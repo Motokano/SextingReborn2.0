@@ -1,0 +1,15 @@
+id,sn,placeholder_name,fn,category,sub_category,weight,stack_limit,tags,source,production_lines,spoilage,price_class,volatility,region_restrict
+weapon_dagger_iron_simple,粗铁短刀,铁短刀,简单打磨过的铁制短刀，可靠但并不锋利。,weapon,dagger,1.2,1,weapon;melee;starter,forge;buy,forge,none,material,mid,0
+weapon_spear_bamboo_iron,竹骨长枪,竹长枪,以粗竹为杆并嵌入小铁尖的长枪，适合新手练手。,weapon,spear,2.5,1,weapon;melee;reach,forge;craft,forge;craft,none,material,mid,0
+weapon_machete_bronze,青铜砍刀,青铜刀,青铜铸成的宽刃砍刀，砍伐灌木与近身战斗都还算顺手。,weapon,machete,2.0,1,weapon;melee,forge,forge,none,material,mid,0
+weapon_bow_bamboo_short,竹弦短弓,竹短弓,用韧性较好的竹片弯成弓身，粗制浅色弓弦拉感偏硬。,weapon,bow,1.5,1,weapon;ranged,craft,craft,none,material,mid,0
+weapon_javelin_stone,石砾投枪,石投枪,在削尖的木杆前端绑上磨圆的石块，用于近距离投掷攻击。,weapon,javelin,1.8,3,weapon;ranged;throw,craft;hunting,craft,none,material,mid,0
+armor_cloth_rag_shirt,粗布衣,旧布衣,用粗布随手缝制的上衣，只能略微挡风遮体。,armor,cloth,0.8,1,armor;body;cloth,weave;craft,weave;craft,none,life_good,low,0
+armor_leather_vest_basic,皮甲背心,旧皮甲,用处理过的兽皮钉合成的背心，在躯干处提供一点额外保护。,armor,leather,1.6,1,armor;body;leather,craft;hunting,craft,none,material,mid,0
+armor_bamboo_breastplate,竹片护胸,竹护胸,多片薄竹板用绳索交错系在一起，能稍微卸去正面冲击。,armor,bamboo,2.2,1,armor;body;bamboo,craft;logging,craft,none,material,mid,0
+armor_silk_undershirt,细丝里衣,丝里衣,贴身穿着的细丝里衣，几乎不妨碍行动，仅在轻微擦伤时略有缓冲。,armor,silk_under,0.4,1,armor;body;silk,weave;husbandry,weave,none,rare,mid,0
+tool_pickaxe_iron_simple,简易矿镐,旧矿镐,用短铁镐头与粗木柄临时拼成的矿镐，只适合浅层开采。,tool,mining,2.8,1,tool;mining;weapon_alt,forge;craft,forge;craft,none,material,mid,0
+tool_hatchet_woodcutter,伐木小斧,木小斧,斧刃偏小但够锋利，适合砍伐较细的树木和枝条。,tool,logging,1.9,1,tool;logging;weapon_alt,forge;logging,forge;craft,none,material,mid,0
+tool_sewing_kit_cloth,缝纫工具包,线包,装有几枚粗针与少量线轴的小包，用来简单修补衣物和布制装备。,tool,sewing,0.3,5,tool;sewing;repair,craft,weave;craft,none,life_good,low,0
+tool_flask_iron_water,铁皮水壶,铁水壶,包铁外壳的水壶，比陶罐更耐摔但略有金属异味。,tool,container,0.7,1,tool;container;water,craft;buy,craft,none,life_good,mid,0
+tool_pot_clay_cooking,粗陶饭锅,陶饭锅,用粗陶烧成的饭锅，受热不算均匀但足以应付常见炊煮。,tool,cookware,1.5,1,tool;cookware;cooking,craft;buy,cook,none,life_good,mid,0

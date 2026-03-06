@@ -1,0 +1,9 @@
+id,sn,placeholder_name,fn,category,sub_category,weight,stack_limit,tags,source,production_lines,spoilage,price_class,volatility,region_restrict,convert_to_high,usable_regions,accept_code
+currency_origin_stone,原石,发光的原石,凉滑有棱角，透微光，兴许能当钱。,currency,high,0.0014,100,currency;high,trade;reward,trade,none,luxury,low,0,,1,IOS
+currency_genesis_crystal,创世结晶,创世结晶,小块凉滑，透微光，或许能当钱。,currency,low,0.0008,500000,currency;low,trade;reward,trade,none,material,low,0,"currency_origin_stone,1000",1,GC
+currency_star_jade,星琼,星琼,轻软如花瓣，摸着柔嫩，兴许能换东西。,currency,high,0.0007,100,currency;high,trade;reward,trade,none,luxury,low,0,,2,SJW
+currency_old_dream,古老梦华,古老梦华,轻软似羽，几无重量，或许能当钱。,currency,low,0.0004,500000,currency;low,trade;reward,trade,none,material,low,0,"currency_star_jade,1000",2,OD
+currency_film,菲林,菲林,薄软一片，捏着有弹性，兴许能当钱。,currency,high,0.0008,100,currency;high,trade;reward,trade,none,luxury,low,0,,3,FLP
+currency_film_negative,菲林底片,菲林底片,软韧能弯，略透光，或许能换东西。,currency,low,0.0005,500000,currency;low,trade;reward,trade,none,material,low,0,"currency_film,1000",3,FN
+currency_chip,晶片,晶片,规整沉手，棱角分明，兴许能当钱。,currency,high,0.002,100,currency;high,trade;reward,trade,none,luxury,low,0,,4,JPY
+currency_unnamed_crystal,未名晶石,未名晶石,沉手微凉，像小石块，或许能当钱。,currency,low,0.0011,500000,currency;low,trade;reward,trade,none,material,low,0,"currency_chip,1000",4,UC
