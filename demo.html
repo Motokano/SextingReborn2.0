@@ -1,0 +1,1101 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>末世武侠 UI Demo - 稳定版</title>
+    <!-- 使用 Tailwind CDN (内地访问通常稳定) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* 使用更易读的中文字体栈，整体字号略放大 */
+        body { 
+            font-family: "Microsoft YaHei", "微软雅黑", -apple-system, BlinkMacSystemFont,
+                         "Source Han Sans SC", "Noto Sans CJK SC", "PingFang SC",
+                         "Helvetica Neue", Arial, sans-serif;
+            background-color: #1c1815; 
+            color: #f3f4f6; 
+            overflow: hidden; 
+            font-size: 14px;
+        }
+        /* 轻微放大原本的超小字号，提升可读性 */
+        .text-\[9px\]  { font-size: 10px !important; }
+        .text-\[10px\] { font-size: 11px !important; }
+        .text-\[11px\] { font-size: 12px !important; }
+        .scrollbar-hide::-webkit-scrollbar { display: none; }
+        .custom-status-scroll::-webkit-scrollbar { width: 3px; }
+        .custom-status-scroll::-webkit-scrollbar-thumb { background: rgba(212, 163, 115, 0.2); border-radius: 10px; }
+        .modal-bg { background-color: rgba(0, 0, 0, 0.95); backdrop-filter: blur(16px); }
+        .btn-active:active { transform: scale(0.95); }
+        .node-hover:hover { border-color: #fbbf24; background-color: #2b211b; }
+        .bag-slot:hover { border-color: #fbbf24; background-color: rgba(251, 191, 36, 0.05); }
+        /* 简单物品浮窗 */
+        #tooltip {
+            position: fixed;
+            z-index: 9999;
+            max-width: 260px;
+            font-size: 12px;
+            line-height: 1.4;
+            pointer-events: none;
+            background: rgba(17, 12, 9, 0.96);
+            border: 1px solid rgba(212, 163, 115, 0.7);
+            color: #f3f4f6;
+            padding: 6px 9px;
+            border-radius: 6px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.6);
+            opacity: 0;
+            transform: translateY(4px);
+            transition: opacity 120ms ease-out, transform 120ms ease-out;
+            white-space: normal;
+        }
+        #tooltip.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    </style>
+</head>
+<body class="flex flex-col h-screen select-none">
+
+    <!-- 全局 tooltip 容器 -->
+    <div id="tooltip"></div>
+
+    <!-- 1. 核心视口 -->
+    <div class="relative flex-1 flex items-center justify-center border-b-2 border-[#4d3f35] overflow-hidden">
+        <div class="absolute inset-0 pointer-events-none opacity-10 z-10" style="background-image: url('./assets/dust.svg'); background-size: 80px 80px;"></div>
+        
+        <!-- 地图容器 -->
+        <div class="relative border-[6px] border-[#4d3f35] bg-[#26211d] shadow-2xl overflow-hidden" style="width: 744px; height: 456px;">
+            <div id="map-grid" class="absolute transition-all duration-300 p-3 origin-center" style="width: 1800px; height: 1800px;"></div>
+            <div id="player-sprite" class="absolute z-20 flex items-center justify-center transition-all duration-300 pointer-events-none" style="width: 72px; height: 72px;">
+                <div class="w-11 h-11 bg-[#5b1c03] rounded-xl border-2 border-[#fbbf24]/50 flex items-center justify-center shadow-xl">
+                    <img src="./icons/character.svg" alt="角色" class="w-7 h-7">
+                </div>
+            </div>
+        </div>
+
+        <!-- 侧边 HUD 层 -->
+        <div class="absolute inset-0 pointer-events-none z-30">
+            <!-- 左侧状态面板 -->
+            <div id="left-hud" class="absolute left-6 top-6 bottom-10 w-72 flex flex-col pointer-events-auto transition-all duration-500">
+                <div class="bg-[#2d241e]/95 border-2 border-[#d4a373]/40 p-4 shadow-xl mb-3">
+                    <h1 class="text-xl font-black text-white tracking-[0.2em]">沈遗墨</h1>
+                    <p class="text-[10px] text-[#fbbf24] font-bold mt-1 uppercase">称号 · 初入末世</p>
+                </div>
+                    <div id="status-scroll" class="flex-1 overflow-y-auto custom-status-scroll space-y-3 pr-2">
+                    <div class="bg-[#1c1612]/90 border border-[#4d3f35] p-3 text-[11px] font-bold space-y-2">
+                        <div class="flex justify-between items-center"><span class="text-stone-500 uppercase tracking-widest">生命状态</span><span class="text-green-500 font-black">健康</span></div>
+                        <div class="flex justify-between items-center"><span class="text-stone-500 uppercase tracking-widest">身手感官</span><span class="text-stone-300">轻快</span></div>
+                    </div>
+                    <div id="limb-status-list" class="bg-[#1c1612]/90 border border-[#4d3f35] p-3 space-y-1.5 text-[11px]">
+                        <!-- 由 JS 填充 7 部位状态 -->
+                    </div>
+                    <div class="bg-[#1c1612]/90 border border-[#4d3f35] p-3 space-y-3">
+                        <div class="text-[9px] text-stone-600 font-black uppercase tracking-widest">生存循环</div>
+
+                        <!-- 饱食度 -->
+                        <div class="flex flex-col gap-1">
+                            <div class="flex justify-between text-[10px]">
+                                <span class="text-stone-500">饱食度</span>
+                                <span class="text-white font-bold">稍饿</span>
+                            </div>
+                            <div class="h-0.5 bg-stone-900">
+                                <div class="h-full bg-orange-700/40 w-4/5"></div>
+                            </div>
+                        </div>
+
+                        <!-- 饮水度 -->
+                        <div class="flex flex-col gap-1">
+                            <div class="flex justify-between text-[10px]">
+                                <span class="text-stone-500">饮水度</span>
+                                <span class="text-white font-bold">不渴</span>
+                            </div>
+                            <div class="h-0.5 bg-stone-900">
+                                <div class="h-full bg-blue-700/40 w-full"></div>
+                            </div>
+                        </div>
+
+                        <!-- 体力 -->
+                        <div class="flex flex-col gap-1">
+                            <div class="flex justify-between text-[10px]">
+                                <span class="text-stone-500">体力</span>
+                                <span class="text-white font-bold">尚充</span>
+                            </div>
+                            <div class="h-0.5 bg-stone-900">
+                                <div class="h-full bg-lime-500/40 w-3/4"></div>
+                            </div>
+                        </div>
+
+                        <!-- 精力 -->
+                        <div class="flex flex-col gap-1">
+                            <div class="flex justify-between text-[10px]">
+                                <span class="text-stone-500">精力</span>
+                                <span class="text-white font-bold">专注</span>
+                            </div>
+                            <div class="h-0.5 bg-stone-900">
+                                <div class="h-full bg-purple-500/40 w-2/3"></div>
+                            </div>
+                        </div>
+
+                        <!-- 心情 / 营养 文案 -->
+                        <div class="flex justify-between text-[10px] pt-1 border-t border-[#4d3f35]/40 mt-1">
+                            <span class="text-stone-500">心情</span>
+                            <span class="text-amber-300 font-bold">平静</span>
+                        </div>
+                        <div class="flex justify-between text-[10px]">
+                            <span class="text-stone-500">营养</span>
+                            <span class="text-stone-300 font-bold">正常</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 右侧动作按钮 -->
+            <div id="right-hud" class="absolute right-8 top-1/2 -translate-y-1/2 space-y-6 pointer-events-auto transition-all">
+                <button onclick="openTab('inventory')" class="w-14 h-14 bg-[#2d241e] border-2 border-[#4d3f35] rounded flex items-center justify-center hover:border-[#fbbf24] transition-all shadow-xl">
+                    <img src="./icons/backpack.svg" alt="行囊" class="w-7 h-7">
+                </button>
+                <button onclick="openTab('combat')" class="w-14 h-14 bg-[#2d241e] border-2 border-[#4d3f35] rounded flex items-center justify-center hover:border-[#fbbf24] transition-all shadow-xl">
+                    <img src="./icons/sword.svg" alt="战斗" class="w-7 h-7">
+                </button>
+                <button onclick="openTab('life')" class="w-14 h-14 bg-[#2d241e] border-2 border-[#4d3f35] rounded flex items-center justify-center hover:border-[#fbbf24] transition-all shadow-xl">
+                    <img src="./icons/life.svg" alt="生活" class="w-7 h-7">
+                </button>
+                <button class="w-14 h-14 bg-[#2d241e] border-2 border-[#4d3f35] rounded flex items-center justify-center hover:border-[#fbbf24] transition-all shadow-xl">
+                    <img src="./icons/cog.svg" alt="设置" class="w-7 h-7">
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 3.5 生活技能弹窗 -->
+    <div id="modal-life" class="hidden fixed inset-0 z-[100] modal-bg flex items-center justify-center p-6">
+        <div class="relative w-[1100px] h-[720px] bg-[#1c1612] border-2 border-[#d4a373]/30 rounded-2xl shadow-2xl flex flex-col overflow-hidden animate-in">
+            <div class="h-16 border-b border-[#3d2d24] flex items-center justify-between px-10 bg-[#1c1612]">
+                <div class="flex flex-col">
+                    <h2 class="text-xl font-black text-white tracking-[0.6em] uppercase">生活技能枢纽</h2>
+                    <span class="text-[10px] text-stone-600 uppercase tracking-widest mt-1 italic">Life Skill Synchronization</span>
+                </div>
+                <button onclick="closeModals()" class="w-10 h-10 rounded-full flex items-center justify-center hover:bg-red-900/20 text-stone-500 hover:text-white transition-all text-xl">✖</button>
+            </div>
+            <div class="flex-1 flex overflow-hidden">
+                <!-- 左：生活技能概览 -->
+                <div class="w-[360px] border-r border-[#3d2d24] flex flex-col p-8 bg-[#18120e] overflow-y-auto scrollbar-hide">
+                    <div class="mb-4">
+                        <div class="text-[10px] font-black text-[#fbbf24] border-l-2 border-[#fbbf24] pl-4 uppercase mb-2">生活技艺</div>
+                        <p class="text-[11px] text-stone-400 leading-relaxed">
+                            这里只专注于你已经察觉到、并开始练习的生活技能本身。
+                        </p>
+                    </div>
+                </div>
+                <!-- 右：生活技能列表 -->
+                <div class="flex-1 flex flex-col p-10 bg-[#1c1612]">
+                    <div id="life-category-tabs" class="flex gap-3 mb-8"></div>
+                    <div id="life-skill-list" class="flex-1 overflow-y-auto pr-4 flex flex-col gap-3 scrollbar-hide"></div>
+                </div>
+            </div>
+            <div class="h-[200px] border-t border-[#3d2d24] bg-[#1c1612] flex items-center px-12 gap-12 flex-shrink-0 relative">
+                <div class="flex-1 flex flex-col gap-4 min-w-0">
+                    <div class="flex items-baseline gap-4">
+                        <h3 id="life-skill-title" class="text-2xl font-black text-white tracking-[0.25em]">--</h3>
+                        <div class="flex gap-2">
+                            <div id="life-skill-level" class="px-3 py-0.5 bg-stone-900 text-[10px] font-black text-stone-500 uppercase">等级 0</div>
+                            <div id="life-skill-prof" class="px-3 py-0.5 bg-[#fbbf24]/10 border border-[#fbbf24]/30 text-[10px] font-black text-[#fbbf24] uppercase">熟练度 0%</div>
+                        </div>
+                    </div>
+                    <div id="life-skill-tags" class="flex flex-wrap gap-2"></div>
+                    <p id="life-skill-desc" class="text-[11px] text-stone-400 leading-relaxed line-clamp-3">--</p>
+                </div>
+                <div class="w-60 flex flex-col gap-3">
+                    <div class="text-[10px] text-stone-500 font-black uppercase tracking-widest">产线预留</div>
+                    <div class="text-[11px] text-stone-400 leading-relaxed">
+                        将来可以在这里挂载与该生活技能相关的生产建筑、产线或加成信息，例如“锻造台 · 火候”“炼药台 · 炉火”等。
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 2. 快捷栏：悬在日志栏正上方 -->
+    <div class="h-12 bg-transparent flex items-center justify-center relative z-40 pointer-events-none">
+        <div id="quick-bar" class="pointer-events-auto flex items-center justify-center gap-2">
+            <div class="w-10 h-10 rounded border border-stone-800 bg-black/40 flex items-center justify-center hover:border-[#fbbf24] cursor-pointer btn-active">
+                <img src="./icons/potion.svg" alt="药剂" class="w-6 h-6">
+            </div>
+            <div class="w-10 h-10 rounded border border-stone-800 bg-black/40 flex items-center justify-center hover:border-[#fbbf24] cursor-pointer btn-active">
+                <img src="./icons/sword.svg" alt="武器" class="w-6 h-6">
+            </div>
+            <div class="w-10 h-10 rounded border border-stone-800 bg-black/40 flex items-center justify-center opacity-10"></div>
+            <div class="w-10 h-10 rounded border border-stone-800 bg-black/40 flex items-center justify-center opacity-10"></div>
+            <div class="w-10 h-10 rounded border border-stone-800 bg-black/40 flex items-center justify-center opacity-10"></div>
+            <div class="w-10 h-10 rounded border border-stone-800 bg-black/40 flex items-center justify-center opacity-10"></div>
+        </div>
+    </div>
+
+    <!-- 3. 对话 + 日志 -->
+    <div class="h-44 bg-[#1c1815] flex items-center justify-center relative z-40 border-t border-[#3d2d24]">
+        <div class="w-[880px] h-[160px] bg-[#2d241e] border-2 border-[#4d3f35] px-4 py-3 flex flex-col gap-2">
+            <!-- 对话面板：类似 CRPG 底部对话框 -->
+            <div id="dialogue-panel" class="hidden bg-black/40 border border-[#3d2d24] rounded px-3 py-2.5 flex items-start gap-3 text-sm">
+                <!-- 由 JS 填充：说话人 + 台词 + 按钮 -->
+            </div>
+            <!-- 可回溯日志 -->
+            <div id="log-list" class="flex-1 overflow-y-auto flex flex-col-reverse text-sm scrollbar-hide">
+                <div class="text-stone-500 mb-1">
+                    <span class="text-[#fbbf24] mr-3 font-black">»</span>欢迎来到末世江湖，资源已加载完毕。
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 3. 武学枢纽弹窗 -->
+    <div id="modal-combat" class="hidden fixed inset-0 z-[100] modal-bg flex items-center justify-center p-6">
+        <div class="relative w-[1200px] h-[780px] bg-[#1c1612] border-2 border-[#d4a373]/30 rounded-2xl shadow-2xl flex flex-col overflow-hidden animate-in">
+            <div class="h-16 border-b border-[#3d2d24] flex items-center justify-between px-10 bg-[#1c1612]">
+                <div class="flex flex-col">
+                    <h2 class="text-xl font-black text-white tracking-[0.6em] uppercase">战斗技能枢纽</h2>
+                    <span class="text-[10px] text-stone-600 uppercase tracking-widest mt-1 italic">Combat Node Synchronization</span>
+                </div>
+                <button onclick="closeModals()" class="w-10 h-10 rounded-full flex items-center justify-center hover:bg-red-900/20 text-stone-500 hover:text-white transition-all text-xl">✖</button>
+            </div>
+            <div class="flex-1 flex overflow-hidden">
+                <div class="w-[380px] border-r border-[#3d2d24] flex flex-col p-8 bg-[#18120e] overflow-y-auto scrollbar-hide">
+                    <div class="mb-8 space-y-4">
+                        <div class="text-[10px] font-black text-[#fbbf24] border-l-2 border-[#fbbf24] pl-4 uppercase">全局枢纽核心</div>
+                        <div class="grid grid-cols-2 gap-3">
+                            <div id="hub-breath" class="h-20 rounded border-2 border-[#fbbf24] bg-[#2b211b] flex flex-col items-center justify-center">
+                                <span class="text-[8px] font-black text-[#fbbf24] uppercase mb-1">内息核心</span>
+                                <span id="val-breath" class="text-xs font-black text-white">--</span>
+                            </div>
+                            <div id="hub-light" class="h-20 rounded border-2 border-stone-900 bg-[#120e0c] flex flex-col items-center justify-center opacity-60">
+                                <span class="text-[8px] font-black text-stone-500 uppercase mb-1">身法核心</span>
+                                <span id="val-light" class="text-xs font-black text-stone-700 italic">未载入</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="limb-container" class="flex flex-col gap-6"></div>
+                </div>
+                <div class="flex-1 flex flex-col p-10 bg-[#1c1612]">
+                    <div id="category-tabs" class="flex gap-3 mb-10"></div>
+                    <div id="skill-list" class="flex-1 overflow-y-auto pr-4 flex flex-col gap-3 scrollbar-hide"></div>
+                </div>
+            </div>
+            <div class="h-[240px] border-t border-[#3d2d24] bg-[#1c1612] flex items-center px-12 gap-12 flex-shrink-0 relative">
+                <div class="flex-1 flex flex-col gap-5 min-w-0">
+                    <div class="flex items-baseline gap-6">
+                        <h3 id="skill-title" class="text-3xl font-black text-white tracking-[0.3em]">--</h3>
+                        <div class="flex gap-2">
+                            <div id="skill-level" class="px-3 py-0.5 bg-stone-900 text-[10px] font-black text-stone-500 uppercase">等级 0</div>
+                            <div id="skill-prof" class="px-3 py-0.5 bg-[#fbbf24]/10 border border-[#fbbf24]/30 text-[10px] font-black text-[#fbbf24] uppercase">熟练度 0%</div>
+                        </div>
+                    </div>
+                    <div id="move-sequence" class="flex flex-wrap gap-4 py-2 relative"></div>
+                </div>
+                <div class="w-64 flex flex-col gap-4">
+                    <button onclick="handleDeploy()" class="w-full py-5 rounded bg-[#fbbf24] hover:bg-amber-400 text-black font-black uppercase tracking-[0.4em] shadow-xl active:scale-95 transition-all">⚡ 载入枢纽</button>
+                    <div id="target-indicator" class="text-[10px] text-[#fbbf24] font-black uppercase tracking-widest text-center bg-black/40 px-3 py-1 rounded border border-[#3d2d24]">--</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 4. 行囊弹窗 (补全内容) -->
+    <div id="modal-inventory" class="hidden fixed inset-0 z-[100] modal-bg flex items-center justify-center p-6">
+        <div class="relative w-[900px] h-[640px] bg-[#1c1612] border-2 border-[#d4a373]/30 rounded-2xl shadow-2xl flex flex-col overflow-hidden animate-in">
+            <!-- 头部 -->
+            <div class="h-16 border-b border-[#3d2d24] flex items-center justify-between px-10 bg-[#261e18]">
+                <h2 class="text-xl font-black text-white tracking-[0.4em] uppercase flex items-center gap-3">🎒 行囊 · 藏珍</h2>
+                <button onclick="closeModals()" class="w-10 h-10 rounded-full flex items-center justify-center hover:bg-red-900/20 text-stone-500 hover:text-white transition-all text-xl">✖</button>
+            </div>
+            <!-- 内容 -->
+            <div class="flex-1 flex p-10 gap-10 overflow-hidden">
+                <!-- 左：人物装备位 -->
+                <div class="w-80 flex flex-col gap-3">
+                    <div class="text-[10px] font-black text-stone-600 uppercase tracking-widest mb-2 border-l-4 border-[#fbbf24] pl-3">核心配置节点</div>
+                    <div id="equip-slots" class="flex flex-col gap-3">
+                        <!-- 由渲染脚本动态填充装备位 -->
+                    </div>
+                </div>
+                <!-- 右：背包网格 -->
+                <div class="flex-1 flex flex-col gap-5">
+                    <div class="flex justify-between items-center text-[10px] font-black text-stone-600 uppercase tracking-widest">
+                        <span>随身收纳 (9x3)</span>
+                        <span class="text-[#fbbf24]/50 font-bold">点击物品以配置</span>
+                    </div>
+                    <div id="bag-grid" class="grid grid-cols-9 gap-2.5 bg-black/40 p-5 border border-[#3d2d24] shadow-inner overflow-y-auto scrollbar-hide">
+                        <!-- 27个格子 -->
+                    </div>
+                    <!-- 碎银 -->
+                    <div class="mt-auto pt-4 border-t border-[#3d2d24] flex justify-between items-center px-2">
+                        <span class="text-[10px] text-stone-600 font-black uppercase italic">Inventory Load: 3/27</span>
+                        <div class="flex items-center gap-3">
+                            <span class="text-xs text-stone-500 font-black uppercase">碎银总量:</span>
+                            <span class="text-2xl text-[#fbbf24] font-black tracking-widest">88.5</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 5. 招式选择弹出 -->
+    <div id="picker-move" class="hidden fixed z-[300] w-48 bg-[#1c1612] border-2 border-[#fbbf24] rounded shadow-2xl overflow-hidden animate-in fade-in zoom-in-95">
+        <div id="picker-list" class="max-h-64 overflow-y-auto custom-status-scroll"></div>
+    </div>
+
+    <script>
+        // --- 数据定义 ---
+        const SKILLS = [
+            { id: 's1', name: '基本拳脚', cat: 'unarmed', lv: 120, pr: 75, moves: ['直拳','前踢','勾拳','鞭腿','冲拳','撩阴腿'] },
+            { id: 's2', name: '太极拳', cat: 'unarmed', lv: 85, pr: 45, moves: ['揽雀尾','单鞭','提手上势','白鹤亮翅'] },
+            { id: 's3', name: '狂风快刀', cat: 'weapon', lv: 30, pr: 30, moves: ['劈山','横抹','缠头','裹脑'] },
+            { id: 's4', name: '草上飞', cat: 'light', lv: 40, pr: 75, moves: ['提气','踏草','凌空','纵跃'] },
+            { id: 's5', name: '禅定呼吸', cat: 'breath', lv: 50, pr: 75, moves: ['吐纳','闭气','导引','聚气'] },
+            { id: 's6', name: '基础招架', cat: 'parry', lv: 80, pr: 60, moves: ['格挡','卸力','闪避','反制'] }
+        ];
+
+        const CATEGORIES = [
+            { id: 'unarmed', label: '徒手', icon: '🖐️' },
+            { id: 'weapon', label: '兵器', icon: '⚔️' },
+            { id: 'light', label: '轻功', icon: '👟' },
+            { id: 'breath', label: '呼吸', icon: '🫁' },
+            { id: 'parry', label: '招架', icon: '🛡️' }
+        ];
+
+        // 生活技能示例数据
+        const LIFE_SKILLS = [
+            { id: 'l1', name: '采集', cat: 'gather', lv: 60, pr: 40, desc: '在灌木与草丛中寻找药草、野果与杂物。熟练后能更快辨认有用之物。', tags: ['资源获取'] },
+            { id: 'l2', name: '挖矿', cat: 'gather', lv: 35, pr: 20, desc: '在矿脉中开采矿石与稀有矿物，是锻造与制造的基础。', tags: ['资源获取'] },
+            { id: 'l3', name: '锻造', cat: 'produce', lv: 10, pr: 8, desc: '在简陋的铁匠台前，尝试把冰冷矿石敲成趁手兵刃。', tags: ['武器', '产线'] },
+            { id: 'l4', name: '烹饪', cat: 'produce', lv: 45, pr: 55, desc: '用有限的食材做出能填饱肚子甚至提振士气的料理。', tags: ['饱食', '心情'] },
+            { id: 'l5', name: '炼药', cat: 'produce', lv: 22, pr: 18, desc: '在破旧的炉鼎里煎煮药剂，赌一把是灵药还是毒汤。', tags: ['回复', '风险'] },
+            { id: 'l6', name: '贸易', cat: 'trade', lv: 5, pr: 2, desc: '学着和行商打交道，在价钱与信息之间尽量占点便宜。', tags: ['经济'] },
+            { id: 'l7', name: '鉴定', cat: 'trade', lv: 15, pr: 10, desc: '看穿旧物与残卷背后的真价与来历，不至于把宝贝当破铜烂铁卖掉。', tags: ['信息'] },
+        ];
+
+        const LIFE_CATEGORIES = [
+            { id: 'gather', label: '采集 / 探索', icon: '🧭' },
+            { id: 'produce', label: '生产 / 制作', icon: '🧱' },
+            { id: 'trade', label: '交易 / 鉴定', icon: '📜' },
+        ];
+
+        // 简单多地图：两张地图，固定传送点，类似早期 RPG
+        const MAPS = [
+            {
+                id: 'outskirts',
+                name: '城郊荒地',
+                width: 25,
+                height: 25,
+                // 入口 / 出口：从城郊左边缘某格 → 小村落
+                exits: [
+                    { x: 0, y: 12, targetMapId: 'village', targetX: 24, targetY: 12, label: '通往小村落' }
+                ],
+                tintClass: 'bg-[#312a24]'
+            },
+            {
+                id: 'village',
+                name: '破败小村',
+                width: 25,
+                height: 25,
+                // 反向出口：从小村落右边缘某格 → 回到城郊
+                exits: [
+                    { x: 24, y: 12, targetMapId: 'outskirts', targetX: 1, targetY: 12, label: '通往城郊荒地' }
+                ],
+                tintClass: 'bg-[#2b3130]'
+            }
+        ];
+
+        // 简单对话脚本示例（CRPG 风格：台词 + 多个选项）
+        const DIALOG_SCRIPTS = {
+            old_hermit: {
+                name: '破衣道人',
+                nodes: [
+                    {
+                        id: 0,
+                        text: '……这地方，不该有人活着走动。',
+                        options: [
+                            { text: '你是谁？', next: 1 },
+                            { text: '我只是路过。', next: 2 }
+                        ]
+                    },
+                    {
+                        id: 1,
+                        text: '我是谁不重要，你还没活到需要知道名字的年纪。',
+                        options: [
+                            { text: '那你看得出我能活多久？', next: 3 },
+                            { text: '那我走了。', next: -1 }
+                        ]
+                    },
+                    {
+                        id: 2,
+                        text: '路，会记住每一个被踩过的脚印，你脚上的劲儿太乱。',
+                        options: [
+                            { text: '什么意思？', next: 3 },
+                            { text: '不听老人言。', next: -1 }
+                        ]
+                    },
+                    {
+                        id: 3,
+                        text: '你连自己是怎么出拳、怎么呼吸都说不清，打赢一场也是侥幸。',
+                        options: [
+                            { text: '……你能教我吗？', next: 4 },
+                            { text: '我不需要别人教。', next: -1 }
+                        ]
+                    },
+                    {
+                        id: 4,
+                        text: '等哪天你真开始「留意」自己的每一次出手，再来问我战斗这回事。',
+                        options: [
+                            { text: '（点头离开）', next: -1 }
+                        ]
+                    }
+                ]
+            }
+        };
+
+        const LIMBS = [
+            { id: 'lh', label: '左手部件', icon: '🤚' },
+            { id: 'rh', label: '右手部件', icon: '🤚' },
+            { id: 'lf', label: '左腿部件', icon: '👣' },
+            { id: 'rf', label: '右腿部件', icon: '👣' }
+        ];
+
+        const EQUIP_SLOTS = [
+            { id: 'head', label: '头部核心', icon: '🎓' },
+            { id: 'body', label: '躯干节点', icon: '👕' },
+            { id: 'weapon', label: '主战兵刃', icon: '🗡️' },
+            { id: 'feet', label: '足下位点', icon: '👞' }
+        ];
+
+        // --- 核心状态 ---
+        let state = {
+            mapId: 'outskirts',
+            pos: { x: 12, y: 12 },
+            curCat: 'unarmed',
+            curSkillId: 's1',
+            curPart: 'rh',
+            curSlot: 'active',
+            skillData: {}, 
+            body: { lh: { active: null, parry: 's6', p: 3 }, rh: { active: 's1', parry: null, p: 1 }, lf: { active: null, parry: null, p: 4 }, rf: { active: null, parry: null, p: 2 } },
+            hubs: { breath: 's5', light: null },
+            bag: [
+                { id: 'i1', name: '生锈的铁刀', cat: 'weapon', icon: '🗡️', desc: '一把被废弃很久的短刀，刀刃满是锈蚀。\n· 品质：粗糙\n· 仍勉强可以用来防身。' },
+                { id: 'i2', name: '破损的斗笠', cat: 'head', icon: '👒', desc: '略微遮风挡雨的旧斗笠。\n· 品质：粗糙\n· 至少比光头直接吹好一点。' },
+                { id: 'i3', name: '粗布麻衣', cat: 'body', icon: '👘', desc: '普普通通的粗布长衫。\n· 品质：普通\n· 没有护甲，但穿上总比赤身露体强。' },
+                ...Array(24).fill(null)
+            ],
+            equips: { head: null, body: null, weapon: null, feet: null },
+            lifeCurCat: 'gather',
+            lifeCurSkillId: 'l1',
+            dialog: {
+                active: false,
+                npcId: null,
+                npcName: '',
+                nodeId: null,
+                lastLine: null
+            }
+        };
+
+        // --- 渲染函数 ---
+        function renderAll() {
+            renderMap();
+            renderLeftHUD();
+            renderCombatPanel();
+            renderDialoguePanel();
+            renderLifePanel();
+            renderInventory();
+        }
+
+        function renderMap() {
+            const grid = document.getElementById('map-grid');
+            grid.innerHTML = '';
+
+            const curMap = MAPS.find(m => m.id === state.mapId) || MAPS[0];
+            const w = curMap.width;
+            const h = curMap.height;
+            const npcPos = { x: 15, y: 10, mapId: 'outskirts' }; // 目前 NPC 只在城郊地图
+
+            for(let i=0; i<w*h; i++) {
+                const x = i % w, y = Math.floor(i / w);
+                const isNear = Math.abs(x-state.pos.x)<=1 && Math.abs(y-state.pos.y)<=1 && (x!==state.pos.x || y!==state.pos.y);
+                const isNpc = (state.mapId === npcPos.mapId && x === npcPos.x && y === npcPos.y);
+                const exitDef = (curMap.exits || []).find(ex => ex.x === x && ex.y === y);
+
+                const div = document.createElement('div');
+                // NPC 格子
+                if (isNpc) {
+                    div.className = "absolute rounded border border-[#fbbf24]/60 bg-[#4d3f35] transition-all duration-300 cursor-pointer flex items-center justify-center";
+                    div.innerHTML = '<img src="./icons/npc.svg" alt="NPC" class="w-7 h-7">';
+                    div.onclick = () => {
+                        startDialogue('old_hermit');
+                        renderAll();
+                    };
+                } else if (exitDef) {
+                    // 地图出口格子
+                    div.className = "absolute rounded border border-emerald-400/70 bg-[#274134] transition-all duration-300 cursor-pointer flex items-center justify-center";
+                    div.innerHTML = '<span class="text-[10px] text-emerald-100 font-bold">⇄</span>';
+                    div.onclick = () => {
+                        if (state.dialog && state.dialog.active) return;
+                        state.mapId = exitDef.targetMapId;
+                        state.pos = { x: exitDef.targetX, y: exitDef.targetY };
+                        addLog(exitDef.label || '你进入了另一片区域。');
+                        renderAll();
+                    };
+                } else {
+                    const baseClass = curMap.tintClass || 'bg-[#312a24]';
+                    const nearClass = state.mapId === 'village'
+                        ? 'bg-[#36413d] hover:bg-[#404b46]'
+                        : 'bg-[#3d332c] hover:bg-[#4d3f35]';
+                    div.className = `absolute rounded border border-white/5 transition-all duration-300 ${isNear ? nearClass + ' cursor-pointer' : baseClass}`;
+                    if (isNear) {
+                        div.onclick = () => {
+                            // 对话进行中时禁止移动
+                            if (state.dialog && state.dialog.active) return;
+                            state.pos = { x, y };
+                            addLog("你在风沙中前行。");
+                            renderAll();
+                        };
+                    }
+                }
+                div.style.cssText = `width:62px;height:62px;left:${x*72+5}px;top:${y*72+5}px;`;
+                grid.appendChild(div);
+            }
+            grid.style.transform = `translate(${(5-0.5-state.pos.x)*72}px, ${(3-0.5-state.pos.y)*72}px)`;
+            document.getElementById('player-sprite').style.transform = `translate(${state.pos.x*72}px, ${state.pos.y*72}px)`;
+        }
+
+        function renderLeftHUD() {
+            const limbBox = document.getElementById('limb-status-list');
+            limbBox.innerHTML = '<div class="text-[9px] text-[#fbbf24] mb-2 uppercase opacity-50 tracking-widest font-black">肢体检视</div>';
+
+            const limbLabels = {
+                head:  '头',
+                chest: '胸',
+                abs:   '腹',
+                lh:    '左手',
+                rh:    '右手',
+                lf:    '左脚',
+                rf:    '右脚'
+            };
+
+            const limbStates = {
+                head:  { tier: '完好',      extra: '' },
+                chest: { tier: '轻微损伤',  extra: '' },
+                abs:   { tier: '中度损伤',  extra: '内伤' },
+                lh:    { tier: '完好',      extra: '' },
+                rh:    { tier: '轻伤',      extra: '握力下降' },
+                lf:    { tier: '重伤',      extra: '骨折' },
+                rf:    { tier: '完好',      extra: '' },
+            };
+
+            Object.entries(limbLabels).forEach(([id, label]) => {
+                const st = limbStates[id];
+                const isBroken = st.extra.includes('骨折');
+                const color =
+                    st.tier === '完好' ? 'text-stone-500'
+                  : (st.tier === '轻微损伤' || st.tier === '轻伤') ? 'text-amber-400'
+                  : 'text-red-500';
+
+                const div = document.createElement('div');
+                div.className = "flex justify-between items-center text-[11px]";
+                div.innerHTML = `
+                    <span>${label}</span>
+                    <span class="flex items-center gap-1 ${color}">
+                        ${isBroken ? '🦴' : ''}
+                        <span>${st.tier}${st.extra ? '（'+st.extra+'）' : ''}</span>
+                    </span>
+                `;
+                limbBox.appendChild(div);
+            });
+        }
+
+        function renderCombatPanel() {
+            // A. 分类
+            const catBox = document.getElementById('category-tabs');
+            catBox.innerHTML = '';
+            CATEGORIES.forEach(c => {
+                const btn = document.createElement('button');
+                btn.className = `flex items-center gap-3 px-6 py-2.5 rounded-full text-xs font-black border-2 transition-all ${state.curCat===c.id ? 'bg-[#fbbf24] text-black border-[#fbbf24]' : 'bg-[#120e0c] text-stone-600 border-stone-900 hover:text-[#fbbf24]'}`;
+                btn.innerHTML = `${c.icon} ${c.label}`;
+                btn.onclick = () => { state.curCat = c.id; const f=SKILLS.find(s=>s.cat===c.id); if(f) state.curSkillId=f.id; renderAll(); };
+                catBox.appendChild(btn);
+            });
+
+            // B. 列表
+            const list = document.getElementById('skill-list');
+            list.innerHTML = '';
+            SKILLS.filter(s => s.cat === state.curCat).forEach(s => {
+                const isS = state.curSkillId === s.id;
+                const div = document.createElement('div');
+                div.className = `flex items-center justify-between px-8 py-5 rounded-xl border-2 transition-all cursor-pointer ${isS ? 'border-[#fbbf24] bg-[#2b211b] shadow-2xl' : 'border-stone-900 bg-[#14100e] hover:border-stone-800'}`;
+                const iconSrc =
+                    s.cat === 'unarmed' ? './icons/sword.svg' :
+                    s.cat === 'weapon'  ? './icons/sword.svg' :
+                    s.cat === 'light'   ? './icons/life.svg'  :
+                    s.cat === 'breath'  ? './icons/potion.svg' :
+                    './icons/cog.svg';
+                div.innerHTML = `
+                    <div class="flex items-center gap-6">
+                        <div class="w-8 h-8 rounded border border-stone-800 bg-black/40 flex items-center justify-center">
+                            <img src="${iconSrc}" alt="" class="w-5 h-5">
+                        </div>
+                        <div class="flex flex-col">
+                            <span class="text-lg font-black tracking-widest text-white uppercase">${s.name}</span>
+                            <span class="text-[10px] text-[#fbbf24] font-black uppercase mt-1">等级 ${s.lv} · 熟练度 ${s.pr}%</span>
+                        </div>
+                    </div>
+                `;
+                const titleLine = `${s.name}（战斗技能）`;
+                const levelLine = `等级：${s.lv}    熟练度：${s.pr}%`;
+                const typeLine =
+                    s.cat === 'unarmed' ? '类型：徒手 · 近战' :
+                    s.cat === 'weapon'  ? '类型：兵器 · 近战/中距' :
+                    s.cat === 'light'   ? '类型：轻功 · 位移/速度' :
+                    s.cat === 'breath'  ? '类型：呼吸法 · 底气/护体' :
+                    '类型：招架 · 防御/卸力';
+                div.dataset.tooltip = [titleLine, levelLine, typeLine].join('\n');
+                div.addEventListener('mouseenter', handleTooltipEnter);
+                div.addEventListener('mouseleave', handleTooltipLeave);
+                div.onclick = () => { state.curSkillId = s.id; renderAll(); };
+                list.appendChild(div);
+            });
+
+            // C. 肢体槽位
+            const limbContainer = document.getElementById('limb-container');
+            limbContainer.innerHTML = '';
+            const isGlobal = (state.curCat === 'breath' || state.curCat === 'light');
+            limbContainer.style.opacity = isGlobal ? '0.2' : '1';
+            limbContainer.style.pointerEvents = isGlobal ? 'none' : 'auto';
+            LIMBS.forEach(l => {
+                const div = document.createElement('div');
+                div.className = "flex flex-col gap-2.5";
+                const actName = SKILLS.find(s=>s.id===state.body[l.id].active)?.name || '空缺';
+                const parName = SKILLS.find(s=>s.id===state.body[l.id].parry)?.name || '空缺';
+                const limbStatusMap = {
+                    lh: { text: '完好', color: 'text-stone-500', icon: '' },
+                    rh: { text: '轻伤', color: 'text-amber-400', icon: '🩹' },
+                    lf: { text: '骨折', color: 'text-red-500',   icon: '🦴' },
+                    rf: { text: '完好', color: 'text-stone-500', icon: '' },
+                };
+                const st = limbStatusMap[l.id] || { text: '未知', color: 'text-stone-700', icon: '' };
+
+                div.innerHTML = `
+                    <div class="flex justify-between items-center text-[10px] font-black">
+                        <span class="text-stone-500 uppercase tracking-widest">${l.icon} ${l.label}</span>
+                        <span class="text-[#fbbf24]">优先级 ${state.body[l.id].p}</span>
+                    </div>
+                    <div class="flex gap-2">
+                        <div onclick="state.curPart='${l.id}';state.curSlot='active';renderAll()" class="flex-1 h-12 border-2 rounded flex flex-col items-center justify-center transition-all cursor-pointer ${state.curPart===l.id && state.curSlot==='active' ? 'border-[#fbbf24] bg-[#2b211b]' : 'border-stone-900 bg-[#120e0c]'}">
+                            <span class="text-[7px] text-stone-700 uppercase">进攻</span><span class="text-xs font-black text-white">${actName}</span>
+                        </div>
+                        <div onclick="state.curPart='${l.id}';state.curSlot='parry';renderAll()" class="flex-1 h-12 border-2 rounded flex flex-col items-center justify-center transition-all cursor-pointer ${state.curPart===l.id && state.curSlot==='parry' ? 'border-[#fbbf24] bg-[#2b211b]' : 'border-stone-900 bg-[#120e0c]'}">
+                            <span class="text-[7px] text-stone-700 uppercase">招架</span><span class="text-xs font-black text-white">${parName}</span>
+                        </div>
+                    </div>
+                    <div class="flex justify-between items-center text-[9px] text-stone-600 mt-1">
+                        <span class="uppercase tracking-widest">状态</span>
+                        <span class="flex items-center gap-1 ${st.color}">
+                            ${st.icon ? `<span>${st.icon}</span>` : ''}
+                            <span>${st.text}</span>
+                        </span>
+                    </div>
+                `;
+                limbContainer.appendChild(div);
+            });
+            
+            document.getElementById('val-breath').innerText = SKILLS.find(s=>s.id===state.hubs.breath)?.name || '未载入';
+            document.getElementById('val-light').innerText = SKILLS.find(s=>s.id===state.hubs.light)?.name || '未载入';
+
+            // D. 底部序列
+            const selS = SKILLS.find(s=>s.id === state.curSkillId);
+            document.getElementById('skill-title').innerText = selS.name;
+            document.getElementById('skill-level').innerText = `等级 ${selS.lv}`;
+            document.getElementById('skill-prof').innerText = `总熟练度 ${selS.pr}%`;
+
+            const tagBox = document.getElementById('skill-tags');
+            if (tagBox) {
+                tagBox.innerHTML = '';
+                const tagMap = {
+                    unarmed: ['筋骨', '柔韧'],
+                    weapon:  ['筋骨'],
+                    light:   ['身手'],
+                    breath:  ['呼吸'],
+                    parry:   ['柔韧'],
+                };
+                const tags = tagMap[selS.cat] || [];
+                tags.forEach(t => {
+                    const span = document.createElement('span');
+                    span.className = "px-2 py-0.5 rounded-full bg-[#fbbf24]/10 border border-[#fbbf24]/40 text-[9px] font-black tracking-widest text-[#fbbf24]";
+                    span.innerText = t;
+                    tagBox.appendChild(span);
+                });
+            }
+            
+            const seqBox = document.getElementById('move-sequence');
+            seqBox.innerHTML = '';
+            if(!state.skillData[selS.id]) state.skillData[selS.id] = Array(6).fill(selS.moves[0]);
+            state.skillData[selS.id].forEach((mv, i) => {
+                const node = document.createElement('div');
+                node.className = `relative w-36 h-16 border rounded flex flex-col items-center justify-center transition-all cursor-pointer node-hover ${state.editingSlot === i ? 'border-[#fbbf24] bg-[#2b211b]' : 'border-stone-900 bg-[#120e0c]'}`;
+                node.innerHTML = `
+                    <div class="absolute -top-2 left-2 px-1 bg-[#1c1612] text-[9px] font-black italic ${state.editingSlot===i?'text-[#fbbf24]':'text-stone-800'}">0${i+1}</div>
+                    <span class="text-xs font-black text-white">${mv}</span>
+                    <span class="text-[9px] text-[#fbbf24] font-black mt-1 opacity-80 uppercase font-black tracking-tighter">熟练度 75%</span>
+                    ${(i<5 && i!==2)?'<div class="absolute -right-5 top-1/2 -translate-y-1/2 text-stone-900 opacity-20 text-xl font-black">»</div>':''}
+                `;
+                node.onclick = (e) => { e.stopPropagation(); openMovePicker(i, node); };
+                seqBox.appendChild(node);
+            });
+
+            const tDesc = document.getElementById('target-indicator');
+            if(state.curCat === 'breath') tDesc.innerText = "内息枢纽 · 核心";
+            else if(state.curCat === 'light') tDesc.innerText = "身法枢纽 · 核心";
+            else tDesc.innerText = `${LIMBS.find(l=>l.id===state.curPart).label} · ${state.curSlot==='active'?'进攻':'招架'}`;
+        }
+
+        function renderLifePanel() {
+            const catBox = document.getElementById('life-category-tabs');
+            const list = document.getElementById('life-skill-list');
+            if (!catBox || !list) return;
+
+            // 分类 Tab
+            catBox.innerHTML = '';
+            LIFE_CATEGORIES.forEach(c => {
+                const btn = document.createElement('button');
+                btn.className = `flex items-center gap-3 px-5 py-2 rounded-full text-xs font-black border-2 transition-all ${state.lifeCurCat===c.id ? 'bg-[#fbbf24] text-black border-[#fbbf24]' : 'bg-[#120e0c] text-stone-600 border-stone-900 hover:text-[#fbbf24]'}`;
+                btn.innerHTML = `${c.icon} ${c.label}`;
+                btn.onclick = () => {
+                    state.lifeCurCat = c.id;
+                    const f = LIFE_SKILLS.find(s => s.cat === c.id);
+                    if (f) state.lifeCurSkillId = f.id;
+                    renderAll();
+                };
+                catBox.appendChild(btn);
+            });
+
+            // 列表
+            list.innerHTML = '';
+            LIFE_SKILLS.filter(s => s.cat === state.lifeCurCat).forEach(s => {
+                const isS = state.lifeCurSkillId === s.id;
+                const div = document.createElement('div');
+                div.className = `flex items-center justify-between px-8 py-4 rounded-xl border-2 transition-all cursor-pointer ${isS ? 'border-[#fbbf24] bg-[#2b211b] shadow-2xl' : 'border-stone-900 bg-[#14100e] hover:border-stone-800'}`;
+                const iconSrc =
+                    s.cat === 'gather'  ? './icons/life.svg'   :
+                    s.cat === 'produce' ? './icons/potion.svg' :
+                    './icons/backpack.svg';
+                div.innerHTML = `
+                    <div class="flex items-center gap-5">
+                        <div class="w-8 h-8 rounded border border-stone-800 bg-black/40 flex items-center justify-center">
+                            <img src="${iconSrc}" alt="" class="w-5 h-5">
+                        </div>
+                        <div class="flex flex-col">
+                            <span class="text-base font-black tracking-widest text-white">${s.name}</span>
+                            <span class="text-[10px] text-[#fbbf24] font-black uppercase mt-1">等级 ${s.lv} · 熟练度 ${s.pr}%</span>
+                        </div>
+                    </div>
+                `;
+                const titleLine = `${s.name}（生活技能）`;
+                const levelLine = `等级：${s.lv}    熟练度：${s.pr}%`;
+                const hintLine = s.desc || '';
+                div.dataset.tooltip = [titleLine, levelLine, hintLine].filter(Boolean).join('\n');
+                div.addEventListener('mouseenter', handleTooltipEnter);
+                div.addEventListener('mouseleave', handleTooltipLeave);
+                div.onclick = () => { state.lifeCurSkillId = s.id; renderAll(); };
+                list.appendChild(div);
+            });
+
+            // 底部当前生活技能详情
+            const sel = LIFE_SKILLS.find(s => s.id === state.lifeCurSkillId);
+            if (sel) {
+                const t = document.getElementById('life-skill-title');
+                const l = document.getElementById('life-skill-level');
+                const p = document.getElementById('life-skill-prof');
+                const d = document.getElementById('life-skill-desc');
+                const tagsBox = document.getElementById('life-skill-tags');
+                if (t) t.innerText = sel.name;
+                if (l) l.innerText = `等级 ${sel.lv}`;
+                if (p) p.innerText = `熟练度 ${sel.pr}%`;
+                if (d) d.innerText = sel.desc;
+                if (tagsBox) {
+                    tagsBox.innerHTML = '';
+                    (sel.tags || []).forEach(tag => {
+                        const span = document.createElement('span');
+                        span.className = "px-2 py-0.5 rounded-full bg-[#fbbf24]/10 border border-[#fbbf24]/40 text-[9px] font-black tracking-widest text-[#fbbf24]";
+                        span.innerText = tag;
+                        tagsBox.appendChild(span);
+                    });
+                }
+            }
+        }
+
+        function renderDialoguePanel() {
+            const wrap = document.getElementById('dialogue-panel');
+            if (!wrap) return;
+
+            const d = state.dialog;
+            if (!d.active || !d.lastLine) {
+                wrap.classList.add('hidden');
+                wrap.innerHTML = '';
+                return;
+            }
+
+            const script = DIALOG_SCRIPTS[d.npcId];
+            const node = script?.nodes.find(n => n.id === d.nodeId);
+            const options = node?.options || [];
+
+            wrap.classList.remove('hidden');
+
+            const optionsHtml = options.map((opt, idx) => `
+                <button 
+                    onclick="chooseDialogueOption(${idx})"
+                    class="px-3 py-1 rounded bg-[#3a2b21] hover:bg-[#4a3426] text-[11px] text-stone-100 border border-[#5b4332] btn-active"
+                >
+                    ${opt.text}
+                </button>
+            `).join('');
+
+            wrap.innerHTML = `
+                <div class="flex flex-col gap-1 flex-1">
+                    <div class="text-[11px] font-black text-[#fbbf24] uppercase tracking-[0.25em]">
+                        ${d.npcName}
+                    </div>
+                    <div class="text-[13px] text-stone-100 leading-relaxed">
+                        ${d.lastLine.text}
+                    </div>
+                </div>
+                <div class="ml-3 flex flex-col gap-1 items-end">
+                    ${optionsHtml || `
+                        <button 
+                            onclick="endDialogue()"
+                            class="px-4 py-1.5 rounded bg-[#fbbf24] hover:bg-amber-400 text-black text-xs font-black tracking-[0.3em] uppercase btn-active"
+                        >
+                            结束
+                        </button>
+                    `}
+                </div>
+            `;
+        }
+
+        function renderInventory() {
+            // A. 装备位
+            const equipBox = document.getElementById('equip-slots');
+            equipBox.innerHTML = '';
+            EQUIP_SLOTS.forEach(s => {
+                const item = state.equips[s.id];
+                const div = document.createElement('div');
+                div.className = "flex items-center gap-4 p-3 bg-black/40 border border-[#3d2d24] transition-all cursor-pointer hover:border-[#fbbf24]";
+                div.innerHTML = `
+                    <div class="w-10 h-10 border border-[#3d2d24] flex items-center justify-center text-xl bg-[#1c1612]">${item ? item.icon : s.icon}</div>
+                    <div class="flex flex-col">
+                        <span class="text-[8px] text-stone-600 font-black uppercase">${s.label}</span>
+                        <span class="text-xs font-bold ${item?'text-white':'text-stone-700 italic'}">${item ? item.name : '虚位以待'}</span>
+                    </div>
+                `;
+                if (item) {
+                    const baseLine = `${item.name}`;
+                    const slotLine = `槽位：${s.label}`;
+                    const descLine = item.desc ? item.desc : '';
+                    div.dataset.tooltip = [baseLine, slotLine, descLine].filter(Boolean).join('\n');
+                    div.addEventListener('mouseenter', handleTooltipEnter);
+                    div.addEventListener('mouseleave', handleTooltipLeave);
+                }
+                div.onclick = () => { if(item) { unequip(s.id); } };
+                equipBox.appendChild(div);
+            });
+
+            // B. 背包格
+            const bagBox = document.getElementById('bag-grid');
+            bagBox.innerHTML = '';
+            state.bag.forEach((item, idx) => {
+                const div = document.createElement('div');
+                div.className = `bag-slot aspect-square border flex items-center justify-center text-2xl transition-all cursor-pointer ${item ? 'border-[#fbbf24]/40 bg-[#2d241e]' : 'border-stone-900 bg-black/20'}`;
+                if(item) {
+                    div.innerHTML = item.icon;
+                    const baseLine = item.name;
+                    const descLine = item.desc ? item.desc : '（未鉴定）';
+                    div.dataset.tooltip = `${baseLine}\n${descLine}`;
+                    div.addEventListener('mouseenter', handleTooltipEnter);
+                    div.addEventListener('mouseleave', handleTooltipLeave);
+                }
+                div.onclick = () => { if(item) equipItem(idx); };
+                bagBox.appendChild(div);
+            });
+        }
+
+        // --- 交互功能 ---
+        function equipItem(bagIdx) {
+            const item = state.bag[bagIdx];
+            if(!item || !state.equips.hasOwnProperty(item.cat)) return;
+            const currentEquip = state.equips[item.cat];
+            state.equips[item.cat] = item;
+            state.bag[bagIdx] = currentEquip;
+            addLog(`你装备了 [${item.name}]。`);
+            renderAll();
+        }
+
+        function unequip(slotId) {
+            const item = state.equips[slotId];
+            const emptyIdx = state.bag.findIndex(i => i === null);
+            if(emptyIdx !== -1) {
+                state.bag[emptyIdx] = item;
+                state.equips[slotId] = null;
+                addLog(`你卸下了 [${item.name}]。`);
+                renderAll();
+            }
+        }
+
+        function openTab(id) {
+            closeModals();
+            if(id === 'combat') document.getElementById('modal-combat').classList.remove('hidden');
+            if(id === 'life') document.getElementById('modal-life').classList.remove('hidden');
+            if(id === 'inventory') document.getElementById('modal-inventory').classList.remove('hidden');
+            document.getElementById('left-hud').classList.add('opacity-10', 'blur-sm');
+        }
+
+        function closeModals() {
+            document.getElementById('modal-combat').classList.add('hidden');
+            document.getElementById('modal-life').classList.add('hidden');
+            document.getElementById('modal-inventory').classList.add('hidden');
+            document.getElementById('left-hud').classList.remove('opacity-10', 'blur-sm');
+        }
+
+        function openMovePicker(idx, anchor) {
+            state.editingSlot = idx;
+            const picker = document.getElementById('picker-move');
+            const list = document.getElementById('picker-list');
+            const selS = SKILLS.find(s=>s.id === state.curSkillId);
+            list.innerHTML = '';
+            selS.moves.forEach(m => {
+                const btn = document.createElement('button');
+                btn.className = "w-full p-4 text-left border-b border-stone-800/50 hover:bg-[#fbbf24] hover:text-black transition-colors flex justify-between items-center group";
+                btn.innerHTML = `<span class="text-xs font-black uppercase">${m}</span><span class="text-[9px] text-[#fbbf24] group-hover:text-black">75%</span>`;
+                btn.onclick = () => {
+                    state.skillData[selS.id][idx] = m;
+                    state.editingSlot = null;
+                    picker.classList.add('hidden');
+                    renderAll();
+                };
+                list.appendChild(btn);
+            });
+            const r = anchor.getBoundingClientRect();
+            picker.style.left = `${r.left}px`;
+            picker.style.top = `${r.top - (selS.moves.length * 40)}px`;
+            picker.classList.remove('hidden');
+        }
+
+        function handleDeploy() {
+            const sk = SKILLS.find(s=>s.id === state.curSkillId);
+            if(state.curCat === 'breath') state.hubs.breath = state.curSkillId;
+            else if(state.curCat === 'light') state.hubs.light = state.curSkillId;
+            else state.body[state.curPart][state.curSlot] = state.curSkillId;
+            addLog(`配置枢纽载入：[${sk.name}]`);
+            renderAll();
+        }
+
+        // --- Tooltip 逻辑 ---
+        const tooltipEl = document.getElementById('tooltip');
+
+        function handleTooltipEnter(e) {
+            const text = e.currentTarget.dataset.tooltip;
+            if (!text || !tooltipEl) return;
+            tooltipEl.textContent = '';
+            text.split('\n').forEach((line, idx) => {
+                if (idx > 0) tooltipEl.appendChild(document.createElement('br'));
+                tooltipEl.appendChild(document.createTextNode(line));
+            });
+            tooltipEl.classList.add('visible');
+        }
+
+        function handleTooltipLeave() {
+            if (!tooltipEl) return;
+            tooltipEl.classList.remove('visible');
+        }
+
+        function startDialogue(npcId) {
+            const script = DIALOG_SCRIPTS[npcId];
+            if (!script) return;
+            state.dialog.active = true;
+            state.dialog.npcId = npcId;
+            state.dialog.npcName = script.name;
+            state.dialog.nodeId = 0;
+            state.dialog.lastLine = null;
+            addLog(`你开始与 [${script.name}] 交谈。`);
+            advanceDialogue(); // 播放第一个节点
+        }
+
+        function advanceDialogue() {
+            const d = state.dialog;
+            const script = DIALOG_SCRIPTS[d.npcId];
+            if (!script) return;
+
+            const node = script.nodes.find(n => n.id === d.nodeId);
+            if (!node) {
+                endDialogue();
+                return;
+            }
+
+            d.lastLine = { text: node.text };
+            addLog(`[${script.name}]：${node.text}`);
+            renderAll();
+        }
+
+        function chooseDialogueOption(optIndex) {
+            const d = state.dialog;
+            const script = DIALOG_SCRIPTS[d.npcId];
+            if (!script) return;
+            const node = script.nodes.find(n => n.id === d.nodeId);
+            if (!node || !node.options || !node.options[optIndex]) return;
+
+            const opt = node.options[optIndex];
+            // 玩家选择也写入日志
+            addLog(`[你]：${opt.text}`);
+
+            if (opt.next === -1) {
+                endDialogue();
+                return;
+            }
+            d.nodeId = opt.next;
+            advanceDialogue();
+        }
+
+        function endDialogue() {
+            const d = state.dialog;
+            if (d.active) {
+                addLog(`你结束了与 [${d.npcName}] 的交谈。`);
+            }
+            d.active = false;
+            d.lastLine = null;
+            d.nodeId = null;
+            renderAll();
+        }
+
+        function addLog(t) {
+            const l = document.getElementById('log-list');
+            const d = document.createElement('div');
+            d.className = "mb-1 text-stone-400 animate-in fade-in";
+            d.innerHTML = `<span class="text-[#fbbf24] mr-3 font-black tracking-tighter">»</span>${t}`;
+            l.prepend(d);
+        }
+
+        // 初始化
+        window.onclick = (e) => { 
+            if(!e.target.closest('.node-hover') && !e.target.closest('#picker-move')) {
+                document.getElementById('picker-move').classList.add('hidden'); 
+                state.editingSlot = null;
+            }
+        };
+        window.addEventListener('mousemove', (e) => {
+            if (!tooltipEl) return;
+            const offset = 14;
+            let x = e.clientX + offset;
+            let y = e.clientY + offset;
+            const vw = window.innerWidth;
+            const vh = window.innerHeight;
+            const rect = tooltipEl.getBoundingClientRect();
+            if (x + rect.width + 10 > vw) x = e.clientX - rect.width - offset;
+            if (y + rect.height + 10 > vh) y = e.clientY - rect.height - offset;
+            tooltipEl.style.left = x + 'px';
+            tooltipEl.style.top = y + 'px';
+        });
+        renderAll();
+    </script>
+</body>
+</html>
