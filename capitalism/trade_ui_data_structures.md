@@ -228,3 +228,167 @@
 
 > 至此，交易界面所需的物品与商人数据结构最小字段集合已定义完毕，可据此设计前后端的请求/响应与内部会话状态结构。
 
+---
+
+## 六、地区-货物池、库存模板与商人 Override 结构约定
+
+> 本节对应「商人物品库存生成机制」方案中的概念层（见 `basic.md` 9.3 与 `trader_template.md`），只定义字段结构与示例，具体数值可在后续实现阶段再行细化。
+
+### 6.1 地区-货物池（Region–Goods Pool）
+
+**用途**：描述「某地区 + 某货物大类」在**库存生成时可被抽样**的物品池，与价格、供需系统解耦，仅决定「有哪些货物可以出现在商人库存里」及其基础出现权重。
+
+- **region_goods_pools.csv**（示意）
+  - **字段列表**：
+    - `region_id`
+      - 类型：`string`
+      - 含义：地区/行省 ID，需与地区配置表保持一致。
+    - `goods_major_class`
+      - 类型：枚举 `life` / `material` / `product` / `luxury` 等
+      - 含义：货物大类；与 `basic.md` 9.3 的商品分类和物品表中的 `price_class`、`category` 对齐。
+      - 示例映射：
+        - 生活物资池 → `life`
+        - 生产材料池 → `material`
+        - 成品/工具池 → `product`
+        - 奢侈/稀有池 → `luxury`
+    - `item_id`
+      - 类型：`string`
+      - 含义：可出现在本池中的物品 ID，对应物品表 `id`。
+    - `base_weight`
+      - 类型：`number`
+      - 含义：在本地区本大类池中的基础抽样权重；仅用于「被选中概率」，与价格无关。
+    - `rarity_tag`（可选）
+      - 类型：`string`
+      - 含义：粗略稀有度标记，如 `common` / `uncommon` / `rare` / `legendary`，供库存模板在「稀有槽位」中优先抽取。
+    - `tags_filter_hint`（可选）
+      - 类型：`string`
+      - 含义：与物品 `tags` 相关的补充信息，如 `food;perishable`，供未来供需/事件系统调整权重时使用。
+
+  - **示例（同一地区的部分记录）**：
+    - `region_id = bay_tide`、`goods_major_class = life`：
+      - `item_id = food_dried_meat`, `base_weight = 10`, `rarity_tag = common`
+      - `item_id = food_clean_water_small`, `base_weight = 15`, `rarity_tag = common`
+      - `item_id = cloth_simple`, `base_weight = 6`, `rarity_tag = common`
+    - `region_id = bay_tide`、`goods_major_class = luxury`：
+      - `item_id = jewelry_shell_necklace`, `base_weight = 2`, `rarity_tag = rare`
+
+> 实现备注：未来若接入供需与事件系统，可在不改动该表结构的前提下，通过附加「地区-时间-事件」修正规则对 `base_weight` 做动态调整。
+
+### 6.2 库存模板档位（Stock Profile）
+
+**用途**：按「商人类型 + 场景类型」给出一套**库存形状模板**，规定总格数、各货物大类数量区间、是否有稀有槽位等。库存生成流程在确定模板后，从对应地区的货物池中抽样填充。
+
+- **stock_profiles.csv**（示意）
+  - **字段列表**：
+    - `stock_profile_id`
+      - 类型：`string`
+      - 含义：库存模板档位 ID，供商人模板引用，例如 `stock_basic_vendor`、`stock_large_shop_weapon`。
+    - `scene_type`
+      - 类型：枚举 `Market` / `Shop` / `Exchange` / `Travel`
+    - `merchant_type_default`
+      - 类型：可选枚举 `Vendor` / `ShopOwner` / `Caravan` / 空
+      - 含义：该模板的典型适用商人类型，可为空表示通用模板。
+    - `slot_count_total`
+      - 类型：`int`
+      - 含义：本商人在该模板下的**理论库存格位上限**（不含玩家以物易物后留下的新货物）。
+    - `slot_life_min` / `slot_life_max`
+      - 类型：`int`
+      - 含义：生活物资大类在本模板下的目标数量区间。
+    - `slot_material_min` / `slot_material_max`
+      - 类型：`int`
+      - 含义：生产材料大类的目标数量区间。
+    - `slot_product_min` / `slot_product_max`
+      - 类型：`int`
+      - 含义：成品/工具大类的目标数量区间。
+    - `slot_luxury_min` / `slot_luxury_max`
+      - 类型：`int`
+      - 含义：奢侈/稀有品大类的目标数量区间。
+    - `rare_slot_count`
+      - 类型：`int`
+      - 含义：在总库存中预留的「稀有槽位」数量（0 表示无稀有槽位）；填充时优先从 `goods_major_class = luxury` 或稀有池抽取。
+    - `allow_cross_region_goods`
+      - 类型：`bool`
+      - 含义：是否允许从商人 `merchant_homeland` 对应地区的货物池中抽取少量货物（旅行商队用于携带他乡特产）。
+    - `stack_range_life`
+      - 类型：`string`（形如 `"3-15"`）
+      - 含义：生活物资单件库存的数量（堆叠）范围，最终仍需与物品表 `stack_limit` 兼容。
+    - `stack_range_material` / `stack_range_product` / `stack_range_luxury`
+      - 类型：同上
+      - 含义：其他大类的堆叠范围。
+
+  - **模板示例**：
+    - `stock_profile_id = stock_basic_vendor_market`
+      - `scene_type = Market`
+      - `merchant_type_default = Vendor`
+      - `slot_count_total = 20`
+      - `slot_life_min = 8`, `slot_life_max = 14`
+      - `slot_material_min = 2`, `slot_material_max = 5`
+      - `slot_product_min = 1`, `slot_product_max = 3`
+      - `slot_luxury_min = 0`, `slot_luxury_max = 1`
+      - `rare_slot_count = 0`
+      - `allow_cross_region_goods = false`
+      - `stack_range_life = "3-15"`
+      - `stack_range_material = "2-8"`
+      - `stack_range_product = "1-4"`
+      - `stack_range_luxury = "1-1"`
+    - `stock_profile_id = stock_travel_caravan_small`
+      - `scene_type = Travel`
+      - `merchant_type_default = Caravan`
+      - `slot_count_total = 24`
+      - `slot_life_min = 10`, `slot_life_max = 16`
+      - `slot_material_min = 3`, `slot_material_max = 6`
+      - `slot_product_min = 2`, `slot_product_max = 4`
+      - `slot_luxury_min = 1`, `slot_luxury_max = 2`
+      - `rare_slot_count = 2`
+      - `allow_cross_region_goods = true`
+      - 堆叠范围可与上述类似。
+
+> 实现时，可在代码中将上述字段加载为结构体/对象，在库存生成流程中先确定 `stock_profile_id` 再行抽样。
+
+### 6.3 商人实例 Override（与 `trader_template.md` 对齐）
+
+**用途**：在具体商人配置中，对「默认库存模板 + 地区货物池」进行**个体化覆写**，包括指定模板、固定必有物品、白/黑名单等。与资金池、限额等字段并列存在。
+
+- 在 `trader_template.md` 对应的商人配置表中，补充/约定以下字段（示意名）：
+  - **stock_profile_id**
+    - 类型：`string | null`
+    - 含义：显式指定本商人使用的库存模板；为空时按 `merchant_type` + `scene_type` 的默认映射选择。
+    - 示例：`stock_basic_vendor_market`、`stock_travel_caravan_small`。
+  - **fixed_items**
+    - 类型：结构化列表或单独 CSV 表，字段示例：
+      - `item_id`：固定必有物品 ID。
+      - `count_min` / `count_max`：本商人刷新时该物品数量的随机区间。
+      - `is_quest_item`：是否为任务/剧情相关物品（影响售卖与刷新逻辑）。
+    - 含义：这些物品在库存生成时**优先放入**，占用格位但不参与随机抽样。
+  - **whitelist_tags**
+    - 类型：`string[]`
+    - 含义：本商人偏好或只经营的物品标签白名单，如 `["medicine","herb"]`、`["tool","ore"]`。
+    - 作用：在从地区货物池抽样时，**优先选择**带有这些标签的物品；也可配置为「只允许这些标签出现」的强白名单模式（由实现决定）。
+  - **blacklist_tags**
+    - 类型：`string[]`
+    - 含义：本商人不经营或严禁出现的物品标签，如 `["contraband","spoiled"]`。
+    - 作用：在抽样时**排除**带有这些标签的物品，即使其在地区货物池中存在。
+  - **override_region_id**（可选）
+    - 类型：`string | null`
+    - 含义：若非空，则本商人的库存抽样**优先视为该地区货物池**，用于模拟在异乡开店但主要售卖故乡货物的情况。
+
+- **商人实例示例（文字版）**：
+  - 「湾岸市场里的药材摊贩」：
+    - `merchant_type = Vendor`
+    - 默认 `scene_type = Market`
+    - `stock_profile_id = stock_basic_vendor_market`
+    - `fixed_items`：
+      - `item_id = herb_basic_pain_relief`, `count_min = 3`, `count_max = 6`
+    - `whitelist_tags = ["medicine","herb"]`
+    - `blacklist_tags = ["luxury","contraband"]`
+  - 「路上的旅行商队（来自内陆行省）」：
+    - `merchant_type = Caravan`
+    - `scene_type = Travel`
+    - `stock_profile_id = stock_travel_caravan_small`
+    - `fixed_items` 可为空或只列出该商队的招牌货物。
+    - `whitelist_tags = ["life_good","material"]`
+    - `blacklist_tags = ["spoiled"]`
+    - `override_region_id = inland_province_1`（使其在外地行进时仍大量携带内陆特产）。
+
+> 以上三层结构共同构成了「地区 → 货物池 → 库存模板 → 商人实例 Override」的库存生成骨架：实现时仅需围绕 `region_goods_pools`、`stock_profiles` 与商人上的覆写字段完成抽样与刷新逻辑，即可得到可运行的最小版本。
+
