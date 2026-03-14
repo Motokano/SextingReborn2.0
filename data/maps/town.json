@@ -1,0 +1,15 @@
+{
+  "map_id": "town",
+  "name": "城镇",
+  "width": 16,
+  "height": 16,
+  "portals": [
+    {
+      "x": 8,
+      "y": 15,
+      "target_map_id": "field",
+      "return_to_previous": true,
+      "label": "出城镇"
+    }
+  ]
+}

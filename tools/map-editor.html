@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>地图编辑器 - 潮碧物语</title>
+    <style>
+        * { box-sizing: border-box; }
+        body { margin: 0; font-family: sans-serif; background: #1a1a1a; color: #e0e0e0; }
+        .toolbar {
+            padding: 10px 16px;
+            background: #2d2d2d;
+            border-bottom: 1px solid #444;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        .toolbar button {
+            padding: 8px 14px;
+            background: #404040;
+            border: 1px solid #555;
+            color: #fff;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+        .toolbar button:hover { background: #505050; }
+        .toolbar label { margin-left: 8px; color: #999; }
+        .toolbar input[type="number"] { width: 56px; padding: 4px; margin: 0 4px; background: #333; border: 1px solid #555; color: #fff; }
+        .toolbar input[type="text"] { width: 100px; padding: 4px; margin: 0 4px; background: #333; border: 1px solid #555; color: #fff; }
+        .main { display: flex; height: calc(100vh - 50px); overflow: hidden; }
+        .grid-wrap {
+            flex: 1;
+            overflow: auto;
+            padding: 20px;
+            display: flex;
+            align-items: flex-start;
+            justify-content: center;
+        }
+        #grid {
+            display: grid;
+            gap: 2px;
+            background: #333;
+            padding: 4px;
+            border-radius: 4px;
+        }
+        .cell {
+            width: 36px;
+            height: 36px;
+            border-radius: 2px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            border: 2px solid transparent;
+        }
+        .cell.walkable { background: #3d4a3d; }
+        .cell.blocked { background: #4a3d3d; }
+        .cell.portal { border-color: #5a9fd4; }
+        .cell.selected { border-color: #f0c040; box-shadow: 0 0 0 2px #f0c040; }
+        .sidebar .multi-hint { font-size: 12px; color: #f0c040; margin-bottom: 8px; }
+        .cell.blocked.portal { background: #4a3d4a; }
+        .cell.void {
+            background: #2a2a2a;
+            border-color: #444;
+            color: #555;
+        }
+        .cell.void::after { content: '×'; font-size: 14px; }
+        .sidebar {
+            width: 280px;
+            background: #252525;
+            border-left: 1px solid #444;
+            padding: 16px;
+            overflow-y: auto;
+        }
+        .sidebar h3 { margin: 0 0 12px 0; font-size: 14px; color: #aaa; }
+        .sidebar .row { margin-bottom: 12px; }
+        .sidebar label { display: block; margin-bottom: 4px; color: #999; font-size: 12px; }
+        .sidebar input[type="text"],
+        .sidebar input[type="number"],
+        .sidebar select {
+            width: 100%;
+            padding: 6px 8px;
+            background: #333;
+            border: 1px solid #555;
+            color: #fff;
+            border-radius: 4px;
+        }
+        .sidebar input[type="checkbox"] { margin-right: 8px; }
+        .sidebar button { padding: 6px 12px; margin-top: 8px; background: #404040; border: 1px solid #555; color: #fff; cursor: pointer; border-radius: 4px; }
+        .sidebar button:hover { background: #505050; }
+        .sidebar .hint { font-size: 11px; color: #666; margin-top: 4px; }
+    </style>
+</head>
+<body>
+
+    <div class="toolbar">
+        <button type="button" id="btn-new">新建地图</button>
+        <button type="button" id="btn-import">导入 JSON</button>
+        <button type="button" id="btn-export">导出 JSON</button>
+        <label>地图 ID <input type="text" id="inp-map-id" placeholder="home" /></label>
+        <label>名称 <input type="text" id="inp-name" placeholder="基地" /></label>
+        <label>宽 <input type="number" id="inp-width" min="1" max="64" value="16" /></label>
+        <label>高 <input type="number" id="inp-height" min="1" max="64" value="16" /></label>
+        <button type="button" id="btn-resize">应用尺寸</button>
+        <span style="color:#666; font-size:12px; margin-left:8px;">Ctrl+点击多选 / 按住左键拖动框选</span>
+    </div>
+
+    <div class="main">
+        <div class="grid-wrap">
+            <div id="grid"></div>
+        </div>
+        <div class="sidebar">
+            <h3>当前格子</h3>
+            <div id="cell-info">
+                <p style="color:#666;">点击格子进行编辑</p>
+            </div>
+            <div class="row" id="panel-enabled">
+                <label><input type="checkbox" id="inp-enabled" checked /> 属于地图</label>
+                <p class="hint">取消勾选后该格为“空洞”，不参与可走/传送，用于不规则边界</p>
+            </div>
+            <div class="row" id="panel-walk">
+                <label><input type="checkbox" id="inp-walkable" checked /> 可走</label>
+                <p class="hint">取消勾选即为不可走（墙/水等）</p>
+            </div>
+            <div class="row" id="panel-portal">
+                <label><input type="checkbox" id="inp-is-portal" /> 传送点</label>
+                <label style="margin-top:8px;">目标地图 ID</label>
+                <input type="text" id="inp-target-map" placeholder="field / home / town" />
+                <label style="margin-top:8px;">落点 X</label>
+                <input type="number" id="inp-target-x" min="0" value="0" />
+                <label style="margin-top:8px;">落点 Y</label>
+                <input type="number" id="inp-target-y" min="0" value="0" />
+                <label style="margin-top:8px;">标签（可选）</label>
+                <input type="text" id="inp-portal-label" placeholder="出基地→野外" />
+                <p class="hint">玩家踩到该格会传送到目标地图的 (落点X, 落点Y)</p>
+                <button type="button" id="btn-apply-portal">应用传送点</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        (function () {
+            var CELL_PX = 36;
+            var state = {
+                mapId: 'home',
+                name: '基地',
+                width: 16,
+                height: 16,
+                enabled: [],    // enabled[y][x] true=属于地图，false=空洞（不规则）
+                walkable: [],   // walkable[y][x] true=可走（仅对属于地图的格有效）
+                portals: []
+            };
+
+            function initGrid() {
+                var w = state.width;
+                var h = state.height;
+                var en = [];
+                var walk = [];
+                for (var y = 0; y < h; y++) {
+                    var er = [], wr = [];
+                    for (var x = 0; x < w; x++) { er.push(true); wr.push(true); }
+                    en.push(er);
+                    walk.push(wr);
+                }
+                state.enabled = en;
+                state.walkable = walk;
+            }
+
+            function initWalkable() {
+                var w = state.width;
+                var h = state.height;
+                var arr = [];
+                for (var y = 0; y < h; y++) {
+                    var row = [];
+                    for (var x = 0; x < w; x++) row.push(true);
+                    arr.push(row);
+                }
+                state.walkable = arr;
+            }
+
+            function isEnabled(x, y) {
+                if (y < 0 || y >= state.height || x < 0 || x >= state.width) return false;
+                return state.enabled[y][x];
+            }
+
+            function getPortalAt(x, y) {
+                for (var i = 0; i < state.portals.length; i++) {
+                    if (state.portals[i].x === x && state.portals[i].y === y) return state.portals[i];
+                }
+                return null;
+            }
+
+            function isWalkable(x, y) {
+                if (!isEnabled(x, y)) return false;
+                return state.walkable[y][x];
+            }
+
+            function renderGrid() {
+                var grid = document.getElementById('grid');
+                grid.innerHTML = '';
+                grid.style.gridTemplateColumns = 'repeat(' + state.width + ', ' + CELL_PX + 'px)';
+                grid.style.gridTemplateRows = 'repeat(' + state.height + ', ' + CELL_PX + 'px)';
+
+                for (var y = 0; y < state.height; y++) {
+                    for (var x = 0; x < state.width; x++) {
+                        var cell = document.createElement('div');
+                        cell.className = 'cell';
+                        cell.dataset.x = x;
+                        cell.dataset.y = y;
+                        if (!isEnabled(x, y)) {
+                            cell.classList.add('void');
+                        } else {
+                            cell.classList.add(isWalkable(x, y) ? 'walkable' : 'blocked');
+                            if (getPortalAt(x, y)) { cell.classList.add('portal'); cell.textContent = '○'; }
+                        }
+                        var t = x + ',' + y;
+                        if (!isEnabled(x, y)) t += ' 空洞';
+                        else { t += getPortalAt(x, y) ? ' 传送' : ''; t += !isWalkable(x, y) ? ' 不可走' : ''; }
+                        cell.title = t;
+                        cell.addEventListener('mousedown', (function (gx, gy) {
+                            return function (e) { if (e.button === 0) onCellMouseDown(gx, gy, e); };
+                        })(x, y));
+                        grid.appendChild(cell);
+                    }
+                }
+            }
+
+            var selected = [];  // [{x,y}, ...]
+            var dragStart = null;
+            var isDragging = false;
+            var didDrag = false;
+
+            function boxCells(x0, y0, x1, y1) {
+                var xa = Math.min(x0, x1), xb = Math.max(x0, x1);
+                var ya = Math.min(y0, y1), yb = Math.max(y0, y1);
+                var list = [];
+                for (var y = ya; y <= yb; y++) {
+                    for (var x = xa; x <= xb; x++) {
+                        if (x >= 0 && x < state.width && y >= 0 && y < state.height) list.push({ x: x, y: y });
+                    }
+                }
+                return list;
+            }
+
+            function onCellMouseDown(x, y, e) {
+                e.preventDefault();
+                dragStart = { x: x, y: y };
+                isDragging = true;
+                didDrag = false;
+                document.addEventListener('mousemove', onDocMouseMove);
+                document.addEventListener('mouseup', onDocMouseUp);
+            }
+
+            function getCellFromEvent(e) {
+                var el = document.elementFromPoint(e.clientX, e.clientY);
+                if (!el || !el.dataset || el.dataset.x === undefined) return null;
+                var cx = parseInt(el.dataset.x, 10);
+                var cy = parseInt(el.dataset.y, 10);
+                return { x: cx, y: cy };
+            }
+
+            function onDocMouseMove(e) {
+                if (!isDragging || !dragStart) return;
+                var cell = getCellFromEvent(e);
+                if (!cell) return;
+                if (cell.x !== dragStart.x || cell.y !== dragStart.y) {
+                    didDrag = true;
+                    selected = boxCells(dragStart.x, dragStart.y, cell.x, cell.y);
+                    updateCellInfo();
+                    highlightSelected();
+                }
+            }
+
+            function onDocMouseUp(e) {
+                document.removeEventListener('mousemove', onDocMouseMove);
+                document.removeEventListener('mouseup', onDocMouseUp);
+                if (!isDragging || !dragStart) return;
+                if (!didDrag) {
+                    var x = dragStart.x, y = dragStart.y;
+                    if (e.ctrlKey || e.metaKey) {
+                        var idx = -1;
+                        for (var i = 0; i < selected.length; i++) {
+                            if (selected[i].x === x && selected[i].y === y) { idx = i; break; }
+                        }
+                        if (idx >= 0) selected.splice(idx, 1);
+                        else selected.push({ x: x, y: y });
+                    } else {
+                        selected = [{ x: x, y: y }];
+                    }
+                    updateCellInfo();
+                    highlightSelected();
+                }
+                dragStart = null;
+                isDragging = false;
+            }
+
+            function onCellClick(x, y, e) {
+                if (e.ctrlKey || e.metaKey) {
+                    var idx = -1;
+                    for (var i = 0; i < selected.length; i++) {
+                        if (selected[i].x === x && selected[i].y === y) { idx = i; break; }
+                    }
+                    if (idx >= 0) selected.splice(idx, 1);
+                    else selected.push({ x: x, y: y });
+                } else {
+                    selected = [{ x: x, y: y }];
+                }
+                updateCellInfo();
+                highlightSelected();
+            }
+
+            function getFirstSelected() {
+                return selected.length ? selected[0] : { x: -1, y: -1 };
+            }
+
+            function highlightSelected() {
+                var cells = document.querySelectorAll('#grid .cell');
+                for (var i = 0; i < cells.length; i++) {
+                    var c = cells[i];
+                    var cx = parseInt(c.dataset.x, 10);
+                    var cy = parseInt(c.dataset.y, 10);
+                    var inSel = false;
+                    for (var j = 0; j < selected.length; j++) {
+                        if (selected[j].x === cx && selected[j].y === cy) { inSel = true; break; }
+                    }
+                    c.classList.toggle('selected', inSel);
+                }
+            }
+
+            function updateCellInfo() {
+                var info = document.getElementById('cell-info');
+                if (selected.length === 0) {
+                    info.innerHTML = '<p style="color:#666;">点击选中 · Ctrl+点击多选 · 拖动框选</p>';
+                    document.getElementById('panel-enabled').style.display = 'none';
+                    document.getElementById('panel-walk').style.display = 'none';
+                    document.getElementById('panel-portal').style.display = 'none';
+                    return;
+                }
+                document.getElementById('panel-enabled').style.display = 'block';
+                document.getElementById('panel-walk').style.display = 'block';
+                document.getElementById('panel-portal').style.display = 'block';
+
+                if (selected.length === 1) {
+                    var x = selected[0].x, y = selected[0].y;
+                    info.innerHTML = '<p>坐标 (' + x + ', ' + y + ')</p>';
+                    document.getElementById('inp-enabled').checked = isEnabled(x, y);
+                    document.getElementById('inp-walkable').checked = isWalkable(x, y);
+                    var portal = getPortalAt(x, y);
+                    document.getElementById('inp-is-portal').checked = !!portal;
+                    document.getElementById('inp-target-map').value = portal ? (portal.target_map_id || '') : '';
+                    document.getElementById('inp-target-x').value = portal ? (portal.target_x ?? 0) : 0;
+                    document.getElementById('inp-target-y').value = portal ? (portal.target_y ?? 0) : 0;
+                    document.getElementById('inp-portal-label').value = portal ? (portal.label || '') : '';
+                } else {
+                    var allEn = true, noneEn = true, allWalk = true, noneWalk = true;
+                    for (var i = 0; i < selected.length; i++) {
+                        var sx = selected[i].x, sy = selected[i].y;
+                        if (isEnabled(sx, sy)) noneEn = false; else allEn = false;
+                        if (isWalkable(sx, sy)) noneWalk = false; else allWalk = false;
+                    }
+                    info.innerHTML = '<p class="multi-hint">已选 ' + selected.length + ' 格</p><p style="color:#999;">下方修改将应用到全部选中格（传送点仅对第一格生效）</p>';
+                    document.getElementById('inp-enabled').checked = allEn;
+                    document.getElementById('inp-enabled').indeterminate = !allEn && !noneEn;
+                    document.getElementById('inp-walkable').checked = allWalk;
+                    document.getElementById('inp-walkable').indeterminate = !allWalk && !noneWalk;
+                    var first = selected[0];
+                    var portal = getPortalAt(first.x, first.y);
+                    document.getElementById('inp-is-portal').checked = !!portal;
+                    document.getElementById('inp-target-map').value = portal ? (portal.target_map_id || '') : '';
+                    document.getElementById('inp-target-x').value = portal ? (portal.target_x ?? 0) : 0;
+                    document.getElementById('inp-target-y').value = portal ? (portal.target_y ?? 0) : 0;
+                    document.getElementById('inp-portal-label').value = portal ? (portal.label || '') : '';
+                }
+            }
+
+            function applyEnabled() {
+                if (selected.length === 0) return;
+                var en = document.getElementById('inp-enabled').checked;
+                for (var i = 0; i < selected.length; i++) {
+                    var x = selected[i].x, y = selected[i].y;
+                    state.enabled[y][x] = en;
+                    if (!en) {
+                        for (var j = state.portals.length - 1; j >= 0; j--) {
+                            if (state.portals[j].x === x && state.portals[j].y === y) state.portals.splice(j, 1);
+                        }
+                    }
+                }
+                renderGrid();
+                highlightSelected();
+            }
+
+            function applyWalkable() {
+                if (selected.length === 0) return;
+                var walk = document.getElementById('inp-walkable').checked;
+                for (var i = 0; i < selected.length; i++) {
+                    var x = selected[i].x, y = selected[i].y;
+                    if (isEnabled(x, y)) state.walkable[y][x] = walk;
+                }
+                renderGrid();
+                highlightSelected();
+            }
+
+            function applyPortal() {
+                if (selected.length === 0) return;
+                var first = getFirstSelected();
+                if (!isEnabled(first.x, first.y)) return;
+                var isPortal = document.getElementById('inp-is-portal').checked;
+                var targetMap = document.getElementById('inp-target-map').value.trim();
+                var tx = parseInt(document.getElementById('inp-target-x').value, 10) || 0;
+                var ty = parseInt(document.getElementById('inp-target-y').value, 10) || 0;
+                var label = document.getElementById('inp-portal-label').value.trim();
+
+                var idx = -1;
+                for (var i = 0; i < state.portals.length; i++) {
+                    if (state.portals[i].x === first.x && state.portals[i].y === first.y) { idx = i; break; }
+                }
+                if (idx >= 0) state.portals.splice(idx, 1);
+                if (isPortal && targetMap) {
+                    state.portals.push({
+                        x: first.x,
+                        y: first.y,
+                        target_map_id: targetMap,
+                        target_x: tx,
+                        target_y: ty,
+                        label: label || undefined
+                    });
+                }
+                renderGrid();
+                highlightSelected();
+            }
+
+            document.getElementById('inp-enabled').addEventListener('change', applyEnabled);
+            document.getElementById('inp-walkable').addEventListener('change', applyWalkable);
+            document.getElementById('btn-apply-portal').addEventListener('click', applyPortal);
+
+            document.getElementById('btn-new').addEventListener('click', function () {
+                state.mapId = document.getElementById('inp-map-id').value.trim() || 'map1';
+                state.name = document.getElementById('inp-name').value.trim() || '地图';
+                state.width = Math.max(1, parseInt(document.getElementById('inp-width').value, 10) || 16);
+                state.height = Math.max(1, parseInt(document.getElementById('inp-height').value, 10) || 16);
+                state.portals = [];
+                initGrid();
+                document.getElementById('inp-width').value = state.width;
+                document.getElementById('inp-height').value = state.height;
+                selected = [];
+                updateCellInfo();
+                renderGrid();
+            });
+
+            document.getElementById('btn-resize').addEventListener('click', function () {
+                var w = Math.max(1, Math.min(64, parseInt(document.getElementById('inp-width').value, 10) || 16));
+                var h = Math.max(1, Math.min(64, parseInt(document.getElementById('inp-height').value, 10) || 16));
+                var oldW = state.width;
+                var oldH = state.height;
+                state.width = w;
+                state.height = h;
+                var newEnabled = [];
+                var newWalk = [];
+                for (var y = 0; y < h; y++) {
+                    var er = [], wr = [];
+                    for (var x = 0; x < w; x++) {
+                        er.push((y < oldH && x < oldW) ? state.enabled[y][x] : true);
+                        wr.push((y < oldH && x < oldW) ? state.walkable[y][x] : true);
+                    }
+                    newEnabled.push(er);
+                    newWalk.push(wr);
+                }
+                state.enabled = newEnabled;
+                state.walkable = newWalk;
+                state.portals = state.portals.filter(function (p) { return p.x < w && p.y < h && state.enabled[p.y][p.x]; });
+                selected = selected.filter(function (p) { return p.x < w && p.y < h; });
+                document.getElementById('inp-width').value = w;
+                document.getElementById('inp-height').value = h;
+                updateCellInfo();
+                renderGrid();
+                highlightSelected();
+            });
+
+            document.getElementById('btn-import').addEventListener('click', function () {
+                var raw = window.prompt('粘贴地图 JSON（含 map_id, name, width, height, blocks 或 walkable, portals）');
+                if (!raw) return;
+                try {
+                    var data = JSON.parse(raw);
+                    state.mapId = data.map_id || state.mapId;
+                    state.name = data.name || state.name;
+                    state.width = data.width || 16;
+                    state.height = data.height || 16;
+                    state.portals = Array.isArray(data.portals) ? JSON.parse(JSON.stringify(data.portals)) : [];
+
+                    initGrid();
+                    if (Array.isArray(data.disabled)) {
+                        for (var i = 0; i < data.disabled.length; i++) {
+                            var d = data.disabled[i];
+                            var dx = d.x != null ? d.x : d[0];
+                            var dy = d.y != null ? d.y : d[1];
+                            if (dy < state.height && dx < state.width) state.enabled[dy][dx] = false;
+                        }
+                    }
+                    if (Array.isArray(data.blocks)) {
+                        for (var i = 0; i < data.blocks.length; i++) {
+                            var b = data.blocks[i];
+                            var bx = b.x != null ? b.x : b[0];
+                            var by = b.y != null ? b.y : b[1];
+                            if (by < state.height && bx < state.width) state.walkable[by][bx] = false;
+                        }
+                    } else if (data.walkable && data.walkable.length) {
+                        state.walkable = data.walkable.map(function (row) { return row.slice ? row.slice() : row; });
+                    }
+
+                    document.getElementById('inp-map-id').value = state.mapId;
+                    document.getElementById('inp-name').value = state.name;
+                    document.getElementById('inp-width').value = state.width;
+                    document.getElementById('inp-height').value = state.height;
+                    selected = [];
+                    updateCellInfo();
+                    renderGrid();
+                } catch (e) {
+                    window.alert('JSON 解析失败：' + e.message);
+                }
+            });
+
+            document.getElementById('btn-export').addEventListener('click', function () {
+                state.mapId = document.getElementById('inp-map-id').value.trim() || state.mapId;
+                state.name = document.getElementById('inp-name').value.trim() || state.name;
+                var disabled = [];
+                var blocks = [];
+                for (var y = 0; y < state.height; y++) {
+                    for (var x = 0; x < state.width; x++) {
+                        if (!state.enabled[y][x]) disabled.push({ x: x, y: y });
+                        else if (!state.walkable[y][x]) blocks.push({ x: x, y: y });
+                    }
+                }
+                var out = {
+                    map_id: state.mapId,
+                    name: state.name,
+                    width: state.width,
+                    height: state.height,
+                    disabled: disabled.length ? disabled : undefined,
+                    blocks: blocks,
+                    portals: state.portals.map(function (p) {
+                        var o = { x: p.x, y: p.y, target_map_id: p.target_map_id, target_x: p.target_x, target_y: p.target_y };
+                        if (p.label) o.label = p.label;
+                        return o;
+                    })
+                };
+                var str = JSON.stringify(out, null, 2);
+                var blob = new Blob([str], { type: 'application/json' });
+                var url = URL.createObjectURL(blob);
+                var a = document.createElement('a');
+                a.href = url;
+                a.download = (state.mapId || 'map') + '.json';
+                a.click();
+                URL.revokeObjectURL(url);
+            });
+
+            initGrid();
+            renderGrid();
+            updateCellInfo();
+        })();
+    </script>
+</body>
+</html>

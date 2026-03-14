@@ -1,0 +1,24 @@
+{
+  "map_id": "field",
+  "name": "野外",
+  "width": 25,
+  "height": 25,
+  "portals": [
+    {
+      "x": 2,
+      "y": 12,
+      "target_map_id": "home",
+      "target_x": 8,
+      "target_y": 1,
+      "label": "回基地"
+    },
+    {
+      "x": 22,
+      "y": 12,
+      "target_map_id": "town",
+      "target_x": 8,
+      "target_y": 1,
+      "label": "进城镇"
+    }
+  ]
+}
