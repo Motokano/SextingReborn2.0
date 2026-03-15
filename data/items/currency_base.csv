@@ -1,0 +1,9 @@
+id,sn,placeholder_name,fn,category,sub_category,weight,stack_limit,tags,source,production_lines,spoilage,price_class,volatility,region_restrict,base_value,accept_code,convert_to_high,usable_regions
+currency_origin_stone,原石,透亮晶块,冰凉透亮的小块，兴许能换东西,currency,,0.0014,100,currency,buy,,none,luxury,low,1,10000,IOS,,1
+currency_genesis_crystal,创世结晶,小块凉滑晶石,小块凉滑的晶石，或许能当钱,currency,,0.0008,500000,currency,buy,,none,luxury,low,1,10,GC,"currency_origin_stone,1000",1
+currency_star_jade,星琼,轻透星点,轻透带星点的薄片，兴许能换东西,currency,,0.0007,100,currency,buy,,none,luxury,low,2,10000,SJW,,2
+currency_old_dream,古老梦华,轻软羽片,轻软似羽的薄片，或许能当钱,currency,,0.0004,500000,currency,buy,,none,luxury,low,2,10,OD,"currency_star_jade,1000",2
+currency_film,菲林,韧薄片,韧而薄的亮片，兴许能换东西,currency,,0.0008,100,currency,buy,,none,luxury,low,3,10000,FLP,,3
+currency_film_negative,菲林底片,软韧底片,软韧的底片状物，或许能当钱,currency,,0.0005,500000,currency,buy,,none,luxury,low,3,10,FN,"currency_film,1000",3
+currency_jpy,晶片,沉手晶块,沉手如小石块的晶片，兴许能换东西,currency,,0.002,100,currency,buy,,none,luxury,low,4,10000,JPY,,4
+currency_unknown_crystal,未名晶石,沉手晶石,沉手如石块的晶粒，或许能当钱,currency,,0.0011,500000,currency,buy,,none,luxury,low,4,10,UC,"currency_jpy,1000",4
