@@ -67,6 +67,10 @@
             color: #555;
         }
         .cell.void::after { content: '×'; font-size: 14px; }
+        .cell.entity-bush { background: #3d4a2d; border-color: rgba(120,180,80,0.5); }
+        .cell.entity-bush::after { content: '灌'; font-size: 11px; color: #8f8; }
+        .cell.entity-grass { background: #2d4a3d; border-color: rgba(80,160,120,0.5); }
+        .cell.entity-grass::after { content: '草'; font-size: 11px; color: #6f8; }
         .sidebar {
             width: 280px;
             background: #252525;
@@ -137,6 +141,16 @@
                 <p class="hint">玩家踩到该格会传送到目标地图的 (落点X, 落点Y)</p>
                 <button type="button" id="btn-apply-portal">应用传送点</button>
             </div>
+            <div class="row" id="panel-entity">
+                <label>采集点 / 实体</label>
+                <select id="inp-entity-id">
+                    <option value="">无</option>
+                    <option value="gathering_bush">灌木丛 (gathering_bush)</option>
+                    <option value="gathering_grass">草丛 (gathering_grass)</option>
+                </select>
+                <p class="hint">与设计文档 8.2.2 一致，地图用 entity_id 引用；游戏内站在该格可执行采集。</p>
+                <button type="button" id="btn-apply-entity">应用实体</button>
+            </div>
         </div>
     </div>
 
@@ -148,9 +162,10 @@
                 name: '基地',
                 width: 16,
                 height: 16,
-                enabled: [],    // enabled[y][x] true=属于地图，false=空洞（不规则）
-                walkable: [],   // walkable[y][x] true=可走（仅对属于地图的格有效）
-                portals: []
+                enabled: [],
+                walkable: [],
+                portals: [],
+                entities: []    // [{ x, y, entity_id: 'gathering_bush'|'gathering_grass' }, ...]
             };
 
             function initGrid() {
@@ -192,6 +207,22 @@
                 return null;
             }
 
+            function getEntityAt(x, y) {
+                for (var i = 0; i < state.entities.length; i++) {
+                    if (state.entities[i].x === x && state.entities[i].y === y) return state.entities[i].entity_id || null;
+                }
+                return null;
+            }
+
+            function setEntityAt(x, y, entityId) {
+                var idx = -1;
+                for (var i = 0; i < state.entities.length; i++) {
+                    if (state.entities[i].x === x && state.entities[i].y === y) { idx = i; break; }
+                }
+                if (idx >= 0) state.entities.splice(idx, 1);
+                if (entityId) state.entities.push({ x: x, y: y, entity_id: entityId });
+            }
+
             function isWalkable(x, y) {
                 if (!isEnabled(x, y)) return false;
                 return state.walkable[y][x];
@@ -214,10 +245,19 @@
                         } else {
                             cell.classList.add(isWalkable(x, y) ? 'walkable' : 'blocked');
                             if (getPortalAt(x, y)) { cell.classList.add('portal'); cell.textContent = '○'; }
+                            var eid = getEntityAt(x, y);
+                            if (eid === 'gathering_bush') cell.classList.add('entity-bush');
+                            else if (eid === 'gathering_grass') cell.classList.add('entity-grass');
                         }
                         var t = x + ',' + y;
                         if (!isEnabled(x, y)) t += ' 空洞';
-                        else { t += getPortalAt(x, y) ? ' 传送' : ''; t += !isWalkable(x, y) ? ' 不可走' : ''; }
+                        else {
+                            t += getPortalAt(x, y) ? ' 传送' : '';
+                            t += !isWalkable(x, y) ? ' 不可走' : '';
+                            var eid = getEntityAt(x, y);
+                            if (eid === 'gathering_bush') t += ' 灌木丛';
+                            else if (eid === 'gathering_grass') t += ' 草丛';
+                        }
                         cell.title = t;
                         cell.addEventListener('mousedown', (function (gx, gy) {
                             return function (e) { if (e.button === 0) onCellMouseDown(gx, gy, e); };
@@ -336,11 +376,13 @@
                     document.getElementById('panel-enabled').style.display = 'none';
                     document.getElementById('panel-walk').style.display = 'none';
                     document.getElementById('panel-portal').style.display = 'none';
+                    document.getElementById('panel-entity').style.display = 'none';
                     return;
                 }
                 document.getElementById('panel-enabled').style.display = 'block';
                 document.getElementById('panel-walk').style.display = 'block';
                 document.getElementById('panel-portal').style.display = 'block';
+                document.getElementById('panel-entity').style.display = 'block';
 
                 if (selected.length === 1) {
                     var x = selected[0].x, y = selected[0].y;
@@ -353,6 +395,8 @@
                     document.getElementById('inp-target-x').value = portal ? (portal.target_x ?? 0) : 0;
                     document.getElementById('inp-target-y').value = portal ? (portal.target_y ?? 0) : 0;
                     document.getElementById('inp-portal-label').value = portal ? (portal.label || '') : '';
+                    var eid = getEntityAt(x, y);
+                    document.getElementById('inp-entity-id').value = eid || '';
                 } else {
                     var allEn = true, noneEn = true, allWalk = true, noneWalk = true;
                     for (var i = 0; i < selected.length; i++) {
@@ -372,7 +416,21 @@
                     document.getElementById('inp-target-x').value = portal ? (portal.target_x ?? 0) : 0;
                     document.getElementById('inp-target-y').value = portal ? (portal.target_y ?? 0) : 0;
                     document.getElementById('inp-portal-label').value = portal ? (portal.label || '') : '';
+                    var eid = getEntityAt(first.x, first.y);
+                    document.getElementById('inp-entity-id').value = eid || '';
                 }
+            }
+
+            function applyEntity() {
+                if (selected.length === 0) return;
+                var entityId = (document.getElementById('inp-entity-id').value || '').trim();
+                for (var i = 0; i < selected.length; i++) {
+                    var x = selected[i].x, y = selected[i].y;
+                    if (!isEnabled(x, y)) continue;
+                    setEntityAt(x, y, entityId || null);
+                }
+                renderGrid();
+                highlightSelected();
             }
 
             function applyEnabled() {
@@ -385,6 +443,7 @@
                         for (var j = state.portals.length - 1; j >= 0; j--) {
                             if (state.portals[j].x === x && state.portals[j].y === y) state.portals.splice(j, 1);
                         }
+                        setEntityAt(x, y, null);
                     }
                 }
                 renderGrid();
@@ -434,6 +493,7 @@
             document.getElementById('inp-enabled').addEventListener('change', applyEnabled);
             document.getElementById('inp-walkable').addEventListener('change', applyWalkable);
             document.getElementById('btn-apply-portal').addEventListener('click', applyPortal);
+            document.getElementById('btn-apply-entity').addEventListener('click', applyEntity);
 
             document.getElementById('btn-new').addEventListener('click', function () {
                 state.mapId = document.getElementById('inp-map-id').value.trim() || 'map1';
@@ -441,6 +501,7 @@
                 state.width = Math.max(1, parseInt(document.getElementById('inp-width').value, 10) || 16);
                 state.height = Math.max(1, parseInt(document.getElementById('inp-height').value, 10) || 16);
                 state.portals = [];
+                state.entities = [];
                 initGrid();
                 document.getElementById('inp-width').value = state.width;
                 document.getElementById('inp-height').value = state.height;
@@ -470,6 +531,7 @@
                 state.enabled = newEnabled;
                 state.walkable = newWalk;
                 state.portals = state.portals.filter(function (p) { return p.x < w && p.y < h && state.enabled[p.y][p.x]; });
+                state.entities = state.entities.filter(function (e) { return e.x < w && e.y < h && state.enabled[e.y][e.x]; });
                 selected = selected.filter(function (p) { return p.x < w && p.y < h; });
                 document.getElementById('inp-width').value = w;
                 document.getElementById('inp-height').value = h;
@@ -488,6 +550,7 @@
                     state.width = data.width || 16;
                     state.height = data.height || 16;
                     state.portals = Array.isArray(data.portals) ? JSON.parse(JSON.stringify(data.portals)) : [];
+                    state.entities = Array.isArray(data.entities) ? JSON.parse(JSON.stringify(data.entities)) : [];
 
                     initGrid();
                     if (Array.isArray(data.disabled)) {
@@ -543,7 +606,8 @@
                         var o = { x: p.x, y: p.y, target_map_id: p.target_map_id, target_x: p.target_x, target_y: p.target_y };
                         if (p.label) o.label = p.label;
                         return o;
-                    })
+                    }),
+                    entities: state.entities.length ? state.entities.map(function (e) { return { x: e.x, y: e.y, entity_id: e.entity_id }; }) : undefined
                 };
                 var str = JSON.stringify(out, null, 2);
                 var blob = new Blob([str], { type: 'application/json' });

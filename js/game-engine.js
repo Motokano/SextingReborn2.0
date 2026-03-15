@@ -29,6 +29,13 @@
             width: 25,
             height: 25,
             blocks: [],
+            entities: [
+                { x: 5, y: 5, entity_id: 'gathering_bush' },
+                { x: 7, y: 6, entity_id: 'gathering_grass' },
+                { x: 10, y: 10, entity_id: 'gathering_bush' },
+                { x: 12, y: 8, entity_id: 'gathering_grass' },
+                { x: 15, y: 14, entity_id: 'gathering_bush' }
+            ],
             portals: [
                 { x: 2, y: 12, target_map_id: 'home', target_x: 8, target_y: 14, label: '回基地' },
                 { x: 22, y: 12, target_map_id: 'town', target_x: 8, target_y: 14, label: '进城镇' }
@@ -91,6 +98,16 @@
         return null;
     }
 
+    function getEntityAt(x, y) {
+        var map = getMap();
+        if (!map || !map.entities) return null;
+        for (var i = 0; i < map.entities.length; i++) {
+            var e = map.entities[i];
+            if (e.x === x && e.y === y) return e.entity_id || null;
+        }
+        return null;
+    }
+
     function clamp(v, min, max) {
         return Math.max(min, Math.min(max, v));
     }
@@ -120,6 +137,9 @@
             state.y = portal.target_y;
         }
 
+        if (typeof global !== 'undefined' && global.Survival && typeof global.Survival.advanceTick === 'function') {
+            global.Survival.advanceTick();
+        }
         onChange();
         return true;
     }
@@ -160,6 +180,7 @@
         isBlocked: isBlocked,
         isDisabled: isDisabled,
         getPortalAt: getPortalAt,
+        getEntityAt: getEntityAt,
         isAdjacent: isAdjacent,
         moveTo: moveTo,
         onChange: function (cb) { onChange = typeof cb === 'function' ? cb : function () {}; }

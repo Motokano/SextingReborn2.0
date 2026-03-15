@@ -102,19 +102,132 @@
             justify-content: center;
             font-size: 20px;
         }
+        .tile.gathering {
+            border-color: rgba(120,180,80,0.45);
+            background: #2a3324;
+        }
+        .tile.gathering.adjacent { background: #353d2a; }
+        .tile.gathering.player { background: #2d3a1f; border-color: rgba(120,180,80,0.5); }
+        /* 格子上有地面物品时的标记 */
+        .tile.ground-items {
+            border-color: rgba(212, 163, 115, 0.5);
+            background: #332a24;
+            box-shadow: inset 0 0 0 2px rgba(212, 163, 115, 0.25);
+        }
+        .tile.ground-items::after {
+            content: '📦';
+            position: absolute;
+            right: 4px;
+            bottom: 4px;
+            font-size: 14px;
+            line-height: 1;
+            opacity: 0.9;
+        }
+        .tile.ground-items.adjacent { background: #3d3228; }
+        .tile.ground-items.player { background: #2d241f; border-color: rgba(212, 163, 115, 0.6); }
         #footer {
-            height: 48px;
+            min-height: 48px;
             background: #1c1815;
             border-top: 1px solid #3d2d24;
             display: flex;
+            flex-wrap: wrap;
             align-items: center;
             justify-content: center;
+            gap: 12px;
+            padding: 8px 16px;
             font-size: 13px;
             color: #78716c;
         }
+        #footer .gather-btn {
+            padding: 6px 14px;
+            background: #3d332c;
+            border: 1px solid #d4a373;
+            border-radius: 4px;
+            color: #e8e6e3;
+            cursor: pointer;
+            font-size: 13px;
+        }
+        #footer .gather-btn:hover { background: #4d3f35; }
+        #footer .gather-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        #footer .state { color: #a8a29e; }
+        #footer .msg { color: #fbbf24; }
+        /* 左侧状态面板 - 与 02-regions 2.5 一致 */
+        #map-wrap { position: relative; }
+        #hud-layer { position: absolute; inset: 0; pointer-events: none; z-index: 30; }
+        #left-hud { position: absolute; left: 24px; top: 24px; bottom: 96px; width: 288px; display: flex; flex-direction: column; pointer-events: auto; transition: opacity 0.3s; }
+        #status-scroll { flex: 1; overflow-y: auto; padding-right: 8px; }
+        #status-scroll::-webkit-scrollbar { width: 3px; }
+        #status-scroll::-webkit-scrollbar-thumb { background: rgba(212, 163, 115, 0.2); border-radius: 10px; }
+        .status-card { background: rgba(28, 22, 18, 0.9); border: 1px solid #4d3f35; padding: 12px; font-size: 11px; font-weight: bold; margin-bottom: 12px; }
+        .status-card .row { display: flex; justify-content: space-between; align-items: center; }
+        .status-card .label { color: #78716c; }
+        .status-card .value { color: #e8e6e3; }
+        .status-card .value.ok { color: #22c55e; }
+        .status-card .value.warn { color: #f59e0b; }
+        .status-card .value.danger { color: #ef4444; }
+        .status-card .block-title { font-size: 9px; color: rgba(251, 191, 36, 0.6); letter-spacing: 0.15em; text-transform: uppercase; margin-bottom: 8px; font-weight: 900; }
+        .progress-wrap { height: 2px; background: #1c1917; overflow: hidden; margin-top: 4px; }
+        .progress-fill { height: 100%; transition: width 0.15s ease-out; }
+        .progress-fill.satiety { background: rgba(194, 65, 12, 0.6); }
+        .progress-fill.thirst { background: rgba(29, 78, 216, 0.6); }
+        .progress-fill.stamina { background: rgba(34, 197, 94, 0.6); }
+        .progress-fill.energy { background: rgba(139, 92, 246, 0.6); }
+        .role-card { background: rgba(45, 36, 30, 0.95); border: 2px solid rgba(212, 163, 115, 0.4); padding: 16px; box-shadow: 0 4px 6px rgba(0,0,0,0.3); margin-bottom: 12px; }
+        .role-card h1 { font-size: 1.25rem; font-weight: 900; color: #fff; letter-spacing: 0.2em; margin: 0; }
+        .role-card .subtitle { font-size: 10px; color: #fbbf24; font-weight: bold; margin-top: 4px; text-transform: uppercase; }
+        .quick-belt { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; padding: 8px; background: rgba(28, 22, 18, 0.95); border: 2px solid #4d3f35; }
+        .quick-belt .slot { aspect-ratio: 1; border: 1px solid #292524; background: rgba(0,0,0,0.4); display: flex; align-items: center; justify-content: center; font-size: 18px; cursor: pointer; }
+        .quick-belt .slot:hover { border-color: #fbbf24; }
+        .details-block { border: 1px solid #4d3f35; background: rgba(28, 25, 23, 0.2); }
+        .details-block summary { padding: 8px; font-size: 10px; font-weight: 900; color: #57534e; cursor: pointer; list-style: none; display: flex; justify-content: space-between; text-transform: uppercase; }
+        .details-block .details-body { padding: 12px; background: #1c1612; border-top: 1px solid #3d2d24; }
+        .details-block .details-body .row { display: flex; justify-content: space-between; font-size: 11px; margin-bottom: 8px; }
+        .details-block .details-body .row:last-child { margin-bottom: 0; }
+        /* 右侧三按钮：背包 / 战斗技能 / 生活技能 - 02-regions 2.5 */
+        #right-hud { position: absolute; right: 24px; top: 50%; transform: translateY(-50%); display: flex; flex-direction: column; gap: 24px; z-index: 31; pointer-events: auto; }
+        #right-hud .hud-btn { width: 56px; height: 56px; border-radius: 8px; border: 2px solid #4d3f35; background: rgba(28, 22, 18, 0.95); color: #e8e6e3; font-size: 24px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: border-color 0.2s, background 0.2s; }
+        #right-hud .hud-btn:hover { border-color: #fbbf24; background: rgba(45, 36, 30, 0.98); }
+        /* 背包+装备面板：同一大面板，Tab 物品栏/装备栏 */
+        #modal-backpack { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 100; align-items: center; justify-content: center; pointer-events: auto; }
+        #modal-backpack.show { display: flex; }
+        #modal-backpack .panel { width: 95%; max-width: 720px; max-height: 85vh; background: #1c1612; border: 2px solid #d4a373; border-radius: 8px; overflow: hidden; display: flex; flex-direction: column; }
+        #modal-backpack .panel-body { flex: 1; overflow-y: auto; padding: 16px; display: flex; gap: 24px; }
+        #modal-backpack .panel-left { flex: 1; min-width: 0; }
+        #modal-backpack .panel-right { width: 200px; flex-shrink: 0; }
+        #modal-backpack .inv-region { margin-bottom: 16px; }
+        #modal-backpack .inv-region h4 { font-size: 11px; color: rgba(251,191,36,0.8); margin: 0 0 8px 0; text-transform: uppercase; letter-spacing: 0.1em; }
+        #modal-backpack .inv-grid { display: grid; grid-template-columns: repeat(6, 62px); gap: 4px; }
+        #modal-backpack .inv-slot { width: 62px; height: 62px; border: 1px solid #4d3f35; background: rgba(0,0,0,0.3); border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 11px; color: #e8e6e3; box-sizing: border-box; }
+        #modal-backpack .inv-slot { position: relative; }
+        #modal-backpack .inv-slot:hover { border-color: #fbbf24; }
+        #modal-backpack .inv-slot .inv-slot-label { flex: 1; overflow: hidden; text-overflow: ellipsis; font-size: 11px; padding-right: 14px; padding-bottom: 12px; }
+        #modal-backpack .inv-slot .inv-slot-drop { position: absolute; right: 2px; bottom: 2px; padding: 0 3px; font-size: 10px; line-height: 1.2; background: #4d3f35; border: 1px solid #78716c; color: #e8e6e3; border-radius: 2px; cursor: pointer; }
+        #modal-backpack .inv-slot .inv-slot-drop:hover { background: #5c4a3d; border-color: #fbbf24; }
+        #modal-backpack .inv-slot.inv-slot-equip { cursor: pointer; }
+        #modal-backpack .ground-region { margin-top: 16px; padding-top: 12px; border-top: 1px solid #4d3f35; }
+        #modal-backpack .ground-item-row { display: flex; align-items: center; justify-content: space-between; padding: 6px 8px; margin-bottom: 4px; background: rgba(45,36,30,0.8); border: 1px solid #4d3f35; border-radius: 4px; gap: 8px; }
+        #modal-backpack .ground-item-row .ground-item-name { color: #e8e6e3; font-size: 12px; flex: 1; }
+        #modal-backpack .ground-item-row .btn-pickup { padding: 2px 10px; font-size: 11px; background: #4d3f35; border: 1px solid #78716c; color: #e8e6e3; border-radius: 4px; cursor: pointer; }
+        #modal-backpack .ground-item-row .btn-pickup:hover { background: #5c4a3d; border-color: #fbbf24; }
+        #modal-backpack .equip-title { font-size: 11px; color: rgba(251,191,36,0.8); margin: 0 0 8px 0; text-transform: uppercase; letter-spacing: 0.1em; }
+        #modal-backpack .equip-list { display: flex; flex-direction: column; gap: 6px; }
+        #modal-backpack .equip-row { display: flex; align-items: center; justify-content: space-between; padding: 6px 8px; background: rgba(45,36,30,0.8); border: 1px solid #4d3f35; border-radius: 4px; gap: 8px; }
+        #modal-backpack .equip-row .slot-name { color: #78716c; font-size: 11px; min-width: 72px; }
+        #modal-backpack .equip-row .item-name { color: #e8e6e3; font-size: 12px; flex: 1; }
+        #modal-backpack .equip-row .btn-unequip { padding: 2px 8px; font-size: 11px; background: #4d3f35; border: 1px solid #78716c; color: #e8e6e3; border-radius: 4px; cursor: pointer; }
+        #modal-backpack .equip-row .btn-unequip:hover { background: #5c4a3d; border-color: #fbbf24; }
+        #modal-backpack .panel-close { padding: 10px; border-top: 1px solid #4d3f35; text-align: center; cursor: pointer; color: #fbbf24; font-weight: bold; }
+        #modal-backpack .panel-close:hover { background: rgba(212,163,115,0.15); }
+        /* 物品信息悬浮窗（替代浏览器 title） */
+        #item-tooltip { display: none; position: fixed; z-index: 1000; min-width: 200px; max-width: 320px; padding: 12px 14px; background: rgba(28, 22, 18, 0.98); border: 2px solid #d4a373; border-radius: 8px; box-shadow: 0 8px 24px rgba(0,0,0,0.5); pointer-events: none; font-size: 12px; line-height: 1.45; color: #e8e6e3; }
+        #item-tooltip.show { display: block; }
+        #item-tooltip .tooltip-name { font-size: 14px; font-weight: bold; color: #fbbf24; margin-bottom: 8px; padding-bottom: 6px; border-bottom: 1px solid #4d3f35; }
+        #item-tooltip .tooltip-desc { color: #a8a29e; margin-bottom: 8px; white-space: pre-wrap; word-break: break-word; }
+        #item-tooltip .tooltip-attrs { color: #78716c; font-size: 11px; white-space: pre-line; }
     </style>
 </head>
 <body>
+    <div id="item-tooltip"></div>
 
     <div id="map-wrap">
         <div id="map-container">
@@ -123,23 +236,228 @@
                 <div class="avatar">👤</div>
             </div>
         </div>
+        <!-- 左侧人物状态区：与 demo / 02-regions 2.5 一致 -->
+        <div id="hud-layer">
+            <div id="left-hud">
+                <div class="role-card">
+                    <h1 id="status-role-name">旅人</h1>
+                    <p class="subtitle" id="status-role-title">称号 · 初入末世</p>
+                </div>
+                <div id="status-scroll">
+                    <div class="status-card" id="status-instant">
+                        <div class="row"><span class="label">生命状态</span><span class="value" id="status-life">健康</span></div>
+                        <div class="row"><span class="label">身手感官</span><span class="value" id="status-dex">轻快</span></div>
+                    </div>
+                    <div class="status-card" id="status-limbs">
+                        <div class="block-title">肢体检视</div>
+                        <div class="row"><span>头</span><span id="limb-head">完好</span></div>
+                        <div class="row"><span>胸</span><span id="limb-chest">完好</span></div>
+                        <div class="row"><span>腹</span><span id="limb-belly">完好</span></div>
+                        <div class="row"><span>左手</span><span id="limb-lhand">完好</span></div>
+                        <div class="row"><span>右手</span><span id="limb-rhand">完好</span></div>
+                        <div class="row"><span>左脚</span><span id="limb-lfoot">完好</span></div>
+                        <div class="row"><span>右脚</span><span id="limb-rfoot">完好</span></div>
+                    </div>
+                    <div class="status-card" id="status-survival">
+                        <div class="block-title">生存循环</div>
+                        <div class="survival-row">
+                            <div class="row"><span class="label">饱食</span><span class="value" id="status-satiety-text">正常</span></div>
+                            <div class="progress-wrap"><div class="progress-fill satiety" id="status-satiety-bar" style="width:100%"></div></div>
+                        </div>
+                        <div class="survival-row" style="margin-top:12px">
+                            <div class="row"><span class="label">饮水</span><span class="value" id="status-thirst-text">正常</span></div>
+                            <div class="progress-wrap"><div class="progress-fill thirst" id="status-thirst-bar" style="width:100%"></div></div>
+                        </div>
+                        <div class="survival-row" style="margin-top:12px">
+                            <div class="row"><span class="label">体力</span><span class="value" id="status-stamina-text">—</span></div>
+                            <div class="progress-wrap"><div class="progress-fill stamina" id="status-stamina-bar" style="width:100%"></div></div>
+                        </div>
+                        <div class="survival-row" style="margin-top:12px">
+                            <div class="row"><span class="label">精力</span><span class="value" id="status-energy-text">—</span></div>
+                            <div class="progress-wrap"><div class="progress-fill energy" id="status-energy-bar" style="width:100%"></div></div>
+                        </div>
+                        <div class="row" style="margin-top:8px"><span class="label">体重</span><span class="value" id="status-weight">—</span></div>
+                        <div class="row" style="margin-top:4px"><span class="label">负重</span><span class="value" id="status-carry">—</span></div>
+                    </div>
+                    <div class="quick-belt" id="quick-belt"></div>
+                    <details class="details-block" open>
+                        <summary>基础五维 <span>▼</span></summary>
+                        <div class="details-body">
+                            <div class="row"><span class="label">筋骨</span><span class="value">—</span></div>
+                            <div class="row"><span class="label">柔韧</span><span class="value">—</span></div>
+                            <div class="row"><span class="label">呼吸</span><span class="value">—</span></div>
+                            <div class="row"><span class="label">身手</span><span class="value">—</span></div>
+                            <div class="row"><span class="label">专注</span><span class="value">—</span></div>
+                        </div>
+                    </details>
+                </div>
+            </div>
+            <!-- 右侧三按钮：背包、战斗技能、生活技能 -->
+            <div id="right-hud">
+                <button type="button" class="hud-btn" id="btn-backpack" title="背包">🎒</button>
+                <button type="button" class="hud-btn" id="btn-combat" title="战斗技能">⚔️</button>
+                <button type="button" class="hud-btn" id="btn-life" title="生活技能">⚙️</button>
+            </div>
+        </div>
+        <!-- 背包+装备面板：左物品栏、右装备栏 -->
+        <div id="modal-backpack">
+            <div class="panel">
+                <div class="panel-body">
+                    <div class="panel-left">
+                        <div class="inv-region" id="inv-region-pocket"><h4>口袋</h4><div class="inv-grid" id="inv-grid-pocket"></div></div>
+                        <div class="inv-region" id="inv-region-vest"><h4>背心</h4><div class="inv-grid" id="inv-grid-vest"></div></div>
+                        <div class="inv-region" id="inv-region-backpack"><h4>背包</h4><div class="inv-grid" id="inv-grid-backpack"></div></div>
+                        <div class="inv-region" id="inv-region-vehicle"><h4>载具</h4><div class="inv-grid" id="inv-grid-vehicle"></div></div>
+                        <div class="inv-region ground-region" id="inv-region-ground"><h4>脚下物品</h4><div id="ground-items-list"></div></div>
+                    </div>
+                    <div class="panel-right">
+                        <h4 class="equip-title">装备栏</h4>
+                        <div class="equip-list" id="equip-list"></div>
+                    </div>
+                </div>
+                <div class="panel-close" id="backpack-panel-close">关闭</div>
+            </div>
+        </div>
     </div>
 
     <div id="footer">
         <span id="footer-text">基地 · 方向键或点击相邻格子移动</span>
+        <span id="footer-state" class="state"></span>
+        <button type="button" id="gather-btn" class="gather-btn" style="display:none;">采集（挂机）</button>
+        <button type="button" id="gather-stop-btn" class="gather-btn" style="display:none;">停止采集</button>
+        <span id="footer-msg" class="msg"></span>
     </div>
 
     <script src="js/game-engine.js"></script>
+    <script src="js/survival.js"></script>
+    <script src="js/inventory-equipment.js"></script>
+    <script src="js/gathering.js"></script>
     <script>
         (function () {
             var E = window.GameEngine;
+            var G = window.Gathering;
+            var IE = window.InventoryEquipment;
             var CELL_PX = E.CELL_PX;
             var CENTER_OFFSET_X = E.CENTER_OFFSET_X;
             var CENTER_OFFSET_Y = E.CENTER_OFFSET_Y;
 
+            var lastMsg = '';
+            var msgTimeout = null;
+            var IDLE_TICK_MS = 3000;
+            var gatheringIdleTimer = null;
+            var gatheringIdleAt = null;
+
+            function showMsg(text) {
+                lastMsg = text;
+                var el = document.getElementById('footer-msg');
+                if (el) el.textContent = text;
+                if (msgTimeout) clearTimeout(msgTimeout);
+                msgTimeout = setTimeout(function () {
+                    if (document.getElementById('footer-msg').textContent === lastMsg)
+                        document.getElementById('footer-msg').textContent = '';
+                }, 3000);
+            }
+
+            var defaultGatheringPoints = { gathering_bush: { gathering_point_id: 'gathering_bush', display_name: '灌木丛', base_gathering_success_rate: 0.6, loot_table_id: 'loot_bush', stamina_cost: 2, tool_required: false }, gathering_grass: { gathering_point_id: 'gathering_grass', display_name: '草丛', base_gathering_success_rate: 0.6, loot_table_id: 'loot_grass', stamina_cost: 2, tool_required: false } };
+            var defaultLootTables = { loot_bush: [ { item_id: 'wild_fruit_red', weight: 40, quality_tier: 1 }, { item_id: 'wild_fruit_red', weight: 30, quality_tier: 2 }, { item_id: 'wild_fruit_purple', weight: 25, quality_tier: 2 }, { item_id: 'wild_fruit_yellow', weight: 15, quality_tier: 3 }, { item_id: 'wild_fruit_purple', weight: 10, quality_tier: 4 }, { item_id: 'wild_fruit_yellow', weight: 5, quality_tier: 5 }, { item_id: 'wild_fruit_red', weight: 2, quality_tier: 6 } ], loot_grass: [ { item_id: 'herb_green', weight: 40, quality_tier: 1 }, { item_id: 'herb_green', weight: 30, quality_tier: 2 }, { item_id: 'herb_bitter', weight: 25, quality_tier: 2 }, { item_id: 'herb_sweet', weight: 15, quality_tier: 3 }, { item_id: 'herb_bitter', weight: 10, quality_tier: 4 }, { item_id: 'herb_sweet', weight: 5, quality_tier: 5 }, { item_id: 'herb_green', weight: 2, quality_tier: 6 } ] };
+            var defaultItems = { wild_fruit_red: { item_id: 'wild_fruit_red', name: '红野果', weight_kg: 0.1 }, wild_fruit_purple: { item_id: 'wild_fruit_purple', name: '紫野果', weight_kg: 0.1 }, wild_fruit_yellow: { item_id: 'wild_fruit_yellow', name: '黄野果', weight_kg: 0.1 }, herb_green: { item_id: 'herb_green', name: '青草药', weight_kg: 0.1 }, herb_bitter: { item_id: 'herb_bitter', name: '苦叶草', weight_kg: 0.1 }, herb_sweet: { item_id: 'herb_sweet', name: '甘香草', weight_kg: 0.1 } };
+
+            var EQUIP_SLOT_LABELS = { head: '头', clothing: '衣服', vest: '背心', backpack: '背包', weapon_left: '左手武器', weapon_right: '右手武器', glove_left: '左手套', glove_right: '右手套', shoe_left: '左脚', shoe_right: '右脚', parry_left: '左招架', parry_right: '右招架', accessory: '饰品' };
+
+            var tooltipEl = null;
+            var tooltipHideTimer = null;
+            function showItemTooltip(html, anchorEl) {
+                if (!tooltipEl) tooltipEl = document.getElementById('item-tooltip');
+                if (!tooltipEl || !html) return;
+                tooltipEl.innerHTML = html;
+                tooltipEl.style.left = '-9999px';
+                tooltipEl.style.top = '0';
+                tooltipEl.classList.add('show');
+                if (tooltipHideTimer) { clearTimeout(tooltipHideTimer); tooltipHideTimer = null; }
+                requestAnimationFrame(function () {
+                    var rect = anchorEl.getBoundingClientRect();
+                    var tr = tooltipEl.getBoundingClientRect();
+                    var tw = tr.width || 220;
+                    var th = tr.height || 100;
+                    var pad = 12;
+                    var left = rect.right + pad;
+                    var top = rect.top;
+                    if (left + tw > window.innerWidth - pad) left = rect.left - tw - pad;
+                    if (left < pad) left = pad;
+                    if (top + th > window.innerHeight - pad) top = window.innerHeight - th - pad;
+                    if (top < pad) top = pad;
+                    tooltipEl.style.left = left + 'px';
+                    tooltipEl.style.top = top + 'px';
+                });
+            }
+            function hideItemTooltip() {
+                if (!tooltipEl) tooltipEl = document.getElementById('item-tooltip');
+                if (tooltipEl) tooltipEl.classList.remove('show');
+            }
+
+            function formatItemAttributes(tpl) {
+                if (!tpl) return '';
+                var lines = [];
+                if (tpl.weight_kg != null) lines.push('重量：' + tpl.weight_kg + ' kg');
+                if (tpl.pocket_slots != null) lines.push('口袋：' + tpl.pocket_slots + ' 格');
+                if (tpl.vest_slots != null) lines.push('背心栏：' + tpl.vest_slots + ' 格');
+                if (tpl.backpack_slots != null) lines.push('背包：' + tpl.backpack_slots + ' 格');
+                if (tpl.backpack_weight_factor != null) lines.push('背包减重：' + (tpl.backpack_weight_factor * 100) + '%');
+                if (tpl.damage_reduce_slash_pct != null || tpl.damage_reduce_pierce_pct != null || tpl.damage_reduce_blunt_pct != null) {
+                    var dr = [];
+                    if (tpl.damage_reduce_slash_pct != null && tpl.damage_reduce_slash_pct > 0) dr.push('劈砍 ' + (tpl.damage_reduce_slash_pct * 100) + '%');
+                    if (tpl.damage_reduce_pierce_pct != null && tpl.damage_reduce_pierce_pct > 0) dr.push('戳刺 ' + (tpl.damage_reduce_pierce_pct * 100) + '%');
+                    if (tpl.damage_reduce_blunt_pct != null && tpl.damage_reduce_blunt_pct > 0) dr.push('钝击 ' + (tpl.damage_reduce_blunt_pct * 100) + '%');
+                    if (dr.length) lines.push('减伤：' + dr.join('、'));
+                }
+                if (tpl.skill_coef != null) lines.push('技能系数：' + tpl.skill_coef);
+                if (tpl.req_innate_jingu != null) lines.push('先天筋骨要求：' + tpl.req_innate_jingu);
+                if (tpl.enchant_slots != null) lines.push('词条槽：' + tpl.enchant_slots);
+                if (tpl.quality_tier != null && IE && IE.QUALITY_NAMES) lines.push('品质：' + (IE.QUALITY_NAMES[tpl.quality_tier] || '—'));
+                return lines.length ? lines.join('\n') : '';
+            }
+            function buildItemTooltipHtml(name, desc, attrs) {
+                var html = '<div class="tooltip-name">' + (name || '').replace(/</g, '&lt;').replace(/>/g, '&gt;') + '</div>';
+                if (desc) html += '<div class="tooltip-desc">' + (desc || '').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\n/g, '<br>') + '</div>';
+                if (attrs) html += '<div class="tooltip-attrs">' + (attrs || '').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\n/g, '<br>') + '</div>';
+                return html;
+            }
+
+            function loadConfig() {
+                var base = 'data/';
+                return Promise.all([
+                    fetch(base + 'gathering_points.json').then(function (r) { return r.ok ? r.json() : defaultGatheringPoints; }).catch(function () { return defaultGatheringPoints; }),
+                    fetch(base + 'loot_tables.json').then(function (r) { return r.ok ? r.json() : defaultLootTables; }).catch(function () { return defaultLootTables; }),
+                    fetch(base + 'items.json').then(function (r) { return r.ok ? r.json() : defaultItems; }).catch(function () { return defaultItems; }),
+                    fetch(base + 'survival-config.json').then(function (r) { return r.ok ? r.json() : {}; }).catch(function () { return {}; }),
+                    fetch(base + 'equipment.json').then(function (r) { return r.ok ? r.json() : {}; }).catch(function () { return {}; }),
+                    fetch(base + 'enchant.json').then(function (r) { return r.ok ? r.json() : {}; }).catch(function () { return {}; }),
+                    fetch(base + 'default_equipment.json').then(function (r) { return r.ok ? r.json() : {}; }).catch(function () { return {}; })
+                ]).then(function (arr) {
+                    G.setConfig({
+                        gathering_points: arr[0],
+                        loot_tables: arr[1],
+                        items: arr[2]
+                    });
+                    if (window.Survival) window.Survival.setConfig(arr[3]);
+                    var survCfg = arr[3] || {};
+                    IE.setConfig({
+                        equipment: arr[4],
+                        items: arr[2],
+                        enchant: arr[5],
+                        default_equipment: arr[6],
+                        item_display_tier_threshold_1: survCfg.item_display_tier_threshold_1,
+                        item_display_tier_threshold_2: survCfg.item_display_tier_threshold_2
+                    });
+                    IE.initNewGame();
+                });
+            }
+
             function render() {
                 var grid = document.getElementById('map-grid');
                 var footerText = document.getElementById('footer-text');
+                var footerState = document.getElementById('footer-state');
+                var gatherBtn = document.getElementById('gather-btn');
                 if (!grid) return;
 
                 var map = E.getMap();
@@ -150,6 +468,10 @@
                 grid.style.width = (map.width * CELL_PX) + 'px';
                 grid.style.height = (map.height * CELL_PX) + 'px';
 
+                var entityAtPlayer = E.getEntityAt(st.x, st.y);
+                var canGather = entityAtPlayer && G.getGatheringPointConfig(entityAtPlayer) && G.canGather(entityAtPlayer);
+                var pointName = entityAtPlayer && G.getGatheringPointConfig(entityAtPlayer) ? G.getGatheringPointConfig(entityAtPlayer).display_name : '';
+
                 var gap = 1;
                 for (var gy = 0; gy < map.height; gy++) {
                     for (var gx = 0; gx < map.width; gx++) {
@@ -158,10 +480,14 @@
                         var adjacent = E.isAdjacent(gx, gy);
                         var walkable = E.isWalkable(gx, gy);
                         var portal = E.getPortalAt(gx, gy);
+                        var entityId = E.getEntityAt(gx, gy);
+                        var groundAt = (IE && IE.getGroundItemsAt) ? IE.getGroundItemsAt(st.mapId, gx, gy) : [];
 
                         tile.className = 'tile';
                         if (!walkable) tile.classList.add('blocked');
                         if (portal) tile.classList.add('portal');
+                        if (entityId === 'gathering_bush' || entityId === 'gathering_grass') tile.classList.add('gathering');
+                        if (groundAt.length > 0) tile.classList.add('ground-items');
                         if (isPlayer) tile.classList.add('player');
                         else if (adjacent && walkable) {
                             tile.classList.add('adjacent');
@@ -170,7 +496,11 @@
                             tile.classList.add('adjacent');
                         }
                         if (portal && portal.label) tile.title = portal.label;
+                        else if (entityId === 'gathering_bush') tile.title = '灌木丛';
+                        else if (entityId === 'gathering_grass') tile.title = '草丛';
                         else if (!walkable) tile.title = '不可走';
+                        else tile.title = '';
+                        if (groundAt.length > 0) tile.title = (tile.title ? tile.title + ' · ' : '') + '地面有 ' + groundAt.length + ' 件物品';
 
                         tile.style.left = (gx * CELL_PX + gap) + 'px';
                         tile.style.top = (gy * CELL_PX + gap) + 'px';
@@ -182,10 +512,382 @@
                 var ty = CENTER_OFFSET_Y - st.y * CELL_PX;
                 grid.style.transform = 'translate(' + tx + 'px, ' + ty + 'px)';
 
-                if (footerText) footerText.textContent = map.name + ' ' + map.width + '×' + map.height + ' · 方向键或点击相邻可走格子移动';
+                if (footerText) footerText.textContent = map.name + ' ' + map.width + '×' + map.height + ' · 方向键或点击相邻格子移动';
+                var cs = G.getCharacterState();
+                var invText = '';
+                if (IE && IE.getState) {
+                    var st = IE.getState();
+                    var pocket = (st.inventory_pocket && st.inventory_pocket.length) ? st.inventory_pocket.filter(Boolean).length : 0;
+                    var vest = (st.inventory_vest && st.inventory_vest.length) ? st.inventory_vest.filter(Boolean).length : 0;
+                    var back = (st.inventory_backpack && st.inventory_backpack.length) ? st.inventory_backpack.filter(Boolean).length : 0;
+                    var pSlots = IE.getPocketSlots(), vSlots = IE.getVestSlots(), bSlots = IE.getBackpackSlots();
+                    invText = ' · 口袋 ' + pocket + '/' + pSlots + ' 背心 ' + vest + '/' + vSlots + ' 背包 ' + back + '/' + bSlots;
+                } else invText = ' · 背包 ' + cs.inventory.length + '/' + G.MAX_INVENTORY_SLOTS;
+                if (footerState) footerState.textContent = '体力 ' + cs.stamina + '/' + cs.stamina_max + invText + ' · 采集熟练度 ' + cs.proficiency_count.toLocaleString() + ' (' + cs.proficiency_percent.toFixed(2) + '%)';
+                var isIdling = !!gatheringIdleTimer;
+                var gatherStopBtn = document.getElementById('gather-stop-btn');
+                if (gatherBtn) {
+                    gatherBtn.style.display = !isIdling && canGather ? 'inline-block' : 'none';
+                    gatherBtn.disabled = !canGather;
+                    gatherBtn.textContent = pointName ? '采集 · ' + pointName + '（挂机）' : '采集（挂机）';
+                }
+                if (gatherStopBtn) {
+                    gatherStopBtn.style.display = isIdling ? 'inline-block' : 'none';
+                }
+                updateStatusPanel(cs);
+                updateQuickBelt();
+                if (document.getElementById('modal-backpack').classList.contains('show')) updateBackpackPanel();
             }
 
-            E.onChange(render);
+            function updateQuickBelt() {
+                var el = document.getElementById('quick-belt');
+                if (!el || !IE) return;
+                var total = IE.getQuickBeltSlots();
+                el.innerHTML = '';
+                var pocketArr = IE.getPocketArray();
+                var vestArr = IE.getVestArray();
+                var char = IE.getCharacterForDisplay();
+                var idx = 0;
+                for (var i = 0; i < pocketArr.length; i++) {
+                    var slot = document.createElement('div');
+                    slot.className = 'slot';
+                    var it = pocketArr[i];
+                    if (it && it.item_id) {
+                        var tpl = IE.getItemTemplate(it.item_id);
+                        var tier = IE.getItemDisplayTier(it.item_id, char);
+                        slot.textContent = tpl ? IE.getDisplayName(tpl, tier).slice(0, 2) : it.item_id.slice(0, 2);
+                        var name = tpl ? IE.getDisplayName(tpl, tier) : it.item_id;
+                        var desc = tpl ? IE.getDisplayDesc(tpl, tier) : '';
+                        var attrs = formatItemAttributes(tpl);
+                        var tipHtml = buildItemTooltipHtml(name, desc, attrs);
+                        slot.addEventListener('mouseenter', function (html, el) { return function () { showItemTooltip(html, el); }; }(tipHtml, slot));
+                        slot.addEventListener('mouseleave', function () { hideItemTooltip(); });
+                    } else {
+                        slot.textContent = '—';
+                    }
+                    el.appendChild(slot);
+                    idx++;
+                }
+                for (var j = 0; j < vestArr.length; j++) {
+                    var slot2 = document.createElement('div');
+                    slot2.className = 'slot';
+                    var it2 = vestArr[j];
+                    if (it2 && it2.item_id) {
+                        var tpl2 = IE.getItemTemplate(it2.item_id);
+                        var tier2 = IE.getItemDisplayTier(it2.item_id, char);
+                        slot2.textContent = tpl2 ? IE.getDisplayName(tpl2, tier2).slice(0, 2) : it2.item_id.slice(0, 2);
+                        var name2 = tpl2 ? IE.getDisplayName(tpl2, tier2) : it2.item_id;
+                        var desc2 = tpl2 ? IE.getDisplayDesc(tpl2, tier2) : '';
+                        var attrs2 = formatItemAttributes(tpl2);
+                        var tipHtml2 = buildItemTooltipHtml(name2, desc2, attrs2);
+                        slot2.addEventListener('mouseenter', function (html, el) { return function () { showItemTooltip(html, el); }; }(tipHtml2, slot2));
+                        slot2.addEventListener('mouseleave', function () { hideItemTooltip(); });
+                    } else {
+                        slot2.textContent = '—';
+                    }
+                    el.appendChild(slot2);
+                }
+            }
+
+            function updateBackpackPanel() {
+                if (!IE) return;
+                var st = IE.getState();
+                var char = IE.getCharacterForDisplay();
+                var pocketSlots = IE.getPocketSlots(), vestSlots = IE.getVestSlots(), backpackSlots = IE.getBackpackSlots();
+                var vehicleSlots = (st.inventory_vehicle && st.inventory_vehicle.length) ? st.inventory_vehicle.length : (st.bound_vehicle_id ? 8 : 0);
+                var pocketGrid = document.getElementById('inv-grid-pocket');
+                var vestGrid = document.getElementById('inv-grid-vest');
+                var backpackGrid = document.getElementById('inv-grid-backpack');
+                var vehicleGrid = document.getElementById('inv-grid-vehicle');
+                var pocketRegion = document.getElementById('inv-region-pocket');
+                var vestRegion = document.getElementById('inv-region-vest');
+                var backpackRegion = document.getElementById('inv-region-backpack');
+                var vehicleRegion = document.getElementById('inv-region-vehicle');
+                function fillGrid(container, arr, maxSlots, containerType) {
+                    if (!container) return;
+                    container.innerHTML = '';
+                    var pos = E.getState();
+                    for (var i = 0; i < maxSlots; i++) {
+                        var cell = document.createElement('div');
+                        cell.className = 'inv-slot';
+                        var it = arr[i] || null;
+                        if (it && it.item_id) {
+                            var tpl = IE.getItemTemplate(it.item_id);
+                            var tier = IE.getItemDisplayTier(it.item_id, char);
+                            var label = (tpl ? IE.getDisplayName(tpl, tier) : it.item_id) + (it.count > 1 ? '×' + it.count : '');
+                            cell.innerHTML = '<span class="inv-slot-label">' + label + '</span>';
+                            var dropBtn = document.createElement('button');
+                            dropBtn.type = 'button';
+                            dropBtn.className = 'inv-slot-drop';
+                            dropBtn.textContent = '丢';
+                            dropBtn.title = '丢弃到脚下';
+                            dropBtn.addEventListener('click', (function (ctype, idx) {
+                                return function (ev) {
+                                    ev.stopPropagation();
+                                    ev.preventDefault();
+                                    var p = E.getState();
+                                    var res = IE.dropItemToGround(ctype, idx, p.mapId, p.x, p.y);
+                                    if (res.success) showMsg('已丢弃到脚下');
+                                    else showMsg(res.message || '丢弃失败');
+                                    updateBackpackPanel();
+                                    updateQuickBelt();
+                                    render();
+                                };
+                            })(containerType, i));
+                            cell.appendChild(dropBtn);
+                            var name = (tpl ? IE.getDisplayName(tpl, tier) : it.item_id) + (it.count > 1 ? ' ×' + it.count : '');
+                            var desc = tpl ? IE.getDisplayDesc(tpl, tier) : '';
+                            var attrs = formatItemAttributes(tpl);
+                            var tipHtml = buildItemTooltipHtml(name, desc, attrs);
+                            cell.addEventListener('mouseenter', function (html, el) { return function () { showItemTooltip(html, el); }; }(tipHtml, cell));
+                            cell.addEventListener('mouseleave', function () { hideItemTooltip(); });
+                            if (tpl && tpl.equip_slot) {
+                                cell.classList.add('inv-slot-equip');
+                                cell.addEventListener('click', (function (ctype, idx) {
+                                    return function (e) {
+                                        if (e.target && e.target.classList && e.target.classList.contains('inv-slot-drop')) return;
+                                        var taken = IE.takeItemFromContainer(ctype, idx);
+                                        if (!taken.success || !taken.item) return;
+                                        var slotId = IE.getItemTemplate(taken.item.item_id).equip_slot;
+                                        var current = IE.getState().equipment[slotId];
+                                        if (current && current.item_id) {
+                                            var old = IE.unequip(slotId);
+                                            if (old) IE.putItemIntoDefaultContainer(old);
+                                        }
+                                        var result = IE.equip(slotId, taken.item);
+                                        if (result.success) showMsg('已装备'); else showMsg(result.message || '穿戴失败');
+                                        updateBackpackPanel();
+                                        updateQuickBelt();
+                                        render();
+                                    };
+                                })(containerType, i));
+                            }
+                        } else {
+                            cell.textContent = '—';
+                        }
+                        container.appendChild(cell);
+                    }
+                }
+                if (pocketRegion) pocketRegion.style.display = pocketSlots > 0 ? 'block' : 'none';
+                if (pocketSlots > 0) fillGrid(pocketGrid, IE.getPocketArray(), pocketSlots, 'pocket');
+                if (vestRegion) vestRegion.style.display = vestSlots > 0 ? 'block' : 'none';
+                if (vestSlots > 0) fillGrid(vestGrid, IE.getVestArray(), vestSlots, 'vest');
+                if (backpackRegion) backpackRegion.style.display = backpackSlots > 0 ? 'block' : 'none';
+                if (backpackSlots > 0) fillGrid(backpackGrid, IE.getBackpackArray(), backpackSlots, 'backpack');
+                if (vehicleRegion) vehicleRegion.style.display = (st.bound_vehicle_id && vehicleSlots > 0) ? 'block' : 'none';
+                if (st.bound_vehicle_id && vehicleSlots > 0) fillGrid(vehicleGrid, st.inventory_vehicle || [], vehicleSlots, 'vehicle');
+                var pos = E.getState();
+                var groundList = document.getElementById('ground-items-list');
+                var groundRegion = document.getElementById('inv-region-ground');
+                if (groundList && IE.getGroundItemsAt) {
+                    var groundItems = IE.getGroundItemsAt(pos.mapId, pos.x, pos.y);
+                    groundRegion.style.display = groundItems.length ? 'block' : 'none';
+                    groundList.innerHTML = '';
+                    for (var gi = 0; gi < groundItems.length; gi++) {
+                        var gItem = groundItems[gi];
+                        var gTpl = IE.getItemTemplate(gItem.item_id);
+                        var gTier = IE.getItemDisplayTier(gItem.item_id, char);
+                        var gName = (gTpl ? IE.getDisplayName(gTpl, gTier) : gItem.item_id) + (gItem.count > 1 ? ' ×' + gItem.count : '');
+                        var row = document.createElement('div');
+                        row.className = 'ground-item-row';
+                        row.innerHTML = '<span class="ground-item-name">' + gName.replace(/</g, '&lt;') + '</span>';
+                        var pickBtn = document.createElement('button');
+                        pickBtn.type = 'button';
+                        pickBtn.className = 'btn-pickup';
+                        pickBtn.textContent = '拾取';
+                        (function (idx) {
+                            pickBtn.addEventListener('click', function () {
+                                var res = IE.pickUpFromGround(pos.mapId, pos.x, pos.y, idx);
+                                if (res.success && res.placed) showMsg('已拾取');
+                                else showMsg(res.message || '拾取失败（背包已满）');
+                                updateBackpackPanel();
+                                updateQuickBelt();
+                                render();
+                            });
+                        })(gi);
+                        row.appendChild(pickBtn);
+                        groundList.appendChild(row);
+                    }
+                }
+                var equipList = document.getElementById('equip-list');
+                if (equipList) {
+                    equipList.innerHTML = '';
+                    for (var s = 0; s < IE.EQUIP_SLOT_IDS.length; s++) {
+                        var slotId = IE.EQUIP_SLOT_IDS[s];
+                        var row = document.createElement('div');
+                        row.className = 'equip-row';
+                        var name = EQUIP_SLOT_LABELS[slotId] || slotId;
+                        var inst = st.equipment[slotId];
+                        var tpl = inst && inst.item_id ? IE.getItemTemplate(inst.item_id) : null;
+                        var tier = inst ? IE.getItemDisplayTier(inst.item_id, char) : 0;
+                        var label = (tpl && inst) ? IE.getDisplayName(tpl, tier) : '空';
+                        var itemSpan = document.createElement('span');
+                        itemSpan.className = 'item-name';
+                        itemSpan.textContent = label;
+                        if (inst && tpl) {
+                            var desc = IE.getDisplayDesc(tpl, tier);
+                            var attrs = formatItemAttributes(tpl);
+                            var tipHtml = buildItemTooltipHtml(label, desc, attrs);
+                            itemSpan.addEventListener('mouseenter', function (html, el) { return function () { showItemTooltip(html, el); }; }(tipHtml, itemSpan));
+                            itemSpan.addEventListener('mouseleave', function () { hideItemTooltip(); });
+                        }
+                        row.innerHTML = '<span class="slot-name">' + name + '</span>';
+                        row.appendChild(itemSpan);
+                        if (inst && inst.item_id) {
+                            var btn = document.createElement('button');
+                            btn.type = 'button';
+                            btn.className = 'btn-unequip';
+                            btn.textContent = '脱下';
+                            btn.addEventListener('click', (function (sid) {
+                                return function () {
+                                    var p = E.getState();
+                                    var optGround = { mapId: p.mapId, x: p.x, y: p.y };
+                                    var unequipped = IE.unequip(sid, optGround);
+                                    if (unequipped) {
+                                        var placed = IE.putItemIntoDefaultContainer(unequipped);
+                                        if (!placed.placed) {
+                                            IE.addItemToGround(p.mapId, p.x, p.y, unequipped);
+                                            showMsg('已脱下，物品已掉落在脚下');
+                                        } else showMsg('已脱下并放入背包');
+                                    }
+                                    updateBackpackPanel();
+                                    updateQuickBelt();
+                                    render();
+                                };
+                            })(slotId));
+                            row.appendChild(btn);
+                        }
+                        equipList.appendChild(row);
+                    }
+                }
+            }
+
+            function getSatietyLabel(zone) {
+                var labels = { normal: '正常', mild: '稍饿', moderate: '中饿', severe: '重饿', starvation: '极限饥饿' };
+                return labels[zone] || '—';
+            }
+            function getThirstLabel(thirst, normalMin) {
+                normalMin = normalMin != null ? normalMin : 60;
+                if (thirst >= normalMin) return '正常';
+                if (thirst > 0) return '渴了';
+                return '缺水';
+            }
+            function updateStatusPanel(gatherState) {
+                var Surv = window.Survival;
+                var lifeEl = document.getElementById('status-life');
+                var dexEl = document.getElementById('status-dex');
+                var satietyText = document.getElementById('status-satiety-text');
+                var satietyBar = document.getElementById('status-satiety-bar');
+                var thirstText = document.getElementById('status-thirst-text');
+                var thirstBar = document.getElementById('status-thirst-bar');
+                var staminaText = document.getElementById('status-stamina-text');
+                var staminaBar = document.getElementById('status-stamina-bar');
+                var energyText = document.getElementById('status-energy-text');
+                var energyBar = document.getElementById('status-energy-bar');
+                var weightEl = document.getElementById('status-weight');
+                if (!lifeEl) return;
+
+                if (Surv && typeof Surv.getState === 'function') {
+                    var s = Surv.getState();
+                    if (s.isDead) { lifeEl.textContent = '死亡'; lifeEl.className = 'value danger'; }
+                    else if (s.isComa) { lifeEl.textContent = '昏迷'; lifeEl.className = 'value warn'; }
+                    else { lifeEl.textContent = '健康'; lifeEl.className = 'value ok'; }
+
+                    var zone = Surv.getSatietyZone ? Surv.getSatietyZone() : 'normal';
+                    satietyText.textContent = getSatietyLabel(zone);
+                    satietyText.className = zone === 'normal' ? 'value ok' : (zone === 'starvation' || zone === 'severe' ? 'value danger' : 'value warn');
+                    var satMax = 120;
+                    var satPct = Math.min(100, (s.satiety / satMax) * 100);
+                    satietyBar.style.width = satPct + '%';
+
+                    thirstText.textContent = getThirstLabel(s.thirst);
+                    thirstText.className = s.thirst >= 60 ? 'value ok' : (s.thirst <= 0 ? 'value danger' : 'value warn');
+                    thirstBar.style.width = s.thirst + '%';
+
+                    var stamMax = s.stamina_max || 100;
+                    staminaText.textContent = s.stamina.toFixed(1) + ' / ' + stamMax;
+                    staminaText.className = s.stamina <= 0 ? 'value danger' : (s.stamina < stamMax * 0.3 ? 'value warn' : 'value ok');
+                    staminaBar.style.width = stamMax > 0 ? (s.stamina / stamMax * 100) + '%' : '0%';
+
+                    var enMax = s.energy_max || 100;
+                    energyText.textContent = s.energy.toFixed(1) + ' / ' + enMax;
+                    energyText.className = s.energy <= 0 ? 'value danger' : (s.energy < enMax * 0.3 ? 'value warn' : 'value ok');
+                    energyBar.style.width = enMax > 0 ? (s.energy / enMax * 100) + '%' : '0%';
+
+                    weightEl.textContent = s.weight_kg + ' kg';
+                    var carryEl = document.getElementById('status-carry');
+                    if (carryEl) carryEl.textContent = '—';
+                } else {
+                    lifeEl.textContent = '健康';
+                    lifeEl.className = 'value ok';
+                    satietyText.textContent = '—';
+                    satietyBar.style.width = '100%';
+                    thirstText.textContent = '—';
+                    thirstBar.style.width = '100%';
+                    if (gatherState) {
+                        staminaText.textContent = gatherState.stamina + ' / ' + gatherState.stamina_max;
+                        staminaBar.style.width = (gatherState.stamina_max > 0 ? (gatherState.stamina / gatherState.stamina_max * 100) : 0) + '%';
+                    } else {
+                        staminaText.textContent = '—';
+                        staminaBar.style.width = '100%';
+                    }
+                    energyText.textContent = '—';
+                    energyBar.style.width = '100%';
+                    weightEl.textContent = '—';
+                    var carryEl = document.getElementById('status-carry');
+                    if (carryEl) carryEl.textContent = '—';
+                }
+                dexEl.textContent = '轻快';
+            }
+
+            function stopGatheringIdle() {
+                if (gatheringIdleTimer) {
+                    clearInterval(gatheringIdleTimer);
+                    gatheringIdleTimer = null;
+                    gatheringIdleAt = null;
+                }
+            }
+
+            function onGatherTick() {
+                var st = E.getState();
+                var entityId = E.getEntityAt(st.x, st.y);
+                if (!entityId || !G.canGather(entityId)) {
+                    stopGatheringIdle();
+                    if (!G.canGather(entityId) && entityId) showMsg('背包已满或体力不足，已停止采集');
+                    render();
+                    return;
+                }
+                var result = G.doGather(entityId);
+                if (result.success && result.gathered) showMsg(result.message);
+                else if (!result.success) showMsg(result.message);
+                render();
+            }
+
+            function onGatherClick() {
+                var st = E.getState();
+                var entityId = E.getEntityAt(st.x, st.y);
+                if (!entityId || !G.canGather(entityId)) return;
+                if (gatheringIdleTimer) return;
+                gatheringIdleAt = { mapId: st.mapId, x: st.x, y: st.y };
+                onGatherTick();
+                gatheringIdleTimer = setInterval(onGatherTick, IDLE_TICK_MS);
+                render();
+            }
+
+            function onGatherStopClick() {
+                stopGatheringIdle();
+                showMsg('已停止采集');
+                render();
+            }
+
+            E.onChange(function () {
+                if (gatheringIdleTimer && gatheringIdleAt) {
+                    var st = E.getState();
+                    if (st.mapId !== gatheringIdleAt.mapId || st.x !== gatheringIdleAt.x || st.y !== gatheringIdleAt.y)
+                        stopGatheringIdle();
+                }
+                render();
+            });
 
             document.addEventListener('keydown', function (e) {
                 var dx = 0, dy = 0;
@@ -198,13 +900,51 @@
                 }
                 e.preventDefault();
                 var st = E.getState();
-                E.moveTo(st.x + dx, st.y + dy);
+                if (E.moveTo(st.x + dx, st.y + dy)) stopGatheringIdle();
             });
 
-            if (document.readyState === 'loading') {
-                document.addEventListener('DOMContentLoaded', render);
-            } else {
+            if (document.getElementById('gather-btn')) {
+                document.getElementById('gather-btn').addEventListener('click', onGatherClick);
+            }
+            if (document.getElementById('gather-stop-btn')) {
+                document.getElementById('gather-stop-btn').addEventListener('click', onGatherStopClick);
+            }
+
+            var backpackPanelOpen = false;
+            function openBackpackPanel() {
+                if (backpackPanelOpen) return;
+                if (window.Survival && typeof window.Survival.advanceTick === 'function') window.Survival.advanceTick();
+                backpackPanelOpen = true;
+                document.getElementById('modal-backpack').classList.add('show');
+                updateBackpackPanel();
                 render();
+            }
+            function closeBackpackPanel() {
+                if (!backpackPanelOpen) return;
+                if (window.Survival && typeof window.Survival.advanceTick === 'function') window.Survival.advanceTick();
+                backpackPanelOpen = false;
+                document.getElementById('modal-backpack').classList.remove('show');
+                render();
+            }
+            if (document.getElementById('btn-backpack')) {
+                document.getElementById('btn-backpack').addEventListener('click', function () {
+                    if (backpackPanelOpen) closeBackpackPanel(); else openBackpackPanel();
+                });
+            }
+            if (document.getElementById('backpack-panel-close')) {
+                document.getElementById('backpack-panel-close').addEventListener('click', closeBackpackPanel);
+            }
+
+            function init() {
+                loadConfig().then(function () {
+                    render();
+                }).catch(function () { render(); });
+            }
+
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', init);
+            } else {
+                init();
             }
         })();
     </script>

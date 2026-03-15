@@ -3,6 +3,13 @@
   "name": "野外",
   "width": 25,
   "height": 25,
+  "entities": [
+    { "x": 5, "y": 5, "entity_id": "gathering_bush" },
+    { "x": 7, "y": 6, "entity_id": "gathering_grass" },
+    { "x": 10, "y": 10, "entity_id": "gathering_bush" },
+    { "x": 12, "y": 8, "entity_id": "gathering_grass" },
+    { "x": 15, "y": 14, "entity_id": "gathering_bush" }
+  ],
   "portals": [
     {
       "x": 2,

@@ -1,0 +1,50 @@
+{
+  "_comment": "词条表：定义可附加在装备上的词条种类与作用。每件装备有六个词条槽位（见 equipment.json 之 enchant_slots），后续通过附魔等手段为物品实例添加词条。词条作用在结算时由实现按 effect_type 与 effect_params 参与公式。同一装备上多个词条之间效果相加（同类型数值相加）；单词条有上限，每条词条在本表内单独配置 cap（或 max_value），实现时应用效果时夹紧至该上限。词条名称展示不受三档技能判断影响，使用本表 name 即可。applicable_slots 为空或省略表示该词条可附加于任意装备槽位；否则仅可附加于列出的槽位。",
+  "_effect_types": {
+    "stat_bonus": "后天属性加成，effect_params: stat_id（jingu/flexibility/breath/dexterity/focus 之一）, value（数值，可负）",
+    "hit_bonus": "命中率加成，effect_params: hit_pct（小数，如 0.02 即 +2%）",
+    "armor_bonus": "防具减伤加成，effect_params: slash_pct, pierce_pct, blunt_pct（三种伤害的额外减伤比例，0～1）",
+    "speed_bonus": "战斗速度加成，effect_params: speed_pct（小数，如 0.01 即 +1%）",
+    "skill_coef": "手套/鞋类技能系数修正，effect_params: coef（乘数，如 1.05）"
+  },
+  "enc_jingu_1": {
+    "id": "enc_jingu_1",
+    "name": "筋骨+1",
+    "effect_type": "stat_bonus",
+    "effect_params": { "stat_id": "jingu", "value": 1 },
+    "cap": 10,
+    "applicable_slots": []
+  },
+  "enc_dexterity_1": {
+    "id": "enc_dexterity_1",
+    "name": "身手+1",
+    "effect_type": "stat_bonus",
+    "effect_params": { "stat_id": "dexterity", "value": 1 },
+    "cap": 10,
+    "applicable_slots": []
+  },
+  "enc_hit_2": {
+    "id": "enc_hit_2",
+    "name": "命中+2%",
+    "effect_type": "hit_bonus",
+    "effect_params": { "hit_pct": 0.02 },
+    "cap": 0.20,
+    "applicable_slots": ["weapon_left", "weapon_right", "glove_left", "glove_right"]
+  },
+  "enc_armor_slash_3": {
+    "id": "enc_armor_slash_3",
+    "name": "劈砍减伤+3%",
+    "effect_type": "armor_bonus",
+    "effect_params": { "slash_pct": 0.03, "pierce_pct": 0, "blunt_pct": 0 },
+    "cap": 0.50,
+    "applicable_slots": ["head", "clothing"]
+  },
+  "enc_speed_1": {
+    "id": "enc_speed_1",
+    "name": "速度+1%",
+    "effect_type": "speed_bonus",
+    "effect_params": { "speed_pct": 0.01 },
+    "cap": 0.30,
+    "applicable_slots": []
+  }
+}

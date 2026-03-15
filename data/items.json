@@ -1,0 +1,32 @@
+{
+  "wild_fruit_red": {
+    "item_id": "wild_fruit_red",
+    "name": "红野果",
+    "weight_kg": 0.1
+  },
+  "wild_fruit_purple": {
+    "item_id": "wild_fruit_purple",
+    "name": "紫野果",
+    "weight_kg": 0.1
+  },
+  "wild_fruit_yellow": {
+    "item_id": "wild_fruit_yellow",
+    "name": "黄野果",
+    "weight_kg": 0.1
+  },
+  "herb_green": {
+    "item_id": "herb_green",
+    "name": "青草药",
+    "weight_kg": 0.1
+  },
+  "herb_bitter": {
+    "item_id": "herb_bitter",
+    "name": "苦叶草",
+    "weight_kg": 0.1
+  },
+  "herb_sweet": {
+    "item_id": "herb_sweet",
+    "name": "甘香草",
+    "weight_kg": 0.1
+  }
+}
