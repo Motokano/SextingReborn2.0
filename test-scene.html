@@ -145,72 +145,157 @@
         }
         .tile.ground-items.adjacent { background: #3d3228; }
         .tile.ground-items.player { background: #2d241f; border-color: rgba(212, 163, 115, 0.6); }
+        /* 玩家旁可交互动作浮层：进入可交互范围时显示在玩家上方 */
+        #player-action-bubble {
+            position: absolute;
+            left: 50%;
+            top: 175px;
+            transform: translateX(-50%);
+            z-index: 25;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            pointer-events: auto;
+        }
+        #player-action-bubble.visible { display: flex; }
+        #player-action-bubble .action-bubble-inner {
+            padding: 8px 12px;
+            background: rgba(28, 22, 18, 0.95);
+            border: 2px solid rgba(120, 180, 80, 0.6);
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 8px;
+        }
+        #player-action-bubble .action-btn {
+            padding: 6px 14px;
+            font-size: 12px;
+            background: #3d332c;
+            border: 1px solid #57534e;
+            color: #e8e6e3;
+            border-radius: 6px;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+        #player-action-bubble .action-btn:hover { background: #4d3f35; border-color: #fbbf24; }
+        #player-action-bubble .action-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        #player-action-bubble .action-btn.primary { border-color: rgba(120, 180, 80, 0.6); color: #86efac; }
         /* 左侧状态面板 - 与 02-regions 2.5 一致 */
         #map-wrap { position: relative; }
         #hud-layer { position: absolute; inset: 0; pointer-events: none; z-index: 30; }
-        #left-hud { position: absolute; left: 24px; top: 24px; bottom: 96px; width: 288px; display: flex; flex-direction: column; pointer-events: auto; transition: opacity 0.3s; }
-        #status-scroll { flex: 1; overflow-y: auto; padding-right: 8px; }
-        #status-scroll::-webkit-scrollbar { width: 3px; }
-        #status-scroll::-webkit-scrollbar-thumb { background: rgba(212, 163, 115, 0.2); border-radius: 10px; }
-        .status-card { background: rgba(28, 22, 18, 0.9); border: 1px solid #4d3f35; padding: 12px; font-size: 11px; font-weight: bold; margin-bottom: 12px; }
-        .status-card .row { display: flex; justify-content: space-between; align-items: center; }
-        .status-card .label { color: #78716c; }
-        .status-card .value { color: #e8e6e3; }
+        #left-hud {
+            position: absolute; left: 20px; top: 20px; bottom: 88px; width: 380px;
+            display: flex; flex-direction: column; pointer-events: auto; transition: opacity 0.3s;
+            font-family: "Microsoft YaHei", "微软雅黑", "PingFang SC", sans-serif;
+        }
+        #status-scroll { flex: 1; overflow-y: auto; padding-right: 10px; font-size: 14px; }
+        #status-scroll::-webkit-scrollbar { width: 4px; }
+        #status-scroll::-webkit-scrollbar-thumb { background: rgba(212, 163, 115, 0.25); border-radius: 10px; }
+        .status-card { background: rgba(28, 22, 18, 0.9); border: 1px solid #4d3f35; padding: 14px 16px; font-size: 14px; font-weight: 600; margin-bottom: 14px; }
+        .status-card .row { display: flex; justify-content: space-between; align-items: center; min-height: 1.5em; }
+        .status-card .label { color: #a8a29e; font-size: 14px; }
+        .status-card .value { color: #e8e6e3; font-size: 14px; }
         .status-card .value.ok { color: #22c55e; }
         .status-card .value.warn { color: #f59e0b; }
         .status-card .value.danger { color: #ef4444; }
-        .status-card .block-title { font-size: 9px; color: rgba(251, 191, 36, 0.6); letter-spacing: 0.15em; text-transform: uppercase; margin-bottom: 8px; font-weight: 900; }
-        .progress-wrap { height: 2px; background: #1c1917; overflow: hidden; margin-top: 4px; }
+        .status-card .block-title { font-size: 12px; color: rgba(251, 191, 36, 0.85); letter-spacing: 0.12em; margin-bottom: 10px; font-weight: 800; }
+        .status-card .limb-row { margin-bottom: 6px; cursor: help; font-size: 14px; }
+        .status-card .limb-row:last-child { margin-bottom: 0; }
+        .progress-wrap { height: 4px; background: #1c1917; overflow: hidden; margin-top: 6px; border-radius: 2px; }
         .progress-fill { height: 100%; transition: width 0.15s ease-out; }
         .progress-fill.satiety { background: rgba(194, 65, 12, 0.6); }
         .progress-fill.thirst { background: rgba(29, 78, 216, 0.6); }
         .progress-fill.stamina { background: rgba(34, 197, 94, 0.6); }
         .progress-fill.energy { background: rgba(139, 92, 246, 0.6); }
-        .role-card { background: rgba(45, 36, 30, 0.95); border: 2px solid rgba(212, 163, 115, 0.4); padding: 16px; box-shadow: 0 4px 6px rgba(0,0,0,0.3); margin-bottom: 12px; }
-        .role-card h1 { font-size: 1.25rem; font-weight: 900; color: #fff; letter-spacing: 0.2em; margin: 0; }
-        .role-card .subtitle { font-size: 10px; color: #fbbf24; font-weight: bold; margin-top: 4px; text-transform: uppercase; }
-        .quick-belt { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; padding: 8px; background: rgba(28, 22, 18, 0.95); border: 2px solid #4d3f35; }
-        .quick-belt .slot { aspect-ratio: 1; border: 1px solid #292524; background: rgba(0,0,0,0.4); display: flex; align-items: center; justify-content: center; font-size: 18px; cursor: pointer; }
+        .role-card { background: rgba(45, 36, 30, 0.95); border: 2px solid rgba(212, 163, 115, 0.4); padding: 18px 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.3); margin-bottom: 14px; }
+        .role-card h1 { font-size: 1.65rem; font-weight: 800; color: #fff; letter-spacing: 0.12em; margin: 0; line-height: 1.3; }
+        .role-card .subtitle { font-size: 15px; color: #fbbf24; font-weight: 600; margin-top: 8px; letter-spacing: 0.06em; }
+        .quick-belt { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; padding: 12px; background: rgba(28, 22, 18, 0.95); border: 2px solid #4d3f35; }
+        .quick-belt .slot { aspect-ratio: 1; border: 1px solid #292524; background: rgba(0,0,0,0.4); display: flex; align-items: center; justify-content: center; font-size: 22px; cursor: pointer; }
         .quick-belt .slot:hover { border-color: #fbbf24; }
         .details-block { border: 1px solid #4d3f35; background: rgba(28, 25, 23, 0.2); }
-        .details-block summary { padding: 8px; font-size: 10px; font-weight: 900; color: #57534e; cursor: pointer; list-style: none; display: flex; justify-content: space-between; text-transform: uppercase; }
-        .details-block .details-body { padding: 12px; background: #1c1612; border-top: 1px solid #3d2d24; }
-        .details-block .details-body .row { display: flex; justify-content: space-between; font-size: 11px; margin-bottom: 8px; }
+        .details-block summary { padding: 10px 12px; font-size: 13px; font-weight: 800; color: #a8a29e; cursor: pointer; list-style: none; display: flex; justify-content: space-between; }
+        .details-block .details-body { padding: 14px 16px; background: #1c1612; border-top: 1px solid #3d2d24; }
+        .details-block .details-body .row { display: flex; justify-content: space-between; font-size: 14px; margin-bottom: 10px; }
         .details-block .details-body .row:last-child { margin-bottom: 0; }
         /* 右侧三按钮：背包 / 战斗技能 / 生活技能 - 02-regions 2.5 */
         #right-hud { position: absolute; right: 24px; top: 50%; transform: translateY(-50%); display: flex; flex-direction: column; gap: 24px; z-index: 31; pointer-events: auto; }
         #right-hud .hud-btn { width: 56px; height: 56px; border-radius: 8px; border: 2px solid #4d3f35; background: rgba(28, 22, 18, 0.95); color: #e8e6e3; font-size: 24px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: border-color 0.2s, background 0.2s; }
         #right-hud .hud-btn:hover { border-color: #fbbf24; background: rgba(45, 36, 30, 0.98); }
-        /* 背包+装备面板：同一大面板，Tab 物品栏/装备栏 */
-        #modal-backpack { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 100; align-items: center; justify-content: center; pointer-events: auto; }
+        /* 背包+装备面板：放大 + 微软雅黑 */
+        #modal-backpack {
+            display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.65); z-index: 100;
+            align-items: center; justify-content: center; pointer-events: auto;
+            font-family: "Microsoft YaHei", "微软雅黑", "PingFang SC", sans-serif;
+        }
         #modal-backpack.show { display: flex; }
-        #modal-backpack .panel { width: 95%; max-width: 720px; max-height: 85vh; background: #1c1612; border: 2px solid #d4a373; border-radius: 8px; overflow: hidden; display: flex; flex-direction: column; }
-        #modal-backpack .panel-body { flex: 1; overflow-y: auto; padding: 16px; display: flex; gap: 24px; }
+        #modal-backpack .panel {
+            width: 96%; max-width: 1080px; max-height: 90vh;
+            background: #1c1612; border: 2px solid #d4a373; border-radius: 10px;
+            overflow: hidden; display: flex; flex-direction: column;
+            font-size: 15px;
+        }
+        #modal-backpack .panel-body { flex: 1; overflow-y: auto; padding: 22px 26px; display: flex; gap: 32px; }
         #modal-backpack .panel-left { flex: 1; min-width: 0; }
-        #modal-backpack .panel-right { width: 200px; flex-shrink: 0; }
-        #modal-backpack .inv-region { margin-bottom: 16px; }
-        #modal-backpack .inv-region h4 { font-size: 11px; color: rgba(251,191,36,0.8); margin: 0 0 8px 0; text-transform: uppercase; letter-spacing: 0.1em; }
-        #modal-backpack .inv-grid { display: grid; grid-template-columns: repeat(6, 62px); gap: 4px; }
-        #modal-backpack .inv-slot { width: 62px; height: 62px; border: 1px solid #4d3f35; background: rgba(0,0,0,0.3); border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 11px; color: #e8e6e3; box-sizing: border-box; }
-        #modal-backpack .inv-slot { position: relative; }
+        #modal-backpack .panel-right { width: 280px; flex-shrink: 0; }
+        #modal-backpack .inv-region { margin-bottom: 20px; }
+        #modal-backpack .inv-region h4 {
+            font-size: 15px; font-weight: 700; color: rgba(251,191,36,0.95);
+            margin: 0 0 10px 0; letter-spacing: 0.06em;
+        }
+        #modal-backpack .inv-grid { display: grid; grid-template-columns: repeat(6, 82px); gap: 7px; }
+        #modal-backpack .inv-slot {
+            width: 82px; height: 82px; border: 1px solid #4d3f35; background: rgba(0,0,0,0.35);
+            border-radius: 6px; display: flex; align-items: center; justify-content: center;
+            font-size: 13px; color: #e8e6e3; box-sizing: border-box; position: relative;
+        }
         #modal-backpack .inv-slot:hover { border-color: #fbbf24; }
-        #modal-backpack .inv-slot .inv-slot-label { flex: 1; overflow: hidden; text-overflow: ellipsis; font-size: 11px; padding-right: 14px; padding-bottom: 12px; }
-        #modal-backpack .inv-slot .inv-slot-drop { position: absolute; right: 2px; bottom: 2px; padding: 0 3px; font-size: 10px; line-height: 1.2; background: #4d3f35; border: 1px solid #78716c; color: #e8e6e3; border-radius: 2px; cursor: pointer; }
+        #modal-backpack .inv-slot .inv-slot-label {
+            flex: 1; overflow: hidden; text-overflow: ellipsis; font-size: 12px; line-height: 1.25;
+            padding: 6px 18px 18px 6px; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical;
+        }
+        #modal-backpack .inv-slot .inv-slot-drop {
+            position: absolute; right: 4px; bottom: 4px; padding: 3px 7px; font-size: 12px; line-height: 1.2;
+            background: #4d3f35; border: 1px solid #78716c; color: #e8e6e3; border-radius: 4px; cursor: pointer;
+        }
         #modal-backpack .inv-slot .inv-slot-drop:hover { background: #5c4a3d; border-color: #fbbf24; }
         #modal-backpack .inv-slot.inv-slot-equip { cursor: pointer; }
-        #modal-backpack .ground-region { margin-top: 16px; padding-top: 12px; border-top: 1px solid #4d3f35; }
-        #modal-backpack .ground-item-row { display: flex; align-items: center; justify-content: space-between; padding: 6px 8px; margin-bottom: 4px; background: rgba(45,36,30,0.8); border: 1px solid #4d3f35; border-radius: 4px; gap: 8px; }
-        #modal-backpack .ground-item-row .ground-item-name { color: #e8e6e3; font-size: 12px; flex: 1; }
-        #modal-backpack .ground-item-row .btn-pickup { padding: 2px 10px; font-size: 11px; background: #4d3f35; border: 1px solid #78716c; color: #e8e6e3; border-radius: 4px; cursor: pointer; }
+        #modal-backpack .ground-region { margin-top: 20px; padding-top: 14px; border-top: 1px solid #4d3f35; }
+        #modal-backpack .ground-item-row {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 10px 12px; margin-bottom: 8px; background: rgba(45,36,30,0.85);
+            border: 1px solid #4d3f35; border-radius: 6px; gap: 12px;
+        }
+        #modal-backpack .ground-item-row .ground-item-name { color: #e8e6e3; font-size: 15px; flex: 1; }
+        #modal-backpack .ground-item-row .btn-pickup {
+            padding: 6px 14px; font-size: 14px; background: #4d3f35; border: 1px solid #78716c;
+            color: #e8e6e3; border-radius: 6px; cursor: pointer; flex-shrink: 0;
+        }
         #modal-backpack .ground-item-row .btn-pickup:hover { background: #5c4a3d; border-color: #fbbf24; }
-        #modal-backpack .equip-title { font-size: 11px; color: rgba(251,191,36,0.8); margin: 0 0 8px 0; text-transform: uppercase; letter-spacing: 0.1em; }
-        #modal-backpack .equip-list { display: flex; flex-direction: column; gap: 6px; }
-        #modal-backpack .equip-row { display: flex; align-items: center; justify-content: space-between; padding: 6px 8px; background: rgba(45,36,30,0.8); border: 1px solid #4d3f35; border-radius: 4px; gap: 8px; }
-        #modal-backpack .equip-row .slot-name { color: #78716c; font-size: 11px; min-width: 72px; }
-        #modal-backpack .equip-row .item-name { color: #e8e6e3; font-size: 12px; flex: 1; }
-        #modal-backpack .equip-row .btn-unequip { padding: 2px 8px; font-size: 11px; background: #4d3f35; border: 1px solid #78716c; color: #e8e6e3; border-radius: 4px; cursor: pointer; }
+        #modal-backpack .ground-item-row .btn-equip-from-ground { margin-left: 8px; }
+        #modal-backpack .equip-title {
+            font-size: 15px; font-weight: 700; color: rgba(251,191,36,0.95);
+            margin: 0 0 12px 0; letter-spacing: 0.06em;
+        }
+        #modal-backpack .equip-list { display: flex; flex-direction: column; gap: 8px; }
+        #modal-backpack .equip-row {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 10px 12px; background: rgba(45,36,30,0.85); border: 1px solid #4d3f35;
+            border-radius: 6px; gap: 10px;
+        }
+        #modal-backpack .equip-row .slot-name { color: #a8a29e; font-size: 14px; min-width: 88px; flex-shrink: 0; }
+        #modal-backpack .equip-row .item-name { color: #e8e6e3; font-size: 15px; flex: 1; min-width: 0; }
+        #modal-backpack .equip-row .btn-unequip {
+            padding: 6px 12px; font-size: 14px; background: #4d3f35; border: 1px solid #78716c;
+            color: #e8e6e3; border-radius: 6px; cursor: pointer; flex-shrink: 0;
+        }
         #modal-backpack .equip-row .btn-unequip:hover { background: #5c4a3d; border-color: #fbbf24; }
-        #modal-backpack .panel-close { padding: 10px; border-top: 1px solid #4d3f35; text-align: center; cursor: pointer; color: #fbbf24; font-weight: bold; }
+        #modal-backpack .panel-close {
+            padding: 14px; border-top: 1px solid #4d3f35; text-align: center; cursor: pointer;
+            color: #fbbf24; font-weight: 700; font-size: 16px;
+        }
         #modal-backpack .panel-close:hover { background: rgba(212,163,115,0.15); }
         /* 物品信息悬浮窗（替代浏览器 title） */
         #item-tooltip { display: none; position: fixed; z-index: 1000; min-width: 200px; max-width: 320px; padding: 12px 14px; background: rgba(28, 22, 18, 0.98); border: 2px solid #d4a373; border-radius: 8px; box-shadow: 0 8px 24px rgba(0,0,0,0.5); pointer-events: none; font-size: 12px; line-height: 1.45; color: #e8e6e3; }
@@ -242,17 +327,6 @@
             justify-content: space-between;
             gap: 8px;
         }
-        #game-log-panel .game-log-header .gather-btn {
-            padding: 4px 10px;
-            background: #3d332c;
-            border: 1px solid #d4a373;
-            border-radius: 4px;
-            color: #e8e6e3;
-            cursor: pointer;
-            font-size: 12px;
-        }
-        #game-log-panel .game-log-header .gather-btn:hover { background: #4d3f35; }
-        #game-log-panel .game-log-header .gather-btn:disabled { opacity: 0.5; cursor: not-allowed; }
         #game-log-panel .game-log-lines {
             flex: 1;
             overflow-y: auto;
@@ -277,10 +351,216 @@
         #game-log-panel .log-system { color: #94a3b8; }
         #game-log-panel .game-log-lines { cursor: grab; user-select: none; }
         #game-log-panel .game-log-lines.log-dragging { cursor: grabbing; }
+        /* 创建角色界面 */
+        #character-creation-overlay {
+            display: flex;
+            position: fixed;
+            inset: 0;
+            background: rgba(12, 10, 8, 0.92);
+            z-index: 200;
+            align-items: center;
+            justify-content: center;
+            pointer-events: auto;
+        }
+        #character-creation-overlay.hidden { display: none; }
+        #character-creation-card {
+            width: 90%;
+            max-width: 420px;
+            background: #1c1612;
+            border: 2px solid #d4a373;
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 12px 40px rgba(0,0,0,0.5);
+        }
+        #character-creation-card h2 {
+            margin: 0 0 20px 0;
+            font-size: 1.25rem;
+            color: #fbbf24;
+            letter-spacing: 0.15em;
+            text-align: center;
+        }
+        #character-creation-card .creation-field {
+            margin-bottom: 16px;
+        }
+        #character-creation-card .creation-field label {
+            display: block;
+            font-size: 11px;
+            color: #78716c;
+            margin-bottom: 6px;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+        }
+        #character-creation-card .creation-name {
+            width: 100%;
+            padding: 10px 12px;
+            font-size: 14px;
+            color: #e8e6e3;
+            background: #26211d;
+            border: 1px solid #4d3f35;
+            border-radius: 6px;
+            box-sizing: border-box;
+        }
+        #character-creation-card .creation-name:focus {
+            outline: none;
+            border-color: #fbbf24;
+        }
+        #character-creation-card .creation-name::placeholder {
+            color: #57534e;
+        }
+        #character-creation-card .attr-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            gap: 12px;
+        }
+        #character-creation-card .attr-row .attr-label {
+            width: 56px;
+            font-size: 13px;
+            color: #e8e6e3;
+        }
+        #character-creation-card .attr-row .attr-controls {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        #character-creation-card .attr-row .attr-btn {
+            width: 32px;
+            height: 32px;
+            padding: 0;
+            font-size: 18px;
+            line-height: 1;
+            color: #e8e6e3;
+            background: #3d332c;
+            border: 1px solid #4d3f35;
+            border-radius: 6px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        #character-creation-card .attr-row .attr-btn:hover:not(:disabled) {
+            background: #4d3f35;
+            border-color: #fbbf24;
+            color: #fbbf24;
+        }
+        #character-creation-card .attr-row .attr-btn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+        #character-creation-card .attr-row .attr-value {
+            min-width: 28px;
+            text-align: center;
+            font-size: 14px;
+            font-weight: bold;
+            color: #fbbf24;
+        }
+        #character-creation-card .creation-points {
+            text-align: center;
+            font-size: 12px;
+            color: #a8a29e;
+            margin: 12px 0 16px 0;
+        }
+        #character-creation-card .creation-points.warn { color: #fcd34d; }
+        #character-creation-card .creation-points.ok { color: #86efac; }
+        #character-creation-card .creation-dominant {
+            display: flex;
+            gap: 24px;
+            margin-bottom: 20px;
+        }
+        #character-creation-card .creation-dominant .group {
+            flex: 1;
+        }
+        #character-creation-card .creation-dominant .group label.group-label {
+            display: block;
+            font-size: 11px;
+            color: #78716c;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+        }
+        #character-creation-card .creation-dominant .group .opt {
+            display: flex;
+            gap: 8px;
+        }
+        #character-creation-card .creation-dominant .opt label {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 13px;
+            color: #e8e6e3;
+            cursor: pointer;
+        }
+        #character-creation-card .creation-dominant .opt input {
+            accent-color: #fbbf24;
+        }
+        #character-creation-card .btn-confirm-creation {
+            width: 100%;
+            padding: 12px 20px;
+            font-size: 14px;
+            font-weight: bold;
+            color: #1c1612;
+            background: #fbbf24;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            letter-spacing: 0.1em;
+        }
+        #character-creation-card .btn-confirm-creation:hover:not(:disabled) {
+            background: #fcd34d;
+        }
+        #character-creation-card .btn-confirm-creation:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
     </style>
 </head>
 <body>
     <div id="item-tooltip"></div>
+
+    <!-- 创建角色界面：姓名 + 五项先天属性 + 惯用手/脚 -->
+    <div id="character-creation-overlay">
+        <div id="character-creation-card">
+            <h2>创建角色</h2>
+            <div class="creation-field">
+                <label for="creation-name">主角姓名</label>
+                <input type="text" id="creation-name" class="creation-name" value="教练" placeholder="输入角色姓名" maxlength="20" autocomplete="off">
+            </div>
+            <div class="creation-field">
+                <label>性别</label>
+                <div class="creation-dominant" style="margin-bottom:0">
+                    <div class="group" style="flex:1">
+                        <div class="opt">
+                            <label><input type="radio" name="creation-gender" value="male" checked> 男</label>
+                            <label><input type="radio" name="creation-gender" value="female"> 女</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="creation-field">
+                <label>先天属性（每项 0～29；未满 100 点时点「完成创建」会把剩余点数随机摊到五维上）</label>
+                <div id="creation-attr-rows"></div>
+                <div id="creation-points" class="creation-points">剩余自由点：50</div>
+            </div>
+            <div class="creation-dominant">
+                <div class="group">
+                    <label class="group-label">惯用手</label>
+                    <div class="opt">
+                        <label><input type="radio" name="creation-hand" value="left"> 左手</label>
+                        <label><input type="radio" name="creation-hand" value="right" checked> 右手</label>
+                    </div>
+                </div>
+                <div class="group">
+                    <label class="group-label">惯用脚</label>
+                    <div class="opt">
+                        <label><input type="radio" name="creation-leg" value="left"> 左脚</label>
+                        <label><input type="radio" name="creation-leg" value="right" checked> 右脚</label>
+                    </div>
+                </div>
+            </div>
+            <button type="button" id="btn-confirm-creation" class="btn-confirm-creation">完成创建</button>
+        </div>
+    </div>
 
     <div id="map-wrap">
         <div id="map-container">
@@ -291,28 +571,25 @@
                     <span class="avatar-fallback">👤</span>
                 </div>
             </div>
+            <!-- 进入可交互范围时在玩家旁显示的动作选项 -->
+            <div id="player-action-bubble">
+                <div class="action-bubble-inner">
+                    <button type="button" id="player-action-gather" class="action-btn primary" style="display:none;">采集（挂机）</button>
+                    <button type="button" id="player-action-gather-stop" class="action-btn" style="display:none;">停止采集</button>
+                </div>
+            </div>
         </div>
         <!-- 左侧人物状态区：与 demo / 02-regions 2.5 一致 -->
         <div id="hud-layer">
             <div id="left-hud">
                 <div class="role-card">
                     <h1 id="status-role-name">旅人</h1>
-                    <p class="subtitle" id="status-role-title">称号 · 初入末世</p>
+                    <p class="subtitle" id="status-gender-line">性别 · 男</p>
                 </div>
                 <div id="status-scroll">
-                    <div class="status-card" id="status-instant">
-                        <div class="row"><span class="label">生命状态</span><span class="value" id="status-life">健康</span></div>
-                        <div class="row"><span class="label">身手感官</span><span class="value" id="status-dex">轻快</span></div>
-                    </div>
                     <div class="status-card" id="status-limbs">
                         <div class="block-title">肢体检视</div>
-                        <div class="row"><span>头</span><span id="limb-head">完好</span></div>
-                        <div class="row"><span>胸</span><span id="limb-chest">完好</span></div>
-                        <div class="row"><span>腹</span><span id="limb-belly">完好</span></div>
-                        <div class="row"><span>左手</span><span id="limb-lhand">完好</span></div>
-                        <div class="row"><span>右手</span><span id="limb-rhand">完好</span></div>
-                        <div class="row"><span>左脚</span><span id="limb-lfoot">完好</span></div>
-                        <div class="row"><span>右脚</span><span id="limb-rfoot">完好</span></div>
+                        <div id="limb-rows"></div>
                     </div>
                     <div class="status-card" id="status-survival">
                         <div class="block-title">生存循环</div>
@@ -339,11 +616,11 @@
                     <details class="details-block" open>
                         <summary>基础五维 <span>▼</span></summary>
                         <div class="details-body">
-                            <div class="row"><span class="label">筋骨</span><span class="value">—</span></div>
-                            <div class="row"><span class="label">柔韧</span><span class="value">—</span></div>
-                            <div class="row"><span class="label">呼吸</span><span class="value">—</span></div>
-                            <div class="row"><span class="label">身手</span><span class="value">—</span></div>
-                            <div class="row"><span class="label">专注</span><span class="value">—</span></div>
+                            <div class="row"><span class="label">筋骨</span><span class="value" id="status-attr-jingu">—</span></div>
+                            <div class="row"><span class="label">柔韧</span><span class="value" id="status-attr-flexibility">—</span></div>
+                            <div class="row"><span class="label">呼吸</span><span class="value" id="status-attr-breath">—</span></div>
+                            <div class="row"><span class="label">身手</span><span class="value" id="status-attr-dexterity">—</span></div>
+                            <div class="row"><span class="label">专注</span><span class="value" id="status-attr-focus">—</span></div>
                         </div>
                     </details>
                 </div>
@@ -379,10 +656,6 @@
     <div id="game-log-panel">
         <div class="game-log-header">
             <span>游戏日志</span>
-            <span class="game-log-actions">
-                <button type="button" id="gather-btn" class="gather-btn" style="display:none;">采集（挂机）</button>
-                <button type="button" id="gather-stop-btn" class="gather-btn" style="display:none;">停止采集</button>
-            </span>
         </div>
         <div id="game-log-lines" class="game-log-lines"></div>
     </div>
@@ -391,6 +664,7 @@
     <script src="js/entity-appearance.js"></script>
     <script src="js/game-log.js"></script>
     <script src="js/survival.js"></script>
+    <script src="js/character-attributes.js"></script>
     <script src="js/inventory-equipment.js"></script>
     <script src="js/gathering.js"></script>
     <script>
@@ -479,7 +753,23 @@
             var defaultLootTables = { loot_bush: [ { item_id: 'wild_fruit_red', weight: 40, quality_tier: 1 }, { item_id: 'wild_fruit_red', weight: 30, quality_tier: 2 }, { item_id: 'wild_fruit_purple', weight: 25, quality_tier: 2 }, { item_id: 'wild_fruit_yellow', weight: 15, quality_tier: 3 }, { item_id: 'wild_fruit_purple', weight: 10, quality_tier: 4 }, { item_id: 'wild_fruit_yellow', weight: 5, quality_tier: 5 }, { item_id: 'wild_fruit_red', weight: 2, quality_tier: 6 } ], loot_grass: [ { item_id: 'herb_green', weight: 40, quality_tier: 1 }, { item_id: 'herb_green', weight: 30, quality_tier: 2 }, { item_id: 'herb_bitter', weight: 25, quality_tier: 2 }, { item_id: 'herb_sweet', weight: 15, quality_tier: 3 }, { item_id: 'herb_bitter', weight: 10, quality_tier: 4 }, { item_id: 'herb_sweet', weight: 5, quality_tier: 5 }, { item_id: 'herb_green', weight: 2, quality_tier: 6 } ] };
             var defaultItems = { wild_fruit_red: { item_id: 'wild_fruit_red', name: '红野果', weight_kg: 0.1 }, wild_fruit_purple: { item_id: 'wild_fruit_purple', name: '紫野果', weight_kg: 0.1 }, wild_fruit_yellow: { item_id: 'wild_fruit_yellow', name: '黄野果', weight_kg: 0.1 }, herb_green: { item_id: 'herb_green', name: '青草药', weight_kg: 0.1 }, herb_bitter: { item_id: 'herb_bitter', name: '苦叶草', weight_kg: 0.1 }, herb_sweet: { item_id: 'herb_sweet', name: '甘香草', weight_kg: 0.1 } };
 
-            var EQUIP_SLOT_LABELS = { head: '头', clothing: '衣服', vest: '背心', backpack: '背包', weapon_left: '左手武器', weapon_right: '右手武器', glove_left: '左手套', glove_right: '右手套', shoe_left: '左脚', shoe_right: '右脚', parry_left: '左招架', parry_right: '右招架', accessory: '饰品' };
+            var EQUIP_SLOT_LABELS = { head: '头', clothing: '衣服', vest: '背心', backpack: '背包', weapon_left: '左手武器', weapon_right: '右手武器', glove_left: '左手套', glove_right: '右手套', shoe_left: '左脚', shoe_right: '右脚', ring_left: '左手戒指', ring_right: '右手戒指', earring_left: '左耳环', earring_right: '右耳环', necklace: '项链' };
+            /** 身体部位/肢体检视：ID 与显示标签（与设计文档 09-body-parts 一致，共七部位） */
+            var BODY_PART_IDS = ['head', 'chest', 'belly', 'lhand', 'rhand', 'lfoot', 'rfoot'];
+            var BODY_PART_LABELS = { head: '头', chest: '胸', belly: '腹', lhand: '左手', rhand: '右手', lfoot: '左脚', rfoot: '右脚' };
+            /** 手臂动作标签（用于判定技能是否可在该肢体释放）；可被装备/buff 等修改 */
+            var ARM_ACTION_TAGS = ['挥拳', '推掌', '指戳'];
+            /** 脚部动作标签；可被装备/buff 等修改 */
+            var FOOT_ACTION_TAGS = ['弹踢', '踏蹬', '尖踢'];
+            /** 有动作标签的肢体 ID（仅四肢） */
+            var COMBAT_LIMB_IDS = ['lhand', 'rhand', 'lfoot', 'rfoot'];
+            /** 当前各肢体的动作标签（可被外部修改，技能判定时读取） */
+            var limbActionTags = {
+                lhand: ARM_ACTION_TAGS.slice(),
+                rhand: ARM_ACTION_TAGS.slice(),
+                lfoot: FOOT_ACTION_TAGS.slice(),
+                rfoot: FOOT_ACTION_TAGS.slice()
+            };
 
             var tooltipEl = null;
             var tooltipHideTimer = null;
@@ -558,21 +848,242 @@
                     });
                     if (window.Survival) window.Survival.setConfig(arr[3]);
                     var survCfg = arr[3] || {};
+                    var starterEquipFallback = {
+                        clothing: 'eq_clothing_commute',
+                        vest: 'eq_vest_hoodie',
+                        shoe_left: 'eq_shoe_left_sport',
+                        shoe_right: 'eq_shoe_right_sport'
+                    };
+                    var defEqFetched = (arr[6] && typeof arr[6] === 'object') ? arr[6] : {};
+                    var defaultEquipMerged = {};
+                    var sk;
+                    for (sk in starterEquipFallback) {
+                        if (starterEquipFallback.hasOwnProperty(sk)) defaultEquipMerged[sk] = starterEquipFallback[sk];
+                    }
+                    for (sk in defEqFetched) {
+                        if (!defEqFetched.hasOwnProperty(sk) || sk === '_comment' || !defEqFetched[sk]) continue;
+                        if (IE.EQUIP_SLOT_IDS.indexOf(sk) >= 0) defaultEquipMerged[sk] = defEqFetched[sk];
+                    }
                     IE.setConfig({
                         equipment: arr[4],
                         items: arr[2],
                         enchant: arr[5],
-                        default_equipment: arr[6],
+                        default_equipment: defaultEquipMerged,
                         item_display_tier_threshold_1: survCfg.item_display_tier_threshold_1,
                         item_display_tier_threshold_2: survCfg.item_display_tier_threshold_2
                     });
                     IE.initNewGame();
+                    if (window.CharacterAttributes) {
+                        window.CharacterAttributes.setConfig(survCfg);
+                        window.CharacterAttributes.setState(window.CharacterAttributes.getDefaultState());
+                        window.CharacterAttributes.recalcCharacterStats({
+                            getEquipmentState: function () { return IE.getState().equipment; },
+                            getSkillsState: function () { return IE.getState().skills; },
+                            getItemTemplate: IE.getItemTemplate,
+                            getEnchantEntry: IE.getEnchantEntry,
+                            getStrengthLevel: function () { return IE.getSkillLevel('survival_strength'); }
+                        });
+                    }
+                    if (window.Survival && window.Survival.setCharacterCallbacks && window.CharacterAttributes) {
+                        window.Survival.setCharacterCallbacks({ getBreathActual: window.CharacterAttributes.getBreathActual });
+                    }
+                    if (window.CharacterAttributes && !window.CharacterAttributes.getCharacterName()) {
+                        initCreationUI();
+                    } else {
+                        hideCreationOverlay();
+                        updateRoleNameFromCharacter();
+                    }
                 });
+            }
+
+            var CREATION_ATTR_LABELS = { jingu: '筋骨', flexibility: '柔韧', breath: '呼吸', dexterity: '身手', focus: '专注' };
+            var creationInnate = { jingu: 10, flexibility: 10, breath: 10, dexterity: 10, focus: 10 };
+            var CREATION_ATTR_MAX = 29;
+
+            function getCreationInnateSum() {
+                return creationInnate.jingu + creationInnate.flexibility + creationInnate.breath + creationInnate.dexterity + creationInnate.focus;
+            }
+
+            /** 剩余自由点 = 100 − 总和，严格不为 0 以下（总和不允许超过 100） */
+            function getCreationFreePoints() {
+                var sum = getCreationInnateSum();
+                return Math.max(0, 100 - sum);
+            }
+
+            function updateCreationPointsDisplay() {
+                var el = document.getElementById('creation-points');
+                if (!el) return;
+                var free = getCreationFreePoints();
+                el.textContent = '剩余自由点：' + free;
+                el.classList.remove('ok');
+                if (free === 0) el.classList.add('ok');
+            }
+
+            function updateCreationConfirmButton() {
+                var btn = document.getElementById('btn-confirm-creation');
+                var nameEl = document.getElementById('creation-name');
+                if (!btn) return;
+                var nameOk = nameEl && String(nameEl.value || '').trim().length > 0;
+                btn.disabled = !nameOk;
+            }
+
+            /** 将剩余自由点随机分到仍低于 29 的五维上，直到总和为 100（测试） */
+            function randomDistributeCreationRemainingPoints() {
+                var attrIds = ['jingu', 'flexibility', 'breath', 'dexterity', 'focus'];
+                var remaining = getCreationFreePoints();
+                while (remaining > 0) {
+                    var candidates = attrIds.filter(function (id) {
+                        return creationInnate[id] < CREATION_ATTR_MAX;
+                    });
+                    if (!candidates.length) break;
+                    var pick = candidates[Math.floor(Math.random() * candidates.length)];
+                    creationInnate[pick]++;
+                    remaining--;
+                }
+            }
+
+            function initCreationUI() {
+                var CA = window.CharacterAttributes;
+                if (!CA) return;
+                var state = CA.getState();
+                creationInnate = {
+                    jingu: state.innate.jingu != null ? Math.min(CREATION_ATTR_MAX, Math.max(0, state.innate.jingu)) : 10,
+                    flexibility: state.innate.flexibility != null ? Math.min(CREATION_ATTR_MAX, Math.max(0, state.innate.flexibility)) : 10,
+                    breath: state.innate.breath != null ? Math.min(CREATION_ATTR_MAX, Math.max(0, state.innate.breath)) : 10,
+                    dexterity: state.innate.dexterity != null ? Math.min(CREATION_ATTR_MAX, Math.max(0, state.innate.dexterity)) : 10,
+                    focus: state.innate.focus != null ? Math.min(CREATION_ATTR_MAX, Math.max(0, state.innate.focus)) : 10
+                };
+                var container = document.getElementById('creation-attr-rows');
+                if (!container) return;
+                container.innerHTML = '';
+                var attrIds = ['jingu', 'flexibility', 'breath', 'dexterity', 'focus'];
+                var creationRowControls = [];
+                function refreshCreationAllRows() {
+                    var sum = getCreationInnateSum();
+                    creationRowControls.forEach(function (r) {
+                        r.valueSpan.textContent = creationInnate[r.attrId];
+                        r.btnMinus.disabled = creationInnate[r.attrId] <= 0;
+                        r.btnPlus.disabled = creationInnate[r.attrId] >= CREATION_ATTR_MAX || sum >= 100;
+                    });
+                    var ids = ['jingu', 'flexibility', 'breath', 'dexterity', 'focus'];
+                    ids.forEach(function (id) {
+                        var el = document.getElementById('status-attr-' + id);
+                        if (el) {
+                            var aq = CA.getAcquiredAttr ? CA.getAcquiredAttr(id) : 0;
+                            var total = creationInnate[id] + aq;
+                            el.textContent = aq ? creationInnate[id] + '+' + aq + '=' + total : String(total);
+                        }
+                    });
+                    updateCreationPointsDisplay();
+                    updateCreationConfirmButton();
+                }
+                attrIds.forEach(function (attrId) {
+                    var row = document.createElement('div');
+                    row.className = 'attr-row';
+                    var label = document.createElement('span');
+                    label.className = 'attr-label';
+                    label.textContent = CREATION_ATTR_LABELS[attrId];
+                    var controls = document.createElement('div');
+                    controls.className = 'attr-controls';
+                    var btnMinus = document.createElement('button');
+                    btnMinus.type = 'button';
+                    btnMinus.className = 'attr-btn';
+                    btnMinus.textContent = '−';
+                    btnMinus.setAttribute('aria-label', '减少');
+                    var valueSpan = document.createElement('span');
+                    valueSpan.className = 'attr-value';
+                    valueSpan.textContent = creationInnate[attrId];
+                    var btnPlus = document.createElement('button');
+                    btnPlus.type = 'button';
+                    btnPlus.className = 'attr-btn';
+                    btnPlus.textContent = '+';
+                    btnPlus.setAttribute('aria-label', '增加');
+                    creationRowControls.push({ attrId: attrId, valueSpan: valueSpan, btnMinus: btnMinus, btnPlus: btnPlus });
+                    btnMinus.onclick = function () {
+                        if (creationInnate[attrId] > 0) {
+                            creationInnate[attrId]--;
+                            refreshCreationAllRows();
+                        }
+                    };
+                    btnPlus.onclick = function () {
+                        var s = getCreationInnateSum();
+                        if (creationInnate[attrId] < CREATION_ATTR_MAX && s < 100) {
+                            creationInnate[attrId]++;
+                            refreshCreationAllRows();
+                        }
+                    };
+                    controls.appendChild(btnMinus);
+                    controls.appendChild(valueSpan);
+                    controls.appendChild(btnPlus);
+                    row.appendChild(label);
+                    row.appendChild(controls);
+                    container.appendChild(row);
+                });
+                refreshCreationAllRows();
+                var nameEl = document.getElementById('creation-name');
+                if (nameEl && !String(nameEl.value || '').trim()) nameEl.value = '教练';
+                if (nameEl) nameEl.addEventListener('input', updateCreationConfirmButton);
+                updateCreationConfirmButton();
+                var btnConfirm = document.getElementById('btn-confirm-creation');
+                if (btnConfirm) btnConfirm.onclick = function () {
+                    if (btnConfirm.disabled) return;
+                    var name = (nameEl && nameEl.value) ? String(nameEl.value).trim() : '';
+                    if (!name) return;
+                    if (getCreationFreePoints() > 0) {
+                        randomDistributeCreationRemainingPoints();
+                        refreshCreationAllRows();
+                        if (window.GameLog) window.GameLog.log('剩余先天点数已随机分配到五维（测试用）。', 'system');
+                    }
+                    if (typeof IE.initNewGame === 'function') {
+                        IE.initNewGame();
+                        if (window.GameLog) window.GameLog.log('已穿戴新手套装。', 'system');
+                    }
+                    var handEl = document.querySelector('input[name="creation-hand"]:checked');
+                    var legEl = document.querySelector('input[name="creation-leg"]:checked');
+                    var genderEl = document.querySelector('input[name="creation-gender"]:checked');
+                    var gender = (genderEl && genderEl.value === 'female') ? 'female' : 'male';
+                    CA.setState({
+                        characterName: name,
+                        characterGender: gender,
+                        innate: { jingu: creationInnate.jingu, flexibility: creationInnate.flexibility, breath: creationInnate.breath, dexterity: creationInnate.dexterity, focus: creationInnate.focus },
+                        dominant_hand: (handEl && handEl.value === 'left') ? 'left' : 'right',
+                        dominant_leg: (legEl && legEl.value === 'left') ? 'left' : 'right'
+                    });
+                    if (window.Survival && window.Survival.setState) {
+                        window.Survival.setState({ gender_value: gender === 'female' ? 100 : 0 });
+                    }
+                    CA.recalcCharacterStats({
+                        getEquipmentState: function () { return IE.getState().equipment; },
+                        getSkillsState: function () { return IE.getState().skills; },
+                        getItemTemplate: IE.getItemTemplate,
+                        getEnchantEntry: IE.getEnchantEntry,
+                        getStrengthLevel: function () { return IE.getSkillLevel('survival_strength'); }
+                    });
+                    hideCreationOverlay();
+                    updateRoleNameFromCharacter();
+                    if (window.GameLog) window.GameLog.log('角色「' + name + '」创建完成。', 'system');
+                    render();
+                };
+            }
+
+            function hideCreationOverlay() {
+                var el = document.getElementById('character-creation-overlay');
+                if (el) el.classList.add('hidden');
+            }
+
+            function updateRoleNameFromCharacter() {
+                var el = document.getElementById('status-role-name');
+                if (!el) return;
+                var name = window.CharacterAttributes && window.CharacterAttributes.getCharacterName();
+                el.textContent = (name && name.length) ? name : '旅人';
+                var gEl = document.getElementById('status-gender-line');
+                if (gEl && window.CharacterAttributes && window.CharacterAttributes.getCharacterGenderLabel) {
+                    gEl.textContent = '性别 · ' + window.CharacterAttributes.getCharacterGenderLabel();
+                }
             }
 
             function render() {
                 var grid = document.getElementById('map-grid');
-                var gatherBtn = document.getElementById('gather-btn');
                 if (!grid) return;
 
                 var map = E.getMap();
@@ -637,14 +1148,16 @@
 
                 var cs = G.getCharacterState();
                 var isIdling = !!gatheringIdleTimer;
-                var gatherStopBtn = document.getElementById('gather-stop-btn');
-                if (gatherBtn) {
-                    gatherBtn.style.display = !isIdling && canGather ? 'inline-block' : 'none';
-                    gatherBtn.disabled = !canGather;
-                    gatherBtn.textContent = pointName ? '采集 · ' + pointName + '（挂机）' : '采集（挂机）';
-                }
-                if (gatherStopBtn) {
-                    gatherStopBtn.style.display = isIdling ? 'inline-block' : 'none';
+                var bubble = document.getElementById('player-action-bubble');
+                var bubbleGather = document.getElementById('player-action-gather');
+                var bubbleStop = document.getElementById('player-action-gather-stop');
+                var showBubble = canGather || isIdling;
+                if (bubble) bubble.classList.toggle('visible', !!showBubble);
+                if (showBubble && bubbleGather && bubbleStop) {
+                    bubbleGather.style.display = !isIdling ? 'inline-block' : 'none';
+                    bubbleGather.disabled = !canGather;
+                    bubbleGather.textContent = pointName ? '采集 · ' + pointName + '（挂机）' : '采集（挂机）';
+                    bubbleStop.style.display = isIdling ? 'inline-block' : 'none';
                 }
                 updateStatusPanel(cs);
                 updateQuickBelt();
@@ -818,6 +1331,23 @@
                             });
                         })(gi);
                         row.appendChild(pickBtn);
+                        if (gTpl && gTpl.equip_slot) {
+                            var equipBtn = document.createElement('button');
+                            equipBtn.type = 'button';
+                            equipBtn.className = 'btn-pickup btn-equip-from-ground';
+                            equipBtn.textContent = '直接穿上';
+                            (function (idx) {
+                                equipBtn.addEventListener('click', function () {
+                                    var res = IE.equipFromGround(pos.mapId, pos.x, pos.y, idx);
+                                    if (res.success) showMsg('已穿上', 'success');
+                                    else showMsg(res.message || '穿上失败', 'warn');
+                                    updateBackpackPanel();
+                                    updateQuickBelt();
+                                    render();
+                                });
+                            })(gi);
+                            row.appendChild(equipBtn);
+                        }
                         groundList.appendChild(row);
                     }
                 }
@@ -884,10 +1414,87 @@
                 if (thirst > 0) return '渴了';
                 return '缺水';
             }
+            function updateLimbBlock() {
+                var container = document.getElementById('limb-rows');
+                if (!container || !BODY_PART_IDS || !BODY_PART_LABELS) return;
+                container.innerHTML = '';
+                for (var i = 0; i < BODY_PART_IDS.length; i++) {
+                    var partId = BODY_PART_IDS[i];
+                    var label = BODY_PART_LABELS[partId] != null ? BODY_PART_LABELS[partId] : partId;
+                    var row = document.createElement('div');
+                    row.className = 'limb-row';
+                    row.innerHTML = '<div class="row"><span>' + (label.replace(/</g, '&lt;')) + '</span><span id="limb-' + partId + '">完好</span></div>';
+                    (function (pid, partLabel) {
+                        row.addEventListener('mouseenter', function () {
+                            var statusEl = document.getElementById('limb-' + pid);
+                            var statusText = statusEl ? statusEl.textContent : '—';
+                            var esc = function (s) { return String(s).replace(/</g, '&lt;').replace(/>/g, '&gt;'); };
+                            var html = '<div class="tooltip-name">' + esc(partLabel) + '</div>';
+                            html += '<div class="tooltip-desc">状态：' + esc(statusText) + '</div>';
+                            if (COMBAT_LIMB_IDS.indexOf(pid) >= 0) {
+                                var arr = limbActionTags[pid] || [];
+                                var tagStr = arr.length ? arr.map(esc).join('、') : '—';
+                                html += '<div class="tooltip-attrs">动作标签：' + tagStr + '</div>';
+                            }
+                            showItemTooltip(html, row);
+                        });
+                        row.addEventListener('mouseleave', hideItemTooltip);
+                    })(partId, label);
+                    container.appendChild(row);
+                }
+            }
+            /** 获取某肢体的动作标签列表（用于技能判定）；limbId 为 lhand/rhand/lfoot/rfoot */
+            function getLimbActionTags(limbId) {
+                if (!limbActionTags[limbId]) return [];
+                return limbActionTags[limbId].slice();
+            }
+            /** 设置某肢体的动作标签（覆盖）；可被装备/buff 等调用以修改 */
+            function setLimbActionTags(limbId, tags) {
+                if (COMBAT_LIMB_IDS.indexOf(limbId) < 0) return;
+                limbActionTags[limbId] = Array.isArray(tags) ? tags.slice() : [];
+            }
+            /** 为某肢体增加一个动作标签（若已存在则不重复添加） */
+            function addLimbActionTag(limbId, tag) {
+                if (COMBAT_LIMB_IDS.indexOf(limbId) < 0 || !tag) return;
+                var arr = limbActionTags[limbId];
+                if (!arr) limbActionTags[limbId] = [];
+                if (limbActionTags[limbId].indexOf(tag) < 0) limbActionTags[limbId].push(tag);
+            }
+            /** 从某肢体移除一个动作标签 */
+            function removeLimbActionTag(limbId, tag) {
+                if (COMBAT_LIMB_IDS.indexOf(limbId) < 0 || !limbActionTags[limbId]) return;
+                var i = limbActionTags[limbId].indexOf(tag);
+                if (i >= 0) limbActionTags[limbId].splice(i, 1);
+            }
+            /** 判定某肢体是否具备指定动作标签（技能释放前可用） */
+            function hasLimbActionTag(limbId, tag) {
+                return limbActionTags[limbId] && limbActionTags[limbId].indexOf(tag) >= 0;
+            }
+            window.getLimbActionTags = getLimbActionTags;
+            window.setLimbActionTags = setLimbActionTags;
+            window.addLimbActionTag = addLimbActionTag;
+            window.removeLimbActionTag = removeLimbActionTag;
+            window.hasLimbActionTag = hasLimbActionTag;
+            window.ARM_ACTION_TAGS = ARM_ACTION_TAGS;
+            window.FOOT_ACTION_TAGS = FOOT_ACTION_TAGS;
+            window.COMBAT_LIMB_IDS = COMBAT_LIMB_IDS;
             function updateStatusPanel(gatherState) {
+                updateLimbBlock();
+                updateRoleNameFromCharacter();
+                var CA = window.CharacterAttributes;
+                if (CA && typeof CA.getEffectiveAttr === 'function') {
+                    var attrIds = ['jingu', 'flexibility', 'breath', 'dexterity', 'focus'];
+                    attrIds.forEach(function (id) {
+                        var el = document.getElementById('status-attr-' + id);
+                        if (!el) return;
+                        var inn = CA.getInnateAttr ? CA.getInnateAttr(id) : 0;
+                        var acq = CA.getAcquiredAttr ? CA.getAcquiredAttr(id) : 0;
+                        var eff = CA.getEffectiveAttr(id);
+                        if (acq > 0) el.textContent = inn + '+' + acq + '=' + eff;
+                        else el.textContent = String(eff);
+                    });
+                }
                 var Surv = window.Survival;
-                var lifeEl = document.getElementById('status-life');
-                var dexEl = document.getElementById('status-dex');
                 var satietyText = document.getElementById('status-satiety-text');
                 var satietyBar = document.getElementById('status-satiety-bar');
                 var thirstText = document.getElementById('status-thirst-text');
@@ -897,14 +1504,10 @@
                 var energyText = document.getElementById('status-energy-text');
                 var energyBar = document.getElementById('status-energy-bar');
                 var weightEl = document.getElementById('status-weight');
-                if (!lifeEl) return;
+                if (!satietyText || !weightEl) return;
 
                 if (Surv && typeof Surv.getState === 'function') {
                     var s = Surv.getState();
-                    if (s.isDead) { lifeEl.textContent = '死亡'; lifeEl.className = 'value danger'; }
-                    else if (s.isComa) { lifeEl.textContent = '昏迷'; lifeEl.className = 'value warn'; }
-                    else { lifeEl.textContent = '健康'; lifeEl.className = 'value ok'; }
-
                     var zone = Surv.getSatietyZone ? Surv.getSatietyZone() : 'normal';
                     satietyText.textContent = getSatietyLabel(zone);
                     satietyText.className = zone === 'normal' ? 'value ok' : (zone === 'starvation' || zone === 'severe' ? 'value danger' : 'value warn');
@@ -928,10 +1531,13 @@
 
                     weightEl.textContent = s.weight_kg + ' kg';
                     var carryEl = document.getElementById('status-carry');
-                    if (carryEl) carryEl.textContent = '—';
+                    if (carryEl) {
+                        if (window.CharacterAttributes && typeof window.CharacterAttributes.getCarryCapacity === 'function')
+                            carryEl.textContent = window.CharacterAttributes.getCarryCapacity().toFixed(1) + ' kg';
+                        else
+                            carryEl.textContent = '—';
+                    }
                 } else {
-                    lifeEl.textContent = '健康';
-                    lifeEl.className = 'value ok';
                     satietyText.textContent = '—';
                     satietyBar.style.width = '100%';
                     thirstText.textContent = '—';
@@ -949,7 +1555,6 @@
                     var carryEl = document.getElementById('status-carry');
                     if (carryEl) carryEl.textContent = '—';
                 }
-                dexEl.textContent = '轻快';
             }
 
             function stopGatheringIdle() {
@@ -1018,12 +1623,10 @@
                 }
             });
 
-            if (document.getElementById('gather-btn')) {
-                document.getElementById('gather-btn').addEventListener('click', onGatherClick);
-            }
-            if (document.getElementById('gather-stop-btn')) {
-                document.getElementById('gather-stop-btn').addEventListener('click', onGatherStopClick);
-            }
+            var bubbleGatherBtn = document.getElementById('player-action-gather');
+            var bubbleStopBtn = document.getElementById('player-action-gather-stop');
+            if (bubbleGatherBtn) bubbleGatherBtn.addEventListener('click', onGatherClick);
+            if (bubbleStopBtn) bubbleStopBtn.addEventListener('click', onGatherStopClick);
 
             var backpackPanelOpen = false;
             function openBackpackPanel() {

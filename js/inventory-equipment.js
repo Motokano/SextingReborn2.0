@@ -6,13 +6,13 @@
 (function (global) {
     'use strict';
 
-    /** 装备槽位 ID（呼吸法、轻功为技能而非装备，不占装备槽） */
+    /** 装备槽位 ID（呼吸法、轻功、招架为技能而非装备，不占装备槽；招架在肢体技能栏配置；饰品分五槽） */
     var EQUIP_SLOT_IDS = [
         'head', 'clothing', 'vest', 'backpack',
         'weapon_left', 'weapon_right',
         'glove_left', 'glove_right',
         'shoe_left', 'shoe_right',
-        'parry_left', 'parry_right', 'accessory'
+        'ring_left', 'ring_right', 'earring_left', 'earring_right', 'necklace'
     ];
 
     /** 品质六档：粗糙→普通→精良→稀有→史诗→传说，0～5 */
@@ -51,6 +51,12 @@
             var slot = EQUIP_SLOT_IDS[i];
             if (state.equipment[slot] === undefined) state.equipment[slot] = null;
         }
+    }
+
+    /** 根据词条 ID 返回词条配置（供属性重算等使用） */
+    function getEnchantEntry(encId) {
+        if (!encId) return null;
+        return enchantTable[encId] || null;
     }
 
     /**
@@ -276,6 +282,15 @@
         if (enc && enc.length > maxEnchants) return { success: false, message: '词条数量超过上限' };
 
         state.equipment[slotId] = copyItemInstance(instance);
+        if (typeof global !== 'undefined' && global.CharacterAttributes && typeof global.CharacterAttributes.recalcCharacterStats === 'function') {
+            global.CharacterAttributes.recalcCharacterStats({
+                getEquipmentState: function () { return state.equipment; },
+                getSkillsState: function () { return state.skills; },
+                getItemTemplate: getItemTemplate,
+                getEnchantEntry: getEnchantEntry,
+                getStrengthLevel: function () { return getSkillLevel('survival_strength'); }
+            });
+        }
         return { success: true };
     }
 
@@ -325,6 +340,15 @@
             state.inventory_pocket = [];
         }
 
+        if (typeof global !== 'undefined' && global.CharacterAttributes && typeof global.CharacterAttributes.recalcCharacterStats === 'function') {
+            global.CharacterAttributes.recalcCharacterStats({
+                getEquipmentState: function () { return state.equipment; },
+                getSkillsState: function () { return state.skills; },
+                getItemTemplate: getItemTemplate,
+                getEnchantEntry: getEnchantEntry,
+                getStrengthLevel: function () { return getSkillLevel('survival_strength'); }
+            });
+        }
         return current;
     }
 
@@ -388,6 +412,50 @@
         return { success: false, placed: false, message: '背包已满' };
     }
 
+    /**
+     * 从地面直接穿上装备：若该槽位已有装备则先脱下，脱下装备优先进空物品栏，放不下则掉落在脚下
+     * @param {string} mapId
+     * @param {number} x
+     * @param {number} y
+     * @param {number} index - 地面物品列表中的索引
+     * @returns {{ success: boolean, message?: string }}
+     */
+    function equipFromGround(mapId, x, y, index) {
+        var key = getGroundItemKey(mapId, x, y);
+        var arr = state.ground_items[key];
+        if (!arr || index < 0 || index >= arr.length) return { success: false, message: '该位置无物品' };
+        var item = removeItemFromGround(mapId, x, y, index);
+        if (!item || !item.item_id) {
+            if (item) addItemToGround(mapId, x, y, item);
+            return { success: false, message: '拾取失败' };
+        }
+        var tpl = getItemTemplate(item.item_id);
+        if (!tpl || !tpl.equip_slot) {
+            addItemToGround(mapId, x, y, item);
+            return { success: false, message: '不是装备' };
+        }
+        var slotId = tpl.equip_slot;
+        if (EQUIP_SLOT_IDS.indexOf(slotId) < 0) {
+            addItemToGround(mapId, x, y, item);
+            return { success: false, message: '无效槽位' };
+        }
+        var optGround = { mapId: mapId, x: x, y: y };
+        var current = state.equipment[slotId];
+        if (current) {
+            var unequipped = unequip(slotId, optGround);
+            if (unequipped) {
+                var placed = putItemIntoDefaultContainer(unequipped);
+                if (!placed.placed) addItemToGround(mapId, x, y, unequipped);
+            }
+        }
+        var result = equip(slotId, item);
+        if (!result.success) {
+            addItemToGround(mapId, x, y, item);
+            return result;
+        }
+        return { success: true };
+    }
+
     /** 将容器内物品尝试移入背包，放不下的若提供 optGroundPos 则掉落到该格子 */
     function migrateContainerToBackpack(fromArr, optGroundPos) {
         if (!fromArr || !fromArr.length) return;
@@ -437,6 +505,86 @@
         state.bound_vehicle_id = null;
     }
 
+    /**
+     * 新手默认穿戴（与 data/default_equipment.json 一致，不含帽子）。
+     * initNewGame 始终以此为底，再被 default_equipment 配置覆盖，避免未 setConfig 或配置为空时不发装。
+     */
+    var BUILTIN_NEWGAME_EQUIPMENT = {
+        clothing: 'eq_clothing_commute',
+        vest: 'eq_vest_hoodie',
+        shoe_left: 'eq_shoe_left_sport',
+        shoe_right: 'eq_shoe_right_sport'
+    };
+
+    /**
+     * 新手装备的内置模板。当 equipment.json 未加载（如 file://）时，getItemTemplate 仍能返回这些条目，避免显示「空」或裸 id。
+     */
+    var BUILTIN_EQUIPMENT_TEMPLATES = {
+        eq_clothing_commute: {
+            id: 'eq_clothing_commute',
+            quality_tier: 0,
+            name_0: '灰扑扑的外套',
+            name_1: '通勤外套',
+            name_2: '通勤套服',
+            desc_0: '一件能穿的外套，兜里能塞点东西，好像能挡一点伤。',
+            desc_1: '日常通勤用的套服，两格口袋；对劈砍、钝击有一定防护。',
+            desc_2: '通勤套服，劈砍抗性 5%、钝击抗性 10%，提供两格口袋。',
+            display_skill_id: 'survival_language',
+            equip_slot: 'clothing',
+            enchant_slots: 6,
+            weight_kg: 0.5,
+            pocket_slots: 2,
+            damage_reduce_slash_pct: 0.05,
+            damage_reduce_pierce_pct: 0,
+            damage_reduce_blunt_pct: 0.10
+        },
+        eq_vest_hoodie: {
+            id: 'eq_vest_hoodie',
+            quality_tier: 0,
+            name_0: '带帽的厚衫',
+            name_1: '连帽衫',
+            name_2: '连帽衫',
+            desc_0: '一件带帽子的厚衣服，里头能装点小东西。',
+            desc_1: '连帽衫，胸前有两格收纳，当背心用。',
+            desc_2: '连帽衫，提供两格背心栏位。',
+            display_skill_id: 'survival_language',
+            equip_slot: 'vest',
+            enchant_slots: 6,
+            weight_kg: 0.3,
+            vest_slots: 2
+        },
+        eq_shoe_left_sport: {
+            id: 'eq_shoe_left_sport',
+            quality_tier: 0,
+            name_0: '左脚运动鞋',
+            name_1: '运动鞋',
+            name_2: '运动鞋',
+            desc_0: '左脚穿的运动鞋，走路跑步都行。',
+            desc_1: '左脚的运动鞋，脚上出招时系数 1.0。',
+            desc_2: '左脚运动鞋，脚部战斗技能系数 1.0。',
+            display_skill_id: 'survival_language',
+            equip_slot: 'shoe_left',
+            enchant_slots: 6,
+            weight_kg: 0.25,
+            skill_coef: 1.0
+        },
+        eq_shoe_right_sport: {
+            id: 'eq_shoe_right_sport',
+            quality_tier: 0,
+            name_0: '右脚运动鞋',
+            name_1: '运动鞋',
+            name_2: '运动鞋',
+            desc_0: '右脚穿的运动鞋，走路跑步都行。',
+            desc_1: '右脚的运动鞋，脚上出招时系数 1.0。',
+            desc_2: '右脚运动鞋，脚部战斗技能系数 1.0。',
+            display_skill_id: 'survival_language',
+            equip_slot: 'shoe_right',
+            enchant_slots: 6,
+            weight_kg: 0.25,
+            skill_coef: 1.0
+        }
+    };
+
     /** 新游戏初始化：四类物品栏为空，仅根据 default_equipment 穿戴；地面物品清空 */
     function initNewGame() {
         state.inventory_pocket = [];
@@ -451,20 +599,37 @@
             slot = EQUIP_SLOT_IDS[i];
             state.equipment[slot] = null;
         }
-        var def = defaultEquipmentConfig;
-        for (var key in def) {
-            if (def.hasOwnProperty(key) && key !== '_comment' && EQUIP_SLOT_IDS.indexOf(key) >= 0) {
-                var itemId = def[key];
-                if (itemId) state.equipment[key] = { item_id: itemId, enchants: [] };
-            }
+        var merged = {};
+        var k;
+        for (k in BUILTIN_NEWGAME_EQUIPMENT) {
+            if (BUILTIN_NEWGAME_EQUIPMENT.hasOwnProperty(k)) merged[k] = BUILTIN_NEWGAME_EQUIPMENT[k];
+        }
+        var def = defaultEquipmentConfig || {};
+        for (k in def) {
+            if (!def.hasOwnProperty(k) || k === '_comment' || !def[k]) continue;
+            if (EQUIP_SLOT_IDS.indexOf(k) >= 0) merged[k] = def[k];
+        }
+        for (var key in merged) {
+            if (!merged.hasOwnProperty(key) || EQUIP_SLOT_IDS.indexOf(key) < 0) continue;
+            var itemId = merged[key];
+            if (itemId) state.equipment[key] = { item_id: String(itemId), enchants: [] };
         }
     }
 
+    /** 创建角色完成或需补发新手装时调用：等价于再执行一轮 initNewGame（仍清空口袋等，仅适合新档/创角） */
+    function applyNewGameEquipment() {
+        initNewGame();
+    }
+
     function setConfig(cfg) {
-        if (cfg.equipment) equipmentTable = cfg.equipment;
+        equipmentTable = (cfg.equipment && typeof cfg.equipment === 'object')
+            ? Object.assign({}, cfg.equipment, BUILTIN_EQUIPMENT_TEMPLATES)
+            : Object.assign({}, BUILTIN_EQUIPMENT_TEMPLATES);
         if (cfg.items) itemsTable = cfg.items;
         if (cfg.enchant) enchantTable = cfg.enchant;
-        if (cfg.default_equipment) defaultEquipmentConfig = cfg.default_equipment;
+        if (cfg.default_equipment && typeof cfg.default_equipment === 'object') {
+            defaultEquipmentConfig = cfg.default_equipment;
+        }
         if (cfg.item_display_tier_threshold_1 !== undefined) displayTierThreshold1 = cfg.item_display_tier_threshold_1;
         if (cfg.item_display_tier_threshold_2 !== undefined) displayTierThreshold2 = cfg.item_display_tier_threshold_2;
     }
@@ -550,9 +715,12 @@
         removeItemFromGround: removeItemFromGround,
         dropItemToGround: dropItemToGround,
         pickUpFromGround: pickUpFromGround,
+        equipFromGround: equipFromGround,
         clearAllOnDeath: clearAllOnDeath,
         initNewGame: initNewGame,
+        applyNewGameEquipment: applyNewGameEquipment,
         getSkillLevel: getSkillLevel,
-        getCharacterForDisplay: getCharacterForDisplay
+        getCharacterForDisplay: getCharacterForDisplay,
+        getEnchantEntry: getEnchantEntry
     };
 })(typeof window !== 'undefined' ? window : this);

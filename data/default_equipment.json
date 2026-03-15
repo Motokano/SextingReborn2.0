@@ -1,5 +1,5 @@
 {
-  "_comment": "新游戏默认装备（新手套装）。仅用于新游戏初始化：创建角色时按此表写入 character.equipment 各槽位实例 { item_id, enchants: [] }；空槽不写或写 null。死亡后全部装备消失，不得据此表重新发放装备——死亡复活后装备栏为空。",
+  "_comment": "新游戏默认装备（新手套装，不含帽子）。仅用于新游戏初始化；创建角色完成入场时也会按此表再穿一遍。死亡后不得据此表重发。",
   "clothing": "eq_clothing_commute",
   "vest": "eq_vest_hoodie",
   "shoe_left": "eq_shoe_left_sport",

@@ -82,6 +82,38 @@
   "tick_cost_transfer_to_vehicle": 1,
   "backpack_weight_factor": 0.7,
   "base_carry_weight_kg": 25,
+  "jingu_carry_weight_pct_per_point": 0.0005,
+  "strength_carry_weight_pct_per_level": 0.01,
+  "move_energy_cost_base": 1,
+  "move_energy_overweight_k": 20,
+
+  "weapon_innate_jingu_bonus_pct_per_point": 0.05,
+  "weapon_req_innate_jingu_default": 20,
+  "breath_diqi_cap_pct_per_point": 0.01,
+  "dexterity_speed_pct_per_point": 0.005,
+  "base_speed_no_qinggong": 1,
+
+  "fist_power_cap": 650,
+  "fist_jingu_scale": 450,
+  "base_defense_D_factor": 3,
+  "dominant_limb_damage_mult": 1.1,
+  "non_dominant_limb_damage_mult": 0.9,
+
+  "hit_base_at_equal_speed": 0.825,
+  "hit_base_max": 0.95,
+  "hit_base_min": 0.05,
+  "hit_final_cap": 0.99,
+  "hit_curve_L": 2.0,
+  "hit_epsilon": 1e-6,
+
+  "parry_flexibility_mult_per_point": 0.005,
+  "parry_chance_cap": 0.75,
+  "parry_damage_reduce_cap": 0.5,
+
+  "study_tick_energy_cost": 1,
+  "focus_baseline": 10,
+  "study_potential_per_energy_base": 200,
+  "focus_potential_per_energy_pct_per_point": 0.05,
 
   "item_display_tier_threshold_1": null,
   "item_display_tier_threshold_2": null
