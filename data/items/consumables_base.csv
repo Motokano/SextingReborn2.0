@@ -12,9 +12,9 @@ supply_bandage_cloth,布制绷带,布绷带,干净布条缠成的绷带，可做
 supply_torch_bamboo,竹火把,竹火把,竹杆缠布浸油制成的火把，点燃后可照明一段时间，遇风易灭。,supply,torch,0.5,5,consumable;tool;craft,craft,craft,none,life_good,low,0,0,0
 supply_rope_hemp_short,短麻绳,短麻绳,一截结实的麻绳，可捆绑、攀援或与机关配合使用。,supply,rope,0.3,10,tool;craft;consumable,craft,craft,none,material,low,0,0,0
 supply_flint_fire,火石,火石,打火用的火石与铁片，能反复使用，在干燥处较易引火。,supply,fire_start,0.1,3,tool;craft;consumable,craft;buy,craft,none,life_good,low,0,0,0
-wild_fruit_red,红野果,火莓,灌木丛里摘的小红果，酸里带涩，生吃能垫垫肚子，也有人拿来煮酱或泡酒。,food,berry,0.05,10,food;consumable;cook,gathering,cook,fast,life_good,mid,0,6.0,0
-wild_fruit_purple,紫野果,紫苏果,熟透的紫黑色小果，甜味重些，放不久，适合当场吃或很快用掉。,food,berry,0.05,10,food;consumable;cook,gathering,cook,fast,life_good,mid,0,8.0,1.0
-wild_fruit_yellow,黄野果,黄肚柑,偏黄的小野果，口感略绵，能充饥，晒干或煮过更好保存。,food,berry,0.06,10,food;consumable;cook,gathering,cook,slow,life_good,low,0,10.0,0
-herb_green,青嫩叶,青草尖,随手掐的嫩草叶，嚼着有点草腥，能稍微解渴，常被路人当零嘴或塞进干粮里。,food,herb_raw,0.02,10,food;consumable,gathering,,fast,life_good,low,0,2.0,6.0
-herb_bitter,苦尖叶,涩堇草,叶子带苦味，有人嚼了提神，也有人煮水当凉茶，用量多了会拉肚子。,food,herb_raw,0.02,10,food;consumable,gathering,cook,fast,material,mid,0,0,8.0
-herb_sweet,甜根叶,甘花茎,叶柄和茎带一点甜味，嚼一嚼能压饿，乡下常当小孩的零嘴。,food,herb_raw,0.03,10,food;consumable,gathering,,fast,life_good,low,0,5.0,4.0
+wild_fruit_red,红野果,火莓,灌木丛里摘的小红果，酸里带涩，生吃能垫垫肚子，也有人拿来煮酱或泡酒。,food,berry,0.05,10,food;consumable;cook,gathering,cook,fast,life_good,mid,0,10.0,0
+wild_fruit_purple,紫野果,紫苏果,熟透的紫黑色小果，甜味重些，放不久，适合当场吃或很快用掉。,food,berry,0.05,10,food;consumable;cook,gathering,cook,fast,life_good,mid,0,16.0,0
+wild_fruit_yellow,黄野果,黄肚柑,偏黄的小野果，口感略绵，能充饥，晒干或煮过更好保存。,food,berry,0.06,10,food;consumable;cook,gathering,cook,slow,life_good,low,0,8.0,4.0
+herb_green,青嫩叶,青草尖,随手掐的嫩草叶，嚼着有点草腥，能稍微解渴，常被当零嘴或塞进干粮里。,food,herb_raw,0.02,10,food;consumable,gathering,,fast,life_good,low,0,0,18.0
+herb_bitter,苦尖叶,涩堇草,叶子带苦味，有人嚼了提神，也有人煮水当凉茶，用量多了会拉肚子。,food,herb_raw,0.02,10,food;consumable,gathering,cook,fast,material,mid,0,1.0,13.0
+herb_sweet,甜根叶,甘花茎,叶柄和茎带一点甜味，嚼一嚼能压饿，乡下常当小孩的零食。,food,herb_raw,0.03,10,food;consumable,gathering,,fast,life_good,low,0,5.0,8.0
