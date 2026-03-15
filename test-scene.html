@@ -27,8 +27,8 @@
         #map-container {
             overflow: hidden;
             position: relative;
-            width: 744px;
-            height: 456px;
+            width: 1042px;
+            height: 638px;
             background: #26211d;
             border: 6px solid #4d3f35;
             border-radius: 4px;
@@ -37,14 +37,14 @@
             position: absolute;
             left: 0;
             top: 0;
-            width: 1152px;
-            height: 1152px;
+            width: 1616px;
+            height: 1616px;
             transition: transform 0.15s ease-out;
         }
         .tile {
             position: absolute;
-            width: 70px;
-            height: 70px;
+            width: 98px;
+            height: 98px;
             border-radius: 4px;
             border: 1px solid rgba(255,255,255,0.08);
             background: #312a24;
@@ -82,25 +82,45 @@
         #player-sprite {
             position: absolute;
             z-index: 20;
-            width: 72px;
-            height: 72px;
-            left: 336px;
-            top: 192px;
+            width: 101px;
+            height: 101px;
+            left: 471px;
+            top: 269px;
             display: flex;
             align-items: center;
             justify-content: center;
             pointer-events: none;
         }
         #player-sprite .avatar {
-            width: 44px;
-            height: 44px;
-            background: #5b1c03;
-            border: 2px solid rgba(251,191,36,0.5);
-            border-radius: 8px;
+            width: 62px;
+            height: 62px;
+            background: transparent;
+            border: none;
+            border-radius: 0;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 20px;
+            font-size: 28px;
+            position: relative;
+            overflow: hidden;
+        }
+        #player-sprite .avatar .avatar-img {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 0;
+            display: none;
+        }
+        #player-sprite .avatar.avatar-has-image .avatar-img {
+            display: block;
+        }
+        #player-sprite .avatar.avatar-has-image .avatar-fallback {
+            display: none;
+        }
+        #player-sprite .avatar .avatar-fallback {
+            user-select: none;
         }
         .tile.gathering {
             border-color: rgba(120,180,80,0.45);
@@ -125,32 +145,6 @@
         }
         .tile.ground-items.adjacent { background: #3d3228; }
         .tile.ground-items.player { background: #2d241f; border-color: rgba(212, 163, 115, 0.6); }
-        #footer {
-            min-height: 48px;
-            background: #1c1815;
-            border-top: 1px solid #3d2d24;
-            display: flex;
-            flex-wrap: wrap;
-            align-items: center;
-            justify-content: center;
-            gap: 12px;
-            padding: 8px 16px;
-            font-size: 13px;
-            color: #78716c;
-        }
-        #footer .gather-btn {
-            padding: 6px 14px;
-            background: #3d332c;
-            border: 1px solid #d4a373;
-            border-radius: 4px;
-            color: #e8e6e3;
-            cursor: pointer;
-            font-size: 13px;
-        }
-        #footer .gather-btn:hover { background: #4d3f35; }
-        #footer .gather-btn:disabled { opacity: 0.5; cursor: not-allowed; }
-        #footer .state { color: #a8a29e; }
-        #footer .msg { color: #fbbf24; }
         /* 左侧状态面板 - 与 02-regions 2.5 一致 */
         #map-wrap { position: relative; }
         #hud-layer { position: absolute; inset: 0; pointer-events: none; z-index: 30; }
@@ -224,6 +218,65 @@
         #item-tooltip .tooltip-name { font-size: 14px; font-weight: bold; color: #fbbf24; margin-bottom: 8px; padding-bottom: 6px; border-bottom: 1px solid #4d3f35; }
         #item-tooltip .tooltip-desc { color: #a8a29e; margin-bottom: 8px; white-space: pre-wrap; word-break: break-word; }
         #item-tooltip .tooltip-attrs { color: #78716c; font-size: 11px; white-space: pre-line; }
+        /* 游戏实时日志：显示在游戏正下方 */
+        #game-log-panel {
+            flex: 0 0 auto;
+            height: 100px;
+            min-height: 80px;
+            max-height: 160px;
+            background: #1a1614;
+            border-top: 1px solid #3d2d24;
+            border-bottom: 1px solid #2d221c;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        #game-log-panel .game-log-header {
+            flex: 0 0 auto;
+            padding: 4px 12px 6px;
+            font-size: 11px;
+            color: #78716c;
+            border-bottom: 1px solid #2d221c;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+        }
+        #game-log-panel .game-log-header .gather-btn {
+            padding: 4px 10px;
+            background: #3d332c;
+            border: 1px solid #d4a373;
+            border-radius: 4px;
+            color: #e8e6e3;
+            cursor: pointer;
+            font-size: 12px;
+        }
+        #game-log-panel .game-log-header .gather-btn:hover { background: #4d3f35; }
+        #game-log-panel .game-log-header .gather-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        #game-log-panel .game-log-lines {
+            flex: 1;
+            overflow-y: auto;
+            padding: 6px 12px 8px;
+            font-size: 12px;
+            line-height: 1.5;
+            color: #a8a29e;
+        }
+        #game-log-panel .game-log-line {
+            margin-bottom: 2px;
+            word-break: break-word;
+        }
+        #game-log-panel .log-time {
+            color: #57534e;
+            margin-right: 6px;
+        }
+        #game-log-panel .log-info { color: #a8a29e; }
+        #game-log-panel .log-success { color: #86efac; }
+        #game-log-panel .log-warn { color: #fcd34d; }
+        #game-log-panel .log-combat { color: #fca5a5; }
+        #game-log-panel .log-damage { color: #f87171; }
+        #game-log-panel .log-system { color: #94a3b8; }
+        #game-log-panel .game-log-lines { cursor: grab; user-select: none; }
+        #game-log-panel .game-log-lines.log-dragging { cursor: grabbing; }
     </style>
 </head>
 <body>
@@ -233,7 +286,10 @@
         <div id="map-container">
             <div id="map-grid"></div>
             <div id="player-sprite">
-                <div class="avatar">👤</div>
+                <div class="avatar" id="player-avatar">
+                    <img id="player-avatar-img" class="avatar-img" src="" alt="">
+                    <span class="avatar-fallback">👤</span>
+                </div>
             </div>
         </div>
         <!-- 左侧人物状态区：与 demo / 02-regions 2.5 一致 -->
@@ -320,15 +376,20 @@
         </div>
     </div>
 
-    <div id="footer">
-        <span id="footer-text">基地 · 方向键或点击相邻格子移动</span>
-        <span id="footer-state" class="state"></span>
-        <button type="button" id="gather-btn" class="gather-btn" style="display:none;">采集（挂机）</button>
-        <button type="button" id="gather-stop-btn" class="gather-btn" style="display:none;">停止采集</button>
-        <span id="footer-msg" class="msg"></span>
+    <div id="game-log-panel">
+        <div class="game-log-header">
+            <span>游戏日志</span>
+            <span class="game-log-actions">
+                <button type="button" id="gather-btn" class="gather-btn" style="display:none;">采集（挂机）</button>
+                <button type="button" id="gather-stop-btn" class="gather-btn" style="display:none;">停止采集</button>
+            </span>
+        </div>
+        <div id="game-log-lines" class="game-log-lines"></div>
     </div>
 
     <script src="js/game-engine.js"></script>
+    <script src="js/entity-appearance.js"></script>
+    <script src="js/game-log.js"></script>
     <script src="js/survival.js"></script>
     <script src="js/inventory-equipment.js"></script>
     <script src="js/gathering.js"></script>
@@ -341,21 +402,77 @@
             var CENTER_OFFSET_X = E.CENTER_OFFSET_X;
             var CENTER_OFFSET_Y = E.CENTER_OFFSET_Y;
 
-            var lastMsg = '';
-            var msgTimeout = null;
             var IDLE_TICK_MS = 3000;
             var gatheringIdleTimer = null;
             var gatheringIdleAt = null;
 
-            function showMsg(text) {
-                lastMsg = text;
-                var el = document.getElementById('footer-msg');
-                if (el) el.textContent = text;
-                if (msgTimeout) clearTimeout(msgTimeout);
-                msgTimeout = setTimeout(function () {
-                    if (document.getElementById('footer-msg').textContent === lastMsg)
-                        document.getElementById('footer-msg').textContent = '';
-                }, 3000);
+            function showMsg(text, logType) {
+                if (window.GameLog && text) window.GameLog.log(text, logType || 'info');
+            }
+
+            var playerSpriteUrls = { down: '', up: '', left: '', right: '' };
+            var currentFacing = 'down';
+
+            function updatePlayerAvatarImage() {
+                var wrap = document.getElementById('player-avatar');
+                var img = document.getElementById('player-avatar-img');
+                if (!wrap || !img) return;
+                var url = playerSpriteUrls[currentFacing] || '';
+                if (!url) {
+                    img.src = '';
+                    img.removeAttribute('src');
+                    wrap.classList.remove('avatar-has-image');
+                    return;
+                }
+                img.onload = function () {
+                    wrap.classList.add('avatar-has-image');
+                };
+                img.onerror = function () {
+                    wrap.classList.remove('avatar-has-image');
+                };
+                img.src = url;
+            }
+
+            function setFacingFromMove(dx, dy) {
+                if (dx > 0) currentFacing = 'right';
+                else if (dx < 0) currentFacing = 'left';
+                else if (dy > 0) currentFacing = 'down';
+                else if (dy < 0) currentFacing = 'up';
+                updatePlayerAvatarImage();
+            }
+
+            /**
+             * 设置地图上玩家头像图片（单张时四个方向共用）。
+             * @param {string} url - 图片地址，空则使用默认 👤
+             */
+            function setPlayerAvatar(url) {
+                var u = (url != null && url !== '') ? url : '';
+                playerSpriteUrls.down = playerSpriteUrls.up = playerSpriteUrls.left = playerSpriteUrls.right = u;
+                updatePlayerAvatarImage();
+                if (window.EntityAppearance) window.EntityAppearance.setEntityAppearanceSilent('player', u);
+            }
+
+            /**
+             * 设置玩家四个方向的行走图（上下左右）。
+             * @param {Object} urls - { down: string, up: string, left: string, right: string } 图片 URL，缺省的方向会保持原状
+             */
+            function setPlayerAvatarSprites(urls) {
+                if (urls && typeof urls === 'object') {
+                    if (urls.down != null) playerSpriteUrls.down = urls.down ? String(urls.down) : '';
+                    if (urls.up != null) playerSpriteUrls.up = urls.up ? String(urls.up) : '';
+                    if (urls.left != null) playerSpriteUrls.left = urls.left ? String(urls.left) : '';
+                    if (urls.right != null) playerSpriteUrls.right = urls.right ? String(urls.right) : '';
+                }
+                updatePlayerAvatarImage();
+            }
+
+            window.setPlayerAvatar = setPlayerAvatar;
+            window.setPlayerAvatarSprites = setPlayerAvatarSprites;
+
+            if (window.EntityAppearance) {
+                EntityAppearance.onAppearanceChange(function (entityId, imageUrl) {
+                    if (entityId === 'player') setPlayerAvatar(imageUrl);
+                });
             }
 
             var defaultGatheringPoints = { gathering_bush: { gathering_point_id: 'gathering_bush', display_name: '灌木丛', base_gathering_success_rate: 0.6, loot_table_id: 'loot_bush', stamina_cost: 2, tool_required: false }, gathering_grass: { gathering_point_id: 'gathering_grass', display_name: '草丛', base_gathering_success_rate: 0.6, loot_table_id: 'loot_grass', stamina_cost: 2, tool_required: false } };
@@ -455,8 +572,6 @@
 
             function render() {
                 var grid = document.getElementById('map-grid');
-                var footerText = document.getElementById('footer-text');
-                var footerState = document.getElementById('footer-state');
                 var gatherBtn = document.getElementById('gather-btn');
                 if (!grid) return;
 
@@ -491,7 +606,15 @@
                         if (isPlayer) tile.classList.add('player');
                         else if (adjacent && walkable) {
                             tile.classList.add('adjacent');
-                            tile.onclick = (function (tx, ty) { return function () { E.moveTo(tx, ty); }; })(gx, gy);
+                            tile.onclick = (function (tx, ty) {
+                                return function () {
+                                    var st = E.getState();
+                                    if (E.moveTo(tx, ty)) {
+                                        setFacingFromMove(tx - st.x, ty - st.y);
+                                        stopGatheringIdle();
+                                    }
+                                };
+                            })(gx, gy);
                         } else if (adjacent) {
                             tile.classList.add('adjacent');
                         }
@@ -512,18 +635,7 @@
                 var ty = CENTER_OFFSET_Y - st.y * CELL_PX;
                 grid.style.transform = 'translate(' + tx + 'px, ' + ty + 'px)';
 
-                if (footerText) footerText.textContent = map.name + ' ' + map.width + '×' + map.height + ' · 方向键或点击相邻格子移动';
                 var cs = G.getCharacterState();
-                var invText = '';
-                if (IE && IE.getState) {
-                    var st = IE.getState();
-                    var pocket = (st.inventory_pocket && st.inventory_pocket.length) ? st.inventory_pocket.filter(Boolean).length : 0;
-                    var vest = (st.inventory_vest && st.inventory_vest.length) ? st.inventory_vest.filter(Boolean).length : 0;
-                    var back = (st.inventory_backpack && st.inventory_backpack.length) ? st.inventory_backpack.filter(Boolean).length : 0;
-                    var pSlots = IE.getPocketSlots(), vSlots = IE.getVestSlots(), bSlots = IE.getBackpackSlots();
-                    invText = ' · 口袋 ' + pocket + '/' + pSlots + ' 背心 ' + vest + '/' + vSlots + ' 背包 ' + back + '/' + bSlots;
-                } else invText = ' · 背包 ' + cs.inventory.length + '/' + G.MAX_INVENTORY_SLOTS;
-                if (footerState) footerState.textContent = '体力 ' + cs.stamina + '/' + cs.stamina_max + invText + ' · 采集熟练度 ' + cs.proficiency_count.toLocaleString() + ' (' + cs.proficiency_percent.toFixed(2) + '%)';
                 var isIdling = !!gatheringIdleTimer;
                 var gatherStopBtn = document.getElementById('gather-stop-btn');
                 if (gatherBtn) {
@@ -627,8 +739,8 @@
                                     ev.preventDefault();
                                     var p = E.getState();
                                     var res = IE.dropItemToGround(ctype, idx, p.mapId, p.x, p.y);
-                                    if (res.success) showMsg('已丢弃到脚下');
-                                    else showMsg(res.message || '丢弃失败');
+                                    if (res.success) showMsg('已丢弃到脚下', 'info');
+                                    else showMsg(res.message || '丢弃失败', 'warn');
                                     updateBackpackPanel();
                                     updateQuickBelt();
                                     render();
@@ -655,7 +767,7 @@
                                             if (old) IE.putItemIntoDefaultContainer(old);
                                         }
                                         var result = IE.equip(slotId, taken.item);
-                                        if (result.success) showMsg('已装备'); else showMsg(result.message || '穿戴失败');
+                                        if (result.success) showMsg('已装备', 'success'); else showMsg(result.message || '穿戴失败', 'warn');
                                         updateBackpackPanel();
                                         updateQuickBelt();
                                         render();
@@ -698,8 +810,8 @@
                         (function (idx) {
                             pickBtn.addEventListener('click', function () {
                                 var res = IE.pickUpFromGround(pos.mapId, pos.x, pos.y, idx);
-                                if (res.success && res.placed) showMsg('已拾取');
-                                else showMsg(res.message || '拾取失败（背包已满）');
+                                if (res.success && res.placed) showMsg('已拾取', 'success');
+                                else showMsg(res.message || '拾取失败（背包已满）', 'warn');
                                 updateBackpackPanel();
                                 updateQuickBelt();
                                 render();
@@ -747,8 +859,8 @@
                                         var placed = IE.putItemIntoDefaultContainer(unequipped);
                                         if (!placed.placed) {
                                             IE.addItemToGround(p.mapId, p.x, p.y, unequipped);
-                                            showMsg('已脱下，物品已掉落在脚下');
-                                        } else showMsg('已脱下并放入背包');
+                                            showMsg('已脱下，物品已掉落在脚下', 'info');
+                                        } else showMsg('已脱下并放入背包', 'info');
                                     }
                                     updateBackpackPanel();
                                     updateQuickBelt();
@@ -858,8 +970,8 @@
                     return;
                 }
                 var result = G.doGather(entityId);
-                if (result.success && result.gathered) showMsg(result.message);
-                else if (!result.success) showMsg(result.message);
+                if (result.success && result.gathered) showMsg(result.message, 'success');
+                else if (!result.success) showMsg(result.message, 'warn');
                 render();
             }
 
@@ -876,7 +988,7 @@
 
             function onGatherStopClick() {
                 stopGatheringIdle();
-                showMsg('已停止采集');
+                showMsg('已停止采集', 'info');
                 render();
             }
 
@@ -900,7 +1012,10 @@
                 }
                 e.preventDefault();
                 var st = E.getState();
-                if (E.moveTo(st.x + dx, st.y + dy)) stopGatheringIdle();
+                if (E.moveTo(st.x + dx, st.y + dy)) {
+                    setFacingFromMove(dx, dy);
+                    stopGatheringIdle();
+                }
             });
 
             if (document.getElementById('gather-btn')) {
@@ -937,6 +1052,13 @@
 
             function init() {
                 loadConfig().then(function () {
+                    setPlayerAvatarSprites({
+                        down: 'image/player_down.png',
+                        up: 'image/player_up.png',
+                        left: 'image/player_left.png',
+                        right: 'image/player_right.png'
+                    });
+                    if (window.GameLog) window.GameLog.log('进入场景。', 'system');
                     render();
                 }).catch(function () { render(); });
             }

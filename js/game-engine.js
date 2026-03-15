@@ -6,9 +6,9 @@
 (function (global) {
     'use strict';
 
-    var CELL_PX = 72;
-    var VIEW_W = 744;
-    var VIEW_H = 456;
+    var CELL_PX = 101;
+    var VIEW_W = 1042;
+    var VIEW_H = 638;
     var CENTER_OFFSET_X = (VIEW_W / 2) - (CELL_PX / 2);
     var CENTER_OFFSET_Y = (VIEW_H / 2) - (CELL_PX / 2);
 
