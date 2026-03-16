@@ -1,4 +1,4 @@
-﻿## 六、人物生存属性与战斗核心
+## 六、人物生存属性与战斗核心
 
 ### 6.1 饱食（Satiety）
 
@@ -54,6 +54,7 @@
   - `satiety_mild_min`：稍微饥饿区间下界（当前约定 40.0）。
   - `satiety_moderate_min`：中等饥饿区间下界（当前约定 15.0）。
   - `satiety_starvation_ticks_to_death`：饱食度为 0.0 时连续存活 tick 数上限（当前约定 100）。
+  - **与物品表的对接（实现约定）**：食物类消耗品通过 `items/consumables_base.csv` 中的 `satiety_restore` 字段恢复饱食度。角色每次使用该物品时，将该字段数值加到当前饱食度上，并按本小节约定的上限和过量规则进行夹紧。
 
 #### 6.1.1 过量进食（>100）与体重（Weight）
 
@@ -117,6 +118,7 @@
   - `thirst_tick_decay_amount`：每次结算饮水度固定消耗值（当前约定 1.0）。
   - `thirst_normal_min`：正常区间下界（当前约定 60.0）。
   - `thirst_death_ticks`：缺水状态下连续存活 tick 数上限（当前约定 500）。
+  - **与物品表的对接（实现约定）**：饮用类或带水分的消耗品通过 `items/consumables_base.csv` 中的 `thirst_restore` 字段恢复饮水度。角色每次使用该物品时，将该字段数值加到当前饮水度上，并按本小节约定的上限和缺水规则进行夹紧。
 
 #### 6.1.3 体力（Stamina）
 
@@ -413,6 +415,7 @@
   - `nutrition_malnutrition_diqi_regen_mult`：0.5
   - `nutrition_abundant_pot_per_energy_mult`：1.3
   - `nutrition_peak_diqi_cap_pct`：0.15
+  - **与物品表的对接（实现约定）**：食物类消耗品在 `items/consumables_base.csv` 中通过 `nutrition_restore` 字段提高营养值。角色每次使用该物品时，将 `nutrition_restore` 的数值加到当前营养值 `nutrition` 上，并在 `0 ～ 100` 区间内夹紧；非食物类消耗品该字段通常填 `0`，使用时不改变营养值。营养值的自然衰减仍按本小节前文约定（每经过 `nutrition_tick_decay_interval` 个 tick，营养值固定减少 `nutrition_tick_decay_amount`），与物品恢复无冲突。
 
 #### 6.1.10 体温（Body Temperature）
 
