@@ -1,0 +1,322 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <title>交易 UI Demo</title>
+    <style>
+      body {
+        margin: 0;
+        padding: 0;
+        background: #000;
+        color: #eee;
+        font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+          sans-serif;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: flex-start;
+        min-height: 100vh;
+      }
+      header {
+        margin: 16px 0;
+      }
+      #canvas-container {
+        box-shadow: 0 0 24px rgba(0, 0, 0, 0.8);
+      }
+      canvas {
+        display: block;
+        background: #111;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1>交易 UI Demo</h1>
+      <p>此页面用于快速验证 Canvas 交易界面的布局、感受词刷新与成交确认流程。</p>
+    </header>
+    <div id="canvas-container">
+      <canvas id="tradeCanvas" width="1280" height="720"></canvas>
+    </div>
+
+    <script type="module">
+      import {
+        createTradeContext,
+      } from "./js/trade_context.js";
+      import {
+        createTradeUIState,
+      } from "./js/trade_canvas_ui.js";
+      import {
+        createDemoRenderer,
+        bindDemoRendererWithState,
+      } from "./js/trade_canvas_renderer_demo.js";
+
+      /**
+       * 简单的 valueCalculator：直接返回 baseValue。
+       *
+       * @param {import("./js/trade_context.js").TradeItem} item
+       * @returns {number}
+       */
+      function valueCalculator(item) {
+        return item.baseValue || 0;
+      }
+
+      /**
+       * Demo 版感受词计算：
+       * - 计算玩家给出/获得与商人给出/获得的总价值
+       * - 用简单区间将玩家视角盈亏映射为五档感受词
+       *
+       * @param {import("./js/trade_context.js").TradeContext} context
+       * @returns {import("./js/trade_context.js").PerceivedFeelingResult}
+       */
+      function feelingCalculator(context) {
+        let V_player_give = 0;
+        let V_player_get = 0;
+        let V_merchant_give = 0;
+        let V_merchant_get = 0;
+
+        const { pendingGivePlayer, pendingGetPlayer, pendingGiveMerchant, pendingGetMerchant } =
+          context;
+
+        for (const itemId in pendingGivePlayer) {
+          const p = pendingGivePlayer[itemId];
+          const row = findRowForItem(context.playerInventory, itemId);
+          if (!row) continue;
+          V_player_give +=
+            (context.valueCalculator(row.item, context) || 0) * p.count;
+        }
+
+        for (const itemId in pendingGetPlayer) {
+          const p = pendingGetPlayer[itemId];
+          const row =
+            findRowForItem(context.playerInventory, itemId) ||
+            findRowForItem(context.merchantInventory, itemId);
+          if (!row) continue;
+          V_player_get +=
+            (context.valueCalculator(row.item, context) || 0) * p.count;
+        }
+
+        for (const itemId in pendingGiveMerchant) {
+          const p = pendingGiveMerchant[itemId];
+          const row = findRowForItem(context.merchantInventory, itemId);
+          if (!row) continue;
+          V_merchant_give +=
+            (context.valueCalculator(row.item, context) || 0) * p.count;
+        }
+
+        for (const itemId in pendingGetMerchant) {
+          const p = pendingGetMerchant[itemId];
+          const row =
+            findRowForItem(context.merchantInventory, itemId) ||
+            findRowForItem(context.playerInventory, itemId);
+          if (!row) continue;
+          V_merchant_get +=
+            (context.valueCalculator(row.item, context) || 0) * p.count;
+        }
+
+        const playerDelta = V_player_get - V_player_give;
+        const merchantDelta = V_merchant_get - V_merchant_give;
+
+        function mapDeltaToFeeling(delta) {
+          if (delta <= -50) return "不行";
+          if (delta < 0) return "略亏";
+          if (delta === 0) return "可以";
+          if (delta < 50) return "略赚";
+          return "很赚";
+        }
+
+        return {
+          playerFeeling: mapDeltaToFeeling(playerDelta),
+          merchantFeeling: mapDeltaToFeeling(merchantDelta),
+          valueSummary: {
+            V_player_give,
+            V_player_get,
+            V_merchant_give,
+            V_merchant_get,
+          },
+        };
+      }
+
+      /**
+       * 在给定库存中查找 itemId 对应的行。
+       *
+       * @param {import("./js/trade_context.js").TradeInventoryRow[]} inventory
+       * @param {string} itemId
+       */
+      function findRowForItem(inventory, itemId) {
+        for (let i = 0; i < inventory.length; i += 1) {
+          const row = inventory[i];
+          if (row.item && row.item.itemId === itemId) {
+            return row;
+          }
+        }
+        return null;
+      }
+
+      /**
+       * Demo 版结算逻辑：
+       * - 计算玩家给出的总价值 totalSell
+       * - 若 totalSell > 1000 且 !forceCommit，则返回 needConfirm=true
+       * - 否则视为成功结算：清空所有 pending*，不改动 availableCount
+       *
+       * @param {import("./js/trade_context.js").TradeContext} context
+       * @param {{ forceCommit: boolean }} options
+       * @returns {import("./js/trade_canvas_ui.js").CommitTradeResult}
+       */
+      function tryCommitTrade(context, { forceCommit }) {
+        let totalSell = 0;
+        for (const itemId in context.pendingGivePlayer) {
+          const p = context.pendingGivePlayer[itemId];
+          const row =
+            findRowForItem(context.playerInventory, itemId) ||
+            findRowForItem(context.merchantInventory, itemId);
+          if (!row) continue;
+          totalSell +=
+            (context.valueCalculator(row.item, context) || 0) * p.count;
+        }
+
+        const THRESHOLD = 1000;
+        if (!forceCommit && totalSell > THRESHOLD) {
+          return {
+            committed: false,
+            needConfirm: true,
+            errorCode: "NEED_CONFIRM",
+          };
+        }
+
+        // 简化：成功时清空所有 pending，不修改 availableCount
+        context.pendingGivePlayer = {};
+        context.pendingGetPlayer = {};
+        context.pendingGiveMerchant = {};
+        context.pendingGetMerchant = {};
+
+        return {
+          committed: true,
+          needConfirm: false,
+        };
+      }
+
+      function initDemo() {
+        const canvas = /** @type {HTMLCanvasElement|null} */ (
+          document.getElementById("tradeCanvas")
+        );
+        if (!canvas) {
+          console.error("找不到 tradeCanvas");
+          return;
+        }
+
+        /** @type {import("./js/trade_context.js").MerchantProfile} */
+        const merchant = {
+          id: "merchant_demo",
+          name: "示例商人",
+          merchantType: "shopkeeper",
+          attitude: "neutral",
+          priceBias: 1.0,
+          preferredTags: ["food"],
+          dislikedTags: ["junk"],
+          acceptedCurrencyCodes: ["DEMOCOIN"],
+          baseFundsPool: 5000,
+          currentFundsPool: 5000,
+        };
+
+        /** @type {import("./js/trade_context.js").TradeInventoryRow[]} */
+        const playerInventory = [
+          {
+            item: {
+              itemId: "apple",
+              displayName: "苹果",
+              stackCount: 10,
+              baseValue: 20,
+              tags: ["food"],
+              isCurrency: false,
+            },
+            availableCount: 10,
+            tradeLocked: false,
+          },
+          {
+            item: {
+              itemId: "junk_scrap",
+              displayName: "废铁",
+              stackCount: 30,
+              baseValue: 5,
+              tags: ["junk"],
+              isCurrency: false,
+            },
+            availableCount: 30,
+            tradeLocked: false,
+          },
+          {
+            item: {
+              itemId: "demo_coin",
+              displayName: "示例硬币",
+              stackCount: 100,
+              baseValue: 1,
+              tags: ["currency"],
+              isCurrency: true,
+            },
+            availableCount: 100,
+            tradeLocked: false,
+          },
+        ];
+
+        /** @type {import("./js/trade_context.js").TradeInventoryRow[]} */
+        const merchantInventory = [
+          {
+            item: {
+              itemId: "bread",
+              displayName: "面包",
+              stackCount: 15,
+              baseValue: 25,
+              tags: ["food"],
+              isCurrency: false,
+            },
+            availableCount: 15,
+            tradeLocked: false,
+          },
+          {
+            item: {
+              itemId: "water_bottle",
+              displayName: "水瓶",
+              stackCount: 20,
+              baseValue: 15,
+              tags: ["water"],
+              isCurrency: false,
+            },
+            availableCount: 20,
+            tradeLocked: false,
+          },
+        ];
+
+        const context = createTradeContext(
+          "Shop",
+          "demo_location",
+          merchant,
+          playerInventory,
+          merchantInventory,
+          valueCalculator,
+          feelingCalculator
+        );
+
+        const baseRenderer = createDemoRenderer();
+        /** @type {import("./js/trade_canvas_ui.js").TradeUIState | null} */
+        let stateRef = null;
+
+        const renderer = bindDemoRendererWithState(
+          baseRenderer,
+          () => /** @type {import("./js/trade_canvas_ui.js").TradeUIState} */ (
+            stateRef
+          )
+        );
+
+        stateRef = createTradeUIState(canvas, context, {
+          renderer,
+          tryCommitTrade,
+        });
+
+        console.log("交易 UI Demo 已初始化。");
+      }
+
+      window.addEventListener("DOMContentLoaded", initDemo);
+    </script>
+  </body>
+  </html>
+
