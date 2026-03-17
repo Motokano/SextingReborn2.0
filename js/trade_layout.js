@@ -13,11 +13,14 @@
  */
 
 /**
- * 逻辑坐标系的宽高（虚拟分辨率）。
- * 所有布局以该坐标系为基准，再按实际 Canvas 尺寸等比缩放。
+ * 逻辑坐标系的宽高（虚拟分辨率，基准分辨率）。
+ *
+ * 硬约束：1280×720。
+ * 所有布局以该坐标系为基准，再按实际 Canvas 尺寸等比缩放，
+ * scale = min(viewW/1280, viewH/720)。
  */
-export const LOGICAL_WIDTH = 1920;
-export const LOGICAL_HEIGHT = 1080;
+export const LOGICAL_WIDTH = 1280;
+export const LOGICAL_HEIGHT = 720;
 
 /**
  * 一个矩形区域的基础描述。
@@ -32,23 +35,33 @@ export const LOGICAL_HEIGHT = 1080;
  * 交易界面主要布局区域的集合。
  *
  * 坐标均基于逻辑坐标系（LOGICAL_WIDTH/LOGICAL_HEIGHT）：
- * - titleBar: 顶部标题栏（包含说明文本与关闭按钮）
+ * - mask: 遮罩层（覆盖全屏）
+ * - panel: 居中面板（弹窗主体）
+ * - titleBar: 标题栏（包含说明文本与关闭按钮）
  * - titleText: 标题文案区域（左侧）
- * - closeButton: 右上角关闭按钮
- * - playerList: 左侧玩家物品列表整体区域
- * - merchantList: 右侧商人物品列表整体区域
- * - feelingBar: 底部感受行文案区域
- * - dealButton: 右下角成交按钮
+ * - closeButton: 右侧关闭按钮
+ * - tableHeader: 双列表的表头行（“玩家可交易物品 / 对方可交易物品”）
+ * - playerList: 左侧玩家物品列表区域（可独立滚动）
+ * - merchantList: 右侧商人物品列表区域（可独立滚动）
+ * - profitSep: 利润行上方分隔线区域
+ * - profitBar: 底部利润行（左侧净利润，右侧成交按钮在同一行）
+ * - profitText: 净利润文字区域
+ * - dealButton: 右侧成交按钮
  *
  * 行内按钮（-10/-1/N/+1/+10 等）由列表绘制逻辑在各自列表区域内部再细分。
  *
  * @typedef {Object} TradeLayoutBounds
+ * @property {Rect} mask
+ * @property {Rect} panel
  * @property {Rect} titleBar
  * @property {Rect} titleText
  * @property {Rect} closeButton
+ * @property {Rect} tableHeader
  * @property {Rect} playerList
  * @property {Rect} merchantList
- * @property {Rect} feelingBar
+ * @property {Rect} profitSep
+ * @property {Rect} profitBar
+ * @property {Rect} profitText
  * @property {Rect} dealButton
  */
 
@@ -66,84 +79,118 @@ export const LOGICAL_HEIGHT = 1080;
  * @returns {TradeLayoutBounds}
  */
 export function computeLogicalTradeLayoutBounds() {
-  // 统一边距
-  const marginX = 80;
-  const marginTop = 60;
-  const marginBottom = 80;
+  const mask = { x: 0, y: 0, width: LOGICAL_WIDTH, height: LOGICAL_HEIGHT };
 
-  // 垂直分配
-  const titleHeight = 100; // 顶部标题栏高度
-  const bottomHeight = 160; // 底部感受区高度
-  const centerTop = marginTop + titleHeight;
-  const centerBottom = LOGICAL_HEIGHT - marginBottom - bottomHeight;
-  const centerHeight = Math.max(0, centerBottom - centerTop);
+  // 面板尺寸：尽量贴近 1280×720 但保留外边距，营造弹窗感
+  const outerMargin = 56;
+  const panel = {
+    x: outerMargin,
+    y: outerMargin,
+    width: LOGICAL_WIDTH - outerMargin * 2,
+    height: LOGICAL_HEIGHT - outerMargin * 2,
+  };
 
-  // 水平分配：左右列表
-  const contentWidth = LOGICAL_WIDTH - marginX * 2;
-  const midGap = 40; // 左右列表之间的空隙
-  const listWidth = (contentWidth - midGap) / 2;
+  const pad = 24;
+  const titleHeight = 54;
+  const headerHeight = 34;
+  const profitHeight = 54;
+  const sepHeight = 10;
+
+  const contentX = panel.x + pad;
+  const contentW = panel.width - pad * 2;
 
   const titleBar = {
-    x: marginX,
-    y: marginTop,
-    width: contentWidth,
+    x: panel.x,
+    y: panel.y,
+    width: panel.width,
     height: titleHeight,
   };
 
-  // 标题文字区域占标题栏左侧大部分空间
-  const titleText = {
-    x: titleBar.x + 20,
-    y: titleBar.y,
-    width: titleBar.width - 200, // 预留右侧关闭按钮空间
-    height: titleBar.height,
-  };
-
-  // 关闭按钮位于右上角，保留内边距
-  const closeButtonSize = 64;
+  const closeButtonSize = 34;
   const closeButton = {
-    x: titleBar.x + titleBar.width - closeButtonSize,
-    y: titleBar.y + (titleBar.height - closeButtonSize) / 2,
+    x: titleBar.x + titleBar.width - pad - closeButtonSize,
+    y: titleBar.y + Math.floor((titleBar.height - closeButtonSize) / 2),
     width: closeButtonSize,
     height: closeButtonSize,
   };
 
+  const titleText = {
+    x: titleBar.x + pad,
+    y: titleBar.y,
+    width: closeButton.x - (titleBar.x + pad) - 8,
+    height: titleBar.height,
+  };
+
+  const tableHeader = {
+    x: contentX,
+    y: titleBar.y + titleBar.height + 10,
+    width: contentW,
+    height: headerHeight,
+  };
+
+  const midGap = 16;
+  const listWidth = Math.floor((contentW - midGap) / 2);
+  const listTop = tableHeader.y + tableHeader.height + 6;
+  const listBottom = panel.y + panel.height - pad - profitHeight - sepHeight;
+  const listHeight = Math.max(0, listBottom - listTop);
+
   const playerList = {
-    x: marginX,
-    y: centerTop,
+    x: contentX,
+    y: listTop,
     width: listWidth,
-    height: centerHeight,
+    height: listHeight,
   };
 
   const merchantList = {
-    x: marginX + listWidth + midGap,
-    y: centerTop,
+    x: contentX + listWidth + midGap,
+    y: listTop,
     width: listWidth,
-    height: centerHeight,
+    height: listHeight,
   };
 
-  const feelingBar = {
-    x: marginX,
-    y: LOGICAL_HEIGHT - marginBottom - bottomHeight,
-    width: contentWidth - 260, // 右侧预留给成交按钮
-    height: bottomHeight,
+  const profitSep = {
+    x: contentX,
+    y: panel.y + panel.height - pad - profitHeight - sepHeight,
+    width: contentW,
+    height: sepHeight,
   };
 
-  const dealButtonWidth = 220;
-  const dealButtonHeight = 96;
+  const profitBar = {
+    x: contentX,
+    y: panel.y + panel.height - pad - profitHeight,
+    width: contentW,
+    height: profitHeight,
+  };
+
+  const dealButtonWidth = 144;
+  const dealButtonHeight = 34;
+  const dealButtonRightInset = 14;
   const dealButton = {
-    x: marginX + contentWidth - dealButtonWidth,
-    y: feelingBar.y + (feelingBar.height - dealButtonHeight) / 2,
+    x: profitBar.x + profitBar.width - dealButtonRightInset - dealButtonWidth,
+    y: profitBar.y + Math.floor((profitBar.height - dealButtonHeight) / 2),
     width: dealButtonWidth,
     height: dealButtonHeight,
   };
 
+  const profitText = {
+    x: profitBar.x,
+    y: profitBar.y,
+    width: dealButton.x - profitBar.x - 12,
+    height: profitBar.height,
+  };
+
   return {
+    mask,
+    panel,
     titleBar,
     titleText,
     closeButton,
+    tableHeader,
     playerList,
     merchantList,
-    feelingBar,
+    profitSep,
+    profitBar,
+    profitText,
     dealButton,
   };
 }
@@ -172,24 +219,36 @@ export function computePhysicalTradeLayout(canvasWidth, canvasHeight) {
   const offsetX = (canvasWidth - contentWidth) / 2;
   const offsetY = (canvasHeight - contentHeight) / 2;
 
-  const scaleRect = (r) => ({
-    x: offsetX + r.x * scale,
-    y: offsetY + r.y * scale,
-    width: r.width * scale,
-    height: r.height * scale,
-  });
+  // 像素对齐：尽量用整数像素，营造像素复古风的“硬边”
+  const scaleRect = (r) => {
+    const x = offsetX + r.x * scale;
+    const y = offsetY + r.y * scale;
+    const w = r.width * scale;
+    const h = r.height * scale;
+    return {
+      x: Math.round(x),
+      y: Math.round(y),
+      width: Math.round(w),
+      height: Math.round(h),
+    };
+  };
 
   return {
     scale,
     offsetX,
     offsetY,
     bounds: {
+      mask: scaleRect(logicalBounds.mask),
+      panel: scaleRect(logicalBounds.panel),
       titleBar: scaleRect(logicalBounds.titleBar),
       titleText: scaleRect(logicalBounds.titleText),
       closeButton: scaleRect(logicalBounds.closeButton),
+      tableHeader: scaleRect(logicalBounds.tableHeader),
       playerList: scaleRect(logicalBounds.playerList),
       merchantList: scaleRect(logicalBounds.merchantList),
-      feelingBar: scaleRect(logicalBounds.feelingBar),
+      profitSep: scaleRect(logicalBounds.profitSep),
+      profitBar: scaleRect(logicalBounds.profitBar),
+      profitText: scaleRect(logicalBounds.profitText),
       dealButton: scaleRect(logicalBounds.dealButton),
     },
   };
