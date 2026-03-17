@@ -4,38 +4,55 @@
     <meta charset="utf-8" />
     <title>交易 UI Demo</title>
     <style>
+      :root {
+        color-scheme: dark;
+      }
       body {
         margin: 0;
         padding: 0;
-        background: #000;
-        color: #eee;
-        font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
-          sans-serif;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: flex-start;
-        min-height: 100vh;
-      }
-      header {
-        margin: 16px 0;
+        background: #1c1815;
+        color: #e8e6e3;
+        font-family: "Microsoft YaHei", "微软雅黑", "PingFang SC", "Noto Sans CJK SC",
+          system-ui, sans-serif;
+        overflow: hidden;
       }
       #canvas-container {
-        box-shadow: 0 0 24px rgba(0, 0, 0, 0.8);
+        width: 100vw;
+        height: 100vh;
+        position: relative;
       }
       canvas {
         display: block;
-        background: #111;
+        background: #1c1815;
+        width: 100%;
+        height: 100%;
+      }
+      #trade-step-input {
+        position: absolute;
+        display: none;
+        z-index: 10;
+        padding: 6px 10px;
+        background: #26211d;
+        border: 2px solid #d4a373;
+        border-radius: 8px;
+        color: #e8e6e3;
+        font-family: "Microsoft YaHei", "微软雅黑", "PingFang SC", "Noto Sans CJK SC",
+          system-ui, sans-serif;
+        font-size: 18px;
+        line-height: 1;
+        text-align: center;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+        outline: none;
+      }
+      #trade-step-input:focus {
+        border-color: #fbbf24;
       }
     </style>
   </head>
   <body>
-    <header>
-      <h1>交易 UI Demo</h1>
-      <p>此页面用于快速验证 Canvas 交易界面的布局、感受词刷新与成交确认流程。</p>
-    </header>
     <div id="canvas-container">
-      <canvas id="tradeCanvas" width="1280" height="720"></canvas>
+      <canvas id="tradeCanvas"></canvas>
+      <input id="trade-step-input" inputmode="numeric" autocomplete="off" spellcheck="false" />
     </div>
 
     <script type="module">
@@ -44,6 +61,7 @@
       } from "./js/trade_context.js";
       import {
         createTradeUIState,
+        refreshTradeUILayout,
       } from "./js/trade_canvas_ui.js";
       import {
         createDemoRenderer,
@@ -79,6 +97,7 @@
 
         for (const itemId in pendingGivePlayer) {
           const p = pendingGivePlayer[itemId];
+          if (!p || !p.count) continue;
           const row = findRowForItem(context.playerInventory, itemId);
           if (!row) continue;
           V_player_give +=
@@ -87,6 +106,7 @@
 
         for (const itemId in pendingGetPlayer) {
           const p = pendingGetPlayer[itemId];
+          if (!p || !p.count) continue;
           const row =
             findRowForItem(context.playerInventory, itemId) ||
             findRowForItem(context.merchantInventory, itemId);
@@ -97,6 +117,7 @@
 
         for (const itemId in pendingGiveMerchant) {
           const p = pendingGiveMerchant[itemId];
+          if (!p || !p.count) continue;
           const row = findRowForItem(context.merchantInventory, itemId);
           if (!row) continue;
           V_merchant_give +=
@@ -105,6 +126,7 @@
 
         for (const itemId in pendingGetMerchant) {
           const p = pendingGetMerchant[itemId];
+          if (!p || !p.count) continue;
           const row =
             findRowForItem(context.merchantInventory, itemId) ||
             findRowForItem(context.playerInventory, itemId);
@@ -166,6 +188,7 @@
         let totalSell = 0;
         for (const itemId in context.pendingGivePlayer) {
           const p = context.pendingGivePlayer[itemId];
+          if (!p || !p.count) continue;
           const row =
             findRowForItem(context.playerInventory, itemId) ||
             findRowForItem(context.merchantInventory, itemId);
@@ -183,7 +206,56 @@
           };
         }
 
-        // 简化：成功时清空所有 pending，不修改 availableCount
+        // 成功结算：按 pending 把双方库存做加减，并清空 pending。
+        // （本 demo 仅做最小正确性：不处理限额/资金池/商誉等复杂规则）
+
+        /**
+         * @param {import("./js/trade_context.js").TradeInventoryRow[]} inventory
+         * @param {import("./js/trade_context.js").TradeItem} item
+         */
+        function ensureRow(inventory, item) {
+          const existing = findRowForItem(inventory, item.itemId);
+          if (existing) return existing;
+          const cloneItem = { ...item };
+          const row = { item: cloneItem, availableCount: 0, tradeLocked: false };
+          inventory.push(row);
+          return row;
+        }
+
+        // 玩家给出 -> 玩家减、商人加
+        for (const itemId in context.pendingGivePlayer) {
+          const p = context.pendingGivePlayer[itemId];
+          const cnt = (p?.count || 0) | 0;
+          if (cnt <= 0) continue;
+          const from = findRowForItem(context.playerInventory, itemId);
+          if (!from) continue;
+          from.item.stackCount = Math.max(0, (from.item.stackCount | 0) - cnt);
+          const to = ensureRow(context.merchantInventory, from.item);
+          to.item.stackCount = (to.item.stackCount | 0) + cnt;
+        }
+
+        // 玩家要取 -> 商人减、玩家加
+        for (const itemId in context.pendingGetPlayer) {
+          const p = context.pendingGetPlayer[itemId];
+          const cnt = (p?.count || 0) | 0;
+          if (cnt <= 0) continue;
+          const from = findRowForItem(context.merchantInventory, itemId);
+          if (!from) continue;
+          from.item.stackCount = Math.max(0, (from.item.stackCount | 0) - cnt);
+          const to = ensureRow(context.playerInventory, from.item);
+          to.item.stackCount = (to.item.stackCount | 0) + cnt;
+        }
+
+        // 结算后：用 stackCount 重置会话可用数量（availableCount）
+        for (const row of context.playerInventory) {
+          if (!row || !row.item) continue;
+          row.availableCount = row.item.stackCount | 0;
+        }
+        for (const row of context.merchantInventory) {
+          if (!row || !row.item) continue;
+          row.availableCount = row.item.stackCount | 0;
+        }
+
         context.pendingGivePlayer = {};
         context.pendingGetPlayer = {};
         context.pendingGiveMerchant = {};
@@ -204,6 +276,16 @@
           return;
         }
 
+        function resizeCanvas() {
+          const dpr = window.devicePixelRatio || 1;
+          const w = Math.max(1, Math.floor(window.innerWidth * dpr));
+          const h = Math.max(1, Math.floor(window.innerHeight * dpr));
+          if (canvas.width !== w) canvas.width = w;
+          if (canvas.height !== h) canvas.height = h;
+        }
+
+        resizeCanvas();
+
         /** @type {import("./js/trade_context.js").MerchantProfile} */
         const merchant = {
           id: "merchant_demo",
@@ -213,7 +295,7 @@
           priceBias: 1.0,
           preferredTags: ["food"],
           dislikedTags: ["junk"],
-          acceptedCurrencyCodes: ["DEMOCOIN"],
+          acceptedCurrencyCodes: ["创世结晶"],
           baseFundsPool: 5000,
           currentFundsPool: 5000,
         };
@@ -246,14 +328,14 @@
           },
           {
             item: {
-              itemId: "demo_coin",
-              displayName: "示例硬币",
-              stackCount: 100,
+              itemId: "currency_base",
+              displayName: "创世结晶",
+              stackCount: 140,
               baseValue: 1,
               tags: ["currency"],
               isCurrency: true,
             },
-            availableCount: 100,
+            availableCount: 140,
             tradeLocked: false,
           },
         ];
@@ -284,6 +366,18 @@
             availableCount: 20,
             tradeLocked: false,
           },
+          {
+            item: {
+              itemId: "currency_base",
+              displayName: "创世结晶",
+              stackCount: 60,
+              baseValue: 1,
+              tags: ["currency"],
+              isCurrency: true,
+            },
+            availableCount: 60,
+            tradeLocked: false,
+          },
         ];
 
         const context = createTradeContext(
@@ -312,7 +406,16 @@
           tryCommitTrade,
         });
 
-        console.log("交易 UI Demo 已初始化。");
+        // 供手工自检
+        window.__tradeState = stateRef;
+        window.__tradeContext = context;
+
+        window.addEventListener("resize", () => {
+          resizeCanvas();
+          refreshTradeUILayout(stateRef);
+        });
+
+        console.log("交易 UI Demo 已初始化。可在控制台查看 window.__tradeContext / window.__tradeState。");
       }
 
       window.addEventListener("DOMContentLoaded", initDemo);
