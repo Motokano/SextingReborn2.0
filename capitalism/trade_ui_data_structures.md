@@ -45,7 +45,7 @@
 - **base_value**
   - 类型：`number`
   - 含义：物品表中的「基线价值」，仅用于内部估值计算。
-  - 用途：驱动「你觉得XX、对方觉得XX」的五档感受词；**不在任何界面直接展示**。
+  - 用途：用于内部估值与净利润/净亏损计算；**不在任何界面直接展示**。
 
 - **tags**
   - 类型：`string[]`
@@ -86,7 +86,7 @@
 
 > 实现时也可以将 `session_delta_give` 与 `session_delta_take` 合并为一个带符号的 `session_delta`（玩家给为负、拿为正），本文件保留「拆分版」以便前后端理解与调试。
 
-### 2.3 会话内：用于估值与感受词的聚合字段（可由后台计算）
+### 2.3 会话内：用于估值与净利润的聚合字段（可由后台计算）
 
 以下为**整场会话级**的临时聚合值，不要求前端逐条维护，但需要在接口或内部状态中存在：
 
@@ -102,15 +102,17 @@
   - 计算示意：  
     `V_player_get = Σ( value_i_per_unit × session_delta_take_i )`
 
-- **r_player**
+- **net_profit_value**
   - 类型：`number`
-  - 定义：`r_player = V_player_get / max(V_player_give, ε)`
-  - 用途：映射为玩家侧的五档感受词（不行 / 略亏 / 可以 / 略赚 / 很赚）。
+  - 含义：当前会话下玩家净收益的内部价值，`V_player_get - V_player_give`。
 
-- **r_merchant**
-  - 类型：`number`
-  - 定义：`r_merchant = V_player_give / max(V_player_get, ε)`
-  - 用途：映射为商人侧的五档感受词，用于「[交易对象] 觉得 XX」。
+- **net_profit_in_primary_currency**
+  - 类型：`int`
+  - 含义：将 `net_profit_value` 换算为「商人最优先使用的货币」后的数量，取整（实现可约定四舍五入或向零取整）；用于界面展示「n[货币名]」中的 `n`。
+
+- **primary_currency_display_name**（或由现有货币表带出）
+  - 类型：`string`
+  - 含义：该货币的显示名，用于界面展示「n[货币名]」中的 `[货币名]`。商人最优先使用的货币来自商人模板（`trader_template.md`）中的 **accept_currencies** 数组的**第一位**（`accept_currencies[0]`），会话中的 `accepted_currencies` 与该数组一致，故取该数组首位对应货币的展示名即可。
 
 ---
 
@@ -131,19 +133,18 @@
 
 - **display_name**
   - 类型：`string`
-  - 含义：在标题栏与感受行中展示的称呼（如「摊贩」「老者」「旅行商队」等）。
-  - 用途：
-    - 标题栏文案：「[display_name] 说能用 [货币名]、[货币名] 交易」。
-    - 感受行文案：「你觉得 [感受词]，[display_name] 觉得 [感受词]。」。
+  - 含义：在标题栏等处展示的称呼（如「摊贩」「老者」「旅行商队」等）。
+  - 用途：标题栏文案：「[display_name] 说能用 [货币名]、[货币名] 交易」。
 
 ### 3.2 交易规则与金额边界
 
 - **accepted_currencies**
   - 类型：`string[]`
-  - 含义：该商人当前场景下可接受的货币短码列表，对应货币表的 `accept_code`。
+  - 含义：该商人当前场景下可接受的货币短码列表，与商人模板（`trader_template.md`）中的 **accept_currencies** 数组一致，对应货币表的 `accept_code`。
   - 用途：
     - 标题栏「能用 [货币名] 交易」文案。
     - 结算时判断哪些物品视为货币、可用于扣款或支付。
+    - **最优先使用的货币** = 该数组中**第一位的货币**（`accepted_currencies[0]`），用于交易界面净利润/净亏损的换算与展示「n[货币名]」。
 
 - **fund_pool_current**
   - 类型：`number`
@@ -161,7 +162,7 @@
 
 ### 3.3 估值偏好（最小版）
 
-用于在价格计算中对不同物品做加权，驱动感受词与 NPC 主观判断。
+用于在价格计算中对不同物品做加权，驱动内部估值与净利润换算。
 
 - **preferred_tags**
   - 类型：`string[]`
@@ -195,14 +196,14 @@
     - `merchant_bias`：商人字段 `price_bias`。
     - `item_tag_coef`：按物品 `tags[]` 与商人 `preferred_tags[]` / `disliked_tags[]` 决定的权重。
 
-- **会话级聚合值**
+- **会话级聚合值与净利润换算**
 
   - 玩家给出价值：`V_player_give`  
   - 玩家获得价值：`V_player_get`
-  - 玩家视角比值：`r_player = V_player_get / max(V_player_give, ε)`
-  - 商人视角比值：`r_merchant = V_player_give / max(V_player_get, ε)`
+  - 净利润内部价值：`net_profit_value = V_player_get - V_player_give`
+  - 换算为最优先货币数量：`net_profit_in_primary_currency = round(net_profit_value / value_primary_currency_per_unit)`（取整为整数），其中最优先货币为商人模板 **accept_currencies** 数组第一位对应货币，`value_primary_currency_per_unit` 为该货币在当前会话下的单件内部价值。
 
-前端只需关心「五档感受词」枚举与当前选中的两档；后台可在每次会话状态更新时重新计算并将结果回传。
+后台可在每次会话状态更新时重新计算并将 `net_profit_in_primary_currency` 与对应货币展示名回传，供界面显示「n[货币名]」。
 
 ---
 
@@ -223,7 +224,7 @@
 
 3. **会话字段清理**
    - 清空所有物品上的 `session_available_count`、`session_delta_give`、`session_delta_take` 等会话级字段。
-   - 清空本会话内的聚合值 `V_player_give`、`V_player_get`、`r_player`、`r_merchant` 等。
+   - 清空本会话内的聚合值 `V_player_give`、`V_player_get`、`net_profit_value`、`net_profit_in_primary_currency` 等。
    - 刷新前端列表展示，并根据实际设计选择直接关闭窗口或回到初始列表状态。
 
 > 至此，交易界面所需的物品与商人数据结构最小字段集合已定义完毕，可据此设计前后端的请求/响应与内部会话状态结构。
