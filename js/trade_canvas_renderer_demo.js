@@ -34,9 +34,19 @@ const THEME = {
 };
 
 const FONT = {
-  ui: '18px "Microsoft YaHei", "微软雅黑", "PingFang SC", system-ui, sans-serif',
-  uiBold: '18px "Microsoft YaHei", "微软雅黑", "PingFang SC", system-ui, sans-serif',
-  title: '21px "Microsoft YaHei", "微软雅黑", "PingFang SC", system-ui, sans-serif',
+  // Header：标题栏与双列表表头同字号突出；可在局部切换 bold
+  header: '26px "Microsoft YaHei", "微软雅黑", "PingFang SC", system-ui, sans-serif',
+  headerBold: 'bold 26px "Microsoft YaHei", "微软雅黑", "PingFang SC", system-ui, sans-serif',
+  // 表头：比标题栏略小；主语可加粗
+  tableHeader: '24px "Microsoft YaHei", "微软雅黑", "PingFang SC", system-ui, sans-serif',
+  tableHeaderBold: 'bold 24px "Microsoft YaHei", "微软雅黑", "PingFang SC", system-ui, sans-serif',
+  // 行文本（物品名 × 数量）略大于按钮文本
+  rowText: '20px "Microsoft YaHei", "微软雅黑", "PingFang SC", system-ui, sans-serif',
+  rowQty: 'bold 18px "Microsoft YaHei", "微软雅黑", "PingFang SC", system-ui, sans-serif',
+  // 列表内按钮文字（步进、给/要、全都、关闭 X）
+  listBtnText: '16px "Microsoft YaHei", "微软雅黑", "PingFang SC", system-ui, sans-serif',
+  // 底行按钮文字（成交）与利润行文本
+  footerText: '20px "Microsoft YaHei", "微软雅黑", "PingFang SC", system-ui, sans-serif',
 };
 
 /**
@@ -69,30 +79,53 @@ export function createDemoRenderer() {
 
     // 标题栏（同一行：文案 + 右侧关闭）
     drawRoundedRect(ctx, bounds.titleBar, 8, THEME.titleFill, THEME.panelStroke);
-    ctx.font = FONT.title;
     ctx.fillStyle = THEME.text;
     const merchantName = context.merchant?.name || "某人";
     const currencies = context.acceptedCurrencies?.join("、") || "未知货币";
-    const titleText = `「${merchantName} 说能用 ${currencies} 交易。」`;
-    drawTextLeft(ctx, titleText, bounds.titleText.x + 6, bounds.titleText.y + bounds.titleText.height / 2);
+    const titleY = bounds.titleText.y + bounds.titleText.height / 2;
+    const titleX = bounds.titleText.x + 8;
+    const prefix = `「${merchantName} 说能用 `;
+    const mid = `${currencies}`;
+    const suffix = ` 交易。」`;
+
+    // 标题：仅将“货币名”部分加粗
+    ctx.font = FONT.header;
+    drawTextLeft(ctx, prefix, titleX, titleY);
+    const wPrefix = ctx.measureText(prefix).width;
+    ctx.font = FONT.headerBold;
+    drawTextLeft(ctx, mid, titleX + wPrefix, titleY);
+    const wMid = ctx.measureText(mid).width;
+    ctx.font = FONT.header;
+    drawTextLeft(ctx, suffix, titleX + wPrefix + wMid, titleY);
 
     // 关闭按钮
-    drawUIButton(ctx, state, "closeButton", bounds.closeButton, {
+    drawUIButtonWithLabel(ctx, state, "closeButton", bounds.closeButton, {
       baseFill: THEME.btnDanger,
       baseStroke: THEME.btnStroke,
+      label: "X",
+      font: FONT.listBtnText,
     });
-    ctx.font = FONT.uiBold;
-    ctx.fillStyle = THEME.text;
-    ctx.textAlign = "center";
-    drawTextCenter(ctx, "X", bounds.closeButton);
-    ctx.textAlign = "left";
 
     // 表头
-    ctx.font = FONT.uiBold;
     ctx.fillStyle = THEME.text;
     const midX = bounds.tableHeader.x + bounds.tableHeader.width / 2;
-    drawTextLeft(ctx, "玩家可交易物品", bounds.tableHeader.x + 4, bounds.tableHeader.y + bounds.tableHeader.height / 2);
-    drawTextLeft(ctx, "对方可交易物品", midX + 8, bounds.tableHeader.y + bounds.tableHeader.height / 2);
+    const headY = bounds.tableHeader.y + bounds.tableHeader.height / 2;
+    const leftX = bounds.tableHeader.x + 6;
+    const rightX = midX + 10;
+
+    // 左表头：仅“玩家”加粗
+    ctx.font = FONT.tableHeaderBold;
+    drawTextLeft(ctx, "玩家", leftX, headY);
+    const wPlayer = ctx.measureText("玩家").width;
+    ctx.font = FONT.tableHeader;
+    drawTextLeft(ctx, "可交易物品", leftX + wPlayer, headY);
+
+    // 右表头：仅“对方”加粗
+    ctx.font = FONT.tableHeaderBold;
+    drawTextLeft(ctx, "对方", rightX, headY);
+    const wOther = ctx.measureText("对方").width;
+    ctx.font = FONT.tableHeader;
+    drawTextLeft(ctx, "可交易物品", rightX + wOther, headY);
 
     // 双列表（独立裁剪 + 滚动）
     drawList(ctx, state, "player");
@@ -109,24 +142,35 @@ export function createDemoRenderer() {
     drawRoundedRect(ctx, bounds.profitBar, 8, THEME.titleFill, THEME.panelStroke);
     const currencyName = context.acceptedCurrencies?.[0] || "货币";
     const netProfit = computeNetProfitValue(lastFeelingResult);
-    ctx.font = FONT.uiBold;
     ctx.fillStyle = THEME.text;
-    drawTextLeft(
-      ctx,
-      `${netProfit} ${currencyName}`,
-      bounds.profitText.x + 6,
-      bounds.profitText.y + bounds.profitText.height / 2
-    );
+    const profitY = bounds.profitText.y + bounds.profitText.height / 2;
+    const profitGapToDeal = 14;
+    const profitLeftPad = 10;
+    const profitRightX = bounds.dealButton.x - profitGapToDeal;
+    const profitMinX = bounds.profitText.x + profitLeftPad;
+    const profitMaxW = Math.max(0, profitRightX - profitMinX);
+    const profitText = `${formatIntWithCommas(netProfit)} ${currencyName}`;
+
+    ctx.save();
+    ctx.font = FONT.footerText;
+    ctx.textAlign = "right";
+    // 过长时从左侧省略，确保右侧（数字/货币）贴近成交按钮左侧且不覆盖按钮
+    const fitted = fitTextFromLeftWithEllipsis(ctx, profitText, profitMaxW);
+    ctx.fillText(fitted, profitRightX, profitY);
+    ctx.restore();
 
     drawUIButton(ctx, state, "dealButton", bounds.dealButton, {
       baseFill: THEME.btnOk,
       baseStroke: THEME.btnStroke,
       disabled: isDealButtonDisabled(state),
     });
-    ctx.fillStyle = THEME.text;
-    ctx.textAlign = "center";
-    drawTextCenter(ctx, "成交", bounds.dealButton);
-    ctx.textAlign = "left";
+    drawUIButtonWithLabel(ctx, state, "dealButton", bounds.dealButton, {
+      baseFill: THEME.btnOk,
+      baseStroke: THEME.btnStroke,
+      disabled: isDealButtonDisabled(state),
+      label: "成交",
+      font: FONT.footerText,
+    });
 
     // 最后绘制所有按钮的文字（从命中框读取，保证与点击区域一致）
     drawUIButtonLabels(ctx, state);
@@ -172,6 +216,52 @@ function computeNetProfitValue(lastFeelingResult) {
   const delta = (s.V_player_get || 0) - (s.V_player_give || 0);
   // 只展示整数
   return (delta | 0);
+}
+
+/**
+ * 将整数格式化为三位逗号分组（负数同样支持）。
+ *
+ * @param {number} n
+ * @returns {string}
+ */
+function formatIntWithCommas(n) {
+  const v = (n | 0);
+  const sign = v < 0 ? "-" : "";
+  const absStr = String(Math.abs(v));
+  // 每三位插入半角逗号
+  const grouped = absStr.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+  return sign + grouped;
+}
+
+/**
+ * 当文本过长时，从左侧省略为 “…<尾部>”，以保证右对齐的尾部信息可见。
+ *
+ * @param {CanvasRenderingContext2D} ctx
+ * @param {string} text
+ * @param {number} maxWidth
+ * @returns {string}
+ */
+function fitTextFromLeftWithEllipsis(ctx, text, maxWidth) {
+  if (!text) return "";
+  if (!(maxWidth > 0)) return "";
+  if (ctx.measureText(text).width <= maxWidth) return text;
+
+  const ell = "…";
+  if (ctx.measureText(ell).width > maxWidth) return "";
+
+  // 保留右侧尾部，逐步缩短
+  let lo = 0;
+  let hi = text.length;
+  while (lo < hi) {
+    const mid = Math.floor((lo + hi) / 2);
+    const candidate = ell + text.slice(mid);
+    if (ctx.measureText(candidate).width <= maxWidth) {
+      hi = mid;
+    } else {
+      lo = mid + 1;
+    }
+  }
+  return ell + text.slice(lo);
 }
 
 function drawPanel(ctx, rect) {
@@ -266,6 +356,51 @@ function drawUIButton(ctx, state, elementId, rect, opt) {
 }
 
 /**
+ * 统一按钮 + 文本绘制（视觉居中优先）。
+ *
+ * 规则（按用户选择的 C 方案）：
+ * - 16px 列表按钮文字：Y +1px（解决视觉偏上）
+ * - 20px 底行文字：Y +0px
+ * - pressed 的 inset 同步作用到文字，使按下态仍居中
+ *
+ * @param {CanvasRenderingContext2D} ctx
+ * @param {import("./trade_canvas_ui.js").TradeUIState} state
+ * @param {string} elementId
+ * @param {{ x: number, y: number, width: number, height: number }} rect
+ * @param {{ baseFill: string, baseStroke: string, disabled?: boolean, label: string, font: string, yOffset?: number, xOffset?: number }} opt
+ */
+function drawUIButtonWithLabel(ctx, state, elementId, rect, opt) {
+  const disabled = !!opt.disabled;
+  const isPressed = (state.pressedElementId || null) === elementId;
+  const inset = isPressed && !disabled ? 1 : 0;
+
+  drawUIButton(ctx, state, elementId, rect, {
+    baseFill: opt.baseFill,
+    baseStroke: opt.baseStroke,
+    disabled,
+  });
+
+  // 视觉居中：按字号给默认偏移（可被 opt.yOffset 覆盖）
+  const fontPx = parseInt(String(opt.font).match(/(\d+)px/)?.[1] || "0", 10) | 0;
+  const defaultYOffset = fontPx <= 16 ? 1 : 0;
+  const ox = (opt.xOffset || 0) + inset;
+  const oy = (opt.yOffset != null ? opt.yOffset : defaultYOffset) + inset;
+
+  ctx.save();
+  if (disabled) ctx.globalAlpha = 0.45;
+  ctx.font = opt.font;
+  ctx.fillStyle = THEME.text;
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  ctx.fillText(
+    opt.label,
+    rect.x + rect.width / 2 + ox,
+    rect.y + rect.height / 2 + oy
+  );
+  ctx.restore();
+}
+
+/**
  * 在给定矩形中心绘制居中文本。
  *
  * @param {CanvasRenderingContext2D} ctx
@@ -345,7 +480,7 @@ function drawList(ctx, state, side) {
 
   if (totalRows === 0) {
     ctx.save();
-    ctx.font = FONT.ui;
+    ctx.font = FONT.rowText;
     ctx.fillStyle = THEME.muted;
     ctx.textAlign = "center";
     ctx.fillText("空", listRect.x + listRect.width / 2, listRect.y + listRect.height / 2);
@@ -357,7 +492,7 @@ function drawList(ctx, state, side) {
   // 本侧为空态：即使对侧有数据，也在本侧列表中央显示“空”
   if (rows.length === 0) {
     ctx.save();
-    ctx.font = FONT.ui;
+    ctx.font = FONT.rowText;
     ctx.fillStyle = THEME.muted;
     ctx.textAlign = "center";
     ctx.fillText("空", listRect.x + listRect.width / 2, listRect.y + listRect.height / 2);
@@ -378,7 +513,6 @@ function drawList(ctx, state, side) {
   ctx.rect(listRect.x + 1, listRect.y + 1, listRect.width - 2, listRect.height - 2);
   ctx.clip();
 
-  ctx.font = FONT.ui;
   ctx.fillStyle = THEME.text;
 
   const contentTop = listRect.y + LIST_INSET_Y;
@@ -388,13 +522,13 @@ function drawList(ctx, state, side) {
     if (!row) continue;
 
     const count = row.pendingCount > 0 ? row.pendingCount : row.availableCount;
-    const label = `${row.displayName} × ${count}`;
 
     const textX = listRect.x + LIST_TEXT_PAD_X;
     const textY = y + ROW_H / 2;
 
     // 下划线（待处理行）
     if (row.underline) {
+      ctx.font = FONT.rowText;
       const w = ctx.measureText(row.displayName).width;
       ctx.save();
       ctx.strokeStyle = THEME.text;
@@ -405,7 +539,13 @@ function drawList(ctx, state, side) {
       ctx.restore();
     }
 
-    ctx.fillText(label, textX, textY);
+    // C2：物品名更突出；数量略弱但仍比按钮文本更大
+    ctx.font = FONT.rowText;
+    ctx.fillText(row.displayName, textX, textY);
+    const wName = ctx.measureText(row.displayName).width;
+    ctx.font = FONT.rowQty;
+    const tail = ` × ${count}`;
+    ctx.fillText(tail, textX + wName, textY);
   }
 
   ctx.restore();
@@ -416,7 +556,7 @@ function drawUIButtonLabels(ctx, state) {
   if (!uiElements || uiElements.length === 0) return;
 
   ctx.save();
-  ctx.font = FONT.ui;
+  ctx.font = FONT.listBtnText;
   ctx.fillStyle = THEME.text;
   ctx.textAlign = "center";
 
@@ -440,12 +580,13 @@ function drawUIButtonLabels(ctx, state) {
         const n = (state.stepN && state.stepN[side] && state.stepN[side][itemId]) || 1;
         text = String(n | 0);
       }
-      drawUIButton(ctx, state, id, b, {
+      drawUIButtonWithLabel(ctx, state, id, b, {
         baseFill: THEME.btnFill,
         baseStroke: THEME.btnStroke,
         disabled: isElementDisabled(state, id),
+        label: text,
+        font: FONT.listBtnText,
       });
-      ctx.fillText(text, b.x + b.width / 2, b.y + b.height / 2);
       continue;
     }
 
@@ -469,12 +610,13 @@ function drawUIButtonLabels(ctx, state) {
         else if (kind === "getAll") text = "全都要";
       }
 
-      drawUIButton(ctx, state, id, b, {
+      drawUIButtonWithLabel(ctx, state, id, b, {
         baseFill: THEME.btnFill,
         baseStroke: THEME.btnStroke,
         disabled: isElementDisabled(state, id),
+        label: text,
+        font: FONT.listBtnText,
       });
-      ctx.fillText(text, b.x + b.width / 2, b.y + b.height / 2);
       continue;
     }
   }
