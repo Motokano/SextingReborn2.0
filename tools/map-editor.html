@@ -54,6 +54,8 @@
             justify-content: center;
             font-size: 12px;
             border: 2px solid transparent;
+            position: relative;
+            user-select: none;
         }
         .cell.walkable { background: #3d4a3d; }
         .cell.blocked { background: #4a3d3d; }
@@ -71,6 +73,26 @@
         .cell.entity-bush::after { content: '灌'; font-size: 11px; color: #8f8; }
         .cell.entity-grass { background: #2d4a3d; border-color: rgba(80,160,120,0.5); }
         .cell.entity-grass::after { content: '草'; font-size: 11px; color: #6f8; }
+        .cell .mark {
+            position: relative;
+            z-index: 1;
+        }
+        .cell .note {
+            position: absolute;
+            left: 2px;
+            right: 2px;
+            bottom: 2px;
+            font-size: 10px;
+            line-height: 1.1;
+            color: rgba(255,255,255,0.85);
+            text-shadow: 0 1px 0 rgba(0,0,0,0.6);
+            overflow: hidden;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+            pointer-events: none;
+            z-index: 2;
+        }
+        .cell .note.dim { color: rgba(255,255,255,0.6); }
         .sidebar {
             width: 280px;
             background: #252525;
@@ -95,6 +117,16 @@
         .sidebar button { padding: 6px 12px; margin-top: 8px; background: #404040; border: 1px solid #555; color: #fff; cursor: pointer; border-radius: 4px; }
         .sidebar button:hover { background: #505050; }
         .sidebar .hint { font-size: 11px; color: #666; margin-top: 4px; }
+        .sidebar textarea {
+            width: 100%;
+            padding: 6px 8px;
+            background: #333;
+            border: 1px solid #555;
+            color: #fff;
+            border-radius: 4px;
+            resize: vertical;
+            min-height: 68px;
+        }
     </style>
 </head>
 <body>
@@ -103,6 +135,7 @@
         <button type="button" id="btn-new">新建地图</button>
         <button type="button" id="btn-import">导入 JSON</button>
         <button type="button" id="btn-export">导出 JSON</button>
+        <button type="button" id="btn-toggle-notes" title="仅编辑器显示，导出不包含">显示注释：开</button>
         <label>地图 ID <input type="text" id="inp-map-id" placeholder="home" /></label>
         <label>名称 <input type="text" id="inp-name" placeholder="基地" /></label>
         <label>宽 <input type="number" id="inp-width" min="1" max="64" value="16" /></label>
@@ -151,6 +184,13 @@
                 <p class="hint">与设计文档 8.2.2 一致，地图用 entity_id 引用；游戏内站在该格可执行采集。</p>
                 <button type="button" id="btn-apply-entity">应用实体</button>
             </div>
+            <div class="row" id="panel-note">
+                <label>格子注释（仅编辑器，不导出）</label>
+                <textarea id="inp-note" placeholder="比如：这里是Boss房入口 / 需要放事件触发 / 视觉标记等"></textarea>
+                <button type="button" id="btn-apply-note">应用注释</button>
+                <button type="button" id="btn-clear-note">清空注释</button>
+                <p class="hint">注释会自动保存在本地浏览器存储；导出 JSON 不包含该字段</p>
+            </div>
         </div>
     </div>
 
@@ -165,8 +205,50 @@
                 enabled: [],
                 walkable: [],
                 portals: [],
-                entities: []    // [{ x, y, entity_id: 'gathering_bush'|'gathering_grass' }, ...]
+                entities: [],   // [{ x, y, entity_id: 'gathering_bush'|'gathering_grass' }, ...]
+                annotations: {} // { "x,y": "text" } 编辑器专用，不参与导出
             };
+
+            var ui = {
+                showNotes: true
+            };
+
+            function notesStorageKey(mapId) {
+                return 'cabi_map_editor_notes_v1:' + (mapId || 'map');
+            }
+
+            function loadNotesForMap(mapId) {
+                try {
+                    var raw = localStorage.getItem(notesStorageKey(mapId));
+                    if (!raw) return {};
+                    var obj = JSON.parse(raw);
+                    if (!obj || typeof obj !== 'object') return {};
+                    return obj;
+                } catch (e) {
+                    return {};
+                }
+            }
+
+            function saveNotesForMap(mapId) {
+                try {
+                    localStorage.setItem(notesStorageKey(mapId), JSON.stringify(state.annotations || {}));
+                } catch (e) { /* ignore */ }
+            }
+
+            function keyXY(x, y) { return x + ',' + y; }
+
+            function getNoteAt(x, y) {
+                var k = keyXY(x, y);
+                return (state.annotations && state.annotations[k]) ? String(state.annotations[k]) : '';
+            }
+
+            function setNoteAt(x, y, text) {
+                var k = keyXY(x, y);
+                var t = (text || '').trim();
+                if (!state.annotations) state.annotations = {};
+                if (!t) delete state.annotations[k];
+                else state.annotations[k] = t;
+            }
 
             function initGrid() {
                 var w = state.width;
@@ -244,7 +326,10 @@
                             cell.classList.add('void');
                         } else {
                             cell.classList.add(isWalkable(x, y) ? 'walkable' : 'blocked');
-                            if (getPortalAt(x, y)) { cell.classList.add('portal'); cell.textContent = '○'; }
+                            var mark = document.createElement('span');
+                            mark.className = 'mark';
+                            if (getPortalAt(x, y)) { cell.classList.add('portal'); mark.textContent = '○'; }
+                            cell.appendChild(mark);
                             var eid = getEntityAt(x, y);
                             if (eid === 'gathering_bush') cell.classList.add('entity-bush');
                             else if (eid === 'gathering_grass') cell.classList.add('entity-grass');
@@ -257,8 +342,21 @@
                             var eid = getEntityAt(x, y);
                             if (eid === 'gathering_bush') t += ' 灌木丛';
                             else if (eid === 'gathering_grass') t += ' 草丛';
+                            var note = getNoteAt(x, y);
+                            if (note) t += ' 注释:' + note;
                         }
                         cell.title = t;
+
+                        if (ui.showNotes && isEnabled(x, y)) {
+                            var noteText = getNoteAt(x, y);
+                            if (noteText) {
+                                var noteEl = document.createElement('div');
+                                noteEl.className = 'note';
+                                noteEl.textContent = noteText;
+                                cell.appendChild(noteEl);
+                            }
+                        }
+
                         cell.addEventListener('mousedown', (function (gx, gy) {
                             return function (e) { if (e.button === 0) onCellMouseDown(gx, gy, e); };
                         })(x, y));
@@ -377,12 +475,14 @@
                     document.getElementById('panel-walk').style.display = 'none';
                     document.getElementById('panel-portal').style.display = 'none';
                     document.getElementById('panel-entity').style.display = 'none';
+                    document.getElementById('panel-note').style.display = 'none';
                     return;
                 }
                 document.getElementById('panel-enabled').style.display = 'block';
                 document.getElementById('panel-walk').style.display = 'block';
                 document.getElementById('panel-portal').style.display = 'block';
                 document.getElementById('panel-entity').style.display = 'block';
+                document.getElementById('panel-note').style.display = 'block';
 
                 if (selected.length === 1) {
                     var x = selected[0].x, y = selected[0].y;
@@ -397,6 +497,7 @@
                     document.getElementById('inp-portal-label').value = portal ? (portal.label || '') : '';
                     var eid = getEntityAt(x, y);
                     document.getElementById('inp-entity-id').value = eid || '';
+                    document.getElementById('inp-note').value = getNoteAt(x, y);
                 } else {
                     var allEn = true, noneEn = true, allWalk = true, noneWalk = true;
                     for (var i = 0; i < selected.length; i++) {
@@ -418,7 +519,28 @@
                     document.getElementById('inp-portal-label').value = portal ? (portal.label || '') : '';
                     var eid = getEntityAt(first.x, first.y);
                     document.getElementById('inp-entity-id').value = eid || '';
+
+                    var note0 = getNoteAt(first.x, first.y);
+                    var sameNote = true;
+                    for (var k = 1; k < selected.length; k++) {
+                        var nx = selected[k].x, ny = selected[k].y;
+                        if (getNoteAt(nx, ny) !== note0) { sameNote = false; break; }
+                    }
+                    document.getElementById('inp-note').value = sameNote ? note0 : '';
                 }
+            }
+
+            function applyNote(textOverride) {
+                if (selected.length === 0) return;
+                var text = (textOverride != null) ? String(textOverride) : document.getElementById('inp-note').value;
+                for (var i = 0; i < selected.length; i++) {
+                    var x = selected[i].x, y = selected[i].y;
+                    if (!isEnabled(x, y)) continue;
+                    setNoteAt(x, y, text);
+                }
+                saveNotesForMap(state.mapId);
+                renderGrid();
+                highlightSelected();
             }
 
             function applyEntity() {
@@ -494,6 +616,15 @@
             document.getElementById('inp-walkable').addEventListener('change', applyWalkable);
             document.getElementById('btn-apply-portal').addEventListener('click', applyPortal);
             document.getElementById('btn-apply-entity').addEventListener('click', applyEntity);
+            document.getElementById('btn-apply-note').addEventListener('click', function () { applyNote(); });
+            document.getElementById('btn-clear-note').addEventListener('click', function () { applyNote(''); document.getElementById('inp-note').value = ''; });
+
+            document.getElementById('btn-toggle-notes').addEventListener('click', function () {
+                ui.showNotes = !ui.showNotes;
+                this.textContent = '显示注释：' + (ui.showNotes ? '开' : '关');
+                renderGrid();
+                highlightSelected();
+            });
 
             document.getElementById('btn-new').addEventListener('click', function () {
                 state.mapId = document.getElementById('inp-map-id').value.trim() || 'map1';
@@ -502,6 +633,7 @@
                 state.height = Math.max(1, parseInt(document.getElementById('inp-height').value, 10) || 16);
                 state.portals = [];
                 state.entities = [];
+                state.annotations = {};
                 initGrid();
                 document.getElementById('inp-width').value = state.width;
                 document.getElementById('inp-height').value = state.height;
@@ -551,6 +683,7 @@
                     state.height = data.height || 16;
                     state.portals = Array.isArray(data.portals) ? JSON.parse(JSON.stringify(data.portals)) : [];
                     state.entities = Array.isArray(data.entities) ? JSON.parse(JSON.stringify(data.entities)) : [];
+                    state.annotations = loadNotesForMap(state.mapId);
 
                     initGrid();
                     if (Array.isArray(data.disabled)) {
@@ -587,6 +720,8 @@
             document.getElementById('btn-export').addEventListener('click', function () {
                 state.mapId = document.getElementById('inp-map-id').value.trim() || state.mapId;
                 state.name = document.getElementById('inp-name').value.trim() || state.name;
+                if (!state.annotations) state.annotations = {};
+                saveNotesForMap(state.mapId);
                 var disabled = [];
                 var blocks = [];
                 for (var y = 0; y < state.height; y++) {
@@ -620,6 +755,7 @@
             });
 
             initGrid();
+            state.annotations = loadNotesForMap(state.mapId);
             renderGrid();
             updateCellInfo();
         })();

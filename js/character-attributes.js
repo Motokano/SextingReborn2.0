@@ -38,6 +38,9 @@
         dominant_leg: 'right'
     };
 
+    // 经脉穴位带来的“先天五维”奖励（每次重算时覆盖写入）
+    var innateBonusFromAcupoints = { jingu: 0, flexibility: 0, breath: 0, dexterity: 0, focus: 0 };
+
     /** 缓存：重算后写入，公式与 UI 只读缓存 */
     var cache = {
         effective: {},
@@ -51,12 +54,18 @@
     }
 
     function getEffectiveAttr(attrId) {
-        var v = (state.innate[attrId] || 0) + (state.acquired[attrId] || 0);
+        var v = getInnateAttr(attrId) + (state.acquired[attrId] || 0);
         return Math.max(0, v);
     }
 
-    function getInnateAttr(attrId) {
+    function getBaseInnateAttr(attrId) {
         return Math.max(0, state.innate[attrId] != null ? state.innate[attrId] : 0);
+    }
+
+    function getInnateAttr(attrId) {
+        var base = getBaseInnateAttr(attrId);
+        var bonus = innateBonusFromAcupoints[attrId] != null ? innateBonusFromAcupoints[attrId] : 0;
+        return Math.max(0, base + bonus);
     }
 
     function getAcquiredAttr(attrId) {
@@ -137,11 +146,34 @@
         var fromEquip = sumFromEquipment(equipmentState, getItemTemplate, getEnchantEntry);
         var fromSkills = sumFromSkills(skillsState, skillAttrGainTable);
 
+        // 基础后天来源：装备 + 技能
         state.acquired.jingu = fromEquip.acquired.jingu + fromSkills.jingu;
         state.acquired.flexibility = fromEquip.acquired.flexibility + fromSkills.flexibility;
         state.acquired.breath = fromEquip.acquired.breath + fromSkills.breath;
         state.acquired.dexterity = fromEquip.acquired.dexterity + fromSkills.dexterity;
         state.acquired.focus = fromEquip.acquired.focus + fromSkills.focus;
+
+        // 经脉穴位来源：后天五维 + 先天五维（任督/全通成就）
+        var extraMaxQi = 0;
+        for (var k in innateBonusFromAcupoints) {
+            if (innateBonusFromAcupoints.hasOwnProperty(k)) innateBonusFromAcupoints[k] = 0;
+        }
+        if (typeof global !== 'undefined' && global.Acupoints && typeof global.Acupoints.getStatBonus === 'function') {
+            var bonus = global.Acupoints.getStatBonus() || {};
+            var acq = bonus.acquired || {};
+            var inn = bonus.innate || {};
+            state.acquired.jingu       += acq.jingu       || 0;
+            state.acquired.flexibility += acq.flexibility || 0;
+            state.acquired.breath      += acq.breath      || 0;
+            state.acquired.dexterity   += acq.dexterity   || 0;
+            state.acquired.focus       += acq.focus       || 0;
+            innateBonusFromAcupoints.jingu       = inn.jingu       || 0;
+            innateBonusFromAcupoints.flexibility = inn.flexibility || 0;
+            innateBonusFromAcupoints.breath      = inn.breath      || 0;
+            innateBonusFromAcupoints.dexterity   = inn.dexterity   || 0;
+            innateBonusFromAcupoints.focus       = inn.focus       || 0;
+            extraMaxQi = bonus.maxQi || 0;
+        }
 
         var jingu = getEffectiveAttr('jingu');
         var flexibility = getEffectiveAttr('flexibility');
@@ -399,6 +431,7 @@
 
         recalcCharacterStats: recalcCharacterStats,
         getEffectiveAttr: getEffectiveAttr,
+        getBaseInnateAttr: getBaseInnateAttr,
         getInnateAttr: getInnateAttr,
         getAcquiredAttr: getAcquiredAttr,
         getCarryCapacity: getCarryCapacity,

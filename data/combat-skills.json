@@ -1,0 +1,99 @@
+{
+  "_comment": "战斗技能配置 - 按 docs/design/11-skills.md 8.3",
+  "constants": {
+    "potential_cost_1_200": 5000,
+    "potential_cost_201_400_base": 5000,
+    "potential_cost_201_400_per_level": 75,
+    "potential_cost_401_1000_base": 20000,
+    "potential_cost_401_1000_per_level": 25,
+    "move_proficiency_max_uses": 50000,
+    "difficulty_multipliers": [1, 2, 3, 4],
+    "base_power_unarmed_1": 10,
+    "base_power_unarmed_1000": 100,
+    "parry_success_at_1000": 0.35,
+    "parry_reduce_at_1000": 0.35
+  },
+  "categories": [
+    { "id": "unarmed", "label": "徒手", "icon": "🖐️" },
+    { "id": "weapon", "label": "兵器", "icon": "⚔️" },
+    { "id": "light", "label": "轻功", "icon": "👟" },
+    { "id": "breath", "label": "呼吸", "icon": "🫁" },
+    { "id": "parry", "label": "招架", "icon": "🛡️" }
+  ],
+  "skills": {
+    "combat_basic_unarmed": {
+      "id": "combat_basic_unarmed",
+      "name": "基本拳脚",
+      "category": "unarmed",
+      "description": "基础徒手功法，讲究大巧不工。",
+      "difficulty": 1,
+      "icon": "👊",
+      "only_parry": false,
+      "moves": [
+        { "id": "zhi_quan", "name": "直拳", "unlock_level": 1 },
+        { "id": "qian_ti", "name": "前踢", "unlock_level": 1 },
+        { "id": "gou_quan", "name": "勾拳", "unlock_level": 50 },
+        { "id": "bian_tui", "name": "鞭腿", "unlock_level": 50 }
+      ],
+      "slots_unlock_by_level": [
+        { "level": 1, "slots": 2 },
+        { "level": 50, "slots": 4 }
+      ],
+      "base_power_curve": "unarmed_simple",
+      "level_cap_skill_id": null
+    },
+    "combat_basic_parry": {
+      "id": "combat_basic_parry",
+      "name": "基本招架",
+      "category": "parry",
+      "description": "防守反击的核心技巧。",
+      "difficulty": 1,
+      "icon": "🛡️",
+      "only_parry": true,
+      "moves": [
+        { "id": "ge_dang", "name": "格挡", "unlock_level": 1 },
+        { "id": "xie_li", "name": "卸力", "unlock_level": 1 },
+        { "id": "shan_bi", "name": "闪避", "unlock_level": 1 },
+        { "id": "fan_zhi", "name": "反制", "unlock_level": 1 }
+      ],
+      "slots_unlock_by_level": [{ "level": 1, "slots": 4 }],
+      "parry_success_at_1000": 0.35,
+      "parry_reduce_at_1000": 0.35,
+      "level_cap_skill_id": null
+    },
+    "combat_breath_sample": {
+      "id": "combat_breath_sample",
+      "name": "禅定呼吸",
+      "category": "breath",
+      "description": "调节气机，平复伤势。",
+      "difficulty": 1,
+      "icon": "♾️",
+      "only_parry": false,
+      "moves": [
+        { "id": "tu_na", "name": "吐纳", "unlock_level": 1 },
+        { "id": "bi_qi", "name": "闭气", "unlock_level": 1 },
+        { "id": "dao_yin", "name": "导引", "unlock_level": 1 },
+        { "id": "ju_qi", "name": "聚气", "unlock_level": 1 }
+      ],
+      "slots_unlock_by_level": [{ "level": 1, "slots": 4 }],
+      "level_cap_skill_id": null
+    },
+    "combat_light_sample": {
+      "id": "combat_light_sample",
+      "name": "草上飞",
+      "category": "light",
+      "description": "提气轻身，如草上疾行。",
+      "difficulty": 1,
+      "icon": "🍃",
+      "only_parry": false,
+      "moves": [
+        { "id": "ti_qi", "name": "提气", "unlock_level": 1 },
+        { "id": "ta_cao", "name": "踏草", "unlock_level": 1 },
+        { "id": "ling_kong", "name": "凌空", "unlock_level": 1 },
+        { "id": "zong_yue", "name": "纵跃", "unlock_level": 1 }
+      ],
+      "slots_unlock_by_level": [{ "level": 1, "slots": 4 }],
+      "level_cap_skill_id": null
+    }
+  }
+}

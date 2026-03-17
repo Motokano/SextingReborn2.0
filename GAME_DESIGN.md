@@ -27,6 +27,7 @@
 | 身体部位与状态 | [09-body-parts.md](docs/design/09-body-parts.md) |
 | 敌人设计 | [10-enemies.md](docs/design/10-enemies.md) |
 | 技能系统 | [11-skills.md](docs/design/11-skills.md) |
+| 经脉与穴位系统 | [12-meridians-and-acupoints.md](docs/design/12-meridians-and-acupoints.md) |
 | **贸易与旅行商人** | 见 [00-index.md](docs/design/00-index.md) 第三节「贸易与旅行商人（capitalism 子模块）」 |
 | 玩家间交易 | [13-p2p-trading.md](docs/design/13-p2p-trading.md) |
 | 实现约定 | [14-implementation.md](docs/design/14-implementation.md) |
