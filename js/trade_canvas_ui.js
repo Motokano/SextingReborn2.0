@@ -18,7 +18,7 @@
  */
 
 import { computePhysicalTradeLayout } from "./trade_layout.js";
-import { applyRowTradeAction } from "./trade_context.js";
+import { applyRowTradeAction, stepPendingQuantity } from "./trade_context.js";
 
 /**
  * UI 元素的基础描述，用于命中检测与事件分发。
@@ -35,7 +35,7 @@ import { applyRowTradeAction } from "./trade_context.js";
  * 鼠标事件在 Trade UI 中的统一封装。
  *
  * @typedef {Object} TradePointerEvent
- * @property {"mousedown"|"mouseup"|"click"} type
+ * @property {"mousedown"|"mouseup"|"mousemove"|"click"} type
  * @property {number} x         相对 Canvas 的像素坐标（已扣除 canvas.getBoundingClientRect 的 left/top）
  * @property {number} y
  * @property {MouseEvent} raw   原始浏览器事件
@@ -112,7 +112,13 @@ import { applyRowTradeAction } from "./trade_context.js";
  * @property {TryCommitTrade} tryCommitTrade
  * @property {import("./trade_context.js").PerceivedFeelingResult|null} lastFeelingResult
  * @property {boolean} needsRedraw
+ * @property {string|null} hoverElementId
+ * @property {string|null} pressedElementId
+ * @property {HTMLInputElement|null} stepInputEl
+ * @property {{ side: "player"|"merchant", itemId: string, originalValue: number } | null} stepInputSession
  * @property {{ isPointerDown: boolean, lastPointerX: number, lastPointerY: number }} pointerState
+ * @property {{ player: number, merchant: number }} scrollY
+ * @property {{ player: Object.<string, number>, merchant: Object.<string, number> }} stepN
  */
 
 /**
@@ -147,15 +153,30 @@ export function createTradeUIState(canvas, context, { renderer, tryCommitTrade }
     tryCommitTrade,
     lastFeelingResult: null,
     needsRedraw: true,
+    hoverElementId: null,
+    pressedElementId: null,
+    stepInputEl:
+      typeof document !== "undefined"
+        ? /** @type {HTMLInputElement|null} */ (document.getElementById("trade-step-input"))
+        : null,
+    stepInputSession: null,
     pointerState: {
       isPointerDown: false,
       lastPointerX: 0,
       lastPointerY: 0,
     },
+    scrollY: {
+      player: 0,
+      merchant: 0,
+    },
+    stepN: {
+      player: {},
+      merchant: {},
+    },
   };
 
-  // 初始构建 UI 元素（仅标题栏关闭按钮与成交按钮，列表行由上层绘制层在首次 drawAll 中补充）
-  rebuildStaticUIElements(state);
+  // 初始构建 UI 元素（静态按钮 + 列表滚动区 + 行内按钮）
+  rebuildAllUIElements(state);
 
   // 初次计算感受词（通常在没有 pending 的情况下会返回「可以」等中性值）
   recomputeFeelings(state);
@@ -166,17 +187,32 @@ export function createTradeUIState(canvas, context, { renderer, tryCommitTrade }
 
   // 绑定鼠标事件
   attachCanvasEventListeners(state);
+  attachStepInputEventListeners(state);
 
   return state;
 }
 
 /**
- * 根据当前布局重建静态 UI 元素，如关闭按钮与成交按钮。
+ * 外部在 canvas 尺寸变化后可调用该函数刷新布局与命中框。
  *
  * @param {TradeUIState} state
  */
-function rebuildStaticUIElements(state) {
-  const { layout } = state;
+export function refreshTradeUILayout(state) {
+  state.layout = computePhysicalTradeLayout(state.canvas.width, state.canvas.height);
+  rebuildAllUIElements(state);
+  requestFullRedraw(state);
+}
+
+/**
+ * 根据当前布局重建静态 + 动态 UI 元素：
+ * - 关闭按钮 / 成交按钮
+ * - 左右列表滚动区域（wheel）
+ * - 行内步进与动作按钮（click）
+ *
+ * @param {TradeUIState} state
+ */
+function rebuildAllUIElements(state) {
+  const { layout, context } = state;
 
   /** @type {UIElement[]} */
   const elements = [];
@@ -201,7 +237,336 @@ function rebuildStaticUIElements(state) {
     },
   });
 
+  // 左右列表滚动区域
+  elements.push({
+    id: "playerListScroll",
+    bounds: layout.bounds.playerList,
+    onWheel: (s, ev) => {
+      applyListWheelScroll(s, "player", ev.deltaY);
+    },
+  });
+  elements.push({
+    id: "merchantListScroll",
+    bounds: layout.bounds.merchantList,
+    onWheel: (s, ev) => {
+      applyListWheelScroll(s, "merchant", ev.deltaY);
+    },
+  });
+
+  // 动态行按钮：根据当前 inventory + pending 构造表格行，然后生成命中框
+  const model = buildTradeTableModel(context);
+  appendRowUIElements(elements, state, model);
+
   state.uiElements = elements;
+}
+
+// 行布局与列表内边距：作为“唯一真源”，渲染层与交互层共享，避免错位。
+export const ROW_HEIGHT = 39;
+export const LIST_INSET_Y = 12; // ~= 18px 字体的 2/3
+export const LIST_TEXT_PAD_X = 12;
+export const ROW_PAD_X = 14;
+
+/**
+ * @typedef {Object} TradeRowModel
+ * @property {string} itemId
+ * @property {string} displayName
+ * @property {number} availableCount
+ * @property {number} pendingCount
+ * @property {boolean} underline
+ */
+
+/**
+ * @typedef {Object} TradeTableModel
+ * @property {TradeRowModel[]} playerRows
+ * @property {TradeRowModel[]} merchantRows
+ * @property {number} totalRows
+ */
+
+/**
+ * 构造双列表的“展示模型”：
+ * - 行数对齐：totalRows = max(左物品数,右物品数)，不足侧补空行
+ * - 待处理行：点击给/要后，在对方列表中展示 pending（同物品仅一行、数量为 0 隐藏）
+ *
+ * 约定：
+ * - 左侧列表的 pending 来自 context.pendingGetPlayer（玩家“要到手”的东西）
+ * - 右侧列表的 pending 来自 context.pendingGivePlayer（玩家“给出去”的东西）
+ *
+ * @param {import("./trade_context.js").TradeContext} context
+ * @returns {TradeTableModel}
+ */
+function buildTradeTableModel(context) {
+  const toBaseRowModel = (row) => ({
+    itemId: row.item.itemId,
+    displayName: row.item.displayName,
+    availableCount: row.availableCount | 0,
+    pendingCount: 0,
+    underline: false,
+  });
+
+  /** @type {Object.<string, TradeRowModel>} */
+  const playerMap = {};
+  /** @type {Object.<string, TradeRowModel>} */
+  const merchantMap = {};
+
+  for (const row of context.playerInventory) {
+    if (!row || !row.item) continue;
+    playerMap[row.item.itemId] = toBaseRowModel(row);
+  }
+  for (const row of context.merchantInventory) {
+    if (!row || !row.item) continue;
+    merchantMap[row.item.itemId] = toBaseRowModel(row);
+  }
+
+  // pending 行：数量为 0 时隐藏但保留；这里直接不加入 rows（达到“隐藏”效果）
+  for (const itemId in context.pendingGetPlayer) {
+    const p = context.pendingGetPlayer[itemId];
+    const cnt = (p?.count || 0) | 0;
+    if (cnt <= 0) continue;
+    if (!playerMap[itemId]) {
+      playerMap[itemId] = {
+        itemId,
+        displayName: itemId,
+        availableCount: 0,
+        pendingCount: cnt,
+        underline: true,
+      };
+    } else {
+      playerMap[itemId].pendingCount = cnt;
+      playerMap[itemId].underline = true;
+    }
+  }
+  for (const itemId in context.pendingGivePlayer) {
+    const p = context.pendingGivePlayer[itemId];
+    const cnt = (p?.count || 0) | 0;
+    if (cnt <= 0) continue;
+    if (!merchantMap[itemId]) {
+      merchantMap[itemId] = {
+        itemId,
+        displayName: itemId,
+        availableCount: 0,
+        pendingCount: cnt,
+        underline: true,
+      };
+    } else {
+      merchantMap[itemId].pendingCount = cnt;
+      merchantMap[itemId].underline = true;
+    }
+  }
+
+  const playerRows = Object.values(playerMap);
+  const merchantRows = Object.values(merchantMap);
+
+  // 稳定排序：按 displayName（demo 足够）
+  playerRows.sort((a, b) => a.displayName.localeCompare(b.displayName, "zh-Hans-CN"));
+  merchantRows.sort((a, b) => a.displayName.localeCompare(b.displayName, "zh-Hans-CN"));
+
+  const totalRows = Math.max(playerRows.length, merchantRows.length);
+  return { playerRows, merchantRows, totalRows };
+}
+
+/**
+ * 将滚轮输入转为列表滚动（独立滚动）。
+ *
+ * @param {TradeUIState} state
+ * @param {"player"|"merchant"} side
+ * @param {number} deltaY
+ */
+function applyListWheelScroll(state, side, deltaY) {
+  const model = buildTradeTableModel(state.context);
+  const total = model.totalRows;
+  const listBounds =
+    side === "player" ? state.layout.bounds.playerList : state.layout.bounds.merchantList;
+  const viewportH = Math.max(0, listBounds.height - LIST_INSET_Y * 2);
+  const maxScroll = Math.max(0, total * ROW_HEIGHT - viewportH);
+  const next = (state.scrollY[side] || 0) + deltaY;
+  state.scrollY[side] = clamp(next, 0, maxScroll);
+  rebuildAllUIElements(state);
+  requestFullRedraw(state);
+}
+
+function clamp(v, min, max) {
+  if (v <= min) return min;
+  if (v >= max) return max;
+  return v;
+}
+
+/**
+ * 生成双列表行内按钮的命中框。
+ *
+ * @param {UIElement[]} elements
+ * @param {TradeUIState} state
+ * @param {TradeTableModel} model
+ */
+function appendRowUIElements(elements, state, model) {
+  const { bounds } = state.layout;
+  const { totalRows, playerRows, merchantRows } = model;
+
+  const appendSide = (side) => {
+    const isPlayer = side === "player";
+    const listRect = isPlayer ? bounds.playerList : bounds.merchantList;
+    const rows = isPlayer ? playerRows : merchantRows;
+    const scrollY = state.scrollY[side] || 0;
+
+    const contentTop = listRect.y + LIST_INSET_Y;
+    for (let i = 0; i < totalRows; i += 1) {
+      const row = rows[i] || null;
+      const rowY = contentTop + i * ROW_HEIGHT - scrollY;
+
+      // 不在可视区域内的行不生成按钮命中框
+      if (rowY + ROW_HEIGHT < listRect.y + 1 || rowY > listRect.y + listRect.height - 1)
+        continue;
+      if (!row) continue; // 补空行无按钮
+
+      // 按钮布局：右侧从后往前排，以便对齐
+      const right = listRect.x + listRect.width - ROW_PAD_X;
+      const btnH = 26;
+      const btnY = rowY + Math.floor((ROW_HEIGHT - btnH) / 2);
+      const pad = 4;
+
+      const mkBtn = (id, x, w, onClick) => {
+        elements.push({
+          id,
+          bounds: { x, y: btnY, width: w, height: btnH },
+          onClick,
+        });
+      };
+
+      // 动作按钮：两按钮间 1 个半角空格视觉间距（这里用 9px）
+      const actionGap = 9;
+      const actionW = 92;
+      const actionW2 = 92;
+
+      const btn2X = right - actionW2;
+      const btn1X = btn2X - actionGap - actionW;
+
+      const itemId = row.itemId;
+
+      // 步进区：[-10][-1][N][+1][+10]
+      const stepW = 44;
+      const stepGap = 6;
+      const stepN_W = 62; // N 输入槽更宽，形成差异化
+      const stepRight = btn1X - 18;
+      const step5X = stepRight - stepW;
+      const step4X = step5X - stepGap - stepW;
+      const step3X = step4X - stepGap - stepN_W;
+      const step2X = step3X - stepGap - stepW;
+      const step1X = step2X - stepGap - stepW;
+
+      const availableCount = findAvailableCountForSide(state.context, side, itemId);
+
+      mkBtn(`${side}:step:-10:${itemId}`, step1X, stepW, (s) => {
+        const avail = findAvailableCountForSide(s.context, side, itemId);
+        setStepN(
+          s,
+          side,
+          itemId,
+          stepPendingQuantity(getStepN(s, side, itemId, avail), avail, -10)
+        );
+      });
+      mkBtn(`${side}:step:-1:${itemId}`, step2X, stepW, (s) => {
+        const avail = findAvailableCountForSide(s.context, side, itemId);
+        setStepN(
+          s,
+          side,
+          itemId,
+          stepPendingQuantity(getStepN(s, side, itemId, avail), avail, -1)
+        );
+      });
+      elements.push({
+        id: `${side}:step:N:${itemId}`,
+        bounds: { x: step3X, y: btnY, width: stepN_W, height: btnH },
+        onClick: (s) => {
+          const avail = findAvailableCountForSide(s.context, side, itemId);
+          openStepNInput(
+            s,
+            side,
+            itemId,
+            { x: step3X, y: btnY, width: stepN_W, height: btnH },
+            avail
+          );
+        },
+      });
+      mkBtn(`${side}:step:+1:${itemId}`, step4X, stepW, (s) => {
+        const avail = findAvailableCountForSide(s.context, side, itemId);
+        setStepN(
+          s,
+          side,
+          itemId,
+          stepPendingQuantity(getStepN(s, side, itemId, avail), avail, +1)
+        );
+      });
+      mkBtn(`${side}:step:+10:${itemId}`, step5X, stepW, (s) => {
+        const avail = findAvailableCountForSide(s.context, side, itemId);
+        setStepN(
+          s,
+          side,
+          itemId,
+          stepPendingQuantity(getStepN(s, side, itemId, avail), avail, +10)
+        );
+      });
+
+      if (isPlayer) {
+        // 左侧动作：[给N个] [全都给]
+        mkBtn(`${side}:action:giveN:${itemId}`, btn1X, actionW, (s) => {
+          const avail = findAvailableCountForSide(s.context, "player", itemId);
+          const n = clamp(getStepN(s, "player", itemId, avail), 0, avail);
+          applyRowActionAndRefresh(s, "player", "give", itemId, n);
+          rebuildAllUIElements(s);
+        });
+        mkBtn(`${side}:action:giveAll:${itemId}`, btn2X, actionW2, (s) => {
+          const avail = findAvailableCountForSide(s.context, "player", itemId);
+          applyRowActionAndRefresh(s, "player", "give", itemId, avail);
+          rebuildAllUIElements(s);
+        });
+      } else {
+        // 右侧动作：[要N个] [全都要]
+        mkBtn(`${side}:action:getN:${itemId}`, btn1X, actionW, (s) => {
+          const avail = findAvailableCountForSide(s.context, "merchant", itemId);
+          const n = clamp(getStepN(s, "merchant", itemId, avail), 0, avail);
+          applyRowActionAndRefresh(s, "player", "get", itemId, n);
+          rebuildAllUIElements(s);
+        });
+        mkBtn(`${side}:action:getAll:${itemId}`, btn2X, actionW2, (s) => {
+          const avail = findAvailableCountForSide(s.context, "merchant", itemId);
+          applyRowActionAndRefresh(s, "player", "get", itemId, avail);
+          rebuildAllUIElements(s);
+        });
+      }
+
+      // 避免 unused 警告（未来会用于绘制 N 与状态）
+      void pad;
+      void availableCount;
+    }
+  };
+
+  appendSide("player");
+  appendSide("merchant");
+}
+
+/**
+ * @param {import("./trade_context.js").TradeContext} context
+ * @param {"player"|"merchant"} side
+ * @param {string} itemId
+ */
+function findAvailableCountForSide(context, side, itemId) {
+  const inv = side === "player" ? context.playerInventory : context.merchantInventory;
+  for (const row of inv) {
+    if (row?.item?.itemId === itemId) return Math.max(0, row.availableCount | 0);
+  }
+  return 0;
+}
+
+function getStepN(state, side, itemId, availableCount) {
+  const map = state.stepN[side];
+  const existing = map[itemId];
+  const base = typeof existing === "number" ? (existing | 0) : 1;
+  return clamp(base, 0, Math.max(0, availableCount | 0));
+}
+
+function setStepN(state, side, itemId, next) {
+  state.stepN[side][itemId] = next | 0;
+  rebuildAllUIElements(state);
+  requestFullRedraw(state);
 }
 
 /**
@@ -238,6 +603,7 @@ function handleDealButtonClick(state) {
   // 成功结算：pending 聚合应在逻辑层已被清空，并刷新库存
   // 重新计算感受词，并整屏重绘
   recomputeFeelings(state);
+  rebuildAllUIElements(state);
   requestFullRedraw(state);
 }
 
@@ -258,6 +624,7 @@ export function confirmCurrentTrade(state) {
   }
 
   recomputeFeelings(state);
+  rebuildAllUIElements(state);
   requestFullRedraw(state);
 }
 
@@ -307,17 +674,46 @@ function requestFullRedraw(state) {
 }
 
 /**
+ * 仅在 hover/pressed 状态变化时触发重绘，避免 mousemove 频繁全量重绘。
+ *
+ * @param {TradeUIState} state
+ * @param {string|null} nextHoverId
+ */
+function setHoverElementId(state, nextHoverId) {
+  const curr = state.hoverElementId || null;
+  const next = nextHoverId || null;
+  if (curr === next) return;
+  state.hoverElementId = next;
+  requestFullRedraw(state);
+}
+
+/**
+ * @param {TradeUIState} state
+ * @param {string|null} nextPressedId
+ */
+function setPressedElementId(state, nextPressedId) {
+  const curr = state.pressedElementId || null;
+  const next = nextPressedId || null;
+  if (curr === next) return;
+  state.pressedElementId = next;
+  requestFullRedraw(state);
+}
+
+/**
  * 将浏览器鼠标事件转换为 TradePointerEvent / TradeWheelEvent。
  *
  * @param {TradeUIState} state
  * @param {MouseEvent | WheelEvent} ev
- * @param {"mousedown"|"mouseup"|"click"|"wheel"} type
+ * @param {"mousedown"|"mouseup"|"mousemove"|"click"|"wheel"} type
  * @returns {TradePointerEvent | TradeWheelEvent}
  */
 function normalizePointerEvent(state, ev, type) {
   const rect = state.canvas.getBoundingClientRect();
-  const x = ev.clientX - rect.left;
-  const y = ev.clientY - rect.top;
+  // 将 CSS 像素坐标映射到 Canvas 实际像素坐标（处理 devicePixelRatio / CSS 缩放）
+  const scaleX = rect.width > 0 ? state.canvas.width / rect.width : 1;
+  const scaleY = rect.height > 0 ? state.canvas.height / rect.height : 1;
+  const x = (ev.clientX - rect.left) * scaleX;
+  const y = (ev.clientY - rect.top) * scaleY;
 
   if (type === "wheel") {
     const wheelEv = /** @type {WheelEvent} */ (ev);
@@ -401,19 +797,25 @@ function attachCanvasEventListeners(state) {
   const canvas = state.canvas;
 
   const handleMouseDown = (ev) => {
+    if (isStepInputVisible(state)) return;
     const pev = /** @type {TradePointerEvent} */ (
       normalizePointerEvent(state, ev, "mousedown")
     );
     state.pointerState.isPointerDown = true;
     state.pointerState.lastPointerX = pev.x;
     state.pointerState.lastPointerY = pev.y;
+
+    const target = hitTest(state, pev.x, pev.y);
+    setPressedElementId(state, target ? target.id : null);
   };
 
   const handleMouseUp = (ev) => {
+    if (isStepInputVisible(state)) return;
     const pev = /** @type {TradePointerEvent} */ (
       normalizePointerEvent(state, ev, "mouseup")
     );
     state.pointerState.isPointerDown = false;
+    setPressedElementId(state, null);
     dispatchPointerEvent(state, pev);
 
     // 将 mouseup 视为一次 click，方便按钮实现
@@ -424,24 +826,153 @@ function attachCanvasEventListeners(state) {
   };
 
   const handleMouseMove = (ev) => {
+    if (isStepInputVisible(state)) return;
     const pev = /** @type {TradePointerEvent} */ (
       normalizePointerEvent(state, ev, "mousemove")
     );
     state.pointerState.lastPointerX = pev.x;
     state.pointerState.lastPointerY = pev.y;
+
+    const target = hitTest(state, pev.x, pev.y);
+    setHoverElementId(state, target ? target.id : null);
     dispatchPointerEvent(state, pev);
   };
 
   const handleWheel = (ev) => {
+    if (isStepInputVisible(state)) return;
     const wev = /** @type {TradeWheelEvent} */ (
       normalizePointerEvent(state, ev, "wheel")
     );
     dispatchWheelEvent(state, wev);
   };
 
+  const handleMouseLeave = () => {
+    state.pointerState.isPointerDown = false;
+    setPressedElementId(state, null);
+    setHoverElementId(state, null);
+  };
+
   canvas.addEventListener("mousedown", handleMouseDown);
   canvas.addEventListener("mouseup", handleMouseUp);
   canvas.addEventListener("mousemove", handleMouseMove);
+  canvas.addEventListener("mouseleave", handleMouseLeave);
   canvas.addEventListener("wheel", handleWheel, { passive: true });
+}
+
+function isStepInputVisible(state) {
+  const el = state.stepInputEl;
+  return !!el && el.style.display !== "none";
+}
+
+function attachStepInputEventListeners(state) {
+  const input = state.stepInputEl;
+  if (!input) return;
+
+  // 输入过滤：仅允许数字（允许为空）；其他字符实时剔除
+  input.addEventListener("input", () => {
+    const raw = String(input.value || "");
+    // 仅保留 0-9
+    const filtered = raw.replace(/[^\d]/g, "");
+    if (filtered !== raw) {
+      const end = input.selectionEnd || 0;
+      const delta = raw.length - filtered.length;
+      input.value = filtered;
+      // 尽量维持光标位置
+      const nextPos = Math.max(0, end - delta);
+      try {
+        input.setSelectionRange(nextPos, nextPos);
+      } catch {
+        // ignore
+      }
+    }
+  });
+
+  input.addEventListener("mousedown", (ev) => {
+    ev.stopPropagation();
+  });
+  input.addEventListener("wheel", (ev) => {
+    ev.stopPropagation();
+  });
+
+  input.addEventListener("keydown", (ev) => {
+    if (ev.key === "Enter") {
+      ev.preventDefault();
+      commitAndHideStepInput(state, "commit");
+    } else if (ev.key === "Escape") {
+      ev.preventDefault();
+      commitAndHideStepInput(state, "cancel");
+    }
+  });
+
+  input.addEventListener("blur", () => {
+    commitAndHideStepInput(state, "commit");
+  });
+}
+
+/**
+ * 打开某行的 N 输入框（覆盖在 Canvas 对应矩形上）。
+ *
+ * @param {TradeUIState} state
+ * @param {"player"|"merchant"} side
+ * @param {string} itemId
+ * @param {{ x:number,y:number,width:number,height:number }} boundsPx  Canvas 像素坐标
+ * @param {number} availableCount
+ */
+function openStepNInput(state, side, itemId, boundsPx, availableCount) {
+  const input = state.stepInputEl;
+  if (!input) return;
+
+  const rect = state.canvas.getBoundingClientRect();
+  const cssScaleX = rect.width > 0 ? rect.width / state.canvas.width : 1;
+  const cssScaleY = rect.height > 0 ? rect.height / state.canvas.height : 1;
+
+  const left = rect.left + boundsPx.x * cssScaleX;
+  const top = rect.top + boundsPx.y * cssScaleY;
+  const width = Math.max(24, boundsPx.width * cssScaleX);
+  const height = Math.max(24, boundsPx.height * cssScaleY);
+
+  const current = getStepN(state, side, itemId, availableCount);
+  state.stepInputSession = { side, itemId, originalValue: current | 0 };
+
+  input.style.display = "block";
+  input.style.left = `${Math.round(left)}px`;
+  input.style.top = `${Math.round(top)}px`;
+  input.style.width = `${Math.round(width)}px`;
+  input.style.height = `${Math.round(height)}px`;
+
+  input.value = String(current | 0);
+  input.focus();
+  input.select();
+}
+
+/**
+ * @param {TradeUIState} state
+ * @param {"commit"|"cancel"} mode
+ */
+function commitAndHideStepInput(state, mode) {
+  const input = state.stepInputEl;
+  const session = state.stepInputSession;
+  if (!input || !session) {
+    if (input) input.style.display = "none";
+    state.stepInputSession = null;
+    return;
+  }
+
+  const { side, itemId, originalValue } = session;
+  const avail = findAvailableCountForSide(state.context, side, itemId);
+
+  if (mode === "cancel") {
+    setStepN(state, side, itemId, clamp(originalValue, 0, avail));
+  } else {
+    // 用户选择的策略：非法/空输入当作 0
+    const raw = String(input.value || "").trim();
+    const parsed = raw ? parseInt(raw, 10) : 0;
+    const next = Number.isFinite(parsed) ? (parsed | 0) : 0;
+    setStepN(state, side, itemId, clamp(next, 0, avail));
+  }
+
+  input.style.display = "none";
+  state.stepInputSession = null;
+  requestFullRedraw(state);
 }
 
