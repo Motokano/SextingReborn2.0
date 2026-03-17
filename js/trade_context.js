@@ -218,7 +218,10 @@ function findInventoryRow(inventory, itemId) {
 
 /**
  * 在 PendingLine 映射中安全地增加/减少数量。
- * 数量降到 0 或以下时移除该条目，供 UI 隐藏对应 pending 行。
+ *
+ * 对齐 trade_ui_layout.md：
+ * - 数量为 0 时「隐藏但不删除」，以便后续从 0 再次增加时复用同一行
+ * - 仅在「成交」或「关闭交易窗口」时才应真正删除（demo 中由更上层负责清空）
  *
  * @param {Object.<string, PendingLine>} pendingMap
  * @param {string} itemId
@@ -230,14 +233,10 @@ function updatePendingMap(pendingMap, itemId, delta) {
   const existing = pendingMap[itemId];
   const nextCount = (existing ? existing.count : 0) + delta;
 
-  if (nextCount > 0) {
-    pendingMap[itemId] = {
-      itemId,
-      count: nextCount,
-    };
-  } else {
-    delete pendingMap[itemId];
-  }
+  pendingMap[itemId] = {
+    itemId,
+    count: Math.max(0, nextCount | 0),
+  };
 }
 
 /**
