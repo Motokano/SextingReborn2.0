@@ -107,6 +107,36 @@
             z-index: 2;
         }
         .cell .note.dim { color: rgba(255,255,255,0.6); }
+        .cell .note-indicator {
+            position: absolute;
+            right: 2px;
+            bottom: 2px;
+            padding: 1px 4px;
+            border-radius: 4px;
+            background: rgba(0,0,0,0.45);
+            border: 1px solid rgba(255,255,255,0.18);
+            font-size: 10px;
+            line-height: 1.1;
+            color: rgba(240,192,64,0.95);
+            pointer-events: none;
+            z-index: 3;
+        }
+        .note-tooltip {
+            position: fixed;
+            max-width: min(420px, 70vw);
+            padding: 8px 10px;
+            border-radius: 8px;
+            background: rgba(20, 20, 20, 0.96);
+            border: 1px solid rgba(255,255,255,0.16);
+            box-shadow: 0 12px 34px rgba(0,0,0,0.55);
+            color: rgba(255,255,255,0.92);
+            font-size: 12px;
+            line-height: 1.35;
+            white-space: pre-wrap;
+            pointer-events: none;
+            z-index: 9999;
+            display: none;
+        }
         .sidebar {
             width: 280px;
             background: #252525;
@@ -220,14 +250,15 @@
                 <button type="button" id="btn-apply-npc">应用 NPC</button>
             </div>
             <div class="row" id="panel-note">
-                <label>格子注释（仅编辑器，不导出）</label>
+                <label>格子注释（导出到 annotations，不进 tooltip/title）</label>
                 <textarea id="inp-note" placeholder="比如：这里是Boss房入口 / 需要放事件触发 / 视觉标记等"></textarea>
                 <button type="button" id="btn-apply-note">应用注释</button>
                 <button type="button" id="btn-clear-note">清空注释</button>
-                <p class="hint">注释会自动保存在本地浏览器存储；导出 JSON 不包含该字段</p>
+                <p class="hint">格子上只显示“注”角标；鼠标悬停会弹出完整注释。</p>
             </div>
         </div>
     </div>
+    <div id="note-tooltip" class="note-tooltip"></div>
 
     <script>
         (function () {
@@ -249,8 +280,45 @@
 
             var ui = {
                 showNotes: true,
-                terrainRegistry: null
+                terrainRegistry: null,
+                hoverCell: null
             };
+
+            var noteTooltipEl = document.getElementById('note-tooltip');
+            var lastMouse = { x: 0, y: 0 };
+            window.addEventListener('mousemove', function (e) {
+                lastMouse.x = e.clientX;
+                lastMouse.y = e.clientY;
+                if (ui.hoverCell && noteTooltipEl && noteTooltipEl.style.display !== 'none') {
+                    positionNoteTooltip(lastMouse.x, lastMouse.y);
+                }
+            }, { passive: true });
+
+            function showNoteTooltip(x, y, text) {
+                if (!noteTooltipEl) return;
+                if (!text) { hideNoteTooltip(); return; }
+                noteTooltipEl.textContent = '(' + x + ', ' + y + ')\n' + String(text);
+                noteTooltipEl.style.display = 'block';
+                positionNoteTooltip(lastMouse.x, lastMouse.y);
+            }
+            function hideNoteTooltip() {
+                if (!noteTooltipEl) return;
+                noteTooltipEl.style.display = 'none';
+            }
+            function positionNoteTooltip(mx, my) {
+                if (!noteTooltipEl) return;
+                var pad = 12;
+                var x = mx + 14;
+                var y = my + 14;
+                noteTooltipEl.style.left = x + 'px';
+                noteTooltipEl.style.top = y + 'px';
+                var r = noteTooltipEl.getBoundingClientRect();
+                var vx = x, vy = y;
+                if (r.right > window.innerWidth - pad) vx = Math.max(pad, window.innerWidth - pad - r.width);
+                if (r.bottom > window.innerHeight - pad) vy = Math.max(pad, window.innerHeight - pad - r.height);
+                noteTooltipEl.style.left = vx + 'px';
+                noteTooltipEl.style.top = vy + 'px';
+            }
 
             // 注释现在写入导出 JSON（annotations），不再使用 localStorage。
 
@@ -416,16 +484,30 @@
                         if (ui.showNotes && isEnabled(x, y)) {
                             var noteText = getNoteAt(x, y);
                             if (noteText) {
-                                var noteEl = document.createElement('div');
-                                noteEl.className = 'note' + (isWalkable(x, y) ? '' : ' dim');
-                                noteEl.textContent = noteText;
-                                cell.appendChild(noteEl);
+                                // 格子太小，直接显示正文会被截断；改成“注”角标，正文走悬浮窗显示
+                                var indicator = document.createElement('div');
+                                indicator.className = 'note-indicator';
+                                indicator.textContent = '注';
+                                cell.appendChild(indicator);
                             }
                         }
 
                         cell.addEventListener('mousedown', (function (gx, gy) {
                             return function (e) { if (e.button === 0) onCellMouseDown(gx, gy, e); };
                         })(x, y));
+                        cell.addEventListener('mouseenter', (function (gx, gy) {
+                            return function () {
+                                if (!ui.showNotes || !isEnabled(gx, gy)) return;
+                                var txt = getNoteAt(gx, gy);
+                                if (!txt) return;
+                                ui.hoverCell = { x: gx, y: gy };
+                                showNoteTooltip(gx, gy, txt);
+                            };
+                        })(x, y));
+                        cell.addEventListener('mouseleave', function () {
+                            ui.hoverCell = null;
+                            hideNoteTooltip();
+                        });
                         grid.appendChild(cell);
                     }
                 }
@@ -829,6 +911,7 @@
             document.getElementById('btn-toggle-notes').addEventListener('click', function () {
                 ui.showNotes = !ui.showNotes;
                 this.textContent = '显示注释：' + (ui.showNotes ? '开' : '关');
+                hideNoteTooltip();
                 renderGrid();
                 highlightSelected();
             });
