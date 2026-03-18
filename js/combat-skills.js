@@ -162,7 +162,7 @@
         };
     }
 
-    /** 肢体 ID 列表（与 test-scene COMBAT_LIMB_IDS 一致） */
+    /** 肢体 ID 列表（与 scene-app COMBAT_LIMB_IDS 一致） */
     var LIMB_IDS = ['lhand', 'rhand', 'lfoot', 'rfoot'];
 
     function getLimbIds() {

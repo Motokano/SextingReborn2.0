@@ -1,0 +1,1104 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>地图沙盘 - 潮碧物语</title>
+  <style>
+    * { box-sizing: border-box; }
+    html, body { height: 100%; }
+    body {
+      margin: 0;
+      font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Arial, sans-serif;
+      background: #141414;
+      color: #e7e7e7;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .toolbar {
+      padding: 10px 14px;
+      background: #222;
+      border-bottom: 1px solid #333;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .toolbar button {
+      padding: 8px 12px;
+      background: #3a3a3a;
+      border: 1px solid #4a4a4a;
+      color: #fff;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    .toolbar button:hover { background: #464646; }
+    .toolbar .sep { width: 1px; height: 22px; background: #3a3a3a; margin: 0 2px; }
+    .toolbar .hint { color: #9a9a9a; font-size: 12px; }
+    .toolbar input[type="text"] {
+      padding: 6px 8px;
+      background: #2d2d2d;
+      border: 1px solid #444;
+      color: #fff;
+      border-radius: 6px;
+      width: 260px;
+      max-width: 70vw;
+    }
+
+    .main {
+      flex: 1;
+      min-height: 0;
+      display: flex;
+      overflow: hidden;
+    }
+    .canvas-wrap {
+      flex: 1;
+      min-width: 0;
+      position: relative;
+      background: radial-gradient(circle at 25% 15%, rgba(90,140,255,0.08), rgba(0,0,0,0)) , #151515;
+    }
+    .sidebar {
+      width: 360px;
+      background: #1f1f1f;
+      border-left: 1px solid #333;
+      padding: 14px;
+      overflow: auto;
+    }
+    .sidebar h3 {
+      margin: 0 0 10px 0;
+      font-size: 14px;
+      color: #bfbfbf;
+    }
+    .card {
+      border: 1px solid #333;
+      background: #1a1a1a;
+      border-radius: 10px;
+      padding: 10px;
+      margin-bottom: 12px;
+    }
+    .row { margin-bottom: 10px; }
+    .row label { display: block; font-size: 12px; color: #a7a7a7; margin-bottom: 4px; }
+    .row input[type="text"], .row input[type="number"], .row select, .row textarea {
+      width: 100%;
+      padding: 7px 8px;
+      background: #272727;
+      border: 1px solid #3b3b3b;
+      color: #fff;
+      border-radius: 8px;
+    }
+    .row input[type="number"] { appearance: textfield; }
+    .row textarea { min-height: 66px; resize: vertical; }
+    .row .inline {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+    .btn-row { display: flex; gap: 8px; flex-wrap: wrap; }
+    .btn {
+      padding: 7px 10px;
+      background: #3a3a3a;
+      border: 1px solid #4a4a4a;
+      color: #fff;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+    .btn:hover { background: #454545; }
+    .btn.danger { border-color: #6a2a2a; background: #3a2424; }
+    .btn.danger:hover { background: #4a2a2a; }
+    .muted { color: #9a9a9a; font-size: 12px; line-height: 1.4; }
+    .warn { color: #f0c040; }
+    .err { color: #ff6b6b; }
+    .pill {
+      display: inline-block;
+      font-size: 11px;
+      padding: 2px 8px;
+      border-radius: 999px;
+      background: #2a2a2a;
+      border: 1px solid #3b3b3b;
+      color: #cfcfcf;
+      margin-right: 6px;
+    }
+
+    /* SVG styling */
+    #svg {
+      width: 100%;
+      height: 100%;
+      display: block;
+      cursor: grab;
+    }
+    #svg.dragging { cursor: grabbing; }
+
+    .edge { stroke: rgba(180,180,180,0.55); stroke-width: 2; fill: none; }
+    .edge.missing { stroke: rgba(255,107,107,0.75); stroke-dasharray: 6 5; }
+    .edge.selected { stroke: rgba(240,192,64,0.9); }
+    .edge-label {
+      font-size: 12px;
+      fill: rgba(220,220,220,0.85);
+      paint-order: stroke;
+      stroke: rgba(0,0,0,0.55);
+      stroke-width: 3px;
+      user-select: none;
+      pointer-events: none;
+    }
+
+    .node rect {
+      fill: rgba(40,40,40,0.9);
+      stroke: rgba(120,120,120,0.8);
+      stroke-width: 1.5;
+      rx: 10;
+      ry: 10;
+    }
+    .node.selected rect { stroke: rgba(240,192,64,0.95); }
+    .node .title { font-size: 13px; fill: #fff; }
+    .node .sub { font-size: 11px; fill: rgba(210,210,210,0.75); }
+    .node .badge { font-size: 11px; fill: rgba(240,192,64,0.95); }
+    .node .hit { fill: transparent; cursor: pointer; }
+  </style>
+</head>
+<body>
+  <div class="toolbar">
+    <button type="button" id="btn-load-default">载入默认地图（data/maps）</button>
+    <button type="button" id="btn-import-files">导入地图 JSON（多选文件）</button>
+    <input id="inp-files" type="file" accept="application/json,.json" multiple style="display:none" />
+    <div class="sep"></div>
+    <button type="button" id="btn-export-bundle">导出：bundle.json</button>
+    <button type="button" id="btn-export-individual">导出：每张地图</button>
+    <div class="sep"></div>
+    <span class="hint">缩放：Ctrl+滚轮｜平移：拖动画布｜拖拽节点：左键拖动｜选择：点节点/连线｜建连接：按住 Shift 从节点拖到另一个节点</span>
+    <span style="flex:1"></span>
+    <input id="inp-search" type="text" placeholder="搜索地图：map_id / 名称" style="width:220px" />
+    <input id="inp-default-list" type="text" value="data/maps/home.json,data/maps/field.json,data/maps/town.json" title="默认载入列表（逗号分隔相对路径）" />
+  </div>
+
+  <div class="main">
+    <div class="canvas-wrap">
+      <svg id="svg" viewBox="0 0 1200 800" aria-label="地图沙盘">
+        <defs>
+          <marker id="arrow" viewBox="0 0 10 10" refX="9.5" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M 0 0 L 10 5 L 0 10 z" fill="rgba(180,180,180,0.75)"></path>
+          </marker>
+          <marker id="arrowMissing" viewBox="0 0 10 10" refX="9.5" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M 0 0 L 10 5 L 0 10 z" fill="rgba(255,107,107,0.8)"></path>
+          </marker>
+        </defs>
+        <g id="world"></g>
+      </svg>
+    </div>
+
+    <div class="sidebar">
+      <h3>连接总览</h3>
+      <div class="card" id="card-summary">
+        <div class="muted" id="summary-text">未载入地图。可用工具栏载入默认地图或导入 JSON 文件。</div>
+      </div>
+
+      <h3>选中对象</h3>
+      <div class="card" id="card-selected">
+        <div class="muted">点击节点查看该地图的传送点列表；点击连线查看两张地图之间的连接。</div>
+      </div>
+
+      <h3>新建 / 编辑传送点</h3>
+      <div class="card" id="card-editor">
+        <div class="row">
+          <label>源地图</label>
+          <select id="ed-src"></select>
+        </div>
+        <div class="row">
+          <div class="inline">
+            <div>
+              <label>源 X</label>
+              <input id="ed-sx" type="number" min="0" value="0" />
+            </div>
+            <div>
+              <label>源 Y</label>
+              <input id="ed-sy" type="number" min="0" value="0" />
+            </div>
+          </div>
+          <div class="muted">注意：这里只编辑跨图连接，不会修改格子“可走/空洞”等。</div>
+        </div>
+        <div class="row">
+          <label>目标地图</label>
+          <select id="ed-dst"></select>
+        </div>
+        <div class="row">
+          <div class="inline">
+            <div>
+              <label>目标 X（可空）</label>
+              <input id="ed-tx" type="number" min="0" placeholder="可省略" />
+            </div>
+            <div>
+              <label>目标 Y（可空）</label>
+              <input id="ed-ty" type="number" min="0" placeholder="可省略" />
+            </div>
+          </div>
+        </div>
+        <div class="row">
+          <label>标签 label（可选）</label>
+          <input id="ed-label" type="text" placeholder="例如：回基地 / 出城镇" />
+        </div>
+        <div class="row">
+          <label><input id="ed-return-prev" type="checkbox" /> return_to_previous（可选）</label>
+          <div class="muted">保持兼容：如果你的游戏逻辑会读取该字段，本工具会照常保留。</div>
+        </div>
+        <div class="row">
+          <label>高级字段（JSON，可选）</label>
+          <textarea id="ed-extra" placeholder='例如：{ "cost": 1, "one_way": true }'></textarea>
+          <div class="muted">用于扩展字段（比如门票/条件/脚本触发等）。这些字段会合并到 portal 对象里；与上面显式字段冲突时以上面为准。</div>
+        </div>
+        <div class="btn-row">
+          <button class="btn" type="button" id="btn-add-or-update">新增 / 更新</button>
+          <button class="btn danger" type="button" id="btn-delete">删除该 portal</button>
+        </div>
+        <div class="muted" id="editor-status" style="margin-top:8px;"></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      var MSG_NS = 'cabi.worldEditor.v1';
+      var LAYOUT_KEY = 'cabi_map_sandbox_layout_v1';
+      var DEFAULT_NODE_W = 210;
+      var DEFAULT_NODE_H = 64;
+
+      var state = {
+        mapsById: {},     // map_id => mapJsonObject
+        order: [],        // map_id[]
+        layout: {},       // map_id => {x,y}
+        selected: { type: null, id: null }, // type: 'node'|'edge'|'portal', id: mapId | edgeKey | portalKey
+        portalSelection: null // { mapId, portalIndex }
+      };
+
+      var view = {
+        x: 0,
+        y: 0,
+        scale: 1
+      };
+
+      var ui = {
+        search: ''
+      };
+
+      function deepClone(obj) {
+        return JSON.parse(JSON.stringify(obj));
+      }
+
+      function clamp(n, a, b) { return Math.max(a, Math.min(b, n)); }
+      function asInt(v) {
+        var n = parseInt(String(v), 10);
+        return Number.isFinite(n) ? n : null;
+      }
+
+      function layoutLoad() {
+        try {
+          var raw = localStorage.getItem(LAYOUT_KEY);
+          if (!raw) return {};
+          var obj = JSON.parse(raw);
+          return (obj && typeof obj === 'object') ? obj : {};
+        } catch (e) { return {}; }
+      }
+      function layoutSave() {
+        try {
+          localStorage.setItem(LAYOUT_KEY, JSON.stringify(state.layout || {}));
+        } catch (e) {}
+      }
+
+      function getMapIds() { return state.order.slice(); }
+      function getMap(mapId) { return state.mapsById[mapId] || null; }
+
+      function ensureLayout() {
+        var ids = getMapIds();
+        var existing = state.layout || {};
+        var cols = Math.max(1, Math.ceil(Math.sqrt(ids.length || 1)));
+        for (var i = 0; i < ids.length; i++) {
+          var id = ids[i];
+          if (!existing[id] || typeof existing[id].x !== 'number' || typeof existing[id].y !== 'number') {
+            var r = Math.floor(i / cols);
+            var c = i % cols;
+            existing[id] = { x: 120 + c * 280, y: 90 + r * 140 };
+          }
+        }
+        state.layout = existing;
+      }
+
+      function normalizePortals(mapObj) {
+        if (!mapObj || !Array.isArray(mapObj.portals)) mapObj.portals = [];
+        // 保持原样即可；编辑时只增删改 portal 对象的字段
+      }
+
+      function setMaps(maps) {
+        state.mapsById = {};
+        state.order = [];
+        for (var i = 0; i < maps.length; i++) {
+          var m = maps[i];
+          if (!m || typeof m !== 'object') continue;
+          var id = String(m.map_id || '').trim();
+          if (!id) continue;
+          var obj = deepClone(m);
+          normalizePortals(obj);
+          state.mapsById[id] = obj;
+          state.order.push(id);
+        }
+        state.order.sort();
+        state.layout = layoutLoad();
+        ensureLayout();
+        layoutSave();
+        state.selected = { type: null, id: null };
+        state.portalSelection = null;
+        refreshAll();
+        emitState();
+      }
+
+      function edgeKey(src, dst) { return src + '->' + dst; }
+
+      function buildEdges() {
+        var edges = {}; // key => {src,dst,count,missingTarget}
+        var ids = getMapIds();
+        for (var i = 0; i < ids.length; i++) {
+          var src = ids[i];
+          var m = getMap(src);
+          var portals = (m && Array.isArray(m.portals)) ? m.portals : [];
+          for (var p = 0; p < portals.length; p++) {
+            var dst = String(portals[p].target_map_id || '').trim();
+            if (!dst) continue;
+            var k = edgeKey(src, dst);
+            if (!edges[k]) edges[k] = { src: src, dst: dst, count: 0, missingTarget: !getMap(dst) };
+            edges[k].count += 1;
+            if (!getMap(dst)) edges[k].missingTarget = true;
+          }
+        }
+        return Object.keys(edges).sort().map(function (k) { return edges[k]; });
+      }
+
+      function worldEl() { return document.getElementById('world'); }
+      function svgEl() { return document.getElementById('svg'); }
+
+      function setWorldTransform() {
+        var w = worldEl();
+        w.setAttribute('transform', 'translate(' + view.x + ' ' + view.y + ') scale(' + view.scale + ')');
+      }
+
+      function clearWorld() {
+        var w = worldEl();
+        while (w.firstChild) w.removeChild(w.firstChild);
+      }
+
+      function svgNS() { return 'http://www.w3.org/2000/svg'; }
+      function el(name) { return document.createElementNS(svgNS(), name); }
+
+      function draw() {
+        clearWorld();
+        setWorldTransform();
+
+        var w = worldEl();
+        var edges = buildEdges();
+
+        // edges first
+        for (var i = 0; i < edges.length; i++) {
+          var e = edges[i];
+          var srcPos = state.layout[e.src];
+          var dstPos = state.layout[e.dst] || { x: srcPos.x + 260, y: srcPos.y };
+          var x1 = srcPos.x + DEFAULT_NODE_W;
+          var y1 = srcPos.y + DEFAULT_NODE_H / 2;
+          var x2 = dstPos.x;
+          var y2 = dstPos.y + DEFAULT_NODE_H / 2;
+          var dx = Math.max(60, Math.abs(x2 - x1) * 0.5);
+          var path = el('path');
+          path.setAttribute('class', 'edge' + (e.missingTarget ? ' missing' : '') + ((state.selected.type === 'edge' && state.selected.id === edgeKey(e.src, e.dst)) ? ' selected' : ''));
+          var d = 'M ' + x1 + ' ' + y1 + ' C ' + (x1 + dx) + ' ' + y1 + ' ' + (x2 - dx) + ' ' + y2 + ' ' + x2 + ' ' + y2;
+          path.setAttribute('d', d);
+          path.setAttribute('marker-end', 'url(#' + (e.missingTarget ? 'arrowMissing' : 'arrow') + ')');
+          path.dataset.edge = edgeKey(e.src, e.dst);
+          path.style.pointerEvents = 'stroke';
+          path.addEventListener('click', onEdgeClick);
+          w.appendChild(path);
+
+          var label = el('text');
+          label.setAttribute('class', 'edge-label');
+          label.textContent = e.count + ' 条';
+          var mx = (x1 + x2) / 2;
+          var my = (y1 + y2) / 2 - 6;
+          label.setAttribute('x', String(mx));
+          label.setAttribute('y', String(my));
+          label.setAttribute('text-anchor', 'middle');
+          w.appendChild(label);
+        }
+
+        // nodes
+        var ids = getMapIds();
+        for (var j = 0; j < ids.length; j++) {
+          var id = ids[j];
+          var m = getMap(id);
+          var pos = state.layout[id];
+          if (ui.search) {
+            var q = ui.search;
+            var hay = (id + ' ' + (m && m.name ? m.name : '')).toLowerCase();
+            if (hay.indexOf(q) < 0) continue;
+          }
+          var g = el('g');
+          g.setAttribute('class', 'node' + ((state.selected.type === 'node' && state.selected.id === id) ? ' selected' : ''));
+          g.setAttribute('transform', 'translate(' + pos.x + ' ' + pos.y + ')');
+          g.dataset.node = id;
+
+          var rect = el('rect');
+          rect.setAttribute('x', '0'); rect.setAttribute('y', '0');
+          rect.setAttribute('width', String(DEFAULT_NODE_W));
+          rect.setAttribute('height', String(DEFAULT_NODE_H));
+          g.appendChild(rect);
+
+          var title = el('text');
+          title.setAttribute('class', 'title');
+          title.setAttribute('x', '12');
+          title.setAttribute('y', '24');
+          title.textContent = id + (m && m.name ? (' · ' + m.name) : '');
+          g.appendChild(title);
+
+          var sub = el('text');
+          sub.setAttribute('class', 'sub');
+          sub.setAttribute('x', '12');
+          sub.setAttribute('y', '44');
+          var wv = (m && m.width) ? m.width : '?';
+          var hv = (m && m.height) ? m.height : '?';
+          var pc = (m && Array.isArray(m.portals)) ? m.portals.length : 0;
+          sub.textContent = '尺寸 ' + wv + '×' + hv + ' · portals ' + pc;
+          g.appendChild(sub);
+
+          var outgoingMissing = countOutgoingMissingTargets(id);
+          if (outgoingMissing > 0) {
+            var badge = el('text');
+            badge.setAttribute('class', 'badge');
+            badge.setAttribute('x', String(DEFAULT_NODE_W - 12));
+            badge.setAttribute('y', '24');
+            badge.setAttribute('text-anchor', 'end');
+            badge.textContent = '缺目标 ' + outgoingMissing;
+            g.appendChild(badge);
+          }
+
+          var hit = el('rect');
+          hit.setAttribute('class', 'hit');
+          hit.setAttribute('x', '0'); hit.setAttribute('y', '0');
+          hit.setAttribute('width', String(DEFAULT_NODE_W));
+          hit.setAttribute('height', String(DEFAULT_NODE_H));
+          hit.addEventListener('mousedown', onNodeMouseDown);
+          hit.addEventListener('click', onNodeClick);
+          g.appendChild(hit);
+
+          w.appendChild(g);
+        }
+      }
+
+      function countOutgoingMissingTargets(mapId) {
+        var m = getMap(mapId);
+        if (!m || !Array.isArray(m.portals)) return 0;
+        var c = 0;
+        for (var i = 0; i < m.portals.length; i++) {
+          var dst = String(m.portals[i].target_map_id || '').trim();
+          if (dst && !getMap(dst)) c++;
+        }
+        return c;
+      }
+
+      function refreshSummary() {
+        var sum = document.getElementById('summary-text');
+        var ids = getMapIds();
+        if (!ids.length) {
+          sum.innerHTML = '未载入地图。可用工具栏载入默认地图或导入 JSON 文件。';
+          return;
+        }
+        var edges = buildEdges();
+        var missing = 0;
+        for (var i = 0; i < edges.length; i++) if (edges[i].missingTarget) missing++;
+        sum.innerHTML =
+          '<div><span class="pill">地图 ' + ids.length + '</span><span class="pill">连接 ' + edges.length + '</span>' +
+          (missing ? (' <span class="pill" style="border-color:#6a2a2a;color:#ffb0b0">缺目标 ' + missing + '</span>') : '') +
+          '</div>' +
+          '<div class="muted" style="margin-top:6px;">提示：缺目标表示某些 portal 指向了未加载的 target_map_id（连线会变红虚线）。</div>';
+      }
+
+      function refreshEditorOptions() {
+        var srcSel = document.getElementById('ed-src');
+        var dstSel = document.getElementById('ed-dst');
+        var ids = getMapIds();
+        function fill(sel) {
+          var cur = sel.value || '';
+          sel.innerHTML = '';
+          for (var i = 0; i < ids.length; i++) {
+            var id = ids[i];
+            var opt = document.createElement('option');
+            opt.value = id;
+            var m = getMap(id);
+            opt.textContent = id + (m && m.name ? (' · ' + m.name) : '');
+            sel.appendChild(opt);
+          }
+          if (cur && ids.indexOf(cur) >= 0) sel.value = cur;
+        }
+        fill(srcSel);
+        fill(dstSel);
+      }
+
+      function setSelectedPanelHtml(html) {
+        document.getElementById('card-selected').innerHTML = html;
+      }
+
+      function selectNode(mapId) {
+        state.selected = { type: 'node', id: mapId };
+        state.portalSelection = null;
+        var m = getMap(mapId);
+        if (!m) return;
+        var portals = Array.isArray(m.portals) ? m.portals : [];
+        var items = [];
+        for (var i = 0; i < portals.length; i++) {
+          var p = portals[i];
+          var dst = String(p.target_map_id || '').trim();
+          var dstOk = !!getMap(dst);
+          var label = p.label ? String(p.label) : '';
+          var sx = (p.x != null) ? p.x : '';
+          var sy = (p.y != null) ? p.y : '';
+          var tx = (p.target_x != null) ? p.target_x : '';
+          var ty = (p.target_y != null) ? p.target_y : '';
+          items.push(
+            '<div style="padding:8px;border:1px solid #333;border-radius:10px;margin:8px 0;background:#171717">' +
+              '<div><b>' + (dst || '<span class="err">（未填 target_map_id）</span>') + '</b> ' +
+              (dst && !dstOk ? '<span class="err">（目标未加载）</span>' : '') +
+              (label ? (' <span class="muted">· ' + escapeHtml(label) + '</span>') : '') +
+              '</div>' +
+              '<div class="muted">源(' + sx + ',' + sy + ') → 目标(' + (tx === '' ? '—' : tx) + ',' + (ty === '' ? '—' : ty) + ')' +
+              (p.return_to_previous ? ' · return_to_previous' : '') +
+              '</div>' +
+              '<div class="btn-row" style="margin-top:8px">' +
+                '<button class="btn" type="button" data-portal="' + mapId + ':' + i + '">编辑此 portal</button>' +
+              '</div>' +
+            '</div>'
+          );
+        }
+
+        setSelectedPanelHtml(
+          '<div><b>' + mapId + '</b> <span class="muted">' + escapeHtml(String(m.name || '')) + '</span></div>' +
+          '<div class="muted">尺寸 ' + (m.width || '?') + '×' + (m.height || '?') + '</div>' +
+          '<div style="margin-top:10px;"><b>传送点 portals</b> <span class="muted">(' + portals.length + ')</span></div>' +
+          (items.length ? items.join('') : '<div class="muted" style="margin-top:8px;">暂无 portals。</div>') +
+          '<div class="muted" style="margin-top:10px;">提示：点“编辑此 portal”会把它带入下方编辑器，可直接改 target_map_id/坐标/label。</div>'
+        );
+
+        // attach handlers for portal edit buttons
+        var card = document.getElementById('card-selected');
+        var btns = card.querySelectorAll('button[data-portal]');
+        for (var b = 0; b < btns.length; b++) {
+          btns[b].addEventListener('click', function () {
+            var k = this.getAttribute('data-portal');
+            var parts = k.split(':');
+            var mid = parts[0];
+            var idx = parseInt(parts[1], 10);
+            loadPortalIntoEditor(mid, idx);
+          });
+        }
+      }
+
+      function emitSelection() {
+        try {
+          window.parent && window.parent.postMessage({
+            ns: MSG_NS,
+            type: 'sandbox.selection',
+            payload: {
+              selected: state.selected,
+              portalSelection: state.portalSelection || null
+            }
+          }, '*');
+        } catch (e) {}
+      }
+
+      function emitState() {
+        try {
+          var ids = getMapIds();
+          var maps = ids.map(function (id) { return state.mapsById[id]; });
+          window.parent && window.parent.postMessage({
+            ns: MSG_NS,
+            type: 'sandbox.state',
+            payload: {
+              maps: maps,
+              order: ids,
+              layout: state.layout || {}
+            }
+          }, '*');
+        } catch (e) {}
+      }
+
+      function selectEdge(k) {
+        state.selected = { type: 'edge', id: k };
+        state.portalSelection = null;
+        var parts = k.split('->');
+        var src = parts[0];
+        var dst = parts[1];
+        var m = getMap(src);
+        var list = [];
+        if (m && Array.isArray(m.portals)) {
+          for (var i = 0; i < m.portals.length; i++) {
+            var p = m.portals[i];
+            if (String(p.target_map_id || '').trim() !== dst) continue;
+            var label = p.label ? String(p.label) : '';
+            list.push(
+              '<div style="padding:8px;border:1px solid #333;border-radius:10px;margin:8px 0;background:#171717">' +
+                '<div><b>portal</b>' + (label ? (' <span class="muted">· ' + escapeHtml(label) + '</span>') : '') + '</div>' +
+                '<div class="muted">源(' + p.x + ',' + p.y + ') → 目标(' + (p.target_x == null ? '—' : p.target_x) + ',' + (p.target_y == null ? '—' : p.target_y) + ')</div>' +
+                '<div class="btn-row" style="margin-top:8px">' +
+                  '<button class="btn" type="button" data-portal="' + src + ':' + i + '">编辑此 portal</button>' +
+                '</div>' +
+              '</div>'
+            );
+          }
+        }
+        setSelectedPanelHtml(
+          '<div><b>' + src + '</b> <span class="muted">→</span> <b>' + dst + '</b> ' +
+          (!getMap(dst) ? '<span class="err">（目标未加载）</span>' : '') +
+          '</div>' +
+          '<div class="muted" style="margin-top:6px;">这里展示从源地图指向目标地图的所有 portals（可能不止一个坐标）。</div>' +
+          (list.length ? list.join('') : '<div class="muted" style="margin-top:8px;">未找到 portals（可能 target_map_id 为空或未匹配）。</div>')
+        );
+
+        var card = document.getElementById('card-selected');
+        var btns = card.querySelectorAll('button[data-portal]');
+        for (var b = 0; b < btns.length; b++) {
+          btns[b].addEventListener('click', function () {
+            var kk = this.getAttribute('data-portal');
+            var pp = kk.split(':');
+            loadPortalIntoEditor(pp[0], parseInt(pp[1], 10));
+          });
+        }
+      }
+
+      function escapeHtml(s) {
+        return String(s)
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;')
+          .replace(/'/g, '&#39;');
+      }
+
+      function setEditorStatus(text, cls) {
+        var el = document.getElementById('editor-status');
+        el.className = 'muted ' + (cls || '');
+        el.textContent = text || '';
+      }
+
+      function loadPortalIntoEditor(mapId, idx) {
+        var m = getMap(mapId);
+        if (!m || !Array.isArray(m.portals) || !m.portals[idx]) return;
+        var p = m.portals[idx];
+        state.portalSelection = { mapId: mapId, portalIndex: idx };
+        document.getElementById('ed-src').value = mapId;
+        document.getElementById('ed-sx').value = (p.x != null ? p.x : 0);
+        document.getElementById('ed-sy').value = (p.y != null ? p.y : 0);
+        document.getElementById('ed-dst').value = String(p.target_map_id || '');
+        document.getElementById('ed-tx').value = (p.target_x != null ? p.target_x : '');
+        document.getElementById('ed-ty').value = (p.target_y != null ? p.target_y : '');
+        document.getElementById('ed-label').value = (p.label != null ? String(p.label) : '');
+        document.getElementById('ed-return-prev').checked = !!p.return_to_previous;
+        document.getElementById('ed-extra').value = formatExtraJsonForPortal(p);
+        setEditorStatus('已载入 ' + mapId + ' 的 portal #' + idx + '（修改后点“新增/更新”覆盖保存）');
+      }
+
+      function formatExtraJsonForPortal(p) {
+        var extra = {};
+        for (var k in p) {
+          if (!Object.prototype.hasOwnProperty.call(p, k)) continue;
+          if (k === 'x' || k === 'y' || k === 'target_map_id' || k === 'target_x' || k === 'target_y' || k === 'label' || k === 'return_to_previous') continue;
+          extra[k] = p[k];
+        }
+        var keys = Object.keys(extra);
+        if (!keys.length) return '';
+        try { return JSON.stringify(extra, null, 2); } catch (e) { return ''; }
+      }
+
+      function upsertPortal() {
+        var src = document.getElementById('ed-src').value;
+        var dst = document.getElementById('ed-dst').value;
+        var sx = asInt(document.getElementById('ed-sx').value);
+        var sy = asInt(document.getElementById('ed-sy').value);
+        var tx = asInt(document.getElementById('ed-tx').value);
+        var ty = asInt(document.getElementById('ed-ty').value);
+        var label = document.getElementById('ed-label').value.trim();
+        var retPrev = document.getElementById('ed-return-prev').checked;
+        var extraRaw = document.getElementById('ed-extra').value.trim();
+        var extra = null;
+        if (extraRaw) {
+          try {
+            extra = JSON.parse(extraRaw);
+            if (!extra || typeof extra !== 'object' || Array.isArray(extra)) {
+              return setEditorStatus('高级字段 JSON 必须是对象，例如 {"a":1}', 'err');
+            }
+          } catch (e) {
+            return setEditorStatus('高级字段 JSON 解析失败：' + e.message, 'err');
+          }
+        }
+
+        if (!src || !getMap(src)) return setEditorStatus('源地图无效', 'err');
+        if (!dst) return setEditorStatus('请先选择目标地图', 'err');
+        if (sx == null || sy == null) return setEditorStatus('源坐标无效', 'err');
+
+        var sm = getMap(src);
+        if (sm && sm.width != null && sm.height != null) {
+          if (sx < 0 || sy < 0 || sx >= sm.width || sy >= sm.height) {
+            return setEditorStatus('源坐标超出范围：该地图尺寸为 ' + sm.width + '×' + sm.height, 'err');
+          }
+        }
+
+        var portal = null;
+        var idx = -1;
+        if (state.portalSelection && state.portalSelection.mapId === src) {
+          idx = state.portalSelection.portalIndex;
+          if (sm.portals && sm.portals[idx]) portal = sm.portals[idx];
+        }
+
+        // 如果不是编辑已选 portal，则尝试按 (x,y) 找一个同格 portal 作为覆盖目标；否则新增
+        if (!portal) {
+          for (var i = 0; i < sm.portals.length; i++) {
+            var p = sm.portals[i];
+            if (p && p.x === sx && p.y === sy) { portal = p; idx = i; break; }
+          }
+        }
+
+        if (!portal) {
+          portal = { x: sx, y: sy };
+          sm.portals.push(portal);
+          idx = sm.portals.length - 1;
+        }
+
+        // 保留未知字段，只更新我们编辑到的字段
+        portal.x = sx;
+        portal.y = sy;
+        portal.target_map_id = dst;
+        if (tx == null || ty == null) {
+          delete portal.target_x;
+          delete portal.target_y;
+        } else {
+          portal.target_x = tx;
+          portal.target_y = ty;
+        }
+        if (label) portal.label = label; else delete portal.label;
+        if (retPrev) portal.return_to_previous = true; else delete portal.return_to_previous;
+        if (extra) {
+          for (var k in extra) {
+            if (!Object.prototype.hasOwnProperty.call(extra, k)) continue;
+            // 显式字段由上方输入控制，不允许被 extra 覆盖
+            if (k === 'x' || k === 'y' || k === 'target_map_id' || k === 'target_x' || k === 'target_y' || k === 'label' || k === 'return_to_previous') continue;
+            portal[k] = extra[k];
+          }
+        }
+
+        state.portalSelection = { mapId: src, portalIndex: idx };
+        setEditorStatus('已保存：' + src + ' portal #' + idx + ' → ' + dst);
+        refreshAll();
+        emitState();
+      }
+
+      function deletePortal() {
+        if (!state.portalSelection) return setEditorStatus('未选择要删除的 portal（先在右侧列表点“编辑此 portal”）', 'warn');
+        var src = state.portalSelection.mapId;
+        var idx = state.portalSelection.portalIndex;
+        var sm = getMap(src);
+        if (!sm || !Array.isArray(sm.portals) || !sm.portals[idx]) return setEditorStatus('portal 已不存在', 'warn');
+        sm.portals.splice(idx, 1);
+        state.portalSelection = null;
+        setEditorStatus('已删除 ' + src + ' portal #' + idx);
+        refreshAll();
+        emitState();
+      }
+
+      function refreshAll() {
+        refreshEditorOptions();
+        refreshSummary();
+        draw();
+        // 如果之前选中的是节点/边，保持面板同步
+        if (state.selected.type === 'node' && getMap(state.selected.id)) selectNode(state.selected.id);
+        else if (state.selected.type === 'edge') selectEdge(state.selected.id);
+      }
+
+      function onNodeClick(e) {
+        e.stopPropagation();
+        var id = this.parentNode && this.parentNode.dataset ? this.parentNode.dataset.node : null;
+        if (!id) return;
+        selectNode(id);
+        draw();
+        emitSelection();
+      }
+
+      function onEdgeClick(e) {
+        e.stopPropagation();
+        var k = this.dataset.edge;
+        if (!k) return;
+        selectEdge(k);
+        draw();
+        emitSelection();
+      }
+
+      // pan/zoom and node dragging
+      var draggingWorld = false;
+      var dragWorldStart = null;
+      var dragNode = null; // { id, startMouse:{x,y}, startPos:{x,y} }
+      var linkDrag = null; // { fromId }
+
+      function screenToWorld(pt) {
+        return {
+          x: (pt.x - view.x) / view.scale,
+          y: (pt.y - view.y) / view.scale
+        };
+      }
+
+      function onSvgMouseDown(e) {
+        if (e.button !== 0) return;
+        if (dragNode) return;
+        draggingWorld = true;
+        svgEl().classList.add('dragging');
+        dragWorldStart = { mx: e.clientX, my: e.clientY, vx: view.x, vy: view.y };
+      }
+      function onSvgMouseMove(e) {
+        if (dragNode) {
+          var id = dragNode.id;
+          var wp = screenToWorld({ x: e.clientX, y: e.clientY });
+          var sp = screenToWorld({ x: dragNode.startMouse.x, y: dragNode.startMouse.y });
+          var dx = wp.x - sp.x;
+          var dy = wp.y - sp.y;
+          state.layout[id] = { x: dragNode.startPos.x + dx, y: dragNode.startPos.y + dy };
+          layoutSave();
+          draw();
+          return;
+        }
+        if (linkDrag) {
+          // 连接拖拽只需要在 mouseup 时结算；这里不做临时线，避免复杂度飙升
+          return;
+        }
+        if (!draggingWorld || !dragWorldStart) return;
+        view.x = dragWorldStart.vx + (e.clientX - dragWorldStart.mx);
+        view.y = dragWorldStart.vy + (e.clientY - dragWorldStart.my);
+        setWorldTransform();
+      }
+      function onSvgMouseUp() {
+        draggingWorld = false;
+        dragWorldStart = null;
+        dragNode = null;
+        if (linkDrag) {
+          var fromId = linkDrag.fromId;
+          linkDrag = null;
+          // 尝试找鼠标落点下的节点
+          var target = eTargetNodeIdFromPoint(window._lastMouseX, window._lastMouseY);
+          if (fromId && target && fromId !== target) {
+            // 创建一个 portal（默认坐标 0,0），并载入编辑器让用户补齐坐标与额外字段
+            var sm = getMap(fromId);
+            if (sm) {
+              if (!Array.isArray(sm.portals)) sm.portals = [];
+              sm.portals.push({ x: 0, y: 0, target_map_id: target, label: '' });
+              var idx = sm.portals.length - 1;
+              refreshAll();
+              selectEdge(edgeKey(fromId, target));
+              loadPortalIntoEditor(fromId, idx);
+              setEditorStatus('已从图上创建连接：' + fromId + ' → ' + target + '（请在下方补齐源坐标/落点坐标）', 'warn');
+              emitSelection();
+              emitState();
+            }
+          } else if (fromId) {
+            setEditorStatus('连接创建已取消（未拖到另一个节点上）', 'warn');
+          }
+        }
+        svgEl().classList.remove('dragging');
+      }
+
+      function onNodeMouseDown(e) {
+        e.stopPropagation();
+        if (e.button !== 0) return;
+        var id = this.parentNode && this.parentNode.dataset ? this.parentNode.dataset.node : null;
+        if (!id) return;
+        if (e.shiftKey) {
+          linkDrag = { fromId: id };
+          setEditorStatus('正在创建连接：从 ' + id + ' 拖到目标节点…（松开鼠标完成）', 'warn');
+          return;
+        }
+        dragNode = {
+          id: id,
+          startMouse: { x: e.clientX, y: e.clientY },
+          startPos: { x: state.layout[id].x, y: state.layout[id].y }
+        };
+      }
+
+      function onWheel(e) {
+        if (!e.ctrlKey) return; // 防止与页面滚动冲突
+        e.preventDefault();
+        var delta = -e.deltaY;
+        var factor = delta > 0 ? 1.08 : 1 / 1.08;
+        var old = view.scale;
+        var next = clamp(old * factor, 0.35, 2.2);
+        if (Math.abs(next - old) < 1e-6) return;
+        // zoom around pointer (keep world-point under cursor stable)
+        var mx = e.clientX, my = e.clientY;
+        var before = screenToWorld({ x: mx, y: my });
+        view.scale = next;
+        view.x = mx - before.x * view.scale;
+        view.y = my - before.y * view.scale;
+        setWorldTransform();
+      }
+
+      // IO
+      function downloadText(filename, text) {
+        var blob = new Blob([text], { type: 'application/json' });
+        var url = URL.createObjectURL(blob);
+        var a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        a.click();
+        URL.revokeObjectURL(url);
+      }
+
+      function exportBundle() {
+        var ids = getMapIds();
+        if (!ids.length) return window.alert('没有可导出的地图');
+        var maps = ids.map(function (id) { return state.mapsById[id]; });
+        downloadText('maps_bundle.json', JSON.stringify({ maps: maps }, null, 2));
+      }
+
+      function exportIndividual() {
+        var ids = getMapIds();
+        if (!ids.length) return window.alert('没有可导出的地图');
+        for (var i = 0; i < ids.length; i++) {
+          var id = ids[i];
+          downloadText(id + '.json', JSON.stringify(state.mapsById[id], null, 2));
+        }
+      }
+
+      function importFiles(fileList) {
+        var files = Array.prototype.slice.call(fileList || []);
+        if (!files.length) return;
+        var maps = [];
+        var pending = files.length;
+        for (var i = 0; i < files.length; i++) {
+          (function (file) {
+            var reader = new FileReader();
+            reader.onload = function () {
+              try {
+                var obj = JSON.parse(String(reader.result || ''));
+                maps.push(obj);
+              } catch (e) {
+                window.alert('解析失败：' + file.name + '：' + e.message);
+              } finally {
+                pending--;
+                if (pending === 0) setMaps(maps);
+              }
+            };
+            reader.onerror = function () {
+              pending--;
+              window.alert('读取失败：' + file.name);
+              if (pending === 0) setMaps(maps);
+            };
+            reader.readAsText(file, 'utf-8');
+          })(files[i]);
+        }
+      }
+
+      function loadDefault() {
+        var raw = document.getElementById('inp-default-list').value || '';
+        var parts = raw.split(',').map(function (s) { return s.trim(); }).filter(Boolean);
+        if (!parts.length) return window.alert('默认列表为空');
+        var maps = [];
+        var pending = parts.length;
+        for (var i = 0; i < parts.length; i++) {
+          (function (path) {
+            fetch(path)
+              .then(function (r) { return r.ok ? r.json() : null; })
+              .then(function (obj) {
+                if (!obj) window.alert('载入失败：' + path);
+                else maps.push(obj);
+              })
+              .catch(function () { window.alert('载入失败：' + path); })
+              .finally(function () {
+                pending--;
+                if (pending === 0) setMaps(maps);
+              });
+          })(parts[i]);
+        }
+      }
+
+      // wiring
+      document.getElementById('btn-load-default').addEventListener('click', loadDefault);
+      document.getElementById('btn-import-files').addEventListener('click', function () {
+        var inp = document.getElementById('inp-files');
+        inp.value = '';
+        inp.click();
+      });
+      document.getElementById('inp-files').addEventListener('change', function () { importFiles(this.files); });
+      document.getElementById('btn-export-bundle').addEventListener('click', exportBundle);
+      document.getElementById('btn-export-individual').addEventListener('click', exportIndividual);
+      document.getElementById('btn-add-or-update').addEventListener('click', upsertPortal);
+      document.getElementById('btn-delete').addEventListener('click', deletePortal);
+
+      svgEl().addEventListener('mousedown', onSvgMouseDown);
+      window.addEventListener('mousemove', onSvgMouseMove);
+      window.addEventListener('mouseup', onSvgMouseUp);
+      svgEl().addEventListener('wheel', onWheel, { passive: false });
+      window.addEventListener('mousemove', function (e) { window._lastMouseX = e.clientX; window._lastMouseY = e.clientY; });
+      svgEl().addEventListener('click', function () {
+        state.selected = { type: null, id: null };
+        state.portalSelection = null;
+        setSelectedPanelHtml('<div class="muted">点击节点查看该地图的传送点列表；点击连线查看两张地图之间的连接。</div>');
+        draw();
+        emitSelection();
+      });
+
+      function eTargetNodeIdFromPoint(clientX, clientY) {
+        if (clientX == null || clientY == null) return null;
+        var elAt = document.elementFromPoint(clientX, clientY);
+        if (!elAt) return null;
+        // 可能点到 rect/text/path，向上找带 data-node 的 g
+        var n = elAt;
+        while (n && n !== svgEl()) {
+          if (n.dataset && n.dataset.node) return n.dataset.node;
+          n = n.parentNode;
+        }
+        return null;
+      }
+
+      document.getElementById('inp-search').addEventListener('input', function () {
+        ui.search = String(this.value || '').trim().toLowerCase();
+        draw();
+      });
+
+      // message API for world-editor host
+      window.addEventListener('message', function (evt) {
+        var msg = evt && evt.data;
+        if (!msg || msg.ns !== MSG_NS) return;
+        if (msg.type === 'sandbox.setMaps') {
+          var maps = msg.payload && Array.isArray(msg.payload.maps) ? msg.payload.maps : [];
+          setMaps(maps);
+        } else if (msg.type === 'sandbox.setLayout') {
+          var lay = msg.payload && msg.payload.layout;
+          if (lay && typeof lay === 'object') {
+            state.layout = lay;
+            ensureLayout();
+            layoutSave();
+            draw();
+            emitState();
+          }
+        } else if (msg.type === 'sandbox.selectMap') {
+          var mapId = msg.payload && msg.payload.mapId;
+          if (mapId && getMap(mapId)) {
+            selectNode(mapId);
+            draw();
+            emitSelection();
+          }
+        } else if (msg.type === 'sandbox.requestState') {
+          emitState();
+          emitSelection();
+        }
+      });
+
+      // init UI
+      state.layout = layoutLoad();
+      refreshEditorOptions();
+      refreshSummary();
+      setWorldTransform();
+      setEditorStatus('提示：先载入地图，然后再编辑 portals。');
+      emitState();
+    })();
+  </script>
+</body>
+</html>
+

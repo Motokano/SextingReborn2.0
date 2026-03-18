@@ -288,7 +288,7 @@ function drawRect(ctx, rect, fillStyle, strokeStyle) {
 }
 
 /**
- * 圆角矩形（用于面板/按钮更贴近 test-scene）。
+ * 圆角矩形（用于面板/按钮更贴近主场景）。
  *
  * @param {CanvasRenderingContext2D} ctx
  * @param {{ x: number, y: number, width: number, height: number }} rect

@@ -1,0 +1,1721 @@
+// Main scene entry
+(function () {
+    var E = window.GameEngine;
+    var G = window.Gathering;
+    var IE = window.InventoryEquipment;
+    var CELL_PX = E.CELL_PX;
+    var CENTER_OFFSET_X = E.CENTER_OFFSET_X;
+    var CENTER_OFFSET_Y = E.CENTER_OFFSET_Y;
+
+    var IDLE_TICK_MS = 3000;
+    var gatheringIdleTimer = null;
+    var gatheringIdleAt = null;
+    var timeHudVisible = true;
+
+    // Shared context for renderer/systems
+    window.SceneCtx = {
+        E: E,
+        G: G,
+        IE: IE,
+        CELL_PX: CELL_PX,
+        CENTER_OFFSET_X: CENTER_OFFSET_X,
+        CENTER_OFFSET_Y: CENTER_OFFSET_Y,
+        actions: {},
+        isTimeHudVisible: function () { return !!timeHudVisible; }
+    };
+
+    function showMsg(text, logType) {
+        if (window.GameLog && text) window.GameLog.log(text, logType || 'info');
+    }
+    window.SceneCtx.showMsg = showMsg;
+
+    function ui(key, vars) {
+        try {
+            if (!window.UIText || typeof window.UIText.t !== 'function') throw new Error('[SceneApp] UIText not ready');
+            return window.UIText.t(key, vars);
+        } catch (e) {
+            var msg = '[E_UI_CALL] ' + JSON.stringify({ module: 'SceneApp', key: String(key || ''), fix_hint: 'Usually add/fix key in data/ui_text_zhCN.json' });
+            var err = new Error(msg + ' cause=' + (e && e.message ? e.message : String(e)));
+            err.code = 'E_UI_CALL';
+            err.details = { module: 'SceneApp', key: String(key || '') };
+            err.cause = e;
+            throw err;
+        }
+    }
+
+    // Route NPC messages into game log
+    if (window.NPCSystem && typeof window.NPCSystem.configure === 'function') {
+        window.NPCSystem.configure({ log: showMsg });
+    }
+
+    function normalizePortal(p, fallback) {
+        var out = {
+            x: p.x,
+            y: p.y,
+            target_map_id: p.target_map_id,
+            target_x: (p.target_x != null) ? p.target_x : (fallback && fallback.target_x != null ? fallback.target_x : 0),
+            target_y: (p.target_y != null) ? p.target_y : (fallback && fallback.target_y != null ? fallback.target_y : 0),
+            label: p.label
+        };
+        return out;
+    }
+
+    function mergeMapData(base, loaded) {
+        var m = {};
+        for (var k in base) m[k] = base[k];
+        for (var k2 in loaded) m[k2] = loaded[k2];
+
+        // portals: fill missing target_x/target_y for old maps
+        if (Array.isArray(loaded.portals)) {
+            var basePortals = Array.isArray(base.portals) ? base.portals : [];
+            m.portals = loaded.portals.map(function (p) {
+                var fb = null;
+                for (var i = 0; i < basePortals.length; i++) {
+                    var bp = basePortals[i];
+                    if (bp && bp.x === p.x && bp.y === p.y && bp.target_map_id === p.target_map_id) { fb = bp; break; }
+                }
+                return normalizePortal(p, fb);
+            });
+        }
+        if (!Array.isArray(m.blocks)) m.blocks = [];
+        if (!Array.isArray(m.portals)) m.portals = [];
+        if (!Array.isArray(m.entities)) m.entities = m.entities ? m.entities : undefined;
+        if (!Array.isArray(m.npcs)) m.npcs = m.npcs ? m.npcs : undefined;
+        return m;
+    }
+
+    function bootstrapMapsFromJson() {
+        if (!E || typeof E.getMaps !== 'function' || typeof E.setMaps !== 'function') return;
+        var baseMaps = E.getMaps();
+        var ids = Object.keys(baseMaps || {});
+        if (!ids.length || typeof fetch !== 'function') return;
+
+        return Promise.all(ids.map(function (id) {
+            return fetch('data/maps/' + id + '.json')
+                .then(function (r) { return r.ok ? r.json() : null; })
+                .then(function (json) { return { id: id, json: json }; })
+                .catch(function () { return { id: id, json: null }; });
+        })).then(function (rows) {
+            var next = {};
+            for (var i = 0; i < ids.length; i++) next[ids[i]] = baseMaps[ids[i]];
+            for (var j = 0; j < rows.length; j++) {
+                var row = rows[j];
+                if (!row || !row.id || !row.json) continue;
+                next[row.id] = mergeMapData(baseMaps[row.id] || {}, row.json);
+            }
+            E.setMaps(next);
+            render();
+        });
+    }
+
+    var playerSpriteUrls = { down: '', up: '', left: '', right: '' };
+    var currentFacing = 'down';
+
+    function updatePlayerAvatarImage() {
+        var wrap = document.getElementById('player-avatar');
+        var img = document.getElementById('player-avatar-img');
+        if (!wrap || !img) return;
+        var url = playerSpriteUrls[currentFacing] || '';
+        if (!url) {
+            img.src = '';
+            img.removeAttribute('src');
+            wrap.classList.remove('avatar-has-image');
+            return;
+        }
+        img.onload = function () {
+            wrap.classList.add('avatar-has-image');
+        };
+        img.onerror = function () {
+            wrap.classList.remove('avatar-has-image');
+        };
+        img.src = url;
+    }
+
+    function setFacingFromMove(dx, dy) {
+        if (dx > 0) currentFacing = 'right';
+        else if (dx < 0) currentFacing = 'left';
+        else if (dy > 0) currentFacing = 'down';
+        else if (dy < 0) currentFacing = 'up';
+        updatePlayerAvatarImage();
+    }
+    window.SceneCtx.setFacingFromMove = setFacingFromMove;
+
+    function setPlayerAvatar(url) {
+        var u = (url != null && url !== '') ? url : '';
+        playerSpriteUrls.down = playerSpriteUrls.up = playerSpriteUrls.left = playerSpriteUrls.right = u;
+        updatePlayerAvatarImage();
+        if (window.EntityAppearance) window.EntityAppearance.setEntityAppearanceSilent('player', u);
+    }
+
+    function setPlayerAvatarSprites(urls) {
+        if (urls && typeof urls === 'object') {
+            if (urls.down != null) playerSpriteUrls.down = urls.down ? String(urls.down) : '';
+            if (urls.up != null) playerSpriteUrls.up = urls.up ? String(urls.up) : '';
+            if (urls.left != null) playerSpriteUrls.left = urls.left ? String(urls.left) : '';
+            if (urls.right != null) playerSpriteUrls.right = urls.right ? String(urls.right) : '';
+        }
+        updatePlayerAvatarImage();
+    }
+
+    window.setPlayerAvatar = setPlayerAvatar;
+    window.setPlayerAvatarSprites = setPlayerAvatarSprites;
+
+    if (window.EntityAppearance) {
+        EntityAppearance.onAppearanceChange(function (entityId, imageUrl) {
+            if (entityId === 'player') setPlayerAvatar(imageUrl);
+        });
+    }
+
+    var defaultGatheringPoints = { gathering_bush: { gathering_point_id: 'gathering_bush', display_name: 'gathering_bush', base_gathering_success_rate: 0.6, loot_table_id: 'loot_bush', stamina_cost: 2, tool_required: false }, gathering_grass: { gathering_point_id: 'gathering_grass', display_name: 'gathering_grass', base_gathering_success_rate: 0.6, loot_table_id: 'loot_grass', stamina_cost: 2, tool_required: false } };
+    var defaultLootTables = { loot_bush: [ { item_id: 'wild_fruit_red', weight: 40, quality_tier: 1 }, { item_id: 'wild_fruit_red', weight: 30, quality_tier: 2 }, { item_id: 'wild_fruit_purple', weight: 25, quality_tier: 2 }, { item_id: 'wild_fruit_yellow', weight: 15, quality_tier: 3 }, { item_id: 'wild_fruit_purple', weight: 10, quality_tier: 4 }, { item_id: 'wild_fruit_yellow', weight: 5, quality_tier: 5 }, { item_id: 'wild_fruit_red', weight: 2, quality_tier: 6 } ], loot_grass: [ { item_id: 'herb_green', weight: 40, quality_tier: 1 }, { item_id: 'herb_green', weight: 30, quality_tier: 2 }, { item_id: 'herb_bitter', weight: 25, quality_tier: 2 }, { item_id: 'herb_sweet', weight: 15, quality_tier: 3 }, { item_id: 'herb_bitter', weight: 10, quality_tier: 4 }, { item_id: 'herb_sweet', weight: 5, quality_tier: 5 }, { item_id: 'herb_green', weight: 2, quality_tier: 6 } ] };
+    var defaultItems = { wild_fruit_red: { item_id: 'wild_fruit_red', name: 'wild_fruit_red', weight_kg: 0.1 }, wild_fruit_purple: { item_id: 'wild_fruit_purple', name: 'wild_fruit_purple', weight_kg: 0.1 }, wild_fruit_yellow: { item_id: 'wild_fruit_yellow', name: 'wild_fruit_yellow', weight_kg: 0.1 }, herb_green: { item_id: 'herb_green', name: 'herb_green', weight_kg: 0.1 }, herb_bitter: { item_id: 'herb_bitter', name: 'herb_bitter', weight_kg: 0.1 }, herb_sweet: { item_id: 'herb_sweet', name: 'herb_sweet', weight_kg: 0.1 } };
+
+    var EQUIP_SLOT_LABELS = { head: 'equip.slot.head', clothing: 'equip.slot.clothing', vest: 'equip.slot.vest', backpack: 'equip.slot.backpack', weapon_left: 'equip.slot.weapon_left', weapon_right: 'equip.slot.weapon_right', glove_left: 'equip.slot.glove_left', glove_right: 'equip.slot.glove_right', shoe_left: 'equip.slot.shoe_left', shoe_right: 'equip.slot.shoe_right', ring_left: 'equip.slot.ring_left', ring_right: 'equip.slot.ring_right', earring_left: 'equip.slot.earring_left', earring_right: 'equip.slot.earring_right', necklace: 'equip.slot.necklace' };
+    var BODY_PART_IDS = ['head', 'chest', 'belly', 'lhand', 'rhand', 'lfoot', 'rfoot'];
+    var BODY_PART_LABELS = { head: 'body.part.head', chest: 'body.part.chest', belly: 'body.part.belly', lhand: 'body.part.lhand', rhand: 'body.part.rhand', lfoot: 'body.part.lfoot', rfoot: 'body.part.rfoot' };
+    var ARM_ACTION_TAGS = ['combat.action.punch', 'combat.action.push_palm', 'combat.action.finger_jab'];
+    var FOOT_ACTION_TAGS = ['combat.action.snap_kick', 'combat.action.stomp', 'combat.action.toe_kick'];
+    var COMBAT_LIMB_IDS = ['lhand', 'rhand', 'lfoot', 'rfoot'];
+    var limbActionTags = {
+        lhand: ARM_ACTION_TAGS.slice(),
+        rhand: ARM_ACTION_TAGS.slice(),
+        lfoot: FOOT_ACTION_TAGS.slice(),
+        rfoot: FOOT_ACTION_TAGS.slice()
+    };
+
+    var tooltipEl = null;
+    var tooltipHideTimer = null;
+    function showItemTooltip(html, anchorEl) {
+        if (!tooltipEl) tooltipEl = document.getElementById('item-tooltip');
+        if (!tooltipEl || !html) return;
+        tooltipEl.innerHTML = html;
+        tooltipEl.style.left = '-9999px';
+        tooltipEl.style.top = '0';
+        tooltipEl.classList.add('show');
+        if (tooltipHideTimer) { clearTimeout(tooltipHideTimer); tooltipHideTimer = null; }
+        requestAnimationFrame(function () {
+            var rect = anchorEl.getBoundingClientRect();
+            var tr = tooltipEl.getBoundingClientRect();
+            var tw = tr.width || 220;
+            var th = tr.height || 100;
+            var pad = 12;
+            var left = rect.right + pad;
+            var top = rect.top;
+            if (left + tw > window.innerWidth - pad) left = rect.left - tw - pad;
+            if (left < pad) left = pad;
+            if (top + th > window.innerHeight - pad) top = window.innerHeight - th - pad;
+            if (top < pad) top = pad;
+            tooltipEl.style.left = left + 'px';
+            tooltipEl.style.top = top + 'px';
+        });
+    }
+    function hideItemTooltip() {
+        if (!tooltipEl) tooltipEl = document.getElementById('item-tooltip');
+        if (tooltipEl) tooltipEl.classList.remove('show');
+    }
+
+    function formatItemAttributes(tpl) {
+        if (!tpl) return '';
+        var lines = [];
+        if (tpl.weight_kg != null) lines.push(ui('item.attr.weight', { v: tpl.weight_kg }));
+        if (tpl.pocket_slots != null) lines.push(ui('item.attr.pocket_slots', { v: tpl.pocket_slots }));
+        if (tpl.vest_slots != null) lines.push(ui('item.attr.vest_slots', { v: tpl.vest_slots }));
+        if (tpl.backpack_slots != null) lines.push(ui('item.attr.backpack_slots', { v: tpl.backpack_slots }));
+        if (tpl.backpack_weight_factor != null) lines.push(ui('item.attr.backpack_weight_factor', { v: Math.round(tpl.backpack_weight_factor * 100) }));
+        if (tpl.damage_reduce_slash_pct != null || tpl.damage_reduce_pierce_pct != null || tpl.damage_reduce_blunt_pct != null) {
+            var dr = [];
+            if (tpl.damage_reduce_slash_pct != null && tpl.damage_reduce_slash_pct > 0) dr.push(ui('item.attr.dr.slash', { v: Math.round(tpl.damage_reduce_slash_pct * 100) }));
+            if (tpl.damage_reduce_pierce_pct != null && tpl.damage_reduce_pierce_pct > 0) dr.push(ui('item.attr.dr.pierce', { v: Math.round(tpl.damage_reduce_pierce_pct * 100) }));
+            if (tpl.damage_reduce_blunt_pct != null && tpl.damage_reduce_blunt_pct > 0) dr.push(ui('item.attr.dr.blunt', { v: Math.round(tpl.damage_reduce_blunt_pct * 100) }));
+            if (dr.length) lines.push(ui('item.attr.damage_reduce', { v: dr.join(ui('punct.join.dot')) }));
+        }
+        if (tpl.skill_coef != null) lines.push(ui('item.attr.skill_coef', { v: tpl.skill_coef }));
+        if (tpl.req_innate_jingu != null) lines.push(ui('item.attr.req_innate_jingu', { v: tpl.req_innate_jingu }));
+        if (tpl.enchant_slots != null) lines.push(ui('item.attr.enchant_slots', { v: tpl.enchant_slots }));
+        if (tpl.quality_tier != null && IE && IE.QUALITY_NAMES) lines.push(ui('item.attr.quality', { v: (IE.QUALITY_NAMES[tpl.quality_tier] || ui('common.dash')) }));
+        return lines.length ? lines.join('\n') : '';
+    }
+    function buildItemTooltipHtml(name, desc, attrs) {
+        var html = '<div class="tooltip-name">' + (name || '').replace(/</g, '&lt;').replace(/>/g, '&gt;') + '</div>';
+        if (desc) html += '<div class="tooltip-desc">' + (desc || '').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\n/g, '<br>') + '</div>';
+        if (attrs) html += '<div class="tooltip-attrs">' + (attrs || '').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\n/g, '<br>') + '</div>';
+        return html;
+    }
+
+    function loadConfig() {
+        var base = 'data/';
+        return Promise.all([
+            fetch(base + 'ui_text_zhCN.json').then(function (r) { return r.ok ? r.json() : null; }),
+            fetch(base + 'gathering_points.json').then(function (r) { return r.ok ? r.json() : defaultGatheringPoints; }).catch(function () { return defaultGatheringPoints; }),
+            fetch(base + 'loot_tables.json').then(function (r) { return r.ok ? r.json() : defaultLootTables; }).catch(function () { return defaultLootTables; }),
+            fetch(base + 'items.json').then(function (r) { return r.ok ? r.json() : defaultItems; }).catch(function () { return defaultItems; }),
+            fetch(base + 'survival-config.json').then(function (r) { return r.ok ? r.json() : {}; }).catch(function () { return {}; }),
+            fetch(base + 'equipment.json').then(function (r) { return r.ok ? r.json() : {}; }).catch(function () { return {}; }),
+            fetch(base + 'enchant.json').then(function (r) { return r.ok ? r.json() : {}; }).catch(function () { return {}; }),
+            fetch(base + 'default_equipment.json').then(function (r) { return r.ok ? r.json() : {}; }).catch(function () { return {}; }),
+            fetch(base + 'combat-skills.json').then(function (r) { return r.ok ? r.json() : { constants: {}, categories: [], skills: {} }; }).catch(function () { return { constants: {}, categories: [], skills: {} }; })
+        ]).then(function (arr) {
+            if (!arr[0]) throw new Error('[SceneApp] ui_text_zhCN.json missing');
+            if (!window.UIText || typeof window.UIText.setDict !== 'function') throw new Error('[SceneApp] UIText module missing');
+            window.UIText.setDict(arr[0]);
+            window.UIText.applyDom(document);
+            G.setConfig({
+                gathering_points: arr[1],
+                loot_tables: arr[2],
+                items: arr[3]
+            });
+            if (window.Survival) window.Survival.setConfig(arr[4]);
+            var survCfg = arr[4] || {};
+            var starterEquipFallback = {
+                clothing: 'eq_clothing_commute',
+                vest: 'eq_vest_hoodie',
+                shoe_left: 'eq_shoe_left_sport',
+                shoe_right: 'eq_shoe_right_sport'
+            };
+            if (window.CombatSkills && arr[8]) window.CombatSkills.setConfig(arr[8]);
+            var defEqFetched = (arr[7] && typeof arr[7] === 'object') ? arr[7] : {};
+            var defaultEquipMerged = {};
+            var sk;
+            for (sk in starterEquipFallback) {
+                if (starterEquipFallback.hasOwnProperty(sk)) defaultEquipMerged[sk] = starterEquipFallback[sk];
+            }
+            for (sk in defEqFetched) {
+                if (!defEqFetched.hasOwnProperty(sk) || sk === '_comment' || !defEqFetched[sk]) continue;
+                if (IE.EQUIP_SLOT_IDS.indexOf(sk) >= 0) defaultEquipMerged[sk] = defEqFetched[sk];
+            }
+            IE.setConfig({
+                equipment: arr[5],
+                items: arr[3],
+                enchant: arr[6],
+                default_equipment: defaultEquipMerged,
+                item_display_tier_threshold_1: survCfg.item_display_tier_threshold_1,
+                item_display_tier_threshold_2: survCfg.item_display_tier_threshold_2
+            });
+            IE.initNewGame();
+            if (window.CharacterAttributes) {
+                window.CharacterAttributes.setConfig(survCfg);
+                window.CharacterAttributes.setState(window.CharacterAttributes.getDefaultState());
+                window.CharacterAttributes.recalcCharacterStats({
+                    getEquipmentState: function () { return IE.getState().equipment; },
+                    getSkillsState: function () { return IE.getState().skills; },
+                    getItemTemplate: IE.getItemTemplate,
+                    getEnchantEntry: IE.getEnchantEntry,
+                    getStrengthLevel: function () { return IE.getSkillLevel('survival_strength'); }
+                });
+            }
+            if (window.Survival && window.Survival.setCharacterCallbacks && window.CharacterAttributes) {
+                window.Survival.setCharacterCallbacks({ getBreathActual: window.CharacterAttributes.getBreathActual });
+            }
+            if (window.CharacterAttributes && !window.CharacterAttributes.getCharacterName()) {
+                initCreationUI();
+            } else {
+                hideCreationOverlay();
+                updateRoleNameFromCharacter();
+            }
+        });
+    }
+
+    var CREATION_ATTR_LABELS = { jingu: 'status.attr.jingu', flexibility: 'status.attr.flexibility', breath: 'status.attr.breath', dexterity: 'status.attr.dexterity', focus: 'status.attr.focus' };
+    var creationInnate = { jingu: 10, flexibility: 10, breath: 10, dexterity: 10, focus: 10 };
+    var CREATION_ATTR_MAX = 29;
+
+    function getCreationInnateSum() {
+        return creationInnate.jingu + creationInnate.flexibility + creationInnate.breath + creationInnate.dexterity + creationInnate.focus;
+    }
+
+    function getCreationFreePoints() {
+        var sum = getCreationInnateSum();
+        return Math.max(0, 100 - sum);
+    }
+
+    function updateCreationPointsDisplay() {
+        var el = document.getElementById('creation-points');
+        if (!el) return;
+        var free = getCreationFreePoints();
+        el.textContent = ui('creation.points.left', { free: free });
+        el.classList.remove('ok');
+        if (free === 0) el.classList.add('ok');
+    }
+
+    function updateCreationConfirmButton() {
+        var btn = document.getElementById('btn-confirm-creation');
+        var nameEl = document.getElementById('creation-name');
+        if (!btn) return;
+        var nameOk = nameEl && String(nameEl.value || '').trim().length > 0;
+        btn.disabled = !nameOk;
+    }
+
+    function randomDistributeCreationRemainingPoints() {
+        var attrIds = ['jingu', 'flexibility', 'breath', 'dexterity', 'focus'];
+        var remaining = getCreationFreePoints();
+        while (remaining > 0) {
+            var candidates = attrIds.filter(function (id) {
+                return creationInnate[id] < CREATION_ATTR_MAX;
+            });
+            if (!candidates.length) break;
+            var pick = candidates[Math.floor(Math.random() * candidates.length)];
+            creationInnate[pick]++;
+            remaining--;
+        }
+    }
+
+    function initCreationUI() {
+        var CA = window.CharacterAttributes;
+        if (!CA) return;
+        var state = CA.getState();
+        creationInnate = {
+            jingu: state.innate.jingu != null ? Math.min(CREATION_ATTR_MAX, Math.max(0, state.innate.jingu)) : 10,
+            flexibility: state.innate.flexibility != null ? Math.min(CREATION_ATTR_MAX, Math.max(0, state.innate.flexibility)) : 10,
+            breath: state.innate.breath != null ? Math.min(CREATION_ATTR_MAX, Math.max(0, state.innate.breath)) : 10,
+            dexterity: state.innate.dexterity != null ? Math.min(CREATION_ATTR_MAX, Math.max(0, state.innate.dexterity)) : 10,
+            focus: state.innate.focus != null ? Math.min(CREATION_ATTR_MAX, Math.max(0, state.innate.focus)) : 10
+        };
+        var container = document.getElementById('creation-attr-rows');
+        if (!container) return;
+        container.innerHTML = '';
+        var attrIds = ['jingu', 'flexibility', 'breath', 'dexterity', 'focus'];
+        var creationRowControls = [];
+        function refreshCreationAllRows() {
+            var sum = getCreationInnateSum();
+            creationRowControls.forEach(function (r) {
+                r.valueSpan.textContent = creationInnate[r.attrId];
+                r.btnMinus.disabled = creationInnate[r.attrId] <= 0;
+                r.btnPlus.disabled = creationInnate[r.attrId] >= CREATION_ATTR_MAX || sum >= 100;
+            });
+            var ids = ['jingu', 'flexibility', 'breath', 'dexterity', 'focus'];
+            ids.forEach(function (id) {
+                var el = document.getElementById('status-attr-' + id);
+                if (el) {
+                    var aq = CA.getAcquiredAttr ? CA.getAcquiredAttr(id) : 0;
+                    var total = creationInnate[id] + aq;
+                    el.textContent = aq ? creationInnate[id] + '+' + aq + '=' + total : String(total);
+                }
+            });
+            updateCreationPointsDisplay();
+            updateCreationConfirmButton();
+        }
+        attrIds.forEach(function (attrId) {
+            var row = document.createElement('div');
+            row.className = 'attr-row';
+            var label = document.createElement('span');
+            label.className = 'attr-label';
+            label.textContent = ui(CREATION_ATTR_LABELS[attrId]);
+            var controls = document.createElement('div');
+            controls.className = 'attr-controls';
+            var btnMinus = document.createElement('button');
+            btnMinus.type = 'button';
+            btnMinus.className = 'attr-btn';
+            btnMinus.textContent = '−';
+            btnMinus.setAttribute('aria-label', ui('creation.attr.minus'));
+            var valueSpan = document.createElement('span');
+            valueSpan.className = 'attr-value';
+            valueSpan.textContent = creationInnate[attrId];
+            var btnPlus = document.createElement('button');
+            btnPlus.type = 'button';
+            btnPlus.className = 'attr-btn';
+            btnPlus.textContent = '+';
+            btnPlus.setAttribute('aria-label', ui('creation.attr.plus'));
+            creationRowControls.push({ attrId: attrId, valueSpan: valueSpan, btnMinus: btnMinus, btnPlus: btnPlus });
+            btnMinus.onclick = function () {
+                if (creationInnate[attrId] > 0) {
+                    creationInnate[attrId]--;
+                    refreshCreationAllRows();
+                }
+            };
+            btnPlus.onclick = function () {
+                var s = getCreationInnateSum();
+                if (creationInnate[attrId] < CREATION_ATTR_MAX && s < 100) {
+                    creationInnate[attrId]++;
+                    refreshCreationAllRows();
+                }
+            };
+            controls.appendChild(btnMinus);
+            controls.appendChild(valueSpan);
+            controls.appendChild(btnPlus);
+            row.appendChild(label);
+            row.appendChild(controls);
+            container.appendChild(row);
+        });
+        refreshCreationAllRows();
+
+        var nameEl = document.getElementById('creation-name');
+        if (nameEl && !String(nameEl.value || '').trim()) nameEl.value = '';
+        if (nameEl) nameEl.addEventListener('input', updateCreationConfirmButton);
+        updateCreationConfirmButton();
+        var btnConfirm = document.getElementById('btn-confirm-creation');
+        if (btnConfirm) btnConfirm.onclick = function () {
+            if (btnConfirm.disabled) return;
+            var name = (nameEl && nameEl.value) ? String(nameEl.value).trim() : '';
+            if (!name) return;
+            if (getCreationFreePoints() > 0) {
+                randomDistributeCreationRemainingPoints();
+                refreshCreationAllRows();
+                if (window.GameLog) window.GameLog.log(ui('log.system.creation.points.auto'), 'system');
+            }
+            if (typeof IE.initNewGame === 'function') {
+                IE.initNewGame();
+                if (window.GameLog) window.GameLog.log(ui('log.system.starter.equip'), 'system');
+            }
+            var handEl = document.querySelector('input[name="creation-hand"]:checked');
+            var legEl = document.querySelector('input[name="creation-leg"]:checked');
+            var genderEl = document.querySelector('input[name="creation-gender"]:checked');
+            var gender = (genderEl && genderEl.value === 'female') ? 'female' : 'male';
+            CA.setState({
+                characterName: name,
+                characterGender: gender,
+                innate: { jingu: creationInnate.jingu, flexibility: creationInnate.flexibility, breath: creationInnate.breath, dexterity: creationInnate.dexterity, focus: creationInnate.focus },
+                dominant_hand: (handEl && handEl.value === 'left') ? 'left' : 'right',
+                dominant_leg: (legEl && legEl.value === 'left') ? 'left' : 'right'
+            });
+            if (window.Survival && window.Survival.setState) {
+                window.Survival.setState({ gender_value: gender === 'female' ? 100 : 0 });
+            }
+            CA.recalcCharacterStats({
+                getEquipmentState: function () { return IE.getState().equipment; },
+                getSkillsState: function () { return IE.getState().skills; },
+                getItemTemplate: IE.getItemTemplate,
+                getEnchantEntry: IE.getEnchantEntry,
+                getStrengthLevel: function () { return IE.getSkillLevel('survival_strength'); }
+            });
+            if (window.GameTime && typeof window.GameTime.reset === 'function') {
+                window.GameTime.reset({ year: 1, day: 1, hour: 9, minute: 0 });
+            }
+            hideCreationOverlay();
+            updateRoleNameFromCharacter();
+            if (window.GameLog) window.GameLog.log(ui('log.system.creation.done', { name: name }), 'system');
+            render();
+        };
+    }
+
+    function hideCreationOverlay() {
+        var el = document.getElementById('character-creation-overlay');
+        if (el) el.classList.add('hidden');
+    }
+
+    function updateRoleNameFromCharacter() {
+        var el = document.getElementById('status-role-name');
+        if (!el) return;
+        var name = window.CharacterAttributes && window.CharacterAttributes.getCharacterName();
+        el.textContent = (name && name.length) ? name : ui('status.role.default');
+        var gEl = document.getElementById('status-gender-line');
+        if (gEl && window.CharacterAttributes && window.CharacterAttributes.getCharacterGenderLabel) {
+            gEl.textContent = ui('status.gender.prefix', { gender: window.CharacterAttributes.getCharacterGenderLabel() });
+        }
+    }
+
+    function render() {
+        if (window.SceneRenderer && typeof window.SceneRenderer.render === 'function') {
+            window.SceneRenderer.render();
+        }
+    }
+
+    bootstrapMapsFromJson();
+
+    function setTimeHudVisible(visible) {
+        timeHudVisible = (visible !== false);
+        var wrap = document.getElementById('top-hud');
+        if (wrap) wrap.style.display = timeHudVisible ? '' : 'none';
+    }
+
+    function isTimeHudVisible() {
+        return !!timeHudVisible;
+    }
+
+    window.HUD = window.HUD || {};
+    window.HUD.setTimeHudVisible = setTimeHudVisible;
+    window.HUD.isTimeHudVisible = isTimeHudVisible;
+
+    document.addEventListener('hud:time', function (ev) {
+        var v = ev && ev.detail ? ev.detail.visible : undefined;
+        if (v === undefined) return;
+        setTimeHudVisible(!!v);
+    });
+
+    function getSatietyLabel(zone) {
+        var labels = { normal: 'survival.satiety.normal', mild: 'survival.satiety.mild', moderate: 'survival.satiety.moderate', severe: 'survival.satiety.severe', starvation: 'survival.satiety.starvation' };
+        return ui(labels[zone] || 'common.dash');
+    }
+    function getThirstLabel(thirst, normalMin) {
+        normalMin = normalMin != null ? normalMin : 60;
+        if (thirst >= normalMin) return ui('survival.thirst.normal');
+        if (thirst > 0) return ui('survival.thirst.thirsty');
+        return ui('survival.thirst.dehydrated');
+    }
+    function updateLimbBlock() {
+        var container = document.getElementById('limb-rows');
+        if (!container || !BODY_PART_IDS || !BODY_PART_LABELS) return;
+        container.innerHTML = '';
+        for (var i = 0; i < BODY_PART_IDS.length; i++) {
+            var partId = BODY_PART_IDS[i];
+                var labelKey = BODY_PART_LABELS[partId] != null ? BODY_PART_LABELS[partId] : partId;
+                var label = ui(labelKey);
+            var row = document.createElement('div');
+            row.className = 'limb-row';
+            row.innerHTML = '<div class="row"><span>' + (label.replace(/</g, '&lt;')) + '</span><span id="limb-' + partId + '">' + ui('body.part.status.ok') + '</span></div>';
+            (function (pid, partLabel) {
+                row.addEventListener('mouseenter', function () {
+                    var statusEl = document.getElementById('limb-' + pid);
+                    var statusText = statusEl ? statusEl.textContent : '—';
+                    var esc = function (s) { return String(s).replace(/</g, '&lt;').replace(/>/g, '&gt;'); };
+                    var html = '<div class="tooltip-name">' + esc(partLabel) + '</div>';
+                    html += '<div class="tooltip-desc">' + ui('tooltip.status', { v: esc(statusText) }).replace(/</g, '&lt;').replace(/>/g, '&gt;') + '</div>';
+                    if (COMBAT_LIMB_IDS.indexOf(pid) >= 0) {
+                        var arr = (window.getLimbActionTagLabels ? window.getLimbActionTagLabels(pid) : (limbActionTags[pid] || [])).map(esc);
+                        var tagStr = arr.length ? arr.join(ui('punct.join.dot')) : ui('common.dash');
+                        html += '<div class="tooltip-attrs">' + ui('tooltip.action.tags', { v: tagStr }).replace(/</g, '&lt;').replace(/>/g, '&gt;') + '</div>';
+                    }
+                    showItemTooltip(html, row);
+                });
+                row.addEventListener('mouseleave', hideItemTooltip);
+            })(partId, label);
+            container.appendChild(row);
+        }
+    }
+    function getLimbActionTags(limbId) {
+        if (!limbActionTags[limbId]) return [];
+        return limbActionTags[limbId].slice();
+    }
+
+    function getLimbActionTagLabels(limbId) {
+        var tags = getLimbActionTags(limbId);
+        return tags.map(function (k) {
+            try { return ui(k); } catch (e) { return k; }
+        });
+    }
+    function setLimbActionTags(limbId, tags) {
+        if (COMBAT_LIMB_IDS.indexOf(limbId) < 0) return;
+        limbActionTags[limbId] = Array.isArray(tags) ? tags.slice() : [];
+    }
+    function addLimbActionTag(limbId, tag) {
+        if (COMBAT_LIMB_IDS.indexOf(limbId) < 0 || !tag) return;
+        var arr = limbActionTags[limbId];
+        if (!arr) limbActionTags[limbId] = [];
+        if (limbActionTags[limbId].indexOf(tag) < 0) limbActionTags[limbId].push(tag);
+    }
+    function removeLimbActionTag(limbId, tag) {
+        if (COMBAT_LIMB_IDS.indexOf(limbId) < 0 || !limbActionTags[limbId]) return;
+        var i = limbActionTags[limbId].indexOf(tag);
+        if (i >= 0) limbActionTags[limbId].splice(i, 1);
+    }
+    function hasLimbActionTag(limbId, tag) {
+        return limbActionTags[limbId] && limbActionTags[limbId].indexOf(tag) >= 0;
+    }
+    window.getLimbActionTags = getLimbActionTags;
+    window.getLimbActionTagLabels = getLimbActionTagLabels;
+    window.setLimbActionTags = setLimbActionTags;
+    window.addLimbActionTag = addLimbActionTag;
+    window.removeLimbActionTag = removeLimbActionTag;
+    window.hasLimbActionTag = hasLimbActionTag;
+    window.ARM_ACTION_TAGS = ARM_ACTION_TAGS;
+    window.FOOT_ACTION_TAGS = FOOT_ACTION_TAGS;
+    window.COMBAT_LIMB_IDS = COMBAT_LIMB_IDS;
+    function updateStatusPanel(gatherState) {
+        updateLimbBlock();
+        updateRoleNameFromCharacter();
+        var CA = window.CharacterAttributes;
+        if (CA && typeof CA.getEffectiveAttr === 'function') {
+            var attrIds = ['jingu', 'flexibility', 'breath', 'dexterity', 'focus'];
+            attrIds.forEach(function (id) {
+                var el = document.getElementById('status-attr-' + id);
+                if (!el) return;
+                var baseInn = CA.getBaseInnateAttr ? CA.getBaseInnateAttr(id) : (CA.getInnateAttr ? CA.getInnateAttr(id) : 0);
+                var eff = CA.getEffectiveAttr(id);
+                var extra = Math.max(0, eff - baseInn);
+                if (extra > 0) el.textContent = baseInn + '+' + extra + '=' + eff;
+                else el.textContent = String(eff);
+            });
+        }
+        var Surv = window.Survival;
+        var satietyText = document.getElementById('status-satiety-text');
+        var satietyBar = document.getElementById('status-satiety-bar');
+        var thirstText = document.getElementById('status-thirst-text');
+        var thirstBar = document.getElementById('status-thirst-bar');
+        var staminaText = document.getElementById('status-stamina-text');
+        var staminaBar = document.getElementById('status-stamina-bar');
+        var energyText = document.getElementById('status-energy-text');
+        var energyBar = document.getElementById('status-energy-bar');
+        var weightEl = document.getElementById('status-weight');
+        if (!satietyText || !weightEl) return;
+
+        if (Surv && typeof Surv.getState === 'function') {
+            var s = Surv.getState();
+            var zone = Surv.getSatietyZone ? Surv.getSatietyZone() : 'normal';
+            satietyText.textContent = getSatietyLabel(zone);
+            satietyText.className = zone === 'normal' ? 'value ok' : (zone === 'starvation' || zone === 'severe' ? 'value danger' : 'value warn');
+            var satMax = 120;
+            var satPct = Math.min(100, (s.satiety / satMax) * 100);
+            satietyBar.style.width = satPct + '%';
+
+            thirstText.textContent = getThirstLabel(s.thirst);
+            thirstText.className = s.thirst >= 60 ? 'value ok' : (s.thirst <= 0 ? 'value danger' : 'value warn');
+            thirstBar.style.width = s.thirst + '%';
+
+            var stamMax = s.stamina_max || 100;
+            staminaText.textContent = s.stamina.toFixed(1) + ' / ' + stamMax;
+            staminaText.className = s.stamina <= 0 ? 'value danger' : (s.stamina < stamMax * 0.3 ? 'value warn' : 'value ok');
+            staminaBar.style.width = stamMax > 0 ? (s.stamina / stamMax * 100) + '%' : '0%';
+
+            var enMax = s.energy_max || 100;
+            energyText.textContent = s.energy.toFixed(1) + ' / ' + enMax;
+            energyText.className = s.energy <= 0 ? 'value danger' : (s.energy < enMax * 0.3 ? 'value warn' : 'value ok');
+            energyBar.style.width = enMax > 0 ? (s.energy / enMax * 100) + '%' : '0%';
+
+            weightEl.textContent = s.weight_kg + ' kg';
+            var carryEl = document.getElementById('status-carry');
+            if (carryEl) {
+                var cap = (window.CharacterAttributes && typeof window.CharacterAttributes.getCarryCapacity === 'function')
+                    ? window.CharacterAttributes.getCarryCapacity() : null;
+                var current = (IE && typeof IE.getCurrentCarryWeight === 'function') ? IE.getCurrentCarryWeight() : null;
+                if (cap != null && current != null)
+                    carryEl.textContent = current.toFixed(1) + ' / ' + cap.toFixed(1) + ' kg';
+                else if (cap != null)
+                    carryEl.textContent = '— / ' + cap.toFixed(1) + ' kg';
+                else
+                    carryEl.textContent = '—';
+            }
+        } else {
+            satietyText.textContent = '—';
+            satietyBar.style.width = '100%';
+            thirstText.textContent = '—';
+            thirstBar.style.width = '100%';
+            if (gatherState) {
+                staminaText.textContent = gatherState.stamina + ' / ' + gatherState.stamina_max;
+                staminaBar.style.width = (gatherState.stamina_max > 0 ? (gatherState.stamina / gatherState.stamina_max * 100) : 0) + '%';
+            } else {
+                staminaText.textContent = '—';
+                staminaBar.style.width = '100%';
+            }
+            energyText.textContent = '—';
+            energyBar.style.width = '100%';
+            weightEl.textContent = '—';
+            var carryEl = document.getElementById('status-carry');
+            if (carryEl) {
+                var cap = (window.CharacterAttributes && typeof window.CharacterAttributes.getCarryCapacity === 'function') ? window.CharacterAttributes.getCarryCapacity() : null;
+                var current = (IE && typeof IE.getCurrentCarryWeight === 'function') ? IE.getCurrentCarryWeight() : null;
+                if (cap != null && current != null) carryEl.textContent = current.toFixed(1) + ' / ' + cap.toFixed(1) + ' kg';
+                else if (cap != null) carryEl.textContent = '— / ' + cap.toFixed(1) + ' kg';
+                else carryEl.textContent = '—';
+            }
+        }
+    }
+    window.SceneCtx.updateStatusPanel = updateStatusPanel;
+
+    function stopGatheringIdle() {
+        if (gatheringIdleTimer) {
+            clearInterval(gatheringIdleTimer);
+            gatheringIdleTimer = null;
+            gatheringIdleAt = null;
+        }
+    }
+    window.SceneCtx.isGatheringIdling = function () { return !!gatheringIdleTimer; };
+
+    function onGatherTick() {
+        var st = E.getState();
+        var entityId = E.getEntityAt(st.x, st.y);
+        if (!entityId || !G.canGather(entityId)) {
+            stopGatheringIdle();
+            if (!G.canGather(entityId) && entityId) showMsg(ui('log.warn.gather.stop.full_or_tired'));
+            render();
+            return;
+        }
+        var result = G.doGather(entityId);
+        if (result.success && result.gathered) showMsg(result.message, 'success');
+        else if (!result.success) showMsg(result.message, 'warn');
+        render();
+    }
+
+    function onGatherClick() {
+        var st = E.getState();
+        var entityId = E.getEntityAt(st.x, st.y);
+        if (!entityId || !G.canGather(entityId)) return;
+        if (gatheringIdleTimer) return;
+        gatheringIdleAt = { mapId: st.mapId, x: st.x, y: st.y };
+        onGatherTick();
+        gatheringIdleTimer = setInterval(onGatherTick, IDLE_TICK_MS);
+        if (window.SceneRenderer) window.SceneRenderer.render();
+    }
+
+    function onGatherStopClick() {
+        stopGatheringIdle();
+        showMsg(ui('log.info.gather.stop'), 'info');
+        if (window.SceneRenderer) window.SceneRenderer.render();
+    }
+
+    var backpackPanelOpen = false;
+
+    function updateBackpackPanel() {
+        if (!IE) return;
+        var char = IE.getCharacterForDisplay ? IE.getCharacterForDisplay() : null;
+        var st = E.getState();
+        var groundPos = { mapId: st.mapId, x: st.x, y: st.y };
+
+        function renderInvGrid(containerId, containerType, getArr) {
+            var grid = document.getElementById('inv-grid-' + containerType);
+            var region = document.getElementById('inv-region-' + containerType);
+            if (!grid || !region) return;
+            var arr = getArr();
+            grid.innerHTML = '';
+            for (var i = 0; i < arr.length; i++) {
+                var slot = document.createElement('div');
+                slot.className = 'inv-slot';
+                var it = arr[i];
+                if (it && it.item_id) {
+                    var tpl = IE.getItemTemplate(it.item_id);
+                    var tier = IE.getItemDisplayTier ? IE.getItemDisplayTier(it.item_id, char) : 0;
+                    var name = tpl ? IE.getDisplayName(tpl, tier) : it.item_id;
+                    var qty = (it.count != null && it.count > 1) ? ' x' + it.count : '';
+                    var label = document.createElement('div');
+                    label.className = 'inv-slot-label';
+                    label.textContent = (name || '').slice(0, 8) + qty;
+                    slot.appendChild(label);
+                    var dropBtn = document.createElement('button');
+                    dropBtn.type = 'button';
+                    dropBtn.className = 'inv-slot-drop';
+                    dropBtn.textContent = ui('inv.drop');
+                    dropBtn.onclick = (function (ct, idx) {
+                        return function () {
+                            var pos = E.getState();
+                            var r = IE.dropItemToGround(ct, idx, pos.mapId, pos.x, pos.y);
+                            if (r.success) showMsg(ui('log.info.dropped'), 'info');
+                            else if (r.message) showMsg(r.message, 'warn');
+                            updateBackpackPanel();
+                            render();
+                        };
+                    })(containerType, i);
+                    slot.appendChild(dropBtn);
+                    var tplAttrs = formatItemAttributes(tpl);
+                    var tipHtml = buildItemTooltipHtml(name, tpl ? IE.getDisplayDesc(tpl, tier) : '', tplAttrs);
+                    slot.addEventListener('mouseenter', function (h, el) { return function () { showItemTooltip(h, el); }; }(tipHtml, slot));
+                    slot.addEventListener('mouseleave', hideItemTooltip);
+                    if (tpl && tpl.equip_slot) slot.classList.add('inv-slot-equip');
+                } else {
+                    slot.textContent = '—';
+                }
+                grid.appendChild(slot);
+            }
+        }
+
+        renderInvGrid('inv-grid-pocket', 'pocket', function () { return IE.getPocketArray ? IE.getPocketArray() : []; });
+        renderInvGrid('inv-grid-vest', 'vest', function () { return IE.getVestArray ? IE.getVestArray() : []; });
+        renderInvGrid('inv-grid-backpack', 'backpack', function () { return IE.getBackpackArray ? IE.getBackpackArray() : []; });
+
+        var ieState = IE.getState ? IE.getState() : {};
+        var hasVehicle = !!(ieState.bound_vehicle_id);
+        var vehicleRegion = document.getElementById('inv-region-vehicle');
+        if (vehicleRegion) vehicleRegion.style.display = hasVehicle ? '' : 'none';
+        if (hasVehicle) {
+            var vArr = ieState.inventory_vehicle || [];
+            var vPadded = vArr.slice();
+            while (vPadded.length < 4) vPadded.push(null);
+            renderInvGrid('inv-grid-vehicle', 'vehicle', function () { return vPadded; });
+        }
+
+        var groundList = document.getElementById('ground-items-list');
+        if (groundList) {
+            var groundItems = IE.getGroundItemsAt ? IE.getGroundItemsAt(st.mapId, st.x, st.y) : [];
+            groundList.innerHTML = '';
+            for (var g = 0; g < groundItems.length; g++) {
+                var row = document.createElement('div');
+                row.className = 'ground-item-row';
+                var it = groundItems[g];
+                var tpl = it && it.item_id ? IE.getItemTemplate(it.item_id) : null;
+                var tier = it && it.item_id && IE.getItemDisplayTier ? IE.getItemDisplayTier(it.item_id, char) : 0;
+                var gName = tpl ? IE.getDisplayName(tpl, tier) : (it ? it.item_id : '—');
+                var gQty = (it && it.count != null && it.count > 1) ? ' x' + it.count : '';
+                row.innerHTML = '<span class="ground-item-name">' + String(gName + gQty).replace(/</g, '&lt;').replace(/>/g, '&gt;') + '</span>';
+                var pickupBtn = document.createElement('button');
+                pickupBtn.type = 'button';
+                pickupBtn.className = 'btn-pickup';
+                pickupBtn.textContent = ui('inv.pickup');
+                pickupBtn.onclick = (function (idx) {
+                    return function () {
+                        var r = IE.pickUpFromGround(st.mapId, st.x, st.y, idx);
+                        if (r.success) showMsg(ui('log.success.picked'), 'success');
+                        else if (r.message) showMsg(r.message, 'warn');
+                        updateBackpackPanel();
+                        render();
+                    };
+                })(g);
+                row.appendChild(pickupBtn);
+                if (tpl && tpl.equip_slot) {
+                    var eqBtn = document.createElement('button');
+                    eqBtn.type = 'button';
+                    eqBtn.className = 'btn-pickup btn-equip-from-ground';
+                    eqBtn.textContent = ui('inv.equip');
+                    eqBtn.onclick = (function (idx) {
+                        return function () {
+                            var r = IE.equipFromGround(st.mapId, st.x, st.y, idx);
+                            if (r.success) showMsg(ui('log.success.equipped'), 'success');
+                            else if (r.message) showMsg(r.message, 'warn');
+                            updateBackpackPanel();
+                            render();
+                        };
+                    })(g);
+                    row.appendChild(eqBtn);
+                }
+                groundList.appendChild(row);
+            }
+        }
+
+        var equipList = document.getElementById('equip-list');
+        if (equipList && IE.EQUIP_SLOT_IDS) {
+            equipList.innerHTML = '';
+            var eqState = ieState.equipment || {};
+            for (var s = 0; s < IE.EQUIP_SLOT_IDS.length; s++) {
+                var slotId = IE.EQUIP_SLOT_IDS[s];
+                var row = document.createElement('div');
+                row.className = 'equip-row';
+                var labelKey = EQUIP_SLOT_LABELS[slotId] || slotId;
+                var label = (labelKey && String(labelKey).indexOf('equip.slot.') === 0) ? ui(labelKey) : labelKey;
+                var eq = eqState[slotId];
+                var itemName = '—';
+                if (eq && eq.item_id) {
+                    var eqTpl = IE.getItemTemplate(eq.item_id);
+                    var eqTier = IE.getItemDisplayTier ? IE.getItemDisplayTier(eq.item_id, char) : 0;
+                    itemName = eqTpl ? IE.getDisplayName(eqTpl, eqTier) : eq.item_id;
+                }
+                row.innerHTML = '<span class="slot-name">' + String(label).replace(/</g, '&lt;') + '</span><span class="item-name">' + String(itemName).replace(/</g, '&lt;').replace(/>/g, '&gt;') + '</span>';
+                var unequipBtn = document.createElement('button');
+                unequipBtn.type = 'button';
+                unequipBtn.className = 'btn-unequip';
+                unequipBtn.textContent = ui('inv.unequip');
+                unequipBtn.disabled = !eq || !eq.item_id;
+                unequipBtn.onclick = (function (sid) {
+                    return function () {
+                        var old = IE.unequip(sid, groundPos);
+                        if (old) {
+                            var placed = IE.putItemIntoDefaultContainer(old);
+                            if (!placed.placed && groundPos && groundPos.mapId != null && groundPos.x != null && groundPos.y != null) {
+                                IE.addItemToGround(groundPos.mapId, groundPos.x, groundPos.y, old);
+                            }
+                            showMsg(ui('log.info.unequipped'), 'info');
+                        }
+                        updateBackpackPanel();
+                        render();
+                    };
+                })(slotId);
+                row.appendChild(unequipBtn);
+                equipList.appendChild(row);
+            }
+        }
+    }
+
+    function openBackpackPanel() {
+        if (backpackPanelOpen) return;
+        if (window.Survival && typeof window.Survival.advanceTick === 'function') window.Survival.advanceTick();
+        backpackPanelOpen = true;
+        document.getElementById('modal-backpack').classList.add('show');
+        updateBackpackPanel();
+        render();
+    }
+    function closeBackpackPanel() {
+        if (!backpackPanelOpen) return;
+        if (window.Survival && typeof window.Survival.advanceTick === 'function') window.Survival.advanceTick();
+        backpackPanelOpen = false;
+        document.getElementById('modal-backpack').classList.remove('show');
+        render();
+    }
+    if (document.getElementById('btn-backpack')) {
+        document.getElementById('btn-backpack').addEventListener('click', function () {
+            if (backpackPanelOpen) closeBackpackPanel(); else openBackpackPanel();
+        });
+    }
+    if (document.getElementById('player-action-ground-items')) {
+        document.getElementById('player-action-ground-items').addEventListener('click', function () {
+            if (!backpackPanelOpen) openBackpackPanel();
+        });
+    }
+    (function () {
+        var btn = document.getElementById('btn-reset-demo-save');
+        if (!btn) return;
+        btn.addEventListener('click', function () {
+            var ok = window.confirm(ui('confirm.reset.demo'));
+            if (!ok) return;
+            try {
+                localStorage.removeItem('cabi_demo_flags_v1');
+                localStorage.removeItem('cabi_demo_triggered_entries_v1');
+            } catch (e) { /* ignore */ }
+            try { window.location.reload(); } catch (e2) { /* ignore */ }
+        });
+    })();
+    if (document.getElementById('backpack-panel-close')) {
+        document.getElementById('backpack-panel-close').addEventListener('click', closeBackpackPanel);
+    }
+
+    var combatPanelOpen = false;
+    var combatUIState = {
+        mode: 'skills',
+        curCat: 'unarmed',
+        curSkillId: null,
+        curPart: 'rhand',
+        curSlot: 'active',
+        editingSlot: null,
+        curAcupointCat: 'du',
+        curAcupointId: null,
+        acupointPage: 0
+    };
+    var LIMB_LABELS = { lhand: 'body.part.lhand', rhand: 'body.part.rhand', lfoot: 'body.part.lfoot', rfoot: 'body.part.rfoot' };
+    var LIMB_ICONS = { lhand: '🤚', rhand: '🤚', lfoot: '👣', rfoot: '👣' };
+
+    var survivalPanelOpen = false;
+    var acupointPanelOpen = false;
+    var specialPanelOpen = false;
+
+    function openCombatPanel() {
+        if (combatPanelOpen) return;
+        if (window.Survival && typeof window.Survival.advanceTick === 'function') window.Survival.advanceTick();
+        combatPanelOpen = true;
+        var firstCat = window.CombatSkills && window.CombatSkills.getCategories().length ? window.CombatSkills.getCategories()[0].id : 'unarmed';
+        combatUIState.curCat = firstCat;
+        var skillsInCat = window.CombatSkills ? window.CombatSkills.getSkillsByCategory(firstCat) : [];
+        combatUIState.curSkillId = (skillsInCat.length && skillsInCat[0].id) ? skillsInCat[0].id : null;
+        combatUIState.curPart = 'rhand';
+        combatUIState.curSlot = 'active';
+        combatUIState.editingSlot = null;
+        combatUIState.mode = 'skills';
+        document.getElementById('modal-combat').classList.add('show');
+        document.getElementById('left-hud').style.opacity = '0.1';
+        document.getElementById('left-hud').style.pointerEvents = 'none';
+        renderCombatModal();
+    }
+
+    function closeCombatPanel() {
+        if (!combatPanelOpen) return;
+        if (window.Survival && typeof window.Survival.advanceTick === 'function') window.Survival.advanceTick();
+        combatPanelOpen = false;
+        document.getElementById('modal-combat').classList.remove('show');
+        document.getElementById('left-hud').style.opacity = '';
+        document.getElementById('left-hud').style.pointerEvents = '';
+        document.getElementById('picker-move').classList.remove('show');
+        combatUIState.editingSlot = null;
+        render();
+    }
+
+    function getCombatSkillName(skillId) {
+        if (!skillId) return ui('combat.empty');
+        var sk = window.CombatSkills && window.CombatSkills.getSkill(skillId);
+        return (sk && sk.name) ? sk.name : skillId;
+    }
+
+    function renderCombatModal() {
+        var CS = window.CombatSkills;
+        var AP = window.Acupoints;
+        var combatState = IE && IE.getCombatState ? IE.getCombatState() : { limbs: {}, hubs: { breath: null, light: null }, move_sequences: {}, skill_move_sequences: {} };
+        var limbIds = IE && IE.COMBAT_LIMB_IDS ? IE.COMBAT_LIMB_IDS.slice() : ['lhand', 'rhand', 'lfoot', 'rfoot'];
+
+        var mainTabs = document.querySelectorAll('#modal-combat .combat-main-tab');
+        var isAcupointMode = combatUIState.mode === 'acupoints';
+
+        if (mainTabs && mainTabs.length) {
+            mainTabs.forEach(function (btn) {
+                var mode = btn.getAttribute('data-mode') || 'skills';
+                btn.classList.toggle('active', combatUIState.mode === mode);
+                btn.onclick = function () {
+                    combatUIState.mode = mode;
+                    if (mode === 'acupoints') combatUIState.acupointPage = 0;
+                    renderCombatModal();
+                };
+            });
+        }
+
+        var catBox = document.getElementById('category-tabs');
+        var skillListEl = document.getElementById('skill-list');
+        var acListEl = document.getElementById('acupoint-list');
+
+        if (catBox) catBox.innerHTML = '';
+        if (skillListEl) {
+            skillListEl.style.display = isAcupointMode ? 'none' : 'flex';
+            if (!isAcupointMode) skillListEl.innerHTML = '';
+        }
+        if (acListEl) {
+            acListEl.style.display = isAcupointMode ? 'flex' : 'none';
+            if (isAcupointMode) acListEl.innerHTML = '';
+        }
+
+        if (CS && !isAcupointMode) {
+            var cats = CS.getCategories();
+            if (catBox) {
+                cats.forEach(function (c) {
+                    var btn = document.createElement('button');
+                    btn.type = 'button';
+                    btn.className = 'combat-cat-btn' + (combatUIState.curCat === c.id ? ' active' : '');
+                    btn.textContent = (c.icon ? c.icon + ' ' : '') + c.label;
+                    btn.onclick = function () {
+                        combatUIState.curCat = c.id;
+                        var list = CS.getSkillsByCategory(c.id);
+                        combatUIState.curSkillId = (list.length && list[0]) ? list[0].id : null;
+                        renderCombatModal();
+                    };
+                    catBox.appendChild(btn);
+                });
+            }
+
+            if (skillListEl) {
+                var list = CS.getSkillsByCategory(combatUIState.curCat);
+                list.forEach(function (s) {
+                    var div = document.createElement('div');
+                    div.className = 'combat-skill-item' + (combatUIState.curSkillId === s.id ? ' selected' : '');
+                    var level = IE && IE.getSkillLevel ? IE.getSkillLevel(s.id) : 0;
+                    var skillsState = IE && IE.getState() && IE.getState().skills ? IE.getState().skills : {};
+                    var moveUsage = (skillsState[s.id] && skillsState[s.id].move_usage) ? skillsState[s.id].move_usage : {};
+                    var profPct = Math.floor(CS.getSkillTotalProficiency(s.id, moveUsage) * 100);
+                    div.innerHTML = '<div class="skill-icon">' + (s.icon || '') + '</div><div class="skill-info"><div class="skill-name">' + (s.name || s.id) + '</div><div class="skill-meta">' + ui('combat.skill.meta', { level: level, profPct: profPct }) + '</div></div>';
+                    div.onclick = function () {
+                        combatUIState.curSkillId = s.id;
+                        renderCombatModal();
+                    };
+                    skillListEl.appendChild(div);
+                });
+            }
+        }
+
+        var hubBreath = document.getElementById('hub-breath');
+        var hubLight = document.getElementById('hub-light');
+        var valBreath = document.getElementById('val-breath');
+        var valLight = document.getElementById('val-light');
+        if (hubBreath) hubBreath.classList.toggle('active', !!combatState.hubs.breath);
+        if (hubLight) hubLight.classList.toggle('active', !!combatState.hubs.light);
+        if (valBreath) { valBreath.textContent = getCombatSkillName(combatState.hubs.breath) || ui('combat.not.loaded'); valBreath.classList.toggle('empty', !combatState.hubs.breath); }
+        if (valLight) { valLight.textContent = getCombatSkillName(combatState.hubs.light) || ui('combat.not.loaded'); valLight.classList.toggle('empty', !combatState.hubs.light); }
+
+        var limbBox = document.getElementById('limb-container');
+        if (limbBox && combatState.limbs) {
+            limbBox.innerHTML = '';
+            var isGlobal = combatUIState.curCat === 'breath' || combatUIState.curCat === 'light';
+            limbBox.style.opacity = isGlobal ? '0.2' : '1';
+            limbBox.style.pointerEvents = isGlobal ? 'none' : 'auto';
+            limbIds.forEach(function (lid) {
+                var limb = combatState.limbs[lid] || { active: null, parry: null, priority: 1 };
+                var div = document.createElement('div');
+                div.className = 'combat-limb-item';
+                var activeName = getCombatSkillName(limb.active);
+                var parryName = getCombatSkillName(limb.parry);
+                var isActiveSel = combatUIState.curPart === lid && combatUIState.curSlot === 'active';
+                var isParrySel = combatUIState.curPart === lid && combatUIState.curSlot === 'parry';
+                div.innerHTML = '<div class="limb-header"><span>' + (LIMB_ICONS[lid] || '') + ' ' + ui(LIMB_LABELS[lid] || lid) + '</span><span class="limb-priority">' + ui('combat.priority', { v: (limb.priority || 1) }) + '</span></div><div class="limb-slots"><div class="combat-limb-slot' + (isActiveSel ? ' selected' : '') + '" data-part="' + lid + '" data-slot="active"><span class="slot-type">' + ui('combat.slot.active') + '</span><span class="slot-skill">' + activeName + '</span></div><div class="combat-limb-slot' + (isParrySel ? ' selected' : '') + '" data-part="' + lid + '" data-slot="parry"><span class="slot-type">' + ui('combat.slot.parry') + '</span><span class="slot-skill">' + parryName + '</span></div></div>';
+                div.querySelectorAll('.combat-limb-slot').forEach(function (slotEl) {
+                    slotEl.onclick = function () {
+                        combatUIState.curPart = slotEl.getAttribute('data-part');
+                        combatUIState.curSlot = slotEl.getAttribute('data-slot');
+                        renderCombatModal();
+                    };
+                });
+                limbBox.appendChild(div);
+            });
+        }
+
+        var selSkill = CS && combatUIState.curSkillId ? CS.getSkill(combatUIState.curSkillId) : null;
+        var titleEl = document.getElementById('skill-title');
+        var levelEl = document.getElementById('skill-level');
+        var profEl = document.getElementById('skill-prof');
+        if (titleEl) {
+            if (!isAcupointMode) {
+                titleEl.textContent = selSkill ? selSkill.name : '--';
+            } else if (AP && combatUIState.curAcupointId) {
+                var catId = combatUIState.curAcupointCat;
+                var listApTitle = AP.getAcupointsByCategory(catId);
+                var curAp = listApTitle.find(function (x) { return x.id === combatUIState.curAcupointId; });
+                titleEl.textContent = curAp ? curAp.name : '--';
+            } else {
+                titleEl.textContent = '--';
+            }
+        }
+        var skillLevel = IE && combatUIState.curSkillId ? IE.getSkillLevel(combatUIState.curSkillId) : 0;
+        var skillsState = IE && IE.getState() && IE.getState().skills ? IE.getState().skills : {};
+        var moveUsage = (combatUIState.curSkillId && skillsState[combatUIState.curSkillId] && skillsState[combatUIState.curSkillId].move_usage) ? skillsState[combatUIState.curSkillId].move_usage : {};
+        var profPct = selSkill && CS ? Math.floor(CS.getSkillTotalProficiency(combatUIState.curSkillId, moveUsage) * 100) : 0;
+        if (levelEl) levelEl.textContent = ui('combat.level', { v: skillLevel });
+        if (profEl) profEl.textContent = ui('combat.prof.total', { v: profPct });
+
+        var seqBox = document.getElementById('move-sequence');
+        if (!isAcupointMode && seqBox && selSkill && selSkill.moves) {
+            seqBox.innerHTML = '';
+            var maxSlots = CS.getMaxSlotsForLevel(combatUIState.curSkillId, skillLevel);
+            var unlocked = CS.getUnlockedMoves(combatUIState.curSkillId, skillLevel);
+            var seq = (combatState.skill_move_sequences && combatState.skill_move_sequences[combatUIState.curSkillId]) ? combatState.skill_move_sequences[combatUIState.curSkillId].slice() : [];
+            while (seq.length < maxSlots) seq.push(unlocked.length ? unlocked[0].id : '');
+            seq = seq.slice(0, maxSlots);
+            for (var i = 0; i < maxSlots; i++) {
+                var moveId = seq[i] || (unlocked[0] ? unlocked[0].id : '');
+                var moveObj = unlocked.find(function (m) { return m.id === moveId; }) || unlocked[0];
+                var moveName = moveObj ? moveObj.name : moveId;
+                var useCount = (moveUsage && moveObj && moveUsage[moveObj.id] != null) ? moveUsage[moveObj.id] : 0;
+                var nodeProf = moveObj ? Math.floor(CS.getMoveProficiencyRatio(useCount) * 100) : 0;
+                var node = document.createElement('div');
+                node.className = 'combat-move-node' + (combatUIState.editingSlot === i ? ' editing' : '');
+                node.innerHTML = '<span class="node-index">' + String(i + 1).padStart(2, '0') + '</span><span class="node-name">' + moveName + '</span><span class="node-prof">' + ui('combat.prof.node', { v: nodeProf }) + '</span>';
+                node.onclick = function (idx, el) {
+                    return function (e) {
+                        e.stopPropagation();
+                        combatUIState.editingSlot = idx;
+                        openMovePicker(idx, el);
+                        renderCombatModal();
+                    };
+                }(i, node);
+                seqBox.appendChild(node);
+            }
+        }
+
+        var targetEl = document.getElementById('target-indicator');
+        if (targetEl) {
+            if (!isAcupointMode) {
+                if (combatUIState.curCat === 'breath') targetEl.textContent = ui('combat.target.hub.breath');
+                else if (combatUIState.curCat === 'light') targetEl.textContent = ui('combat.target.hub.light');
+                else targetEl.textContent = ui('combat.target.limb', { limb: ui(LIMB_LABELS[combatUIState.curPart] || combatUIState.curPart), slot: ui(combatUIState.curSlot === 'active' ? 'combat.slot.active' : 'combat.slot.parry') });
+            } else {
+                targetEl.textContent = ui('combat.target.acupoint');
+            }
+        }
+
+        if (AP && isAcupointMode && catBox && acListEl) {
+            var acCats = AP.getCategories();
+            if (!combatUIState.curAcupointCat && acCats.length) combatUIState.curAcupointCat = acCats[0].id;
+            acCats.forEach(function (c) {
+                var btn = document.createElement('button');
+                btn.type = 'button';
+                btn.className = 'combat-cat-btn' + (combatUIState.curAcupointCat === c.id ? ' active' : '');
+                btn.textContent = (c.icon ? c.icon + ' ' : '') + c.label;
+                btn.onclick = function () {
+                    combatUIState.curAcupointCat = c.id;
+                    combatUIState.acupointPage = 0;
+                    var listAp2 = AP.getAcupointsByCategory(c.id);
+                    combatUIState.curAcupointId = listAp2.length ? listAp2[0].id : null;
+                    renderCombatModal();
+                };
+                catBox.appendChild(btn);
+            });
+
+            var listAp = AP.getAcupointsByCategory(combatUIState.curAcupointCat);
+            var pageSize = 18;
+            var total = listAp.length;
+            var maxPage = total ? Math.max(0, Math.ceil(total / pageSize) - 1) : 0;
+            if (combatUIState.acupointPage > maxPage) combatUIState.acupointPage = maxPage;
+            if (combatUIState.acupointPage < 0) combatUIState.acupointPage = 0;
+            var start = combatUIState.acupointPage * pageSize;
+            var end = Math.min(start + pageSize, total);
+
+            for (var i = start; i < end; i++) {
+                var a = listAp[i];
+                var div = document.createElement('div');
+                var isSel = combatUIState.curAcupointId === a.id;
+                div.className = 'combat-acupoint-item' + (isSel ? ' selected' : '');
+                var meta = ui(AP.isUnlocked(a.id) ? 'acupoint.meta.unlocked' : 'acupoint.meta.locked', { effects: (a.effectsText || '') });
+                div.innerHTML = '<div class="acupoint-name">' + a.name + '</div><div class="acupoint-meta">' + meta + '</div>';
+                div.onclick = function (id) {
+                    return function () {
+                        combatUIState.curAcupointId = id;
+                        renderCombatModal();
+                    };
+                }(a.id);
+                acListEl.appendChild(div);
+            }
+
+            if (total > pageSize) {
+                var pager = document.createElement('div');
+                pager.style.marginTop = '8px';
+                pager.style.display = 'flex';
+                pager.style.justifyContent = 'space-between';
+                pager.style.alignItems = 'center';
+                pager.style.fontSize = '11px';
+                pager.style.color = '#a8a29e';
+
+                var btnPrev = document.createElement('button');
+                btnPrev.type = 'button';
+                btnPrev.textContent = ui('pager.prev');
+                btnPrev.disabled = combatUIState.acupointPage <= 0;
+                btnPrev.style.padding = '4px 10px';
+                btnPrev.style.borderRadius = '9999px';
+                btnPrev.style.border = '1px solid #4d3f35';
+                btnPrev.style.background = '#120e0c';
+                btnPrev.style.color = '#e8e6e3';
+                btnPrev.style.cursor = btnPrev.disabled ? 'default' : 'pointer';
+                if (!btnPrev.disabled) {
+                    btnPrev.onclick = function () {
+                        combatUIState.acupointPage--;
+                        renderCombatModal();
+                    };
+                } else {
+                    btnPrev.style.opacity = '0.4';
+                }
+
+                var info = document.createElement('span');
+                info.textContent = ui('pager.info', { cur: (combatUIState.acupointPage + 1), max: (maxPage + 1), total: total });
+
+                var btnNext = document.createElement('button');
+                btnNext.type = 'button';
+                btnNext.textContent = ui('pager.next');
+                btnNext.disabled = combatUIState.acupointPage >= maxPage;
+                btnNext.style.padding = '4px 10px';
+                btnNext.style.borderRadius = '9999px';
+                btnNext.style.border = '1px solid #4d3f35';
+                btnNext.style.background = '#120e0c';
+                btnNext.style.color = '#e8e6e3';
+                btnNext.style.cursor = btnNext.disabled ? 'default' : 'pointer';
+                if (!btnNext.disabled) {
+                    btnNext.onclick = function () {
+                        combatUIState.acupointPage++;
+                        renderCombatModal();
+                    };
+                } else {
+                    btnNext.style.opacity = '0.4';
+                }
+
+                pager.appendChild(btnPrev);
+                pager.appendChild(info);
+                pager.appendChild(btnNext);
+                acListEl.appendChild(pager);
+            }
+        }
+    }
+
+    function openMovePicker(idx, anchorEl) {
+        var CS = window.CombatSkills;
+        var picker = document.getElementById('picker-move');
+        var listEl = document.getElementById('picker-list');
+        if (!picker || !listEl || !CS || !combatUIState.curSkillId) return;
+        var skillLevel = IE ? IE.getSkillLevel(combatUIState.curSkillId) : 0;
+        var unlocked = CS.getUnlockedMoves(combatUIState.curSkillId, skillLevel);
+        var skillsState = IE && IE.getState() && IE.getState().skills ? IE.getState().skills : {};
+        var moveUsage = (combatUIState.curSkillId && skillsState[combatUIState.curSkillId] && skillsState[combatUIState.curSkillId].move_usage) ? skillsState[combatUIState.curSkillId].move_usage : {};
+        listEl.innerHTML = '';
+        unlocked.forEach(function (m) {
+            var count = moveUsage[m.id] != null ? moveUsage[m.id] : 0;
+            var pct = Math.floor(CS.getMoveProficiencyRatio(count) * 100);
+            var btn = document.createElement('button');
+            btn.type = 'button';
+            btn.innerHTML = '<span>' + m.name + '</span><span class="move-prof">' + ui('combat.prof.short', { v: pct }) + '</span>';
+            btn.onclick = function () {
+                var combat = IE.getCombatState();
+                if (!combat.skill_move_sequences[combatUIState.curSkillId]) combat.skill_move_sequences[combatUIState.curSkillId] = [];
+                var seq = combat.skill_move_sequences[combatUIState.curSkillId];
+                while (seq.length <= idx) seq.push(unlocked[0] ? unlocked[0].id : '');
+                seq[idx] = m.id;
+                IE.setCombatState({ skill_move_sequences: combat.skill_move_sequences });
+                combatUIState.editingSlot = null;
+                picker.classList.remove('show');
+                renderCombatModal();
+            };
+            listEl.appendChild(btn);
+        });
+        var rect = anchorEl.getBoundingClientRect();
+        picker.style.left = (rect.left) + 'px';
+        picker.style.top = (rect.top - 200) + 'px';
+        picker.classList.add('show');
+    }
+
+    function handleDeployCombat() {
+        var CS = window.CombatSkills;
+        var AP = window.Acupoints;
+
+        if (combatUIState.mode === 'acupoints') {
+            if (!AP || !combatUIState.curAcupointId) return;
+            var changed = AP.unlock(combatUIState.curAcupointId);
+            if (changed && window.GameLog) {
+                window.GameLog.log(ui('log.system.acupoint.unlocked', { id: combatUIState.curAcupointId }), 'system');
+            }
+            renderCombatModal();
+            return;
+        }
+
+        var skillId = combatUIState.curSkillId;
+        if (!skillId || !IE || !IE.setCombatState) return;
+        var sk = CS && CS.getSkill(skillId);
+        if (!sk) return;
+        var combat = IE.getCombatState();
+        if (combatUIState.curCat === 'breath') {
+            combat.hubs.breath = skillId;
+            IE.setCombatState({ hubs: { breath: skillId } });
+        } else if (combatUIState.curCat === 'light') {
+            combat.hubs.light = skillId;
+            IE.setCombatState({ hubs: { light: skillId } });
+        } else {
+            combat.limbs[combatUIState.curPart][combatUIState.curSlot] = skillId;
+            IE.setCombatState({ limbs: combat.limbs });
+            var seq = (combat.skill_move_sequences && combat.skill_move_sequences[skillId]) ? combat.skill_move_sequences[skillId].slice() : [];
+            if (seq.length) {
+                var moveSeqs = {};
+                moveSeqs[combatUIState.curPart] = seq;
+                IE.setCombatState({ move_sequences: moveSeqs });
+            }
+        }
+        if (window.GameLog) window.GameLog.log(ui('log.system.combat.deployed', { name: (sk.name || skillId) }), 'system');
+        renderCombatModal();
+    }
+
+    if (document.getElementById('btn-combat')) {
+        document.getElementById('btn-combat').addEventListener('click', function () {
+            if (combatPanelOpen) closeCombatPanel(); else openCombatPanel();
+        });
+    }
+    if (document.getElementById('combat-modal-close')) {
+        document.getElementById('combat-modal-close').addEventListener('click', closeCombatPanel);
+    }
+    if (document.getElementById('btn-deploy-combat')) {
+        document.getElementById('btn-deploy-combat').addEventListener('click', handleDeployCombat);
+    }
+    document.addEventListener('click', function () {
+        if (combatUIState.editingSlot != null) {
+            combatUIState.editingSlot = null;
+            var picker = document.getElementById('picker-move');
+            if (picker) picker.classList.remove('show');
+            if (combatPanelOpen) renderCombatModal();
+        }
+    });
+
+    function renderSurvivalModal() {
+        var wrap = document.getElementById('survival-skill-table');
+        if (!wrap) return;
+        wrap.innerHTML = '';
+        var list = (window.SurvivalSkills && typeof window.SurvivalSkills.getAll === 'function')
+            ? window.SurvivalSkills.getAll()
+            : [];
+        var IE = window.InventoryEquipment;
+        list.forEach(function (sk) {
+            var row = document.createElement('div');
+            row.className = 'survival-row';
+            var nameEl = document.createElement('div');
+            nameEl.className = 'survival-name';
+            nameEl.textContent = sk.name;
+            var levelEl = document.createElement('div');
+            levelEl.className = 'survival-level';
+            var lv = IE && typeof IE.getSkillLevel === 'function'
+                ? IE.getSkillLevel(sk.id)
+                : 0;
+            levelEl.textContent = (lv || 0) + ' 级';
+            row.appendChild(nameEl);
+            row.appendChild(levelEl);
+            wrap.appendChild(row);
+        });
+    }
+
+    function renderAcupointModal() {
+        var AP = window.Acupoints;
+        var catBox = document.getElementById('acupoint-cat-tabs');
+        var table = document.getElementById('acupoint-table');
+        var pagerBox = document.getElementById('acupoint-pager');
+        if (!AP || !catBox || !table) return;
+
+        catBox.innerHTML = '';
+        table.innerHTML = '';
+        if (pagerBox) pagerBox.innerHTML = '';
+
+        var acCats = AP.getCategories ? AP.getCategories() : [];
+        if (!combatUIState.curAcupointCat && acCats.length) combatUIState.curAcupointCat = acCats[0].id;
+
+        catBox.style.display = 'flex';
+        catBox.style.flexWrap = 'wrap';
+        catBox.style.gap = '8px';
+        catBox.style.marginBottom = '12px';
+
+        acCats.forEach(function (c) {
+            var btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = 'combat-cat-btn' + (combatUIState.curAcupointCat === c.id ? ' active' : '');
+            btn.textContent = (c.icon ? c.icon + ' ' : '') + c.label;
+            btn.onclick = function () {
+                combatUIState.curAcupointCat = c.id;
+                combatUIState.acupointPage = 0;
+                var listAp2 = AP.getAcupointsByCategory(c.id);
+                combatUIState.curAcupointId = listAp2.length ? listAp2[0].id : null;
+                renderAcupointModal();
+            };
+            catBox.appendChild(btn);
+        });
+
+        var listAp = AP.getAcupointsByCategory(combatUIState.curAcupointCat);
+        var pageSize = 18;
+        var total = listAp.length;
+        var maxPage = total ? Math.max(0, Math.ceil(total / pageSize) - 1) : 0;
+        if (combatUIState.acupointPage > maxPage) combatUIState.acupointPage = maxPage;
+        if (combatUIState.acupointPage < 0) combatUIState.acupointPage = 0;
+        var start = combatUIState.acupointPage * pageSize;
+        var end = Math.min(start + pageSize, total);
+
+        for (var i = start; i < end; i++) {
+            var a = listAp[i];
+            var row = document.createElement('div');
+            var unlocked = AP.isUnlocked ? AP.isUnlocked(a.id) : false;
+            row.className = 'survival-row';
+
+            var infoWrap = document.createElement('div');
+            infoWrap.className = 'acupoint-info';
+
+            var nameEl = document.createElement('div');
+            nameEl.className = 'acupoint-name-main';
+            nameEl.textContent = a.name;
+
+            var metaEl = document.createElement('div');
+            metaEl.className = 'acupoint-meta';
+            var metaText = ui(unlocked ? 'acupoint.meta.unlocked' : 'acupoint.meta.locked', { effects: (a.effectsText || '') });
+            metaEl.textContent = metaText;
+
+            infoWrap.appendChild(nameEl);
+            infoWrap.appendChild(metaEl);
+            row.appendChild(infoWrap);
+
+            var btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = 'acupoint-unlock-btn' + (unlocked ? ' unlocked' : '');
+            btn.textContent = unlocked ? ui('acupoint.btn.unlocked') : ui('acupoint.btn.unlock');
+            btn.disabled = !!unlocked;
+            if (!unlocked) {
+                (function (acupointId, acupointName) {
+                    btn.onclick = function () {
+                        if (!AP || !AP.unlock) return;
+                        var changed = AP.unlock(acupointId);
+                        if (changed) {
+                            if (window.GameLog) {
+                                window.GameLog.log(
+                                    ui('log.system.acupoint.unlocked', { id: (acupointName || acupointId) }),
+                                    'system'
+                                );
+                            }
+                            if (window.CharacterAttributes && typeof window.CharacterAttributes.recalcCharacterStats === 'function' && window.InventoryEquipment) {
+                                window.CharacterAttributes.recalcCharacterStats({
+                                    getEquipmentState: function () { return window.InventoryEquipment.getState().equipment; },
+                                    getSkillsState: function () { return window.InventoryEquipment.getState().skills; },
+                                    getItemTemplate: window.InventoryEquipment.getItemTemplate,
+                                    getEnchantEntry: window.InventoryEquipment.getEnchantEntry,
+                                    getStrengthLevel: function () { return window.InventoryEquipment.getSkillLevel('survival_strength'); }
+                                });
+                            }
+                            if (typeof updateStatusPanel === 'function') {
+                                updateStatusPanel();
+                            }
+                        }
+                        renderAcupointModal();
+                    };
+                })(a.id, a.name);
+            }
+            row.appendChild(btn);
+
+            table.appendChild(row);
+        }
+
+        if (pagerBox && total > pageSize) {
+            pagerBox.innerHTML = '';
+            pagerBox.style.marginTop = '8px';
+            pagerBox.style.display = 'flex';
+            pagerBox.style.justifyContent = 'space-between';
+            pagerBox.style.alignItems = 'center';
+            pagerBox.style.fontSize = '11px';
+            pagerBox.style.color = '#a8a29e';
+
+            var btnPrev = document.createElement('button');
+            btnPrev.type = 'button';
+            btnPrev.textContent = ui('pager.prev');
+            btnPrev.disabled = combatUIState.acupointPage <= 0;
+            btnPrev.style.padding = '4px 10px';
+            btnPrev.style.borderRadius = '9999px';
+            btnPrev.style.border = '1px solid #4d3f35';
+            btnPrev.style.background = '#120e0c';
+            btnPrev.style.color = '#e8e6e3';
+            btnPrev.style.cursor = btnPrev.disabled ? 'default' : 'pointer';
+            if (!btnPrev.disabled) {
+                btnPrev.onclick = function () {
+                    combatUIState.acupointPage--;
+                    renderAcupointModal();
+                };
+            } else {
+                btnPrev.style.opacity = '0.4';
+            }
+
+            var info = document.createElement('span');
+            info.textContent = ui('pager.info', { cur: (combatUIState.acupointPage + 1), max: (maxPage + 1), total: total });
+
+            var btnNext = document.createElement('button');
+            btnNext.type = 'button';
+            btnNext.textContent = ui('pager.next');
+            btnNext.disabled = combatUIState.acupointPage >= maxPage;
+            btnNext.style.padding = '4px 10px';
+            btnNext.style.borderRadius = '9999px';
+            btnNext.style.border = '1px solid #4d3f35';
+            btnNext.style.background = '#120e0c';
+            btnNext.style.color = '#e8e6e3';
+            btnNext.style.cursor = btnNext.disabled ? 'default' : 'pointer';
+            if (!btnNext.disabled) {
+                btnNext.onclick = function () {
+                    combatUIState.acupointPage++;
+                    renderAcupointModal();
+                };
+            } else {
+                btnNext.style.opacity = '0.4';
+            }
+
+            pagerBox.appendChild(btnPrev);
+            pagerBox.appendChild(info);
+            pagerBox.appendChild(btnNext);
+        }
+    }
+
+    function openSurvivalPanel() {
+        if (survivalPanelOpen) return;
+        if (window.Survival && typeof window.Survival.advanceTick === 'function') window.Survival.advanceTick();
+        survivalPanelOpen = true;
+        var modal = document.getElementById('modal-survival');
+        if (modal) modal.classList.add('show');
+        var left = document.getElementById('left-hud');
+        if (left) {
+            left.style.opacity = '0.1';
+            left.style.pointerEvents = 'none';
+        }
+        renderSurvivalModal();
+    }
+
+    function openAcupointPanel() {
+        if (acupointPanelOpen) return;
+        if (window.Survival && typeof window.Survival.advanceTick === 'function') window.Survival.advanceTick();
+        acupointPanelOpen = true;
+        var modal = document.getElementById('modal-acupoints');
+        if (modal) modal.classList.add('show');
+        var left = document.getElementById('left-hud');
+        if (left) {
+            left.style.opacity = '0.1';
+            left.style.pointerEvents = 'none';
+        }
+        var AP = window.Acupoints;
+        if (AP && AP.getCategories) {
+            var acCats = AP.getCategories();
+            if (!combatUIState.curAcupointCat && acCats.length) combatUIState.curAcupointCat = acCats[0].id;
+            var listAp = combatUIState.curAcupointCat && AP.getAcupointsByCategory
+                ? AP.getAcupointsByCategory(combatUIState.curAcupointCat)
+                : [];
+            if (!combatUIState.curAcupointId && listAp.length) {
+                combatUIState.curAcupointId = listAp[0].id;
+            }
+        }
+        renderAcupointModal();
+    }
+
+    function closeAcupointPanel() {
+        if (!acupointPanelOpen) return;
+        if (window.Survival && typeof window.Survival.advanceTick === 'function') window.Survival.advanceTick();
+        acupointPanelOpen = false;
+        var modal = document.getElementById('modal-acupoints');
+        if (modal) modal.classList.remove('show');
+        var left = document.getElementById('left-hud');
+        if (left) {
+            left.style.opacity = '';
+            left.style.pointerEvents = '';
+        }
+        render();
+    }
+
+    function closeSurvivalPanel() {
+        if (!survivalPanelOpen) return;
+        if (window.Survival && typeof window.Survival.advanceTick === 'function') window.Survival.advanceTick();
+        survivalPanelOpen = false;
+        var modal = document.getElementById('modal-survival');
+        if (modal) modal.classList.remove('show');
+        var left = document.getElementById('left-hud');
+        if (left) {
+            left.style.opacity = '';
+            left.style.pointerEvents = '';
+        }
+        render();
+    }
+
+    function openSpecialPanel() {
+        if (specialPanelOpen) return;
+        if (window.Survival && typeof window.Survival.advanceTick === 'function') window.Survival.advanceTick();
+        specialPanelOpen = true;
+        var modal = document.getElementById('modal-special');
+        if (modal) modal.classList.add('show');
+        var left = document.getElementById('left-hud');
+        if (left) {
+            left.style.opacity = '0.1';
+            left.style.pointerEvents = 'none';
+        }
+    }
+
+    function closeSpecialPanel() {
+        if (!specialPanelOpen) return;
+        if (window.Survival && typeof window.Survival.advanceTick === 'function') window.Survival.advanceTick();
+        specialPanelOpen = false;
+        var modal = document.getElementById('modal-special');
+        if (modal) modal.classList.remove('show');
+        var left = document.getElementById('left-hud');
+        if (left) {
+            left.style.opacity = '';
+            left.style.pointerEvents = '';
+        }
+        render();
+    }
+
+    if (document.getElementById('btn-survival')) {
+        document.getElementById('btn-survival').addEventListener('click', function () {
+            if (survivalPanelOpen) closeSurvivalPanel(); else openSurvivalPanel();
+        });
+    }
+    if (document.getElementById('survival-modal-close')) {
+        document.getElementById('survival-modal-close').addEventListener('click', closeSurvivalPanel);
+    }
+
+    if (document.getElementById('btn-life')) {
+        document.getElementById('btn-life').addEventListener('click', function () {
+            if (specialPanelOpen) closeSpecialPanel(); else openSpecialPanel();
+        });
+    }
+    if (document.getElementById('special-modal-close')) {
+        document.getElementById('special-modal-close').addEventListener('click', closeSpecialPanel);
+    }
+
+    if (document.getElementById('btn-acupoints')) {
+        document.getElementById('btn-acupoints').addEventListener('click', function () {
+            if (acupointPanelOpen) closeAcupointPanel(); else openAcupointPanel();
+        });
+    }
+    if (document.getElementById('acupoint-modal-close')) {
+        document.getElementById('acupoint-modal-close').addEventListener('click', closeAcupointPanel);
+    }
+
+    function init() {
+        loadConfig().then(function () {
+            setPlayerAvatarSprites({
+                down: 'image/player_down.png',
+                up: 'image/player_up.png',
+                left: 'image/player_left.png',
+                right: 'image/player_right.png'
+            });
+            if (window.GameLog) window.GameLog.log(ui('log.system.enter.scene'), 'system');
+            window.SceneCtx.actions = window.SceneCtx.actions || {};
+            window.SceneCtx.actions.tryMoveTo = function (tx, ty, dx, dy) {
+                var st = E.getState();
+                var ddx = (dx != null) ? dx : (tx - st.x);
+                var ddy = (dy != null) ? dy : (ty - st.y);
+                if (E.moveTo(tx, ty)) {
+                    setFacingFromMove(ddx, ddy);
+                    stopGatheringIdle();
+                }
+            };
+            window.SceneCtx.actions.interactNpc = function (npcId) {
+                if (typeof showMsg === 'function') showMsg(ui('log.system.try.interact.npc', { npcId: npcId }), 'system');
+                if (window.NPCSystem && typeof window.NPCSystem.openMenu === 'function') window.NPCSystem.openMenu(npcId);
+            };
+            window.SceneCtx.actions.startGatheringIdle = onGatherClick;
+            window.SceneCtx.actions.stopGatheringIdle = function (withMsg) {
+                stopGatheringIdle();
+                if (withMsg) showMsg(ui('log.info.gather.stop'), 'info');
+                if (window.SceneRenderer) window.SceneRenderer.render();
+            };
+            window.SceneCtx.actions.onEngineChanged = function () {
+                if (gatheringIdleTimer && gatheringIdleAt) {
+                    var st2 = E.getState();
+                    if (st2.mapId !== gatheringIdleAt.mapId || st2.x !== gatheringIdleAt.x || st2.y !== gatheringIdleAt.y)
+                        stopGatheringIdle();
+                }
+                if (window.SceneRenderer) window.SceneRenderer.render();
+            };
+
+            if (window.SceneSystems && typeof window.SceneSystems.init === 'function') window.SceneSystems.init();
+            if (window.SceneRenderer) window.SceneRenderer.render();
+        }).catch(function () { render(); });
+    }
+
+    // Expose entrypoints for bootstrap.js
+    window.SceneApp = window.SceneApp || {};
+    window.SceneApp.init = init;
+    window.SceneApp.loadConfig = loadConfig;
+    window.SceneApp.render = render;
+})();
+

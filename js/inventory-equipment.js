@@ -479,6 +479,8 @@
      * @returns {{ success: boolean, message?: string }}
      */
     function dropItemToGround(containerType, index, mapId, x, y) {
+        var key = getGroundItemKey(mapId, x, y);
+        if (!key) return { success: false, message: '无效的位置，无法丢弃' };
         var taken = takeItemFromContainer(containerType, index);
         if (!taken.success || !taken.item) return { success: false, message: '无法取出物品' };
         addItemToGround(mapId, x, y, taken.item);
@@ -740,7 +742,6 @@
         if (s.bound_vehicle_id !== undefined) state.bound_vehicle_id = s.bound_vehicle_id;
         if (s.skills) state.skills = s.skills;
         if (s.ground_items && typeof s.ground_items === 'object') {
-            state.ground_items = {};
             for (var gk in s.ground_items) {
                 if (s.ground_items.hasOwnProperty(gk) && Array.isArray(s.ground_items[gk]))
                     state.ground_items[gk] = s.ground_items[gk].slice();

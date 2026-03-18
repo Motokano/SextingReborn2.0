@@ -15,17 +15,17 @@
     var MAPS = {
         home: {
             map_id: 'home',
-            name: '基地',
+            name: '',
             width: 16,
             height: 16,
             blocks: [],
             portals: [
-                { x: 8, y: 15, target_map_id: 'field', target_x: 2, target_y: 11, label: '出基地→野外' }
+                { x: 8, y: 15, target_map_id: 'field', target_x: 2, target_y: 11, label: '' }
             ]
         },
         field: {
             map_id: 'field',
-            name: '野外',
+            name: '',
             width: 25,
             height: 25,
             blocks: [],
@@ -37,18 +37,18 @@
                 { x: 15, y: 14, entity_id: 'gathering_bush' }
             ],
             portals: [
-                { x: 2, y: 12, target_map_id: 'home', target_x: 8, target_y: 14, label: '回基地' },
-                { x: 22, y: 12, target_map_id: 'town', target_x: 8, target_y: 14, label: '进城镇' }
+                { x: 2, y: 12, target_map_id: 'home', target_x: 8, target_y: 14, label: '' },
+                { x: 22, y: 12, target_map_id: 'town', target_x: 8, target_y: 14, label: '' }
             ]
         },
         town: {
             map_id: 'town',
-            name: '城镇',
+            name: '',
             width: 16,
             height: 16,
             blocks: [],
             portals: [
-                { x: 8, y: 15, target_map_id: 'field', target_x: 22, target_y: 11, label: '出城镇→野外' }
+                { x: 8, y: 15, target_map_id: 'field', target_x: 22, target_y: 11, label: '' }
             ]
         }
     };

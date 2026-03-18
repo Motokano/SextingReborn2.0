@@ -32,18 +32,32 @@
     var optionsContext = null; // pass-through context (npcId etc.)
     var lastLoggedKey = null;
 
+    function ui(key, vars) {
+        try {
+            if (!global.UIText || typeof global.UIText.t !== 'function') throw new Error('[DialogueUI] UIText not ready');
+            return global.UIText.t(key, vars);
+        } catch (e) {
+            var msg = '[E_UI_CALL] ' + JSON.stringify({ module: 'DialogueUI', key: String(key || ''), fix_hint: 'Usually add/fix key in data/ui_text_zhCN.json' });
+            var err = new Error(msg + ' cause=' + (e && e.message ? e.message : String(e)));
+            err.code = 'E_UI_CALL';
+            err.details = { module: 'DialogueUI', key: String(key || '') };
+            err.cause = e;
+            throw err;
+        }
+    }
+
     function logDialogueLine(speakerName, text) {
         if (!global.GameLog || typeof global.GameLog.log !== 'function') return;
         var name = speakerName != null ? String(speakerName) : '';
         var t = text != null ? String(text) : '';
         if (!t.trim()) return;
-        global.GameLog.log((name ? (name + '：') : '') + t, 'info');
+        global.GameLog.log((name ? (name + ui('dialogue.punct.colon')) : '') + t, 'info');
     }
 
     function logDialogueChoice(choiceText) {
         if (!global.GameLog || typeof global.GameLog.log !== 'function') return;
         if (choiceText == null) return;
-        global.GameLog.log('【选择】' + String(choiceText), 'system');
+        global.GameLog.log(ui('dialogue.choice.prefix') + String(choiceText), 'system');
     }
 
     function $(id) { return document.getElementById(id); }
@@ -169,7 +183,7 @@
         queue = [{
             speakerRole: role,
             speakerId: entityId,
-            speakerName: payload.speakerName || (role === 'player' ? '主角' : 'NPC'),
+            speakerName: payload.speakerName || (role === 'player' ? ui('dialogue.player.name') : ui('dialogue.npc.name')),
             text: payload.text || ''
         }];
         open();
@@ -188,8 +202,8 @@
                 speakerRole: role,
                 speakerId: entityId,
                 speakerName: (role === 'player')
-                    ? (opts.playerName || '主角')
-                    : (opts.npcName || opts.speakerName || 'NPC'),
+                    ? (opts.playerName || ui('dialogue.player.name'))
+                    : (opts.npcName || opts.speakerName || ui('dialogue.npc.name')),
                 text: (l && l.text != null) ? String(l.text) : ''
             };
         });
@@ -220,7 +234,7 @@
                 var b = document.createElement('button');
                 b.type = 'button';
                 b.className = 'dlg-option-btn';
-                b.textContent = (opt && opt.text != null) ? String(opt.text) : '（无标题选项）';
+                b.textContent = (opt && opt.text != null) ? String(opt.text) : ui('dialogue.choice.untitled');
                 b.addEventListener('click', function () {
                     // 选项可选：next 为新的 linesRich；否则仅关闭
                     var next = opt && opt.next;
@@ -257,7 +271,7 @@
             avatarWrap.classList.remove('avatar-has-image');
             avatarImg.src = '';
             avatarImg.removeAttribute('src');
-            avatarFallback.textContent = '…';
+            avatarFallback.textContent = ui('dialogue.ellipsis');
             nextBtn.disabled = true;
             clearOptionsUi();
             return;
@@ -281,7 +295,7 @@
         avatarFallback.textContent = glyph;
 
         nextBtn.disabled = false;
-        nextBtn.textContent = (queue.length > 1) ? '下一句' : '结束';
+        nextBtn.textContent = (queue.length > 1) ? ui('dialogue.next') : ui('dialogue.end');
         clearOptionsUi();
         if (queue.length === 1) {
             // 最后一条显示完后，如果有 options，则展示选项并锁定 next

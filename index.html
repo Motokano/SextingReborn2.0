@@ -1,0 +1,1358 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title data-ui="app.title"></title>
+    <style>
+        * { box-sizing: border-box; }
+        body {
+            margin: 0;
+            font-family: "Source Han Serif SC", "Noto Serif CJK SC", "SimSun", serif;
+            background: #1c1815;
+            color: #e8e6e3;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+        #map-wrap {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+            border-bottom: 2px solid #4d3f35;
+        }
+        #map-container {
+            overflow: hidden;
+            position: relative;
+            width: 1042px;
+            height: 638px;
+            background: #26211d;
+            border: 6px solid #4d3f35;
+            border-radius: 4px;
+        }
+        #map-grid {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 1616px;
+            height: 1616px;
+            transition: transform 0.15s ease-out;
+        }
+        .tile {
+            position: absolute;
+            width: 98px;
+            height: 98px;
+            border-radius: 4px;
+            border: 1px solid rgba(255,255,255,0.08);
+            background: #312a24;
+        }
+        .tile.adjacent {
+            background: #3d332c;
+            cursor: pointer;
+            border-color: rgba(255,255,255,0.15);
+        }
+        .tile.adjacent:hover {
+            background: #4d3f35;
+        }
+        .tile.player {
+            background: #3d2a1a;
+            border-color: rgba(251,191,36,0.4);
+        }
+        .tile.portal {
+            border-color: rgba(100,200,255,0.35);
+            background: #2a2d35;
+        }
+        .tile.portal.adjacent {
+            background: #353a45;
+        }
+        .tile.portal.adjacent:hover {
+            background: #454a55;
+        }
+        .tile.blocked {
+            background: #3d2a2a;
+            border-color: rgba(180,80,80,0.4);
+            cursor: not-allowed;
+        }
+        .tile.blocked.adjacent {
+            cursor: not-allowed;
+        }
+        #player-sprite {
+            position: absolute;
+            z-index: 20;
+            width: 101px;
+            height: 101px;
+            left: 471px;
+            top: 269px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            pointer-events: none;
+        }
+        #player-sprite .avatar {
+            width: 62px;
+            height: 62px;
+            background: transparent;
+            border: none;
+            border-radius: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            position: relative;
+            overflow: hidden;
+        }
+        #player-sprite .avatar .avatar-img {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 0;
+            display: none;
+        }
+        #player-sprite .avatar.avatar-has-image .avatar-img {
+            display: block;
+        }
+        #player-sprite .avatar.avatar-has-image .avatar-fallback {
+            display: none;
+        }
+        #player-sprite .avatar .avatar-fallback {
+            user-select: none;
+        }
+        .tile.gathering {
+            border-color: rgba(120,180,80,0.45);
+            background: #2a3324;
+        }
+        .tile.gathering.adjacent { background: #353d2a; }
+        .tile.gathering.player { background: #2d3a1f; border-color: rgba(120,180,80,0.5); }
+        /* 格子上有地面物品时的标记 */
+        .tile.ground-items {
+            border-color: rgba(212, 163, 115, 0.5);
+            background: #332a24;
+            box-shadow: inset 0 0 0 2px rgba(212, 163, 115, 0.25);
+        }
+        .tile.ground-items::after {
+            content: '📦';
+            position: absolute;
+            right: 4px;
+            bottom: 4px;
+            font-size: 14px;
+            line-height: 1;
+            opacity: 0.9;
+        }
+        .tile.ground-items.adjacent { background: #3d3228; }
+        .tile.ground-items.player { background: #2d241f; border-color: rgba(212, 163, 115, 0.6); }
+        /* NPC 站位标记（最小可视化）：后续可替换为精灵/头像渲染 */
+        .tile.npc {
+            border-color: rgba(180, 120, 220, 0.55);
+            box-shadow: inset 0 0 0 2px rgba(180, 120, 220, 0.18);
+        }
+        .tile.npc::after {
+            content: '人';
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 20px;
+            line-height: 1;
+            color: rgba(210, 190, 255, 0.95);
+            text-shadow: 0 1px 0 rgba(0,0,0,0.55);
+            pointer-events: none;
+        }
+        .tile.player.npc::after { content: '你'; color: rgba(255, 220, 150, 0.95); }
+        /* 玩家旁可交互动作浮层：进入可交互范围时显示在玩家上方 */
+        #player-action-bubble {
+            position: absolute;
+            left: 50%;
+            top: 175px;
+            transform: translateX(-50%);
+            z-index: 25;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            pointer-events: auto;
+        }
+        #player-action-bubble.visible { display: flex; }
+        #player-action-bubble .action-bubble-inner {
+            padding: 8px 12px;
+            background: rgba(28, 22, 18, 0.95);
+            border: 2px solid rgba(120, 180, 80, 0.6);
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 8px;
+        }
+        #player-action-bubble .action-btn {
+            padding: 6px 14px;
+            font-size: 12px;
+            background: #3d332c;
+            border: 1px solid #57534e;
+            color: #e8e6e3;
+            border-radius: 6px;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+        #player-action-bubble .action-btn:hover { background: #4d3f35; border-color: #fbbf24; }
+        #player-action-bubble .action-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        #player-action-bubble .action-btn.primary { border-color: rgba(120, 180, 80, 0.6); color: #86efac; }
+        /* 左侧状态面板 - 与 02-regions 2.5 一致 */
+        #map-wrap { position: relative; }
+        #hud-layer { position: absolute; inset: 0; pointer-events: none; z-index: 30; }
+        /* 顶部时间条：显示“第X年 第Y天 HH:MM” */
+        #top-hud {
+            position: absolute;
+            left: 50%;
+            top: 14px;
+            transform: translateX(-50%);
+            z-index: 32;
+            pointer-events: none;
+            font-family: "Microsoft YaHei", "微软雅黑", "PingFang SC", sans-serif;
+        }
+        #top-hud .time-pill {
+            display: inline-flex;
+            align-items: baseline;
+            gap: 10px;
+            padding: 8px 14px;
+            border-radius: 9999px;
+            border: 1px solid rgba(212, 163, 115, 0.5);
+            background: rgba(28, 22, 18, 0.88);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.35);
+            backdrop-filter: blur(6px);
+        }
+        #top-hud .time-text {
+            font-size: 12px;
+            font-weight: 800;
+            letter-spacing: 0.18em;
+            color: #e8e6e3;
+            white-space: nowrap;
+        }
+        #top-hud .time-period {
+            font-size: 11px;
+            font-weight: 800;
+            letter-spacing: 0.12em;
+            color: rgba(251, 191, 36, 0.9);
+            white-space: nowrap;
+        }
+        #left-hud {
+            position: absolute; left: 20px; top: 20px; bottom: 88px; width: 380px;
+            display: flex; flex-direction: column; pointer-events: auto; transition: opacity 0.3s;
+            font-family: "Microsoft YaHei", "微软雅黑", "PingFang SC", sans-serif;
+        }
+        #status-scroll { flex: 1; overflow-y: auto; padding-right: 10px; font-size: 14px; }
+        #status-scroll::-webkit-scrollbar { width: 4px; }
+        #status-scroll::-webkit-scrollbar-thumb { background: rgba(212, 163, 115, 0.25); border-radius: 10px; }
+        .status-card { background: rgba(28, 22, 18, 0.9); border: 1px solid #4d3f35; padding: 14px 16px; font-size: 14px; font-weight: 600; margin-bottom: 14px; }
+        .status-card .row { display: flex; justify-content: space-between; align-items: center; min-height: 1.5em; }
+        .status-card .label { color: #a8a29e; font-size: 14px; }
+        .status-card .value { color: #e8e6e3; font-size: 14px; }
+        .status-card .value.ok { color: #22c55e; }
+        .status-card .value.warn { color: #f59e0b; }
+        .status-card .value.danger { color: #ef4444; }
+        .status-card .block-title { font-size: 12px; color: rgba(251, 191, 36, 0.85); letter-spacing: 0.12em; margin-bottom: 10px; font-weight: 800; }
+        .status-card .limb-row { margin-bottom: 6px; cursor: help; font-size: 14px; }
+        .status-card .limb-row:last-child { margin-bottom: 0; }
+        .progress-wrap { height: 4px; background: #1c1917; overflow: hidden; margin-top: 6px; border-radius: 2px; }
+        .progress-fill { height: 100%; transition: width 0.15s ease-out; }
+        .progress-fill.satiety { background: rgba(194, 65, 12, 0.6); }
+        .progress-fill.thirst { background: rgba(29, 78, 216, 0.6); }
+        .progress-fill.stamina { background: rgba(34, 197, 94, 0.6); }
+        .progress-fill.energy { background: rgba(139, 92, 246, 0.6); }
+        .role-card { background: rgba(45, 36, 30, 0.95); border: 2px solid rgba(212, 163, 115, 0.4); padding: 18px 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.3); margin-bottom: 14px; }
+        .role-card h1 { font-size: 1.65rem; font-weight: 800; color: #fff; letter-spacing: 0.12em; margin: 0; line-height: 1.3; }
+        .role-card .subtitle { font-size: 15px; color: #fbbf24; font-weight: 600; margin-top: 8px; letter-spacing: 0.06em; }
+        .quick-belt { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; padding: 12px; background: rgba(28, 22, 18, 0.95); border: 2px solid #4d3f35; }
+        .quick-belt .slot { aspect-ratio: 1; border: 1px solid #292524; background: rgba(0,0,0,0.4); display: flex; align-items: center; justify-content: center; font-size: 22px; cursor: pointer; }
+        .quick-belt .slot:hover { border-color: #fbbf24; }
+        .details-block { border: 1px solid #4d3f35; background: rgba(28, 25, 23, 0.2); }
+        .details-block summary { padding: 10px 12px; font-size: 13px; font-weight: 800; color: #a8a29e; cursor: pointer; list-style: none; display: flex; justify-content: space-between; }
+        .details-block .details-body { padding: 14px 16px; background: #1c1612; border-top: 1px solid #3d2d24; }
+        .details-block .details-body .row { display: flex; justify-content: space-between; font-size: 14px; margin-bottom: 10px; }
+        .details-block .details-body .row:last-child { margin-bottom: 0; }
+        /* 右侧三按钮：背包 / 战斗技能 / 生活技能 - 02-regions 2.5 */
+        #right-hud { position: absolute; right: 24px; top: 50%; transform: translateY(-50%); display: flex; flex-direction: column; gap: 24px; z-index: 31; pointer-events: auto; }
+        #right-hud .hud-btn { width: 56px; height: 56px; border-radius: 8px; border: 2px solid #4d3f35; background: rgba(28, 22, 18, 0.95); color: #e8e6e3; font-size: 24px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: border-color 0.2s, background 0.2s; }
+        #right-hud .hud-btn:hover { border-color: #fbbf24; background: rgba(45, 36, 30, 0.98); }
+        /* 背包+装备面板：放大 + 微软雅黑 */
+        #modal-backpack {
+            display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.65); z-index: 100;
+            align-items: center; justify-content: center; pointer-events: auto;
+            font-family: "Microsoft YaHei", "微软雅黑", "PingFang SC", sans-serif;
+        }
+        #modal-backpack.show { display: flex; }
+        #modal-backpack .panel {
+            width: 96%; max-width: 1080px; max-height: 90vh;
+            background: #1c1612; border: 2px solid #d4a373; border-radius: 10px;
+            overflow: hidden; display: flex; flex-direction: column;
+            font-size: 15px;
+        }
+        #modal-backpack .panel-body { flex: 1; overflow-y: auto; padding: 22px 26px; display: flex; gap: 32px; }
+        #modal-backpack .panel-left { flex: 1; min-width: 0; }
+        #modal-backpack .panel-right { width: 280px; flex-shrink: 0; }
+        #modal-backpack .inv-region { margin-bottom: 20px; }
+        #modal-backpack .inv-region h4 {
+            font-size: 15px; font-weight: 700; color: rgba(251,191,36,0.95);
+            margin: 0 0 10px 0; letter-spacing: 0.06em;
+        }
+        #modal-backpack .inv-grid { display: grid; grid-template-columns: repeat(6, 82px); gap: 7px; }
+        #modal-backpack .inv-slot {
+            width: 82px; height: 82px; border: 1px solid #4d3f35; background: rgba(0,0,0,0.35);
+            border-radius: 6px; display: flex; align-items: center; justify-content: center;
+            font-size: 13px; color: #e8e6e3; box-sizing: border-box; position: relative;
+        }
+        #modal-backpack .inv-slot:hover { border-color: #fbbf24; }
+        #modal-backpack .inv-slot .inv-slot-label {
+            flex: 1; overflow: hidden; text-overflow: ellipsis; font-size: 12px; line-height: 1.25;
+            padding: 6px 18px 18px 6px; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical;
+        }
+        #modal-backpack .inv-slot .inv-slot-drop {
+            position: absolute; right: 4px; bottom: 4px; padding: 3px 7px; font-size: 12px; line-height: 1.2;
+            background: #4d3f35; border: 1px solid #78716c; color: #e8e6e3; border-radius: 4px; cursor: pointer;
+        }
+        #modal-backpack .inv-slot .inv-slot-drop:hover { background: #5c4a3d; border-color: #fbbf24; }
+        #modal-backpack .inv-slot.inv-slot-equip { cursor: pointer; }
+        #modal-backpack .ground-region { margin-top: 20px; padding-top: 14px; border-top: 1px solid #4d3f35; }
+        #modal-backpack .ground-item-row {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 10px 12px; margin-bottom: 8px; background: rgba(45,36,30,0.85);
+            border: 1px solid #4d3f35; border-radius: 6px; gap: 12px;
+        }
+        #modal-backpack .ground-item-row .ground-item-name { color: #e8e6e3; font-size: 15px; flex: 1; }
+        #modal-backpack .ground-item-row .btn-pickup {
+            padding: 6px 14px; font-size: 14px; background: #4d3f35; border: 1px solid #78716c;
+            color: #e8e6e3; border-radius: 6px; cursor: pointer; flex-shrink: 0;
+        }
+        #modal-backpack .ground-item-row .btn-pickup:hover { background: #5c4a3d; border-color: #fbbf24; }
+        #modal-backpack .ground-item-row .btn-equip-from-ground { margin-left: 8px; }
+        #modal-backpack .equip-title {
+            font-size: 15px; font-weight: 700; color: rgba(251,191,36,0.95);
+            margin: 0 0 12px 0; letter-spacing: 0.06em;
+        }
+        #modal-backpack .equip-list { display: flex; flex-direction: column; gap: 8px; }
+        #modal-backpack .equip-row {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 10px 12px; background: rgba(45,36,30,0.85); border: 1px solid #4d3f35;
+            border-radius: 6px; gap: 10px;
+        }
+        #modal-backpack .equip-row .slot-name { color: #a8a29e; font-size: 14px; min-width: 88px; flex-shrink: 0; }
+        #modal-backpack .equip-row .item-name { color: #e8e6e3; font-size: 15px; flex: 1; min-width: 0; }
+        #modal-backpack .equip-row .btn-unequip {
+            padding: 6px 12px; font-size: 14px; background: #4d3f35; border: 1px solid #78716c;
+            color: #e8e6e3; border-radius: 6px; cursor: pointer; flex-shrink: 0;
+        }
+        #modal-backpack .equip-row .btn-unequip:hover { background: #5c4a3d; border-color: #fbbf24; }
+        #modal-backpack .panel-close {
+            padding: 14px; border-top: 1px solid #4d3f35; text-align: center; cursor: pointer;
+            color: #fbbf24; font-weight: 700; font-size: 16px;
+        }
+        #modal-backpack .panel-close:hover { background: rgba(212,163,115,0.15); }
+        /* 战斗技能枢纽弹窗 - 参照 demo.html */
+        #modal-combat {
+            display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 100;
+            align-items: center; justify-content: center; padding: 24px; pointer-events: auto;
+            font-family: "Microsoft YaHei", "微软雅黑", "PingFang SC", sans-serif;
+        }
+        #modal-combat.show { display: flex; }
+        #modal-combat .combat-panel {
+            width: 1200px; max-width: 98%; height: 780px; max-height: 90vh;
+            background: #1c1612; border: 2px solid rgba(212,163,115,0.3); border-radius: 16px;
+            box-shadow: 0 24px 48px rgba(0,0,0,0.5); display: flex; flex-direction: column; overflow: hidden;
+        }
+        #modal-combat .combat-header {
+            height: 64px; border-bottom: 1px solid #3d2d24; display: flex; align-items: center; justify-content: space-between;
+            padding: 0 40px; background: #1c1612; flex-shrink: 0;
+        }
+        #modal-combat .combat-header h2 {
+            margin: 0; font-size: 1.25rem; font-weight: 800; color: #fff; letter-spacing: 0.6em; text-transform: uppercase;
+        }
+        #modal-combat .combat-header .combat-subtitle {
+            font-size: 10px; color: #78716c; text-transform: uppercase; letter-spacing: 0.12em; margin-top: 4px; font-style: italic;
+        }
+        #modal-combat .combat-close {
+            width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
+            background: transparent; border: none; color: #78716c; cursor: pointer; font-size: 18px;
+        }
+        #modal-combat .combat-close:hover { background: rgba(185,28,28,0.2); color: #fff; }
+        #modal-combat .combat-body { flex: 1; display: flex; overflow: hidden; min-height: 0; }
+        #modal-combat .combat-left {
+            width: 380px; border-right: 1px solid #3d2d24; display: flex; flex-direction: column; padding: 32px;
+            background: #18120e; overflow-y: auto; flex-shrink: 0;
+        }
+        #modal-combat .combat-hub-section { margin-bottom: 32px; }
+        #modal-combat .combat-hub-title {
+            font-size: 10px; font-weight: 800; color: #fbbf24; border-left: 2px solid #fbbf24; padding-left: 16px;
+            text-transform: uppercase; margin-bottom: 16px;
+        }
+        #modal-combat .combat-hub-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        #modal-combat .combat-hub-node {
+            height: 80px; border-radius: 8px; border: 2px solid #4d3f35; background: #120e0c;
+            display: flex; flex-direction: column; align-items: center; justify-content: center; transition: border-color 0.2s, background 0.2s;
+        }
+        #modal-combat .combat-hub-node.active { border-color: #fbbf24; background: #2b211b; }
+        #modal-combat .combat-hub-node .hub-label { font-size: 8px; font-weight: 800; color: #78716c; text-transform: uppercase; margin-bottom: 4px; }
+        #modal-combat .combat-hub-node.active .hub-label { color: #fbbf24; }
+        #modal-combat .combat-hub-node .hub-value { font-size: 12px; font-weight: 800; color: #e8e6e3; }
+        #modal-combat .combat-hub-node .hub-value.empty { color: #57534e; font-style: italic; }
+        #modal-combat .combat-limb-title {
+            font-size: 10px; font-weight: 800; color: #78716c; border-left: 2px solid #57534e; padding-left: 16px;
+            text-transform: uppercase; margin-bottom: 20px;
+        }
+        #modal-combat .combat-limb-list { display: flex; flex-direction: column; gap: 24px; }
+        #modal-combat .combat-limb-item { display: flex; flex-direction: column; gap: 10px; }
+        #modal-combat .combat-limb-item .limb-header {
+            display: flex; justify-content: space-between; align-items: center; font-size: 10px; font-weight: 800;
+            color: #78716c; text-transform: uppercase; letter-spacing: 0.1em;
+        }
+        #modal-combat .combat-limb-item .limb-priority { color: #fbbf24; }
+        #modal-combat .combat-limb-item .limb-slots { display: flex; gap: 8px; }
+        #modal-combat .combat-limb-slot {
+            flex: 1; height: 48px; border: 2px solid #4d3f35; border-radius: 8px; background: #120e0c;
+            display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer;
+            transition: border-color 0.2s, background 0.2s; font-size: 11px;
+        }
+        #modal-combat .combat-limb-slot:hover { border-color: #78716c; }
+        #modal-combat .combat-limb-slot.selected { border-color: #fbbf24; background: #2b211b; }
+        #modal-combat .combat-limb-slot .slot-type { font-size: 7px; color: #57534e; text-transform: uppercase; }
+        #modal-combat .combat-limb-slot .slot-skill { font-size: 12px; font-weight: 800; color: #e8e6e3; }
+        #modal-combat .combat-right {
+            flex: 1; display: flex; flex-direction: column; padding: 40px; background: #1c1612; min-width: 0;
+        }
+        /* 顶部模式分页：战斗技能 / 经脉穴位 */
+        #modal-combat .combat-main-tabs {
+            display: flex; gap: 10px; margin-bottom: 24px; flex-wrap: wrap;
+        }
+        #modal-combat .combat-main-tab {
+            padding: 6px 18px; border-radius: 9999px; font-size: 12px; font-weight: 800;
+            border: 1px solid #4d3f35; background: #120e0c; color: #78716c;
+            cursor: pointer; text-transform: uppercase; letter-spacing: 0.16em;
+            transition: all 0.2s;
+        }
+        #modal-combat .combat-main-tab:hover { color: #fbbf24; border-color: #57534e; }
+        #modal-combat .combat-main-tab.active { background: #fbbf24; color: #1c1612; border-color: #fbbf24; }
+
+        #modal-combat .combat-category-tabs { display: flex; gap: 12px; margin-bottom: 40px; flex-wrap: wrap; }
+        /* 通用战斗/经脉分类按钮样式 */
+        .combat-cat-btn {
+            display: flex; align-items: center; gap: 12px; padding: 10px 24px; border-radius: 9999px;
+            font-size: 12px; font-weight: 800; border: 2px solid #4d3f35; background: #120e0c; color: #78716c;
+            cursor: pointer; transition: all 0.2s;
+        }
+        .combat-cat-btn:hover { color: #fbbf24; border-color: #57534e; }
+        .combat-cat-btn.active { background: #fbbf24; color: #1c1612; border-color: #fbbf24; }
+        #modal-combat .combat-skill-list { flex: 1; overflow-y: auto; padding-right: 16px; display: flex; flex-direction: column; gap: 12px; }
+        #modal-combat .combat-skill-item {
+            display: flex; align-items: center; justify-content: space-between; padding: 20px 32px; border-radius: 12px;
+            border: 2px solid #4d3f35; background: #14100e; cursor: pointer; transition: border-color 0.2s, background 0.2s;
+        }
+        #modal-combat .combat-skill-item:hover { border-color: #57534e; }
+        #modal-combat .combat-skill-item.selected { border-color: #fbbf24; background: #2b211b; box-shadow: 0 8px 24px rgba(0,0,0,0.3); }
+        #modal-combat .combat-skill-item .skill-icon { font-size: 24px; margin-right: 24px; }
+        #modal-combat .combat-skill-item .skill-info .skill-name { font-size: 18px; font-weight: 800; letter-spacing: 0.12em; color: #fff; text-transform: uppercase; }
+        #modal-combat .combat-skill-item .skill-info .skill-meta { font-size: 10px; color: #fbbf24; font-weight: 800; text-transform: uppercase; margin-top: 4px; }
+        /* 经脉穴位列表样式（与技能列表风格统一） */
+        #modal-combat .combat-acupoint-list {
+            flex: 1; overflow-y: auto; padding-right: 16px; display: flex; flex-direction: column; gap: 10px;
+        }
+        #modal-combat .combat-acupoint-item {
+            display: flex; flex-direction: column; padding: 16px 24px; border-radius: 12px;
+            border: 2px solid #4d3f35; background: #14100e; cursor: pointer;
+            transition: border-color 0.2s, background 0.2s;
+        }
+        #modal-combat .combat-acupoint-item:hover { border-color: #57534e; }
+        #modal-combat .combat-acupoint-item.selected { border-color: #fbbf24; background: #2b211b; box-shadow: 0 8px 24px rgba(0,0,0,0.3); }
+        #modal-combat .combat-acupoint-item .acupoint-name {
+            font-size: 15px; font-weight: 800; letter-spacing: 0.16em; color: #fff; text-transform: uppercase;
+        }
+        #modal-combat .combat-acupoint-item .acupoint-meta {
+            margin-top: 4px; font-size: 11px; color: #fbbf24; font-weight: 700;
+        }
+        #modal-combat .combat-acupoint-item .acupoint-desc {
+            margin-top: 6px; font-size: 12px; color: #a8a29e;
+        }
+
+        #modal-combat .combat-footer {
+            height: 240px; border-top: 1px solid #3d2d24; background: #1c1612; flex-shrink: 0;
+            display: flex; align-items: center; padding: 0 48px; gap: 48px;
+        }
+        #modal-combat .combat-footer-left { flex: 1; display: flex; flex-direction: column; gap: 20px; min-width: 0; }
+        #modal-combat .combat-footer .skill-title { font-size: 1.875rem; font-weight: 800; color: #fff; letter-spacing: 0.3em; margin: 0; }
+        #modal-combat .combat-footer .skill-badges { display: flex; gap: 8px; align-items: baseline; }
+        #modal-combat .combat-footer .badge-level {
+            padding: 4px 12px; font-size: 10px; font-weight: 800; text-transform: uppercase;
+            background: #292524; color: #78716c;
+        }
+        #modal-combat .combat-footer .badge-prof {
+            padding: 4px 12px; font-size: 10px; font-weight: 800; text-transform: uppercase;
+            background: rgba(251,191,36,0.1); border: 1px solid rgba(251,191,36,0.3); color: #fbbf24;
+        }
+        #modal-combat .combat-move-sequence { display: flex; flex-wrap: wrap; gap: 16px; padding: 8px 0; }
+        #modal-combat .combat-move-node {
+            width: 144px; height: 64px; border: 2px solid #4d3f35; border-radius: 8px; background: #120e0c;
+            display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer;
+            transition: border-color 0.2s, background 0.2s; position: relative;
+        }
+        #modal-combat .combat-move-node:hover { border-color: #fbbf24; background: #2b211b; }
+        #modal-combat .combat-move-node.editing { border-color: #fbbf24; background: #2b211b; transform: scale(1.05); box-shadow: 0 8px 24px rgba(0,0,0,0.3); }
+        #modal-combat .combat-move-node .node-index {
+            position: absolute; top: -8px; left: 8px; padding: 0 4px; background: #1c1612;
+            font-size: 9px; font-weight: 800; font-style: italic; color: #57534e;
+        }
+        #modal-combat .combat-move-node.editing .node-index { color: #fbbf24; }
+        #modal-combat .combat-move-node .node-name { font-size: 12px; font-weight: 800; color: #e8e6e3; }
+        #modal-combat .combat-move-node .node-prof { font-size: 9px; color: #fbbf24; font-weight: 800; text-transform: uppercase; margin-top: 4px; opacity: 0.9; }
+        #modal-combat .combat-footer-right { width: 256px; display: flex; flex-direction: column; gap: 16px; flex-shrink: 0; }
+        #modal-combat .btn-deploy {
+            width: 100%; padding: 20px; border-radius: 8px; background: #fbbf24; color: #1c1612; font-weight: 800;
+            text-transform: uppercase; letter-spacing: 0.4em; border: none; cursor: pointer; font-size: 14px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.2); transition: background 0.2s;
+        }
+        #modal-combat .btn-deploy:hover { background: #fcd34d; }
+        #modal-combat .btn-deploy:active { transform: scale(0.98); }
+        #modal-combat .target-indicator {
+            font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.12em; color: #fbbf24;
+            text-align: center; background: rgba(0,0,0,0.4); padding: 8px 12px; border-radius: 4px; border: 1px solid #3d2d24;
+        }
+        /* 招式选择弹出层 */
+        #picker-move {
+            display: none; position: fixed; z-index: 300; width: 192px; background: #1c1612; border: 2px solid #fbbf24;
+            border-radius: 8px; box-shadow: 0 16px 48px rgba(0,0,0,0.5); overflow: hidden;
+        }
+        #picker-move.show { display: block; }
+        #picker-move .picker-title {
+            padding: 8px; background: #261e18; font-size: 9px; font-weight: 800; color: #fbbf24;
+            text-transform: uppercase; letter-spacing: 0.12em; text-align: center;
+        }
+        #picker-move .picker-list { max-height: 256px; overflow-y: auto; }
+        #picker-move .picker-list button {
+            width: 100%; padding: 16px; text-align: left; border: none; border-bottom: 1px solid rgba(61,45,36,0.5);
+            background: transparent; color: #e8e6e3; font-size: 12px; font-weight: 800; letter-spacing: 0.08em;
+            cursor: pointer; display: flex; flex-direction: column; transition: background 0.2s, color 0.2s;
+        }
+        #picker-move .picker-list button:hover { background: #fbbf24; color: #1c1612; }
+        #picker-move .picker-list button .move-prof { font-size: 9px; color: #fbbf24; font-weight: 800; }
+        #picker-move .picker-list button:hover .move-prof { color: #1c1612; }
+
+        /* 生存技能总览弹窗 - 风格参考 demo.html 右侧 UI */
+        #modal-survival {
+            display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 100;
+            align-items: center; justify-content: center; padding: 24px; pointer-events: auto;
+            font-family: "Microsoft YaHei", "微软雅黑", "PingFang SC", sans-serif;
+        }
+        #modal-survival.show { display: flex; }
+        #modal-survival .survival-panel {
+            width: 880px; max-width: 96%; max-height: 80vh;
+            background: #1c1612; border: 2px solid rgba(212,163,115,0.3); border-radius: 16px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.5); display: flex; flex-direction: column; overflow: hidden;
+        }
+        #modal-survival .survival-header {
+            height: 60px; border-bottom: 1px solid #3d2d24; display: flex; align-items: center; justify-content: space-between;
+            padding: 0 32px; background: #1c1612; flex-shrink: 0;
+        }
+        #modal-survival .survival-header h2 {
+            margin: 0; font-size: 1.1rem; font-weight: 800; color: #fff; letter-spacing: 0.4em; text-transform: uppercase;
+        }
+        #modal-survival .survival-header .subtitle {
+            font-size: 10px; color: #78716c; text-transform: uppercase; letter-spacing: 0.12em; margin-top: 4px; font-style: italic;
+        }
+        #modal-survival .btn-close {
+            width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
+            background: transparent; border: none; color: #78716c; cursor: pointer; font-size: 16px;
+        }
+        #modal-survival .btn-close:hover { background: rgba(185,28,28,0.25); color: #fff; }
+        #modal-survival .survival-body {
+            flex: 1; display: flex; flex-direction: column; padding: 20px 28px 24px; min-height: 0; background: #1c1612;
+        }
+        #modal-survival .survival-table {
+            flex: 1; overflow-y: auto;
+        }
+        #modal-survival .survival-row {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 10px 4px; border-bottom: 1px solid rgba(63,63,70,0.4);
+        }
+        #modal-survival .survival-row:last-child { border-bottom: none; }
+        #modal-survival .survival-name {
+            font-size: 13px; font-weight: 700; color: #e8e6e3;
+        }
+        #modal-survival .survival-level {
+            font-size: 12px; font-weight: 700; color: #fbbf24; white-space: nowrap;
+        }
+
+        /* 特殊技能弹窗 - 复用生存技能总览的整体风格 */
+        #modal-special {
+            display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 100;
+            align-items: center; justify-content: center; padding: 24px; pointer-events: auto;
+            font-family: "Microsoft YaHei", "微软雅黑", "PingFang SC", sans-serif;
+        }
+        #modal-special.show { display: flex; }
+        #modal-special .survival-panel {
+            width: 880px; max-width: 96%; max-height: 80vh;
+            background: #1c1612; border: 2px solid rgba(212,163,115,0.3); border-radius: 16px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.5); display: flex; flex-direction: column; overflow: hidden;
+        }
+        #modal-special .survival-header {
+            height: 60px; border-bottom: 1px solid #3d2d24; display: flex; align-items: center; justify-content: space-between;
+            padding: 0 32px; background: #1c1612; flex-shrink: 0;
+        }
+        #modal-special .survival-header h2 {
+            margin: 0; font-size: 1.1rem; font-weight: 800; color: #fff; letter-spacing: 0.4em; text-transform: uppercase;
+        }
+        #modal-special .survival-header .subtitle {
+            font-size: 10px; color: #78716c; text-transform: uppercase; letter-spacing: 0.12em; margin-top: 4px; font-style: italic;
+        }
+        #modal-special .btn-close {
+            width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
+            background: transparent; border: none; color: #78716c; cursor: pointer; font-size: 16px;
+        }
+        #modal-special .btn-close:hover { background: rgba(185,28,28,0.25); color: #fff; }
+        #modal-special .survival-body {
+            flex: 1; display: flex; flex-direction: column; padding: 20px 28px 24px; min-height: 0; background: #1c1612;
+        }
+        #modal-special .survival-table {
+            flex: 1; overflow-y: auto;
+        }
+        #modal-special .survival-row {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 10px 4px; border-bottom: 1px solid rgba(63,63,70,0.4);
+        }
+        #modal-special .survival-row:last-child { border-bottom: none; }
+        #modal-special .survival-name {
+            font-size: 13px; font-weight: 700; color: #e8e6e3;
+        }
+        #modal-special .survival-level {
+            font-size: 12px; font-weight: 700; color: #fbbf24; white-space: nowrap;
+        }
+
+        /* 经脉穴位总览中的单行样式（在生存技能基础上稍微精致一点） */
+        #modal-acupoints .survival-row {
+            padding: 10px 8px;
+            border-bottom: 1px solid rgba(63,63,70,0.4);
+            display: flex; align-items: center; justify-content: space-between;
+            gap: 12px;
+        }
+        #modal-acupoints .survival-row:last-child { border-bottom: none; }
+        #modal-acupoints .acupoint-info {
+            display: flex; flex-direction: column; gap: 4px;
+        }
+        #modal-acupoints .acupoint-name-main {
+            font-size: 13px; font-weight: 700; color: #e8e6e3;
+        }
+        #modal-acupoints .acupoint-meta {
+            font-size: 11px; color: #a8a29e;
+        }
+        #modal-acupoints .acupoint-unlock-btn {
+            padding: 4px 10px;
+            border-radius: 9999px;
+            border: 1px solid #fbbf24;
+            background: #fbbf24;
+            color: #1c1612;
+            font-size: 11px;
+            font-weight: 800;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: all 0.15s;
+        }
+        #modal-acupoints .acupoint-unlock-btn:hover:not(:disabled) {
+            background: #facc15;
+            border-color: #facc15;
+        }
+        #modal-acupoints .acupoint-unlock-btn:disabled,
+        #modal-acupoints .acupoint-unlock-btn.unlocked {
+            background: transparent;
+            border-color: #4d3f35;
+            color: #78716c;
+            cursor: default;
+        }
+
+        /* 经脉穴位总览弹窗 - UI 延续生存技能风格 */
+        #modal-acupoints {
+            display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 100;
+            align-items: center; justify-content: center; padding: 24px; pointer-events: auto;
+            font-family: "Microsoft YaHei", "微软雅黑", "PingFang SC", sans-serif;
+        }
+        #modal-acupoints.show { display: flex; }
+        #modal-acupoints .survival-panel {
+            width: 880px; max-width: 96%; max-height: 80vh;
+            background: #1c1612; border: 2px solid rgba(212,163,115,0.3); border-radius: 16px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.5); display: flex; flex-direction: column; overflow: hidden;
+        }
+        #modal-acupoints .survival-header {
+            height: 60px; border-bottom: 1px solid #3d2d24; display: flex; align-items: center; justify-content: space-between;
+            padding: 0 32px; background: #1c1612; flex-shrink: 0;
+        }
+        #modal-acupoints .survival-header h2 {
+            margin: 0; font-size: 1.1rem; font-weight: 800; color: #fff; letter-spacing: 0.4em; text-transform: uppercase;
+        }
+        #modal-acupoints .survival-header .subtitle {
+            font-size: 10px; color: #78716c; text-transform: uppercase; letter-spacing: 0.12em; margin-top: 4px; font-style: italic;
+        }
+        #modal-acupoints .btn-close {
+            width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
+            background: transparent; border: none; color: #78716c; cursor: pointer; font-size: 16px;
+        }
+        #modal-acupoints .btn-close:hover { background: rgba(185,28,28,0.25); color: #fff; }
+        #modal-acupoints .survival-body {
+            flex: 1; display: flex; flex-direction: column; padding: 20px 28px 24px; min-height: 0; background: #1c1612;
+        }
+        #modal-acupoints .survival-table {
+            flex: 1; overflow-y: auto;
+        }
+        /* 物品信息悬浮窗（替代浏览器 title） */
+        #item-tooltip { display: none; position: fixed; z-index: 1000; min-width: 200px; max-width: 320px; padding: 12px 14px; background: rgba(28, 22, 18, 0.98); border: 2px solid #d4a373; border-radius: 8px; box-shadow: 0 8px 24px rgba(0,0,0,0.5); pointer-events: none; font-size: 12px; line-height: 1.45; color: #e8e6e3; }
+        #item-tooltip.show { display: block; }
+        #item-tooltip .tooltip-name { font-size: 14px; font-weight: bold; color: #fbbf24; margin-bottom: 8px; padding-bottom: 6px; border-bottom: 1px solid #4d3f35; }
+        #item-tooltip .tooltip-desc { color: #a8a29e; margin-bottom: 8px; white-space: pre-wrap; word-break: break-word; }
+        #item-tooltip .tooltip-attrs { color: #78716c; font-size: 11px; white-space: pre-line; }
+
+        /* 底部对话框：头像 + 台词（固定高度，位于地图正下方） */
+        #dialogue-panel {
+            flex: 0 0 auto;
+            height: 140px;
+            min-height: 120px;
+            max-height: 180px;
+            background: rgba(26, 22, 20, 0.98);
+            border-top: 1px solid #3d2d24;
+            border-bottom: 1px solid #2d221c;
+            display: none;
+            overflow: hidden;
+            font-family: "Microsoft YaHei", "微软雅黑", "PingFang SC", sans-serif;
+        }
+        #dialogue-panel.show { display: flex; }
+        #dialogue-panel .dlg-inner {
+            flex: 1;
+            display: flex;
+            gap: 14px;
+            padding: 12px 14px;
+            min-width: 0;
+        }
+        #dialogue-panel .dlg-avatar {
+            width: 84px;
+            height: 84px;
+            border-radius: 10px;
+            border: 2px solid rgba(212, 163, 115, 0.35);
+            background: #26211d;
+            box-shadow: 0 10px 24px rgba(0,0,0,0.35);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+            flex: 0 0 auto;
+        }
+        #dialogue-panel .dlg-avatar img {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: none;
+        }
+        #dialogue-panel .dlg-avatar.avatar-has-image img { display: block; }
+        #dialogue-panel .dlg-avatar.avatar-has-image .fallback { display: none; }
+        #dialogue-panel .dlg-avatar .fallback {
+            font-size: 34px;
+            user-select: none;
+            opacity: 0.95;
+        }
+        #dialogue-panel .dlg-main {
+            flex: 1;
+            min-width: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        #dialogue-panel .dlg-top {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+        }
+        #dialogue-panel .dlg-name {
+            font-size: 13px;
+            font-weight: 800;
+            letter-spacing: 0.12em;
+            color: #fbbf24;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        #dialogue-panel .dlg-actions {
+            display: flex;
+            gap: 8px;
+            flex: 0 0 auto;
+        }
+        #dialogue-panel .dlg-btn {
+            padding: 6px 12px;
+            font-size: 12px;
+            background: #3d332c;
+            border: 1px solid #57534e;
+            color: #e8e6e3;
+            border-radius: 8px;
+            cursor: pointer;
+            letter-spacing: 0.06em;
+        }
+        #dialogue-panel .dlg-btn:hover:not(:disabled) { background: #4d3f35; border-color: #fbbf24; }
+        #dialogue-panel .dlg-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        #dialogue-panel .dlg-btn.primary { border-color: rgba(251,191,36,0.55); color: #fde68a; }
+        #dialogue-panel .dlg-text {
+            flex: 1;
+            min-height: 0;
+            padding: 10px 12px;
+            border-radius: 10px;
+            border: 1px solid rgba(212, 163, 115, 0.25);
+            background: rgba(28, 22, 18, 0.55);
+            color: #e8e6e3;
+            font-size: 14px;
+            line-height: 1.55;
+            overflow: auto;
+            word-break: break-word;
+        }
+        #dialogue-panel .dlg-options {
+            margin-top: 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        #dialogue-panel .dlg-option-btn {
+            padding: 10px 12px;
+            text-align: left;
+            background: rgba(64, 64, 64, 0.85);
+            border: 1px solid #555;
+            color: rgba(255, 255, 255, 0.95);
+            border-radius: 10px;
+            cursor: pointer;
+            letter-spacing: 0.02em;
+        }
+        #dialogue-panel .dlg-option-btn:hover {
+            background: rgba(77, 63, 53, 0.85);
+            border-color: rgba(251, 191, 36, 0.7);
+        }
+        #dialogue-panel .dlg-hint {
+            font-size: 11px;
+            color: #78716c;
+            letter-spacing: 0.08em;
+            user-select: none;
+        }
+        /* 游戏实时日志：显示在游戏正下方 */
+        #game-log-panel {
+            flex: 0 0 auto;
+            height: 100px;
+            min-height: 80px;
+            max-height: 160px;
+            background: #1a1614;
+            border-top: 1px solid #3d2d24;
+            border-bottom: 1px solid #2d221c;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        #game-log-panel .game-log-header {
+            flex: 0 0 auto;
+            padding: 4px 12px 6px;
+            font-size: 11px;
+            color: #78716c;
+            border-bottom: 1px solid #2d221c;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+        }
+        #game-log-panel .game-log-lines {
+            flex: 1;
+            overflow-y: auto;
+            padding: 6px 12px 8px;
+            font-size: 12px;
+            line-height: 1.5;
+            color: #a8a29e;
+        }
+        #game-log-panel .game-log-line {
+            margin-bottom: 2px;
+            word-break: break-word;
+        }
+        #game-log-panel .log-time {
+            color: #57534e;
+            margin-right: 6px;
+        }
+        #game-log-panel .log-info { color: #a8a29e; }
+        #game-log-panel .log-success { color: #86efac; }
+        #game-log-panel .log-warn { color: #fcd34d; }
+        #game-log-panel .log-combat { color: #fca5a5; }
+        #game-log-panel .log-damage { color: #f87171; }
+        #game-log-panel .log-system { color: #94a3b8; }
+        #game-log-panel .game-log-lines { cursor: grab; user-select: none; }
+        #game-log-panel .game-log-lines.log-dragging { cursor: grabbing; }
+        /* 创建角色界面 */
+        #character-creation-overlay {
+            display: flex;
+            position: fixed;
+            inset: 0;
+            background: rgba(12, 10, 8, 0.92);
+            z-index: 200;
+            align-items: center;
+            justify-content: center;
+            pointer-events: auto;
+        }
+        #character-creation-overlay.hidden { display: none; }
+        #character-creation-card {
+            width: 90%;
+            max-width: 420px;
+            background: #1c1612;
+            border: 2px solid #d4a373;
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 12px 40px rgba(0,0,0,0.5);
+        }
+        #character-creation-card h2 {
+            margin: 0 0 20px 0;
+            font-size: 1.25rem;
+            color: #fbbf24;
+            letter-spacing: 0.15em;
+            text-align: center;
+        }
+        #character-creation-card .creation-field {
+            margin-bottom: 16px;
+        }
+        #character-creation-card .creation-field label {
+            display: block;
+            font-size: 11px;
+            color: #78716c;
+            margin-bottom: 6px;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+        }
+        #character-creation-card .creation-name {
+            width: 100%;
+            padding: 10px 12px;
+            font-size: 14px;
+            color: #e8e6e3;
+            background: #26211d;
+            border: 1px solid #4d3f35;
+            border-radius: 6px;
+            box-sizing: border-box;
+        }
+        #character-creation-card .creation-name:focus {
+            outline: none;
+            border-color: #fbbf24;
+        }
+        #character-creation-card .creation-name::placeholder {
+            color: #57534e;
+        }
+        #character-creation-card .attr-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            gap: 12px;
+        }
+        #character-creation-card .attr-row .attr-label {
+            width: 56px;
+            font-size: 13px;
+            color: #e8e6e3;
+        }
+        #character-creation-card .attr-row .attr-controls {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        #character-creation-card .attr-row .attr-btn {
+            width: 32px;
+            height: 32px;
+            padding: 0;
+            font-size: 18px;
+            line-height: 1;
+            color: #e8e6e3;
+            background: #3d332c;
+            border: 1px solid #4d3f35;
+            border-radius: 6px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        #character-creation-card .attr-row .attr-btn:hover:not(:disabled) {
+            background: #4d3f35;
+            border-color: #fbbf24;
+            color: #fbbf24;
+        }
+        #character-creation-card .attr-row .attr-btn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+        #character-creation-card .attr-row .attr-value {
+            min-width: 28px;
+            text-align: center;
+            font-size: 14px;
+            font-weight: bold;
+            color: #fbbf24;
+        }
+        #character-creation-card .creation-points {
+            text-align: center;
+            font-size: 12px;
+            color: #a8a29e;
+            margin: 12px 0 16px 0;
+        }
+        #character-creation-card .creation-points.warn { color: #fcd34d; }
+        #character-creation-card .creation-points.ok { color: #86efac; }
+        #character-creation-card .creation-dominant {
+            display: flex;
+            gap: 24px;
+            margin-bottom: 20px;
+        }
+        #character-creation-card .creation-dominant .group {
+            flex: 1;
+        }
+        #character-creation-card .creation-dominant .group label.group-label {
+            display: block;
+            font-size: 11px;
+            color: #78716c;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+        }
+        #character-creation-card .creation-dominant .group .opt {
+            display: flex;
+            gap: 8px;
+        }
+        #character-creation-card .creation-dominant .opt label {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 13px;
+            color: #e8e6e3;
+            cursor: pointer;
+        }
+        #character-creation-card .creation-dominant .opt input {
+            accent-color: #fbbf24;
+        }
+        #character-creation-card .btn-confirm-creation {
+            width: 100%;
+            padding: 12px 20px;
+            font-size: 14px;
+            font-weight: bold;
+            color: #1c1612;
+            background: #fbbf24;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            letter-spacing: 0.1em;
+        }
+        #character-creation-card .btn-confirm-creation:hover:not(:disabled) {
+            background: #fcd34d;
+        }
+        #character-creation-card .btn-confirm-creation:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+    </style>
+</head>
+<body>
+    <div id="item-tooltip"></div>
+
+    <!-- 创建角色界面：文案由 UI 文案表注入 -->
+    <div id="character-creation-overlay">
+        <div id="character-creation-card">
+            <h2 data-ui="creation.title"></h2>
+            <div class="creation-field">
+                <label for="creation-name" data-ui="creation.name.label"></label>
+                <input type="text" id="creation-name" class="creation-name" value="" maxlength="20" autocomplete="off" data-ui="creation.name.placeholder" data-ui-attr="placeholder">
+            </div>
+            <div class="creation-field">
+                <label data-ui="creation.gender.label"></label>
+                <div class="creation-dominant" style="margin-bottom:0">
+                    <div class="group" style="flex:1">
+                        <div class="opt">
+                            <label><input type="radio" name="creation-gender" value="male" checked> <span data-ui="creation.gender.male"></span></label>
+                            <label><input type="radio" name="creation-gender" value="female"> <span data-ui="creation.gender.female"></span></label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="creation-field">
+                <label data-ui="creation.innate.label"></label>
+                <div id="creation-attr-rows"></div>
+                <div id="creation-points" class="creation-points"></div>
+            </div>
+            <div class="creation-dominant">
+                <div class="group">
+                    <label class="group-label" data-ui="creation.dominant.hand"></label>
+                    <div class="opt">
+                        <label><input type="radio" name="creation-hand" value="left"> <span data-ui="creation.left"></span></label>
+                        <label><input type="radio" name="creation-hand" value="right" checked> <span data-ui="creation.right"></span></label>
+                    </div>
+                </div>
+                <div class="group">
+                    <label class="group-label" data-ui="creation.dominant.foot"></label>
+                    <div class="opt">
+                        <label><input type="radio" name="creation-leg" value="left"> <span data-ui="creation.left"></span></label>
+                        <label><input type="radio" name="creation-leg" value="right" checked> <span data-ui="creation.right"></span></label>
+                    </div>
+                </div>
+            </div>
+            <button type="button" id="btn-confirm-creation" class="btn-confirm-creation" data-ui="creation.finish"></button>
+        </div>
+    </div>
+
+    <div id="map-wrap">
+        <div id="map-container">
+            <div id="map-grid"></div>
+            <div id="player-sprite">
+                <div class="avatar" id="player-avatar">
+                    <img id="player-avatar-img" class="avatar-img" src="" alt="">
+                    <span class="avatar-fallback">👤</span>
+                </div>
+            </div>
+            <!-- 进入可交互范围时在玩家旁显示的动作选项 -->
+            <div id="player-action-bubble">
+                <div class="action-bubble-inner">
+                    <button type="button" id="player-action-gather" class="action-btn primary" style="display:none;" data-ui="player.action.gather"></button>
+                    <button type="button" id="player-action-gather-stop" class="action-btn" style="display:none;" data-ui="player.action.gather.stop"></button>
+                    <button type="button" id="player-action-ground-items" class="action-btn" style="display:none;" title="" data-ui="player.action.ground.items" data-ui-title="player.action.ground.items.title"></button>
+                </div>
+            </div>
+        </div>
+        <!-- 左侧人物状态区：与 demo / 02-regions 2.5 一致 -->
+        <div id="hud-layer">
+            <div id="top-hud">
+                <div class="time-pill">
+                    <span class="time-text" id="hud-time-text" data-ui="hud.time.default"></span>
+                    <span class="time-period" id="hud-time-period" data-ui="hud.period.default"></span>
+                </div>
+            </div>
+            <div id="left-hud">
+                <div class="role-card">
+                    <h1 id="status-role-name" data-ui="status.role.default"></h1>
+                    <p class="subtitle" id="status-gender-line"></p>
+                </div>
+                <div id="status-scroll">
+                    <div class="status-card" id="status-limbs">
+                        <div class="block-title" data-ui="status.block.limbs"></div>
+                        <div id="limb-rows"></div>
+                    </div>
+                    <div class="status-card" id="status-survival">
+                        <div class="block-title" data-ui="status.block.survival"></div>
+                        <div class="survival-row">
+                            <div class="row"><span class="label" data-ui="status.label.satiety"></span><span class="value" id="status-satiety-text"></span></div>
+                            <div class="progress-wrap"><div class="progress-fill satiety" id="status-satiety-bar" style="width:100%"></div></div>
+                        </div>
+                        <div class="survival-row" style="margin-top:12px">
+                            <div class="row"><span class="label" data-ui="status.label.thirst"></span><span class="value" id="status-thirst-text"></span></div>
+                            <div class="progress-wrap"><div class="progress-fill thirst" id="status-thirst-bar" style="width:100%"></div></div>
+                        </div>
+                        <div class="survival-row" style="margin-top:12px">
+                            <div class="row"><span class="label" data-ui="status.label.stamina"></span><span class="value" id="status-stamina-text">—</span></div>
+                            <div class="progress-wrap"><div class="progress-fill stamina" id="status-stamina-bar" style="width:100%"></div></div>
+                        </div>
+                        <div class="survival-row" style="margin-top:12px">
+                            <div class="row"><span class="label" data-ui="status.label.energy"></span><span class="value" id="status-energy-text">—</span></div>
+                            <div class="progress-wrap"><div class="progress-fill energy" id="status-energy-bar" style="width:100%"></div></div>
+                        </div>
+                        <div class="row" style="margin-top:8px"><span class="label" data-ui="status.label.weight"></span><span class="value" id="status-weight">—</span></div>
+                        <div class="row" style="margin-top:4px"><span class="label" data-ui="status.label.carry"></span><span class="value" id="status-carry">—</span></div>
+                    </div>
+                    <div class="quick-belt" id="quick-belt"></div>
+                    <details class="details-block" open>
+                        <summary><span data-ui="status.block.attrs"></span> <span>▼</span></summary>
+                        <div class="details-body">
+                            <div class="row"><span class="label" data-ui="status.attr.jingu"></span><span class="value" id="status-attr-jingu">—</span></div>
+                            <div class="row"><span class="label" data-ui="status.attr.flexibility"></span><span class="value" id="status-attr-flexibility">—</span></div>
+                            <div class="row"><span class="label" data-ui="status.attr.breath"></span><span class="value" id="status-attr-breath">—</span></div>
+                            <div class="row"><span class="label" data-ui="status.attr.dexterity"></span><span class="value" id="status-attr-dexterity">—</span></div>
+                            <div class="row"><span class="label" data-ui="status.attr.focus"></span><span class="value" id="status-attr-focus">—</span></div>
+                        </div>
+                    </details>
+                </div>
+            </div>
+            <!-- 右侧按钮：背包、生存技能、战斗技能、穴位、特殊技能 -->
+            <div id="right-hud">
+                <button type="button" class="hud-btn" id="btn-backpack" data-ui="btn.backpack.title" data-ui-attr="title">🎒</button>
+                <button type="button" class="hud-btn" id="btn-survival" data-ui="btn.survival.title" data-ui-attr="title">🌿</button>
+                <button type="button" class="hud-btn" id="btn-combat" data-ui="btn.combat.title" data-ui-attr="title">⚔️</button>
+                <button type="button" class="hud-btn" id="btn-acupoints" data-ui="btn.acupoints.title" data-ui-attr="title">🌀</button>
+                <button type="button" class="hud-btn" id="btn-life" data-ui="btn.special.title" data-ui-attr="title">✨</button>
+                <button type="button" class="hud-btn" id="btn-reset-demo-save" data-ui="btn.reset.demo.title" data-ui-attr="title">🧹</button>
+            </div>
+        </div>
+        <!-- 背包+装备面板：左物品栏、右装备栏 -->
+        <div id="modal-backpack">
+            <div class="panel">
+                <div class="panel-body">
+                    <div class="panel-left">
+                        <div class="inv-region" id="inv-region-pocket"><h4 data-ui="inv.pocket"></h4><div class="inv-grid" id="inv-grid-pocket"></div></div>
+                        <div class="inv-region" id="inv-region-vest"><h4 data-ui="inv.vest"></h4><div class="inv-grid" id="inv-grid-vest"></div></div>
+                        <div class="inv-region" id="inv-region-backpack"><h4 data-ui="inv.backpack"></h4><div class="inv-grid" id="inv-grid-backpack"></div></div>
+                        <div class="inv-region" id="inv-region-vehicle"><h4 data-ui="inv.vehicle"></h4><div class="inv-grid" id="inv-grid-vehicle"></div></div>
+                        <div class="inv-region ground-region" id="inv-region-ground"><h4 data-ui="inv.ground"></h4><div id="ground-items-list"></div></div>
+                    </div>
+                    <div class="panel-right">
+                        <h4 class="equip-title" data-ui="equip.title"></h4>
+                        <div class="equip-list" id="equip-list"></div>
+                    </div>
+                </div>
+                <div class="panel-close" id="backpack-panel-close" data-ui="backpack.close"></div>
+            </div>
+        </div>
+        <!-- 战斗技能枢纽弹窗 -->
+        <div id="modal-combat">
+            <div class="combat-panel">
+                <div class="combat-header">
+                    <div>
+                        <h2 data-ui="combat.hub.title"></h2>
+                        <span class="combat-subtitle" data-ui="combat.hub.subtitle"></span>
+                    </div>
+                    <button type="button" class="combat-close" id="combat-modal-close" aria-label="关闭">✖</button>
+                </div>
+                <div class="combat-body">
+                    <div class="combat-left">
+                        <div class="combat-hub-section">
+                            <div class="combat-hub-title" data-ui="combat.global.hub.title"></div>
+                            <div class="combat-hub-grid">
+                                <div id="hub-breath" class="combat-hub-node">
+                                    <span class="hub-label" data-ui="combat.hub.breath"></span>
+                                    <span id="val-breath" class="hub-value" data-ui="combat.not.loaded"></span>
+                                </div>
+                                <div id="hub-light" class="combat-hub-node">
+                                    <span class="hub-label" data-ui="combat.hub.light"></span>
+                                    <span id="val-light" class="hub-value empty" data-ui="combat.not.loaded"></span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="combat-limb-title" data-ui="combat.limb.load.title"></div>
+                        <div id="limb-container" class="combat-limb-list"></div>
+                    </div>
+                    <div class="combat-right">
+                        <div class="combat-main-tabs">
+                            <button type="button" class="combat-main-tab active" data-mode="skills" data-ui="combat.tab.skills"></button>
+                        </div>
+                        <div id="category-tabs" class="combat-category-tabs"></div>
+                        <div id="skill-list" class="combat-skill-list"></div>
+                    </div>
+                </div>
+                <div class="combat-footer">
+                    <div class="combat-footer-left">
+                        <div class="combat-footer-top">
+                            <h3 id="skill-title" class="skill-title">--</h3>
+                            <div class="skill-badges">
+                                <span id="skill-level" class="badge-level" data-ui="combat.level.zero"></span>
+                                <span id="skill-prof" class="badge-prof" data-ui="combat.prof.zero"></span>
+                            </div>
+                        </div>
+                        <div id="move-sequence" class="combat-move-sequence"></div>
+                    </div>
+                    <div class="combat-footer-right">
+                        <button type="button" class="btn-deploy" id="btn-deploy-combat" data-ui="combat.deploy"></button>
+                        <div id="target-indicator" class="target-indicator" data-ui="combat.target.default"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- 招式选择弹出层 -->
+        <div id="picker-move">
+            <div class="picker-title" data-ui="picker.move.title"></div>
+            <div id="picker-list" class="picker-list"></div>
+        </div>
+
+        <!-- 生存技能总览弹窗 -->
+        <div id="modal-survival">
+            <div class="survival-panel">
+                <div class="survival-header">
+                    <div>
+                        <h2 data-ui="survival.modal.title"></h2>
+                        <div class="subtitle" data-ui="survival.modal.subtitle"></div>
+                    </div>
+                    <button type="button" class="btn-close" id="survival-modal-close" aria-label="关闭">✖</button>
+                </div>
+                <div class="survival-body">
+                    <div id="survival-skill-table" class="survival-table"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 特殊技能弹窗（先留空，后续填充具体技能） -->
+        <div id="modal-special">
+            <div class="survival-panel">
+                <div class="survival-header">
+                    <div>
+                        <h2 data-ui="special.modal.title"></h2>
+                        <div class="subtitle" data-ui="special.modal.subtitle"></div>
+                    </div>
+                    <button type="button" class="btn-close" id="special-modal-close" aria-label="关闭">✖</button>
+                </div>
+                <div class="survival-body">
+                    <div id="special-skill-table" class="survival-table">
+                        <!-- 预留：后续在此渲染特殊技能列表 -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 经脉穴位总览弹窗（独立于战斗技能枢纽） -->
+        <div id="modal-acupoints">
+            <div class="survival-panel">
+                <div class="survival-header">
+                    <div>
+                        <h2 data-ui="acupoints.modal.title"></h2>
+                        <div class="subtitle" data-ui="acupoints.modal.subtitle"></div>
+                    </div>
+                    <button type="button" class="btn-close" id="acupoint-modal-close" aria-label="关闭">✖</button>
+                </div>
+                <div class="survival-body">
+                    <div id="acupoint-cat-tabs" class="combat-category-tabs"></div>
+                    <div id="acupoint-table" class="survival-table"></div>
+                    <div id="acupoint-pager"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="dialogue-panel" aria-hidden="true">
+        <div class="dlg-inner">
+            <div class="dlg-avatar" id="dialogue-avatar">
+                <img id="dialogue-avatar-img" src="" alt="">
+                <span class="fallback" id="dialogue-avatar-fallback">🧑</span>
+            </div>
+            <div class="dlg-main">
+                <div class="dlg-top">
+                    <div class="dlg-name" id="dialogue-speaker-name" data-ui="dialogue.speaker.default"></div>
+                    <div class="dlg-actions">
+                        <button type="button" class="dlg-btn primary" id="dialogue-btn-next" data-ui="dialogue.next"></button>
+                        <button type="button" class="dlg-btn" id="dialogue-btn-close" data-ui="dialogue.close"></button>
+                    </div>
+                </div>
+                <div class="dlg-text" id="dialogue-text" data-ui="dialogue.placeholder"></div>
+                <div class="dlg-options" id="dialogue-options" style="display:none;"></div>
+                <div class="dlg-hint" data-ui="dialogue.hint"></div>
+            </div>
+        </div>
+    </div>
+
+    <div id="game-log-panel">
+        <div class="game-log-header">
+            <span data-ui="log.title"></span>
+        </div>
+        <div id="game-log-lines" class="game-log-lines"></div>
+    </div>
+
+    <script src="js/ui-text.js"></script>
+    <script src="js/game-engine.js"></script>
+    <script src="js/entity-appearance.js"></script>
+    <script src="js/dialogue-ui.js"></script>
+    <script src="js/game-log.js"></script>
+    <script src="js/game-time.js"></script>
+    <script src="js/npc-system.js"></script>
+    <script src="js/survival.js"></script>
+    <script src="js/character-attributes.js"></script>
+    <script src="js/inventory-equipment.js"></script>
+    <script src="js/combat-skills.js"></script>
+    <script src="js/acupoints.js"></script>
+    <script src="js/survival-skills.js"></script>
+    <script src="js/gathering.js"></script>
+    <script src="js/scene-renderer.js"></script>
+    <script src="js/scene-systems.js"></script>
+    <script src="js/scene-app.js"></script>
+    <script src="js/bootstrap.js"></script>
+    
+</body>
+</html>

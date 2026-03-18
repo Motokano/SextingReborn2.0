@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>世界编辑器（沙盘 + 单图）- 潮碧物语</title>
+  <style>
+    * { box-sizing: border-box; }
+    html, body { height: 100%; }
+    body {
+      margin: 0;
+      background: #121212;
+      color: #e7e7e7;
+      font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Arial, sans-serif;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    .topbar {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 12px;
+      background: #1f1f1f;
+      border-bottom: 1px solid #2f2f2f;
+    }
+    .tabs {
+      display: inline-flex;
+      gap: 6px;
+      background: #171717;
+      border: 1px solid #2b2b2b;
+      border-radius: 10px;
+      padding: 4px;
+    }
+    .tab {
+      padding: 7px 10px;
+      border-radius: 8px;
+      border: 1px solid transparent;
+      background: transparent;
+      color: #dcdcdc;
+      cursor: pointer;
+      font-size: 13px;
+    }
+    .tab.active {
+      background: #2a2a2a;
+      border-color: #3b3b3b;
+      color: #fff;
+    }
+    .hint { color: #9a9a9a; font-size: 12px; }
+    .spacer { flex: 1; }
+    .pill {
+      font-size: 12px;
+      padding: 3px 10px;
+      border-radius: 999px;
+      border: 1px solid #343434;
+      background: #191919;
+      color: #cfcfcf;
+      max-width: 52vw;
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+    }
+    .btn {
+      padding: 8px 10px;
+      background: #343434;
+      border: 1px solid #444;
+      color: #fff;
+      border-radius: 10px;
+      cursor: pointer;
+    }
+    .btn:hover { background: #3f3f3f; }
+
+    .main {
+      flex: 1;
+      min-height: 0;
+      display: flex;
+      overflow: hidden;
+    }
+    .pane {
+      position: relative;
+      min-width: 0;
+      overflow: hidden;
+    }
+    .pane iframe {
+      width: 100%;
+      height: 100%;
+      border: 0;
+      background: #121212;
+    }
+    .splitter {
+      width: 6px;
+      cursor: col-resize;
+      background: #1a1a1a;
+      border-left: 1px solid #2b2b2b;
+      border-right: 1px solid #2b2b2b;
+    }
+    .pane {
+      position: relative;
+      min-width: 0;
+      overflow: hidden;
+      border: 1px solid transparent;
+    }
+    .pane.focus {
+      border-color: rgba(240,192,64,0.55);
+      box-shadow: 0 0 0 2px rgba(240,192,64,0.18), 0 10px 30px rgba(0,0,0,0.45);
+      transition: box-shadow 160ms ease, border-color 160ms ease;
+    }
+  </style>
+</head>
+<body>
+  <div class="topbar">
+    <div class="tabs">
+      <button class="tab active" id="tab-both" type="button">并排</button>
+      <button class="tab" id="tab-sandbox" type="button">沙盘</button>
+      <button class="tab" id="tab-map" type="button">单图</button>
+    </div>
+    <span class="hint">顺滑切换：点沙盘节点会自动载入单图；两边的数据会互相同步（不影响后续扩展字段）。</span>
+    <div class="spacer"></div>
+    <div class="pill" id="status">未选择地图</div>
+    <button class="btn" type="button" id="btn-load-default">载入默认地图</button>
+  </div>
+
+  <div class="main" id="main">
+    <div class="pane" id="pane-sandbox" style="flex: 1.05;">
+      <iframe id="frame-sandbox" src="map-sandbox.html" title="地图沙盘"></iframe>
+    </div>
+    <div class="splitter" id="splitter" title="拖动调整宽度"></div>
+    <div class="pane" id="pane-map" style="flex: 1;">
+      <iframe id="frame-map" src="map-editor.html" title="地图编辑器"></iframe>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      var MSG_NS = 'cabi.worldEditor.v1';
+      var mapsById = {}; // authoritative copy in host
+      var order = [];
+      var layout = {};
+      var selectedMapId = '';
+
+      var ui = {
+        mode: 'both', // both|sandbox|map
+        split: 0.52
+      };
+
+      var paneSandbox = document.getElementById('pane-sandbox');
+      var paneMap = document.getElementById('pane-map');
+      var splitter = document.getElementById('splitter');
+      var statusEl = document.getElementById('status');
+
+      function setTabs(activeId) {
+        var ids = ['tab-both', 'tab-sandbox', 'tab-map'];
+        for (var i = 0; i < ids.length; i++) {
+          var el = document.getElementById(ids[i]);
+          el.classList.toggle('active', ids[i] === activeId);
+        }
+      }
+
+      function applyLayoutMode() {
+        if (ui.mode === 'both') {
+          paneSandbox.style.display = 'block';
+          paneMap.style.display = 'block';
+          splitter.style.display = 'block';
+          var a = Math.max(0.18, Math.min(0.82, ui.split));
+          paneSandbox.style.flex = String(a);
+          paneMap.style.flex = String(1 - a);
+          paneSandbox.classList.remove('focus');
+          paneMap.classList.remove('focus');
+        } else if (ui.mode === 'sandbox') {
+          paneSandbox.style.display = 'block';
+          paneMap.style.display = 'none';
+          splitter.style.display = 'none';
+          paneSandbox.style.flex = '1';
+        } else {
+          paneSandbox.style.display = 'none';
+          paneMap.style.display = 'block';
+          splitter.style.display = 'none';
+          paneMap.style.flex = '1';
+        }
+      }
+
+      function postToSandbox(type, payload) {
+        var f = document.getElementById('frame-sandbox');
+        if (f && f.contentWindow) f.contentWindow.postMessage({ ns: MSG_NS, type: type, payload: payload || {} }, '*');
+      }
+      function postToMap(type, payload) {
+        var f = document.getElementById('frame-map');
+        if (f && f.contentWindow) f.contentWindow.postMessage({ ns: MSG_NS, type: type, payload: payload || {} }, '*');
+      }
+
+      function setStatus(text) { statusEl.textContent = text; }
+
+      function ingestMaps(maps) {
+        mapsById = {};
+        order = [];
+        for (var i = 0; i < (maps || []).length; i++) {
+          var m = maps[i];
+          if (!m || typeof m !== 'object') continue;
+          var id = String(m.map_id || '').trim();
+          if (!id) continue;
+          mapsById[id] = m;
+          order.push(id);
+        }
+        order.sort();
+      }
+
+      function allMapsArray() {
+        return order.map(function (id) { return mapsById[id]; });
+      }
+
+      function selectMap(mapId, reason, opts) {
+        if (!mapId || !mapsById[mapId]) return;
+        selectedMapId = mapId;
+        setStatus('当前地图：' + mapId + (mapsById[mapId].name ? (' · ' + mapsById[mapId].name) : '') + (reason ? ('（' + reason + '）') : ''));
+        postToMap('mapEditor.loadMap', { map: mapsById[mapId] });
+        // 防止“回声”：来自沙盘的选中不再回传给沙盘，否则会触发 selection 循环导致闪烁
+        var notifySandbox = !(opts && opts.noEchoToSandbox);
+        if (notifySandbox) postToSandbox('sandbox.selectMap', { mapId: mapId });
+      }
+
+      function syncToSandbox() {
+        postToSandbox('sandbox.setMaps', { maps: allMapsArray() });
+        if (layout && typeof layout === 'object') postToSandbox('sandbox.setLayout', { layout: layout });
+      }
+
+      function loadDefaultFromHost() {
+        // 复用沙盘默认加载机制：触发它自行加载，然后我们接收 sandbox.state
+        postToSandbox('sandbox.requestState', {});
+        // 沙盘内部有“载入默认地图”按钮；这里直接模拟点击更复杂，交给用户点也行。
+        // 但为了顺滑，这里让 host 自己 fetch 默认列表，与沙盘保持一致
+        var list = ['data/maps/home.json','data/maps/field.json','data/maps/town.json'];
+        Promise.all(list.map(function (p) {
+          return fetch(p).then(function (r) { return r.ok ? r.json() : null; }).catch(function () { return null; });
+        })).then(function (objs) {
+          var maps = objs.filter(Boolean);
+          ingestMaps(maps);
+          syncToSandbox();
+          if (order.length) selectMap(order[0], '默认载入');
+        });
+      }
+
+      // handle messages from iframes
+      window.addEventListener('message', function (evt) {
+        var msg = evt && evt.data;
+        if (!msg || msg.ns !== MSG_NS) return;
+
+        if (msg.type === 'sandbox.state') {
+          var maps = msg.payload && Array.isArray(msg.payload.maps) ? msg.payload.maps : [];
+          ingestMaps(maps);
+          layout = (msg.payload && msg.payload.layout) ? msg.payload.layout : layout;
+          // map 侧如果当前选中地图存在，保持；否则选一个
+          if (selectedMapId && mapsById[selectedMapId]) {
+            // noop
+          } else if (order.length) {
+            selectedMapId = '';
+            selectMap(order[0], '同步');
+          }
+        } else if (msg.type === 'sandbox.selection') {
+          var sel = msg.payload && msg.payload.selected;
+          if (sel && sel.type === 'node' && sel.id) {
+            if (mapsById[sel.id]) {
+              // 触发顺滑切换：并排模式下让右侧高亮，单图模式直接保持
+              if (ui.mode === 'sandbox') {
+                ui.mode = 'both';
+                setTabs('tab-both');
+                applyLayoutMode();
+              }
+              // 轻量聚焦提示：高亮右侧单图面板（不使用遮罩，避免闪烁/压迫感）
+              paneMap.classList.add('focus');
+              selectMap(sel.id, '来自沙盘', { noEchoToSandbox: true });
+              setTimeout(function () { paneMap.classList.remove('focus'); }, 260);
+            }
+          }
+        } else if (msg.type === 'mapEditor.state') {
+          var map = msg.payload && msg.payload.map;
+          if (map && map.map_id) {
+            mapsById[String(map.map_id)] = map;
+            if (order.indexOf(String(map.map_id)) < 0) { order.push(String(map.map_id)); order.sort(); }
+            // 回写到沙盘，让连线/计数立刻更新
+            syncToSandbox();
+            if (String(map.map_id) === selectedMapId) {
+              setStatus('当前地图：' + selectedMapId + (map.name ? (' · ' + map.name) : '') + '（已同步）');
+            }
+          }
+        }
+      });
+
+      // tabs
+      document.getElementById('tab-both').addEventListener('click', function () {
+        ui.mode = 'both'; setTabs('tab-both'); applyLayoutMode();
+      });
+      document.getElementById('tab-sandbox').addEventListener('click', function () {
+        ui.mode = 'sandbox'; setTabs('tab-sandbox'); applyLayoutMode();
+      });
+      document.getElementById('tab-map').addEventListener('click', function () {
+        ui.mode = 'map'; setTabs('tab-map'); applyLayoutMode();
+      });
+
+      // splitter drag
+      var dragging = false;
+      splitter.addEventListener('mousedown', function (e) {
+        dragging = true;
+        e.preventDefault();
+      });
+      window.addEventListener('mousemove', function (e) {
+        if (!dragging || ui.mode !== 'both') return;
+        var rect = document.getElementById('main').getBoundingClientRect();
+        var x = (e.clientX - rect.left) / rect.width;
+        ui.split = Math.max(0.18, Math.min(0.82, x));
+        applyLayoutMode();
+      });
+      window.addEventListener('mouseup', function () { dragging = false; });
+
+      document.getElementById('btn-load-default').addEventListener('click', loadDefaultFromHost);
+
+      // init
+      applyLayoutMode();
+      setStatus('未选择地图（建议点“载入默认地图”）');
+
+      // 让两个 iframe 在加载后把状态推上来
+      document.getElementById('frame-sandbox').addEventListener('load', function () {
+        postToSandbox('sandbox.requestState', {});
+      });
+      document.getElementById('frame-map').addEventListener('load', function () {
+        postToMap('mapEditor.requestState', {});
+      });
+    })();
+  </script>
+</body>
+</html>
+

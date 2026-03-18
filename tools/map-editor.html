@@ -63,6 +63,18 @@
         .cell.selected { border-color: #f0c040; box-shadow: 0 0 0 2px #f0c040; }
         .sidebar .multi-hint { font-size: 12px; color: #f0c040; margin-bottom: 8px; }
         .cell.blocked.portal { background: #4a3d4a; }
+        .cell .terrain {
+            position: absolute;
+            inset: 2px;
+            border-radius: 2px;
+            background-size: cover;
+            background-position: center;
+            opacity: 0.92;
+            pointer-events: none;
+            z-index: 0;
+        }
+        .cell.walkable .terrain,
+        .cell.blocked .terrain { mix-blend-mode: overlay; }
         .cell.void {
             background: #2a2a2a;
             border-color: #444;
@@ -129,6 +141,7 @@
             resize: vertical;
             min-height: 68px;
         }
+        /* 右侧小地图已移除：编辑统一在主网格上完成 */
     </style>
 </head>
 <body>
@@ -190,6 +203,14 @@
                 <p class="hint">与设计文档 8.2.2 一致，地图用 entity_id 引用；游戏内站在该格可执行采集。</p>
                 <button type="button" id="btn-apply-entity">应用实体</button>
             </div>
+            <div class="row" id="panel-terrain">
+                <label>地形（可扩展，样式可换图）</label>
+                <select id="inp-terrain-id">
+                    <option value="">无</option>
+                </select>
+                <p class="hint">从 data/editor/map_style_registry.json 读取 terrains 列表（若不存在则仅显示“无”）。导出会写入 terrains: [{x,y,terrain_id}]（旧引擎不读也不影响）。</p>
+                <button type="button" id="btn-apply-terrain">应用地形</button>
+            </div>
             <div class="row" id="panel-npc">
                 <label>NPC 生成点</label>
                 <select id="inp-npc-id">
@@ -210,6 +231,7 @@
 
     <script>
         (function () {
+            var MSG_NS = 'cabi.worldEditor.v1';
             var CELL_PX = 36;
             var state = {
                 mapId: 'home',
@@ -221,34 +243,16 @@
                 portals: [],
                 entities: [],   // [{ x, y, entity_id: 'gathering_bush'|'gathering_grass' }, ...]
                 npcs: [],       // [{ x, y, npc_id: 'npc.supervisor.linShuyao' }, ...]
+                terrains: [],   // [{ x, y, terrain_id: 'ground' }, ...] 稀疏层，可扩展，旧引擎不读也不影响
                 annotations: {} // { "x,y": "text" } 编辑器专用，不参与导出
             };
 
             var ui = {
-                showNotes: true
+                showNotes: true,
+                terrainRegistry: null
             };
 
-            function notesStorageKey(mapId) {
-                return 'cabi_map_editor_notes_v1:' + (mapId || 'map');
-            }
-
-            function loadNotesForMap(mapId) {
-                try {
-                    var raw = localStorage.getItem(notesStorageKey(mapId));
-                    if (!raw) return {};
-                    var obj = JSON.parse(raw);
-                    if (!obj || typeof obj !== 'object') return {};
-                    return obj;
-                } catch (e) {
-                    return {};
-                }
-            }
-
-            function saveNotesForMap(mapId) {
-                try {
-                    localStorage.setItem(notesStorageKey(mapId), JSON.stringify(state.annotations || {}));
-                } catch (e) { /* ignore */ }
-            }
+            // 注释现在写入导出 JSON（annotations），不再使用 localStorage。
 
             function keyXY(x, y) { return x + ',' + y; }
 
@@ -311,6 +315,23 @@
                 return null;
             }
 
+            function getTerrainAt(x, y) {
+                for (var i = 0; i < (state.terrains || []).length; i++) {
+                    if (state.terrains[i].x === x && state.terrains[i].y === y) return state.terrains[i].terrain_id || null;
+                }
+                return null;
+            }
+
+            function setTerrainAt(x, y, terrainId) {
+                if (!state.terrains) state.terrains = [];
+                var idx = -1;
+                for (var i = 0; i < state.terrains.length; i++) {
+                    if (state.terrains[i].x === x && state.terrains[i].y === y) { idx = i; break; }
+                }
+                if (idx >= 0) state.terrains.splice(idx, 1);
+                if (terrainId) state.terrains.push({ x: x, y: y, terrain_id: terrainId });
+            }
+
             function setEntityAt(x, y, entityId) {
                 var idx = -1;
                 for (var i = 0; i < state.entities.length; i++) {
@@ -357,6 +378,16 @@
                             cell.classList.add('void');
                         } else {
                             cell.classList.add(isWalkable(x, y) ? 'walkable' : 'blocked');
+                            // terrain layer (editor-extensible)
+                            var tid = getTerrainAt(x, y);
+                            if (tid && ui.terrainRegistry && ui.terrainRegistry._byId && ui.terrainRegistry._byId[tid]) {
+                                var tdef = ui.terrainRegistry._byId[tid];
+                                var terr = document.createElement('div');
+                                terr.className = 'terrain';
+                                if (tdef.image) terr.style.backgroundImage = 'url(' + tdef.image + ')';
+                                else if (tdef.swatch) terr.style.background = tdef.swatch;
+                                cell.appendChild(terr);
+                            }
                             var mark = document.createElement('span');
                             mark.className = 'mark';
                             if (getPortalAt(x, y)) { cell.classList.add('portal'); mark.textContent = '○'; }
@@ -377,20 +408,11 @@
                             else if (eid === 'gathering_grass') t += ' 草丛';
                             var npcId = getNpcAt(x, y);
                             if (npcId) t += ' NPC:' + npcId;
-                            var note = getNoteAt(x, y);
-                            if (note) t += ' 注释:' + note;
+                            // 注释不进入 title，避免“具体渲染”出现
                         }
                         cell.title = t;
 
-                        if (ui.showNotes && isEnabled(x, y)) {
-                            var noteText = getNoteAt(x, y);
-                            if (noteText) {
-                                var noteEl = document.createElement('div');
-                                noteEl.className = 'note';
-                                noteEl.textContent = noteText;
-                                cell.appendChild(noteEl);
-                            }
-                        }
+                        // 注释不在格子渲染层显示（仅用于编辑/设计记录）
 
                         cell.addEventListener('mousedown', (function (gx, gy) {
                             return function (e) { if (e.button === 0) onCellMouseDown(gx, gy, e); };
@@ -404,6 +426,8 @@
             var dragStart = null;
             var isDragging = false;
             var didDrag = false;
+            var npcAutoBlocked = {}; // { "x,y": true } 仅编辑器内部：记录因 NPC 自动设为不可走的格子
+            var elementDrag = null; // { kind:'portal'|'entity'|'npc'|'terrain', index:number, from:{x,y} }
 
             function boxCells(x0, y0, x1, y1) {
                 var xa = Math.min(x0, x1), xb = Math.max(x0, x1);
@@ -419,6 +443,15 @@
 
             function onCellMouseDown(x, y, e) {
                 e.preventDefault();
+                // Ctrl+左键：拖动元素（NPC/实体/传送点）
+                if (tryBeginElementDrag(x, y, e)) {
+                    dragStart = { x: x, y: y };
+                    isDragging = true;
+                    didDrag = false;
+                    document.addEventListener('mousemove', onDocMouseMove);
+                    document.addEventListener('mouseup', onDocMouseUp);
+                    return;
+                }
                 dragStart = { x: x, y: y };
                 isDragging = true;
                 didDrag = false;
@@ -428,10 +461,59 @@
 
             function getCellFromEvent(e) {
                 var el = document.elementFromPoint(e.clientX, e.clientY);
-                if (!el || !el.dataset || el.dataset.x === undefined) return null;
-                var cx = parseInt(el.dataset.x, 10);
-                var cy = parseInt(el.dataset.y, 10);
+                if (!el) return null;
+                var cellEl = el.closest ? el.closest('.cell') : el;
+                if (!cellEl || !cellEl.dataset || cellEl.dataset.x === undefined) return null;
+                var cx = parseInt(cellEl.dataset.x, 10);
+                var cy = parseInt(cellEl.dataset.y, 10);
                 return { x: cx, y: cy };
+            }
+
+            function indexOfPortalAt(x, y) {
+                for (var i = 0; i < state.portals.length; i++) if (state.portals[i].x === x && state.portals[i].y === y) return i;
+                return -1;
+            }
+            function indexOfEntityAt(x, y) {
+                for (var i = 0; i < state.entities.length; i++) if (state.entities[i].x === x && state.entities[i].y === y) return i;
+                return -1;
+            }
+            function indexOfNpcAt(x, y) {
+                for (var i = 0; i < state.npcs.length; i++) if (state.npcs[i].x === x && state.npcs[i].y === y) return i;
+                return -1;
+            }
+            function indexOfTerrainAt(x, y) {
+                for (var i = 0; i < (state.terrains || []).length; i++) if (state.terrains[i].x === x && state.terrains[i].y === y) return i;
+                return -1;
+            }
+
+            function tryBeginElementDrag(x, y, e) {
+                if (!(e.ctrlKey || e.metaKey)) return false;
+                if (!isEnabled(x, y)) return false;
+                var ni = indexOfNpcAt(x, y);
+                if (ni >= 0) { elementDrag = { kind: 'npc', index: ni, from: { x: x, y: y } }; return true; }
+                var ei = indexOfEntityAt(x, y);
+                if (ei >= 0) { elementDrag = { kind: 'entity', index: ei, from: { x: x, y: y } }; return true; }
+                var pi = indexOfPortalAt(x, y);
+                if (pi >= 0) { elementDrag = { kind: 'portal', index: pi, from: { x: x, y: y } }; return true; }
+                var ti = indexOfTerrainAt(x, y);
+                if (ti >= 0) { elementDrag = { kind: 'terrain', index: ti, from: { x: x, y: y } }; return true; }
+                return false;
+            }
+
+            function restoreWalkableIfNpcAutoBlocked(x, y) {
+                var k = keyXY(x, y);
+                if (!npcAutoBlocked[k]) return;
+                if (indexOfNpcAt(x, y) >= 0) return;
+                state.walkable[y][x] = true;
+                delete npcAutoBlocked[k];
+            }
+
+            function applyNpcAutoBlock(x, y) {
+                var k = keyXY(x, y);
+                if (state.walkable[y][x]) {
+                    state.walkable[y][x] = false;
+                    npcAutoBlocked[k] = true;
+                }
             }
 
             function onDocMouseMove(e) {
@@ -440,9 +522,14 @@
                 if (!cell) return;
                 if (cell.x !== dragStart.x || cell.y !== dragStart.y) {
                     didDrag = true;
-                    selected = boxCells(dragStart.x, dragStart.y, cell.x, cell.y);
-                    updateCellInfo();
-                    highlightSelected();
+                    if (elementDrag) {
+                        selected = [{ x: cell.x, y: cell.y }];
+                        highlightSelected();
+                    } else {
+                        selected = boxCells(dragStart.x, dragStart.y, cell.x, cell.y);
+                        updateCellInfo();
+                        highlightSelected();
+                    }
                 }
             }
 
@@ -450,6 +537,36 @@
                 document.removeEventListener('mousemove', onDocMouseMove);
                 document.removeEventListener('mouseup', onDocMouseUp);
                 if (!isDragging || !dragStart) return;
+                if (elementDrag) {
+                    var to = didDrag ? (getCellFromEvent(e) || dragStart) : dragStart;
+                    if (to && isEnabled(to.x, to.y)) {
+                        var from = elementDrag.from;
+                        if (elementDrag.kind === 'npc') restoreWalkableIfNpcAutoBlocked(from.x, from.y);
+                        if (elementDrag.kind === 'portal') {
+                            var p = state.portals[elementDrag.index];
+                            if (p) { p.x = to.x; p.y = to.y; }
+                        } else if (elementDrag.kind === 'entity') {
+                            var ent = state.entities[elementDrag.index];
+                            if (ent) { ent.x = to.x; ent.y = to.y; }
+                        } else if (elementDrag.kind === 'npc') {
+                            var n = state.npcs[elementDrag.index];
+                            if (n) { n.x = to.x; n.y = to.y; applyNpcAutoBlock(to.x, to.y); }
+                        } else if (elementDrag.kind === 'terrain') {
+                            var t = (state.terrains || [])[elementDrag.index];
+                            if (t) {
+                                // terrain 稀疏层：移动坐标即可
+                                t.x = to.x; t.y = to.y;
+                            }
+                        }
+                    }
+                    elementDrag = null;
+                    renderGrid();
+                    highlightSelected();
+                    updateCellInfo();
+                    dragStart = null;
+                    isDragging = false;
+                    return;
+                }
                 if (!didDrag) {
                     var x = dragStart.x, y = dragStart.y;
                     if (e.ctrlKey || e.metaKey) {
@@ -510,6 +627,7 @@
                     document.getElementById('panel-walk').style.display = 'none';
                     document.getElementById('panel-portal').style.display = 'none';
                     document.getElementById('panel-entity').style.display = 'none';
+                    document.getElementById('panel-terrain').style.display = 'none';
                     document.getElementById('panel-npc').style.display = 'none';
                     document.getElementById('panel-note').style.display = 'none';
                     return;
@@ -518,6 +636,7 @@
                 document.getElementById('panel-walk').style.display = 'block';
                 document.getElementById('panel-portal').style.display = 'block';
                 document.getElementById('panel-entity').style.display = 'block';
+                document.getElementById('panel-terrain').style.display = 'block';
                 document.getElementById('panel-npc').style.display = 'block';
                 document.getElementById('panel-note').style.display = 'block';
 
@@ -537,6 +656,9 @@
                     var npcId = getNpcAt(x, y);
                     document.getElementById('inp-npc-id').value = npcId || '';
                     document.getElementById('inp-note').value = getNoteAt(x, y);
+                    var tid = getTerrainAt(x, y);
+                    var terrSel = document.getElementById('inp-terrain-id');
+                    if (terrSel) terrSel.value = tid || '';
                 } else {
                     var allEn = true, noneEn = true, allWalk = true, noneWalk = true;
                     for (var i = 0; i < selected.length; i++) {
@@ -568,6 +690,9 @@
                         if (getNoteAt(nx, ny) !== note0) { sameNote = false; break; }
                     }
                     document.getElementById('inp-note').value = sameNote ? note0 : '';
+                    var tid = getTerrainAt(first.x, first.y);
+                    var terrSel = document.getElementById('inp-terrain-id');
+                    if (terrSel) terrSel.value = tid || '';
                 }
             }
 
@@ -579,7 +704,6 @@
                     if (!isEnabled(x, y)) continue;
                     setNoteAt(x, y, text);
                 }
-                saveNotesForMap(state.mapId);
                 renderGrid();
                 highlightSelected();
             }
@@ -596,6 +720,18 @@
                 highlightSelected();
             }
 
+            function applyTerrain() {
+                if (selected.length === 0) return;
+                var terrainId = (document.getElementById('inp-terrain-id').value || '').trim();
+                for (var i = 0; i < selected.length; i++) {
+                    var x = selected[i].x, y = selected[i].y;
+                    if (!isEnabled(x, y)) continue;
+                    setTerrainAt(x, y, terrainId || null);
+                }
+                renderGrid();
+                highlightSelected();
+            }
+
             function applyNpc() {
                 if (selected.length === 0) return;
                 var npcId = (document.getElementById('inp-npc-id').value || '').trim();
@@ -604,7 +740,7 @@
                     if (!isEnabled(x, y)) continue;
                     setNpcAt(x, y, npcId || null);
                     // 约定：格子上放了 NPC 时，默认不可走（可在右侧手动勾回“可走”取消）
-                    if (npcId) state.walkable[y][x] = false;
+                    if (npcId) applyNpcAutoBlock(x, y);
                 }
                 renderGrid();
                 highlightSelected();
@@ -634,6 +770,8 @@
                 for (var i = 0; i < selected.length; i++) {
                     var x = selected[i].x, y = selected[i].y;
                     if (isEnabled(x, y)) state.walkable[y][x] = walk;
+                    // 手动修改 walkable 时，视为用户覆盖了“NPC自动阻挡”的约定
+                    delete npcAutoBlocked[keyXY(x, y)];
                 }
                 renderGrid();
                 highlightSelected();
@@ -668,19 +806,19 @@
                 highlightSelected();
             }
 
+            // 右侧小地图已移除（拖拽编辑统一在主网格上完成）
+
             document.getElementById('inp-enabled').addEventListener('change', applyEnabled);
             document.getElementById('inp-walkable').addEventListener('change', applyWalkable);
             document.getElementById('btn-apply-portal').addEventListener('click', applyPortal);
             document.getElementById('btn-apply-entity').addEventListener('click', applyEntity);
+            document.getElementById('btn-apply-terrain').addEventListener('click', applyTerrain);
             document.getElementById('btn-apply-npc').addEventListener('click', applyNpc);
             document.getElementById('btn-apply-note').addEventListener('click', function () { applyNote(); });
             document.getElementById('btn-clear-note').addEventListener('click', function () { applyNote(''); document.getElementById('inp-note').value = ''; });
 
             document.getElementById('btn-toggle-notes').addEventListener('click', function () {
-                ui.showNotes = !ui.showNotes;
-                this.textContent = '显示注释：' + (ui.showNotes ? '开' : '关');
-                renderGrid();
-                highlightSelected();
+                window.alert('注释已改为写入导出 JSON 的 annotations 字段，并且不再在格子渲染中显示。');
             });
 
             document.getElementById('btn-new').addEventListener('click', function () {
@@ -732,6 +870,9 @@
             });
 
             function importMapData(data) {
+                // 切换地图时先清空注释，避免 UI 残留
+                state.annotations = {};
+                npcAutoBlocked = {};
                 state.mapId = data.map_id || state.mapId;
                 state.name = data.name || state.name;
                 state.width = data.width || 16;
@@ -739,7 +880,9 @@
                 state.portals = Array.isArray(data.portals) ? JSON.parse(JSON.stringify(data.portals)) : [];
                 state.entities = Array.isArray(data.entities) ? JSON.parse(JSON.stringify(data.entities)) : [];
                 state.npcs = Array.isArray(data.npcs) ? JSON.parse(JSON.stringify(data.npcs)) : [];
-                state.annotations = loadNotesForMap(state.mapId);
+                state.terrains = Array.isArray(data.terrains) ? JSON.parse(JSON.stringify(data.terrains)) : [];
+                // 注释直接来自 JSON（annotations）
+                state.annotations = (data.annotations && typeof data.annotations === 'object') ? JSON.parse(JSON.stringify(data.annotations)) : {};
 
                 initGrid();
                 if (Array.isArray(data.disabled)) {
@@ -768,6 +911,44 @@
                 selected = [];
                 updateCellInfo();
                 renderGrid();
+            }
+
+            function exportMapDataObject() {
+                // 与导出按钮保持一致，但不触发下载
+                state.mapId = document.getElementById('inp-map-id').value.trim() || state.mapId;
+                state.name = document.getElementById('inp-name').value.trim() || state.name;
+                if (!state.annotations) state.annotations = {};
+                var disabled = [];
+                var blocks = [];
+                for (var y = 0; y < state.height; y++) {
+                    for (var x = 0; x < state.width; x++) {
+                        if (!state.enabled[y][x]) disabled.push({ x: x, y: y });
+                        else if (!state.walkable[y][x]) blocks.push({ x: x, y: y });
+                    }
+                }
+                return {
+                    map_id: state.mapId,
+                    name: state.name,
+                    width: state.width,
+                    height: state.height,
+                    disabled: disabled.length ? disabled : undefined,
+                    blocks: blocks,
+                    portals: state.portals.map(function (p) {
+                        var o = { x: p.x, y: p.y, target_map_id: p.target_map_id, target_x: p.target_x, target_y: p.target_y };
+                        if (p.label) o.label = p.label;
+                        // 兼容额外字段（例如 return_to_previous 等）
+                        for (var k in p) {
+                            if (!Object.prototype.hasOwnProperty.call(p, k)) continue;
+                            if (k === 'x' || k === 'y' || k === 'target_map_id' || k === 'target_x' || k === 'target_y' || k === 'label') continue;
+                            o[k] = p[k];
+                        }
+                        return o;
+                    }),
+                    entities: state.entities.length ? state.entities.map(function (e) { return { x: e.x, y: e.y, entity_id: e.entity_id }; }) : undefined,
+                    npcs: state.npcs.length ? state.npcs.map(function (n) { return { x: n.x, y: n.y, npc_id: n.npc_id }; }) : undefined,
+                    terrains: state.terrains && state.terrains.length ? state.terrains.map(function (t) { return { x: t.x, y: t.y, terrain_id: t.terrain_id }; }) : undefined,
+                    annotations: (state.annotations && Object.keys(state.annotations).length) ? state.annotations : undefined
+                };
             }
 
             function importFromJsonText(raw) {
@@ -863,33 +1044,7 @@
             } catch (e) {}
 
             document.getElementById('btn-export').addEventListener('click', function () {
-                state.mapId = document.getElementById('inp-map-id').value.trim() || state.mapId;
-                state.name = document.getElementById('inp-name').value.trim() || state.name;
-                if (!state.annotations) state.annotations = {};
-                saveNotesForMap(state.mapId);
-                var disabled = [];
-                var blocks = [];
-                for (var y = 0; y < state.height; y++) {
-                    for (var x = 0; x < state.width; x++) {
-                        if (!state.enabled[y][x]) disabled.push({ x: x, y: y });
-                        else if (!state.walkable[y][x]) blocks.push({ x: x, y: y });
-                    }
-                }
-                var out = {
-                    map_id: state.mapId,
-                    name: state.name,
-                    width: state.width,
-                    height: state.height,
-                    disabled: disabled.length ? disabled : undefined,
-                    blocks: blocks,
-                    portals: state.portals.map(function (p) {
-                        var o = { x: p.x, y: p.y, target_map_id: p.target_map_id, target_x: p.target_x, target_y: p.target_y };
-                        if (p.label) o.label = p.label;
-                        return o;
-                    }),
-                    entities: state.entities.length ? state.entities.map(function (e) { return { x: e.x, y: e.y, entity_id: e.entity_id }; }) : undefined,
-                    npcs: state.npcs.length ? state.npcs.map(function (n) { return { x: n.x, y: n.y, npc_id: n.npc_id }; }) : undefined
-                };
+                var out = exportMapDataObject();
                 var str = JSON.stringify(out, null, 2);
                 var blob = new Blob([str], { type: 'application/json' });
                 var url = URL.createObjectURL(blob);
@@ -900,8 +1055,83 @@
                 URL.revokeObjectURL(url);
             });
 
+            function emitState() {
+                try {
+                    window.parent && window.parent.postMessage({
+                        ns: MSG_NS,
+                        type: 'mapEditor.state',
+                        payload: { map: exportMapDataObject() }
+                    }, '*');
+                } catch (e) {}
+            }
+
+            // 只要地图发生变化就尽量发一次（简单做法：在关键 apply 后调用；这里先覆盖最常用的几个）
+            var _origApplyPortal = applyPortal;
+            applyPortal = function () { _origApplyPortal(); emitState(); };
+            var _origApplyEntity = applyEntity;
+            applyEntity = function () { _origApplyEntity(); emitState(); };
+            var _origApplyNpc = applyNpc;
+            applyNpc = function () { _origApplyNpc(); emitState(); };
+            var _origApplyEnabled = applyEnabled;
+            applyEnabled = function () { _origApplyEnabled(); emitState(); };
+            var _origApplyWalkable = applyWalkable;
+            applyWalkable = function () { _origApplyWalkable(); emitState(); };
+            var _origApplyTerrain = applyTerrain;
+            applyTerrain = function () { _origApplyTerrain(); emitState(); };
+
+            window.addEventListener('message', function (evt) {
+                var msg = evt && evt.data;
+                if (!msg || msg.ns !== MSG_NS) return;
+                if (msg.type === 'mapEditor.loadMap') {
+                    var map = msg.payload && msg.payload.map;
+                    if (map && typeof map === 'object') {
+                        importMapData(map);
+                        emitState();
+                    }
+                } else if (msg.type === 'mapEditor.requestState') {
+                    emitState();
+                }
+            });
+
+            function applyTerrainRegistry(reg) {
+                if (!reg || typeof reg !== 'object' || !Array.isArray(reg.terrains)) return;
+                ui.terrainRegistry = reg;
+                ui.terrainRegistry._byId = {};
+                for (var i = 0; i < reg.terrains.length; i++) {
+                    var t = reg.terrains[i];
+                    if (t && t.terrain_id) ui.terrainRegistry._byId[String(t.terrain_id)] = t;
+                }
+                var sel = document.getElementById('inp-terrain-id');
+                if (!sel) return;
+                var current = sel.value || '';
+                sel.innerHTML = '';
+                var opt0 = document.createElement('option');
+                opt0.value = '';
+                opt0.textContent = '无';
+                sel.appendChild(opt0);
+                for (var j = 0; j < reg.terrains.length; j++) {
+                    var tt = reg.terrains[j];
+                    if (!tt || !tt.terrain_id) continue;
+                    var opt = document.createElement('option');
+                    opt.value = String(tt.terrain_id);
+                    opt.textContent = (tt.name ? (tt.name + ' ') : '') + '(' + tt.terrain_id + ')';
+                    sel.appendChild(opt);
+                }
+                if (current) sel.value = current;
+            }
+
+            // 自动流程：启动时尝试加载地形/样式注册表（若不存在则静默忽略）
+            try {
+                if (typeof fetch === 'function') {
+                    fetch('data/editor/map_style_registry.json')
+                        .then(function (r) { return r.ok ? r.json() : null; })
+                        .then(function (reg) { if (reg) { applyTerrainRegistry(reg); renderGrid(); highlightSelected(); } })
+                        .catch(function () {});
+                }
+            } catch (e) {}
+
             initGrid();
-            state.annotations = loadNotesForMap(state.mapId);
+            state.annotations = {};
             renderGrid();
             updateCellInfo();
         })();

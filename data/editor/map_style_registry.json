@@ -1,0 +1,30 @@
+{
+  "version": 1,
+  "terrains": [
+    {
+      "terrain_id": "ground",
+      "name": "地面",
+      "swatch": "#3d4a3d",
+      "image": ""
+    },
+    {
+      "terrain_id": "wall",
+      "name": "墙",
+      "swatch": "#4a3d3d",
+      "image": ""
+    },
+    {
+      "terrain_id": "water",
+      "name": "水",
+      "swatch": "#2d3a4a",
+      "image": ""
+    }
+  ],
+  "overlays": {
+    "portal": { "text": "○" },
+    "npc": { "text": "人" },
+    "gathering_bush": { "text": "灌" },
+    "gathering_grass": { "text": "草" }
+  }
+}
+
