@@ -1,0 +1,321 @@
+{
+  "map_id": "M0_Base_Outside_lv_1",
+  "name": "居住点",
+  "width": 16,
+  "height": 16,
+  "blocks": [
+    {
+      "x": 5,
+      "y": 1
+    },
+    {
+      "x": 6,
+      "y": 1
+    },
+    {
+      "x": 7,
+      "y": 1
+    },
+    {
+      "x": 8,
+      "y": 1
+    },
+    {
+      "x": 9,
+      "y": 1
+    },
+    {
+      "x": 2,
+      "y": 2
+    },
+    {
+      "x": 3,
+      "y": 2
+    },
+    {
+      "x": 4,
+      "y": 2
+    },
+    {
+      "x": 5,
+      "y": 2
+    },
+    {
+      "x": 6,
+      "y": 2
+    },
+    {
+      "x": 7,
+      "y": 2
+    },
+    {
+      "x": 8,
+      "y": 2
+    },
+    {
+      "x": 9,
+      "y": 2
+    },
+    {
+      "x": 14,
+      "y": 2
+    },
+    {
+      "x": 2,
+      "y": 3
+    },
+    {
+      "x": 3,
+      "y": 3
+    },
+    {
+      "x": 4,
+      "y": 3
+    },
+    {
+      "x": 5,
+      "y": 3
+    },
+    {
+      "x": 6,
+      "y": 3
+    },
+    {
+      "x": 7,
+      "y": 3
+    },
+    {
+      "x": 8,
+      "y": 3
+    },
+    {
+      "x": 9,
+      "y": 3
+    },
+    {
+      "x": 2,
+      "y": 4
+    },
+    {
+      "x": 3,
+      "y": 4
+    },
+    {
+      "x": 4,
+      "y": 4
+    },
+    {
+      "x": 5,
+      "y": 4
+    },
+    {
+      "x": 6,
+      "y": 4
+    },
+    {
+      "x": 8,
+      "y": 4
+    },
+    {
+      "x": 9,
+      "y": 4
+    },
+    {
+      "x": 12,
+      "y": 5
+    },
+    {
+      "x": 1,
+      "y": 7
+    },
+    {
+      "x": 5,
+      "y": 11
+    }
+  ],
+  "portals": [
+    {
+      "x": 7,
+      "y": 15,
+      "target_map_id": "M0_Field_1",
+      "target_x": 1,
+      "target_y": 1,
+      "label": "进入野外"
+    },
+    {
+      "x": 7,
+      "y": 4,
+      "target_map_id": "M0_Base_Inside_lv_1",
+      "target_x": 8,
+      "target_y": 14,
+      "label": "进家"
+    }
+  ],
+  "entities": [
+    {
+      "x": 3,
+      "y": 8,
+      "entity_id": "gathering_grass"
+    },
+    {
+      "x": 4,
+      "y": 8,
+      "entity_id": "gathering_grass"
+    },
+    {
+      "x": 2,
+      "y": 9,
+      "entity_id": "gathering_grass"
+    },
+    {
+      "x": 3,
+      "y": 9,
+      "entity_id": "gathering_grass"
+    },
+    {
+      "x": 4,
+      "y": 9,
+      "entity_id": "gathering_grass"
+    },
+    {
+      "x": 2,
+      "y": 10,
+      "entity_id": "gathering_grass"
+    },
+    {
+      "x": 3,
+      "y": 10,
+      "entity_id": "gathering_grass"
+    },
+    {
+      "x": 3,
+      "y": 11,
+      "entity_id": "gathering_grass"
+    },
+    {
+      "x": 2,
+      "y": 11,
+      "entity_id": "gathering_grass"
+    },
+    {
+      "x": 3,
+      "y": 13,
+      "entity_id": "gathering_bush"
+    },
+    {
+      "x": 4,
+      "y": 13,
+      "entity_id": "gathering_bush"
+    },
+    {
+      "x": 5,
+      "y": 13,
+      "entity_id": "gathering_bush"
+    },
+    {
+      "x": 3,
+      "y": 14,
+      "entity_id": "gathering_bush"
+    },
+    {
+      "x": 4,
+      "y": 14,
+      "entity_id": "gathering_bush"
+    },
+    {
+      "x": 5,
+      "y": 14,
+      "entity_id": "gathering_bush"
+    },
+    {
+      "x": 2,
+      "y": 12,
+      "entity_id": "gathering_grass"
+    },
+    {
+      "x": 3,
+      "y": 12,
+      "entity_id": "gathering_grass"
+    },
+    {
+      "x": 2,
+      "y": 13,
+      "entity_id": "gathering_grass"
+    },
+    {
+      "x": 2,
+      "y": 14,
+      "entity_id": "gathering_grass"
+    },
+    {
+      "x": 6,
+      "y": 14,
+      "entity_id": "gathering_grass"
+    },
+    {
+      "x": 11,
+      "y": 11,
+      "entity_id": "gathering_grass"
+    },
+    {
+      "x": 12,
+      "y": 11,
+      "entity_id": "gathering_grass"
+    },
+    {
+      "x": 13,
+      "y": 11,
+      "entity_id": "gathering_grass"
+    },
+    {
+      "x": 11,
+      "y": 12,
+      "entity_id": "gathering_grass"
+    },
+    {
+      "x": 12,
+      "y": 12,
+      "entity_id": "gathering_grass"
+    },
+    {
+      "x": 13,
+      "y": 12,
+      "entity_id": "gathering_grass"
+    },
+    {
+      "x": 11,
+      "y": 13,
+      "entity_id": "gathering_grass"
+    },
+    {
+      "x": 12,
+      "y": 13,
+      "entity_id": "gathering_grass"
+    },
+    {
+      "x": 13,
+      "y": 13,
+      "entity_id": "gathering_grass"
+    },
+    {
+      "x": 10,
+      "y": 9,
+      "entity_id": "gathering_bush"
+    },
+    {
+      "x": 11,
+      "y": 9,
+      "entity_id": "gathering_bush"
+    },
+    {
+      "x": 10,
+      "y": 10,
+      "entity_id": "gathering_bush"
+    },
+    {
+      "x": 11,
+      "y": 10,
+      "entity_id": "gathering_bush"
+    }
+  ]
+}
