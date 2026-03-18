@@ -30,6 +30,7 @@
 | 身体部位与状态 | [09-body-parts.md](09-body-parts.md) | 七部位、效果、损毁、手术 |
 | 敌人设计 | [10-enemies.md](10-enemies.md) | 敌人与主角差异、配置、掉落池 |
 | 技能系统 | [11-skills.md](11-skills.md) | 生存/生活/战斗/特殊、熟练度、战斗技能通用规则与示例 |
+| NPC 与任务模板 | [16-npc-and-quest-template.md](16-npc-and-quest-template.md) | NPC 行为模板、触发条目模板、任务模板、林书瑶首例与 2 条触发条目 |
 | 贸易与旅行商人 | 见下「贸易子模块表」 | 并入 capitalism 多文件 |
 | 玩家间交易 | [13-p2p-trading.md](13-p2p-trading.md) | 交易码、接头暗号、兑换与时效 |
 | 实现约定 | [14-implementation.md](14-implementation.md) | 技术栈、配置表、存档、字段中英对照 |

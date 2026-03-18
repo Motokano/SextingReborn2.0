@@ -1,0 +1,1474 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NPC 编辑器 - 潮碧物语</title>
+    <style>
+        * { box-sizing: border-box; }
+        body { margin: 0; font-family: sans-serif; background: #1a1a1a; color: #e0e0e0; }
+        .toolbar {
+            padding: 10px 16px;
+            background: #2d2d2d;
+            border-bottom: 1px solid #444;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        .toolbar .break { flex-basis: 100%; height: 0; }
+        .toolbar button {
+            padding: 8px 14px;
+            background: #404040;
+            border: 1px solid #555;
+            color: #fff;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+        .toolbar button:hover { background: #505050; }
+        .toolbar button.primary { background: #3d5a80; }
+        .toolbar button.primary:hover { background: #4d6a90; }
+        .toolbar label { margin-left: 8px; color: #999; font-size: 12px; }
+        .toolbar input[type="text"] { width: 140px; padding: 4px 8px; margin: 0 4px; background: #333; border: 1px solid #555; color: #fff; border-radius: 4px; }
+        .main { display: flex; height: calc(100vh - 50px); overflow: hidden; }
+        .col-npc {
+            width: 320px;
+            min-width: 280px;
+            background: #252525;
+            border-right: 1px solid #444;
+            padding: 16px;
+            overflow-y: auto;
+        }
+        .col-events {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            min-width: 0;
+            overflow: hidden;
+        }
+        .events-list-wrap {
+            flex: 0 0 auto;
+            max-height: 280px;
+            overflow-y: auto;
+            padding: 12px 16px;
+            background: #252525;
+            border-bottom: 1px solid #444;
+        }
+        .events-list-wrap h3 { margin: 0 0 10px 0; font-size: 14px; color: #aaa; }
+        .event-card {
+            padding: 8px 12px;
+            margin-bottom: 6px;
+            background: #333;
+            border: 1px solid #444;
+            border-radius: 4px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .event-card:hover { background: #3a3a3a; border-color: #555; }
+        .event-card.selected { border-color: #5a9fd4; background: #2d3d4d; }
+        .event-card .id { font-weight: bold; color: #c9b3ff; }
+        .event-card .cond-summary { font-size: 11px; color: #888; margin-top: 2px; }
+        .event-card .badge { font-size: 10px; padding: 2px 6px; border-radius: 3px; background: #444; color: #999; }
+        .event-card .badge.repeat { background: #3d4a3d; color: #8f8; }
+        .event-edit-wrap {
+            flex: 1;
+            overflow-y: auto;
+            padding: 16px;
+        }
+        .event-edit-wrap h3 { margin: 0 0 12px 0; font-size: 14px; color: #aaa; }
+        .section { margin-bottom: 20px; }
+        .section-title { font-size: 12px; color: #888; margin-bottom: 8px; text-transform: uppercase; }
+        .row { margin-bottom: 12px; }
+        .row label { display: block; margin-bottom: 4px; color: #999; font-size: 12px; }
+        .row input[type="text"],
+        .row input[type="number"],
+        .row select {
+            width: 100%;
+            padding: 6px 8px;
+            background: #333;
+            border: 1px solid #555;
+            color: #fff;
+            border-radius: 4px;
+        }
+        .row input[type="checkbox"] { margin-right: 8px; }
+        .row textarea {
+            width: 100%;
+            padding: 6px 8px;
+            background: #333;
+            border: 1px solid #555;
+            color: #fff;
+            border-radius: 4px;
+            resize: vertical;
+            min-height: 60px;
+            font-family: inherit;
+        }
+        .row textarea.code { font-family: monospace; font-size: 12px; min-height: 80px; }
+        .hint { font-size: 11px; color: #666; margin-top: 4px; }
+        .btn-row { display: flex; gap: 8px; margin-top: 8px; flex-wrap: wrap; }
+        .btn-row button { padding: 6px 12px; background: #404040; border: 1px solid #555; color: #fff; cursor: pointer; border-radius: 4px; }
+        .btn-row button:hover { background: #505050; }
+        .btn-row button.danger { background: #5a3d3d; border-color: #664; }
+        .btn-row button.danger:hover { background: #6a4d4d; }
+        .dlg-line { padding: 8px; background: #2a2a2a; border-radius: 4px; margin-bottom: 6px; border: 1px solid #444; }
+        .dlg-line .top { display:flex; gap:8px; align-items:center; margin-bottom:6px; }
+        .dlg-line select { width: 120px; padding: 4px 6px; background:#333; border:1px solid #555; color:#fff; border-radius:4px; }
+        .dlg-line textarea { width: 100%; min-height: 46px; padding: 6px 8px; background:#1e1e1e; border:1px solid #444; color:#fff; border-radius:4px; resize:vertical; }
+        .dlg-line .actions { display:flex; gap:6px; }
+        .dlg-line .actions button { padding: 4px 8px; background:#404040; border:1px solid #555; color:#fff; cursor:pointer; border-radius:4px; }
+        .dlg-line .actions button:hover { background:#505050; }
+        .dlg-line .actions button.danger { background:#5a3d3d; border-color:#664; }
+        .dlg-line .actions button.danger:hover { background:#6a4d4d; }
+        .dlg-line .avatar-row { display:flex; gap:8px; align-items:center; margin-top:6px; flex-wrap:wrap; }
+        .dlg-line .avatar-row input[type="text"] { flex: 1; min-width: 220px; padding: 4px 6px; background:#333; border:1px solid #555; color:#fff; border-radius:4px; }
+        .dlg-line .avatar-row input[type="file"] { width: 180px; }
+        .dlg-line .avatar-prev {
+            width: 34px; height: 34px; border-radius: 6px;
+            border: 1px solid #555; background: #111;
+            display:flex; align-items:center; justify-content:center;
+            overflow:hidden;
+        }
+        .dlg-line .avatar-prev img { width:100%; height:100%; object-fit:cover; display:block; }
+        .dlg-line .avatar-prev .glyph { font-size: 14px; color:#777; }
+        .tags-in { display: flex; flex-wrap: wrap; gap: 4px; align-items: center; }
+        .tags-in input { flex: 1; min-width: 80px; }
+        .tag { display: inline-block; padding: 2px 8px; background: #444; border-radius: 3px; font-size: 11px; margin-right: 4px; margin-bottom: 4px; }
+        .tag .rm { cursor: pointer; margin-left: 4px; color: #f88; }
+        .inline-row { display: flex; gap: 8px; align-items: center; }
+        .inline-row .grow { flex: 1; }
+        .effect-item { padding: 8px; background: #2a2a2a; border-radius: 4px; margin-bottom: 6px; border: 1px solid #444; }
+        .effect-item .head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+        .effect-item .head input { flex: 1; margin-right: 8px; padding: 4px 6px; background: #333; border: 1px solid #555; color: #fff; border-radius: 4px; }
+        .effect-item .params { font-size: 11px; font-family: monospace; }
+        .effect-item .params textarea { width: 100%; min-height: 44px; padding: 4px 6px; background: #1e1e1e; border: 1px solid #444; color: #9cf; border-radius: 4px; resize: vertical; font-size: 11px; }
+        .empty-msg { color: #666; font-size: 13px; padding: 20px; text-align: center; }
+        .two-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        @media (max-width: 900px) { .two-cols { grid-template-columns: 1fr; } }
+    </style>
+</head>
+<body>
+
+    <div class="toolbar">
+        <button type="button" id="btn-new-npc" class="primary">新建 NPC</button>
+        <button type="button" id="btn-create-npc-folders" title="按当前 NPC 姓名创建 image/&lt;名&gt;/ 与 assets/npc/&lt;名&gt;/">新建 NPC 文件夹</button>
+        <input type="file" id="file-import-npc" accept=".json,application/json" style="display:none;" />
+        <input type="file" id="file-import-triggers" accept=".json,application/json" style="display:none;" />
+        <input type="file" id="file-import-skills" accept=".json,.md,text/markdown,application/json,text/plain" style="display:none;" />
+        <input type="file" id="file-import-npc-registry" accept=".json,application/json" style="display:none;" />
+        <button type="button" id="btn-import-npc">从本地载入 NPC</button>
+        <a href="#" id="link-paste-npc" style="color:#8af; font-size:12px;">粘贴 NPC</a>
+        <button type="button" id="btn-import-triggers">从本地载入事件</button>
+        <a href="#" id="link-paste-triggers" style="color:#8af; font-size:12px;">粘贴事件</a>
+        <button type="button" id="btn-import-skills">载入技能表</button>
+        <span id="skill-count" style="color:#666; font-size:11px;">技能：未载入</span>
+        <span class="break"></span>
+        <button type="button" id="btn-export-registry">一键更新注册表</button>
+        <button type="button" id="btn-export-npc">导出 NPC 数据</button>
+        <button type="button" id="btn-export-triggers">导出事件</button>
+        <label>当前 NPC ID <input type="text" id="inp-npc-id-readonly" readonly placeholder="先新建或导入" style="width:220px;color:#888;" /></label>
+        <span style="color:#666; font-size:11px;">导出后请放入 data/npc/：本体 xxx.json，事件 xxx_triggers.json</span>
+    </div>
+
+    <div class="main">
+        <div class="col-npc">
+            <h3 style="margin:0 0 14px 0; color:#aaa;">NPC 基础数据</h3>
+            <div class="section">
+                <div class="section-title">标识</div>
+                <div class="row">
+                    <label>ID（唯一）</label>
+                    <input type="text" id="npc-id" placeholder="npc.supervisor.xxx" />
+                </div>
+                <div class="row">
+                    <label>姓名</label>
+                    <input type="text" id="npc-name" placeholder="林书瑶" />
+                </div>
+                <div class="row">
+                    <label>称呼（玩家看到的）</label>
+                    <input type="text" id="npc-displayTitle" placeholder="林经理" />
+                </div>
+            </div>
+            <div class="section">
+                <div class="section-title">出现时间与位置</div>
+                <div class="row inline-row">
+                    <label class="grow">上班开始</label>
+                    <input type="text" id="npc-schedule-start" placeholder="09:00" style="width:70px;" />
+                </div>
+                <div class="row inline-row">
+                    <label class="grow">上班结束</label>
+                    <input type="text" id="npc-schedule-end" placeholder="17:30" style="width:70px;" />
+                </div>
+                <div class="row">
+                    <label>场景 ID</label>
+                    <input type="text" id="npc-location-scene" placeholder="base_main" />
+                </div>
+                <div class="row two-cols">
+                    <div><label>站位 X</label><input type="number" id="npc-location-x" min="0" value="0" /></div>
+                    <div><label>站位 Y</label><input type="number" id="npc-location-y" min="0" value="0" /></div>
+                </div>
+            </div>
+            <div class="section">
+                <div class="section-title">地图形象</div>
+                <div class="row">
+                    <label>图片路径 / 资源键（sprite）</label>
+                    <input type="text" id="npc-sprite" placeholder="assets/npc/xxx.png 或 sprite_key" />
+                    <p class="hint">渲染地图上的 NPC 形象用。导出后由游戏读取 sprite 字段加载对应图片。</p>
+                </div>
+                <div class="row">
+                    <label>从本地选择预览图片</label>
+                    <input type="file" id="npc-sprite-file" accept="image/*" />
+                    <p class="hint">仅用于编辑器预览，不会把图片内容写进 JSON；你可以手动把文件放到 assets 目录并在上面的 sprite 中填相对路径。</p>
+                </div>
+                <div class="row" id="npc-sprite-preview-row" style="display:none;">
+                    <label>预览</label>
+                    <div style="border:1px solid #444; padding:4px; display:inline-block; background:#111;">
+                        <img id="npc-sprite-preview" src="" alt="预览" style="max-width:128px; max-height:128px; image-rendering: pixelated;" />
+                    </div>
+                </div>
+            </div>
+            <div class="section">
+                <div class="section-title">主菜单</div>
+                <div class="row">
+                    <label><input type="checkbox" id="npc-showChat" checked /> 显示「闲聊」</label>
+                </div>
+                <div class="row">
+                    <label>工作/任务 显示条件</label>
+                    <select id="npc-showWorkWhen">
+                        <option value="hasAvailableOrTurnIn">有可接或可交付任务时显示</option>
+                    </select>
+                </div>
+                <div class="row">
+                    <label><input type="checkbox" id="npc-showLeave" checked /> 显示「离开」</label>
+                </div>
+            </div>
+            <div class="section">
+                <div class="section-title">行为描述</div>
+                <div class="row">
+                    <label>类型</label>
+                    <select id="npc-behavior-type">
+                        <option value="supervisor">监督者 (supervisor)</option>
+                        <option value="merchant">商人 (merchant)</option>
+                        <option value="quest">任务 (quest)</option>
+                        <option value="custom">自定义</option>
+                    </select>
+                </div>
+                <div class="row">
+                    <label>来源</label>
+                    <select id="npc-behavior-origin">
+                        <option value="mysterious_system">神秘系统 (mysterious_system)</option>
+                        <option value="org_assignment">组织派驻</option>
+                        <option value="contract">合同/投保</option>
+                        <option value="custom">自定义</option>
+                    </select>
+                </div>
+                <div class="row">
+                    <label>描述（可选）</label>
+                    <textarea id="npc-behavior-desc" placeholder="表面是…实际为…" rows="2"></textarea>
+                </div>
+            </div>
+            <div class="section">
+                <div class="section-title">默认台词池</div>
+                <div class="row">
+                    <label>无触发时的台词池 ID</label>
+                    <input type="text" id="npc-fallbackPoolId" placeholder="npc.xxx.fallback" />
+                    <p class="hint">闲聊无命中条目时，从此池随机一句（摸鱼/嚼槟榔等）</p>
+                </div>
+            </div>
+            <div class="section">
+                <div class="section-title">标签</div>
+                <div class="row">
+                    <div class="tags-in">
+                        <input type="text" id="npc-tag-input" placeholder="输入后回车添加" />
+                    </div>
+                    <div id="npc-tags-list"></div>
+                    <p class="hint">如 supervisor, guide_hidden, base_npc, non_combat</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-events">
+            <div class="events-list-wrap">
+                <h3>触发事件列表 <button type="button" id="btn-new-entry" style="margin-left:8px; padding:4px 10px;">+ 新增事件</button></h3>
+                <div id="entries-list"></div>
+                <div id="entries-empty" class="empty-msg">暂无事件，点击「新增事件」添加；或导入事件 JSON。</div>
+            </div>
+            <div class="event-edit-wrap">
+                <div id="entry-edit-placeholder" class="empty-msg">在左侧选中一条事件进行编辑，或新增事件。</div>
+                <div id="entry-edit-panel" style="display:none;">
+                    <h3>编辑事件</h3>
+                    <div class="section">
+                        <div class="row">
+                            <label>条目 ID</label>
+                            <input type="text" id="entry-id" placeholder="supervisor.xxx_01" />
+                        </div>
+                        <div class="row two-cols">
+                            <div>
+                                <label>条目类型</label>
+                                <select id="entry-type">
+                                    <option value="dialogue">对话 (dialogue)</option>
+                                    <option value="task">任务</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label>触发入口</label>
+                                <select id="entry-source">
+                                    <option value="chat">闲聊 (chat)</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="section">
+                        <div class="section-title">触发条件（condition）</div>
+                        <div class="row">
+                            <label>条件类型</label>
+                            <select id="entry-cond-type">
+                                <option value="flagEquals">flag 等于 (flagEquals)</option>
+                                <option value="skillLevelEquals">技能等级等于 (skillLevelEquals)</option>
+                                <option value="skillLevelGte">技能等级 ≥ (skillLevelGte)</option>
+                                <option value="hasItem">背包持有物品 (hasItem)</option>
+                                <option value="custom">自定义（见下方 JSON）</option>
+                            </select>
+                        </div>
+                        <div class="row" id="cond-form-flag">
+                            <label>flag 名称</label>
+                            <input type="text" id="cond-flag-name" placeholder="lsy_has_talked" />
+                            <label style="margin-top:8px;">flag 值</label>
+                            <select id="cond-flag-value">
+                                <option value="true">true</option>
+                                <option value="false">false</option>
+                            </select>
+                        </div>
+                        <div class="row" id="cond-form-skill" style="display:none;">
+                            <label>技能 ID</label>
+                            <select id="cond-skill-id">
+                                <option value="survival_language">survival_language（未载入技能表）</option>
+                            </select>
+                            <label style="margin-top:8px;">等级</label>
+                            <input type="number" id="cond-skill-level" min="0" value="0" />
+                            <p class="hint">建议先点工具栏「载入技能表」，这里会自动变成完整技能下拉。</p>
+                        </div>
+                        <div class="row" id="cond-form-item" style="display:none;">
+                            <label>物品 ID</label>
+                            <input type="text" id="cond-item-id" placeholder="item_xxx" />
+                            <label style="margin-top:8px;">数量（可选，默认 1）</label>
+                            <input type="number" id="cond-item-count" min="1" value="1" />
+                        </div>
+                        <div class="row">
+                            <label><input type="checkbox" id="cond-advanced-toggle" /> 高级：显示 JSON（可选）</label>
+                            <p class="hint">不会写 JSON 就不用勾。自定义条件时会强制显示。</p>
+                        </div>
+                        <div class="row" id="entry-cond-params" style="display:none;">
+                            <label>条件参数（JSON）</label>
+                            <textarea id="entry-cond-json" class="code" placeholder='{\"type\":\"flagEquals\",\"flag\":\"lsy_has_talked\",\"value\":false}'></textarea>
+                        </div>
+                    </div>
+                    <div class="section">
+                        <div class="section-title">关系约束</div>
+                        <div class="row">
+                            <label>前置条目 ID（requires，逗号分隔）</label>
+                            <input type="text" id="entry-requires" placeholder="id1, id2" />
+                        </div>
+                        <div class="row">
+                            <label>触发后屏蔽的条目 ID（blocks，逗号分隔）</label>
+                            <input type="text" id="entry-blocks" placeholder="id1, id2" />
+                        </div>
+                    </div>
+                    <div class="section">
+                        <div class="section-title">对话（dialogue）</div>
+                        <div class="row">
+                            <label>台词（聊天记录编辑，不用写 JSON）</label>
+                            <div id="entry-dialogue-list"></div>
+                            <div class="btn-row">
+                                <button type="button" id="btn-add-dialogue-line">+ 添加一句</button>
+                                <input type="file" id="file-dialogue-avatar-bulk" accept="image/*" style="display:none;" />
+                                <button type="button" id="btn-dialogue-avatar-bulk">一键全部用同一张头像</button>
+                                <label style="display:flex; align-items:center; gap:6px; font-size:12px; color:#999;">
+                                    <input type="checkbox" id="chk-dialogue-avatar-only-npc" checked />
+                                    仅 NPC 台词
+                                </label>
+                            </div>
+                            <p class="hint">每句可选择说话人（林经理/主角/旁白），并可上下移动调整顺序。</p>
+                        </div>
+                        <div class="row">
+                            <label><input type="checkbox" id="entry-hasOptions" /> 带选项分支</label>
+                            <p class="hint">勾选后可在 options 中配置选项（当前版本可于导出 JSON 中手写）</p>
+                        </div>
+                    </div>
+                    <div class="section">
+                        <div class="section-title">效果（effects）</div>
+                        <div id="entry-effects-list"></div>
+                        <div class="btn-row">
+                            <button type="button" id="btn-add-effect">+ 添加效果</button>
+                        </div>
+                        <p class="hint">常见：setFlag, modifySkillLevel, unlockTask；每条 effect 含 type 与 params（见导出 JSON）</p>
+                    </div>
+                    <div class="section">
+                        <div class="section-title">一次性与作用域</div>
+                        <div class="row">
+                            <label><input type="checkbox" id="entry-repeatable" /> 可重复触发</label>
+                        </div>
+                        <div class="row">
+                            <label>作用域 (scope)</label>
+                            <select id="entry-scope">
+                                <option value="global">global</option>
+                                <option value="region">region</option>
+                                <option value="daily">daily</option>
+                                <option value="weekly">weekly</option>
+                            </select>
+                        </div>
+                        <div class="row">
+                            <label><input type="checkbox" id="entry-causesNpcDisappear" /> 触发后 NPC 消失并改世界（次日再出现）</label>
+                        </div>
+                    </div>
+                    <div class="btn-row">
+                        <button type="button" id="btn-save-entry">保存当前事件</button>
+                        <button type="button" id="btn-delete-entry" class="danger">删除此事件</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        (function () {
+            var defaultNpc = {
+                id: 'npc.custom.unnamed',
+                name: '',
+                displayTitle: '',
+                sprite: '',
+                appearanceSchedule: { start: '09:00', end: '17:30' },
+                location: { sceneId: 'base_main', x: 0, y: 0 },
+                mainMenu: { showChat: true, showWorkWhen: 'hasAvailableOrTurnIn', showLeave: true },
+                behavior: { type: 'supervisor', origin: 'mysterious_system', description: '' },
+                fallbackDialoguePoolId: '',
+                tags: []
+            };
+
+            var defaultEntry = {
+                id: 'custom.entry_01',
+                entryType: 'dialogue',
+                entrySource: 'chat',
+                condition: { type: 'flagEquals', flag: '', value: false },
+                requires: [],
+                blocks: [],
+                dialogue: { lines: [''], hasOptions: false, options: [] },
+                effects: [],
+                repeatable: false,
+                scope: 'global',
+                causesNpcDisappear: false
+            };
+
+            var state = {
+                npc: JSON.parse(JSON.stringify(defaultNpc)),
+                triggers: { npcId: '', entries: [] },
+                selectedEntryIndex: -1,
+                skills: [],
+                imageRootDirHandle: null // File System Access API: /image 目录句柄（可选）
+            };
+
+            function sanitizeFolderName(name) {
+                var s = String(name || '').trim();
+                if (!s) return 'npc';
+                // Windows 文件夹名：替换非法字符；id 中的 . 转为 _
+                return s.replace(/\./g, '_').replace(/[\\\/:\*\?"<>\|]/g, '_').replace(/\s+/g, '_').slice(0, 64) || 'npc';
+            }
+
+            function getNpcAvatarFolderName() {
+                // 用 id 作为文件夹名（如 npc.supervisor.linShuyao -> npc_supervisor_linShuyao）
+                var n = state.npc || {};
+                return sanitizeFolderName(n.id || 'npc');
+            }
+
+            async function ensureImageRootDir() {
+                if (state.imageRootDirHandle) return state.imageRootDirHandle;
+                // 需要用户手势触发；若浏览器不支持则返回 null
+                if (!window.showDirectoryPicker) return null;
+                var dir = await window.showDirectoryPicker({ id: 'cabi-image-root', mode: 'readwrite' });
+                state.imageRootDirHandle = dir;
+                return dir;
+            }
+
+            async function ensureNpcImageFolder() {
+                var root = await ensureImageRootDir();
+                if (!root) return null;
+                // 约定：选择的目录就是 /image
+                var folderName = getNpcAvatarFolderName();
+                var npcDir = await root.getDirectoryHandle(folderName, { create: true });
+                return { root: root, npcDir: npcDir, folderName: folderName };
+            }
+
+            async function writeFileToHandle(dirHandle, file, filename) {
+                var name = filename || (file && file.name) || 'image.png';
+                var fh = await dirHandle.getFileHandle(name, { create: true });
+                var w = await fh.createWritable();
+                await w.write(file);
+                await w.close();
+                return name;
+            }
+
+            async function writeTextToHandle(dirHandle, filename, text) {
+                var fh = await dirHandle.getFileHandle(filename, { create: true });
+                var w = await fh.createWritable();
+                await w.write(text || '');
+                await w.close();
+            }
+
+            /** 按当前 NPC 姓名创建 image/<名>/ 与 assets/npc/<名>/，需用户选择项目根目录 */
+            async function createNpcFolders() {
+                formToNpc();
+                var folderName = getNpcAvatarFolderName();
+                if (!folderName || folderName === 'npc') {
+                    window.alert('请先填写 NPC ID，以便生成文件夹名。');
+                    return;
+                }
+                if (!window.showDirectoryPicker) {
+                    window.alert('当前浏览器不支持文件夹选择。请手动创建：\nimage/' + folderName + '/\nassets/npc/' + folderName + '/');
+                    return;
+                }
+                try {
+                    var root = await window.showDirectoryPicker({ id: 'cabi-project-root', mode: 'readwrite' });
+                    var imageDir = await root.getDirectoryHandle('image', { create: true });
+                    var npcImageDir = await imageDir.getDirectoryHandle(folderName, { create: true });
+                    await writeTextToHandle(npcImageDir, '.gitkeep', '');
+                    var assetsDir = await root.getDirectoryHandle('assets', { create: true });
+                    var npcAssetsDir = await assetsDir.getDirectoryHandle('npc', { create: true });
+                    var npcAssetsNpcDir = await npcAssetsDir.getDirectoryHandle(folderName, { create: true });
+                    await writeTextToHandle(npcAssetsNpcDir, '.gitkeep', '');
+                    window.alert('已创建：\nimage/' + folderName + '/\nassets/npc/' + folderName + '/');
+                    var spriteInp = document.getElementById('npc-sprite');
+                    if (spriteInp && (!spriteInp.value || spriteInp.value.trim() === '')) {
+                        spriteInp.placeholder = 'assets/npc/' + folderName + '/xxx.png';
+                    }
+                } catch (err) {
+                    window.alert('创建失败：' + (err && err.message ? err.message : String(err)));
+                }
+            }
+
+            function updateSkillCount() {
+                var el = document.getElementById('skill-count');
+                if (!el) return;
+                el.textContent = (state.skills && state.skills.length) ? ('技能：已载入 ' + state.skills.length + ' 个') : '技能：未载入';
+            }
+
+            function uniqueSorted(arr) {
+                var map = {};
+                var out = [];
+                for (var i = 0; i < arr.length; i++) {
+                    var s = String(arr[i] || '').trim();
+                    if (!s) continue;
+                    if (map[s]) continue;
+                    map[s] = true;
+                    out.push(s);
+                }
+                out.sort();
+                return out;
+            }
+
+            function extractSkillIdsFromMarkdown(md) {
+                var out = [];
+                var re = /`((?:survival|life|combat)_[a-z0-9_]+)`/g;
+                var m;
+                while ((m = re.exec(md)) !== null) out.push(m[1]);
+                return out;
+            }
+
+            function extractSkillIdsFromCombatSkillsJson(obj) {
+                var out = [];
+                if (obj && obj.skills && typeof obj.skills === 'object') {
+                    for (var k in obj.skills) out.push(k);
+                }
+                return out;
+            }
+
+            function setSkills(list) {
+                state.skills = uniqueSorted(list || []);
+                updateSkillCount();
+                updateSkillSelectOptions();
+            }
+
+            function updateSkillSelectOptions() {
+                var sel = document.getElementById('cond-skill-id');
+                if (!sel) return;
+                var cur = sel.value;
+                sel.innerHTML = '';
+                var skills = (state.skills && state.skills.length) ? state.skills : ['survival_language'];
+                for (var i = 0; i < skills.length; i++) {
+                    var opt = document.createElement('option');
+                    opt.value = skills[i];
+                    opt.textContent = skills[i];
+                    sel.appendChild(opt);
+                }
+                if (cur && skills.indexOf(cur) !== -1) sel.value = cur;
+                else sel.value = skills[0];
+            }
+
+            document.getElementById('btn-import-skills').addEventListener('click', function () {
+                document.getElementById('file-import-skills').click();
+            });
+            document.getElementById('file-import-skills').addEventListener('change', function () {
+                var file = this.files && this.files[0];
+                this.value = '';
+                if (!file) return;
+                var reader = new FileReader();
+                reader.onload = function () {
+                    try {
+                        var text = String(reader.result || '');
+                        var list = [];
+                        try {
+                            var obj = JSON.parse(text);
+                            list = list.concat(extractSkillIdsFromCombatSkillsJson(obj));
+                            if (Array.isArray(obj)) list = list.concat(obj);
+                        } catch (e) {
+                            list = list.concat(extractSkillIdsFromMarkdown(text));
+                        }
+                        setSkills(list);
+                    } catch (e2) {
+                        window.alert('读取技能表失败：' + e2.message);
+                    }
+                };
+                reader.readAsText(file, 'UTF-8');
+            });
+
+            function updateSpritePreview(spritePathOrUrl) {
+                var row = document.getElementById('npc-sprite-preview-row');
+                var img = document.getElementById('npc-sprite-preview');
+                if (!img || !row) return;
+                if (!spritePathOrUrl) {
+                    row.style.display = 'none';
+                    img.src = '';
+                    return;
+                }
+                img.src = spritePathOrUrl;
+                row.style.display = 'block';
+            }
+
+            function npcToForm() {
+                var n = state.npc;
+                document.getElementById('npc-id').value = n.id || '';
+                document.getElementById('npc-name').value = n.name || '';
+                document.getElementById('npc-displayTitle').value = n.displayTitle || '';
+                var spriteVal = n.sprite || '';
+                document.getElementById('npc-sprite').value = spriteVal;
+                updateSpritePreview(spriteVal);
+                document.getElementById('npc-schedule-start').value = (n.appearanceSchedule && n.appearanceSchedule.start) || '09:00';
+                document.getElementById('npc-schedule-end').value = (n.appearanceSchedule && n.appearanceSchedule.end) || '17:30';
+                document.getElementById('npc-location-scene').value = (n.location && n.location.sceneId) || '';
+                document.getElementById('npc-location-x').value = (n.location && n.location.x) != null ? n.location.x : 0;
+                document.getElementById('npc-location-y').value = (n.location && n.location.y) != null ? n.location.y : 0;
+                document.getElementById('npc-showChat').checked = (n.mainMenu && n.mainMenu.showChat) !== false;
+                document.getElementById('npc-showWorkWhen').value = (n.mainMenu && n.mainMenu.showWorkWhen) || 'hasAvailableOrTurnIn';
+                document.getElementById('npc-showLeave').checked = (n.mainMenu && n.mainMenu.showLeave) !== false;
+                document.getElementById('npc-behavior-type').value = (n.behavior && n.behavior.type) || 'supervisor';
+                document.getElementById('npc-behavior-origin').value = (n.behavior && n.behavior.origin) || 'mysterious_system';
+                document.getElementById('npc-behavior-desc').value = (n.behavior && n.behavior.description) || '';
+                document.getElementById('npc-fallbackPoolId').value = n.fallbackDialoguePoolId || '';
+                renderTagsList();
+                document.getElementById('inp-npc-id-readonly').value = n.id || '';
+                state.triggers.npcId = n.id || '';
+            }
+
+            function formToNpc() {
+                var n = state.npc;
+                n.id = document.getElementById('npc-id').value.trim() || 'npc.custom.unnamed';
+                n.name = document.getElementById('npc-name').value.trim();
+                n.displayTitle = document.getElementById('npc-displayTitle').value.trim();
+                n.sprite = document.getElementById('npc-sprite').value.trim();
+                n.appearanceSchedule = {
+                    start: document.getElementById('npc-schedule-start').value.trim() || '09:00',
+                    end: document.getElementById('npc-schedule-end').value.trim() || '17:30'
+                };
+                n.location = {
+                    sceneId: document.getElementById('npc-location-scene').value.trim() || 'base_main',
+                    x: parseInt(document.getElementById('npc-location-x').value, 10) || 0,
+                    y: parseInt(document.getElementById('npc-location-y').value, 10) || 0
+                };
+                n.mainMenu = {
+                    showChat: document.getElementById('npc-showChat').checked,
+                    showWorkWhen: document.getElementById('npc-showWorkWhen').value,
+                    showLeave: document.getElementById('npc-showLeave').checked
+                };
+                n.behavior = {
+                    type: document.getElementById('npc-behavior-type').value,
+                    origin: document.getElementById('npc-behavior-origin').value,
+                    description: document.getElementById('npc-behavior-desc').value.trim()
+                };
+                n.fallbackDialoguePoolId = document.getElementById('npc-fallbackPoolId').value.trim();
+                state.triggers.npcId = n.id;
+                document.getElementById('inp-npc-id-readonly').value = n.id;
+            }
+
+            function getTagsFromDom() {
+                var list = document.getElementById('npc-tags-list');
+                var tags = [];
+                var nodes = list.querySelectorAll('.tag');
+                for (var i = 0; i < nodes.length; i++) {
+                    var t = nodes[i].getAttribute('data-tag');
+                    if (t) tags.push(t);
+                }
+                return tags;
+            }
+
+            function renderTagsList() {
+                var list = document.getElementById('npc-tags-list');
+                list.innerHTML = '';
+                var tags = state.npc.tags || [];
+                for (var i = 0; i < tags.length; i++) {
+                    var span = document.createElement('span');
+                    span.className = 'tag';
+                    span.setAttribute('data-tag', tags[i]);
+                    span.textContent = tags[i];
+                    var rm = document.createElement('span');
+                    rm.className = 'rm';
+                    rm.textContent = '×';
+                    rm.addEventListener('click', (function (idx) { return function () {
+                        state.npc.tags.splice(idx, 1);
+                        renderTagsList();
+                    }; })(i));
+                    span.appendChild(rm);
+                    list.appendChild(span);
+                }
+            }
+
+            document.getElementById('npc-tag-input').addEventListener('keydown', function (e) {
+                if (e.key !== 'Enter') return;
+                e.preventDefault();
+                var v = this.value.trim();
+                if (!v) return;
+                if (!state.npc.tags) state.npc.tags = [];
+                if (state.npc.tags.indexOf(v) === -1) state.npc.tags.push(v);
+                this.value = '';
+                renderTagsList();
+            });
+
+            function conditionSummary(cond) {
+                if (!cond || !cond.type) return '—';
+                if (cond.type === 'flagEquals') return 'flag ' + (cond.flag || '?') + ' = ' + cond.value;
+                if (cond.type === 'skillLevelEquals') return '技能 ' + (cond.skillId || '?') + ' = ' + cond.level;
+                if (cond.type === 'skillLevelGte') return '技能 ' + (cond.skillId || '?') + ' ≥ ' + cond.level;
+                if (cond.type === 'hasItem') return '持有 ' + (cond.itemId || '?');
+                return cond.type;
+            }
+
+            function renderEntriesList() {
+                var list = document.getElementById('entries-list');
+                var empty = document.getElementById('entries-empty');
+                var entries = state.triggers.entries || [];
+                list.innerHTML = '';
+                if (entries.length === 0) {
+                    empty.style.display = 'block';
+                    return;
+                }
+                empty.style.display = 'none';
+                for (var i = 0; i < entries.length; i++) {
+                    var e = entries[i];
+                    var card = document.createElement('div');
+                    card.className = 'event-card' + (state.selectedEntryIndex === i ? ' selected' : '');
+                    card.innerHTML = '<div><span class="id">' + (e.id || '?') + '</span><div class="cond-summary">' + conditionSummary(e.condition) + '</div></div>' +
+                        (e.repeatable ? '<span class="badge repeat">可重复</span>' : '');
+                    (function (idx) {
+                        card.addEventListener('click', function () {
+                            state.selectedEntryIndex = idx;
+                            renderEntriesList();
+                            entryToForm(state.triggers.entries[idx]);
+                            document.getElementById('entry-edit-placeholder').style.display = 'none';
+                            document.getElementById('entry-edit-panel').style.display = 'block';
+                        });
+                    })(i);
+                    list.appendChild(card);
+                }
+            }
+
+            function entryToForm(entry) {
+                if (!entry) return;
+                document.getElementById('entry-id').value = entry.id || '';
+                document.getElementById('entry-type').value = entry.entryType || 'dialogue';
+                document.getElementById('entry-source').value = entry.entrySource || 'chat';
+                document.getElementById('entry-cond-type').value = (entry.condition && entry.condition.type) || 'flagEquals';
+                applyConditionToForm(entry.condition || { type: 'flagEquals', flag: '', value: false });
+                document.getElementById('entry-requires').value = Array.isArray(entry.requires) ? entry.requires.join(', ') : '';
+                document.getElementById('entry-blocks').value = Array.isArray(entry.blocks) ? entry.blocks.join(', ') : '';
+                renderDialogueList(entry.dialogue);
+                document.getElementById('entry-hasOptions').checked = !!(entry.dialogue && entry.dialogue.hasOptions);
+                document.getElementById('entry-repeatable').checked = !!entry.repeatable;
+                document.getElementById('entry-scope').value = entry.scope || 'global';
+                document.getElementById('entry-causesNpcDisappear').checked = !!entry.causesNpcDisappear;
+                renderEffectsList(entry.effects || []);
+            }
+
+            function formToEntry(entry) {
+                entry = entry || {};
+                entry.id = document.getElementById('entry-id').value.trim() || 'custom.entry_01';
+                entry.entryType = document.getElementById('entry-type').value;
+                entry.entrySource = document.getElementById('entry-source').value;
+                entry.condition = readConditionFromForm();
+                var r = document.getElementById('entry-requires').value.split(',').map(function (s) { return s.trim(); }).filter(Boolean);
+                var b = document.getElementById('entry-blocks').value.split(',').map(function (s) { return s.trim(); }).filter(Boolean);
+                entry.requires = r;
+                entry.blocks = b;
+                entry.dialogue = entry.dialogue || {};
+                entry.dialogue.linesRich = getDialogueListFromDom();
+                entry.dialogue.lines = entry.dialogue.linesRich.map(function (l) { return l.text; });
+                if (!entry.dialogue.lines || entry.dialogue.lines.length === 0) entry.dialogue.lines = [''];
+                entry.dialogue.hasOptions = document.getElementById('entry-hasOptions').checked;
+                entry.dialogue.options = (entry.dialogue.options && entry.dialogue.options.length) ? entry.dialogue.options : [];
+                entry.effects = getEffectsFromDom();
+                entry.repeatable = document.getElementById('entry-repeatable').checked;
+                entry.scope = document.getElementById('entry-scope').value;
+                entry.causesNpcDisappear = document.getElementById('entry-causesNpcDisappear').checked;
+                return entry;
+            }
+
+            function normalizeDialogueLines(dialogue) {
+                dialogue = dialogue || {};
+                var out = [];
+                if (Array.isArray(dialogue.linesRich) && dialogue.linesRich.length) {
+                    for (var i = 0; i < dialogue.linesRich.length; i++) {
+                        var it = dialogue.linesRich[i] || {};
+                        var speaker = (it.speaker || 'npc');
+                        var text = (it.text != null ? String(it.text) : '').trim();
+                        if (!text) continue;
+                        out.push({ speaker: speaker, text: text, avatar: it.avatar || '' });
+                    }
+                    return out.length ? out : [{ speaker: 'npc', text: '' }];
+                }
+                if (Array.isArray(dialogue.lines) && dialogue.lines.length) {
+                    for (var j = 0; j < dialogue.lines.length; j++) {
+                        var t = dialogue.lines[j] != null ? String(dialogue.lines[j]).trim() : '';
+                        if (!t) continue;
+                        out.push({ speaker: 'npc', text: t, avatar: '' });
+                    }
+                    return out.length ? out : [{ speaker: 'npc', text: '' }];
+                }
+                return [{ speaker: 'npc', text: '' }];
+            }
+
+            function syncCondJsonBox(cond) {
+                var ta = document.getElementById('entry-cond-json');
+                if (!ta) return;
+                ta.value = JSON.stringify(cond || {}, null, 2);
+            }
+
+            function setCondFormVisibility(type) {
+                var fFlag = document.getElementById('cond-form-flag');
+                var fSkill = document.getElementById('cond-form-skill');
+                var fItem = document.getElementById('cond-form-item');
+                if (fFlag) fFlag.style.display = (type === 'flagEquals') ? 'block' : 'none';
+                if (fSkill) fSkill.style.display = (type === 'skillLevelEquals' || type === 'skillLevelGte') ? 'block' : 'none';
+                if (fItem) fItem.style.display = (type === 'hasItem') ? 'block' : 'none';
+                var adv = document.getElementById('cond-advanced-toggle');
+                var jsonRow = document.getElementById('entry-cond-params');
+                if (type === 'custom') {
+                    if (adv) adv.checked = true;
+                    if (jsonRow) jsonRow.style.display = 'block';
+                } else {
+                    if (jsonRow) jsonRow.style.display = (adv && adv.checked) ? 'block' : 'none';
+                }
+            }
+
+            function applyConditionToForm(cond) {
+                cond = cond || { type: 'flagEquals', flag: '', value: false };
+                var type = cond.type || 'flagEquals';
+                document.getElementById('entry-cond-type').value = type;
+                setCondFormVisibility(type);
+                // 填各表单
+                if (type === 'flagEquals') {
+                    document.getElementById('cond-flag-name').value = cond.flag || '';
+                    document.getElementById('cond-flag-value').value = String(!!cond.value);
+                } else if (type === 'skillLevelEquals' || type === 'skillLevelGte') {
+                    updateSkillSelectOptions();
+                    document.getElementById('cond-skill-id').value = cond.skillId || document.getElementById('cond-skill-id').value;
+                    document.getElementById('cond-skill-level').value = (cond.level != null ? cond.level : 0);
+                } else if (type === 'hasItem') {
+                    document.getElementById('cond-item-id').value = cond.itemId || '';
+                    document.getElementById('cond-item-count').value = (cond.count != null ? cond.count : 1);
+                } else if (type === 'custom') {
+                    // custom: 直接使用 JSON
+                }
+                syncCondJsonBox(cond);
+            }
+
+            function readConditionFromForm() {
+                var type = document.getElementById('entry-cond-type').value;
+                var cond = { type: type };
+                if (type === 'flagEquals') {
+                    cond.flag = document.getElementById('cond-flag-name').value.trim();
+                    cond.value = (document.getElementById('cond-flag-value').value === 'true');
+                } else if (type === 'skillLevelEquals' || type === 'skillLevelGte') {
+                    cond.skillId = document.getElementById('cond-skill-id').value;
+                    cond.level = parseInt(document.getElementById('cond-skill-level').value, 10) || 0;
+                } else if (type === 'hasItem') {
+                    cond.itemId = document.getElementById('cond-item-id').value.trim();
+                    cond.count = parseInt(document.getElementById('cond-item-count').value, 10) || 1;
+                } else if (type === 'custom') {
+                    var raw = document.getElementById('entry-cond-json').value.trim();
+                    try { cond = raw ? JSON.parse(raw) : { type: 'custom' }; } catch (e) { cond = { type: 'custom' }; }
+                }
+                syncCondJsonBox(cond);
+                return cond;
+            }
+
+            function renderDialogueList(dialogue) {
+                var list = document.getElementById('entry-dialogue-list');
+                if (!list) return;
+                list.innerHTML = '';
+                var lines = normalizeDialogueLines(dialogue);
+                for (var i = 0; i < lines.length; i++) {
+                    list.appendChild(createDialogueLineRow(lines, i));
+                }
+            }
+
+            function createDialogueLineRow(linesArr, idx) {
+                var line = linesArr[idx] || { speaker: 'npc', text: '' };
+                var wrap = document.createElement('div');
+                wrap.className = 'dlg-line';
+
+                var top = document.createElement('div');
+                top.className = 'top';
+
+                var sel = document.createElement('select');
+                sel.className = 'dlg-speaker';
+                var opts = [
+                    { v: 'npc', t: '林经理 / NPC' },
+                    { v: 'player', t: '主角' },
+                    { v: 'narration', t: '旁白' }
+                ];
+                for (var i = 0; i < opts.length; i++) {
+                    var o = document.createElement('option');
+                    o.value = opts[i].v;
+                    o.textContent = opts[i].t;
+                    sel.appendChild(o);
+                }
+                sel.value = line.speaker || 'npc';
+
+                var actions = document.createElement('div');
+                actions.className = 'actions';
+
+                var btnUp = document.createElement('button');
+                btnUp.type = 'button';
+                btnUp.textContent = '↑';
+                var btnDown = document.createElement('button');
+                btnDown.type = 'button';
+                btnDown.textContent = '↓';
+                var btnDel = document.createElement('button');
+                btnDel.type = 'button';
+                btnDel.textContent = '删除';
+                btnDel.className = 'danger';
+
+                actions.appendChild(btnUp);
+                actions.appendChild(btnDown);
+                actions.appendChild(btnDel);
+
+                top.appendChild(sel);
+                top.appendChild(actions);
+
+                var ta = document.createElement('textarea');
+                ta.className = 'dlg-text';
+                ta.placeholder = '输入这一句台词…';
+                ta.value = line.text || '';
+
+                // 头像：每句可单独设置（导出时写入 linesRich[].avatar）
+                var avatarRow = document.createElement('div');
+                avatarRow.className = 'avatar-row';
+
+                var prev = document.createElement('div');
+                prev.className = 'avatar-prev';
+                var prevImg = document.createElement('img');
+                var prevGlyph = document.createElement('span');
+                prevGlyph.className = 'glyph';
+                prevGlyph.textContent = '像';
+                prev.appendChild(prevGlyph);
+                prev.appendChild(prevImg);
+                prevImg.style.display = 'none';
+
+                function setPreviewFromUrl(url) {
+                    url = (url || '').trim();
+                    if (!url) {
+                        prevImg.src = '';
+                        prevImg.style.display = 'none';
+                        prevGlyph.style.display = 'block';
+                        return;
+                    }
+                    prevImg.onload = function () {
+                        prevImg.style.display = 'block';
+                        prevGlyph.style.display = 'none';
+                    };
+                    prevImg.onerror = function () {
+                        prevImg.style.display = 'none';
+                        prevGlyph.style.display = 'block';
+                    };
+                    prevImg.src = url;
+                }
+
+                var inpAvatarPath = document.createElement('input');
+                inpAvatarPath.type = 'text';
+                inpAvatarPath.className = 'dlg-avatar-path';
+                inpAvatarPath.placeholder = '头像路径（相对项目），例如 image/林书瑶/01.png（可空）';
+                inpAvatarPath.value = (line.avatar || '').trim();
+                inpAvatarPath.addEventListener('input', function () {
+                    // 直接用路径预览（若路径不可访问则显示 glyph）
+                    setPreviewFromUrl(inpAvatarPath.value);
+                });
+
+                var fileInp = document.createElement('input');
+                fileInp.type = 'file';
+                fileInp.accept = 'image/*';
+                fileInp.className = 'dlg-avatar-file';
+
+                var btnUpload = document.createElement('button');
+                btnUpload.type = 'button';
+                btnUpload.textContent = '上传';
+
+                fileInp.addEventListener('change', function () {
+                    var file = fileInp.files && fileInp.files[0];
+                    if (!file) return;
+                    // 本地预览
+                    var url = URL.createObjectURL(file);
+                    setPreviewFromUrl(url);
+                    // 自动填建议路径（不强制）
+                    var folder = getNpcAvatarFolderName();
+                    inpAvatarPath.value = 'image/' + folder + '/' + file.name;
+                });
+
+                btnUpload.addEventListener('click', function () {
+                    var file = fileInp.files && fileInp.files[0];
+                    if (!file) return window.alert('请先选择一张图片');
+                    // 尝试写入 /image/<npcName>/（需要支持 File System Access API）
+                    if (!window.showDirectoryPicker) {
+                        window.alert('当前浏览器不支持“直接写入文件夹”。\n请手动把图片放到项目的 image/ 目录，并在上方路径里填相对路径。');
+                        return;
+                    }
+                    ensureNpcImageFolder().then(function (res) {
+                        if (!res || !res.npcDir) return;
+                        return writeFileToHandle(res.npcDir, file, file.name).then(function (fn) {
+                            inpAvatarPath.value = 'image/' + res.folderName + '/' + fn;
+                            setPreviewFromUrl(inpAvatarPath.value);
+                            window.alert('已写入：image/' + res.folderName + '/' + fn);
+                        });
+                    }).catch(function (err) {
+                        window.alert('写入失败：' + (err && err.message ? err.message : String(err)));
+                    });
+                });
+
+                avatarRow.appendChild(prev);
+                avatarRow.appendChild(inpAvatarPath);
+                avatarRow.appendChild(fileInp);
+                avatarRow.appendChild(btnUpload);
+
+                btnUp.addEventListener('click', function () {
+                    var list = document.getElementById('entry-dialogue-list');
+                    var node = wrap;
+                    var prev = node.previousElementSibling;
+                    if (prev) list.insertBefore(node, prev);
+                });
+                btnDown.addEventListener('click', function () {
+                    var list = document.getElementById('entry-dialogue-list');
+                    var node = wrap;
+                    var next = node.nextElementSibling;
+                    if (next) list.insertBefore(next, node);
+                });
+                btnDel.addEventListener('click', function () {
+                    wrap.parentNode && wrap.parentNode.removeChild(wrap);
+                });
+
+                wrap.appendChild(top);
+                wrap.appendChild(ta);
+                wrap.appendChild(avatarRow);
+                // 初始预览
+                setPreviewFromUrl(inpAvatarPath.value);
+                return wrap;
+            }
+
+            function getDialogueListFromDom() {
+                var list = document.getElementById('entry-dialogue-list');
+                if (!list) return [];
+                var rows = list.querySelectorAll('.dlg-line');
+                var out = [];
+                for (var i = 0; i < rows.length; i++) {
+                    var sp = rows[i].querySelector('.dlg-speaker');
+                    var tx = rows[i].querySelector('.dlg-text');
+                    var av = rows[i].querySelector('.dlg-avatar-path');
+                    var speaker = sp && sp.value ? sp.value : 'npc';
+                    var text = tx && tx.value != null ? String(tx.value).trim() : '';
+                    if (!text) continue;
+                    var avatar = av && av.value != null ? String(av.value).trim() : '';
+                    out.push({ speaker: speaker, text: text, avatar: avatar });
+                }
+                return out;
+            }
+
+            // 一键全部用同一张头像（默认只给 NPC 台词）
+            document.getElementById('btn-dialogue-avatar-bulk').addEventListener('click', function () {
+                var input = document.getElementById('file-dialogue-avatar-bulk');
+                if (!input) return;
+                input.value = '';
+                input.click();
+            });
+            document.getElementById('file-dialogue-avatar-bulk').addEventListener('change', function () {
+                var file = this.files && this.files[0];
+                this.value = '';
+                if (!file) return;
+                var onlyNpc = !!document.getElementById('chk-dialogue-avatar-only-npc').checked;
+                var list = document.getElementById('entry-dialogue-list');
+                if (!list) return;
+                var folder = getNpcAvatarFolderName();
+                var suggestedPath = 'image/' + folder + '/' + file.name;
+                var rows = list.querySelectorAll('.dlg-line');
+                for (var i = 0; i < rows.length; i++) {
+                    var sp = rows[i].querySelector('.dlg-speaker');
+                    var speaker = sp && sp.value ? sp.value : 'npc';
+                    if (onlyNpc && speaker !== 'npc') continue;
+                    var av = rows[i].querySelector('.dlg-avatar-path');
+                    if (av) {
+                        av.value = suggestedPath;
+                        av.dispatchEvent(new Event('input'));
+                    }
+                }
+                // 如支持，顺便写入一次文件（用户同意后）
+                if (window.showDirectoryPicker) {
+                    ensureNpcImageFolder().then(function (res) {
+                        if (!res || !res.npcDir) return;
+                        return writeFileToHandle(res.npcDir, file, file.name).then(function (fn) {
+                            // 路径改为实际 folderName（可能与 folder 不同）
+                            var p2 = 'image/' + res.folderName + '/' + fn;
+                            for (var j = 0; j < rows.length; j++) {
+                                var sp2 = rows[j].querySelector('.dlg-speaker');
+                                var speaker2 = sp2 && sp2.value ? sp2.value : 'npc';
+                                if (onlyNpc && speaker2 !== 'npc') continue;
+                                var av2 = rows[j].querySelector('.dlg-avatar-path');
+                                if (av2) {
+                                    av2.value = p2;
+                                    av2.dispatchEvent(new Event('input'));
+                                }
+                            }
+                            window.alert('已写入：' + p2 + '（并应用到台词）');
+                        });
+                    }).catch(function () {
+                        // 写入失败就静默：路径仍然已填，用户可手动放置
+                    });
+                }
+            });
+
+            function renderEffectsList(effects) {
+                var list = document.getElementById('entry-effects-list');
+                list.innerHTML = '';
+                effects = effects || [];
+                for (var i = 0; i < effects.length; i++) {
+                    var ef = effects[i];
+                    var div = document.createElement('div');
+                    div.className = 'effect-item';
+                    var typeVal = (ef.type || 'setFlag');
+                    var paramsVal = typeof ef.params === 'object' ? JSON.stringify(ef.params, null, 2) : (ef.params || '{}');
+                    var head = document.createElement('div');
+                    head.className = 'head';
+                    var typeInp = document.createElement('input');
+                    typeInp.type = 'text';
+                    typeInp.className = 'effect-type';
+                    typeInp.value = typeVal;
+                    typeInp.placeholder = 'setFlag / modifySkillLevel / unlockTask';
+                    var rmBtn = document.createElement('button');
+                    rmBtn.type = 'button';
+                    rmBtn.className = 'rm-effect';
+                    rmBtn.textContent = '删除';
+                    head.appendChild(typeInp);
+                    head.appendChild(rmBtn);
+                    var paramsWrap = document.createElement('div');
+                    paramsWrap.className = 'params';
+                    var paramsTa = document.createElement('textarea');
+                    paramsTa.className = 'effect-params';
+                    paramsTa.placeholder = '{}';
+                    paramsTa.value = paramsVal;
+                    paramsWrap.appendChild(paramsTa);
+                    div.appendChild(head);
+                    div.appendChild(paramsWrap);
+                    (function (idx) {
+                        rmBtn.addEventListener('click', function () {
+                            effects.splice(idx, 1);
+                            renderEffectsList(effects);
+                        });
+                    })(i);
+                    list.appendChild(div);
+                }
+            }
+
+            function getEffectsFromDom() {
+                var list = document.getElementById('entry-effects-list');
+                var items = list.querySelectorAll('.effect-item');
+                var out = [];
+                for (var i = 0; i < items.length; i++) {
+                    var typeEl = items[i].querySelector('.effect-type');
+                    var paramsEl = items[i].querySelector('.effect-params');
+                    var type = typeEl && typeEl.value ? typeEl.value.trim() : 'setFlag';
+                    var params = {};
+                    if (paramsEl && paramsEl.value) {
+                        try { params = JSON.parse(paramsEl.value); } catch (e) { params = {}; }
+                    }
+                    out.push({ type: type, params: params });
+                }
+                return out;
+            }
+
+            document.getElementById('btn-add-effect').addEventListener('click', function () {
+                var list = document.getElementById('entry-effects-list');
+                var effects = [];
+                var items = list.querySelectorAll('.effect-item');
+                for (var i = 0; i < items.length; i++) {
+                    var typeEl = items[i].querySelector('.effect-type');
+                    var paramsEl = items[i].querySelector('.effect-params');
+                    effects.push({
+                        type: typeEl && typeEl.value ? typeEl.value.trim() : 'setFlag',
+                        params: (function () { try { return paramsEl && paramsEl.value ? JSON.parse(paramsEl.value) : {}; } catch (e) { return {}; } })()
+                    });
+                }
+                effects.push({ type: 'setFlag', params: { flag: '', value: true } });
+                renderEffectsList(effects);
+            });
+
+            document.getElementById('btn-new-npc').addEventListener('click', function () {
+                formToNpc();
+                state.npc = JSON.parse(JSON.stringify(defaultNpc));
+                state.triggers = { npcId: state.npc.id, entries: [] };
+                state.selectedEntryIndex = -1;
+                npcToForm();
+                renderEntriesList();
+                document.getElementById('entry-edit-placeholder').style.display = 'block';
+                document.getElementById('entry-edit-panel').style.display = 'none';
+            });
+
+            document.getElementById('btn-create-npc-folders').addEventListener('click', function () {
+                createNpcFolders();
+            });
+
+            document.getElementById('btn-new-entry').addEventListener('click', function () {
+                formToNpc();
+                var newEntry = JSON.parse(JSON.stringify(defaultEntry));
+                newEntry.id = 'custom.entry_' + String((state.triggers.entries.length + 1)).padStart(2, '0');
+                state.triggers.entries.push(newEntry);
+                state.selectedEntryIndex = state.triggers.entries.length - 1;
+                renderEntriesList();
+                entryToForm(newEntry);
+                document.getElementById('entry-edit-placeholder').style.display = 'none';
+                document.getElementById('entry-edit-panel').style.display = 'block';
+            });
+
+            document.getElementById('btn-add-dialogue-line').addEventListener('click', function () {
+                var list = document.getElementById('entry-dialogue-list');
+                if (!list) return;
+                // 直接追加一行空对白（默认 NPC）
+                var wrap = document.createElement('div');
+                // 复用 createDialogueLineRow 的 DOM 结构：临时数组只为生成一行
+                list.appendChild(createDialogueLineRow([{ speaker: 'npc', text: '' }], 0));
+            });
+
+            document.getElementById('btn-save-entry').addEventListener('click', function () {
+                if (state.selectedEntryIndex < 0) return;
+                formToEntry(state.triggers.entries[state.selectedEntryIndex]);
+                renderEntriesList();
+            });
+
+            document.getElementById('btn-delete-entry').addEventListener('click', function () {
+                if (state.selectedEntryIndex < 0) return;
+                if (!window.confirm('确定删除此事件？')) return;
+                state.triggers.entries.splice(state.selectedEntryIndex, 1);
+                state.selectedEntryIndex = -1;
+                renderEntriesList();
+                document.getElementById('entry-edit-placeholder').style.display = 'block';
+                document.getElementById('entry-edit-panel').style.display = 'none';
+            });
+
+            function exportJson(obj) {
+                return JSON.stringify(obj, null, 2);
+            }
+
+            function download(filename, text) {
+                var blob = new Blob([text], { type: 'application/json' });
+                var url = URL.createObjectURL(blob);
+                var a = document.createElement('a');
+                a.href = url;
+                a.download = filename;
+                a.click();
+                URL.revokeObjectURL(url);
+            }
+
+            document.getElementById('btn-export-npc').addEventListener('click', function () {
+                formToNpc();
+                var out = {};
+                for (var k in state.npc) { if (k !== '_comment') out[k] = state.npc[k]; }
+                var name = (state.npc.id || 'npc').replace(/\./g, '_') + '.json';
+                download(name, exportJson(out));
+            });
+
+            document.getElementById('btn-export-triggers').addEventListener('click', function () {
+                formToNpc();
+                if (state.selectedEntryIndex >= 0) formToEntry(state.triggers.entries[state.selectedEntryIndex]);
+                var out = {
+                    npcId: state.triggers.npcId || state.npc.id,
+                    entries: state.triggers.entries
+                };
+                var name = (state.triggers.npcId || 'triggers').replace(/\./g, '_') + '_triggers.json';
+                download(name, exportJson(out));
+            });
+
+            document.getElementById('btn-export-registry').addEventListener('click', function () {
+                formToNpc();
+                var npcId = state.npc.id || '';
+                if (!npcId) return window.alert('请先填写 NPC ID');
+                // 与导出文件名保持一致（避免手动对不上）
+                var defName = (npcId || 'npc').replace(/\./g, '_') + '.json';
+                var trigName = (npcId || 'npc').replace(/\./g, '_') + '_triggers.json';
+                // 自动流程：让用户选择现有 npc_registry.json（不选就生成全新 registry）
+                var input = document.getElementById('file-import-npc-registry');
+                if (!input) return;
+                input.value = '';
+                input.onchange = null;
+                input.onchange = function () {
+                    var file = input.files && input.files[0];
+                    input.value = '';
+                    // 无论是否选择文件，都走合并逻辑（未选择则用空 registry）
+                    var mergeAndDownload = function (baseReg) {
+                        var reg = baseReg && typeof baseReg === 'object' ? baseReg : {};
+                        if (!reg.npcs || typeof reg.npcs !== 'object') reg.npcs = {};
+                        reg.npcs[npcId] = { def: 'data/npc/' + defName, triggers: 'data/npc/' + trigName };
+                        download('npc_registry.json', exportJson(reg));
+                    };
+                    if (!file) return mergeAndDownload({ _comment: 'NPC 注册表：npcId -> 本体/事件配置文件路径。', npcs: {} });
+                    var reader = new FileReader();
+                    reader.onload = function () {
+                        try {
+                            var baseReg = JSON.parse(String(reader.result || ''));
+                            mergeAndDownload(baseReg);
+                        } catch (e) {
+                            // 解析失败则仍然生成新 registry，避免卡住
+                            mergeAndDownload({ _comment: 'NPC 注册表：npcId -> 本体/事件配置文件路径。', npcs: {} });
+                        }
+                    };
+                    reader.onerror = function () {
+                        mergeAndDownload({ _comment: 'NPC 注册表：npcId -> 本体/事件配置文件路径。', npcs: {} });
+                    };
+                    reader.readAsText(file, 'UTF-8');
+                };
+                // 打开文件选择器；用户取消则会直接生成新 registry（通过 onchange file 为空处理）
+                input.click();
+            });
+
+            function applyImportedNpc(data) {
+                state.npc = {
+                    id: data.id || defaultNpc.id,
+                    name: data.name != null ? data.name : defaultNpc.name,
+                    displayTitle: data.displayTitle != null ? data.displayTitle : defaultNpc.displayTitle,
+                    sprite: data.sprite != null ? data.sprite : defaultNpc.sprite,
+                    appearanceSchedule: data.appearanceSchedule || defaultNpc.appearanceSchedule,
+                    location: data.location || defaultNpc.location,
+                    mainMenu: data.mainMenu || defaultNpc.mainMenu,
+                    behavior: data.behavior || defaultNpc.behavior,
+                    fallbackDialoguePoolId: data.fallbackDialoguePoolId != null ? data.fallbackDialoguePoolId : defaultNpc.fallbackDialoguePoolId,
+                    tags: Array.isArray(data.tags) ? data.tags : (defaultNpc.tags || [])
+                };
+                state.triggers.npcId = state.npc.id;
+                npcToForm();
+            }
+
+            document.getElementById('btn-import-npc').addEventListener('click', function () {
+                document.getElementById('file-import-npc').click();
+            });
+            document.getElementById('file-import-npc').addEventListener('change', function () {
+                var file = this.files && this.files[0];
+                this.value = '';
+                if (!file) return;
+                var reader = new FileReader();
+                reader.onload = function () {
+                    try {
+                        var data = JSON.parse(reader.result);
+                        applyImportedNpc(data);
+                    } catch (e) {
+                        window.alert('JSON 解析失败：' + e.message);
+                    }
+                };
+                reader.readAsText(file, 'UTF-8');
+            });
+            document.getElementById('link-paste-npc').addEventListener('click', function (e) {
+                e.preventDefault();
+                var raw = window.prompt('粘贴 NPC 基础数据 JSON（来自 data/npc/*.json）');
+                if (!raw) return;
+                try {
+                    var data = JSON.parse(raw);
+                    applyImportedNpc(data);
+                } catch (err) {
+                    window.alert('JSON 解析失败：' + err.message);
+                }
+            });
+
+            function applyImportedTriggers(data) {
+                state.triggers.npcId = data.npcId || state.npc.id;
+                state.triggers.entries = Array.isArray(data.entries) ? JSON.parse(JSON.stringify(data.entries)) : [];
+                if (state.npc.id && !state.triggers.npcId) state.triggers.npcId = state.npc.id;
+                state.selectedEntryIndex = -1;
+                renderEntriesList();
+                document.getElementById('entry-edit-placeholder').style.display = 'block';
+                document.getElementById('entry-edit-panel').style.display = 'none';
+            }
+
+            document.getElementById('btn-import-triggers').addEventListener('click', function () {
+                document.getElementById('file-import-triggers').click();
+            });
+            document.getElementById('file-import-triggers').addEventListener('change', function () {
+                var file = this.files && this.files[0];
+                this.value = '';
+                if (!file) return;
+                var reader = new FileReader();
+                reader.onload = function () {
+                    try {
+                        var data = JSON.parse(reader.result);
+                        applyImportedTriggers(data);
+                    } catch (e) {
+                        window.alert('JSON 解析失败：' + e.message);
+                    }
+                };
+                reader.readAsText(file, 'UTF-8');
+            });
+            document.getElementById('link-paste-triggers').addEventListener('click', function (e) {
+                e.preventDefault();
+                var raw = window.prompt('粘贴触发事件 JSON（来自 data/npc/*_triggers.json，需含 npcId 与 entries）');
+                if (!raw) return;
+                try {
+                    var data = JSON.parse(raw);
+                    applyImportedTriggers(data);
+                } catch (err) {
+                    window.alert('JSON 解析失败：' + err.message);
+                }
+            });
+
+            document.getElementById('npc-sprite-file').addEventListener('change', function () {
+                var file = this.files && this.files[0];
+                if (!file) return;
+                var url = URL.createObjectURL(file);
+                updateSpritePreview(url);
+            });
+            document.getElementById('npc-sprite').addEventListener('input', function () {
+                updateSpritePreview(this.value.trim());
+            });
+
+            document.getElementById('cond-advanced-toggle').addEventListener('change', function () {
+                setCondFormVisibility(document.getElementById('entry-cond-type').value);
+            });
+
+            document.getElementById('entry-cond-type').addEventListener('change', function () {
+                var type = this.value;
+                var firstSkill = (state.skills && state.skills.length) ? state.skills[0] : 'survival_language';
+                var sample = (type === 'flagEquals') ? { type: 'flagEquals', flag: 'lsy_has_talked', value: false }
+                    : (type === 'skillLevelEquals') ? { type: 'skillLevelEquals', skillId: firstSkill, level: 0 }
+                    : (type === 'skillLevelGte') ? { type: 'skillLevelGte', skillId: firstSkill, level: 1 }
+                    : (type === 'hasItem') ? { type: 'hasItem', itemId: 'item_xxx', count: 1 }
+                    : { type: 'custom' };
+                applyConditionToForm(sample);
+            });
+
+            npcToForm();
+            updateSkillCount();
+            updateSkillSelectOptions();
+            renderEntriesList();
+            document.getElementById('entry-edit-placeholder').style.display = 'block';
+            document.getElementById('entry-edit-panel').style.display = 'none';
+        })();
+    </script>
+</body>
+</html>

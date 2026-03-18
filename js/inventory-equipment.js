@@ -26,6 +26,9 @@
     var displayTierThreshold1 = null;
     var displayTierThreshold2 = null;
 
+    /** 战斗肢体 ID（左手、右手、左脚、右脚），与设计 11-skills 一致 */
+    var COMBAT_LIMB_IDS = ['lhand', 'rhand', 'lfoot', 'rfoot'];
+
     /** 地面物品：key = "mapId_x_y"，value = 该格子上物品实例数组 */
     var state = {
         equipment: {},
@@ -35,8 +38,40 @@
         inventory_vehicle: [],
         bound_vehicle_id: null,
         skills: {},
-        ground_items: {}
+        ground_items: {},
+        combat: null
     };
+
+    function getDefaultCombatState() {
+        return {
+            limbs: {
+                lhand: { active: null, parry: null, priority: 1 },
+                rhand: { active: null, parry: null, priority: 2 },
+                lfoot: { active: null, parry: null, priority: 3 },
+                rfoot: { active: null, parry: null, priority: 4 }
+            },
+            hubs: { breath: null, light: null },
+            move_sequences: { lhand: [], rhand: [], lfoot: [], rfoot: [] },
+            skill_move_sequences: {}
+        };
+    }
+
+    function ensureCombatState() {
+        if (!state.combat || typeof state.combat !== 'object') {
+            state.combat = getDefaultCombatState();
+        }
+        var def = getDefaultCombatState();
+        var limbIds = COMBAT_LIMB_IDS;
+        for (var i = 0; i < limbIds.length; i++) {
+            var lid = limbIds[i];
+            if (!state.combat.limbs[lid]) {
+                state.combat.limbs[lid] = { active: null, parry: null, priority: def.limbs[lid] ? def.limbs[lid].priority : i + 1 };
+            }
+            if (!state.combat.move_sequences[lid]) state.combat.move_sequences[lid] = [];
+        }
+        if (!state.combat.hubs) state.combat.hubs = { breath: null, light: null };
+        if (!state.combat.skill_move_sequences) state.combat.skill_move_sequences = {};
+    }
 
     /** 技能等级获取：未习得为 0 */
     function getSkillLevel(skillId) {
@@ -155,6 +190,60 @@
         var arr = state.inventory_backpack.slice(0, max);
         while (arr.length < max) arr.push(null);
         return arr.slice(0, max);
+    }
+
+    /**
+     * 当前实际负重 W（设计 05 5.5.4）
+     * 装备 + 口袋 + 背心 + 背包内物品×背包折扣；力量满 100 时左右手武器不计入。
+     * @returns {number} 公斤（kg），浮点
+     */
+    function getCurrentCarryWeight() {
+        var total = 0;
+        var strLevel = getSkillLevel('survival_strength');
+        var excludeWeaponWeight = strLevel >= 100;
+
+        for (var i = 0; i < EQUIP_SLOT_IDS.length; i++) {
+            var slotId = EQUIP_SLOT_IDS[i];
+            if (excludeWeaponWeight && (slotId === 'weapon_left' || slotId === 'weapon_right')) continue;
+            var eq = state.equipment[slotId];
+            if (!eq || !eq.item_id) continue;
+            var tpl = getItemTemplate(eq.item_id);
+            if (tpl && tpl.weight_kg != null) total += Number(tpl.weight_kg);
+        }
+
+        function addContainerWeight(arr) {
+            if (!arr) return;
+            for (var j = 0; j < arr.length; j++) {
+                var cell = arr[j];
+                if (!cell || !cell.item_id) continue;
+                var tpl = getItemTemplate(cell.item_id);
+                if (!tpl || tpl.weight_kg == null) continue;
+                var qty = (cell.count != null && cell.count > 0) ? cell.count : 1;
+                total += qty * Number(tpl.weight_kg);
+            }
+        }
+
+        addContainerWeight(state.inventory_pocket);
+        addContainerWeight(state.inventory_vest);
+
+        var backpackFactor = 0.7;
+        var backpack = state.equipment.backpack;
+        if (backpack && backpack.item_id) {
+            var bpTpl = getItemTemplate(backpack.item_id);
+            if (bpTpl && bpTpl.backpack_weight_factor != null) backpackFactor = Number(bpTpl.backpack_weight_factor);
+        }
+        if (state.inventory_backpack && state.inventory_backpack.length) {
+            for (var k = 0; k < state.inventory_backpack.length; k++) {
+                var cell = state.inventory_backpack[k];
+                if (!cell || !cell.item_id) continue;
+                var tpl = getItemTemplate(cell.item_id);
+                if (!tpl || tpl.weight_kg == null) continue;
+                var qty = (cell.count != null && cell.count > 0) ? cell.count : 1;
+                total += qty * Number(tpl.weight_kg) * backpackFactor;
+            }
+        }
+
+        return total;
     }
 
     /**
@@ -614,6 +703,7 @@
             var itemId = merged[key];
             if (itemId) state.equipment[key] = { item_id: String(itemId), enchants: [] };
         }
+        ensureCombatState();
     }
 
     /** 创建角色完成或需补发新手装时调用：等价于再执行一轮 initNewGame（仍清空口袋等，仅适合新档/创角） */
@@ -656,6 +746,29 @@
                     state.ground_items[gk] = s.ground_items[gk].slice();
             }
         }
+        if (s.combat && typeof s.combat === 'object') {
+            state.combat = {
+                limbs: {},
+                hubs: { breath: s.combat.hubs && s.combat.hubs.breath != null ? s.combat.hubs.breath : null, light: s.combat.hubs && s.combat.hubs.light != null ? s.combat.hubs.light : null },
+                move_sequences: {},
+                skill_move_sequences: (function () {
+                    var src = s.combat.skill_move_sequences;
+                    if (!src || typeof src !== 'object') return {};
+                    var out = {};
+                    for (var sk in src) { if (src.hasOwnProperty(sk) && Array.isArray(src[sk])) out[sk] = src[sk].slice(); }
+                    return out;
+                })()
+            };
+            var limbIds = COMBAT_LIMB_IDS;
+            for (var li = 0; li < limbIds.length; li++) {
+                var lid = limbIds[li];
+                state.combat.limbs[lid] = s.combat.limbs && s.combat.limbs[lid]
+                    ? { active: s.combat.limbs[lid].active, parry: s.combat.limbs[lid].parry, priority: s.combat.limbs[lid].priority != null ? s.combat.limbs[lid].priority : li + 1 }
+                    : { active: null, parry: null, priority: li + 1 };
+                state.combat.move_sequences[lid] = (s.combat.move_sequences && Array.isArray(s.combat.move_sequences[lid])) ? s.combat.move_sequences[lid].slice() : [];
+            }
+        }
+        ensureCombatState();
     }
 
     function getState() {
@@ -669,6 +782,22 @@
             if (state.ground_items.hasOwnProperty(gk))
                 groundCopy[gk] = state.ground_items[gk].slice();
         }
+        ensureCombatState();
+        var combatCopy = {
+            limbs: {},
+            hubs: { breath: state.combat.hubs.breath, light: state.combat.hubs.light },
+            move_sequences: {},
+            skill_move_sequences: {}
+        };
+        for (var li = 0; li < COMBAT_LIMB_IDS.length; li++) {
+            var lid = COMBAT_LIMB_IDS[li];
+            combatCopy.limbs[lid] = { active: state.combat.limbs[lid].active, parry: state.combat.limbs[lid].parry, priority: state.combat.limbs[lid].priority };
+            combatCopy.move_sequences[lid] = (state.combat.move_sequences[lid] || []).slice();
+        }
+        for (var sk in state.combat.skill_move_sequences) {
+            if (state.combat.skill_move_sequences.hasOwnProperty(sk) && Array.isArray(state.combat.skill_move_sequences[sk]))
+                combatCopy.skill_move_sequences[sk] = state.combat.skill_move_sequences[sk].slice();
+        }
         return {
             equipment: eq,
             inventory_pocket: state.inventory_pocket.slice(),
@@ -677,7 +806,8 @@
             inventory_vehicle: state.inventory_vehicle.slice(),
             bound_vehicle_id: state.bound_vehicle_id,
             skills: state.skills,
-            ground_items: groundCopy
+            ground_items: groundCopy,
+            combat: combatCopy
         };
     }
 
@@ -685,8 +815,55 @@
         return { skills: state.skills };
     }
 
+    function getCombatState() {
+        ensureCombatState();
+        var c = state.combat;
+        var out = { limbs: {}, hubs: { breath: c.hubs.breath, light: c.hubs.light }, move_sequences: {}, skill_move_sequences: {} };
+        for (var i = 0; i < COMBAT_LIMB_IDS.length; i++) {
+            var lid = COMBAT_LIMB_IDS[i];
+            out.limbs[lid] = { active: c.limbs[lid].active, parry: c.limbs[lid].parry, priority: c.limbs[lid].priority };
+            out.move_sequences[lid] = (c.move_sequences[lid] || []).slice();
+        }
+        for (var sk in c.skill_move_sequences) {
+            if (c.skill_move_sequences.hasOwnProperty(sk) && Array.isArray(c.skill_move_sequences[sk]))
+                out.skill_move_sequences[sk] = c.skill_move_sequences[sk].slice();
+        }
+        return out;
+    }
+
+    function setCombatState(partial) {
+        ensureCombatState();
+        if (!partial || typeof partial !== 'object') return;
+        if (partial.limbs) {
+            for (var lid in partial.limbs) {
+                if (COMBAT_LIMB_IDS.indexOf(lid) >= 0 && partial.limbs[lid]) {
+                    if (partial.limbs[lid].active !== undefined) state.combat.limbs[lid].active = partial.limbs[lid].active;
+                    if (partial.limbs[lid].parry !== undefined) state.combat.limbs[lid].parry = partial.limbs[lid].parry;
+                    if (partial.limbs[lid].priority !== undefined) state.combat.limbs[lid].priority = partial.limbs[lid].priority;
+                }
+            }
+        }
+        if (partial.hubs) {
+            if (partial.hubs.breath !== undefined) state.combat.hubs.breath = partial.hubs.breath;
+            if (partial.hubs.light !== undefined) state.combat.hubs.light = partial.hubs.light;
+        }
+        if (partial.move_sequences) {
+            for (var lid in partial.move_sequences) {
+                if (COMBAT_LIMB_IDS.indexOf(lid) >= 0 && Array.isArray(partial.move_sequences[lid]))
+                    state.combat.move_sequences[lid] = partial.move_sequences[lid].slice();
+            }
+        }
+        if (partial.skill_move_sequences && typeof partial.skill_move_sequences === 'object') {
+            for (var sk in partial.skill_move_sequences) {
+                if (partial.skill_move_sequences.hasOwnProperty(sk) && Array.isArray(partial.skill_move_sequences[sk]))
+                    state.combat.skill_move_sequences[sk] = partial.skill_move_sequences[sk].slice();
+            }
+        }
+    }
+
     global.InventoryEquipment = {
         EQUIP_SLOT_IDS: EQUIP_SLOT_IDS,
+        COMBAT_LIMB_IDS: COMBAT_LIMB_IDS,
         QUALITY_TIERS: QUALITY_TIERS,
         QUALITY_NAMES: QUALITY_NAMES,
         setConfig: setConfig,
@@ -704,6 +881,7 @@
         getPocketArray: getPocketArray,
         getVestArray: getVestArray,
         getBackpackArray: getBackpackArray,
+        getCurrentCarryWeight: getCurrentCarryWeight,
         putItemIntoDefaultContainer: putItemIntoDefaultContainer,
         canAcceptItem: canAcceptItem,
         equip: equip,
@@ -721,6 +899,9 @@
         applyNewGameEquipment: applyNewGameEquipment,
         getSkillLevel: getSkillLevel,
         getCharacterForDisplay: getCharacterForDisplay,
-        getEnchantEntry: getEnchantEntry
+        getEnchantEntry: getEnchantEntry,
+        getCombatState: getCombatState,
+        setCombatState: setCombatState,
+        ensureCombatState: ensureCombatState
     };
 })(typeof window !== 'undefined' ? window : this);

@@ -1,0 +1,110 @@
+{
+  "npcId": "npc.supervisor.linShuyao",
+  "entries": [
+    {
+      "id": "supervisor.firstTalk_01",
+      "entryType": "dialogue",
+      "entrySource": "chat",
+      "condition": {
+        "type": "flagEquals",
+        "flag": "lsy_has_talked",
+        "value": false
+      },
+      "requires": [],
+      "blocks": [],
+      "dialogue": {
+        "linesRich": [
+          {
+            "speaker": "npc",
+            "text": "（大意）林经理告诉主角：你已经被选为某个综艺节目的主人公。"
+          },
+          {
+            "speaker": "player",
+            "text": "……你说什么？"
+          },
+          {
+            "speaker": "npc",
+            "text": "（大意）这个节目的核心内容，是让你在这个世界里想办法找到回家的路。"
+          }
+        ],
+        "lines": [
+          "（大意）林经理告诉主角：你已经被选为某个综艺节目的主人公。",
+          "……你说什么？",
+          "（大意）这个节目的核心内容，是让你在这个世界里想办法找到回家的路。"
+        ],
+        "hasOptions": false,
+        "options": []
+      },
+      "effects": [
+        {
+          "type": "setFlag",
+          "params": {
+            "flag": "lsy_has_talked",
+            "value": true
+          }
+        }
+      ],
+      "repeatable": false,
+      "scope": "global",
+      "causesNpcDisappear": false
+    },
+    {
+      "id": "supervisor.languageFix_01",
+      "entryType": "dialogue",
+      "entrySource": "chat",
+      "condition": {
+        "type": "and",
+        "conds": [
+          {
+            "type": "flagEquals",
+            "flag": "lsy_has_talked",
+            "value": true
+          },
+          {
+            "type": "skillLevelEquals",
+            "skillId": "survival_language",
+            "level": 0
+          }
+        ]
+      },
+      "requires": [],
+      "blocks": [],
+      "dialogue": {
+        "linesRich": [
+          {
+            "speaker": "npc",
+            "text": "（大意）林经理恍然大悟，说差点忘了提醒：这里和你原来的地方语言不通。"
+          },
+          {
+            "speaker": "player",
+            "text": "我就说为什么他们看我的眼神那么怪。"
+          },
+          {
+            "speaker": "npc",
+            "text": "（大意）她顺手帮你把语言权限开了一点，否则你连路都打听不清楚。"
+          }
+        ],
+        "lines": [
+          "（大意）林经理恍然大悟，说差点忘了提醒：这里和你原来的地方语言不通。",
+          "我就说为什么他们看我的眼神那么怪。",
+          "（大意）她顺手帮你把语言权限开了一点，否则你连路都打听不清楚。"
+        ],
+        "hasOptions": false,
+        "options": []
+      },
+      "effects": [
+        {
+          "type": "modifySkillLevel",
+          "params": {
+            "skillId": "survival_language",
+            "delta": 1,
+            "min": 0
+          }
+        }
+      ],
+      "repeatable": false,
+      "scope": "global",
+      "causesNpcDisappear": false
+    }
+  ]
+}

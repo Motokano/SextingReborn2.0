@@ -3,13 +3,25 @@
   "name": "基地",
   "width": 16,
   "height": 16,
+  "blocks": [
+    {
+      "x": 11,
+      "y": 3
+    }
+  ],
   "portals": [
     {
       "x": 8,
       "y": 15,
       "target_map_id": "field",
-      "return_to_previous": true,
       "label": "出基地"
+    }
+  ],
+  "npcs": [
+    {
+      "x": 11,
+      "y": 3,
+      "npc_id": "npc.supervisor.linShuyao"
     }
   ]
 }

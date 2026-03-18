@@ -214,6 +214,11 @@
         state.tickCount += 1;
         var tick = state.tickCount;
 
+        // 推进世界时间（若时间系统已加载）
+        if (typeof global !== 'undefined' && global.GameTime && typeof global.GameTime.advanceTicks === 'function') {
+            global.GameTime.advanceTicks(1);
+        }
+
         // ---------- 饱食 ----------
         var satDecay = get('satiety_tick_decay', 1);
         state.satiety = round1(Math.max(0, state.satiety - satDecay));

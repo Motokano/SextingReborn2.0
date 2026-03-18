@@ -54,6 +54,8 @@
             justify-content: center;
             font-size: 12px;
             border: 2px solid transparent;
+            position: relative;
+            user-select: none;
         }
         .cell.walkable { background: #3d4a3d; }
         .cell.blocked { background: #4a3d3d; }
@@ -71,6 +73,28 @@
         .cell.entity-bush::after { content: '灌'; font-size: 11px; color: #8f8; }
         .cell.entity-grass { background: #2d4a3d; border-color: rgba(80,160,120,0.5); }
         .cell.entity-grass::after { content: '草'; font-size: 11px; color: #6f8; }
+        .cell.npc { background: #3d3d4a; border-color: rgba(150,120,220,0.7); }
+        .cell.npc::after { content: '人'; font-size: 11px; color: #c9b3ff; }
+        .cell .mark {
+            position: relative;
+            z-index: 1;
+        }
+        .cell .note {
+            position: absolute;
+            left: 2px;
+            right: 2px;
+            bottom: 2px;
+            font-size: 10px;
+            line-height: 1.1;
+            color: rgba(255,255,255,0.85);
+            text-shadow: 0 1px 0 rgba(0,0,0,0.6);
+            overflow: hidden;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+            pointer-events: none;
+            z-index: 2;
+        }
+        .cell .note.dim { color: rgba(255,255,255,0.6); }
         .sidebar {
             width: 280px;
             background: #252525;
@@ -95,14 +119,27 @@
         .sidebar button { padding: 6px 12px; margin-top: 8px; background: #404040; border: 1px solid #555; color: #fff; cursor: pointer; border-radius: 4px; }
         .sidebar button:hover { background: #505050; }
         .sidebar .hint { font-size: 11px; color: #666; margin-top: 4px; }
+        .sidebar textarea {
+            width: 100%;
+            padding: 6px 8px;
+            background: #333;
+            border: 1px solid #555;
+            color: #fff;
+            border-radius: 4px;
+            resize: vertical;
+            min-height: 68px;
+        }
     </style>
 </head>
 <body>
 
     <div class="toolbar">
         <button type="button" id="btn-new">新建地图</button>
-        <button type="button" id="btn-import">导入 JSON</button>
+        <button type="button" id="btn-import">导入 JSON（选文件）</button>
+        <button type="button" id="btn-import-paste">导入 JSON（粘贴）</button>
+        <button type="button" id="btn-import-npc-reg">载入 NPC 注册表</button>
         <button type="button" id="btn-export">导出 JSON</button>
+        <button type="button" id="btn-toggle-notes" title="仅编辑器显示，导出不包含">显示注释：开</button>
         <label>地图 ID <input type="text" id="inp-map-id" placeholder="home" /></label>
         <label>名称 <input type="text" id="inp-name" placeholder="基地" /></label>
         <label>宽 <input type="number" id="inp-width" min="1" max="64" value="16" /></label>
@@ -110,6 +147,8 @@
         <button type="button" id="btn-resize">应用尺寸</button>
         <span style="color:#666; font-size:12px; margin-left:8px;">Ctrl+点击多选 / 按住左键拖动框选</span>
     </div>
+    <input id="inp-import-file" type="file" accept="application/json,.json" style="display:none" />
+    <input id="inp-import-npc-reg-file" type="file" accept="application/json,.json" style="display:none" />
 
     <div class="main">
         <div class="grid-wrap">
@@ -151,6 +190,21 @@
                 <p class="hint">与设计文档 8.2.2 一致，地图用 entity_id 引用；游戏内站在该格可执行采集。</p>
                 <button type="button" id="btn-apply-entity">应用实体</button>
             </div>
+            <div class="row" id="panel-npc">
+                <label>NPC 生成点</label>
+                <select id="inp-npc-id">
+                    <option value="">无</option>
+                </select>
+                <p class="hint">地图用 npc_id 引用 NPC。本编辑器仅维护坐标与 npc_id。可点工具栏「载入 NPC 注册表」从 data/npc/npc_registry.json 导入 NPC 列表。</p>
+                <button type="button" id="btn-apply-npc">应用 NPC</button>
+            </div>
+            <div class="row" id="panel-note">
+                <label>格子注释（仅编辑器，不导出）</label>
+                <textarea id="inp-note" placeholder="比如：这里是Boss房入口 / 需要放事件触发 / 视觉标记等"></textarea>
+                <button type="button" id="btn-apply-note">应用注释</button>
+                <button type="button" id="btn-clear-note">清空注释</button>
+                <p class="hint">注释会自动保存在本地浏览器存储；导出 JSON 不包含该字段</p>
+            </div>
         </div>
     </div>
 
@@ -165,8 +219,51 @@
                 enabled: [],
                 walkable: [],
                 portals: [],
-                entities: []    // [{ x, y, entity_id: 'gathering_bush'|'gathering_grass' }, ...]
+                entities: [],   // [{ x, y, entity_id: 'gathering_bush'|'gathering_grass' }, ...]
+                npcs: [],       // [{ x, y, npc_id: 'npc.supervisor.linShuyao' }, ...]
+                annotations: {} // { "x,y": "text" } 编辑器专用，不参与导出
             };
+
+            var ui = {
+                showNotes: true
+            };
+
+            function notesStorageKey(mapId) {
+                return 'cabi_map_editor_notes_v1:' + (mapId || 'map');
+            }
+
+            function loadNotesForMap(mapId) {
+                try {
+                    var raw = localStorage.getItem(notesStorageKey(mapId));
+                    if (!raw) return {};
+                    var obj = JSON.parse(raw);
+                    if (!obj || typeof obj !== 'object') return {};
+                    return obj;
+                } catch (e) {
+                    return {};
+                }
+            }
+
+            function saveNotesForMap(mapId) {
+                try {
+                    localStorage.setItem(notesStorageKey(mapId), JSON.stringify(state.annotations || {}));
+                } catch (e) { /* ignore */ }
+            }
+
+            function keyXY(x, y) { return x + ',' + y; }
+
+            function getNoteAt(x, y) {
+                var k = keyXY(x, y);
+                return (state.annotations && state.annotations[k]) ? String(state.annotations[k]) : '';
+            }
+
+            function setNoteAt(x, y, text) {
+                var k = keyXY(x, y);
+                var t = (text || '').trim();
+                if (!state.annotations) state.annotations = {};
+                if (!t) delete state.annotations[k];
+                else state.annotations[k] = t;
+            }
 
             function initGrid() {
                 var w = state.width;
@@ -223,6 +320,22 @@
                 if (entityId) state.entities.push({ x: x, y: y, entity_id: entityId });
             }
 
+            function getNpcAt(x, y) {
+                for (var i = 0; i < state.npcs.length; i++) {
+                    if (state.npcs[i].x === x && state.npcs[i].y === y) return state.npcs[i].npc_id || null;
+                }
+                return null;
+            }
+
+            function setNpcAt(x, y, npcId) {
+                var idx = -1;
+                for (var i = 0; i < state.npcs.length; i++) {
+                    if (state.npcs[i].x === x && state.npcs[i].y === y) { idx = i; break; }
+                }
+                if (idx >= 0) state.npcs.splice(idx, 1);
+                if (npcId) state.npcs.push({ x: x, y: y, npc_id: npcId });
+            }
+
             function isWalkable(x, y) {
                 if (!isEnabled(x, y)) return false;
                 return state.walkable[y][x];
@@ -244,10 +357,15 @@
                             cell.classList.add('void');
                         } else {
                             cell.classList.add(isWalkable(x, y) ? 'walkable' : 'blocked');
-                            if (getPortalAt(x, y)) { cell.classList.add('portal'); cell.textContent = '○'; }
+                            var mark = document.createElement('span');
+                            mark.className = 'mark';
+                            if (getPortalAt(x, y)) { cell.classList.add('portal'); mark.textContent = '○'; }
+                            cell.appendChild(mark);
                             var eid = getEntityAt(x, y);
                             if (eid === 'gathering_bush') cell.classList.add('entity-bush');
                             else if (eid === 'gathering_grass') cell.classList.add('entity-grass');
+                            var npcId = getNpcAt(x, y);
+                            if (npcId) cell.classList.add('npc');
                         }
                         var t = x + ',' + y;
                         if (!isEnabled(x, y)) t += ' 空洞';
@@ -257,8 +375,23 @@
                             var eid = getEntityAt(x, y);
                             if (eid === 'gathering_bush') t += ' 灌木丛';
                             else if (eid === 'gathering_grass') t += ' 草丛';
+                            var npcId = getNpcAt(x, y);
+                            if (npcId) t += ' NPC:' + npcId;
+                            var note = getNoteAt(x, y);
+                            if (note) t += ' 注释:' + note;
                         }
                         cell.title = t;
+
+                        if (ui.showNotes && isEnabled(x, y)) {
+                            var noteText = getNoteAt(x, y);
+                            if (noteText) {
+                                var noteEl = document.createElement('div');
+                                noteEl.className = 'note';
+                                noteEl.textContent = noteText;
+                                cell.appendChild(noteEl);
+                            }
+                        }
+
                         cell.addEventListener('mousedown', (function (gx, gy) {
                             return function (e) { if (e.button === 0) onCellMouseDown(gx, gy, e); };
                         })(x, y));
@@ -377,12 +510,16 @@
                     document.getElementById('panel-walk').style.display = 'none';
                     document.getElementById('panel-portal').style.display = 'none';
                     document.getElementById('panel-entity').style.display = 'none';
+                    document.getElementById('panel-npc').style.display = 'none';
+                    document.getElementById('panel-note').style.display = 'none';
                     return;
                 }
                 document.getElementById('panel-enabled').style.display = 'block';
                 document.getElementById('panel-walk').style.display = 'block';
                 document.getElementById('panel-portal').style.display = 'block';
                 document.getElementById('panel-entity').style.display = 'block';
+                document.getElementById('panel-npc').style.display = 'block';
+                document.getElementById('panel-note').style.display = 'block';
 
                 if (selected.length === 1) {
                     var x = selected[0].x, y = selected[0].y;
@@ -397,6 +534,9 @@
                     document.getElementById('inp-portal-label').value = portal ? (portal.label || '') : '';
                     var eid = getEntityAt(x, y);
                     document.getElementById('inp-entity-id').value = eid || '';
+                    var npcId = getNpcAt(x, y);
+                    document.getElementById('inp-npc-id').value = npcId || '';
+                    document.getElementById('inp-note').value = getNoteAt(x, y);
                 } else {
                     var allEn = true, noneEn = true, allWalk = true, noneWalk = true;
                     for (var i = 0; i < selected.length; i++) {
@@ -418,7 +558,30 @@
                     document.getElementById('inp-portal-label').value = portal ? (portal.label || '') : '';
                     var eid = getEntityAt(first.x, first.y);
                     document.getElementById('inp-entity-id').value = eid || '';
+                    var npcId = getNpcAt(first.x, first.y);
+                    document.getElementById('inp-npc-id').value = npcId || '';
+
+                    var note0 = getNoteAt(first.x, first.y);
+                    var sameNote = true;
+                    for (var k = 1; k < selected.length; k++) {
+                        var nx = selected[k].x, ny = selected[k].y;
+                        if (getNoteAt(nx, ny) !== note0) { sameNote = false; break; }
+                    }
+                    document.getElementById('inp-note').value = sameNote ? note0 : '';
                 }
+            }
+
+            function applyNote(textOverride) {
+                if (selected.length === 0) return;
+                var text = (textOverride != null) ? String(textOverride) : document.getElementById('inp-note').value;
+                for (var i = 0; i < selected.length; i++) {
+                    var x = selected[i].x, y = selected[i].y;
+                    if (!isEnabled(x, y)) continue;
+                    setNoteAt(x, y, text);
+                }
+                saveNotesForMap(state.mapId);
+                renderGrid();
+                highlightSelected();
             }
 
             function applyEntity() {
@@ -431,6 +594,21 @@
                 }
                 renderGrid();
                 highlightSelected();
+            }
+
+            function applyNpc() {
+                if (selected.length === 0) return;
+                var npcId = (document.getElementById('inp-npc-id').value || '').trim();
+                for (var i = 0; i < selected.length; i++) {
+                    var x = selected[i].x, y = selected[i].y;
+                    if (!isEnabled(x, y)) continue;
+                    setNpcAt(x, y, npcId || null);
+                    // 约定：格子上放了 NPC 时，默认不可走（可在右侧手动勾回“可走”取消）
+                    if (npcId) state.walkable[y][x] = false;
+                }
+                renderGrid();
+                highlightSelected();
+                updateCellInfo();
             }
 
             function applyEnabled() {
@@ -494,6 +672,16 @@
             document.getElementById('inp-walkable').addEventListener('change', applyWalkable);
             document.getElementById('btn-apply-portal').addEventListener('click', applyPortal);
             document.getElementById('btn-apply-entity').addEventListener('click', applyEntity);
+            document.getElementById('btn-apply-npc').addEventListener('click', applyNpc);
+            document.getElementById('btn-apply-note').addEventListener('click', function () { applyNote(); });
+            document.getElementById('btn-clear-note').addEventListener('click', function () { applyNote(''); document.getElementById('inp-note').value = ''; });
+
+            document.getElementById('btn-toggle-notes').addEventListener('click', function () {
+                ui.showNotes = !ui.showNotes;
+                this.textContent = '显示注释：' + (ui.showNotes ? '开' : '关');
+                renderGrid();
+                highlightSelected();
+            });
 
             document.getElementById('btn-new').addEventListener('click', function () {
                 state.mapId = document.getElementById('inp-map-id').value.trim() || 'map1';
@@ -502,6 +690,8 @@
                 state.height = Math.max(1, parseInt(document.getElementById('inp-height').value, 10) || 16);
                 state.portals = [];
                 state.entities = [];
+                state.npcs = [];
+                state.annotations = {};
                 initGrid();
                 document.getElementById('inp-width').value = state.width;
                 document.getElementById('inp-height').value = state.height;
@@ -532,6 +722,7 @@
                 state.walkable = newWalk;
                 state.portals = state.portals.filter(function (p) { return p.x < w && p.y < h && state.enabled[p.y][p.x]; });
                 state.entities = state.entities.filter(function (e) { return e.x < w && e.y < h && state.enabled[e.y][e.x]; });
+                state.npcs = state.npcs.filter(function (n) { return n.x < w && n.y < h && state.enabled[n.y][n.x]; });
                 selected = selected.filter(function (p) { return p.x < w && p.y < h; });
                 document.getElementById('inp-width').value = w;
                 document.getElementById('inp-height').value = h;
@@ -540,53 +731,142 @@
                 highlightSelected();
             });
 
-            document.getElementById('btn-import').addEventListener('click', function () {
-                var raw = window.prompt('粘贴地图 JSON（含 map_id, name, width, height, blocks 或 walkable, portals）');
+            function importMapData(data) {
+                state.mapId = data.map_id || state.mapId;
+                state.name = data.name || state.name;
+                state.width = data.width || 16;
+                state.height = data.height || 16;
+                state.portals = Array.isArray(data.portals) ? JSON.parse(JSON.stringify(data.portals)) : [];
+                state.entities = Array.isArray(data.entities) ? JSON.parse(JSON.stringify(data.entities)) : [];
+                state.npcs = Array.isArray(data.npcs) ? JSON.parse(JSON.stringify(data.npcs)) : [];
+                state.annotations = loadNotesForMap(state.mapId);
+
+                initGrid();
+                if (Array.isArray(data.disabled)) {
+                    for (var i = 0; i < data.disabled.length; i++) {
+                        var d = data.disabled[i];
+                        var dx = d.x != null ? d.x : d[0];
+                        var dy = d.y != null ? d.y : d[1];
+                        if (dy < state.height && dx < state.width) state.enabled[dy][dx] = false;
+                    }
+                }
+                if (Array.isArray(data.blocks)) {
+                    for (var j = 0; j < data.blocks.length; j++) {
+                        var b = data.blocks[j];
+                        var bx = b.x != null ? b.x : b[0];
+                        var by = b.y != null ? b.y : b[1];
+                        if (by < state.height && bx < state.width) state.walkable[by][bx] = false;
+                    }
+                } else if (data.walkable && data.walkable.length) {
+                    state.walkable = data.walkable.map(function (row) { return row.slice ? row.slice() : row; });
+                }
+
+                document.getElementById('inp-map-id').value = state.mapId;
+                document.getElementById('inp-name').value = state.name;
+                document.getElementById('inp-width').value = state.width;
+                document.getElementById('inp-height').value = state.height;
+                selected = [];
+                updateCellInfo();
+                renderGrid();
+            }
+
+            function importFromJsonText(raw) {
                 if (!raw) return;
                 try {
                     var data = JSON.parse(raw);
-                    state.mapId = data.map_id || state.mapId;
-                    state.name = data.name || state.name;
-                    state.width = data.width || 16;
-                    state.height = data.height || 16;
-                    state.portals = Array.isArray(data.portals) ? JSON.parse(JSON.stringify(data.portals)) : [];
-                    state.entities = Array.isArray(data.entities) ? JSON.parse(JSON.stringify(data.entities)) : [];
-
-                    initGrid();
-                    if (Array.isArray(data.disabled)) {
-                        for (var i = 0; i < data.disabled.length; i++) {
-                            var d = data.disabled[i];
-                            var dx = d.x != null ? d.x : d[0];
-                            var dy = d.y != null ? d.y : d[1];
-                            if (dy < state.height && dx < state.width) state.enabled[dy][dx] = false;
-                        }
-                    }
-                    if (Array.isArray(data.blocks)) {
-                        for (var i = 0; i < data.blocks.length; i++) {
-                            var b = data.blocks[i];
-                            var bx = b.x != null ? b.x : b[0];
-                            var by = b.y != null ? b.y : b[1];
-                            if (by < state.height && bx < state.width) state.walkable[by][bx] = false;
-                        }
-                    } else if (data.walkable && data.walkable.length) {
-                        state.walkable = data.walkable.map(function (row) { return row.slice ? row.slice() : row; });
-                    }
-
-                    document.getElementById('inp-map-id').value = state.mapId;
-                    document.getElementById('inp-name').value = state.name;
-                    document.getElementById('inp-width').value = state.width;
-                    document.getElementById('inp-height').value = state.height;
-                    selected = [];
-                    updateCellInfo();
-                    renderGrid();
+                    importMapData(data);
                 } catch (e) {
                     window.alert('JSON 解析失败：' + e.message);
                 }
+            }
+
+            function applyNpcRegistry(reg) {
+                // reg: { npcs: { [npcId]: { def, triggers } } }
+                var sel = document.getElementById('inp-npc-id');
+                if (!sel) return;
+                var current = sel.value || '';
+                // 清空除了“无”
+                sel.innerHTML = '';
+                var opt0 = document.createElement('option');
+                opt0.value = '';
+                opt0.textContent = '无';
+                sel.appendChild(opt0);
+                if (!reg || !reg.npcs) return;
+                var ids = Object.keys(reg.npcs);
+                ids.sort();
+                for (var i = 0; i < ids.length; i++) {
+                    var id = ids[i];
+                    var opt = document.createElement('option');
+                    opt.value = id;
+                    opt.textContent = id;
+                    sel.appendChild(opt);
+                }
+                if (current) sel.value = current;
+            }
+
+            var importFileInput = document.getElementById('inp-import-file');
+            document.getElementById('btn-import').addEventListener('click', function () {
+                if (!importFileInput) return;
+                importFileInput.value = '';
+                importFileInput.click();
             });
+
+            if (importFileInput) {
+                importFileInput.addEventListener('change', function () {
+                    var file = importFileInput.files && importFileInput.files[0];
+                    if (!file) return;
+                    var reader = new FileReader();
+                    reader.onload = function () { importFromJsonText(String(reader.result || '')); };
+                    reader.onerror = function () { window.alert('读取文件失败'); };
+                    reader.readAsText(file, 'utf-8');
+                });
+            }
+
+            document.getElementById('btn-import-paste').addEventListener('click', function () {
+                var raw = window.prompt('粘贴地图 JSON（含 map_id, name, width, height, blocks 或 walkable, portals）');
+                importFromJsonText(raw);
+            });
+
+            // NPC 注册表导入（用于填充 NPC 下拉选项）
+            var npcRegInput = document.getElementById('inp-import-npc-reg-file');
+            document.getElementById('btn-import-npc-reg').addEventListener('click', function () {
+                if (!npcRegInput) return;
+                npcRegInput.value = '';
+                npcRegInput.click();
+            });
+            if (npcRegInput) {
+                npcRegInput.addEventListener('change', function () {
+                    var file = npcRegInput.files && npcRegInput.files[0];
+                    if (!file) return;
+                    var reader = new FileReader();
+                    reader.onload = function () {
+                        try {
+                            var reg = JSON.parse(String(reader.result || ''));
+                            applyNpcRegistry(reg);
+                        } catch (e) {
+                            window.alert('NPC 注册表 JSON 解析失败：' + e.message);
+                        }
+                    };
+                    reader.onerror = function () { window.alert('读取 NPC 注册表失败'); };
+                    reader.readAsText(file, 'utf-8');
+                });
+            }
+
+            // 自动流程：启动时尝试加载默认注册表（若不存在则静默忽略）
+            try {
+                if (typeof fetch === 'function') {
+                    fetch('data/npc/npc_registry.json')
+                        .then(function (r) { return r.ok ? r.json() : null; })
+                        .then(function (reg) { if (reg) applyNpcRegistry(reg); })
+                        .catch(function () {});
+                }
+            } catch (e) {}
 
             document.getElementById('btn-export').addEventListener('click', function () {
                 state.mapId = document.getElementById('inp-map-id').value.trim() || state.mapId;
                 state.name = document.getElementById('inp-name').value.trim() || state.name;
+                if (!state.annotations) state.annotations = {};
+                saveNotesForMap(state.mapId);
                 var disabled = [];
                 var blocks = [];
                 for (var y = 0; y < state.height; y++) {
@@ -607,7 +887,8 @@
                         if (p.label) o.label = p.label;
                         return o;
                     }),
-                    entities: state.entities.length ? state.entities.map(function (e) { return { x: e.x, y: e.y, entity_id: e.entity_id }; }) : undefined
+                    entities: state.entities.length ? state.entities.map(function (e) { return { x: e.x, y: e.y, entity_id: e.entity_id }; }) : undefined,
+                    npcs: state.npcs.length ? state.npcs.map(function (n) { return { x: n.x, y: n.y, npc_id: n.npc_id }; }) : undefined
                 };
                 var str = JSON.stringify(out, null, 2);
                 var blob = new Blob([str], { type: 'application/json' });
@@ -620,6 +901,7 @@
             });
 
             initGrid();
+            state.annotations = loadNotesForMap(state.mapId);
             renderGrid();
             updateCellInfo();
         })();
