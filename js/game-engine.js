@@ -108,6 +108,16 @@
         return null;
     }
 
+    function getNpcAt(x, y) {
+        var map = getMap();
+        if (!map || !map.npcs) return null;
+        for (var i = 0; i < map.npcs.length; i++) {
+            var n = map.npcs[i];
+            if (n.x === x && n.y === y) return n.npc_id || null;
+        }
+        return null;
+    }
+
     function clamp(v, min, max) {
         return Math.max(min, Math.min(max, v));
     }
@@ -181,6 +191,7 @@
         isDisabled: isDisabled,
         getPortalAt: getPortalAt,
         getEntityAt: getEntityAt,
+        getNpcAt: getNpcAt,
         isAdjacent: isAdjacent,
         moveTo: moveTo,
         onChange: function (cb) { onChange = typeof cb === 'function' ? cb : function () {}; }

@@ -145,6 +145,24 @@
         }
         .tile.ground-items.adjacent { background: #3d3228; }
         .tile.ground-items.player { background: #2d241f; border-color: rgba(212, 163, 115, 0.6); }
+        /* NPC 站位标记（最小可视化）：后续可替换为精灵/头像渲染 */
+        .tile.npc {
+            border-color: rgba(180, 120, 220, 0.55);
+            box-shadow: inset 0 0 0 2px rgba(180, 120, 220, 0.18);
+        }
+        .tile.npc::after {
+            content: '人';
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 20px;
+            line-height: 1;
+            color: rgba(210, 190, 255, 0.95);
+            text-shadow: 0 1px 0 rgba(0,0,0,0.55);
+            pointer-events: none;
+        }
+        .tile.player.npc::after { content: '你'; color: rgba(255, 220, 150, 0.95); }
         /* 玩家旁可交互动作浮层：进入可交互范围时显示在玩家上方 */
         #player-action-bubble {
             position: absolute;
@@ -688,6 +706,136 @@
         #item-tooltip .tooltip-name { font-size: 14px; font-weight: bold; color: #fbbf24; margin-bottom: 8px; padding-bottom: 6px; border-bottom: 1px solid #4d3f35; }
         #item-tooltip .tooltip-desc { color: #a8a29e; margin-bottom: 8px; white-space: pre-wrap; word-break: break-word; }
         #item-tooltip .tooltip-attrs { color: #78716c; font-size: 11px; white-space: pre-line; }
+
+        /* 底部对话框：头像 + 台词（固定高度，位于地图正下方） */
+        #dialogue-panel {
+            flex: 0 0 auto;
+            height: 140px;
+            min-height: 120px;
+            max-height: 180px;
+            background: rgba(26, 22, 20, 0.98);
+            border-top: 1px solid #3d2d24;
+            border-bottom: 1px solid #2d221c;
+            display: none;
+            overflow: hidden;
+            font-family: "Microsoft YaHei", "微软雅黑", "PingFang SC", sans-serif;
+        }
+        #dialogue-panel.show { display: flex; }
+        #dialogue-panel .dlg-inner {
+            flex: 1;
+            display: flex;
+            gap: 14px;
+            padding: 12px 14px;
+            min-width: 0;
+        }
+        #dialogue-panel .dlg-avatar {
+            width: 84px;
+            height: 84px;
+            border-radius: 10px;
+            border: 2px solid rgba(212, 163, 115, 0.35);
+            background: #26211d;
+            box-shadow: 0 10px 24px rgba(0,0,0,0.35);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+            flex: 0 0 auto;
+        }
+        #dialogue-panel .dlg-avatar img {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: none;
+        }
+        #dialogue-panel .dlg-avatar.avatar-has-image img { display: block; }
+        #dialogue-panel .dlg-avatar.avatar-has-image .fallback { display: none; }
+        #dialogue-panel .dlg-avatar .fallback {
+            font-size: 34px;
+            user-select: none;
+            opacity: 0.95;
+        }
+        #dialogue-panel .dlg-main {
+            flex: 1;
+            min-width: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        #dialogue-panel .dlg-top {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+        }
+        #dialogue-panel .dlg-name {
+            font-size: 13px;
+            font-weight: 800;
+            letter-spacing: 0.12em;
+            color: #fbbf24;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        #dialogue-panel .dlg-actions {
+            display: flex;
+            gap: 8px;
+            flex: 0 0 auto;
+        }
+        #dialogue-panel .dlg-btn {
+            padding: 6px 12px;
+            font-size: 12px;
+            background: #3d332c;
+            border: 1px solid #57534e;
+            color: #e8e6e3;
+            border-radius: 8px;
+            cursor: pointer;
+            letter-spacing: 0.06em;
+        }
+        #dialogue-panel .dlg-btn:hover:not(:disabled) { background: #4d3f35; border-color: #fbbf24; }
+        #dialogue-panel .dlg-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        #dialogue-panel .dlg-btn.primary { border-color: rgba(251,191,36,0.55); color: #fde68a; }
+        #dialogue-panel .dlg-text {
+            flex: 1;
+            min-height: 0;
+            padding: 10px 12px;
+            border-radius: 10px;
+            border: 1px solid rgba(212, 163, 115, 0.25);
+            background: rgba(28, 22, 18, 0.55);
+            color: #e8e6e3;
+            font-size: 14px;
+            line-height: 1.55;
+            overflow: auto;
+            word-break: break-word;
+        }
+        #dialogue-panel .dlg-options {
+            margin-top: 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        #dialogue-panel .dlg-option-btn {
+            padding: 10px 12px;
+            text-align: left;
+            background: rgba(64, 64, 64, 0.85);
+            border: 1px solid #555;
+            color: rgba(255, 255, 255, 0.95);
+            border-radius: 10px;
+            cursor: pointer;
+            letter-spacing: 0.02em;
+        }
+        #dialogue-panel .dlg-option-btn:hover {
+            background: rgba(77, 63, 53, 0.85);
+            border-color: rgba(251, 191, 36, 0.7);
+        }
+        #dialogue-panel .dlg-hint {
+            font-size: 11px;
+            color: #78716c;
+            letter-spacing: 0.08em;
+            user-select: none;
+        }
         /* 游戏实时日志：显示在游戏正下方 */
         #game-log-panel {
             flex: 0 0 auto;
@@ -1023,6 +1171,7 @@
                 <button type="button" class="hud-btn" id="btn-combat" title="战斗技能">⚔️</button>
                 <button type="button" class="hud-btn" id="btn-acupoints" title="经脉穴位">🌀</button>
                 <button type="button" class="hud-btn" id="btn-life" title="特殊技能">✨</button>
+                <button type="button" class="hud-btn" id="btn-reset-demo-save" title="清空 Demo 存档（flags/一次性触发等）">🧹</button>
             </div>
         </div>
         <!-- 背包+装备面板：左物品栏、右装备栏 -->
@@ -1157,6 +1306,27 @@
         </div>
     </div>
 
+    <div id="dialogue-panel" aria-hidden="true">
+        <div class="dlg-inner">
+            <div class="dlg-avatar" id="dialogue-avatar">
+                <img id="dialogue-avatar-img" src="" alt="">
+                <span class="fallback" id="dialogue-avatar-fallback">🧑</span>
+            </div>
+            <div class="dlg-main">
+                <div class="dlg-top">
+                    <div class="dlg-name" id="dialogue-speaker-name">NPC</div>
+                    <div class="dlg-actions">
+                        <button type="button" class="dlg-btn primary" id="dialogue-btn-next">下一句</button>
+                        <button type="button" class="dlg-btn" id="dialogue-btn-close">关闭</button>
+                    </div>
+                </div>
+                <div class="dlg-text" id="dialogue-text">（对话将显示在这里）</div>
+                <div class="dlg-options" id="dialogue-options" style="display:none;"></div>
+                <div class="dlg-hint">Enter/空格：下一句　Esc：关闭</div>
+            </div>
+        </div>
+    </div>
+
     <div id="game-log-panel">
         <div class="game-log-header">
             <span>游戏日志</span>
@@ -1166,8 +1336,10 @@
 
     <script src="js/game-engine.js"></script>
     <script src="js/entity-appearance.js"></script>
+    <script src="js/dialogue-ui.js"></script>
     <script src="js/game-log.js"></script>
     <script src="js/game-time.js"></script>
+    <script src="js/npc-system.js"></script>
     <script src="js/survival.js"></script>
     <script src="js/character-attributes.js"></script>
     <script src="js/inventory-equipment.js"></script>
@@ -1191,6 +1363,71 @@
 
             function showMsg(text, logType) {
                 if (window.GameLog && text) window.GameLog.log(text, logType || 'info');
+            }
+
+            // 让 NPC 系统把诊断/提示输出到游戏日志
+            if (window.NPCSystem && typeof window.NPCSystem.configure === 'function') {
+                window.NPCSystem.configure({ log: showMsg });
+            }
+
+            function normalizePortal(p, fallback) {
+                var out = {
+                    x: p.x,
+                    y: p.y,
+                    target_map_id: p.target_map_id,
+                    target_x: (p.target_x != null) ? p.target_x : (fallback && fallback.target_x != null ? fallback.target_x : 0),
+                    target_y: (p.target_y != null) ? p.target_y : (fallback && fallback.target_y != null ? fallback.target_y : 0),
+                    label: p.label
+                };
+                return out;
+            }
+
+            function mergeMapData(base, loaded) {
+                var m = {};
+                for (var k in base) m[k] = base[k];
+                for (var k2 in loaded) m[k2] = loaded[k2];
+
+                // portals：补齐缺省 target_x/target_y，避免旧地图缺字段导致传送坐标为 undefined
+                if (Array.isArray(loaded.portals)) {
+                    var basePortals = Array.isArray(base.portals) ? base.portals : [];
+                    m.portals = loaded.portals.map(function (p) {
+                        var fb = null;
+                        for (var i = 0; i < basePortals.length; i++) {
+                            var bp = basePortals[i];
+                            if (bp && bp.x === p.x && bp.y === p.y && bp.target_map_id === p.target_map_id) { fb = bp; break; }
+                        }
+                        return normalizePortal(p, fb);
+                    });
+                }
+                if (!Array.isArray(m.blocks)) m.blocks = [];
+                if (!Array.isArray(m.portals)) m.portals = [];
+                if (!Array.isArray(m.entities)) m.entities = m.entities ? m.entities : undefined;
+                if (!Array.isArray(m.npcs)) m.npcs = m.npcs ? m.npcs : undefined;
+                return m;
+            }
+
+            function bootstrapMapsFromJson() {
+                if (!E || typeof E.getMaps !== 'function' || typeof E.setMaps !== 'function') return;
+                var baseMaps = E.getMaps();
+                var ids = Object.keys(baseMaps || {});
+                if (!ids.length || typeof fetch !== 'function') return;
+
+                return Promise.all(ids.map(function (id) {
+                    return fetch('data/maps/' + id + '.json')
+                        .then(function (r) { return r.ok ? r.json() : null; })
+                        .then(function (json) { return { id: id, json: json }; })
+                        .catch(function () { return { id: id, json: null }; });
+                })).then(function (rows) {
+                    var next = {};
+                    for (var i = 0; i < ids.length; i++) next[ids[i]] = baseMaps[ids[i]];
+                    for (var j = 0; j < rows.length; j++) {
+                        var row = rows[j];
+                        if (!row || !row.id || !row.json) continue;
+                        next[row.id] = mergeMapData(baseMaps[row.id] || {}, row.json);
+                    }
+                    E.setMaps(next);
+                    render();
+                });
             }
 
             var playerSpriteUrls = { down: '', up: '', left: '', right: '' };
@@ -1570,6 +1807,10 @@
                         getEnchantEntry: IE.getEnchantEntry,
                         getStrengthLevel: function () { return IE.getSkillLevel('survival_strength'); }
                     });
+                    // 开局时间：早上 09:00（第1年 第1天）
+                    if (window.GameTime && typeof window.GameTime.reset === 'function') {
+                        window.GameTime.reset({ year: 1, day: 1, hour: 9, minute: 0 });
+                    }
                     hideCreationOverlay();
                     updateRoleNameFromCharacter();
                     if (window.GameLog) window.GameLog.log('角色「' + name + '」创建完成。', 'system');
@@ -1618,6 +1859,11 @@
                         var walkable = E.isWalkable(gx, gy);
                         var portal = E.getPortalAt(gx, gy);
                         var entityId = E.getEntityAt(gx, gy);
+                        var npcId = (typeof E.getNpcAt === 'function') ? E.getNpcAt(gx, gy) : null;
+                        // 不在上班时间则视为该格无 NPC（不显示、不点击）
+                        if (npcId && window.GameTime && window.NPCSystem && typeof window.NPCSystem.isNpcPresentNow === 'function') {
+                            if (!window.NPCSystem.isNpcPresentNow(npcId)) npcId = null;
+                        }
                         var groundAt = (IE && IE.getGroundItemsAt) ? IE.getGroundItemsAt(st.mapId, gx, gy) : [];
 
                         tile.className = 'tile';
@@ -1626,7 +1872,19 @@
                         if (entityId === 'gathering_bush' || entityId === 'gathering_grass') tile.classList.add('gathering');
                         if (groundAt.length > 0) tile.classList.add('ground-items');
                         if (isPlayer) tile.classList.add('player');
-                        else if (adjacent && walkable) {
+                        if (npcId) {
+                            tile.classList.add('npc');
+                            if (adjacent) {
+                                tile.classList.add('adjacent');
+                                tile.onclick = (function (id) {
+                                    return function () {
+                                        // 诊断：确认点击事件确实触发
+                                        if (typeof showMsg === 'function') showMsg('尝试与 NPC 交互：' + id, 'system');
+                                        if (window.NPCSystem && typeof window.NPCSystem.openMenu === 'function') window.NPCSystem.openMenu(id);
+                                    };
+                                })(npcId);
+                            }
+                        } else if (adjacent && walkable) {
                             tile.classList.add('adjacent');
                             tile.onclick = (function (tx, ty) {
                                 return function () {
@@ -1645,6 +1903,7 @@
                         else if (entityId === 'gathering_grass') tile.title = '草丛';
                         else if (!walkable) tile.title = '不可走';
                         else tile.title = '';
+                        if (npcId) tile.title = ''; // 不显示 NPC 悬浮提示，避免遮挡
                         if (groundAt.length > 0) tile.title = (tile.title ? tile.title + ' · ' : '') + '地面有 ' + groundAt.length + ' 件物品';
 
                         tile.style.left = (gx * CELL_PX + gap) + 'px';
@@ -1675,6 +1934,9 @@
                 updateQuickBelt();
                 if (document.getElementById('modal-backpack').classList.contains('show')) updateBackpackPanel();
             }
+
+            // 启动时尝试用 data/maps/*.json 覆盖内置地图（含 npcs 字段）
+            bootstrapMapsFromJson();
 
             function updateTopTimeHud() {
                 if (!timeHudVisible) return;
@@ -2209,6 +2471,20 @@
                     if (backpackPanelOpen) closeBackpackPanel(); else openBackpackPanel();
                 });
             }
+            // 清空 Demo 存档（NPC flags / 一次性触发记录等）
+            (function () {
+                var btn = document.getElementById('btn-reset-demo-save');
+                if (!btn) return;
+                btn.addEventListener('click', function () {
+                    var ok = window.confirm('确定清空 Demo 存档吗？\n\n将清除：\n- NPC flags（如 lsy_has_talked）\n- 一次性触发记录（repeatable=false）\n\n清空后将刷新页面。');
+                    if (!ok) return;
+                    try {
+                        localStorage.removeItem('cabi_demo_flags_v1');
+                        localStorage.removeItem('cabi_demo_triggered_entries_v1');
+                    } catch (e) { /* ignore */ }
+                    try { window.location.reload(); } catch (e2) { /* ignore */ }
+                });
+            })();
             if (document.getElementById('backpack-panel-close')) {
                 document.getElementById('backpack-panel-close').addEventListener('click', closeBackpackPanel);
             }

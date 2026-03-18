@@ -16,8 +16,9 @@
     var DAYS_PER_YEAR = 360;
 
     // 以“总 tick 数”作为唯一真源，便于存档与回放。
+    // 开局默认从早上 09:00 开始（第1年 第1天）。
     var state = {
-        totalTicks: 0
+        totalTicks: Math.floor((9 * 60) / MINUTES_PER_TICK)
     };
 
     function clampInt(v, min, max) {
@@ -115,7 +116,7 @@
         }
         var year = (options.year !== undefined) ? Math.max(1, Math.floor(Number(options.year) || 1)) : 1;
         var day = (options.day !== undefined) ? clampInt(options.day, 1, DAYS_PER_YEAR) : 1;
-        var hour = clampInt(options.hour !== undefined ? options.hour : 6, 0, 23);
+        var hour = clampInt(options.hour !== undefined ? options.hour : 9, 0, 23);
         var minute = clampInt(options.minute !== undefined ? options.minute : 0, 0, 59);
         var totalDays = (year - 1) * DAYS_PER_YEAR + (day - 1);
         var totalMinutes = totalDays * MINUTES_PER_DAY + hour * 60 + minute;
