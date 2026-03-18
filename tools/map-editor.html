@@ -412,7 +412,16 @@
                         }
                         cell.title = t;
 
-                        // 注释不在格子渲染层显示（仅用于编辑/设计记录）
+                        // 注释：仅编辑器显示（导出会写入 annotations，但游戏渲染可选择不读）
+                        if (ui.showNotes && isEnabled(x, y)) {
+                            var noteText = getNoteAt(x, y);
+                            if (noteText) {
+                                var noteEl = document.createElement('div');
+                                noteEl.className = 'note' + (isWalkable(x, y) ? '' : ' dim');
+                                noteEl.textContent = noteText;
+                                cell.appendChild(noteEl);
+                            }
+                        }
 
                         cell.addEventListener('mousedown', (function (gx, gy) {
                             return function (e) { if (e.button === 0) onCellMouseDown(gx, gy, e); };
@@ -818,7 +827,10 @@
             document.getElementById('btn-clear-note').addEventListener('click', function () { applyNote(''); document.getElementById('inp-note').value = ''; });
 
             document.getElementById('btn-toggle-notes').addEventListener('click', function () {
-                window.alert('注释已改为写入导出 JSON 的 annotations 字段，并且不再在格子渲染中显示。');
+                ui.showNotes = !ui.showNotes;
+                this.textContent = '显示注释：' + (ui.showNotes ? '开' : '关');
+                renderGrid();
+                highlightSelected();
             });
 
             document.getElementById('btn-new').addEventListener('click', function () {
