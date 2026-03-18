@@ -1127,6 +1127,26 @@
         if (levelEl) levelEl.textContent = ui('combat.level', { v: skillLevel });
         if (profEl) profEl.textContent = ui('combat.prof.total', { v: profPct });
 
+        // Deploy slot validation:
+        // - 进攻槽（active）只能放非招架技能
+        // - 招架槽（parry）只能放招架技能（only_parry / category=parry）
+        var btnDeploy = document.getElementById('btn-deploy-combat');
+        if (btnDeploy) {
+            var canDeploy = true;
+            if (isAcupointMode) {
+                canDeploy = !!combatUIState.curAcupointId;
+            } else if (combatUIState.curCat !== 'breath' && combatUIState.curCat !== 'light') {
+                if (!selSkill) {
+                    canDeploy = false;
+                } else {
+                    var skillIsParry = !!(selSkill.only_parry || selSkill.category === 'parry');
+                    var slotIsParry = combatUIState.curSlot === 'parry';
+                    canDeploy = (skillIsParry === slotIsParry);
+                }
+            }
+            btnDeploy.disabled = !canDeploy;
+        }
+
         var seqBox = document.getElementById('move-sequence');
         if (!isAcupointMode && seqBox && selSkill && selSkill.moves) {
             seqBox.innerHTML = '';
@@ -1329,6 +1349,12 @@
             combat.hubs.light = skillId;
             IE.setCombatState({ hubs: { light: skillId } });
         } else {
+            var slotIsParry = combatUIState.curSlot === 'parry';
+            var skillIsParry = !!(sk.only_parry || sk.category === 'parry');
+            if (slotIsParry !== skillIsParry) {
+                showMsg(slotIsParry ? '该槽位只能装配招架技能。' : '招架技能不能装配到进攻槽位。', 'warn');
+                return;
+            }
             combat.limbs[combatUIState.curPart][combatUIState.curSlot] = skillId;
             IE.setCombatState({ limbs: combat.limbs });
             var seq = (combat.skill_move_sequences && combat.skill_move_sequences[skillId]) ? combat.skill_move_sequences[skillId].slice() : [];
