@@ -58,6 +58,7 @@
 
     function boot() {
         var SceneApp = requireGlobal('SceneApp');
+        var BuffSystem = window.BuffSystem;
 
         try {
             if (typeof SceneApp.init !== 'function') fatal('[bootstrap] SceneApp.init missing');
@@ -66,6 +67,7 @@
         }
 
         runHooks(window.AppBoot.beforeStart, 'beforeStart');
+        if (BuffSystem && typeof BuffSystem.init === 'function') BuffSystem.init();
         SceneApp.init(); // SceneApp.init loads ui_text_zhCN.json and applies DOM i18n.
         runHooks(window.AppBoot.afterStart, 'afterStart');
     }

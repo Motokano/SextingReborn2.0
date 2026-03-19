@@ -509,7 +509,8 @@
         }
     }
 
-    bootstrapMapsFromJson();
+    // NOTE: bootstrapMapsFromJson 会触发 render()，而此时 SceneApp.init 里还未完成 ui_text_zhCN.json 的加载。
+    // 放到 init() 的 loadConfig 成功后再执行，避免出现 UIText 未加载导致的崩溃。
 
     function setTimeHudVisible(visible) {
         timeHudVisible = (visible !== false);
@@ -1697,6 +1698,8 @@
 
     function init() {
         loadConfig().then(function () {
+            // i18n 已就绪（UIText.setDict 已完成）后再进行地图合并渲染
+            bootstrapMapsFromJson();
             setPlayerAvatarSprites({
                 down: 'image/player_down.png',
                 up: 'image/player_up.png',
@@ -1714,9 +1717,58 @@
                     stopGatheringIdle();
                 }
             };
+            window.SceneCtx.actions.attackEnemy = function (enemyId, ctxMeta) {
+                ctxMeta = ctxMeta || {};
+                // 统一攻击入口：当前先走基础普攻消息，后续可在这里接正式战斗结算。
+                showMsg(ui('log.system.attack.enemy', { enemyId: enemyId }), 'system');
+                if (window.Survival && typeof window.Survival.advanceTick === 'function') {
+                    window.Survival.advanceTick();
+                }
+                if (window.GameLog && ctxMeta.source === 'keyboard') {
+                    window.GameLog.log(ui('log.system.attack.intent.keyboard'), 'info');
+                }
+                render();
+            };
             window.SceneCtx.actions.interactNpc = function (npcId) {
                 if (typeof showMsg === 'function') showMsg(ui('log.system.try.interact.npc', { npcId: npcId }), 'system');
                 if (window.NPCSystem && typeof window.NPCSystem.openMenu === 'function') window.NPCSystem.openMenu(npcId);
+            };
+            window.SceneCtx.actions.tryIntentMove = function (tx, ty, dx, dy, source) {
+                var st = E.getState();
+                var ddx = (dx != null) ? dx : (tx - st.x);
+                var ddy = (dy != null) ? dy : (ty - st.y);
+                if (!ddx && !ddy) return;
+                if (Math.abs(ddx) > 1 || Math.abs(ddy) > 1) return;
+                var targetX = st.x + ddx;
+                var targetY = st.y + ddy;
+
+                // 固定优先级：敌人攻击 > NPC 对话 > 普通移动
+                var enemyId = (typeof E.getEnemyAt === 'function') ? E.getEnemyAt(targetX, targetY) : null;
+                if (enemyId) {
+                    if (window.SceneCtx.actions && typeof window.SceneCtx.actions.attackEnemy === 'function') {
+                        window.SceneCtx.actions.attackEnemy(enemyId, { source: source || 'unknown', x: targetX, y: targetY });
+                    }
+                    setFacingFromMove(ddx, ddy);
+                    stopGatheringIdle();
+                    return;
+                }
+
+                var npcId = (typeof E.getNpcAt === 'function') ? E.getNpcAt(targetX, targetY) : null;
+                if (npcId && window.GameTime && window.NPCSystem && typeof window.NPCSystem.isNpcPresentNow === 'function') {
+                    if (!window.NPCSystem.isNpcPresentNow(npcId)) npcId = null;
+                }
+                if (npcId) {
+                    if (window.SceneCtx.actions && typeof window.SceneCtx.actions.interactNpc === 'function') {
+                        window.SceneCtx.actions.interactNpc(npcId);
+                    }
+                    setFacingFromMove(ddx, ddy);
+                    stopGatheringIdle();
+                    return;
+                }
+
+                if (window.SceneCtx.actions && typeof window.SceneCtx.actions.tryMoveTo === 'function') {
+                    window.SceneCtx.actions.tryMoveTo(targetX, targetY, ddx, ddy);
+                }
             };
             window.SceneCtx.actions.startGatheringIdle = onGatherClick;
             window.SceneCtx.actions.stopGatheringIdle = function (withMsg) {

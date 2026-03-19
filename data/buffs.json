@@ -1,0 +1,179 @@
+{
+  "version": 1,
+  "buffs": [
+    {
+      "buff_id": "buff_time_focus_training",
+      "name": "定时专注训练",
+      "desc": "在时间推进与整点事件中触发，临时提升后天专注。",
+      "durationTicks": 30,
+      "maxStacks": 3,
+      "stacksAddOnApply": 1,
+      "priority": 90,
+      "listenerSide": "self",
+      "consumeMode": "always",
+      "consumeLayersFixed": 1,
+      "applyMode": "tie_to_consume",
+      "triggerEventKind": [
+        "world"
+      ],
+      "triggerEventName": [
+        "tick_advanced",
+        "time_point_reached"
+      ],
+      "triggerTags": [
+        "time",
+        "tick"
+      ],
+      "effects": [
+        {
+          "type": "add_stat_delta",
+          "params": {
+            "focus": 1
+          }
+        }
+      ]
+    },
+    {
+      "buff_id": "buff_attribute_adapt",
+      "name": "属性适应",
+      "desc": "当角色属性变化时触发，提供综合后天微增益。",
+      "durationTicks": 25,
+      "maxStacks": 4,
+      "stacksAddOnApply": 1,
+      "priority": 100,
+      "listenerSide": "self",
+      "consumeMode": "always",
+      "consumeLayersFixed": 1,
+      "applyMode": "tie_to_consume",
+      "triggerEventKind": [
+        "world"
+      ],
+      "triggerEventName": [
+        "attribute_changed"
+      ],
+      "triggerTags": [
+        "attribute",
+        "player"
+      ],
+      "effects": [
+        {
+          "type": "add_stat_delta",
+          "params": {
+            "jingu": 1,
+            "flexibility": 1,
+            "breath": 1,
+            "dexterity": 1
+          }
+        }
+      ]
+    },
+    {
+      "buff_id": "buff_dialogue_inspiration",
+      "name": "对话灵感",
+      "desc": "在对话选项确认与条件变化时触发，提升后天专注与身手。",
+      "durationTicks": 40,
+      "maxStacks": 2,
+      "stacksAddOnApply": 1,
+      "priority": 80,
+      "listenerSide": "self",
+      "consumeMode": "always",
+      "consumeLayersFixed": 1,
+      "applyMode": "tie_to_consume",
+      "triggerEventKind": [
+        "dialogue"
+      ],
+      "triggerEventName": [
+        "dialogue_choice_confirmed",
+        "dialogue_condition_changed"
+      ],
+      "triggerTags": [
+        "dialogue",
+        "condition"
+      ],
+      "effects": [
+        {
+          "type": "add_stat_delta",
+          "params": {
+            "focus": 2,
+            "dexterity": 1
+          }
+        }
+      ]
+    },
+    {
+      "buff_id": "buff_environment_attune",
+      "name": "环境调息",
+      "desc": "在环境参数变化时触发，强化后天呼吸与柔韧。",
+      "durationTicks": 20,
+      "maxStacks": 5,
+      "stacksAddOnApply": 1,
+      "priority": 110,
+      "listenerSide": "self",
+      "consumeMode": "always",
+      "consumeLayersFixed": 1,
+      "applyMode": "tie_to_consume",
+      "triggerEventKind": [
+        "world"
+      ],
+      "triggerEventName": [
+        "environment_param_changed"
+      ],
+      "triggerTags": [
+        "world",
+        "environment"
+      ],
+      "effects": [
+        {
+          "type": "add_stat_delta",
+          "params": {
+            "breath": 2,
+            "flexibility": 1
+          }
+        }
+      ]
+    },
+    {
+      "buff_id": "buff_chain_probe",
+      "name": "链式探针",
+      "desc": "用于验证 trigger_event 链路防环与深度限制的稳定性。",
+      "durationTicks": 15,
+      "maxStacks": 3,
+      "stacksAddOnApply": 1,
+      "priority": 120,
+      "listenerSide": "self",
+      "consumeMode": "always",
+      "consumeLayersFixed": 1,
+      "applyMode": "always_apply",
+      "triggerEventKind": [
+        "world"
+      ],
+      "triggerEventName": [
+        "tick_advanced"
+      ],
+      "triggerTags": [
+        "time"
+      ],
+      "effects": [
+        {
+          "type": "add_stat_delta",
+          "params": {
+            "focus": 1
+          }
+        },
+        {
+          "type": "trigger_event",
+          "params": {
+            "event_kind": "world",
+            "event_name": "world_event_triggered",
+            "tags": [
+              "world",
+              "buff"
+            ],
+            "actor_id": "player"
+          }
+        }
+      ]
+    }
+  ]
+}
+

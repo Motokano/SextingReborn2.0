@@ -118,6 +118,16 @@
         return null;
     }
 
+    function getEnemyAt(x, y) {
+        var map = getMap();
+        if (!map || !map.enemies) return null;
+        for (var i = 0; i < map.enemies.length; i++) {
+            var n = map.enemies[i];
+            if (n.x === x && n.y === y) return n.enemy_id || null;
+        }
+        return null;
+    }
+
     function clamp(v, min, max) {
         return Math.max(min, Math.min(max, v));
     }
@@ -192,6 +202,7 @@
         getPortalAt: getPortalAt,
         getEntityAt: getEntityAt,
         getNpcAt: getNpcAt,
+        getEnemyAt: getEnemyAt,
         isAdjacent: isAdjacent,
         moveTo: moveTo,
         onChange: function (cb) { onChange = typeof cb === 'function' ? cb : function () {}; }

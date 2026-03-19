@@ -1,0 +1,53 @@
+---
+description: Buff system guardrails for all agent edits
+alwaysApply: true
+---
+
+# Buff System Agent Rule
+
+When editing any Buff/Debuff code, data, or docs, follow `docs/design/18-buff-system.md` as source of truth.
+
+## Hard Constraints
+
+- Tick is the primary duration unit.
+- Same buff type is stackable.
+- On re-apply: add stacks + reset duration.
+- Clamp stacks to `max_stacks`.
+- Fixed consumption per trigger from buff definition (`consume_layers_fixed`).
+- Remove entire buff instance when stacks reach 0.
+- Execution order is fixed: filter -> priority sort -> consume check -> consume layers first -> apply effects -> remove if zero.
+
+## Hit Semantics
+
+- For `consume_mode = on_hit_roll_success`, use hit-roll success as the only condition.
+- Even if later parried to zero damage, consumption still happens once hit-roll is successful.
+
+## Multi-Hit In One Tick
+
+- A skill can resolve multiple attacks within one tick.
+- Each sub-hit must emit a unique event id.
+- Buff consumption/effect is evaluated per sub-hit (no merge at tick level).
+
+## Unified Trigger API
+
+- Buff pipeline must be callable by combat, actions, world events, and dialogue.
+- Do not add isolated one-off buff entry points for a single subsystem.
+- Reuse one shared event context shape and one shared trigger function.
+
+## Register Before Use
+
+- Before introducing any new `event_kind`, `event_name`, or trigger `tag`, register it in `data/editor/buff_event_registry.json`.
+- Only after registration should it be used in `data/buffs.json` and runtime trigger calls.
+- Avoid runtime-only event names that are not visible in editor registry.
+
+## Debug Visibility
+
+- Detailed buff logs/UI are hidden by default.
+- Only show detailed traces when `buff_debug_enabled` is true.
+
+## Implementation Notes
+
+- Reuse existing recalculation flow for stat-affecting buffs (e.g. `recalcCharacterStats()`).
+- Prefer indexed lookup by event kind/name to avoid full scan on every event.
+- Persist `expires_at_tick` in saves for stable timing.
+

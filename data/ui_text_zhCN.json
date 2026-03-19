@@ -70,7 +70,9 @@
   "log.system.starter.equip": "已穿戴新手套装。",
   "log.system.creation.done": "角色「{name}」创建完成。",
   "log.system.enter.scene": "进入场景。",
-  "log.system.try.interact.npc": "尝试与 NPC 交互：{npcId}"
+  "log.system.try.interact.npc": "尝试与 NPC 交互：{npcId}",
+  "log.system.attack.enemy": "你朝 [{enemyId}] 发动了普通攻击。",
+  "log.system.attack.intent.keyboard": "方向输入命中敌人：已按攻击意图处理。"
   ,
   "dialogue.punct.colon": "：",
   "dialogue.choice.prefix": "【选择】",

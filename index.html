@@ -709,29 +709,36 @@
 
         /* 底部对话框：头像 + 台词（固定高度，位于地图正下方） */
         #dialogue-panel {
+            /* 使用 fixed + z-index 以便在对话时覆盖日志栏（而不是挤压布局） */
+            position: fixed;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            z-index: 50; /* 覆盖日志栏与左侧状态栏 */
             flex: 0 0 auto;
-            height: 140px;
-            min-height: 120px;
-            max-height: 180px;
+            height: 240px;
+            min-height: 180px;
+            max-height: 45vh;
             background: rgba(26, 22, 20, 0.98);
             border-top: 1px solid #3d2d24;
             border-bottom: 1px solid #2d221c;
             display: none;
             overflow: hidden;
             font-family: "Microsoft YaHei", "微软雅黑", "PingFang SC", sans-serif;
+            backdrop-filter: blur(6px);
         }
         #dialogue-panel.show { display: flex; }
         #dialogue-panel .dlg-inner {
             flex: 1;
             display: flex;
-            gap: 14px;
-            padding: 12px 14px;
+            gap: 20px;
+            padding: 18px 20px;
             min-width: 0;
         }
         #dialogue-panel .dlg-avatar {
-            width: 84px;
-            height: 84px;
-            border-radius: 10px;
+            width: 120px;
+            height: 120px;
+            border-radius: 16px;
             border: 2px solid rgba(212, 163, 115, 0.35);
             background: #26211d;
             box-shadow: 0 10px 24px rgba(0,0,0,0.35);
@@ -747,13 +754,14 @@
             inset: 0;
             width: 100%;
             height: 100%;
-            object-fit: cover;
+            /* 上传头像可按比例完整显示，不因长宽比被裁切 */
+            object-fit: contain;
             display: none;
         }
         #dialogue-panel .dlg-avatar.avatar-has-image img { display: block; }
         #dialogue-panel .dlg-avatar.avatar-has-image .fallback { display: none; }
         #dialogue-panel .dlg-avatar .fallback {
-            font-size: 34px;
+            font-size: 48px;
             user-select: none;
             opacity: 0.95;
         }
@@ -771,7 +779,7 @@
             gap: 10px;
         }
         #dialogue-panel .dlg-name {
-            font-size: 13px;
+            font-size: 16px;
             font-weight: 800;
             letter-spacing: 0.12em;
             color: #fbbf24;
@@ -800,15 +808,27 @@
         #dialogue-panel .dlg-text {
             flex: 1;
             min-height: 0;
-            padding: 10px 12px;
+            padding: 12px 14px;
             border-radius: 10px;
             border: 1px solid rgba(212, 163, 115, 0.25);
             background: rgba(28, 22, 18, 0.55);
             color: #e8e6e3;
-            font-size: 14px;
-            line-height: 1.55;
+            font-size: 15px;
+            line-height: 1.6;
             overflow: auto;
             word-break: break-word;
+        }
+        #dialogue-panel .dlg-typing-wrap { white-space: normal; }
+        #dialogue-panel .dlg-typing-cursor {
+            display: inline-block;
+            margin-left: 1px;
+            color: #fbbf24;
+            animation: dlg-caret-blink 0.9s steps(1, end) infinite;
+            vertical-align: baseline;
+        }
+        @keyframes dlg-caret-blink {
+            0%, 49% { opacity: 1; }
+            50%, 100% { opacity: 0; }
         }
         #dialogue-panel .dlg-options {
             margin-top: 10px;
@@ -842,6 +862,8 @@
             height: 100px;
             min-height: 80px;
             max-height: 160px;
+            position: relative;
+            z-index: 10; /* 为对话框覆盖预留层级 */
             background: #1a1614;
             border-top: 1px solid #3d2d24;
             border-bottom: 1px solid #2d221c;
@@ -1338,7 +1360,11 @@
     <script src="js/ui-text.js"></script>
     <script src="js/game-engine.js"></script>
     <script src="js/entity-appearance.js"></script>
+    <script src="assets/vendor/react/react.production.min.js"></script>
+    <script src="assets/vendor/react/react-dom.production.min.js"></script>
+    <script src="js/dialogue-react-view.js"></script>
     <script src="js/dialogue-ui.js"></script>
+    <script src="js/buff-system.js"></script>
     <script src="js/game-log.js"></script>
     <script src="js/game-time.js"></script>
     <script src="js/npc-system.js"></script>
