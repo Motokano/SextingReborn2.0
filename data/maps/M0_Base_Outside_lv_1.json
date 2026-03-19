@@ -1,6 +1,6 @@
 {
   "map_id": "M0_Base_Outside_lv_1",
-  "name": "居住点",
+  "name": "居住点户外",
   "width": 16,
   "height": 16,
   "blocks": [
@@ -113,16 +113,16 @@
       "y": 4
     },
     {
+      "x": 7,
+      "y": 4
+    },
+    {
       "x": 8,
       "y": 4
     },
     {
       "x": 9,
       "y": 4
-    },
-    {
-      "x": 12,
-      "y": 5
     },
     {
       "x": 1,
@@ -136,19 +136,19 @@
   "portals": [
     {
       "x": 7,
-      "y": 15,
-      "target_map_id": "M0_Field_1",
-      "target_x": 1,
-      "target_y": 1,
-      "label": "进入野外"
-    },
-    {
-      "x": 7,
       "y": 4,
       "target_map_id": "M0_Base_Inside_lv_1",
       "target_x": 8,
       "target_y": 14,
       "label": "进家"
+    },
+    {
+      "x": 7,
+      "y": 15,
+      "target_map_id": "M0_Field_01",
+      "target_x": 11,
+      "target_y": 1,
+      "label": "进入野外"
     }
   ],
   "entities": [
@@ -203,27 +203,7 @@
       "entity_id": "gathering_bush"
     },
     {
-      "x": 4,
-      "y": 13,
-      "entity_id": "gathering_bush"
-    },
-    {
-      "x": 5,
-      "y": 13,
-      "entity_id": "gathering_bush"
-    },
-    {
       "x": 3,
-      "y": 14,
-      "entity_id": "gathering_bush"
-    },
-    {
-      "x": 4,
-      "y": 14,
-      "entity_id": "gathering_bush"
-    },
-    {
-      "x": 5,
       "y": 14,
       "entity_id": "gathering_bush"
     },
@@ -240,21 +220,6 @@
     {
       "x": 2,
       "y": 13,
-      "entity_id": "gathering_grass"
-    },
-    {
-      "x": 2,
-      "y": 14,
-      "entity_id": "gathering_grass"
-    },
-    {
-      "x": 6,
-      "y": 14,
-      "entity_id": "gathering_grass"
-    },
-    {
-      "x": 11,
-      "y": 11,
       "entity_id": "gathering_grass"
     },
     {
@@ -265,16 +230,6 @@
     {
       "x": 13,
       "y": 11,
-      "entity_id": "gathering_grass"
-    },
-    {
-      "x": 11,
-      "y": 12,
-      "entity_id": "gathering_grass"
-    },
-    {
-      "x": 12,
-      "y": 12,
       "entity_id": "gathering_grass"
     },
     {
@@ -316,6 +271,207 @@
       "x": 11,
       "y": 10,
       "entity_id": "gathering_bush"
+    },
+    {
+      "x": 12,
+      "y": 8,
+      "entity_id": "gathering_grass"
+    },
+    {
+      "x": 12,
+      "y": 9,
+      "entity_id": "gathering_grass"
+    },
+    {
+      "x": 12,
+      "y": 10,
+      "entity_id": "gathering_grass"
+    },
+    {
+      "x": 11,
+      "y": 8,
+      "entity_id": "gathering_grass"
+    },
+    {
+      "x": 10,
+      "y": 8,
+      "entity_id": "gathering_grass"
+    },
+    {
+      "x": 10,
+      "y": 7,
+      "entity_id": "gathering_grass"
+    },
+    {
+      "x": 11,
+      "y": 11,
+      "entity_id": "gathering_bush"
+    },
+    {
+      "x": 12,
+      "y": 12,
+      "entity_id": "gathering_bush"
+    },
+    {
+      "x": 11,
+      "y": 12,
+      "entity_id": "gathering_bush"
+    },
+    {
+      "x": 5,
+      "y": 14,
+      "entity_id": "gathering_grass"
+    },
+    {
+      "x": 5,
+      "y": 13,
+      "entity_id": "gathering_grass"
+    },
+    {
+      "x": 3,
+      "y": 15,
+      "entity_id": "gathering_grass"
+    },
+    {
+      "x": 4,
+      "y": 15,
+      "entity_id": "gathering_grass"
+    },
+    {
+      "x": 5,
+      "y": 15,
+      "entity_id": "gathering_grass"
+    },
+    {
+      "x": 1,
+      "y": 10,
+      "entity_id": "gathering_grass"
+    },
+    {
+      "x": 1,
+      "y": 11,
+      "entity_id": "gathering_grass"
+    },
+    {
+      "x": 1,
+      "y": 12,
+      "entity_id": "gathering_grass"
+    },
+    {
+      "x": 1,
+      "y": 13,
+      "entity_id": "gathering_grass"
+    },
+    {
+      "x": 0,
+      "y": 13,
+      "entity_id": "gathering_grass"
+    },
+    {
+      "x": 0,
+      "y": 14,
+      "entity_id": "gathering_grass"
+    },
+    {
+      "x": 0,
+      "y": 15,
+      "entity_id": "gathering_grass"
+    },
+    {
+      "x": 1,
+      "y": 14,
+      "entity_id": "gathering_bush"
+    },
+    {
+      "x": 2,
+      "y": 14,
+      "entity_id": "gathering_bush"
+    },
+    {
+      "x": 1,
+      "y": 15,
+      "entity_id": "gathering_bush"
+    },
+    {
+      "x": 2,
+      "y": 15,
+      "entity_id": "gathering_bush"
+    },
+    {
+      "x": 4,
+      "y": 13,
+      "entity_id": "gathering_grass"
+    },
+    {
+      "x": 4,
+      "y": 14,
+      "entity_id": "gathering_grass"
+    },
+    {
+      "x": 4,
+      "y": 12,
+      "entity_id": "gathering_grass"
+    },
+    {
+      "x": 0,
+      "y": 12,
+      "entity_id": "gathering_grass"
     }
-  ]
+  ],
+  "annotations": {
+    "1,7": "树",
+    "5,11": "树",
+    "14,2": "树",
+    "13,5": "树",
+    "7,4": "进家",
+    "7,15": "进入野外",
+    "9,7": "可开垦田地",
+    "10,7": "可开垦田地",
+    "11,7": "可开垦田地",
+    "12,7": "可开垦田地",
+    "13,7": "可开垦田地",
+    "14,7": "可开垦田地",
+    "9,8": "可开垦田地",
+    "10,8": "可开垦田地",
+    "11,8": "可开垦田地",
+    "12,8": "可开垦田地",
+    "13,8": "可开垦田地",
+    "14,8": "可开垦田地",
+    "9,9": "可开垦田地",
+    "10,9": "可开垦田地",
+    "11,9": "可开垦田地",
+    "12,9": "可开垦田地",
+    "13,9": "可开垦田地",
+    "14,9": "可开垦田地",
+    "9,10": "可开垦田地",
+    "10,10": "可开垦田地",
+    "11,10": "可开垦田地",
+    "12,10": "可开垦田地",
+    "13,10": "可开垦田地",
+    "14,10": "可开垦田地",
+    "9,11": "可开垦田地",
+    "10,11": "可开垦田地",
+    "11,11": "可开垦田地",
+    "12,11": "可开垦田地",
+    "13,11": "可开垦田地",
+    "14,11": "可开垦田地",
+    "9,12": "可开垦田地",
+    "10,12": "可开垦田地",
+    "11,12": "可开垦田地",
+    "12,12": "可开垦田地",
+    "13,12": "可开垦田地",
+    "14,12": "可开垦田地",
+    "9,13": "可开垦田地",
+    "10,13": "可开垦田地",
+    "11,13": "可开垦田地",
+    "12,13": "可开垦田地",
+    "13,13": "可开垦田地",
+    "14,13": "可开垦田地",
+    "9,14": "可开垦田地",
+    "10,14": "可开垦田地",
+    "11,14": "可开垦田地",
+    "12,14": "可开垦田地",
+    "13,14": "可开垦田地",
+    "14,14": "可开垦田地"
+  }
 }
