@@ -1,0 +1,546 @@
+{
+  "map_id": "M0_Field_02",
+  "name": "前往金木镇的路",
+  "width": 16,
+  "height": 16,
+  "blocks": [
+    {
+      "x": 0,
+      "y": 9
+    },
+    {
+      "x": 1,
+      "y": 9
+    },
+    {
+      "x": 0,
+      "y": 10
+    },
+    {
+      "x": 1,
+      "y": 10
+    },
+    {
+      "x": 2,
+      "y": 10
+    },
+    {
+      "x": 3,
+      "y": 10
+    },
+    {
+      "x": 4,
+      "y": 10
+    },
+    {
+      "x": 0,
+      "y": 11
+    },
+    {
+      "x": 1,
+      "y": 11
+    },
+    {
+      "x": 2,
+      "y": 11
+    },
+    {
+      "x": 3,
+      "y": 11
+    },
+    {
+      "x": 4,
+      "y": 11
+    },
+    {
+      "x": 5,
+      "y": 11
+    },
+    {
+      "x": 6,
+      "y": 11
+    },
+    {
+      "x": 7,
+      "y": 11
+    },
+    {
+      "x": 0,
+      "y": 12
+    },
+    {
+      "x": 1,
+      "y": 12
+    },
+    {
+      "x": 2,
+      "y": 12
+    },
+    {
+      "x": 3,
+      "y": 12
+    },
+    {
+      "x": 4,
+      "y": 12
+    },
+    {
+      "x": 5,
+      "y": 12
+    },
+    {
+      "x": 6,
+      "y": 12
+    },
+    {
+      "x": 7,
+      "y": 12
+    },
+    {
+      "x": 8,
+      "y": 12
+    },
+    {
+      "x": 9,
+      "y": 12
+    },
+    {
+      "x": 0,
+      "y": 13
+    },
+    {
+      "x": 1,
+      "y": 13
+    },
+    {
+      "x": 2,
+      "y": 13
+    },
+    {
+      "x": 3,
+      "y": 13
+    },
+    {
+      "x": 4,
+      "y": 13
+    },
+    {
+      "x": 5,
+      "y": 13
+    },
+    {
+      "x": 6,
+      "y": 13
+    },
+    {
+      "x": 7,
+      "y": 13
+    },
+    {
+      "x": 8,
+      "y": 13
+    },
+    {
+      "x": 9,
+      "y": 13
+    },
+    {
+      "x": 10,
+      "y": 13
+    },
+    {
+      "x": 11,
+      "y": 13
+    },
+    {
+      "x": 0,
+      "y": 14
+    },
+    {
+      "x": 1,
+      "y": 14
+    },
+    {
+      "x": 2,
+      "y": 14
+    },
+    {
+      "x": 3,
+      "y": 14
+    },
+    {
+      "x": 4,
+      "y": 14
+    },
+    {
+      "x": 5,
+      "y": 14
+    },
+    {
+      "x": 6,
+      "y": 14
+    },
+    {
+      "x": 7,
+      "y": 14
+    },
+    {
+      "x": 8,
+      "y": 14
+    },
+    {
+      "x": 9,
+      "y": 14
+    },
+    {
+      "x": 10,
+      "y": 14
+    },
+    {
+      "x": 11,
+      "y": 14
+    },
+    {
+      "x": 12,
+      "y": 14
+    },
+    {
+      "x": 13,
+      "y": 14
+    },
+    {
+      "x": 0,
+      "y": 15
+    },
+    {
+      "x": 1,
+      "y": 15
+    },
+    {
+      "x": 2,
+      "y": 15
+    },
+    {
+      "x": 3,
+      "y": 15
+    },
+    {
+      "x": 4,
+      "y": 15
+    },
+    {
+      "x": 5,
+      "y": 15
+    },
+    {
+      "x": 6,
+      "y": 15
+    },
+    {
+      "x": 7,
+      "y": 15
+    },
+    {
+      "x": 8,
+      "y": 15
+    },
+    {
+      "x": 9,
+      "y": 15
+    },
+    {
+      "x": 10,
+      "y": 15
+    },
+    {
+      "x": 11,
+      "y": 15
+    },
+    {
+      "x": 12,
+      "y": 15
+    },
+    {
+      "x": 13,
+      "y": 15
+    },
+    {
+      "x": 14,
+      "y": 15
+    }
+  ],
+  "portals": [
+    {
+      "x": 0,
+      "y": 7,
+      "target_map_id": "M0_Field_01",
+      "target_x": 14,
+      "target_y": 7,
+      "label": "回家的路"
+    },
+    {
+      "x": 15,
+      "y": 9,
+      "target_map_id": "M0_JinmuTown_01",
+      "target_x": 1,
+      "target_y": 9,
+      "label": "金木镇"
+    }
+  ],
+  "entities": [
+    {
+      "x": 7,
+      "y": 2,
+      "entity_id": "gathering_bush"
+    },
+    {
+      "x": 8,
+      "y": 2,
+      "entity_id": "gathering_bush"
+    },
+    {
+      "x": 5,
+      "y": 3,
+      "entity_id": "gathering_bush"
+    },
+    {
+      "x": 6,
+      "y": 3,
+      "entity_id": "gathering_bush"
+    },
+    {
+      "x": 7,
+      "y": 3,
+      "entity_id": "gathering_bush"
+    },
+    {
+      "x": 8,
+      "y": 3,
+      "entity_id": "gathering_bush"
+    },
+    {
+      "x": 9,
+      "y": 3,
+      "entity_id": "gathering_bush"
+    },
+    {
+      "x": 8,
+      "y": 4,
+      "entity_id": "gathering_grass"
+    },
+    {
+      "x": 13,
+      "y": 4,
+      "entity_id": "gathering_grass"
+    },
+    {
+      "x": 14,
+      "y": 4,
+      "entity_id": "gathering_grass"
+    },
+    {
+      "x": 8,
+      "y": 5,
+      "entity_id": "gathering_grass"
+    },
+    {
+      "x": 9,
+      "y": 5,
+      "entity_id": "gathering_grass"
+    },
+    {
+      "x": 10,
+      "y": 5,
+      "entity_id": "gathering_grass"
+    },
+    {
+      "x": 11,
+      "y": 5,
+      "entity_id": "gathering_grass"
+    },
+    {
+      "x": 12,
+      "y": 5,
+      "entity_id": "gathering_grass"
+    },
+    {
+      "x": 13,
+      "y": 5,
+      "entity_id": "gathering_grass"
+    },
+    {
+      "x": 14,
+      "y": 5,
+      "entity_id": "gathering_grass"
+    },
+    {
+      "x": 12,
+      "y": 3,
+      "entity_id": "gathering_grass"
+    },
+    {
+      "x": 13,
+      "y": 3,
+      "entity_id": "gathering_grass"
+    },
+    {
+      "x": 5,
+      "y": 4,
+      "entity_id": "gathering_grass"
+    },
+    {
+      "x": 6,
+      "y": 4,
+      "entity_id": "gathering_grass"
+    },
+    {
+      "x": 7,
+      "y": 4,
+      "entity_id": "gathering_grass"
+    },
+    {
+      "x": 2,
+      "y": 2,
+      "entity_id": "gathering_grass"
+    },
+    {
+      "x": 3,
+      "y": 2,
+      "entity_id": "gathering_grass"
+    },
+    {
+      "x": 4,
+      "y": 2,
+      "entity_id": "gathering_grass"
+    },
+    {
+      "x": 5,
+      "y": 2,
+      "entity_id": "gathering_grass"
+    },
+    {
+      "x": 6,
+      "y": 2,
+      "entity_id": "gathering_grass"
+    },
+    {
+      "x": 10,
+      "y": 3,
+      "entity_id": "gathering_grass"
+    },
+    {
+      "x": 11,
+      "y": 3,
+      "entity_id": "gathering_grass"
+    },
+    {
+      "x": 9,
+      "y": 4,
+      "entity_id": "gathering_bush"
+    },
+    {
+      "x": 10,
+      "y": 4,
+      "entity_id": "gathering_bush"
+    },
+    {
+      "x": 11,
+      "y": 4,
+      "entity_id": "gathering_bush"
+    },
+    {
+      "x": 12,
+      "y": 4,
+      "entity_id": "gathering_bush"
+    },
+    {
+      "x": 5,
+      "y": 1,
+      "entity_id": "gathering_grass"
+    },
+    {
+      "x": 6,
+      "y": 1,
+      "entity_id": "gathering_grass"
+    },
+    {
+      "x": 7,
+      "y": 1,
+      "entity_id": "gathering_grass"
+    },
+    {
+      "x": 8,
+      "y": 1,
+      "entity_id": "gathering_grass"
+    },
+    {
+      "x": 9,
+      "y": 1,
+      "entity_id": "gathering_grass"
+    },
+    {
+      "x": 10,
+      "y": 1,
+      "entity_id": "gathering_grass"
+    },
+    {
+      "x": 11,
+      "y": 1,
+      "entity_id": "gathering_grass"
+    },
+    {
+      "x": 9,
+      "y": 2,
+      "entity_id": "gathering_grass"
+    },
+    {
+      "x": 10,
+      "y": 2,
+      "entity_id": "gathering_grass"
+    },
+    {
+      "x": 11,
+      "y": 2,
+      "entity_id": "gathering_grass"
+    },
+    {
+      "x": 12,
+      "y": 2,
+      "entity_id": "gathering_grass"
+    },
+    {
+      "x": 13,
+      "y": 2,
+      "entity_id": "gathering_grass"
+    },
+    {
+      "x": 1,
+      "y": 3,
+      "entity_id": "gathering_grass"
+    },
+    {
+      "x": 2,
+      "y": 3,
+      "entity_id": "gathering_grass"
+    },
+    {
+      "x": 3,
+      "y": 3,
+      "entity_id": "gathering_grass"
+    },
+    {
+      "x": 4,
+      "y": 3,
+      "entity_id": "gathering_grass"
+    },
+    {
+      "x": 4,
+      "y": 4,
+      "entity_id": "gathering_grass"
+    }
+  ],
+  "annotations": {
+    "0,7": "回家的路",
+    "15,9": "金木镇"
+  }
+}
