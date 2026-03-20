@@ -207,6 +207,8 @@
     <button type="button" class="primary" id="btn-load-data">载入：data/buffs.json</button>
     <button type="button" id="btn-import-json">导入 JSON</button>
     <input id="inp-json" type="file" accept="application/json,.json" style="display:none" />
+    <button type="button" id="btn-load-registry" title="选择 data/editor/buff_event_registry.json（file:// 下必需）">载入注册表…</button>
+    <input id="inp-registry-json" type="file" accept="application/json,.json" style="display:none" />
     <button type="button" id="btn-export-json">导出 JSON</button>
     <button type="button" id="btn-export-clipboard">复制 JSON 到剪贴板</button>
     <div style="flex-basis:100%; height:0;"></div>
@@ -227,7 +229,7 @@
       </div>
       <div class="content">
         <div class="hint">
-          面向不写代码的策划：先点“新增 Buff”，再按右侧表单逐项填写。导出后把 JSON 放进 `data/buffs.json`（或用本工具直接导出文件）。
+          面向不写代码的策划：先点“新增 Buff”，再按右侧表单逐项填写。导出后把 JSON 放进 `data/buffs.json`（或用本工具直接导出文件）。若用本地文件打开本页，请用工具栏「载入注册表…」选择 `data/editor/buff_event_registry.json`，下拉与校验才会齐全。
         </div>
         <div class="list" id="list"></div>
         <div class="mini">草稿会自动保存到本地（仅你电脑）。</div>
@@ -460,6 +462,8 @@
         btnLoad: $('btn-load-data'),
         btnImport: $('btn-import-json'),
         inpJson: $('inp-json'),
+        btnLoadRegistry: $('btn-load-registry'),
+        inpRegistryJson: $('inp-registry-json'),
         btnExport: $('btn-export-json'),
         btnExportClipboard: $('btn-export-clipboard'),
 
@@ -551,15 +555,60 @@
         fillSelect(el.selEventName, registry.event_names || [], '从注册表选择事件名');
         fillSelect(el.selTag, registry.tags || [], '从注册表选择标签');
       }
+
+      /** @returns {boolean} 是否成功写入 registry */
+      function mergeRegistryFromObject(obj){
+        if (!obj || typeof obj !== 'object') return false;
+        registry.event_kinds = Array.isArray(obj.event_kinds) ? obj.event_kinds.slice() : [];
+        registry.event_names = Array.isArray(obj.event_names) ? obj.event_names.slice() : [];
+        registry.tags = Array.isArray(obj.tags) ? obj.tags.slice() : [];
+        refreshRegistrySelects();
+        return true;
+      }
+
+      function loadRegistryFromFile(file){
+        if (!file) return;
+        var reader = new FileReader();
+        reader.onload = function(){
+          clearMsg();
+          var obj;
+          try{
+            obj = JSON.parse(String(reader.result || ''));
+          }catch(e){
+            showErr('注册表 JSON 解析失败：' + (e && e.message ? e.message : e));
+            return;
+          }
+          if (!mergeRegistryFromObject(obj)){
+            showErr('注册表格式无效：根须为 JSON 对象，且可含 event_kinds / event_names / tags 数组。');
+            return;
+          }
+          showOk('已载入事件注册表（' + (file.name || '文件') + '）：kinds ' + registry.event_kinds.length + '，names ' + registry.event_names.length + '，tags ' + registry.tags.length);
+        };
+        reader.onerror = function(){
+          clearMsg();
+          showErr('读取注册表文件失败。');
+        };
+        reader.readAsText(file, 'utf-8');
+      }
+      function resolveAssetUrl(relativePath){
+        try{
+          return new URL(relativePath, window.location.href).toString();
+        }catch(e){
+          return relativePath;
+        }
+      }
+
+      function isFileProtocol(){
+        return String(window.location.protocol || '').toLowerCase() === 'file:';
+      }
+
       function loadRegistry(){
-        fetch('../data/editor/buff_event_registry.json')
+        if (isFileProtocol()) return;
+        var regUrl = resolveAssetUrl('../data/editor/buff_event_registry.json');
+        fetch(regUrl)
           .then(function(r){ return r.ok ? r.json() : null; })
           .then(function(obj){
-            if (!obj || typeof obj !== 'object') return;
-            registry.event_kinds = Array.isArray(obj.event_kinds) ? obj.event_kinds : [];
-            registry.event_names = Array.isArray(obj.event_names) ? obj.event_names : [];
-            registry.tags = Array.isArray(obj.tags) ? obj.tags : [];
-            refreshRegistrySelects();
+            if (obj) mergeRegistryFromObject(obj);
           })
           .catch(function(){ /* keep manual input only */ });
       }
@@ -904,15 +953,29 @@
 
       function loadData(){
         clearMsg();
-        fetch('../data/buffs.json')
-          .then(function(r){ return r.ok ? r.json() : null; })
+        if (isFileProtocol()){
+          showOk('当前为本地 file:// 打开：浏览器禁止页面用 fetch 读取磁盘上的 JSON。将打开文件选择，请选仓库中的 data/buffs.json（与「导入 JSON」相同）。');
+          el.inpJson.value = '';
+          el.inpJson.click();
+          return;
+        }
+        var dataUrl = resolveAssetUrl('../data/buffs.json');
+        fetch(dataUrl)
+          .then(function(r){
+            if (!r.ok) throw new Error('HTTP ' + r.status + '：' + dataUrl);
+            return r.json();
+          })
           .then(function(obj){
-            if (!obj) throw new Error('载入失败：../data/buffs.json');
-            importJsonText(JSON.stringify(obj), '../data/buffs.json');
-            lastLoadedPath = '../data/buffs.json';
+            if (!obj || typeof obj !== 'object') throw new Error('响应不是 JSON 对象：' + dataUrl);
+            importJsonText(JSON.stringify(obj), dataUrl);
+            lastLoadedPath = dataUrl;
           })
           .catch(function(e){
-            showErr(e && e.message ? e.message : e);
+            var msg = e && e.message ? e.message : String(e);
+            if (/failed to fetch/i.test(msg)){
+              msg += '\n\n常见原因：用 file:// 打开本页（请用本页自动弹窗选文件，或在项目根运行静态服务后通过 http 访问）；或路径/端口不对。';
+            }
+            showErr(msg);
           });
       }
 
@@ -996,6 +1059,13 @@
       el.btnLoad.addEventListener('click', loadData);
       el.btnImport.addEventListener('click', function(){ el.inpJson.value=''; el.inpJson.click(); });
       el.inpJson.addEventListener('change', function(){ if (this.files && this.files[0]) loadFromFile(this.files[0]); });
+      el.btnLoadRegistry.addEventListener('click', function(){
+        el.inpRegistryJson.value = '';
+        el.inpRegistryJson.click();
+      });
+      el.inpRegistryJson.addEventListener('change', function(){
+        if (this.files && this.files[0]) loadRegistryFromFile(this.files[0]);
+      });
       el.btnExport.addEventListener('click', exportJson);
       el.btnExportClipboard.addEventListener('click', exportClipboard);
 

@@ -259,7 +259,11 @@
             var canStack = canStackInSlot(itemInstance, null);
             for (var i = 0; i < backpackSlots; i++) {
                 var existing = arr[i] || null;
-                if (canStack && existing && existing.item_id === itemInstance.item_id && !(existing.enchants && existing.enchants.length)) {
+                var instQ = itemInstance && itemInstance.quality_tier != null ? itemInstance.quality_tier : 0;
+                var existQ = existing && existing.quality_tier != null ? existing.quality_tier : 0;
+                if (canStack && existing && existing.item_id === itemInstance.item_id
+                    && instQ === existQ
+                    && !(existing.enchants && existing.enchants.length)) {
                     var count = (existing.count || 1) + (itemInstance.count || 1);
                     var maxStack = getMaxStack(itemInstance.item_id);
                     if (count <= maxStack) {
@@ -338,6 +342,11 @@
         if (tpl.enchant_slots != null && tpl.enchant_slots > 0) return false;
         if (instance.enchants && instance.enchants.length) return false;
         if (existing && (existing.enchants && existing.enchants.length)) return false;
+        if (existing) {
+            var instQ = instance && instance.quality_tier != null ? instance.quality_tier : 0;
+            var existQ = existing && existing.quality_tier != null ? existing.quality_tier : 0;
+            if (instQ !== existQ) return false;
+        }
         return true;
     }
 

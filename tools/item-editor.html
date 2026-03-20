@@ -199,7 +199,8 @@
         <div class="title">字段（属性）：可删减 / 可扩展</div>
         <div class="content">
             <div class="hint">
-                列名会作为“属性字段”。你可以删除任意非 `id` 列；也可以新增列，新增后所有行都会补空值。
+                列名会作为“属性字段”。你可以删除任意非 `id` 列；也可以新增列，新增后所有行都会补空值。<br>
+                品质接入建议：使用 `quality_tier`（0~5）作为统一品质字段；即使暂不生效，也建议先在数据层保持该字段。
             </div>
 
             <div class="grid2" style="margin-top:12px;">
@@ -215,6 +216,7 @@
 
             <div class="rowActions">
                 <button type="button" class="primary" id="btn-add-col">添加字段</button>
+                <button type="button" id="btn-add-quality-col" title="若不存在则新增 quality_tier，默认填 0">一键补 quality_tier=0</button>
                 <button type="button" class="danger" id="btn-delete-col">删除选中字段</button>
             </div>
 
@@ -382,6 +384,8 @@
         satiety_restore: '食物：使用一次恢复饱食度',
         thirst_restore: '饮用/带水分消耗：使用一次恢复饮水度',
         nutrition_restore: '食物：使用一次恢复营养值',
+        quality_tier: '统一品质档位（0~5：粗糙/普通/精良/稀有/史诗/传说），建议用于实例与产出字段',
+        quality_note: '可选：品质说明/策划备注，不参与运行时数值',
         pocket_slots: '运行时：口袋格数（装备常用）',
         vest_slots: '运行时：背心格数（装备常用）',
         backpack_slots: '运行时：背包格数（装备常用）'
@@ -408,6 +412,7 @@
         newColName: $('new-col-name'),
         newColDefault: $('new-col-default'),
         btnAddCol: $('btn-add-col'),
+        btnAddQualityCol: $('btn-add-quality-col'),
         btnDeleteCol: $('btn-delete-col'),
 
         rowEditor: $('row-editor'),
@@ -599,6 +604,22 @@
         clearError();
     }
 
+    function ensureQualityTierColumn(){
+        clearError();
+        var key = 'quality_tier';
+        if (state.headers.indexOf(key) >= 0){
+            el.exportHint.textContent = 'quality_tier 已存在，未重复添加。';
+            return;
+        }
+        state.headers.push(key);
+        for (var i = 0; i < state.rows.length; i++){
+            state.rows[i][key] = '0';
+        }
+        refreshColSelect();
+        renderRowEditor();
+        el.exportHint.textContent = '已新增 quality_tier 列，并为全部行填入默认值 0。';
+    }
+
     function deleteColumnByIndex(colIndex){
         if (colIndex == null) colIndex = state.selectedColIndex;
         var key = state.headers[colIndex];
@@ -669,6 +690,23 @@
             for (var h = 0; h < state.headers.length; h++){
                 var key = state.headers[h];
                 if (key === 'id') continue;
+                if (key === 'quality_tier'){
+                    // 统一品质口径：0~5；兼容旧口径 1~6
+                    var qRaw = r[key];
+                    if (qRaw == null || qRaw === ''){
+                        tpl[key] = '';
+                    } else {
+                        var qNum = parseInt(qRaw, 10);
+                        if (isNaN(qNum)) {
+                            tpl[key] = qRaw;
+                        } else if (qNum >= 1 && qNum <= 6) {
+                            tpl[key] = Math.max(0, Math.min(5, qNum - 1));
+                        } else {
+                            tpl[key] = Math.max(0, Math.min(5, qNum));
+                        }
+                    }
+                    continue;
+                }
                 tpl[key] = r[key];
             }
             out[itemId] = tpl;
@@ -690,6 +728,7 @@
         state.selectedColIndex = parseInt(el.colSelect.value, 10) || 0;
     });
     el.btnAddCol.addEventListener('click', function(){ addColumn(); });
+    el.btnAddQualityCol.addEventListener('click', function(){ ensureQualityTierColumn(); });
     el.btnDeleteCol.addEventListener('click', function(){ deleteColumnByIndex(); });
     el.btnNewRow.addEventListener('click', function(){ addRow(); });
     el.btnExportCsv.addEventListener('click', function(){ exportCsv(); });

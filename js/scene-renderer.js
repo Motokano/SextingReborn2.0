@@ -37,7 +37,7 @@
         if (tooltipEl) tooltipEl.classList.remove('show');
     }
 
-    function formatItemAttributes(tpl) {
+    function formatItemAttributes(tpl, inst) {
         var ctx = getCtx();
         var IE = ctx ? ctx.IE : null;
         if (!tpl) return '';
@@ -57,7 +57,8 @@
         if (tpl.skill_coef != null) lines.push('技能系数：' + tpl.skill_coef);
         if (tpl.req_innate_jingu != null) lines.push('先天筋骨要求：' + tpl.req_innate_jingu);
         if (tpl.enchant_slots != null) lines.push('词条槽：' + tpl.enchant_slots);
-        if (tpl.quality_tier != null && IE && IE.QUALITY_NAMES) lines.push('品质：' + (IE.QUALITY_NAMES[tpl.quality_tier] || '—'));
+        var q = (inst && inst.quality_tier != null) ? inst.quality_tier : tpl.quality_tier;
+        if (q != null && IE && IE.QUALITY_NAMES) lines.push('品质：' + (IE.QUALITY_NAMES[q] || '—'));
         return lines.length ? lines.join('\n') : '';
     }
 
@@ -101,7 +102,7 @@
                 slot.textContent = tpl ? IE.getDisplayName(tpl, tier).slice(0, 2) : it.item_id.slice(0, 2);
                 var name = tpl ? IE.getDisplayName(tpl, tier) : it.item_id;
                 var desc = tpl ? IE.getDisplayDesc(tpl, tier) : '';
-                var attrs = formatItemAttributes(tpl);
+                var attrs = formatItemAttributes(tpl, it);
                 var tipHtml = buildItemTooltipHtml(name, desc, attrs);
                 slot.addEventListener('mouseenter', function (html, el) { return function () { showItemTooltip(html, el); }; }(tipHtml, slot));
                 slot.addEventListener('mouseleave', function () { hideItemTooltip(); });
@@ -120,7 +121,7 @@
                 slot2.textContent = tpl2 ? IE.getDisplayName(tpl2, tier2).slice(0, 2) : it2.item_id.slice(0, 2);
                 var name2 = tpl2 ? IE.getDisplayName(tpl2, tier2) : it2.item_id;
                 var desc2 = tpl2 ? IE.getDisplayDesc(tpl2, tier2) : '';
-                var attrs2 = formatItemAttributes(tpl2);
+                var attrs2 = formatItemAttributes(tpl2, it2);
                 var tipHtml2 = buildItemTooltipHtml(name2, desc2, attrs2);
                 slot2.addEventListener('mouseenter', function (html, el) { return function () { showItemTooltip(html, el); }; }(tipHtml2, slot2));
                 slot2.addEventListener('mouseleave', function () { hideItemTooltip(); });

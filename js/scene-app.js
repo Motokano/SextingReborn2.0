@@ -214,7 +214,7 @@
         if (tooltipEl) tooltipEl.classList.remove('show');
     }
 
-    function formatItemAttributes(tpl) {
+    function formatItemAttributes(tpl, inst) {
         if (!tpl) return '';
         var lines = [];
         if (tpl.weight_kg != null) lines.push(ui('item.attr.weight', { v: tpl.weight_kg }));
@@ -232,7 +232,8 @@
         if (tpl.skill_coef != null) lines.push(ui('item.attr.skill_coef', { v: tpl.skill_coef }));
         if (tpl.req_innate_jingu != null) lines.push(ui('item.attr.req_innate_jingu', { v: tpl.req_innate_jingu }));
         if (tpl.enchant_slots != null) lines.push(ui('item.attr.enchant_slots', { v: tpl.enchant_slots }));
-        if (tpl.quality_tier != null && IE && IE.QUALITY_NAMES) lines.push(ui('item.attr.quality', { v: (IE.QUALITY_NAMES[tpl.quality_tier] || ui('common.dash')) }));
+        var q = (inst && inst.quality_tier != null) ? inst.quality_tier : tpl.quality_tier;
+        if (q != null && IE && IE.QUALITY_NAMES) lines.push(ui('item.attr.quality', { v: (IE.QUALITY_NAMES[q] || ui('common.dash')) }));
         return lines.length ? lines.join('\n') : '';
     }
     function buildItemTooltipHtml(name, desc, attrs) {
@@ -266,6 +267,9 @@
             });
             if (window.Survival) window.Survival.setConfig(arr[4]);
             var survCfg = arr[4] || {};
+            if (window.ProductionQuality && typeof window.ProductionQuality.setConfig === 'function') {
+                window.ProductionQuality.setConfig(survCfg);
+            }
             var starterEquipFallback = {
                 clothing: 'eq_clothing_commute',
                 vest: 'eq_vest_hoodie',
@@ -784,7 +788,7 @@
                         };
                     })(containerType, i);
                     slot.appendChild(dropBtn);
-                    var tplAttrs = formatItemAttributes(tpl);
+                    var tplAttrs = formatItemAttributes(tpl, it);
                     var tipHtml = buildItemTooltipHtml(name, tpl ? IE.getDisplayDesc(tpl, tier) : '', tplAttrs);
                     slot.addEventListener('mouseenter', function (h, el) { return function () { showItemTooltip(h, el); }; }(tipHtml, slot));
                     slot.addEventListener('mouseleave', hideItemTooltip);

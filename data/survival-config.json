@@ -115,6 +115,12 @@
   "study_potential_per_energy_base": 200,
   "focus_potential_per_energy_pct_per_point": 0.05,
 
+  "production_success_bonus_per_quality_tier": 0.04,
+  "production_success_bonus_at_skill_1000": 0.20,
+  "production_upgrade_chance_per_quality_tier": 0.03,
+  "production_upgrade_chance_at_skill_1000": 0.25,
+  "production_upgrade_chain_decay": 0.35,
+
   "item_display_tier_threshold_1": null,
   "item_display_tier_threshold_2": null
 }

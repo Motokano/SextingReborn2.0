@@ -9,7 +9,9 @@
     var GATHERING_MAX_PROFICIENCY = 5000000;
     var STAMINA_COST = 2;
     var MAX_INVENTORY_SLOTS = 30;
-    var QUALITY_NAMES = ['', '粗糙', '普通', '精良', '稀有', '史诗', '传说'];
+    // 品质六档：粗糙 -> 普通 -> 精良 -> 稀有 -> 史诗 -> 传说
+    // 约定：quality_tier 取值 0~5
+    var QUALITY_NAMES = ['粗糙', '普通', '精良', '稀有', '史诗', '传说'];
 
     var config = {
         gathering_points: {},
@@ -88,11 +90,21 @@
         return lootTable[lootTable.length - 1];
     }
 
+    function normalizeQualityTier(rawTier) {
+        // 兼容旧数据：某些 loot 表可能用 1~6 表示六档（1=粗糙 ... 6=传说）
+        if (rawTier == null) return 0;
+        var v = Number(rawTier);
+        if (Number.isNaN(v)) return 0;
+        if (v >= 1 && v <= 6) return Math.max(0, Math.min(5, v - 1));
+        return Math.max(0, Math.min(5, v));
+    }
+
     function tryQualityUpgrade(qualityTier) {
-        if (qualityTier >= 6) return 6;
+        qualityTier = normalizeQualityTier(qualityTier);
+        if (qualityTier >= 5) return 5;
         var pct = getProficiencyPercent();
         var chance = Math.min(1, pct / 100);
-        if (Math.random() < chance) return Math.min(6, qualityTier + 1);
+        if (Math.random() < chance) return Math.min(5, qualityTier + 1);
         return qualityTier;
     }
 
@@ -139,7 +151,7 @@
             return { success: true, message: '采集成功但无产出', consumedStamina: true };
         }
 
-        var qualityTier = row.quality_tier != null ? Math.max(1, Math.min(6, row.quality_tier)) : 1;
+        var qualityTier = normalizeQualityTier(row.quality_tier);
         qualityTier = tryQualityUpgrade(qualityTier);
 
         var itemDef = config.items[row.item_id];
