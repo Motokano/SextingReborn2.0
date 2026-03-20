@@ -14,7 +14,21 @@
     var LS_FLAGS = 'cabi_demo_flags_v1';
     var LS_TRIGGERED = 'cabi_demo_triggered_entries_v1';
 
+    // 日志输出：优先走配置注入的 logFn；兜底直接写入 GameLog
     var logFn = function () {};
+    function log(message, type) {
+        try {
+            if (typeof logFn === 'function') {
+                logFn(message, type);
+                return;
+            }
+        } catch (e0) { /* ignore */ }
+        try {
+            if (global.GameLog && typeof global.GameLog.log === 'function') {
+                global.GameLog.log(message, type || 'info');
+            }
+        } catch (e1) { /* ignore */ }
+    }
 
     function safeJsonParse(raw, fallback) { try { return JSON.parse(raw); } catch (e) { return fallback; } }
     function getFlags() { return safeJsonParse(localStorage.getItem(LS_FLAGS) || '{}', {}); }
@@ -22,11 +36,18 @@
     function getTriggered() { return safeJsonParse(localStorage.getItem(LS_TRIGGERED) || '[]', []); }
     function markTriggered(entryId) {
         var arr = getTriggered();
-        if (arr.indexOf(entryId) >= 0) return;
-        arr.push(entryId);
+        var id = (entryId == null) ? '' : String(entryId);
+        if (!id) return;
+        if (arr.indexOf(id) >= 0) return;
+        arr.push(id);
         localStorage.setItem(LS_TRIGGERED, JSON.stringify(arr));
+        log('[NPCSystem] Mark triggered: ' + id, 'system');
     }
-    function isTriggered(entryId) { return getTriggered().indexOf(entryId) >= 0; }
+    function isTriggered(entryId) {
+        var id = (entryId == null) ? '' : String(entryId);
+        if (!id) return false;
+        return getTriggered().indexOf(id) >= 0;
+    }
 
     function getPlayerName() {
         var el = document.getElementById('creation-name');
@@ -125,9 +146,25 @@
         if (cond.type === 'flagEquals') {
             var f = getFlags();
             var key = String(cond.flag);
-            // 约定：未设置的 flag 视为 false（更符合“首次对话/首次触发”的直觉）
-            var cur = (f[key] === undefined) ? false : f[key];
-            return (cur === cond.value);
+            function normalizeFlagBool(v) {
+                // 约定：未设置/未定义/空值都视为 false（支持 editor 或旧数据导出的 undefined/null 字符串）
+                if (v === undefined || v === null) return false;
+                if (typeof v === 'boolean') return v;
+                if (typeof v === 'number') return v !== 0;
+                if (typeof v === 'string') {
+                    var s = v.trim().toLowerCase();
+                    if (!s || s === 'undefined' || s === 'null') return false;
+                    if (s === 'true' || s === '1') return true;
+                    if (s === 'false' || s === '0') return false;
+                }
+                // 兜底：未知类型尽量保持“语义为 false”
+                return false;
+            }
+
+            // cond.value 也可能来自 JSON/编辑器为字符串
+            var cur = normalizeFlagBool(f[key]);
+            var want = normalizeFlagBool(cond.value);
+            return cur === want;
         }
         if (cond.type === 'skillLevelEquals') {
             return getSkillLevel(cond.skillId) === (parseInt(cond.level, 10) || 0);
@@ -171,9 +208,14 @@
             if (!ef || !ef.type) continue;
             if (ef.type === 'setFlag' && ef.params) {
                 setFlag(ef.params.flag, ef.params.value);
+                log('[NPCSystem] Effect setFlag: ' + String(ef.params.flag) + '=' + String(ef.params.value), 'system');
             }
             if (ef.type === 'modifySkillLevel' && ef.params) {
+                var sid = ef.params.skillId;
+                var before = getSkillLevel(sid);
                 modifySkillLevel(ef.params.skillId, ef.params.delta, ef.params.min);
+                var after = getSkillLevel(sid);
+                log('[NPCSystem] Effect modifySkillLevel: ' + String(sid) + ' ' + String(before) + '->' + String(after), 'system');
             }
         }
     }
@@ -193,29 +235,73 @@
 
             var candidates = [];
             var debug = [];
+
+            function entryPassesDependencies(e) {
+                if (!e) return false;
+                // requires：需要先触发指定 entryId（repeatable=false 才会写入 triggered list）
+                var reqsRaw = Array.isArray(e.requires) ? e.requires : [];
+                var reqs = [];
+                for (var ri = 0; ri < reqsRaw.length; ri++) {
+                    var rid = reqsRaw[ri];
+                    if (rid == null || rid === '') continue;
+                    var rs = String(rid).trim();
+                    if (!rs || rs === 'undefined' || rs === 'null') continue;
+                    reqs.push(rs);
+                }
+                for (var ri = 0; ri < reqs.length; ri++) {
+                    var rid = reqs[ri];
+                    if (!rid) continue;
+                    if (!isTriggered(rid)) return false;
+                }
+                // blocks：若触发过指定 entryId，则屏蔽
+                var blksRaw = Array.isArray(e.blocks) ? e.blocks : [];
+                var blks = [];
+                for (var bi = 0; bi < blksRaw.length; bi++) {
+                    var bid = blksRaw[bi];
+                    if (bid == null || bid === '') continue;
+                    var bs = String(bid).trim();
+                    if (!bs || bs === 'undefined' || bs === 'null') continue;
+                    blks.push(bs);
+                }
+                for (var bj = 0; bj < blks.length; bj++) {
+                    var blkId = blks[bj];
+                    if (!blkId) continue;
+                    if (isTriggered(blkId)) return false;
+                }
+                return true;
+            }
+
             for (var i = 0; i < tr.entries.length; i++) {
                 var e = tr.entries[i];
                 if (!e || e.entrySource !== 'chat') continue;
                 if (e.repeatable === false && isTriggered(e.id)) continue;
+                if (!entryPassesDependencies(e)) {
+                    // 依赖未满足：跳过（仍记录到 debug 便于定位）
+                    debug.push({ id: e.id, pass: false, cond: e.condition, requires: e.requires, blocks: e.blocks });
+                    continue;
+                }
                 var pass = evalCondition(e.condition);
                 debug.push({ id: e.id, pass: pass, cond: e.condition });
                 if (!pass) continue;
                 candidates.push(e);
             }
+            log('[NPCSystem] scanChatEntry npc=' + String(npcId) + ', candidates=' + String(candidates.length), 'system');
             var picked = pickRandom(candidates);
             if (!picked) {
                 // 诊断：当没有任何候选时，输出一次条件状态（便于定位“为什么不触发”）
                 try {
                     var f = getFlags();
                     var lang = getSkillLevel('survival_language');
-                    logFn('闲聊无可触发条目：flag lsy_has_talked=' + (f.lsy_has_talked === undefined ? 'undefined' : String(f.lsy_has_talked))
+                    log('闲聊无可触发条目：flag lsy_has_talked=' + (f.lsy_has_talked === undefined ? 'undefined' : String(f.lsy_has_talked))
                         + '，survival_language=' + String(lang), 'warn');
                     for (var di = 0; di < debug.length; di++) {
-                        logFn(' - ' + debug[di].id + ' 条件' + (debug[di].pass ? '通过' : '不通过') + '：' + JSON.stringify(debug[di].cond || {}), 'warn');
+                        if (di >= 6) break;
+                        log(' - ' + debug[di].id + ' 条件' + (debug[di].pass ? '通过' : '不通过') + '：' + JSON.stringify(debug[di].cond || {}), 'warn');
                     }
                 } catch (e2) { /* ignore */ }
                 return { type: 'fallback', npc: def };
             }
+            log('[NPCSystem] Picked chat entry: ' + String(picked.id) + ' (npc=' + String(npcId) + ')', 'system');
             return { type: 'entry', npc: def, entry: picked };
         });
     }
@@ -251,12 +337,12 @@
         Promise.all([loadNpcDef(npcId)]).then(function (rows) {
             var def = rows[0];
             if (!def) {
-                logFn('NPC 数据未加载：' + npcId + '（检查 npc_registry.json 路径）', 'warn');
+                log('NPC 数据未加载：' + npcId + '（检查 npc_registry.json 路径）', 'warn');
                 return;
             }
             if (!isNpcOnDuty(def)) {
                 var t = (global.GameTime && global.GameTime.getDisplayString) ? (global.GameTime.getDisplayString() || '') : '';
-                logFn('NPC 当前不在场（' + t + '）：' + npcId, 'warn');
+                log('NPC 当前不在场（' + t + '）：' + npcId, 'warn');
                 return;
             }
             menuEl.style.display = 'block';
@@ -282,10 +368,12 @@
 
             btnWrap.appendChild(mkBtn('闲聊', function () {
                 closeMenu();
+                log('[NPCSystem] NPC chat clicked: npc=' + String(npcId), 'system');
                 scanChatEntry(npcId).then(function (res) {
                     if (!res || !global.DialogueUI) return;
                     if (res.type === 'not_on_duty') return;
                     if (res.type === 'fallback') {
+                        log('[NPCSystem] chat fallback: npc=' + String(npcId), 'system');
                         global.DialogueUI.say({
                             speakerRole: 'npc',
                             speakerId: def.id,
@@ -296,8 +384,9 @@
                     }
                     if (res.type === 'entry') {
                         var entry = res.entry;
+                        log('[NPCSystem] Execute chat entry: ' + String(entry.id), 'system');
                         var linesRich = entry && entry.dialogue && entry.dialogue.linesRich;
-                        if (Array.isArray(linesRich) && linesRich.length) {
+                        if (Array.isArray(linesRich)) {
                             global.DialogueUI.playLinesRich(linesRich, {
                                 npcId: def.id,
                                 npcName: def.displayTitle || def.name || 'NPC',
@@ -312,6 +401,7 @@
                                 text: entry.dialogue.lines.join('\n')
                             });
                         }
+                        // effect 日志在 applyEffects 内输出
                         applyEffects(entry.effects);
                         if (entry.repeatable === false) markTriggered(entry.id);
                     }

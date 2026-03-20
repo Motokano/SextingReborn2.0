@@ -316,7 +316,52 @@
             color: rgba(219,234,254,0.92);
         }
         .search-row .count{ font-size: 11px; color: rgba(148,163,184,0.72); margin-left:auto; }
-    </style>"}]}  彩神争霸快
+
+        /* === Project-binding & tab styles (v2) === */
+        .toolbar .bind-pill{
+            display:inline-flex; align-items:center; gap:8px;
+            padding:5px 10px; border-radius:999px;
+            border:1px solid var(--border); background:rgba(148,163,184,0.10);
+            color:var(--muted); font-size:11px; font-weight:800; max-width:260px;
+            white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+        }
+        .toolbar .bind-pill.bound{ border-color:rgba(34,197,94,0.38); color:rgba(134,239,172,0.95); background:rgba(34,197,94,0.10); }
+        .toolbar .bind-pill.saving{ border-color:rgba(96,165,250,0.38); color:rgba(147,197,253,0.95); background:rgba(96,165,250,0.10); }
+        .toolbar .bind-pill.error{ border-color:rgba(239,68,68,0.38); color:rgba(252,165,165,0.95); background:rgba(239,68,68,0.10); }
+
+        .left-tabs{ display:flex; gap:0; border-bottom:1px solid var(--border); margin:0 0 12px 0; }
+        .left-tab-btn{
+            flex:1; padding:8px 10px; font-size:12px; font-weight:700;
+            background:transparent; border:none; border-bottom:2px solid transparent;
+            color:var(--muted); cursor:pointer; border-radius:0; letter-spacing:0.04em;
+            transition:color .15s, border-color .15s;
+        }
+        .left-tab-btn:hover{ color:var(--text); background:rgba(148,163,184,0.07); }
+        .left-tab-btn.active{ color:var(--primary2); border-bottom-color:var(--primary2); }
+        .left-tab-pane{ display:none; }
+        .left-tab-pane.active{ display:block; }
+
+        .img-asset-card{
+            display:flex; gap:10px; align-items:flex-start;
+            padding:10px; margin-bottom:10px;
+            background:rgba(148,163,184,0.06); border:1px solid var(--border);
+            border-radius:var(--radiusSm);
+        }
+        .img-asset-card .thumb{
+            width:64px; height:64px; border-radius:10px;
+            background:rgba(0,0,0,0.25); border:1px solid var(--border);
+            display:flex; align-items:center; justify-content:center;
+            overflow:hidden; flex-shrink:0;
+        }
+        .img-asset-card .thumb img{ width:100%; height:100%; object-fit:contain; }
+        .img-asset-card .thumb .no-img{ font-size:11px; color:rgba(148,163,184,0.5); }
+        .img-asset-card .info{ flex:1; min-width:0; }
+        .img-asset-card .info .path{ font-size:11px; color:var(--primary2); word-break:break-all; margin-bottom:6px; }
+        .img-asset-card .info .usage{ font-size:10px; color:var(--muted2); margin-bottom:6px; }
+        .img-asset-card .info .btn-row{ display:flex; gap:6px; flex-wrap:wrap; }
+        .img-asset-card .info .btn-row button{ padding:5px 9px; font-size:11px; }
+        .img-empty{ padding:18px; text-align:center; color:var(--muted2); font-size:12px; }
+    </style>
 </head>
 <body>
 
@@ -346,22 +391,42 @@
         <button type="button" id="btn-import-skills">载入技能表</button>
         <span id="skill-count" style="color:#666; font-size:11px;">技能：未载入</span>
         <span class="break"></span>
-        <button type="button" id="btn-export-registry">一键更新注册表</button>
-        <button type="button" id="btn-export-npc">导出 NPC 数据</button>
-        <button type="button" id="btn-export-triggers">导出事件</button>
-        <label>当前 NPC ID <input type="text" id="inp-npc-id-readonly" readonly placeholder="先新建或导入" style="width:220px;color:#888;" /></label>
+        <button type="button" id="btn-export-registry">更新注册表</button>
+        <button type="button" id="btn-export-npc" class="primary">保存 NPC</button>
+        <button type="button" id="btn-export-triggers" class="primary">保存事件</button>
+        <label>当前 NPC ID <input type="text" id="inp-npc-id-readonly" readonly placeholder="先新建或导入" style="width:200px;color:#888;" /></label>
+        <button type="button" id="btn-bind-project" title="绑定项目根目录后可直接写入 data/npc/，不再需要手动移文件">📁 绑定目录</button>
+        <span id="bind-pill" class="bind-pill" title="未绑定项目目录">📁 未绑定</span>
         <span id="dirty-pill" class="status-pill ok" title="编辑状态">✓ 已保存</span>
-        <span style="color:#666; font-size:11px;">导出后请放入 data/npc/：本体 xxx.json，事件 xxx_triggers.json</span>
     </div>
 
     <div class="main">
         <div class="col-npc">
-            <h3 style="margin:0 0 14px 0; color:#aaa;">NPC 基础数据</h3>
-            <div id="npc-errors" class="error-box" aria-live="polite"></div>
-            <div class="panel-note" style="margin-bottom:12px;">
-                <strong>扩展约定</strong>：左侧表单由 Schema 自动生成。以后新增 NPC 字段只需要在本文件里的 schema 注册字段即可，无需再改 HTML 结构。
+            <div class="left-tabs">
+                <button type="button" class="left-tab-btn active" id="tab-btn-npc" onclick="switchLeftTab('npc')">NPC 数据</button>
+                <button type="button" class="left-tab-btn" id="tab-btn-images" onclick="switchLeftTab('images')">🖼 图像资源</button>
             </div>
-            <div id="npc-form"></div>
+            <div class="left-tab-pane active" id="tab-pane-npc">
+                <div id="npc-errors" class="error-box" aria-live="polite"></div>
+                <div class="panel-note" style="margin-bottom:12px; font-size:11px;">
+                    <strong>扩展约定</strong>：左侧表单由 Schema 自动生成。新增 NPC 字段在 schema 里注册即可。
+                </div>
+                <div id="npc-form"></div>
+            </div>
+            <div class="left-tab-pane" id="tab-pane-images">
+                <div class="section">
+                    <div class="section-title">地图形象 (Sprite)</div>
+                    <div id="img-sprite-card"></div>
+                </div>
+                <div class="section">
+                    <div class="section-title" style="display:flex;justify-content:space-between;align-items:center;">
+                        <span>对话头像</span>
+                        <span id="img-avatars-count" style="font-size:10px;font-weight:400;color:var(--muted2);"></span>
+                    </div>
+                    <div id="img-avatars-list"></div>
+                    <button type="button" id="btn-refresh-images" style="width:100%;margin-top:4px;" onclick="renderImagePanel()">↺ 刷新列表</button>
+                </div>
+            </div>
         </div>
 
         <div class="col-events">
@@ -1080,6 +1145,7 @@
                 if (state.imageRootDirHandle) return state.imageRootDirHandle;
                 // 需要用户手势触发；若浏览器不支持则返回 null
                 if (!window.showDirectoryPicker) return null;
+                // 用户可能会误选 image/<npcId目录> 而不是 image/；后续 ensureNpcImageFolder 会自动兼容。
                 var dir = await window.showDirectoryPicker({ id: 'cabi-image-root', mode: 'readwrite' });
                 state.imageRootDirHandle = dir;
                 return dir;
@@ -1090,7 +1156,18 @@
                 if (!root) return null;
                 // 约定：选择的目录就是 /image
                 var folderName = getNpcAvatarFolderName();
-                var npcDir = await root.getDirectoryHandle(folderName, { create: true });
+                // 如果用户选的是 image/<folderName>（而不是 image/），则避免再嵌套一层。
+                // 例如 folderName=npc_supervisor_linShuyao：
+                // - 误选 image/ 时：写入 image/<folderName>/file.png（正确）
+                // - 误选 image/<folderName>/ 时：写入 image/<folderName>/<folderName>/file.png（错误）
+                // 这里通过 root.name 判断，若已等于 folderName，则直接把 root 当作 npcDir。
+                var npcDir = null;
+                try {
+                    if (root && root.name && String(root.name) === String(folderName)) {
+                        npcDir = root;
+                    }
+                } catch (e) { /* ignore */ }
+                if (!npcDir) npcDir = await root.getDirectoryHandle(folderName, { create: true });
                 return { root: root, npcDir: npcDir, folderName: folderName };
             }
 
@@ -2133,6 +2210,11 @@
                 var name = (state.triggers.npcId || 'triggers').replace(/\./g, '_') + '_triggers.json';
                 download(name, exportJson(out));
                 setDirty('entry', false);
+                // 开发态：清理演示触发记录，避免 repeatable:false 的条目因为旧 localStorage 一直不再触发
+                try {
+                    localStorage.removeItem('cabi_demo_flags_v1');
+                    localStorage.removeItem('cabi_demo_triggered_entries_v1');
+                } catch (e) { /* ignore */ }
                 toast('success', '已导出事件', name + '（请手动放入 data/npc/）');
             });
 
@@ -2329,6 +2411,551 @@
             renderEntriesList();
             document.getElementById('entry-edit-placeholder').style.display = 'block';
             document.getElementById('entry-edit-panel').style.display = 'none';
+            // v2 additions: project-directory binding, direct file save, image panel
+            // ═══════════════════════════════════════════════════════════════════
+
+            // --- Project root directory handle ----------------------------------
+            state.projectDirHandle = null;  // FileSystemDirectoryHandle for project root
+            var autoSaveTimer = null;
+
+            function updateBindPill() {
+                var pill = document.getElementById('bind-pill');
+                if (!pill) return;
+                if (state.projectDirHandle) {
+                    pill.textContent = '📁 ' + (state.projectDirHandle.name || '已绑定');
+                    pill.className = 'bind-pill bound';
+                    pill.title = '已绑定目录：' + (state.projectDirHandle.name || '') + '\n保存时直接写入 data/npc/';
+                } else {
+                    pill.textContent = '📁 未绑定';
+                    pill.className = 'bind-pill';
+                    pill.title = '未绑定项目目录，保存时会下载 JSON 文件';
+                }
+            }
+
+            function setBoundSaving(msg) {
+                var pill = document.getElementById('bind-pill');
+                if (!pill) return;
+                pill.className = 'bind-pill saving';
+                pill.textContent = '💾 ' + (msg || '保存中…');
+            }
+            function setBoundError(msg) {
+                var pill = document.getElementById('bind-pill');
+                if (!pill) return;
+                pill.className = 'bind-pill error';
+                pill.textContent = '✗ ' + (msg || '保存失败');
+                pill.title = msg || '';
+                window.setTimeout(function () { updateBindPill(); }, 3000);
+            }
+            function setBoundOk(msg) {
+                var pill = document.getElementById('bind-pill');
+                if (!pill) return;
+                pill.className = 'bind-pill bound';
+                pill.textContent = '✓ ' + (msg || '已写入');
+                window.setTimeout(function () { updateBindPill(); }, 2200);
+            }
+
+            async function bindProjectDir() {
+                if (!window.showDirectoryPicker) {
+                    toast('warn', '不支持', '当前浏览器不支持目录选取，请使用 Chrome/Edge 的最新版本。');
+                    return;
+                }
+                try {
+                    var dir = await window.showDirectoryPicker({ id: 'cabi-project-root-v2', mode: 'readwrite' });
+                    state.projectDirHandle = dir;
+                    // Also reuse as image root if user picked project root (common case)
+                    // Try to navigate into image/ to set imageRootDirHandle
+                    try {
+                        var imgDir = await dir.getDirectoryHandle('image', { create: false });
+                        state.imageRootDirHandle = imgDir;
+                    } catch (e) { /* image dir doesn't exist yet, that's ok */ }
+                    updateBindPill();
+                    toast('success', '已绑定目录', dir.name + '\n保存 NPC/事件 时将直接写入 data/npc/，无需手动移动文件。', 5000);
+                } catch (err) {
+                    if (err && err.name === 'AbortError') return;
+                    toast('error', '绑定失败', (err && err.message) ? err.message : String(err));
+                }
+            }
+
+            async function writeJsonToProject(relativePath, text) {
+                // relativePath like 'data/npc/xxx.json'
+                if (!state.projectDirHandle) return false;
+                try {
+                    var parts = relativePath.split('/');
+                    var cur = state.projectDirHandle;
+                    for (var i = 0; i < parts.length - 1; i++) {
+                        cur = await cur.getDirectoryHandle(parts[i], { create: true });
+                    }
+                    var fh = await cur.getFileHandle(parts[parts.length - 1], { create: true });
+                    var w = await fh.createWritable();
+                    await w.write(text || '');
+                    await w.close();
+                    return true;
+                } catch (err) {
+                    throw err;
+                }
+            }
+
+            async function readJsonFromProject(relativePath) {
+                if (!state.projectDirHandle) return null;
+                try {
+                    var parts = relativePath.split('/');
+                    var cur = state.projectDirHandle;
+                    for (var i = 0; i < parts.length - 1; i++) {
+                        cur = await cur.getDirectoryHandle(parts[i], { create: false });
+                    }
+                    var fh = await cur.getFileHandle(parts[parts.length - 1], { create: false });
+                    var file = await fh.getFile();
+                    return await file.text();
+                } catch (err) {
+                    return null;
+                }
+            }
+
+            function getNpcJsonPath() {
+                var id = (state.npc && state.npc.id) ? state.npc.id : 'npc';
+                return 'data/npc/' + id.replace(/\./g, '_') + '.json';
+            }
+            function getTriggersJsonPath() {
+                var id = (state.triggers && state.triggers.npcId) ? state.triggers.npcId : ((state.npc && state.npc.id) ? state.npc.id : 'npc');
+                return 'data/npc/' + id.replace(/\./g, '_') + '_triggers.json';
+            }
+
+            function scheduleAutoSave() {
+                if (!state.projectDirHandle) return;
+                if (autoSaveTimer) window.clearTimeout(autoSaveTimer);
+                autoSaveTimer = window.setTimeout(function () {
+                    doSaveAll(true);
+                }, 1500);
+            }
+
+            // Patch setDirty to trigger auto-save
+            var _origSetDirty = setDirty;
+            setDirty = function (which, v) {
+                _origSetDirty(which, v);
+                if (v && state.projectDirHandle) scheduleAutoSave();
+            };
+
+            async function doSaveNpc(silent) {
+                formToNpc();
+                var errs = validateNpcDef(state.npc);
+                if (errs && errs.length) {
+                    if (!silent) toast('error', '无法保存', '请先修复左侧红色错误提示。');
+                    return false;
+                }
+                var out = {};
+                out.schemaVersion = state.npc.schemaVersion || SCHEMA_VERSION;
+                for (var k in state.npc) {
+                    if (!state.npc.hasOwnProperty(k)) continue;
+                    if (k === '_comment' || k === '_extra') continue;
+                    out[k] = state.npc[k];
+                }
+                if (state.npc._extra && typeof state.npc._extra === 'object') {
+                    for (var k2 in state.npc._extra) {
+                        if (!state.npc._extra.hasOwnProperty(k2)) continue;
+                        if (out[k2] === undefined) out[k2] = state.npc._extra[k2];
+                    }
+                }
+                var jsonStr = exportJson(out);
+                var path = getNpcJsonPath();
+                if (state.projectDirHandle) {
+                    try {
+                        setBoundSaving('保存 NPC…');
+                        await writeJsonToProject(path, jsonStr);
+                        setDirty('npc', false);
+                        setBoundOk('NPC 已写入');
+                        if (!silent) toast('success', '已保存 NPC', path);
+                        return true;
+                    } catch (err) {
+                        setBoundError('写入失败');
+                        if (!silent) toast('error', '保存失败', (err && err.message) ? err.message : String(err));
+                        return false;
+                    }
+                } else {
+                    var name = path.split('/').pop();
+                    download(name, jsonStr);
+                    setDirty('npc', false);
+                    if (!silent) toast('success', '已下载 NPC', name + '\n（未绑定目录，请手动放入 data/npc/）', 6000);
+                    return true;
+                }
+            }
+
+            async function doSaveTriggers(silent) {
+                formToNpc();
+                if (state.selectedEntryIndex >= 0) formToEntry(state.triggers.entries[state.selectedEntryIndex]);
+                var vtr = validateTriggers(state.triggers);
+                if (vtr.errors && vtr.errors.length) {
+                    if (!silent) toast('error', '无法保存', vtr.errors[0].message);
+                    return false;
+                }
+                if (vtr.warnings && vtr.warnings.length && !silent) {
+                    toast('warn', '保存提醒', vtr.warnings[0].message, 8000);
+                }
+                var out = { npcId: state.triggers.npcId || state.npc.id, entries: state.triggers.entries };
+                var jsonStr = exportJson(out);
+                var path = getTriggersJsonPath();
+                // 清理演示用的 localStorage
+                try { localStorage.removeItem('cabi_demo_flags_v1'); localStorage.removeItem('cabi_demo_triggered_entries_v1'); } catch (e) {}
+                if (state.projectDirHandle) {
+                    try {
+                        setBoundSaving('保存事件…');
+                        await writeJsonToProject(path, jsonStr);
+                        setDirty('entry', false);
+                        setBoundOk('事件已写入');
+                        if (!silent) toast('success', '已保存事件', path);
+                        return true;
+                    } catch (err) {
+                        setBoundError('写入失败');
+                        if (!silent) toast('error', '保存失败', (err && err.message) ? err.message : String(err));
+                        return false;
+                    }
+                } else {
+                    var name2 = path.split('/').pop();
+                    download(name2, jsonStr);
+                    setDirty('entry', false);
+                    if (!silent) toast('success', '已下载事件', name2 + '\n（未绑定目录，请手动放入 data/npc/）', 6000);
+                    return true;
+                }
+            }
+
+            async function doSaveAll(silent) {
+                var dirty = !!(state.dirty && (state.dirty.npc || state.dirty.entry));
+                if (!dirty) return;
+                if (state.dirty && state.dirty.npc) await doSaveNpc(silent);
+                if (state.dirty && state.dirty.entry) await doSaveTriggers(silent);
+            }
+
+            // Add "从目录打开 NPC" feature
+            async function openNpcFromProject() {
+                if (!state.projectDirHandle) {
+                    toast('warn', '需要绑定目录', '请先点击「📁 绑定目录」选择项目根目录。');
+                    return;
+                }
+                // List data/npc/ and let user pick
+                try {
+                    var dataNpcDir = await state.projectDirHandle.getDirectoryHandle('data', { create: false })
+                        .then(function (d) { return d.getDirectoryHandle('npc', { create: false }); });
+                    var files = [];
+                    for await (var entry of dataNpcDir.values()) {
+                        if (entry.kind === 'file' && entry.name.endsWith('.json') && !entry.name.endsWith('_triggers.json') && entry.name !== 'npc_registry.json') {
+                            files.push(entry.name);
+                        }
+                    }
+                    if (!files.length) {
+                        toast('info', '目录为空', 'data/npc/ 中暂无 NPC JSON 文件。');
+                        return;
+                    }
+                    files.sort();
+                    // Show a quick pick dialog using confirmDialog pattern
+                    var pickSel = document.createElement('select');
+                    pickSel.style.cssText = 'width:100%;padding:8px;background:#1a1a2e;border:1px solid #444;color:#e5e5e5;border-radius:8px;font-size:13px;';
+                    for (var i = 0; i < files.length; i++) {
+                        var o = document.createElement('option');
+                        o.value = files[i]; o.textContent = files[i];
+                        pickSel.appendChild(o);
+                    }
+                    var container = document.createElement('div');
+                    container.appendChild(pickSel);
+                    // Re-use paste overlay as a quick container
+                    var chosen = await new Promise(function (resolve) {
+                        var overlay = document.createElement('div');
+                        overlay.className = 'confirm-overlay show';
+                        overlay.setAttribute('role', 'dialog');
+                        var card = document.createElement('div');
+                        card.className = 'confirm-card';
+                        card.innerHTML = '<div class="c-title">打开 NPC 文件</div><div class="c-msg" style="margin:10px 0 6px;"><label style="display:block;margin-bottom:6px;color:#94a3b8;font-size:12px;">选择 data/npc/ 中的文件：</label></div>';
+                        card.querySelector('.c-msg').appendChild(pickSel);
+                        var acts = document.createElement('div');
+                        acts.className = 'c-actions';
+                        var cancel = document.createElement('button');
+                        cancel.type = 'button'; cancel.textContent = '取消';
+                        cancel.addEventListener('click', function () { document.body.removeChild(overlay); resolve(null); });
+                        var ok = document.createElement('button');
+                        ok.type = 'button'; ok.textContent = '打开'; ok.className = 'primary';
+                        ok.addEventListener('click', function () { document.body.removeChild(overlay); resolve(pickSel.value); });
+                        acts.appendChild(cancel); acts.appendChild(ok);
+                        card.appendChild(acts);
+                        overlay.appendChild(card);
+                        overlay.addEventListener('click', function (e) { if (e.target === overlay) { document.body.removeChild(overlay); resolve(null); } });
+                        document.body.appendChild(overlay);
+                        pickSel.focus();
+                    });
+                    if (!chosen) return;
+                    var fh2 = await dataNpcDir.getFileHandle(chosen, { create: false });
+                    var file2 = await fh2.getFile();
+                    var text2 = await file2.text();
+                    var data2 = JSON.parse(text2);
+                    applyImportedNpc(data2);
+                    // Also try to load matching triggers
+                    var trigName = chosen.replace('.json', '_triggers.json');
+                    try {
+                        var tfh = await dataNpcDir.getFileHandle(trigName, { create: false });
+                        var tfile = await tfh.getFile();
+                        var ttext = await tfile.text();
+                        var tdata = JSON.parse(ttext);
+                        applyImportedTriggers(tdata);
+                        toast('success', '已打开', chosen + ' + ' + trigName);
+                    } catch (te) {
+                        toast('success', '已打开', chosen + '\n（未找到对应 _triggers.json）');
+                    }
+                } catch (err) {
+                    if (err && err.name === 'NotFoundError') {
+                        toast('warn', '目录不存在', '项目中没有 data/npc/ 目录，请先创建 NPC 并保存一次。');
+                    } else {
+                        toast('error', '打开失败', (err && err.message) ? err.message : String(err));
+                    }
+                }
+            }
+
+            document.getElementById('btn-bind-project').addEventListener('click', function () {
+                bindProjectDir();
+            });
+
+            // Override export buttons to use doSave* instead
+            document.getElementById('btn-export-npc').removeEventListener('click', arguments.callee);
+            (function () {
+                var btn = document.getElementById('btn-export-npc');
+                var old = btn.onclick;
+                // Replace with new handler - remove old listener by cloning
+                var fresh = btn.cloneNode(true);
+                btn.parentNode.replaceChild(fresh, btn);
+                fresh.addEventListener('click', function () { doSaveNpc(false); });
+            })();
+            (function () {
+                var btn = document.getElementById('btn-export-triggers');
+                var fresh = btn.cloneNode(true);
+                btn.parentNode.replaceChild(fresh, btn);
+                fresh.addEventListener('click', function () { doSaveTriggers(false); });
+            })();
+
+            // ─── Left panel tab switching ─────────────────────────────────────
+            window.switchLeftTab = function (name) {
+                var panes = ['npc', 'images'];
+                for (var i = 0; i < panes.length; i++) {
+                    var btn = document.getElementById('tab-btn-' + panes[i]);
+                    var pane = document.getElementById('tab-pane-' + panes[i]);
+                    if (btn) btn.classList.toggle('active', panes[i] === name);
+                    if (pane) pane.classList.toggle('active', panes[i] === name);
+                }
+                if (name === 'images') renderImagePanel();
+            };
+
+            // ─── Image Panel ──────────────────────────────────────────────────
+            window.renderImagePanel = function () {
+                renderSpriteCard();
+                renderAvatarsList();
+            };
+
+            function renderSpriteCard() {
+                var card = document.getElementById('img-sprite-card');
+                if (!card) return;
+                card.innerHTML = '';
+                var spritePath = (state.npc && state.npc.sprite) ? String(state.npc.sprite) : '';
+                var div = document.createElement('div');
+                div.className = 'img-asset-card';
+
+                var thumb = document.createElement('div');
+                thumb.className = 'thumb';
+                if (spritePath) {
+                    var img = document.createElement('img');
+                    img.src = spritePath;
+                    img.onerror = function () { thumb.innerHTML = '<span class="no-img">无法加载</span>'; };
+                    thumb.appendChild(img);
+                } else {
+                    thumb.innerHTML = '<span class="no-img">未设置</span>';
+                }
+
+                var info = document.createElement('div');
+                info.className = 'info';
+                var pathEl = document.createElement('div');
+                pathEl.className = 'path';
+                pathEl.textContent = spritePath || '（地图形象未设置）';
+                var pathInp = document.createElement('input');
+                pathInp.type = 'text';
+                pathInp.value = spritePath;
+                pathInp.placeholder = 'assets/npc/xxx/sprite.png';
+                pathInp.style.cssText = 'margin-bottom:6px; font-size:11px;';
+                pathInp.addEventListener('input', function () {
+                    state.npc.sprite = pathInp.value.trim();
+                    setDirty('npc', true);
+                    // Update sprite field in form if visible
+                    var formEl = document.getElementById('npc-sprite');
+                    if (formEl) formEl.value = state.npc.sprite;
+                    // Update preview
+                    if (state.npc.sprite) {
+                        var img2 = thumb.querySelector('img');
+                        if (!img2) { img2 = document.createElement('img'); thumb.innerHTML = ''; thumb.appendChild(img2); }
+                        img2.src = state.npc.sprite;
+                        img2.onerror = function () { thumb.innerHTML = '<span class="no-img">无法加载</span>'; };
+                    } else {
+                        thumb.innerHTML = '<span class="no-img">未设置</span>';
+                    }
+                });
+
+                var btnRow = document.createElement('div');
+                btnRow.className = 'btn-row';
+
+                var fileInp2 = document.createElement('input');
+                fileInp2.type = 'file';
+                fileInp2.accept = 'image/*';
+                fileInp2.style.display = 'none';
+                var btnUploadSprite = document.createElement('button');
+                btnUploadSprite.type = 'button';
+                btnUploadSprite.textContent = '📤 上传 Sprite';
+                fileInp2.addEventListener('change', function () {
+                    var f = fileInp2.files && fileInp2.files[0];
+                    if (!f) return;
+                    var folder = getNpcAvatarFolderName();
+                    var sugPath = 'assets/npc/' + folder + '/' + f.name;
+                    pathInp.value = sugPath;
+                    pathInp.dispatchEvent(new Event('input'));
+                    if (window.showDirectoryPicker && state.projectDirHandle) {
+                        state.projectDirHandle.getDirectoryHandle('assets', { create: true })
+                            .then(function (d) { return d.getDirectoryHandle('npc', { create: true }); })
+                            .then(function (d) { return d.getDirectoryHandle(folder, { create: true }); })
+                            .then(function (d) { return writeFileToHandle(d, f, f.name); })
+                            .then(function () { toast('success', '已写入 Sprite', sugPath); })
+                            .catch(function (err) { toast('error', '写入失败', err && err.message ? err.message : String(err)); });
+                    } else {
+                        var url3 = URL.createObjectURL(f);
+                        var img3 = thumb.querySelector('img');
+                        if (!img3) { img3 = document.createElement('img'); thumb.innerHTML = ''; thumb.appendChild(img3); }
+                        img3.src = url3;
+                        toast('info', '已预览', '请手动把图片放到 ' + sugPath);
+                    }
+                });
+                btnUploadSprite.addEventListener('click', function () { fileInp2.click(); });
+
+                btnRow.appendChild(btnUploadSprite);
+                btnRow.appendChild(fileInp2);
+
+                info.appendChild(pathInp);
+                info.appendChild(btnRow);
+                div.appendChild(thumb);
+                div.appendChild(info);
+                card.appendChild(div);
+            }
+
+            function collectAllAvatarPaths() {
+                var map = {};  // path -> [ entryId, ... ]
+                var entries = (state.triggers && Array.isArray(state.triggers.entries)) ? state.triggers.entries : [];
+                for (var i = 0; i < entries.length; i++) {
+                    var e = entries[i];
+                    var dlg = e && e.dialogue;
+                    var linesRich = dlg && Array.isArray(dlg.linesRich) ? dlg.linesRich : [];
+                    for (var j = 0; j < linesRich.length; j++) {
+                        var av = linesRich[j] && (linesRich[j].avatar || linesRich[j].avatarUrl);
+                        if (av && String(av).trim()) {
+                            var p = String(av).trim();
+                            if (!map[p]) map[p] = [];
+                            if (map[p].indexOf(e.id || ('entry_' + i)) < 0) map[p].push(e.id || ('entry_' + i));
+                        }
+                    }
+                }
+                return map;
+            }
+
+            function renderAvatarsList() {
+                var list = document.getElementById('img-avatars-list');
+                var countEl = document.getElementById('img-avatars-count');
+                if (!list) return;
+                list.innerHTML = '';
+                var map = collectAllAvatarPaths();
+                var paths = Object.keys(map);
+                if (countEl) countEl.textContent = paths.length + ' 张';
+                if (!paths.length) {
+                    list.innerHTML = '<div class="img-empty">还没有任何事件使用对话头像。<br>在事件编辑器里为台词设置头像后，这里会自动显示。</div>';
+                    return;
+                }
+                paths.sort();
+                for (var pi = 0; pi < paths.length; pi++) {
+                    (function (p, usedIn) {
+                        var div = document.createElement('div');
+                        div.className = 'img-asset-card';
+
+                        var thumb = document.createElement('div');
+                        thumb.className = 'thumb';
+                        var tImg = document.createElement('img');
+                        tImg.src = p;
+                        tImg.onerror = function () { thumb.innerHTML = '<span class="no-img">未找到</span>'; };
+                        thumb.appendChild(tImg);
+
+                        var info = document.createElement('div');
+                        info.className = 'info';
+
+                        var pathEl = document.createElement('div');
+                        pathEl.className = 'path';
+                        pathEl.textContent = p;
+
+                        var usageEl = document.createElement('div');
+                        usageEl.className = 'usage';
+                        usageEl.textContent = '使用于：' + usedIn.slice(0, 3).join(', ') + (usedIn.length > 3 ? '…' : '');
+
+                        var btnRow = document.createElement('div');
+                        btnRow.className = 'btn-row';
+
+                        var fileInpR = document.createElement('input');
+                        fileInpR.type = 'file';
+                        fileInpR.accept = 'image/*';
+                        fileInpR.style.display = 'none';
+
+                        var btnReplace = document.createElement('button');
+                        btnReplace.type = 'button';
+                        btnReplace.textContent = '替换图片';
+
+                        fileInpR.addEventListener('change', function () {
+                            var f = fileInpR.files && fileInpR.files[0];
+                            if (!f) return;
+                            // Keep same path, replace file
+                            var url4 = URL.createObjectURL(f);
+                            tImg.src = url4;
+                            tImg.style.display = 'block';
+                            if (state.projectDirHandle) {
+                                // Write to project at same path
+                                var parts2 = p.split('/');
+                                var dir2 = state.projectDirHandle;
+                                var dirPromise = Promise.resolve(dir2);
+                                for (var pi2 = 0; pi2 < parts2.length - 1; pi2++) {
+                                    (function (seg) {
+                                        dirPromise = dirPromise.then(function (d) { return d.getDirectoryHandle(seg, { create: true }); });
+                                    })(parts2[pi2]);
+                                }
+                                dirPromise.then(function (d) {
+                                    return writeFileToHandle(d, f, parts2[parts2.length - 1]);
+                                }).then(function () {
+                                    toast('success', '已替换图片', p);
+                                }).catch(function (err) {
+                                    toast('error', '替换失败', err && err.message ? err.message : String(err));
+                                });
+                            } else {
+                                toast('info', '已预览', '请手动把图片放到 ' + p + '\n（绑定目录后可自动写入）');
+                            }
+                        });
+                        btnReplace.addEventListener('click', function () { fileInpR.click(); });
+
+                        var btnCopy = document.createElement('button');
+                        btnCopy.type = 'button';
+                        btnCopy.textContent = '复制路径';
+                        btnCopy.addEventListener('click', function () {
+                            try { navigator.clipboard.writeText(p); toast('success', '已复制', p, 1800); } catch (e2) { toast('info', '路径', p); }
+                        });
+
+                        btnRow.appendChild(btnReplace);
+                        btnRow.appendChild(fileInpR);
+                        btnRow.appendChild(btnCopy);
+
+                        info.appendChild(pathEl);
+                        info.appendChild(usageEl);
+                        info.appendChild(btnRow);
+                        div.appendChild(thumb);
+                        div.appendChild(info);
+                        list.appendChild(div);
+                    })(paths[pi], map[paths[pi]]);
+                }
+            }
+
+            // Initialize
+            updateBindPill();
+
         })();
     </script>
 </body>

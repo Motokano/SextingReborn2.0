@@ -1,0 +1,1059 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Buff 编辑器 - 潮碧物语</title>
+  <style>
+    :root{
+      --bg: #0b1020;
+      --panel:#0b1324;
+      --border: rgba(148,163,184,0.18);
+      --border2: rgba(148,163,184,0.28);
+      --text:#e5e7eb;
+      --muted:#94a3b8;
+      --muted2:#64748b;
+      --primary:#60a5fa;
+      --danger:#ef4444;
+      --warn:#f59e0b;
+      --shadow: 0 18px 60px rgba(0,0,0,0.45);
+      --radius: 12px;
+    }
+    *{ box-sizing:border-box; }
+    body{
+      margin:0;
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial, "Noto Sans", "Liberation Sans", sans-serif;
+      background: radial-gradient(1200px 800px at 30% 0%, rgba(96,165,250,0.10), transparent 55%),
+                  linear-gradient(180deg, var(--bg), #070a14 70%);
+      color: var(--text);
+    }
+    .toolbar{
+      position: sticky; top: 0; z-index: 50;
+      padding: 12px 16px;
+      background: rgba(10,18,34,0.86);
+      border-bottom: 1px solid var(--border);
+      backdrop-filter: blur(10px);
+      display:flex; gap:10px; align-items:center; flex-wrap:wrap;
+    }
+    button{
+      appearance:none;
+      border: 1px solid var(--border);
+      background: rgba(148,163,184,0.10);
+      color: var(--text);
+      cursor: pointer;
+      border-radius: 10px;
+      padding: 8px 12px;
+      font-size: 12px;
+      font-weight: 900;
+    }
+    button.primary{ background: linear-gradient(180deg, rgba(96,165,250,0.22), rgba(96,165,250,0.10)); border-color: rgba(96,165,250,0.45); }
+    button.danger{ background: linear-gradient(180deg, rgba(239,68,68,0.18), rgba(239,68,68,0.08)); border-color: rgba(239,68,68,0.38); }
+    button.warn{ background: linear-gradient(180deg, rgba(245,158,11,0.18), rgba(245,158,11,0.08)); border-color: rgba(245,158,11,0.38); }
+    button:disabled{ opacity: 0.55; cursor: not-allowed; }
+    input, select, textarea{
+      background: rgba(148,163,184,0.10);
+      border: 1px solid var(--border);
+      color: var(--text);
+      border-radius: 10px;
+      padding: 8px 12px;
+      outline: none;
+      font-size: 12px;
+    }
+    select{ background: rgba(148,163,184,0.10) !important; color: var(--text) !important; }
+    option{ background: #0b1324 !important; color: #e5e7eb !important; }
+    textarea{
+      width:100%;
+      resize: vertical;
+      min-height: 80px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+    }
+    .hint{ color: var(--muted2); font-size: 12px; line-height: 1.5; }
+    .pill{
+      display:inline-block;
+      padding: 3px 10px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: rgba(148,163,184,0.07);
+      color: var(--muted);
+      font-size: 12px;
+      max-width: 55vw;
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+    }
+    .wrap{
+      display:grid;
+      grid-template-columns: 340px 1fr;
+      gap: 14px;
+      padding: 14px;
+    }
+    @media (max-width: 1100px){ .wrap{ grid-template-columns: 1fr; } }
+    .panel{
+      border: 1px solid var(--border);
+      background: rgba(11,19,36,0.68);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow:hidden;
+    }
+    .panel .title{
+      padding: 12px 14px;
+      border-bottom: 1px solid var(--border);
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 900;
+      display:flex;
+      align-items:center;
+      gap:10px;
+      flex-wrap:wrap;
+    }
+    .panel .content{ padding: 12px 14px; }
+    .list{
+      display:grid;
+      gap: 8px;
+      margin-top: 12px;
+    }
+    .item{
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      background: rgba(148,163,184,0.07);
+      padding: 10px 10px;
+      cursor: pointer;
+    }
+    .item.active{
+      border-color: rgba(96,165,250,0.55);
+      box-shadow: 0 0 0 2px rgba(96,165,250,0.16);
+      background: rgba(96,165,250,0.08);
+    }
+    .item .top{
+      display:flex; align-items:center; gap:10px;
+    }
+    .item .id{
+      font-weight: 1000;
+      font-size: 12px;
+      flex: 1;
+      overflow:hidden;
+      white-space:nowrap;
+      text-overflow:ellipsis;
+    }
+    .item .tag{
+      font-size: 11px;
+      padding: 2px 8px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      color: var(--muted);
+      background: rgba(148,163,184,0.05);
+    }
+    .item .sub{
+      margin-top: 6px;
+      color: var(--muted2);
+      font-size: 12px;
+      overflow:hidden;
+      white-space:nowrap;
+      text-overflow:ellipsis;
+    }
+    .err{
+      color: #fecaca;
+      background: rgba(239,68,68,0.12);
+      border: 1px solid rgba(239,68,68,0.35);
+      padding: 10px 12px;
+      border-radius: 10px;
+      white-space: pre-wrap;
+      font-size: 12px;
+      display:none;
+    }
+    .ok{
+      color: #bbf7d0;
+      background: rgba(34,197,94,0.12);
+      border: 1px solid rgba(34,197,94,0.35);
+      padding: 10px 12px;
+      border-radius: 10px;
+      white-space: pre-wrap;
+      font-size: 12px;
+      display:none;
+    }
+    .field{
+      display:grid;
+      grid-template-columns: 220px 1fr;
+      gap: 10px;
+      align-items:start;
+      margin: 10px 0;
+    }
+    @media (max-width: 900px){ .field{ grid-template-columns: 1fr; } }
+    .field label{
+      color: var(--muted);
+      font-weight: 1000;
+      font-size: 12px;
+      padding-top: 8px;
+    }
+    .rowActions{ display:flex; gap:10px; flex-wrap:wrap; margin-top: 12px; }
+    .grid2{ display:grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    @media (max-width: 900px){ .grid2{ grid-template-columns: 1fr; } }
+    .mini{ font-size: 11px; color: var(--muted2); margin-top: 6px; }
+    .mono{ font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; }
+    .opt-guide{
+      margin: 10px 0 0;
+      padding: 10px 12px;
+      border: 1px solid var(--border2);
+      border-radius: 10px;
+      background: rgba(148,163,184,0.06);
+      font-size: 12px;
+      line-height: 1.6;
+      color: #cbd5e1;
+    }
+  </style>
+</head>
+<body>
+  <div class="toolbar">
+    <button type="button" class="primary" id="btn-load-data">载入：data/buffs.json</button>
+    <button type="button" id="btn-import-json">导入 JSON</button>
+    <input id="inp-json" type="file" accept="application/json,.json" style="display:none" />
+    <button type="button" id="btn-export-json">导出 JSON</button>
+    <button type="button" id="btn-export-clipboard">复制 JSON 到剪贴板</button>
+    <div style="flex-basis:100%; height:0;"></div>
+
+    <button type="button" class="primary" id="btn-new">新增 Buff</button>
+    <button type="button" id="btn-duplicate">复制当前</button>
+    <button type="button" class="danger" id="btn-delete">删除当前</button>
+    <span class="pill" id="status">未载入数据</span>
+    <span style="flex:1"></span>
+    <input id="inp-search" type="text" placeholder="搜索：buff_id / name / event_name / tag" style="min-width:240px; width:340px; max-width:70vw;" />
+  </div>
+
+  <div class="wrap">
+    <div class="panel">
+      <div class="title">
+        Buff 列表
+        <span class="pill" id="pill-count">0</span>
+      </div>
+      <div class="content">
+        <div class="hint">
+          面向不写代码的策划：先点“新增 Buff”，再按右侧表单逐项填写。导出后把 JSON 放进 `data/buffs.json`（或用本工具直接导出文件）。
+        </div>
+        <div class="list" id="list"></div>
+        <div class="mini">草稿会自动保存到本地（仅你电脑）。</div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="title">编辑 Buff（遵循 docs/design/18-buff-system.md）</div>
+      <div class="content">
+        <div id="msg-ok" class="ok"></div>
+        <div id="msg-err" class="err"></div>
+
+        <div class="field">
+          <label>buff_id（内部唯一）</label>
+          <div>
+            <input id="f-buff-id" class="mono" placeholder="例如：buff_guard_layers" />
+            <div class="mini">建议：全小写英文+下划线。不可重复。</div>
+          </div>
+        </div>
+
+        <div class="field">
+          <label>name（展示名）</label>
+          <div>
+            <input id="f-name" placeholder="例如：护体·层" />
+            <div class="mini">给玩家看的名字；内部逻辑用 buff_id。</div>
+          </div>
+        </div>
+
+        <div class="field">
+          <label>desc（描述）</label>
+          <div>
+            <textarea id="f-desc" placeholder="给玩家看的说明（可空）"></textarea>
+          </div>
+        </div>
+
+        <div class="grid2">
+          <div class="field" style="margin:0;">
+            <label>durationTicks（持续 tick）</label>
+            <div>
+              <input id="f-duration" type="number" min="0" step="1" value="0" />
+              <div class="mini">叠加时：stacks 增加 + duration 重置（你已确认）。</div>
+            </div>
+          </div>
+          <div class="field" style="margin:0;">
+            <label>maxStacks（最大层数）</label>
+            <div>
+              <input id="f-max-stacks" type="number" min="1" step="1" value="1" />
+              <div class="mini">超过上限会夹紧。</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="grid2" style="margin-top:10px;">
+          <div class="field" style="margin:0;">
+            <label>stacksAddOnApply（施加增加层数）</label>
+            <div>
+              <input id="f-add-stacks" type="number" min="0" step="1" value="1" />
+              <div class="mini">同类叠加时增加的层数。</div>
+            </div>
+          </div>
+          <div class="field" style="margin:0;">
+            <label>priority（同事件顺序）</label>
+            <div>
+              <input id="f-priority" type="number" step="1" value="100" />
+              <div class="mini">数字越小越先执行。执行顺序：先扣层 → 再应用效果。</div>
+            </div>
+          </div>
+        </div>
+
+        <hr style="border:0;border-top:1px solid var(--border);margin:14px 0;">
+
+        <div class="hint" style="margin-bottom:6px;">
+          触发过滤：让任意动作/事件/对话都能触发同一套 Buff 逻辑（按配置决定是否触发/是否消耗）。
+        </div>
+        <div class="opt-guide">
+          <strong>关键选项说明：</strong><br>
+          - <span class="mono">listenerSide</span>：<span class="mono">self</span>=宿主自身；<span class="mono">actor</span>=宿主是施动方；<span class="mono">target</span>=宿主是目标方；<span class="mono">both</span>=两边都算。<br>
+          - <span class="mono">consumeMode</span>：<span class="mono">always</span>=每次触发都扣层；<span class="mono">on_hit_roll_success</span>=命中判定成功才扣层；<span class="mono">on_effect_applied</span>=产生实际效果才扣层。<br>
+          - <span class="mono">applyMode</span>：<span class="mono">tie_to_consume</span>=满足消耗条件才生效；<span class="mono">always_apply</span>=始终生效（常用于探针/链式）。<br>
+          - <span class="mono">triggerEventKind/Name/Tags</span>：都从注册表选；事件名建议必填，避免“空过滤”导致误触发。
+        </div>
+
+        <div class="grid2">
+          <div class="field" style="margin:0;">
+            <label>listenerSide（监听侧）</label>
+            <div>
+              <select id="f-listener-side">
+                <option value="self">self（宿主自身）</option>
+                <option value="actor">actor（宿主作为施动方）</option>
+                <option value="target">target（宿主作为目标方）</option>
+                <option value="both">both（施动/目标都可）</option>
+              </select>
+              <div class="mini">决定“这次事件对谁的 buff 生效”。</div>
+            </div>
+          </div>
+
+          <div class="field" style="margin:0;">
+            <label>consumeMode（消耗条件）</label>
+            <div>
+              <select id="f-consume-mode">
+                <option value="always">always（不管命中都消耗）</option>
+                <option value="on_hit_roll_success">on_hit_roll_success（命中判定成功才消耗）</option>
+                <option value="on_effect_applied">on_effect_applied（实际效果生效才消耗）</option>
+              </select>
+              <div class="mini">你选择的命中口径：命中判定成功即算命中（招架后 0 伤害也算）。</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="grid2" style="margin-top:10px;">
+          <div class="field" style="margin:0;">
+            <label>consumeLayersFixed（每次固定消耗）</label>
+            <div>
+              <input id="f-consume-fixed" type="number" min="0" step="1" value="1" />
+              <div class="mini">一次触发扣这么多层；层数扣完即删除整个 buff。</div>
+            </div>
+          </div>
+          <div class="field" style="margin:0;">
+            <label>applyMode（效果应用）</label>
+            <div>
+              <select id="f-apply-mode">
+                <option value="tie_to_consume">tie_to_consume（与消耗条件一致）</option>
+                <option value="always_apply">always_apply（总是应用效果）</option>
+              </select>
+              <div class="mini">高级用法：效果总生效，但只在命中/生效时扣层。</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="field">
+          <label>triggerEventKind（事件大类，逗号分隔）</label>
+          <div>
+            <input id="f-event-kind" class="mono" placeholder="combat,action,dialogue,world,ui" />
+            <div class="rowActions" style="margin-top:8px;">
+              <select id="sel-event-kind" style="min-width:220px;"></select>
+              <button type="button" id="btn-add-event-kind">添加到字段</button>
+            </div>
+            <div class="mini">留空表示不过滤（任何 kind 都可能触发）。</div>
+          </div>
+        </div>
+
+        <div class="field">
+          <label>triggerEventName（事件名，逗号分隔）</label>
+          <div>
+            <input id="f-event-name" class="mono" placeholder="attack_resolved,dialogue_choice_confirmed" />
+            <div class="rowActions" style="margin-top:8px;">
+              <select id="sel-event-name" style="min-width:220px;"></select>
+              <button type="button" id="btn-add-event-name">添加到字段</button>
+            </div>
+            <div class="rowActions" style="margin-top:8px;">
+              <button type="button" id="btn-preset-time">预设：时间触发</button>
+              <button type="button" id="btn-preset-attr">预设：属性触发</button>
+              <button type="button" id="btn-preset-dialogue">预设：对话触发</button>
+              <button type="button" id="btn-preset-env">预设：环境触发</button>
+            </div>
+            <div class="mini">留空表示不过滤（任何 event_name 都可能触发）。建议尽量填写，避免误触发。</div>
+          </div>
+        </div>
+
+        <div class="field">
+          <label>triggerTags（标签过滤，逗号分隔）</label>
+          <div>
+            <input id="f-tags" class="mono" placeholder="attack,control,fire" />
+            <div class="rowActions" style="margin-top:8px;">
+              <select id="sel-tag" style="min-width:220px;"></select>
+              <button type="button" id="btn-add-tag">添加到字段</button>
+            </div>
+            <div class="mini">可空；事件 tags 命中其一即可触发（实现时可选“全包含/任一包含”）。</div>
+          </div>
+        </div>
+
+        <hr style="border:0;border-top:1px solid var(--border);margin:14px 0;">
+
+        <div class="hint" style="margin-bottom:6px;">
+          effects：触发后要做的效果列表。为了让非程序也能用，这里提供“模板按钮”，并允许直接编辑 JSON。
+        </div>
+
+        <div class="rowActions">
+          <button type="button" class="primary" id="btn-effect-template-stat">插入模板：数值型</button>
+          <button type="button" class="primary" id="btn-effect-template-layered">插入模板：分层护盾</button>
+          <button type="button" class="primary" id="btn-effect-template-chain">插入模板：链式触发</button>
+          <button type="button" id="btn-effect-clear">清空 effects</button>
+        </div>
+
+        <div class="field">
+          <label>effects（JSON 数组）</label>
+          <div>
+            <textarea id="f-effects" class="mono" placeholder='例如：[{"type":"add_stat_delta","params":{"jingu":5}}]'></textarea>
+            <div class="mini">
+              建议只用对象数组，每个对象至少包含：<span class="mono">type</span> 与 <span class="mono">params</span>。
+            </div>
+          </div>
+        </div>
+
+        <div class="rowActions">
+          <button type="button" class="primary" id="btn-save">保存到内存（自动草稿）</button>
+          <button type="button" id="btn-validate">校验</button>
+        </div>
+
+        <div class="hint" style="margin-top:10px;">
+          重要：本工具只负责“配表”。运行时如何执行 effects、如何索引触发、如何接入 `recalcCharacterStats()`，以 `docs/design/18-buff-system.md` 为准。
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    (function(){
+      'use strict';
+
+      var DRAFT_KEY = 'cabi.buffEditor.v1.draft';
+      var lastLoadedPath = '';
+      var registry = { event_kinds: [], event_names: [], tags: [] };
+
+      var state = {
+        version: 1,
+        buffs: [],
+        selectedIndex: -1
+      };
+
+      function $(id){ return document.getElementById(id); }
+      var el = {
+        list: $('list'),
+        pillCount: $('pill-count'),
+        status: $('status'),
+        search: $('inp-search'),
+        msgOk: $('msg-ok'),
+        msgErr: $('msg-err'),
+
+        btnLoad: $('btn-load-data'),
+        btnImport: $('btn-import-json'),
+        inpJson: $('inp-json'),
+        btnExport: $('btn-export-json'),
+        btnExportClipboard: $('btn-export-clipboard'),
+
+        btnNew: $('btn-new'),
+        btnDuplicate: $('btn-duplicate'),
+        btnDelete: $('btn-delete'),
+        btnSave: $('btn-save'),
+        btnValidate: $('btn-validate'),
+
+        fId: $('f-buff-id'),
+        fName: $('f-name'),
+        fDesc: $('f-desc'),
+        fDuration: $('f-duration'),
+        fMaxStacks: $('f-max-stacks'),
+        fAddStacks: $('f-add-stacks'),
+        fPriority: $('f-priority'),
+
+        fListenerSide: $('f-listener-side'),
+        fConsumeMode: $('f-consume-mode'),
+        fConsumeFixed: $('f-consume-fixed'),
+        fApplyMode: $('f-apply-mode'),
+        fEventKind: $('f-event-kind'),
+        fEventName: $('f-event-name'),
+        fTags: $('f-tags'),
+        fEffects: $('f-effects'),
+        selEventKind: $('sel-event-kind'),
+        selEventName: $('sel-event-name'),
+        selTag: $('sel-tag'),
+        btnAddEventKind: $('btn-add-event-kind'),
+        btnAddEventName: $('btn-add-event-name'),
+        btnAddTag: $('btn-add-tag'),
+        btnPresetTime: $('btn-preset-time'),
+        btnPresetAttr: $('btn-preset-attr'),
+        btnPresetDialogue: $('btn-preset-dialogue'),
+        btnPresetEnv: $('btn-preset-env'),
+
+        btnTplStat: $('btn-effect-template-stat'),
+        btnTplLayered: $('btn-effect-template-layered'),
+        btnTplChain: $('btn-effect-template-chain'),
+        btnEffectsClear: $('btn-effect-clear')
+      };
+
+      function deepClone(obj){ return JSON.parse(JSON.stringify(obj)); }
+      function nowIso(){ return new Date().toISOString().slice(0,19).replace(/[:T]/g,'-'); }
+      function showErr(msg){
+        el.msgOk.style.display = 'none';
+        el.msgErr.style.display = 'block';
+        el.msgErr.textContent = String(msg || '');
+      }
+      function showOk(msg){
+        el.msgErr.style.display = 'none';
+        el.msgOk.style.display = 'block';
+        el.msgOk.textContent = String(msg || '');
+      }
+      function clearMsg(){
+        el.msgErr.style.display = 'none';
+        el.msgOk.style.display = 'none';
+      }
+      function parseCsvishList(raw){
+        return String(raw || '')
+          .split(',')
+          .map(function(s){ return s.trim(); })
+          .filter(Boolean);
+      }
+      function appendCsvToken(inputEl, token){
+        token = String(token || '').trim();
+        if (!token) return;
+        var arr = parseCsvishList(inputEl.value);
+        if (arr.indexOf(token) < 0) arr.push(token);
+        inputEl.value = arr.join(',');
+        scheduleDraft();
+      }
+      function fillSelect(selectEl, values, placeholder){
+        if (!selectEl) return;
+        selectEl.innerHTML = '';
+        var p = document.createElement('option');
+        p.value = '';
+        p.textContent = placeholder || '请选择';
+        selectEl.appendChild(p);
+        for (var i = 0; i < values.length; i++){
+          var opt = document.createElement('option');
+          opt.value = values[i];
+          opt.textContent = values[i];
+          selectEl.appendChild(opt);
+        }
+      }
+      function refreshRegistrySelects(){
+        fillSelect(el.selEventKind, registry.event_kinds || [], '从注册表选择事件大类');
+        fillSelect(el.selEventName, registry.event_names || [], '从注册表选择事件名');
+        fillSelect(el.selTag, registry.tags || [], '从注册表选择标签');
+      }
+      function loadRegistry(){
+        fetch('../data/editor/buff_event_registry.json')
+          .then(function(r){ return r.ok ? r.json() : null; })
+          .then(function(obj){
+            if (!obj || typeof obj !== 'object') return;
+            registry.event_kinds = Array.isArray(obj.event_kinds) ? obj.event_kinds : [];
+            registry.event_names = Array.isArray(obj.event_names) ? obj.event_names : [];
+            registry.tags = Array.isArray(obj.tags) ? obj.tags : [];
+            refreshRegistrySelects();
+          })
+          .catch(function(){ /* keep manual input only */ });
+      }
+
+      function normalizeBuff(b){
+        b = b && typeof b === 'object' ? b : {};
+        if (!b.buff_id) b.buff_id = '';
+        if (b.name == null) b.name = '';
+        if (b.desc == null) b.desc = '';
+        if (b.durationTicks == null) b.durationTicks = 0;
+        if (b.maxStacks == null) b.maxStacks = 1;
+        if (b.stacksAddOnApply == null) b.stacksAddOnApply = 1;
+        if (b.priority == null) b.priority = 100;
+        if (!b.listenerSide) b.listenerSide = 'self';
+        if (!b.consumeMode) b.consumeMode = 'always';
+        if (b.consumeLayersFixed == null) b.consumeLayersFixed = 1;
+        if (!b.applyMode) b.applyMode = 'tie_to_consume';
+        if (!Array.isArray(b.triggerEventKind)) b.triggerEventKind = [];
+        if (!Array.isArray(b.triggerEventName)) b.triggerEventName = [];
+        if (!Array.isArray(b.triggerTags)) b.triggerTags = [];
+        if (!Array.isArray(b.effects)) b.effects = [];
+        return b;
+      }
+
+      function getDisplayLine(b){
+        var id = b.buff_id || '(未命名 buff_id)';
+        var nm = b.name ? (' · ' + b.name) : '';
+        return id + nm;
+      }
+
+      function refreshList(){
+        el.list.innerHTML = '';
+        var q = String(el.search.value || '').trim().toLowerCase();
+        var shown = 0;
+        for (var i = 0; i < state.buffs.length; i++){
+          var b = state.buffs[i];
+          var hay = JSON.stringify(b).toLowerCase();
+          if (q && hay.indexOf(q) < 0) continue;
+          shown++;
+
+          var div = document.createElement('div');
+          div.className = 'item' + (i === state.selectedIndex ? ' active' : '');
+          div.addEventListener('click', function(idx){
+            return function(){
+              selectIndex(idx);
+            };
+          }(i));
+
+          var top = document.createElement('div');
+          top.className = 'top';
+          var id = document.createElement('div');
+          id.className = 'id';
+          id.textContent = getDisplayLine(b);
+          var tag = document.createElement('div');
+          tag.className = 'tag';
+          tag.textContent = (b.consumeMode || '—');
+          top.appendChild(id);
+          top.appendChild(tag);
+
+          var sub = document.createElement('div');
+          sub.className = 'sub';
+          var ev = (b.triggerEventName && b.triggerEventName.length) ? b.triggerEventName.slice(0,2).join(',') : '（未限制事件名）';
+          sub.textContent = 'dur ' + (b.durationTicks|0) + ' · stacks≤' + (b.maxStacks|0) + ' · events: ' + ev + (b.triggerEventName && b.triggerEventName.length > 2 ? '…' : '');
+
+          div.appendChild(top);
+          div.appendChild(sub);
+          el.list.appendChild(div);
+        }
+        el.pillCount.textContent = String(shown) + ' / ' + String(state.buffs.length);
+      }
+
+      function setStatus(text){
+        el.status.textContent = text;
+      }
+
+      function selectIndex(idx){
+        clearMsg();
+        if (idx < 0 || idx >= state.buffs.length){
+          state.selectedIndex = -1;
+          refreshList();
+          renderEditor(null);
+          setStatus('未选择 buff');
+          return;
+        }
+        state.selectedIndex = idx;
+        refreshList();
+        renderEditor(state.buffs[idx]);
+        setStatus('已选择：' + (state.buffs[idx].buff_id || '(未命名)'));
+        saveDraft();
+      }
+
+      function renderEditor(b){
+        var has = !!b;
+        el.btnDuplicate.disabled = !has;
+        el.btnDelete.disabled = !has;
+        el.btnSave.disabled = !has;
+        el.btnValidate.disabled = !has;
+        if (!has){
+          el.fId.value = '';
+          el.fName.value = '';
+          el.fDesc.value = '';
+          el.fDuration.value = 0;
+          el.fMaxStacks.value = 1;
+          el.fAddStacks.value = 1;
+          el.fPriority.value = 100;
+          el.fListenerSide.value = 'self';
+          el.fConsumeMode.value = 'always';
+          el.fConsumeFixed.value = 1;
+          el.fApplyMode.value = 'tie_to_consume';
+          el.fEventKind.value = '';
+          el.fEventName.value = '';
+          el.fTags.value = '';
+          el.fEffects.value = '';
+          return;
+        }
+
+        b = normalizeBuff(b);
+        el.fId.value = b.buff_id || '';
+        el.fName.value = b.name || '';
+        el.fDesc.value = b.desc || '';
+        el.fDuration.value = (b.durationTicks|0);
+        el.fMaxStacks.value = (b.maxStacks|0) || 1;
+        el.fAddStacks.value = (b.stacksAddOnApply|0);
+        el.fPriority.value = (b.priority|0);
+        el.fListenerSide.value = b.listenerSide || 'self';
+        el.fConsumeMode.value = b.consumeMode || 'always';
+        el.fConsumeFixed.value = (b.consumeLayersFixed|0);
+        el.fApplyMode.value = b.applyMode || 'tie_to_consume';
+        el.fEventKind.value = (b.triggerEventKind || []).join(',');
+        el.fEventName.value = (b.triggerEventName || []).join(',');
+        el.fTags.value = (b.triggerTags || []).join(',');
+        el.fEffects.value = (b.effects && b.effects.length) ? JSON.stringify(b.effects, null, 2) : '';
+      }
+
+      function collectEditor(){
+        var b = normalizeBuff({});
+        b.buff_id = String(el.fId.value || '').trim();
+        b.name = String(el.fName.value || '').trim();
+        b.desc = String(el.fDesc.value || '');
+        b.durationTicks = Math.max(0, parseInt(el.fDuration.value, 10) || 0);
+        b.maxStacks = Math.max(1, parseInt(el.fMaxStacks.value, 10) || 1);
+        b.stacksAddOnApply = Math.max(0, parseInt(el.fAddStacks.value, 10) || 0);
+        b.priority = parseInt(el.fPriority.value, 10) || 0;
+        b.listenerSide = String(el.fListenerSide.value || 'self');
+        b.consumeMode = String(el.fConsumeMode.value || 'always');
+        b.consumeLayersFixed = Math.max(0, parseInt(el.fConsumeFixed.value, 10) || 0);
+        b.applyMode = String(el.fApplyMode.value || 'tie_to_consume');
+        b.triggerEventKind = parseCsvishList(el.fEventKind.value);
+        b.triggerEventName = parseCsvishList(el.fEventName.value);
+        b.triggerTags = parseCsvishList(el.fTags.value);
+
+        var rawEffects = String(el.fEffects.value || '').trim();
+        if (rawEffects){
+          try{
+            var arr = JSON.parse(rawEffects);
+            if (!Array.isArray(arr)) throw new Error('effects 必须是 JSON 数组');
+            b.effects = arr;
+          }catch(e){
+            throw new Error('effects JSON 解析失败：' + (e && e.message ? e.message : e));
+          }
+        }else{
+          b.effects = [];
+        }
+        return b;
+      }
+
+      function validateAll(){
+        var errs = [];
+        var idSet = {};
+        for (var i = 0; i < state.buffs.length; i++){
+          var b = normalizeBuff(state.buffs[i]);
+          if (!b.buff_id) errs.push('第 ' + (i+1) + ' 条：buff_id 不能为空');
+          if (b.buff_id){
+            if (idSet[b.buff_id]) errs.push('buff_id 重复：' + b.buff_id);
+            idSet[b.buff_id] = true;
+          }
+          if (b.maxStacks < 1) errs.push(b.buff_id + '：maxStacks 必须 >= 1');
+          if (b.durationTicks < 0) errs.push(b.buff_id + '：durationTicks 必须 >= 0');
+          if (b.consumeLayersFixed < 0) errs.push(b.buff_id + '：consumeLayersFixed 必须 >= 0');
+          if (!Array.isArray(b.effects)) errs.push(b.buff_id + '：effects 必须是数组');
+          for (var k = 0; k < (b.triggerEventKind || []).length; k++) {
+            if (registry.event_kinds.length && registry.event_kinds.indexOf(b.triggerEventKind[k]) < 0) {
+              errs.push((b.buff_id || ('第' + (i + 1) + '条')) + '：未注册 event_kind -> ' + b.triggerEventKind[k]);
+            }
+          }
+          for (var n = 0; n < (b.triggerEventName || []).length; n++) {
+            if (registry.event_names.length && registry.event_names.indexOf(b.triggerEventName[n]) < 0) {
+              errs.push((b.buff_id || ('第' + (i + 1) + '条')) + '：未注册 event_name -> ' + b.triggerEventName[n]);
+            }
+          }
+          for (var t = 0; t < (b.triggerTags || []).length; t++) {
+            if (registry.tags.length && registry.tags.indexOf(b.triggerTags[t]) < 0) {
+              errs.push((b.buff_id || ('第' + (i + 1) + '条')) + '：未注册 tag -> ' + b.triggerTags[t]);
+            }
+          }
+        }
+        return errs;
+      }
+
+      function saveCurrent(){
+        if (state.selectedIndex < 0) return;
+        clearMsg();
+        try{
+          var b = collectEditor();
+          if (!b.buff_id) throw new Error('buff_id 不能为空');
+
+          // uniqueness check except self
+          for (var i = 0; i < state.buffs.length; i++){
+            if (i === state.selectedIndex) continue;
+            if (state.buffs[i].buff_id === b.buff_id) throw new Error('buff_id 已存在：' + b.buff_id);
+          }
+
+          state.buffs[state.selectedIndex] = b;
+          refreshList();
+          saveDraft();
+          showOk('已保存到内存/草稿。建议点“导出 JSON”写回 data/buffs.json。');
+          setStatus('已保存：' + b.buff_id);
+        }catch(e){
+          showErr(e && e.message ? e.message : String(e));
+        }
+      }
+
+      function newBuff(){
+        clearMsg();
+        var base = normalizeBuff({
+          buff_id: 'buff_new_' + (state.buffs.length + 1),
+          name: '新 Buff',
+          desc: '',
+          durationTicks: 10,
+          maxStacks: 1,
+          stacksAddOnApply: 1,
+          priority: 100,
+          listenerSide: 'self',
+          consumeMode: 'always',
+          consumeLayersFixed: 1,
+          applyMode: 'tie_to_consume',
+          triggerEventKind: ['combat'],
+          triggerEventName: [],
+          triggerTags: [],
+          effects: []
+        });
+        state.buffs.push(base);
+        selectIndex(state.buffs.length - 1);
+        saveDraft();
+      }
+
+      function duplicateCurrent(){
+        if (state.selectedIndex < 0) return;
+        clearMsg();
+        var src = deepClone(state.buffs[state.selectedIndex]);
+        src.buff_id = (src.buff_id || 'buff_copy') + '_copy';
+        state.buffs.push(src);
+        selectIndex(state.buffs.length - 1);
+        saveDraft();
+      }
+
+      function deleteCurrent(){
+        if (state.selectedIndex < 0) return;
+        var b = state.buffs[state.selectedIndex];
+        var ok = window.confirm('确认删除？\n\n' + (b && b.buff_id ? b.buff_id : '(未命名)'));
+        if (!ok) return;
+        state.buffs.splice(state.selectedIndex, 1);
+        var next = Math.min(state.selectedIndex, state.buffs.length - 1);
+        selectIndex(next);
+        saveDraft();
+      }
+
+      function download(filename, text, mime){
+        mime = mime || 'application/json;charset=utf-8';
+        var blob = new Blob([text], { type: mime });
+        var a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        setTimeout(function(){
+          document.body.removeChild(a);
+          URL.revokeObjectURL(a.href);
+        }, 0);
+      }
+
+      function exportJson(){
+        clearMsg();
+        var errs = validateAll();
+        if (errs.length){
+          showErr('校验失败：\n- ' + errs.join('\n- '));
+          return;
+        }
+        var out = { version: state.version || 1, buffs: state.buffs };
+        download('buffs_export_' + nowIso() + '.json', JSON.stringify(out, null, 2));
+        showOk('已导出 JSON。');
+      }
+
+      function exportClipboard(){
+        clearMsg();
+        var out = { version: state.version || 1, buffs: state.buffs };
+        var text = JSON.stringify(out, null, 2);
+        if (!navigator.clipboard || !navigator.clipboard.writeText){
+          showErr('当前环境不支持剪贴板 API，请使用“导出 JSON”。');
+          return;
+        }
+        navigator.clipboard.writeText(text).then(function(){
+          showOk('已复制到剪贴板。');
+        }).catch(function(e){
+          showErr('复制失败：' + (e && e.message ? e.message : e));
+        });
+      }
+
+      function importJsonText(text, from){
+        clearMsg();
+        var obj;
+        try{
+          obj = JSON.parse(String(text || ''));
+        }catch(e){
+          showErr('JSON 解析失败：' + (e && e.message ? e.message : e));
+          return;
+        }
+        if (!obj || typeof obj !== 'object') return showErr('JSON 根必须是对象');
+        var buffs = obj.buffs;
+        if (!Array.isArray(buffs)) return showErr('JSON 必须包含 buffs 数组');
+        state.version = obj.version != null ? obj.version : 1;
+        state.buffs = buffs.map(normalizeBuff);
+        state.selectedIndex = -1;
+        refreshList();
+        selectIndex(state.buffs.length ? 0 : -1);
+        saveDraft();
+        setStatus('已导入：' + (from || 'JSON') + '（共 ' + state.buffs.length + ' 条）');
+        showOk('导入完成。建议点“校验”。');
+      }
+
+      function loadFromFile(file){
+        if (!file) return;
+        var reader = new FileReader();
+        reader.onload = function(){
+          importJsonText(String(reader.result || ''), file.name);
+        };
+        reader.onerror = function(){
+          showErr('读取文件失败');
+        };
+        reader.readAsText(file, 'utf-8');
+      }
+
+      function loadData(){
+        clearMsg();
+        fetch('../data/buffs.json')
+          .then(function(r){ return r.ok ? r.json() : null; })
+          .then(function(obj){
+            if (!obj) throw new Error('载入失败：../data/buffs.json');
+            importJsonText(JSON.stringify(obj), '../data/buffs.json');
+            lastLoadedPath = '../data/buffs.json';
+          })
+          .catch(function(e){
+            showErr(e && e.message ? e.message : e);
+          });
+      }
+
+      function saveDraft(){
+        try{
+          localStorage.setItem(DRAFT_KEY, JSON.stringify({
+            savedAt: Date.now(),
+            state: { version: state.version || 1, buffs: state.buffs, selectedIndex: state.selectedIndex }
+          }));
+        }catch(e){}
+      }
+
+      function loadDraft(){
+        try{
+          var raw = localStorage.getItem(DRAFT_KEY);
+          if (!raw) return false;
+          var obj = JSON.parse(raw);
+          if (!obj || !obj.state || !Array.isArray(obj.state.buffs)) return false;
+          state.version = obj.state.version != null ? obj.state.version : 1;
+          state.buffs = obj.state.buffs.map(normalizeBuff);
+          state.selectedIndex = -1;
+          refreshList();
+          var idx = obj.state.selectedIndex;
+          if (typeof idx === 'number' && idx >= 0 && idx < state.buffs.length) selectIndex(idx);
+          else selectIndex(state.buffs.length ? 0 : -1);
+          setStatus('已从本地草稿恢复（不会覆盖 data/buffs.json，需手动导出）');
+          return true;
+        }catch(e){
+          return false;
+        }
+      }
+
+      function insertEffectsTemplate(kind){
+        if (state.selectedIndex < 0) return;
+        clearMsg();
+        if (kind === 'stat'){
+          el.fEffects.value = JSON.stringify([
+            { "type": "add_stat_delta", "params": { "jingu": 5, "flexibility": 0, "breath": 0, "dexterity": 0, "focus": 0 } }
+          ], null, 2);
+          showOk('已插入 effects 模板：数值型（add_stat_delta）。');
+        } else if (kind === 'layered') {
+          el.fEffects.value = JSON.stringify([
+            { "type": "add_shield_layers", "params": { "shield_id": "diqi_shield", "layers_consumed": 1, "reduce_pct_per_layer": 0.05 } }
+          ], null, 2);
+          showOk('已插入 effects 模板：分层护盾（示意）。');
+        } else {
+          el.fEffects.value = JSON.stringify([
+            { "type": "add_stat_delta", "params": { "focus": 1 } },
+            { "type": "trigger_event", "params": { "event_kind": "world", "event_name": "world_event_triggered", "tags": ["world", "buff"], "actor_id": "player" } }
+          ], null, 2);
+          showOk('已插入 effects 模板：链式触发（用于验证事件链稳定性）。');
+        }
+      }
+
+      function applyEventPreset(kind){
+        if (kind === 'time'){
+          el.fEventKind.value = 'world';
+          el.fEventName.value = 'tick_advanced,time_point_reached';
+          el.fTags.value = 'time,tick';
+          showOk('已应用预设：时间触发。');
+        } else if (kind === 'attr'){
+          el.fEventKind.value = 'world';
+          el.fEventName.value = 'attribute_changed';
+          el.fTags.value = 'attribute,player';
+          showOk('已应用预设：属性触发。');
+        } else if (kind === 'dialogue'){
+          el.fEventKind.value = 'dialogue';
+          el.fEventName.value = 'dialogue_choice_confirmed,dialogue_condition_changed';
+          el.fTags.value = 'dialogue,condition';
+          showOk('已应用预设：对话触发。');
+        } else if (kind === 'env'){
+          el.fEventKind.value = 'world';
+          el.fEventName.value = 'environment_param_changed';
+          el.fTags.value = 'world,environment';
+          showOk('已应用预设：环境触发。');
+        }
+        scheduleDraft();
+      }
+
+      // wiring
+      el.btnLoad.addEventListener('click', loadData);
+      el.btnImport.addEventListener('click', function(){ el.inpJson.value=''; el.inpJson.click(); });
+      el.inpJson.addEventListener('change', function(){ if (this.files && this.files[0]) loadFromFile(this.files[0]); });
+      el.btnExport.addEventListener('click', exportJson);
+      el.btnExportClipboard.addEventListener('click', exportClipboard);
+
+      el.btnNew.addEventListener('click', newBuff);
+      el.btnDuplicate.addEventListener('click', duplicateCurrent);
+      el.btnDelete.addEventListener('click', deleteCurrent);
+      el.btnSave.addEventListener('click', saveCurrent);
+      el.btnValidate.addEventListener('click', function(){
+        clearMsg();
+        var errs = validateAll();
+        if (errs.length) showErr('校验失败：\n- ' + errs.join('\n- '));
+        else showOk('校验通过（基础校验）。');
+      });
+
+      el.search.addEventListener('input', refreshList);
+      el.btnAddEventKind.addEventListener('click', function(){ appendCsvToken(el.fEventKind, el.selEventKind.value); });
+      el.btnAddEventName.addEventListener('click', function(){ appendCsvToken(el.fEventName, el.selEventName.value); });
+      el.btnAddTag.addEventListener('click', function(){ appendCsvToken(el.fTags, el.selTag.value); });
+      el.btnTplStat.addEventListener('click', function(){ insertEffectsTemplate('stat'); });
+      el.btnTplLayered.addEventListener('click', function(){ insertEffectsTemplate('layered'); });
+      el.btnTplChain.addEventListener('click', function(){ insertEffectsTemplate('chain'); });
+      el.btnPresetTime.addEventListener('click', function(){ applyEventPreset('time'); });
+      el.btnPresetAttr.addEventListener('click', function(){ applyEventPreset('attr'); });
+      el.btnPresetDialogue.addEventListener('click', function(){ applyEventPreset('dialogue'); });
+      el.btnPresetEnv.addEventListener('click', function(){ applyEventPreset('env'); });
+      el.btnEffectsClear.addEventListener('click', function(){ el.fEffects.value=''; showOk('已清空 effects。'); });
+
+      // auto-save draft on typing (lightweight debounce)
+      var debounceT = null;
+      function scheduleDraft(){
+        if (debounceT) clearTimeout(debounceT);
+        debounceT = setTimeout(function(){
+          try{
+            if (state.selectedIndex >= 0){
+              // do not force-save if invalid; just store raw editor snapshot into draft via saveCurrent attempt not desired
+              saveDraft();
+            }
+          }catch(e){}
+        }, 250);
+      }
+      [
+        el.fId, el.fName, el.fDesc, el.fDuration, el.fMaxStacks, el.fAddStacks, el.fPriority,
+        el.fListenerSide, el.fConsumeMode, el.fConsumeFixed, el.fApplyMode,
+        el.fEventKind, el.fEventName, el.fTags, el.fEffects
+      ].forEach(function(input){
+        input.addEventListener('input', scheduleDraft);
+        input.addEventListener('change', scheduleDraft);
+      });
+
+      // init
+      refreshList();
+      renderEditor(null);
+      refreshRegistrySelects();
+      loadRegistry();
+      setStatus('未载入数据（可点“载入：data/buffs.json”，或从本地草稿恢复）');
+      loadDraft();
+    })();
+  </script>
+</body>
+</html>
+

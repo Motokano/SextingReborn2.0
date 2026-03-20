@@ -166,6 +166,7 @@
                 var portal = E.getPortalAt(gx, gy);
                 var entityId = E.getEntityAt(gx, gy);
                 var npcId = (typeof E.getNpcAt === 'function') ? E.getNpcAt(gx, gy) : null;
+                var enemyId = (typeof E.getEnemyAt === 'function') ? E.getEnemyAt(gx, gy) : null;
                 if (npcId && window.GameTime && window.NPCSystem && typeof window.NPCSystem.isNpcPresentNow === 'function') {
                     if (!window.NPCSystem.isNpcPresentNow(npcId)) npcId = null;
                 }
@@ -188,11 +189,29 @@
                             };
                         })(npcId);
                     }
+                } else if (enemyId) {
+                    tile.classList.add('enemy');
+                    if (adjacent) {
+                        tile.classList.add('adjacent');
+                        tile.onclick = (function (tx, ty) {
+                            return function () {
+                                if (ctx.actions && typeof ctx.actions.tryIntentMove === 'function') {
+                                    ctx.actions.tryIntentMove(tx, ty, tx - st.x, ty - st.y, 'click');
+                                } else if (ctx.actions && typeof ctx.actions.tryMoveTo === 'function') {
+                                    ctx.actions.tryMoveTo(tx, ty, tx - st.x, ty - st.y);
+                                }
+                            };
+                        })(gx, gy);
+                    }
                 } else if (adjacent && walkable) {
                     tile.classList.add('adjacent');
                     tile.onclick = (function (tx, ty) {
                         return function () {
-                            if (ctx.actions && typeof ctx.actions.tryMoveTo === 'function') ctx.actions.tryMoveTo(tx, ty);
+                            if (ctx.actions && typeof ctx.actions.tryIntentMove === 'function') {
+                                ctx.actions.tryIntentMove(tx, ty, tx - st.x, ty - st.y, 'click');
+                            } else if (ctx.actions && typeof ctx.actions.tryMoveTo === 'function') {
+                                ctx.actions.tryMoveTo(tx, ty, tx - st.x, ty - st.y);
+                            }
                         };
                     })(gx, gy);
                 } else if (adjacent) {

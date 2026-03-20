@@ -37,6 +37,8 @@
         dominant_hand: 'right',
         dominant_leg: 'right'
     };
+    // 供 Buff 等系统注入的后天五维修正（最终会并入 acquired 参与重算）
+    var externalAcquiredBonus = { jingu: 0, flexibility: 0, breath: 0, dexterity: 0, focus: 0 };
 
     // 经脉穴位带来的“先天五维”奖励（每次重算时覆盖写入）
     var innateBonusFromAcupoints = { jingu: 0, flexibility: 0, breath: 0, dexterity: 0, focus: 0 };
@@ -152,6 +154,13 @@
         state.acquired.breath = fromEquip.acquired.breath + fromSkills.breath;
         state.acquired.dexterity = fromEquip.acquired.dexterity + fromSkills.dexterity;
         state.acquired.focus = fromEquip.acquired.focus + fromSkills.focus;
+
+        // 外部来源（例如 Buff）统一并入后天
+        state.acquired.jingu += externalAcquiredBonus.jingu || 0;
+        state.acquired.flexibility += externalAcquiredBonus.flexibility || 0;
+        state.acquired.breath += externalAcquiredBonus.breath || 0;
+        state.acquired.dexterity += externalAcquiredBonus.dexterity || 0;
+        state.acquired.focus += externalAcquiredBonus.focus || 0;
 
         // 经脉穴位来源：后天五维 + 先天五维（任督/全通成就）
         var extraMaxQi = 0;
@@ -374,6 +383,24 @@
         if (s.characterGender === 'male' || s.characterGender === 'female') state.characterGender = s.characterGender;
     }
 
+    function setExternalAcquiredBonus(bonus) {
+        bonus = bonus || {};
+        ATTR_IDS.forEach(function (id) {
+            var v = bonus[id];
+            externalAcquiredBonus[id] = (typeof v === 'number' && isFinite(v)) ? v : 0;
+        });
+    }
+
+    function getExternalAcquiredBonus() {
+        return {
+            jingu: externalAcquiredBonus.jingu,
+            flexibility: externalAcquiredBonus.flexibility,
+            breath: externalAcquiredBonus.breath,
+            dexterity: externalAcquiredBonus.dexterity,
+            focus: externalAcquiredBonus.focus
+        };
+    }
+
     function getState() {
         return {
             characterName: state.characterName,
@@ -428,6 +455,8 @@
         setState: setState,
         getState: getState,
         getDefaultState: getDefaultState,
+        setExternalAcquiredBonus: setExternalAcquiredBonus,
+        getExternalAcquiredBonus: getExternalAcquiredBonus,
 
         recalcCharacterStats: recalcCharacterStats,
         getEffectiveAttr: getEffectiveAttr,
