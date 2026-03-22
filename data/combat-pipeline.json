@@ -1,0 +1,90 @@
+{
+  "_comment": "近战结算管线：phases[].handler 为注册键，可在 js/combat-pipeline.js 用 registerPhaseHandler 覆盖；策划增删 phase 行即可扩展顺序。平衡硬顶唯一数据源见 survival-config.json（hit_*、parry_chance_cap、parry_damage_reduce_cap）。",
+  "version": 1,
+  "balance_config_keys": [
+    "hit_base_at_equal_speed",
+    "hit_base_max",
+    "hit_base_min",
+    "hit_final_cap",
+    "hit_curve_L",
+    "hit_epsilon",
+    "parry_flexibility_mult_per_point",
+    "parry_chance_cap",
+    "parry_damage_reduce_cap"
+  ],
+  "pipelines": {
+    "melee_hit_enemy_defender": {
+      "_doc": "玩家攻敌人：命中 roll → 敌人招架（无柔韧乘算）→ 攻方招式后遗症（hit_roll_success 等）→ 伤害占位",
+      "phases": [
+        {
+          "id": "hit_roll",
+          "handler": "builtin.emit_hit_roll",
+          "buff_event_name": "attack_hit_roll_resolved"
+        },
+        {
+          "id": "parry_enemy",
+          "handler": "builtin.parry_enemy_simple",
+          "buff_event_skip": "parry_phase_skipped",
+          "buff_event_parry_ok": "parry_roll_succeeded",
+          "buff_event_parry_fail": "parry_roll_failed"
+        },
+        {
+          "id": "post_move_effects",
+          "handler": "builtin.post_effects_hook",
+          "_doc": "按 post-effects.json effect_type 分派；trigger 见各条目 effect_params.trigger"
+        },
+        {
+          "id": "damage_resolve_stub",
+          "handler": "builtin.damage_stub",
+          "buff_event_name": "attack_damage_applied"
+        }
+      ]
+    },
+    "melee_hit_player_defender": {
+      "_doc": "防方为人类玩家：命中 roll → CombatParry 肢位解析与掷骰 → 卸力 → 后遗症 → 减伤链（与敌人管线共用后遗症分派）",
+      "phases": [
+        {
+          "id": "hit_roll",
+          "handler": "builtin.emit_hit_roll",
+          "buff_event_name": "attack_hit_roll_resolved"
+        },
+        {
+          "id": "parry_player",
+          "handler": "builtin.parry_player_combat_parry",
+          "buff_event_skip": "parry_phase_skipped",
+          "buff_event_guard": "parry_guard_limb_resolved",
+          "buff_event_ok": "parry_roll_succeeded",
+          "buff_event_fail": "parry_roll_failed",
+          "buff_event_shunt": "parry_shunt_applied"
+        },
+        {
+          "id": "post_move_effects",
+          "handler": "builtin.post_effects_hook"
+        },
+        {
+          "id": "diqi_shield",
+          "handler": "builtin.diqi_shield_player",
+          "_doc": "玩家受击：护体层先于最终伤害占位"
+        },
+        {
+          "id": "damage_resolve_stub",
+          "handler": "builtin.damage_stub",
+          "buff_event_name": "attack_damage_applied"
+        }
+      ]
+    }
+  },
+  "effect_type_catalog": {
+    "_doc": "与 post-effects.json 中 effect_type 对齐；resolver 为 CombatPostEffects 内置或 registerPostEffectResolver 注册的键",
+    "initiative_always_first": {
+      "resolver": "initiative_always_first",
+      "hooks": ["initiative_check"],
+      "mechanic_shared_with_enemy": true
+    },
+    "dispel_one_beneficial_buff_on_target": {
+      "resolver": "dispel_one_beneficial_buff_on_target",
+      "hooks": ["hit_roll_success"],
+      "mechanic_shared_with_enemy": true
+    }
+  }
+}

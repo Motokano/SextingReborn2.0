@@ -39,6 +39,11 @@ When editing any Buff/Debuff code, data, or docs, follow `docs/design/18-buff-sy
 - Before introducing any new `event_kind`, `event_name`, or trigger `tag`, register it in `data/editor/buff_event_registry.json`.
 - Only after registration should it be used in `data/buffs.json` and runtime trigger calls.
 - Avoid runtime-only event names that are not visible in editor registry.
+- Examples: `move_whip_kick`, `off_balance`, `off_balance_pipeline_manual` (失衡 / 鞭腿); `parry_chance_delta_percent` effect documented in `18.3.1`.
+
+## Parry chance debuffs
+
+- Summed via **`BuffSystem.getParryChanceDeltaPercent(ownerId)`** from instances with effect type **`parry_chance_delta_percent`** (`params.delta_per_stack` × stacks). Apply per `08` / `11-skills` after flex + default cap, then clamp.
 
 ## Debug Visibility
 
@@ -50,4 +55,30 @@ When editing any Buff/Debuff code, data, or docs, follow `docs/design/18-buff-sy
 - Reuse existing recalculation flow for stat-affecting buffs (e.g. `recalcCharacterStats()`).
 - Prefer indexed lookup by event kind/name to avoid full scan on every event.
 - Persist `expires_at_tick` in saves for stable timing.
+
+## Editor & combat emit conventions (see `18.13` in design doc)
+
+- Prefer **granular** registered `event_name` values over vague names: `attack_hit_roll_resolved`, `attack_damage_applied`, `attack_subhit_resolved`, `attack_multi_hit_finished` (all under `event_kind: combat` unless design says otherwise).
+- Every emit must use a **unique** `event_id` per sub-hit / per logical step (`18.6`).
+- Put semantics in `tags` (e.g. `move_jab`, `move_swing_punch`, `subhit`, `multi_hit`). Register new tags in `data/editor/buff_event_registry.json` before use.
+- Optional `payload` keys for combat/debug (documented in `18.13`): `move_id`, `cast_instance_id`, `subhit_index`, `is_last_subhit`, `damage_final` (plus top-level `hit_roll_success` etc. as in `BuffEventContext`).
+
+## Tag `probe_pipeline_manual`
+
+- Buff templates that list this in `triggerTags` **only match** events whose `tags` array **includes** `probe_pipeline_manual` (see `eventMatchesTemplate` in `js/buff-system.js`).
+- Purpose: avoid accidental pipeline matches on generic combat events; combat still implements stack/clear/W_coef logic explicitly when needed.
+- **`buff_probe`** uses this tag; do not remove it without updating design (`11-skills` 8.3.2, `18-buff-system.md`).
+
+## `buff_probe` (试探) — design + data contract
+
+- Full combat rules: `docs/design/11-skills.md` section 8.3.2 (`jab` stacks on hit-roll success; `swing_punch` uses \(K_{\text{试探}}\); clear-all instance semantics; multi-hit vs combo). Data: `data/buffs.json`, effect type `multiply_w_coef_factor` (`18.3.1`).
+- **Only one** probe buff id: `buff_probe` (no alternate ids for the same mechanic).
+- `consumeLayersFixed` for `buff_probe` is `0`; **clearing is removing the whole instance** via combat logic / `removeBuffByBuffId`, not “consume 1 layer per trigger”.
+
+## `BuffSystem` helpers (runtime)
+
+- `BuffSystem.applyBuff(ownerId, 'buff_probe', sourceId, eventContext)` — stack + reset duration per template.
+- `BuffSystem.removeBuffByBuffId(ownerId, 'buff_probe')` — remove all instances of that `buff_id` on the owner (probe clear-all).
+- `BuffSystem.getBuffTemplate('buff_probe')` — read normalized template (e.g. parse `effects` for `multiply_w_coef_factor`).
+- Use `triggerBuffPipeline` only with **registered** `event_kind` / `event_name` / `tags`; include `probe_pipeline_manual` when intentionally driving pipeline paths that filter on it.
 

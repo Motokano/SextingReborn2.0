@@ -137,7 +137,28 @@
         var next = cur + (parseInt(delta, 10) || 0);
         var mn = (min != null) ? parseInt(min, 10) : 0;
         if (next < mn) next = mn;
+        if (global.CombatSkills && typeof global.CombatSkills.getProgressionSkillMaxLevel === 'function') {
+            var progMax = global.CombatSkills.getProgressionSkillMaxLevel(st, skillId);
+            if (next > progMax) next = progMax;
+        }
         st.skills[skillId].level = next;
+        global.InventoryEquipment.setState(st);
+    }
+
+    function clampSkillLevelToProgression(st, skillId) {
+        if (!st || !st.skills || !st.skills[skillId] || !global.CombatSkills || typeof global.CombatSkills.getProgressionSkillMaxLevel !== 'function') return;
+        var prog = global.CombatSkills.getProgressionSkillMaxLevel(st, skillId);
+        var lv = st.skills[skillId].level != null ? Math.max(0, parseInt(st.skills[skillId].level, 10)) : 0;
+        if (lv > prog) st.skills[skillId].level = prog;
+    }
+
+    function modifySkillMaxLevelBonus(skillId, delta) {
+        if (!global.InventoryEquipment || typeof global.InventoryEquipment.getState !== 'function' || typeof global.InventoryEquipment.setState !== 'function') return;
+        var st = global.InventoryEquipment.getState();
+        if (!st.skill_max_level_bonus || typeof st.skill_max_level_bonus !== 'object') st.skill_max_level_bonus = {};
+        var cur = st.skill_max_level_bonus[skillId] != null ? parseInt(st.skill_max_level_bonus[skillId], 10) || 0 : 0;
+        st.skill_max_level_bonus[skillId] = cur + (parseInt(delta, 10) || 0);
+        clampSkillLevelToProgression(st, skillId);
         global.InventoryEquipment.setState(st);
     }
 
@@ -216,6 +237,11 @@
                 modifySkillLevel(ef.params.skillId, ef.params.delta, ef.params.min);
                 var after = getSkillLevel(sid);
                 log('[NPCSystem] Effect modifySkillLevel: ' + String(sid) + ' ' + String(before) + '->' + String(after), 'system');
+            }
+            if (ef.type === 'modifySkillMaxLevelBonus' && ef.params) {
+                var sidB = ef.params.skillId;
+                modifySkillMaxLevelBonus(sidB, ef.params.delta);
+                log('[NPCSystem] Effect modifySkillMaxLevelBonus: ' + String(sidB) + ' delta=' + String(ef.params.delta), 'system');
             }
         }
     }
@@ -417,6 +443,32 @@
             opts = opts || {};
             logFn = (typeof opts.log === 'function') ? opts.log : function () {};
         },
+        /**
+         * Demo 存档：仅用于当前工程阶段把 NPC 闲聊触发/flag 状态纳入存档。
+         * 后续可替换为完整存档系统的统一读写。
+         */
+        getDemoState: function () {
+            // deep-clone via JSON to avoid accidental external mutation
+            var flags = null;
+            var triggered = null;
+            try { flags = getFlags(); } catch (e0) { flags = {}; }
+            try { triggered = getTriggered(); } catch (e1) { triggered = []; }
+            return {
+                flags: isPlainObject(flags) ? flags : {},
+                triggered: Array.isArray(triggered) ? triggered : []
+            };
+        },
+        setDemoState: function (s) {
+            if (!s || typeof s !== 'object') return;
+            var nextFlags = s.flags && typeof s.flags === 'object' ? s.flags : {};
+            var nextTriggered = Array.isArray(s.triggered) ? s.triggered : [];
+            try {
+                localStorage.setItem(LS_FLAGS, JSON.stringify(nextFlags));
+            } catch (e2) { /* ignore */ }
+            try {
+                localStorage.setItem(LS_TRIGGERED, JSON.stringify(nextTriggered));
+            } catch (e3) { /* ignore */ }
+        },
         isNpcPresentNow: function (npcId) {
             var def = npcDefCache[npcId];
             if (!def) return true;
@@ -427,4 +479,9 @@
         scanChatEntry: scanChatEntry
     };
 })(typeof window !== 'undefined' ? window : this);
+
+// local helper (kept at file end to avoid hoist confusion)
+function isPlainObject(v) {
+    return !!v && typeof v === 'object' && !Array.isArray(v);
+}
 

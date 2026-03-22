@@ -35,8 +35,14 @@
         innate: { jingu: 10, flexibility: 10, breath: 10, dexterity: 10, focus: 10 },
         acquired: { jingu: 0, flexibility: 0, breath: 0, dexterity: 0, focus: 0 },
         dominant_hand: 'right',
-        dominant_leg: 'right'
+        dominant_leg: 'right',
+        /** 曾获得过的后遗症 id 去重列表（统计「获得多少种」= length） */
+        post_effects_obtained: [],
+        /** 四肢损毁累积值（非头）；血气化劲等见 19 §6.1 */
+        limb_destroy: { lhand: 0, rhand: 0, lfoot: 0, rfoot: 0 }
     };
+
+    var LIMB_DESTROY_IDS = ['lhand', 'rhand', 'lfoot', 'rfoot'];
     // 供 Buff 等系统注入的后天五维修正（最终会并入 acquired 参与重算）
     var externalAcquiredBonus = { jingu: 0, flexibility: 0, breath: 0, dexterity: 0, focus: 0 };
 
@@ -106,7 +112,10 @@
         return { acquired: acquired, hit_bonus: hitBonus };
     }
 
-    /** 从技能等级汇总后天属性（如基本拳脚 200 级 +1 筋骨 +1 柔韧；暂无技能表则返回 0） */
+    /**
+     * 从技能等级汇总后天属性。表结构见 survival-config `skill_attr_gain`：
+     * 每属性 { threshold, value } → 当 level >= threshold 时加 value * floor(level / threshold)。
+     */
     function sumFromSkills(skillsState, skillAttrGainTable) {
         var out = { jingu: 0, flexibility: 0, breath: 0, dexterity: 0, focus: 0 };
         if (!skillsState || !skillAttrGainTable) return out;
@@ -129,6 +138,84 @@
         return out;
     }
 
+    function accumulateProficiencyAttrUnlocks(entries, moveUsage, getProfRatio, out) {
+        if (!entries || !entries.length) return;
+        var ei;
+        for (ei = 0; ei < entries.length; ei++) {
+            var ent = entries[ei];
+            if (!ent || !ent.id || !ent.proficiency_attr_unlocks || !ent.proficiency_attr_unlocks.length) continue;
+            var uses = moveUsage[ent.id] != null ? parseInt(moveUsage[ent.id], 10) || 0 : 0;
+            var maxU = ent.proficiency_max_uses != null ? ent.proficiency_max_uses : null;
+            var r = getProfRatio(uses, maxU);
+            var ui;
+            for (ui = 0; ui < ent.proficiency_attr_unlocks.length; ui++) {
+                var u = ent.proficiency_attr_unlocks[ui];
+                if (!u || u.min_proficiency_ratio == null) continue;
+                var minR = Number(u.min_proficiency_ratio);
+                if (!(r >= minR)) continue;
+                var acq = u.acquired;
+                if (!acq || typeof acq !== 'object') continue;
+                var aid;
+                for (aid in acq) {
+                    if (!acq.hasOwnProperty(aid)) continue;
+                    if (out[aid] === undefined) continue;
+                    var add = acq[aid];
+                    if (typeof add === 'number' && isFinite(add)) out[aid] += add;
+                }
+            }
+        }
+    }
+
+    /**
+     * 单招式 / hub_actions 熟练度达阈值时给予后天五维（与 post_effect_unlocks 同一套 R）。
+     * 配置：`data/combat-skills.json` 的 `moves[]`、**`hub_actions[]`** 上 `proficiency_attr_unlocks`，以及招架类 **`parry_proficiency_attr_unlocks`**（按 `parry_proficiency_usage_key` 计 R）。
+     * 依赖 global.CombatSkills；未加载时返回零。
+     */
+    /** 招架类：按 `parry_proficiency_usage_key` 的 R 触发 `parry_proficiency_attr_unlocks` */
+    function accumulateParryProficiencyAttrUnlocks(skTpl, moveUsage, getProfRatio, out) {
+        if (!skTpl || skTpl.category !== 'parry' || !skTpl.parry_proficiency_attr_unlocks || !skTpl.parry_proficiency_attr_unlocks.length) return;
+        var pKey = skTpl.parry_proficiency_usage_key || 'parry_success';
+        var pMax = skTpl.parry_proficiency_max_uses != null ? skTpl.parry_proficiency_max_uses : null;
+        var uses = moveUsage[pKey] != null ? parseInt(moveUsage[pKey], 10) || 0 : 0;
+        var r = getProfRatio(uses, pMax);
+        var pi;
+        for (pi = 0; pi < skTpl.parry_proficiency_attr_unlocks.length; pi++) {
+            var pu = skTpl.parry_proficiency_attr_unlocks[pi];
+            if (!pu || pu.min_proficiency_ratio == null) continue;
+            if (!(r >= Number(pu.min_proficiency_ratio))) continue;
+            var acq = pu.acquired;
+            if (!acq || typeof acq !== 'object') continue;
+            var aid;
+            for (aid in acq) {
+                if (!acq.hasOwnProperty(aid)) continue;
+                if (out[aid] === undefined) continue;
+                var add = acq[aid];
+                if (typeof add === 'number' && isFinite(add)) out[aid] += add;
+            }
+        }
+    }
+
+    function sumFromMoveProficiencyAttrUnlocks(skillsState) {
+        var out = { jingu: 0, flexibility: 0, breath: 0, dexterity: 0, focus: 0 };
+        if (!skillsState || typeof global === 'undefined' || !global.CombatSkills) return out;
+        var CS = global.CombatSkills;
+        var getSkill = CS.getSkill;
+        var getProfRatio = CS.getProficiencyRatio;
+        if (typeof getSkill !== 'function' || typeof getProfRatio !== 'function') return out;
+        for (var skillId in skillsState) {
+            if (!skillsState.hasOwnProperty(skillId)) continue;
+            var skTpl = getSkill(skillId);
+            if (!skTpl) continue;
+            if (skTpl.category === 'footwork') continue;
+            var entry = skillsState[skillId];
+            var moveUsage = (entry && entry.move_usage && typeof entry.move_usage === 'object') ? entry.move_usage : {};
+            accumulateProficiencyAttrUnlocks(skTpl.moves || [], moveUsage, getProfRatio, out);
+            accumulateProficiencyAttrUnlocks(skTpl.hub_actions || [], moveUsage, getProfRatio, out);
+            accumulateParryProficiencyAttrUnlocks(skTpl, moveUsage, getProfRatio, out);
+        }
+        return out;
+    }
+
     /**
      * 统一重算入口：装备、技能、buff 等变化后调用。
      * 需要外部传入：getEquipmentState(), getSkillsState(), getItemTemplate(), getEnchantEntry(), getStrengthLevel()
@@ -140,20 +227,24 @@
         var getItemTemplate = options.getItemTemplate || function () { return null; };
         var getEnchantEntry = options.getEnchantEntry || function () { return null; };
         var getStrengthLevel = options.getStrengthLevel || function () { return 0; };
-        var skillAttrGainTable = options.skillAttrGainTable || {};
+        var skillAttrGainTable = options.skillAttrGainTable;
+        if (skillAttrGainTable == null || typeof skillAttrGainTable !== 'object') {
+            skillAttrGainTable = cfg.skill_attr_gain && typeof cfg.skill_attr_gain === 'object' ? cfg.skill_attr_gain : {};
+        }
 
         var equipmentState = getEquipmentState();
         var skillsState = getSkillsState();
 
         var fromEquip = sumFromEquipment(equipmentState, getItemTemplate, getEnchantEntry);
         var fromSkills = sumFromSkills(skillsState, skillAttrGainTable);
+        var fromMoveProf = sumFromMoveProficiencyAttrUnlocks(skillsState);
 
-        // 基础后天来源：装备 + 技能
-        state.acquired.jingu = fromEquip.acquired.jingu + fromSkills.jingu;
-        state.acquired.flexibility = fromEquip.acquired.flexibility + fromSkills.flexibility;
-        state.acquired.breath = fromEquip.acquired.breath + fromSkills.breath;
-        state.acquired.dexterity = fromEquip.acquired.dexterity + fromSkills.dexterity;
-        state.acquired.focus = fromEquip.acquired.focus + fromSkills.focus;
+        // 基础后天来源：装备 + 技能等级表 + 招式熟练度阈值奖励
+        state.acquired.jingu = fromEquip.acquired.jingu + fromSkills.jingu + fromMoveProf.jingu;
+        state.acquired.flexibility = fromEquip.acquired.flexibility + fromSkills.flexibility + fromMoveProf.flexibility;
+        state.acquired.breath = fromEquip.acquired.breath + fromSkills.breath + fromMoveProf.breath;
+        state.acquired.dexterity = fromEquip.acquired.dexterity + fromSkills.dexterity + fromMoveProf.dexterity;
+        state.acquired.focus = fromEquip.acquired.focus + fromSkills.focus + fromMoveProf.focus;
 
         // 外部来源（例如 Buff）统一并入后天
         state.acquired.jingu += externalAcquiredBonus.jingu || 0;
@@ -203,19 +294,38 @@
         var strLevel = getStrengthLevel();
         cache.carry_capacity = Wbase * (1 + strCoef * strLevel + jinguCoef * jingu);
 
-        var vBase = getCfg('base_speed_no_qinggong', 1);
+        var vBase = getCfg('base_speed_no_footwork', getCfg('base_speed_no_qinggong', 1));
         var dexPct = getCfg('dexterity_speed_pct_per_point', 0.005);
         var speedPctFromEquip = 0;
-        if (equipmentState) {
-            var qinggongSlots = ['shoe_left', 'shoe_right'];
-            for (var s = 0; s < qinggongSlots.length; s++) {
-                var eq = equipmentState[qinggongSlots[s]];
-                if (eq && eq.item_id) {
-                    var tpl = getItemTemplate(eq.item_id);
-                    if (tpl && tpl.base_speed != null) vBase = tpl.base_speed;
-                    break;
+        var hubFoot = null;
+        if (typeof options.getCombatHubs === 'function') {
+            var H = options.getCombatHubs();
+            if (H) {
+                hubFoot = H.footwork != null ? H.footwork : H.light;
+            }
+        } else if (typeof global !== 'undefined' && global.InventoryEquipment && typeof global.InventoryEquipment.getCombatState === 'function') {
+            try {
+                var cst = global.InventoryEquipment.getCombatState();
+                if (cst && cst.hubs) hubFoot = cst.hubs.footwork != null ? cst.hubs.footwork : cst.hubs.light;
+            } catch (eHub) { hubFoot = null; }
+        }
+        var footworkSpeedFlat = 0;
+        if (hubFoot && typeof global !== 'undefined' && global.CombatSkills && typeof global.CombatSkills.getSkill === 'function') {
+            var fskFoot = global.CombatSkills.getSkill(hubFoot);
+            if (fskFoot && fskFoot.category === 'footwork') {
+                if (fskFoot.combat_speed_base != null) {
+                    var vb = Number(fskFoot.combat_speed_base);
+                    if (isFinite(vb) && vb > 0) vBase = vb;
+                }
+                var per10 = fskFoot.combat_speed_per_10_levels;
+                if (typeof per10 === 'number' && isFinite(per10) && per10 !== 0 && skillsState && skillsState[hubFoot]) {
+                    var flv = parseInt(skillsState[hubFoot].level, 10);
+                    if (!isFinite(flv) || flv < 0) flv = 0;
+                    footworkSpeedFlat = Math.floor(flv / 10) * per10;
                 }
             }
+        }
+        if (equipmentState) {
             for (var slot in equipmentState) {
                 if (!equipmentState.hasOwnProperty(slot) || !equipmentState[slot] || !equipmentState[slot].enchants) continue;
                 var encList = equipmentState[slot].enchants;
@@ -227,8 +337,12 @@
             }
         }
         var speedFloat = vBase * (1 + dexPct * dexterity + speedPctFromEquip);
-        cache.combat_speed = Math.max(1, Math.floor(speedFloat));
+        cache.combat_speed = Math.max(1, Math.floor(speedFloat) + footworkSpeedFlat);
         cache.hit_bonus_from_equipment = fromEquip.hit_bonus || 0;
+
+        if (typeof global !== 'undefined' && global.Survival && typeof global.Survival.refreshDiqiMaxFromBreath === 'function') {
+            global.Survival.refreshDiqiMaxFromBreath(breath);
+        }
     }
 
     /** 负重上限（只读缓存） */
@@ -381,6 +495,136 @@
         if (s.dominant_leg === 'left' || s.dominant_leg === 'right') state.dominant_leg = s.dominant_leg;
         if (s.characterName !== undefined) state.characterName = String(s.characterName);
         if (s.characterGender === 'male' || s.characterGender === 'female') state.characterGender = s.characterGender;
+        if (Array.isArray(s.post_effects_obtained)) {
+            var seenPe = {};
+            state.post_effects_obtained = [];
+            for (var pi = 0; pi < s.post_effects_obtained.length; pi++) {
+                var pid = String(s.post_effects_obtained[pi] || '').trim();
+                if (!pid || seenPe[pid]) continue;
+                seenPe[pid] = true;
+                state.post_effects_obtained.push(pid);
+            }
+        }
+        if (s.limb_destroy && typeof s.limb_destroy === 'object') {
+            for (var li = 0; li < LIMB_DESTROY_IDS.length; li++) {
+                var lid = LIMB_DESTROY_IDS[li];
+                if (s.limb_destroy[lid] != null) {
+                    state.limb_destroy[lid] = Math.max(0, Math.floor(Number(s.limb_destroy[lid]) || 0));
+                }
+            }
+        }
+    }
+
+    function getLimbDestroy(limbId) {
+        if (!limbId || state.limb_destroy[limbId] == null) return 0;
+        return Math.max(0, Math.floor(state.limb_destroy[limbId] || 0));
+    }
+
+    /**
+     * 血气化劲：选一非头肢 +destroyDelta 损毁（须 ≤ 上限−1），并返还 diqiGain 底气（经 Survival 夹紧）。
+     * @returns {{ ok: boolean, reason_key?: string, limb?: string }}
+     */
+    function tryApplyXueQiHuaJing(destroyDelta, diqiGain) {
+        var dDel = Math.max(0, Math.floor(Number(destroyDelta) || 0));
+        var dGain = Math.max(0, Math.floor(Number(diqiGain) || 0));
+        if (dDel <= 0) return { ok: false, reason_key: 'combat.hub.fail.xue_qi.params' };
+        var maxTotal = getCfg('limb_destroy_max', 100);
+        var capAfter = maxTotal - 1;
+        if (capAfter < 1) return { ok: false, reason_key: 'combat.hub.fail.xue_qi.config' };
+        var order = LIMB_DESTROY_IDS.slice();
+        var seed = Date.now() % 1000;
+        for (var s = 0; s < order.length; s++) {
+            var j = s + (seed % (order.length - s));
+            var tmp = order[s];
+            order[s] = order[j];
+            order[j] = tmp;
+        }
+        var i;
+        for (i = 0; i < order.length; i++) {
+            var limb = order[i];
+            var cur = getLimbDestroy(limb);
+            if (cur + dDel <= capAfter) {
+                state.limb_destroy[limb] = cur + dDel;
+                if (typeof global !== 'undefined' && global.Survival && typeof global.Survival.addDiqiCurrent === 'function' && dGain > 0) {
+                    global.Survival.addDiqiCurrent(dGain);
+                }
+                return { ok: true, limb: limb };
+            }
+        }
+        return { ok: false, reason_key: 'combat.hub.fail.xue_qi.no_limb' };
+    }
+
+    /** 登记曾获得的后遗症（去重）；返回是否新加入 */
+    function registerPostEffectObtained(postEffectId) {
+        var id = String(postEffectId || '').trim();
+        if (!id) return false;
+        for (var i = 0; i < state.post_effects_obtained.length; i++) {
+            if (state.post_effects_obtained[i] === id) return false;
+        }
+        state.post_effects_obtained.push(id);
+        return true;
+    }
+
+    /** 不对玩家 UI 展示；查询前会合并熟练度解锁项（与 sync 一致）。 */
+    function getPostEffectsObtainedCount() {
+        syncPostEffectsObtainedFromSkillsState();
+        return state.post_effects_obtained.length;
+    }
+
+    /** 不对玩家 UI 展示；查询前会合并熟练度解锁项。 */
+    function getPostEffectsObtainedIds() {
+        syncPostEffectsObtainedFromSkillsState();
+        return state.post_effects_obtained.slice();
+    }
+
+    /** 不对玩家 UI 展示；供条件脚本判断是否曾获得某后遗症 id。 */
+    function hasPostEffectObtained(postEffectId) {
+        syncPostEffectsObtainedFromSkillsState();
+        var id = String(postEffectId || '').trim();
+        if (!id) return false;
+        for (var hi = 0; hi < state.post_effects_obtained.length; hi++) {
+            if (state.post_effects_obtained[hi] === id) return true;
+        }
+        return false;
+    }
+
+    /**
+     * 根据 InventoryEquipment 中技能招式使用次数与 combat-skills 配置的 post_effect_unlocks 同步「已获得」列表。
+     * 通常由查询 API 内部调用；剧情发奖用 registerPostEffectObtained。
+     */
+    function syncPostEffectsObtainedFromSkillsState() {
+        var IE = global.InventoryEquipment;
+        var CS = global.CombatSkills;
+        if (!IE || typeof IE.getState !== 'function' || !CS || typeof CS.getSkill !== 'function' || typeof CS.getProficiencyRatio !== 'function') return;
+        var skillsState = IE.getState().skills || {};
+        function syncPostEffectsForEntries(entries, moveUsage) {
+            if (!entries || !entries.length) return;
+            var mi;
+            for (mi = 0; mi < entries.length; mi++) {
+                var m = entries[mi];
+                if (!m || !m.id || !m.post_effect_unlocks || !m.post_effect_unlocks.length) continue;
+                var uses = moveUsage[m.id] != null ? parseInt(moveUsage[m.id], 10) || 0 : 0;
+                var maxU = m.proficiency_max_uses != null ? m.proficiency_max_uses : null;
+                var ratio = CS.getProficiencyRatio(uses, maxU);
+                var ui;
+                for (ui = 0; ui < m.post_effect_unlocks.length; ui++) {
+                    var pu = m.post_effect_unlocks[ui];
+                    if (!pu || pu.post_effect_id == null) continue;
+                    var minR = pu.min_proficiency_ratio != null ? Number(pu.min_proficiency_ratio) : 0;
+                    if (ratio >= minR) registerPostEffectObtained(pu.post_effect_id);
+                }
+            }
+        }
+        for (var skillId in skillsState) {
+            if (!Object.prototype.hasOwnProperty.call(skillsState, skillId)) continue;
+            var entry = skillsState[skillId];
+            var moveUsage = (entry && entry.move_usage && typeof entry.move_usage === 'object') ? entry.move_usage : {};
+            var skill = CS.getSkill(skillId);
+            if (!skill) continue;
+            if (skill.category === 'footwork') continue;
+            syncPostEffectsForEntries(skill.moves, moveUsage);
+            syncPostEffectsForEntries(skill.hub_actions, moveUsage);
+        }
     }
 
     function setExternalAcquiredBonus(bonus) {
@@ -408,7 +652,14 @@
             innate: { jingu: state.innate.jingu, flexibility: state.innate.flexibility, breath: state.innate.breath, dexterity: state.innate.dexterity, focus: state.innate.focus },
             acquired: { jingu: state.acquired.jingu, flexibility: state.acquired.flexibility, breath: state.acquired.breath, dexterity: state.acquired.dexterity, focus: state.acquired.focus },
             dominant_hand: state.dominant_hand,
-            dominant_leg: state.dominant_leg
+            dominant_leg: state.dominant_leg,
+            post_effects_obtained: state.post_effects_obtained.slice(),
+            limb_destroy: {
+                lhand: state.limb_destroy.lhand,
+                rhand: state.limb_destroy.rhand,
+                lfoot: state.limb_destroy.lfoot,
+                rfoot: state.limb_destroy.rfoot
+            }
         };
     }
 
@@ -420,7 +671,9 @@
             innate: { jingu: 10, flexibility: 10, breath: 10, dexterity: 10, focus: 10 },
             acquired: { jingu: 0, flexibility: 0, breath: 0, dexterity: 0, focus: 0 },
             dominant_hand: 'right',
-            dominant_leg: 'right'
+            dominant_leg: 'right',
+            post_effects_obtained: [],
+            limb_destroy: { lhand: 0, rhand: 0, lfoot: 0, rfoot: 0 }
         };
     }
 
@@ -476,9 +729,17 @@
         getParryDamageReduce: getParryDamageReduce,
         getDominantLimbMultiplier: getDominantLimbMultiplier,
         getBreathActual: getBreathActual,
+        getLimbDestroy: getLimbDestroy,
+        tryApplyXueQiHuaJing: tryApplyXueQiHuaJing,
         getCharacterName: getCharacterName,
         getCharacterGender: getCharacterGender,
         getCharacterGenderLabel: getCharacterGenderLabel,
+
+        registerPostEffectObtained: registerPostEffectObtained,
+        getPostEffectsObtainedCount: getPostEffectsObtainedCount,
+        getPostEffectsObtainedIds: getPostEffectsObtainedIds,
+        hasPostEffectObtained: hasPostEffectObtained,
+        syncPostEffectsObtainedFromSkillsState: syncPostEffectsObtainedFromSkillsState,
 
         getHitBonusFromEquipment: function () { return cache.hit_bonus_from_equipment; }
     };

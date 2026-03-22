@@ -1,0 +1,43 @@
+{
+  "_comment": "战斗后遗症（构式）：由技能/招式熟练度解锁，装配在招式槽上。同一 post_effect_id 同一条出招肢至多装配 1 份（四肢可各 1 份）。effect_type 与先手等见 docs/design/11-skills.md、07-combat-core.md。mechanic_shared_with_enemy：与敌人共用同一 effect_type / Buff 语义（招架、位移、驱散等），敌人侧在敌表或管线上下文中挂载等价 post_effect_ids 即可。design_meta 见 combat-skills.json constants.design_meta_template。",
+  "post_no_second_thought": {
+    "id": "post_no_second_thought",
+    "name_key": "posteffect.no_second_thought.name",
+    "desc_key": "posteffect.no_second_thought.desc",
+    "scope": "move_socket",
+    "valid_skill_ids": ["combat_basic_unarmed"],
+    "valid_move_ids": ["jab"],
+    "effect_type": "initiative_always_first",
+    "effect_params": {},
+    "mechanic_shared_with_enemy": true,
+    "design_meta": {
+      "sheet_row_id": "PE_NO_SECOND_THOUGHT",
+      "doc_anchor": "11-skills jab",
+      "tags": ["initiative", "post_effect"],
+      "wip_status": "live",
+      "applies_to": ["player", "enemy"]
+    }
+  },
+  "post_po_xiang": {
+    "id": "post_po_xiang",
+    "name_key": "posteffect.po_xiang.name",
+    "desc_key": "posteffect.po_xiang.desc",
+    "scope": "move_socket",
+    "valid_skill_ids": ["combat_basic_unarmed"],
+    "valid_move_ids": ["swing_punch"],
+    "effect_type": "dispel_one_beneficial_buff_on_target",
+    "effect_params": {
+      "trigger": "hit_roll_success",
+      "apply_when_parry_zero_damage": true,
+      "count": 1
+    },
+    "mechanic_shared_with_enemy": true,
+    "design_meta": {
+      "sheet_row_id": "PE_PO_XIANG",
+      "doc_anchor": "11-skills swing_punch",
+      "tags": ["dispel", "post_effect"],
+      "wip_status": "live",
+      "applies_to": ["player", "enemy"]
+    }
+  }
+}

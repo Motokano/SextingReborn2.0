@@ -6,7 +6,7 @@
 (function (global) {
     'use strict';
 
-    /** 装备槽位 ID（呼吸法、轻功、招架为技能而非装备，不占装备槽；招架在肢体技能栏配置；饰品分五槽） */
+    /** 装备槽位 ID（呼吸法、步法、招架为技能而非装备，不占装备槽；招架在肢体技能栏配置；饰品分五槽） */
     var EQUIP_SLOT_IDS = [
         'head', 'clothing', 'vest', 'backpack',
         'weapon_left', 'weapon_right',
@@ -38,8 +38,11 @@
         inventory_vehicle: [],
         bound_vehicle_id: null,
         skills: {},
+        skill_max_level_bonus: {},
         ground_items: {},
-        combat: null
+        combat: null,
+        /** hub 动作冷却：key = "skillId:actionId" → 剩余 tick */
+        hub_action_cooldowns: {}
     };
 
     function getDefaultCombatState() {
@@ -50,7 +53,7 @@
                 lfoot: { active: null, parry: null, priority: 3 },
                 rfoot: { active: null, parry: null, priority: 4 }
             },
-            hubs: { breath: null, light: null },
+            hubs: { breath: null, footwork: null },
             move_sequences: { lhand: [], rhand: [], lfoot: [], rfoot: [] },
             skill_move_sequences: {}
         };
@@ -69,7 +72,13 @@
             }
             if (!state.combat.move_sequences[lid]) state.combat.move_sequences[lid] = [];
         }
-        if (!state.combat.hubs) state.combat.hubs = { breath: null, light: null };
+        if (!state.combat.hubs) state.combat.hubs = { breath: null, footwork: null };
+        if (state.combat.hubs.light != null && state.combat.hubs.footwork == null) {
+            state.combat.hubs.footwork = state.combat.hubs.light;
+            delete state.combat.hubs.light;
+        }
+        if (state.combat.hubs.breath === undefined) state.combat.hubs.breath = null;
+        if (state.combat.hubs.footwork === undefined) state.combat.hubs.footwork = null;
         if (!state.combat.skill_move_sequences) state.combat.skill_move_sequences = {};
     }
 
@@ -78,6 +87,38 @@
         var s = state.skills[skillId];
         if (!s || s.level == null) return 0;
         return Math.max(0, parseInt(s.level, 10));
+    }
+
+    function getSkillsState() {
+        return state.skills;
+    }
+
+    /**
+     * 增加 skills[skillId].move_usage[usageKey]（如招架成功 parry_success、吐纳 tu_na）。
+     * 未习得（level &lt; 1）或无该技能条目时不写入。
+     * @returns {number} 新累计值，未写入时 -1
+     */
+    function incrementSkillMoveUsage(skillId, usageKey, delta) {
+        if (!skillId || !usageKey) return -1;
+        var d = parseInt(delta, 10);
+        if (!isFinite(d) || d <= 0) return -1;
+        if (getSkillLevel(skillId) < 1) return -1;
+        var entry = state.skills[skillId];
+        if (!entry || typeof entry !== 'object') return -1;
+        if (!entry.move_usage || typeof entry.move_usage !== 'object') entry.move_usage = {};
+        var k = String(usageKey);
+        var cur = parseInt(entry.move_usage[k], 10) || 0;
+        entry.move_usage[k] = cur + d;
+        if (typeof global !== 'undefined' && global.CharacterAttributes && typeof global.CharacterAttributes.recalcCharacterStats === 'function') {
+            global.CharacterAttributes.recalcCharacterStats({
+                getEquipmentState: function () { return state.equipment; },
+                getSkillsState: function () { return state.skills; },
+                getItemTemplate: getItemTemplate,
+                getEnchantEntry: getEnchantEntry,
+                getStrengthLevel: function () { return getSkillLevel('survival_strength'); }
+            });
+        }
+        return entry.move_usage[k];
     }
 
     function initEquipmentSlots() {
@@ -685,8 +726,61 @@
         }
     };
 
+    /** 基本拳脚默认招式序列（与设计 11-skills 创角一致：刺拳 + 正蹬） */
+    var STARTER_UNARMED_MOVE_SEQ = ['jab', 'front_kick'];
+
+    function ensureSkillEntry(skillId, minLevel) {
+        if (!skillId) return;
+        minLevel = Math.max(1, parseInt(minLevel, 10) || 1);
+        if (!state.skills[skillId] || typeof state.skills[skillId] !== 'object') {
+            state.skills[skillId] = { level: minLevel, move_usage: {} };
+            return;
+        }
+        var lv = parseInt(state.skills[skillId].level, 10);
+        if (!isFinite(lv) || lv < 1) state.skills[skillId].level = minLevel;
+        if (!state.skills[skillId].move_usage || typeof state.skills[skillId].move_usage !== 'object') {
+            state.skills[skillId].move_usage = {};
+        }
+    }
+
+    /**
+     * 发放徒手/呼吸/步法并写默认枢纽与四肢进攻槽（不含兵器、不含基本招架——招架初始未习得见 11-skills 8.3.5）。
+     */
+    function applyDefaultStarterCombatLayout() {
+        ensureCombatState();
+        ensureSkillEntry('combat_basic_unarmed', 1);
+        ensureSkillEntry('combat_basic_breath', 1);
+        ensureSkillEntry('combat_basic_footwork', 1);
+        state.combat.hubs.breath = 'combat_basic_breath';
+        state.combat.hubs.footwork = 'combat_basic_footwork';
+        var seq = STARTER_UNARMED_MOVE_SEQ.slice();
+        state.combat.skill_move_sequences.combat_basic_unarmed = seq.slice();
+        for (var i = 0; i < COMBAT_LIMB_IDS.length; i++) {
+            var lid = COMBAT_LIMB_IDS[i];
+            state.combat.limbs[lid].active = 'combat_basic_unarmed';
+            state.combat.move_sequences[lid] = seq.slice();
+        }
+    }
+
+    /** 旧档或无战斗技能条目时补足（不覆盖已有装配） */
+    function ensureCombatBasicsMigrated() {
+        if (getSkillLevel('combat_basic_unarmed') >= 1) return;
+        applyDefaultStarterCombatLayout();
+        if (typeof global !== 'undefined' && global.CharacterAttributes && typeof global.CharacterAttributes.recalcCharacterStats === 'function') {
+            global.CharacterAttributes.recalcCharacterStats({
+                getEquipmentState: function () { return state.equipment; },
+                getSkillsState: function () { return state.skills; },
+                getItemTemplate: getItemTemplate,
+                getEnchantEntry: getEnchantEntry,
+                getStrengthLevel: function () { return getSkillLevel('survival_strength'); }
+            });
+        }
+    }
+
     /** 新游戏初始化：四类物品栏为空，仅根据 default_equipment 穿戴；地面物品清空 */
     function initNewGame() {
+        state.skills = {};
+        state.skill_max_level_bonus = {};
         state.inventory_pocket = [];
         state.inventory_vest = [];
         state.inventory_backpack = [];
@@ -714,7 +808,40 @@
             var itemId = merged[key];
             if (itemId) state.equipment[key] = { item_id: String(itemId), enchants: [] };
         }
-        ensureCombatState();
+        state.combat = getDefaultCombatState();
+        state.hub_action_cooldowns = {};
+        applyDefaultStarterCombatLayout();
+    }
+
+    function hubCooldownKey(skillId, actionId) {
+        return String(skillId || '') + ':' + String(actionId || '');
+    }
+
+    function getHubActionCooldownRemaining(skillId, actionId) {
+        var k = hubCooldownKey(skillId, actionId);
+        var n = state.hub_action_cooldowns[k];
+        return Math.max(0, parseInt(n, 10) || 0);
+    }
+
+    function setHubActionCooldownRemaining(skillId, actionId, ticks) {
+        var t = Math.max(0, parseInt(ticks, 10) || 0);
+        var k = hubCooldownKey(skillId, actionId);
+        if (t <= 0) {
+            delete state.hub_action_cooldowns[k];
+            return;
+        }
+        state.hub_action_cooldowns[k] = t;
+    }
+
+    function tickHubActionCooldowns(delta) {
+        var d = Math.max(0, parseInt(delta, 10) || 0);
+        if (d <= 0) return;
+        for (var k in state.hub_action_cooldowns) {
+            if (!state.hub_action_cooldowns.hasOwnProperty(k)) continue;
+            var v = Math.max(0, (parseInt(state.hub_action_cooldowns[k], 10) || 0) - d);
+            if (v <= 0) delete state.hub_action_cooldowns[k];
+            else state.hub_action_cooldowns[k] = v;
+        }
     }
 
     /** 创建角色完成或需补发新手装时调用：等价于再执行一轮 initNewGame（仍清空口袋等，仅适合新档/创角） */
@@ -750,6 +877,12 @@
         if (s.inventory_vehicle) state.inventory_vehicle = s.inventory_vehicle.slice();
         if (s.bound_vehicle_id !== undefined) state.bound_vehicle_id = s.bound_vehicle_id;
         if (s.skills) state.skills = s.skills;
+        if (s.skill_max_level_bonus && typeof s.skill_max_level_bonus === 'object') {
+            state.skill_max_level_bonus = {};
+            for (var bk in s.skill_max_level_bonus) {
+                if (s.skill_max_level_bonus.hasOwnProperty(bk)) state.skill_max_level_bonus[bk] = s.skill_max_level_bonus[bk];
+            }
+        }
         if (s.ground_items && typeof s.ground_items === 'object') {
             for (var gk in s.ground_items) {
                 if (s.ground_items.hasOwnProperty(gk) && Array.isArray(s.ground_items[gk]))
@@ -757,9 +890,11 @@
             }
         }
         if (s.combat && typeof s.combat === 'object') {
+            var loadHubs = s.combat.hubs && typeof s.combat.hubs === 'object' ? s.combat.hubs : {};
+            var footworkId = loadHubs.footwork != null ? loadHubs.footwork : loadHubs.light;
             state.combat = {
                 limbs: {},
-                hubs: { breath: s.combat.hubs && s.combat.hubs.breath != null ? s.combat.hubs.breath : null, light: s.combat.hubs && s.combat.hubs.light != null ? s.combat.hubs.light : null },
+                hubs: { breath: loadHubs.breath != null ? loadHubs.breath : null, footwork: footworkId != null ? footworkId : null },
                 move_sequences: {},
                 skill_move_sequences: (function () {
                     var src = s.combat.skill_move_sequences;
@@ -776,6 +911,14 @@
                     ? { active: s.combat.limbs[lid].active, parry: s.combat.limbs[lid].parry, priority: s.combat.limbs[lid].priority != null ? s.combat.limbs[lid].priority : li + 1 }
                     : { active: null, parry: null, priority: li + 1 };
                 state.combat.move_sequences[lid] = (s.combat.move_sequences && Array.isArray(s.combat.move_sequences[lid])) ? s.combat.move_sequences[lid].slice() : [];
+            }
+        }
+        if (s.hub_action_cooldowns && typeof s.hub_action_cooldowns === 'object') {
+            state.hub_action_cooldowns = {};
+            for (var hk in s.hub_action_cooldowns) {
+                if (!s.hub_action_cooldowns.hasOwnProperty(hk)) continue;
+                var hv = parseInt(s.hub_action_cooldowns[hk], 10) || 0;
+                if (hv > 0) state.hub_action_cooldowns[hk] = hv;
             }
         }
         ensureCombatState();
@@ -795,7 +938,7 @@
         ensureCombatState();
         var combatCopy = {
             limbs: {},
-            hubs: { breath: state.combat.hubs.breath, light: state.combat.hubs.light },
+            hubs: { breath: state.combat.hubs.breath, footwork: state.combat.hubs.footwork },
             move_sequences: {},
             skill_move_sequences: {}
         };
@@ -808,6 +951,14 @@
             if (state.combat.skill_move_sequences.hasOwnProperty(sk) && Array.isArray(state.combat.skill_move_sequences[sk]))
                 combatCopy.skill_move_sequences[sk] = state.combat.skill_move_sequences[sk].slice();
         }
+        var bonusCopy = {};
+        for (var bj in state.skill_max_level_bonus) {
+            if (state.skill_max_level_bonus.hasOwnProperty(bj)) bonusCopy[bj] = state.skill_max_level_bonus[bj];
+        }
+        var hubCd = {};
+        for (var ck in state.hub_action_cooldowns) {
+            if (state.hub_action_cooldowns.hasOwnProperty(ck)) hubCd[ck] = state.hub_action_cooldowns[ck];
+        }
         return {
             equipment: eq,
             inventory_pocket: state.inventory_pocket.slice(),
@@ -816,19 +967,21 @@
             inventory_vehicle: state.inventory_vehicle.slice(),
             bound_vehicle_id: state.bound_vehicle_id,
             skills: state.skills,
+            skill_max_level_bonus: bonusCopy,
             ground_items: groundCopy,
-            combat: combatCopy
+            combat: combatCopy,
+            hub_action_cooldowns: hubCd
         };
     }
 
     function getCharacterForDisplay() {
-        return { skills: state.skills };
+        return { skills: state.skills, skill_max_level_bonus: state.skill_max_level_bonus };
     }
 
     function getCombatState() {
         ensureCombatState();
         var c = state.combat;
-        var out = { limbs: {}, hubs: { breath: c.hubs.breath, light: c.hubs.light }, move_sequences: {}, skill_move_sequences: {} };
+        var out = { limbs: {}, hubs: { breath: c.hubs.breath, footwork: c.hubs.footwork }, move_sequences: {}, skill_move_sequences: {} };
         for (var i = 0; i < COMBAT_LIMB_IDS.length; i++) {
             var lid = COMBAT_LIMB_IDS[i];
             out.limbs[lid] = { active: c.limbs[lid].active, parry: c.limbs[lid].parry, priority: c.limbs[lid].priority };
@@ -855,7 +1008,17 @@
         }
         if (partial.hubs) {
             if (partial.hubs.breath !== undefined) state.combat.hubs.breath = partial.hubs.breath;
-            if (partial.hubs.light !== undefined) state.combat.hubs.light = partial.hubs.light;
+            if (partial.hubs.footwork !== undefined) state.combat.hubs.footwork = partial.hubs.footwork;
+            if (partial.hubs.light !== undefined && partial.hubs.footwork === undefined) state.combat.hubs.footwork = partial.hubs.light;
+        }
+        if (partial.hubs && typeof global !== 'undefined' && global.CharacterAttributes && typeof global.CharacterAttributes.recalcCharacterStats === 'function') {
+            global.CharacterAttributes.recalcCharacterStats({
+                getEquipmentState: function () { return state.equipment; },
+                getSkillsState: function () { return state.skills; },
+                getItemTemplate: getItemTemplate,
+                getEnchantEntry: getEnchantEntry,
+                getStrengthLevel: function () { return getSkillLevel('survival_strength'); }
+            });
         }
         if (partial.move_sequences) {
             for (var lid in partial.move_sequences) {
@@ -907,11 +1070,18 @@
         clearAllOnDeath: clearAllOnDeath,
         initNewGame: initNewGame,
         applyNewGameEquipment: applyNewGameEquipment,
+        applyDefaultStarterCombatLayout: applyDefaultStarterCombatLayout,
+        ensureCombatBasicsMigrated: ensureCombatBasicsMigrated,
         getSkillLevel: getSkillLevel,
+        getSkillsState: getSkillsState,
+        incrementSkillMoveUsage: incrementSkillMoveUsage,
         getCharacterForDisplay: getCharacterForDisplay,
         getEnchantEntry: getEnchantEntry,
         getCombatState: getCombatState,
         setCombatState: setCombatState,
-        ensureCombatState: ensureCombatState
+        ensureCombatState: ensureCombatState,
+        getHubActionCooldownRemaining: getHubActionCooldownRemaining,
+        setHubActionCooldownRemaining: setHubActionCooldownRemaining,
+        tickHubActionCooldowns: tickHubActionCooldowns
     };
 })(typeof window !== 'undefined' ? window : this);

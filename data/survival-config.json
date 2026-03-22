@@ -25,6 +25,12 @@
 
   "energy_max": 100.0,
 
+  "qi_li_max": 100,
+  "diqi_max_base": 40,
+  "diqi_max_per_breath_effective": 2,
+  "diqi_tick_regen_base": 0.12,
+  "limb_destroy_max": 100,
+
   "mood_min": 0,
   "mood_max": 1000,
   "mood_center": 500,
@@ -91,6 +97,7 @@
   "weapon_req_innate_jingu_default": 20,
   "breath_diqi_cap_pct_per_point": 0.01,
   "dexterity_speed_pct_per_point": 0.005,
+  "base_speed_no_footwork": 1,
   "base_speed_no_qinggong": 1,
 
   "fist_power_cap": 650,
@@ -109,6 +116,7 @@
   "parry_flexibility_mult_per_point": 0.005,
   "parry_chance_cap": 0.75,
   "parry_damage_reduce_cap": 0.5,
+  "_combat_balance_note": "全局战斗平衡单一数据源：命中率上下界见 hit_*；招架几率/卸力硬顶仅 parry_chance_cap、parry_damage_reduce_cap（管线 CombatPipeline.getParryCaps 与此一致）。调整平衡优先改本文件，勿在单技能 JSON 重复写死封顶。",
 
   "study_tick_energy_cost": 1,
   "focus_baseline": 10,
@@ -122,5 +130,11 @@
   "production_upgrade_chain_decay": 0.35,
 
   "item_display_tier_threshold_1": null,
-  "item_display_tier_threshold_2": null
+  "item_display_tier_threshold_2": null,
+
+  "skill_attr_gain": {
+    "combat_basic_unarmed": {
+      "jingu": { "threshold": 20, "value": 1 }
+    }
+  }
 }

@@ -5,6 +5,8 @@
       "buff_id": "buff_time_focus_training",
       "name": "定时专注训练",
       "desc": "在时间推进与整点事件中触发，临时提升后天专注。",
+      "dispel_pool": "beneficial",
+      "dispel_priority": 50,
       "durationTicks": 30,
       "maxStacks": 3,
       "stacksAddOnApply": 1,
@@ -128,6 +130,72 @@
           "params": {
             "breath": 2,
             "flexibility": 1
+          }
+        }
+      ]
+    },
+    {
+      "buff_id": "buff_probe",
+      "name": "试探",
+      "desc": "数据：multiply_w_coef_factor（见 18.3.1）。刺拳 jab 命中 roll 成功叠层；摆拳 swing_punch 在 W_skill×G 之后乘 (1+0.05×层数)。清空为整实例删除（非逐层扣 1）：连击每记摆拳在命中成功且该记伤害结算后清空（含 0 伤）；未命中不清。同一 cast 多 sub-hit 每段各乘一次 K，全部 sub-hit 结算完后若至少一段命中成功则一次性清空。重上重置持续。仅 buff_probe。不挂自动流水线。",
+      "durationTicks": 999999,
+      "maxStacks": 3,
+      "stacksAddOnApply": 1,
+      "priority": 55,
+      "listenerSide": "self",
+      "consumeMode": "always",
+      "consumeLayersFixed": 0,
+      "applyMode": "always_apply",
+      "triggerEventKind": [
+        "combat"
+      ],
+      "triggerEventName": [
+        "attack_hit_roll_resolved",
+        "attack_damage_applied",
+        "attack_subhit_resolved",
+        "attack_multi_hit_finished"
+      ],
+      "triggerTags": [
+        "probe_pipeline_manual"
+      ],
+      "effects": [
+        {
+          "type": "multiply_w_coef_factor",
+          "params": {
+            "order": "after_g",
+            "move_id": "swing_punch",
+            "base": 1,
+            "per_stack": 0.05
+          }
+        }
+      ]
+    },
+    {
+      "buff_id": "buff_off_balance",
+      "name": "失衡",
+      "desc": "每层使最终招架几率减少 5 个百分点（在柔韧与默认硬上限之后叠加，再 clamp）；最高 3 层；持续 8 tick；再叠加刷新持续。由鞭腿 whip_kick 命中判定成功对目标施加；即使被招架至 0 伤仍叠加。与试探无关。战斗可读 BuffSystem.getParryChanceDeltaPercent(ownerId)。",
+      "durationTicks": 8,
+      "maxStacks": 3,
+      "stacksAddOnApply": 1,
+      "priority": 45,
+      "listenerSide": "self",
+      "consumeMode": "always",
+      "consumeLayersFixed": 0,
+      "applyMode": "always_apply",
+      "triggerEventKind": [
+        "combat"
+      ],
+      "triggerEventName": [
+        "attack_hit_roll_resolved"
+      ],
+      "triggerTags": [
+        "off_balance_pipeline_manual"
+      ],
+      "effects": [
+        {
+          "type": "parry_chance_delta_percent",
+          "params": {
+            "delta_per_stack": -5
           }
         }
       ]

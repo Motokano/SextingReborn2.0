@@ -13,6 +13,11 @@
     "attack_resolved",
     "attack_hit_roll_resolved",
     "attack_parry_resolved",
+    "parry_guard_limb_resolved",
+    "parry_phase_skipped",
+    "parry_roll_succeeded",
+    "parry_roll_failed",
+    "parry_shunt_applied",
     "attack_damage_applied",
     "attack_subhit_resolved",
     "attack_multi_hit_finished",
@@ -33,6 +38,7 @@
     "gather_started",
     "gather_tick_resolved",
     "gather_stopped",
+    "footwork_nie_bu_resolved",
     "trade_row_action_applied",
     "trade_deal_confirmed",
     "dialogue_choice_confirmed",
@@ -48,7 +54,9 @@
     "environment_param_changed",
     "dialogue_condition_changed",
     "tick_advanced",
-    "time_point_reached"
+    "time_point_reached",
+    "hub_action_resolved",
+    "diqi_shield_absorbed"
   ],
   "tags": [
     "attack",
@@ -89,7 +97,31 @@
     "debuff",
     "fire",
     "ice",
-    "poison"
+    "poison",
+    "probe",
+    "move_jab",
+    "move_front_kick",
+    "combat_displace_tick_end",
+    "move_swing_punch",
+    "move_whip_kick",
+    "off_balance",
+    "off_balance_pipeline_manual",
+    "probe_pipeline_manual",
+    "footwork_nie_bu",
+    "hub_action",
+    "parry_skip",
+    "parry_guard",
+    "torso_guard",
+    "limb_struck",
+    "parry_roll",
+    "parry_shunt",
+    "diqi_shield",
+    "breath",
+    "tu_na",
+    "xue_qi_hua_jing",
+    "tu_qi_na_jing",
+    "tiao_xi",
+    "sit_meditation"
   ]
 }
 

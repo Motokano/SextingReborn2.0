@@ -1,0 +1,53 @@
+---
+description: 战斗枢纽动作（呼吸 hub_actions）、底气护体进管线、动作菜单与 Buff 注册 — 供 agent 改相关代码/配置时遵循
+globs: "**/js/combat-hub-actions.js,**/js/combat-pipeline.js,**/data/combat-pipeline.json,**/data/combat-skills.json,**/js/scene-app.js,**/js/scene-renderer.js,**/index.html,**/data/ui_text_zhCN.json,**/data/editor/buff_event_registry.json"
+alwaysApply: false
+---
+
+# Combat Hub Actions & Diqi Shield Pipeline
+
+编辑 **呼吸法 `hub_actions`**、**`CombatHubActions`**、**近战管线护体**、**右侧「动作」菜单** 或相关文案/注册表时，以 **`docs/design/19-action-system.md` §6** 为行为口径，并交叉 **`docs/design/06-survival.md`**、**`docs/design/08-hit-parry-damage.md`**、**`docs/design/11-skills.md` 8.3.3**。
+
+## 与现有规则的分工
+
+- **Buff 语义 / 消费 / 命中**：遵循 **`buff-system-agent.mdc`** 与 **`docs/design/18-buff-system.md`**；本规则只要求 **新 `event_name` / `tags` 先写入 `data/editor/buff_event_registry.json`**。
+- **招式与 `proficiency_attr_unlocks` / 后天五维键名**：遵循 **`combat-skills-proficiency-agent.mdc`** 与 **`docs/design/05-character-attributes.md`**；本规则强调 **吐纳线例外**（见下）。
+
+## 战斗管线（`data/combat-pipeline.json` + `js/combat-pipeline.js`）
+
+- **护体阶段**只挂在 **`melee_hit_player_defender`**：**招架/卸力之后**、**`damage_stub` 之前**；handler 如 **`builtin.diqi_shield_player`**。
+- **勿**在 **`melee_hit_enemy_defender`** 加护体（防方非玩家，逻辑无意义）。
+- 实现约定：`ctx.defender.kind === 'player'` 时才调用 **`Survival.applyDiqiShieldToDamage`**；减伤比例来自 **`combat_basic_breath` → `hub_actions` → `id === 'diqi_huti'` → `shield_tri_type_damage_reduce_pct`**，缺省需安全 fallback（如 **0.25**）。
+- **最终伤害**优先 **`ctx.damageAfterDiqiShield`**，再回退 **`damageAfterParry` / `rawDamage`**。
+- 发射 **`diqi_shield_absorbed`** 等 **combat** 事件前，**必须**已在 **`buff_event_registry.json`** 注册对应 **`event_name` / `tags`**。
+
+## 枢纽运行时（`js/combat-hub-actions.js`）
+
+- **分发**：每条 `hub_actions[]` 应有稳定 **`hub_effect`**（如 **`restore_qi_li`**、**`diqi_shield`**、**`xue_qi_hua_jing`**、**`tu_qi_na_jing`**、**`tiao_xi_once`**）；可保留对旧字段的推断兼容，**新动作禁止只写零散字段而不写 `hub_effect`**。
+- **§6.5 呼吸挂载**：执行前须 **`InventoryEquipment.getCombatState().hubs.breath === skillId`**；未挂载应 **整次失败或 UI 禁用**，且 **不得** 增加 **`move_usage.tu_na`**。
+- **吐纳线熟练度（§6 总述）**：**血气化劲、吐气纳精、调息、吐纳** 在 **成功结算** 且 **已挂载呼吸** 时，统一 **`incrementSkillMoveUsage(skillId, 'tu_na', 1)`**（与具体 `hub_action_id` 无关，供总熟练度 / 威力乘区 / `proficiency_attr_unlocks`）。
+- **底气护体**：**不** 写入 **`tu_na`**；可选 **`incrementSkillMoveUsage(skillId, 'diqi_huti', 1)`** 独立统计；模板保持 **`exclude_from_skill_total_proficiency: true`**，避免稀释吐纳对 **`breath_power_multiplier`** 的贡献。
+- **Tick**：成功路径用统一的 **`advanceActionTicks(Survival, tick_cost)`**，与全局/战斗 tick 推进一致。
+- **动作解析 Buff**：成功后可 **`BuffSystem.triggerBuffPipeline`**，`event_kind: action`、`event_name: hub_action_resolved`，**`tags` 须在注册表中存在**。
+
+## 数据（`data/combat-skills.json`）
+
+- **基本呼吸法** §6 动作：**`unlock_level`**、**`tick_cost`**、**`hub_effect`** 与效果字段（如 **`qi_li_restore`**、**`diqi_consume_ratio_of_max`**、**`xue_qi_destroy`** 等）与 **`19` §6** 对齐；**`tu_na`** 保持 **`battle_only`** 等既有约束。
+- 修改 **后天奖励** 时同步 **`docs/design/11-skills.md`** / **`05`** 举例（与 proficiency 规则一致）。
+
+## UI（`index.html`、`js/scene-app.js`、`js/scene-renderer.js`）
+
+- **右侧「动作」菜单**：列出已解锁的 **`combat_basic_breath.hub_actions`**；灰显条件与 **`tryExecuteHubAction`** 前置一致：**未挂呼吸、`battle_only` 且无邻接战、冷却、护体未破** 等。
+- **气泡快捷**（如吐纳/护体）可与菜单并存；**新呼吸类动作默认只进菜单**，避免气泡膨胀。
+- 玩家可见字符串 **统一 `data/ui_text_zhCN.json`** key，避免硬编码长中文。
+
+## 冷却持久化（文档 vs 代码）
+
+- 设计文档可能写 **`skills[combat_basic_breath].hub_action_cooldown_ticks`**；**实现以当前代码为准**（现为 **`InventoryEquipment.hub_action_cooldowns`** 等）。若迁移存档字段，须 **同时** 改：读写档、递减、UI 展示与 **`tryExecuteHubAction` 读取路径**，并更新 **`docs/design/14-implementation.md` / `19`** 表述。
+
+## 自检清单（agent 提交前）
+
+1. 玩家受击是否走 **`melee_hit_player_defender`** 且护体在 **stub 前**？
+2. 新 pipeline 事件 / tag 是否已 **`buff_event_registry`**？
+3. 无 **`hubs.breath`** 时是否 **不写 `tu_na` 熟练度**、护体是否 **不可偷跑**？
+4. **`incrementSkillMoveUsage`** 后是否依赖现有 **`recalcCharacterStats`** 路径（已在 `inventory-equipment.js` 中挂钩）？

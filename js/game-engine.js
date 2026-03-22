@@ -138,6 +138,50 @@
         return (dx <= 1 && dy <= 1) && (dx !== 0 || dy !== 0);
     }
 
+    /** 可走且格上无敌人、无当前在场的 NPC（与蹑步落点一致） */
+    function canStandAt(x, y) {
+        if (!isWalkable(x, y)) return false;
+        if (getEnemyAt(x, y)) return false;
+        var nid = getNpcAt(x, y);
+        if (nid) {
+            if (typeof global !== 'undefined' && global.NPCSystem && typeof global.NPCSystem.isNpcPresentNow === 'function') {
+                if (global.NPCSystem.isNpcPresentNow(nid)) return false;
+            } else {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
+     * 蹑步等：切比雪夫距离 ∈ [1, maxRadius] 的跳跃；不消耗 tick（由调用方 advanceTick）。
+     * @param {number} maxRadius 默认 2（身边两格）
+     */
+    function jumpTo(nx, ny, maxRadius) {
+        var map = getMap();
+        if (!map) return false;
+        var r = maxRadius != null ? Math.max(1, parseInt(maxRadius, 10) || 2) : 2;
+        if (nx === state.x && ny === state.y) return false;
+        nx = clamp(nx, 0, map.width - 1);
+        ny = clamp(ny, 0, map.height - 1);
+        var cheb = Math.max(Math.abs(nx - state.x), Math.abs(ny - state.y));
+        if (cheb < 1 || cheb > r) return false;
+        if (!canStandAt(nx, ny)) return false;
+
+        state.x = nx;
+        state.y = ny;
+
+        var portal = getPortalAt(state.x, state.y);
+        if (portal) {
+            state.mapId = portal.target_map_id;
+            state.x = portal.target_x;
+            state.y = portal.target_y;
+        }
+
+        onChange();
+        return true;
+    }
+
     function moveTo(nx, ny) {
         var map = getMap();
         if (!map) return false;
@@ -204,6 +248,8 @@
         getNpcAt: getNpcAt,
         getEnemyAt: getEnemyAt,
         isAdjacent: isAdjacent,
+        canStandAt: canStandAt,
+        jumpTo: jumpTo,
         moveTo: moveTo,
         onChange: function (cb) { onChange = typeof cb === 'function' ? cb : function () {}; }
     };

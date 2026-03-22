@@ -138,9 +138,9 @@
                                 <span class="text-[8px] font-black text-[#fbbf24] uppercase mb-1">内息核心</span>
                                 <span id="val-breath" class="text-xs font-black text-white">禅定呼吸</span>
                             </div>
-                            <div id="hub-light" class="h-20 rounded border-2 border-stone-900 bg-[#120e0c] flex flex-col items-center justify-center transition-all">
-                                <span class="text-[8px] font-black text-stone-500 uppercase mb-1">身法核心</span>
-                                <span id="val-light" class="text-xs font-black text-stone-700 italic">未载入</span>
+                            <div id="hub-footwork" class="h-20 rounded border-2 border-stone-900 bg-[#120e0c] flex flex-col items-center justify-center transition-all">
+                                <span class="text-[8px] font-black text-stone-500 uppercase mb-1">步法核心</span>
+                                <span id="val-footwork" class="text-xs font-black text-stone-700 italic">未载入</span>
                             </div>
                         </div>
                     </div>
@@ -195,10 +195,10 @@
     <script>
         // 1. 数据定义 (Icons 使用 Emoji 代替以确保 100% 离线兼容)
         const SKILLS = [
-            { id: 's1', name: '基本拳脚', cat: 'unarmed', lv: 120, pr: 75, desc: '基础徒手功法，讲究大巧不工。', moves: ['直拳','前踢','勾拳','鞭腿','冲拳','撩阴腿'], icon: '👊' },
+            { id: 's1', name: '基本拳脚', cat: 'unarmed', lv: 120, pr: 75, desc: '基础徒手功法，讲究大巧不工。', moves: ['刺拳','正蹬','摆拳','鞭腿','冲拳','撩阴腿'], icon: '👊' },
             { id: 's2', name: '太极拳', cat: 'unarmed', lv: 85, pr: 45, desc: '以柔克刚，武当入门功法。', moves: ['揽雀尾','单鞭','提手上势','白鹤亮翅'], icon: '☯️' },
             { id: 's3', name: '狂风快刀', cat: 'weapon', lv: 30, pr: 30, desc: '刀势如风，一旦开启连绵不绝。', moves: ['劈山','横抹','缠头','裹脑'], icon: '⚔️' },
-            { id: 's4', name: '草上飞', cat: 'light', lv: 40, pr: 75, desc: '提气轻身，如草上疾行。', moves: ['提气','踏草','凌空','纵跃'], icon: '🍃' },
+            { id: 's4', name: '基本步法', cat: 'footwork', lv: 40, pr: 0, desc: '全局身法根基；无招式熟练度；hub_actions 可上 buff。', moves: [], icon: '👟' },
             { id: 's5', name: '禅定呼吸', cat: 'breath', lv: 50, pr: 75, desc: '调节气机，平复伤势。', moves: ['吐纳','闭气','导引','聚气'], icon: '♾️' },
             { id: 's6', name: '基础招架', cat: 'parry', lv: 80, pr: 60, desc: '防守反击的核心技巧。', moves: ['格挡','卸力','闪避','反制'], icon: '🛡️' }
         ];
@@ -206,8 +206,8 @@
         const CATEGORIES = [
             { id: 'unarmed', label: '徒手', icon: '🖐️' },
             { id: 'weapon', label: '兵器', icon: '⚔️' },
-            { id: 'light', label: '轻功', icon: '👟' },
             { id: 'breath', label: '呼吸', icon: '🫁' },
+            { id: 'footwork', label: '步法', icon: '👟' },
             { id: 'parry', label: '招架', icon: '🛡️' }
         ];
 
@@ -232,7 +232,7 @@
                 lf: { active: null, parry: null, p: 4 },
                 rf: { active: null, parry: null, p: 2 },
             },
-            hubs: { breath: 's5', light: null },
+            hubs: { breath: 's5', footwork: null },
             editingSlot: null
         };
 
@@ -282,7 +282,7 @@
                         <div class="text-2xl">${s.icon}</div>
                         <div class="flex flex-col">
                             <span class="text-lg font-black tracking-widest text-white uppercase">${s.name}</span>
-                            <span class="text-[10px] text-[#fbbf24] font-black uppercase mt-1">等级 ${s.lv} · 熟练 ${s.pr}%</span>
+                            <span class="text-[10px] text-[#fbbf24] font-black uppercase mt-1">${s.cat === 'footwork' ? `等级 ${s.lv} · 无招式熟练度` : `等级 ${s.lv} · 熟练 ${s.pr}%`}</span>
                         </div>
                     </div>
                 `;
@@ -293,11 +293,11 @@
             // D. 枢纽与肢体配置
             const limbBox = document.getElementById('limb-container');
             limbBox.innerHTML = '';
-            const isGlobal = state.curCat === 'breath' || state.curCat === 'light';
+            const isGlobal = state.curCat === 'breath' || state.curCat === 'footwork';
             limbBox.className = `flex flex-col gap-5 transition-all ${isGlobal ? 'opacity-20 pointer-events-none' : 'opacity-100'}`;
             
             document.getElementById('val-breath').innerText = SKILLS.find(s=>s.id === state.hubs.breath)?.name || '未载入';
-            document.getElementById('val-light').innerText = SKILLS.find(s=>s.id === state.hubs.light)?.name || '未载入';
+            document.getElementById('val-footwork').innerText = SKILLS.find(s=>s.id === state.hubs.footwork)?.name || '未载入';
             
             LIMBS.forEach(l => {
                 const div = document.createElement('div');
@@ -327,28 +327,32 @@
             const selS = SKILLS.find(s=>s.id === state.curSkillId);
             document.getElementById('skill-title').innerText = selS.name;
             document.getElementById('skill-level').innerText = `等级 ${selS.lv}`;
-            document.getElementById('skill-prof').innerText = `总熟练度 ${selS.pr}%`;
+            document.getElementById('skill-prof').innerText = selS.cat === 'footwork' ? '—' : `总熟练度 ${selS.pr}%`;
             
             const seqBox = document.getElementById('move-sequence');
             seqBox.innerHTML = '';
-            if(!state.skillData[selS.id]) state.skillData[selS.id] = Array(6).fill(selS.moves[0]);
-            state.skillData[selS.id].forEach((mv, i) => {
-                const node = document.createElement('div');
-                node.className = `relative w-36 h-16 border rounded flex flex-col items-center justify-center transition-all cursor-pointer node-hover ${state.editingSlot === i ? 'border-[#fbbf24] bg-[#2b211b] scale-105 shadow-xl' : 'border-stone-900 bg-[#120e0c]'}`;
-                node.innerHTML = `
-                    <div class="absolute -top-2 left-2 px-1 bg-[#1c1612] text-[9px] font-black italic ${state.editingSlot===i?'text-[#fbbf24]':'text-stone-800'}">0${i+1}</div>
-                    <span class="text-xs font-black text-white">${mv}</span>
-                    <span class="text-[9px] text-[#fbbf24] font-black uppercase mt-1 opacity-80">熟练度 75%</span>
-                    ${i<5 && i!==2 ? '<div class="absolute -right-5 top-1/2 -translate-y-1/2 text-stone-800 opacity-20 text-xl font-black">»</div>' : ''}
-                `;
-                node.onclick = (e) => { e.stopPropagation(); openMovePicker(i, node); };
-                seqBox.appendChild(node);
-            });
+            if (selS.moves && selS.moves.length) {
+                if(!state.skillData[selS.id]) state.skillData[selS.id] = Array(6).fill(selS.moves[0]);
+                state.skillData[selS.id].forEach((mv, i) => {
+                    const node = document.createElement('div');
+                    node.className = `relative w-36 h-16 border rounded flex flex-col items-center justify-center transition-all cursor-pointer node-hover ${state.editingSlot === i ? 'border-[#fbbf24] bg-[#2b211b] scale-105 shadow-xl' : 'border-stone-900 bg-[#120e0c]'}`;
+                    node.innerHTML = `
+                        <div class="absolute -top-2 left-2 px-1 bg-[#1c1612] text-[9px] font-black italic ${state.editingSlot===i?'text-[#fbbf24]':'text-stone-800'}">0${i+1}</div>
+                        <span class="text-xs font-black text-white">${mv}</span>
+                        <span class="text-[9px] text-[#fbbf24] font-black uppercase mt-1 opacity-80">熟练度 75%</span>
+                        ${i<5 && i!==2 ? '<div class="absolute -right-5 top-1/2 -translate-y-1/2 text-stone-800 opacity-20 text-xl font-black">»</div>' : ''}
+                    `;
+                    node.onclick = (e) => { e.stopPropagation(); openMovePicker(i, node); };
+                    seqBox.appendChild(node);
+                });
+            } else {
+                seqBox.innerHTML = '<span class="text-stone-600 text-xs font-black tracking-widest">无肢上招式序列（步法走 hub / 动作）</span>';
+            }
 
             // 更新目标描述
             const tDesc = document.getElementById('target-indicator');
             if(state.curCat === 'breath') tDesc.innerText = "内息枢纽 · 核心";
-            else if(state.curCat === 'light') tDesc.innerText = "身法枢纽 · 核心";
+            else if(state.curCat === 'footwork') tDesc.innerText = "步法枢纽 · 核心";
             else {
                 const lObj = LIMBS.find(l=>l.id===state.curPart);
                 tDesc.innerText = `${lObj.label} · ${state.curSlot==='active'?'进攻':'招架'}`;
@@ -386,6 +390,7 @@
             const list = document.getElementById('picker-list');
             const selS = SKILLS.find(s=>s.id === state.curSkillId);
             list.innerHTML = '';
+            if (!selS.moves || !selS.moves.length) { picker.classList.add('hidden'); return; }
             selS.moves.forEach(m => {
                 const btn = document.createElement('button');
                 btn.className = "w-full p-4 text-left border-b border-stone-800/50 hover:bg-[#fbbf24] hover:text-black flex flex-col transition-colors group";
@@ -407,7 +412,7 @@
         function handleDeploy() {
             const sk = SKILLS.find(s=>s.id === state.curSkillId);
             if(state.curCat === 'breath') state.hubs.breath = state.curSkillId;
-            else if(state.curCat === 'light') state.hubs.light = state.curSkillId;
+            else if(state.curCat === 'footwork') state.hubs.footwork = state.curSkillId;
             else {
                 state.body[state.curPart][state.curSlot] = state.curSkillId;
             }

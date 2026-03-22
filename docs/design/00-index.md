@@ -25,17 +25,19 @@
 | 实战经验 | [04-combat-exp.md](04-combat-exp.md) | 经验上限、伤害加成 |
 | 角色基础属性 | [05-character-attributes.md](05-character-attributes.md) | 五项属性、衍生、筋骨/柔韧/呼吸/身手/专注、物品栏、负重 |
 | 生存属性 | [06-survival.md](06-survival.md) | 饱食、饮水、体力、精力、心情、定力、性能力、性别、营养、体温、底气与行气 |
-| 战斗核心 | [07-combat-core.md](07-combat-core.md) | 回合刻、方向与范围、气劲、出力、速度与先手/连击 |
+| 战斗核心 | [07-combat-core.md](07-combat-core.md) | 回合刻、方向与范围、气力与底气、出力、速度与先手/连击 |
 | 命中招架与伤害 | [08-hit-parry-damage.md](08-hit-parry-damage.md) | 命中率、招架、卸力、减伤链 |
 | 身体部位与状态 | [09-body-parts.md](09-body-parts.md) | 七部位、效果、损毁、手术 |
 | 敌人设计 | [10-enemies.md](10-enemies.md) | 敌人与主角差异、配置、掉落池 |
 | 技能系统 | [11-skills.md](11-skills.md) | 生存/生活/战斗/特殊、熟练度、战斗技能通用规则与示例 |
 | Buff / Debuff 系统 | [18-buff-system.md](18-buff-system.md) | 通用触发、分层消耗、命中/效果条件、调试开关 |
+| 动作系统 | [19-action-system.md](19-action-system.md) | 条件解锁的特殊指令、菜单执行、Tick、可选限次耗尽隐藏、与 hubs 呼吸法/步法对齐 |
 | NPC 与任务模板 | [16-npc-and-quest-template.md](16-npc-and-quest-template.md) | NPC 行为模板、触发条目模板、任务模板、林书瑶首例与 2 条触发条目 |
 | 贸易与旅行商人 | 见下「贸易子模块表」 | 并入 capitalism 多文件 |
 | 玩家间交易 | [13-p2p-trading.md](13-p2p-trading.md) | 交易码、接头暗号、兑换与时效 |
 | 实现约定 | [14-implementation.md](14-implementation.md) | 技术栈、配置表、存档、字段中英对照 |
 | 后续可补充 | [15-todo.md](15-todo.md) | 敌人 AI、异常状态、技能形态等 |
+| 实现进度快照 | [implementation-progress.md](../implementation-progress.md) | 相对本索引的代码落地进度与下一步建议（非设计正本） |
 
 ---
 
@@ -59,7 +61,7 @@ GAME_DESIGN 中「贸易与旅行商人」不单独成章，以 capitalism 目�
 1. **基础框架与配置**：技术栈、`/data/` JSON、全局常数表、存档骨架 → 14
 2. **角色与属性**：角色创建、属性重算、衍生属性、物品栏 → 05、14
 3. **生存与底气**：Tick、饱食/饮水/体力/精力、心情/定力/营养/体温、底气与行气 → 06
-4. **战斗核心**：回合刻、气劲与出力、速度与先手/连击 → 07、05
+4. **战斗核心**：回合刻、气力/底气与出力、速度与先手/连击 → 07、05、06
 5. **命中、招架与伤害**：命中率、招架、减伤链 → 08、05、06
 6. **身体部位与敌人**：七部位、损毁与手术；敌人配置与掉落 → 09、10
 7. **技能系统**：四类技能、熟练度、战斗技能规则与示例 → 11

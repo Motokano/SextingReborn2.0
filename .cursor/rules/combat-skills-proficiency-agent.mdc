@@ -1,0 +1,50 @@
+---
+description: Combat skill move proficiency, proficiency_attr_unlocks → acquired stats, move_usage + recalc
+alwaysApply: true
+---
+
+# Combat Skills & Move Proficiency Agent Rule
+
+When editing **战斗技能招式熟练度**、**后天五维来自招式的奖励**、或相关存档/UI，以 `docs/design/11-skills.md`（8.3.1 招式熟练度、后遗症、`proficiency_attr_unlocks`）与 `docs/design/05-character-attributes.md`（5.4 后天来源）为准。
+
+## 配置（`data/combat-skills.json`）
+
+- **徒手/兵器**：`moves[]` 条目可配置 **`proficiency_attr_unlocks`**。
+- **呼吸法（无肢上招式槽）**：在技能上配置 **`hub_actions[]`**（如 **`combat_basic_breath`** 的 **吐纳** `tu_na`）；条目可含与 move 相同字段：**`proficiency_attr_unlocks`**、可选 **`proficiency_max_uses`**、**`post_effect_unlocks`**（若有）。
+- **步法（`category: footwork`）**：**不设招式/步法熟练度**；`getSkillTotalProficiency` 对该类恒 **0**；`recalcCharacterStats` 中 **`sumFromMoveProficiencyAttrUnlocks`** **跳过**步法技能。战斗 **\(V_{\text{base}}\)** 来自 **`hubs.footwork`** 与技能 **`combat_speed_base`**（见 `11` **8.3.4**、`05` 5.7）。**`hub_actions[]`** 仅用于动作及对**自身**上 buff，**不**配 `proficiency_attr_unlocks` 作为熟练度成长轨（若配了也不会被步法熟练度统计消费）。
+- 数组项形状：`[{ "min_proficiency_ratio": number, "acquired": { "<attr_id>": number } }]`。
+- **`min_proficiency_ratio`**：与 `post_effect_unlocks` 共用同一套 **\(R_{\text{move}}\)**（使用次数 / `constants.move_proficiency_max_uses`，默认 50000，clamp 到 1）。
+- **`acquired` 键名**须为后天五维 id，与 `js/character-attributes.js` 一致：**`jingu`**、**`flexibility`**、**`breath`**、**`dexterity`**、**`focus`**；未知键在运行时会被忽略。
+- 达到阈值时 **一次性累加**配置点数；多条目分别判定，可叠加。
+- **已定示例（基本拳脚）**：`front_kick`（正蹬）**≥20%** → `jingu` +15；`whip_kick`（鞭腿）**≥20%** → `flexibility` +15。
+- **已定示例（基本呼吸法）**：`hub_actions` **`tu_na`**（吐纳）**≥50%** → **`breath`（后天呼吸）+20**；吐纳战斗效果（1 tick、**+50 `qi_li`**、**冷却 5 tick**、**`battle_only`**）见 `11-skills` **8.3.3**，非本规则展开。
+- **呼吸法威力乘区**：技能上 **`breath_power_multiplier`**：`base`（基本呼吸法 **1.0**）+ 按 **技能总熟练度** `getSkillTotalProficiency` 触发的 **`multiplier_delta`**（**≥50%** 时 **+0.3** → **1.3**）。算伤时 **`CombatSkills.getBreathPowerMultiplier(skillId, move_usage)`**；未挂载 hub / 非 breath 技能 **1**。
+
+## 基本拳脚：熟练度奖励分轨（勿混用）
+
+| 招式 | 熟练度 ≥20% 的奖励类型 | 配置字段 | 说明 |
+|------|------------------------|----------|------|
+| 刺拳 `jab` | **后遗症** | `post_effect_unlocks` → `post_no_second_thought` | 装配槽生效，见 `post-effects.json` |
+| **摆拳 `swing_punch`** | **后遗症（仅此轨）** | `post_effect_unlocks` → `post_po_xiang`（破相） | **不得**为该招配置 `proficiency_attr_unlocks` 顶替后遗症 |
+| 正蹬 `front_kick` | **后天属性** | `proficiency_attr_unlocks` → 筋骨 +15 | 无装配，recalc 汇总 |
+| 鞭腿 `whip_kick` | **后天属性** | `proficiency_attr_unlocks` → 柔韧 +15 | 同上 |
+
+- **摆拳**与**刺拳**同属「熟练度解锁 **后遗症**」模型：走 **`post_effect_unlocks` + `/data/post-effects.json` + 招式 `post_effect_slot_max`**；与 **`proficiency_attr_unlocks`** 是**并列、不同奖励形态**，不可把摆拳的奖励改成纯属性条而不经后遗症表与装配规则。
+
+## 运行时（`js/character-attributes.js`）
+
+- 后天汇总在 **`recalcCharacterStats`**：`sumFromMoveProficiencyAttrUnlocks(skillsState)` 读取模板 **`moves[]` + `hub_actions[]`**，计数 **`skillsState[skillId].move_usage[<move_id 或 hub_action_id>]`**（同字段名）。
+- **依赖 `CombatSkills`**：若在 **`combat-skills.js` 执行完毕之前**调用 `recalcCharacterStats`，该函数内 `CombatSkills` 不存在则熟练度属性贡献为 **0**（下次重算会补上）。新增早期初始化 recalc 时，须保证 **`combat-skills.js` 已加载**，或调整 `index.html` 脚本顺序使 `CombatSkills` 先于首次 recalc。
+- 贡献与 **是否装备该技能无关**；只要存档里该技能条目存在且 `move_usage` 满足阈值即计入（与 `skill_attr_gain` 等级筋骨口径一致）。
+
+## 实现清单（战斗/存档/UI agent）
+
+- **递增 `move_usage`** 时（每施展/计数 +1 等），须 **`recalcCharacterStats`**（与升级、换装、buff 变更同级），否则 UI/缓存属性不会立刻反映 `proficiency_attr_unlocks`。
+- 新增或修改某招式的熟练度属性奖励时：**同步** `docs/design/11-skills.md` 该技能/招式小节（及必要时 `05-character-attributes.md` 5.4 举例）。
+- 勿另写一套「仅某子系统」的熟练度→属性入口；统一走 **`proficiency_attr_unlocks` + `recalcCharacterStats`**。
+
+## 与后遗症的区别
+
+- **`post_effect_unlocks`**：解锁 `post_effect_id`，**须装配**后于战斗/结算生效；「已获得」同步见 **`CharacterAttributes.syncPostEffectsObtainedFromSkillsState`**（与 buff 规则中的后遗症约定一致）。
+- **`proficiency_attr_unlocks`**：直接并入 **后天五维**，**无装配槽**；仅 **`recalcCharacterStats`** 汇总。
+- 同一招式可同时有两种配置（若设计需要）；但 **摆拳当前设计仅为后遗症**，新增实现时不要误用属性轨替代。

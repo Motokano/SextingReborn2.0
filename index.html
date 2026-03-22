@@ -57,6 +57,14 @@
         .tile.adjacent:hover {
             background: #4d3f35;
         }
+        .tile.leap-target {
+            background: #2a3538;
+            cursor: pointer;
+            border-color: rgba(56,189,248,0.45);
+        }
+        .tile.leap-target:hover {
+            background: #354a52;
+        }
         .tile.player {
             background: #3d2a1a;
             border-color: rgba(251,191,36,0.4);
@@ -277,6 +285,21 @@
         #right-hud { position: absolute; right: 24px; top: 50%; transform: translateY(-50%); display: flex; flex-direction: column; gap: 24px; z-index: 31; pointer-events: auto; }
         #right-hud .hud-btn { width: 56px; height: 56px; border-radius: 8px; border: 2px solid #4d3f35; background: rgba(28, 22, 18, 0.95); color: #e8e6e3; font-size: 24px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: border-color 0.2s, background 0.2s; }
         #right-hud .hud-btn:hover { border-color: #fbbf24; background: rgba(45, 36, 30, 0.98); }
+        #right-hud .hud-dropdown-wrap { position: relative; display: flex; flex-direction: column; align-items: center; }
+        .player-actions-submenu {
+            display: none; position: absolute; right: calc(100% + 12px); top: 50%; transform: translateY(-50%);
+            min-width: 200px; max-width: min(280px, 85vw); max-height: min(420px, 70vh); overflow-y: auto;
+            background: rgba(28, 22, 18, 0.98); border: 2px solid #4d3f35; border-radius: 8px; padding: 8px 6px;
+            box-shadow: 0 8px 28px rgba(0,0,0,0.5); z-index: 120; pointer-events: auto;
+        }
+        .player-actions-submenu.open { display: block; }
+        .player-actions-submenu .player-action-item {
+            display: block; width: 100%; text-align: left; padding: 10px 12px; margin: 4px 0;
+            border-radius: 6px; border: 1px solid #3d2d24; background: rgba(0,0,0,0.35);
+            color: #e8e6e3; font-size: 14px; font-family: inherit; cursor: pointer;
+        }
+        .player-actions-submenu .player-action-item:hover:not(:disabled) { border-color: #fbbf24; background: rgba(45, 36, 30, 0.9); }
+        .player-actions-submenu .player-action-item:disabled { opacity: 0.45; cursor: not-allowed; }
         /* 背包+装备面板：放大 + 微软雅黑 */
         #modal-backpack {
             display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.65); z-index: 100;
@@ -625,6 +648,64 @@
         #modal-special .survival-level {
             font-size: 12px; font-weight: 700; color: #fbbf24; white-space: nowrap;
         }
+
+        /* 存档弹窗 - 复用生存技能总览风格，表单区略窄 */
+        #modal-save {
+            display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 100;
+            align-items: center; justify-content: center; padding: 24px; pointer-events: auto;
+            font-family: "Microsoft YaHei", "微软雅黑", "PingFang SC", sans-serif;
+        }
+        #modal-save.show { display: flex; }
+        #modal-save .survival-panel {
+            width: 520px; max-width: 96%; max-height: 85vh;
+            background: #1c1612; border: 2px solid rgba(212,163,115,0.3); border-radius: 16px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.5); display: flex; flex-direction: column; overflow: hidden;
+        }
+        #modal-save .survival-header {
+            height: 60px; border-bottom: 1px solid #3d2d24; display: flex; align-items: center; justify-content: space-between;
+            padding: 0 32px; background: #1c1612; flex-shrink: 0;
+        }
+        #modal-save .survival-header h2 {
+            margin: 0; font-size: 1.1rem; font-weight: 800; color: #fff; letter-spacing: 0.4em; text-transform: uppercase;
+        }
+        #modal-save .survival-header .subtitle {
+            font-size: 10px; color: #78716c; text-transform: uppercase; letter-spacing: 0.12em; margin-top: 4px; font-style: italic;
+        }
+        #modal-save .btn-close {
+            width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
+            background: transparent; border: none; color: #78716c; cursor: pointer; font-size: 16px;
+        }
+        #modal-save .btn-close:hover { background: rgba(185,28,28,0.25); color: #fff; }
+        #modal-save .survival-body {
+            flex: 1; display: flex; flex-direction: column; padding: 20px 28px 24px; min-height: 0; background: #1c1612;
+            gap: 14px; overflow-y: auto;
+        }
+        #modal-save .save-hint {
+            font-size: 12px; color: #a8a29e; line-height: 1.5;
+        }
+        #modal-save .save-row { display: flex; flex-direction: column; gap: 6px; }
+        #modal-save .save-row label {
+            font-size: 11px; font-weight: 700; color: #78716c; letter-spacing: 0.08em; text-transform: uppercase;
+        }
+        #modal-save .save-row input,
+        #modal-save .save-row textarea {
+            width: 100%; box-sizing: border-box; padding: 10px 12px; border-radius: 8px;
+            border: 2px solid #4d3f35; background: rgba(28, 22, 18, 0.95); color: #e8e6e3; font-size: 13px;
+            font-family: ui-monospace, "Cascadia Code", Consolas, monospace;
+        }
+        #modal-save .save-row textarea { min-height: 72px; resize: vertical; }
+        #modal-save .save-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 4px; }
+        #modal-save .save-actions button {
+            padding: 10px 16px; border-radius: 8px; border: 2px solid #4d3f35; background: rgba(45, 36, 30, 0.98);
+            color: #e8e6e3; font-size: 12px; font-weight: 800; letter-spacing: 0.06em; cursor: pointer;
+            transition: border-color 0.2s, background 0.2s;
+        }
+        #modal-save .save-actions button:hover { border-color: #fbbf24; background: rgba(55, 44, 36, 0.98); }
+        #modal-save .save-actions button.primary {
+            border-color: #fbbf24; background: #fbbf24; color: #1c1612;
+        }
+        #modal-save .save-actions button.primary:hover { background: #facc15; border-color: #facc15; }
+        #modal-save .save-divider { height: 1px; background: rgba(63,63,70,0.5); margin: 6px 0; }
 
         /* 经脉穴位总览中的单行样式（在生存技能基础上稍微精致一点） */
         #modal-acupoints .survival-row {
@@ -1132,6 +1213,8 @@
                     <button type="button" id="player-action-gather" class="action-btn primary" style="display:none;" data-ui="player.action.gather"></button>
                     <button type="button" id="player-action-gather-stop" class="action-btn" style="display:none;" data-ui="player.action.gather.stop"></button>
                     <button type="button" id="player-action-ground-items" class="action-btn" style="display:none;" title="" data-ui="player.action.ground.items" data-ui-title="player.action.ground.items.title"></button>
+                    <button type="button" id="player-action-tu-na" class="action-btn" style="display:none;" data-ui="player.action.tu_na"></button>
+                    <button type="button" id="player-action-diqi-huti" class="action-btn" style="display:none;" data-ui="player.action.diqi_huti"></button>
                 </div>
             </div>
         </div>
@@ -1171,6 +1254,13 @@
                             <div class="row"><span class="label" data-ui="status.label.energy"></span><span class="value" id="status-energy-text">—</span></div>
                             <div class="progress-wrap"><div class="progress-fill energy" id="status-energy-bar" style="width:100%"></div></div>
                         </div>
+                        <div id="status-battle-resources" class="survival-row" style="margin-top:12px;display:none">
+                            <div class="row"><span class="label" data-ui="status.label.qi_li"></span><span class="value" id="status-qi-li-text">—</span></div>
+                            <div class="progress-wrap"><div class="progress-fill stamina" id="status-qi-li-bar" style="width:0%"></div></div>
+                            <div class="row" style="margin-top:8px"><span class="label" data-ui="status.label.diqi"></span><span class="value" id="status-diqi-text">—</span></div>
+                            <div class="progress-wrap"><div class="progress-fill thirst" id="status-diqi-bar" style="width:0%"></div></div>
+                            <div class="row" style="margin-top:6px"><span class="label" data-ui="status.label.diqi_shield"></span><span class="value" id="status-diqi-shield-text">—</span></div>
+                        </div>
                         <div class="row" style="margin-top:8px"><span class="label" data-ui="status.label.weight"></span><span class="value" id="status-weight">—</span></div>
                         <div class="row" style="margin-top:4px"><span class="label" data-ui="status.label.carry"></span><span class="value" id="status-carry">—</span></div>
                     </div>
@@ -1192,8 +1282,13 @@
                 <button type="button" class="hud-btn" id="btn-backpack" data-ui="btn.backpack.title" data-ui-attr="title">🎒</button>
                 <button type="button" class="hud-btn" id="btn-survival" data-ui="btn.survival.title" data-ui-attr="title">🌿</button>
                 <button type="button" class="hud-btn" id="btn-combat" data-ui="btn.combat.title" data-ui-attr="title">⚔️</button>
+                <div class="hud-dropdown-wrap" id="player-actions-hud-wrap" style="display:none;">
+                    <button type="button" class="hud-btn" id="btn-player-actions" data-ui="btn.player.actions.title" data-ui-attr="title">⚙</button>
+                    <div id="player-actions-submenu" class="player-actions-submenu" role="menu" aria-hidden="true"></div>
+                </div>
                 <button type="button" class="hud-btn" id="btn-acupoints" data-ui="btn.acupoints.title" data-ui-attr="title">🌀</button>
                 <button type="button" class="hud-btn" id="btn-life" data-ui="btn.special.title" data-ui-attr="title">✨</button>
+                <button type="button" class="hud-btn" id="btn-save" data-ui="btn.save.title" data-ui-attr="title">💾</button>
                 <button type="button" class="hud-btn" id="btn-reset-demo-save" data-ui="btn.reset.demo.title" data-ui-attr="title">🧹</button>
             </div>
         </div>
@@ -1235,9 +1330,9 @@
                                     <span class="hub-label" data-ui="combat.hub.breath"></span>
                                     <span id="val-breath" class="hub-value" data-ui="combat.not.loaded"></span>
                                 </div>
-                                <div id="hub-light" class="combat-hub-node">
-                                    <span class="hub-label" data-ui="combat.hub.light"></span>
-                                    <span id="val-light" class="hub-value empty" data-ui="combat.not.loaded"></span>
+                                <div id="hub-footwork" class="combat-hub-node">
+                                    <span class="hub-label" data-ui="combat.hub.footwork"></span>
+                                    <span id="val-footwork" class="hub-value empty" data-ui="combat.not.loaded"></span>
                                 </div>
                             </div>
                         </div>
@@ -1288,6 +1383,51 @@
                 </div>
                 <div class="survival-body">
                     <div id="survival-skill-table" class="survival-table"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 存档：本机保存 / 导出密文 / 导入密文 -->
+        <div id="modal-save">
+            <div class="survival-panel">
+                <div class="survival-header">
+                    <div>
+                        <h2 data-ui="save.modal.title"></h2>
+                        <div class="subtitle" data-ui="save.modal.subtitle"></div>
+                    </div>
+                    <button type="button" class="btn-close" id="save-modal-close" aria-label="关闭">✖</button>
+                </div>
+                <div class="survival-body">
+                    <p class="save-hint" data-ui="save.hint.realtime"></p>
+                    <div class="save-actions">
+                        <button type="button" class="primary" id="btn-save-local-now" data-ui="save.btn.localNow"></button>
+                    </div>
+                    <div class="save-divider"></div>
+                    <p class="save-hint" data-ui="save.hint.exportImport"></p>
+                    <div class="save-row">
+                        <label for="save-input-account" data-ui="save.label.account"></label>
+                        <input type="text" id="save-input-account" autocomplete="username" />
+                    </div>
+                    <div class="save-row">
+                        <label for="save-input-password" data-ui="save.label.password"></label>
+                        <input type="password" id="save-input-password" autocomplete="current-password" />
+                    </div>
+                    <div class="save-actions">
+                        <button type="button" class="primary" id="btn-save-export" data-ui="save.btn.export"></button>
+                        <button type="button" id="btn-save-copy-code" data-ui="save.btn.copyCode"></button>
+                    </div>
+                    <div class="save-row">
+                        <label for="save-textarea-export" data-ui="save.label.codeOut"></label>
+                        <textarea id="save-textarea-export" readonly spellcheck="false"></textarea>
+                    </div>
+                    <div class="save-divider"></div>
+                    <div class="save-row">
+                        <label for="save-textarea-import" data-ui="save.label.codePaste"></label>
+                        <textarea id="save-textarea-import" spellcheck="false"></textarea>
+                    </div>
+                    <div class="save-actions">
+                        <button type="button" class="primary" id="btn-save-import" data-ui="save.btn.import"></button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -1372,12 +1512,19 @@
     <script src="js/character-attributes.js"></script>
     <script src="js/inventory-equipment.js"></script>
     <script src="js/combat-skills.js"></script>
+    <script src="js/combat-hub-actions.js"></script>
+    <script src="js/combat-parry.js"></script>
+    <script src="js/combat-post-effects.js"></script>
+    <script src="js/combat-pipeline.js"></script>
     <script src="js/acupoints.js"></script>
     <script src="js/survival-skills.js"></script>
     <script src="js/production-quality.js"></script>
     <script src="js/gathering.js"></script>
+    <script src="js/scene-animation.js"></script>
+    <script src="js/core/tile-renderer-v2.js"></script>
     <script src="js/scene-renderer.js"></script>
     <script src="js/scene-systems.js"></script>
+    <script src="js/save-system.js"></script>
     <script src="js/scene-app.js"></script>
     <script src="js/bootstrap.js"></script>
     

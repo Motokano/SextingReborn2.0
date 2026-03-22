@@ -28,7 +28,13 @@
         severeHungerTicks: 0,
         isResting: false,
         isDead: false,
-        isComa: false
+        isComa: false,
+
+        /** 战斗：气力（快耗快消）、底气、底气护体剩余盾量（见 07 / 11 基本呼吸法） */
+        qi_li_current: 100,
+        diqi_current: 0,
+        diqi_max_effective: 0,
+        diqi_shield_remaining: 0
     };
 
     /** 从外部获取呼吸实际值、凝气加成（可选），用于体力/底气恢复公式 */
@@ -80,12 +86,26 @@
             tickCount: state.tickCount,
             isResting: state.isResting,
             isDead: state.isDead,
-            isComa: state.isComa
+            isComa: state.isComa,
+
+            qi_li_current: state.qi_li_current,
+            qi_li_max: getQiLiMax(),
+            diqi_current: state.diqi_current,
+            diqi_max: state.diqi_max_effective,
+            diqi_shield_remaining: state.diqi_shield_remaining
         };
     }
 
     function setState(s) {
         if (!s || typeof s !== 'object') return;
+        // tick-based internal counters (for deterministic progression after reload)
+        if (s.tickCount !== undefined) state.tickCount = Math.max(0, Math.floor(Number(s.tickCount) || 0));
+        if (s.starvationTicks !== undefined) state.starvationTicks = Math.max(0, Math.floor(Number(s.starvationTicks) || 0));
+        if (s.thirstDeathTicks !== undefined) state.thirstDeathTicks = Math.max(0, Math.floor(Number(s.thirstDeathTicks) || 0));
+        if (s.staminaZeroTicks !== undefined) state.staminaZeroTicks = Math.max(0, Math.floor(Number(s.staminaZeroTicks) || 0));
+        if (s.overfedTicks !== undefined) state.overfedTicks = Math.max(0, Math.floor(Number(s.overfedTicks) || 0));
+        if (s.severeHungerTicks !== undefined) state.severeHungerTicks = Math.max(0, Math.floor(Number(s.severeHungerTicks) || 0));
+
         if (s.satiety !== undefined) state.satiety = round1(clamp(s.satiety, 0, get('satiety_overcap_max', 120)));
         if (s.thirst !== undefined) state.thirst = round1(clamp(s.thirst, 0, get('thirst_max', 100)));
         if (s.stamina !== undefined) state.stamina = round1(clamp(s.stamina, 0, get('stamina_max', 100)));
@@ -101,6 +121,134 @@
         if (s.isResting !== undefined) state.isResting = !!s.isResting;
         if (s.isDead !== undefined) state.isDead = !!s.isDead;
         if (s.isComa !== undefined) state.isComa = !!s.isComa;
+
+        var diqiCapLoad = Math.max(0, Math.round(Number(s.diqi_max != null ? s.diqi_max : s.diqi_max_effective) || 0));
+        if (diqiCapLoad > 0) state.diqi_max_effective = diqiCapLoad;
+        if (s.diqi_current !== undefined) {
+            var capD = state.diqi_max_effective > 0 ? state.diqi_max_effective : 9999;
+            state.diqi_current = round1(clamp(s.diqi_current, 0, capD));
+        }
+        if (s.qi_li_current !== undefined) state.qi_li_current = round1(clamp(s.qi_li_current, 0, getQiLiMax()));
+        if (s.diqi_shield_remaining !== undefined) state.diqi_shield_remaining = Math.max(0, Math.round(Number(s.diqi_shield_remaining) || 0));
+    }
+
+    function getQiLiMax() {
+        return Math.max(1, get('qi_li_max', 100));
+    }
+
+    /** 由先天+后天呼吸推导底气上限缓存；实际 current 在 refresh 时夹紧 */
+    function computeDiqiMaxFromBreath(breathEffective) {
+        var b = Math.max(0, parseInt(breathEffective, 10) || 0);
+        var base = get('diqi_max_base', 40);
+        var per = get('diqi_max_per_breath_effective', 2);
+        return Math.max(0, Math.floor(base + b * per));
+    }
+
+    /**
+     * 属性重算后调用：更新 diqi 上限并夹紧 current；护体盾不超过 current 逻辑在扣盾侧处理
+     */
+    function refreshDiqiMaxFromBreath(breathEffective) {
+        var mx = computeDiqiMaxFromBreath(breathEffective);
+        state.diqi_max_effective = mx;
+        state.diqi_current = round1(clamp(state.diqi_current, 0, mx));
+        if (state.diqi_shield_remaining > state.diqi_current && state.diqi_shield_remaining > 0) {
+            state.diqi_shield_remaining = Math.min(state.diqi_shield_remaining, Math.floor(state.diqi_current));
+        }
+    }
+
+    /**
+     * 调息 / 行气单 tick：ceil(diqi_max×5%)×底气恢复倍率，至少 1；夹紧到 diqi_max（满额行气溢出见 06，后续可扩展）。
+     * @returns {number} 实际增加的底气量
+     */
+    function applySitMeditationDiqiOnce() {
+        var mx = Math.max(0, state.diqi_max_effective);
+        if (mx <= 0) return 0;
+        var base = Math.max(1, Math.ceil(mx * 0.05));
+        var R = Math.max(1, Math.ceil(base * getDiqiRegenMultiplier()));
+        var before = state.diqi_current;
+        state.diqi_current = round1(clamp(before + R, 0, mx));
+        return Math.max(0, state.diqi_current - before);
+    }
+
+    function initBattleResourcesFull() {
+        var qm = getQiLiMax();
+        state.qi_li_current = qm;
+        if (typeof global !== 'undefined' && global.CharacterAttributes && typeof global.CharacterAttributes.getEffectiveAttr === 'function') {
+            refreshDiqiMaxFromBreath(global.CharacterAttributes.getEffectiveAttr('breath'));
+        } else {
+            refreshDiqiMaxFromBreath(10);
+        }
+        state.diqi_current = round1(state.diqi_max_effective);
+        state.diqi_shield_remaining = 0;
+    }
+
+    function addQiLi(amount) {
+        var a = Math.max(0, Number(amount) || 0);
+        if (a <= 0) return;
+        var mx = getQiLiMax();
+        state.qi_li_current = round1(clamp(state.qi_li_current + a, 0, mx));
+    }
+
+    function consumeQiLi(amount) {
+        var a = Math.max(0, Number(amount) || 0);
+        if (a <= 0) return 0;
+        var take = Math.min(a, state.qi_li_current);
+        state.qi_li_current = round1(Math.max(0, state.qi_li_current - take));
+        return take;
+    }
+
+    function consumeDiqi(amount) {
+        var a = Math.max(0, Math.floor(Number(amount) || 0));
+        if (a <= 0) return 0;
+        var take = Math.min(a, state.diqi_current);
+        state.diqi_current = round1(Math.max(0, state.diqi_current - take));
+        return take;
+    }
+
+    /** 增加底气，夹紧到当前 diqi_max_effective */
+    function addDiqiCurrent(amount) {
+        var a = Math.max(0, Number(amount) || 0);
+        if (a <= 0) return;
+        var mx = Math.max(0, state.diqi_max_effective);
+        if (mx <= 0) return;
+        state.diqi_current = round1(clamp(state.diqi_current + a, 0, mx));
+    }
+
+    /**
+     * 受击侧底气护体：按配置比例从本击伤害中「吸收」数值，并从 shield 扣除（见 06 / 08 / 19 §6.6）。
+     * @param {number} incomingDamage 进入护体层前的伤害（通常已过完招架）
+     * @param {number} reducePct 如 0.25 表示理想吸收 floor(D×pct)，实际吸收 min(理想, 剩余盾)
+     * @returns {{ outDamage: number, absorbed: number }}
+     */
+    function applyDiqiShieldToDamage(incomingDamage, reducePct) {
+        var D = Math.max(0, Number(incomingDamage) || 0);
+        if (D <= 0) return { outDamage: 0, absorbed: 0 };
+        var sh = getDiqiShieldRemaining();
+        if (sh <= 0) return { outDamage: D, absorbed: 0 };
+        var pct = typeof reducePct === 'number' && isFinite(reducePct) ? reducePct : 0.25;
+        if (pct < 0) pct = 0;
+        if (pct > 0.95) pct = 0.95;
+        var ideal = Math.floor(D * pct);
+        var absorb = Math.min(ideal, sh);
+        if (absorb < 0) absorb = 0;
+        var outD = Math.max(0, D - absorb);
+        if (absorb > 0) {
+            setDiqiShieldRemaining(sh - absorb);
+            breakDiqiShieldIfDepleted();
+        }
+        return { outDamage: outD, absorbed: absorb };
+    }
+
+    function getDiqiShieldRemaining() {
+        return Math.max(0, Math.floor(state.diqi_shield_remaining || 0));
+    }
+
+    function setDiqiShieldRemaining(v) {
+        state.diqi_shield_remaining = Math.max(0, Math.floor(Number(v) || 0));
+    }
+
+    function breakDiqiShieldIfDepleted() {
+        if (state.diqi_shield_remaining <= 0) state.diqi_shield_remaining = 0;
     }
 
     /** 饱食区间：正常 / 稍微饥饿 / 中等饥饿 / 重度饥饿 / 极限饥饿 */
@@ -194,6 +342,13 @@
     function consumeEnergy(amount) {
         var a = amount || 0;
         state.energy = round1(Math.max(0, state.energy - a));
+    }
+
+    function addEnergy(amount) {
+        var a = Math.max(0, Number(amount) || 0);
+        if (a <= 0) return;
+        var em = get('energy_max', 100);
+        state.energy = round1(clamp(state.energy + a, 0, em));
     }
 
     function addNutrition(amount) {
@@ -304,6 +459,17 @@
             state.nutrition = clamp(state.nutrition - nutDecay, get('nutrition_min', 0), get('nutrition_max', 100));
         }
 
+        if (typeof global !== 'undefined' && global.InventoryEquipment && typeof global.InventoryEquipment.tickHubActionCooldowns === 'function') {
+            global.InventoryEquipment.tickHubActionCooldowns(1);
+        }
+
+        // ---------- 底气自然恢复（战斗外资源；与营养等同一 tick） ----------
+        var dMax = Math.max(0, state.diqi_max_effective);
+        if (dMax > 0 && state.diqi_current < dMax) {
+            var dRegen = get('diqi_tick_regen_base', 0.12) * getDiqiRegenMultiplier();
+            state.diqi_current = round1(clamp(state.diqi_current + dRegen, 0, dMax));
+        }
+
         return result;
     }
 
@@ -350,6 +516,21 @@
         getNutrition: getNutrition,
         getWeightKg: getWeightKg,
         isDead: isDead,
-        isComa: isComa
+        isComa: isComa,
+
+        getQiLiMax: getQiLiMax,
+        refreshDiqiMaxFromBreath: refreshDiqiMaxFromBreath,
+        initBattleResourcesFull: initBattleResourcesFull,
+        addQiLi: addQiLi,
+        consumeQiLi: consumeQiLi,
+        consumeDiqi: consumeDiqi,
+        getDiqiShieldRemaining: getDiqiShieldRemaining,
+        setDiqiShieldRemaining: setDiqiShieldRemaining,
+        breakDiqiShieldIfDepleted: breakDiqiShieldIfDepleted,
+        computeDiqiMaxFromBreath: computeDiqiMaxFromBreath,
+        addDiqiCurrent: addDiqiCurrent,
+        applyDiqiShieldToDamage: applyDiqiShieldToDamage,
+        addEnergy: addEnergy,
+        applySitMeditationDiqiOnce: applySitMeditationDiqiOnce
     };
 })(typeof window !== 'undefined' ? window : this);

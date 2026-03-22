@@ -13,12 +13,14 @@
     var registry = { event_kinds: [], event_names: [], tags: [] };
     var indexByEvent = {}; // event_kind:event_name -> [buffTemplate]
     var instancesByOwner = {}; // ownerId -> [instance]
+    var templateById = {}; // buff_id -> normalized template
     var eventSeq = 0;
     var attrSeq = 0;
     var registeredSet = { kinds: {}, names: {}, tags: {} };
     var timeSnapshot = null;
     var lastAttrSnapshot = null;
     var ready = false;
+    var pendingRestore = null; // { instancesByOwner, tick }
     var pendingEvents = [];
     var pendingReady = { registry: false, buffs: false };
 
@@ -77,15 +79,23 @@
             triggerEventKind: arrayOrEmpty(t.triggerEventKind),
             triggerEventName: arrayOrEmpty(t.triggerEventName),
             triggerTags: arrayOrEmpty(t.triggerTags),
-            effects: arrayOrEmpty(t.effects)
+            effects: arrayOrEmpty(t.effects),
+            /** 见 design/18：beneficial 可被「破相」等驱散；缺省不可选 */
+            dispel_pool: t.dispel_pool === 'beneficial' ? 'beneficial' : '',
+            dispel_priority: (function () {
+                var dp = parseInt(t.dispel_priority, 10);
+                return isFinite(dp) ? dp : 1000;
+            })()
         };
     }
 
     function rebuildIndexes() {
         indexByEvent = {};
+        templateById = {};
         for (var i = 0; i < config.buffs.length; i++) {
             var t = normalizeTemplate(config.buffs[i]);
             if (!t.buff_id) continue;
+            templateById[t.buff_id] = t;
             var kinds = t.triggerEventKind.length ? t.triggerEventKind : ['*'];
             var names = t.triggerEventName.length ? t.triggerEventName : ['*'];
             for (var k = 0; k < kinds.length; k++) {
@@ -125,6 +135,49 @@
         var oid = ownerId || PLAYER_OWNER_ID;
         if (!instancesByOwner[oid]) instancesByOwner[oid] = [];
         return instancesByOwner[oid];
+    }
+
+    function getBuffTemplate(buffId) {
+        var id = String(buffId || '');
+        var t = templateById[id];
+        return t || null;
+    }
+
+    function getParryChanceDeltaPercent(ownerId) {
+        var oid = ownerId || PLAYER_OWNER_ID;
+        var arr = instancesByOwner[oid] || [];
+        var sum = 0;
+        var i, j, inst, effects, e, p, d;
+        for (i = 0; i < arr.length; i++) {
+            inst = arr[i];
+            if (!inst || !inst.template || inst.stacks <= 0) continue;
+            effects = arrayOrEmpty(inst.template.effects);
+            for (j = 0; j < effects.length; j++) {
+                e = effects[j] || {};
+                if (e.type !== 'parry_chance_delta_percent') continue;
+                p = e.params || {};
+                d = safeNum(p.delta_per_stack, 0);
+                sum += d * safeNum(inst.stacks, 0);
+            }
+        }
+        return sum;
+    }
+
+    function removeBuffByBuffId(ownerId, buffId) {
+        var oid = ownerId || PLAYER_OWNER_ID;
+        var bid = String(buffId || '');
+        if (!bid) return 0;
+        var arr = instancesByOwner[oid];
+        if (!arr || !arr.length) return 0;
+        var removed = 0;
+        for (var j = arr.length - 1; j >= 0; j--) {
+            if (arr[j] && arr[j].buff_id === bid) {
+                arr.splice(j, 1);
+                removed += 1;
+            }
+        }
+        if (removed) recalcDerived();
+        return removed;
     }
 
     function applyBuff(ownerId, buffId, sourceId, eventContext) {
@@ -183,6 +236,97 @@
             }
         }
         return changed;
+    }
+
+    function toInt(v, def) {
+        var n = parseInt(v, 10);
+        return (typeof n === 'number' && isFinite(n)) ? n : def;
+    }
+
+    function attachTemplatesAndClamp() {
+        // Attach template objects by buff_id, then clamp stacks to max_stacks.
+        var owners = Object.keys(instancesByOwner);
+        var anyTemplate = false;
+        for (var i = 0; i < owners.length; i++) {
+            var arr = instancesByOwner[owners[i]];
+            for (var j = 0; j < arr.length; j++) {
+                var inst = arr[j];
+                if (!inst || !inst.buff_id) continue;
+                var tpl = templateById[inst.buff_id] || null;
+                inst.template = tpl;
+                if (tpl) {
+                    anyTemplate = true;
+                    inst.stacks = Math.min(tpl.maxStacks, Math.max(0, toInt(inst.stacks, 1)));
+                } else {
+                    inst.stacks = Math.max(0, toInt(inst.stacks, 1));
+                }
+            }
+        }
+        return anyTemplate;
+    }
+
+    function applyPendingRestoreIfAny() {
+        if (!pendingRestore) return;
+        pendingRestore = null;
+        attachTemplatesAndClamp();
+        recalcDerived();
+    }
+
+    function setState(saved) {
+        if (!saved || typeof saved !== 'object') return;
+        var instByOwner = saved.instancesByOwner;
+        if (!isPlainObject(instByOwner)) instByOwner = null;
+
+        // Reset current runtime instances first.
+        instancesByOwner = {};
+
+        var nowTick = getTickNow();
+        if (!nowTick) {
+            // In case GameTime isn't available yet, still restore without expiration pruning.
+            nowTick = 0;
+        }
+
+        if (instByOwner) {
+            var ownerIds = Object.keys(instByOwner);
+            for (var i = 0; i < ownerIds.length; i++) {
+                var oid = ownerIds[i];
+                var arr = instByOwner[oid];
+                if (!Array.isArray(arr)) continue;
+                instancesByOwner[oid] = [];
+                for (var j = 0; j < arr.length; j++) {
+                    var inst = arr[j];
+                    if (!inst || !inst.buff_id) continue;
+                    instancesByOwner[oid].push({
+                        uid: inst.uid != null ? String(inst.uid) : '',
+                        buff_id: String(inst.buff_id),
+                        owner_id: inst.owner_id != null ? String(inst.owner_id) : String(oid),
+                        source_id: inst.source_id != null ? String(inst.source_id) : null,
+                        started_tick: inst.started_tick != null ? toInt(inst.started_tick, 0) : toInt(nowTick, 0),
+                        expires_at_tick: inst.expires_at_tick != null ? toInt(inst.expires_at_tick, nowTick) : toInt(nowTick, 0),
+                        stacks: inst.stacks != null ? toInt(inst.stacks, 1) : 1,
+                        template: null
+                    });
+                }
+            }
+        }
+
+        // Prune expired by current tick.
+        try {
+            removeExpiredByTick(nowTick);
+        } catch (e0) { /* ignore */ }
+
+        if (loaded) {
+            attachTemplatesAndClamp();
+            recalcDerived();
+            pendingRestore = null;
+        } else {
+            // Keep pending: templates will be attached once buff config finishes loading.
+            pendingRestore = { tick: nowTick };
+        }
+    }
+
+    function isPlainObject(v) {
+        return !!v && typeof v === 'object' && !Array.isArray(v);
     }
 
     function eventMatchesTemplate(template, eventContext) {
@@ -612,6 +756,7 @@
             config.buffs = arrayOrEmpty(obj && obj.buffs).map(normalizeTemplate);
             rebuildIndexes();
             loaded = true;
+            applyPendingRestoreIfAny();
             pendingReady.buffs = true;
             ready = pendingReady.registry && pendingReady.buffs;
             flushPendingEvents();
@@ -619,6 +764,7 @@
             config = { version: 1, buffs: [] };
             rebuildIndexes();
             loaded = true;
+            applyPendingRestoreIfAny();
             pendingReady.buffs = true;
             ready = pendingReady.registry && pendingReady.buffs;
             flushPendingEvents();
@@ -631,7 +777,11 @@
     global.BuffSystem = {
         init: init,
         getState: getState,
+        setState: setState,
         applyBuff: applyBuff,
+        getBuffTemplate: getBuffTemplate,
+        getParryChanceDeltaPercent: getParryChanceDeltaPercent,
+        removeBuffByBuffId: removeBuffByBuffId,
         triggerBuffPipeline: triggerBuffPipeline,
         triggerRegisteredEvent: triggerRegisteredEvent,
         notifyEnvironmentChanged: notifyEnvironmentChanged,

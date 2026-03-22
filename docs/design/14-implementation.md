@@ -14,7 +14,7 @@
   | 兵器先天筋骨超额增伤系数（每超 1 点 +x%） | `weapon_innate_jingu_bonus_pct_per_point` | 0.05 |
   | 呼吸每点对底气上限加成（+x%） | `breath_diqi_cap_pct_per_point` | 0.01 |
   | 身手每点对速度加成（+x%） | `dexterity_speed_pct_per_point` | 0.005 |
-  | 未装备轻功时基础速度 | `base_speed_no_qinggong` | 1 |
+  | 未挂载步法 hub 时默认 \(V_{\text{base}}\) | `base_speed_no_footwork`（兼容旧键 `base_speed_no_qinggong`） | 1 |
   | 命中率同速时基础值 | `hit_base_at_equal_speed` | 0.825（80%～85% 内） |
   | 命中率基础上限（仅速度，<1） | `hit_base_max` | 0.95 或 0.98 |
   | 命中率攻方慢时下限 | `hit_base_min` | 0.05～0.10 |
@@ -46,12 +46,62 @@
 - **兵器先天筋骨超额增伤系数**：`weapon_jingu_bonus_coef` → `weapon_innate_jingu_bonus_pct_per_point`
 
 - **武器表**：武器应有属性（含 `req_innate_jingu` 等）在后续设计「武器属性」时一并汇总，再出表结构。
-- **技能/招式配置**：出力相关（默认成数、气劲/体力基础消耗等）以 **`skill_id`** 关联；具体为每招式一行或嵌套在技能 JSON 内，以实际策划表结构为准。
+- **技能/招式配置**：出力相关（默认成数、**气力/底气**基础或比例消耗、体力等）以 **`skill_id`** 关联；具体为每招式一行或嵌套在技能 JSON 内，以实际策划表结构为准。
+- **底气 / 气力比例消耗取整（与 `11-skills` 刺拳及同类一致）**：凡配置为「**方案 1**」的扣 **底气** 或扣 **气力值**（先定十成基准再 × 成数/10，且基准夹紧 `[min,max]`）：**步骤 A** \(B=\mathrm{clamp}(\lfloor D_{\max}\times r\rfloor,\,d_{\min},\,d_{\max})\)，其中 \(D_{\max}\) 分别为当前 `diqi_max` 或 `qi_li_max`，\(r\) 与 \(d_{\min},d_{\max}\) 来自招式配置（刺拳示例：底气 \(r=0.1\)、夹紧 \([1,50]\)；气力 \(r=0.2\)、夹紧 \([1,50]\)）；**步骤 B** \(C=B\times(k/10)\)，\(k\) 为成数；**步骤 C** 实际扣除整数 \(\max(1,\,\mathrm{round}(C))\)，再与 `diqi_current` 或 `qi_li_current` 取 min 扣减。全项目统一，勿混用「先乘成数再夹紧」或其它取整函数，除非新招式在文档中单条声明例外。
+- **徒手 \(W_{\text{coef}}\) 合成顺序**：与 `11-skills` 8.3.2 一致：**\(W_{\text{skill}}\) → 招式乘子 \(M_{\text{move}}\)（`move_power_multiplier`，默认 1；刺拳 0.8、正蹬 1.2、鞭腿 1.0、摆拳 1.4，余见 `11`）→ 手套 \(G\) → 试探 \(K_{\text{试探}}\)**（仅摆拳 `swing_punch`），再与武器基础伤害相乘。
+- **呼吸法威力 \(F_{\text{呼吸法威力}}\)**：挂载 **`hubs.breath`** 的技能若为 `category: breath` 且配置了 **`breath_power_multiplier`**，算伤侧调用 **`CombatSkills.getBreathPowerMultiplier(skillId, move_usage)`**（见 `11` 8.3.3、`05` 5.5.2）；**应乘入 \(W_{\text{skill}}\)**，与 `Base(L)`、招式熟练度等顺序以 `11`/`08` 为准。未挂载或非 breath：**1**。
+
+### 战斗技能·呼吸法·熟练度：**已定**与**尚待实现**
+
+#### 已定（策划已拍板；以 `11` / `19` / JSON / API 为准）
+
+| 主题 | 依据 | 摘要 |
+|------|------|------|
+| 肢上招式熟练度与后天奖励 | `11` 8.3.1、`05` 5.4 | `proficiency_attr_unlocks`；`move_usage`；`recalcCharacterStats` |
+| 基本拳脚分轨 | `11` 8.3.2、agent 规则 | 后遗症 vs `proficiency_attr_unlocks` |
+| **基本呼吸法** 显示名 | `data/combat-skills.json`、`19` §6、`11` 8.3.3 | 全文统一 **「基本呼吸法」**；技能 ID 仍为 **`combat_basic_breath`** |
+| **吐纳** 入口 | `19` §6.4、`11` 8.3.3 | **「动作」**二级菜单；**不**要求武学枢纽独立战斗条（可选快捷除外） |
+| **冷却** | `19` §6 总述 | **`skills[combat_basic_breath].hub_action_cooldown_ticks[hub_action_id]`**（如 **`tu_na`**），战斗 tick 递减 |
+| **熟练度累计** | `19` §6 总述 | **血气化劲 / 吐气纳精 / 调息 / 吐纳** 成功结算均 **`move_usage.tu_na` +1**；调息 **每成功 1 tick** +1 |
+| **底气护体** `diqi_huti` | `19` §6.6、`11` 8.3.3、`06` 底气护体示例 | **≥50** 级；**战斗**；**\(B=\lfloor diqi_{\max}\times r\rfloor\)**，`r`=`diqi_consume_ratio_of_max`（0.5）；**\(C=\max(d_{\min},B)\)**，`d_{\min}`=`diqi_consume_min`（**1**，底气消耗下限夹紧）；**`diqi_max=0`** 整次失败 → **`shield_value=C`**；**三系 25%**（`shield_tri_type_damage_reduce_pct`）；**无 duration tick**；**护体未破不可重复开**；**不累加 `tu_na`** |
+| **`getSkillTotalProficiency` hub 排除** | `11` 8.3.3、`js/combat-skills.js` | **`hub_actions[].exclude_from_skill_total_proficiency: true`** 的条目 **不参与** 算术平均（**底气护体** 已用，避免稀释吐纳对 **`breath_power_multiplier`** 的影响） |
+| 呼吸法威力 | `11` 8.3.3、`getBreathPowerMultiplier` | `base` 1.0；总熟练 ≥50% → +0.3 |
+| 新呼吸法 | `11` 8.3.3 | **沿用** `hub_actions` + `breath_power_multiplier` |
+| 新步法 | `11` 8.3.4 | **`category: footwork`**、`hubs.footwork`、**`combat_speed_base`**、**无熟练度**、`hub_actions` 仅动作/Buff |
+| **基本招架** | `11` 8.3.5、`08` 招架结算阶段、`getParryValues`、`js/combat-parry.js` | 仅招架槽；**1→满级**线性 **15%→45%** / **20%→50%**；**成功** **`move_usage.parry_success` +1**；**R≥50%** → 后天柔韧 **+40**（`parry_proficiency_attr_unlocks`）；**肢位选取 / 跳过 / 日志 / 事件** 见 `08` 与 **`CombatParry`**；registry **`parry_*`** 事件 |
+| Buff/试探 | `18`、`11` | 既有规则 |
+
+**技能存档字段补充（实现须持久化）**：在 `skills[skill_id]` 上除 **`level`**、**`move_usage`** 外，呼吸法相关可增加 **`hub_action_cooldown_ticks?: { [string]: number }`**（剩余冷却 tick）；缺省键视为 0。
+
+#### 尚待实现（非策划缺口）
+
+- **战斗结算接线**：\(F_{\text{呼吸法威力}}\) 乘入 \(W_{\text{skill}}\) 的代码路径；**多 hub 切换**时以 **出手前一刻** `hubs.breath` 为准（实现登记）。
+- **非战斗扩展**：吐纳 **`battle_only`** 已约束；若将来大地图回气，单独立项。
+
+### 战斗管线与后遗症分派（可扩展落地）
+
+- **配置**：`data/combat-pipeline.json` 定义 **`pipelines.*.phases[]`**（`handler` 键、`buff_event_name` 等）。**勿在单技能 JSON 写死封顶**，招架/命中硬顶以 **`survival-config.json`** 的 `parry_chance_cap`、`parry_damage_reduce_cap`、`hit_*` 为准（`CombatPipeline.getParryCaps` 读取）。
+- **实现**：`js/combat-pipeline.js` — `CombatPipeline.setConfig`、`runPipeline`、`registerPhaseHandler(handlerKey, fn)` 覆盖内置 **`builtin.*`**。`js/combat-post-effects.js` — `CombatPostEffects.setTable(post-effects.json)`、`registerPostEffectResolver(effectType, fn)`；管线阶段 **`builtin.post_effects_hook`** 对 `hit_roll_success` 分派。
+- **入口**：`SceneApp` 加载配置后注入管线；**`attackEnemy`** 默认跑 **`melee_hit_enemy_defender`**，可通过 **`ctxMeta.pipeline`** 换 **`melee_hit_player_defender`**（演示/受击）；**`ctxMeta.post_effect_ids`** 传入装配的后遗症 id 列表。
+- **策划填表字段**：`combat-skills.json` 的 **`constants.design_meta_template`**；技能根、`moves[]`、`hub_actions[]` 可选 **`design_meta`**。`post-effects.json` 条目可选 **`design_meta`**、**`mechanic_shared_with_enemy`**（与 `10-enemies`「共用机制」一致）。
+
+---
+
+（以下仍为第十节全局实现约定条目。）
+
+- **招架几率 Debuff**：失衡等按 `08` 在最终几率上叠加百分点；运行时可用 **`BuffSystem.getParryChanceDeltaPercent(ownerId)`**。
+- **正蹬 tick 末击退**：招式配置 **`on_parry_failed_at_tick_end_displace_target`**（`cells`、`direction`、可选 **`wall_slam_final_damage_multiplier`**）：**命中成功**且 **`08` 招架失败**时入队；**tick 末**按 **`07`** 全局规则 **坍缩为至多一条**（**`cells` 最大子集** → **攻击方筋骨低** → **攻击方速度取整低** → **`event_id` 小**）执行位移；**撞阻**时 **`08` 第 5 条** 对本击最终伤害乘子（正蹬 **1.3**）。见 `11-skills` 8.3.2、`07`、`08`。
+- **战斗调试日志**：试探层数、\(W_{\text{skill}}\)、\(G\)、\(K_{\text{试探}}\)、\(W_{\text{coef}}\) 等细粒度威力拆分，**仅当** `buff_debug_enabled`（或项目内等价全局开关）为真时输出；默认关闭（与 `18-buff-system.md` 调试可见性一致）。
 - **技能 ID 与显示名**：ID → 显示名（如 `survival_strength` → 「力量」）的映射放在 **`/data/` 下技能配置表**中，每条技能包含 `id` 与显示名字段（如 `name` 或 `display_name`），便于通过读表/写表维护与扩展。
 - **展示用文案**：所有需展示的文案（技能名、物品名、UI 按钮与提示、系统说明等）均从 **配置表/文案表**（如 `/data/` 下 JSON）读取，通过 **key** 引用，不写死在代码中，便于通过读表/写表维护与 agent 修改；多语言与表结构（如按模块拆表、i18n 键名约定）在实现时确定。
 - **物品三种名字与三种描述**：同一物品在配置中提供 **name_0 / name_1 / name_2**（三种名字）与 **desc_0 / desc_1 / desc_2**（三种描述）；UI 与系统根据当前档位显示对应名字与描述。档位由**开放技能判断接口**决定。
 - **开放技能判断接口**：实现须提供接口（如 `getItemDisplayTier(itemId, character)` 或等价），根据**当前玩家**在物品配置中 `display_skill_id` 所指技能上的**等级**，返回档位 0 / 1 / 2，进而决定使用 name_0/1/2 与 desc_0/1/2 的哪一档。档位阈值从**配置表**读取（如全局常数表字段 `item_display_tier_threshold_1`、`item_display_tier_threshold_2`）；**当前实现可留空**，只要后续配置其他物品时能通过该字段调参即可，未配置时由实现约定默认值。UI 与任何需要展示物品名称、描述的地方均**必须**通过该接口取得档位后再取对应文案，不得写死单档。
 - **技能等级存储**：角色技能等级建议存于 `character.skills`，结构为 `{ [skill_id]: { level: number } }`（或等价 `character.skill_levels: { [skill_id]: number }`）；未习得技能时等级视为 0。展示档位接口通过 `character.skills[display_skill_id].level`（或等价）读取等级。语言技能 ID 为 `survival_language`（见 11 技能系统）。
+- **技能等级 → 后天属性**：`data/survival-config.json` 中 `skill_attr_gain`：`{ [skill_id]: { [attr_id]: { threshold, value } } }`。`recalcCharacterStats` 默认从 `CharacterAttributes` 已加载的配置读取；也可在调用时传入 `skillAttrGainTable` 覆盖。结算规则：`level >= threshold` 时该项后天 += `value * floor(level / threshold)`（与 `character-attributes.js` 的 `sumFromSkills` 一致）。当前「基本拳脚」为每 20 级 +1 后天筋骨（见 `11-skills`）。
+- **战斗后遗症（构式）**：`/data/post-effects.json` 定义 `post_effect_id`、文案 key、`effect_type`（如 **`initiative_always_first`**、**`dispel_one_beneficial_buff_on_target`**）、`valid_skill_ids` / `valid_move_ids`、`effect_params`（如驱散是否在招架 0 伤后仍触发）。招式在 `combat-skills.json` 的 `moves[]` 内可含 **`post_effect_unlocks`**（`min_proficiency_ratio` + `post_effect_id`）与 **`post_effect_slot_max`**。存档中须在**出招肢 × 技能 × 招式槽**（或等价结构）持久化「某槽已装配的后遗症 id」；**装配校验**：同一 `post_effect_id` 在同一肢体内**至多出现一次**（四肢可各一次）。先手解析在 `07` 速度比较**之前**查询本击 `move_id` 是否带该装配。**驱散类**须在 **命中 roll 成功** 且（若配置）**招架后**仍执行的节点调用 BuffSystem，候选池见 `18`。
+- **已获得后遗症（后台-only）**：`CharacterAttributes` 状态含 **`post_effects_obtained: string[]`**（去重 id）。**不向玩家默认状态栏/角色面板展示**；仅供 **`getPostEffectsObtainedCount()`**、**`getPostEffectsObtainedIds()`**、**`hasPostEffectObtained(post_effect_id)`** 及 **`syncPostEffectsObtainedFromSkillsState()`**（可手动调用）供剧情、NPC 条件、成就等判断。前三个查询接口在读取前会内部 **`syncPostEffectsObtainedFromSkillsState()`**（按 `skills[*].move_usage` 与 `post_effect_unlocks` 合并熟练度解锁）。剧情直发奖用 **`registerPostEffectObtained(id)`**。随角色存档读写。
+- **战斗技能等级上限（开放接口）**：与 `skills` 一并持久化 `skill_max_level_bonus: { [combat_skill_id]: number }`（整数，可负），含义见 `11-skills`「技能有效等级上限」。凡判断「能否升到 L+1」、传授上限、改级、载入后校验，须使用 `CombatSkills.getProgressionSkillMaxLevel(characterLike, skillId)`（或等价实现），其中 `characterLike` 至少包含 `skills` 与 `skill_max_level_bonus`；**不得**仅以字面 `1000` 作为唯一上界。**数值曲线**（潜能、`Base(L)`、招架比例等）以 `getTemplateMaxLevel` 封顶，参与计算的等级用 `getSkillLevelForStatCurves`（超额级如 1001 与模板满级数值相同）。NPC 触发器可通过效果 `modifySkillMaxLevelBonus`（`skillId`、`delta`）改可练上限；改后若当前等级超过新的 progression 上限，须夹紧等级。
+- **肢上招式槽与分槽成数**：每条装备主动战斗技能的肢体，在存档中持久化 **循环槽列表**，建议每项为 `{ move_id: string, power_level: number }`（1～12，与招式模板 min/max 夹紧）；与 `11-skills` 8.3.1、`07` 成数来源一致。轮转到某槽时，本击 **\(k\) = 该元素的 `power_level`**。
 - **物品与装备实例**：存档中**装备槽位**与**物品栏每格**存的是**实例**而非仅模板 ID。推荐格式：每格/每槽为 `{ item_id, enchants?: string[] }`，装备槽位必含 `item_id`，若有词条则 `enchants` 为词条 ID 数组；可堆叠且无词条的消耗品/材料可为 `{ item_id, count }`（无 enchants 或空数组）。同一模板的不同实例通过是否带词条、词条列表区分。脱下背心/背包/衣服时，该容器内物品按 05 迁移后，**对应容器置空**，格数随当前装备变化，未装备时该容器为空。
 - **快捷腰带格序**：快捷腰带格位与容器格的对应顺序为**先口袋、后背心**（即索引 0～pocket_slots-1 为口袋，pocket_slots～pocket_slots+vest_slots-1 为背心）。
 - **防具减伤与词条**：头部/衣服防具的减伤与词条 `armor_bonus` 的叠加为**乘算**：例如基础减伤比例 \(r_{\text{base}}\)、词条加成比例 \(r_{\text{enc}}\)，最终减伤后剩余伤害比例 = \((1 - r_{\text{base}}) \times (1 - r_{\text{enc}})\)（具体公式以 08 为准）。**词条叠加**：同一装备上多个词条之间**相加**（同类型效果数值相加）；**单词条有上限**，上限在词条配置或全局常数中定义。**词条展示**：词条名称与描述**不受**三档名字/描述技能判断影响，使用词条表内单一 `name` 即可。

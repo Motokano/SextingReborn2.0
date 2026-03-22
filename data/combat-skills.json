@@ -1,5 +1,5 @@
 {
-  "_comment": "战斗技能配置 - 按 docs/design/11-skills.md 8.3",
+  "_comment": "战斗技能配置 - 按 docs/design/11-skills.md 8.3。招式 default_power_level 为装入槽位时的初始 power_level；战斗中每槽独立 power_level 存存档（见 14-implementation）",
   "constants": {
     "potential_cost_1_200": 5000,
     "potential_cost_201_400_base": 5000,
@@ -11,13 +11,22 @@
     "base_power_unarmed_1": 10,
     "base_power_unarmed_1000": 100,
     "parry_success_at_1000": 0.35,
-    "parry_reduce_at_1000": 0.35
+    "parry_reduce_at_1000": 0.35,
+    "default_combat_skill_max_level": 1000,
+    "design_meta_template": {
+      "_usage": "技能根、moves[]、hub_actions[] 均可选挂同名结构；运行时忽略，仅供策划表与文档对齐",
+      "sheet_row_id": "",
+      "doc_anchor": "",
+      "tags": [],
+      "wip_status": "draft",
+      "applies_to": ["player"]
+    }
   },
   "categories": [
     { "id": "unarmed", "label": "徒手", "icon": "🖐️" },
     { "id": "weapon", "label": "兵器", "icon": "⚔️" },
-    { "id": "light", "label": "轻功", "icon": "👟" },
     { "id": "breath", "label": "呼吸", "icon": "🫁" },
+    { "id": "footwork", "label": "步法", "icon": "👟" },
     { "id": "parry", "label": "招架", "icon": "🛡️" }
   ],
   "skills": {
@@ -29,70 +38,331 @@
       "difficulty": 1,
       "icon": "👊",
       "only_parry": false,
+      "design_meta": {
+        "sheet_row_id": "SKILL_UNARMED_BASIC",
+        "doc_anchor": "11-skills 8.3.2",
+        "tags": ["starter", "unarmed"],
+        "wip_status": "live",
+        "applies_to": ["player"]
+      },
       "moves": [
-        { "id": "zhi_quan", "name": "直拳", "unlock_level": 1 },
-        { "id": "qian_ti", "name": "前踢", "unlock_level": 1 },
-        { "id": "gou_quan", "name": "勾拳", "unlock_level": 50 },
-        { "id": "bian_tui", "name": "鞭腿", "unlock_level": 50 }
+        {
+          "id": "jab",
+          "name": "刺拳",
+          "design_meta": {
+            "sheet_row_id": "MOVE_JAB",
+            "doc_anchor": "11-skills 8.3.2 jab",
+            "tags": ["probe", "unarmed"],
+            "wip_status": "live",
+            "applies_to": ["player"]
+          },
+          "unlock_level": 1,
+          "required_limb_tags": ["挥拳"],
+          "damage_type": "blunt",
+          "hit_segments": 1,
+          "move_power_multiplier": 0.8,
+          "default_power_level": 10,
+          "power_level_min": 1,
+          "power_level_max": 12,
+          "hit_part_weights": {
+            "head": 0.1,
+            "chest": 0.5,
+            "abdomen": 0.2,
+            "left_arm": 0.05,
+            "right_arm": 0.05,
+            "left_leg": 0.05,
+            "right_leg": 0.05
+          },
+          "on_hit_roll_success_apply_buff_actor": "buff_probe",
+          "diqi_cost": {
+            "ratio_of_diqi_max_at_10_power": 0.1,
+            "min": 1,
+            "max": 50,
+            "settlement": "floor_ratio_then_clamp_base_at_10_round_scale_min_1"
+          },
+          "qi_li_cost": {
+            "ratio_of_qi_li_max_at_10_power": 0.2,
+            "min": 1,
+            "max": 50,
+            "settlement": "floor_ratio_then_clamp_base_at_10_round_scale_min_1"
+          },
+          "post_effect_slot_max": 1,
+          "post_effect_unlocks": [
+            { "min_proficiency_ratio": 0.2, "post_effect_id": "post_no_second_thought" }
+          ]
+        },
+        {
+          "id": "front_kick",
+          "name": "正蹬",
+          "unlock_level": 1,
+          "required_limb_tags": ["踢击"],
+          "damage_type": "blunt",
+          "hit_segments": 1,
+          "move_power_multiplier": 1.2,
+          "default_power_level": 10,
+          "power_level_min": 1,
+          "power_level_max": 12,
+          "hit_part_weights": {
+            "head": 0.05,
+            "chest": 0.25,
+            "abdomen": 0.5,
+            "left_arm": 0.05,
+            "right_arm": 0.05,
+            "left_leg": 0.05,
+            "right_leg": 0.05
+          },
+          "on_parry_failed_at_tick_end_displace_target": {
+            "cells": 1,
+            "direction": "away_from_actor",
+            "wall_slam_final_damage_multiplier": 1.3
+          },
+          "diqi_cost": {
+            "ratio_of_diqi_max_at_10_power": 0.1,
+            "min": 1,
+            "max": 50,
+            "settlement": "floor_ratio_then_clamp_base_at_10_round_scale_min_1"
+          },
+          "qi_li_cost": {
+            "ratio_of_qi_li_max_at_10_power": 0.25,
+            "min": 1,
+            "max": 50,
+            "settlement": "floor_ratio_then_clamp_base_at_10_round_scale_min_1"
+          },
+          "proficiency_attr_unlocks": [
+            { "min_proficiency_ratio": 0.2, "acquired": { "jingu": 15 } }
+          ]
+        },
+        {
+          "id": "swing_punch",
+          "name": "摆拳",
+          "unlock_level": 50,
+          "required_limb_tags": ["挥拳"],
+          "damage_type": "blunt",
+          "hit_segments": 1,
+          "move_power_multiplier": 1.4,
+          "default_power_level": 10,
+          "power_level_min": 1,
+          "power_level_max": 12,
+          "hit_part_weights": {
+            "head": 0.3,
+            "chest": 0,
+            "abdomen": 0,
+            "left_arm": 0.35,
+            "right_arm": 0.35,
+            "left_leg": 0,
+            "right_leg": 0
+          },
+          "diqi_cost": {
+            "ratio_of_diqi_max_at_10_power": 0.1,
+            "min": 1,
+            "max": 50,
+            "settlement": "floor_ratio_then_clamp_base_at_10_round_scale_min_1"
+          },
+          "qi_li_cost": {
+            "ratio_of_qi_li_max_at_10_power": 0.25,
+            "min": 1,
+            "max": 50,
+            "settlement": "floor_ratio_then_clamp_base_at_10_round_scale_min_1"
+          },
+          "post_effect_slot_max": 1,
+          "post_effect_unlocks": [
+            { "min_proficiency_ratio": 0.2, "post_effect_id": "post_po_xiang" }
+          ]
+        },
+        {
+          "id": "whip_kick",
+          "name": "鞭腿",
+          "unlock_level": 50,
+          "required_limb_tags": ["踢击"],
+          "damage_type": "blunt",
+          "hit_segments": 1,
+          "move_power_multiplier": 1.0,
+          "default_power_level": 10,
+          "power_level_min": 1,
+          "power_level_max": 12,
+          "hit_part_weights": {
+            "head": 0.1,
+            "chest": 0.15,
+            "abdomen": 0.35,
+            "left_arm": 0.1,
+            "right_arm": 0.1,
+            "left_leg": 0.1,
+            "right_leg": 0.1
+          },
+          "on_hit_roll_success_apply_buff_target": "buff_off_balance",
+          "diqi_cost": {
+            "ratio_of_diqi_max_at_10_power": 0.1,
+            "min": 1,
+            "max": 50,
+            "settlement": "floor_ratio_then_clamp_base_at_10_round_scale_min_1"
+          },
+          "qi_li_cost": {
+            "ratio_of_qi_li_max_at_10_power": 0.25,
+            "min": 1,
+            "max": 50,
+            "settlement": "floor_ratio_then_clamp_base_at_10_round_scale_min_1"
+          },
+          "proficiency_attr_unlocks": [
+            { "min_proficiency_ratio": 0.2, "acquired": { "flexibility": 15 } }
+          ]
+        }
       ],
       "slots_unlock_by_level": [
         { "level": 1, "slots": 2 },
         { "level": 50, "slots": 4 }
       ],
       "base_power_curve": "unarmed_simple",
+      "max_level": 1000,
       "level_cap_skill_id": null
     },
     "combat_basic_parry": {
       "id": "combat_basic_parry",
       "name": "基本招架",
       "category": "parry",
-      "description": "防守反击的核心技巧。",
+      "description": "仅可装在肢体「招架槽」；不可装进攻槽；无资源消耗。对劈砍/戳刺/钝击共用同一基础招架成功率（命中后一次招架判定）。1 级：15% 招架率、20% 卸力；满模板级（默认 1000）45% / 50%，中间线性。每次招架成功 `move_usage.parry_success` +1；总熟练 R≥50% 后天柔韧 +40（`parry_proficiency_attr_unlocks`）。初始未习得、无额外学习门槛（有则单条声明）。受击肢位与承担招架肢选取见 `08`/`CombatParry`。",
       "difficulty": 1,
       "icon": "🛡️",
       "only_parry": true,
-      "moves": [
-        { "id": "ge_dang", "name": "格挡", "unlock_level": 1 },
-        { "id": "xie_li", "name": "卸力", "unlock_level": 1 },
-        { "id": "shan_bi", "name": "闪避", "unlock_level": 1 },
-        { "id": "fan_zhi", "name": "反制", "unlock_level": 1 }
+      "moves": [],
+      "parry_success_at_level_1": 0.15,
+      "parry_success_at_max": 0.45,
+      "parry_reduce_at_level_1": 0.2,
+      "parry_reduce_at_max": 0.5,
+      "parry_proficiency_usage_key": "parry_success",
+      "parry_proficiency_max_uses": 50000,
+      "parry_proficiency_attr_unlocks": [
+        { "min_proficiency_ratio": 0.5, "acquired": { "flexibility": 40 } }
       ],
-      "slots_unlock_by_level": [{ "level": 1, "slots": 4 }],
-      "parry_success_at_1000": 0.35,
-      "parry_reduce_at_1000": 0.35,
+      "max_level": 1000,
       "level_cap_skill_id": null
     },
-    "combat_breath_sample": {
-      "id": "combat_breath_sample",
-      "name": "禅定呼吸",
+    "combat_basic_breath": {
+      "id": "combat_basic_breath",
+      "name": "基本呼吸法",
       "category": "breath",
-      "description": "调节气机，平复伤势。",
+      "description": "吐纳炼气，为诸功之本。无肢上招式槽；吐纳、底气护体等由「动作」菜单执行，数据见 hub_actions。",
       "difficulty": 1,
       "icon": "♾️",
       "only_parry": false,
-      "moves": [
-        { "id": "tu_na", "name": "吐纳", "unlock_level": 1 },
-        { "id": "bi_qi", "name": "闭气", "unlock_level": 1 },
-        { "id": "dao_yin", "name": "导引", "unlock_level": 1 },
-        { "id": "ju_qi", "name": "聚气", "unlock_level": 1 }
+      "moves": [],
+      "hub_actions": [
+        {
+          "id": "xue_qi_hua_jing",
+          "name": "血气化劲",
+          "hub_effect": "xue_qi_hua_jing",
+          "design_meta": {
+            "sheet_row_id": "HUB_XUE_QI",
+            "doc_anchor": "19-action-system §6.1",
+            "tags": ["breath", "hub_action", "xue_qi_hua_jing"],
+            "wip_status": "live",
+            "applies_to": ["player"]
+          },
+          "unlock_level": 1,
+          "tick_cost": 1,
+          "xue_qi_destroy": 10,
+          "xue_qi_diqi_gain": 10
+        },
+        {
+          "id": "tu_qi_na_jing",
+          "name": "吐气纳精",
+          "hub_effect": "tu_qi_na_jing",
+          "design_meta": {
+            "sheet_row_id": "HUB_TU_QI",
+            "doc_anchor": "19-action-system §6.2",
+            "tags": ["breath", "hub_action", "tu_qi_na_jing"],
+            "wip_status": "live",
+            "applies_to": ["player"]
+          },
+          "unlock_level": 1,
+          "tick_cost": 1,
+          "tu_qi_diqi_cost": 10,
+          "tu_qi_energy_gain": 1
+        },
+        {
+          "id": "tiao_xi_once",
+          "name": "调息",
+          "hub_effect": "tiao_xi_once",
+          "design_meta": {
+            "sheet_row_id": "HUB_TIAO_XI",
+            "doc_anchor": "19-action-system §6.3",
+            "tags": ["breath", "hub_action", "tiao_xi", "sit_meditation"],
+            "wip_status": "live",
+            "applies_to": ["player"]
+          },
+          "unlock_level": 1,
+          "tick_cost": 1
+        },
+        {
+          "id": "tu_na",
+          "name": "吐纳",
+          "hub_effect": "restore_qi_li",
+          "design_meta": {
+            "sheet_row_id": "HUB_TU_NA",
+            "doc_anchor": "19-action-system §6",
+            "tags": ["breath", "hub_action"],
+            "wip_status": "live",
+            "applies_to": ["player"]
+          },
+          "unlock_level": 1,
+          "tick_cost": 1,
+          "cooldown_ticks": 5,
+          "qi_li_restore": 50,
+          "battle_only": true,
+          "proficiency_attr_unlocks": [
+            { "min_proficiency_ratio": 0.5, "acquired": { "breath": 20 } }
+          ]
+        },
+        {
+          "id": "diqi_huti",
+          "name": "底气护体",
+          "hub_effect": "diqi_shield",
+          "design_meta": {
+            "sheet_row_id": "HUB_DIQI_HUTI",
+            "doc_anchor": "19-action-system §6.6",
+            "tags": ["breath", "hub_action", "diqi_shield"],
+            "wip_status": "live",
+            "applies_to": ["player"]
+          },
+          "unlock_level": 50,
+          "tick_cost": 1,
+          "battle_only": true,
+          "exclude_from_skill_total_proficiency": true,
+          "diqi_consume_ratio_of_max": 0.5,
+          "diqi_consume_min": 1,
+          "shield_tri_type_damage_reduce_pct": 0.25
+        }
       ],
-      "slots_unlock_by_level": [{ "level": 1, "slots": 4 }],
+      "breath_power_multiplier": {
+        "base": 1.0,
+        "proficiency_bonus_unlocks": [
+          { "min_proficiency_ratio": 0.5, "multiplier_delta": 0.3 }
+        ]
+      },
+      "max_level": 1000,
       "level_cap_skill_id": null
     },
-    "combat_light_sample": {
-      "id": "combat_light_sample",
-      "name": "草上飞",
-      "category": "light",
-      "description": "提气轻身，如草上疾行。",
+    "combat_basic_footwork": {
+      "id": "combat_basic_footwork",
+      "name": "基本步法",
+      "category": "footwork",
+      "description": "全局身法根基：挂载于武学枢纽「步法核心」`hubs.footwork`，不占肢体槽；同时仅可挂一条，可随时切换且立即影响战斗速度。`combat_speed_base` 为乘区底；另按等级每满 10 级战斗速度 +1（`combat_speed_per_10_levels`，见 `11` 8.3.4）。不设招式熟练度；对敌方命中仅通过战斗速度间接体现。可在 `hub_actions[]` 配置步法动作。学习/使用门槛仅看先天属性（见 `05`/`11`）。",
       "difficulty": 1,
-      "icon": "🍃",
+      "icon": "👟",
       "only_parry": false,
-      "moves": [
-        { "id": "ti_qi", "name": "提气", "unlock_level": 1 },
-        { "id": "ta_cao", "name": "踏草", "unlock_level": 1 },
-        { "id": "ling_kong", "name": "凌空", "unlock_level": 1 },
-        { "id": "zong_yue", "name": "纵跃", "unlock_level": 1 }
+      "moves": [],
+      "hub_actions": [
+        {
+          "id": "nie_bu",
+          "name": "蹑步",
+          "unlock_level": 1,
+          "tick_cost": 1,
+          "cooldown_ticks": 10,
+          "leap_radius": 2
+        }
       ],
-      "slots_unlock_by_level": [{ "level": 1, "slots": 4 }],
+      "combat_speed_base": 1,
+      "combat_speed_per_10_levels": 1,
+      "max_level": 1000,
       "level_cap_skill_id": null
     }
   }

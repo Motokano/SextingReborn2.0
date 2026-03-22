@@ -70,6 +70,47 @@ type BuffInstance = {
 };
 ```
 
+### 18.3.1 `effects[]` 扩展类型（数据声明）
+
+除既有的 `add_stat_delta`、`trigger_event` 外，可增加 **规则型** 声明，供战斗/动作结算读取（通用流水线未必会执行其数值，以各子系统文档为准）。
+
+### 18.3.2 可被「破相」等效果驱散的增益池（Buff 模板字段）
+
+- **用途**：后遗症 **「破相」**（`post_po_xiang`，`effect_type` = **`dispel_one_beneficial_buff_on_target`**）等在 **命中判定成功** 时，从**防守方**当前 Buff 实例中移除 **1** 条**可驱散增益**。
+- **模板字段（建议）**：在 `/data/buffs.json` 各条 Buff 上可选  
+  - **`dispel_pool`**：字符串枚举；**`beneficial`** 表示可被本类驱散逻辑选入候选池；**缺省或空**表示**不可**被「破相」选中（剧情锁、环境领域、永久诅咒等应不填或显式 `none`）。
+- **选中规则**：在目标身上、满足 **`dispel_pool === "beneficial"`** 且仍有效的实例中，按模板 **`dispel_priority`**（数值，**越小越优先被驱散**；缺省视为较大）排序，取**最优先的一条**移除**整实例**；**同优先级**时按实现约定（如 `started_tick` 较早、或稳定随机）。
+- **时机口径**：与 **`on_hit_roll_success_apply_buff_target`**（鞭腿失衡）一致——**命中 roll 成功**即进入可触发路径；**之后**即使招架使**最终伤害为 0**，**仍执行驱散**。**命中失败**不驱散。
+- **登记**：新增 `effect_type` / 驱散相关 `event_name` 若需接入通用 Buff 管道，须在 **`/data/editor/buff_event_registry.json`** 登记后再用于配置引用。
+
+#### `multiply_w_coef_factor`（徒手威力系数乘子，试探示例）
+
+- **用途**：声明「在 \(W_{\text{skill}}\times G\) **之后**再乘一个与层数挂钩的因子」，并限定 **招式 `move_id`**。  
+- **建议 `params` 字段**：
+
+```json
+{
+  "type": "multiply_w_coef_factor",
+  "params": {
+    "order": "after_g",
+    "move_id": "swing_punch",
+    "base": 1,
+    "per_stack": 0.05
+  }
+}
+```
+
+- **语义**：当本击 `move_id` 与 `params.move_id` 一致、且宿主持有该 Buff 实例层数 \(s\) 时，令  
+  \(K = \texttt{base} + \texttt{per\_stack} \times s\)（与 `11-skills.md` 8.3.2 中 \(K_{\text{试探}} = 1 + 0.05s\) 对齐）。  
+- **`order`**：预留与将来更多乘区排序；当前已定稿为 **`after_g`**（紧接手套 \(G\) 之后）。  
+- **实现**：战斗侧在合成 \(W_{\text{coef}}\) 时读取模板；若 Buff 带 **`probe_pipeline_manual`**（见 `18.13`），仍由战斗显式参与结算，**不**依赖仅扫描触发的自动流水线。
+
+#### `parry_chance_delta_percent`（招架几率百分点，失衡示例）
+
+- **用途**：按 **层数** 累加对 **最终招架几率** 的**百分点**修正（在 `08` 柔韧与默认硬上限之后应用）。  
+- **建议 `params`**：`delta_per_stack`（number，如 **-5** 表示每层 −5 个百分点）。总修正 \(\Delta p = \texttt{delta\_per\_stack} \times \texttt{stacks}\)。  
+- **实现**：`BuffSystem.getParryChanceDeltaPercent(ownerId)` 遍历该宿主实例上所有本 effect 并求和；战斗在招架判定时读取。模板宜配 **`off_balance_pipeline_manual`** 等 tag，避免被泛事件误匹配（同 `probe_pipeline_manual` 思路）。
+
 ---
 
 ## 18.4 叠加与生命周期（已确认口径）
@@ -209,4 +250,47 @@ type BuffEventContext = {
 - 让不会写代码的策划能在编辑器下拉中直接找到可用事件并复用；
 - 降低命名漂移（同一事件多个拼写）导致的触发失败；
 - 便于后续在 debug 模式下做“未注册事件名”告警。
+
+---
+
+## 18.13 编辑器与战斗调用约定（推荐）
+
+### 为什么需要单独约定
+
+- **编辑器**：下拉选项应来自 **`buff_event_registry.json`**，事件名宜**细**不宜粗，便于表达「roll 后」「伤害落地后」「多段收束」等不同时机。  
+- **运行时**：像 **`buff_probe`** 这类规则型 Buff，**叠层 / 整实例清空 / \(W_{\text{coef}}\)** 仍主要由**战斗结算**按 `11-skills` 执行；管道只处理「将来可声明化」的部分，避免策划误以为只配表不写战斗钩子。
+
+### 战斗事件命名（优先使用已注册名）
+
+| 时机（建议） | `event_kind` | `event_name` |
+|-------------|--------------|--------------|
+| 命中判定已出 | `combat` | `attack_hit_roll_resolved` |
+| 伤害（含 0）已写入 | `combat` | `attack_damage_applied` |
+| 某一 sub-hit 整段结束 | `combat` | `attack_subhit_resolved` |
+| 同一 cast 全部 sub-hit 结束 | `combat` | `attack_multi_hit_finished` |
+
+每次触发须带 **唯一** `event_id`（`18.6`）。`tags` 建议携带语义标签，如 **`move_jab`**、**`move_swing_punch`**、**`subhit`**、**`multi_hit`**，便于编辑器检索与条件过滤。
+
+### `probe_pipeline_manual`（原魔法 tag 的编辑友好名）
+
+- 含义：该 Buff **不会**被「只有 `event_kind`+`event_name`、但**不带**本 tag」的泛事件误触发；战斗若**刻意**走管道扩展，须在 `tags` 里带上 **`probe_pipeline_manual`**。  
+- **`buff_probe` 的 `triggerTags`** 仅含此 tag 时，日常未带该 tag 的 combat 事件**不会**匹配到该模板，从而避免误跑通用扣层逻辑。
+
+### 建议的 `payload` 字段（可选，供战斗与调试）
+
+在 `BuffEventContext.payload` 中约定常用键（编辑器可生成骨架，运行时可忽略未知键）：
+
+- **`move_id`**：`jab` / `swing_punch` / …  
+- **`cast_instance_id`**：同一招式 cast 的稳定 id（多 sub-hit 共享）。  
+- **`subhit_index`**：从 0 或 1 起的段序号（项目内统一一种即可）。  
+- **`is_last_subhit`**：是否本 cast 最后一 sub-hit。  
+- **`hit_roll_success`**：仍优先用上下文顶层字段；`payload` 内可不重复。  
+- **`damage_final`**：本段最终伤害（可为 0）。
+
+### `BuffSystem` 推荐调用组合
+
+- **叠层**：`applyBuff(actorId, 'buff_probe', sourceId, eventContext)`（内部已按模板 **重置持续**、**叠层夹紧**）。  
+- **整实例移除（试探清空）**：`removeBuffByBuffId(actorId, 'buff_probe')`（或等价封装）。  
+- **读规则型 effect（如 `multiply_w_coef_factor`）**：`getBuffTemplate('buff_probe')` 取模板后遍历 `effects`。  
+- **需要让管道也收到同一节拍时**：`triggerBuffPipeline({ ... event_name, tags: ['probe_pipeline_manual', 'move_swing_punch', ...] })`（**须已注册**）。
 
