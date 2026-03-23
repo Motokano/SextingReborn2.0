@@ -83,6 +83,36 @@
         }
     }
 
+    function isStoryMovementLocked() {
+        if (window.DialogueUI && typeof window.DialogueUI.isDialogueOpen === 'function' && window.DialogueUI.isDialogueOpen()) return true;
+        var ov = document.getElementById('character-creation-overlay');
+        if (ov && !ov.classList.contains('hidden')) return true;
+        return false;
+    }
+
+    function isPreCreationGameplayRestricted() {
+        var CA = window.CharacterAttributes;
+        return !!(CA && typeof CA.isCharacterCreationCompleted === 'function' && !CA.isCharacterCreationCompleted());
+    }
+
+    function showIntroBlockedMsg() {
+        try {
+            showMsg(ui('intro.blocked.action'), 'info');
+        } catch (e0) {
+            showMsg('现在还无法使用。', 'info');
+        }
+    }
+
+    function syncIntroShellUi() {
+        var CA = window.CharacterAttributes;
+        var done = CA && typeof CA.isCharacterCreationCompleted === 'function' && CA.isCharacterCreationCompleted();
+        if (document.body) {
+            if (done) document.body.classList.remove('intro-shell-active');
+            else document.body.classList.add('intro-shell-active');
+        }
+        if (typeof updateStatusPanel === 'function') updateStatusPanel();
+    }
+
     // Route NPC messages into game log
     if (window.NPCSystem && typeof window.NPCSystem.configure === 'function') {
         window.NPCSystem.configure({ log: showMsg });
@@ -296,7 +326,8 @@
             fetch(base + 'default_equipment.json').then(function (r) { return r.ok ? r.json() : {}; }).catch(function () { return {}; }),
             fetch(base + 'combat-skills.json').then(function (r) { return r.ok ? r.json() : { constants: {}, categories: [], skills: {} }; }).catch(function () { return { constants: {}, categories: [], skills: {} }; }),
             fetch(base + 'combat-pipeline.json').then(function (r) { return r.ok ? r.json() : { pipelines: {} }; }).catch(function () { return { pipelines: {} }; }),
-            fetch(base + 'post-effects.json').then(function (r) { return r.ok ? r.json() : {}; }).catch(function () { return {}; })
+            fetch(base + 'post-effects.json').then(function (r) { return r.ok ? r.json() : {}; }).catch(function () { return {}; }),
+            fetch(base + 'survival-skills.json').then(function (r) { return r.ok ? r.json() : null; }).catch(function () { return null; })
         ]).then(function (arr) {
             if (!arr[0]) throw new Error('[SceneApp] ui_text_zhCN.json missing');
             if (!window.UIText || typeof window.UIText.setDict !== 'function') throw new Error('[SceneApp] UIText module missing');
@@ -321,6 +352,9 @@
             if (window.CombatSkills && arr[8]) window.CombatSkills.setConfig(arr[8]);
             if (window.CombatPipeline && arr[9]) window.CombatPipeline.setConfig(arr[9]);
             if (window.CombatPostEffects && arr[10]) window.CombatPostEffects.setTable(arr[10]);
+            if (window.SurvivalSkills && typeof window.SurvivalSkills.setTable === 'function' && arr[11]) {
+                window.SurvivalSkills.setTable(arr[11]);
+            }
             var defEqFetched = (arr[7] && typeof arr[7] === 'object') ? arr[7] : {};
             var defaultEquipMerged = {};
             var sk;
@@ -354,12 +388,9 @@
             if (window.Survival && window.Survival.setCharacterCallbacks && window.CharacterAttributes) {
                 window.Survival.setCharacterCallbacks({ getBreathActual: window.CharacterAttributes.getBreathActual });
             }
-            if (window.CharacterAttributes && !window.CharacterAttributes.getCharacterName()) {
-                initCreationUI();
-            } else {
-                hideCreationOverlay();
-                updateRoleNameFromCharacter();
-            }
+            hideCreationOverlay();
+            updateRoleNameFromCharacter();
+            syncIntroShellUi();
         });
     }
 
@@ -412,11 +443,11 @@
         if (!CA) return;
         var state = CA.getState();
         creationInnate = {
-            jingu: state.innate.jingu != null ? Math.min(CREATION_ATTR_MAX, Math.max(0, state.innate.jingu)) : 10,
-            flexibility: state.innate.flexibility != null ? Math.min(CREATION_ATTR_MAX, Math.max(0, state.innate.flexibility)) : 10,
-            breath: state.innate.breath != null ? Math.min(CREATION_ATTR_MAX, Math.max(0, state.innate.breath)) : 10,
-            dexterity: state.innate.dexterity != null ? Math.min(CREATION_ATTR_MAX, Math.max(0, state.innate.dexterity)) : 10,
-            focus: state.innate.focus != null ? Math.min(CREATION_ATTR_MAX, Math.max(0, state.innate.focus)) : 10
+            jingu: state.innate.jingu != null ? Math.min(CREATION_ATTR_MAX, Math.max(0, state.innate.jingu)) : 1,
+            flexibility: state.innate.flexibility != null ? Math.min(CREATION_ATTR_MAX, Math.max(0, state.innate.flexibility)) : 1,
+            breath: state.innate.breath != null ? Math.min(CREATION_ATTR_MAX, Math.max(0, state.innate.breath)) : 1,
+            dexterity: state.innate.dexterity != null ? Math.min(CREATION_ATTR_MAX, Math.max(0, state.innate.dexterity)) : 1,
+            focus: state.innate.focus != null ? Math.min(CREATION_ATTR_MAX, Math.max(0, state.innate.focus)) : 1
         };
         var container = document.getElementById('creation-attr-rows');
         if (!container) return;
@@ -487,11 +518,16 @@
         refreshCreationAllRows();
 
         var nameEl = document.getElementById('creation-name');
-        if (nameEl && !String(nameEl.value || '').trim()) nameEl.value = '';
-        if (nameEl) nameEl.addEventListener('input', updateCreationConfirmButton);
+        if (nameEl) nameEl.value = '';
+        if (nameEl && !nameEl.__sceneAppCreationInputBound) {
+            nameEl.__sceneAppCreationInputBound = true;
+            nameEl.addEventListener('input', updateCreationConfirmButton);
+        }
         updateCreationConfirmButton();
         var btnConfirm = document.getElementById('btn-confirm-creation');
-        if (btnConfirm) btnConfirm.onclick = function () {
+        if (btnConfirm && !btnConfirm.__sceneAppCreationConfirmBound) {
+            btnConfirm.__sceneAppCreationConfirmBound = true;
+            btnConfirm.onclick = function () {
             if (btnConfirm.disabled) return;
             var name = (nameEl && nameEl.value) ? String(nameEl.value).trim() : '';
             if (!name) return;
@@ -508,12 +544,23 @@
             var legEl = document.querySelector('input[name="creation-leg"]:checked');
             var genderEl = document.querySelector('input[name="creation-gender"]:checked');
             var gender = (genderEl && genderEl.value === 'female') ? 'female' : 'male';
+            var prevHidden = [];
+            try {
+                var pst = CA.getState();
+                if (pst && Array.isArray(pst.hidden_epithets)) prevHidden = pst.hidden_epithets.slice();
+            } catch (eH) { prevHidden = []; }
+            if (typeof CA.innateAllTwentyForUselessPerson === 'function' && CA.innateAllTwentyForUselessPerson(creationInnate)) {
+                var uselessLabel = CA.HIDDEN_EPITHET_USELESS || '无用之人';
+                if (prevHidden.indexOf(uselessLabel) < 0) prevHidden.push(uselessLabel);
+            }
             CA.setState({
                 characterName: name,
                 characterGender: gender,
+                character_creation_completed: true,
                 innate: { jingu: creationInnate.jingu, flexibility: creationInnate.flexibility, breath: creationInnate.breath, dexterity: creationInnate.dexterity, focus: creationInnate.focus },
                 dominant_hand: (handEl && handEl.value === 'left') ? 'left' : 'right',
-                dominant_leg: (legEl && legEl.value === 'left') ? 'left' : 'right'
+                dominant_leg: (legEl && legEl.value === 'left') ? 'left' : 'right',
+                hidden_epithets: prevHidden
             });
             if (window.Survival && window.Survival.setState) {
                 window.Survival.setState({ gender_value: gender === 'female' ? 100 : 0 });
@@ -528,19 +575,28 @@
             if (window.Survival && typeof window.Survival.initBattleResourcesFull === 'function') {
                 window.Survival.initBattleResourcesFull();
             }
-            if (window.GameTime && typeof window.GameTime.reset === 'function') {
-                window.GameTime.reset({ year: 1, day: 1, hour: 9, minute: 0 });
-            }
             hideCreationOverlay();
             updateRoleNameFromCharacter();
+            syncIntroShellUi();
             if (window.GameLog) window.GameLog.log(ui('log.system.creation.done', { name: name }), 'system');
             render();
         };
+        }
     }
 
     function hideCreationOverlay() {
         var el = document.getElementById('character-creation-overlay');
         if (el) el.classList.add('hidden');
+    }
+
+    function showCreationOverlay() {
+        var el = document.getElementById('character-creation-overlay');
+        if (el) el.classList.remove('hidden');
+    }
+
+    function openCharacterCreationAfterIntro() {
+        showCreationOverlay();
+        initCreationUI();
     }
 
     function updateRoleNameFromCharacter() {
@@ -1063,6 +1119,10 @@
     }
 
     function onGatherClick() {
+        if (isPreCreationGameplayRestricted()) {
+            showIntroBlockedMsg();
+            return;
+        }
         var st = E.getState();
         var entityId = E.getEntityAt(st.x, st.y);
         if (!entityId || !G.canGather(entityId)) return;
@@ -1243,6 +1303,10 @@
     }
 
     function openBackpackPanel() {
+        if (isPreCreationGameplayRestricted()) {
+            showIntroBlockedMsg();
+            return;
+        }
         if (backpackPanelOpen) return;
         if (window.Survival && typeof window.Survival.advanceTick === 'function') window.Survival.advanceTick();
         backpackPanelOpen = true;
@@ -1346,6 +1410,10 @@
     }
 
     function openCombatPanel() {
+        if (isPreCreationGameplayRestricted()) {
+            showIntroBlockedMsg();
+            return;
+        }
         if (combatPanelOpen) return;
         if (window.Survival && typeof window.Survival.advanceTick === 'function') window.Survival.advanceTick();
         combatPanelOpen = true;
@@ -2194,6 +2262,7 @@
                         // 读档成功后，确保 UI 状态与角色数据一致。
                         hideCreationOverlay();
                         updateRoleNameFromCharacter();
+                        syncIntroShellUi();
                         if (window.GameLog) window.GameLog.log('[SaveSystem] loaded realtime save', 'system');
                     }
                     if (window.InventoryEquipment && typeof window.InventoryEquipment.ensureCombatBasicsMigrated === 'function') {
@@ -2217,6 +2286,7 @@
             if (window.GameLog) window.GameLog.log(ui('log.system.enter.scene'), 'system');
             window.SceneCtx.actions = window.SceneCtx.actions || {};
             window.SceneCtx.actions.tryMoveTo = function (tx, ty, dx, dy) {
+                if (isStoryMovementLocked()) return;
                 var st = E.getState();
                 var ddx = (dx != null) ? dx : (tx - st.x);
                 var ddy = (dy != null) ? dy : (ty - st.y);
@@ -2246,6 +2316,10 @@
                 }
             };
             window.SceneCtx.actions.attackEnemy = function (enemyId, ctxMeta) {
+                if (isPreCreationGameplayRestricted()) {
+                    showIntroBlockedMsg();
+                    return;
+                }
                 ctxMeta = ctxMeta || {};
                 if (window.SceneCtx && typeof window.SceneCtx.exitFootworkNieBuMode === 'function') {
                     window.SceneCtx.exitFootworkNieBuMode();
@@ -2314,6 +2388,7 @@
                 if (window.NPCSystem && typeof window.NPCSystem.openMenu === 'function') window.NPCSystem.openMenu(npcId);
             };
             window.SceneCtx.actions.tryIntentMove = function (tx, ty, dx, dy, source) {
+                if (isStoryMovementLocked()) return;
                 var st = E.getState();
                 var ddx = (dx != null) ? dx : (tx - st.x);
                 var ddy = (dy != null) ? dy : (ty - st.y);
@@ -2325,6 +2400,10 @@
                 // 固定优先级：敌人攻击 > NPC 对话 > 普通移动
                 var enemyId = (typeof E.getEnemyAt === 'function') ? E.getEnemyAt(targetX, targetY) : null;
                 if (enemyId) {
+                    if (isPreCreationGameplayRestricted()) {
+                        showIntroBlockedMsg();
+                        return;
+                    }
                     if (window.SceneCtx && typeof window.SceneCtx.exitFootworkNieBuMode === 'function') {
                         window.SceneCtx.exitFootworkNieBuMode();
                     }
@@ -2363,6 +2442,11 @@
                 }
             };
             window.SceneCtx.actions.tryFootworkNieBuJump = function (gx, gy) {
+                if (isStoryMovementLocked()) return false;
+                if (isPreCreationGameplayRestricted()) {
+                    showIntroBlockedMsg();
+                    return false;
+                }
                 var SKILL_ID = 'combat_basic_footwork';
                 var ACTION_ID = 'nie_bu';
                 if (!window.SceneCtx || !window.SceneCtx.footworkNieBuMode) return false;
@@ -2539,5 +2623,8 @@
     window.SceneApp.init = init;
     window.SceneApp.loadConfig = loadConfig;
     window.SceneApp.render = render;
+    window.SceneApp.openCharacterCreationAfterIntro = openCharacterCreationAfterIntro;
+    window.SceneApp.isStoryMovementLocked = isStoryMovementLocked;
+    window.SceneApp.isPreCreationGameplayRestricted = isPreCreationGameplayRestricted;
 })();
 

@@ -809,6 +809,19 @@
             backdrop-filter: blur(6px);
         }
         #dialogue-panel.show { display: flex; }
+        /* 对话中：禁止用关闭键跳过；仅能通过「下一句/结束」推进 */
+        #dialogue-panel.dialogue-advance-only #dialogue-btn-close {
+            display: none !important;
+        }
+        /* 盖住地图与 HUD（含日志区点击），z-index 低于对话框以便操作对话 UI */
+        #dialogue-input-blocker {
+            display: none;
+            position: fixed;
+            inset: 0;
+            z-index: 40;
+            background: transparent;
+            pointer-events: auto;
+        }
         #dialogue-panel .dlg-inner {
             flex: 1;
             display: flex;
@@ -999,6 +1012,17 @@
             pointer-events: auto;
         }
         #character-creation-overlay.hidden { display: none; }
+        /* 序章未创角：保留顶栏时间，隐藏左右信息与地图旁动作气泡 */
+        body.intro-shell-active #left-hud,
+        body.intro-shell-active #right-hud {
+            display: none !important;
+        }
+        body.intro-shell-active #player-action-bubble,
+        body.intro-shell-active #player-action-bubble.visible {
+            display: none !important;
+            visibility: hidden !important;
+            pointer-events: none !important;
+        }
         #character-creation-card {
             width: 90%;
             max-width: 420px;
@@ -1155,7 +1179,7 @@
     <div id="item-tooltip"></div>
 
     <!-- 创建角色界面：文案由 UI 文案表注入 -->
-    <div id="character-creation-overlay">
+    <div id="character-creation-overlay" class="hidden">
         <div id="character-creation-card">
             <h2 data-ui="creation.title"></h2>
             <div class="creation-field">
@@ -1469,6 +1493,7 @@
         </div>
     </div>
 
+    <div id="dialogue-input-blocker" aria-hidden="true"></div>
     <div id="dialogue-panel" aria-hidden="true">
         <div class="dlg-inner">
             <div class="dlg-avatar" id="dialogue-avatar">

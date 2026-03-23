@@ -161,9 +161,8 @@
         var onNext = props && typeof props.onNext === 'function' ? props.onNext : null;
         var onClose = props && typeof props.onClose === 'function' ? props.onClose : null;
         var closeLabel = props && props.closeLabel ? String(props.closeLabel) : 'close';
-        return global.React.createElement(
-            global.React.Fragment,
-            null,
+        var showClose = !!(props && props.showCloseButton);
+        var children = [
             global.React.createElement(
                 'button',
                 {
@@ -174,8 +173,10 @@
                     onClick: function () { if (onNext) onNext(); }
                 },
                 nextLabel
-            ),
-            global.React.createElement(
+            )
+        ];
+        if (showClose) {
+            children.push(global.React.createElement(
                 'button',
                 {
                     type: 'button',
@@ -184,8 +185,9 @@
                     onClick: function () { if (onClose) onClose(); }
                 },
                 closeLabel
-            )
-        );
+            ));
+        }
+        return global.React.createElement.apply(global.React, [global.React.Fragment, null].concat(children));
     }
 
     function mount(payload) {
@@ -208,6 +210,7 @@
                 nextLabel: nextState.nextLabel || '',
                 nextDisabled: !!nextState.nextDisabled,
                 closeLabel: nextState.closeLabel || 'close',
+                showCloseButton: !!nextState.showCloseButton,
                 onNext: nextState.onNext || null,
                 onClose: nextState.onClose || null
             }));

@@ -13,6 +13,7 @@
         document.addEventListener('keydown', function (e) {
             var tag = (e.target && e.target.tagName) ? String(e.target.tagName).toLowerCase() : '';
             if (tag === 'input' || tag === 'textarea' || tag === 'select' || (e.target && e.target.isContentEditable)) return;
+            if (window.SceneApp && typeof window.SceneApp.isStoryMovementLocked === 'function' && window.SceneApp.isStoryMovementLocked()) return;
             var dx = 0, dy = 0;
             switch (e.key) {
                 case 'ArrowUp':    case 'w': case 'W': dy = -1; break;

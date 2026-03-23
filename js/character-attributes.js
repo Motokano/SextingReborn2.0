@@ -29,9 +29,18 @@
     };
 
     var cfg = {};
+    /** 创角完成前占位显示名（与 scene-app / npc-system 一致） */
+    var PLACEHOLDER_CHARACTER_NAME = '无名氏';
+    /** 隐藏称号/标签（不入常规 UI，可参与剧情条件；创角五维全 20 → 无用之人） */
+    var HIDDEN_EPITHET_USELESS = '无用之人';
+
     var state = {
         characterName: '',
         characterGender: 'male',
+        /** false：序章未创角（先天占位、侧栏隐藏）；true：已完成创角或读档老存档 */
+        character_creation_completed: false,
+        /** 不可见剧情用标签，字符串去重列表 */
+        hidden_epithets: [],
         innate: { jingu: 10, flexibility: 10, breath: 10, dexterity: 10, focus: 10 },
         acquired: { jingu: 0, flexibility: 0, breath: 0, dexterity: 0, focus: 0 },
         dominant_hand: 'right',
@@ -495,6 +504,22 @@
         if (s.dominant_leg === 'left' || s.dominant_leg === 'right') state.dominant_leg = s.dominant_leg;
         if (s.characterName !== undefined) state.characterName = String(s.characterName);
         if (s.characterGender === 'male' || s.characterGender === 'female') state.characterGender = s.characterGender;
+        if (s.character_creation_completed === true) {
+            state.character_creation_completed = true;
+        } else if (s.character_creation_completed === false) {
+            state.character_creation_completed = false;
+        } else if (!Object.prototype.hasOwnProperty.call(s, 'character_creation_completed')) {
+            var nm = state.characterName;
+            if (nm && nm !== PLACEHOLDER_CHARACTER_NAME) {
+                state.character_creation_completed = true;
+            } else {
+                var ssum = 0;
+                ATTR_IDS.forEach(function (id) {
+                    ssum += (state.innate[id] != null) ? Number(state.innate[id]) : 0;
+                });
+                state.character_creation_completed = ssum > 5;
+            }
+        }
         if (Array.isArray(s.post_effects_obtained)) {
             var seenPe = {};
             state.post_effects_obtained = [];
@@ -513,6 +538,21 @@
                 }
             }
         }
+        if (Array.isArray(s.hidden_epithets)) {
+            var seenH = {};
+            state.hidden_epithets = [];
+            for (var he = 0; he < s.hidden_epithets.length; he++) {
+                var het = String(s.hidden_epithets[he] || '').trim();
+                if (!het || seenH[het]) continue;
+                seenH[het] = true;
+                state.hidden_epithets.push(het);
+            }
+        }
+        try {
+            if (typeof global !== 'undefined' && global.NPCSystem && typeof global.NPCSystem.syncPlayerEpithetFlags === 'function') {
+                global.NPCSystem.syncPlayerEpithetFlags();
+            }
+        } catch (eEpSync) { /* ignore */ }
     }
 
     function getLimbDestroy(limbId) {
@@ -649,6 +689,7 @@
         return {
             characterName: state.characterName,
             characterGender: state.characterGender,
+            character_creation_completed: !!state.character_creation_completed,
             innate: { jingu: state.innate.jingu, flexibility: state.innate.flexibility, breath: state.innate.breath, dexterity: state.innate.dexterity, focus: state.innate.focus },
             acquired: { jingu: state.acquired.jingu, flexibility: state.acquired.flexibility, breath: state.acquired.breath, dexterity: state.acquired.dexterity, focus: state.acquired.focus },
             dominant_hand: state.dominant_hand,
@@ -659,26 +700,53 @@
                 rhand: state.limb_destroy.rhand,
                 lfoot: state.limb_destroy.lfoot,
                 rfoot: state.limb_destroy.rfoot
-            }
+            },
+            hidden_epithets: state.hidden_epithets.slice()
         };
     }
 
     /** 创建角色时的默认状态（基础 10、50 自由点、惯用右右） */
     function getDefaultState() {
         return {
-            characterName: '',
+            characterName: PLACEHOLDER_CHARACTER_NAME,
             characterGender: 'male',
-            innate: { jingu: 10, flexibility: 10, breath: 10, dexterity: 10, focus: 10 },
+            character_creation_completed: false,
+            innate: { jingu: 1, flexibility: 1, breath: 1, dexterity: 1, focus: 1 },
             acquired: { jingu: 0, flexibility: 0, breath: 0, dexterity: 0, focus: 0 },
             dominant_hand: 'right',
             dominant_leg: 'right',
             post_effects_obtained: [],
-            limb_destroy: { lhand: 0, rhand: 0, lfoot: 0, rfoot: 0 }
+            limb_destroy: { lhand: 0, rhand: 0, lfoot: 0, rfoot: 0 },
+            hidden_epithets: []
         };
     }
 
     function getCharacterName() {
         return state.characterName || '';
+    }
+
+    function isCharacterCreationCompleted() {
+        return !!state.character_creation_completed;
+    }
+
+    function hasHiddenEpithet(epithet) {
+        var t = String(epithet || '').trim();
+        if (!t) return false;
+        for (var hi = 0; hi < state.hidden_epithets.length; hi++) {
+            if (state.hidden_epithets[hi] === t) return true;
+        }
+        return false;
+    }
+
+    /** 创角：先天五维均为 20 时写入隐藏称号「无用之人」 */
+    function innateAllTwentyForUselessPerson(innate) {
+        if (!innate || typeof innate !== 'object') return false;
+        for (var ai = 0; ai < ATTR_IDS.length; ai++) {
+            var id = ATTR_IDS[ai];
+            var v = innate[id] != null ? parseInt(innate[id], 10) : 0;
+            if (v !== 20) return false;
+        }
+        return true;
     }
 
     function getCharacterGender() {
@@ -732,6 +800,11 @@
         getLimbDestroy: getLimbDestroy,
         tryApplyXueQiHuaJing: tryApplyXueQiHuaJing,
         getCharacterName: getCharacterName,
+        isCharacterCreationCompleted: isCharacterCreationCompleted,
+        PLACEHOLDER_CHARACTER_NAME: PLACEHOLDER_CHARACTER_NAME,
+        HIDDEN_EPITHET_USELESS: HIDDEN_EPITHET_USELESS,
+        hasHiddenEpithet: hasHiddenEpithet,
+        innateAllTwentyForUselessPerson: innateAllTwentyForUselessPerson,
         getCharacterGender: getCharacterGender,
         getCharacterGenderLabel: getCharacterGenderLabel,
 

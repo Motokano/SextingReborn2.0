@@ -4,6 +4,10 @@
         return window.SceneCtx || null;
     }
 
+    function isDialogueBlockingWorldInput() {
+        return !!(window.DialogueUI && typeof window.DialogueUI.isDialogueOpen === 'function' && window.DialogueUI.isDialogueOpen());
+    }
+
     var tooltipEl = null;
     var tooltipHideTimer = null;
     var tileRenderer = null;
@@ -149,6 +153,7 @@
                     if (leapTarget) {
                         tile.onclick = (function (tx, ty) {
                             return function () {
+                                if (isDialogueBlockingWorldInput()) return;
                                 if (ctx.actions && typeof ctx.actions.tryFootworkNieBuJump === 'function') {
                                     ctx.actions.tryFootworkNieBuJump(tx, ty);
                                 }
@@ -158,6 +163,7 @@
                 } else if (adjacent) {
                     tile.onclick = (function (tx, ty) {
                         return function () {
+                            if (isDialogueBlockingWorldInput()) return;
                             var ddx = tx - st.x;
                             var ddy = ty - st.y;
                             if (ctx.actions && typeof ctx.actions.tryIntentMove === 'function') {
@@ -516,6 +522,7 @@
         if (hasV2 && !interactionBound) {
             interactionBound = true;
             grid.addEventListener('click', function (ev) {
+                if (isDialogueBlockingWorldInput()) return;
                 if (!tileRenderer || !latestFrame) return;
                 var hit = tileRenderer.hitTest(ev.clientX, ev.clientY);
                 if (!hit) return;
@@ -528,6 +535,11 @@
                 hoverRafId = requestAnimationFrame(function () {
                     hoverRafId = 0;
                     if (!tileRenderer) return;
+                    if (isDialogueBlockingWorldInput()) {
+                        grid.style.cursor = 'default';
+                        grid.title = '';
+                        return;
+                    }
                     tileRenderer.setHoverCursor(hoverPendingClientX, hoverPendingClientY);
                     if (!latestFrame) return;
                     var hit = tileRenderer.hitTest(hoverPendingClientX, hoverPendingClientY);

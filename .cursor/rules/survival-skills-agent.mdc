@@ -1,0 +1,44 @@
+---
+description: 生存技能元数据与 survival-config / Survival 解耦、维护约定、NPC 条件与 SurvivalSkills API
+globs: data/survival-skills.json,data/survival-config.json,js/survival-skills.js,js/survival.js,js/scene-app.js,js/npc-system.js,tools/npc-editor.html
+alwaysApply: true
+---
+
+# 生存技能数据与 Survival 模块（Agent 规则）
+
+编辑生存技能**展示元数据**、**数值配置**、**加载**、**NPC 触发条件**或相关 UI/工具时，遵守下列分工；勿把元数据表并入 `Survival.setConfig` 或 `survival-config.json` 的「技能列表」字段。
+
+## 数据源分工（硬约定）
+
+| 职责 | 文件 / 模块 | 内容 |
+|------|-------------|------|
+| **元数据（id / 名称 / 描述）** | `data/survival-skills.json` | `skills[]`：`id`、`name`、`desc`。与饱食、体力、`skill_attr_gain` 等**数值**无关。 |
+| **数值与生存玩法** | `data/survival-config.json` | 饱食/饮水/体温等、`skill_attr_gain`、物品展示阈值等；**不**承担「技能 id 登记表 + 文案」职责。 |
+| **运行时生存循环** | `js/survival.js`（`Survival`） | 只吃 `survival-config`；**不**维护生存技能 id 列表。 |
+| **等级与存档** | `InventoryEquipment`（`skills[skillId].level` 等） | 与上表 id 一致；升级曲线来自 `survival-config` 的 `skill_attr_gain`，非 `survival-skills.json`。 |
+
+## 维护约定
+
+- **改展示名、说明、增删生存技能 id**：只改 **`data/survival-skills.json`**，并**同步** `js/survival-skills.js` 内 **`FALLBACK_SKILLS`**（与 JSON 列表一致），以便 fetch 失败或未加载时行为一致。
+- **改升级属性奖励、等级上限相关数值、生存数值**：只改 **`data/survival-config.json`**（及设计文档若项目要求）。
+- **新增加载入口**：生存技能表须由 **`js/scene-app.js` 的 `loadConfig`** 中 `fetch('data/survival-skills.json')` 注入 **`SurvivalSkills.setTable`**；**不要**把该 JSON 合并进 `Survival.setConfig(arr[4])` 的同一配置对象。
+- **新增生存技能 id**：须同时出现在 **`survival-skills.json`**（及 FALLBACK）；若参与属性成长，须在 **`survival-config.json` 的 `skill_attr_gain`** 等处补齐数值侧（按设计）。
+
+## 运行时 API（`js/survival-skills.js`）
+
+- **`SurvivalSkills.setTable(json)`**：`{ skills: [...] }`；空表则回退到 FALLBACK。
+- **`getAll` / `getById` / `getIds` / `isRegisteredSkillId(id)`**：UI（如生存技能弹窗）与条件校验用；**不得**在别处再硬编码一份并列的 id 列表作为唯一真相（测试桩除外）。
+
+## NPC 触发条件（`js/npc-system.js`）
+
+- **`survivalSkillLevelEquals` / `survivalSkillLevelGte`**：`skillId` **必须**通过 `SurvivalSkills.isRegisteredSkillId`；否则条件为 false。用于「明确仅限登记表内生存技能」。
+- **`skillLevelEquals` / `skillLevelGte`**：仍可用任意 `skillId`（含 `survival_*`），不做登记表校验。
+
+## 工具（`tools/npc-editor.html`）
+
+- 导入 **`survival-skills.json`** 时，应能通过 **`extractSkillIdsFromSurvivalSkillsJson`** 填充技能下拉；**`extractSkillIdsFromCombatSkillsJson`** 仅应在 `skills` 为**对象映射**（战斗技能表）时遍历，避免把 `survival-skills.json` 的 **`skills` 数组**误解析为战斗 id。
+
+## 与战斗技能表区分
+
+- **`data/combat-skills.json`**：`skills` 为 **对象**（按技能 id 键控）。
+- **`data/survival-skills.json`**：`skills` 为 **数组**（每项含 `id`）。二者勿混在同一解析分支。

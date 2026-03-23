@@ -13,6 +13,8 @@
     // demo 存档：flags 与一次性触发记录（后续可替换为真实存档系统）
     var LS_FLAGS = 'cabi_demo_flags_v1';
     var LS_TRIGGERED = 'cabi_demo_triggered_entries_v1';
+    /** 与 CharacterAttributes.hidden_epithets「无用之人」同步，供 flagEquals 设计事件 */
+    var FLAG_PLAYER_EPITHET_USELESS = 'player_epithet_useless_person';
 
     // 日志输出：优先走配置注入的 logFn；兜底直接写入 GameLog
     var logFn = function () {};
@@ -49,9 +51,20 @@
         return getTriggered().indexOf(id) >= 0;
     }
 
+    /** 根据角色 hidden_epithets 写入/清除 demo flag（读档 setDemoState 后须再调一次） */
+    function syncPlayerEpithetFlags() {
+        var useless = (global.CharacterAttributes && global.CharacterAttributes.HIDDEN_EPITHET_USELESS) || '无用之人';
+        var on = !!(global.CharacterAttributes && typeof global.CharacterAttributes.hasHiddenEpithet === 'function'
+            && global.CharacterAttributes.hasHiddenEpithet(useless));
+        setFlag(FLAG_PLAYER_EPITHET_USELESS, on);
+    }
+
     function getPlayerName() {
-        var el = document.getElementById('creation-name');
-        return el && el.value ? el.value : '主角';
+        if (global.CharacterAttributes && typeof global.CharacterAttributes.getCharacterName === 'function') {
+            var n = global.CharacterAttributes.getCharacterName();
+            if (n) return n;
+        }
+        return '无名氏';
     }
 
     function parseHHMM(s) {
@@ -192,6 +205,22 @@
         }
         if (cond.type === 'skillLevelGte') {
             return getSkillLevel(cond.skillId) >= (parseInt(cond.level, 10) || 0);
+        }
+        function isRegisteredSurvivalSkillId(skillId) {
+            return global.SurvivalSkills && typeof global.SurvivalSkills.isRegisteredSkillId === 'function' && global.SurvivalSkills.isRegisteredSkillId(skillId);
+        }
+        if (cond.type === 'survivalSkillLevelEquals') {
+            if (!isRegisteredSurvivalSkillId(cond.skillId)) return false;
+            return getSkillLevel(cond.skillId) === (parseInt(cond.level, 10) || 0);
+        }
+        if (cond.type === 'survivalSkillLevelGte') {
+            if (!isRegisteredSurvivalSkillId(cond.skillId)) return false;
+            return getSkillLevel(cond.skillId) >= (parseInt(cond.level, 10) || 0);
+        }
+        if (cond.type === 'characterHiddenEpithetEquals') {
+            var wantEp = String(cond.epithet || '').trim();
+            if (!wantEp || !global.CharacterAttributes || typeof global.CharacterAttributes.hasHiddenEpithet !== 'function') return false;
+            return global.CharacterAttributes.hasHiddenEpithet(wantEp);
         }
         if (cond.type === 'timeBetween') {
             if (!global.GameTime || typeof global.GameTime.isTimeBetween !== 'function') return false;
@@ -417,7 +446,19 @@
                                 npcId: def.id,
                                 npcName: def.displayTitle || def.name || 'NPC',
                                 playerName: getPlayerName(),
-                                options: entry && entry.dialogue ? entry.dialogue.options : null
+                                options: entry && entry.dialogue ? entry.dialogue.options : null,
+                                onQueueExhausted: function () {
+                                    applyEffects(entry.effects);
+                                    if (entry.repeatable === false) markTriggered(entry.id);
+                                    if (entry.id === 'supervisor.firstTalk_01'
+                                        && global.CharacterAttributes
+                                        && typeof global.CharacterAttributes.isCharacterCreationCompleted === 'function'
+                                        && !global.CharacterAttributes.isCharacterCreationCompleted()
+                                        && global.SceneApp
+                                        && typeof global.SceneApp.openCharacterCreationAfterIntro === 'function') {
+                                        global.SceneApp.openCharacterCreationAfterIntro();
+                                    }
+                                }
                             });
                         } else if (entry && entry.dialogue && Array.isArray(entry.dialogue.lines)) {
                             global.DialogueUI.say({
@@ -426,10 +467,9 @@
                                 speakerName: def.displayTitle || def.name || 'NPC',
                                 text: entry.dialogue.lines.join('\n')
                             });
+                            applyEffects(entry.effects);
+                            if (entry.repeatable === false) markTriggered(entry.id);
                         }
-                        // effect 日志在 applyEffects 内输出
-                        applyEffects(entry.effects);
-                        if (entry.repeatable === false) markTriggered(entry.id);
                     }
                 });
             }));
@@ -476,7 +516,9 @@
         },
         preloadNpc: function (npcId) { return loadNpcDef(npcId).then(function () { return loadNpcTriggers(npcId); }); },
         openMenu: openMenu,
-        scanChatEntry: scanChatEntry
+        scanChatEntry: scanChatEntry,
+        FLAG_PLAYER_EPITHET_USELESS: FLAG_PLAYER_EPITHET_USELESS,
+        syncPlayerEpithetFlags: syncPlayerEpithetFlags
     };
 })(typeof window !== 'undefined' ? window : this);
 

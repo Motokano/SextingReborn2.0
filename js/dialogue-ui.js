@@ -7,9 +7,10 @@
  * - DialogueUI.setPortrait(entityId, imageUrl)
  * - DialogueUI.clearPortrait(entityId)
  * - DialogueUI.open()
- * - DialogueUI.close()
+ * - DialogueUI.close()（仅内部在台词推进完毕时调用；玩家不可用 Esc/关闭键跳过）
  * - DialogueUI.say({ speakerRole, speakerId, speakerName, text })
  * - DialogueUI.playLinesRich(linesRich, opts?)
+ * - speakerRole === 'narration'（旁白）：不显示名字栏
  */
 (function (global) {
     'use strict';
@@ -38,11 +39,27 @@
     var fullText = '';
     var visibleText = '';
     var currentSpeakerName = '';
+    /** 当前句 speaker 角色（如 narration），用于旁白隐藏名字栏 */
+    var currentLineSpeakerRole = '';
     var currentAvatarUrl = '';
     var currentFallbackGlyph = '❖';
     var currentNextLabel = '';
     var currentNextDisabled = false;
     var currentCloseLabel = '';
+    /** playLinesRich：队列自然耗尽（非 Esc 中途关闭）时回调一次 */
+    var dialogueOnQueueExhausted = null;
+
+    function setDialogueInputBlockerVisible(visible) {
+        var b = document.getElementById('dialogue-input-blocker');
+        if (!b) return;
+        if (visible) {
+            b.style.display = 'block';
+            b.setAttribute('aria-hidden', 'false');
+        } else {
+            b.style.display = 'none';
+            b.setAttribute('aria-hidden', 'true');
+        }
+    }
 
     function deriveAvatarAltUrl(url) {
         // 兼容 npc-editor 在“选择目录层级错误”导致的多/少一层路径：
@@ -134,13 +151,19 @@
         }
         if (closeBtn && !closeBtn.__dlgBound) {
             closeBtn.__dlgBound = true;
-            if (!useReact) closeBtn.addEventListener('click', function () { close(); });
+            if (!useReact) closeBtn.addEventListener('click', function (e) {
+                e.preventDefault();
+                e.stopPropagation();
+            });
         }
         if (!document.__dlgKeyBound) {
             document.__dlgKeyBound = true;
             document.addEventListener('keydown', function (e) {
                 if (!isOpen) return;
-                if (e.key === 'Escape') close();
+                if (e.key === 'Escape') {
+                    e.preventDefault();
+                    return;
+                }
                 if (e.key === 'Enter' || e.key === ' ') {
                     // 避免在输入框里误触（当前对话框没有输入框，但保持通用）
                     var tag = (e.target && e.target.tagName) ? String(e.target.tagName).toLowerCase() : '';
@@ -170,7 +193,13 @@
         if (!textEl) return;
 
         // 名字和文字始终同步写入 DOM，不依赖 React 异步调度
-        if (nameEl) nameEl.textContent = currentSpeakerName || '';
+        if (nameEl) {
+            var hideName = currentLineSpeakerRole === 'narration';
+            nameEl.textContent = hideName ? '' : (currentSpeakerName || '');
+            nameEl.style.display = hideName ? 'none' : '';
+            if (hideName) nameEl.setAttribute('aria-hidden', 'true');
+            else nameEl.removeAttribute('aria-hidden');
+        }
         var textHtml = visibleTextAsHtml(visibleText || '');
         if (isTyping) {
             textHtml += '<span class="dlg-typing-cursor" aria-hidden="true">▋</span>';
@@ -185,8 +214,9 @@
                 nextLabel: currentNextLabel || '',
                 nextDisabled: !!currentNextDisabled,
                 closeLabel: currentCloseLabel || '',
+                showCloseButton: false,
                 onNext: next,
-                onClose: close,
+                onClose: function () { /* 禁止手动关闭，仅 next 推进至结束 */ },
                 options: (Array.isArray(options) && queue.length === 1) ? options : [],
                 onChoose: onChooseOption
             });
@@ -255,10 +285,12 @@
         ensureBound();
         var panel = $(PANEL_ID);
         if (!panel) return;
+        setDialogueInputBlockerVisible(true);
         mountDialogueTextRenderer();
         lastActiveEl = document.activeElement || null;
         isOpen = true;
         panel.classList.add('show');
+        panel.classList.add('dialogue-advance-only');
         panel.setAttribute('aria-hidden', 'false');
         // 避免隐藏/显示切换时焦点落在不可见区域
         try {
@@ -271,7 +303,12 @@
 
     function close() {
         var panel = $(PANEL_ID);
-        if (!panel) return;
+        if (!panel) {
+            setDialogueInputBlockerVisible(false);
+            return;
+        }
+        setDialogueInputBlockerVisible(false);
+        panel.classList.remove('dialogue-advance-only');
         // 若焦点仍在对话框内，先移走再 aria-hidden
         try {
             var ae = document.activeElement;
@@ -288,11 +325,19 @@
         fullText = '';
         visibleText = '';
         currentSpeakerName = '';
+        currentLineSpeakerRole = '';
         currentAvatarUrl = '';
         currentFallbackGlyph = '❖';
         currentNextLabel = '';
         currentNextDisabled = false;
         currentCloseLabel = '';
+        try {
+            var nameElClose = $(NAME_ID);
+            if (nameElClose) {
+                nameElClose.style.display = '';
+                nameElClose.removeAttribute('aria-hidden');
+            }
+        } catch (eName) { /* ignore */ }
         clearOptionsUi();
         panel.classList.remove('show');
         panel.setAttribute('aria-hidden', 'true');
@@ -304,6 +349,7 @@
         } catch (e) { /* ignore */ }
         lastActiveEl = null;
         unmountDialogueTextRenderer();
+        dialogueOnQueueExhausted = null;
     }
 
     function setPortrait(entityId, imageUrl) {
@@ -322,13 +368,15 @@
         if (!payload) return;
         var role = payload.speakerRole || 'npc';
         var entityId = normalizeEntityId(role, payload.speakerId);
+        dialogueOnQueueExhausted = null;
         options = null;
         optionsContext = null;
         lastLoggedKey = null;
+        var sayName = role === 'narration' ? '' : (payload.speakerName || (role === 'player' ? ui('dialogue.player.name') : ui('dialogue.npc.name')));
         queue = [{
             speakerRole: role,
             speakerId: entityId,
-            speakerName: payload.speakerName || (role === 'player' ? ui('dialogue.player.name') : ui('dialogue.npc.name')),
+            speakerName: sayName,
             text: (payload.text != null && String(payload.text).trim())
                 ? String(payload.text)
                 : '（对话内容缺失）'
@@ -339,8 +387,16 @@
     function playLinesRich(linesRich, opts) {
         opts = opts || {};
         if (!Array.isArray(linesRich)) return;
+        dialogueOnQueueExhausted = (typeof opts.onQueueExhausted === 'function') ? opts.onQueueExhausted : null;
         options = Array.isArray(opts.options) ? opts.options : null;
-        optionsContext = opts || null;
+        optionsContext = null;
+        if (opts && typeof opts === 'object') {
+            optionsContext = {};
+            for (var ok in opts) {
+                if (!Object.prototype.hasOwnProperty.call(opts, ok) || ok === 'onQueueExhausted') continue;
+                optionsContext[ok] = opts[ok];
+            }
+        }
         lastLoggedKey = null;
         function deriveRole(l) {
             var v = (l && (l.speaker || l.role)) ? String(l.speaker || l.role) : '';
@@ -378,12 +434,13 @@
             var text = deriveText(l);
             // 避免“触发了但台词为空白”的空对话框
             if (!text || !String(text).trim()) continue;
+            var lineName = role === 'narration' ? '' : ((role === 'player')
+                ? (opts.playerName || ui('dialogue.player.name'))
+                : (opts.npcName || opts.speakerName || ui('dialogue.npc.name')));
             queue.push({
                 speakerRole: role,
                 speakerId: entityId,
-                speakerName: (role === 'player')
-                    ? (opts.playerName || ui('dialogue.player.name'))
-                    : (opts.npcName || opts.speakerName || ui('dialogue.npc.name')),
+                speakerName: lineName,
                 text: String(text),
                 avatarUrl: avatarUrl || ''
             });
@@ -482,6 +539,7 @@
 
         if (!queue.length) {
             currentSpeakerName = '';
+            currentLineSpeakerRole = '';
             currentAvatarUrl = '';
             currentFallbackGlyph = ui('dialogue.ellipsis');
             currentNextDisabled = true;
@@ -503,7 +561,8 @@
         }
 
         var cur = queue[0];
-        currentSpeakerName = cur.speakerName || '';
+        currentLineSpeakerRole = cur.speakerRole || '';
+        currentSpeakerName = (currentLineSpeakerRole === 'narration') ? '' : (cur.speakerName || '');
         currentCloseLabel = ui('dialogue.close');
         var entityId = cur.speakerId || normalizeEntityId(cur.speakerRole, null);
         var url = getPortraitUrl(entityId);
@@ -568,8 +627,19 @@
         // 有分支选项时，“下一句”应无效，直到用户选择
         if (options && options.length && queue.length === 1) return;
         queue.shift();
-        if (!queue.length) return close();
+        if (!queue.length) {
+            var endCb = dialogueOnQueueExhausted;
+            dialogueOnQueueExhausted = null;
+            if (typeof endCb === 'function') {
+                try { endCb(); } catch (e0) { /* ignore */ }
+            }
+            return close();
+        }
         renderCurrent();
+    }
+
+    function isDialogueOpen() {
+        return !!isOpen;
     }
 
     global.DialogueUI = {
@@ -577,6 +647,7 @@
         close: close,
         say: say,
         playLinesRich: playLinesRich,
+        isDialogueOpen: isDialogueOpen,
         setPortrait: setPortrait,
         clearPortrait: clearPortrait
     };

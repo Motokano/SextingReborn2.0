@@ -131,7 +131,10 @@
             try { appearance = mods.EntityAppearance.getAllAppearances(); } catch (e2) { appearance = null; }
         }
 
-        // NPC demo state (flags + one-shot triggered entries)
+        // NPC demo state（写入前同步 epithet→flag，避免存档里缺 player_epithet_useless_person）
+        if (mods.NPCSystem && typeof mods.NPCSystem.syncPlayerEpithetFlags === 'function') {
+            try { mods.NPCSystem.syncPlayerEpithetFlags(); } catch (eSyncSnap) { /* ignore */ }
+        }
         var npcDemo = null;
         if (mods.NPCSystem && typeof mods.NPCSystem.getDemoState === 'function') {
             try { npcDemo = mods.NPCSystem.getDemoState(); } catch (e4) { npcDemo = null; }
@@ -230,6 +233,10 @@
         // NPC demo state (optional).
         if (mods.NPCSystem && typeof mods.NPCSystem.setDemoState === 'function' && snapshot.player.npcDemo) {
             try { mods.NPCSystem.setDemoState(snapshot.player.npcDemo); } catch (e5) { /* ignore */ }
+        }
+        // setDemoState 会整包覆盖 flags，需按角色 epithet 再对齐无用之人 flag
+        if (mods.NPCSystem && typeof mods.NPCSystem.syncPlayerEpithetFlags === 'function') {
+            try { mods.NPCSystem.syncPlayerEpithetFlags(); } catch (e5b) { /* ignore */ }
         }
 
         // Recalc derived stats once before buff restore.

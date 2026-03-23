@@ -10,32 +10,66 @@
         "flag": "lsy_has_talked",
         "value": false
       },
-      "requires": [
-        ""
-      ],
+      "requires": [],
       "blocks": [],
       "dialogue": {
         "linesRich": [
           {
-            "speaker": "npc",
-            "text": "（大意）林经理告诉主角：你已经被选为某个综艺节目的主人公。",
-            "avatar": "image/npc_supervisor_linShuyao/19621d34d43ed73564d43d7437132a54.png"
-          },
-          {
-            "speaker": "player",
-            "text": "……你说什么？",
+            "speaker": "narration",
+            "text": "不远处，一个穿着褪色制服、斜挎着公文包的女性正靠在树干上。她右手夹着烟，腮帮子一动一动的，脚边还有几点可疑的红色。",
             "avatar": ""
           },
           {
             "speaker": "npc",
-            "text": "（大意）这个节目的核心内容，是让你在这个世界里想办法找到回家的路。",
+            "text": "……嗯？",
+            "avatar": "image/npc_supervisor_linShuyao/19621d34d43ed73564d43d7437132a54.png"
+          },
+          {
+            "speaker": "narration",
+            "text": "我跟她解释了一番我不知道为什么突然来到了这里，她盯着我看了半天，深深吸了一口烟，又吐出个歪掉的烟圈。",
+            "avatar": ""
+          },
+          {
+            "speaker": "npc",
+            "text": "嗯…随便了，这里也时不时会有一些身份不明的人",
+            "avatar": "image/npc_supervisor_linShuyao/19621d34d43ed73564d43d7437132a54.png"
+          },
+          {
+            "speaker": "npc",
+            "text": "既然没死，就过来签个名。算你运气好，刚好撞见我今天值班。要是换成那个卷王组长，他现在已经把你当成非法入境者关进笼子里冲业绩了。",
+            "avatar": "image/npc_supervisor_linShuyao/19621d34d43ed73564d43d7437132a54.png"
+          },
+          {
+            "speaker": "npc",
+            "text": "还有，成年人除了登记身份信息，还需要进行身体素质测试。",
+            "avatar": "image/npc_supervisor_linShuyao/19621d34d43ed73564d43d7437132a54.png"
+          },
+          {
+            "speaker": "narration",
+            "text": "她一边说着嘴里还在嚼个不停，慢悠悠地从兜里掏出一张皱巴巴的登记表，连笔尖都秃了。",
+            "avatar": ""
+          },
+          {
+            "speaker": "narration",
+            "text": "好奇的问她到底在嚼什么。",
+            "avatar": ""
+          },
+          {
+            "speaker": "npc",
+            "text": "（面无表情）我的命。很苦、提神、让人想吐。",
             "avatar": "image/npc_supervisor_linShuyao/19621d34d43ed73564d43d7437132a54.png"
           }
         ],
         "lines": [
-          "（大意）林经理告诉主角：你已经被选为某个综艺节目的主人公。",
-          "……你说什么？",
-          "（大意）这个节目的核心内容，是让你在这个世界里想办法找到回家的路。"
+          "不远处，一个穿着褪色制服、斜挎着公文包的女性正靠在树干上。她右手夹着烟，腮帮子一动一动的，脚边还有几点可疑的红色。",
+          "……嗯？",
+          "我跟她解释了一番我不知道为什么突然来到了这里，她盯着我看了半天，深深吸了一口烟，又吐出个歪掉的烟圈。",
+          "嗯…随便了，这里也时不时会有一些身份不明的人",
+          "既然没死，就过来签个名。算你运气好，刚好撞见我今天值班。要是换成那个卷王组长，他现在已经把你当成非法入境者关进笼子里冲业绩了。",
+          "还有，成年人除了登记身份信息，还需要进行身体素质测试。",
+          "她一边说着嘴里还在嚼个不停，慢悠悠地从兜里掏出一张皱巴巴的登记表，连笔尖都秃了。",
+          "好奇的问她到底在嚼什么。",
+          "（面无表情）我的命。很苦、提神、让人想吐。"
         ],
         "hasOptions": false,
         "options": []
@@ -102,6 +136,125 @@
           }
         }
       ],
+      "repeatable": false,
+      "scope": "global",
+      "causesNpcDisappear": false
+    },
+    {
+      "id": "supervisor.basicUnarmed_followup_01",
+      "entryType": "dialogue",
+      "entrySource": "chat",
+      "condition": {
+        "type": "skillLevelGte",
+        "skillId": "combat_basic_unarmed",
+        "level": 1
+      },
+      "requires": [
+        "supervisor.firstTalk_01",
+        "supervisor.languageFix_01"
+      ],
+      "blocks": [],
+      "dialogue": {
+        "linesRich": [
+          {
+            "speaker": "npc",
+            "text": "你这套拳脚动作倒挺规范，跟印出来的似的。",
+            "avatar": "image/npc_supervisor_linShuyao/19621d34d43ed73564d43d7437132a54.png"
+          },
+          {
+            "speaker": "narration",
+            "text": "她一边抽着烟一边上下打量我，时不时点点头，又摇摇头",
+            "avatar": ""
+          },
+          {
+            "speaker": "npc",
+            "text": "刹那、须弥、轮转……嘿，这些好听的词儿都能套在你这四招上，但说白了，不就是打得着和站得稳么。",
+            "avatar": "image/npc_supervisor_linShuyao/19621d34d43ed73564d43d7437132a54.png"
+          }
+        ],
+        "lines": [
+          "你这套拳脚动作倒挺规范，跟印出来的似的。",
+          "她一边抽着烟一边上下打量我，时不时点点头，又摇摇头",
+          "刹那、须弥、轮转……嘿，这些好听的词儿都能套在你这四招上，但说白了，不就是打得着和站得稳么。"
+        ],
+        "hasOptions": false,
+        "options": []
+      },
+      "effects": [],
+      "repeatable": false,
+      "scope": "global",
+      "causesNpcDisappear": false
+    },
+    {
+      "id": "supervisor.uselessPerson_remark_01",
+      "entryType": "dialogue",
+      "entrySource": "chat",
+      "condition": {
+        "type": "flagEquals",
+        "flag": "player_epithet_useless_person",
+        "value": true
+      },
+      "requires": [
+        "supervisor.firstTalk_01"
+      ],
+      "blocks": [],
+      "dialogue": {
+        "linesRich": [
+          {
+            "speaker": "narration",
+            "text": "她看着登记表僵住了两秒，然后扑哧一声笑了出来",
+            "avatar": ""
+          },
+          {
+            "speaker": "npc",
+            "text": "……啊，你是怎么做到的？",
+            "avatar": "image/npc_supervisor_linShuyao/19621d34d43ed73564d43d7437132a54.png"
+          },
+          {
+            "speaker": "narration",
+            "text": "她把嘴里的槟榔吐在脚边，又重新点燃了一根烟",
+            "avatar": ""
+          },
+          {
+            "speaker": "npc",
+            "text": "连一点长处都找不出来，也算是一种旷世奇才了。",
+            "avatar": "image/npc_supervisor_linShuyao/19621d34d43ed73564d43d7437132a54.png"
+          },
+          {
+            "speaker": "narration",
+            "text": "我连忙问她出了什么问题",
+            "avatar": ""
+          },
+          {
+            "speaker": "npc",
+            "text": "没问题，太没问题了。",
+            "avatar": "image/npc_supervisor_linShuyao/19621d34d43ed73564d43d7437132a54.png"
+          },
+          {
+            "speaker": "narration",
+            "text": "她又从兜里摸出一颗槟榔丢进嘴里，腮帮子一动一动的，语气倒变得温和了一点。",
+            "avatar": "image/npc_supervisor_linShuyao/19621d34d43ed73564d43d7437132a54.png"
+          },
+          {
+            "speaker": "npc",
+            "text": "不生不灭，不垢不净，不增不减，不上不下，应该说的就是你这种人吧。",
+            "avatar": "image/npc_supervisor_linShuyao/19621d34d43ed73564d43d7437132a54.png"
+          }
+        ],
+        "lines": [
+          "她看着登记表僵住了两秒，然后扑哧一声笑了出来",
+          "……啊，你是怎么做到的？",
+          "她把嘴里的槟榔吐在脚边，又重新点燃了一根烟",
+          "连一点长处都找不出来，也算是一种旷世奇才了。",
+          "我连忙问她出了什么问题",
+          "没问题，太没问题了。",
+          "她又从兜里摸出一颗槟榔丢进嘴里，腮帮子一动一动的，语气倒变得温和了一点。",
+          "不生不灭，不垢不净，不增不减，不上不下，应该说的就是你这种人吧。"
+        ],
+        "hasOptions": false,
+        "options": []
+      },
+      "effects": [],
       "repeatable": false,
       "scope": "global",
       "causesNpcDisappear": false

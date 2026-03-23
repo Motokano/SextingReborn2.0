@@ -21,7 +21,7 @@
   "behavior": {
     "type": "supervisor",
     "origin": "mysterious_system",
-    "description": "表面是公事公办的上班族管理者，实际为来自更高层系统/世界规则的监督者，仅在被搭话和特定条件满足时影响世界。"
+    "description": "公事公办的上班族管理者"
   },
   "fallbackDialoguePoolId": "npc.supervisor.linShuyao.fallback",
   "tags": [

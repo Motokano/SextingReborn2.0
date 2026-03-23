@@ -474,6 +474,8 @@
                                 <option value="flagEquals">flag 等于 (flagEquals)</option>
                                 <option value="skillLevelEquals">技能等级等于 (skillLevelEquals)</option>
                                 <option value="skillLevelGte">技能等级 ≥ (skillLevelGte)</option>
+                                <option value="survivalSkillLevelEquals">生存技能等级等于 (survivalSkillLevelEquals)</option>
+                                <option value="survivalSkillLevelGte">生存技能等级 ≥ (survivalSkillLevelGte)</option>
                                 <option value="hasItem">背包持有物品 (hasItem)</option>
                                 <option value="custom">自定义（见下方 JSON）</option>
                             </select>
@@ -1246,12 +1248,54 @@
                 return out;
             }
 
-            function extractSkillIdsFromCombatSkillsJson(obj) {
+            /**
+             * 技能 id 一律为字符串。忽略 number（避免 JSON 数组里的纯数字被当成 id）；
+             * 支持元素为 string 或 { id: string }。
+             */
+            function normalizeSkillIdEntry(x) {
+                if (x == null) return null;
+                if (typeof x === 'number') return null;
+                if (typeof x === 'string') {
+                    var t = x.trim();
+                    return t || null;
+                }
+                if (typeof x === 'object' && x.id != null) {
+                    if (typeof x.id === 'number') return null;
+                    var sid = String(x.id).trim();
+                    return sid || null;
+                }
+                return null;
+            }
+
+            function extractSkillIdsFromSkillsArray(arr) {
                 var out = [];
-                if (obj && obj.skills && typeof obj.skills === 'object') {
-                    for (var k in obj.skills) out.push(k);
+                if (!Array.isArray(arr)) return out;
+                for (var i = 0; i < arr.length; i++) {
+                    var id = normalizeSkillIdEntry(arr[i]);
+                    if (id) out.push(id);
                 }
                 return out;
+            }
+
+            function extractSkillIdsFromCombatSkillsJson(obj) {
+                var out = [];
+                if (!obj || obj.skills == null || typeof obj.skills !== 'object') return out;
+                if (Array.isArray(obj.skills)) {
+                    return extractSkillIdsFromSkillsArray(obj.skills);
+                }
+                for (var k in obj.skills) {
+                    if (!Object.prototype.hasOwnProperty.call(obj.skills, k)) continue;
+                    var sk = String(k).trim();
+                    if (!sk) continue;
+                    if (/^\d+$/.test(sk)) continue;
+                    out.push(sk);
+                }
+                return out;
+            }
+
+            function extractSkillIdsFromSurvivalSkillsJson(obj) {
+                if (!obj || !Array.isArray(obj.skills)) return [];
+                return extractSkillIdsFromSkillsArray(obj.skills);
             }
 
             function setSkills(list) {
@@ -1268,8 +1312,9 @@
                 var skills = (state.skills && state.skills.length) ? state.skills : ['survival_language'];
                 for (var i = 0; i < skills.length; i++) {
                     var opt = document.createElement('option');
-                    opt.value = skills[i];
-                    opt.textContent = skills[i];
+                    var sid = String(skills[i] == null ? '' : skills[i]);
+                    opt.value = sid;
+                    opt.textContent = sid;
                     sel.appendChild(opt);
                 }
                 if (cur && skills.indexOf(cur) !== -1) sel.value = cur;
@@ -1291,9 +1336,14 @@
                         try {
                             var obj = JSON.parse(text);
                             list = list.concat(extractSkillIdsFromCombatSkillsJson(obj));
-                            if (Array.isArray(obj)) list = list.concat(obj);
+                            list = list.concat(extractSkillIdsFromSurvivalSkillsJson(obj));
+                            if (Array.isArray(obj)) list = list.concat(extractSkillIdsFromSkillsArray(obj));
+                            var prev = (state.skills && state.skills.length) ? state.skills.slice() : [];
+                            list = prev.concat(list);
                         } catch (e) {
                             list = list.concat(extractSkillIdsFromMarkdown(text));
+                            var prev2 = (state.skills && state.skills.length) ? state.skills.slice() : [];
+                            list = prev2.concat(list);
                         }
                         setSkills(list);
                     } catch (e2) {
@@ -1455,6 +1505,8 @@
                 if (cond.type === 'flagEquals') return 'flag ' + (cond.flag || '?') + ' = ' + cond.value;
                 if (cond.type === 'skillLevelEquals') return '技能 ' + (cond.skillId || '?') + ' = ' + cond.level;
                 if (cond.type === 'skillLevelGte') return '技能 ' + (cond.skillId || '?') + ' ≥ ' + cond.level;
+                if (cond.type === 'survivalSkillLevelEquals') return '生存技能 ' + (cond.skillId || '?') + ' = ' + cond.level;
+                if (cond.type === 'survivalSkillLevelGte') return '生存技能 ' + (cond.skillId || '?') + ' ≥ ' + cond.level;
                 if (cond.type === 'hasItem') return '持有 ' + (cond.itemId || '?');
                 return cond.type;
             }
@@ -1623,7 +1675,7 @@
                 var fSkill = document.getElementById('cond-form-skill');
                 var fItem = document.getElementById('cond-form-item');
                 if (fFlag) fFlag.style.display = (type === 'flagEquals') ? 'block' : 'none';
-                if (fSkill) fSkill.style.display = (type === 'skillLevelEquals' || type === 'skillLevelGte') ? 'block' : 'none';
+                if (fSkill) fSkill.style.display = (type === 'skillLevelEquals' || type === 'skillLevelGte' || type === 'survivalSkillLevelEquals' || type === 'survivalSkillLevelGte') ? 'block' : 'none';
                 if (fItem) fItem.style.display = (type === 'hasItem') ? 'block' : 'none';
                 var adv = document.getElementById('cond-advanced-toggle');
                 var jsonRow = document.getElementById('entry-cond-params');
@@ -1644,7 +1696,7 @@
                 if (type === 'flagEquals') {
                     document.getElementById('cond-flag-name').value = cond.flag || '';
                     document.getElementById('cond-flag-value').value = String(!!cond.value);
-                } else if (type === 'skillLevelEquals' || type === 'skillLevelGte') {
+                } else if (type === 'skillLevelEquals' || type === 'skillLevelGte' || type === 'survivalSkillLevelEquals' || type === 'survivalSkillLevelGte') {
                     updateSkillSelectOptions();
                     document.getElementById('cond-skill-id').value = cond.skillId || document.getElementById('cond-skill-id').value;
                     document.getElementById('cond-skill-level').value = (cond.level != null ? cond.level : 0);
@@ -1663,7 +1715,7 @@
                 if (type === 'flagEquals') {
                     cond.flag = document.getElementById('cond-flag-name').value.trim();
                     cond.value = (document.getElementById('cond-flag-value').value === 'true');
-                } else if (type === 'skillLevelEquals' || type === 'skillLevelGte') {
+                } else if (type === 'skillLevelEquals' || type === 'skillLevelGte' || type === 'survivalSkillLevelEquals' || type === 'survivalSkillLevelGte') {
                     cond.skillId = document.getElementById('cond-skill-id').value;
                     cond.level = parseInt(document.getElementById('cond-skill-level').value, 10) || 0;
                 } else if (type === 'hasItem') {
@@ -2353,6 +2405,8 @@
                 var sample = (type === 'flagEquals') ? { type: 'flagEquals', flag: 'lsy_has_talked', value: false }
                     : (type === 'skillLevelEquals') ? { type: 'skillLevelEquals', skillId: firstSkill, level: 0 }
                     : (type === 'skillLevelGte') ? { type: 'skillLevelGte', skillId: firstSkill, level: 1 }
+                    : (type === 'survivalSkillLevelEquals') ? { type: 'survivalSkillLevelEquals', skillId: firstSkill, level: 0 }
+                    : (type === 'survivalSkillLevelGte') ? { type: 'survivalSkillLevelGte', skillId: firstSkill, level: 1 }
                     : (type === 'hasItem') ? { type: 'hasItem', itemId: 'item_xxx', count: 1 }
                     : { type: 'custom' };
                 applyConditionToForm(sample);
