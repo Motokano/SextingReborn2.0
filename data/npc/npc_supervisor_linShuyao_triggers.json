@@ -1,5 +1,5 @@
 {
-  "npcId": "npc.supervisor.linShuyao",
+  "npcId": "npc.custom.unnamed",
   "entries": [
     {
       "id": "supervisor.firstTalk_01",
@@ -31,7 +31,7 @@
           },
           {
             "speaker": "npc",
-            "text": "嗯…随便了，这里也时不时会有一些身份不明的人",
+            "text": "嗯…随便了，这里也时不时会有一些身份不明的人，你可以叫我林经理。",
             "avatar": "image/npc_supervisor_linShuyao/19621d34d43ed73564d43d7437132a54.png"
           },
           {
@@ -41,22 +41,22 @@
           },
           {
             "speaker": "npc",
-            "text": "还有，成年人除了登记身份信息，还需要进行身体素质测试。",
+            "text": "还有，成年人除了登记身份信息，还需要进行身体素质测试，站在那里就行了，具体数字我会填的。",
             "avatar": "image/npc_supervisor_linShuyao/19621d34d43ed73564d43d7437132a54.png"
           },
           {
             "speaker": "narration",
-            "text": "她一边说着嘴里还在嚼个不停，慢悠悠地从兜里掏出一张皱巴巴的登记表，连笔尖都秃了。",
+            "text": "她一边说着嘴里还在嚼个不停，慢悠悠地从兜里掏出一张皱巴巴的登记表。",
             "avatar": ""
           },
           {
             "speaker": "narration",
-            "text": "好奇的问她到底在嚼什么。",
+            "text": "好奇的问她到底在嚼什么，她瞪了我一眼。",
             "avatar": ""
           },
           {
             "speaker": "npc",
-            "text": "（面无表情）我的命。很苦、提神、让人想吐。",
+            "text": "管好你自己。",
             "avatar": "image/npc_supervisor_linShuyao/19621d34d43ed73564d43d7437132a54.png"
           }
         ],
@@ -64,12 +64,12 @@
           "不远处，一个穿着褪色制服、斜挎着公文包的女性正靠在树干上。她右手夹着烟，腮帮子一动一动的，脚边还有几点可疑的红色。",
           "……嗯？",
           "我跟她解释了一番我不知道为什么突然来到了这里，她盯着我看了半天，深深吸了一口烟，又吐出个歪掉的烟圈。",
-          "嗯…随便了，这里也时不时会有一些身份不明的人",
+          "嗯…随便了，这里也时不时会有一些身份不明的人，你可以叫我林经理。",
           "既然没死，就过来签个名。算你运气好，刚好撞见我今天值班。要是换成那个卷王组长，他现在已经把你当成非法入境者关进笼子里冲业绩了。",
-          "还有，成年人除了登记身份信息，还需要进行身体素质测试。",
-          "她一边说着嘴里还在嚼个不停，慢悠悠地从兜里掏出一张皱巴巴的登记表，连笔尖都秃了。",
-          "好奇的问她到底在嚼什么。",
-          "（面无表情）我的命。很苦、提神、让人想吐。"
+          "还有，成年人除了登记身份信息，还需要进行身体素质测试，站在那里就行了，具体数字我会填的。",
+          "她一边说着嘴里还在嚼个不停，慢悠悠地从兜里掏出一张皱巴巴的登记表。",
+          "好奇的问她到底在嚼什么，她瞪了我一眼。",
+          "管好你自己。"
         ],
         "hasOptions": false,
         "options": []
@@ -83,6 +83,67 @@
           }
         }
       ],
+      "repeatable": false,
+      "scope": "global",
+      "causesNpcDisappear": false
+    },
+    {
+      "id": "supervisor.postEffectRemark_01",
+      "entryType": "dialogue",
+      "entrySource": "chat",
+      "condition": {
+        "type": "postEffectObtainedGte",
+        "value": 1
+      },
+      "requires": [
+        "supervisor.firstTalk_01"
+      ],
+      "blocks": [],
+      "dialogue": {
+        "linesRich": [
+          {
+            "speaker": "narration",
+            "text": "因为后遗症的原因，现在身体总会觉得有一些不舒服，被林经理看到了。",
+            "avatar": ""
+          },
+          {
+            "speaker": "npc",
+            "text": "嚯，练拳这么勤奋吗",
+            "avatar": "image/npc_supervisor_linShuyao/19621d34d43ed73564d43d7437132a54.png"
+          },
+          {
+            "speaker": "narration",
+            "text": "她吐出长长的一口烟，任由灰白色的雾气遮住大半张脸。",
+            "avatar": ""
+          },
+          {
+            "speaker": "npc",
+            "text": "很神奇吧，明明是怕死才开始挥拳的。",
+            "avatar": "image/npc_supervisor_linShuyao/19621d34d43ed73564d43d7437132a54.png"
+          },
+          {
+            "speaker": "npc",
+            "text": "啊，算了，你当没听见吧，加油。",
+            "avatar": "image/npc_supervisor_linShuyao/19621d34d43ed73564d43d7437132a54.png"
+          },
+          {
+            "speaker": "narration",
+            "text": "说着，她假模假样的做了一个加油的姿势。",
+            "avatar": ""
+          }
+        ],
+        "lines": [
+          "因为后遗症的原因，现在身体总会觉得有一些不舒服，被林经理看到了。",
+          "嚯，练拳这么勤奋吗",
+          "她吐出长长的一口烟，任由灰白色的雾气遮住大半张脸。",
+          "很神奇吧，明明是怕死才开始挥拳的。",
+          "啊，算了，你当没听见吧，加油。",
+          "说着，她假模假样的做了一个加油的姿势。"
+        ],
+        "hasOptions": false,
+        "options": []
+      },
+      "effects": [],
       "repeatable": false,
       "scope": "global",
       "causesNpcDisappear": false
@@ -104,24 +165,66 @@
         "linesRich": [
           {
             "speaker": "npc",
-            "text": "（大意）林经理恍然大悟，说差点忘了提醒：这里和你原来的地方语言不通。",
+            "text": "差点忘了，你大概是听不懂这边人的土话的，我来教你几句",
             "avatar": "image/npc_supervisor_linShuyao/19621d34d43ed73564d43d7437132a54.png"
           },
           {
-            "speaker": "player",
-            "text": "我就说为什么他们看我的眼神那么怪。",
+            "speaker": "npc",
+            "text": "记好了，这几个词能保你的命。",
+            "avatar": "image/npc_supervisor_linShuyao/19621d34d43ed73564d43d7437132a54.png"
+          },
+          {
+            "speaker": "npc",
+            "text": "没钱。",
+            "avatar": "image/npc_supervisor_linShuyao/19621d34d43ed73564d43d7437132a54.png"
+          },
+          {
+            "speaker": "narration",
+            "text": "她伸出两根手指比划了一下，吐出一口青烟",
             "avatar": ""
           },
           {
             "speaker": "npc",
-            "text": "（大意）她顺手帮你把语言权限开了一点，否则你连路都打听不清楚。",
+            "text": "通融。",
             "avatar": "image/npc_supervisor_linShuyao/19621d34d43ed73564d43d7437132a54.png"
+          },
+          {
+            "speaker": "narration",
+            "text": "她搓了搓指尖，眼神空洞地看着远方",
+            "avatar": ""
+          },
+          {
+            "speaker": "npc",
+            "text": "饶命。",
+            "avatar": "image/npc_supervisor_linShuyao/19621d34d43ed73564d43d7437132a54.png"
+          },
+          {
+            "speaker": "narration",
+            "text": "提这个词时，她那双死鱼眼终于亮了一瞬",
+            "avatar": ""
+          },
+          {
+            "speaker": "npc",
+            "text": "如果听到这句他还冲上来，那你赶紧跑。",
+            "avatar": "image/npc_supervisor_linShuyao/19621d34d43ed73564d43d7437132a54.png"
+          },
+          {
+            "speaker": "narration",
+            "text": "跟她学了几句常用语。",
+            "avatar": ""
           }
         ],
         "lines": [
-          "（大意）林经理恍然大悟，说差点忘了提醒：这里和你原来的地方语言不通。",
-          "我就说为什么他们看我的眼神那么怪。",
-          "（大意）她顺手帮你把语言权限开了一点，否则你连路都打听不清楚。"
+          "差点忘了，你大概是听不懂这边人的土话的，我来教你几句",
+          "记好了，这几个词能保你的命。",
+          "没钱。",
+          "她伸出两根手指比划了一下，吐出一口青烟",
+          "通融。",
+          "她搓了搓指尖，眼神空洞地看着远方",
+          "饶命。",
+          "提这个词时，她那双死鱼眼终于亮了一瞬",
+          "如果听到这句他还冲上来，那你赶紧跑。",
+          "跟她学了几句常用语。"
         ],
         "hasOptions": false,
         "options": []
@@ -168,14 +271,20 @@
           },
           {
             "speaker": "npc",
-            "text": "刹那、须弥、轮转……嘿，这些好听的词儿都能套在你这四招上，但说白了，不就是打得着和站得稳么。",
+            "text": "好东西总是越多越好，但拳头不一定是。",
             "avatar": "image/npc_supervisor_linShuyao/19621d34d43ed73564d43d7437132a54.png"
+          },
+          {
+            "speaker": "narration",
+            "text": "她嘴边的烟灰积得老长，颤巍巍地悬在火星边缘，她连拍都懒得拍一下。",
+            "avatar": ""
           }
         ],
         "lines": [
           "你这套拳脚动作倒挺规范，跟印出来的似的。",
           "她一边抽着烟一边上下打量我，时不时点点头，又摇摇头",
-          "刹那、须弥、轮转……嘿，这些好听的词儿都能套在你这四招上，但说白了，不就是打得着和站得稳么。"
+          "好东西总是越多越好，但拳头不一定是。",
+          "她嘴边的烟灰积得老长，颤巍巍地悬在火星边缘，她连拍都懒得拍一下。"
         ],
         "hasOptions": false,
         "options": []
@@ -227,17 +336,17 @@
           },
           {
             "speaker": "npc",
-            "text": "没问题，太没问题了。",
+            "text": "不，没什么。",
             "avatar": "image/npc_supervisor_linShuyao/19621d34d43ed73564d43d7437132a54.png"
           },
           {
             "speaker": "narration",
-            "text": "她又从兜里摸出一颗槟榔丢进嘴里，腮帮子一动一动的，语气倒变得温和了一点。",
+            "text": "她又从兜里摸出一颗东西丢进嘴里，腮帮子一动一动的，语气倒变得温和了一点。",
             "avatar": "image/npc_supervisor_linShuyao/19621d34d43ed73564d43d7437132a54.png"
           },
           {
             "speaker": "npc",
-            "text": "不生不灭，不垢不净，不增不减，不上不下，应该说的就是你这种人吧。",
+            "text": "你以后应该会挺辛苦的。",
             "avatar": "image/npc_supervisor_linShuyao/19621d34d43ed73564d43d7437132a54.png"
           }
         ],
@@ -247,12 +356,81 @@
           "她把嘴里的槟榔吐在脚边，又重新点燃了一根烟",
           "连一点长处都找不出来，也算是一种旷世奇才了。",
           "我连忙问她出了什么问题",
-          "没问题，太没问题了。",
-          "她又从兜里摸出一颗槟榔丢进嘴里，腮帮子一动一动的，语气倒变得温和了一点。",
-          "不生不灭，不垢不净，不增不减，不上不下，应该说的就是你这种人吧。"
+          "不，没什么。",
+          "她又从兜里摸出一颗东西丢进嘴里，腮帮子一动一动的，语气倒变得温和了一点。",
+          "你以后应该会挺辛苦的。"
         ],
         "hasOptions": false,
         "options": []
+      },
+      "effects": [],
+      "repeatable": false,
+      "scope": "global",
+      "causesNpcDisappear": false
+    },
+    {
+      "id": "supervisor.basicBreath_followup_01",
+      "entryType": "dialogue",
+      "entrySource": "chat",
+      "condition": {
+        "type": "skillLevelGte",
+        "skillId": "combat_basic_breath",
+        "level": 1
+      },
+      "requires": [
+        "supervisor.firstTalk_01",
+        "supervisor.languageFix_01"
+      ],
+      "blocks": [],
+      "dialogue": {
+        "lines": [
+          "怎么最近看到你一直在瘪嘴，瘪完又开始嘟嘴，吃错东西了？",
+          "她依旧面无表情的咀嚼着什么东西，时不时又往地上吐些红色的汁液。",
+          "...她不会在吃那个吧？",
+          "噢~我知道了。",
+          "她又点起一根烟，学着我练习呼吸法的样子开始运转气息，时不时吐出几个烟圈，最后一个烟圈吐出来的时候，嘴里又吐出来一颗不知道什么东西从烟圈中间飞过去。",
+          "心与意合，意与气合，气与力合...",
+          "那口气要是没憋住，你就完蛋咯。"
+        ],
+        "hasOptions": false,
+        "options": [],
+        "linesRich": [
+          {
+            "speaker": "npc",
+            "text": "怎么最近看到你一直在瘪嘴，瘪完又开始嘟嘴，吃错东西了？",
+            "avatar": "image/npc_supervisor_linShuyao/19621d34d43ed73564d43d7437132a54.png"
+          },
+          {
+            "speaker": "narration",
+            "text": "她依旧面无表情的咀嚼着什么东西，时不时又往地上吐些红色的汁液。",
+            "avatar": ""
+          },
+          {
+            "speaker": "narration",
+            "text": "...她不会在吃那个吧？",
+            "avatar": ""
+          },
+          {
+            "speaker": "npc",
+            "text": "噢~我知道了。",
+            "avatar": "image/npc_supervisor_linShuyao/19621d34d43ed73564d43d7437132a54.png"
+          },
+          {
+            "speaker": "narration",
+            "text": "她又点起一根烟，学着我练习呼吸法的样子开始运转气息，时不时吐出几个烟圈，最后一个烟圈吐出来的时候，嘴里又吐出来一颗不知道什么东西从烟圈中间飞过去。",
+            "avatar": ""
+          },
+          {
+            "speaker": "npc",
+            "text": "心与意合，意与气合，气与力合...",
+            "avatar": "image/npc_supervisor_linShuyao/19621d34d43ed73564d43d7437132a54.png"
+          },
+          {
+            "speaker": "npc",
+            "text": "那口气要是没憋住，你就完蛋咯。",
+            "avatar": "image/npc_supervisor_linShuyao/19621d34d43ed73564d43d7437132a54.png"
+          }
+        ]
       },
       "effects": [],
       "repeatable": false,

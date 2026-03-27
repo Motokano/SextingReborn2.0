@@ -55,7 +55,9 @@
             },
             hubs: { breath: null, footwork: null },
             move_sequences: { lhand: [], rhand: [], lfoot: [], rfoot: [] },
-            skill_move_sequences: {}
+            skill_move_sequences: {},
+            /** 后遗症装配：post_effect_sequences[limbId][skillId] = [post_effect_id|null, ...] */
+            post_effect_sequences: {}
         };
     }
 
@@ -80,6 +82,13 @@
         if (state.combat.hubs.breath === undefined) state.combat.hubs.breath = null;
         if (state.combat.hubs.footwork === undefined) state.combat.hubs.footwork = null;
         if (!state.combat.skill_move_sequences) state.combat.skill_move_sequences = {};
+        if (!state.combat.post_effect_sequences || typeof state.combat.post_effect_sequences !== 'object') state.combat.post_effect_sequences = {};
+        for (var li = 0; li < limbIds.length; li++) {
+            var lid2 = limbIds[li];
+            if (!state.combat.post_effect_sequences[lid2] || typeof state.combat.post_effect_sequences[lid2] !== 'object') {
+                state.combat.post_effect_sequences[lid2] = {};
+            }
+        }
     }
 
     /** 技能等级获取：未习得为 0 */
@@ -902,6 +911,20 @@
                     var out = {};
                     for (var sk in src) { if (src.hasOwnProperty(sk) && Array.isArray(src[sk])) out[sk] = src[sk].slice(); }
                     return out;
+                })(),
+                post_effect_sequences: (function () {
+                    var src = s.combat.post_effect_sequences;
+                    if (!src || typeof src !== 'object') return {};
+                    var out = {};
+                    for (var lid in src) {
+                        if (!Object.prototype.hasOwnProperty.call(src, lid) || !src[lid] || typeof src[lid] !== 'object') continue;
+                        out[lid] = {};
+                        for (var sk in src[lid]) {
+                            if (!Object.prototype.hasOwnProperty.call(src[lid], sk) || !Array.isArray(src[lid][sk])) continue;
+                            out[lid][sk] = src[lid][sk].slice();
+                        }
+                    }
+                    return out;
                 })()
             };
             var limbIds = COMBAT_LIMB_IDS;
@@ -940,7 +963,8 @@
             limbs: {},
             hubs: { breath: state.combat.hubs.breath, footwork: state.combat.hubs.footwork },
             move_sequences: {},
-            skill_move_sequences: {}
+            skill_move_sequences: {},
+            post_effect_sequences: {}
         };
         for (var li = 0; li < COMBAT_LIMB_IDS.length; li++) {
             var lid = COMBAT_LIMB_IDS[li];
@@ -950,6 +974,16 @@
         for (var sk in state.combat.skill_move_sequences) {
             if (state.combat.skill_move_sequences.hasOwnProperty(sk) && Array.isArray(state.combat.skill_move_sequences[sk]))
                 combatCopy.skill_move_sequences[sk] = state.combat.skill_move_sequences[sk].slice();
+        }
+        for (var lidP in state.combat.post_effect_sequences) {
+            if (!Object.prototype.hasOwnProperty.call(state.combat.post_effect_sequences, lidP) || !state.combat.post_effect_sequences[lidP]) continue;
+            combatCopy.post_effect_sequences[lidP] = {};
+            for (var skP in state.combat.post_effect_sequences[lidP]) {
+                if (!Object.prototype.hasOwnProperty.call(state.combat.post_effect_sequences[lidP], skP)) continue;
+                if (Array.isArray(state.combat.post_effect_sequences[lidP][skP])) {
+                    combatCopy.post_effect_sequences[lidP][skP] = state.combat.post_effect_sequences[lidP][skP].slice();
+                }
+            }
         }
         var bonusCopy = {};
         for (var bj in state.skill_max_level_bonus) {
@@ -981,7 +1015,7 @@
     function getCombatState() {
         ensureCombatState();
         var c = state.combat;
-        var out = { limbs: {}, hubs: { breath: c.hubs.breath, footwork: c.hubs.footwork }, move_sequences: {}, skill_move_sequences: {} };
+        var out = { limbs: {}, hubs: { breath: c.hubs.breath, footwork: c.hubs.footwork }, move_sequences: {}, skill_move_sequences: {}, post_effect_sequences: {} };
         for (var i = 0; i < COMBAT_LIMB_IDS.length; i++) {
             var lid = COMBAT_LIMB_IDS[i];
             out.limbs[lid] = { active: c.limbs[lid].active, parry: c.limbs[lid].parry, priority: c.limbs[lid].priority };
@@ -990,6 +1024,16 @@
         for (var sk in c.skill_move_sequences) {
             if (c.skill_move_sequences.hasOwnProperty(sk) && Array.isArray(c.skill_move_sequences[sk]))
                 out.skill_move_sequences[sk] = c.skill_move_sequences[sk].slice();
+        }
+        for (var lidP in c.post_effect_sequences) {
+            if (!Object.prototype.hasOwnProperty.call(c.post_effect_sequences, lidP) || !c.post_effect_sequences[lidP]) continue;
+            out.post_effect_sequences[lidP] = {};
+            for (var skP in c.post_effect_sequences[lidP]) {
+                if (!Object.prototype.hasOwnProperty.call(c.post_effect_sequences[lidP], skP)) continue;
+                if (Array.isArray(c.post_effect_sequences[lidP][skP])) {
+                    out.post_effect_sequences[lidP][skP] = c.post_effect_sequences[lidP][skP].slice();
+                }
+            }
         }
         return out;
     }
@@ -1030,6 +1074,19 @@
             for (var sk in partial.skill_move_sequences) {
                 if (partial.skill_move_sequences.hasOwnProperty(sk) && Array.isArray(partial.skill_move_sequences[sk]))
                     state.combat.skill_move_sequences[sk] = partial.skill_move_sequences[sk].slice();
+            }
+        }
+        if (partial.post_effect_sequences && typeof partial.post_effect_sequences === 'object') {
+            for (var lidP in partial.post_effect_sequences) {
+                if (COMBAT_LIMB_IDS.indexOf(lidP) < 0 || !partial.post_effect_sequences[lidP] || typeof partial.post_effect_sequences[lidP] !== 'object') continue;
+                if (!state.combat.post_effect_sequences[lidP] || typeof state.combat.post_effect_sequences[lidP] !== 'object') {
+                    state.combat.post_effect_sequences[lidP] = {};
+                }
+                for (var skP in partial.post_effect_sequences[lidP]) {
+                    if (Object.prototype.hasOwnProperty.call(partial.post_effect_sequences[lidP], skP) && Array.isArray(partial.post_effect_sequences[lidP][skP])) {
+                        state.combat.post_effect_sequences[lidP][skP] = partial.post_effect_sequences[lidP][skP].slice();
+                    }
+                }
             }
         }
     }

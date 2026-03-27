@@ -107,6 +107,7 @@
 - `flagEquals`：某个 flag 是否等于 true/false
 - `skillLevelEquals`：某技能等级等于某数值
 - `skillLevelGte`：某技能等级 ≥ 某数值
+- `postEffectObtainedGte`：主角“已获得后遗症”的数量 ≥ 某个数值（一次性闲聊等用它筛选“至少有一个后遗症”）
 - `hasItem`：背包持有物品（注意：当前 demo 运行时可能未完全接入）
 
 也支持 **高级 JSON**：
@@ -118,6 +119,7 @@
 - `and / or / not` 组合条件
 - `timeBetween`：`{ "type":"timeBetween","start":"09:00","end":"10:00" }`
 - `timePeriodEquals`：`{ "type":"timePeriodEquals","value":"morning" }`（morning/noon/afternoon/evening）
+- `postEffectObtainedGte` 示例：`{ "type":"postEffectObtainedGte","value":1 }`
 
 ---
 

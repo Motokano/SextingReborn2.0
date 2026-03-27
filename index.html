@@ -512,6 +512,26 @@
             padding: 4px 12px; font-size: 10px; font-weight: 800; text-transform: uppercase;
             background: rgba(251,191,36,0.1); border: 1px solid rgba(251,191,36,0.3); color: #fbbf24;
         }
+        #modal-combat .combat-debug-btn {
+            padding: 6px 10px; border-radius: 9999px;
+            background: rgba(251,191,36,0.08); border: 1px solid rgba(251,191,36,0.3);
+            color: #fbbf24; cursor: pointer; font-size: 10px; font-weight: 800;
+            text-transform: uppercase; letter-spacing: 0.08em;
+        }
+        #modal-combat .combat-debug-btn:hover {
+            background: #fbbf24; color: #1c1612; border-color: #fbbf24;
+        }
+        #modal-combat .combat-move-node .debug-move-prof-btn {
+            position: absolute; right: 8px; bottom: 8px;
+            width: 44px; height: 20px; padding: 0;
+            border-radius: 6px;
+            background: rgba(251,191,36,0.1); border: 1px solid rgba(251,191,36,0.35);
+            color: #fbbf24; cursor: pointer;
+            font-size: 9px; font-weight: 800; text-transform: uppercase;
+        }
+        #modal-combat .combat-move-node .debug-move-prof-btn:hover {
+            background: #fbbf24; color: #1c1612; border-color: #fbbf24;
+        }
         #modal-combat .combat-move-sequence { display: flex; flex-wrap: wrap; gap: 16px; padding: 8px 0; }
         #modal-combat .combat-move-node {
             width: 144px; height: 64px; border: 2px solid #4d3f35; border-radius: 8px; background: #120e0c;
@@ -527,6 +547,25 @@
         #modal-combat .combat-move-node.editing .node-index { color: #fbbf24; }
         #modal-combat .combat-move-node .node-name { font-size: 12px; font-weight: 800; color: #e8e6e3; }
         #modal-combat .combat-move-node .node-prof { font-size: 9px; color: #fbbf24; font-weight: 800; text-transform: uppercase; margin-top: 4px; opacity: 0.9; }
+        #modal-combat .combat-move-node .node-post {
+            margin-top: 2px; font-size: 9px; color: #a8a29e; font-weight: 700;
+            white-space: nowrap; max-width: 126px; overflow: hidden; text-overflow: ellipsis;
+        }
+        #modal-combat .combat-move-node .node-post.empty { color: #57534e; }
+        #modal-combat .combat-move-node .btn-post-slot {
+            position: absolute; left: 8px; bottom: 8px;
+            min-width: 44px; height: 20px; padding: 0 6px;
+            border-radius: 6px;
+            background: rgba(245, 158, 11, 0.1); border: 1px solid rgba(245, 158, 11, 0.35);
+            color: #fbbf24; cursor: pointer;
+            font-size: 9px; font-weight: 800; text-transform: uppercase;
+        }
+        #modal-combat .combat-move-node .btn-post-slot:hover {
+            background: #f59e0b; color: #1c1612; border-color: #f59e0b;
+        }
+        #modal-combat .combat-move-node .btn-post-slot:disabled {
+            opacity: 0.35; cursor: not-allowed;
+        }
         #modal-combat .combat-footer-right { width: 256px; display: flex; flex-direction: column; gap: 16px; flex-shrink: 0; }
         #modal-combat .btn-deploy {
             width: 100%; padding: 20px; border-radius: 8px; background: #fbbf24; color: #1c1612; font-weight: 800;
@@ -558,6 +597,24 @@
         #picker-move .picker-list button:hover { background: #fbbf24; color: #1c1612; }
         #picker-move .picker-list button .move-prof { font-size: 9px; color: #fbbf24; font-weight: 800; }
         #picker-move .picker-list button:hover .move-prof { color: #1c1612; }
+        #picker-post-effect {
+            display: none; position: fixed; z-index: 300; width: 240px; background: #1c1612; border: 2px solid #f59e0b;
+            border-radius: 8px; box-shadow: 0 16px 48px rgba(0,0,0,0.5); overflow: hidden;
+        }
+        #picker-post-effect.show { display: block; }
+        #picker-post-effect .picker-title {
+            padding: 8px; background: #261e18; font-size: 9px; font-weight: 800; color: #f59e0b;
+            text-transform: uppercase; letter-spacing: 0.12em; text-align: center;
+        }
+        #picker-post-effect .picker-list { max-height: 300px; overflow-y: auto; }
+        #picker-post-effect .picker-list button {
+            width: 100%; padding: 12px; text-align: left; border: none; border-bottom: 1px solid rgba(61,45,36,0.5);
+            background: transparent; color: #e8e6e3; font-size: 12px; font-weight: 700;
+            cursor: pointer; display: flex; flex-direction: column; gap: 2px; transition: background 0.2s, color 0.2s;
+        }
+        #picker-post-effect .picker-list button:hover { background: #f59e0b; color: #1c1612; }
+        #picker-post-effect .picker-list .post-desc { font-size: 10px; color: #a8a29e; }
+        #picker-post-effect .picker-list button:hover .post-desc { color: #2a2117; }
 
         /* 生存技能总览弹窗 - 风格参考 demo.html 右侧 UI */
         #modal-survival {
@@ -1378,6 +1435,7 @@
                             <div class="skill-badges">
                                 <span id="skill-level" class="badge-level" data-ui="combat.level.zero"></span>
                                 <span id="skill-prof" class="badge-prof" data-ui="combat.prof.zero"></span>
+                                    <button type="button" class="combat-debug-btn" id="btn-debug-combat-skill-plus50" title="调试：给当前战斗技能加 +50 级">+50级</button>
                             </div>
                         </div>
                         <div id="move-sequence" class="combat-move-sequence"></div>
@@ -1393,6 +1451,10 @@
         <div id="picker-move">
             <div class="picker-title" data-ui="picker.move.title"></div>
             <div id="picker-list" class="picker-list"></div>
+        </div>
+        <div id="picker-post-effect">
+            <div class="picker-title">后遗症槽位</div>
+            <div id="picker-post-effect-list" class="picker-list"></div>
         </div>
 
         <!-- 生存技能总览弹窗 -->

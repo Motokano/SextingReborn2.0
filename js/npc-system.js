@@ -233,6 +233,13 @@
             if (!global.GameTime || typeof global.GameTime.getTimePeriod !== 'function') return false;
             return global.GameTime.getTimePeriod() === String(cond.value || '');
         }
+        if (cond.type === 'postEffectObtainedGte') {
+            if (!global.CharacterAttributes || typeof global.CharacterAttributes.getPostEffectsObtainedCount !== 'function') return false;
+            var want = (cond.value != null) ? cond.value : (cond.count != null ? cond.count : cond.min);
+            want = parseInt(want, 10);
+            if (!isFinite(want) || want < 0) want = 1;
+            return global.CharacterAttributes.getPostEffectsObtainedCount() >= want;
+        }
         if (cond.type === 'not') return !evalCondition(cond.cond);
         if (cond.type === 'and') {
             var arrA = Array.isArray(cond.conds) ? cond.conds : [];

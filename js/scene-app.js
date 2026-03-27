@@ -1441,6 +1441,8 @@
         document.getElementById('left-hud').style.opacity = '';
         document.getElementById('left-hud').style.pointerEvents = '';
         document.getElementById('picker-move').classList.remove('show');
+        var postPicker = document.getElementById('picker-post-effect');
+        if (postPicker) postPicker.classList.remove('show');
         combatUIState.editingSlot = null;
         render();
     }
@@ -1454,7 +1456,7 @@
     function renderCombatModal() {
         var CS = window.CombatSkills;
         var AP = window.Acupoints;
-        var combatState = IE && IE.getCombatState ? IE.getCombatState() : { limbs: {}, hubs: { breath: null, footwork: null }, move_sequences: {}, skill_move_sequences: {} };
+        var combatState = IE && IE.getCombatState ? IE.getCombatState() : { limbs: {}, hubs: { breath: null, footwork: null }, move_sequences: {}, skill_move_sequences: {}, post_effect_sequences: {} };
         var limbIds = IE && IE.COMBAT_LIMB_IDS ? IE.COMBAT_LIMB_IDS.slice() : ['lhand', 'rhand', 'lfoot', 'rfoot'];
 
         var mainTabs = document.querySelectorAll('#modal-combat .combat-main-tab');
@@ -1604,23 +1606,106 @@
             btnDeploy.disabled = !canDeploy;
         }
 
+        function getPostEffectName(postId) {
+            if (!postId || !window.CombatPostEffects || typeof window.CombatPostEffects.getPostEffect !== 'function') return '';
+            var pe = window.CombatPostEffects.getPostEffect(postId);
+            if (!pe) return String(postId);
+            if (pe.name_key && window.UIText && typeof window.UIText.t === 'function') return window.UIText.t(pe.name_key);
+            return pe.id || String(postId);
+        }
+
+        function getLimbPostEffectMap(combatState, limbId) {
+            if (!combatState || !combatState.post_effect_sequences || !combatState.post_effect_sequences[limbId]) return {};
+            return combatState.post_effect_sequences[limbId];
+        }
+
+        function isPostEffectDuplicateOnLimb(combatState, limbId, postId, curSkillId, curSlotIndex) {
+            if (!postId) return false;
+            var limbMap = getLimbPostEffectMap(combatState, limbId);
+            for (var sid in limbMap) {
+                if (!Object.prototype.hasOwnProperty.call(limbMap, sid) || !Array.isArray(limbMap[sid])) continue;
+                var arr = limbMap[sid];
+                for (var pi = 0; pi < arr.length; pi++) {
+                    if (sid === curSkillId && pi === curSlotIndex) continue;
+                    if (arr[pi] === postId) return true;
+                }
+            }
+            return false;
+        }
+
         var seqBox = document.getElementById('move-sequence');
-        if (!isAcupointMode && seqBox && selSkill && selSkill.moves && selSkill.moves.length) {
+        if (!isAcupointMode && seqBox && selSkill && selSkill.moves && selSkill.moves.length && selSkill.category !== 'breath' && selSkill.category !== 'footwork' && selSkill.category !== 'parry') {
             seqBox.innerHTML = '';
             var maxSlots = CS.getMaxSlotsForLevel(combatUIState.curSkillId, skillLevel);
             var unlocked = CS.getUnlockedMoves(combatUIState.curSkillId, skillLevel);
             var seq = (combatState.skill_move_sequences && combatState.skill_move_sequences[combatUIState.curSkillId]) ? combatState.skill_move_sequences[combatUIState.curSkillId].slice() : [];
+            var limbIdForPost = combatUIState.curPart || 'lhand';
+            var postMap = getLimbPostEffectMap(combatState, limbIdForPost);
+            var postSeq = (postMap && postMap[combatUIState.curSkillId] && Array.isArray(postMap[combatUIState.curSkillId])) ? postMap[combatUIState.curSkillId].slice() : [];
             while (seq.length < maxSlots) seq.push(unlocked.length ? unlocked[0].id : '');
             seq = seq.slice(0, maxSlots);
+            while (postSeq.length < maxSlots) postSeq.push(null);
+            postSeq = postSeq.slice(0, maxSlots);
             for (var i = 0; i < maxSlots; i++) {
                 var moveId = seq[i] || (unlocked[0] ? unlocked[0].id : '');
                 var moveObj = unlocked.find(function (m) { return m.id === moveId; }) || unlocked[0];
                 var moveName = moveObj ? moveObj.name : moveId;
                 var useCount = (moveUsage && moveObj && moveUsage[moveObj.id] != null) ? moveUsage[moveObj.id] : 0;
                 var nodeProf = moveObj ? Math.floor(CS.getMoveProficiencyRatio(useCount) * 100) : 0;
+                var postIdAtSlot = postSeq[i] || null;
+                var postText = postIdAtSlot ? getPostEffectName(postIdAtSlot) : '无后遗症';
+                var slotCap = moveObj && moveObj.post_effect_slot_max != null ? Math.max(0, parseInt(moveObj.post_effect_slot_max, 10) || 0) : 0;
                 var node = document.createElement('div');
                 node.className = 'combat-move-node' + (combatUIState.editingSlot === i ? ' editing' : '');
-                node.innerHTML = '<span class="node-index">' + String(i + 1).padStart(2, '0') + '</span><span class="node-name">' + moveName + '</span><span class="node-prof">' + ui('combat.prof.node', { v: nodeProf }) + '</span>';
+                node.innerHTML = '<span class="node-index">' + String(i + 1).padStart(2, '0') + '</span><span class="node-name">' + moveName + '</span><span class="node-prof">' + ui('combat.prof.node', { v: nodeProf }) + '</span><span class="node-post' + (postIdAtSlot ? '' : ' empty') + '">' + postText + '</span>';
+
+                var btnPost = document.createElement('button');
+                btnPost.type = 'button';
+                btnPost.className = 'btn-post-slot';
+                btnPost.textContent = '后遗症';
+                if (slotCap < 1 || !moveObj || !moveObj.id) {
+                    btnPost.disabled = true;
+                    btnPost.title = '该招式没有后遗症槽位';
+                } else {
+                    btnPost.onclick = function (slotIdx, anchorEl, moveEntry, limbId, skillId) {
+                        return function (e) {
+                            e.stopPropagation();
+                            openPostEffectPicker(slotIdx, anchorEl, moveEntry, limbId, skillId);
+                        };
+                    }(i, node, moveObj, limbIdForPost, combatUIState.curSkillId);
+                }
+                node.appendChild(btnPost);
+
+                // Debug: 一键让该招式熟练度 +10%（用于测试 post-effects）
+                var debugBtn = document.createElement('button');
+                debugBtn.type = 'button';
+                debugBtn.className = 'debug-move-prof-btn';
+                debugBtn.textContent = '+10%';
+                var thisMoveId = moveObj && moveObj.id ? String(moveObj.id) : '';
+                debugBtn.disabled = !thisMoveId;
+                debugBtn.onclick = function (skillId, mid, moveTemplate) {
+                    return function (e) {
+                        e.stopPropagation();
+                        if (!skillId || !mid) return;
+                        var curLevel = IE.getSkillLevel(skillId);
+                        if (curLevel < 1) {
+                            var st = IE.getState();
+                            if (!st.skills || typeof st.skills !== 'object') st.skills = {};
+                            if (!st.skills[skillId] || typeof st.skills[skillId] !== 'object') st.skills[skillId] = { level: 1, move_usage: {} };
+                            if (st.skills[skillId].level == null) st.skills[skillId].level = 1;
+                            if (!st.skills[skillId].move_usage || typeof st.skills[skillId].move_usage !== 'object') st.skills[skillId].move_usage = {};
+                        }
+
+                        var maxU = (moveTemplate && moveTemplate.proficiency_max_uses != null)
+                            ? moveTemplate.proficiency_max_uses
+                            : (CS && typeof CS.getMoveProficiencyMax === 'function' ? CS.getMoveProficiencyMax() : 50000);
+                        var dUses = Math.floor(Number(maxU) * 0.1);
+                        if (!isFinite(dUses) || dUses <= 0) dUses = 1;
+                        IE.incrementSkillMoveUsage(skillId, mid, dUses);
+                        renderCombatModal();
+                    };
+                }(combatUIState.curSkillId, thisMoveId, moveObj);
+                node.appendChild(debugBtn);
                 node.onclick = function (idx, el) {
                     return function (e) {
                         e.stopPropagation();
@@ -1631,6 +1716,8 @@
                 }(i, node);
                 seqBox.appendChild(node);
             }
+        } else if (seqBox) {
+            seqBox.innerHTML = '';
         }
 
         var targetEl = document.getElementById('target-indicator');
@@ -1768,6 +1855,21 @@
                 while (seq.length <= idx) seq.push(unlocked[0] ? unlocked[0].id : '');
                 seq[idx] = m.id;
                 IE.setCombatState({ skill_move_sequences: combat.skill_move_sequences });
+
+                // 招式替换后，若该槽已装配后遗症但不再匹配 valid_*，则自动清空该槽
+                var limbId = combatUIState.curPart || 'lhand';
+                var postSeqMap = (combat.post_effect_sequences && combat.post_effect_sequences[limbId]) ? combat.post_effect_sequences[limbId] : null;
+                var postSeq = postSeqMap && Array.isArray(postSeqMap[combatUIState.curSkillId]) ? postSeqMap[combatUIState.curSkillId] : null;
+                if (postSeq && postSeq[idx] && window.CombatPostEffects && typeof window.CombatPostEffects.getPostEffect === 'function') {
+                    var pe = window.CombatPostEffects.getPostEffect(postSeq[idx]);
+                    var mismatch = false;
+                    if (pe && Array.isArray(pe.valid_skill_ids) && pe.valid_skill_ids.length && pe.valid_skill_ids.indexOf(combatUIState.curSkillId) < 0) mismatch = true;
+                    if (pe && Array.isArray(pe.valid_move_ids) && pe.valid_move_ids.length && pe.valid_move_ids.indexOf(m.id) < 0) mismatch = true;
+                    if (mismatch) {
+                        postSeq[idx] = null;
+                        IE.setCombatState({ post_effect_sequences: combat.post_effect_sequences });
+                    }
+                }
                 combatUIState.editingSlot = null;
                 picker.classList.remove('show');
                 renderCombatModal();
@@ -1777,6 +1879,99 @@
         var rect = anchorEl.getBoundingClientRect();
         picker.style.left = (rect.left) + 'px';
         picker.style.top = (rect.top - 200) + 'px';
+        picker.classList.add('show');
+    }
+
+    function openPostEffectPicker(slotIdx, anchorEl, moveObj, limbId, skillId) {
+        var picker = document.getElementById('picker-post-effect');
+        var listEl = document.getElementById('picker-post-effect-list');
+        if (!picker || !listEl || !moveObj || !moveObj.id || !limbId || !skillId || !IE) return;
+        listEl.innerHTML = '';
+
+        var postCap = moveObj.post_effect_slot_max != null ? Math.max(0, parseInt(moveObj.post_effect_slot_max, 10) || 0) : 0;
+        if (postCap < 1) return;
+
+        var obtainedIds = (window.CharacterAttributes && typeof window.CharacterAttributes.getPostEffectsObtainedIds === 'function')
+            ? window.CharacterAttributes.getPostEffectsObtainedIds()
+            : [];
+        var allPost = (window.CombatPostEffects && typeof window.CombatPostEffects.getAllPostEffects === 'function')
+            ? window.CombatPostEffects.getAllPostEffects()
+            : [];
+        var combat = IE.getCombatState ? IE.getCombatState() : null;
+        if (!combat) return;
+        if (!combat.post_effect_sequences || typeof combat.post_effect_sequences !== 'object') combat.post_effect_sequences = {};
+        if (!combat.post_effect_sequences[limbId] || typeof combat.post_effect_sequences[limbId] !== 'object') combat.post_effect_sequences[limbId] = {};
+        var postSeq = combat.post_effect_sequences[limbId][skillId];
+        if (!Array.isArray(postSeq)) postSeq = [];
+        while (postSeq.length <= slotIdx) postSeq.push(null);
+
+        function isDuplicateOnLimb(postId) {
+            var limbMap = combat.post_effect_sequences[limbId] || {};
+            for (var sid in limbMap) {
+                if (!Object.prototype.hasOwnProperty.call(limbMap, sid) || !Array.isArray(limbMap[sid])) continue;
+                for (var i = 0; i < limbMap[sid].length; i++) {
+                    if (sid === skillId && i === slotIdx) continue;
+                    if (limbMap[sid][i] === postId) return true;
+                }
+            }
+            return false;
+        }
+
+        function isAllowedBySocket(pe) {
+            if (!pe) return false;
+            if (Array.isArray(pe.valid_skill_ids) && pe.valid_skill_ids.length && pe.valid_skill_ids.indexOf(skillId) < 0) return false;
+            if (Array.isArray(pe.valid_move_ids) && pe.valid_move_ids.length && pe.valid_move_ids.indexOf(moveObj.id) < 0) return false;
+            return true;
+        }
+
+        function addOption(label, desc, onClick) {
+            var btn = document.createElement('button');
+            btn.type = 'button';
+            btn.innerHTML = '<span>' + label + '</span>' + (desc ? ('<span class="post-desc">' + desc + '</span>') : '');
+            btn.onclick = onClick;
+            listEl.appendChild(btn);
+        }
+
+        addOption('清空槽位', '移除当前装配', function () {
+            postSeq[slotIdx] = null;
+            combat.post_effect_sequences[limbId][skillId] = postSeq.slice();
+            IE.setCombatState({ post_effect_sequences: combat.post_effect_sequences });
+            picker.classList.remove('show');
+            renderCombatModal();
+        });
+
+        var hasAny = false;
+        for (var ai = 0; ai < allPost.length; ai++) {
+            var pe = allPost[ai];
+            if (!pe || !pe.id) continue;
+            if (obtainedIds.indexOf(pe.id) < 0) continue;
+            if (!isAllowedBySocket(pe)) continue;
+            hasAny = true;
+            var name = pe.name_key && window.UIText && typeof window.UIText.t === 'function' ? window.UIText.t(pe.name_key) : pe.id;
+            var desc = pe.desc_key && window.UIText && typeof window.UIText.t === 'function' ? window.UIText.t(pe.desc_key) : '';
+            addOption(name, desc, (function (postId) {
+                return function () {
+                    if (isDuplicateOnLimb(postId)) {
+                        showMsg('同一肢体上同一后遗症只能装配 1 份。', 'warn');
+                        return;
+                    }
+                    postSeq[slotIdx] = postId;
+                    combat.post_effect_sequences[limbId][skillId] = postSeq.slice();
+                    IE.setCombatState({ post_effect_sequences: combat.post_effect_sequences });
+                    picker.classList.remove('show');
+                    renderCombatModal();
+                };
+            })(pe.id));
+        }
+
+        if (!hasAny) {
+            addOption('暂无可装后遗症', '先通过熟练度解锁并满足该招式可装配限制', function () {});
+            listEl.lastChild.disabled = true;
+        }
+
+        var rect = anchorEl.getBoundingClientRect();
+        picker.style.left = (rect.left) + 'px';
+        picker.style.top = (rect.top - 260) + 'px';
         picker.classList.add('show');
     }
 
@@ -1836,12 +2031,50 @@
     if (document.getElementById('btn-deploy-combat')) {
         document.getElementById('btn-deploy-combat').addEventListener('click', handleDeployCombat);
     }
+    if (document.getElementById('btn-debug-combat-skill-plus50')) {
+        document.getElementById('btn-debug-combat-skill-plus50').addEventListener('click', function () {
+            var skillId = combatUIState.curSkillId;
+            if (!skillId || !IE || typeof IE.getState !== 'function') return;
+            var st = IE.getState();
+            if (!st.skills || typeof st.skills !== 'object') st.skills = {};
+            if (!st.skills[skillId] || typeof st.skills[skillId] !== 'object') st.skills[skillId] = { level: 0, move_usage: {} };
+
+            var curLv = IE.getSkillLevel(skillId);
+            st.skills[skillId].level = Math.max(0, parseInt(curLv, 10) || 0) + 50;
+            if (!st.skills[skillId].move_usage || typeof st.skills[skillId].move_usage !== 'object') st.skills[skillId].move_usage = {};
+
+            if (window.CharacterAttributes && typeof window.CharacterAttributes.recalcCharacterStats === 'function') {
+                window.CharacterAttributes.recalcCharacterStats({
+                    getEquipmentState: function () { return IE.getState().equipment; },
+                    getSkillsState: function () { return IE.getState().skills; },
+                    getItemTemplate: IE.getItemTemplate,
+                    getEnchantEntry: IE.getEnchantEntry,
+                    getStrengthLevel: function () { return IE.getSkillLevel('survival_strength'); }
+                });
+            }
+            if (typeof updateStatusPanel === 'function') updateStatusPanel();
+            if (combatPanelOpen) refreshRenderProfile();
+            renderCombatModal();
+        });
+    }
     document.addEventListener('click', function () {
+        var hadOpenPicker = false;
+        var movePickerAny = document.getElementById('picker-move');
+        var postPickerAny = document.getElementById('picker-post-effect');
+        if (movePickerAny && movePickerAny.classList.contains('show')) hadOpenPicker = true;
+        if (postPickerAny && postPickerAny.classList.contains('show')) hadOpenPicker = true;
         if (combatUIState.editingSlot != null) {
             combatUIState.editingSlot = null;
             var picker = document.getElementById('picker-move');
             if (picker) picker.classList.remove('show');
+            var postPicker = document.getElementById('picker-post-effect');
+            if (postPicker) postPicker.classList.remove('show');
             if (combatPanelOpen) renderCombatModal();
+            return;
+        }
+        if (hadOpenPicker) {
+            if (movePickerAny) movePickerAny.classList.remove('show');
+            if (postPickerAny) postPickerAny.classList.remove('show');
         }
     });
 

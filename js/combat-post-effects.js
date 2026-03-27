@@ -22,6 +22,14 @@
         return id ? table[id] : null;
     }
 
+    function getAllPostEffects() {
+        var out = [];
+        for (var k in table) {
+            if (Object.prototype.hasOwnProperty.call(table, k) && table[k]) out.push(table[k]);
+        }
+        return out;
+    }
+
     function registerPostEffectResolver(effectType, fn) {
         if (effectType && typeof fn === 'function') customResolvers[effectType] = fn;
     }
@@ -72,6 +80,7 @@
     global.CombatPostEffects = {
         setTable: setTable,
         getPostEffect: getPostEffect,
+        getAllPostEffects: getAllPostEffects,
         registerPostEffectResolver: registerPostEffectResolver,
         runPostEffectsForHook: runPostEffectsForHook
     };
