@@ -113,10 +113,6 @@
       "y": 4
     },
     {
-      "x": 7,
-      "y": 4
-    },
-    {
       "x": 8,
       "y": 4
     },
@@ -136,19 +132,19 @@
   "portals": [
     {
       "x": 7,
-      "y": 4,
-      "target_map_id": "M0_Base_Inside_lv_1",
-      "target_x": 8,
-      "target_y": 14,
-      "label": "进家"
-    },
-    {
-      "x": 7,
       "y": 15,
       "target_map_id": "M0_Field_01",
       "target_x": 11,
       "target_y": 1,
       "label": "进入野外"
+    },
+    {
+      "x": 7,
+      "y": 4,
+      "target_map_id": "M0_Base_Inside_lv_1",
+      "target_x": 8,
+      "target_y": 14,
+      "label": "进家"
     }
   ],
   "entities": [
