@@ -95,7 +95,39 @@
     function getSkillLevel(skillId) {
         var s = state.skills[skillId];
         if (!s || s.level == null) return 0;
-        return Math.max(0, parseInt(s.level, 10));
+        var lv = parseInt(s.level, 10);
+        if (!isFinite(lv) || lv < 0) return 0;
+        return lv;
+    }
+
+    function getProgressionSkillCap(skillId) {
+        if (!skillId) return Number.MAX_SAFE_INTEGER;
+        if (typeof global !== 'undefined' && global.CombatSkills) {
+            var CS = global.CombatSkills;
+            if (typeof CS.getProgressionSkillMaxLevel === 'function') {
+                var characterLike = { skills: state.skills || {}, skill_max_level_bonus: state.skill_max_level_bonus || {} };
+                var cap = parseInt(CS.getProgressionSkillMaxLevel(characterLike, skillId), 10);
+                if (isFinite(cap)) return Math.max(0, cap);
+            }
+            if (typeof CS.getTemplateMaxLevel === 'function') {
+                var tCap = parseInt(CS.getTemplateMaxLevel(skillId), 10);
+                if (isFinite(tCap)) return Math.max(0, tCap);
+            }
+        }
+        return Number.MAX_SAFE_INTEGER;
+    }
+
+    function clampSkillLevelsToProgressionCaps() {
+        if (!state.skills || typeof state.skills !== 'object') return;
+        for (var sid in state.skills) {
+            if (!Object.prototype.hasOwnProperty.call(state.skills, sid)) continue;
+            var ent = state.skills[sid];
+            if (!ent || typeof ent !== 'object') continue;
+            var lv = parseInt(ent.level, 10);
+            if (!isFinite(lv) || lv < 0) lv = 0;
+            var cap = getProgressionSkillCap(sid);
+            ent.level = Math.min(lv, cap);
+        }
     }
 
     function getSkillsState() {
@@ -892,6 +924,7 @@
                 if (s.skill_max_level_bonus.hasOwnProperty(bk)) state.skill_max_level_bonus[bk] = s.skill_max_level_bonus[bk];
             }
         }
+        clampSkillLevelsToProgressionCaps();
         if (s.ground_items && typeof s.ground_items === 'object') {
             for (var gk in s.ground_items) {
                 if (s.ground_items.hasOwnProperty(gk) && Array.isArray(s.ground_items[gk]))

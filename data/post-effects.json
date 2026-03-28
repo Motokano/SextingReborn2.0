@@ -1,12 +1,10 @@
 {
-  "_comment": "战斗后遗症（构式）：由技能/招式熟练度解锁，装配在招式槽上。同一 post_effect_id 同一条出招肢至多装配 1 份（四肢可各 1 份）。effect_type 与先手等见 docs/design/11-skills.md、07-combat-core.md。mechanic_shared_with_enemy：与敌人共用同一 effect_type / Buff 语义（招架、位移、驱散等），敌人侧在敌表或管线上下文中挂载等价 post_effect_ids 即可。design_meta 见 combat-skills.json constants.design_meta_template。",
+  "_comment": "战斗后遗症（构式）：由技能/招式熟练度解锁，装配在招式槽上。同一 post_effect_id 同一条出招肢至多装配 1 份（四肢可各 1 份）。effect_type 与先手等见 docs/design/11-skills.md、07-combat-core.md。mechanic_shared_with_enemy：与敌人共用同一 effect_type / Buff 语义（招架、位移、驱散等），敌人侧在敌表或管线上下文中挂载等价 post_effect_ids 即可。design_meta 见 combat-skills.json constants.design_meta_template。装配范围：未写 valid_skill_ids / valid_move_ids（或二者均为空数组）时，已解锁的后遗症可装到任意具备 post_effect_slot_max 的招式；仅当条目显式列出 valid_* 时才限制技能/招式。",
   "post_no_second_thought": {
     "id": "post_no_second_thought",
     "name_key": "posteffect.no_second_thought.name",
     "desc_key": "posteffect.no_second_thought.desc",
     "scope": "move_socket",
-    "valid_skill_ids": ["combat_basic_unarmed"],
-    "valid_move_ids": ["jab"],
     "effect_type": "initiative_always_first",
     "effect_params": {},
     "mechanic_shared_with_enemy": true,
@@ -23,8 +21,6 @@
     "name_key": "posteffect.po_xiang.name",
     "desc_key": "posteffect.po_xiang.desc",
     "scope": "move_socket",
-    "valid_skill_ids": ["combat_basic_unarmed"],
-    "valid_move_ids": ["swing_punch"],
     "effect_type": "dispel_one_beneficial_buff_on_target",
     "effect_params": {
       "trigger": "hit_roll_success",

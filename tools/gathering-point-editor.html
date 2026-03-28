@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>采集点实例编辑器 - 潮碧物语</title>
+    <style>
+        * { box-sizing: border-box; }
+        body { margin: 0; font-family: sans-serif; background: #1a1a1a; color: #e0e0e0; padding: 16px; }
+        h1 { font-size: 18px; margin: 0 0 12px 0; }
+        .toolbar { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; align-items: center; }
+        button { padding: 8px 12px; background: #404040; border: 1px solid #555; color: #fff; border-radius: 4px; cursor: pointer; }
+        button:hover { background: #505050; }
+        .layout { display: flex; gap: 16px; flex-wrap: wrap; }
+        .col { flex: 1; min-width: 280px; }
+        label { display: block; font-size: 12px; color: #999; margin: 8px 0 4px 0; }
+        input, select { width: 100%; padding: 6px 8px; background: #333; border: 1px solid #555; color: #fff; border-radius: 4px; }
+        table { width: 100%; border-collapse: collapse; font-size: 12px; margin-top: 8px; }
+        th, td { border: 1px solid #444; padding: 6px; text-align: left; }
+        th { background: #2d2d2d; color: #aaa; }
+        .hint { font-size: 11px; color: #666; margin-top: 8px; line-height: 1.4; }
+        textarea.raw { width: 100%; min-height: 200px; font-family: monospace; font-size: 11px; background: #222; color: #ccc; border: 1px solid #444; border-radius: 4px; padding: 8px; }
+        .cell-item-wrap select { width: 100%; margin-bottom: 0; }
+        .cell-item-custom { width: 100%; margin-top: 4px; display: none; }
+        .items-status { font-size: 12px; color: #888; margin-left: 8px; }
+    </style>
+</head>
+<body>
+    <h1>采集点实例编辑器</h1>
+    <p class="hint">编辑 <code>data/gathering_point_instances.json</code>：实例可被地图格 <code>gathering_instance_id</code> 引用；每行掉落可设 <code>quality_tier_max</code>（1～6，熟练度上修后的<strong>硬上限</strong>）。<strong>掉落物品</strong>与仓库 <code>data/items.json</code> 联动：先载入物品表，再从下拉选择 <code>item_id</code>（亦可「自定义」填未入库 id）。保存后请将 JSON 覆盖到仓库 <code>data/gathering_point_instances.json</code>。</p>
+    <div class="toolbar">
+        <button type="button" id="btn-fetch-items">载入 items.json</button>
+        <button type="button" id="btn-file-items">选择物品 JSON</button>
+        <span class="items-status" id="items-status">物品表：未载入</span>
+    </div>
+    <input type="file" id="inp-file-items" accept=".json,application/json" style="display:none" />
+    <div class="toolbar">
+        <button type="button" id="btn-fetch">从 data/gathering_point_instances.json 拉取</button>
+        <button type="button" id="btn-file">选择本地 JSON 文件</button>
+        <button type="button" id="btn-new-inst">新建实例</button>
+        <button type="button" id="btn-del-inst">删除当前实例</button>
+        <button type="button" id="btn-add-row">掉落表 +1 行</button>
+        <button type="button" id="btn-download">下载完整 JSON</button>
+    </div>
+    <input type="file" id="inp-file" accept=".json,application/json" style="display:none" />
+
+    <div class="layout">
+        <div class="col">
+            <label>当前实例</label>
+            <select id="sel-instance"></select>
+            <label>instance_id</label>
+            <input type="text" id="fld-instance-id" />
+            <label>map_entity_id（地图视觉键，如 gathering_bush）</label>
+            <input type="text" id="fld-map-entity" />
+            <label>wild_interaction_category</label>
+            <select id="fld-category">
+                <option value="gathering">gathering（徒手采集，当前游戏已接）</option>
+                <option value="mining">mining</option>
+                <option value="logging">logging</option>
+                <option value="hunting">hunting</option>
+                <option value="fishing">fishing</option>
+            </select>
+            <label>display_name</label>
+            <input type="text" id="fld-display" />
+            <label>base_gathering_success_rate（0～1）</label>
+            <input type="number" id="fld-base" step="0.05" min="0" max="1" />
+            <label>stamina_cost</label>
+            <input type="number" id="fld-stamina" step="1" min="0" />
+            <label><input type="checkbox" id="fld-tool" /> tool_required</label>
+        </div>
+        <div class="col">
+            <label>defaults（map_entity_id → 默认实例 id，JSON 对象）</label>
+            <textarea class="raw" id="ta-defaults" placeholder='{ "gathering_bush": "gp_std_bush" }'></textarea>
+            <label>掉落表 loot_rows</label>
+            <table>
+                <thead><tr><th>物品（items.json）</th><th>weight</th><th>quality_tier（基础 1～6）</th><th>quality_tier_max（硬上限 1～6）</th><th></th></tr></thead>
+                <tbody id="loot-tbody"></tbody>
+            </table>
+        </div>
+    </div>
+    <label style="margin-top:16px;">完整 JSON 预览</label>
+    <textarea class="raw" id="ta-full" readonly></textarea>
+
+    <script>
+(function () {
+    var data = { defaults: {}, instances: {} };
+    var itemsCatalog = {};
+
+    function setItemsStatus(text) {
+        var el = document.getElementById('items-status');
+        if (el) el.textContent = text;
+    }
+
+    function applyItemsJson(j) {
+        if (!j || typeof j !== 'object') {
+            setItemsStatus('物品表：解析失败');
+            return;
+        }
+        itemsCatalog = j;
+        var n = Object.keys(itemsCatalog).filter(function (k) { return k && k.charAt(0) !== '_'; }).length;
+        setItemsStatus('物品表：已载入 ' + n + ' 条（data/items.json）');
+        var id = document.getElementById('sel-instance').value;
+        if (id && data.instances[id]) loadFormFromSelection();
+    }
+
+    function fetchItems() {
+        return fetch('../data/items.json')
+            .then(function (r) { return r.ok ? r.json() : Promise.reject(); })
+            .catch(function () {
+                return fetch('data/items.json').then(function (r2) { return r2.ok ? r2.json() : Promise.reject(); });
+            })
+            .then(function (j) { applyItemsJson(j); })
+            .catch(function () {
+                setItemsStatus('物品表：拉取失败（请从仓库根起 HTTP 服务或「选择物品 JSON」）');
+            });
+    }
+
+    function syncSelect() {
+        var sel = document.getElementById('sel-instance');
+        var cur = sel.value || '';
+        sel.innerHTML = '';
+        var ids = Object.keys(data.instances || {});
+        ids.sort();
+        for (var i = 0; i < ids.length; i++) {
+            var opt = document.createElement('option');
+            opt.value = ids[i];
+            opt.textContent = ids[i];
+            sel.appendChild(opt);
+        }
+        if (cur && data.instances[cur]) sel.value = cur;
+        else if (ids.length) sel.value = ids[0];
+        loadFormFromSelection();
+    }
+
+    function loadFormFromSelection() {
+        var id = document.getElementById('sel-instance').value;
+        var inst = id && data.instances[id];
+        if (!inst) {
+            document.getElementById('fld-instance-id').value = '';
+            document.getElementById('loot-tbody').innerHTML = '';
+            return;
+        }
+        document.getElementById('fld-instance-id').value = inst.instance_id || id;
+        document.getElementById('fld-map-entity').value = inst.map_entity_id || '';
+        document.getElementById('fld-category').value = inst.wild_interaction_category || 'gathering';
+        document.getElementById('fld-display').value = inst.display_name || '';
+        document.getElementById('fld-base').value = inst.base_gathering_success_rate != null ? inst.base_gathering_success_rate : 0.6;
+        document.getElementById('fld-stamina').value = inst.stamina_cost != null ? inst.stamina_cost : 2;
+        document.getElementById('fld-tool').checked = !!inst.tool_required;
+        document.getElementById('ta-defaults').value = JSON.stringify(data.defaults || {}, null, 2);
+        var tb = document.getElementById('loot-tbody');
+        tb.innerHTML = '';
+        var rows = inst.loot_rows || [];
+        for (var r = 0; r < rows.length; r++) addLootRowEl(rows[r]);
+        refreshFullJson();
+    }
+
+    function fillItemSelect(sel, selectedId) {
+        sel.innerHTML = '';
+        var o0 = document.createElement('option');
+        o0.value = '';
+        o0.textContent = '— 从物品表选择 —';
+        sel.appendChild(o0);
+        var ids = Object.keys(itemsCatalog).filter(function (k) {
+            return k && String(k).charAt(0) !== '_' && itemsCatalog[k] && typeof itemsCatalog[k] === 'object';
+        });
+        ids.sort(function (a, b) {
+            var na = (itemsCatalog[a].name || a) + a;
+            var nb = (itemsCatalog[b].name || b) + b;
+            return na.localeCompare(nb, 'zh-Hans');
+        });
+        for (var i = 0; i < ids.length; i++) {
+            var oid = ids[i];
+            var tpl = itemsCatalog[oid];
+            var o = document.createElement('option');
+            o.value = oid;
+            o.textContent = (tpl.name || oid) + ' (' + oid + ')';
+            sel.appendChild(o);
+        }
+        var oC = document.createElement('option');
+        oC.value = '__custom__';
+        oC.textContent = '自定义 item_id…';
+        sel.appendChild(oC);
+
+        var cur = selectedId || '';
+        if (cur && itemsCatalog[cur]) sel.value = cur;
+        else if (cur) {
+            sel.value = '__custom__';
+        } else {
+            sel.value = '';
+        }
+    }
+
+    function addLootRowEl(row) {
+        row = row || { item_id: '', weight: 10, quality_tier: 1, quality_tier_max: 6 };
+        var tr = document.createElement('tr');
+        var tdItem = document.createElement('td');
+        tdItem.className = 'cell-item-wrap';
+        var sel = document.createElement('select');
+        sel.className = 'cell-item-sel';
+        fillItemSelect(sel, row.item_id);
+        var inpCustom = document.createElement('input');
+        inpCustom.type = 'text';
+        inpCustom.className = 'cell-item-custom';
+        inpCustom.placeholder = '未在表中的 item_id';
+        var curId = row.item_id || '';
+        if (sel.value === '__custom__') {
+            inpCustom.value = curId;
+            inpCustom.style.display = 'block';
+        }
+        function onSelChange() {
+            if (sel.value === '__custom__') {
+                inpCustom.style.display = 'block';
+                if (!inpCustom.value && row.item_id && !itemsCatalog[row.item_id]) inpCustom.value = row.item_id;
+            } else {
+                inpCustom.style.display = 'none';
+            }
+            saveFormToData();
+            refreshFullJson();
+        }
+        sel.addEventListener('change', onSelChange);
+        inpCustom.addEventListener('input', function () { saveFormToData(); refreshFullJson(); });
+        tdItem.appendChild(sel);
+        tdItem.appendChild(inpCustom);
+
+        var tdW = document.createElement('td');
+        tdW.innerHTML = '<input type="number" class="cell-w" step="1" min="0" value="' + (row.weight != null ? row.weight : 10) + '" />';
+        var tdQ = document.createElement('td');
+        tdQ.innerHTML = '<input type="number" class="cell-q" step="1" min="1" max="6" value="' + (row.quality_tier != null ? row.quality_tier : 1) + '" />';
+        var tdQm = document.createElement('td');
+        tdQm.innerHTML = '<input type="number" class="cell-qmax" step="1" min="1" max="6" value="' + (row.quality_tier_max != null ? row.quality_tier_max : 6) + '" />';
+        var tdDel = document.createElement('td');
+        var btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'btn-row-del';
+        btn.textContent = '删';
+        btn.onclick = function () { tr.remove(); saveFormToData(); refreshFullJson(); };
+        tdDel.appendChild(btn);
+        tr.appendChild(tdItem);
+        tr.appendChild(tdW);
+        tr.appendChild(tdQ);
+        tr.appendChild(tdQm);
+        tr.appendChild(tdDel);
+        tr.querySelectorAll('.cell-w, .cell-q, .cell-qmax').forEach(function (inp) {
+            inp.addEventListener('input', function () { saveFormToData(); refreshFullJson(); });
+        });
+        document.getElementById('loot-tbody').appendChild(tr);
+    }
+
+    function readLootRowsFromDom() {
+        var tb = document.getElementById('loot-tbody');
+        var out = [];
+        var trs = tb.querySelectorAll('tr');
+        for (var i = 0; i < trs.length; i++) {
+            var tr = trs[i];
+            var sel = tr.querySelector('.cell-item-sel');
+            var custom = tr.querySelector('.cell-item-custom');
+            var item_id = '';
+            if (sel && sel.value === '__custom__') item_id = (custom && custom.value || '').trim();
+            else if (sel && sel.value) item_id = String(sel.value).trim();
+            if (!item_id) continue;
+            out.push({
+                item_id: item_id,
+                weight: Number(tr.querySelector('.cell-w').value) || 0,
+                quality_tier: Math.max(1, Math.min(6, parseInt(tr.querySelector('.cell-q').value, 10) || 1)),
+                quality_tier_max: Math.max(1, Math.min(6, parseInt(tr.querySelector('.cell-qmax').value, 10) || 6))
+            });
+        }
+        return out;
+    }
+
+    function saveFormToData() {
+        var selId = document.getElementById('sel-instance').value;
+        if (!selId || !data.instances[selId]) return;
+        try {
+            data.defaults = JSON.parse(document.getElementById('ta-defaults').value || '{}');
+        } catch (e) {
+            return;
+        }
+        var inst = data.instances[selId];
+        inst.instance_id = (document.getElementById('fld-instance-id').value || '').trim() || selId;
+        inst.map_entity_id = (document.getElementById('fld-map-entity').value || '').trim();
+        inst.wild_interaction_category = document.getElementById('fld-category').value || 'gathering';
+        inst.display_name = (document.getElementById('fld-display').value || '').trim();
+        inst.base_gathering_success_rate = Number(document.getElementById('fld-base').value);
+        inst.stamina_cost = parseInt(document.getElementById('fld-stamina').value, 10) || 0;
+        inst.tool_required = document.getElementById('fld-tool').checked;
+        inst.loot_rows = readLootRowsFromDom();
+        if (inst.instance_id !== selId) {
+            data.instances[inst.instance_id] = inst;
+            delete data.instances[selId];
+            syncSelect();
+            document.getElementById('sel-instance').value = inst.instance_id;
+        }
+    }
+
+    function refreshFullJson() {
+        saveFormToData();
+        document.getElementById('ta-full').value = JSON.stringify(data, null, 2);
+    }
+
+    document.getElementById('sel-instance').addEventListener('change', loadFormFromSelection);
+
+    ['fld-instance-id', 'fld-map-entity', 'fld-display', 'fld-base', 'fld-stamina', 'fld-category', 'fld-tool', 'ta-defaults'].forEach(function (id) {
+        var el = document.getElementById(id);
+        if (el) el.addEventListener('input', function () { saveFormToData(); refreshFullJson(); });
+        if (el && el.type === 'checkbox') el.addEventListener('change', function () { saveFormToData(); refreshFullJson(); });
+    });
+
+    document.getElementById('btn-add-row').onclick = function () {
+        addLootRowEl();
+        saveFormToData();
+        refreshFullJson();
+    };
+
+    document.getElementById('btn-new-inst').onclick = function () {
+        var nid = window.prompt('新实例 id（如 gp_my_vein）', 'gp_new_' + Date.now().toString(36));
+        if (!nid || !nid.trim()) return;
+        nid = nid.trim();
+        if (data.instances[nid]) { window.alert('已存在'); return; }
+        data.instances[nid] = {
+            instance_id: nid,
+            map_entity_id: 'gathering_bush',
+            wild_interaction_category: 'gathering',
+            display_name: nid,
+            base_gathering_success_rate: 0.6,
+            stamina_cost: 2,
+            tool_required: false,
+            loot_rows: [{ item_id: 'herb_green', weight: 10, quality_tier: 1, quality_tier_max: 6 }]
+        };
+        syncSelect();
+        document.getElementById('sel-instance').value = nid;
+        loadFormFromSelection();
+    };
+
+    document.getElementById('btn-del-inst').onclick = function () {
+        var id = document.getElementById('sel-instance').value;
+        if (!id || !window.confirm('删除实例 ' + id + ' ?')) return;
+        delete data.instances[id];
+        syncSelect();
+        refreshFullJson();
+    };
+
+    document.getElementById('btn-download').onclick = function () {
+        saveFormToData();
+        var str = JSON.stringify(data, null, 2);
+        var blob = new Blob([str], { type: 'application/json' });
+        var a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = 'gathering_point_instances.json';
+        a.click();
+        URL.revokeObjectURL(a.href);
+    };
+
+    document.getElementById('btn-fetch-items').onclick = function () { fetchItems(); };
+
+    document.getElementById('btn-file-items').onclick = function () {
+        document.getElementById('inp-file-items').click();
+    };
+    document.getElementById('inp-file-items').onchange = function () {
+        var f = this.files && this.files[0];
+        if (!f) return;
+        var reader = new FileReader();
+        reader.onload = function () {
+            try {
+                applyItemsJson(JSON.parse(String(reader.result || '')));
+            } catch (e) {
+                window.alert('物品 JSON 解析失败');
+                setItemsStatus('物品表：解析失败');
+            }
+        };
+        reader.readAsText(f, 'utf-8');
+        this.value = '';
+    };
+
+    document.getElementById('btn-fetch').onclick = function () {
+        fetch('../data/gathering_point_instances.json').then(function (r) { return r.ok ? r.json() : Promise.reject(); })
+            .then(function (j) {
+                data.defaults = j.defaults || {};
+                data.instances = j.instances || {};
+                syncSelect();
+                refreshFullJson();
+            })
+            .catch(function () {
+                fetch('data/gathering_point_instances.json').then(function (r) { return r.ok ? r.json() : Promise.reject(); })
+                    .then(function (j) {
+                        data.defaults = j.defaults || {};
+                        data.instances = j.instances || {};
+                        syncSelect();
+                        refreshFullJson();
+                    })
+                    .catch(function () { window.alert('拉取失败：请用本地 HTTP 打开 tools 目录的上一级，或改用「选择本地 JSON」'); });
+            });
+    };
+
+    document.getElementById('btn-file').onclick = function () { document.getElementById('inp-file').click(); };
+    document.getElementById('inp-file').onchange = function () {
+        var f = this.files && this.files[0];
+        if (!f) return;
+        var reader = new FileReader();
+        reader.onload = function () {
+            try {
+                var j = JSON.parse(String(reader.result || ''));
+                data.defaults = j.defaults || {};
+                data.instances = j.instances || {};
+                syncSelect();
+                refreshFullJson();
+            } catch (e) { window.alert('解析失败'); }
+        };
+        reader.readAsText(f, 'utf-8');
+    };
+
+    document.getElementById('btn-fetch').click();
+    fetchItems();
+})();
+    </script>
+</body>
+</html>

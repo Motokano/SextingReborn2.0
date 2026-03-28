@@ -585,8 +585,12 @@
             var cur = getLimbDestroy(limb);
             if (cur + dDel <= capAfter) {
                 state.limb_destroy[limb] = cur + dDel;
-                if (typeof global !== 'undefined' && global.Survival && typeof global.Survival.addDiqiCurrent === 'function' && dGain > 0) {
-                    global.Survival.addDiqiCurrent(dGain);
+                if (typeof global !== 'undefined' && global.Survival && dGain > 0) {
+                    if (typeof global.Survival.changeDiqi === 'function') {
+                        global.Survival.changeDiqi({ curDelta: dGain, sourceTag: 'hub_action:xue_qi_hua_jing' });
+                    } else if (typeof global.Survival.addDiqiCurrent === 'function') {
+                        global.Survival.addDiqiCurrent(dGain);
+                    }
                 }
                 return { ok: true, limb: limb };
             }

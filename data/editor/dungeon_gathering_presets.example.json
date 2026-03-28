@@ -1,0 +1,23 @@
+{
+  "_comment": "地牢随机生成时，向房间 entities[] 写入与野外地图相同形状的对象即可引用采集点实例。生成器只需从池中挑选 instance_id 并设置 entity_id = 该实例的 map_entity_id。",
+  "example_room_patch": {
+    "entities": [
+      {
+        "x": 3,
+        "y": 5,
+        "entity_id": "gathering_bush",
+        "gathering_instance_id": "gp_std_bush"
+      },
+      {
+        "x": 8,
+        "y": 5,
+        "entity_id": "gathering_bush",
+        "gathering_instance_id": "gp_example_per_item_quality_cap"
+      }
+    ]
+  },
+  "procedural_hint": [
+    "池子可列为 [{ \"gathering_instance_id\": \"gp_std_grass\", \"weight\": 10 }, ...]",
+    "选中后 entity_id 必须使用对应实例的 map_entity_id，避免渲染与逻辑不一致"
+  ]
+}

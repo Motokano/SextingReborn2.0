@@ -59,14 +59,31 @@
         });
     }
 
+    function isPlayerInSitMeditationState() {
+        var Surv = global.Survival;
+        if (!Surv) return false;
+        if (typeof Surv.isSitMeditationActive === 'function' && Surv.isSitMeditationActive()) return true;
+        if (global.SceneCtx && global.SceneCtx.idleActionType === 'tiao_xi') return true;
+        return false;
+    }
+
     function phaseEmitHitRoll(ctx, phase) {
+        if (ctx && ctx.defender && ctx.defender.kind === 'player' && isPlayerInSitMeditationState()) {
+            // 行气/调息中被选为受击目标：命中强制成功，并标记本 tick 行气收益作废。
+            ctx.hitRollSuccess = true;
+            if (global.Survival && typeof global.Survival.interruptSitMeditationThisTick === 'function') {
+                global.Survival.interruptSitMeditationThisTick();
+            }
+            ctx.sitMeditationInterrupted = true;
+        }
         ctx.hitRollSuccess = ctx.hitRollSuccess !== false;
         if (phase.buff_event_name) {
             emitCombat(phase.buff_event_name, ['attack', 'hit_roll', 'subhit'], {
                 move_id: ctx.moveId,
                 skill_id: ctx.skillId,
                 hit_roll_success: ctx.hitRollSuccess,
-                defender_kind: ctx.defender && ctx.defender.kind
+                defender_kind: ctx.defender && ctx.defender.kind,
+                sit_meditation_interrupted: !!ctx.sitMeditationInterrupted
             }, ctx.eventIdSuffix || ctx.moveId);
         }
         return ctx;
@@ -100,6 +117,14 @@
 
     function phaseParryPlayerCombatParry(ctx, phase) {
         if (!ctx.hitRollSuccess) return ctx;
+        if (ctx.sitMeditationInterrupted) {
+            ctx.parryPhaseSkipped = true;
+            ctx.skipReason = 'sit_meditation_interrupted';
+            ctx.parrySucceeded = false;
+            ctx.damageAfterParry = ctx.rawDamage;
+            emitCombat(phase.buff_event_skip || 'parry_phase_skipped', ['parry', 'parry_skip'], { reason: 'sit_meditation_interrupted' }, ctx.eventIdSuffix);
+            return ctx;
+        }
         var CP = global.CombatParry;
         var IE = global.InventoryEquipment;
         if (!CP || !IE || typeof CP.resolveParryPhaseContext !== 'function') {

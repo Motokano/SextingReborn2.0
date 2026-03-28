@@ -27,14 +27,19 @@
         overfedTicks: 0,
         severeHungerTicks: 0,
         isResting: false,
+        is_sit_meditation_active: false,
         isDead: false,
         isComa: false,
 
         /** 战斗：气力（快耗快消）、底气、底气护体剩余盾量（见 07 / 11 基本呼吸法） */
         qi_li_current: 100,
         diqi_current: 0,
+        diqi_cap_limit: 0,
+        diqi_cap_limit_flat_bonuses: {},
         diqi_max_effective: 0,
-        diqi_shield_remaining: 0
+        diqi_shield_remaining: 0,
+        last_sit_meditation_gain: 0,
+        sit_meditation_interrupt_this_tick: false
     };
 
     /** 从外部获取呼吸实际值、凝气加成（可选），用于体力/底气恢复公式 */
@@ -85,13 +90,17 @@
             weight_kg: state.weight_kg,
             tickCount: state.tickCount,
             isResting: state.isResting,
+            is_sit_meditation_active: !!state.is_sit_meditation_active,
             isDead: state.isDead,
             isComa: state.isComa,
 
             qi_li_current: state.qi_li_current,
             qi_li_max: getQiLiMax(),
             diqi_current: state.diqi_current,
+            diqi_cap_limit: state.diqi_cap_limit,
+            diqi_cap_limit_flat_bonuses: state.diqi_cap_limit_flat_bonuses,
             diqi_max: state.diqi_max_effective,
+            diqi_max_effective: state.diqi_max_effective,
             diqi_shield_remaining: state.diqi_shield_remaining
         };
     }
@@ -119,11 +128,21 @@
         if (s.body_temperature_standard !== undefined) state.body_temperature_standard = round1(s.body_temperature_standard);
         if (s.weight_kg !== undefined) state.weight_kg = Math.max(0, s.weight_kg);
         if (s.isResting !== undefined) state.isResting = !!s.isResting;
+        if (s.is_sit_meditation_active !== undefined) state.is_sit_meditation_active = !!s.is_sit_meditation_active;
         if (s.isDead !== undefined) state.isDead = !!s.isDead;
         if (s.isComa !== undefined) state.isComa = !!s.isComa;
 
+        if (s.diqi_cap_limit !== undefined) {
+            state.diqi_cap_limit = Math.max(0, Math.round(Number(s.diqi_cap_limit) || 0));
+        }
+        if (s.diqi_cap_limit_flat_bonuses && typeof s.diqi_cap_limit_flat_bonuses === 'object') {
+            state.diqi_cap_limit_flat_bonuses = normalizeDiqiCapLimitBonuses(s.diqi_cap_limit_flat_bonuses);
+        }
         var diqiCapLoad = Math.max(0, Math.round(Number(s.diqi_max != null ? s.diqi_max : s.diqi_max_effective) || 0));
-        if (diqiCapLoad > 0) state.diqi_max_effective = diqiCapLoad;
+        state.diqi_max_effective = diqiCapLoad;
+        if (state.diqi_cap_limit > 0) {
+            state.diqi_max_effective = Math.min(state.diqi_max_effective, state.diqi_cap_limit);
+        }
         if (s.diqi_current !== undefined) {
             var capD = state.diqi_max_effective > 0 ? state.diqi_max_effective : 9999;
             state.diqi_current = round1(clamp(s.diqi_current, 0, capD));
@@ -136,38 +155,179 @@
         return Math.max(1, get('qi_li_max', 100));
     }
 
-    /** 由先天+后天呼吸推导底气上限缓存；实际 current 在 refresh 时夹紧 */
-    function computeDiqiMaxFromBreath(breathEffective) {
-        var b = Math.max(0, parseInt(breathEffective, 10) || 0);
-        var base = get('diqi_max_base', 40);
-        var per = get('diqi_max_per_breath_effective', 2);
-        return Math.max(0, Math.floor(base + b * per));
+    function normalizeDiqiCapLimitBonuses(map) {
+        var out = {};
+        if (!map || typeof map !== 'object') return out;
+        var k;
+        for (k in map) {
+            if (!map.hasOwnProperty(k)) continue;
+            var key = String(k || '');
+            if (!key) continue;
+            var v = Math.round(Number(map[k]) || 0);
+            if (v !== 0) out[key] = v;
+        }
+        return out;
+    }
+
+    function sumDiqiCapLimitFlatBonuses() {
+        var map = state.diqi_cap_limit_flat_bonuses || {};
+        var sum = 0;
+        var k;
+        for (k in map) {
+            if (!map.hasOwnProperty(k)) continue;
+            var v = Math.round(Number(map[k]) || 0);
+            if (isFinite(v)) sum += v;
+        }
+        return sum;
+    }
+
+    function recomputeDiqiCapLimitAndClamp() {
+        var cap = computeDiqiCapLimitFromBreath();
+        state.diqi_cap_limit = cap;
+        if (cap <= 0) {
+            state.diqi_max_effective = 0;
+            state.diqi_current = 0;
+            state.diqi_shield_remaining = 0;
+            return;
+        }
+        state.diqi_max_effective = clamp(state.diqi_max_effective, 0, cap);
+        state.diqi_current = round1(clamp(state.diqi_current, 0, state.diqi_max_effective));
+        if (state.diqi_shield_remaining > state.diqi_current && state.diqi_shield_remaining > 0) {
+            state.diqi_shield_remaining = Math.min(state.diqi_shield_remaining, Math.floor(state.diqi_current));
+        }
+    }
+
+    function setDiqiCapLimitFlatBonus(sourceTag, value) {
+        var key = String(sourceTag || '').trim();
+        if (!key) return;
+        var map = state.diqi_cap_limit_flat_bonuses || {};
+        var v = Math.round(Number(value) || 0);
+        if (v === 0) {
+            delete map[key];
+        } else {
+            map[key] = v;
+        }
+        state.diqi_cap_limit_flat_bonuses = map;
+        recomputeDiqiCapLimitAndClamp();
+    }
+
+    function removeDiqiCapLimitFlatBonus(sourceTag) {
+        var key = String(sourceTag || '').trim();
+        if (!key) return;
+        var map = state.diqi_cap_limit_flat_bonuses || {};
+        delete map[key];
+        state.diqi_cap_limit_flat_bonuses = map;
+        recomputeDiqiCapLimitAndClamp();
+    }
+
+    /** 由“基本呼吸法”等级推导底气上限容器（diqi_cap_limit） */
+    function computeDiqiCapLimitFromBreath(breathEffective) {
+        var lv = 0;
+        if (typeof global !== 'undefined' && global.InventoryEquipment && typeof global.InventoryEquipment.getSkillLevel === 'function') {
+            lv = Math.max(0, parseInt(global.InventoryEquipment.getSkillLevel('combat_basic_breath'), 10) || 0);
+        }
+        var cap = lv;
+        var nPeakPct = Number(get('nutrition_peak_diqi_cap_pct', 0));
+        if (isFinite(nPeakPct) && nPeakPct > 0 && getNutritionTier() === 'peak') {
+            cap += Math.max(0, Math.floor(lv * nPeakPct));
+        }
+        cap += sumDiqiCapLimitFlatBonuses();
+        var hardMax = Number(get('diqi_cap_limit_hard_max', 999999));
+        if (isFinite(hardMax) && hardMax >= 0) cap = Math.min(cap, Math.floor(hardMax));
+        return Math.max(0, cap);
     }
 
     /**
      * 属性重算后调用：更新 diqi 上限并夹紧 current；护体盾不超过 current 逻辑在扣盾侧处理
      */
     function refreshDiqiMaxFromBreath(breathEffective) {
-        var mx = computeDiqiMaxFromBreath(breathEffective);
-        state.diqi_max_effective = mx;
-        state.diqi_current = round1(clamp(state.diqi_current, 0, mx));
+        var prevCap = Math.max(0, Math.round(Number(state.diqi_cap_limit) || 0));
+        var prevMax = Math.max(0, Math.round(Number(state.diqi_max_effective) || 0));
+        var cap = computeDiqiCapLimitFromBreath(breathEffective);
+        state.diqi_cap_limit = cap;
+        if (cap <= 0) {
+            state.diqi_max_effective = 0;
+            state.diqi_current = 0;
+            state.diqi_shield_remaining = 0;
+            return;
+        }
+        // 学会基础呼吸法后底气上限至少为 1；后续仅通过调息突破增长
+        if (state.diqi_max_effective <= 0) state.diqi_max_effective = 1;
+        state.diqi_max_effective = clamp(state.diqi_max_effective, 1, cap);
+        var maxChanged = (state.diqi_cap_limit !== prevCap) || (state.diqi_max_effective !== prevMax);
+        if (maxChanged) {
+            // 文档约定：当上限发生变化时，若 current 超过新上限，夹紧到新上限。
+            state.diqi_current = round1(clamp(state.diqi_current, 0, state.diqi_max_effective));
+        } else {
+            // 上限未变化时，保留调息突破过程中的溢出区间（最多 2*diqi_max-1）。
+            var keepUpper = Math.max(0, state.diqi_max_effective);
+            if (state.diqi_current > keepUpper) {
+                keepUpper = Math.max(keepUpper, 2 * state.diqi_max_effective - 1);
+            }
+            state.diqi_current = round1(clamp(state.diqi_current, 0, keepUpper));
+        }
         if (state.diqi_shield_remaining > state.diqi_current && state.diqi_shield_remaining > 0) {
             state.diqi_shield_remaining = Math.min(state.diqi_shield_remaining, Math.floor(state.diqi_current));
         }
     }
 
     /**
-     * 调息 / 行气单 tick：ceil(diqi_max×5%)×底气恢复倍率，至少 1；夹紧到 diqi_max（满额行气溢出见 06，后续可扩展）。
+     * 调息 / 行气单 tick：
+     * - 未封顶：恢复到 2*diqi_max 触发突破（current 归零，diqi_max +1，不超过 cap_limit）
+     * - 已封顶：允许溢出到 2*diqi_max-1（达到后不再继续增加）
      * @returns {number} 实际增加的底气量
      */
     function applySitMeditationDiqiOnce() {
         var mx = Math.max(0, state.diqi_max_effective);
-        if (mx <= 0) return 0;
+        if (mx <= 0) {
+            state.last_sit_meditation_gain = 0;
+            return 0;
+        }
         var base = Math.max(1, Math.ceil(mx * 0.05));
-        var R = Math.max(1, Math.ceil(base * getDiqiRegenMultiplier()));
+        var breath = Math.max(0, (typeof getBreathActual === 'function' ? getBreathActual() : 10));
+        var coef = Number(get('breath_diqi_stamina_coef', 0.02));
+        if (!isFinite(coef) || coef < 0) coef = 0;
+        var mBreath = Math.max(0, 1 + coef * breath);
+        var ningqi = (typeof getNingqiBonus === 'function' ? getNingqiBonus() : 0) || 0;
+        if (!isFinite(ningqi) || ningqi < 0) ningqi = 0;
+        var R = Math.max(1, Math.ceil(base * (1 + ningqi) * mBreath * getDiqiRegenMultiplier()));
         var before = state.diqi_current;
-        state.diqi_current = round1(clamp(before + R, 0, mx));
-        return Math.max(0, state.diqi_current - before);
+        var capLimit = Math.max(0, state.diqi_cap_limit || 0);
+        var atCap = capLimit > 0 && mx >= capLimit;
+        if (atCap) {
+            var overflowMax = Math.max(0, 2 * mx - 1);
+            state.diqi_current = round1(clamp(before + R, 0, overflowMax));
+            state.last_sit_meditation_gain = Math.max(0, state.diqi_current - before);
+            return state.last_sit_meditation_gain;
+        }
+        var curAfterGain = before + R;
+        if (curAfterGain >= 2 * mx) {
+            state.diqi_current = 0;
+            var nextMx = mx + 1;
+            if (capLimit > 0) nextMx = Math.min(nextMx, capLimit);
+            state.diqi_max_effective = Math.max(0, nextMx);
+            state.last_sit_meditation_gain = Math.max(0, round1(curAfterGain - before));
+            return state.last_sit_meditation_gain;
+        }
+        state.diqi_current = round1(clamp(curAfterGain, 0, 2 * mx - 1));
+        state.last_sit_meditation_gain = Math.max(0, state.diqi_current - before);
+        return state.last_sit_meditation_gain;
+    }
+
+    function setSitMeditationActive(active) {
+        state.is_sit_meditation_active = !!active;
+    }
+
+    function isSitMeditationActive() {
+        return !!state.is_sit_meditation_active;
+    }
+
+    function getLastSitMeditationGain() {
+        return Math.max(0, Number(state.last_sit_meditation_gain) || 0);
+    }
+
+    function interruptSitMeditationThisTick() {
+        state.sit_meditation_interrupt_this_tick = true;
     }
 
     function initBattleResourcesFull() {
@@ -212,6 +372,42 @@
         var mx = Math.max(0, state.diqi_max_effective);
         if (mx <= 0) return;
         state.diqi_current = round1(clamp(state.diqi_current + a, 0, mx));
+    }
+
+    /**
+     * 统一底气入口（06 约定）：同时支持当前值、上限、上限容器增减，并处理夹紧。
+     * @param {{curDelta?:number,maxDelta?:number,capLimitDelta?:number,sourceTag?:string}} patch
+     */
+    function changeDiqi(patch) {
+        patch = patch || {};
+        var capDelta = Number(patch.capLimitDelta || 0);
+        var maxDelta = Number(patch.maxDelta || 0);
+        var curDelta = Number(patch.curDelta || 0);
+        var sourceTag = String(patch.sourceTag || '').trim();
+        if (isFinite(capDelta) && capDelta !== 0) {
+            var key = sourceTag || '__legacy_cap_delta__';
+            var oldVal = (state.diqi_cap_limit_flat_bonuses && state.diqi_cap_limit_flat_bonuses[key]) || 0;
+            setDiqiCapLimitFlatBonus(key, oldVal + Math.round(capDelta));
+        }
+        if (isFinite(maxDelta) && maxDelta !== 0) {
+            state.diqi_max_effective = Math.max(0, Math.round(state.diqi_max_effective + maxDelta));
+        }
+        if (state.diqi_cap_limit > 0) {
+            state.diqi_max_effective = Math.min(state.diqi_max_effective, state.diqi_cap_limit);
+        }
+        if (isFinite(curDelta) && curDelta !== 0) {
+            state.diqi_current = round1(state.diqi_current + curDelta);
+        }
+        var curCap = Math.max(0, state.diqi_max_effective);
+        state.diqi_current = round1(clamp(state.diqi_current, 0, curCap));
+        if (state.diqi_shield_remaining > state.diqi_current && state.diqi_shield_remaining > 0) {
+            state.diqi_shield_remaining = Math.min(state.diqi_shield_remaining, Math.floor(state.diqi_current));
+        }
+        return {
+            diqi_current: state.diqi_current,
+            diqi_max: state.diqi_max_effective,
+            diqi_cap_limit: state.diqi_cap_limit
+        };
     }
 
     /**
@@ -463,12 +659,25 @@
             global.InventoryEquipment.tickHubActionCooldowns(1);
         }
 
-        // ---------- 底气自然恢复（战斗外资源；与营养等同一 tick） ----------
+        // ---------- 底气恢复（行气/调息激活时替代自然恢复） ----------
         var dMax = Math.max(0, state.diqi_max_effective);
-        if (dMax > 0 && state.diqi_current < dMax) {
-            var dRegen = get('diqi_tick_regen_base', 0.12) * getDiqiRegenMultiplier();
-            state.diqi_current = round1(clamp(state.diqi_current + dRegen, 0, dMax));
+        if (dMax > 0) {
+            if (state.is_sit_meditation_active) {
+                if (state.sit_meditation_interrupt_this_tick) {
+                    state.sit_meditation_interrupt_this_tick = false;
+                    state.last_sit_meditation_gain = 0;
+                } else {
+                    // 调息可在 current>=max 时继续累积，用于触发“烧蓝换上限”与封顶溢出区间。
+                    applySitMeditationDiqiOnce();
+                }
+            } else if (state.diqi_current < dMax) {
+                var breath = Math.max(0, (typeof getBreathActual === 'function' ? getBreathActual() : 10));
+                var coef = get('breath_diqi_stamina_coef', 0.02);
+                var dRegen = (get('diqi_tick_regen_base', 0.12) + coef * breath) * getDiqiRegenMultiplier();
+                state.diqi_current = round1(clamp(state.diqi_current + dRegen, 0, dMax));
+            }
         }
+        if (!state.is_sit_meditation_active) state.sit_meditation_interrupt_this_tick = false;
 
         return result;
     }
@@ -527,10 +736,18 @@
         getDiqiShieldRemaining: getDiqiShieldRemaining,
         setDiqiShieldRemaining: setDiqiShieldRemaining,
         breakDiqiShieldIfDepleted: breakDiqiShieldIfDepleted,
-        computeDiqiMaxFromBreath: computeDiqiMaxFromBreath,
+        computeDiqiMaxFromBreath: computeDiqiCapLimitFromBreath,
+        computeDiqiCapLimitFromBreath: computeDiqiCapLimitFromBreath,
         addDiqiCurrent: addDiqiCurrent,
+        changeDiqi: changeDiqi,
         applyDiqiShieldToDamage: applyDiqiShieldToDamage,
         addEnergy: addEnergy,
-        applySitMeditationDiqiOnce: applySitMeditationDiqiOnce
+        applySitMeditationDiqiOnce: applySitMeditationDiqiOnce,
+        setSitMeditationActive: setSitMeditationActive,
+        isSitMeditationActive: isSitMeditationActive,
+        getLastSitMeditationGain: getLastSitMeditationGain,
+        interruptSitMeditationThisTick: interruptSitMeditationThisTick,
+        setDiqiCapLimitFlatBonus: setDiqiCapLimitFlatBonus,
+        removeDiqiCapLimitFlatBonus: removeDiqiCapLimitFlatBonus
     };
 })(typeof window !== 'undefined' ? window : this);

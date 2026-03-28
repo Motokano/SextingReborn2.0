@@ -54,7 +54,6 @@
 | **贸易** | 通过与商人交易提升；等级影响打折力度。 |
 | **鉴定** | 物品默认只显示极少信息，需鉴定才能看到更多信息；鉴定等级越高可见信息越多。说明字段及鉴定前/后写作规范见 `./capitalism/items_template_and_style.md`。 |
 | **畜牧** | 在基地畜牧区域养殖动物，主要产出各类食材，与狩猎为互补关系。 |
-| **谈判** | 与特定行商或远道商队交易时，影响稀有货品出现几率与议价空间。 |
 | **物流管理** | 影响腐败速度（农产品保鲜等）、代理跑商任务耗时与收益等。 |
 
 #### 8.2.1 生活技能熟练度规则
@@ -157,6 +156,14 @@
 **配置字段建议**（产出表每行）：`item_id`、`weight`、`quality_tier`（1～6 对应粗糙～传说）；产出表 id 与采集点表之 `loot_table_id` 对应。物品表中野果/药草类物品的 `weight_kg` 建议为 0.1。
 
 **工具表**（与采集相关）：增加 `gathering_success_bonus`（对采集成功率的加成）、`gathering_quality_bonus`（对高品质/稀有概率的加成）等字段，具体字段名与数值在工具表配置。
+
+#### 8.2.2a 采集点实例、地图引用、分物品品质硬上限
+
+- **数据主文件**：`data/gathering_point_instances.json`（`defaults`：`map_entity_id` → 默认 `instance_id`；`instances`：各实例完整配置）。
+- **地图格**：`entity_id` 为**视觉/样式键**（如 `gathering_bush`）；可选 **`gathering_instance_id`** 引用上述实例。未写时由 `defaults[entity_id]` 解析默认实例。
+- **实例字段**：含 `wild_interaction_category`（`fishing` / `mining` / `logging` / `hunting` / `gathering`）、成功率与体力、`loot_rows`（行内 `item_id`、`weight`、`quality_tier`、`quality_tier_max`）。**不枯竭**规则见野外采集点通用约定。
+- **分物品品质硬上限**：每行可选 **`quality_tier_max`（1～6）**；在熟练度**品质上修之后**将结果**夹紧**到不超过该上限（仍用 1～6 档语义）。未配置时视为 **6（传说）**。
+- **工具**：`tools/gathering-point-editor.html` 编辑实例并导出 JSON（与 `data/items.json` 联动选择 `item_id`）；`tools/map-editor.html` 可选绑定 `gathering_instance_id`。随机生成地牢时在房间实体列表中写入相同结构即可引用同一实例 id。
 
 ### 8.3 战斗系
 

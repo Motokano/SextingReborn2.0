@@ -103,7 +103,11 @@
             result.reason_key = 'combat.hub.fail.diqi_low';
             return;
         }
-        if (typeof Surv.consumeDiqi === 'function') Surv.consumeDiqi(C);
+        if (typeof Surv.changeDiqi === 'function') {
+            Surv.changeDiqi({ curDelta: -C, sourceTag: 'hub_action:diqi_huti' });
+        } else if (typeof Surv.consumeDiqi === 'function') {
+            Surv.consumeDiqi(C);
+        }
         if (typeof Surv.setDiqiShieldRemaining === 'function') Surv.setDiqiShieldRemaining(C);
         advanceActionTicks(Surv, ha.tick_cost);
         if (IE.incrementSkillMoveUsage) IE.incrementSkillMoveUsage(skillId, 'diqi_huti', 1);
@@ -143,7 +147,11 @@
             result.reason_key = 'combat.hub.fail.tu_qi.diqi';
             return;
         }
-        if (typeof Surv.consumeDiqi === 'function') Surv.consumeDiqi(cost);
+        if (typeof Surv.changeDiqi === 'function') {
+            Surv.changeDiqi({ curDelta: -cost, sourceTag: 'hub_action:tu_qi_na_jing' });
+        } else if (typeof Surv.consumeDiqi === 'function') {
+            Surv.consumeDiqi(cost);
+        }
         if (typeof Surv.addEnergy === 'function') Surv.addEnergy(eg);
         advanceActionTicks(Surv, ha.tick_cost);
         incrementBreathTuNaLine(IE, skillId);
@@ -155,13 +163,18 @@
 
     function tryExecuteTiaoXiOnce(skillId, actionId, ha, IE, Surv, result) {
         var st0 = typeof Surv.getState === 'function' ? Surv.getState() : {};
-        var dmx = st0.diqi_max_effective != null ? st0.diqi_max_effective : 0;
+        var dmx = st0.diqi_max != null ? st0.diqi_max : (st0.diqi_max_effective != null ? st0.diqi_max_effective : 0);
         if (!isFinite(dmx) || dmx <= 0) {
             result.reason_key = 'combat.hub.fail.tiao_xi.diqi_max';
             return;
         }
-        var added = typeof Surv.applySitMeditationDiqiOnce === 'function' ? Surv.applySitMeditationDiqiOnce() : 0;
-        advanceActionTicks(Surv, ha.tick_cost);
+        if (typeof Surv.setSitMeditationActive === 'function') Surv.setSitMeditationActive(true);
+        try {
+            advanceActionTicks(Surv, ha.tick_cost);
+        } finally {
+            if (typeof Surv.setSitMeditationActive === 'function') Surv.setSitMeditationActive(false);
+        }
+        var added = typeof Surv.getLastSitMeditationGain === 'function' ? Surv.getLastSitMeditationGain() : 0;
         incrementBreathTuNaLine(IE, skillId);
         result.ok = true;
         result.reason_key = 'combat.hub.ok.tiao_xi';

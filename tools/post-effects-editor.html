@@ -1,0 +1,868 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>后遗症编辑器 - 潮碧物语</title>
+  <style>
+    :root{
+      --bg:#0b1020; --panel:#0b1324; --border:rgba(148,163,184,0.18); --text:#e5e7eb;
+      --muted:#94a3b8; --muted2:#64748b; --primary:#60a5fa; --danger:#ef4444;
+      --shadow:0 18px 60px rgba(0,0,0,0.45); --radius:12px;
+    }
+    *{box-sizing:border-box;}
+    body{margin:0;font-family:ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
+      background:radial-gradient(1200px 800px at 30% 0%,rgba(96,165,250,0.10),transparent 55%),linear-gradient(180deg,var(--bg),#070a14 70%);color:var(--text);}
+    .toolbar{position:sticky;top:0;z-index:50;padding:12px 16px;background:rgba(10,18,34,0.86);
+      border-bottom:1px solid var(--border);backdrop-filter:blur(10px);display:flex;gap:10px;align-items:center;flex-wrap:wrap;}
+    button{appearance:none;border:1px solid var(--border);background:rgba(148,163,184,0.10);color:var(--text);
+      cursor:pointer;border-radius:10px;padding:8px 12px;font-size:12px;font-weight:800;}
+    button.primary{background:linear-gradient(180deg,rgba(96,165,250,0.22),rgba(96,165,250,0.10));border-color:rgba(96,165,250,0.45);}
+    button.danger{background:linear-gradient(180deg,rgba(239,68,68,0.18),rgba(239,68,68,0.08));border-color:rgba(239,68,68,0.38);}
+    button:disabled{opacity:.55;cursor:not-allowed;}
+    input,select,textarea{background:rgba(148,163,184,0.10);border:1px solid var(--border);color:var(--text);
+      border-radius:10px;padding:8px 12px;outline:none;font-size:12px;}
+    textarea{width:100%;resize:vertical;min-height:72px;font-family:ui-monospace,Menlo,Consolas,monospace;}
+    textarea.locale-text{font-family:ui-sans-serif,system-ui,"PingFang SC","Microsoft YaHei",sans-serif;line-height:1.5;}
+    .wrap{display:grid;grid-template-columns:320px 1fr;gap:14px;padding:14px;}
+    @media(max-width:1000px){.wrap{grid-template-columns:1fr;}}
+    .panel{border:1px solid var(--border);background:rgba(11,19,36,0.68);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden;}
+    .panel .title{padding:12px 14px;border-bottom:1px solid var(--border);color:var(--muted);font-size:12px;font-weight:900;}
+    .panel .content{padding:12px 14px;}
+    .hint{color:var(--muted2);font-size:12px;line-height:1.55;margin-bottom:10px;}
+    .list{display:grid;gap:8px;margin-top:8px;}
+    .item{border:1px solid var(--border);border-radius:12px;background:rgba(148,163,184,0.07);padding:10px;cursor:pointer;}
+    .item.active{border-color:rgba(96,165,250,0.55);box-shadow:0 0 0 2px rgba(96,165,250,0.16);background:rgba(96,165,250,0.08);}
+    .item .id{font-weight:900;font-size:12px;}
+    .item .sub{margin-top:4px;color:var(--muted2);font-size:11px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+    .field{display:grid;grid-template-columns:200px 1fr;gap:10px;align-items:start;margin:10px 0;}
+    @media(max-width:800px){.field{grid-template-columns:1fr;}}
+    .field label{color:var(--muted);font-weight:800;font-size:12px;padding-top:8px;}
+    .mini{font-size:11px;color:var(--muted2);margin-top:6px;}
+    .mono{font-family:ui-monospace,Menlo,Consolas,monospace;}
+    .err{color:#fecaca;background:rgba(239,68,68,0.12);border:1px solid rgba(239,68,68,0.35);padding:10px;border-radius:10px;font-size:12px;display:none;white-space:pre-wrap;}
+    .ok{color:#bbf7d0;background:rgba(34,197,94,0.12);border:1px solid rgba(34,197,94,0.35);padding:10px;border-radius:10px;font-size:12px;display:none;}
+    .pill{display:inline-block;padding:3px 10px;border-radius:999px;border:1px solid var(--border);color:var(--muted);font-size:11px;}
+    .rowActions{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px;}
+  </style>
+</head>
+<body>
+  <div class="toolbar">
+    <button type="button" class="primary" id="btn-load">载入 data/post-effects.json</button>
+    <button type="button" id="btn-load-pipeline">载入 combat-pipeline.json（effect 目录）</button>
+    <button type="button" id="btn-load-skills">载入 combat-skills.json（id 提示）</button>
+    <button type="button" id="btn-load-ui">载入 ui_text_zhCN.json（文案）</button>
+    <button type="button" id="btn-import">导入 post-effects</button>
+    <input id="inp-file" type="file" accept="application/json,.json" style="display:none" />
+    <button type="button" id="btn-import-ui">导入文案 JSON</button>
+    <input id="inp-ui-file" type="file" accept="application/json,.json" style="display:none" />
+    <button type="button" id="btn-export">导出 post-effects</button>
+    <button type="button" id="btn-export-ui">导出 ui_text_zhCN</button>
+    <button type="button" id="btn-clipboard">复制 post-effects</button>
+    <button type="button" id="btn-clipboard-ui">复制文案 JSON</button>
+    <button type="button" class="primary" id="btn-new">新增后遗症</button>
+    <button type="button" id="btn-dup">复制当前</button>
+    <button type="button" class="danger" id="btn-del">删除当前</button>
+    <span class="pill" id="status">未载入</span>
+    <span style="flex:1"></span>
+    <input id="inp-search" type="text" placeholder="搜索 id / effect_type / name_key" style="min-width:200px;max-width:40vw" />
+  </div>
+
+  <div class="wrap">
+    <div class="panel">
+      <div class="title">条目列表 <span class="pill" id="pill-count">0</span></div>
+      <div class="content">
+        <div class="hint">
+          设计入口：<code class="mono">GAME_DESIGN.md</code> → <code class="mono">docs/design/11-skills.md</code>、<code class="mono">14-implementation.md</code>、<code class="mono">07-combat-core.md</code>。<br/>
+          数据文件：<code class="mono">data/post-effects.json</code>；新 <code class="mono">effect_type</code> 须在 <code class="mono">js/combat-post-effects.js</code> 注册解析器，并在 <code class="mono">data/combat-pipeline.json</code> 的 <code class="mono">effect_type_catalog</code> 登记。
+        </div>
+        <div class="list" id="list"></div>
+        <div class="mini">草稿保存在浏览器 localStorage（仅本机）。导出后分别覆盖 <code class="mono">data/post-effects.json</code> 与 <code class="mono">data/ui_text_zhCN.json</code>（文案全量导出为当前内存中的整表）。</div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="title">编辑条目</div>
+      <div class="content">
+        <div id="msg-ok" class="ok"></div>
+        <div id="msg-err" class="err"></div>
+
+        <div class="field">
+          <label>根 _comment</label>
+          <div>
+            <textarea id="f-comment" class="mono" rows="3"></textarea>
+            <div class="mini">写入导出 JSON 顶层的说明字段。</div>
+          </div>
+        </div>
+
+        <div class="field">
+          <label>post_effect_id</label>
+          <div>
+            <input id="f-id" class="mono" placeholder="例如 post_my_effect" />
+            <div class="mini">须与 JSON 顶层键一致；建议小写+下划线。</div>
+          </div>
+        </div>
+
+        <div class="field">
+          <label>name_key</label>
+          <div><input id="f-name-key" class="mono" placeholder="ui_text_zhCN.json 中的 key" /></div>
+        </div>
+        <div class="field">
+          <label>desc_key</label>
+          <div><input id="f-desc-key" class="mono" /></div>
+        </div>
+
+        <div class="field">
+          <label>展示名称</label>
+          <div>
+            <textarea id="f-name-locale" class="locale-text" rows="2" placeholder="写入 ui_text_zhCN.json 中 name_key 对应字符串"></textarea>
+            <div class="mini">对应运行时 <code class="mono">UIText.t(name_key)</code>；须先载入或导入 <code class="mono">data/ui_text_zhCN.json</code>。</div>
+          </div>
+        </div>
+        <div class="field">
+          <label>展示说明</label>
+          <div>
+            <textarea id="f-desc-locale" class="locale-text" rows="6" placeholder="写入 ui_text_zhCN.json 中 desc_key 对应字符串（可换行）"></textarea>
+            <div class="mini">游戏内后遗症列表按<strong>真实换行</strong>显示：在此框内直接<strong>回车</strong>分段即可；若手写 JSON 则用 <code class="mono">\n</code>（或 <code class="mono">\n\n</code> 空一行）。勿使用 <code class="mono">&lt;br&gt;</code>。</div>
+          </div>
+        </div>
+        <div class="rowActions" style="margin-top:0;">
+          <button type="button" id="btn-suggest-keys">按 post_effect_id 生成 name_key / desc_key</button>
+        </div>
+
+        <div class="field">
+          <label>scope</label>
+          <div>
+            <select id="f-scope">
+              <option value="move_socket">move_socket（招式槽）</option>
+            </select>
+            <div class="mini">当前实现以招式槽为主；扩展时可增枚举。</div>
+          </div>
+        </div>
+
+        <div class="field">
+          <label>effect_type</label>
+          <div>
+            <select id="f-effect-type"></select>
+            <input id="f-effect-type-custom" class="mono" style="margin-top:8px;display:none" placeholder="自定义 effect_type" />
+            <div class="mini">下拉来自已载入的 <code class="mono">effect_type_catalog</code>；选「自定义」可填新类型（须写代码注册）。</div>
+          </div>
+        </div>
+
+        <div class="field">
+          <label>effect_params（JSON）</label>
+          <div>
+            <textarea id="f-effect-params" class="mono" rows="6" placeholder='{}'></textarea>
+            <div class="mini">常见：<code class="mono">trigger</code>（如 hit_roll_success）、驱散类 <code class="mono">apply_when_parry_zero_damage</code>。</div>
+          </div>
+        </div>
+
+        <div class="field">
+          <label>valid_skill_ids</label>
+          <div>
+            <textarea id="f-valid-skills" class="mono" rows="2" placeholder="逗号或换行分隔，留空=任意技能可装"></textarea>
+            <div class="mini">提示：<span id="hint-skills" class="mono"></span></div>
+          </div>
+        </div>
+        <div class="field">
+          <label>valid_move_ids</label>
+          <div>
+            <textarea id="f-valid-moves" class="mono" rows="2" placeholder="逗号或换行分隔，留空=任意招式可装"></textarea>
+            <div class="mini">提示：<span id="hint-moves" class="mono"></span></div>
+          </div>
+        </div>
+
+        <div class="field">
+          <label>mechanic_shared_with_enemy</label>
+          <div><label><input type="checkbox" id="f-shared" /> 与敌人共用机制语义</label></div>
+        </div>
+
+        <div class="field">
+          <label>design_meta（JSON）</label>
+          <div>
+            <textarea id="f-design-meta" class="mono" rows="5" placeholder="可选，对齐 combat-skills constants.design_meta_template"></textarea>
+          </div>
+        </div>
+
+        <div class="rowActions">
+          <button type="button" class="primary" id="btn-apply">写入当前条目（内存）</button>
+          <button type="button" id="btn-validate">校验当前表单</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+(function () {
+  'use strict';
+
+  var DRAFT_KEY = 'cabi.postEffectsEditor.v1.draft';
+  var DEFAULT_COMMENT = '战斗后遗症（构式）：由技能/招式熟练度解锁，装配在招式槽上。同一 post_effect_id 同一条出招肢至多装配 1 份（四肢可各 1 份）。装配范围：未写 valid_skill_ids / valid_move_ids（或空）时，已解锁的可装到任意具备 post_effect_slot_max 的招式；显式 valid_* 则限制。详见 docs/design/11-skills.md、14-implementation.md。';
+
+  var state = {
+    comment: DEFAULT_COMMENT,
+    entries: {},
+    order: [],
+    activeId: null,
+    /** 完整 ui 文案表（与 data/ui_text_zhCN.json 同形）；未载入时为 null */
+    uiDict: null
+  };
+  var catalogTypes = [];
+  var hintSkillIds = '';
+  var hintMoveIds = '';
+
+  function ensureUiDict() {
+    if (!state.uiDict) state.uiDict = {};
+  }
+
+  /** post_xxx → posteffect.xxx.name / .desc（与现有 id 命名一致） */
+  function defaultKeysFromPostId(id) {
+    var tail = String(id || '').replace(/^post_/, '') || String(id || '');
+    return {
+      name_key: 'posteffect.' + tail + '.name',
+      desc_key: 'posteffect.' + tail + '.desc'
+    };
+  }
+
+  function flushLocaleToUiDict() {
+    ensureUiDict();
+    var nid = ($('f-id').value || '').trim();
+    if (!nid || !/^[a-z0-9_]+$/.test(nid)) return;
+    var nk = ($('f-name-key').value || '').trim();
+    var dk = ($('f-desc-key').value || '').trim();
+    if (nk) state.uiDict[nk] = $('f-name-locale').value;
+    if (dk) state.uiDict[dk] = $('f-desc-locale').value;
+  }
+
+  function ingestUiTextJson(json) {
+    if (!json || typeof json !== 'object' || Array.isArray(json)) throw new Error('ui 文案须为 JSON 对象');
+    state.uiDict = deepClone(json);
+  }
+
+  function buildUiExportObject() {
+    ensureUiDict();
+    var keys = Object.keys(state.uiDict).sort();
+    var o = {};
+    var i;
+    for (i = 0; i < keys.length; i++) {
+      o[keys[i]] = state.uiDict[keys[i]];
+    }
+    return o;
+  }
+
+  function slimUiDraftFromEntries() {
+    ensureUiDict();
+    var out = {};
+    var i;
+    for (i = 0; i < state.order.length; i++) {
+      var row = state.entries[state.order[i]];
+      if (!row) continue;
+      if (row.name_key && state.uiDict[row.name_key] !== undefined) out[row.name_key] = state.uiDict[row.name_key];
+      if (row.desc_key && state.uiDict[row.desc_key] !== undefined) out[row.desc_key] = state.uiDict[row.desc_key];
+    }
+    return out;
+  }
+
+  function $(id) { return document.getElementById(id); }
+
+  function deepClone(o) { return JSON.parse(JSON.stringify(o)); }
+
+  function parseIdList(text) {
+    if (!text || !String(text).trim()) return [];
+    return String(text).split(/[\s,]+/).map(function (s) { return s.trim(); }).filter(Boolean);
+  }
+
+  function formatIdList(arr) {
+    if (!arr || !arr.length) return '';
+    return arr.join(', ');
+  }
+
+  function nowIso() {
+    var d = new Date();
+    return d.toISOString().replace(/[:.]/g, '-').slice(0, 19);
+  }
+
+  function download(filename, text) {
+    var blob = new Blob([text], { type: 'application/json;charset=utf-8' });
+    var a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = filename;
+    a.click();
+    URL.revokeObjectURL(a.href);
+  }
+
+  function showErr(msg) {
+    var el = $('msg-err');
+    el.style.display = msg ? 'block' : 'none';
+    el.textContent = msg || '';
+    $('msg-ok').style.display = 'none';
+  }
+  function showOk(msg) {
+    var el = $('msg-ok');
+    el.style.display = msg ? 'block' : 'none';
+    el.textContent = msg || '';
+    $('msg-err').style.display = 'none';
+  }
+
+  function rebuildEffectTypeSelect() {
+    var sel = $('f-effect-type');
+    var prev = sel.value;
+    sel.innerHTML = '';
+    var o0 = document.createElement('option');
+    o0.value = '__custom__';
+    o0.textContent = '（自定义，手动输入）';
+    sel.appendChild(o0);
+    catalogTypes.forEach(function (t) {
+      var o = document.createElement('option');
+      o.value = t;
+      o.textContent = t;
+      sel.appendChild(o);
+    });
+    if (prev && (prev === '__custom__' || catalogTypes.indexOf(prev) >= 0)) sel.value = prev;
+  }
+
+  function ingestPostEffectsJson(json) {
+    if (!json || typeof json !== 'object') throw new Error('根须为对象');
+    state.comment = typeof json._comment === 'string' ? json._comment : DEFAULT_COMMENT;
+    state.entries = {};
+    state.order = [];
+    var k;
+    for (k in json) {
+      if (!Object.prototype.hasOwnProperty.call(json, k) || k === '_comment') continue;
+      var row = json[k];
+      if (!row || typeof row !== 'object') continue;
+      var id = row.id != null ? String(row.id).trim() : k;
+      if (!id) continue;
+      var copy = deepClone(row);
+      copy.id = id;
+      state.entries[id] = copy;
+      state.order.push(id);
+    }
+    state.order.sort();
+    if (!state.order.length) state.activeId = null;
+    else if (!state.activeId || !state.entries[state.activeId]) state.activeId = state.order[0];
+  }
+
+  function buildExportObject() {
+    var o = { _comment: state.comment };
+    state.order.forEach(function (id) {
+      var row = state.entries[id];
+      if (!row) return;
+      var copy = deepClone(row);
+      copy.id = id;
+      o[id] = copy;
+    });
+    return o;
+  }
+
+  function saveDraft() {
+    var payload = { comment: state.comment, entries: state.entries, order: state.order, activeId: state.activeId };
+    if (state.uiDict) {
+      payload.uiDict = state.uiDict;
+    }
+    try {
+      localStorage.setItem(DRAFT_KEY, JSON.stringify(payload));
+    } catch (e) {
+      try {
+        delete payload.uiDict;
+        payload.uiSlim = slimUiDraftFromEntries();
+        localStorage.setItem(DRAFT_KEY, JSON.stringify(payload));
+      } catch (e2) { /* ignore */ }
+    }
+  }
+
+  function loadDraft() {
+    try {
+      var raw = localStorage.getItem(DRAFT_KEY);
+      if (!raw) return false;
+      var d = JSON.parse(raw);
+      if (!d || !d.entries) return false;
+      state.comment = d.comment || DEFAULT_COMMENT;
+      state.entries = d.entries;
+      state.order = Array.isArray(d.order) ? d.order : Object.keys(d.entries).sort();
+      state.activeId = d.activeId || state.order[0] || null;
+      if (d.uiDict && typeof d.uiDict === 'object') {
+        state.uiDict = d.uiDict;
+      } else if (d.uiSlim && typeof d.uiSlim === 'object') {
+        ensureUiDict();
+        var sk;
+        for (sk in d.uiSlim) {
+          if (Object.prototype.hasOwnProperty.call(d.uiSlim, sk)) state.uiDict[sk] = d.uiSlim[sk];
+        }
+      }
+      return true;
+    } catch (e) { return false; }
+  }
+
+  function filteredOrder() {
+    var q = ($('inp-search').value || '').trim().toLowerCase();
+    if (!q) return state.order.slice();
+    return state.order.filter(function (id) {
+      var row = state.entries[id];
+      if (!row) return false;
+      var blob = [id, row.effect_type, row.name_key, row.desc_key].join(' ').toLowerCase();
+      if (state.uiDict && row.name_key && state.uiDict[row.name_key]) blob += ' ' + String(state.uiDict[row.name_key]).toLowerCase();
+      if (state.uiDict && row.desc_key && state.uiDict[row.desc_key]) blob += ' ' + String(state.uiDict[row.desc_key]).toLowerCase();
+      return blob.indexOf(q) >= 0;
+    });
+  }
+
+  function renderList() {
+    var list = $('list');
+    list.innerHTML = '';
+    var ord = filteredOrder();
+    $('pill-count').textContent = String(state.order.length);
+    ord.forEach(function (id) {
+      var row = state.entries[id];
+      var div = document.createElement('div');
+      div.className = 'item' + (id === state.activeId ? ' active' : '');
+      div.innerHTML = '<div class="id mono">' + id.replace(/</g, '&lt;') + '</div><div class="sub">' + (row.effect_type || '') + '</div>';
+      div.onclick = function () {
+        flushLocaleToUiDict();
+        applyFormToEntry(false);
+        state.activeId = id;
+        fillForm();
+        renderList();
+        saveDraft();
+      };
+      list.appendChild(div);
+    });
+  }
+
+  function getEffectTypeValue() {
+    var sel = $('f-effect-type').value;
+    if (sel === '__custom__') return ($('f-effect-type-custom').value || '').trim();
+    return sel;
+  }
+
+  function setEffectTypeValue(v) {
+    v = (v || '').trim();
+    if (catalogTypes.indexOf(v) >= 0) {
+      $('f-effect-type').value = v;
+      $('f-effect-type-custom').style.display = 'none';
+    } else {
+      $('f-effect-type').value = '__custom__';
+      $('f-effect-type-custom').style.display = 'block';
+      $('f-effect-type-custom').value = v;
+    }
+  }
+
+  function fillForm() {
+    $('f-comment').value = state.comment;
+    var id = state.activeId;
+    if (!id || !state.entries[id]) {
+      $('f-id').value = '';
+      $('f-name-key').value = '';
+      $('f-desc-key').value = '';
+      $('f-scope').value = 'move_socket';
+      setEffectTypeValue('initiative_always_first');
+      $('f-effect-params').value = '{}';
+      $('f-valid-skills').value = '';
+      $('f-valid-moves').value = '';
+      $('f-shared').checked = false;
+      $('f-design-meta').value = '';
+      $('f-name-locale').value = '';
+      $('f-desc-locale').value = '';
+      return;
+    }
+    var row = state.entries[id];
+    $('f-id').value = id;
+    $('f-name-key').value = row.name_key || '';
+    $('f-desc-key').value = row.desc_key || '';
+    var nk = row.name_key || '';
+    var dk = row.desc_key || '';
+    $('f-name-locale').value = (state.uiDict && nk && state.uiDict[nk] != null) ? String(state.uiDict[nk]) : '';
+    $('f-desc-locale').value = (state.uiDict && dk && state.uiDict[dk] != null) ? String(state.uiDict[dk]) : '';
+    $('f-scope').value = row.scope || 'move_socket';
+    setEffectTypeValue(row.effect_type || '');
+    $('f-effect-params').value = JSON.stringify(row.effect_params && typeof row.effect_params === 'object' ? row.effect_params : {}, null, 2);
+    $('f-valid-skills').value = formatIdList(row.valid_skill_ids);
+    $('f-valid-moves').value = formatIdList(row.valid_move_ids);
+    $('f-shared').checked = !!row.mechanic_shared_with_enemy;
+    $('f-design-meta').value = row.design_meta && typeof row.design_meta === 'object' ? JSON.stringify(row.design_meta, null, 2) : '';
+  }
+
+  function applyFormToEntry(allowCreate) {
+    var newId = ($('f-id').value || '').trim();
+    if (!newId) {
+      if (allowCreate) showErr('请填写 post_effect_id');
+      return false;
+    }
+    if (!/^[a-z0-9_]+$/.test(newId)) {
+      showErr('id 仅允许小写字母、数字、下划线');
+      return false;
+    }
+    var effectParams;
+    try {
+      effectParams = JSON.parse($('f-effect-params').value.trim() || '{}');
+      if (!effectParams || typeof effectParams !== 'object' || Array.isArray(effectParams)) throw new Error('须为 JSON 对象');
+    } catch (e) {
+      showErr('effect_params JSON 无效：' + e.message);
+      return false;
+    }
+    var designMeta = null;
+    var dmRaw = $('f-design-meta').value.trim();
+    if (dmRaw) {
+      try {
+        designMeta = JSON.parse(dmRaw);
+        if (typeof designMeta !== 'object' || Array.isArray(designMeta)) throw new Error('须为 JSON 对象');
+      } catch (e) {
+        showErr('design_meta JSON 无效：' + e.message);
+        return false;
+      }
+    }
+    state.comment = $('f-comment').value || DEFAULT_COMMENT;
+
+    var et = getEffectTypeValue();
+    if (!et) {
+      showErr('请选择或填写 effect_type');
+      return false;
+    }
+
+    var row = {
+      id: newId,
+      name_key: ($('f-name-key').value || '').trim(),
+      desc_key: ($('f-desc-key').value || '').trim(),
+      scope: $('f-scope').value || 'move_socket',
+      effect_type: et,
+      effect_params: effectParams,
+      mechanic_shared_with_enemy: !!$('f-shared').checked
+    };
+    var vs = parseIdList($('f-valid-skills').value);
+    var vm = parseIdList($('f-valid-moves').value);
+    if (vs.length) row.valid_skill_ids = vs;
+    if (vm.length) row.valid_move_ids = vm;
+    if (designMeta) row.design_meta = designMeta;
+
+    var oldId = state.activeId;
+    if (oldId && oldId !== newId && state.entries[oldId]) {
+      delete state.entries[oldId];
+      var ix = state.order.indexOf(oldId);
+      if (ix >= 0) state.order.splice(ix, 1);
+    }
+    if (state.order.indexOf(newId) < 0) state.order.push(newId);
+    state.order.sort();
+    state.entries[newId] = row;
+    state.activeId = newId;
+    flushLocaleToUiDict();
+    showErr('');
+    showOk('已写入内存（记得导出或依赖自动草稿）');
+    saveDraft();
+    renderList();
+    return true;
+  }
+
+  function validateForm() {
+    if (applyFormToEntry(true)) showOk('校验通过并已写入');
+  }
+
+  $('f-effect-type').addEventListener('change', function () {
+    $('f-effect-type-custom').style.display = $('f-effect-type').value === '__custom__' ? 'block' : 'none';
+  });
+
+  $('inp-search').addEventListener('input', renderList);
+
+  $('btn-apply').addEventListener('click', function () { applyFormToEntry(true); });
+  $('btn-validate').addEventListener('click', validateForm);
+
+  $('btn-suggest-keys').addEventListener('click', function () {
+    var id = ($('f-id').value || '').trim();
+    if (!id) {
+      showErr('请先填写 post_effect_id');
+      return;
+    }
+    var keys = defaultKeysFromPostId(id);
+    $('f-name-key').value = keys.name_key;
+    $('f-desc-key').value = keys.desc_key;
+    ensureUiDict();
+    $('f-name-locale').value = state.uiDict[keys.name_key] != null ? String(state.uiDict[keys.name_key]) : '';
+    $('f-desc-locale').value = state.uiDict[keys.desc_key] != null ? String(state.uiDict[keys.desc_key]) : '';
+    showOk('已生成 key，可继续编辑展示名称/说明');
+  });
+
+  $('btn-load').addEventListener('click', function () {
+    fetch('../data/post-effects.json').then(function (r) {
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      return r.json();
+    }).then(function (j) {
+      ingestPostEffectsJson(j);
+      fillForm();
+      renderList();
+      $('status').textContent = '已载入 post-effects.json';
+      showOk('载入成功');
+      saveDraft();
+    }).catch(function (e) {
+      showErr('载入失败（若用 file:// 打开，请改用本地服务器或点「导入 JSON」）：' + e.message);
+    });
+  });
+
+  $('btn-load-ui').addEventListener('click', function () {
+    fetch('../data/ui_text_zhCN.json').then(function (r) {
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      return r.json();
+    }).then(function (j) {
+      ingestUiTextJson(j);
+      fillForm();
+      showOk('已载入 ui_text_zhCN.json（' + Object.keys(state.uiDict).length + ' keys）');
+      saveDraft();
+    }).catch(function (e) {
+      showErr('载入文案失败：' + e.message);
+    });
+  });
+
+  $('btn-load-pipeline').addEventListener('click', function () {
+    fetch('../data/combat-pipeline.json').then(function (r) {
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      return r.json();
+    }).then(function (j) {
+      var cat = j && j.effect_type_catalog;
+      catalogTypes = [];
+      if (cat && typeof cat === 'object') {
+        Object.keys(cat).forEach(function (k) {
+          if (k !== '_doc') catalogTypes.push(k);
+        });
+      }
+      catalogTypes.sort();
+      rebuildEffectTypeSelect();
+      $('status').textContent = '已载入 effect_type_catalog（' + catalogTypes.length + '）';
+      showOk('effect_type 下拉已更新');
+    }).catch(function (e) {
+      showErr('载入 combat-pipeline.json 失败：' + e.message);
+    });
+  });
+
+  $('btn-load-skills').addEventListener('click', function () {
+    fetch('../data/combat-skills.json').then(function (r) {
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      return r.json();
+    }).then(function (j) {
+      var skills = j && j.skills;
+      var sids = [];
+      var mids = [];
+      if (skills && typeof skills === 'object') {
+        Object.keys(skills).forEach(function (sk) {
+          sids.push(sk);
+          var sko = skills[sk];
+          var moves = sko && sko.moves;
+          if (Array.isArray(moves)) {
+            moves.forEach(function (m) {
+              if (m && m.id) mids.push(m.id);
+            });
+          }
+        });
+      }
+      hintSkillIds = sids.sort().join(', ');
+      mids.sort();
+      hintMoveIds = mids.filter(function (x, i) { return mids.indexOf(x) === i; }).join(', ');
+      $('hint-skills').textContent = hintSkillIds.slice(0, 500) + (hintSkillIds.length > 500 ? '…' : '');
+      $('hint-moves').textContent = hintMoveIds.slice(0, 500) + (hintMoveIds.length > 500 ? '…' : '');
+      showOk('已拉取技能/招式 id 提示');
+    }).catch(function (e) {
+      showErr('载入 combat-skills.json 失败：' + e.message);
+    });
+  });
+
+  $('btn-import-ui').addEventListener('click', function () { $('inp-ui-file').click(); });
+  $('inp-ui-file').addEventListener('change', function () {
+    var f = $('inp-ui-file').files && $('inp-ui-file').files[0];
+    if (!f) return;
+    var reader = new FileReader();
+    reader.onload = function () {
+      try {
+        ingestUiTextJson(JSON.parse(String(reader.result)));
+        fillForm();
+        showOk('文案 JSON 导入成功');
+        saveDraft();
+      } catch (e) {
+        showErr('文案导入失败：' + e.message);
+      }
+    };
+    reader.readAsText(f, 'utf-8');
+    $('inp-ui-file').value = '';
+  });
+
+  $('btn-import').addEventListener('click', function () { $('inp-file').click(); });
+  $('inp-file').addEventListener('change', function () {
+    var f = $('inp-file').files && $('inp-file').files[0];
+    if (!f) return;
+    var reader = new FileReader();
+    reader.onload = function () {
+      try {
+        ingestPostEffectsJson(JSON.parse(String(reader.result)));
+        fillForm();
+        renderList();
+        $('status').textContent = '已导入';
+        showOk('导入成功');
+        saveDraft();
+      } catch (e) {
+        showErr('导入解析失败：' + e.message);
+      }
+    };
+    reader.readAsText(f, 'utf-8');
+  });
+
+  $('btn-export').addEventListener('click', function () {
+    flushLocaleToUiDict();
+    state.comment = ($('f-comment').value || '').trim() || DEFAULT_COMMENT;
+    if (state.activeId) applyFormToEntry(false);
+    var out = buildExportObject();
+    download('post-effects_export_' + nowIso() + '.json', JSON.stringify(out, null, 2));
+    showOk('已下载 post-effects');
+  });
+
+  $('btn-export-ui').addEventListener('click', function () {
+    flushLocaleToUiDict();
+    state.comment = ($('f-comment').value || '').trim() || DEFAULT_COMMENT;
+    if (state.activeId) applyFormToEntry(false);
+    if (!state.uiDict || !Object.keys(state.uiDict).length) {
+      showErr('请先载入或导入 ui_text_zhCN.json');
+      return;
+    }
+    download('ui_text_zhCN_export_' + nowIso() + '.json', JSON.stringify(buildUiExportObject(), null, 2));
+    showOk('已下载 ui 文案全表');
+  });
+
+  $('btn-clipboard').addEventListener('click', function () {
+    flushLocaleToUiDict();
+    state.comment = ($('f-comment').value || '').trim() || DEFAULT_COMMENT;
+    if (state.activeId) applyFormToEntry(false);
+    var text = JSON.stringify(buildExportObject(), null, 2);
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(function () { showOk('已复制 post-effects'); }).catch(function () { showErr('复制失败'); });
+    } else {
+      showErr('浏览器不支持剪贴板 API');
+    }
+  });
+
+  $('btn-clipboard-ui').addEventListener('click', function () {
+    flushLocaleToUiDict();
+    if (state.activeId) applyFormToEntry(false);
+    if (!state.uiDict || !Object.keys(state.uiDict).length) {
+      showErr('请先载入或导入 ui_text_zhCN.json');
+      return;
+    }
+    var text = JSON.stringify(buildUiExportObject(), null, 2);
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(function () { showOk('已复制文案 JSON'); }).catch(function () { showErr('复制失败'); });
+    } else {
+      showErr('浏览器不支持剪贴板 API');
+    }
+  });
+
+  $('btn-new').addEventListener('click', function () {
+    flushLocaleToUiDict();
+    applyFormToEntry(false);
+    var nid = prompt('新后遗症 id（小写+下划线，例如 post_my_new）', '');
+    if (!nid) return;
+    nid = nid.trim();
+    if (!/^[a-z0-9_]+$/.test(nid)) {
+      showErr('id 格式无效');
+      return;
+    }
+    if (state.entries[nid]) {
+      showErr('id 已存在');
+      return;
+    }
+    var sug = defaultKeysFromPostId(nid);
+    state.entries[nid] = {
+      id: nid,
+      name_key: sug.name_key,
+      desc_key: sug.desc_key,
+      scope: 'move_socket',
+      effect_type: catalogTypes[0] || 'initiative_always_first',
+      effect_params: {},
+      mechanic_shared_with_enemy: true
+    };
+    ensureUiDict();
+    if (state.uiDict[sug.name_key] === undefined) state.uiDict[sug.name_key] = '';
+    if (state.uiDict[sug.desc_key] === undefined) state.uiDict[sug.desc_key] = '';
+    state.order.push(nid);
+    state.order.sort();
+    state.activeId = nid;
+    fillForm();
+    renderList();
+    saveDraft();
+    showOk('已新增');
+  });
+
+  $('btn-dup').addEventListener('click', function () {
+    flushLocaleToUiDict();
+    if (!state.activeId || !state.entries[state.activeId]) return;
+    var base = state.activeId;
+    var nid = prompt('复制为新的 id', base + '_copy');
+    if (!nid) return;
+    nid = nid.trim();
+    if (!/^[a-z0-9_]+$/.test(nid)) {
+      showErr('id 格式无效');
+      return;
+    }
+    if (state.entries[nid]) {
+      showErr('id 已存在');
+      return;
+    }
+    var copy = deepClone(state.entries[base]);
+    copy.id = nid;
+    state.entries[nid] = copy;
+    state.order.push(nid);
+    state.order.sort();
+    state.activeId = nid;
+    fillForm();
+    renderList();
+    saveDraft();
+    showOk('已复制');
+  });
+
+  $('btn-del').addEventListener('click', function () {
+    if (!state.activeId || !state.entries[state.activeId]) return;
+    if (!confirm('确定删除 ' + state.activeId + ' ?')) return;
+    delete state.entries[state.activeId];
+    var ix = state.order.indexOf(state.activeId);
+    if (ix >= 0) state.order.splice(ix, 1);
+    state.activeId = state.order[0] || null;
+    fillForm();
+    renderList();
+    saveDraft();
+    showOk('已删除');
+  });
+
+  function applyCatalogFromPipelineJson(j) {
+    if (j && j.effect_type_catalog && typeof j.effect_type_catalog === 'object') {
+      catalogTypes = Object.keys(j.effect_type_catalog).filter(function (k) { return k !== '_doc'; }).sort();
+      rebuildEffectTypeSelect();
+    }
+  }
+
+  if (loadDraft()) {
+    rebuildEffectTypeSelect();
+    fillForm();
+    renderList();
+    $('status').textContent = '已恢复草稿';
+    fetch('../data/combat-pipeline.json').then(function (r) { return r.ok ? r.json() : null; }).then(applyCatalogFromPipelineJson).catch(function () {});
+    fetch('../data/ui_text_zhCN.json').then(function (r) { return r.ok ? r.json() : null; }).then(function (full) {
+      if (!full || typeof full !== 'object') return;
+      var overlay = state.uiDict && typeof state.uiDict === 'object' ? state.uiDict : {};
+      state.uiDict = Object.assign(deepClone(full), overlay);
+      fillForm();
+    }).catch(function () {});
+  } else {
+    Promise.all([
+      fetch('../data/post-effects.json').then(function (r) { return r.ok ? r.json() : null; }),
+      fetch('../data/ui_text_zhCN.json').then(function (r) { return r.ok ? r.json() : null; })
+    ]).then(function (pair) {
+      if (pair[1]) ingestUiTextJson(pair[1]);
+      if (pair[0]) ingestPostEffectsJson(pair[0]);
+      fillForm();
+      renderList();
+      if (pair[0]) {
+        $('status').textContent = '已自动载入 post-effects.json' + (pair[1] ? ' + ui_text_zhCN.json' : '');
+      }
+      return fetch('../data/combat-pipeline.json').then(function (r) { return r.ok ? r.json() : null; });
+    }).then(applyCatalogFromPipelineJson).catch(function () {
+      rebuildEffectTypeSelect();
+      renderList();
+    });
+  }
+})();
+  </script>
+</body>
+</html>
