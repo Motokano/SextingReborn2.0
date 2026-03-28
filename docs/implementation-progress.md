@@ -25,7 +25,7 @@
 | 状态抽离（进行中） | `js/core/game-state-core.js`（框架无关核心，与迁移文档方向一致）。 |
 | 生存（对照 06） | `js/survival.js`、`data/survival-config.json`。 |
 | 角色与装备栏（对照 05 / 14 子集） | `js/character-attributes.js`、`js/inventory-equipment.js`（含战斗子状态、死亡清空装备等）。 |
-| 采集与生产 | `js/gathering.js`、`js/production-quality.js`、`data/gathering_points.json` 等。 |
+| 采集与生产 | `js/gathering.js`、`js/production-quality.js`、`data/gathering_point_instances.json`（实例/掉落/品质硬上限）、`data/gathering_points.json`（兼容）、`tools/gathering-point-editor.html` 等。 |
 | 技能 | `js/combat-skills.js`、`js/survival-skills.js`、`data/combat-skills.json`。 |
 | Buff（对照 18） | `js/buff-system.js`、`data/buffs.json`、`data/editor/buff_event_registry.json`。 |
 | 经脉/穴位（对照 12） | `js/acupoints.js`。 |

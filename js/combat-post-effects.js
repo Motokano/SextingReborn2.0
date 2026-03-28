@@ -1,33 +1,24 @@
 /**
- * 后遗症（post-effects.json）分派：按 effect_type 注册解析器，供 combat-pipeline 阶段调用。
+ * 后遗症管线分派：按 effect_type 注册解析器，供 combat-pipeline 阶段调用。
+ * 数据表与装配校验见 js/post-effects.js（PostEffects）。
  * 新增 effect_type：在此 registerPostEffectResolver，并在 data/combat-pipeline.json effect_type_catalog 登记。
  */
 (function (global) {
     'use strict';
 
-    var table = {};
+    var PE = global.PostEffects;
     var customResolvers = {};
 
     function setTable(json) {
-        table = {};
-        if (!json || typeof json !== 'object') return;
-        for (var k in json) {
-            if (!json.hasOwnProperty(k) || k === '_comment') continue;
-            var row = json[k];
-            if (row && typeof row === 'object' && row.id) table[row.id] = row;
-        }
+        if (PE && typeof PE.setTable === 'function') PE.setTable(json);
     }
 
     function getPostEffect(id) {
-        return id ? table[id] : null;
+        return PE && typeof PE.getPostEffect === 'function' ? PE.getPostEffect(id) : null;
     }
 
     function getAllPostEffects() {
-        var out = [];
-        for (var k in table) {
-            if (Object.prototype.hasOwnProperty.call(table, k) && table[k]) out.push(table[k]);
-        }
-        return out;
+        return PE && typeof PE.getAllPostEffects === 'function' ? PE.getAllPostEffects() : [];
     }
 
     function registerPostEffectResolver(effectType, fn) {
@@ -35,7 +26,9 @@
     }
 
     function validateSocket(pe, ctx) {
+        if (PE && typeof PE.validateSocket === 'function') return PE.validateSocket(pe, ctx);
         if (!pe) return false;
+        ctx = ctx || {};
         if (pe.valid_skill_ids && pe.valid_skill_ids.length && ctx.skillId && pe.valid_skill_ids.indexOf(ctx.skillId) < 0) return false;
         if (pe.valid_move_ids && pe.valid_move_ids.length && ctx.moveId && pe.valid_move_ids.indexOf(ctx.moveId) < 0) return false;
         return true;
@@ -70,7 +63,7 @@
         }
     }
 
-    function resolverInitiativeNoop(ctx, pe) {
+    function resolverInitiativeNoop(/* ctx, pe */) {
         /* 先手在 07 速度比较前查询装配；管线内不重复处理 */
     }
 

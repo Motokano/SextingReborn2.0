@@ -1,7 +1,7 @@
 /**
- * 采集系统 - 按设计文档 11-skills 8.2.2
- * 灌木丛(gathering_bush)、草丛(gathering_grass)，成功率 base + base*(熟练度%*0.003)，
- * 五百万次满熟练度，品质上修：熟练度每高 5% 有 5% 概率上修一档（最高传说）
+ * 采集系统 — 设计见 docs/design/11-skills.md 8.2.2 + gathering_point_instances
+ * 地图格 entity_id 为视觉键；可选 gathering_instance_id 引用 data/gathering_point_instances.json 中的实例。
+ * 不枯竭；每行 loot 可配 quality_tier_max（1～6）为熟练度上修后的硬上限。
  */
 (function (global) {
     'use strict';
@@ -9,14 +9,14 @@
     var GATHERING_MAX_PROFICIENCY = 5000000;
     var STAMINA_COST = 2;
     var MAX_INVENTORY_SLOTS = 30;
-    // 品质六档：粗糙 -> 普通 -> 精良 -> 稀有 -> 史诗 -> 传说
-    // 约定：quality_tier 取值 0~5
     var QUALITY_NAMES = ['粗糙', '普通', '精良', '稀有', '史诗', '传说'];
 
     var config = {
         gathering_points: {},
         loot_tables: {},
-        items: {}
+        items: {},
+        instanceDefaults: {},
+        instances: {}
     };
 
     var character = {
@@ -31,10 +31,54 @@
         return g && g.Survival && typeof g.Survival.getStamina === 'function';
     }
 
+    function synthesizeInstancesFromLegacy(points, lootTables) {
+        var defaults = {};
+        var instances = {};
+        if (!points || typeof points !== 'object') return { defaults: defaults, instances: instances };
+        for (var key in points) {
+            if (!Object.prototype.hasOwnProperty.call(points, key)) continue;
+            var p = points[key];
+            var gid = p.gathering_point_id || key;
+            defaults[key] = gid;
+            var loot = (p.loot_table_id && lootTables && lootTables[p.loot_table_id]) ? lootTables[p.loot_table_id] : [];
+            var rows = [];
+            for (var i = 0; i < loot.length; i++) {
+                var r = loot[i];
+                rows.push({
+                    item_id: r.item_id,
+                    weight: r.weight,
+                    quality_tier: r.quality_tier,
+                    quality_tier_max: r.quality_tier_max != null ? r.quality_tier_max : 6
+                });
+            }
+            instances[gid] = {
+                instance_id: gid,
+                map_entity_id: key,
+                wild_interaction_category: 'gathering',
+                display_name: p.display_name || key,
+                base_gathering_success_rate: p.base_gathering_success_rate != null ? p.base_gathering_success_rate : 0.6,
+                stamina_cost: p.stamina_cost != null ? p.stamina_cost : STAMINA_COST,
+                tool_required: !!p.tool_required,
+                loot_rows: rows
+            };
+        }
+        return { defaults: defaults, instances: instances };
+    }
+
     function setConfig(cfg) {
         if (cfg.gathering_points) config.gathering_points = cfg.gathering_points;
         if (cfg.loot_tables) config.loot_tables = cfg.loot_tables;
         if (cfg.items) config.items = cfg.items;
+
+        var bundle = cfg.gathering_point_instances;
+        if (bundle && typeof bundle === 'object' && bundle.instances && typeof bundle.instances === 'object' && Object.keys(bundle.instances).length > 0) {
+            config.instanceDefaults = bundle.defaults && typeof bundle.defaults === 'object' ? bundle.defaults : {};
+            config.instances = bundle.instances;
+        } else {
+            var syn = synthesizeInstancesFromLegacy(config.gathering_points, config.loot_tables);
+            config.instanceDefaults = syn.defaults;
+            config.instances = syn.instances;
+        }
     }
 
     function getCharacterState() {
@@ -73,30 +117,48 @@
         return character.inventory.length >= MAX_INVENTORY_SLOTS;
     }
 
-    function getGatheringPointConfig(entityId) {
-        return config.gathering_points[entityId] || null;
-    }
-
-    function rollLootRow(lootTable) {
-        if (!lootTable || lootTable.length === 0) return null;
-        var total = 0;
-        for (var i = 0; i < lootTable.length; i++) total += lootTable[i].weight;
-        if (total <= 0) return lootTable[0] || null;
-        var r = Math.random() * total;
-        for (var j = 0; j < lootTable.length; j++) {
-            r -= lootTable[j].weight;
-            if (r <= 0) return lootTable[j];
-        }
-        return lootTable[lootTable.length - 1];
-    }
-
     function normalizeQualityTier(rawTier) {
-        // 兼容旧数据：某些 loot 表可能用 1~6 表示六档（1=粗糙 ... 6=传说）
         if (rawTier == null) return 0;
         var v = Number(rawTier);
         if (Number.isNaN(v)) return 0;
         if (v >= 1 && v <= 6) return Math.max(0, Math.min(5, v - 1));
         return Math.max(0, Math.min(5, v));
+    }
+
+    /** 行级品质上限：1～6 → 最大允许 internal tier（0～5）；缺省 6 = 传说 */
+    function rowMaxQualityInternal(row) {
+        if (!row || row.quality_tier_max == null) return 5;
+        return normalizeQualityTier(row.quality_tier_max);
+    }
+
+    function resolveInstanceId(mapEntityId, instanceIdOpt) {
+        if (instanceIdOpt && config.instances[instanceIdOpt]) return instanceIdOpt;
+        if (mapEntityId && config.instanceDefaults[mapEntityId]) return config.instanceDefaults[mapEntityId];
+        if (mapEntityId && config.instances[mapEntityId]) return mapEntityId;
+        return null;
+    }
+
+    function resolveGatheringPoint(mapEntityId, instanceIdOpt) {
+        var iid = resolveInstanceId(mapEntityId, instanceIdOpt);
+        if (!iid || !config.instances[iid]) return null;
+        var inst = config.instances[iid];
+        if (inst.map_entity_id && mapEntityId && inst.map_entity_id !== mapEntityId) {
+            /* 宽松：仍以实例为准，避免旧图错配直接失效 */
+        }
+        return inst;
+    }
+
+    function rollLootRow(lootTable) {
+        if (!lootTable || lootTable.length === 0) return null;
+        var total = 0;
+        for (var i = 0; i < lootTable.length; i++) total += Number(lootTable[i].weight) || 0;
+        if (total <= 0) return lootTable[0] || null;
+        var r = Math.random() * total;
+        for (var j = 0; j < lootTable.length; j++) {
+            r -= Number(lootTable[j].weight) || 0;
+            if (r <= 0) return lootTable[j];
+        }
+        return lootTable[lootTable.length - 1];
     }
 
     function tryQualityUpgrade(qualityTier) {
@@ -109,13 +171,17 @@
     }
 
     /**
-     * 执行一次采集
-     * @param {string} entityId - gathering_bush | gathering_grass
-     * @returns {{ success: boolean, gathered?: { item_id, quality_tier, item_name, quality_name }, message: string }}
+     * @param {string} mapEntityId - 地图 entity_id（视觉/键）
+     * @param {string} [gatheringInstanceId] - 可选实例 id
      */
-    function doGather(entityId) {
-        var point = getGatheringPointConfig(entityId);
+    function doGather(mapEntityId, gatheringInstanceId) {
+        var point = resolveGatheringPoint(mapEntityId, gatheringInstanceId);
         if (!point) return { success: false, message: '未知采集点' };
+
+        var cat = point.wild_interaction_category || 'gathering';
+        if (cat !== 'gathering') {
+            return { success: false, message: '该资源需要「' + cat + '」类技能互动（当前仅开放徒手采集类）' };
+        }
 
         var Surv = useSurvival() ? (typeof window !== 'undefined' ? window : global).Survival : null;
         if (Surv && !Surv.canPerformStaminaOrEnergyAction()) {
@@ -138,21 +204,22 @@
             return { success: false, message: '采集失败', consumedStamina: true };
         }
 
-        var lootTableId = point.loot_table_id;
-        var lootTable = config.loot_tables[lootTableId];
+        var lootTable = point.loot_rows;
         if (!lootTable || lootTable.length === 0) {
-            character.proficiency_count += 1;
+            if (cat === 'gathering') character.proficiency_count += 1;
             return { success: true, message: '采集成功但无产出', consumedStamina: true };
         }
 
         var row = rollLootRow(lootTable);
         if (!row) {
-            character.proficiency_count += 1;
+            if (cat === 'gathering') character.proficiency_count += 1;
             return { success: true, message: '采集成功但无产出', consumedStamina: true };
         }
 
         var qualityTier = normalizeQualityTier(row.quality_tier);
         qualityTier = tryQualityUpgrade(qualityTier);
+        var capInt = rowMaxQualityInternal(row);
+        qualityTier = Math.min(qualityTier, capInt);
 
         var itemDef = config.items[row.item_id];
         var itemName = itemDef && itemDef.name ? itemDef.name : row.item_id;
@@ -168,7 +235,7 @@
                     if (pos && pos.mapId != null && pos.x != null && pos.y != null)
                         g.InventoryEquipment.addItemToGround(pos.mapId, pos.x, pos.y, itemInstance);
                 }
-                character.proficiency_count += 1;
+                if (cat === 'gathering') character.proficiency_count += 1;
                 if (typeof global !== 'undefined' && global.Survival && typeof global.Survival.advanceTick === 'function') {
                     global.Survival.advanceTick();
                 }
@@ -177,7 +244,7 @@
         } else {
             character.inventory.push({ item_id: row.item_id, quality_tier: qualityTier });
         }
-        character.proficiency_count += 1;
+        if (cat === 'gathering') character.proficiency_count += 1;
 
         if (Surv && typeof Surv.advanceTick === 'function') Surv.advanceTick();
         return {
@@ -193,6 +260,19 @@
         };
     }
 
+    function canGather(mapEntityId, gatheringInstanceId) {
+        var point = resolveGatheringPoint(mapEntityId, gatheringInstanceId);
+        if (!point) return false;
+        if ((point.wild_interaction_category || 'gathering') !== 'gathering') return false;
+        var Surv = useSurvival() ? (typeof window !== 'undefined' ? window : global).Survival : null;
+        if (Surv && !Surv.canPerformStaminaOrEnergyAction()) return false;
+        var stamina = Surv ? Surv.getStamina() : character.stamina;
+        var cost = point.stamina_cost != null ? point.stamina_cost : STAMINA_COST;
+        if (stamina < cost) return false;
+        if (isInventoryFull()) return false;
+        return true;
+    }
+
     global.Gathering = {
         GATHERING_MAX_PROFICIENCY: GATHERING_MAX_PROFICIENCY,
         QUALITY_NAMES: QUALITY_NAMES,
@@ -201,19 +281,13 @@
         getCharacterState: getCharacterState,
         setCharacterState: setCharacterState,
         getProficiencyPercent: getProficiencyPercent,
-        getGatheringPointConfig: getGatheringPointConfig,
-        isInventoryFull: isInventoryFull,
-        canGather: function (entityId) {
-            var point = getGatheringPointConfig(entityId);
-            if (!point) return false;
-            var Surv = useSurvival() ? (typeof window !== 'undefined' ? window : global).Survival : null;
-            if (Surv && !Surv.canPerformStaminaOrEnergyAction()) return false;
-            var stamina = Surv ? Surv.getStamina() : character.stamina;
-            var cost = point.stamina_cost != null ? point.stamina_cost : STAMINA_COST;
-            if (stamina < cost) return false;
-            if (isInventoryFull()) return false;
-            return true;
+        resolveGatheringPoint: resolveGatheringPoint,
+        resolveInstanceId: resolveInstanceId,
+        getGatheringPointConfig: function (entityId) {
+            return config.gathering_points[entityId] || null;
         },
+        isInventoryFull: isInventoryFull,
+        canGather: canGather,
         doGather: doGather
     };
 })(typeof window !== 'undefined' ? window : this);

@@ -181,6 +181,7 @@
         <button type="button" id="btn-import">导入 JSON（选文件）</button>
         <button type="button" id="btn-import-paste">导入 JSON（粘贴）</button>
         <button type="button" id="btn-import-npc-reg">载入 NPC 注册表</button>
+        <button type="button" id="btn-load-gp-instances" title="从 ../data/gathering_point_instances.json 拉取实例 id 列表">载入采集点实例表</button>
         <button type="button" id="btn-export">导出 JSON</button>
         <button type="button" id="btn-toggle-notes" title="仅编辑器显示，导出不包含">显示注释：开</button>
         <label>地图 ID <input type="text" id="inp-map-id" placeholder="home" /></label>
@@ -224,13 +225,17 @@
                 <button type="button" id="btn-apply-portal">应用传送点</button>
             </div>
             <div class="row" id="panel-entity">
-                <label>采集点 / 实体</label>
+                <label>采集点 / 实体（视觉 entity_id）</label>
                 <select id="inp-entity-id">
                     <option value="">无</option>
                     <option value="gathering_bush">灌木丛 (gathering_bush)</option>
                     <option value="gathering_grass">草丛 (gathering_grass)</option>
                 </select>
-                <p class="hint">与设计文档 8.2.2 一致，地图用 entity_id 引用；游戏内站在该格可执行采集。</p>
+                <label style="margin-top:8px;">采集点实例 gathering_instance_id（可选）</label>
+                <select id="inp-gathering-instance-id">
+                    <option value="">默认（按 entity_id 走 instances.defaults）</option>
+                </select>
+                <p class="hint">实例在 <code>data/gathering_point_instances.json</code> 编辑（工具栏「载入采集点实例表」）。留空则游戏用 defaults 映射。</p>
                 <button type="button" id="btn-apply-entity">应用实体</button>
             </div>
             <div class="row" id="panel-terrain">
@@ -272,7 +277,7 @@
                 enabled: [],
                 walkable: [],
                 portals: [],
-                entities: [],   // [{ x, y, entity_id: 'gathering_bush'|'gathering_grass' }, ...]
+                entities: [],   // [{ x, y, entity_id, gathering_instance_id? }, ...]
                 npcs: [],       // [{ x, y, npc_id: 'npc.supervisor.linShuyao' }, ...]
                 terrains: [],   // [{ x, y, terrain_id: 'ground' }, ...] 稀疏层，可扩展，旧引擎不读也不影响
                 annotations: {} // { "x,y": "text" } 编辑器专用，不参与导出
@@ -376,11 +381,19 @@
                 return null;
             }
 
-            function getEntityAt(x, y) {
+            function getEntityRecordAt(x, y) {
                 for (var i = 0; i < state.entities.length; i++) {
-                    if (state.entities[i].x === x && state.entities[i].y === y) return state.entities[i].entity_id || null;
+                    if (state.entities[i].x === x && state.entities[i].y === y) return state.entities[i];
                 }
                 return null;
+            }
+            function getEntityAt(x, y) {
+                var r = getEntityRecordAt(x, y);
+                return r ? (r.entity_id || null) : null;
+            }
+            function getGatheringInstanceAt(x, y) {
+                var r = getEntityRecordAt(x, y);
+                return (r && r.gathering_instance_id) ? String(r.gathering_instance_id) : '';
             }
 
             function getTerrainAt(x, y) {
@@ -400,13 +413,17 @@
                 if (terrainId) state.terrains.push({ x: x, y: y, terrain_id: terrainId });
             }
 
-            function setEntityAt(x, y, entityId) {
+            function setEntityAt(x, y, entityId, gatheringInstanceId) {
                 var idx = -1;
                 for (var i = 0; i < state.entities.length; i++) {
                     if (state.entities[i].x === x && state.entities[i].y === y) { idx = i; break; }
                 }
                 if (idx >= 0) state.entities.splice(idx, 1);
-                if (entityId) state.entities.push({ x: x, y: y, entity_id: entityId });
+                if (entityId) {
+                    var o = { x: x, y: y, entity_id: entityId };
+                    if (gatheringInstanceId) o.gathering_instance_id = String(gatheringInstanceId);
+                    state.entities.push(o);
+                }
             }
 
             function getNpcAt(x, y) {
@@ -744,6 +761,7 @@
                     document.getElementById('inp-portal-label').value = portal ? (portal.label || '') : '';
                     var eid = getEntityAt(x, y);
                     document.getElementById('inp-entity-id').value = eid || '';
+                    syncGatheringInstanceFieldFromCell(x, y);
                     var npcId = getNpcAt(x, y);
                     document.getElementById('inp-npc-id').value = npcId || '';
                     document.getElementById('inp-note').value = getNoteAt(x, y);
@@ -771,6 +789,7 @@
                     document.getElementById('inp-portal-label').value = portal ? (portal.label || '') : '';
                     var eid = getEntityAt(first.x, first.y);
                     document.getElementById('inp-entity-id').value = eid || '';
+                    syncGatheringInstanceFieldFromCell(first.x, first.y);
                     var npcId = getNpcAt(first.x, first.y);
                     document.getElementById('inp-npc-id').value = npcId || '';
 
@@ -799,13 +818,59 @@
                 highlightSelected();
             }
 
+            function ensureGatheringInstanceOption(sel, value) {
+                if (!sel || !value) return;
+                var v = String(value);
+                for (var i = 0; i < sel.options.length; i++) {
+                    if (sel.options[i].value === v) return;
+                }
+                var opt = document.createElement('option');
+                opt.value = v;
+                opt.textContent = v + '（地图）';
+                sel.appendChild(opt);
+            }
+
+            function syncGatheringInstanceFieldFromCell(x, y) {
+                var gInstSel = document.getElementById('inp-gathering-instance-id');
+                if (!gInstSel) return;
+                var gi = getGatheringInstanceAt(x, y);
+                if (gi) ensureGatheringInstanceOption(gInstSel, gi);
+                gInstSel.value = gi || '';
+            }
+
+            function applyGatheringInstancesRegistry(data) {
+                var sel = document.getElementById('inp-gathering-instance-id');
+                if (!sel || !data || !data.instances) return;
+                var cur = sel.value || '';
+                sel.innerHTML = '';
+                var opt0 = document.createElement('option');
+                opt0.value = '';
+                opt0.textContent = '默认（按 entity_id 走 instances.defaults）';
+                sel.appendChild(opt0);
+                var ids = Object.keys(data.instances);
+                ids.sort();
+                for (var i = 0; i < ids.length; i++) {
+                    var id = ids[i];
+                    var inst = data.instances[id];
+                    var opt = document.createElement('option');
+                    opt.value = id;
+                    opt.textContent = id + (inst && inst.display_name ? ' — ' + inst.display_name : '');
+                    sel.appendChild(opt);
+                }
+                if (cur) {
+                    ensureGatheringInstanceOption(sel, cur);
+                    sel.value = cur;
+                }
+            }
+
             function applyEntity() {
                 if (selected.length === 0) return;
                 var entityId = (document.getElementById('inp-entity-id').value || '').trim();
+                var gInst = (document.getElementById('inp-gathering-instance-id').value || '').trim();
                 for (var i = 0; i < selected.length; i++) {
                     var x = selected[i].x, y = selected[i].y;
                     if (!isEnabled(x, y)) continue;
-                    setEntityAt(x, y, entityId || null);
+                    setEntityAt(x, y, entityId || null, gInst || null);
                 }
                 renderGrid();
                 highlightSelected();
@@ -1039,7 +1104,11 @@
                         }
                         return o;
                     }),
-                    entities: state.entities.length ? state.entities.map(function (e) { return { x: e.x, y: e.y, entity_id: e.entity_id }; }) : undefined,
+                    entities: state.entities.length ? state.entities.map(function (e) {
+                        var o = { x: e.x, y: e.y, entity_id: e.entity_id };
+                        if (e.gathering_instance_id) o.gathering_instance_id = e.gathering_instance_id;
+                        return o;
+                    }) : undefined,
                     npcs: state.npcs.length ? state.npcs.map(function (n) { return { x: n.x, y: n.y, npc_id: n.npc_id }; }) : undefined,
                     terrains: state.terrains && state.terrains.length ? state.terrains.map(function (t) { return { x: t.x, y: t.y, terrain_id: t.terrain_id }; }) : undefined,
                     annotations: (state.annotations && Object.keys(state.annotations).length) ? state.annotations : undefined
@@ -1137,6 +1206,28 @@
                         .catch(function () {});
                 }
             } catch (e) {}
+
+            document.getElementById('btn-load-gp-instances').addEventListener('click', function () {
+                if (typeof fetch !== 'function') return;
+                fetch('data/gathering_point_instances.json')
+                    .then(function (r) { return r.ok ? r.json() : Promise.reject(new Error('http')); })
+                    .then(function (data) {
+                        if (!data || !data.instances) throw new Error('bad');
+                        applyGatheringInstancesRegistry(data);
+                        window.alert('已载入 ' + Object.keys(data.instances).length + ' 个采集点实例');
+                    })
+                    .catch(function () {
+                        window.alert('读取失败：请从仓库根目录用本地静态服务打开本页（需能访问 data/gathering_point_instances.json）。');
+                    });
+            });
+            try {
+                if (typeof fetch === 'function') {
+                    fetch('data/gathering_point_instances.json')
+                        .then(function (r) { return r.ok ? r.json() : null; })
+                        .then(function (data) { if (data && data.instances) applyGatheringInstancesRegistry(data); })
+                        .catch(function () {});
+                }
+            } catch (e2) {}
 
             document.getElementById('btn-export').addEventListener('click', function () {
                 var out = exportMapDataObject();

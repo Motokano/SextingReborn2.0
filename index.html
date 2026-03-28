@@ -613,7 +613,11 @@
             cursor: pointer; display: flex; flex-direction: column; gap: 2px; transition: background 0.2s, color 0.2s;
         }
         #picker-post-effect .picker-list button:hover { background: #f59e0b; color: #1c1612; }
-        #picker-post-effect .picker-list .post-desc { font-size: 10px; color: #a8a29e; }
+        #picker-post-effect .picker-list .post-desc {
+            font-size: 10px; color: #a8a29e;
+            white-space: pre-line;
+            word-break: break-word;
+        }
         #picker-post-effect .picker-list button:hover .post-desc { color: #2a2117; }
 
         /* 生存技能总览弹窗 - 风格参考 demo.html 右侧 UI */
@@ -1308,7 +1312,7 @@
                 </div>
             </div>
             <div id="left-hud">
-                <div class="role-card">
+                <div class="role-card" id="status-role-card">
                     <h1 id="status-role-name" data-ui="status.role.default"></h1>
                     <p class="subtitle" id="status-gender-line"></p>
                 </div>
@@ -1316,6 +1320,16 @@
                     <div class="status-card" id="status-limbs">
                         <div class="block-title" data-ui="status.block.limbs"></div>
                         <div id="limb-rows"></div>
+                    </div>
+                    <div class="status-card" id="status-combat-resources-card" style="display:none">
+                        <div class="block-title" data-ui="status.block.battle_resources"></div>
+                        <div id="status-battle-resources" class="survival-row">
+                            <div class="row"><span class="label" data-ui="status.label.qi_li"></span><span class="value" id="status-qi-li-text">—</span></div>
+                            <div class="progress-wrap"><div class="progress-fill stamina" id="status-qi-li-bar" style="width:0%"></div></div>
+                            <div class="row" style="margin-top:8px"><span class="label" data-ui="status.label.diqi"></span><span class="value" id="status-diqi-text">—</span></div>
+                            <div class="progress-wrap"><div class="progress-fill thirst" id="status-diqi-bar" style="width:0%"></div></div>
+                            <div class="row" style="margin-top:6px"><span class="label" data-ui="status.label.diqi_shield"></span><span class="value" id="status-diqi-shield-text">—</span></div>
+                        </div>
                     </div>
                     <div class="status-card" id="status-survival">
                         <div class="block-title" data-ui="status.block.survival"></div>
@@ -1335,18 +1349,11 @@
                             <div class="row"><span class="label" data-ui="status.label.energy"></span><span class="value" id="status-energy-text">—</span></div>
                             <div class="progress-wrap"><div class="progress-fill energy" id="status-energy-bar" style="width:100%"></div></div>
                         </div>
-                        <div id="status-battle-resources" class="survival-row" style="margin-top:12px;display:none">
-                            <div class="row"><span class="label" data-ui="status.label.qi_li"></span><span class="value" id="status-qi-li-text">—</span></div>
-                            <div class="progress-wrap"><div class="progress-fill stamina" id="status-qi-li-bar" style="width:0%"></div></div>
-                            <div class="row" style="margin-top:8px"><span class="label" data-ui="status.label.diqi"></span><span class="value" id="status-diqi-text">—</span></div>
-                            <div class="progress-wrap"><div class="progress-fill thirst" id="status-diqi-bar" style="width:0%"></div></div>
-                            <div class="row" style="margin-top:6px"><span class="label" data-ui="status.label.diqi_shield"></span><span class="value" id="status-diqi-shield-text">—</span></div>
-                        </div>
                         <div class="row" style="margin-top:8px"><span class="label" data-ui="status.label.weight"></span><span class="value" id="status-weight">—</span></div>
                         <div class="row" style="margin-top:4px"><span class="label" data-ui="status.label.carry"></span><span class="value" id="status-carry">—</span></div>
                     </div>
                     <div class="quick-belt" id="quick-belt"></div>
-                    <details class="details-block" open>
+                    <details class="details-block" id="status-attrs-block" open>
                         <summary><span data-ui="status.block.attrs"></span> <span>▼</span></summary>
                         <div class="details-body">
                             <div class="row"><span class="label" data-ui="status.attr.jingu"></span><span class="value" id="status-attr-jingu">—</span></div>
@@ -1601,6 +1608,7 @@
     <script src="js/combat-skills.js"></script>
     <script src="js/combat-hub-actions.js"></script>
     <script src="js/combat-parry.js"></script>
+    <script src="js/post-effects.js"></script>
     <script src="js/combat-post-effects.js"></script>
     <script src="js/combat-pipeline.js"></script>
     <script src="js/acupoints.js"></script>

@@ -128,6 +128,7 @@
             "max": 50,
             "settlement": "floor_ratio_then_clamp_base_at_10_round_scale_min_1"
           },
+          "post_effect_slot_max": 1,
           "proficiency_attr_unlocks": [
             { "min_proficiency_ratio": 0.2, "acquired": { "jingu": 15 } }
           ]
@@ -202,6 +203,7 @@
             "max": 50,
             "settlement": "floor_ratio_then_clamp_base_at_10_round_scale_min_1"
           },
+          "post_effect_slot_max": 1,
           "proficiency_attr_unlocks": [
             { "min_proficiency_ratio": 0.2, "acquired": { "flexibility": 15 } }
           ]

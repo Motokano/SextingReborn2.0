@@ -7,11 +7,19 @@
     var CENTER_OFFSET_X = E.CENTER_OFFSET_X;
     var CENTER_OFFSET_Y = E.CENTER_OFFSET_Y;
 
-    var IDLE_TICK_MS = 3000;
+    var idleTickMs = 3000;
     var gatheringIdleTimer = null;
     var gatheringIdleAt = null;
+    var tiaoXiIdleTimer = null;
+    var tiaoXiCapModeNotified = false;
     var timeHudVisible = true;
     var combatRenderProfileTimer = null;
+
+    function getIdleTickMs() {
+        var n = parseInt(idleTickMs, 10);
+        if (!isFinite(n) || n < 200) n = 3000;
+        return n;
+    }
 
     // Shared context for renderer/systems
     window.SceneCtx = {
@@ -61,7 +69,35 @@
         },
         isTimeHudVisible: function () { return !!timeHudVisible; },
         footworkNieBuMode: false,
-        nieBuLeapRadius: 2
+        nieBuLeapRadius: 2,
+        idleActionType: '',
+        /**
+         * 左侧状态栏区块显示规则接口（默认全开）：
+         * - 值可为 boolean
+         * - 也可为函数 () => boolean（后续可接入任意条件）
+         */
+        leftHudBlockVisibilityRules: {
+            role: true,
+            limbs: true,
+            combat_resources: true,
+            survival: true,
+            quick_belt: true,
+            attrs: true
+        },
+        setLeftHudBlockVisibilityRule: function (blockId, rule) {
+            if (!blockId) return;
+            this.leftHudBlockVisibilityRules = this.leftHudBlockVisibilityRules || {};
+            this.leftHudBlockVisibilityRules[blockId] = rule;
+        },
+        shouldShowLeftHudBlock: function (blockId) {
+            var rules = this.leftHudBlockVisibilityRules || {};
+            var rule = rules[blockId];
+            if (typeof rule === 'function') {
+                try { return !!rule(); } catch (e0) { return true; }
+            }
+            if (rule === undefined || rule === null) return true;
+            return !!rule;
+        }
     };
 
     function showMsg(text, logType) {
@@ -327,7 +363,8 @@
             fetch(base + 'combat-skills.json').then(function (r) { return r.ok ? r.json() : { constants: {}, categories: [], skills: {} }; }).catch(function () { return { constants: {}, categories: [], skills: {} }; }),
             fetch(base + 'combat-pipeline.json').then(function (r) { return r.ok ? r.json() : { pipelines: {} }; }).catch(function () { return { pipelines: {} }; }),
             fetch(base + 'post-effects.json').then(function (r) { return r.ok ? r.json() : {}; }).catch(function () { return {}; }),
-            fetch(base + 'survival-skills.json').then(function (r) { return r.ok ? r.json() : null; }).catch(function () { return null; })
+            fetch(base + 'survival-skills.json').then(function (r) { return r.ok ? r.json() : null; }).catch(function () { return null; }),
+            fetch(base + 'gathering_point_instances.json').then(function (r) { return r.ok ? r.json() : null; }).catch(function () { return null; })
         ]).then(function (arr) {
             if (!arr[0]) throw new Error('[SceneApp] ui_text_zhCN.json missing');
             if (!window.UIText || typeof window.UIText.setDict !== 'function') throw new Error('[SceneApp] UIText module missing');
@@ -336,10 +373,17 @@
             G.setConfig({
                 gathering_points: arr[1],
                 loot_tables: arr[2],
-                items: arr[3]
+                items: arr[3],
+                gathering_point_instances: arr[12] || null
             });
             if (window.Survival) window.Survival.setConfig(arr[4]);
             var survCfg = arr[4] || {};
+            var idleSec = Number(survCfg.idle_seconds_per_tick);
+            if (isFinite(idleSec) && idleSec > 0) {
+                idleTickMs = Math.max(200, Math.round(idleSec * 1000));
+            } else {
+                idleTickMs = 3000;
+            }
             if (window.ProductionQuality && typeof window.ProductionQuality.setConfig === 'function') {
                 window.ProductionQuality.setConfig(survCfg);
             }
@@ -351,7 +395,7 @@
             };
             if (window.CombatSkills && arr[8]) window.CombatSkills.setConfig(arr[8]);
             if (window.CombatPipeline && arr[9]) window.CombatPipeline.setConfig(arr[9]);
-            if (window.CombatPostEffects && arr[10]) window.CombatPostEffects.setTable(arr[10]);
+            if (window.PostEffects && arr[10]) window.PostEffects.setTable(arr[10]);
             if (window.SurvivalSkills && typeof window.SurvivalSkills.setTable === 'function' && arr[11]) {
                 window.SurvivalSkills.setTable(arr[11]);
             }
@@ -386,7 +430,15 @@
                 });
             }
             if (window.Survival && window.Survival.setCharacterCallbacks && window.CharacterAttributes) {
-                window.Survival.setCharacterCallbacks({ getBreathActual: window.CharacterAttributes.getBreathActual });
+                window.Survival.setCharacterCallbacks({
+                    getBreathActual: window.CharacterAttributes.getBreathActual,
+                    getNingqiBonus: function () {
+                        var lv = (IE && typeof IE.getSkillLevel === 'function') ? (IE.getSkillLevel('survival_ningqi') || 0) : 0;
+                        var per = Number(survCfg.ningqi_regen_bonus_per_level);
+                        if (!isFinite(per) || per < 0) per = 0.01;
+                        return Math.max(0, lv) * per;
+                    }
+                });
             }
             hideCreationOverlay();
             updateRoleNameFromCharacter();
@@ -812,6 +864,10 @@
                     var cdCfg = ha.cooldown_ticks != null ? parseInt(ha.cooldown_ticks, 10) : 0;
                     var dis = false;
                     var hint = '';
+                    if (ha.id === 'tiao_xi_once' && tiaoXiIdleTimer) {
+                        btnRow.textContent = (ha.name || ha.id) + '（挂机中）';
+                        hint = '点击停止挂机调息';
+                    }
                     if (!mounted) {
                         dis = true;
                         hint = ui('combat.hub.fail.hub_mount');
@@ -831,6 +887,20 @@
                     (function (actionId) {
                         btnRow.addEventListener('click', function (ev) {
                             ev.stopPropagation();
+                            if (actionId === 'tiao_xi_once') {
+                                if (tiaoXiIdleTimer) {
+                                    stopTiaoXiIdle(false);
+                                    closePlayerActionsSubmenu();
+                                    if (window.SceneRenderer) window.SceneRenderer.render();
+                                    updateStatusPanel();
+                                    return;
+                                }
+                                startTiaoXiIdle();
+                                closePlayerActionsSubmenu();
+                                if (window.SceneRenderer) window.SceneRenderer.render();
+                                updateStatusPanel();
+                                return;
+                            }
                             if (!CHA || typeof CHA.tryExecuteHubAction !== 'function') return;
                             var r = CHA.tryExecuteHubAction(breathId, actionId, { isBattleContext: hubAdjacentForBreathActions });
                             if (!r.ok) {
@@ -926,6 +996,24 @@
     }
 
     function updateStatusPanel(gatherState) {
+        function shouldShowBlock(blockId) {
+            var ctx = window.SceneCtx;
+            if (ctx && typeof ctx.shouldShowLeftHudBlock === 'function') {
+                return !!ctx.shouldShowLeftHudBlock(blockId);
+            }
+            return true;
+        }
+        function setBlockDisplay(id, visible) {
+            var el = document.getElementById(id);
+            if (!el) return;
+            el.style.display = visible ? '' : 'none';
+        }
+        setBlockDisplay('status-role-card', shouldShowBlock('role'));
+        setBlockDisplay('status-limbs', shouldShowBlock('limbs'));
+        setBlockDisplay('status-survival', shouldShowBlock('survival'));
+        setBlockDisplay('quick-belt', shouldShowBlock('quick_belt'));
+        setBlockDisplay('status-attrs-block', shouldShowBlock('attrs'));
+
         updateLimbBlock();
         updateRoleNameFromCharacter();
         var CA = window.CharacterAttributes;
@@ -979,11 +1067,12 @@
             energyText.className = s.energy <= 0 ? 'value danger' : (s.energy < enMax * 0.3 ? 'value warn' : 'value ok');
             energyBar.style.width = enMax > 0 ? (s.energy / enMax * 100) + '%' : '0%';
 
+            var battleCard = document.getElementById('status-combat-resources-card');
             var battleWrap = document.getElementById('status-battle-resources');
-            var showBattleRes = window.SceneCtx && typeof window.SceneCtx.hasAdjacentEnemyForCombat === 'function' && window.SceneCtx.hasAdjacentEnemyForCombat();
+            var showBattleCardByRule = shouldShowBlock('combat_resources');
+            if (battleCard) battleCard.style.display = showBattleCardByRule ? '' : 'none';
             if (battleWrap) {
-                battleWrap.style.display = showBattleRes ? '' : 'none';
-                if (showBattleRes) {
+                if (showBattleCardByRule) {
                     var qm = s.qi_li_max != null ? s.qi_li_max : (Surv.getQiLiMax ? Surv.getQiLiMax() : 100);
                     var qc = s.qi_li_current != null ? s.qi_li_current : 0;
                     var dmax = s.diqi_max != null ? s.diqi_max : 0;
@@ -1043,14 +1132,105 @@
     }
     window.SceneCtx.updateStatusPanel = updateStatusPanel;
 
+    function setIdleActionType(t) {
+        if (window.SceneCtx) window.SceneCtx.idleActionType = t || '';
+    }
+
     function stopGatheringIdle() {
         if (gatheringIdleTimer) {
             clearInterval(gatheringIdleTimer);
             gatheringIdleTimer = null;
             gatheringIdleAt = null;
         }
+        if (tiaoXiIdleTimer) {
+            clearInterval(tiaoXiIdleTimer);
+            tiaoXiIdleTimer = null;
+        }
+        setIdleActionType('');
     }
     window.SceneCtx.isGatheringIdling = function () { return !!gatheringIdleTimer; };
+    window.SceneCtx.isTiaoXiIdling = function () { return !!tiaoXiIdleTimer; };
+
+    function stopTiaoXiIdle(withMsg) {
+        if (!tiaoXiIdleTimer) return;
+        clearInterval(tiaoXiIdleTimer);
+        tiaoXiIdleTimer = null;
+        tiaoXiCapModeNotified = false;
+        setIdleActionType('');
+        if (withMsg !== false) showMsg('已停止挂机调息', 'info');
+    }
+
+    function onTiaoXiIdleTick() {
+        var CHA = window.CombatHubActions;
+        if (!CHA || typeof CHA.tryExecuteHubAction !== 'function') {
+            stopTiaoXiIdle(false);
+            return;
+        }
+        var r = CHA.tryExecuteHubAction('combat_basic_breath', 'tiao_xi_once', { isBattleContext: hubAdjacentForBreathActions });
+        if (!r.ok) {
+            stopTiaoXiIdle(false);
+            showMsg(ui(r.reason_key || 'combat.hub.fail.tiao_xi.diqi_max'), 'warn');
+            if (window.SceneRenderer) window.SceneRenderer.render();
+            updateStatusPanel();
+            return;
+        }
+        var Surv = window.Survival;
+        var s = Surv && typeof Surv.getState === 'function' ? Surv.getState() : null;
+        if (s && s.diqi_max > 0 && s.diqi_cap_limit > 0 && s.diqi_max >= s.diqi_cap_limit && !tiaoXiCapModeNotified) {
+            tiaoXiCapModeNotified = true;
+            showMsg(ui('combat.hub.info.tiao_xi.cap_mode'), 'info');
+        }
+        // 封顶后达到 2*diqi_max-1 自动停（与 06 设计一致）
+        var atCapNow = !!(s && s.diqi_max > 0 && s.diqi_cap_limit > 0 && s.diqi_max >= s.diqi_cap_limit);
+        if (s && atCapNow && s.diqi_current >= (2 * s.diqi_max - 1)) {
+            stopTiaoXiIdle(false);
+            showMsg(ui('combat.hub.info.tiao_xi.overflow_stop'), 'info');
+        }
+        if (window.SceneRenderer) window.SceneRenderer.render();
+        updateStatusPanel();
+    }
+
+    function startTiaoXiIdle() {
+        if (isPreCreationGameplayRestricted()) {
+            showIntroBlockedMsg();
+            return;
+        }
+        if (tiaoXiIdleTimer) return;
+        if (gatheringIdleTimer) {
+            showMsg('请先停止采集挂机', 'info');
+            return;
+        }
+        var CHA = window.CombatHubActions;
+        if (!CHA || typeof CHA.tryExecuteHubAction !== 'function') {
+            showMsg(ui('combat.hub.fail.modules'), 'warn');
+            return;
+        }
+        var r0 = CHA.tryExecuteHubAction('combat_basic_breath', 'tiao_xi_once', { isBattleContext: hubAdjacentForBreathActions });
+        if (!r0.ok) {
+            showMsg(ui(r0.reason_key || 'combat.hub.fail.tiao_xi.diqi_max'), 'warn');
+            return;
+        }
+        var Surv = window.Survival;
+        var s0 = Surv && typeof Surv.getState === 'function' ? Surv.getState() : null;
+        if (s0 && s0.diqi_max > 0 && s0.diqi_cap_limit > 0 && s0.diqi_max >= s0.diqi_cap_limit) {
+            tiaoXiCapModeNotified = true;
+            showMsg(ui('combat.hub.info.tiao_xi.cap_mode'), 'info');
+        } else {
+            tiaoXiCapModeNotified = false;
+        }
+        var atCap0 = !!(s0 && s0.diqi_max > 0 && s0.diqi_cap_limit > 0 && s0.diqi_max >= s0.diqi_cap_limit);
+        if (s0 && atCap0 && s0.diqi_current >= (2 * s0.diqi_max - 1)) {
+            showMsg(ui('combat.hub.info.tiao_xi.overflow_stop'), 'info');
+            if (window.SceneRenderer) window.SceneRenderer.render();
+            updateStatusPanel();
+            return;
+        }
+        tiaoXiIdleTimer = setInterval(onTiaoXiIdleTick, getIdleTickMs());
+        setIdleActionType('tiao_xi');
+        showMsg('开始挂机调息', 'info');
+        if (window.SceneRenderer) window.SceneRenderer.render();
+        updateStatusPanel();
+    }
 
     function markCellDirty(mapId, x, y) {
         if (window.SceneCtx && typeof window.SceneCtx.pushDirtyCell === 'function') {
@@ -1103,15 +1283,17 @@
 
     function onGatherTick() {
         var st = E.getState();
-        var entityId = E.getEntityAt(st.x, st.y);
-        if (!entityId || !G.canGather(entityId)) {
+        var rec = (E.getEntityRecordAt && typeof E.getEntityRecordAt === 'function') ? E.getEntityRecordAt(st.x, st.y) : null;
+        var entityId = rec ? (rec.entity_id || null) : E.getEntityAt(st.x, st.y);
+        var gatheringInst = rec && rec.gathering_instance_id ? String(rec.gathering_instance_id) : null;
+        if (!entityId || !G.canGather(entityId, gatheringInst)) {
             stopGatheringIdle();
-            if (!G.canGather(entityId) && entityId) showMsg(ui('log.warn.gather.stop.full_or_tired'));
+            if (!G.canGather(entityId, gatheringInst) && entityId) showMsg(ui('log.warn.gather.stop.full_or_tired'));
             markCellDirty(st.mapId, st.x, st.y);
             render();
             return;
         }
-        var result = G.doGather(entityId);
+        var result = G.doGather(entityId, gatheringInst);
         if (result.success && result.gathered) showMsg(result.message, 'success');
         else if (!result.success) showMsg(result.message, 'warn');
         markCellDirty(st.mapId, st.x, st.y);
@@ -1124,12 +1306,19 @@
             return;
         }
         var st = E.getState();
-        var entityId = E.getEntityAt(st.x, st.y);
-        if (!entityId || !G.canGather(entityId)) return;
+        var rec = (E.getEntityRecordAt && typeof E.getEntityRecordAt === 'function') ? E.getEntityRecordAt(st.x, st.y) : null;
+        var entityId = rec ? (rec.entity_id || null) : E.getEntityAt(st.x, st.y);
+        var gatheringInst = rec && rec.gathering_instance_id ? String(rec.gathering_instance_id) : null;
+        if (!entityId || !G.canGather(entityId, gatheringInst)) return;
+        if (tiaoXiIdleTimer) {
+            showMsg('请先停止挂机调息', 'info');
+            return;
+        }
         if (gatheringIdleTimer) return;
         gatheringIdleAt = { mapId: st.mapId, x: st.x, y: st.y };
         onGatherTick();
-        gatheringIdleTimer = setInterval(onGatherTick, IDLE_TICK_MS);
+        gatheringIdleTimer = setInterval(onGatherTick, getIdleTickMs());
+        setIdleActionType('gathering');
         if (window.SceneRenderer) window.SceneRenderer.render();
     }
 
@@ -1607,8 +1796,8 @@
         }
 
         function getPostEffectName(postId) {
-            if (!postId || !window.CombatPostEffects || typeof window.CombatPostEffects.getPostEffect !== 'function') return '';
-            var pe = window.CombatPostEffects.getPostEffect(postId);
+            if (!postId || !window.PostEffects || typeof window.PostEffects.getPostEffect !== 'function') return '';
+            var pe = window.PostEffects.getPostEffect(postId);
             if (!pe) return String(postId);
             if (pe.name_key && window.UIText && typeof window.UIText.t === 'function') return window.UIText.t(pe.name_key);
             return pe.id || String(postId);
@@ -1860,12 +2049,9 @@
                 var limbId = combatUIState.curPart || 'lhand';
                 var postSeqMap = (combat.post_effect_sequences && combat.post_effect_sequences[limbId]) ? combat.post_effect_sequences[limbId] : null;
                 var postSeq = postSeqMap && Array.isArray(postSeqMap[combatUIState.curSkillId]) ? postSeqMap[combatUIState.curSkillId] : null;
-                if (postSeq && postSeq[idx] && window.CombatPostEffects && typeof window.CombatPostEffects.getPostEffect === 'function') {
-                    var pe = window.CombatPostEffects.getPostEffect(postSeq[idx]);
-                    var mismatch = false;
-                    if (pe && Array.isArray(pe.valid_skill_ids) && pe.valid_skill_ids.length && pe.valid_skill_ids.indexOf(combatUIState.curSkillId) < 0) mismatch = true;
-                    if (pe && Array.isArray(pe.valid_move_ids) && pe.valid_move_ids.length && pe.valid_move_ids.indexOf(m.id) < 0) mismatch = true;
-                    if (mismatch) {
+                if (postSeq && postSeq[idx] && window.PostEffects && typeof window.PostEffects.getPostEffect === 'function') {
+                    var pe = window.PostEffects.getPostEffect(postSeq[idx]);
+                    if (pe && typeof window.PostEffects.validateSocket === 'function' && !window.PostEffects.validateSocket(pe, { skillId: combatUIState.curSkillId, moveId: m.id })) {
                         postSeq[idx] = null;
                         IE.setCombatState({ post_effect_sequences: combat.post_effect_sequences });
                     }
@@ -1894,8 +2080,8 @@
         var obtainedIds = (window.CharacterAttributes && typeof window.CharacterAttributes.getPostEffectsObtainedIds === 'function')
             ? window.CharacterAttributes.getPostEffectsObtainedIds()
             : [];
-        var allPost = (window.CombatPostEffects && typeof window.CombatPostEffects.getAllPostEffects === 'function')
-            ? window.CombatPostEffects.getAllPostEffects()
+        var allPost = (window.PostEffects && typeof window.PostEffects.getAllPostEffects === 'function')
+            ? window.PostEffects.getAllPostEffects()
             : [];
         var combat = IE.getCombatState ? IE.getCombatState() : null;
         if (!combat) return;
@@ -1918,16 +2104,23 @@
         }
 
         function isAllowedBySocket(pe) {
-            if (!pe) return false;
-            if (Array.isArray(pe.valid_skill_ids) && pe.valid_skill_ids.length && pe.valid_skill_ids.indexOf(skillId) < 0) return false;
-            if (Array.isArray(pe.valid_move_ids) && pe.valid_move_ids.length && pe.valid_move_ids.indexOf(moveObj.id) < 0) return false;
-            return true;
+            return !!(window.PostEffects && typeof window.PostEffects.validateSocket === 'function' && window.PostEffects.validateSocket(pe, { skillId: skillId, moveId: moveObj.id }));
+        }
+
+        function escapePickerHtml(s) {
+            return String(s)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;');
         }
 
         function addOption(label, desc, onClick) {
             var btn = document.createElement('button');
             btn.type = 'button';
-            btn.innerHTML = '<span>' + label + '</span>' + (desc ? ('<span class="post-desc">' + desc + '</span>') : '');
+            var lab = escapePickerHtml(label);
+            var d = desc ? escapePickerHtml(desc) : '';
+            btn.innerHTML = '<span>' + lab + '</span>' + (d ? ('<span class="post-desc">' + d + '</span>') : '');
             btn.onclick = onClick;
             listEl.appendChild(btn);
         }
@@ -2040,7 +2233,12 @@
             if (!st.skills[skillId] || typeof st.skills[skillId] !== 'object') st.skills[skillId] = { level: 0, move_usage: {} };
 
             var curLv = IE.getSkillLevel(skillId);
-            st.skills[skillId].level = Math.max(0, parseInt(curLv, 10) || 0) + 50;
+            var nextLv = Math.max(0, parseInt(curLv, 10) || 0) + 50;
+            if (window.CombatSkills && typeof window.CombatSkills.getProgressionSkillMaxLevel === 'function') {
+                var cap = window.CombatSkills.getProgressionSkillMaxLevel(st, skillId);
+                if (isFinite(cap)) nextLv = Math.min(nextLv, Math.max(0, parseInt(cap, 10) || 0));
+            }
+            st.skills[skillId].level = nextLv;
             if (!st.skills[skillId].move_usage || typeof st.skills[skillId].move_usage !== 'object') st.skills[skillId].move_usage = {};
 
             if (window.CharacterAttributes && typeof window.CharacterAttributes.recalcCharacterStats === 'function') {

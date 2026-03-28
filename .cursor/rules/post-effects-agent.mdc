@@ -1,0 +1,52 @@
+---
+description: 战斗后遗症（post-effects）数据、运行时、UI 与扩展约定；编辑相关 JSON/JS 时遵循
+alwaysApply: true
+---
+
+# 后遗症（Post Effects）Agent 规则
+
+编辑**后遗症定义、装配、解锁、管线分派、编辑器或相关 UI**时，以 `docs/design/11-skills.md`（后遗症与招式槽）、`docs/design/14-implementation.md`（战斗后遗症与存档）、`docs/design/07-combat-core.md`（先手例外等）为准；与**招式熟练度 → 后天五维**的分轨见 `.cursor/rules/combat-skills-proficiency-agent.mdc`。
+
+## 数据源分工（硬约定）
+
+| 职责 | 位置 |
+|------|------|
+| **后遗症模板表**（id、`name_key`/`desc_key`、`effect_type`、`effect_params`、`valid_*`、可选 `design_meta` 等） | `data/post-effects.json`（顶层键 = `id`，与条目内 `id` 一致） |
+| **后遗症展示文案**（`name_key` / `desc_key` 对应的玩家可见字符串） | `data/ui_text_zhCN.json`；可用 **`tools/post-effects-editor.html`** 同页编辑「展示名称/说明」并导出整表 |
+| **解锁条件 + 招式槽位数** | `data/combat-skills.json` 的 `moves[]` / `hub_actions[]`：`post_effect_unlocks`、`post_effect_slot_max`（未配槽位默认 0 则 UI 不可装） |
+| **已获得（后台）** | `CharacterAttributes.post_effects_obtained`；同步逻辑 `syncPostEffectsObtainedFromSkillsState`（按 `move_usage` + 模板 `post_effect_unlocks`） |
+| **已装配** | `InventoryEquipment` 战斗状态 `post_effect_sequences[limbId][skillId]` 与招式槽对齐 |
+
+## 运行时模块分工（勿混）
+
+- **`js/post-effects.js` → `PostEffects`**：表加载 `setTable`、查询 `getPostEffect` / `getAllPostEffects` / `getPostEffectIds`、**装配与管线共用的** `validateSocket(pe, { skillId, moveId })`。
+- **`js/combat-post-effects.js` → `CombatPostEffects`**：`registerPostEffectResolver`、`runPostEffectsForHook`（管线阶段调用）；**不**再维护独立表，数据以 `PostEffects` 为准。
+- **加载**：`scene-app.js` 的 `loadConfig` 对 `post-effects.json` 调用 **`PostEffects.setTable`**；`index.html` 中 **`post-effects.js` 须在 `combat-post-effects.js` 之前**。
+- **战斗 UI**：`scene-app.js` 后遗症展示/选择器使用 **`PostEffects`**（与 `validateSocket` 单一来源，避免与管线不一致）。
+
+## `valid_skill_ids` / `valid_move_ids`
+
+- **未配置**或**空数组**：已解锁的后遗症可装到**任意**具备 `post_effect_slot_max > 0` 的招式（仍受「同肢同 id 唯一」等规则约束）。
+- **非空数组**：仅当 `skillId` / `moveId` 命中列表时允许装配且管线内 `validateSocket` 通过。
+
+## 存档与校验（实现约定）
+
+- **同肢同后遗症唯一**：同一 `post_effect_id` 在同一出招肢（`lhand`/`rhand`/`lfoot`/`rfoot`）上至多装配 1 份；四肢可各 1 份。
+- 换招式后若已装后遗症不再满足 `valid_*`，应清空该槽（现有 `scene-app` 逻辑）。
+
+## 新增 `effect_type`（扩展清单）
+
+1. 在 `js/combat-post-effects.js` 中 **`registerPostEffectResolver(effectType, fn)`** 实现解析器。
+2. 在 **`data/combat-pipeline.json` 的 `effect_type_catalog`** 中登记该类型（与管线文档一致）。
+3. 在 **`data/post-effects.json`** 增加条目（可用 **`tools/post-effects-editor.html`** 维护）；**文案内容**写入 **`data/ui_text_zhCN.json`**（编辑器内编辑展示名称/说明后「导出 ui_text_zhCN」；缺 key 时 `UIText` 会抛错）。
+4. 若需熟练度解锁：在 **`combat-skills.json`** 对应招式补 `post_effect_unlocks`，并设 **`post_effect_slot_max`**；**勿**用 `proficiency_attr_unlocks` 顶替设计为后遗症的奖励（见 combat-skills-proficiency 规则中刺拳/摆拳分轨）。
+
+## 与 Buff / NPC
+
+- 驱散类等与 Buff 候选池、命中语义相关的实现以 **`docs/design/18-buff-system.md`** 及 Buff 规则为准。
+- NPC/剧情条件：`postEffectObtainedGte`、`CharacterAttributes.hasPostEffectObtained` 等基于**已获得**列表，与是否当前槽位装配无关。
+
+## 调试与文档
+
+- 设计变更时同步相关 **`docs/design/11-skills.md` / `14-implementation.md`** 小节（若项目要求文档与实现对齐）。
+- 勿新增「仅某处硬编码」的后遗症 id 列表作为唯一真相；**以 `post-effects.json` + `PostEffects` API** 为准（测试桩除外）。

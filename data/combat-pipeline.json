@@ -75,7 +75,7 @@
     }
   },
   "effect_type_catalog": {
-    "_doc": "与 post-effects.json 中 effect_type 对齐；resolver 为 CombatPostEffects 内置或 registerPostEffectResolver 注册的键",
+    "_doc": "与 post-effects.json 中 effect_type 对齐；resolver 在 js/combat-post-effects.js 内置或 registerPostEffectResolver 注册；数据表见 js/post-effects.js（PostEffects）",
     "initiative_always_first": {
       "resolver": "initiative_always_first",
       "hooks": ["initiative_check"],

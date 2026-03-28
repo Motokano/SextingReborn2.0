@@ -98,14 +98,19 @@
         return null;
     }
 
-    function getEntityAt(x, y) {
+    function getEntityRecordAt(x, y) {
         var map = getMap();
         if (!map || !map.entities) return null;
         for (var i = 0; i < map.entities.length; i++) {
             var e = map.entities[i];
-            if (e.x === x && e.y === y) return e.entity_id || null;
+            if (e.x === x && e.y === y) return e;
         }
         return null;
+    }
+
+    function getEntityAt(x, y) {
+        var e = getEntityRecordAt(x, y);
+        return e ? (e.entity_id || null) : null;
     }
 
     function getNpcAt(x, y) {
@@ -244,6 +249,7 @@
         isBlocked: isBlocked,
         isDisabled: isDisabled,
         getPortalAt: getPortalAt,
+        getEntityRecordAt: getEntityRecordAt,
         getEntityAt: getEntityAt,
         getNpcAt: getNpcAt,
         getEnemyAt: getEnemyAt,
