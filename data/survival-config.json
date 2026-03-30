@@ -26,10 +26,22 @@
   "energy_max": 100.0,
 
   "qi_li_max": 100,
+  "qi_li_regen_pct_per_turn": 0.5,
   "diqi_max_base": 40,
   "diqi_max_per_breath_effective": 2,
   "diqi_tick_regen_base": 0.12,
   "limb_destroy_max": 100,
+  "_limb_destroy_max_note": "四肢缺省上限：当 body_part_destroy_max 未写某肢键时回退到此值（与 09 左手/右手/脚一致）。",
+  "body_part_destroy_max": {
+    "head": 50,
+    "chest": 100,
+    "abdomen": 80,
+    "lhand": 100,
+    "rhand": 100,
+    "lfoot": 100,
+    "rfoot": 100
+  },
+  "_body_part_destroy_max_note": "各部位损毁值满值（与 GAME_DESIGN → docs/design/09-body-parts.md 表一致）。实现读取：CharacterAttributes.getBodyPartDestroyMax；存档字段 part_destroy + 兼容 limb_destroy。",
 
   "mood_min": 0,
   "mood_max": 1000,

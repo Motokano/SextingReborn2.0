@@ -134,9 +134,15 @@
         }
         var combatState = IE.getCombatState ? IE.getCombatState() : {};
         var skillsState = IE.getSkillsState ? IE.getSkillsState() : {};
-        var isDes = ctx.defender && typeof ctx.defender.isBodyPartDestroyed === 'function'
-            ? ctx.defender.isBodyPartDestroyed
-            : function () { return false; };
+        var isDes;
+        if (ctx.defender && typeof ctx.defender.isBodyPartDestroyed === 'function') {
+            isDes = ctx.defender.isBodyPartDestroyed;
+        } else if (ctx.defender && ctx.defender.kind === 'player' && global.CharacterAttributes
+            && typeof global.CharacterAttributes.isBodyPartDestroyedForParry === 'function') {
+            isDes = global.CharacterAttributes.isBodyPartDestroyedForParry;
+        } else {
+            isDes = function () { return false; };
+        }
         var pctx = CP.resolveParryPhaseContext({
             hitPart: ctx.hitPart || 'chest',
             combatState: combatState,
@@ -228,6 +234,48 @@
     }
 
     /** 防方为玩家时消耗护体盾减伤；非玩家或无 Survival 则透传 */
+    /** 敌人防方：内功% × 身体减伤% × 部位伤害类型微调（与 08 / 10-enemies 对齐） */
+    function phaseEnemyDamageMitigation(ctx, phase) {
+        var def = ctx.defender || {};
+        if (def.kind !== 'enemy') {
+            ctx.damageAfterEnemyMitigation = null;
+            return ctx;
+        }
+        if (!ctx.hitRollSuccess) {
+            ctx.damageAfterEnemyMitigation = 0;
+            return ctx;
+        }
+        var d = ctx.damageAfterParry != null ? ctx.damageAfterParry : ctx.rawDamage;
+        d = Math.max(0, Number(d) || 0);
+        var inner = typeof def.inner_damage_reduce === 'number' ? def.inner_damage_reduce : 0;
+        var body = typeof def.body_damage_reduce === 'number' ? def.body_damage_reduce : 0;
+        inner = clamp(inner, 0, 1);
+        body = clamp(body, 0, 1);
+        d = d * (1 - inner) * (1 - body);
+        var dmgType = ctx.damageType || 'blunt';
+        var modKey = ctx.hitPartModifierKey;
+        if (!modKey && global.CombatMeleeResolve && typeof global.CombatMeleeResolve.mapHitPartToModifierKey === 'function') {
+            modKey = global.CombatMeleeResolve.mapHitPartToModifierKey(ctx.hitPart || 'chest');
+        }
+        var M = 1;
+        if (global.CharacterAttributes && typeof global.CharacterAttributes.getDamageTypeModifier === 'function') {
+            M = global.CharacterAttributes.getDamageTypeModifier(modKey || 'chest', dmgType);
+        }
+        d *= M;
+        ctx.damageAfterEnemyMitigation = d;
+        if (global.GameLog && typeof global.GameLog.log === 'function' && global.UIText && typeof global.UIText.t === 'function') {
+            try {
+                global.GameLog.log(global.UIText.t('log.combat.resolve.enemy_mit', {
+                    inner: String(Math.round(inner * 1000) / 10),
+                    body: String(Math.round(body * 1000) / 10),
+                    mType: String(Math.round(M * 1000) / 1000),
+                    dmg: String(Math.round(d * 100) / 100)
+                }), 'damage');
+            } catch (eM) { /* ignore */ }
+        }
+        return ctx;
+    }
+
     function phaseDiqiShieldPlayer(ctx, phase) {
         var d = ctx.defender;
         var baseD = ctx.damageAfterParry != null ? ctx.damageAfterParry : ctx.rawDamage;
@@ -259,7 +307,28 @@
     }
 
     function phaseDamageStub(ctx, phase) {
-        var dmg = ctx.damageAfterDiqiShield != null ? ctx.damageAfterDiqiShield : (ctx.damageAfterParry != null ? ctx.damageAfterParry : ctx.rawDamage);
+        if (ctx.hitRollSuccess === false) {
+            ctx.finalDamage = 0;
+            if (phase.buff_event_name) {
+                emitCombat(phase.buff_event_name, ['attack', 'damage', 'miss'], {
+                    damage_final: 0,
+                    parry_succeeded: !!ctx.parrySucceeded,
+                    move_id: ctx.moveId
+                }, ctx.eventIdSuffix);
+            }
+            if (global.CombatEnemies && typeof global.CombatEnemies.onEnemyDamageResolved === 'function') {
+                global.CombatEnemies.onEnemyDamageResolved(ctx);
+            }
+            return ctx;
+        }
+        var def = ctx.defender || {};
+        var dmg;
+        if (def.kind === 'enemy' && ctx.damageAfterEnemyMitigation != null) {
+            dmg = ctx.damageAfterEnemyMitigation;
+        } else {
+            dmg = ctx.damageAfterDiqiShield != null ? ctx.damageAfterDiqiShield : (ctx.damageAfterParry != null ? ctx.damageAfterParry : ctx.rawDamage);
+        }
+        dmg = Math.max(0, Math.floor(Number(dmg) || 0));
         ctx.finalDamage = dmg;
         if (phase.buff_event_name) {
             emitCombat(phase.buff_event_name, ['attack', 'damage'], {
@@ -267,6 +336,9 @@
                 parry_succeeded: !!ctx.parrySucceeded,
                 move_id: ctx.moveId
             }, ctx.eventIdSuffix);
+        }
+        if (global.CombatEnemies && typeof global.CombatEnemies.onEnemyDamageResolved === 'function') {
+            global.CombatEnemies.onEnemyDamageResolved(ctx);
         }
         return ctx;
     }
@@ -276,6 +348,7 @@
         'builtin.parry_enemy_simple': phaseParryEnemySimple,
         'builtin.parry_player_combat_parry': phaseParryPlayerCombatParry,
         'builtin.post_effects_hook': phasePostEffectsHook,
+        'builtin.enemy_damage_mitigation': phaseEnemyDamageMitigation,
         'builtin.diqi_shield_player': phaseDiqiShieldPlayer,
         'builtin.damage_stub': phaseDamageStub
     };

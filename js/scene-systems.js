@@ -13,6 +13,38 @@
         document.addEventListener('keydown', function (e) {
             var tag = (e.target && e.target.tagName) ? String(e.target.tagName).toLowerCase() : '';
             if (tag === 'input' || tag === 'textarea' || tag === 'select' || (e.target && e.target.isContentEditable)) return;
+            // 数字键 1–9：快捷腰带使用物品（与 UI 格序一致；长按连发屏蔽）
+            var keyDigit = e.key;
+            if (keyDigit >= '1' && keyDigit <= '9' && keyDigit.length === 1) {
+                if (e.repeat) return;
+                if (window.DialogueUI && typeof window.DialogueUI.isDialogueOpen === 'function' && window.DialogueUI.isDialogueOpen()) return;
+                if (window.SceneApp && typeof window.SceneApp.isPreCreationGameplayRestricted === 'function' && window.SceneApp.isPreCreationGameplayRestricted()) return;
+                if (window.SceneApp && typeof window.SceneApp.tryUseQuickBeltDigit === 'function') {
+                    window.SceneApp.tryUseQuickBeltDigit(parseInt(keyDigit, 10));
+                    e.preventDefault();
+                }
+                return;
+            }
+            // 空格：过 1 个全局 tick（长按连发由 e.repeat 屏蔽）
+            if (e.key === ' ' || e.key === 'Spacebar') {
+                if (e.repeat) return;
+                if (window.DialogueUI && typeof window.DialogueUI.isDialogueOpen === 'function' && window.DialogueUI.isDialogueOpen()) return;
+                if (window.SceneApp && typeof window.SceneApp.isStoryMovementLocked === 'function' && window.SceneApp.isStoryMovementLocked()) return;
+                e.preventDefault();
+                if (window.Survival && typeof window.Survival.advanceTick === 'function') {
+                    window.Survival.advanceTick();
+                }
+                if (window.GameLog && window.UIText && typeof window.UIText.t === 'function') {
+                    window.GameLog.log(window.UIText.t('log.system.tick.space'), 'system');
+                }
+                if (window.SceneRenderer && typeof window.SceneRenderer.render === 'function') {
+                    window.SceneRenderer.render();
+                }
+                if (ctx && typeof ctx.updateStatusPanel === 'function') {
+                    ctx.updateStatusPanel();
+                }
+                return;
+            }
             if (window.SceneApp && typeof window.SceneApp.isStoryMovementLocked === 'function' && window.SceneApp.isStoryMovementLocked()) return;
             var dx = 0, dy = 0;
             switch (e.key) {
@@ -47,6 +79,14 @@
         }
         if (bubbleStopBtn && ctx.actions && typeof ctx.actions.stopGatheringIdle === 'function') {
             bubbleStopBtn.addEventListener('click', function () { ctx.actions.stopGatheringIdle(true); });
+        }
+        var abGather = document.getElementById('action-bar-gather');
+        var abStop = document.getElementById('action-bar-gather-stop');
+        if (abGather && ctx.actions && typeof ctx.actions.startGatheringIdle === 'function') {
+            abGather.addEventListener('click', function () { ctx.actions.startGatheringIdle(); });
+        }
+        if (abStop && ctx.actions && typeof ctx.actions.stopGatheringIdle === 'function') {
+            abStop.addEventListener('click', function () { ctx.actions.stopGatheringIdle(true); });
         }
 
         // 引擎变化 -> 触发重渲染（渲染由 renderer 完成）

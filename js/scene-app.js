@@ -60,12 +60,22 @@
             }
         },
         /**
-         * 关闭蹑步选点。动态层清理由 scene-renderer 在 footworkNieBuMode true→false 当帧强制整视野重画（V2 partial dirty 无法可靠覆盖环上全部格）。
-         * 参数保留供调用方语义一致；环心/半径不再在此处标脏。
+         * 关闭蹑步选点。scene-renderer 在 true→false 当帧可整视野重画；此处仍对环上格 pushDirty，
+         * 避免下一帧走 V2 partial 时漏格导致青色高亮残留在 canvas 上。
+         * ringCX/ringCY 缺省为当前玩家格；radiusOpt 缺省为 nieBuLeapRadius（蹑步起跳前应以起跳格+半径传入）。
          */
         exitFootworkNieBuMode: function (ringCX, ringCY, radiusOpt) {
             if (!this.footworkNieBuMode) return;
             this.footworkNieBuMode = false;
+            var E0 = this.E || window.GameEngine;
+            if (!E0 || typeof this.pushDirtyNieBuRing !== 'function') return;
+            var map = typeof E0.getMap === 'function' ? E0.getMap() : null;
+            var st = typeof E0.getState === 'function' ? E0.getState() : null;
+            if (!map || !st) return;
+            var cx = ringCX != null ? ringCX : st.x;
+            var cy = ringCY != null ? ringCY : st.y;
+            var r = radiusOpt != null ? radiusOpt : (this.nieBuLeapRadius != null ? this.nieBuLeapRadius : 2);
+            this.pushDirtyNieBuRing(cx, cy, r);
         },
         isTimeHudVisible: function () { return !!timeHudVisible; },
         footworkNieBuMode: false,
@@ -97,6 +107,35 @@
             }
             if (rule === undefined || rule === null) return true;
             return !!rule;
+        },
+        /**
+         * 快捷动作栏 · 固定槽（常态动作）：玩家在「动作」菜单点 📌 登记，token 形如 hub|skillId|actionId。
+         * 与情境动作（采集/脚下/护体等）分离，见 .cursor/rules/quick-action-bar-agent.mdc
+         */
+        action_bar_slots: [null, null, null, null],
+        getActionBarSlots: function () {
+            var a = this.action_bar_slots;
+            if (!Array.isArray(a)) return [null, null, null, null];
+            var out = [null, null, null, null];
+            var i;
+            for (i = 0; i < 4; i++) out[i] = a[i] != null ? String(a[i]).trim() : null;
+            return out;
+        },
+        setActionBarSlots: function (arr) {
+            var out = [null, null, null, null];
+            if (arr && Array.isArray(arr)) {
+                var j;
+                for (j = 0; j < 4 && j < arr.length; j++) {
+                    var v = arr[j];
+                    if (v == null || v === '') continue;
+                    var s = String(v).trim();
+                    if (s.indexOf('hub|') !== 0) continue;
+                    var parts = s.split('|');
+                    if (parts.length < 3 || !parts[1] || !parts[2]) continue;
+                    out[j] = s;
+                }
+            }
+            this.action_bar_slots = out;
         }
     };
 
@@ -147,6 +186,9 @@
             else document.body.classList.add('intro-shell-active');
         }
         if (typeof updateStatusPanel === 'function') updateStatusPanel();
+        if (window.GameLog && typeof window.GameLog.clampLogPanelForLeftHud === 'function') {
+            window.GameLog.clampLogPanelForLeftHud();
+        }
     }
 
     // Route NPC messages into game log
@@ -364,7 +406,8 @@
             fetch(base + 'combat-pipeline.json').then(function (r) { return r.ok ? r.json() : { pipelines: {} }; }).catch(function () { return { pipelines: {} }; }),
             fetch(base + 'post-effects.json').then(function (r) { return r.ok ? r.json() : {}; }).catch(function () { return {}; }),
             fetch(base + 'survival-skills.json').then(function (r) { return r.ok ? r.json() : null; }).catch(function () { return null; }),
-            fetch(base + 'gathering_point_instances.json').then(function (r) { return r.ok ? r.json() : null; }).catch(function () { return null; })
+            fetch(base + 'gathering_point_instances.json').then(function (r) { return r.ok ? r.json() : null; }).catch(function () { return null; }),
+            fetch(base + 'combat-enemies.json').then(function (r) { return r.ok ? r.json() : { enemies: {} }; }).catch(function () { return { enemies: {} }; })
         ]).then(function (arr) {
             if (!arr[0]) throw new Error('[SceneApp] ui_text_zhCN.json missing');
             if (!window.UIText || typeof window.UIText.setDict !== 'function') throw new Error('[SceneApp] UIText module missing');
@@ -399,6 +442,7 @@
             if (window.SurvivalSkills && typeof window.SurvivalSkills.setTable === 'function' && arr[11]) {
                 window.SurvivalSkills.setTable(arr[11]);
             }
+            if (window.CombatEnemies && arr[13]) window.CombatEnemies.setTable(arr[13]);
             var defEqFetched = (arr[7] && typeof arr[7] === 'object') ? arr[7] : {};
             var defaultEquipMerged = {};
             var sk;
@@ -705,14 +749,25 @@
     function updateLimbBlock() {
         var container = document.getElementById('limb-rows');
         if (!container || !BODY_PART_IDS || !BODY_PART_LABELS) return;
+        var CA0 = window.CharacterAttributes;
         container.innerHTML = '';
         for (var i = 0; i < BODY_PART_IDS.length; i++) {
             var partId = BODY_PART_IDS[i];
                 var labelKey = BODY_PART_LABELS[partId] != null ? BODY_PART_LABELS[partId] : partId;
                 var label = ui(labelKey);
+            var destroyKey = partId === 'belly' ? 'abdomen' : partId;
+            var statusCell = ui('body.part.status.ok');
+            if (CA0 && typeof CA0.getPartDestroy === 'function' && typeof CA0.getBodyPartDestroyMax === 'function') {
+                var showD = destroyKey === 'head' || destroyKey === 'chest' || destroyKey === 'abdomen' || COMBAT_LIMB_IDS.indexOf(partId) >= 0;
+                if (showD) {
+                    var curD = CA0.getPartDestroy(destroyKey);
+                    var maxD = CA0.getBodyPartDestroyMax(destroyKey);
+                    statusCell = ui('body.part.destroy.fmt', { cur: String(curD), max: String(maxD) });
+                }
+            }
             var row = document.createElement('div');
             row.className = 'limb-row';
-            row.innerHTML = '<div class="row"><span>' + (label.replace(/</g, '&lt;')) + '</span><span id="limb-' + partId + '">' + ui('body.part.status.ok') + '</span></div>';
+            row.innerHTML = '<div class="row"><span>' + (label.replace(/</g, '&lt;')) + '</span><span id="limb-' + partId + '">' + statusCell + '</span></div>';
             (function (pid, partLabel) {
                 row.addEventListener('mouseenter', function () {
                     var statusEl = document.getElementById('limb-' + pid);
@@ -778,6 +833,133 @@
         return !!(window.SceneCtx && typeof window.SceneCtx.hasAdjacentEnemyForCombat === 'function' && window.SceneCtx.hasAdjacentEnemyForCombat());
     }
 
+    var ACTION_BAR_PIN_SLOTS = 4;
+
+    function parseHubQuickBarToken(tok) {
+        if (!tok || String(tok).indexOf('hub|') !== 0) return null;
+        var parts = String(tok).split('|');
+        if (parts.length < 3 || !parts[1] || !parts[2]) return null;
+        return { skillId: parts[1], actionId: parts[2] };
+    }
+
+    function getQuickBarPinLabel(skillId, actionId) {
+        var CS = window.CombatSkills;
+        if (!CS || typeof CS.getSkill !== 'function') return actionId || '—';
+        var sk = CS.getSkill(skillId);
+        if (!sk || !sk.hub_actions) return actionId || '—';
+        var hi;
+        for (hi = 0; hi < sk.hub_actions.length; hi++) {
+            if (sk.hub_actions[hi].id === actionId) return sk.hub_actions[hi].name || actionId;
+        }
+        return actionId || '—';
+    }
+
+    function pinHubToQuickBar(skillId, actionId) {
+        var tok = 'hub|' + skillId + '|' + actionId;
+        var slots = window.SceneCtx.getActionBarSlots();
+        var i;
+        for (i = 0; i < ACTION_BAR_PIN_SLOTS; i++) {
+            if (!slots[i]) {
+                slots[i] = tok;
+                window.SceneCtx.setActionBarSlots(slots);
+                if (window.SaveSystem && typeof window.SaveSystem.saveNow === 'function') window.SaveSystem.saveNow();
+                showMsg(ui('action.bar.pin.ok'), 'success');
+                if (window.SceneRenderer) window.SceneRenderer.render();
+                return true;
+            }
+        }
+        showMsg(ui('action.bar.pin.full'), 'warning');
+        return false;
+    }
+
+    function clearQuickBarPinSlot(slotIndex) {
+        var idx = slotIndex | 0;
+        if (idx < 0 || idx >= ACTION_BAR_PIN_SLOTS) return;
+        var slots = window.SceneCtx.getActionBarSlots();
+        if (!slots[idx]) return;
+        slots[idx] = null;
+        window.SceneCtx.setActionBarSlots(slots);
+        if (window.SaveSystem && typeof window.SaveSystem.saveNow === 'function') window.SaveSystem.saveNow();
+        showMsg(ui('action.bar.pin.cleared'), 'info');
+        if (window.SceneRenderer) window.SceneRenderer.render();
+    }
+
+    function executeQuickBarPinnedSlot(slotIndex) {
+        if (isPreCreationGameplayRestricted()) {
+            showIntroBlockedMsg();
+            return;
+        }
+        var idx = slotIndex | 0;
+        var slots = window.SceneCtx.getActionBarSlots();
+        var parsed = parseHubQuickBarToken(slots[idx]);
+        if (!parsed) return;
+        var sk = parsed.skillId;
+        var act = parsed.actionId;
+        var footworkId = 'combat_basic_footwork';
+        var breathId = 'combat_basic_breath';
+        if (sk === footworkId && act === 'nie_bu') {
+            toggleFootworkNieBuModeFromMenu();
+            return;
+        }
+        if (sk === breathId && act === 'tiao_xi_once') {
+            if (tiaoXiIdleTimer) stopTiaoXiIdle(false);
+            else startTiaoXiIdle();
+            if (window.SceneRenderer) window.SceneRenderer.render();
+            updateStatusPanel();
+            return;
+        }
+        if (sk === breathId) {
+            var CHAx = window.CombatHubActions;
+            if (!CHAx || typeof CHAx.tryExecuteHubAction !== 'function') return;
+            var rx = CHAx.tryExecuteHubAction(breathId, act, { isBattleContext: hubAdjacentForBreathActions });
+            if (!rx.ok) {
+                var varsx = {};
+                if (rx.cooldown_ticks != null) varsx.ticks = rx.cooldown_ticks;
+                showMsg(ui(rx.reason_key, varsx), 'info');
+                return;
+            }
+            if (act === 'diqi_huti') showMsg(ui(rx.reason_key, { shield: rx.shield_value != null ? rx.shield_value : 0 }), 'success');
+            else if (act === 'xue_qi_hua_jing') {
+                var CAxq = window.CharacterAttributes;
+                var limbIdx = rx.limb;
+                var limbUiKey2 = limbIdx && BODY_PART_LABELS[limbIdx] ? BODY_PART_LABELS[limbIdx] : null;
+                var limbLabel2 = limbUiKey2 ? ui(limbUiKey2) : String(limbIdx || '—');
+                var dmaxXq2 = (CAxq && typeof CAxq.getBodyPartDestroyMax === 'function' && limbIdx) ? CAxq.getBodyPartDestroyMax(limbIdx) : 100;
+                var curXq2 = (CAxq && typeof CAxq.getLimbDestroy === 'function' && limbIdx) ? CAxq.getLimbDestroy(limbIdx) : 0;
+                showMsg(ui('combat.hub.ok.xue_qi.detail', { limb: limbLabel2, cur: String(curXq2), max: String(dmaxXq2) }), 'success');
+            } else if (act === 'tu_qi_na_jing') showMsg(ui('combat.hub.ok.tu_qi', { e: rx.energy_gain != null ? rx.energy_gain : 1 }), 'success');
+            else if (act === 'tiao_xi_once') showMsg(ui('combat.hub.ok.tiao_xi', { n: rx.diqi_gained != null ? rx.diqi_gained : 0 }), 'success');
+            else {
+                var hubOkVars2 = {};
+                if (rx.qi_li_restored != null) hubOkVars2.n = rx.qi_li_restored;
+                showMsg(ui(rx.reason_key || 'combat.hub.ok', hubOkVars2), 'success');
+            }
+            if (window.SceneRenderer) window.SceneRenderer.render();
+            updateStatusPanel();
+            return;
+        }
+        showMsg(ui('action.bar.pin.unknown'), 'info');
+    }
+
+    function bindQuickBarPinSlotsOnce() {
+        if (bindQuickBarPinSlotsOnce._done) return;
+        bindQuickBarPinSlotsOnce._done = true;
+        var si;
+        for (si = 0; si < ACTION_BAR_PIN_SLOTS; si++) {
+            (function (idx) {
+                var b = document.getElementById('action-bar-pin-' + idx);
+                if (!b) return;
+                b.addEventListener('click', function () {
+                    executeQuickBarPinnedSlot(idx);
+                });
+                b.addEventListener('contextmenu', function (e) {
+                    e.preventDefault();
+                    clearQuickBarPinSlot(idx);
+                });
+            })(si);
+        }
+    }
+
     /** 右侧「动作」菜单：切换蹑步选点（与地图点击 tryFootworkNieBuJump 配套） */
     function toggleFootworkNieBuModeFromMenu() {
         var SKILL_ID = 'combat_basic_footwork';
@@ -800,6 +982,7 @@
         }
         if (window.SceneCtx.footworkNieBuMode) {
             if (typeof window.SceneCtx.exitFootworkNieBuMode === 'function') window.SceneCtx.exitFootworkNieBuMode();
+            if (window.SceneRenderer && typeof window.SceneRenderer.render === 'function') window.SceneRenderer.render();
             return;
         }
         var rNb = 2;
@@ -824,6 +1007,7 @@
         if (mapNb && typeof window.SceneCtx.pushDirtyNieBuRing === 'function') {
             window.SceneCtx.pushDirtyNieBuRing(stNb.x, stNb.y, rNb);
         }
+        if (window.SceneRenderer && typeof window.SceneRenderer.render === 'function') window.SceneRenderer.render();
     }
 
     function closePlayerActionsSubmenu() {
@@ -884,6 +1068,8 @@
                     }
                     btnRow.disabled = !!dis;
                     if (hint) btnRow.title = hint;
+                    var rowWrap = document.createElement('div');
+                    rowWrap.className = 'player-action-item-row';
                     (function (actionId) {
                         btnRow.addEventListener('click', function (ev) {
                             ev.stopPropagation();
@@ -909,18 +1095,46 @@
                                 showMsg(ui(r.reason_key, vars), 'info');
                                 return;
                             }
-                            if (actionId === 'tu_na') showMsg(ui(r.reason_key, { n: r.qi_li_restored != null ? r.qi_li_restored : 0 }), 'success');
-                            else if (actionId === 'diqi_huti') showMsg(ui(r.reason_key, { shield: r.shield_value != null ? r.shield_value : 0 }), 'success');
-                            else if (actionId === 'xue_qi_hua_jing') showMsg(ui('combat.hub.ok.xue_qi'), 'success');
+                            if (actionId === 'diqi_huti') showMsg(ui(r.reason_key, { shield: r.shield_value != null ? r.shield_value : 0 }), 'success');
+                            else if (actionId === 'xue_qi_hua_jing') {
+                                var CAxq = window.CharacterAttributes;
+                                var limbId = r.limb;
+                                var limbUiKey = limbId && BODY_PART_LABELS[limbId] ? BODY_PART_LABELS[limbId] : null;
+                                var limbLabel = limbUiKey ? ui(limbUiKey) : String(limbId || '—');
+                                var dmaxXq = (CAxq && typeof CAxq.getBodyPartDestroyMax === 'function' && limbId)
+                                    ? CAxq.getBodyPartDestroyMax(limbId) : 100;
+                                var curXq = (CAxq && typeof CAxq.getLimbDestroy === 'function' && limbId) ? CAxq.getLimbDestroy(limbId) : 0;
+                                showMsg(ui('combat.hub.ok.xue_qi.detail', { limb: limbLabel, cur: String(curXq), max: String(dmaxXq) }), 'success');
+                            }
                             else if (actionId === 'tu_qi_na_jing') showMsg(ui('combat.hub.ok.tu_qi', { e: r.energy_gain != null ? r.energy_gain : 1 }), 'success');
                             else if (actionId === 'tiao_xi_once') showMsg(ui('combat.hub.ok.tiao_xi', { n: r.diqi_gained != null ? r.diqi_gained : 0 }), 'success');
-                            else showMsg(ui(r.reason_key || 'combat.hub.ok.tu_na', { n: 0 }), 'success');
+                            else {
+                                var hubOkVars = {};
+                                if (r.qi_li_restored != null) hubOkVars.n = r.qi_li_restored;
+                                showMsg(ui(r.reason_key || 'combat.hub.ok', hubOkVars), 'success');
+                            }
                             closePlayerActionsSubmenu();
                             if (window.SceneRenderer) window.SceneRenderer.render();
                             updateStatusPanel();
                         });
                     })(ha.id);
-                    sub.appendChild(btnRow);
+                    rowWrap.appendChild(btnRow);
+                    var pinBtn = document.createElement('button');
+                    pinBtn.type = 'button';
+                    pinBtn.className = 'player-action-pin';
+                    pinBtn.setAttribute('aria-label', ui('action.bar.pin.hint'));
+                    pinBtn.title = ui('action.bar.pin.hint');
+                    pinBtn.textContent = '📌';
+                    pinBtn.disabled = !!dis;
+                    (function (pinEl, actionIdForPin) {
+                        pinEl.addEventListener('click', function (ev) {
+                            ev.stopPropagation();
+                            if (pinEl.disabled) return;
+                            pinHubToQuickBar(breathId, actionIdForPin);
+                        });
+                    })(pinBtn, ha.id);
+                    rowWrap.appendChild(pinBtn);
+                    sub.appendChild(rowWrap);
                 }
             }
         }
@@ -955,7 +1169,23 @@
                 if (window.SceneRenderer) window.SceneRenderer.render();
                 updateStatusPanel();
             });
-            sub.appendChild(btnNie);
+            var nieRow = document.createElement('div');
+            nieRow.className = 'player-action-item-row';
+            nieRow.appendChild(btnNie);
+            var pinNie = document.createElement('button');
+            pinNie.type = 'button';
+            pinNie.className = 'player-action-pin';
+            pinNie.setAttribute('aria-label', ui('action.bar.pin.hint'));
+            pinNie.title = ui('action.bar.pin.hint');
+            pinNie.textContent = '📌';
+            pinNie.disabled = !!btnNie.disabled;
+            pinNie.addEventListener('click', function (ev) {
+                ev.stopPropagation();
+                if (pinNie.disabled) return;
+                pinHubToQuickBar(footworkId, 'nie_bu');
+            });
+            nieRow.appendChild(pinNie);
+            sub.appendChild(nieRow);
         }
     }
 
@@ -1011,7 +1241,7 @@
         setBlockDisplay('status-role-card', shouldShowBlock('role'));
         setBlockDisplay('status-limbs', shouldShowBlock('limbs'));
         setBlockDisplay('status-survival', shouldShowBlock('survival'));
-        setBlockDisplay('quick-belt', shouldShowBlock('quick_belt'));
+        setBlockDisplay('quick-belt-dock', shouldShowBlock('quick_belt'));
         setBlockDisplay('status-attrs-block', shouldShowBlock('attrs'));
 
         updateLimbBlock();
@@ -1642,10 +1872,149 @@
         return (sk && sk.name) ? sk.name : skillId;
     }
 
+    function buildDefaultMoveSequenceArray(CS, IE, skillId, limbId) {
+        if (!CS || !IE || !skillId) return [];
+        limbId = limbId || 'lhand';
+        if (typeof CS.buildDefaultMoveSequenceForLimb === 'function') {
+            return CS.buildDefaultMoveSequenceForLimb(skillId, limbId, IE.getSkillLevel(skillId));
+        }
+        var lv = IE.getSkillLevel(skillId);
+        var maxSlots = CS.getMaxSlotsForLevel(skillId, lv);
+        var unlocked = CS.getUnlockedMoves(skillId, lv);
+        var out = [];
+        var i;
+        for (i = 0; i < maxSlots; i++) {
+            if (unlocked[i]) out.push(unlocked[i].id);
+            else if (unlocked[0]) out.push(unlocked[0].id);
+            else out.push('');
+        }
+        return out;
+    }
+
+    /**
+     * 地图近战：按各肢 priority 档位（仅 1～4 档）加权随机选肢，档位数字越小越常被抽到；招式来自该肢 move_sequences 轮询。
+     * ctxMeta 同时给出 skill_id、limb_id、move_id 时不抽样、不推进光标。
+     */
+    function pickWorldMeleeAttackIntent(ctxMeta) {
+        ctxMeta = ctxMeta || {};
+        var out = { skillId: 'combat_basic_unarmed', moveId: null, limbId: 'lhand', advanceCursor: false };
+        var IE = window.InventoryEquipment;
+        var CS = window.CombatSkills;
+        if (ctxMeta.skill_id != null && ctxMeta.limb_id != null && ctxMeta.move_id != null) {
+            out.skillId = ctxMeta.skill_id;
+            out.limbId = ctxMeta.limb_id;
+            out.moveId = ctxMeta.move_id;
+            out.advanceCursor = false;
+            return out;
+        }
+        if (!IE || !CS || typeof IE.getCombatState !== 'function') return out;
+        var cmb = IE.getCombatState();
+        var LIMB_IDS = IE.COMBAT_LIMB_IDS || ['lhand', 'rhand', 'lfoot', 'rfoot'];
+        var LIMB_LABEL_KEYS = { lhand: 'body.part.lhand', rhand: 'body.part.rhand', lfoot: 'body.part.lfoot', rfoot: 'body.part.rfoot' };
+
+        function limbLabel(lid) {
+            return ui(LIMB_LABEL_KEYS[lid] || lid);
+        }
+
+        function firstValidMoveForLimb(lid, skillId) {
+            var pk = typeof IE.peekMoveIdForLimb === 'function' ? IE.peekMoveIdForLimb(lid) : null;
+            var lv = IE.getSkillLevel(skillId);
+            var un = CS.getUnlockedMoves(skillId, lv);
+            var limbKeys = typeof window.getLimbActionTags === 'function' ? window.getLimbActionTags(lid) : [];
+            if (typeof CS.moveAllowedOnLimbByTagKeys !== 'function') {
+                var ids = {};
+                var u;
+                for (u = 0; u < un.length; u++) ids[un[u].id] = 1;
+                if (pk && ids[pk]) return pk;
+                return un.length ? un[0].id : null;
+            }
+            function moveOk(moveId) {
+                if (!moveId) return false;
+                var mi;
+                for (mi = 0; mi < un.length; mi++) {
+                    if (un[mi].id === moveId) return CS.moveAllowedOnLimbByTagKeys(un[mi], limbKeys);
+                }
+                return false;
+            }
+            if (pk && moveOk(pk)) return pk;
+            var ui;
+            for (ui = 0; ui < un.length; ui++) {
+                if (CS.moveAllowedOnLimbByTagKeys(un[ui], limbKeys)) return un[ui].id;
+            }
+            return null;
+        }
+
+        var candidates = [];
+        var li;
+        for (li = 0; li < LIMB_IDS.length; li++) {
+            var lid = LIMB_IDS[li];
+            var limb = cmb.limbs && cmb.limbs[lid];
+            if (!limb || !limb.active) continue;
+            var sk = CS.getSkill(limb.active);
+            if (!sk || (sk.category !== 'unarmed' && sk.category !== 'weapon')) continue;
+            var fm = firstValidMoveForLimb(lid, limb.active);
+            if (!fm) continue;
+            var p = Math.max(1, Math.min(4, Math.floor(Number(limb.priority) || 1)));
+            candidates.push({ lid: lid, skillId: limb.active, priority: p, weight: 0 });
+        }
+
+        if (!candidates.length) {
+            out.limbId = 'lhand';
+            out.skillId = (cmb.limbs && cmb.limbs.lhand && cmb.limbs.lhand.active) ? cmb.limbs.lhand.active : 'combat_basic_unarmed';
+            var fm0 = firstValidMoveForLimb(out.limbId, out.skillId);
+            out.moveId = fm0 || 'jab';
+            out.advanceCursor = false;
+            if (window.GameLog && typeof window.GameLog.log === 'function') {
+                window.GameLog.log(ui('log.combat.resolve.limb_pick_none'), 'warn');
+            }
+            return out;
+        }
+
+        var maxPri = 0;
+        for (li = 0; li < candidates.length; li++) {
+            if (candidates[li].priority > maxPri) maxPri = candidates[li].priority;
+        }
+        var sumW = 0;
+        for (li = 0; li < candidates.length; li++) {
+            candidates[li].weight = maxPri - candidates[li].priority + 1;
+            sumW += candidates[li].weight;
+        }
+        var roll = Math.random() * sumW;
+        var acc = 0;
+        var picked = candidates[0];
+        for (li = 0; li < candidates.length; li++) {
+            acc += candidates[li].weight;
+            if (roll <= acc) {
+                picked = candidates[li];
+                break;
+            }
+        }
+        out.limbId = picked.lid;
+        out.skillId = picked.skillId;
+        out.moveId = firstValidMoveForLimb(picked.lid, picked.skillId);
+        out.advanceCursor = ctxMeta.move_id == null;
+
+        var rowParts = [];
+        for (li = 0; li < candidates.length; li++) {
+            var c = candidates[li];
+            var pct = sumW > 0 ? Math.round((c.weight / sumW) * 1000) / 10 : 0;
+            rowParts.push(limbLabel(c.lid) + ' ' + pct + '%（w=' + c.weight + ',p=' + c.priority + '）');
+        }
+        if (window.GameLog && typeof window.GameLog.log === 'function') {
+            window.GameLog.log(ui('log.combat.resolve.limb_pick', {
+                rows: rowParts.join('；'),
+                sum: String(sumW),
+                roll: String(Math.round(roll * 1000) / 1000),
+                picked: limbLabel(picked.lid)
+            }), 'combat');
+        }
+        return out;
+    }
+
     function renderCombatModal() {
         var CS = window.CombatSkills;
         var AP = window.Acupoints;
-        var combatState = IE && IE.getCombatState ? IE.getCombatState() : { limbs: {}, hubs: { breath: null, footwork: null }, move_sequences: {}, skill_move_sequences: {}, post_effect_sequences: {} };
+        var combatState = IE && IE.getCombatState ? IE.getCombatState() : { limbs: {}, hubs: { breath: null, footwork: null }, move_sequences: {}, skill_move_sequences: {}, move_sequence_cursors: {}, post_effect_sequences: {} };
         var limbIds = IE && IE.COMBAT_LIMB_IDS ? IE.COMBAT_LIMB_IDS.slice() : ['lhand', 'rhand', 'lfoot', 'rfoot'];
 
         var mainTabs = document.querySelectorAll('#modal-combat .combat-main-tab');
@@ -1740,7 +2109,37 @@
                 var parryName = getCombatSkillName(limb.parry);
                 var isActiveSel = combatUIState.curPart === lid && combatUIState.curSlot === 'active';
                 var isParrySel = combatUIState.curPart === lid && combatUIState.curSlot === 'parry';
-                div.innerHTML = '<div class="limb-header"><span>' + (LIMB_ICONS[lid] || '') + ' ' + ui(LIMB_LABELS[lid] || lid) + '</span><span class="limb-priority">' + ui('combat.priority', { v: (limb.priority || 1) }) + '</span></div><div class="limb-slots"><div class="combat-limb-slot' + (isActiveSel ? ' selected' : '') + '" data-part="' + lid + '" data-slot="active"><span class="slot-type">' + ui('combat.slot.active') + '</span><span class="slot-skill">' + activeName + '</span></div><div class="combat-limb-slot' + (isParrySel ? ' selected' : '') + '" data-part="' + lid + '" data-slot="parry"><span class="slot-type">' + ui('combat.slot.parry') + '</span><span class="slot-skill">' + parryName + '</span></div></div>';
+                var priVal = Math.max(1, Math.min(4, Math.floor(Number(limb.priority) || 1)));
+                var priHint = ui('combat.priority.hint');
+                var escAttr = function (s) {
+                    return String(s).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;');
+                };
+                var priLabel = ui('combat.priority.label');
+                var tierBtnsHtml = '';
+                var ti;
+                for (ti = 1; ti <= 4; ti++) {
+                    tierBtnsHtml += '<button type="button" class="btn-limb-tier' + (ti === priVal ? ' active' : '') + '" data-limb-tier="' + ti + '" tabindex="0" aria-pressed="' + (ti === priVal ? 'true' : 'false') + '">' + ui('combat.priority.tier.' + ti) + '</button>';
+                }
+                div.innerHTML = '<div class="limb-header"><span>' + (LIMB_ICONS[lid] || '') + ' ' + ui(LIMB_LABELS[lid] || lid) + '</span><div class="limb-priority-editor" title="' + escAttr(priHint) + '"><span class="limb-priority-label">' + priLabel + '</span><div class="limb-tier-btns">' + tierBtnsHtml + '</div></div></div><div class="limb-slots"><div class="combat-limb-slot' + (isActiveSel ? ' selected' : '') + '" data-part="' + lid + '" data-slot="active"><span class="slot-type">' + ui('combat.slot.active') + '</span><span class="slot-skill">' + activeName + '</span></div><div class="combat-limb-slot' + (isParrySel ? ' selected' : '') + '" data-part="' + lid + '" data-slot="parry"><span class="slot-type">' + ui('combat.slot.parry') + '</span><span class="slot-skill">' + parryName + '</span></div></div>';
+                (function bindLimbPriority(limbId) {
+                    var editor = div.querySelector('.limb-priority-editor');
+                    if (!editor || !IE || typeof IE.setCombatState !== 'function') return;
+                    editor.querySelectorAll('[data-limb-tier]').forEach(function (btn) {
+                        btn.addEventListener('click', function (ev) {
+                            ev.stopPropagation();
+                            ev.preventDefault();
+                            var v = Math.max(1, Math.min(4, parseInt(btn.getAttribute('data-limb-tier'), 10) || 1));
+                            editor.querySelectorAll('[data-limb-tier]').forEach(function (b) {
+                                var on = parseInt(b.getAttribute('data-limb-tier'), 10) === v;
+                                b.classList.toggle('active', on);
+                                b.setAttribute('aria-pressed', on ? 'true' : 'false');
+                            });
+                            var patchLimbs = {};
+                            patchLimbs[limbId] = { priority: v };
+                            IE.setCombatState({ limbs: patchLimbs });
+                        });
+                    });
+                }(lid));
                 div.querySelectorAll('.combat-limb-slot').forEach(function (slotEl) {
                     slotEl.onclick = function () {
                         combatUIState.curPart = slotEl.getAttribute('data-part');
@@ -1823,38 +2222,45 @@
         }
 
         var seqBox = document.getElementById('move-sequence');
-        if (!isAcupointMode && seqBox && selSkill && selSkill.moves && selSkill.moves.length && selSkill.category !== 'breath' && selSkill.category !== 'footwork' && selSkill.category !== 'parry') {
+        var limbPartForSeq = combatUIState.curPart || 'lhand';
+        var limbRowForSeq = combatState.limbs && combatState.limbs[limbPartForSeq];
+        var limbSeqMatchesSkill = !!(limbRowForSeq && limbRowForSeq.active === combatUIState.curSkillId);
+
+        if (!isAcupointMode && seqBox && selSkill && selSkill.moves && selSkill.moves.length && selSkill.category !== 'breath' && selSkill.category !== 'footwork' && selSkill.category !== 'parry' && limbSeqMatchesSkill) {
             seqBox.innerHTML = '';
             var maxSlots = CS.getMaxSlotsForLevel(combatUIState.curSkillId, skillLevel);
             var unlocked = CS.getUnlockedMoves(combatUIState.curSkillId, skillLevel);
-            var seq = (combatState.skill_move_sequences && combatState.skill_move_sequences[combatUIState.curSkillId]) ? combatState.skill_move_sequences[combatUIState.curSkillId].slice() : [];
-            var limbIdForPost = combatUIState.curPart || 'lhand';
+            var seq = (combatState.move_sequences && Array.isArray(combatState.move_sequences[limbPartForSeq])) ? combatState.move_sequences[limbPartForSeq].slice() : [];
+            var limbIdForPost = limbPartForSeq;
             var postMap = getLimbPostEffectMap(combatState, limbIdForPost);
             var postSeq = (postMap && postMap[combatUIState.curSkillId] && Array.isArray(postMap[combatUIState.curSkillId])) ? postMap[combatUIState.curSkillId].slice() : [];
-            while (seq.length < maxSlots) seq.push(unlocked.length ? unlocked[0].id : '');
+            while (seq.length < maxSlots) seq.push('');
             seq = seq.slice(0, maxSlots);
             while (postSeq.length < maxSlots) postSeq.push(null);
             postSeq = postSeq.slice(0, maxSlots);
             for (var i = 0; i < maxSlots; i++) {
-                var moveId = seq[i] || (unlocked[0] ? unlocked[0].id : '');
-                var moveObj = unlocked.find(function (m) { return m.id === moveId; }) || unlocked[0];
-                var moveName = moveObj ? moveObj.name : moveId;
+                var rawMoveId = seq[i] ? String(seq[i]) : '';
+                var moveObj = null;
+                if (rawMoveId) {
+                    moveObj = unlocked.find(function (m) { return m.id === rawMoveId; }) || null;
+                }
+                var moveName = moveObj ? moveObj.name : (rawMoveId ? rawMoveId : ui('combat.seq.slot_empty'));
                 var useCount = (moveUsage && moveObj && moveUsage[moveObj.id] != null) ? moveUsage[moveObj.id] : 0;
                 var nodeProf = moveObj ? Math.floor(CS.getMoveProficiencyRatio(useCount) * 100) : 0;
-                var postIdAtSlot = postSeq[i] || null;
-                var postText = postIdAtSlot ? getPostEffectName(postIdAtSlot) : '无后遗症';
+                var postIdAtSlot = (rawMoveId && moveObj) ? (postSeq[i] || null) : null;
+                var postText = postIdAtSlot ? getPostEffectName(postIdAtSlot) : (rawMoveId ? '无后遗症' : '—');
                 var slotCap = moveObj && moveObj.post_effect_slot_max != null ? Math.max(0, parseInt(moveObj.post_effect_slot_max, 10) || 0) : 0;
                 var node = document.createElement('div');
-                node.className = 'combat-move-node' + (combatUIState.editingSlot === i ? ' editing' : '');
+                node.className = 'combat-move-node' + (combatUIState.editingSlot === i ? ' editing' : '') + (!rawMoveId ? ' slot-empty' : '');
                 node.innerHTML = '<span class="node-index">' + String(i + 1).padStart(2, '0') + '</span><span class="node-name">' + moveName + '</span><span class="node-prof">' + ui('combat.prof.node', { v: nodeProf }) + '</span><span class="node-post' + (postIdAtSlot ? '' : ' empty') + '">' + postText + '</span>';
 
                 var btnPost = document.createElement('button');
                 btnPost.type = 'button';
                 btnPost.className = 'btn-post-slot';
                 btnPost.textContent = '后遗症';
-                if (slotCap < 1 || !moveObj || !moveObj.id) {
+                if (slotCap < 1 || !moveObj || !moveObj.id || !rawMoveId) {
                     btnPost.disabled = true;
-                    btnPost.title = '该招式没有后遗症槽位';
+                    btnPost.title = !rawMoveId ? ui('combat.seq.slot_empty') : '该招式没有后遗症槽位';
                 } else {
                     btnPost.onclick = function (slotIdx, anchorEl, moveEntry, limbId, skillId) {
                         return function (e) {
@@ -1870,7 +2276,7 @@
                 debugBtn.type = 'button';
                 debugBtn.className = 'debug-move-prof-btn';
                 debugBtn.textContent = '+10%';
-                var thisMoveId = moveObj && moveObj.id ? String(moveObj.id) : '';
+                var thisMoveId = (moveObj && moveObj.id && rawMoveId) ? String(moveObj.id) : '';
                 debugBtn.disabled = !thisMoveId;
                 debugBtn.onclick = function (skillId, mid, moveTemplate) {
                     return function (e) {
@@ -2026,27 +2432,98 @@
         var picker = document.getElementById('picker-move');
         var listEl = document.getElementById('picker-list');
         if (!picker || !listEl || !CS || !combatUIState.curSkillId) return;
+        var part = combatUIState.curPart || 'lhand';
+        var combatPre = IE.getCombatState();
+        var limbRec = combatPre.limbs && combatPre.limbs[part];
+        if (!limbRec || limbRec.active !== combatUIState.curSkillId) {
+            showMsg(ui('combat.seq.need_deploy'), 'warn');
+            return;
+        }
         var skillLevel = IE ? IE.getSkillLevel(combatUIState.curSkillId) : 0;
         var unlocked = CS.getUnlockedMoves(combatUIState.curSkillId, skillLevel);
+        var limbKeys = typeof window.getLimbActionTags === 'function' ? window.getLimbActionTags(part) : [];
         var skillsState = IE && IE.getState() && IE.getState().skills ? IE.getState().skills : {};
         var moveUsage = (combatUIState.curSkillId && skillsState[combatUIState.curSkillId] && skillsState[combatUIState.curSkillId].move_usage) ? skillsState[combatUIState.curSkillId].move_usage : {};
         listEl.innerHTML = '';
+        function countFilledMoveSlots(s) {
+            var c = 0;
+            var fi;
+            for (fi = 0; fi < s.length; fi++) {
+                if (s[fi]) c++;
+            }
+            return c;
+        }
+        var seqPreview = (combatPre.move_sequences && Array.isArray(combatPre.move_sequences[part])) ? combatPre.move_sequences[part].slice() : [];
+        var skillLevelPick = skillLevel;
+        var maxSlotsPick = CS.getMaxSlotsForLevel(combatUIState.curSkillId, skillLevelPick);
+        while (seqPreview.length < maxSlotsPick) seqPreview.push('');
+        seqPreview = seqPreview.slice(0, maxSlotsPick);
+        while (seqPreview.length <= idx) seqPreview.push('');
+        var filledPreview = countFilledMoveSlots(seqPreview);
+        var canClearSlot = !!(seqPreview[idx] && filledPreview > 1);
+        var btnClearSlot = document.createElement('button');
+        btnClearSlot.type = 'button';
+        btnClearSlot.className = 'picker-move-clear-slot';
+        btnClearSlot.textContent = ui('combat.seq.clear_slot');
+        btnClearSlot.disabled = !canClearSlot;
+        btnClearSlot.title = canClearSlot ? '' : (seqPreview[idx] ? ui('combat.seq.clear_last_forbidden') : ui('combat.seq.already_empty'));
+        btnClearSlot.onclick = function () {
+            var combat = IE.getCombatState();
+            var seq = (combat.move_sequences && Array.isArray(combat.move_sequences[part])) ? combat.move_sequences[part].slice() : [];
+            var mx = CS.getMaxSlotsForLevel(combatUIState.curSkillId, IE.getSkillLevel(combatUIState.curSkillId));
+            while (seq.length < mx) seq.push('');
+            seq = seq.slice(0, mx);
+            while (seq.length <= idx) seq.push('');
+            if (!seq[idx]) {
+                showMsg(ui('combat.seq.already_empty'), 'warn');
+                return;
+            }
+            if (countFilledMoveSlots(seq) <= 1) {
+                showMsg(ui('combat.seq.clear_last_forbidden'), 'warn');
+                return;
+            }
+            seq[idx] = '';
+            var patchMs = {};
+            patchMs[part] = seq;
+            var limbId = part;
+            if (!combat.post_effect_sequences || typeof combat.post_effect_sequences !== 'object') combat.post_effect_sequences = {};
+            if (!combat.post_effect_sequences[limbId] || typeof combat.post_effect_sequences[limbId] !== 'object') combat.post_effect_sequences[limbId] = {};
+            var postArr = combat.post_effect_sequences[limbId][combatUIState.curSkillId];
+            if (Array.isArray(postArr) && postArr[idx]) {
+                postArr[idx] = null;
+                combat.post_effect_sequences[limbId][combatUIState.curSkillId] = postArr.slice();
+            }
+            IE.setCombatState({ move_sequences: patchMs, post_effect_sequences: combat.post_effect_sequences });
+            combatUIState.editingSlot = null;
+            picker.classList.remove('show');
+            renderCombatModal();
+        };
+        listEl.appendChild(btnClearSlot);
         unlocked.forEach(function (m) {
+            if (typeof CS.moveAllowedOnLimbByTagKeys === 'function' && !CS.moveAllowedOnLimbByTagKeys(m, limbKeys)) return;
             var count = moveUsage[m.id] != null ? moveUsage[m.id] : 0;
             var pct = Math.floor(CS.getMoveProficiencyRatio(count) * 100);
             var btn = document.createElement('button');
             btn.type = 'button';
             btn.innerHTML = '<span>' + m.name + '</span><span class="move-prof">' + ui('combat.prof.short', { v: pct }) + '</span>';
             btn.onclick = function () {
+                if (typeof CS.moveAllowedOnLimbByTagKeys === 'function' && !CS.moveAllowedOnLimbByTagKeys(m, limbKeys)) {
+                    showMsg(ui('combat.seq.limb_tag_blocked'), 'warn');
+                    return;
+                }
                 var combat = IE.getCombatState();
-                if (!combat.skill_move_sequences[combatUIState.curSkillId]) combat.skill_move_sequences[combatUIState.curSkillId] = [];
-                var seq = combat.skill_move_sequences[combatUIState.curSkillId];
-                while (seq.length <= idx) seq.push(unlocked[0] ? unlocked[0].id : '');
+                var seq = (combat.move_sequences && Array.isArray(combat.move_sequences[part])) ? combat.move_sequences[part].slice() : [];
+                var mxSel = CS.getMaxSlotsForLevel(combatUIState.curSkillId, IE.getSkillLevel(combatUIState.curSkillId));
+                while (seq.length < mxSel) seq.push('');
+                seq = seq.slice(0, mxSel);
+                while (seq.length <= idx) seq.push('');
                 seq[idx] = m.id;
-                IE.setCombatState({ skill_move_sequences: combat.skill_move_sequences });
+                var patchMs = {};
+                patchMs[part] = seq;
+                IE.setCombatState({ move_sequences: patchMs });
 
                 // 招式替换后，若该槽已装配后遗症但不再匹配 valid_*，则自动清空该槽
-                var limbId = combatUIState.curPart || 'lhand';
+                var limbId = part;
                 var postSeqMap = (combat.post_effect_sequences && combat.post_effect_sequences[limbId]) ? combat.post_effect_sequences[limbId] : null;
                 var postSeq = postSeqMap && Array.isArray(postSeqMap[combatUIState.curSkillId]) ? postSeqMap[combatUIState.curSkillId] : null;
                 if (postSeq && postSeq[idx] && window.PostEffects && typeof window.PostEffects.getPostEffect === 'function') {
@@ -2062,6 +2539,15 @@
             };
             listEl.appendChild(btn);
         });
+        if (!listEl.children.length) {
+            var emptyHint = document.createElement('div');
+            emptyHint.className = 'picker-empty-hint';
+            emptyHint.style.padding = '8px 12px';
+            emptyHint.style.fontSize = '12px';
+            emptyHint.style.color = '#a8a29e';
+            emptyHint.textContent = ui('combat.seq.no_matching_moves');
+            listEl.appendChild(emptyHint);
+        }
         var rect = anchorEl.getBoundingClientRect();
         picker.style.left = (rect.left) + 'px';
         picker.style.top = (rect.top - 200) + 'px';
@@ -2200,14 +2686,20 @@
                 showMsg(slotIsParry ? '该槽位只能装配招架技能。' : '招架技能不能装配到进攻槽位。', 'warn');
                 return;
             }
-            combat.limbs[combatUIState.curPart][combatUIState.curSlot] = skillId;
-            IE.setCombatState({ limbs: combat.limbs });
-            var seq = (combat.skill_move_sequences && combat.skill_move_sequences[skillId]) ? combat.skill_move_sequences[skillId].slice() : [];
-            if (seq.length) {
-                var moveSeqs = {};
-                moveSeqs[combatUIState.curPart] = seq;
-                IE.setCombatState({ move_sequences: moveSeqs });
+            var part = combatUIState.curPart;
+            var prevActive = combat.limbs[part] && combat.limbs[part].active;
+            combat.limbs[part][combatUIState.curSlot] = skillId;
+            var deployPatch = { limbs: combat.limbs };
+            if (!slotIsParry && prevActive !== skillId) {
+                var freshSeq = buildDefaultMoveSequenceArray(CS, IE, skillId, part);
+                var ms = {};
+                ms[part] = freshSeq;
+                deployPatch.move_sequences = ms;
+                var mc = {};
+                mc[part] = 0;
+                deployPatch.move_sequence_cursors = mc;
             }
+            IE.setCombatState(deployPatch);
         }
         if (window.GameLog) window.GameLog.log(ui('log.system.combat.deployed', { name: (sk.name || skillId) }), 'system');
         renderCombatModal();
@@ -2240,6 +2732,14 @@
             }
             st.skills[skillId].level = nextLv;
             if (!st.skills[skillId].move_usage || typeof st.skills[skillId].move_usage !== 'object') st.skills[skillId].move_usage = {};
+            if (window.GameLog) {
+                window.GameLog.log(ui('log.debug.proficiency.skill_level', {
+                    skillId: String(skillId),
+                    before: String(curLv),
+                    after: String(nextLv),
+                    delta: String(nextLv - curLv)
+                }), 'system');
+            }
 
             if (window.CharacterAttributes && typeof window.CharacterAttributes.recalcCharacterStats === 'function') {
                 window.CharacterAttributes.recalcCharacterStats({
@@ -2756,39 +3256,77 @@
                     window.SceneCtx.exitFootworkNieBuMode();
                 }
                 if (window.CombatPipeline && typeof window.CombatPipeline.runPipeline === 'function') {
-                    var rawDmg = ctxMeta.raw_damage != null ? Number(ctxMeta.raw_damage) : 10;
-                    if (!isFinite(rawDmg) || rawDmg < 0) rawDmg = 10;
+                    var intent = pickWorldMeleeAttackIntent(ctxMeta);
+                    var defSpeed = 10;
+                    var defenderBase = {
+                        kind: 'enemy',
+                        enemyId: enemyId,
+                        parry_rate: ctxMeta.enemy_parry_rate != null ? Number(ctxMeta.enemy_parry_rate) : 0,
+                        parry_damage_reduce: ctxMeta.enemy_parry_reduce != null ? Number(ctxMeta.enemy_parry_reduce) : 0
+                    };
+                    if (window.CombatEnemies && typeof window.CombatEnemies.mergeIntoDefender === 'function') {
+                        window.CombatEnemies.mergeIntoDefender(defenderBase);
+                    }
+                    if (defenderBase.speed != null && isFinite(Number(defenderBase.speed))) defSpeed = Number(defenderBase.speed);
+
+                    var r = null;
+                    if (window.CombatMeleeResolve && typeof window.CombatMeleeResolve.resolvePlayerVsEnemyAttack === 'function') {
+                        r = window.CombatMeleeResolve.resolvePlayerVsEnemyAttack({
+                            skillId: ctxMeta.skill_id != null ? ctxMeta.skill_id : intent.skillId,
+                            moveId: ctxMeta.move_id != null ? ctxMeta.move_id : intent.moveId,
+                            limbId: ctxMeta.limb_id != null ? ctxMeta.limb_id : intent.limbId,
+                            powerLevel: ctxMeta.power_level,
+                            defenderSpeed: defSpeed
+                        });
+                    }
+                    var rawDmg = r && isFinite(r.rawDamage) ? r.rawDamage : 10;
+                    var hitOk = r ? !!r.hitRollSuccess : (ctxMeta.hit_roll_success !== false);
+                    var hitPt = r ? r.hitPart : (ctxMeta.hit_part || 'chest');
+                    var skId = r ? r.skillId : (ctxMeta.skill_id || 'combat_basic_unarmed');
+                    var mvId = r ? r.moveId : (ctxMeta.move_id || 'jab');
+                    var lmId = r ? r.limbId : (ctxMeta.limb_id || 'lhand');
+                    var dmgType = r ? r.damageType : 'blunt';
+                    var modKey = r ? r.hitPartModifierKey : null;
+
+                    if (intent.advanceCursor && window.InventoryEquipment && typeof window.InventoryEquipment.advanceMoveSequenceCursorForLimb === 'function') {
+                        window.InventoryEquipment.advanceMoveSequenceCursorForLimb(lmId);
+                    }
+
                     var pipeName = ctxMeta.pipeline || 'melee_hit_enemy_defender';
                     var postIds = ctxMeta.post_effect_ids;
                     if (!postIds && ctxMeta.post_effect_id) postIds = [ctxMeta.post_effect_id];
                     var atkCtx = {
-                        eventIdSuffix: String(enemyId) + '_' + String(ctxMeta.move_id || 'jab'),
-                        hitRollSuccess: ctxMeta.hit_roll_success !== false,
-                        hitPart: ctxMeta.hit_part || 'chest',
-                        moveId: ctxMeta.move_id || 'jab',
-                        skillId: ctxMeta.skill_id || 'combat_basic_unarmed',
-                        limbId: ctxMeta.limb_id || 'lhand',
+                        eventIdSuffix: String(enemyId) + '_' + String(mvId),
+                        hitRollSuccess: hitOk,
+                        hitPart: hitPt,
+                        moveId: mvId,
+                        skillId: skId,
+                        limbId: lmId,
+                        damageType: dmgType,
+                        hitPartModifierKey: modKey,
                         rawDamage: rawDmg,
                         attacker: {
                             kind: 'player',
                             postEffectIds: Array.isArray(postIds) ? postIds.slice() : []
                         },
-                        defender: {
-                            kind: 'enemy',
-                            enemyId: enemyId,
-                            parry_rate: ctxMeta.enemy_parry_rate != null ? Number(ctxMeta.enemy_parry_rate) : 0,
-                            parry_damage_reduce: ctxMeta.enemy_parry_reduce != null ? Number(ctxMeta.enemy_parry_reduce) : 0
-                        }
+                        defender: defenderBase
                     };
                     window.CombatPipeline.runPipeline(pipeName, atkCtx);
                     if (window.GameLog && atkCtx.finalDamage != null) {
-                        window.GameLog.log(ui('log.combat.pipeline.hit_stub', {
+                        window.GameLog.log(ui('log.combat.resolve.summary', {
                             dmg: String(Math.round(atkCtx.finalDamage)),
                             parry: atkCtx.parrySucceeded ? ui('log.combat.pipeline.parry_yes') : ui('log.combat.pipeline.parry_no')
-                        }), 'info');
+                        }), 'damage');
                     }
+                    ctxMeta.damageText = hitOk ? String(Math.round(atkCtx.finalDamage != null ? atkCtx.finalDamage : 0)) : ui('log.combat.resolve.hit_miss');
                 }
-                showMsg(ui('log.system.attack.enemy', { enemyId: enemyId }), 'system');
+                var enemyLogLabel = enemyId;
+                try {
+                    if (window.UIText && typeof window.UIText.t === 'function') {
+                        enemyLogLabel = window.UIText.t('enemy.name.' + String(enemyId).replace(/\./g, '_'));
+                    }
+                } catch (eLabel) { /* 无专用名时退回 id */ }
+                showMsg(ui('log.system.attack.enemy', { enemyId: enemyLogLabel }), 'system');
                 if (window.SceneAnimation && typeof window.SceneAnimation.emit === 'function') {
                     var stNow = E.getState ? E.getState() : null;
                     window.SceneAnimation.emit('combat:attack', {
@@ -2987,23 +3525,6 @@
                 return !!(window.SceneCtx && typeof window.SceneCtx.hasAdjacentEnemyForCombat === 'function' && window.SceneCtx.hasAdjacentEnemyForCombat());
             }
             var breathHubSkillId = 'combat_basic_breath';
-            var tuNaBtnEl = document.getElementById('player-action-tu-na');
-            if (tuNaBtnEl) {
-                tuNaBtnEl.addEventListener('click', function () {
-                    var CHA = window.CombatHubActions;
-                    if (!CHA || typeof CHA.tryExecuteHubAction !== 'function') return;
-                    var r = CHA.tryExecuteHubAction(breathHubSkillId, 'tu_na', { isBattleContext: hubAdjacentBattleContext });
-                    if (!r.ok) {
-                        var vars = {};
-                        if (r.cooldown_ticks != null) vars.ticks = r.cooldown_ticks;
-                        showMsg(ui(r.reason_key, vars), 'info');
-                        return;
-                    }
-                    showMsg(ui(r.reason_key, { n: r.qi_li_restored != null ? r.qi_li_restored : 0 }), 'success');
-                    if (window.SceneRenderer) window.SceneRenderer.render();
-                    if (typeof updateStatusPanel === 'function') updateStatusPanel();
-                });
-            }
             var diqiHutiBtnEl = document.getElementById('player-action-diqi-huti');
             if (diqiHutiBtnEl) {
                 diqiHutiBtnEl.addEventListener('click', function () {
@@ -3019,6 +3540,22 @@
                     showMsg(ui(r2.reason_key, { shield: r2.shield_value != null ? r2.shield_value : 0 }), 'success');
                     if (window.SceneRenderer) window.SceneRenderer.render();
                     if (typeof updateStatusPanel === 'function') updateStatusPanel();
+                });
+            }
+            var abGroundEl = document.getElementById('action-bar-ground');
+            if (abGroundEl && !abGroundEl._actionBarProxy) {
+                abGroundEl._actionBarProxy = true;
+                abGroundEl.addEventListener('click', function () {
+                    var gBtn = document.getElementById('player-action-ground-items');
+                    if (gBtn) gBtn.click();
+                });
+            }
+            var abDiqiEl = document.getElementById('action-bar-diqi-huti');
+            if (abDiqiEl && !abDiqiEl._actionBarProxy) {
+                abDiqiEl._actionBarProxy = true;
+                abDiqiEl.addEventListener('click', function () {
+                    var dh = document.getElementById('player-action-diqi-huti');
+                    if (dh) dh.click();
                 });
             }
 
@@ -3045,8 +3582,72 @@
             }
 
             if (window.SceneSystems && typeof window.SceneSystems.init === 'function') window.SceneSystems.init();
+            bindQuickBarPinSlotsOnce();
             if (window.SceneRenderer) window.SceneRenderer.render();
         }).catch(function () { render(); });
+    }
+
+    function applyItemUseEffectFromTemplate(tpl) {
+        var ue = tpl && tpl.use_effect;
+        if (!ue || typeof ue !== 'object') return false;
+        var Surv = window.Survival;
+        if (!Surv) return false;
+        var n;
+        var any = false;
+        if (ue.satiety != null && typeof Surv.addSatiety === 'function') {
+            n = Number(ue.satiety);
+            if (isFinite(n) && n !== 0) { Surv.addSatiety(n); any = true; }
+        }
+        if (ue.thirst != null && typeof Surv.addThirst === 'function') {
+            n = Number(ue.thirst);
+            if (isFinite(n) && n !== 0) { Surv.addThirst(n); any = true; }
+        }
+        if (ue.nutrition != null && typeof Surv.addNutrition === 'function') {
+            n = Number(ue.nutrition);
+            if (isFinite(n) && n !== 0) { Surv.addNutrition(n); any = true; }
+        }
+        if (ue.energy != null && typeof Surv.addEnergy === 'function') {
+            n = Number(ue.energy);
+            if (isFinite(n) && n !== 0) { Surv.addEnergy(n); any = true; }
+        }
+        return any;
+    }
+
+    function tryUseQuickBeltDigit(digit) {
+        var inv = window.InventoryEquipment;
+        if (!inv || typeof inv.getQuickBeltSlotSource !== 'function') return;
+        if (digit < 1 || digit > 9) return;
+        var beltIndex = digit - 1;
+        var total = typeof inv.getQuickBeltSlots === 'function' ? inv.getQuickBeltSlots() : 0;
+        if (beltIndex < 0 || beltIndex >= total) return;
+        var src = inv.getQuickBeltSlotSource(beltIndex);
+        if (!src || !src.type) return;
+        var arr = src.type === 'pocket' ? (inv.getPocketArray ? inv.getPocketArray() : []) : (inv.getVestArray ? inv.getVestArray() : []);
+        var cell = arr[src.index];
+        if (!cell || !cell.item_id) return;
+        var tpl = inv.getItemTemplate(cell.item_id);
+        if (!tpl || !tpl.use_effect) {
+            showMsg(ui('item.use.cannot'), 'info');
+            return;
+        }
+        var taken = inv.takeItemFromContainer(src.type, src.index);
+        if (!taken.success || !taken.item) {
+            showMsg(ui('item.use.fail'), 'warn');
+            return;
+        }
+        if (!applyItemUseEffectFromTemplate(tpl)) {
+            if (inv.putItemIntoDefaultContainer) inv.putItemIntoDefaultContainer(taken.item);
+            showMsg(ui('item.use.cannot'), 'info');
+            return;
+        }
+        var char0 = inv.getCharacterForDisplay ? inv.getCharacterForDisplay() : null;
+        var tier0 = inv.getItemDisplayTier ? inv.getItemDisplayTier(cell.item_id, char0) : 0;
+        var dispName = inv.getDisplayName ? inv.getDisplayName(tpl, tier0) : cell.item_id;
+        showMsg(ui('item.use.ok', { name: dispName }), 'success');
+        if (window.Survival && typeof window.Survival.advanceTick === 'function') window.Survival.advanceTick();
+        if (typeof updateStatusPanel === 'function') updateStatusPanel();
+        if (typeof backpackPanelOpen !== 'undefined' && backpackPanelOpen && typeof updateBackpackPanel === 'function') updateBackpackPanel();
+        if (window.SceneRenderer && typeof window.SceneRenderer.render === 'function') window.SceneRenderer.render();
     }
 
     // Expose entrypoints for bootstrap.js
@@ -3057,5 +3658,8 @@
     window.SceneApp.openCharacterCreationAfterIntro = openCharacterCreationAfterIntro;
     window.SceneApp.isStoryMovementLocked = isStoryMovementLocked;
     window.SceneApp.isPreCreationGameplayRestricted = isPreCreationGameplayRestricted;
+    window.SceneApp.tryUseQuickBeltDigit = tryUseQuickBeltDigit;
+    window.SceneApp.executeQuickBarPinnedSlot = executeQuickBarPinnedSlot;
+    window.SceneApp.clearQuickBarPinSlot = clearQuickBarPinSlot;
 })();
 

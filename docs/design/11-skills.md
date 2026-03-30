@@ -479,25 +479,23 @@
   - 玩家可以在每个槽内自由选择已解锁的招式，并为装备了「基本拳脚」的每条肢体分别设定槽内招式顺序；不同肢体可以有完全不同的出招顺序。
 
 - **等级与基础威力曲线**
-  - 「基本拳脚」的基础威力系数以 1 级为基准，记为 \(Base(1)=10\)，并随 **曲线等级** \(L_{\text{curve}}=\min(\text{实际等级}, L_{\text{tpl}})\) 提升；在 \(L_{\text{tpl}}=1000\) 时约为 1 级的 10 倍，即 \(Base(1000)\approx 100\)。**实际等级 1001 时仍按 \(L_{\text{curve}}=1000\) 取 \(Base\)**（与 `CombatSkills.getBasePower` 一致）。
-  - 为体现“前期提升明显、后期逐渐变缓”，定义相对 1 级的倍数函数 \(M(L)\)（1 级时 \(M(1)=1\)），分三段线性插值（第三段上界为 **模板满级** \(L_{\text{tpl}}=\texttt{getTemplateMaxLevel}(\ldots)\)）：
-    - **1 ≤ L ≤ 200**：从 1 倍平滑提升到约 4 倍：
-      \[
-      M(L) = 1 + \frac{3}{199}\,(L - 1)
-      \]
-    - **200 < L ≤ 400**：从约 4 倍提升到约 7 倍：
-      \[
-      M(L) = 4 + \frac{3}{200}\,(L - 200)
-      \]
-    - **400 < L ≤ \(L_{\text{tpl}}\)**：从约 7 倍按斜率 \(\frac{3}{600}\) 提升到 \(L_{\text{tpl}}\) 处（1000 时约 10 倍）：
-      \[
-      M(L) = 7 + \frac{3}{600}\,(L - 400)
-      \]
-  - 对应的基础威力系数为：
+  - 「基本拳脚」的 **`base_power_curve`: `unarmed_simple`** 下，`CombatSkills.getBasePower` 返回的是**随技能等级变化的威力倍数** \(Base(L)\)（浮点运算，实现中**保留两位小数**），参与伤害链中的 \(W_{\text{技}}\) 等（见 `08` / `combat-melee-resolve`）：**非**旧版「常数 10 × 分段 \(M(L)\)」模型。
+  - **曲线等级**：\(L_{\text{curve}}=\min(\text{实际等级}, L_{\text{tpl}})\)，\(L_{\text{tpl}}=\texttt{getTemplateMaxLevel}(\ldots)\)。**实际等级超过模板满级时仍按 \(L_{\text{curve}}=L_{\text{tpl}}\) 取 \(Base\)**。
+  - **配置**（`data/combat-skills.json` → `constants`）：**`base_power_unarmed_mult_at_1`**（默认 **1**，对应 \(L=1\)）、**`base_power_unarmed_mult_at_max`**（默认 **2**，对应 \(L=L_{\text{tpl}}\)，如 1000 级模板即满级倍数为 2）。
+  - **归一化进度**：设 \(L=L_{\text{curve}}\)，当 \(L_{\text{tpl}}>1\) 时
     \[
-    Base(L) = 10 \times M(L)
+    t = \frac{L - 1}{L_{\text{tpl}} - 1}\quad (t \text{ 夹紧到 } [0,1])
     \]
-  - 在原始伤害公式中，「基本拳脚」各招式的“招式威力系数”部分即取自该 \(Base(L)\) 再结合熟练度加成。
+  - **smoothstep**（两端缓入缓出）：
+    \[
+    s = t^2\,(3 - 2t)
+    \]
+  - **基础威力倍数**：
+    \[
+    Base(L) = m_1 + (m_{\max} - m_1)\, s
+    \]
+    其中 \(m_1=\texttt{base\_power\_unarmed\_mult\_at\_1}\)，\(m_{\max}=\texttt{base\_power\_unarmed\_mult\_at\_max}\)。例：\(m_1=1,m_{\max}=2,L_{\text{tpl}}=1000\) 时 \(Base(1)=1.00\)，\(Base(1000)=2.00\)；\(L=500\) 时 \(t\approx0.4995\)，\(s\approx0.3748\)，\(Base\approx1.37\)。
+  - 在原始伤害公式中，「基本拳脚」各招式在 \(Base(L)\) 之上再乘熟练度因子 \((1+R_{\text{move}})\)、招式 `move_power_multiplier`、装备 `skill_coef` 等（见 8.3.1 与实现）。
 
 - **熟练度与最终威力**
   - 「基本拳脚」下各招式的熟练度计数、熟练度比例 \(R_{\text{move}}\)、最终威力系数 \(Final_{\text{move}}(L, P) = Base(L) \times (1 + R_{\text{move}})\) 等，均按 8.3.1「招式与招式熟练度（参与伤害）」通用规则执行。

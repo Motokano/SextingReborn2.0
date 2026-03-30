@@ -55,10 +55,74 @@
             },
             hubs: { breath: null, footwork: null },
             move_sequences: { lhand: [], rhand: [], lfoot: [], rfoot: [] },
+            /** 仅作旧档兼容；运行时以 move_sequences[肢] 为权威 */
             skill_move_sequences: {},
+            /** 各肢招式槽轮询下标（对应该肢 move_sequences 中非空槽位序列） */
+            move_sequence_cursors: { lhand: 0, rhand: 0, lfoot: 0, rfoot: 0 },
             /** 后遗症装配：post_effect_sequences[limbId][skillId] = [post_effect_id|null, ...] */
             post_effect_sequences: {}
         };
+    }
+
+    function ensureMoveSequenceCursors() {
+        var def = getDefaultCombatState().move_sequence_cursors;
+        if (!state.combat.move_sequence_cursors || typeof state.combat.move_sequence_cursors !== 'object') {
+            state.combat.move_sequence_cursors = {};
+        }
+        var i;
+        for (i = 0; i < COMBAT_LIMB_IDS.length; i++) {
+            var lid = COMBAT_LIMB_IDS[i];
+            if (state.combat.move_sequence_cursors[lid] == null || !isFinite(Number(state.combat.move_sequence_cursors[lid]))) {
+                state.combat.move_sequence_cursors[lid] = def[lid] != null ? def[lid] : 0;
+            }
+        }
+    }
+
+    function getCompactMoveIdsForLimb(limbId) {
+        var seq = state.combat.move_sequences[limbId] || [];
+        var out = [];
+        var i;
+        for (i = 0; i < seq.length; i++) {
+            if (seq[i]) out.push(String(seq[i]));
+        }
+        return out;
+    }
+
+    /** 旧档 skill_move_sequences[skillId] 为全局一份时，按肢上 active 技能补全空的 move_sequences */
+    function migrateLegacySkillMoveSequencesIntoLimbs() {
+        var flat = state.combat.skill_move_sequences;
+        if (!flat || typeof flat !== 'object') return;
+        var i;
+        for (i = 0; i < COMBAT_LIMB_IDS.length; i++) {
+            var lid = COMBAT_LIMB_IDS[i];
+            var local = state.combat.move_sequences[lid];
+            var active = state.combat.limbs[lid] && state.combat.limbs[lid].active;
+            if (!active || !flat[active] || !Array.isArray(flat[active]) || !flat[active].length) continue;
+            if (!local || !local.length) {
+                state.combat.move_sequences[lid] = flat[active].slice();
+            }
+        }
+    }
+
+    function peekMoveIdForLimb(limbId) {
+        if (COMBAT_LIMB_IDS.indexOf(limbId) < 0) return null;
+        ensureCombatState();
+        ensureMoveSequenceCursors();
+        var compact = getCompactMoveIdsForLimb(limbId);
+        if (!compact.length) return null;
+        var idx = Math.floor(Number(state.combat.move_sequence_cursors[limbId]) || 0) % compact.length;
+        if (idx < 0) idx = 0;
+        return compact[idx];
+    }
+
+    function advanceMoveSequenceCursorForLimb(limbId) {
+        if (COMBAT_LIMB_IDS.indexOf(limbId) < 0) return;
+        ensureCombatState();
+        ensureMoveSequenceCursors();
+        var compact = getCompactMoveIdsForLimb(limbId);
+        if (!compact.length) return;
+        var cur = Math.floor(Number(state.combat.move_sequence_cursors[limbId]) || 0);
+        state.combat.move_sequence_cursors[limbId] = (cur + 1) % compact.length;
     }
 
     function ensureCombatState() {
@@ -73,6 +137,16 @@
                 state.combat.limbs[lid] = { active: null, parry: null, priority: def.limbs[lid] ? def.limbs[lid].priority : i + 1 };
             }
             if (!state.combat.move_sequences[lid]) state.combat.move_sequences[lid] = [];
+        }
+        var j;
+        for (j = 0; j < limbIds.length; j++) {
+            var lidNorm = limbIds[j];
+            var lr = state.combat.limbs[lidNorm];
+            if (!lr) continue;
+            var pr = Math.floor(Number(lr.priority) || 1);
+            if (!isFinite(pr) || pr < 1) pr = 1;
+            if (pr > 4) pr = 4;
+            lr.priority = pr;
         }
         if (!state.combat.hubs) state.combat.hubs = { breath: null, footwork: null };
         if (state.combat.hubs.light != null && state.combat.hubs.footwork == null) {
@@ -89,6 +163,7 @@
                 state.combat.post_effect_sequences[lid2] = {};
             }
         }
+        ensureMoveSequenceCursors();
     }
 
     /** 技能等级获取：未习得为 0 */
@@ -135,7 +210,7 @@
     }
 
     /**
-     * 增加 skills[skillId].move_usage[usageKey]（如招架成功 parry_success、吐纳 tu_na）。
+     * 增加 skills[skillId].move_usage[usageKey]（如招架成功 parry_success、呼吸法共用线 tu_na）。
      * 未习得（level &lt; 1）或无该技能条目时不写入。
      * @returns {number} 新累计值，未写入时 -1
      */
@@ -149,7 +224,16 @@
         if (!entry.move_usage || typeof entry.move_usage !== 'object') entry.move_usage = {};
         var k = String(usageKey);
         var cur = parseInt(entry.move_usage[k], 10) || 0;
-        entry.move_usage[k] = cur + d;
+        var newTotal = cur + d;
+        entry.move_usage[k] = newTotal;
+        if (global.GameLog && global.UIText && typeof global.UIText.t === 'function') {
+            global.GameLog.log(global.UIText.t('log.debug.proficiency.move_usage', {
+                skillId: String(skillId),
+                usageKey: k,
+                delta: String(d),
+                total: String(newTotal)
+            }), 'system');
+        }
         if (typeof global !== 'undefined' && global.CharacterAttributes && typeof global.CharacterAttributes.recalcCharacterStats === 'function') {
             global.CharacterAttributes.recalcCharacterStats({
                 getEquipmentState: function () { return state.equipment; },
@@ -767,8 +851,110 @@
         }
     };
 
-    /** 基本拳脚默认招式序列（与设计 11-skills 创角一致：刺拳 + 正蹬） */
-    var STARTER_UNARMED_MOVE_SEQ = ['jab', 'front_kick'];
+    function sanitizeCombatMoveSequencesAgainstLimbTags() {
+        var CS = typeof global !== 'undefined' && global.CombatSkills;
+        if (!CS || typeof CS.getSkill !== 'function' || typeof CS.moveAllowedOnLimbByTagKeys !== 'function') return;
+        ensureCombatState();
+        var getTags = typeof global !== 'undefined' && typeof global.getLimbActionTags === 'function' ? global.getLimbActionTags : null;
+        var li;
+        for (li = 0; li < COMBAT_LIMB_IDS.length; li++) {
+            var lid = COMBAT_LIMB_IDS[li];
+            var limbRec = state.combat.limbs[lid];
+            var skillId = limbRec && limbRec.active;
+            if (!skillId) continue;
+            var sk = CS.getSkill(skillId);
+            if (!sk || !sk.moves || !sk.moves.length) continue;
+            var seq = state.combat.move_sequences[lid];
+            if (!Array.isArray(seq) || !seq.length) continue;
+            var limbKeys = (getTags ? getTags(lid) : null) || (typeof CS.getDefaultLimbTagKeysForLimbId === 'function' ? CS.getDefaultLimbTagKeysForLimbId(lid) : []);
+            var si;
+            var changed = false;
+            for (si = 0; si < seq.length; si++) {
+                var mid = seq[si];
+                if (!mid) continue;
+                var mj;
+                var moveObj = null;
+                for (mj = 0; mj < sk.moves.length; mj++) {
+                    if (sk.moves[mj] && sk.moves[mj].id === mid) {
+                        moveObj = sk.moves[mj];
+                        break;
+                    }
+                }
+                if (!moveObj || !CS.moveAllowedOnLimbByTagKeys(moveObj, limbKeys)) {
+                    seq[si] = '';
+                    changed = true;
+                    var psMap = state.combat.post_effect_sequences[lid];
+                    if (psMap && psMap[skillId] && Array.isArray(psMap[skillId]) && psMap[skillId][si]) {
+                        psMap[skillId][si] = null;
+                    }
+                }
+            }
+            if (changed) state.combat.move_sequences[lid] = seq.slice();
+        }
+    }
+
+    /**
+     * 每肢进攻技能至少保留 1 个非空招式槽（轮转依赖 getCompactMoveIdsForLimb）。
+     * 在标签清洗之后调用。
+     */
+    function ensureMinimumOneFilledMovePerLimb() {
+        var CS = typeof global !== 'undefined' && global.CombatSkills;
+        if (!CS || typeof CS.getSkill !== 'function' || typeof CS.getUnlockedMoves !== 'function' || typeof CS.getMaxSlotsForLevel !== 'function') return;
+        ensureCombatState();
+        var getTags = typeof global !== 'undefined' && typeof global.getLimbActionTags === 'function' ? global.getLimbActionTags : null;
+        var li;
+        for (li = 0; li < COMBAT_LIMB_IDS.length; li++) {
+            var lid = COMBAT_LIMB_IDS[li];
+            var limbRec = state.combat.limbs[lid];
+            var skillId = limbRec && limbRec.active;
+            if (!skillId) continue;
+            var sk = CS.getSkill(skillId);
+            if (!sk || !sk.moves || !sk.moves.length) continue;
+            if (sk.category !== 'unarmed' && sk.category !== 'weapon') continue;
+            var lv = getSkillLevel(skillId);
+            var maxSlots = CS.getMaxSlotsForLevel(skillId, lv);
+            if (!maxSlots || maxSlots < 1) continue;
+            var seq = Array.isArray(state.combat.move_sequences[lid]) ? state.combat.move_sequences[lid].slice() : [];
+            while (seq.length < maxSlots) seq.push('');
+            seq = seq.slice(0, maxSlots);
+            var filled = 0;
+            var si;
+            for (si = 0; si < seq.length; si++) {
+                if (seq[si]) filled++;
+            }
+            if (filled >= 1) {
+                state.combat.move_sequences[lid] = seq;
+                continue;
+            }
+            var limbKeys = (getTags ? getTags(lid) : null) || (typeof CS.getDefaultLimbTagKeysForLimbId === 'function' ? CS.getDefaultLimbTagKeysForLimbId(lid) : []);
+            var unlocked = CS.getUnlockedMoves(skillId, lv);
+            var pick = null;
+            var uidx;
+            if (typeof CS.moveAllowedOnLimbByTagKeys === 'function') {
+                for (uidx = 0; uidx < unlocked.length; uidx++) {
+                    if (CS.moveAllowedOnLimbByTagKeys(unlocked[uidx], limbKeys)) {
+                        pick = unlocked[uidx].id;
+                        break;
+                    }
+                }
+            }
+            if (!pick && unlocked[0]) pick = unlocked[0].id;
+            if (!pick) {
+                state.combat.move_sequences[lid] = seq;
+                continue;
+            }
+            var placed = false;
+            for (si = 0; si < seq.length; si++) {
+                if (!seq[si]) {
+                    seq[si] = pick;
+                    placed = true;
+                    break;
+                }
+            }
+            if (!placed) seq[0] = pick;
+            state.combat.move_sequences[lid] = seq;
+        }
+    }
 
     function ensureSkillEntry(skillId, minLevel) {
         if (!skillId) return;
@@ -794,13 +980,18 @@
         ensureSkillEntry('combat_basic_footwork', 1);
         state.combat.hubs.breath = 'combat_basic_breath';
         state.combat.hubs.footwork = 'combat_basic_footwork';
-        var seq = STARTER_UNARMED_MOVE_SEQ.slice();
-        state.combat.skill_move_sequences.combat_basic_unarmed = seq.slice();
+        var CS = typeof global !== 'undefined' && global.CombatSkills;
+        var lv = getSkillLevel('combat_basic_unarmed');
         for (var i = 0; i < COMBAT_LIMB_IDS.length; i++) {
             var lid = COMBAT_LIMB_IDS[i];
             state.combat.limbs[lid].active = 'combat_basic_unarmed';
-            state.combat.move_sequences[lid] = seq.slice();
+            if (CS && typeof CS.buildDefaultMoveSequenceForLimb === 'function') {
+                state.combat.move_sequences[lid] = CS.buildDefaultMoveSequenceForLimb('combat_basic_unarmed', lid, lv);
+            } else {
+                state.combat.move_sequences[lid] = (lid === 'lfoot' || lid === 'rfoot') ? ['front_kick', ''] : ['jab', ''];
+            }
         }
+        state.combat.move_sequence_cursors = { lhand: 0, rhand: 0, lfoot: 0, rfoot: 0 };
     }
 
     /** 旧档或无战斗技能条目时补足（不覆盖已有装配） */
@@ -968,6 +1159,17 @@
                     : { active: null, parry: null, priority: li + 1 };
                 state.combat.move_sequences[lid] = (s.combat.move_sequences && Array.isArray(s.combat.move_sequences[lid])) ? s.combat.move_sequences[lid].slice() : [];
             }
+            state.combat.move_sequence_cursors = { lhand: 0, rhand: 0, lfoot: 0, rfoot: 0 };
+            var cursSrc = s.combat.move_sequence_cursors;
+            if (cursSrc && typeof cursSrc === 'object') {
+                for (var ci = 0; ci < limbIds.length; ci++) {
+                    var clid = limbIds[ci];
+                    if (cursSrc[clid] != null) {
+                        state.combat.move_sequence_cursors[clid] = Math.max(0, Math.floor(Number(cursSrc[clid]) || 0));
+                    }
+                }
+            }
+            migrateLegacySkillMoveSequencesIntoLimbs();
         }
         if (s.hub_action_cooldowns && typeof s.hub_action_cooldowns === 'object') {
             state.hub_action_cooldowns = {};
@@ -978,6 +1180,8 @@
             }
         }
         ensureCombatState();
+        sanitizeCombatMoveSequencesAgainstLimbTags();
+        ensureMinimumOneFilledMovePerLimb();
     }
 
     function getState() {
@@ -997,12 +1201,15 @@
             hubs: { breath: state.combat.hubs.breath, footwork: state.combat.hubs.footwork },
             move_sequences: {},
             skill_move_sequences: {},
+            move_sequence_cursors: {},
             post_effect_sequences: {}
         };
+        ensureMoveSequenceCursors();
         for (var li = 0; li < COMBAT_LIMB_IDS.length; li++) {
             var lid = COMBAT_LIMB_IDS[li];
             combatCopy.limbs[lid] = { active: state.combat.limbs[lid].active, parry: state.combat.limbs[lid].parry, priority: state.combat.limbs[lid].priority };
             combatCopy.move_sequences[lid] = (state.combat.move_sequences[lid] || []).slice();
+            combatCopy.move_sequence_cursors[lid] = Math.floor(Number(state.combat.move_sequence_cursors[lid]) || 0);
         }
         for (var sk in state.combat.skill_move_sequences) {
             if (state.combat.skill_move_sequences.hasOwnProperty(sk) && Array.isArray(state.combat.skill_move_sequences[sk]))
@@ -1047,12 +1254,15 @@
 
     function getCombatState() {
         ensureCombatState();
+        ensureMinimumOneFilledMovePerLimb();
         var c = state.combat;
-        var out = { limbs: {}, hubs: { breath: c.hubs.breath, footwork: c.hubs.footwork }, move_sequences: {}, skill_move_sequences: {}, post_effect_sequences: {} };
+        var out = { limbs: {}, hubs: { breath: c.hubs.breath, footwork: c.hubs.footwork }, move_sequences: {}, skill_move_sequences: {}, move_sequence_cursors: {}, post_effect_sequences: {} };
+        ensureMoveSequenceCursors();
         for (var i = 0; i < COMBAT_LIMB_IDS.length; i++) {
             var lid = COMBAT_LIMB_IDS[i];
             out.limbs[lid] = { active: c.limbs[lid].active, parry: c.limbs[lid].parry, priority: c.limbs[lid].priority };
             out.move_sequences[lid] = (c.move_sequences[lid] || []).slice();
+            out.move_sequence_cursors[lid] = Math.floor(Number(c.move_sequence_cursors[lid]) || 0);
         }
         for (var sk in c.skill_move_sequences) {
             if (c.skill_move_sequences.hasOwnProperty(sk) && Array.isArray(c.skill_move_sequences[sk]))
@@ -1109,6 +1319,15 @@
                     state.combat.skill_move_sequences[sk] = partial.skill_move_sequences[sk].slice();
             }
         }
+        if (partial.move_sequence_cursors && typeof partial.move_sequence_cursors === 'object') {
+            ensureMoveSequenceCursors();
+            for (var cl in partial.move_sequence_cursors) {
+                if (!Object.prototype.hasOwnProperty.call(partial.move_sequence_cursors, cl)) continue;
+                if (COMBAT_LIMB_IDS.indexOf(cl) < 0) continue;
+                var vx = Math.floor(Number(partial.move_sequence_cursors[cl]) || 0);
+                state.combat.move_sequence_cursors[cl] = Math.max(0, vx);
+            }
+        }
         if (partial.post_effect_sequences && typeof partial.post_effect_sequences === 'object') {
             for (var lidP in partial.post_effect_sequences) {
                 if (COMBAT_LIMB_IDS.indexOf(lidP) < 0 || !partial.post_effect_sequences[lidP] || typeof partial.post_effect_sequences[lidP] !== 'object') continue;
@@ -1122,6 +1341,8 @@
                 }
             }
         }
+        sanitizeCombatMoveSequencesAgainstLimbTags();
+        ensureMinimumOneFilledMovePerLimb();
     }
 
     global.InventoryEquipment = {
@@ -1169,6 +1390,8 @@
         getEnchantEntry: getEnchantEntry,
         getCombatState: getCombatState,
         setCombatState: setCombatState,
+        peekMoveIdForLimb: peekMoveIdForLimb,
+        advanceMoveSequenceCursorForLimb: advanceMoveSequenceCursorForLimb,
         ensureCombatState: ensureCombatState,
         getHubActionCooldownRemaining: getHubActionCooldownRemaining,
         setHubActionCooldownRemaining: setHubActionCooldownRemaining,

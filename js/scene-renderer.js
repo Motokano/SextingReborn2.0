@@ -254,6 +254,34 @@
         if (pEl) pEl.textContent = st.timePeriodLabel || '';
     }
 
+    function appendQuickBeltSlot(frag, IE, char, it, slotIndex) {
+        var slot = document.createElement('div');
+        slot.className = 'slot';
+        if (slotIndex < 9) {
+            var keyEl = document.createElement('span');
+            keyEl.className = 'quick-belt-slot-key';
+            keyEl.textContent = String(slotIndex + 1);
+            slot.appendChild(keyEl);
+        }
+        var body = document.createElement('span');
+        body.className = 'quick-belt-slot-body';
+        if (it && it.item_id) {
+            var tpl = IE.getItemTemplate(it.item_id);
+            var tier = IE.getItemDisplayTier(it.item_id, char);
+            body.textContent = tpl ? IE.getDisplayName(tpl, tier).slice(0, 2) : it.item_id.slice(0, 2);
+            var name = tpl ? IE.getDisplayName(tpl, tier) : it.item_id;
+            var desc = tpl ? IE.getDisplayDesc(tpl, tier) : '';
+            var attrs = formatItemAttributes(tpl, it);
+            var tipHtml = buildItemTooltipHtml(name, desc, attrs);
+            slot.addEventListener('mouseenter', function (html, el) { return function () { showItemTooltip(html, el); }; }(tipHtml, slot));
+            slot.addEventListener('mouseleave', function () { hideItemTooltip(); });
+        } else {
+            body.textContent = '—';
+        }
+        slot.appendChild(body);
+        frag.appendChild(slot);
+    }
+
     function updateQuickBelt() {
         var ctx = getCtx();
         if (!ctx || !ctx.IE) return;
@@ -289,45 +317,25 @@
 
         el.innerHTML = '';
         var frag = document.createDocumentFragment();
-        for (var i = 0; i < pocketArr.length; i++) {
-            var slot = document.createElement('div');
-            slot.className = 'slot';
-            var it = pocketArr[i];
-            if (it && it.item_id) {
-                var tpl = IE.getItemTemplate(it.item_id);
-                var tier = IE.getItemDisplayTier(it.item_id, char);
-                slot.textContent = tpl ? IE.getDisplayName(tpl, tier).slice(0, 2) : it.item_id.slice(0, 2);
-                var name = tpl ? IE.getDisplayName(tpl, tier) : it.item_id;
-                var desc = tpl ? IE.getDisplayDesc(tpl, tier) : '';
-                var attrs = formatItemAttributes(tpl, it);
-                var tipHtml = buildItemTooltipHtml(name, desc, attrs);
-                slot.addEventListener('mouseenter', function (html, el) { return function () { showItemTooltip(html, el); }; }(tipHtml, slot));
-                slot.addEventListener('mouseleave', function () { hideItemTooltip(); });
-            } else {
-                slot.textContent = '—';
-            }
-            frag.appendChild(slot);
+        var slotIndex = 0;
+        var pi;
+        for (pi = 0; pi < pocketArr.length; pi++) {
+            appendQuickBeltSlot(frag, IE, char, pocketArr[pi], slotIndex++);
         }
-        for (var j = 0; j < vestArr.length; j++) {
-            var slot2 = document.createElement('div');
-            slot2.className = 'slot';
-            var it2 = vestArr[j];
-            if (it2 && it2.item_id) {
-                var tpl2 = IE.getItemTemplate(it2.item_id);
-                var tier2 = IE.getItemDisplayTier(it2.item_id, char);
-                slot2.textContent = tpl2 ? IE.getDisplayName(tpl2, tier2).slice(0, 2) : it2.item_id.slice(0, 2);
-                var name2 = tpl2 ? IE.getDisplayName(tpl2, tier2) : it2.item_id;
-                var desc2 = tpl2 ? IE.getDisplayDesc(tpl2, tier2) : '';
-                var attrs2 = formatItemAttributes(tpl2, it2);
-                var tipHtml2 = buildItemTooltipHtml(name2, desc2, attrs2);
-                slot2.addEventListener('mouseenter', function (html, el) { return function () { showItemTooltip(html, el); }; }(tipHtml2, slot2));
-                slot2.addEventListener('mouseleave', function () { hideItemTooltip(); });
-            } else {
-                slot2.textContent = '—';
-            }
-            frag.appendChild(slot2);
+        if (pocketArr.length && vestArr.length) {
+            var sep = document.createElement('div');
+            sep.className = 'quick-belt-sep';
+            sep.setAttribute('aria-hidden', 'true');
+            frag.appendChild(sep);
+        }
+        var vj;
+        for (vj = 0; vj < vestArr.length; vj++) {
+            appendQuickBeltSlot(frag, IE, char, vestArr[vj], slotIndex++);
         }
         el.appendChild(frag);
+        if (window.GameLog && typeof window.GameLog.syncQuickBeltDock === 'function') {
+            window.GameLog.syncQuickBeltDock();
+        }
     }
 
     function render() {
@@ -421,6 +429,7 @@
                     gathering: (entityId === 'gathering_bush' || entityId === 'gathering_grass'),
                     npc: !!npcId,
                     enemy: !!enemyId,
+                    enemyId: enemyId || null,
                     groundCount: groundAt.length
                 };
             },
@@ -553,7 +562,21 @@
                     if (meta.portal) tips.push('传送点');
                     if (meta.gathering) tips.push('采集点');
                     if (meta.npc) tips.push('可对话');
-                    if (meta.enemy) tips.push('敌人');
+                    if (meta.enemy) {
+                        if (meta.enemyId === 'enemy.training_dummy_wooden') {
+                            try {
+                                if (window.UIText && typeof window.UIText.t === 'function') {
+                                    tips.push(window.UIText.t('map.tooltip.enemy.training_dummy'));
+                                } else {
+                                    tips.push('训练木桩');
+                                }
+                            } catch (eTip) {
+                                tips.push('训练木桩');
+                            }
+                        } else {
+                            tips.push('敌人');
+                        }
+                    }
                     if (meta.groundCount > 0) tips.push('地面有 ' + meta.groundCount + ' 件物品');
                     if (meta.leapTarget) tips.push('蹑步落点');
                     grid.title = tips.join(' · ');
@@ -577,24 +600,17 @@
         var bubbleGather = document.getElementById('player-action-gather');
         var bubbleStop = document.getElementById('player-action-gather-stop');
         var bubbleGroundItems = document.getElementById('player-action-ground-items');
-        var bubbleTuNa = document.getElementById('player-action-tu-na');
         var bubbleDiqiHuti = document.getElementById('player-action-diqi-huti');
         var adjEnemyCombat = ctx && typeof ctx.hasAdjacentEnemyForCombat === 'function' ? !!ctx.hasAdjacentEnemyForCombat() : false;
         var breathSkillId = 'combat_basic_breath';
-        var tuNaOk = false;
         var diqiHutiOk = false;
-        var cdTuNa = 0;
         if (IE && E && window.CombatSkills && adjEnemyCombat) {
             var breathLv = typeof IE.getSkillLevel === 'function' ? IE.getSkillLevel(breathSkillId) : 0;
             var hubsB = IE.getCombatState && IE.getCombatState().hubs ? IE.getCombatState().hubs : null;
-            if (breathLv >= 1 && hubsB && hubsB.breath === breathSkillId) tuNaOk = true;
             if (breathLv >= 50 && hubsB && hubsB.breath === breathSkillId) {
                 var shRem = (window.Survival && typeof window.Survival.getDiqiShieldRemaining === 'function') ? window.Survival.getDiqiShieldRemaining() : 0;
                 if (shRem <= 0) diqiHutiOk = true;
             }
-        }
-        if (tuNaOk && IE.getHubActionCooldownRemaining) {
-            cdTuNa = IE.getHubActionCooldownRemaining(breathSkillId, 'tu_na');
         }
         var tNie = function (key, vars) {
             try {
@@ -602,27 +618,93 @@
             } catch (e1) { /* ignore */ }
             return key;
         };
-        if (bubbleTuNa) {
-            bubbleTuNa.style.display = tuNaOk ? 'inline-block' : 'none';
-            bubbleTuNa.disabled = cdTuNa > 0;
-            if (cdTuNa > 0) bubbleTuNa.textContent = tNie('player.action.tu_na.cd', { ticks: cdTuNa });
-            else bubbleTuNa.textContent = tNie('player.action.tu_na');
-        }
         if (bubbleDiqiHuti) {
             bubbleDiqiHuti.style.display = diqiHutiOk ? 'inline-block' : 'none';
             bubbleDiqiHuti.textContent = tNie('player.action.diqi_huti');
         }
-        var showBubble = canGather || isIdling || hasGroundItems || tuNaOk || diqiHutiOk;
+        var showBubble = canGather || isIdling || hasGroundItems || diqiHutiOk;
         if (bubble) bubble.classList.toggle('visible', !!showBubble);
-        if (showBubble && bubbleGather && bubbleStop) {
-            bubbleGather.style.display = !isIdling ? 'inline-block' : 'none';
-            bubbleGather.disabled = !canGather;
-            bubbleGather.textContent = pointName ? '采集 · ' + pointName + '（挂机）' : '采集（挂机）';
-            bubbleStop.style.display = isIdling ? 'inline-block' : 'none';
+        // 采集/停止：仅与「站在可采集格」或「正在挂机采集」相关；勿因脚下物品/护体等其它理由把采集钮常驻显示
+        if (bubbleGather && bubbleStop) {
+            if (showBubble) {
+                bubbleGather.style.display = (!isIdling && canGather) ? 'inline-block' : 'none';
+                bubbleGather.disabled = !canGather;
+                bubbleGather.textContent = pointName ? '采集 · ' + pointName + '（挂机）' : '采集（挂机）';
+                bubbleStop.style.display = isIdling ? 'inline-block' : 'none';
+            } else {
+                bubbleGather.style.display = 'none';
+                bubbleStop.style.display = 'none';
+            }
         }
         if (bubbleGroundItems) {
             bubbleGroundItems.style.display = hasGroundItems ? 'inline-block' : 'none';
             bubbleGroundItems.textContent = hasGroundItems ? '📦 脚下 ' + groundAtPlayer.length + ' 件' : '📦 脚下物品';
+        }
+
+        var abGather = document.getElementById('action-bar-gather');
+        var abStop = document.getElementById('action-bar-gather-stop');
+        var abGround = document.getElementById('action-bar-ground');
+        var abDiqi = document.getElementById('action-bar-diqi-huti');
+        if (abGather && bubbleGather) {
+            abGather.style.display = bubbleGather.style.display;
+            abGather.disabled = !!bubbleGather.disabled;
+            abGather.textContent = bubbleGather.textContent || '';
+        }
+        if (abStop && bubbleStop) {
+            abStop.style.display = bubbleStop.style.display;
+            abStop.textContent = bubbleStop.textContent || '';
+        }
+        if (abGround && bubbleGroundItems) {
+            abGround.style.display = bubbleGroundItems.style.display;
+            abGround.textContent = bubbleGroundItems.textContent || '';
+        }
+        if (abDiqi && bubbleDiqiHuti) {
+            abDiqi.style.display = bubbleDiqiHuti.style.display;
+            abDiqi.textContent = bubbleDiqiHuti.textContent || '';
+        }
+
+        var anyCtxAb = (abGather && abGather.style.display !== 'none')
+            || (abStop && abStop.style.display !== 'none')
+            || (abGround && abGround.style.display !== 'none')
+            || (abDiqi && abDiqi.style.display !== 'none');
+        var sepAb = document.getElementById('action-bar-sep');
+        if (sepAb) sepAb.style.display = anyCtxAb ? 'block' : 'none';
+
+        var slotsAb = (ctx && typeof ctx.getActionBarSlots === 'function') ? ctx.getActionBarSlots() : [null, null, null, null];
+        var pxi;
+        for (pxi = 0; pxi < 4; pxi++) {
+            var pBtn = document.getElementById('action-bar-pin-' + pxi);
+            if (!pBtn) continue;
+            var tokp = slotsAb[pxi];
+            if (!tokp) {
+                pBtn.textContent = '·';
+                pBtn.classList.add('empty');
+                pBtn.title = tNie('action.bar.pin.empty_title') + ' · ' + tNie('action.bar.pin.right_clear');
+                continue;
+            }
+            pBtn.classList.remove('empty');
+            var partsp = String(tokp).split('|');
+            var lblPin = '—';
+            if (partsp.length >= 3 && partsp[0] === 'hub') {
+                var skPin = partsp[1];
+                var acPin = partsp[2];
+                var CSab = (typeof window !== 'undefined' && window.CombatSkills) ? window.CombatSkills : null;
+                if (CSab && typeof CSab.getSkill === 'function') {
+                    var tplab = CSab.getSkill(skPin);
+                    if (tplab && tplab.hub_actions) {
+                        var hx;
+                        for (hx = 0; hx < tplab.hub_actions.length; hx++) {
+                            if (tplab.hub_actions[hx].id === acPin) {
+                                lblPin = tplab.hub_actions[hx].name || acPin;
+                                break;
+                            }
+                        }
+                    }
+                }
+                if (lblPin === '—') lblPin = acPin;
+            }
+            pBtn.textContent = lblPin;
+            pBtn.title = lblPin + ' · ' + tNie('action.bar.pin.right_clear');
         }
 
         updateTopTimeHud();

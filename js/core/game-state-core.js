@@ -17,9 +17,9 @@
         var opts = options || {};
         var maps = clone(opts.maps || {});
         var state = {
-            mapId: opts.initialMapId || 'home',
-            x: opts.initialX != null ? opts.initialX : 0,
-            y: opts.initialY != null ? opts.initialY : 0
+            mapId: opts.initialMapId || 'M0_Base_Inside_lv_1',
+            x: opts.initialX != null ? opts.initialX : 10,
+            y: opts.initialY != null ? opts.initialY : 12
         };
 
         function getMap() {

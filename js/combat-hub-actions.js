@@ -76,9 +76,9 @@
         if (isFinite(cdt) && cdt > 0) IE.setHubActionCooldownRemaining(skillId, actionId, cdt);
         incrementBreathTuNaLine(IE, skillId);
         result.ok = true;
-        result.reason_key = 'combat.hub.ok.tu_na';
+        result.reason_key = 'combat.hub.ok.restore_qi_li';
         result.qi_li_restored = add;
-        emitHubResolved(Surv, skillId, actionId, ['tu_na']);
+        emitHubResolved(Surv, skillId, actionId, [String(actionId || 'restore_qi_li')]);
     }
 
     function tryExecuteDiqiShield(skillId, actionId, ha, IE, Surv, result) {

@@ -39,7 +39,9 @@
         diqi_max_effective: 0,
         diqi_shield_remaining: 0,
         last_sit_meditation_gain: 0,
-        sit_meditation_interrupt_this_tick: false
+        sit_meditation_interrupt_this_tick: false,
+        /** 自上一次 advanceTick 起是否发生过 consumeQiLi 的实际扣减（用于 07 空闲回气） */
+        qi_li_spent_this_tick: false
     };
 
     /** 从外部获取呼吸实际值、凝气加成（可选），用于体力/底气恢复公式 */
@@ -340,6 +342,7 @@
         }
         state.diqi_current = round1(state.diqi_max_effective);
         state.diqi_shield_remaining = 0;
+        state.qi_li_spent_this_tick = false;
     }
 
     function addQiLi(amount) {
@@ -354,6 +357,7 @@
         if (a <= 0) return 0;
         var take = Math.min(a, state.qi_li_current);
         state.qi_li_current = round1(Math.max(0, state.qi_li_current - take));
+        if (take > 0) state.qi_li_spent_this_tick = true;
         return take;
     }
 
@@ -561,6 +565,16 @@
     function advanceTick() {
         var result = { death: null, coma: false };
         if (state.isDead) return result;
+
+        // 07：本 tick 推进前，若自上一 tick 以来未扣除过气力，则按上限比例回气（与其它 addQiLi 不互斥）
+        if (!state.qi_li_spent_this_tick) {
+            var pct = get('qi_li_regen_pct_per_turn', 0.5);
+            if (typeof pct !== 'number' || !isFinite(pct)) pct = 0.25;
+            pct = clamp(pct, 0, 1);
+            var regenAmt = Math.floor(getQiLiMax() * pct);
+            if (regenAmt > 0) addQiLi(regenAmt);
+        }
+        state.qi_li_spent_this_tick = false;
 
         state.tickCount += 1;
         var tick = state.tickCount;

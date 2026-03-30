@@ -273,9 +273,185 @@
         .role-card { background: rgba(45, 36, 30, 0.95); border: 2px solid rgba(212, 163, 115, 0.4); padding: 18px 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.3); margin-bottom: 14px; }
         .role-card h1 { font-size: 1.65rem; font-weight: 800; color: #fff; letter-spacing: 0.12em; margin: 0; line-height: 1.3; }
         .role-card .subtitle { font-size: 15px; color: #fbbf24; font-weight: 600; margin-top: 8px; letter-spacing: 0.06em; }
-        .quick-belt { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; padding: 12px; background: rgba(28, 22, 18, 0.95); border: 2px solid #4d3f35; }
-        .quick-belt .slot { aspect-ratio: 1; border: 1px solid #292524; background: rgba(0,0,0,0.4); display: flex; align-items: center; justify-content: center; font-size: 22px; cursor: pointer; }
+        /* 底部动作栏 + 快捷腰带：整体贴游戏日志上沿，位置由 game-log.js 同步 */
+        #bottom-hud-stack {
+            position: fixed;
+            left: 50%;
+            transform: translateX(-50%);
+            bottom: 108px;
+            z-index: 39;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+            max-width: min(96vw, 780px);
+            pointer-events: none;
+        }
+        #bottom-hud-stack .action-bar-dock,
+        #bottom-hud-stack #quick-belt-dock {
+            pointer-events: auto;
+        }
+        #quick-belt-dock {
+            max-width: 100%;
+        }
+        .action-bar-dock {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            padding: 5px 8px;
+            background: rgba(22, 18, 15, 0.92);
+            border: 1px solid rgba(77, 63, 53, 0.85);
+            border-radius: 8px;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+        }
+        .action-bar-dock .action-bar-btn {
+            min-height: 32px;
+            padding: 4px 10px;
+            font-size: 12px;
+            font-weight: 700;
+            font-family: "Microsoft YaHei", "微软雅黑", "PingFang SC", sans-serif;
+            color: #e8e6e3;
+            background: rgba(0, 0, 0, 0.35);
+            border: 1px solid #3d332c;
+            border-radius: 6px;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+        .action-bar-dock .action-bar-btn:hover:not(:disabled) {
+            border-color: #fbbf24;
+            background: rgba(45, 36, 30, 0.95);
+        }
+        .action-bar-dock .action-bar-btn:disabled {
+            opacity: 0.45;
+            cursor: not-allowed;
+        }
+        .action-bar-context {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+        .action-bar-sep {
+            display: none;
+            width: 1px;
+            height: 24px;
+            margin: 0 2px;
+            flex-shrink: 0;
+            align-self: center;
+            background: linear-gradient(180deg, transparent, rgba(212, 163, 115, 0.45), transparent);
+            pointer-events: none;
+        }
+        .action-bar-pinned {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+        }
+        .action-bar-dock .action-bar-pin-slot {
+            min-width: 2.4em;
+            padding: 4px 8px;
+            font-size: 11px;
+        }
+        .action-bar-dock .action-bar-pin-slot:not(.empty) {
+            max-width: 10.5em;
+            white-space: normal;
+            line-height: 1.2;
+            text-align: center;
+            word-break: keep-all;
+            overflow-wrap: break-word;
+            font-weight: 700;
+        }
+        .action-bar-dock .action-bar-pin-slot.empty {
+            opacity: 0.5;
+            font-weight: 600;
+        }
+        .player-action-item-row {
+            display: flex;
+            align-items: stretch;
+            gap: 4px;
+            width: 100%;
+        }
+        .player-action-item-row .player-action-item {
+            flex: 1;
+            min-width: 0;
+        }
+        .player-action-pin {
+            flex-shrink: 0;
+            min-width: 36px;
+            padding: 4px 6px;
+            font-size: 14px;
+            line-height: 1.2;
+            background: rgba(0, 0, 0, 0.35);
+            border: 1px solid #3d332c;
+            border-radius: 6px;
+            color: #d4a574;
+            cursor: pointer;
+        }
+        .player-action-pin:hover { border-color: #fbbf24; color: #fde68a; }
+        .player-action-pin:disabled { opacity: 0.35; cursor: not-allowed; }
+        .quick-belt {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: center;
+            gap: 5px 6px;
+            padding: 6px 10px;
+            background: rgba(28, 22, 18, 0.94);
+            border: 1px solid rgba(77, 63, 53, 0.95);
+            border-radius: 10px;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.45);
+            backdrop-filter: blur(8px);
+        }
+        .quick-belt .quick-belt-sep {
+            width: 1px;
+            height: 28px;
+            margin: 0 4px;
+            flex-shrink: 0;
+            align-self: center;
+            background: linear-gradient(180deg, transparent, rgba(212, 163, 115, 0.35), transparent);
+            pointer-events: none;
+        }
+        .quick-belt .slot {
+            position: relative;
+            width: 42px;
+            height: 42px;
+            flex-shrink: 0;
+            border: 1px solid #292524;
+            border-radius: 6px;
+            background: rgba(0, 0, 0, 0.42);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-family: "Microsoft YaHei", "微软雅黑", "PingFang SC", sans-serif;
+        }
         .quick-belt .slot:hover { border-color: #fbbf24; }
+        .quick-belt .quick-belt-slot-key {
+            position: absolute;
+            top: 3px;
+            left: 4px;
+            font-size: 9px;
+            font-weight: 800;
+            line-height: 1;
+            color: rgba(251, 191, 36, 0.8);
+            pointer-events: none;
+            letter-spacing: 0;
+        }
+        .quick-belt .quick-belt-slot-body {
+            font-size: 13px;
+            font-weight: 700;
+            color: #e8e6e3;
+            line-height: 1.1;
+            text-align: center;
+            max-width: 100%;
+            overflow: hidden;
+            text-overflow: clip;
+            white-space: nowrap;
+        }
         .details-block { border: 1px solid #4d3f35; background: rgba(28, 25, 23, 0.2); }
         .details-block summary { padding: 10px 12px; font-size: 13px; font-weight: 800; color: #a8a29e; cursor: pointer; list-style: none; display: flex; justify-content: space-between; }
         .details-block .details-body { padding: 14px 16px; background: #1c1612; border-top: 1px solid #3d2d24; }
@@ -300,6 +476,7 @@
         }
         .player-actions-submenu .player-action-item:hover:not(:disabled) { border-color: #fbbf24; background: rgba(45, 36, 30, 0.9); }
         .player-actions-submenu .player-action-item:disabled { opacity: 0.45; cursor: not-allowed; }
+        .player-actions-submenu .player-action-item-row { width: 100%; margin: 4px 0; box-sizing: border-box; }
         /* 背包+装备面板：放大 + 微软雅黑 */
         #modal-backpack {
             display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.65); z-index: 100;
@@ -431,6 +608,24 @@
             color: #78716c; text-transform: uppercase; letter-spacing: 0.1em;
         }
         #modal-combat .combat-limb-item .limb-priority { color: #fbbf24; }
+        #modal-combat .combat-limb-item .limb-priority-editor {
+            display: flex; flex-direction: column; align-items: flex-end; gap: 6px; flex-shrink: 0; max-width: 200px;
+        }
+        #modal-combat .combat-limb-item .limb-priority-label {
+            color: #a8a29e; font-size: 9px; font-weight: 800; letter-spacing: 0.06em; line-height: 1.2; text-align: right;
+        }
+        #modal-combat .combat-limb-item .limb-tier-btns {
+            display: flex; gap: 4px; flex-wrap: nowrap;
+        }
+        #modal-combat .combat-limb-item .btn-limb-tier {
+            min-width: 36px; padding: 4px 6px; border: 1px solid #57534e; border-radius: 6px;
+            background: #1c1612; color: #a8a29e; font-size: 10px; font-weight: 800; line-height: 1.2; cursor: pointer;
+            letter-spacing: 0.04em;
+        }
+        #modal-combat .combat-limb-item .btn-limb-tier:hover { border-color: #78716c; color: #e8e6e3; }
+        #modal-combat .combat-limb-item .btn-limb-tier.active {
+            border-color: #fbbf24; background: #2b211b; color: #fbbf24; box-shadow: 0 0 0 1px rgba(251,191,36,0.25);
+        }
         #modal-combat .combat-limb-item .limb-slots { display: flex; gap: 8px; }
         #modal-combat .combat-limb-slot {
             flex: 1; height: 48px; border: 2px solid #4d3f35; border-radius: 8px; background: #120e0c;
@@ -544,7 +739,14 @@
             position: absolute; top: -8px; left: 8px; padding: 0 4px; background: #1c1612;
             font-size: 9px; font-weight: 800; font-style: italic; color: #57534e;
         }
+        #modal-combat .combat-move-node.slot-empty .node-name { color: #57534e; font-style: italic; }
         #modal-combat .combat-move-node.editing .node-index { color: #fbbf24; }
+        #modal-combat #picker-move .picker-move-clear-slot {
+            width: 100%; margin-bottom: 10px; padding: 8px 10px; border-radius: 8px; border: 1px dashed #57534e;
+            background: #120e0c; color: #a8a29e; font-size: 11px; font-weight: 800; cursor: pointer; letter-spacing: 0.06em;
+        }
+        #modal-combat #picker-move .picker-move-clear-slot:hover:not(:disabled) { border-color: #fbbf24; color: #fbbf24; }
+        #modal-combat #picker-move .picker-move-clear-slot:disabled { opacity: 0.35; cursor: default; }
         #modal-combat .combat-move-node .node-name { font-size: 12px; font-weight: 800; color: #e8e6e3; }
         #modal-combat .combat-move-node .node-prof { font-size: 9px; color: #fbbf24; font-weight: 800; text-transform: uppercase; margin-top: 4px; opacity: 0.9; }
         #modal-combat .combat-move-node .node-post {
@@ -1011,20 +1213,62 @@
             letter-spacing: 0.08em;
             user-select: none;
         }
-        /* 游戏实时日志：显示在游戏正下方 */
+        /* 游戏实时日志：贴底全宽（与早期版本一致）；位置与尺寸可由用户拖拽调整后存入 localStorage */
         #game-log-panel {
-            flex: 0 0 auto;
+            position: fixed;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            width: auto;
             height: 100px;
-            min-height: 80px;
-            max-height: 160px;
-            position: relative;
-            z-index: 10; /* 为对话框覆盖预留层级 */
-            background: #1a1614;
+            min-height: 64px;
+            max-height: 72vh;
+            z-index: 40;
+            background: rgba(26, 22, 20, 0.96);
             border-top: 1px solid #3d2d24;
-            border-bottom: 1px solid #2d221c;
+            box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.35);
             display: flex;
             flex-direction: column;
             overflow: hidden;
+        }
+        #game-log-panel .game-log-resize-handle-top {
+            flex: 0 0 6px;
+            min-height: 6px;
+            cursor: ns-resize;
+            background: linear-gradient(180deg, rgba(251, 191, 36, 0.22), rgba(26, 22, 20, 0.3));
+            z-index: 3;
+        }
+        #game-log-panel .game-log-resize-handle-top:hover,
+        #game-log-panel .game-log-resize-handle-top.log-resize-active {
+            background: linear-gradient(180deg, rgba(251, 191, 36, 0.38), rgba(45, 34, 28, 0.5));
+        }
+        #game-log-panel .game-log-resize-handle-left {
+            position: absolute;
+            left: 0;
+            top: 6px;
+            bottom: 0;
+            width: 8px;
+            cursor: ew-resize;
+            z-index: 4;
+            background: linear-gradient(90deg, rgba(251, 191, 36, 0.12), transparent);
+        }
+        #game-log-panel .game-log-resize-handle-left:hover,
+        #game-log-panel .game-log-resize-handle-left.log-resize-active {
+            background: linear-gradient(90deg, rgba(251, 191, 36, 0.28), transparent);
+        }
+        #game-log-panel .game-log-resize-handle-right {
+            position: absolute;
+            top: 6px;
+            right: 0;
+            bottom: 0;
+            width: 8px;
+            cursor: ew-resize;
+            z-index: 2;
+            background: linear-gradient(90deg, transparent, rgba(251, 191, 36, 0.12));
+        }
+        #game-log-panel .game-log-resize-handle-right:hover,
+        #game-log-panel .game-log-resize-handle-right.log-resize-active {
+            background: linear-gradient(90deg, transparent, rgba(251, 191, 36, 0.28));
         }
         #game-log-panel .game-log-header {
             flex: 0 0 auto;
@@ -1036,6 +1280,12 @@
             align-items: center;
             justify-content: space-between;
             gap: 8px;
+            cursor: move;
+            user-select: none;
+        }
+        #game-log-panel .game-log-header.log-panel-dragging {
+            cursor: grabbing;
+            background: rgba(45, 34, 28, 0.95);
         }
         #game-log-panel .game-log-lines {
             flex: 1;
@@ -1059,7 +1309,7 @@
         #game-log-panel .log-combat { color: #fca5a5; }
         #game-log-panel .log-damage { color: #f87171; }
         #game-log-panel .log-system { color: #94a3b8; }
-        #game-log-panel .game-log-lines { cursor: grab; user-select: none; }
+        #game-log-panel .game-log-lines { cursor: ns-resize; user-select: none; }
         #game-log-panel .game-log-lines.log-dragging { cursor: grabbing; }
         /* 创建角色界面 */
         #character-creation-overlay {
@@ -1298,7 +1548,6 @@
                     <button type="button" id="player-action-gather" class="action-btn primary" style="display:none;" data-ui="player.action.gather"></button>
                     <button type="button" id="player-action-gather-stop" class="action-btn" style="display:none;" data-ui="player.action.gather.stop"></button>
                     <button type="button" id="player-action-ground-items" class="action-btn" style="display:none;" title="" data-ui="player.action.ground.items" data-ui-title="player.action.ground.items.title"></button>
-                    <button type="button" id="player-action-tu-na" class="action-btn" style="display:none;" data-ui="player.action.tu_na"></button>
                     <button type="button" id="player-action-diqi-huti" class="action-btn" style="display:none;" data-ui="player.action.diqi_huti"></button>
                 </div>
             </div>
@@ -1352,7 +1601,6 @@
                         <div class="row" style="margin-top:8px"><span class="label" data-ui="status.label.weight"></span><span class="value" id="status-weight">—</span></div>
                         <div class="row" style="margin-top:4px"><span class="label" data-ui="status.label.carry"></span><span class="value" id="status-carry">—</span></div>
                     </div>
-                    <div class="quick-belt" id="quick-belt"></div>
                     <details class="details-block" id="status-attrs-block" open>
                         <summary><span data-ui="status.block.attrs"></span> <span>▼</span></summary>
                         <div class="details-body">
@@ -1584,9 +1832,34 @@
         </div>
     </div>
 
+    <div id="bottom-hud-stack" class="bottom-hud-stack" data-ui="bottom.hud.stack" data-ui-attr="aria-label" aria-label="">
+        <div id="action-bar-dock" class="action-bar-dock" role="toolbar" data-ui="action.bar.dock" data-ui-attr="aria-label" aria-label="">
+            <div class="action-bar-context" id="action-bar-context">
+                <button type="button" id="action-bar-gather" class="action-bar-btn" style="display:none;" data-ui="action.bar.gather"></button>
+                <button type="button" id="action-bar-gather-stop" class="action-bar-btn" style="display:none;" data-ui="player.action.gather.stop"></button>
+                <button type="button" id="action-bar-ground" class="action-bar-btn" style="display:none;" data-ui="action.bar.ground"></button>
+                <button type="button" id="action-bar-diqi-huti" class="action-bar-btn" style="display:none;" data-ui="player.action.diqi_huti"></button>
+            </div>
+            <div class="action-bar-sep" id="action-bar-sep" aria-hidden="true"></div>
+            <div class="action-bar-pinned" id="action-bar-pinned">
+                <button type="button" id="action-bar-pin-0" class="action-bar-btn action-bar-pin-slot empty" data-slot="0">·</button>
+                <button type="button" id="action-bar-pin-1" class="action-bar-btn action-bar-pin-slot empty" data-slot="1">·</button>
+                <button type="button" id="action-bar-pin-2" class="action-bar-btn action-bar-pin-slot empty" data-slot="2">·</button>
+                <button type="button" id="action-bar-pin-3" class="action-bar-btn action-bar-pin-slot empty" data-slot="3">·</button>
+            </div>
+        </div>
+        <div id="quick-belt-dock" class="quick-belt-dock" role="toolbar" data-ui="quick.belt.dock" data-ui-attr="aria-label" aria-label="">
+            <div class="quick-belt" id="quick-belt"></div>
+        </div>
+    </div>
+
     <div id="game-log-panel">
-        <div class="game-log-header">
+        <div class="game-log-resize-handle-top" data-ui="log.panel.resize_top" data-ui-attr="title" title="" aria-hidden="true"></div>
+        <div class="game-log-resize-handle-left" data-ui="log.panel.resize_left" data-ui-attr="title" title="" aria-hidden="true"></div>
+        <div class="game-log-resize-handle-right" data-ui="log.panel.resize_right" data-ui-attr="title" title="" aria-hidden="true"></div>
+        <div class="game-log-header" data-ui="log.panel.header_hint" data-ui-attr="title" title="">
             <span data-ui="log.title"></span>
+            <span style="font-size:10px;opacity:0.65;" data-ui="log.panel.drag_hint"></span>
         </div>
         <div id="game-log-lines" class="game-log-lines"></div>
     </div>
@@ -1611,6 +1884,8 @@
     <script src="js/post-effects.js"></script>
     <script src="js/combat-post-effects.js"></script>
     <script src="js/combat-pipeline.js"></script>
+    <script src="js/combat-enemies.js"></script>
+    <script src="js/combat-melee-resolve.js"></script>
     <script src="js/acupoints.js"></script>
     <script src="js/survival-skills.js"></script>
     <script src="js/production-quality.js"></script>

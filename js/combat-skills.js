@@ -195,6 +195,10 @@
             var pc = (moveUsage && moveUsage[pKey] != null) ? parseInt(moveUsage[pKey], 10) || 0 : 0;
             return getProficiencyRatio(pc, pMax);
         }
+        if (sk.category === 'breath') {
+            var tuNaUses = (moveUsage && moveUsage.tu_na != null) ? parseInt(moveUsage.tu_na, 10) || 0 : 0;
+            return getProficiencyRatio(tuNaUses, null);
+        }
         var sum = 0;
         var n = 0;
         var i;
@@ -255,8 +259,8 @@
     }
 
     /**
-     * 基本拳脚基础威力系数 Base(L) = 10 * M(L)
-     * 1≤L≤200: M(L)=1+3/199*(L-1); 200<L≤400: M(L)=4+3/200*(L-200); 400<L≤模板满级: M(L)=7+3/600*(L-400)
+     * 基本拳脚（unarmed_simple）：技能等级威力倍数 Base(L)，参与 W技 = Base(L)×(1+R招)×…
+     * L=1 → mult_at_1（默认 1），L=模板满级 → mult_at_max（默认 2）；t=(L-1)/(cap-1) 上 smoothstep，返回保留两位小数。
      * @param {object} [character] 未使用；保留签名便于调用方统一传角色
      */
     function getBasePower(skillId, level, character) {
@@ -268,16 +272,20 @@
         level = Math.max(1, Math.min(cap, raw));
         var curve = sk.base_power_curve;
         if (curve === 'unarmed_simple') {
-            var M = 1;
-            if (level <= 200) {
-                M = 1 + (3 / 199) * (level - 1);
-            } else if (level <= 400) {
-                M = 4 + (3 / 200) * (level - 200);
-            } else {
-                M = 7 + (3 / 600) * (level - 400);
-            }
-            var base1 = config.constants.base_power_unarmed_1 != null ? config.constants.base_power_unarmed_1 : 10;
-            return base1 * M;
+            var c = config.constants || {};
+            var mult1 = c.base_power_unarmed_mult_at_1;
+            if (mult1 == null || !isFinite(Number(mult1))) mult1 = 1;
+            var multMax = c.base_power_unarmed_mult_at_max;
+            if (multMax == null || !isFinite(Number(multMax))) multMax = 2;
+            mult1 = Number(mult1);
+            multMax = Number(multMax);
+            var denom = cap > 1 ? (cap - 1) : 1;
+            var t = cap > 1 ? (level - 1) / denom : 0;
+            if (t < 0) t = 0;
+            if (t > 1) t = 1;
+            var s = t * t * (3 - 2 * t);
+            var mult = mult1 + (multMax - mult1) * s;
+            return Math.round(mult * 100) / 100;
         }
         return 0;
     }
@@ -359,6 +367,69 @@
         return LIMB_IDS.slice();
     }
 
+    /**
+     * 策划表 `required_limb_tags` 使用展示用中文大类，与 ui_text `combat.action.*` 多对一。
+     * 未列入的字符串按「肢体上须含同名 key」处理。
+     */
+    var REQUIRED_LIMB_TAG_KEY_GROUPS = {
+        挥拳: ['combat.action.punch', 'combat.action.push_palm', 'combat.action.finger_jab'],
+        踢击: ['combat.action.snap_kick', 'combat.action.stomp', 'combat.action.toe_kick']
+    };
+
+    function getDefaultLimbTagKeysForLimbId(limbId) {
+        if (limbId === 'lfoot' || limbId === 'rfoot') return REQUIRED_LIMB_TAG_KEY_GROUPS.踢击.slice();
+        if (limbId === 'lhand' || limbId === 'rhand') return REQUIRED_LIMB_TAG_KEY_GROUPS.挥拳.slice();
+        return [];
+    }
+
+    function limbTagKeysSatisfyRequirement(limbTagKeys, requiredTag) {
+        if (requiredTag == null || requiredTag === '') return true;
+        var req = String(requiredTag);
+        var keys = REQUIRED_LIMB_TAG_KEY_GROUPS[req];
+        var limb = limbTagKeys || [];
+        var i;
+        if (keys && keys.length) {
+            for (i = 0; i < keys.length; i++) {
+                if (limb.indexOf(keys[i]) >= 0) return true;
+            }
+            return false;
+        }
+        return limb.indexOf(req) >= 0;
+    }
+
+    function moveAllowedOnLimbByTagKeys(moveObj, limbTagKeys) {
+        if (!moveObj || !moveObj.required_limb_tags || !moveObj.required_limb_tags.length) return true;
+        var r;
+        for (r = 0; r < moveObj.required_limb_tags.length; r++) {
+            if (!limbTagKeysSatisfyRequirement(limbTagKeys, moveObj.required_limb_tags[r])) return false;
+        }
+        return true;
+    }
+
+    /**
+     * 某肢装配技能时，按等级槽位数生成默认招式序列（仅含该肢动作标签允许的已解锁招式）。
+     */
+    function buildDefaultMoveSequenceForLimb(skillId, limbId, level) {
+        var sk = getSkill(skillId);
+        if (!sk) return [];
+        level = parseInt(level, 10) || 0;
+        var maxSlots = getMaxSlotsForLevel(skillId, level);
+        var unlocked = getUnlockedMoves(skillId, level);
+        var limbKeys = typeof global !== 'undefined' && global.getLimbActionTags
+            ? global.getLimbActionTags(limbId)
+            : getDefaultLimbTagKeysForLimbId(limbId);
+        var allowed = unlocked.filter(function (m) {
+            return moveAllowedOnLimbByTagKeys(m, limbKeys);
+        });
+        var out = [];
+        var i;
+        for (i = 0; i < maxSlots; i++) {
+            if (allowed[i]) out.push(allowed[i].id);
+            else out.push('');
+        }
+        return out;
+    }
+
     global.CombatSkills = {
         setConfig: setConfig,
         getConstants: getConstants,
@@ -387,6 +458,10 @@
         getParryProficiencyUsageKey: getParryProficiencyUsageKey,
         getBreathPowerMultiplier: getBreathPowerMultiplier,
         getLimbIds: getLimbIds,
+        getDefaultLimbTagKeysForLimbId: getDefaultLimbTagKeysForLimbId,
+        limbTagKeysSatisfyRequirement: limbTagKeysSatisfyRequirement,
+        moveAllowedOnLimbByTagKeys: moveAllowedOnLimbByTagKeys,
+        buildDefaultMoveSequenceForLimb: buildDefaultMoveSequenceForLimb,
         MOVE_PROFICIENCY_MAX: MOVE_PROFICIENCY_MAX
     };
 })(typeof window !== 'undefined' ? window : this);

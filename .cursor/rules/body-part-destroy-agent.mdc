@@ -1,0 +1,47 @@
+---
+description: 肢体损毁值上限、存档字段、UI/战斗 ID 映射与实现入口（Agent）
+alwaysApply: true
+---
+
+# 肢体损毁（Body Part Destroy）Agent 规则
+
+编辑**损毁累积值、满值上限、血气化劲约束、侧栏肢体检视、招架「已损毁」判定**或相关配置时遵守本节；数值权威与索引见 **`GAME_DESIGN.md`**「肢体损毁值上限（速查）」与 **`docs/design/09-body-parts.md`**（分摊、手术等规则仍以 09 为准）。
+
+## 满值表（单一数据源）
+
+运行时各部位「损毁满值」以 **`data/survival-config.json`** 的 **`body_part_destroy_max`** 为准（对象键见下）。**勿**在 JS 里为平衡再写死第二套上限（测试桩除外）。
+
+| 键 | 部位 | 约定满值（与 09 一致） |
+|----|------|-------------------------|
+| `head` | 头 | 50 |
+| `chest` | 胸 | 100 |
+| `abdomen` | 腹 | 80 |
+| `lhand` / `rhand` / `lfoot` / `rfoot` | 左/右手、左/右脚 | 各 100 |
+
+- **`limb_destroy_max`**：仅作**四肢**在 `body_part_destroy_max` **缺某肢键时**的回退（见配置内 `_limb_destroy_max_note`）。
+- 查询 API：**`CharacterAttributes.getBodyPartDestroyMax(id)`**（接受 `belly` 别名，见下）。
+
+## 存档与内存（`CharacterAttributes`）
+
+- **主字段**：`part_destroy`，七键 **`head` / `chest` / `abdomen` / `lhand` / `rhand` / `lfoot` / `rfoot`**，值为非负整数累积损毁。
+- **兼容**：`getState()` 仍带 **`limb_destroy`**（四肢子集），`setState()` 同时接受 **`part_destroy`**、旧 **`limb_destroy`**、可选 **`torso_destroy`**（`head`/`chest`/`abdomen`，`belly` 写入腹）。
+- **读当前值**：**`getPartDestroy(id)`**；四肢也可用 **`getLimbDestroy`**（同 `part_destroy`）。
+- **血气化劲**（`tryApplyXueQiHuaJing`）：按**被选肢**各自的 **`getBodyPartDestroyMax(limb)`** 计算「上限−1」约束，**不得**再假设四肢共用一个常数上限。
+
+## ID 与 UI
+
+- **战斗 / 管线 / CombatParry**：命中部位 **`abdomen`**（与 `combat-parry.js` 一致）。
+- **侧栏肢体检视**（`scene-app`）：行 id **`belly`** 表示腹，与 **`abdomen` 同指**；调用 `getPartDestroy` / `getBodyPartDestroyMax` 前映射 **`belly` → `abdomen`**（或在 CA 内用 `normalizePartDestroyKey`）。
+- **招架「该肢已损毁」**（四肢）：**`isBodyPartDestroyedForParry(left_arm 等)`** → 映射到 `lhand`… 后判定 **`getLimbDestroy(limb) >= getBodyPartDestroyMax(limb)`**。
+
+## 实现索引
+
+- 配置：`data/survival-config.json`（`body_part_destroy_max`、`limb_destroy_max`）
+- 运行时：`js/character-attributes.js`（`part_destroy`、`getBodyPartDestroy`、`getBodyPartDestroyMax`、`tryApplyXueQiHuaJing`）
+- 侧栏：`js/scene-app.js`（`updateLimbBlock`）
+- 招架：`js/combat-pipeline.js`（玩家防御方默认 `isBodyPartDestroyedForParry`）、`js/combat-parry.js`（部位 id）
+
+## 勿混用
+
+- **头/胸/腹**的损毁与**四肢**同一套 `part_destroy` 键空间；未接入受击写入前躯干可能长期为 0，但**上限展示**仍应按 `getBodyPartDestroyMax` 显示。
+- 生存技能、Buff 与**部位损毁表**无直接合并；手术/消耗品改上限或清损毁若落地，应走 09 与专门管线，**勿**把损毁写进 `Survival.setConfig` 的杂项字段。

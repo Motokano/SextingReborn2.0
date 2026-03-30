@@ -1,0 +1,14 @@
+{
+  "_comment": "战斗用敌人模板。地图 map.enemies[].enemy_id 须与此表键一致。can_attack 供后续敌方回合 AI；limbs_invulnerable 为 true 时不累计部位损毁（测试木桩）。",
+  "enemies": {
+    "enemy.training_dummy_wooden": {
+      "speed": 10,
+      "inner_damage_reduce": 0,
+      "body_damage_reduce": 0,
+      "parry_rate": 0,
+      "parry_damage_reduce": 0,
+      "limbs_invulnerable": true,
+      "can_attack": false
+    }
+  }
+}

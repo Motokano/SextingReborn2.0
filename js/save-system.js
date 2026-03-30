@@ -140,6 +140,14 @@
             try { npcDemo = mods.NPCSystem.getDemoState(); } catch (e4) { npcDemo = null; }
         }
 
+        var sceneUiPersist = null;
+        if (global.SceneCtx && typeof global.SceneCtx.getActionBarSlots === 'function') {
+            try {
+                var abs = global.SceneCtx.getActionBarSlots();
+                if (Array.isArray(abs)) sceneUiPersist = { action_bar_slots: abs.slice(0, 4) };
+            } catch (eSceneUi) { sceneUiPersist = null; }
+        }
+
         // Buffs: store dynamic instance fields only, decouple from buff definition templates.
         var buffsPersist = null;
         if (mods.BuffSystem && typeof mods.BuffSystem.getState === 'function' && typeof mods.BuffSystem.setState === 'function') {
@@ -184,7 +192,8 @@
                 inventoryEquipment: invSt,
                 gathering: gatheringPersist,
                 entityAppearance: appearance,
-                npcDemo: npcDemo
+                npcDemo: npcDemo,
+                sceneUi: sceneUiPersist
             },
             buffs: buffsPersist
         };
@@ -252,6 +261,13 @@
 
         if (snapshot.buffs && mods.BuffSystem && typeof mods.BuffSystem.setState === 'function') {
             try { mods.BuffSystem.setState(snapshot.buffs); } catch (e4) { /* ignore */ }
+        }
+
+        if (global.SceneCtx && typeof global.SceneCtx.setActionBarSlots === 'function' && snapshot.player && snapshot.player.sceneUi) {
+            try {
+                var su = snapshot.player.sceneUi;
+                if (su && Array.isArray(su.action_bar_slots)) global.SceneCtx.setActionBarSlots(su.action_bar_slots);
+            } catch (eAb) { /* ignore */ }
         }
 
         return true;
