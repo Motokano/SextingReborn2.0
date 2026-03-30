@@ -116,10 +116,18 @@
                 dynamicCtx.font = '20px sans-serif';
                 dynamicCtx.fillText('人', x + w / 2 - 6, y + h / 2 + 7);
             } else if (meta.enemy) {
-                dynamicCtx.fillStyle = 'rgba(248,113,113,0.95)';
-                dynamicCtx.beginPath();
-                dynamicCtx.arc(x + w / 2, y + h / 2, 8, 0, Math.PI * 2);
-                dynamicCtx.fill();
+                if (meta.enemyId === 'enemy.training_dummy_wooden') {
+                    dynamicCtx.fillStyle = 'rgba(139,90,43,0.95)';
+                    dynamicCtx.fillRect(x + w / 2 - 5, y + h / 2 - 16, 10, 26);
+                    dynamicCtx.strokeStyle = 'rgba(60,40,20,0.6)';
+                    dynamicCtx.lineWidth = 1;
+                    dynamicCtx.strokeRect(x + w / 2 - 5 + 0.5, y + h / 2 - 16 + 0.5, 9, 25);
+                } else {
+                    dynamicCtx.fillStyle = 'rgba(248,113,113,0.95)';
+                    dynamicCtx.beginPath();
+                    dynamicCtx.arc(x + w / 2, y + h / 2, 8, 0, Math.PI * 2);
+                    dynamicCtx.fill();
+                }
             }
 
             if (meta.groundCount > 0) {

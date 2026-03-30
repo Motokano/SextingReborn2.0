@@ -272,7 +272,17 @@
                 var before = getSkillLevel(sid);
                 modifySkillLevel(ef.params.skillId, ef.params.delta, ef.params.min);
                 var after = getSkillLevel(sid);
-                log('[NPCSystem] Effect modifySkillLevel: ' + String(sid) + ' ' + String(before) + '->' + String(after), 'system');
+                var dLv = after - before;
+                if (global.GameLog && global.UIText && typeof global.UIText.t === 'function') {
+                    global.GameLog.log(global.UIText.t('log.debug.proficiency.skill_level', {
+                        skillId: String(sid),
+                        before: String(before),
+                        after: String(after),
+                        delta: String(dLv)
+                    }), 'system');
+                } else {
+                    log('[NPCSystem] Effect modifySkillLevel: ' + String(sid) + ' ' + String(before) + '→' + String(after) + ' (Δ' + String(dLv) + ')', 'system');
+                }
             }
             if (ef.type === 'modifySkillMaxLevelBonus' && ef.params) {
                 var sidB = ef.params.skillId;

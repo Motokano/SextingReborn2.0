@@ -34,6 +34,11 @@
           "_doc": "按 post-effects.json effect_type 分派；trigger 见各条目 effect_params.trigger"
         },
         {
+          "id": "enemy_mitigation",
+          "handler": "builtin.enemy_damage_mitigation",
+          "_doc": "攻方为人类、防方为敌人：内功/身体减伤 × 伤害类型微调（柔韧基础防御对敌人表用 body 字段替代）"
+        },
+        {
           "id": "damage_resolve_stub",
           "handler": "builtin.damage_stub",
           "buff_event_name": "attack_damage_applied"

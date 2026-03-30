@@ -45,4 +45,20 @@
 
 ---
 
+## 肢体损毁值上限（速查）
+
+与 **`docs/design/09-body-parts.md`**「各部位损毁值上限」表一致，数值以 **`data/survival-config.json`** 的 **`body_part_destroy_max`** 为运行时单一数据源（缺键时按模块内设计回退）。
+
+| 部位 | 损毁值上限 |
+|------|-----------|
+| 头 | 50 |
+| 胸 | 100 |
+| 腹 | 80 |
+| 左手 / 右手 | 各 100 |
+| 左脚 / 右脚 | 各 100 |
+
+**ID 约定（实现）**：存档与 `CharacterAttributes` 使用 **`head` / `chest` / `abdomen` / `lhand` / `rhand` / `lfoot` / `rfoot`**；战斗命中部位 `abdomen` 与侧栏 UI 标签 **`belly`（腹）** 同指，查询时做别名映射。
+
+---
+
 *文档版本：按模块拆分后，主文档为总览与索引；正文见 docs/design/ 与 capitalism/。*

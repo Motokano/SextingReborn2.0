@@ -109,6 +109,20 @@
         return (character.proficiency_count / GATHERING_MAX_PROFICIENCY) * 100;
     }
 
+    /** 徒手采集熟练度计数 +delta，并写入调试日志（GameLog） */
+    function addGatheringProficiencyDelta(delta) {
+        var d = parseInt(delta, 10);
+        if (!isFinite(d) || d <= 0) return;
+        character.proficiency_count += d;
+        var root = typeof window !== 'undefined' ? window : global;
+        if (root && root.GameLog && root.UIText && typeof root.UIText.t === 'function') {
+            root.GameLog.log(root.UIText.t('log.debug.proficiency.gathering', {
+                delta: String(d),
+                total: String(character.proficiency_count)
+            }), 'system');
+        }
+    }
+
     function isInventoryFull() {
         var g = typeof window !== 'undefined' ? window : (typeof global !== 'undefined' ? global : null);
         if (g && g.InventoryEquipment && typeof g.InventoryEquipment.canAcceptItem === 'function') {
@@ -206,13 +220,13 @@
 
         var lootTable = point.loot_rows;
         if (!lootTable || lootTable.length === 0) {
-            if (cat === 'gathering') character.proficiency_count += 1;
+            if (cat === 'gathering') addGatheringProficiencyDelta(1);
             return { success: true, message: '采集成功但无产出', consumedStamina: true };
         }
 
         var row = rollLootRow(lootTable);
         if (!row) {
-            if (cat === 'gathering') character.proficiency_count += 1;
+            if (cat === 'gathering') addGatheringProficiencyDelta(1);
             return { success: true, message: '采集成功但无产出', consumedStamina: true };
         }
 
@@ -235,7 +249,7 @@
                     if (pos && pos.mapId != null && pos.x != null && pos.y != null)
                         g.InventoryEquipment.addItemToGround(pos.mapId, pos.x, pos.y, itemInstance);
                 }
-                if (cat === 'gathering') character.proficiency_count += 1;
+                if (cat === 'gathering') addGatheringProficiencyDelta(1);
                 if (typeof global !== 'undefined' && global.Survival && typeof global.Survival.advanceTick === 'function') {
                     global.Survival.advanceTick();
                 }
@@ -244,7 +258,7 @@
         } else {
             character.inventory.push({ item_id: row.item_id, quality_tier: qualityTier });
         }
-        if (cat === 'gathering') character.proficiency_count += 1;
+        if (cat === 'gathering') addGatheringProficiencyDelta(1);
 
         if (Surv && typeof Surv.advanceTick === 'function') Surv.advanceTick();
         return {

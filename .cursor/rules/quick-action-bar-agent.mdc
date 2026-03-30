@@ -1,0 +1,38 @@
+---
+description: 底部快捷动作栏（情境动作 vs 玩家固定槽）与存档 sceneUi
+globs: "**/scene-app.js,**/scene-renderer.js,**/save-system.js,index.html,data/ui_text_zhCN.json"
+alwaysApply: false
+---
+
+# 快捷动作栏（Quick Action Bar）Agent 规则
+
+底部 **`#action-bar-dock`**（`data-ui="action.bar.dock"`）与 **`quick-belt-dock`（快捷腰带）无关**：腰带是**物品格**，动作栏是**地图/战斗行为入口**。
+
+## 两条原则（必须保持）
+
+1. **情境动作（`#action-bar-context`）**  
+   仅当**当前上下文满足**时才显示/可点，例如：站在可采集格、挂机采集中、脚下有地面物品、邻接敌且可开护体等。  
+   - 逻辑与 **`#player-action-bubble`** 同步，由 **`js/scene-renderer.js`** 在 `render()` 里更新 `display`/`disabled`/`textContent`。  
+   - **禁止**把「只有站在格子上才能用」的动作默认常驻显示为可用。  
+   - **采集**：`showBubble` 可能因脚下物品/护体等为真，但**采集按钮**必须仅在 `canGather && !isIdling` 时显示；`showBubble` 为假时须显式隐藏采集与停止采集，避免残留上一轮 DOM 状态。
+
+2. **常态动作（`#action-bar-pinned`）**  
+   **不会**因站在采集点等自动出现；须由玩家在 **「动作」子菜单** 对某条 hub 动作点 **📌**，写入**首个空槽**（最多 4 槽）。  
+   - Token：`hub|skillId|actionId`（例 `hub|combat_basic_breath|tu_na`、`hub|combat_basic_footwork|nie_bu`）。  
+   - **右键**槽位清除；执行与失败提示与菜单内一致。  
+   - 槽位 **`textContent`** 使用 **`combat-skills.json`** 中对应 hub 动作的**展示名**（`name`），勿在渲染里截断到不可读。  
+   - 存档：`player.sceneUi.action_bar_slots`（见 **`js/save-system.js`**）；运行时 **`SceneCtx.getActionBarSlots` / `setActionBarSlots`**。
+
+## 扩展新类型时
+
+- **新的情境动作**：在 `scene-renderer` 与（若需要）`player-action-bubble` 同步增加按钮，并严格用条件控制显示。  
+- **新的可固定常态动作**：在 `scene-app.js` 的 **`executeQuickBarPinnedSlot`** 中增加对 `hub|…` 的分派，或约定新 token 前缀并在同一函数表驱动。  
+- **勿**把仅情境可用的动作放进固定槽的默认配置（固定槽只能来自玩家 📌）。
+
+## 相关文件
+
+- `index.html`：`action-bar-context` / `action-bar-sep` / `action-bar-pinned` / 样式  
+- `js/scene-app.js`：`pinHubToQuickBar`、`executeQuickBarPinnedSlot`、`bindQuickBarPinSlotsOnce`、菜单行 📌  
+- `js/scene-renderer.js`：情境区与固定槽标签刷新、分隔线显示  
+- `js/save-system.js`：`buildSnapshot` / `applySnapshot` 的 `sceneUi`  
+- `data/ui_text_zhCN.json`：`action.bar.pin.*`

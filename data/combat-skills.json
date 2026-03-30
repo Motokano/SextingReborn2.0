@@ -8,8 +8,9 @@
     "potential_cost_401_1000_per_level": 25,
     "move_proficiency_max_uses": 50000,
     "difficulty_multipliers": [1, 2, 3, 4],
-    "base_power_unarmed_1": 10,
-    "base_power_unarmed_1000": 100,
+    "base_power_unarmed_mult_at_1": 1,
+    "base_power_unarmed_mult_at_max": 2,
+    "_base_power_unarmed_note": "基本拳脚 getBasePower：L=1 → mult_at_1，L=模板满级 → mult_at_max；中间 smoothstep(t)=t²(3-2t)，t=(L-1)/(cap-1)，结果保留两位小数",
     "parry_success_at_1000": 0.35,
     "parry_reduce_at_1000": 0.35,
     "default_combat_skill_max_level": 1000,
@@ -242,7 +243,7 @@
       "id": "combat_basic_breath",
       "name": "基本呼吸法",
       "category": "breath",
-      "description": "吐纳炼气，为诸功之本。无肢上招式槽；吐纳、底气护体等由「动作」菜单执行，数据见 hub_actions。",
+      "description": "调息炼气，为诸功之本。无肢上招式槽；血气化劲、吐气纳精、调息、底气护体等由「动作」菜单执行，数据见 hub_actions。",
       "difficulty": 1,
       "icon": "♾️",
       "only_parry": false,
@@ -292,24 +293,8 @@
             "applies_to": ["player"]
           },
           "unlock_level": 1,
-          "tick_cost": 1
-        },
-        {
-          "id": "tu_na",
-          "name": "吐纳",
-          "hub_effect": "restore_qi_li",
-          "design_meta": {
-            "sheet_row_id": "HUB_TU_NA",
-            "doc_anchor": "19-action-system §6",
-            "tags": ["breath", "hub_action"],
-            "wip_status": "live",
-            "applies_to": ["player"]
-          },
-          "unlock_level": 1,
           "tick_cost": 1,
-          "cooldown_ticks": 5,
-          "qi_li_restore": 50,
-          "battle_only": true,
+          "proficiency_usage_key": "tu_na",
           "proficiency_attr_unlocks": [
             { "min_proficiency_ratio": 0.5, "acquired": { "breath": 20 } }
           ]

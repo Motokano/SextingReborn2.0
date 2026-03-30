@@ -143,6 +143,20 @@
         return t || null;
     }
 
+    /** 某 owner 上指定 buff_id 的实例层数之和（用于试探层数等） */
+    function getBuffStacksSum(ownerId, buffId) {
+        if (!buffId) return 0;
+        var oid = ownerId || PLAYER_OWNER_ID;
+        var arr = instancesByOwner[oid] || [];
+        var sum = 0;
+        var i;
+        for (i = 0; i < arr.length; i++) {
+            var inst = arr[i];
+            if (inst && inst.buff_id === buffId) sum += Math.max(0, parseInt(inst.stacks, 10) || 0);
+        }
+        return sum;
+    }
+
     function getParryChanceDeltaPercent(ownerId) {
         var oid = ownerId || PLAYER_OWNER_ID;
         var arr = instancesByOwner[oid] || [];
@@ -780,6 +794,7 @@
         setState: setState,
         applyBuff: applyBuff,
         getBuffTemplate: getBuffTemplate,
+        getBuffStacksSum: getBuffStacksSum,
         getParryChanceDeltaPercent: getParryChanceDeltaPercent,
         removeBuffByBuffId: removeBuffByBuffId,
         triggerBuffPipeline: triggerBuffPipeline,

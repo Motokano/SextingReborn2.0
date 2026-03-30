@@ -47,11 +47,51 @@
         dominant_leg: 'right',
         /** 曾获得过的后遗症 id 去重列表（统计「获得多少种」= length） */
         post_effects_obtained: [],
-        /** 四肢损毁累积值（非头）；血气化劲等见 19 §6.1 */
-        limb_destroy: { lhand: 0, rhand: 0, lfoot: 0, rfoot: 0 }
+        /** 七部位损毁累积值；键为 head/chest/abdomen/lhand/rhand/lfoot/rfoot（与 09、GAME_DESIGN 速查一致） */
+        part_destroy: { head: 0, chest: 0, abdomen: 0, lhand: 0, rhand: 0, lfoot: 0, rfoot: 0 }
     };
 
     var LIMB_DESTROY_IDS = ['lhand', 'rhand', 'lfoot', 'rfoot'];
+    var PART_DESTROY_IDS = ['head', 'chest', 'abdomen', 'lhand', 'rhand', 'lfoot', 'rfoot'];
+    /** 招架/受击语义：身体部位 id（与 combat-parry 一致）→ 战斗肢 id */
+    var PARRY_BODY_PART_TO_LIMB = { left_arm: 'lhand', right_arm: 'rhand', left_leg: 'lfoot', right_leg: 'rfoot' };
+
+    function normalizePartDestroyKey(rawId) {
+        var k = String(rawId || '').trim();
+        if (k === 'belly') return 'abdomen';
+        return k;
+    }
+
+    /** 各部位损毁「满值」：优先 `survival-config.body_part_destroy_max`，缺键时四肢回退 `limb_destroy_max`，躯干回退 09 设计值 */
+    function getBodyPartDestroyMax(canonicalOrHudKey) {
+        var key = normalizePartDestroyKey(canonicalOrHudKey);
+        var tab = getCfg('body_part_destroy_max', null);
+        if (tab && typeof tab === 'object' && tab[key] != null) {
+            var tv = Math.floor(Number(tab[key]) || 0);
+            if (tv > 0) return Math.max(1, tv);
+        }
+        var limbFb = Math.floor(Number(getCfg('limb_destroy_max', 100)) || 100);
+        if (LIMB_DESTROY_IDS.indexOf(key) >= 0) return Math.max(1, limbFb);
+        var designFb = { head: 50, chest: 100, abdomen: 80 };
+        if (designFb[key] != null) return Math.max(1, designFb[key]);
+        return Math.max(1, limbFb);
+    }
+
+    function mergePartDestroyScalar(rawKey, val) {
+        if (val == null) return;
+        var k = normalizePartDestroyKey(rawKey);
+        if (PART_DESTROY_IDS.indexOf(k) < 0) return;
+        state.part_destroy[k] = Math.max(0, Math.floor(Number(val) || 0));
+    }
+
+    function mergePartDestroyFromObject(obj) {
+        if (!obj || typeof obj !== 'object') return;
+        var pi;
+        for (pi = 0; pi < PART_DESTROY_IDS.length; pi++) {
+            var pk = PART_DESTROY_IDS[pi];
+            if (obj[pk] != null) mergePartDestroyScalar(pk, obj[pk]);
+        }
+    }
     // 供 Buff 等系统注入的后天五维修正（最终会并入 acquired 参与重算）
     var externalAcquiredBonus = { jingu: 0, flexibility: 0, breath: 0, dexterity: 0, focus: 0 };
 
@@ -153,7 +193,8 @@
         for (ei = 0; ei < entries.length; ei++) {
             var ent = entries[ei];
             if (!ent || !ent.id || !ent.proficiency_attr_unlocks || !ent.proficiency_attr_unlocks.length) continue;
-            var uses = moveUsage[ent.id] != null ? parseInt(moveUsage[ent.id], 10) || 0 : 0;
+            var usageKey = ent.proficiency_usage_key ? String(ent.proficiency_usage_key) : ent.id;
+            var uses = moveUsage[usageKey] != null ? parseInt(moveUsage[usageKey], 10) || 0 : 0;
             var maxU = ent.proficiency_max_uses != null ? ent.proficiency_max_uses : null;
             var r = getProfRatio(uses, maxU);
             var ui;
@@ -530,13 +571,21 @@
                 state.post_effects_obtained.push(pid);
             }
         }
+        if (s.part_destroy && typeof s.part_destroy === 'object') {
+            mergePartDestroyFromObject(s.part_destroy);
+        }
         if (s.limb_destroy && typeof s.limb_destroy === 'object') {
             for (var li = 0; li < LIMB_DESTROY_IDS.length; li++) {
                 var lid = LIMB_DESTROY_IDS[li];
-                if (s.limb_destroy[lid] != null) {
-                    state.limb_destroy[lid] = Math.max(0, Math.floor(Number(s.limb_destroy[lid]) || 0));
-                }
+                if (s.limb_destroy[lid] != null) mergePartDestroyScalar(lid, s.limb_destroy[lid]);
             }
+        }
+        if (s.torso_destroy && typeof s.torso_destroy === 'object') {
+            var ts = s.torso_destroy;
+            if (ts.head != null) mergePartDestroyScalar('head', ts.head);
+            if (ts.chest != null) mergePartDestroyScalar('chest', ts.chest);
+            if (ts.abdomen != null) mergePartDestroyScalar('abdomen', ts.abdomen);
+            if (ts.belly != null) mergePartDestroyScalar('abdomen', ts.belly);
         }
         if (Array.isArray(s.hidden_epithets)) {
             var seenH = {};
@@ -555,9 +604,29 @@
         } catch (eEpSync) { /* ignore */ }
     }
 
+    /** 当前部位损毁累积值；`belly` 与 `abdomen` 同键 */
+    function getPartDestroy(rawId) {
+        var k = normalizePartDestroyKey(rawId);
+        if (PART_DESTROY_IDS.indexOf(k) < 0) return 0;
+        var raw = state.part_destroy[k];
+        if (raw == null || raw === '') return 0;
+        return Math.max(0, Math.floor(Number(raw) || 0));
+    }
+
     function getLimbDestroy(limbId) {
-        if (!limbId || state.limb_destroy[limbId] == null) return 0;
-        return Math.max(0, Math.floor(state.limb_destroy[limbId] || 0));
+        return getPartDestroy(limbId);
+    }
+
+    /**
+     * 与 CombatParry.resolveParryPhaseContext 的 isBodyPartDestroyed 一致：参数为 left_arm 等。
+     * 损毁值 ≥ 该肢 `getBodyPartDestroyMax` 视为已损毁。
+     */
+    function isBodyPartDestroyedForParry(bodyPartId) {
+        var bp = String(bodyPartId || '').trim();
+        var limb = PARRY_BODY_PART_TO_LIMB[bp];
+        if (!limb) return false;
+        var maxV = getBodyPartDestroyMax(limb);
+        return getLimbDestroy(limb) >= maxV;
     }
 
     /**
@@ -568,9 +637,6 @@
         var dDel = Math.max(0, Math.floor(Number(destroyDelta) || 0));
         var dGain = Math.max(0, Math.floor(Number(diqiGain) || 0));
         if (dDel <= 0) return { ok: false, reason_key: 'combat.hub.fail.xue_qi.params' };
-        var maxTotal = getCfg('limb_destroy_max', 100);
-        var capAfter = maxTotal - 1;
-        if (capAfter < 1) return { ok: false, reason_key: 'combat.hub.fail.xue_qi.config' };
         var order = LIMB_DESTROY_IDS.slice();
         var seed = Date.now() % 1000;
         for (var s = 0; s < order.length; s++) {
@@ -582,9 +648,12 @@
         var i;
         for (i = 0; i < order.length; i++) {
             var limb = order[i];
+            var maxTotal = getBodyPartDestroyMax(limb);
+            var capAfter = maxTotal - 1;
+            if (capAfter < 1) continue;
             var cur = getLimbDestroy(limb);
             if (cur + dDel <= capAfter) {
-                state.limb_destroy[limb] = cur + dDel;
+                state.part_destroy[limb] = cur + dDel;
                 if (typeof global !== 'undefined' && global.Survival && dGain > 0) {
                     if (typeof global.Survival.changeDiqi === 'function') {
                         global.Survival.changeDiqi({ curDelta: dGain, sourceTag: 'hub_action:xue_qi_hua_jing' });
@@ -699,11 +768,20 @@
             dominant_hand: state.dominant_hand,
             dominant_leg: state.dominant_leg,
             post_effects_obtained: state.post_effects_obtained.slice(),
+            part_destroy: {
+                head: state.part_destroy.head,
+                chest: state.part_destroy.chest,
+                abdomen: state.part_destroy.abdomen,
+                lhand: state.part_destroy.lhand,
+                rhand: state.part_destroy.rhand,
+                lfoot: state.part_destroy.lfoot,
+                rfoot: state.part_destroy.rfoot
+            },
             limb_destroy: {
-                lhand: state.limb_destroy.lhand,
-                rhand: state.limb_destroy.rhand,
-                lfoot: state.limb_destroy.lfoot,
-                rfoot: state.limb_destroy.rfoot
+                lhand: state.part_destroy.lhand,
+                rhand: state.part_destroy.rhand,
+                lfoot: state.part_destroy.lfoot,
+                rfoot: state.part_destroy.rfoot
             },
             hidden_epithets: state.hidden_epithets.slice()
         };
@@ -720,6 +798,7 @@
             dominant_hand: 'right',
             dominant_leg: 'right',
             post_effects_obtained: [],
+            part_destroy: { head: 0, chest: 0, abdomen: 0, lhand: 0, rhand: 0, lfoot: 0, rfoot: 0 },
             limb_destroy: { lhand: 0, rhand: 0, lfoot: 0, rfoot: 0 },
             hidden_epithets: []
         };
@@ -801,7 +880,11 @@
         getParryDamageReduce: getParryDamageReduce,
         getDominantLimbMultiplier: getDominantLimbMultiplier,
         getBreathActual: getBreathActual,
+        getCfg: getCfg,
+        getBodyPartDestroyMax: getBodyPartDestroyMax,
+        getPartDestroy: getPartDestroy,
         getLimbDestroy: getLimbDestroy,
+        isBodyPartDestroyedForParry: isBodyPartDestroyedForParry,
         tryApplyXueQiHuaJing: tryApplyXueQiHuaJing,
         getCharacterName: getCharacterName,
         isCharacterCreationCompleted: isCharacterCreationCompleted,

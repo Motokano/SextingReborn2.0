@@ -50,13 +50,19 @@
             portals: [
                 { x: 8, y: 15, target_map_id: 'field', target_x: 22, target_y: 11, label: '' }
             ]
-        }
+        },
+        /** 与 data/maps/*.json 的 map_id 一致；启动后由 bootstrapMapsFromJson 合并完整数据 */
+        M0_Base_Inside_lv_1: { map_id: 'M0_Base_Inside_lv_1', name: '', width: 16, height: 16, blocks: [], portals: [], disabled: [] },
+        M0_Base_Outside_lv_1: { map_id: 'M0_Base_Outside_lv_1', name: '', width: 16, height: 16, blocks: [], portals: [] },
+        M0_Field_01: { map_id: 'M0_Field_01', name: '', width: 16, height: 16, blocks: [], portals: [] },
+        M0_Field_02: { map_id: 'M0_Field_02', name: '', width: 16, height: 16, blocks: [], portals: [] },
+        M0_JInmuTown_01: { map_id: 'M0_JinmuTown_01', name: '', width: 18, height: 18, blocks: [], portals: [] }
     };
 
     var state = {
-        mapId: 'home',
-        x: 8,
-        y: 8
+        mapId: 'M0_Base_Inside_lv_1',
+        x: 10,
+        y: 12
     };
 
     var onChange = function () {};
