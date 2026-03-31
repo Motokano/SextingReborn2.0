@@ -41,6 +41,14 @@
         }
     }
 
+    function notifyBuffHudRefresh() {
+        if (global.SceneCtx && typeof global.SceneCtx.updateStatusPanel === 'function') {
+            try {
+                global.SceneCtx.updateStatusPanel();
+            } catch (eHud) { /* SceneApp 未就绪时忽略 */ }
+        }
+    }
+
     function safeNum(v, def) {
         return (typeof v === 'number' && isFinite(v)) ? v : def;
     }
@@ -190,7 +198,10 @@
                 removed += 1;
             }
         }
-        if (removed) recalcDerived();
+        if (removed) {
+            recalcDerived();
+            notifyBuffHudRefresh();
+        }
         return removed;
     }
 
@@ -233,6 +244,7 @@
             debugLog('apply ' + buffId + ' owner=' + oid);
         }
         recalcDerived();
+        notifyBuffHudRefresh();
         return true;
     }
 
@@ -284,6 +296,7 @@
         pendingRestore = null;
         attachTemplatesAndClamp();
         recalcDerived();
+        notifyBuffHudRefresh();
     }
 
     function setState(saved) {
@@ -332,6 +345,7 @@
         if (loaded) {
             attachTemplatesAndClamp();
             recalcDerived();
+            notifyBuffHudRefresh();
             pendingRestore = null;
         } else {
             // Keep pending: templates will be attached once buff config finishes loading.
@@ -577,7 +591,10 @@
             debugLog('event=' + ev.event_name + ' buff=' + m.buff_id + ' stacks ' + stacksBefore + ' -> ' + m.stacks);
         }
 
-        if (changed) recalcDerived();
+        if (changed) {
+            recalcDerived();
+            notifyBuffHudRefresh();
+        }
         return { processed: matched.length, skipped: false, candidates: candidates.length };
     }
 

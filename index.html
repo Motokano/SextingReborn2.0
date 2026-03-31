@@ -458,6 +458,53 @@
         .details-block .details-body .row { display: flex; justify-content: space-between; font-size: 14px; margin-bottom: 10px; }
         .details-block .details-body .row:last-child { margin-bottom: 0; }
         /* 右侧三按钮：背包 / 战斗技能 / 生活技能 - 02-regions 2.5 */
+        /* 右上角 Buff：与右侧竖排按钮区分，贴顶对齐 */
+        #buff-hud {
+            position: absolute;
+            right: 96px;
+            top: 20px;
+            max-width: min(320px, 42vw);
+            z-index: 31;
+            pointer-events: none;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 8px;
+            font-family: "Microsoft YaHei", "微软雅黑", "PingFang SC", sans-serif;
+        }
+        #buff-hud .buff-hud-section {
+            width: 100%;
+            text-align: right;
+        }
+        #buff-hud .buff-hud-title {
+            font-size: 11px;
+            font-weight: 800;
+            letter-spacing: 0.14em;
+            color: rgba(251, 191, 36, 0.88);
+            margin-bottom: 6px;
+        }
+        #buff-hud .buff-hud-chips {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: flex-end;
+            gap: 6px;
+            min-height: 1.5em;
+        }
+        #buff-hud .buff-chip {
+            pointer-events: auto;
+            padding: 4px 8px;
+            font-size: 11px;
+            font-weight: 700;
+            color: #e8e6e3;
+            background: rgba(28, 22, 18, 0.92);
+            border: 1px solid rgba(77, 63, 53, 0.95);
+            border-radius: 6px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+            max-width: 100%;
+            white-space: normal;
+            line-height: 1.25;
+            text-align: left;
+        }
         #right-hud { position: absolute; right: 24px; top: 50%; transform: translateY(-50%); display: flex; flex-direction: column; gap: 24px; z-index: 31; pointer-events: auto; }
         #right-hud .hud-btn { width: 56px; height: 56px; border-radius: 8px; border: 2px solid #4d3f35; background: rgba(28, 22, 18, 0.95); color: #e8e6e3; font-size: 24px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: border-color 0.2s, background 0.2s; }
         #right-hud .hud-btn:hover { border-color: #fbbf24; background: rgba(45, 36, 30, 0.98); }
@@ -1325,7 +1372,8 @@
         #character-creation-overlay.hidden { display: none; }
         /* 序章未创角：保留顶栏时间，隐藏左右信息与地图旁动作气泡 */
         body.intro-shell-active #left-hud,
-        body.intro-shell-active #right-hud {
+        body.intro-shell-active #right-hud,
+        body.intro-shell-active #buff-hud {
             display: none !important;
         }
         body.intro-shell-active #player-action-bubble,
@@ -1614,6 +1662,16 @@
                 </div>
             </div>
             <!-- 右侧按钮：背包、生存技能、战斗技能、穴位、特殊技能 -->
+            <div id="buff-hud" aria-label="buff hud">
+                <div class="buff-hud-section">
+                    <div class="buff-hud-title" id="buff-hud-self-title"></div>
+                    <div id="buff-hud-player-chips" class="buff-hud-chips"></div>
+                </div>
+                <div class="buff-hud-section">
+                    <div class="buff-hud-title" id="buff-hud-enemy-title"></div>
+                    <div id="buff-hud-enemy-chips" class="buff-hud-chips"></div>
+                </div>
+            </div>
             <div id="right-hud">
                 <button type="button" class="hud-btn" id="btn-backpack" data-ui="btn.backpack.title" data-ui-attr="title">🎒</button>
                 <button type="button" class="hud-btn" id="btn-survival" data-ui="btn.survival.title" data-ui-attr="title">🌿</button>
