@@ -137,8 +137,8 @@
     {
       "buff_id": "buff_probe",
       "name": "试探",
-      "desc": "数据：multiply_w_coef_factor（见 18.3.1）。刺拳 jab 命中 roll 成功叠层；摆拳 swing_punch 在 W_skill×G 之后乘 (1+0.05×层数)。清空为整实例删除（非逐层扣 1）：连击每记摆拳在命中成功且该记伤害结算后清空（含 0 伤）；未命中不清。同一 cast 多 sub-hit 每段各乘一次 K，全部 sub-hit 结算完后若至少一段命中成功则一次性清空。重上重置持续。仅 buff_probe。不挂自动流水线。",
-      "durationTicks": 999999,
+      "desc": "下一次摆拳伤害+5%，最大三层，摆拳会消耗所有叠层。",
+      "durationTicks": 10,
       "maxStacks": 3,
       "stacksAddOnApply": 1,
       "priority": 55,
@@ -173,7 +173,7 @@
     {
       "buff_id": "buff_off_balance",
       "name": "失衡",
-      "desc": "每层使最终招架几率减少 5 个百分点（在柔韧与默认硬上限之后叠加，再 clamp）；最高 3 层；持续 8 tick；再叠加刷新持续。由鞭腿 whip_kick 命中判定成功对目标施加；即使被招架至 0 伤仍叠加。与试探无关。战斗可读 BuffSystem.getParryChanceDeltaPercent(ownerId)。",
+      "desc": "每层使最终招架几率减少 5 个百分点,最高 3 层；持续 8 tick。",
       "durationTicks": 8,
       "maxStacks": 3,
       "stacksAddOnApply": 1,
@@ -244,4 +244,3 @@
     }
   ]
 }
-

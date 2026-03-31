@@ -1,0 +1,46 @@
+---
+description: 将 data/items/*.csv 构建为 data/items.json 的字段口径、字段映射与合并顺序
+globs: tools/build-items-json.mjs,data/items/*.csv,data/items.json
+alwaysApply: false
+---
+
+# items.json 构建脚本（Agent 规则）
+
+当需要新增物品、调整物品语言展示字段（`sn/fn/placeholder_name`）或修改运行时用的 `data/items.json` 时，应优先修改 CSV/脚本，然后再运行构建生成最终 JSON。
+
+## 1) 数据源与合并顺序（强制）
+
+当前构建脚本合并顺序为（先出现先保留，重复 `id` 会跳过并警告）：
+1. `consumables_base.csv`
+2. `materials_base.csv`
+3. `materials_cooking_raw.csv`
+4. `product_base.csv`
+5. `currency_base.csv`
+
+## 2) 输出 JSON 字段口径（强制）
+
+构建产物 `data/items.json` 中每个 `item_id` 的模板应至少包含：
+- `item_id`
+- `name` / `name_0`（通常来自 CSV 的 `sn`，兼容回退）
+- `weight_kg`（来自 CSV 的 `weight`）
+
+并应包含语言展示相关字段（由 CSV 列决定）：
+- `sn`
+- `placeholder_name`
+- `fn_before`
+- `fn`
+- `desc_0`（来自 `fn`/`desc` 基底字段，作为描述 fallback）
+
+物品使用效果字段由恢复量列组合：
+- `satiety_restore` → `use_effect.satiety`
+- `thirst_restore` → `use_effect.thirst`
+- `nutrition_restore` → `use_effect.nutrition`
+
+如果后续扩展新的展示字段或新的 effect 列，需要同步更新本规则与构建脚本。
+
+## 3) 构建流程口径
+
+- 修改 CSV 之后必须运行：
+  - `node tools/build-items-json.mjs` 或 `npm run build:items`
+- 不要手工直接编辑 `data/items.json` 当作唯一来源；否则会在下一次构建被覆盖。
+

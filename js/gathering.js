@@ -237,6 +237,15 @@
 
         var itemDef = config.items[row.item_id];
         var itemName = itemDef && itemDef.name ? itemDef.name : row.item_id;
+        var gIE = typeof window !== 'undefined' ? window.InventoryEquipment : null;
+        if (gIE && typeof gIE.getItemTemplate === 'function' && typeof gIE.getDisplayName === 'function') {
+            var tplG = gIE.getItemTemplate(row.item_id);
+            if (tplG) {
+                var chG = gIE.getCharacterForDisplay ? gIE.getCharacterForDisplay() : null;
+                var tierG = gIE.getItemDisplayTier ? gIE.getItemDisplayTier(row.item_id, chG) : 0;
+                itemName = gIE.getDisplayName(tplG, tierG, chG);
+            }
+        }
         var qualityName = QUALITY_NAMES[qualityTier] || '粗糙';
 
         var g = typeof window !== 'undefined' ? window : (typeof global !== 'undefined' ? global : null);

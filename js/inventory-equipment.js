@@ -270,9 +270,29 @@
         return null;
     }
 
+    /** 仅物品表（items.json）中的 id，已排序；不含装备表 */
+    function getAllItemIds() {
+        return Object.keys(itemsTable || {}).sort();
+    }
+
+    /** 语言等级（survival_language）；character 缺省时用当前存档 skills */
+    function getSurvivalLanguageLevel(character) {
+        var lv;
+        if (character && character.skills && character.skills.survival_language) {
+            lv = parseInt(character.skills.survival_language.level, 10);
+            if (isFinite(lv)) return Math.max(0, lv);
+        }
+        if (state.skills && state.skills.survival_language) {
+            lv = parseInt(state.skills.survival_language.level, 10);
+            if (isFinite(lv)) return Math.max(0, lv);
+        }
+        return 0;
+    }
+
     /**
      * 根据技能等级返回展示档位 0/1/2，用于 name_0/1/2、desc_0/1/2
      * 档位阈值可留空，留空时默认档位 0
+     * 名称/说明的最终展示另受「语言」等级约束，见 getDisplayName / getDisplayDesc
      */
     function getItemDisplayTier(itemId, character) {
         var tpl = getItemTemplate(itemId);
@@ -288,16 +308,35 @@
         return 0;
     }
 
-    function getDisplayName(tpl, tier) {
+    /**
+     * 语言小于 3：名称 placeholder_name；大于等于 3：名称 sn（无 sn 时用 name_0/name）
+     * @param {object} character 可选；缺省用当前角色 skills
+     */
+    function getDisplayName(tpl, tier, character) {
         if (!tpl) return '?';
-        var key = 'name_' + (tier || 0);
-        return tpl[key] != null ? tpl[key] : (tpl.name_0 || tpl.name || tpl.id || '?');
+        var langLv = getSurvivalLanguageLevel(character);
+        if (langLv < 3) {
+            if (tpl.placeholder_name != null && String(tpl.placeholder_name) !== '') return String(tpl.placeholder_name);
+            return tpl.name_0 != null ? tpl.name_0 : (tpl.name || tpl.id || '?');
+        }
+        if (tpl.sn != null && String(tpl.sn) !== '') return String(tpl.sn);
+        return tpl.name_0 != null ? tpl.name_0 : (tpl.name || tpl.id || '?');
     }
 
-    function getDisplayDesc(tpl, tier) {
+    /**
+     * 语言小于 2：无说明；大于等于 2 且小于 4：fn_before（无则 desc_0）；大于等于 4：fn（无 fn 时用 desc_0）
+     */
+    function getDisplayDesc(tpl, tier, character) {
         if (!tpl) return '';
-        var key = 'desc_' + (tier || 0);
-        return tpl[key] != null ? tpl[key] : (tpl.desc_0 || tpl.desc || '');
+        var langLv = getSurvivalLanguageLevel(character);
+        if (langLv < 2) return '';
+        if (langLv < 4) {
+            if (tpl.fn_before != null && String(tpl.fn_before) !== '') return String(tpl.fn_before);
+            return tpl.desc_0 != null ? tpl.desc_0 : (tpl.desc || '');
+        }
+        var fn = tpl.fn != null ? String(tpl.fn) : '';
+        if (fn === '' && tpl.desc_0 != null) fn = String(tpl.desc_0);
+        return fn;
     }
 
     /** 当前装备提供的口袋格数（来自衣服） */
@@ -1354,6 +1393,7 @@
         setState: setState,
         getState: getState,
         getItemTemplate: getItemTemplate,
+        getAllItemIds: getAllItemIds,
         getItemDisplayTier: getItemDisplayTier,
         getDisplayName: getDisplayName,
         getDisplayDesc: getDisplayDesc,

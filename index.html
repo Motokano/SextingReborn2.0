@@ -562,6 +562,17 @@
         }
         #modal-backpack .inv-slot .inv-slot-drop:hover { background: #5c4a3d; border-color: #fbbf24; }
         #modal-backpack .inv-slot.inv-slot-equip { cursor: pointer; }
+        #modal-backpack .equip-action-btn {
+            position: absolute; right: 4px; top: 4px;
+            display: none;
+            padding: 3px 8px;
+            font-size: 12px;
+            line-height: 1.2;
+            background: #4d3f35; border: 1px solid #78716c;
+            color: #e8e6e3; border-radius: 6px;
+            cursor: pointer;
+        }
+        #modal-backpack .inv-slot.inv-slot-equip:hover .equip-action-btn { display: inline-block; }
         #modal-backpack .ground-region { margin-top: 20px; padding-top: 14px; border-top: 1px solid #4d3f35; }
         #modal-backpack .ground-item-row {
             display: flex; align-items: center; justify-content: space-between;
@@ -597,6 +608,48 @@
             color: #fbbf24; font-weight: 700; font-size: 16px;
         }
         #modal-backpack .panel-close:hover { background: rgba(212,163,115,0.15); }
+        /* 基地仓库（调试：全物品无限取） */
+        #modal-base-warehouse {
+            display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.65); z-index: 100;
+            align-items: center; justify-content: center; pointer-events: auto;
+            font-family: "Microsoft YaHei", "微软雅黑", "PingFang SC", sans-serif;
+        }
+        #modal-base-warehouse.show { display: flex; }
+        #modal-base-warehouse .bw-panel {
+            width: 96%; max-width: 720px; max-height: 88vh;
+            background: #1c1612; border: 2px solid #d4a373; border-radius: 10px;
+            overflow: hidden; display: flex; flex-direction: column; font-size: 15px;
+        }
+        #modal-base-warehouse .bw-head {
+            padding: 16px 20px; border-bottom: 1px solid #4d3f35;
+            display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap;
+        }
+        #modal-base-warehouse .bw-head h2 {
+            margin: 0; font-size: 17px; font-weight: 700; color: rgba(251,191,36,0.95); letter-spacing: 0.06em;
+        }
+        #modal-base-warehouse .bw-head .bw-hint { font-size: 13px; color: #a8a29e; flex: 1; min-width: 200px; }
+        #modal-base-warehouse #base-warehouse-filter {
+            width: 200px; max-width: 100%; padding: 8px 10px; border-radius: 6px;
+            border: 1px solid #4d3f35; background: rgba(0,0,0,0.35); color: #e8e6e3; font-size: 14px;
+        }
+        #modal-base-warehouse .bw-body { flex: 1; overflow-y: auto; padding: 12px 16px 20px; min-height: 200px; }
+        #modal-base-warehouse .warehouse-item-row {
+            display: flex; align-items: center; justify-content: space-between; gap: 10px;
+            padding: 8px 12px; margin-bottom: 6px; background: rgba(45,36,30,0.85);
+            border: 1px solid #4d3f35; border-radius: 6px;
+        }
+        #modal-base-warehouse .warehouse-item-row .wname { color: #e8e6e3; font-size: 15px; flex: 1; min-width: 0; }
+        #modal-base-warehouse .warehouse-item-row .wid { font-size: 12px; color: #78716c; flex-shrink: 0; max-width: 42%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        #modal-base-warehouse .warehouse-item-row .btn-take-one {
+            padding: 6px 12px; font-size: 13px; background: #4d3f35; border: 1px solid #78716c;
+            color: #e8e6e3; border-radius: 6px; cursor: pointer; flex-shrink: 0;
+        }
+        #modal-base-warehouse .warehouse-item-row .btn-take-one:hover { background: #5c4a3d; border-color: #fbbf24; }
+        #modal-base-warehouse .bw-close {
+            padding: 14px; border-top: 1px solid #4d3f35; text-align: center; cursor: pointer;
+            color: #fbbf24; font-weight: 700; font-size: 16px;
+        }
+        #modal-base-warehouse .bw-close:hover { background: rgba(212,163,115,0.15); }
         /* 战斗技能枢纽弹窗 - 参照 demo.html */
         #modal-combat {
             display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 100;
@@ -912,6 +965,20 @@
         }
         #modal-survival .survival-level {
             font-size: 12px; font-weight: 700; color: #fbbf24; white-space: nowrap;
+        }
+        #modal-survival .survival-plus-btn {
+            margin-left: 10px;
+            padding: 4px 10px;
+            border-radius: 999px;
+            border: 1px solid #4d3f35;
+            background: rgba(45,36,30,0.85);
+            color: #e8e6e3;
+            font-size: 11px;
+            cursor: pointer;
+        }
+        #modal-survival .survival-plus-btn:hover {
+            border-color: #fbbf24;
+            background: rgba(60,45,36,0.92);
         }
 
         /* 特殊技能弹窗 - 复用生存技能总览的整体风格 */
@@ -1705,6 +1772,18 @@
                 <div class="panel-close" id="backpack-panel-close" data-ui="backpack.close"></div>
             </div>
         </div>
+        <!-- 基地仓库：站在标注「仓库」的格子上打开；物品表全条目可无限取 1 件 -->
+        <div id="modal-base-warehouse" aria-hidden="true">
+            <div class="bw-panel">
+                <div class="bw-head">
+                    <h2 data-ui="warehouse.modal.title">基地仓库</h2>
+                    <span class="bw-hint" data-ui="warehouse.modal.hint">物品表内全部物品可重复领取，不占仓库库存。</span>
+                    <input type="search" id="base-warehouse-filter" autocomplete="off" data-ui="warehouse.search.placeholder" data-ui-attr="placeholder" placeholder="" />
+                </div>
+                <div class="bw-body" id="base-warehouse-list"></div>
+                <div class="bw-close" id="base-warehouse-close" data-ui="warehouse.modal.close">关闭</div>
+            </div>
+        </div>
         <!-- 战斗技能枢纽弹窗 -->
         <div id="modal-combat">
             <div class="combat-panel">
@@ -1897,6 +1976,7 @@
                 <button type="button" id="action-bar-gather-stop" class="action-bar-btn" style="display:none;" data-ui="player.action.gather.stop"></button>
                 <button type="button" id="action-bar-ground" class="action-bar-btn" style="display:none;" data-ui="action.bar.ground"></button>
                 <button type="button" id="action-bar-diqi-huti" class="action-bar-btn" style="display:none;" data-ui="player.action.diqi_huti"></button>
+                <button type="button" id="action-bar-warehouse" class="action-bar-btn" style="display:none;" data-ui="action.bar.warehouse"></button>
             </div>
             <div class="action-bar-sep" id="action-bar-sep" aria-hidden="true"></div>
             <div class="action-bar-pinned" id="action-bar-pinned">

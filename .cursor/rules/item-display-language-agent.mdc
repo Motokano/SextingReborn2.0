@@ -1,0 +1,53 @@
+---
+description: 物品展示语言等级（survival_language）口径、字段与调用约定
+globs: js/inventory-equipment.js,js/scene-app.js,js/scene-renderer.js,tools/build-items-json.mjs,data/items.json
+alwaysApply: true
+---
+
+# 物品展示语言等级（Agent 规则）
+
+编辑“物品名称/描述展示”，尤其是随生存技能 `survival_language` 变化的可见性与展示字段时，必须遵循本节口径，避免出现“显示名走 tier，描述走另一套逻辑”的口径混乱。
+
+## 1) 语言等级阈值（强制）
+
+使用 `survival_language` 技能等级 `langLv`（缺省视为 0）。
+
+1. **语言等级 < 3**
+   - 物品**名称**：显示 `placeholder_name`（若缺失，fallback 到 `name_0`/`name`/`id`）。
+   - 物品**描述**：显示为空字符串（`''`）。
+
+2. **语言等级 >= 2 且 < 4**
+   - 物品**名称**：同 `< 3`（`placeholder_name`）。
+   - 物品**描述**：显示 `fn_before`（若缺失，fallback 到 `desc_0`）。
+
+3. **语言等级 >= 3 且 < 4**
+   - 物品**名称**：显示 `sn`（若缺失，fallback 到 `name_0`/`name`/`id`）。
+   - 物品**描述**：继续走 `fn_before`。
+
+4. **语言等级 >= 4**
+   - 物品**名称**：显示 `sn`（fallback 同上）。
+   - 物品**描述**：显示 `fn`（若 `fn` 缺失，fallback 到 `desc_0`）。
+
+> 本项目最终实现集中在 `InventoryEquipment.getDisplayName()` / `InventoryEquipment.getDisplayDesc()`，而不是依赖 `getItemDisplayTier()` 的档位。
+
+## 2) items.json 字段要求（强制）
+
+`data/items.json` 的物品模板应包含（至少）：
+- `sn`：真实展示名（>=3 时用）
+- `placeholder_name`：鉴定前/低语言名称（<3 时用）
+- `fn_before`：鉴定前描述（>=2 且 <4 时用）
+- `fn`：鉴定后描述基底（>=4 时用）
+- `desc_0`：作为描述 fallback（当 `fn_before/fn` 缺失时用）
+
+这些字段由 `tools/build-items-json.mjs` 从 CSV 生成；不要在运行时代码里硬编码字段映射表。
+
+## 3) 调用约定：displayName/desc 必须传 character（强制）
+
+`getDisplayName(tpl, tier, character)` 与 `getDisplayDesc(tpl, tier, character)` 在语言等级判定里需要 `character` 参数（用于读取 `state.skills.survival_language.level`）。
+
+后续 agent 修改任何展示位置时，必须确认调用处传入了 `character`：
+- `js/scene-renderer.js`（hover 快捷栏/名称/描述）
+- `js/scene-app.js`（背包面板、脚下物品、工具提示、基地仓库列表等）
+
+若在某处未传 `character`，语言等级将无法生效，且会回落到不符合设计的默认展示。
+

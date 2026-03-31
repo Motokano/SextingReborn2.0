@@ -1,0 +1,48 @@
+---
+description: 基地仓库（无限取物调试面板）的地图标注、动作栏入口与 modal 口径
+globs: js/game-engine.js,data/maps/M0_Base_Inside_lv_1.json,js/scene-renderer.js,js/scene-app.js,index.html,data/ui_text_zhCN.json,js/inventory-equipment.js
+alwaysApply: false
+---
+
+# 基地仓库（无限取物）Agent 规则
+
+本项目目前的“基地仓库”是一个面向调试/便捷取物的实现：通过地图格子 `annotations` 标注“仓库”，点击底部动作栏按钮打开面板，在面板内可以从物品表 `items.json` 无限领取 1 件。
+
+## 1) 地图标注口径（强制）
+
+- 地图 JSON（如 `data/maps/M0_Base_Inside_lv_1.json`）中，使用字段：
+  - `annotations`: 对象键名为 `"x,y"`（数字坐标），值为标注字符串（目前约定：`"仓库"`）
+- 引擎侧已提供 `GameEngine.getAnnotationAt(x, y)`，用于读取 `annotations["x,y"]`。
+
+## 2) 入口显示口径（强制）
+
+- `js/scene-renderer.js` 在底部动作栏区根据 `getAnnotationAt(st.x, st.y) === '仓库'` 来切换按钮显示。
+- 按钮 id：`action-bar-warehouse`
+- 按钮显示文案来自 `data/ui_text_zhCN.json`：
+  - `action.bar.warehouse`
+
+## 3) 面板口径（强制）
+
+- modal id：`modal-base-warehouse`
+- 面板列表数据来源：
+  - `InventoryEquipment.getAllItemIds()`（目前仅物品表 `items.json`，不含 `equipment.json`）
+  - `InventoryEquipment.getItemTemplate(itemId)`
+  - 显示名/描述使用 `InventoryEquipment.getDisplayName/getDisplayDesc`，并传入当前角色 `character`（确保语言等级逻辑生效）
+
+## 4) “无限取物”的实现口径（强制）
+
+- 点击“取 1”后调用：
+  - `InventoryEquipment.putItemIntoDefaultContainer({ item_id, count: 1, quality_tier: 0 })`
+- “无限”指的是：不做仓库库存扣减；但仍遵守人物携带容量/背包格位限制，因此当背包满时仍可能领取失败。
+
+## 5) 悬停浮窗（补充）
+
+- 面板内每行鼠标悬停会复用现有 `#item-tooltip` 浮窗逻辑（由 `showItemTooltip/hideItemTooltip` 控制）。
+
+***End Note***
+
+如果未来你要把“仓库”变成真正有库存的系统，需要在本规则基础上增加：
+- 仓库库存结构（独立存档字段）
+- 取物扣减与并发保护
+- UI 中库存显示与刷新时机
+

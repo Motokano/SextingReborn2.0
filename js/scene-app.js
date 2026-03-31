@@ -1258,7 +1258,8 @@
                 return;
             }
             ownerArr.forEach(function (inst) {
-                if (!inst || !inst.buff_id || (inst.stacks != null && inst.stacks <= 0)) return;
+                // 不要因为 stacks<=0/缺失就跳过：用于定位“敌方 buff 不显示”的 owner/stacks 对齐问题
+                if (!inst || !inst.buff_id) return;
                 var chip = document.createElement('span');
                 chip.className = 'buff-chip';
                 var buffName = (inst.template && inst.template.name) ? String(inst.template.name) : String(inst.buff_id);
@@ -1267,6 +1268,18 @@
                 var rem = isFinite(expiresAt) ? Math.max(0, expiresAt - nowTick) : null;
                 chip.textContent = buffName + '×' + stacks + (rem != null ? ' ' + rem + 't' : '');
                 chip.title = buffName + (inst.template && inst.template.desc ? (': ' + inst.template.desc) : '');
+
+                // 鼠标悬浮：复用物品说明的同一套 tooltip（#item-tooltip）
+                var buffDesc = inst.template && inst.template.desc ? String(inst.template.desc) : '';
+                var attrs = '层数：' + String(stacks);
+                if (rem != null) attrs += '\n剩余：' + String(rem) + 't';
+                var tipHtml = buildItemTooltipHtml(buffName, buffDesc, attrs);
+                chip.addEventListener('mouseenter', function () {
+                    showItemTooltip(tipHtml, chip);
+                });
+                chip.addEventListener('mouseleave', function () {
+                    hideItemTooltip();
+                });
                 containerEl.appendChild(chip);
             });
             if (!containerEl.children.length) containerEl.textContent = ui('status.enemy_buffs.none_buff');
@@ -1282,7 +1295,7 @@
                 hud.style.display = 'none';
                 return;
             }
-            hud.style.display = '';
+            hud.style.display = 'none';
             if (selfTitle) selfTitle.textContent = ui('buff.hud.self');
             var nowTick = getBuffHudNowTick();
             if (!window.BuffSystem || typeof window.BuffSystem.getState !== 'function') {
@@ -1297,16 +1310,76 @@
             var targetEnemyId = window.SceneCtx && window.SceneCtx.lastAttackedEnemyId != null
                 ? String(window.SceneCtx.lastAttackedEnemyId)
                 : '';
+            var chosenEnemyId = targetEnemyId;
+            var eArr = (chosenEnemyId && Array.isArray(instByOwner[chosenEnemyId]))
+                ? instByOwner[chosenEnemyId]
+                : [];
+
+            // 兜底：如果上回合敌方没有 buff（可能 ownerId 对不上/尚未记录），则显示“最近一次出现 buff 的敌人”
+            if (!eArr || !eArr.length) {
+                var bestOwnerId = '';
+                var bestTick = -1;
+                var ownerKeys = Object.keys(instByOwner || {});
+                for (var k = 0; k < ownerKeys.length; k++) {
+                    var oid = ownerKeys[k];
+                    if (!oid || oid === 'player') continue;
+                    var arr = instByOwner[oid];
+                    if (!Array.isArray(arr) || !arr.length) continue;
+                    for (var ii = 0; ii < arr.length; ii++) {
+                        var inst = arr[ii];
+                        if (!inst) continue;
+                        var st = inst.started_tick != null ? Number(inst.started_tick) : NaN;
+                        if (isFinite(st) && st > bestTick) {
+                            bestTick = st;
+                            bestOwnerId = oid;
+                        }
+                    }
+                }
+                if (bestOwnerId) {
+                    chosenEnemyId = bestOwnerId;
+                    eArr = Array.isArray(instByOwner[chosenEnemyId]) ? instByOwner[chosenEnemyId] : [];
+                }
+            }
+
+            // 若自身与敌方都没有可显示的 Buff，则隐藏整个 HUD。
+            var selfHas = Array.isArray(pArr) && pArr.some(function (inst) {
+                return inst && inst.buff_id && (parseInt(inst.stacks, 10) || 0) > 0;
+            });
+            var enemyHas = Array.isArray(eArr) && eArr.some(function (inst) {
+                return inst && inst.buff_id && (parseInt(inst.stacks, 10) || 0) > 0;
+            });
+            if (!selfHas && !enemyHas) {
+                hud.style.display = 'none';
+                return;
+            }
+            hud.style.display = '';
+
             if (enemyTitle) {
-                enemyTitle.textContent = targetEnemyId
-                    ? ui('buff.hud.target_with_name', { name: getEnemyDisplayName(targetEnemyId) })
+                enemyTitle.textContent = chosenEnemyId
+                    ? ui('buff.hud.target_with_name', { name: getEnemyDisplayName(chosenEnemyId) })
                     : ui('buff.hud.target_none');
             }
-            if (!targetEnemyId) {
+
+            if (!chosenEnemyId) {
                 enemyEl.textContent = ui('status.enemy_buffs.none_target');
                 return;
             }
-            var eArr = Array.isArray(instByOwner[targetEnemyId]) ? instByOwner[targetEnemyId] : [];
+
+            // HUD 调试：帮助定位“敌方 buff 不显示”究竟是 ownerId 对不上还是 buff 实例不存在
+            try {
+                var sig = 't=' + String(targetEnemyId || '') + '|c=' + String(chosenEnemyId || '') + '|e=' + String(eArr && eArr.length ? eArr.length : 0);
+                if (window.__buffHudLastSig !== sig) {
+                    window.__buffHudLastSig = sig;
+                    console.log('[BUFF-HUD]', {
+                        targetEnemyId: targetEnemyId,
+                        chosenEnemyId: chosenEnemyId,
+                        enemyBuffInstanceCount: eArr && eArr.length ? eArr.length : 0,
+                        playerBuffInstanceCount: pArr && pArr.length ? pArr.length : 0,
+                        ownerKeys: Object.keys(instByOwner || {})
+                    });
+                }
+            } catch (e0) { /* ignore */ }
+
             appendBuffChips(enemyEl, eArr, nowTick);
         }
         function shouldShowBlock(blockId) {
@@ -1663,7 +1736,7 @@
                 if (it && it.item_id) {
                     var tpl = IE.getItemTemplate(it.item_id);
                     var tier = IE.getItemDisplayTier ? IE.getItemDisplayTier(it.item_id, char) : 0;
-                    var name = tpl ? IE.getDisplayName(tpl, tier) : it.item_id;
+                    var name = tpl ? IE.getDisplayName(tpl, tier, char) : it.item_id;
                     var qty = (it.count != null && it.count > 1) ? ' x' + it.count : '';
                     var label = document.createElement('div');
                     label.className = 'inv-slot-label';
@@ -1674,7 +1747,8 @@
                     dropBtn.className = 'inv-slot-drop';
                     dropBtn.textContent = ui('inv.drop');
                     dropBtn.onclick = (function (ct, idx) {
-                        return function () {
+                        return function (ev) {
+                            if (ev && typeof ev.stopPropagation === 'function') ev.stopPropagation();
                             var pos = E.getState();
                             var r = IE.dropItemToGround(ct, idx, pos.mapId, pos.x, pos.y);
                             if (r.success) showMsg(ui('log.info.dropped'), 'info');
@@ -1686,10 +1760,62 @@
                     })(containerType, i);
                     slot.appendChild(dropBtn);
                     var tplAttrs = formatItemAttributes(tpl, it);
-                    var tipHtml = buildItemTooltipHtml(name, tpl ? IE.getDisplayDesc(tpl, tier) : '', tplAttrs);
+                    var tipHtml = buildItemTooltipHtml(name, tpl ? IE.getDisplayDesc(tpl, tier, char) : '', tplAttrs);
                     slot.addEventListener('mouseenter', function (h, el) { return function () { showItemTooltip(h, el); }; }(tipHtml, slot));
                     slot.addEventListener('mouseleave', hideItemTooltip);
-                    if (tpl && tpl.equip_slot) slot.classList.add('inv-slot-equip');
+                    if (tpl && tpl.equip_slot) {
+                        slot.classList.add('inv-slot-equip');
+                        var equipBtn = document.createElement('button');
+                        equipBtn.type = 'button';
+                        equipBtn.className = 'equip-action-btn';
+                        equipBtn.textContent = ui('inv.equip');
+                        equipBtn.onclick = (function (ct, idx, slotId, itemId) {
+                            return function (ev) {
+                                if (ev && typeof ev.stopPropagation === 'function') ev.stopPropagation();
+                                if (!IE || typeof IE.takeItemFromContainer !== 'function') return;
+
+                                var posNow = E.getState ? E.getState() : groundPos;
+                                var taken = IE.takeItemFromContainer(ct, idx);
+                                if (!taken.success || !taken.item) return;
+
+                                var itemToEquip = taken.item;
+                                if (itemToEquip && itemToEquip.count != null) itemToEquip.count = 1;
+
+                                // 若已有装备：先脱下（把旧装备迁移到背包/掉落），再穿上新装备
+                                var stNow = IE.getState ? IE.getState() : {};
+                                var currentEq = (stNow && stNow.equipment) ? stNow.equipment[slotId] : null;
+                                if (currentEq) {
+                                    var unequipped = IE.unequip(slotId, posNow);
+                                    if (unequipped) {
+                                        var placedOld = IE.putItemIntoDefaultContainer(unequipped);
+                                        if (!placedOld || !placedOld.placed) {
+                                            if (typeof IE.addItemToGround === 'function') {
+                                                IE.addItemToGround(posNow.mapId, posNow.x, posNow.y, unequipped);
+                                            }
+                                        }
+                                    }
+                                }
+
+                                var res = IE.equip(slotId, itemToEquip);
+                                if (!res || !res.success) {
+                                    var placedNew = IE.putItemIntoDefaultContainer(itemToEquip);
+                                    if (!placedNew || !placedNew.placed) {
+                                        if (typeof IE.addItemToGround === 'function') {
+                                            IE.addItemToGround(posNow.mapId, posNow.x, posNow.y, itemToEquip);
+                                        }
+                                    }
+                                    if (res && res.message) showMsg(res.message, 'warn');
+                                    else showMsg(ui('inv.equip'), 'warn');
+                                } else {
+                                    showMsg(ui('log.success.equipped'), 'success');
+                                }
+
+                                updateBackpackPanel();
+                                render();
+                            };
+                        })(containerType, i, tpl.equip_slot, tpl.id || tpl.item_id);
+                        slot.appendChild(equipBtn);
+                    }
                 } else {
                     slot.textContent = '—';
                 }
@@ -1722,7 +1848,7 @@
                 var it = groundItems[g];
                 var tpl = it && it.item_id ? IE.getItemTemplate(it.item_id) : null;
                 var tier = it && it.item_id && IE.getItemDisplayTier ? IE.getItemDisplayTier(it.item_id, char) : 0;
-                var gName = tpl ? IE.getDisplayName(tpl, tier) : (it ? it.item_id : '—');
+                var gName = tpl ? IE.getDisplayName(tpl, tier, char) : (it ? it.item_id : '—');
                 var gQty = (it && it.count != null && it.count > 1) ? ' x' + it.count : '';
                 row.innerHTML = '<span class="ground-item-name">' + String(gName + gQty).replace(/</g, '&lt;').replace(/>/g, '&gt;') + '</span>';
                 var pickupBtn = document.createElement('button');
@@ -1776,7 +1902,7 @@
                 if (eq && eq.item_id) {
                     var eqTpl = IE.getItemTemplate(eq.item_id);
                     var eqTier = IE.getItemDisplayTier ? IE.getItemDisplayTier(eq.item_id, char) : 0;
-                    itemName = eqTpl ? IE.getDisplayName(eqTpl, eqTier) : eq.item_id;
+                    itemName = eqTpl ? IE.getDisplayName(eqTpl, eqTier, char) : eq.item_id;
                 }
                 row.innerHTML = '<span class="slot-name">' + String(label).replace(/</g, '&lt;') + '</span><span class="item-name">' + String(itemName).replace(/</g, '&lt;').replace(/>/g, '&gt;') + '</span>';
                 var unequipBtn = document.createElement('button');
@@ -1855,6 +1981,145 @@
     if (document.getElementById('backpack-panel-close')) {
         document.getElementById('backpack-panel-close').addEventListener('click', closeBackpackPanel);
     }
+
+    var baseWarehousePanelOpen = false;
+
+    function buildBaseWarehouseList(filterStr) {
+        var el = document.getElementById('base-warehouse-list');
+        if (!el) return;
+        var IE = window.InventoryEquipment;
+        if (!IE || typeof IE.getAllItemIds !== 'function') {
+            el.textContent = '';
+            return;
+        }
+        var ids = IE.getAllItemIds();
+        var f = (filterStr || '').trim().toLowerCase();
+        var char0 = IE.getCharacterForDisplay ? IE.getCharacterForDisplay() : null;
+        var frag = document.createDocumentFragment();
+        var i;
+        for (i = 0; i < ids.length; i++) {
+            var id = ids[i];
+            var tpl = IE.getItemTemplate(id);
+            var tier = IE.getItemDisplayTier ? IE.getItemDisplayTier(id, char0) : 0;
+            var disp = tpl && IE.getDisplayName ? IE.getDisplayName(tpl, tier, char0) : id;
+            if (f) {
+                if (String(id).toLowerCase().indexOf(f) < 0 && String(disp).toLowerCase().indexOf(f) < 0) continue;
+            }
+            var row = document.createElement('div');
+            row.className = 'warehouse-item-row';
+            var nameEl = document.createElement('div');
+            nameEl.className = 'wname';
+            nameEl.textContent = disp;
+            var idEl = document.createElement('div');
+            idEl.className = 'wid';
+            idEl.textContent = id;
+            var btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = 'btn-take-one';
+            btn.setAttribute('data-item-id', id);
+            btn.textContent = ui('warehouse.take.one');
+            if (tpl) {
+                var desc = IE.getDisplayDesc ? IE.getDisplayDesc(tpl, tier, char0) : '';
+                var attrs = formatItemAttributes(tpl, null);
+                var tipHtml = buildItemTooltipHtml(disp, desc, attrs);
+                row.addEventListener('mouseenter', function (h, elRef) { return function () { showItemTooltip(h, elRef); }; }(tipHtml, row));
+                row.addEventListener('mouseleave', hideItemTooltip);
+            }
+            row.appendChild(nameEl);
+            row.appendChild(idEl);
+            row.appendChild(btn);
+            frag.appendChild(row);
+        }
+        el.innerHTML = '';
+        el.appendChild(frag);
+    }
+
+    function takeFromBaseWarehouse(itemId) {
+        var IE = window.InventoryEquipment;
+        if (!IE || !itemId) return;
+        var tpl = IE.getItemTemplate(itemId);
+        if (!tpl) return;
+        var r = IE.putItemIntoDefaultContainer({ item_id: itemId, count: 1, quality_tier: 0 });
+        var char0 = IE.getCharacterForDisplay ? IE.getCharacterForDisplay() : null;
+        var tier0 = IE.getItemDisplayTier ? IE.getItemDisplayTier(itemId, char0) : 0;
+        var dispName = tpl && IE.getDisplayName ? IE.getDisplayName(tpl, tier0, char0) : itemId;
+        if (r.placed) {
+            showMsg(ui('warehouse.take.ok', { name: dispName }), 'success');
+        } else {
+            showMsg(ui('warehouse.take.fail'), 'warn');
+        }
+        if (window.Survival && typeof window.Survival.advanceTick === 'function') window.Survival.advanceTick();
+        if (typeof updateBackpackPanel === 'function') updateBackpackPanel();
+        render();
+    }
+
+    function openBaseWarehousePanel() {
+        if (isPreCreationGameplayRestricted()) {
+            showIntroBlockedMsg();
+            return;
+        }
+        if (baseWarehousePanelOpen) return;
+        if (window.Survival && typeof window.Survival.advanceTick === 'function') window.Survival.advanceTick();
+        baseWarehousePanelOpen = true;
+        var modal = document.getElementById('modal-base-warehouse');
+        if (modal) {
+            modal.classList.add('show');
+            modal.setAttribute('aria-hidden', 'false');
+        }
+        var filterEl = document.getElementById('base-warehouse-filter');
+        if (filterEl) filterEl.value = '';
+        buildBaseWarehouseList('');
+        if (window.UIText && typeof window.UIText.applyDom === 'function') {
+            var mw = document.getElementById('modal-base-warehouse');
+            if (mw) window.UIText.applyDom(mw);
+        }
+        render();
+    }
+
+    function closeBaseWarehousePanel() {
+        if (!baseWarehousePanelOpen) return;
+        if (window.Survival && typeof window.Survival.advanceTick === 'function') window.Survival.advanceTick();
+        baseWarehousePanelOpen = false;
+        var modal = document.getElementById('modal-base-warehouse');
+        if (modal) {
+            modal.classList.remove('show');
+            modal.setAttribute('aria-hidden', 'true');
+        }
+        render();
+    }
+
+    (function bindBaseWarehouse() {
+        var abw = document.getElementById('action-bar-warehouse');
+        if (abw) {
+            abw.addEventListener('click', function () {
+                if (baseWarehousePanelOpen) closeBaseWarehousePanel(); else openBaseWarehousePanel();
+            });
+        }
+        var cl = document.getElementById('base-warehouse-close');
+        if (cl) cl.addEventListener('click', closeBaseWarehousePanel);
+        var listEl = document.getElementById('base-warehouse-list');
+        if (listEl) {
+            listEl.addEventListener('click', function (ev) {
+                var t = ev.target;
+                if (!t || !t.closest) return;
+                var btn = t.closest('.btn-take-one');
+                if (!btn) return;
+                var iid = btn.getAttribute('data-item-id');
+                if (iid) takeFromBaseWarehouse(iid);
+            });
+        }
+        var fe = document.getElementById('base-warehouse-filter');
+        if (fe) {
+            fe.addEventListener('input', function () {
+                if (!baseWarehousePanelOpen) return;
+                buildBaseWarehouseList(fe.value || '');
+                if (window.UIText && typeof window.UIText.applyDom === 'function') {
+                    var mw = document.getElementById('modal-base-warehouse');
+                    if (mw) window.UIText.applyDom(mw);
+                }
+            });
+        }
+    })();
 
     var combatPanelOpen = false;
     var combatUIState = {
@@ -2868,6 +3133,35 @@
             ? window.SurvivalSkills.getAll()
             : [];
         var IE = window.InventoryEquipment;
+        function addSurvivalSkillLevel(skillId, plus) {
+            if (!IE || typeof IE.getState !== 'function' || !skillId) return;
+            var st = IE.getState();
+            if (!st.skills || typeof st.skills !== 'object') st.skills = {};
+            if (!st.skills[skillId] || typeof st.skills[skillId] !== 'object') st.skills[skillId] = { level: 0, move_usage: {} };
+            var before = Math.max(0, parseInt(st.skills[skillId].level, 10) || 0);
+            var delta = Math.max(1, parseInt(plus, 10) || 1);
+            st.skills[skillId].level = before + delta;
+            if (!st.skills[skillId].move_usage || typeof st.skills[skillId].move_usage !== 'object') st.skills[skillId].move_usage = {};
+            if (window.GameLog) {
+                window.GameLog.log(ui('log.debug.proficiency.skill_level', {
+                    skillId: String(skillId),
+                    before: String(before),
+                    after: String(st.skills[skillId].level),
+                    delta: String(delta)
+                }), 'system');
+            }
+            if (window.CharacterAttributes && typeof window.CharacterAttributes.recalcCharacterStats === 'function') {
+                window.CharacterAttributes.recalcCharacterStats({
+                    getEquipmentState: function () { return IE.getState().equipment; },
+                    getSkillsState: function () { return IE.getState().skills; },
+                    getItemTemplate: IE.getItemTemplate,
+                    getEnchantEntry: IE.getEnchantEntry,
+                    getStrengthLevel: function () { return IE.getSkillLevel('survival_strength'); }
+                });
+            }
+            if (typeof updateStatusPanel === 'function') updateStatusPanel();
+            renderSurvivalModal();
+        }
         list.forEach(function (sk) {
             var row = document.createElement('div');
             row.className = 'survival-row';
@@ -2880,8 +3174,14 @@
                 ? IE.getSkillLevel(sk.id)
                 : 0;
             levelEl.textContent = (lv || 0) + ' 级';
+            var plusBtn = document.createElement('button');
+            plusBtn.type = 'button';
+            plusBtn.className = 'survival-plus-btn';
+            plusBtn.textContent = ui('survival.btn.plus_one');
+            plusBtn.onclick = function () { addSurvivalSkillLevel(sk.id, 1); };
             row.appendChild(nameEl);
             row.appendChild(levelEl);
+            row.appendChild(plusBtn);
             wrap.appendChild(row);
         });
     }
@@ -3728,7 +4028,7 @@
         }
         var char0 = inv.getCharacterForDisplay ? inv.getCharacterForDisplay() : null;
         var tier0 = inv.getItemDisplayTier ? inv.getItemDisplayTier(cell.item_id, char0) : 0;
-        var dispName = inv.getDisplayName ? inv.getDisplayName(tpl, tier0) : cell.item_id;
+        var dispName = inv.getDisplayName ? inv.getDisplayName(tpl, tier0, char0) : cell.item_id;
         showMsg(ui('item.use.ok', { name: dispName }), 'success');
         if (window.Survival && typeof window.Survival.advanceTick === 'function') window.Survival.advanceTick();
         if (typeof updateStatusPanel === 'function') updateStatusPanel();

@@ -42,3 +42,12 @@ alwaysApply: true
 
 - **`data/combat-skills.json`**：`skills` 为 **对象**（按技能 id 键控）。
 - **`data/survival-skills.json`**：`skills` 为 **数组**（每项含 `id`）。二者勿混在同一解析分支。
+
+## UI 快速升一级按钮（实现口径）
+
+- 当前生存技能弹窗会在每个技能行提供 **“+1级”** 按钮（见 `js/scene-app.js` 的 `renderSurvivalModal()`）。
+- 按钮实现应遵循：
+  1. 只改 `InventoryEquipment.getState().skills[skillId].level`（若不存在则先补足技能条目结构：`{ level, move_usage: {} }`）。
+  2. 每次修改后必须调用 `CharacterAttributes.recalcCharacterStats()`，保证属性缓存/派生立刻刷新。
+  3. UI 刷新：重新 `renderSurvivalModal()` 并 `updateStatusPanel()`（若存在）。
+- 不能只改数值不重算；否则 UI/战斗/负重等会表现与技能等级不一致。

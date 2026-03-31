@@ -268,9 +268,9 @@
         if (it && it.item_id) {
             var tpl = IE.getItemTemplate(it.item_id);
             var tier = IE.getItemDisplayTier(it.item_id, char);
-            body.textContent = tpl ? IE.getDisplayName(tpl, tier).slice(0, 2) : it.item_id.slice(0, 2);
-            var name = tpl ? IE.getDisplayName(tpl, tier) : it.item_id;
-            var desc = tpl ? IE.getDisplayDesc(tpl, tier) : '';
+            body.textContent = tpl ? IE.getDisplayName(tpl, tier, char).slice(0, 2) : it.item_id.slice(0, 2);
+            var name = tpl ? IE.getDisplayName(tpl, tier, char) : it.item_id;
+            var desc = tpl ? IE.getDisplayDesc(tpl, tier, char) : '';
             var attrs = formatItemAttributes(tpl, it);
             var tipHtml = buildItemTooltipHtml(name, desc, attrs);
             slot.addEventListener('mouseenter', function (html, el) { return function () { showItemTooltip(html, el); }; }(tipHtml, slot));
@@ -645,6 +645,8 @@
         var abStop = document.getElementById('action-bar-gather-stop');
         var abGround = document.getElementById('action-bar-ground');
         var abDiqi = document.getElementById('action-bar-diqi-huti');
+        var abWarehouse = document.getElementById('action-bar-warehouse');
+        var onWarehouseTile = !!(E.getAnnotationAt && E.getAnnotationAt(st.x, st.y) === '仓库');
         if (abGather && bubbleGather) {
             abGather.style.display = bubbleGather.style.display;
             abGather.disabled = !!bubbleGather.disabled;
@@ -662,11 +664,20 @@
             abDiqi.style.display = bubbleDiqiHuti.style.display;
             abDiqi.textContent = bubbleDiqiHuti.textContent || '';
         }
+        if (abWarehouse) {
+            abWarehouse.style.display = onWarehouseTile ? 'inline-block' : 'none';
+            if (onWarehouseTile) {
+                try {
+                    if (window.UIText && typeof window.UIText.t === 'function') abWarehouse.textContent = window.UIText.t('action.bar.warehouse');
+                } catch (eWh) { /* ignore */ }
+            }
+        }
 
         var anyCtxAb = (abGather && abGather.style.display !== 'none')
             || (abStop && abStop.style.display !== 'none')
             || (abGround && abGround.style.display !== 'none')
-            || (abDiqi && abDiqi.style.display !== 'none');
+            || (abDiqi && abDiqi.style.display !== 'none')
+            || (abWarehouse && abWarehouse.style.display !== 'none');
         var sepAb = document.getElementById('action-bar-sep');
         if (sepAb) sepAb.style.display = anyCtxAb ? 'block' : 'none';
 

@@ -1,0 +1,57 @@
+---
+description: 右上角 Buff HUD 显示/交互口径（含 Tooltip 与空态隐藏）
+globs: index.html,js/scene-app.js,data/ui_text_zhCN.json
+alwaysApply: false
+---
+
+# 右上角 Buff HUD（Agent 规则）
+
+本规则约束右上角 `#buff-hud` 的显示逻辑：显示“自身 Buff”与“最近一次攻击命中的敌人 Buff”，并在两侧都没有可显示 Buff 时隐藏整块面板；同时鼠标移上 Buff chip 要弹出复用的 `#item-tooltip` 说明框。
+
+## DOM 与元素 id（强制）
+
+- 根容器：`#buff-hud`
+- 自身标题：`#buff-hud-self-title`
+- 自身 chips 容器：`#buff-hud-player-chips`
+- 敌人标题：`#buff-hud-enemy-title`
+- 敌人 chips 容器：`#buff-hud-enemy-chips`
+
+## 数据源（强制）
+
+- Buff 存储由 `window.BuffSystem.getState()` 提供，取 `instancesByOwner`
+- `player` 作为“自身 Buff”的 ownerId
+- 敌人 Buff 的 ownerId 使用 `enemyId` 字符串（与 `BuffSystem` 实例中的 `owner_id` 一致）
+
+## 敌人选择口径（强制）
+
+- 首选：`window.SceneCtx.lastAttackedEnemyId`（在 `SceneCtx.actions.attackEnemy(enemyId, ...)` 被更新）
+- 兜底：如果最近攻击目标没有可显示的 Buff，则从 `instancesByOwner` 中挑选“排除 player 后”的 owner，其 `started_tick` 最大者作为展示目标
+
+## 空态隐藏（强制）
+
+- 当“自身 Buff（player）”与“敌人 Buff（chosenEnemyId）”两边都不存在可显示实例时，直接把 `#buff-hud` 设为 `display:none`；
+- 只要任意一边存在可显示实例（`inst.stacks > 0`），就显示整块 HUD。
+
+## 剩余时间显示（建议）
+
+- nowTick：优先用 `GameTime.getState().totalTicks`
+- 每个 chip 显示：
+  - `inst.template.name`（否则 fallback 到 `inst.buff_id`）
+  - `inst.stacks`
+  - 剩余 tick：`max(0, inst.expires_at_tick - nowTick)`，追加 `t` 后缀（若 `expires_at_tick` 不可解析则不显示）
+
+## 悬浮 Tooltip（强制）
+
+- 复用已有物品说明悬浮窗实现：
+  - `showItemTooltip(html, anchorEl)`
+  - `hideItemTooltip()`
+  - `buildItemTooltipHtml(name, desc, attrs)`
+- 规则：对每个 `buff-chip` 绑定 `mouseenter`/`mouseleave`：
+  - `mouseenter`：用 buff 模板的 `desc` 生成 tooltip，并在 attrs 中至少包含 `层数` 与 `剩余 tick`
+  - `mouseleave`：隐藏 tooltip
+
+## 刷新时机（强制）
+
+- `BuffSystem.applyBuff/removeExpiredByTick/setState/applyPendingRestoreIfAny` 在实际变更后要通知 UI 刷新（通常通过 `SceneCtx.updateStatusPanel()`）
+- 若后续你改了 Buff 系统的刷新机制，必须保证右上角 HUD 仍能即时反映 Buff 叠加/移除。
+

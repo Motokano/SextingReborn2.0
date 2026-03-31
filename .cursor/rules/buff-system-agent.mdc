@@ -50,6 +50,11 @@ When editing any Buff/Debuff code, data, or docs, follow `docs/design/18-buff-sy
 - Detailed buff logs/UI are hidden by default.
 - Only show detailed traces when `buff_debug_enabled` is true.
 
+## UI 同步约定（补充）
+
+- 若有任何依赖 Buff 状态渲染的 UI（例如右上角 `#buff-hud`），在 Buff 状态实际变更后需要触发 UI 刷新（通常通过 `SceneCtx.updateStatusPanel()` 或等价入口）。
+- 编辑 `js/buff-system.js` 时，优先确保：`applyBuff`、移除过期（`removeExpiredByTick`）、恢复（`setState/applyPendingRestoreIfAny`）等路径里任何可能引起 HUD 变化的状态更新之后，都能触发一次 UI 刷新；否则 UI 可能短暂滞后或看不到新增/移除的 Buff。
+
 ## Implementation Notes
 
 - Reuse existing recalculation flow for stat-affecting buffs (e.g. `recalcCharacterStats()`).

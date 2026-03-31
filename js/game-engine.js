@@ -139,6 +139,16 @@
         return null;
     }
 
+    /** 地图 annotations 键为 "x,y"，与 data/maps/*.json 中一致 */
+    function getAnnotationAt(x, y) {
+        var map = getMap();
+        if (!map || !map.annotations || typeof map.annotations !== 'object') return null;
+        var key = x + ',' + y;
+        if (!Object.prototype.hasOwnProperty.call(map.annotations, key)) return null;
+        var v = map.annotations[key];
+        return v != null && v !== '' ? String(v) : null;
+    }
+
     function clamp(v, min, max) {
         return Math.max(min, Math.min(max, v));
     }
@@ -259,6 +269,7 @@
         getEntityAt: getEntityAt,
         getNpcAt: getNpcAt,
         getEnemyAt: getEnemyAt,
+        getAnnotationAt: getAnnotationAt,
         isAdjacent: isAdjacent,
         canStandAt: canStandAt,
         jumpTo: jumpTo,

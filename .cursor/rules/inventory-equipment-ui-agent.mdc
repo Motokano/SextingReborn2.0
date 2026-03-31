@@ -1,0 +1,44 @@
+---
+description: 物品栏/背包面板 UI 交互口径（可装备物品的悬停穿戴按钮）
+globs: js/scene-app.js,index.html,js/inventory-equipment.js
+alwaysApply: false
+---
+
+# 物品栏 UI 与装备交互（Agent 规则）
+
+当编辑或扩展**背包/物品栏面板**的交互逻辑时，遵循本节，避免出现“脱下后无法再次穿戴”“点击触发了错误动作”等回归。
+
+## 1) 可装备格子的标记口径（强制）
+
+- 在 `js/scene-app.js` 的 `updateBackpackPanel()` 内部渲染物品格时：
+  - 若该物品模板 `tpl.equip_slot` 存在，则该格必须带样式：`inv-slot-equip`
+  - 该格不应依赖“整格点击”触发穿戴（易与其它按钮/拖拽行为冲突）
+
+## 2) 悬停穿戴按钮口径（强制）
+
+- 背包面板每个可装备格（`.inv-slot.inv-slot-equip`）内部应存在按钮元素：
+  - class：`equip-action-btn`
+  - 默认隐藏，随 hover 显示（CSS：`#modal-backpack .inv-slot.inv-slot-equip:hover .equip-action-btn { display: inline-block; }`）
+- 按钮文案使用 UI key：`ui('inv.equip')`
+
+## 3) 按钮点击时的装备流程（强制）
+
+点击 `equip-action-btn` 时，必须执行：
+1. 从对应容器格位取出物品实例（`InventoryEquipment.takeItemFromContainer(containerType, index)`）
+2. 若装备槽位 `slotId = tpl.equip_slot` 已有旧装备：
+   - 先 `InventoryEquipment.unequip(slotId, posNow)`（旧装备迁移到背包/必要时丢在脚下）
+3. 再 `InventoryEquipment.equip(slotId, itemToEquip)`
+4. 若装备失败：
+   - 尝试把物品放回默认容器（`putItemIntoDefaultContainer`），仍失败则丢到脚下（`addItemToGround`）
+5. 最后刷新 UI：`updateBackpackPanel()` + `render()`
+
+## 4) 事件传播与冲突保护（强制）
+
+- 物品格内的“丢弃按钮”（`inv-slot-drop`）点击必须 `stopPropagation()`，避免触发 `equip-action-btn`。
+- 未来新增任何 slot 内按钮（如“整理/拆解/使用”）也必须遵守同样的事件隔离。
+
+## 5) 与 tooltip 的关系（补充）
+
+- 鼠标悬停物品仍会复用现有 `#item-tooltip` 浮窗（`showItemTooltip/hideItemTooltip`）。
+- `equip-action-btn` 属于独立动作入口，不应改变 tooltip 的显示逻辑。
+

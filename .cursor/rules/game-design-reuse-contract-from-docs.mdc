@@ -1,0 +1,189 @@
+---
+description: 从 GAME_DESIGN.md 与 docs/design/* 提炼的可复用约定（供后续 agent 复用）
+alwaysApply: true
+---
+
+# 游戏设计文档复用约定（Agent 通用合约）
+
+该规则文件总结了本项目设计文档中反复出现、且容易被实现阶段误用的约定；后续 agent 在修改数据/运行时代码/事件或新增功能前，应优先检查本文件，避免“看似合理但口径不一致”。
+
+## 1) 数据与文案：解耦与强校验
+
+- 配置表统一放在项目 `/data/`，并按系统/类型拆分（技能、物品、常数等不要混到同一张表里）。
+- 文案数据化：玩家可见文本不应硬编码在 `index.html` / 业务逻辑中，而应从 `data/ui_text_zhCN.json` 取 key。
+- UI 注入强校验：`js/ui-text.js` 提供 `UIText.setDict()`、`UIText.t()`（缺 key 直接 `throw`）、`UIText.applyDom()`（注入失败会抛错并带节点信息）。因此新增 UI 节点/`data-ui="key"` 时必须先补齐文案 key。
+
+约定依据：`docs/design/14-implementation.md`（index.html 纯壳、UIText 强校验、文案来自 /data）。
+
+## 2) tick 与统一事件口径
+
+- “推动时间前进”的行为统称为 `tick`；非推进时间的仅展示/纯查看动作不算 tick。
+- 所有需要“计时、持续、消耗、冷却”的系统，以 `tick` 为主单位对齐。
+
+约定依据：`docs/design/18-buff-system.md`、`docs/design/06-survival.md`、`docs/design/19-action-system.md`（本项目统一 tick 语义）。
+
+## 3) Buff / Debuff：分层、堆叠、事件、顺序（强制）
+
+### 3.1 生命周期与数值口径
+
+- Buff/Debuff 以 `tick` 驱动；同类可叠加（`stacks += addStacks`）。
+- 重新施加时：追加层数并重置持续时间（`expires_at_tick` 按新持续重算）。
+- `stacks` 超出 `max_stacks` 时必须夹紧（clamp）。
+- 分层 Buff 每次触发消耗固定层数（`consume_layers_fixed`）。
+- 层数消耗到 0：立即删除整个 Buff 实例（不保留空壳）。
+- 同类/事件内的触发顺序固定：
+  1. 过滤候选 Buff（按类型/名称/标签/监听侧）
+  2. `priority` 排序
+  3. 判断是否触发消耗条件（`consume_mode`）
+  4. 先扣层数
+  5. 再应用效果（`apply_mode`）
+  6. 若 `stacks <= 0` 立即移除
+
+约定依据：`docs/design/18-buff-system.md`（18.4-18.8、18.7 执行顺序）。
+
+### 3.2 命中语义（强制）
+
+- 若 `consume_mode = on_hit_roll_success`：只看 `hit_roll_success` 是否为真。
+- 即使命中后伤害最终为 0（例如随后招架导致不造成伤害），只要命中判定成功，仍视为“命中触发消耗”。
+
+约定依据：`docs/design/18-buff-system.md`（18.8 命中口径）。
+
+### 3.3 多段/连击：每段独立事件
+
+- 允许同一 `tick` 内多次攻击结算（连击/多段）。
+- 每一段攻击都必须发出独立事件：**独立 `event_id`**。
+- 分层 Buff 对每段独立触发、独立判定、独立消耗；禁止把同一 tick 内多段攻击合并成一次 Buff 消耗。
+
+约定依据：`docs/design/18-buff-system.md`（18.6、18.5/18.7）。
+
+### 3.4 事件注册：先注册、再定义、后调用（强制）
+
+- 新增或修改 Buff 触发点时必须遵循顺序：
+  1. 先注册：把 `event_kind` / `event_name` / `tags` 写入 `data/editor/buff_event_registry.json`
+  2. 再定义：在 `data/buffs.json` 使用已注册的配置
+ 3. 后调用：运行时触发时必须使用同名 `event_kind` / `event_name` / `tags`
+- 禁止“代码直接发新事件名但注册表未登记”。
+
+约定依据：`docs/design/18-buff-system.md`（18.12 事件注册约定）。
+
+### 3.5 调试可观测性
+
+- 默认隐藏 Buff 触发明细日志。
+- 仅当 `buff_debug_enabled`（或项目等价开关）开启时才输出触发明细/调试面板数据。
+
+约定依据：`docs/design/18-buff-system.md`（18.9/18.13）。
+
+## 4) 技能系统：技能 ID、成长上限、招式熟练度、装配口径（强制）
+
+### 4.1 技能 ID 与等级缺省
+
+- 本作技能在代码与配置中通过“技能 ID”引用；未习得技能等级视为 0。
+- 力量等技能 ID 使用明确字段（示例：`survival_strength`）。
+- 生活技能统一使用 `life_` 前缀（避免技能类型混写）。
+
+约定依据：`docs/design/11-skills.md`（实现约定（技能 ID）、生活技能前缀）。
+
+### 4.2 战斗技能模板上限与可练上限
+
+- 战斗技能模板等级上限为 1000（全局常量可覆盖），曲线以模板上限数学封顶；通过存档字段 `skill_max_level_bonus` 可抬升可练/展示上限（例如唯一事件到 1001）。
+- 所有判断“能否升到 L+1 / 是否夹紧”的逻辑必须使用开放接口（如 `getProgressionSkillMaxLevel`），禁止直接写死 `1000` 作为唯一上界。
+- 伤害/招架/潜能等曲线计算必须使用 `getSkillLevelForStatCurves`（例如超额级 1001 时曲线仍按模板满级数值）。
+
+约定依据：`docs/design/11-skills.md`（技能有效等级上限/开放接口）、`docs/design/14-implementation.md`（技能有效等级上限开放接口）。
+
+### 4.3 招式熟练度模型
+
+- 只对拥有招式槽的“徒手/兵器主动战斗技能”使用招式熟练度与 `R_move`。
+- 招式熟练度计数规则：仅当该招式的释放中至少一段命中并完成伤害结算时，该招式使用次数 +1（失败不涨）。
+- 单个招式满熟练度：使用 50000 次 = 100%。
+- 招式熟练度比例：
+  - `R_move = min(P / 50000, 1)`
+- 该招式在技能等级 `L` 与熟练度比例 `R_move` 下的最终威力系数：
+  - `Final_move = Base(L) * (1 + R_move)`
+- 熟练度只在伤害链的“当前出手招式”上生效，不使用整条战斗技能总熟练度做伤害乘区（避免口径混用）。
+
+约定依据：`docs/design/11-skills.md`（招式熟练度参与伤害）。
+
+### 4.4 后遗症/后天奖励与重算
+
+- 后遗症定义在 `/data/post-effects.json`，装配在“被动槽/招式槽”上生效；解锁仅表示“获得装配资格”，真正生效需该槽 `post_effect_slot_max > 0` 且已装配。
+- “单招式熟练度 -> 后遗症”由 `post_effect_unlocks` 给出，条件使用同一套 `R_move`（与 50000 次满一致）。
+- “单招式熟练度 -> 后天五维奖励”由 `proficiency_attr_unlocks` 配置，达到阈值一次性累加整点数。
+- 后天属性贡献与装配是否装备无关：只要存档中该技能条目的 `move_usage` 达阈值就生效；需要调用统一重算入口（如 `recalcCharacterStats`）更新缓存。
+
+约定依据：`docs/design/11-skills.md`（后遗症与招式槽、proficiency_attr_unlocks 口径）、`docs/design/05-character-attributes.md`（recalc Character Stats 统一重算与缓存）。
+
+## 5) 后遗症装配唯一性与先手例外（强制）
+
+- 同一 `post_effect_id` 在同一角色上、同一出招肢（`lhand`/`rhand`/`lfoot`/`rfoot`）范围内至多装配一份：四肢可以各装一次，但同一肢体禁止重复装配。
+- 后遗症 `effect_type = initiative_always_first` 的“先手例外”规则：
+  - 若攻击方本击所出的 `move_id` 对应出招肢上已装配该后遗症，则先后手比较中固定攻击方严格先于防守方（不比较双方速度）。
+  - 若防守方亦有对称规则则相互抵消，回退速度比较；若仍相同则维持“同时”。
+
+约定依据：`docs/design/11-skills.md`（同肢同 id 唯一、先手例外），`docs/design/07-combat-core.md`（先手例外）。
+
+## 6) 身体部位损毁：分摊、上限、已损毁重分配（强制）
+
+- 每个部位有损毁值与损毁上限；损毁满后部位失去功能（四肢还包括无法出招等，见技能篇）。
+- 已损毁部位再受击时：
+  - 先计算本次最终伤害得到损毁增加值 `Q`（与伤害扣血同源，并向下取整）。
+  - 若命中部位未损毁：`Q` 全部加到该部位（仍受上限封顶）。
+  - 若命中部位已损毁：不得继续加在该部位；将 `Q` 分摊到其余“未损毁”的部位，分摊顺序为：
+    - `head → chest → abdomen → lhand → rhand → lfoot → rfoot`
+  - 若所有部位均已损毁：`Q` 作废，不累加。
+
+约定依据：`docs/design/09-body-parts.md`（已损毁部位再受击时的损毁重分配与顺序）。
+
+## 7) 野外采集点：元素 id、采集流程、是否枯竭（强制）
+
+### 7.1 元素 id 与产出关联
+
+- 地图格子元素类型/实体 id：
+  - `gathering_bush`：灌木丛
+  - `gathering_grass`：草丛
+- 配置表通过这些 id 关联采集产出表与采集规则。
+
+约定依据：`docs/design/11-skills.md`（采集点类型与地图调用）。
+
+### 7.2 采集流程（灌木/草丛共用）
+
+1. 前置条件：当前格为采集点；背包未满且体力 > 0，否则不可采集（不扣体力、不推进 tick）。
+2. 成功率判定：`actual = base + base * (proficiency% * 0.003)`，仅当成功判定通过后才进入产出判定。
+3. 产出：按产出表权重抽取 1 行得到 `item_id` 与基础品质档位，再按熟练度做一次品质上修（每高 5% 对应一次“上修一档”概率）。
+4. 体力消耗：成功/失败都消耗固定体力（当前约定与 06 生存一致）。
+5. 熟练度计数：成功采集 +1 次计数（与生活技能满熟练口径一致）。
+6. 可挂机：成功率判定与产出结算在挂机时按 tick 周期重复执行。
+
+约定依据：`docs/design/11-skills.md`（8.2.2a 采集技能与采集点机制）。
+
+### 7.3 枯竭规则的冲突处理
+
+- `docs/design/11-skills.md` 明确：灌木丛与草丛“不设采空、可一直采”，唯一限制是背包满或体力空。
+- 若 `docs/design/02-regions.md` 仍出现“采完后按行动回合数刷新/枯竭刷新”类表述，应视为与当前采集技能口径冲突：后续落盘时以“不枯竭”口径为准。
+
+约定依据：`docs/design/11-skills.md`（采空口径），冲突依据：`docs/design/02-regions.md`（采集点刷新表述）。
+
+## 8) 战斗核心：先手、资源不足仍出手、tick 末击退坍缩（强制）
+
+### 8.1 tick 末位移队列坍缩
+
+- 若本 tick 末队列里存在多条击退候选，只执行一条：
+  - 先在候选中取 `cells` 值最大的子集
+  - 在该子集内以攻击方“筋骨实际值更低者优先”
+  - 筋骨相同则“攻击方战斗速度更低者优先”（取整后的速度参与）
+  - 再相同则 `event_id` 字典序最小
+
+约定依据：`docs/design/07-combat-core.md`（tick 末位移/击退队列坍缩）。
+
+### 8.2 资源不足仍出手（按槽成数）
+
+- 当前击成数 `k` 取“玩家本击所轮到招式槽位保存的 `power_level`”，不是默认值。
+- 若按此 `k` 计算的应扣气力/底气大于当前剩余：本击仍走完整命中/招架/伤害流程；只在资源扣除时用 `min(应扣量, 当前资源)`，并不影响伤害计算口径。
+
+约定依据：`docs/design/07-combat-core.md`（资源不足仍出手）。
+
+# 使用方式（给后续 agent）
+
+- 修改 Buff：先看第 3 节，再看 18-buff-system 的具体 effect_type/consume_mode。
+- 修改 招式/后遗症/熟练度：先看第 4、5 节，确保 `R_move` 与 `post_effect_unlocks` / `proficiency_attr_unlocks` 使用同一套阈值口径与重算入口。
+- 修改 野外采集点：先看第 7 节，避免把 `02-regions` 的“刷新说法”误当成采空规则。

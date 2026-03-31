@@ -17,6 +17,15 @@ alwaysApply: false
 
 - **护体阶段**只挂在 **`melee_hit_player_defender`**：**招架/卸力之后**、**`damage_stub` 之前**；handler 如 **`builtin.diqi_shield_player`**。
 - **勿**在 **`melee_hit_enemy_defender`** 加护体（防方非玩家，逻辑无意义）。
+- **命中 roll 后叠 Buff**：在近战“命中 roll 成功判定”之后、招架之前插入 `builtin.apply_move_hit_roll_buffs`（或等价阶段）。
+  - 读取 `/data/combat-skills.json` 中招式字段：
+    - `on_hit_roll_success_apply_buff_actor`
+    - `on_hit_roll_success_apply_buff_target`
+  - 对应地调用 `BuffSystem.applyBuff(ownerId, buffId, sourceId, { tick })`
+  - owner 的约定：
+    - actor：玩家为 `player`，敌人为 `enemyId` 字符串
+    - target：玩家为 `player`，敌人为 `enemyId` 字符串（来自 `ctx.defender.enemyId`）
+  - 只在 `hitRollSuccess === true` 时触发（对齐 `consume_mode = on_hit_roll_success` 的命中语义）。
 - 实现约定：`ctx.defender.kind === 'player'` 时才调用 **`Survival.applyDiqiShieldToDamage`**；减伤比例来自 **`combat_basic_breath` → `hub_actions` → `id === 'diqi_huti'` → `shield_tri_type_damage_reduce_pct`**，缺省需安全 fallback（如 **0.25**）。
 - **最终伤害**优先 **`ctx.damageAfterDiqiShield`**，再回退 **`damageAfterParry` / `rawDamage`**。
 - 发射 **`diqi_shield_absorbed`** 等 **combat** 事件前，**必须**已在 **`buff_event_registry.json`** 注册对应 **`event_name` / `tags`**。
