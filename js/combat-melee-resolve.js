@@ -250,6 +250,21 @@
 
         var qiIntended = computeIntendedResourceCost(qiMax, move.qi_li_cost, powerK);
         var diqiIntended = computeIntendedResourceCost(diqiMax, move.diqi_cost, powerK);
+        var qiCurrent = Infinity;
+        var diqiCurrent = Infinity;
+        if (Surv && typeof Surv.getState === 'function') {
+            var st0 = Surv.getState() || {};
+            qiCurrent = st0.qi_li_current != null ? Number(st0.qi_li_current) : 0;
+            diqiCurrent = st0.diqi_current != null ? Number(st0.diqi_current) : 0;
+            if (!isFinite(qiCurrent) || qiCurrent < 0) qiCurrent = 0;
+            if (!isFinite(diqiCurrent) || diqiCurrent < 0) diqiCurrent = 0;
+        }
+        var insufficientQi = qiIntended > 0 && qiCurrent < qiIntended;
+        var insufficientDiqi = diqiIntended > 0 && diqiCurrent < diqiIntended;
+        var forceZeroDamageByResourceInsufficient = insufficientQi || insufficientDiqi;
+        if (forceZeroDamageByResourceInsufficient) {
+            rawDamage = 0;
+        }
 
         var qiSpent = 0;
         var diqiSpent = 0;
@@ -274,10 +289,6 @@
             });
         }
 
-        if (IE && typeof IE.incrementSkillMoveUsage === 'function') {
-            IE.incrementSkillMoveUsage(skillId, moveId, 1);
-        }
-
         return {
             rawDamage: rawDamage,
             hitRollSuccess: hitRollSuccess,
@@ -296,7 +307,11 @@
             qiIntended: qiIntended,
             qiSpent: qiSpent,
             diqiIntended: diqiIntended,
-            diqiSpent: diqiSpent
+            diqiSpent: diqiSpent,
+            forceZeroDamageByResourceInsufficient: forceZeroDamageByResourceInsufficient,
+            insufficientQiForIntendedCost: insufficientQi,
+            insufficientDiqiForIntendedCost: insufficientDiqi,
+            proficiencyDelta: 1
         };
     }
 

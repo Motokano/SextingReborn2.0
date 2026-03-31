@@ -115,6 +115,9 @@
     }
 
     function phaseEmitHitRoll(ctx, phase) {
+        if (global.CombatVariants && typeof global.CombatVariants.applyToActiveContext === 'function') {
+            global.CombatVariants.applyToActiveContext(ctx);
+        }
         if (ctx && ctx.defender && ctx.defender.kind === 'player' && isPlayerInSitMeditationState()) {
             // 行气/调息中被选为受击目标：命中强制成功，并标记本 tick 行气收益作废。
             ctx.hitRollSuccess = true;
@@ -137,6 +140,9 @@
     }
 
     function phaseParryEnemySimple(ctx, phase) {
+        if (global.CombatVariants && typeof global.CombatVariants.applyToParryContext === 'function') {
+            global.CombatVariants.applyToParryContext(ctx);
+        }
         var d = ctx.defender || {};
         var rate = typeof d.parry_rate === 'number' ? d.parry_rate : (parseFloat(d.parry_rate) || 0);
         var red = typeof d.parry_damage_reduce === 'number' ? d.parry_damage_reduce : (parseFloat(d.parry_damage_reduce) || 0);
@@ -207,6 +213,13 @@
         }
         ctx.guardLimb = pctx.guardLimb;
         ctx.parrySkillId = pctx.parrySkillId;
+        if (global.InventoryEquipment && typeof global.InventoryEquipment.getParryVariantIdsForLimb === 'function') {
+            ctx.defender = ctx.defender || {};
+            ctx.defender.parryVariantIds = global.InventoryEquipment.getParryVariantIdsForLimb(pctx.guardLimb);
+        }
+        if (global.CombatVariants && typeof global.CombatVariants.applyToParryContext === 'function') {
+            global.CombatVariants.applyToParryContext(ctx);
+        }
         var isTorso = CP.isTorsoHit && CP.isTorsoHit(ctx.hitPart);
         if (typeof CP.logParryGuardLimb === 'function') CP.logParryGuardLimb(ctx.hitPart, pctx.guardLimb, !!isTorso);
         emitCombat(phase.buff_event_guard || 'parry_guard_limb_resolved', ['parry', 'parry_guard', isTorso ? 'torso_guard' : 'limb_struck'], {
@@ -374,6 +387,9 @@
             dmg = ctx.damageAfterEnemyMitigation;
         } else {
             dmg = ctx.damageAfterDiqiShield != null ? ctx.damageAfterDiqiShield : (ctx.damageAfterParry != null ? ctx.damageAfterParry : ctx.rawDamage);
+        }
+        if (ctx.forceZeroDamageByResourceInsufficient) {
+            dmg = 0;
         }
         dmg = Math.max(0, Math.floor(Number(dmg) || 0));
         ctx.finalDamage = dmg;

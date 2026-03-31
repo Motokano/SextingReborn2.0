@@ -410,6 +410,7 @@
             fetch(base + 'default_equipment.json').then(function (r) { return r.ok ? r.json() : {}; }).catch(function () { return {}; }),
             fetch(base + 'combat-skills.json').then(function (r) { return r.ok ? r.json() : { constants: {}, categories: [], skills: {} }; }).catch(function () { return { constants: {}, categories: [], skills: {} }; }),
             fetch(base + 'combat-pipeline.json').then(function (r) { return r.ok ? r.json() : { pipelines: {} }; }).catch(function () { return { pipelines: {} }; }),
+            fetch(base + 'move-variants.json').then(function (r) { return r.ok ? r.json() : { variants: {} }; }).catch(function () { return { variants: {} }; }),
             fetch(base + 'post-effects.json').then(function (r) { return r.ok ? r.json() : {}; }).catch(function () { return {}; }),
             fetch(base + 'survival-skills.json').then(function (r) { return r.ok ? r.json() : null; }).catch(function () { return null; }),
             fetch(base + 'gathering_point_instances.json').then(function (r) { return r.ok ? r.json() : null; }).catch(function () { return null; }),
@@ -423,7 +424,7 @@
                 gathering_points: arr[1],
                 loot_tables: arr[2],
                 items: arr[3],
-                gathering_point_instances: arr[12] || null
+                gathering_point_instances: arr[13] || null
             });
             if (window.Survival) window.Survival.setConfig(arr[4]);
             var survCfg = arr[4] || {};
@@ -444,11 +445,12 @@
             };
             if (window.CombatSkills && arr[8]) window.CombatSkills.setConfig(arr[8]);
             if (window.CombatPipeline && arr[9]) window.CombatPipeline.setConfig(arr[9]);
-            if (window.PostEffects && arr[10]) window.PostEffects.setTable(arr[10]);
-            if (window.SurvivalSkills && typeof window.SurvivalSkills.setTable === 'function' && arr[11]) {
-                window.SurvivalSkills.setTable(arr[11]);
+            if (window.CombatVariants && arr[10]) window.CombatVariants.setTable(arr[10]);
+            if (window.PostEffects && arr[11]) window.PostEffects.setTable(arr[11]);
+            if (window.SurvivalSkills && typeof window.SurvivalSkills.setTable === 'function' && arr[12]) {
+                window.SurvivalSkills.setTable(arr[12]);
             }
-            if (window.CombatEnemies && arr[13]) window.CombatEnemies.setTable(arr[13]);
+            if (window.CombatEnemies && arr[14]) window.CombatEnemies.setTable(arr[14]);
             var defEqFetched = (arr[7] && typeof arr[7] === 'object') ? arr[7] : {};
             var defaultEquipMerged = {};
             var sk;
@@ -2240,6 +2242,21 @@
         return out;
     }
 
+    function safeSetCombatState(patch, failMsg) {
+        if (!IE || typeof IE.setCombatState !== 'function') return false;
+        try {
+            var ok = IE.setCombatState(patch);
+            if (ok === false) {
+                showMsg(failMsg || '战斗配置不合法，已拒绝保存。', 'warn');
+                return false;
+            }
+            return true;
+        } catch (e) {
+            showMsg((failMsg || '战斗配置不合法，已拒绝保存。') + (e && e.message ? (' ' + e.message) : ''), 'warn');
+            return false;
+        }
+    }
+
     /**
      * 地图近战：按各肢 priority 档位（仅 1～4 档）加权随机选肢，档位数字越小越常被抽到；招式来自该肢 move_sequences 轮询。
      * ctxMeta 同时给出 skill_id、limb_id、move_id 时不抽样、不推进光标。
@@ -2485,7 +2502,7 @@
                             });
                             var patchLimbs = {};
                             patchLimbs[limbId] = { priority: v };
-                            IE.setCombatState({ limbs: patchLimbs });
+                            safeSetCombatState({ limbs: patchLimbs }, '出手顺位保存失败。');
                         });
                     });
                 }(lid));
@@ -2570,6 +2587,27 @@
             return false;
         }
 
+        function getVariantName(variantId) {
+            if (!variantId || !window.CombatVariants || typeof window.CombatVariants.getVariant !== 'function') return '';
+            var v = window.CombatVariants.getVariant(variantId);
+            if (!v) return String(variantId);
+            if (v.name_key && window.UIText && typeof window.UIText.t === 'function') return window.UIText.t(v.name_key);
+            return v.id || v.variant_id || String(variantId);
+        }
+
+        function variantScopeAllows(meta, target) {
+            var s = String((meta && meta.assist_scope) || 'active_moves');
+            if (s === 'both') return true;
+            if (target === 'active') return s === 'active_moves';
+            if (target === 'parry') return s === 'parry';
+            return false;
+        }
+
+        function getParryVariantSlotCap(parrySkillId) {
+            var lv = IE && parrySkillId ? (IE.getSkillLevel(parrySkillId) || 0) : 0;
+            return Math.max(0, Math.min(5, Math.floor(Number(lv) / 200)));
+        }
+
         var seqBox = document.getElementById('move-sequence');
         var limbPartForSeq = combatUIState.curPart || 'lhand';
         var limbRowForSeq = combatState.limbs && combatState.limbs[limbPartForSeq];
@@ -2589,15 +2627,19 @@
             postSeq = postSeq.slice(0, maxSlots);
             for (var i = 0; i < maxSlots; i++) {
                 var rawMoveId = seq[i] ? String(seq[i]) : '';
+                var isVariantSlot = rawMoveId.indexOf('variant:') === 0;
+                var variantIdAtSlot = isVariantSlot ? rawMoveId.slice('variant:'.length) : '';
                 var moveObj = null;
-                if (rawMoveId) {
+                if (rawMoveId && !isVariantSlot) {
                     moveObj = unlocked.find(function (m) { return m.id === rawMoveId; }) || null;
                 }
-                var moveName = moveObj ? moveObj.name : (rawMoveId ? rawMoveId : ui('combat.seq.slot_empty'));
+                var moveName = isVariantSlot
+                    ? ('[变式] ' + getVariantName(variantIdAtSlot))
+                    : (moveObj ? moveObj.name : (rawMoveId ? rawMoveId : ui('combat.seq.slot_empty')));
                 var useCount = (moveUsage && moveObj && moveUsage[moveObj.id] != null) ? moveUsage[moveObj.id] : 0;
                 var nodeProf = moveObj ? Math.floor(CS.getMoveProficiencyRatio(useCount) * 100) : 0;
-                var postIdAtSlot = (rawMoveId && moveObj) ? (postSeq[i] || null) : null;
-                var postText = postIdAtSlot ? getPostEffectName(postIdAtSlot) : (rawMoveId ? '无后遗症' : '—');
+                var postIdAtSlot = (rawMoveId && moveObj && !isVariantSlot) ? (postSeq[i] || null) : null;
+                var postText = postIdAtSlot ? getPostEffectName(postIdAtSlot) : (rawMoveId && !isVariantSlot ? '无后遗症' : '—');
                 var slotCap = moveObj && moveObj.post_effect_slot_max != null ? Math.max(0, parseInt(moveObj.post_effect_slot_max, 10) || 0) : 0;
                 var node = document.createElement('div');
                 node.className = 'combat-move-node' + (combatUIState.editingSlot === i ? ' editing' : '') + (!rawMoveId ? ' slot-empty' : '');
@@ -2607,7 +2649,7 @@
                 btnPost.type = 'button';
                 btnPost.className = 'btn-post-slot';
                 btnPost.textContent = '后遗症';
-                if (slotCap < 1 || !moveObj || !moveObj.id || !rawMoveId) {
+                if (slotCap < 1 || !moveObj || !moveObj.id || !rawMoveId || isVariantSlot) {
                     btnPost.disabled = true;
                     btnPost.title = !rawMoveId ? ui('combat.seq.slot_empty') : '该招式没有后遗症槽位';
                 } else {
@@ -2660,8 +2702,51 @@
                 }(i, node);
                 seqBox.appendChild(node);
             }
+
+            // 主动链变式与招式共槽，直接在槽位中编辑，不单独渲染列表。
         } else if (seqBox) {
             seqBox.innerHTML = '';
+            // 招架槽下显示招架变式槽
+            if (!isAcupointMode && combatUIState.curSlot === 'parry' && limbRowForSeq && limbRowForSeq.parry) {
+                var parrySkillIdForLimb = limbRowForSeq.parry;
+                var capPv = getParryVariantSlotCap(parrySkillIdForLimb);
+                var pWrap = document.createElement('div');
+                pWrap.className = 'combat-variant-wrap';
+                var pTitle = document.createElement('div');
+                pTitle.className = 'combat-variant-title';
+                pTitle.textContent = ui('combat.variant.parry.title', { cur: capPv, max: 5 });
+                pWrap.appendChild(pTitle);
+                if (capPv <= 0) {
+                    var hint = document.createElement('div');
+                    hint.className = 'picker-empty-hint';
+                    hint.textContent = ui('combat.variant.parry.locked_hint');
+                    pWrap.appendChild(hint);
+                } else {
+                    var pSeqWrap = document.createElement('div');
+                    pSeqWrap.className = 'combat-move-sequence combat-variant-sequence';
+                    var pSeq = (combatState.parry_variant_sequences && Array.isArray(combatState.parry_variant_sequences[limbPartForSeq]))
+                        ? combatState.parry_variant_sequences[limbPartForSeq].slice()
+                        : [];
+                    while (pSeq.length < capPv) pSeq.push(null);
+                    pSeq = pSeq.slice(0, capPv);
+                    for (var ps = 0; ps < capPv; ps++) {
+                        var prow = document.createElement('div');
+                        var pvid = pSeq[ps];
+                        prow.className = 'combat-move-node' + (pvid ? '' : ' slot-empty');
+                        var pname = pvid ? getVariantName(pvid) : ui('combat.seq.slot_empty');
+                        prow.innerHTML = '<span class="node-index">' + String(ps + 1).padStart(2, '0') + '</span><span class="node-name">' + pname + '</span>';
+                        (function (slotIndex, anchorEl) {
+                            prow.onclick = function (e) {
+                                e.stopPropagation();
+                                openParryVariantPicker(limbPartForSeq, parrySkillIdForLimb, slotIndex, anchorEl);
+                            };
+                        })(ps, prow);
+                        pSeqWrap.appendChild(prow);
+                    }
+                    pWrap.appendChild(pSeqWrap);
+                }
+                seqBox.appendChild(pWrap);
+            }
         }
 
         var targetEl = document.getElementById('target-indicator');
@@ -2798,7 +2883,7 @@
             var c = 0;
             var fi;
             for (fi = 0; fi < s.length; fi++) {
-                if (s[fi]) c++;
+                if (s[fi] && String(s[fi]).indexOf('variant:') !== 0) c++;
             }
             return c;
         }
@@ -2842,7 +2927,7 @@
                 postArr[idx] = null;
                 combat.post_effect_sequences[limbId][combatUIState.curSkillId] = postArr.slice();
             }
-            IE.setCombatState({ move_sequences: patchMs, post_effect_sequences: combat.post_effect_sequences });
+            if (!safeSetCombatState({ move_sequences: patchMs, post_effect_sequences: combat.post_effect_sequences }, ui('combat.seq.clear_last_forbidden'))) return;
             combatUIState.editingSlot = null;
             picker.classList.remove('show');
             renderCombatModal();
@@ -2869,7 +2954,7 @@
                 seq[idx] = m.id;
                 var patchMs = {};
                 patchMs[part] = seq;
-                IE.setCombatState({ move_sequences: patchMs });
+                if (!safeSetCombatState({ move_sequences: patchMs }, ui('combat.seq.clear_last_forbidden'))) return;
 
                 // 招式替换后，若该槽已装配后遗症但不再匹配 valid_*，则自动清空该槽
                 var limbId = part;
@@ -2879,7 +2964,7 @@
                     var pe = window.PostEffects.getPostEffect(postSeq[idx]);
                     if (pe && typeof window.PostEffects.validateSocket === 'function' && !window.PostEffects.validateSocket(pe, { skillId: combatUIState.curSkillId, moveId: m.id })) {
                         postSeq[idx] = null;
-                        IE.setCombatState({ post_effect_sequences: combat.post_effect_sequences });
+                        if (!safeSetCombatState({ post_effect_sequences: combat.post_effect_sequences }, '后遗症保存失败。')) return;
                     }
                 }
                 combatUIState.editingSlot = null;
@@ -2888,6 +2973,62 @@
             };
             listEl.appendChild(btn);
         });
+        if (window.CombatVariants && typeof window.CombatVariants.getAllVariants === 'function') {
+            var allVar = window.CombatVariants.getAllVariants() || [];
+            allVar.forEach(function (v) {
+                if (!v) return;
+                var vid = String(v.variant_id || v.id || '');
+                if (!vid) return;
+                var scope = String(v.assist_scope || 'active_moves');
+                if (scope !== 'active_moves' && scope !== 'both') return;
+                var sid = v.source_skill_id ? String(v.source_skill_id) : '';
+                var minLv = parseInt(v.min_source_level, 10);
+                if (!isFinite(minLv)) minLv = 0;
+                if (sid && IE.getSkillLevel(sid) < minLv) return;
+                var token = 'variant:' + vid;
+                var isDup = seqPreview.indexOf(token) >= 0;
+                var btnV = document.createElement('button');
+                btnV.type = 'button';
+                var vName = (v.name_key && window.UIText && typeof window.UIText.t === 'function') ? window.UIText.t(v.name_key) : vid;
+                btnV.innerHTML = '<span>[变式] ' + vName + '</span><span class="move-prof">被动</span>';
+                btnV.disabled = isDup;
+                btnV.title = isDup ? '同肢同变式唯一' : '';
+                btnV.onclick = function () {
+                    var combat = IE.getCombatState();
+                    var seq = (combat.move_sequences && Array.isArray(combat.move_sequences[part])) ? combat.move_sequences[part].slice() : [];
+                    var mxSel = CS.getMaxSlotsForLevel(combatUIState.curSkillId, IE.getSkillLevel(combatUIState.curSkillId));
+                    while (seq.length < mxSel) seq.push('');
+                    seq = seq.slice(0, mxSel);
+                    while (seq.length <= idx) seq.push('');
+                    for (var di = 0; di < seq.length; di++) {
+                        if (di !== idx && seq[di] === token) {
+                            showMsg('同肢同变式唯一。', 'warn');
+                            return;
+                        }
+                    }
+                    seq[idx] = token;
+                    if (countFilledMoveSlots(seq) < 1) {
+                        showMsg(ui('combat.seq.clear_last_forbidden'), 'warn');
+                        return;
+                    }
+                    var patchMs = {};
+                    patchMs[part] = seq;
+                    if (!safeSetCombatState({ move_sequences: patchMs }, ui('combat.seq.clear_last_forbidden'))) return;
+                    // 该槽改成变式后，自动清空后遗症
+                    var limbId = part;
+                    var postSeqMap = (combat.post_effect_sequences && combat.post_effect_sequences[limbId]) ? combat.post_effect_sequences[limbId] : null;
+                    var postSeq = postSeqMap && Array.isArray(postSeqMap[combatUIState.curSkillId]) ? postSeqMap[combatUIState.curSkillId] : null;
+                    if (postSeq && postSeq[idx]) {
+                        postSeq[idx] = null;
+                        safeSetCombatState({ post_effect_sequences: combat.post_effect_sequences }, '后遗症保存失败。');
+                    }
+                    combatUIState.editingSlot = null;
+                    picker.classList.remove('show');
+                    renderCombatModal();
+                };
+                listEl.appendChild(btnV);
+            });
+        }
         if (!listEl.children.length) {
             var emptyHint = document.createElement('div');
             emptyHint.className = 'picker-empty-hint';
@@ -2896,6 +3037,89 @@
             emptyHint.style.color = '#a8a29e';
             emptyHint.textContent = ui('combat.seq.no_matching_moves');
             listEl.appendChild(emptyHint);
+        }
+        var rect = anchorEl.getBoundingClientRect();
+        picker.style.left = (rect.left) + 'px';
+        picker.style.top = (rect.top - 200) + 'px';
+        picker.classList.add('show');
+    }
+
+    function openParryVariantPicker(limbId, parrySkillId, slotIndex, anchorEl) {
+        var picker = document.getElementById('picker-move');
+        var listEl = document.getElementById('picker-list');
+        if (!picker || !listEl || !IE || !window.CombatVariants || typeof window.CombatVariants.getAllVariants !== 'function') return;
+        listEl.innerHTML = '';
+        var cap = Math.max(0, Math.min(5, Math.floor((IE.getSkillLevel(parrySkillId) || 0) / 200)));
+        if (slotIndex >= cap) return;
+        var combat = IE.getCombatState();
+        if (!combat.parry_variant_sequences || typeof combat.parry_variant_sequences !== 'object') combat.parry_variant_sequences = {};
+        var cur = Array.isArray(combat.parry_variant_sequences[limbId]) ? combat.parry_variant_sequences[limbId].slice() : [];
+        while (cur.length < cap) cur.push(null);
+        cur = cur.slice(0, cap);
+
+        var btnClear = document.createElement('button');
+        btnClear.type = 'button';
+        btnClear.textContent = '清空此槽';
+        btnClear.disabled = !cur[slotIndex];
+        btnClear.onclick = function () {
+            var c2 = IE.getCombatState();
+            if (!c2.parry_variant_sequences || typeof c2.parry_variant_sequences !== 'object') c2.parry_variant_sequences = {};
+            var arr = Array.isArray(c2.parry_variant_sequences[limbId]) ? c2.parry_variant_sequences[limbId].slice() : [];
+            while (arr.length < cap) arr.push(null);
+            arr = arr.slice(0, cap);
+            arr[slotIndex] = null;
+            c2.parry_variant_sequences[limbId] = arr;
+            if (!safeSetCombatState({ parry_variant_sequences: c2.parry_variant_sequences }, '招架变式保存失败。')) return;
+            picker.classList.remove('show');
+            renderCombatModal();
+        };
+        listEl.appendChild(btnClear);
+
+        var all = window.CombatVariants.getAllVariants() || [];
+        var added = 0;
+        all.forEach(function (v) {
+            if (!v) return;
+            var id = String(v.variant_id || v.id || '');
+            if (!id) return;
+            var scope = String(v.assist_scope || 'active_moves');
+            if (scope !== 'parry' && scope !== 'both') return;
+            var minLv = parseInt(v.min_source_level, 10);
+            if (!isFinite(minLv)) minLv = 0;
+            var sid = v.source_skill_id ? String(v.source_skill_id) : '';
+            if (sid && IE.getSkillLevel(sid) < minLv) return;
+            var duplicate = false;
+            for (var i = 0; i < cur.length; i++) {
+                if (i === slotIndex) continue;
+                if (cur[i] === id) { duplicate = true; break; }
+            }
+            var btn = document.createElement('button');
+            btn.type = 'button';
+            var nm = (v.name_key && window.UIText && typeof window.UIText.t === 'function') ? window.UIText.t(v.name_key) : id;
+            btn.textContent = nm + (duplicate ? '（同肢已存在）' : '');
+            btn.disabled = duplicate;
+            btn.onclick = function () {
+                var c2 = IE.getCombatState();
+                if (!c2.parry_variant_sequences || typeof c2.parry_variant_sequences !== 'object') c2.parry_variant_sequences = {};
+                var arr = Array.isArray(c2.parry_variant_sequences[limbId]) ? c2.parry_variant_sequences[limbId].slice() : [];
+                while (arr.length < cap) arr.push(null);
+                arr = arr.slice(0, cap);
+                arr[slotIndex] = id;
+                c2.parry_variant_sequences[limbId] = arr;
+                if (!safeSetCombatState({ parry_variant_sequences: c2.parry_variant_sequences }, '招架变式保存失败。')) return;
+                picker.classList.remove('show');
+                renderCombatModal();
+            };
+            listEl.appendChild(btn);
+            added++;
+        });
+        if (!added) {
+            var hint = document.createElement('div');
+            hint.className = 'picker-empty-hint';
+            hint.style.padding = '8px 12px';
+            hint.style.fontSize = '12px';
+            hint.style.color = '#a8a29e';
+            hint.textContent = '没有可装配的招架变式';
+            listEl.appendChild(hint);
         }
         var rect = anchorEl.getBoundingClientRect();
         picker.style.left = (rect.left) + 'px';
@@ -2963,7 +3187,7 @@
         addOption('清空槽位', '移除当前装配', function () {
             postSeq[slotIdx] = null;
             combat.post_effect_sequences[limbId][skillId] = postSeq.slice();
-            IE.setCombatState({ post_effect_sequences: combat.post_effect_sequences });
+            if (!safeSetCombatState({ post_effect_sequences: combat.post_effect_sequences }, '后遗症保存失败。')) return;
             picker.classList.remove('show');
             renderCombatModal();
         });
@@ -2985,7 +3209,7 @@
                     }
                     postSeq[slotIdx] = postId;
                     combat.post_effect_sequences[limbId][skillId] = postSeq.slice();
-                    IE.setCombatState({ post_effect_sequences: combat.post_effect_sequences });
+                    if (!safeSetCombatState({ post_effect_sequences: combat.post_effect_sequences }, '后遗症保存失败。')) return;
                     picker.classList.remove('show');
                     renderCombatModal();
                 };
@@ -3024,10 +3248,10 @@
         var combat = IE.getCombatState();
         if (combatUIState.curCat === 'breath') {
             combat.hubs.breath = skillId;
-            IE.setCombatState({ hubs: { breath: skillId } });
+            if (!safeSetCombatState({ hubs: { breath: skillId } }, '内息核心装配失败。')) return;
         } else if (combatUIState.curCat === 'footwork') {
             combat.hubs.footwork = skillId;
-            IE.setCombatState({ hubs: { footwork: skillId } });
+            if (!safeSetCombatState({ hubs: { footwork: skillId } }, '步法核心装配失败。')) return;
         } else {
             var slotIsParry = combatUIState.curSlot === 'parry';
             var skillIsParry = !!(sk.only_parry || sk.category === 'parry');
@@ -3048,7 +3272,7 @@
                 mc[part] = 0;
                 deployPatch.move_sequence_cursors = mc;
             }
-            IE.setCombatState(deployPatch);
+            if (!safeSetCombatState(deployPatch, '技能装配失败。')) return;
         }
         if (window.GameLog) window.GameLog.log(ui('log.system.combat.deployed', { name: (sk.name || skillId) }), 'system');
         renderCombatModal();
@@ -3672,6 +3896,19 @@
                     var lmId = r ? r.limbId : (ctxMeta.limb_id || 'lhand');
                     var dmgType = r ? r.damageType : 'blunt';
                     var modKey = r ? r.hitPartModifierKey : null;
+                    var moveTags = [];
+                    if (window.CombatSkills && typeof window.CombatSkills.getSkill === 'function') {
+                        var skObj = window.CombatSkills.getSkill(skId);
+                        if (skObj && Array.isArray(skObj.moves)) {
+                            for (var mi = 0; mi < skObj.moves.length; mi++) {
+                                var mObj = skObj.moves[mi];
+                                if (mObj && mObj.id === mvId) {
+                                    if (Array.isArray(mObj.required_limb_tags)) moveTags = mObj.required_limb_tags.slice();
+                                    break;
+                                }
+                            }
+                        }
+                    }
 
                     if (intent.advanceCursor && window.InventoryEquipment && typeof window.InventoryEquipment.advanceMoveSequenceCursorForLimb === 'function') {
                         window.InventoryEquipment.advanceMoveSequenceCursorForLimb(lmId);
@@ -3689,14 +3926,34 @@
                         limbId: lmId,
                         damageType: dmgType,
                         hitPartModifierKey: modKey,
+                        moveTags: moveTags,
+                        subhit_index: 0,
+                        is_last_subhit: true,
                         rawDamage: rawDmg,
+                        forceZeroDamageByResourceInsufficient: !!(r && r.forceZeroDamageByResourceInsufficient),
                         attacker: {
                             kind: 'player',
-                            postEffectIds: Array.isArray(postIds) ? postIds.slice() : []
+                            postEffectIds: Array.isArray(postIds) ? postIds.slice() : [],
+                            activeVariantIds: (window.InventoryEquipment && typeof window.InventoryEquipment.getActiveVariantIdsForLimb === 'function')
+                                ? window.InventoryEquipment.getActiveVariantIdsForLimb(lmId)
+                                : []
                         },
-                        defender: defenderBase
+                        defender: (function () {
+                            var d = Object.assign({}, defenderBase);
+                            if (window.InventoryEquipment && typeof window.InventoryEquipment.getParryVariantIdsForLimb === 'function') {
+                                // 敌人侧当前未接入肢体化招架变式，默认空；玩家防守管线会在 CombatParry 解析 guardLimb 后补充。
+                                d.parryVariantIds = [];
+                            }
+                            return d;
+                        })()
                     };
                     window.CombatPipeline.runPipeline(pipeName, atkCtx);
+                    if (window.InventoryEquipment && typeof window.InventoryEquipment.adjustSkillMoveUsage === 'function') {
+                        var pd = Number(atkCtx.proficiencyDelta);
+                        if (isFinite(pd) && pd !== 0) {
+                            window.InventoryEquipment.adjustSkillMoveUsage(skId, mvId, Math.round(pd));
+                        }
+                    }
                     if (window.GameLog && atkCtx.finalDamage != null) {
                         window.GameLog.log(ui('log.combat.resolve.summary', {
                             dmg: String(Math.round(atkCtx.finalDamage)),
@@ -3973,9 +4230,69 @@
         }).catch(function () { render(); });
     }
 
-    function applyItemUseEffectFromTemplate(tpl) {
+    function applyFoodDigestBuffFromTemplate(itemId, tpl) {
         var ue = tpl && tpl.use_effect;
+        if (!itemId || !ue || typeof ue !== 'object') return false;
+        var Buff = window.BuffSystem;
+        if (!Buff || typeof Buff.registerRuntimeBuffTemplate !== 'function' || typeof Buff.applyBuff !== 'function') return false;
+
+        var sat = Number(ue.satiety || 0);
+        var thi = Number(ue.thirst || 0);
+        var nut = Number(ue.nutrition || 0);
+        var ene = Number(ue.energy || 0);
+        if (!isFinite(sat)) sat = 0;
+        if (!isFinite(thi)) thi = 0;
+        if (!isFinite(nut)) nut = 0;
+        if (!isFinite(ene)) ene = 0;
+        if (sat <= 0 && thi <= 0 && nut <= 0 && ene <= 0) return false;
+
+        var dur = Number(tpl.food_buff_duration_ticks);
+        if (!isFinite(dur) || dur <= 0) dur = 10;
+        dur = Math.max(1, Math.floor(dur));
+
+        var buffId = 'buff_food_digest__' + itemId;
+        if (typeof Buff.hasBuffByBuffId === 'function' && Buff.hasBuffByBuffId('player', buffId)) return false;
+
+        var perTick = {
+            satiety: sat > 0 ? sat / dur : 0,
+            thirst: thi > 0 ? thi / dur : 0,
+            nutrition: nut > 0 ? nut / dur : 0,
+            energy: ene > 0 ? ene / dur : 0
+        };
+        var name = (tpl.sn || tpl.name || itemId);
+        Buff.registerRuntimeBuffTemplate({
+            buff_id: buffId,
+            name: '消化中·' + name,
+            desc: '食物正在消化中，按 tick 持续生效。',
+            durationTicks: dur,
+            maxStacks: 1,
+            stacksAddOnApply: 1,
+            priority: 100,
+            listenerSide: 'self',
+            consumeMode: 'always',
+            consumeLayersFixed: 0,
+            applyMode: 'always_apply',
+            triggerEventKind: ['world'],
+            triggerEventName: ['tick_advanced'],
+            triggerTags: ['time', 'tick'],
+            effects: [{ type: 'survival_delta', params: perTick }],
+            food_digest: true
+        });
+        return Buff.applyBuff('player', buffId, 'item:' + itemId, null);
+    }
+
+    function applyItemUseEffectFromTemplate(itemId, tpl) {
+        var ue = tpl && tpl.use_effect;
+        var Buff = window.BuffSystem;
+        var edibleRaw = tpl ? tpl.edible : null;
+        var edible = edibleRaw === true || edibleRaw === 1 || edibleRaw === '1' || edibleRaw === 'true';
+        var edibleBuffId = tpl && tpl.edible_buff_id ? String(tpl.edible_buff_id).trim() : '';
+        if (edible && edibleBuffId && Buff && typeof Buff.applyBuff === 'function') {
+            if (typeof Buff.hasBuffByBuffId === 'function' && Buff.hasBuffByBuffId('player', edibleBuffId)) return false;
+            return Buff.applyBuff('player', edibleBuffId, 'item:' + itemId, null);
+        }
         if (!ue || typeof ue !== 'object') return false;
+        if ((tpl && tpl.category) === 'food') return applyFoodDigestBuffFromTemplate(itemId, tpl);
         var Surv = window.Survival;
         if (!Surv) return false;
         var n;
@@ -4021,7 +4338,7 @@
             showMsg(ui('item.use.fail'), 'warn');
             return;
         }
-        if (!applyItemUseEffectFromTemplate(tpl)) {
+        if (!applyItemUseEffectFromTemplate(cell.item_id, tpl)) {
             if (inv.putItemIntoDefaultContainer) inv.putItemIntoDefaultContainer(taken.item);
             showMsg(ui('item.use.cannot'), 'info');
             return;
