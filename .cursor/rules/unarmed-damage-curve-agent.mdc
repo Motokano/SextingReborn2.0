@@ -1,0 +1,40 @@
+---
+description: 徒手筋骨饱和曲线口径（B_fist）与配置同步
+globs: "**/js/character-attributes.js,**/data/survival-config.json,**/docs/design/05-character-attributes.md,**/docs/design/08-hit-parry-damage.md"
+alwaysApply: false
+---
+
+# Unarmed Jingu Saturation Curve
+
+当编辑徒手伤害的“筋骨饱和曲线”相关内容时，以下述**单一口径**为准，且保持代码/配置/文档三者一致。
+
+## 数学模型（徒手基础威力）
+- 输出：`B_fist(S_筋骨)`（基础威力值）
+- 指数曲线保持：`scale = 450` 不变
+- 公式：
+  `B_fist(S) = floor( fist_power_cap * (1 - exp(-S / fist_jingu_scale)) / 2 )`
+
+其中：
+- `S` 为攻击方实际筋骨值（先天 + 后天，代码侧使用 effective attr `jingu`）
+ - `fist_power_cap`：饱和上限常数（当前仍为 650，但最终结果整体再 /2）
+- `fist_jingu_scale`：饱和衰减尺度（当前仍为 450）
+
+## 配置权威来源（实现）
+- 代码位置：`js/character-attributes.js` 的 `getFistBasePower()`
+- 配置键（单一数据源）：
+  - `data/survival-config.json`：`fist_power_cap`、`fist_jingu_scale`
+- 代码提供默认值兜底，但正式平衡必须以 `data/survival-config.json` 为准：
+  - `fist_power_cap` 默认 650
+  - `fist_jingu_scale` 默认 450
+
+## 本项目当前口径（已应用）
+- `fist_power_cap = 650`（保持不变）
+- `fist_jingu_scale = 450`（保持不变）
+- 最终基础威力结果再整体 `/2`
+
+## 同步要求（防止后续 agent 改丢口径）
+若你要调整曲线常数：
+1. 同步改 `data/survival-config.json`（只在需要时改 `fist_power_cap` 或 `fist_jingu_scale`）
+2. 同步改 `docs/design/05-character-attributes.md` 里的 `B_fist` 公式与锚点表
+3. 如 `08-hit-parry-damage.md` / `11-skills.md` 存在简写描述，需确认不与新口径冲突（必要时修正文案）
+

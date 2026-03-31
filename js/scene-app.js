@@ -94,12 +94,18 @@
             quick_belt: true,
             attrs: true
         },
+        /** 右上角 Buff 条（与 leftHudBlockVisibilityRules 共用 shouldShowLeftHudBlock('buff_hud')） */
+        buffHudVisible: true,
+        lastAttackedEnemyId: null,
         setLeftHudBlockVisibilityRule: function (blockId, rule) {
             if (!blockId) return;
             this.leftHudBlockVisibilityRules = this.leftHudBlockVisibilityRules || {};
             this.leftHudBlockVisibilityRules[blockId] = rule;
         },
         shouldShowLeftHudBlock: function (blockId) {
+            if (blockId === 'buff_hud') {
+                if (this.buffHudVisible === false) return false;
+            }
             var rules = this.leftHudBlockVisibilityRules || {};
             var rule = rules[blockId];
             if (typeof rule === 'function') {
@@ -1226,6 +1232,83 @@
     }
 
     function updateStatusPanel(gatherState) {
+        function getEnemyDisplayName(enemyId) {
+            var id = enemyId != null ? String(enemyId) : '';
+            if (!id) return '';
+            try {
+                if (window.UIText && typeof window.UIText.t === 'function') {
+                    return window.UIText.t('enemy.name.' + id.replace(/\./g, '_'));
+                }
+            } catch (e0) { /* 无专用名时回退 id */ }
+            return id;
+        }
+        function getBuffHudNowTick() {
+            var nowTick = 0;
+            if (window.GameTime && typeof window.GameTime.getState === 'function') {
+                var ts = window.GameTime.getState();
+                nowTick = ts && ts.totalTicks != null ? Number(ts.totalTicks) || 0 : 0;
+            }
+            return nowTick;
+        }
+        function appendBuffChips(containerEl, ownerArr, nowTick) {
+            if (!containerEl) return;
+            containerEl.innerHTML = '';
+            if (!ownerArr || !ownerArr.length) {
+                containerEl.textContent = ui('status.enemy_buffs.none_buff');
+                return;
+            }
+            ownerArr.forEach(function (inst) {
+                if (!inst || !inst.buff_id || (inst.stacks != null && inst.stacks <= 0)) return;
+                var chip = document.createElement('span');
+                chip.className = 'buff-chip';
+                var buffName = (inst.template && inst.template.name) ? String(inst.template.name) : String(inst.buff_id);
+                var stacks = Math.max(0, parseInt(inst.stacks, 10) || 0);
+                var expiresAt = parseInt(inst.expires_at_tick, 10);
+                var rem = isFinite(expiresAt) ? Math.max(0, expiresAt - nowTick) : null;
+                chip.textContent = buffName + '×' + stacks + (rem != null ? ' ' + rem + 't' : '');
+                chip.title = buffName + (inst.template && inst.template.desc ? (': ' + inst.template.desc) : '');
+                containerEl.appendChild(chip);
+            });
+            if (!containerEl.children.length) containerEl.textContent = ui('status.enemy_buffs.none_buff');
+        }
+        function renderBuffHud() {
+            var hud = document.getElementById('buff-hud');
+            var playerEl = document.getElementById('buff-hud-player-chips');
+            var enemyEl = document.getElementById('buff-hud-enemy-chips');
+            var selfTitle = document.getElementById('buff-hud-self-title');
+            var enemyTitle = document.getElementById('buff-hud-enemy-title');
+            if (!hud || !playerEl || !enemyEl) return;
+            if (!shouldShowBlock('buff_hud')) {
+                hud.style.display = 'none';
+                return;
+            }
+            hud.style.display = '';
+            if (selfTitle) selfTitle.textContent = ui('buff.hud.self');
+            var nowTick = getBuffHudNowTick();
+            if (!window.BuffSystem || typeof window.BuffSystem.getState !== 'function') {
+                playerEl.textContent = ui('status.enemy_buffs.none_buff');
+                enemyEl.textContent = ui('status.enemy_buffs.none_buff');
+                return;
+            }
+            var bs = window.BuffSystem.getState() || {};
+            var instByOwner = bs.instancesByOwner || {};
+            var pArr = Array.isArray(instByOwner.player) ? instByOwner.player : [];
+            appendBuffChips(playerEl, pArr, nowTick);
+            var targetEnemyId = window.SceneCtx && window.SceneCtx.lastAttackedEnemyId != null
+                ? String(window.SceneCtx.lastAttackedEnemyId)
+                : '';
+            if (enemyTitle) {
+                enemyTitle.textContent = targetEnemyId
+                    ? ui('buff.hud.target_with_name', { name: getEnemyDisplayName(targetEnemyId) })
+                    : ui('buff.hud.target_none');
+            }
+            if (!targetEnemyId) {
+                enemyEl.textContent = ui('status.enemy_buffs.none_target');
+                return;
+            }
+            var eArr = Array.isArray(instByOwner[targetEnemyId]) ? instByOwner[targetEnemyId] : [];
+            appendBuffChips(enemyEl, eArr, nowTick);
+        }
         function shouldShowBlock(blockId) {
             var ctx = window.SceneCtx;
             if (ctx && typeof ctx.shouldShowLeftHudBlock === 'function') {
@@ -1245,6 +1328,7 @@
         setBlockDisplay('status-attrs-block', shouldShowBlock('attrs'));
 
         updateLimbBlock();
+        renderBuffHud();
         updateRoleNameFromCharacter();
         var CA = window.CharacterAttributes;
         if (CA && typeof CA.getEffectiveAttr === 'function') {
@@ -3252,6 +3336,7 @@
                     return;
                 }
                 ctxMeta = ctxMeta || {};
+                if (window.SceneCtx) window.SceneCtx.lastAttackedEnemyId = enemyId != null ? String(enemyId) : null;
                 if (window.SceneCtx && typeof window.SceneCtx.exitFootworkNieBuMode === 'function') {
                     window.SceneCtx.exitFootworkNieBuMode();
                 }
@@ -3351,6 +3436,7 @@
                     window.GameLog.log(ui('log.system.attack.intent.keyboard'), 'info');
                 }
                 render();
+                if (typeof updateStatusPanel === 'function') updateStatusPanel();
             };
             window.SceneCtx.actions.interactNpc = function (npcId) {
                 if (typeof showMsg === 'function') showMsg(ui('log.system.try.interact.npc', { npcId: npcId }), 'system');

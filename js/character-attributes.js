@@ -405,12 +405,12 @@
         return cache.combat_speed;
     }
 
-    /** 徒手基础威力 B_fist(S) = floor(650 * (1 - e^(-S/450))) */
+    /** 徒手基础威力 B_fist(S) = floor(650 * (1 - e^(-S/450)) / 2) */
     function getFistBasePower() {
         var S = getEffectiveAttr('jingu');
         var cap = getCfg('fist_power_cap', 650);
         var scale = getCfg('fist_jingu_scale', 450);
-        return Math.floor(cap * (1 - Math.exp(-S / scale)));
+        return Math.floor(cap * (1 - Math.exp(-S / scale)) / 2);
     }
 
     /**

@@ -22,6 +22,11 @@
           "buff_event_name": "attack_hit_roll_resolved"
         },
         {
+          "id": "move_hit_buffs",
+          "handler": "builtin.apply_move_hit_roll_buffs",
+          "_doc": "招式配置的 on_hit_roll_success_apply_buff_actor/target：命中 roll 成功后叠层，先于招架（与 08 一致）"
+        },
+        {
           "id": "parry_enemy",
           "handler": "builtin.parry_enemy_simple",
           "buff_event_skip": "parry_phase_skipped",
@@ -52,6 +57,11 @@
           "id": "hit_roll",
           "handler": "builtin.emit_hit_roll",
           "buff_event_name": "attack_hit_roll_resolved"
+        },
+        {
+          "id": "move_hit_buffs",
+          "handler": "builtin.apply_move_hit_roll_buffs",
+          "_doc": "同 melee_hit_enemy_defender：命中 roll 成功后按招式配置叠 Buff"
         },
         {
           "id": "parry_player",

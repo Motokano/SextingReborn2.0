@@ -67,6 +67,53 @@
         return false;
     }
 
+    /**
+     * 读取 combat-skills 招式 on_hit_roll_success_apply_buff_actor / target，
+     * 在命中 roll 成功后对己方/受击方施加 Buff（先叠层再进入招架，见 08 / 11）。
+     */
+    function phaseApplyMoveHitRollBuffs(ctx, phase) {
+        if (!ctx || ctx.hitRollSuccess === false) return ctx;
+        var CS = global.CombatSkills;
+        var BS = global.BuffSystem;
+        if (!CS || typeof CS.getSkill !== 'function' || !BS || typeof BS.applyBuff !== 'function') return ctx;
+        var sk = CS.getSkill(ctx.skillId);
+        if (!sk || !Array.isArray(sk.moves)) return ctx;
+        var move = null;
+        var mi;
+        for (mi = 0; mi < sk.moves.length; mi++) {
+            if (sk.moves[mi] && sk.moves[mi].id === ctx.moveId) {
+                move = sk.moves[mi];
+                break;
+            }
+        }
+        if (!move) return ctx;
+        var tick = 0;
+        if (global.GameTime && typeof global.GameTime.getState === 'function') {
+            var gts = global.GameTime.getState();
+            tick = gts && gts.totalTicks != null ? Number(gts.totalTicks) || 0 : 0;
+        } else if (global.Survival && typeof global.Survival.getState === 'function') {
+            var s0 = global.Survival.getState();
+            tick = s0 && s0.tickCount != null ? Number(s0.tickCount) || 0 : 0;
+        }
+        var evCtx = { tick: tick };
+        var src = 'move_' + String(ctx.moveId || '') + '_' + String(ctx.eventIdSuffix || '');
+        var atk = ctx.attacker || {};
+        var actorOwner = 'player';
+        if (atk.kind === 'enemy' && atk.enemyId != null) actorOwner = String(atk.enemyId);
+        else if (atk.kind === 'player') actorOwner = 'player';
+        if (move.on_hit_roll_success_apply_buff_actor) {
+            BS.applyBuff(actorOwner, move.on_hit_roll_success_apply_buff_actor, src, evCtx);
+        }
+        if (move.on_hit_roll_success_apply_buff_target) {
+            var def = ctx.defender || {};
+            var targetOwner = 'player';
+            if (def.kind === 'enemy' && def.enemyId != null) targetOwner = String(def.enemyId);
+            else if (def.kind === 'player') targetOwner = 'player';
+            BS.applyBuff(targetOwner, move.on_hit_roll_success_apply_buff_target, src, evCtx);
+        }
+        return ctx;
+    }
+
     function phaseEmitHitRoll(ctx, phase) {
         if (ctx && ctx.defender && ctx.defender.kind === 'player' && isPlayerInSitMeditationState()) {
             // 行气/调息中被选为受击目标：命中强制成功，并标记本 tick 行气收益作废。
@@ -345,6 +392,7 @@
 
     var builtins = {
         'builtin.emit_hit_roll': phaseEmitHitRoll,
+        'builtin.apply_move_hit_roll_buffs': phaseApplyMoveHitRollBuffs,
         'builtin.parry_enemy_simple': phaseParryEnemySimple,
         'builtin.parry_player_combat_parry': phaseParryPlayerCombatParry,
         'builtin.post_effects_hook': phasePostEffectsHook,
