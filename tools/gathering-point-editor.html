@@ -20,14 +20,13 @@
         th { background: #2d2d2d; color: #aaa; }
         .hint { font-size: 11px; color: #666; margin-top: 8px; line-height: 1.4; }
         textarea.raw { width: 100%; min-height: 200px; font-family: monospace; font-size: 11px; background: #222; color: #ccc; border: 1px solid #444; border-radius: 4px; padding: 8px; }
-        .cell-item-wrap select { width: 100%; margin-bottom: 0; }
-        .cell-item-custom { width: 100%; margin-top: 4px; display: none; }
+        .cell-item-wrap .cell-item-input { width: 100%; margin-bottom: 0; }
         .items-status { font-size: 12px; color: #888; margin-left: 8px; }
     </style>
 </head>
 <body>
     <h1>采集点实例编辑器</h1>
-    <p class="hint">编辑 <code>data/gathering_point_instances.json</code>：实例可被地图格 <code>gathering_instance_id</code> 引用；每行掉落可设 <code>quality_tier_max</code>（1～6，熟练度上修后的<strong>硬上限</strong>）。<strong>掉落物品</strong>与仓库 <code>data/items.json</code> 联动：先载入物品表，再从下拉选择 <code>item_id</code>（亦可「自定义」填未入库 id）。保存后请将 JSON 覆盖到仓库 <code>data/gathering_point_instances.json</code>。</p>
+    <p class="hint">编辑 <code>data/gathering_point_instances.json</code>：实例可被地图格 <code>gathering_instance_id</code> 引用；每行掉落可设 <code>quality_tier_max</code>（1～6，熟练度上修后的<strong>硬上限</strong>）。<strong>掉落物品</strong>与仓库 <code>data/items.json</code> 联动：先载入物品表，再在可搜索输入框中筛选 <code>item_id</code>（仍可手填未入库 id）。保存后请将 JSON 覆盖到仓库 <code>data/gathering_point_instances.json</code>。</p>
     <div class="toolbar">
         <button type="button" id="btn-fetch-items">载入 items.json</button>
         <button type="button" id="btn-file-items">选择物品 JSON</button>
@@ -80,6 +79,7 @@
     </div>
     <label style="margin-top:16px;">完整 JSON 预览</label>
     <textarea class="raw" id="ta-full" readonly></textarea>
+    <datalist id="loot-item-options"></datalist>
 
     <script>
 (function () {
@@ -99,6 +99,7 @@
         itemsCatalog = j;
         var n = Object.keys(itemsCatalog).filter(function (k) { return k && k.charAt(0) !== '_'; }).length;
         setItemsStatus('物品表：已载入 ' + n + ' 条（data/items.json）');
+        refreshItemDatalist();
         var id = document.getElementById('sel-instance').value;
         if (id && data.instances[id]) loadFormFromSelection();
     }
@@ -155,12 +156,10 @@
         refreshFullJson();
     }
 
-    function fillItemSelect(sel, selectedId) {
-        sel.innerHTML = '';
-        var o0 = document.createElement('option');
-        o0.value = '';
-        o0.textContent = '— 从物品表选择 —';
-        sel.appendChild(o0);
+    function refreshItemDatalist() {
+        var list = document.getElementById('loot-item-options');
+        if (!list) return;
+        list.innerHTML = '';
         var ids = Object.keys(itemsCatalog).filter(function (k) {
             return k && String(k).charAt(0) !== '_' && itemsCatalog[k] && typeof itemsCatalog[k] === 'object';
         });
@@ -174,20 +173,8 @@
             var tpl = itemsCatalog[oid];
             var o = document.createElement('option');
             o.value = oid;
-            o.textContent = (tpl.name || oid) + ' (' + oid + ')';
-            sel.appendChild(o);
-        }
-        var oC = document.createElement('option');
-        oC.value = '__custom__';
-        oC.textContent = '自定义 item_id…';
-        sel.appendChild(oC);
-
-        var cur = selectedId || '';
-        if (cur && itemsCatalog[cur]) sel.value = cur;
-        else if (cur) {
-            sel.value = '__custom__';
-        } else {
-            sel.value = '';
+            o.label = (tpl.name || oid) + ' (' + oid + ')';
+            list.appendChild(o);
         }
     }
 
@@ -196,32 +183,15 @@
         var tr = document.createElement('tr');
         var tdItem = document.createElement('td');
         tdItem.className = 'cell-item-wrap';
-        var sel = document.createElement('select');
-        sel.className = 'cell-item-sel';
-        fillItemSelect(sel, row.item_id);
-        var inpCustom = document.createElement('input');
-        inpCustom.type = 'text';
-        inpCustom.className = 'cell-item-custom';
-        inpCustom.placeholder = '未在表中的 item_id';
-        var curId = row.item_id || '';
-        if (sel.value === '__custom__') {
-            inpCustom.value = curId;
-            inpCustom.style.display = 'block';
-        }
-        function onSelChange() {
-            if (sel.value === '__custom__') {
-                inpCustom.style.display = 'block';
-                if (!inpCustom.value && row.item_id && !itemsCatalog[row.item_id]) inpCustom.value = row.item_id;
-            } else {
-                inpCustom.style.display = 'none';
-            }
-            saveFormToData();
-            refreshFullJson();
-        }
-        sel.addEventListener('change', onSelChange);
-        inpCustom.addEventListener('input', function () { saveFormToData(); refreshFullJson(); });
-        tdItem.appendChild(sel);
-        tdItem.appendChild(inpCustom);
+        var inpItem = document.createElement('input');
+        inpItem.type = 'text';
+        inpItem.className = 'cell-item-input';
+        inpItem.setAttribute('list', 'loot-item-options');
+        inpItem.placeholder = '搜索或输入 item_id';
+        inpItem.value = row.item_id || '';
+        inpItem.addEventListener('input', function () { saveFormToData(); refreshFullJson(); });
+        inpItem.addEventListener('change', function () { saveFormToData(); refreshFullJson(); });
+        tdItem.appendChild(inpItem);
 
         var tdW = document.createElement('td');
         tdW.innerHTML = '<input type="number" class="cell-w" step="1" min="0" value="' + (row.weight != null ? row.weight : 10) + '" />';
@@ -253,11 +223,8 @@
         var trs = tb.querySelectorAll('tr');
         for (var i = 0; i < trs.length; i++) {
             var tr = trs[i];
-            var sel = tr.querySelector('.cell-item-sel');
-            var custom = tr.querySelector('.cell-item-custom');
-            var item_id = '';
-            if (sel && sel.value === '__custom__') item_id = (custom && custom.value || '').trim();
-            else if (sel && sel.value) item_id = String(sel.value).trim();
+            var inpItem = tr.querySelector('.cell-item-input');
+            var item_id = inpItem ? String(inpItem.value || '').trim() : '';
             if (!item_id) continue;
             out.push({
                 item_id: item_id,

@@ -5,6 +5,7 @@
     "action",
     "dialogue",
     "world",
+    "buff",
     "ui"
   ],
   "event_names": [
@@ -56,7 +57,8 @@
     "tick_advanced",
     "time_point_reached",
     "hub_action_resolved",
-    "diqi_shield_absorbed"
+    "diqi_shield_absorbed",
+    "buff_state_changed"
   ],
   "tags": [
     "attack",
@@ -90,6 +92,7 @@
     "time",
     "tick",
     "player",
+    "state",
     "control",
     "damage",
     "heal",
@@ -121,7 +124,10 @@
     "xue_qi_hua_jing",
     "tu_qi_na_jing",
     "tiao_xi",
-    "sit_meditation"
+    "sit_meditation",
+    "hit_arc_front",
+    "hit_arc_side",
+    "hit_arc_back"
   ]
 }
 

@@ -1,0 +1,94 @@
+---
+description: 食物可食用 Buff 与 Buff 监听联动约定
+alwaysApply: true
+---
+
+# 食物 Buff + Buff 监听（Agent 规则）
+
+当修改食物使用、物品编辑器、Buff 编辑器、`buff-system` 或相关配置时，遵循以下约定，避免后续实现口径分裂。
+
+## 1) 物品食用字段（单一口径）
+
+- 物品模板支持：
+  - `edible`（bool）
+  - `edible_buff_id`（string，指向 `data/buffs.json` 的 `buff_id`）
+- 构建脚本 `tools/build-items-json.mjs` 需保持 CSV → items.json 映射：
+  - `edible` -> `item.edible`
+  - `edible_buff_id` -> `item.edible_buff_id`
+
+## 2) 运行时食用优先级（强制）
+
+- `js/scene-app.js` 物品使用逻辑优先顺序：
+  1. 若 `edible=true` 且有 `edible_buff_id`：直接 `BuffSystem.applyBuff('player', edible_buff_id, ...)`
+  2. 否则走旧 `use_effect` 逻辑（含 food 的自动消化兜底）
+- 可使用判定口径：`edible=true && edible_buff_id` **或**存在 `use_effect` 任一成立即可进入“使用”流程（不要把“可用”错误限定为必须有 `use_effect`）。
+- 同种 Buff 去重：若玩家已拥有同 `buff_id`，不允许重复食用同种 Buff。
+- 食用入口覆盖口径：
+  - 背包面板（`updateBackpackPanel`）中可消耗物品应提供“使用”入口；
+  - 快捷腰带（quick-belt）悬浮菜单中的“使用”入口必须复用同一套判定与施加逻辑；
+  - 禁止出现“某入口能用 edible_buff_id，另一入口只认 use_effect”的分裂实现。
+
+## 3) 饱食 overcap 门槛（强制）
+
+- `js/survival.js` 的 `addSatiety`：在 `satiety >= 90` 时，只有 `BuffSystem.hasActiveSatietyDigestBuff('player')` 为真，才允许突破 `100` 到 overcap 区间。
+- 增重判定保持原规则（`satiety > 100` 的连续 tick 计数）不变。
+
+## 4) Buff 监听事件（强制）
+
+- 注册表 `data/editor/buff_event_registry.json` 必须包含：
+  - `event_kind: buff`
+  - `event_name: buff_state_changed`
+  - `tag: state`（以及 `buff/player`）
+- `js/buff-system.js` 在 Buff 状态变更后发出 `buff_state_changed`（需防重入）。
+
+## 5) 多 Buff 触发授予 Buff（强制）
+
+- 运行时 effects 支持：
+  - `type: apply_buff_if_has_buffs`
+  - `params.required_buff_ids: string[]`
+  - `params.grant_buff_id: string`
+  - `params.allow_reapply: boolean`
+- 语义：当宿主同时拥有 `required_buff_ids` 中全部 Buff，且（若配置了 `required_judgment_tags`）存在至少一个 `stacks>0` 的实例其模板 `judgment_tags` 与 `required_judgment_tags` 逐键相等时，授予 `grant_buff_id`；`allow_reapply=false` 时已存在则不重复施加。
+- Buff 模板可选 **`judgment_tags`**（字符串键值对象，如 `food_category` / `food_item`）：与具体效果写在同一 Buff 上，大类不单独成 Buff；运行时 `BuffSystem.hasBuffMatchingJudgmentTags(ownerId, tags)` 可供其它系统查询。
+- **`grant_buff_id` 必填且非空**：运行时 `apply_buff_if_has_buffs` 以 `!!grant_buff_id` 作为前置条件，空字符串会直接短路为不触发。
+- 设计口径：若目标是“当 A+B 同时存在时获得 C”，`apply_buff_if_has_buffs` 应挂在 **A/B 或 watcher Buff** 上，`grant_buff_id = C`；**不要**只挂在 C 自身期待“自动获得 C”。
+
+## 6) 编辑器联动约定
+
+- `tools/item-editor.html`：
+  - 提供“是否可食用 + 食用 Buff 选择”可视化入口，写回 `edible` / `edible_buff_id`。
+  - 提供“是否可使用 + 使用触发 Buff 选择”可视化入口，写回 `usable` / `use_buff_id`（与食用配置并行，不互相覆盖）。
+  - Buff 选项来源允许本地文件导入：通过文件选择器读取本地 `buffs.json`（`{ buffs: [...] }`，每项含 `buff_id`，可选 `name`），避免 `file://` 场景下 `fetch('../data/buffs.json')` 失败。
+  - 物品行选择区需提供搜索过滤（至少支持 `id` / `sn(name)` / `placeholder_name` 关键词）。
+- `tools/buff-editor.html`：主流程按四段组织：**基础信息 → 触发过滤 → 组合判定 → 具体效果**。避免同义按钮重复入口。
+- 具体效果区采用“模板库 + 高级 JSON 折叠”：
+  - 模板库支持 `food_buff_bundle`（一次写入 `judgment_tags + trigger + effects + expire_effects`）。
+  - 模板库支持 `survival_delta_expire`（写入 `expire_effects`）。
+  - 高级 JSON 默认折叠；模板写入后自动展开，便于核对落盘结果。
+- 组合判定区（`apply_buff_if_has_buffs`）交互约定：
+  - `grant_buff_id` 默认当前编辑中的 `buff_id`；不要求策划重复手选。
+  - “必需 Buff”双击条目应直接写入/移除 `required_buff_ids`（而非仅改变高亮）。
+  - 组合区写入只更新 `effects` 中该条 `apply_buff_if_has_buffs`，不得覆盖其它 effect。
+- 主表单可编辑 `judgment_tags`（`food_category` / `food_item`），组合区可编辑 `required_judgment_tags`。
+
+## 7) `survival_delta` 字段口径（防踩坑）
+
+- `survival_delta.params` 当前统一口径：
+  - `satiety`：饱食
+  - `thirst`：饮水
+  - `nutrition`：营养
+  - `stamina`：体力
+  - `energy`：精力（不是体力）
+- 字段命名优先级：
+  1. 体力一律写 `stamina`
+  2. `energy` 仅表示精力，不得在文案/编辑器中标作体力
+  3. 历史数据若仍有 `energy`，按“精力”解释，不自动当作体力
+- 运行时约定（`js/buff-system.js`）：
+  - `stamina < 0`：扣体力（`consumeStamina`）
+  - `stamina > 0`：加体力（通过 `Survival.setState` 回写）
+  - `energy < 0`：扣精力（`consumeEnergy`）
+  - `energy > 0`：加精力（`addEnergy`）
+  - `satiety/thirst/nutrition` 负值扣减走 `Survival.setState`（由 Survival 内部 clamp）
+- 编辑器约定（`tools/buff-editor.html`）：
+  - 模板表单显示“`stamina（体力）`”
+  - `energy` 仅保留兼容旧字段，不作为体力主字段

@@ -240,6 +240,22 @@
             if (!isFinite(want) || want < 0) want = 1;
             return global.CharacterAttributes.getPostEffectsObtainedCount() >= want;
         }
+        if (cond.type === 'lastCombatDefenderHitArcEquals') {
+            var wantArc = String(cond.value || cond.arc || '').trim().toLowerCase();
+            if (!wantArc) return false;
+            var c0 = global.SceneCtx && global.SceneCtx.lastCombatDirectional ? global.SceneCtx.lastCombatDirectional : null;
+            if (!c0) return false;
+            var gotArc = String(c0.defender_hit_arc || '').trim().toLowerCase();
+            return gotArc === wantArc;
+        }
+        if (cond.type === 'lastCombatAttackerStrikeArcEquals') {
+            var wantArc2 = String(cond.value || cond.arc || '').trim().toLowerCase();
+            if (!wantArc2) return false;
+            var c1 = global.SceneCtx && global.SceneCtx.lastCombatDirectional ? global.SceneCtx.lastCombatDirectional : null;
+            if (!c1) return false;
+            var gotArc2 = String(c1.attacker_strike_arc || '').trim().toLowerCase();
+            return gotArc2 === wantArc2;
+        }
         if (cond.type === 'not') return !evalCondition(cond.cond);
         if (cond.type === 'and') {
             var arrA = Array.isArray(cond.conds) ? cond.conds : [];

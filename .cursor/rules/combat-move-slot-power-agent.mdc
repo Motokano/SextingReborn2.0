@@ -1,0 +1,67 @@
+---
+description: 招式槽位分槽成数（move_slot_power_levels）实现约定
+alwaysApply: true
+---
+
+# 招式槽位分槽成数（Agent 规则）
+
+编辑**招式槽配置、招式槽渲染、攻击管线**或相关存档字段时，遵守本节；避免"成数永远用模板默认值"或"改了槽不清成数"的回归。
+
+## 单一事实源
+
+| 职责 | 位置 |
+|---|---|
+| 每槽成数存档 | `state.combat.move_slot_power_levels[limbId][slotIndex]`（`null` = 用招式模板默认值） |
+| 读取 | `InventoryEquipment.getMoveSlotPowerLevel(limbId, slotIndex)` → `number \| null` |
+| 写入 / 清除 | `InventoryEquipment.setMoveSlotPowerLevel(limbId, slotIndex, value \| null)`（自动夹紧 1-12） |
+| 当前游标 → 原始槽位下标 | `InventoryEquipment.peekMoveSlotIndexForLimb(limbId)` → `number`（找不到 `-1`） |
+
+`move_slot_power_levels` 与 `move_sequences` **并行**，均以槽位下标（原始 `move_sequences[limbId]` 数组下标）对齐，**不是** compact 游标下标。
+
+## 攻击管线接线（`scene-app.js` `attackEnemy`）
+
+- 在 `limbUse / skUse / mvUse` 确定后、三个 `CMR.resolvePlayerVsEnemyAttack` 调用之前，读取本次实际出手槽的成数：
+
+  ```javascript
+  var _slotPwr = ctxMeta.power_level != null ? Number(ctxMeta.power_level) : null;
+  if (_slotPwr == null && IE && typeof IE.peekMoveSlotIndexForLimb === 'function') {
+      var _slotPwrIdx = IE.peekMoveSlotIndexForLimb(limbUse);
+      if (_slotPwrIdx >= 0 && typeof IE.getMoveSlotPowerLevel === 'function')
+          _slotPwr = IE.getMoveSlotPowerLevel(limbUse, _slotPwrIdx);
+  }
+  // 传给 resolvePlayerVsEnemyAttack: powerLevel: _slotPwr
+  ```
+
+- `ctxMeta.power_level` 显式传入时**优先**（NPC/事件驱动攻击保留覆盖能力）。
+- `_slotPwr` 为 `null` 时 `resolvePlayerVsEnemyAttack` 内部 fallback 到 `move.default_power_level`，行为与改动前一致。
+
+## 槽位变更必须清成数（硬约定）
+
+`openMovePicker` 三条写槽路径执行完 `safeSetCombatState` 后，**必须立即**：
+
+```javascript
+if (IE && typeof IE.setMoveSlotPowerLevel === 'function') IE.setMoveSlotPowerLevel(part, idx, null);
+```
+
+| 操作 | 是否重置成数 |
+|---|---|
+| 选新招式替换槽位 | ✅ 必须 |
+| 清空槽位（清为空） | ✅ 必须 |
+| 槽位改为变式 | ✅ 必须 |
+| 仅点击 +/- 修改成数 | ❌ 不重置（本身就是写入） |
+
+## UI 约束（`renderCombatModal` 槽位节点）
+
+- 成数控件 `[−] N成 [＋]` 只渲染在 **主动招式槽**（`rawMoveId && !isVariantSlot && moveObj`）。
+- 变式槽、空槽**不得**渲染成数控件。
+- 控件用 CSS class `node-power-ctrl / node-power-val / btn-power-step`，绝对定位于卡片右上角（`top: 2px; right: 4px`），**不**与底部的 `btn-post-slot` / `debug-move-prof-btn` 重叠。
+- 按钮 `onclick` 必须 `e.stopPropagation()`，防止触发卡片点击（打开 picker）。
+
+## 存档字段接线
+
+`getDefaultCombatState` / `ensureCombatState` / `getState` / `getCombatState` / `setState` / `setCombatState` 均已接入 `move_slot_power_levels`；新增迁移或存档改造时**不得**遗漏该字段。
+
+## 勿混用
+
+- `move_slot_power_levels[limb][i]` 下标对应 **`move_sequences[limb]` 原始下标**（含空槽/变式槽占位），不是 compact 游标。
+- 成数仅对**玩家主动攻击**生效；敌人还击、呼吸法 hub_action 等不使用此字段。

@@ -18,20 +18,17 @@
         }
         #map-wrap {
             flex: 1;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 16px;
-            border-bottom: 2px solid #4d3f35;
+            position: relative;
+            min-height: 0;
         }
         #map-container {
             overflow: hidden;
             position: relative;
-            width: 1042px;
-            height: 638px;
+            width: 100%;
+            height: 100%;
             background: #26211d;
-            border: 6px solid #4d3f35;
-            border-radius: 4px;
+            border: none;
+            border-radius: 0;
         }
         #map-grid {
             position: absolute;
@@ -92,8 +89,9 @@
             z-index: 20;
             width: 101px;
             height: 101px;
-            left: 471px;
-            top: 269px;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
             display: flex;
             align-items: center;
             justify-content: center;
@@ -175,8 +173,8 @@
         #player-action-bubble {
             position: absolute;
             left: 50%;
-            top: 175px;
-            transform: translateX(-50%);
+            top: 50%;
+            transform: translate(-50%, calc(-50% - 96px));
             z-index: 25;
             display: none;
             flex-direction: column;
@@ -430,6 +428,31 @@
             font-family: "Microsoft YaHei", "微软雅黑", "PingFang SC", sans-serif;
         }
         .quick-belt .slot:hover { border-color: #fbbf24; }
+        .quick-belt-hover-menu {
+            position: fixed;
+            z-index: 5000;
+            display: none;
+            flex-direction: column;
+            gap: 6px;
+            min-width: 88px;
+            padding: 6px;
+            border: 1px solid #5c4a3d;
+            border-radius: 6px;
+            background: rgba(20, 16, 13, 0.96);
+            box-shadow: 0 6px 18px rgba(0, 0, 0, 0.45);
+        }
+        .quick-belt-hover-menu.show { display: flex; }
+        .quick-belt-hover-btn {
+            padding: 5px 8px;
+            font-size: 12px;
+            line-height: 1.2;
+            color: #e8e6e3;
+            background: #4d3f35;
+            border: 1px solid #78716c;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .quick-belt-hover-btn:hover { background: #5c4a3d; border-color: #fbbf24; }
         .quick-belt .quick-belt-slot-key {
             position: absolute;
             top: 3px;
@@ -560,6 +583,7 @@
             position: absolute; right: 4px; bottom: 4px; padding: 3px 7px; font-size: 12px; line-height: 1.2;
             background: #4d3f35; border: 1px solid #78716c; color: #e8e6e3; border-radius: 4px; cursor: pointer;
         }
+        #modal-backpack .inv-slot .inv-slot-use { left: 4px; right: auto; }
         #modal-backpack .inv-slot .inv-slot-drop:hover { background: #5c4a3d; border-color: #fbbf24; }
         #modal-backpack .inv-slot.inv-slot-equip { cursor: pointer; }
         #modal-backpack .equip-action-btn {
@@ -868,6 +892,34 @@
         #modal-combat .combat-move-node .btn-post-slot:disabled {
             opacity: 0.35; cursor: not-allowed;
         }
+        #modal-combat .combat-move-node .node-power-ctrl {
+            position: absolute; top: 2px; right: 4px;
+            display: flex; align-items: center; gap: 2px;
+        }
+        #modal-combat .combat-move-node .node-power-val {
+            font-size: 9px; font-weight: 800; color: #34d399;
+            min-width: 22px; text-align: center;
+        }
+        #modal-combat .combat-move-node .btn-power-step {
+            width: 16px; height: 16px; padding: 0;
+            border-radius: 3px;
+            background: rgba(52,211,153,0.1); border: 1px solid rgba(52,211,153,0.35);
+            color: #34d399; cursor: pointer; font-size: 11px; font-weight: 800; line-height: 1;
+        }
+        #modal-combat .combat-move-node .btn-power-step:hover:not(:disabled) {
+            background: #34d399; color: #1c1612; border-color: #34d399;
+        }
+        #modal-combat .combat-move-node .btn-power-step:disabled { opacity: 0.3; cursor: not-allowed; }
+        #modal-combat .combat-variant-wrap .combat-variant-title {
+            font-size: 12px;
+            color: #c9b7a8;
+            margin-bottom: 6px;
+        }
+        #modal-combat .combat-variant-wrap .picker-empty-hint {
+            font-size: 12px;
+            color: #8f8a84;
+        }
+        #modal-combat .combat-variant-wrap .combat-variant-sequence { margin-top: 6px; }
         #modal-combat .combat-footer-right { width: 256px; display: flex; flex-direction: column; gap: 16px; flex-shrink: 0; }
         #modal-combat .btn-deploy {
             width: 100%; padding: 20px; border-radius: 8px; background: #fbbf24; color: #1c1612; font-weight: 800;
@@ -2019,8 +2071,10 @@
     <script src="js/combat-skills.js"></script>
     <script src="js/combat-hub-actions.js"></script>
     <script src="js/combat-parry.js"></script>
+    <script src="js/combat-variants.js"></script>
     <script src="js/post-effects.js"></script>
     <script src="js/combat-post-effects.js"></script>
+    <script src="js/combat-initiative.js"></script>
     <script src="js/combat-pipeline.js"></script>
     <script src="js/combat-enemies.js"></script>
     <script src="js/combat-melee-resolve.js"></script>

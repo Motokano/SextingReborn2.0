@@ -42,3 +42,21 @@ alwaysApply: false
 - 鼠标悬停物品仍会复用现有 `#item-tooltip` 浮窗（`showItemTooltip/hideItemTooltip`）。
 - `equip-action-btn` 属于独立动作入口，不应改变 tooltip 的显示逻辑。
 
+## 6) 背包格“使用 + 丢弃”并存（强制）
+
+- 对可消耗物品（食用 Buff 或 `use_effect`）可显示“使用”按钮，但**不得覆盖/取代**“丢弃”按钮。
+- 推荐样式口径：
+  - `inv-slot-drop` 保持右下角；
+  - 使用按钮增加独立类（如 `inv-slot-use`）放左下角，避免两按钮重叠导致“有使用就不能丢弃”。
+- 两按钮点击都必须 `stopPropagation()`，不得触发格子其它动作（如穿戴）。
+
+## 7) 快捷腰带（quick-belt）物品交互口径（强制）
+
+- 快捷腰带格默认展示 `#item-tooltip`；当格内有物品时，鼠标悬浮应提供“可执行动作菜单”（hover menu），而非仅键盘数字键入口。
+- 菜单动作按物品能力动态生成：
+  - 可消耗：`使用`
+  - 可装备（`tpl.equip_slot`）：`穿上`
+  - 任意物品：`丢弃`
+- 菜单动作必须复用 `SceneApp` 的统一容器入口（如 `tryUseItemFromContainer` / `tryEquipItemFromContainer`），禁止在 `scene-renderer` 复制一套取物/回滚逻辑。
+- 菜单需支持：离开槽位延时关闭、点击外部关闭、重渲染时主动收起，避免残留浮层与过期索引。
+

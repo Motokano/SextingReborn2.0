@@ -1,0 +1,40 @@
+---
+description: 食物Buff与Buff监听 20行速查
+alwaysApply: true
+---
+
+# 快速口径（20行）
+
+- 物品食用配置字段：`edible`、`edible_buff_id`（源自 CSV，经 `build-items-json` 映射到 `items.json`）。
+- 运行时优先：`edible=true && edible_buff_id` -> 直接 `BuffSystem.applyBuff('player', edible_buff_id, ...)`。
+- 物品“可使用”判定：`edible+edible_buff_id` 或 `use_effect` 任一成立即可。
+- “使用”入口至少覆盖：背包面板 + 快捷腰带悬浮菜单；两者必须复用同一判定/施加逻辑。
+- 同 `buff_id` 已存在时，不允许重复食用同种 Buff。
+- 未配置 `edible_buff_id` 时，可走旧 `use_effect`/自动消化兜底，不要破坏兼容。
+- `addSatiety` 在 `satiety>=90` 时，只有存在“可加饱食的消化 Buff”才允许超过 `100`。
+- 增重条件维持原逻辑：`satiety > 100` 的连续 tick 计数，不要改口径。
+- Buff 注册表必须有：`event_kind=buff`、`event_name=buff_state_changed`、`tag=state`。
+- Buff 状态变化后需发 `buff_state_changed`，并防止事件重入死循环。
+- `survival_delta` 字段速记：`satiety=饱食`、`thirst=饮水`、`nutrition=营养`、`stamina=体力`、`energy=精力`（**不是体力**）。
+- 体力一律写 `stamina`；`energy` 只用于精力（编辑器文案也按此口径）。
+- effects 可用：`apply_buff_if_has_buffs`。
+- `apply_buff_if_has_buffs.params.required_buff_ids`：必需 Buff 列表（全满足）。
+- `apply_buff_if_has_buffs.params.required_judgment_tags`（可选）：对象；与 `required_buff_ids` **同时**要求时，需存在至少一层活跃 Buff 实例，其模板 `judgment_tags` 对该对象**每一键**值全相等（常用键：`food_category`、`food_item`）。
+- Buff 模板可选 `judgment_tags`：与 `effects` 同条 Buff，仅用于条件判断，不单独拆大类 Buff。
+- `apply_buff_if_has_buffs.params.grant_buff_id`：满足后授予的 Buff。
+- `grant_buff_id` 不能为空；空值会导致 `apply_buff_if_has_buffs` 直接不触发。
+- 组合授予写法：把 `apply_buff_if_has_buffs` 放在已存在的触发来源 Buff（或 watcher Buff）上，目标 Buff 写到 `grant_buff_id`；不要只把该判定写在目标 Buff 自身。
+- `allow_reapply=false` 时，目标 Buff 已存在则不重复施加。
+- `tools/item-editor.html` 必须可视化编辑 `edible` / `edible_buff_id`，并支持 `usable` / `use_buff_id`。
+- `tools/item-editor.html` 的 Buff 列表需支持“本地 `buffs.json` 文件导入”（兼容 `file://` 打开工具页）。
+- 物品行选择需有搜索过滤（`id` / `sn(name)` / `placeholder_name`）。
+- `tools/buff-editor.html` 必须有：
+- 事件预设：Buff监听触发（`buff_state_changed`）。
+- 模板库：支持 `food_buff_bundle`（整套食物Buff）与 `survival_delta_expire`（结束时效果）。
+- 组合判定：双击“必需 Buff”直接写入/移除 `required_buff_ids`。
+- `grant_buff_id` 默认当前编辑中的 `buff_id`（无需重复手选）。
+- 可视化区需支持“写入 JSON / 从 JSON 回填”。
+- 高级 JSON 默认折叠；模板写入后自动展开。
+- 改动任一链路后，检查：编辑器导出 -> 构建 -> 运行时食用 -> Buff 生效 -> overcap 门槛。
+- 修改时勿新增并行真相，以 `items.json + buffs.json + registry` 为准。
+- 背包格中“使用”与“丢弃”按钮必须并存且不重叠（避免“显示使用后无法丢弃”回归）。

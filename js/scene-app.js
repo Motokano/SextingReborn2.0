@@ -264,6 +264,7 @@
 
     var playerSpriteUrls = { down: '', up: '', left: '', right: '' };
     var currentFacing = 'down';
+    var currentFacingDir = 4; // 8-dir: 0 up, 2 right, 4 down, 6 left
 
     function updatePlayerAvatarImage() {
         var wrap = document.getElementById('player-avatar');
@@ -285,14 +286,77 @@
         img.src = url;
     }
 
-    function setFacingFromMove(dx, dy) {
-        if (dx > 0) currentFacing = 'right';
-        else if (dx < 0) currentFacing = 'left';
-        else if (dy > 0) currentFacing = 'down';
-        else if (dy < 0) currentFacing = 'up';
+    function normalizeFacingDir(v) {
+        var n = Number(v);
+        if (!isFinite(n)) return 4;
+        n = Math.round(n) % 8;
+        if (n < 0) n += 8;
+        return n;
+    }
+
+    function facingDirToVector(dir) {
+        switch (normalizeFacingDir(dir)) {
+            case 0: return { x: 0, y: -1 };
+            case 1: return { x: 1, y: -1 };
+            case 2: return { x: 1, y: 0 };
+            case 3: return { x: 1, y: 1 };
+            case 4: return { x: 0, y: 1 };
+            case 5: return { x: -1, y: 1 };
+            case 6: return { x: -1, y: 0 };
+            case 7: return { x: -1, y: -1 };
+            default: return { x: 0, y: 1 };
+        }
+    }
+
+    function facingDirToCardinal(dir) {
+        var d = normalizeFacingDir(dir);
+        if (d === 0 || d === 1 || d === 7) return 'up';
+        if (d === 2 || d === 3) return 'right';
+        if (d === 4 || d === 5) return 'down';
+        return 'left';
+    }
+
+    function facingDirFromMove(dx, dy) {
+        var x = Number(dx) || 0;
+        var y = Number(dy) || 0;
+        if (!x && !y) return currentFacingDir;
+        if (x > 0 && y < 0) return 1;
+        if (x > 0 && y > 0) return 3;
+        if (x < 0 && y > 0) return 5;
+        if (x < 0 && y < 0) return 7;
+        if (x > 0) return 2;
+        if (x < 0) return 6;
+        if (y < 0) return 0;
+        return 4;
+    }
+
+    function setFacingDir(dir) {
+        currentFacingDir = normalizeFacingDir(dir);
+        currentFacing = facingDirToCardinal(currentFacingDir);
         updatePlayerAvatarImage();
+        return currentFacingDir;
+    }
+
+    function getFacingDir() {
+        return normalizeFacingDir(currentFacingDir);
+    }
+
+    function setFacingFromMove(dx, dy) {
+        return setFacingDir(facingDirFromMove(dx, dy));
     }
     window.SceneCtx.setFacingFromMove = setFacingFromMove;
+    window.SceneCtx.getFacingDir = getFacingDir;
+    window.SceneCtx.setFacingDir = setFacingDir;
+    window.SceneCtx.getFacingVector = function () {
+        return facingDirToVector(currentFacingDir);
+    };
+    window.PlayerFacing = {
+        getDir: getFacingDir,
+        setDir: setFacingDir,
+        setFromMove: setFacingFromMove,
+        getVector: function () { return facingDirToVector(currentFacingDir); },
+        getCardinal: function () { return currentFacing; }
+    };
 
     function setPlayerAvatar(url) {
         var u = (url != null && url !== '') ? url : '';
@@ -720,6 +784,9 @@
             window.SceneRenderer.render();
         }
     }
+    window.addEventListener('resize', function () {
+        render();
+    });
 
     // NOTE: bootstrapMapsFromJson 会触发 render()，而此时 SceneApp.init 里还未完成 ui_text_zhCN.json 的加载。
     // 放到 init() 的 loadConfig 成功后再执行，避免出现 UIText 未加载导致的崩溃。
@@ -1761,6 +1828,19 @@
                         };
                     })(containerType, i);
                     slot.appendChild(dropBtn);
+                    if (itemTemplateIsConsumable(tpl)) {
+                        var useBtn = document.createElement('button');
+                        useBtn.type = 'button';
+                        useBtn.className = 'inv-slot-drop inv-slot-use';
+                        useBtn.textContent = ui('inv.use');
+                        useBtn.onclick = (function (ct, idx) {
+                            return function (ev) {
+                                if (ev && typeof ev.stopPropagation === 'function') ev.stopPropagation();
+                                tryUseItemFromContainer(ct, idx);
+                            };
+                        })(containerType, i);
+                        slot.appendChild(useBtn);
+                    }
                     var tplAttrs = formatItemAttributes(tpl, it);
                     var tipHtml = buildItemTooltipHtml(name, tpl ? IE.getDisplayDesc(tpl, tier, char) : '', tplAttrs);
                     slot.addEventListener('mouseenter', function (h, el) { return function () { showItemTooltip(h, el); }; }(tipHtml, slot));
@@ -2645,6 +2725,50 @@
                 node.className = 'combat-move-node' + (combatUIState.editingSlot === i ? ' editing' : '') + (!rawMoveId ? ' slot-empty' : '');
                 node.innerHTML = '<span class="node-index">' + String(i + 1).padStart(2, '0') + '</span><span class="node-name">' + moveName + '</span><span class="node-prof">' + ui('combat.prof.node', { v: nodeProf }) + '</span><span class="node-post' + (postIdAtSlot ? '' : ' empty') + '">' + postText + '</span>';
 
+                // 成数控件（仅主动招式槽）
+                if (rawMoveId && !isVariantSlot && moveObj && IE && typeof IE.getMoveSlotPowerLevel === 'function') {
+                    var plStored = IE.getMoveSlotPowerLevel(limbPartForSeq, i);
+                    var plMin = moveObj.power_level_min != null ? Number(moveObj.power_level_min) : 1;
+                    var plMax = moveObj.power_level_max != null ? Number(moveObj.power_level_max) : 12;
+                    var plDef = moveObj.default_power_level != null ? Number(moveObj.default_power_level) : 10;
+                    var plShow = plStored != null ? plStored : plDef;
+                    var powerCtrl = document.createElement('div');
+                    powerCtrl.className = 'node-power-ctrl';
+                    var btnMinus = document.createElement('button');
+                    btnMinus.type = 'button';
+                    btnMinus.className = 'btn-power-step';
+                    btnMinus.textContent = '−';
+                    btnMinus.disabled = plShow <= plMin;
+                    var powerVal = document.createElement('span');
+                    powerVal.className = 'node-power-val';
+                    powerVal.textContent = plShow + '成';
+                    var btnPlus = document.createElement('button');
+                    btnPlus.type = 'button';
+                    btnPlus.className = 'btn-power-step';
+                    btnPlus.textContent = '+';
+                    btnPlus.disabled = plShow >= plMax;
+                    btnMinus.onclick = function (slotIdx, limbId, cur, min) {
+                        return function (e) {
+                            e.stopPropagation();
+                            if (!IE || typeof IE.setMoveSlotPowerLevel !== 'function') return;
+                            IE.setMoveSlotPowerLevel(limbId, slotIdx, Math.max(min, cur - 1));
+                            renderCombatModal();
+                        };
+                    }(i, limbPartForSeq, plShow, plMin);
+                    btnPlus.onclick = function (slotIdx, limbId, cur, max) {
+                        return function (e) {
+                            e.stopPropagation();
+                            if (!IE || typeof IE.setMoveSlotPowerLevel !== 'function') return;
+                            IE.setMoveSlotPowerLevel(limbId, slotIdx, Math.min(max, cur + 1));
+                            renderCombatModal();
+                        };
+                    }(i, limbPartForSeq, plShow, plMax);
+                    powerCtrl.appendChild(btnMinus);
+                    powerCtrl.appendChild(powerVal);
+                    powerCtrl.appendChild(btnPlus);
+                    node.appendChild(powerCtrl);
+                }
+
                 var btnPost = document.createElement('button');
                 btnPost.type = 'button';
                 btnPost.className = 'btn-post-slot';
@@ -2928,6 +3052,7 @@
                 combat.post_effect_sequences[limbId][combatUIState.curSkillId] = postArr.slice();
             }
             if (!safeSetCombatState({ move_sequences: patchMs, post_effect_sequences: combat.post_effect_sequences }, ui('combat.seq.clear_last_forbidden'))) return;
+            if (IE && typeof IE.setMoveSlotPowerLevel === 'function') IE.setMoveSlotPowerLevel(part, idx, null);
             combatUIState.editingSlot = null;
             picker.classList.remove('show');
             renderCombatModal();
@@ -2955,6 +3080,7 @@
                 var patchMs = {};
                 patchMs[part] = seq;
                 if (!safeSetCombatState({ move_sequences: patchMs }, ui('combat.seq.clear_last_forbidden'))) return;
+                if (IE && typeof IE.setMoveSlotPowerLevel === 'function') IE.setMoveSlotPowerLevel(part, idx, null);
 
                 // 招式替换后，若该槽已装配后遗症但不再匹配 valid_*，则自动清空该槽
                 var limbId = part;
@@ -3014,6 +3140,7 @@
                     var patchMs = {};
                     patchMs[part] = seq;
                     if (!safeSetCombatState({ move_sequences: patchMs }, ui('combat.seq.clear_last_forbidden'))) return;
+                    if (IE && typeof IE.setMoveSlotPowerLevel === 'function') IE.setMoveSlotPowerLevel(part, idx, null);
                     // 该槽改成变式后，自动清空后遗症
                     var limbId = part;
                     var postSeqMap = (combat.post_effect_sequences && combat.post_effect_sequences[limbId]) ? combat.post_effect_sequences[limbId] : null;
@@ -3826,6 +3953,10 @@
             window.SceneCtx.actions = window.SceneCtx.actions || {};
             window.SceneCtx.actions.tryMoveTo = function (tx, ty, dx, dy) {
                 if (isStoryMovementLocked()) return;
+                if (window.BuffSystem && typeof window.BuffSystem.hasMovementDisabled === 'function' && window.BuffSystem.hasMovementDisabled('player')) {
+                    showMsg(ui('intro.blocked.action'), 'info');
+                    return;
+                }
                 var st = E.getState();
                 var ddx = (dx != null) ? dx : (tx - st.x);
                 var ddy = (dy != null) ? dy : (ty - st.y);
@@ -3878,76 +4009,242 @@
                     }
                     if (defenderBase.speed != null && isFinite(Number(defenderBase.speed))) defSpeed = Number(defenderBase.speed);
 
-                    var r = null;
-                    if (window.CombatMeleeResolve && typeof window.CombatMeleeResolve.resolvePlayerVsEnemyAttack === 'function') {
-                        r = window.CombatMeleeResolve.resolvePlayerVsEnemyAttack({
-                            skillId: ctxMeta.skill_id != null ? ctxMeta.skill_id : intent.skillId,
-                            moveId: ctxMeta.move_id != null ? ctxMeta.move_id : intent.moveId,
-                            limbId: ctxMeta.limb_id != null ? ctxMeta.limb_id : intent.limbId,
-                            powerLevel: ctxMeta.power_level,
-                            defenderSpeed: defSpeed
+                    var limbUse = ctxMeta.limb_id != null ? ctxMeta.limb_id : intent.limbId;
+                    var skUse = ctxMeta.skill_id != null ? ctxMeta.skill_id : intent.skillId;
+                    var mvUse = ctxMeta.move_id != null ? ctxMeta.move_id : intent.moveId;
+
+                    // 读取该肢当前槽位成数（ctxMeta 显式传入时优先）
+                    var _slotPwr = ctxMeta.power_level != null ? Number(ctxMeta.power_level) : null;
+                    if (_slotPwr == null && IE && typeof IE.peekMoveSlotIndexForLimb === 'function') {
+                        var _slotPwrIdx = IE.peekMoveSlotIndexForLimb(limbUse);
+                        if (_slotPwrIdx >= 0 && typeof IE.getMoveSlotPowerLevel === 'function') {
+                            _slotPwr = IE.getMoveSlotPowerLevel(limbUse, _slotPwrIdx);
+                        }
+                    }
+
+                    var postIds = ctxMeta.post_effect_ids;
+                    if (!postIds && ctxMeta.post_effect_id) postIds = [ctxMeta.post_effect_id];
+                    if ((!postIds || !postIds.length) && window.CombatInitiative && typeof window.CombatInitiative.getPostEffectIdsForMoveSlot === 'function' && window.InventoryEquipment) {
+                        postIds = window.CombatInitiative.getPostEffectIdsForMoveSlot(window.InventoryEquipment, limbUse, skUse, mvUse);
+                    }
+                    if (!Array.isArray(postIds)) postIds = [];
+                    var defPostIds = Array.isArray(defenderBase.counter_post_effect_ids) ? defenderBase.counter_post_effect_ids : [];
+
+                    var plSpeed = 1;
+                    if (window.CharacterAttributes && typeof window.CharacterAttributes.getCombatSpeed === 'function') {
+                        plSpeed = window.CharacterAttributes.getCombatSpeed();
+                    }
+                    var initPlan = { mode: 'sequential', firstStrike: 'player' };
+                    if (window.CombatInitiative && typeof window.CombatInitiative.resolvePlayerInitiatedExchange === 'function') {
+                        initPlan = window.CombatInitiative.resolvePlayerInitiatedExchange({
+                            playerSpeed: plSpeed,
+                            enemySpeed: defSpeed,
+                            attackerPostEffectIds: postIds,
+                            defenderPostEffectIds: defPostIds,
+                            skillId: skUse,
+                            moveId: mvUse
                         });
                     }
-                    var rawDmg = r && isFinite(r.rawDamage) ? r.rawDamage : 10;
-                    var hitOk = r ? !!r.hitRollSuccess : (ctxMeta.hit_roll_success !== false);
-                    var hitPt = r ? r.hitPart : (ctxMeta.hit_part || 'chest');
-                    var skId = r ? r.skillId : (ctxMeta.skill_id || 'combat_basic_unarmed');
-                    var mvId = r ? r.moveId : (ctxMeta.move_id || 'jab');
-                    var lmId = r ? r.limbId : (ctxMeta.limb_id || 'lhand');
-                    var dmgType = r ? r.damageType : 'blunt';
-                    var modKey = r ? r.hitPartModifierKey : null;
-                    var moveTags = [];
-                    if (window.CombatSkills && typeof window.CombatSkills.getSkill === 'function') {
-                        var skObj = window.CombatSkills.getSkill(skId);
-                        if (skObj && Array.isArray(skObj.moves)) {
-                            for (var mi = 0; mi < skObj.moves.length; mi++) {
-                                var mObj = skObj.moves[mi];
-                                if (mObj && mObj.id === mvId) {
-                                    if (Array.isArray(mObj.required_limb_tags)) moveTags = mObj.required_limb_tags.slice();
-                                    break;
+                    var CP = window.CombatPipeline;
+                    var CMR = window.CombatMeleeResolve;
+                    var canEnemyCounter = defenderBase.can_attack !== false;
+                    var useSimultaneous = initPlan.mode === 'simultaneous' && canEnemyCounter
+                        && CP && typeof CP.flushPendingBuffApplies === 'function'
+                        && typeof CP.finalizeSimultaneousStrike === 'function'
+                        && CMR && typeof CMR.applyDeferredResourceSpendFromResolveResult === 'function';
+                    var enemyActsFirst = initPlan.firstStrike === 'enemy' && canEnemyCounter;
+
+                    var defenderFacingDir = 4;
+                    if (window.CombatEnemies && typeof window.CombatEnemies.ensureFacingTowardTarget === 'function') {
+                        defenderFacingDir = window.CombatEnemies.ensureFacingTowardTarget(
+                            enemyId,
+                            st.mapId,
+                            ctxMeta.x,
+                            ctxMeta.y,
+                            ctxMeta.fromX,
+                            ctxMeta.fromY
+                        );
+                    }
+
+                    function buildPlayerAtkCtx(r0, postIdsArr, simDry) {
+                        var rawDmg0 = r0 && isFinite(r0.rawDamage) ? r0.rawDamage : 10;
+                        var hitOk0 = r0 ? !!r0.hitRollSuccess : (ctxMeta.hit_roll_success !== false);
+                        var hitPt0 = r0 ? r0.hitPart : (ctxMeta.hit_part || 'chest');
+                        var skId0 = r0 ? r0.skillId : (ctxMeta.skill_id || 'combat_basic_unarmed');
+                        var mvId0 = r0 ? r0.moveId : (ctxMeta.move_id || 'jab');
+                        var lmId0 = r0 ? r0.limbId : (ctxMeta.limb_id || 'lhand');
+                        var dmgType0 = r0 ? r0.damageType : 'blunt';
+                        var modKey0 = r0 ? r0.hitPartModifierKey : null;
+                        var moveTags0 = [];
+                        if (window.CombatSkills && typeof window.CombatSkills.getSkill === 'function') {
+                            var skObj0 = window.CombatSkills.getSkill(skId0);
+                            if (skObj0 && Array.isArray(skObj0.moves)) {
+                                for (var mi0 = 0; mi0 < skObj0.moves.length; mi0++) {
+                                    var mObj0 = skObj0.moves[mi0];
+                                    if (mObj0 && mObj0.id === mvId0) {
+                                        if (Array.isArray(mObj0.required_limb_tags)) moveTags0 = mObj0.required_limb_tags.slice();
+                                        break;
+                                    }
                                 }
+                            }
+                        }
+                        return {
+                            eventIdSuffix: String(enemyId) + '_' + String(mvId0),
+                            hitRollSuccess: hitOk0,
+                            hitPart: hitPt0,
+                            moveId: mvId0,
+                            skillId: skId0,
+                            limbId: lmId0,
+                            damageType: dmgType0,
+                            hitPartModifierKey: modKey0,
+                            moveTags: moveTags0,
+                            subhit_index: 0,
+                            is_last_subhit: true,
+                            rawDamage: rawDmg0,
+                            forceZeroDamageByResourceInsufficient: !!(r0 && r0.forceZeroDamageByResourceInsufficient),
+                            simultaneousDryRun: !!simDry,
+                            attacker: {
+                                kind: 'player',
+                                facingDir: (window.PlayerFacing && typeof window.PlayerFacing.getDir === 'function') ? window.PlayerFacing.getDir() : 4,
+                                pos: { x: ctxMeta.fromX, y: ctxMeta.fromY },
+                                postEffectIds: Array.isArray(postIdsArr) ? postIdsArr.slice() : [],
+                                activeVariantIds: (window.InventoryEquipment && typeof window.InventoryEquipment.getActiveVariantIdsForLimb === 'function')
+                                    ? window.InventoryEquipment.getActiveVariantIdsForLimb(lmId0)
+                                    : []
+                            },
+                            defender: (function () {
+                                var d0 = Object.assign({}, defenderBase);
+                                d0.facingDir = defenderFacingDir;
+                                d0.pos = { x: ctxMeta.x, y: ctxMeta.y };
+                                if (window.InventoryEquipment && typeof window.InventoryEquipment.getParryVariantIdsForLimb === 'function') {
+                                    d0.parryVariantIds = [];
+                                }
+                                return d0;
+                            })()
+                        };
+                    }
+
+                    function buildEnemyCounterAtkCtx(rE, simDry) {
+                        var re = rE || {};
+                        return {
+                            eventIdSuffix: String(enemyId) + '_' + String(re.moveId || 'counter') + (simDry ? '_sim' : ''),
+                            hitRollSuccess: !!re.hitRollSuccess,
+                            hitPart: re.hitPart || 'chest',
+                            moveId: re.moveId || 'enemy_counter_strike',
+                            skillId: re.skillId || '__enemy_counter_attack__',
+                            limbId: 'rhand',
+                            damageType: re.damageType || 'blunt',
+                            hitPartModifierKey: re.hitPartModifierKey || null,
+                            moveTags: [],
+                            subhit_index: 0,
+                            is_last_subhit: true,
+                            rawDamage: isFinite(re.rawDamage) ? re.rawDamage : 0,
+                            forceZeroDamageByResourceInsufficient: false,
+                            simultaneousDryRun: !!simDry,
+                            attacker: {
+                                kind: 'enemy',
+                                enemyId: enemyId,
+                                postEffectIds: [],
+                                facingDir: defenderFacingDir,
+                                pos: { x: ctxMeta.x, y: ctxMeta.y }
+                            },
+                            defender: {
+                                kind: 'player',
+                                facingDir: (window.PlayerFacing && typeof window.PlayerFacing.getDir === 'function') ? window.PlayerFacing.getDir() : 4,
+                                pos: { x: ctxMeta.fromX, y: ctxMeta.fromY }
+                            }
+                        };
+                    }
+
+                    var pipeName = ctxMeta.pipeline || 'melee_hit_enemy_defender';
+                    var r = null;
+                    var atkCtx = null;
+                    var rEnemyCounter = null;
+                    var atkCtxEnemy = null;
+
+                    if (useSimultaneous && CMR && typeof CMR.resolvePlayerVsEnemyAttack === 'function' && typeof CMR.resolveEnemyVsPlayerAttack === 'function') {
+                        r = CMR.resolvePlayerVsEnemyAttack({
+                            skillId: skUse,
+                            moveId: mvUse,
+                            limbId: limbUse,
+                            powerLevel: _slotPwr,
+                            defenderSpeed: defSpeed,
+                            deferResourceSpend: true
+                        });
+                        rEnemyCounter = CMR.resolveEnemyVsPlayerAttack({ enemyId: enemyId, attackerSpeed: defSpeed });
+                        atkCtx = buildPlayerAtkCtx(r, postIds, true);
+                        atkCtxEnemy = buildEnemyCounterAtkCtx(rEnemyCounter, true);
+                        if (intent.advanceCursor && window.InventoryEquipment && typeof window.InventoryEquipment.advanceMoveSequenceCursorForLimb === 'function') {
+                            window.InventoryEquipment.advanceMoveSequenceCursorForLimb(atkCtx.limbId);
+                        }
+                        CP.runPipeline(pipeName, atkCtx);
+                        CP.runPipeline('melee_hit_player_defender', atkCtxEnemy);
+                        if (typeof CP.flushPendingBuffApplies === 'function') {
+                            CP.flushPendingBuffApplies(atkCtx);
+                            CP.flushPendingBuffApplies(atkCtxEnemy);
+                        }
+                        if (typeof CMR.applyDeferredResourceSpendFromResolveResult === 'function') {
+                            CMR.applyDeferredResourceSpendFromResolveResult(r);
+                        }
+                        if (typeof CP.finalizeSimultaneousStrike === 'function') {
+                            CP.finalizeSimultaneousStrike(atkCtx);
+                            CP.finalizeSimultaneousStrike(atkCtxEnemy);
+                        }
+                    } else if (enemyActsFirst && CMR && typeof CMR.resolveEnemyVsPlayerAttack === 'function' && typeof CMR.resolvePlayerVsEnemyAttack === 'function') {
+                        rEnemyCounter = CMR.resolveEnemyVsPlayerAttack({ enemyId: enemyId, attackerSpeed: defSpeed });
+                        atkCtxEnemy = buildEnemyCounterAtkCtx(rEnemyCounter, false);
+                        CP.runPipeline('melee_hit_player_defender', atkCtxEnemy);
+                        if (window.GameLog && atkCtxEnemy.finalDamage != null && typeof window.GameLog.log === 'function') {
+                            window.GameLog.log(ui('log.combat.resolve.summary', {
+                                dmg: String(Math.round(atkCtxEnemy.finalDamage)),
+                                parry: atkCtxEnemy.parrySucceeded ? ui('log.combat.pipeline.parry_yes') : ui('log.combat.pipeline.parry_no')
+                            }) + '（先手还击）', 'damage');
+                        }
+                        r = CMR.resolvePlayerVsEnemyAttack({
+                            skillId: skUse,
+                            moveId: mvUse,
+                            limbId: limbUse,
+                            powerLevel: _slotPwr,
+                            defenderSpeed: defSpeed
+                        });
+                        atkCtx = buildPlayerAtkCtx(r, postIds, false);
+                        if (intent.advanceCursor && window.InventoryEquipment && typeof window.InventoryEquipment.advanceMoveSequenceCursorForLimb === 'function') {
+                            window.InventoryEquipment.advanceMoveSequenceCursorForLimb(atkCtx.limbId);
+                        }
+                        CP.runPipeline(pipeName, atkCtx);
+                    } else {
+                        if (!CMR || typeof CMR.resolvePlayerVsEnemyAttack !== 'function') {
+                            atkCtx = buildPlayerAtkCtx(null, postIds, false);
+                        } else {
+                            r = CMR.resolvePlayerVsEnemyAttack({
+                                skillId: skUse,
+                                moveId: mvUse,
+                                limbId: limbUse,
+                                powerLevel: _slotPwr,
+                                defenderSpeed: defSpeed
+                            });
+                            atkCtx = buildPlayerAtkCtx(r, postIds, false);
+                        }
+                        if (intent.advanceCursor && window.InventoryEquipment && typeof window.InventoryEquipment.advanceMoveSequenceCursorForLimb === 'function') {
+                            window.InventoryEquipment.advanceMoveSequenceCursorForLimb(atkCtx.limbId);
+                        }
+                        CP.runPipeline(pipeName, atkCtx);
+                        if (canEnemyCounter && CMR && typeof CMR.resolveEnemyVsPlayerAttack === 'function') {
+                            rEnemyCounter = CMR.resolveEnemyVsPlayerAttack({ enemyId: enemyId, attackerSpeed: defSpeed });
+                            atkCtxEnemy = buildEnemyCounterAtkCtx(rEnemyCounter, false);
+                            CP.runPipeline('melee_hit_player_defender', atkCtxEnemy);
+                            if (window.GameLog && atkCtxEnemy.finalDamage != null && typeof window.GameLog.log === 'function') {
+                                window.GameLog.log(ui('log.combat.resolve.summary', {
+                                    dmg: String(Math.round(atkCtxEnemy.finalDamage)),
+                                    parry: atkCtxEnemy.parrySucceeded ? ui('log.combat.pipeline.parry_yes') : ui('log.combat.pipeline.parry_no')
+                                }) + '（还击）', 'damage');
                             }
                         }
                     }
 
-                    if (intent.advanceCursor && window.InventoryEquipment && typeof window.InventoryEquipment.advanceMoveSequenceCursorForLimb === 'function') {
-                        window.InventoryEquipment.advanceMoveSequenceCursorForLimb(lmId);
-                    }
-
-                    var pipeName = ctxMeta.pipeline || 'melee_hit_enemy_defender';
-                    var postIds = ctxMeta.post_effect_ids;
-                    if (!postIds && ctxMeta.post_effect_id) postIds = [ctxMeta.post_effect_id];
-                    var atkCtx = {
-                        eventIdSuffix: String(enemyId) + '_' + String(mvId),
-                        hitRollSuccess: hitOk,
-                        hitPart: hitPt,
-                        moveId: mvId,
-                        skillId: skId,
-                        limbId: lmId,
-                        damageType: dmgType,
-                        hitPartModifierKey: modKey,
-                        moveTags: moveTags,
-                        subhit_index: 0,
-                        is_last_subhit: true,
-                        rawDamage: rawDmg,
-                        forceZeroDamageByResourceInsufficient: !!(r && r.forceZeroDamageByResourceInsufficient),
-                        attacker: {
-                            kind: 'player',
-                            postEffectIds: Array.isArray(postIds) ? postIds.slice() : [],
-                            activeVariantIds: (window.InventoryEquipment && typeof window.InventoryEquipment.getActiveVariantIdsForLimb === 'function')
-                                ? window.InventoryEquipment.getActiveVariantIdsForLimb(lmId)
-                                : []
-                        },
-                        defender: (function () {
-                            var d = Object.assign({}, defenderBase);
-                            if (window.InventoryEquipment && typeof window.InventoryEquipment.getParryVariantIdsForLimb === 'function') {
-                                // 敌人侧当前未接入肢体化招架变式，默认空；玩家防守管线会在 CombatParry 解析 guardLimb 后补充。
-                                d.parryVariantIds = [];
-                            }
-                            return d;
-                        })()
-                    };
-                    window.CombatPipeline.runPipeline(pipeName, atkCtx);
+                    var skId = atkCtx.skillId;
+                    var mvId = atkCtx.moveId;
+                    var hitOk = atkCtx.hitRollSuccess;
                     if (window.InventoryEquipment && typeof window.InventoryEquipment.adjustSkillMoveUsage === 'function') {
                         var pd = Number(atkCtx.proficiencyDelta);
                         if (isFinite(pd) && pd !== 0) {
@@ -4139,7 +4436,15 @@
                         event_name: 'footwork_nie_bu_resolved',
                         event_id: 'footwork_nie_bu_' + String(tickSnap) + '_' + fromX + '_' + fromY + '_' + gx + '_' + gy,
                         tags: ['footwork_nie_bu', 'hub_action', 'move'],
-                        payload: { hub_skill_id: SKILL_ID, hub_action_id: ACTION_ID, from_x: fromX, from_y: fromY, to_x: stAfter.x, to_y: stAfter.y }
+                        payload: {
+                            hub_skill_id: SKILL_ID,
+                            hub_action_id: ACTION_ID,
+                            from_x: fromX,
+                            from_y: fromY,
+                            to_x: stAfter.x,
+                            to_y: stAfter.y,
+                            facing_dir: (window.PlayerFacing && typeof window.PlayerFacing.getDir === 'function') ? window.PlayerFacing.getDir() : 4
+                        }
                     });
                 }
                 render();
@@ -4281,6 +4586,15 @@
         return Buff.applyBuff('player', buffId, 'item:' + itemId, null);
     }
 
+    function itemTemplateIsConsumable(tpl) {
+        if (!tpl) return false;
+        var edibleRaw = tpl.edible;
+        var edible = edibleRaw === true || edibleRaw === 1 || edibleRaw === '1' || edibleRaw === 'true';
+        if (edible && tpl.edible_buff_id && String(tpl.edible_buff_id).trim()) return true;
+        var ue = tpl.use_effect;
+        return !!(ue && typeof ue === 'object');
+    }
+
     function applyItemUseEffectFromTemplate(itemId, tpl) {
         var ue = tpl && tpl.use_effect;
         var Buff = window.BuffSystem;
@@ -4316,6 +4630,95 @@
         return any;
     }
 
+    function tryUseItemFromContainer(containerType, index, opts) {
+        var inv = window.InventoryEquipment;
+        if (!inv || typeof inv.takeItemFromContainer !== 'function') return false;
+        var options = opts || {};
+        var arr = containerType === 'pocket' ? (inv.getPocketArray ? inv.getPocketArray() : [])
+            : (containerType === 'vest' ? (inv.getVestArray ? inv.getVestArray() : [])
+                : (containerType === 'backpack' ? (inv.getBackpackArray ? inv.getBackpackArray() : [])
+                    : []));
+        var cell = arr[index];
+        if (!cell || !cell.item_id) return false;
+        var itemId = cell.item_id;
+        var tpl = inv.getItemTemplate(itemId);
+        if (!itemTemplateIsConsumable(tpl)) {
+            if (!options.silent) showMsg(ui('item.use.cannot'), 'info');
+            return false;
+        }
+        var taken = inv.takeItemFromContainer(containerType, index);
+        if (!taken.success || !taken.item) {
+            if (!options.silent) showMsg(ui('item.use.fail'), 'warn');
+            return false;
+        }
+        if (!applyItemUseEffectFromTemplate(itemId, tpl)) {
+            if (inv.putItemIntoDefaultContainer) inv.putItemIntoDefaultContainer(taken.item);
+            if (!options.silent) showMsg(ui('item.use.cannot'), 'info');
+            return false;
+        }
+        var char0 = inv.getCharacterForDisplay ? inv.getCharacterForDisplay() : null;
+        var tier0 = inv.getItemDisplayTier ? inv.getItemDisplayTier(itemId, char0) : 0;
+        var dispName = inv.getDisplayName ? inv.getDisplayName(tpl, tier0, char0) : itemId;
+        if (!options.silent) showMsg(ui('item.use.ok', { name: dispName }), 'success');
+        if (window.Survival && typeof window.Survival.advanceTick === 'function') window.Survival.advanceTick();
+        if (typeof updateStatusPanel === 'function') updateStatusPanel();
+        if (typeof backpackPanelOpen !== 'undefined' && backpackPanelOpen && typeof updateBackpackPanel === 'function') updateBackpackPanel();
+        if (window.SceneRenderer && typeof window.SceneRenderer.render === 'function') window.SceneRenderer.render();
+        return true;
+    }
+
+    function tryEquipItemFromContainer(containerType, index, opts) {
+        var inv = window.InventoryEquipment;
+        if (!inv || typeof inv.takeItemFromContainer !== 'function' || typeof inv.equip !== 'function') return false;
+        var options = opts || {};
+        var arr = containerType === 'pocket' ? (inv.getPocketArray ? inv.getPocketArray() : [])
+            : (containerType === 'vest' ? (inv.getVestArray ? inv.getVestArray() : [])
+                : (containerType === 'backpack' ? (inv.getBackpackArray ? inv.getBackpackArray() : [])
+                    : []));
+        var cell = arr[index];
+        if (!cell || !cell.item_id) return false;
+        var tpl = inv.getItemTemplate(cell.item_id);
+        if (!tpl || !tpl.equip_slot) return false;
+        var posNow = E && E.getState ? E.getState() : null;
+
+        var taken = inv.takeItemFromContainer(containerType, index);
+        if (!taken.success || !taken.item) return false;
+        var itemToEquip = taken.item;
+        if (itemToEquip && itemToEquip.count != null) itemToEquip.count = 1;
+
+        var stNow = inv.getState ? inv.getState() : {};
+        var slotId = tpl.equip_slot;
+        var currentEq = (stNow && stNow.equipment) ? stNow.equipment[slotId] : null;
+        if (currentEq && typeof inv.unequip === 'function') {
+            var unequipped = inv.unequip(slotId, posNow);
+            if (unequipped) {
+                var placedOld = inv.putItemIntoDefaultContainer ? inv.putItemIntoDefaultContainer(unequipped) : null;
+                if ((!placedOld || !placedOld.placed) && posNow && posNow.mapId != null && posNow.x != null && posNow.y != null && typeof inv.addItemToGround === 'function') {
+                    inv.addItemToGround(posNow.mapId, posNow.x, posNow.y, unequipped);
+                }
+            }
+        }
+
+        var res = inv.equip(slotId, itemToEquip);
+        if (!res || !res.success) {
+            var placedNew = inv.putItemIntoDefaultContainer ? inv.putItemIntoDefaultContainer(itemToEquip) : null;
+            if ((!placedNew || !placedNew.placed) && posNow && posNow.mapId != null && posNow.x != null && posNow.y != null && typeof inv.addItemToGround === 'function') {
+                inv.addItemToGround(posNow.mapId, posNow.x, posNow.y, itemToEquip);
+            }
+            if (!options.silent) {
+                if (res && res.message) showMsg(res.message, 'warn');
+                else showMsg(ui('inv.equip'), 'warn');
+            }
+            return false;
+        }
+
+        if (!options.silent) showMsg(ui('log.success.equipped'), 'success');
+        if (typeof updateStatusPanel === 'function') updateStatusPanel();
+        if (typeof backpackPanelOpen !== 'undefined' && backpackPanelOpen && typeof updateBackpackPanel === 'function') updateBackpackPanel();
+        if (window.SceneRenderer && typeof window.SceneRenderer.render === 'function') window.SceneRenderer.render();
+        return true;
+    }
+
     function tryUseQuickBeltDigit(digit) {
         var inv = window.InventoryEquipment;
         if (!inv || typeof inv.getQuickBeltSlotSource !== 'function') return;
@@ -4325,38 +4728,15 @@
         if (beltIndex < 0 || beltIndex >= total) return;
         var src = inv.getQuickBeltSlotSource(beltIndex);
         if (!src || !src.type) return;
-        var arr = src.type === 'pocket' ? (inv.getPocketArray ? inv.getPocketArray() : []) : (inv.getVestArray ? inv.getVestArray() : []);
-        var cell = arr[src.index];
-        if (!cell || !cell.item_id) return;
-        var tpl = inv.getItemTemplate(cell.item_id);
-        if (!tpl || !tpl.use_effect) {
-            showMsg(ui('item.use.cannot'), 'info');
-            return;
-        }
-        var taken = inv.takeItemFromContainer(src.type, src.index);
-        if (!taken.success || !taken.item) {
-            showMsg(ui('item.use.fail'), 'warn');
-            return;
-        }
-        if (!applyItemUseEffectFromTemplate(cell.item_id, tpl)) {
-            if (inv.putItemIntoDefaultContainer) inv.putItemIntoDefaultContainer(taken.item);
-            showMsg(ui('item.use.cannot'), 'info');
-            return;
-        }
-        var char0 = inv.getCharacterForDisplay ? inv.getCharacterForDisplay() : null;
-        var tier0 = inv.getItemDisplayTier ? inv.getItemDisplayTier(cell.item_id, char0) : 0;
-        var dispName = inv.getDisplayName ? inv.getDisplayName(tpl, tier0, char0) : cell.item_id;
-        showMsg(ui('item.use.ok', { name: dispName }), 'success');
-        if (window.Survival && typeof window.Survival.advanceTick === 'function') window.Survival.advanceTick();
-        if (typeof updateStatusPanel === 'function') updateStatusPanel();
-        if (typeof backpackPanelOpen !== 'undefined' && backpackPanelOpen && typeof updateBackpackPanel === 'function') updateBackpackPanel();
-        if (window.SceneRenderer && typeof window.SceneRenderer.render === 'function') window.SceneRenderer.render();
+        tryUseItemFromContainer(src.type, src.index);
     }
 
     // Expose entrypoints for bootstrap.js
     window.SceneApp = window.SceneApp || {};
     window.SceneApp.init = init;
     window.SceneApp.loadConfig = loadConfig;
+    window.SceneApp.tryUseItemFromContainer = tryUseItemFromContainer;
+    window.SceneApp.tryEquipItemFromContainer = tryEquipItemFromContainer;
     window.SceneApp.render = render;
     window.SceneApp.openCharacterCreationAfterIntro = openCharacterCreationAfterIntro;
     window.SceneApp.isStoryMovementLocked = isStoryMovementLocked;

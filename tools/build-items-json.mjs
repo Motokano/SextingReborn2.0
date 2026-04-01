@@ -155,6 +155,13 @@ function rowToItem(o, filename) {
 
   const ue = buildUseEffect(o);
   if (ue) item.use_effect = ue;
+  if (Object.prototype.hasOwnProperty.call(o, 'edible')) {
+    const v = String(o.edible == null ? '' : o.edible).trim().toLowerCase();
+    item.edible = (v === '1' || v === 'true' || v === 'yes');
+  }
+  if (o.edible_buff_id) item.edible_buff_id = String(o.edible_buff_id).trim();
+  const foodBuffDur = intOrNull(o.food_buff_duration_ticks);
+  if (foodBuffDur != null && foodBuffDur > 0) item.food_buff_duration_ticks = foodBuffDur;
 
   return item;
 }

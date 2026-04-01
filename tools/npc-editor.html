@@ -477,6 +477,8 @@
                                 <option value="survivalSkillLevelEquals">生存技能等级等于 (survivalSkillLevelEquals)</option>
                                 <option value="survivalSkillLevelGte">生存技能等级 ≥ (survivalSkillLevelGte)</option>
                                 <option value="postEffectObtainedGte">后遗症数量 ≥ (postEffectObtainedGte)</option>
+                                <option value="lastCombatDefenderHitArcEquals">最近被击方位等于 (lastCombatDefenderHitArcEquals)</option>
+                                <option value="lastCombatAttackerStrikeArcEquals">最近攻击方位等于 (lastCombatAttackerStrikeArcEquals)</option>
                                 <option value="hasItem">背包持有物品 (hasItem)</option>
                                 <option value="custom">自定义（见下方 JSON）</option>
                             </select>
@@ -502,6 +504,15 @@
                         <div class="row" id="cond-form-postEffect" style="display:none;">
                             <label>后遗症数量（≥）</label>
                             <input type="number" id="cond-postEffect-count" min="1" value="1" />
+                        </div>
+                        <div class="row" id="cond-form-hitArc" style="display:none;">
+                            <label>方位</label>
+                            <select id="cond-hit-arc-value">
+                                <option value="front">front（正面）</option>
+                                <option value="side">side（侧面）</option>
+                                <option value="back">back（背面）</option>
+                            </select>
+                            <p class="hint">基于最近一次战斗方位快照（SceneCtx.lastCombatDirectional）。</p>
                         </div>
                         <div class="row" id="cond-form-item" style="display:none;">
                             <label>物品 ID</label>
@@ -1513,6 +1524,8 @@
                 if (cond.type === 'survivalSkillLevelEquals') return '生存技能 ' + (cond.skillId || '?') + ' = ' + cond.level;
                 if (cond.type === 'survivalSkillLevelGte') return '生存技能 ' + (cond.skillId || '?') + ' ≥ ' + cond.level;
                 if (cond.type === 'postEffectObtainedGte') return '后遗症数量 ≥ ' + (cond.value != null ? cond.value : (cond.count != null ? cond.count : (cond.min != null ? cond.min : 0)));
+                if (cond.type === 'lastCombatDefenderHitArcEquals') return '最近被击方位 = ' + (cond.value || cond.arc || '?');
+                if (cond.type === 'lastCombatAttackerStrikeArcEquals') return '最近攻击方位 = ' + (cond.value || cond.arc || '?');
                 if (cond.type === 'hasItem') return '持有 ' + (cond.itemId || '?');
                 return cond.type;
             }
@@ -1680,10 +1693,12 @@
                 var fFlag = document.getElementById('cond-form-flag');
                 var fSkill = document.getElementById('cond-form-skill');
                 var fPostEffect = document.getElementById('cond-form-postEffect');
+                var fHitArc = document.getElementById('cond-form-hitArc');
                 var fItem = document.getElementById('cond-form-item');
                 if (fFlag) fFlag.style.display = (type === 'flagEquals') ? 'block' : 'none';
                 if (fSkill) fSkill.style.display = (type === 'skillLevelEquals' || type === 'skillLevelGte' || type === 'survivalSkillLevelEquals' || type === 'survivalSkillLevelGte') ? 'block' : 'none';
                 if (fPostEffect) fPostEffect.style.display = (type === 'postEffectObtainedGte') ? 'block' : 'none';
+                if (fHitArc) fHitArc.style.display = (type === 'lastCombatDefenderHitArcEquals' || type === 'lastCombatAttackerStrikeArcEquals') ? 'block' : 'none';
                 if (fItem) fItem.style.display = (type === 'hasItem') ? 'block' : 'none';
                 var adv = document.getElementById('cond-advanced-toggle');
                 var jsonRow = document.getElementById('entry-cond-params');
@@ -1710,6 +1725,8 @@
                     document.getElementById('cond-skill-level').value = (cond.level != null ? cond.level : 0);
                 } else if (type === 'postEffectObtainedGte') {
                     document.getElementById('cond-postEffect-count').value = (cond.value != null ? cond.value : (cond.count != null ? cond.count : (cond.min != null ? cond.min : 1)));
+                } else if (type === 'lastCombatDefenderHitArcEquals' || type === 'lastCombatAttackerStrikeArcEquals') {
+                    document.getElementById('cond-hit-arc-value').value = String(cond.value || cond.arc || 'front');
                 } else if (type === 'hasItem') {
                     document.getElementById('cond-item-id').value = cond.itemId || '';
                     document.getElementById('cond-item-count').value = (cond.count != null ? cond.count : 1);
@@ -1730,6 +1747,8 @@
                     cond.level = parseInt(document.getElementById('cond-skill-level').value, 10) || 0;
                 } else if (type === 'postEffectObtainedGte') {
                     cond.value = parseInt(document.getElementById('cond-postEffect-count').value, 10) || 1;
+                } else if (type === 'lastCombatDefenderHitArcEquals' || type === 'lastCombatAttackerStrikeArcEquals') {
+                    cond.value = String(document.getElementById('cond-hit-arc-value').value || 'front');
                 } else if (type === 'hasItem') {
                     cond.itemId = document.getElementById('cond-item-id').value.trim();
                     cond.count = parseInt(document.getElementById('cond-item-count').value, 10) || 1;
@@ -2420,6 +2439,8 @@
                     : (type === 'survivalSkillLevelEquals') ? { type: 'survivalSkillLevelEquals', skillId: firstSkill, level: 0 }
                     : (type === 'survivalSkillLevelGte') ? { type: 'survivalSkillLevelGte', skillId: firstSkill, level: 1 }
                     : (type === 'postEffectObtainedGte') ? { type: 'postEffectObtainedGte', value: 1 }
+                    : (type === 'lastCombatDefenderHitArcEquals') ? { type: 'lastCombatDefenderHitArcEquals', value: 'back' }
+                    : (type === 'lastCombatAttackerStrikeArcEquals') ? { type: 'lastCombatAttackerStrikeArcEquals', value: 'back' }
                     : (type === 'hasItem') ? { type: 'hasItem', itemId: 'item_xxx', count: 1 }
                     : { type: 'custom' };
                 applyConditionToForm(sample);

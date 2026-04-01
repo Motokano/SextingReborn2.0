@@ -23,6 +23,10 @@
     var hoverRafId = 0;
     var hoverPendingClientX = 0;
     var hoverPendingClientY = 0;
+    var quickBeltHoverMenuEl = null;
+    var quickBeltHoverHideTimer = null;
+    var quickBeltHoverDocBound = false;
+    var visionDebugEnabled = false;
 
     function buildDirtyCells(prev, cur, radius) {
         var out = [];
@@ -123,6 +127,410 @@
             maxX: st.x + r,
             maxY: st.y + r
         };
+    }
+
+    function lerp(a, b, t) {
+        return a + (b - a) * t;
+    }
+
+    function wrapMinuteOfDay(minute) {
+        var m = Math.floor(Number(minute) || 0) % 1440;
+        if (m < 0) m += 1440;
+        return m;
+    }
+
+    function getDayNightVisionConfig() {
+        var fallback = {
+            enabled: true,
+            overlayRgb: [8, 12, 24],
+            darknessKeyframes: [
+                { minute: 0, alpha: 0.58 },
+                { minute: 240, alpha: 0.52 },
+                { minute: 360, alpha: 0.30 },
+                { minute: 480, alpha: 0.14 },
+                { minute: 720, alpha: 0.04 },
+                { minute: 1080, alpha: 0.22 },
+                { minute: 1320, alpha: 0.48 },
+                { minute: 1440, alpha: 0.58 }
+            ],
+            clearRadiusCellsDay: 5.4,
+            clearRadiusCellsNight: 2.8,
+            clearFalloffCells: 3.4
+        };
+        var cfg = null;
+        if (window.Survival && typeof window.Survival.getConfigValue === 'function') {
+            cfg = window.Survival.getConfigValue('vision_day_night', null);
+        }
+        if (!cfg || typeof cfg !== 'object') return fallback;
+
+        var out = {
+            enabled: cfg.enabled !== false,
+            overlayRgb: fallback.overlayRgb.slice(),
+            darknessKeyframes: fallback.darknessKeyframes.slice(),
+            clearRadiusCellsDay: fallback.clearRadiusCellsDay,
+            clearRadiusCellsNight: fallback.clearRadiusCellsNight,
+            clearFalloffCells: fallback.clearFalloffCells
+        };
+
+        if (Array.isArray(cfg.overlay_rgb) && cfg.overlay_rgb.length >= 3) {
+            var r = Math.max(0, Math.min(255, Number(cfg.overlay_rgb[0]) || 0));
+            var g = Math.max(0, Math.min(255, Number(cfg.overlay_rgb[1]) || 0));
+            var b = Math.max(0, Math.min(255, Number(cfg.overlay_rgb[2]) || 0));
+            out.overlayRgb = [r, g, b];
+        }
+        if (Array.isArray(cfg.darkness_keyframes) && cfg.darkness_keyframes.length >= 2) {
+            var rows = [];
+            for (var i = 0; i < cfg.darkness_keyframes.length; i++) {
+                var row = cfg.darkness_keyframes[i];
+                if (!row || typeof row !== 'object') continue;
+                var minute = Math.max(0, Math.min(1440, Number(row.minute)));
+                var alpha = Math.max(0, Math.min(1, Number(row.alpha)));
+                if (!Number.isFinite(minute) || !Number.isFinite(alpha)) continue;
+                rows.push({ minute: minute, alpha: alpha });
+            }
+            rows.sort(function (a, b) { return a.minute - b.minute; });
+            if (rows.length >= 2) out.darknessKeyframes = rows;
+        }
+        var dayRadius = Number(cfg.clear_radius_cells_day);
+        var nightRadius = Number(cfg.clear_radius_cells_night);
+        var falloffCells = Number(cfg.clear_falloff_cells);
+        if (Number.isFinite(dayRadius) && dayRadius > 0.2) out.clearRadiusCellsDay = dayRadius;
+        if (Number.isFinite(nightRadius) && nightRadius > 0.2) out.clearRadiusCellsNight = nightRadius;
+        if (Number.isFinite(falloffCells) && falloffCells > 0.1) out.clearFalloffCells = falloffCells;
+        return out;
+    }
+
+    function getVisionRevealUiConfig() {
+        var fallback = {
+            visualRadiusDay: 8.0,
+            visualRadiusNight: 4.0,
+            identifyRatio: 0.72,
+            detailRatio: 0.45,
+            adjacentDetailRadius: 1,
+            debugEnabledDefault: false
+        };
+        var cfg = null;
+        if (window.Survival && typeof window.Survival.getConfigValue === 'function') {
+            cfg = window.Survival.getConfigValue('vision_reveal_ui', null);
+        }
+        if (!cfg || typeof cfg !== 'object') return fallback;
+        var out = {
+            visualRadiusDay: fallback.visualRadiusDay,
+            visualRadiusNight: fallback.visualRadiusNight,
+            identifyRatio: fallback.identifyRatio,
+            detailRatio: fallback.detailRatio,
+            adjacentDetailRadius: fallback.adjacentDetailRadius,
+            debugEnabledDefault: fallback.debugEnabledDefault
+        };
+        var day = Number(cfg.visual_radius_day);
+        var night = Number(cfg.visual_radius_night);
+        var identifyRatio = Number(cfg.identify_ratio);
+        var detailRatio = Number(cfg.detail_ratio);
+        var adjacent = Number(cfg.adjacent_detail_radius);
+        out.debugEnabledDefault = cfg.debug_enabled === true;
+        if (Number.isFinite(day) && day >= 2) out.visualRadiusDay = day;
+        if (Number.isFinite(night) && night >= 1) out.visualRadiusNight = night;
+        if (Number.isFinite(identifyRatio) && identifyRatio > 0 && identifyRatio <= 1) out.identifyRatio = identifyRatio;
+        if (Number.isFinite(detailRatio) && detailRatio > 0 && detailRatio <= out.identifyRatio) out.detailRatio = detailRatio;
+        if (Number.isFinite(adjacent) && adjacent >= 0) out.adjacentDetailRadius = adjacent;
+        return out;
+    }
+
+    function getVisionFacingUiConfig() {
+        var fallback = {
+            enabled: false,
+            frontHalfAngleDeg: 45,
+            sideHalfAngleDeg: 90,
+            frontMul: 1.0,
+            sideMul: 0.65,
+            backMul: 0.35,
+            showConeOverlay: true,
+            coneOpacity: 0.16,
+            edgeOpacity: 0.28
+        };
+        var cfg = null;
+        if (window.Survival && typeof window.Survival.getConfigValue === 'function') {
+            cfg = window.Survival.getConfigValue('vision_facing_ui', null);
+        }
+        if (!cfg || typeof cfg !== 'object') return fallback;
+        var out = {
+            enabled: cfg.enabled === true,
+            frontHalfAngleDeg: fallback.frontHalfAngleDeg,
+            sideHalfAngleDeg: fallback.sideHalfAngleDeg,
+            frontMul: fallback.frontMul,
+            sideMul: fallback.sideMul,
+            backMul: fallback.backMul,
+            showConeOverlay: fallback.showConeOverlay,
+            coneOpacity: fallback.coneOpacity,
+            edgeOpacity: fallback.edgeOpacity
+        };
+        var frontA = Number(cfg.front_half_angle_deg);
+        var sideA = Number(cfg.side_half_angle_deg);
+        var frontMul = Number(cfg.front_mul);
+        var sideMul = Number(cfg.side_mul);
+        var backMul = Number(cfg.back_mul);
+        var coneOpacity = Number(cfg.cone_opacity);
+        var edgeOpacity = Number(cfg.edge_opacity);
+        if (Number.isFinite(frontA) && frontA >= 5 && frontA <= 180) out.frontHalfAngleDeg = frontA;
+        if (Number.isFinite(sideA) && sideA >= out.frontHalfAngleDeg && sideA <= 180) out.sideHalfAngleDeg = sideA;
+        if (Number.isFinite(frontMul) && frontMul > 0 && frontMul <= 2) out.frontMul = frontMul;
+        if (Number.isFinite(sideMul) && sideMul > 0 && sideMul <= 2) out.sideMul = sideMul;
+        if (Number.isFinite(backMul) && backMul > 0 && backMul <= 2) out.backMul = backMul;
+        if (cfg.show_cone_overlay != null) out.showConeOverlay = cfg.show_cone_overlay !== false;
+        if (Number.isFinite(coneOpacity) && coneOpacity >= 0 && coneOpacity <= 1) out.coneOpacity = coneOpacity;
+        if (Number.isFinite(edgeOpacity) && edgeOpacity >= 0 && edgeOpacity <= 1) out.edgeOpacity = edgeOpacity;
+        return out;
+    }
+
+    function getDarknessAlphaNow() {
+        var gt = window.GameTime;
+        if (!gt || typeof gt.getState !== 'function') return 0;
+        var state = gt.getState() || {};
+        var dayNightCfg = getDayNightVisionConfig();
+        return sampleNightDarknessByMinute(state.minuteOfDay, dayNightCfg.darknessKeyframes);
+    }
+
+    function getMaxDarknessAlphaRef(keyframes) {
+        var maxAlpha = 0;
+        var rows = Array.isArray(keyframes) ? keyframes : [];
+        for (var i = 0; i < rows.length; i++) {
+            maxAlpha = Math.max(maxAlpha, Number(rows[i].alpha) || 0);
+        }
+        return Math.max(0.01, maxAlpha);
+    }
+
+    function getVisionRevealProfile() {
+        var dayNightCfg = getDayNightVisionConfig();
+        var uiCfg = getVisionRevealUiConfig();
+        var darknessAlpha = getDarknessAlphaNow();
+        var maxDarknessAlphaRef = getMaxDarknessAlphaRef(dayNightCfg.darknessKeyframes);
+        var nightT = Math.min(1, Math.max(0, darknessAlpha / maxDarknessAlphaRef));
+        var visualRadius = lerp(uiCfg.visualRadiusDay, uiCfg.visualRadiusNight, nightT);
+        var identifyRadius = Math.max(1, visualRadius * uiCfg.identifyRatio);
+        var detailRadius = Math.max(1, visualRadius * uiCfg.detailRatio);
+        return {
+            visualRadius: visualRadius,
+            identifyRadius: identifyRadius,
+            detailRadius: detailRadius,
+            adjacentDetailRadius: uiCfg.adjacentDetailRadius
+        };
+    }
+
+    function chebyshevDistance(ax, ay, bx, by) {
+        return Math.max(Math.abs((ax | 0) - (bx | 0)), Math.abs((ay | 0) - (by | 0)));
+    }
+
+    function facingDirToVector(dir) {
+        var d = Number(dir);
+        if (!Number.isFinite(d)) d = 4;
+        d = Math.round(d) % 8;
+        if (d < 0) d += 8;
+        switch (d) {
+            case 0: return { x: 0, y: -1 };
+            case 1: return { x: 1, y: -1 };
+            case 2: return { x: 1, y: 0 };
+            case 3: return { x: 1, y: 1 };
+            case 4: return { x: 0, y: 1 };
+            case 5: return { x: -1, y: 1 };
+            case 6: return { x: -1, y: 0 };
+            case 7: return { x: -1, y: -1 };
+            default: return { x: 0, y: 1 };
+        }
+    }
+
+    function resolvePlayerFacingDir() {
+        if (window.PlayerFacing && typeof window.PlayerFacing.getDir === 'function') {
+            return window.PlayerFacing.getDir();
+        }
+        if (window.SceneCtx && typeof window.SceneCtx.getFacingDir === 'function') {
+            return window.SceneCtx.getFacingDir();
+        }
+        return 4;
+    }
+
+    function getFacingVisionMultiplier(st, gx, gy) {
+        var cfg = getVisionFacingUiConfig();
+        if (!cfg.enabled) return 1;
+        var tx = (gx | 0) - (st.x | 0);
+        var ty = (gy | 0) - (st.y | 0);
+        if (!tx && !ty) return 1;
+        var fv = facingDirToVector(resolvePlayerFacingDir());
+        var lenA = Math.sqrt(fv.x * fv.x + fv.y * fv.y) || 1;
+        var lenB = Math.sqrt(tx * tx + ty * ty) || 1;
+        var dot = fv.x * tx + fv.y * ty;
+        var c = dot / (lenA * lenB);
+        if (c > 1) c = 1;
+        if (c < -1) c = -1;
+        var ang = Math.acos(c) * 180 / Math.PI;
+        if (ang <= cfg.frontHalfAngleDeg) return cfg.frontMul;
+        if (ang <= cfg.sideHalfAngleDeg) return cfg.sideMul;
+        return cfg.backMul;
+    }
+
+    function sampleNightDarknessByMinute(minuteOfDay, keyframes) {
+        var m = wrapMinuteOfDay(minuteOfDay);
+        var src = Array.isArray(keyframes) ? keyframes : [];
+        if (src.length < 2) return 0.2;
+        var keys = [];
+        for (var i = 0; i < src.length; i++) {
+            var row = src[i] || {};
+            keys.push({
+                m: Math.max(0, Math.min(1440, Number(row.minute) || 0)),
+                a: Math.max(0, Math.min(1, Number(row.alpha) || 0))
+            });
+        }
+        keys.sort(function (a, b) { return a.m - b.m; });
+        for (var i = 0; i < keys.length - 1; i++) {
+            var a = keys[i];
+            var b = keys[i + 1];
+            if (m >= a.m && m <= b.m) {
+                var span = Math.max(1, b.m - a.m);
+                var t = (m - a.m) / span;
+                return lerp(a.a, b.a, t);
+            }
+        }
+        return 0.2;
+    }
+
+    function renderDayNightVisionOverlay(args) {
+        if (!args || !args.ctx || !args.map || !args.state) return;
+        var ctx2d = args.ctx;
+        var map = args.map;
+        var st = args.state;
+        var cellPx = args.cellPx || 101;
+        var cellToPx = args.cellToPx || function (x, y) { return { x: x * cellPx, y: y * cellPx }; };
+        var gt = window.GameTime;
+        if (!gt || typeof gt.getState !== 'function') return;
+        var cfg = getDayNightVisionConfig();
+        if (!cfg.enabled) return;
+        var timeState = gt.getState() || {};
+        var darknessAlpha = sampleNightDarknessByMinute(timeState.minuteOfDay, cfg.darknessKeyframes);
+        if (!(darknessAlpha > 0.01)) return;
+
+        var mapW = (map.width | 0) * cellPx;
+        var mapH = (map.height | 0) * cellPx;
+        if (!(mapW > 0) || !(mapH > 0)) return;
+
+        var p = cellToPx(st.x | 0, st.y | 0);
+        var cx = p.x + cellPx / 2;
+        var cy = p.y + cellPx / 2;
+
+        // 夜越深，清晰半径越小；只做视觉层，不改变规则判定。
+        var maxDarknessAlphaRef = getMaxDarknessAlphaRef(cfg.darknessKeyframes);
+        var nightT = Math.min(1, darknessAlpha / maxDarknessAlphaRef);
+        var clearRadiusInner = cellPx * lerp(cfg.clearRadiusCellsDay, cfg.clearRadiusCellsNight, nightT);
+        var clearRadiusOuter = clearRadiusInner + cellPx * cfg.clearFalloffCells;
+        var rgb = cfg.overlayRgb;
+
+        ctx2d.save();
+        ctx2d.fillStyle = 'rgba(' + rgb[0] + ', ' + rgb[1] + ', ' + rgb[2] + ', ' + darknessAlpha.toFixed(3) + ')';
+        ctx2d.fillRect(0, 0, mapW, mapH);
+
+        var g = ctx2d.createRadialGradient(cx, cy, clearRadiusInner * 0.2, cx, cy, clearRadiusOuter);
+        g.addColorStop(0, 'rgba(0,0,0,0.95)');
+        g.addColorStop(0.55, 'rgba(0,0,0,0.50)');
+        g.addColorStop(1, 'rgba(0,0,0,0)');
+        ctx2d.globalCompositeOperation = 'destination-out';
+        ctx2d.fillStyle = g;
+        ctx2d.beginPath();
+        ctx2d.arc(cx, cy, clearRadiusOuter, 0, Math.PI * 2);
+        ctx2d.fill();
+        ctx2d.restore();
+    }
+
+    function renderFacingVisionOverlay(args) {
+        if (!args || !args.ctx || !args.map || !args.state) return;
+        var cfg = getVisionFacingUiConfig();
+        if (!cfg.enabled || !cfg.showConeOverlay) return;
+        var ctx2d = args.ctx;
+        var map = args.map;
+        var st = args.state;
+        var cellPx = args.cellPx || 101;
+        var cellToPx = args.cellToPx || function (x, y) { return { x: x * cellPx, y: y * cellPx }; };
+        var profile = getVisionRevealProfile();
+        var darkness = getDarknessAlphaNow();
+        var mapW = (map.width | 0) * cellPx;
+        var mapH = (map.height | 0) * cellPx;
+        if (!(mapW > 0) || !(mapH > 0)) return;
+        var p = cellToPx(st.x | 0, st.y | 0);
+        var cx = p.x + cellPx / 2;
+        var cy = p.y + cellPx / 2;
+        var fv = facingDirToVector(resolvePlayerFacingDir());
+        var baseAng = Math.atan2(fv.y, fv.x);
+        var halfRad = (Math.max(5, Math.min(175, cfg.sideHalfAngleDeg)) * Math.PI) / 180;
+        var radius = Math.max(1, profile.visualRadius) * cellPx;
+        // 夜间更明显，白天更轻。
+        var alphaMul = 0.55 + Math.min(1, Math.max(0, darkness * 1.2));
+        var coneAlpha = Math.min(1, Math.max(0, cfg.coneOpacity * alphaMul));
+        var edgeAlpha = Math.min(1, Math.max(0, cfg.edgeOpacity * alphaMul));
+        // 扇形切片：明显强化“背后看不到”，同时保留轻微前偏避免死板。
+        var forwardOffset = radius * 0.06;
+        var ccx = cx + fv.x * forwardOffset;
+        var ccy = cy + fv.y * forwardOffset;
+        // 扇尖更贴近人物格中心：从玩家中心沿朝向轻微前移一点作为扇形起点。
+        var tipX = cx + fv.x * (cellPx * 0.18);
+        var tipY = cy + fv.y * (cellPx * 0.18);
+
+        ctx2d.save();
+        var grad = ctx2d.createRadialGradient(ccx, ccy, cellPx * 0.6, ccx, ccy, radius);
+        grad.addColorStop(0, 'rgba(250, 230, 140, ' + coneAlpha.toFixed(3) + ')');
+        grad.addColorStop(0.72, 'rgba(250, 230, 140, ' + (coneAlpha * 0.22).toFixed(3) + ')');
+        grad.addColorStop(1, 'rgba(250, 230, 140, 0)');
+        ctx2d.beginPath();
+        ctx2d.moveTo(tipX, tipY);
+        ctx2d.arc(ccx, ccy, radius, baseAng - halfRad, baseAng + halfRad, false);
+        ctx2d.closePath();
+        ctx2d.fillStyle = grad;
+        ctx2d.fill();
+
+        // 柔化处理：用轻微 blur 的外弧叠加，替代硬描边。
+        ctx2d.save();
+        ctx2d.shadowColor = 'rgba(250, 220, 120, ' + (edgeAlpha * 0.42).toFixed(3) + ')';
+        ctx2d.shadowBlur = 12;
+        ctx2d.strokeStyle = 'rgba(250, 220, 120, ' + (edgeAlpha * 0.28).toFixed(3) + ')';
+        ctx2d.lineWidth = 2;
+        ctx2d.beginPath();
+        ctx2d.arc(ccx, ccy, radius * 0.985, baseAng - halfRad, baseAng + halfRad, false);
+        ctx2d.stroke();
+        ctx2d.restore();
+        ctx2d.restore();
+    }
+
+    function renderVisionDebugOverlay(args) {
+        if (!visionDebugEnabled || !args || !args.ctx || !args.state) return;
+        var ctx2d = args.ctx;
+        var st = args.state;
+        var cellPx = args.cellPx || 101;
+        var cellToPx = args.cellToPx || function (x, y) { return { x: x * cellPx, y: y * cellPx }; };
+        var profile = getVisionRevealProfile();
+        var darkness = getDarknessAlphaNow();
+        var facingCfg = getVisionFacingUiConfig();
+        var p = cellToPx(st.x | 0, st.y | 0);
+        var boxX = p.x - 150;
+        var boxY = p.y - cellPx * 2.25;
+        var boxW = 300;
+        var boxH = 98;
+        ctx2d.save();
+        ctx2d.fillStyle = 'rgba(10, 10, 10, 0.66)';
+        ctx2d.fillRect(boxX, boxY, boxW, boxH);
+        ctx2d.strokeStyle = 'rgba(251, 191, 36, 0.7)';
+        ctx2d.lineWidth = 1;
+        ctx2d.strokeRect(boxX + 0.5, boxY + 0.5, boxW - 1, boxH - 1);
+        ctx2d.fillStyle = 'rgba(245, 245, 245, 0.96)';
+        ctx2d.font = '12px monospace';
+        ctx2d.textAlign = 'left';
+        ctx2d.textBaseline = 'top';
+        ctx2d.fillText('[VISION DEBUG]', boxX + 8, boxY + 8);
+        ctx2d.fillText(
+            'visual=' + profile.visualRadius.toFixed(2) +
+            ' identify=' + profile.identifyRadius.toFixed(2) +
+            ' detail=' + profile.detailRadius.toFixed(2),
+            boxX + 8,
+            boxY + 28
+        );
+        ctx2d.fillText('darkness=' + darkness.toFixed(3), boxX + 8, boxY + 48);
+        ctx2d.fillText('facingDir=' + resolvePlayerFacingDir() + ' sideHalf=' + facingCfg.sideHalfAngleDeg, boxX + 8, boxY + 64);
+        ctx2d.restore();
     }
 
     function renderDomFallback(grid, map, st, E, ctx) {
@@ -241,6 +649,85 @@
         return html;
     }
 
+    function tQuick(key, fallback, vars) {
+        try {
+            if (window.UIText && typeof window.UIText.t === 'function') return window.UIText.t(key, vars);
+        } catch (e0) { /* ignore */ }
+        return fallback || key;
+    }
+
+    function itemTemplateIsConsumableQuick(tpl) {
+        if (!tpl) return false;
+        var edibleRaw = tpl.edible;
+        var edible = edibleRaw === true || edibleRaw === 1 || edibleRaw === '1' || edibleRaw === 'true';
+        if (edible && tpl.edible_buff_id && String(tpl.edible_buff_id).trim()) return true;
+        var ue = tpl.use_effect;
+        return !!(ue && typeof ue === 'object');
+    }
+
+    function ensureQuickBeltHoverMenu() {
+        if (quickBeltHoverMenuEl && document.body && document.body.contains(quickBeltHoverMenuEl)) return quickBeltHoverMenuEl;
+        var el = document.createElement('div');
+        el.className = 'quick-belt-hover-menu';
+        el.addEventListener('mouseenter', function () {
+            if (quickBeltHoverHideTimer) { clearTimeout(quickBeltHoverHideTimer); quickBeltHoverHideTimer = null; }
+        });
+        el.addEventListener('mouseleave', function () {
+            hideQuickBeltHoverMenuDelayed();
+        });
+        document.body.appendChild(el);
+        quickBeltHoverMenuEl = el;
+        if (!quickBeltHoverDocBound) {
+            quickBeltHoverDocBound = true;
+            document.addEventListener('click', function () { hideQuickBeltHoverMenuNow(); });
+        }
+        return el;
+    }
+
+    function hideQuickBeltHoverMenuNow() {
+        if (!quickBeltHoverMenuEl) return;
+        quickBeltHoverMenuEl.classList.remove('show');
+        quickBeltHoverMenuEl.style.left = '-9999px';
+        quickBeltHoverMenuEl.style.top = '0';
+    }
+
+    function hideQuickBeltHoverMenuDelayed() {
+        if (quickBeltHoverHideTimer) clearTimeout(quickBeltHoverHideTimer);
+        quickBeltHoverHideTimer = setTimeout(function () {
+            quickBeltHoverHideTimer = null;
+            hideQuickBeltHoverMenuNow();
+        }, 120);
+    }
+
+    function openQuickBeltHoverMenu(slotEl, actions) {
+        var menu = ensureQuickBeltHoverMenu();
+        if (quickBeltHoverHideTimer) { clearTimeout(quickBeltHoverHideTimer); quickBeltHoverHideTimer = null; }
+        menu.innerHTML = '';
+        var actList = Array.isArray(actions) ? actions : [];
+        for (var i = 0; i < actList.length; i++) {
+            var it = actList[i];
+            if (!it || typeof it.onClick !== 'function') continue;
+            var btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = 'quick-belt-hover-btn';
+            btn.textContent = String(it.label || '');
+            btn.addEventListener('click', function (fn) {
+                return function (ev) {
+                    ev.preventDefault();
+                    ev.stopPropagation();
+                    hideQuickBeltHoverMenuNow();
+                    fn();
+                };
+            }(it.onClick));
+            menu.appendChild(btn);
+        }
+        if (!menu.children.length) return;
+        var r = slotEl.getBoundingClientRect();
+        menu.style.left = Math.round(r.right + 6) + 'px';
+        menu.style.top = Math.round(r.top) + 'px';
+        menu.classList.add('show');
+    }
+
     function updateTopTimeHud() {
         var ctx = getCtx();
         if (!ctx || !ctx.isTimeHudVisible || !ctx.isTimeHudVisible()) return;
@@ -254,7 +741,7 @@
         if (pEl) pEl.textContent = st.timePeriodLabel || '';
     }
 
-    function appendQuickBeltSlot(frag, IE, char, it, slotIndex) {
+    function appendQuickBeltSlot(frag, IE, char, it, slotIndex, sourceType, sourceIndex) {
         var slot = document.createElement('div');
         slot.className = 'slot';
         if (slotIndex < 9) {
@@ -274,7 +761,44 @@
             var attrs = formatItemAttributes(tpl, it);
             var tipHtml = buildItemTooltipHtml(name, desc, attrs);
             slot.addEventListener('mouseenter', function (html, el) { return function () { showItemTooltip(html, el); }; }(tipHtml, slot));
-            slot.addEventListener('mouseleave', function () { hideItemTooltip(); });
+            slot.addEventListener('mouseleave', function () { hideItemTooltip(); hideQuickBeltHoverMenuDelayed(); });
+            slot.addEventListener('mouseenter', function () {
+                var actions = [];
+                if (itemTemplateIsConsumableQuick(tpl)) {
+                    actions.push({
+                        label: tQuick('inv.use', '使用'),
+                        onClick: function () {
+                            if (window.SceneApp && typeof window.SceneApp.tryUseItemFromContainer === 'function') {
+                                window.SceneApp.tryUseItemFromContainer(sourceType, sourceIndex);
+                            }
+                        }
+                    });
+                }
+                if (tpl && tpl.equip_slot) {
+                    actions.push({
+                        label: tQuick('inv.equip', '穿上'),
+                        onClick: function () {
+                            if (window.SceneApp && typeof window.SceneApp.tryEquipItemFromContainer === 'function') {
+                                window.SceneApp.tryEquipItemFromContainer(sourceType, sourceIndex);
+                            }
+                        }
+                    });
+                }
+                actions.push({
+                    label: tQuick('inv.drop', '丢弃'),
+                    onClick: function () {
+                        var ctx = getCtx();
+                        if (!ctx || !ctx.E || typeof IE.dropItemToGround !== 'function') return;
+                        var pos = ctx.E.getState ? ctx.E.getState() : null;
+                        if (!pos || pos.mapId == null || pos.x == null || pos.y == null) return;
+                        IE.dropItemToGround(sourceType, sourceIndex, pos.mapId, pos.x, pos.y);
+                        if (typeof window.SceneRenderer !== 'undefined' && window.SceneRenderer && typeof window.SceneRenderer.render === 'function') {
+                            window.SceneRenderer.render();
+                        }
+                    }
+                });
+                openQuickBeltHoverMenu(slot, actions);
+            });
         } else {
             body.textContent = '—';
         }
@@ -288,6 +812,7 @@
         var IE = ctx.IE;
         var el = document.getElementById('quick-belt');
         if (!el) return;
+        hideQuickBeltHoverMenuNow();
         var pocketArr = IE.getPocketArray();
         var vestArr = IE.getVestArray();
         var char = IE.getCharacterForDisplay();
@@ -320,7 +845,7 @@
         var slotIndex = 0;
         var pi;
         for (pi = 0; pi < pocketArr.length; pi++) {
-            appendQuickBeltSlot(frag, IE, char, pocketArr[pi], slotIndex++);
+            appendQuickBeltSlot(frag, IE, char, pocketArr[pi], slotIndex++, 'pocket', pi);
         }
         if (pocketArr.length && vestArr.length) {
             var sep = document.createElement('div');
@@ -330,7 +855,7 @@
         }
         var vj;
         for (vj = 0; vj < vestArr.length; vj++) {
-            appendQuickBeltSlot(frag, IE, char, vestArr[vj], slotIndex++);
+            appendQuickBeltSlot(frag, IE, char, vestArr[vj], slotIndex++, 'vest', vj);
         }
         el.appendChild(frag);
         if (window.GameLog && typeof window.GameLog.syncQuickBeltDock === 'function') {
@@ -353,6 +878,11 @@
         var CELL_PX = ctx.CELL_PX;
         var CENTER_OFFSET_X = ctx.CENTER_OFFSET_X;
         var CENTER_OFFSET_Y = ctx.CENTER_OFFSET_Y;
+        var container = document.getElementById('map-container');
+        var viewportWidth = (container && container.clientWidth) ? container.clientWidth : 1042;
+        var viewportHeight = (container && container.clientHeight) ? container.clientHeight : 638;
+        var runtimeCenterOffsetX = (viewportWidth / 2) - (CELL_PX / 2);
+        var runtimeCenterOffsetY = (viewportHeight / 2) - (CELL_PX / 2);
 
         var grid = document.getElementById('map-grid');
         if (!grid) {
@@ -362,6 +892,7 @@
 
         var map = E.getMap();
         var st = E.getState();
+        var visionProfile = getVisionRevealProfile();
         if (!map) {
             prevFootworkNieBuMode = curFootworkNieBuMode;
             return;
@@ -369,12 +900,15 @@
 
         if (!tileRenderer && window.TileRendererV2 && typeof window.TileRendererV2.create === 'function') {
             tileRenderer = window.TileRendererV2.create(grid, { cellPx: CELL_PX });
-            if (window.SceneAnimation && typeof window.SceneAnimation.render === 'function') {
-                tileRenderer.setEffectsRenderer(function (fxCtx) {
+            tileRenderer.setEffectsRenderer(function (fxCtx) {
+                if (window.SceneAnimation && typeof window.SceneAnimation.render === 'function') {
                     window.SceneAnimation.render(fxCtx);
-                });
-                if (typeof tileRenderer.startAnimationLoop === 'function') tileRenderer.startAnimationLoop();
-            }
+                }
+                renderDayNightVisionOverlay(fxCtx);
+                renderFacingVisionOverlay(fxCtx);
+                renderVisionDebugOverlay(fxCtx);
+            });
+            if (typeof tileRenderer.startAnimationLoop === 'function') tileRenderer.startAnimationLoop();
         }
         var hasV2 = !!tileRenderer;
 
@@ -403,6 +937,7 @@
             getDynamicMetaAt: function (gx, gy) {
                 var ctxDyn = getCtx();
                 var adjacent = E.isAdjacent(gx, gy);
+                var dist = chebyshevDistance(gx, gy, st.x, st.y);
                 var walkable = E.isWalkable(gx, gy);
                 var portal = E.getPortalAt(gx, gy);
                 var entityId = E.getEntityAt(gx, gy);
@@ -412,12 +947,42 @@
                     if (!window.NPCSystem.isNpcPresentNow(npcId)) npcId = null;
                 }
                 var groundAt = (IE && IE.getGroundItemsAt) ? IE.getGroundItemsAt(st.mapId, gx, gy) : [];
+                var rawGroundCount = Array.isArray(groundAt) ? groundAt.length : 0;
+                var facingMul = getFacingVisionMultiplier(st, gx, gy);
+                var canVisual = dist <= (visionProfile.visualRadius * facingMul);
+                var canIdentify = dist <= (visionProfile.identifyRadius * facingMul);
+                var canDetail = dist <= (visionProfile.detailRadius * facingMul);
+                var adjacentForcedDetail = dist <= visionProfile.adjacentDetailRadius;
+                if (adjacentForcedDetail) {
+                    canVisual = true;
+                    canIdentify = true;
+                    canDetail = true;
+                }
                 var leapTarget = false;
                 if (ctxDyn && ctxDyn.footworkNieBuMode && typeof E.canStandAt === 'function' && !(gx === st.x && gy === st.y)) {
                     var rDyn = ctxDyn.nieBuLeapRadius != null ? (ctxDyn.nieBuLeapRadius | 0) : 2;
                     var chDyn = Math.max(Math.abs(gx - st.x), Math.abs(gy - st.y));
                     if (chDyn >= 1 && chDyn <= rDyn && E.canStandAt(gx, gy)) leapTarget = true;
                 }
+                var hasGatheringPoint = (entityId === 'gathering_bush' || entityId === 'gathering_grass');
+                var showGathering = hasGatheringPoint && canIdentify;
+                var unknownPresence = false;
+                if (!canVisual) {
+                    npcId = null;
+                    enemyId = null;
+                    rawGroundCount = 0;
+                    showGathering = false;
+                } else if (!canIdentify) {
+                    unknownPresence = !!(npcId || enemyId);
+                    npcId = null;
+                    enemyId = null;
+                }
+                var unknownGround = false;
+                if (rawGroundCount > 0 && !canIdentify) {
+                    unknownGround = true;
+                    rawGroundCount = 0;
+                }
+                var shownEnemyId = canDetail ? (enemyId || null) : null;
                 return {
                     x: gx,
                     y: gy,
@@ -426,11 +991,15 @@
                     leapTarget: leapTarget,
                     walkable: walkable,
                     portal: !!portal,
-                    gathering: (entityId === 'gathering_bush' || entityId === 'gathering_grass'),
+                    gathering: showGathering,
+                    gatheringBlurred: !!(hasGatheringPoint && canVisual && !canIdentify),
                     npc: !!npcId,
                     enemy: !!enemyId,
-                    enemyId: enemyId || null,
-                    groundCount: groundAt.length
+                    enemyId: shownEnemyId,
+                    unknownPresence: unknownPresence,
+                    groundUnknown: unknownGround,
+                    groundCount: rawGroundCount,
+                    playerFacingDir: resolvePlayerFacingDir()
                 };
             },
             onTileClick: function (gx, gy) {
@@ -488,7 +1057,6 @@
         }
 
         if (tileRenderer) {
-            var container = document.getElementById('map-container');
             if (staticDataKey !== lastStaticDataKey && typeof tileRenderer.invalidateStatic === 'function') {
                 tileRenderer.invalidateStatic();
                 lastStaticDataKey = staticDataKey;
@@ -519,8 +1087,8 @@
                 staticDataKey: staticDataKey,
                 dirtyCells: dirtyForV2,
                 viewport: {
-                    width: container ? container.clientWidth : 1042,
-                    height: container ? container.clientHeight : 638
+                    width: viewportWidth,
+                    height: viewportHeight
                 }
             });
             prevRenderState = curPos;
@@ -561,6 +1129,8 @@
                     if (!meta.walkable) tips.push('不可走');
                     if (meta.portal) tips.push('传送点');
                     if (meta.gathering) tips.push('采集点');
+                    else if (meta.gatheringBlurred) tips.push('附近似乎有可采资源');
+                    if (meta.unknownPresence) tips.push('有未知动静');
                     if (meta.npc) tips.push('可对话');
                     if (meta.enemy) {
                         if (meta.enemyId === 'enemy.training_dummy_wooden') {
@@ -578,6 +1148,7 @@
                         }
                     }
                     if (meta.groundCount > 0) tips.push('地面有 ' + meta.groundCount + ' 件物品');
+                    else if (meta.groundUnknown) tips.push('地面似乎有东西');
                     if (meta.leapTarget) tips.push('蹑步落点');
                     grid.title = tips.join(' · ');
                 });
@@ -588,8 +1159,10 @@
             });
         }
 
-        var tx = CENTER_OFFSET_X - st.x * CELL_PX;
-        var ty = CENTER_OFFSET_Y - st.y * CELL_PX;
+        var centerOffsetX = Number.isFinite(runtimeCenterOffsetX) ? runtimeCenterOffsetX : CENTER_OFFSET_X;
+        var centerOffsetY = Number.isFinite(runtimeCenterOffsetY) ? runtimeCenterOffsetY : CENTER_OFFSET_Y;
+        var tx = centerOffsetX - st.x * CELL_PX;
+        var ty = centerOffsetY - st.y * CELL_PX;
         if (tileRenderer) tileRenderer.setCamera(tx, ty);
         else grid.style.transform = 'translate(' + tx + 'px, ' + ty + 'px)';
 
@@ -726,11 +1299,35 @@
 
     window.SceneRenderer = {
         render: render,
+        setVisionDebugEnabled: function (enabled) {
+            visionDebugEnabled = !!enabled;
+            render();
+            return visionDebugEnabled;
+        },
+        toggleVisionDebug: function () {
+            visionDebugEnabled = !visionDebugEnabled;
+            render();
+            return visionDebugEnabled;
+        },
+        isVisionDebugEnabled: function () {
+            return !!visionDebugEnabled;
+        },
         updateQuickBelt: updateQuickBelt,
         showItemTooltip: showItemTooltip,
         hideItemTooltip: hideItemTooltip,
         buildItemTooltipHtml: buildItemTooltipHtml,
         formatItemAttributes: formatItemAttributes
     };
+    window.VisionDebug = {
+        on: function () { return window.SceneRenderer.setVisionDebugEnabled(true); },
+        off: function () { return window.SceneRenderer.setVisionDebugEnabled(false); },
+        toggle: function () { return window.SceneRenderer.toggleVisionDebug(); },
+        status: function () { return window.SceneRenderer.isVisionDebugEnabled(); }
+    };
+    try {
+        visionDebugEnabled = !!getVisionRevealUiConfig().debugEnabledDefault;
+    } catch (e) {
+        visionDebugEnabled = false;
+    }
 })();
 

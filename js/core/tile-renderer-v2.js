@@ -111,7 +111,11 @@
                 dynamicCtx.strokeRect(x + 1, y + 1, w - 2, h - 2);
             }
 
-            if (meta.npc) {
+            if (meta.unknownPresence) {
+                dynamicCtx.fillStyle = 'rgba(245, 222, 179, 0.95)';
+                dynamicCtx.font = 'bold 20px sans-serif';
+                dynamicCtx.fillText('?', x + w / 2 - 5, y + h / 2 + 7);
+            } else if (meta.npc) {
                 dynamicCtx.fillStyle = 'rgba(210,190,255,0.95)';
                 dynamicCtx.font = '20px sans-serif';
                 dynamicCtx.fillText('人', x + w / 2 - 6, y + h / 2 + 7);
@@ -134,12 +138,40 @@
                 dynamicCtx.fillStyle = 'rgba(212,163,115,0.95)';
                 dynamicCtx.font = '14px sans-serif';
                 dynamicCtx.fillText('📦', x + w - 18, y + h - 6);
+            } else if (meta.groundUnknown) {
+                dynamicCtx.fillStyle = 'rgba(212,163,115,0.75)';
+                dynamicCtx.font = '13px sans-serif';
+                dynamicCtx.fillText('?', x + w - 14, y + h - 6);
             }
 
             if (meta.player) {
                 dynamicCtx.strokeStyle = 'rgba(251,191,36,0.85)';
                 dynamicCtx.lineWidth = 2;
                 dynamicCtx.strokeRect(x + 1, y + 1, w - 2, h - 2);
+                var d = Number(meta.playerFacingDir);
+                if (!isFinite(d)) d = 4;
+                d = Math.round(d) % 8;
+                if (d < 0) d += 8;
+                var dirs = [
+                    { x: 0, y: -1 }, { x: 1, y: -1 }, { x: 1, y: 0 }, { x: 1, y: 1 },
+                    { x: 0, y: 1 }, { x: -1, y: 1 }, { x: -1, y: 0 }, { x: -1, y: -1 }
+                ];
+                var v = dirs[d] || dirs[4];
+                var cx = x + w / 2;
+                var cy = y + h / 2;
+                var tipX = cx + v.x * 12;
+                var tipY = cy + v.y * 12;
+                var leftX = cx + (-v.y) * 4;
+                var leftY = cy + (v.x) * 4;
+                var rightX = cx - (-v.y) * 4;
+                var rightY = cy - (v.x) * 4;
+                dynamicCtx.fillStyle = 'rgba(251,191,36,0.92)';
+                dynamicCtx.beginPath();
+                dynamicCtx.moveTo(tipX, tipY);
+                dynamicCtx.lineTo(leftX, leftY);
+                dynamicCtx.lineTo(rightX, rightY);
+                dynamicCtx.closePath();
+                dynamicCtx.fill();
             }
         }
 

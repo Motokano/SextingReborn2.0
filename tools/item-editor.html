@@ -189,7 +189,13 @@
         </div>
         <div style="flex:1; min-width:260px;">
             <label class="hint" style="display:block; margin-bottom:6px;">物品行</label>
+            <input id="row-search" placeholder="搜索 id / 名称（支持拼音首字母请后续扩展）" style="width:100%; margin-bottom:6px;" />
             <select id="row-select"></select>
+        </div>
+        <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+            <button type="button" id="btn-load-buff-options" title="从本地选择 buffs.json 加载可选 Buff">选择本地Buff列表</button>
+            <input id="buff-file-input" type="file" accept=".json,application/json" style="display:none;" />
+            <span class="hint" id="buff-options-status">未载入 Buff 选项</span>
         </div>
     </div>
 </div>
@@ -384,6 +390,11 @@
         satiety_restore: '食物：使用一次恢复饱食度',
         thirst_restore: '饮用/带水分消耗：使用一次恢复饮水度',
         nutrition_restore: '食物：使用一次恢复营养值',
+        usable: '是否可使用（1/0 或 true/false）',
+        use_buff_id: '使用时触发的 Buff ID（来自 data/buffs.json）',
+        edible: '是否可食用（1/0 或 true/false）',
+        edible_buff_id: '勾选可食用后使用的 Buff ID（来自 data/buffs.json）',
+        food_buff_duration_ticks: '自动生成食物消化 Buff 时持续 tick（未用自定义 buff 时生效）',
         quality_tier: '统一品质档位（0~5：粗糙/普通/精良/稀有/史诗/传说），建议用于实例与产出字段',
         quality_note: '可选：品质说明/策划备注，不参与运行时数值',
         pocket_slots: '运行时：口袋格数（装备常用）',
@@ -396,7 +407,8 @@
         headers: [],
         rows: [], // Array<obj>
         selectedRowIndex: 0,
-        selectedColIndex: 0
+        selectedColIndex: 0,
+        edibleBuffOptions: []
     };
 
     var $ = function(id){ return document.getElementById(id); };
@@ -404,8 +416,12 @@
         statusLine: $('status-line'),
         fileInput: $('file-input'),
         btnLoadMaterials: $('btn-load-materials'),
+        btnLoadBuffOptions: $('btn-load-buff-options'),
+        buffFileInput: $('buff-file-input'),
+        buffOptionsStatus: $('buff-options-status'),
 
         rowSelect: $('row-select'),
+        rowSearch: $('row-search'),
         colSelect: $('col-select'),
         colList: $('col-list'),
 
@@ -425,6 +441,88 @@
         exportHint: $('export-hint')
     };
 
+    function isTruthy(v){
+        var s = String(v == null ? '' : v).trim().toLowerCase();
+        return s === '1' || s === 'true' || s === 'yes';
+    }
+
+    function ensureEdibleColumns(){
+        var changed = false;
+        if (state.headers.indexOf('edible') < 0){
+            state.headers.push('edible');
+            changed = true;
+            for (var i = 0; i < state.rows.length; i++) state.rows[i].edible = '';
+        }
+        if (state.headers.indexOf('edible_buff_id') < 0){
+            state.headers.push('edible_buff_id');
+            changed = true;
+            for (var j = 0; j < state.rows.length; j++) state.rows[j].edible_buff_id = '';
+        }
+        if (changed) refreshColSelect();
+    }
+    function ensureUsableColumns(){
+        var changed = false;
+        if (state.headers.indexOf('usable') < 0){
+            state.headers.push('usable');
+            changed = true;
+            for (var i = 0; i < state.rows.length; i++) state.rows[i].usable = '';
+        }
+        if (state.headers.indexOf('use_buff_id') < 0){
+            state.headers.push('use_buff_id');
+            changed = true;
+            for (var j = 0; j < state.rows.length; j++) state.rows[j].use_buff_id = '';
+        }
+        if (changed) refreshColSelect();
+    }
+
+    function refreshBuffOptionsStatus(){
+        if (!el.buffOptionsStatus) return;
+        if (!state.edibleBuffOptions.length) {
+            el.buffOptionsStatus.textContent = '未载入 Buff 选项';
+            return;
+        }
+        el.buffOptionsStatus.textContent = '已载入 Buff 选项：' + state.edibleBuffOptions.length;
+    }
+
+    function loadBuffOptionsFromObject(obj){
+        if (!obj || !Array.isArray(obj.buffs)) return false;
+        var list = [];
+        for (var i = 0; i < obj.buffs.length; i++){
+            var b = obj.buffs[i] || {};
+            if (!b.buff_id) continue;
+            list.push({
+                buff_id: String(b.buff_id),
+                name: String(b.name || '')
+            });
+        }
+        state.edibleBuffOptions = list;
+        refreshBuffOptionsStatus();
+        renderRowEditor();
+        return true;
+    }
+
+    function loadBuffOptionsFromLocalFile(file){
+        clearError();
+        if (!file){
+            showError('未选择文件');
+            return;
+        }
+        var reader = new FileReader();
+        reader.onload = function(){
+            try {
+                var text = String(reader.result || '');
+                var obj = JSON.parse(text);
+                if (!loadBuffOptionsFromObject(obj)) throw new Error('buffs.json 格式无效：需要 { buffs: [] }');
+            } catch (e) {
+                showError('读取 Buff 文件失败：' + String(e && e.message ? e.message : e));
+            }
+        };
+        reader.onerror = function(){
+            showError('读取 Buff 文件失败');
+        };
+        reader.readAsText(file);
+    }
+
     function showError(msg){
         el.errBox.textContent = String(msg || '');
         el.errBox.style.display = 'block';
@@ -442,20 +540,33 @@
         if (sn) return sn;
         return '(空行)';
     }
+    function getRowSearchKeyword(row){
+        var id = String(row.id || row.item_id || '').toLowerCase();
+        var sn = String(row.sn || row.name || '').toLowerCase();
+        var placeholder = String(row.placeholder_name || '').toLowerCase();
+        return [id, sn, placeholder].join(' ');
+    }
 
     function refreshRowSelect(){
+        var q = String((el.rowSearch && el.rowSearch.value) || '').trim().toLowerCase();
         el.rowSelect.innerHTML = '';
+        var selectedVisible = false;
+        var firstVisibleRowIndex = -1;
         for (var i = 0; i < state.rows.length; i++){
+            if (q && getRowSearchKeyword(state.rows[i]).indexOf(q) < 0) continue;
             var opt = document.createElement('option');
-            opt.value = String(i);
+            opt.value = String(i); // value 始终是真实行索引
             opt.textContent = getRowDisplayName(state.rows[i]).slice(0, 80);
             el.rowSelect.appendChild(opt);
+            if (firstVisibleRowIndex < 0) firstVisibleRowIndex = i;
+            if (i === state.selectedRowIndex) selectedVisible = true;
         }
-        if (state.rows.length){
+        if (state.rows.length && firstVisibleRowIndex >= 0){
             state.selectedRowIndex = Math.min(state.selectedRowIndex, state.rows.length - 1);
+            if (!selectedVisible) state.selectedRowIndex = firstVisibleRowIndex;
             el.rowSelect.value = String(state.selectedRowIndex);
         } else {
-            state.selectedRowIndex = 0;
+            state.selectedRowIndex = -1;
         }
     }
 
@@ -513,9 +624,110 @@
 
     function renderRowEditor(){
         el.rowEditor.innerHTML = '';
-        if (!state.rows.length) return;
+        if (!state.rows.length || state.selectedRowIndex < 0) return;
         var row = state.rows[state.selectedRowIndex];
         if (!row) return;
+
+        // 可使用快捷配置（映射到 usable / use_buff_id 两列）
+        ensureUsableColumns();
+        var usableWrap = document.createElement('div');
+        usableWrap.className = 'field';
+        var usableLab = document.createElement('label');
+        usableLab.textContent = '可使用设置（快捷）';
+        var usableBody = document.createElement('div');
+        usableBody.style.display = 'grid';
+        usableBody.style.gap = '8px';
+        var usableCheckLine = document.createElement('label');
+        usableCheckLine.style.display = 'flex';
+        usableCheckLine.style.gap = '8px';
+        usableCheckLine.style.alignItems = 'center';
+        var usableCheck = document.createElement('input');
+        usableCheck.type = 'checkbox';
+        usableCheck.checked = isTruthy(row.usable);
+        var usableTxt = document.createElement('span');
+        usableTxt.textContent = '是否可使用（写入 usable）';
+        usableCheckLine.appendChild(usableCheck);
+        usableCheckLine.appendChild(usableTxt);
+        usableBody.appendChild(usableCheckLine);
+
+        var useBuffSel = document.createElement('select');
+        var useOpt0 = document.createElement('option');
+        useOpt0.value = '';
+        useOpt0.textContent = state.edibleBuffOptions.length ? '选择使用触发 Buff（写入 use_buff_id）' : '未载入 Buff 选项（可手动填下方字段）';
+        useBuffSel.appendChild(useOpt0);
+        for (var ubi = 0; ubi < state.edibleBuffOptions.length; ubi++){
+            var ub = state.edibleBuffOptions[ubi];
+            var ubo = document.createElement('option');
+            ubo.value = ub.buff_id;
+            ubo.textContent = ub.buff_id + (ub.name ? (' / ' + ub.name) : '');
+            useBuffSel.appendChild(ubo);
+        }
+        useBuffSel.value = row.use_buff_id == null ? '' : String(row.use_buff_id);
+        useBuffSel.disabled = !usableCheck.checked;
+        usableBody.appendChild(useBuffSel);
+        usableCheck.addEventListener('change', function(){
+            row.usable = usableCheck.checked ? '1' : '0';
+            if (!usableCheck.checked) row.use_buff_id = '';
+            useBuffSel.disabled = !usableCheck.checked;
+            if (!usableCheck.checked) useBuffSel.value = '';
+        });
+        useBuffSel.addEventListener('change', function(){
+            row.use_buff_id = useBuffSel.value || '';
+        });
+        usableWrap.appendChild(usableLab);
+        usableWrap.appendChild(usableBody);
+        el.rowEditor.appendChild(usableWrap);
+
+        // 可食用快捷配置（映射到 editable / edible_buff_id 两列）
+        ensureEdibleColumns();
+        var edibleWrap = document.createElement('div');
+        edibleWrap.className = 'field';
+        var edibleLab = document.createElement('label');
+        edibleLab.textContent = '食用设置（快捷）';
+        var edibleBody = document.createElement('div');
+        edibleBody.style.display = 'grid';
+        edibleBody.style.gap = '8px';
+        var edibleCheckLine = document.createElement('label');
+        edibleCheckLine.style.display = 'flex';
+        edibleCheckLine.style.gap = '8px';
+        edibleCheckLine.style.alignItems = 'center';
+        var edibleCheck = document.createElement('input');
+        edibleCheck.type = 'checkbox';
+        edibleCheck.checked = isTruthy(row.edible);
+        var edibleTxt = document.createElement('span');
+        edibleTxt.textContent = '是否可食用（写入 edible）';
+        edibleCheckLine.appendChild(edibleCheck);
+        edibleCheckLine.appendChild(edibleTxt);
+        edibleBody.appendChild(edibleCheckLine);
+
+        var buffSel = document.createElement('select');
+        var opt0 = document.createElement('option');
+        opt0.value = '';
+        opt0.textContent = state.edibleBuffOptions.length ? '选择食用 Buff（写入 edible_buff_id）' : '未载入 Buff 选项（可手动填下方字段）';
+        buffSel.appendChild(opt0);
+        for (var bi = 0; bi < state.edibleBuffOptions.length; bi++){
+            var it = state.edibleBuffOptions[bi];
+            var op = document.createElement('option');
+            op.value = it.buff_id;
+            op.textContent = it.buff_id + (it.name ? (' / ' + it.name) : '');
+            buffSel.appendChild(op);
+        }
+        buffSel.value = row.edible_buff_id == null ? '' : String(row.edible_buff_id);
+        buffSel.disabled = !edibleCheck.checked;
+        edibleBody.appendChild(buffSel);
+
+        edibleCheck.addEventListener('change', function(){
+            row.edible = edibleCheck.checked ? '1' : '0';
+            if (!edibleCheck.checked) row.edible_buff_id = '';
+            buffSel.disabled = !edibleCheck.checked;
+            if (!edibleCheck.checked) buffSel.value = '';
+        });
+        buffSel.addEventListener('change', function(){
+            row.edible_buff_id = buffSel.value || '';
+        });
+        edibleWrap.appendChild(edibleLab);
+        edibleWrap.appendChild(edibleBody);
+        el.rowEditor.appendChild(edibleWrap);
 
         for (var i = 0; i < state.headers.length; i++){
             (function(){
@@ -724,6 +936,10 @@
         state.selectedRowIndex = parseInt(el.rowSelect.value, 10) || 0;
         renderRowEditor();
     });
+    if (el.rowSearch) el.rowSearch.addEventListener('input', function(){
+        refreshRowSelect();
+        renderRowEditor();
+    });
     el.colSelect.addEventListener('change', function(){
         state.selectedColIndex = parseInt(el.colSelect.value, 10) || 0;
     });
@@ -733,6 +949,17 @@
     el.btnNewRow.addEventListener('click', function(){ addRow(); });
     el.btnExportCsv.addEventListener('click', function(){ exportCsv(); });
     el.btnExportItemsJson.addEventListener('click', function(){ exportItemsJsonSimplified(); });
+    if (el.btnLoadBuffOptions) el.btnLoadBuffOptions.addEventListener('click', function(){
+        clearError();
+        if (!el.buffFileInput) return;
+        el.buffFileInput.value = '';
+        el.buffFileInput.click();
+    });
+    if (el.buffFileInput) el.buffFileInput.addEventListener('change', function(){
+        if (el.buffFileInput.files && el.buffFileInput.files[0]){
+            loadBuffOptionsFromLocalFile(el.buffFileInput.files[0]);
+        }
+    });
 
     el.btnLoadMaterials.addEventListener('click', function(){
         // 从 tools/ 相对 data/ 读取
@@ -741,6 +968,7 @@
 
     // 给页面一个轻量默认状态：也可以在未来改成加载其它表
     el.statusLine.textContent = '未加载 CSV（你可以选择本地文件，或点“载入示例”）';
+    refreshBuffOptionsStatus();
 })();
 </script>
 </body>

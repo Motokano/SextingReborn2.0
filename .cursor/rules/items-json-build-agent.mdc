@@ -36,6 +36,10 @@ alwaysApply: false
 - `thirst_restore` → `use_effect.thirst`
 - `nutrition_restore` → `use_effect.nutrition`
 
+物品“主动可使用”字段（若 CSV 提供）应保持映射一致：
+- `usable` → `item.usable`（布尔）
+- `use_buff_id` → `item.use_buff_id`（字符串，指向 `data/buffs.json` 的 `buff_id`）
+
 如果后续扩展新的展示字段或新的 effect 列，需要同步更新本规则与构建脚本。
 
 ## 3) 构建流程口径

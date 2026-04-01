@@ -1,0 +1,55 @@
+---
+description: Combat variants (变式) implementation contract
+alwaysApply: true
+---
+
+# 变式（Combat Variants）统一实现约定
+
+编辑变式相关功能时，以本规则为硬约束，避免重复造轮子与口径分裂。
+
+## 单一事实源（当前实现）
+
+- 变式数据：`data/move-variants.json`（`variants`）。
+- 运行时模块：`js/combat-variants.js`（独立 `variant_effect_type`，不复用 Buff effect 目录）。
+- 载入入口：`js/scene-app.js` `loadConfig()` 已加载并注入 `CombatVariants.setTable(...)`。
+- 存档结构：主动链采用**与 `move_sequences` 共用槽位**表示变式；招架链为 `parry_variant_sequences`。
+
+## 核心语义（强制）
+
+- `assist_scope`：`active_moves | parry | both`。
+- `trigger` 缺省：恒 `true`。
+- `target_filters` 缺省：不限制。
+- 多段判定：按 sub-hit **每段独立**检查触发条件。
+- 同肢同 `variant_id` 唯一；不同 id 可叠加（互不覆盖）。
+- 来源等级缩放：按 `source_skill_id` 的**实际等级**线性缩放。
+- 来源等级不足（低于 `min_source_level`）：必须清空该肢对应变式槽。
+
+## 槽位与校验（强制）
+
+- 主动链变式：与主动招式共用 `move_sequences` 槽位；同槽二选一，不参与招式指针轮转。
+- 招架变式槽：`parry_variant_sequences[limb]`，最多 5 槽；招架等级每 200 级开 1 槽。
+- 仅 `assist_scope` 含 `parry` 的变式可装入招架槽。
+- 参与普攻链的每条肢体必须至少 1 个主动招式（move）；纯变式布局必须拒绝。
+- 编辑保存/载入都要拒绝非法布局（不要自动“修正成可用”）。
+
+## 战斗面板 UI 布局约束（强制）
+
+- **招架变式槽与主动招式槽同构显示**：在战斗弹窗 `#move-sequence` 区域，招架变式槽必须复用 `combat-move-sequence` 卡片流（`display:flex; flex-wrap:wrap`）与 `combat-move-node` 卡片样式；禁止回退为“逐条竖排 list”。
+- **容器结构固定**：招架分支使用 `combat-variant-wrap > .combat-variant-sequence.combat-move-sequence > .combat-move-node*`，后续改动不得绕开该结构直接向 `combat-variant-wrap` 逐个 append 节点。
+- **空槽视觉一致**：空槽必须标记 `slot-empty`（或等价受同一套样式控制），保证与主动槽空位颜色/字重口径一致，避免“同为空槽、视觉两套规则”。
+- **交互一致**：招架变式槽点击行为仅打开 `openParryVariantPicker(...)`；不得引入与主动槽相同的“编辑态放大（editing）/后遗症按钮/熟练度按钮”。
+- **样式集中在 `index.html` CSS**：禁止在 `scene-app.js` 为招架变式标题、提示、卡片间距写 `style.xxx = ...` 内联样式；统一落在 `#modal-combat` 作用域 CSS 类中。
+- **文案 key 化**：招架变式标题、空态提示等玩家可见文本应使用 `data/ui_text_zhCN.json` 的 key（`ui(...)`），避免在 JS 中硬编码中文字符串。
+
+## 管线接线约定
+
+- 主动变式在 combat pipeline 的命中/伤害相关阶段执行（`applyToActiveContext`）。
+- 招架变式在招架阶段执行（`applyToParryContext`，基于 guard limb）。
+- 变式可改写熟练度增减：通过上下文 `proficiencyDelta` 汇总后统一写入 `move_usage`。
+
+## 禁止事项
+
+- 禁止把变式并入 Buff 的 `effect_type` 目录或 `data/buffs.json`。
+- 禁止让变式参与招式轮转或当作主动招式计次。
+- 禁止绕过 `InventoryEquipment` 的槽位/唯一性/最低主动招式校验。
+

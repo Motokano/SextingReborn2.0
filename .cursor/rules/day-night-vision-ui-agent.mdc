@@ -1,0 +1,63 @@
+# 昼夜光照 + 视野分层（仅 UI）Agent 规则
+
+当修改昼夜光照、地图可见性、未知目标提示或调试显示时，遵守本规则，避免把“视觉表现”误改成“战斗数值”。
+
+## 1) 硬边界：只影响显示，不影响结算
+
+- 视野系统只改**渲染与信息揭示**（地图符号、tooltip、HUD 提示）。
+- 禁止改动命中/招架/伤害/先后手等战斗公式与管线。
+- 禁止因视野而改敌我属性、技能等级、Buff 数值。
+
+实现口径：`js/scene-renderer.js`、`js/core/tile-renderer-v2.js`。  
+非目标：`js/combat-pipeline.js`、`js/combat-melee-resolve.js` 等战斗结算模块。
+
+## 2) 数据单一来源（配置）
+
+- 昼夜遮罩参数：`data/survival-config.json` -> `vision_day_night`
+  - `enabled`
+  - `overlay_rgb`
+  - `darkness_keyframes[]`（`minute`/`alpha`）
+  - `clear_radius_cells_day` / `clear_radius_cells_night` / `clear_falloff_cells`
+- 视野分层参数：`data/survival-config.json` -> `vision_reveal_ui`
+  - `visual_radius_day` / `visual_radius_night`
+  - `identify_ratio` / `detail_ratio`
+  - `adjacent_detail_radius`
+  - `debug_enabled`
+- 朝向视野 UI 参数：`data/survival-config.json` -> `vision_facing_ui`
+  - `enabled`
+  - `front_half_angle_deg` / `side_half_angle_deg`
+  - `front_mul` / `side_mul` / `back_mul`
+  - `show_cone_overlay`
+  - `cone_opacity` / `edge_opacity`
+
+读取入口统一经 `Survival`：`js/survival.js` -> `Survival.getConfigValue(key, def)`。  
+缺字段必须有兜底默认值，不得因配置缺失导致渲染崩溃。
+
+## 3) 视野分层语义（UI）
+
+- `visual`：只知道“有东西”（可显示 `?`）。
+- `identify`：识别类型（敌人/NPC/采集点/地面有物）。
+- `detail`：显示细节（如具体敌人类型、更完整 tooltip）。
+- 邻格保底：`adjacent_detail_radius` 范围内强制细节可见，避免交互挫败。
+
+## 4) 渲染约定
+
+- 暗度由 `GameTime.getState().minuteOfDay` + `darkness_keyframes` 插值得出。
+- 夜色遮罩与玩家周围清晰圈在 FX 层绘制（`setEffectsRenderer` 链路）。
+- 朝向覆盖层使用“柔和扇形切片”视觉：尖点贴近玩家格中心、外缘羽化；避免生硬直线边。
+- 当前推荐夹角：约 150°（`side_half_angle_deg = 75`）；作为默认视觉参数可继续在配置内微调。
+- `tile-renderer-v2` 可消费以下动态元信息：
+  - `unknownPresence`
+  - `groundUnknown`
+  - `gatheringBlurred`
+
+## 5) 调试开关（现行）
+
+- 运行时接口：
+  - `SceneRenderer.setVisionDebugEnabled(bool)`
+  - `SceneRenderer.toggleVisionDebug()`
+  - `SceneRenderer.isVisionDebugEnabled()`
+- 便捷全局：
+  - `VisionDebug.on() / off() / toggle() / status()`
+- 调试 HUD 仅显示当前半径与暗度，不应改变任何规则计算结果。
+- 调试可附加朝向信息（如 `facingDir` / `sideHalf`），但只作可视化诊断，不得参与战斗判定。

@@ -200,6 +200,75 @@
       line-height: 1.6;
       color: #cbd5e1;
     }
+    .advanced-section{
+      border: 1px dashed var(--border2);
+      border-radius: 10px;
+      padding: 10px 12px;
+      margin: 8px 0 14px;
+      background: rgba(148,163,184,0.04);
+    }
+    .advanced-section.collapsed .advanced-body{
+      display: none;
+    }
+    .item-ac-wrap{
+      position: relative;
+      width: 100%;
+    }
+    .item-ac-wrap > input{ width: 100%; }
+    .item-ac-drop{
+      display: none;
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: 100%;
+      margin-top: 4px;
+      max-height: 220px;
+      overflow-y: auto;
+      z-index: 200;
+      background: #0f172a;
+      border: 1px solid var(--border2);
+      border-radius: 10px;
+      box-shadow: var(--shadow);
+    }
+    .item-ac-row{
+      padding: 8px 10px;
+      cursor: pointer;
+      font-size: 12px;
+      border-bottom: 1px solid rgba(148,163,184,0.08);
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    .item-ac-row:hover{ background: rgba(96,165,250,0.12); }
+    .item-ac-txt{ color: var(--text); font-weight: 700; }
+    .item-ac-id{ color: var(--muted2); font-size: 11px; }
+    .item-ac-empty{ padding: 10px; color: var(--muted2); font-size: 12px; }
+    .item-ref-head{
+      margin-top: 14px;
+      padding-top: 12px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .item-ref-list{
+      margin-top: 8px;
+      max-height: 280px;
+      overflow-y: auto;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: rgba(148,163,184,0.05);
+    }
+    .item-ref-row{
+      padding: 8px 10px;
+      cursor: pointer;
+      font-size: 11px;
+      border-bottom: 1px solid rgba(148,163,184,0.08);
+    }
+    .item-ref-row:hover{ background: rgba(96,165,250,0.10); }
+    .item-ref-row .nm{ font-weight: 800; color: var(--text); font-size: 12px; }
+    .item-ref-row .meta{ color: var(--muted2); margin-top: 2px; }
   </style>
 </head>
 <body>
@@ -209,6 +278,9 @@
     <input id="inp-json" type="file" accept="application/json,.json" style="display:none" />
     <button type="button" id="btn-load-registry" title="选择 data/editor/buff_event_registry.json（file:// 下必需）">载入注册表…</button>
     <input id="inp-registry-json" type="file" accept="application/json,.json" style="display:none" />
+    <button type="button" class="primary" id="btn-load-items" title="data/items.json，用于 food_item 名称搜索与左侧物品参考">载入：data/items.json</button>
+    <input id="inp-items-json" type="file" accept="application/json,.json" style="display:none" />
+    <span class="pill" id="pill-items">物品 未载入</span>
     <button type="button" id="btn-export-json">导出 JSON</button>
     <button type="button" id="btn-export-clipboard">复制 JSON 到剪贴板</button>
     <div style="flex-basis:100%; height:0;"></div>
@@ -233,6 +305,16 @@
         </div>
         <div class="list" id="list"></div>
         <div class="mini">草稿会自动保存到本地（仅你电脑）。</div>
+
+        <div class="item-ref-head">
+          <span style="font-weight:900;font-size:12px;color:var(--muted);">物品参考</span>
+          <span class="pill" id="pill-item-ref-count">0 条</span>
+        </div>
+        <div class="hint" style="margin-top:6px;">
+          先点工具栏「载入：data/items.json」。下方按<strong>名称 / id / placeholder</strong>筛选；点击一行将 <span class="mono">item_id</span> 填入当前焦点所在的 <span class="mono">food_item</span> 输入框（请先点一下主表单或监听区里的 food_item 框）。也可只用右侧输入框的名称搜索下拉。
+        </div>
+        <input id="inp-item-browse-search" type="text" placeholder="筛选物品…" class="mono" style="width:100%;margin-top:8px;box-sizing:border-box;" disabled />
+        <div class="item-ref-list" id="item-browse-list"></div>
       </div>
     </div>
 
@@ -243,7 +325,7 @@
         <div id="msg-err" class="err"></div>
 
         <div class="field">
-          <label>buff_id（内部唯一）</label>
+          <label>一、Buff基础信息：buff_id（内部唯一）</label>
           <div>
             <input id="f-buff-id" class="mono" placeholder="例如：buff_guard_layers" />
             <div class="mini">建议：全小写英文+下划线。不可重复。</div>
@@ -251,7 +333,7 @@
         </div>
 
         <div class="field">
-          <label>name（展示名）</label>
+          <label>基础信息：name（展示名）</label>
           <div>
             <input id="f-name" placeholder="例如：护体·层" />
             <div class="mini">给玩家看的名字；内部逻辑用 buff_id。</div>
@@ -259,9 +341,33 @@
         </div>
 
         <div class="field">
-          <label>desc（描述）</label>
+          <label>基础信息：desc（描述）</label>
           <div>
             <textarea id="f-desc" placeholder="给玩家看的说明（可空）"></textarea>
+          </div>
+        </div>
+
+        <div class="field">
+          <label>基础信息：judgment_tags（判断标签，可选）</label>
+          <div>
+            <div class="grid2">
+              <div>
+                <div class="mini">food_category（大类，例 nut=坚果）</div>
+                <input id="f-jt-food-category" class="mono" placeholder="nut" />
+              </div>
+              <div>
+                <div class="mini">food_item（item_id；载入物品表后可输入名称筛选）</div>
+                <div class="item-ac-wrap">
+                  <input id="f-jt-food-item" class="mono" placeholder="herb_pecan 或输入中文名筛选" autocomplete="off" />
+                  <div id="f-jt-food-item-drop" class="item-ac-drop"></div>
+                </div>
+              </div>
+            </div>
+            <div class="field" style="margin-top:10px;">
+              <div class="mini">其它键（JSON 对象，可选；勿写 food_category / food_item，以两输入为准）</div>
+              <textarea id="f-jt-extra-json" class="mono" rows="3" placeholder='例如：{ "diet_tag": "keto" }'></textarea>
+            </div>
+            <div class="mini">与运行时 <span class="mono">BuffSystem</span> 一致：<span class="mono">judgment_tags</span> 仅用于条件判断（如 <span class="mono">apply_buff_if_has_buffs.params.required_judgment_tags</span>），不参与 <span class="mono">triggerTags</span> 触发过滤。同一条 Buff 上可同时写大类 + 具体食物 + 其它字符串键。</div>
           </div>
         </div>
 
@@ -302,14 +408,15 @@
         <hr style="border:0;border-top:1px solid var(--border);margin:14px 0;">
 
         <div class="hint" style="margin-bottom:6px;">
-          触发过滤：让任意动作/事件/对话都能触发同一套 Buff 逻辑（按配置决定是否触发/是否消耗）。
+          二、Buff触发过滤：让任意动作/事件/对话都能触发同一套 Buff 逻辑（按配置决定是否触发/是否消耗）。
         </div>
         <div class="opt-guide">
           <strong>关键选项说明：</strong><br>
           - <span class="mono">listenerSide</span>：<span class="mono">self</span>=宿主自身；<span class="mono">actor</span>=宿主是施动方；<span class="mono">target</span>=宿主是目标方；<span class="mono">both</span>=两边都算。<br>
           - <span class="mono">consumeMode</span>：<span class="mono">always</span>=每次触发都扣层；<span class="mono">on_hit_roll_success</span>=命中判定成功才扣层；<span class="mono">on_effect_applied</span>=产生实际效果才扣层。<br>
           - <span class="mono">applyMode</span>：<span class="mono">tie_to_consume</span>=满足消耗条件才生效；<span class="mono">always_apply</span>=始终生效（常用于探针/链式）。<br>
-          - <span class="mono">triggerEventKind/Name/Tags</span>：都从注册表选；事件名建议必填，避免“空过滤”导致误触发。
+          - <span class="mono">triggerEventKind/Name/Tags</span>：都从注册表选；事件名建议必填，避免“空过滤”导致误触发。<br>
+          - <span class="mono">judgment_tags</span>：与触发无关，仅供复合 effect（<span class="mono">required_judgment_tags</span>）等判断；值均为字符串。
         </div>
 
         <div class="grid2">
@@ -367,6 +474,7 @@
               <select id="sel-event-kind" style="min-width:220px;"></select>
               <button type="button" id="btn-add-event-kind">添加到字段</button>
             </div>
+            <div class="mini" id="event-kind-note">事件大类注释：world=时间/环境，combat=战斗流程，dialogue=对话，action=动作执行，buff=Buff状态变化。</div>
             <div class="mini">留空表示不过滤（任何 kind 都可能触发）。</div>
           </div>
         </div>
@@ -379,11 +487,13 @@
               <select id="sel-event-name" style="min-width:220px;"></select>
               <button type="button" id="btn-add-event-name">添加到字段</button>
             </div>
+            <div class="mini" id="event-name-note">事件名注释：tick_advanced=时间推进1 tick，time_point_reached=跨分钟/小时等时间点，buff_state_changed=Buff增减变化。</div>
             <div class="rowActions" style="margin-top:8px;">
               <button type="button" id="btn-preset-time">预设：时间触发</button>
               <button type="button" id="btn-preset-attr">预设：属性触发</button>
               <button type="button" id="btn-preset-dialogue">预设：对话触发</button>
               <button type="button" id="btn-preset-env">预设：环境触发</button>
+              <button type="button" id="btn-preset-buff-watch">预设：Buff监听触发</button>
             </div>
             <div class="mini">留空表示不过滤（任何 event_name 都可能触发）。建议尽量填写，避免误触发。</div>
           </div>
@@ -397,29 +507,109 @@
               <select id="sel-tag" style="min-width:220px;"></select>
               <button type="button" id="btn-add-tag">添加到字段</button>
             </div>
+            <div class="rowActions" style="margin-top:8px;">
+              <select id="sel-hit-arc-tag" style="min-width:220px;">
+                <option value="hit_arc_front">命中方位：front（正面）</option>
+                <option value="hit_arc_side">命中方位：side（侧面）</option>
+                <option value="hit_arc_back">命中方位：back（背面）</option>
+              </select>
+              <button type="button" id="btn-add-hit-arc-tag">添加命中方位Tag</button>
+            </div>
             <div class="mini">可空；事件 tags 命中其一即可触发（实现时可选“全包含/任一包含”）。</div>
           </div>
         </div>
 
         <hr style="border:0;border-top:1px solid var(--border);margin:14px 0;">
 
-        <div class="hint" style="margin-bottom:6px;">
-          effects：触发后要做的效果列表。为了让非程序也能用，这里提供“模板按钮”，并允许直接编辑 JSON。
+        <div class="mini" style="margin:10px 0 6px;font-weight:900;color:#cbd5e1;">三、组合Buff判定（触发扩展）</div>
+        <div class="field">
+          <label>组合判定：满足多Buff授予新Buff</label>
+          <div>
+            <div class="grid2">
+              <div>
+                <div class="mini">组合判定条目（一个 Buff 可有多条）</div>
+                <select id="watch-entry-list" size="5" class="mono" style="width:100%;"></select>
+                <div class="rowActions" style="margin-top:8px;">
+                  <button type="button" id="btn-watch-entry-new">新增条目</button>
+                  <button type="button" id="btn-watch-entry-delete">删除当前条目</button>
+                </div>
+                <div class="mini">必需 Buff（可多选）</div>
+                <select id="watch-required-buffs" multiple size="8" class="mono" style="width:100%;"></select>
+                <div class="mini" id="watch-required-status">已载入 0 条，可 Ctrl/Shift 多选；双击可快速切换选中。</div>
+                <div class="mini" style="margin-top:10px;">required_judgment_tags（可选，与上面 Buff id 同时满足）</div>
+                <input id="watch-jt-food-category" class="mono" style="width:100%;box-sizing:border-box;" placeholder="food_category，例 nut" />
+                <div class="item-ac-wrap" style="margin-top:6px;">
+                  <input id="watch-jt-food-item" class="mono" style="width:100%;box-sizing:border-box;" placeholder="food_item：可输入名称筛选" autocomplete="off" />
+                  <div id="watch-jt-food-item-drop" class="item-ac-drop"></div>
+                </div>
+                <div class="mini" style="margin-top:8px;">required 其它键（JSON 对象，可选）</div>
+                <textarea id="watch-jt-extra-json" class="mono" rows="2" style="width:100%;box-sizing:border-box;" placeholder='{ "custom": "x" }'></textarea>
+              </div>
+              <div>
+                <div class="mini">满足后授予 Buff（默认当前编辑项）</div>
+                <select id="watch-grant-buff" class="mono" style="width:100%;"></select>
+                <label style="display:flex;align-items:center;gap:8px;margin-top:10px;">
+                  <input id="watch-allow-reapply" type="checkbox" />
+                  <span class="mini" style="margin:0;">允许重复施加（allow_reapply）</span>
+                </label>
+              </div>
+            </div>
+            <div class="rowActions" style="margin-top:10px;">
+              <button type="button" id="btn-watch-build-json">写入到 effects JSON</button>
+              <button type="button" id="btn-watch-read-json">从 effects JSON 读取</button>
+            </div>
+            <div class="mini">说明：该区会维护 <span class="mono">effects</span> 中的 <span class="mono">apply_buff_if_has_buffs</span> 条目；仅作组合判定，不会覆盖其它 effect。</div>
+          </div>
         </div>
 
-        <div class="rowActions">
-          <button type="button" class="primary" id="btn-effect-template-stat">插入模板：数值型</button>
-          <button type="button" class="primary" id="btn-effect-template-layered">插入模板：分层护盾</button>
-          <button type="button" class="primary" id="btn-effect-template-chain">插入模板：链式触发</button>
+        <div class="hint" style="margin-bottom:6px;">
+          四、Buff具体效果：先用模板库与动态表单，再在高级 JSON 中精修。
+        </div>
+
+        <div class="mini" style="margin:10px 0 6px;font-weight:900;color:#cbd5e1;">四-1：效果模板库（智能表单）</div>
+        <div class="rowActions" style="margin-top:8px;">
+          <select id="sel-effect-template" style="min-width:320px;">
+            <option value="">选择模板类型…</option>
+            <option value="food_buff_bundle">食物Buff整套模板（标签+触发+效果）</option>
+            <option value="survival_delta">生存值变化（survival_delta）</option>
+            <option value="survival_delta_expire">结束时生存值（survival_delta -> expire_effects）</option>
+            <option value="add_stat_delta">后天五维变化（add_stat_delta）</option>
+            <option value="trigger_event">触发事件（trigger_event）</option>
+            <option value="apply_buff_if_has_buffs">满足条件授予Buff（apply_buff_if_has_buffs）</option>
+          </select>
+          <button type="button" id="btn-effect-template-insert">按模板写入</button>
+          <button type="button" id="btn-effect-template-help">查看模板说明</button>
           <button type="button" id="btn-effect-clear">清空 effects</button>
         </div>
+        <div id="effect-template-dynamic" class="opt-guide" style="margin-top:8px;">
+          <div class="mini">请选择模板后显示参数表单。</div>
+        </div>
+        <div class="mini" id="effect-template-help-text">
+          模板说明：食物整套模板会同时写入标签、触发过滤、effects 与 expire_effects；其余模板会写入对应数组。
+        </div>
 
-        <div class="field">
-          <label>effects（JSON 数组）</label>
-          <div>
-            <textarea id="f-effects" class="mono" placeholder='例如：[{"type":"add_stat_delta","params":{"jingu":5}}]'></textarea>
-            <div class="mini">
-              建议只用对象数组，每个对象至少包含：<span class="mono">type</span> 与 <span class="mono">params</span>。
+        <div class="advanced-section collapsed" id="advanced-json-section">
+          <div class="rowActions" style="margin-top:0;">
+            <span class="mini" style="margin:0;font-weight:900;color:#cbd5e1;">四-2：JSON 高级模式</span>
+            <button type="button" id="btn-toggle-advanced-json">展开高级编辑</button>
+          </div>
+          <div class="advanced-body">
+            <div class="field">
+              <label>effects（JSON 数组）</label>
+              <div>
+                <textarea id="f-effects" class="mono" placeholder='例如：[{"type":"add_stat_delta","params":{"jingu":5}}]'></textarea>
+                <div class="mini">
+                  建议只用对象数组，每个对象至少包含：<span class="mono">type</span> 与 <span class="mono">params</span>。
+                </div>
+              </div>
+            </div>
+
+            <div class="field">
+              <label>expire_effects（JSON 数组）</label>
+              <div>
+                <textarea id="f-expire-effects" class="mono" placeholder='例如：[{"type":"survival_delta","params":{"nutrition":1}}]'></textarea>
+                <div class="mini">Buff 自然结束（到期/层数耗尽）时执行；当前运行时支持 <span class="mono">survival_delta</span>。</div>
+              </div>
             </div>
           </div>
         </div>
@@ -431,6 +621,7 @@
 
         <div class="hint" style="margin-top:10px;">
           重要：本工具只负责“配表”。运行时如何执行 effects、如何索引触发、如何接入 `recalcCharacterStats()`，以 `docs/design/18-buff-system.md` 为准。
+          标签条件查询 API：<span class="mono">BuffSystem.hasBuffMatchingJudgmentTags('player', { food_category: 'nut' })</span>（与 <span class="mono">apply_buff_if_has_buffs</span> 判定一致）。
         </div>
       </div>
     </div>
@@ -450,6 +641,9 @@
         selectedIndex: -1
       };
 
+      var itemState = { loaded: false, byId: {}, list: [] };
+      var activeFoodItemInput = null;
+
       function $(id){ return document.getElementById(id); }
       var el = {
         list: $('list'),
@@ -464,6 +658,14 @@
         inpJson: $('inp-json'),
         btnLoadRegistry: $('btn-load-registry'),
         inpRegistryJson: $('inp-registry-json'),
+        btnLoadItems: $('btn-load-items'),
+        inpItemsJson: $('inp-items-json'),
+        pillItems: $('pill-items'),
+        inpItemBrowseSearch: $('inp-item-browse-search'),
+        itemBrowseList: $('item-browse-list'),
+        pillItemRefCount: $('pill-item-ref-count'),
+        fJtFoodItemDrop: $('f-jt-food-item-drop'),
+        watchJtFoodItemDrop: $('watch-jt-food-item-drop'),
         btnExport: $('btn-export-json'),
         btnExportClipboard: $('btn-export-clipboard'),
 
@@ -476,6 +678,9 @@
         fId: $('f-buff-id'),
         fName: $('f-name'),
         fDesc: $('f-desc'),
+        fJtFoodCategory: $('f-jt-food-category'),
+        fJtFoodItem: $('f-jt-food-item'),
+        fJtExtraJson: $('f-jt-extra-json'),
         fDuration: $('f-duration'),
         fMaxStacks: $('f-max-stacks'),
         fAddStacks: $('f-add-stacks'),
@@ -488,25 +693,88 @@
         fEventKind: $('f-event-kind'),
         fEventName: $('f-event-name'),
         fTags: $('f-tags'),
+        advancedJsonSection: $('advanced-json-section'),
+        btnToggleAdvancedJson: $('btn-toggle-advanced-json'),
         fEffects: $('f-effects'),
+        fExpireEffects: $('f-expire-effects'),
+        effectTemplateDynamic: $('effect-template-dynamic'),
         selEventKind: $('sel-event-kind'),
         selEventName: $('sel-event-name'),
+        eventKindNote: $('event-kind-note'),
+        eventNameNote: $('event-name-note'),
         selTag: $('sel-tag'),
+        selHitArcTag: $('sel-hit-arc-tag'),
         btnAddEventKind: $('btn-add-event-kind'),
         btnAddEventName: $('btn-add-event-name'),
         btnAddTag: $('btn-add-tag'),
+        btnAddHitArcTag: $('btn-add-hit-arc-tag'),
         btnPresetTime: $('btn-preset-time'),
         btnPresetAttr: $('btn-preset-attr'),
         btnPresetDialogue: $('btn-preset-dialogue'),
         btnPresetEnv: $('btn-preset-env'),
+        btnPresetBuffWatch: $('btn-preset-buff-watch'),
 
-        btnTplStat: $('btn-effect-template-stat'),
-        btnTplLayered: $('btn-effect-template-layered'),
-        btnTplChain: $('btn-effect-template-chain'),
-        btnEffectsClear: $('btn-effect-clear')
+        selEffectTemplate: $('sel-effect-template'),
+        btnEffectTemplateInsert: $('btn-effect-template-insert'),
+        btnEffectTemplateHelp: $('btn-effect-template-help'),
+        effectTemplateHelpText: $('effect-template-help-text'),
+        btnEffectsClear: $('btn-effect-clear'),
+
+        watchRequiredBuffs: $('watch-required-buffs'),
+        watchEntryList: $('watch-entry-list'),
+        btnWatchEntryNew: $('btn-watch-entry-new'),
+        btnWatchEntryDelete: $('btn-watch-entry-delete'),
+        watchRequiredStatus: $('watch-required-status'),
+        watchJtFoodCategory: $('watch-jt-food-category'),
+        watchJtFoodItem: $('watch-jt-food-item'),
+        watchJtExtraJson: $('watch-jt-extra-json'),
+        watchGrantBuff: $('watch-grant-buff'),
+        watchAllowReapply: $('watch-allow-reapply'),
+        btnWatchBuildJson: $('btn-watch-build-json'),
+        btnWatchReadJson: $('btn-watch-read-json')
       };
+      var watchEntryIndex = -1;
 
       function deepClone(obj){ return JSON.parse(JSON.stringify(obj)); }
+
+      /** 用于展示：从 judgment_tags 中去掉食物两键，其余序列化为「其它键」JSON */
+      function judgmentTagsToExtraJson(jt){
+        if (!jt || typeof jt !== 'object' || Array.isArray(jt)) return '';
+        var extra = {};
+        var keys = Object.keys(jt);
+        for (var i = 0; i < keys.length; i++){
+          var k = keys[i];
+          if (k === 'food_category' || k === 'food_item') continue;
+          extra[k] = jt[k];
+        }
+        return Object.keys(extra).length ? JSON.stringify(extra, null, 2) : '';
+      }
+
+      /** 解析「其它键」JSON；跳过 food_category / food_item（由专用输入负责） */
+      function parseJudgmentExtraJsonField(raw, label){
+        var out = {};
+        var s = String(raw || '').trim();
+        if (!s) return out;
+        var ex;
+        try{
+          ex = JSON.parse(s);
+        }catch(e){
+          throw new Error((label || 'JSON') + ' 解析失败：' + (e && e.message ? e.message : e));
+        }
+        if (!ex || typeof ex !== 'object' || Array.isArray(ex)){
+          throw new Error((label || 'JSON') + ' 须为非空 JSON 对象');
+        }
+        var ek = Object.keys(ex);
+        for (var i = 0; i < ek.length; i++){
+          var k = String(ek[i] || '').trim();
+          if (!k || k === 'food_category' || k === 'food_item') continue;
+          var v = ex[ek[i]];
+          if (v == null) continue;
+          var sv = String(v).trim();
+          if (sv) out[k] = sv;
+        }
+        return out;
+      }
       function nowIso(){ return new Date().toISOString().slice(0,19).replace(/[:T]/g,'-'); }
       function showErr(msg){
         el.msgOk.style.display = 'none';
@@ -630,6 +898,10 @@
         if (!Array.isArray(b.triggerEventName)) b.triggerEventName = [];
         if (!Array.isArray(b.triggerTags)) b.triggerTags = [];
         if (!Array.isArray(b.effects)) b.effects = [];
+        if (!Array.isArray(b.expire_effects)) b.expire_effects = [];
+        if (b.judgment_tags != null && (typeof b.judgment_tags !== 'object' || Array.isArray(b.judgment_tags))) {
+          b.judgment_tags = {};
+        }
         return b;
       }
 
@@ -671,7 +943,18 @@
           var sub = document.createElement('div');
           sub.className = 'sub';
           var ev = (b.triggerEventName && b.triggerEventName.length) ? b.triggerEventName.slice(0,2).join(',') : '（未限制事件名）';
-          sub.textContent = 'dur ' + (b.durationTicks|0) + ' · stacks≤' + (b.maxStacks|0) + ' · events: ' + ev + (b.triggerEventName && b.triggerEventName.length > 2 ? '…' : '');
+          var jtLine = '';
+          var jto = b.judgment_tags;
+          if (jto && typeof jto === 'object' && !Array.isArray(jto)){
+            var jc = jto.food_category != null ? String(jto.food_category) : '';
+            var ji = jto.food_item != null ? String(jto.food_item) : '';
+            var jx = Object.keys(jto).length - (jc ? 1 : 0) - (ji ? 1 : 0);
+            if (jc || ji || jx > 0){
+              jtLine = ' · jt:' + (jc || '—') + '/' + (ji || '—');
+              if (jx > 0) jtLine += '+' + jx;
+            }
+          }
+          sub.textContent = 'dur ' + (b.durationTicks|0) + ' · stacks≤' + (b.maxStacks|0) + ' · events: ' + ev + (b.triggerEventName && b.triggerEventName.length > 2 ? '…' : '') + jtLine;
 
           div.appendChild(top);
           div.appendChild(sub);
@@ -682,6 +965,337 @@
 
       function setStatus(text){
         el.status.textContent = text;
+      }
+
+      function getBuffOptions(includeEmpty){
+        var arr = [];
+        if (includeEmpty) arr.push({ id: '', label: '（不选择）' });
+        for (var i = 0; i < state.buffs.length; i++){
+          var b = state.buffs[i] || {};
+          var id = String(b.buff_id || '').trim();
+          if (!id) continue;
+          arr.push({ id: id, label: id + (b.name ? (' / ' + b.name) : '') });
+        }
+        return arr;
+      }
+
+      function getCurrentEditingBuffId(){
+        if (state.selectedIndex < 0 || state.selectedIndex >= state.buffs.length) return '';
+        var b = state.buffs[state.selectedIndex] || {};
+        return String(b.buff_id || '').trim();
+      }
+
+      function refreshBuffWatchSelectors(){
+        if (!el.watchRequiredBuffs || !el.watchGrantBuff) return;
+        var opts = getBuffOptions(false);
+        el.watchRequiredBuffs.innerHTML = '';
+        for (var i = 0; i < opts.length; i++){
+          var op = document.createElement('option');
+          op.value = opts[i].id;
+          op.textContent = opts[i].label;
+          el.watchRequiredBuffs.appendChild(op);
+        }
+        var grantOpts = getBuffOptions(true);
+        el.watchGrantBuff.innerHTML = '';
+        for (var j = 0; j < grantOpts.length; j++){
+          var op2 = document.createElement('option');
+          op2.value = grantOpts[j].id;
+          op2.textContent = grantOpts[j].label;
+          el.watchGrantBuff.appendChild(op2);
+        }
+        // 默认授予当前正在编辑的 buff，避免重复手选
+        var curId = getCurrentEditingBuffId();
+        if (curId) {
+          for (var gi = 0; gi < el.watchGrantBuff.options.length; gi++) {
+            if (el.watchGrantBuff.options[gi].value === curId) {
+              el.watchGrantBuff.value = curId;
+              break;
+            }
+          }
+        }
+        if (el.watchRequiredStatus) {
+          el.watchRequiredStatus.textContent = '已载入 ' + opts.length + ' 条，可 Ctrl/Shift 多选；双击可快速切换选中。';
+        }
+      }
+
+      function updateWatchRequiredSelectionStatus(){
+        if (!el.watchRequiredBuffs || !el.watchRequiredStatus) return;
+        var selected = getMultiSelectValues(el.watchRequiredBuffs);
+        if (!selected.length){
+          el.watchRequiredStatus.textContent = '已载入 ' + el.watchRequiredBuffs.options.length + ' 条，当前未选择。';
+          return;
+        }
+        el.watchRequiredStatus.textContent = '当前已选 ' + selected.length + ' 条：' + selected.join(', ');
+      }
+
+      function setMultiSelectValues(selectEl, values){
+        var set = {};
+        for (var i = 0; i < values.length; i++) set[String(values[i])] = true;
+        for (var j = 0; j < selectEl.options.length; j++){
+          var o = selectEl.options[j];
+          o.selected = !!set[o.value];
+        }
+      }
+
+      function getMultiSelectValues(selectEl){
+        var out = [];
+        for (var i = 0; i < selectEl.options.length; i++){
+          if (selectEl.options[i].selected) out.push(selectEl.options[i].value);
+        }
+        return out;
+      }
+
+      function findBuffWatchEffectIndex(effects){
+        for (var i = 0; i < effects.length; i++){
+          var e = effects[i] || {};
+          if (e.type === 'apply_buff_if_has_buffs') return i;
+        }
+        return -1;
+      }
+
+      function getBuffWatchEffects(effects){
+        var out = [];
+        for (var i = 0; i < effects.length; i++){
+          var e = effects[i] || {};
+          if (e.type === 'apply_buff_if_has_buffs') out.push(e);
+        }
+        return out;
+      }
+
+      function setBuffWatchEffectsInEffects(effects, watchEffects){
+        var keep = [];
+        for (var i = 0; i < effects.length; i++){
+          var e = effects[i] || {};
+          if (e.type !== 'apply_buff_if_has_buffs') keep.push(e);
+        }
+        for (var j = 0; j < watchEffects.length; j++){
+          keep.push(watchEffects[j]);
+        }
+        return keep;
+      }
+
+      function summarizeWatchEffect(effectObj, idx){
+        var p = (effectObj && effectObj.params) || {};
+        var req = Array.isArray(p.required_buff_ids) ? p.required_buff_ids : [];
+        var grant = String(p.grant_buff_id || '').trim() || '（未设 grant）';
+        return '#' + (idx + 1) + ' req:' + (req.length ? req.join('+') : '（空）') + ' -> ' + grant;
+      }
+
+      function refreshWatchEntryList(watchEffects){
+        if (!el.watchEntryList) return;
+        el.watchEntryList.innerHTML = '';
+        for (var i = 0; i < watchEffects.length; i++){
+          var opt = document.createElement('option');
+          opt.value = String(i);
+          opt.textContent = summarizeWatchEffect(watchEffects[i], i);
+          el.watchEntryList.appendChild(opt);
+        }
+        if (!watchEffects.length){
+          watchEntryIndex = -1;
+          return;
+        }
+        if (watchEntryIndex < 0 || watchEntryIndex >= watchEffects.length) watchEntryIndex = 0;
+        el.watchEntryList.value = String(watchEntryIndex);
+      }
+
+      function parseEffectsInputOrEmpty(){
+        var raw = String(el.fEffects.value || '').trim();
+        if (!raw) return [];
+        var arr = JSON.parse(raw);
+        if (!Array.isArray(arr)) throw new Error('effects 必须是 JSON 数组');
+        return arr;
+      }
+
+      function parseExpireEffectsInputOrEmpty(){
+        var raw = String(el.fExpireEffects && el.fExpireEffects.value || '').trim();
+        if (!raw) return [];
+        var arr = JSON.parse(raw);
+        if (!Array.isArray(arr)) throw new Error('expire_effects 必须是 JSON 数组');
+        return arr;
+      }
+
+      function toFiniteNum(v){
+        var n = Number(v);
+        return isFinite(n) ? n : 0;
+      }
+
+      function writeSurvivalDeltaIntoArray(arr, val){
+        arr = Array.isArray(arr) ? arr.slice() : [];
+        var p = {};
+        if (val.satiety !== 0) p.satiety = val.satiety;
+        if (val.thirst !== 0) p.thirst = val.thirst;
+        if (val.nutrition !== 0) p.nutrition = val.nutrition;
+        if (val.stamina !== 0) p.stamina = val.stamina;
+        if (val.energy !== 0) p.energy = val.energy; // 兼容旧配置（energy）
+        var next = [];
+        for (var i = 0; i < arr.length; i++){
+          if ((arr[i] || {}).type !== 'survival_delta') next.push(arr[i]);
+        }
+        if (Object.keys(p).length){
+          next.push({ type: 'survival_delta', params: p });
+        }
+        return next;
+      }
+
+      function syncBuffWatchUiFromEffects(){
+        if (!el.watchRequiredBuffs || !el.watchGrantBuff || !el.watchAllowReapply) return;
+        refreshBuffWatchSelectors();
+        var effects;
+        try{
+          effects = parseEffectsInputOrEmpty();
+        }catch(e){
+          return;
+        }
+        var watchEffects = getBuffWatchEffects(effects);
+        refreshWatchEntryList(watchEffects);
+        if (!watchEffects.length){
+          setMultiSelectValues(el.watchRequiredBuffs, []);
+          if (el.watchJtFoodCategory) el.watchJtFoodCategory.value = '';
+          if (el.watchJtFoodItem) el.watchJtFoodItem.value = '';
+          if (el.watchJtExtraJson) el.watchJtExtraJson.value = '';
+          el.watchGrantBuff.value = '';
+          el.watchAllowReapply.checked = false;
+          return;
+        }
+        var picked = watchEffects[watchEntryIndex] || watchEffects[0] || {};
+        var p = picked.params || {};
+        var rj = (p.required_judgment_tags && typeof p.required_judgment_tags === 'object' && !Array.isArray(p.required_judgment_tags)) ? p.required_judgment_tags : {};
+        setMultiSelectValues(el.watchRequiredBuffs, Array.isArray(p.required_buff_ids) ? p.required_buff_ids : []);
+        if (el.watchJtFoodCategory) el.watchJtFoodCategory.value = rj.food_category != null ? String(rj.food_category) : '';
+        if (el.watchJtFoodItem) el.watchJtFoodItem.value = rj.food_item != null ? String(rj.food_item) : '';
+        if (el.watchJtExtraJson) el.watchJtExtraJson.value = judgmentTagsToExtraJson(rj);
+        var grantId = p.grant_buff_id ? String(p.grant_buff_id) : '';
+        if (!grantId) grantId = getCurrentEditingBuffId();
+        el.watchGrantBuff.value = grantId;
+        el.watchAllowReapply.checked = !!p.allow_reapply;
+        updateWatchRequiredSelectionStatus();
+      }
+
+      function buildOrUpdateBuffWatchEffectFromUi(){
+        var effects = parseEffectsInputOrEmpty();
+        var watchEffects = getBuffWatchEffects(effects);
+        var required = getMultiSelectValues(el.watchRequiredBuffs);
+        var grant = String(el.watchGrantBuff.value || '').trim();
+        if (!grant) grant = getCurrentEditingBuffId();
+        if (!grant) throw new Error('当前 Buff 缺少 buff_id，无法作为授予目标。请先填写并保存 buff_id。');
+        var reqJ = {};
+        try{
+          if (el.watchJtExtraJson){
+            var parsedExtra = parseJudgmentExtraJsonField(el.watchJtExtraJson.value, 'required_judgment_tags 其它键');
+            var pk = Object.keys(parsedExtra);
+            for (var pi = 0; pi < pk.length; pi++) reqJ[pk[pi]] = parsedExtra[pk[pi]];
+          }
+        }catch(e){
+          throw e;
+        }
+        var wfc = el.watchJtFoodCategory ? String(el.watchJtFoodCategory.value || '').trim() : '';
+        var wfi = el.watchJtFoodItem ? String(el.watchJtFoodItem.value || '').trim() : '';
+        if (wfc) reqJ.food_category = wfc;
+        if (wfi) reqJ.food_item = wfi;
+        var params = {
+          required_buff_ids: required,
+          grant_buff_id: grant,
+          allow_reapply: !!el.watchAllowReapply.checked
+        };
+        if (Object.keys(reqJ).length) params.required_judgment_tags = reqJ;
+        var effectObj = {
+          type: 'apply_buff_if_has_buffs',
+          params: params
+        };
+        if (watchEntryIndex < 0 || watchEntryIndex >= watchEffects.length){
+          watchEffects.push(effectObj);
+          watchEntryIndex = watchEffects.length - 1;
+        } else {
+          watchEffects[watchEntryIndex] = effectObj;
+        }
+        effects = setBuffWatchEffectsInEffects(effects, watchEffects);
+        el.fEffects.value = JSON.stringify(effects, null, 2);
+        refreshWatchEntryList(watchEffects);
+      }
+
+      function upsertBuffWatchRequiredOnlyById(buffId){
+        var id = String(buffId || '').trim();
+        if (!id) return;
+        var effects = parseEffectsInputOrEmpty();
+        var watchEffects = getBuffWatchEffects(effects);
+        if (watchEntryIndex < 0 || watchEntryIndex >= watchEffects.length) watchEntryIndex = 0;
+        var effectObj = (watchEntryIndex >= 0 && watchEntryIndex < watchEffects.length) ? (watchEffects[watchEntryIndex] || {}) : { type: 'apply_buff_if_has_buffs', params: {} };
+        if (effectObj.type !== 'apply_buff_if_has_buffs') effectObj.type = 'apply_buff_if_has_buffs';
+        var p = effectObj.params && typeof effectObj.params === 'object' ? effectObj.params : {};
+        var req = Array.isArray(p.required_buff_ids) ? p.required_buff_ids.slice() : [];
+        var at = req.indexOf(id);
+        var added = false;
+        if (at >= 0) {
+          req.splice(at, 1);
+        } else {
+          req.push(id);
+          added = true;
+        }
+        p.required_buff_ids = req;
+        if (p.allow_reapply == null) p.allow_reapply = false;
+        if (p.grant_buff_id == null) p.grant_buff_id = '';
+        effectObj.params = p;
+        if (watchEntryIndex >= 0 && watchEntryIndex < watchEffects.length) watchEffects[watchEntryIndex] = effectObj;
+        else {
+          watchEffects.push(effectObj);
+          watchEntryIndex = watchEffects.length - 1;
+        }
+        effects = setBuffWatchEffectsInEffects(effects, watchEffects);
+        el.fEffects.value = JSON.stringify(effects, null, 2);
+        syncBuffWatchUiFromEffects();
+        updateWatchRequiredSelectionStatus();
+        showOk(added ? ('已加入必需 Buff：' + id) : ('已移除必需 Buff：' + id));
+      }
+
+      function createWatchEffectFromCurrentUi(){
+        var grant = String(el.watchGrantBuff && el.watchGrantBuff.value || '').trim();
+        if (!grant) grant = getCurrentEditingBuffId();
+        return {
+          type: 'apply_buff_if_has_buffs',
+          params: {
+            required_buff_ids: [],
+            grant_buff_id: grant || '',
+            allow_reapply: !!(el.watchAllowReapply && el.watchAllowReapply.checked)
+          }
+        };
+      }
+
+      function addBuffWatchEntry(){
+        clearMsg();
+        try{
+          var effects = parseEffectsInputOrEmpty();
+          var watchEffects = getBuffWatchEffects(effects);
+          watchEffects.push(createWatchEffectFromCurrentUi());
+          watchEntryIndex = watchEffects.length - 1;
+          effects = setBuffWatchEffectsInEffects(effects, watchEffects);
+          el.fEffects.value = JSON.stringify(effects, null, 2);
+          syncBuffWatchUiFromEffects();
+          showOk('已新增组合监听条目。');
+          scheduleDraft();
+        }catch(e){
+          showErr(e && e.message ? e.message : String(e));
+        }
+      }
+
+      function deleteCurrentBuffWatchEntry(){
+        clearMsg();
+        try{
+          var effects = parseEffectsInputOrEmpty();
+          var watchEffects = getBuffWatchEffects(effects);
+          if (!watchEffects.length || watchEntryIndex < 0 || watchEntryIndex >= watchEffects.length){
+            showErr('当前没有可删除的组合监听条目。');
+            return;
+          }
+          watchEffects.splice(watchEntryIndex, 1);
+          if (watchEntryIndex >= watchEffects.length) watchEntryIndex = watchEffects.length - 1;
+          effects = setBuffWatchEffectsInEffects(effects, watchEffects);
+          el.fEffects.value = JSON.stringify(effects, null, 2);
+          syncBuffWatchUiFromEffects();
+          showOk('已删除当前组合监听条目。');
+          scheduleDraft();
+        }catch(e){
+          showErr(e && e.message ? e.message : String(e));
+        }
       }
 
       function selectIndex(idx){
@@ -696,6 +1310,7 @@
         state.selectedIndex = idx;
         refreshList();
         renderEditor(state.buffs[idx]);
+        syncBuffWatchUiFromEffects();
         setStatus('已选择：' + (state.buffs[idx].buff_id || '(未命名)'));
         saveDraft();
       }
@@ -710,6 +1325,9 @@
           el.fId.value = '';
           el.fName.value = '';
           el.fDesc.value = '';
+          if (el.fJtFoodCategory) el.fJtFoodCategory.value = '';
+          if (el.fJtFoodItem) el.fJtFoodItem.value = '';
+          if (el.fJtExtraJson) el.fJtExtraJson.value = '';
           el.fDuration.value = 0;
           el.fMaxStacks.value = 1;
           el.fAddStacks.value = 1;
@@ -722,6 +1340,8 @@
           el.fEventName.value = '';
           el.fTags.value = '';
           el.fEffects.value = '';
+          if (el.fExpireEffects) el.fExpireEffects.value = '';
+          syncBuffWatchUiFromEffects();
           return;
         }
 
@@ -729,6 +1349,10 @@
         el.fId.value = b.buff_id || '';
         el.fName.value = b.name || '';
         el.fDesc.value = b.desc || '';
+        var jt = (b.judgment_tags && typeof b.judgment_tags === 'object' && !Array.isArray(b.judgment_tags)) ? b.judgment_tags : {};
+        if (el.fJtFoodCategory) el.fJtFoodCategory.value = jt.food_category != null ? String(jt.food_category) : '';
+        if (el.fJtFoodItem) el.fJtFoodItem.value = jt.food_item != null ? String(jt.food_item) : '';
+        if (el.fJtExtraJson) el.fJtExtraJson.value = judgmentTagsToExtraJson(jt);
         el.fDuration.value = (b.durationTicks|0);
         el.fMaxStacks.value = (b.maxStacks|0) || 1;
         el.fAddStacks.value = (b.stacksAddOnApply|0);
@@ -741,6 +1365,8 @@
         el.fEventName.value = (b.triggerEventName || []).join(',');
         el.fTags.value = (b.triggerTags || []).join(',');
         el.fEffects.value = (b.effects && b.effects.length) ? JSON.stringify(b.effects, null, 2) : '';
+        if (el.fExpireEffects) el.fExpireEffects.value = (b.expire_effects && b.expire_effects.length) ? JSON.stringify(b.expire_effects, null, 2) : '';
+        syncBuffWatchUiFromEffects();
       }
 
       function collectEditor(){
@@ -760,6 +1386,18 @@
         b.triggerEventName = parseCsvishList(el.fEventName.value);
         b.triggerTags = parseCsvishList(el.fTags.value);
 
+        var jtBase = {};
+        if (el.fJtExtraJson){
+          var parsedJt = parseJudgmentExtraJsonField(el.fJtExtraJson.value, 'judgment_tags 其它键');
+          var jk = Object.keys(parsedJt);
+          for (var ji = 0; ji < jk.length; ji++) jtBase[jk[ji]] = parsedJt[jk[ji]];
+        }
+        var jtCat = el.fJtFoodCategory ? String(el.fJtFoodCategory.value || '').trim() : '';
+        var jtItem = el.fJtFoodItem ? String(el.fJtFoodItem.value || '').trim() : '';
+        if (jtCat) jtBase.food_category = jtCat;
+        if (jtItem) jtBase.food_item = jtItem;
+        if (Object.keys(jtBase).length) b.judgment_tags = jtBase;
+
         var rawEffects = String(el.fEffects.value || '').trim();
         if (rawEffects){
           try{
@@ -771,6 +1409,19 @@
           }
         }else{
           b.effects = [];
+        }
+
+        var rawExpireEffects = String(el.fExpireEffects && el.fExpireEffects.value || '').trim();
+        if (rawExpireEffects){
+          try{
+            var expArr = JSON.parse(rawExpireEffects);
+            if (!Array.isArray(expArr)) throw new Error('expire_effects 必须是 JSON 数组');
+            b.expire_effects = expArr;
+          }catch(e3){
+            throw new Error('expire_effects JSON 解析失败：' + (e3 && e3.message ? e3.message : e3));
+          }
+        }else{
+          b.expire_effects = [];
         }
         return b;
       }
@@ -789,6 +1440,7 @@
           if (b.durationTicks < 0) errs.push(b.buff_id + '：durationTicks 必须 >= 0');
           if (b.consumeLayersFixed < 0) errs.push(b.buff_id + '：consumeLayersFixed 必须 >= 0');
           if (!Array.isArray(b.effects)) errs.push(b.buff_id + '：effects 必须是数组');
+          if (!Array.isArray(b.expire_effects)) errs.push(b.buff_id + '：expire_effects 必须是数组');
           for (var k = 0; k < (b.triggerEventKind || []).length; k++) {
             if (registry.event_kinds.length && registry.event_kinds.indexOf(b.triggerEventKind[k]) < 0) {
               errs.push((b.buff_id || ('第' + (i + 1) + '条')) + '：未注册 event_kind -> ' + b.triggerEventKind[k]);
@@ -802,6 +1454,29 @@
           for (var t = 0; t < (b.triggerTags || []).length; t++) {
             if (registry.tags.length && registry.tags.indexOf(b.triggerTags[t]) < 0) {
               errs.push((b.buff_id || ('第' + (i + 1) + '条')) + '：未注册 tag -> ' + b.triggerTags[t]);
+            }
+          }
+          if (b.judgment_tags != null) {
+            if (typeof b.judgment_tags !== 'object' || Array.isArray(b.judgment_tags)) {
+              errs.push((b.buff_id || ('第' + (i + 1) + '条')) + '：judgment_tags 须为 JSON 对象');
+            } else {
+              var jks = Object.keys(b.judgment_tags);
+              for (var ji = 0; ji < jks.length; ji++) {
+                var jvk = b.judgment_tags[jks[ji]];
+                if (jvk != null && typeof jvk !== 'string') {
+                  errs.push((b.buff_id || '条目') + '：judgment_tags.' + jks[ji] + ' 应为字符串');
+                }
+              }
+            }
+          }
+          var effs = b.effects || [];
+          for (var ei = 0; ei < effs.length; ei++) {
+            var eff = effs[ei];
+            if (!eff || eff.type !== 'apply_buff_if_has_buffs') continue;
+            var pm = eff.params || {};
+            var rjt = pm.required_judgment_tags;
+            if (rjt != null && (typeof rjt !== 'object' || Array.isArray(rjt))) {
+              errs.push((b.buff_id || '条目') + '：effects[' + ei + '].params.required_judgment_tags 须为对象');
             }
           }
         }
@@ -1008,25 +1683,195 @@
         }
       }
 
-      function insertEffectsTemplate(kind){
-        if (state.selectedIndex < 0) return;
-        clearMsg();
-        if (kind === 'stat'){
-          el.fEffects.value = JSON.stringify([
-            { "type": "add_stat_delta", "params": { "jingu": 5, "flexibility": 0, "breath": 0, "dexterity": 0, "focus": 0 } }
-          ], null, 2);
-          showOk('已插入 effects 模板：数值型（add_stat_delta）。');
-        } else if (kind === 'layered') {
-          el.fEffects.value = JSON.stringify([
-            { "type": "add_shield_layers", "params": { "shield_id": "diqi_shield", "layers_consumed": 1, "reduce_pct_per_layer": 0.05 } }
-          ], null, 2);
-          showOk('已插入 effects 模板：分层护盾（示意）。');
-        } else {
-          el.fEffects.value = JSON.stringify([
-            { "type": "add_stat_delta", "params": { "focus": 1 } },
-            { "type": "trigger_event", "params": { "event_kind": "world", "event_name": "world_event_triggered", "tags": ["world", "buff"], "actor_id": "player" } }
-          ], null, 2);
-          showOk('已插入 effects 模板：链式触发（用于验证事件链稳定性）。');
+      function getEffectTemplateById(templateId){
+        if (templateId === 'survival_delta' || templateId === 'survival_delta_expire'){
+          return { type: 'survival_delta', params: { satiety: 4, thirst: 0, nutrition: 0, stamina: 0 } };
+        }
+        if (templateId === 'add_stat_delta'){
+          return { type: 'add_stat_delta', params: { jingu: 1, flexibility: 0, breath: 0, dexterity: 0, focus: 0 } };
+        }
+        if (templateId === 'trigger_event'){
+          return { type: 'trigger_event', params: { event_kind: 'world', event_name: 'world_event_triggered', tags: ['world', 'buff'], actor_id: 'player' } };
+        }
+        if (templateId === 'apply_buff_if_has_buffs'){
+          return { type: 'apply_buff_if_has_buffs', params: { required_buff_ids: [], grant_buff_id: '', allow_reapply: false } };
+        }
+        return null;
+      }
+
+      function getTplInputValue(id){
+        var n = document.getElementById(id);
+        return n ? String(n.value || '') : '';
+      }
+
+      function parseCsvTags(raw){
+        return String(raw || '').split(',').map(function(s){ return s.trim(); }).filter(Boolean);
+      }
+
+      function renderEffectTemplateDynamicForm(){
+        if (!el.effectTemplateDynamic) return;
+        var id = el.selEffectTemplate ? String(el.selEffectTemplate.value || '') : '';
+        if (!id){
+          el.effectTemplateDynamic.innerHTML = '<div class="mini">请选择模板后显示参数表单。</div>';
+          return;
+        }
+        if (id === 'food_buff_bundle'){
+          el.effectTemplateDynamic.innerHTML =
+            '<div class="grid2">' +
+            '<div><div class="mini">food_category</div><input id="tpl-food-category" class="mono" value="nut"></div>' +
+            '<div><div class="mini">food_item（支持名称搜索）</div><div class="item-ac-wrap"><input id="tpl-food-item" class="mono" placeholder="herb_pecan 或输入中文名筛选" autocomplete="off"><div id="tpl-food-item-drop" class="item-ac-drop"></div></div></div>' +
+            '<div><div class="mini">durationTicks</div><input id="tpl-food-duration" type="number" min="1" step="1" value="5"></div>' +
+            '<div><div class="mini">每tick satiety</div><input id="tpl-food-satiety" type="number" step="0.1" value="4"></div>' +
+            '<div><div class="mini">每tick thirst</div><input id="tpl-food-thirst" type="number" step="0.1" value="0"></div>' +
+            '<div><div class="mini">每tick nutrition</div><input id="tpl-food-nutrition" type="number" step="0.1" value="0"></div>' +
+            '<div><div class="mini">每tick stamina（体力）</div><input id="tpl-food-stamina" type="number" step="0.1" value="0"></div>' +
+            '<div><div class="mini">结束时 nutrition</div><input id="tpl-food-expire-nutrition" type="number" step="0.1" value="1"></div>' +
+            '</div>' +
+            '<div class="mini">该模板会同时写入 judgment_tags、触发过滤、effects、expire_effects。</div>';
+          attachItemAutocomplete(document.getElementById('tpl-food-item'), document.getElementById('tpl-food-item-drop'));
+          return;
+        }
+        if (id === 'survival_delta' || id === 'survival_delta_expire'){
+          el.effectTemplateDynamic.innerHTML =
+            '<div class="grid2">' +
+            '<div><div class="mini">satiety（饱食）</div><input id="tpl-satiety" type="number" step="0.1" value="4"></div>' +
+            '<div><div class="mini">thirst（饮水）</div><input id="tpl-thirst" type="number" step="0.1" value="0"></div>' +
+            '<div><div class="mini">nutrition（营养）</div><input id="tpl-nutrition" type="number" step="0.1" value="0"></div>' +
+            '<div><div class="mini">stamina（体力）</div><input id="tpl-stamina" type="number" step="0.1" value="0"></div>' +
+            '</div>';
+          return;
+        }
+        if (id === 'add_stat_delta'){
+          el.effectTemplateDynamic.innerHTML =
+            '<div class="grid2">' +
+            '<div><div class="mini">jingu（筋骨）</div><input id="tpl-jingu" type="number" step="1" value="1"></div>' +
+            '<div><div class="mini">flexibility（柔韧）</div><input id="tpl-flexibility" type="number" step="1" value="0"></div>' +
+            '<div><div class="mini">breath（呼吸）</div><input id="tpl-breath" type="number" step="1" value="0"></div>' +
+            '<div><div class="mini">dexterity（灵巧）</div><input id="tpl-dexterity" type="number" step="1" value="0"></div>' +
+            '<div><div class="mini">focus（专注）</div><input id="tpl-focus" type="number" step="1" value="0"></div>' +
+            '</div>';
+          return;
+        }
+        if (id === 'trigger_event'){
+          el.effectTemplateDynamic.innerHTML =
+            '<div class="grid2">' +
+            '<div><div class="mini">event_kind</div><input id="tpl-event-kind" class="mono" value="world"></div>' +
+            '<div><div class="mini">event_name</div><input id="tpl-event-name" class="mono" value="world_event_triggered"></div>' +
+            '<div><div class="mini">tags（逗号分隔）</div><input id="tpl-event-tags" class="mono" value="world,buff"></div>' +
+            '<div><div class="mini">actor_id</div><input id="tpl-actor-id" class="mono" value="player"></div>' +
+            '</div>';
+          return;
+        }
+        if (id === 'apply_buff_if_has_buffs'){
+          el.effectTemplateDynamic.innerHTML =
+            '<div class="grid2">' +
+            '<div><div class="mini">required_buff_ids（逗号分隔）</div><input id="tpl-req-buffs" class="mono" placeholder="buff_a,buff_b"></div>' +
+            '<div><div class="mini">grant_buff_id</div><input id="tpl-grant-buff" class="mono"></div>' +
+            '<div><div class="mini">food_category（可选）</div><input id="tpl-req-food-category" class="mono"></div>' +
+            '<div><div class="mini">food_item（可选）</div><input id="tpl-req-food-item" class="mono"></div>' +
+            '<div><label style="display:flex;align-items:center;gap:8px;margin-top:8px;"><input id="tpl-allow-reapply" type="checkbox"><span class="mini" style="margin:0;">allow_reapply</span></label></div>' +
+            '</div>';
+          return;
+        }
+      }
+
+      function appendEffectTemplateToEffectsJson(templateId){
+        var id = String(templateId || '');
+        if (!id) throw new Error('请选择有效模板。');
+        if (el.advancedJsonSection) el.advancedJsonSection.classList.remove('collapsed');
+        if (el.btnToggleAdvancedJson) el.btnToggleAdvancedJson.textContent = '收起高级编辑';
+        if (id === 'food_buff_bundle'){
+          if (state.selectedIndex < 0) throw new Error('请先在左侧选择一个 Buff。');
+          var fc = getTplInputValue('tpl-food-category').trim();
+          var fi = getTplInputValue('tpl-food-item').trim();
+          if (!fc || !fi) throw new Error('food_category 与 food_item 必填。');
+          var dur = Math.max(1, parseInt(getTplInputValue('tpl-food-duration'), 10) || 1);
+          var sat = toFiniteNum(getTplInputValue('tpl-food-satiety'));
+          var thi = toFiniteNum(getTplInputValue('tpl-food-thirst'));
+          var nut = toFiniteNum(getTplInputValue('tpl-food-nutrition'));
+          var sta = toFiniteNum(getTplInputValue('tpl-food-stamina'));
+          var expNut = toFiniteNum(getTplInputValue('tpl-food-expire-nutrition'));
+
+          el.fJtFoodCategory.value = fc;
+          el.fJtFoodItem.value = fi;
+          el.fDuration.value = String(dur);
+          el.fListenerSide.value = 'self';
+          el.fConsumeMode.value = 'always';
+          el.fConsumeFixed.value = '0';
+          el.fApplyMode.value = 'always_apply';
+          el.fEventKind.value = 'world';
+          el.fEventName.value = 'tick_advanced';
+          el.fTags.value = 'time,tick';
+
+          var efx = writeSurvivalDeltaIntoArray(parseEffectsInputOrEmpty(), { satiety: sat, thirst: thi, nutrition: nut, stamina: sta });
+          el.fEffects.value = efx.length ? JSON.stringify(efx, null, 2) : '';
+          var exf = writeSurvivalDeltaIntoArray(parseExpireEffectsInputOrEmpty(), { satiety: 0, thirst: 0, nutrition: expNut, stamina: 0 });
+          el.fExpireEffects.value = exf.length ? JSON.stringify(exf, null, 2) : '';
+          syncBuffWatchUiFromEffects();
+          return;
+        }
+
+        var arrTargetEffects = parseEffectsInputOrEmpty();
+        var arrTargetExpire = parseExpireEffectsInputOrEmpty();
+        if (id === 'survival_delta' || id === 'survival_delta_expire'){
+          var sv = {
+            satiety: toFiniteNum(getTplInputValue('tpl-satiety')),
+            thirst: toFiniteNum(getTplInputValue('tpl-thirst')),
+            nutrition: toFiniteNum(getTplInputValue('tpl-nutrition')),
+            stamina: toFiniteNum(getTplInputValue('tpl-stamina'))
+          };
+          if (id === 'survival_delta_expire'){
+            arrTargetExpire = writeSurvivalDeltaIntoArray(arrTargetExpire, sv);
+            el.fExpireEffects.value = arrTargetExpire.length ? JSON.stringify(arrTargetExpire, null, 2) : '';
+          } else {
+            arrTargetEffects = writeSurvivalDeltaIntoArray(arrTargetEffects, sv);
+            el.fEffects.value = arrTargetEffects.length ? JSON.stringify(arrTargetEffects, null, 2) : '';
+          }
+          return;
+        }
+        if (id === 'add_stat_delta'){
+          arrTargetEffects.push({
+            type: 'add_stat_delta',
+            params: {
+              jingu: toFiniteNum(getTplInputValue('tpl-jingu')),
+              flexibility: toFiniteNum(getTplInputValue('tpl-flexibility')),
+              breath: toFiniteNum(getTplInputValue('tpl-breath')),
+              dexterity: toFiniteNum(getTplInputValue('tpl-dexterity')),
+              focus: toFiniteNum(getTplInputValue('tpl-focus'))
+            }
+          });
+          el.fEffects.value = JSON.stringify(arrTargetEffects, null, 2);
+          return;
+        }
+        if (id === 'trigger_event'){
+          arrTargetEffects.push({
+            type: 'trigger_event',
+            params: {
+              event_kind: getTplInputValue('tpl-event-kind').trim() || 'world',
+              event_name: getTplInputValue('tpl-event-name').trim() || 'world_event_triggered',
+              tags: parseCsvTags(getTplInputValue('tpl-event-tags')),
+              actor_id: getTplInputValue('tpl-actor-id').trim() || 'player'
+            }
+          });
+          el.fEffects.value = JSON.stringify(arrTargetEffects, null, 2);
+          return;
+        }
+        if (id === 'apply_buff_if_has_buffs'){
+          var params = {
+            required_buff_ids: parseCsvTags(getTplInputValue('tpl-req-buffs')),
+            grant_buff_id: getTplInputValue('tpl-grant-buff').trim(),
+            allow_reapply: !!(document.getElementById('tpl-allow-reapply') && document.getElementById('tpl-allow-reapply').checked)
+          };
+          var rj = {};
+          var rfc = getTplInputValue('tpl-req-food-category').trim();
+          var rfi = getTplInputValue('tpl-req-food-item').trim();
+          if (rfc) rj.food_category = rfc;
+          if (rfi) rj.food_item = rfi;
+          if (Object.keys(rj).length) params.required_judgment_tags = rj;
+          arrTargetEffects.push({ type: 'apply_buff_if_has_buffs', params: params });
+          el.fEffects.value = JSON.stringify(arrTargetEffects, null, 2);
+          syncBuffWatchUiFromEffects();
+          return;
         }
       }
 
@@ -1051,8 +1896,42 @@
           el.fEventName.value = 'environment_param_changed';
           el.fTags.value = 'world,environment';
           showOk('已应用预设：环境触发。');
+        } else if (kind === 'buff_watch') {
+          el.fEventKind.value = 'buff';
+          el.fEventName.value = 'buff_state_changed';
+          el.fTags.value = 'buff,player,state';
+          showOk('已应用预设：Buff监听触发。');
         }
         scheduleDraft();
+      }
+
+      function updateEventKindNoteFromSelect(){
+        if (!el.eventKindNote || !el.selEventKind) return;
+        var v = String(el.selEventKind.value || '').trim();
+        var map = {
+          world: 'world：时间推进、环境变化、属性变化等全局事件。',
+          combat: 'combat：命中判定、伤害结算、连击子段等战斗事件。',
+          dialogue: 'dialogue：对话选项确认、条件变化等剧情事件。',
+          action: 'action：动作菜单/技能动作执行事件。',
+          buff: 'buff：Buff实例状态变化（新增/移除/重置）事件。',
+          ui: 'ui：界面交互相关事件（较少用于数值Buff）。'
+        };
+        el.eventKindNote.textContent = map[v] || '事件大类注释：world=时间/环境，combat=战斗流程，dialogue=对话，action=动作执行，buff=Buff状态变化。';
+      }
+
+      function updateEventNameNoteFromSelect(){
+        if (!el.eventNameNote || !el.selEventName) return;
+        var v = String(el.selEventName.value || '').trim();
+        var map = {
+          tick_advanced: 'tick_advanced：每推进 1 tick 触发一次（最常用于持续性每tick效果）。',
+          time_point_reached: 'time_point_reached：跨分钟/小时/日期等关键时间点时触发。',
+          buff_state_changed: 'buff_state_changed：Buff有新增/移除/重置时触发，常用于组合判定链。',
+          attribute_changed: 'attribute_changed：角色属性变化后触发（重算后可监听）。',
+          environment_param_changed: 'environment_param_changed：环境参数（温度/湿度等）变化时触发。',
+          dialogue_choice_confirmed: 'dialogue_choice_confirmed：对话选项被确认后触发。',
+          dialogue_condition_changed: 'dialogue_condition_changed：对话条件状态变化时触发。'
+        };
+        el.eventNameNote.textContent = map[v] || '事件名注释：tick_advanced=时间推进1 tick，time_point_reached=跨分钟/小时等时间点，buff_state_changed=Buff增减变化。';
       }
 
       // wiring
@@ -1065,6 +1944,15 @@
       });
       el.inpRegistryJson.addEventListener('change', function(){
         if (this.files && this.files[0]) loadRegistryFromFile(this.files[0]);
+      });
+      el.btnLoadItems.addEventListener('click', loadItemsData);
+      el.inpItemsJson.addEventListener('change', function(){
+        if (this.files && this.files[0]) loadItemsFromFile(this.files[0]);
+      });
+      if (el.inpItemBrowseSearch) el.inpItemBrowseSearch.addEventListener('input', refreshItemBrowseList);
+      document.addEventListener('mousedown', function(ev){
+        if (!ev.target || !ev.target.closest) return;
+        if (!ev.target.closest('.item-ac-wrap')) hideAllItemAc();
       });
       el.btnExport.addEventListener('click', exportJson);
       el.btnExportClipboard.addEventListener('click', exportClipboard);
@@ -1083,15 +1971,97 @@
       el.search.addEventListener('input', refreshList);
       el.btnAddEventKind.addEventListener('click', function(){ appendCsvToken(el.fEventKind, el.selEventKind.value); });
       el.btnAddEventName.addEventListener('click', function(){ appendCsvToken(el.fEventName, el.selEventName.value); });
+      if (el.selEventKind) el.selEventKind.addEventListener('change', updateEventKindNoteFromSelect);
+      if (el.selEventName) el.selEventName.addEventListener('change', updateEventNameNoteFromSelect);
       el.btnAddTag.addEventListener('click', function(){ appendCsvToken(el.fTags, el.selTag.value); });
-      el.btnTplStat.addEventListener('click', function(){ insertEffectsTemplate('stat'); });
-      el.btnTplLayered.addEventListener('click', function(){ insertEffectsTemplate('layered'); });
-      el.btnTplChain.addEventListener('click', function(){ insertEffectsTemplate('chain'); });
+      if (el.btnAddHitArcTag) el.btnAddHitArcTag.addEventListener('click', function(){ appendCsvToken(el.fTags, el.selHitArcTag.value); });
+      if (el.btnEffectTemplateInsert) el.btnEffectTemplateInsert.addEventListener('click', function(){
+        clearMsg();
+        try{
+          var id = el.selEffectTemplate ? String(el.selEffectTemplate.value || '') : '';
+          appendEffectTemplateToEffectsJson(id);
+          showOk('已按模板写入 effects。');
+          scheduleDraft();
+        }catch(eIns){
+          showErr(eIns && eIns.message ? eIns.message : String(eIns));
+        }
+      });
+      if (el.selEffectTemplate) el.selEffectTemplate.addEventListener('change', function(){
+        renderEffectTemplateDynamicForm();
+        scheduleDraft();
+      });
+      if (el.btnToggleAdvancedJson) el.btnToggleAdvancedJson.addEventListener('click', function(){
+        if (!el.advancedJsonSection) return;
+        el.advancedJsonSection.classList.toggle('collapsed');
+        var collapsed = el.advancedJsonSection.classList.contains('collapsed');
+        el.btnToggleAdvancedJson.textContent = collapsed ? '展开高级编辑' : '收起高级编辑';
+      });
+      if (el.btnEffectTemplateHelp) el.btnEffectTemplateHelp.addEventListener('click', function(){
+        var id = el.selEffectTemplate ? String(el.selEffectTemplate.value || '') : '';
+        var msgMap = {
+          'food_buff_bundle': '食物Buff整套：一次写入 judgment_tags、tick触发过滤、effects.survival_delta、expire_effects.survival_delta。',
+          'survival_delta': '生存值变化：satiety(饱食) / thirst(饮水) / nutrition(营养) / stamina(体力)（兼容旧字段 energy）。支持正负值。',
+          'survival_delta_expire': '结束时生存值：写入 expire_effects，常用于到期后一次性结算营养/体力。',
+          'add_stat_delta': '后天五维变化：jingu(筋骨) / flexibility(柔韧) / breath(呼吸) / dexterity(灵巧) / focus(专注)。',
+          'trigger_event': '触发事件：按 params 里 event_kind/event_name/tags 转发到 Buff 事件管线。',
+          'apply_buff_if_has_buffs': '组合授予：required_buff_ids + required_judgment_tags（可选）满足后授予 grant_buff_id。'
+        };
+        var msg = msgMap[id] || '先在模板库中选择一个 effect 类型，再查看说明。';
+        if (el.effectTemplateHelpText) el.effectTemplateHelpText.textContent = msg;
+        else showOk(msg);
+      });
       el.btnPresetTime.addEventListener('click', function(){ applyEventPreset('time'); });
       el.btnPresetAttr.addEventListener('click', function(){ applyEventPreset('attr'); });
       el.btnPresetDialogue.addEventListener('click', function(){ applyEventPreset('dialogue'); });
       el.btnPresetEnv.addEventListener('click', function(){ applyEventPreset('env'); });
+      el.btnPresetBuffWatch.addEventListener('click', function(){ applyEventPreset('buff_watch'); });
       el.btnEffectsClear.addEventListener('click', function(){ el.fEffects.value=''; showOk('已清空 effects。'); });
+      el.btnWatchBuildJson.addEventListener('click', function(){
+        clearMsg();
+        try{
+          buildOrUpdateBuffWatchEffectFromUi();
+          showOk('已把“多Buff授予新Buff”写入 effects JSON。');
+          updateWatchRequiredSelectionStatus();
+          scheduleDraft();
+        }catch(e){
+          showErr(e && e.message ? e.message : String(e));
+        }
+      });
+      el.btnWatchReadJson.addEventListener('click', function(){
+        clearMsg();
+        syncBuffWatchUiFromEffects();
+        showOk('已从 effects JSON 读取到可视化区域。');
+        updateWatchRequiredSelectionStatus();
+        scheduleDraft();
+      });
+      if (el.watchRequiredBuffs) {
+        el.watchRequiredBuffs.addEventListener('change', function(){
+          updateWatchRequiredSelectionStatus();
+          scheduleDraft();
+        });
+        el.watchRequiredBuffs.addEventListener('dblclick', function(ev){
+          var t = ev.target;
+          if (t && t.tagName === 'OPTION') {
+            clearMsg();
+            try{
+              upsertBuffWatchRequiredOnlyById(t.value);
+            }catch(e2){
+              showErr(e2 && e2.message ? e2.message : String(e2));
+            }
+            scheduleDraft();
+          }
+        });
+      }
+      if (el.watchEntryList){
+        el.watchEntryList.addEventListener('change', function(){
+          var idx = parseInt(el.watchEntryList.value, 10);
+          watchEntryIndex = isFinite(idx) ? idx : 0;
+          syncBuffWatchUiFromEffects();
+          scheduleDraft();
+        });
+      }
+      if (el.btnWatchEntryNew) el.btnWatchEntryNew.addEventListener('click', addBuffWatchEntry);
+      if (el.btnWatchEntryDelete) el.btnWatchEntryDelete.addEventListener('click', deleteCurrentBuffWatchEntry);
 
       // auto-save draft on typing (lightweight debounce)
       var debounceT = null;
@@ -1106,19 +2076,241 @@
           }catch(e){}
         }, 250);
       }
+
+      function escapeHtml(s){
+        return String(s == null ? '' : s)
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;');
+      }
+
+      function normalizeItemsObject(root){
+        var byId = {};
+        var list = [];
+        if (!root || typeof root !== 'object' || Array.isArray(root)) return { byId: byId, list: list };
+        var keys = Object.keys(root);
+        for (var ii = 0; ii < keys.length; ii++){
+          var k = keys[ii];
+          var rec = root[k];
+          if (!rec || typeof rec !== 'object' || Array.isArray(rec)) continue;
+          var id = String(rec.item_id != null ? rec.item_id : k).trim();
+          if (!id) continue;
+          var sn = rec.sn != null ? String(rec.sn) : '';
+          var name = rec.name != null ? String(rec.name) : '';
+          var n0 = rec.name_0 != null ? String(rec.name_0) : '';
+          var ph = rec.placeholder_name != null ? String(rec.placeholder_name) : '';
+          var displayName = sn || name || n0 || id;
+          var cat = rec.category != null ? String(rec.category) : '';
+          var sub = rec.sub_category != null ? String(rec.sub_category) : '';
+          var hay = (id + ' ' + displayName + ' ' + name + ' ' + n0 + ' ' + ph + ' ' + cat + ' ' + sub).toLowerCase().replace(/\s+/g, ' ');
+          list.push({ item_id: id, displayName: displayName, category: cat, sub_category: sub, hay: hay });
+          byId[id] = rec;
+        }
+        list.sort(function(a, b){ return a.item_id.localeCompare(b.item_id); });
+        return { byId: byId, list: list };
+      }
+
+      function filterItemsForEditor(query, limit){
+        limit = Math.max(1, Math.min(500, limit || 40));
+        var q = String(query || '').trim().toLowerCase().replace(/\s+/g, ' ');
+        if (!itemState.loaded || !itemState.list.length) return [];
+        if (!q) return itemState.list.slice(0, limit);
+        var out = [];
+        for (var fi = 0; fi < itemState.list.length; fi++){
+          if (itemState.list[fi].hay.indexOf(q) >= 0){
+            out.push(itemState.list[fi]);
+            if (out.length >= limit) break;
+          }
+        }
+        return out;
+      }
+
+      function updateItemsUiPills(){
+        if (el.pillItems) el.pillItems.textContent = itemState.loaded ? ('物品 ' + itemState.list.length) : '物品 未载入';
+        if (el.pillItemRefCount) el.pillItemRefCount.textContent = itemState.loaded ? (itemState.list.length + ' 条') : '0 条';
+        if (el.inpItemBrowseSearch){
+          el.inpItemBrowseSearch.disabled = !itemState.loaded;
+          if (!itemState.loaded) el.inpItemBrowseSearch.value = '';
+        }
+      }
+
+      function refreshItemBrowseList(){
+        if (!el.itemBrowseList) return;
+        el.itemBrowseList.innerHTML = '';
+        if (!itemState.loaded){
+          el.itemBrowseList.innerHTML = '<div class="item-ac-empty" style="border:none;">请先载入 data/items.json</div>';
+          return;
+        }
+        var q = el.inpItemBrowseSearch ? el.inpItemBrowseSearch.value : '';
+        var rows = filterItemsForEditor(q, 200);
+        if (!rows.length){
+          el.itemBrowseList.innerHTML = '<div class="item-ac-empty" style="border:none;">无匹配</div>';
+          return;
+        }
+        for (var bi = 0; bi < rows.length; bi++){
+          var r = rows[bi];
+          var row = document.createElement('div');
+          row.className = 'item-ref-row';
+          var meta = (r.category || '—') + (r.sub_category ? '/' + r.sub_category : '');
+          row.innerHTML = '<div class="nm">' + escapeHtml(r.displayName) + '</div><div class="meta mono">' + escapeHtml(r.item_id) + ' · ' + escapeHtml(meta) + '</div>';
+          (function(id){
+            row.addEventListener('click', function(){
+              var target = activeFoodItemInput;
+              if (target !== el.fJtFoodItem && target !== el.watchJtFoodItem) target = el.fJtFoodItem;
+              if (target){
+                target.value = id;
+                target.dispatchEvent(new Event('input', { bubbles: true }));
+                try{ target.focus(); }catch(e1){}
+              }
+              showOk('已填入 item_id：' + id + ' → food_item');
+              scheduleDraft();
+            });
+          })(r.item_id);
+          el.itemBrowseList.appendChild(row);
+        }
+      }
+
+      function hideAllItemAc(){
+        if (el.fJtFoodItemDrop) el.fJtFoodItemDrop.style.display = 'none';
+        if (el.watchJtFoodItemDrop) el.watchJtFoodItemDrop.style.display = 'none';
+        var tplDrop = document.getElementById('tpl-food-item-drop');
+        if (tplDrop) tplDrop.style.display = 'none';
+      }
+
+      function renderItemAcDropdown(dropEl, inputEl){
+        if (!dropEl || !inputEl || !itemState.loaded) return;
+        var rows = filterItemsForEditor(inputEl.value, 40);
+        dropEl.innerHTML = '';
+        if (!rows.length){
+          dropEl.innerHTML = '<div class="item-ac-empty">无匹配；可直接保留手输 id</div>';
+          dropEl.style.display = 'block';
+          return;
+        }
+        for (var dj = 0; dj < rows.length; dj++){
+          var r = rows[dj];
+          var div = document.createElement('div');
+          div.className = 'item-ac-row';
+          div.innerHTML = '<span class="item-ac-txt">' + escapeHtml(r.displayName) + '</span><span class="item-ac-id mono">' + escapeHtml(r.item_id) + '</span>';
+          (function(rec){
+            div.addEventListener('mousedown', function(ev){
+              ev.preventDefault();
+              inputEl.value = rec.item_id;
+              dropEl.style.display = 'none';
+              inputEl.dispatchEvent(new Event('input', { bubbles: true }));
+              scheduleDraft();
+            });
+          })(r);
+          dropEl.appendChild(div);
+        }
+        dropEl.style.display = 'block';
+      }
+
+      function attachItemAutocomplete(inputEl, dropEl){
+        if (!inputEl || !dropEl) return;
+        var acTimer = null;
+        function run(){
+          if (acTimer) clearTimeout(acTimer);
+          acTimer = setTimeout(function(){
+            if (!itemState.loaded){ hideAllItemAc(); return; }
+            renderItemAcDropdown(dropEl, inputEl);
+          }, 100);
+        }
+        inputEl.addEventListener('focus', function(){
+          activeFoodItemInput = inputEl;
+          run();
+        });
+        inputEl.addEventListener('input', function(){
+          activeFoodItemInput = inputEl;
+          run();
+        });
+        inputEl.addEventListener('keydown', function(ev){
+          if (ev.key === 'Escape') hideAllItemAc();
+        });
+      }
+
+      function loadItemsFromJsonText(text, from){
+        var obj;
+        try{
+          obj = JSON.parse(String(text || ''));
+        }catch(e){
+          showErr('物品 JSON 解析失败：' + (e && e.message ? e.message : e));
+          return;
+        }
+        if (!obj || typeof obj !== 'object' || Array.isArray(obj)){
+          showErr('物品表根须为对象（item_id → 条目）');
+          return;
+        }
+        var norm = normalizeItemsObject(obj);
+        itemState.byId = norm.byId;
+        itemState.list = norm.list;
+        itemState.loaded = itemState.list.length > 0;
+        updateItemsUiPills();
+        refreshItemBrowseList();
+        hideAllItemAc();
+        clearMsg();
+        showOk('已载入物品：' + (from || 'JSON') + '，共 ' + itemState.list.length + ' 条');
+      }
+
+      function loadItemsData(){
+        clearMsg();
+        if (isFileProtocol()){
+          showOk('file:// 下将打开文件选择，请选仓库中的 data/items.json。');
+          if (el.inpItemsJson){ el.inpItemsJson.value = ''; el.inpItemsJson.click(); }
+          return;
+        }
+        var url = resolveAssetUrl('../data/items.json');
+        fetch(url)
+          .then(function(r){
+            if (!r.ok) throw new Error('HTTP ' + r.status + ' @ ' + url);
+            return r.text();
+          })
+          .then(function(txt){ loadItemsFromJsonText(txt, url); })
+          .catch(function(e){
+            showErr('载入物品失败：' + (e && e.message ? e.message : e));
+          });
+      }
+
+      function loadItemsFromFile(file){
+        if (!file) return;
+        var reader = new FileReader();
+        reader.onload = function(){
+          loadItemsFromJsonText(String(reader.result || ''), file.name);
+        };
+        reader.onerror = function(){ showErr('读取物品文件失败'); };
+        reader.readAsText(file, 'utf-8');
+      }
+
       [
         el.fId, el.fName, el.fDesc, el.fDuration, el.fMaxStacks, el.fAddStacks, el.fPriority,
         el.fListenerSide, el.fConsumeMode, el.fConsumeFixed, el.fApplyMode,
-        el.fEventKind, el.fEventName, el.fTags, el.fEffects
+        el.fEventKind, el.fEventName, el.fTags, el.fEffects, el.fExpireEffects,
+        el.fJtFoodCategory, el.fJtFoodItem, el.fJtExtraJson,
+        el.selEffectTemplate,
+        el.watchRequiredBuffs, el.watchGrantBuff, el.watchAllowReapply,
+        el.watchJtFoodCategory, el.watchJtFoodItem, el.watchJtExtraJson
       ].forEach(function(input){
+        if (!input) return;
         input.addEventListener('input', scheduleDraft);
         input.addEventListener('change', scheduleDraft);
       });
+      el.fEffects.addEventListener('input', function(){
+        syncBuffWatchUiFromEffects();
+      });
+
+      attachItemAutocomplete(el.fJtFoodItem, el.fJtFoodItemDrop);
+      attachItemAutocomplete(el.watchJtFoodItem, el.watchJtFoodItemDrop);
+      renderEffectTemplateDynamicForm();
+      updateItemsUiPills();
+      refreshItemBrowseList();
 
       // init
       refreshList();
       renderEditor(null);
+      refreshBuffWatchSelectors();
       refreshRegistrySelects();
+      updateEventKindNoteFromSelect();
+      updateEventNameNoteFromSelect();
       loadRegistry();
       setStatus('未载入数据（可点“载入：data/buffs.json”，或从本地草稿恢复）');
       loadDraft();

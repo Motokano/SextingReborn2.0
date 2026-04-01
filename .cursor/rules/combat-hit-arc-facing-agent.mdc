@@ -1,0 +1,54 @@
+---
+description: 战斗命中方位（前/侧/后）统一口径与接线
+alwaysApply: true
+---
+
+# 战斗命中方位（Hit Arc）Agent 规则
+
+编辑战斗事件、Buff 触发、招式效果或后遗症时，命中方位统一使用本规则。
+
+## 1) 判定产物（单一口径）
+
+- `defender_hit_arc`: `front | side | back`
+- `attacker_strike_arc`: `front | side | back`（与 defender_hit_arc 同值，便于攻击方语义读取）
+- `relative_angle_deg`: 防守方朝向向量与“防守方 -> 攻击方”向量夹角（度）
+
+## 2) 阈值（当前实现）
+
+- `angle <= 45` -> `front`
+- `45 < angle <= 120` -> `side`
+- `angle > 120` -> `back`
+
+## 3) 朝向与坐标来源（强制）
+
+- 朝向：`attacker.facingDir`、`defender.facingDir`（8 向 0..7）
+- 坐标：`attacker.pos.{x,y}`、`defender.pos.{x,y}`
+- 玩家朝向：`window.PlayerFacing.getDir()`（或 `SceneCtx.getFacingDir()`）
+- 敌人朝向：`CombatEnemies.get/ensureFacing...` 维护
+
+## 4) 事件接线（强制）
+
+- `attack_hit_roll_resolved` 与 `attack_damage_applied` 的 `payload` 必须带上述 3 字段。
+- 事件 `tags` 追加：`hit_arc_front | hit_arc_side | hit_arc_back`（三选一）。
+- 新增 tag 必须同步登记 `data/editor/buff_event_registry.json`。
+
+## 5) 作用边界（强制）
+
+- 命中方位默认只提供“事件与条件信息”，不直接修改命中/招架/伤害公式。
+- 需要做数值加成时，走 Buff/后遗症/招式配置，不要在渲染或 UI 层硬编码加成。
+
+## 6) NPC 条件（当前实现）
+
+- `lastCombatDefenderHitArcEquals`
+  - `value` 或 `arc`：`front | side | back`
+- `lastCombatAttackerStrikeArcEquals`
+  - `value` 或 `arc`：`front | side | back`
+- 数据源：`SceneCtx.lastCombatDirectional`（由 `combat-pipeline` 在伤害阶段更新）。
+
+## 7) Buff 编辑器口径
+
+- `tools/buff-editor.html` 提供命中方位 tag 快捷写入：
+  - `hit_arc_front`
+  - `hit_arc_side`
+  - `hit_arc_back`
+- 配置事件触发时，优先用 `hit_arc_*` tag 过滤，不要在多个系统重复手算方位角。

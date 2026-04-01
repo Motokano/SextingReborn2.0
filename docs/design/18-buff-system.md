@@ -74,6 +74,20 @@ type BuffInstance = {
 
 除既有的 `add_stat_delta`、`trigger_event` 外，可增加 **规则型** 声明，供战斗/动作结算读取（通用流水线未必会执行其数值，以各子系统文档为准）。
 
+### 18.3.1a `survival_delta.params` 字段口径（统一）
+
+- `satiety`：饱食
+- `thirst`：饮水
+- `nutrition`：营养
+- `stamina`：体力
+- `energy`：精力（**不是体力**）
+
+实现/配表约定：
+
+- 体力变化优先使用 `stamina` 字段；不要再用 `energy` 表示体力。
+- 历史配置里若出现 `energy`，按“精力变化”解释，不映射到体力。
+- `tools/buff-editor.html` 与运行时字段保持同口径，避免“编辑器文案”和运行时语义分裂。
+
 ### 18.3.2 可被「破相」等效果驱散的增益池（Buff 模板字段）
 
 - **用途**：后遗症 **「破相」**（`post_po_xiang`，`effect_type` = **`dispel_one_beneficial_buff_on_target`**）等在 **命中判定成功** 时，从**防守方**当前 Buff 实例中移除 **1** 条**可驱散增益**。

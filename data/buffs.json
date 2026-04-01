@@ -33,7 +33,8 @@
             "focus": 1
           }
         }
-      ]
+      ],
+      "expire_effects": []
     },
     {
       "buff_id": "buff_attribute_adapt",
@@ -67,7 +68,8 @@
             "dexterity": 1
           }
         }
-      ]
+      ],
+      "expire_effects": []
     },
     {
       "buff_id": "buff_dialogue_inspiration",
@@ -100,7 +102,8 @@
             "dexterity": 1
           }
         }
-      ]
+      ],
+      "expire_effects": []
     },
     {
       "buff_id": "buff_environment_attune",
@@ -132,7 +135,8 @@
             "flexibility": 1
           }
         }
-      ]
+      ],
+      "expire_effects": []
     },
     {
       "buff_id": "buff_probe",
@@ -168,7 +172,8 @@
             "per_stack": 0.05
           }
         }
-      ]
+      ],
+      "expire_effects": []
     },
     {
       "buff_id": "buff_off_balance",
@@ -198,7 +203,8 @@
             "delta_per_stack": -5
           }
         }
-      ]
+      ],
+      "expire_effects": []
     },
     {
       "buff_id": "buff_chain_probe",
@@ -240,7 +246,155 @@
             "actor_id": "player"
           }
         }
-      ]
+      ],
+      "expire_effects": []
+    },
+    {
+      "buff_id": "buff_food_pecan_walnut",
+      "name": "山核桃仁",
+      "desc": "每回合 +4 饱食；效果结束时 +1 营养。",
+      "durationTicks": 6,
+      "maxStacks": 1,
+      "stacksAddOnApply": 1,
+      "priority": 70,
+      "listenerSide": "self",
+      "consumeMode": "always",
+      "consumeLayersFixed": 0,
+      "applyMode": "always_apply",
+      "triggerEventKind": [
+        "world"
+      ],
+      "triggerEventName": [
+        "tick_advanced"
+      ],
+      "triggerTags": [
+        "time",
+        "tick"
+      ],
+      "effects": [
+        {
+          "type": "survival_delta",
+          "params": {
+            "satiety": 4
+          }
+        },
+        {
+          "type": "apply_buff_if_has_buffs",
+          "params": {
+            "required_buff_ids": [
+              "buff_food_pecan_walnut",
+              "buff_food_herb_sour_plum"
+            ],
+            "grant_buff_id": "buff_pecan_plum_diarrhoea",
+            "allow_reapply": false
+          }
+        }
+      ],
+      "expire_effects": [
+        {
+          "type": "survival_delta",
+          "params": {
+            "nutrition": 1
+          }
+        }
+      ],
+      "judgment_tags": {
+        "food_category": "nut",
+        "food_item": "herb_pecan"
+      }
+    },
+    {
+      "buff_id": "buff_food_herb_sour_plum",
+      "name": "酸梅",
+      "desc": "每回合 +2 饮水/饱食；效果结束时 +1 营养。",
+      "durationTicks": 5,
+      "maxStacks": 1,
+      "stacksAddOnApply": 1,
+      "priority": 70,
+      "listenerSide": "self",
+      "consumeMode": "always",
+      "consumeLayersFixed": 0,
+      "applyMode": "always_apply",
+      "triggerEventKind": [
+        "world"
+      ],
+      "triggerEventName": [
+        "tick_advanced"
+      ],
+      "triggerTags": [
+        "time",
+        "tick"
+      ],
+      "effects": [
+        {
+          "type": "survival_delta",
+          "params": {
+            "satiety": 2,
+            "thirst": 2
+          }
+        },
+        {
+          "type": "apply_buff_if_has_buffs",
+          "params": {
+            "required_buff_ids": [
+              "buff_food_pecan_walnut",
+              "buff_food_herb_sour_plum"
+            ],
+            "grant_buff_id": "buff_pecan_plum_diarrhoea",
+            "allow_reapply": false
+          }
+        }
+      ],
+      "expire_effects": [
+        {
+          "type": "survival_delta",
+          "params": {
+            "nutrition": 1
+          }
+        }
+      ],
+      "judgment_tags": {
+        "food_category": "fruit",
+        "food_item": "herb_sour_plum"
+      }
+    },
+    {
+      "buff_id": "buff_pecan_plum_diarrhoea",
+      "name": "腹泻",
+      "desc": "每回合 -15 饮水/饱食， -5 体力",
+      "durationTicks": 5,
+      "maxStacks": 1,
+      "stacksAddOnApply": 1,
+      "priority": 70,
+      "listenerSide": "self",
+      "consumeMode": "always",
+      "consumeLayersFixed": 0,
+      "applyMode": "always_apply",
+      "triggerEventKind": [
+        "world"
+      ],
+      "triggerEventName": [
+        "tick_advanced"
+      ],
+      "triggerTags": [
+        "time",
+        "tick"
+      ],
+      "effects": [
+        {
+          "type": "survival_delta",
+          "params": {
+            "satiety": -15,
+            "thirst": -15,
+            "stamina": -5
+          }
+        },
+        {
+          "type": "disable_movement",
+          "params": {}
+        }
+      ],
+      "expire_effects": []
     }
   ]
 }

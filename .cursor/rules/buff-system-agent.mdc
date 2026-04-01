@@ -60,6 +60,13 @@ When editing any Buff/Debuff code, data, or docs, follow `docs/design/18-buff-sy
 - Reuse existing recalculation flow for stat-affecting buffs (e.g. `recalcCharacterStats()`).
 - Prefer indexed lookup by event kind/name to avoid full scan on every event.
 - Persist `expires_at_tick` in saves for stable timing.
+- `survival_delta` field semantics are strict:
+  - `satiety` = 饱食
+  - `thirst` = 饮水
+  - `nutrition` = 营养
+  - `stamina` = 体力
+  - `energy` = 精力 (NOT stamina)
+- Do not map `energy` to stamina in editor/UI copy; treat old `energy` entries as energy only.
 
 ## Editor & combat emit conventions (see `18.13` in design doc)
 
@@ -86,4 +93,9 @@ When editing any Buff/Debuff code, data, or docs, follow `docs/design/18-buff-sy
 - `BuffSystem.removeBuffByBuffId(ownerId, 'buff_probe')` — remove all instances of that `buff_id` on the owner (probe clear-all).
 - `BuffSystem.getBuffTemplate('buff_probe')` — read normalized template (e.g. parse `effects` for `multiply_w_coef_factor`).
 - Use `triggerBuffPipeline` only with **registered** `event_kind` / `event_name` / `tags`; include `probe_pipeline_manual` when intentionally driving pipeline paths that filter on it.
+
+## `expire_effects`（移除时结算）
+
+- 模板可选 **`expire_effects`**（与 `effects` 同形的数组片段）：在实例因 **`expires_at_tick` 到期**或**层数耗尽**从宿主移除**之前**执行；**不**走 `triggerBuffPipeline`；当前实现仅 **`survival_delta`**。
+- **`removeBuffByBuffId` 驱散**等路径**不**执行 `expire_effects`（与「自然结束」区分）。
 

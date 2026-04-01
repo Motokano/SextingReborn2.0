@@ -161,7 +161,11 @@
                 qiIntended: 0,
                 qiSpent: 0,
                 diqiIntended: 0,
-                diqiSpent: 0
+                diqiSpent: 0,
+                deferredResourceSpend: false,
+                qiIntendedForCommit: 0,
+                diqiIntendedForCommit: 0,
+                proficiencyDelta: 0
             };
         }
 
@@ -268,25 +272,28 @@
 
         var qiSpent = 0;
         var diqiSpent = 0;
-        if (Surv && typeof Surv.consumeQiLi === 'function' && qiIntended > 0) {
-            qiSpent = Surv.consumeQiLi(qiIntended);
-            var stQ = Surv.getState();
-            logLine('log.combat.resolve.qi', {
-                intend: String(qiIntended),
-                act: String(qiSpent),
-                cur: String(stQ.qi_li_current != null ? Math.round(stQ.qi_li_current) : 0),
-                max: String(qiMax)
-            });
-        }
-        if (Surv && typeof Surv.consumeDiqi === 'function' && diqiIntended > 0) {
-            diqiSpent = Surv.consumeDiqi(diqiIntended);
-            var stD = Surv.getState();
-            logLine('log.combat.resolve.diqi', {
-                intend: String(diqiIntended),
-                act: String(diqiSpent),
-                cur: String(stD.diqi_current != null ? Math.round(stD.diqi_current) : 0),
-                max: String(Math.round(diqiMax))
-            });
+        var deferSpend = !!opts.deferResourceSpend;
+        if (!deferSpend) {
+            if (Surv && typeof Surv.consumeQiLi === 'function' && qiIntended > 0) {
+                qiSpent = Surv.consumeQiLi(qiIntended);
+                var stQ = Surv.getState();
+                logLine('log.combat.resolve.qi', {
+                    intend: String(qiIntended),
+                    act: String(qiSpent),
+                    cur: String(stQ.qi_li_current != null ? Math.round(stQ.qi_li_current) : 0),
+                    max: String(qiMax)
+                });
+            }
+            if (Surv && typeof Surv.consumeDiqi === 'function' && diqiIntended > 0) {
+                diqiSpent = Surv.consumeDiqi(diqiIntended);
+                var stD = Surv.getState();
+                logLine('log.combat.resolve.diqi', {
+                    intend: String(diqiIntended),
+                    act: String(diqiSpent),
+                    cur: String(stD.diqi_current != null ? Math.round(stD.diqi_current) : 0),
+                    max: String(Math.round(diqiMax))
+                });
+            }
         }
 
         return {
@@ -311,13 +318,93 @@
             forceZeroDamageByResourceInsufficient: forceZeroDamageByResourceInsufficient,
             insufficientQiForIntendedCost: insufficientQi,
             insufficientDiqiForIntendedCost: insufficientDiqi,
-            proficiencyDelta: 1
+            proficiencyDelta: 1,
+            deferredResourceSpend: deferSpend,
+            qiIntendedForCommit: qiIntended,
+            diqiIntendedForCommit: diqiIntended
         };
+    }
+
+    /**
+     * 敌人还击玩家：命中用敌速攻、玩家速防；伤害来自 combat-enemies 模板 attack_damage_min/max（缺省 6～14）。
+     */
+    function resolveEnemyVsPlayerAttack(opts) {
+        opts = opts || {};
+        var enemyId = opts.enemyId;
+        var CE = global.CombatEnemies;
+        var CA = global.CharacterAttributes;
+        var tpl = CE && typeof CE.getById === 'function' ? CE.getById(enemyId) : null;
+        var Vatk = opts.attackerSpeed != null ? Number(opts.attackerSpeed) : (tpl && tpl.speed != null ? Number(tpl.speed) : 10);
+        if (!isFinite(Vatk) || Vatk < 1) Vatk = 10;
+        var Vdef = CA && typeof CA.getCombatSpeed === 'function' ? CA.getCombatSpeed() : 1;
+        if (!isFinite(Vdef) || Vdef < 1) Vdef = 1;
+        var P = CA && typeof CA.getHitRate === 'function' ? CA.getHitRate(Vatk, Vdef) : 0.8;
+        var hitRollSuccess = Math.random() < P;
+        logLine('log.combat.resolve.hit', {
+            vAtk: String(Math.floor(Vatk)),
+            vDef: String(Math.floor(Vdef)),
+            pct: String(Math.round(P * 1000) / 10),
+            result: hitRollSuccess ? tUi('log.combat.resolve.hit_ok') : tUi('log.combat.resolve.hit_miss')
+        }, 'combat');
+
+        var dmgMin = tpl && tpl.attack_damage_min != null ? Number(tpl.attack_damage_min) : 6;
+        var dmgMax = tpl && tpl.attack_damage_max != null ? Number(tpl.attack_damage_max) : 14;
+        if (!isFinite(dmgMin)) dmgMin = 6;
+        if (!isFinite(dmgMax)) dmgMax = 14;
+        if (dmgMax < dmgMin) {
+            var tmp = dmgMin;
+            dmgMin = dmgMax;
+            dmgMax = tmp;
+        }
+        var rawDamage = hitRollSuccess ? Math.floor(dmgMin + Math.random() * (dmgMax - dmgMin + 1)) : 0;
+        var damageType = (tpl && tpl.attack_damage_type) ? String(tpl.attack_damage_type) : 'blunt';
+        var skId = global.CombatInitiative && typeof global.CombatInitiative.getEnemyAttackSkillId === 'function'
+            ? global.CombatInitiative.getEnemyAttackSkillId() : '__enemy_counter_attack__';
+        var mvId = global.CombatInitiative && typeof global.CombatInitiative.getEnemyAttackMoveId === 'function'
+            ? global.CombatInitiative.getEnemyAttackMoveId() : 'enemy_counter_strike';
+
+        return {
+            rawDamage: rawDamage,
+            hitRollSuccess: hitRollSuccess,
+            hitPart: 'chest',
+            damageType: damageType,
+            skillId: skId,
+            moveId: mvId,
+            limbId: 'rhand',
+            powerLevel: 10,
+            hitPartModifierKey: mapHitPartToModifierKey('chest'),
+            hitChance: P,
+            qiIntended: 0,
+            qiSpent: 0,
+            diqiIntended: 0,
+            diqiSpent: 0,
+            forceZeroDamageByResourceInsufficient: false,
+            proficiencyDelta: 0,
+            deferredResourceSpend: false,
+            qiIntendedForCommit: 0,
+            diqiIntendedForCommit: 0
+        };
+    }
+
+    /** 同速同时提交：在两侧 dry 管线结束后扣玩家本击气力/底气 */
+    function applyDeferredResourceSpendFromResolveResult(r) {
+        if (!r || !r.deferredResourceSpend) return;
+        var Surv = global.Survival;
+        var qiIntended = r.qiIntendedForCommit != null ? Number(r.qiIntendedForCommit) : Number(r.qiIntended) || 0;
+        var diqiIntended = r.diqiIntendedForCommit != null ? Number(r.diqiIntendedForCommit) : Number(r.diqiIntended) || 0;
+        if (Surv && typeof Surv.consumeQiLi === 'function' && qiIntended > 0) {
+            Surv.consumeQiLi(qiIntended);
+        }
+        if (Surv && typeof Surv.consumeDiqi === 'function' && diqiIntended > 0) {
+            Surv.consumeDiqi(diqiIntended);
+        }
     }
 
     global.CombatMeleeResolve = {
         computeIntendedResourceCost: computeIntendedResourceCost,
         mapHitPartToModifierKey: mapHitPartToModifierKey,
-        resolvePlayerVsEnemyAttack: resolvePlayerVsEnemyAttack
+        resolvePlayerVsEnemyAttack: resolvePlayerVsEnemyAttack,
+        resolveEnemyVsPlayerAttack: resolveEnemyVsPlayerAttack,
+        applyDeferredResourceSpendFromResolveResult: applyDeferredResourceSpendFromResolveResult
     };
 })(typeof window !== 'undefined' ? window : this);

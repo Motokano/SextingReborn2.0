@@ -23,6 +23,7 @@
     var pendingRestore = null; // { instancesByOwner, tick }
     var pendingEvents = [];
     var pendingReady = { registry: false, buffs: false };
+    var isEmittingBuffState = false;
 
     function hasDebugEnabled() {
         try {
@@ -53,6 +54,51 @@
         return (typeof v === 'number' && isFinite(v)) ? v : def;
     }
 
+    function isPlainObject(v) {
+        return !!v && typeof v === 'object' && !Array.isArray(v);
+    }
+
+    /** 策划用：同一 Buff 上可挂多键字符串标签（如食物大类 + 具体物品），供复合条件判断；不参与触发过滤。 */
+    function normalizeJudgmentTags(raw) {
+        if (!isPlainObject(raw)) return {};
+        var out = {};
+        var keys = Object.keys(raw);
+        for (var i = 0; i < keys.length; i++) {
+            var k = String(keys[i] || '').trim();
+            if (!k) continue;
+            var v = raw[keys[i]];
+            if (v == null) continue;
+            var s = String(v).trim();
+            if (!s) continue;
+            out[k] = s;
+        }
+        return out;
+    }
+
+    function judgmentTagsMatch(templateTags, requiredTags) {
+        var reqKeys = Object.keys(requiredTags);
+        if (!reqKeys.length) return true;
+        for (var i = 0; i < reqKeys.length; i++) {
+            var rk = reqKeys[i];
+            if (templateTags[rk] !== requiredTags[rk]) return false;
+        }
+        return true;
+    }
+
+    function ownerHasBuffMatchingJudgmentTags(ownerId, requiredRaw) {
+        var required = normalizeJudgmentTags(requiredRaw);
+        if (!Object.keys(required).length) return true;
+        var oid = ownerId || PLAYER_OWNER_ID;
+        var arr = instancesByOwner[oid] || [];
+        for (var i = 0; i < arr.length; i++) {
+            var inst = arr[i];
+            if (!inst || (inst.stacks || 0) <= 0 || !inst.template) continue;
+            var tplTags = inst.template.judgment_tags || {};
+            if (judgmentTagsMatch(tplTags, required)) return true;
+        }
+        return false;
+    }
+
     function arrayOrEmpty(v) {
         return Array.isArray(v) ? v : [];
     }
@@ -60,6 +106,26 @@
     function makeEventId(prefix) {
         eventSeq += 1;
         return String(prefix || 'evt') + '_' + String(Date.now()) + '_' + String(eventSeq);
+    }
+
+    function emitBuffStateChanged(ownerId, reason, payload) {
+        if (isEmittingBuffState) return;
+        isEmittingBuffState = true;
+        try {
+            triggerBuffPipeline({
+                event_kind: 'buff',
+                event_name: 'buff_state_changed',
+                tags: ['buff', 'player', 'state'],
+                actor_id: ownerId || PLAYER_OWNER_ID,
+                owner_id: ownerId || PLAYER_OWNER_ID,
+                payload: {
+                    reason: reason || 'changed',
+                    detail: payload || null
+                }
+            });
+        } finally {
+            isEmittingBuffState = false;
+        }
     }
 
     function getTickNow() {
@@ -88,6 +154,10 @@
             triggerEventName: arrayOrEmpty(t.triggerEventName),
             triggerTags: arrayOrEmpty(t.triggerTags),
             effects: arrayOrEmpty(t.effects),
+            /** 实例因到期或层数耗尽被移除时执行（不经事件管线）；目前实现 survival_delta */
+            expire_effects: arrayOrEmpty(t.expire_effects),
+            food_digest: !!t.food_digest,
+            judgment_tags: normalizeJudgmentTags(t.judgment_tags),
             /** 见 design/18：beneficial 可被「破相」等驱散；缺省不可选 */
             dispel_pool: t.dispel_pool === 'beneficial' ? 'beneficial' : '',
             dispel_priority: (function () {
@@ -201,8 +271,69 @@
         if (removed) {
             recalcDerived();
             notifyBuffHudRefresh();
+            emitBuffStateChanged(oid, 'remove_by_id', { buff_id: bid, removed: removed });
         }
         return removed;
+    }
+
+    function hasBuffByBuffId(ownerId, buffId) {
+        var oid = ownerId || PLAYER_OWNER_ID;
+        var bid = String(buffId || '');
+        if (!bid) return false;
+        var arr = instancesByOwner[oid] || [];
+        for (var i = 0; i < arr.length; i++) {
+            if (arr[i] && arr[i].buff_id === bid && (arr[i].stacks || 0) > 0) return true;
+        }
+        return false;
+    }
+
+    function hasActiveSatietyDigestBuff(ownerId) {
+        var oid = ownerId || PLAYER_OWNER_ID;
+        var arr = instancesByOwner[oid] || [];
+        for (var i = 0; i < arr.length; i++) {
+            var inst = arr[i];
+            if (!inst || !inst.template || !inst.template.food_digest || (inst.stacks || 0) <= 0) continue;
+            var effects = arrayOrEmpty(inst.template.effects);
+            for (var j = 0; j < effects.length; j++) {
+                var e = effects[j] || {};
+                if (e.type !== 'survival_delta') continue;
+                var p = e.params || {};
+                if (safeNum(p.satiety, 0) > 0) return true;
+            }
+        }
+        return false;
+    }
+
+    function hasMovementDisabled(ownerId) {
+        var oid = ownerId || PLAYER_OWNER_ID;
+        var arr = instancesByOwner[oid] || [];
+        for (var i = 0; i < arr.length; i++) {
+            var inst = arr[i];
+            if (!inst || !inst.template || (inst.stacks || 0) <= 0) continue;
+            var effects = arrayOrEmpty(inst.template.effects);
+            for (var j = 0; j < effects.length; j++) {
+                var e = effects[j] || {};
+                if (e.type === 'disable_movement') return true;
+            }
+        }
+        return false;
+    }
+
+    function registerRuntimeBuffTemplate(template) {
+        var t = normalizeTemplate(template || {});
+        if (!t.buff_id) return false;
+        var replaced = false;
+        for (var i = 0; i < config.buffs.length; i++) {
+            if (config.buffs[i] && config.buffs[i].buff_id === t.buff_id) {
+                config.buffs[i] = t;
+                replaced = true;
+                break;
+            }
+        }
+        if (!replaced) config.buffs.push(t);
+        templateById[t.buff_id] = t;
+        rebuildIndexes();
+        return true;
     }
 
     function applyBuff(ownerId, buffId, sourceId, eventContext) {
@@ -245,6 +376,7 @@
         }
         recalcDerived();
         notifyBuffHudRefresh();
+        emitBuffStateChanged(oid, existing ? 'reapply' : 'apply', { buff_id: buffId });
         return true;
     }
 
@@ -256,6 +388,7 @@
             for (var j = arr.length - 1; j >= 0; j--) {
                 var inst = arr[j];
                 if (inst.expires_at_tick <= tick) {
+                    applyExpireEffects(inst, tick);
                     arr.splice(j, 1);
                     changed = true;
                 }
@@ -353,10 +486,6 @@
         }
     }
 
-    function isPlainObject(v) {
-        return !!v && typeof v === 'object' && !Array.isArray(v);
-    }
-
     function eventMatchesTemplate(template, eventContext) {
         var kindOk = !template.triggerEventKind.length || template.triggerEventKind.indexOf(eventContext.event_kind) >= 0;
         if (!kindOk) return false;
@@ -394,6 +523,55 @@
         return false;
     }
 
+    function applySurvivalDeltaParams(p) {
+        p = p && typeof p === 'object' ? p : {};
+        var Surv = global && global.Survival;
+        if (!Surv) return;
+        var sat = safeNum(p.satiety, 0);
+        var thi = safeNum(p.thirst, 0);
+        var nut = safeNum(p.nutrition, 0);
+        var sta = safeNum(p.stamina, 0);
+        var ene = safeNum(p.energy, 0);
+        if (sat > 0 && typeof Surv.addSatiety === 'function') Surv.addSatiety(sat);
+        if (thi > 0 && typeof Surv.addThirst === 'function') Surv.addThirst(thi);
+        if (nut > 0 && typeof Surv.addNutrition === 'function') Surv.addNutrition(nut);
+        if (sta < 0 && typeof Surv.consumeStamina === 'function') Surv.consumeStamina(-sta);
+        if (ene > 0 && typeof Surv.addEnergy === 'function') Surv.addEnergy(ene);
+        if (ene < 0 && typeof Surv.consumeEnergy === 'function') Surv.consumeEnergy(-ene);
+
+        // satiety/thirst/nutrition/stamina 正向增减（及前三者负向）统一走 setState，并由 Survival 内部 clamp。
+        if ((sat < 0 || thi < 0 || nut < 0 || sta > 0) && typeof Surv.setState === 'function') {
+            var cur = (typeof Surv.getState === 'function') ? (Surv.getState() || {}) : {};
+            var next = {};
+            if (sat < 0) next.satiety = safeNum(cur.satiety, 0) + sat;
+            if (thi < 0) next.thirst = safeNum(cur.thirst, 0) + thi;
+            if (nut < 0) next.nutrition = safeNum(cur.nutrition, 0) + nut;
+            if (sta > 0) next.stamina = safeNum(cur.stamina, 0) + sta;
+            Surv.setState(next);
+        }
+    }
+
+    /** 到期或层数耗尽移除前调用；不经 triggerBuffPipeline（避免与 removeExpired 顺序死循环） */
+    function applyExpireEffects(inst, tick) {
+        var tpl = inst && inst.template;
+        if (!tpl) return;
+        var ef = arrayOrEmpty(tpl.expire_effects);
+        if (!ef.length) return;
+        var i;
+        for (i = 0; i < ef.length; i++) {
+            var e = ef[i] || {};
+            if (e.type === 'survival_delta') {
+                applySurvivalDeltaParams(e.params || {});
+            }
+        }
+        if (global.SceneCtx && typeof global.SceneCtx.updateStatusPanel === 'function') {
+            try {
+                global.SceneCtx.updateStatusPanel();
+            } catch (ePan) { /* ignore */ }
+        }
+        debugLog('expire_effects buff=' + (tpl.buff_id || '') + ' tick=' + String(tick));
+    }
+
     function applyEffects(inst, eventContext, chainState) {
         var effects = arrayOrEmpty(inst.template.effects);
         for (var i = 0; i < effects.length; i++) {
@@ -402,6 +580,34 @@
             var p = e.params || {};
             if (type === 'add_stat_delta') {
                 // 实际加成汇总放到 recalcDerived，再统一重算
+                continue;
+            }
+            if (type === 'survival_delta') {
+                applySurvivalDeltaParams(p);
+                continue;
+            }
+            if (type === 'apply_buff_if_has_buffs') {
+                var owner = inst.owner_id || PLAYER_OWNER_ID;
+                var required = arrayOrEmpty(p.required_buff_ids);
+                var grantBuffId = String(p.grant_buff_id || '').trim();
+                var allowReapply = !!p.allow_reapply;
+                var allMet = !!grantBuffId;
+                for (var rb = 0; rb < required.length; rb++) {
+                    var reqId = String(required[rb] || '').trim();
+                    if (!reqId || !hasBuffByBuffId(owner, reqId)) {
+                        allMet = false;
+                        break;
+                    }
+                }
+                if (allMet && p.required_judgment_tags != null && isPlainObject(p.required_judgment_tags)) {
+                    var reqJ = normalizeJudgmentTags(p.required_judgment_tags);
+                    if (Object.keys(reqJ).length && !ownerHasBuffMatchingJudgmentTags(owner, reqJ)) {
+                        allMet = false;
+                    }
+                }
+                if (!allMet) continue;
+                if (!allowReapply && hasBuffByBuffId(owner, grantBuffId)) continue;
+                applyBuff(owner, grantBuffId, inst.buff_id, { tick: eventContext.tick });
                 continue;
             }
             if (type === 'trigger_event') {
@@ -582,6 +788,7 @@
                 });
             }
             if (m.stacks <= 0) {
+                applyExpireEffects(m, ev.tick);
                 var ownArr = instancesByOwner[m.owner_id] || [];
                 for (oi = ownArr.length - 1; oi >= 0; oi--) {
                     if (ownArr[oi].uid === m.uid) ownArr.splice(oi, 1);
@@ -594,6 +801,7 @@
         if (changed) {
             recalcDerived();
             notifyBuffHudRefresh();
+            emitBuffStateChanged(PLAYER_OWNER_ID, 'pipeline_changed', { event_name: ev.event_name });
         }
         return { processed: matched.length, skipped: false, candidates: candidates.length };
     }
@@ -813,6 +1021,13 @@
         getBuffTemplate: getBuffTemplate,
         getBuffStacksSum: getBuffStacksSum,
         getParryChanceDeltaPercent: getParryChanceDeltaPercent,
+        hasBuffByBuffId: hasBuffByBuffId,
+        hasBuffMatchingJudgmentTags: function (ownerId, requiredTags) {
+            return ownerHasBuffMatchingJudgmentTags(ownerId, requiredTags);
+        },
+        hasActiveSatietyDigestBuff: hasActiveSatietyDigestBuff,
+        hasMovementDisabled: hasMovementDisabled,
+        registerRuntimeBuffTemplate: registerRuntimeBuffTemplate,
         removeBuffByBuffId: removeBuffByBuffId,
         triggerBuffPipeline: triggerBuffPipeline,
         triggerRegisteredEvent: triggerRegisteredEvent,

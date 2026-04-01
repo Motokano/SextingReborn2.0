@@ -69,6 +69,11 @@
         }
     }
 
+    function getConfigValue(key, def) {
+        if (key == null) return def;
+        return get(String(key), def);
+    }
+
     function setCharacterCallbacks(options) {
         if (options.getBreathActual) getBreathActual = options.getBreathActual;
         if (options.getNingqiBonus) getNingqiBonus = options.getNingqiBonus;
@@ -520,7 +525,11 @@
         if (state.satiety < overcapThreshold) {
             next = Math.min(next, maxVal);
         } else {
-            next = Math.min(next, overcapMax);
+            var allowOvercap = false;
+            if (global && global.BuffSystem && typeof global.BuffSystem.hasActiveSatietyDigestBuff === 'function') {
+                allowOvercap = !!global.BuffSystem.hasActiveSatietyDigestBuff('player');
+            }
+            next = Math.min(next, allowOvercap ? overcapMax : maxVal);
         }
         state.satiety = round1(clamp(next, 0, overcapMax));
         if (state.satiety > 0) state.starvationTicks = 0;
@@ -672,6 +681,9 @@
         if (typeof global !== 'undefined' && global.InventoryEquipment && typeof global.InventoryEquipment.tickHubActionCooldowns === 'function') {
             global.InventoryEquipment.tickHubActionCooldowns(1);
         }
+        if (typeof global !== 'undefined' && global.InventoryEquipment && typeof global.InventoryEquipment.pruneExpiredGroundItems === 'function') {
+            global.InventoryEquipment.pruneExpiredGroundItems(state.tickCount, 100);
+        }
 
         // ---------- 底气恢复（行气/调息激活时替代自然恢复） ----------
         var dMax = Math.max(0, state.diqi_max_effective);
@@ -711,6 +723,7 @@
 
     global.Survival = {
         setConfig: setConfig,
+        getConfigValue: getConfigValue,
         setCharacterCallbacks: setCharacterCallbacks,
         getState: getState,
         setState: setState,

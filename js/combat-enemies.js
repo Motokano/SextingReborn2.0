@@ -6,6 +6,7 @@
     'use strict';
 
     var table = { enemies: {} };
+    var facingByKey = {};
 
     function setTable(obj) {
         if (!obj || typeof obj !== 'object') return;
@@ -20,6 +21,55 @@
         if (!enemyId) return null;
         var e = table.enemies[enemyId];
         return e && typeof e === 'object' ? e : null;
+    }
+
+    function normalizeDir(v) {
+        var n = Number(v);
+        if (!isFinite(n)) return 4;
+        n = Math.round(n) % 8;
+        if (n < 0) n += 8;
+        return n;
+    }
+
+    function dirFromDelta(dx, dy) {
+        var x = Number(dx) || 0;
+        var y = Number(dy) || 0;
+        if (!x && !y) return 4;
+        if (x > 0 && y < 0) return 1;
+        if (x > 0 && y > 0) return 3;
+        if (x < 0 && y > 0) return 5;
+        if (x < 0 && y < 0) return 7;
+        if (x > 0) return 2;
+        if (x < 0) return 6;
+        if (y < 0) return 0;
+        return 4;
+    }
+
+    function facingKey(enemyId, mapId, x, y) {
+        return String(mapId || '') + '|' + String(enemyId || '') + '|' + String(x | 0) + ',' + String(y | 0);
+    }
+
+    function setFacingDir(enemyId, mapId, x, y, dir) {
+        if (!enemyId) return 4;
+        var k = facingKey(enemyId, mapId, x, y);
+        facingByKey[k] = normalizeDir(dir);
+        return facingByKey[k];
+    }
+
+    function getFacingDir(enemyId, mapId, x, y, fallback) {
+        if (!enemyId) return normalizeDir(fallback);
+        var k = facingKey(enemyId, mapId, x, y);
+        if (facingByKey[k] == null) return normalizeDir(fallback);
+        return normalizeDir(facingByKey[k]);
+    }
+
+    function ensureFacingTowardTarget(enemyId, mapId, x, y, targetX, targetY) {
+        if (!enemyId) return 4;
+        var k = facingKey(enemyId, mapId, x, y);
+        if (facingByKey[k] == null) {
+            facingByKey[k] = dirFromDelta((targetX | 0) - (x | 0), (targetY | 0) - (y | 0));
+        }
+        return normalizeDir(facingByKey[k]);
     }
 
     /**
@@ -41,6 +91,7 @@
         if (t.body_damage_reduce != null && isFinite(Number(t.body_damage_reduce))) defender.body_damage_reduce = clamp01(Number(t.body_damage_reduce));
         if (t.limbs_invulnerable === true) defender.limbs_invulnerable = true;
         if (t.can_attack === false) defender.can_attack = false;
+        if (Array.isArray(t.counter_post_effect_ids)) defender.counter_post_effect_ids = t.counter_post_effect_ids.slice();
         if (defender.speed == null || !isFinite(Number(defender.speed))) defender.speed = 10;
         if (defender.inner_damage_reduce == null) defender.inner_damage_reduce = 0;
         if (defender.body_damage_reduce == null) defender.body_damage_reduce = 0;
@@ -60,6 +111,9 @@
     global.CombatEnemies = {
         setTable: setTable,
         getById: getById,
+        setFacingDir: setFacingDir,
+        getFacingDir: getFacingDir,
+        ensureFacingTowardTarget: ensureFacingTowardTarget,
         mergeIntoDefender: mergeIntoDefender,
         onEnemyDamageResolved: onEnemyDamageResolved
     };

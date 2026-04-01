@@ -144,7 +144,12 @@
         if (global.SceneCtx && typeof global.SceneCtx.getActionBarSlots === 'function') {
             try {
                 var abs = global.SceneCtx.getActionBarSlots();
-                if (Array.isArray(abs)) sceneUiPersist = { action_bar_slots: abs.slice(0, 4) };
+                if (Array.isArray(abs)) {
+                    sceneUiPersist = { action_bar_slots: abs.slice(0, 4) };
+                    if (typeof global.SceneCtx.getFacingDir === 'function') {
+                        sceneUiPersist.facing_dir = global.SceneCtx.getFacingDir();
+                    }
+                }
             } catch (eSceneUi) { sceneUiPersist = null; }
         }
 
@@ -267,6 +272,9 @@
             try {
                 var su = snapshot.player.sceneUi;
                 if (su && Array.isArray(su.action_bar_slots)) global.SceneCtx.setActionBarSlots(su.action_bar_slots);
+                if (su && su.facing_dir != null && typeof global.SceneCtx.setFacingDir === 'function') {
+                    global.SceneCtx.setFacingDir(su.facing_dir);
+                }
             } catch (eAb) { /* ignore */ }
         }
 

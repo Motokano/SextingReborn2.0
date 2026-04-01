@@ -13,13 +13,30 @@
       "stamina_cost": 2,
       "tool_required": false,
       "loot_rows": [
-        { "item_id": "wild_fruit_red", "weight": 40, "quality_tier": 1, "quality_tier_max": 6 },
-        { "item_id": "wild_fruit_red", "weight": 30, "quality_tier": 2, "quality_tier_max": 6 },
-        { "item_id": "wild_fruit_purple", "weight": 25, "quality_tier": 2, "quality_tier_max": 6 },
-        { "item_id": "wild_fruit_yellow", "weight": 15, "quality_tier": 3, "quality_tier_max": 6 },
-        { "item_id": "wild_fruit_purple", "weight": 10, "quality_tier": 4, "quality_tier_max": 6 },
-        { "item_id": "wild_fruit_yellow", "weight": 5, "quality_tier": 5, "quality_tier_max": 6 },
-        { "item_id": "wild_fruit_red", "weight": 2, "quality_tier": 6, "quality_tier_max": 6 }
+        {
+          "item_id": "herb_pecan",
+          "weight": 20,
+          "quality_tier": 1,
+          "quality_tier_max": 6
+        },
+        {
+          "item_id": "herb_sour_plum",
+          "weight": 20,
+          "quality_tier": 2,
+          "quality_tier_max": 6
+        },
+        {
+          "item_id": "herb_chestnut",
+          "weight": 20,
+          "quality_tier": 2,
+          "quality_tier_max": 6
+        },
+        {
+          "item_id": "herb_almond",
+          "weight": 20,
+          "quality_tier": 3,
+          "quality_tier_max": 6
+        }
       ]
     },
     "gp_std_grass": {
@@ -31,13 +48,48 @@
       "stamina_cost": 2,
       "tool_required": false,
       "loot_rows": [
-        { "item_id": "herb_green", "weight": 40, "quality_tier": 1, "quality_tier_max": 6 },
-        { "item_id": "herb_green", "weight": 30, "quality_tier": 2, "quality_tier_max": 6 },
-        { "item_id": "herb_bitter", "weight": 25, "quality_tier": 2, "quality_tier_max": 6 },
-        { "item_id": "herb_sweet", "weight": 15, "quality_tier": 3, "quality_tier_max": 6 },
-        { "item_id": "herb_bitter", "weight": 10, "quality_tier": 4, "quality_tier_max": 6 },
-        { "item_id": "herb_sweet", "weight": 5, "quality_tier": 5, "quality_tier_max": 6 },
-        { "item_id": "herb_green", "weight": 2, "quality_tier": 6, "quality_tier_max": 6 }
+        {
+          "item_id": "herb_green",
+          "weight": 40,
+          "quality_tier": 1,
+          "quality_tier_max": 6
+        },
+        {
+          "item_id": "herb_green",
+          "weight": 30,
+          "quality_tier": 2,
+          "quality_tier_max": 6
+        },
+        {
+          "item_id": "herb_bitter",
+          "weight": 25,
+          "quality_tier": 2,
+          "quality_tier_max": 6
+        },
+        {
+          "item_id": "herb_sweet",
+          "weight": 15,
+          "quality_tier": 3,
+          "quality_tier_max": 6
+        },
+        {
+          "item_id": "herb_bitter",
+          "weight": 10,
+          "quality_tier": 4,
+          "quality_tier_max": 6
+        },
+        {
+          "item_id": "herb_sweet",
+          "weight": 5,
+          "quality_tier": 5,
+          "quality_tier_max": 6
+        },
+        {
+          "item_id": "herb_green",
+          "weight": 2,
+          "quality_tier": 6,
+          "quality_tier_max": 6
+        }
       ]
     },
     "gp_example_per_item_quality_cap": {
@@ -49,8 +101,18 @@
       "stamina_cost": 3,
       "tool_required": false,
       "loot_rows": [
-        { "item_id": "herb_green", "weight": 30, "quality_tier": 1, "quality_tier_max": 2 },
-        { "item_id": "herb_bitter", "weight": 20, "quality_tier": 1, "quality_tier_max": 3 }
+        {
+          "item_id": "herb_green",
+          "weight": 30,
+          "quality_tier": 1,
+          "quality_tier_max": 2
+        },
+        {
+          "item_id": "herb_bitter",
+          "weight": 20,
+          "quality_tier": 1,
+          "quality_tier_max": 3
+        }
       ]
     }
   }

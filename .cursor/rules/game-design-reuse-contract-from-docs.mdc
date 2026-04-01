@@ -165,6 +165,16 @@ alwaysApply: true
 
 ## 8) 战斗核心：先手、资源不足仍出手、tick 末击退坍缩（强制）
 
+### 8.0 速度先手与同速「同时提交」（一次交换内）
+
+- **速度不等**：取整后战斗速度高者为**先手**；先手方先完整结算本侧伤害链与**未声明延后**的即时效果，再结算后手方；若后手方在先手落地后已失能（死亡/离场等），**不再**执行本次交换中后手还击（先击杀可避免再挨对方本击）。
+- **同速**：以交换起始状态为**同一快照**，先演算玩家侧、再演算敌人侧**待提交变更集**（演算中途不互相覆盖快照），最后**同时提交**两侧结果（允许互中、同归）。
+- **`initiative_always_first`**：仍在与速度比较前决定本击是否强制攻击方先手；抵消后仍同速则走同速口径。
+
+约定依据：`docs/design/07-combat-core.md`（速度与先手、连击）。
+
+**实现索引（代码/数据/脚本顺序）**：**`.cursor/rules/combat-initiative-exchange-agent.mdc`**（`CombatInitiative`、`attackEnemy` 分支、`simultaneousDryRun`、`combat-enemies.json` 还击字段等）。
+
 ### 8.1 tick 末位移队列坍缩
 
 - 若本 tick 末队列里存在多条击退候选，只执行一条：
@@ -188,3 +198,4 @@ alwaysApply: true
 - 修改 Buff：先看第 3 节，再看 18-buff-system 的具体 effect_type/consume_mode。
 - 修改 招式/后遗症/熟练度：先看第 4、5 节，确保 `R_move` 与 `post_effect_unlocks` / `proficiency_attr_unlocks` 使用同一套阈值口径与重算入口。
 - 修改 野外采集点：先看第 7 节，避免把 `02-regions` 的“刷新说法”误当成采空规则。
+- 修改 昼夜光照/视野显示：先看 **`.cursor/rules/day-night-vision-ui-agent.mdc`**（仅 UI 分层与信息揭示，禁止影响战斗结算）。

@@ -76,6 +76,7 @@
 #### 尚待实现（非策划缺口）
 
 - **战斗结算接线**：\(F_{\text{呼吸法威力}}\) 乘入 \(W_{\text{skill}}\) 的代码路径；**多 hub 切换**时以 **出手前一刻** `hubs.breath` 为准（实现登记）。
+- **速度先手与同时结算（`07`）**：已接线 **`js/combat-initiative.js`** + **`SceneCtx.actions.attackEnemy`**：**速度不等**时先手方先跑满管线再跑后手还击（敌人还击用 **`CombatMeleeResolve.resolveEnemyVsPlayerAttack`** + **`melee_hit_player_defender`**）；**同速**且敌人 **`can_attack !== false`** 时走 **`simultaneousDryRun`**（招式命中 Buff 入队 + 伤害入队）再 **`flushPendingBuffApplies` / `finalizeSimultaneousStrike`**；**`initiative_always_first`** 仍由 `resolvePlayerInitiatedExchange` 在速度比较前处理。局限：后手「失能短路」待敌人 HP/离场接入；同 tick 内其它系统对「同时提交」的观测顺序以当前 commit 为准。Agent 维护约定见 **`.cursor/rules/combat-initiative-exchange-agent.mdc`**。
 - **非战斗扩展**：吐纳 **`battle_only`** 已约束；若将来大地图回气，单独立项。
 
 ### 战斗管线与后遗症分派（可扩展落地）
@@ -100,8 +101,29 @@
 - **技能等级 → 后天属性**：`data/survival-config.json` 中 `skill_attr_gain`：`{ [skill_id]: { [attr_id]: { threshold, value } } }`。`recalcCharacterStats` 默认从 `CharacterAttributes` 已加载的配置读取；也可在调用时传入 `skillAttrGainTable` 覆盖。结算规则：`level >= threshold` 时该项后天 += `value * floor(level / threshold)`（与 `character-attributes.js` 的 `sumFromSkills` 一致）。当前「基本拳脚」为每 20 级 +1 后天筋骨（见 `11-skills`）。
 - **战斗后遗症（构式）**：`/data/post-effects.json` 定义 `post_effect_id`、文案 key、`effect_type`（如 **`initiative_always_first`**、**`dispel_one_beneficial_buff_on_target`**）、`valid_skill_ids` / `valid_move_ids`、`effect_params`（如驱散是否在招架 0 伤后仍触发）。招式在 `combat-skills.json` 的 `moves[]` 内可含 **`post_effect_unlocks`**（`min_proficiency_ratio` + `post_effect_id`）与 **`post_effect_slot_max`**。存档中须在**出招肢 × 技能 × 招式槽**（或等价结构）持久化「某槽已装配的后遗症 id」；**装配校验**：同一 `post_effect_id` 在同一肢体内**至多出现一次**（四肢可各一次）。先手解析在 `07` 速度比较**之前**查询本击 `move_id` 是否带该装配。**驱散类**须在 **命中 roll 成功** 且（若配置）**招架后**仍执行的节点调用 BuffSystem，候选池见 `18`。
 - **已获得后遗症（后台-only）**：`CharacterAttributes` 状态含 **`post_effects_obtained: string[]`**（去重 id）。**不向玩家默认状态栏/角色面板展示**；仅供 **`getPostEffectsObtainedCount()`**、**`getPostEffectsObtainedIds()`**、**`hasPostEffectObtained(post_effect_id)`** 及 **`syncPostEffectsObtainedFromSkillsState()`**（可手动调用）供剧情、NPC 条件、成就等判断。前三个查询接口在读取前会内部 **`syncPostEffectsObtainedFromSkillsState()`**（按 `skills[*].move_usage` 与 `post_effect_unlocks` 合并熟练度解锁）。剧情直发奖用 **`registerPostEffectObtained(id)`**。随角色存档读写。
+- **变式（招式槽被动）**：建议单表 **`/data/move-variants.json`** 定义（与后续 UI/数据导出对齐）。装配位置与招式槽同层，但语义是**被动**：作用于其所在肢体的主动招式结算上下文。
+  - **数据字段建议（关键项）**：
+    - `variant_id`、文案 key；
+    - `source_skill_id`（变式来源技能，可为呼吸法/步法/招架/徒手/兵器等任意技能类型）；
+    - `min_source_level`（来源技能等级门槛，来源不满足则变式不可用）；
+    - `scale_params_by_source_level`（效果参数按 `source_skill_id` 的**实际等级**线性缩放的声明/口径；变式本身无熟练度）；
+    - `assist_scope`（`active_moves` / `parry` / `both`，声明作用对象）；
+    - `trigger`（触发条件配置：要求触发/判定口径与 Buff 对齐，使用同一套事件上下文字段与条件判定接口；事件上下文应能对应到某个主动招式的 sub-hit 结算时刻，保持字段如 `hit_roll_success`、`damage_final`、`subhit_index`/`is_last_subhit`、`tags` 等语义一致）。**缺省语义**：未声明时视为恒 true。
+    - `target_filters`（作用目标过滤：例如 `valid_move_ids`、动作标签过滤、伤害类型过滤、以及对多段的段序号/段类型过滤；其中段过滤基于事件上下文的 `subhit_index`、`is_last_subhit` 等字段）。**缺省语义**：未声明时不做目标限制。
+    - `variant_effect_type` / `variant_effect_params`（把效果赋予“某个主动招式/某个 sub-hit”的结算上下文；如效果是数值乘区/伤害类型改写/叠加附加效果等，均写入此处）。**注意**：该 effect 目录独立于 Buff 的 `effect_type` 目录。
+  - **强制约束**：
+    - 变式不参与出招指针轮转；变式不产生“出手一次”，不对 `skills[skill_id].move_usage` 计数。
+    - 后遗症系统不以变式为目标：变式不可挂 `post_effect_slot_max`，后遗症装配校验不应把变式 id 当作合法 `valid_move_ids` 目标。
+    - 变式“只有条件满足才赋予效果”：触发与条件不满足时，对该 sub-hit 的结算不生效；当 `trigger` 与 `target_filters` 都未声明时，等价于默认总是为可辅助主动招式赋予效果。
+    - 多段命中时，变式触发条件按 sub-hit **逐段检查**（不允许“整次 cast 只判一次”）。
+    - 同一肢体内同一 `variant_id` 唯一；不同 `variant_id` 互不覆盖，按可叠加语义进入执行器合成。
+    - 对“参与肢上普攻链”的肢体，招式槽保存/编辑/载入校验时必须满足：至少存在 1 个 `slot_kind="move"`。纯 `variant` 槽配置判为非法并**拒绝保存/拒绝载入**。
+    - 当来源技能等级不足（低于 `min_source_level`）时，必须**强制清空该肢体对应变式槽**（含主动链变式槽与招架变式槽）。
+    - 变式 effect 允许改写全部已开放战斗结算维度（含命中/招架/伤害链与熟练度增减结算字段）；具体冲突合成顺序由独立 variant 执行器定义。
+    - 若技能本体不参与肢上普攻链（如呼吸法/步法/招架）但可作为变式来源，其熟练度统计按该技能既有规则，不因变式额外增加 `move_usage`。
 - **战斗技能等级上限（开放接口）**：与 `skills` 一并持久化 `skill_max_level_bonus: { [combat_skill_id]: number }`（整数，可负），含义见 `11-skills`「技能有效等级上限」。凡判断「能否升到 L+1」、传授上限、改级、载入后校验，须使用 `CombatSkills.getProgressionSkillMaxLevel(characterLike, skillId)`（或等价实现），其中 `characterLike` 至少包含 `skills` 与 `skill_max_level_bonus`；**不得**仅以字面 `1000` 作为唯一上界。**数值曲线**（潜能、`Base(L)`、招架比例等）以 `getTemplateMaxLevel` 封顶，参与计算的等级用 `getSkillLevelForStatCurves`（超额级如 1001 与模板满级数值相同）。NPC 触发器可通过效果 `modifySkillMaxLevelBonus`（`skillId`、`delta`）改可练上限；改后若当前等级超过新的 progression 上限，须夹紧等级。
-- **肢上招式槽与分槽成数**：每条装备主动战斗技能的肢体，在存档中持久化 **循环槽列表**，建议每项为 `{ move_id: string, power_level: number }`（1～12，与招式模板 min/max 夹紧）；与 `11-skills` 8.3.1、`07` 成数来源一致。轮转到某槽时，本击 **\(k\) = 该元素的 `power_level`**。
+- **肢上招式槽与分槽成数（共用槽）**：每条装备主动战斗技能的肢体，在存档中持久化 **循环槽列表**。同一槽位二选一：主动招式或变式。实现可用统一数组表示（例如字符串 token 或对象 union）；约束是“同槽不可同时有 `move` 与 `variant`”。主动招式槽使用 `power_level`（1～12，与招式模板 min/max 夹紧）；变式槽不使用 `power_level`。轮转时仅在可释放的主动招式槽之间前进，本击 **\(k\)** 取当前主动招式槽 `power_level`。  
+- **招架变式槽（新）**：每条肢体的招架技能侧单独持久化 `parry_variant_slots`（建议结构：`{ slot_index, variant_id? }[]`），最多 5 槽；按招架技能等级每 200 级解锁 1 槽。装配校验要求 `assist_scope` 含 `parry`。
 - **物品与装备实例**：存档中**装备槽位**与**物品栏每格**存的是**实例**而非仅模板 ID。推荐格式：每格/每槽为 `{ item_id, enchants?: string[] }`，装备槽位必含 `item_id`，若有词条则 `enchants` 为词条 ID 数组；可堆叠且无词条的消耗品/材料可为 `{ item_id, count }`（无 enchants 或空数组）。同一模板的不同实例通过是否带词条、词条列表区分。脱下背心/背包/衣服时，该容器内物品按 05 迁移后，**对应容器置空**，格数随当前装备变化，未装备时该容器为空。
 - **快捷腰带格序**：快捷腰带格位与容器格的对应顺序为**先口袋、后背心**（即索引 0～pocket_slots-1 为口袋，pocket_slots～pocket_slots+vest_slots-1 为背心）。
 - **防具减伤与词条**：头部/衣服防具的减伤与词条 `armor_bonus` 的叠加为**乘算**：例如基础减伤比例 \(r_{\text{base}}\)、词条加成比例 \(r_{\text{enc}}\)，最终减伤后剩余伤害比例 = \((1 - r_{\text{base}}) \times (1 - r_{\text{enc}})\)（具体公式以 08 为准）。**词条叠加**：同一装备上多个词条之间**相加**（同类型效果数值相加）；**单词条有上限**，上限在词条配置或全局常数中定义。**词条展示**：词条名称与描述**不受**三档名字/描述技能判断影响，使用词条表内单一 `name` 即可。

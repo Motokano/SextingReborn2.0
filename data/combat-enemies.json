@@ -9,6 +9,18 @@
       "parry_damage_reduce": 0,
       "limbs_invulnerable": true,
       "can_attack": false
+    },
+    "enemy.training_sparring_fast": {
+      "_doc": "与玩家同速时可测「同速同时提交」；速度快于玩家时先手还击。地图 enemy_id 须与此键一致。",
+      "speed": 10,
+      "inner_damage_reduce": 0,
+      "body_damage_reduce": 0,
+      "parry_rate": 0.1,
+      "parry_damage_reduce": 0.1,
+      "can_attack": true,
+      "attack_damage_min": 4,
+      "attack_damage_max": 10,
+      "attack_damage_type": "blunt"
     }
   }
 }

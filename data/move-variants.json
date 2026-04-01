@@ -1,0 +1,5 @@
+{
+  "_comment": "变式定义表：variant_effect_type 独立于 Buff effect_type；默认 trigger 缺省恒 true，target_filters 缺省不限制。",
+  "variants": {}
+}
+

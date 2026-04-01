@@ -393,7 +393,7 @@
     \text{速度（浮点）} = V_{\text{base}} \times \left(1 + 0.005 \times S_{\text{身手}} + \sum P_{\text{装备等}}\right)
     \]
   - **步法等级平直加成**：当前挂载的步法技能若配置 **`combat_speed_per_10_levels`**（整数，基本步法为 **1**），且该技能在存档中等级为 \(L\)，则额外 **`+\left\lfloor L/10\right\rfloor \times \texttt{combat_speed_per_10_levels}`** 点速度（**在**对浮点结果 `floor` **之后**再累加，再与下限比较）。
-  - **取整与下限**：先 **`floor(\text{速度（浮点）})`**，加上步法平直加成，再取 **\(\max(1,\cdot)\)**。取整后的速度用于先手判定、连击倍数判定与命中率公式。其中 0.005 从配置表字段 `dexterity_speed_pct_per_point` 读取；无步法 hub 时的默认 \(V_{\text{base}}\) 从 **`base_speed_no_footwork`** 读取（兼容旧键 **`base_speed_no_qinggong`** 的存档/配置可保留，实现优先读新键）。
+  - **取整与下限**：先 **`floor(\text{速度（浮点）})`**，加上步法平直加成，再取 **\(\max(1,\cdot)\)**。取整后的速度用于先手判定、连击倍数判定与命中率公式；**先手顺序与同速「同时提交」口径**见 **`07-combat-core.md`**「速度与先手、连击」。其中 0.005 从配置表字段 `dexterity_speed_pct_per_point` 读取；无步法 hub 时的默认 \(V_{\text{base}}\) 从 **`base_speed_no_footwork`** 读取（兼容旧键 **`base_speed_no_qinggong`** 的存档/配置可保留，实现优先读新键）。
 - **命中率**：由攻防双方**速度值**参与，见「七、命中、招架与伤害流程」；身手通过速度间接影响命中率。
 
 ### 5.8 专注属性细则（自修学习：tick 经验与精力→潜能效率）

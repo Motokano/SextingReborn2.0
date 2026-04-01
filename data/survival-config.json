@@ -143,6 +143,42 @@
 
   "item_display_tier_threshold_1": null,
   "item_display_tier_threshold_2": null,
+  "vision_day_night": {
+    "enabled": true,
+    "overlay_rgb": [8, 12, 24],
+    "darkness_keyframes": [
+      { "minute": 0, "alpha": 0.58 },
+      { "minute": 240, "alpha": 0.52 },
+      { "minute": 360, "alpha": 0.3 },
+      { "minute": 480, "alpha": 0.14 },
+      { "minute": 720, "alpha": 0.04 },
+      { "minute": 1080, "alpha": 0.22 },
+      { "minute": 1320, "alpha": 0.48 },
+      { "minute": 1440, "alpha": 0.58 }
+    ],
+    "clear_radius_cells_day": 5.4,
+    "clear_radius_cells_night": 2.8,
+    "clear_falloff_cells": 3.4
+  },
+  "vision_reveal_ui": {
+    "visual_radius_day": 8.0,
+    "visual_radius_night": 4.0,
+    "identify_ratio": 0.72,
+    "detail_ratio": 0.45,
+    "adjacent_detail_radius": 1,
+    "debug_enabled": false
+  },
+  "vision_facing_ui": {
+    "enabled": true,
+    "front_half_angle_deg": 45,
+    "side_half_angle_deg": 75,
+    "front_mul": 1.0,
+    "side_mul": 0.65,
+    "back_mul": 0.35,
+    "show_cone_overlay": true,
+    "cone_opacity": 0.12,
+    "edge_opacity": 0.2
+  },
 
   "skill_attr_gain": {
     "combat_basic_unarmed": {
