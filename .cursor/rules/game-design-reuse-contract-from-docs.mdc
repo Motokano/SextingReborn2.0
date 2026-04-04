@@ -198,4 +198,4 @@ alwaysApply: true
 - 修改 Buff：先看第 3 节，再看 18-buff-system 的具体 effect_type/consume_mode。
 - 修改 招式/后遗症/熟练度：先看第 4、5 节，确保 `R_move` 与 `post_effect_unlocks` / `proficiency_attr_unlocks` 使用同一套阈值口径与重算入口。
 - 修改 野外采集点：先看第 7 节，避免把 `02-regions` 的“刷新说法”误当成采空规则。
-- 修改 昼夜光照/视野显示：先看 **`.cursor/rules/day-night-vision-ui-agent.mdc`**（仅 UI 分层与信息揭示，禁止影响战斗结算）。
+- 修改 昼夜光照/视野显示：先看 **`docs/design/20-map-vision-ui.md`** 与 **`.cursor/rules/day-night-vision-ui-agent.mdc`**（仅 UI 分层与信息揭示，禁止影响战斗结算）。

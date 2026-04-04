@@ -36,6 +36,7 @@
 | 贸易与旅行商人 | 见下「贸易子模块表」 | 并入 capitalism 多文件 |
 | 玩家间交易 | [13-p2p-trading.md](13-p2p-trading.md) | 交易码、接头暗号、兑换与时效 |
 | 实现约定 | [14-implementation.md](14-implementation.md) | 技术栈、配置表、存档、字段中英对照 |
+| 地图视野 UI | [20-map-vision-ui.md](20-map-vision-ui.md) | 昼夜/距离分层/朝向倍率/格级遮挡与身后三邻格（仅显示） |
 | 后续可补充 | [15-todo.md](15-todo.md) | 敌人 AI、异常状态、技能形态等 |
 | 实现进度快照 | [implementation-progress.md](../implementation-progress.md) | 相对本索引的代码落地进度与下一步建议（非设计正本） |
 

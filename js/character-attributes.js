@@ -390,6 +390,10 @@
         cache.combat_speed = Math.max(1, Math.floor(speedFloat) + footworkSpeedFlat);
         cache.hit_bonus_from_equipment = fromEquip.hit_bonus || 0;
 
+        // 穴位「底气上限+N」→ Survival.diqi_cap_limit 的扁平加成（见 computeDiqiCapLimitFromBreath）
+        if (typeof global !== 'undefined' && global.Survival && typeof global.Survival.setDiqiCapLimitFlatBonus === 'function') {
+            global.Survival.setDiqiCapLimitFlatBonus('acupoints', Math.max(0, Math.round(Number(extraMaxQi) || 0)));
+        }
         if (typeof global !== 'undefined' && global.Survival && typeof global.Survival.refreshDiqiMaxFromBreath === 'function') {
             global.Survival.refreshDiqiMaxFromBreath(breath);
         }

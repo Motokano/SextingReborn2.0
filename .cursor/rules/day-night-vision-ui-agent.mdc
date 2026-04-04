@@ -11,6 +11,8 @@
 实现口径：`js/scene-renderer.js`、`js/core/tile-renderer-v2.js`。  
 非目标：`js/combat-pipeline.js`、`js/combat-melee-resolve.js` 等战斗结算模块。
 
+**设计正本**：`docs/design/20-map-vision-ui.md`（格级遮挡、身后三邻格、与昼夜层顺序）。
+
 ## 2) 数据单一来源（配置）
 
 - 昼夜遮罩参数：`data/survival-config.json` -> `vision_day_night`
@@ -29,6 +31,12 @@
   - `front_mul` / `side_mul` / `back_mul`
   - `show_cone_overlay`
   - `cone_opacity` / `edge_opacity`
+- **格级遮挡 + 身后邻格动态剥离**：`data/survival-config.json` -> `vision_occlusion_ui`
+  - `enabled`：总开关；**且需** `vision_facing_ui.enabled`，否则无「背后」语义、不绘制遮挡。
+  - `hide_nonvisible_terrain`：对不可视格在 FX 层叠色盖住地形（可与 `strip_dynamic_on_rear_adjacent` 独立开关）。
+  - `occlusion_rgb` / `occlusion_alpha`：叠色。
+  - `strip_dynamic_on_rear_adjacent`：对**身后三邻格**（八向、与 `facingDirToVector` 一致，`dot < 0` 的 3 个距离 1 格）**不叠满遮挡**时仍**强制不显示** NPC/敌/地面物/`?`/采集模糊与 gathering 提示；**不**影响可走判定与点击后退。
+  - `distance_shade_enabled` / `distance_shade_rgb` / `distance_shade_max_alpha` / `distance_shade_start_ratio` / `distance_shade_power`：在**可视区**内按 `chebyshev` 相对有效半径叠半透明暗色（近亮远暗）；**不**改信息分层规则；与 `vision_occlusion_ui.enabled` 同开；**不依赖** `hide_nonvisible_terrain`。
 
 读取入口统一经 `Survival`：`js/survival.js` -> `Survival.getConfigValue(key, def)`。  
 缺字段必须有兜底默认值，不得因配置缺失导致渲染崩溃。
@@ -39,11 +47,14 @@
 - `identify`：识别类型（敌人/NPC/采集点/地面有物）。
 - `detail`：显示细节（如具体敌人类型、更完整 tooltip）。
 - 邻格保底：`adjacent_detail_radius` 范围内强制细节可见，避免交互挫败。
+- **与身后三邻格**：`strip_dynamic_on_rear_adjacent` 开启时，这三格**仍以无动态符号为准**（实现上在 `getDynamicMetaAt` 末尾剥离），**优先于**邻格保底对实体/地面/采集的展示。
 
 ## 4) 渲染约定
 
 - 暗度由 `GameTime.getState().minuteOfDay` + `darkness_keyframes` 插值得出。
 - 夜色遮罩与玩家周围清晰圈在 FX 层绘制（`setEffectsRenderer` 链路）。
+- **FX 顺序**：`SceneAnimation` → `vision_day_night` → **`vision_occlusion_ui`（不可视满遮挡）** → **`renderVisionDistanceShadeOverlay`（可视区内远近渐暗）** → `vision_facing_ui` 扇形装饰（若 `show_cone_overlay`）→ 调试 HUD。
+- **不可视判定（遮挡用）**：`chebyshev <= visualRadius * facingMul`；**不**并入 `adjacent_detail_radius`，否则全邻格永不遮挡。
 - 朝向覆盖层使用“柔和扇形切片”视觉：尖点贴近玩家格中心、外缘羽化；避免生硬直线边。
 - 当前推荐夹角：约 150°（`side_half_angle_deg = 75`）；作为默认视觉参数可继续在配置内微调。
 - `tile-renderer-v2` 可消费以下动态元信息：
@@ -60,4 +71,4 @@
 - 便捷全局：
   - `VisionDebug.on() / off() / toggle() / status()`
 - 调试 HUD 仅显示当前半径与暗度，不应改变任何规则计算结果。
-- 调试可附加朝向信息（如 `facingDir` / `sideHalf`），但只作可视化诊断，不得参与战斗判定。
+- 调试可附加朝向信息（如 `facingDir` / `sideHalf`）、**occlusion / hideTerr / rearStrip**，但只作可视化诊断，不得参与战斗判定。

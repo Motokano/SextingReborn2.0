@@ -175,9 +175,21 @@
     "front_mul": 1.0,
     "side_mul": 0.65,
     "back_mul": 0.35,
-    "show_cone_overlay": true,
+    "show_cone_overlay": false,
     "cone_opacity": 0.12,
     "edge_opacity": 0.2
+  },
+  "vision_occlusion_ui": {
+    "enabled": true,
+    "hide_nonvisible_terrain": true,
+    "occlusion_rgb": [6, 8, 14],
+    "occlusion_alpha": 0.96,
+    "strip_dynamic_on_rear_adjacent": true,
+    "distance_shade_enabled": true,
+    "distance_shade_rgb": [10, 12, 22],
+    "distance_shade_max_alpha": 0.26,
+    "distance_shade_start_ratio": 0.2,
+    "distance_shade_power": 1.28
   },
 
   "skill_attr_gain": {

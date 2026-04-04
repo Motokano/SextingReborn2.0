@@ -3364,6 +3364,16 @@
             if (changed && window.GameLog) {
                 window.GameLog.log(ui('log.system.acupoint.unlocked', { id: combatUIState.curAcupointId }), 'system');
             }
+            if (changed && window.CharacterAttributes && typeof window.CharacterAttributes.recalcCharacterStats === 'function' && window.InventoryEquipment) {
+                window.CharacterAttributes.recalcCharacterStats({
+                    getEquipmentState: function () { return window.InventoryEquipment.getState().equipment; },
+                    getSkillsState: function () { return window.InventoryEquipment.getState().skills; },
+                    getItemTemplate: window.InventoryEquipment.getItemTemplate,
+                    getEnchantEntry: window.InventoryEquipment.getEnchantEntry,
+                    getStrengthLevel: function () { return window.InventoryEquipment.getSkillLevel('survival_strength'); }
+                });
+            }
+            if (changed && typeof updateStatusPanel === 'function') updateStatusPanel();
             renderCombatModal();
             return;
         }
@@ -3991,6 +4001,7 @@
                     return;
                 }
                 ctxMeta = ctxMeta || {};
+                var st = (E && typeof E.getState === 'function') ? E.getState() : null;
                 if (window.SceneCtx) window.SceneCtx.lastAttackedEnemyId = enemyId != null ? String(enemyId) : null;
                 if (window.SceneCtx && typeof window.SceneCtx.exitFootworkNieBuMode === 'function') {
                     window.SceneCtx.exitFootworkNieBuMode();
@@ -4058,7 +4069,7 @@
                     if (window.CombatEnemies && typeof window.CombatEnemies.ensureFacingTowardTarget === 'function') {
                         defenderFacingDir = window.CombatEnemies.ensureFacingTowardTarget(
                             enemyId,
-                            st.mapId,
+                            st && st.mapId != null ? st.mapId : null,
                             ctxMeta.x,
                             ctxMeta.y,
                             ctxMeta.fromX,

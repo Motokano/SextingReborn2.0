@@ -282,6 +282,70 @@
         return out;
     }
 
+    function getVisionOcclusionUiConfig() {
+        var fallback = {
+            enabled: false,
+            hideNonvisibleTerrain: true,
+            occlusionRgb: [6, 8, 14],
+            occlusionAlpha: 0.96,
+            stripDynamicOnRearAdjacent: true,
+            distanceShadeEnabled: false,
+            distanceShadeRgb: [10, 12, 22],
+            distanceShadeMaxAlpha: 0.24,
+            distanceShadeStartRatio: 0.2,
+            distanceShadePower: 1.25
+        };
+        var cfg = null;
+        if (window.Survival && typeof window.Survival.getConfigValue === 'function') {
+            cfg = window.Survival.getConfigValue('vision_occlusion_ui', null);
+        }
+        if (!cfg || typeof cfg !== 'object') return fallback;
+        var out = {
+            enabled: cfg.enabled === true,
+            hideNonvisibleTerrain: cfg.hide_nonvisible_terrain !== false,
+            occlusionRgb: fallback.occlusionRgb.slice(),
+            occlusionAlpha: fallback.occlusionAlpha,
+            stripDynamicOnRearAdjacent: cfg.strip_dynamic_on_rear_adjacent !== false,
+            distanceShadeEnabled: cfg.distance_shade_enabled === true,
+            distanceShadeRgb: fallback.distanceShadeRgb.slice(),
+            distanceShadeMaxAlpha: fallback.distanceShadeMaxAlpha,
+            distanceShadeStartRatio: fallback.distanceShadeStartRatio,
+            distanceShadePower: fallback.distanceShadePower
+        };
+        if (Array.isArray(cfg.occlusion_rgb) && cfg.occlusion_rgb.length >= 3) {
+            var r = Math.max(0, Math.min(255, Number(cfg.occlusion_rgb[0]) || 0));
+            var g = Math.max(0, Math.min(255, Number(cfg.occlusion_rgb[1]) || 0));
+            var b = Math.max(0, Math.min(255, Number(cfg.occlusion_rgb[2]) || 0));
+            out.occlusionRgb = [r, g, b];
+        }
+        var oa = Number(cfg.occlusion_alpha);
+        if (Number.isFinite(oa) && oa >= 0 && oa <= 1) out.occlusionAlpha = oa;
+        if (Array.isArray(cfg.distance_shade_rgb) && cfg.distance_shade_rgb.length >= 3) {
+            var r2 = Math.max(0, Math.min(255, Number(cfg.distance_shade_rgb[0]) || 0));
+            var g2 = Math.max(0, Math.min(255, Number(cfg.distance_shade_rgb[1]) || 0));
+            var b2 = Math.max(0, Math.min(255, Number(cfg.distance_shade_rgb[2]) || 0));
+            out.distanceShadeRgb = [r2, g2, b2];
+        }
+        var dma = Number(cfg.distance_shade_max_alpha);
+        if (Number.isFinite(dma) && dma >= 0 && dma <= 0.95) out.distanceShadeMaxAlpha = dma;
+        var dsr = Number(cfg.distance_shade_start_ratio);
+        if (Number.isFinite(dsr) && dsr >= 0 && dsr <= 0.9) out.distanceShadeStartRatio = dsr;
+        var dsp = Number(cfg.distance_shade_power);
+        if (Number.isFinite(dsp) && dsp >= 0.5 && dsp <= 3) out.distanceShadePower = dsp;
+        return out;
+    }
+
+    /** 与玩家距离 1 且处于朝向「背后」半空间的三个邻格（八向一格一步）。 */
+    function isRearAdjacentTriple(st, gx, gy) {
+        if (!st) return false;
+        var dx = (gx | 0) - (st.x | 0);
+        var dy = (gy | 0) - (st.y | 0);
+        if (Math.max(Math.abs(dx), Math.abs(dy)) !== 1) return false;
+        var fv = facingDirToVector(resolvePlayerFacingDir());
+        var dot = dx * fv.x + dy * fv.y;
+        return dot < 0;
+    }
+
     function getDarknessAlphaNow() {
         var gt = window.GameTime;
         if (!gt || typeof gt.getState !== 'function') return 0;
@@ -496,6 +560,98 @@
         ctx2d.restore();
     }
 
+    /**
+     * 对「当前不可视」格子叠色盖住地形；身后三邻格在 strip_dynamic_on_rear_adjacent 为真时不叠（便于后退）。
+     * 不并入 adjacent_detail_radius，与 20-map-vision-ui.md 一致。
+     */
+    function renderVisionOcclusionOverlay(args) {
+        if (!args || !args.ctx || !args.map || !args.state) return;
+        var occCfg = getVisionOcclusionUiConfig();
+        if (!occCfg.enabled || !occCfg.hideNonvisibleTerrain) return;
+        var facingCfg = getVisionFacingUiConfig();
+        if (!facingCfg.enabled) return;
+        var ctx2d = args.ctx;
+        var map = args.map;
+        var st = args.state;
+        var cellPx = args.cellPx || 101;
+        var cellToPx = args.cellToPx || function (x, y) { return { x: x * cellPx, y: y * cellPx }; };
+        var mapW = (map.width | 0) * cellPx;
+        var mapH = (map.height | 0) * cellPx;
+        if (!(mapW > 0) || !(mapH > 0)) return;
+        var profile = getVisionRevealProfile();
+        var gap = 1;
+        var rgb = occCfg.occlusionRgb;
+        var a = occCfg.occlusionAlpha;
+        if (!(a > 0.02)) return;
+        ctx2d.save();
+        var rgba = 'rgba(' + rgb[0] + ', ' + rgb[1] + ', ' + rgb[2] + ', ' + a.toFixed(3) + ')';
+        ctx2d.fillStyle = rgba;
+        for (var gy = 0; gy < map.height; gy++) {
+            for (var gx = 0; gx < map.width; gx++) {
+                if ((gx | 0) === (st.x | 0) && (gy | 0) === (st.y | 0)) continue;
+                if (occCfg.stripDynamicOnRearAdjacent && isRearAdjacentTriple(st, gx, gy)) continue;
+                var dist = chebyshevDistance(gx, gy, st.x, st.y);
+                var facingMul = getFacingVisionMultiplier(st, gx, gy);
+                if (dist <= profile.visualRadius * facingMul) continue;
+                var p = cellToPx(gx | 0, gy | 0);
+                var x = p.x + gap;
+                var y = p.y + gap;
+                var w = cellPx - gap * 2 - 1;
+                var h = cellPx - gap * 2 - 1;
+                ctx2d.fillRect(x, y, w, h);
+            }
+        }
+        ctx2d.restore();
+    }
+
+    /**
+     * 可视区内按距离叠半透明暗色：近亮远略暗（仅 FX，不改规则）。
+     * 使用与遮挡相同的有效半径 visualRadius * facingMul；玩家格不叠。
+     */
+    function renderVisionDistanceShadeOverlay(args) {
+        if (!args || !args.ctx || !args.map || !args.state) return;
+        var occCfg = getVisionOcclusionUiConfig();
+        if (!occCfg.enabled || !occCfg.distanceShadeEnabled) return;
+        var maxA = occCfg.distanceShadeMaxAlpha;
+        if (!(maxA > 0.004)) return;
+        var ctx2d = args.ctx;
+        var map = args.map;
+        var st = args.state;
+        var cellPx = args.cellPx || 101;
+        var cellToPx = args.cellToPx || function (x, y) { return { x: x * cellPx, y: y * cellPx }; };
+        var mapW = (map.width | 0) * cellPx;
+        var mapH = (map.height | 0) * cellPx;
+        if (!(mapW > 0) || !(mapH > 0)) return;
+        var profile = getVisionRevealProfile();
+        var gap = 1;
+        var rgb = occCfg.distanceShadeRgb;
+        var startRatio = occCfg.distanceShadeStartRatio;
+        var pow = occCfg.distanceShadePower;
+        var span = Math.max(0.02, 1 - startRatio);
+        ctx2d.save();
+        for (var gy = 0; gy < map.height; gy++) {
+            for (var gx = 0; gx < map.width; gx++) {
+                if ((gx | 0) === (st.x | 0) && (gy | 0) === (st.y | 0)) continue;
+                var dist = chebyshevDistance(gx, gy, st.x, st.y);
+                var facingMul = getFacingVisionMultiplier(st, gx, gy);
+                var rEff = profile.visualRadius * facingMul;
+                if (!(rEff > 0.05)) continue;
+                if (dist > rEff) continue;
+                var t = dist / rEff;
+                if (t <= startRatio) continue;
+                var u = (t - startRatio) / span;
+                if (u < 0) u = 0;
+                if (u > 1) u = 1;
+                var cellAlpha = maxA * Math.pow(u, pow);
+                if (!(cellAlpha > 0.006)) continue;
+                var p = cellToPx(gx | 0, gy | 0);
+                ctx2d.fillStyle = 'rgba(' + rgb[0] + ', ' + rgb[1] + ', ' + rgb[2] + ', ' + cellAlpha.toFixed(4) + ')';
+                ctx2d.fillRect(p.x + gap, p.y + gap, cellPx - gap * 2 - 1, cellPx - gap * 2 - 1);
+            }
+        }
+        ctx2d.restore();
+    }
+
     function renderVisionDebugOverlay(args) {
         if (!visionDebugEnabled || !args || !args.ctx || !args.state) return;
         var ctx2d = args.ctx;
@@ -509,7 +665,7 @@
         var boxX = p.x - 150;
         var boxY = p.y - cellPx * 2.25;
         var boxW = 300;
-        var boxH = 98;
+        var boxH = 118;
         ctx2d.save();
         ctx2d.fillStyle = 'rgba(10, 10, 10, 0.66)';
         ctx2d.fillRect(boxX, boxY, boxW, boxH);
@@ -530,6 +686,20 @@
         );
         ctx2d.fillText('darkness=' + darkness.toFixed(3), boxX + 8, boxY + 48);
         ctx2d.fillText('facingDir=' + resolvePlayerFacingDir() + ' sideHalf=' + facingCfg.sideHalfAngleDeg, boxX + 8, boxY + 64);
+        var occDbg = getVisionOcclusionUiConfig();
+        ctx2d.fillText(
+            'occlusion=' + (occDbg.enabled ? 'on' : 'off') +
+            ' hideTerr=' + (occDbg.hideNonvisibleTerrain ? 'y' : 'n') +
+            ' rearStrip=' + (occDbg.stripDynamicOnRearAdjacent ? 'y' : 'n'),
+            boxX + 8,
+            boxY + 80
+        );
+        ctx2d.fillText(
+            'distShade=' + (occDbg.distanceShadeEnabled ? 'on' : 'off') +
+            ' maxA=' + occDbg.distanceShadeMaxAlpha.toFixed(2),
+            boxX + 8,
+            boxY + 96
+        );
         ctx2d.restore();
     }
 
@@ -893,6 +1063,8 @@
         var map = E.getMap();
         var st = E.getState();
         var visionProfile = getVisionRevealProfile();
+        var facingCfgForVisionMeta = getVisionFacingUiConfig();
+        var occlusionUiCfgForMeta = getVisionOcclusionUiConfig();
         if (!map) {
             prevFootworkNieBuMode = curFootworkNieBuMode;
             return;
@@ -905,6 +1077,8 @@
                     window.SceneAnimation.render(fxCtx);
                 }
                 renderDayNightVisionOverlay(fxCtx);
+                renderVisionOcclusionOverlay(fxCtx);
+                renderVisionDistanceShadeOverlay(fxCtx);
                 renderFacingVisionOverlay(fxCtx);
                 renderVisionDebugOverlay(fxCtx);
             });
@@ -983,6 +1157,22 @@
                     rawGroundCount = 0;
                 }
                 var shownEnemyId = canDetail ? (enemyId || null) : null;
+                var gatheringBlurred = !!(hasGatheringPoint && canVisual && !canIdentify);
+                if (
+                    occlusionUiCfgForMeta.enabled &&
+                    occlusionUiCfgForMeta.stripDynamicOnRearAdjacent &&
+                    facingCfgForVisionMeta.enabled &&
+                    isRearAdjacentTriple(st, gx, gy)
+                ) {
+                    npcId = null;
+                    enemyId = null;
+                    rawGroundCount = 0;
+                    unknownPresence = false;
+                    unknownGround = false;
+                    showGathering = false;
+                    shownEnemyId = null;
+                    gatheringBlurred = false;
+                }
                 return {
                     x: gx,
                     y: gy,
@@ -992,7 +1182,7 @@
                     walkable: walkable,
                     portal: !!portal,
                     gathering: showGathering,
-                    gatheringBlurred: !!(hasGatheringPoint && canVisual && !canIdentify),
+                    gatheringBlurred: gatheringBlurred,
                     npc: !!npcId,
                     enemy: !!enemyId,
                     enemyId: shownEnemyId,
