@@ -371,6 +371,28 @@
         return Object.keys(itemsTable || {}).sort();
     }
 
+    /**
+     * 含品质档的有效基价（贸易/任务/事件）：模板 base_value × (1 + 每档加成 × 档)，见全局 ItemValue。
+     * @param {string} itemId
+     * @param {object|number|null} [instanceOrTier] 实例 { quality_tier, ... }，或仅品质档；缺省用模板 quality_tier
+     * @returns {number}
+     */
+    function getEffectiveBaseValue(itemId, instanceOrTier) {
+        var IV = global.ItemValue;
+        if (IV && typeof IV.getEffectiveBaseValue === 'function') {
+            var opts = {};
+            if (instanceOrTier != null && typeof instanceOrTier === 'object' && !Array.isArray(instanceOrTier)) {
+                opts.instance = instanceOrTier;
+            } else if (instanceOrTier != null) {
+                opts.quality_tier = instanceOrTier;
+            }
+            return IV.getEffectiveBaseValue(itemId, opts);
+        }
+        var tpl = getItemTemplate(itemId);
+        var b = tpl && tpl.base_value != null ? Number(tpl.base_value) : 0;
+        return isFinite(b) ? Math.max(0, Math.round(b)) : 0;
+    }
+
     /** 语言等级（survival_language）；character 缺省时用当前存档 skills */
     function getSurvivalLanguageLevel(character) {
         var lv;
@@ -491,6 +513,138 @@
         var arr = state.inventory_backpack.slice(0, max);
         while (arr.length < max) arr.push(null);
         return arr.slice(0, max);
+    }
+
+    function getVehicleArray() {
+        if (!state.bound_vehicle_id || !state.inventory_vehicle) return [];
+        return state.inventory_vehicle.slice();
+    }
+
+    /** 统计 raw 容器数组前 maxSlots 格内某模板 id 的总数量（与口袋/背心/背包有效格一致） */
+    function sumItemTemplateInRawArray(arr, itemId, maxSlots) {
+        var want = String(itemId || '').trim();
+        if (!want || !Array.isArray(arr)) return 0;
+        var lim = arr.length;
+        if (maxSlots != null && isFinite(maxSlots)) {
+            var ms = Math.max(0, Math.floor(Number(maxSlots)));
+            lim = Math.min(lim, ms);
+        }
+        var sum = 0;
+        for (var i = 0; i < lim; i++) {
+            var cell = arr[i];
+            if (!cell || !cell.item_id) continue;
+            if (String(cell.item_id) !== want) continue;
+            var c = (cell.count != null && cell.count > 0) ? cell.count : 1;
+            sum += c;
+        }
+        return sum;
+    }
+
+    /**
+     * 口袋 + 背心 + 背包 +（已绑定载具时）载具栏内，按物品模板 id 合计数量（不含身上装备槽）。
+     */
+    function countCarriedItemsByTemplateId(itemId) {
+        var want = String(itemId || '').trim();
+        if (!want) return 0;
+        var total = 0;
+        total += sumItemTemplateInRawArray(state.inventory_pocket, want, getPocketSlots());
+        total += sumItemTemplateInRawArray(state.inventory_vest, want, getVestSlots());
+        total += sumItemTemplateInRawArray(state.inventory_backpack, want, getBackpackSlots());
+        if (state.bound_vehicle_id && state.inventory_vehicle && state.inventory_vehicle.length) {
+            total += sumItemTemplateInRawArray(state.inventory_vehicle, want, null);
+        }
+        return total;
+    }
+
+    function recalcStatsAfterInventoryChange() {
+        if (typeof global === 'undefined' || !global.CharacterAttributes || typeof global.CharacterAttributes.recalcCharacterStats !== 'function') return;
+        global.CharacterAttributes.recalcCharacterStats({
+            getEquipmentState: function () { return state.equipment; },
+            getSkillsState: function () { return state.skills; },
+            getItemTemplate: getItemTemplate,
+            getEnchantEntry: getEnchantEntry,
+            getStrengthLevel: function () { return getSkillLevel('survival_strength'); }
+        });
+    }
+
+    /**
+     * 按模板 id 从携带容器扣减数量。顺序：口袋 → 背心 → 背包 → 载具。
+     * @param {string} itemId
+     * @param {number} count
+     * @param {{ strict?: boolean }} options strict 默认 true：数量不足时整笔不扣；false 时扣到尽为止
+     */
+    function removeCarriedItemsByTemplateId(itemId, count, options) {
+        options = options || {};
+        var strict = options.strict !== false;
+        var requested = Math.max(0, Math.floor(Number(count) || 0));
+        if (!requested) return { ok: true, removed: 0, requested: 0, shortfall: 0 };
+        var want = String(itemId || '').trim();
+        if (!want) return { ok: false, removed: 0, requested: requested, shortfall: requested };
+        var available = countCarriedItemsByTemplateId(want);
+        if (strict && available < requested) {
+            return { ok: false, removed: 0, requested: requested, shortfall: requested - available };
+        }
+        var toRemove = strict ? requested : Math.min(requested, available);
+        var removed = 0;
+        var order = ['pocket', 'vest', 'backpack'];
+        var oi, idx;
+        for (oi = 0; oi < order.length && removed < toRemove; oi++) {
+            var ct = order[oi];
+            var maxI = (ct === 'pocket') ? getPocketSlots() : (ct === 'vest') ? getVestSlots() : getBackpackSlots();
+            if (maxI <= 0) continue;
+            for (idx = 0; idx < maxI && removed < toRemove; idx++) {
+                while (removed < toRemove) {
+                    var arr = state['inventory_' + ct];
+                    if (!arr || idx >= arr.length) break;
+                    var cell = arr[idx];
+                    if (!cell || String(cell.item_id) !== want) break;
+                    var took = takeItemFromContainer(ct, idx);
+                    if (!took.success) break;
+                    removed++;
+                }
+            }
+        }
+        if (removed < toRemove && state.bound_vehicle_id && state.inventory_vehicle) {
+            for (idx = 0; idx < state.inventory_vehicle.length && removed < toRemove; idx++) {
+                while (removed < toRemove) {
+                    var varr = state.inventory_vehicle;
+                    if (!varr || idx >= varr.length) break;
+                    var vc = varr[idx];
+                    if (!vc || String(vc.item_id) !== want) break;
+                    var tookV = takeItemFromContainer('vehicle', idx);
+                    if (!tookV.success) break;
+                    removed++;
+                }
+            }
+        }
+        if (removed > 0) recalcStatsAfterInventoryChange();
+        var shortfall = Math.max(0, requested - removed);
+        return {
+            ok: strict ? (removed === requested) : true,
+            removed: removed,
+            requested: requested,
+            shortfall: shortfall
+        };
+    }
+
+    /**
+     * 通过默认放置顺序逐件发放（与 putItemIntoDefaultContainer 一致）。
+     */
+    function giveCarriedItemsByTemplateId(itemId, count, qualityTier) {
+        var id = String(itemId || '').trim();
+        var c = Math.max(1, Math.floor(Number(count) || 1));
+        if (!id || !getItemTemplate(id)) return { ok: false, placed: 0, requested: c, shortfall: c };
+        var qt = qualityTier != null ? Math.max(0, Math.floor(Number(qualityTier))) : 0;
+        var placed = 0;
+        for (var i = 0; i < c; i++) {
+            var pr = putItemIntoDefaultContainer({ item_id: id, count: 1, quality_tier: qt });
+            if (!pr || !pr.placed) {
+                return { ok: false, placed: placed, requested: c, shortfall: c - placed };
+            }
+            placed++;
+        }
+        if (placed > 0) recalcStatsAfterInventoryChange();
+        return { ok: placed === c, placed: placed, requested: c, shortfall: Math.max(0, c - placed) };
     }
 
     /**
@@ -1774,6 +1928,7 @@
         setState: setState,
         getState: getState,
         getItemTemplate: getItemTemplate,
+        getEffectiveBaseValue: getEffectiveBaseValue,
         getAllItemIds: getAllItemIds,
         getItemDisplayTier: getItemDisplayTier,
         getDisplayName: getDisplayName,
@@ -1786,6 +1941,10 @@
         getPocketArray: getPocketArray,
         getVestArray: getVestArray,
         getBackpackArray: getBackpackArray,
+        getVehicleArray: getVehicleArray,
+        countCarriedItemsByTemplateId: countCarriedItemsByTemplateId,
+        removeCarriedItemsByTemplateId: removeCarriedItemsByTemplateId,
+        giveCarriedItemsByTemplateId: giveCarriedItemsByTemplateId,
         getCurrentCarryWeight: getCurrentCarryWeight,
         putItemIntoDefaultContainer: putItemIntoDefaultContainer,
         canAcceptItem: canAcceptItem,

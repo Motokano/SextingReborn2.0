@@ -233,6 +233,18 @@
             font-size: 12px;
         }
 
+        .cond-multi-item-row{
+            padding: 10px;
+            margin-bottom: 10px;
+            background: rgba(148,163,184,0.06);
+            border: 1px solid var(--border);
+            border-radius: var(--radiusSm);
+        }
+        .cond-multi-item-row .cond-multi-top{ display:flex; gap:8px; align-items:center; margin-bottom:8px; flex-wrap:wrap; }
+        .cond-multi-item-row .cond-multi-top button{ padding: 6px 10px; font-size: 12px; }
+        .cond-multi-item-row .cond-multi-item-id{ flex:1; min-width: 160px; }
+        .cond-multi-item-row .cond-multi-item-count{ width: 88px; }
+
         .empty-msg{ color: rgba(148,163,184,0.65); font-size: 13px; padding: 18px; text-align:center; border: 1px dashed rgba(148,163,184,0.18); border-radius: var(--radius); background: rgba(148,163,184,0.04); }
         .two-cols{ display:grid; grid-template-columns: 1fr 1fr; gap: 12px; }
         @media (max-width: 900px){ .two-cols{ grid-template-columns: 1fr; } .col-npc{ width: 100%; } }
@@ -361,6 +373,36 @@
         .img-asset-card .info .btn-row{ display:flex; gap:6px; flex-wrap:wrap; }
         .img-asset-card .info .btn-row button{ padding:5px 9px; font-size:11px; }
         .img-empty{ padding:18px; text-align:center; color:var(--muted2); font-size:12px; }
+
+        .npc-item-search-row{ display:flex; gap:8px; align-items:center; flex-wrap:wrap; margin-top:8px; }
+        .npc-item-search-row input[type="text"].npc-item-search{ flex:1; min-width:160px; }
+        .npc-item-suggest{
+            margin-top:6px; max-height:200px; overflow-y:auto;
+            border:1px solid var(--border); border-radius:10px;
+            background: rgba(3,7,18,0.55);
+            display:none;
+        }
+        .npc-item-suggest.open{ display:block; }
+        .npc-item-suggest button{
+            display:block; width:100%; text-align:left;
+            border:none; border-bottom:1px solid rgba(148,163,184,0.10);
+            border-radius:0; background:transparent; color:var(--text);
+            padding:8px 10px; font-size:12px; font-weight:500;
+            cursor:pointer;
+        }
+        .npc-item-suggest button:last-child{ border-bottom:none; }
+        .npc-item-suggest button:hover{ background: rgba(96,165,250,0.12); }
+        .npc-item-suggest .sid{ font-weight:800; color: rgba(191,219,254,0.95); margin-right:8px; }
+        .npc-item-suggest .slab{ color: var(--muted); font-size:11px; }
+        .effect-inv-wrap{
+            margin-top:8px; padding:10px;
+            background: rgba(3,7,18,0.35);
+            border:1px solid rgba(148,163,184,0.14);
+            border-radius:10px;
+        }
+        .effect-inv-wrap .row-mini{ display:flex; gap:10px; flex-wrap:wrap; align-items:center; margin-top:8px; }
+        .effect-inv-wrap .row-mini label{ font-size:11px; color:var(--muted); margin:0; display:flex; align-items:center; gap:6px; }
+        .effect-inv-wrap input[type="number"]{ width:88px; }
     </style>
 </head>
 <body>
@@ -390,6 +432,9 @@
         <a href="#" id="link-paste-triggers" style="color:#8af; font-size:12px;">粘贴事件</a>
         <button type="button" id="btn-import-skills">载入技能表</button>
         <span id="skill-count" style="color:#666; font-size:11px;">技能：未载入</span>
+        <input type="file" id="file-import-items" accept=".json,application/json" style="display:none;" />
+        <button type="button" id="btn-import-items" title="用于条件 hasItem、效果 removeItem/giveItem 的物品搜索；file:// 打开时请用本地选择 data/items.json">载入物品表</button>
+        <span id="items-catalog-count" style="color:#666; font-size:11px;">物品：未载入</span>
         <span class="break"></span>
         <button type="button" id="btn-export-registry">更新注册表</button>
         <button type="button" id="btn-export-npc" class="primary">保存 NPC</button>
@@ -479,7 +524,8 @@
                                 <option value="postEffectObtainedGte">后遗症数量 ≥ (postEffectObtainedGte)</option>
                                 <option value="lastCombatDefenderHitArcEquals">最近被击方位等于 (lastCombatDefenderHitArcEquals)</option>
                                 <option value="lastCombatAttackerStrikeArcEquals">最近攻击方位等于 (lastCombatAttackerStrikeArcEquals)</option>
-                                <option value="hasItem">背包持有物品 (hasItem)</option>
+                                <option value="hasItem">背包持有物品 (hasItem，单种)</option>
+                                <option value="hasItemsAll">同时持有多种物品（导出为 and + hasItem）</option>
                                 <option value="custom">自定义（见下方 JSON）</option>
                             </select>
                         </div>
@@ -516,17 +562,31 @@
                         </div>
                         <div class="row" id="cond-form-item" style="display:none;">
                             <label>物品 ID</label>
-                            <input type="text" id="cond-item-id" placeholder="item_xxx" />
+                            <input type="text" id="cond-item-id" placeholder="armor_bamboo_breastplate" autocomplete="off" />
+                            <div class="npc-item-search-row">
+                                <input type="text" id="cond-item-search" class="npc-item-search" placeholder="搜索 id / sn / placeholder_name…" autocomplete="off" />
+                                <span class="hint" style="margin:0;">从列表点选填入上方 ID</span>
+                            </div>
+                            <div id="cond-item-suggest" class="npc-item-suggest" role="listbox" aria-label="物品候选"></div>
                             <label style="margin-top:8px;">数量（可选，默认 1）</label>
                             <input type="number" id="cond-item-count" min="1" value="1" />
+                            <p class="hint">统计口袋、背心、背包与载具栏（与运行时 hasItem 一致）。本条件<strong>只检测不扣除</strong>；扣物请用 effects 的 <code>removeItem</code>。</p>
+                        </div>
+                        <div class="row" id="cond-form-items-multi" style="display:none;">
+                            <label>多条「持有」要求（全部满足才触发，运行时等价 <code>and</code> + 多条 <code>hasItem</code>）</label>
+                            <div id="cond-items-multi-list"></div>
+                            <div class="btn-row">
+                                <button type="button" id="btn-cond-items-multi-add">+ 添加一条物品</button>
+                            </div>
+                            <p class="hint">仅<strong>检测</strong>是否携带，<strong>不会扣物</strong>。若对话结束后要没收，请在下方 effects 里添加 <code>removeItem</code>（可用快捷按钮从本条件生成）。</p>
                         </div>
                         <div class="row">
                             <label><input type="checkbox" id="cond-advanced-toggle" /> 高级：显示 JSON（可选）</label>
-                            <p class="hint">不会写 JSON 就不用勾。自定义条件时会强制显示。</p>
+                            <p class="hint">不会写 JSON 就不用勾。自定义条件时会强制显示。混合条件（如 <code>and</code> 里既有 <code>flagEquals</code> 又有 <code>hasItem</code>，例：灶台 <code>station.cooking.repair_unlock</code>）请用本区编辑；下方「从物品条件生成 removeItem」会从整棵树抽取所有 <code>hasItem</code>。</p>
                         </div>
                         <div class="row" id="entry-cond-params" style="display:none;">
                             <label>条件参数（JSON）</label>
-                            <textarea id="entry-cond-json" class="code" placeholder='{\"type\":\"flagEquals\",\"flag\":\"lsy_has_talked\",\"value\":false}'></textarea>
+                            <textarea id="entry-cond-json" class="code" placeholder='{\"type\":\"and\",\"conds\":[{\"type\":\"flagEquals\",\"flag\":\"cooking_base_station_unlocked\",\"value\":false},{\"type\":\"hasItem\",\"itemId\":\"ore_clay_raw\",\"count\":4}]}'></textarea>
                         </div>
                     </div>
                     <div class="section">
@@ -563,11 +623,15 @@
                     </div>
                     <div class="section">
                         <div class="section-title">效果（effects）</div>
+                        <div id="entry-effects-condition-items-hint" class="panel-note" style="display:none; margin-bottom:10px;"></div>
                         <div id="entry-effects-list"></div>
                         <div class="btn-row">
                             <button type="button" id="btn-add-effect">+ 添加效果</button>
+                            <button type="button" id="btn-effects-add-giveItem" title="追加一条 giveItem，对话结束后发放到背包">+ 添加 giveItem（发物品）</button>
+                            <button type="button" id="btn-effects-from-cond-removeItem" title="从当前条件树抽取所有 hasItem（含 and 中与 flag 混合），追加 removeItem">从物品条件生成 removeItem（扣物）</button>
                         </div>
-                        <p class="hint">常见：setFlag, modifySkillLevel, unlockTask；每条 effect 含 type 与 params（见导出 JSON）</p>
+                        <p class="hint">物品语义：<strong>条件</strong>里的 hasItem / 多物品检测只判断背包是否够，<strong>不扣</strong>。<strong>效果</strong>里 <code>removeItem</code> 在对话播完后的 <code>applyEffects</code> 中扣除；<code>giveItem</code> 发放物品（可选 <code>quality_tier</code>）。常见组合：条件 <code>and</code>（旗标 + hasItem）→ 对话 → effects 依次 <code>removeItem</code> → <code>setFlag</code>（与 <code>js/npc-system.js</code> 一致）。<strong>注意</strong>：当前 runtime 对 effects 为顺序执行，<code>removeItem</code> 短少时不会自动中止后续 <code>setFlag</code>；若需原子维修需另行改代码。</p>
+                        <p class="hint" style="margin-top:6px;">effects 类型以运行时为准：<code>setFlag</code>、<code>modifySkillLevel</code>、<code>modifySkillMaxLevelBonus</code>、<code>removeItem</code>、<code>giveItem</code>、<code>setCookingStationWater</code>（<code>params.unlimited</code> 布尔，仅主灶台料理水）；其它字符串会被静默跳过。</p>
                     </div>
                     <div class="section">
                         <div class="section-title">一次性与作用域</div>
@@ -798,6 +862,8 @@
                 triggers: { npcId: '', entries: [] },
                 selectedEntryIndex: -1,
                 skills: [],
+                /** @type {{ id:string, sn:string, ph:string, hay:string }[]} */
+                itemsCatalog: [],
                 imageRootDirHandle: null, // File System Access API: /image 目录句柄（可选）
                 ui: {
                     entriesSearch: '',
@@ -1242,6 +1308,531 @@
                 el.textContent = (state.skills && state.skills.length) ? ('技能：已载入 ' + state.skills.length + ' 个') : '技能：未载入';
             }
 
+            function updateItemsCatalogPill() {
+                var el = document.getElementById('items-catalog-count');
+                if (!el) return;
+                var n = (state.itemsCatalog && state.itemsCatalog.length) ? state.itemsCatalog.length : 0;
+                el.textContent = n ? ('物品：已载入 ' + n + ' 条') : '物品：未载入';
+            }
+
+            function applyItemsJsonToCatalog(j) {
+                state.itemsCatalog = [];
+                if (!j || typeof j !== 'object') return;
+                for (var k in j) {
+                    if (!Object.prototype.hasOwnProperty.call(j, k)) continue;
+                    var it = j[k];
+                    if (!it || typeof it !== 'object') continue;
+                    var id = String(it.item_id != null ? it.item_id : k).trim();
+                    if (!id) continue;
+                    var sn = String(it.sn != null ? it.sn : (it.name != null ? it.name : (it.name_0 || ''))).trim();
+                    var ph = String(it.placeholder_name != null ? it.placeholder_name : '').trim();
+                    var hay = (id + ' ' + sn + ' ' + ph).toLowerCase();
+                    state.itemsCatalog.push({ id: id, sn: sn, ph: ph, hay: hay });
+                }
+                state.itemsCatalog.sort(function (a, b) { return a.id.localeCompare(b.id); });
+                updateItemsCatalogPill();
+            }
+
+            function npcFilterItemsCatalog(query, limit) {
+                limit = Math.max(1, Math.floor(Number(limit) || 80));
+                var q = String(query || '').trim().toLowerCase();
+                var cat = state.itemsCatalog || [];
+                if (!cat.length) return [];
+                if (!q) return cat.slice(0, limit);
+                var out = [];
+                for (var i = 0; i < cat.length && out.length < limit; i++) {
+                    if (cat[i].hay.indexOf(q) >= 0) out.push(cat[i]);
+                }
+                return out;
+            }
+
+            function closeAllNpcItemSuggests(exceptEl) {
+                var nodes = document.querySelectorAll('.npc-item-suggest.open');
+                for (var i = 0; i < nodes.length; i++) {
+                    if (exceptEl && nodes[i] === exceptEl) continue;
+                    nodes[i].classList.remove('open');
+                    nodes[i].innerHTML = '';
+                }
+            }
+
+            function renderNpcItemSuggestInto(suggestEl, query, onPickId) {
+                if (!suggestEl) return;
+                var rows = npcFilterItemsCatalog(query, 80);
+                suggestEl.innerHTML = '';
+                if (!state.itemsCatalog || !state.itemsCatalog.length) {
+                    var b0 = document.createElement('button');
+                    b0.type = 'button';
+                    b0.textContent = '（尚未载入物品表：请点工具栏「载入物品表」或把本页放在项目根下自动 fetch）';
+                    b0.disabled = true;
+                    suggestEl.appendChild(b0);
+                    suggestEl.classList.add('open');
+                    return;
+                }
+                if (!rows.length) {
+                    var b1 = document.createElement('button');
+                    b1.type = 'button';
+                    b1.textContent = '（无匹配项）';
+                    b1.disabled = true;
+                    suggestEl.appendChild(b1);
+                    suggestEl.classList.add('open');
+                    return;
+                }
+                for (var r = 0; r < rows.length; r++) {
+                    (function (rec) {
+                        var btn = document.createElement('button');
+                        btn.type = 'button';
+                        var lab = document.createElement('span');
+                        lab.className = 'sid';
+                        lab.textContent = rec.id;
+                        var slab = document.createElement('span');
+                        slab.className = 'slab';
+                        slab.textContent = (rec.sn || rec.ph) ? (' — ' + (rec.sn || rec.ph)) : '';
+                        btn.appendChild(lab);
+                        btn.appendChild(slab);
+                        btn.addEventListener('mousedown', function (ev) {
+                            ev.preventDefault();
+                            if (typeof onPickId === 'function') onPickId(rec.id);
+                            suggestEl.innerHTML = '';
+                            suggestEl.classList.remove('open');
+                        });
+                        suggestEl.appendChild(btn);
+                    })(rows[r]);
+                }
+                suggestEl.classList.add('open');
+            }
+
+            function wireNpcItemSearch(searchEl, suggestEl, itemIdInput) {
+                if (!searchEl || !suggestEl || !itemIdInput) return;
+                var tmr = null;
+                function schedule() {
+                    if (tmr) window.clearTimeout(tmr);
+                    tmr = window.setTimeout(function () {
+                        tmr = null;
+                        closeAllNpcItemSuggests(suggestEl);
+                        renderNpcItemSuggestInto(suggestEl, searchEl.value, function (id) {
+                            itemIdInput.value = id;
+                            itemIdInput.dispatchEvent(new Event('input'));
+                            searchEl.value = '';
+                        });
+                    }, 120);
+                }
+                searchEl.addEventListener('focus', function () { schedule(); });
+                searchEl.addEventListener('input', function () { schedule(); });
+                searchEl.addEventListener('keydown', function (ev) {
+                    if (ev.key === 'Escape') {
+                        suggestEl.innerHTML = '';
+                        suggestEl.classList.remove('open');
+                    }
+                });
+            }
+
+            document.addEventListener('click', function (ev) {
+                var t = ev.target;
+                if (!t || !t.closest) return;
+                if (t.closest('.npc-item-suggest') || t.closest('.npc-item-search')) return;
+                closeAllNpcItemSuggests(null);
+            });
+
+            /** JSON 中 { type:'and', conds:[{type:'hasItem'}...] } 且子项全是 hasItem */
+            function onlyHasItemConds(cond) {
+                if (!cond || cond.type !== 'and' || !Array.isArray(cond.conds) || cond.conds.length === 0) return false;
+                for (var i = 0; i < cond.conds.length; i++) {
+                    if (!cond.conds[i] || cond.conds[i].type !== 'hasItem') return false;
+                }
+                return true;
+            }
+
+            function extractHasItemsFromAnd(cond) {
+                if (!onlyHasItemConds(cond)) return [];
+                var out = [];
+                for (var i = 0; i < cond.conds.length; i++) {
+                    var c = cond.conds[i];
+                    out.push({
+                        itemId: c.itemId != null ? String(c.itemId).trim() : '',
+                        count: c.count != null ? Math.max(1, parseInt(c.count, 10) || 1) : 1
+                    });
+                }
+                return out;
+            }
+
+            /**
+             * 从 condition 子树收集所有 hasItem（与 npc-system 检测口径一致）。
+             * 不进入 type==='not' 的子树，避免误为否定条件生成扣物。
+             */
+            function collectHasItemsFromConditionTree(cond) {
+                var out = [];
+                function walk(c) {
+                    if (!c || typeof c !== 'object' || !c.type) return;
+                    if (c.type === 'not') return;
+                    if (c.type === 'hasItem') {
+                        out.push({
+                            itemId: c.itemId != null ? String(c.itemId).trim() : '',
+                            count: c.count != null ? Math.max(1, parseInt(c.count, 10) || 1) : 1
+                        });
+                        return;
+                    }
+                    if (Array.isArray(c.conds)) {
+                        for (var i = 0; i < c.conds.length; i++) walk(c.conds[i]);
+                    }
+                }
+                walk(cond);
+                return out;
+            }
+
+            function resolveEditorCondType(cond) {
+                cond = cond || {};
+                var t = cond.type || 'flagEquals';
+                if (t === 'and' && onlyHasItemConds(cond)) return 'hasItemsAll';
+                var known = {
+                    flagEquals: 1, skillLevelEquals: 1, skillLevelGte: 1, survivalSkillLevelEquals: 1, survivalSkillLevelGte: 1,
+                    postEffectObtainedGte: 1, lastCombatDefenderHitArcEquals: 1, lastCombatAttackerStrikeArcEquals: 1,
+                    hasItem: 1, hasItemsAll: 1, custom: 1
+                };
+                if (known[t]) return t;
+                return 'custom';
+            }
+
+            function buildConditionFromMultiRows(rows) {
+                rows = rows || [];
+                var filled = [];
+                for (var i = 0; i < rows.length; i++) {
+                    var id = rows[i].itemId != null ? String(rows[i].itemId).trim() : '';
+                    if (!id) continue;
+                    var cnt = rows[i].count != null ? Math.max(1, parseInt(rows[i].count, 10) || 1) : 1;
+                    filled.push({ type: 'hasItem', itemId: id, count: cnt });
+                }
+                if (filled.length === 0) return { type: 'hasItem', itemId: '', count: 1 };
+                if (filled.length === 1) return filled[0];
+                return { type: 'and', conds: filled };
+            }
+
+            function syncCondJsonPreviewForMultiIfNeeded() {
+                var t = document.getElementById('entry-cond-type').value;
+                if (t !== 'hasItemsAll') return;
+                syncCondJsonBox(buildConditionFromMultiRows(getCondMultiRowsFromDom()));
+            }
+
+            function getCondMultiRowsFromDom() {
+                var list = document.getElementById('cond-items-multi-list');
+                if (!list) return [];
+                var nodes = list.querySelectorAll('.cond-multi-item-row');
+                var out = [];
+                for (var i = 0; i < nodes.length; i++) {
+                    var idEl = nodes[i].querySelector('.cond-multi-item-id');
+                    var cEl = nodes[i].querySelector('.cond-multi-item-count');
+                    out.push({
+                        itemId: idEl ? String(idEl.value || '').trim() : '',
+                        count: cEl ? Math.max(1, parseInt(cEl.value, 10) || 1) : 1
+                    });
+                }
+                return out;
+            }
+
+            function createCondMultiItemRow(data) {
+                data = data || { itemId: '', count: 1 };
+                var wrap = document.createElement('div');
+                wrap.className = 'cond-multi-item-row';
+
+                var top = document.createElement('div');
+                top.className = 'cond-multi-top';
+
+                var idInp = document.createElement('input');
+                idInp.type = 'text';
+                idInp.className = 'cond-multi-item-id';
+                idInp.placeholder = 'item_id';
+                idInp.autocomplete = 'off';
+                idInp.value = data.itemId || '';
+
+                var cntInp = document.createElement('input');
+                cntInp.type = 'number';
+                cntInp.className = 'cond-multi-item-count';
+                cntInp.min = '1';
+                cntInp.value = String(data.count != null ? data.count : 1);
+
+                var btnRm = document.createElement('button');
+                btnRm.type = 'button';
+                btnRm.textContent = '删除此行';
+                btnRm.addEventListener('click', function () {
+                    var list = document.getElementById('cond-items-multi-list');
+                    if (!list || !wrap.parentNode) return;
+                    if (list.querySelectorAll('.cond-multi-item-row').length <= 1) {
+                        idInp.value = '';
+                        cntInp.value = '1';
+                        syncCondJsonPreviewForMultiIfNeeded();
+                        setDirty('entry', true);
+                        return;
+                    }
+                    wrap.parentNode.removeChild(wrap);
+                    syncCondJsonPreviewForMultiIfNeeded();
+                    setDirty('entry', true);
+                });
+
+                top.appendChild(idInp);
+                top.appendChild(cntInp);
+                top.appendChild(btnRm);
+                wrap.appendChild(top);
+
+                var rowQ = document.createElement('div');
+                rowQ.className = 'npc-item-search-row';
+                var qInp = document.createElement('input');
+                qInp.type = 'text';
+                qInp.className = 'npc-item-search';
+                qInp.placeholder = '搜索 id / sn / placeholder_name…';
+                qInp.autocomplete = 'off';
+                rowQ.appendChild(qInp);
+                wrap.appendChild(rowQ);
+
+                var sug = document.createElement('div');
+                sug.className = 'npc-item-suggest';
+                sug.setAttribute('role', 'listbox');
+                wrap.appendChild(sug);
+
+                wireNpcItemSearch(qInp, sug, idInp);
+
+                function bump() {
+                    syncCondJsonPreviewForMultiIfNeeded();
+                    setDirty('entry', true);
+                }
+                idInp.addEventListener('input', bump);
+                cntInp.addEventListener('input', bump);
+
+                return wrap;
+            }
+
+            function renderCondMultiRows(rows) {
+                var list = document.getElementById('cond-items-multi-list');
+                if (!list) return;
+                list.innerHTML = '';
+                if (!rows || !rows.length) rows = [{ itemId: '', count: 1 }, { itemId: '', count: 1 }];
+                for (var i = 0; i < rows.length; i++) {
+                    list.appendChild(createCondMultiItemRow(rows[i]));
+                }
+            }
+
+            function npcEditorNormEffectTypeStr(s) {
+                return String(s != null ? s : '').trim().toLowerCase();
+            }
+
+            /** 在效果列表上方提示：当前「条件」里有哪些 hasItem（便于与 removeItem 对齐）。 */
+            function syncConditionItemsHintAboveEffects() {
+                var el = document.getElementById('entry-effects-condition-items-hint');
+                if (!el) return;
+                var panel = document.getElementById('entry-edit-panel');
+                if (!panel || panel.style.display === 'none') {
+                    el.style.display = 'none';
+                    el.textContent = '';
+                    return;
+                }
+                var ctype = (document.getElementById('entry-cond-type') && document.getElementById('entry-cond-type').value) || '';
+                var items = [];
+                if (ctype === 'hasItem') {
+                    var idEl = document.getElementById('cond-item-id');
+                    var cnEl = document.getElementById('cond-item-count');
+                    var id = idEl ? String(idEl.value || '').trim() : '';
+                    var cn = cnEl ? Math.max(1, parseInt(cnEl.value, 10) || 1) : 1;
+                    if (id) items.push({ itemId: id, count: cn });
+                } else if (ctype === 'hasItemsAll') {
+                    var rows = getCondMultiRowsFromDom();
+                    for (var i = 0; i < rows.length; i++) {
+                        if (rows[i].itemId) items.push(rows[i]);
+                    }
+                } else if (ctype === 'custom') {
+                    try {
+                        var raw = document.getElementById('entry-cond-json') && document.getElementById('entry-cond-json').value.trim();
+                        if (raw) items = collectHasItemsFromConditionTree(JSON.parse(raw));
+                    } catch (eH) {
+                        items = [];
+                    }
+                }
+                if (!items.length) {
+                    el.style.display = 'none';
+                    el.textContent = '';
+                    return;
+                }
+                var parts = [];
+                for (var j = 0; j < items.length; j++) {
+                    if (items[j].itemId) parts.push(String(items[j].itemId) + ' ×' + String(items[j].count != null ? items[j].count : 1));
+                }
+                if (!parts.length) {
+                    el.style.display = 'none';
+                    el.textContent = '';
+                    return;
+                }
+                el.style.display = 'block';
+                el.textContent = '触发条件中的「持有」检测（非效果）：' + parts.join('；') + '。若要对话结束时扣物，请在本区添加 removeItem，数量与条件对齐。';
+            }
+
+            function updateEffectInvVisibility(div) {
+                var wrap = div.querySelector('.effect-inv-wrap');
+                if (!wrap) return;
+                var typeInp = div.querySelector('.effect-type');
+                var tl = npcEditorNormEffectTypeStr(typeInp && typeInp.value);
+                var show = (tl === 'removeitem' || tl === 'giveitem' || tl === 'hasitem');
+                wrap.style.display = show ? 'block' : 'none';
+                var rowRm = wrap.querySelector('.effect-inv-row-remove');
+                var rowGive = wrap.querySelector('.effect-inv-row-give');
+                var stWrap = wrap.querySelector('.effect-inv-strict-wrap');
+                var badNote = wrap.querySelector('.effect-inv-runtime-note');
+                if (rowRm) rowRm.style.display = (tl === 'removeitem' || tl === 'hasitem') ? 'flex' : 'none';
+                if (rowGive) rowGive.style.display = (tl === 'giveitem') ? 'flex' : 'none';
+                if (stWrap) stWrap.style.display = (tl === 'removeitem') ? '' : 'none';
+                if (badNote) badNote.style.display = (tl === 'hasitem') ? 'block' : 'none';
+            }
+
+            function parseEffectParamsFromTa(ta) {
+                if (!ta || !String(ta.value || '').trim()) return {};
+                try { return JSON.parse(ta.value); } catch (e) { return {}; }
+            }
+
+            function populateEffectInvFromParams(div) {
+                var wrap = div.querySelector('.effect-inv-wrap');
+                var ta = div.querySelector('.effect-params');
+                if (!wrap || !ta) return;
+                var p = parseEffectParamsFromTa(ta);
+                var idInp = wrap.querySelector('.effect-inv-item-id');
+                var cntInp = wrap.querySelector('.effect-inv-count');
+                var stInp = wrap.querySelector('.effect-inv-strict');
+                var qtInp = wrap.querySelector('.effect-inv-quality');
+                if (idInp) idInp.value = (p.itemId != null ? String(p.itemId) : '');
+                if (cntInp) cntInp.value = String((p.count != null && p.count > 0) ? p.count : 1);
+                if (stInp) stInp.checked = (p.strict !== false);
+                if (qtInp) qtInp.value = String(p.quality_tier != null ? p.quality_tier : 0);
+            }
+
+            function flushOneEffectInvToParams(div) {
+                var wrap = div.querySelector('.effect-inv-wrap');
+                var typeInp = div.querySelector('.effect-type');
+                var ta = div.querySelector('.effect-params');
+                if (!wrap || !typeInp || !ta) return;
+                var tl = npcEditorNormEffectTypeStr(typeInp.value);
+                if (tl !== 'removeitem' && tl !== 'giveitem' && tl !== 'hasitem') return;
+                var idInp = wrap.querySelector('.effect-inv-item-id');
+                var cntInp = wrap.querySelector('.effect-inv-count');
+                var stInp = wrap.querySelector('.effect-inv-strict');
+                var qtInp = wrap.querySelector('.effect-inv-quality');
+                var params = parseEffectParamsFromTa(ta);
+                if (idInp) params.itemId = String(idInp.value || '').trim();
+                if (cntInp) params.count = Math.max(1, parseInt(cntInp.value, 10) || 1);
+                if (tl === 'removeitem') {
+                    params.strict = !!(stInp && stInp.checked);
+                    delete params.quality_tier;
+                } else if (tl === 'giveitem') {
+                    params.quality_tier = qtInp ? Math.max(0, parseInt(qtInp.value, 10) || 0) : 0;
+                    delete params.strict;
+                } else {
+                    delete params.strict;
+                    delete params.quality_tier;
+                }
+                ta.value = JSON.stringify(params, null, 2);
+            }
+
+            function flushAllEffectInvToParams() {
+                var list = document.getElementById('entry-effects-list');
+                if (!list) return;
+                var items = list.querySelectorAll('.effect-item');
+                for (var i = 0; i < items.length; i++) flushOneEffectInvToParams(items[i]);
+            }
+
+            function attachEffectInventoryControls(div, typeInp, paramsTa) {
+                var wrap = document.createElement('div');
+                wrap.className = 'effect-inv-wrap';
+                wrap.style.display = 'none';
+
+                var rowSearch = document.createElement('div');
+                rowSearch.className = 'npc-item-search-row';
+                var labS = document.createElement('label');
+                labS.style.margin = '0';
+                labS.style.width = '100%';
+                labS.textContent = '物品';
+                var idInp = document.createElement('input');
+                idInp.type = 'text';
+                idInp.className = 'effect-inv-item-id';
+                idInp.placeholder = 'item_id';
+                idInp.autocomplete = 'off';
+                var qInp = document.createElement('input');
+                qInp.type = 'text';
+                qInp.className = 'npc-item-search';
+                qInp.placeholder = '搜索 id / 名称…';
+                qInp.autocomplete = 'off';
+                var sug = document.createElement('div');
+                sug.className = 'npc-item-suggest';
+                sug.setAttribute('role', 'listbox');
+                rowSearch.appendChild(labS);
+                rowSearch.appendChild(idInp);
+                var rowQ = document.createElement('div');
+                rowQ.className = 'npc-item-search-row';
+                rowQ.appendChild(qInp);
+                wrap.appendChild(rowSearch);
+                wrap.appendChild(rowQ);
+                wrap.appendChild(sug);
+                wireNpcItemSearch(qInp, sug, idInp);
+
+                var rowRm = document.createElement('div');
+                rowRm.className = 'row-mini effect-inv-row-remove';
+                var cntLab = document.createElement('label');
+                cntLab.textContent = '数量';
+                var cntInp = document.createElement('input');
+                cntInp.type = 'number';
+                cntInp.className = 'effect-inv-count';
+                cntInp.min = '1';
+                cntInp.value = '1';
+                var stLab = document.createElement('label');
+                stLab.className = 'effect-inv-strict-wrap';
+                var stInp = document.createElement('input');
+                stInp.type = 'checkbox';
+                stInp.className = 'effect-inv-strict';
+                stInp.checked = true;
+                stLab.appendChild(stInp);
+                stLab.appendChild(document.createTextNode(' strict：不足整笔不扣'));
+                rowRm.appendChild(cntLab);
+                rowRm.appendChild(cntInp);
+                rowRm.appendChild(stLab);
+
+                var rowGive = document.createElement('div');
+                rowGive.className = 'row-mini effect-inv-row-give';
+                var qtLab = document.createElement('label');
+                qtLab.textContent = '品质档 quality_tier';
+                var qtInp = document.createElement('input');
+                qtInp.type = 'number';
+                qtInp.className = 'effect-inv-quality';
+                qtInp.min = '0';
+                qtInp.value = '0';
+                rowGive.appendChild(qtLab);
+                rowGive.appendChild(qtInp);
+
+                wrap.appendChild(rowRm);
+                wrap.appendChild(rowGive);
+
+                var badNote = document.createElement('div');
+                badNote.className = 'effect-inv-runtime-note';
+                badNote.style.display = 'none';
+                badNote.style.fontSize = '11px';
+                badNote.style.color = 'rgba(253, 224, 71, 0.92)';
+                badNote.style.marginTop = '8px';
+                badNote.style.lineHeight = '1.45';
+                badNote.textContent = '提示：hasItem 只应在「触发条件」里使用；js/npc-system.js 的 applyEffects 不会处理效果类型 hasItem。请改到上方条件，或改用 removeItem（扣物）/ giveItem（发物）。';
+                wrap.appendChild(badNote);
+
+                function bump() {
+                    flushOneEffectInvToParams(div);
+                    setDirty('entry', true);
+                }
+                idInp.addEventListener('input', bump);
+                cntInp.addEventListener('input', bump);
+                stInp.addEventListener('change', bump);
+                qtInp.addEventListener('input', bump);
+                paramsTa.addEventListener('blur', function () { populateEffectInvFromParams(div); });
+
+                typeInp.addEventListener('input', function () {
+                    updateEffectInvVisibility(div);
+                    bump();
+                });
+
+                div.insertBefore(wrap, paramsTa.parentNode);
+                populateEffectInvFromParams(div);
+                updateEffectInvVisibility(div);
+            }
+
             function uniqueSorted(arr) {
                 var map = {};
                 var out = [];
@@ -1369,6 +1960,44 @@
                 reader.readAsText(file, 'UTF-8');
             });
 
+            document.getElementById('btn-import-items').addEventListener('click', function () {
+                document.getElementById('file-import-items').click();
+            });
+            document.getElementById('file-import-items').addEventListener('change', function () {
+                var file = this.files && this.files[0];
+                this.value = '';
+                if (!file) return;
+                var reader = new FileReader();
+                reader.onload = function () {
+                    try {
+                        var j = JSON.parse(String(reader.result || '{}'));
+                        applyItemsJsonToCatalog(j);
+                        toast('success', '物品表', '已载入 ' + String(state.itemsCatalog.length) + ' 条', 2400);
+                    } catch (e2) {
+                        toast('error', '物品表解析失败', e2.message || String(e2));
+                    }
+                };
+                reader.readAsText(file, 'UTF-8');
+            });
+
+            wireNpcItemSearch(
+                document.getElementById('cond-item-search'),
+                document.getElementById('cond-item-suggest'),
+                document.getElementById('cond-item-id')
+            );
+
+            (function tryFetchItemsCatalog() {
+                if (typeof fetch !== 'function') return;
+                fetch('../data/items.json')
+                    .then(function (r) {
+                        return r.ok ? r.json() : Promise.reject(new Error('HTTP ' + String(r.status)));
+                    })
+                    .then(function (j) {
+                        applyItemsJsonToCatalog(j);
+                    })
+                    .catch(function () { /* file:// 或相对路径不可用 */ });
+            })();
+
             function updateSpritePreview(spritePathOrUrl) {
                 var row = document.getElementById('npc-sprite-preview-row');
                 var img = document.getElementById('npc-sprite-preview');
@@ -1429,9 +2058,6 @@
                     } else {
                         if (seen[id]) res.errors.push({ message: '事件 id 重复：' + id });
                         seen[id] = true;
-                    }
-                    if (e.condition && e.condition.type === 'hasItem') {
-                        res.warnings.push({ message: '存在 hasItem 条件：运行时 js/npc-system.js 目前未接入（将始终不触发）。建议先不用或先补运行时接口。' });
                     }
                 }
                 // custom/advanced JSON validity check (current form)
@@ -1526,7 +2152,30 @@
                 if (cond.type === 'postEffectObtainedGte') return '后遗症数量 ≥ ' + (cond.value != null ? cond.value : (cond.count != null ? cond.count : (cond.min != null ? cond.min : 0)));
                 if (cond.type === 'lastCombatDefenderHitArcEquals') return '最近被击方位 = ' + (cond.value || cond.arc || '?');
                 if (cond.type === 'lastCombatAttackerStrikeArcEquals') return '最近攻击方位 = ' + (cond.value || cond.arc || '?');
-                if (cond.type === 'hasItem') return '持有 ' + (cond.itemId || '?');
+                if (cond.type === 'hasItem') return '持有 ' + (cond.itemId || '?') + ' ×' + String(cond.count != null ? cond.count : 1);
+                if (cond.type === 'and' && onlyHasItemConds(cond)) {
+                    var bits = [];
+                    for (var hi = 0; hi < cond.conds.length; hi++) {
+                        var h = cond.conds[hi];
+                        bits.push((h.itemId || '?') + '×' + String(h.count != null ? h.count : 1));
+                    }
+                    return '同时持有 ' + bits.join(' + ');
+                }
+                if (cond.type === 'and' && Array.isArray(cond.conds) && cond.conds.length && !onlyHasItemConds(cond)) {
+                    var mixHi = [];
+                    var mixOther = 0;
+                    for (var mi = 0; mi < cond.conds.length; mi++) {
+                        var mc = cond.conds[mi];
+                        if (mc && mc.type === 'hasItem') mixHi.push((mc.itemId || '?') + '×' + String(mc.count != null ? mc.count : 1));
+                        else mixOther++;
+                    }
+                    if (mixHi.length) return 'and：' + (mixOther ? String(mixOther) + ' 条其它 + ' : '') + '持有 ' + mixHi.join('、');
+                }
+                if (cond.type === 'characterHiddenEpithetEquals') return '隐称 = ' + (cond.epithet || '?');
+                if (cond.type === 'timeBetween') return '时间在 ' + String(cond.start || '?') + '–' + String(cond.end || '?');
+                if (cond.type === 'timePeriodEquals') return '时段 = ' + String(cond.value || '?');
+                if (cond.type === 'not') return 'not(…)';
+                if (cond.type === 'and' || cond.type === 'or') return cond.type + '(' + (Array.isArray(cond.conds) ? cond.conds.length : 0) + ')';
                 return cond.type;
             }
 
@@ -1540,7 +2189,15 @@
                     if (entry && entry.scope) parts.push(String(entry.scope));
                     if (entry && entry.repeatable) parts.push('repeatable');
                     // quick hints
-                    if (entry && entry.effects && entry.effects.length) parts.push('effects');
+                    if (entry && entry.effects && entry.effects.length) {
+                        parts.push('effects');
+                        for (var ei = 0; ei < entry.effects.length; ei++) {
+                            var ef0 = entry.effects[ei];
+                            if (ef0 && ef0.type) parts.push(String(ef0.type).toLowerCase());
+                            if (ef0 && ef0.params && ef0.params.itemId) parts.push(String(ef0.params.itemId));
+                            if (ef0 && ef0.params && ef0.params.flag != null) parts.push(String(ef0.params.flag));
+                        }
+                    }
                     if (entry && entry.dialogue && entry.dialogue.linesRich && entry.dialogue.linesRich.length) parts.push('linesRich ' + entry.dialogue.linesRich.length);
                     return parts.join(' ').toLowerCase();
                 } catch (e) {
@@ -1624,7 +2281,6 @@
                 document.getElementById('entry-id').value = entry.id || '';
                 document.getElementById('entry-type').value = entry.entryType || 'dialogue';
                 document.getElementById('entry-source').value = entry.entrySource || 'chat';
-                document.getElementById('entry-cond-type').value = (entry.condition && entry.condition.type) || 'flagEquals';
                 applyConditionToForm(entry.condition || { type: 'flagEquals', flag: '', value: false });
                 document.getElementById('entry-requires').value = Array.isArray(entry.requires) ? entry.requires.join(', ') : '';
                 document.getElementById('entry-blocks').value = Array.isArray(entry.blocks) ? entry.blocks.join(', ') : '';
@@ -1634,6 +2290,7 @@
                 document.getElementById('entry-scope').value = entry.scope || 'global';
                 document.getElementById('entry-causesNpcDisappear').checked = !!entry.causesNpcDisappear;
                 renderEffectsList(entry.effects || []);
+                syncConditionItemsHintAboveEffects();
             }
 
             function formToEntry(entry) {
@@ -1695,11 +2352,13 @@
                 var fPostEffect = document.getElementById('cond-form-postEffect');
                 var fHitArc = document.getElementById('cond-form-hitArc');
                 var fItem = document.getElementById('cond-form-item');
+                var fMulti = document.getElementById('cond-form-items-multi');
                 if (fFlag) fFlag.style.display = (type === 'flagEquals') ? 'block' : 'none';
                 if (fSkill) fSkill.style.display = (type === 'skillLevelEquals' || type === 'skillLevelGte' || type === 'survivalSkillLevelEquals' || type === 'survivalSkillLevelGte') ? 'block' : 'none';
                 if (fPostEffect) fPostEffect.style.display = (type === 'postEffectObtainedGte') ? 'block' : 'none';
                 if (fHitArc) fHitArc.style.display = (type === 'lastCombatDefenderHitArcEquals' || type === 'lastCombatAttackerStrikeArcEquals') ? 'block' : 'none';
                 if (fItem) fItem.style.display = (type === 'hasItem') ? 'block' : 'none';
+                if (fMulti) fMulti.style.display = (type === 'hasItemsAll') ? 'block' : 'none';
                 var adv = document.getElementById('cond-advanced-toggle');
                 var jsonRow = document.getElementById('entry-cond-params');
                 if (type === 'custom') {
@@ -1712,7 +2371,7 @@
 
             function applyConditionToForm(cond) {
                 cond = cond || { type: 'flagEquals', flag: '', value: false };
-                var type = cond.type || 'flagEquals';
+                var type = resolveEditorCondType(cond);
                 document.getElementById('entry-cond-type').value = type;
                 setCondFormVisibility(type);
                 // 填各表单
@@ -1730,10 +2389,17 @@
                 } else if (type === 'hasItem') {
                     document.getElementById('cond-item-id').value = cond.itemId || '';
                     document.getElementById('cond-item-count').value = (cond.count != null ? cond.count : 1);
+                    var csi = document.getElementById('cond-item-search');
+                    if (csi) csi.value = '';
+                } else if (type === 'hasItemsAll') {
+                    var rows = extractHasItemsFromAnd(cond);
+                    if (!rows.length) rows = [{ itemId: '', count: 1 }, { itemId: '', count: 1 }];
+                    renderCondMultiRows(rows);
                 } else if (type === 'custom') {
                     // custom: 直接使用 JSON
                 }
                 syncCondJsonBox(cond);
+                syncConditionItemsHintAboveEffects();
             }
 
             function readConditionFromForm() {
@@ -1752,11 +2418,14 @@
                 } else if (type === 'hasItem') {
                     cond.itemId = document.getElementById('cond-item-id').value.trim();
                     cond.count = parseInt(document.getElementById('cond-item-count').value, 10) || 1;
+                } else if (type === 'hasItemsAll') {
+                    cond = buildConditionFromMultiRows(getCondMultiRowsFromDom());
                 } else if (type === 'custom') {
                     var raw = document.getElementById('entry-cond-json').value.trim();
                     try { cond = raw ? JSON.parse(raw) : { type: 'custom' }; } catch (e) { cond = { type: 'custom' }; }
                 }
                 syncCondJsonBox(cond);
+                syncConditionItemsHintAboveEffects();
                 return cond;
             }
 
@@ -2069,7 +2738,7 @@
                     typeInp.type = 'text';
                     typeInp.className = 'effect-type';
                     typeInp.value = typeVal;
-                    typeInp.placeholder = 'setFlag / modifySkillLevel / unlockTask';
+                    typeInp.placeholder = 'setFlag / modifySkillLevel / modifySkillMaxLevelBonus / removeItem / giveItem';
                     var rmBtn = document.createElement('button');
                     rmBtn.type = 'button';
                     rmBtn.className = 'rm-effect';
@@ -2085,6 +2754,7 @@
                     paramsWrap.appendChild(paramsTa);
                     div.appendChild(head);
                     div.appendChild(paramsWrap);
+                    attachEffectInventoryControls(div, typeInp, paramsTa);
                     (function (idx) {
                         rmBtn.addEventListener('click', function () {
                             effects.splice(idx, 1);
@@ -2093,10 +2763,13 @@
                     })(i);
                     list.appendChild(div);
                 }
+                syncConditionItemsHintAboveEffects();
             }
 
             function getEffectsFromDom() {
+                flushAllEffectInvToParams();
                 var list = document.getElementById('entry-effects-list');
+                if (!list) return [];
                 var items = list.querySelectorAll('.effect-item');
                 var out = [];
                 for (var i = 0; i < items.length; i++) {
@@ -2113,6 +2786,7 @@
             }
 
             document.getElementById('btn-add-effect').addEventListener('click', function () {
+                flushAllEffectInvToParams();
                 var list = document.getElementById('entry-effects-list');
                 var effects = [];
                 var items = list.querySelectorAll('.effect-item');
@@ -2126,6 +2800,83 @@
                 }
                 effects.push({ type: 'setFlag', params: { flag: '', value: true } });
                 renderEffectsList(effects);
+            });
+
+            document.getElementById('btn-cond-items-multi-add').addEventListener('click', function () {
+                var list = document.getElementById('cond-items-multi-list');
+                if (!list) return;
+                list.appendChild(createCondMultiItemRow({ itemId: '', count: 1 }));
+                syncCondJsonPreviewForMultiIfNeeded();
+                setDirty('entry', true);
+            });
+
+            function collectEffectsArrayFromDom() {
+                flushAllEffectInvToParams();
+                var list = document.getElementById('entry-effects-list');
+                if (!list) return [];
+                var items = list.querySelectorAll('.effect-item');
+                var effects = [];
+                for (var i = 0; i < items.length; i++) {
+                    var typeEl = items[i].querySelector('.effect-type');
+                    var paramsEl = items[i].querySelector('.effect-params');
+                    effects.push({
+                        type: typeEl && typeEl.value ? typeEl.value.trim() : 'setFlag',
+                        params: (function () { try { return paramsEl && paramsEl.value ? JSON.parse(paramsEl.value) : {}; } catch (e) { return {}; } })()
+                    });
+                }
+                return effects;
+            }
+
+            document.getElementById('btn-effects-add-giveItem').addEventListener('click', function () {
+                if (state.selectedEntryIndex < 0) {
+                    toast('warn', '未选择事件', '请先在左侧列表选中一个事件条目。');
+                    return;
+                }
+                var effects = collectEffectsArrayFromDom();
+                effects.push({ type: 'giveItem', params: { itemId: '', count: 1, quality_tier: 0 } });
+                renderEffectsList(effects);
+                setDirty('entry', true);
+                toast('info', '已添加', '请在列表最后一项填写物品 id / 数量；需要品质档时改 quality_tier。', 3200);
+            });
+
+            document.getElementById('btn-effects-from-cond-removeItem').addEventListener('click', function () {
+                if (state.selectedEntryIndex < 0) {
+                    toast('warn', '未选择事件', '请先在左侧列表选中一个事件条目。');
+                    return;
+                }
+                var cond = readConditionFromForm();
+                var rows = [];
+                if (cond && cond.type === 'hasItem') {
+                    rows = [{ itemId: cond.itemId || '', count: cond.count != null ? cond.count : 1 }];
+                } else {
+                    rows = collectHasItemsFromConditionTree(cond);
+                }
+                if (!rows.length) {
+                    toast('warn', '条件里没有 hasItem', '请用「单种 / 多种持有」条件，或在高级 JSON 的 and 中加入 hasItem（可与 flagEquals 等并存，如灶台维修）。');
+                    return;
+                }
+                var filled = [];
+                for (var i = 0; i < rows.length; i++) {
+                    if (rows[i].itemId) filled.push(rows[i]);
+                }
+                if (!filled.length) {
+                    toast('warn', '没有有效的物品 id', '请先在条件里填写 itemId。');
+                    return;
+                }
+                var effects = collectEffectsArrayFromDom();
+                for (var j = 0; j < filled.length; j++) {
+                    effects.push({
+                        type: 'removeItem',
+                        params: {
+                            itemId: filled[j].itemId,
+                            count: Math.max(1, parseInt(filled[j].count, 10) || 1),
+                            strict: true
+                        }
+                    });
+                }
+                renderEffectsList(effects);
+                setDirty('entry', true);
+                toast('success', '已追加 removeItem', '共 ' + String(filled.length) + ' 条；可按需调整 strict / 顺序。', 2800);
             });
 
             document.getElementById('btn-new-npc').addEventListener('click', function () {
@@ -2442,6 +3193,10 @@
                     : (type === 'lastCombatDefenderHitArcEquals') ? { type: 'lastCombatDefenderHitArcEquals', value: 'back' }
                     : (type === 'lastCombatAttackerStrikeArcEquals') ? { type: 'lastCombatAttackerStrikeArcEquals', value: 'back' }
                     : (type === 'hasItem') ? { type: 'hasItem', itemId: 'item_xxx', count: 1 }
+                    : (type === 'hasItemsAll') ? { type: 'and', conds: [
+                        { type: 'hasItem', itemId: 'item_a', count: 1 },
+                        { type: 'hasItem', itemId: 'item_b', count: 1 }
+                    ] }
                     : { type: 'custom' };
                 applyConditionToForm(sample);
             });
@@ -2459,6 +3214,22 @@
                 };
                 panel.addEventListener('input', mark, true);
                 panel.addEventListener('change', mark, true);
+            })();
+
+            (function bindEffectsConditionItemsHintRefresh() {
+                var panel = document.getElementById('entry-edit-panel');
+                if (!panel || panel._efcCondHintBound) return;
+                panel._efcCondHintBound = true;
+                var tmr = null;
+                function schedule() {
+                    if (tmr) window.clearTimeout(tmr);
+                    tmr = window.setTimeout(function () {
+                        tmr = null;
+                        syncConditionItemsHintAboveEffects();
+                    }, 120);
+                }
+                panel.addEventListener('input', schedule, true);
+                panel.addEventListener('change', schedule, true);
             })();
 
             // events search + chips

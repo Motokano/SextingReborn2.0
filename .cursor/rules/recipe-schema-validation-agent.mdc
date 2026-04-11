@@ -1,0 +1,64 @@
+---
+description: Recipe schema validation and error visibility contract
+alwaysApply: true
+---
+
+# 配方 Schema 校验与错误可见性（Agent 规则）
+
+编辑 `recipe`/`method` 校验、加载器容错、错误日志与调试展示时，遵守本规则。
+
+## 1) 单一校验入口（强制）
+
+- 校验规则必须集中在独立模块（建议：`js/recipe-schema.js`）。
+- 运行时与编辑器都复用该模块；禁止复制两份逻辑并行演进。
+
+## 2) 校验策略（强制）
+
+- 非法数据处理：**条目级失败**（剔除非法条目），不是整表直接失败。
+- 需汇总错误并输出结构化报告（至少包含：`entry_type`、`id`、`error_code`、`message`）。
+- 同一条目可累积多条错误，不因第一条错误提前短路。
+
+## 3) 冲突与优先级校验（强制）
+
+- 覆盖优先级：`recipe` > `method` > `life-skill-recipe-interfaces`。
+- 若 `recipe` 覆盖字段与 `method` 默认发生逻辑冲突（尤其 `recipe_system` 不一致），必须报错并剔除该 recipe。
+- 允许 `null` 显式覆盖；校验器需区分“字段缺失”与“显式 null”。
+
+## 4) 关键字段校验（强制）
+
+- `recipe_system` 必须为 `life_*` 枚举之一。
+- `recipe_id` 必须匹配 `{recipe_system}.{slug}`。
+- `method_id` 必须匹配 `{recipe_system}.{method_slug}`。
+- `inputs` 必须是数组，每项至少含 `item_id`、`count`（`count > 0`）。
+- `main_output` 必填，至少含 `item_id`、`count`。
+- `bonus_outputs` 若存在，`chance` 必须在 `[0,1]`。
+- `match_weight` 缺省按 `1`，若填则必须 `> 0`。
+
+## 5) 解锁校验（强制）
+
+- `unlock` 必须是数组；数组内按 AND 语义。
+- 首版仅允许 `type`：
+  - `skill_level_min`
+  - `quest_flag`
+  - `npc_flag`
+- **`quest_flag` / `npc_flag` 不做任务表、NPC 表存在性校验**（无 warning/error）；运行时由游戏逻辑自行判定。
+- `quest_flag` 须非空 `flag`；`npc_flag` 须非空 `npc_id` 与 `flag`；缺失仍为 **error** 并剔除条目。
+- 不支持的 `unlock.type` 必须报错并剔除条目。
+
+## 6) 可见性（强制）
+
+- 错误输出渠道必须同时覆盖：
+  - 控制台（开发排查）
+  - 可视化错误列表（调试面板或编辑器）
+- 可视化错误需可按 `entry_type/id/error_code` 过滤与定位。
+
+## 7) 迁移期兼容校验
+
+- 新表加载与旧表兜底并存期间，校验器不得阻断旧烹饪主流程。
+- 新表非法时可降级到旧表，但必须保留错误报告。
+
+## 8) 禁止事项
+
+- 禁止把“格式容错”做成静默吞错（无日志无报告）。
+- 禁止编辑器与运行时使用不同校验标准。
+- 禁止将未知字段直接当合法字段吞并而不做告警（至少 warning）。

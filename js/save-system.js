@@ -49,6 +49,84 @@
         return (typeof n === 'number' && isFinite(n)) ? n : def;
     }
 
+    function normalizeRecipeIdArray(listLike) {
+        var out = [];
+        var seen = {};
+        var i;
+        if (Array.isArray(listLike)) {
+            for (i = 0; i < listLike.length; i++) {
+                if (listLike[i] == null) continue;
+                var ridA = String(listLike[i]).trim();
+                if (!ridA || seen[ridA]) continue;
+                seen[ridA] = true;
+                out.push(ridA);
+            }
+        } else if (isPlainObject(listLike)) {
+            var keys = Object.keys(listLike);
+            for (i = 0; i < keys.length; i++) {
+                var k = String(keys[i] || '').trim();
+                if (!k || seen[k]) continue;
+                if (!listLike[keys[i]]) continue;
+                seen[k] = true;
+                out.push(k);
+            }
+        }
+        out.sort();
+        return out;
+    }
+
+    /** 旧档烹饪图鉴为 cook_xxx；统一配方表为 life_cooking.cook_xxx */
+    function migrateLegacyCookingRecipeId(rid) {
+        var s = String(rid || '').trim();
+        if (!s) return s;
+        if (s.indexOf('life_cooking.') === 0) return s;
+        return 'life_cooking.' + s;
+    }
+
+    function migrateLegacyCookingRecipeIdList(arr) {
+        var base = normalizeRecipeIdArray(arr);
+        var seen = {};
+        var out = [];
+        var i;
+        for (i = 0; i < base.length; i++) {
+            var m = migrateLegacyCookingRecipeId(base[i]);
+            if (!m || seen[m]) continue;
+            seen[m] = true;
+            out.push(m);
+        }
+        out.sort();
+        return out;
+    }
+
+    function deriveKnownCookingRecipeIds(sceneCtx) {
+        if (!sceneCtx || typeof sceneCtx !== 'object') return [];
+        var bySystem = sceneCtx.known_recipe_ids_by_system;
+        if (bySystem && typeof bySystem === 'object') {
+            var cooking = bySystem.cooking;
+            var idsFromNew = migrateLegacyCookingRecipeIdList(normalizeRecipeIdArray(cooking));
+            if (idsFromNew.length > 0) return idsFromNew;
+        }
+        return migrateLegacyCookingRecipeIdList(normalizeRecipeIdArray(sceneCtx.known_cooking_recipes));
+    }
+
+    function normalizeSceneUiKnownRecipes(sceneUi) {
+        if (!sceneUi || typeof sceneUi !== 'object') return sceneUi;
+        var ids = [];
+        if (sceneUi.known_recipe_ids_by_system && typeof sceneUi.known_recipe_ids_by_system === 'object') {
+            ids = migrateLegacyCookingRecipeIdList(normalizeRecipeIdArray(sceneUi.known_recipe_ids_by_system.cooking));
+        }
+        if (ids.length === 0) {
+            ids = normalizeRecipeIdArray(sceneUi.known_cooking_recipe_ids);
+        }
+        ids = migrateLegacyCookingRecipeIdList(ids);
+        sceneUi.known_cooking_recipe_ids = ids.slice();
+        sceneUi.known_recipe_ids_by_system = sceneUi.known_recipe_ids_by_system && typeof sceneUi.known_recipe_ids_by_system === 'object'
+            ? sceneUi.known_recipe_ids_by_system
+            : {};
+        sceneUi.known_recipe_ids_by_system.cooking = ids.slice();
+        return sceneUi;
+    }
+
     function assertSnapshotShape(snapshot) {
         if (!snapshot || typeof snapshot !== 'object') return false;
         if (snapshot.schemaVersion !== SCHEMA_VERSION) return false;
@@ -141,15 +219,70 @@
         }
 
         var sceneUiPersist = null;
-        if (global.SceneCtx && typeof global.SceneCtx.getActionBarSlots === 'function') {
+        if (global.SceneCtx) {
             try {
-                var abs = global.SceneCtx.getActionBarSlots();
-                if (Array.isArray(abs)) {
-                    sceneUiPersist = { action_bar_slots: abs.slice(0, 4) };
-                    if (typeof global.SceneCtx.getFacingDir === 'function') {
-                        sceneUiPersist.facing_dir = global.SceneCtx.getFacingDir();
+                var su = {};
+                if (typeof global.SceneCtx.getActionBarSlots === 'function') {
+                    var abs = global.SceneCtx.getActionBarSlots();
+                    if (Array.isArray(abs)) {
+                        su.action_bar_slots = abs.slice(0, 4);
+                        if (typeof global.SceneCtx.getFacingDir === 'function') {
+                            su.facing_dir = global.SceneCtx.getFacingDir();
+                        }
                     }
                 }
+                var crtSnap = global.SceneCtx.cooking_station_runtime;
+                if (crtSnap && typeof crtSnap === 'object') {
+                    su.cooking_station = {
+                        fuel_points: coerceNumber(crtSnap.fuel_points, 0),
+                        water_points: coerceNumber(crtSnap.water_points, 0),
+                        water_unlimited: !!(crtSnap.water_unlimited === true || crtSnap.water_unlimited === 'true' || crtSnap.water_unlimited === 1),
+                        installed_accessory_item_ids: Array.isArray(crtSnap.installed_accessory_item_ids) ? crtSnap.installed_accessory_item_ids.slice() : []
+                    };
+                    // active_craft（进行中制作）- 固定 tick 耗时 + 制作中不可移动（21.10.1/21.10.3）
+                    // 仅持久化必要字段，避免过大；运行时可按 method_id + inputs 重新匹配配方。
+                    if (crtSnap.active_craft && typeof crtSnap.active_craft === 'object') {
+                        var ac = crtSnap.active_craft;
+                        su.cooking_station.active_craft = {
+                            remaining_ticks: coerceNumber(ac.remaining_ticks, 0),
+                            started_total_ticks: coerceNumber(ac.started_total_ticks, 0),
+                            method_id: ac.method_id != null ? String(ac.method_id) : '',
+                            inputs: Array.isArray(ac.inputs) ? ac.inputs.slice() : [],
+                            consumed_items: Array.isArray(ac.consumed_items) ? ac.consumed_items.slice() : []
+                        };
+                        if (ac.station_ref && typeof ac.station_ref === 'object') {
+                            su.cooking_station.active_craft.station_ref = {
+                                station_type: ac.station_ref.station_type != null ? String(ac.station_ref.station_type) : '',
+                                map_id: ac.station_ref.map_id != null ? String(ac.station_ref.map_id) : '',
+                                x: coerceNumber(ac.station_ref.x, 0),
+                                y: coerceNumber(ac.station_ref.y, 0)
+                            };
+                        }
+                    }
+                }
+                var cts = global.SceneCtx.cooking_temp_stations_runtime;
+                if (Array.isArray(cts)) {
+                    su.cooking_temp_stations = [];
+                    var cti;
+                    for (cti = 0; cti < cts.length; cti++) {
+                        var e = cts[cti];
+                        if (!e || typeof e !== 'object') continue;
+                        if (e.map_id == null || e.x == null || e.y == null || e.despawn_tick == null) continue;
+                        su.cooking_temp_stations.push({
+                            map_id: String(e.map_id),
+                            x: coerceNumber(e.x, 0),
+                            y: coerceNumber(e.y, 0),
+                            placed_tick: coerceNumber(e.placed_tick, 0),
+                            despawn_tick: coerceNumber(e.despawn_tick, 0),
+                            allowed_methods: Array.isArray(e.allowed_methods) ? e.allowed_methods.slice() : [],
+                            installed_accessory_item_ids: Array.isArray(e.installed_accessory_item_ids) ? e.installed_accessory_item_ids.slice() : []
+                        });
+                    }
+                }
+                var kra = deriveKnownCookingRecipeIds(global.SceneCtx);
+                su.known_cooking_recipe_ids = kra.slice();
+                su.known_recipe_ids_by_system = { cooking: kra.slice() };
+                if (Object.keys(su).length) sceneUiPersist = su;
             } catch (eSceneUi) { sceneUiPersist = null; }
         }
 
@@ -268,13 +401,73 @@
             try { mods.BuffSystem.setState(snapshot.buffs); } catch (e4) { /* ignore */ }
         }
 
-        if (global.SceneCtx && typeof global.SceneCtx.setActionBarSlots === 'function' && snapshot.player && snapshot.player.sceneUi) {
+        if (global.SceneCtx && snapshot.player && snapshot.player.sceneUi) {
             try {
                 var su = snapshot.player.sceneUi;
-                if (su && Array.isArray(su.action_bar_slots)) global.SceneCtx.setActionBarSlots(su.action_bar_slots);
+                if (typeof global.SceneCtx.setActionBarSlots === 'function' && su && Array.isArray(su.action_bar_slots)) {
+                    global.SceneCtx.setActionBarSlots(su.action_bar_slots);
+                }
                 if (su && su.facing_dir != null && typeof global.SceneCtx.setFacingDir === 'function') {
                     global.SceneCtx.setFacingDir(su.facing_dir);
                 }
+                if (su && su.cooking_station && typeof su.cooking_station === 'object') {
+                    var cst = su.cooking_station;
+                    global.SceneCtx.cooking_station_runtime = {
+                        fuel_points: coerceNumber(cst.fuel_points, 0),
+                        water_points: coerceNumber(cst.water_points, 0),
+                        water_unlimited: !!(cst.water_unlimited === true || cst.water_unlimited === 'true' || cst.water_unlimited === 1),
+                        installed_accessory_item_ids: Array.isArray(cst.installed_accessory_item_ids) ? cst.installed_accessory_item_ids.slice() : []
+                    };
+                    if (cst.active_craft && typeof cst.active_craft === 'object') {
+                        var ac2 = cst.active_craft;
+                        global.SceneCtx.cooking_station_runtime.active_craft = {
+                            remaining_ticks: Math.max(0, Math.floor(coerceNumber(ac2.remaining_ticks, 0))),
+                            started_total_ticks: Math.max(0, Math.floor(coerceNumber(ac2.started_total_ticks, 0))),
+                            method_id: ac2.method_id != null ? String(ac2.method_id) : '',
+                            inputs: Array.isArray(ac2.inputs) ? ac2.inputs.slice() : [],
+                            consumed_items: Array.isArray(ac2.consumed_items) ? ac2.consumed_items.slice() : []
+                        };
+                        if (ac2.station_ref && typeof ac2.station_ref === 'object') {
+                            global.SceneCtx.cooking_station_runtime.active_craft.station_ref = {
+                                station_type: ac2.station_ref.station_type != null ? String(ac2.station_ref.station_type) : '',
+                                map_id: ac2.station_ref.map_id != null ? String(ac2.station_ref.map_id) : '',
+                                x: Math.floor(coerceNumber(ac2.station_ref.x, 0)),
+                                y: Math.floor(coerceNumber(ac2.station_ref.y, 0))
+                            };
+                        }
+                    }
+                }
+                if (su && Array.isArray(su.cooking_temp_stations)) {
+                    global.SceneCtx.cooking_temp_stations_runtime = [];
+                    var sti;
+                    for (sti = 0; sti < su.cooking_temp_stations.length; sti++) {
+                        var stE = su.cooking_temp_stations[sti];
+                        if (!stE || typeof stE !== 'object') continue;
+                        if (stE.map_id == null || stE.x == null || stE.y == null || stE.despawn_tick == null) continue;
+                        global.SceneCtx.cooking_temp_stations_runtime.push({
+                            map_id: String(stE.map_id),
+                            x: Math.floor(coerceNumber(stE.x, 0)),
+                            y: Math.floor(coerceNumber(stE.y, 0)),
+                            placed_tick: Math.floor(coerceNumber(stE.placed_tick, 0)),
+                            despawn_tick: Math.floor(coerceNumber(stE.despawn_tick, 0)),
+                            allowed_methods: Array.isArray(stE.allowed_methods) ? stE.allowed_methods.slice() : [],
+                            installed_accessory_item_ids: Array.isArray(stE.installed_accessory_item_ids) ? stE.installed_accessory_item_ids.slice() : []
+                        });
+                    }
+                }
+                normalizeSceneUiKnownRecipes(su);
+                if (su && Array.isArray(su.known_cooking_recipe_ids)) {
+                    global.SceneCtx.known_cooking_recipes = {};
+                    var kri;
+                    for (kri = 0; kri < su.known_cooking_recipe_ids.length; kri++) {
+                        var rid = su.known_cooking_recipe_ids[kri];
+                        if (rid) global.SceneCtx.known_cooking_recipes[String(rid)] = true;
+                    }
+                }
+                global.SceneCtx.known_recipe_ids_by_system = global.SceneCtx.known_recipe_ids_by_system && typeof global.SceneCtx.known_recipe_ids_by_system === 'object'
+                    ? global.SceneCtx.known_recipe_ids_by_system
+                    : {};
+                global.SceneCtx.known_recipe_ids_by_system.cooking = Array.isArray(su.known_cooking_recipe_ids) ? su.known_cooking_recipe_ids.slice() : [];
             } catch (eAb) { /* ignore */ }
         }
 
@@ -527,6 +720,9 @@
         // Hook for future migrations.
         // Currently only schemaVersion=1 exists.
         if (!snapshot || typeof snapshot !== 'object') return snapshot;
+        if (snapshot.player && snapshot.player.sceneUi && typeof snapshot.player.sceneUi === 'object') {
+            normalizeSceneUiKnownRecipes(snapshot.player.sceneUi);
+        }
         snapshot.schemaVersion = SCHEMA_VERSION;
         return snapshot;
     }
@@ -541,6 +737,9 @@
 
         var migrated = snapshot;
         if (snapshot.schemaVersion !== SCHEMA_VERSION) migrated = migrateSnapshot(snapshot);
+        if (migrated && migrated.player && migrated.player.sceneUi && typeof migrated.player.sceneUi === 'object') {
+            normalizeSceneUiKnownRecipes(migrated.player.sceneUi);
+        }
         if (!assertSnapshotShape(migrated)) return false;
 
         inLoad = true;

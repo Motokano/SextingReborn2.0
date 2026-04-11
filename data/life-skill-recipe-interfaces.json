@@ -1,0 +1,67 @@
+{
+  "_comment": "Life-skill recipe interface defaults. Resolution priority is recipe > method > interface.",
+  "schema_version": "1.0.0",
+  "interfaces": {
+    "life_cooking": {
+      "required_skill_id": "life_cooking",
+      "recipe_processor_id": "processor.life_cooking.default",
+      "proficiency_usage_key": "life_cooking.placeholder_basic",
+      "default_method_id": "life_cooking.roast_bake",
+      "default_recipe_id": "life_cooking.cook_flatbread_plain",
+      "allowed_station_tags": [
+        "station_cooking"
+      ],
+      "enabled": true
+    },
+    "life_forging": {
+      "required_skill_id": "life_forging",
+      "recipe_processor_id": "processor.life_forging.default",
+      "proficiency_usage_key": "life_forging.placeholder_basic",
+      "default_method_id": "life_forging.placeholder_basic",
+      "allowed_station_tags": [
+        "station_forging"
+      ],
+      "enabled": true
+    },
+    "life_pharmacy": {
+      "required_skill_id": "life_pharmacy",
+      "recipe_processor_id": "processor.life_pharmacy.default",
+      "proficiency_usage_key": "life_pharmacy.placeholder_basic",
+      "default_method_id": "life_pharmacy.placeholder_basic",
+      "allowed_station_tags": [
+        "station_pharmacy"
+      ],
+      "enabled": true
+    },
+    "life_weaving": {
+      "required_skill_id": "life_weaving",
+      "recipe_processor_id": "processor.life_weaving.default",
+      "proficiency_usage_key": "life_weaving.placeholder_basic",
+      "default_method_id": "life_weaving.placeholder_basic",
+      "allowed_station_tags": [
+        "station_weaving"
+      ],
+      "enabled": true
+    },
+    "life_manufacturing": {
+      "required_skill_id": "life_manufacturing",
+      "recipe_processor_id": "processor.life_manufacturing.default",
+      "proficiency_usage_key": "life_manufacturing.placeholder_basic",
+      "default_method_id": "life_manufacturing.placeholder_basic",
+      "allowed_station_tags": [
+        "station_manufacturing"
+      ],
+      "enabled": true
+    },
+    "life_enchant": {
+      "required_skill_id": "life_enchant",
+      "recipe_processor_id": "processor.life_enchant.default",
+      "proficiency_usage_key": "life_enchant.placeholder_basic",
+      "default_method_id": "life_enchant.placeholder_basic",
+      "allowed_station_tags": [
+        "station_enchant"
+      ],
+      "enabled": true
+    }
+  }
+}

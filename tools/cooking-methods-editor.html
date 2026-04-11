@@ -1,0 +1,443 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>烹饪技法编辑器（cooking-methods.json）</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 16px; color: #222; max-width: 1100px; }
+    .row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-bottom: 8px; }
+    .grid { display: grid; grid-template-columns: 220px 1fr; gap: 14px; }
+    .panel { border: 1px solid #ddd; border-radius: 6px; padding: 10px; }
+    .muted { color: #666; font-size: 12px; }
+    .bad { color: #b00020; }
+    .ok { color: #006400; }
+    .warn { color: #9a6700; }
+    button, select, input { font-size: 13px; }
+    input[type="text"], input[type="number"] { min-width: 120px; }
+    #methodList { width: 100%; min-height: 320px; font-size: 13px; }
+    .inline-code { font-family: Consolas, monospace; background: #f6f6f6; padding: 1px 4px; border-radius: 4px; }
+    h2 { margin-top: 0; }
+  </style>
+</head>
+<body>
+  <h2>烹饪技法编辑器</h2>
+  <p class="muted">
+    编辑 <span class="inline-code">data/cooking-methods.json</span>（灶台运行时读取：燃料/水/tick/体力/默认成功率/配件门禁）。
+    设计定案为 <strong>12</strong> 种工艺时可在此「新建技法」补全条目；键名须与 <span class="inline-code">method_id</span> 一致。
+    统一配方表 <span class="inline-code">recipe-methods.json</span> 为另一套数据，请用 <span class="inline-code">tools/recipe-editor.html</span> 编辑。
+  </p>
+
+  <div class="panel" style="margin-bottom:12px;">
+    <div class="row">
+      <button type="button" id="btnLoadRepo">从仓库加载 cooking-methods.json</button>
+      <label>本地文件：<input id="fileCookingMethods" type="file" accept=".json,application/json" /></label>
+      <button type="button" id="btnImportFile">导入所选文件</button>
+      <label>items.json（配件 id 搜索，可选）：<input id="fileItems" type="file" accept=".json" /></label>
+      <button type="button" id="btnLoadItemsRepo">加载仓库 items.json</button>
+    </div>
+    <div class="row">
+      <button type="button" id="btnExport">导出 cooking-methods.json</button>
+      <span id="loadHint" class="muted"></span>
+    </div>
+  </div>
+
+  <div class="grid">
+    <div class="panel">
+      <div><strong>技法列表</strong> <span id="countHint" class="muted"></span></div>
+      <select id="methodList" size="18"></select>
+      <div class="row" style="margin-top:8px;">
+        <button type="button" id="btnNew">新建技法</button>
+        <button type="button" id="btnDup">复制当前</button>
+        <button type="button" id="btnDel">删除当前</button>
+      </div>
+    </div>
+    <div class="panel">
+      <div><strong>当前技法属性</strong></div>
+      <div class="row">
+        <label>键 / method_id <input id="fMethodId" type="text" style="width:200px" /></label>
+        <span class="muted">保存时同步为 map 键</span>
+      </div>
+      <div class="row">
+        <label>展示名 name <input id="fName" type="text" style="width:200px" /></label>
+      </div>
+      <div class="row">
+        <label>requires_accessory_item_id
+          <input id="fAccessory" type="text" style="width:280px" list="itemCandidates" placeholder="空=无配件要求，填 item_id" />
+        </label>
+      </div>
+      <div class="row">
+        <label>fuel_cost <input id="fFuel" type="number" min="0" step="1" /></label>
+        <label>water_cost <input id="fWater" type="number" min="0" step="1" /></label>
+        <label>craft_ticks <input id="fTicks" type="number" min="0" step="1" /></label>
+        <label>stamina_cost <input id="fStamina" type="number" min="0" step="1" /></label>
+      </div>
+      <div class="row">
+        <label>base_success_rate（0~1）<input id="fRate" type="number" min="0" max="1" step="0.01" /></label>
+      </div>
+      <div class="row">
+        <button type="button" id="btnSave">保存到内存</button>
+        <span id="saveHint" class="muted"></span>
+      </div>
+      <hr />
+      <div class="muted">
+        配件搜索：先加载 items.json，在输入框聚焦后点击下方候选（与 recipe-editor 同款索引）。
+      </div>
+      <div class="row">
+        <label>关键词 <input id="itemKw" type="text" placeholder="id / sn / placeholder_name" /></label>
+        <button type="button" id="btnSearchItems">搜索配件</button>
+      </div>
+      <div id="itemResults" style="max-height:120px;overflow:auto;font-size:12px;"></div>
+    </div>
+  </div>
+
+  <datalist id="itemCandidates"></datalist>
+
+  <script>
+    (function () {
+      'use strict';
+
+      var state = {
+        root: { methods: {} },
+        items: {},
+        itemRows: [],
+        selectedKey: '',
+        activeInput: null
+      };
+
+      var el = {
+        methodList: document.getElementById('methodList'),
+        countHint: document.getElementById('countHint'),
+        fMethodId: document.getElementById('fMethodId'),
+        fName: document.getElementById('fName'),
+        fAccessory: document.getElementById('fAccessory'),
+        fFuel: document.getElementById('fFuel'),
+        fWater: document.getElementById('fWater'),
+        fTicks: document.getElementById('fTicks'),
+        fStamina: document.getElementById('fStamina'),
+        fRate: document.getElementById('fRate'),
+        saveHint: document.getElementById('saveHint'),
+        loadHint: document.getElementById('loadHint'),
+        itemCandidates: document.getElementById('itemCandidates'),
+        itemKw: document.getElementById('itemKw'),
+        itemResults: document.getElementById('itemResults')
+      };
+
+      function escapeHtml(s) {
+        return String(s)
+          .replaceAll('&', '&amp;')
+          .replaceAll('<', '&lt;')
+          .replaceAll('>', '&gt;')
+          .replaceAll('"', '&quot;')
+          .replaceAll("'", '&#39;');
+      }
+
+      function methodsMap() {
+        return state.root.methods && typeof state.root.methods === 'object' ? state.root.methods : {};
+      }
+
+      function sortedKeys(obj) {
+        return Object.keys(obj || {}).sort(function (a, b) { return a.localeCompare(b); });
+      }
+
+      function readFileAsText(file) {
+        return new Promise(function (resolve, reject) {
+          if (!file) return reject(new Error('未选择文件'));
+          var r = new FileReader();
+          r.onload = function () { resolve(String(r.result || '')); };
+          r.onerror = function () { reject(new Error('读取失败')); };
+          r.readAsText(file, 'utf-8');
+        });
+      }
+
+      function fetchJson(path) {
+        return fetch(path, { cache: 'no-store' }).then(function (res) {
+          if (!res.ok) throw new Error(path + ' ' + res.status);
+          return res.json();
+        });
+      }
+
+      function normalizeRoot(raw) {
+        var o = raw && typeof raw === 'object' ? raw : {};
+        var m = o.methods && typeof o.methods === 'object' ? o.methods : {};
+        return {
+          methods: JSON.parse(JSON.stringify(m))
+        };
+      }
+
+      function renderItemDatalist() {
+        var items = state.items || {};
+        var keys = sortedKeys(items);
+        el.itemCandidates.innerHTML = keys.map(function (id) {
+          var row = items[id] || {};
+          var label = [id, row.sn || '', row.placeholder_name || ''].filter(Boolean).join(' | ');
+          return '<option value="' + escapeHtml(id) + '" label="' + escapeHtml(label) + '"></option>';
+        }).join('');
+      }
+
+      function rebuildItemIndex() {
+        var items = state.items || {};
+        state.itemRows = sortedKeys(items).map(function (id) {
+          var row = items[id] || {};
+          var sn = String(row.sn || '');
+          var pn = String(row.placeholder_name || '');
+          return {
+            id: id,
+            searchText: (id + '\n' + sn + '\n' + pn).toLowerCase()
+          };
+        });
+      }
+
+      function renderList() {
+        var map = methodsMap();
+        var keys = sortedKeys(map);
+        el.countHint.textContent = '（共 ' + keys.length + ' 条）';
+        el.methodList.innerHTML = keys.map(function (k) {
+          var row = map[k] || {};
+          var name = row.name ? ' — ' + row.name : '';
+          return '<option value="' + escapeHtml(k) + '">' + escapeHtml(k + name) + '</option>';
+        }).join('');
+        if (state.selectedKey && keys.indexOf(state.selectedKey) >= 0) {
+          el.methodList.value = state.selectedKey;
+        } else if (keys.length) {
+          state.selectedKey = keys[0];
+          el.methodList.value = state.selectedKey;
+        } else {
+          state.selectedKey = '';
+        }
+        loadFormFromKey(state.selectedKey);
+      }
+
+      function loadFormFromKey(key) {
+        var map = methodsMap();
+        var row = key ? map[key] : null;
+        if (!row) {
+          el.fMethodId.value = '';
+          el.fName.value = '';
+          el.fAccessory.value = '';
+          el.fFuel.value = '0';
+          el.fWater.value = '0';
+          el.fTicks.value = '1';
+          el.fStamina.value = '1';
+          el.fRate.value = '0.5';
+          return;
+        }
+        el.fMethodId.value = row.method_id != null ? String(row.method_id) : key;
+        el.fName.value = row.name != null ? String(row.name) : '';
+        el.fAccessory.value = row.requires_accessory_item_id != null && row.requires_accessory_item_id !== ''
+          ? String(row.requires_accessory_item_id) : '';
+        el.fFuel.value = String(row.fuel_cost != null ? row.fuel_cost : 0);
+        el.fWater.value = String(row.water_cost != null ? row.water_cost : 0);
+        el.fTicks.value = String(row.craft_ticks != null ? row.craft_ticks : 1);
+        el.fStamina.value = String(row.stamina_cost != null ? row.stamina_cost : 1);
+        el.fRate.value = String(row.base_success_rate != null ? row.base_success_rate : 0.5);
+      }
+
+      function toInt(v, fb) {
+        var n = Math.floor(Number(v));
+        return Number.isFinite(n) ? n : fb;
+      }
+
+      function toRate(v, fb) {
+        var n = Number(v);
+        if (!Number.isFinite(n)) return fb;
+        return Math.max(0, Math.min(1, n));
+      }
+
+      function saveToMemory() {
+        var oldKey = state.selectedKey;
+        var newId = String(el.fMethodId.value || '').trim();
+        if (!newId) {
+          el.saveHint.textContent = 'method_id 不能为空';
+          el.saveHint.className = 'bad';
+          return;
+        }
+        var map = methodsMap();
+        var acc = String(el.fAccessory.value || '').trim();
+        var row = {
+          method_id: newId,
+          name: String(el.fName.value || '').trim() || newId,
+          requires_accessory_item_id: acc ? acc : null,
+          fuel_cost: Math.max(0, toInt(el.fFuel.value, 0)),
+          water_cost: Math.max(0, toInt(el.fWater.value, 0)),
+          craft_ticks: Math.max(0, toInt(el.fTicks.value, 1)),
+          stamina_cost: Math.max(0, toInt(el.fStamina.value, 1)),
+          base_success_rate: toRate(el.fRate.value, 0.5)
+        };
+        if (oldKey && oldKey !== newId) {
+          if (map[newId]) {
+            el.saveHint.textContent = '目标 method_id 已存在';
+            el.saveHint.className = 'bad';
+            return;
+          }
+          delete map[oldKey];
+        }
+        map[newId] = row;
+        state.root.methods = map;
+        state.selectedKey = newId;
+        el.saveHint.textContent = '已写入内存：' + newId + '（请导出 JSON 覆盖 data 文件）';
+        el.saveHint.className = 'ok';
+        renderList();
+        el.methodList.value = newId;
+      }
+
+      function newMethod() {
+        var slug = window.prompt('新技法 id（与 cooking-recipes 的 required_method 一致，如 smoke_dry）', '');
+        if (slug == null) return;
+        slug = String(slug).trim().replace(/\s+/g, '_');
+        if (!slug) return;
+        var map = methodsMap();
+        if (map[slug]) {
+          alert('已存在：' + slug);
+          return;
+        }
+        map[slug] = {
+          method_id: slug,
+          name: slug,
+          requires_accessory_item_id: null,
+          fuel_cost: 20,
+          water_cost: 0,
+          craft_ticks: 2,
+          stamina_cost: 4,
+          base_success_rate: 0.85
+        };
+        state.root.methods = map;
+        state.selectedKey = slug;
+        renderList();
+      }
+
+      function dupMethod() {
+        var key = state.selectedKey;
+        if (!key || !methodsMap()[key]) return;
+        var base = JSON.parse(JSON.stringify(methodsMap()[key]));
+        var i = 1;
+        var nid = key + '_copy';
+        while (methodsMap()[nid]) {
+          nid = key + '_copy_' + i;
+          i += 1;
+        }
+        base.method_id = nid;
+        base.name = (base.name || key) + '（副本）';
+        methodsMap()[nid] = base;
+        state.selectedKey = nid;
+        renderList();
+      }
+
+      function delMethod() {
+        var key = state.selectedKey;
+        if (!key) return;
+        if (!window.confirm('删除技法 ' + key + '？')) return;
+        delete methodsMap()[key];
+        state.selectedKey = sortedKeys(methodsMap())[0] || '';
+        renderList();
+      }
+
+      function exportJson() {
+        var out = {
+          methods: methodsMap()
+        };
+        var blob = new Blob([JSON.stringify(out, null, 2) + '\n'], { type: 'application/json' });
+        var a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = 'cooking-methods.json';
+        a.click();
+        setTimeout(function () { URL.revokeObjectURL(a.href); }, 2000);
+      }
+
+      function runItemSearch() {
+        var kw = String(el.itemKw.value || '').trim().toLowerCase();
+        if (!state.itemRows.length) {
+          el.itemResults.innerHTML = '<span class="warn">未加载 items.json</span>';
+          return;
+        }
+        var rows = state.itemRows.filter(function (r) {
+          return !kw || r.searchText.indexOf(kw) >= 0;
+        }).slice(0, 40);
+        if (!rows.length) {
+          el.itemResults.innerHTML = '<span class="muted">无匹配</span>';
+          return;
+        }
+        el.itemResults.innerHTML = rows.map(function (r) {
+          return '<div><button type="button" class="pick-item" data-id="' + escapeHtml(r.id) + '" style="font-size:12px;margin:2px 0;">' + escapeHtml(r.id) + '</button></div>';
+        }).join('');
+        Array.prototype.forEach.call(el.itemResults.querySelectorAll('.pick-item'), function (btn) {
+          btn.addEventListener('click', function () {
+            var id = btn.getAttribute('data-id') || '';
+            var tgt = state.activeInput || el.fAccessory;
+            tgt.value = id;
+          });
+        });
+      }
+
+      el.methodList.addEventListener('change', function () {
+        state.selectedKey = el.methodList.value;
+        loadFormFromKey(state.selectedKey);
+      });
+      el.fAccessory.addEventListener('focus', function () { state.activeInput = el.fAccessory; });
+      document.getElementById('btnLoadRepo').addEventListener('click', function () {
+        fetchJson('../data/cooking-methods.json').then(function (j) {
+          state.root = normalizeRoot(j);
+          el.loadHint.textContent = '已从仓库加载';
+          el.loadHint.className = 'ok';
+          renderList();
+        }).catch(function (e) {
+          el.loadHint.textContent = String(e.message || e);
+          el.loadHint.className = 'bad';
+        });
+      });
+      document.getElementById('btnImportFile').addEventListener('click', function () {
+        var f = document.getElementById('fileCookingMethods').files[0];
+        readFileAsText(f).then(function (txt) {
+          state.root = normalizeRoot(JSON.parse(txt));
+          el.loadHint.textContent = '已导入本地文件';
+          el.loadHint.className = 'ok';
+          renderList();
+        }).catch(function (e) {
+          alert(String(e.message || e));
+        });
+      });
+      document.getElementById('fileItems').addEventListener('change', function () {
+        var f = this.files[0];
+        if (!f) return;
+        readFileAsText(f).then(function (txt) {
+          state.items = JSON.parse(txt) || {};
+          renderItemDatalist();
+          rebuildItemIndex();
+          el.loadHint.textContent = '已导入 items.json';
+          el.loadHint.className = 'ok';
+        }).catch(function (e) {
+          alert(String(e.message || e));
+        });
+      });
+      document.getElementById('btnLoadItemsRepo').addEventListener('click', function () {
+        fetchJson('../data/items.json').then(function (j) {
+          state.items = j && typeof j === 'object' ? j : {};
+          renderItemDatalist();
+          rebuildItemIndex();
+        }).catch(function () {
+          el.loadHint.textContent = 'items.json 加载失败（可忽略）';
+          el.loadHint.className = 'warn';
+        });
+      });
+      document.getElementById('btnSave').addEventListener('click', saveToMemory);
+      document.getElementById('btnNew').addEventListener('click', newMethod);
+      document.getElementById('btnDup').addEventListener('click', dupMethod);
+      document.getElementById('btnDel').addEventListener('click', delMethod);
+      document.getElementById('btnExport').addEventListener('click', exportJson);
+      document.getElementById('btnSearchItems').addEventListener('click', runItemSearch);
+
+      fetchJson('../data/cooking-methods.json').then(function (j) {
+        state.root = normalizeRoot(j);
+        el.loadHint.textContent = '已自动加载仓库 cooking-methods.json';
+        el.loadHint.className = 'ok';
+        renderList();
+      }).catch(function () {
+        state.root = { methods: {} };
+        el.loadHint.textContent = '未能从仓库加载（请用本地文件导入或启动本地 HTTP 服务）';
+        el.loadHint.className = 'warn';
+        renderList();
+      });
+    })();
+  </script>
+</body>
+</html>

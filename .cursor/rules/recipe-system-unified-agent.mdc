@@ -1,0 +1,123 @@
+---
+description: Unified recipe system contract (统一配方系统约定)
+alwaysApply: true
+---
+
+# 统一配方系统（Recipe System）Agent 规则
+
+编辑配方主表、工艺表、运行时制作路由、烹饪迁移与存档兼容时，必须遵守本规则，避免“多套配方口径并存”与“技能接口缺失”。
+
+## 1) 作用范围（首版）
+
+- 仅覆盖设施制作类：`life_cooking`、`life_forging`、`life_pharmacy`、`life_weaving`、`life_manufacturing`、`life_enchant`。
+- 首版仅支持**单次制作**（一次一个），不做批量制作。
+
+## 2) 数据主表（强制）
+
+- `data/recipes.json` 使用 map 结构：`{ schema_version, recipes: { [recipe_id]: Recipe } }`
+- `data/recipe-methods.json` 使用 map 结构：`{ schema_version, methods: { [method_id]: Method } }`
+- `data/life-skill-recipe-interfaces.json` 作为生活技能接口映射与默认参数表（见第 6 节）。
+
+## 3) 命名与枚举（强制）
+
+- `recipe_system` 使用 `life_*` 命名：如 `life_cooking`。
+- `recipe_id` 命名：`{recipe_system}.{slug}`。
+- `method_id` 命名：`{recipe_system}.{method_slug}`。
+
+## 4) Recipe 字段口径（强制）
+
+- 核心字段：
+  - `recipe_id`
+  - `recipe_system`
+  - `method_id`
+  - `enabled`（默认 `true`）
+  - `inputs`（数组：`[{ item_id, count }]`）
+  - `main_output`（成功后固定产出）
+- 成长/制作字段：
+  - `required_skill_level_min`
+  - `proficiency_usage_key`
+  - `base_output_quality_tier`
+- 可选覆盖字段（覆盖 method 默认）：
+  - `required_skill_id`
+  - `recipe_processor_id`
+  - `base_success_rate`
+  - `failure_output`
+  - `allowed_station_tags`
+- 允许 `null` 作为显式覆盖值（用于关闭 method 默认项）。
+
+## 5) Method 字段口径（强制）
+
+- 核心字段：
+  - `method_id`
+  - `recipe_system`
+  - `cost: { fuel, water, ticks, stamina }`
+  - `base_success_rate`
+- 默认接口字段：
+  - `required_skill_id`
+  - `recipe_processor_id`
+  - `proficiency_usage_key`
+- 限制/解锁字段：
+  - `allowed_station_tags`
+  - `unlock: [{ type, ...params }]`
+  - `requires_accessory_item_id`（可选，`null` = 不要求灶台配件；与 `cooking-methods.json` 的配件门禁同语义，供统一表与编辑器维护）
+- 失败产物默认：
+  - `failure_output`（可被 recipe 覆盖；无配置时回落全局）
+
+## 6) 生活技能接口覆盖（强制）
+
+- 每个设施技能必须在 `life-skill-recipe-interfaces.json` 里有接口项。
+- 每个设施技能必须至少有占位 `method` + 占位 `recipe`（`enabled:false`）。
+- 占位条目允许完整字段（含 `unlock` 与产出），以便后续直接启用。
+- 运行时默认优先级：
+  - `recipe` 覆盖 > `method` 默认 > `life-skill-recipe-interfaces` 默认
+
+## 7) 配方匹配与结算（强制）
+
+- `inputs` 允许**超集投料**（包含配方所需即可）。
+- 命中配方后，已投入材料**全部消耗**。
+- 同输入+method 命中多条时：按 `match_weight` 加权随机。
+- `match_weight` 缺省默认 `1`（等概率）。
+- 产出模型：
+  - `main_output`：成功固定产出
+  - `bonus_outputs[]`：成功后逐条独立概率判定（可同时命中多个）
+- 副产物品质：与主产物同口径，参与技能驱动品质上修。
+
+## 8) 成本/时间/成长时机（强制）
+
+- 材料消耗：制作开始即扣（成功失败都扣）。
+- 时间推进：制作开始即消耗 `cost.ticks`（成功失败都推进）。
+- 熟练度计数：仅制作成功时增加 `proficiency_usage_key`。
+
+## 9) 解锁规则（强制）
+
+- `unlock` 为数组，数组内按 AND（全部满足）判定。
+- 首版支持 `unlock.type`：
+  - `skill_level_min`
+  - `quest_flag`
+  - `npc_flag`
+- `quest_flag` / `npc_flag` 在 `RecipeSchema` 中仅校验必填字段；是否在任务/NPC 中存在由运行时/策划流程自行保证，不在统一 schema 层对照权威表。
+
+## 10) 工位与系统关系（强制）
+
+- `allowed_station_tags` 判定为 ANY（有交集即可）。
+- `recipe_system` 与 `required_skill_id` 为弱绑定，允许跨 `life_*` 组合。
+
+## 11) 迁移与兼容（强制）
+
+- 上线路径：新表优先，旧烹饪表兜底。
+- 已知配方存档新增：`known_recipe_ids_by_system`。
+- 兼容期双写：
+  - 旧：`known_cooking_recipe_ids`
+  - 新：`known_recipe_ids_by_system.cooking`
+- 已知配方记录时机：首次成功制作后写入新结构。
+
+## 12) 可见性与编辑器（强制）
+
+- `enabled:false` 条目：编辑器可见，运行时不可匹配。
+- `recipe_processor_id` 使用集中注册表管理，不允许“自由字符串即有效”。
+
+## 13) 禁止事项
+
+- 禁止并行维护第二套“配方主数据真相”。
+- 禁止在烹饪迁移阶段私改平衡口径（成功率、品质曲线、熟练度时机）。
+- 禁止删除旧字段兼容而不提供迁移/双写。

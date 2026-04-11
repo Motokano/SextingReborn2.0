@@ -12,10 +12,9 @@ alwaysApply: false
 
 当前构建脚本合并顺序为（先出现先保留，重复 `id` 会跳过并警告）：
 1. `consumables_base.csv`
-2. `materials_base.csv`
-3. `materials_cooking_raw.csv`
-4. `product_base.csv`
-5. `currency_base.csv`
+2. `materials_all.csv`（原 `materials_base` + `materials_cooking_raw` 合并维护）
+3. `product_base.csv`
+4. `currency_base.csv`
 
 ## 2) 输出 JSON 字段口径（强制）
 
@@ -23,6 +22,8 @@ alwaysApply: false
 - `item_id`
 - `name` / `name_0`（通常来自 CSV 的 `sn`，兼容回退）
 - `weight_kg`（来自 CSV 的 `weight`）
+
+**腐败**：CSV 列 **`spoilage_ticks`**（非负整数）→ `items.json` 的 **`spoilage_ticks`**；**`0` 表示不腐败**。构建脚本仍接受已废弃列 **`spoilage`**（`none`/`fast`/`slow`）并映射为数字，便于旧表合并；新数据请只填 **`spoilage_ticks`**。
 
 并应包含语言展示相关字段（由 CSV 列决定）：
 - `sn`
@@ -40,6 +41,11 @@ alwaysApply: false
 - `usable` → `item.usable`（布尔）
 - `use_buff_id` → `item.use_buff_id`（字符串，指向 `data/buffs.json` 的 `buff_id`）
 
+**烹饪原料**（与 `cooking-system-agent` 一致）：
+- CSV 列 **`cooking_ingredient`**：`1` / `true` / `yes` → `items.json` 写入 **`cooking_ingredient: true`**。
+- **未声明、空值或非真** → **不写该键**；运行时视为**不可**作为烹饪投料。
+- 新增物品若需进锅，须在 `materials_all.csv` 等对应 CSV 显式填 `cooking_ingredient`；合并表缺列时可运行 **`node tools/ensure-cooking-ingredient-column.mjs`**（仅当表头尚无该列时追加空列，并按脚本内 id 集合填默认 `1`，之后以 CSV 为准维护）。
+
 如果后续扩展新的展示字段或新的 effect 列，需要同步更新本规则与构建脚本。
 
 ## 3) 构建流程口径
@@ -47,4 +53,11 @@ alwaysApply: false
 - 修改 CSV 之后必须运行：
   - `node tools/build-items-json.mjs` 或 `npm run build:items`
 - 不要手工直接编辑 `data/items.json` 当作唯一来源；否则会在下一次构建被覆盖。
+
+## 4) 烹饪系统常数（不参与 items 合并）
+
+- **烹饪技法表**：改 `data/cooking-methods.csv` 后执行 **`npm run build:cooking-methods`**（`tools/build-cooking-methods-json.mjs`）生成 `data/cooking-methods.json`；勿长期只改 JSON 以免被构建覆盖。
+- [`data/cooking-system-config.csv`](data/cooking-system-config.csv)：`key,value,notes` 三列；运行时由 `scene-app.js` `loadConfig` 拉取并解析 **`cooking_global_failure_item_id`**（全局失败产物 **item_id**，可在 **`tools/item-editor.html`** 编辑对应物品后改 CSV 中的 id）。**不**由 `build-items-json.mjs` 处理。
+- `cooking_stamina_per_tick`：**已废弃**（体力仅 `cooking-methods.json` 的 `stamina_cost` 一次性扣除）；保留行仅为占位说明。
+- 全局失败产物默认 id：`food_cooking_fail_generic`（`consumables_base.csv`），与 CSV 默认行一致即可。
 

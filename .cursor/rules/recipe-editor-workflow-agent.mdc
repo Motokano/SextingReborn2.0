@@ -1,0 +1,68 @@
+# 统一配方编辑器分层工作流（Agent 规则）
+
+当编辑 `tools/recipe-editor.html`（或其后续拆分模块）时，必须遵守本规则，目标是让**不会写 JSON 的策划**也能完成配方配置。
+
+## 目标与范围
+
+- 首要目标：用“流程化向导”替代“纯 JSON 编辑”。
+- 首版示例系统：`life_cooking`（烹饪）。
+- 同时保留统一配方系统口径：`recipes.json`、`recipe-methods.json`、`life-skill-recipe-interfaces.json`。
+
+## 六步向导（强制）
+
+1. **引导读取文件**
+   - 必须明确显示“必选文件/可选文件”说明。
+   - 必选：`recipes.json`、`recipe-methods.json`、`life-skill-recipe-interfaces.json`。
+   - 可选：`items.json`（材料与产出辅助选择）、`scene-app.js`（processor 下拉辅助）。
+   - 导入失败必须给可定位错误（文件名 + 原因）。
+
+2. **选择生活技能**
+   - 技能来源优先：`interfaces` 的 key（如 `life_cooking`）。
+   - UI 要求：只允许选择单个系统，后续步骤基于该系统过滤。
+
+3. **选择技法（method）**
+   - 只展示 `method.recipe_system === 选中系统` 的方法。
+   - 必须允许“新建配方时绑定 method_id”。
+
+4. **配置配方材料（可搜索）**
+   - 材料输入必须支持搜索（按 `item_id`、`sn`、`placeholder_name`）。
+   - 优先使用 `items.json` 作为候选源；未导入时允许手输并给提示。
+   - 支持增删多行 `inputs`，每行至少 `item_id` + `count`。
+
+5. **定义配方属性**
+   - 需可视化编辑：`enabled`、`required_skill_level_min`、`match_weight`、`base_output_quality_tier`、`proficiency_usage_key`。
+   - 可选覆盖字段（允许 null）：`required_skill_id`、`recipe_processor_id`、`base_success_rate`、`allowed_station_tags`、`failure_output`。
+
+6. **定义配方产出**
+   - 主产出 `main_output` 必填（`item_id` + `count`）。
+   - 副产出 `bonus_outputs` 支持多行，含 `chance`（0..1）。
+   - 产出物品选择与材料同样使用可搜索候选。
+
+## 数据与行为约束（强制）
+
+- 保存时必须写入标准结构：
+  - `recipes[recipe_id].recipe_system` 与已选系统一致；
+  - `method_id` 与已选技法一致；
+  - `recipe_id` 命名遵循 `{recipe_system}.{slug}`。
+- 保持与统一校验器一致：保存后可直接跑 `RecipeSchema.validateRecipeTables`。
+- 不得引入第二套配方真相；导出仍落到三表 JSON。
+- `enabled:false` 占位条目在编辑器中可见，不可默认隐藏全部占位。
+
+## 交互体验约束（面向策划）
+
+- 页面应有“当前步骤”与“下一步提示”，避免策划迷路。
+- 错误信息要中文可读，避免只抛技术错误。
+- 提供“按系统 + method 过滤的配方列表”，支持点选回填并继续编辑。
+
+## 多 Agent 拆分建议（用于并行部署）
+
+- **Agent A（加载与向导骨架）**
+  - 实现第 1-3 步：文件导入、系统选择、技法选择、状态同步。
+- **Agent B（材料与物品搜索）**
+  - 实现第 4 步：`items.json` 导入、可搜索输入、inputs 多行编辑。
+- **Agent C（属性与产出）**
+  - 实现第 5-6 步：属性表单、主副产出编辑、bonus 概率校验。
+- **Agent D（落盘与校验）**
+  - 负责写回 `state.recipes`、运行统一校验、导出 JSON 与错误展示。
+
+> 并行实施时，最终集成必须由一个 Agent 统一验收：导入 -> 选择系统/技法 -> 配料 -> 属性 -> 产出 -> 保存 -> 校验 -> 导出，全链路可用。

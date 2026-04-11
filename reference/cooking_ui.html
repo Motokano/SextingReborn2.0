@@ -1,0 +1,258 @@
+import React, { useState, useEffect } from 'react';
+import { Flame, Trash2, X, Star, AlertCircle, CheckCircle2, Timer, ChefHat } from 'lucide-react';
+
+const CookingApp = () => {
+  // 状态：idle (空闲), cooking (进行中), success (成功), failure (失败)
+  const [status, setStatus] = useState('idle');
+  const [progress, setProgress] = useState(0);
+  const [selectedMethod, setSelectedMethod] = useState('grill'); // boil, grill, steam
+
+  // 模拟食材状态
+  const [ingredients, setIngredients] = useState([
+    { id: 1, name: '生肉', icon: '🥩', filled: true },
+    { id: 2, name: '盐', icon: '🧂', filled: true },
+    { id: 3, name: null, icon: null, filled: false },
+  ]);
+
+  // 处理烹饪逻辑
+  useEffect(() => {
+    let timer;
+    if (status === 'cooking') {
+      timer = setInterval(() => {
+        setProgress((prev) => {
+          if (prev >= 100) {
+            clearInterval(timer);
+            // 随机模拟结果
+            const isSuccess = Math.random() > 0.2;
+            setStatus(isSuccess ? 'success' : 'failure');
+            return 100;
+          }
+          return prev + 2;
+        });
+      }, 50);
+    }
+    return () => clearInterval(timer);
+  }, [status]);
+
+  const handleStart = () => {
+    setProgress(0);
+    setStatus('cooking');
+  };
+
+  const handleReset = () => {
+    setStatus('idle');
+    setProgress(0);
+  };
+
+  // 背景蒙层样式
+  const overlayStyle = "fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 font-sans";
+  
+  // 面板主色调说明：
+  // 主色：#1C1612 (生铁黑)
+  // 辅色：#2D241E (焦木棕)
+  // 强调色：#D35400 (炉火橙)
+  // 提示色：#F39C12 (琥珀黄)
+
+  return (
+    <div className={overlayStyle}>
+      {/* 主面板 */}
+      <div className="relative w-full max-w-3xl bg-[#1C1612] border-2 border-[#3D2D24] rounded-lg shadow-[0_0_50px_rgba(0,0,0,0.8)] overflow-hidden flex flex-col">
+        
+        {/* 顶部标题栏 */}
+        <div className="h-12 bg-[#2D241E] border-b border-[#3D2D24] flex items-center justify-between px-6">
+          <div className="flex items-center gap-2">
+            <Flame className="text-[#D35400]" size={18} fill="#D35400" />
+            <span className="text-[#E0D7D0] font-bold tracking-widest text-sm">简易石灶 (等级 1)</span>
+          </div>
+          <button className="text-stone-500 hover:text-white transition-colors">
+            <X size={20} />
+          </button>
+        </div>
+
+        <div className="flex flex-1 min-h-[400px]">
+          
+          {/* 左侧：工艺与材料区 */}
+          <div className="w-1/2 p-6 border-r border-[#3D2D24] flex flex-col gap-6">
+            
+            {/* 工艺选择 */}
+            <div className="space-y-3">
+              <label className="text-[10px] text-stone-500 uppercase tracking-widest font-black">烹饪工艺</label>
+              <div className="flex gap-2">
+                {[
+                  { id: 'boil', label: '煮' },
+                  { id: 'grill', label: '烤' },
+                  { id: 'steam', label: '蒸' }
+                ].map(m => (
+                  <button 
+                    key={m.id}
+                    onClick={() => setSelectedMethod(m.id)}
+                    disabled={status === 'cooking'}
+                    className={`flex-1 py-2 text-xs font-bold rounded border transition-all ${
+                      selectedMethod === m.id 
+                      ? 'bg-[#D35400] border-[#FF6B00] text-white shadow-[0_0_10px_rgba(211,84,0,0.3)]' 
+                      : 'bg-[#120E0C] border-[#2D241E] text-stone-500 hover:border-stone-600'
+                    }`}
+                  >
+                    {m.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* 材料投放区 */}
+            <div className="space-y-3 flex-1">
+              <div className="flex justify-between items-end">
+                <label className="text-[10px] text-stone-500 uppercase tracking-widest font-black">材料投入 (3/5)</label>
+                <button 
+                  onClick={() => setIngredients([ {id:1, name:null, icon:null, filled:false}, {id:2, name:null, icon:null, filled:false}, {id:3, name:null, icon:null, filled:false} ])}
+                  className="text-[10px] text-stone-600 hover:text-amber-600 flex items-center gap-1 transition-colors uppercase font-bold"
+                >
+                  <Trash2 size={10} /> 清空材料
+                </button>
+              </div>
+              
+              <div className="grid grid-cols-3 gap-3">
+                {ingredients.map((item, idx) => (
+                  <div 
+                    key={idx}
+                    className={`aspect-square rounded border-2 flex items-center justify-center relative transition-all ${
+                      item.filled 
+                      ? 'bg-[#2D241E] border-[#4D3F35] shadow-inner' 
+                      : 'bg-[#120E0C] border-[#2D241E] border-dashed cursor-pointer hover:border-stone-600'
+                    }`}
+                  >
+                    {item.filled ? (
+                      <span className="text-2xl drop-shadow-md">{item.icon}</span>
+                    ) : (
+                      <div className="w-1/2 h-1/2 bg-stone-900/50 rounded-full flex items-center justify-center">
+                         <span className="text-stone-800 text-lg">+</span>
+                      </div>
+                    )}
+                    {item.filled && status === 'failure' && (
+                      <div className="absolute inset-0 bg-black/60 flex items-center justify-center rounded">
+                        <span className="text-[8px] text-red-500 font-bold uppercase rotate-12 border border-red-500 px-1">已损毁</span>
+                      </div>
+                    )}
+                  </div>
+                ))}
+                {/* 锁定槽位示例 */}
+                <div className="aspect-square rounded bg-black/20 border border-transparent flex items-center justify-center grayscale opacity-30">
+                  <span className="text-xs">🔒</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* 右侧：结果与预览区 */}
+          <div className="w-1/2 p-6 flex flex-col">
+            <label className="text-[10px] text-stone-500 uppercase tracking-widest font-black mb-3">预计结果</label>
+            
+            <div className="flex-1 bg-[#120E0C] rounded border border-[#2D241E] p-6 flex flex-col items-center justify-center relative overflow-hidden shadow-inner">
+              
+              {/* 根据状态显示不同的视图 */}
+              {status === 'idle' && (
+                <div className="text-center space-y-4 animate-in fade-in duration-500">
+                  <div className="w-20 h-20 rounded-full border-2 border-dashed border-stone-800 flex items-center justify-center mx-auto bg-stone-900/20">
+                    <ChefHat size={32} className="text-stone-800" />
+                  </div>
+                  <div className="space-y-1">
+                    <p className="text-stone-600 text-xs font-bold">待匹配配方...</p>
+                    <p className="text-[10px] text-stone-700">放入正确的食材组合以解锁</p>
+                  </div>
+                </div>
+              )}
+
+              {status === 'cooking' && (
+                <div className="text-center space-y-6 w-full animate-in zoom-in-95 duration-300">
+                  <div className="relative w-24 h-24 mx-auto flex items-center justify-center">
+                    <svg className="w-full h-full transform -rotate-90">
+                      <circle cx="48" cy="48" r="44" stroke="#2D241E" strokeWidth="4" fill="transparent" />
+                      <circle cx="48" cy="48" r="44" stroke="#D35400" strokeWidth="4" fill="transparent" 
+                        strokeDasharray={276} strokeDashoffset={276 - (276 * progress) / 100}
+                        style={{ transition: 'stroke-dashoffset 0.1s linear' }}
+                      />
+                    </svg>
+                    <Timer className="absolute text-[#D35400] animate-pulse" size={24} />
+                  </div>
+                  <div className="space-y-2">
+                    <p className="text-[#D35400] text-xs font-black tracking-[.2em] uppercase">正在烹饪中...</p>
+                    <div className="h-1.5 w-full bg-[#2D241E] rounded-full overflow-hidden">
+                       <div className="h-full bg-gradient-to-right bg-[#D35400]" style={{ width: `${progress}%` }} />
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {status === 'success' && (
+                <div className="text-center space-y-4 animate-in zoom-in-90 duration-500">
+                  <div className="relative">
+                    <div className="absolute inset-0 blur-xl bg-amber-500/20 rounded-full"></div>
+                    <div className="w-24 h-24 bg-[#2D241E] border-2 border-[#F39C12] rounded flex items-center justify-center mx-auto shadow-[0_0_20px_rgba(243,156,18,0.2)]">
+                      <span className="text-4xl">🍖</span>
+                    </div>
+                    <div className="absolute -bottom-2 -right-2 bg-[#F39C12] text-black rounded-full p-1 border-2 border-[#1C1612]">
+                      <CheckCircle2 size={16} />
+                    </div>
+                  </div>
+                  <div className="space-y-1">
+                    <h4 className="text-white font-black text-lg tracking-widest uppercase">烤制肉排</h4>
+                    <div className="flex justify-center gap-0.5">
+                      {[1,2,3,4].map(i => <Star key={i} size={12} fill="#F39C12" stroke="none" />)}
+                      <Star size={12} fill="#3D2D24" stroke="none" />
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {status === 'failure' && (
+                <div className="text-center space-y-4 animate-in zoom-in-95 duration-300">
+                   <div className="w-24 h-24 bg-[#120E0C] border-2 border-red-900/50 rounded flex items-center justify-center mx-auto grayscale">
+                      <span className="text-4xl opacity-40">🪨</span>
+                   </div>
+                   <div className="space-y-1">
+                      <div className="flex items-center justify-center gap-2 text-red-500">
+                        <AlertCircle size={14} />
+                        <h4 className="font-black text-xs uppercase tracking-widest">烹饪失败</h4>
+                      </div>
+                      <p className="text-stone-600 text-[10px]">温度过高或材料比例不对</p>
+                   </div>
+                </div>
+              )}
+            </div>
+
+            {/* 操作按钮 */}
+            <div className="mt-6 space-y-3">
+              {status === 'idle' ? (
+                <button 
+                  onClick={handleStart}
+                  className="w-full py-4 bg-[#D35400] hover:bg-[#E67E22] text-white font-black text-sm tracking-[.3em] uppercase rounded shadow-[0_4px_0_#A04000] active:translate-y-1 active:shadow-none transition-all"
+                >
+                  开始烹饪
+                </button>
+              ) : status === 'cooking' ? (
+                <button disabled className="w-full py-4 bg-stone-800 text-stone-500 font-black text-sm tracking-[.3em] uppercase rounded cursor-not-allowed opacity-50">
+                  烹饪中...
+                </button>
+              ) : (
+                <button 
+                  onClick={handleReset}
+                  className="w-full py-4 bg-[#2D241E] hover:bg-stone-800 text-stone-300 font-black text-sm tracking-[.3em] uppercase rounded border border-stone-700 transition-all"
+                >
+                  继续尝试
+                </button>
+              )}
+            </div>
+
+          </div>
+        </div>
+
+        {/* 底部装饰提示 */}
+        <div className="h-8 bg-black/40 px-6 flex items-center justify-center">
+           <p className="text-[9px] text-stone-600 font-bold italic tracking-tighter">温馨提示：高等级灶台能显著提高「成功率」并降低「燃料消耗」</p>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default CookingApp;

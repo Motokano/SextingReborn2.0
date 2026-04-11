@@ -1,0 +1,84 @@
+{
+  "methods": {
+    "roast_bake": {
+      "method_id": "roast_bake",
+      "name": "烤/焙",
+      "requires_accessory_item_id": null,
+      "fuel_cost": 40,
+      "water_cost": 0,
+      "craft_ticks": 2,
+      "stamina_cost": 4,
+      "base_success_rate": 0.9
+    },
+    "boil_stew": {
+      "method_id": "boil_stew",
+      "name": "煮/炖",
+      "requires_accessory_item_id": "tool_pot_clay_cooking",
+      "fuel_cost": 30,
+      "water_cost": 60,
+      "craft_ticks": 3,
+      "stamina_cost": 6,
+      "base_success_rate": 0.88
+    },
+    "steam": {
+      "method_id": "steam",
+      "name": "蒸",
+      "requires_accessory_item_id": "tool_steamer_bamboo_cooking",
+      "fuel_cost": 25,
+      "water_cost": 80,
+      "craft_ticks": 3,
+      "stamina_cost": 6,
+      "base_success_rate": 0.86
+    },
+    "stir_fry": {
+      "method_id": "stir_fry",
+      "name": "炒/煸",
+      "requires_accessory_item_id": "tool_wok_iron_cooking",
+      "fuel_cost": 35,
+      "water_cost": 5,
+      "craft_ticks": 2,
+      "stamina_cost": 5,
+      "base_success_rate": 0.87
+    },
+    "deep_fry": {
+      "method_id": "deep_fry",
+      "name": "炸",
+      "requires_accessory_item_id": "tool_fryer_pot_iron_cooking",
+      "fuel_cost": 42,
+      "water_cost": 15,
+      "craft_ticks": 2,
+      "stamina_cost": 5,
+      "base_success_rate": 0.85
+    },
+    "pickle_salt": {
+      "method_id": "pickle_salt",
+      "name": "腌/盐渍",
+      "requires_accessory_item_id": "tool_pickling_jar_cooking",
+      "fuel_cost": 15,
+      "water_cost": 40,
+      "craft_ticks": 4,
+      "stamina_cost": 4,
+      "base_success_rate": 0.9
+    },
+    "ferment": {
+      "method_id": "ferment",
+      "name": "发酵",
+      "requires_accessory_item_id": "tool_fermentation_jar_cooking",
+      "fuel_cost": 20,
+      "water_cost": 50,
+      "craft_ticks": 6,
+      "stamina_cost": 5,
+      "base_success_rate": 0.82
+    },
+    "grind_mix": {
+      "method_id": "grind_mix",
+      "name": "研磨/调和",
+      "requires_accessory_item_id": "tool_mortar_pestle_cooking",
+      "fuel_cost": 12,
+      "water_cost": 0,
+      "craft_ticks": 1,
+      "stamina_cost": 3,
+      "base_success_rate": 0.92
+    }
+  }
+}

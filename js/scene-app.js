@@ -8,6 +8,42 @@
     var CENTER_OFFSET_Y = E.CENTER_OFFSET_Y;
 
     var idleTickMs = 3000;
+    var COOKING_FUEL_MAX_POINTS = 1000;
+    var COOKING_WATER_MAX_POINTS = 1000;
+    var cookingMethods = {};
+    var cookingRecipes = [];
+    /** 由 data/cooking-system-config.csv 注入，可改 id 后 item-editor 维护物品模板 */
+    var cookingFailureItemId = 'food_cooking_fail_generic';
+    var cookingTempStationLifetimeTicks = 50;
+    var COOKING_TEMP_STATION_ENTITY_ID = 'cooking_station_temp';
+    /** 与 `npc_station_cooking_base_triggers` / `NPCSystem` demo flags 对齐：主灶台绑定设施 NPC 时，修好前禁止烹饪 UI 与结算 */
+    var COOKING_BASE_STATION_UNLOCK_FLAG = 'cooking_base_station_unlocked';
+
+    function parseCookingSystemConfigCsv(text) {
+        var out = {
+            cooking_global_failure_item_id: 'food_cooking_fail_generic',
+            cooking_temp_station_lifetime_ticks: 50
+        };
+        if (!text || typeof text !== 'string') return out;
+        var lines = text.split(/\r?\n/);
+        var li;
+        for (li = 0; li < lines.length; li++) {
+            var line = String(lines[li] || '').trim();
+            if (!line || line.indexOf('#') === 0) continue;
+            var comma = line.indexOf(',');
+            if (comma < 0) continue;
+            var key = line.slice(0, comma).trim();
+            var rest = line.slice(comma + 1);
+            var comma2 = rest.indexOf(',');
+            var val = (comma2 >= 0 ? rest.slice(0, comma2) : rest).trim();
+            if (key === 'cooking_global_failure_item_id' && val) out.cooking_global_failure_item_id = val;
+            if (key === 'cooking_temp_station_lifetime_ticks') {
+                var life = Math.max(1, Math.floor(Number(val) || 0));
+                if (life > 0) out.cooking_temp_station_lifetime_ticks = life;
+            }
+        }
+        return out;
+    }
     var gatheringIdleTimer = null;
     var gatheringIdleAt = null;
     var tiaoXiIdleTimer = null;
@@ -142,7 +178,13 @@
                 }
             }
             this.action_bar_slots = out;
-        }
+        },
+        /** 烹饪图鉴：recipe_id -> true（存档见 SaveSystem sceneUi.known_cooking_recipe_ids） */
+        known_cooking_recipes: {},
+        /** 统一配方图鉴：known_recipe_ids_by_system[recipe_system][recipe_id] = true（迁移期运行时双写） */
+        known_recipe_ids_by_system: {},
+        /** 统一配方 schema 校验报告（仅调试可视化，不影响主流程） */
+        recipe_schema_validation_report: { errors: [], warnings: [] }
     };
 
     function showMsg(text, logType) {
@@ -258,7 +300,11 @@
                 next[row.id] = mergeMapData(baseMaps[row.id] || {}, row.json);
             }
             E.setMaps(next);
-            render();
+            if (window.NPCSystem && typeof window.NPCSystem.preloadAllMapsNpcs === 'function') {
+                window.NPCSystem.preloadAllMapsNpcs(next).then(function () { render(); }).catch(function () { render(); });
+            } else {
+                render();
+            }
         });
     }
 
@@ -478,7 +524,13 @@
             fetch(base + 'post-effects.json').then(function (r) { return r.ok ? r.json() : {}; }).catch(function () { return {}; }),
             fetch(base + 'survival-skills.json').then(function (r) { return r.ok ? r.json() : null; }).catch(function () { return null; }),
             fetch(base + 'gathering_point_instances.json').then(function (r) { return r.ok ? r.json() : null; }).catch(function () { return null; }),
-            fetch(base + 'combat-enemies.json').then(function (r) { return r.ok ? r.json() : { enemies: {} }; }).catch(function () { return { enemies: {} }; })
+            fetch(base + 'combat-enemies.json').then(function (r) { return r.ok ? r.json() : { enemies: {} }; }).catch(function () { return { enemies: {} }; }),
+            fetch(base + 'cooking-methods.json').then(function (r) { return r.ok ? r.json() : { methods: {} }; }).catch(function () { return { methods: {} }; }),
+            fetch(base + 'cooking-recipes.json').then(function (r) { return r.ok ? r.json() : { recipes: [] }; }).catch(function () { return { recipes: [] }; }),
+            fetch(base + 'cooking-system-config.csv').then(function (r) { return r.ok ? r.text() : ''; }).catch(function () { return ''; }),
+            fetch(base + 'recipes.json').then(function (r) { return r.ok ? r.json() : { recipes: {} }; }).catch(function () { return { recipes: {} }; }),
+            fetch(base + 'recipe-methods.json').then(function (r) { return r.ok ? r.json() : { methods: {} }; }).catch(function () { return { methods: {} }; }),
+            fetch(base + 'life-skill-recipe-interfaces.json').then(function (r) { return r.ok ? r.json() : { interfaces: {} }; }).catch(function () { return { interfaces: {} }; })
         ]).then(function (arr) {
             if (!arr[0]) throw new Error('[SceneApp] ui_text_zhCN.json missing');
             if (!window.UIText || typeof window.UIText.setDict !== 'function') throw new Error('[SceneApp] UIText module missing');
@@ -515,6 +567,54 @@
                 window.SurvivalSkills.setTable(arr[12]);
             }
             if (window.CombatEnemies && arr[14]) window.CombatEnemies.setTable(arr[14]);
+            cookingMethods = (arr[15] && arr[15].methods && typeof arr[15].methods === 'object') ? arr[15].methods : {};
+            cookingRecipes = (arr[16] && Array.isArray(arr[16].recipes)) ? arr[16].recipes : [];
+            var cookCfgParsed = parseCookingSystemConfigCsv(arr[17] != null ? String(arr[17]) : '');
+            cookingFailureItemId = cookCfgParsed.cooking_global_failure_item_id || 'food_cooking_fail_generic';
+            cookingTempStationLifetimeTicks = Math.max(1, Math.floor(Number(cookCfgParsed.cooking_temp_station_lifetime_ticks) || 50));
+            if (window.RecipeSchema && typeof window.RecipeSchema.validateRecipeTables === 'function') {
+                try {
+                    var schemaReport = window.RecipeSchema.validateRecipeTables(arr[18], arr[19], arr[20], {});
+                    if (window.SceneCtx) window.SceneCtx.recipe_schema_validation_report = schemaReport || { errors: [], warnings: [] };
+                    var schemaErrors = (schemaReport && Array.isArray(schemaReport.errors)) ? schemaReport.errors : [];
+                    var schemaWarnings = (schemaReport && Array.isArray(schemaReport.warnings)) ? schemaReport.warnings : [];
+                    if (schemaErrors.length > 0) {
+                        console.error('[RecipeSchema] validation failed:', {
+                            error_count: schemaErrors.length,
+                            warning_count: schemaWarnings.length
+                        });
+                        schemaErrors.forEach(function (e, idx) {
+                            console.error('[RecipeSchema][Error#' + (idx + 1) + ']', e);
+                        });
+                    } else if (schemaWarnings.length > 0) {
+                        console.warn('[RecipeSchema] validation warnings:', {
+                            error_count: 0,
+                            warning_count: schemaWarnings.length
+                        });
+                        schemaWarnings.forEach(function (w, idx) {
+                            console.warn('[RecipeSchema][Warn#' + (idx + 1) + ']', w);
+                        });
+                    }
+                } catch (eSchema) {
+                    console.error('[RecipeSchema] validator runtime error:', eSchema);
+                    if (window.SceneCtx) {
+                        window.SceneCtx.recipe_schema_validation_report = {
+                            errors: [{
+                                entry_type: 'runtime',
+                                id: 'recipe_schema_validator',
+                                error_code: 'VALIDATOR_RUNTIME_ERROR',
+                                message: (eSchema && eSchema.message) ? String(eSchema.message) : String(eSchema)
+                            }],
+                            warnings: []
+                        };
+                    }
+                }
+            }
+            if (window.RecipeSystem && typeof window.RecipeSystem.setTables === 'function') {
+                window.RecipeSystem.setTables(arr[18], arr[19], arr[20]);
+                registerCookingRecipeProcessorIfNeeded();
+            }
+            renderRecipeSchemaValidationDebugList();
             var defEqFetched = (arr[7] && typeof arr[7] === 'object') ? arr[7] : {};
             var defaultEquipMerged = {};
             var sk;
@@ -708,6 +808,7 @@
                 IE.initNewGame();
                 if (window.GameLog) window.GameLog.log(ui('log.system.starter.equip'), 'system');
             }
+            resetCookingStateForNewCharacter();
             var handEl = document.querySelector('input[name="creation-hand"]:checked');
             var legEl = document.querySelector('input[name="creation-leg"]:checked');
             var genderEl = document.querySelector('input[name="creation-gender"]:checked');
@@ -1694,6 +1795,238 @@
         }
     }
 
+    function getMapsRef() {
+        if (!E || typeof E.getMaps !== 'function') return null;
+        return E.getMaps();
+    }
+
+    function normalizeTempStationEntry(entry) {
+        if (!entry || typeof entry !== 'object') return null;
+        var mapId = entry.map_id != null ? String(entry.map_id) : '';
+        var x = Math.floor(Number(entry.x));
+        var y = Math.floor(Number(entry.y));
+        var placedTick = Math.max(0, Math.floor(Number(entry.placed_tick) || 0));
+        var despawnTick = Math.max(0, Math.floor(Number(entry.despawn_tick) || 0));
+        if (!mapId || !isFinite(x) || !isFinite(y) || despawnTick <= 0) return null;
+        return {
+            entity_id: COOKING_TEMP_STATION_ENTITY_ID,
+            map_id: mapId,
+            x: x,
+            y: y,
+            placed_tick: placedTick,
+            despawn_tick: despawnTick,
+            allowed_methods: Array.isArray(entry.allowed_methods)
+                ? entry.allowed_methods.map(function (m0) { return String(m0).trim(); }).filter(function (m1) { return !!m1; })
+                : [],
+            installed_accessory_item_ids: Array.isArray(entry.installed_accessory_item_ids)
+                ? entry.installed_accessory_item_ids.map(function (z) { return String(z).trim(); }).filter(function (z0) { return !!z0; })
+                : []
+        };
+    }
+
+    function getCookingTempStationsRuntime() {
+        if (!window.SceneCtx) return [];
+        if (!Array.isArray(window.SceneCtx.cooking_temp_stations_runtime)) {
+            window.SceneCtx.cooking_temp_stations_runtime = [];
+        }
+        var arr = window.SceneCtx.cooking_temp_stations_runtime;
+        var out = [];
+        var i;
+        for (i = 0; i < arr.length; i++) {
+            var norm = normalizeTempStationEntry(arr[i]);
+            if (norm) out.push(norm);
+        }
+        window.SceneCtx.cooking_temp_stations_runtime = out;
+        return out;
+    }
+
+    function isCookingTempStationEntity(rec) {
+        if (!rec || typeof rec !== 'object') return false;
+        return String(rec.entity_id || '') === COOKING_TEMP_STATION_ENTITY_ID;
+    }
+
+    function findCookingTempStationAt(mapId, x, y) {
+        var arr = getCookingTempStationsRuntime();
+        var i;
+        for (i = 0; i < arr.length; i++) {
+            var e = arr[i];
+            if (e.map_id === mapId && e.x === x && e.y === y) return e;
+        }
+        return null;
+    }
+
+    function upsertCookingTempStation(entry) {
+        var norm = normalizeTempStationEntry(entry);
+        if (!norm) return null;
+        var arr = getCookingTempStationsRuntime();
+        var i;
+        for (i = 0; i < arr.length; i++) {
+            var e = arr[i];
+            if (e.map_id === norm.map_id && e.x === norm.x && e.y === norm.y) {
+                arr[i] = norm;
+                return norm;
+            }
+        }
+        arr.push(norm);
+        return norm;
+    }
+
+    function removeCookingTempStationAt(mapId, x, y) {
+        var arr = getCookingTempStationsRuntime();
+        var i;
+        for (i = arr.length - 1; i >= 0; i--) {
+            var e = arr[i];
+            if (e.map_id === mapId && e.x === x && e.y === y) arr.splice(i, 1);
+        }
+    }
+
+    function syncCookingTempStationsIntoMaps() {
+        var maps = getMapsRef();
+        if (!maps || typeof maps !== 'object') return;
+        var mapIds = Object.keys(maps);
+        var i;
+        for (i = 0; i < mapIds.length; i++) {
+            var map = maps[mapIds[i]];
+            if (!map || !Array.isArray(map.entities)) continue;
+            var kept = [];
+            var j;
+            for (j = 0; j < map.entities.length; j++) {
+                var rec = map.entities[j];
+                if (isCookingTempStationEntity(rec)) continue;
+                kept.push(rec);
+            }
+            map.entities = kept;
+        }
+        var arr = getCookingTempStationsRuntime();
+        for (i = 0; i < arr.length; i++) {
+            var e = arr[i];
+            var m = maps[e.map_id];
+            if (!m) continue;
+            if (!Array.isArray(m.entities)) m.entities = [];
+            m.entities.push({
+                x: e.x,
+                y: e.y,
+                entity_id: COOKING_TEMP_STATION_ENTITY_ID,
+                placed_tick: e.placed_tick,
+                despawn_tick: e.despawn_tick,
+                allowed_methods: Array.isArray(e.allowed_methods) ? e.allowed_methods.slice() : [],
+                installed_accessory_item_ids: Array.isArray(e.installed_accessory_item_ids) ? e.installed_accessory_item_ids.slice() : []
+            });
+        }
+    }
+
+    function placeTempCookingStation(mapId, x, y, options) {
+        var gt = window.GameTime && typeof window.GameTime.getState === 'function' ? window.GameTime.getState() : null;
+        var placedTick = gt && typeof gt.totalTicks === 'number' ? Math.max(0, Math.floor(gt.totalTicks)) : 0;
+        var opts = options && typeof options === 'object' ? options : {};
+        var life = Math.max(1, Math.floor(Number(opts.lifetime_ticks) || cookingTempStationLifetimeTicks || 50));
+        var next = upsertCookingTempStation({
+            map_id: String(mapId || ''),
+            x: Math.floor(Number(x)),
+            y: Math.floor(Number(y)),
+            placed_tick: placedTick,
+            despawn_tick: placedTick + life,
+            allowed_methods: Array.isArray(opts.allowed_methods) ? opts.allowed_methods.slice() : [],
+            installed_accessory_item_ids: Array.isArray(opts.installed_accessory_item_ids) ? opts.installed_accessory_item_ids.slice() : []
+        });
+        if (!next) return null;
+        syncCookingTempStationsIntoMaps();
+        markCellDirty(next.map_id, next.x, next.y);
+        if (window.SceneRenderer) window.SceneRenderer.render();
+        return Object.assign({}, next);
+    }
+
+    function forEachAdjacentCell(x, y, fn) {
+        var dy;
+        for (dy = -1; dy <= 1; dy++) {
+            var dx;
+            for (dx = -1; dx <= 1; dx++) {
+                if (!dx && !dy) continue;
+                var rx = (x | 0) + dx;
+                var ry = (y | 0) + dy;
+                if (fn(rx, ry) === true) return true;
+            }
+        }
+        return false;
+    }
+
+    function isCookingStationAnnotationText(s) {
+        if (E && typeof E.isBlockingStationAnnotation === 'function') return E.isBlockingStationAnnotation(s);
+        return !!(s && (s === '烹饪台' || s.indexOf('烹饪') >= 0 || s.indexOf('灶') >= 0));
+    }
+
+    // 口径：烹饪设施仅允许邻接交互，不允许站在同格交互。
+    function getCurrentCookingStationContext() {
+        if (!E || typeof E.getState !== 'function') return null;
+        var st = E.getState();
+        var hit = null;
+        forEachAdjacentCell(st.x, st.y, function (x, y) {
+            var rec = (E.getEntityRecordAt && typeof E.getEntityRecordAt === 'function') ? E.getEntityRecordAt(x, y) : null;
+            if (isCookingTempStationEntity(rec)) {
+                var temp = findCookingTempStationAt(st.mapId, x, y) || normalizeTempStationEntry(Object.assign({ map_id: st.mapId }, rec));
+                hit = {
+                    station_type: 'temp',
+                    map_id: st.mapId,
+                    x: x,
+                    y: y,
+                    temp_station: temp
+                };
+                return true;
+            }
+            var ann = (E.getAnnotationAt && typeof E.getAnnotationAt === 'function') ? E.getAnnotationAt(x, y) : null;
+            var s = ann != null ? String(ann) : '';
+            if (isCookingStationAnnotationText(s)) {
+                hit = {
+                    station_type: 'main',
+                    map_id: st.mapId,
+                    x: x,
+                    y: y
+                };
+                return true;
+            }
+            return false;
+        });
+        if (hit) return hit;
+        return null;
+    }
+
+    /** 当前地图格是否配置了「灶格 → 设施 NPC」绑定（见 map.cooking_station_interact_npc_*） */
+    function isCookingStationCellRepairGated(mapId, x, y) {
+        if (!E || typeof E.getMap !== 'function' || typeof E.getCookingStationInteractNpcId !== 'function') return false;
+        var map = E.getMap();
+        if (!map || String(map.map_id || '') !== String(mapId || '')) return false;
+        return !!E.getCookingStationInteractNpcId(x | 0, y | 0);
+    }
+
+    /**
+     * 主灶台且地图绑定了设施 NPC 时：未解锁 `COOKING_BASE_STATION_UNLOCK_FLAG` 则禁止打开烹饪 UI、倒水添柴、tryCookAtStation。
+     * 临时灶 / 无绑定格不受此限制。
+     */
+    function isCookingUiBlockedByRepairForContext(stationCtx) {
+        if (!stationCtx || stationCtx.station_type === 'temp') return false;
+        if (!isCookingStationCellRepairGated(stationCtx.map_id, stationCtx.x, stationCtx.y)) return false;
+        if (!window.NPCSystem || typeof window.NPCSystem.isDemoFlagTrue !== 'function') return true;
+        return !window.NPCSystem.isDemoFlagTrue(COOKING_BASE_STATION_UNLOCK_FLAG);
+    }
+
+    function isCookingUiBlockedByRepair() {
+        return isCookingUiBlockedByRepairForContext(getCurrentCookingStationContext());
+    }
+
+    function isAdjacentToWarehouseTile() {
+        if (!E || typeof E.getState !== 'function' || typeof E.getAnnotationAt !== 'function') return false;
+        var st = E.getState();
+        var ok = false;
+        forEachAdjacentCell(st.x, st.y, function (x, y) {
+            if (E.getAnnotationAt(x, y) === '仓库') {
+                ok = true;
+                return true;
+            }
+            return false;
+        });
+        return ok;
+    }
+
     function hasAdjacentEnemyNow() {
         if (!E || typeof E.getState !== 'function' || typeof E.getEnemyAt !== 'function') return false;
         var st = E.getState();
@@ -1782,6 +2115,1200 @@
         stopGatheringIdle();
         showMsg(ui('log.info.gather.stop'), 'info');
         if (window.SceneRenderer) window.SceneRenderer.render();
+    }
+
+    function findFirstContainerSlotByItemId(itemId) {
+        if (!IE || !itemId) return null;
+        var targets = [
+            { type: 'pocket', arr: IE.getPocketArray ? IE.getPocketArray() : [] },
+            { type: 'vest', arr: IE.getVestArray ? IE.getVestArray() : [] },
+            { type: 'backpack', arr: IE.getBackpackArray ? IE.getBackpackArray() : [] }
+        ];
+        var t, i;
+        for (t = 0; t < targets.length; t++) {
+            var arr = targets[t].arr;
+            if (!Array.isArray(arr)) continue;
+            for (i = 0; i < arr.length; i++) {
+                var cell = arr[i];
+                if (!cell || !cell.item_id) continue;
+                if (String(cell.item_id) === String(itemId)) {
+                    return { containerType: targets[t].type, index: i };
+                }
+            }
+        }
+        return null;
+    }
+
+    function getInventoryContainerArray(containerType) {
+        if (!IE) return null;
+        var t = containerType != null ? String(containerType) : '';
+        if (t === 'pocket') return IE.getPocketArray ? IE.getPocketArray() : null;
+        if (t === 'vest') return IE.getVestArray ? IE.getVestArray() : null;
+        if (t === 'backpack') return IE.getBackpackArray ? IE.getBackpackArray() : null;
+        return null;
+    }
+
+    function cookingResourceSlotKey(containerType, index) {
+        return String(containerType || '') + '|' + String(Math.floor(Number(index)));
+    }
+
+    function parseCookingResourceSlotKey(key) {
+        if (key == null || typeof key !== 'string') return null;
+        var p = key.indexOf('|');
+        if (p <= 0) return null;
+        var ct = key.slice(0, p);
+        var idx = parseInt(key.slice(p + 1), 10);
+        if (!isFinite(idx) || idx < 0) return null;
+        return { containerType: ct, index: idx };
+    }
+
+    function resolveCookingSlotOrFirst(forcedSlot, predicateFn) {
+        if (forcedSlot && forcedSlot.containerType != null && forcedSlot.index != null) {
+            var arrF = getInventoryContainerArray(forcedSlot.containerType);
+            var ix = Math.floor(Number(forcedSlot.index));
+            if (!Array.isArray(arrF) || !(ix >= 0) || ix >= arrF.length) return null;
+            var cellF = arrF[ix];
+            if (!cellF || !cellF.item_id) return null;
+            if (typeof predicateFn === 'function' && !predicateFn(cellF)) return null;
+            return { containerType: String(forcedSlot.containerType), index: ix, item: cellF };
+        }
+        return findFirstContainerSlotByPredicate(predicateFn);
+    }
+
+    function findAllContainerSlotsByPredicate(predicateFn) {
+        if (!IE || typeof predicateFn !== 'function') return [];
+        var targets = [
+            { type: 'pocket', arr: IE.getPocketArray ? IE.getPocketArray() : [] },
+            { type: 'vest', arr: IE.getVestArray ? IE.getVestArray() : [] },
+            { type: 'backpack', arr: IE.getBackpackArray ? IE.getBackpackArray() : [] }
+        ];
+        var out = [];
+        var t, i;
+        for (t = 0; t < targets.length; t++) {
+            var arr = targets[t].arr;
+            if (!Array.isArray(arr)) continue;
+            for (i = 0; i < arr.length; i++) {
+                var cell = arr[i];
+                if (!cell || !cell.item_id) continue;
+                if (predicateFn(cell, targets[t].type, i)) {
+                    out.push({ containerType: targets[t].type, index: i, item: cell });
+                }
+            }
+        }
+        return out;
+    }
+
+    function findFirstContainerSlotByPredicate(predicateFn) {
+        if (!IE || typeof predicateFn !== 'function') return null;
+        var targets = [
+            { type: 'pocket', arr: IE.getPocketArray ? IE.getPocketArray() : [] },
+            { type: 'vest', arr: IE.getVestArray ? IE.getVestArray() : [] },
+            { type: 'backpack', arr: IE.getBackpackArray ? IE.getBackpackArray() : [] }
+        ];
+        var t, i;
+        for (t = 0; t < targets.length; t++) {
+            var arr = targets[t].arr;
+            if (!Array.isArray(arr)) continue;
+            for (i = 0; i < arr.length; i++) {
+                var cell = arr[i];
+                if (!cell || !cell.item_id) continue;
+                if (predicateFn(cell, targets[t].type, i)) {
+                    return { containerType: targets[t].type, index: i, item: cell };
+                }
+            }
+        }
+        return null;
+    }
+
+    function getItemTemplateSafe(itemId) {
+        if (!IE || typeof IE.getItemTemplate !== 'function' || !itemId) return null;
+        return IE.getItemTemplate(itemId);
+    }
+
+    function hasItemById(itemId) {
+        return !!findFirstContainerSlotByItemId(itemId);
+    }
+
+    function getItemWaterPoints(itemId) {
+        var tpl = getItemTemplateSafe(itemId);
+        var n = tpl && tpl.water_points != null ? parseInt(tpl.water_points, 10) : 0;
+        return (isFinite(n) && n > 0) ? n : 0;
+    }
+    function getItemFuelPoints(itemId) {
+        var tpl = getItemTemplateSafe(itemId);
+        var n = tpl && tpl.fuel_points != null ? parseInt(tpl.fuel_points, 10) : 0;
+        return (isFinite(n) && n > 0) ? n : 0;
+    }
+
+    /** 仅当物品模板显式 cooking_ingredient===true 时可作烹饪投料；缺省或 false 均不可。 */
+    function isItemAllowedCookingIngredient(itemId) {
+        var tpl = getItemTemplateSafe(itemId);
+        return !!(tpl && tpl.cooking_ingredient === true);
+    }
+
+    function getInventoryCountByItemId(itemId) {
+        if (!IE || !itemId) return 0;
+        var total = 0;
+        var groups = [
+            IE.getPocketArray ? IE.getPocketArray() : [],
+            IE.getVestArray ? IE.getVestArray() : [],
+            IE.getBackpackArray ? IE.getBackpackArray() : []
+        ];
+        var g, i;
+        for (g = 0; g < groups.length; g++) {
+            var arr = groups[g];
+            if (!Array.isArray(arr)) continue;
+            for (i = 0; i < arr.length; i++) {
+                var cell = arr[i];
+                if (!cell || !cell.item_id) continue;
+                if (String(cell.item_id) !== String(itemId)) continue;
+                total += (cell.count != null && cell.count > 0) ? parseInt(cell.count, 10) : 1;
+            }
+        }
+        return total;
+    }
+
+    function normalizeCookingInputs(rawInputs) {
+        if (!Array.isArray(rawInputs) || !rawInputs.length) return [];
+        var byId = {};
+        var i;
+        for (i = 0; i < rawInputs.length; i++) {
+            var r = rawInputs[i] || {};
+            var id = r.item_id != null ? String(r.item_id).trim() : '';
+            if (!id) continue;
+            var c = parseInt(r.count, 10);
+            if (!isFinite(c) || c <= 0) c = 1;
+            byId[id] = (byId[id] || 0) + c;
+        }
+        var out = [];
+        var keys = Object.keys(byId);
+        for (i = 0; i < keys.length; i++) out.push({ item_id: keys[i], count: byId[keys[i]] });
+        return out;
+    }
+
+    function toCountMap(list) {
+        var m = {};
+        var i;
+        for (i = 0; i < list.length; i++) {
+            var it = list[i] || {};
+            var id = it.item_id != null ? String(it.item_id) : '';
+            var c = parseInt(it.count, 10);
+            if (!id || !isFinite(c) || c <= 0) continue;
+            m[id] = (m[id] || 0) + c;
+        }
+        return m;
+    }
+
+    function recipeInputsSatisfiedBySelected(recipe, selectedInputs) {
+        var selectedMap = toCountMap(selectedInputs || []);
+        var reqs = Array.isArray(recipe && recipe.inputs) ? recipe.inputs : [];
+        var j;
+        for (j = 0; j < reqs.length; j++) {
+            var need = reqs[j] || {};
+            var id = need.item_id != null ? String(need.item_id) : '';
+            var cnt = parseInt(need.count, 10);
+            if (!isFinite(cnt) || cnt <= 0) cnt = 1;
+            if (!id || (selectedMap[id] || 0) < cnt) return false;
+        }
+        return reqs.length > 0;
+    }
+
+    /** 盲配：仅按投料 multiset 是否包含配方需求命中；可选 methodFilter 限制 required_method。 */
+    function matchCookingRecipesByInputs(selectedInputs, methodFilter) {
+        var out = [];
+        var i;
+        var mf = methodFilter != null && String(methodFilter) !== '' ? String(methodFilter) : null;
+        for (i = 0; i < cookingRecipes.length; i++) {
+            var r = cookingRecipes[i] || {};
+            if (mf != null && String(r.required_method || '') !== mf) continue;
+            if (recipeInputsSatisfiedBySelected(r, selectedInputs)) out.push(r);
+        }
+        return out;
+    }
+
+    /** 按 match_weight（缺省 1）加权随机选一条配方。 */
+    function pickCookingRecipeWeighted(recipes) {
+        if (!Array.isArray(recipes) || !recipes.length) return null;
+        var total = 0;
+        var i, w;
+        var weights = [];
+        for (i = 0; i < recipes.length; i++) {
+            w = recipes[i].match_weight != null ? parseFloat(recipes[i].match_weight, 10) : 1;
+            if (!isFinite(w) || w <= 0) w = 1;
+            weights.push(w);
+            total += w;
+        }
+        var roll = Math.random() * total;
+        var acc = 0;
+        for (i = 0; i < recipes.length; i++) {
+            acc += weights[i];
+            if (roll < acc) return recipes[i];
+        }
+        return recipes[recipes.length - 1];
+    }
+
+    function consumeInventoryItemsByList(inputList) {
+        var consumed = [];
+        var i;
+        for (i = 0; i < inputList.length; i++) {
+            var entry = inputList[i] || {};
+            var id = entry.item_id != null ? String(entry.item_id) : '';
+            var need = parseInt(entry.count, 10);
+            if (!id || !isFinite(need) || need <= 0) continue;
+            var k;
+            for (k = 0; k < need; k++) {
+                var slot = findFirstContainerSlotByItemId(id);
+                if (!slot) return { ok: false, consumed: consumed };
+                var taken = IE.takeItemFromContainer(slot.containerType, slot.index);
+                if (!taken || !taken.success || !taken.item) return { ok: false, consumed: consumed };
+                consumed.push(taken.item);
+            }
+        }
+        return { ok: true, consumed: consumed };
+    }
+
+    function putItemsBack(items) {
+        if (!Array.isArray(items) || !IE || typeof IE.putItemIntoDefaultContainer !== 'function') return;
+        var i;
+        for (i = 0; i < items.length; i++) {
+            var it = items[i];
+            if (!it || !it.item_id) continue;
+            IE.putItemIntoDefaultContainer(it);
+        }
+    }
+
+    function advanceWorldTicks(n) {
+        var times = parseInt(n, 10);
+        if (!isFinite(times) || times <= 0) return;
+        var i;
+        for (i = 0; i < times; i++) {
+            if (window.Survival && typeof window.Survival.advanceTick === 'function') window.Survival.advanceTick();
+        }
+    }
+
+    // ---------------------------
+    // Cooking craft (async, tick-driven; 21.10.1 / 21.10.3)
+    // ---------------------------
+    var cookingCraftIdleTimer = null;
+    var COOKING_RECIPE_SYSTEM = 'life_cooking';
+    var COOKING_DEFAULT_PROCESSOR_ID = 'processor.life_cooking.default';
+    var cookingRecipeProcessorRegistered = false;
+
+    function registerCookingRecipeProcessorIfNeeded() {
+        if (cookingRecipeProcessorRegistered) return;
+        if (!window.RecipeSystem || typeof window.RecipeSystem.registerProcessor !== 'function') return;
+        window.RecipeSystem.registerProcessor(COOKING_DEFAULT_PROCESSOR_ID, function (payload) {
+            var recipe = payload && payload.recipe && typeof payload.recipe === 'object' ? payload.recipe : {};
+            var route = payload && payload.route && typeof payload.route === 'object' ? payload.route : {};
+            var method = payload && payload.method && typeof payload.method === 'object' ? payload.method : {};
+            var mainOut = recipe && recipe.main_output && typeof recipe.main_output === 'object' ? recipe.main_output : null;
+            var bonusOut = Array.isArray(recipe && recipe.bonus_outputs) ? recipe.bonus_outputs : [];
+            var failOut = route && route.failure_output && typeof route.failure_output === 'object' ? route.failure_output : null;
+            return {
+                selected_recipe_id: payload && payload.recipe_id ? String(payload.recipe_id) : '',
+                method_id: method && method.method_id != null ? String(method.method_id) : '',
+                route: route,
+                main_output: mainOut,
+                bonus_outputs: bonusOut,
+                failure_output: failOut,
+                base_success_rate: (route && route.base_success_rate != null)
+                    ? route.base_success_rate
+                    : (method && method.base_success_rate != null ? method.base_success_rate : null),
+                base_output_quality_tier: (recipe && recipe.base_output_quality_tier != null) ? recipe.base_output_quality_tier : 0
+            };
+        });
+        cookingRecipeProcessorRegistered = true;
+    }
+
+    /** 灶台工艺 id 与 cooking-methods.json 键一致（如 boil_stew）；统一表 method_id 为 life_cooking.boil_stew。 */
+    function toUnifiedCookingMethodId(legacyMethodId) {
+        var s = String(legacyMethodId || '').trim();
+        if (!s) return '';
+        if (s.indexOf('life_cooking.') === 0) return s;
+        return 'life_cooking.' + s;
+    }
+
+    function tryResolveCookingByUnifiedRoute(methodId, selectedInputs) {
+        if (!window.RecipeSystem || typeof window.RecipeSystem.craft !== 'function') {
+            return { ok: false, reason: 'recipe_system_unavailable' };
+        }
+        registerCookingRecipeProcessorIfNeeded();
+        var ret = window.RecipeSystem.craft({
+            recipe_system: COOKING_RECIPE_SYSTEM,
+            method_id: toUnifiedCookingMethodId(methodId),
+            inputs: Array.isArray(selectedInputs) ? selectedInputs : []
+        });
+        if (!ret || ret.ok !== true) {
+            return {
+                ok: false,
+                reason: 'recipe_system_craft_failed',
+                error: ret && ret.error ? ret.error : null
+            };
+        }
+        var data = ret.result && typeof ret.result === 'object' ? ret.result : {};
+        return { ok: true, data: data };
+    }
+
+    function getActiveCookingCraft() {
+        var cs = getCookingStationState();
+        var ac = cs && cs.active_craft && typeof cs.active_craft === 'object' ? cs.active_craft : null;
+        if (!ac) return null;
+        var rt = Math.max(0, Math.floor(Number(ac.remaining_ticks) || 0));
+        if (!(rt > 0)) return null;
+        return Object.assign({}, ac, { remaining_ticks: rt });
+    }
+
+    function clearActiveCookingCraft() {
+        var cs = getCookingStationState();
+        if (cs) cs.active_craft = null;
+    }
+
+    function stopCookingCraftIdle() {
+        if (cookingCraftIdleTimer) {
+            try { clearInterval(cookingCraftIdleTimer); } catch (e0) { /* ignore */ }
+            cookingCraftIdleTimer = null;
+        }
+    }
+
+    function startCookingCraftIdleIfNeeded() {
+        if (cookingCraftIdleTimer) return;
+        if (!getActiveCookingCraft()) return;
+        cookingCraftIdleTimer = setInterval(function () {
+            if (window.Survival && typeof window.Survival.advanceTick === 'function') window.Survival.advanceTick();
+        }, getIdleTickMs());
+    }
+
+    function finalizeCookingCraftNow(craftSnap, options) {
+        var opts = options && typeof options === 'object' ? options : {};
+        var craft = craftSnap && typeof craftSnap === 'object' ? craftSnap : getActiveCookingCraft();
+        // finalize 前清掉 active_craft，防止重入
+        clearActiveCookingCraft();
+        stopCookingCraftIdle();
+
+        if (!craft || !craft.method_id) return;
+        var mid = String(craft.method_id).trim();
+        var m = cookingMethods && cookingMethods[mid] ? cookingMethods[mid] : null;
+        var failId = cookingFailureItemId;
+        var forceFailure = !!opts.force_failure;
+        var selected = normalizeCookingInputs(craft.inputs || []);
+        var matched = matchCookingRecipesByInputs(selected, mid);
+
+        function grantItemOrDrop(itemId, qualityTier) {
+            var outInst = { item_id: itemId, count: 1, quality_tier: qualityTier || 0 };
+            var placed = IE.putItemIntoDefaultContainer(outInst);
+            if (!placed || !placed.placed) {
+                var st0 = E.getState();
+                if (typeof IE.addItemToGround === 'function') IE.addItemToGround(st0.mapId, st0.x, st0.y, outInst);
+            }
+        }
+
+        if (forceFailure) {
+            grantItemOrDrop(failId, 0);
+            showMsg(ui('cooking.msg.done_fail', { item: failId }), 'warn');
+            if (typeof updateBackpackPanel === 'function') updateBackpackPanel();
+            if (typeof updateStatusPanel === 'function') updateStatusPanel();
+            if (window.SceneRenderer) window.SceneRenderer.render();
+            return;
+        }
+
+        var pick = null;
+        var pickRecipeId = '';
+        var pickBaseSuccessRate = null;
+        var pickBaseOutputQualityTier = 0;
+        var pickMainOutput = null;
+        var pickBonusOutputs = [];
+        var pickFailureOutput = null;
+        var unifiedRet = tryResolveCookingByUnifiedRoute(mid, selected);
+        if (unifiedRet.ok && unifiedRet.data) {
+            var routeData = unifiedRet.data;
+            pickRecipeId = routeData.selected_recipe_id || '';
+            pickMainOutput = routeData.main_output && typeof routeData.main_output === 'object' ? routeData.main_output : null;
+            pickBonusOutputs = Array.isArray(routeData.bonus_outputs) ? routeData.bonus_outputs : [];
+            pickFailureOutput = routeData.failure_output && typeof routeData.failure_output === 'object' ? routeData.failure_output : null;
+            pickBaseSuccessRate = routeData.base_success_rate;
+            pickBaseOutputQualityTier = routeData.base_output_quality_tier != null ? routeData.base_output_quality_tier : 0;
+            if (pickMainOutput && pickMainOutput.item_id) {
+                pick = {
+                    output_item_id: String(pickMainOutput.item_id),
+                    recipe_id: pickRecipeId,
+                    bonus_outputs: pickBonusOutputs,
+                    failure_output: pickFailureOutput
+                };
+            }
+        } else if (unifiedRet.error && unifiedRet.error.code !== 'RECIPE_NO_MATCHED_RECIPE') {
+            try { console.warn('[Cooking][UnifiedRoute] craft failed:', unifiedRet.error); } catch (eLog0) { /* ignore */ }
+        }
+        if (!pick) {
+            if (!matched.length) {
+                grantItemOrDrop(failId, 0);
+                showMsg(ui('cooking.msg.no_recipe_fail', { item: failId }), 'warn');
+                if (typeof updateBackpackPanel === 'function') updateBackpackPanel();
+                if (typeof updateStatusPanel === 'function') updateStatusPanel();
+                if (window.SceneRenderer) window.SceneRenderer.render();
+                return;
+            }
+            pick = pickCookingRecipeWeighted(matched);
+            if (!pick) {
+                grantItemOrDrop(failId, 0);
+                showMsg(ui('cooking.msg.done_fail', { item: failId }), 'warn');
+                if (typeof updateBackpackPanel === 'function') updateBackpackPanel();
+                if (typeof updateStatusPanel === 'function') updateStatusPanel();
+                if (window.SceneRenderer) window.SceneRenderer.render();
+                return;
+            }
+            pickRecipeId = pick.recipe_id ? String(pick.recipe_id) : '';
+            pickBaseSuccessRate = pick.base_success_rate != null ? pick.base_success_rate : (m ? m.base_success_rate : 1);
+            pickBaseOutputQualityTier = pick.base_output_quality_tier != null ? pick.base_output_quality_tier : 0;
+        }
+
+        var pq = window.ProductionQuality;
+        var cookingLv = Math.max(0, Math.min(COOKING_SKILL_MAX_LEVEL, getCookingSkillLevel()));
+        var evalRes = (pq && typeof pq.evaluateProduction === 'function')
+            ? pq.evaluateProduction({
+                base_success_rate: pickBaseSuccessRate != null ? pickBaseSuccessRate : (m ? m.base_success_rate : 1),
+                // 烹饪系统单独处理技能成功率与溢出品质，不复用通用 skill_level 乘区。
+                skill_level: 0,
+                input_items: Array.isArray(craft.consumed_items) ? craft.consumed_items.slice() : [],
+                base_output_quality_tier: pickBaseOutputQualityTier
+            })
+            : { success: true, output_quality_tier: 0, success_rate: 1 };
+        var baseSuccessRate = Math.max(0, Number(evalRes.success_rate) || 0);
+        var bonusFromCookingLv = cookingLv * COOKING_SUCCESS_BONUS_PER_LEVEL;
+        var successRateRaw = baseSuccessRate + bonusFromCookingLv;
+        var successRateFinal = Math.max(0, Math.min(1, successRateRaw));
+        var overflowRate = Math.max(0, successRateRaw - 1);
+        var isMaxCookingLv = cookingLv >= COOKING_SKILL_MAX_LEVEL;
+        evalRes.success = isMaxCookingLv ? true : (Math.random() < successRateFinal);
+        evalRes.success_rate = successRateFinal;
+        if (evalRes.success) {
+            var qOut = (evalRes.output_quality_tier != null) ? Number(evalRes.output_quality_tier) : 0;
+            if ((Math.random() < Math.max(0, Math.min(1, overflowRate))) && qOut < 5) qOut += 1;
+            evalRes.output_quality_tier = qOut;
+        } else {
+            evalRes.output_quality_tier = null;
+        }
+
+        var outputItemId = failId;
+        if (evalRes.success) {
+            if (pickMainOutput && pickMainOutput.item_id) outputItemId = String(pickMainOutput.item_id);
+            else outputItemId = pick.output_item_id;
+        } else if (pickFailureOutput && pickFailureOutput.item_id) {
+            outputItemId = String(pickFailureOutput.item_id);
+        } else if (pick && pick.failure_output && pick.failure_output.item_id) {
+            outputItemId = String(pick.failure_output.item_id);
+        }
+        var outputQuality = evalRes.success ? (evalRes.output_quality_tier != null ? evalRes.output_quality_tier : 0) : 0;
+        if (evalRes.success && pickRecipeId) markCookingRecipeKnown(pickRecipeId);
+        if (evalRes.success) addCookingSuccessProficiency();
+
+        grantItemOrDrop(outputItemId, outputQuality);
+        if (evalRes.success && Array.isArray(pickBonusOutputs) && pickBonusOutputs.length) {
+            var bi;
+            for (bi = 0; bi < pickBonusOutputs.length; bi++) {
+                var brow = pickBonusOutputs[bi] || {};
+                var bid = brow.item_id != null ? String(brow.item_id) : '';
+                var bcnt = Math.max(1, parseInt(brow.count, 10) || 1);
+                var bchance = Number(brow.chance);
+                if (!bid) continue;
+                if (!(bchance >= 0)) bchance = 1;
+                bchance = Math.max(0, Math.min(1, bchance));
+                if (Math.random() >= bchance) continue;
+                var bk;
+                for (bk = 0; bk < bcnt; bk++) grantItemOrDrop(bid, outputQuality);
+            }
+        }
+        showMsg(
+            evalRes.success
+                ? ui('cooking.msg.done_ok', { item: outputItemId, method: mid })
+                : ui('cooking.msg.done_fail', { item: failId }),
+            evalRes.success ? 'success' : 'warn'
+        );
+        if (typeof updateBackpackPanel === 'function') updateBackpackPanel();
+        if (typeof updateStatusPanel === 'function') updateStatusPanel();
+        if (window.SceneRenderer) window.SceneRenderer.render();
+    }
+
+    function tickCookingCraftAfterWorldTick() {
+        var cs = getCookingStationState();
+        if (!cs || !cs.active_craft || typeof cs.active_craft !== 'object') return;
+        var rt = Math.max(0, Math.floor(Number(cs.active_craft.remaining_ticks) || 0));
+        if (!(rt > 0)) {
+            cs.active_craft = null;
+            stopCookingCraftIdle();
+            return;
+        }
+        rt -= 1;
+        cs.active_craft.remaining_ticks = rt;
+        if (rt <= 0) {
+            finalizeCookingCraftNow(cs.active_craft);
+        }
+        if (cookingStationPanelOpen) renderCookingStationPanel();
+    }
+
+    function isActiveCraftOnTempStation(mapId, x, y) {
+        var cs = getCookingStationState();
+        var ac = cs && cs.active_craft && typeof cs.active_craft === 'object' ? cs.active_craft : null;
+        if (!ac || !ac.station_ref || typeof ac.station_ref !== 'object') return false;
+        var ref = ac.station_ref;
+        return String(ref.station_type || '') === 'temp'
+            && String(ref.map_id || '') === String(mapId || '')
+            && Math.floor(Number(ref.x)) === Math.floor(Number(x))
+            && Math.floor(Number(ref.y)) === Math.floor(Number(y));
+    }
+
+    function tickCookingTempStationsAfterWorldTick() {
+        var gt = window.GameTime && typeof window.GameTime.getState === 'function' ? window.GameTime.getState() : null;
+        var nowTick = gt && typeof gt.totalTicks === 'number' ? Math.max(0, Math.floor(gt.totalTicks)) : 0;
+        var arr = getCookingTempStationsRuntime();
+        if (!arr.length) return;
+        var changed = false;
+        var i;
+        for (i = arr.length - 1; i >= 0; i--) {
+            var e = arr[i];
+            if (nowTick < e.despawn_tick) continue;
+            var hasActiveCraft = isActiveCraftOnTempStation(e.map_id, e.x, e.y);
+            if (hasActiveCraft) {
+                var cs = getCookingStationState();
+                var ac = cs && cs.active_craft && typeof cs.active_craft === 'object' ? cs.active_craft : null;
+                if (ac) finalizeCookingCraftNow(ac, { force_failure: true, reason: 'temp_station_despawn' });
+            }
+            arr.splice(i, 1);
+            changed = true;
+            markCellDirty(e.map_id, e.x, e.y);
+        }
+        if (changed) {
+            syncCookingTempStationsIntoMaps();
+            if (cookingStationPanelOpen) renderCookingStationPanel();
+            if (window.SceneRenderer) window.SceneRenderer.render();
+        }
+    }
+
+    function findAdjacentStandableCellAround(x, y) {
+        if (!E || typeof E.canStandAt !== 'function') return null;
+        var dirsR1 = [
+            { dx: 0, dy: -1 },
+            { dx: 1, dy: 0 },
+            { dx: 0, dy: 1 },
+            { dx: -1, dy: 0 },
+            { dx: 1, dy: -1 },
+            { dx: 1, dy: 1 },
+            { dx: -1, dy: 1 },
+            { dx: -1, dy: -1 }
+        ];
+        var dirsR2 = [
+            { dx: 0, dy: -2 }, { dx: 1, dy: -2 }, { dx: 2, dy: -2 }, { dx: 2, dy: -1 },
+            { dx: 2, dy: 0 }, { dx: 2, dy: 1 }, { dx: 2, dy: 2 }, { dx: 1, dy: 2 },
+            { dx: 0, dy: 2 }, { dx: -1, dy: 2 }, { dx: -2, dy: 2 }, { dx: -2, dy: 1 },
+            { dx: -2, dy: 0 }, { dx: -2, dy: -1 }, { dx: -2, dy: -2 }, { dx: -1, dy: -2 }
+        ];
+        var i;
+        for (i = 0; i < dirsR1.length; i++) {
+            var nx = (x | 0) + dirsR1[i].dx;
+            var ny = (y | 0) + dirsR1[i].dy;
+            if (E.canStandAt(nx, ny)) return { x: nx, y: ny };
+        }
+        for (i = 0; i < dirsR2.length; i++) {
+            var nx2 = (x | 0) + dirsR2[i].dx;
+            var ny2 = (y | 0) + dirsR2[i].dy;
+            if (E.canStandAt(nx2, ny2)) return { x: nx2, y: ny2 };
+        }
+        return null;
+    }
+
+    // NPC 上班后强占其工作格：若玩家占格，立即挤到该格邻近可用位（不额外推进 tick）。
+    function resolveNpcHardOccupancyAfterWorldTick() {
+        if (!E || typeof E.getState !== 'function' || typeof E.getMap !== 'function' || typeof E.setState !== 'function') return false;
+        if (!window.NPCSystem || typeof window.NPCSystem.isNpcPresentNow !== 'function') return false;
+        var st = E.getState();
+        var map = E.getMap();
+        if (!st || !map || !Array.isArray(map.npcs) || !map.npcs.length) return false;
+
+        var px = st.x | 0;
+        var py = st.y | 0;
+        var i;
+        for (i = 0; i < map.npcs.length; i++) {
+            var n = map.npcs[i];
+            if (!n) continue;
+            var nx = n.x | 0;
+            var ny = n.y | 0;
+            if (nx !== px || ny !== py) continue;
+            var npcId = n.npc_id != null ? String(n.npc_id) : '';
+            if (!npcId) continue;
+            if (!window.NPCSystem.isNpcPresentNow(npcId)) continue;
+            var target = findAdjacentStandableCellAround(nx, ny);
+            if (!target) {
+                showMsg('NPC 上班占位冲突：周围无可用格，玩家暂留原地。', 'warn');
+                return false;
+            }
+            E.setState(st.mapId, target.x, target.y);
+            if (window.SceneCtx && typeof window.SceneCtx.pushDirtyCell === 'function') {
+                window.SceneCtx.pushDirtyCell(nx, ny);
+                window.SceneCtx.pushDirtyCell(target.x, target.y);
+            }
+            showMsg('NPC 已上班，你被挤到了旁边。', 'info');
+            return true;
+        }
+        return false;
+    }
+
+    function patchSurvivalTickForCookingCraftOnce() {
+        if (!window.Survival || typeof window.Survival.advanceTick !== 'function') return;
+        if (window.Survival.__cookingCraftPatched) return;
+        var oldAdvance = window.Survival.advanceTick;
+        window.Survival.advanceTick = function () {
+            var ret = oldAdvance.apply(this, arguments);
+            try { resolveNpcHardOccupancyAfterWorldTick(); } catch (e2) { /* ignore */ }
+            try { tickCookingTempStationsAfterWorldTick(); } catch (e1) { /* ignore */ }
+            try { tickCookingCraftAfterWorldTick(); } catch (e0) { /* ignore */ }
+            return ret;
+        };
+        window.Survival.__cookingCraftPatched = true;
+    }
+
+    var COOKING_SKILL_MAX_LEVEL = 100;
+    var COOKING_MAX_PROFICIENCY_USES = 5000000;
+    var COOKING_SUCCESS_BONUS_PER_LEVEL = 0.005;
+
+    function getCookingSkillLevel() {
+        if (IE && typeof IE.getSkillLevel === 'function') {
+            var lv = parseInt(IE.getSkillLevel('life_cooking'), 10);
+            if (isFinite(lv) && lv > 0) return lv;
+        }
+        return 0;
+    }
+
+    function getCookingLevelBySuccessUses(successUses) {
+        var uses = Math.max(0, parseInt(successUses, 10) || 0);
+        // 对齐生活技能：以累计使用次数驱动成长，5000000 次达到满级 100。
+        var ratio = Math.max(0, Math.min(1, uses / COOKING_MAX_PROFICIENCY_USES));
+        return Math.max(1, Math.min(COOKING_SKILL_MAX_LEVEL, 1 + Math.floor(ratio * (COOKING_SKILL_MAX_LEVEL - 1))));
+    }
+
+    function recalcCharacterStatsFromIE() {
+        if (!window.CharacterAttributes || typeof window.CharacterAttributes.recalcCharacterStats !== 'function') return;
+        if (!IE || typeof IE.getState !== 'function') return;
+        window.CharacterAttributes.recalcCharacterStats({
+            getEquipmentState: function () { return IE.getState().equipment; },
+            getSkillsState: function () { return IE.getState().skills; },
+            getItemTemplate: IE.getItemTemplate,
+            getEnchantEntry: IE.getEnchantEntry,
+            getStrengthLevel: function () { return IE.getSkillLevel('survival_strength'); }
+        });
+    }
+
+    function ensureLifeCookingSkillEntry() {
+        if (!IE || typeof IE.getState !== 'function') return false;
+        var st = IE.getState();
+        if (!st || typeof st !== 'object') return false;
+        if (!st.skills || typeof st.skills !== 'object') st.skills = {};
+        if (!st.skills.life_cooking || typeof st.skills.life_cooking !== 'object') {
+            st.skills.life_cooking = { level: 1, move_usage: {} };
+            recalcCharacterStatsFromIE();
+            return true;
+        }
+        var changed = false;
+        var lv = Math.max(0, parseInt(st.skills.life_cooking.level, 10) || 0);
+        if (lv < 1) {
+            st.skills.life_cooking.level = 1;
+            changed = true;
+        } else if (lv > COOKING_SKILL_MAX_LEVEL) {
+            st.skills.life_cooking.level = COOKING_SKILL_MAX_LEVEL;
+            changed = true;
+        }
+        if (!st.skills.life_cooking.move_usage || typeof st.skills.life_cooking.move_usage !== 'object') {
+            st.skills.life_cooking.move_usage = {};
+            changed = true;
+        }
+        var uses = Math.max(0, parseInt(st.skills.life_cooking.move_usage.cooking_success, 10) || 0);
+        var mappedLv = getCookingLevelBySuccessUses(uses);
+        if ((parseInt(st.skills.life_cooking.level, 10) || 0) !== mappedLv) {
+            st.skills.life_cooking.level = mappedLv;
+            changed = true;
+        }
+        if (changed) recalcCharacterStatsFromIE();
+        return true;
+    }
+
+    function addCookingSuccessProficiency() {
+        if (!IE || typeof IE.incrementSkillMoveUsage !== 'function' || typeof IE.getState !== 'function') return;
+        if (!ensureLifeCookingSkillEntry()) return;
+        var newUses = IE.incrementSkillMoveUsage('life_cooking', 'cooking_success', 1);
+        var st = IE.getState();
+        if (!st || !st.skills || !st.skills.life_cooking) return;
+        var ent = st.skills.life_cooking;
+        var nextLv = getCookingLevelBySuccessUses(newUses);
+        var curLv = Math.max(1, parseInt(ent.level, 10) || 1);
+        if (nextLv !== curLv) {
+            ent.level = nextLv;
+            recalcCharacterStatsFromIE();
+        }
+    }
+
+    var DEFAULT_COOKING_INSTALLED_ACCESSORIES = [];
+
+    function getCookingStationState() {
+        if (!window.SceneCtx) {
+            return {
+                fuel_points: 0,
+                water_points: 0,
+                water_unlimited: false,
+                installed_accessory_item_ids: DEFAULT_COOKING_INSTALLED_ACCESSORIES.slice()
+            };
+        }
+        if (!window.SceneCtx.cooking_station_runtime || typeof window.SceneCtx.cooking_station_runtime !== 'object') {
+            window.SceneCtx.cooking_station_runtime = {
+                fuel_points: 0,
+                water_points: 0,
+                water_unlimited: false,
+                installed_accessory_item_ids: DEFAULT_COOKING_INSTALLED_ACCESSORIES.slice(),
+                active_craft: null
+            };
+        }
+        var s = window.SceneCtx.cooking_station_runtime;
+        if (!isFinite(parseInt(s.fuel_points, 10))) s.fuel_points = 0;
+        if (!isFinite(parseInt(s.water_points, 10))) s.water_points = 0;
+        s.water_unlimited = s.water_unlimited === true || s.water_unlimited === 'true' || s.water_unlimited === 1 || String(s.water_unlimited).toLowerCase() === '1';
+        if (!Array.isArray(s.installed_accessory_item_ids)) s.installed_accessory_item_ids = DEFAULT_COOKING_INSTALLED_ACCESSORIES.slice();
+        if (s.active_craft != null && typeof s.active_craft !== 'object') s.active_craft = null;
+        return s;
+    }
+
+    function getCookingAccessoryItemIdsFromMethods() {
+        var out = [];
+        var seen = {};
+        if (!cookingMethods || typeof cookingMethods !== 'object') return out;
+        var ids = Object.keys(cookingMethods);
+        var i;
+        for (i = 0; i < ids.length; i++) {
+            var m = cookingMethods[ids[i]] || {};
+            var aid = (m.requires_accessory_item_id != null) ? String(m.requires_accessory_item_id).trim() : '';
+            if (!aid || seen[aid]) continue;
+            seen[aid] = true;
+            out.push(aid);
+        }
+        out.sort();
+        return out;
+    }
+
+    function getCookingAccessoryOptionsFromInventory(installedIds) {
+        var allow = getCookingAccessoryItemIdsFromMethods();
+        if (!allow.length) return [];
+        var installedSet = {};
+        var i;
+        for (i = 0; i < (installedIds || []).length; i++) installedSet[String(installedIds[i])] = true;
+        var out = [];
+        for (i = 0; i < allow.length; i++) {
+            var id = allow[i];
+            var have = getInventoryCountByItemId(id);
+            if (have <= 0) continue;
+            if (installedSet[id]) continue;
+            out.push({ item_id: id, count: have });
+        }
+        return out;
+    }
+
+    function installCookingAccessoryFromInventory(itemId) {
+        var id = itemId != null ? String(itemId).trim() : '';
+        if (!id) return { ok: false, reason: 'bad_item' };
+        var allow = getCookingAccessoryItemIdsFromMethods();
+        if (allow.indexOf(id) < 0) return { ok: false, reason: 'not_cooking_accessory', item_id: id };
+        var cs = getCookingStationState();
+        var arr = Array.isArray(cs.installed_accessory_item_ids) ? cs.installed_accessory_item_ids : [];
+        var i;
+        for (i = 0; i < arr.length; i++) {
+            if (String(arr[i]) === id) return { ok: false, reason: 'already_installed', item_id: id };
+        }
+        var slot = findFirstContainerSlotByItemId(id);
+        if (!slot) return { ok: false, reason: 'missing_item', item_id: id };
+        if (!IE || typeof IE.takeItemFromContainer !== 'function') return { ok: false, reason: 'inventory_api_missing' };
+        var taken = IE.takeItemFromContainer(slot.containerType, slot.index);
+        if (!taken || !taken.success || !taken.item) return { ok: false, reason: 'take_failed', item_id: id };
+        arr.push(id);
+        cs.installed_accessory_item_ids = arr;
+        return { ok: true, item_id: id };
+    }
+
+    function uninstallCookingAccessoryToInventory(itemId) {
+        var id = itemId != null ? String(itemId).trim() : '';
+        if (!id) return { ok: false, reason: 'bad_item' };
+        var cs = getCookingStationState();
+        var src = Array.isArray(cs.installed_accessory_item_ids) ? cs.installed_accessory_item_ids : [];
+        var out = [];
+        var removed = false;
+        var i;
+        for (i = 0; i < src.length; i++) {
+            var cur = String(src[i]).trim();
+            if (!removed && cur === id) {
+                removed = true;
+                continue;
+            }
+            if (cur) out.push(cur);
+        }
+        if (!removed) return { ok: false, reason: 'not_installed', item_id: id };
+        if (!IE || typeof IE.putItemIntoDefaultContainer !== 'function') return { ok: false, reason: 'inventory_api_missing' };
+        var inst = { item_id: id, count: 1, quality_tier: 0 };
+        var placed = IE.putItemIntoDefaultContainer(inst);
+        if (!placed || !placed.placed) {
+            var st = E && typeof E.getState === 'function' ? E.getState() : null;
+            if (st && typeof IE.addItemToGround === 'function') {
+                IE.addItemToGround(st.mapId, st.x, st.y, inst);
+            } else {
+                return { ok: false, reason: 'put_back_failed', item_id: id };
+            }
+        }
+        cs.installed_accessory_item_ids = out;
+        return { ok: true, item_id: id };
+    }
+
+    function isCookingMethodUnlockedAtStation(methodId, stationContext) {
+        var m = cookingMethods && methodId ? cookingMethods[String(methodId)] : null;
+        if (!m) return false;
+        var ctx = stationContext || getCurrentCookingStationContext();
+        if (ctx && ctx.station_type === 'temp') {
+            var allowed = ctx.temp_station && Array.isArray(ctx.temp_station.allowed_methods) ? ctx.temp_station.allowed_methods : null;
+            if (allowed && allowed.length) {
+                var mid0 = String(methodId);
+                var allowHit = false;
+                var ai;
+                for (ai = 0; ai < allowed.length; ai++) {
+                    if (String(allowed[ai]) === mid0) { allowHit = true; break; }
+                }
+                if (!allowHit) return false;
+            }
+        }
+        var req = m.requires_accessory_item_id;
+        if (req == null || String(req).trim() === '') return true;
+        var arr;
+        if (ctx && ctx.station_type === 'temp') {
+            arr = ctx.temp_station && Array.isArray(ctx.temp_station.installed_accessory_item_ids)
+                ? ctx.temp_station.installed_accessory_item_ids
+                : [];
+        } else {
+            var st = getCookingStationState();
+            arr = st.installed_accessory_item_ids || [];
+        }
+        var need = String(req).trim();
+        var i;
+        for (i = 0; i < arr.length; i++) {
+            if (String(arr[i]).trim() === need) return true;
+        }
+        return false;
+    }
+
+    function markCookingRecipeKnown(recipeId) {
+        if (!recipeId || !window.SceneCtx) return;
+        window.SceneCtx.known_cooking_recipes = window.SceneCtx.known_cooking_recipes || {};
+        var rid = String(recipeId);
+        window.SceneCtx.known_cooking_recipes[rid] = true;
+        window.SceneCtx.known_recipe_ids_by_system = window.SceneCtx.known_recipe_ids_by_system || {};
+        if (!window.SceneCtx.known_recipe_ids_by_system[COOKING_RECIPE_SYSTEM]) {
+            window.SceneCtx.known_recipe_ids_by_system[COOKING_RECIPE_SYSTEM] = {};
+        }
+        window.SceneCtx.known_recipe_ids_by_system[COOKING_RECIPE_SYSTEM][rid] = true;
+    }
+
+    function resetCookingStateForNewCharacter() {
+        if (!window.SceneCtx) return;
+        window.SceneCtx.cooking_station_runtime = {
+            fuel_points: 0,
+            water_points: 0,
+            water_unlimited: false,
+            installed_accessory_item_ids: DEFAULT_COOKING_INSTALLED_ACCESSORIES.slice(),
+            active_craft: null
+        };
+        window.SceneCtx.cooking_temp_stations_runtime = [];
+        syncCookingTempStationsIntoMaps();
+        window.SceneCtx.known_cooking_recipes = {};
+        window.SceneCtx.known_recipe_ids_by_system = {};
+        stopCookingCraftIdle();
+        if (window.NPCSystem && typeof window.NPCSystem.resetCookingStationRepairQuestFlags === 'function') {
+            try { window.NPCSystem.resetCookingStationRepairQuestFlags(); } catch (eNq) { /* ignore */ }
+        }
+    }
+
+    function isOnCookingStationTile() {
+        return !!getCurrentCookingStationContext();
+    }
+
+    function canPourWaterAtCurrentTile() {
+        if (isPreCreationGameplayRestricted()) return false;
+        if (!isOnCookingStationTile()) return false;
+        if (isCookingUiBlockedByRepair()) return false;
+        var pourCtx = getCurrentCookingStationContext();
+        if (pourCtx && pourCtx.station_type === 'main' && getCookingStationState().water_unlimited) return false;
+        var slot = findFirstContainerSlotByPredicate(function (cell) {
+            return getItemWaterPoints(cell.item_id) > 0;
+        });
+        return !!slot;
+    }
+    function canAddFuelAtCurrentTile() {
+        if (isPreCreationGameplayRestricted()) return false;
+        if (!isOnCookingStationTile()) return false;
+        if (isCookingUiBlockedByRepair()) return false;
+        var slot = findFirstContainerSlotByPredicate(function (cell) {
+            return getItemFuelPoints(cell.item_id) > 0;
+        });
+        return !!slot;
+    }
+
+    function isFishingPointAtPlayerTile() {
+        if (!E || !G || typeof E.getState !== 'function') return false;
+        var st = E.getState();
+        var rec = (E.getEntityRecordAt && typeof E.getEntityRecordAt === 'function') ? E.getEntityRecordAt(st.x, st.y) : null;
+        var entityId = rec ? (rec.entity_id || null) : (E.getEntityAt ? E.getEntityAt(st.x, st.y) : null);
+        if (!entityId) return false;
+        var cfg = (typeof G.getGatheringPointConfig === 'function') ? G.getGatheringPointConfig(entityId) : null;
+        var cat = cfg && cfg.wild_interaction_category != null ? String(cfg.wild_interaction_category) : '';
+        if (cat === 'fishing') return true;
+        // 兼容旧数据：未配 category 时允许 fishing 命名实体
+        return String(entityId).indexOf('fishing') >= 0;
+    }
+
+    function canTakeWaterAtCurrentTile() {
+        if (isPreCreationGameplayRestricted()) return false;
+        if (!isFishingPointAtPlayerTile()) return false;
+        return hasItemById('tool_bucket_water_empty');
+    }
+
+    function onTakeWaterClick() {
+        if (isPreCreationGameplayRestricted()) {
+            showIntroBlockedMsg();
+            return;
+        }
+        if (!isFishingPointAtPlayerTile()) {
+            showMsg(ui('cooking.take_water.not_fishing'), 'info');
+            return;
+        }
+        if (gatheringIdleTimer) {
+            showMsg(ui('cooking.take_water.stop_gather_first'), 'info');
+            return;
+        }
+        var slot = findFirstContainerSlotByItemId('tool_bucket_water_empty');
+        if (!slot) {
+            showMsg(ui('cooking.take_water.no_bucket'), 'info');
+            return;
+        }
+        if (!IE || typeof IE.takeItemFromContainer !== 'function' || typeof IE.putItemIntoDefaultContainer !== 'function') return;
+        var taken = IE.takeItemFromContainer(slot.containerType, slot.index);
+        if (!taken || !taken.success || !taken.item) {
+            showMsg(ui('cooking.take_water.fail_consume'), 'warn');
+            return;
+        }
+        var placed = IE.putItemIntoDefaultContainer({ item_id: 'tool_bucket_water_full', count: 1, quality_tier: 0 });
+        if (!placed || !placed.placed) {
+            // 背包塞不下时回滚空桶，避免道具吞没
+            IE.putItemIntoDefaultContainer(taken.item);
+            showMsg(ui('cooking.take_water.fail_full'), 'warn');
+            return;
+        }
+        if (window.Survival && typeof window.Survival.advanceTick === 'function') window.Survival.advanceTick();
+        var st = E.getState();
+        markCellDirty(st.mapId, st.x, st.y);
+        showMsg(ui('cooking.take_water.ok'), 'success');
+        if (typeof updateBackpackPanel === 'function') updateBackpackPanel();
+        if (typeof updateStatusPanel === 'function') updateStatusPanel();
+        if (window.SceneRenderer) window.SceneRenderer.render();
+    }
+
+    function onPourWaterClick(forcedSlot) {
+        if (isPreCreationGameplayRestricted()) {
+            showIntroBlockedMsg();
+            return;
+        }
+        if (!isOnCookingStationTile()) {
+            showMsg(ui('cooking.station.not_on_tile'), 'info');
+            return;
+        }
+        if (isCookingUiBlockedByRepair()) {
+            showMsg(ui('cooking.station.locked_until_repaired'), 'info');
+            return;
+        }
+        var pourCtx0 = getCurrentCookingStationContext();
+        if (pourCtx0 && pourCtx0.station_type === 'main' && getCookingStationState().water_unlimited) {
+            showMsg(ui('cooking.pour_water.main_already_unlimited'), 'info');
+            return;
+        }
+        var slot = resolveCookingSlotOrFirst(forcedSlot, function (cell) {
+            return getItemWaterPoints(cell.item_id) > 0;
+        });
+        if (!slot) {
+            showMsg(ui(forcedSlot ? 'cooking.pour_water.slot_invalid' : 'cooking.pour_water.no_item'), 'info');
+            return;
+        }
+        var waterGain = getItemWaterPoints(slot.item.item_id);
+        if (!(waterGain > 0)) {
+            showMsg(ui('cooking.pour_water.no_water_value'), 'info');
+            return;
+        }
+        var taken = IE.takeItemFromContainer(slot.containerType, slot.index);
+        if (!taken || !taken.success || !taken.item) {
+            showMsg(ui('cooking.pour_water.fail_take'), 'warn');
+            return;
+        }
+        var cs = getCookingStationState();
+        var before = parseInt(cs.water_points, 10) || 0;
+        var afterRaw = before + waterGain;
+        var after = Math.min(COOKING_WATER_MAX_POINTS, afterRaw);
+        var overflow = Math.max(0, afterRaw - after);
+        cs.water_points = after;
+        if (window.Survival && typeof window.Survival.advanceTick === 'function') window.Survival.advanceTick();
+        showMsg(
+            overflow > 0
+                ? ui('cooking.pour_water.ok_overflow', { gain: waterGain, before: before, after: after, max: COOKING_WATER_MAX_POINTS, overflow: overflow })
+                : ui('cooking.pour_water.ok', { gain: waterGain, before: before, after: after, max: COOKING_WATER_MAX_POINTS }),
+            'success'
+        );
+        if (typeof updateBackpackPanel === 'function') updateBackpackPanel();
+        if (typeof updateStatusPanel === 'function') updateStatusPanel();
+        if (window.SceneRenderer) window.SceneRenderer.render();
+    }
+    function onAddFuelClick(forcedSlot) {
+        if (isPreCreationGameplayRestricted()) {
+            showIntroBlockedMsg();
+            return;
+        }
+        if (!isOnCookingStationTile()) {
+            showMsg(ui('cooking.station.not_on_tile'), 'info');
+            return;
+        }
+        if (isCookingUiBlockedByRepair()) {
+            showMsg(ui('cooking.station.locked_until_repaired'), 'info');
+            return;
+        }
+        var slot = resolveCookingSlotOrFirst(forcedSlot, function (cell) {
+            return getItemFuelPoints(cell.item_id) > 0;
+        });
+        if (!slot) {
+            showMsg(ui(forcedSlot ? 'cooking.add_fuel.slot_invalid' : 'cooking.add_fuel.no_item'), 'info');
+            return;
+        }
+        var fuelGain = getItemFuelPoints(slot.item.item_id);
+        if (!(fuelGain > 0)) {
+            showMsg(ui('cooking.add_fuel.not_fuel'), 'info');
+            return;
+        }
+        var taken = IE.takeItemFromContainer(slot.containerType, slot.index);
+        if (!taken || !taken.success || !taken.item) {
+            showMsg(ui('cooking.add_fuel.fail_take'), 'warn');
+            return;
+        }
+        var cs = getCookingStationState();
+        var before = parseInt(cs.fuel_points, 10) || 0;
+        var afterRaw = before + fuelGain;
+        var after = Math.min(COOKING_FUEL_MAX_POINTS, afterRaw);
+        var overflow = Math.max(0, afterRaw - after);
+        cs.fuel_points = after;
+        if (window.Survival && typeof window.Survival.advanceTick === 'function') window.Survival.advanceTick();
+        showMsg(
+            overflow > 0
+                ? ui('cooking.add_fuel.ok_overflow', { gain: fuelGain, before: before, after: after, max: COOKING_FUEL_MAX_POINTS, overflow: overflow })
+                : ui('cooking.add_fuel.ok', { gain: fuelGain, before: before, after: after, max: COOKING_FUEL_MAX_POINTS }),
+            'success'
+        );
+        if (typeof updateBackpackPanel === 'function') updateBackpackPanel();
+        if (typeof updateStatusPanel === 'function') updateStatusPanel();
+        if (window.SceneRenderer) window.SceneRenderer.render();
+    }
+
+    /**
+     * 烹饪台：**必须**指定当前灶台工艺 `methodId`。燃料/水/world tick/体力一律来自 `cooking-methods.json`（与配方无关）。
+     * 在该工艺下按投料 multiset 命中配方；**无命中亦扣料 + 扣技法资源** → 全局失败物（id 见 cooking-system-config.csv）；多命中加权选配方后再判成功率。
+     */
+    function tryCookAtStation(methodId, inputItems) {
+        var stationCtx = getCurrentCookingStationContext();
+        if (!stationCtx) return { ok: false, reason: 'not_on_cooking_station' };
+        if (isCookingUiBlockedByRepairForContext(stationCtx)) {
+            return { ok: false, reason: 'cooking_station_repair_locked' };
+        }
+        if (methodId == null || !Array.isArray(inputItems)) return { ok: false, reason: 'bad_args' };
+        if (getActiveCookingCraft()) return { ok: false, reason: 'craft_in_progress' };
+        var mid = String(methodId).trim();
+        if (!mid) return { ok: false, reason: 'method_required' };
+        var m = cookingMethods && cookingMethods[mid] ? cookingMethods[mid] : null;
+        if (!m) return { ok: false, reason: 'method_not_found', method_id: mid };
+        if (!isCookingMethodUnlockedAtStation(mid, stationCtx)) {
+            return {
+                ok: false,
+                reason: 'cooking_method_locked',
+                method_id: mid,
+                required_accessory_item_id: m.requires_accessory_item_id != null ? m.requires_accessory_item_id : null
+            };
+        }
+
+        var selected = normalizeCookingInputs(inputItems);
+        if (!selected.length) return { ok: false, reason: 'empty_inputs' };
+        var i;
+        for (i = 0; i < selected.length; i++) {
+            var sid = selected[i].item_id;
+            if (!isItemAllowedCookingIngredient(sid)) {
+                return { ok: false, reason: 'not_cooking_ingredient', item_id: sid };
+            }
+            if (getInventoryCountByItemId(sid) < selected[i].count) {
+                return { ok: false, reason: 'missing_input_items', item_id: sid };
+            }
+        }
+
+        var matched = matchCookingRecipesByInputs(selected, mid);
+
+        var needFuel = Math.max(0, parseInt(m.fuel_cost, 10) || 0);
+        var needWater = Math.max(0, parseInt(m.water_cost, 10) || 0);
+        var needTicks = Math.max(0, parseInt(m.craft_ticks, 10) || 0);
+        var needStamina = Math.max(0, parseInt(m.stamina_cost, 10) || 0);
+        var cs = getCookingStationState();
+        var curFuel = parseInt(cs.fuel_points, 10) || 0;
+        var curWater = parseInt(cs.water_points, 10) || 0;
+        var mainWaterFree = !!(stationCtx && stationCtx.station_type === 'main' && cs.water_unlimited);
+        if (curFuel < needFuel) return { ok: false, reason: 'insufficient_fuel', need: needFuel, current: curFuel };
+        if (!mainWaterFree && curWater < needWater) return { ok: false, reason: 'insufficient_water', need: needWater, current: curWater };
+        var survState = window.Survival && typeof window.Survival.getState === 'function' ? window.Survival.getState() : null;
+        var curStamina = survState ? Number(survState.stamina || 0) : 0;
+        if (curStamina < needStamina) return { ok: false, reason: 'insufficient_stamina', need: needStamina, current: curStamina };
+        if (IE && typeof IE.canAcceptItem === 'function' && !IE.canAcceptItem()) {
+            return { ok: false, reason: 'inventory_full' };
+        }
+
+        var consumedRes = consumeInventoryItemsByList(selected);
+        if (!consumedRes.ok) {
+            putItemsBack(consumedRes.consumed || []);
+            return { ok: false, reason: 'consume_inputs_failed' };
+        }
+
+        cs.fuel_points = curFuel - needFuel;
+        if (!mainWaterFree) cs.water_points = curWater - needWater;
+        if (window.Survival && typeof window.Survival.consumeStamina === 'function' && needStamina > 0) {
+            window.Survival.consumeStamina(needStamina);
+        }
+
+        // 固定 tick 耗时：开做即扣资源，但时间按 world tick 递减；制作中不可移动
+        var cs2 = getCookingStationState();
+        var gt = window.GameTime && typeof window.GameTime.getState === 'function' ? window.GameTime.getState() : null;
+        cs2.active_craft = {
+            remaining_ticks: Math.max(1, needTicks),
+            started_total_ticks: gt && typeof gt.totalTicks === 'number' ? gt.totalTicks : 0,
+            method_id: mid,
+            inputs: selected,
+            consumed_items: consumedRes.consumed || [],
+            station_ref: {
+                station_type: stationCtx.station_type || 'main',
+                map_id: stationCtx.map_id,
+                x: stationCtx.x,
+                y: stationCtx.y
+            }
+        };
+        stopGatheringIdle();
+        patchSurvivalTickForCookingCraftOnce();
+        startCookingCraftIdleIfNeeded();
+        showMsg(ui('cooking.msg.started', { n: Math.max(1, needTicks) }), 'info');
+        if (typeof updateBackpackPanel === 'function') updateBackpackPanel();
+        if (typeof updateStatusPanel === 'function') updateStatusPanel();
+        if (window.SceneRenderer) window.SceneRenderer.render();
+        return {
+            ok: true,
+            started: true,
+            method_id: mid,
+            remaining_ticks: Math.max(1, needTicks),
+            consumed: { fuel: needFuel, water: needWater, ticks: needTicks, stamina: needStamina }
+        };
     }
 
     var backpackPanelOpen = false;
@@ -2042,6 +3569,702 @@
             if (!backpackPanelOpen) openBackpackPanel();
         });
     }
+    if (document.getElementById('player-action-take-water')) {
+        document.getElementById('player-action-take-water').addEventListener('click', onTakeWaterClick);
+    }
+    if (document.getElementById('player-action-pour-water')) {
+        document.getElementById('player-action-pour-water').addEventListener('click', onPourWaterClick);
+    }
+    if (document.getElementById('player-action-add-fuel')) {
+        document.getElementById('player-action-add-fuel').addEventListener('click', onAddFuelClick);
+    }
+    // 烹饪台面板（站在烹饪台格）
+    var cookingStationPanelOpen = false;
+    var cookingStationUiState = {
+        method_id: '',
+        inputs: [],
+        /** 烹饪台模态：注水来源格子 `containerType|index` */
+        selected_water_slot_key: '',
+        /** 烹饪台模态：燃料来源格子 */
+        selected_fuel_slot_key: ''
+    };
+
+    function getCookingIngredientOptionsFromInventory() {
+        if (!IE) return [];
+        var seen = {};
+        var out = [];
+        var groups = [
+            IE.getPocketArray ? IE.getPocketArray() : [],
+            IE.getVestArray ? IE.getVestArray() : [],
+            IE.getBackpackArray ? IE.getBackpackArray() : []
+        ];
+        for (var g = 0; g < groups.length; g++) {
+            var arr = groups[g];
+            if (!Array.isArray(arr)) continue;
+            for (var i = 0; i < arr.length; i++) {
+                var cell = arr[i];
+                if (!cell || !cell.item_id) continue;
+                var id = String(cell.item_id);
+                if (seen[id]) continue;
+                if (!isItemAllowedCookingIngredient(id)) continue;
+                if (getInventoryCountByItemId(id) <= 0) continue;
+                seen[id] = true;
+                out.push(id);
+            }
+        }
+        out.sort();
+        return out;
+    }
+
+    function getItemDisplayNameSafe(itemId) {
+        try {
+            if (!IE || !itemId) return String(itemId || '');
+            var tpl = IE.getItemTemplate ? IE.getItemTemplate(itemId) : null;
+            var char0 = IE.getCharacterForDisplay ? IE.getCharacterForDisplay() : null;
+            var tier0 = IE.getItemDisplayTier ? IE.getItemDisplayTier(itemId, char0) : 0;
+            if (tpl && IE.getDisplayName) return IE.getDisplayName(tpl, tier0, char0) || itemId;
+        } catch (e) { /* ignore */ }
+        return String(itemId || '');
+    }
+
+    function setCookingMethodId(mid) {
+        cookingStationUiState.method_id = (mid != null) ? String(mid) : '';
+    }
+
+    function setCookingInputs(list) {
+        cookingStationUiState.inputs = normalizeCookingInputs(list || []);
+    }
+
+    function getStagedCookingCountForItem(itemId) {
+        var arr = normalizeCookingInputs(cookingStationUiState.inputs || []);
+        var i;
+        for (i = 0; i < arr.length; i++) {
+            if (String(arr[i].item_id) === String(itemId)) return parseInt(arr[i].count, 10) || 0;
+        }
+        return 0;
+    }
+
+    function tryAddOneCookingInputFromInventory(iid) {
+        if (!cookingStationPanelOpen) return;
+        iid = iid != null ? String(iid) : '';
+        if (!iid) return;
+        if (!isItemAllowedCookingIngredient(iid)) {
+            showMsg(ui('cooking.try.fail.not_ingredient', { item: iid }), 'info');
+            return;
+        }
+        var have = getInventoryCountByItemId(iid);
+        var staged = getStagedCookingCountForItem(iid);
+        if (have <= 0 || staged >= have) {
+            showMsg(ui('cooking.try.fail.missing_inputs', { item: getItemDisplayNameSafe(iid) }), 'info');
+            return;
+        }
+        var arr = normalizeCookingInputs(cookingStationUiState.inputs || []);
+        arr.push({ item_id: iid, count: 1 });
+        setCookingInputs(arr);
+        renderCookingStationPanel();
+    }
+
+    function renderCookingIngredientPickerList() {
+        var wrap = document.getElementById('cooking-ingredient-list');
+        if (!wrap) return;
+        var filterEl = document.getElementById('cooking-ingredient-filter');
+        var f = filterEl && filterEl.value ? String(filterEl.value).trim().toLowerCase() : '';
+        var opts = getCookingIngredientOptionsFromInventory();
+        var char0 = IE && IE.getCharacterForDisplay ? IE.getCharacterForDisplay() : null;
+        wrap.innerHTML = '';
+        var nShown = 0;
+        var oi;
+        for (oi = 0; oi < opts.length; oi++) {
+            var iid = opts[oi];
+            var disp = getItemDisplayNameSafe(iid);
+            if (f && String(iid).toLowerCase().indexOf(f) < 0 && String(disp).toLowerCase().indexOf(f) < 0) continue;
+            nShown++;
+            var have = getInventoryCountByItemId(iid);
+            var staged = getStagedCookingCountForItem(iid);
+            var canAdd = have > 0 && staged < have;
+            var row = document.createElement('div');
+            row.className = 'cs-ingredient-row';
+            var left = document.createElement('div');
+            left.className = 'cs-ing-left';
+            var nameEl = document.createElement('div');
+            nameEl.className = 'cs-ing-name';
+            nameEl.textContent = disp;
+            var idEl = document.createElement('div');
+            idEl.className = 'cs-ing-id';
+            idEl.textContent = iid;
+            left.appendChild(nameEl);
+            left.appendChild(idEl);
+            var countsEl = document.createElement('div');
+            countsEl.className = 'cs-ing-counts';
+            countsEl.textContent = ui('cooking.ingredient.available_staged_fmt', { have: String(have), staged: String(staged) });
+            var btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = 'btn-add-ingredient';
+            btn.setAttribute('data-ui', 'cooking.btn.add_input');
+            btn.textContent = ui('cooking.btn.add_input');
+            btn.disabled = !canAdd;
+            btn.onclick = (function (xid) {
+                return function (ev) {
+                    if (ev && typeof ev.stopPropagation === 'function') ev.stopPropagation();
+                    tryAddOneCookingInputFromInventory(xid);
+                };
+            })(iid);
+            row.appendChild(left);
+            row.appendChild(countsEl);
+            row.appendChild(btn);
+            try {
+                if (IE && typeof IE.getItemTemplate === 'function') {
+                    var tpl = IE.getItemTemplate(iid);
+                    if (tpl) {
+                        var tier = IE.getItemDisplayTier ? IE.getItemDisplayTier(iid, char0) : 0;
+                        var desc = IE.getDisplayDesc ? IE.getDisplayDesc(tpl, tier, char0) : '';
+                        var attrs = formatItemAttributes(tpl, null);
+                        var tipHtml = buildItemTooltipHtml(disp, desc, attrs);
+                        row.addEventListener('mouseenter', function (h, elRef) { return function () { showItemTooltip(h, elRef); }; }(tipHtml, row));
+                        row.addEventListener('mouseleave', hideItemTooltip);
+                    }
+                }
+            } catch (eTip) { /* ignore */ }
+            wrap.appendChild(row);
+        }
+        if (!opts.length) {
+            wrap.innerHTML = '<div style="color:#a8a29e;font-size:13px;">' + ui('cooking.ingredient.empty') + '</div>';
+        } else if (!nShown) {
+            wrap.innerHTML = '<div style="color:#a8a29e;font-size:13px;">' + ui('cooking.ingredient.filter_empty') + '</div>';
+        }
+    }
+
+    function uiCookingInventoryContainerLabel(containerType) {
+        var t = String(containerType || '');
+        if (t === 'pocket') return ui('cooking.station_resource.container.pocket');
+        if (t === 'vest') return ui('cooking.station_resource.container.vest');
+        if (t === 'backpack') return ui('cooking.station_resource.container.backpack');
+        return t || '—';
+    }
+
+    function slotKeyInCookingSlotList(slots, key) {
+        if (!key || !Array.isArray(slots)) return false;
+        var si;
+        for (si = 0; si < slots.length; si++) {
+            if (cookingResourceSlotKey(slots[si].containerType, slots[si].index) === key) return true;
+        }
+        return false;
+    }
+
+    function renderCookingWaterFuelPickLists() {
+        var waterWrap = document.getElementById('cooking-water-source-list');
+        var fuelWrap = document.getElementById('cooking-fuel-source-list');
+        if (!waterWrap || !fuelWrap) return;
+        var char0 = IE && IE.getCharacterForDisplay ? IE.getCharacterForDisplay() : null;
+        var waterSlots = findAllContainerSlotsByPredicate(function (cell) {
+            return getItemWaterPoints(cell.item_id) > 0;
+        });
+        var fuelSlots = findAllContainerSlotsByPredicate(function (cell) {
+            return getItemFuelPoints(cell.item_id) > 0;
+        });
+        if (!slotKeyInCookingSlotList(waterSlots, cookingStationUiState.selected_water_slot_key)) {
+            cookingStationUiState.selected_water_slot_key = '';
+        }
+        if (!slotKeyInCookingSlotList(fuelSlots, cookingStationUiState.selected_fuel_slot_key)) {
+            cookingStationUiState.selected_fuel_slot_key = '';
+        }
+
+        function appendResourceRows(wrap, slots, kind, selectedKey) {
+            wrap.innerHTML = '';
+            var emptyKey = kind === 'water' ? 'cooking.station_resource.empty_water' : 'cooking.station_resource.empty_fuel';
+            if (!slots.length) {
+                wrap.innerHTML = '<div style="color:#a8a29e;font-size:13px;">' + ui(emptyKey) + '</div>';
+                return;
+            }
+            var ri;
+            for (ri = 0; ri < slots.length; ri++) {
+                (function (sl) {
+                    var iid = sl.item.item_id;
+                    var disp = getItemDisplayNameSafe(iid);
+                    var cnt = (sl.item.count != null && parseInt(sl.item.count, 10) > 0) ? parseInt(sl.item.count, 10) : 1;
+                    var gain = kind === 'water' ? getItemWaterPoints(iid) : getItemFuelPoints(iid);
+                    var gainTxt = kind === 'water'
+                        ? ui('cooking.station_resource.water_gain_fmt', { n: gain })
+                        : ui('cooking.station_resource.fuel_gain_fmt', { n: gain });
+                    var rowKey = cookingResourceSlotKey(sl.containerType, sl.index);
+                    var row = document.createElement('div');
+                    row.className = 'cs-ingredient-row cs-resource-pick' + (rowKey === selectedKey ? ' active' : '');
+                    row.setAttribute('role', 'button');
+                    var left = document.createElement('div');
+                    left.className = 'cs-ing-left';
+                    var nameEl = document.createElement('div');
+                    nameEl.className = 'cs-ing-name';
+                    nameEl.textContent = disp;
+                    var idEl = document.createElement('div');
+                    idEl.className = 'cs-ing-id';
+                    idEl.textContent = String(iid) + ' · ' + uiCookingInventoryContainerLabel(sl.containerType) + ' #' + (sl.index + 1);
+                    left.appendChild(nameEl);
+                    left.appendChild(idEl);
+                    var countsEl = document.createElement('div');
+                    countsEl.className = 'cs-ing-counts';
+                    var gLine = document.createElement('div');
+                    gLine.textContent = gainTxt;
+                    var sLine = document.createElement('div');
+                    sLine.style.opacity = '0.9';
+                    sLine.textContent = ui('cooking.station_resource.stack_fmt', { n: cnt });
+                    countsEl.appendChild(gLine);
+                    countsEl.appendChild(sLine);
+                    row.appendChild(left);
+                    row.appendChild(countsEl);
+                    row.onclick = function (ev) {
+                        if (ev && typeof ev.stopPropagation === 'function') ev.stopPropagation();
+                        if (kind === 'water') {
+                            cookingStationUiState.selected_water_slot_key = rowKey === cookingStationUiState.selected_water_slot_key ? '' : rowKey;
+                        } else {
+                            cookingStationUiState.selected_fuel_slot_key = rowKey === cookingStationUiState.selected_fuel_slot_key ? '' : rowKey;
+                        }
+                        renderCookingStationPanel();
+                    };
+                    try {
+                        if (IE && typeof IE.getItemTemplate === 'function') {
+                            var tpl = IE.getItemTemplate(iid);
+                            if (tpl) {
+                                var tier = IE.getItemDisplayTier ? IE.getItemDisplayTier(iid, char0) : 0;
+                                var desc = IE.getDisplayDesc ? IE.getDisplayDesc(tpl, tier, char0) : '';
+                                var attrs = formatItemAttributes(tpl, null);
+                                var tipHtml = buildItemTooltipHtml(disp, desc, attrs);
+                                row.addEventListener('mouseenter', function (h, elRef) { return function () { showItemTooltip(h, elRef); }; }(tipHtml, row));
+                                row.addEventListener('mouseleave', hideItemTooltip);
+                            }
+                        }
+                    } catch (eTip) { /* ignore */ }
+                    wrap.appendChild(row);
+                })(slots[ri]);
+            }
+        }
+
+        appendResourceRows(waterWrap, waterSlots, 'water', cookingStationUiState.selected_water_slot_key);
+        appendResourceRows(fuelWrap, fuelSlots, 'fuel', cookingStationUiState.selected_fuel_slot_key);
+    }
+
+    function renderCookingStationPanel() {
+        var modal = document.getElementById('modal-cooking-station');
+        if (!modal) return;
+        var listEl = document.getElementById('cooking-input-list');
+        var methodWrap = document.getElementById('cooking-method-list');
+        var kvWrap = document.getElementById('cooking-status-kv');
+        var knownWrap = document.getElementById('cooking-known-list');
+        var helpEl = document.getElementById('cooking-help-text');
+        var startBtn = document.getElementById('cooking-start-btn');
+        var accessoryList = document.getElementById('cooking-accessory-list');
+        var accessorySel = document.getElementById('cooking-add-accessory');
+
+        var mid = cookingStationUiState.method_id ? String(cookingStationUiState.method_id) : '';
+        // 默认选一个可用工艺
+        if (!mid) {
+            var ids = cookingMethods ? Object.keys(cookingMethods) : [];
+            for (var mi = 0; mi < ids.length; mi++) {
+                if (isCookingMethodUnlockedAtStation(ids[mi])) { mid = ids[mi]; break; }
+            }
+            if (mid) setCookingMethodId(mid);
+        }
+
+        // 工艺按钮（仅显示已解锁）
+        if (methodWrap) {
+            methodWrap.innerHTML = '';
+            var mids = cookingMethods ? Object.keys(cookingMethods) : [];
+            mids.sort(function (a, b) {
+                var na = (cookingMethods[a] && cookingMethods[a].name) ? String(cookingMethods[a].name) : a;
+                var nb = (cookingMethods[b] && cookingMethods[b].name) ? String(cookingMethods[b].name) : b;
+                return na.localeCompare(nb, 'zh-Hans-CN');
+            });
+            for (var mx = 0; mx < mids.length; mx++) {
+                var idm = mids[mx];
+                if (!isCookingMethodUnlockedAtStation(idm)) continue;
+                var mObj = cookingMethods[idm] || {};
+                var btn = document.createElement('button');
+                btn.type = 'button';
+                btn.className = 'btn-method' + (String(idm) === String(mid) ? ' active' : '');
+                btn.textContent = mObj.name ? String(mObj.name) : String(idm);
+                btn.setAttribute('data-method-id', idm);
+                btn.onclick = (function (xid) { return function () { setCookingMethodId(xid); renderCookingStationPanel(); }; })(idm);
+                methodWrap.appendChild(btn);
+            }
+        }
+
+        // 投料列表
+        if (listEl) {
+            listEl.innerHTML = '';
+            var selected = normalizeCookingInputs(cookingStationUiState.inputs || []);
+            cookingStationUiState.inputs = selected;
+            if (!selected.length) {
+                listEl.innerHTML = '<div style="color:#a8a29e;font-size:13px;">' + ui('cooking.inputs.empty') + '</div>';
+            } else {
+                for (var ii = 0; ii < selected.length; ii++) {
+                    var row = document.createElement('div');
+                    row.className = 'cs-input-row';
+                    var id0 = selected[ii].item_id;
+                    var c0 = parseInt(selected[ii].count, 10) || 1;
+                    var nameEl = document.createElement('div');
+                    nameEl.className = 'iname';
+                    nameEl.textContent = getItemDisplayNameSafe(id0) + ' (' + String(id0) + ')';
+                    var cntEl = document.createElement('div');
+                    cntEl.className = 'icnt';
+                    cntEl.textContent = 'x' + c0;
+                    var btnDel = document.createElement('button');
+                    btnDel.type = 'button';
+                    btnDel.className = 'btn-mini';
+                    btnDel.textContent = ui('cooking.btn.remove');
+                    btnDel.onclick = (function (rid) {
+                        return function () {
+                            var arr = normalizeCookingInputs(cookingStationUiState.inputs || []);
+                            var out = [];
+                            for (var k = 0; k < arr.length; k++) if (String(arr[k].item_id) !== String(rid)) out.push(arr[k]);
+                            setCookingInputs(out);
+                            renderCookingStationPanel();
+                        };
+                    })(id0);
+                    row.appendChild(nameEl);
+                    row.appendChild(cntEl);
+                    row.appendChild(btnDel);
+                    listEl.appendChild(row);
+                }
+            }
+        }
+
+        renderCookingIngredientPickerList();
+
+        // 配件安装/卸下
+        var csAcc = getCookingStationState();
+        var installed = Array.isArray(csAcc.installed_accessory_item_ids) ? csAcc.installed_accessory_item_ids.slice() : [];
+        if (accessoryList) {
+            accessoryList.innerHTML = '';
+            if (!installed.length) {
+                accessoryList.innerHTML = '<div style="color:#a8a29e;font-size:13px;">' + ui('cooking.accessory.empty') + '</div>';
+            } else {
+                for (var ai = 0; ai < installed.length; ai++) {
+                    var aid = String(installed[ai]);
+                    var arow = document.createElement('div');
+                    arow.className = 'cs-input-row';
+                    var aname = document.createElement('div');
+                    aname.className = 'iname';
+                    aname.textContent = getItemDisplayNameSafe(aid) + ' (' + aid + ')';
+                    var abtn = document.createElement('button');
+                    abtn.type = 'button';
+                    abtn.className = 'btn-mini';
+                    abtn.textContent = ui('cooking.btn.remove');
+                    abtn.onclick = (function (rid) {
+                        return function () {
+                            var ret = uninstallCookingAccessoryToInventory(rid);
+                            if (!ret || !ret.ok) {
+                                showMsg(ui('cooking.accessory.uninstall_fail', { item: getItemDisplayNameSafe(rid) }), 'warn');
+                            } else {
+                                showMsg(ui('cooking.accessory.uninstall_ok', { item: getItemDisplayNameSafe(rid) }), 'success');
+                            }
+                            renderCookingStationPanel();
+                            if (typeof updateBackpackPanel === 'function') updateBackpackPanel();
+                            if (typeof updateStatusPanel === 'function') updateStatusPanel();
+                            if (window.SceneRenderer) window.SceneRenderer.render();
+                        };
+                    })(aid);
+                    arow.appendChild(aname);
+                    arow.appendChild(abtn);
+                    accessoryList.appendChild(arow);
+                }
+            }
+        }
+        if (accessorySel) {
+            var prevAcc = accessorySel.value ? String(accessorySel.value) : '';
+            var accOpts = getCookingAccessoryOptionsFromInventory(installed);
+            accessorySel.innerHTML = '';
+            for (var ax = 0; ax < accOpts.length; ax++) {
+                var ao = accOpts[ax];
+                var o = document.createElement('option');
+                o.value = ao.item_id;
+                o.textContent = getItemDisplayNameSafe(ao.item_id) + ' (' + ao.item_id + ') · ' + ui('cooking.inputs.available_fmt', { n: ao.count });
+                accessorySel.appendChild(o);
+            }
+            if (prevAcc && accOpts.some(function (z) { return String(z.item_id) === prevAcc; })) accessorySel.value = prevAcc;
+        }
+
+        // 已知配方快捷填材（可选）
+        if (knownWrap) {
+            knownWrap.innerHTML = '';
+            var knownIds = (window.SceneApp && typeof window.SceneApp.getKnownCookingRecipeIds === 'function') ? window.SceneApp.getKnownCookingRecipeIds() : [];
+            if (!Array.isArray(knownIds) || !knownIds.length) {
+                knownWrap.innerHTML = '<div style="color:#a8a29e;font-size:13px;">' + ui('cooking.known.empty') + '</div>';
+            } else {
+                for (var kr = 0; kr < knownIds.length; kr++) {
+                    var rid = knownIds[kr];
+                    var legacyRecipeKey = String(rid);
+                    if (legacyRecipeKey.indexOf('life_cooking.') === 0) {
+                        legacyRecipeKey = legacyRecipeKey.slice('life_cooking.'.length);
+                    }
+                    var rec = null;
+                    var rr;
+                    for (rr = 0; rr < cookingRecipes.length; rr++) {
+                        if (String(cookingRecipes[rr].recipe_id) === legacyRecipeKey) { rec = cookingRecipes[rr]; break; }
+                    }
+                    if (!rec) {
+                        for (rr = 0; rr < cookingRecipes.length; rr++) {
+                            if (String(cookingRecipes[rr].recipe_id) === String(rid)) { rec = cookingRecipes[rr]; break; }
+                        }
+                    }
+                    if (!rec) continue;
+                    var btnK = document.createElement('button');
+                    btnK.type = 'button';
+                    btnK.className = 'btn-known';
+                    var rName = rid;
+                    try {
+                        if (window.UIText && typeof window.UIText.t === 'function') {
+                            rName = window.UIText.t('cooking.recipe.' + legacyRecipeKey);
+                        }
+                    } catch (eKn) { rName = rid; }
+                    btnK.textContent = rName;
+                    btnK.onclick = (function (rx) {
+                        return function () {
+                            if (rx.required_method) setCookingMethodId(rx.required_method);
+                            setCookingInputs(rx.inputs || []);
+                            renderCookingStationPanel();
+                        };
+                    })(rec);
+                    knownWrap.appendChild(btnK);
+                }
+            }
+        }
+
+        // 状态区
+        var mSel = (cookingMethods && mid && cookingMethods[String(mid)]) ? cookingMethods[String(mid)] : null;
+        var cs = getCookingStationState();
+        var curFuel = parseInt(cs.fuel_points, 10) || 0;
+        var curWater = parseInt(cs.water_points, 10) || 0;
+        var needFuel = mSel ? Math.max(0, parseInt(mSel.fuel_cost, 10) || 0) : 0;
+        var needWater = mSel ? Math.max(0, parseInt(mSel.water_cost, 10) || 0) : 0;
+        var needTicks = mSel ? Math.max(0, parseInt(mSel.craft_ticks, 10) || 0) : 0;
+        var needStamina = mSel ? Math.max(0, parseInt(mSel.stamina_cost, 10) || 0) : 0;
+        var survState = window.Survival && typeof window.Survival.getState === 'function' ? window.Survival.getState() : null;
+        var curStamina = survState ? Number(survState.stamina || 0) : 0;
+        var activeCraft = getActiveCookingCraft();
+
+        if (kvWrap) {
+            kvWrap.innerHTML = '';
+            function addKv(text, bad) {
+                var d = document.createElement('div');
+                d.className = 'kv' + (bad ? ' bad' : '');
+                d.textContent = text;
+                kvWrap.appendChild(d);
+            }
+            addKv(ui('cooking.kv.fuel', { cur: curFuel, max: COOKING_FUEL_MAX_POINTS, need: needFuel }), curFuel < needFuel);
+            var panelCtx = getCurrentCookingStationContext();
+            var mainWaterUnl = !!(panelCtx && panelCtx.station_type === 'main' && cs.water_unlimited);
+            if (mainWaterUnl) {
+                addKv(ui('cooking.kv.water_unlimited', { need: needWater }), false);
+            } else {
+                addKv(ui('cooking.kv.water', { cur: curWater, max: COOKING_WATER_MAX_POINTS, need: needWater }), curWater < needWater);
+            }
+            addKv(ui('cooking.kv.ticks', { n: needTicks }), false);
+            addKv(ui('cooking.kv.stamina', { cur: curStamina, need: needStamina }), curStamina < needStamina);
+            if (activeCraft) addKv(ui('cooking.kv.remaining', { n: activeCraft.remaining_ticks }), false);
+        }
+
+        renderCookingWaterFuelPickLists();
+
+        if (helpEl) {
+            helpEl.innerHTML = '';
+            var lines = [
+                ui('cooking.help.line1'),
+                ui('cooking.help.line2'),
+                ui('cooking.help.line3'),
+                ui('cooking.help.line4')
+            ];
+            helpEl.innerHTML = '<div style="color:#a8a29e;line-height:1.65;">' + lines.map(function (s) {
+                return String(s || '').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+            }).join('<br>') + '</div>';
+        }
+
+        var okStart = !!(mid && normalizeCookingInputs(cookingStationUiState.inputs || []).length) && !activeCraft;
+        if (startBtn) {
+            startBtn.disabled = !okStart;
+        }
+
+        var pourModalBtn = document.getElementById('cooking-modal-pour-btn');
+        var fuelModalBtn = document.getElementById('cooking-modal-add-fuel-btn');
+        var pourModalOk = canPourWaterAtCurrentTile() && !!cookingStationUiState.selected_water_slot_key;
+        var fuelModalOk = canAddFuelAtCurrentTile() && !!cookingStationUiState.selected_fuel_slot_key;
+        if (pourModalBtn) pourModalBtn.disabled = !pourModalOk;
+        if (fuelModalBtn) fuelModalBtn.disabled = !fuelModalOk;
+
+        if (window.UIText && typeof window.UIText.applyDom === 'function') {
+            try { window.UIText.applyDom(modal); } catch (eApply) { /* ignore */ }
+        }
+    }
+
+    function cookingStartReasonToMsgKey(reason) {
+        var r = reason != null ? String(reason) : '';
+        if (r === 'not_on_cooking_station') return 'cooking.station.not_on_tile';
+        if (r === 'method_required') return 'cooking.try.fail.method_required';
+        if (r === 'method_not_found') return 'cooking.try.fail.method_not_found';
+        if (r === 'cooking_method_locked') return 'cooking.try.fail.method_locked';
+        if (r === 'empty_inputs') return 'cooking.try.fail.empty_inputs';
+        if (r === 'not_cooking_ingredient') return 'cooking.try.fail.not_ingredient';
+        if (r === 'missing_input_items') return 'cooking.try.fail.missing_inputs';
+        if (r === 'insufficient_fuel') return 'cooking.try.fail.insufficient_fuel';
+        if (r === 'insufficient_water') return 'cooking.try.fail.insufficient_water';
+        if (r === 'insufficient_stamina') return 'cooking.try.fail.insufficient_stamina';
+        if (r === 'inventory_full') return 'cooking.try.fail.inventory_full';
+        if (r === 'consume_inputs_failed') return 'cooking.try.fail.consume_failed';
+        if (r === 'bad_args') return 'cooking.try.fail.bad_args';
+        if (r === 'craft_in_progress') return 'cooking.try.fail.craft_in_progress';
+        if (r === 'cooking_station_repair_locked') return 'cooking.try.fail.repair_locked';
+        return 'cooking.try.fail.unknown';
+    }
+
+    function openCookingStationPanel() {
+        if (isPreCreationGameplayRestricted()) {
+            showIntroBlockedMsg();
+            return;
+        }
+        if (cookingStationPanelOpen) return;
+        if (!isOnCookingStationTile()) {
+            showMsg(ui('cooking.station.not_on_tile'), 'info');
+            return;
+        }
+        if (isCookingUiBlockedByRepair()) {
+            showMsg(ui('cooking.station.locked_until_repaired'), 'info');
+            return;
+        }
+        if (window.Survival && typeof window.Survival.advanceTick === 'function') window.Survival.advanceTick();
+        cookingStationPanelOpen = true;
+        cookingStationUiState.selected_water_slot_key = '';
+        cookingStationUiState.selected_fuel_slot_key = '';
+        var modal = document.getElementById('modal-cooking-station');
+        if (modal) {
+            modal.classList.add('show');
+            modal.setAttribute('aria-hidden', 'false');
+        }
+        renderCookingStationPanel();
+        render();
+    }
+
+    function closeCookingStationPanel() {
+        if (!cookingStationPanelOpen) return;
+        if (window.Survival && typeof window.Survival.advanceTick === 'function') window.Survival.advanceTick();
+        cookingStationPanelOpen = false;
+        var modal = document.getElementById('modal-cooking-station');
+        if (modal) {
+            modal.classList.remove('show');
+            modal.setAttribute('aria-hidden', 'true');
+        }
+        render();
+    }
+
+    (function bindCookingStationPanel() {
+        var abCook = document.getElementById('action-bar-cook');
+        if (abCook) {
+            abCook.addEventListener('click', function () {
+                if (cookingStationPanelOpen) closeCookingStationPanel(); else openCookingStationPanel();
+            });
+        }
+        var bubCook = document.getElementById('player-action-cook');
+        if (bubCook) {
+            bubCook.addEventListener('click', function () {
+                if (!cookingStationPanelOpen) openCookingStationPanel();
+            });
+        }
+        var closeBtn = document.getElementById('cooking-station-close');
+        if (closeBtn) closeBtn.addEventListener('click', closeCookingStationPanel);
+        var ingFilter = document.getElementById('cooking-ingredient-filter');
+        if (ingFilter && !ingFilter._cookingFilterBound) {
+            ingFilter._cookingFilterBound = true;
+            ingFilter.addEventListener('input', function () {
+                if (cookingStationPanelOpen) renderCookingStationPanel();
+            });
+        }
+        var clearBtn = document.getElementById('cooking-clear-btn');
+        if (clearBtn) clearBtn.addEventListener('click', function () { if (!cookingStationPanelOpen) return; setCookingInputs([]); renderCookingStationPanel(); });
+        var pourMb = document.getElementById('cooking-modal-pour-btn');
+        if (pourMb && !pourMb._cookingSrvBound) {
+            pourMb._cookingSrvBound = true;
+            pourMb.addEventListener('click', function () {
+                if (!cookingStationPanelOpen) return;
+                var wk = cookingStationUiState.selected_water_slot_key ? String(cookingStationUiState.selected_water_slot_key) : '';
+                if (!wk) {
+                    showMsg(ui('cooking.pour_water.pick_first'), 'info');
+                    return;
+                }
+                var pw = parseCookingResourceSlotKey(wk);
+                if (!pw) {
+                    showMsg(ui('cooking.pour_water.pick_first'), 'info');
+                    return;
+                }
+                onPourWaterClick({ containerType: pw.containerType, index: pw.index });
+                renderCookingStationPanel();
+                if (typeof updateBackpackPanel === 'function') updateBackpackPanel();
+                if (typeof updateStatusPanel === 'function') updateStatusPanel();
+                if (window.SceneRenderer) window.SceneRenderer.render();
+            });
+        }
+        var fuelMb = document.getElementById('cooking-modal-add-fuel-btn');
+        if (fuelMb && !fuelMb._cookingSrvBound) {
+            fuelMb._cookingSrvBound = true;
+            fuelMb.addEventListener('click', function () {
+                if (!cookingStationPanelOpen) return;
+                var fk = cookingStationUiState.selected_fuel_slot_key ? String(cookingStationUiState.selected_fuel_slot_key) : '';
+                if (!fk) {
+                    showMsg(ui('cooking.add_fuel.pick_first'), 'info');
+                    return;
+                }
+                var pf = parseCookingResourceSlotKey(fk);
+                if (!pf) {
+                    showMsg(ui('cooking.add_fuel.pick_first'), 'info');
+                    return;
+                }
+                onAddFuelClick({ containerType: pf.containerType, index: pf.index });
+                renderCookingStationPanel();
+                if (typeof updateBackpackPanel === 'function') updateBackpackPanel();
+                if (typeof updateStatusPanel === 'function') updateStatusPanel();
+                if (window.SceneRenderer) window.SceneRenderer.render();
+            });
+        }
+        var addAccessoryBtn = document.getElementById('cooking-add-accessory-btn');
+        if (addAccessoryBtn) {
+            addAccessoryBtn.addEventListener('click', function () {
+                if (!cookingStationPanelOpen) return;
+                var sel = document.getElementById('cooking-add-accessory');
+                var aid = sel && sel.value ? String(sel.value) : '';
+                if (!aid) return;
+                var ret = installCookingAccessoryFromInventory(aid);
+                if (!ret || !ret.ok) {
+                    showMsg(ui('cooking.accessory.install_fail', { item: getItemDisplayNameSafe(aid) }), 'warn');
+                    renderCookingStationPanel();
+                    return;
+                }
+                showMsg(ui('cooking.accessory.install_ok', { item: getItemDisplayNameSafe(aid) }), 'success');
+                renderCookingStationPanel();
+                if (typeof updateBackpackPanel === 'function') updateBackpackPanel();
+                if (typeof updateStatusPanel === 'function') updateStatusPanel();
+                if (window.SceneRenderer) window.SceneRenderer.render();
+            });
+        }
+        var startBtn = document.getElementById('cooking-start-btn');
+        if (startBtn) {
+            startBtn.addEventListener('click', function () {
+                if (!cookingStationPanelOpen) return;
+                var mid = cookingStationUiState.method_id ? String(cookingStationUiState.method_id) : '';
+                var inputs = normalizeCookingInputs(cookingStationUiState.inputs || []);
+                var res = tryCookAtStation(mid, inputs);
+                if (!res || res.ok !== true) {
+                    var key = cookingStartReasonToMsgKey(res ? res.reason : 'unknown');
+                    var vars = {};
+                    if (res && res.item_id) vars.item = getItemDisplayNameSafe(res.item_id);
+                    if (res && res.method_id) vars.method = String(res.method_id);
+                    if (res && res.required_accessory_item_id) vars.accessory = getItemDisplayNameSafe(res.required_accessory_item_id);
+                    if (res && res.need != null && res.current != null) { vars.need = res.need; vars.cur = res.current; }
+                    showMsg(ui(key, vars), 'warn');
+                    renderCookingStationPanel();
+                    return;
+                }
+                // tryCookAtStation 成功路径内部已负责 showMsg；这里清空投料便于下一次盲配
+                setCookingInputs([]);
+                renderCookingStationPanel();
+            });
+        }
+    })();
     (function () {
         var btn = document.getElementById('btn-reset-demo-save');
         if (!btn) return;
@@ -2140,6 +4363,10 @@
             showIntroBlockedMsg();
             return;
         }
+        if (!isAdjacentToWarehouseTile()) {
+            showMsg('需要站在仓库旁边才能打开仓库。', 'info');
+            return;
+        }
         if (baseWarehousePanelOpen) return;
         if (window.Survival && typeof window.Survival.advanceTick === 'function') window.Survival.advanceTick();
         baseWarehousePanelOpen = true;
@@ -2213,8 +4440,57 @@
         editingSlot: null,
         curAcupointCat: 'du',
         curAcupointId: null,
-        acupointPage: 0
+        acupointPage: 0,
+        recipeSchemaListOpen: false
     };
+
+    function getRecipeSchemaValidationReport() {
+        var rep = window.SceneCtx && window.SceneCtx.recipe_schema_validation_report;
+        if (!rep || typeof rep !== 'object') return { errors: [], warnings: [] };
+        return {
+            errors: Array.isArray(rep.errors) ? rep.errors : [],
+            warnings: Array.isArray(rep.warnings) ? rep.warnings : []
+        };
+    }
+
+    function renderRecipeSchemaValidationDebugList() {
+        var btn = document.getElementById('btn-debug-recipe-schema-errors');
+        var panel = document.getElementById('recipe-schema-debug-panel');
+        var list = document.getElementById('recipe-schema-debug-list');
+        var empty = document.getElementById('recipe-schema-debug-empty');
+        if (!btn || !panel || !list || !empty) return;
+
+        var rep = getRecipeSchemaValidationReport();
+        var rows = rep.errors;
+        if (!rows.length) {
+            btn.style.display = 'none';
+            panel.classList.remove('show');
+            list.innerHTML = '';
+            empty.textContent = ui('debug.recipe_schema.empty');
+            return;
+        }
+
+        btn.style.display = '';
+        btn.textContent = ui('debug.recipe_schema.btn', { count: rows.length });
+        panel.classList.toggle('show', !!combatUIState.recipeSchemaListOpen);
+        list.innerHTML = '';
+        empty.style.display = rows.length ? 'none' : '';
+
+        rows.forEach(function (row) {
+            var item = document.createElement('div');
+            item.className = 'recipe-schema-debug-row';
+            var entryType = row && row.entry_type != null ? String(row.entry_type) : '';
+            var id = row && row.id != null ? String(row.id) : '';
+            var code = row && row.error_code != null ? String(row.error_code) : '';
+            var msg = row && row.message != null ? String(row.message) : '';
+            item.innerHTML =
+                '<div class="col entry-type">' + entryType.replace(/</g, '&lt;').replace(/>/g, '&gt;') + '</div>' +
+                '<div class="col entry-id">' + id.replace(/</g, '&lt;').replace(/>/g, '&gt;') + '</div>' +
+                '<div class="col error-code">' + code.replace(/</g, '&lt;').replace(/>/g, '&gt;') + '</div>' +
+                '<div class="col message">' + msg.replace(/</g, '&lt;').replace(/>/g, '&gt;') + '</div>';
+            list.appendChild(item);
+        });
+    }
     var LIMB_LABELS = { lhand: 'body.part.lhand', rhand: 'body.part.rhand', lfoot: 'body.part.lfoot', rfoot: 'body.part.rfoot' };
     var LIMB_ICONS = { lhand: '🤚', rhand: '🤚', lfoot: '👣', rfoot: '👣' };
 
@@ -2619,6 +4895,7 @@
         var profPct = selSkill && CS && selSkill.category !== 'footwork' ? Math.floor(CS.getSkillTotalProficiency(combatUIState.curSkillId, moveUsage) * 100) : 0;
         if (levelEl) levelEl.textContent = ui('combat.level', { v: skillLevel });
         if (profEl) profEl.textContent = (selSkill && selSkill.category === 'footwork') ? ui('combat.prof.not_applicable') : ui('combat.prof.total', { v: profPct });
+        renderRecipeSchemaValidationDebugList();
 
         // Deploy slot validation:
         // - 进攻槽（active）只能放非招架技能
@@ -3465,6 +5742,12 @@
             renderCombatModal();
         });
     }
+    if (document.getElementById('btn-debug-recipe-schema-errors')) {
+        document.getElementById('btn-debug-recipe-schema-errors').addEventListener('click', function () {
+            combatUIState.recipeSchemaListOpen = !combatUIState.recipeSchemaListOpen;
+            renderRecipeSchemaValidationDebugList();
+        });
+    }
     document.addEventListener('click', function () {
         var hadOpenPicker = false;
         var movePickerAny = document.getElementById('picker-move');
@@ -3930,6 +6213,8 @@
             if (window.SaveSystem && typeof window.SaveSystem.init === 'function') {
                 window.SaveSystem.init({ saveIntervalTicks: 50 });
             }
+            // 固定 tick 烹饪：挂接 world tick 递减（避免单次调用瞬推）
+            patchSurvivalTickForCookingCraftOnce();
             var mapsPromise = bootstrapMapsFromJson();
             function afterMaps() {
                 if (window.SaveSystem && typeof window.SaveSystem.loadRealtime === 'function') {
@@ -3948,6 +6233,9 @@
                         window.Survival.initBattleResourcesFull();
                     }
                 }
+                syncCookingTempStationsIntoMaps();
+                // 读档后：若存在进行中制作，恢复自动 tick 推进
+                startCookingCraftIdleIfNeeded();
                 // 读档后再渲染一次，避免出现“短暂默认状态闪屏”。
                 render();
             }
@@ -3963,6 +6251,11 @@
             window.SceneCtx.actions = window.SceneCtx.actions || {};
             window.SceneCtx.actions.tryMoveTo = function (tx, ty, dx, dy) {
                 if (isStoryMovementLocked()) return;
+                var ac = getActiveCookingCraft();
+                if (ac) {
+                    showMsg(ui('cooking.move.blocked', { n: ac.remaining_ticks }), 'info');
+                    return;
+                }
                 if (window.BuffSystem && typeof window.BuffSystem.hasMovementDisabled === 'function' && window.BuffSystem.hasMovementDisabled('player')) {
                     showMsg(ui('intro.blocked.action'), 'info');
                     return;
@@ -4317,7 +6610,7 @@
                 var targetX = st.x + ddx;
                 var targetY = st.y + ddy;
 
-                // 固定优先级：敌人攻击 > NPC 对话 > 普通移动
+                // 固定优先级：敌人攻击 > NPC 对话 > 烹饪台互动 > 普通移动
                 var enemyId = (typeof E.getEnemyAt === 'function') ? E.getEnemyAt(targetX, targetY) : null;
                 if (enemyId) {
                     if (isPreCreationGameplayRestricted()) {
@@ -4341,7 +6634,9 @@
                     return;
                 }
 
-                var npcId = (typeof E.getNpcAt === 'function') ? E.getNpcAt(targetX, targetY) : null;
+                var npcId = (typeof E.getInteractNpcIdAt === 'function')
+                    ? E.getInteractNpcIdAt(targetX, targetY)
+                    : ((typeof E.getNpcAt === 'function') ? E.getNpcAt(targetX, targetY) : null);
                 if (npcId && window.GameTime && window.NPCSystem && typeof window.NPCSystem.isNpcPresentNow === 'function') {
                     if (!window.NPCSystem.isNpcPresentNow(npcId)) npcId = null;
                 }
@@ -4351,6 +6646,23 @@
                     }
                     if (window.SceneCtx.actions && typeof window.SceneCtx.actions.interactNpc === 'function') {
                         window.SceneCtx.actions.interactNpc(npcId);
+                    }
+                    setFacingFromMove(ddx, ddy);
+                    stopGatheringIdle();
+                    return;
+                }
+
+                // 烹饪台：若地图未绑定设施 NPC，则邻格点灶格仍直接打开烹饪面板；已绑定则走上方 interactNpc 管线（与林经理同套菜单 + 闲聊）
+                var cookingCell = (typeof E.isCookingStationCell === 'function') && E.isCookingStationCell(targetX, targetY);
+                var cookingBoundNpc = cookingCell && typeof E.getCookingStationInteractNpcId === 'function'
+                    ? E.getCookingStationInteractNpcId(targetX, targetY)
+                    : null;
+                if (cookingCell && !cookingBoundNpc) {
+                    if (window.SceneCtx && typeof window.SceneCtx.exitFootworkNieBuMode === 'function') {
+                        window.SceneCtx.exitFootworkNieBuMode();
+                    }
+                    if (typeof openCookingStationPanel === 'function') {
+                        openCookingStationPanel();
                     }
                     setFacingFromMove(ddx, ddy);
                     stopGatheringIdle();
@@ -4467,6 +6779,9 @@
                 if (withMsg) showMsg(ui('log.info.gather.stop'), 'info');
                 if (window.SceneRenderer) window.SceneRenderer.render();
             };
+            window.SceneCtx.actions.canTakeWaterAtCurrentTile = canTakeWaterAtCurrentTile;
+            window.SceneCtx.actions.canAddFuelAtCurrentTile = canAddFuelAtCurrentTile;
+            window.SceneCtx.actions.canPourWaterAtCurrentTile = canPourWaterAtCurrentTile;
             window.SceneCtx.actions.onEngineChanged = function () {
                 if (window.SceneCtx && typeof window.SceneCtx.exitFootworkNieBuMode === 'function') {
                     window.SceneCtx.exitFootworkNieBuMode();
@@ -4507,6 +6822,30 @@
                 abGroundEl.addEventListener('click', function () {
                     var gBtn = document.getElementById('player-action-ground-items');
                     if (gBtn) gBtn.click();
+                });
+            }
+            var abTakeWaterEl = document.getElementById('action-bar-take-water');
+            if (abTakeWaterEl && !abTakeWaterEl._actionBarProxy) {
+                abTakeWaterEl._actionBarProxy = true;
+                abTakeWaterEl.addEventListener('click', function () {
+                    var tw = document.getElementById('player-action-take-water');
+                    if (tw) tw.click();
+                });
+            }
+            var abPourWaterEl = document.getElementById('action-bar-pour-water');
+            if (abPourWaterEl && !abPourWaterEl._actionBarProxy) {
+                abPourWaterEl._actionBarProxy = true;
+                abPourWaterEl.addEventListener('click', function () {
+                    var pw = document.getElementById('player-action-pour-water');
+                    if (pw) pw.click();
+                });
+            }
+            var abAddFuelEl = document.getElementById('action-bar-add-fuel');
+            if (abAddFuelEl && !abAddFuelEl._actionBarProxy) {
+                abAddFuelEl._actionBarProxy = true;
+                abAddFuelEl.addEventListener('click', function () {
+                    var af = document.getElementById('player-action-add-fuel');
+                    if (af) af.click();
                 });
             }
             var abDiqiEl = document.getElementById('action-bar-diqi-huti');
@@ -4753,6 +7092,56 @@
     window.SceneApp.isStoryMovementLocked = isStoryMovementLocked;
     window.SceneApp.isPreCreationGameplayRestricted = isPreCreationGameplayRestricted;
     window.SceneApp.tryUseQuickBeltDigit = tryUseQuickBeltDigit;
+    window.SceneApp.tryCookAtStation = tryCookAtStation;
+    window.SceneApp.openCookingStationPanel = openCookingStationPanel;
+    window.SceneApp.closeCookingStationPanel = closeCookingStationPanel;
+    window.SceneApp.isCookingStationPanelBlockedByRepair = isCookingUiBlockedByRepair;
+    window.SceneApp.resetCookingStateForNewCharacter = resetCookingStateForNewCharacter;
+    window.SceneApp.getKnownCookingRecipeIds = function () {
+        var o = window.SceneCtx && window.SceneCtx.known_cooking_recipes;
+        if (!o || typeof o !== 'object') return [];
+        var a = [];
+        var k;
+        for (k in o) {
+            if (Object.prototype.hasOwnProperty.call(o, k) && o[k]) a.push(String(k));
+        }
+        a.sort();
+        return a;
+    };
+    window.SceneApp.getCookingStationAccessories = function () {
+        return getCookingStationState().installed_accessory_item_ids.slice();
+    };
+    window.SceneApp.setCookingStationAccessories = function (ids) {
+        var s = getCookingStationState();
+        if (!Array.isArray(ids)) {
+            s.installed_accessory_item_ids = [];
+            return;
+        }
+        var seen = {};
+        var out = [];
+        var i;
+        for (i = 0; i < ids.length; i++) {
+            var z = String(ids[i] || '').trim();
+            if (!z || seen[z]) continue;
+            seen[z] = true;
+            out.push(z);
+        }
+        s.installed_accessory_item_ids = out;
+    };
+    window.SceneApp.placeTempCookingStation = function (mapId, x, y, options) {
+        return placeTempCookingStation(mapId, x, y, options || {});
+    };
+    window.SceneApp.placeTempCookingStationAtPlayer = function (options) {
+        var st = E && typeof E.getState === 'function' ? E.getState() : null;
+        if (!st) return null;
+        return placeTempCookingStation(st.mapId, st.x, st.y, options || {});
+    };
+    window.SceneApp.removeTempCookingStation = function (mapId, x, y) {
+        removeCookingTempStationAt(String(mapId || ''), Math.floor(Number(x)), Math.floor(Number(y)));
+        syncCookingTempStationsIntoMaps();
+        markCellDirty(String(mapId || ''), Math.floor(Number(x)), Math.floor(Number(y)));
+        if (window.SceneRenderer) window.SceneRenderer.render();
+    };
     window.SceneApp.executeQuickBarPinnedSlot = executeQuickBarPinnedSlot;
     window.SceneApp.clearQuickBarPinSlot = clearQuickBarPinSlot;
 })();

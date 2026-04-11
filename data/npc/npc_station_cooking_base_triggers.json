@@ -1,0 +1,227 @@
+{
+  "npcId": "npc.station.cooking_base",
+  "entries": [
+    {
+      "id": "station.cooking.repair_intro",
+      "entryType": "dialogue",
+      "entrySource": "chat",
+      "condition": {
+        "type": "and",
+        "conds": [
+          {
+            "type": "flagEquals",
+            "flag": "cooking_base_station_unlocked",
+            "value": false
+          },
+          {
+            "type": "flagEquals",
+            "flag": "cooking_base_station_repair_briefed",
+            "value": false
+          }
+        ]
+      },
+      "requires": [],
+      "blocks": [],
+      "dialogue": {
+        "linesRich": [
+          {
+            "speaker": "narration",
+            "text": "灶台塌了一角，砖缝里塞着陈年油垢。旁边用炭条歪歪扭扭写着几个字：要修好，得找些黏土、干柴和一口能用的陶锅——齐了再来。",
+            "avatar": ""
+          }
+        ],
+        "lines": [
+          "灶台塌了一角，砖缝里塞着陈年油垢。旁边用炭条歪歪扭扭写着几个字：要修好，得找些黏土、干柴和一口能用的陶锅——齐了再来。"
+        ],
+        "hasOptions": false,
+        "options": []
+      },
+      "effects": [
+        {
+          "type": "setFlag",
+          "params": {
+            "flag": "cooking_base_station_repair_briefed",
+            "value": true
+          }
+        }
+      ],
+      "repeatable": false,
+      "scope": "global",
+      "causesNpcDisappear": false
+    },
+    {
+      "id": "station.cooking.repair_unlock",
+      "entryType": "dialogue",
+      "entrySource": "chat",
+      "condition": {
+        "type": "and",
+        "conds": [
+          {
+            "type": "flagEquals",
+            "flag": "cooking_base_station_unlocked",
+            "value": false
+          },
+          {
+            "type": "flagEquals",
+            "flag": "cooking_base_station_repair_briefed",
+            "value": true
+          },
+          {
+            "type": "hasItem",
+            "itemId": "ore_clay_raw",
+            "count": 1
+          },
+          {
+            "type": "hasItem",
+            "itemId": "wood_firewood",
+            "count": 1
+          },
+          {
+            "type": "hasItem",
+            "itemId": "tool_pot_clay_cooking",
+            "count": 1
+          }
+        ]
+      },
+      "requires": [
+        "station.cooking.repair_intro"
+      ],
+      "blocks": [],
+      "dialogue": {
+        "linesRich": [
+          {
+            "speaker": "narration",
+            "text": "材料若还没齐，就再去翻翻箱子；齐了就把黏土糊进裂缝，垫上干柴，把陶锅稳稳卡进灶膛。灶眼深处像是轻轻吸了一口气，砖面终于不再晃了。",
+            "avatar": ""
+          }
+        ],
+        "lines": [
+          "材料若还没齐，就再去翻翻箱子；齐了就把黏土糊进裂缝，垫上干柴，把陶锅稳稳卡进灶膛。灶眼深处像是轻轻吸了一口气，砖面终于不再晃了。"
+        ],
+        "hasOptions": false,
+        "options": []
+      },
+      "effects": [
+        {
+          "type": "removeItem",
+          "params": {
+            "itemId": "ore_clay_raw",
+            "count": 1,
+            "strict": true
+          }
+        },
+        {
+          "type": "removeItem",
+          "params": {
+            "itemId": "wood_firewood",
+            "count": 1,
+            "strict": true
+          }
+        },
+        {
+          "type": "setFlag",
+          "params": {
+            "flag": "cooking_base_station_unlocked",
+            "value": true
+          }
+        },
+        {
+          "type": "removeItem",
+          "params": {
+            "itemId": "tool_pot_clay_cooking",
+            "count": 1,
+            "strict": true
+          }
+        }
+      ],
+      "repeatable": false,
+      "scope": "global",
+      "causesNpcDisappear": false
+    },
+    {
+      "id": "station.cooking.repaired_idle",
+      "entryType": "dialogue",
+      "entrySource": "chat",
+      "condition": {
+        "type": "flagEquals",
+        "flag": "cooking_base_station_unlocked",
+        "value": true
+      },
+      "requires": [],
+      "blocks": [],
+      "dialogue": {
+        "linesRich": [
+          {
+            "speaker": "narration",
+            "text": "灶火可以生了。想做什么，先点灶台打开菜单，再选「使用灶台」进入烹饪界面。",
+            "avatar": ""
+          }
+        ],
+        "lines": [
+          "灶火可以生了。想做什么，先点灶台打开菜单，再选「使用灶台」进入烹饪界面。"
+        ],
+        "hasOptions": false,
+        "options": []
+      },
+      "effects": [],
+      "repeatable": true,
+      "scope": "global",
+      "causesNpcDisappear": false
+    },
+    {
+      "id": "station.cooking.main_water_unlimited_template",
+      "entryType": "dialogue",
+      "entrySource": "chat",
+      "condition": {
+        "type": "and",
+        "conds": [
+          {
+            "type": "flagEquals",
+            "flag": "cooking_base_station_unlocked",
+            "value": true
+          },
+          {
+            "type": "hasItem",
+            "itemId": "wood_firewood",
+            "count": 1
+          }
+        ]
+      },
+      "requires": [],
+      "blocks": [],
+      "dialogue": {
+        "linesRich": [
+          {
+            "speaker": "narration",
+            "text": "【事件模板】你把祭品塞进灶膛缝里，砖缝里渗出潮气，像有人在深处点头应允。此后主灶台料理水不再枯竭。（请在 npc_station_cooking_base_triggers.json 本条目内修改条件与 removeItem 的道具。）",
+            "avatar": ""
+          }
+        ],
+        "lines": [
+          "【事件模板】你把祭品塞进灶膛缝里，砖缝里渗出潮气，像有人在深处点头应允。此后主灶台料理水不再枯竭。（请在 npc_station_cooking_base_triggers.json 本条目内修改条件与 removeItem 的道具。）"
+        ],
+        "hasOptions": false,
+        "options": []
+      },
+      "effects": [
+        {
+          "type": "removeItem",
+          "params": {
+            "itemId": "wood_firewood",
+            "count": 1,
+            "strict": true
+          }
+        },
+        {
+          "type": "setCookingStationWater",
+          "params": {
+            "unlimited": true
+          }
+        }
+      ],
+      "repeatable": false,
+      "scope": "global",
+      "causesNpcDisappear": false
+    }
+  ]
+}

@@ -674,6 +674,131 @@
             color: #fbbf24; font-weight: 700; font-size: 16px;
         }
         #modal-base-warehouse .bw-close:hover { background: rgba(212,163,115,0.15); }
+        /* 烹饪台 */
+        #modal-cooking-station {
+            display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.70); z-index: 100;
+            align-items: center; justify-content: center; pointer-events: auto;
+            font-family: "Microsoft YaHei", "微软雅黑", "PingFang SC", sans-serif;
+        }
+        #modal-cooking-station.show { display: flex; }
+        #modal-cooking-station .cs-panel {
+            width: min(1100px, 96vw); height: min(720px, 88vh);
+            background: #1c1612; border: 2px solid rgba(212,163,115,0.30); border-radius: 12px;
+            overflow: hidden; display: flex; flex-direction: column; font-size: 14px;
+            box-shadow: 0 18px 48px rgba(0,0,0,0.55);
+        }
+        #modal-cooking-station .cs-head {
+            padding: 14px 18px; border-bottom: 1px solid #4d3f35;
+            display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap;
+        }
+        #modal-cooking-station .cs-head h2 { margin: 0; font-size: 17px; font-weight: 800; color: rgba(251,191,36,0.95); letter-spacing: 0.06em; }
+        #modal-cooking-station .cs-head .cs-hint { font-size: 13px; color: #a8a29e; flex: 1; min-width: 200px; }
+        #modal-cooking-station .cs-head .cs-close {
+            padding: 8px 12px; font-size: 14px; background: rgba(212,163,115,0.08); border: 1px solid #4d3f35;
+            color: #e8e6e3; border-radius: 8px; cursor: pointer; flex-shrink: 0; font-weight: 700;
+        }
+        #modal-cooking-station .cs-head .cs-close:hover { background: rgba(212,163,115,0.15); border-color: #fbbf24; }
+        #modal-cooking-station .cs-body {
+            flex: 1; overflow: hidden; min-height: 0;
+            display: grid; grid-template-columns: 1.2fr 1fr 0.9fr; gap: 12px;
+            padding: 12px 16px 18px;
+        }
+        #modal-cooking-station .cs-box {
+            border: 1px solid #4d3f35; border-radius: 10px; background: rgba(45,36,30,0.55);
+            overflow: hidden; display: flex; flex-direction: column; min-height: 0;
+        }
+        #modal-cooking-station .cs-box .title {
+            padding: 10px 12px; border-bottom: 1px solid #4d3f35;
+            color: #e8e6e3; font-weight: 800; font-size: 13px; letter-spacing: 0.2px;
+        }
+        #modal-cooking-station .cs-subtitle {
+            margin: 0 0 8px 0; padding-top: 6px; border-top: 1px dashed rgba(120,113,108,0.35);
+            color: rgba(251,191,36,0.85); font-weight: 800; font-size: 12px; letter-spacing: 0.12em;
+        }
+        #modal-cooking-station .cs-box .content { padding: 10px 12px; overflow: auto; min-height: 0; }
+        #modal-cooking-station .cs-method-list { display: flex; gap: 8px; flex-wrap: wrap; }
+        #modal-cooking-station .btn-method {
+            padding: 7px 10px; font-size: 12px; background: rgba(0,0,0,0.22); border: 1px solid #4d3f35;
+            color: #e8e6e3; border-radius: 9px; cursor: pointer; font-weight: 800;
+        }
+        #modal-cooking-station .btn-method:hover { border-color: #78716c; }
+        #modal-cooking-station .btn-method.active { background: #fbbf24; color: #1c1612; border-color: #fbbf24; }
+        #modal-cooking-station .cs-input-row {
+            display: grid; grid-template-columns: 1fr 70px 70px; gap: 8px; align-items: center;
+            padding: 8px 0; border-bottom: 1px dashed rgba(120,113,108,0.35);
+        }
+        #modal-cooking-station .cs-input-row:last-child { border-bottom: none; }
+        #modal-cooking-station .cs-input-row .iname { color: #e8e6e3; font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        #modal-cooking-station .cs-input-row .icnt { color: #a8a29e; font-size: 12px; text-align: right; }
+        #modal-cooking-station .btn-mini {
+            padding: 6px 10px; font-size: 12px; background: rgba(212,163,115,0.08); border: 1px solid #4d3f35;
+            color: #e8e6e3; border-radius: 9px; cursor: pointer; font-weight: 800;
+        }
+        #modal-cooking-station .btn-mini:hover { background: rgba(212,163,115,0.15); border-color: #fbbf24; }
+        #modal-cooking-station .cs-add-row { display: grid; grid-template-columns: 1fr 92px 92px; gap: 8px; align-items: center; }
+        #modal-cooking-station .cs-add-row.accessory { grid-template-columns: 1fr 92px; }
+        /* 材料选择：与基地仓库一致的行式列表 */
+        #modal-cooking-station #cooking-ingredient-filter {
+            width: 100%; max-width: 100%; padding: 8px 10px; border-radius: 8px; margin-bottom: 10px; box-sizing: border-box;
+            border: 1px solid #4d3f35; background: rgba(0,0,0,0.35); color: #e8e6e3; font-size: 13px;
+        }
+        #modal-cooking-station .cs-ingredient-list {
+            max-height: min(280px, 36vh); overflow-y: auto; padding-right: 4px;
+        }
+        #modal-cooking-station .cs-ingredient-row {
+            display: flex; align-items: center; justify-content: space-between; gap: 10px;
+            padding: 8px 12px; margin-bottom: 6px; background: rgba(45,36,30,0.85);
+            border: 1px solid #4d3f35; border-radius: 6px;
+        }
+        #modal-cooking-station .cs-ingredient-row .cs-ing-left {
+            flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px;
+        }
+        #modal-cooking-station .cs-ingredient-row .cs-ing-name { color: #e8e6e3; font-size: 14px; font-weight: 700; }
+        #modal-cooking-station .cs-ingredient-row .cs-ing-id { font-size: 12px; color: #78716c; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        #modal-cooking-station .cs-ingredient-row .cs-ing-counts {
+            font-size: 12px; color: #a8a29e; flex-shrink: 0; text-align: right; min-width: 7em;
+        }
+        #modal-cooking-station .cs-ingredient-row .btn-add-ingredient {
+            padding: 6px 12px; font-size: 13px; background: #4d3f35; border: 1px solid #78716c;
+            color: #e8e6e3; border-radius: 6px; cursor: pointer; flex-shrink: 0; font-weight: 700;
+        }
+        #modal-cooking-station .cs-ingredient-row .btn-add-ingredient:hover:not(:disabled) { background: #5c4a3d; border-color: #fbbf24; }
+        #modal-cooking-station .cs-ingredient-row .btn-add-ingredient:disabled { opacity: 0.45; cursor: not-allowed; }
+        #modal-cooking-station .cs-ingredient-row.cs-resource-pick { cursor: pointer; }
+        #modal-cooking-station .cs-ingredient-row.cs-resource-pick:hover { border-color: #78716c; }
+        #modal-cooking-station .cs-ingredient-row.cs-resource-pick.active {
+            border-color: #fbbf24;
+            box-shadow: 0 0 0 1px rgba(251,191,36,0.25);
+        }
+        #modal-cooking-station select, #modal-cooking-station input[type="number"] {
+            width: 100%; padding: 8px 10px; border-radius: 8px;
+            border: 1px solid #4d3f35; background: rgba(0,0,0,0.35); color: #e8e6e3; font-size: 13px;
+        }
+        #modal-cooking-station input[type="number"] { text-align: right; }
+        #modal-cooking-station .cs-kv { display: flex; gap: 10px; flex-wrap: wrap; }
+        #modal-cooking-station .cs-kv .kv {
+            padding: 8px 10px; border: 1px solid rgba(120,113,108,0.35); border-radius: 9px;
+            background: rgba(0,0,0,0.18); color: #e8e6e3; font-size: 12px;
+        }
+        #modal-cooking-station .cs-kv .kv.bad { border-color: rgba(185,28,28,0.6); color: #fecaca; }
+        #modal-cooking-station .cs-actions { display: flex; gap: 10px; margin-top: 10px; flex-wrap: wrap; }
+        #modal-cooking-station .cs-station-service { margin-top: 8px; }
+        #modal-cooking-station .btn-start {
+            flex: 1; padding: 10px 12px; font-size: 14px; background: #fbbf24; border: 1px solid #fbbf24;
+            color: #1c1612; border-radius: 10px; cursor: pointer; font-weight: 900;
+        }
+        #modal-cooking-station .btn-start:disabled { opacity: 0.65; cursor: not-allowed; }
+        #modal-cooking-station .btn-clear {
+            padding: 10px 12px; font-size: 14px; background: rgba(212,163,115,0.08); border: 1px solid #4d3f35;
+            color: #e8e6e3; border-radius: 10px; cursor: pointer; font-weight: 900;
+        }
+        #modal-cooking-station .btn-clear:hover { background: rgba(212,163,115,0.15); border-color: #fbbf24; }
+        #modal-cooking-station .cs-known-list { display: flex; flex-direction: column; gap: 8px; }
+        #modal-cooking-station .btn-known {
+            text-align: left; width: 100%; padding: 9px 10px; border-radius: 10px;
+            border: 1px solid #4d3f35; background: rgba(0,0,0,0.22); color: #e8e6e3; cursor: pointer; font-weight: 800; font-size: 12px;
+        }
+        #modal-cooking-station .btn-known:hover { border-color: #fbbf24; background: rgba(212,163,115,0.12); }
         /* 战斗技能枢纽弹窗 - 参照 demo.html */
         #modal-combat {
             display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 100;
@@ -839,6 +964,46 @@
         }
         #modal-combat .combat-debug-btn:hover {
             background: #fbbf24; color: #1c1612; border-color: #fbbf24;
+        }
+        #modal-combat #btn-debug-recipe-schema-errors { display: none; }
+        #modal-combat .recipe-schema-debug-panel {
+            display: none;
+            margin-top: 8px;
+            border: 1px solid #4d3f35;
+            border-radius: 8px;
+            background: #120e0c;
+            max-height: 180px;
+            overflow: auto;
+            font-size: 11px;
+            color: #e7e5e4;
+        }
+        #modal-combat .recipe-schema-debug-panel.show { display: block; }
+        #modal-combat .recipe-schema-debug-head,
+        #modal-combat .recipe-schema-debug-row {
+            display: grid;
+            grid-template-columns: 90px 180px 220px 1fr;
+            gap: 8px;
+            padding: 6px 10px;
+            border-bottom: 1px solid rgba(120, 113, 108, 0.25);
+            align-items: start;
+        }
+        #modal-combat .recipe-schema-debug-head {
+            position: sticky;
+            top: 0;
+            z-index: 1;
+            background: #1f1916;
+            font-weight: 800;
+            text-transform: uppercase;
+            color: #fbbf24;
+        }
+        #modal-combat .recipe-schema-debug-row:last-child { border-bottom: 0; }
+        #modal-combat .recipe-schema-debug-row .col {
+            word-break: break-word;
+            line-height: 1.35;
+        }
+        #modal-combat .recipe-schema-debug-empty {
+            padding: 10px;
+            color: #a8a29e;
         }
         #modal-combat .combat-move-node .debug-move-prof-btn {
             position: absolute; right: 8px; bottom: 8px;
@@ -1714,6 +1879,10 @@
                 <div class="action-bubble-inner">
                     <button type="button" id="player-action-gather" class="action-btn primary" style="display:none;" data-ui="player.action.gather"></button>
                     <button type="button" id="player-action-gather-stop" class="action-btn" style="display:none;" data-ui="player.action.gather.stop"></button>
+                    <button type="button" id="player-action-take-water" class="action-btn" style="display:none;"></button>
+                    <button type="button" id="player-action-add-fuel" class="action-btn" style="display:none;"></button>
+                    <button type="button" id="player-action-pour-water" class="action-btn" style="display:none;"></button>
+                    <button type="button" id="player-action-cook" class="action-btn" style="display:none;" data-ui="player.action.cook"></button>
                     <button type="button" id="player-action-ground-items" class="action-btn" style="display:none;" title="" data-ui="player.action.ground.items" data-ui-title="player.action.ground.items.title"></button>
                     <button type="button" id="player-action-diqi-huti" class="action-btn" style="display:none;" data-ui="player.action.diqi_huti"></button>
                 </div>
@@ -1836,6 +2005,70 @@
                 <div class="bw-close" id="base-warehouse-close" data-ui="warehouse.modal.close">关闭</div>
             </div>
         </div>
+        <!-- 烹饪台：邻格点击灶台格打开（同 NPC 对话） -->
+        <div id="modal-cooking-station" aria-hidden="true">
+            <div class="cs-panel">
+                <div class="cs-head">
+                    <h2 data-ui="cooking.modal.title"></h2>
+                    <span class="cs-hint" data-ui="cooking.modal.hint"></span>
+                    <button type="button" class="cs-close" id="cooking-station-close" data-ui="cooking.modal.close"></button>
+                </div>
+                <div class="cs-body">
+                    <div class="cs-box">
+                        <div class="title" data-ui="cooking.section.inputs"></div>
+                        <div class="content">
+                            <div id="cooking-input-list"></div>
+                            <div style="height:10px"></div>
+                            <div class="cs-subtitle" data-ui="cooking.section.from_inventory"></div>
+                            <input type="search" id="cooking-ingredient-filter" autocomplete="off" data-ui="cooking.ingredient.search.placeholder" data-ui-attr="placeholder" placeholder="" />
+                            <div id="cooking-ingredient-list" class="cs-ingredient-list"></div>
+                        </div>
+                        <div class="title" data-ui="cooking.section.known_recipes"></div>
+                        <div class="content">
+                            <div id="cooking-known-list" class="cs-known-list"></div>
+                        </div>
+                    </div>
+                    <div class="cs-box">
+                        <div class="title" data-ui="cooking.section.method"></div>
+                        <div class="content">
+                            <div id="cooking-method-list" class="cs-method-list"></div>
+                        </div>
+                        <div class="title" data-ui="cooking.section.accessory"></div>
+                        <div class="content">
+                            <div id="cooking-accessory-list"></div>
+                            <div style="height:10px"></div>
+                            <div class="cs-add-row accessory">
+                                <select id="cooking-add-accessory"></select>
+                                <button type="button" class="btn-mini" id="cooking-add-accessory-btn" data-ui="cooking.btn.install_accessory"></button>
+                            </div>
+                        </div>
+                        <div class="title" data-ui="cooking.section.status"></div>
+                        <div class="content">
+                            <div id="cooking-status-kv" class="cs-kv"></div>
+                            <div style="height:10px"></div>
+                            <div class="cs-subtitle" data-ui="cooking.section.water_sources"></div>
+                            <div id="cooking-water-source-list" class="cs-ingredient-list"></div>
+                            <div style="height:8px"></div>
+                            <div class="cs-subtitle" data-ui="cooking.section.fuel_sources"></div>
+                            <div id="cooking-fuel-source-list" class="cs-ingredient-list"></div>
+                            <div style="height:10px"></div>
+                            <div class="cs-actions cs-station-service">
+                                <button type="button" class="btn-clear" id="cooking-modal-pour-btn" data-ui="player.action.pour_water"></button>
+                                <button type="button" class="btn-clear" id="cooking-modal-add-fuel-btn" data-ui="player.action.add_fuel"></button>
+                            </div>
+                            <div class="cs-actions">
+                                <button type="button" class="btn-start" id="cooking-start-btn" data-ui="cooking.btn.start"></button>
+                                <button type="button" class="btn-clear" id="cooking-clear-btn" data-ui="cooking.btn.clear"></button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="cs-box">
+                        <div class="title" data-ui="cooking.section.help"></div>
+                        <div class="content" id="cooking-help-text"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
         <!-- 战斗技能枢纽弹窗 -->
         <div id="modal-combat">
             <div class="combat-panel">
@@ -1880,7 +2113,18 @@
                                 <span id="skill-level" class="badge-level" data-ui="combat.level.zero"></span>
                                 <span id="skill-prof" class="badge-prof" data-ui="combat.prof.zero"></span>
                                     <button type="button" class="combat-debug-btn" id="btn-debug-combat-skill-plus50" title="调试：给当前战斗技能加 +50 级">+50级</button>
+                                    <button type="button" class="combat-debug-btn" id="btn-debug-recipe-schema-errors" data-ui="debug.recipe_schema.btn"></button>
                             </div>
+                        </div>
+                        <div id="recipe-schema-debug-panel" class="recipe-schema-debug-panel">
+                            <div class="recipe-schema-debug-head">
+                                <div data-ui="debug.recipe_schema.col.entry_type"></div>
+                                <div data-ui="debug.recipe_schema.col.id"></div>
+                                <div data-ui="debug.recipe_schema.col.error_code"></div>
+                                <div data-ui="debug.recipe_schema.col.message"></div>
+                            </div>
+                            <div id="recipe-schema-debug-empty" class="recipe-schema-debug-empty" data-ui="debug.recipe_schema.empty"></div>
+                            <div id="recipe-schema-debug-list"></div>
                         </div>
                         <div id="move-sequence" class="combat-move-sequence"></div>
                     </div>
@@ -2026,6 +2270,10 @@
             <div class="action-bar-context" id="action-bar-context">
                 <button type="button" id="action-bar-gather" class="action-bar-btn" style="display:none;" data-ui="action.bar.gather"></button>
                 <button type="button" id="action-bar-gather-stop" class="action-bar-btn" style="display:none;" data-ui="player.action.gather.stop"></button>
+                <button type="button" id="action-bar-take-water" class="action-bar-btn" style="display:none;"></button>
+                <button type="button" id="action-bar-add-fuel" class="action-bar-btn" style="display:none;"></button>
+                <button type="button" id="action-bar-pour-water" class="action-bar-btn" style="display:none;"></button>
+                <button type="button" id="action-bar-cook" class="action-bar-btn" style="display:none;" data-ui="action.bar.cook"></button>
                 <button type="button" id="action-bar-ground" class="action-bar-btn" style="display:none;" data-ui="action.bar.ground"></button>
                 <button type="button" id="action-bar-diqi-huti" class="action-bar-btn" style="display:none;" data-ui="player.action.diqi_huti"></button>
                 <button type="button" id="action-bar-warehouse" class="action-bar-btn" style="display:none;" data-ui="action.bar.warehouse"></button>
@@ -2081,12 +2329,14 @@
     <script src="js/acupoints.js"></script>
     <script src="js/survival-skills.js"></script>
     <script src="js/production-quality.js"></script>
+    <script src="js/item-value.js"></script>
     <script src="js/gathering.js"></script>
     <script src="js/scene-animation.js"></script>
     <script src="js/core/tile-renderer-v2.js"></script>
     <script src="js/scene-renderer.js"></script>
     <script src="js/scene-systems.js"></script>
     <script src="js/save-system.js"></script>
+    <script src="js/recipe-system.js"></script>
     <script src="js/scene-app.js"></script>
     <script src="js/bootstrap.js"></script>
     

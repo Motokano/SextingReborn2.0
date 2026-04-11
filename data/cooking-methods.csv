@@ -1,0 +1,9 @@
+method_id,name,requires_accessory_item_id,fuel_cost,water_cost,craft_ticks,stamina_cost,base_success_rate,notes
+roast_bake,烤/焙,,40,0,2,4,0.9,基线工艺；配件列留空表示不要求
+boil_stew,煮/炖,tool_pot_clay_cooking,30,60,3,6,0.88,
+steam,蒸,tool_steamer_bamboo_cooking,25,80,3,6,0.86,
+stir_fry,炒/煸,tool_wok_iron_cooking,35,5,2,5,0.87,
+deep_fry,炸,tool_fryer_pot_iron_cooking,42,15,2,5,0.85,
+pickle_salt,腌/盐渍,tool_pickling_jar_cooking,15,40,4,4,0.9,
+ferment,发酵,tool_fermentation_jar_cooking,20,50,6,5,0.82,
+grind_mix,研磨/调和,tool_mortar_pestle_cooking,12,0,1,3,0.92,

@@ -1,0 +1,57 @@
+---
+description: 物品腐败 tick、烹饪台 fuel/water 列、品质档有效基价（ItemValue）—本轮落地口径与易错点
+globs: tools/item-editor.html,tools/build-items-json.mjs,tools/migrate-spoilage-to-ticks-csv.mjs,js/item-value.js,js/inventory-equipment.js,js/scene-app.js,data/items/*.csv,capitalism/items_template_and_style.md
+alwaysApply: false
+---
+
+# 物品：腐败列、烹饪台资源、品质基价（Agent 备忘）
+
+编辑 **CSV / items.json 构建 / 物品编辑器 / 烹饪台倒水添柴 / 贸易与任务估值** 时，遵守本节，避免与本轮已落地实现冲突。
+
+## 1) 烹饪台：水槽与燃料（物品字段）
+
+| 字段 | 含义 | 运行时 |
+|------|------|--------|
+| **`water_points`** | 整件倒入灶台水槽时增加的 **料理水点数**；`≤0` 不可用于倒水 | `scene-app.js`：`getItemWaterPoints` → `onPourWaterClick`，消耗 **1 件** 物品，槽上限见 `COOKING_WATER_MAX_POINTS` |
+| **`fuel_points`** | 每件 **添柴** 为灶台燃料槽增加的点数；`≤0` 视为不可燃 | 添柴逻辑同文件 `getItemFuelPoints` / `onAddFuelClick` |
+
+- **判定与 `tags` 无关**：只看模板数值字段，勿误以为带 `water` 标签即自动可倒水。
+- **`tools/item-editor.html`**：载入 CSV 会 `ensureCookingStationColumns()`；行编辑区有 **烹饪台（燃料 / 料理水）** 快捷数字框，与下方 `fuel_points` / `water_points` 列 textarea 同源。
+- 更完整的烹饪流程索引见 **`.cursor/rules/cooking-system-agent.mdc`**。
+
+## 2) 腐败：`spoilage_ticks`（非枚举）
+
+- **CSV / JSON 列名**：**`spoilage_ticks`**（非负整数）；**`0` = 不腐败**。
+- **构建**：`tools/build-items-json.mjs` 始终写入 `item.spoilage_ticks`；若仍存在旧列 **`spoilage`**（`none`/`fast`/`slow`），按兜底映射：`none→0`，`fast→600`，`slow→3600`（占位，策划应在 CSV 中改为目标 tick）。
+- **一次性迁移脚本**：`node tools/migrate-spoilage-to-ticks-csv.mjs`（仅当表头仍为 `spoilage` 时改写四个合并表）。
+- **运行时**：当前 **无** 按 tick 腐败结算逻辑；本字段为 **数据与编辑口径** 预留，接入玩法时读 `spoilage_ticks` 即可。
+- **`tools/item-editor.html`**：载入时 `migrateLegacySpoilageInState()` 将表头 `spoilage` 升为 `spoilage_ticks` 并换算；缺列时 `ensureSpoilageTicksColumn()` 补 `0`；提供 **腐败 tick（快捷）** 数字框。
+- 文案/模板说明见 **`capitalism/items_template_and_style.md`**；构建合并顺序与通用物品字段仍以 **`.cursor/rules/items-json-build-agent.mdc`** 为准。
+
+## 3) 品质档 → 有效 `base_value`（ItemValue）
+
+- **模块**：`js/item-value.js`，在 **`index.html`** 中须位于 **`js/production-quality.js` 之后**（依赖 `ProductionQuality.normalizeQualityTier`），且 **`js/inventory-equipment.js` 之后**（需 `getItemTemplate` 查表）。
+- **默认公式**：归一化品质档 `q` ∈ [0,5]（与生产品质一致，兼容旧 1~6）  
+  `有效基价 = round(base_value × (1 + value_bonus_per_quality_tier × q))`，默认 **`value_bonus_per_quality_tier = 0.1`**（每高一档 **+10%** 模板基价）。
+- **对外 API**（`window.ItemValue`）：`getEffectiveBaseValue`、`getEffectiveBaseValueStack`、`getQualityTierValueMultiplier`、`normalizeQualityTier`、`computeQualityAdjustedBase`、`setParams` / `getParams`、`registerEffectiveBaseValueModifier` / `clearEffectiveBaseValueModifiers`。
+- **背包桥接**：`InventoryEquipment.getEffectiveBaseValue(itemId, instanceOrTier?)` 委托 `ItemValue`；未加载 `ItemValue` 时退回 `round(模板 base_value)`。
+- **交易/任务**：构造 `TradeItem.baseValue` 或任务奖励估值时，**应以 `ItemValue.getEffectiveBaseValue`（或 IE 桥接）为起点**，再乘区域/商人/tag 等系数；见 **`js/trade_context.js`** 注释。
+- **修饰器约定**：`registerEffectiveBaseValueModifier(fn)` 的 `fn(currentValue, itemId, opts)` 返回数字则覆盖链上当前值；异常忽略，勿静默吞错关键逻辑。
+- **`tools/item-editor.html`**：`FIELD_HINTS.base_value` 已注明与 `ItemValue` 的关系。
+
+## 4) 禁止与自检
+
+- **禁止**把烹饪补水判定改成只认 `tags` 不认 **`water_points`**。
+- **禁止**把 `spoilage` 字符串枚举当作当前权威数据源写回新 CSV（仅构建兜底与编辑器载入迁移）。
+- **禁止**在第二处复制一套「品质 × 基价」公式；统一 **`ItemValue`**（或 IE 委托）。
+- **改 CSV 后**：执行 `node tools/build-items-json.mjs`（或 `npm run build:items`），勿长期只改 `items.json`。
+
+## 5) 相关文件速查
+
+| 主题 | 路径 |
+|------|------|
+| 倒水/添柴 | `js/scene-app.js`：`getItemWaterPoints`、`getItemFuelPoints`、`onPourWaterClick`、`onAddFuelClick` |
+| 物品构建 | `tools/build-items-json.mjs` |
+| 品质估值 | `js/item-value.js`、`js/inventory-equipment.js`（`getEffectiveBaseValue`） |
+| 物品编辑器 | `tools/item-editor.html` |
+| 腐败迁移 | `tools/migrate-spoilage-to-ticks-csv.mjs` |

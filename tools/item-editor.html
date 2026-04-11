@@ -175,7 +175,7 @@
 </head>
 <body>
 <div class="toolbar">
-    <button type="button" id="btn-load-materials">载入示例：materials_base.csv</button>
+    <button type="button" id="btn-load-materials">载入示例：materials_all.csv</button>
     <label style="display:flex; gap:10px; align-items:center;">
         <span style="color: var(--muted); font-weight:900; font-size:12px;">选择 CSV 文件</span>
         <input id="file-input" type="file" accept=".csv,text/csv" style="padding:6px 10px; border-radius: 10px;" />
@@ -206,7 +206,8 @@
         <div class="content">
             <div class="hint">
                 列名会作为“属性字段”。你可以删除任意非 `id` 列；也可以新增列，新增后所有行都会补空值。<br>
-                品质接入建议：使用 `quality_tier`（0~5）作为统一品质字段；即使暂不生效，也建议先在数据层保持该字段。
+                品质接入建议：使用 `quality_tier`（0~5）作为统一品质字段；即使暂不生效，也建议先在数据层保持该字段。<br>
+                腐败列名：<code>spoilage_ticks</code>（非负整数 tick，<code>0</code>=不腐败）。载入旧表若仍含 <code>spoilage</code>（none/fast/slow）会自动换算为 tick。
             </div>
 
             <div class="grid2" style="margin-top:12px;">
@@ -379,11 +380,14 @@
         tags: '英文小写标签，用分号 ; 分隔',
         source: '主要获得方式（mining/logging/gathering...）',
         production_lines: '生产线类型（forge;craft...）',
-        spoilage: '腐败属性（none/slow/fast）',
+        spoilage_ticks: '腐败：自进入可腐败状态起经过多少 world tick 后腐败；0=不腐败（旧 none）。构建/载入旧表时 fast→600、slow→3600 为占位，可按设计改',
+        fuel_points: '烹饪台添柴：每件消耗的该物品为灶台增加的燃料点数；≤0 视为不可燃',
+        water_points: '烹饪台倒水：整件消耗，每件为灶台水槽增加的料理水点数；≤0 不可用于倒水',
+        cooking_ingredient: '1/true/yes 表示可作烹饪投料（ multiset 盲配材料）',
         price_class: '贸易价值定位（life_good/material/rare/luxury）',
         volatility: '价格波动（low/mid/high）',
         region_restrict: '生成地区限制（0=全局，其它需与地区体系匹配）',
-        base_value: '贸易内部基线价值（不对玩家展示）',
+        base_value: '贸易内部基线价值（不对玩家展示）；运行时有效价 = base_value×(1+每品质档10%)，见 ItemValue / InventoryEquipment.getEffectiveBaseValue',
         accept_code: '商人接受货币短码',
         convert_to_high: '低级→高级兑换依据（"目标id,比例"）',
         usable_regions: '货币可用地区代号（分号分隔）',
@@ -471,6 +475,55 @@
             state.headers.push('use_buff_id');
             changed = true;
             for (var j = 0; j < state.rows.length; j++) state.rows[j].use_buff_id = '';
+        }
+        if (changed) refreshColSelect();
+    }
+
+    function mapLegacySpoilageToTicks(v){
+        var s = String(v == null ? '' : v).trim().toLowerCase();
+        if (!s || s === 'none') return '0';
+        if (s === 'fast') return '600';
+        if (s === 'slow') return '3600';
+        if (/^\d+$/.test(s)) return s;
+        return '0';
+    }
+
+    /** 将旧列名 spoilage 升为 spoilage_ticks，并把枚举换成数字 */
+    function migrateLegacySpoilageInState(){
+        var si = state.headers.indexOf('spoilage');
+        if (si < 0) return;
+        state.headers[si] = 'spoilage_ticks';
+        for (var i = 0; i < state.rows.length; i++){
+            var r = state.rows[i];
+            var raw = r.spoilage != null && r.spoilage !== '' ? r.spoilage : r.spoilage_ticks;
+            delete r.spoilage;
+            r.spoilage_ticks = mapLegacySpoilageToTicks(raw);
+        }
+    }
+
+    /** 表头完全没有腐败列时补一列，默认 0 */
+    function ensureSpoilageTicksColumn(){
+        if (state.headers.indexOf('spoilage_ticks') >= 0) return;
+        if (state.headers.indexOf('spoilage') >= 0) return;
+        state.headers.push('spoilage_ticks');
+        for (var i = 0; i < state.rows.length; i++){
+            state.rows[i].spoilage_ticks = '0';
+        }
+        refreshColSelect();
+    }
+
+    /** 烹饪台燃料/水：缺列时补上，默认 0 */
+    function ensureCookingStationColumns(){
+        var changed = false;
+        var cols = ['fuel_points', 'water_points'];
+        for (var c = 0; c < cols.length; c++){
+            var col = cols[c];
+            if (state.headers.indexOf(col) >= 0) continue;
+            state.headers.push(col);
+            changed = true;
+            for (var i = 0; i < state.rows.length; i++){
+                state.rows[i][col] = '0';
+            }
         }
         if (changed) refreshColSelect();
     }
@@ -678,6 +731,76 @@
         usableWrap.appendChild(usableBody);
         el.rowEditor.appendChild(usableWrap);
 
+        ensureCookingStationColumns();
+        var cookWrap = document.createElement('div');
+        cookWrap.className = 'field';
+        var cookLab = document.createElement('label');
+        cookLab.textContent = '烹饪台（燃料 / 料理水）';
+        var cookBody = document.createElement('div');
+        cookBody.style.display = 'grid';
+        cookBody.style.gap = '10px';
+        var cookHint = document.createElement('div');
+        cookHint.className = 'hint';
+        cookHint.textContent = '与运行时 scene-app 一致：添柴按 fuel_points 增加灶台燃料槽；倒水按 water_points 增加水槽并整件消耗物品。≤0 表示不可用该方式。';
+        cookBody.appendChild(cookHint);
+        function bindNonNegIntInput(labelText, key){
+            var line = document.createElement('label');
+            line.style.display = 'flex';
+            line.style.flexWrap = 'wrap';
+            line.style.gap = '8px';
+            line.style.alignItems = 'center';
+            var span = document.createElement('span');
+            span.textContent = labelText;
+            var inp = document.createElement('input');
+            inp.type = 'number';
+            inp.min = '0';
+            inp.step = '1';
+            inp.style.width = '120px';
+            var v0 = parseInt(String(row[key] == null ? '' : row[key]), 10);
+            inp.value = String(isFinite(v0) && v0 >= 0 ? v0 : 0);
+            inp.addEventListener('input', function(){
+                var n = parseInt(inp.value, 10);
+                row[key] = (isFinite(n) && n >= 0) ? String(n) : '0';
+            });
+            line.appendChild(span);
+            line.appendChild(inp);
+            return line;
+        }
+        cookBody.appendChild(bindNonNegIntInput('fuel_points（添柴 +燃料）', 'fuel_points'));
+        cookBody.appendChild(bindNonNegIntInput('water_points（倒水 +料理水）', 'water_points'));
+        cookWrap.appendChild(cookLab);
+        cookWrap.appendChild(cookBody);
+        el.rowEditor.appendChild(cookWrap);
+
+        if (state.headers.indexOf('spoilage_ticks') >= 0){
+            var spoilWrap = document.createElement('div');
+            spoilWrap.className = 'field';
+            var spoilLab = document.createElement('label');
+            spoilLab.textContent = '腐败 tick（快捷）';
+            var spoilBody = document.createElement('div');
+            spoilBody.style.display = 'grid';
+            spoilBody.style.gap = '8px';
+            var spoilHint = document.createElement('div');
+            spoilHint.className = 'hint';
+            spoilHint.textContent = '写入 spoilage_ticks：经过多少 world tick 后腐败；0 表示不腐败。与下方同名列 textarea 同步。';
+            spoilBody.appendChild(spoilHint);
+            var spoilInp = document.createElement('input');
+            spoilInp.type = 'number';
+            spoilInp.min = '0';
+            spoilInp.step = '1';
+            spoilInp.style.width = '140px';
+            var sv = parseInt(String(row.spoilage_ticks == null ? '' : row.spoilage_ticks), 10);
+            spoilInp.value = String(isFinite(sv) && sv >= 0 ? sv : 0);
+            spoilInp.addEventListener('input', function(){
+                var n = parseInt(spoilInp.value, 10);
+                row.spoilage_ticks = (isFinite(n) && n >= 0) ? String(n) : '0';
+            });
+            spoilBody.appendChild(spoilInp);
+            spoilWrap.appendChild(spoilLab);
+            spoilWrap.appendChild(spoilBody);
+            el.rowEditor.appendChild(spoilWrap);
+        }
+
         // 可食用快捷配置（映射到 editable / edible_buff_id 两列）
         ensureEdibleColumns();
         var edibleWrap = document.createElement('div');
@@ -760,6 +883,10 @@
         state.rows = parsed.rows || [];
         state.selectedRowIndex = 0;
         state.selectedColIndex = 0;
+
+        migrateLegacySpoilageInState();
+        ensureSpoilageTicksColumn();
+        ensureCookingStationColumns();
 
         refreshRowSelect();
         refreshColSelect();
@@ -963,7 +1090,7 @@
 
     el.btnLoadMaterials.addEventListener('click', function(){
         // 从 tools/ 相对 data/ 读取
-        loadFromUrl('../data/items/materials_base.csv');
+        loadFromUrl('../data/items/materials_all.csv');
     });
 
     // 给页面一个轻量默认状态：也可以在未来改成加载其它表

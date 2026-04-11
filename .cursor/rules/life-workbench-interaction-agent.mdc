@@ -1,0 +1,81 @@
+---
+description: 生活技能工作台（地图可互动设施）与烹饪台同构的交互范例：占格、渲染、tryIntentMove、模态 UI；新增锻造/制药等工作台时按本节对齐。
+globs: data/maps/**/*.json,js/game-engine.js,js/scene-app.js,js/scene-renderer.js,js/core/tile-renderer-v2.js,index.html,data/ui_text_zhCN.json
+alwaysApply: false
+---
+
+# 生活技能·工作台地图互动（烹饪台范例合约）
+
+**正范例（已实现）**：**烹饪台**（`life_cooking` 相关 UI 与 `tryCookAtStation` 等见 **`.cursor/rules/cooking-system-agent.mdc`**、**`recipe-cooking-migration-agent.mdc`**）。  
+本节只约束 **「玩家在地图上如何发现、走近、点开工作台」** 的交互与代码分层，便于 **锻造 / 制药 / 纺织 / 制造** 等工作台复用同一套路。
+
+## 1) 产品交互（强制对齐 NPC）
+
+| 要点 | 口径 |
+|------|------|
+| **触发方式** | 玩家站在工作台 **邻格（含八向斜格）**，**点击工作台所在格**（或键盘朝该格发移动意图，走 `tryIntentMove`），与 **NPC 对话** 同构。 |
+| **禁止** | **不要**在「仅邻接工作台」时，在气泡/底栏 **自动冒出** 该设施的专属主入口（避免与 NPC 体验分裂）。 |
+| **主入口** | 打开 **专用模态面板**；次要操作（如烹饪的倒水/添柴）放在 **面板内按钮**，不依赖邻格冒泡。 |
+| **可走性** | 工作台所在格 **不可走入**（与 NPC 占格一致：`isWalkable` / `canStandAt` 为 false）。 |
+
+## 2) 地图数据（`data/maps/*.json`）
+
+- 使用 **`annotations`**，键 **`"x,y"`**，值为策划可读标签（如 `烹饪台`、`灶台`）。
+- **不要**依赖玩家站在设施**同格**交互；逻辑上以 **邻格 + 点设施格** 为准。
+- 改标注后须能触发 **静态格重绘**：`scene-renderer` 的 `staticDataKey` 已纳入 `annotations` 序列化，避免只改字不重画。
+
+## 3) 引擎层（`js/game-engine.js`）
+
+- **占格判定**：对「设施本体格」返回不可走（在 `isWalkable` 中短路，勿仅依赖 `blocks` 重复铺格）。
+- **烹饪范例 API**（新设施可复制命名风格）：
+  - `isBlockingStationAnnotation(ann)`：哪些 `annotation` 文本视为 **烹饪类占格设施**（与邻格烹饪上下文共用同一字符串规则，避免分裂）。
+  - `isCookingStationCell(x, y)`：**标注命中** 或 **`entity_id === 'cooking_station_temp'`**（临时灶实体）→ 占格。
+- **扩展新工作台**：新增 `isXxxWorkbenchCell(x,y)`（或日后统一的 `annotation` 注册表），并在 `isWalkable` 中 **并列** 判断；**禁止**在 `scene-renderer` 单独写可走规则。
+
+## 4) 移动意图链（`js/scene-app.js` → `SceneCtx.actions.tryIntentMove`）
+
+**固定优先级（已落地顺序）**：
+
+1. 邻格目标有 **敌人** → 攻击意图  
+2. 邻格目标有 **NPC** → `interactNpc`  
+3. 邻格目标是 **烹饪台格** → `openCookingStationPanel()`（**范例**）  
+4. 否则 → `tryMoveTo` 普通移动  
+
+新增工作台时：在 **第 3 与第 4 步之间**（或在与 NPC 不冲突的前提下紧接 NPC 后）插入 **本设施分支**，内部只做：**朝向**、`stopGatheringIdle`、**打开对应模态**（或统一 `openLifeWorkbenchModal(type)`），**结算仍走各系统唯一 API**（与 `cooking-system-agent` 的「禁止 UI 自写结算」一致）。
+
+## 5) 邻接上下文 vs 点格打开（`scene-app`）
+
+- **「是否站在能用的位置」**：用 **邻格扫描**（范例：`getCurrentCookingStationContext` / `forEachAdjacentCell` + `getAnnotationAt` / 实体记录），供 **打开面板校验**、**tryXxx 前置**。
+- **「是否点到了设施」**：以 **`tryIntentMove` 的 target 格** `isCookingStationCell(tx,ty)`（范例）为准，与 NPC 用 `getNpcAt(targetX,targetY)` 一致。
+
+## 6) UI / 文案（`index.html` + `data/ui_text_zhCN.json`）
+
+- **模态**：样式优先 **`index.html`** 作用域 CSS；业务胶水在 **`scene-app.js`**。
+- **气泡/底栏**：与烹饪相关的 **主入口 + 同场景次要服务**（范例：倒水、添柴）**不要**再挂到 `scene-renderer` 的 `showBubble`；若必须保留全局动作（如钓鱼 **取水**），须与 **脚下/实体** 强绑定，**不要**与「邻接工作台」混用同一显示条件。
+- **文案**：玩家可见字符串一律 **`ui_text_zhCN.json` key**；模态 `hint` 应写明 **邻格 + 点击设施格**（范例：`cooking.modal.hint`）。
+
+## 7) 地块标识（`js/core/tile-renderer-v2.js` + `scene-renderer` meta）
+
+- **静态层**：不可走设施格可用 **区别于普通墙** 的底色/描边（范例：`cookingStation` + 暖色描边）。
+- **动态层**：在 **可辨识距离内** 绘制简记号（范例：**「灶」**），语义与 NPC「人」字同级；受视野/背后遮挡条影响时与现有一致。
+- **`getStaticMetaAt` / `getDynamicMetaAt`** 须带上设施标记字段，**禁止**在 `tile-renderer-v2` 内硬编码坐标。
+
+## 8) 新设施落地检查清单（给策划/程序）
+
+1. 地图 `annotations`（或实体）是否落在 **可走网格外** 的设施格上？  
+2. `GameEngine.isWalkable` 是否对该格 **恒 false**？  
+3. `tryIntentMove` 是否已在 **移动前** 分支打开模态？键盘是否同样走 `tryIntentMove`？  
+4. 是否 **未** 在邻接时往 `showBubble` 塞主入口？  
+5. 模态内是否包含 **该场景需要的次要操作**（避免玩家无处点）？  
+6. `ui_text_zhCN` 是否补充 **操作说明**？  
+7. 业务结算是否仍只走 **各系统唯一入口**（烹饪：`tryCookAtStation`）？
+
+## 9) 与现有规则的关系
+
+- **数值/配方/燃料**：烹饪仍服从 **`cooking-system-agent.mdc`**、**`recipe-*`**。  
+- **物品食用/Buff**：食物链服从 **`food-buff-and-buff-watch-agent.mdc`**。  
+- **文案强校验**：**`game-design-reuse-contract-from-docs.mdc`**（`UIText.applyDom`）。
+
+---
+
+**一句话**：新工作台 = **占格不可走 + 地块可见记号 + 邻格点设施格打开模态（走 tryIntentMove）+ 功能进面板不冒泡**；烹饪台是当前完整范例，复制分层即可换皮换 API。

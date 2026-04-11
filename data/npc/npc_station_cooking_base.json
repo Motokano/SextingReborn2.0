@@ -1,0 +1,34 @@
+{
+  "schemaVersion": 1,
+  "id": "npc.station.cooking_base",
+  "name": "破损的灶台",
+  "displayTitle": "灶台",
+  "sprite": "",
+  "appearanceSchedule": {
+    "start": "00:00",
+    "end": "23:59"
+  },
+  "location": {
+    "sceneId": "M0_Base_Inside_lv_1",
+    "x": 11,
+    "y": 11
+  },
+  "mainMenu": {
+    "showChat": true,
+    "showWorkWhen": "never",
+    "showOpenCookingPanel": true,
+    "showLeave": true
+  },
+  "behavior": {
+    "type": "workbench",
+    "origin": "base_hideout",
+    "description": "设施 NPC：邻格点灶格走 interactNpc 打开与林经理同套菜单；闲聊走 triggers，使用灶台打开烹饪面板。"
+  },
+  "fallbackDialoguePoolId": "npc.station.cooking_base.fallback",
+  "tags": [
+    "workbench",
+    "cooking_station",
+    "non_combat",
+    "base_facility"
+  ]
+}

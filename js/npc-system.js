@@ -51,6 +51,19 @@
         return getTriggered().indexOf(id) >= 0;
     }
 
+    function removeTriggered(entryId) {
+        var id = (entryId == null) ? '' : String(entryId);
+        if (!id) return false;
+        var arr = getTriggered();
+        var ix = arr.indexOf(id);
+        if (ix < 0) return false;
+        arr.splice(ix, 1);
+        try {
+            localStorage.setItem(LS_TRIGGERED, JSON.stringify(arr));
+        } catch (eRm) { /* ignore */ }
+        return true;
+    }
+
     /** 根据角色 hidden_epithets 写入/清除 demo flag（读档 setDemoState 后须再调一次） */
     function syncPlayerEpithetFlags() {
         var useless = (global.CharacterAttributes && global.CharacterAttributes.HIDDEN_EPITHET_USELESS) || '无用之人';
@@ -111,6 +124,26 @@
             if (!reg || !reg.npcs || !reg.npcs[npcId]) return null;
             return reg.npcs[npcId];
         });
+    }
+
+    function collectNpcIdsFromMap(map) {
+        var out = {};
+        function add(id) {
+            if (id == null) return;
+            var s = String(id).trim();
+            if (s) out[s] = true;
+        }
+        if (map && Array.isArray(map.npcs)) {
+            var i;
+            for (i = 0; i < map.npcs.length; i++) add(map.npcs[i] && map.npcs[i].npc_id);
+        }
+        if (map && map.cooking_station_interact_npc_id != null) add(map.cooking_station_interact_npc_id);
+        if (map && map.cooking_station_interact_npc_by_cell && typeof map.cooking_station_interact_npc_by_cell === 'object') {
+            var keys = Object.keys(map.cooking_station_interact_npc_by_cell);
+            var k;
+            for (k = 0; k < keys.length; k++) add(map.cooking_station_interact_npc_by_cell[keys[k]]);
+        }
+        return Object.keys(out);
     }
 
     function loadNpcDef(npcId) {
@@ -269,13 +302,33 @@
             for (var j = 0; j < arrO.length; j++) if (evalCondition(arrO[j])) return true;
             return false;
         }
-        // hasItem：当前 demo 未接入背包查询接口，先保留 false（后续接 InventoryEquipment 背包查询可补）
-        if (cond.type === 'hasItem') return false;
+        if (cond.type === 'hasItem') {
+            var itemId = cond.itemId != null ? String(cond.itemId).trim() : '';
+            if (!itemId) return false;
+            if (!global.InventoryEquipment || typeof global.InventoryEquipment.countCarriedItemsByTemplateId !== 'function') return false;
+            var need = cond.count != null ? Math.floor(Number(cond.count)) : 1;
+            if (!isFinite(need) || need < 1) need = 1;
+            return global.InventoryEquipment.countCarriedItemsByTemplateId(itemId) >= need;
+        }
         return false;
+    }
+
+    function refreshAfterNpcInventoryMutation() {
+        try {
+            if (global.SceneCtx && typeof global.SceneCtx.updateStatusPanel === 'function') {
+                global.SceneCtx.updateStatusPanel();
+            }
+        } catch (e0) { /* ignore */ }
+        try {
+            if (global.SceneRenderer && typeof global.SceneRenderer.render === 'function') {
+                global.SceneRenderer.render();
+            }
+        } catch (e1) { /* ignore */ }
     }
 
     function applyEffects(effects) {
         if (!Array.isArray(effects)) return;
+        var IE = global.InventoryEquipment;
         for (var i = 0; i < effects.length; i++) {
             var ef = effects[i];
             if (!ef || !ef.type) continue;
@@ -304,6 +357,55 @@
                 var sidB = ef.params.skillId;
                 modifySkillMaxLevelBonus(sidB, ef.params.delta);
                 log('[NPCSystem] Effect modifySkillMaxLevelBonus: ' + String(sidB) + ' delta=' + String(ef.params.delta), 'system');
+            }
+            if (ef.type === 'removeItem' && ef.params && IE && typeof IE.removeCarriedItemsByTemplateId === 'function') {
+                var rid = ef.params.itemId != null ? String(ef.params.itemId).trim() : '';
+                var rc = ef.params.count != null ? Math.floor(Number(ef.params.count)) : 1;
+                if (!isFinite(rc) || rc < 1) rc = 1;
+                var rStrict = ef.params.strict !== false;
+                if (rid) {
+                    var rr = IE.removeCarriedItemsByTemplateId(rid, rc, { strict: rStrict });
+                    log('[NPCSystem] Effect removeItem: ' + rid + ' x' + String(rc) + ' → removed=' + String(rr.removed)
+                        + ' ok=' + String(!!rr.ok) + (rr.shortfall ? (' shortfall=' + String(rr.shortfall)) : ''), rr.ok ? 'system' : 'warn');
+                    if (rr.removed > 0) refreshAfterNpcInventoryMutation();
+                }
+            }
+            if (ef.type === 'giveItem' && ef.params && IE && typeof IE.giveCarriedItemsByTemplateId === 'function') {
+                var gid = ef.params.itemId != null ? String(ef.params.itemId).trim() : '';
+                var gc = ef.params.count != null ? Math.floor(Number(ef.params.count)) : 1;
+                if (!isFinite(gc) || gc < 1) gc = 1;
+                var gq = ef.params.quality_tier;
+                if (gid) {
+                    var gr = IE.giveCarriedItemsByTemplateId(gid, gc, gq);
+                    log('[NPCSystem] Effect giveItem: ' + gid + ' x' + String(gc) + ' → placed=' + String(gr.placed)
+                        + ' ok=' + String(!!gr.ok) + (gr.shortfall ? (' shortfall=' + String(gr.shortfall)) : ''), gr.ok ? 'system' : 'warn');
+                    if (gr.placed > 0) refreshAfterNpcInventoryMutation();
+                }
+            }
+            /** 主灶台 `SceneCtx.cooking_station_runtime`：料理水槽「无限水」开关（仅主灶台 tryCook 扣水会跳过；临时灶不受影响）。 */
+            if (ef.type === 'setCookingStationWater' && ef.params && global.SceneCtx) {
+                try {
+                    var sc = global.SceneCtx;
+                    if (!sc.cooking_station_runtime || typeof sc.cooking_station_runtime !== 'object') {
+                        sc.cooking_station_runtime = {
+                            fuel_points: 0,
+                            water_points: 0,
+                            water_unlimited: false,
+                            installed_accessory_item_ids: [],
+                            active_craft: null
+                        };
+                    }
+                    var cr = sc.cooking_station_runtime;
+                    if (ef.params.unlimited === true || ef.params.unlimited === 'true' || ef.params.unlimited === 1) {
+                        cr.water_unlimited = true;
+                    } else if (ef.params.unlimited === false || ef.params.unlimited === 'false' || ef.params.unlimited === 0) {
+                        cr.water_unlimited = false;
+                    }
+                    log('[NPCSystem] Effect setCookingStationWater: water_unlimited=' + String(!!cr.water_unlimited), 'system');
+                    refreshAfterNpcInventoryMutation();
+                } catch (eCookW) {
+                    log('[NPCSystem] Effect setCookingStationWater failed: ' + String(eCookW && eCookW.message ? eCookW.message : eCookW), 'warn');
+                }
             }
         }
     }
@@ -454,6 +556,20 @@
                 return b;
             }
 
+            function shouldShowOpenCookingPanelButton(def0) {
+                if (!def0 || !def0.mainMenu || typeof def0.mainMenu !== 'object') return false;
+                if (def0.mainMenu.showOpenCookingPanel === true) return true;
+                var tags = Array.isArray(def0.tags) ? def0.tags : [];
+                return tags.indexOf('cooking_station') >= 0;
+            }
+
+            function tUi(key, fb) {
+                try {
+                    if (global.UIText && typeof global.UIText.t === 'function') return global.UIText.t(key);
+                } catch (eT) { /* ignore */ }
+                return fb;
+            }
+
             btnWrap.appendChild(mkBtn('闲聊', function () {
                 closeMenu();
                 log('[NPCSystem] NPC chat clicked: npc=' + String(npcId), 'system');
@@ -507,6 +623,32 @@
                 });
             }));
 
+            if (shouldShowOpenCookingPanelButton(def)) {
+                var cookBtn = mkBtn(tUi('npc.menu.open_cooking_panel', '使用灶台'), function () {
+                    if (global.SceneApp && typeof global.SceneApp.isCookingStationPanelBlockedByRepair === 'function'
+                        && global.SceneApp.isCookingStationPanelBlockedByRepair()) {
+                        try {
+                            if (global.SceneCtx && typeof global.SceneCtx.showMsg === 'function' && global.UIText && typeof global.UIText.t === 'function') {
+                                global.SceneCtx.showMsg(global.UIText.t('cooking.station.locked_until_repaired'), 'info');
+                            }
+                        } catch (eL) { /* ignore */ }
+                        return;
+                    }
+                    closeMenu();
+                    if (global.SceneApp && typeof global.SceneApp.openCookingStationPanel === 'function') {
+                        global.SceneApp.openCookingStationPanel();
+                    }
+                });
+                if (global.SceneApp && typeof global.SceneApp.isCookingStationPanelBlockedByRepair === 'function'
+                    && global.SceneApp.isCookingStationPanelBlockedByRepair()) {
+                    cookBtn.disabled = true;
+                    cookBtn.style.opacity = '0.55';
+                    cookBtn.style.cursor = 'not-allowed';
+                    cookBtn.title = tUi('npc.menu.open_cooking_panel_locked', '请先与灶台对话修好灶台');
+                }
+                btnWrap.appendChild(cookBtn);
+            }
+
             btnWrap.appendChild(mkBtn('离开', function () { closeMenu(); }));
         });
     }
@@ -542,12 +684,69 @@
                 localStorage.setItem(LS_TRIGGERED, JSON.stringify(nextTriggered));
             } catch (e3) { /* ignore */ }
         },
+        /** 读取 demo flags（与 setFlag / 存档 setDemoState 同源），供场景门闸等查询；缺键返回 undefined。 */
+        getFlagValue: function (key) {
+            if (key == null) return undefined;
+            var f = getFlags();
+            return Object.prototype.hasOwnProperty.call(f, String(key)) ? f[String(key)] : undefined;
+        },
+        /** 与 NPC 条件里 flag 布尔归一一致：仅 true / 1 / \"true\" / \"1\" 为真。 */
+        isDemoFlagTrue: function (key) {
+            var v = (function (k) {
+                if (k == null) return undefined;
+                var f = getFlags();
+                return Object.prototype.hasOwnProperty.call(f, String(k)) ? f[String(k)] : undefined;
+            })(key);
+            if (v === true || v === 1) return true;
+            if (typeof v === 'string') {
+                var s = v.trim().toLowerCase();
+                return s === 'true' || s === '1';
+            }
+            return false;
+        },
+        setDemoFlag: function (key, value) {
+            if (key == null) return;
+            setFlag(String(key), value);
+        },
+        /** 新档/重置烹饪台任务：清锁、清已听说明，并移除灶台相关一次性闲聊触发记录（避免与 reset flag 冲突）。 */
+        resetCookingStationRepairQuestFlags: function () {
+            setFlag('cooking_base_station_unlocked', false);
+            setFlag('cooking_base_station_repair_briefed', false);
+            removeTriggered('station.cooking.repair_intro');
+            removeTriggered('station.cooking.repair_unlock');
+        },
         isNpcPresentNow: function (npcId) {
             var def = npcDefCache[npcId];
             if (!def) return true;
             return isNpcOnDuty(def);
         },
         preloadNpc: function (npcId) { return loadNpcDef(npcId).then(function () { return loadNpcTriggers(npcId); }); },
+        /** 预加载地图上出现的 NPC def（供地块短名等同步读取 npcDefCache） */
+        preloadNpcsFromMap: function (map) {
+            var ids = collectNpcIdsFromMap(map);
+            if (!ids.length) return Promise.resolve();
+            return Promise.all(ids.map(function (id) {
+                return loadNpcDef(id).then(function () { return loadNpcTriggers(id); });
+            }));
+        },
+        preloadAllMapsNpcs: function (maps) {
+            if (!maps || typeof maps !== 'object') return Promise.resolve();
+            var mids = Object.keys(maps);
+            if (!mids.length) return Promise.resolve();
+            return Promise.all(mids.map(function (mid) {
+                return global.NPCSystem.preloadNpcsFromMap(maps[mid]);
+            }));
+        },
+        /** 地图格上展示的短名称（优先 displayTitle，否则 name）；无缓存时返回空串。 */
+        getNpcMapLabel: function (npcId) {
+            if (!npcId) return '';
+            var d = npcDefCache[String(npcId)];
+            if (!d || typeof d !== 'object') return '';
+            var dt = d.displayTitle != null ? String(d.displayTitle).trim() : '';
+            if (dt) return dt;
+            var nm = d.name != null ? String(d.name).trim() : '';
+            return nm || '';
+        },
         openMenu: openMenu,
         scanChatEntry: scanChatEntry,
         FLAG_PLAYER_EPITHET_USELESS: FLAG_PLAYER_EPITHET_USELESS,

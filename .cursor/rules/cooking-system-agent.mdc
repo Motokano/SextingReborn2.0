@@ -1,0 +1,88 @@
+---
+description: 烹饪系统数据、运行时入口、燃料/水槽、技法消耗与食用 Buff 口径（供 agent 改烹饪相关代码/配置时使用）
+globs: data/cooking-*.json,data/cooking-system-config.csv,data/items/*.csv,js/scene-app.js,js/save-system.js,js/scene-renderer.js,index.html,tools/build-items-json.mjs,docs/design/21-cooking-system-benchmarks.md
+alwaysApply: false
+---
+
+# 烹饪系统（Agent 规则）
+
+设计正本以 **`docs/design/21-cooking-system-benchmarks.md`**（尤其 **21.10**）为准；与 **`11-skills.md`**（生活·烹饪）、**`18-buff-system.md`**、**`06-survival.md`**、**`02-regions.md`** 冲突时以设计评审后的文档为准。
+
+## 1) 产品定案摘要（必读）
+
+- **主范式**：菜谱/藏身处设施；**先选灶台工艺**再投料盲配；**开做即扣材料 + 技法资源**（燃料/水/tick/体力），失败不退料；全局唯一失败物 id 由 **`cooking-system-config.csv`** 指定。
+- **食用单轨**：料理成品必须 **`edible` + `edible_buff_id`**（与 `food-buff-and-buff-watch-agent` 一致）。
+- **并行与上限**：不设主食/饮品槽位计数上限；进食门闸见 **21.4.2**。
+- **技法 vs 配方**：**燃料、水槽、world `craft_ticks`、`stamina_cost`、默认 `base_success_rate` 只读 `cooking-methods.json`**；配方只提供 `inputs` / `output` / 可选覆写成功率与品质等，**不在配方上配燃料或 tick**。
+- **配件门禁**：技法可选 **`requires_accessory_item_id`**；灶台 **`SceneCtx.cooking_station_runtime.installed_accessory_item_ids`** 须含该 id；默认新档含 `tool_pot_clay_cooking` 以便煮/炖可测，可用 **`SceneApp.setCookingStationAccessories`** 调整。
+- **体力**：**开做时一次性**扣 `stamina_cost`，**不**再按每 world tick 扣体力；`cooking-system-config.csv` 的 `cooking_stamina_per_tick` 为废弃占位。
+- **燃料槽 / 水槽**：上限各 **1000**；物品字段见 **`items-json-build-agent`**（`fuel_points` / `water_points`）、**`cooking_ingredient`**。
+
+### 1.1 硬禁止（擅自改动视为偏离目标）
+
+- **开做即扣**：材料与技法资源（燃料/水）按文档扣减后，**失败不退料**；不得改为「失败全退」除非设计文档正式修订。
+- **体力**：仅 **`cooking-methods.json` 的 `stamina_cost` 一次性扣除**；禁止恢复使用或依赖 **`cooking_stamina_per_tick`**（CSV 中为废弃占位）。
+- **技法 vs 配方**：配方条目**不得**配置 `fuel_cost` / `water_cost` / `craft_ticks` / `stamina_cost`（一律技法表）。
+- **料理成品效果**：纳入烹饪产线的成品须 **`edible` + `edible_buff_id`**；**不得**用 `use_effect` 承载「吃下去」的主效果（与 `food-buff-and-buff-watch-agent` 一致）。
+- **匹配与结算唯一入口**：禁止在 UI 或其它模块复制「 multiset 匹配 + 扣料 + 产出」第二套逻辑。玩家侧须调用 **`SceneApp.tryCookAtStation`**，或经评审后抽成的**唯一**封装（如异步落地后的 `startCookingCraft` / `finalizeCookingCraft`，名称以代码为准），且匹配规则仍须与 `tryCookAtStation` 同源。
+- **文案**：新增玩家可见字符串须进 **`data/ui_text_zhCN.json`**（`cooking.*` 等），禁止在业务 JS 硬编码长中文。
+
+## 2) 数据文件分工（单一事实源）
+
+| 职责 | 文件 |
+|------|------|
+| 全局失败物 **`cooking_global_failure_item_id`**（改 id 后用 item-editor 维护物品） | `data/cooking-system-config.csv`（`loadConfig` 拉取并解析） |
+| 技法消耗、门禁、默认成功率（策划主改 CSV） | **`data/cooking-methods.csv`** → `npm run build:cooking-methods` → **`data/cooking-methods.json`**（运行时只读 JSON） |
+| 配方 | `data/cooking-recipes.json` |
+| 物品模板 | `data/items/*.csv` → `build-items-json` → `items.json` |
+
+## 3) 运行时实现索引
+
+- **加载**：`scene-app.js` `loadConfig` → `cooking-methods.json`、`cooking-recipes.json`、**`cooking-system-config.csv`（文本解析）**。
+- **结算**：**`SceneApp.tryCookAtStation(methodId, inputItems)`**（**必须**传工艺 id）。顺序：灶台格 → 技法存在 → **`isCookingMethodUnlockedAtStation`** → 投料与 **`cooking_ingredient`** → **`matchCookingRecipesByInputs(selected, methodId)`** → 按 **技法表** 校验燃料/水/体力/背包空位 → **扣料 + 扣资源 + 时间推进** → 无命中直接失败物；有命中 **`pickCookingRecipeWeighted`** → **`ProductionQuality.evaluateProduction`**；成功 **`markCookingRecipeKnown(recipe_id)`**。
+- **与文档 21.10.1 的时间语义（重要）**：设计目标为 **固定 `craft_ticks`、制作中不可移动、按 world tick 递减**。当前实现可能在单次调用内用 **`advanceWorldTicks(craft_ticks)`** 瞬推 tick。**若你实现异步灶**，应改为「进行中状态 + 每 tick 递减」，并在此规则 §3 更新本句，避免后续 agent 把「瞬推」当成最终口径。
+- **灶台状态 + 图鉴存档**：`js/save-system.js` 的 **`sceneUi.cooking_station`**（`fuel_points`、`water_points`、`installed_accessory_item_ids`）与 **`sceneUi.known_cooking_recipe_ids`**（有解锁时才写入数组）。
+- **调试 API**：`SceneApp.getKnownCookingRecipeIds`、`getCookingStationAccessories` / `setCookingStationAccessories`、`resetCookingStateForNewCharacter`（创角确认时已调用）。
+- **文案**：取水/倒水/添柴/烹饪结果等使用 **`cooking.*` UIText key**（见 `ui_text_zhCN.json`）。
+
+## 4) 实现现状快照与文档差距（改前自检）
+
+以下用于防止 agent 误以为「未实现」或「已实现」而做错方向；**以仓库实际代码为准**，落地功能后应回头更新本节。
+
+| 方向 | 状态（若已实现请在 PR 中更新本表） |
+|------|-------------------------------------|
+| `loadConfig` 拉取技法/配方/CSV | 已有 |
+| `tryCookAtStation` 盲配、加权、失败物、图鉴、ProductionQuality | 已有 |
+| 燃料/水槽、取水/倒水/添柴、`cooking_ingredient`、存档 `cooking_station` | 已有 |
+| **制作中禁止移动**、按 tick **异步**递减 `craft_ticks` | 对照 **21.10.1 / 21.10.3**，可能与「瞬推 tick」并存，待接 |
+| **正式烹饪 UI**（选工艺、投料、开始） | 可能仅控制台/API，待接 |
+| **野外临时烹饪台** `21.10.6`、寿命与到期失败结算 | 待接 |
+| **`life_cooking` 成功制作涨熟练**（21.5.2） | 待核对是否已接 `increment*` |
+| **配件从背包装入灶台**（不仅是默认送汤锅） | 待接 |
+| 技法/配方与 **21.10.4 / 21.9** 全量对齐 | 数据可能仍部分，策划表持续迭代 |
+
+## 5) 多 Agent 分工建议（防同文件打架）
+
+多人并行时**缩小写入面**，避免都改 `tryCookAtStation` 大块逻辑：
+
+| 包 | 主要职责 | 避免 |
+|----|-----------|------|
+| **数据** | `cooking-methods.json`、`cooking-recipes.json`、CSV、物品/Buff/UIText、`build-items-json` | 复制运行时匹配算法 |
+| **UI** | `index.html`、`scene-renderer.js`、胶水；**只调统一结算入口** | 自写 multiset 匹配与扣料 |
+| **异步灶** | `scene-app.js`（或抽模块）：`active_craft`、每 tick 递减、**移动 gate**、与 finalize 同源 | 改口径为退料或按 tick 扣体力 |
+| **临时台** | 地图实体、存档、`despawn_tick`、到期时若有进行中则**失败物**再移除 | 把烹饪挂到野外采集点技能上 |
+| **技能/代谢** | 成功 finalize 路径挂钩 `life_cooking`；代谢乘区走统一属性/食用链 | Buff 与物品双轨数值 |
+| **配件交互** | `installed_accessory_item_ids` 安装/卸下 UI，**写回须过 `save-system` 与 `SceneCtx` 一致** | 只改内存不写档 |
+
+**顺序建议**：数据可与文档并行；**异步灶**与 **烹饪 UI** 建议先约定「玩家只调哪个函数」再并行，或**先异步再改 UI 调用**，减少二次合并。
+
+## 6) 与其它规则的边界
+
+- **野外采集点**：烹饪不挂在采集点上；钓鱼点仅**取水**。
+- **Buff / 食物**：只走 **`edible_buff_id`**。
+
+## 7) 新增 UI
+
+- 烹饪面板须调用 **§3 唯一结算入口**（或其实时封装），**禁止**另起一套烹饪结算。
+- 样式优先集中在 **`index.html`** 既有作用域 CSS；避免在 `scene-app.js` 大量内联样式。
+- **地图上如何走近、点击灶台、打开面板、不在邻格冒泡** 等与 **其他生活工作台** 共用的交互分层，以 **`.cursor/rules/life-workbench-interaction-agent.mdc`**（烹饪台为范例）为准。

@@ -80,7 +80,9 @@
         for (var gy = minY; gy <= maxY; gy++) {
             for (var gx = minX; gx <= maxX; gx++) {
                 var k = gx + ',' + gy;
-                var npcId = (typeof E.getNpcAt === 'function') ? E.getNpcAt(gx, gy) : null;
+                var npcId = (typeof E.getInteractNpcIdAt === 'function')
+                    ? E.getInteractNpcIdAt(gx, gy)
+                    : ((typeof E.getNpcAt === 'function') ? E.getNpcAt(gx, gy) : null);
                 var enemyId = (typeof E.getEnemyAt === 'function') ? E.getEnemyAt(gx, gy) : null;
                 if (npcId && window.GameTime && window.NPCSystem && typeof window.NPCSystem.isNpcPresentNow === 'function') {
                     if (!window.NPCSystem.isNpcPresentNow(npcId)) npcId = null;
@@ -911,6 +913,21 @@
         if (pEl) pEl.textContent = st.timePeriodLabel || '';
     }
 
+    function hasAdjacentAnnotation(E, st, matcher) {
+        if (!E || !st || typeof E.getAnnotationAt !== 'function' || typeof matcher !== 'function') return false;
+        var dy;
+        for (dy = -1; dy <= 1; dy++) {
+            var dx;
+            for (dx = -1; dx <= 1; dx++) {
+                if (!dx && !dy) continue;
+                var ann = E.getAnnotationAt((st.x | 0) + dx, (st.y | 0) + dy);
+                var s = ann != null ? String(ann) : '';
+                if (matcher(s)) return true;
+            }
+        }
+        return false;
+    }
+
     function appendQuickBeltSlot(frag, IE, char, it, slotIndex, sourceType, sourceIndex) {
         var slot = document.createElement('div');
         slot.className = 'slot';
@@ -1097,10 +1114,12 @@
                 var walkable = E.isWalkable(gx, gy);
                 var portal = E.getPortalAt(gx, gy);
                 var entityId = E.getEntityAt(gx, gy);
+                var cookingStation = typeof E.isCookingStationCell === 'function' && E.isCookingStationCell(gx, gy);
                 return {
                     walkable: walkable,
                     portal: !!portal,
                     gathering: (entityId === 'gathering_bush' || entityId === 'gathering_grass'),
+                    cookingStation: cookingStation,
                     adjacent: false,
                     groundCount: 0,
                     npc: false,
@@ -1115,7 +1134,9 @@
                 var walkable = E.isWalkable(gx, gy);
                 var portal = E.getPortalAt(gx, gy);
                 var entityId = E.getEntityAt(gx, gy);
-                var npcId = (typeof E.getNpcAt === 'function') ? E.getNpcAt(gx, gy) : null;
+                var npcId = (typeof E.getInteractNpcIdAt === 'function')
+                    ? E.getInteractNpcIdAt(gx, gy)
+                    : ((typeof E.getNpcAt === 'function') ? E.getNpcAt(gx, gy) : null);
                 var enemyId = (typeof E.getEnemyAt === 'function') ? E.getEnemyAt(gx, gy) : null;
                 if (npcId && window.GameTime && window.NPCSystem && typeof window.NPCSystem.isNpcPresentNow === 'function') {
                     if (!window.NPCSystem.isNpcPresentNow(npcId)) npcId = null;
@@ -1140,16 +1161,20 @@
                 }
                 var hasGatheringPoint = (entityId === 'gathering_bush' || entityId === 'gathering_grass');
                 var showGathering = hasGatheringPoint && canIdentify;
+                var cookingStationCell = typeof E.isCookingStationCell === 'function' && E.isCookingStationCell(gx, gy);
+                var showCookingStation = !!(cookingStationCell && canVisual && canIdentify);
                 var unknownPresence = false;
                 if (!canVisual) {
                     npcId = null;
                     enemyId = null;
                     rawGroundCount = 0;
                     showGathering = false;
+                    showCookingStation = false;
                 } else if (!canIdentify) {
                     unknownPresence = !!(npcId || enemyId);
                     npcId = null;
                     enemyId = null;
+                    showCookingStation = false;
                 }
                 var unknownGround = false;
                 if (rawGroundCount > 0 && !canIdentify) {
@@ -1172,6 +1197,11 @@
                     showGathering = false;
                     shownEnemyId = null;
                     gatheringBlurred = false;
+                    showCookingStation = false;
+                }
+                var npcLabel = '';
+                if (npcId && window.NPCSystem && typeof window.NPCSystem.getNpcMapLabel === 'function') {
+                    npcLabel = window.NPCSystem.getNpcMapLabel(npcId) || '';
                 }
                 return {
                     x: gx,
@@ -1183,7 +1213,9 @@
                     portal: !!portal,
                     gathering: showGathering,
                     gatheringBlurred: gatheringBlurred,
+                    cookingStation: showCookingStation,
                     npc: !!npcId,
+                    npcLabel: npcLabel,
                     enemy: !!enemyId,
                     enemyId: shownEnemyId,
                     unknownPresence: unknownPresence,
@@ -1201,7 +1233,9 @@
                 var ddx = gx - st.x;
                 var ddy = gy - st.y;
                 if (Math.abs(ddx) > 1 || Math.abs(ddy) > 1 || (!ddx && !ddy)) return;
-                var npcId = (typeof E.getNpcAt === 'function') ? E.getNpcAt(gx, gy) : null;
+                var npcId = (typeof E.getInteractNpcIdAt === 'function')
+                    ? E.getInteractNpcIdAt(gx, gy)
+                    : ((typeof E.getNpcAt === 'function') ? E.getNpcAt(gx, gy) : null);
                 if (npcId && window.GameTime && window.NPCSystem && typeof window.NPCSystem.isNpcPresentNow === 'function') {
                     if (!window.NPCSystem.isNpcPresentNow(npcId)) npcId = null;
                 }
@@ -1240,6 +1274,23 @@
                 for (var ei = 0; ei < map.entities.length; ei++) {
                     parts.push('E' + map.entities[ei].x + ',' + map.entities[ei].y + ':' + (map.entities[ei].entity_id || ''));
                 }
+            }
+            if (map.annotations && typeof map.annotations === 'object') {
+                var annKeys = Object.keys(map.annotations).sort();
+                for (var ai = 0; ai < annKeys.length; ai++) {
+                    var ak = annKeys[ai];
+                    parts.push('@' + ak + '=' + String(map.annotations[ak]));
+                }
+            }
+            if (map.cooking_station_interact_npc_by_cell && typeof map.cooking_station_interact_npc_by_cell === 'object') {
+                var csk = Object.keys(map.cooking_station_interact_npc_by_cell).sort();
+                for (var ci = 0; ci < csk.length; ci++) {
+                    var ck = csk[ci];
+                    parts.push('C' + ck + '=' + String(map.cooking_station_interact_npc_by_cell[ck]));
+                }
+            }
+            if (map.cooking_station_interact_npc_id != null && String(map.cooking_station_interact_npc_id).trim()) {
+                parts.push('CSI=' + String(map.cooking_station_interact_npc_id).trim());
             }
             staticDataKey = parts.join('|');
         } catch (e) {
@@ -1321,7 +1372,10 @@
                     if (meta.gathering) tips.push('采集点');
                     else if (meta.gatheringBlurred) tips.push('附近似乎有可采资源');
                     if (meta.unknownPresence) tips.push('有未知动静');
-                    if (meta.npc) tips.push('可对话');
+                    if (meta.npc) {
+                        if (meta.npcLabel && String(meta.npcLabel).trim()) tips.push(String(meta.npcLabel).trim());
+                        else tips.push('可对话');
+                    }
                     if (meta.enemy) {
                         if (meta.enemyId === 'enemy.training_dummy_wooden') {
                             try {
@@ -1362,8 +1416,13 @@
         var bubble = document.getElementById('player-action-bubble');
         var bubbleGather = document.getElementById('player-action-gather');
         var bubbleStop = document.getElementById('player-action-gather-stop');
+        var bubbleTakeWater = document.getElementById('player-action-take-water');
+        var bubbleAddFuel = document.getElementById('player-action-add-fuel');
+        var bubblePourWater = document.getElementById('player-action-pour-water');
+        var bubbleCook = document.getElementById('player-action-cook');
         var bubbleGroundItems = document.getElementById('player-action-ground-items');
         var bubbleDiqiHuti = document.getElementById('player-action-diqi-huti');
+        var canTakeWater = !!(ctx && ctx.actions && typeof ctx.actions.canTakeWaterAtCurrentTile === 'function' && ctx.actions.canTakeWaterAtCurrentTile());
         var adjEnemyCombat = ctx && typeof ctx.hasAdjacentEnemyForCombat === 'function' ? !!ctx.hasAdjacentEnemyForCombat() : false;
         var breathSkillId = 'combat_basic_breath';
         var diqiHutiOk = false;
@@ -1385,7 +1444,8 @@
             bubbleDiqiHuti.style.display = diqiHutiOk ? 'inline-block' : 'none';
             bubbleDiqiHuti.textContent = tNie('player.action.diqi_huti');
         }
-        var showBubble = canGather || isIdling || hasGroundItems || diqiHutiOk;
+        // 烹饪台：与 NPC 一致，不靠邻格冒泡；点击灶台格打开面板后在面板内选倒水/添柴/制作
+        var showBubble = canGather || isIdling || canTakeWater || hasGroundItems || diqiHutiOk;
         if (bubble) bubble.classList.toggle('visible', !!showBubble);
         // 采集/停止：仅与「站在可采集格」或「正在挂机采集」相关；勿因脚下物品/护体等其它理由把采集钮常驻显示
         if (bubbleGather && bubbleStop) {
@@ -1403,13 +1463,33 @@
             bubbleGroundItems.style.display = hasGroundItems ? 'inline-block' : 'none';
             bubbleGroundItems.textContent = hasGroundItems ? '📦 脚下 ' + groundAtPlayer.length + ' 件' : '📦 脚下物品';
         }
+        if (bubbleTakeWater) {
+            bubbleTakeWater.style.display = canTakeWater ? 'inline-block' : 'none';
+            bubbleTakeWater.textContent = tNie('player.action.take_water');
+        }
+        if (bubbleAddFuel) {
+            bubbleAddFuel.style.display = 'none';
+            bubbleAddFuel.textContent = tNie('player.action.add_fuel');
+        }
+        if (bubblePourWater) {
+            bubblePourWater.style.display = 'none';
+            bubblePourWater.textContent = tNie('player.action.pour_water');
+        }
+        if (bubbleCook) {
+            bubbleCook.style.display = 'none';
+            bubbleCook.textContent = tNie('player.action.cook');
+        }
 
         var abGather = document.getElementById('action-bar-gather');
         var abStop = document.getElementById('action-bar-gather-stop');
+        var abTakeWater = document.getElementById('action-bar-take-water');
+        var abAddFuel = document.getElementById('action-bar-add-fuel');
+        var abPourWater = document.getElementById('action-bar-pour-water');
+        var abCook = document.getElementById('action-bar-cook');
         var abGround = document.getElementById('action-bar-ground');
         var abDiqi = document.getElementById('action-bar-diqi-huti');
         var abWarehouse = document.getElementById('action-bar-warehouse');
-        var onWarehouseTile = !!(E.getAnnotationAt && E.getAnnotationAt(st.x, st.y) === '仓库');
+        var onWarehouseTile = hasAdjacentAnnotation(E, st, function (sWh) { return sWh === '仓库'; });
         if (abGather && bubbleGather) {
             abGather.style.display = bubbleGather.style.display;
             abGather.disabled = !!bubbleGather.disabled;
@@ -1418,6 +1498,22 @@
         if (abStop && bubbleStop) {
             abStop.style.display = bubbleStop.style.display;
             abStop.textContent = bubbleStop.textContent || '';
+        }
+        if (abTakeWater && bubbleTakeWater) {
+            abTakeWater.style.display = bubbleTakeWater.style.display;
+            abTakeWater.textContent = bubbleTakeWater.textContent || '';
+        }
+        if (abAddFuel && bubbleAddFuel) {
+            abAddFuel.style.display = bubbleAddFuel.style.display;
+            abAddFuel.textContent = bubbleAddFuel.textContent || '';
+        }
+        if (abPourWater && bubblePourWater) {
+            abPourWater.style.display = bubblePourWater.style.display;
+            abPourWater.textContent = bubblePourWater.textContent || '';
+        }
+        if (abCook && bubbleCook) {
+            abCook.style.display = bubbleCook.style.display;
+            abCook.textContent = bubbleCook.textContent || '';
         }
         if (abGround && bubbleGroundItems) {
             abGround.style.display = bubbleGroundItems.style.display;
@@ -1438,6 +1534,10 @@
 
         var anyCtxAb = (abGather && abGather.style.display !== 'none')
             || (abStop && abStop.style.display !== 'none')
+            || (abTakeWater && abTakeWater.style.display !== 'none')
+            || (abAddFuel && abAddFuel.style.display !== 'none')
+            || (abPourWater && abPourWater.style.display !== 'none')
+            || (abCook && abCook.style.display !== 'none')
             || (abGround && abGround.style.display !== 'none')
             || (abDiqi && abDiqi.style.display !== 'none')
             || (abWarehouse && abWarehouse.style.display !== 'none');

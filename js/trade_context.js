@@ -28,7 +28,7 @@
  * @property {string} itemId           物品内部唯一 ID（来自各类 items_* 表）
  * @property {string} displayName      UI 当前应展示的名称（已考虑语言与鉴定）
  * @property {number} stackCount       会话开始时该堆叠的数量（不含会话内 pending）
- * @property {number} baseValue        物品表中的 base_value 基线价值
+ * @property {number} baseValue        估值起点：建议填 `ItemValue.getEffectiveBaseValue(itemId,{instance})`（品质档每级默认 +10% 基价）；未接品质时可用模板 base_value
  * @property {string[]} tags           用于价值修正与过滤的用途标签集合
  * @property {boolean} isCurrency      是否为货币类物品（category=currency）
  */

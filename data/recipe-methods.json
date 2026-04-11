@@ -1,0 +1,410 @@
+{
+  "_comment": "Unified recipe methods map. method_id format: {recipe_system}.{method_slug}.",
+  "schema_version": "1.0.0",
+  "methods": {
+    "life_cooking.placeholder_basic": {
+      "method_id": "life_cooking.placeholder_basic",
+      "recipe_system": "life_cooking",
+      "cost": {
+        "fuel": 1,
+        "water": 1,
+        "ticks": 1,
+        "stamina": 1
+      },
+      "base_success_rate": 0.5,
+      "required_skill_id": "life_cooking",
+      "recipe_processor_id": "processor.life_cooking.default",
+      "proficiency_usage_key": "life_cooking.placeholder_basic",
+      "allowed_station_tags": [
+        "station_cooking"
+      ],
+      "unlock": [
+        {
+          "type": "skill_level_min",
+          "skill_id": "life_cooking",
+          "level": 1
+        }
+      ],
+      "failure_output": {
+        "item_id": "food_cooking_fail_generic",
+        "count": 1
+      },
+      "requires_accessory_item_id": null
+    },
+    "life_forging.placeholder_basic": {
+      "method_id": "life_forging.placeholder_basic",
+      "recipe_system": "life_forging",
+      "cost": {
+        "fuel": 2,
+        "water": 0,
+        "ticks": 2,
+        "stamina": 2
+      },
+      "base_success_rate": 0.45,
+      "required_skill_id": "life_forging",
+      "recipe_processor_id": "processor.life_forging.default",
+      "proficiency_usage_key": "life_forging.placeholder_basic",
+      "allowed_station_tags": [
+        "station_forging"
+      ],
+      "unlock": [
+        {
+          "type": "quest_flag",
+          "flag": "unlock_life_forging_basic"
+        }
+      ],
+      "failure_output": {
+        "item_id": "item.scrap.metal_shards",
+        "count": 1
+      },
+      "requires_accessory_item_id": null
+    },
+    "life_pharmacy.placeholder_basic": {
+      "method_id": "life_pharmacy.placeholder_basic",
+      "recipe_system": "life_pharmacy",
+      "cost": {
+        "fuel": 0,
+        "water": 1,
+        "ticks": 1,
+        "stamina": 1
+      },
+      "base_success_rate": 0.55,
+      "required_skill_id": "life_pharmacy",
+      "recipe_processor_id": "processor.life_pharmacy.default",
+      "proficiency_usage_key": "life_pharmacy.placeholder_basic",
+      "allowed_station_tags": [
+        "station_pharmacy"
+      ],
+      "unlock": [
+        {
+          "type": "npc_flag",
+          "npc_id": "mentor_herbalist",
+          "flag": "teach_pharmacy_basic"
+        }
+      ],
+      "failure_output": {
+        "item_id": "item.scrap.herb_dregs",
+        "count": 1
+      },
+      "requires_accessory_item_id": null
+    },
+    "life_weaving.placeholder_basic": {
+      "method_id": "life_weaving.placeholder_basic",
+      "recipe_system": "life_weaving",
+      "cost": {
+        "fuel": 0,
+        "water": 0,
+        "ticks": 1,
+        "stamina": 1
+      },
+      "base_success_rate": 0.5,
+      "required_skill_id": "life_weaving",
+      "recipe_processor_id": "processor.life_weaving.default",
+      "proficiency_usage_key": "life_weaving.placeholder_basic",
+      "allowed_station_tags": [
+        "station_weaving"
+      ],
+      "unlock": [
+        {
+          "type": "skill_level_min",
+          "skill_id": "life_weaving",
+          "level": 1
+        }
+      ],
+      "failure_output": {
+        "item_id": "item.scrap.thread_waste",
+        "count": 1
+      },
+      "requires_accessory_item_id": null
+    },
+    "life_manufacturing.placeholder_basic": {
+      "method_id": "life_manufacturing.placeholder_basic",
+      "recipe_system": "life_manufacturing",
+      "cost": {
+        "fuel": 1,
+        "water": 0,
+        "ticks": 2,
+        "stamina": 2
+      },
+      "base_success_rate": 0.48,
+      "required_skill_id": "life_manufacturing",
+      "recipe_processor_id": "processor.life_manufacturing.default",
+      "proficiency_usage_key": "life_manufacturing.placeholder_basic",
+      "allowed_station_tags": [
+        "station_manufacturing"
+      ],
+      "unlock": [
+        {
+          "type": "quest_flag",
+          "flag": "unlock_life_manufacturing_basic"
+        }
+      ],
+      "failure_output": {
+        "item_id": "item.scrap.parts_broken",
+        "count": 1
+      },
+      "requires_accessory_item_id": null
+    },
+    "life_enchant.placeholder_basic": {
+      "method_id": "life_enchant.placeholder_basic",
+      "recipe_system": "life_enchant",
+      "cost": {
+        "fuel": 0,
+        "water": 0,
+        "ticks": 2,
+        "stamina": 2
+      },
+      "base_success_rate": 0.4,
+      "required_skill_id": "life_enchant",
+      "recipe_processor_id": "processor.life_enchant.default",
+      "proficiency_usage_key": "life_enchant.placeholder_basic",
+      "allowed_station_tags": [
+        "station_enchant"
+      ],
+      "unlock": [
+        {
+          "type": "npc_flag",
+          "npc_id": "mentor_enchanter",
+          "flag": "teach_enchant_basic"
+        }
+      ],
+      "failure_output": {
+        "item_id": "item.scrap.arcane_dust",
+        "count": 1
+      },
+      "requires_accessory_item_id": null
+    },
+    "life_cooking.roast_bake": {
+      "method_id": "life_cooking.roast_bake",
+      "recipe_system": "life_cooking",
+      "cost": {
+        "fuel": 40,
+        "water": 0,
+        "ticks": 2,
+        "stamina": 4
+      },
+      "base_success_rate": 0.9,
+      "required_skill_id": "life_cooking",
+      "recipe_processor_id": "processor.life_cooking.default",
+      "proficiency_usage_key": "life_cooking.roast_bake",
+      "allowed_station_tags": [
+        "station_cooking"
+      ],
+      "unlock": [
+        {
+          "type": "skill_level_min",
+          "skill_id": "life_cooking",
+          "level": 1
+        }
+      ],
+      "failure_output": {
+        "item_id": "food_cooking_fail_generic",
+        "count": 1
+      },
+      "requires_accessory_item_id": null
+    },
+    "life_cooking.boil_stew": {
+      "method_id": "life_cooking.boil_stew",
+      "recipe_system": "life_cooking",
+      "cost": {
+        "fuel": 30,
+        "water": 60,
+        "ticks": 3,
+        "stamina": 6
+      },
+      "base_success_rate": 0.88,
+      "required_skill_id": "life_cooking",
+      "recipe_processor_id": "processor.life_cooking.default",
+      "proficiency_usage_key": "life_cooking.boil_stew",
+      "allowed_station_tags": [
+        "station_cooking"
+      ],
+      "unlock": [
+        {
+          "type": "skill_level_min",
+          "skill_id": "life_cooking",
+          "level": 1
+        }
+      ],
+      "failure_output": {
+        "item_id": "food_cooking_fail_generic",
+        "count": 1
+      },
+      "requires_accessory_item_id": "tool_pot_clay_cooking"
+    },
+    "life_cooking.steam": {
+      "method_id": "life_cooking.steam",
+      "recipe_system": "life_cooking",
+      "cost": {
+        "fuel": 25,
+        "water": 80,
+        "ticks": 3,
+        "stamina": 6
+      },
+      "base_success_rate": 0.86,
+      "required_skill_id": "life_cooking",
+      "recipe_processor_id": "processor.life_cooking.default",
+      "proficiency_usage_key": "life_cooking.steam",
+      "allowed_station_tags": [
+        "station_cooking"
+      ],
+      "unlock": [
+        {
+          "type": "skill_level_min",
+          "skill_id": "life_cooking",
+          "level": 1
+        }
+      ],
+      "failure_output": {
+        "item_id": "food_cooking_fail_generic",
+        "count": 1
+      },
+      "requires_accessory_item_id": "tool_steamer_bamboo_cooking"
+    },
+    "life_cooking.stir_fry": {
+      "method_id": "life_cooking.stir_fry",
+      "recipe_system": "life_cooking",
+      "cost": {
+        "fuel": 35,
+        "water": 5,
+        "ticks": 2,
+        "stamina": 5
+      },
+      "base_success_rate": 0.87,
+      "required_skill_id": "life_cooking",
+      "recipe_processor_id": "processor.life_cooking.default",
+      "proficiency_usage_key": "life_cooking.stir_fry",
+      "allowed_station_tags": [
+        "station_cooking"
+      ],
+      "unlock": [
+        {
+          "type": "skill_level_min",
+          "skill_id": "life_cooking",
+          "level": 1
+        }
+      ],
+      "failure_output": {
+        "item_id": "food_cooking_fail_generic",
+        "count": 1
+      },
+      "requires_accessory_item_id": "tool_wok_iron_cooking"
+    },
+    "life_cooking.deep_fry": {
+      "method_id": "life_cooking.deep_fry",
+      "recipe_system": "life_cooking",
+      "cost": {
+        "fuel": 42,
+        "water": 15,
+        "ticks": 2,
+        "stamina": 5
+      },
+      "base_success_rate": 0.85,
+      "required_skill_id": "life_cooking",
+      "recipe_processor_id": "processor.life_cooking.default",
+      "proficiency_usage_key": "life_cooking.deep_fry",
+      "allowed_station_tags": [
+        "station_cooking"
+      ],
+      "unlock": [
+        {
+          "type": "skill_level_min",
+          "skill_id": "life_cooking",
+          "level": 1
+        }
+      ],
+      "failure_output": {
+        "item_id": "food_cooking_fail_generic",
+        "count": 1
+      },
+      "requires_accessory_item_id": "tool_fryer_pot_iron_cooking"
+    },
+    "life_cooking.pickle_salt": {
+      "method_id": "life_cooking.pickle_salt",
+      "recipe_system": "life_cooking",
+      "cost": {
+        "fuel": 15,
+        "water": 40,
+        "ticks": 4,
+        "stamina": 4
+      },
+      "base_success_rate": 0.9,
+      "required_skill_id": "life_cooking",
+      "recipe_processor_id": "processor.life_cooking.default",
+      "proficiency_usage_key": "life_cooking.pickle_salt",
+      "allowed_station_tags": [
+        "station_cooking"
+      ],
+      "unlock": [
+        {
+          "type": "skill_level_min",
+          "skill_id": "life_cooking",
+          "level": 1
+        }
+      ],
+      "failure_output": {
+        "item_id": "food_cooking_fail_generic",
+        "count": 1
+      },
+      "requires_accessory_item_id": "tool_pickling_jar_cooking"
+    },
+    "life_cooking.ferment": {
+      "method_id": "life_cooking.ferment",
+      "recipe_system": "life_cooking",
+      "cost": {
+        "fuel": 20,
+        "water": 50,
+        "ticks": 6,
+        "stamina": 5
+      },
+      "base_success_rate": 0.82,
+      "required_skill_id": "life_cooking",
+      "recipe_processor_id": "processor.life_cooking.default",
+      "proficiency_usage_key": "life_cooking.ferment",
+      "allowed_station_tags": [
+        "station_cooking"
+      ],
+      "unlock": [
+        {
+          "type": "skill_level_min",
+          "skill_id": "life_cooking",
+          "level": 1
+        }
+      ],
+      "failure_output": {
+        "item_id": "food_cooking_fail_generic",
+        "count": 1
+      },
+      "requires_accessory_item_id": "tool_fermentation_jar_cooking"
+    },
+    "life_cooking.grind_mix": {
+      "method_id": "life_cooking.grind_mix",
+      "recipe_system": "life_cooking",
+      "cost": {
+        "fuel": 12,
+        "water": 0,
+        "ticks": 1,
+        "stamina": 3
+      },
+      "base_success_rate": 0.92,
+      "required_skill_id": "life_cooking",
+      "recipe_processor_id": "processor.life_cooking.default",
+      "proficiency_usage_key": "life_cooking.grind_mix",
+      "allowed_station_tags": [
+        "station_cooking"
+      ],
+      "unlock": [
+        {
+          "type": "skill_level_min",
+          "skill_id": "life_cooking",
+          "level": 1
+        }
+      ],
+      "failure_output": {
+        "item_id": "food_cooking_fail_generic",
+        "count": 1
+      },
+      "requires_accessory_item_id": "tool_mortar_pestle_cooking"
+    }
+  }
+}

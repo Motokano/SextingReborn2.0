@@ -1,0 +1,1292 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Recipe Editor (Unified Schema)</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 16px; color: #222; }
+    .row { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; margin-bottom: 10px; }
+    .col { display: flex; flex-direction: column; gap: 6px; }
+    button, select, input, textarea { font-size: 13px; }
+    textarea { width: 100%; min-height: 220px; font-family: Consolas, monospace; }
+    .grid { display: grid; grid-template-columns: 320px 1fr; gap: 12px; }
+    .panel { border: 1px solid #ddd; border-radius: 6px; padding: 10px; }
+    .muted { color: #666; font-size: 12px; }
+    .bad { color: #b00020; }
+    .warn { color: #9a6700; }
+    .ok { color: #006400; }
+    table { border-collapse: collapse; width: 100%; }
+    th, td { border: 1px solid #ddd; padding: 6px; font-size: 12px; text-align: left; }
+    #entryList { width: 100%; min-height: 360px; }
+    .step-title { font-weight: bold; margin-bottom: 6px; }
+    .step-hint { font-size: 12px; color: #444; margin-bottom: 8px; }
+    .inline-code { font-family: Consolas, monospace; background: #f6f6f6; padding: 1px 4px; border-radius: 4px; }
+    .chip { display: inline-block; border: 1px solid #ddd; border-radius: 999px; padding: 2px 8px; font-size: 12px; background: #f8f8f8; }
+    .material-row, .bonus-row { display: grid; grid-template-columns: 1fr 80px 110px; gap: 8px; align-items: center; margin-bottom: 6px; }
+    .bonus-row { grid-template-columns: 1fr 80px 100px 110px; }
+    .full { width: 100%; }
+    .wizard-flow { display: flex; gap: 6px; flex-wrap: wrap; margin: 8px 0; }
+    .wizard-step { font-size: 12px; border: 1px solid #ddd; border-radius: 999px; padding: 3px 9px; background: #f8f8f8; }
+    .wizard-step.active { border-color: #2563eb; color: #2563eb; background: #eff6ff; }
+    .search-panel { border: 1px dashed #ccc; border-radius: 6px; padding: 8px; margin-bottom: 10px; }
+    .search-results { max-height: 130px; overflow: auto; margin-top: 6px; }
+    .search-item { display: block; width: 100%; text-align: left; margin-bottom: 4px; font-size: 12px; }
+  </style>
+</head>
+<body>
+  <h2>统一配方编辑器（recipes/methods/interfaces）</h2>
+  <div class="panel" style="margin-bottom:12px;">
+    <div class="step-title">六步向导状态</div>
+    <div class="wizard-flow" id="wizardFlow"></div>
+    <div class="step-hint" id="nextHint">下一步提示：先导入三表。</div>
+  </div>
+  <div class="panel" style="margin-bottom:12px;">
+    <div class="row">
+      <strong>第 1 步：先导入文件（不会写 JSON 也能用）</strong>
+    </div>
+    <div class="col muted">
+      <div>必选文件：<span class="inline-code">recipes.json</span>、<span class="inline-code">recipe-methods.json</span>、<span class="inline-code">life-skill-recipe-interfaces.json</span></div>
+      <div>辅助文件（建议）：<span class="inline-code">items.json</span>（用于材料/产出搜索）；<span class="inline-code">scene-app.js</span>（用于 processor 候选）</div>
+    </div>
+    <div class="row" style="margin-top:8px">
+      <label>recipes.json：<input id="fileRecipes" type="file" accept=".json,application/json" /></label>
+      <label>recipe-methods.json：<input id="fileMethods" type="file" accept=".json,application/json" /></label>
+      <label>interfaces.json：<input id="fileInterfaces" type="file" accept=".json,application/json" /></label>
+      <label>items.json（建议）：<input id="fileItems" type="file" accept=".json,application/json" /></label>
+      <label>scene-app.js（可选）：<input id="fileSceneApp" type="file" accept=".js,text/javascript" /></label>
+      <button id="btnLoadLocal">从本地文件导入</button>
+    </div>
+    <div class="row">
+      <button id="btnLoadDefaults">从仓库 data 目录加载（三表）</button>
+      <button id="btnLoadItemsDefault">加载仓库 items.json（辅助搜索）</button>
+      <span id="loadHint" class="muted"></span>
+    </div>
+    <div id="loadIssues" class="col muted"></div>
+  </div>
+
+  <div class="grid">
+    <div class="panel">
+      <div class="step-title">第 2-3 步：选择生活技能与技法</div>
+      <div class="row">
+        <label>生活技能：
+          <select id="skillSystemSelect"></select>
+        </label>
+        <span id="skillHint" class="chip">示例：先选 life_cooking</span>
+      </div>
+      <div class="row">
+        <label>技法（method）：
+          <select id="methodSelect" style="min-width:280px"></select>
+        </label>
+      </div>
+
+      <hr style="margin:10px 0;border:none;border-top:1px solid #eee" />
+      <div class="step-title">技法参数（recipe-methods.json）</div>
+      <div class="muted" style="margin-bottom:8px;">编辑当前选中的 <span class="inline-code">method</span>；与右侧配方表单独立。保存后请「导出 recipe-methods.json」。</div>
+      <div id="methodFormWarn" class="warn" style="display:none;margin-bottom:6px;">当前生活技能下没有技法条目：可点「新建技法」或先导入含 method 的 JSON。</div>
+      <div id="methodFormWrap">
+        <div class="row">
+          <label>cost.fuel <input id="methCostFuel" type="number" min="0" step="1" style="width:64px" /></label>
+          <label>cost.water <input id="methCostWater" type="number" min="0" step="1" style="width:64px" /></label>
+          <label>cost.ticks <input id="methCostTicks" type="number" min="0" step="1" style="width:64px" /></label>
+          <label>cost.stamina <input id="methCostStamina" type="number" min="0" step="1" style="width:64px" /></label>
+        </div>
+        <div class="row col" style="align-items:stretch;">
+          <span class="muted" style="font-size:12px;">除 fuel / water / ticks / stamina 外的 <span class="inline-code">cost</span> 键（只读；由 JSON / agent 写入；点「保存当前技法」会保留不被上方四格覆盖）</span>
+          <pre id="methCostExtraPreview" style="margin:4px 0 0 0;white-space:pre-wrap;font-size:12px;max-height:140px;overflow:auto;background:#f9f9f9;padding:8px;border-radius:4px;border:1px solid #eee;font-family:Consolas,monospace;">{}</pre>
+        </div>
+        <div class="row">
+          <label>base_success_rate <input id="methBaseSuccess" type="number" min="0" max="1" step="0.01" style="width:72px" /></label>
+          <label>required_skill_id <input id="methReqSkill" style="width:130px" /></label>
+          <label>proficiency_usage_key <input id="methProfKey" style="width:200px" /></label>
+        </div>
+        <div class="row">
+          <label>recipe_processor_id
+            <select id="methodProcessorSelect" style="min-width:260px"></select>
+          </label>
+        </div>
+        <div class="row">
+          <label>requires_accessory_item_id（技法配件 / 灶台安装后解锁工艺，可空）
+            <input id="methAccessoryItem" type="text" style="min-width:320px" list="itemCandidates" placeholder="空=不要求；点选下方候选或聚焦后用物品搜索填入" />
+          </label>
+        </div>
+        <div class="row">
+          <label class="full">allowed_station_tags（逗号分隔）
+            <input id="methStationTags" class="full" placeholder="如 station_cooking" />
+          </label>
+        </div>
+        <div class="row">
+          <label>failure_output.item_id <input id="methFailItem" list="itemCandidates" style="width:200px" /></label>
+          <label>count <input id="methFailCount" type="number" min="1" value="1" style="width:52px" /></label>
+        </div>
+        <div class="row col" style="align-items:stretch;">
+          <label>unlock（JSON 数组，可空为 []）</label>
+          <textarea id="methUnlockJson" style="min-height:88px;font-family:Consolas,monospace;width:100%;box-sizing:border-box;"></textarea>
+        </div>
+        <div class="row">
+          <button type="button" id="btnSaveMethod">保存当前技法</button>
+          <button type="button" id="btnNewMethod">新建技法（当前系统）</button>
+          <span id="methodSaveHint" class="muted"></span>
+        </div>
+      </div>
+
+      <div class="row">
+        <label>当前 recipe_id：
+          <select id="recipeSelect" style="min-width:280px"></select>
+        </label>
+      </div>
+      <div class="row">
+        <label>配方过滤（当前系统+技法范围内）：<input id="recipeFilterInput" style="min-width:280px" placeholder="按 recipe_id 搜索" /></label>
+      </div>
+      <div class="row">
+        <button id="btnNewRecipe">新建配方（当前系统+技法）</button>
+        <button id="btnDeleteRecipe">删除当前配方</button>
+      </div>
+      <div class="muted">只展示当前生活技能下的配方与技法，避免跨系统误配。</div>
+    </div>
+    <div class="panel">
+      <div class="step-title">第 4 步：配置配方材料（支持物品搜索）</div>
+      <div class="step-hint">在物品输入框中可按 <span class="inline-code">item_id / sn / placeholder_name</span> 搜索；技法区的 <span class="inline-code">requires_accessory_item_id</span>、失败产物、本区材料/产出均支持：先点击目标输入框，再搜索选候选。没导入 items 也可手输。</div>
+      <div class="search-panel">
+        <div class="row">
+          <label>物品搜索关键词：<input id="itemSearchInput" placeholder="输入 id/sn/placeholder_name" /></label>
+          <button id="btnRunItemSearch">搜索并填入当前焦点框</button>
+        </div>
+        <div class="muted" id="itemSearchHint">先点击任意材料/产出的 item 输入框，再执行搜索填充。</div>
+        <div id="itemSearchResults" class="search-results"></div>
+      </div>
+      <div id="materialsBox"></div>
+      <div class="row">
+        <button id="btnAddInputRow">新增材料行</button>
+      </div>
+
+      <hr />
+
+      <div class="step-title">第 5 步：定义配方属性</div>
+      <div class="row">
+        <label><input id="enabledInput" type="checkbox" /> enabled</label>
+        <label>recipe_id：<input id="recipeIdInput" style="width:280px" /></label>
+      </div>
+      <div class="row">
+        <label>required_skill_level_min：<input id="requiredLevelInput" type="number" min="1" value="1" /></label>
+        <label>match_weight：<input id="matchWeightInput" type="number" min="0.000001" step="0.1" value="1" /></label>
+        <label>base_output_quality_tier：<input id="qualityTierInput" type="number" min="1" max="6" value="1" /></label>
+      </div>
+      <div class="row">
+        <label>proficiency_usage_key：<input id="proficiencyKeyInput" style="width:280px" /></label>
+      </div>
+      <div class="row">
+        <label>required_skill_id（可空）：
+          <input id="requiredSkillIdInput" style="width:220px" placeholder="留空表示 null" />
+        </label>
+        <label>processor（可空）：
+          <select id="processorSelect" style="min-width:280px"></select>
+        </label>
+        <label>base_success_rate（可空）：
+          <input id="successRateInput" style="width:140px" placeholder="0~1, 留空=null" />
+        </label>
+      </div>
+      <div class="row">
+        <label>allowed_station_tags（逗号分隔，可空）：
+          <input id="stationTagsInput" class="full" placeholder="如 station_cooking,station_campfire；留空表示 null" />
+        </label>
+      </div>
+      <div class="row">
+        <label>failure_output.item_id（可空）：
+          <input id="failureItemInput" style="width:260px" placeholder="留空表示 null" list="itemCandidates" />
+        </label>
+        <label>failure_output.count：
+          <input id="failureCountInput" type="number" min="1" value="1" />
+        </label>
+      </div>
+
+      <hr />
+
+      <div class="step-title">第 6 步：定义配方产出</div>
+      <div class="row">
+        <label>主产出 item_id：<input id="mainOutputItemInput" style="width:280px" list="itemCandidates" /></label>
+        <label>主产出 count：<input id="mainOutputCountInput" type="number" min="1" value="1" /></label>
+      </div>
+      <div id="bonusBox"></div>
+      <div class="row">
+        <button id="btnAddBonusRow">新增副产出行</button>
+      </div>
+
+      <div class="row" style="margin-top:8px;">
+        <button id="btnSaveRecipe">保存当前配方</button>
+        <button id="btnValidate">运行统一校验</button>
+        <button id="btnExportRecipes">导出 recipes.json</button>
+        <button id="btnExportMethods">导出 recipe-methods.json</button>
+        <button id="btnExportInterfaces">导出 life-skill-recipe-interfaces.json</button>
+        <span id="saveHint" class="muted"></span>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel" style="margin-top:12px">
+    <div class="row">
+      <strong>统一校验结果（RecipeSchema.validateRecipeTables）</strong>
+      <span id="validateSummary" class="muted"></span>
+    </div>
+    <div class="col">
+      <div id="errBox"></div>
+      <div id="warnBox"></div>
+    </div>
+  </div>
+
+  <datalist id="itemCandidates"></datalist>
+
+  <script src="../js/recipe-schema.js"></script>
+  <script>
+    (function () {
+      'use strict';
+
+      var state = {
+        recipes: { schema_version: '1.0.0', recipes: {} },
+        methods: { schema_version: '1.0.0', methods: {} },
+        interfaces: { schema_version: '1.0.0', interfaces: {} },
+        items: {},
+        itemIndexRows: [],
+        itemIndexReady: false,
+        selectedSystem: 'life_cooking',
+        selectedMethodId: '',
+        selectedRecipeId: '',
+        processorOptions: []
+      };
+
+      var el = {
+        loadHint: document.getElementById('loadHint'),
+        loadIssues: document.getElementById('loadIssues'),
+        fileItems: document.getElementById('fileItems'),
+        fileRecipes: document.getElementById('fileRecipes'),
+        fileMethods: document.getElementById('fileMethods'),
+        fileInterfaces: document.getElementById('fileInterfaces'),
+        fileSceneApp: document.getElementById('fileSceneApp'),
+        skillSystemSelect: document.getElementById('skillSystemSelect'),
+        methodSelect: document.getElementById('methodSelect'),
+        recipeSelect: document.getElementById('recipeSelect'),
+        skillHint: document.getElementById('skillHint'),
+        materialsBox: document.getElementById('materialsBox'),
+        enabledInput: document.getElementById('enabledInput'),
+        recipeIdInput: document.getElementById('recipeIdInput'),
+        requiredLevelInput: document.getElementById('requiredLevelInput'),
+        matchWeightInput: document.getElementById('matchWeightInput'),
+        qualityTierInput: document.getElementById('qualityTierInput'),
+        proficiencyKeyInput: document.getElementById('proficiencyKeyInput'),
+        requiredSkillIdInput: document.getElementById('requiredSkillIdInput'),
+        processorSelect: document.getElementById('processorSelect'),
+        successRateInput: document.getElementById('successRateInput'),
+        stationTagsInput: document.getElementById('stationTagsInput'),
+        failureItemInput: document.getElementById('failureItemInput'),
+        failureCountInput: document.getElementById('failureCountInput'),
+        mainOutputItemInput: document.getElementById('mainOutputItemInput'),
+        mainOutputCountInput: document.getElementById('mainOutputCountInput'),
+        bonusBox: document.getElementById('bonusBox'),
+        saveHint: document.getElementById('saveHint'),
+        validateSummary: document.getElementById('validateSummary'),
+        errBox: document.getElementById('errBox'),
+        warnBox: document.getElementById('warnBox'),
+        itemCandidates: document.getElementById('itemCandidates'),
+        wizardFlow: document.getElementById('wizardFlow'),
+        nextHint: document.getElementById('nextHint'),
+        recipeFilterInput: document.getElementById('recipeFilterInput'),
+        itemSearchInput: document.getElementById('itemSearchInput'),
+        itemSearchHint: document.getElementById('itemSearchHint'),
+        itemSearchResults: document.getElementById('itemSearchResults'),
+        methodFormWarn: document.getElementById('methodFormWarn'),
+        methodFormWrap: document.getElementById('methodFormWrap'),
+        methCostFuel: document.getElementById('methCostFuel'),
+        methCostWater: document.getElementById('methCostWater'),
+        methCostTicks: document.getElementById('methCostTicks'),
+        methCostStamina: document.getElementById('methCostStamina'),
+        methCostExtraPreview: document.getElementById('methCostExtraPreview'),
+        methBaseSuccess: document.getElementById('methBaseSuccess'),
+        methReqSkill: document.getElementById('methReqSkill'),
+        methProfKey: document.getElementById('methProfKey'),
+        methodProcessorSelect: document.getElementById('methodProcessorSelect'),
+        methStationTags: document.getElementById('methStationTags'),
+        methAccessoryItem: document.getElementById('methAccessoryItem'),
+        methFailItem: document.getElementById('methFailItem'),
+        methFailCount: document.getElementById('methFailCount'),
+        methUnlockJson: document.getElementById('methUnlockJson'),
+        methodSaveHint: document.getElementById('methodSaveHint')
+      };
+
+      function asObj(v) { return v && typeof v === 'object' && !Array.isArray(v) ? v : {}; }
+      function deepClone(v) { return JSON.parse(JSON.stringify(v)); }
+      function sortedKeys(obj) {
+        return Object.keys(asObj(obj)).sort(function (a, b) { return a.localeCompare(b); });
+      }
+      function recipesMap() { return asObj(state.recipes.recipes); }
+      function methodsMap() { return asObj(state.methods.methods); }
+      function interfacesMap() { return asObj(state.interfaces.interfaces); }
+      function recipeById(id) { return recipesMap()[id] || null; }
+
+      function collectProcessorOptions() {
+        var set = {};
+        function add(v) {
+          var s = String(v || '').trim();
+          if (s) set[s] = true;
+        }
+        Object.keys(methodsMap()).forEach(function (id) {
+          add(methodsMap()[id] && methodsMap()[id].recipe_processor_id);
+        });
+        Object.keys(interfacesMap()).forEach(function (id) {
+          add(interfacesMap()[id] && interfacesMap()[id].recipe_processor_id);
+        });
+        Object.keys(recipesMap()).forEach(function (id) {
+          var row = recipesMap()[id];
+          if (row && row.recipe_processor_id != null) add(row.recipe_processor_id);
+        });
+        state.processorOptions.forEach(add);
+        var arr = Object.keys(set).sort(function (a, b) { return a.localeCompare(b); });
+        var opts = '<option value="">(空 / null)</option>' + arr.map(function (id) {
+          return '<option value="' + escapeHtml(id) + '">' + escapeHtml(id) + '</option>';
+        }).join('');
+        el.processorSelect.innerHTML = opts;
+        el.methodProcessorSelect.innerHTML = opts;
+      }
+
+      function escapeHtml(s) {
+        return String(s)
+          .replaceAll('&', '&amp;')
+          .replaceAll('<', '&lt;')
+          .replaceAll('>', '&gt;')
+          .replaceAll('"', '&quot;')
+          .replaceAll("'", '&#39;');
+      }
+
+      async function fetchJson(path) {
+        var res = await fetch(path, { cache: 'no-store' });
+        if (!res.ok) throw new Error(path + ' 加载失败: ' + res.status);
+        return res.json();
+      }
+
+      function readFileAsText(file) {
+        return new Promise(function (resolve, reject) {
+          if (!file) return reject(new Error('文件未选择'));
+          var reader = new FileReader();
+          reader.onload = function () { resolve(String(reader.result || '')); };
+          reader.onerror = function () { reject(new Error('读取文件失败: ' + (file.name || 'unknown'))); };
+          reader.readAsText(file, 'utf-8');
+        });
+      }
+
+      async function readJsonFile(file, label) {
+        var txt = await readFileAsText(file);
+        try {
+          return JSON.parse(txt);
+        } catch (e) {
+          throw new Error(label + ' 不是合法 JSON: ' + e.message);
+        }
+      }
+
+      async function loadDefaults() {
+        var arr = await Promise.all([
+          fetchJson('../data/recipes.json'),
+          fetchJson('../data/recipe-methods.json'),
+          fetchJson('../data/life-skill-recipe-interfaces.json')
+        ]);
+        state.recipes = normalizeRoot(arr[0], 'recipes');
+        state.methods = normalizeRoot(arr[1], 'methods');
+        state.interfaces = normalizeRoot(arr[2], 'interfaces');
+        if (!interfacesMap()[state.selectedSystem]) state.selectedSystem = sortedKeys(interfacesMap())[0] || 'life_cooking';
+        state.selectedMethodId = '';
+        state.selectedRecipeId = '';
+        await loadRegisteredProcessors();
+        collectProcessorOptions();
+        renderWizard();
+        rebuildItemIndex();
+      }
+
+      async function loadFromLocalFiles() {
+        var fRecipes = el.fileRecipes.files && el.fileRecipes.files[0];
+        var fMethods = el.fileMethods.files && el.fileMethods.files[0];
+        var fInterfaces = el.fileInterfaces.files && el.fileInterfaces.files[0];
+        var fItems = el.fileItems.files && el.fileItems.files[0];
+        var fSceneApp = el.fileSceneApp.files && el.fileSceneApp.files[0];
+        var missing = [];
+        if (!fRecipes) missing.push('recipes.json');
+        if (!fMethods) missing.push('recipe-methods.json');
+        if (!fInterfaces) missing.push('life-skill-recipe-interfaces.json');
+        if (missing.length) {
+          el.loadHint.textContent = '缺少必选文件：' + missing.join('、');
+          el.loadHint.className = 'bad';
+          el.loadIssues.innerHTML = missing.map(function (name) {
+            return '<div class="bad">[必选] ' + escapeHtml(name) + '：未选择文件</div>';
+          }).join('');
+          throw new Error('必选文件未选择完整');
+        }
+        var issues = [];
+        var recipesJson;
+        var methodsJson;
+        var interfacesJson;
+        try {
+          recipesJson = await readJsonFile(fRecipes, 'recipes.json');
+        } catch (e) {
+          issues.push({ file: fRecipes.name || 'recipes.json', reason: String(e && e.message ? e.message : e) });
+        }
+        try {
+          methodsJson = await readJsonFile(fMethods, 'recipe-methods.json');
+        } catch (e) {
+          issues.push({ file: fMethods.name || 'recipe-methods.json', reason: String(e && e.message ? e.message : e) });
+        }
+        try {
+          interfacesJson = await readJsonFile(fInterfaces, 'life-skill-recipe-interfaces.json');
+        } catch (e) {
+          issues.push({ file: fInterfaces.name || 'life-skill-recipe-interfaces.json', reason: String(e && e.message ? e.message : e) });
+        }
+        if (issues.length) {
+          el.loadIssues.innerHTML = issues.map(function (it) {
+            return '<div class="bad">' + escapeHtml(it.file) + '：' + escapeHtml(it.reason) + '</div>';
+          }).join('');
+          el.loadHint.textContent = '导入失败：请按下方错误修正后重试';
+          el.loadHint.className = 'bad';
+          throw new Error('必选文件解析失败');
+        }
+        state.recipes = normalizeRoot(recipesJson, 'recipes');
+        state.methods = normalizeRoot(methodsJson, 'methods');
+        state.interfaces = normalizeRoot(interfacesJson, 'interfaces');
+        if (fItems) {
+          try {
+            state.items = asObj(await readJsonFile(fItems, 'items.json'));
+            renderItemCandidates();
+            rebuildItemIndex();
+          } catch (e) {
+            issues.push({ file: fItems.name || 'items.json', reason: String(e && e.message ? e.message : e) });
+            state.items = {};
+            renderItemCandidates();
+            rebuildItemIndex();
+          }
+        } else {
+          state.items = {};
+          renderItemCandidates();
+          rebuildItemIndex();
+        }
+        if (!interfacesMap()[state.selectedSystem]) state.selectedSystem = sortedKeys(interfacesMap())[0] || 'life_cooking';
+        state.selectedMethodId = '';
+        state.selectedRecipeId = '';
+        if (fSceneApp) {
+          try {
+            var txt = await readFileAsText(fSceneApp);
+            loadRegisteredProcessorsFromText(txt);
+          } catch (e) {
+            issues.push({ file: fSceneApp.name || 'scene-app.js', reason: String(e && e.message ? e.message : e) });
+          }
+        } else {
+          await loadRegisteredProcessors();
+        }
+        collectProcessorOptions();
+        if (issues.length) {
+          el.loadIssues.innerHTML = issues.map(function (it) {
+            return '<div class="warn">' + escapeHtml(it.file) + '：' + escapeHtml(it.reason) + '</div>';
+          }).join('');
+          el.loadHint.textContent = '必选三表已导入；可选文件存在问题（见下方）';
+          el.loadHint.className = 'warn';
+        } else {
+          el.loadIssues.innerHTML = [
+            '<div class="ok">' + escapeHtml(fRecipes.name || 'recipes.json') + '：已导入</div>',
+            '<div class="ok">' + escapeHtml(fMethods.name || 'recipe-methods.json') + '：已导入</div>',
+            '<div class="ok">' + escapeHtml(fInterfaces.name || 'life-skill-recipe-interfaces.json') + '：已导入</div>'
+          ].join('');
+          el.loadHint.textContent = '本地导入完成：可继续第2~3步';
+          el.loadHint.className = 'ok';
+        }
+        renderWizard();
+      }
+
+      function normalizeRoot(raw, key) {
+        var root = asObj(raw);
+        var map = asObj(root[key]);
+        return {
+          schema_version: root.schema_version || '1.0.0',
+          _comment: root._comment || '',
+          [key]: deepClone(map)
+        };
+      }
+
+      async function loadRegisteredProcessors() {
+        try {
+          var res = await fetch('../js/scene-app.js', { cache: 'no-store' });
+          if (!res.ok) return;
+          var txt = await res.text();
+          loadRegisteredProcessorsFromText(txt);
+        } catch (_e) {
+          state.processorOptions = [];
+        }
+      }
+
+      function loadRegisteredProcessorsFromText(txt) {
+        var list = [];
+        var re = /registerProcessor\s*\(\s*['"`]([^'"`]+)['"`]/g;
+        var m;
+        while ((m = re.exec(String(txt || '')))) list.push(m[1]);
+        state.processorOptions = Array.from(new Set(list)).sort();
+      }
+
+      function renderItemCandidates() {
+        var items = asObj(state.items);
+        var keys = sortedKeys(items);
+        var html = keys.map(function (id) {
+          var row = items[id] || {};
+          var label = [id, row.sn || '', row.placeholder_name || ''].filter(Boolean).join(' | ');
+          return '<option value="' + escapeHtml(id) + '" label="' + escapeHtml(label) + '"></option>';
+        }).join('');
+        el.itemCandidates.innerHTML = html;
+      }
+
+      function rebuildItemIndex() {
+        var items = asObj(state.items);
+        var keys = sortedKeys(items);
+        state.itemIndexRows = keys.map(function (id) {
+          var row = items[id] || {};
+          var sn = String(row.sn || '');
+          var placeholderName = String(row.placeholder_name || '');
+          return {
+            id: id,
+            sn: sn,
+            placeholder_name: placeholderName,
+            // 预拼接搜索字段：item_id / sn / placeholder_name
+            searchText: (String(id) + '\n' + sn + '\n' + placeholderName).toLowerCase()
+          };
+        });
+        state.itemIndexReady = state.itemIndexRows.length > 0;
+        if (state.itemIndexReady) {
+          el.itemSearchHint.textContent = '已加载候选索引，可按 item_id/sn/placeholder_name 搜索并填入。';
+          el.itemSearchHint.className = 'muted ok';
+          if (!String(el.itemSearchResults.innerHTML || '').trim()) {
+            el.itemSearchResults.innerHTML = '<div class="muted">输入关键词后点击“搜索并填入当前焦点框”。</div>';
+          }
+        } else {
+          el.itemSearchHint.textContent = '已进入手输模式：未加载 items.json，仍可直接输入 item_id。';
+          el.itemSearchHint.className = 'muted warn';
+          el.itemSearchResults.innerHTML = '<div class="warn">已进入手输模式：未加载 items.json，无法提供候选搜索。</div>';
+        }
+      }
+
+      function methodsForSystem(systemId) {
+        return sortedKeys(methodsMap()).filter(function (id) {
+          var row = methodsMap()[id] || {};
+          return row.recipe_system === systemId;
+        });
+      }
+
+      function recipesForSelection(systemId, methodId) {
+        var keyword = String(el.recipeFilterInput.value || '').trim().toLowerCase();
+        return sortedKeys(recipesMap()).filter(function (id) {
+          var row = recipesMap()[id] || {};
+          if (row.recipe_system !== systemId) return false;
+          if (methodId && row.method_id !== methodId) return false;
+          if (keyword && String(id).toLowerCase().indexOf(keyword) < 0) return false;
+          return true;
+        });
+      }
+
+      function defaultRecipeFor(systemId, methodId) {
+        var slug = 'new_recipe';
+        var i = 1;
+        var id = systemId + '.' + slug;
+        while (recipesMap()[id]) { id = systemId + '.' + slug + '_' + i; i += 1; }
+        return {
+          recipe_id: id,
+          recipe_system: systemId,
+          method_id: methodId || '',
+          enabled: false,
+          inputs: [],
+          main_output: { item_id: '', count: 1 },
+          bonus_outputs: [],
+          required_skill_level_min: 1,
+          proficiency_usage_key: (systemId || 'life_cooking') + '.new_recipe',
+          base_output_quality_tier: 1,
+          required_skill_id: null,
+          recipe_processor_id: null,
+          base_success_rate: null,
+          failure_output: null,
+          allowed_station_tags: null,
+          match_weight: 1
+        };
+      }
+
+      function clearForm() {
+        el.materialsBox.innerHTML = '';
+        el.bonusBox.innerHTML = '';
+      }
+
+      function makeMaterialRow(itemId, count) {
+        var wrap = document.createElement('div');
+        wrap.className = 'material-row';
+        wrap.innerHTML = ''
+          + '<input class="mat-item item-pickable" list="itemCandidates" placeholder="输入或搜索 item_id" value="' + escapeHtml(itemId || '') + '" />'
+          + '<input class="mat-count" type="number" min="1" value="' + String(count || 1) + '" />'
+          + '<button class="btn-remove">删除</button>';
+        bindItemPickable(wrap.querySelector('.mat-item'));
+        wrap.querySelector('.btn-remove').addEventListener('click', function () { wrap.remove(); });
+        return wrap;
+      }
+
+      function makeBonusRow(itemId, count, chance) {
+        var wrap = document.createElement('div');
+        wrap.className = 'bonus-row';
+        wrap.innerHTML = ''
+          + '<input class="bonus-item item-pickable" list="itemCandidates" placeholder="输入或搜索 item_id" value="' + escapeHtml(itemId || '') + '" />'
+          + '<input class="bonus-count" type="number" min="1" value="' + String(count || 1) + '" />'
+          + '<input class="bonus-chance" type="number" min="0" max="1" step="0.01" value="' + String(chance != null ? chance : 0.1) + '" />'
+          + '<button class="btn-remove">删除</button>';
+        bindItemPickable(wrap.querySelector('.bonus-item'));
+        wrap.querySelector('.btn-remove').addEventListener('click', function () { wrap.remove(); });
+        return wrap;
+      }
+
+      var activeItemInput = null;
+      function bindItemPickable(inputEl) {
+        if (!inputEl) return;
+        inputEl.addEventListener('focus', function () {
+          activeItemInput = inputEl;
+          el.itemSearchHint.textContent = '当前目标输入框：已选中，可用“搜索并填入当前焦点框”。';
+        });
+      }
+
+      function itemMatches(row, keyword) {
+        if (!keyword) return true;
+        var k = String(keyword || '').toLowerCase();
+        return String(row.searchText || '').indexOf(k) >= 0;
+      }
+
+      function runItemSearchAndRender() {
+        var keyword = String(el.itemSearchInput.value || '').trim();
+        if (!state.itemIndexReady) {
+          el.itemSearchResults.innerHTML = '<div class="warn">已进入手输模式：未加载 items.json，无法提供候选搜索。</div>';
+          el.itemSearchHint.textContent = '请直接在材料/产出输入框手动输入 item_id。';
+          return;
+        }
+        var rows = state.itemIndexRows.filter(function (r) {
+          return itemMatches(r, keyword);
+        }).slice(0, 50);
+        if (!rows.length) {
+          el.itemSearchResults.innerHTML = '<div class="muted">无匹配项，请尝试更短关键词。</div>';
+          return;
+        }
+        el.itemSearchResults.innerHTML = rows.map(function (r) {
+          var label = [r.id, r.sn, r.placeholder_name].filter(Boolean).join(' | ');
+          return '<button class="search-item" data-item-id="' + escapeHtml(r.id) + '">' + escapeHtml(label) + '</button>';
+        }).join('');
+        Array.prototype.forEach.call(el.itemSearchResults.querySelectorAll('.search-item'), function (btn) {
+          btn.addEventListener('click', function () {
+            var id = btn.getAttribute('data-item-id') || '';
+            if (activeItemInput) {
+              activeItemInput.value = id;
+              el.itemSearchHint.textContent = '已填入：' + id;
+            } else {
+              el.itemSearchHint.textContent = '请先点击一个材料/产出 item 输入框，再选择候选。';
+            }
+          });
+        });
+      }
+
+      function updateWizardProgress() {
+        var steps = [
+          { n: 1, t: '导入三表', done: !!(Object.keys(recipesMap()).length || Object.keys(methodsMap()).length || Object.keys(interfacesMap()).length) },
+          { n: 2, t: '选择系统', done: !!state.selectedSystem },
+          { n: 3, t: '选择技法', done: !!state.selectedMethodId },
+          { n: 4, t: '配置材料', done: readMaterialRows().length > 0 },
+          { n: 5, t: '配置属性', done: !!String(el.recipeIdInput.value || '').trim() },
+          { n: 6, t: '配置产出', done: !!String(el.mainOutputItemInput.value || '').trim() }
+        ];
+        var active = 1;
+        for (var i = 0; i < steps.length; i += 1) {
+          if (!steps[i].done) { active = steps[i].n; break; }
+          if (i === steps.length - 1) active = 6;
+        }
+        el.wizardFlow.innerHTML = steps.map(function (s) {
+          var cls = 'wizard-step' + (s.n === active ? ' active' : '');
+          var mark = s.done ? '✓' : '…';
+          return '<span class="' + cls + '">' + s.n + '. ' + escapeHtml(s.t) + ' ' + mark + '</span>';
+        }).join('');
+        var hints = {
+          1: '下一步提示：先导入 recipes / methods / interfaces 三表。',
+          2: '下一步提示：选择一个生活技能系统（建议 life_cooking）。',
+          3: '下一步提示：选择当前系统下的 method。',
+          4: '下一步提示：至少添加一行材料 inputs。',
+          5: '下一步提示：确认 recipe_id、等级门槛、权重等属性。',
+          6: '下一步提示：填写 main_output，然后保存、校验、导出。'
+        };
+        el.nextHint.textContent = hints[active] || hints[6];
+      }
+
+      function fillRecipeForm(recipe) {
+        clearForm();
+        el.enabledInput.checked = recipe.enabled !== false;
+        el.recipeIdInput.value = recipe.recipe_id || '';
+        el.requiredLevelInput.value = Number(recipe.required_skill_level_min || 1);
+        el.matchWeightInput.value = Number(recipe.match_weight || 1);
+        el.qualityTierInput.value = Number(recipe.base_output_quality_tier || 1);
+        el.proficiencyKeyInput.value = recipe.proficiency_usage_key || '';
+        el.requiredSkillIdInput.value = recipe.required_skill_id == null ? '' : String(recipe.required_skill_id);
+        el.processorSelect.value = recipe.recipe_processor_id == null ? '' : String(recipe.recipe_processor_id);
+        el.successRateInput.value = recipe.base_success_rate == null ? '' : String(recipe.base_success_rate);
+        el.stationTagsInput.value = Array.isArray(recipe.allowed_station_tags) ? recipe.allowed_station_tags.join(',') : '';
+        el.failureItemInput.value = recipe.failure_output && recipe.failure_output.item_id ? recipe.failure_output.item_id : '';
+        el.failureCountInput.value = recipe.failure_output && recipe.failure_output.count ? Number(recipe.failure_output.count) : 1;
+        var inputs = Array.isArray(recipe.inputs) ? recipe.inputs : [];
+        if (!inputs.length) inputs = [{ item_id: '', count: 1 }];
+        inputs.forEach(function (row) {
+          el.materialsBox.appendChild(makeMaterialRow(row.item_id || '', Number(row.count || 1)));
+        });
+        var main = recipe.main_output || {};
+        el.mainOutputItemInput.value = main.item_id || '';
+        el.mainOutputCountInput.value = Number(main.count || 1);
+        var bonuses = Array.isArray(recipe.bonus_outputs) ? recipe.bonus_outputs : [];
+        bonuses.forEach(function (row) {
+          el.bonusBox.appendChild(makeBonusRow(row.item_id || '', Number(row.count || 1), Number(row.chance || 0)));
+        });
+      }
+
+      function readMaterialRows() {
+        var rows = [];
+        Array.prototype.forEach.call(el.materialsBox.querySelectorAll('.material-row'), function (r) {
+          var itemId = String(r.querySelector('.mat-item').value || '').trim();
+          var count = toClampedInt(r.querySelector('.mat-count').value, 1, null, 1);
+          if (!itemId) return;
+          rows.push({ item_id: itemId, count: count });
+        });
+        return rows;
+      }
+
+      function readBonusRows() {
+        var rows = [];
+        Array.prototype.forEach.call(el.bonusBox.querySelectorAll('.bonus-row'), function (r) {
+          var itemId = String(r.querySelector('.bonus-item').value || '').trim();
+          if (!itemId) return;
+          var count = toClampedInt(r.querySelector('.bonus-count').value, 1, null, 1);
+          var chance = toClampedNumber(r.querySelector('.bonus-chance').value, 0, 1, 0);
+          rows.push({ item_id: itemId, count: count, chance: chance });
+        });
+        return rows;
+      }
+
+      function parseNullableNumber(txt) {
+        var s = String(txt || '').trim();
+        if (!s) return null;
+        var n = Number(s);
+        return Number.isFinite(n) ? n : null;
+      }
+
+      function toFiniteNumberOr(fallback, raw) {
+        var n = Number(raw);
+        return Number.isFinite(n) ? n : fallback;
+      }
+
+      function toClampedInt(raw, min, max, fallback) {
+        var n = Math.floor(toFiniteNumberOr(fallback, raw));
+        if (Number.isFinite(min)) n = Math.max(min, n);
+        if (Number.isFinite(max)) n = Math.min(max, n);
+        return n;
+      }
+
+      function toClampedNumber(raw, min, max, fallback) {
+        var n = toFiniteNumberOr(fallback, raw);
+        if (Number.isFinite(min)) n = Math.max(min, n);
+        if (Number.isFinite(max)) n = Math.min(max, n);
+        return n;
+      }
+
+      function parseNullableString(txt) {
+        var s = String(txt || '').trim();
+        return s ? s : null;
+      }
+
+      function parseNullableTags(txt) {
+        var s = String(txt || '').trim();
+        if (!s) return null;
+        var arr = s.split(',').map(function (x) { return x.trim(); }).filter(Boolean);
+        return arr.length ? arr : null;
+      }
+
+      function currentMethodRow() {
+        var id = state.selectedMethodId;
+        if (!id) return null;
+        return methodsMap()[id] || null;
+      }
+
+      var METH_COST_CORE_KEYS = ['fuel', 'water', 'ticks', 'stamina'];
+
+      function costExtraKeysObject(cost) {
+        var c = cost && typeof cost === 'object' && !Array.isArray(cost) ? cost : {};
+        var out = {};
+        var k;
+        for (k in c) {
+          if (!Object.prototype.hasOwnProperty.call(c, k)) continue;
+          if (METH_COST_CORE_KEYS.indexOf(k) >= 0) continue;
+          out[k] = c[k];
+        }
+        return out;
+      }
+
+      function setMethCostExtraPreview(cost) {
+        if (!el.methCostExtraPreview) return;
+        var extra = costExtraKeysObject(cost);
+        var keys = Object.keys(extra);
+        if (!keys.length) {
+          el.methCostExtraPreview.textContent = '（无额外 cost 字段；agent 可在 JSON 的 method.cost 上增键，保存技法时会合并保留）';
+          return;
+        }
+        try {
+          el.methCostExtraPreview.textContent = JSON.stringify(extra, null, 2);
+        } catch (_e) {
+          el.methCostExtraPreview.textContent = String(extra);
+        }
+      }
+
+      function fillMethodForm() {
+        var m = currentMethodRow();
+        var methods = methodsForSystem(state.selectedSystem);
+        if (!methods.length) {
+          el.methodFormWarn.style.display = 'block';
+          el.methodFormWrap.style.display = 'none';
+          return;
+        }
+        el.methodFormWarn.style.display = 'none';
+        el.methodFormWrap.style.display = 'block';
+        if (!m) {
+          el.methCostFuel.value = '0';
+          el.methCostWater.value = '0';
+          el.methCostTicks.value = '1';
+          el.methCostStamina.value = '1';
+          el.methBaseSuccess.value = '0.5';
+          el.methReqSkill.value = state.selectedSystem;
+          el.methProfKey.value = '';
+          el.methodProcessorSelect.value = '';
+          el.methStationTags.value = '';
+          el.methAccessoryItem.value = '';
+          el.methFailItem.value = '';
+          el.methFailCount.value = '1';
+          el.methUnlockJson.value = '[]';
+          setMethCostExtraPreview(null);
+          return;
+        }
+        var c = m.cost || {};
+        el.methCostFuel.value = String(c.fuel != null ? c.fuel : 0);
+        el.methCostWater.value = String(c.water != null ? c.water : 0);
+        el.methCostTicks.value = String(c.ticks != null ? c.ticks : 1);
+        el.methCostStamina.value = String(c.stamina != null ? c.stamina : 1);
+        el.methBaseSuccess.value = String(m.base_success_rate != null ? m.base_success_rate : 0.5);
+        el.methReqSkill.value = m.required_skill_id != null ? String(m.required_skill_id) : state.selectedSystem;
+        el.methProfKey.value = m.proficiency_usage_key != null ? String(m.proficiency_usage_key) : '';
+        var proc = m.recipe_processor_id != null ? String(m.recipe_processor_id) : '';
+        el.methodProcessorSelect.value = proc;
+        if (proc && !el.methodProcessorSelect.value) {
+          var opt = document.createElement('option');
+          opt.value = proc;
+          opt.textContent = proc;
+          el.methodProcessorSelect.appendChild(opt);
+          el.methodProcessorSelect.value = proc;
+        }
+        el.methStationTags.value = Array.isArray(m.allowed_station_tags) ? m.allowed_station_tags.join(',') : '';
+        el.methAccessoryItem.value = m.requires_accessory_item_id != null && String(m.requires_accessory_item_id).trim() !== ''
+          ? String(m.requires_accessory_item_id).trim() : '';
+        el.methFailItem.value = m.failure_output && m.failure_output.item_id ? String(m.failure_output.item_id) : '';
+        el.methFailCount.value = String(m.failure_output && m.failure_output.count ? Number(m.failure_output.count) : 1);
+        try {
+          el.methUnlockJson.value = m.unlock != null ? JSON.stringify(m.unlock, null, 2) : '[]';
+        } catch (_e) {
+          el.methUnlockJson.value = '[]';
+        }
+        setMethCostExtraPreview(m.cost);
+      }
+
+      function saveCurrentMethod() {
+        var id = state.selectedMethodId;
+        if (!id) {
+          el.methodSaveHint.textContent = '请先在上方选择技法';
+          el.methodSaveHint.className = 'bad';
+          return;
+        }
+        var map = methodsMap();
+        var row = map[id];
+        if (!row) {
+          el.methodSaveHint.textContent = '当前技法不存在于内存表';
+          el.methodSaveHint.className = 'bad';
+          return;
+        }
+        var unlockParsed;
+        try {
+          unlockParsed = JSON.parse(String(el.methUnlockJson.value || '[]'));
+        } catch (e) {
+          el.methodSaveHint.textContent = 'unlock JSON 无法解析：' + (e && e.message ? e.message : e);
+          el.methodSaveHint.className = 'bad';
+          return;
+        }
+        if (!Array.isArray(unlockParsed)) {
+          el.methodSaveHint.textContent = 'unlock 必须是 JSON 数组';
+          el.methodSaveHint.className = 'bad';
+          return;
+        }
+        var fuel = toClampedInt(el.methCostFuel.value, 0, null, 0);
+        var water = toClampedInt(el.methCostWater.value, 0, null, 0);
+        var ticks = toClampedInt(el.methCostTicks.value, 0, null, 1);
+        var stamina = toClampedInt(el.methCostStamina.value, 0, null, 1);
+        var rate = toClampedNumber(el.methBaseSuccess.value, 0, 1, 0.5);
+        var prevCost = row.cost && typeof row.cost === 'object' && !Array.isArray(row.cost) ? row.cost : {};
+        row.cost = Object.assign({}, prevCost, { fuel: fuel, water: water, ticks: ticks, stamina: stamina });
+        row.base_success_rate = rate;
+        row.required_skill_id = parseNullableString(el.methReqSkill.value) || state.selectedSystem;
+        row.proficiency_usage_key = String(el.methProfKey.value || '').trim() || id;
+        row.recipe_processor_id = parseNullableString(el.methodProcessorSelect.value);
+        row.allowed_station_tags = parseNullableTags(el.methStationTags.value);
+        var acc = String(el.methAccessoryItem.value || '').trim();
+        row.requires_accessory_item_id = acc ? acc : null;
+        var fi = String(el.methFailItem.value || '').trim();
+        if (fi) {
+          row.failure_output = { item_id: fi, count: toClampedInt(el.methFailCount.value, 1, null, 1) };
+        } else {
+          row.failure_output = null;
+        }
+        row.unlock = unlockParsed;
+        row.method_id = id;
+        row.recipe_system = state.selectedSystem;
+        map[id] = row;
+        state.methods.methods = map;
+        el.methodSaveHint.textContent = '已保存技法：' + id;
+        el.methodSaveHint.className = 'ok';
+        collectProcessorOptions();
+        el.methodProcessorSelect.value = row.recipe_processor_id == null ? '' : String(row.recipe_processor_id);
+        setMethCostExtraPreview(row.cost);
+        runValidation();
+      }
+
+      function createNewMethodForSystem() {
+        var slug = window.prompt('新技法 slug（将生成 ' + state.selectedSystem + '.<slug>）', '');
+        if (slug == null) return;
+        slug = String(slug).trim().replace(/\s+/g, '_').replace(/^\.+|\.+$/g, '');
+        if (!slug) return;
+        var newId = state.selectedSystem + '.' + slug;
+        if (methodsMap()[newId]) {
+          alert('已存在：' + newId);
+          return;
+        }
+        var stationTag = 'station_' + String(state.selectedSystem).replace(/^life_/, '');
+        methodsMap()[newId] = {
+          method_id: newId,
+          recipe_system: state.selectedSystem,
+          cost: { fuel: 0, water: 0, ticks: 1, stamina: 1 },
+          base_success_rate: 0.5,
+          required_skill_id: state.selectedSystem,
+          recipe_processor_id: 'processor.' + state.selectedSystem + '.default',
+          proficiency_usage_key: newId,
+          allowed_station_tags: [stationTag],
+          requires_accessory_item_id: null,
+          unlock: [{ type: 'skill_level_min', skill_id: state.selectedSystem, level: 1 }],
+          failure_output: null
+        };
+        state.methods.methods = methodsMap();
+        state.selectedMethodId = newId;
+        state.selectedRecipeId = '';
+        collectProcessorOptions();
+        renderWizard();
+        el.methodSaveHint.textContent = '已新建：' + newId;
+        el.methodSaveHint.className = 'ok';
+      }
+
+      function saveCurrentRecipe() {
+        var map = recipesMap();
+        var oldId = state.selectedRecipeId;
+        var recipeId = String(el.recipeIdInput.value || '').trim();
+        if (!recipeId) {
+          el.saveHint.textContent = 'recipe_id 不能为空';
+          el.saveHint.className = 'bad';
+          return;
+        }
+        if (recipeId.indexOf(state.selectedSystem + '.') !== 0) {
+          el.saveHint.textContent = 'recipe_id 必须以当前系统前缀开头：' + state.selectedSystem + '.';
+          el.saveHint.className = 'bad';
+          return;
+        }
+        var mainItem = String(el.mainOutputItemInput.value || '').trim();
+        if (!mainItem) {
+          el.saveHint.textContent = '主产出 item_id 不能为空';
+          el.saveHint.className = 'bad';
+          return;
+        }
+        var payload = {
+          recipe_id: recipeId,
+          recipe_system: state.selectedSystem,
+          method_id: state.selectedMethodId || '',
+          enabled: !!el.enabledInput.checked,
+          inputs: readMaterialRows(),
+          main_output: { item_id: mainItem, count: toClampedInt(el.mainOutputCountInput.value, 1, null, 1) },
+          bonus_outputs: readBonusRows(),
+          required_skill_level_min: toClampedInt(el.requiredLevelInput.value, 1, null, 1),
+          proficiency_usage_key: String(el.proficiencyKeyInput.value || '').trim(),
+          base_output_quality_tier: toClampedInt(el.qualityTierInput.value, 1, 6, 1),
+          required_skill_id: parseNullableString(el.requiredSkillIdInput.value),
+          recipe_processor_id: parseNullableString(el.processorSelect.value),
+          base_success_rate: parseNullableNumber(el.successRateInput.value),
+          failure_output: null,
+          allowed_station_tags: parseNullableTags(el.stationTagsInput.value),
+          match_weight: toClampedNumber(el.matchWeightInput.value, 0.000001, null, 1)
+        };
+        var failureItem = String(el.failureItemInput.value || '').trim();
+        if (failureItem) payload.failure_output = {
+          item_id: failureItem,
+          count: toClampedInt(el.failureCountInput.value, 1, null, 1)
+        };
+        if (oldId && oldId !== recipeId && map[recipeId]) {
+          el.saveHint.textContent = '重命名失败：目标 recipe_id 已存在（' + recipeId + '）';
+          el.saveHint.className = 'bad';
+          return;
+        }
+        if (oldId && oldId !== recipeId && map[oldId]) delete map[oldId];
+        map[recipeId] = payload;
+        state.recipes.recipes = map;
+        state.selectedRecipeId = recipeId;
+        renderWizard();
+        var renamed = oldId && oldId !== recipeId;
+        el.saveHint.textContent = renamed
+          ? ('已保存并重命名：' + oldId + ' → ' + recipeId)
+          : ('已保存：' + recipeId);
+        el.saveHint.className = 'ok';
+        runValidation();
+      }
+
+      function deleteCurrentRecipe() {
+        var map = recipesMap();
+        if (!state.selectedRecipeId || !map[state.selectedRecipeId]) return;
+        delete map[state.selectedRecipeId];
+        state.recipes.recipes = map;
+        state.selectedRecipeId = '';
+        renderWizard();
+      }
+
+      function createRecipe() {
+        var draft = defaultRecipeFor(state.selectedSystem, state.selectedMethodId);
+        state.recipes.recipes[draft.recipe_id] = draft;
+        state.selectedRecipeId = draft.recipe_id;
+        renderWizard();
+      }
+
+      function renderWizard() {
+        var systems = sortedKeys(interfacesMap());
+        if (!systems.length) systems = ['life_cooking'];
+        if (systems.indexOf(state.selectedSystem) < 0) state.selectedSystem = systems[0];
+        el.skillSystemSelect.innerHTML = systems.map(function (id) {
+          return '<option value="' + escapeHtml(id) + '">' + escapeHtml(id) + '</option>';
+        }).join('');
+        el.skillSystemSelect.value = state.selectedSystem;
+        el.skillHint.textContent = state.selectedSystem === 'life_cooking'
+          ? '当前是烹饪范例流程'
+          : '当前系统：' + state.selectedSystem;
+        var methods = methodsForSystem(state.selectedSystem);
+        if (methods.indexOf(state.selectedMethodId) < 0) state.selectedMethodId = methods[0] || '';
+        el.methodSelect.innerHTML = methods.map(function (id) {
+          return '<option value="' + escapeHtml(id) + '">' + escapeHtml(id) + '</option>';
+        }).join('');
+        el.methodSelect.value = state.selectedMethodId;
+        var recs = recipesForSelection(state.selectedSystem, state.selectedMethodId);
+        if (recs.indexOf(state.selectedRecipeId) < 0) state.selectedRecipeId = recs[0] || '';
+        el.recipeSelect.innerHTML = recs.map(function (id) {
+          var r = recipeById(id) || {};
+          var tag = r.enabled === false ? ' [disabled]' : '';
+          return '<option value="' + escapeHtml(id) + '">' + escapeHtml(id + tag) + '</option>';
+        }).join('');
+        el.recipeSelect.value = state.selectedRecipeId;
+        var row = recipeById(state.selectedRecipeId);
+        if (row) fillRecipeForm(row);
+        else fillRecipeForm(defaultRecipeFor(state.selectedSystem, state.selectedMethodId));
+        bindItemPickable(el.mainOutputItemInput);
+        bindItemPickable(el.failureItemInput);
+        bindItemPickable(el.methFailItem);
+        fillMethodForm();
+        updateWizardProgress();
+      }
+
+      function runValidation() {
+        if (!window.RecipeSchema || typeof window.RecipeSchema.validateRecipeTables !== 'function') {
+          el.validateSummary.textContent = '未找到统一校验器 RecipeSchema';
+          el.validateSummary.className = 'bad';
+          return;
+        }
+        var report = window.RecipeSchema.validateRecipeTables(
+          state.recipes,
+          state.methods,
+          state.interfaces,
+          {}
+        );
+        var ec = (report.errors || []).length;
+        var wc = (report.warnings || []).length;
+        el.validateSummary.textContent = '错误 ' + ec + ' 条，警告 ' + wc + ' 条';
+        el.validateSummary.className = ec > 0 ? 'bad' : 'ok';
+        renderIssueTable(el.errBox, report.errors || [], 'bad', '错误');
+        renderIssueTable(el.warnBox, report.warnings || [], 'warn', '警告');
+        return report;
+      }
+
+      function entryTypeLabel(t) {
+        var m = {
+          recipe: '配方',
+          method: '技法',
+          interface: '技能接口'
+        };
+        return m[t] || t || '未知';
+      }
+
+      function jumpToIssue(entryType, id) {
+        if (!id) return;
+        if (entryType === 'recipe' && recipeById(id)) {
+          var row = recipeById(id);
+          state.selectedSystem = row.recipe_system || state.selectedSystem;
+          state.selectedMethodId = row.method_id || '';
+          state.selectedRecipeId = id;
+          renderWizard();
+          return;
+        }
+        if (entryType === 'method') {
+          var m = methodsMap()[id];
+          if (!m) return;
+          state.selectedSystem = m.recipe_system || state.selectedSystem;
+          state.selectedMethodId = id;
+          state.selectedRecipeId = '';
+          renderWizard();
+          return;
+        }
+        if (entryType === 'interface') {
+          state.selectedSystem = id;
+          state.selectedMethodId = '';
+          state.selectedRecipeId = '';
+          renderWizard();
+        }
+      }
+
+      function renderIssueTable(container, rows, cssClass, title) {
+        if (!rows.length) {
+          container.innerHTML = '<div class="' + cssClass + '">' + escapeHtml(title || '结果') + '：无</div>';
+          return;
+        }
+        var html = '<div class="' + cssClass + '" style="margin:4px 0 6px;">' + escapeHtml(title || '结果') + '：' + rows.length + ' 条</div>';
+        html += '<table><thead><tr><th>entry_type</th><th>id</th><th>error_code</th><th>message</th><th>path</th><th>定位</th></tr></thead><tbody>';
+        rows.forEach(function (r, idx) {
+          var pathText = r.path ? r.path : '(root)';
+          html += '<tr>'
+            + '<td>' + escapeHtml(entryTypeLabel(r.entry_type || '')) + '</td>'
+            + '<td>' + escapeHtml(r.id || '') + '</td>'
+            + '<td>' + escapeHtml(r.error_code || '') + '</td>'
+            + '<td>' + escapeHtml(r.message || '') + '</td>'
+            + '<td>' + escapeHtml(pathText) + '</td>'
+            + '<td><button class="btn-jump-issue" data-entry-type="' + escapeHtml(r.entry_type || '') + '" data-id="' + escapeHtml(r.id || '') + '" data-idx="' + idx + '">定位</button></td>'
+            + '</tr>';
+        });
+        html += '</tbody></table>';
+        container.innerHTML = html;
+        Array.prototype.forEach.call(container.querySelectorAll('.btn-jump-issue'), function (btn) {
+          btn.addEventListener('click', function () {
+            jumpToIssue(btn.getAttribute('data-entry-type') || '', btn.getAttribute('data-id') || '');
+          });
+        });
+      }
+
+      function exportWithValidation(filename, rootObj) {
+        var report = runValidation();
+        if (!report) {
+          alert('导出失败：未找到 RecipeSchema.validateRecipeTables 统一校验入口。');
+          return;
+        }
+        if ((report.errors || []).length > 0) {
+          var goOn = confirm('当前存在 ' + report.errors.length + ' 条错误，导出文件可能不可直接使用。是否仍继续导出？');
+          if (!goOn) return;
+        }
+        downloadJson(filename, rootObj);
+      }
+
+      function downloadJson(filename, obj) {
+        var blob = new Blob([JSON.stringify(obj, null, 2) + '\n'], { type: 'application/json' });
+        var a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = filename;
+        a.click();
+        setTimeout(function () { URL.revokeObjectURL(a.href); }, 2000);
+      }
+
+      document.getElementById('btnLoadDefaults').addEventListener('click', function () {
+        loadDefaults().then(function () {
+          el.loadIssues.innerHTML = [
+            '<div class="ok">recipes.json：已从仓库加载</div>',
+            '<div class="ok">recipe-methods.json：已从仓库加载</div>',
+            '<div class="ok">life-skill-recipe-interfaces.json：已从仓库加载</div>'
+          ].join('');
+          el.loadHint.textContent = '仓库三表加载完成：可继续第2~3步';
+          el.loadHint.className = 'ok';
+          runValidation();
+        }).catch(function (e) {
+          el.loadHint.textContent = '仓库三表加载失败';
+          el.loadHint.className = 'bad';
+          el.loadIssues.innerHTML = '<div class="bad">data 目录加载错误：' + escapeHtml(String(e && e.message ? e.message : e)) + '</div>';
+          alert(String(e && e.message ? e.message : e));
+        });
+      });
+      document.getElementById('btnLoadItemsDefault').addEventListener('click', function () {
+        fetchJson('../data/items.json').then(function (json) {
+          state.items = asObj(json);
+          renderItemCandidates();
+          rebuildItemIndex();
+          el.loadHint.textContent = '已加载 items.json，可按 item_id/sn/placeholder_name 搜索。';
+          el.loadHint.className = 'ok';
+        }).catch(function (e) {
+          el.loadHint.textContent = '加载 items.json 失败：' + String(e && e.message ? e.message : e);
+          el.loadHint.className = 'bad';
+          state.items = {};
+          renderItemCandidates();
+          rebuildItemIndex();
+        });
+      });
+      document.getElementById('btnLoadLocal').addEventListener('click', function () {
+        loadFromLocalFiles().then(runValidation).catch(function () {
+        });
+      });
+      document.getElementById('btnValidate').addEventListener('click', runValidation);
+      document.getElementById('btnExportRecipes').addEventListener('click', function () { exportWithValidation('recipes.json', state.recipes); });
+      document.getElementById('btnExportMethods').addEventListener('click', function () { exportWithValidation('recipe-methods.json', state.methods); });
+      document.getElementById('btnExportInterfaces').addEventListener('click', function () { exportWithValidation('life-skill-recipe-interfaces.json', state.interfaces); });
+      document.getElementById('btnAddInputRow').addEventListener('click', function () {
+        el.materialsBox.appendChild(makeMaterialRow('', 1));
+      });
+      document.getElementById('btnAddBonusRow').addEventListener('click', function () {
+        el.bonusBox.appendChild(makeBonusRow('', 1, 0.1));
+      });
+      document.getElementById('btnSaveRecipe').addEventListener('click', saveCurrentRecipe);
+      document.getElementById('btnDeleteRecipe').addEventListener('click', deleteCurrentRecipe);
+      document.getElementById('btnNewRecipe').addEventListener('click', createRecipe);
+      el.skillSystemSelect.addEventListener('change', function () {
+        state.selectedSystem = el.skillSystemSelect.value;
+        state.selectedMethodId = '';
+        state.selectedRecipeId = '';
+        renderWizard();
+      });
+      el.methodSelect.addEventListener('change', function () {
+        state.selectedMethodId = el.methodSelect.value;
+        state.selectedRecipeId = '';
+        renderWizard();
+      });
+      el.recipeSelect.addEventListener('change', function () {
+        state.selectedRecipeId = el.recipeSelect.value;
+        renderWizard();
+      });
+      el.recipeFilterInput.addEventListener('input', function () {
+        state.selectedRecipeId = '';
+        renderWizard();
+      });
+      document.getElementById('btnRunItemSearch').addEventListener('click', runItemSearchAndRender);
+      bindItemPickable(el.methAccessoryItem);
+      bindItemPickable(el.methFailItem);
+      bindItemPickable(el.failureItemInput);
+      bindItemPickable(el.mainOutputItemInput);
+      document.getElementById('btnSaveMethod').addEventListener('click', saveCurrentMethod);
+      document.getElementById('btnNewMethod').addEventListener('click', createNewMethodForSystem);
+
+      loadDefaults().then(runValidation).catch(function () {
+        collectProcessorOptions();
+        renderWizard();
+        rebuildItemIndex();
+      });
+    })();
+  </script>
+</body>
+</html>

@@ -4,6 +4,10 @@
     "npc.supervisor.linShuyao": {
       "def": "data/npc/npc_supervisor_linShuyao.json",
       "triggers": "data/npc/npc_supervisor_linShuyao_triggers.json"
+    },
+    "npc.station.cooking_base": {
+      "def": "data/npc/npc_station_cooking_base.json",
+      "triggers": "data/npc/npc_station_cooking_base_triggers.json"
     }
   }
 }

@@ -1,0 +1,4 @@
+key,value,notes
+cooking_global_failure_item_id,food_cooking_fail_generic,指向 consumables_base / items.json 中的物品 id；可用 item-editor 维护后在 CSV 改 id
+cooking_stamina_per_tick,2,已废弃：体力仅在开做时按 cooking-methods.json 的 stamina_cost 一次性扣除；本行保留仅为旧档兼容占位
+cooking_temp_station_lifetime_ticks,50,野外临时烹饪台自 placed_tick 起存在的 tick 数，到期移除实体

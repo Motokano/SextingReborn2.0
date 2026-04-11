@@ -2,7 +2,7 @@
  * 将 data/items/*.csv 合并为 data/items.json（单一运行时数据源）。
  * 用法：node tools/build-items-json.mjs
  * 合并顺序（先出现的 id 优先，后表重复 id 会跳过并打印警告）：
- *   consumables_base → materials_base → materials_cooking_raw → product_base → currency_base
+ *   consumables_base → materials_all → product_base → currency_base
  */
 import fs from 'fs';
 import path from 'path';
@@ -15,8 +15,7 @@ const OUT = path.join(ROOT, 'data', 'items.json');
 
 const MERGE_FILES = [
   'consumables_base.csv',
-  'materials_base.csv',
-  'materials_cooking_raw.csv',
+  'materials_all.csv',
   'product_base.csv',
   'currency_base.csv'
 ];
@@ -99,6 +98,24 @@ function intOrNull(s) {
   return isFinite(n) ? n : null;
 }
 
+/** 0 = 不腐败；>0 表示自进入可腐败状态起经过多少 tick 后腐败（具体结算由玩法接入）。 */
+function resolveSpoilageTicks(o) {
+  if (Object.prototype.hasOwnProperty.call(o, 'spoilage_ticks')) {
+    const raw = String(o.spoilage_ticks == null ? '' : o.spoilage_ticks).trim();
+    if (raw !== '') {
+      const n = intOrNull(raw);
+      if (n != null && n >= 0) return n;
+    }
+  }
+  const leg = String(o.spoilage == null ? '' : o.spoilage).trim().toLowerCase();
+  if (!leg || leg === 'none') return 0;
+  if (leg === 'fast') return 600;
+  if (leg === 'slow') return 3600;
+  const n2 = intOrNull(o.spoilage);
+  if (n2 != null && n2 >= 0) return n2;
+  return 0;
+}
+
 function buildUseEffect(o) {
   if (!Object.prototype.hasOwnProperty.call(o, 'satiety_restore')) return null;
   const sat = numOrNull(o.satiety_restore);
@@ -136,7 +153,7 @@ function rowToItem(o, filename) {
   if (o.tags) item.tags = o.tags;
   if (o.source) item.source = o.source;
   if (o.production_lines) item.production_lines = o.production_lines;
-  if (o.spoilage) item.spoilage = o.spoilage;
+  item.spoilage_ticks = resolveSpoilageTicks(o);
   if (o.price_class) item.price_class = o.price_class;
   if (o.volatility) item.volatility = o.volatility;
   if (o.region_restrict !== '' && o.region_restrict != null) {
@@ -159,9 +176,17 @@ function rowToItem(o, filename) {
     const v = String(o.edible == null ? '' : o.edible).trim().toLowerCase();
     item.edible = (v === '1' || v === 'true' || v === 'yes');
   }
+  if (Object.prototype.hasOwnProperty.call(o, 'cooking_ingredient')) {
+    const cv = String(o.cooking_ingredient == null ? '' : o.cooking_ingredient).trim().toLowerCase();
+    if (cv === '1' || cv === 'true' || cv === 'yes') item.cooking_ingredient = true;
+  }
   if (o.edible_buff_id) item.edible_buff_id = String(o.edible_buff_id).trim();
   const foodBuffDur = intOrNull(o.food_buff_duration_ticks);
   if (foodBuffDur != null && foodBuffDur > 0) item.food_buff_duration_ticks = foodBuffDur;
+  const fp = intOrNull(o.fuel_points);
+  item.fuel_points = (fp != null && fp > 0) ? fp : 0;
+  const wp = intOrNull(o.water_points);
+  item.water_points = (wp != null && wp > 0) ? wp : 0;
 
   return item;
 }

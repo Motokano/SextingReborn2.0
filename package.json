@@ -2,6 +2,7 @@
   "name": "sexting-reborn",
   "private": true,
   "scripts": {
-    "build:items": "node tools/build-items-json.mjs"
+    "build:items": "node tools/build-items-json.mjs",
+    "build:cooking-methods": "node tools/build-cooking-methods-json.mjs"
   }
 }

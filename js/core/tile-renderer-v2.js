@@ -76,7 +76,10 @@
         }
 
         function colorForCell(meta) {
-            if (!meta.walkable) return '#3d2a2a';
+            if (!meta.walkable) {
+                if (meta.cookingStation) return '#3d2b1f';
+                return '#3d2a2a';
+            }
             if (meta.portal) return '#2a2d35';
             if (meta.gathering) return '#2a3324';
             if (meta.groundCount > 0) return '#332a24';
@@ -84,7 +87,10 @@
         }
 
         function strokeForCell(meta) {
-            if (!meta.walkable) return 'rgba(180,80,80,0.4)';
+            if (!meta.walkable) {
+                if (meta.cookingStation) return 'rgba(251,146,60,0.5)';
+                return 'rgba(180,80,80,0.4)';
+            }
             if (meta.portal) return 'rgba(100,200,255,0.35)';
             if (meta.gathering) return 'rgba(120,180,80,0.45)';
             if (meta.groundCount > 0) return 'rgba(212,163,115,0.5)';
@@ -117,8 +123,13 @@
                 dynamicCtx.fillText('?', x + w / 2 - 5, y + h / 2 + 7);
             } else if (meta.npc) {
                 dynamicCtx.fillStyle = 'rgba(210,190,255,0.95)';
-                dynamicCtx.font = '20px sans-serif';
-                dynamicCtx.fillText('人', x + w / 2 - 6, y + h / 2 + 7);
+                var rawLab = meta.npcLabel != null ? String(meta.npcLabel).trim() : '';
+                var lab = rawLab || '人';
+                if (lab.length > 6) lab = lab.slice(0, 6);
+                var fs = lab.length > 3 ? 11 : 13;
+                dynamicCtx.font = 'bold ' + fs + 'px "Microsoft YaHei","PingFang SC",sans-serif';
+                var tw = dynamicCtx.measureText(lab).width;
+                dynamicCtx.fillText(lab, x + w / 2 - tw / 2, y + h / 2 + 7);
             } else if (meta.enemy) {
                 if (meta.enemyId === 'enemy.training_dummy_wooden') {
                     dynamicCtx.fillStyle = 'rgba(139,90,43,0.95)';
@@ -132,6 +143,10 @@
                     dynamicCtx.arc(x + w / 2, y + h / 2, 8, 0, Math.PI * 2);
                     dynamicCtx.fill();
                 }
+            } else if (meta.cookingStation) {
+                dynamicCtx.fillStyle = 'rgba(251,146,60,0.95)';
+                dynamicCtx.font = 'bold 20px "Microsoft YaHei","PingFang SC",sans-serif';
+                dynamicCtx.fillText('灶', x + w / 2 - 10, y + h / 2 + 7);
             }
 
             if (meta.groundCount > 0) {

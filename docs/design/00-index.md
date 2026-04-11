@@ -30,6 +30,8 @@
 | 身体部位与状态 | [09-body-parts.md](09-body-parts.md) | 七部位、效果、损毁、手术 |
 | 敌人设计 | [10-enemies.md](10-enemies.md) | 敌人与主角差异、配置、掉落池 |
 | 技能系统 | [11-skills.md](11-skills.md) | 生存/生活/战斗/特殊、熟练度、战斗技能通用规则与示例 |
+| 烹饪系统（实现收口） | [21-cooking-system-benchmarks.md](21-cooking-system-benchmarks.md) | 烹饪当前实现口径：单次制作、统一配方路由优先、旧表兜底、图鉴双写兼容 |
+| 统一配方系统（实现口径） | [22-recipe-system-unified.md](22-recipe-system-unified.md) | 配方主表/工艺表/interface、schema 校验、route 优先级、兼容期双写约定 |
 | Buff / Debuff 系统 | [18-buff-system.md](18-buff-system.md) | 通用触发、分层消耗、命中/效果条件、调试开关 |
 | 动作系统 | [19-action-system.md](19-action-system.md) | 条件解锁的特殊指令、菜单执行、Tick、可选限次耗尽隐藏、与 hubs 呼吸法/步法对齐 |
 | NPC 与任务模板 | [16-npc-and-quest-template.md](16-npc-and-quest-template.md) | NPC 行为模板、触发条目模板、任务模板、林书瑶首例与 2 条触发条目 |

@@ -92,7 +92,9 @@
         if (!map) return false;
         if (x < 0 || x >= map.width || y < 0 || y >= map.height) return false;
         if (isDisabled(map, x, y)) return false;
-        return !isBlocked(map, x, y);
+        if (isBlocked(map, x, y)) return false;
+        if (isCookingStationCell(x, y)) return false;
+        return true;
     }
 
     function getPortalAt(x, y) {
@@ -147,6 +149,49 @@
         if (!Object.prototype.hasOwnProperty.call(map.annotations, key)) return null;
         var v = map.annotations[key];
         return v != null && v !== '' ? String(v) : null;
+    }
+
+    /** 与 scene-app 烹饪邻格判定一致：该格视为设施本体，不可走入（同 NPC 占格） */
+    var COOKING_TEMP_STATION_ENTITY_ID = 'cooking_station_temp';
+
+    function isBlockingStationAnnotation(ann) {
+        if (ann == null || ann === '') return false;
+        var s = String(ann);
+        return s === '烹饪台' || s.indexOf('烹饪') >= 0 || s.indexOf('灶') >= 0;
+    }
+
+    /** 固定标注的烹饪台，或临时灶台实体（野外临时灶） */
+    function isCookingStationCell(x, y) {
+        if (isBlockingStationAnnotation(getAnnotationAt(x, y))) return true;
+        var rec = getEntityRecordAt(x, y);
+        return !!(rec && String(rec.entity_id || '') === COOKING_TEMP_STATION_ENTITY_ID);
+    }
+
+    /**
+     * 地图上烹饪格绑定的「设施 NPC」id（与 map.npcs 互斥：格上无实体 NPC 时仍可对灶走 NPC 菜单管线）。
+     * 优先 `cooking_station_interact_npc_by_cell["x,y"]`，否则回落 `cooking_station_interact_npc_id`（该图任意烹饪台共用）。
+     */
+    function getCookingStationInteractNpcId(x, y) {
+        var map = getMap();
+        if (!map || !isCookingStationCell(x, y)) return null;
+        var by = map.cooking_station_interact_npc_by_cell;
+        if (by && typeof by === 'object') {
+            var k = (x | 0) + ',' + (y | 0);
+            if (Object.prototype.hasOwnProperty.call(by, k)) {
+                var v = by[k];
+                if (v != null && String(v).trim()) return String(v).trim();
+            }
+        }
+        var id = map.cooking_station_interact_npc_id;
+        if (id != null && String(id).trim()) return String(id).trim();
+        return null;
+    }
+
+    /** 格上实体 NPC，或烹饪台格绑定的设施 NPC（供邻格点击与气泡逻辑统一） */
+    function getInteractNpcIdAt(x, y) {
+        var nid = getNpcAt(x, y);
+        if (nid) return nid;
+        return getCookingStationInteractNpcId(x, y);
     }
 
     function clamp(v, min, max) {
@@ -268,8 +313,12 @@
         getEntityRecordAt: getEntityRecordAt,
         getEntityAt: getEntityAt,
         getNpcAt: getNpcAt,
+        getCookingStationInteractNpcId: getCookingStationInteractNpcId,
+        getInteractNpcIdAt: getInteractNpcIdAt,
         getEnemyAt: getEnemyAt,
         getAnnotationAt: getAnnotationAt,
+        isBlockingStationAnnotation: isBlockingStationAnnotation,
+        isCookingStationCell: isCookingStationCell,
         isAdjacent: isAdjacent,
         canStandAt: canStandAt,
         jumpTo: jumpTo,

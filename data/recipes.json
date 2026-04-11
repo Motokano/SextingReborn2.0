@@ -1,0 +1,928 @@
+{
+  "_comment": "Unified recipes map. 当前仅含 life_cooking；recipe_id 格式 {recipe_system}.{slug}。",
+  "schema_version": "1.0.0",
+  "recipes": {
+    "life_cooking.placeholder_porridge": {
+      "recipe_id": "life_cooking.placeholder_porridge",
+      "recipe_system": "life_cooking",
+      "method_id": "life_cooking.placeholder_basic",
+      "enabled": false,
+      "inputs": [
+        {
+          "item_id": "item.material.grain_generic",
+          "count": 1
+        },
+        {
+          "item_id": "item.material.water_clean",
+          "count": 1
+        }
+      ],
+      "main_output": {
+        "item_id": "item.food.placeholder_porridge",
+        "count": 1
+      },
+      "bonus_outputs": [
+        {
+          "item_id": "item.food.placeholder_porridge_plus",
+          "count": 1,
+          "chance": 0.1
+        }
+      ],
+      "required_skill_level_min": 1,
+      "proficiency_usage_key": "life_cooking.placeholder_porridge",
+      "base_output_quality_tier": 1,
+      "required_skill_id": null,
+      "recipe_processor_id": null,
+      "base_success_rate": null,
+      "failure_output": null,
+      "allowed_station_tags": null,
+      "match_weight": 1
+    },
+    "life_cooking.cook_stew_meat_simple": {
+      "recipe_id": "life_cooking.cook_stew_meat_simple",
+      "recipe_system": "life_cooking",
+      "method_id": "life_cooking.boil_stew",
+      "enabled": true,
+      "inputs": [
+        {
+          "item_id": "hunt_meat_beast_basic",
+          "count": 1
+        },
+        {
+          "item_id": "ore_water_pure_soft",
+          "count": 1
+        },
+        {
+          "item_id": "ore_salt_sea",
+          "count": 1
+        }
+      ],
+      "main_output": {
+        "item_id": "food_stew_meat_simple",
+        "count": 1
+      },
+      "bonus_outputs": [],
+      "required_skill_level_min": 1,
+      "proficiency_usage_key": "life_cooking.cook_stew_meat_simple",
+      "base_output_quality_tier": 0,
+      "required_skill_id": null,
+      "recipe_processor_id": null,
+      "base_success_rate": null,
+      "failure_output": null,
+      "allowed_station_tags": null,
+      "match_weight": 1
+    },
+    "life_cooking.cook_fish_soup_clear": {
+      "recipe_id": "life_cooking.cook_fish_soup_clear",
+      "recipe_system": "life_cooking",
+      "method_id": "life_cooking.boil_stew",
+      "enabled": true,
+      "inputs": [
+        {
+          "item_id": "fish_whitefish",
+          "count": 1
+        },
+        {
+          "item_id": "ore_water_pure_soft",
+          "count": 1
+        },
+        {
+          "item_id": "ore_salt_sea",
+          "count": 1
+        }
+      ],
+      "main_output": {
+        "item_id": "food_fish_soup_clear",
+        "count": 1
+      },
+      "bonus_outputs": [],
+      "required_skill_level_min": 1,
+      "proficiency_usage_key": "life_cooking.cook_fish_soup_clear",
+      "base_output_quality_tier": 0,
+      "required_skill_id": null,
+      "recipe_processor_id": null,
+      "base_success_rate": null,
+      "failure_output": null,
+      "allowed_station_tags": null,
+      "match_weight": 1
+    },
+    "life_cooking.cook_flatbread_plain": {
+      "recipe_id": "life_cooking.cook_flatbread_plain",
+      "recipe_system": "life_cooking",
+      "method_id": "life_cooking.roast_bake",
+      "enabled": true,
+      "inputs": [
+        {
+          "item_id": "herb_wheat_flour",
+          "count": 1
+        },
+        {
+          "item_id": "ore_water_pure_soft",
+          "count": 1
+        },
+        {
+          "item_id": "ore_salt_sea",
+          "count": 1
+        }
+      ],
+      "main_output": {
+        "item_id": "food_flatbread_plain",
+        "count": 1
+      },
+      "bonus_outputs": [],
+      "required_skill_level_min": 1,
+      "proficiency_usage_key": "life_cooking.cook_flatbread_plain",
+      "base_output_quality_tier": 0,
+      "required_skill_id": null,
+      "recipe_processor_id": null,
+      "base_success_rate": null,
+      "failure_output": null,
+      "allowed_station_tags": null,
+      "match_weight": 1
+    },
+    "life_cooking.cook_mvp_beef_brisket_clear_stew": {
+      "recipe_id": "life_cooking.cook_mvp_beef_brisket_clear_stew",
+      "recipe_system": "life_cooking",
+      "method_id": "life_cooking.boil_stew",
+      "enabled": true,
+      "inputs": [
+        {
+          "item_id": "hus_beef_brisket",
+          "count": 1
+        },
+        {
+          "item_id": "herb_potato",
+          "count": 1
+        },
+        {
+          "item_id": "herb_carrot",
+          "count": 1
+        },
+        {
+          "item_id": "herb_onion",
+          "count": 1
+        },
+        {
+          "item_id": "ore_salt_sea",
+          "count": 1
+        },
+        {
+          "item_id": "ore_water_pure_soft",
+          "count": 1
+        }
+      ],
+      "main_output": {
+        "item_id": "food_dish_beef_brisket_stew",
+        "count": 1
+      },
+      "bonus_outputs": [],
+      "required_skill_level_min": 1,
+      "proficiency_usage_key": "life_cooking.cook_mvp_beef_brisket_clear_stew",
+      "base_output_quality_tier": 0,
+      "required_skill_id": null,
+      "recipe_processor_id": null,
+      "base_success_rate": null,
+      "failure_output": null,
+      "allowed_station_tags": null,
+      "match_weight": 1
+    },
+    "life_cooking.cook_mvp_pig_trotter_bean_soup": {
+      "recipe_id": "life_cooking.cook_mvp_pig_trotter_bean_soup",
+      "recipe_system": "life_cooking",
+      "method_id": "life_cooking.boil_stew",
+      "enabled": true,
+      "inputs": [
+        {
+          "item_id": "hus_pig_trotter",
+          "count": 1
+        },
+        {
+          "item_id": "herb_garrofo",
+          "count": 1
+        },
+        {
+          "item_id": "herb_ginger",
+          "count": 1
+        },
+        {
+          "item_id": "ore_salt_sea",
+          "count": 1
+        },
+        {
+          "item_id": "ore_water_pure_soft",
+          "count": 1
+        }
+      ],
+      "main_output": {
+        "item_id": "food_dish_pig_trotter_bean_soup",
+        "count": 1
+      },
+      "bonus_outputs": [],
+      "required_skill_level_min": 1,
+      "proficiency_usage_key": "life_cooking.cook_mvp_pig_trotter_bean_soup",
+      "base_output_quality_tier": 0,
+      "required_skill_id": null,
+      "recipe_processor_id": null,
+      "base_success_rate": null,
+      "failure_output": null,
+      "allowed_station_tags": null,
+      "match_weight": 1
+    },
+    "life_cooking.cook_mvp_whitefish_soup_deluxe": {
+      "recipe_id": "life_cooking.cook_mvp_whitefish_soup_deluxe",
+      "recipe_system": "life_cooking",
+      "method_id": "life_cooking.boil_stew",
+      "enabled": true,
+      "inputs": [
+        {
+          "item_id": "fish_whitefish",
+          "count": 1
+        },
+        {
+          "item_id": "herb_scallion",
+          "count": 1
+        },
+        {
+          "item_id": "herb_ginger",
+          "count": 1
+        },
+        {
+          "item_id": "ore_salt_sea",
+          "count": 1
+        },
+        {
+          "item_id": "ore_water_pure_soft",
+          "count": 1
+        }
+      ],
+      "main_output": {
+        "item_id": "food_dish_whitefish_soup_deluxe",
+        "count": 1
+      },
+      "bonus_outputs": [],
+      "required_skill_level_min": 1,
+      "proficiency_usage_key": "life_cooking.cook_mvp_whitefish_soup_deluxe",
+      "base_output_quality_tier": 0,
+      "required_skill_id": null,
+      "recipe_processor_id": null,
+      "base_success_rate": null,
+      "failure_output": null,
+      "allowed_station_tags": null,
+      "match_weight": 9
+    },
+    "life_cooking.cook_mvp_chicken_dice_chili": {
+      "recipe_id": "life_cooking.cook_mvp_chicken_dice_chili",
+      "recipe_system": "life_cooking",
+      "method_id": "life_cooking.stir_fry",
+      "enabled": true,
+      "inputs": [
+        {
+          "item_id": "hus_chicken_meat",
+          "count": 1
+        },
+        {
+          "item_id": "herb_chili_red",
+          "count": 1
+        },
+        {
+          "item_id": "herb_garlic",
+          "count": 1
+        },
+        {
+          "item_id": "herb_ginger",
+          "count": 1
+        },
+        {
+          "item_id": "hus_pork_lard",
+          "count": 1
+        }
+      ],
+      "main_output": {
+        "item_id": "food_dish_chicken_dice_stirfry",
+        "count": 1
+      },
+      "bonus_outputs": [],
+      "required_skill_level_min": 1,
+      "proficiency_usage_key": "life_cooking.cook_mvp_chicken_dice_chili",
+      "base_output_quality_tier": 0,
+      "required_skill_id": null,
+      "recipe_processor_id": null,
+      "base_success_rate": null,
+      "failure_output": null,
+      "allowed_station_tags": null,
+      "match_weight": 1
+    },
+    "life_cooking.cook_mvp_squid_stirfry": {
+      "recipe_id": "life_cooking.cook_mvp_squid_stirfry",
+      "recipe_system": "life_cooking",
+      "method_id": "life_cooking.stir_fry",
+      "enabled": true,
+      "inputs": [
+        {
+          "item_id": "fish_squid",
+          "count": 1
+        },
+        {
+          "item_id": "herb_chili_red",
+          "count": 1
+        },
+        {
+          "item_id": "herb_garlic",
+          "count": 1
+        },
+        {
+          "item_id": "hus_pork_lard",
+          "count": 1
+        },
+        {
+          "item_id": "ore_salt_sea",
+          "count": 1
+        }
+      ],
+      "main_output": {
+        "item_id": "food_dish_squid_stirfry",
+        "count": 1
+      },
+      "bonus_outputs": [],
+      "required_skill_level_min": 1,
+      "proficiency_usage_key": "life_cooking.cook_mvp_squid_stirfry",
+      "base_output_quality_tier": 0,
+      "required_skill_id": null,
+      "recipe_processor_id": null,
+      "base_success_rate": null,
+      "failure_output": null,
+      "allowed_station_tags": null,
+      "match_weight": 1
+    },
+    "life_cooking.cook_mvp_beef_onion_stirfry": {
+      "recipe_id": "life_cooking.cook_mvp_beef_onion_stirfry",
+      "recipe_system": "life_cooking",
+      "method_id": "life_cooking.stir_fry",
+      "enabled": true,
+      "inputs": [
+        {
+          "item_id": "hus_beef_shoulder",
+          "count": 1
+        },
+        {
+          "item_id": "herb_onion",
+          "count": 1
+        },
+        {
+          "item_id": "herb_black_pepper_whole",
+          "count": 1
+        },
+        {
+          "item_id": "hus_pork_lard",
+          "count": 1
+        },
+        {
+          "item_id": "ore_salt_sea",
+          "count": 1
+        }
+      ],
+      "main_output": {
+        "item_id": "food_dish_beef_onion_stirfry",
+        "count": 1
+      },
+      "bonus_outputs": [],
+      "required_skill_level_min": 1,
+      "proficiency_usage_key": "life_cooking.cook_mvp_beef_onion_stirfry",
+      "base_output_quality_tier": 0,
+      "required_skill_id": null,
+      "recipe_processor_id": null,
+      "base_success_rate": null,
+      "failure_output": null,
+      "allowed_station_tags": null,
+      "match_weight": 1
+    },
+    "life_cooking.cook_mvp_salt_grilled_whitefish": {
+      "recipe_id": "life_cooking.cook_mvp_salt_grilled_whitefish",
+      "recipe_system": "life_cooking",
+      "method_id": "life_cooking.roast_bake",
+      "enabled": true,
+      "inputs": [
+        {
+          "item_id": "fish_whitefish",
+          "count": 1
+        },
+        {
+          "item_id": "ore_salt_sea",
+          "count": 1
+        },
+        {
+          "item_id": "herb_lemon",
+          "count": 1
+        },
+        {
+          "item_id": "wood_charcoal",
+          "count": 1
+        }
+      ],
+      "main_output": {
+        "item_id": "food_dish_salt_grilled_whitefish",
+        "count": 1
+      },
+      "bonus_outputs": [],
+      "required_skill_level_min": 1,
+      "proficiency_usage_key": "life_cooking.cook_mvp_salt_grilled_whitefish",
+      "base_output_quality_tier": 0,
+      "required_skill_id": null,
+      "recipe_processor_id": null,
+      "base_success_rate": null,
+      "failure_output": null,
+      "allowed_station_tags": null,
+      "match_weight": 1
+    },
+    "life_cooking.cook_mvp_applewood_roast_turkey": {
+      "recipe_id": "life_cooking.cook_mvp_applewood_roast_turkey",
+      "recipe_system": "life_cooking",
+      "method_id": "life_cooking.roast_bake",
+      "enabled": true,
+      "inputs": [
+        {
+          "item_id": "hunt_turkey_meat",
+          "count": 1
+        },
+        {
+          "item_id": "ore_salt_rock",
+          "count": 1
+        },
+        {
+          "item_id": "wood_apple",
+          "count": 1
+        },
+        {
+          "item_id": "herb_rosemary",
+          "count": 1
+        }
+      ],
+      "main_output": {
+        "item_id": "food_dish_applewood_turkey_roast",
+        "count": 1
+      },
+      "bonus_outputs": [],
+      "required_skill_level_min": 1,
+      "proficiency_usage_key": "life_cooking.cook_mvp_applewood_roast_turkey",
+      "base_output_quality_tier": 0,
+      "required_skill_id": null,
+      "recipe_processor_id": null,
+      "base_success_rate": null,
+      "failure_output": null,
+      "allowed_station_tags": null,
+      "match_weight": 1
+    },
+    "life_cooking.cook_mvp_roasted_potato_herbs": {
+      "recipe_id": "life_cooking.cook_mvp_roasted_potato_herbs",
+      "recipe_system": "life_cooking",
+      "method_id": "life_cooking.roast_bake",
+      "enabled": true,
+      "inputs": [
+        {
+          "item_id": "herb_potato",
+          "count": 1
+        },
+        {
+          "item_id": "hus_pork_lard",
+          "count": 1
+        },
+        {
+          "item_id": "herb_thyme",
+          "count": 1
+        },
+        {
+          "item_id": "ore_salt_sea",
+          "count": 1
+        }
+      ],
+      "main_output": {
+        "item_id": "food_dish_roasted_potato_herbs",
+        "count": 1
+      },
+      "bonus_outputs": [],
+      "required_skill_level_min": 1,
+      "proficiency_usage_key": "life_cooking.cook_mvp_roasted_potato_herbs",
+      "base_output_quality_tier": 0,
+      "required_skill_id": null,
+      "recipe_processor_id": null,
+      "base_success_rate": null,
+      "failure_output": null,
+      "allowed_station_tags": null,
+      "match_weight": 1
+    },
+    "life_cooking.cook_mvp_steamed_egg": {
+      "recipe_id": "life_cooking.cook_mvp_steamed_egg",
+      "recipe_system": "life_cooking",
+      "method_id": "life_cooking.steam",
+      "enabled": true,
+      "inputs": [
+        {
+          "item_id": "hus_egg",
+          "count": 1
+        },
+        {
+          "item_id": "ore_water_pure_soft",
+          "count": 1
+        },
+        {
+          "item_id": "ore_salt_sea",
+          "count": 1
+        }
+      ],
+      "main_output": {
+        "item_id": "food_dish_steamed_egg_custard",
+        "count": 1
+      },
+      "bonus_outputs": [],
+      "required_skill_level_min": 1,
+      "proficiency_usage_key": "life_cooking.cook_mvp_steamed_egg",
+      "base_output_quality_tier": 0,
+      "required_skill_id": null,
+      "recipe_processor_id": null,
+      "base_success_rate": null,
+      "failure_output": null,
+      "allowed_station_tags": null,
+      "match_weight": 1
+    },
+    "life_cooking.cook_mvp_lotus_glutinous_chicken": {
+      "recipe_id": "life_cooking.cook_mvp_lotus_glutinous_chicken",
+      "recipe_system": "life_cooking",
+      "method_id": "life_cooking.steam",
+      "enabled": true,
+      "inputs": [
+        {
+          "item_id": "herb_lotus_leaf",
+          "count": 1
+        },
+        {
+          "item_id": "herb_rice_glutinous_round",
+          "count": 1
+        },
+        {
+          "item_id": "hus_chicken_meat",
+          "count": 1
+        },
+        {
+          "item_id": "herb_shiitake",
+          "count": 1
+        },
+        {
+          "item_id": "ore_salt_sea",
+          "count": 1
+        }
+      ],
+      "main_output": {
+        "item_id": "food_dish_lotus_glutinous_chicken",
+        "count": 1
+      },
+      "bonus_outputs": [],
+      "required_skill_level_min": 1,
+      "proficiency_usage_key": "life_cooking.cook_mvp_lotus_glutinous_chicken",
+      "base_output_quality_tier": 0,
+      "required_skill_id": null,
+      "recipe_processor_id": null,
+      "base_success_rate": null,
+      "failure_output": null,
+      "allowed_station_tags": null,
+      "match_weight": 1
+    },
+    "life_cooking.cook_mvp_steamed_bream": {
+      "recipe_id": "life_cooking.cook_mvp_steamed_bream",
+      "recipe_system": "life_cooking",
+      "method_id": "life_cooking.steam",
+      "enabled": true,
+      "inputs": [
+        {
+          "item_id": "fish_bream",
+          "count": 1
+        },
+        {
+          "item_id": "herb_scallion",
+          "count": 1
+        },
+        {
+          "item_id": "herb_ginger",
+          "count": 1
+        },
+        {
+          "item_id": "ore_salt_sea",
+          "count": 1
+        }
+      ],
+      "main_output": {
+        "item_id": "food_dish_steamed_bream",
+        "count": 1
+      },
+      "bonus_outputs": [],
+      "required_skill_level_min": 1,
+      "proficiency_usage_key": "life_cooking.cook_mvp_steamed_bream",
+      "base_output_quality_tier": 0,
+      "required_skill_id": null,
+      "recipe_processor_id": null,
+      "base_success_rate": null,
+      "failure_output": null,
+      "allowed_station_tags": null,
+      "match_weight": 1
+    },
+    "life_cooking.cook_mvp_fried_potato": {
+      "recipe_id": "life_cooking.cook_mvp_fried_potato",
+      "recipe_system": "life_cooking",
+      "method_id": "life_cooking.deep_fry",
+      "enabled": true,
+      "inputs": [
+        {
+          "item_id": "herb_potato",
+          "count": 1
+        },
+        {
+          "item_id": "hus_pork_lard",
+          "count": 1
+        },
+        {
+          "item_id": "ore_salt_sea",
+          "count": 1
+        }
+      ],
+      "main_output": {
+        "item_id": "food_dish_fried_potato_chunks",
+        "count": 1
+      },
+      "bonus_outputs": [],
+      "required_skill_level_min": 1,
+      "proficiency_usage_key": "life_cooking.cook_mvp_fried_potato",
+      "base_output_quality_tier": 0,
+      "required_skill_id": null,
+      "recipe_processor_id": null,
+      "base_success_rate": null,
+      "failure_output": null,
+      "allowed_station_tags": null,
+      "match_weight": 1
+    },
+    "life_cooking.cook_mvp_river_shrimp_soft_fry": {
+      "recipe_id": "life_cooking.cook_mvp_river_shrimp_soft_fry",
+      "recipe_system": "life_cooking",
+      "method_id": "life_cooking.deep_fry",
+      "enabled": true,
+      "inputs": [
+        {
+          "item_id": "fish_shrimp_river",
+          "count": 1
+        },
+        {
+          "item_id": "herb_wheat_flour",
+          "count": 1
+        },
+        {
+          "item_id": "hus_egg",
+          "count": 1
+        },
+        {
+          "item_id": "ore_salt_sea",
+          "count": 1
+        },
+        {
+          "item_id": "hus_pork_lard",
+          "count": 1
+        }
+      ],
+      "main_output": {
+        "item_id": "food_dish_river_shrimp_soft_fry",
+        "count": 1
+      },
+      "bonus_outputs": [],
+      "required_skill_level_min": 1,
+      "proficiency_usage_key": "life_cooking.cook_mvp_river_shrimp_soft_fry",
+      "base_output_quality_tier": 0,
+      "required_skill_id": null,
+      "recipe_processor_id": null,
+      "base_success_rate": null,
+      "failure_output": null,
+      "allowed_station_tags": null,
+      "match_weight": 1
+    },
+    "life_cooking.cook_mvp_salted_cucumber": {
+      "recipe_id": "life_cooking.cook_mvp_salted_cucumber",
+      "recipe_system": "life_cooking",
+      "method_id": "life_cooking.pickle_salt",
+      "enabled": true,
+      "inputs": [
+        {
+          "item_id": "herb_cucumber",
+          "count": 1
+        },
+        {
+          "item_id": "ore_salt_sea",
+          "count": 1
+        },
+        {
+          "item_id": "herb_garlic",
+          "count": 1
+        }
+      ],
+      "main_output": {
+        "item_id": "food_dish_salted_cucumber",
+        "count": 1
+      },
+      "bonus_outputs": [],
+      "required_skill_level_min": 1,
+      "proficiency_usage_key": "life_cooking.cook_mvp_salted_cucumber",
+      "base_output_quality_tier": 0,
+      "required_skill_id": null,
+      "recipe_processor_id": null,
+      "base_success_rate": null,
+      "failure_output": null,
+      "allowed_station_tags": null,
+      "match_weight": 1
+    },
+    "life_cooking.cook_mvp_herb_cured_pork": {
+      "recipe_id": "life_cooking.cook_mvp_herb_cured_pork",
+      "recipe_system": "life_cooking",
+      "method_id": "life_cooking.pickle_salt",
+      "enabled": true,
+      "inputs": [
+        {
+          "item_id": "hus_pork_belly",
+          "count": 1
+        },
+        {
+          "item_id": "ore_salt_sea_coarse",
+          "count": 1
+        },
+        {
+          "item_id": "herb_rosemary",
+          "count": 1
+        },
+        {
+          "item_id": "herb_thyme",
+          "count": 1
+        },
+        {
+          "item_id": "herb_garlic",
+          "count": 1
+        }
+      ],
+      "main_output": {
+        "item_id": "food_dish_herb_cured_pork_slices",
+        "count": 1
+      },
+      "bonus_outputs": [],
+      "required_skill_level_min": 1,
+      "proficiency_usage_key": "life_cooking.cook_mvp_herb_cured_pork",
+      "base_output_quality_tier": 0,
+      "required_skill_id": null,
+      "recipe_processor_id": null,
+      "base_success_rate": null,
+      "failure_output": null,
+      "allowed_station_tags": null,
+      "match_weight": 1
+    },
+    "life_cooking.cook_mvp_beet_kvass": {
+      "recipe_id": "life_cooking.cook_mvp_beet_kvass",
+      "recipe_system": "life_cooking",
+      "method_id": "life_cooking.ferment",
+      "enabled": true,
+      "inputs": [
+        {
+          "item_id": "herb_beet",
+          "count": 1
+        },
+        {
+          "item_id": "ore_salt_sea",
+          "count": 1
+        },
+        {
+          "item_id": "herb_sugar_white",
+          "count": 1
+        },
+        {
+          "item_id": "ore_water_pure_soft",
+          "count": 1
+        }
+      ],
+      "main_output": {
+        "item_id": "food_dish_beet_kvass",
+        "count": 1
+      },
+      "bonus_outputs": [],
+      "required_skill_level_min": 1,
+      "proficiency_usage_key": "life_cooking.cook_mvp_beet_kvass",
+      "base_output_quality_tier": 0,
+      "required_skill_id": null,
+      "recipe_processor_id": null,
+      "base_success_rate": null,
+      "failure_output": null,
+      "allowed_station_tags": null,
+      "match_weight": 1
+    },
+    "life_cooking.cook_mvp_buffalo_yogurt": {
+      "recipe_id": "life_cooking.cook_mvp_buffalo_yogurt",
+      "recipe_system": "life_cooking",
+      "method_id": "life_cooking.ferment",
+      "enabled": true,
+      "inputs": [
+        {
+          "item_id": "hus_milk_buffalo",
+          "count": 1
+        },
+        {
+          "item_id": "herb_sugar_white",
+          "count": 1
+        }
+      ],
+      "main_output": {
+        "item_id": "food_dish_buffalo_yogurt",
+        "count": 1
+      },
+      "bonus_outputs": [],
+      "required_skill_level_min": 1,
+      "proficiency_usage_key": "life_cooking.cook_mvp_buffalo_yogurt",
+      "base_output_quality_tier": 0,
+      "required_skill_id": null,
+      "recipe_processor_id": null,
+      "base_success_rate": null,
+      "failure_output": null,
+      "allowed_station_tags": null,
+      "match_weight": 1
+    },
+    "life_cooking.cook_mvp_sesame_garlic_salad": {
+      "recipe_id": "life_cooking.cook_mvp_sesame_garlic_salad",
+      "recipe_system": "life_cooking",
+      "method_id": "life_cooking.grind_mix",
+      "enabled": true,
+      "inputs": [
+        {
+          "item_id": "herb_sesame",
+          "count": 1
+        },
+        {
+          "item_id": "herb_garlic",
+          "count": 1
+        },
+        {
+          "item_id": "herb_chili_red",
+          "count": 1
+        },
+        {
+          "item_id": "ore_salt_sea",
+          "count": 1
+        },
+        {
+          "item_id": "herb_cucumber",
+          "count": 1
+        }
+      ],
+      "main_output": {
+        "item_id": "food_dish_sesame_garlic_salad",
+        "count": 1
+      },
+      "bonus_outputs": [],
+      "required_skill_level_min": 1,
+      "proficiency_usage_key": "life_cooking.cook_mvp_sesame_garlic_salad",
+      "base_output_quality_tier": 0,
+      "required_skill_id": null,
+      "recipe_processor_id": null,
+      "base_success_rate": null,
+      "failure_output": null,
+      "allowed_station_tags": null,
+      "match_weight": 1
+    },
+    "life_cooking.cook_mvp_mustard_beef_tongue": {
+      "recipe_id": "life_cooking.cook_mvp_mustard_beef_tongue",
+      "recipe_system": "life_cooking",
+      "method_id": "life_cooking.grind_mix",
+      "enabled": true,
+      "inputs": [
+        {
+          "item_id": "hus_beef_tongue",
+          "count": 1
+        },
+        {
+          "item_id": "herb_mustard_yellow",
+          "count": 1
+        },
+        {
+          "item_id": "ore_salt_sea",
+          "count": 1
+        },
+        {
+          "item_id": "herb_lemon",
+          "count": 1
+        }
+      ],
+      "main_output": {
+        "item_id": "food_dish_mustard_beef_tongue",
+        "count": 1
+      },
+      "bonus_outputs": [],
+      "required_skill_level_min": 1,
+      "proficiency_usage_key": "life_cooking.cook_mvp_mustard_beef_tongue",
+      "base_output_quality_tier": 0,
+      "required_skill_id": null,
+      "recipe_processor_id": null,
+      "base_success_rate": null,
+      "failure_output": null,
+      "allowed_station_tags": null,
+      "match_weight": 1
+    }
+  }
+}
