@@ -193,12 +193,12 @@
         "linesRich": [
           {
             "speaker": "narration",
-            "text": "【事件模板】你把祭品塞进灶膛缝里，砖缝里渗出潮气，像有人在深处点头应允。此后主灶台料理水不再枯竭。（请在 npc_station_cooking_base_triggers.json 本条目内修改条件与 removeItem 的道具。）",
+            "text": "你把祭品塞进灶膛缝里，砖缝里渗出潮气，像有人在深处点头应允。此后主灶台料理水不再枯竭。",
             "avatar": ""
           }
         ],
         "lines": [
-          "【事件模板】你把祭品塞进灶膛缝里，砖缝里渗出潮气，像有人在深处点头应允。此后主灶台料理水不再枯竭。（请在 npc_station_cooking_base_triggers.json 本条目内修改条件与 removeItem 的道具。）"
+          "你把祭品塞进灶膛缝里，砖缝里渗出潮气，像有人在深处点头应允。此后主灶台料理水不再枯竭。"
         ],
         "hasOptions": false,
         "options": []
