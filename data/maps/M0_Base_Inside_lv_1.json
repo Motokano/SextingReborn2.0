@@ -761,7 +761,13 @@
     }
   ],
   "cooking_station_interact_npc_by_cell": {
-    "11,11": "npc.station.cooking_base"
+    "12,14": "npc.station.cooking_base"
+  },
+  "pharmacy_station_interact_npc_by_cell": {
+    "14,14": "npc.station.pharmacy_base"
+  },
+  "compost_station_interact_npc_by_cell": {
+    "13,14": "npc.station.compost_base"
   },
   "enemies": [
     {
@@ -771,7 +777,9 @@
     }
   ],
   "annotations": {
-    "11,11": "烹饪台",
+    "14,14": "制药台",
+    "12,14": "烹饪台",
+    "13,14": "制肥桶",
     "7,11": "黄历",
     "3,15": "床",
     "3,14": "床",

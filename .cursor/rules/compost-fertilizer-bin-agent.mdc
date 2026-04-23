@@ -1,0 +1,119 @@
+---
+description: 肥料桶堆肥/沤肥、碳氮投料、四档产物、时长 tick、堆肥事件 CSV→JSON 与动作枚举；编辑相关数据/脚本/实现时遵循
+alwaysApply: false
+---
+
+# 肥料桶 / 堆肥与沤肥（Agent 规则）
+
+编辑**堆肥与沤肥投料、`fert_c`/`fert_n`、分档与产物、批次时长、堆肥随机事件表**或相关运行时接线时，以 **`docs/design/23-fertilizer-bin-station.md`** 为设计正本；与本文冲突时以设计文档为准，并同步修正实现或数据。
+
+## 1) 设计正本与职责边界
+
+| 职责 | 位置 |
+|------|------|
+| 玩法与数值口径（盲投、分档、产物、时长、非法批次等） | `docs/design/23-fertilizer-bin-station.md` |
+| 堆肥/沤肥事件策划表（含多句文案变体） | `data/compost-events.csv`（**编辑源**，运行时勿直接读） |
+| 事件表构建产物 | `data/compost-events.json`（**运行时只读**） |
+| 事件表构建脚本 | `tools/build-compost-events-json.mjs` |
+| 固定动作 id 与中文说明（策划对照） | `data/compost-event-actions.csv`（参考，不参与构建校验） |
+
+## 2) 投料与碳氮（`fert_c` / `fert_n`）
+
+- **`fert_c`、`fert_n`**：整数；**已配置的一侧可为 0**；**未配置的键**在批次合计时按 **0** 计入（见设计 **23.2 / 23.3**）。
+- **主料格（堆肥、沤肥一致；菌剂除外）**：物品模板须 **至少具备 `fert_c`、`fert_n` 其中之一**（键存在且为整数）；**两键皆无**不得进主料格（废产物等）。
+- **菌剂**：不要求 `fert_c`/`fert_n`，**不计入** `C`/`N` 合计；**首版仅启动器**（门控堆肥/沤肥页 + 失败仍消耗），**无**容错/耗时/风险等数值增益。
+- **非法批次（优先于 ratio）**：`C = Σ fert_c`、`N = Σ fert_n` 若 **`C <= 0` 或 `N <= 0`** → **废产物档**，不计算 `ratio`（见 **23.3 / 23.5.2**）。
+- **碳氮比理想区间（统一）**：
+  - 投料阶段理想：`25:1 ~ 35:1`（`25 <= ratio <= 35`）
+  - 成品阶段理想：`10:1 ~ 15:1`
+  - 投料分档：优档 `25~35`；中档 `18~25` / `35~45`；其余为差档（见设计 **23.3**）。
+
+## 3) 堆肥产物与废产物
+
+- 堆肥结算为 **四档独立 `item_id`**（非 `quality_tier`）：`compost_matrix_grade_low` / `mid` / `high`，废档 **`compost_matrix_batch_void`**。
+- **废产物**：**不配** `fert_c` 与 `fert_n`（两键皆无），故不能再进主料格。
+- 前三档基质可配双字段并参与后续沤肥等 **`C`/`N`** 演算；数值以设计 **23.5.1** 为准，全表缩放时 **同比** 调整。
+
+## 4) 时长（tick）
+
+- **`1 tick = 10 分钟`**（与设计 **23.8.1** 一致）。
+- 基准：`compost_duration_ticks = 288`（堆肥 2 天）、`anaerobic_duration_ticks = 1008`（沤肥 7 天）。
+- 可选浮动边界以设计文档为准；**改口径须同步文档**。
+- **堆肥批次与随机事件**：批次剩余时间 **不因「有待处理事件」而暂停**；**禁止**要求玩家在事件触发的 **单一 tick** 内完成互动（见设计 **23.8.1b**）。批次年龄、互动消耗的 tick 与 **全局 / 生存主循环 tick** 一致，**无**堆肥专用时间例外（见设计 **23.8.1c**）。
+- **交互窗（动态）**：对排程 `trigger_tick[k]`，`window_start[k]=trigger_tick[k]`，`window_end[k]=trigger_tick[k+1]-1`；最后一条用 **`compost_duration_ticks - 1`**；须 **`trigger_tick` 严格递增**；每窗 **至多 1 次**有效操作；窗过 **miss** → 本批 **`compost_ops_score`（或等价）`-1`**；**不得**回拨批次时间。
+- **首版默认排程（已定）**：每批 **`5`** 次随机状态事件；**`trigger_tick[] = [48, 96, 144, 192, 240]`**（相对 `batch_age_tick`）；末窗 **`[240, 287]`**；**`[0,47]`** 无随机状态事件（见设计 **23.8.1b**）。
+- **开批次前置（堆肥/沤肥一致）**：设施内存在未取出的已结算产物时，禁止开始新批次；必须先全部取出。
+- **熟练度统一口径（堆肥/沤肥一致）**：仅「开始一批」与「事件窗有效互动」计熟练度；每次都记 **1 次 `life_farming` 熟练度**，并仅在主角当前已装备呼吸法时记 **1 次该呼吸法熟练度**（未装备则跳过呼吸法计次）。纯投料与收取成品不计熟练度。
+- **可见性统一口径**：熟练度增加提示默认对普通玩家隐藏；保留调试日志输出（debug 可见）。
+
+## 5) 堆肥事件数据（CSV → JSON，防脏数据）
+
+### 5.1 工作流（强制）
+
+1. 策划只改 **`data/compost-events.csv`**（及需要时的 **`data/compost-event-actions.csv`** 说明表）。
+2. 执行 **`node tools/build-compost-events-json.mjs`**。
+3. 校验通过后才写入 **`data/compost-events.json`**；失败则 **不更新** JSON（脚本非 0 退出）。
+4. 运行时 **只加载 `compost-events.json`**，禁止把未校验的 CSV 当唯一真相。
+
+### 5.2 表结构与唯一键
+
+- 必填列（顺序以 CSV 表头为准，缺列构建失败）：  
+  `event_id, text_variant_id, stage, severity, title, desc, best_action, secondary_action, bad_action, success_text, fail_text, enabled`
+- **行唯一键**：`(event_id, text_variant_id)`；`event_id` 与 `text_variant_id` 仅允许 **`[a-z0-9_]+`**。
+- **同一 `event_id` 多行**：`stage`、`severity`、`best_action`、`secondary_action`、`bad_action`、`enabled` **必须全一致**；仅 **`title` / `desc` / `success_text` / `fail_text`** 允许按变体不同。
+- **`stage`**：`state | action | result`；**`severity`**：`good | info | warn | bad`。
+- **`stage=state`**：必须填写 **`best_action`**；各动作字段若非空，须落在固定枚举内（与构建脚本 **`ALLOWED_ACTION`** 一致，见下节）。
+
+### 5.3 固定动作枚举（须与脚本同源）
+
+允许值：**`none`**、**`turn_pile`**、**`add_water`**、**`ventilate`**、**`cover_keepwarm`**、**`break_clumps`**、**`remove_contaminant`**。  
+若需增删动作：**同时**改 **`tools/build-compost-events-json.mjs`** 的枚举、**`data/compost-event-actions.csv`**、设计文档 **23.8.2**，避免运行时与表不一致。
+
+### 5.4 随机与权重
+
+- **不再使用 `weight`**；随机事件在「候选集合」内按设计 **等概率**（见 **23.8.2**）。
+- **同一 `event_id` 下多条文案变体**：运行时从 `variants[]` **等概率**抽一条展示（`text_variant_id` 仅用于唯一性与策划识别）。
+
+### 5.5 JSON 产物形状（实现索引）
+
+- 顶层：`schema_version`、`source_csv`、`generated_at`、`events`。
+- `events[event_id]`：`event_id`、`stage`、`severity`、`best_action`、`secondary_action`、`bad_action`、`enabled`、**`variants[]`**。
+- `variants[]` 每项：`text_variant_id`、`title`、`desc`、`success_text`、`fail_text`。
+
+## 6) 禁止事项
+
+- **禁止**长期只手改 **`data/compost-events.json`** 而不走 CSV + 构建（会被下次构建覆盖且绕过校验）。
+- **禁止**在第二处维护一套并行的堆肥事件文案表（测试桩除外）。
+- **禁止**为堆肥事件重新引入 **`weight`** 或「未校验的任意 `action_id` 字符串」破坏枚举口径。
+
+## 7) 与 UI 文案（`ui_text_zhCN`）的关系
+
+- 当前堆肥事件观察文案由 **`compost-events` 数据表**承载；若未来改为 **`UIText` key 化**，须一次性迁移并同步 **`data/ui_text_zhCN.json`** 与加载逻辑，避免双轨并存。
+
+## 8) 堆肥运行时（与 **23.8.1c** 一致，摘要）
+
+- **产出**：四档仅 `item_id` 区分；合法基质 **无**玩法向 **`quality`/`quality_tier`**；**`compost_ops_score` 只在 low/mid/high 内修正**，非法恒 **`compost_matrix_batch_void`**。
+- **分数阈值**：`compost_ops_score >= +2` 升一档，`-1~+1` 保持，`<= -2` 降一档；结果 clamp 到 `low~high`。
+- **单窗**：选 1 动作即结算；**+1 / 0 / -1** 与 miss **-1**；扣 **5** 体力 + 推 **1** 全局 tick（与主循环一致，无例外）；非法批次 **不**进互动。
+- **成长**：开始堆肥 + 每窗有效互动，各记 1 次 `life_farming` 熟练度；呼吸法仅对当前已装备呼吸法计次；纯投料/收取不计。
+- **抽样**：`compost-events.json` 中 **`stage=state` 且 `enabled`** 的 `event_id` **等概率**；文案再在 **`variants[]`** 等概率。
+- **离线**：关游戏 **冻结**；重开再继续。
+- **开收**：开堆 **锁定**主料；**点一次收**；**不可**远程收。
+- **物品**：四档在 **`data/items/compost_matrix_base.csv`**，合并见 **`items-json-build-agent.mdc`**；须 **`sn`/`placeholder_name`/`fn_before`/`fn`**；三档带 **`fert_c`/`fert_n`**，废坨 **不配**。
+- **菌剂**：仅门控页签 + **失败仍消耗**；**无**数值增益；不改 ratio、不改事件池。
+
+## 9) 沤肥首版运行时（与 **23.10** 一致，摘要）
+
+- **分档**：与堆肥复用同一 `ratio` 规则（设计 **23.3**）；非法批次仍产废档。
+- **产量**：沤肥主产物按同一 `item_id` 的**数量**结算，首版在 **2~4** 份中等权随机（与堆肥固定 1 个单格产物区分）。
+- **物品标记**：仅沤肥线**可用肥料**模板带 `is_anaerobic_fertilizer: true`；沤肥废档不加该字段。
+- **放气事件**：每个沤肥周期固定 **2** 次；`anaerobic_duration_ticks=1008` 时 `trigger_tick=[336,672]`，窗口 `[336,671]` / `[672,1007]`；每次仅两动作：`vent_gas`（正确）/ `leave_as_is`（错误）；事件只影响数量，不改变最终档位 / `item_id`。
+- **交互判定**：玩家需在设施旁交互进入沤肥页后选择动作；选择 `vent_gas` 才算成功。
+- **周期判定**：若两次都未成功（即均未选 `vent_gas`）-> 最终数量减半并向下取整，数量保底 1 + 挂 `buff_id=沤肥满身`；若至少成功一次 -> 按原定数量结算。
+- **动作成本与成长**：放气不扣体力；每次互动推进 1 全局 tick，并计 1 次 `life_farming` 熟练度；呼吸法仅对当前已装备呼吸法计次。
+- **成长补充**：开始沤肥时同样计 1 次 `life_farming` 熟练度；呼吸法仅对当前已装备呼吸法计次；纯投料/收取不计。
+- **收取**：背包不足允许部分收取，余量保留设施中。
+- **废档优先**：若批次非法 C/N，直接走废档产物，覆盖 2~4 液体数量规则。
+- **事件数据源**：继续使用 **`data/compost-events.csv` -> `data/compost-events.json`**；禁止新建并行沤肥事件主表。
+- **筛选约束**：运行时按 `event_id` 约定筛选沤肥事件，不引入 `mode` 字段。
+- **其余约束**：tick/冻结、开堆锁料、收取与邻格限制、菌剂启动器语义与堆肥同口径。

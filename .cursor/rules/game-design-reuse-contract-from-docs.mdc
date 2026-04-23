@@ -169,7 +169,7 @@ alwaysApply: true
 
 - **速度不等**：取整后战斗速度高者为**先手**；先手方先完整结算本侧伤害链与**未声明延后**的即时效果，再结算后手方；若后手方在先手落地后已失能（死亡/离场等），**不再**执行本次交换中后手还击（先击杀可避免再挨对方本击）。
 - **同速**：以交换起始状态为**同一快照**，先演算玩家侧、再演算敌人侧**待提交变更集**（演算中途不互相覆盖快照），最后**同时提交**两侧结果（允许互中、同归）。
-- **`initiative_always_first`**：仍在与速度比较前决定本击是否强制攻击方先手；抵消后仍同速则走同速口径。
+- **`initiative_always_first`**：与取整速度**合成**判定（实现：**先**速度结构，**再**强制先手与互抵；见 `combat-initiative.js`）。**地图普攻、敌速更高且非显式三件套**时，须在还击后按终稿肢再解析一次；**不**回滚已先发生的还击，与终稿冲突时仅日志提示。
 
 约定依据：`docs/design/07-combat-core.md`（速度与先手、连击）。
 
@@ -193,9 +193,23 @@ alwaysApply: true
 
 约定依据：当前仓库实现（`combat-melee-resolve` + `combat-pipeline`）与团队口径。
 
+玩家攻敌 **raw 底数 / 加性增伤 / 技艺总熟乘区 / 实战经验值乘区（`04-combat-exp`）/ 成数** 的编辑口径：**`.cursor/rules/combat-player-melee-damage-agent.mdc`**。
+
+### 8.3 三类型伤害后处理（强制激活）
+
+- 主公式产出 `rawDamage` 与 `damageType` 后，必须进入三类型池：`typedDamage = { blunt, slash, pierce }`；初始将 `rawDamage` 注入 `typedDamage[damageType]`。
+- 后处理顺序固定：**前置注入（`add_flat` / `add_from_pct`）→ 首轮类型增伤（`increase_pct`）→ 单向转换（仅 `blunt_to_slash`、`slash_to_pierce`）→ 转换后二次增伤（仅新增目标类型分量）**。
+- 同源同目标多条转换：先求和再一次转换（sum once）。
+- 绝对禁止反向转换（如 `slash -> blunt`、`pierce -> slash`），防止结算递归套娃。
+- 后处理阶段全程保留小数；仅 `finalDamage` 落地时 `floor`。
+- 管线减伤必须按三类型分量分别结算并汇总，不得回退为单一 `damageType` 一次性过系数。
+
+约定依据：`docs/design/08-hit-parry-damage.md`（三类型伤害后处理）与 `docs/design/14-implementation.md`（实现接线）。
+
 # 使用方式（给后续 agent）
 
 - 修改 Buff：先看第 3 节，再看 18-buff-system 的具体 effect_type/consume_mode。
 - 修改 招式/后遗症/熟练度：先看第 4、5 节，确保 `R_move` 与 `post_effect_unlocks` / `proficiency_attr_unlocks` 使用同一套阈值口径与重算入口。
+- 修改 玩家近战伤害/类型词条：先看第 8.3 节，再看 **`.cursor/rules/combat-player-melee-damage-agent.mdc`** 与 `docs/design/08-hit-parry-damage.md`。
 - 修改 野外采集点：先看第 7 节，避免把 `02-regions` 的“刷新说法”误当成采空规则。
 - 修改 昼夜光照/视野显示：先看 **`docs/design/20-map-vision-ui.md`** 与 **`.cursor/rules/day-night-vision-ui-agent.mdc`**（仅 UI 分层与信息揭示，禁止影响战斗结算）。

@@ -78,22 +78,30 @@
         function colorForCell(meta) {
             if (!meta.walkable) {
                 if (meta.cookingStation) return '#3d2b1f';
+                if (meta.pharmacyStation) return '#1e2d2c';
+                if (meta.compostStation) return '#2f2f18';
                 return '#3d2a2a';
             }
             if (meta.portal) return '#2a2d35';
             if (meta.gathering) return '#2a3324';
             if (meta.groundCount > 0) return '#332a24';
+            if (meta.pharmacyStation) return '#243530';
+            if (meta.compostStation) return '#363620';
             return '#312a24';
         }
 
         function strokeForCell(meta) {
             if (!meta.walkable) {
                 if (meta.cookingStation) return 'rgba(251,146,60,0.5)';
+                if (meta.pharmacyStation) return 'rgba(45,212,191,0.45)';
+                if (meta.compostStation) return 'rgba(202,138,4,0.45)';
                 return 'rgba(180,80,80,0.4)';
             }
             if (meta.portal) return 'rgba(100,200,255,0.35)';
             if (meta.gathering) return 'rgba(120,180,80,0.45)';
             if (meta.groundCount > 0) return 'rgba(212,163,115,0.5)';
+            if (meta.pharmacyStation) return 'rgba(45,212,191,0.22)';
+            if (meta.compostStation) return 'rgba(202,138,4,0.22)';
             return 'rgba(255,255,255,0.08)';
         }
 
@@ -124,12 +132,19 @@
             } else if (meta.npc) {
                 dynamicCtx.fillStyle = 'rgba(210,190,255,0.95)';
                 var rawLab = meta.npcLabel != null ? String(meta.npcLabel).trim() : '';
-                var lab = rawLab || '人';
-                if (lab.length > 6) lab = lab.slice(0, 6);
-                var fs = lab.length > 3 ? 11 : 13;
-                dynamicCtx.font = 'bold ' + fs + 'px "Microsoft YaHei","PingFang SC",sans-serif';
-                var tw = dynamicCtx.measureText(lab).width;
-                dynamicCtx.fillText(lab, x + w / 2 - tw / 2, y + h / 2 + 7);
+                var lab = rawLab;
+                if (lab) {
+                    if (lab.length > 6) lab = lab.slice(0, 6);
+                    var fs = lab.length > 3 ? 11 : 13;
+                    dynamicCtx.font = 'bold ' + fs + 'px "Microsoft YaHei","PingFang SC",sans-serif';
+                    var tw = dynamicCtx.measureText(lab).width;
+                    dynamicCtx.fillText(lab, x + w / 2 - tw / 2, y + h / 2 + 7);
+                } else {
+                    // 无地图短标签时使用中性标记，避免误导为“人形 NPC”。
+                    dynamicCtx.beginPath();
+                    dynamicCtx.arc(x + w / 2, y + h / 2, 4, 0, Math.PI * 2);
+                    dynamicCtx.fill();
+                }
             } else if (meta.enemy) {
                 if (meta.enemyId === 'enemy.training_dummy_wooden') {
                     dynamicCtx.fillStyle = 'rgba(139,90,43,0.95)';
@@ -143,10 +158,12 @@
                     dynamicCtx.arc(x + w / 2, y + h / 2, 8, 0, Math.PI * 2);
                     dynamicCtx.fill();
                 }
-            } else if (meta.cookingStation) {
+            } else if (meta.cookingStation || meta.pharmacyStation || meta.compostStation) {
+                var stationLabel = meta.cookingStation ? '灶' : (meta.pharmacyStation ? '制药台' : '制肥桶');
                 dynamicCtx.fillStyle = 'rgba(251,146,60,0.95)';
                 dynamicCtx.font = 'bold 20px "Microsoft YaHei","PingFang SC",sans-serif';
-                dynamicCtx.fillText('灶', x + w / 2 - 10, y + h / 2 + 7);
+                var stationLabelWidth = dynamicCtx.measureText(stationLabel).width;
+                dynamicCtx.fillText(stationLabel, x + w / 2 - stationLabelWidth / 2, y + h / 2 + 7);
             }
 
             if (meta.groundCount > 0) {
@@ -163,30 +180,6 @@
                 dynamicCtx.strokeStyle = 'rgba(251,191,36,0.85)';
                 dynamicCtx.lineWidth = 2;
                 dynamicCtx.strokeRect(x + 1, y + 1, w - 2, h - 2);
-                var d = Number(meta.playerFacingDir);
-                if (!isFinite(d)) d = 4;
-                d = Math.round(d) % 8;
-                if (d < 0) d += 8;
-                var dirs = [
-                    { x: 0, y: -1 }, { x: 1, y: -1 }, { x: 1, y: 0 }, { x: 1, y: 1 },
-                    { x: 0, y: 1 }, { x: -1, y: 1 }, { x: -1, y: 0 }, { x: -1, y: -1 }
-                ];
-                var v = dirs[d] || dirs[4];
-                var cx = x + w / 2;
-                var cy = y + h / 2;
-                var tipX = cx + v.x * 12;
-                var tipY = cy + v.y * 12;
-                var leftX = cx + (-v.y) * 4;
-                var leftY = cy + (v.x) * 4;
-                var rightX = cx - (-v.y) * 4;
-                var rightY = cy - (v.x) * 4;
-                dynamicCtx.fillStyle = 'rgba(251,191,36,0.92)';
-                dynamicCtx.beginPath();
-                dynamicCtx.moveTo(tipX, tipY);
-                dynamicCtx.lineTo(leftX, leftY);
-                dynamicCtx.lineTo(rightX, rightY);
-                dynamicCtx.closePath();
-                dynamicCtx.fill();
             }
         }
 

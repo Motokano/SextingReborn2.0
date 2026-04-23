@@ -9,8 +9,11 @@
     "move_proficiency_max_uses": 50000,
     "difficulty_multipliers": [1, 2, 3, 4],
     "base_power_unarmed_mult_at_1": 1,
-    "base_power_unarmed_mult_at_max": 2,
-    "_base_power_unarmed_note": "基本拳脚 getBasePower：L=1 → mult_at_1，L=模板满级 → mult_at_max；中间 smoothstep(t)=t²(3-2t)，t=(L-1)/(cap-1)，结果保留两位小数",
+    "base_power_unarmed_mult_at_max": 3.5,
+    "base_power_weapon_mult_at_1": 1,
+    "base_power_weapon_mult_at_max": 3.5,
+    "_base_power_unarmed_note": "基本拳脚 getBasePower（unarmed_simple）：L=1 → mult_at_1，L=模板满级 → mult_at_max；t=(L-1)/(cap-1) 线性插值。默认满级 3.5 = 相对 1 级 +250%。",
+    "_base_power_weapon_note": "兵器技能 getBasePower（weapon_simple）：缺省字段时回落 unarmed 同名常数；算法与徒手线性段相同。",
     "parry_success_at_1000": 0.35,
     "parry_reduce_at_1000": 0.35,
     "default_combat_skill_max_level": 1000,
@@ -215,6 +218,57 @@
         { "level": 50, "slots": 4 }
       ],
       "base_power_curve": "unarmed_simple",
+      "max_level": 1000,
+      "level_cap_skill_id": null
+    },
+    "combat_basic_weapon_melee": {
+      "id": "combat_basic_weapon_melee",
+      "name": "基本兵击（占位）",
+      "category": "weapon",
+      "description": "占位兵器技能：底伤读 weapon_left/right 对应物品 weapon_attack_power；等级曲线 weapon_simple（与徒手线性满级+250%同源常数，可独立配）。需在装备槽持兵并在肢体链装配后方可测试。",
+      "difficulty": 1,
+      "icon": "🗡️",
+      "only_parry": false,
+      "moves": [
+        {
+          "id": "weapon_strike",
+          "name": "兵击直斩",
+          "unlock_level": 1,
+          "required_limb_tags": ["挥拳"],
+          "damage_type": "slash",
+          "hit_segments": 1,
+          "move_power_multiplier": 1,
+          "default_power_level": 10,
+          "power_level_min": 1,
+          "power_level_max": 12,
+          "hit_part_weights": {
+            "head": 0.05,
+            "chest": 0.35,
+            "abdomen": 0.3,
+            "left_arm": 0.1,
+            "right_arm": 0.1,
+            "left_leg": 0.05,
+            "right_leg": 0.05
+          },
+          "diqi_cost": {
+            "ratio_of_diqi_max_at_10_power": 0.1,
+            "min": 1,
+            "max": 50,
+            "settlement": "floor_ratio_then_clamp_base_at_10_round_scale_min_1"
+          },
+          "qi_li_cost": {
+            "ratio_of_qi_li_max_at_10_power": 0.2,
+            "min": 1,
+            "max": 50,
+            "settlement": "floor_ratio_then_clamp_base_at_10_round_scale_min_1"
+          },
+          "post_effect_slot_max": 0
+        }
+      ],
+      "slots_unlock_by_level": [
+        { "level": 1, "slots": 1 }
+      ],
+      "base_power_curve": "weapon_simple",
       "max_level": 1000,
       "level_cap_skill_id": null
     },

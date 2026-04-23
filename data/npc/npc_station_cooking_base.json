@@ -10,8 +10,8 @@
   },
   "location": {
     "sceneId": "M0_Base_Inside_lv_1",
-    "x": 11,
-    "y": 11
+    "x": 13,
+    "y": 14
   },
   "mainMenu": {
     "showChat": true,
@@ -25,6 +25,66 @@
     "description": "设施 NPC：邻格点灶格走 interactNpc 打开与林经理同套菜单；闲聊走 triggers，使用灶台打开烹饪面板。"
   },
   "fallbackDialoguePoolId": "npc.station.cooking_base.fallback",
+  "fallbackPoolRules": [
+    {
+      "id": "npc.station.cooking_unlimit",
+      "repeatable": true,
+      "match_weight": 1,
+      "poolPickMode": "pick_one",
+      "poolIds": [
+        "npc.station.cooking_unlimit"
+      ],
+      "requires": [],
+      "blocks": [],
+      "condition": {
+        "type": "flagEquals",
+        "flag": "cooking_base_station_water_unlimited",
+        "value": true
+      }
+    },
+    {
+      "id": "npc.station.cooking_base",
+      "repeatable": true,
+      "match_weight": 1,
+      "poolPickMode": "pick_one",
+      "poolIds": [
+        "npc.station.cooking_base"
+      ],
+      "requires": [],
+      "blocks": [],
+      "condition": {
+        "type": "flagEquals",
+        "flag": "cooking_base_station_unlocked",
+        "value": true
+      }
+    },
+    {
+      "id": "npc.station.cooking_faulty",
+      "repeatable": true,
+      "match_weight": 1,
+      "poolPickMode": "pick_one",
+      "poolIds": [
+        "npc.station.cooking_faulty"
+      ],
+      "requires": [],
+      "blocks": [],
+      "condition": {
+        "type": "and",
+        "conds": [
+          {
+            "type": "flagEquals",
+            "flag": "cooking_base_station_repair_briefed",
+            "value": true
+          },
+          {
+            "type": "flagEquals",
+            "flag": "cooking_base_station_unlocked",
+            "value": false
+          }
+        ]
+      }
+    }
+  ],
   "tags": [
     "workbench",
     "cooking_station",

@@ -1,0 +1,95 @@
+---
+description: 新版地图近战交换口径 — 四肢出手顺序、普攻/招架肢互斥、敌先还击与先后手推迟、无存档顺位、招架日志与文案 key；改 scene-app / IE 战斗态 / CombatParry / ui_text / 07·08·14 时遵循
+globs: "**/js/scene-app.js,**/js/inventory-equipment.js,**/js/combat-parry.js,**/js/combat-pipeline.js,**/js/combat-initiative.js,**/data/ui_text_zhCN.json,**/docs/design/07-combat-core.md,**/docs/design/08-hit-parry-damage.md,**/docs/design/14-implementation.md,**/.cursor/rules/combat-initiative-exchange-agent.mdc,**/.cursor/rules/game-design-reuse-contract-from-docs.mdc"
+alwaysApply: true
+---
+
+# 地图近战交换（新版）Agent 规则
+
+策划与数值权威：**`docs/design/07-combat-core.md`**（先手、敌先还击推迟解析）、**`08-hit-parry-damage.md`**（招架承担肢与日志）、**`14-implementation.md`**（实现索引）。**速度 / 同速 dry-run / 敌人还击字段**的细节与文件表见 **`.cursor/rules/combat-initiative-exchange-agent.mdc`**；本文件只管**地图普攻肢序、互斥、意图选取与招架展示**，避免与先手规则重复造轮子。
+
+**全局合约摘要**：**`game-design-reuse-contract-from-docs.mdc`** §8.0（与 `initiative_always_first` 的合成顺序、地图敌先不回滚）。
+
+---
+
+## 1) 出手顺序（取代旧 `limbs[].priority`）
+
+| 职责 | 位置 |
+|------|------|
+| 顺序 + 游标 | **`state.combat.limb_strike_order`**（`lhand`/`rhand`/`lfoot`/`rfoot` 各出现一次的排列）、**`limb_strike_order_cursor`** |
+| 校验 / 默认 / 交换相邻 | **`js/inventory-equipment.js`**：`isValidLimbStrikeOrderArray`、`ensureLimbStrikeOrder`、`swapLimbStrikeOrderIndices` |
+| 本击后推进游标 | **`advanceLimbStrikeOrderAfterAttack(limbId)`**（本击实际出手肢在顺序表中的下一格） |
+| 选肢 + 日志 | **`js/scene-app.js`** → **`pickWorldMeleeAttackIntent(ctxMeta)`**（顺序扫描 + 跳过空槽/标签不符肢；日志 `log.combat.resolve.limb_pick_strike`） |
+
+**硬约定**
+
+- **勿**再向存档读写 **`combat.limbs[*].priority`**；旧档由 **`ensureCombatState`** 剥离该字段。UI 以 **`combat.strike_order.*`** 与战斗弹窗顺序条为准，**`combat.priority.*`** 仅作废弃说明文案。
+- 新配表、迁移或编辑器若仍写 `priority`，应删除并改为维护 **`limb_strike_order`**。
+
+---
+
+## 2) 同一次交换内：普攻肢 vs 招架肢互斥
+
+| 职责 | 位置 |
+|------|------|
+| 每交换清空 | **`SceneCtx.clearPlayerExchangeLimbLocks`**（在 **`attackEnemy`** 进入管线前调用） |
+| 登记普攻肢 | **`SceneCtx.recordPlayerExchangeAttackLimb(limbId)`**（玩家段管线落地后、非显式三件套路径） |
+| 登记招架肢 | **`SceneCtx.recordPlayerExchangeParryLimb`**（**`combat-pipeline.js`** 招架段解析出 **`guardLimb`** 后、非 dry-run） |
+| 选招架肢时排除 | **`CombatParry.resolveParryPhaseContext`** 的 **`forbiddenGuardLimbs`**（由管线从 SceneCtx 组出本 tick 已用于普攻的肢） |
+
+**语义**：同一玩家发起的一次交换内，某肢已用于**普攻出手**则不可再作为 **`guard_limb`**；躯干受击需在剩余候选中随机（见 **`CombatParry`** 与 **`08`**）。
+
+---
+
+## 3) 意图与「显式三件套」
+
+- **`explicitThree`**：`ctxMeta` 同时提供 **`skill_id`、`limb_id`、`move_id`** 时视为策划/事件**显式指定**，**不**在敌先分支内二次 **`pickWorldMeleeAttackIntent`**。
+- 否则为**地图自动普攻意图**：依赖 **`limb_strike_order` + 各肢 `move_sequences` / `move_sequence_cursors`**；敌先时须在还击后 **二次 `pick`**，并 **`recomputeSlotPowerAndPostIds`**（成数、槽位后遗症 id）。
+
+---
+
+## 4) 敌先还击与 `resolvePlayerInitiatedExchange` 调用时机
+
+与 **`combat-initiative-exchange-agent.mdc`** 一致，补充地图口径：
+
+- 当 **`floor(enemySpeed) > floor(playerSpeed)`** 且 **`!explicitThree`** 且可还击：**首次**不在选肢前调用 **`resolvePlayerInitiatedExchange`**（避免用错肢上的 **`attackerPostEffectIds`**）。
+- **敌人先手分支**内，若 **`!explicitThree`**：在二次 **`pick` + recompute** 之后**必须**再调用 **`CombatInitiative.resolvePlayerInitiatedExchange`**（终稿肢/招上的后遗症与速度合成）。
+- **不回滚**已执行的还击；若仅 **`deferInitForEnemyFirst`** 结构下终稿出现「玩家强制先手」与已发生敌先冲突，打 **`log.combat.initiative.enemy_speed_first_overrides_post_force`**。
+
+---
+
+## 5) 招架战斗日志与 `ui_text`（强制）
+
+- **承担招架 / 受击部位**的可见日志须同时包含：**可读名** + **原始 id**（`hit_part`：`head` / `chest` / `abdomen` / `left_arm` …；`guard_limb`：`lhand` …）。
+- 实现集中在 **`js/combat-parry.js`**（`formatHitPartForLog`、`formatGuardLimbForLog`、`logParryGuardLimb`、`logParryPhaseSkipped`），文案 key：
+  - 受击部位：**`combat.hit_part.*`**
+  - 肢可读名：复用 **`body.part.lhand`** 等
+  - 招架行：**`log.combat.parry.guard.*`**、**`log.combat.parry.skipped.*`**
+- 新增或改键须同步 **`data/ui_text_zhCN.json`**（**`UIText` 强校验**，缺 key 会抛错）。
+
+### 5b) 地图普攻「动作」侧游戏日志（与招架行区分）
+
+- **`log.combat.resolve.limb_pick_strike`**：`pickWorldMeleeAttackIntent` 成功抽样时写入；须含**顺序表可读名 + 原始肢 id 链**、**招架互斥肢可读名 + id**、**选用肢**、**技能/招式可读名 + id**（与新版出手顺序口径一致）。
+- **`log.combat.resolve.player_offense_skipped`**：自动抽样下四肢皆无法普攻时写入；本段跳过玩家进攻（无兜底普攻）。旧键 **`log.combat.resolve.limb_pick_none`** 已废弃。
+- **`log.system.attack.enemy`**：普攻结算后 `showMsg`（进游戏日志）；须含 **`modeTag`**（`log.system.attack.mode.explicit` / `log.system.attack.mode.auto`）与终稿 **肢 / 技能 / 招式** 可读名 + id。管线未就绪时用 **`log.system.attack.enemy.fallback`**。
+- **`log.action.move.step`**：地图 **`tryMoveTo`** 成功走一步时可选写入（与「出招」并列的**动作**粒度，便于对账坐标）。
+
+---
+
+## 6) 实现索引（速查）
+
+| 模块 | 文件 |
+|------|------|
+| 交换编排、pick、显式三件套、`deferInitForEnemyFirst` | **`js/scene-app.js`** → `attackEnemy`、`pickWorldMeleeAttackIntent`、`SceneCtx` 锁 |
+| 战斗态肢序 / 无 priority | **`js/inventory-equipment.js`** |
+| 招架上下文 + 日志 | **`js/combat-parry.js`** |
+| 管线传 `forbiddenGuardLimbs` + 登记招架肢 | **`js/combat-pipeline.js`** |
+| 先后手 API | **`js/combat-initiative.js`** |
+
+---
+
+## 7) 勿混用
+
+- **变式 / 招式槽成数 / 后遗症装配数据**：仍遵守 **`combat-variants-agent.mdc`**、**`combat-move-slot-power-agent.mdc`**、**`post-effects-agent.mdc`**。
+- **命中方位 Buff 事件**：**`combat-hit-arc-facing-agent.mdc`**。
+- 本节**不**定义命中率、减伤链、气力扣除公式；以 **`08`**、**`combat-melee-resolve`** 为准。

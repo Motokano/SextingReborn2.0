@@ -1,9 +1,10 @@
 /**
- * 玩家近战攻敌人：命中率、部位抽样、徒手原始伤害链、气力/底气扣费（与 11-skills / 14-implementation 方案 1 一致）。
+ * 玩家近战攻敌人：命中率、部位抽样、原始伤害链（徒手：筋骨底；兵器：持兵 weapon_attack_power）、气力/底气扣费。
  * 减伤链中敌人侧内功/身体/类型微调在 combat-pipeline builtin.enemy_damage_mitigation。
  */
 (function (global) {
     'use strict';
+    var DAMAGE_TYPES = ['blunt', 'slash', 'pierce'];
 
     var HIT_PART_LABEL_KEYS = {
         head: 'body.part.head',
@@ -29,6 +30,199 @@
 
     function clamp(n, lo, hi) {
         return Math.max(lo, Math.min(hi, n));
+    }
+
+    function normalizeDamageType(t) {
+        var v = String(t || '').toLowerCase();
+        return DAMAGE_TYPES.indexOf(v) >= 0 ? v : 'blunt';
+    }
+
+    function createEmptyTypedDamage() {
+        return { blunt: 0, slash: 0, pierce: 0 };
+    }
+
+    function cloneTypedDamage(src) {
+        src = src || {};
+        return {
+            blunt: Math.max(0, Number(src.blunt) || 0),
+            slash: Math.max(0, Number(src.slash) || 0),
+            pierce: Math.max(0, Number(src.pierce) || 0)
+        };
+    }
+
+    function toPct(raw) {
+        var v = Number(raw);
+        if (!isFinite(v)) return 0;
+        if (Math.abs(v) > 1) return v / 100;
+        return v;
+    }
+
+    function normalizeDamageTypeEffects(src) {
+        src = src || {};
+        var out = {
+            add_flat: createEmptyTypedDamage(),
+            add_from_pct: [],
+            increase_pct: createEmptyTypedDamage(),
+            convert_pct: { blunt_to_slash: 0, slash_to_pierce: 0 }
+        };
+        var t;
+        if (src.add_flat && typeof src.add_flat === 'object') {
+            for (t in out.add_flat) {
+                if (!out.add_flat.hasOwnProperty(t)) continue;
+                out.add_flat[t] += Number(src.add_flat[t]) || 0;
+            }
+        }
+        if (src.increase_pct && typeof src.increase_pct === 'object') {
+            for (t in out.increase_pct) {
+                if (!out.increase_pct.hasOwnProperty(t)) continue;
+                out.increase_pct[t] += toPct(src.increase_pct[t]);
+            }
+        }
+        if (Array.isArray(src.add_from_pct)) {
+            for (var i = 0; i < src.add_from_pct.length; i++) {
+                var ent = src.add_from_pct[i] || {};
+                var fromT = normalizeDamageType(ent.source || ent.from);
+                var toT = normalizeDamageType(ent.target || ent.to);
+                var pct = toPct(ent.pct != null ? ent.pct : ent.value);
+                if (!pct) continue;
+                out.add_from_pct.push({ source: fromT, target: toT, pct: pct });
+            }
+        }
+        if (src.convert_pct && typeof src.convert_pct === 'object') {
+            out.convert_pct.blunt_to_slash += toPct(src.convert_pct.blunt_to_slash);
+            out.convert_pct.slash_to_pierce += toPct(src.convert_pct.slash_to_pierce);
+        }
+        out.convert_pct.blunt_to_slash = clamp(out.convert_pct.blunt_to_slash, 0, 1);
+        out.convert_pct.slash_to_pierce = clamp(out.convert_pct.slash_to_pierce, 0, 1);
+        return out;
+    }
+
+    function mergeDamageTypeEffects(dst, src) {
+        src = normalizeDamageTypeEffects(src);
+        for (var t in dst.add_flat) {
+            if (!dst.add_flat.hasOwnProperty(t)) continue;
+            dst.add_flat[t] += src.add_flat[t];
+            dst.increase_pct[t] += src.increase_pct[t];
+        }
+        dst.convert_pct.blunt_to_slash = clamp(dst.convert_pct.blunt_to_slash + src.convert_pct.blunt_to_slash, 0, 1);
+        dst.convert_pct.slash_to_pierce = clamp(dst.convert_pct.slash_to_pierce + src.convert_pct.slash_to_pierce, 0, 1);
+        if (src.add_from_pct && src.add_from_pct.length) {
+            dst.add_from_pct = dst.add_from_pct.concat(src.add_from_pct);
+        }
+        return dst;
+    }
+
+    function extractEffectsFromCarrier(carrier) {
+        if (!carrier || typeof carrier !== 'object') return null;
+        if (carrier.damage_type_effects && typeof carrier.damage_type_effects === 'object') {
+            return carrier.damage_type_effects;
+        }
+        return null;
+    }
+
+    function resolveDamageTypeEffects(opts) {
+        opts = opts || {};
+        var merged = normalizeDamageTypeEffects(null);
+        var CA = opts.CA;
+        if (CA && typeof CA.getDamageTypeCombatModifiers === 'function') {
+            mergeDamageTypeEffects(merged, CA.getDamageTypeCombatModifiers() || null);
+        }
+        mergeDamageTypeEffects(merged, extractEffectsFromCarrier(opts.move));
+        mergeDamageTypeEffects(merged, extractEffectsFromCarrier(opts.weaponTpl));
+        return merged;
+    }
+
+    function applyTypedDamageEffects(baseTyped, effects) {
+        var typed = cloneTypedDamage(baseTyped);
+        var logs = {
+            initial: cloneTypedDamage(baseTyped),
+            afterInject: null,
+            afterIncrease1: null,
+            afterConvert: null,
+            afterIncrease2: null
+        };
+        var t;
+        for (t in typed) {
+            if (!typed.hasOwnProperty(t)) continue;
+            typed[t] += Number(effects.add_flat[t]) || 0;
+        }
+        var preBoostSnapshot = cloneTypedDamage(typed);
+        for (var i = 0; i < effects.add_from_pct.length; i++) {
+            var ent = effects.add_from_pct[i];
+            var fromV = preBoostSnapshot[ent.source] || 0;
+            typed[ent.target] += fromV * ent.pct;
+        }
+        logs.afterInject = cloneTypedDamage(typed);
+        for (t in typed) {
+            if (!typed.hasOwnProperty(t)) continue;
+            typed[t] *= (1 + (effects.increase_pct[t] || 0));
+        }
+        logs.afterIncrease1 = cloneTypedDamage(typed);
+
+        var gainedByConvert = createEmptyTypedDamage();
+        var convBS = effects.convert_pct.blunt_to_slash || 0;
+        if (convBS > 0 && typed.blunt > 0) {
+            var movedBS = typed.blunt * convBS;
+            typed.blunt -= movedBS;
+            typed.slash += movedBS;
+            gainedByConvert.slash += movedBS;
+        }
+        var convSP = effects.convert_pct.slash_to_pierce || 0;
+        if (convSP > 0 && typed.slash > 0) {
+            var movedSP = typed.slash * convSP;
+            typed.slash -= movedSP;
+            typed.pierce += movedSP;
+            gainedByConvert.pierce += movedSP;
+        }
+        logs.afterConvert = cloneTypedDamage(typed);
+
+        if (gainedByConvert.slash > 0) typed.slash += gainedByConvert.slash * (effects.increase_pct.slash || 0);
+        if (gainedByConvert.pierce > 0) typed.pierce += gainedByConvert.pierce * (effects.increase_pct.pierce || 0);
+        logs.afterIncrease2 = cloneTypedDamage(typed);
+        return {
+            typedDamage: typed,
+            stages: logs
+        };
+    }
+
+    function sumTypedDamage(typed) {
+        typed = typed || {};
+        return Math.max(0, (Number(typed.blunt) || 0) + (Number(typed.slash) || 0) + (Number(typed.pierce) || 0));
+    }
+
+    function sumPositive(arr) {
+        if (!Array.isArray(arr) || !arr.length) return 0;
+        var out = 0;
+        for (var i = 0; i < arr.length; i++) {
+            var v = Number(arr[i]);
+            if (!isFinite(v) || v <= 0) continue;
+            out += v;
+        }
+        return out;
+    }
+
+    function sumNegativeAbs(arr) {
+        if (!Array.isArray(arr) || !arr.length) return 0;
+        var out = 0;
+        for (var i = 0; i < arr.length; i++) {
+            var v = Number(arr[i]);
+            if (!isFinite(v) || v >= 0) continue;
+            out += Math.abs(v);
+        }
+        return out;
+    }
+
+    function multiplyFactors(factors, fallback) {
+        if (!Array.isArray(factors) || !factors.length) return fallback;
+        var out = 1;
+        var hasAny = false;
+        for (var i = 0; i < factors.length; i++) {
+            var v = Number(factors[i]);
+            if (!isFinite(v) || v <= 0) continue;
+            out *= v;
+            hasAny = true;
+        }
+        return hasAny ? out : fallback;
     }
 
     /**
@@ -66,6 +260,38 @@
         if (limbId === 'lfoot') return 'shoe_left';
         if (limbId === 'rfoot') return 'shoe_right';
         return 'glove_right';
+    }
+
+    function limbToWeaponSlot(limbId) {
+        if (limbId === 'lhand') return 'weapon_left';
+        if (limbId === 'rhand') return 'weapon_right';
+        return null;
+    }
+
+    function getWeaponItemTemplateForLimb(IE, limbId) {
+        var slot = limbToWeaponSlot(limbId);
+        if (!slot || !IE || typeof IE.getState !== 'function' || typeof IE.getItemTemplate !== 'function') return null;
+        var eq = IE.getState().equipment && IE.getState().equipment[slot];
+        if (!eq || !eq.item_id) return null;
+        return IE.getItemTemplate(eq.item_id) || null;
+    }
+
+    /** 兵器模板 `weapon_attack_power`（或兼容 `attack_power`）；无槽/无模板为 0 */
+    function getWeaponAttackPowerForLimb(IE, limbId) {
+        var tpl = getWeaponItemTemplateForLimb(IE, limbId);
+        if (!tpl) return 0;
+        var v = tpl.weapon_attack_power != null ? Number(tpl.weapon_attack_power)
+            : (tpl.attack_power != null ? Number(tpl.attack_power) : NaN);
+        if (!isFinite(v) || v < 0) return 0;
+        return v;
+    }
+
+    /** 兵器技能：G 取自持兵 `skill_coef`，缺省 1 */
+    function getWeaponSkillCoefForLimb(IE, limbId) {
+        var tpl = getWeaponItemTemplateForLimb(IE, limbId);
+        if (!tpl) return 1;
+        var c = tpl.skill_coef != null ? Number(tpl.skill_coef) : 1;
+        return isFinite(c) && c > 0 ? c : 1;
     }
 
     function getSkillCoefForLimb(IE, limbId) {
@@ -146,6 +372,7 @@
         if (!move) {
             return {
                 rawDamage: 0,
+                typedDamage: createEmptyTypedDamage(),
                 hitRollSuccess: false,
                 hitPart: 'chest',
                 damageType: 'blunt',
@@ -165,11 +392,18 @@
                 deferredResourceSpend: false,
                 qiIntendedForCommit: 0,
                 diqiIntendedForCommit: 0,
-                proficiencyDelta: 0
+                proficiencyDelta: 0,
+                skillTotalMult: 1,
+                expMult: 1,
+                combatExperience: 0,
+                increasedSum: 0,
+                decreasedSum: 0,
+                moreSum: 0,
+                lessSum: 0
             };
         }
 
-        var damageType = move.damage_type || 'blunt';
+        var damageType = normalizeDamageType(move.damage_type || 'blunt');
         var sk = CS.getSkill(skillId);
         var category = sk && sk.category;
 
@@ -196,7 +430,7 @@
         var uses = moveUsage[moveId] != null ? parseInt(moveUsage[moveId], 10) || 0 : 0;
         var Rmove = CS.getMoveProficiencyRatio ? CS.getMoveProficiencyRatio(uses) : 0;
         var baseL = CS.getBasePower(skillId, skillLv, null);
-        var Wskill = baseL * (1 + Rmove);
+        if (!isFinite(baseL) || baseL <= 0) baseL = 1;
 
         var breathMult = 1;
         if (IE.getCombatState) {
@@ -207,11 +441,13 @@
                 breathMult = CS.getBreathPowerMultiplier(bid, bu);
             }
         }
-        Wskill *= breathMult;
+        if (!isFinite(breathMult) || breathMult <= 0) breathMult = 1;
 
         var Mmove = move.move_power_multiplier != null ? Number(move.move_power_multiplier) : 1;
-        if (!isFinite(Mmove)) Mmove = 1;
-        var G = getSkillCoefForLimb(IE, limbId);
+        if (!isFinite(Mmove) || Mmove <= 0) Mmove = 1;
+        var G = category === 'weapon'
+            ? getWeaponSkillCoefForLimb(IE, limbId)
+            : getSkillCoefForLimb(IE, limbId);
 
         var sProbe = 0;
         if (moveId === 'swing_punch') sProbe = getBuffProbeStacks('player');
@@ -219,30 +455,104 @@
 
         var limbSlot = limbToEquipSlot(limbId);
         var dom = CA && typeof CA.getDominantLimbMultiplier === 'function' ? CA.getDominantLimbMultiplier(limbSlot) : 1;
+        if (!isFinite(dom)) dom = 1;
 
         var baseWeapon = 0;
         if (category === 'unarmed') {
             baseWeapon = CA && typeof CA.getFistBasePower === 'function' ? CA.getFistBasePower() : 0;
+        } else if (category === 'weapon') {
+            baseWeapon = getWeaponAttackPowerForLimb(IE, limbId);
+            if ((!baseWeapon || baseWeapon <= 0) && (limbId === 'lfoot' || limbId === 'rfoot')) {
+                logLine('log.combat.resolve.weapon_foot_base', { limb: String(limbId) }, 'warn');
+            }
         } else {
             baseWeapon = CA && typeof CA.getFistBasePower === 'function' ? CA.getFistBasePower() : 0;
             logLine('log.combat.resolve.weapon_fallback', {}, 'warn');
         }
 
         var pk = powerK / 10;
-        var wCoef = Wskill * Mmove * G * Kprobe;
-        var rawDamage = baseWeapon * wCoef * dom * pk;
+        /**
+         * 统一四口径：
+         * - 增加/减少：同一加性增伤区（increased/decreased）
+         * - 总增/总减：独立乘区（more/less）
+         */
+        var addTerms = [(baseL - 1), (breathMult - 1), (Mmove - 1), (G - 1), (Kprobe - 1), (dom - 1), Rmove];
+        var increasedSum = sumPositive(addTerms);
+        var decreasedSum = sumNegativeAbs(addTerms);
+        var dmgBonusAdd = increasedSum - decreasedSum;
+        var dmgBonusMult = 1 + dmgBonusAdd;
+        if (!isFinite(dmgBonusMult)) dmgBonusMult = 1;
+        if (dmgBonusMult < 0) dmgBonusMult = 0;
+        var combatExpMult = 1;
+        var combatExpVal = 0;
+        if (IE && typeof IE.getCombatExperienceDamageMultiplier === 'function') {
+            combatExpMult = IE.getCombatExperienceDamageMultiplier();
+            if (typeof IE.getCombatExperience === 'function') combatExpVal = IE.getCombatExperience();
+        }
+        if (!isFinite(combatExpMult) || combatExpMult < 1) combatExpMult = 1;
+        var moreFactors = [combatExpMult];
+        var lessFactors = [];
+        var moreMult = multiplyFactors(moreFactors, 1);
+        var lessMult = multiplyFactors(lessFactors, 1);
+        var moreSum = sumPositive([moreMult - 1]);
+        var lessSum = sumNegativeAbs([lessMult - 1]);
+        var independentMult = moreMult * lessMult;
+        var rawDamage = baseWeapon * dmgBonusMult * independentMult * pk;
         rawDamage = Math.max(0, rawDamage);
+        var baseTypedDamage = createEmptyTypedDamage();
+        baseTypedDamage[damageType] = rawDamage;
+        var triEffects = resolveDamageTypeEffects({
+            CA: CA,
+            IE: IE,
+            skillId: skillId,
+            moveId: moveId,
+            limbId: limbId,
+            move: move,
+            weaponTpl: getWeaponItemTemplateForLimb(IE, limbId)
+        });
+        var typedEval = applyTypedDamageEffects(baseTypedDamage, triEffects);
+        var typedDamage = typedEval.typedDamage;
+        rawDamage = sumTypedDamage(typedDamage);
 
         logLine('log.combat.resolve.chain', {
-            bf: String(Math.round(baseWeapon)),
-            wSkill: String(Math.round(Wskill * 100) / 100),
+            baseTag: tUi(category === 'weapon' ? 'log.combat.resolve.base_tag_weapon' : 'log.combat.resolve.base_tag_unarmed'),
+            bf: String(Math.round(baseWeapon * 100) / 100),
+            zEng: String(Math.round(dmgBonusMult * 1000) / 1000),
+            addD: String(Math.round(dmgBonusAdd * 1000) / 1000),
+            zExp: String(Math.round(independentMult * 1000) / 1000),
+            rCombatExp: String(combatExpVal),
+            rMove: String(Math.round(Rmove * 1000) / 1000),
             mMove: String(Mmove),
             g: String(G),
             kProbe: String(Math.round(Kprobe * 1000) / 1000),
             dom: String(dom),
             k: String(powerK),
-            raw: String(Math.round(rawDamage * 100) / 100)
+            raw: String(Math.round(rawDamage * 100) / 100) + ' [inc=' + Math.round(increasedSum * 1000) / 1000 +
+                ', dec=' + Math.round(decreasedSum * 1000) / 1000 +
+                ', more=' + Math.round(moreSum * 1000) / 1000 +
+                ', less=' + Math.round(lessSum * 1000) / 1000 + ']'
         });
+        logLine('log.combat.resolve.chain', {
+            baseTag: 'typed(initial/inject/inc1/convert/inc2)',
+            bf: '',
+            zEng: '',
+            addD: '',
+            zExp: '',
+            rCombatExp: '',
+            rMove: '',
+            mMove: '',
+            g: '',
+            kProbe: '',
+            dom: '',
+            k: '',
+            raw: [
+                'B:' + Math.round((typedEval.stages.initial.blunt || 0) * 100) / 100 + '/' + Math.round((typedEval.stages.initial.slash || 0) * 100) / 100 + '/' + Math.round((typedEval.stages.initial.pierce || 0) * 100) / 100,
+                'I:' + Math.round((typedEval.stages.afterInject.blunt || 0) * 100) / 100 + '/' + Math.round((typedEval.stages.afterInject.slash || 0) * 100) / 100 + '/' + Math.round((typedEval.stages.afterInject.pierce || 0) * 100) / 100,
+                'P1:' + Math.round((typedEval.stages.afterIncrease1.blunt || 0) * 100) / 100 + '/' + Math.round((typedEval.stages.afterIncrease1.slash || 0) * 100) / 100 + '/' + Math.round((typedEval.stages.afterIncrease1.pierce || 0) * 100) / 100,
+                'C:' + Math.round((typedEval.stages.afterConvert.blunt || 0) * 100) / 100 + '/' + Math.round((typedEval.stages.afterConvert.slash || 0) * 100) / 100 + '/' + Math.round((typedEval.stages.afterConvert.pierce || 0) * 100) / 100,
+                'P2:' + Math.round((typedEval.stages.afterIncrease2.blunt || 0) * 100) / 100 + '/' + Math.round((typedEval.stages.afterIncrease2.slash || 0) * 100) / 100 + '/' + Math.round((typedEval.stages.afterIncrease2.pierce || 0) * 100) / 100
+            ].join(' ')
+        }, 'combat');
 
         var qiMax = Surv && typeof Surv.getQiLiMax === 'function' ? Surv.getQiLiMax() : 100;
         var diqiMax = 0;
@@ -268,6 +578,7 @@
         var forceZeroDamageByResourceInsufficient = insufficientQi || insufficientDiqi;
         if (forceZeroDamageByResourceInsufficient) {
             rawDamage = 0;
+            typedDamage = createEmptyTypedDamage();
         }
 
         var qiSpent = 0;
@@ -298,6 +609,7 @@
 
         return {
             rawDamage: rawDamage,
+            typedDamage: typedDamage,
             hitRollSuccess: hitRollSuccess,
             hitPart: hitPart,
             damageType: damageType,
@@ -306,8 +618,17 @@
             limbId: limbId,
             powerLevel: powerK,
             hitPartModifierKey: mapHitPartToModifierKey(hitPart),
-            wSkill: Wskill,
-            wCoef: wCoef,
+            wSkill: dmgBonusMult * independentMult,
+            wCoef: dmgBonusMult,
+            skillTotalMult: 1,
+            expMult: independentMult,
+            combatExperience: combatExpVal,
+            increasedSum: increasedSum,
+            decreasedSum: decreasedSum,
+            moreSum: moreSum,
+            lessSum: lessSum,
+            moveProfRatio: Rmove,
+            skillTotalProfRatio: 0,
             baseFist: baseWeapon,
             kProbe: Kprobe,
             hitChance: P,
@@ -357,7 +678,9 @@
             dmgMax = tmp;
         }
         var rawDamage = hitRollSuccess ? Math.floor(dmgMin + Math.random() * (dmgMax - dmgMin + 1)) : 0;
-        var damageType = (tpl && tpl.attack_damage_type) ? String(tpl.attack_damage_type) : 'blunt';
+        var damageType = normalizeDamageType((tpl && tpl.attack_damage_type) ? String(tpl.attack_damage_type) : 'blunt');
+        var typedDamage = createEmptyTypedDamage();
+        typedDamage[damageType] = rawDamage;
         var skId = global.CombatInitiative && typeof global.CombatInitiative.getEnemyAttackSkillId === 'function'
             ? global.CombatInitiative.getEnemyAttackSkillId() : '__enemy_counter_attack__';
         var mvId = global.CombatInitiative && typeof global.CombatInitiative.getEnemyAttackMoveId === 'function'
@@ -365,6 +688,7 @@
 
         return {
             rawDamage: rawDamage,
+            typedDamage: typedDamage,
             hitRollSuccess: hitRollSuccess,
             hitPart: 'chest',
             damageType: damageType,
@@ -403,6 +727,9 @@
     global.CombatMeleeResolve = {
         computeIntendedResourceCost: computeIntendedResourceCost,
         mapHitPartToModifierKey: mapHitPartToModifierKey,
+        limbToWeaponSlot: limbToWeaponSlot,
+        getWeaponAttackPowerForLimb: getWeaponAttackPowerForLimb,
+        getWeaponSkillCoefForLimb: getWeaponSkillCoefForLimb,
         resolvePlayerVsEnemyAttack: resolvePlayerVsEnemyAttack,
         resolveEnemyVsPlayerAttack: resolveEnemyVsPlayerAttack,
         applyDeferredResourceSpendFromResolveResult: applyDeferredResourceSpendFromResolveResult

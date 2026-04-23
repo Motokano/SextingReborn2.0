@@ -1,0 +1,5 @@
+{
+  "schemaVersion": 1,
+  "_comment": "全 NPC 可选共用台词池。各 NPC 优先加载 data/npc/<npc_文件前缀>_dialogue_pools.json（见 npc_registry.json 的 dialogue_pools），再与本文件按池 id 合并（专用文件覆盖同名池）。",
+  "pools": {}
+}

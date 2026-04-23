@@ -24,6 +24,26 @@
     "description": "公事公办的上班族管理者"
   },
   "fallbackDialoguePoolId": "npc.supervisor.linShuyao.fallback",
+  "fallbackPoolRules": [
+    {
+      "id": "supervisor.fallback.after_meet",
+      "repeatable": true,
+      "match_weight": 2,
+      "poolIds": ["npc.supervisor.linShuyao.fallback_veteran"],
+      "requires": [],
+      "blocks": [],
+      "condition": { "type": "flagEquals", "flag": "lsy_has_talked", "value": true }
+    },
+    {
+      "id": "supervisor.fallback.stranger",
+      "repeatable": true,
+      "match_weight": 1,
+      "poolIds": ["npc.supervisor.linShuyao.fallback"],
+      "requires": [],
+      "blocks": [],
+      "condition": { "type": "flagEquals", "flag": "lsy_has_talked", "value": false }
+    }
+  ],
   "tags": [
     "supervisor",
     "guide_hidden",

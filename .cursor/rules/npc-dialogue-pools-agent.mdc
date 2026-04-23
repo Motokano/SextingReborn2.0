@@ -1,0 +1,77 @@
+---
+description: NPC 闲聊台词池分文件、注册表、运行时合并与 npc-editor 约定；改台词池/注册表/npc-system 时遵循
+globs: data/npc/**/*dialogue_pools*.json,data/npc/npc_registry.json,data/npc/dialogue_pools.json,js/npc-system.js,tools/npc-editor.html
+alwaysApply: true
+---
+
+# NPC 台词池（Dialogue Pools）Agent 规则
+
+编辑 **闲聊 fallback 台词池**、**`npc_registry.json`**、**`js/npc-system.js`** 或 **`tools/npc-editor.html`** 时遵守本节，避免回到「全 NPC 共写单一 `dialogue_pools.json`」的旧口径或路径不一致。
+
+## 1) 文件分工（硬约定）
+
+| 职责 | 路径 |
+|------|------|
+| **跨 NPC 共用池**（可选） | `data/npc/dialogue_pools.json` — `pools` 可为空壳；有则参与合并 |
+| **单 NPC 专用池** | `data/npc/{npc_id 点改下划线}_dialogue_pools.json`（与 NPC 本体 `*.json` 同前缀，后缀 `_dialogue_pools.json`） |
+| **路径登记** | `data/npc/npc_registry.json` → `npcs[npcId].dialogue_pools`（推荐显式写出，与 `def` / `triggers` 并列） |
+
+## 2) 运行时合并语义（`js/npc-system.js`）
+
+- **加载顺序**：先 `fetch` **共用** `data/npc/dialogue_pools.json`，再 `fetch` **该 NPC 专用**文件（来源见下）。
+- **专用路径解析**：`resolveNpcFiles(npcId)` 后 — 若注册表项含非空 **`dialogue_pools`** 则用其 URL；**否则**用 **`def`** 路径将末尾 `.json` 替换为 **`_dialogue_pools.json`** 推导。
+- **合并规则**：`pools` 对象先铺共用表的所有键，再铺专用表；**同名 `pool_id` 以专用文件为准（覆盖）**。
+- **缓存**：按 `npcId` 缓存合并结果；**`NPCSystem.reloadDialoguePools()`** 须清空该缓存（勿只清单一全局变量）。
+- **闲聊抽句**：`fallbackDialoguePoolId`、`fallbackPoolRules` 等均在 **合并后的文档** 上解析（含 `includePools` / `composeMode` 等既有语义）。
+- **`fallbackPoolRules` 命中语义**：数组**从上到下**依次检测；**同一轮闲聊仅第一条**同时通过（`id` / `repeatable` 与 triggered / `requires` / `blocks` / `condition` / 有池 id）的规则生效，其后条目不再参与。**不再**使用 `match_weight` 做多条加权随机（字段可留档兼容，运行时忽略）。
+
+## 3) 注册表（`npc_registry.json`）
+
+- 每个 `npcs[npcId]` 建议包含：**`def`**、**`triggers`**、**`dialogue_pools`**。
+- **`dialogue_pools` 缺省**：运行时按 **`def` 同前缀** 推导 `*_dialogue_pools.json`（实现须与上节一致）；仍推荐在注册表里**显式写出**，便于工具与人工对账。
+
+## 4) 编辑器（`tools/npc-editor.html`）
+
+- **读写路径**：台词池的载入/保存/绑定目录写入，一律针对 **当前 NPC id** 的 **`getDialoguePoolsJsonPath()`** → `data/npc/<id_underscore>_dialogue_pools.json`；**不要**把当前 NPC 的池默认写进全局 `dialogue_pools.json`。
+- **「从目录打开 NPC」**：列举 `data/npc/*.json` 时须 **排除** `*_triggers.json`、**`*_dialogue_pools.json`**、`npc_registry.json`、以及历史名单里的 **`dialogue_pools.json`**（若仍单独存在），避免误开成「NPC 本体」。
+- **「更新注册表」**：合并写入 `npcs[npcId]` 时须包含 **`dialogue_pools`** 字段，且与 `def` 文件名前缀一致。
+- **导出 `lines[]`**：须保留 **`string` 或 `{ speaker, text, avatar? }`**（与事件 `linesRich` 对齐）；**禁止**把对象行 `String(x)` 导出成 `[object Object]`；应使用与表单一致的 **规范化 → `poolLineToPersist`** 路径。
+- **`fallbackPoolRules` 顺序**：分部规则卡片 **左侧手柄（⠿）+ 标题栏** 可 **拖到另一条规则卡片上** 完成重排（与运行时「自上而下首条命中」一致）；勿依赖 **`match_weight`**。
+- **保存口径（高频误区）**：
+ - `fallbackPoolRules` 与 `fallbackDialoguePoolId` 存在 **`data/npc/<id>.json`（NPC 本体）**，不在 `*_dialogue_pools.json`。
+ - `*_dialogue_pools.json` 仅保存 `pools`（台词池内容）。
+ - 因此改了规则顺序/条件后，只保存「台词池表」不会生效；必须再保存 **NPC 文件**。
+- **一键内存保存**：工具栏 `保存到内存` 仅把 NPC/事件/台词池写回内存状态（便于继续编辑），**不会**下载文件；落盘仍需分别点 `保存 NPC / 保存事件 / 保存台词池表`。
+
+## 4b) 无限制用水（示例口径）
+
+- 事件 `station.cooking.main_water_unlimited` 若需驱动后续 fallback 规则，推荐在 triggers `effects` 内显式写：
+ - `setFlag: cooking_base_station_water_unlimited = true`
+- 对应 fallback 规则建议使用：
+ - `condition: { type: "flagEquals", flag: "cooking_base_station_water_unlimited", value: true }`
+ - 避免写互相矛盾的 `requires` + `blocks`（同一 id 同时要求“已触发且未触发”会导致永不命中）。
+
+## 5) 新增 NPC 时的清单
+
+1. `data/npc/<prefix>.json`（NPC def）  
+2. `data/npc/<prefix>_triggers.json`  
+3. `data/npc/<prefix>_dialogue_pools.json`（专用台词池，可与空 `pools` 起盘）  
+4. `npc_registry.json` 补 **三条路径**（含 **`dialogue_pools`**）
+
+## 5b) 设施台（灶台/制药台）与 NPC 绑定口径
+
+- 地图设施格若要走 `interactNpc` 菜单链路，需在地图写绑定：
+ - 灶台：`cooking_station_interact_npc_by_cell["x,y"]`（或回退 `cooking_station_interact_npc_id`）
+ - 制药台：`pharmacy_station_interact_npc_by_cell["x,y"]`（或回退 `pharmacy_station_interact_npc_id`）
+- 运行时（`game-engine` / `scene-app`）约定：**有绑定 NPC 时**，邻格点台格优先走 `interactNpc`；**无绑定**才直接开对应工作台面板。
+- 设施 NPC 本体 `mainMenu` 开关：
+ - 灶台使用 `showOpenCookingPanel`
+ - 制药台使用 `showOpenPharmacyPanel`
+- 设施 NPC `tags` 建议分别使用 `cooking_station` / `pharmacy_station`，供菜单按钮与工具筛选复用。
+- 若需要「修好前禁止使用工作台」，门控应与是否绑定设施 NPC 一致；不要只在 UI 按钮层做锁定而绕开 `tryCookAtStation` / `tryPharmacyAtStation` 的运行时拦截。
+
+## 6) 禁止事项
+
+- **禁止**把各 NPC 独有的大量池子只堆在全局 `dialogue_pools.json` 而不提供专用文件（除非刻意设计为全服共用池 id）。
+- **禁止**在运行时再维护第二套「未合并的」台词池真相；闲聊入口必须走 **`loadDialoguePoolsForNpc`（或等价）** 的合并结果。
+- **禁止**编辑器与运行时对「专用文件名 / 注册表字段」的约定互相矛盾（以 **`npc_registry` + `def` 前缀推导** 为单一文件名真相）。

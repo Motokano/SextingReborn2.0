@@ -1,0 +1,32 @@
+{
+  "schemaVersion": 1,
+  "pools": {
+    "npc.station.cooking_base.fallback": {
+      "lines": [
+        "一个灶台，平平无奇。"
+      ]
+    },
+    "npc.station.cooking_base": {
+      "lines": [
+        "修好了的灶台，还有不少空间放各类厨具。",
+        "修好了的灶台，有一节破损的水管，似乎原本是有水龙头的，如果能能带点材料说不定可以修好"
+      ],
+      "includePools": [
+        "npc.station.cooking_base"
+      ],
+      "composeMode": "pick_pool"
+    },
+    "npc.station.cooking_unlimit": {
+      "lines": [
+        "做饭用的灶台，修好了水管，现在可以直接从水龙头接水用，但是记得别喝生水。"
+      ],
+      "composeMode": "pick_pool"
+    },
+    "npc.station.cooking_faulty": {
+      "lines": [
+        "如果有粘土、柴火还有锅的话可以尝试修一下。"
+      ],
+      "composeMode": "pick_pool"
+    }
+  }
+}

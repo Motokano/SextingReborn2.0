@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>战斗技能配置面板 - 本地预览</title>
+    
+    <!-- 1. 加载核心库 (国内高速 CDN) -->
+    <script src="https://cdn.staticfile.org/react/18.2.0/umd/react.production.min.js"></script>
+    <script src="https://cdn.staticfile.org/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+    <script src="https://cdn.staticfile.org/babel-standalone/7.22.10/babel.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;700;900&display=swap');
+        body { 
+            font-family: 'Noto Serif SC', serif; 
+            margin: 0;
+            background-color: #1a1512;
+        }
+        /* 自定义滚动条 */
+        .custom-scroll::-webkit-scrollbar { width: 4px; }
+        .custom-scroll::-webkit-scrollbar-track { background: transparent; }
+        .custom-scroll::-webkit-scrollbar-thumb { background: #4d4d45; border-radius: 10px; }
+        
+        /* 简单动画 */
+        @keyframes pulse-soft {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        .animate-pulse-soft {
+            animation: pulse-soft 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        // --- 内部图标库 (SVG 方案，完全解决依赖报错) ---
+        const Icons = {
+            Shield: ({size=18, className=""}) => (
+                <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+            ),
+            Swords: ({size=18, className=""}) => (
+                <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><polyline points="14.5 17.5 3 6 3 3 6 3 17.5 14.5"/><line x1="13" y1="19" x2="19" y2="13"/><line x1="16" y1="16" x2="20" y2="20"/><line x1="19" y1="21" x2="20" y2="20"/></svg>
+            ),
+            Wind: ({size=18, className=""}) => (
+                <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M9.59 4.59A2 2 0 1 1 11 8H2"/><path d="M12.59 19.41A2 2 0 1 0 14 16H2"/><path d="M15.83 7.17A2 2 0 1 0 17 4H2"/></svg>
+            ),
+            Footprints: ({size=18, className=""}) => (
+                <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M4 16v-2.38C4 11.5 5.88 9 8.5 9s4.5 2.5 4.5 4.62V16"/><path d="M11 16v-2.38C11 11.5 12.88 9 15.5 9s4.5 2.5 4.5 4.62V16"/><path d="M12 19v-1"/><path d="M8 19v-1"/><path d="M16 19v-1"/></svg>
+            ),
+            ChevronRight: ({size=18, className=""}) => (
+                <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><polyline points="9 18 15 12 9 6"/></svg>
+            ),
+            Plus: ({size=18, className=""}) => (
+                <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            ),
+            Minus: ({size=18, className=""}) => (
+                <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            ),
+            X: ({size=18, className=""}) => (
+                <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            ),
+            Info: ({size=18, className=""}) => (
+                <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+            ),
+            Zap: ({size=18, className=""}) => (
+                <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+            ),
+            Layers: ({size=18, className=""}) => (
+                <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>
+            ),
+            CircleDot: ({size=18, className=""}) => (
+                <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="1"/></svg>
+            )
+        };
+
+        // --- 视觉常量定义 ---
+        const COLORS = {
+          bg: 'bg-[#1a1512]',
+          surface: 'bg-[#2d2d28]',
+          surfaceAlt: 'bg-[#252520]',
+          border: 'border-[#4d4d45]',
+          accent: 'text-[#d3a060]',
+          accentBg: 'bg-[#d3a060]',
+          highlight: 'text-[#ff8c00]',
+          highlightBorder: 'border-[#ff8c00]',
+          highlightGlow: 'shadow-[0_0_15px_rgba(255,140,0,0.3)]',
+          danger: 'text-[#a93226]',
+          textPrimary: 'text-[#e0d7c6]',
+          textDim: 'text-[#8e8e8e]',
+        };
+
+        const App = () => {
+          const [activeTab, setActiveTab] = React.useState('skills');
+          const [selectedCat, setSelectedCat] = React.useState('unarmed');
+          const [selectedLimb, setSelectedLimb] = React.useState('rhand');
+          const [strikeOrder, setStrikeOrder] = React.useState(['lhand', 'rhand', 'lfoot', 'rfoot']);
+          const [cursorIndex, setCursorIndex] = React.useState(1); // 默认游标
+          const [powerLevels, setPowerLevels] = React.useState([8, null, 10, 4]);
+
+          const limbsData = {
+            lhand: { label: '左手', icon: <Icons.CircleDot size={14}/> },
+            rhand: { label: '右手', icon: <Icons.CircleDot size={14}/> },
+            lfoot: { label: '左脚', icon: <Icons.Footprints size={14}/> },
+            rfoot: { label: '右脚', icon: <Icons.Footprints size={14}/> },
+          };
+
+          const categories = [
+            { id: 'unarmed', label: '徒手', icon: <Icons.Swords size={20}/> },
+            { id: 'weapon', label: '兵器', icon: <Icons.Layers size={20}/> },
+            { id: 'parry', label: '招架', icon: <Icons.Shield size={20}/> },
+            { id: 'breath', label: '呼吸', icon: <Icons.Wind size={20}/> },
+            { id: 'footwork', label: '步法', icon: <Icons.Footprints size={20}/> },
+          ];
+
+          const swapOrder = (idxA, idxB) => {
+            const newOrder = [...strikeOrder];
+            [newOrder[idxA], newOrder[idxB]] = [newOrder[idxB], newOrder[idxA]];
+            setStrikeOrder(newOrder);
+          };
+
+          const adjustPower = (idx, delta) => {
+            const newLevels = [...powerLevels];
+            const current = newLevels[idx] || 7;
+            newLevels[idx] = Math.max(1, Math.min(12, current + delta));
+            setPowerLevels(newLevels);
+          };
+
+          // 出手顺序 Chip
+          const StrikeOrderChip = ({ id, index, isCursor }) => (
+            <div className="flex items-center gap-2 group">
+              <div className={`
+                flex items-center px-4 py-2 rounded ${COLORS.surfaceAlt} border-2 transition-all duration-300
+                ${isCursor ? `${COLORS.highlightBorder} ${COLORS.highlightGlow} scale-105` : COLORS.border}
+              `}>
+                <span className={`text-[10px] font-black mr-2 ${isCursor ? COLORS.highlight : COLORS.textDim}`}>
+                  {index + 1}
+                </span>
+                <span className={`text-sm font-bold tracking-widest ${isCursor ? COLORS.textPrimary : COLORS.textDim}`}>
+                  {limbsData[id].label}
+                </span>
+                {isCursor && <div className={`ml-2 w-2 h-2 rounded-full ${COLORS.highlightBg} animate-pulse`} />}
+              </div>
+              {index < 3 && (
+                <button 
+                  onClick={() => swapOrder(index, index + 1)}
+                  className={`p-2 ${COLORS.textDim} hover:${COLORS.highlight} transition-colors min-w-[44px] flex justify-center`}
+                  title="交换顺序"
+                >
+                  <Icons.ChevronRight size={18} />
+                </button>
+              )}
+            </div>
+          );
+
+          // 招式节点
+          const MoveNode = ({ index, type = 'move', name, power, isParry = false }) => (
+            <div className={`
+              relative min-w-[160px] flex-1 p-3 rounded border-2 transition-all
+              ${COLORS.surface} ${COLORS.border} hover:border-[#666]
+            `}>
+              <div className="flex justify-between items-start mb-2">
+                <span className={`text-[10px] font-black ${COLORS.textDim}`}>0{index + 1}</span>
+                {type === 'variant' && (
+                  <span className={`text-[10px] px-1.5 py-0.5 rounded bg-purple-900/30 text-purple-400 border border-purple-800 uppercase`}>
+                    变式
+                  </span>
+                )}
+              </div>
+              <div className={`text-sm font-bold mb-3 ${COLORS.textPrimary} tracking-wide`}>
+                {type === 'variant' ? `[${name}]` : name}
+              </div>
+              {type === 'move' && !isParry && (
+                <div className="flex items-center justify-between mt-auto pt-2 border-t border-[#3d3d38]">
+                  <button 
+                    onClick={(e) => { e.stopPropagation(); adjustPower(index, -1); }}
+                    className={`w-8 h-8 flex items-center justify-center rounded ${COLORS.surfaceAlt} ${COLORS.textDim} hover:${COLORS.highlight} transition-colors`}
+                  >
+                    <Icons.Minus size={14} />
+                  </button>
+                  <span className={`text-xs font-black ${COLORS.highlight}`}>{power || 7}成</span>
+                  <button 
+                    onClick={(e) => { e.stopPropagation(); adjustPower(index, 1); }}
+                    className={`w-8 h-8 flex items-center justify-center rounded ${COLORS.surfaceAlt} ${COLORS.textDim} hover:${COLORS.highlight} transition-colors`}
+                  >
+                    <Icons.Plus size={14} />
+                  </button>
+                </div>
+              )}
+              {type === 'move' && !isParry && (
+                <div className="absolute -bottom-2 -right-1">
+                  <div className={`w-5 h-5 rounded-full ${COLORS.bg} ${COLORS.border} border flex items-center justify-center shadow-lg`}>
+                    <Icons.Zap size={10} className={COLORS.highlight} />
+                  </div>
+                </div>
+              )}
+            </div>
+          );
+
+          const isGlobalHub = selectedCat === 'breath' || selectedCat === 'footwork';
+
+          return (
+            <div className={`fixed inset-0 ${COLORS.bg} flex items-center justify-center p-4 md:p-8 font-serif select-none`}>
+              <div className={`w-full max-w-7xl h-full max-h-[850px] ${COLORS.surface} rounded-lg border-2 ${COLORS.border} flex flex-col overflow-hidden shadow-2xl`}>
+                
+                {/* Header */}
+                <div className={`h-14 flex items-center justify-between px-6 border-b-2 ${COLORS.border} ${COLORS.bg}`}>
+                  <div className="flex items-center gap-8">
+                    <h1 className={`text-xl font-black tracking-tighter ${COLORS.textPrimary}`}>战斗配置</h1>
+                    <nav className="flex gap-4">
+                      {['skills', 'acupoints'].map(tab => (
+                        <button 
+                          key={tab}
+                          onClick={() => setActiveTab(tab)}
+                          className={`px-4 py-1 text-sm font-bold border-b-2 transition-colors ${activeTab === tab ? 'border-[#ff8c00] text-[#ff8c00]' : 'border-transparent text-[#8e8e8e]'}`}
+                        >
+                          {tab === 'skills' ? '技能' : '穴位'}
+                        </button>
+                      ))}
+                    </nav>
+                  </div>
+                  <button className={`${COLORS.textDim} hover:text-white transition-colors p-2`}>
+                    <Icons.X size={24} />
+                  </button>
+                </div>
+
+                <div className="flex-1 flex overflow-hidden">
+                  {/* Left Column: Categories */}
+                  <div className={`w-20 border-r-2 ${COLORS.border} flex flex-col py-4 gap-4 items-center ${COLORS.surfaceAlt}`}>
+                    {categories.map(cat => (
+                      <button
+                        key={cat.id}
+                        onClick={() => setSelectedCat(cat.id)}
+                        className={`w-14 h-14 flex flex-col items-center justify-center rounded transition-all gap-1 ${selectedCat === cat.id ? `${COLORS.accentBg} text-[#1a1512] shadow-inner` : `${COLORS.textDim} hover:bg-[#3d3d38]`}`}
+                      >
+                        {cat.icon}
+                        <span className="text-[10px] font-black">{cat.label}</span>
+                      </button>
+                    ))}
+                  </div>
+
+                  {/* Middle Column: Skill List */}
+                  <div className={`w-72 border-r-2 ${COLORS.border} flex flex-col ${COLORS.bg}/30 overflow-y-auto custom-scroll p-4 gap-3`}>
+                    <div className={`p-4 rounded border-2 ${COLORS.highlightBorder} ${COLORS.surface} shadow-lg cursor-pointer transition-all`}>
+                      <div className="flex justify-between items-start mb-1">
+                        <span className="font-bold text-sm">太极拳</span>
+                        <span className={`text-[10px] font-black ${COLORS.highlight}`}>L8</span>
+                      </div>
+                      <div className="w-full h-1 bg-[#1a1512] rounded-full mt-2 overflow-hidden">
+                        <div className={`h-full ${COLORS.accentBg} w-[45%]`}></div>
+                      </div>
+                      <span className={`text-[10px] ${COLORS.textDim} mt-1 block uppercase font-black`}>熟练: 45%</span>
+                    </div>
+                    {[1, 2, 3, 4].map(i => (
+                      <div key={i} className={`p-4 rounded border-2 ${COLORS.border} ${COLORS.surface} opacity-60 hover:opacity-100 transition-all cursor-pointer`}>
+                        <div className="flex justify-between items-start mb-1">
+                          <span className="font-bold text-sm">示例武学 {i}</span>
+                          <span className={`text-[10px] font-black ${COLORS.textDim}`}>L12</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Right Column: Configuration */}
+                  <div className="flex-1 flex flex-col overflow-y-auto custom-scroll p-8 gap-8">
+                    {/* 1. Strike Order */}
+                    <section className="space-y-4">
+                      <div className="flex items-center gap-2">
+                        <h2 className={`text-xs font-black uppercase tracking-widest ${COLORS.textDim}`}>出手顺序 · Strike Order</h2>
+                        <Icons.Info size={12} className={COLORS.textDim} />
+                      </div>
+                      <div className="flex items-center flex-wrap gap-y-4">
+                        {strikeOrder.map((id, index) => (
+                          <StrikeOrderChip key={id} id={id} index={index} isCursor={index === cursorIndex} />
+                        ))}
+                      </div>
+                    </section>
+
+                    {/* 2. Limb Deployment */}
+                    <section className="space-y-4 relative">
+                      <div className="flex justify-between items-end">
+                        <h2 className={`text-xs font-black uppercase tracking-widest ${COLORS.textDim}`}>肢体配置 · Limb Deployment</h2>
+                        <button className={`px-6 py-2 rounded font-black text-xs uppercase tracking-widest transition-all ${COLORS.accentBg} text-[#1a1512] hover:scale-105 active:scale-95 shadow-lg`}>
+                          部署到 {limbsData[selectedLimb].label} 进攻槽
+                        </button>
+                      </div>
+
+                      <div className={`grid grid-cols-2 gap-4 transition-all duration-500 ${isGlobalHub ? 'blur-md opacity-20 pointer-events-none grayscale' : ''}`}>
+                        {Object.keys(limbsData).map(id => (
+                          <div 
+                            key={id}
+                            onClick={() => setSelectedLimb(id)}
+                            className={`p-4 rounded border-2 transition-all flex flex-col gap-3 cursor-pointer ${selectedLimb === id ? `${COLORS.highlightBorder} ${COLORS.surface}` : `${COLORS.border} ${COLORS.surfaceAlt} hover:border-[#666]`}`}
+                          >
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center gap-2">
+                                <span className={selectedLimb === id ? COLORS.highlight : COLORS.textDim}>{limbsData[id].icon}</span>
+                                <span className={`text-xs font-black ${selectedLimb === id ? COLORS.textPrimary : COLORS.textDim}`}>{limbsData[id].label}</span>
+                              </div>
+                              <div className={`text-[10px] font-black px-1.5 py-0.5 rounded ${COLORS.bg} ${COLORS.textDim}`}>
+                                位置 {strikeOrder.indexOf(id) + 1}
+                              </div>
+                            </div>
+                            <div className="grid grid-cols-2 gap-2">
+                              <div className={`text-[10px] p-2 rounded border border-dashed ${COLORS.border} ${COLORS.textDim} flex flex-col items-center bg-black/10`}>
+                                <span className="mb-1 opacity-50 uppercase tracking-tighter text-[8px]">Active</span>
+                                <span className="font-bold text-white tracking-widest">太极拳</span>
+                              </div>
+                              <div className={`text-[10px] p-2 rounded border border-dashed ${COLORS.border} ${COLORS.textDim} flex flex-col items-center bg-black/5`}>
+                                <span className="mb-1 opacity-50 uppercase tracking-tighter text-[8px]">Parry</span>
+                                <span className="italic">空槽</span>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+
+                      {isGlobalHub && (
+                        <div className="absolute inset-0 flex items-center justify-center z-10">
+                          <div className={`px-8 py-12 rounded-lg border-2 border-dashed ${COLORS.highlightBorder} ${COLORS.bg} text-center space-y-4 shadow-2xl`}>
+                            <Icons.Wind size={40} className={`mx-auto ${COLORS.highlight} animate-pulse-soft`} />
+                            <p className={`text-sm font-black tracking-widest ${COLORS.textPrimary}`}>
+                              当前选中全局枢纽 · 正在载入配置
+                            </p>
+                          </div>
+                        </div>
+                      )}
+                    </section>
+
+                    {/* 3. Move Sequence */}
+                    <section className="space-y-4">
+                      <h2 className={`text-xs font-black uppercase tracking-widest ${COLORS.textDim}`}>招式序列 · Move Sequence ({limbsData[selectedLimb].label})</h2>
+                      <div className="flex flex-wrap gap-4">
+                        <MoveNode index={0} name="揽雀尾" power={powerLevels[0]} />
+                        <MoveNode index={1} type="variant" name="柔劲" />
+                        <MoveNode index={2} name="单鞭" power={powerLevels[2]} />
+                        <MoveNode index={3} name="提手上势" power={powerLevels[3]} />
+                        <div className={`flex-1 min-w-[160px] h-24 border-2 border-dashed ${COLORS.border} rounded flex items-center justify-center ${COLORS.surfaceAlt} hover:border-[#666] cursor-pointer group transition-all`}>
+                           <div className="flex flex-col items-center gap-1">
+                            <Icons.Plus size={20} className={`${COLORS.textDim} group-hover:${COLORS.highlight}`} />
+                            <span className={`text-[10px] font-black uppercase tracking-widest ${COLORS.textDim}`}>空位待装配</span>
+                           </div>
+                        </div>
+                      </div>
+                    </section>
+                  </div>
+                </div>
+
+                {/* Footer Bar */}
+                <div className={`h-8 flex items-center px-6 ${COLORS.bg} border-t-2 ${COLORS.border} justify-between text-[10px] font-black uppercase tracking-widest`}>
+                  <div className="flex gap-6">
+                     <span className={COLORS.textDim}>系统版本: V4.2_NODE_SYNC</span>
+                     <span className={COLORS.highlight}>部署状态: 核心就绪</span>
+                  </div>
+                  <div className={COLORS.textDim}>
+                    普攻逻辑: 从环形扫描起点依次尝试
+                  </div>
+                </div>
+              </div>
+              <div className="absolute inset-0 pointer-events-none shadow-[inset_0_0_200px_rgba(0,0,0,0.8)] z-[-1] opacity-90" />
+            </div>
+          );
+        };
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>

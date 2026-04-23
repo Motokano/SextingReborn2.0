@@ -112,8 +112,10 @@
   "base_speed_no_footwork": 1,
   "base_speed_no_qinggong": 1,
 
+  "fist_jingu_divisor": 5,
   "fist_power_cap": 650,
   "fist_jingu_scale": 450,
+  "_fist_base_note": "徒手拳底已改为有效筋骨/fist_jingu_divisor（默认5）；fist_power_cap、fist_jingu_scale 仅保留兼容旧文档/工具，运行时拳底不再读取二者。",
   "base_defense_D_factor": 3,
   "dominant_limb_damage_mult": 1.1,
   "non_dominant_limb_damage_mult": 0.9,

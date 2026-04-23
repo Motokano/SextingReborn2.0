@@ -1,0 +1,10 @@
+action_id,display_name,description,usable_in_stage
+none,不操作,本窗口不执行任何干预动作,state
+turn_pile,翻堆,翻动物料以改善通气并均衡温湿,state
+add_water,补水,向堆体补充水分以缓解偏干,state
+ventilate,通风,增强空气交换以降低过热和厌氧风险,state
+cover_keepwarm,覆盖保温,保留热量以帮助温升较慢的批次,state
+break_clumps,打散结块,打散团聚块体以恢复内部通气,state
+remove_contaminant,清理杂质,移除异常杂质以降低污染影响,state
+vent_gas,放气,拧开排气阀释放厌氧发酵积气,state
+leave_as_is,放置不理,不做放气处理并维持当前状态,state

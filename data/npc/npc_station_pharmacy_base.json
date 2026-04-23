@@ -1,0 +1,76 @@
+{
+  "schemaVersion": 1,
+  "id": "npc.station.pharmacy_base",
+  "name": "破损的制药台",
+  "displayTitle": "制药台",
+  "sprite": "",
+  "appearanceSchedule": {
+    "start": "00:00",
+    "end": "23:59"
+  },
+  "location": {
+    "sceneId": "M0_Base_Inside_lv_1",
+    "x": 14,
+    "y": 14
+  },
+  "mainMenu": {
+    "showChat": true,
+    "showWorkWhen": "never",
+    "showOpenPharmacyPanel": true,
+    "showLeave": true
+  },
+  "behavior": {
+    "type": "workbench",
+    "origin": "base_hideout",
+    "description": "设施 NPC：邻格点制药台格走 interactNpc；闲聊走 triggers，使用制药台打开制药面板。"
+  },
+  "fallbackDialoguePoolId": "npc.station.pharmacy_base.fallback",
+  "fallbackPoolRules": [
+    {
+      "id": "npc.station.pharmacy_base",
+      "repeatable": true,
+      "match_weight": 1,
+      "poolPickMode": "pick_one",
+      "poolIds": [
+        "npc.station.pharmacy_base"
+      ],
+      "requires": [],
+      "blocks": [],
+      "condition": {
+        "type": "flagEquals",
+        "flag": "npc_station_pharmacy_base_repaired",
+        "value": true
+      }
+    },
+    {
+      "id": "npc.station.pharmacy_faulty",
+      "repeatable": true,
+      "match_weight": 1,
+      "poolPickMode": "pick_one",
+      "poolIds": [
+        "npc.station.pharmacy_faulty"
+      ],
+      "requires": [],
+      "blocks": [],
+      "condition": {
+        "type": "and",
+        "conds": [
+          {
+            "type": "flagEquals",
+            "flag": "pharmacy_base_station_repair_briefed",
+            "value": true
+          },
+          {
+            "type": "flagEquals",
+            "flag": "npc_station_pharmacy_base_repaired",
+            "value": false
+          }
+        ]
+      }
+    }
+  ],
+  "tags": [
+    "workbench",
+    "pharmacy_station"
+  ]
+}

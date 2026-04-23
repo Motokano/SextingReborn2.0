@@ -1,0 +1,159 @@
+{
+  "npcId": "npc.station.compost_base",
+  "entries": [
+    {
+      "id": "station.compost.repair_intro",
+      "entryType": "dialogue",
+      "entrySource": "chat",
+      "condition": {
+        "type": "and",
+        "conds": [
+          {
+            "type": "flagEquals",
+            "flag": "npc_station_compost_base_repaired",
+            "value": false
+          },
+          {
+            "type": "flagEquals",
+            "flag": "compost_base_station_repair_briefed",
+            "value": false
+          }
+        ]
+      },
+      "requires": [],
+      "blocks": [],
+      "dialogue": {
+        "linesRich": [
+          {
+            "speaker": "narration",
+            "text": "制肥桶木箍松了，桶身还渗着缝。先把它修稳，才能放心做堆肥。",
+            "avatar": ""
+          }
+        ],
+        "lines": [
+          "制肥桶木箍松了，桶身还渗着缝。先把它修稳，才能放心做堆肥。"
+        ],
+        "hasOptions": false,
+        "options": []
+      },
+      "effects": [
+        {
+          "type": "setFlag",
+          "params": {
+            "flag": "compost_base_station_repair_briefed",
+            "value": true
+          }
+        }
+      ],
+      "repeatable": false,
+      "scope": "global",
+      "causesNpcDisappear": false
+    },
+    {
+      "id": "station.compost.repair_unlock",
+      "entryType": "dialogue",
+      "entrySource": "chat",
+      "condition": {
+        "type": "and",
+        "conds": [
+          {
+            "type": "flagEquals",
+            "flag": "npc_station_compost_base_repaired",
+            "value": false
+          },
+          {
+            "type": "flagEquals",
+            "flag": "compost_base_station_repair_briefed",
+            "value": true
+          },
+          {
+            "type": "hasItem",
+            "itemId": "ore_clay_raw",
+            "count": 1
+          },
+          {
+            "type": "hasItem",
+            "itemId": "wood_firewood",
+            "count": 1
+          }
+        ]
+      },
+      "requires": [
+        "station.compost.repair_intro"
+      ],
+      "blocks": [],
+      "dialogue": {
+        "linesRich": [
+          {
+            "speaker": "narration",
+            "text": "你把桶箍重新勒紧，抹上黏土封住缝隙，再垫上干柴烘干。制肥桶总算稳住了。",
+            "avatar": ""
+          }
+        ],
+        "lines": [
+          "你把桶箍重新勒紧，抹上黏土封住缝隙，再垫上干柴烘干。制肥桶总算稳住了。"
+        ],
+        "hasOptions": false,
+        "options": []
+      },
+      "effects": [
+        {
+          "type": "removeItem",
+          "params": {
+            "itemId": "ore_clay_raw",
+            "count": 1,
+            "strict": true
+          }
+        },
+        {
+          "type": "removeItem",
+          "params": {
+            "itemId": "wood_firewood",
+            "count": 1,
+            "strict": true
+          }
+        },
+        {
+          "type": "setFlag",
+          "params": {
+            "flag": "npc_station_compost_base_repaired",
+            "value": true
+          }
+        }
+      ],
+      "repeatable": false,
+      "scope": "global",
+      "causesNpcDisappear": false
+    },
+    {
+      "id": "station.compost.repaired_idle",
+      "entryType": "dialogue",
+      "entrySource": "chat",
+      "condition": {
+        "type": "flagEquals",
+        "flag": "npc_station_compost_base_repaired",
+        "value": true
+      },
+      "requires": [],
+      "blocks": [],
+      "dialogue": {
+        "linesRich": [
+          {
+            "speaker": "narration",
+            "text": "制肥桶现在能用了。点桶打开菜单，再选「使用制肥桶」进入堆肥界面。",
+            "avatar": ""
+          }
+        ],
+        "lines": [
+          "制肥桶现在能用了。点桶打开菜单，再选「使用制肥桶」进入堆肥界面。"
+        ],
+        "hasOptions": false,
+        "options": []
+      },
+      "effects": [],
+      "repeatable": false,
+      "scope": "global",
+      "causesNpcDisappear": false
+    }
+  ]
+}

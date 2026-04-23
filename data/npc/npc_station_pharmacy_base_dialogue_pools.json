@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "pools": {
+    "npc.station.pharmacy_base.fallback": {
+      "lines": [
+        "一张制药台，台面裂了缝。"
+      ]
+    },
+    "npc.station.pharmacy_base": {
+      "lines": [
+        "台面补好了，可以固定小锅和研钵，慢慢试配方。",
+        "记得先装工具再选工艺；燃料不够的话这口台子也烧不起来。"
+      ],
+      "includePools": [
+        "npc.station.pharmacy_base"
+      ],
+      "composeMode": "pick_pool"
+    },
+    "npc.station.pharmacy_faulty": {
+      "lines": [
+        "有黏土、干柴，再配一把制药用的小擀杖，或许能把台面裂缝糊住。"
+      ],
+      "composeMode": "pick_pool"
+    }
+  }
+}

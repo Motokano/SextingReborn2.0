@@ -26,10 +26,31 @@
     var displayTierThreshold1 = null;
     var displayTierThreshold2 = null;
 
+    /** 特殊技能：经络学（0 级未入门；≥1 解锁战斗配置中的经脉/穴位分页） */
+    var SPECIAL_MERIDIAN_STUDIES_SKILL_ID = 'special_meridian_studies';
+
+    function ensureMeridianStudiesSkillPresent() {
+        if (!state.skills || typeof state.skills !== 'object') state.skills = {};
+        if (!state.skills[SPECIAL_MERIDIAN_STUDIES_SKILL_ID] || typeof state.skills[SPECIAL_MERIDIAN_STUDIES_SKILL_ID] !== 'object') {
+            state.skills[SPECIAL_MERIDIAN_STUDIES_SKILL_ID] = { level: 0, move_usage: {} };
+            return;
+        }
+        var ent = state.skills[SPECIAL_MERIDIAN_STUDIES_SKILL_ID];
+        if (ent.level == null) ent.level = 0;
+        var z = parseInt(ent.level, 10);
+        if (!isFinite(z) || z < 0) ent.level = 0;
+        if (!ent.move_usage || typeof ent.move_usage !== 'object') ent.move_usage = {};
+    }
+
     /** 战斗肢体 ID（左手、右手、左脚、右脚），与设计 11-skills 一致 */
     var COMBAT_LIMB_IDS = ['lhand', 'rhand', 'lfoot', 'rfoot'];
 
     var GROUND_ITEM_DESPAWN_TICKS = 100;
+
+    /** 实战经验值：见 `docs/design/04-combat-exp.md`（上限 1000 亿；每 1 亿 +5% 全局伤害乘区） */
+    var COMBAT_EXPERIENCE_MAX = 100000000000;
+    var COMBAT_EXPERIENCE_UNIT = 100000000;
+    var COMBAT_EXPERIENCE_BONUS_PER_UNIT = 0.05;
 
     /** 地面物品：key = "mapId_x_y"，value = 该格子上物品实例数组 */
     var state = {
@@ -44,16 +65,50 @@
         ground_items: {},
         combat: null,
         /** hub 动作冷却：key = "skillId:actionId" → 剩余 tick */
-        hub_action_cooldowns: {}
+        hub_action_cooldowns: {},
+        combat_experience: 0
     };
+
+    function clampCombatExperienceStored(n) {
+        var v = Math.floor(Number(n));
+        if (!isFinite(v) || v < 0) return 0;
+        return Math.min(v, COMBAT_EXPERIENCE_MAX);
+    }
+
+    function normalizeCombatExperienceState() {
+        if (state.combat_experience == null || !isFinite(Number(state.combat_experience))) state.combat_experience = 0;
+        else state.combat_experience = clampCombatExperienceStored(state.combat_experience);
+    }
+
+    function getCombatExperience() {
+        normalizeCombatExperienceState();
+        return state.combat_experience;
+    }
+
+    /** @returns {number} 乘子 ≥1，公式：1 + clamp(值) / 1亿 × 5% */
+    function getCombatExperienceDamageMultiplier() {
+        var exp = getCombatExperience();
+        var bonus = (exp / COMBAT_EXPERIENCE_UNIT) * COMBAT_EXPERIENCE_BONUS_PER_UNIT;
+        var m = 1 + bonus;
+        return isFinite(m) && m >= 1 ? m : 1;
+    }
+
+    /** 战斗胜利等路径调用；delta 正整数，累加后夹紧上限 */
+    function addCombatExperience(delta) {
+        var d = Math.floor(Number(delta));
+        if (!isFinite(d) || d <= 0) return getCombatExperience();
+        normalizeCombatExperienceState();
+        state.combat_experience = clampCombatExperienceStored(state.combat_experience + d);
+        return state.combat_experience;
+    }
 
     function getDefaultCombatState() {
         return {
             limbs: {
-                lhand: { active: null, parry: null, priority: 1 },
-                rhand: { active: null, parry: null, priority: 2 },
-                lfoot: { active: null, parry: null, priority: 3 },
-                rfoot: { active: null, parry: null, priority: 4 }
+                lhand: { active: null, parry: null },
+                rhand: { active: null, parry: null },
+                lfoot: { active: null, parry: null },
+                rfoot: { active: null, parry: null }
             },
             hubs: { breath: null, footwork: null },
             move_sequences: { lhand: [], rhand: [], lfoot: [], rfoot: [] },
@@ -61,15 +116,82 @@
             skill_move_sequences: {},
             /** 各肢招式槽轮询下标（对应该肢 move_sequences 中非空槽位序列） */
             move_sequence_cursors: { lhand: 0, rhand: 0, lfoot: 0, rfoot: 0 },
-            /** 后遗症装配：post_effect_sequences[limbId][skillId] = [post_effect_id|null, ...] */
+            /** 后遗症装配（肢体级）：post_effect_sequences[limbId] = post_effect_id|null */
             post_effect_sequences: {},
             /** 主动链变式装配：variant_sequences[limbId] = [variant_id, ...] */
             variant_sequences: { lhand: [], rhand: [], lfoot: [], rfoot: [] },
             /** 招架变式装配：parry_variant_sequences[limbId] = [variant_id|null, ...]，最多 5 槽 */
             parry_variant_sequences: { lhand: [], rhand: [], lfoot: [], rfoot: [] },
             /** 各肢各槽位成数（null = 使用招式模板默认值；数字 = 玩家设定 1-12 成数） */
-            move_slot_power_levels: { lhand: [], rhand: [], lfoot: [], rfoot: [] }
+            move_slot_power_levels: { lhand: [], rhand: [], lfoot: [], rfoot: [] },
+            /** 地图普攻四肢出手顺序（须为 lhand/rhand/lfoot/rfoot 各出现一次的排列） */
+            limb_strike_order: ['lhand', 'rhand', 'lfoot', 'rfoot'],
+            /** 下一击从 limb_strike_order 的该下标开始扫描（0～3） */
+            limb_strike_order_cursor: 0
         };
+    }
+
+    function isValidLimbStrikeOrderArray(arr) {
+        if (!Array.isArray(arr) || arr.length !== COMBAT_LIMB_IDS.length) return false;
+        var seen = {};
+        var i;
+        for (i = 0; i < arr.length; i++) {
+            var id = arr[i];
+            if (COMBAT_LIMB_IDS.indexOf(id) < 0) return false;
+            if (seen[id]) return false;
+            seen[id] = true;
+        }
+        return true;
+    }
+
+    function ensureLimbStrikeOrder() {
+        if (!state.combat || typeof state.combat !== 'object') return;
+        var o = state.combat.limb_strike_order;
+        if (!isValidLimbStrikeOrderArray(o)) {
+            state.combat.limb_strike_order = COMBAT_LIMB_IDS.slice();
+        }
+        var c = Math.floor(Number(state.combat.limb_strike_order_cursor) || 0);
+        if (!isFinite(c)) c = 0;
+        state.combat.limb_strike_order_cursor = ((c % COMBAT_LIMB_IDS.length) + COMBAT_LIMB_IDS.length) % COMBAT_LIMB_IDS.length;
+    }
+
+    function getLimbStrikeOrderSlice() {
+        ensureCombatState();
+        ensureLimbStrikeOrder();
+        return state.combat.limb_strike_order.slice();
+    }
+
+    function getLimbStrikeOrderCursor() {
+        ensureCombatState();
+        ensureLimbStrikeOrder();
+        return state.combat.limb_strike_order_cursor;
+    }
+
+    function swapLimbStrikeOrderIndices(i, j) {
+        ensureCombatState();
+        ensureLimbStrikeOrder();
+        var o = state.combat.limb_strike_order;
+        var ii = Math.floor(Number(i)) || 0;
+        var jj = Math.floor(Number(j)) || 0;
+        var n = COMBAT_LIMB_IDS.length;
+        ii = ((ii % n) + n) % n;
+        jj = ((jj % n) + n) % n;
+        var t = o[ii];
+        o[ii] = o[jj];
+        o[jj] = t;
+    }
+
+    /**
+     * 本击实际出手肢为 limbId 时，将出手顺序游标置于该肢在顺序表中的下一格（tick 内跳过肢同样落在此规则）。
+     */
+    function advanceLimbStrikeOrderAfterAttack(limbId) {
+        if (COMBAT_LIMB_IDS.indexOf(limbId) < 0) return;
+        ensureCombatState();
+        ensureLimbStrikeOrder();
+        var ord = state.combat.limb_strike_order;
+        var idx = ord.indexOf(limbId);
+        if (idx < 0) return;
+        state.combat.limb_strike_order_cursor = (idx + 1) % COMBAT_LIMB_IDS.length;
     }
 
     function ensureMoveSequenceCursors() {
@@ -84,6 +206,25 @@
                 state.combat.move_sequence_cursors[lid] = def[lid] != null ? def[lid] : 0;
             }
         }
+    }
+
+    function pickFirstPostEffectIdFromLegacyLimbMap(legacyMap) {
+        if (!legacyMap || typeof legacyMap !== 'object') return null;
+        for (var sk in legacyMap) {
+            if (!Object.prototype.hasOwnProperty.call(legacyMap, sk) || !Array.isArray(legacyMap[sk])) continue;
+            for (var i = 0; i < legacyMap[sk].length; i++) {
+                var pid = legacyMap[sk][i];
+                if (pid) return String(pid);
+            }
+        }
+        return null;
+    }
+
+    function normalizePostEffectForLimbValue(v) {
+        if (v == null || v === '') return null;
+        if (typeof v === 'string') return v;
+        if (typeof v === 'object') return pickFirstPostEffectIdFromLegacyLimbMap(v);
+        return null;
     }
 
     function getCompactMoveIdsForLimb(limbId) {
@@ -193,7 +334,7 @@
         for (var i = 0; i < limbIds.length; i++) {
             var lid = limbIds[i];
             if (!state.combat.limbs[lid]) {
-                state.combat.limbs[lid] = { active: null, parry: null, priority: def.limbs[lid] ? def.limbs[lid].priority : i + 1 };
+                state.combat.limbs[lid] = { active: null, parry: null };
             }
             if (!state.combat.move_sequences[lid]) state.combat.move_sequences[lid] = [];
         }
@@ -201,11 +342,9 @@
         for (j = 0; j < limbIds.length; j++) {
             var lidNorm = limbIds[j];
             var lr = state.combat.limbs[lidNorm];
-            if (!lr) continue;
-            var pr = Math.floor(Number(lr.priority) || 1);
-            if (!isFinite(pr) || pr < 1) pr = 1;
-            if (pr > 4) pr = 4;
-            lr.priority = pr;
+            if (lr && Object.prototype.hasOwnProperty.call(lr, 'priority')) {
+                try { delete lr.priority; } catch (eDel) { lr.priority = undefined; }
+            }
         }
         if (!state.combat.hubs) state.combat.hubs = { breath: null, footwork: null };
         if (state.combat.hubs.light != null && state.combat.hubs.footwork == null) {
@@ -220,9 +359,7 @@
         if (!state.combat.parry_variant_sequences || typeof state.combat.parry_variant_sequences !== 'object') state.combat.parry_variant_sequences = {};
         for (var li = 0; li < limbIds.length; li++) {
             var lid2 = limbIds[li];
-            if (!state.combat.post_effect_sequences[lid2] || typeof state.combat.post_effect_sequences[lid2] !== 'object') {
-                state.combat.post_effect_sequences[lid2] = {};
-            }
+            state.combat.post_effect_sequences[lid2] = normalizePostEffectForLimbValue(state.combat.post_effect_sequences[lid2]);
             if (!Array.isArray(state.combat.variant_sequences[lid2])) state.combat.variant_sequences[lid2] = [];
             if (!Array.isArray(state.combat.parry_variant_sequences[lid2])) state.combat.parry_variant_sequences[lid2] = [];
         }
@@ -230,6 +367,13 @@
         for (var lmpl = 0; lmpl < limbIds.length; lmpl++) {
             if (!Array.isArray(state.combat.move_slot_power_levels[limbIds[lmpl]])) state.combat.move_slot_power_levels[limbIds[lmpl]] = [];
         }
+        if (!isValidLimbStrikeOrderArray(state.combat.limb_strike_order)) {
+            state.combat.limb_strike_order = COMBAT_LIMB_IDS.slice();
+        }
+        if (state.combat.limb_strike_order_cursor == null || !isFinite(Number(state.combat.limb_strike_order_cursor))) {
+            state.combat.limb_strike_order_cursor = 0;
+        }
+        ensureLimbStrikeOrder();
         ensureMoveSequenceCursors();
     }
 
@@ -1254,10 +1398,7 @@
                 if (!moveObj || !CS.moveAllowedOnLimbByTagKeys(moveObj, limbKeys)) {
                     seq[si] = '';
                     changed = true;
-                    var psMap = state.combat.post_effect_sequences[lid];
-                    if (psMap && psMap[skillId] && Array.isArray(psMap[skillId]) && psMap[skillId][si]) {
-                        psMap[skillId][si] = null;
-                    }
+                    // 肢体级后遗症不随单槽清空；是否生效由运行时 validateSocket 判定。
                 }
             }
             if (changed) state.combat.move_sequences[lid] = seq.slice();
@@ -1495,6 +1636,7 @@
 
     /** 旧档或无战斗技能条目时补足（不覆盖已有装配） */
     function ensureCombatBasicsMigrated() {
+        ensureMeridianStudiesSkillPresent();
         if (getSkillLevel('combat_basic_unarmed') >= 1) return;
         applyDefaultStarterCombatLayout();
         if (typeof global !== 'undefined' && global.CharacterAttributes && typeof global.CharacterAttributes.recalcCharacterStats === 'function') {
@@ -1541,7 +1683,9 @@
         }
         state.combat = getDefaultCombatState();
         state.hub_action_cooldowns = {};
+        state.combat_experience = 0;
         applyDefaultStarterCombatLayout();
+        ensureMeridianStudiesSkillPresent();
     }
 
     function hubCooldownKey(skillId, actionId) {
@@ -1615,6 +1759,7 @@
             }
         }
         clampSkillLevelsToProgressionCaps();
+        ensureMeridianStudiesSkillPresent();
         if (s.ground_items && typeof s.ground_items === 'object') {
             for (var gk in s.ground_items) {
                 if (s.ground_items.hasOwnProperty(gk) && Array.isArray(s.ground_items[gk]))
@@ -1640,12 +1785,8 @@
                     if (!src || typeof src !== 'object') return {};
                     var out = {};
                     for (var lid in src) {
-                        if (!Object.prototype.hasOwnProperty.call(src, lid) || !src[lid] || typeof src[lid] !== 'object') continue;
-                        out[lid] = {};
-                        for (var sk in src[lid]) {
-                            if (!Object.prototype.hasOwnProperty.call(src[lid], sk) || !Array.isArray(src[lid][sk])) continue;
-                            out[lid][sk] = src[lid][sk].slice();
-                        }
+                        if (!Object.prototype.hasOwnProperty.call(src, lid) || COMBAT_LIMB_IDS.indexOf(lid) < 0) continue;
+                        out[lid] = normalizePostEffectForLimbValue(src[lid]);
                     }
                     return out;
                 })(),
@@ -1672,8 +1813,8 @@
             for (var li = 0; li < limbIds.length; li++) {
                 var lid = limbIds[li];
                 state.combat.limbs[lid] = s.combat.limbs && s.combat.limbs[lid]
-                    ? { active: s.combat.limbs[lid].active, parry: s.combat.limbs[lid].parry, priority: s.combat.limbs[lid].priority != null ? s.combat.limbs[lid].priority : li + 1 }
-                    : { active: null, parry: null, priority: li + 1 };
+                    ? { active: s.combat.limbs[lid].active, parry: s.combat.limbs[lid].parry }
+                    : { active: null, parry: null };
                 state.combat.move_sequences[lid] = (s.combat.move_sequences && Array.isArray(s.combat.move_sequences[lid])) ? s.combat.move_sequences[lid].slice() : [];
             }
             state.combat.move_sequence_cursors = { lhand: 0, rhand: 0, lfoot: 0, rfoot: 0 };
@@ -1692,6 +1833,14 @@
                 var mliid = limbIds[mli];
                 state.combat.move_slot_power_levels[mliid] = (mslSrc && Array.isArray(mslSrc[mliid])) ? mslSrc[mliid].slice() : [];
             }
+            state.combat.limb_strike_order = (s.combat.limb_strike_order && isValidLimbStrikeOrderArray(s.combat.limb_strike_order))
+                ? s.combat.limb_strike_order.slice()
+                : COMBAT_LIMB_IDS.slice();
+            if (s.combat.limb_strike_order_cursor != null && isFinite(Number(s.combat.limb_strike_order_cursor))) {
+                state.combat.limb_strike_order_cursor = Math.floor(Number(s.combat.limb_strike_order_cursor)) || 0;
+            } else {
+                state.combat.limb_strike_order_cursor = 0;
+            }
             migrateLegacySkillMoveSequencesIntoLimbs();
         }
         if (s.hub_action_cooldowns && typeof s.hub_action_cooldowns === 'object') {
@@ -1702,6 +1851,10 @@
                 if (hv > 0) state.hub_action_cooldowns[hk] = hv;
             }
         }
+        if (s.combat_experience !== undefined && s.combat_experience !== null) {
+            state.combat_experience = clampCombatExperienceStored(s.combat_experience);
+        }
+        normalizeCombatExperienceState();
         ensureCombatState();
         sanitizeCombatMoveSequencesAgainstLimbTags();
         clearInvalidVariantSlotsBySourceLevel();
@@ -1736,7 +1889,7 @@
         ensureMoveSequenceCursors();
         for (var li = 0; li < COMBAT_LIMB_IDS.length; li++) {
             var lid = COMBAT_LIMB_IDS[li];
-            combatCopy.limbs[lid] = { active: state.combat.limbs[lid].active, parry: state.combat.limbs[lid].parry, priority: state.combat.limbs[lid].priority };
+            combatCopy.limbs[lid] = { active: state.combat.limbs[lid].active, parry: state.combat.limbs[lid].parry };
             combatCopy.move_sequences[lid] = (state.combat.move_sequences[lid] || []).slice();
             combatCopy.move_sequence_cursors[lid] = Math.floor(Number(state.combat.move_sequence_cursors[lid]) || 0);
             combatCopy.move_slot_power_levels[lid] = (state.combat.move_slot_power_levels && Array.isArray(state.combat.move_slot_power_levels[lid])) ? state.combat.move_slot_power_levels[lid].slice() : [];
@@ -1746,14 +1899,8 @@
                 combatCopy.skill_move_sequences[sk] = state.combat.skill_move_sequences[sk].slice();
         }
         for (var lidP in state.combat.post_effect_sequences) {
-            if (!Object.prototype.hasOwnProperty.call(state.combat.post_effect_sequences, lidP) || !state.combat.post_effect_sequences[lidP]) continue;
-            combatCopy.post_effect_sequences[lidP] = {};
-            for (var skP in state.combat.post_effect_sequences[lidP]) {
-                if (!Object.prototype.hasOwnProperty.call(state.combat.post_effect_sequences[lidP], skP)) continue;
-                if (Array.isArray(state.combat.post_effect_sequences[lidP][skP])) {
-                    combatCopy.post_effect_sequences[lidP][skP] = state.combat.post_effect_sequences[lidP][skP].slice();
-                }
-            }
+            if (!Object.prototype.hasOwnProperty.call(state.combat.post_effect_sequences, lidP) || COMBAT_LIMB_IDS.indexOf(lidP) < 0) continue;
+            combatCopy.post_effect_sequences[lidP] = normalizePostEffectForLimbValue(state.combat.post_effect_sequences[lidP]);
         }
         for (var lidV in state.combat.variant_sequences) {
             if (Object.prototype.hasOwnProperty.call(state.combat.variant_sequences, lidV)) {
@@ -1765,6 +1912,9 @@
                 combatCopy.parry_variant_sequences[lidPV] = (state.combat.parry_variant_sequences[lidPV] || []).slice();
             }
         }
+        ensureLimbStrikeOrder();
+        combatCopy.limb_strike_order = state.combat.limb_strike_order.slice();
+        combatCopy.limb_strike_order_cursor = state.combat.limb_strike_order_cursor;
         var bonusCopy = {};
         for (var bj in state.skill_max_level_bonus) {
             if (state.skill_max_level_bonus.hasOwnProperty(bj)) bonusCopy[bj] = state.skill_max_level_bonus[bj];
@@ -1773,6 +1923,7 @@
         for (var ck in state.hub_action_cooldowns) {
             if (state.hub_action_cooldowns.hasOwnProperty(ck)) hubCd[ck] = state.hub_action_cooldowns[ck];
         }
+        normalizeCombatExperienceState();
         return {
             equipment: eq,
             inventory_pocket: state.inventory_pocket.slice(),
@@ -1784,7 +1935,8 @@
             skill_max_level_bonus: bonusCopy,
             ground_items: groundCopy,
             combat: combatCopy,
-            hub_action_cooldowns: hubCd
+            hub_action_cooldowns: hubCd,
+            combat_experience: state.combat_experience
         };
     }
 
@@ -1800,7 +1952,7 @@
         ensureMoveSequenceCursors();
         for (var i = 0; i < COMBAT_LIMB_IDS.length; i++) {
             var lid = COMBAT_LIMB_IDS[i];
-            out.limbs[lid] = { active: c.limbs[lid].active, parry: c.limbs[lid].parry, priority: c.limbs[lid].priority };
+            out.limbs[lid] = { active: c.limbs[lid].active, parry: c.limbs[lid].parry };
             out.move_sequences[lid] = (c.move_sequences[lid] || []).slice();
             out.move_sequence_cursors[lid] = Math.floor(Number(c.move_sequence_cursors[lid]) || 0);
             out.move_slot_power_levels[lid] = (c.move_slot_power_levels && Array.isArray(c.move_slot_power_levels[lid])) ? c.move_slot_power_levels[lid].slice() : [];
@@ -1810,14 +1962,8 @@
                 out.skill_move_sequences[sk] = c.skill_move_sequences[sk].slice();
         }
         for (var lidP in c.post_effect_sequences) {
-            if (!Object.prototype.hasOwnProperty.call(c.post_effect_sequences, lidP) || !c.post_effect_sequences[lidP]) continue;
-            out.post_effect_sequences[lidP] = {};
-            for (var skP in c.post_effect_sequences[lidP]) {
-                if (!Object.prototype.hasOwnProperty.call(c.post_effect_sequences[lidP], skP)) continue;
-                if (Array.isArray(c.post_effect_sequences[lidP][skP])) {
-                    out.post_effect_sequences[lidP][skP] = c.post_effect_sequences[lidP][skP].slice();
-                }
-            }
+            if (!Object.prototype.hasOwnProperty.call(c.post_effect_sequences, lidP) || COMBAT_LIMB_IDS.indexOf(lidP) < 0) continue;
+            out.post_effect_sequences[lidP] = normalizePostEffectForLimbValue(c.post_effect_sequences[lidP]);
         }
         for (var lidV in c.variant_sequences) {
             if (Object.prototype.hasOwnProperty.call(c.variant_sequences, lidV)) {
@@ -1829,6 +1975,9 @@
                 out.parry_variant_sequences[lidPV] = (c.parry_variant_sequences[lidPV] || []).slice();
             }
         }
+        ensureLimbStrikeOrder();
+        out.limb_strike_order = state.combat.limb_strike_order.slice();
+        out.limb_strike_order_cursor = state.combat.limb_strike_order_cursor;
         return out;
     }
 
@@ -1840,7 +1989,6 @@
                 if (COMBAT_LIMB_IDS.indexOf(lid) >= 0 && partial.limbs[lid]) {
                     if (partial.limbs[lid].active !== undefined) state.combat.limbs[lid].active = partial.limbs[lid].active;
                     if (partial.limbs[lid].parry !== undefined) state.combat.limbs[lid].parry = partial.limbs[lid].parry;
-                    if (partial.limbs[lid].priority !== undefined) state.combat.limbs[lid].priority = partial.limbs[lid].priority;
                 }
             }
         }
@@ -1881,15 +2029,8 @@
         }
         if (partial.post_effect_sequences && typeof partial.post_effect_sequences === 'object') {
             for (var lidP in partial.post_effect_sequences) {
-                if (COMBAT_LIMB_IDS.indexOf(lidP) < 0 || !partial.post_effect_sequences[lidP] || typeof partial.post_effect_sequences[lidP] !== 'object') continue;
-                if (!state.combat.post_effect_sequences[lidP] || typeof state.combat.post_effect_sequences[lidP] !== 'object') {
-                    state.combat.post_effect_sequences[lidP] = {};
-                }
-                for (var skP in partial.post_effect_sequences[lidP]) {
-                    if (Object.prototype.hasOwnProperty.call(partial.post_effect_sequences[lidP], skP) && Array.isArray(partial.post_effect_sequences[lidP][skP])) {
-                        state.combat.post_effect_sequences[lidP][skP] = partial.post_effect_sequences[lidP][skP].slice();
-                    }
-                }
+                if (COMBAT_LIMB_IDS.indexOf(lidP) < 0) continue;
+                state.combat.post_effect_sequences[lidP] = normalizePostEffectForLimbValue(partial.post_effect_sequences[lidP]);
             }
         }
         if (partial.variant_sequences && typeof partial.variant_sequences === 'object') {
@@ -1912,6 +2053,15 @@
                 }
             }
         }
+        if (partial.limb_strike_order && isValidLimbStrikeOrderArray(partial.limb_strike_order)) {
+            state.combat.limb_strike_order = partial.limb_strike_order.slice();
+        }
+        if (partial.limb_strike_order_cursor != null && isFinite(Number(partial.limb_strike_order_cursor))) {
+            state.combat.limb_strike_order_cursor = Math.floor(Number(partial.limb_strike_order_cursor)) || 0;
+        }
+        if (partial.limb_strike_order || partial.limb_strike_order_cursor != null) {
+            ensureLimbStrikeOrder();
+        }
         sanitizeCombatMoveSequencesAgainstLimbTags();
         clearInvalidVariantSlotsBySourceLevel();
         if (!validateAtLeastOneMovePerActiveLimb()) {
@@ -1920,6 +2070,7 @@
     }
 
     global.InventoryEquipment = {
+        SPECIAL_MERIDIAN_STUDIES_SKILL_ID: SPECIAL_MERIDIAN_STUDIES_SKILL_ID,
         EQUIP_SLOT_IDS: EQUIP_SLOT_IDS,
         COMBAT_LIMB_IDS: COMBAT_LIMB_IDS,
         QUALITY_TIERS: QUALITY_TIERS,
@@ -1979,9 +2130,16 @@
         getMoveSlotPowerLevel: getMoveSlotPowerLevel,
         setMoveSlotPowerLevel: setMoveSlotPowerLevel,
         advanceMoveSequenceCursorForLimb: advanceMoveSequenceCursorForLimb,
+        advanceLimbStrikeOrderAfterAttack: advanceLimbStrikeOrderAfterAttack,
+        swapLimbStrikeOrderIndices: swapLimbStrikeOrderIndices,
+        getLimbStrikeOrderSlice: getLimbStrikeOrderSlice,
+        getLimbStrikeOrderCursor: getLimbStrikeOrderCursor,
         ensureCombatState: ensureCombatState,
         getHubActionCooldownRemaining: getHubActionCooldownRemaining,
         setHubActionCooldownRemaining: setHubActionCooldownRemaining,
-        tickHubActionCooldowns: tickHubActionCooldowns
+        tickHubActionCooldowns: tickHubActionCooldowns,
+        getCombatExperience: getCombatExperience,
+        getCombatExperienceDamageMultiplier: getCombatExperienceDamageMultiplier,
+        addCombatExperience: addCombatExperience
     };
 })(typeof window !== 'undefined' ? window : this);

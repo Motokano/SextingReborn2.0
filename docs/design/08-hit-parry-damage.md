@@ -29,6 +29,74 @@
    - **乘算位置**：在 **本条减伤链全部执行完毕** 之后、**写入 HP（扣血）之前**，将 **该击最终伤害数值**（已为整数则直接用）乘以撞墙乘子，再 **向下取整** 后扣血。**不**回退重算减伤链。多 sub-hit **每击各自**判定是否撞阻。  
    - **同 tick 多条击退** 的坍缩（**`cells` → 攻击方筋骨 → 攻击方速度 → `event_id`**）见 **`07`**，不改变「哪一击」承担撞墙判定——**始终对产生该击退队列项的那一击**结算撞墙乘子。
 
+### 伤害类型增伤/转换（三类型后处理）
+
+- **适用阶段**：主伤害公式产出 `rawDamage` 并确定初始 `damageType` 后开始（即减伤链前）。
+- **三类型池**：统一使用 `typed = { blunt, slash, pierce }`；初始时将 `rawDamage` 注入 `typed[damageType]`。
+- **取整规则**：本阶段全程保留小数；仅最终 `finalDamage` 落地时 `floor`。
+
+#### 结算顺序（强制）
+
+1. **前置注入（标签后、增伤前）**
+   - 固定加成：`add_flat[target] += X`
+   - 百分比派生：`add_from_pct[target] += typed[source] * pct`
+2. **首轮类型增伤**
+   - `typed[t] *= (1 + increase_pct[t])`
+3. **单向类型转换（不可反向）**
+   - 仅允许：`blunt -> slash`、`slash -> pierce`
+   - 同源同目标多条转换：先求和再一次转换（sum once）
+4. **转换后二次增伤（仅新增目标类型）**
+   - 对本轮“转换得到的新增分量”应用目标类型 `increase_pct`
+5. **进入减伤链**
+   - 敌方减伤按三类型分别结算并汇总，再进入最终伤害落地
+
+#### 禁止事项
+
+- 禁止 `slash -> blunt`、`pierce -> slash` 等反向转换（防止结算递归套娃）。
+- 禁止在三类型后处理阶段进行中途取整。
+
+#### 数据字段规范（策划直填）
+
+- 推荐承载字段：`damage_type_effects`
+- 可挂载位置：`combat-skills.json` 的 `moves[]`，以及 `items.json`（或其词条源）
+
+```json
+{
+  "damage_type_effects": {
+    "add_flat": {
+      "blunt": 0,
+      "slash": 5,
+      "pierce": 0
+    },
+    "add_from_pct": [
+      { "source": "blunt", "target": "pierce", "pct": 0.2 }
+    ],
+    "increase_pct": {
+      "blunt": 0.1,
+      "slash": 0.2,
+      "pierce": 0
+    },
+    "convert_pct": {
+      "blunt_to_slash": 0.2,
+      "slash_to_pierce": 0
+    }
+  }
+}
+```
+
+- `pct` 支持两种写法：`0.2` 或 `20`（实现统一按百分比语义归一化）。
+- `convert_pct` 仅接受 `blunt_to_slash` 与 `slash_to_pierce` 两个键。
+- 未配置字段默认为 0（不影响原有伤害口径）。
+
+#### 对账示例
+
+- 输入：`20 blunt`，`increase(blunt)=20%`，`increase(slash)=20%`，`convert blunt->slash=20%`
+- 过程：
+  - 首轮增伤后：`24 blunt`
+  - 转换后：`19.2 blunt + 4.8 slash`
+  - 转换后二次增伤：`4.8 slash -> 5.76 slash`
+- 结果：`19.2 blunt + 5.76 slash`（最终落地前不取整）
+
 ### 招架（细则）
 
 - **招架效果与柔韧（乘算 + 硬上限）**  
@@ -68,7 +136,8 @@
    - 仅当 **本击命中判定已成功**（`attack_hit_roll_resolved` 语义）后，才进入招架段。  
    - **本段不消耗** 气力 / 底气等战斗资源（**基本招架**无消耗；其它招架技能若有消耗须在单条中声明并在本段前扣费）。
 
-2. **解析「承担招架」的肢体 `guard_limb`**（`lhand` / `rhand` / `lfoot` / `rfoot`）  
+2. **解析「承担招架」的肢体 `guard_limb`**（`lhand` / `rhand` / `lfoot` / `rfoot`）
+   - **战斗日志**：`CombatParry.logParryGuardLimb` 等须写明 **受击部位**（可读名 + 原始 `hit_part` id）与 **承担招架肢**（可读名 + 原始 `guard_limb` id），便于与 `09` 部位表、存档对账。  
    - **四肢部位受击**（命中部位为 **`left_arm` / `right_arm` / `left_leg` / `right_leg`**，与招式 `hit_part_weights`、身体篇一致）：**固定**取**该肢**对应映射——左手↔`lhand`、右手↔`rhand`、左脚↔`lfoot`、右脚↔`rfoot`。  
      - 若**该肢在身体状态中已损毁**（该肢无法再用于招架，与 `11`「损毁肢体无法出招/招架」一致）：**跳过整段招架结算**（不掷招架骰、不卸力），本击直接进入减伤链（无招架带来的卸力前置）。  
    - **头 / 胸 / 腹受击**（**`head` / `chest` / `abdomen`**）：在 **`lhand` → `rhand` → `lfoot` → `rfoot`** 的**固定肢体优先级**上，选取**第一条尚未损毁**的肢体作为 `guard_limb`。  

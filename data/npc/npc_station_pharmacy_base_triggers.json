@@ -1,0 +1,172 @@
+{
+  "npcId": "npc.station.pharmacy_base",
+  "entries": [
+    {
+      "id": "station.pharmacy.repair_intro",
+      "entryType": "dialogue",
+      "entrySource": "chat",
+      "condition": {
+        "type": "and",
+        "conds": [
+          {
+            "type": "flagEquals",
+            "flag": "npc_station_pharmacy_base_repaired",
+            "value": false
+          },
+          {
+            "type": "flagEquals",
+            "flag": "pharmacy_base_station_repair_briefed",
+            "value": false
+          }
+        ]
+      },
+      "requires": [],
+      "blocks": [],
+      "dialogue": {
+        "linesRich": [
+          {
+            "speaker": "narration",
+            "text": "制药台台面裂了一道口子，不补好的话架不住火，也没法固定研钵。",
+            "avatar": ""
+          }
+        ],
+        "lines": [
+          "制药台台面裂了一道口子，不补好的话架不住火，也没法固定研钵。"
+        ],
+        "hasOptions": false,
+        "options": []
+      },
+      "effects": [
+        {
+          "type": "setFlag",
+          "params": {
+            "flag": "pharmacy_base_station_repair_briefed",
+            "value": true
+          }
+        }
+      ],
+      "repeatable": false,
+      "scope": "global",
+      "causesNpcDisappear": false
+    },
+    {
+      "id": "station.pharmacy.repair_unlock",
+      "entryType": "dialogue",
+      "entrySource": "chat",
+      "condition": {
+        "type": "and",
+        "conds": [
+          {
+            "type": "flagEquals",
+            "flag": "npc_station_pharmacy_base_repaired",
+            "value": false
+          },
+          {
+            "type": "flagEquals",
+            "flag": "pharmacy_base_station_repair_briefed",
+            "value": true
+          },
+          {
+            "type": "hasItem",
+            "itemId": "ore_clay_raw",
+            "count": 1
+          },
+          {
+            "type": "hasItem",
+            "itemId": "wood_firewood",
+            "count": 1
+          },
+          {
+            "type": "hasItem",
+            "itemId": "tool_rolling_pin_pharmacy",
+            "count": 1
+          }
+        ]
+      },
+      "requires": [
+        "station.pharmacy.repair_intro"
+      ],
+      "blocks": [],
+      "dialogue": {
+        "linesRich": [
+          {
+            "speaker": "narration",
+            "text": "你把黏土塞进裂缝，垫上干柴烘干，再用小擀杖压实台面。木框终于不再吱呀作响，可以试着生火了。",
+            "avatar": ""
+          }
+        ],
+        "lines": [
+          "你把黏土塞进裂缝，垫上干柴烘干，再用小擀杖压实台面。木框终于不再吱呀作响，可以试着生火了。"
+        ],
+        "hasOptions": false,
+        "options": []
+      },
+      "effects": [
+        {
+          "type": "removeItem",
+          "params": {
+            "itemId": "ore_clay_raw",
+            "count": 1,
+            "strict": true
+          }
+        },
+        {
+          "type": "removeItem",
+          "params": {
+            "itemId": "wood_firewood",
+            "count": 1,
+            "strict": true
+          }
+        },
+        {
+          "type": "setFlag",
+          "params": {
+            "flag": "npc_station_pharmacy_base_repaired",
+            "value": true
+          }
+        },
+        {
+          "type": "removeItem",
+          "params": {
+            "itemId": "tool_rolling_pin_pharmacy",
+            "count": 1,
+            "strict": true
+          }
+        }
+      ],
+      "repeatable": false,
+      "scope": "global",
+      "causesNpcDisappear": false
+    },
+    {
+      "id": "station.pharmacy.repaired_idle",
+      "entryType": "dialogue",
+      "entrySource": "chat",
+      "condition": {
+        "type": "flagEquals",
+        "flag": "npc_station_pharmacy_base_repaired",
+        "value": true
+      },
+      "requires": [],
+      "blocks": [],
+      "dialogue": {
+        "linesRich": [
+          {
+            "speaker": "narration",
+            "text": "制药台可以用了。点台子打开菜单，选「使用制药台」进入界面；记得备燃料与工具。",
+            "avatar": ""
+          }
+        ],
+        "lines": [
+          "制药台可以用了。点台子打开菜单，选「使用制药台」进入界面；记得备燃料与工具。"
+        ],
+        "hasOptions": false,
+        "options": []
+      },
+      "effects": [],
+      "repeatable": false,
+      "scope": "global",
+      "causesNpcDisappear": false
+    }
+  ]
+}

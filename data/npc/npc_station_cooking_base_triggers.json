@@ -26,12 +26,12 @@
         "linesRich": [
           {
             "speaker": "narration",
-            "text": "灶台塌了一角，砖缝里塞着陈年油垢。旁边用炭条歪歪扭扭写着几个字：要修好，得找些黏土、干柴和一口能用的陶锅——齐了再来。",
+            "text": "灶台塌了一角，想用的话需要一些粘土、柴火和一口锅才行。",
             "avatar": ""
           }
         ],
         "lines": [
-          "灶台塌了一角，砖缝里塞着陈年油垢。旁边用炭条歪歪扭扭写着几个字：要修好，得找些黏土、干柴和一口能用的陶锅——齐了再来。"
+          "灶台塌了一角，想用的话需要一些粘土、柴火和一口锅才行。"
         ],
         "hasOptions": false,
         "options": []
@@ -91,12 +91,12 @@
         "linesRich": [
           {
             "speaker": "narration",
-            "text": "材料若还没齐，就再去翻翻箱子；齐了就把黏土糊进裂缝，垫上干柴，把陶锅稳稳卡进灶膛。灶眼深处像是轻轻吸了一口气，砖面终于不再晃了。",
+            "text": "把黏土糊进裂缝，垫上干柴，把陶锅稳稳卡进灶膛。灶眼深处像是轻轻吸了一口气，砖面终于不再晃了。",
             "avatar": ""
           }
         ],
         "lines": [
-          "材料若还没齐，就再去翻翻箱子；齐了就把黏土糊进裂缝，垫上干柴，把陶锅稳稳卡进灶膛。灶眼深处像是轻轻吸了一口气，砖面终于不再晃了。"
+          "把黏土糊进裂缝，垫上干柴，把陶锅稳稳卡进灶膛。灶眼深处像是轻轻吸了一口气，砖面终于不再晃了。"
         ],
         "hasOptions": false,
         "options": []
@@ -164,12 +164,12 @@
         "options": []
       },
       "effects": [],
-      "repeatable": true,
+      "repeatable": false,
       "scope": "global",
       "causesNpcDisappear": false
     },
     {
-      "id": "station.cooking.main_water_unlimited_template",
+      "id": "station.cooking.main_water_unlimited",
       "entryType": "dialogue",
       "entrySource": "chat",
       "condition": {
@@ -210,6 +210,13 @@
             "itemId": "wood_firewood",
             "count": 1,
             "strict": true
+          }
+        },
+        {
+          "type": "setFlag",
+          "params": {
+            "flag": "cooking_base_station_water_unlimited",
+            "value": true
           }
         },
         {

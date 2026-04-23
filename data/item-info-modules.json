@@ -1,0 +1,97 @@
+{
+  "schema_version": 1,
+  "module_sets": {
+    "module.material_ore": {
+      "set_id": "module.material_ore",
+      "display_name": "矿材观察",
+      "modules": [
+        {
+          "module_id": "base",
+          "title": "基础识别",
+          "icon": "info",
+          "content": {
+            "type": "text",
+            "text": "矿石外观粗糙，适合基础冶炼用途。"
+          }
+        },
+        {
+          "module_id": "physical",
+          "title": "物理性质",
+          "icon": "eye",
+          "unlock": {
+            "skill_id": "survival_gathering",
+            "level_min": 3,
+            "locked_hint": "采集经验不足，难以判断矿石细节"
+          },
+          "content": {
+            "type": "kv",
+            "entries": [
+              { "k": "可冶炼性", "v": "中等" },
+              { "k": "杂质比例", "v": "偏高" }
+            ]
+          }
+        },
+        {
+          "module_id": "trade_hint",
+          "title": "交易线索",
+          "icon": "scroll",
+          "unlock": {
+            "skill_id": "survival_language",
+            "level_min": 4,
+            "locked_hint": "阅读能力不足，难以理解流通标识"
+          },
+          "content": {
+            "type": "text",
+            "text": "常见于基础锻造摊位，价格波动受矿区安全影响。"
+          }
+        }
+      ]
+    },
+    "module.food_basic": {
+      "set_id": "module.food_basic",
+      "display_name": "熟食观察",
+      "modules": [
+        {
+          "module_id": "base",
+          "title": "食物印象",
+          "icon": "info",
+          "content": {
+            "type": "text",
+            "text": "热量充足，适合短时补给。"
+          }
+        },
+        {
+          "module_id": "flavor",
+          "title": "风味层次",
+          "icon": "eye",
+          "unlock": {
+            "skill_id": "life_cooking",
+            "level_min": 2,
+            "locked_hint": "烹饪经验不足，难分辨细节风味"
+          },
+          "content": {
+            "type": "list",
+            "items": [
+              "入口偏咸，后段有果酸感",
+              "油脂较少，耐饥效果稳定"
+            ]
+          }
+        },
+        {
+          "module_id": "digest",
+          "title": "消化评估",
+          "icon": "swords",
+          "unlock": {
+            "skill_id": "survival_language",
+            "level_min": 3,
+            "locked_hint": "读写能力不足，难以理解配方标注"
+          },
+          "content": {
+            "type": "text",
+            "text": "适合作为战前简餐，避免高强度行动前一次性过量进食。"
+          }
+        }
+      ]
+    }
+  }
+}

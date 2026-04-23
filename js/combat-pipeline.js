@@ -302,11 +302,16 @@
         } else {
             isDes = function () { return false; };
         }
+        var forbidParry = [];
+        if (window.SceneCtx && window.SceneCtx.playerExchangeAttackLimb) {
+            forbidParry.push(window.SceneCtx.playerExchangeAttackLimb);
+        }
         var pctx = CP.resolveParryPhaseContext({
             hitPart: ctx.hitPart || 'chest',
             combatState: combatState,
             skillsState: skillsState,
-            isBodyPartDestroyed: isDes
+            isBodyPartDestroyed: isDes,
+            forbiddenGuardLimbs: forbidParry
         });
         if (pctx.skip) {
             ctx.parryPhaseSkipped = true;
@@ -321,6 +326,9 @@
         }
         ctx.guardLimb = pctx.guardLimb;
         ctx.parrySkillId = pctx.parrySkillId;
+        if (!isSimultaneousDryRun(ctx) && window.SceneCtx && typeof window.SceneCtx.recordPlayerExchangeParryLimb === 'function' && pctx.guardLimb) {
+            window.SceneCtx.recordPlayerExchangeParryLimb(pctx.guardLimb);
+        }
         if (global.InventoryEquipment && typeof global.InventoryEquipment.getParryVariantIdsForLimb === 'function') {
             ctx.defender = ctx.defender || {};
             ctx.defender.parryVariantIds = global.InventoryEquipment.getParryVariantIdsForLimb(pctx.guardLimb);
@@ -426,24 +434,49 @@
         var body = typeof def.body_damage_reduce === 'number' ? def.body_damage_reduce : 0;
         inner = clamp(inner, 0, 1);
         body = clamp(body, 0, 1);
-        d = d * (1 - inner) * (1 - body);
-        var dmgType = ctx.damageType || 'blunt';
+        var typed = { blunt: 0, slash: 0, pierce: 0 };
+        var td = ctx.typedDamage;
+        if (td && typeof td === 'object') {
+            typed.blunt = Math.max(0, Number(td.blunt) || 0);
+            typed.slash = Math.max(0, Number(td.slash) || 0);
+            typed.pierce = Math.max(0, Number(td.pierce) || 0);
+            var typedTotal = typed.blunt + typed.slash + typed.pierce;
+            if (typedTotal > 0 && d >= 0 && ctx.rawDamage > 0 && d !== typedTotal) {
+                var ratio = d / typedTotal;
+                typed.blunt *= ratio;
+                typed.slash *= ratio;
+                typed.pierce *= ratio;
+            }
+        } else {
+            var dmgTypeLegacy = ctx.damageType || 'blunt';
+            if (dmgTypeLegacy !== 'slash' && dmgTypeLegacy !== 'pierce') dmgTypeLegacy = 'blunt';
+            typed[dmgTypeLegacy] = d;
+        }
+        typed.blunt *= (1 - inner) * (1 - body);
+        typed.slash *= (1 - inner) * (1 - body);
+        typed.pierce *= (1 - inner) * (1 - body);
         var modKey = ctx.hitPartModifierKey;
         if (!modKey && global.CombatMeleeResolve && typeof global.CombatMeleeResolve.mapHitPartToModifierKey === 'function') {
             modKey = global.CombatMeleeResolve.mapHitPartToModifierKey(ctx.hitPart || 'chest');
         }
-        var M = 1;
+        var Mblunt = 1, Mslash = 1, Mpierce = 1;
         if (global.CharacterAttributes && typeof global.CharacterAttributes.getDamageTypeModifier === 'function') {
-            M = global.CharacterAttributes.getDamageTypeModifier(modKey || 'chest', dmgType);
+            Mblunt = global.CharacterAttributes.getDamageTypeModifier(modKey || 'chest', 'blunt');
+            Mslash = global.CharacterAttributes.getDamageTypeModifier(modKey || 'chest', 'slash');
+            Mpierce = global.CharacterAttributes.getDamageTypeModifier(modKey || 'chest', 'pierce');
         }
-        d *= M;
+        typed.blunt *= Mblunt;
+        typed.slash *= Mslash;
+        typed.pierce *= Mpierce;
+        d = typed.blunt + typed.slash + typed.pierce;
+        ctx.damageAfterEnemyMitigationTyped = typed;
         ctx.damageAfterEnemyMitigation = d;
         if (global.GameLog && typeof global.GameLog.log === 'function' && global.UIText && typeof global.UIText.t === 'function') {
             try {
                 global.GameLog.log(global.UIText.t('log.combat.resolve.enemy_mit', {
                     inner: String(Math.round(inner * 1000) / 10),
                     body: String(Math.round(body * 1000) / 10),
-                    mType: String(Math.round(M * 1000) / 1000),
+                    mType: String('b:' + Math.round(Mblunt * 1000) / 1000 + '/s:' + Math.round(Mslash * 1000) / 1000 + '/p:' + Math.round(Mpierce * 1000) / 1000),
                     dmg: String(Math.round(d * 100) / 100)
                 }), 'damage');
             } catch (eM) { /* ignore */ }

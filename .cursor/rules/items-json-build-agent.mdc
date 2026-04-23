@@ -15,6 +15,7 @@ alwaysApply: false
 2. `materials_all.csv`（原 `materials_base` + `materials_cooking_raw` 合并维护）
 3. `product_base.csv`
 4. `currency_base.csv`
+5. `compost_matrix_base.csv`（堆肥四档基质/废坨；含 `fert_c`/`fert_n` 扩展列时须与 **`docs/design/23-fertilizer-bin-station.md`** 一致）
 
 ## 2) 输出 JSON 字段口径（强制）
 
@@ -41,10 +42,24 @@ alwaysApply: false
 - `usable` → `item.usable`（布尔）
 - `use_buff_id` → `item.use_buff_id`（字符串，指向 `data/buffs.json` 的 `buff_id`）
 
+**模块化 tooltip 引用字段**：
+- `info_module_set_id`（字符串）→ `item.info_module_set_id`。
+- 该字段仅做引用，不在 `build-items-json` 内解析模块内容。
+
+**CSV 扩展列保留（新增）**：
+- 构建脚本应保留“未被核心映射消费”的 CSV 列（非空值），原样写入 `items.json` 模板，供运行时模块（如 `csv_field_text`）读取。
+- 禁止在脚本里仅白名单写入导致策划新增列在构建后丢失。
+- 例：CSV 新增 `lore_fragment_1`，构建后应可在 `items.json[item_id].lore_fragment_1` 读取到。
+
 **烹饪原料**（与 `cooking-system-agent` 一致）：
 - CSV 列 **`cooking_ingredient`**：`1` / `true` / `yes` → `items.json` 写入 **`cooking_ingredient: true`**。
 - **未声明、空值或非真** → **不写该键**；运行时视为**不可**作为烹饪投料。
 - 新增物品若需进锅，须在 `materials_all.csv` 等对应 CSV 显式填 `cooking_ingredient`；合并表缺列时可运行 **`node tools/ensure-cooking-ingredient-column.mjs`**（仅当表头尚无该列时追加空列，并按脚本内 id 集合填默认 `1`，之后以 CSV 为准维护）。
+
+**制药投料**（与制药台盲配一致）：
+- CSV 列 **`pharmacy_ingredient`**：`1` / `true` / `yes` → `items.json` 写入 **`pharmacy_ingredient: true`**。
+- **未声明、空值或非真** → **不写该键**；运行时视为**不可**作为制药投料。
+- 合并表缺列时可运行 **`node tools/ensure-pharmacy-ingredient-column.mjs`**（追加空列，默认不可投料）。
 
 如果后续扩展新的展示字段或新的 effect 列，需要同步更新本规则与构建脚本。
 

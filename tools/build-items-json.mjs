@@ -17,7 +17,8 @@ const MERGE_FILES = [
   'consumables_base.csv',
   'materials_all.csv',
   'product_base.csv',
-  'currency_base.csv'
+  'currency_base.csv',
+  'compost_matrix_base.csv'
 ];
 
 function parseCsv(text) {
@@ -145,10 +146,14 @@ function rowToItem(o, filename) {
     item.fn = o.fn;
     item.desc_0 = o.fn;
   }
+  if (Object.prototype.hasOwnProperty.call(o, 'info_module_set_id')) {
+    const mid = String(o.info_module_set_id == null ? '' : o.info_module_set_id).trim();
+    if (mid) item.info_module_set_id = mid;
+  }
   if (o.category) item.category = o.category;
   if (o.sub_category) item.sub_category = o.sub_category;
-  const sl = intOrNull(o.stack_limit);
-  if (sl != null) item.stack_limit = sl;
+  // 全局口径：所有物品可堆叠数固定为 1
+  item.stack_limit = 1;
   if (o.quality) item.quality = o.quality;
   if (o.tags) item.tags = o.tags;
   if (o.source) item.source = o.source;
@@ -180,6 +185,18 @@ function rowToItem(o, filename) {
     const cv = String(o.cooking_ingredient == null ? '' : o.cooking_ingredient).trim().toLowerCase();
     if (cv === '1' || cv === 'true' || cv === 'yes') item.cooking_ingredient = true;
   }
+  if (Object.prototype.hasOwnProperty.call(o, 'pharmacy_ingredient')) {
+    const pv = String(o.pharmacy_ingredient == null ? '' : o.pharmacy_ingredient).trim().toLowerCase();
+    if (pv === '1' || pv === 'true' || pv === 'yes') item.pharmacy_ingredient = true;
+  }
+  if (Object.prototype.hasOwnProperty.call(o, 'compost_inoculant_aerobic')) {
+    const ivA = String(o.compost_inoculant_aerobic == null ? '' : o.compost_inoculant_aerobic).trim().toLowerCase();
+    if (ivA === '1' || ivA === 'true' || ivA === 'yes') item.compost_inoculant_aerobic = true;
+  }
+  if (Object.prototype.hasOwnProperty.call(o, 'compost_inoculant_anaerobic')) {
+    const ivN = String(o.compost_inoculant_anaerobic == null ? '' : o.compost_inoculant_anaerobic).trim().toLowerCase();
+    if (ivN === '1' || ivN === 'true' || ivN === 'yes') item.compost_inoculant_anaerobic = true;
+  }
   if (o.edible_buff_id) item.edible_buff_id = String(o.edible_buff_id).trim();
   const foodBuffDur = intOrNull(o.food_buff_duration_ticks);
   if (foodBuffDur != null && foodBuffDur > 0) item.food_buff_duration_ticks = foodBuffDur;
@@ -187,6 +204,36 @@ function rowToItem(o, filename) {
   item.fuel_points = (fp != null && fp > 0) ? fp : 0;
   const wp = intOrNull(o.water_points);
   item.water_points = (wp != null && wp > 0) ? wp : 0;
+
+  const wap = numOrNull(o.weapon_attack_power);
+  if (wap != null && wap >= 0) item.weapon_attack_power = wap;
+  const scf = numOrNull(o.skill_coef);
+  if (scf != null && scf > 0) item.skill_coef = scf;
+
+  // 保留 CSV 新增扩展列（用于策划自定义 tooltip 模块字段等）
+  const handled = {
+    id: 1, sn: 1, placeholder_name: 1, fn_before: 1, fn: 1,
+    category: 1, sub_category: 1, weight: 1, stack_limit: 1, quality: 1,
+    tags: 1, source: 1, production_lines: 1, spoilage_ticks: 1, spoilage: 1,
+    price_class: 1, volatility: 1, region_restrict: 1, base_value: 1,
+    satiety_restore: 1, thirst_restore: 1, nutrition_restore: 1,
+    edible: 1, edible_buff_id: 1, food_buff_duration_ticks: 1,
+    usable: 1, use_buff_id: 1,
+    cooking_ingredient: 1, pharmacy_ingredient: 1,
+    compost_inoculant_aerobic: 1, compost_inoculant_anaerobic: 1,
+    fuel_points: 1, water_points: 1,
+    weapon_attack_power: 1, skill_coef: 1,
+    accept_code: 1, convert_to_high: 1, usable_regions: 1,
+    info_module_set_id: 1
+  };
+  Object.keys(o).forEach((k) => {
+    if (handled[k]) return;
+    const raw = o[k];
+    if (raw == null) return;
+    const s = String(raw).trim();
+    if (!s) return;
+    item[k] = s;
+  });
 
   return item;
 }

@@ -95,6 +95,112 @@
     "fuel_points": 0,
     "water_points": 0
   },
+  "compost_matrix_batch_void": {
+    "item_id": "compost_matrix_batch_void",
+    "name": "发酵废坨",
+    "name_0": "发酵废坨",
+    "weight_kg": 4,
+    "sn": "发酵废坨",
+    "placeholder_name": "失败腐块",
+    "fn_before": "结块发硬，气味冲鼻又杂乱。",
+    "fn": "这批发酵失控留下的残渣，几乎没有任何农用价值；不配碳氮投料格，也无法进入换土制造链。",
+    "desc_0": "这批发酵失控留下的残渣，几乎没有任何农用价值；不配碳氮投料格，也无法进入换土制造链。",
+    "category": "material",
+    "sub_category": "compost_waste",
+    "stack_limit": 1,
+    "tags": "material;compost;waste;life_farming",
+    "source": "compost",
+    "production_lines": "compost",
+    "spoilage_ticks": 0,
+    "price_class": "material",
+    "volatility": "low",
+    "region_restrict": 0,
+    "base_value": 10,
+    "edible": false,
+    "fuel_points": 0,
+    "water_points": 0
+  },
+  "compost_matrix_grade_high": {
+    "item_id": "compost_matrix_grade_high",
+    "name": "腐熟基质·细",
+    "name_0": "腐熟基质·细",
+    "weight_kg": 3,
+    "sn": "腐熟基质·细",
+    "placeholder_name": "细腻腐料",
+    "fn_before": "手感细腻绵软，气味干净的土块。",
+    "fn": "细腻度较高的腐熟半成品，适合走高级制造线去压制与配土；仍不可直接当作终局换土土料使用。",
+    "desc_0": "细腻度较高的腐熟半成品，适合走高级制造线去压制与配土；仍不可直接当作终局换土土料使用。",
+    "category": "material",
+    "sub_category": "compost_matrix",
+    "stack_limit": 1,
+    "tags": "material;compost;life_farming",
+    "source": "compost",
+    "production_lines": "compost",
+    "spoilage_ticks": 0,
+    "price_class": "material",
+    "volatility": "mid",
+    "region_restrict": 0,
+    "base_value": 260,
+    "edible": false,
+    "fuel_points": 0,
+    "water_points": 0,
+    "fert_c": "30",
+    "fert_n": "3"
+  },
+  "compost_matrix_grade_low": {
+    "item_id": "compost_matrix_grade_low",
+    "name": "腐熟基质·散",
+    "name_0": "腐熟基质·散",
+    "weight_kg": 3,
+    "sn": "腐熟基质·散",
+    "placeholder_name": "散碎腐料",
+    "fn_before": "摸起来干散，颗粒粗细不均，还有点臭的土块。",
+    "fn": "触感松散的腐熟半成品，可作为土壤调理基料进入后续制造链，但本身不足以替代整块种植土。",
+    "desc_0": "触感松散的腐熟半成品，可作为土壤调理基料进入后续制造链，但本身不足以替代整块种植土。",
+    "category": "material",
+    "sub_category": "compost_matrix",
+    "stack_limit": 1,
+    "tags": "material;compost;life_farming",
+    "source": "compost",
+    "production_lines": "compost",
+    "spoilage_ticks": 0,
+    "price_class": "material",
+    "volatility": "low",
+    "region_restrict": 0,
+    "base_value": 120,
+    "edible": false,
+    "fuel_points": 0,
+    "water_points": 0,
+    "fert_c": "42",
+    "fert_n": "3"
+  },
+  "compost_matrix_grade_mid": {
+    "item_id": "compost_matrix_grade_mid",
+    "name": "腐熟基质·匀",
+    "name_0": "腐熟基质·匀",
+    "weight_kg": 3,
+    "sn": "腐熟基质·匀",
+    "placeholder_name": "均匀腐料",
+    "fn_before": "颗粒大小相近，不干不湿的土块。",
+    "fn": "质地均匀的腐熟半成品，作为基质半成品，后续需经制造流程才能换成可用的特殊土壤。",
+    "desc_0": "质地均匀的腐熟半成品，作为基质半成品，后续需经制造流程才能换成可用的特殊土壤。",
+    "category": "material",
+    "sub_category": "compost_matrix",
+    "stack_limit": 1,
+    "tags": "material;compost;life_farming",
+    "source": "compost",
+    "production_lines": "compost",
+    "spoilage_ticks": 0,
+    "price_class": "material",
+    "volatility": "low",
+    "region_restrict": 0,
+    "base_value": 180,
+    "edible": false,
+    "fuel_points": 0,
+    "water_points": 0,
+    "fert_c": "36",
+    "fert_n": "3"
+  },
   "currency_film": {
     "item_id": "currency_film",
     "name": "菲林",
@@ -105,7 +211,7 @@
     "fn": "韧而薄的亮片，兴许能换东西",
     "desc_0": "韧而薄的亮片，兴许能换东西",
     "category": "currency",
-    "stack_limit": 100,
+    "stack_limit": 1,
     "quality": "green",
     "tags": "currency",
     "source": "buy",
@@ -129,7 +235,7 @@
     "fn": "软韧的底片状物，或许能当钱",
     "desc_0": "软韧的底片状物，或许能当钱",
     "category": "currency",
-    "stack_limit": 500000,
+    "stack_limit": 1,
     "quality": "blue",
     "tags": "currency",
     "source": "buy",
@@ -154,7 +260,7 @@
     "fn": "小块凉滑的晶石，或许能当钱",
     "desc_0": "小块凉滑的晶石，或许能当钱",
     "category": "currency",
-    "stack_limit": 500000,
+    "stack_limit": 1,
     "quality": "blue",
     "tags": "currency",
     "source": "buy",
@@ -179,7 +285,7 @@
     "fn": "沉手如小石块的晶片，兴许能换东西",
     "desc_0": "沉手如小石块的晶片，兴许能换东西",
     "category": "currency",
-    "stack_limit": 100,
+    "stack_limit": 1,
     "quality": "green",
     "tags": "currency",
     "source": "buy",
@@ -203,7 +309,7 @@
     "fn": "轻软似羽的薄片，或许能当钱",
     "desc_0": "轻软似羽的薄片，或许能当钱",
     "category": "currency",
-    "stack_limit": 500000,
+    "stack_limit": 1,
     "quality": "blue",
     "tags": "currency",
     "source": "buy",
@@ -228,7 +334,7 @@
     "fn": "冰凉透亮的小块，兴许能换东西",
     "desc_0": "冰凉透亮的小块，兴许能换东西",
     "category": "currency",
-    "stack_limit": 100,
+    "stack_limit": 1,
     "quality": "green",
     "tags": "currency",
     "source": "buy",
@@ -252,7 +358,7 @@
     "fn": "轻透带星点的薄片，兴许能换东西",
     "desc_0": "轻透带星点的薄片，兴许能换东西",
     "category": "currency",
-    "stack_limit": 100,
+    "stack_limit": 1,
     "quality": "green",
     "tags": "currency",
     "source": "buy",
@@ -276,7 +382,7 @@
     "fn": "沉手如石块的晶粒，或许能当钱",
     "desc_0": "沉手如石块的晶粒，或许能当钱",
     "category": "currency",
-    "stack_limit": 500000,
+    "stack_limit": 1,
     "quality": "blue",
     "tags": "currency",
     "source": "buy",
@@ -313,7 +419,9 @@
     "region_restrict": 0,
     "edible": false,
     "fuel_points": 0,
-    "water_points": 0
+    "water_points": 0,
+    "fert_c": "4",
+    "fert_n": "22"
   },
   "fish_anchovy": {
     "item_id": "fish_anchovy",
@@ -337,7 +445,9 @@
     "region_restrict": 0,
     "edible": false,
     "fuel_points": 0,
-    "water_points": 0
+    "water_points": 0,
+    "fert_c": "22",
+    "fert_n": "121"
   },
   "fish_bone": {
     "item_id": "fish_bone",
@@ -361,7 +471,9 @@
     "region_restrict": 0,
     "edible": false,
     "fuel_points": 0,
-    "water_points": 0
+    "water_points": 0,
+    "fert_c": "11",
+    "fert_n": "21"
   },
   "fish_bonito": {
     "item_id": "fish_bonito",
@@ -385,7 +497,9 @@
     "region_restrict": 0,
     "edible": false,
     "fuel_points": 0,
-    "water_points": 0
+    "water_points": 0,
+    "fert_c": "22",
+    "fert_n": "121"
   },
   "fish_bream": {
     "item_id": "fish_bream",
@@ -410,7 +524,9 @@
     "edible": false,
     "cooking_ingredient": true,
     "fuel_points": 0,
-    "water_points": 0
+    "water_points": 0,
+    "fert_c": "22",
+    "fert_n": "121"
   },
   "fish_cockle": {
     "item_id": "fish_cockle",
@@ -434,7 +550,9 @@
     "region_restrict": 0,
     "edible": false,
     "fuel_points": 0,
-    "water_points": 0
+    "water_points": 0,
+    "fert_c": "6",
+    "fert_n": "33"
   },
   "fish_crab_spider": {
     "item_id": "fish_crab_spider",
@@ -458,7 +576,9 @@
     "region_restrict": 0,
     "edible": false,
     "fuel_points": 0,
-    "water_points": 0
+    "water_points": 0,
+    "fert_c": "22",
+    "fert_n": "121"
   },
   "fish_cuttlefish": {
     "item_id": "fish_cuttlefish",
@@ -482,7 +602,9 @@
     "region_restrict": 0,
     "edible": false,
     "fuel_points": 0,
-    "water_points": 0
+    "water_points": 0,
+    "fert_c": "22",
+    "fert_n": "121"
   },
   "fish_eel": {
     "item_id": "fish_eel",
@@ -506,7 +628,9 @@
     "region_restrict": 0,
     "edible": false,
     "fuel_points": 0,
-    "water_points": 0
+    "water_points": 0,
+    "fert_c": "22",
+    "fert_n": "121"
   },
   "fish_fish_maw": {
     "item_id": "fish_fish_maw",
@@ -530,7 +654,9 @@
     "region_restrict": 0,
     "edible": false,
     "fuel_points": 0,
-    "water_points": 0
+    "water_points": 0,
+    "fert_c": "4",
+    "fert_n": "22"
   },
   "fish_fish_maw_glue": {
     "item_id": "fish_fish_maw_glue",
@@ -554,7 +680,9 @@
     "region_restrict": 0,
     "edible": false,
     "fuel_points": 0,
-    "water_points": 0
+    "water_points": 0,
+    "fert_c": "4",
+    "fert_n": "22"
   },
   "fish_head": {
     "item_id": "fish_head",
@@ -578,7 +706,9 @@
     "region_restrict": 0,
     "edible": false,
     "fuel_points": 0,
-    "water_points": 0
+    "water_points": 0,
+    "fert_c": "10",
+    "fert_n": "18"
   },
   "fish_monkfish": {
     "item_id": "fish_monkfish",
@@ -602,7 +732,9 @@
     "region_restrict": 0,
     "edible": false,
     "fuel_points": 0,
-    "water_points": 0
+    "water_points": 0,
+    "fert_c": "22",
+    "fert_n": "121"
   },
   "fish_mussel": {
     "item_id": "fish_mussel",
@@ -626,7 +758,9 @@
     "region_restrict": 0,
     "edible": false,
     "fuel_points": 0,
-    "water_points": 0
+    "water_points": 0,
+    "fert_c": "8",
+    "fert_n": "44"
   },
   "fish_mussel_greenlip": {
     "item_id": "fish_mussel_greenlip",
@@ -650,7 +784,9 @@
     "region_restrict": 0,
     "edible": false,
     "fuel_points": 0,
-    "water_points": 0
+    "water_points": 0,
+    "fert_c": "10",
+    "fert_n": "55"
   },
   "fish_octopus": {
     "item_id": "fish_octopus",
@@ -674,7 +810,9 @@
     "region_restrict": 0,
     "edible": false,
     "fuel_points": 0,
-    "water_points": 0
+    "water_points": 0,
+    "fert_c": "20",
+    "fert_n": "110"
   },
   "fish_rascasse": {
     "item_id": "fish_rascasse",
@@ -698,7 +836,9 @@
     "region_restrict": 0,
     "edible": false,
     "fuel_points": 0,
-    "water_points": 0
+    "water_points": 0,
+    "fert_c": "22",
+    "fert_n": "121"
   },
   "fish_scallop_dried": {
     "item_id": "fish_scallop_dried",
@@ -712,7 +852,7 @@
     "desc_0": "干贝泡发吊高汤煮粥鲜上加鲜。",
     "category": "hunt",
     "sub_category": "seafood_product",
-    "stack_limit": 10,
+    "stack_limit": 1,
     "quality": "white",
     "tags": "material",
     "source": "fishing",
@@ -722,7 +862,9 @@
     "region_restrict": 0,
     "edible": false,
     "fuel_points": 0,
-    "water_points": 0
+    "water_points": 0,
+    "fert_c": "4",
+    "fert_n": "22"
   },
   "fish_sea_cucumber": {
     "item_id": "fish_sea_cucumber",
@@ -746,7 +888,9 @@
     "region_restrict": 0,
     "edible": false,
     "fuel_points": 0,
-    "water_points": 0
+    "water_points": 0,
+    "fert_c": "4",
+    "fert_n": "22"
   },
   "fish_shrimp_head": {
     "item_id": "fish_shrimp_head",
@@ -770,7 +914,9 @@
     "region_restrict": 0,
     "edible": false,
     "fuel_points": 0,
-    "water_points": 0
+    "water_points": 0,
+    "fert_c": "4",
+    "fert_n": "22"
   },
   "fish_shrimp_large": {
     "item_id": "fish_shrimp_large",
@@ -794,7 +940,9 @@
     "region_restrict": 0,
     "edible": false,
     "fuel_points": 0,
-    "water_points": 0
+    "water_points": 0,
+    "fert_c": "10",
+    "fert_n": "55"
   },
   "fish_shrimp_river": {
     "item_id": "fish_shrimp_river",
@@ -819,7 +967,9 @@
     "edible": false,
     "cooking_ingredient": true,
     "fuel_points": 0,
-    "water_points": 0
+    "water_points": 0,
+    "fert_c": "4",
+    "fert_n": "22"
   },
   "fish_shrimp_sea": {
     "item_id": "fish_shrimp_sea",
@@ -843,7 +993,9 @@
     "region_restrict": 0,
     "edible": false,
     "fuel_points": 0,
-    "water_points": 0
+    "water_points": 0,
+    "fert_c": "10",
+    "fert_n": "55"
   },
   "fish_shrimp_shell": {
     "item_id": "fish_shrimp_shell",
@@ -867,7 +1019,9 @@
     "region_restrict": 0,
     "edible": false,
     "fuel_points": 0,
-    "water_points": 0
+    "water_points": 0,
+    "fert_c": "6",
+    "fert_n": "12"
   },
   "fish_shrimp_small": {
     "item_id": "fish_shrimp_small",
@@ -891,7 +1045,9 @@
     "region_restrict": 0,
     "edible": false,
     "fuel_points": 0,
-    "water_points": 0
+    "water_points": 0,
+    "fert_c": "6",
+    "fert_n": "33"
   },
   "fish_squid": {
     "item_id": "fish_squid",
@@ -916,7 +1072,9 @@
     "edible": false,
     "cooking_ingredient": true,
     "fuel_points": 0,
-    "water_points": 0
+    "water_points": 0,
+    "fert_c": "10",
+    "fert_n": "55"
   },
   "fish_whitefish": {
     "item_id": "fish_whitefish",
@@ -941,7 +1099,9 @@
     "edible": false,
     "cooking_ingredient": true,
     "fuel_points": 0,
-    "water_points": 0
+    "water_points": 0,
+    "fert_c": "22",
+    "fert_n": "121"
   },
   "food_cooking_fail_generic": {
     "item_id": "food_cooking_fail_generic",
@@ -954,7 +1114,7 @@
     "desc_0": "TODO：策划补全展示名、描述、是否叠加其它 Buff；烹饪失败时全局产出。",
     "category": "food",
     "sub_category": "cooking_fail",
-    "stack_limit": 30,
+    "stack_limit": 1,
     "quality": "white",
     "tags": "food;consumable;cook;cooking_fail",
     "source": "cook",
@@ -980,7 +1140,7 @@
     "desc_0": "苹果木与迷迭香熏烤火鸡肉，带淡淡果木香。",
     "category": "food",
     "sub_category": "roast",
-    "stack_limit": 8,
+    "stack_limit": 1,
     "quality": "white",
     "tags": "food;consumable;cook;cooked",
     "source": "cook",
@@ -1006,7 +1166,7 @@
     "desc_0": "牛腩与根茎蔬菜慢炖，汤清肉糯，饱足感强。",
     "category": "food",
     "sub_category": "stew",
-    "stack_limit": 8,
+    "stack_limit": 1,
     "quality": "white",
     "tags": "food;consumable;cook;cooked",
     "source": "cook",
@@ -1032,7 +1192,7 @@
     "desc_0": "牛肩配洋葱黑胡椒猪油快炒。",
     "category": "food",
     "sub_category": "stirfry",
-    "stack_limit": 10,
+    "stack_limit": 1,
     "quality": "white",
     "tags": "food;consumable;cook;cooked",
     "source": "cook",
@@ -1058,7 +1218,7 @@
     "desc_0": "甜菜糖盐轻发酵的爽口饮，偏解渴。",
     "category": "food",
     "sub_category": "drink",
-    "stack_limit": 8,
+    "stack_limit": 1,
     "quality": "white",
     "tags": "food;consumable;cook;cooked",
     "source": "cook",
@@ -1084,7 +1244,7 @@
     "desc_0": "水牛奶加糖发酵的稠酸奶，奶香重。",
     "category": "food",
     "sub_category": "dairy",
-    "stack_limit": 10,
+    "stack_limit": 1,
     "quality": "white",
     "tags": "food;consumable;cook;cooked",
     "source": "cook",
@@ -1110,7 +1270,7 @@
     "desc_0": "鸡丁配椒蒜姜猪油爆炒，下饭。",
     "category": "food",
     "sub_category": "stirfry",
-    "stack_limit": 10,
+    "stack_limit": 1,
     "quality": "white",
     "tags": "food;consumable;cook;cooked",
     "source": "cook",
@@ -1136,7 +1296,7 @@
     "desc_0": "猪油里炸到外脆里沙的土豆块。",
     "category": "food",
     "sub_category": "fry",
-    "stack_limit": 12,
+    "stack_limit": 1,
     "quality": "white",
     "tags": "food;consumable;cook;cooked",
     "source": "cook",
@@ -1162,7 +1322,7 @@
     "desc_0": "粗盐与香草蒜腌入味的猪腩片，宜再烹或薄煎。",
     "category": "food",
     "sub_category": "pickle",
-    "stack_limit": 12,
+    "stack_limit": 1,
     "quality": "white",
     "tags": "food;consumable;cook;cooked",
     "source": "cook",
@@ -1188,7 +1348,7 @@
     "desc_0": "荷叶包糯米鸡肉香菇蒸透，一口油润。",
     "category": "food",
     "sub_category": "steam",
-    "stack_limit": 6,
+    "stack_limit": 1,
     "quality": "white",
     "tags": "food;consumable;cook;cooked",
     "source": "cook",
@@ -1214,7 +1374,7 @@
     "desc_0": "牛舌配黄芥末与柠檬的冷盘风味。",
     "category": "food",
     "sub_category": "cold",
-    "stack_limit": 8,
+    "stack_limit": 1,
     "quality": "white",
     "tags": "food;consumable;cook;cooked",
     "source": "cook",
@@ -1240,7 +1400,7 @@
     "desc_0": "猪蹄与大白芸豆熬到胶质出汤，浓稠暖胃。",
     "category": "food",
     "sub_category": "soup",
-    "stack_limit": 8,
+    "stack_limit": 1,
     "quality": "white",
     "tags": "food;consumable;cook;cooked",
     "source": "cook",
@@ -1266,7 +1426,7 @@
     "desc_0": "虾仁挂薄糊软炸，外酥里弹。",
     "category": "food",
     "sub_category": "fry",
-    "stack_limit": 8,
+    "stack_limit": 1,
     "quality": "white",
     "tags": "food;consumable;cook;cooked",
     "source": "cook;fishing",
@@ -1292,7 +1452,7 @@
     "desc_0": "土豆抹猪油撒百里香海盐烤到焦边。",
     "category": "food",
     "sub_category": "roast",
-    "stack_limit": 12,
+    "stack_limit": 1,
     "quality": "white",
     "tags": "food;consumable;cook;cooked",
     "source": "cook",
@@ -1318,7 +1478,7 @@
     "desc_0": "盐、柠檬与炭火烤出的白身鱼，外干里嫩。",
     "category": "food",
     "sub_category": "grill",
-    "stack_limit": 8,
+    "stack_limit": 1,
     "quality": "white",
     "tags": "food;consumable;cook;cooked",
     "source": "cook;fishing",
@@ -1344,7 +1504,7 @@
     "desc_0": "盐蒜腌渍的黄瓜条，爽脆开胃。",
     "category": "food",
     "sub_category": "pickle",
-    "stack_limit": 20,
+    "stack_limit": 1,
     "quality": "white",
     "tags": "food;consumable;cook;cooked",
     "source": "cook",
@@ -1370,7 +1530,7 @@
     "desc_0": "芝麻蒜泥椒油拌黄瓜，清爽辛辣。",
     "category": "food",
     "sub_category": "salad",
-    "stack_limit": 12,
+    "stack_limit": 1,
     "quality": "white",
     "tags": "food;consumable;cook;cooked",
     "source": "cook",
@@ -1396,7 +1556,7 @@
     "desc_0": "鱿鱼圈急火爆炒，镬气足。",
     "category": "food",
     "sub_category": "stirfry",
-    "stack_limit": 10,
+    "stack_limit": 1,
     "quality": "white",
     "tags": "food;consumable;cook;cooked",
     "source": "cook;fishing",
@@ -1422,7 +1582,7 @@
     "desc_0": "鲂鱼配葱姜盐清蒸，湖鲜本味。",
     "category": "food",
     "sub_category": "steam",
-    "stack_limit": 6,
+    "stack_limit": 1,
     "quality": "white",
     "tags": "food;consumable;cook;cooked",
     "source": "cook;fishing",
@@ -1448,7 +1608,7 @@
     "desc_0": "蛋与软水蒸成镜面羹，清淡易咽。",
     "category": "food",
     "sub_category": "steam",
-    "stack_limit": 15,
+    "stack_limit": 1,
     "quality": "white",
     "tags": "food;consumable;cook;cooked",
     "source": "cook",
@@ -1474,7 +1634,7 @@
     "desc_0": "白身鱼配葱姜细熬，比简版更鲜一层。",
     "category": "food",
     "sub_category": "soup",
-    "stack_limit": 8,
+    "stack_limit": 1,
     "quality": "white",
     "tags": "food;consumable;cook;cooked",
     "source": "cook;fishing",
@@ -1500,7 +1660,7 @@
     "desc_0": "晒干后的兽肉条，不易坏，嚼起来费劲但能长时间顶饿。",
     "category": "food",
     "sub_category": "dried",
-    "stack_limit": 30,
+    "stack_limit": 1,
     "quality": "white",
     "tags": "food;consumable;cook",
     "source": "cook",
@@ -1527,7 +1687,7 @@
     "desc_0": "用河鱼和清香叶熬成的清汤，暖胃且能恢复较多饱食与饮水。",
     "category": "food",
     "sub_category": "soup",
-    "stack_limit": 8,
+    "stack_limit": 1,
     "quality": "white",
     "tags": "food;consumable;cook",
     "source": "cook;fishing",
@@ -1554,7 +1714,7 @@
     "desc_0": "用粗粮烙成的薄饼，耐放但口感偏硬，适合赶路时充饥。",
     "category": "food",
     "sub_category": "bread",
-    "stack_limit": 20,
+    "stack_limit": 1,
     "quality": "white",
     "tags": "food;consumable;cook",
     "source": "cook",
@@ -1581,7 +1741,7 @@
     "desc_0": "用苦根草煮出的茶汤，喝下去能略微退热提神，味道很苦。",
     "category": "food",
     "sub_category": "tea",
-    "stack_limit": 15,
+    "stack_limit": 1,
     "quality": "white",
     "tags": "food;consumable;cook;alchemy",
     "source": "cook",
@@ -1606,9 +1766,10 @@
     "placeholder_name": "稠肉糊",
     "fn": "用兽肉和野果一起煮成的糊状食物，能填饱肚子并恢复少许体力。",
     "desc_0": "用兽肉和野果一起煮成的糊状食物，能填饱肚子并恢复少许体力。",
+    "info_module_set_id": "module.food_basic",
     "category": "food",
     "sub_category": "stew",
-    "stack_limit": 10,
+    "stack_limit": 1,
     "quality": "white",
     "tags": "food;consumable;cook",
     "source": "cook",
@@ -1646,7 +1807,9 @@
     "region_restrict": 0,
     "edible": false,
     "fuel_points": 0,
-    "water_points": 0
+    "water_points": 0,
+    "fert_c": "25",
+    "fert_n": "7"
   },
   "herb_apricot": {
     "item_id": "herb_apricot",
@@ -1670,7 +1833,9 @@
     "region_restrict": 0,
     "edible": false,
     "fuel_points": 0,
-    "water_points": 0
+    "water_points": 0,
+    "fert_c": "62",
+    "fert_n": "26"
   },
   "herb_bamboo_shoot": {
     "item_id": "herb_bamboo_shoot",
@@ -1694,7 +1859,9 @@
     "region_restrict": 0,
     "edible": false,
     "fuel_points": 0,
-    "water_points": 0
+    "water_points": 0,
+    "fert_c": "44",
+    "fert_n": "48"
   },
   "herb_bamboo_shoot_winter": {
     "item_id": "herb_bamboo_shoot_winter",
@@ -1718,7 +1885,9 @@
     "region_restrict": 0,
     "edible": false,
     "fuel_points": 0,
-    "water_points": 0
+    "water_points": 0,
+    "fert_c": "44",
+    "fert_n": "48"
   },
   "herb_bay_leaf": {
     "item_id": "herb_bay_leaf",
@@ -1732,7 +1901,7 @@
     "desc_0": "月桂叶久煮取香，卤汁高汤丢一片。",
     "category": "herb",
     "sub_category": "spice",
-    "stack_limit": 10,
+    "stack_limit": 1,
     "quality": "white",
     "tags": "material",
     "source": "gathering",
@@ -1742,7 +1911,9 @@
     "region_restrict": 0,
     "edible": false,
     "fuel_points": 0,
-    "water_points": 0
+    "water_points": 0,
+    "fert_c": "13",
+    "fert_n": "4"
   },
   "herb_beans_white_haricot": {
     "item_id": "herb_beans_white_haricot",
@@ -1766,7 +1937,9 @@
     "region_restrict": 0,
     "edible": false,
     "fuel_points": 0,
-    "water_points": 0
+    "water_points": 0,
+    "fert_c": "43",
+    "fert_n": "12"
   },
   "herb_beet": {
     "item_id": "herb_beet",
@@ -1791,7 +1964,9 @@
     "edible": false,
     "cooking_ingredient": true,
     "fuel_points": 0,
-    "water_points": 0
+    "water_points": 0,
+    "fert_c": "44",
+    "fert_n": "48"
   },
   "herb_bitter": {
     "item_id": "herb_bitter",
@@ -1804,7 +1979,7 @@
     "desc_0": "叶子带苦味，有人嚼了提神，也有人煮水当凉茶，用量多了会拉肚子。",
     "category": "food",
     "sub_category": "herb_raw",
-    "stack_limit": 10,
+    "stack_limit": 1,
     "quality": "white",
     "tags": "food;consumable",
     "source": "gathering",
@@ -1832,7 +2007,7 @@
     "desc_0": "黑胡椒现磨才香，配牛排意面都行。",
     "category": "herb",
     "sub_category": "spice",
-    "stack_limit": 10,
+    "stack_limit": 1,
     "quality": "white",
     "tags": "material",
     "source": "gathering",
@@ -1843,7 +2018,9 @@
     "edible": false,
     "cooking_ingredient": true,
     "fuel_points": 0,
-    "water_points": 0
+    "water_points": 0,
+    "fert_c": "13",
+    "fert_n": "4"
   },
   "herb_bunga_kantan": {
     "item_id": "herb_bunga_kantan",
@@ -1857,7 +2034,7 @@
     "desc_0": "火炬姜花东南亚凉拌酸辣里显味。",
     "category": "herb",
     "sub_category": "flower",
-    "stack_limit": 10,
+    "stack_limit": 1,
     "quality": "white",
     "tags": "material",
     "source": "gathering",
@@ -1867,7 +2044,9 @@
     "region_restrict": 0,
     "edible": false,
     "fuel_points": 0,
-    "water_points": 0
+    "water_points": 0,
+    "fert_c": "13",
+    "fert_n": "4"
   },
   "herb_cabbage": {
     "item_id": "herb_cabbage",
@@ -1891,7 +2070,9 @@
     "region_restrict": 0,
     "edible": false,
     "fuel_points": 0,
-    "water_points": 0
+    "water_points": 0,
+    "fert_c": "44",
+    "fert_n": "48"
   },
   "herb_cacao_pod": {
     "item_id": "herb_cacao_pod",
@@ -1915,7 +2096,9 @@
     "region_restrict": 0,
     "edible": false,
     "fuel_points": 0,
-    "water_points": 0
+    "water_points": 0,
+    "fert_c": "62",
+    "fert_n": "26"
   },
   "herb_candlenut": {
     "item_id": "herb_candlenut",
@@ -1939,7 +2122,9 @@
     "region_restrict": 0,
     "edible": false,
     "fuel_points": 0,
-    "water_points": 0
+    "water_points": 0,
+    "fert_c": "29",
+    "fert_n": "8"
   },
   "herb_caper": {
     "item_id": "herb_caper",
@@ -1953,7 +2138,7 @@
     "desc_0": "刺山柑咸酸，配意面熏鱼也不赖。",
     "category": "herb",
     "sub_category": "fruit_product",
-    "stack_limit": 10,
+    "stack_limit": 1,
     "quality": "white",
     "tags": "material",
     "source": "gathering",
@@ -1963,7 +2148,9 @@
     "region_restrict": 0,
     "edible": false,
     "fuel_points": 0,
-    "water_points": 0
+    "water_points": 0,
+    "fert_c": "17",
+    "fert_n": "7"
   },
   "herb_cardamom_black": {
     "item_id": "herb_cardamom_black",
@@ -1977,7 +2164,7 @@
     "desc_0": "黑豆蔻烟熏香，南洋炖肉放几颗。",
     "category": "herb",
     "sub_category": "spice",
-    "stack_limit": 10,
+    "stack_limit": 1,
     "quality": "white",
     "tags": "material",
     "source": "gathering",
@@ -1987,7 +2174,9 @@
     "region_restrict": 0,
     "edible": false,
     "fuel_points": 0,
-    "water_points": 0
+    "water_points": 0,
+    "fert_c": "13",
+    "fert_n": "4"
   },
   "herb_cardamom_green": {
     "item_id": "herb_cardamom_green",
@@ -2001,7 +2190,7 @@
     "desc_0": "绿豆蔻异域炖咖喱、奶茶里见过。",
     "category": "herb",
     "sub_category": "spice",
-    "stack_limit": 10,
+    "stack_limit": 1,
     "quality": "white",
     "tags": "material",
     "source": "gathering",
@@ -2011,7 +2200,9 @@
     "region_restrict": 0,
     "edible": false,
     "fuel_points": 0,
-    "water_points": 0
+    "water_points": 0,
+    "fert_c": "13",
+    "fert_n": "4"
   },
   "herb_carrot": {
     "item_id": "herb_carrot",
@@ -2036,7 +2227,9 @@
     "edible": false,
     "cooking_ingredient": true,
     "fuel_points": 0,
-    "water_points": 0
+    "water_points": 0,
+    "fert_c": "44",
+    "fert_n": "48"
   },
   "herb_celery": {
     "item_id": "herb_celery",
@@ -2060,7 +2253,9 @@
     "region_restrict": 0,
     "edible": false,
     "fuel_points": 0,
-    "water_points": 0
+    "water_points": 0,
+    "fert_c": "44",
+    "fert_n": "48"
   },
   "herb_cherry": {
     "item_id": "herb_cherry",
@@ -2084,7 +2279,9 @@
     "region_restrict": 0,
     "edible": false,
     "fuel_points": 0,
-    "water_points": 0
+    "water_points": 0,
+    "fert_c": "42",
+    "fert_n": "18"
   },
   "herb_chestnut": {
     "item_id": "herb_chestnut",
@@ -2108,7 +2305,9 @@
     "region_restrict": 0,
     "edible": false,
     "fuel_points": 0,
-    "water_points": 0
+    "water_points": 0,
+    "fert_c": "36",
+    "fert_n": "10"
   },
   "herb_chili_kashmir": {
     "item_id": "herb_chili_kashmir",
@@ -2122,7 +2321,7 @@
     "desc_0": "克什米尔椒温和些，调色做印度糊合适。",
     "category": "herb",
     "sub_category": "spice",
-    "stack_limit": 10,
+    "stack_limit": 1,
     "quality": "white",
     "tags": "material",
     "source": "farming",
@@ -2132,7 +2331,9 @@
     "region_restrict": 0,
     "edible": false,
     "fuel_points": 0,
-    "water_points": 0
+    "water_points": 0,
+    "fert_c": "13",
+    "fert_n": "4"
   },
   "herb_chili_red": {
     "item_id": "herb_chili_red",
@@ -2146,7 +2347,7 @@
     "desc_0": "红辣椒做剁椒油泼辣子，辣味足。",
     "category": "herb",
     "sub_category": "spice",
-    "stack_limit": 10,
+    "stack_limit": 1,
     "quality": "white",
     "tags": "material",
     "source": "farming",
@@ -2157,7 +2358,9 @@
     "edible": false,
     "cooking_ingredient": true,
     "fuel_points": 0,
-    "water_points": 0
+    "water_points": 0,
+    "fert_c": "13",
+    "fert_n": "4"
   },
   "herb_chili_wild": {
     "item_id": "herb_chili_wild",
@@ -2171,7 +2374,7 @@
     "desc_0": "野山椒劲儿野，爆炒蘸水都爱搁。",
     "category": "herb",
     "sub_category": "spice",
-    "stack_limit": 10,
+    "stack_limit": 1,
     "quality": "white",
     "tags": "material",
     "source": "gathering",
@@ -2181,7 +2384,9 @@
     "region_restrict": 0,
     "edible": false,
     "fuel_points": 0,
-    "water_points": 0
+    "water_points": 0,
+    "fert_c": "13",
+    "fert_n": "4"
   },
   "herb_cilantro": {
     "item_id": "herb_cilantro",
@@ -2195,7 +2400,7 @@
     "desc_0": "芫荽凉拌蘸水去腥有人极爱有人躲。",
     "category": "herb",
     "sub_category": "spice",
-    "stack_limit": 10,
+    "stack_limit": 1,
     "quality": "white",
     "tags": "material",
     "source": "farming",
@@ -2205,7 +2410,9 @@
     "region_restrict": 0,
     "edible": false,
     "fuel_points": 0,
-    "water_points": 0
+    "water_points": 0,
+    "fert_c": "13",
+    "fert_n": "4"
   },
   "herb_clove": {
     "item_id": "herb_clove",
@@ -2219,7 +2426,7 @@
     "desc_0": "丁香味霸，卤排骨泡酒一点点就够。",
     "category": "herb",
     "sub_category": "spice",
-    "stack_limit": 10,
+    "stack_limit": 1,
     "quality": "white",
     "tags": "material",
     "source": "gathering",
@@ -2229,7 +2436,9 @@
     "region_restrict": 0,
     "edible": false,
     "fuel_points": 0,
-    "water_points": 0
+    "water_points": 0,
+    "fert_c": "13",
+    "fert_n": "4"
   },
   "herb_coriander_seed": {
     "item_id": "herb_coriander_seed",
@@ -2243,7 +2452,7 @@
     "desc_0": "芫荽子卤肉腌菜，异域汤里也放。",
     "category": "herb",
     "sub_category": "seed",
-    "stack_limit": 10,
+    "stack_limit": 1,
     "quality": "white",
     "tags": "material",
     "source": "farming",
@@ -2253,7 +2462,9 @@
     "region_restrict": 0,
     "edible": false,
     "fuel_points": 0,
-    "water_points": 0
+    "water_points": 0,
+    "fert_c": "14",
+    "fert_n": "4"
   },
   "herb_cucumber": {
     "item_id": "herb_cucumber",
@@ -2278,7 +2489,9 @@
     "edible": false,
     "cooking_ingredient": true,
     "fuel_points": 0,
-    "water_points": 0
+    "water_points": 0,
+    "fert_c": "40",
+    "fert_n": "44"
   },
   "herb_cumin": {
     "item_id": "herb_cumin",
@@ -2292,7 +2505,7 @@
     "desc_0": "孜然烤肉那股香，馆子门口飘着就是它。",
     "category": "herb",
     "sub_category": "spice",
-    "stack_limit": 10,
+    "stack_limit": 1,
     "quality": "white",
     "tags": "material",
     "source": "farming",
@@ -2302,7 +2515,9 @@
     "region_restrict": 0,
     "edible": false,
     "fuel_points": 0,
-    "water_points": 0
+    "water_points": 0,
+    "fert_c": "13",
+    "fert_n": "4"
   },
   "herb_curry_leaf": {
     "item_id": "herb_curry_leaf",
@@ -2316,7 +2531,7 @@
     "desc_0": "咖喱叶热锅一爆，南洋汤的底子香。",
     "category": "herb",
     "sub_category": "spice",
-    "stack_limit": 10,
+    "stack_limit": 1,
     "quality": "white",
     "tags": "material",
     "source": "gathering",
@@ -2326,7 +2541,9 @@
     "region_restrict": 0,
     "edible": false,
     "fuel_points": 0,
-    "water_points": 0
+    "water_points": 0,
+    "fert_c": "13",
+    "fert_n": "4"
   },
   "herb_dill": {
     "item_id": "herb_dill",
@@ -2340,7 +2557,7 @@
     "desc_0": "莳萝腌鱼拌酸酱，北欧那路口味。",
     "category": "herb",
     "sub_category": "spice",
-    "stack_limit": 10,
+    "stack_limit": 1,
     "quality": "white",
     "tags": "material",
     "source": "gathering",
@@ -2350,7 +2567,9 @@
     "region_restrict": 0,
     "edible": false,
     "fuel_points": 0,
-    "water_points": 0
+    "water_points": 0,
+    "fert_c": "13",
+    "fert_n": "4"
   },
   "herb_euryale": {
     "item_id": "herb_euryale",
@@ -2374,7 +2593,9 @@
     "region_restrict": 0,
     "edible": false,
     "fuel_points": 0,
-    "water_points": 0
+    "water_points": 0,
+    "fert_c": "48",
+    "fert_n": "10"
   },
   "herb_fennel": {
     "item_id": "herb_fennel",
@@ -2388,7 +2609,7 @@
     "desc_0": "茴香叶拌沙拉烤鱼也能去点腥。",
     "category": "herb",
     "sub_category": "spice",
-    "stack_limit": 10,
+    "stack_limit": 1,
     "quality": "white",
     "tags": "material",
     "source": "gathering",
@@ -2398,7 +2619,9 @@
     "region_restrict": 0,
     "edible": false,
     "fuel_points": 0,
-    "water_points": 0
+    "water_points": 0,
+    "fert_c": "13",
+    "fert_n": "4"
   },
   "herb_fennel_seed": {
     "item_id": "herb_fennel_seed",
@@ -2412,7 +2635,7 @@
     "desc_0": "小茴香去牛羊肉膻，奶茶里也有人搁。",
     "category": "herb",
     "sub_category": "seed",
-    "stack_limit": 10,
+    "stack_limit": 1,
     "quality": "white",
     "tags": "material",
     "source": "farming",
@@ -2422,7 +2645,9 @@
     "region_restrict": 0,
     "edible": false,
     "fuel_points": 0,
-    "water_points": 0
+    "water_points": 0,
+    "fert_c": "14",
+    "fert_n": "4"
   },
   "herb_galangal": {
     "item_id": "herb_galangal",
@@ -2436,7 +2661,7 @@
     "desc_0": "蓝姜比生姜更野，泰式汤去腥狠。",
     "category": "herb",
     "sub_category": "spice",
-    "stack_limit": 10,
+    "stack_limit": 1,
     "quality": "white",
     "tags": "material",
     "source": "gathering",
@@ -2446,7 +2671,9 @@
     "region_restrict": 0,
     "edible": false,
     "fuel_points": 0,
-    "water_points": 0
+    "water_points": 0,
+    "fert_c": "13",
+    "fert_n": "4"
   },
   "herb_garlic": {
     "item_id": "herb_garlic",
@@ -2471,7 +2698,9 @@
     "edible": false,
     "cooking_ingredient": true,
     "fuel_points": 0,
-    "water_points": 0
+    "water_points": 0,
+    "fert_c": "13",
+    "fert_n": "4"
   },
   "herb_garrofo": {
     "item_id": "herb_garrofo",
@@ -2496,7 +2725,9 @@
     "edible": false,
     "cooking_ingredient": true,
     "fuel_points": 0,
-    "water_points": 0
+    "water_points": 0,
+    "fert_c": "43",
+    "fert_n": "12"
   },
   "herb_ginger": {
     "item_id": "herb_ginger",
@@ -2510,7 +2741,7 @@
     "desc_0": "生姜炒菜炖汤去腥暖胃，野采筋粗也一样用。",
     "category": "herb",
     "sub_category": "spice",
-    "stack_limit": 10,
+    "stack_limit": 1,
     "quality": "white",
     "tags": "material",
     "source": "farming",
@@ -2521,7 +2752,9 @@
     "edible": false,
     "cooking_ingredient": true,
     "fuel_points": 0,
-    "water_points": 0
+    "water_points": 0,
+    "fert_c": "13",
+    "fert_n": "4"
   },
   "herb_ginseng": {
     "item_id": "herb_ginseng",
@@ -2535,7 +2768,7 @@
     "desc_0": "人参老火炖汤传说补气，可别乱进补。",
     "category": "herb",
     "sub_category": "spice",
-    "stack_limit": 10,
+    "stack_limit": 1,
     "quality": "white",
     "tags": "material",
     "source": "gathering",
@@ -2545,7 +2778,9 @@
     "region_restrict": 0,
     "edible": false,
     "fuel_points": 0,
-    "water_points": 0
+    "water_points": 0,
+    "fert_c": "13",
+    "fert_n": "4"
   },
   "herb_goji": {
     "item_id": "herb_goji",
@@ -2559,7 +2794,7 @@
     "desc_0": "枸杞泡茶炖甜汤，药膳摊子常见。",
     "category": "herb",
     "sub_category": "fruit_product",
-    "stack_limit": 10,
+    "stack_limit": 1,
     "quality": "white",
     "tags": "material",
     "source": "gathering",
@@ -2569,7 +2804,9 @@
     "region_restrict": 0,
     "edible": false,
     "fuel_points": 0,
-    "water_points": 0
+    "water_points": 0,
+    "fert_c": "11",
+    "fert_n": "5"
   },
   "herb_green": {
     "item_id": "herb_green",
@@ -2582,7 +2819,7 @@
     "desc_0": "随手掐的嫩草叶，嚼着有点草腥，能稍微解渴，常被当零嘴或塞进干粮里。",
     "category": "food",
     "sub_category": "herb_raw",
-    "stack_limit": 10,
+    "stack_limit": 1,
     "quality": "white",
     "tags": "food;consumable",
     "source": "gathering",
@@ -2619,7 +2856,9 @@
     "region_restrict": 0,
     "edible": false,
     "fuel_points": 0,
-    "water_points": 0
+    "water_points": 0,
+    "fert_c": "36",
+    "fert_n": "10"
   },
   "herb_juniper_berry": {
     "item_id": "herb_juniper_berry",
@@ -2633,7 +2872,7 @@
     "desc_0": "杜松子腌野味，泡酒也去膻。",
     "category": "herb",
     "sub_category": "fruit_product",
-    "stack_limit": 10,
+    "stack_limit": 1,
     "quality": "white",
     "tags": "material",
     "source": "gathering",
@@ -2643,7 +2882,9 @@
     "region_restrict": 0,
     "edible": false,
     "fuel_points": 0,
-    "water_points": 0
+    "water_points": 0,
+    "fert_c": "62",
+    "fert_n": "26"
   },
   "herb_kombu": {
     "item_id": "herb_kombu",
@@ -2657,7 +2898,7 @@
     "desc_0": "真昆布熬日式高汤，拉面锅底第一步。",
     "category": "herb",
     "sub_category": "seafood_product",
-    "stack_limit": 10,
+    "stack_limit": 1,
     "quality": "white",
     "tags": "material",
     "source": "gathering",
@@ -2667,7 +2908,9 @@
     "region_restrict": 0,
     "edible": false,
     "fuel_points": 0,
-    "water_points": 0
+    "water_points": 0,
+    "fert_c": "4",
+    "fert_n": "22"
   },
   "herb_konjac": {
     "item_id": "herb_konjac",
@@ -2691,7 +2934,9 @@
     "region_restrict": 0,
     "edible": false,
     "fuel_points": 0,
-    "water_points": 0
+    "water_points": 0,
+    "fert_c": "44",
+    "fert_n": "48"
   },
   "herb_laksa_leaf": {
     "item_id": "herb_laksa_leaf",
@@ -2705,7 +2950,7 @@
     "desc_0": "叻沙叶煮叻沙汤正对味。",
     "category": "herb",
     "sub_category": "spice",
-    "stack_limit": 10,
+    "stack_limit": 1,
     "quality": "white",
     "tags": "material",
     "source": "gathering",
@@ -2715,7 +2960,9 @@
     "region_restrict": 0,
     "edible": false,
     "fuel_points": 0,
-    "water_points": 0
+    "water_points": 0,
+    "fert_c": "13",
+    "fert_n": "4"
   },
   "herb_leaf_fresh": {
     "item_id": "herb_leaf_fresh",
@@ -2729,7 +2976,7 @@
     "desc_0": "常被用来去腥或为料理增加清爽口感",
     "category": "herb",
     "sub_category": "leaf",
-    "stack_limit": 120,
+    "stack_limit": 1,
     "quality": "white",
     "tags": "material;herb;cooking",
     "source": "gathering",
@@ -2741,7 +2988,9 @@
     "base_value": 600,
     "edible": false,
     "fuel_points": 0,
-    "water_points": 0
+    "water_points": 0,
+    "fert_c": "8",
+    "fert_n": "9"
   },
   "herb_leek": {
     "item_id": "herb_leek",
@@ -2755,7 +3004,7 @@
     "desc_0": "韭葱洋人炖高汤爱使，顶大葱也行。",
     "category": "herb",
     "sub_category": "spice",
-    "stack_limit": 10,
+    "stack_limit": 1,
     "quality": "white",
     "tags": "material",
     "source": "farming",
@@ -2765,7 +3014,9 @@
     "region_restrict": 0,
     "edible": false,
     "fuel_points": 0,
-    "water_points": 0
+    "water_points": 0,
+    "fert_c": "13",
+    "fert_n": "4"
   },
   "herb_lemon": {
     "item_id": "herb_lemon",
@@ -2790,7 +3041,9 @@
     "edible": false,
     "cooking_ingredient": true,
     "fuel_points": 0,
-    "water_points": 0
+    "water_points": 0,
+    "fert_c": "62",
+    "fert_n": "26"
   },
   "herb_lemongrass": {
     "item_id": "herb_lemongrass",
@@ -2804,7 +3057,7 @@
     "desc_0": "香茅拍散下锅，冬荫功别怕呛手。",
     "category": "herb",
     "sub_category": "spice",
-    "stack_limit": 10,
+    "stack_limit": 1,
     "quality": "white",
     "tags": "material",
     "source": "gathering",
@@ -2814,7 +3067,9 @@
     "region_restrict": 0,
     "edible": false,
     "fuel_points": 0,
-    "water_points": 0
+    "water_points": 0,
+    "fert_c": "13",
+    "fert_n": "4"
   },
   "herb_lotus_leaf": {
     "item_id": "herb_lotus_leaf",
@@ -2839,7 +3094,9 @@
     "edible": false,
     "cooking_ingredient": true,
     "fuel_points": 0,
-    "water_points": 0
+    "water_points": 0,
+    "fert_c": "26",
+    "fert_n": "29"
   },
   "herb_lotus_seed": {
     "item_id": "herb_lotus_seed",
@@ -2853,7 +3110,7 @@
     "desc_0": "莲子银耳甜汤芯苦要剔掉。",
     "category": "herb",
     "sub_category": "seed",
-    "stack_limit": 10,
+    "stack_limit": 1,
     "quality": "white",
     "tags": "material",
     "source": "farming",
@@ -2863,7 +3120,9 @@
     "region_restrict": 0,
     "edible": false,
     "fuel_points": 0,
-    "water_points": 0
+    "water_points": 0,
+    "fert_c": "22",
+    "fert_n": "6"
   },
   "herb_mace": {
     "item_id": "herb_mace",
@@ -2877,7 +3136,7 @@
     "desc_0": "豆蔻皮炖肉柔和一层香气。",
     "category": "herb",
     "sub_category": "spice",
-    "stack_limit": 10,
+    "stack_limit": 1,
     "quality": "white",
     "tags": "material",
     "source": "gathering",
@@ -2887,7 +3146,9 @@
     "region_restrict": 0,
     "edible": false,
     "fuel_points": 0,
-    "water_points": 0
+    "water_points": 0,
+    "fert_c": "13",
+    "fert_n": "4"
   },
   "herb_maize": {
     "item_id": "herb_maize",
@@ -2911,7 +3172,9 @@
     "region_restrict": 0,
     "edible": false,
     "fuel_points": 0,
-    "water_points": 0
+    "water_points": 0,
+    "fert_c": "56",
+    "fert_n": "11"
   },
   "herb_mushroom_floral": {
     "item_id": "herb_mushroom_floral",
@@ -2934,8 +3197,12 @@
     "volatility": "mid",
     "region_restrict": 0,
     "edible": false,
+    "compost_inoculant_aerobic": true,
+    "compost_inoculant_anaerobic": true,
     "fuel_points": 0,
-    "water_points": 0
+    "water_points": 0,
+    "fert_c": "18",
+    "fert_n": "16"
   },
   "herb_mustard_seed": {
     "item_id": "herb_mustard_seed",
@@ -2949,7 +3216,7 @@
     "desc_0": "芥末籽磨酱腌菜，西式芥末那口冲。",
     "category": "herb",
     "sub_category": "seed",
-    "stack_limit": 10,
+    "stack_limit": 1,
     "quality": "white",
     "tags": "material",
     "source": "farming",
@@ -2959,7 +3226,9 @@
     "region_restrict": 0,
     "edible": false,
     "fuel_points": 0,
-    "water_points": 0
+    "water_points": 0,
+    "fert_c": "14",
+    "fert_n": "4"
   },
   "herb_mustard_yellow": {
     "item_id": "herb_mustard_yellow",
@@ -2973,7 +3242,7 @@
     "desc_0": "黄芥末酱抹热狗三明治常见。",
     "category": "herb",
     "sub_category": "seed",
-    "stack_limit": 10,
+    "stack_limit": 1,
     "quality": "white",
     "tags": "material",
     "source": "cooking",
@@ -2984,7 +3253,9 @@
     "edible": false,
     "cooking_ingredient": true,
     "fuel_points": 0,
-    "water_points": 0
+    "water_points": 0,
+    "fert_c": "14",
+    "fert_n": "4"
   },
   "herb_nutmeg": {
     "item_id": "herb_nutmeg",
@@ -2998,7 +3269,7 @@
     "desc_0": "肉豆蔻磨粉炖肉牛奶炖蛋去腥。",
     "category": "herb",
     "sub_category": "spice",
-    "stack_limit": 10,
+    "stack_limit": 1,
     "quality": "white",
     "tags": "material",
     "source": "gathering",
@@ -3008,7 +3279,9 @@
     "region_restrict": 0,
     "edible": false,
     "fuel_points": 0,
-    "water_points": 0
+    "water_points": 0,
+    "fert_c": "13",
+    "fert_n": "4"
   },
   "herb_onion": {
     "item_id": "herb_onion",
@@ -3033,7 +3306,9 @@
     "edible": false,
     "cooking_ingredient": true,
     "fuel_points": 0,
-    "water_points": 0
+    "water_points": 0,
+    "fert_c": "10",
+    "fert_n": "11"
   },
   "herb_orange_peel_dried": {
     "item_id": "herb_orange_peel_dried",
@@ -3047,7 +3322,7 @@
     "desc_0": "干橙皮卤味里陈皮鸭也算一道。",
     "category": "herb",
     "sub_category": "fruit_product",
-    "stack_limit": 10,
+    "stack_limit": 1,
     "quality": "white",
     "tags": "material",
     "source": "gathering",
@@ -3057,7 +3332,9 @@
     "region_restrict": 0,
     "edible": false,
     "fuel_points": 0,
-    "water_points": 0
+    "water_points": 0,
+    "fert_c": "11",
+    "fert_n": "5"
   },
   "herb_oregano": {
     "item_id": "herb_oregano",
@@ -3071,7 +3348,7 @@
     "desc_0": "牛至洋人炖汤烤番茄常放，咱当香草使也行。",
     "category": "herb",
     "sub_category": "spice",
-    "stack_limit": 10,
+    "stack_limit": 1,
     "quality": "white",
     "tags": "material",
     "source": "gathering",
@@ -3081,7 +3358,9 @@
     "region_restrict": 0,
     "edible": false,
     "fuel_points": 0,
-    "water_points": 0
+    "water_points": 0,
+    "fert_c": "13",
+    "fert_n": "4"
   },
   "herb_parsley": {
     "item_id": "herb_parsley",
@@ -3095,7 +3374,7 @@
     "desc_0": "欧芹碎撒汤面上，摆盘去腥都行。",
     "category": "herb",
     "sub_category": "spice",
-    "stack_limit": 10,
+    "stack_limit": 1,
     "quality": "white",
     "tags": "material",
     "source": "gathering",
@@ -3105,7 +3384,9 @@
     "region_restrict": 0,
     "edible": false,
     "fuel_points": 0,
-    "water_points": 0
+    "water_points": 0,
+    "fert_c": "13",
+    "fert_n": "4"
   },
   "herb_peanut": {
     "item_id": "herb_peanut",
@@ -3129,7 +3410,9 @@
     "region_restrict": 0,
     "edible": false,
     "fuel_points": 0,
-    "water_points": 0
+    "water_points": 0,
+    "fert_c": "18",
+    "fert_n": "5"
   },
   "herb_pear": {
     "item_id": "herb_pear",
@@ -3153,7 +3436,9 @@
     "region_restrict": 0,
     "edible": false,
     "fuel_points": 0,
-    "water_points": 0
+    "water_points": 0,
+    "fert_c": "56",
+    "fert_n": "24"
   },
   "herb_pecan": {
     "item_id": "herb_pecan",
@@ -3178,7 +3463,9 @@
     "edible": true,
     "edible_buff_id": "buff_food_pecan_walnut",
     "fuel_points": 0,
-    "water_points": 0
+    "water_points": 0,
+    "fert_c": "22",
+    "fert_n": "6"
   },
   "herb_plantain": {
     "item_id": "herb_plantain",
@@ -3202,7 +3489,9 @@
     "region_restrict": 0,
     "edible": false,
     "fuel_points": 0,
-    "water_points": 0
+    "water_points": 0,
+    "fert_c": "62",
+    "fert_n": "26"
   },
   "herb_potato": {
     "item_id": "herb_potato",
@@ -3227,7 +3516,9 @@
     "edible": false,
     "cooking_ingredient": true,
     "fuel_points": 0,
-    "water_points": 0
+    "water_points": 0,
+    "fert_c": "79",
+    "fert_n": "22"
   },
   "herb_pumpkin_seed": {
     "item_id": "herb_pumpkin_seed",
@@ -3241,7 +3532,7 @@
     "desc_0": "南瓜籽盐焗当零嘴，也能榨油。",
     "category": "herb",
     "sub_category": "seed",
-    "stack_limit": 10,
+    "stack_limit": 1,
     "quality": "white",
     "tags": "material",
     "source": "farming",
@@ -3251,7 +3542,9 @@
     "region_restrict": 0,
     "edible": false,
     "fuel_points": 0,
-    "water_points": 0
+    "water_points": 0,
+    "fert_c": "14",
+    "fert_n": "4"
   },
   "herb_radish_white": {
     "item_id": "herb_radish_white",
@@ -3275,7 +3568,9 @@
     "region_restrict": 0,
     "edible": false,
     "fuel_points": 0,
-    "water_points": 0
+    "water_points": 0,
+    "fert_c": "44",
+    "fert_n": "48"
   },
   "herb_rice": {
     "item_id": "herb_rice",
@@ -3299,7 +3594,9 @@
     "region_restrict": 0,
     "edible": false,
     "fuel_points": 0,
-    "water_points": 0
+    "water_points": 0,
+    "fert_c": "40",
+    "fert_n": "8"
   },
   "herb_rice_basmati": {
     "item_id": "herb_rice_basmati",
@@ -3323,7 +3620,9 @@
     "region_restrict": 0,
     "edible": false,
     "fuel_points": 0,
-    "water_points": 0
+    "water_points": 0,
+    "fert_c": "48",
+    "fert_n": "10"
   },
   "herb_rice_bomba": {
     "item_id": "herb_rice_bomba",
@@ -3347,7 +3646,9 @@
     "region_restrict": 0,
     "edible": false,
     "fuel_points": 0,
-    "water_points": 0
+    "water_points": 0,
+    "fert_c": "56",
+    "fert_n": "11"
   },
   "herb_rice_glutinous_round": {
     "item_id": "herb_rice_glutinous_round",
@@ -3372,7 +3673,9 @@
     "edible": false,
     "cooking_ingredient": true,
     "fuel_points": 0,
-    "water_points": 0
+    "water_points": 0,
+    "fert_c": "40",
+    "fert_n": "8"
   },
   "herb_root_bitter": {
     "item_id": "herb_root_bitter",
@@ -3386,7 +3689,7 @@
     "desc_0": "煮制后具有微弱的止痛与退热效果",
     "category": "herb",
     "sub_category": "root",
-    "stack_limit": 100,
+    "stack_limit": 1,
     "quality": "white",
     "tags": "material;herb;alchemy;medical",
     "source": "gathering",
@@ -3398,7 +3701,9 @@
     "base_value": 500,
     "edible": false,
     "fuel_points": 0,
-    "water_points": 0
+    "water_points": 0,
+    "fert_c": "10",
+    "fert_n": "6"
   },
   "herb_rosemary": {
     "item_id": "herb_rosemary",
@@ -3412,7 +3717,7 @@
     "desc_0": "迷迭香配羊排，洋人炖番茄也爱搁。",
     "category": "herb",
     "sub_category": "spice",
-    "stack_limit": 10,
+    "stack_limit": 1,
     "quality": "white",
     "tags": "material",
     "source": "gathering",
@@ -3423,7 +3728,9 @@
     "edible": false,
     "cooking_ingredient": true,
     "fuel_points": 0,
-    "water_points": 0
+    "water_points": 0,
+    "fert_c": "13",
+    "fert_n": "4"
   },
   "herb_saffron": {
     "item_id": "herb_saffron",
@@ -3437,7 +3744,7 @@
     "desc_0": "藏红花金贵，炖饭染金汤星星点点就够。",
     "category": "herb",
     "sub_category": "spice",
-    "stack_limit": 10,
+    "stack_limit": 1,
     "quality": "white",
     "tags": "material",
     "source": "gathering",
@@ -3447,7 +3754,9 @@
     "region_restrict": 0,
     "edible": false,
     "fuel_points": 0,
-    "water_points": 0
+    "water_points": 0,
+    "fert_c": "13",
+    "fert_n": "4"
   },
   "herb_sage": {
     "item_id": "herb_sage",
@@ -3461,7 +3770,7 @@
     "desc_0": "鼠尾草黄油煎瓜，洋人菜里见得着。",
     "category": "herb",
     "sub_category": "spice",
-    "stack_limit": 10,
+    "stack_limit": 1,
     "quality": "white",
     "tags": "material",
     "source": "gathering",
@@ -3471,7 +3780,9 @@
     "region_restrict": 0,
     "edible": false,
     "fuel_points": 0,
-    "water_points": 0
+    "water_points": 0,
+    "fert_c": "13",
+    "fert_n": "4"
   },
   "herb_scallion": {
     "item_id": "herb_scallion",
@@ -3485,7 +3796,7 @@
     "desc_0": "大葱炝锅炖肉北方菜底子。",
     "category": "herb",
     "sub_category": "spice",
-    "stack_limit": 10,
+    "stack_limit": 1,
     "quality": "white",
     "tags": "material",
     "source": "farming",
@@ -3496,7 +3807,9 @@
     "edible": false,
     "cooking_ingredient": true,
     "fuel_points": 0,
-    "water_points": 0
+    "water_points": 0,
+    "fert_c": "13",
+    "fert_n": "4"
   },
   "herb_sesame": {
     "item_id": "herb_sesame",
@@ -3510,7 +3823,7 @@
     "desc_0": "芝麻磨酱撒面，香都在油里。",
     "category": "herb",
     "sub_category": "seed",
-    "stack_limit": 10,
+    "stack_limit": 1,
     "quality": "white",
     "tags": "material",
     "source": "farming",
@@ -3521,7 +3834,9 @@
     "edible": false,
     "cooking_ingredient": true,
     "fuel_points": 0,
-    "water_points": 0
+    "water_points": 0,
+    "fert_c": "14",
+    "fert_n": "4"
   },
   "herb_shallot": {
     "item_id": "herb_shallot",
@@ -3545,7 +3860,9 @@
     "region_restrict": 0,
     "edible": false,
     "fuel_points": 0,
-    "water_points": 0
+    "water_points": 0,
+    "fert_c": "10",
+    "fert_n": "11"
   },
   "herb_shiitake": {
     "item_id": "herb_shiitake",
@@ -3569,8 +3886,12 @@
     "region_restrict": 0,
     "edible": false,
     "cooking_ingredient": true,
+    "compost_inoculant_aerobic": true,
+    "compost_inoculant_anaerobic": true,
     "fuel_points": 0,
-    "water_points": 0
+    "water_points": 0,
+    "fert_c": "22",
+    "fert_n": "20"
   },
   "herb_sichuan_pepper": {
     "item_id": "herb_sichuan_pepper",
@@ -3584,7 +3905,7 @@
     "desc_0": "花椒麻劲儿足，川味卤味里少不了。",
     "category": "herb",
     "sub_category": "spice",
-    "stack_limit": 10,
+    "stack_limit": 1,
     "quality": "white",
     "tags": "material",
     "source": "gathering",
@@ -3594,7 +3915,9 @@
     "region_restrict": 0,
     "edible": false,
     "fuel_points": 0,
-    "water_points": 0
+    "water_points": 0,
+    "fert_c": "13",
+    "fert_n": "4"
   },
   "herb_sour_plum": {
     "item_id": "herb_sour_plum",
@@ -3608,7 +3931,7 @@
     "desc_0": "酸梅汤解渴消暑，老方子。",
     "category": "herb",
     "sub_category": "fruit_product",
-    "stack_limit": 10,
+    "stack_limit": 1,
     "quality": "white",
     "tags": "material",
     "source": "gathering",
@@ -3619,7 +3942,9 @@
     "edible": true,
     "edible_buff_id": "buff_food_herb_sour_plum",
     "fuel_points": 0,
-    "water_points": 0
+    "water_points": 0,
+    "fert_c": "39",
+    "fert_n": "17"
   },
   "herb_sprout": {
     "item_id": "herb_sprout",
@@ -3643,7 +3968,9 @@
     "region_restrict": 0,
     "edible": false,
     "fuel_points": 0,
-    "water_points": 0
+    "water_points": 0,
+    "fert_c": "25",
+    "fert_n": "7"
   },
   "herb_star_anise": {
     "item_id": "herb_star_anise",
@@ -3657,7 +3984,7 @@
     "desc_0": "八角炖肉卤味去腥，家家户户认得。",
     "category": "herb",
     "sub_category": "spice",
-    "stack_limit": 10,
+    "stack_limit": 1,
     "quality": "white",
     "tags": "material",
     "source": "farming",
@@ -3667,7 +3994,9 @@
     "region_restrict": 0,
     "edible": false,
     "fuel_points": 0,
-    "water_points": 0
+    "water_points": 0,
+    "fert_c": "13",
+    "fert_n": "4"
   },
   "herb_sugar_white": {
     "item_id": "herb_sugar_white",
@@ -3681,7 +4010,7 @@
     "desc_0": "白砂糖甜得直白，熬酱烘焙煮汤校甜常用。",
     "category": "herb",
     "sub_category": "sugar",
-    "stack_limit": 10,
+    "stack_limit": 1,
     "quality": "white",
     "tags": "material",
     "source": "cooking",
@@ -3692,7 +4021,9 @@
     "edible": false,
     "cooking_ingredient": true,
     "fuel_points": 0,
-    "water_points": 0
+    "water_points": 0,
+    "fert_c": "22",
+    "fert_n": "0"
   },
   "herb_sugarcane": {
     "item_id": "herb_sugarcane",
@@ -3716,7 +4047,9 @@
     "region_restrict": 0,
     "edible": false,
     "fuel_points": 0,
-    "water_points": 0
+    "water_points": 0,
+    "fert_c": "121",
+    "fert_n": "2"
   },
   "herb_sweet": {
     "item_id": "herb_sweet",
@@ -3729,7 +4062,7 @@
     "desc_0": "叶柄和茎带一点甜味，嚼一嚼能压饿，乡下常当小孩的零食。",
     "category": "food",
     "sub_category": "herb_raw",
-    "stack_limit": 10,
+    "stack_limit": 1,
     "quality": "white",
     "tags": "food;consumable",
     "source": "gathering",
@@ -3756,7 +4089,7 @@
     "desc_0": "百里香炖鸡烤土豆，法式炖菜也爱放。",
     "category": "herb",
     "sub_category": "spice",
-    "stack_limit": 10,
+    "stack_limit": 1,
     "quality": "white",
     "tags": "material",
     "source": "gathering",
@@ -3767,7 +4100,9 @@
     "edible": false,
     "cooking_ingredient": true,
     "fuel_points": 0,
-    "water_points": 0
+    "water_points": 0,
+    "fert_c": "13",
+    "fert_n": "4"
   },
   "herb_tomato": {
     "item_id": "herb_tomato",
@@ -3791,7 +4126,9 @@
     "region_restrict": 0,
     "edible": false,
     "fuel_points": 0,
-    "water_points": 0
+    "water_points": 0,
+    "fert_c": "45",
+    "fert_n": "19"
   },
   "herb_tomato_green": {
     "item_id": "herb_tomato_green",
@@ -3815,7 +4152,9 @@
     "region_restrict": 0,
     "edible": false,
     "fuel_points": 0,
-    "water_points": 0
+    "water_points": 0,
+    "fert_c": "45",
+    "fert_n": "19"
   },
   "herb_turmeric": {
     "item_id": "herb_turmeric",
@@ -3829,7 +4168,7 @@
     "desc_0": "姜黄粉咖喱上色，也能入药。",
     "category": "herb",
     "sub_category": "spice",
-    "stack_limit": 10,
+    "stack_limit": 1,
     "quality": "white",
     "tags": "material",
     "source": "farming",
@@ -3839,7 +4178,9 @@
     "region_restrict": 0,
     "edible": false,
     "fuel_points": 0,
-    "water_points": 0
+    "water_points": 0,
+    "fert_c": "13",
+    "fert_n": "4"
   },
   "herb_vanilla_pod": {
     "item_id": "herb_vanilla_pod",
@@ -3853,7 +4194,7 @@
     "desc_0": "香草籽做甜品烤奶香足。",
     "category": "herb",
     "sub_category": "spice",
-    "stack_limit": 10,
+    "stack_limit": 1,
     "quality": "white",
     "tags": "material",
     "source": "gathering",
@@ -3863,7 +4204,9 @@
     "region_restrict": 0,
     "edible": false,
     "fuel_points": 0,
-    "water_points": 0
+    "water_points": 0,
+    "fert_c": "13",
+    "fert_n": "4"
   },
   "herb_vine_red": {
     "item_id": "herb_vine_red",
@@ -3877,7 +4220,7 @@
     "desc_0": "部分行省会将其视为提神药材也有人说副作用不小",
     "category": "herb",
     "sub_category": "vine",
-    "stack_limit": 80,
+    "stack_limit": 1,
     "quality": "white",
     "tags": "material;herb;alchemy;stimulant",
     "source": "gathering",
@@ -3889,7 +4232,9 @@
     "base_value": 600,
     "edible": false,
     "fuel_points": 0,
-    "water_points": 0
+    "water_points": 0,
+    "fert_c": "10",
+    "fert_n": "6"
   },
   "herb_wheat": {
     "item_id": "herb_wheat",
@@ -3913,7 +4258,9 @@
     "region_restrict": 0,
     "edible": false,
     "fuel_points": 0,
-    "water_points": 0
+    "water_points": 0,
+    "fert_c": "40",
+    "fert_n": "8"
   },
   "herb_wheat_durum": {
     "item_id": "herb_wheat_durum",
@@ -3937,7 +4284,9 @@
     "region_restrict": 0,
     "edible": false,
     "fuel_points": 0,
-    "water_points": 0
+    "water_points": 0,
+    "fert_c": "56",
+    "fert_n": "11"
   },
   "herb_wheat_flour": {
     "item_id": "herb_wheat_flour",
@@ -3962,7 +4311,9 @@
     "edible": false,
     "cooking_ingredient": true,
     "fuel_points": 0,
-    "water_points": 0
+    "water_points": 0,
+    "fert_c": "48",
+    "fert_n": "10"
   },
   "hunt_bacon_smoked": {
     "item_id": "hunt_bacon_smoked",
@@ -3986,7 +4337,9 @@
     "region_restrict": 0,
     "edible": false,
     "fuel_points": 0,
-    "water_points": 0
+    "water_points": 0,
+    "fert_c": "25",
+    "fert_n": "49"
   },
   "hunt_bone_common": {
     "item_id": "hunt_bone_common",
@@ -4000,7 +4353,7 @@
     "desc_0": "可磨成骨粉入药也可加工成简易工具与武器零件",
     "category": "hunt",
     "sub_category": "bone",
-    "stack_limit": 80,
+    "stack_limit": 1,
     "quality": "white",
     "tags": "material;bone;craft;alchemy",
     "source": "hunting",
@@ -4012,7 +4365,9 @@
     "base_value": 50,
     "edible": false,
     "fuel_points": 0,
-    "water_points": 0
+    "water_points": 0,
+    "fert_c": "10",
+    "fert_n": "18"
   },
   "hunt_meat_beast_basic": {
     "item_id": "hunt_meat_beast_basic",
@@ -4026,7 +4381,7 @@
     "desc_0": "烹饪后可以大幅恢复饱食度也可能带来短暂增益",
     "category": "hunt",
     "sub_category": "meat",
-    "stack_limit": 40,
+    "stack_limit": 1,
     "quality": "white",
     "tags": "material;food;perishable;trade_raw",
     "source": "hunting",
@@ -4039,7 +4394,9 @@
     "edible": false,
     "cooking_ingredient": true,
     "fuel_points": 0,
-    "water_points": 0
+    "water_points": 0,
+    "fert_c": "10",
+    "fert_n": "55"
   },
   "hunt_meat_boar": {
     "item_id": "hunt_meat_boar",
@@ -4063,7 +4420,9 @@
     "region_restrict": 0,
     "edible": false,
     "fuel_points": 0,
-    "water_points": 0
+    "water_points": 0,
+    "fert_c": "22",
+    "fert_n": "121"
   },
   "hunt_meat_deer": {
     "item_id": "hunt_meat_deer",
@@ -4087,7 +4446,9 @@
     "region_restrict": 0,
     "edible": false,
     "fuel_points": 0,
-    "water_points": 0
+    "water_points": 0,
+    "fert_c": "22",
+    "fert_n": "121"
   },
   "hunt_meat_rabbit": {
     "item_id": "hunt_meat_rabbit",
@@ -4111,7 +4472,9 @@
     "region_restrict": 0,
     "edible": false,
     "fuel_points": 0,
-    "water_points": 0
+    "water_points": 0,
+    "fert_c": "22",
+    "fert_n": "121"
   },
   "hunt_moose_hoof": {
     "item_id": "hunt_moose_hoof",
@@ -4125,7 +4488,7 @@
     "desc_0": "驼鹿蹄熬胶炖汤胶质足稀罕物。",
     "category": "hunt",
     "sub_category": "collagen",
-    "stack_limit": 10,
+    "stack_limit": 1,
     "quality": "white",
     "tags": "material",
     "source": "hunting",
@@ -4135,7 +4498,9 @@
     "region_restrict": 0,
     "edible": false,
     "fuel_points": 0,
-    "water_points": 0
+    "water_points": 0,
+    "fert_c": "10",
+    "fert_n": "55"
   },
   "hunt_salo": {
     "item_id": "hunt_salo",
@@ -4159,7 +4524,9 @@
     "region_restrict": 0,
     "edible": false,
     "fuel_points": 0,
-    "water_points": 0
+    "water_points": 0,
+    "fert_c": "20",
+    "fert_n": "39"
   },
   "hunt_snail_land": {
     "item_id": "hunt_snail_land",
@@ -4183,7 +4550,9 @@
     "region_restrict": 0,
     "edible": false,
     "fuel_points": 0,
-    "water_points": 0
+    "water_points": 0,
+    "fert_c": "9",
+    "fert_n": "50"
   },
   "hunt_squab": {
     "item_id": "hunt_squab",
@@ -4207,7 +4576,9 @@
     "region_restrict": 0,
     "edible": false,
     "fuel_points": 0,
-    "water_points": 0
+    "water_points": 0,
+    "fert_c": "6",
+    "fert_n": "33"
   },
   "hunt_tongue_deer": {
     "item_id": "hunt_tongue_deer",
@@ -4231,7 +4602,9 @@
     "region_restrict": 0,
     "edible": false,
     "fuel_points": 0,
-    "water_points": 0
+    "water_points": 0,
+    "fert_c": "7",
+    "fert_n": "39"
   },
   "hunt_turkey": {
     "item_id": "hunt_turkey",
@@ -4255,7 +4628,9 @@
     "region_restrict": 0,
     "edible": false,
     "fuel_points": 0,
-    "water_points": 0
+    "water_points": 0,
+    "fert_c": "22",
+    "fert_n": "121"
   },
   "hunt_turkey_meat": {
     "item_id": "hunt_turkey_meat",
@@ -4280,7 +4655,9 @@
     "edible": false,
     "cooking_ingredient": true,
     "fuel_points": 0,
-    "water_points": 0
+    "water_points": 0,
+    "fert_c": "22",
+    "fert_n": "121"
   },
   "hus_beef_bone": {
     "item_id": "hus_beef_bone",
@@ -4304,7 +4681,9 @@
     "region_restrict": 0,
     "edible": false,
     "fuel_points": 0,
-    "water_points": 0
+    "water_points": 0,
+    "fert_c": "35",
+    "fert_n": "66"
   },
   "hus_beef_brisket": {
     "item_id": "hus_beef_brisket",
@@ -4329,7 +4708,9 @@
     "edible": false,
     "cooking_ingredient": true,
     "fuel_points": 0,
-    "water_points": 0
+    "water_points": 0,
+    "fert_c": "20",
+    "fert_n": "110"
   },
   "hus_beef_head_meat": {
     "item_id": "hus_beef_head_meat",
@@ -4353,7 +4734,9 @@
     "region_restrict": 0,
     "edible": false,
     "fuel_points": 0,
-    "water_points": 0
+    "water_points": 0,
+    "fert_c": "12",
+    "fert_n": "66"
   },
   "hus_beef_rib": {
     "item_id": "hus_beef_rib",
@@ -4377,7 +4760,9 @@
     "region_restrict": 0,
     "edible": false,
     "fuel_points": 0,
-    "water_points": 0
+    "water_points": 0,
+    "fert_c": "35",
+    "fert_n": "66"
   },
   "hus_beef_shank": {
     "item_id": "hus_beef_shank",
@@ -4401,7 +4786,9 @@
     "region_restrict": 0,
     "edible": false,
     "fuel_points": 0,
-    "water_points": 0
+    "water_points": 0,
+    "fert_c": "15",
+    "fert_n": "83"
   },
   "hus_beef_shoulder": {
     "item_id": "hus_beef_shoulder",
@@ -4426,7 +4813,9 @@
     "edible": false,
     "cooking_ingredient": true,
     "fuel_points": 0,
-    "water_points": 0
+    "water_points": 0,
+    "fert_c": "20",
+    "fert_n": "110"
   },
   "hus_beef_tail": {
     "item_id": "hus_beef_tail",
@@ -4450,7 +4839,9 @@
     "region_restrict": 0,
     "edible": false,
     "fuel_points": 0,
-    "water_points": 0
+    "water_points": 0,
+    "fert_c": "6",
+    "fert_n": "33"
   },
   "hus_beef_tendon": {
     "item_id": "hus_beef_tendon",
@@ -4464,7 +4855,7 @@
     "desc_0": "牛蹄筋卤了凉拌下酒有咬劲。",
     "category": "hunt",
     "sub_category": "collagen",
-    "stack_limit": 10,
+    "stack_limit": 1,
     "quality": "white",
     "tags": "material",
     "source": "husbandry",
@@ -4474,7 +4865,9 @@
     "region_restrict": 0,
     "edible": false,
     "fuel_points": 0,
-    "water_points": 0
+    "water_points": 0,
+    "fert_c": "5",
+    "fert_n": "28"
   },
   "hus_beef_tongue": {
     "item_id": "hus_beef_tongue",
@@ -4499,7 +4892,9 @@
     "edible": false,
     "cooking_ingredient": true,
     "fuel_points": 0,
-    "water_points": 0
+    "water_points": 0,
+    "fert_c": "8",
+    "fert_n": "44"
   },
   "hus_butter": {
     "item_id": "hus_butter",
@@ -4513,7 +4908,7 @@
     "desc_0": "黄油煎烤烘焙奶香西面点少不了。",
     "category": "hunt",
     "sub_category": "dairy",
-    "stack_limit": 5,
+    "stack_limit": 1,
     "quality": "white",
     "tags": "material",
     "source": "husbandry",
@@ -4523,7 +4918,9 @@
     "region_restrict": 0,
     "edible": false,
     "fuel_points": 0,
-    "water_points": 0
+    "water_points": 0,
+    "fert_c": "22",
+    "fert_n": "25"
   },
   "hus_cattle_trotter": {
     "item_id": "hus_cattle_trotter",
@@ -4537,7 +4934,7 @@
     "desc_0": "牛蹄炖辣酱胶质不输猪蹄。",
     "category": "hunt",
     "sub_category": "collagen",
-    "stack_limit": 10,
+    "stack_limit": 1,
     "quality": "white",
     "tags": "material",
     "source": "husbandry",
@@ -4547,7 +4944,9 @@
     "region_restrict": 0,
     "edible": false,
     "fuel_points": 0,
-    "water_points": 0
+    "water_points": 0,
+    "fert_c": "15",
+    "fert_n": "84"
   },
   "hus_chicken_bone": {
     "item_id": "hus_chicken_bone",
@@ -4561,7 +4960,7 @@
     "desc_0": "鸡骨鸡皮熬清汤厨房舍不得扔。",
     "category": "hunt",
     "sub_category": "collagen",
-    "stack_limit": 10,
+    "stack_limit": 1,
     "quality": "white",
     "tags": "material",
     "source": "husbandry",
@@ -4571,7 +4970,9 @@
     "region_restrict": 0,
     "edible": false,
     "fuel_points": 0,
-    "water_points": 0
+    "water_points": 0,
+    "fert_c": "6",
+    "fert_n": "12"
   },
   "hus_chicken_feet": {
     "item_id": "hus_chicken_feet",
@@ -4585,7 +4986,7 @@
     "desc_0": "鸡爪卤泡柠檬夜宵啃着玩。",
     "category": "hunt",
     "sub_category": "collagen",
-    "stack_limit": 10,
+    "stack_limit": 1,
     "quality": "white",
     "tags": "material",
     "source": "husbandry",
@@ -4595,7 +4996,9 @@
     "region_restrict": 0,
     "edible": false,
     "fuel_points": 0,
-    "water_points": 0
+    "water_points": 0,
+    "fert_c": "5",
+    "fert_n": "28"
   },
   "hus_chicken_meat": {
     "item_id": "hus_chicken_meat",
@@ -4620,7 +5023,9 @@
     "edible": false,
     "cooking_ingredient": true,
     "fuel_points": 0,
-    "water_points": 0
+    "water_points": 0,
+    "fert_c": "12",
+    "fert_n": "66"
   },
   "hus_cream_fresh": {
     "item_id": "hus_cream_fresh",
@@ -4634,7 +5039,7 @@
     "desc_0": "鲜奶油打发裱花煮汤增稠。",
     "category": "hunt",
     "sub_category": "dairy",
-    "stack_limit": 5,
+    "stack_limit": 1,
     "quality": "white",
     "tags": "material",
     "source": "husbandry",
@@ -4644,7 +5049,9 @@
     "region_restrict": 0,
     "edible": false,
     "fuel_points": 0,
-    "water_points": 0
+    "water_points": 0,
+    "fert_c": "31",
+    "fert_n": "35"
   },
   "hus_duck": {
     "item_id": "hus_duck",
@@ -4668,7 +5075,9 @@
     "region_restrict": 0,
     "edible": false,
     "fuel_points": 0,
-    "water_points": 0
+    "water_points": 0,
+    "fert_c": "22",
+    "fert_n": "121"
   },
   "hus_duck_fat_pure": {
     "item_id": "hus_duck_fat_pure",
@@ -4682,7 +5091,7 @@
     "desc_0": "鸭油煎蔬炒饭比植物油多点荤香。",
     "category": "hunt",
     "sub_category": "meat_product",
-    "stack_limit": 10,
+    "stack_limit": 1,
     "quality": "white",
     "tags": "material",
     "source": "husbandry",
@@ -4692,7 +5101,9 @@
     "region_restrict": 0,
     "edible": false,
     "fuel_points": 0,
-    "water_points": 0
+    "water_points": 0,
+    "fert_c": "18",
+    "fert_n": "35"
   },
   "hus_duck_leg_fat": {
     "item_id": "hus_duck_leg_fat",
@@ -4716,7 +5127,9 @@
     "region_restrict": 0,
     "edible": false,
     "fuel_points": 0,
-    "water_points": 0
+    "water_points": 0,
+    "fert_c": "22",
+    "fert_n": "25"
   },
   "hus_egg": {
     "item_id": "hus_egg",
@@ -4730,7 +5143,7 @@
     "desc_0": "家鸡蛋炒蒸烘焙日常蛋白来路。",
     "category": "hunt",
     "sub_category": "egg",
-    "stack_limit": 10,
+    "stack_limit": 1,
     "quality": "white",
     "tags": "material",
     "source": "husbandry",
@@ -4741,7 +5154,9 @@
     "edible": false,
     "cooking_ingredient": true,
     "fuel_points": 0,
-    "water_points": 0
+    "water_points": 0,
+    "fert_c": "10",
+    "fert_n": "55"
   },
   "hus_egg_pigeon": {
     "item_id": "hus_egg_pigeon",
@@ -4755,7 +5170,7 @@
     "desc_0": "鸽蛋蒸甜汤席面比鸡蛋体面。",
     "category": "hunt",
     "sub_category": "egg",
-    "stack_limit": 10,
+    "stack_limit": 1,
     "quality": "white",
     "tags": "material",
     "source": "husbandry",
@@ -4765,7 +5180,9 @@
     "region_restrict": 0,
     "edible": false,
     "fuel_points": 0,
-    "water_points": 0
+    "water_points": 0,
+    "fert_c": "7",
+    "fert_n": "39"
   },
   "hus_egg_quail": {
     "item_id": "hus_egg_quail",
@@ -4779,7 +5196,7 @@
     "desc_0": "鹌鹑蛋卤了下拉面一口一个。",
     "category": "hunt",
     "sub_category": "egg",
-    "stack_limit": 10,
+    "stack_limit": 1,
     "quality": "white",
     "tags": "material",
     "source": "husbandry",
@@ -4789,7 +5206,9 @@
     "region_restrict": 0,
     "edible": false,
     "fuel_points": 0,
-    "water_points": 0
+    "water_points": 0,
+    "fert_c": "4",
+    "fert_n": "22"
   },
   "hus_egg_white": {
     "item_id": "hus_egg_white",
@@ -4803,7 +5222,7 @@
     "desc_0": "蛋清做糕煎蛋白都行。",
     "category": "hunt",
     "sub_category": "egg",
-    "stack_limit": 10,
+    "stack_limit": 1,
     "quality": "white",
     "tags": "material",
     "source": "husbandry",
@@ -4813,7 +5232,9 @@
     "region_restrict": 0,
     "edible": false,
     "fuel_points": 0,
-    "water_points": 0
+    "water_points": 0,
+    "fert_c": "6",
+    "fert_n": "34"
   },
   "hus_egg_yolk": {
     "item_id": "hus_egg_yolk",
@@ -4827,7 +5248,7 @@
     "desc_0": "蛋黄做酱做月饼心都油润。",
     "category": "hunt",
     "sub_category": "egg",
-    "stack_limit": 10,
+    "stack_limit": 1,
     "quality": "white",
     "tags": "material",
     "source": "husbandry",
@@ -4837,7 +5258,9 @@
     "region_restrict": 0,
     "edible": false,
     "fuel_points": 0,
-    "water_points": 0
+    "water_points": 0,
+    "fert_c": "4",
+    "fert_n": "22"
   },
   "hus_ham_jinhua": {
     "item_id": "hus_ham_jinhua",
@@ -4861,7 +5284,9 @@
     "region_restrict": 0,
     "edible": false,
     "fuel_points": 0,
-    "water_points": 0
+    "water_points": 0,
+    "fert_c": "40",
+    "fert_n": "77"
   },
   "hus_hen_old": {
     "item_id": "hus_hen_old",
@@ -4885,7 +5310,9 @@
     "region_restrict": 0,
     "edible": false,
     "fuel_points": 0,
-    "water_points": 0
+    "water_points": 0,
+    "fert_c": "22",
+    "fert_n": "121"
   },
   "hus_milk_buffalo": {
     "item_id": "hus_milk_buffalo",
@@ -4899,7 +5326,7 @@
     "desc_0": "水牛奶做双皮奶比常奶更香浓。",
     "category": "hunt",
     "sub_category": "dairy",
-    "stack_limit": 5,
+    "stack_limit": 1,
     "quality": "white",
     "tags": "material",
     "source": "husbandry",
@@ -4910,7 +5337,9 @@
     "edible": false,
     "cooking_ingredient": true,
     "fuel_points": 0,
-    "water_points": 0
+    "water_points": 0,
+    "fert_c": "20",
+    "fert_n": "110"
   },
   "hus_mutton": {
     "item_id": "hus_mutton",
@@ -4934,7 +5363,9 @@
     "region_restrict": 0,
     "edible": false,
     "fuel_points": 0,
-    "water_points": 0
+    "water_points": 0,
+    "fert_c": "22",
+    "fert_n": "121"
   },
   "hus_pig_lard": {
     "item_id": "hus_pig_lard",
@@ -4958,7 +5389,9 @@
     "region_restrict": 0,
     "edible": false,
     "fuel_points": 0,
-    "water_points": 0
+    "water_points": 0,
+    "fert_c": "13",
+    "fert_n": "15"
   },
   "hus_pig_tongue": {
     "item_id": "hus_pig_tongue",
@@ -4982,7 +5415,9 @@
     "region_restrict": 0,
     "edible": false,
     "fuel_points": 0,
-    "water_points": 0
+    "water_points": 0,
+    "fert_c": "6",
+    "fert_n": "33"
   },
   "hus_pig_trotter": {
     "item_id": "hus_pig_trotter",
@@ -4996,7 +5431,7 @@
     "desc_0": "猪蹄炖黄豆胶质老话讲养颜。",
     "category": "hunt",
     "sub_category": "collagen",
-    "stack_limit": 10,
+    "stack_limit": 1,
     "quality": "white",
     "tags": "material",
     "source": "husbandry",
@@ -5007,7 +5442,9 @@
     "edible": false,
     "cooking_ingredient": true,
     "fuel_points": 0,
-    "water_points": 0
+    "water_points": 0,
+    "fert_c": "10",
+    "fert_n": "55"
   },
   "hus_pork_belly": {
     "item_id": "hus_pork_belly",
@@ -5032,7 +5469,9 @@
     "edible": false,
     "cooking_ingredient": true,
     "fuel_points": 0,
-    "water_points": 0
+    "water_points": 0,
+    "fert_c": "10",
+    "fert_n": "55"
   },
   "hus_pork_bone": {
     "item_id": "hus_pork_bone",
@@ -5046,7 +5485,7 @@
     "desc_0": "猪骨汤拉面白汤浓靠它吊。",
     "category": "hunt",
     "sub_category": "collagen",
-    "stack_limit": 10,
+    "stack_limit": 1,
     "quality": "white",
     "tags": "material",
     "source": "husbandry",
@@ -5056,7 +5495,9 @@
     "region_restrict": 0,
     "edible": false,
     "fuel_points": 0,
-    "water_points": 0
+    "water_points": 0,
+    "fert_c": "32",
+    "fert_n": "60"
   },
   "hus_pork_hoof_casing": {
     "item_id": "hus_pork_hoof_casing",
@@ -5070,7 +5511,7 @@
     "desc_0": "蹄壳配猪蹄炖浓羹凑胶原。",
     "category": "hunt",
     "sub_category": "collagen",
-    "stack_limit": 10,
+    "stack_limit": 1,
     "quality": "white",
     "tags": "material",
     "source": "husbandry",
@@ -5080,7 +5521,9 @@
     "region_restrict": 0,
     "edible": false,
     "fuel_points": 0,
-    "water_points": 0
+    "water_points": 0,
+    "fert_c": "10",
+    "fert_n": "18"
   },
   "hus_pork_lard": {
     "item_id": "hus_pork_lard",
@@ -5094,7 +5537,7 @@
     "desc_0": "猪油炒菜饭香老灶家常味儿。",
     "category": "hunt",
     "sub_category": "meat_product",
-    "stack_limit": 10,
+    "stack_limit": 1,
     "quality": "white",
     "tags": "material",
     "source": "husbandry",
@@ -5105,7 +5548,9 @@
     "edible": false,
     "cooking_ingredient": true,
     "fuel_points": 0,
-    "water_points": 0
+    "water_points": 0,
+    "fert_c": "18",
+    "fert_n": "35"
   },
   "hus_pork_meat_ground": {
     "item_id": "hus_pork_meat_ground",
@@ -5129,7 +5574,9 @@
     "region_restrict": 0,
     "edible": false,
     "fuel_points": 0,
-    "water_points": 0
+    "water_points": 0,
+    "fert_c": "12",
+    "fert_n": "66"
   },
   "hus_pork_rind": {
     "item_id": "hus_pork_rind",
@@ -5143,7 +5590,7 @@
     "desc_0": "猪皮炸响皮凉拌卤味有层次。",
     "category": "hunt",
     "sub_category": "collagen",
-    "stack_limit": 10,
+    "stack_limit": 1,
     "quality": "white",
     "tags": "material",
     "source": "husbandry",
@@ -5153,7 +5600,9 @@
     "region_restrict": 0,
     "edible": false,
     "fuel_points": 0,
-    "water_points": 0
+    "water_points": 0,
+    "fert_c": "16",
+    "fert_n": "88"
   },
   "hus_pork_skin_minced": {
     "item_id": "hus_pork_skin_minced",
@@ -5167,7 +5616,7 @@
     "desc_0": "猪皮碎熬皮冻灌汤包的秘诀。",
     "category": "hunt",
     "sub_category": "collagen",
-    "stack_limit": 10,
+    "stack_limit": 1,
     "quality": "white",
     "tags": "material",
     "source": "husbandry",
@@ -5177,7 +5626,9 @@
     "region_restrict": 0,
     "edible": false,
     "fuel_points": 0,
-    "water_points": 0
+    "water_points": 0,
+    "fert_c": "15",
+    "fert_n": "83"
   },
   "hus_pork_stomach": {
     "item_id": "hus_pork_stomach",
@@ -5191,7 +5642,7 @@
     "desc_0": "猪肚鸡胡椒汤洗不净咬不动。",
     "category": "hunt",
     "sub_category": "collagen",
-    "stack_limit": 10,
+    "stack_limit": 1,
     "quality": "white",
     "tags": "material",
     "source": "husbandry",
@@ -5201,7 +5652,9 @@
     "region_restrict": 0,
     "edible": false,
     "fuel_points": 0,
-    "water_points": 0
+    "water_points": 0,
+    "fert_c": "7",
+    "fert_n": "39"
   },
   "hus_pork_tendon": {
     "item_id": "hus_pork_tendon",
@@ -5215,7 +5668,7 @@
     "desc_0": "猪蹄筋红烧焖鲍汁口感弹。",
     "category": "hunt",
     "sub_category": "collagen",
-    "stack_limit": 10,
+    "stack_limit": 1,
     "quality": "white",
     "tags": "material",
     "source": "husbandry",
@@ -5225,7 +5678,9 @@
     "region_restrict": 0,
     "edible": false,
     "fuel_points": 0,
-    "water_points": 0
+    "water_points": 0,
+    "fert_c": "5",
+    "fert_n": "28"
   },
   "hus_sausage_toulouse": {
     "item_id": "hus_sausage_toulouse",
@@ -5249,7 +5704,9 @@
     "region_restrict": 0,
     "edible": false,
     "fuel_points": 0,
-    "water_points": 0
+    "water_points": 0,
+    "fert_c": "36",
+    "fert_n": "70"
   },
   "hus_zampone": {
     "item_id": "hus_zampone",
@@ -5273,7 +5730,9 @@
     "region_restrict": 0,
     "edible": false,
     "fuel_points": 0,
-    "water_points": 0
+    "water_points": 0,
+    "fert_c": "40",
+    "fert_n": "77"
   },
   "ore_cast_iron": {
     "item_id": "ore_cast_iron",
@@ -5311,7 +5770,7 @@
     "desc_0": "拉坯烧陶的料，干透才结实。",
     "category": "ore",
     "sub_category": "clay",
-    "stack_limit": 10,
+    "stack_limit": 1,
     "quality": "white",
     "tags": "material",
     "source": "mining",
@@ -5333,9 +5792,10 @@
     "fn_before": "暗红粗糙的石块，看着像能炼东西",
     "fn": "含有少量铜质成分的矿石",
     "desc_0": "含有少量铜质成分的矿石",
+    "info_module_set_id": "module.material_ore",
     "category": "ore",
     "sub_category": "non_ferrous",
-    "stack_limit": 50,
+    "stack_limit": 1,
     "quality": "white",
     "tags": "material;ore;craft;trade_raw",
     "source": "mining",
@@ -5385,7 +5845,7 @@
     "desc_0": "常见的铁质矿石",
     "category": "ore",
     "sub_category": "black_metal",
-    "stack_limit": 50,
+    "stack_limit": 1,
     "quality": "white",
     "tags": "material;ore;craft;trade_raw;building",
     "source": "mining",
@@ -5411,7 +5871,7 @@
     "desc_0": "可用于炼制更锋利的兵器",
     "category": "ore",
     "sub_category": "black_metal",
-    "stack_limit": 200,
+    "stack_limit": 1,
     "quality": "white",
     "tags": "material;ore;high_grade;forge_focus",
     "source": "mining",
@@ -5437,7 +5897,7 @@
     "desc_0": "石灰泡的水，点豆腐的老法子。",
     "category": "ore",
     "sub_category": "water",
-    "stack_limit": 5,
+    "stack_limit": 1,
     "quality": "white",
     "tags": "material",
     "source": "craft",
@@ -5461,7 +5921,7 @@
     "desc_0": "常见的石灰石，建筑用的材料。",
     "category": "ore",
     "sub_category": "stone",
-    "stack_limit": 5,
+    "stack_limit": 1,
     "quality": "white",
     "tags": "material",
     "source": "mining",
@@ -5485,7 +5945,7 @@
     "desc_0": "被碎成小粒的黑色岩盐颗粒，能用来做菜。",
     "category": "ore",
     "sub_category": "salt",
-    "stack_limit": 10,
+    "stack_limit": 1,
     "quality": "white",
     "tags": "material",
     "source": "mining",
@@ -5510,7 +5970,7 @@
     "desc_0": "已经被磨碎的粉色岩盐颗粒，烹饪用。",
     "category": "ore",
     "sub_category": "salt",
-    "stack_limit": 10,
+    "stack_limit": 1,
     "quality": "white",
     "tags": "material",
     "source": "mining",
@@ -5535,7 +5995,7 @@
     "desc_0": "精制过的海盐，可以拿来做菜。",
     "category": "ore",
     "sub_category": "salt",
-    "stack_limit": 10,
+    "stack_limit": 1,
     "quality": "white",
     "tags": "material",
     "source": "mining",
@@ -5560,7 +6020,7 @@
     "desc_0": "盐田里做出来的海盐，已经可以用来调味了。",
     "category": "ore",
     "sub_category": "salt",
-    "stack_limit": 10,
+    "stack_limit": 1,
     "quality": "white",
     "tags": "material",
     "source": "mining",
@@ -5585,7 +6045,7 @@
     "desc_0": "似乎缓慢渗出肉眼难辨的灵光",
     "category": "ore",
     "sub_category": "spirit",
-    "stack_limit": 20,
+    "stack_limit": 1,
     "quality": "white",
     "tags": "material;ore;enchant;dungeon_only",
     "source": "mining;dungeon",
@@ -5635,7 +6095,7 @@
     "desc_0": "软过的水熬粥煮汤，不那么起碱花。",
     "category": "ore",
     "sub_category": "water",
-    "stack_limit": 5,
+    "stack_limit": 1,
     "quality": "white",
     "tags": "material",
     "source": "craft",
@@ -5659,7 +6119,7 @@
     "desc_0": "针对常见虫蛇毒的粉末，冲水服下或外敷，能缓解轻症。",
     "category": "potion",
     "sub_category": "antidote",
-    "stack_limit": 15,
+    "stack_limit": 1,
     "quality": "white",
     "tags": "consumable;medical;alchemy",
     "source": "alchemy",
@@ -5684,7 +6144,7 @@
     "desc_0": "苦味药汤，短时内精神与体力恢复略快，不宜连续多服。",
     "category": "potion",
     "sub_category": "stimulant",
-    "stack_limit": 10,
+    "stack_limit": 1,
     "quality": "white",
     "tags": "consumable;medical;alchemy",
     "source": "alchemy",
@@ -5709,7 +6169,7 @@
     "desc_0": "浸过药汁的布条，包扎伤口可较快止住流血。",
     "category": "potion",
     "sub_category": "hemostatic",
-    "stack_limit": 20,
+    "stack_limit": 1,
     "quality": "white",
     "tags": "consumable;medical;alchemy",
     "source": "alchemy;buy",
@@ -5734,7 +6194,7 @@
     "desc_0": "用赤花藤等炼成的小丸，服下后一段时间内痛感减轻，有人会犯困。",
     "category": "potion",
     "sub_category": "painkiller",
-    "stack_limit": 25,
+    "stack_limit": 1,
     "quality": "white",
     "tags": "consumable;medical;alchemy",
     "source": "alchemy",
@@ -5759,7 +6219,7 @@
     "desc_0": "干净布条缠成的绷带，可做简单包扎，减少伤口继续恶化。",
     "category": "supply",
     "sub_category": "bandage",
-    "stack_limit": 25,
+    "stack_limit": 1,
     "quality": "white",
     "tags": "consumable;medical;craft",
     "source": "craft;buy",
@@ -5784,7 +6244,7 @@
     "desc_0": "打火用的火石与铁片，能反复使用，在干燥处较易引火。",
     "category": "supply",
     "sub_category": "fire_start",
-    "stack_limit": 3,
+    "stack_limit": 1,
     "quality": "white",
     "tags": "tool;craft;consumable",
     "source": "craft;buy",
@@ -5809,7 +6269,7 @@
     "desc_0": "一截结实的麻绳，可捆绑、攀援或与机关配合使用。",
     "category": "supply",
     "sub_category": "rope",
-    "stack_limit": 10,
+    "stack_limit": 1,
     "quality": "white",
     "tags": "tool;craft;consumable",
     "source": "craft",
@@ -5834,7 +6294,7 @@
     "desc_0": "竹杆缠布浸油制成的火把，点燃后可照明一段时间，遇风易灭。",
     "category": "supply",
     "sub_category": "torch",
-    "stack_limit": 5,
+    "stack_limit": 1,
     "quality": "white",
     "tags": "consumable;tool;craft",
     "source": "craft",
@@ -5860,7 +6320,7 @@
     "desc_0": "可抽出纤细且有光泽的丝线",
     "category": "textile",
     "sub_category": "cocoon_domestic",
-    "stack_limit": 120,
+    "stack_limit": 1,
     "quality": "white",
     "tags": "material;textile;silk",
     "source": "husbandry",
@@ -5872,7 +6332,9 @@
     "base_value": 600,
     "edible": false,
     "fuel_points": 0,
-    "water_points": 0
+    "water_points": 0,
+    "fert_c": "12",
+    "fert_n": "5"
   },
   "textile_cocoon_wild": {
     "item_id": "textile_cocoon_wild",
@@ -5886,7 +6348,7 @@
     "desc_0": "可抽丝但品质较为普通",
     "category": "textile",
     "sub_category": "cocoon_wild",
-    "stack_limit": 120,
+    "stack_limit": 1,
     "quality": "white",
     "tags": "material;textile;silk",
     "source": "gathering",
@@ -5898,7 +6360,9 @@
     "base_value": 300,
     "edible": false,
     "fuel_points": 0,
-    "water_points": 0
+    "water_points": 0,
+    "fert_c": "12",
+    "fert_n": "5"
   },
   "tool_bucket_water_empty": {
     "item_id": "tool_bucket_water_empty",
@@ -5947,6 +6411,30 @@
     "base_value": 520,
     "fuel_points": 0,
     "water_points": 200
+  },
+  "tool_distiller_pharmacy": {
+    "item_id": "tool_distiller_pharmacy",
+    "name": "蒸馏器",
+    "name_0": "蒸馏器",
+    "weight_kg": 2.2,
+    "sn": "蒸馏器",
+    "placeholder_name": "蒸馏器",
+    "fn": "简易玻璃与金属接口的蒸馏器，用于收集挥发成分。",
+    "desc_0": "简易玻璃与金属接口的蒸馏器，用于收集挥发成分。",
+    "category": "tool",
+    "sub_category": "pharmacy",
+    "stack_limit": 1,
+    "quality": "white",
+    "tags": "tool;pharmacy",
+    "source": "craft",
+    "production_lines": "craft",
+    "spoilage_ticks": 0,
+    "price_class": "material",
+    "volatility": "mid",
+    "region_restrict": 0,
+    "base_value": 980,
+    "fuel_points": 0,
+    "water_points": 0
   },
   "tool_fermentation_jar_cooking": {
     "item_id": "tool_fermentation_jar_cooking",
@@ -6020,6 +6508,30 @@
     "fuel_points": 0,
     "water_points": 0
   },
+  "tool_garlic_press_pharmacy": {
+    "item_id": "tool_garlic_press_pharmacy",
+    "name": "压蒜器",
+    "name_0": "压蒜器",
+    "weight_kg": 0.3,
+    "sn": "压蒜器",
+    "placeholder_name": "压蒜器",
+    "fn": "杠杆式压槽，借机械压力将软材压片或压泥。",
+    "desc_0": "杠杆式压槽，借机械压力将软材压片或压泥。",
+    "category": "tool",
+    "sub_category": "pharmacy",
+    "stack_limit": 1,
+    "quality": "white",
+    "tags": "tool;pharmacy",
+    "source": "craft",
+    "production_lines": "craft",
+    "spoilage_ticks": 0,
+    "price_class": "life_good",
+    "volatility": "low",
+    "region_restrict": 0,
+    "base_value": 200,
+    "fuel_points": 0,
+    "water_points": 0
+  },
   "tool_hatchet_woodcutter": {
     "item_id": "tool_hatchet_woodcutter",
     "name": "伐木小斧",
@@ -6041,6 +6553,54 @@
     "volatility": "mid",
     "region_restrict": 0,
     "base_value": 820,
+    "fuel_points": 0,
+    "water_points": 0
+  },
+  "tool_layer_filter_sheet_pharmacy": {
+    "item_id": "tool_layer_filter_sheet_pharmacy",
+    "name": "分层过滤片",
+    "name_0": "分层过滤片",
+    "weight_kg": 0.05,
+    "sn": "分层过滤片",
+    "placeholder_name": "滤片",
+    "fn": "叠层纤维滤片，用于粗滤与分层澄清。",
+    "desc_0": "叠层纤维滤片，用于粗滤与分层澄清。",
+    "category": "tool",
+    "sub_category": "pharmacy",
+    "stack_limit": 1,
+    "quality": "white",
+    "tags": "tool;pharmacy",
+    "source": "craft",
+    "production_lines": "craft",
+    "spoilage_ticks": 0,
+    "price_class": "life_good",
+    "volatility": "low",
+    "region_restrict": 0,
+    "base_value": 120,
+    "fuel_points": 0,
+    "water_points": 0
+  },
+  "tool_long_handle_flask_pharmacy": {
+    "item_id": "tool_long_handle_flask_pharmacy",
+    "name": "长柄药瓶",
+    "name_0": "长柄药瓶",
+    "weight_kg": 0.25,
+    "sn": "长柄药瓶",
+    "placeholder_name": "长柄瓶",
+    "fn": "细长颈玻璃瓶配长柄夹持，便于离心与倾倒。",
+    "desc_0": "细长颈玻璃瓶配长柄夹持，便于离心与倾倒。",
+    "category": "tool",
+    "sub_category": "pharmacy",
+    "stack_limit": 1,
+    "quality": "white",
+    "tags": "tool;pharmacy",
+    "source": "craft",
+    "production_lines": "craft",
+    "spoilage_ticks": 0,
+    "price_class": "life_good",
+    "volatility": "mid",
+    "region_restrict": 0,
+    "base_value": 340,
     "fuel_points": 0,
     "water_points": 0
   },
@@ -6140,6 +6700,30 @@
     "fuel_points": 0,
     "water_points": 0
   },
+  "tool_rolling_pin_pharmacy": {
+    "item_id": "tool_rolling_pin_pharmacy",
+    "name": "擀面杖",
+    "name_0": "擀面杖",
+    "weight_kg": 0.35,
+    "sn": "擀面杖",
+    "placeholder_name": "木擀杖",
+    "fn": "木制擀杖，用于压薄与碾碎药材。",
+    "desc_0": "木制擀杖，用于压薄与碾碎药材。",
+    "category": "tool",
+    "sub_category": "pharmacy",
+    "stack_limit": 1,
+    "quality": "white",
+    "tags": "tool;pharmacy",
+    "source": "craft",
+    "production_lines": "craft",
+    "spoilage_ticks": 0,
+    "price_class": "life_good",
+    "volatility": "low",
+    "region_restrict": 0,
+    "base_value": 260,
+    "fuel_points": 0,
+    "water_points": 0
+  },
   "tool_sewing_kit_cloth": {
     "item_id": "tool_sewing_kit_cloth",
     "name": "缝纫工具包",
@@ -6151,7 +6735,7 @@
     "desc_0": "装有几枚粗针与少量线轴的小包，用来简单修补衣物和布制装备。",
     "category": "tool",
     "sub_category": "sewing",
-    "stack_limit": 5,
+    "stack_limit": 1,
     "quality": "white",
     "tags": "tool;sewing;repair",
     "source": "craft",
@@ -6185,6 +6769,54 @@
     "volatility": "mid",
     "region_restrict": 0,
     "base_value": 320,
+    "fuel_points": 0,
+    "water_points": 0
+  },
+  "tool_steel_basin_pharmacy": {
+    "item_id": "tool_steel_basin_pharmacy",
+    "name": "钢盆",
+    "name_0": "钢盆",
+    "weight_kg": 0.6,
+    "sn": "钢盆",
+    "placeholder_name": "钢盆",
+    "fn": "浅口不锈钢盆，冷却与结晶时作容器。",
+    "desc_0": "浅口不锈钢盆，冷却与结晶时作容器。",
+    "category": "tool",
+    "sub_category": "pharmacy",
+    "stack_limit": 1,
+    "quality": "white",
+    "tags": "tool;pharmacy",
+    "source": "craft",
+    "production_lines": "craft",
+    "spoilage_ticks": 0,
+    "price_class": "life_good",
+    "volatility": "mid",
+    "region_restrict": 0,
+    "base_value": 280,
+    "fuel_points": 0,
+    "water_points": 0
+  },
+  "tool_strainer_pot_pharmacy": {
+    "item_id": "tool_strainer_pot_pharmacy",
+    "name": "带网汤锅",
+    "name_0": "带网汤锅",
+    "weight_kg": 1.4,
+    "sn": "带网汤锅",
+    "placeholder_name": "网汤锅",
+    "fn": "带细网的汤锅，适合浸渍与滤出粗渣。",
+    "desc_0": "带细网的汤锅，适合浸渍与滤出粗渣。",
+    "category": "tool",
+    "sub_category": "pharmacy",
+    "stack_limit": 1,
+    "quality": "white",
+    "tags": "tool;pharmacy",
+    "source": "craft",
+    "production_lines": "craft",
+    "spoilage_ticks": 0,
+    "price_class": "life_good",
+    "volatility": "mid",
+    "region_restrict": 0,
+    "base_value": 420,
     "fuel_points": 0,
     "water_points": 0
   },
@@ -6234,7 +6866,9 @@
     "region_restrict": 0,
     "base_value": 950,
     "fuel_points": 0,
-    "water_points": 0
+    "water_points": 0,
+    "weapon_attack_power": 5,
+    "skill_coef": 1
   },
   "weapon_dagger_iron_simple": {
     "item_id": "weapon_dagger_iron_simple",
@@ -6258,7 +6892,9 @@
     "region_restrict": 0,
     "base_value": 1600,
     "fuel_points": 0,
-    "water_points": 0
+    "water_points": 0,
+    "weapon_attack_power": 9,
+    "skill_coef": 1.05
   },
   "weapon_javelin_stone": {
     "item_id": "weapon_javelin_stone",
@@ -6271,7 +6907,7 @@
     "desc_0": "在削尖的木杆前端绑上磨圆的石块，用于近距离投掷攻击。",
     "category": "weapon",
     "sub_category": "javelin",
-    "stack_limit": 3,
+    "stack_limit": 1,
     "quality": "white",
     "tags": "weapon;ranged;throw",
     "source": "craft;hunting",
@@ -6282,7 +6918,9 @@
     "region_restrict": 0,
     "base_value": 380,
     "fuel_points": 0,
-    "water_points": 0
+    "water_points": 0,
+    "weapon_attack_power": 6,
+    "skill_coef": 1
   },
   "weapon_machete_bronze": {
     "item_id": "weapon_machete_bronze",
@@ -6306,7 +6944,9 @@
     "region_restrict": 0,
     "base_value": 1400,
     "fuel_points": 0,
-    "water_points": 0
+    "water_points": 0,
+    "weapon_attack_power": 11,
+    "skill_coef": 1.06
   },
   "weapon_spear_bamboo_iron": {
     "item_id": "weapon_spear_bamboo_iron",
@@ -6330,7 +6970,9 @@
     "region_restrict": 0,
     "base_value": 1200,
     "fuel_points": 0,
-    "water_points": 0
+    "water_points": 0,
+    "weapon_attack_power": 14,
+    "skill_coef": 1.08
   },
   "wild_fruit_purple": {
     "item_id": "wild_fruit_purple",
@@ -6343,7 +6985,7 @@
     "desc_0": "熟透的紫黑色小果，甜味重些，放不久，适合当场吃或很快用掉。",
     "category": "food",
     "sub_category": "berry",
-    "stack_limit": 10,
+    "stack_limit": 1,
     "quality": "white",
     "tags": "food;consumable;cook",
     "source": "gathering",
@@ -6370,7 +7012,7 @@
     "desc_0": "灌木丛里摘的小红果，酸里带涩，生吃能垫垫肚子，也有人拿来煮酱或泡酒。",
     "category": "food",
     "sub_category": "berry",
-    "stack_limit": 10,
+    "stack_limit": 1,
     "quality": "white",
     "tags": "food;consumable;cook",
     "source": "gathering",
@@ -6397,7 +7039,7 @@
     "desc_0": "偏黄的小野果，口感略绵，能充饥，晒干或煮过更好保存。",
     "category": "food",
     "sub_category": "berry",
-    "stack_limit": 10,
+    "stack_limit": 1,
     "quality": "white",
     "tags": "food;consumable;cook",
     "source": "gathering",
@@ -6425,7 +7067,7 @@
     "desc_0": "苹果木细，拿来熏肉也常有。",
     "category": "wood",
     "sub_category": "wood",
-    "stack_limit": 10,
+    "stack_limit": 1,
     "quality": "white",
     "tags": "material",
     "source": "logging",
@@ -6436,7 +7078,9 @@
     "edible": false,
     "cooking_ingredient": true,
     "fuel_points": 0,
-    "water_points": 0
+    "water_points": 0,
+    "fert_c": "48",
+    "fert_n": "2"
   },
   "wood_bamboo_green": {
     "item_id": "wood_bamboo_green",
@@ -6450,7 +7094,7 @@
     "desc_0": "适合作为机关骨架或轻型杆身",
     "category": "wood",
     "sub_category": "bamboo",
-    "stack_limit": 50,
+    "stack_limit": 1,
     "quality": "white",
     "tags": "material;wood;craft;build",
     "source": "logging",
@@ -6462,7 +7106,9 @@
     "base_value": 50,
     "edible": false,
     "fuel_points": 0,
-    "water_points": 0
+    "water_points": 0,
+    "fert_c": "120",
+    "fert_n": "4"
   },
   "wood_bits": {
     "item_id": "wood_bits",
@@ -6476,7 +7122,7 @@
     "desc_0": "木屑引火熏烤填料，厨房木工都剩点。",
     "category": "wood",
     "sub_category": "wood_product",
-    "stack_limit": 10,
+    "stack_limit": 1,
     "quality": "white",
     "tags": "material",
     "source": "logging",
@@ -6486,7 +7132,9 @@
     "region_restrict": 0,
     "edible": false,
     "fuel_points": 0,
-    "water_points": 0
+    "water_points": 0,
+    "fert_c": "41",
+    "fert_n": "1"
   },
   "wood_cassia_bark": {
     "item_id": "wood_cassia_bark",
@@ -6500,7 +7148,7 @@
     "desc_0": "桂皮味狠，烧肉卤味里常见。",
     "category": "wood",
     "sub_category": "spice",
-    "stack_limit": 10,
+    "stack_limit": 1,
     "quality": "white",
     "tags": "material",
     "source": "logging",
@@ -6510,7 +7158,9 @@
     "region_restrict": 0,
     "edible": false,
     "fuel_points": 0,
-    "water_points": 0
+    "water_points": 0,
+    "fert_c": "20",
+    "fert_n": "1"
   },
   "wood_charcoal": {
     "item_id": "wood_charcoal",
@@ -6524,7 +7174,7 @@
     "desc_0": "木炭火旺快炒也行，细炭火稳烟少也行；口径不用于果木炭。",
     "category": "wood",
     "sub_category": "charcoal",
-    "stack_limit": 10,
+    "stack_limit": 1,
     "quality": "white",
     "tags": "material",
     "source": "logging",
@@ -6535,7 +7185,9 @@
     "edible": false,
     "cooking_ingredient": true,
     "fuel_points": 0,
-    "water_points": 0
+    "water_points": 0,
+    "fert_c": "60",
+    "fert_n": "1"
   },
   "wood_charcoal_fruit": {
     "item_id": "wood_charcoal_fruit",
@@ -6549,7 +7201,7 @@
     "desc_0": "果木炭火柔，烤串带股甜香；统一不区分具体果木来源。",
     "category": "wood",
     "sub_category": "charcoal",
-    "stack_limit": 10,
+    "stack_limit": 1,
     "quality": "white",
     "tags": "material",
     "source": "logging",
@@ -6559,7 +7211,9 @@
     "region_restrict": 0,
     "edible": false,
     "fuel_points": 0,
-    "water_points": 0
+    "water_points": 0,
+    "fert_c": "30",
+    "fert_n": "3"
   },
   "wood_coconut": {
     "item_id": "wood_coconut",
@@ -6583,7 +7237,9 @@
     "region_restrict": 0,
     "edible": false,
     "fuel_points": 0,
-    "water_points": 0
+    "water_points": 0,
+    "fert_c": "84",
+    "fert_n": "9"
   },
   "wood_cork": {
     "item_id": "wood_cork",
@@ -6597,7 +7253,7 @@
     "desc_0": "软木塞罐子封酒不漏气。",
     "category": "wood",
     "sub_category": "wood_product",
-    "stack_limit": 10,
+    "stack_limit": 1,
     "quality": "white",
     "tags": "material",
     "source": "logging",
@@ -6607,7 +7263,9 @@
     "region_restrict": 0,
     "edible": false,
     "fuel_points": 0,
-    "water_points": 0
+    "water_points": 0,
+    "fert_c": "24",
+    "fert_n": "1"
   },
   "wood_firewood": {
     "item_id": "wood_firewood",
@@ -6621,7 +7279,7 @@
     "desc_0": "干柴耐烧，往灶膛里一塞就能顶一会儿火候。",
     "category": "wood",
     "sub_category": "wood",
-    "stack_limit": 20,
+    "stack_limit": 1,
     "quality": "white",
     "tags": "material;fuel;cooking",
     "source": "gathering;craft",
@@ -6632,7 +7290,9 @@
     "region_restrict": 0,
     "edible": false,
     "fuel_points": 20,
-    "water_points": 0
+    "water_points": 0,
+    "fert_c": "54",
+    "fert_n": "2"
   },
   "wood_firewood_dry": {
     "item_id": "wood_firewood_dry",
@@ -6646,7 +7306,7 @@
     "desc_0": "杂木风干耐烧，灶上煮饭熬汤都靠它。",
     "category": "wood",
     "sub_category": "wood",
-    "stack_limit": 10,
+    "stack_limit": 1,
     "quality": "white",
     "tags": "material",
     "source": "logging",
@@ -6656,7 +7316,9 @@
     "region_restrict": 0,
     "edible": false,
     "fuel_points": 0,
-    "water_points": 0
+    "water_points": 0,
+    "fert_c": "68",
+    "fert_n": "2"
   },
   "wood_firewood_fruit": {
     "item_id": "wood_firewood_fruit",
@@ -6670,7 +7332,7 @@
     "desc_0": "果木柴火旺，带点香，熏烤好用。",
     "category": "wood",
     "sub_category": "wood",
-    "stack_limit": 10,
+    "stack_limit": 1,
     "quality": "white",
     "tags": "material",
     "source": "logging",
@@ -6680,7 +7342,9 @@
     "region_restrict": 0,
     "edible": false,
     "fuel_points": 0,
-    "water_points": 0
+    "water_points": 0,
+    "fert_c": "82",
+    "fert_n": "2"
   },
   "wood_firewood_rubber": {
     "item_id": "wood_firewood_rubber",
@@ -6694,7 +7358,7 @@
     "desc_0": "橡胶木当柴火旺，烟稍大。",
     "category": "wood",
     "sub_category": "wood",
-    "stack_limit": 10,
+    "stack_limit": 1,
     "quality": "white",
     "tags": "material",
     "source": "logging",
@@ -6704,7 +7368,9 @@
     "region_restrict": 0,
     "edible": false,
     "fuel_points": 0,
-    "water_points": 0
+    "water_points": 0,
+    "fert_c": "82",
+    "fert_n": "2"
   },
   "wood_hickory": {
     "item_id": "wood_hickory",
@@ -6718,7 +7384,7 @@
     "desc_0": "山核桃木结实，锤柄刀柄不爱裂。",
     "category": "wood",
     "sub_category": "wood",
-    "stack_limit": 10,
+    "stack_limit": 1,
     "quality": "white",
     "tags": "material",
     "source": "logging",
@@ -6728,7 +7394,9 @@
     "region_restrict": 0,
     "edible": false,
     "fuel_points": 0,
-    "water_points": 0
+    "water_points": 0,
+    "fert_c": "42",
+    "fert_n": "1"
   },
   "wood_oak": {
     "item_id": "wood_oak",
@@ -6742,7 +7410,7 @@
     "desc_0": "橡木耐潮，做桶做地板牢靠。",
     "category": "wood",
     "sub_category": "wood",
-    "stack_limit": 10,
+    "stack_limit": 1,
     "quality": "white",
     "tags": "material",
     "source": "logging",
@@ -6752,7 +7420,9 @@
     "region_restrict": 0,
     "edible": false,
     "fuel_points": 0,
-    "water_points": 0
+    "water_points": 0,
+    "fert_c": "36",
+    "fert_n": "1"
   },
   "wood_olive": {
     "item_id": "wood_olive",
@@ -6766,7 +7436,7 @@
     "desc_0": "橄榄木硬重，做柄做案板耐得住磨。",
     "category": "wood",
     "sub_category": "wood",
-    "stack_limit": 10,
+    "stack_limit": 1,
     "quality": "white",
     "tags": "material",
     "source": "logging",
@@ -6776,7 +7446,9 @@
     "region_restrict": 0,
     "edible": false,
     "fuel_points": 0,
-    "water_points": 0
+    "water_points": 0,
+    "fert_c": "36",
+    "fert_n": "1"
   },
   "wood_orange": {
     "item_id": "wood_orange",
@@ -6790,7 +7462,7 @@
     "desc_0": "橙木香清，做砧板小家具都成。",
     "category": "wood",
     "sub_category": "wood",
-    "stack_limit": 10,
+    "stack_limit": 1,
     "quality": "white",
     "tags": "material",
     "source": "logging",
@@ -6800,7 +7472,9 @@
     "region_restrict": 0,
     "edible": false,
     "fuel_points": 0,
-    "water_points": 0
+    "water_points": 0,
+    "fert_c": "48",
+    "fert_n": "2"
   },
   "wood_plank_soft": {
     "item_id": "wood_plank_soft",
@@ -6814,7 +7488,7 @@
     "desc_0": "重量较轻便于制作箱柜或简单建筑构件",
     "category": "wood",
     "sub_category": "softwood",
-    "stack_limit": 40,
+    "stack_limit": 1,
     "quality": "white",
     "tags": "material;wood;craft;build",
     "source": "logging",
@@ -6826,7 +7500,9 @@
     "base_value": 200,
     "edible": false,
     "fuel_points": 0,
-    "water_points": 0
+    "water_points": 0,
+    "fert_c": "132",
+    "fert_n": "4"
   },
   "wood_shrub_dry": {
     "item_id": "wood_shrub_dry",
@@ -6840,7 +7516,7 @@
     "desc_0": "灌木枯枝捡来引火快。",
     "category": "wood",
     "sub_category": "wood",
-    "stack_limit": 10,
+    "stack_limit": 1,
     "quality": "white",
     "tags": "material",
     "source": "logging",
@@ -6850,7 +7526,9 @@
     "region_restrict": 0,
     "edible": false,
     "fuel_points": 0,
-    "water_points": 0
+    "water_points": 0,
+    "fert_c": "54",
+    "fert_n": "2"
   },
   "wood_spice_cinnamon_bark": {
     "item_id": "wood_spice_cinnamon_bark",
@@ -6864,7 +7542,7 @@
     "desc_0": "肉桂皮，卤肉炖甜口离不了。",
     "category": "wood",
     "sub_category": "spice",
-    "stack_limit": 10,
+    "stack_limit": 1,
     "quality": "white",
     "tags": "material",
     "source": "logging",
@@ -6874,7 +7552,9 @@
     "region_restrict": 0,
     "edible": false,
     "fuel_points": 0,
-    "water_points": 0
+    "water_points": 0,
+    "fert_c": "20",
+    "fert_n": "1"
   },
   "wood_zelkova": {
     "item_id": "wood_zelkova",
@@ -6888,7 +7568,7 @@
     "desc_0": "榉木细腻，山毛榉一类也归在这名里，老木匠爱锛它。",
     "category": "wood",
     "sub_category": "wood",
-    "stack_limit": 10,
+    "stack_limit": 1,
     "quality": "white",
     "tags": "material",
     "source": "logging",
@@ -6898,6 +7578,8 @@
     "region_restrict": 0,
     "edible": false,
     "fuel_points": 0,
-    "water_points": 0
+    "water_points": 0,
+    "fert_c": "36",
+    "fert_n": "1"
   }
 }

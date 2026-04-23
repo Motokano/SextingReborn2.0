@@ -14,6 +14,11 @@
     var cookingRecipes = [];
     /** 由 data/cooking-system-config.csv 注入，可改 id 后 item-editor 维护物品模板 */
     var cookingFailureItemId = 'food_cooking_fail_generic';
+
+    var pharmacyMethods = {};
+    var pharmacyRecipes = [];
+    /** 由 data/pharmacy-system-config.csv 注入，可改 id 后 item-editor 维护物品模板 */
+    var pharmacyFailureItemId = 'food_pharmacy_fail_generic';
     var cookingTempStationLifetimeTicks = 50;
     var COOKING_TEMP_STATION_ENTITY_ID = 'cooking_station_temp';
     /** 与 `npc_station_cooking_base_triggers` / `NPCSystem` demo flags 对齐：主灶台绑定设施 NPC 时，修好前禁止烹饪 UI 与结算 */
@@ -43,6 +48,27 @@
             }
         }
         return out;
+    }
+    function parseCompostEventActionsCsv(text) {
+        var map = {};
+        if (!text || typeof text !== 'string') return map;
+        var lines = text.split(/\r?\n/);
+        if (!lines.length) return map;
+        var headers = String(lines[0] || '').split(',');
+        var idIdx = headers.indexOf('action_id');
+        var displayIdx = headers.indexOf('display');
+        if (displayIdx < 0) displayIdx = headers.indexOf('display_name');
+        if (idIdx < 0 || displayIdx < 0) return map;
+        for (var i = 1; i < lines.length; i++) {
+            var line = String(lines[i] || '').trim();
+            if (!line) continue;
+            var cells = line.split(',');
+            var id = String(cells[idIdx] || '').trim();
+            var display = String(cells[displayIdx] || '').trim();
+            if (!id || !display) continue;
+            map[id] = display;
+        }
+        return map;
     }
     var gatheringIdleTimer = null;
     var gatheringIdleAt = null;
@@ -332,6 +358,13 @@
         img.src = url;
     }
 
+    function updatePlayerDirectionIndicator() {
+        var el = document.getElementById('player-direction-indicator');
+        if (!el) return;
+        var deg = normalizeFacingDir(currentFacingDir) * 45;
+        el.style.transform = 'translate(-50%, -50%) rotate(' + deg + 'deg)';
+    }
+
     function normalizeFacingDir(v) {
         var n = Number(v);
         if (!isFinite(n)) return 4;
@@ -380,6 +413,7 @@
         currentFacingDir = normalizeFacingDir(dir);
         currentFacing = facingDirToCardinal(currentFacingDir);
         updatePlayerAvatarImage();
+        updatePlayerDirectionIndicator();
         return currentFacingDir;
     }
 
@@ -507,6 +541,25 @@
         return html;
     }
 
+    function buildItemTooltipHtmlForTemplate(itemId, tpl, inst, character) {
+        var tier = IE && IE.getItemDisplayTier ? IE.getItemDisplayTier(itemId, character) : 0;
+        var name = tpl && IE && IE.getDisplayName ? IE.getDisplayName(tpl, tier, character) : String(itemId || '');
+        var desc = tpl && IE && IE.getDisplayDesc ? IE.getDisplayDesc(tpl, tier, character) : '';
+        // 默认只显示“名称 + 描述”，其它信息统一走 ItemInfoModules 配置。
+        var html = buildItemTooltipHtml(name, desc, '');
+        try {
+            if (window.ItemInfoModules && typeof window.ItemInfoModules.renderTooltipModulesHtml === 'function') {
+                var modulesHtml = window.ItemInfoModules.renderTooltipModulesHtml({
+                    itemId: itemId,
+                    tpl: tpl,
+                    character: character
+                });
+                if (modulesHtml) html += modulesHtml;
+            }
+        } catch (e) { /* ignore */ }
+        return html;
+    }
+
     function loadConfig() {
         var base = 'data/';
         return Promise.all([
@@ -530,7 +583,10 @@
             fetch(base + 'cooking-system-config.csv').then(function (r) { return r.ok ? r.text() : ''; }).catch(function () { return ''; }),
             fetch(base + 'recipes.json').then(function (r) { return r.ok ? r.json() : { recipes: {} }; }).catch(function () { return { recipes: {} }; }),
             fetch(base + 'recipe-methods.json').then(function (r) { return r.ok ? r.json() : { methods: {} }; }).catch(function () { return { methods: {} }; }),
-            fetch(base + 'life-skill-recipe-interfaces.json').then(function (r) { return r.ok ? r.json() : { interfaces: {} }; }).catch(function () { return { interfaces: {} }; })
+            fetch(base + 'life-skill-recipe-interfaces.json').then(function (r) { return r.ok ? r.json() : { interfaces: {} }; }).catch(function () { return { interfaces: {} }; }),
+            fetch(base + 'item-info-modules.json').then(function (r) { return r.ok ? r.json() : { module_sets: {} }; }).catch(function () { return { module_sets: {} }; }),
+            fetch(base + 'compost-events.json').then(function (r) { return r.ok ? r.json() : { events: {} }; }).catch(function () { return { events: {} }; }),
+            fetch(base + 'compost-event-actions.csv').then(function (r) { return r.ok ? r.text() : ''; }).catch(function () { return ''; })
         ]).then(function (arr) {
             if (!arr[0]) throw new Error('[SceneApp] ui_text_zhCN.json missing');
             if (!window.UIText || typeof window.UIText.setDict !== 'function') throw new Error('[SceneApp] UIText module missing');
@@ -569,6 +625,8 @@
             if (window.CombatEnemies && arr[14]) window.CombatEnemies.setTable(arr[14]);
             cookingMethods = (arr[15] && arr[15].methods && typeof arr[15].methods === 'object') ? arr[15].methods : {};
             cookingRecipes = (arr[16] && Array.isArray(arr[16].recipes)) ? arr[16].recipes : [];
+            pharmacyMethods = (arr[19] && arr[19].methods && typeof arr[19].methods === 'object') ? arr[19].methods : {};
+            pharmacyRecipes = (arr[18] && arr[18].recipes && typeof arr[18].recipes === 'object') ? Object.keys(arr[18].recipes).map(function(k){return arr[18].recipes[k];}) : [];
             var cookCfgParsed = parseCookingSystemConfigCsv(arr[17] != null ? String(arr[17]) : '');
             cookingFailureItemId = cookCfgParsed.cooking_global_failure_item_id || 'food_cooking_fail_generic';
             cookingTempStationLifetimeTicks = Math.max(1, Math.floor(Number(cookCfgParsed.cooking_temp_station_lifetime_ticks) || 50));
@@ -613,6 +671,30 @@
             if (window.RecipeSystem && typeof window.RecipeSystem.setTables === 'function') {
                 window.RecipeSystem.setTables(arr[18], arr[19], arr[20]);
                 registerCookingRecipeProcessorIfNeeded();
+                if (typeof registerPharmacyRecipeProcessorIfNeeded === 'function') {
+                    registerPharmacyRecipeProcessorIfNeeded();
+                }
+            }
+            if (window.ItemInfoModules && typeof window.ItemInfoModules.setTable === 'function') {
+                window.ItemInfoModules.setTable(arr[21]);
+            }
+            if (window.CompostSystem) {
+                if (typeof window.CompostSystem.setEventsTable === 'function') {
+                    window.CompostSystem.setEventsTable(arr[22]);
+                }
+                compostEventActionDisplayById = parseCompostEventActionsCsv(arr[23] != null ? String(arr[23]) : '');
+                if (typeof window.CompostSystem.setConfig === 'function') {
+                    window.CompostSystem.setConfig({
+                        aerobic_duration_ticks: 288,
+                        anaerobic_duration_ticks: 1008
+                    });
+                }
+                if (typeof window.CompostSystem.setHooks === 'function') {
+                    window.CompostSystem.setHooks({
+                        on_batch_started: function () { addCompostProficiencyForAction('compost_batch_started'); },
+                        on_window_interacted: function () { addCompostProficiencyForAction('compost_window_interacted'); }
+                    });
+                }
             }
             renderRecipeSchemaValidationDebugList();
             var defEqFetched = (arr[7] && typeof arr[7] === 'object') ? arr[7] : {};
@@ -656,9 +738,6 @@
                     }
                 });
             }
-            hideCreationOverlay();
-            updateRoleNameFromCharacter();
-            syncIntroShellUi();
         });
     }
 
@@ -1951,8 +2030,16 @@
     }
 
     function isCookingStationAnnotationText(s) {
-        if (E && typeof E.isBlockingStationAnnotation === 'function') return E.isBlockingStationAnnotation(s);
-        return !!(s && (s === '烹饪台' || s.indexOf('烹饪') >= 0 || s.indexOf('灶') >= 0));
+        if (!s) return false;
+        var t = String(s).trim();
+        if (t === '制药台' || t === '药炉') return false;
+        return t === '烹饪台' || t === '灶台' || t === '烹饪灶' || t.indexOf('烹饪') >= 0 || t.indexOf('灶') >= 0;
+    }
+
+    function isPharmacyStationAnnotationText(s) {
+        if (!s) return false;
+        var t = String(s).trim();
+        return t === '制药台' || t === '药炉';
     }
 
     // 口径：烹饪设施仅允许邻接交互，不允许站在同格交互。
@@ -1990,12 +2077,82 @@
         return null;
     }
 
+    // === Auto-generated Pharmacy Helper ===
+    function getCurrentPharmacyStationContext() {
+        if (!E || typeof E.getState !== 'function') return null;
+        var st = E.getState();
+        var hit = null;
+        forEachAdjacentCell(st.x, st.y, function (x, y) {
+            var rec = (E.getEntityRecordAt && typeof E.getEntityRecordAt === 'function') ? E.getEntityRecordAt(x, y) : null;
+            if (isPharmacyTempStationEntity(rec)) {
+                var temp = findPharmacyTempStationAt(st.mapId, x, y) || normalizeTempStationEntry(Object.assign({ map_id: st.mapId }, rec));
+                hit = {
+                    station_type: 'temp',
+                    map_id: st.mapId,
+                    x: x,
+                    y: y,
+                    temp_station: temp
+                };
+                return true;
+            }
+            var ann = (E.getAnnotationAt && typeof E.getAnnotationAt === 'function') ? E.getAnnotationAt(x, y) : null;
+            var s = ann != null ? String(ann) : '';
+            if (isPharmacyStationAnnotationText(s)) {
+                hit = {
+                    station_type: 'main',
+                    map_id: st.mapId,
+                    x: x,
+                    y: y
+                };
+                return true;
+            }
+            return false;
+        });
+        if (hit) return hit;
+        return null;
+    }
+
+    function isCompostStationAnnotationText(s) {
+        var t = String(s || '').trim();
+        return t === '制肥桶';
+    }
+
+    function getCurrentCompostStationContext() {
+        if (!E || typeof E.getState !== 'function') return null;
+        var st = E.getState();
+        var hit = null;
+        forEachAdjacentCell(st.x, st.y, function (x, y) {
+            var ann = (E.getAnnotationAt && typeof E.getAnnotationAt === 'function') ? E.getAnnotationAt(x, y) : null;
+            var s = ann != null ? String(ann) : '';
+            if (isCompostStationAnnotationText(s)) {
+                hit = {
+                    station_type: 'main',
+                    map_id: st.mapId,
+                    x: x,
+                    y: y
+                };
+                return true;
+            }
+            return false;
+        });
+        if (hit) return hit;
+        return null;
+    }
+
     /** 当前地图格是否配置了「灶格 → 设施 NPC」绑定（见 map.cooking_station_interact_npc_*） */
     function isCookingStationCellRepairGated(mapId, x, y) {
         if (!E || typeof E.getMap !== 'function' || typeof E.getCookingStationInteractNpcId !== 'function') return false;
         var map = E.getMap();
         if (!map || String(map.map_id || '') !== String(mapId || '')) return false;
         return !!E.getCookingStationInteractNpcId(x | 0, y | 0);
+    }
+
+    /** 与烹饪对称：仅当地图为制药格绑定了设施 NPC 时，才走 `PHARMACY_BASE_STATION_UNLOCK_FLAG` 维修门控 */
+    function isPharmacyStationCellRepairGated(mapId, x, y) {
+        if (!E || typeof E.getMap !== 'function' || typeof E.getPharmacyStationInteractNpcId !== 'function') return false;
+        var map = E.getMap();
+        if (!map || String(map.map_id || '') !== String(mapId || '')) return false;
+        return !!E.getPharmacyStationInteractNpcId(x | 0, y | 0);
     }
 
     /**
@@ -2009,8 +2166,20 @@
         return !window.NPCSystem.isDemoFlagTrue(COOKING_BASE_STATION_UNLOCK_FLAG);
     }
 
+    // === Auto-generated Pharmacy Helper ===
+    function isPharmacyUiBlockedByRepairForContext(stationCtx) {
+        if (!stationCtx || stationCtx.station_type === 'temp') return false;
+        if (!isPharmacyStationCellRepairGated(stationCtx.map_id, stationCtx.x, stationCtx.y)) return false;
+        if (!window.NPCSystem || typeof window.NPCSystem.isDemoFlagTrue !== 'function') return true;
+        return !window.NPCSystem.isDemoFlagTrue(PHARMACY_BASE_STATION_UNLOCK_FLAG);
+    }
+
     function isCookingUiBlockedByRepair() {
         return isCookingUiBlockedByRepairForContext(getCurrentCookingStationContext());
+    }
+
+    function isPharmacyUiBlockedByRepair() {
+        return isPharmacyUiBlockedByRepairForContext(getCurrentPharmacyStationContext());
     }
 
     function isAdjacentToWarehouseTile() {
@@ -2246,6 +2415,12 @@
         return !!(tpl && tpl.cooking_ingredient === true);
     }
 
+    // === Auto-generated Pharmacy Helper ===
+    function isItemAllowedPharmacyIngredient(itemId) {
+        var tpl = getItemTemplateSafe(itemId);
+        return !!(tpl && tpl.pharmacy_ingredient === true);
+    }
+
     function getInventoryCountByItemId(itemId) {
         if (!IE || !itemId) return 0;
         var total = 0;
@@ -2269,6 +2444,25 @@
     }
 
     function normalizeCookingInputs(rawInputs) {
+        if (!Array.isArray(rawInputs) || !rawInputs.length) return [];
+        var byId = {};
+        var i;
+        for (i = 0; i < rawInputs.length; i++) {
+            var r = rawInputs[i] || {};
+            var id = r.item_id != null ? String(r.item_id).trim() : '';
+            if (!id) continue;
+            var c = parseInt(r.count, 10);
+            if (!isFinite(c) || c <= 0) c = 1;
+            byId[id] = (byId[id] || 0) + c;
+        }
+        var out = [];
+        var keys = Object.keys(byId);
+        for (i = 0; i < keys.length; i++) out.push({ item_id: keys[i], count: byId[keys[i]] });
+        return out;
+    }
+
+    // === Auto-generated Pharmacy Helper ===
+    function normalizePharmacyInputs(rawInputs) {
         if (!Array.isArray(rawInputs) || !rawInputs.length) return [];
         var byId = {};
         var i;
@@ -2320,7 +2514,24 @@
         var mf = methodFilter != null && String(methodFilter) !== '' ? String(methodFilter) : null;
         for (i = 0; i < cookingRecipes.length; i++) {
             var r = cookingRecipes[i] || {};
-            if (mf != null && String(r.required_method || '') !== mf) continue;
+            var reqMethod = r.required_method != null ? String(r.required_method) : '';
+            var recipeMethod = r.method_id != null ? String(r.method_id) : '';
+            if (mf != null && reqMethod !== mf && recipeMethod !== mf && toUnifiedCookingMethodId(reqMethod) !== mf && toUnifiedCookingMethodId(recipeMethod) !== mf) continue;
+            if (recipeInputsSatisfiedBySelected(r, selectedInputs)) out.push(r);
+        }
+        return out;
+    }
+
+    // === Auto-generated Pharmacy Helper ===
+    function matchPharmacyRecipesByInputs(selectedInputs, methodFilter) {
+        var out = [];
+        var i;
+        var mf = methodFilter != null && String(methodFilter) !== '' ? String(methodFilter) : null;
+        for (i = 0; i < pharmacyRecipes.length; i++) {
+            var r = pharmacyRecipes[i] || {};
+            var reqMethod = r.required_method != null ? String(r.required_method) : '';
+            var recipeMethod = r.method_id != null ? String(r.method_id) : '';
+            if (mf != null && reqMethod !== mf && recipeMethod !== mf && toUnifiedPharmacyMethodId(reqMethod) !== mf && toUnifiedPharmacyMethodId(recipeMethod) !== mf) continue;
             if (recipeInputsSatisfiedBySelected(r, selectedInputs)) out.push(r);
         }
         return out;
@@ -2328,6 +2539,27 @@
 
     /** 按 match_weight（缺省 1）加权随机选一条配方。 */
     function pickCookingRecipeWeighted(recipes) {
+        if (!Array.isArray(recipes) || !recipes.length) return null;
+        var total = 0;
+        var i, w;
+        var weights = [];
+        for (i = 0; i < recipes.length; i++) {
+            w = recipes[i].match_weight != null ? parseFloat(recipes[i].match_weight, 10) : 1;
+            if (!isFinite(w) || w <= 0) w = 1;
+            weights.push(w);
+            total += w;
+        }
+        var roll = Math.random() * total;
+        var acc = 0;
+        for (i = 0; i < recipes.length; i++) {
+            acc += weights[i];
+            if (roll < acc) return recipes[i];
+        }
+        return recipes[recipes.length - 1];
+    }
+
+    // === Auto-generated Pharmacy Helper ===
+    function pickPharmacyRecipeWeighted(recipes) {
         if (!Array.isArray(recipes) || !recipes.length) return null;
         var total = 0;
         var i, w;
@@ -2390,9 +2622,17 @@
     // Cooking craft (async, tick-driven; 21.10.1 / 21.10.3)
     // ---------------------------
     var cookingCraftIdleTimer = null;
+    var pharmacyCraftIdleTimer = null;
     var COOKING_RECIPE_SYSTEM = 'life_cooking';
     var COOKING_DEFAULT_PROCESSOR_ID = 'processor.life_cooking.default';
     var cookingRecipeProcessorRegistered = false;
+    var PHARMACY_RECIPE_SYSTEM = 'life_pharmacy';
+    var PHARMACY_DEFAULT_PROCESSOR_ID = 'processor.life_pharmacy.default';
+    var PHARMACY_BASE_STATION_UNLOCK_FLAG = 'npc_station_pharmacy_base_repaired';
+    var PHARMACY_FUEL_MAX_POINTS = 100;
+    var PHARMACY_WATER_MAX_POINTS = 100;
+    var DEFAULT_PHARMACY_INSTALLED_ACCESSORIES = [];
+    var pharmacyRecipeProcessorRegistered = false;
 
     function registerCookingRecipeProcessorIfNeeded() {
         if (cookingRecipeProcessorRegistered) return;
@@ -2420,12 +2660,68 @@
         cookingRecipeProcessorRegistered = true;
     }
 
+    function registerPharmacyRecipeProcessorIfNeeded() {
+        if (pharmacyRecipeProcessorRegistered) return;
+        if (!window.RecipeSystem || typeof window.RecipeSystem.registerProcessor !== 'function') return;
+        window.RecipeSystem.registerProcessor(PHARMACY_DEFAULT_PROCESSOR_ID, function (payload) {
+            var recipe = payload && payload.recipe && typeof payload.recipe === 'object' ? payload.recipe : {};
+            var route = payload && payload.route && typeof payload.route === 'object' ? payload.route : {};
+            var method = payload && payload.method && typeof payload.method === 'object' ? payload.method : {};
+            var mainOut = recipe && recipe.main_output && typeof recipe.main_output === 'object' ? recipe.main_output : null;
+            var bonusOut = Array.isArray(recipe && recipe.bonus_outputs) ? recipe.bonus_outputs : [];
+            var failOut = route && route.failure_output && typeof route.failure_output === 'object' ? route.failure_output : null;
+            return {
+                selected_recipe_id: payload && payload.recipe_id ? String(payload.recipe_id) : '',
+                method_id: method && method.method_id != null ? String(method.method_id) : '',
+                route: route,
+                main_output: mainOut,
+                bonus_outputs: bonusOut,
+                failure_output: failOut,
+                base_success_rate: (route && route.base_success_rate != null)
+                    ? route.base_success_rate
+                    : (method && method.base_success_rate != null ? method.base_success_rate : null),
+                base_output_quality_tier: (recipe && recipe.base_output_quality_tier != null) ? recipe.base_output_quality_tier : 0
+            };
+        });
+        pharmacyRecipeProcessorRegistered = true;
+    }
+
     /** 灶台工艺 id 与 cooking-methods.json 键一致（如 boil_stew）；统一表 method_id 为 life_cooking.boil_stew。 */
     function toUnifiedCookingMethodId(legacyMethodId) {
         var s = String(legacyMethodId || '').trim();
         if (!s) return '';
         if (s.indexOf('life_cooking.') === 0) return s;
         return 'life_cooking.' + s;
+    }
+
+    function toUnifiedPharmacyMethodId(legacyMethodId) {
+        var s = String(legacyMethodId || '').trim();
+        if (!s) return '';
+        if (s.indexOf('life_pharmacy.') === 0) return s;
+        return 'life_pharmacy.' + s;
+    }
+
+    function readMethodCostValue(methodObj, key, legacyKey) {
+        var m = methodObj && typeof methodObj === 'object' ? methodObj : {};
+        var cost = m.cost && typeof m.cost === 'object' ? m.cost : null;
+        var v = cost && cost[key] != null ? Number(cost[key]) : NaN;
+        if (!isFinite(v)) v = Number(m[legacyKey]);
+        if (!isFinite(v)) v = 0;
+        return Math.max(0, Math.floor(v));
+    }
+
+    function getPharmacyMethodDisplayName(methodId, methodObj) {
+        var mid = methodId != null ? String(methodId) : '';
+        var m = methodObj && typeof methodObj === 'object' ? methodObj : {};
+        if (m.name != null && String(m.name).trim() !== '') return String(m.name);
+        var keyRaw = mid.indexOf('life_pharmacy.') === 0 ? mid.slice('life_pharmacy.'.length) : mid;
+        var key = 'pharmacy.method.' + keyRaw;
+        try {
+            if (window.UIText && typeof window.UIText.t === 'function') {
+                return window.UIText.t(key);
+            }
+        } catch (e0) { /* fallback */ }
+        return mid;
     }
 
     function tryResolveCookingByUnifiedRoute(methodId, selectedInputs) {
@@ -2449,6 +2745,30 @@
         return { ok: true, data: data };
     }
 
+    // === Auto-generated Pharmacy Helper ===
+    function tryResolvePharmacyByUnifiedRoute(methodId, selectedInputs) {
+        if (!window.RecipeSystem || typeof window.RecipeSystem.craft !== 'function') {
+            return { ok: false, reason: 'recipe_system_unavailable' };
+        }
+        if (typeof registerPharmacyRecipeProcessorIfNeeded === 'function') {
+            registerPharmacyRecipeProcessorIfNeeded();
+        }
+        var ret = window.RecipeSystem.craft({
+            recipe_system: PHARMACY_RECIPE_SYSTEM,
+            method_id: toUnifiedPharmacyMethodId(methodId),
+            inputs: Array.isArray(selectedInputs) ? selectedInputs : []
+        });
+        if (!ret || ret.ok !== true) {
+            return {
+                ok: false,
+                reason: 'recipe_system_craft_failed',
+                error: ret && ret.error ? ret.error : null
+            };
+        }
+        var data = ret.result && typeof ret.result === 'object' ? ret.result : {};
+        return { ok: true, data: data };
+    }
+
     function getActiveCookingCraft() {
         var cs = getCookingStationState();
         var ac = cs && cs.active_craft && typeof cs.active_craft === 'object' ? cs.active_craft : null;
@@ -2458,8 +2778,24 @@
         return Object.assign({}, ac, { remaining_ticks: rt });
     }
 
+    // === Auto-generated Pharmacy Helper ===
+    function getActivePharmacyCraft() {
+        var cs = getPharmacyStationState();
+        var ac = cs && cs.active_craft && typeof cs.active_craft === 'object' ? cs.active_craft : null;
+        if (!ac) return null;
+        var rt = Math.max(0, Math.floor(Number(ac.remaining_ticks) || 0));
+        if (!(rt > 0)) return null;
+        return Object.assign({}, ac, { remaining_ticks: rt });
+    }
+
     function clearActiveCookingCraft() {
         var cs = getCookingStationState();
+        if (cs) cs.active_craft = null;
+    }
+
+    // === Auto-generated Pharmacy Helper ===
+    function clearActivePharmacyCraft() {
+        var cs = getPharmacyStationState();
         if (cs) cs.active_craft = null;
     }
 
@@ -2476,6 +2812,22 @@
         cookingCraftIdleTimer = setInterval(function () {
             if (window.Survival && typeof window.Survival.advanceTick === 'function') window.Survival.advanceTick();
         }, getIdleTickMs());
+    }
+
+    // === Auto-generated Pharmacy Helper ===
+    function startPharmacyCraftIdleIfNeeded() {
+        if (pharmacyCraftIdleTimer) return;
+        if (!getActivePharmacyCraft()) return;
+        pharmacyCraftIdleTimer = setInterval(function () {
+            if (window.Survival && typeof window.Survival.advanceTick === 'function') window.Survival.advanceTick();
+        }, getIdleTickMs());
+    }
+
+    function stopPharmacyCraftIdle() {
+        if (pharmacyCraftIdleTimer) {
+            try { clearInterval(pharmacyCraftIdleTimer); } catch (e0) { /* ignore */ }
+            pharmacyCraftIdleTimer = null;
+        }
     }
 
     function finalizeCookingCraftNow(craftSnap, options) {
@@ -2645,6 +2997,258 @@
         if (cookingStationPanelOpen) renderCookingStationPanel();
     }
 
+    function markPharmacyRecipeKnown(recipeId) {
+        if (!recipeId || !window.SceneCtx) return;
+        window.SceneCtx.known_pharmacy_recipes = window.SceneCtx.known_pharmacy_recipes || {};
+        var rid = String(recipeId);
+        window.SceneCtx.known_pharmacy_recipes[rid] = true;
+        window.SceneCtx.known_recipe_ids_by_system = window.SceneCtx.known_recipe_ids_by_system || {};
+        if (!window.SceneCtx.known_recipe_ids_by_system[PHARMACY_RECIPE_SYSTEM]) {
+            window.SceneCtx.known_recipe_ids_by_system[PHARMACY_RECIPE_SYSTEM] = {};
+        }
+        window.SceneCtx.known_recipe_ids_by_system[PHARMACY_RECIPE_SYSTEM][rid] = true;
+    }
+
+    function finalizePharmacyCraftNow(craftSnap, options) {
+        var opts = options && typeof options === 'object' ? options : {};
+        var craft = craftSnap && typeof craftSnap === 'object' ? craftSnap : getActivePharmacyCraft();
+        clearActivePharmacyCraft();
+        stopPharmacyCraftIdle();
+
+        if (!craft || !craft.method_id) return;
+        var mid = String(craft.method_id).trim();
+        var m = pharmacyMethods && pharmacyMethods[mid] ? pharmacyMethods[mid] : null;
+        var failId = pharmacyFailureItemId;
+        var forceFailure = !!opts.force_failure;
+        var selected = normalizePharmacyInputs(craft.inputs || []);
+        var matched = matchPharmacyRecipesByInputs(selected, mid);
+
+        function grantItemOrDrop(itemId, qualityTier) {
+            var outInst = { item_id: itemId, count: 1, quality_tier: qualityTier || 0 };
+            var placed = IE.putItemIntoDefaultContainer(outInst);
+            if (!placed || !placed.placed) {
+                var st0 = E.getState();
+                if (typeof IE.addItemToGround === 'function') IE.addItemToGround(st0.mapId, st0.x, st0.y, outInst);
+            }
+        }
+
+        if (forceFailure) {
+            grantItemOrDrop(failId, 0);
+            showMsg(ui('pharmacy.msg.done_fail', { item: failId }), 'warn');
+            if (typeof updateBackpackPanel === 'function') updateBackpackPanel();
+            if (typeof updateStatusPanel === 'function') updateStatusPanel();
+            if (window.SceneRenderer) window.SceneRenderer.render();
+            return;
+        }
+
+        var pick = null;
+        var pickRecipeId = '';
+        var pickBaseSuccessRate = null;
+        var pickBaseOutputQualityTier = 0;
+        var pickMainOutput = null;
+        var pickBonusOutputs = [];
+        var pickFailureOutput = null;
+        var unifiedRet = tryResolvePharmacyByUnifiedRoute(mid, selected);
+        if (unifiedRet.ok && unifiedRet.data) {
+            var routeData = unifiedRet.data;
+            pickRecipeId = routeData.selected_recipe_id || '';
+            pickMainOutput = routeData.main_output && typeof routeData.main_output === 'object' ? routeData.main_output : null;
+            pickBonusOutputs = Array.isArray(routeData.bonus_outputs) ? routeData.bonus_outputs : [];
+            pickFailureOutput = routeData.failure_output && typeof routeData.failure_output === 'object' ? routeData.failure_output : null;
+            pickBaseSuccessRate = routeData.base_success_rate;
+            pickBaseOutputQualityTier = routeData.base_output_quality_tier != null ? routeData.base_output_quality_tier : 0;
+            if (pickMainOutput && pickMainOutput.item_id) {
+                pick = {
+                    output_item_id: String(pickMainOutput.item_id),
+                    recipe_id: pickRecipeId,
+                    bonus_outputs: pickBonusOutputs,
+                    failure_output: pickFailureOutput
+                };
+            }
+        } else if (unifiedRet.error && unifiedRet.error.code !== 'RECIPE_NO_MATCHED_RECIPE') {
+            try { console.warn('[Pharmacy][UnifiedRoute] craft failed:', unifiedRet.error); } catch (eLog0) { /* ignore */ }
+        }
+        if (!pick) {
+            if (!matched.length) {
+                grantItemOrDrop(failId, 0);
+                showMsg(ui('pharmacy.msg.no_recipe_fail', { item: failId }), 'warn');
+                if (typeof updateBackpackPanel === 'function') updateBackpackPanel();
+                if (typeof updateStatusPanel === 'function') updateStatusPanel();
+                if (window.SceneRenderer) window.SceneRenderer.render();
+                return;
+            }
+            pick = pickPharmacyRecipeWeighted(matched);
+            if (!pick) {
+                grantItemOrDrop(failId, 0);
+                showMsg(ui('pharmacy.msg.done_fail', { item: failId }), 'warn');
+                if (typeof updateBackpackPanel === 'function') updateBackpackPanel();
+                if (typeof updateStatusPanel === 'function') updateStatusPanel();
+                if (window.SceneRenderer) window.SceneRenderer.render();
+                return;
+            }
+            pickRecipeId = pick.recipe_id ? String(pick.recipe_id) : '';
+            pickBaseSuccessRate = pick.base_success_rate != null ? pick.base_success_rate : (m ? m.base_success_rate : 1);
+            pickBaseOutputQualityTier = pick.base_output_quality_tier != null ? pick.base_output_quality_tier : 0;
+        }
+
+        var pq = window.ProductionQuality;
+        var evalRes = (pq && typeof pq.evaluateProduction === 'function')
+            ? pq.evaluateProduction({
+                base_success_rate: pickBaseSuccessRate != null ? pickBaseSuccessRate : (m ? m.base_success_rate : 1),
+                skill_level: 0,
+                input_items: Array.isArray(craft.consumed_items) ? craft.consumed_items.slice() : [],
+                base_output_quality_tier: pickBaseOutputQualityTier
+            })
+            : { success: true, output_quality_tier: 0, success_rate: 1 };
+        var outputItemId = failId;
+        if (evalRes.success) {
+            if (pickMainOutput && pickMainOutput.item_id) outputItemId = String(pickMainOutput.item_id);
+            else outputItemId = pick.output_item_id;
+        } else if (pickFailureOutput && pickFailureOutput.item_id) {
+            outputItemId = String(pickFailureOutput.item_id);
+        } else if (pick && pick.failure_output && pick.failure_output.item_id) {
+            outputItemId = String(pick.failure_output.item_id);
+        }
+        var outputQuality = evalRes.success ? (evalRes.output_quality_tier != null ? evalRes.output_quality_tier : 0) : 0;
+        if (evalRes.success && pickRecipeId) markPharmacyRecipeKnown(pickRecipeId);
+
+        grantItemOrDrop(outputItemId, outputQuality);
+        if (evalRes.success && Array.isArray(pickBonusOutputs) && pickBonusOutputs.length) {
+            var bi;
+            for (bi = 0; bi < pickBonusOutputs.length; bi++) {
+                var brow = pickBonusOutputs[bi] || {};
+                var bid = brow.item_id != null ? String(brow.item_id) : '';
+                var bcnt = Math.max(1, parseInt(brow.count, 10) || 1);
+                var bchance = Number(brow.chance);
+                if (!bid) continue;
+                if (!(bchance >= 0)) bchance = 1;
+                bchance = Math.max(0, Math.min(1, bchance));
+                if (Math.random() >= bchance) continue;
+                var bk;
+                for (bk = 0; bk < bcnt; bk++) grantItemOrDrop(bid, outputQuality);
+            }
+        }
+        showMsg(
+            evalRes.success
+                ? ui('pharmacy.msg.done_ok', { item: outputItemId, method: mid })
+                : ui('pharmacy.msg.done_fail', { item: failId }),
+            evalRes.success ? 'success' : 'warn'
+        );
+        if (typeof updateBackpackPanel === 'function') updateBackpackPanel();
+        if (typeof updateStatusPanel === 'function') updateStatusPanel();
+        if (window.SceneRenderer) window.SceneRenderer.render();
+    }
+
+    function tickPharmacyCraftAfterWorldTick() {
+        var cs = getPharmacyStationState();
+        if (!cs || !cs.active_craft || typeof cs.active_craft !== 'object') return;
+        var rt = Math.max(0, Math.floor(Number(cs.active_craft.remaining_ticks) || 0));
+        if (!(rt > 0)) {
+            cs.active_craft = null;
+            stopPharmacyCraftIdle();
+            return;
+        }
+        rt -= 1;
+        cs.active_craft.remaining_ticks = rt;
+        if (rt <= 0) {
+            finalizePharmacyCraftNow(cs.active_craft);
+        }
+        if (pharmacyStationPanelOpen) renderPharmacyStationPanel();
+    }
+
+    function tickPharmacyTempStationsAfterWorldTick() {
+        // 制药台暂未启用临时工位；保留空函数避免 tick patch 调用缺失。
+    }
+
+    function tryPharmacyAtStation(methodId, inputItems) {
+        var stationCtx = getCurrentPharmacyStationContext();
+        if (!stationCtx) return { ok: false, reason: 'not_on_pharmacy_station' };
+        if (isPharmacyUiBlockedByRepairForContext(stationCtx)) {
+            return { ok: false, reason: 'pharmacy_station_repair_locked' };
+        }
+        if (methodId == null || !Array.isArray(inputItems)) return { ok: false, reason: 'bad_args' };
+        if (getActivePharmacyCraft()) return { ok: false, reason: 'craft_in_progress' };
+        var mid = String(methodId).trim();
+        if (!mid) return { ok: false, reason: 'method_required' };
+        var m = pharmacyMethods && pharmacyMethods[mid] ? pharmacyMethods[mid] : null;
+        if (!m) return { ok: false, reason: 'method_not_found', method_id: mid };
+        if (!isPharmacyMethodUnlockedAtStation(mid, stationCtx)) {
+            return {
+                ok: false,
+                reason: 'pharmacy_method_locked',
+                method_id: mid,
+                required_accessory_item_id: m.requires_accessory_item_id != null ? m.requires_accessory_item_id : null
+            };
+        }
+
+        var selected = normalizePharmacyInputs(inputItems);
+        if (!selected.length) return { ok: false, reason: 'empty_inputs' };
+        var i;
+        for (i = 0; i < selected.length; i++) {
+            var sid = selected[i].item_id;
+            if (!isItemAllowedPharmacyIngredient(sid)) {
+                return { ok: false, reason: 'not_pharmacy_ingredient', item_id: sid };
+            }
+            if (getInventoryCountByItemId(sid) < selected[i].count) {
+                return { ok: false, reason: 'missing_input_items', item_id: sid };
+            }
+        }
+
+        var needFuel = readMethodCostValue(m, 'fuel', 'fuel_cost');
+        var needTicks = readMethodCostValue(m, 'ticks', 'craft_ticks');
+        var needStamina = readMethodCostValue(m, 'stamina', 'stamina_cost');
+        var cs = getPharmacyStationState();
+        var curFuel = parseInt(cs.fuel_points, 10) || 0;
+        if (curFuel < needFuel) return { ok: false, reason: 'insufficient_fuel', need: needFuel, current: curFuel };
+        var survState = window.Survival && typeof window.Survival.getState === 'function' ? window.Survival.getState() : null;
+        var curStamina = survState ? Number(survState.stamina || 0) : 0;
+        if (curStamina < needStamina) return { ok: false, reason: 'insufficient_stamina', need: needStamina, current: curStamina };
+        if (IE && typeof IE.canAcceptItem === 'function' && !IE.canAcceptItem()) {
+            return { ok: false, reason: 'inventory_full' };
+        }
+
+        var consumedRes = consumeInventoryItemsByList(selected);
+        if (!consumedRes.ok) {
+            putItemsBack(consumedRes.consumed || []);
+            return { ok: false, reason: 'consume_inputs_failed' };
+        }
+
+        cs.fuel_points = curFuel - needFuel;
+        if (window.Survival && typeof window.Survival.consumeStamina === 'function' && needStamina > 0) {
+            window.Survival.consumeStamina(needStamina);
+        }
+
+        var cs2 = getPharmacyStationState();
+        var gt = window.GameTime && typeof window.GameTime.getState === 'function' ? window.GameTime.getState() : null;
+        cs2.active_craft = {
+            remaining_ticks: Math.max(1, needTicks),
+            started_total_ticks: gt && typeof gt.totalTicks === 'number' ? gt.totalTicks : 0,
+            method_id: mid,
+            inputs: selected,
+            consumed_items: consumedRes.consumed || [],
+            station_ref: {
+                station_type: stationCtx.station_type || 'main',
+                map_id: stationCtx.map_id,
+                x: stationCtx.x,
+                y: stationCtx.y
+            }
+        };
+        stopGatheringIdle();
+        patchSurvivalTickForPharmacyCraftOnce();
+        startPharmacyCraftIdleIfNeeded();
+        showMsg(ui('pharmacy.msg.started', { n: Math.max(1, needTicks) }), 'info');
+        if (typeof updateBackpackPanel === 'function') updateBackpackPanel();
+        if (typeof updateStatusPanel === 'function') updateStatusPanel();
+        if (window.SceneRenderer) window.SceneRenderer.render();
+        return {
+            ok: true,
+            started: true,
+            method_id: mid,
+            remaining_ticks: Math.max(1, needTicks),
+            consumed: { fuel: needFuel, ticks: needTicks, stamina: needStamina }
+        };
+    }
+
     function isActiveCraftOnTempStation(mapId, x, y) {
         var cs = getCookingStationState();
         var ac = cs && cs.active_craft && typeof cs.active_craft === 'object' ? cs.active_craft : null;
@@ -2760,9 +3364,40 @@
             try { resolveNpcHardOccupancyAfterWorldTick(); } catch (e2) { /* ignore */ }
             try { tickCookingTempStationsAfterWorldTick(); } catch (e1) { /* ignore */ }
             try { tickCookingCraftAfterWorldTick(); } catch (e0) { /* ignore */ }
+            try {
+                if (window.CompostSystem && typeof window.CompostSystem.onWorldTick === 'function') {
+                    window.CompostSystem.onWorldTick();
+                }
+            } catch (e3) { /* ignore */ }
+            try {
+                if (compostStationPanelOpen) renderCompostStationPanel();
+            } catch (e4) { /* ignore */ }
             return ret;
         };
         window.Survival.__cookingCraftPatched = true;
+    }
+
+    // === Auto-generated Pharmacy Helper ===
+    function patchSurvivalTickForPharmacyCraftOnce() {
+        if (!window.Survival || typeof window.Survival.advanceTick !== 'function') return;
+        if (window.Survival.__pharmacyCraftPatched) return;
+        var oldAdvance = window.Survival.advanceTick;
+        window.Survival.advanceTick = function () {
+            var ret = oldAdvance.apply(this, arguments);
+            try { resolveNpcHardOccupancyAfterWorldTick(); } catch (e2) { /* ignore */ }
+            try { tickPharmacyTempStationsAfterWorldTick(); } catch (e1) { /* ignore */ }
+            try { tickPharmacyCraftAfterWorldTick(); } catch (e0) { /* ignore */ }
+            try {
+                if (window.CompostSystem && typeof window.CompostSystem.onWorldTick === 'function') {
+                    window.CompostSystem.onWorldTick();
+                }
+            } catch (e3) { /* ignore */ }
+            try {
+                if (compostStationPanelOpen) renderCompostStationPanel();
+            } catch (e4) { /* ignore */ }
+            return ret;
+        };
+        window.Survival.__pharmacyCraftPatched = true;
     }
 
     var COOKING_SKILL_MAX_LEVEL = 100;
@@ -2873,6 +3508,34 @@
         return s;
     }
 
+    // === Auto-generated Pharmacy Helper ===
+    function getPharmacyStationState() {
+        if (!window.SceneCtx) {
+            return {
+                fuel_points: 0,
+                water_points: 0,
+                water_unlimited: false,
+                installed_accessory_item_ids: DEFAULT_PHARMACY_INSTALLED_ACCESSORIES.slice()
+            };
+        }
+        if (!window.SceneCtx.pharmacy_station_runtime || typeof window.SceneCtx.pharmacy_station_runtime !== 'object') {
+            window.SceneCtx.pharmacy_station_runtime = {
+                fuel_points: 0,
+                water_points: 0,
+                water_unlimited: false,
+                installed_accessory_item_ids: DEFAULT_PHARMACY_INSTALLED_ACCESSORIES.slice(),
+                active_craft: null
+            };
+        }
+        var s = window.SceneCtx.pharmacy_station_runtime;
+        if (!isFinite(parseInt(s.fuel_points, 10))) s.fuel_points = 0;
+        if (!isFinite(parseInt(s.water_points, 10))) s.water_points = 0;
+        s.water_unlimited = s.water_unlimited === true || s.water_unlimited === 'true' || s.water_unlimited === 1 || String(s.water_unlimited).toLowerCase() === '1';
+        if (!Array.isArray(s.installed_accessory_item_ids)) s.installed_accessory_item_ids = DEFAULT_PHARMACY_INSTALLED_ACCESSORIES.slice();
+        if (s.active_craft != null && typeof s.active_craft !== 'object') s.active_craft = null;
+        return s;
+    }
+
     function getCookingAccessoryItemIdsFromMethods() {
         var out = [];
         var seen = {};
@@ -2892,6 +3555,24 @@
 
     function getCookingAccessoryOptionsFromInventory(installedIds) {
         var allow = getCookingAccessoryItemIdsFromMethods();
+        if (!allow.length) return [];
+        var installedSet = {};
+        var i;
+        for (i = 0; i < (installedIds || []).length; i++) installedSet[String(installedIds[i])] = true;
+        var out = [];
+        for (i = 0; i < allow.length; i++) {
+            var id = allow[i];
+            var have = getInventoryCountByItemId(id);
+            if (have <= 0) continue;
+            if (installedSet[id]) continue;
+            out.push({ item_id: id, count: have });
+        }
+        return out;
+    }
+
+    // === Auto-generated Pharmacy Helper ===
+    function getPharmacyAccessoryOptionsFromInventory(installedIds) {
+        var allow = getPharmacyAccessoryItemIdsFromMethods();
         if (!allow.length) return [];
         var installedSet = {};
         var i;
@@ -2928,10 +3609,65 @@
         return { ok: true, item_id: id };
     }
 
+    // === Auto-generated Pharmacy Helper ===
+    function installPharmacyAccessoryFromInventory(itemId) {
+        var id = itemId != null ? String(itemId).trim() : '';
+        if (!id) return { ok: false, reason: 'bad_item' };
+        var allow = getPharmacyAccessoryItemIdsFromMethods();
+        if (allow.indexOf(id) < 0) return { ok: false, reason: 'not_pharmacy_accessory', item_id: id };
+        var cs = getPharmacyStationState();
+        var arr = Array.isArray(cs.installed_accessory_item_ids) ? cs.installed_accessory_item_ids : [];
+        var i;
+        for (i = 0; i < arr.length; i++) {
+            if (String(arr[i]) === id) return { ok: false, reason: 'already_installed', item_id: id };
+        }
+        var slot = findFirstContainerSlotByItemId(id);
+        if (!slot) return { ok: false, reason: 'missing_item', item_id: id };
+        if (!IE || typeof IE.takeItemFromContainer !== 'function') return { ok: false, reason: 'inventory_api_missing' };
+        var taken = IE.takeItemFromContainer(slot.containerType, slot.index);
+        if (!taken || !taken.success || !taken.item) return { ok: false, reason: 'take_failed', item_id: id };
+        arr.push(id);
+        cs.installed_accessory_item_ids = arr;
+        return { ok: true, item_id: id };
+    }
+
     function uninstallCookingAccessoryToInventory(itemId) {
         var id = itemId != null ? String(itemId).trim() : '';
         if (!id) return { ok: false, reason: 'bad_item' };
         var cs = getCookingStationState();
+        var src = Array.isArray(cs.installed_accessory_item_ids) ? cs.installed_accessory_item_ids : [];
+        var out = [];
+        var removed = false;
+        var i;
+        for (i = 0; i < src.length; i++) {
+            var cur = String(src[i]).trim();
+            if (!removed && cur === id) {
+                removed = true;
+                continue;
+            }
+            if (cur) out.push(cur);
+        }
+        if (!removed) return { ok: false, reason: 'not_installed', item_id: id };
+        if (!IE || typeof IE.putItemIntoDefaultContainer !== 'function') return { ok: false, reason: 'inventory_api_missing' };
+        var inst = { item_id: id, count: 1, quality_tier: 0 };
+        var placed = IE.putItemIntoDefaultContainer(inst);
+        if (!placed || !placed.placed) {
+            var st = E && typeof E.getState === 'function' ? E.getState() : null;
+            if (st && typeof IE.addItemToGround === 'function') {
+                IE.addItemToGround(st.mapId, st.x, st.y, inst);
+            } else {
+                return { ok: false, reason: 'put_back_failed', item_id: id };
+            }
+        }
+        cs.installed_accessory_item_ids = out;
+        return { ok: true, item_id: id };
+    }
+
+    // === Auto-generated Pharmacy Helper ===
+    function uninstallPharmacyAccessoryToInventory(itemId) {
+        var id = itemId != null ? String(itemId).trim() : '';
+        if (!id) return { ok: false, reason: 'bad_item' };
+        var cs = getPharmacyStationState();
         var src = Array.isArray(cs.installed_accessory_item_ids) ? cs.installed_accessory_item_ids : [];
         var out = [];
         var removed = false;
@@ -2995,6 +3731,42 @@
         return false;
     }
 
+    // === Auto-generated Pharmacy Helper ===
+    function isPharmacyMethodUnlockedAtStation(methodId, stationContext) {
+        var m = pharmacyMethods && methodId ? pharmacyMethods[String(methodId)] : null;
+        if (!m) return false;
+        var ctx = stationContext || getCurrentPharmacyStationContext();
+        if (ctx && ctx.station_type === 'temp') {
+            var allowed = ctx.temp_station && Array.isArray(ctx.temp_station.allowed_methods) ? ctx.temp_station.allowed_methods : null;
+            if (allowed && allowed.length) {
+                var mid0 = String(methodId);
+                var allowHit = false;
+                var ai;
+                for (ai = 0; ai < allowed.length; ai++) {
+                    if (String(allowed[ai]) === mid0) { allowHit = true; break; }
+                }
+                if (!allowHit) return false;
+            }
+        }
+        var req = m.requires_accessory_item_id;
+        if (req == null || String(req).trim() === '') return true;
+        var arr;
+        if (ctx && ctx.station_type === 'temp') {
+            arr = ctx.temp_station && Array.isArray(ctx.temp_station.installed_accessory_item_ids)
+                ? ctx.temp_station.installed_accessory_item_ids
+                : [];
+        } else {
+            var st = getPharmacyStationState();
+            arr = st.installed_accessory_item_ids || [];
+        }
+        var need = String(req).trim();
+        var i;
+        for (i = 0; i < arr.length; i++) {
+            if (String(arr[i]).trim() === need) return true;
+        }
+        return false;
+    }
+
     function markCookingRecipeKnown(recipeId) {
         if (!recipeId || !window.SceneCtx) return;
         window.SceneCtx.known_cooking_recipes = window.SceneCtx.known_cooking_recipes || {};
@@ -3024,10 +3796,30 @@
         if (window.NPCSystem && typeof window.NPCSystem.resetCookingStationRepairQuestFlags === 'function') {
             try { window.NPCSystem.resetCookingStationRepairQuestFlags(); } catch (eNq) { /* ignore */ }
         }
+        stopPharmacyCraftIdle();
+        window.SceneCtx.pharmacy_station_runtime = {
+            fuel_points: 0,
+            water_points: 0,
+            water_unlimited: false,
+            installed_accessory_item_ids: DEFAULT_PHARMACY_INSTALLED_ACCESSORIES.slice(),
+            active_craft: null
+        };
+        window.SceneCtx.known_pharmacy_recipes = {};
+        if (window.NPCSystem && typeof window.NPCSystem.resetPharmacyStationRepairQuestFlags === 'function') {
+            try { window.NPCSystem.resetPharmacyStationRepairQuestFlags(); } catch (ePq) { /* ignore */ }
+        }
     }
 
     function isOnCookingStationTile() {
         return !!getCurrentCookingStationContext();
+    }
+
+    function isOnPharmacyStationTile() {
+        return !!getCurrentPharmacyStationContext();
+    }
+
+    function isOnCompostStationTile() {
+        return !!getCurrentCompostStationContext();
     }
 
     function canPourWaterAtCurrentTile() {
@@ -3312,192 +4104,256 @@
     }
 
     var backpackPanelOpen = false;
+    var backpackUIState = {
+        container: 'backpack',
+        selectedContainer: 'backpack',
+        selectedIndex: -1,
+        search: ''
+    };
 
     function updateBackpackPanel() {
         if (!IE) return;
         var char = IE.getCharacterForDisplay ? IE.getCharacterForDisplay() : null;
         var st = E.getState();
         var groundPos = { mapId: st.mapId, x: st.x, y: st.y };
-
-        function renderInvGrid(containerId, containerType, getArr) {
-            var grid = document.getElementById('inv-grid-' + containerType);
-            var region = document.getElementById('inv-region-' + containerType);
-            if (!grid || !region) return;
-            var arr = getArr();
-            grid.innerHTML = '';
-            for (var i = 0; i < arr.length; i++) {
-                var slot = document.createElement('div');
-                slot.className = 'inv-slot';
-                var it = arr[i];
-                if (it && it.item_id) {
-                    var tpl = IE.getItemTemplate(it.item_id);
-                    var tier = IE.getItemDisplayTier ? IE.getItemDisplayTier(it.item_id, char) : 0;
-                    var name = tpl ? IE.getDisplayName(tpl, tier, char) : it.item_id;
-                    var qty = (it.count != null && it.count > 1) ? ' x' + it.count : '';
-                    var label = document.createElement('div');
-                    label.className = 'inv-slot-label';
-                    label.textContent = (name || '').slice(0, 8) + qty;
-                    slot.appendChild(label);
-                    var dropBtn = document.createElement('button');
-                    dropBtn.type = 'button';
-                    dropBtn.className = 'inv-slot-drop';
-                    dropBtn.textContent = ui('inv.drop');
-                    dropBtn.onclick = (function (ct, idx) {
-                        return function (ev) {
-                            if (ev && typeof ev.stopPropagation === 'function') ev.stopPropagation();
-                            var pos = E.getState();
-                            var r = IE.dropItemToGround(ct, idx, pos.mapId, pos.x, pos.y);
-                            if (r.success) showMsg(ui('log.info.dropped'), 'info');
-                            else if (r.message) showMsg(r.message, 'warn');
-                            markCellDirty(pos.mapId, pos.x, pos.y);
-                            updateBackpackPanel();
-                            render();
-                        };
-                    })(containerType, i);
-                    slot.appendChild(dropBtn);
-                    if (itemTemplateIsConsumable(tpl)) {
-                        var useBtn = document.createElement('button');
-                        useBtn.type = 'button';
-                        useBtn.className = 'inv-slot-drop inv-slot-use';
-                        useBtn.textContent = ui('inv.use');
-                        useBtn.onclick = (function (ct, idx) {
-                            return function (ev) {
-                                if (ev && typeof ev.stopPropagation === 'function') ev.stopPropagation();
-                                tryUseItemFromContainer(ct, idx);
-                            };
-                        })(containerType, i);
-                        slot.appendChild(useBtn);
-                    }
-                    var tplAttrs = formatItemAttributes(tpl, it);
-                    var tipHtml = buildItemTooltipHtml(name, tpl ? IE.getDisplayDesc(tpl, tier, char) : '', tplAttrs);
-                    slot.addEventListener('mouseenter', function (h, el) { return function () { showItemTooltip(h, el); }; }(tipHtml, slot));
-                    slot.addEventListener('mouseleave', hideItemTooltip);
-                    if (tpl && tpl.equip_slot) {
-                        slot.classList.add('inv-slot-equip');
-                        var equipBtn = document.createElement('button');
-                        equipBtn.type = 'button';
-                        equipBtn.className = 'equip-action-btn';
-                        equipBtn.textContent = ui('inv.equip');
-                        equipBtn.onclick = (function (ct, idx, slotId, itemId) {
-                            return function (ev) {
-                                if (ev && typeof ev.stopPropagation === 'function') ev.stopPropagation();
-                                if (!IE || typeof IE.takeItemFromContainer !== 'function') return;
-
-                                var posNow = E.getState ? E.getState() : groundPos;
-                                var taken = IE.takeItemFromContainer(ct, idx);
-                                if (!taken.success || !taken.item) return;
-
-                                var itemToEquip = taken.item;
-                                if (itemToEquip && itemToEquip.count != null) itemToEquip.count = 1;
-
-                                // 若已有装备：先脱下（把旧装备迁移到背包/掉落），再穿上新装备
-                                var stNow = IE.getState ? IE.getState() : {};
-                                var currentEq = (stNow && stNow.equipment) ? stNow.equipment[slotId] : null;
-                                if (currentEq) {
-                                    var unequipped = IE.unequip(slotId, posNow);
-                                    if (unequipped) {
-                                        var placedOld = IE.putItemIntoDefaultContainer(unequipped);
-                                        if (!placedOld || !placedOld.placed) {
-                                            if (typeof IE.addItemToGround === 'function') {
-                                                IE.addItemToGround(posNow.mapId, posNow.x, posNow.y, unequipped);
-                                            }
-                                        }
-                                    }
-                                }
-
-                                var res = IE.equip(slotId, itemToEquip);
-                                if (!res || !res.success) {
-                                    var placedNew = IE.putItemIntoDefaultContainer(itemToEquip);
-                                    if (!placedNew || !placedNew.placed) {
-                                        if (typeof IE.addItemToGround === 'function') {
-                                            IE.addItemToGround(posNow.mapId, posNow.x, posNow.y, itemToEquip);
-                                        }
-                                    }
-                                    if (res && res.message) showMsg(res.message, 'warn');
-                                    else showMsg(ui('inv.equip'), 'warn');
-                                } else {
-                                    showMsg(ui('log.success.equipped'), 'success');
-                                }
-
-                                updateBackpackPanel();
-                                render();
-                            };
-                        })(containerType, i, tpl.equip_slot, tpl.id || tpl.item_id);
-                        slot.appendChild(equipBtn);
-                    }
-                } else {
-                    slot.textContent = '—';
-                }
-                grid.appendChild(slot);
-            }
-        }
-
-        renderInvGrid('inv-grid-pocket', 'pocket', function () { return IE.getPocketArray ? IE.getPocketArray() : []; });
-        renderInvGrid('inv-grid-vest', 'vest', function () { return IE.getVestArray ? IE.getVestArray() : []; });
-        renderInvGrid('inv-grid-backpack', 'backpack', function () { return IE.getBackpackArray ? IE.getBackpackArray() : []; });
-
         var ieState = IE.getState ? IE.getState() : {};
-        var hasVehicle = !!(ieState.bound_vehicle_id);
-        var vehicleRegion = document.getElementById('inv-region-vehicle');
-        if (vehicleRegion) vehicleRegion.style.display = hasVehicle ? '' : 'none';
-        if (hasVehicle) {
-            var vArr = ieState.inventory_vehicle || [];
-            var vPadded = vArr.slice();
-            while (vPadded.length < 4) vPadded.push(null);
-            renderInvGrid('inv-grid-vehicle', 'vehicle', function () { return vPadded; });
+        var hasVehicle = !!ieState.bound_vehicle_id;
+
+        function escHtml(v) {
+            return String(v == null ? '' : v).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
         }
 
-        var groundList = document.getElementById('ground-items-list');
-        if (groundList) {
-            var groundItems = IE.getGroundItemsAt ? IE.getGroundItemsAt(st.mapId, st.x, st.y) : [];
-            groundList.innerHTML = '';
-            for (var g = 0; g < groundItems.length; g++) {
-                var row = document.createElement('div');
-                row.className = 'ground-item-row';
-                var it = groundItems[g];
-                var tpl = it && it.item_id ? IE.getItemTemplate(it.item_id) : null;
-                var tier = it && it.item_id && IE.getItemDisplayTier ? IE.getItemDisplayTier(it.item_id, char) : 0;
-                var gName = tpl ? IE.getDisplayName(tpl, tier, char) : (it ? it.item_id : '—');
-                var gQty = (it && it.count != null && it.count > 1) ? ' x' + it.count : '';
-                row.innerHTML = '<span class="ground-item-name">' + String(gName + gQty).replace(/</g, '&lt;').replace(/>/g, '&gt;') + '</span>';
-                var pickupBtn = document.createElement('button');
-                pickupBtn.type = 'button';
-                pickupBtn.className = 'btn-pickup';
-                pickupBtn.textContent = ui('inv.pickup');
-                pickupBtn.onclick = (function (idx) {
+        function getContainerLabel(containerType) {
+            if (containerType === 'pocket') return ui('inv.pocket');
+            if (containerType === 'vest') return ui('inv.vest');
+            if (containerType === 'backpack') return ui('inv.backpack');
+            if (containerType === 'vehicle') return ui('inv.vehicle');
+            if (containerType === 'ground') return ui('inv.ground');
+            return containerType;
+        }
+
+        function getContainerRows(containerType) {
+            var rows = [];
+            if (containerType === 'pocket') {
+                var p = IE.getPocketArray ? IE.getPocketArray() : [];
+                for (var i = 0; i < p.length; i++) {
+                    if (!p[i] || !p[i].item_id) continue;
+                    rows.push({ source: 'pocket', index: i, item: p[i] });
+                }
+            } else if (containerType === 'vest') {
+                var v = IE.getVestArray ? IE.getVestArray() : [];
+                for (var j = 0; j < v.length; j++) {
+                    if (!v[j] || !v[j].item_id) continue;
+                    rows.push({ source: 'vest', index: j, item: v[j] });
+                }
+            } else if (containerType === 'backpack') {
+                var b = IE.getBackpackArray ? IE.getBackpackArray() : [];
+                for (var k = 0; k < b.length; k++) {
+                    if (!b[k] || !b[k].item_id) continue;
+                    rows.push({ source: 'backpack', index: k, item: b[k] });
+                }
+            } else if (containerType === 'vehicle') {
+                if (!hasVehicle) return [];
+                var va = Array.isArray(ieState.inventory_vehicle) ? ieState.inventory_vehicle : [];
+                for (var q = 0; q < va.length; q++) {
+                    if (!va[q] || !va[q].item_id) continue;
+                    rows.push({ source: 'vehicle', index: q, item: va[q] });
+                }
+            } else if (containerType === 'ground') {
+                var g = IE.getGroundItemsAt ? IE.getGroundItemsAt(st.mapId, st.x, st.y) : [];
+                for (var m = 0; m < g.length; m++) {
+                    if (!g[m] || !g[m].item_id) continue;
+                    rows.push({ source: 'ground', index: m, item: g[m] });
+                }
+            }
+            return rows;
+        }
+
+        function resolveRowDisplay(row) {
+            var it = row && row.item;
+            var tpl = it && it.item_id ? IE.getItemTemplate(it.item_id) : null;
+            var tier = it && it.item_id && IE.getItemDisplayTier ? IE.getItemDisplayTier(it.item_id, char) : 0;
+            var name = tpl ? IE.getDisplayName(tpl, tier, char) : (it ? it.item_id : ui('common.dash'));
+            var desc = tpl ? IE.getDisplayDesc(tpl, tier, char) : '';
+            var qty = (it && it.count != null && it.count > 1) ? (' x' + it.count) : '';
+            return { tpl: tpl, name: name, desc: desc, qty: qty };
+        }
+
+        function pickRowFromState(rows) {
+            if (!Array.isArray(rows) || !rows.length) return null;
+            if (backpackUIState.selectedContainer === backpackUIState.container) {
+                for (var i = 0; i < rows.length; i++) {
+                    if (rows[i].index === backpackUIState.selectedIndex) return rows[i];
+                }
+            }
+            backpackUIState.selectedContainer = backpackUIState.container;
+            backpackUIState.selectedIndex = rows[0].index;
+            return rows[0];
+        }
+
+        function doEquipFromContainer(containerType, idx, tpl) {
+            if (!tpl || !tpl.equip_slot || !IE || typeof IE.takeItemFromContainer !== 'function') return;
+            var posNow = E.getState ? E.getState() : groundPos;
+            var taken = IE.takeItemFromContainer(containerType, idx);
+            if (!taken.success || !taken.item) return;
+            var itemToEquip = taken.item;
+            if (itemToEquip && itemToEquip.count != null) itemToEquip.count = 1;
+            var stNow = IE.getState ? IE.getState() : {};
+            var currentEq = (stNow && stNow.equipment) ? stNow.equipment[tpl.equip_slot] : null;
+            if (currentEq) {
+                var unequipped = IE.unequip(tpl.equip_slot, posNow);
+                if (unequipped) {
+                    var placedOld = IE.putItemIntoDefaultContainer(unequipped);
+                    if (!placedOld || !placedOld.placed) IE.addItemToGround(posNow.mapId, posNow.x, posNow.y, unequipped);
+                }
+            }
+            var res = IE.equip(tpl.equip_slot, itemToEquip);
+            if (!res || !res.success) {
+                var placedNew = IE.putItemIntoDefaultContainer(itemToEquip);
+                if (!placedNew || !placedNew.placed) IE.addItemToGround(posNow.mapId, posNow.x, posNow.y, itemToEquip);
+                showMsg((res && res.message) ? res.message : ui('inv.equip'), 'warn');
+            } else {
+                showMsg(ui('log.success.equipped'), 'success');
+            }
+            markCellDirty(posNow.mapId, posNow.x, posNow.y);
+            updateBackpackPanel();
+            render();
+        }
+
+        function renderItemList() {
+            var listEl = document.getElementById('backpack-item-list');
+            var titleEl = document.getElementById('backpack-list-title');
+            if (!listEl || !titleEl) return { rows: [], picked: null };
+            titleEl.textContent = getContainerLabel(backpackUIState.container);
+            var rows = getContainerRows(backpackUIState.container);
+            var q = String(backpackUIState.search || '').trim().toLowerCase();
+            if (q) {
+                rows = rows.filter(function (row) {
+                    var d = resolveRowDisplay(row);
+                    var hay = (d.name + ' ' + (row.item && row.item.item_id ? row.item.item_id : '') + ' ' + (d.desc || '')).toLowerCase();
+                    return hay.indexOf(q) >= 0;
+                });
+            }
+            listEl.innerHTML = '';
+            if (!rows.length) {
+                listEl.innerHTML = '<div class="bp-detail-empty">当前容器没有可显示物品。</div>';
+                return { rows: rows, picked: null };
+            }
+            var picked = pickRowFromState(rows);
+            for (var i = 0; i < rows.length; i++) {
+                var row = rows[i];
+                var disp = resolveRowDisplay(row);
+                var node = document.createElement('div');
+                var selected = picked && picked.index === row.index && picked.source === row.source;
+                node.className = 'bp-item-row' + (selected ? ' selected' : '');
+                node.innerHTML =
+                    '<div class="bp-item-tier"></div>' +
+                    '<div class="bp-item-main">' +
+                    '<div class="bp-item-name">' + escHtml(disp.name + disp.qty) + '</div>' +
+                    '<div class="bp-item-sub">' + escHtml(disp.desc || '') + '</div>' +
+                    '<div class="bp-item-meta">' + escHtml(row.item.item_id || '') + '</div>' +
+                    '</div>';
+                var tipHtml = buildItemTooltipHtmlForTemplate(row.item.item_id, disp.tpl, row.item, char);
+                node.addEventListener('mouseenter', function (h, el) { return function () { showItemTooltip(h, el); }; }(tipHtml, node));
+                node.addEventListener('mouseleave', hideItemTooltip);
+                node.onclick = (function (r) {
                     return function () {
-                        var r = IE.pickUpFromGround(st.mapId, st.x, st.y, idx);
-                        if (r.success) showMsg(ui('log.success.picked'), 'success');
-                        else if (r.message) showMsg(r.message, 'warn');
+                        backpackUIState.selectedContainer = backpackUIState.container;
+                        backpackUIState.selectedIndex = r.index;
+                        updateBackpackPanel();
+                    };
+                })(row);
+                listEl.appendChild(node);
+            }
+            return { rows: rows, picked: picked };
+        }
+
+        function renderDetail(picked) {
+            var detailEl = document.getElementById('backpack-detail');
+            if (!detailEl) return;
+            detailEl.innerHTML = '';
+            if (!picked || !picked.item || !picked.item.item_id) {
+                detailEl.innerHTML = '<div class="bp-detail-empty">尚未选中物品。</div>';
+                return;
+            }
+            var disp = resolveRowDisplay(picked);
+            var title = document.createElement('div');
+            title.className = 'bp-detail-title';
+            title.textContent = disp.name + disp.qty;
+            detailEl.appendChild(title);
+            var desc = document.createElement('div');
+            desc.className = 'bp-detail-desc';
+            desc.textContent = disp.desc || '';
+            detailEl.appendChild(desc);
+            var modulesHtml = '';
+            try {
+                if (window.ItemInfoModules && typeof window.ItemInfoModules.renderTooltipModulesHtml === 'function') {
+                    modulesHtml = window.ItemInfoModules.renderTooltipModulesHtml({
+                        itemId: picked.item.item_id,
+                        tpl: disp.tpl,
+                        character: char
+                    }) || '';
+                }
+            } catch (eMod) { modulesHtml = ''; }
+            if (modulesHtml) {
+                var modWrap = document.createElement('div');
+                modWrap.className = 'bp-detail-modules';
+                modWrap.innerHTML = modulesHtml;
+                detailEl.appendChild(modWrap);
+            }
+
+            var actions = document.createElement('div');
+            actions.className = 'bp-detail-actions';
+            function addActionBtn(label, onClick) {
+                var btn = document.createElement('button');
+                btn.type = 'button';
+                btn.className = 'bp-action-btn';
+                btn.textContent = label;
+                btn.onclick = onClick;
+                actions.appendChild(btn);
+            }
+            if (picked.source !== 'ground') {
+                if (itemTemplateIsConsumable(disp.tpl)) {
+                    addActionBtn(ui('inv.use'), function () { tryUseItemFromContainer(picked.source, picked.index); });
+                }
+                if (disp.tpl && disp.tpl.equip_slot) {
+                    addActionBtn(ui('inv.equip'), function () { doEquipFromContainer(picked.source, picked.index, disp.tpl); });
+                }
+                addActionBtn(ui('inv.drop'), function () {
+                    var pos = E.getState();
+                    var r = IE.dropItemToGround(picked.source, picked.index, pos.mapId, pos.x, pos.y);
+                    if (r.success) showMsg(ui('log.info.dropped'), 'info');
+                    else if (r.message) showMsg(r.message, 'warn');
+                    markCellDirty(pos.mapId, pos.x, pos.y);
+                    updateBackpackPanel();
+                    render();
+                });
+            } else {
+                addActionBtn(ui('inv.pickup'), function () {
+                    var r0 = IE.pickUpFromGround(st.mapId, st.x, st.y, picked.index);
+                    if (r0.success) showMsg(ui('log.success.picked'), 'success');
+                    else if (r0.message) showMsg(r0.message, 'warn');
+                    markCellDirty(st.mapId, st.x, st.y);
+                    updateBackpackPanel();
+                    render();
+                });
+                if (disp.tpl && disp.tpl.equip_slot) {
+                    addActionBtn(ui('inv.equip'), function () {
+                        var r1 = IE.equipFromGround(st.mapId, st.x, st.y, picked.index);
+                        if (r1.success) showMsg(ui('log.success.equipped'), 'success');
+                        else if (r1.message) showMsg(r1.message, 'warn');
                         markCellDirty(st.mapId, st.x, st.y);
                         updateBackpackPanel();
                         render();
-                    };
-                })(g);
-                row.appendChild(pickupBtn);
-                if (tpl && tpl.equip_slot) {
-                    var eqBtn = document.createElement('button');
-                    eqBtn.type = 'button';
-                    eqBtn.className = 'btn-pickup btn-equip-from-ground';
-                    eqBtn.textContent = ui('inv.equip');
-                    eqBtn.onclick = (function (idx) {
-                        return function () {
-                            var r = IE.equipFromGround(st.mapId, st.x, st.y, idx);
-                            if (r.success) showMsg(ui('log.success.equipped'), 'success');
-                            else if (r.message) showMsg(r.message, 'warn');
-                            markCellDirty(st.mapId, st.x, st.y);
-                            updateBackpackPanel();
-                            render();
-                        };
-                    })(g);
-                    row.appendChild(eqBtn);
+                    });
                 }
-                groundList.appendChild(row);
             }
+            detailEl.appendChild(actions);
         }
 
-        var equipList = document.getElementById('equip-list');
-        if (equipList && IE.EQUIP_SLOT_IDS) {
+        function renderEquipList() {
+            var equipList = document.getElementById('equip-list');
+            if (!equipList || !IE.EQUIP_SLOT_IDS) return;
             equipList.innerHTML = '';
             var eqState = ieState.equipment || {};
             for (var s = 0; s < IE.EQUIP_SLOT_IDS.length; s++) {
@@ -3507,13 +4363,13 @@
                 var labelKey = EQUIP_SLOT_LABELS[slotId] || slotId;
                 var label = (labelKey && String(labelKey).indexOf('equip.slot.') === 0) ? ui(labelKey) : labelKey;
                 var eq = eqState[slotId];
-                var itemName = '—';
+                var itemName = ui('common.dash');
                 if (eq && eq.item_id) {
                     var eqTpl = IE.getItemTemplate(eq.item_id);
                     var eqTier = IE.getItemDisplayTier ? IE.getItemDisplayTier(eq.item_id, char) : 0;
                     itemName = eqTpl ? IE.getDisplayName(eqTpl, eqTier, char) : eq.item_id;
                 }
-                row.innerHTML = '<span class="slot-name">' + String(label).replace(/</g, '&lt;') + '</span><span class="item-name">' + String(itemName).replace(/</g, '&lt;').replace(/>/g, '&gt;') + '</span>';
+                row.innerHTML = '<span class="slot-name">' + escHtml(label) + '</span><span class="item-name">' + escHtml(itemName) + '</span>';
                 var unequipBtn = document.createElement('button');
                 unequipBtn.type = 'button';
                 unequipBtn.className = 'btn-unequip';
@@ -3524,9 +4380,7 @@
                         var old = IE.unequip(sid, groundPos);
                         if (old) {
                             var placed = IE.putItemIntoDefaultContainer(old);
-                            if (!placed.placed && groundPos && groundPos.mapId != null && groundPos.x != null && groundPos.y != null) {
-                                IE.addItemToGround(groundPos.mapId, groundPos.x, groundPos.y, old);
-                            }
+                            if (!placed.placed) IE.addItemToGround(groundPos.mapId, groundPos.x, groundPos.y, old);
                             showMsg(ui('log.info.unequipped'), 'info');
                             markCellDirty(groundPos.mapId, groundPos.x, groundPos.y);
                         }
@@ -3538,6 +4392,59 @@
                 equipList.appendChild(row);
             }
         }
+
+        var carryEl = document.getElementById('backpack-carry');
+        if (carryEl) {
+            var capBp = (window.CharacterAttributes && typeof window.CharacterAttributes.getCarryCapacity === 'function')
+                ? window.CharacterAttributes.getCarryCapacity() : null;
+            var curBp = (IE && typeof IE.getCurrentCarryWeight === 'function') ? IE.getCurrentCarryWeight() : null;
+            var labBp = ui('status.label.carry');
+            if (capBp != null && curBp != null)
+                carryEl.textContent = labBp + ' ' + curBp.toFixed(1) + ' / ' + capBp.toFixed(1) + ' kg';
+            else if (capBp != null)
+                carryEl.textContent = labBp + ' — / ' + capBp.toFixed(1) + ' kg';
+            else
+                carryEl.textContent = labBp + ' —';
+        }
+
+        var tabWrap = document.getElementById('backpack-tabs');
+        if (tabWrap) {
+            var tabBtns = tabWrap.querySelectorAll('.bp-tab-btn');
+            for (var tb = 0; tb < tabBtns.length; tb++) {
+                var tbtn = tabBtns[tb];
+                var key = tbtn.getAttribute('data-container') || '';
+                var disabled = (key === 'vehicle' && !hasVehicle);
+                tbtn.style.display = (key === 'vehicle' && !hasVehicle) ? 'none' : '';
+                tbtn.classList.toggle('active', backpackUIState.container === key);
+                tbtn.onclick = (function (nextKey) {
+                    return function () {
+                        if (nextKey === 'vehicle' && !hasVehicle) return;
+                        backpackUIState.container = nextKey;
+                        backpackUIState.selectedContainer = nextKey;
+                        backpackUIState.selectedIndex = -1;
+                        updateBackpackPanel();
+                    };
+                })(key);
+                tbtn.disabled = !!disabled;
+            }
+        }
+
+        var searchInput = document.getElementById('backpack-search');
+        if (searchInput) {
+            if (searchInput.value !== backpackUIState.search) searchInput.value = backpackUIState.search;
+            if (!searchInput._bpBound) {
+                searchInput._bpBound = true;
+                searchInput.addEventListener('input', function () {
+                    backpackUIState.search = String(searchInput.value || '');
+                    backpackUIState.selectedIndex = -1;
+                    updateBackpackPanel();
+                });
+            }
+        }
+
+        var listState = renderItemList();
+        renderDetail(listState.picked);
+        renderEquipList();
     }
 
     function openBackpackPanel() {
@@ -3717,9 +4624,7 @@
                     var tpl = IE.getItemTemplate(iid);
                     if (tpl) {
                         var tier = IE.getItemDisplayTier ? IE.getItemDisplayTier(iid, char0) : 0;
-                        var desc = IE.getDisplayDesc ? IE.getDisplayDesc(tpl, tier, char0) : '';
-                        var attrs = formatItemAttributes(tpl, null);
-                        var tipHtml = buildItemTooltipHtml(disp, desc, attrs);
+                        var tipHtml = buildItemTooltipHtmlForTemplate(iid, tpl, null, char0);
                         row.addEventListener('mouseenter', function (h, elRef) { return function () { showItemTooltip(h, elRef); }; }(tipHtml, row));
                         row.addEventListener('mouseleave', hideItemTooltip);
                     }
@@ -3825,9 +4730,7 @@
                             var tpl = IE.getItemTemplate(iid);
                             if (tpl) {
                                 var tier = IE.getItemDisplayTier ? IE.getItemDisplayTier(iid, char0) : 0;
-                                var desc = IE.getDisplayDesc ? IE.getDisplayDesc(tpl, tier, char0) : '';
-                                var attrs = formatItemAttributes(tpl, null);
-                                var tipHtml = buildItemTooltipHtml(disp, desc, attrs);
+                                var tipHtml = buildItemTooltipHtmlForTemplate(iid, tpl, null, char0);
                                 row.addEventListener('mouseenter', function (h, elRef) { return function () { showItemTooltip(h, elRef); }; }(tipHtml, row));
                                 row.addEventListener('mouseleave', hideItemTooltip);
                             }
@@ -3893,7 +4796,7 @@
             var selected = normalizeCookingInputs(cookingStationUiState.inputs || []);
             cookingStationUiState.inputs = selected;
             if (!selected.length) {
-                listEl.innerHTML = '<div style="color:#a8a29e;font-size:13px;">' + ui('cooking.inputs.empty') + '</div>';
+                listEl.innerHTML = '';
             } else {
                 for (var ii = 0; ii < selected.length; ii++) {
                     var row = document.createElement('div');
@@ -3935,7 +4838,7 @@
         if (accessoryList) {
             accessoryList.innerHTML = '';
             if (!installed.length) {
-                accessoryList.innerHTML = '<div style="color:#a8a29e;font-size:13px;">' + ui('cooking.accessory.empty') + '</div>';
+                accessoryList.innerHTML = '';
             } else {
                 for (var ai = 0; ai < installed.length; ai++) {
                     var aid = String(installed[ai]);
@@ -3987,7 +4890,7 @@
             knownWrap.innerHTML = '';
             var knownIds = (window.SceneApp && typeof window.SceneApp.getKnownCookingRecipeIds === 'function') ? window.SceneApp.getKnownCookingRecipeIds() : [];
             if (!Array.isArray(knownIds) || !knownIds.length) {
-                knownWrap.innerHTML = '<div style="color:#a8a29e;font-size:13px;">' + ui('cooking.known.empty') + '</div>';
+                knownWrap.innerHTML = '';
             } else {
                 for (var kr = 0; kr < knownIds.length; kr++) {
                     var rid = knownIds[kr];
@@ -4064,18 +4967,7 @@
 
         renderCookingWaterFuelPickLists();
 
-        if (helpEl) {
-            helpEl.innerHTML = '';
-            var lines = [
-                ui('cooking.help.line1'),
-                ui('cooking.help.line2'),
-                ui('cooking.help.line3'),
-                ui('cooking.help.line4')
-            ];
-            helpEl.innerHTML = '<div style="color:#a8a29e;line-height:1.65;">' + lines.map(function (s) {
-                return String(s || '').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-            }).join('<br>') + '</div>';
-        }
+        if (helpEl) helpEl.innerHTML = '';
 
         var okStart = !!(mid && normalizeCookingInputs(cookingStationUiState.inputs || []).length) && !activeCraft;
         if (startBtn) {
@@ -4265,6 +5157,1462 @@
             });
         }
     })();
+
+    // === Pharmacy Station Pane ===
+    var pharmacyStationPanelOpen = false;
+    var pharmacyStationUiState = {
+        method_id: '',
+        inputs: [],
+        /** 烹饪台模态：燃料来源格子 */
+        selected_fuel_slot_key: ''
+    };
+
+    function getPharmacyIngredientOptionsFromInventory() {
+        if (!IE) return [];
+        var seen = {};
+        var out = [];
+        var groups = [
+            IE.getPocketArray ? IE.getPocketArray() : [],
+            IE.getVestArray ? IE.getVestArray() : [],
+            IE.getBackpackArray ? IE.getBackpackArray() : []
+        ];
+        for (var g = 0; g < groups.length; g++) {
+            var arr = groups[g];
+            if (!Array.isArray(arr)) continue;
+            for (var i = 0; i < arr.length; i++) {
+                var cell = arr[i];
+                if (!cell || !cell.item_id) continue;
+                var id = String(cell.item_id);
+                if (seen[id]) continue;
+                if (!isItemAllowedPharmacyIngredient(id)) continue;
+                if (getInventoryCountByItemId(id) <= 0) continue;
+                seen[id] = true;
+                out.push(id);
+            }
+        }
+        out.sort();
+        return out;
+    }
+
+    function getItemDisplayNameSafe(itemId) {
+        try {
+            if (!IE || !itemId) return String(itemId || '');
+            var tpl = IE.getItemTemplate ? IE.getItemTemplate(itemId) : null;
+            var char0 = IE.getCharacterForDisplay ? IE.getCharacterForDisplay() : null;
+            var tier0 = IE.getItemDisplayTier ? IE.getItemDisplayTier(itemId, char0) : 0;
+            if (tpl && IE.getDisplayName) return IE.getDisplayName(tpl, tier0, char0) || itemId;
+        } catch (e) { /* ignore */ }
+        return String(itemId || '');
+    }
+
+    function setPharmacyMethodId(mid) {
+        pharmacyStationUiState.method_id = (mid != null) ? String(mid) : '';
+    }
+
+    function setPharmacyInputs(list) {
+        pharmacyStationUiState.inputs = normalizePharmacyInputs(list || []);
+    }
+
+    function getStagedPharmacyCountForItem(itemId) {
+        var arr = normalizePharmacyInputs(pharmacyStationUiState.inputs || []);
+        var i;
+        for (i = 0; i < arr.length; i++) {
+            if (String(arr[i].item_id) === String(itemId)) return parseInt(arr[i].count, 10) || 0;
+        }
+        return 0;
+    }
+
+    function tryAddOnePharmacyInputFromInventory(iid) {
+        if (!pharmacyStationPanelOpen) return;
+        iid = iid != null ? String(iid) : '';
+        if (!iid) return;
+        if (!isItemAllowedPharmacyIngredient(iid)) {
+            showMsg(ui('pharmacy.try.fail.not_ingredient', { item: iid }), 'info');
+            return;
+        }
+        var have = getInventoryCountByItemId(iid);
+        var staged = getStagedPharmacyCountForItem(iid);
+        if (have <= 0 || staged >= have) {
+            showMsg(ui('pharmacy.try.fail.missing_inputs', { item: getItemDisplayNameSafe(iid) }), 'info');
+            return;
+        }
+        var arr = normalizePharmacyInputs(pharmacyStationUiState.inputs || []);
+        arr.push({ item_id: iid, count: 1 });
+        setPharmacyInputs(arr);
+        renderPharmacyStationPanel();
+    }
+
+    function renderPharmacyIngredientPickerList() {
+        var wrap = document.getElementById('pharmacy-ingredient-list');
+        if (!wrap) return;
+        var filterEl = document.getElementById('pharmacy-ingredient-filter');
+        var f = filterEl && filterEl.value ? String(filterEl.value).trim().toLowerCase() : '';
+        var opts = getPharmacyIngredientOptionsFromInventory();
+        var char0 = IE && IE.getCharacterForDisplay ? IE.getCharacterForDisplay() : null;
+        wrap.innerHTML = '';
+        var nShown = 0;
+        var oi;
+        for (oi = 0; oi < opts.length; oi++) {
+            var iid = opts[oi];
+            var disp = getItemDisplayNameSafe(iid);
+            if (f && String(iid).toLowerCase().indexOf(f) < 0 && String(disp).toLowerCase().indexOf(f) < 0) continue;
+            nShown++;
+            var have = getInventoryCountByItemId(iid);
+            var staged = getStagedPharmacyCountForItem(iid);
+            var canAdd = have > 0 && staged < have;
+            var row = document.createElement('div');
+            row.className = 'cs-ingredient-row';
+            var left = document.createElement('div');
+            left.className = 'cs-ing-left';
+            var nameEl = document.createElement('div');
+            nameEl.className = 'cs-ing-name';
+            nameEl.textContent = disp;
+            var idEl = document.createElement('div');
+            idEl.className = 'cs-ing-id';
+            idEl.textContent = iid;
+            left.appendChild(nameEl);
+            left.appendChild(idEl);
+            var countsEl = document.createElement('div');
+            countsEl.className = 'cs-ing-counts';
+            countsEl.textContent = ui('pharmacy.ingredient.available_staged_fmt', { have: String(have), staged: String(staged) });
+            var btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = 'btn-add-ingredient';
+            btn.setAttribute('data-ui', 'pharmacy.btn.add_input');
+            btn.textContent = ui('pharmacy.btn.add_input');
+            btn.disabled = !canAdd;
+            btn.onclick = (function (xid) {
+                return function (ev) {
+                    if (ev && typeof ev.stopPropagation === 'function') ev.stopPropagation();
+                    tryAddOnePharmacyInputFromInventory(xid);
+                };
+            })(iid);
+            row.appendChild(left);
+            row.appendChild(countsEl);
+            row.appendChild(btn);
+            try {
+                if (IE && typeof IE.getItemTemplate === 'function') {
+                    var tpl = IE.getItemTemplate(iid);
+                    if (tpl) {
+                        var tier = IE.getItemDisplayTier ? IE.getItemDisplayTier(iid, char0) : 0;
+                        var tipHtml = buildItemTooltipHtmlForTemplate(iid, tpl, null, char0);
+                        row.addEventListener('mouseenter', function (h, elRef) { return function () { showItemTooltip(h, elRef); }; }(tipHtml, row));
+                        row.addEventListener('mouseleave', hideItemTooltip);
+                    }
+                }
+            } catch (eTip) { /* ignore */ }
+            wrap.appendChild(row);
+        }
+        if (!opts.length) {
+            wrap.innerHTML = '<div style="color:#a8a29e;font-size:13px;">' + ui('pharmacy.ingredient.empty') + '</div>';
+        } else if (!nShown) {
+            wrap.innerHTML = '<div style="color:#a8a29e;font-size:13px;">' + ui('pharmacy.ingredient.filter_empty') + '</div>';
+        }
+    }
+
+    function uiPharmacyInventoryContainerLabel(containerType) {
+        var t = String(containerType || '');
+        if (t === 'pocket') return ui('pharmacy.station_resource.container.pocket');
+        if (t === 'vest') return ui('pharmacy.station_resource.container.vest');
+        if (t === 'backpack') return ui('pharmacy.station_resource.container.backpack');
+        return t || '—';
+    }
+
+    function slotKeyInPharmacySlotList(slots, key) {
+        if (!key || !Array.isArray(slots)) return false;
+        var si;
+        for (si = 0; si < slots.length; si++) {
+            if (pharmacyResourceSlotKey(slots[si].containerType, slots[si].index) === key) return true;
+        }
+        return false;
+    }
+
+    function renderPharmacyWaterFuelPickLists() {
+        var fuelWrap = document.getElementById('pharmacy-fuel-source-list');
+        if (!fuelWrap) return;
+        var char0 = IE && IE.getCharacterForDisplay ? IE.getCharacterForDisplay() : null;
+        var fuelSlots = findAllContainerSlotsByPredicate(function (cell) {
+            return getItemFuelPoints(cell.item_id) > 0;
+        });
+        if (!slotKeyInPharmacySlotList(fuelSlots, pharmacyStationUiState.selected_fuel_slot_key)) {
+            pharmacyStationUiState.selected_fuel_slot_key = '';
+        }
+
+        function appendResourceRows(wrap, slots, kind, selectedKey) {
+            wrap.innerHTML = '';
+            var emptyKey = 'pharmacy.station_resource.empty_fuel';
+            if (!slots.length) {
+                wrap.innerHTML = '<div style="color:#a8a29e;font-size:13px;">' + ui(emptyKey) + '</div>';
+                return;
+            }
+            var ri;
+            for (ri = 0; ri < slots.length; ri++) {
+                (function (sl) {
+                    var iid = sl.item.item_id;
+                    var disp = getItemDisplayNameSafe(iid);
+                    var cnt = (sl.item.count != null && parseInt(sl.item.count, 10) > 0) ? parseInt(sl.item.count, 10) : 1;
+                    var gain = getItemFuelPoints(iid);
+                    var gainTxt = ui('pharmacy.station_resource.fuel_gain_fmt', { n: gain });
+                    var rowKey = pharmacyResourceSlotKey(sl.containerType, sl.index);
+                    var row = document.createElement('div');
+                    row.className = 'cs-ingredient-row cs-resource-pick' + (rowKey === selectedKey ? ' active' : '');
+                    row.setAttribute('role', 'button');
+                    var left = document.createElement('div');
+                    left.className = 'cs-ing-left';
+                    var nameEl = document.createElement('div');
+                    nameEl.className = 'cs-ing-name';
+                    nameEl.textContent = disp;
+                    var idEl = document.createElement('div');
+                    idEl.className = 'cs-ing-id';
+                    idEl.textContent = String(iid) + ' · ' + uiPharmacyInventoryContainerLabel(sl.containerType) + ' #' + (sl.index + 1);
+                    left.appendChild(nameEl);
+                    left.appendChild(idEl);
+                    var countsEl = document.createElement('div');
+                    countsEl.className = 'cs-ing-counts';
+                    var gLine = document.createElement('div');
+                    gLine.textContent = gainTxt;
+                    var sLine = document.createElement('div');
+                    sLine.style.opacity = '0.9';
+                    sLine.textContent = ui('pharmacy.station_resource.stack_fmt', { n: cnt });
+                    countsEl.appendChild(gLine);
+                    countsEl.appendChild(sLine);
+                    row.appendChild(left);
+                    row.appendChild(countsEl);
+                    row.onclick = function (ev) {
+                        if (ev && typeof ev.stopPropagation === 'function') ev.stopPropagation();
+                        pharmacyStationUiState.selected_fuel_slot_key = rowKey === pharmacyStationUiState.selected_fuel_slot_key ? '' : rowKey;
+                        renderPharmacyStationPanel();
+                    };
+                    try {
+                        if (IE && typeof IE.getItemTemplate === 'function') {
+                            var tpl = IE.getItemTemplate(iid);
+                            if (tpl) {
+                                var tier = IE.getItemDisplayTier ? IE.getItemDisplayTier(iid, char0) : 0;
+                                var tipHtml = buildItemTooltipHtmlForTemplate(iid, tpl, null, char0);
+                                row.addEventListener('mouseenter', function (h, elRef) { return function () { showItemTooltip(h, elRef); }; }(tipHtml, row));
+                                row.addEventListener('mouseleave', hideItemTooltip);
+                            }
+                        }
+                    } catch (eTip) { /* ignore */ }
+                    wrap.appendChild(row);
+                })(slots[ri]);
+            }
+        }
+
+        appendResourceRows(fuelWrap, fuelSlots, 'fuel', pharmacyStationUiState.selected_fuel_slot_key);
+    }
+
+    function renderPharmacyStationPanel() {
+        var modal = document.getElementById('modal-pharmacy-station');
+        if (!modal) return;
+        var listEl = document.getElementById('pharmacy-input-list');
+        var methodWrap = document.getElementById('pharmacy-method-list');
+        var kvWrap = document.getElementById('pharmacy-status-kv');
+        var knownWrap = document.getElementById('pharmacy-known-list');
+        var helpEl = document.getElementById('pharmacy-help-text');
+        var startBtn = document.getElementById('pharmacy-start-btn');
+        var accessoryList = document.getElementById('pharmacy-accessory-list');
+        var accessorySel = document.getElementById('pharmacy-add-accessory');
+
+        var mid = pharmacyStationUiState.method_id ? String(pharmacyStationUiState.method_id) : '';
+        // 默认选一个可用工艺
+        if (!mid) {
+            var ids = pharmacyMethods ? Object.keys(pharmacyMethods) : [];
+            for (var mi = 0; mi < ids.length; mi++) {
+                if (isPharmacyMethodUnlockedAtStation(ids[mi])) { mid = ids[mi]; break; }
+            }
+            if (mid) setPharmacyMethodId(mid);
+        }
+
+        // 工艺按钮（仅显示已解锁）
+        if (methodWrap) {
+            methodWrap.innerHTML = '';
+            var mids = pharmacyMethods ? Object.keys(pharmacyMethods) : [];
+            mids.sort(function (a, b) {
+                var na = getPharmacyMethodDisplayName(a, pharmacyMethods[a]);
+                var nb = getPharmacyMethodDisplayName(b, pharmacyMethods[b]);
+                return na.localeCompare(nb, 'zh-Hans-CN');
+            });
+            for (var mx = 0; mx < mids.length; mx++) {
+                var idm = mids[mx];
+                if (!isPharmacyMethodUnlockedAtStation(idm)) continue;
+                var mObj = pharmacyMethods[idm] || {};
+                var btn = document.createElement('button');
+                btn.type = 'button';
+                btn.className = 'btn-method' + (String(idm) === String(mid) ? ' active' : '');
+                btn.textContent = getPharmacyMethodDisplayName(idm, mObj);
+                btn.setAttribute('data-method-id', idm);
+                btn.onclick = (function (xid) { return function () { setPharmacyMethodId(xid); renderPharmacyStationPanel(); }; })(idm);
+                methodWrap.appendChild(btn);
+            }
+        }
+
+        // 投料列表
+        if (listEl) {
+            listEl.innerHTML = '';
+            var selected = normalizePharmacyInputs(pharmacyStationUiState.inputs || []);
+            pharmacyStationUiState.inputs = selected;
+            if (!selected.length) {
+                listEl.innerHTML = '<div style="color:#a8a29e;font-size:13px;">' + ui('pharmacy.inputs.empty') + '</div>';
+            } else {
+                for (var ii = 0; ii < selected.length; ii++) {
+                    var row = document.createElement('div');
+                    row.className = 'cs-input-row';
+                    var id0 = selected[ii].item_id;
+                    var c0 = parseInt(selected[ii].count, 10) || 1;
+                    var nameEl = document.createElement('div');
+                    nameEl.className = 'iname';
+                    nameEl.textContent = getItemDisplayNameSafe(id0) + ' (' + String(id0) + ')';
+                    var cntEl = document.createElement('div');
+                    cntEl.className = 'icnt';
+                    cntEl.textContent = 'x' + c0;
+                    var btnDel = document.createElement('button');
+                    btnDel.type = 'button';
+                    btnDel.className = 'btn-mini';
+                    btnDel.textContent = ui('pharmacy.btn.remove');
+                    btnDel.onclick = (function (rid) {
+                        return function () {
+                            var arr = normalizePharmacyInputs(pharmacyStationUiState.inputs || []);
+                            var out = [];
+                            for (var k = 0; k < arr.length; k++) if (String(arr[k].item_id) !== String(rid)) out.push(arr[k]);
+                            setPharmacyInputs(out);
+                            renderPharmacyStationPanel();
+                        };
+                    })(id0);
+                    row.appendChild(nameEl);
+                    row.appendChild(cntEl);
+                    row.appendChild(btnDel);
+                    listEl.appendChild(row);
+                }
+            }
+        }
+
+        renderPharmacyIngredientPickerList();
+
+        // 配件安装/卸下
+        var csAcc = getPharmacyStationState();
+        var installed = Array.isArray(csAcc.installed_accessory_item_ids) ? csAcc.installed_accessory_item_ids.slice() : [];
+        if (accessoryList) {
+            accessoryList.innerHTML = '';
+            if (!installed.length) {
+                accessoryList.innerHTML = '<div style="color:#a8a29e;font-size:13px;">' + ui('pharmacy.accessory.empty') + '</div>';
+            } else {
+                for (var ai = 0; ai < installed.length; ai++) {
+                    var aid = String(installed[ai]);
+                    var arow = document.createElement('div');
+                    arow.className = 'cs-input-row';
+                    var aname = document.createElement('div');
+                    aname.className = 'iname';
+                    aname.textContent = getItemDisplayNameSafe(aid) + ' (' + aid + ')';
+                    var abtn = document.createElement('button');
+                    abtn.type = 'button';
+                    abtn.className = 'btn-mini';
+                    abtn.textContent = ui('pharmacy.btn.remove');
+                    abtn.onclick = (function (rid) {
+                        return function () {
+                            var ret = uninstallPharmacyAccessoryToInventory(rid);
+                            if (!ret || !ret.ok) {
+                                showMsg(ui('pharmacy.accessory.uninstall_fail', { item: getItemDisplayNameSafe(rid) }), 'warn');
+                            } else {
+                                showMsg(ui('pharmacy.accessory.uninstall_ok', { item: getItemDisplayNameSafe(rid) }), 'success');
+                            }
+                            renderPharmacyStationPanel();
+                            if (typeof updateBackpackPanel === 'function') updateBackpackPanel();
+                            if (typeof updateStatusPanel === 'function') updateStatusPanel();
+                            if (window.SceneRenderer) window.SceneRenderer.render();
+                        };
+                    })(aid);
+                    arow.appendChild(aname);
+                    arow.appendChild(abtn);
+                    accessoryList.appendChild(arow);
+                }
+            }
+        }
+        if (accessorySel) {
+            var prevAcc = accessorySel.value ? String(accessorySel.value) : '';
+            var accOpts = getPharmacyAccessoryOptionsFromInventory(installed);
+            accessorySel.innerHTML = '';
+            for (var ax = 0; ax < accOpts.length; ax++) {
+                var ao = accOpts[ax];
+                var o = document.createElement('option');
+                o.value = ao.item_id;
+                o.textContent = getItemDisplayNameSafe(ao.item_id) + ' (' + ao.item_id + ') · ' + ui('pharmacy.inputs.available_fmt', { n: ao.count });
+                accessorySel.appendChild(o);
+            }
+            if (prevAcc && accOpts.some(function (z) { return String(z.item_id) === prevAcc; })) accessorySel.value = prevAcc;
+        }
+
+        // 已知配方快捷填材（可选）
+        if (knownWrap) {
+            knownWrap.innerHTML = '';
+            var knownIds = (window.SceneApp && typeof window.SceneApp.getKnownPharmacyRecipeIds === 'function') ? window.SceneApp.getKnownPharmacyRecipeIds() : [];
+            if (!Array.isArray(knownIds) || !knownIds.length) {
+                knownWrap.innerHTML = '<div style="color:#a8a29e;font-size:13px;">' + ui('pharmacy.known.empty') + '</div>';
+            } else {
+                for (var kr = 0; kr < knownIds.length; kr++) {
+                    var rid = knownIds[kr];
+                    var legacyRecipeKey = String(rid);
+                    if (legacyRecipeKey.indexOf('life_pharmacy.') === 0) {
+                        legacyRecipeKey = legacyRecipeKey.slice('life_pharmacy.'.length);
+                    }
+                    var rec = null;
+                    var rr;
+                    for (rr = 0; rr < pharmacyRecipes.length; rr++) {
+                        if (String(pharmacyRecipes[rr].recipe_id) === legacyRecipeKey) { rec = pharmacyRecipes[rr]; break; }
+                    }
+                    if (!rec) {
+                        for (rr = 0; rr < pharmacyRecipes.length; rr++) {
+                            if (String(pharmacyRecipes[rr].recipe_id) === String(rid)) { rec = pharmacyRecipes[rr]; break; }
+                        }
+                    }
+                    if (!rec) continue;
+                    var btnK = document.createElement('button');
+                    btnK.type = 'button';
+                    btnK.className = 'btn-known';
+                    var rName = rid;
+                    try {
+                        if (window.UIText && typeof window.UIText.t === 'function') {
+                            rName = window.UIText.t('pharmacy.recipe.' + legacyRecipeKey);
+                        }
+                    } catch (eKn) { rName = rid; }
+                    btnK.textContent = rName;
+                    btnK.onclick = (function (rx) {
+                        return function () {
+                            if (rx.method_id || rx.required_method) setPharmacyMethodId(rx.method_id || rx.required_method);
+                            setPharmacyInputs(rx.inputs || []);
+                            renderPharmacyStationPanel();
+                        };
+                    })(rec);
+                    knownWrap.appendChild(btnK);
+                }
+            }
+        }
+
+        // 状态区
+        var mSel = (pharmacyMethods && mid && pharmacyMethods[String(mid)]) ? pharmacyMethods[String(mid)] : null;
+        var cs = getPharmacyStationState();
+        var curFuel = parseInt(cs.fuel_points, 10) || 0;
+        var needFuel = mSel ? readMethodCostValue(mSel, 'fuel', 'fuel_cost') : 0;
+        var needTicks = mSel ? readMethodCostValue(mSel, 'ticks', 'craft_ticks') : 0;
+        var needStamina = mSel ? readMethodCostValue(mSel, 'stamina', 'stamina_cost') : 0;
+        var survState = window.Survival && typeof window.Survival.getState === 'function' ? window.Survival.getState() : null;
+        var curStamina = survState ? Number(survState.stamina || 0) : 0;
+        var activeCraft = getActivePharmacyCraft();
+
+        if (kvWrap) {
+            kvWrap.innerHTML = '';
+            function addKv(text, bad) {
+                var d = document.createElement('div');
+                d.className = 'kv' + (bad ? ' bad' : '');
+                d.textContent = text;
+                kvWrap.appendChild(d);
+            }
+            addKv(ui('pharmacy.kv.fuel', { cur: curFuel, max: PHARMACY_FUEL_MAX_POINTS, need: needFuel }), curFuel < needFuel);
+            addKv(ui('pharmacy.kv.ticks', { n: needTicks }), false);
+            addKv(ui('pharmacy.kv.stamina', { cur: curStamina, need: needStamina }), curStamina < needStamina);
+            if (activeCraft) addKv(ui('pharmacy.kv.remaining', { n: activeCraft.remaining_ticks }), false);
+        }
+
+        renderPharmacyWaterFuelPickLists();
+
+        if (helpEl) {
+            helpEl.innerHTML = '';
+            var lines = [
+                ui('pharmacy.help.line1'),
+                ui('pharmacy.help.line2'),
+                ui('pharmacy.help.line3'),
+                ui('pharmacy.help.line4')
+            ];
+            helpEl.innerHTML = '<div style="color:#a8a29e;line-height:1.65;">' + lines.map(function (s) {
+                return String(s || '').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+            }).join('<br>') + '</div>';
+        }
+
+        var okStart = !!(mid && normalizePharmacyInputs(pharmacyStationUiState.inputs || []).length) && !activeCraft;
+        if (startBtn) {
+            startBtn.disabled = !okStart;
+        }
+
+        var fuelModalBtn = document.getElementById('pharmacy-modal-add-fuel-btn');
+        var fuelModalOk = canAddFuelAtCurrentTile() && !!pharmacyStationUiState.selected_fuel_slot_key;
+        if (fuelModalBtn) fuelModalBtn.disabled = !fuelModalOk;
+
+        if (window.UIText && typeof window.UIText.applyDom === 'function') {
+            try { window.UIText.applyDom(modal); } catch (eApply) { /* ignore */ }
+        }
+    }
+
+    function pharmacyStartReasonToMsgKey(reason) {
+        var r = reason != null ? String(reason) : '';
+        if (r === 'not_on_pharmacy_station') return 'pharmacy.station.not_on_tile';
+        if (r === 'method_required') return 'pharmacy.try.fail.method_required';
+        if (r === 'method_not_found') return 'pharmacy.try.fail.method_not_found';
+        if (r === 'pharmacy_method_locked') return 'pharmacy.try.fail.method_locked';
+        if (r === 'empty_inputs') return 'pharmacy.try.fail.empty_inputs';
+        if (r === 'not_pharmacy_ingredient') return 'pharmacy.try.fail.not_ingredient';
+        if (r === 'missing_input_items') return 'pharmacy.try.fail.missing_inputs';
+        if (r === 'insufficient_fuel') return 'pharmacy.try.fail.insufficient_fuel';
+        if (r === 'insufficient_stamina') return 'pharmacy.try.fail.insufficient_stamina';
+        if (r === 'inventory_full') return 'pharmacy.try.fail.inventory_full';
+        if (r === 'consume_inputs_failed') return 'pharmacy.try.fail.consume_failed';
+        if (r === 'bad_args') return 'pharmacy.try.fail.bad_args';
+        if (r === 'craft_in_progress') return 'pharmacy.try.fail.craft_in_progress';
+        if (r === 'pharmacy_station_repair_locked') return 'pharmacy.try.fail.repair_locked';
+        return 'pharmacy.try.fail.unknown';
+    }
+
+    function openPharmacyStationPanel() {
+        if (isPreCreationGameplayRestricted()) {
+            showIntroBlockedMsg();
+            return;
+        }
+        if (pharmacyStationPanelOpen) return;
+        if (!isOnPharmacyStationTile()) {
+            showMsg(ui('pharmacy.station.not_on_tile'), 'info');
+            return;
+        }
+        if (isPharmacyUiBlockedByRepair()) {
+            showMsg(ui('pharmacy.station.locked_until_repaired'), 'info');
+            return;
+        }
+        if (window.Survival && typeof window.Survival.advanceTick === 'function') window.Survival.advanceTick();
+        pharmacyStationPanelOpen = true;
+        pharmacyStationUiState.selected_fuel_slot_key = '';
+        var modal = document.getElementById('modal-pharmacy-station');
+        if (modal) {
+            modal.classList.add('show');
+            modal.setAttribute('aria-hidden', 'false');
+        }
+        renderPharmacyStationPanel();
+        render();
+    }
+
+    function closePharmacyStationPanel() {
+        if (!pharmacyStationPanelOpen) return;
+        if (window.Survival && typeof window.Survival.advanceTick === 'function') window.Survival.advanceTick();
+        pharmacyStationPanelOpen = false;
+        var modal = document.getElementById('modal-pharmacy-station');
+        if (modal) {
+            modal.classList.remove('show');
+            modal.setAttribute('aria-hidden', 'true');
+        }
+        render();
+    }
+
+    (function bindPharmacyStationPanel() {
+        var abPharmacy = document.getElementById('action-bar-pharmacy');
+        if (abPharmacy) {
+            abPharmacy.addEventListener('click', function () {
+                if (pharmacyStationPanelOpen) closePharmacyStationPanel(); else openPharmacyStationPanel();
+            });
+        }
+        var bubPharmacy = document.getElementById('player-action-pharmacy');
+        if (bubPharmacy) {
+            bubPharmacy.addEventListener('click', function () {
+                if (!pharmacyStationPanelOpen) openPharmacyStationPanel();
+            });
+        }
+        var closeBtn = document.getElementById('pharmacy-station-close');
+        if (closeBtn) closeBtn.addEventListener('click', closePharmacyStationPanel);
+        var ingFilter = document.getElementById('pharmacy-ingredient-filter');
+        if (ingFilter && !ingFilter._pharmacyFilterBound) {
+            ingFilter._pharmacyFilterBound = true;
+            ingFilter.addEventListener('input', function () {
+                if (pharmacyStationPanelOpen) renderPharmacyStationPanel();
+            });
+        }
+        var clearBtn = document.getElementById('pharmacy-clear-btn');
+        if (clearBtn) clearBtn.addEventListener('click', function () { if (!pharmacyStationPanelOpen) return; setPharmacyInputs([]); renderPharmacyStationPanel(); });
+        var fuelMb = document.getElementById('pharmacy-modal-add-fuel-btn');
+        if (fuelMb && !fuelMb._pharmacySrvBound) {
+            fuelMb._pharmacySrvBound = true;
+            fuelMb.addEventListener('click', function () {
+                if (!pharmacyStationPanelOpen) return;
+                var fk = pharmacyStationUiState.selected_fuel_slot_key ? String(pharmacyStationUiState.selected_fuel_slot_key) : '';
+                if (!fk) {
+                    showMsg(ui('pharmacy.add_fuel.pick_first'), 'info');
+                    return;
+                }
+                var pf = parsePharmacyResourceSlotKey(fk);
+                if (!pf) {
+                    showMsg(ui('pharmacy.add_fuel.pick_first'), 'info');
+                    return;
+                }
+                onAddFuelClick({ containerType: pf.containerType, index: pf.index });
+                renderPharmacyStationPanel();
+                if (typeof updateBackpackPanel === 'function') updateBackpackPanel();
+                if (typeof updateStatusPanel === 'function') updateStatusPanel();
+                if (window.SceneRenderer) window.SceneRenderer.render();
+            });
+        }
+        var addAccessoryBtn = document.getElementById('pharmacy-add-accessory-btn');
+        if (addAccessoryBtn) {
+            addAccessoryBtn.addEventListener('click', function () {
+                if (!pharmacyStationPanelOpen) return;
+                var sel = document.getElementById('pharmacy-add-accessory');
+                var aid = sel && sel.value ? String(sel.value) : '';
+                if (!aid) return;
+                var ret = installPharmacyAccessoryFromInventory(aid);
+                if (!ret || !ret.ok) {
+                    showMsg(ui('pharmacy.accessory.install_fail', { item: getItemDisplayNameSafe(aid) }), 'warn');
+                    renderPharmacyStationPanel();
+                    return;
+                }
+                showMsg(ui('pharmacy.accessory.install_ok', { item: getItemDisplayNameSafe(aid) }), 'success');
+                renderPharmacyStationPanel();
+                if (typeof updateBackpackPanel === 'function') updateBackpackPanel();
+                if (typeof updateStatusPanel === 'function') updateStatusPanel();
+                if (window.SceneRenderer) window.SceneRenderer.render();
+            });
+        }
+        var startBtn = document.getElementById('pharmacy-start-btn');
+        if (startBtn) {
+            startBtn.addEventListener('click', function () {
+                if (!pharmacyStationPanelOpen) return;
+                var mid = pharmacyStationUiState.method_id ? String(pharmacyStationUiState.method_id) : '';
+                var inputs = normalizePharmacyInputs(pharmacyStationUiState.inputs || []);
+                var res = tryPharmacyAtStation(mid, inputs);
+                if (!res || res.ok !== true) {
+                    var key = pharmacyStartReasonToMsgKey(res ? res.reason : 'unknown');
+                    var vars = {};
+                    if (res && res.item_id) vars.item = getItemDisplayNameSafe(res.item_id);
+                    if (res && res.method_id) vars.method = String(res.method_id);
+                    if (res && res.required_accessory_item_id) vars.accessory = getItemDisplayNameSafe(res.required_accessory_item_id);
+                    if (res && res.need != null && res.current != null) { vars.need = res.need; vars.cur = res.current; }
+                    showMsg(ui(key, vars), 'warn');
+                    renderPharmacyStationPanel();
+                    return;
+                }
+                // tryPharmacyAtStation 成功路径内部已负责 showMsg；这里清空投料便于下一次盲配
+                setPharmacyInputs([]);
+                renderPharmacyStationPanel();
+            });
+        }
+    })();
+
+    var compostStationPanelOpen = false;
+    var compostEventActionDisplayById = {};
+    var compostStationUiState = {
+        mode: 'aerobic',
+        staged_inputs: [],
+        staged_inoculant_item_id: '',
+        logs: []
+    };
+    var compostWindowActionSlots = {
+        best: '',
+        mid: '',
+        alt: ''
+    };
+
+    function getCompostActionDisplay(actionId) {
+        var id = String(actionId || '').trim();
+        if (!id) return '';
+        return String(compostEventActionDisplayById[id] || id);
+    }
+
+    function getCompostBatchOrIdle(mode) {
+        if (!window.CompostSystem || typeof window.CompostSystem.getBatch !== 'function') return null;
+        return window.CompostSystem.getBatch(mode);
+    }
+
+    function hasCompostInteractionContext() {
+        return !!compostStationPanelOpen;
+    }
+
+    function getMountedBreathSkillIdForCompostProficiency() {
+        if (!IE || typeof IE.getCombatState !== 'function' || typeof IE.getSkillLevel !== 'function') return '';
+        var hubs = IE.getCombatState().hubs || {};
+        var breathSkillId = String(hubs.breath || '').trim();
+        if (!breathSkillId) return '';
+        return IE.getSkillLevel(breathSkillId) >= 1 ? breathSkillId : '';
+    }
+
+    function addCompostProficiencyForAction(actionType) {
+        if (!IE || typeof IE.incrementSkillMoveUsage !== 'function') return;
+        var actionKey = String(actionType || '').trim() || 'compost_action';
+        IE.incrementSkillMoveUsage('life_farming', actionKey, 1);
+        var mountedBreathSkillId = getMountedBreathSkillIdForCompostProficiency();
+        if (mountedBreathSkillId) IE.incrementSkillMoveUsage(mountedBreathSkillId, 'tu_na', 1);
+    }
+
+    function getCompostStartGuardState(mode, stagedTotals) {
+        var m = mode === 'anaerobic' ? 'anaerobic' : 'aerobic';
+        var totals = stagedTotals || computeStagedCompostTotals();
+        var block = null;
+        if (window.CompostSystem && typeof window.CompostSystem.getStartBlockState === 'function') {
+            block = window.CompostSystem.getStartBlockState(m);
+        } else if (window.CompostSystem && typeof window.CompostSystem.canStartNewBatch === 'function') {
+            block = window.CompostSystem.canStartNewBatch(m)
+                ? { blocked: false, reason: 'ok' }
+                : { blocked: true, reason: 'slot_not_ready' };
+        } else {
+            block = { blocked: false, reason: 'ok' };
+        }
+        if (block && block.blocked) return { canStart: false, reason: String(block.reason || 'slot_not_ready') };
+        if (!Array.isArray(compostStationUiState.staged_inputs) || compostStationUiState.staged_inputs.length < 2) {
+            return { canStart: false, reason: 'insufficient_inputs' };
+        }
+        if (Number(totals && totals.invalid_main_count || 0) > 0) {
+            return { canStart: false, reason: 'invalid_inputs' };
+        }
+        var inoculantId = String(compostStationUiState.staged_inoculant_item_id || '');
+        if (!inoculantId || !isItemAllowedCompostInoculant(inoculantId, m)) {
+            return { canStart: false, reason: 'inoculant_required' };
+        }
+        if (getInventoryCountByItemId(inoculantId) <= getStagedCompostCountForItem(inoculantId)) {
+            return { canStart: false, reason: 'inoculant_missing_inventory' };
+        }
+        return { canStart: true, reason: 'ok' };
+    }
+
+    function showCompostStartBlockedHint(reason) {
+        var r = String(reason || '');
+        var key = 'compost.start.fail';
+        if (r === 'output_pending') key = 'compost.start.blocked_output_pending';
+        else if (r === 'already_fermenting') key = 'compost.start.blocked_fermenting';
+        else if (r === 'insufficient_inputs') key = 'compost.start.blocked_inputs';
+        else if (r === 'invalid_inputs') key = 'compost.start.blocked_invalid_inputs';
+        else if (r === 'inoculant_required') key = 'compost.start.blocked_inoculant_required';
+        else if (r === 'inoculant_missing_inventory') key = 'compost.start.blocked_inoculant_missing_inventory';
+        showMsg(ui(key), 'warn');
+    }
+
+    function tryCollectCompostToInventory(mode) {
+        if (!window.CompostSystem || typeof window.CompostSystem.collect !== 'function' || !IE || typeof IE.putItemIntoDefaultContainer !== 'function') {
+            return { ok: false, reason: 'unavailable' };
+        }
+        var batch = getCompostBatchOrIdle(mode);
+        var results = batch && Array.isArray(batch.results) ? batch.results : [];
+        if (!results.length) return { ok: false, reason: 'nothing_to_collect' };
+        var row = results[0] || {};
+        var itemId = String(row.item_id || '');
+        var left = Math.max(0, Math.floor(Number(row.count) || 0));
+        if (!itemId || left <= 0) return { ok: false, reason: 'nothing_to_collect' };
+        var wantAll = mode !== 'anaerobic';
+        var tryCount = wantAll ? left : left;
+        var canPut = 0;
+        function rollbackInserted(itemId, n) {
+            for (var t = 0; t < n; t++) {
+                var s = findFirstContainerSlotByItemId(itemId);
+                if (!s) break;
+                IE.takeItemFromContainer(s.containerType, s.index);
+            }
+        }
+        for (var i = 0; i < tryCount; i++) {
+            var placedTry = IE.putItemIntoDefaultContainer({ item_id: itemId, count: 1, quality_tier: 0 });
+            if (!placedTry || !placedTry.placed) break;
+            canPut += 1;
+        }
+        if (canPut <= 0) return { ok: false, reason: 'inventory_full' };
+        var takeCount = wantAll ? left : canPut;
+        if (wantAll && canPut < left) {
+            // 回滚刚才试探放入的数量，避免“好氧全收取”变成偷偷部分收取。
+            rollbackInserted(itemId, canPut);
+            return { ok: false, reason: 'inventory_full' };
+        }
+        var ret = window.CompostSystem.collect(mode, takeCount);
+        if (!ret || !ret.ok) {
+            rollbackInserted(itemId, canPut);
+            return { ok: false, reason: ret && ret.reason ? ret.reason : 'collect_failed' };
+        }
+        return {
+            ok: true,
+            item_id: ret.item_id,
+            collected: ret.count,
+            remaining_in_batch: Math.max(0, Number(ret.remaining_in_batch) || 0),
+            partial: Number(ret.remaining_in_batch) > 0
+        };
+    }
+
+    function isItemAllowedCompostIngredient(itemId) {
+        if (!IE || typeof IE.getItemTemplate !== 'function') return false;
+        var tpl = IE.getItemTemplate(itemId);
+        if (window.CompostSystem && typeof window.CompostSystem.isTemplateEligibleMainMaterial === 'function') {
+            return !!window.CompostSystem.isTemplateEligibleMainMaterial(tpl);
+        }
+        if (!tpl || typeof tpl !== 'object') return false;
+        var hasC = Object.prototype.hasOwnProperty.call(tpl, 'fert_c');
+        var hasN = Object.prototype.hasOwnProperty.call(tpl, 'fert_n');
+        return hasC || hasN;
+    }
+
+    function isItemAllowedCompostInoculant(itemId, mode) {
+        if (!IE || typeof IE.getItemTemplate !== 'function') return false;
+        var tpl = IE.getItemTemplate(itemId);
+        var m = mode === 'anaerobic' ? 'anaerobic' : 'aerobic';
+        if (window.CompostSystem && typeof window.CompostSystem.isTemplateEligibleInoculant === 'function') {
+            return !!window.CompostSystem.isTemplateEligibleInoculant(tpl, m);
+        }
+        if (!tpl || typeof tpl !== 'object') return false;
+        return m === 'anaerobic' ? (tpl.compost_inoculant_anaerobic === true) : (tpl.compost_inoculant_aerobic === true);
+    }
+
+    function getCompostInoculantOptionsFromInventory(mode) {
+        if (!IE) return [];
+        var m = mode === 'anaerobic' ? 'anaerobic' : 'aerobic';
+        var seen = {};
+        var out = [];
+        var groups = [
+            IE.getPocketArray ? IE.getPocketArray() : [],
+            IE.getVestArray ? IE.getVestArray() : [],
+            IE.getBackpackArray ? IE.getBackpackArray() : []
+        ];
+        for (var g = 0; g < groups.length; g++) {
+            var arr = groups[g];
+            if (!Array.isArray(arr)) continue;
+            for (var i = 0; i < arr.length; i++) {
+                var cell = arr[i];
+                if (!cell || !cell.item_id) continue;
+                var id = String(cell.item_id);
+                if (seen[id]) continue;
+                if (!isItemAllowedCompostInoculant(id, m)) continue;
+                if (getInventoryCountByItemId(id) <= 0) continue;
+                seen[id] = true;
+                out.push(id);
+            }
+        }
+        out.sort();
+        return out;
+    }
+
+    function trySetCompostInoculantFromInventory(iid, mode) {
+        var m = mode === 'anaerobic' ? 'anaerobic' : 'aerobic';
+        var id = iid != null ? String(iid) : '';
+        if (!id || !isItemAllowedCompostInoculant(id, m)) return;
+        var have = getInventoryCountByItemId(id);
+        var staged = getStagedCompostCountForItem(id);
+        if (have <= staged) return;
+        compostStationUiState.staged_inoculant_item_id = id;
+        renderCompostStationPanel();
+    }
+
+    function getCompostIngredientOptionsFromInventory() {
+        if (!IE) return [];
+        var seen = {};
+        var out = [];
+        var groups = [
+            IE.getPocketArray ? IE.getPocketArray() : [],
+            IE.getVestArray ? IE.getVestArray() : [],
+            IE.getBackpackArray ? IE.getBackpackArray() : []
+        ];
+        for (var g = 0; g < groups.length; g++) {
+            var arr = groups[g];
+            if (!Array.isArray(arr)) continue;
+            for (var i = 0; i < arr.length; i++) {
+                var cell = arr[i];
+                if (!cell || !cell.item_id) continue;
+                var id = String(cell.item_id);
+                if (seen[id]) continue;
+                if (!isItemAllowedCompostIngredient(id)) continue;
+                if (getInventoryCountByItemId(id) <= 0) continue;
+                seen[id] = true;
+                out.push(id);
+            }
+        }
+        out.sort();
+        return out;
+    }
+
+    function getStagedCompostCountForItem(itemId) {
+        var n = 0;
+        var arr = Array.isArray(compostStationUiState.staged_inputs) ? compostStationUiState.staged_inputs : [];
+        for (var i = 0; i < arr.length; i++) if (String(arr[i]) === String(itemId)) n += 1;
+        return n;
+    }
+
+    function getReservedCompostCountForItem(itemId, mode) {
+        var id = String(itemId || '');
+        if (!id) return 0;
+        var n = getStagedCompostCountForItem(id);
+        var m = mode === 'anaerobic' ? 'anaerobic' : 'aerobic';
+        var inocId = String(compostStationUiState.staged_inoculant_item_id || '');
+        if (inocId && inocId === id && isItemAllowedCompostInoculant(id, m)) n += 1;
+        return n;
+    }
+
+    function pushCompostLog(text) {
+        var line = String(text || '').trim();
+        if (!line) return;
+        compostStationUiState.logs.push(line);
+        if (compostStationUiState.logs.length > 60) compostStationUiState.logs = compostStationUiState.logs.slice(compostStationUiState.logs.length - 60);
+    }
+
+    function computeStagedCompostTotals() {
+        var arr = Array.isArray(compostStationUiState.staged_inputs) ? compostStationUiState.staged_inputs : [];
+        if (window.CompostSystem && typeof window.CompostSystem.computeCnTotalsFromInputItems === 'function') {
+            return window.CompostSystem.computeCnTotalsFromInputItems(arr, {
+                getTemplate: function (itemId) {
+                    return IE && typeof IE.getItemTemplate === 'function' ? IE.getItemTemplate(itemId) : null;
+                }
+            });
+        }
+        var cTotal = 0;
+        var nTotal = 0;
+        for (var i = 0; i < arr.length; i++) {
+            var iid = String(arr[i] || '');
+            if (!iid) continue;
+            var tpl = IE && typeof IE.getItemTemplate === 'function' ? IE.getItemTemplate(iid) : null;
+            cTotal += Math.floor(Number(tpl && tpl.fert_c) || 0);
+            nTotal += Math.floor(Number(tpl && tpl.fert_n) || 0);
+        }
+        return { c_total: cTotal, n_total: nTotal, legal_cn: cTotal > 0 && nTotal > 0, ratio: (cTotal > 0 && nTotal > 0) ? (cTotal / nTotal) : null };
+    }
+
+    function getCompostPerceptionText(cTotal, nTotal, mode) {
+        if (cTotal <= 0 && nTotal <= 0) return { text: ui('compost.perception.empty'), severity: 'neutral', text_key: 'compost.perception.empty' };
+        var feedback = null;
+        if (window.CompostSystem && typeof window.CompostSystem.classifyCnFeedbackByTotals === 'function') {
+            feedback = window.CompostSystem.classifyCnFeedbackByTotals(cTotal, nTotal, mode);
+        }
+        if (!feedback || !feedback.text_key) {
+            var ratio = (nTotal > 0) ? (cTotal / nTotal) : null;
+            if (cTotal <= 0 || nTotal <= 0) feedback = { text_key: 'compost.perception.void', severity: 'fatal', ratio: null };
+            else if (ratio >= 25 && ratio <= 35) feedback = { text_key: 'compost.perception.good', severity: 'good', ratio: ratio };
+            else if ((ratio >= 18 && ratio < 25) || (ratio > 35 && ratio <= 45)) feedback = { text_key: 'compost.perception.mid', severity: 'mid', ratio: ratio };
+            else feedback = { text_key: mode === 'anaerobic' ? 'compost.perception.bad_anaerobic' : 'compost.perception.bad_aerobic', severity: 'bad', ratio: ratio };
+        }
+        return { text: ui(feedback.text_key), severity: String(feedback.severity || 'neutral'), text_key: feedback.text_key };
+    }
+
+    function tryAddOneCompostInputFromInventory(iid) {
+        if (!compostStationPanelOpen) return;
+        iid = iid != null ? String(iid) : '';
+        if (!iid || !isItemAllowedCompostIngredient(iid)) return;
+        var have = getInventoryCountByItemId(iid);
+        var reserved = getReservedCompostCountForItem(iid, compostStationUiState.mode);
+        if (reserved >= have) return;
+        compostStationUiState.staged_inputs.push(iid);
+        renderCompostStationPanel();
+    }
+
+    function renderCompostIngredientPickerList() {
+        var wrap = document.getElementById('compost-ingredient-list');
+        if (!wrap) return;
+        wrap.innerHTML = '';
+        var opts = getCompostIngredientOptionsFromInventory();
+        var oi;
+        for (oi = 0; oi < opts.length; oi++) {
+            var iid = opts[oi];
+            var disp = getItemDisplayNameSafe(iid);
+            var have = getInventoryCountByItemId(iid);
+            var reserved = getReservedCompostCountForItem(iid, compostStationUiState.mode);
+            var canAdd = have > reserved;
+            var row = document.createElement('div');
+            row.className = 'cs-ingredient-row';
+            var left = document.createElement('div');
+            left.className = 'cs-ing-left';
+            var nameEl = document.createElement('div');
+            nameEl.className = 'cs-ing-name';
+            nameEl.textContent = disp;
+            var idEl = document.createElement('div');
+            idEl.className = 'cs-ing-id';
+            idEl.textContent = iid;
+            left.appendChild(nameEl);
+            left.appendChild(idEl);
+            var countsEl = document.createElement('div');
+            countsEl.className = 'cs-ing-counts';
+            countsEl.textContent = ui('compost.ingredient.available_staged_fmt', { have: String(have), staged: String(reserved) });
+            var btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = 'btn-add-ingredient';
+            btn.textContent = ui('compost.btn.add_input');
+            btn.disabled = !canAdd;
+            btn.onclick = (function (xid) {
+                return function (ev) {
+                    if (ev && typeof ev.stopPropagation === 'function') ev.stopPropagation();
+                    tryAddOneCompostInputFromInventory(xid);
+                };
+            })(iid);
+            row.appendChild(left);
+            row.appendChild(countsEl);
+            row.appendChild(btn);
+            wrap.appendChild(row);
+        }
+        if (!opts.length) wrap.innerHTML = '<div style="color:#a8a29e;font-size:13px;">' + ui('compost.ingredient.empty') + '</div>';
+    }
+
+    function renderCompostInoculantPickerList(mode) {
+        var wrap = document.getElementById('compost-inoculant-list');
+        if (!wrap) return;
+        var m = mode === 'anaerobic' ? 'anaerobic' : 'aerobic';
+        var selected = String(compostStationUiState.staged_inoculant_item_id || '');
+        if (selected && !isItemAllowedCompostInoculant(selected, m)) {
+            selected = '';
+            compostStationUiState.staged_inoculant_item_id = '';
+        }
+        var opts = getCompostInoculantOptionsFromInventory(m);
+        wrap.innerHTML = '';
+        for (var i = 0; i < opts.length; i++) {
+            var iid = opts[i];
+            var row = document.createElement('div');
+            row.className = 'cs-ingredient-row';
+            var left = document.createElement('div');
+            left.className = 'cs-ing-left';
+            var nameEl = document.createElement('div');
+            nameEl.className = 'cs-ing-name';
+            nameEl.textContent = getItemDisplayNameSafe(iid);
+            var idEl = document.createElement('div');
+            idEl.className = 'cs-ing-id';
+            idEl.textContent = iid;
+            left.appendChild(nameEl);
+            left.appendChild(idEl);
+            var countsEl = document.createElement('div');
+            countsEl.className = 'cs-ing-counts';
+            countsEl.textContent = ui('compost.ingredient.available_fmt', { have: String(getInventoryCountByItemId(iid)) });
+            var btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = 'btn-add-ingredient';
+            btn.textContent = (selected === iid) ? ui('compost.btn.selected') : ui('compost.btn.select');
+            btn.disabled = selected === iid;
+            btn.onclick = (function (xid, xm) {
+                return function (ev) {
+                    if (ev && typeof ev.stopPropagation === 'function') ev.stopPropagation();
+                    trySetCompostInoculantFromInventory(xid, xm);
+                };
+            })(iid, m);
+            row.appendChild(left);
+            row.appendChild(countsEl);
+            row.appendChild(btn);
+            wrap.appendChild(row);
+        }
+        if (!opts.length) wrap.innerHTML = '<div style="color:#a8a29e;font-size:13px;">' + ui('compost.inoculant.empty') + '</div>';
+    }
+
+    function renderCompostStationPanel() {
+        var modal = document.getElementById('modal-compost-station');
+        if (!modal) return;
+        var mode = compostStationUiState.mode === 'anaerobic' ? 'anaerobic' : 'aerobic';
+        compostStationUiState.mode = mode;
+        var batch = getCompostBatchOrIdle(mode);
+        var inputWrap = document.getElementById('compost-input-list');
+        var perceptionEl = document.getElementById('compost-perception-text');
+        var progressWrap = document.getElementById('compost-progress-kv');
+        var windowEl = document.getElementById('compost-window-text');
+        var resultWrap = document.getElementById('compost-result-list');
+        var logWrap = document.getElementById('compost-log-list');
+        var tabA = document.getElementById('compost-tab-aerobic');
+        var tabN = document.getElementById('compost-tab-anaerobic');
+        if (tabA) tabA.classList.toggle('active', mode === 'aerobic');
+        if (tabN) tabN.classList.toggle('active', mode === 'anaerobic');
+
+        function getCompostStatusText(statusRaw) {
+            var s = String(statusRaw || 'IDLE').trim().toUpperCase();
+            if (s === 'FERMENTING') return ui('compost.status.fermenting');
+            if (s === 'SETTLED') return ui('compost.status.settled');
+            return ui('compost.status.idle');
+        }
+
+        if (inputWrap) {
+            inputWrap.innerHTML = '';
+            if (batch && Array.isArray(batch.materials) && batch.materials.length) {
+                for (var mi = 0; mi < batch.materials.length; mi++) {
+                    var mat = batch.materials[mi] || {};
+                    var r0 = document.createElement('div');
+                    r0.className = 'cs-input-row';
+                    r0.innerHTML = '<div class="iname">' + getItemDisplayNameSafe(mat.item_id) + ' (' + String(mat.item_id || '') + ')</div><div class="icnt">x' + String(mat.count || 1) + '</div><div></div>';
+                    inputWrap.appendChild(r0);
+                }
+                if (batch.inoculant_item_id) {
+                    var inocBatchRow = document.createElement('div');
+                    inocBatchRow.className = 'cs-input-row';
+                    inocBatchRow.innerHTML = '<div class="iname">' + ui('compost.inoculant.label') + ': ' + getItemDisplayNameSafe(batch.inoculant_item_id) + ' (' + String(batch.inoculant_item_id || '') + ')</div><div class="icnt">x1</div><div></div>';
+                    inputWrap.appendChild(inocBatchRow);
+                }
+            } else if (Array.isArray(compostStationUiState.staged_inputs) && compostStationUiState.staged_inputs.length) {
+                var stagedMap = {};
+                for (var si = 0; si < compostStationUiState.staged_inputs.length; si++) {
+                    var sid = String(compostStationUiState.staged_inputs[si] || '');
+                    if (!sid) continue;
+                    stagedMap[sid] = (stagedMap[sid] || 0) + 1;
+                }
+                var keys = Object.keys(stagedMap);
+                for (var ki = 0; ki < keys.length; ki++) {
+                    var id0 = keys[ki];
+                    var row = document.createElement('div');
+                    row.className = 'cs-input-row';
+                    var name = document.createElement('div');
+                    name.className = 'iname';
+                    name.textContent = getItemDisplayNameSafe(id0) + ' (' + id0 + ')';
+                    var cnt = document.createElement('div');
+                    cnt.className = 'icnt';
+                    cnt.textContent = 'x' + String(stagedMap[id0]);
+                    var btnDel = document.createElement('button');
+                    btnDel.type = 'button';
+                    btnDel.className = 'btn-mini';
+                    btnDel.textContent = ui('compost.btn.remove');
+                    btnDel.onclick = (function (rid) {
+                        return function () {
+                            for (var dx = compostStationUiState.staged_inputs.length - 1; dx >= 0; dx--) {
+                                if (String(compostStationUiState.staged_inputs[dx]) === String(rid)) {
+                                    compostStationUiState.staged_inputs.splice(dx, 1);
+                                    break;
+                                }
+                            }
+                            renderCompostStationPanel();
+                        };
+                    })(id0);
+                    row.appendChild(name);
+                    row.appendChild(cnt);
+                    row.appendChild(btnDel);
+                    inputWrap.appendChild(row);
+                }
+                if (compostStationUiState.staged_inoculant_item_id) {
+                    var inocRow = document.createElement('div');
+                    inocRow.className = 'cs-input-row';
+                    var inocName = document.createElement('div');
+                    inocName.className = 'iname';
+                    inocName.textContent = ui('compost.inoculant.label') + ': ' + getItemDisplayNameSafe(compostStationUiState.staged_inoculant_item_id) + ' (' + compostStationUiState.staged_inoculant_item_id + ')';
+                    var inocCnt = document.createElement('div');
+                    inocCnt.className = 'icnt';
+                    inocCnt.textContent = 'x1';
+                    var inocDel = document.createElement('button');
+                    inocDel.type = 'button';
+                    inocDel.className = 'btn-mini';
+                    inocDel.textContent = ui('compost.btn.remove');
+                    inocDel.onclick = function () {
+                        compostStationUiState.staged_inoculant_item_id = '';
+                        renderCompostStationPanel();
+                    };
+                    inocRow.appendChild(inocName);
+                    inocRow.appendChild(inocCnt);
+                    inocRow.appendChild(inocDel);
+                    inputWrap.appendChild(inocRow);
+                }
+            } else {
+                if (compostStationUiState.staged_inoculant_item_id) {
+                    var inocOnly = document.createElement('div');
+                    inocOnly.className = 'cs-input-row';
+                    inocOnly.innerHTML = '<div class="iname">' + ui('compost.inoculant.label') + ': ' + getItemDisplayNameSafe(compostStationUiState.staged_inoculant_item_id) + ' (' + compostStationUiState.staged_inoculant_item_id + ')</div><div class="icnt">x1</div><div></div>';
+                    inputWrap.appendChild(inocOnly);
+                } else {
+                    inputWrap.innerHTML = '<div class="cs-empty-hint">' + ui('compost.inputs.empty') + '</div>';
+                }
+            }
+        }
+        renderCompostIngredientPickerList();
+        renderCompostInoculantPickerList(mode);
+
+        var totals = computeStagedCompostTotals();
+        if (batch && batch.status === 'FERMENTING') totals = { c_total: Number(batch.c_total) || 0, n_total: Number(batch.n_total) || 0 };
+        if (perceptionEl) {
+            var perception = getCompostPerceptionText(totals.c_total, totals.n_total, mode);
+            perceptionEl.textContent = perception.text;
+            perceptionEl.setAttribute('data-severity', perception.severity || 'neutral');
+        }
+
+        if (progressWrap) {
+            progressWrap.innerHTML = '';
+            var age = batch ? (Number(batch.age_ticks) || 0) : 0;
+            var duration = batch ? (Number(batch.duration_ticks) || 0) : 0;
+            var stat = getCompostStatusText(batch ? batch.status : 'IDLE');
+            var kv1 = document.createElement('div'); kv1.className = 'kv'; kv1.textContent = ui('compost.kv.status', { status: stat });
+            var kv2 = document.createElement('div'); kv2.className = 'kv'; kv2.textContent = ui('compost.kv.tick', { cur: age, max: duration });
+            progressWrap.appendChild(kv1); progressWrap.appendChild(kv2);
+        }
+
+        var pendingWindow = null;
+        var windowInteractState = null;
+        if (window.CompostSystem && typeof window.CompostSystem.getWindowInteractionState === 'function') {
+            windowInteractState = window.CompostSystem.getWindowInteractionState(mode);
+            if (windowInteractState && windowInteractState.can_interact) {
+                pendingWindow = windowInteractState.pending_window || null;
+            }
+        } else if (batch && Array.isArray(batch.windows) && Number(batch.pending_window_index) >= 0) {
+            pendingWindow = batch.windows[Number(batch.pending_window_index)] || null;
+        }
+        if (windowEl) {
+            if (pendingWindow && batch && batch.status === 'FERMENTING') {
+                var evt = pendingWindow.event || {};
+                var vEvt = evt.variant || {};
+                var evtTitle = String(vEvt.title || evt.title || evt.event_id || 'window');
+                var evtDesc = String(vEvt.desc || evt.desc || '').trim();
+                windowEl.textContent = ui('compost.window.pending', { title: evtTitle }) + (evtDesc ? ('\n' + evtDesc) : '');
+            } else if (windowInteractState && windowInteractState.reason === 'illegal_cn_batch') {
+                windowEl.textContent = ui('compost.window.disabled_illegal');
+            } else {
+                windowEl.textContent = ui('compost.window.none');
+            }
+        }
+
+        var bestBtn = document.getElementById('compost-interact-best-btn');
+        var midBtn = document.getElementById('compost-interact-mid-btn');
+        var altBtn = document.getElementById('compost-interact-alt-btn');
+        var canInteract = !!(batch && batch.status === 'FERMENTING' && pendingWindow);
+        var pEvt = (pendingWindow && pendingWindow.event) ? pendingWindow.event : {};
+        var isAerobicWindow = canInteract && mode === 'aerobic';
+        var btnSlots = [
+            { key: 'best', el: bestBtn },
+            { key: 'mid', el: midBtn },
+            { key: 'alt', el: altBtn }
+        ];
+        compostWindowActionSlots.best = '';
+        compostWindowActionSlots.mid = '';
+        compostWindowActionSlots.alt = '';
+        var actionChoices = [];
+        if (canInteract) {
+            if (isAerobicWindow) {
+                if (String(pEvt.best_action || '').trim()) actionChoices.push({ id: String(pEvt.best_action || '').trim() });
+                if (String(pEvt.secondary_action || '').trim()) actionChoices.push({ id: String(pEvt.secondary_action || '').trim() });
+                if (String(pEvt.bad_action || '').trim()) actionChoices.push({ id: String(pEvt.bad_action || '').trim() });
+                // 固定种子洗牌：同一事件窗顺序稳定，但不同事件窗会变化。
+                var seedSrc = String(pEvt.event_id || '') + '|' + String(pendingWindow && pendingWindow.index || 0) + '|' + String(pendingWindow && pendingWindow.trigger_tick || 0);
+                var seed = 0;
+                for (var sx = 0; sx < seedSrc.length; sx++) seed = (((seed * 131) + seedSrc.charCodeAt(sx)) >>> 0);
+                function seededRand() { seed = ((seed * 1664525 + 1013904223) >>> 0); return seed / 4294967296; }
+                for (var sh = actionChoices.length - 1; sh > 0; sh--) {
+                    var j = Math.floor(seededRand() * (sh + 1));
+                    var tmp = actionChoices[sh];
+                    actionChoices[sh] = actionChoices[j];
+                    actionChoices[j] = tmp;
+                }
+            } else {
+                actionChoices.push({ id: 'vent_gas' }, { id: 'leave_as_is' });
+            }
+        }
+        for (var bi = 0; bi < btnSlots.length; bi++) {
+            var slot = btnSlots[bi];
+            if (!slot.el) continue;
+            var ch = actionChoices[bi] || null;
+            if (!canInteract || !ch || !ch.id) {
+                slot.el.disabled = true;
+                slot.el.style.display = 'none';
+                slot.el.textContent = '';
+                compostWindowActionSlots[slot.key] = '';
+            } else {
+                slot.el.disabled = false;
+                slot.el.style.display = '';
+                slot.el.textContent = getCompostActionDisplay(ch.id);
+                compostWindowActionSlots[slot.key] = String(ch.id);
+            }
+        }
+
+        if (resultWrap) {
+            resultWrap.innerHTML = '';
+            var results = batch && Array.isArray(batch.results) ? batch.results : [];
+            if (!results.length) {
+                resultWrap.innerHTML = '<div class="cs-empty-hint">' + ui('compost.results.empty') + '</div>';
+            } else {
+                for (var ri = 0; ri < results.length; ri++) {
+                    var r = results[ri] || {};
+                    var rowR = document.createElement('div');
+                    rowR.className = 'cs-input-row';
+                    rowR.innerHTML = '<div class="iname">' + getItemDisplayNameSafe(r.item_id) + ' (' + String(r.item_id || '') + ')</div><div class="icnt">x' + String(r.count || 0) + '</div><div></div>';
+                    resultWrap.appendChild(rowR);
+                }
+            }
+        }
+        if (logWrap) {
+            logWrap.innerHTML = '';
+            var logs = compostStationUiState.logs.slice(-20);
+            if (!logs.length) {
+                logWrap.innerHTML = '<div class="line">' + ui('compost.log.empty') + '</div>';
+            } else {
+                for (var li = 0; li < logs.length; li++) {
+                    var l = document.createElement('div');
+                    l.className = 'line';
+                    l.textContent = logs[li];
+                    logWrap.appendChild(l);
+                }
+            }
+        }
+
+        var startBtn = document.getElementById('compost-start-btn');
+        var stopBtn = document.getElementById('compost-stop-btn');
+        var collectBtn = document.getElementById('compost-collect-btn');
+        var discardBtn = document.getElementById('compost-discard-btn');
+        var stagedTotals = computeStagedCompostTotals();
+        var startGuard = getCompostStartGuardState(mode, stagedTotals);
+        var canStart = !!startGuard.canStart;
+        if (startBtn) startBtn.disabled = !canStart;
+        if (stopBtn) stopBtn.disabled = !(batch && batch.status === 'FERMENTING');
+        if (collectBtn) collectBtn.disabled = !(batch && batch.status === 'SETTLED' && Array.isArray(batch.results) && batch.results.length > 0);
+        if (discardBtn) discardBtn.disabled = !(batch && batch.status === 'SETTLED');
+
+        if (window.UIText && typeof window.UIText.applyDom === 'function') {
+            try { window.UIText.applyDom(modal); } catch (eApplyCompost) { /* ignore */ }
+        }
+    }
+
+    function openCompostStationPanel() {
+        if (isPreCreationGameplayRestricted()) {
+            showIntroBlockedMsg();
+            return;
+        }
+        if (compostStationPanelOpen) return;
+        if (!isOnCompostStationTile()) {
+            showMsg(ui('compost.station.not_on_tile'), 'info');
+            return;
+        }
+        if (window.Survival && typeof window.Survival.advanceTick === 'function') window.Survival.advanceTick();
+        compostStationPanelOpen = true;
+        var modal = document.getElementById('modal-compost-station');
+        if (modal) {
+            modal.classList.add('show');
+            modal.setAttribute('aria-hidden', 'false');
+        }
+        renderCompostStationPanel();
+        render();
+    }
+
+    function closeCompostStationPanel() {
+        if (!compostStationPanelOpen) return;
+        if (window.Survival && typeof window.Survival.advanceTick === 'function') window.Survival.advanceTick();
+        compostStationPanelOpen = false;
+        var modal = document.getElementById('modal-compost-station');
+        if (modal) {
+            modal.classList.remove('show');
+            modal.setAttribute('aria-hidden', 'true');
+        }
+        render();
+    }
+
+    (function bindCompostStationPanel() {
+        var tabA = document.getElementById('compost-tab-aerobic');
+        var tabN = document.getElementById('compost-tab-anaerobic');
+        if (tabA) tabA.addEventListener('click', function () { compostStationUiState.mode = 'aerobic'; renderCompostStationPanel(); });
+        if (tabN) tabN.addEventListener('click', function () { compostStationUiState.mode = 'anaerobic'; renderCompostStationPanel(); });
+        var closeBtn = document.getElementById('compost-station-close');
+        if (closeBtn) closeBtn.addEventListener('click', closeCompostStationPanel);
+
+        var startBtn = document.getElementById('compost-start-btn');
+        if (startBtn) startBtn.addEventListener('click', function () {
+            if (!hasCompostInteractionContext() || !window.CompostSystem) return;
+            var mode = compostStationUiState.mode === 'anaerobic' ? 'anaerobic' : 'aerobic';
+            var startGuard = getCompostStartGuardState(mode, null);
+            if (!startGuard.canStart) {
+                showCompostStartBlockedHint(startGuard.reason);
+                return;
+            }
+            var mats = {};
+            for (var i = 0; i < compostStationUiState.staged_inputs.length; i++) {
+                var id = String(compostStationUiState.staged_inputs[i] || '');
+                if (!id) continue;
+                mats[id] = (mats[id] || 0) + 1;
+            }
+            var list = [];
+            var keys = Object.keys(mats);
+            for (var k = 0; k < keys.length; k++) {
+                var iid = keys[k];
+                var cnt = mats[iid];
+                list.push({ item_id: iid, count: cnt });
+            }
+            var totals = window.CompostSystem && typeof window.CompostSystem.computeCnTotalsFromInputItems === 'function'
+                ? window.CompostSystem.computeCnTotalsFromInputItems(list, {
+                    getTemplate: function (itemId) {
+                        return IE && typeof IE.getItemTemplate === 'function' ? IE.getItemTemplate(itemId) : null;
+                    }
+                })
+                : { c_total: 0, n_total: 0 };
+            var consumed = [];
+            for (var x = 0; x < compostStationUiState.staged_inputs.length; x++) {
+                var sid = String(compostStationUiState.staged_inputs[x] || '');
+                var slot = findFirstContainerSlotByItemId(sid);
+                if (!slot) continue;
+                var taken = IE.takeItemFromContainer(slot.containerType, slot.index);
+                if (taken && taken.success && taken.item) consumed.push(taken.item);
+            }
+            var inoculantId = String(compostStationUiState.staged_inoculant_item_id || '');
+            var inocTaken = null;
+            if (inoculantId) {
+                var inocSlot = findFirstContainerSlotByItemId(inoculantId);
+                if (!inocSlot) {
+                    putItemsBack(consumed);
+                    showCompostStartBlockedHint('inoculant_missing_inventory');
+                    return;
+                }
+                var inocTake = IE.takeItemFromContainer(inocSlot.containerType, inocSlot.index);
+                if (!inocTake || !inocTake.success || !inocTake.item) {
+                    putItemsBack(consumed);
+                    showCompostStartBlockedHint('inoculant_missing_inventory');
+                    return;
+                }
+                inocTaken = inocTake.item;
+            }
+            var ret = window.CompostSystem.startBatch(mode, {
+                materials: list,
+                c_total: totals.c_total,
+                n_total: totals.n_total,
+                inoculant_item_id: inoculantId || null
+            });
+            if (!ret || ret.ok !== true) {
+                if (inocTaken) putItemsBack([inocTaken]);
+                putItemsBack(consumed);
+                showCompostStartBlockedHint(ret && ret.reason ? ret.reason : 'slot_not_ready');
+                return;
+            }
+            compostStationUiState.staged_inputs = [];
+            compostStationUiState.staged_inoculant_item_id = '';
+            pushCompostLog(ui('compost.log.started', { mode: mode === 'anaerobic' ? ui('compost.tab.anaerobic') : ui('compost.tab.aerobic') }));
+            showMsg(ui('compost.start.ok'), 'success');
+            renderCompostStationPanel();
+            if (typeof updateBackpackPanel === 'function') updateBackpackPanel();
+            if (window.SceneRenderer) window.SceneRenderer.render();
+        });
+
+        var stopBtn = document.getElementById('compost-stop-btn');
+        if (stopBtn) stopBtn.addEventListener('click', function () {
+            if (!compostStationPanelOpen || !window.CompostSystem || typeof window.CompostSystem.forceTerminate !== 'function') return;
+            var mode = compostStationUiState.mode === 'anaerobic' ? 'anaerobic' : 'aerobic';
+            var ret = window.CompostSystem.forceTerminate(mode, 'forced_by_player');
+            if (ret && ret.ok) pushCompostLog(ui('compost.log.stopped'));
+            renderCompostStationPanel();
+        });
+
+        function interactWithWindow(slotKey) {
+            if (!compostStationPanelOpen || !window.CompostSystem || typeof window.CompostSystem.interact !== 'function') return;
+            var mode = compostStationUiState.mode === 'anaerobic' ? 'anaerobic' : 'aerobic';
+            var batch = getCompostBatchOrIdle(mode);
+            if (!batch || batch.status !== 'FERMENTING' || Number(batch.pending_window_index) < 0) return;
+            var actionId = String(compostWindowActionSlots[slotKey] || '');
+            if (!actionId) return;
+            var ret = window.CompostSystem.interact(mode, actionId, { advance_world_tick: true });
+            if (ret && ret.ok) {
+                pushCompostLog(ui(ret.success ? 'compost.log.interact_ok' : 'compost.log.interact_fail'));
+            }
+            renderCompostStationPanel();
+        }
+
+        var bestBtn = document.getElementById('compost-interact-best-btn');
+        if (bestBtn) bestBtn.addEventListener('click', function () { interactWithWindow('best'); });
+        var midBtn = document.getElementById('compost-interact-mid-btn');
+        if (midBtn) midBtn.addEventListener('click', function () { interactWithWindow('mid'); });
+        var altBtn = document.getElementById('compost-interact-alt-btn');
+        if (altBtn) altBtn.addEventListener('click', function () { interactWithWindow('alt'); });
+
+        var collectBtn = document.getElementById('compost-collect-btn');
+        if (collectBtn) collectBtn.addEventListener('click', function () {
+            if (!hasCompostInteractionContext()) {
+                showMsg(ui('compost.collect.require_station_context'), 'warn');
+                return;
+            }
+            var mode = compostStationUiState.mode === 'anaerobic' ? 'anaerobic' : 'aerobic';
+            var ret = tryCollectCompostToInventory(mode);
+            if (!ret || !ret.ok) {
+                if (ret && ret.reason === 'inventory_full') {
+                    showMsg(ui('compost.collect.inventory_full'), 'warn');
+                }
+                return;
+            }
+            pushCompostLog(ui('compost.log.collected', { item: getItemDisplayNameSafe(ret.item_id), count: ret.collected }));
+            if (ret.partial) showMsg(ui('compost.collect.partial_left', { left: ret.remaining_in_batch }), 'info');
+            renderCompostStationPanel();
+            if (typeof updateBackpackPanel === 'function') updateBackpackPanel();
+            if (window.SceneRenderer) window.SceneRenderer.render();
+        });
+
+        var discardBtn = document.getElementById('compost-discard-btn');
+        if (discardBtn) discardBtn.addEventListener('click', function () {
+            if (!hasCompostInteractionContext() || !window.CompostSystem || typeof window.CompostSystem.discard !== 'function') {
+                showMsg(ui('compost.collect.require_station_context'), 'warn');
+                return;
+            }
+            var mode = compostStationUiState.mode === 'anaerobic' ? 'anaerobic' : 'aerobic';
+            var ret = window.CompostSystem.discard(mode);
+            if (ret && ret.ok) pushCompostLog(ui('compost.log.discarded'));
+            renderCompostStationPanel();
+        });
+    })();
+
     (function () {
         var btn = document.getElementById('btn-reset-demo-save');
         if (!btn) return;
@@ -4324,9 +6672,7 @@
             btn.setAttribute('data-item-id', id);
             btn.textContent = ui('warehouse.take.one');
             if (tpl) {
-                var desc = IE.getDisplayDesc ? IE.getDisplayDesc(tpl, tier, char0) : '';
-                var attrs = formatItemAttributes(tpl, null);
-                var tipHtml = buildItemTooltipHtml(disp, desc, attrs);
+                var tipHtml = buildItemTooltipHtmlForTemplate(id, tpl, null, char0);
                 row.addEventListener('mouseenter', function (h, elRef) { return function () { showItemTooltip(h, elRef); }; }(tipHtml, row));
                 row.addEventListener('mouseleave', hideItemTooltip);
             }
@@ -4614,7 +6960,7 @@
     }
 
     /**
-     * 地图近战：按各肢 priority 档位（仅 1～4 档）加权随机选肢，档位数字越小越常被抽到；招式来自该肢 move_sequences 轮询。
+     * 地图近战：按 limb_strike_order + cursor 顺序扫描选肢；招式来自该肢 move_sequences 轮询。
      * ctxMeta 同时给出 skill_id、limb_id、move_id 时不抽样、不推进光标。
      */
     function pickWorldMeleeAttackIntent(ctxMeta) {
@@ -4666,18 +7012,28 @@
             return null;
         }
 
+        var orderedLimbs = (typeof IE.getLimbStrikeOrder === 'function') ? IE.getLimbStrikeOrder() : LIMB_IDS.slice();
+        if (!Array.isArray(orderedLimbs) || !orderedLimbs.length) orderedLimbs = LIMB_IDS.slice();
+        var rawCursor = (typeof IE.getLimbStrikeOrderCursor === 'function') ? IE.getLimbStrikeOrderCursor() : 0;
+        var cursor = Math.floor(Number(rawCursor) || 0);
+        cursor = ((cursor % orderedLimbs.length) + orderedLimbs.length) % orderedLimbs.length;
+        var scanOrder = [];
+        var si;
+        for (si = 0; si < orderedLimbs.length; si++) {
+            scanOrder.push(orderedLimbs[(cursor + si) % orderedLimbs.length]);
+        }
+
         var candidates = [];
         var li;
-        for (li = 0; li < LIMB_IDS.length; li++) {
-            var lid = LIMB_IDS[li];
+        for (li = 0; li < scanOrder.length; li++) {
+            var lid = scanOrder[li];
             var limb = cmb.limbs && cmb.limbs[lid];
             if (!limb || !limb.active) continue;
             var sk = CS.getSkill(limb.active);
             if (!sk || (sk.category !== 'unarmed' && sk.category !== 'weapon')) continue;
             var fm = firstValidMoveForLimb(lid, limb.active);
             if (!fm) continue;
-            var p = Math.max(1, Math.min(4, Math.floor(Number(limb.priority) || 1)));
-            candidates.push({ lid: lid, skillId: limb.active, priority: p, weight: 0 });
+            candidates.push({ lid: lid, skillId: limb.active });
         }
 
         if (!candidates.length) {
@@ -4692,41 +7048,25 @@
             return out;
         }
 
-        var maxPri = 0;
-        for (li = 0; li < candidates.length; li++) {
-            if (candidates[li].priority > maxPri) maxPri = candidates[li].priority;
-        }
-        var sumW = 0;
-        for (li = 0; li < candidates.length; li++) {
-            candidates[li].weight = maxPri - candidates[li].priority + 1;
-            sumW += candidates[li].weight;
-        }
-        var roll = Math.random() * sumW;
-        var acc = 0;
         var picked = candidates[0];
-        for (li = 0; li < candidates.length; li++) {
-            acc += candidates[li].weight;
-            if (roll <= acc) {
-                picked = candidates[li];
-                break;
-            }
-        }
         out.limbId = picked.lid;
         out.skillId = picked.skillId;
         out.moveId = firstValidMoveForLimb(picked.lid, picked.skillId);
         out.advanceCursor = ctxMeta.move_id == null;
+        if (out.advanceCursor && typeof IE.advanceLimbStrikeOrderAfterAttack === 'function') {
+            IE.advanceLimbStrikeOrderAfterAttack(out.limbId);
+        }
 
         var rowParts = [];
         for (li = 0; li < candidates.length; li++) {
             var c = candidates[li];
-            var pct = sumW > 0 ? Math.round((c.weight / sumW) * 1000) / 10 : 0;
-            rowParts.push(limbLabel(c.lid) + ' ' + pct + '%（w=' + c.weight + ',p=' + c.priority + '）');
+            rowParts.push(limbLabel(c.lid));
         }
         if (window.GameLog && typeof window.GameLog.log === 'function') {
             window.GameLog.log(ui('log.combat.resolve.limb_pick', {
-                rows: rowParts.join('；'),
-                sum: String(sumW),
-                roll: String(Math.round(roll * 1000) / 1000),
+                rows: rowParts.join(' → '),
+                sum: String(candidates.length),
+                roll: String(cursor),
                 picked: limbLabel(picked.lid)
             }), 'combat');
         }
@@ -4738,15 +7078,23 @@
         var AP = window.Acupoints;
         var combatState = IE && IE.getCombatState ? IE.getCombatState() : { limbs: {}, hubs: { breath: null, footwork: null }, move_sequences: {}, skill_move_sequences: {}, move_sequence_cursors: {}, post_effect_sequences: {} };
         var limbIds = IE && IE.COMBAT_LIMB_IDS ? IE.COMBAT_LIMB_IDS.slice() : ['lhand', 'rhand', 'lfoot', 'rfoot'];
+        var meridianSkillId = (IE && IE.SPECIAL_MERIDIAN_STUDIES_SKILL_ID) ? IE.SPECIAL_MERIDIAN_STUDIES_SKILL_ID : 'special_meridian_studies';
+        var meridianLv = IE && typeof IE.getSkillLevel === 'function' ? IE.getSkillLevel(meridianSkillId) : 0;
+        var acupointsUnlocked = meridianLv >= 1;
 
         var mainTabs = document.querySelectorAll('#modal-combat .combat-main-tab');
+        if (!acupointsUnlocked && combatUIState.mode === 'acupoints') combatUIState.mode = 'skills';
         var isAcupointMode = combatUIState.mode === 'acupoints';
+        var combatModal = document.getElementById('modal-combat');
+        if (combatModal) combatModal.classList.toggle('combat-acupoint-mode', isAcupointMode);
 
         if (mainTabs && mainTabs.length) {
             mainTabs.forEach(function (btn) {
                 var mode = btn.getAttribute('data-mode') || 'skills';
+                if (mode === 'acupoints') btn.style.display = acupointsUnlocked ? '' : 'none';
                 btn.classList.toggle('active', combatUIState.mode === mode);
                 btn.onclick = function () {
+                    if (mode === 'acupoints' && !acupointsUnlocked) return;
                     combatUIState.mode = mode;
                     if (mode === 'acupoints') combatUIState.acupointPage = 0;
                     renderCombatModal();
@@ -4767,6 +7115,20 @@
             acListEl.style.display = isAcupointMode ? 'flex' : 'none';
             if (isAcupointMode) acListEl.innerHTML = '';
         }
+        var hubSectionEl = document.querySelector('#modal-combat .combat-hub-section');
+        var limbTitleEl = document.querySelector('#modal-combat .combat-limb-title');
+        var limbContainerEl = document.getElementById('limb-container');
+        var seqHeadEl = document.querySelector('#modal-combat .combat-seq-head');
+        var selectedMetaEl = document.querySelector('#modal-combat .combat-selected-meta');
+        var seqWrapEl = document.getElementById('move-sequence');
+        var configColEl = document.querySelector('#modal-combat .combat-config-column');
+        if (hubSectionEl) hubSectionEl.style.display = isAcupointMode ? 'none' : '';
+        if (limbTitleEl) limbTitleEl.style.display = isAcupointMode ? 'none' : '';
+        if (limbContainerEl) limbContainerEl.style.display = isAcupointMode ? 'none' : '';
+        if (seqHeadEl) seqHeadEl.style.display = isAcupointMode ? 'none' : '';
+        if (selectedMetaEl) selectedMetaEl.style.display = isAcupointMode ? 'none' : '';
+        if (seqWrapEl) seqWrapEl.style.display = isAcupointMode ? 'none' : '';
+        if (configColEl) configColEl.style.display = isAcupointMode ? 'none' : '';
 
         if (CS && !isAcupointMode) {
             var cats = CS.getCategories();
@@ -4812,56 +7174,28 @@
         var hubFootwork = document.getElementById('hub-footwork');
         var valBreath = document.getElementById('val-breath');
         var valFootwork = document.getElementById('val-footwork');
-        if (hubBreath) hubBreath.classList.toggle('active', !!combatState.hubs.breath);
-        if (hubFootwork) hubFootwork.classList.toggle('active', !!combatState.hubs.footwork);
-        if (valBreath) { valBreath.textContent = getCombatSkillName(combatState.hubs.breath) || ui('combat.not.loaded'); valBreath.classList.toggle('empty', !combatState.hubs.breath); }
-        if (valFootwork) { valFootwork.textContent = getCombatSkillName(combatState.hubs.footwork) || ui('combat.not.loaded'); valFootwork.classList.toggle('empty', !combatState.hubs.footwork); }
+        if (!isAcupointMode) {
+            if (hubBreath) hubBreath.classList.toggle('active', !!combatState.hubs.breath);
+            if (hubFootwork) hubFootwork.classList.toggle('active', !!combatState.hubs.footwork);
+            if (valBreath) { valBreath.textContent = getCombatSkillName(combatState.hubs.breath) || ui('combat.not.loaded'); valBreath.classList.toggle('empty', !combatState.hubs.breath); }
+            if (valFootwork) { valFootwork.textContent = getCombatSkillName(combatState.hubs.footwork) || ui('combat.not.loaded'); valFootwork.classList.toggle('empty', !combatState.hubs.footwork); }
+        }
 
         var limbBox = document.getElementById('limb-container');
-        if (limbBox && combatState.limbs) {
+        if (!isAcupointMode && limbBox && combatState.limbs) {
             limbBox.innerHTML = '';
             var isGlobal = combatUIState.curCat === 'breath' || combatUIState.curCat === 'footwork';
             limbBox.style.opacity = isGlobal ? '0.2' : '1';
             limbBox.style.pointerEvents = isGlobal ? 'none' : 'auto';
             limbIds.forEach(function (lid) {
-                var limb = combatState.limbs[lid] || { active: null, parry: null, priority: 1 };
+                var limb = combatState.limbs[lid] || { active: null, parry: null };
                 var div = document.createElement('div');
                 div.className = 'combat-limb-item';
                 var activeName = getCombatSkillName(limb.active);
                 var parryName = getCombatSkillName(limb.parry);
                 var isActiveSel = combatUIState.curPart === lid && combatUIState.curSlot === 'active';
                 var isParrySel = combatUIState.curPart === lid && combatUIState.curSlot === 'parry';
-                var priVal = Math.max(1, Math.min(4, Math.floor(Number(limb.priority) || 1)));
-                var priHint = ui('combat.priority.hint');
-                var escAttr = function (s) {
-                    return String(s).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;');
-                };
-                var priLabel = ui('combat.priority.label');
-                var tierBtnsHtml = '';
-                var ti;
-                for (ti = 1; ti <= 4; ti++) {
-                    tierBtnsHtml += '<button type="button" class="btn-limb-tier' + (ti === priVal ? ' active' : '') + '" data-limb-tier="' + ti + '" tabindex="0" aria-pressed="' + (ti === priVal ? 'true' : 'false') + '">' + ui('combat.priority.tier.' + ti) + '</button>';
-                }
-                div.innerHTML = '<div class="limb-header"><span>' + (LIMB_ICONS[lid] || '') + ' ' + ui(LIMB_LABELS[lid] || lid) + '</span><div class="limb-priority-editor" title="' + escAttr(priHint) + '"><span class="limb-priority-label">' + priLabel + '</span><div class="limb-tier-btns">' + tierBtnsHtml + '</div></div></div><div class="limb-slots"><div class="combat-limb-slot' + (isActiveSel ? ' selected' : '') + '" data-part="' + lid + '" data-slot="active"><span class="slot-type">' + ui('combat.slot.active') + '</span><span class="slot-skill">' + activeName + '</span></div><div class="combat-limb-slot' + (isParrySel ? ' selected' : '') + '" data-part="' + lid + '" data-slot="parry"><span class="slot-type">' + ui('combat.slot.parry') + '</span><span class="slot-skill">' + parryName + '</span></div></div>';
-                (function bindLimbPriority(limbId) {
-                    var editor = div.querySelector('.limb-priority-editor');
-                    if (!editor || !IE || typeof IE.setCombatState !== 'function') return;
-                    editor.querySelectorAll('[data-limb-tier]').forEach(function (btn) {
-                        btn.addEventListener('click', function (ev) {
-                            ev.stopPropagation();
-                            ev.preventDefault();
-                            var v = Math.max(1, Math.min(4, parseInt(btn.getAttribute('data-limb-tier'), 10) || 1));
-                            editor.querySelectorAll('[data-limb-tier]').forEach(function (b) {
-                                var on = parseInt(b.getAttribute('data-limb-tier'), 10) === v;
-                                b.classList.toggle('active', on);
-                                b.setAttribute('aria-pressed', on ? 'true' : 'false');
-                            });
-                            var patchLimbs = {};
-                            patchLimbs[limbId] = { priority: v };
-                            safeSetCombatState({ limbs: patchLimbs }, '出手顺位保存失败。');
-                        });
-                    });
-                }(lid));
+                div.innerHTML = '<div class="limb-header"><span>' + (LIMB_ICONS[lid] || '') + ' ' + ui(LIMB_LABELS[lid] || lid) + '</span></div><div class="limb-slots"><div class="combat-limb-slot' + (isActiveSel ? ' selected' : '') + '" data-part="' + lid + '" data-slot="active"><span class="slot-type">' + ui('combat.slot.active') + '</span><span class="slot-skill">' + activeName + '</span></div><div class="combat-limb-slot' + (isParrySel ? ' selected' : '') + '" data-part="' + lid + '" data-slot="parry"><span class="slot-type">' + ui('combat.slot.parry') + '</span><span class="slot-skill">' + parryName + '</span></div></div>';
                 div.querySelectorAll('.combat-limb-slot').forEach(function (slotEl) {
                     slotEl.onclick = function () {
                         combatUIState.curPart = slotEl.getAttribute('data-part');
@@ -4895,6 +7229,19 @@
         var profPct = selSkill && CS && selSkill.category !== 'footwork' ? Math.floor(CS.getSkillTotalProficiency(combatUIState.curSkillId, moveUsage) * 100) : 0;
         if (levelEl) levelEl.textContent = ui('combat.level', { v: skillLevel });
         if (profEl) profEl.textContent = (selSkill && selSkill.category === 'footwork') ? ui('combat.prof.not_applicable') : ui('combat.prof.total', { v: profPct });
+        var btnPostInline = document.getElementById('btn-combat-post-effect-inline');
+        if (btnPostInline) {
+            var limbForPost = combatUIState.curPart || 'lhand';
+            var equippedPostId = getLimbPostEffectId(combatState, limbForPost);
+            var equippedPostName = equippedPostId ? getPostEffectName(equippedPostId) : '';
+            btnPostInline.textContent = equippedPostName ? ('后遗症: ' + equippedPostName) : '后遗症';
+            btnPostInline.disabled = !selSkill || combatUIState.curCat === 'breath' || combatUIState.curCat === 'footwork';
+            btnPostInline.onclick = function (e) {
+                if (e && typeof e.stopPropagation === 'function') e.stopPropagation();
+                if (btnPostInline.disabled) return;
+                openLimbPostEffectPicker(btnPostInline, limbForPost);
+            };
+        }
         renderRecipeSchemaValidationDebugList();
 
         // Deploy slot validation:
@@ -4903,6 +7250,7 @@
         var btnDeploy = document.getElementById('btn-deploy-combat');
         if (btnDeploy) {
             var canDeploy = true;
+            btnDeploy.textContent = isAcupointMode ? ui('acupoint.btn.unlock') : ui('combat.deploy');
             if (isAcupointMode) {
                 canDeploy = !!combatUIState.curAcupointId;
             } else if (combatUIState.curCat !== 'breath' && combatUIState.curCat !== 'footwork') {
@@ -4925,23 +7273,11 @@
             return pe.id || String(postId);
         }
 
-        function getLimbPostEffectMap(combatState, limbId) {
-            if (!combatState || !combatState.post_effect_sequences || !combatState.post_effect_sequences[limbId]) return {};
-            return combatState.post_effect_sequences[limbId];
-        }
-
-        function isPostEffectDuplicateOnLimb(combatState, limbId, postId, curSkillId, curSlotIndex) {
-            if (!postId) return false;
-            var limbMap = getLimbPostEffectMap(combatState, limbId);
-            for (var sid in limbMap) {
-                if (!Object.prototype.hasOwnProperty.call(limbMap, sid) || !Array.isArray(limbMap[sid])) continue;
-                var arr = limbMap[sid];
-                for (var pi = 0; pi < arr.length; pi++) {
-                    if (sid === curSkillId && pi === curSlotIndex) continue;
-                    if (arr[pi] === postId) return true;
-                }
-            }
-            return false;
+        function getLimbPostEffectId(combatState, limbId) {
+            if (!combatState || !combatState.post_effect_sequences) return null;
+            var v = combatState.post_effect_sequences[limbId];
+            if (v == null || v === '') return null;
+            return String(v);
         }
 
         function getVariantName(variantId) {
@@ -4976,12 +7312,9 @@
             var unlocked = CS.getUnlockedMoves(combatUIState.curSkillId, skillLevel);
             var seq = (combatState.move_sequences && Array.isArray(combatState.move_sequences[limbPartForSeq])) ? combatState.move_sequences[limbPartForSeq].slice() : [];
             var limbIdForPost = limbPartForSeq;
-            var postMap = getLimbPostEffectMap(combatState, limbIdForPost);
-            var postSeq = (postMap && postMap[combatUIState.curSkillId] && Array.isArray(postMap[combatUIState.curSkillId])) ? postMap[combatUIState.curSkillId].slice() : [];
+            var limbPostId = getLimbPostEffectId(combatState, limbIdForPost);
             while (seq.length < maxSlots) seq.push('');
             seq = seq.slice(0, maxSlots);
-            while (postSeq.length < maxSlots) postSeq.push(null);
-            postSeq = postSeq.slice(0, maxSlots);
             for (var i = 0; i < maxSlots; i++) {
                 var rawMoveId = seq[i] ? String(seq[i]) : '';
                 var isVariantSlot = rawMoveId.indexOf('variant:') === 0;
@@ -4995,12 +7328,10 @@
                     : (moveObj ? moveObj.name : (rawMoveId ? rawMoveId : ui('combat.seq.slot_empty')));
                 var useCount = (moveUsage && moveObj && moveUsage[moveObj.id] != null) ? moveUsage[moveObj.id] : 0;
                 var nodeProf = moveObj ? Math.floor(CS.getMoveProficiencyRatio(useCount) * 100) : 0;
-                var postIdAtSlot = (rawMoveId && moveObj && !isVariantSlot) ? (postSeq[i] || null) : null;
-                var postText = postIdAtSlot ? getPostEffectName(postIdAtSlot) : (rawMoveId && !isVariantSlot ? '无后遗症' : '—');
-                var slotCap = moveObj && moveObj.post_effect_slot_max != null ? Math.max(0, parseInt(moveObj.post_effect_slot_max, 10) || 0) : 0;
+                var postText = limbPostId ? getPostEffectName(limbPostId) : (rawMoveId && !isVariantSlot ? '无后遗症' : '—');
                 var node = document.createElement('div');
                 node.className = 'combat-move-node' + (combatUIState.editingSlot === i ? ' editing' : '') + (!rawMoveId ? ' slot-empty' : '');
-                node.innerHTML = '<span class="node-index">' + String(i + 1).padStart(2, '0') + '</span><span class="node-name">' + moveName + '</span><span class="node-prof">' + ui('combat.prof.node', { v: nodeProf }) + '</span><span class="node-post' + (postIdAtSlot ? '' : ' empty') + '">' + postText + '</span>';
+                node.innerHTML = '<span class="node-index">' + String(i + 1).padStart(2, '0') + '</span><span class="node-name">' + moveName + '</span><span class="node-prof">' + ui('combat.prof.node', { v: nodeProf }) + '</span><span class="node-post' + (limbPostId ? '' : ' empty') + '">' + postText + '</span>';
 
                 // 成数控件（仅主动招式槽）
                 if (rawMoveId && !isVariantSlot && moveObj && IE && typeof IE.getMoveSlotPowerLevel === 'function') {
@@ -5045,23 +7376,6 @@
                     powerCtrl.appendChild(btnPlus);
                     node.appendChild(powerCtrl);
                 }
-
-                var btnPost = document.createElement('button');
-                btnPost.type = 'button';
-                btnPost.className = 'btn-post-slot';
-                btnPost.textContent = '后遗症';
-                if (slotCap < 1 || !moveObj || !moveObj.id || !rawMoveId || isVariantSlot) {
-                    btnPost.disabled = true;
-                    btnPost.title = !rawMoveId ? ui('combat.seq.slot_empty') : '该招式没有后遗症槽位';
-                } else {
-                    btnPost.onclick = function (slotIdx, anchorEl, moveEntry, limbId, skillId) {
-                        return function (e) {
-                            e.stopPropagation();
-                            openPostEffectPicker(slotIdx, anchorEl, moveEntry, limbId, skillId);
-                        };
-                    }(i, node, moveObj, limbIdForPost, combatUIState.curSkillId);
-                }
-                node.appendChild(btnPost);
 
                 // Debug: 一键让该招式熟练度 +10%（用于测试 post-effects）
                 var debugBtn = document.createElement('button');
@@ -5188,13 +7502,45 @@
             var start = combatUIState.acupointPage * pageSize;
             var end = Math.min(start + pageSize, total);
 
+            function unlockAcupointForCombat(acupointId, acupointName) {
+                if (!AP || !acupointId) return;
+                var changed = AP.unlock(acupointId);
+                if (changed && window.GameLog) {
+                    window.GameLog.log(ui('log.system.acupoint.unlocked', { id: (acupointName || acupointId) }), 'system');
+                }
+                if (changed && window.CharacterAttributes && typeof window.CharacterAttributes.recalcCharacterStats === 'function' && window.InventoryEquipment) {
+                    window.CharacterAttributes.recalcCharacterStats({
+                        getEquipmentState: function () { return window.InventoryEquipment.getState().equipment; },
+                        getSkillsState: function () { return window.InventoryEquipment.getState().skills; },
+                        getItemTemplate: window.InventoryEquipment.getItemTemplate,
+                        getEnchantEntry: window.InventoryEquipment.getEnchantEntry,
+                        getStrengthLevel: function () { return window.InventoryEquipment.getSkillLevel('survival_strength'); }
+                    });
+                }
+                if (changed && typeof updateStatusPanel === 'function') updateStatusPanel();
+                renderCombatModal();
+            }
+
             for (var i = start; i < end; i++) {
                 var a = listAp[i];
                 var div = document.createElement('div');
                 var isSel = combatUIState.curAcupointId === a.id;
                 div.className = 'combat-acupoint-item' + (isSel ? ' selected' : '');
-                var meta = ui(AP.isUnlocked(a.id) ? 'acupoint.meta.unlocked' : 'acupoint.meta.locked', { effects: (a.effectsText || '') });
+                var isUnlocked = AP.isUnlocked(a.id);
+                var meta = ui(isUnlocked ? 'acupoint.meta.unlocked' : 'acupoint.meta.locked', { effects: (a.effectsText || '') });
                 div.innerHTML = '<div class="acupoint-name">' + a.name + '</div><div class="acupoint-meta">' + meta + '</div>';
+                var unlockBtn = document.createElement('button');
+                unlockBtn.type = 'button';
+                unlockBtn.className = 'combat-pager-btn';
+                unlockBtn.textContent = isUnlocked ? ui('acupoint.btn.unlocked') : ui('acupoint.btn.unlock');
+                unlockBtn.disabled = !!isUnlocked;
+                unlockBtn.onclick = function (id, name) {
+                    return function (e) {
+                        if (e && typeof e.stopPropagation === 'function') e.stopPropagation();
+                        unlockAcupointForCombat(id, name);
+                    };
+                }(a.id, a.name);
+                div.appendChild(unlockBtn);
                 div.onclick = function (id) {
                     return function () {
                         combatUIState.curAcupointId = id;
@@ -5206,30 +7552,18 @@
 
             if (total > pageSize) {
                 var pager = document.createElement('div');
-                pager.style.marginTop = '8px';
-                pager.style.display = 'flex';
-                pager.style.justifyContent = 'space-between';
-                pager.style.alignItems = 'center';
-                pager.style.fontSize = '11px';
-                pager.style.color = '#a8a29e';
+                pager.className = 'combat-pager';
 
                 var btnPrev = document.createElement('button');
                 btnPrev.type = 'button';
+                btnPrev.className = 'combat-pager-btn';
                 btnPrev.textContent = ui('pager.prev');
                 btnPrev.disabled = combatUIState.acupointPage <= 0;
-                btnPrev.style.padding = '4px 10px';
-                btnPrev.style.borderRadius = '9999px';
-                btnPrev.style.border = '1px solid #4d3f35';
-                btnPrev.style.background = '#120e0c';
-                btnPrev.style.color = '#e8e6e3';
-                btnPrev.style.cursor = btnPrev.disabled ? 'default' : 'pointer';
                 if (!btnPrev.disabled) {
                     btnPrev.onclick = function () {
                         combatUIState.acupointPage--;
                         renderCombatModal();
                     };
-                } else {
-                    btnPrev.style.opacity = '0.4';
                 }
 
                 var info = document.createElement('span');
@@ -5237,21 +7571,14 @@
 
                 var btnNext = document.createElement('button');
                 btnNext.type = 'button';
+                btnNext.className = 'combat-pager-btn';
                 btnNext.textContent = ui('pager.next');
                 btnNext.disabled = combatUIState.acupointPage >= maxPage;
-                btnNext.style.padding = '4px 10px';
-                btnNext.style.borderRadius = '9999px';
-                btnNext.style.border = '1px solid #4d3f35';
-                btnNext.style.background = '#120e0c';
-                btnNext.style.color = '#e8e6e3';
-                btnNext.style.cursor = btnNext.disabled ? 'default' : 'pointer';
                 if (!btnNext.disabled) {
                     btnNext.onclick = function () {
                         combatUIState.acupointPage++;
                         renderCombatModal();
                     };
-                } else {
-                    btnNext.style.opacity = '0.4';
                 }
 
                 pager.appendChild(btnPrev);
@@ -5320,15 +7647,7 @@
             seq[idx] = '';
             var patchMs = {};
             patchMs[part] = seq;
-            var limbId = part;
-            if (!combat.post_effect_sequences || typeof combat.post_effect_sequences !== 'object') combat.post_effect_sequences = {};
-            if (!combat.post_effect_sequences[limbId] || typeof combat.post_effect_sequences[limbId] !== 'object') combat.post_effect_sequences[limbId] = {};
-            var postArr = combat.post_effect_sequences[limbId][combatUIState.curSkillId];
-            if (Array.isArray(postArr) && postArr[idx]) {
-                postArr[idx] = null;
-                combat.post_effect_sequences[limbId][combatUIState.curSkillId] = postArr.slice();
-            }
-            if (!safeSetCombatState({ move_sequences: patchMs, post_effect_sequences: combat.post_effect_sequences }, ui('combat.seq.clear_last_forbidden'))) return;
+            if (!safeSetCombatState({ move_sequences: patchMs }, ui('combat.seq.clear_last_forbidden'))) return;
             if (IE && typeof IE.setMoveSlotPowerLevel === 'function') IE.setMoveSlotPowerLevel(part, idx, null);
             combatUIState.editingSlot = null;
             picker.classList.remove('show');
@@ -5359,17 +7678,6 @@
                 if (!safeSetCombatState({ move_sequences: patchMs }, ui('combat.seq.clear_last_forbidden'))) return;
                 if (IE && typeof IE.setMoveSlotPowerLevel === 'function') IE.setMoveSlotPowerLevel(part, idx, null);
 
-                // 招式替换后，若该槽已装配后遗症但不再匹配 valid_*，则自动清空该槽
-                var limbId = part;
-                var postSeqMap = (combat.post_effect_sequences && combat.post_effect_sequences[limbId]) ? combat.post_effect_sequences[limbId] : null;
-                var postSeq = postSeqMap && Array.isArray(postSeqMap[combatUIState.curSkillId]) ? postSeqMap[combatUIState.curSkillId] : null;
-                if (postSeq && postSeq[idx] && window.PostEffects && typeof window.PostEffects.getPostEffect === 'function') {
-                    var pe = window.PostEffects.getPostEffect(postSeq[idx]);
-                    if (pe && typeof window.PostEffects.validateSocket === 'function' && !window.PostEffects.validateSocket(pe, { skillId: combatUIState.curSkillId, moveId: m.id })) {
-                        postSeq[idx] = null;
-                        if (!safeSetCombatState({ post_effect_sequences: combat.post_effect_sequences }, '后遗症保存失败。')) return;
-                    }
-                }
                 combatUIState.editingSlot = null;
                 picker.classList.remove('show');
                 renderCombatModal();
@@ -5418,14 +7726,6 @@
                     patchMs[part] = seq;
                     if (!safeSetCombatState({ move_sequences: patchMs }, ui('combat.seq.clear_last_forbidden'))) return;
                     if (IE && typeof IE.setMoveSlotPowerLevel === 'function') IE.setMoveSlotPowerLevel(part, idx, null);
-                    // 该槽改成变式后，自动清空后遗症
-                    var limbId = part;
-                    var postSeqMap = (combat.post_effect_sequences && combat.post_effect_sequences[limbId]) ? combat.post_effect_sequences[limbId] : null;
-                    var postSeq = postSeqMap && Array.isArray(postSeqMap[combatUIState.curSkillId]) ? postSeqMap[combatUIState.curSkillId] : null;
-                    if (postSeq && postSeq[idx]) {
-                        postSeq[idx] = null;
-                        safeSetCombatState({ post_effect_sequences: combat.post_effect_sequences }, '后遗症保存失败。');
-                    }
                     combatUIState.editingSlot = null;
                     picker.classList.remove('show');
                     renderCombatModal();
@@ -5531,14 +7831,11 @@
         picker.classList.add('show');
     }
 
-    function openPostEffectPicker(slotIdx, anchorEl, moveObj, limbId, skillId) {
+    function openLimbPostEffectPicker(anchorEl, limbId) {
         var picker = document.getElementById('picker-post-effect');
         var listEl = document.getElementById('picker-post-effect-list');
-        if (!picker || !listEl || !moveObj || !moveObj.id || !limbId || !skillId || !IE) return;
+        if (!picker || !listEl || !limbId || !IE) return;
         listEl.innerHTML = '';
-
-        var postCap = moveObj.post_effect_slot_max != null ? Math.max(0, parseInt(moveObj.post_effect_slot_max, 10) || 0) : 0;
-        if (postCap < 1) return;
 
         var obtainedIds = (window.CharacterAttributes && typeof window.CharacterAttributes.getPostEffectsObtainedIds === 'function')
             ? window.CharacterAttributes.getPostEffectsObtainedIds()
@@ -5549,26 +7846,7 @@
         var combat = IE.getCombatState ? IE.getCombatState() : null;
         if (!combat) return;
         if (!combat.post_effect_sequences || typeof combat.post_effect_sequences !== 'object') combat.post_effect_sequences = {};
-        if (!combat.post_effect_sequences[limbId] || typeof combat.post_effect_sequences[limbId] !== 'object') combat.post_effect_sequences[limbId] = {};
-        var postSeq = combat.post_effect_sequences[limbId][skillId];
-        if (!Array.isArray(postSeq)) postSeq = [];
-        while (postSeq.length <= slotIdx) postSeq.push(null);
-
-        function isDuplicateOnLimb(postId) {
-            var limbMap = combat.post_effect_sequences[limbId] || {};
-            for (var sid in limbMap) {
-                if (!Object.prototype.hasOwnProperty.call(limbMap, sid) || !Array.isArray(limbMap[sid])) continue;
-                for (var i = 0; i < limbMap[sid].length; i++) {
-                    if (sid === skillId && i === slotIdx) continue;
-                    if (limbMap[sid][i] === postId) return true;
-                }
-            }
-            return false;
-        }
-
-        function isAllowedBySocket(pe) {
-            return !!(window.PostEffects && typeof window.PostEffects.validateSocket === 'function' && window.PostEffects.validateSocket(pe, { skillId: skillId, moveId: moveObj.id }));
-        }
+        var curPostId = combat.post_effect_sequences[limbId] ? String(combat.post_effect_sequences[limbId]) : null;
 
         function escapePickerHtml(s) {
             return String(s)
@@ -5589,8 +7867,7 @@
         }
 
         addOption('清空槽位', '移除当前装配', function () {
-            postSeq[slotIdx] = null;
-            combat.post_effect_sequences[limbId][skillId] = postSeq.slice();
+            combat.post_effect_sequences[limbId] = null;
             if (!safeSetCombatState({ post_effect_sequences: combat.post_effect_sequences }, '后遗症保存失败。')) return;
             picker.classList.remove('show');
             renderCombatModal();
@@ -5601,18 +7878,16 @@
             var pe = allPost[ai];
             if (!pe || !pe.id) continue;
             if (obtainedIds.indexOf(pe.id) < 0) continue;
-            if (!isAllowedBySocket(pe)) continue;
             hasAny = true;
             var name = pe.name_key && window.UIText && typeof window.UIText.t === 'function' ? window.UIText.t(pe.name_key) : pe.id;
             var desc = pe.desc_key && window.UIText && typeof window.UIText.t === 'function' ? window.UIText.t(pe.desc_key) : '';
             addOption(name, desc, (function (postId) {
                 return function () {
-                    if (isDuplicateOnLimb(postId)) {
-                        showMsg('同一肢体上同一后遗症只能装配 1 份。', 'warn');
+                    if (curPostId && curPostId === postId) {
+                        picker.classList.remove('show');
                         return;
                     }
-                    postSeq[slotIdx] = postId;
-                    combat.post_effect_sequences[limbId][skillId] = postSeq.slice();
+                    combat.post_effect_sequences[limbId] = postId;
                     if (!safeSetCombatState({ post_effect_sequences: combat.post_effect_sequences }, '后遗症保存失败。')) return;
                     picker.classList.remove('show');
                     renderCombatModal();
@@ -5828,6 +8103,65 @@
             row.appendChild(plusBtn);
             wrap.appendChild(row);
         });
+    }
+
+    function renderSpecialModal() {
+        var wrap = document.getElementById('special-skill-table');
+        if (!wrap) return;
+        wrap.innerHTML = '';
+        var IE = window.InventoryEquipment;
+        var meridianSkillId = (IE && IE.SPECIAL_MERIDIAN_STUDIES_SKILL_ID)
+            ? IE.SPECIAL_MERIDIAN_STUDIES_SKILL_ID
+            : 'special_meridian_studies';
+        var lv = (IE && typeof IE.getSkillLevel === 'function')
+            ? Math.max(0, parseInt(IE.getSkillLevel(meridianSkillId), 10) || 0)
+            : 0;
+        function addSpecialSkillLevel(skillId, plus) {
+            if (!IE || typeof IE.getState !== 'function' || !skillId) return;
+            var st = IE.getState();
+            if (!st.skills || typeof st.skills !== 'object') st.skills = {};
+            if (!st.skills[skillId] || typeof st.skills[skillId] !== 'object') st.skills[skillId] = { level: 0, move_usage: {} };
+            var before = Math.max(0, parseInt(st.skills[skillId].level, 10) || 0);
+            var delta = Math.max(1, parseInt(plus, 10) || 1);
+            st.skills[skillId].level = before + delta;
+            if (!st.skills[skillId].move_usage || typeof st.skills[skillId].move_usage !== 'object') st.skills[skillId].move_usage = {};
+            if (window.CharacterAttributes && typeof window.CharacterAttributes.recalcCharacterStats === 'function') {
+                window.CharacterAttributes.recalcCharacterStats({
+                    getEquipmentState: function () { return IE.getState().equipment; },
+                    getSkillsState: function () { return IE.getState().skills; },
+                    getItemTemplate: IE.getItemTemplate,
+                    getEnchantEntry: IE.getEnchantEntry,
+                    getStrengthLevel: function () { return IE.getSkillLevel('survival_strength'); }
+                });
+            }
+            if (typeof updateStatusPanel === 'function') updateStatusPanel();
+            if (combatPanelOpen) renderCombatModal();
+            renderSpecialModal();
+        }
+
+        var row = document.createElement('div');
+        row.className = 'survival-row';
+        var left = document.createElement('div');
+        left.className = 'survival-name';
+        var name = ui('special.skill.meridian_studies.name');
+        var desc = ui('special.skill.meridian_studies.desc');
+        left.innerHTML = '<div>' + name + '</div><div style="margin-top:4px;font-size:11px;color:#a8a29e;font-weight:500;">' + desc + '</div>';
+
+        var right = document.createElement('div');
+        right.className = 'survival-level';
+        var unlockText = lv >= 1 ? '（已解锁穴位分页）' : '（1级解锁穴位分页）';
+        right.textContent = String(lv) + ' 级 ' + unlockText + ' ';
+
+        var plusBtn = document.createElement('button');
+        plusBtn.type = 'button';
+        plusBtn.className = 'survival-plus-btn';
+        plusBtn.textContent = ui('survival.btn.plus_one');
+        plusBtn.onclick = function () { addSpecialSkillLevel(meridianSkillId, 1); };
+
+        row.appendChild(left);
+        row.appendChild(right);
+        row.appendChild(plusBtn);
+        wrap.appendChild(row);
     }
 
     function renderAcupointModal() {
@@ -6068,6 +8402,7 @@
             left.style.opacity = '0.1';
             left.style.pointerEvents = 'none';
         }
+        renderSpecialModal();
     }
 
     function closeSpecialPanel() {
@@ -6225,6 +8560,10 @@
                         updateRoleNameFromCharacter();
                         syncIntroShellUi();
                         if (window.GameLog) window.GameLog.log('[SaveSystem] loaded realtime save', 'system');
+                    } else {
+                        // 新档默认先走序章；创角仅在林经理首次对话完成后再弹出。
+                        hideCreationOverlay();
+                        syncIntroShellUi();
                     }
                     if (window.InventoryEquipment && typeof window.InventoryEquipment.ensureCombatBasicsMigrated === 'function') {
                         window.InventoryEquipment.ensureCombatBasicsMigrated();
@@ -6610,7 +8949,7 @@
                 var targetX = st.x + ddx;
                 var targetY = st.y + ddy;
 
-                // 固定优先级：敌人攻击 > NPC 对话 > 烹饪台互动 > 普通移动
+                // 固定优先级：敌人攻击 > NPC 对话 > 烹饪台互动 > 制药台互动 > 制肥桶互动 > 普通移动
                 var enemyId = (typeof E.getEnemyAt === 'function') ? E.getEnemyAt(targetX, targetY) : null;
                 if (enemyId) {
                     if (isPreCreationGameplayRestricted()) {
@@ -6663,6 +9002,40 @@
                     }
                     if (typeof openCookingStationPanel === 'function') {
                         openCookingStationPanel();
+                    }
+                    setFacingFromMove(ddx, ddy);
+                    stopGatheringIdle();
+                    return;
+                }
+
+                // 制药台：未绑定设施 NPC 时邻格点台格直接打开面板；已绑定则走上方 interactNpc（闲聊 +「使用制药台」）
+                var pharmacyCell = (typeof E.isPharmacyStationCell === 'function') && E.isPharmacyStationCell(targetX, targetY);
+                var pharmacyBoundNpc = pharmacyCell && typeof E.getPharmacyStationInteractNpcId === 'function'
+                    ? E.getPharmacyStationInteractNpcId(targetX, targetY)
+                    : null;
+                if (pharmacyCell && !pharmacyBoundNpc) {
+                    if (window.SceneCtx && typeof window.SceneCtx.exitFootworkNieBuMode === 'function') {
+                        window.SceneCtx.exitFootworkNieBuMode();
+                    }
+                    if (typeof openPharmacyStationPanel === 'function') {
+                        openPharmacyStationPanel();
+                    }
+                    setFacingFromMove(ddx, ddy);
+                    stopGatheringIdle();
+                    return;
+                }
+
+                // 制肥桶：未绑定设施 NPC 时邻格点桶格直接打开面板；已绑定则走上方 interactNpc。
+                var compostCell = (typeof E.isCompostStationCell === 'function') && E.isCompostStationCell(targetX, targetY);
+                var compostBoundNpc = compostCell && typeof E.getCompostStationInteractNpcId === 'function'
+                    ? E.getCompostStationInteractNpcId(targetX, targetY)
+                    : null;
+                if (compostCell && !compostBoundNpc) {
+                    if (window.SceneCtx && typeof window.SceneCtx.exitFootworkNieBuMode === 'function') {
+                        window.SceneCtx.exitFootworkNieBuMode();
+                    }
+                    if (typeof openCompostStationPanel === 'function') {
+                        openCompostStationPanel();
                     }
                     setFacingFromMove(ddx, ddy);
                     stopGatheringIdle();
@@ -7093,9 +9466,15 @@
     window.SceneApp.isPreCreationGameplayRestricted = isPreCreationGameplayRestricted;
     window.SceneApp.tryUseQuickBeltDigit = tryUseQuickBeltDigit;
     window.SceneApp.tryCookAtStation = tryCookAtStation;
+    window.SceneApp.tryPharmacyAtStation = tryPharmacyAtStation;
     window.SceneApp.openCookingStationPanel = openCookingStationPanel;
     window.SceneApp.closeCookingStationPanel = closeCookingStationPanel;
+    window.SceneApp.openPharmacyStationPanel = openPharmacyStationPanel;
+    window.SceneApp.closePharmacyStationPanel = closePharmacyStationPanel;
+    window.SceneApp.openCompostStationPanel = openCompostStationPanel;
+    window.SceneApp.closeCompostStationPanel = closeCompostStationPanel;
     window.SceneApp.isCookingStationPanelBlockedByRepair = isCookingUiBlockedByRepair;
+    window.SceneApp.isPharmacyStationPanelBlockedByRepair = isPharmacyUiBlockedByRepair;
     window.SceneApp.resetCookingStateForNewCharacter = resetCookingStateForNewCharacter;
     window.SceneApp.getKnownCookingRecipeIds = function () {
         var o = window.SceneCtx && window.SceneCtx.known_cooking_recipes;
@@ -7110,6 +9489,17 @@
     };
     window.SceneApp.getCookingStationAccessories = function () {
         return getCookingStationState().installed_accessory_item_ids.slice();
+    };
+    window.SceneApp.getKnownPharmacyRecipeIds = function () {
+        var o = window.SceneCtx && window.SceneCtx.known_pharmacy_recipes;
+        if (!o || typeof o !== 'object') return [];
+        var a = [];
+        var k;
+        for (k in o) {
+            if (Object.prototype.hasOwnProperty.call(o, k) && o[k]) a.push(String(k));
+        }
+        a.sort();
+        return a;
     };
     window.SceneApp.setCookingStationAccessories = function (ids) {
         var s = getCookingStationState();
@@ -7142,6 +9532,11 @@
         markCellDirty(String(mapId || ''), Math.floor(Number(x)), Math.floor(Number(y)));
         if (window.SceneRenderer) window.SceneRenderer.render();
     };
+    window.SceneApp.buildItemTooltipHtml = buildItemTooltipHtml;
+    window.SceneApp.buildItemTooltipHtmlForTemplate = buildItemTooltipHtmlForTemplate;
+    window.SceneApp.formatItemAttributes = formatItemAttributes;
+    window.SceneApp.showItemTooltip = showItemTooltip;
+    window.SceneApp.hideItemTooltip = hideItemTooltip;
     window.SceneApp.executeQuickBarPinnedSlot = executeQuickBarPinnedSlot;
     window.SceneApp.clearQuickBarPinSlot = clearQuickBarPinSlot;
 })();

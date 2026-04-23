@@ -1,0 +1,155 @@
+---
+description: 玩家近战攻敌 raw 伤害链（徒手/兵器底、加性增伤、技艺总熟、实战经验值、成数、资源门闸）— 单一事实源
+globs: "**/js/combat-melee-resolve.js,**/js/combat-skills.js,**/js/character-attributes.js,**/js/inventory-equipment.js,**/data/combat-skills.json,**/data/survival-config.json,**/data/items/*.csv,**/tools/build-items-json.mjs,**/data/ui_text_zhCN.json,**/docs/design/04-combat-exp.md,**/docs/design/11-skills.md,**/docs/design/08-hit-parry-damage.md"
+alwaysApply: false
+---
+
+# 玩家近战攻敌伤害链（`CombatMeleeResolve`）
+
+编辑 **玩家 `resolvePlayerVsEnemyAttack` 的 raw 伤害、底数、增伤 ΣΔ、技艺总熟乘区、实战经验乘区、气力/底气门闸** 或相关数据/文案时，以本节为**硬口径**；**招架 / 敌人减伤 / 同速 dry-run / 先后手** 见 **`.cursor/rules/combat-map-melee-exchange-agent.mdc`**、**`.cursor/rules/combat-initiative-exchange-agent.mdc`** 与 **`combat-pipeline.js`**，本节不重复管线阶段细节。
+
+## 1) 单一实现入口
+
+| 职责 | 位置 |
+|------|------|
+| raw 伤害、命中 roll、部位抽样、底数分支、ΣΔ、技艺总熟、实战经验 F、成数、扣费意图 | **`js/combat-melee-resolve.js`** → **`resolvePlayerVsEnemyAttack`** |
+| `Base(L)`、`getSkillTotalProficiency`、`getMoveProficiencyRatio`、`weapon_simple` | **`js/combat-skills.js`** + **`data/combat-skills.json`** |
+| 实战经验值与 \(F_{\text{实战经验}}\)（每亿 +5%，上限 1000 亿） | **`docs/design/04-combat-exp.md`** + **`js/inventory-equipment.js`**（`combat_experience`、`getCombatExperienceDamageMultiplier` / `addCombatExperience`） |
+| 徒手拳底 `getFistBasePower` | **`js/character-attributes.js`** + **`data/survival-config.json`** → `fist_jingu_divisor` |
+| 兵器底 `weapon_attack_power`、`skill_coef` | **`data/items/*.csv`** → **`node tools/build-items-json.mjs`** → **`data/items.json`** |
+| 伤害链游戏日志 | **`data/ui_text_zhCN.json`**（`log.combat.resolve.*`）；缺 key 时 **`UIText`** 强校验会抛错 |
+
+**禁止**：在 `scene-app` / 管线里再写一套与上表冲突的「第二套 raw 公式」（测试桩除外）。
+
+## 2) 总公式（raw，管线前）
+
+\[
+\text{raw}=\max\!\Bigl(0,\;B_{\text{底}}\times\text{增伤}\times(1+R_{\text{skill\_total}})\times F_{\text{实战经验}}\times\frac{k}{10}\Bigr)
+\]
+
+- **\(F_{\text{实战经验}}\)**：`InventoryEquipment.getCombatExperienceDamageMultiplier()`，即 **\(1 + \frac{\text{clamp}(\text{combat\_experience})}{10^8}\times 0.05\)**（见 **`04-combat-exp.md`**）。
+- **\(k\)**：槽位成数，招式 `power_level_min/max` 内夹紧；**\(k/10\)** 参与乘算。
+- **资源门闸**：若本击意图扣的 **气力或底气** 任一当前值不足意图量，**强制 `raw=0`**（流程仍走；与「资源不足仍出手」设计一致）。
+
+## 3) 底数 \(B_{\text{底}}\)（按技能 `category`）
+
+| `category` | 底数来源 |
+|--------------|----------|
+| **`unarmed`** | **`CharacterAttributes.getFistBasePower()`** → `max(0, 有效筋骨 jingu / fist_jingu_divisor)`，除数默认 **5**（`survival-config` → `CharacterAttributes.setConfig`） |
+| **`weapon`** | **`getWeaponAttackPowerForLimb(IE, limbId)`**：`lhand`→`equipment.weapon_left`，`rhand`→`weapon_right`；读模板 **`weapon_attack_power`**，缺省试 **`attack_power`**；无装备/无字段为 **0**。**脚位**无持兵槽 → 底 **0**，并记 **`log.combat.resolve.weapon_foot_base`** |
+| **其它** | 暂回落 **`getFistBasePower()`** 并 **`log.combat.resolve.weapon_fallback`**（待专用技能/底数） |
+
+## 4) 增伤（加性块，**含招式熟练度 \(R_{\text{move}}\)**）
+
+\[
+\text{增伤}=1+\sum(x-1)+R_{\text{move}}
+\]
+
+展开为：
+
+\[
+\text{增伤}=1+(Base(L)-1)+(b-1)+(M-1)+(G-1)+(K_{\text{pr}}-1)+(\text{dom}-1)+R_{\text{move}}
+\]
+
+| 符号 | 含义 |
+|------|------|
+| \(Base(L)\) | **`CombatSkills.getBasePower(skillId, L)`**；`base_power_curve` 为 **`unarmed_simple`** 或 **`weapon_simple`**（线性 `mult_at_1`→`mult_at_max`；兵器常数缺省回落徒手常数）。**未识别曲线时**实现将 `Base` **夹成 1** → \((Base-1)=0\) |
+| \(b\) | 挂载呼吸时 **`getBreathPowerMultiplier`**，否则 **1** |
+| \(M\) | 招式 **`move_power_multiplier`**，缺省 **1** |
+| \(G\) | **`unarmed`**：**手套/鞋**槽 `skill_coef`（`getSkillCoefForLimb`）。**`weapon`**：同肢 **武器槽** 模板 `skill_coef`（`getWeaponSkillCoefForLimb`），**不**读手套参与 G |
+| \(K_{\text{pr}}\) | 仅 **`move_id === 'swing_punch'`**：`1 + 0.05 × buff_probe 层数`；否则 **1** |
+| dom | **`getDominantLimbMultiplier(glove_left/right…)`**（仍按**手套左右槽**映射惯用肢，与是否兵器无关） |
+| \(R_{\text{move}}\) | **`getMoveProficiencyRatio(该招式使用次数)`**，满次数见 **`move_proficiency_max_uses`**（默认 50000） |
+
+**夹紧**：`增伤` 计算后 **`max(0, 增伤)`**；非法分量已各处分项兜底。
+
+## 5) 技艺总熟（独立乘区，勿称「实战经验」）
+
+\[
+\text{技艺总熟乘子}=1+R_{\text{skill\_total}},\quad R_{\text{skill\_total}}=\texttt{CombatSkills.getSkillTotalProficiency(skillId,\;move\_usage)}
+\]
+
+- **`move_usage`**：该技能在存档 **`skillsState[skillId].move_usage`** 的对象（含各 `move_id` 与 `hub_actions` 等键）。
+- **`getSkillTotalProficiency`**：对 `moves` + 非 `exclude_from_skill_total_proficiency` 的 `hub_actions` 各算熟练比例再**算术平均**；步法恒 0、招架/呼吸有特殊键逻辑（见 **`combat-skills.js`**）。
+- **\(R_{\text{skill\_total}}\)** 实现侧再 **夹到 `[0,1]`**。
+
+## 5b) 实战经验 \(F_{\text{实战经验}}\)（独立乘区）
+
+- **单一来源**：**`docs/design/04-combat-exp.md`**；存档字段 **`state.combat_experience`**（`InventoryEquipment` 顶层，与 **`getState`/`setState`** 同步）。
+- **乘子**：**`getCombatExperienceDamageMultiplier()`** = **\(1 + \frac{\min(\text{值},\,10^{11})}{10^8}\times 0.05\)**（每 1 亿 +5% 全局伤害；上限 1000 亿）。
+- **累加入口**：**`addCombatExperience(delta)`**（战斗胜利等系统调用；本文件不规定单次发多少经验）。
+
+**与文档**：`docs/design/11-skills.md` 中旧记号 \(Base(L)(1+R_{\text{move}})\) 与当前「\(R_{\text{move}}\) 进增伤 + 技艺总熟 + 实战经验」可能并存为**叙述层**；改实现须同步该文档相关小节。
+
+## 6) `resolvePlayerVsEnemyAttack` 返回值（调试/下游）
+
+| 字段 | 含义 |
+|------|------|
+| **`baseFist`** | 实为 **底数** \(B_{\text{底}}\)（历史字段名，徒手/兵器共用） |
+| **`wCoef`** | **增伤**（不含底数、不含技艺总熟/实战经验、不含成数） |
+| **`skillTotalMult`** | **\(1+R_{\text{skill\_total}}\)** |
+| **`expMult`** | **\(F_{\text{实战经验}}\)** |
+| **`combatExperience`** | 当前累计实战经验值（整数，用于日志） |
+| **`wSkill`** | `增伤 × skillTotalMult × expMult`（仍不含底与成数） |
+| **`moveProfRatio`** / **`skillTotalProfRatio`** | \(R_{\text{move}}\)、\(R_{\text{skill\_total}}\) |
+| **`typedDamage`** | 三类型分量 `{ blunt, slash, pierce }`（主公式后处理结果；供管线按类型减伤） |
+
+## 6b) 三类型伤害后处理（新增硬口径）
+
+> 作用范围：主公式得到 `rawDamage` 与 `damageType` 之后、进入管线减伤之前。
+
+### 结算顺序（固定）
+
+1. 初始化 `typedDamage={blunt:0,slash:0,pierce:0}`，把 `rawDamage` 注入 `typedDamage[damageType]`。
+2. 前置注入（标签后、增伤前）：
+   - 固定加成：`add_flat[target] += X`
+   - 百分比派生：`add_from_pct[target] += typed[source] * pct`
+3. 首轮类型增伤：`typed[t] *= (1 + increase_pct[t])`。
+4. 单向转换（仅两条）：
+   - `blunt -> slash`
+   - `slash -> pierce`
+   - 同源同目标多条转换先求和，再一次转换（sum once）。
+5. 转换后二次增伤：只对“本轮新增的目标类型分量”再乘该类型 `increase_pct`。
+6. `rawDamage = typed.blunt + typed.slash + typed.pierce`，进入 `combat-pipeline`。
+
+### 强约束
+
+- 禁止任何反向转换（如 `slash -> blunt`、`pierce -> slash`），避免递归套娃。
+- 类型后处理阶段全程保留小数；仅最终 `finalDamage` 落地时 `floor`。
+- 管线减伤必须按三类型分量分别结算并汇总；不得回退为“单一 `damageType` 统一 M 系数”。
+
+### 数据字段约定（供策划/实现）
+
+- 推荐统一字段：`damage_type_effects`
+- 结构：
+  - `add_flat: { blunt, slash, pierce }`
+  - `add_from_pct: [{ source, target, pct }]`
+  - `increase_pct: { blunt, slash, pierce }`
+  - `convert_pct: { blunt_to_slash, slash_to_pierce }`
+- `pct` 支持 `0.2` 或 `20`，运行时需归一化成 0～1 比例。
+
+## 7) 日志与 `ui_text`
+
+- 主链：**`log.combat.resolve.chain`**，占位含 **`baseTag`**、**`zEng`**、**`addD`**、**`zSkillTot`**、**`rSkill`**、**`zExp`**、**`rCombatExp`**、**`rMove`** 等。
+- 其它：**`log.combat.resolve.base_tag_*`**、**`weapon_foot_base`**、**`weapon_fallback`**。
+
+**新增或改占位符必须先补 `data/ui_text_zhCN.json`**。
+
+## 8) 兵器数据与占位技能
+
+- CSV 列 **`weapon_attack_power`**、**`skill_coef`** 由 **`tools/build-items-json.mjs`** 写入 JSON；改 CSV 后**必须**跑构建。
+- 占位兵器技能 id：**`combat_basic_weapon_melee`**（`category: weapon`，`base_power_curve: weapon_simple`）；未接入解锁流程前勿默认塞进开局。
+
+## 9) 与管线、熟练度计数的关系
+
+- **raw** 仅管线输入；**招架、敌人 `inner/body`、部位×伤害类型、取整** 在 **`combat-pipeline.js`**（见 **`08-hit-parry-damage.md`**）。
+- **招式使用次数 / 熟练度** 的递增时机仍以 **`InventoryEquipment.adjustSkillMoveUsage`** 与 **`combat-skills-proficiency-agent.mdc`** 为准；**勿**在 `resolve` 内私自写第二套计数。
+
+## 10) 自检清单（agent 提交前）
+
+1. 改公式后 **`log.combat.resolve.chain`** 占位与 **`ui_text`** 是否一致？
+2. **`weapon`** 与 **`unarmed`** 的 **G** 与 **底数** 是否仍分流正确？
+3. **`getBasePower`** 新曲线是否只在 **`combat-skills.js`** 扩展，且 JSON 有 `base_power_curve`？
+4. 改物品战斗字段是否走 **CSV + build-items-json**，避免只手改 **`items.json`** 被覆盖？
+5. 三类型后处理是否严格遵守「注入 → 首轮增伤 → 单向转换 → 二次增伤」顺序？
+6. 是否保证仅 `finalDamage` 处取整，且禁用反向转换？

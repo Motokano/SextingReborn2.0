@@ -9,27 +9,14 @@
     var MOVE_ID_ENEMY_ATTACK = 'enemy_counter_strike';
 
     /**
-     * 从战斗配置中取当前招式槽对应的后遗症 id 列表（与槽位对齐）。
+     * 从战斗配置中取当前肢体装配的后遗症 id 列表（肢体级）。
      */
     function getPostEffectIdsForMoveSlot(IE, limbId, skillId, moveId) {
         if (!IE || typeof IE.getCombatState !== 'function' || !limbId || !skillId || !moveId) return [];
         var c = IE.getCombatState();
-        if (!c || !c.move_sequences || !c.post_effect_sequences) return [];
-        var seq = c.move_sequences[limbId];
-        if (!Array.isArray(seq)) return [];
-        var idx = -1;
-        var i;
-        for (i = 0; i < seq.length; i++) {
-            if (seq[i] === moveId) {
-                idx = i;
-                break;
-            }
-        }
-        if (idx < 0) return [];
-        var pmap = c.post_effect_sequences[limbId] && c.post_effect_sequences[limbId][skillId];
-        if (!Array.isArray(pmap) || idx >= pmap.length) return [];
-        var pid = pmap[idx];
-        return pid ? [pid] : [];
+        if (!c || !c.post_effect_sequences) return [];
+        var pid = c.post_effect_sequences[limbId];
+        return pid ? [String(pid)] : [];
     }
 
     function hasInitiativeAlwaysFirstAmong(postEffectIds, skillId, moveId) {
@@ -50,6 +37,7 @@
 
     /**
      * 玩家发起普攻交换时的先后手（不含连击多段，由上层按段重复调用或扩展）。
+     * 约定：**先**按取整速度比较先后/同速；**再**叠玩家/敌方 `initiative_always_first` 类后遗症（`attackerPostEffectIds` 依赖本击**已确定**的出招肢与招式槽；地图普攻敌先还击时在 `attackEnemy` 内须推迟到二次选肢后，见 `07-combat-core`）。
      * @param {object} o
      * @param {number} o.playerSpeed 取整后
      * @param {number} o.enemySpeed 取整后
@@ -71,22 +59,37 @@
         var sk = o.skillId || '';
         var mv = o.moveId || '';
 
-        var atkForced = hasInitiativeAlwaysFirstAmong(atkP, sk, mv);
-        var defForced = false;
+        var atkForcedRaw = hasInitiativeAlwaysFirstAmong(atkP, sk, mv);
+        var defForcedRaw = false;
         var di;
         for (di = 0; di < defP.length; di++) {
             var dpe = defP[di] && global.CombatPostEffects && global.CombatPostEffects.getPostEffect(defP[di]);
             if (dpe && dpe.effect_type === 'initiative_always_first') {
-                defForced = true;
+                defForcedRaw = true;
                 break;
             }
         }
 
         var canceled = false;
+        var atkForced = atkForcedRaw;
+        var defForced = defForcedRaw;
         if (atkForced && defForced) {
             canceled = true;
             atkForced = false;
             defForced = false;
+        }
+
+        var mode;
+        var firstStrike;
+        if (Vp > Ve) {
+            mode = 'sequential';
+            firstStrike = 'player';
+        } else if (Ve > Vp) {
+            mode = 'sequential';
+            firstStrike = 'enemy';
+        } else {
+            mode = 'simultaneous';
+            firstStrike = 'player';
         }
 
         if (atkForced) {
@@ -96,10 +99,7 @@
             return { mode: 'sequential', firstStrike: 'enemy', attackerForced: false, defenderForced: true, canceledForced: canceled };
         }
 
-        if (Vp > Ve) return { mode: 'sequential', firstStrike: 'player', attackerForced: false, defenderForced: false, canceledForced: canceled };
-        if (Ve > Vp) return { mode: 'sequential', firstStrike: 'enemy', attackerForced: false, defenderForced: false, canceledForced: canceled };
-
-        return { mode: 'simultaneous', firstStrike: 'player', attackerForced: false, defenderForced: false, canceledForced: canceled };
+        return { mode: mode, firstStrike: firstStrike, attackerForced: false, defenderForced: false, canceledForced: canceled };
     }
 
     function getEnemyAttackSkillId() {

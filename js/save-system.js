@@ -32,6 +32,8 @@
     var inSave = false;
     var saveGeneration = 0;
     var patched = false;
+    // 清档后在本次会话内禁止任何本地回写，避免「已排队 autosave」立刻把旧档写回。
+    var persistSuspended = false;
 
     // ---------------------------
     // Utilities
@@ -174,7 +176,8 @@
             Gathering: global.Gathering,
             EntityAppearance: global.EntityAppearance,
             BuffSystem: global.BuffSystem,
-            NPCSystem: global.NPCSystem
+            NPCSystem: global.NPCSystem,
+            CompostSystem: global.CompostSystem
         };
     }
 
@@ -318,6 +321,11 @@
             } catch (e3) { buffsPersist = null; }
         }
 
+        var compostPersist = null;
+        if (mods.CompostSystem && typeof mods.CompostSystem.getState === 'function') {
+            try { compostPersist = mods.CompostSystem.getState(); } catch (eCompost) { compostPersist = null; }
+        }
+
         return {
             schemaVersion: SCHEMA_VERSION,
             saveGeneration: saveGeneration,
@@ -333,7 +341,8 @@
                 npcDemo: npcDemo,
                 sceneUi: sceneUiPersist
             },
-            buffs: buffsPersist
+            buffs: buffsPersist,
+            compost: compostPersist
         };
     }
 
@@ -399,6 +408,9 @@
 
         if (snapshot.buffs && mods.BuffSystem && typeof mods.BuffSystem.setState === 'function') {
             try { mods.BuffSystem.setState(snapshot.buffs); } catch (e4) { /* ignore */ }
+        }
+        if (snapshot.compost && mods.CompostSystem && typeof mods.CompostSystem.setState === 'function') {
+            try { mods.CompostSystem.setState(snapshot.compost); } catch (eCompost) { /* ignore */ }
         }
 
         if (global.SceneCtx && snapshot.player && snapshot.player.sceneUi) {
@@ -708,6 +720,7 @@
     };
 
     function persistRealtime(snapshot) {
+        if (persistSuspended) return false;
         try {
             localStorage.setItem(realtimeKey, JSON.stringify(snapshot));
             return true;
@@ -756,6 +769,7 @@
     }
 
     function maybeAutoSave() {
+        if (persistSuspended) return;
         if (!enableAutoSave) return;
         if (inLoad || inSave) return;
         if (!global.GameTime || typeof global.GameTime.getState !== 'function') return;
@@ -828,6 +842,7 @@
     };
 
     SaveSystem.saveNow = function () {
+        if (persistSuspended) return false;
         if (inLoad || inSave) return false;
         inSave = true;
         try {
@@ -873,6 +888,8 @@
      * 并重置内存中的存档世代计数，避免清空后仍被旧世代规则误伤。
      */
     SaveSystem.clearAllLocalProgress = function () {
+        persistSuspended = true;
+        enableAutoSave = false;
         var anyFail = false;
         function rm(key) {
             try {
@@ -882,6 +899,7 @@
             }
         }
         rm(realtimeKey);
+        if (realtimeKey !== DEFAULT_REALTIME_KEY) rm(DEFAULT_REALTIME_KEY);
         rm(NPC_DEMO_FLAGS_KEY);
         rm(NPC_DEMO_TRIGGERED_KEY);
         lastSavedTotalTicks = null;

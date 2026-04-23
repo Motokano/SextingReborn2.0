@@ -1,0 +1,630 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>堆肥设施 UI 交互体验报告</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <!-- Chosen Palette: Warm Neutrals -->
+    <!-- Application Structure Plan: This SPA serves as an interactive specification dashboard. It uses a light, warm-neutral outer shell to present the documentation, contrasting with the dark-themed "Interactive Prototype Simulator" inside. The structure flows logically: 1. Architecture Overview (mental model), 2. Playable Simulator (hands-on experience), 3. Data Visualization (temporal analysis of mechanics), and 4. Design System (visual rules). This approach allows developers and designers to read the rules and immediately test them in an embedded simulator. -->
+    <!-- Visualization & Content Choices: 1. Interactive Prototype (HTML/JS): Translates static wireframes into a playable mini-game to demonstrate state changes, C/N blind-guessing, and tick-windows without SVG. 2. Tick Event Chart (Chart.js): Visualizes the timeline difference and interaction windows for Aerobic vs Anaerobic processes. 3. Color Token Cards (HTML/CSS): Visualizes the required color palette mappings. -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+
+    <style>
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            background-color: #fafaf9;
+            color: #292524;
+        }
+        
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 900px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 350px;
+            max-height: 400px;
+        }
+
+        .game-ui {
+            background-color: #1A1A1A;
+            color: #E0E0E0;
+            box-shadow: inset 0 0 0 1px rgba(255,255,255,0.05), 0 10px 25px -5px rgba(0, 0, 0, 0.5);
+            font-family: monospace;
+        }
+        
+        .game-btn {
+            transition: all 0.1s;
+        }
+        .game-btn:active:not(:disabled) {
+            transform: scale(0.98);
+        }
+        .game-btn:disabled {
+            background-color: #333333;
+            color: #666666;
+            cursor: not-allowed;
+            border-color: #333;
+        }
+
+        .scroll-custom::-webkit-scrollbar { width: 4px; }
+        .scroll-custom::-webkit-scrollbar-track { background: #1A1A1A; }
+        .scroll-custom::-webkit-scrollbar-thumb { background: #333; border-radius: 2px; }
+
+        .dashed-divider {
+            border-top: 1px dashed rgba(224, 224, 224, 0.2);
+        }
+        
+        .nav-tab-active { border-bottom: 2px solid #B8860B; color: #B8860B; }
+        .nav-tab-inactive { color: #808080; }
+    </style>
+</head>
+<body class="min-h-screen pb-20">
+
+    <header class="bg-white shadow-sm border-b border-stone-200 sticky top-0 z-50">
+        <div class="max-w-6xl mx-auto px-4 py-4 flex justify-between items-center">
+            <div>
+                <h1 class="text-2xl font-bold text-stone-800 tracking-tight">🌿 堆肥设施交互白皮书</h1>
+                <p class="text-sm text-stone-500 mt-1">基于《堆肥/沤肥 UI/UX 设计方案》的动态演示</p>
+            </div>
+            <nav class="hidden md:flex gap-6">
+                <button onclick="document.getElementById('sec-arch').scrollIntoView({behavior: 'smooth'})" class="text-stone-600 hover:text-stone-900 font-medium transition-colors">架构与流程</button>
+                <button onclick="document.getElementById('sec-sim').scrollIntoView({behavior: 'smooth'})" class="text-stone-600 hover:text-stone-900 font-medium transition-colors">原型模拟器</button>
+                <button onclick="document.getElementById('sec-chart').scrollIntoView({behavior: 'smooth'})" class="text-stone-600 hover:text-stone-900 font-medium transition-colors">时间轴分析</button>
+                <button onclick="document.getElementById('sec-design').scrollIntoView({behavior: 'smooth'})" class="text-stone-600 hover:text-stone-900 font-medium transition-colors">视觉规范</button>
+            </nav>
+        </div>
+    </header>
+
+    <main class="max-w-6xl mx-auto px-4 mt-8 space-y-12">
+
+        <section id="sec-arch" class="bg-white p-6 md:p-8 rounded-xl shadow-sm border border-stone-100">
+            <div class="mb-6">
+                <h2 class="text-2xl font-bold text-stone-800 border-l-4 border-stone-800 pl-3">信息架构与业务流程</h2>
+                <p class="text-stone-600 mt-3 leading-relaxed">
+                    本区块展示了设施界面的核心布局逻辑与状态机约束。根据设计方案，UI必须采用“三段式”纵向布局，并严格遵循“文本呈现为主、隐藏数值化熟练度”的硬约束。此架构确保玩家能在一个视图内完成从投料、监控到收取的全周期操作，且关键阻断（如未清空产物禁止开始）具有极强的可见性。
+                </p>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="bg-stone-50 p-5 rounded-lg border border-stone-200">
+                    <h3 class="font-bold text-stone-800 mb-3 text-lg flex items-center gap-2"><span>📥</span> 左侧：投入与感知</h3>
+                    <ul class="space-y-2 text-sm text-stone-600 list-disc pl-4">
+                        <li>展示当前投入的物料清单条目。</li>
+                        <li>提供基于 C/N (碳氮比) 的盲投感知反馈文案。</li>
+                        <li>5档颜色语义实时变化，指导玩家配比。</li>
+                    </ul>
+                </div>
+                <div class="bg-stone-50 p-5 rounded-lg border border-stone-200">
+                    <h3 class="font-bold text-stone-800 mb-3 text-lg flex items-center gap-2"><span>⚙️</span> 中央：过程与记录</h3>
+                    <ul class="space-y-2 text-sm text-stone-600 list-disc pl-4">
+                        <li>显示发酵总进度与当前状态描述。</li>
+                        <li>滚动显示系统日志与环境事件记录。</li>
+                        <li>在特定 Tick 窗口弹出交互按钮（翻堆/放气）。</li>
+                    </ul>
+                </div>
+                <div class="bg-stone-50 p-5 rounded-lg border border-stone-200">
+                    <h3 class="font-bold text-stone-800 mb-3 text-lg flex items-center gap-2"><span>🎁</span> 右侧：产出与结算</h3>
+                    <ul class="space-y-2 text-sm text-stone-600 list-disc pl-4">
+                        <li>发酵结束后展示生成的产物列表。</li>
+                        <li>提供全部收取与放弃残渣功能。</li>
+                        <li>若槽内有遗留物，将触发全局互斥，阻止新批次开始。</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <section id="sec-sim" class="bg-stone-900 p-4 md:p-8 rounded-xl shadow-2xl">
+            <div class="mb-6 text-stone-300">
+                <h2 class="text-2xl font-bold text-white border-l-4 border-[#B8860B] pl-3">高保真原型模拟器</h2>
+                <p class="text-stone-400 mt-3 text-sm leading-relaxed">
+                    此模拟器是设计方案的直接可玩化体现。它应用了文档中规定的深色暗调视觉宇宙（#1A1A1A背景，去图标化设计）。您可以在此体验 C/N 盲投的文案反馈变化，以及在发酵过程中如何捕获“翻堆”与“放气”事件窗口。请注意观察操作失败和阻断状态时的系统文本提示。
+                </p>
+            </div>
+
+            <div class="game-ui rounded-lg border border-[#333] flex flex-col mx-auto max-w-5xl h-[650px] relative">
+                
+                <div id="sim-blocker" class="absolute inset-0 bg-black/80 z-10 hidden flex-col items-center justify-center rounded-lg">
+                    <div class="text-[#CD5C5C] text-xl font-bold mb-4">⚠️ 阻断拦截</div>
+                    <div class="text-[#E0E0E0] mb-6" id="sim-blocker-msg">无法开始：产出槽内仍有旧批次的遗留物。</div>
+                    <button onclick="document.getElementById('sim-blocker').classList.add('hidden')" class="game-btn border border-[#E0E0E0] px-6 py-2 text-sm">确认</button>
+                </div>
+
+                <div class="flex items-end px-6 pt-4 pb-2 dashed-divider border-b">
+                    <div class="flex gap-6 flex-1 cursor-pointer select-none">
+                        <div class="nav-tab-active pb-2 px-1 text-base font-bold" onclick="simSwitchTab('aerobic')" id="tab-aerobic">[ 好氧堆肥 ]</div>
+                        <div class="nav-tab-inactive pb-2 px-1 text-base font-bold" onclick="simSwitchTab('anaerobic')" id="tab-anaerobic">[ 厌氧沤肥 ]</div>
+                    </div>
+                    <div class="text-[#808080] text-xs hidden md:block">设施编号: CF-001 | 环温: 24°C | 熟练度: 隐藏</div>
+                </div>
+
+                <div class="flex flex-1 overflow-hidden flex-col md:flex-row">
+                    
+                    <div class="w-full md:w-1/3 p-4 flex flex-col border-r border-[#333] dashed-divider">
+                        <h3 class="text-[#808080] mb-3">【 当前投入物料 】</h3>
+                        <div class="flex-1 overflow-y-auto scroll-custom space-y-1" id="ui-mat-list">
+                        </div>
+                        
+                        <div class="mt-4 pt-4 dashed-divider">
+                            <div class="text-[#808080] mb-2 text-xs">背包模拟 (点击投入)</div>
+                            <div class="grid grid-cols-2 gap-2">
+                                <button onclick="simAddMaterial('枯枝干草', 10, 1)" class="game-btn border border-[#333] hover:bg-[#333] py-1.5 text-[#E0E0E0] text-xs">+ 枯枝干草 (高碳)</button>
+                                <button onclick="simAddMaterial('厨余残渣', 2, 5)" class="game-btn border border-[#333] hover:bg-[#333] py-1.5 text-[#E0E0E0] text-xs">+ 厨余残渣 (高氮)</button>
+                                <button onclick="simAddMaterial('木屑', 15, 0.5)" class="game-btn border border-[#333] hover:bg-[#333] py-1.5 text-[#E0E0E0] text-xs">+ 木屑 (极高碳)</button>
+                                <button onclick="simClearMaterials()" class="game-btn border border-[#CD5C5C] text-[#CD5C5C] hover:bg-[#CD5C5C] hover:text-white py-1.5 text-xs">清空物料</button>
+                            </div>
+                            <div class="mt-4 p-3 bg-[#111] rounded border border-[#333] min-h-[60px] flex flex-col justify-center">
+                                <span class="text-[#808080] text-xs mb-1">感知反馈：</span>
+                                <span id="ui-cn-text" class="text-[#E0E0E0] text-sm">空槽，等待物料投入。</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="w-full md:w-1/3 p-4 flex flex-col border-r border-[#333] dashed-divider">
+                        <h3 class="text-[#808080] mb-3">【 发酵进程记录 】</h3>
+                        <div class="mb-4">
+                            <div class="flex justify-between text-xs mb-1">
+                                <span id="ui-prog-state" class="text-[#E0E0E0]">状态：[ 等待开始 ]</span>
+                                <span id="ui-prog-pct" class="text-[#B8860B]">0%</span>
+                            </div>
+                            <div class="w-full bg-[#333] h-1.5 rounded-full overflow-hidden">
+                                <div id="ui-prog-bar" class="bg-[#B8860B] h-full transition-all duration-200" style="width: 0%"></div>
+                            </div>
+                            <div class="text-right text-[#808080] text-[10px] mt-1 font-mono">
+                                Tick: <span id="ui-tick-cur">0</span> / <span id="ui-tick-max">288</span>
+                            </div>
+                        </div>
+
+                        <div class="text-[#808080] mb-1 text-xs">系统日志：</div>
+                        <div class="flex-1 bg-[#0a0a0a] border border-[#333] p-2 overflow-y-auto scroll-custom font-mono text-[11px] space-y-1.5" id="ui-log">
+                        </div>
+
+                        <div class="mt-4 pt-4 dashed-divider h-24 flex flex-col justify-center items-center relative">
+                            <div id="ui-action-prompt" class="text-[#808080] text-sm mb-2">-- 暂无交互窗口 --</div>
+                            <button id="btn-interact" disabled onclick="simInteract()" class="game-btn border border-[#D2A270] text-[#D2A270] px-10 py-1.5 rounded text-sm hidden shadow-[0_0_10px_rgba(210,162,112,0.2)]">立即翻堆</button>
+                        </div>
+                    </div>
+
+                    <div class="w-full md:w-1/3 p-4 flex flex-col">
+                        <h3 class="text-[#808080] mb-3">【 结算产出 】</h3>
+                        <div class="flex-1 overflow-y-auto scroll-custom space-y-2" id="ui-out-list">
+                            <div class="text-[#666] text-center mt-10 text-sm" id="ui-out-empty">(等待产出...)</div>
+                        </div>
+                        
+                        <div class="mt-4 pt-4 dashed-divider">
+                            <button id="btn-collect" disabled onclick="simCollect()" class="w-full game-btn border border-[#6B8E23] text-[#6B8E23] hover:bg-[#6B8E23] hover:text-[#1A1A1A] py-2.5 mb-3 disabled:border-[#333] disabled:text-[#666] disabled:hover:bg-transparent text-sm font-bold">全部收取</button>
+                            <button id="btn-discard" disabled onclick="simDiscard()" class="w-full game-btn border border-[#808080] text-[#808080] hover:bg-[#333] py-2 disabled:border-[#333] disabled:text-[#666] disabled:hover:bg-transparent text-xs">清理残渣 (丢弃)</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="p-4 border-t border-[#333] flex justify-between items-center bg-[#111] rounded-b-lg dashed-divider">
+                    <div id="ui-footer-msg" class="text-[#E0E0E0] text-xs">就绪，请先投入物料。</div>
+                    <div class="flex gap-4">
+                        <button id="btn-stop" disabled onclick="simStop()" class="game-btn border border-[#CD5C5C] text-[#CD5C5C] hover:bg-[#CD5C5C]/10 px-6 py-1.5 text-sm disabled:border-[#333] disabled:text-[#666]">强行终止</button>
+                        <button id="btn-start" onclick="simStart()" class="game-btn bg-[#B8860B] text-[#1A1A1A] hover:bg-[#D4AF37] font-bold px-8 py-1.5 text-sm disabled:bg-[#333] disabled:text-[#666]">确认发酵</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="sec-chart" class="bg-white p-6 md:p-8 rounded-xl shadow-sm border border-stone-100">
+            <div class="mb-6">
+                <h2 class="text-2xl font-bold text-stone-800 border-l-4 border-stone-800 pl-3">发酵时间轴与交互频率分析</h2>
+                <p class="text-stone-600 mt-3 leading-relaxed">
+                    此动态图表直观对比了“堆肥（288 Tick）”与“沤肥（1008 Tick）”的底层数学模型。图中的峰值波段代表系统判定的“交互窗口期”。玩家必须在此波段内点击界面上的操作按钮。错失窗口将导致隐藏的 score 变量扣减，最终影响产出质量。
+                </p>
+            </div>
+            
+            <div class="chart-container border border-stone-200 rounded-lg p-4 bg-white shadow-inner">
+                <canvas id="timelineChart"></canvas>
+            </div>
+        </section>
+
+        <section id="sec-design" class="bg-white p-6 md:p-8 rounded-xl shadow-sm border border-stone-100 mb-12">
+            <div class="mb-6">
+                <h2 class="text-2xl font-bold text-stone-800 border-l-4 border-stone-800 pl-3">UI 组件与色彩语义映射</h2>
+                <p class="text-stone-600 mt-3 leading-relaxed">
+                    由于核心约束要求“去图标化”并“以文本为主”，界面颜色的语义传递变得至关重要。以下展示了方案中定义的5个色彩基准，这些颜色通过纯粹的十六进制代码应用于文本和边框，替代了传统的图标警告系统。
+                </p>
+            </div>
+
+            <div class="grid grid-cols-2 md:grid-cols-5 gap-4 mb-8">
+                <div class="bg-stone-50 border border-stone-200 rounded p-4 text-center shadow-sm">
+                    <div class="w-12 h-12 rounded bg-[#1A1A1A] mx-auto mb-3 shadow-inner border border-stone-300"></div>
+                    <div class="text-stone-800 font-mono text-sm font-bold">#1A1A1A</div>
+                    <div class="text-stone-500 text-xs mt-1">Main (背景板)</div>
+                </div>
+                <div class="bg-stone-50 border border-stone-200 rounded p-4 text-center shadow-sm">
+                    <div class="w-12 h-12 rounded bg-[#E0E0E0] mx-auto mb-3 shadow-inner border border-stone-300"></div>
+                    <div class="text-stone-800 font-mono text-sm font-bold">#E0E0E0</div>
+                    <div class="text-stone-500 text-xs mt-1">Normal (常规信息)</div>
+                </div>
+                <div class="bg-stone-50 border border-stone-200 rounded p-4 text-center shadow-sm">
+                    <div class="w-12 h-12 rounded bg-[#B8860B] mx-auto mb-3 shadow-inner border border-stone-300"></div>
+                    <div class="text-stone-800 font-mono text-sm font-bold">#B8860B</div>
+                    <div class="text-stone-500 text-xs mt-1">Sub (进度/激活)</div>
+                </div>
+                <div class="bg-stone-50 border border-stone-200 rounded p-4 text-center shadow-sm">
+                    <div class="w-12 h-12 rounded bg-[#6B8E23] mx-auto mb-3 shadow-inner border border-stone-300"></div>
+                    <div class="text-stone-800 font-mono text-sm font-bold">#6B8E23</div>
+                    <div class="text-stone-500 text-xs mt-1">Success (完美产出)</div>
+                </div>
+                <div class="bg-stone-50 border border-stone-200 rounded p-4 text-center shadow-sm">
+                    <div class="w-12 h-12 rounded bg-[#CD5C5C] mx-auto mb-3 shadow-inner border border-stone-300"></div>
+                    <div class="text-stone-800 font-mono text-sm font-bold">#CD5C5C</div>
+                    <div class="text-stone-500 text-xs mt-1">Alert (危险废档)</div>
+                </div>
+            </div>
+
+            <div class="bg-stone-50 border border-stone-200 rounded-lg p-6 shadow-sm">
+                <h3 class="font-bold text-stone-800 mb-4 text-lg">文案结构规范执行</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="border-l-2 border-[#6B8E23] pl-4">
+                        <div class="text-xs text-stone-500 mb-1">C/N 盲投反馈 (成功区间)</div>
+                        <div class="text-sm text-stone-800 font-medium">“物料配比非常平衡，预感会有优质产出。”</div>
+                    </div>
+                    <div class="border-l-2 border-[#CD5C5C] pl-4">
+                        <div class="text-xs text-stone-500 mb-1">C/N 盲投反馈 (致命区间)</div>
+                        <div class="text-sm text-stone-800 font-medium">“物料缺乏关键成分，这只会产出一堆废渣。”</div>
+                    </div>
+                    <div class="border-l-2 border-[#D2A270] pl-4">
+                        <div class="text-xs text-stone-500 mb-1">交互窗口动作提醒</div>
+                        <div class="text-sm text-stone-800 font-medium">“窗口期：气压过高 / 建议翻堆”</div>
+                    </div>
+                    <div class="border-l-2 border-[#333333] pl-4">
+                        <div class="text-xs text-stone-500 mb-1">阻断异常提示</div>
+                        <div class="text-sm text-stone-800 font-medium">“无法开始：产出槽内仍有旧批次的遗留物。”</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <script>
+        const simData = {
+            mode: 'aerobic',
+            materials: [],
+            outputs: [],
+            status: 'IDLE',
+            tick: 0,
+            maxTick: 288,
+            timer: null,
+            score: 0,
+            winIndex: -1,
+            interacted: false,
+            rules: {
+                aerobic: { max: 288, cnTarget: 30, action: '翻堆', win: [{s:48,e:95}, {s:96,e:143}, {s:144,e:191}, {s:192,e:239}, {s:240,e:287}] },
+                anaerobic: { max: 1008, cnTarget: 15, action: '放气', win: [{s:336,e:671}, {s:672,e:1007}] }
+            }
+        };
+
+        function q(id) { return document.getElementById(id); }
+
+        function simSwitchTab(targetMode) {
+            if (simData.status === 'FERMENTING') return;
+            simData.mode = targetMode;
+            simData.maxTick = simData.rules[targetMode].max;
+            
+            if (targetMode === 'aerobic') {
+                q('tab-aerobic').className = 'nav-tab-active pb-2 px-1 text-base font-bold';
+                q('tab-anaerobic').className = 'nav-tab-inactive pb-2 px-1 text-base font-bold';
+            } else {
+                q('tab-anaerobic').className = 'nav-tab-active pb-2 px-1 text-base font-bold';
+                q('tab-aerobic').className = 'nav-tab-inactive pb-2 px-1 text-base font-bold';
+            }
+            
+            q('ui-tick-max').innerText = simData.maxTick;
+            simEvalCN();
+        }
+
+        function simAddMaterial(name, c, n) {
+            if (simData.status !== 'IDLE' && simData.status !== 'SETTLED') return;
+            
+            let item = simData.materials.find(m => m.n === name);
+            if (item) item.qty++;
+            else simData.materials.push({n: name, c: c, ni: n, qty: 1});
+            
+            simRenderMats();
+            simEvalCN();
+        }
+
+        function simClearMaterials() {
+            if (simData.status === 'FERMENTING') return;
+            simData.materials = [];
+            simRenderMats();
+            simEvalCN();
+        }
+
+        function simRenderMats() {
+            let html = '';
+            simData.materials.forEach(m => {
+                html += `<div class="flex justify-between border-b border-[#333] py-1 border-dashed text-xs"><span>• ${m.n}</span><span class="text-[#808080]">x${m.qty}</span></div>`;
+            });
+            q('ui-mat-list').innerHTML = html;
+        }
+
+        function simEvalCN() {
+            let tc = 0, tn = 0;
+            simData.materials.forEach(m => { tc += m.c * m.qty; tn += m.ni * m.qty; });
+            
+            let btnStart = q('btn-start');
+            let feedText = q('ui-cn-text');
+            let footMsg = q('ui-footer-msg');
+
+            if (simData.outputs.length > 0) {
+                feedText.innerHTML = '<span class="text-[#CD5C5C]">输出区已被占据，设施锁定。</span>';
+                footMsg.innerHTML = '<span class="text-[#CD5C5C]">无法开始：产出槽内仍有旧批次的遗留物。</span>';
+                btnStart.disabled = true;
+                return;
+            }
+
+            if (tc === 0 && tn === 0) {
+                feedText.innerHTML = '<span class="text-[#808080]">空槽，等待物料投入。</span>';
+                footMsg.innerHTML = '就绪，请先投入物料。';
+                btnStart.disabled = true;
+                return;
+            }
+
+            btnStart.disabled = false;
+            footMsg.innerHTML = '配料完毕，可随时开始发酵。';
+
+            if (tn === 0 || tc === 0) {
+                feedText.innerHTML = '<span class="text-[#CD5C5C]">物料缺乏关键成分，这只会产出一堆废渣。</span>';
+                return;
+            }
+
+            let ratio = tc / tn;
+            let target = simData.rules[simData.mode].cnTarget;
+
+            if (Math.abs(ratio - target) <= 5) {
+                feedText.innerHTML = '<span class="text-[#6B8E23]">物料配比非常平衡，预感会有优质产出。</span>';
+            } else if (ratio > target + 5) {
+                feedText.innerHTML = '<span class="text-[#D2A270]">碳源显著过剩，进程可能极其缓慢。</span>';
+            } else {
+                feedText.innerHTML = '<span class="text-[#D2A270]">氮源过高，存在发臭风险。</span>';
+            }
+        }
+
+        function simLog(msg, color = '#808080') {
+            let t = String(simData.tick).padStart(4, '0') + 't';
+            q('ui-log').innerHTML += `<div><span class="text-[#555]">> ${t}:</span> <span style="color:${color}">${msg}</span></div>`;
+            q('ui-log').scrollTop = q('ui-log').scrollHeight;
+        }
+
+        function simStart() {
+            if (simData.outputs.length > 0) {
+                q('sim-blocker').classList.remove('hidden');
+                return;
+            }
+            if (simData.materials.length === 0) return;
+
+            simData.status = 'FERMENTING';
+            simData.tick = 0;
+            simData.score = 0;
+            simData.winIndex = -1;
+            
+            q('btn-start').disabled = true;
+            q('btn-stop').disabled = false;
+            q('ui-log').innerHTML = '';
+            
+            simLog('启动发酵封存协议...');
+            q('ui-prog-state').innerText = '状态：[ 升温发酵中 ]';
+            
+            simData.timer = setInterval(() => {
+                simData.tick += (simData.mode === 'aerobic' ? 1 : 3); 
+                if(simData.tick > simData.maxTick) simData.tick = simData.maxTick;
+                
+                q('ui-tick-cur').innerText = simData.tick;
+                let pct = Math.floor((simData.tick / simData.maxTick) * 100);
+                q('ui-prog-pct').innerText = pct + '%';
+                q('ui-prog-bar').style.width = pct + '%';
+
+                simCheckWindows();
+
+                if (simData.tick >= simData.maxTick) {
+                    clearInterval(simData.timer);
+                    simEnd(false);
+                }
+            }, 30);
+        }
+
+        function simStop() {
+            clearInterval(simData.timer);
+            simLog('检测到人工强行终止！', '#CD5C5C');
+            simEnd(true);
+        }
+
+        function simCheckWindows() {
+            let windows = simData.rules[simData.mode].win;
+            let currentWin = -1;
+            
+            for (let i = 0; i < windows.length; i++) {
+                if (simData.tick >= windows[i].s && simData.tick <= windows[i].e) {
+                    currentWin = i; break;
+                }
+            }
+
+            let btn = q('btn-interact');
+            let prompt = q('ui-action-prompt');
+            let actName = simData.rules[simData.mode].action;
+
+            if (currentWin !== -1) {
+                if (simData.winIndex !== currentWin) {
+                    simData.winIndex = currentWin;
+                    simData.interacted = false;
+                    prompt.innerHTML = `<span class="text-[#D2A270] animate-pulse">⚠️ 窗口期：需要${actName}</span>`;
+                    btn.classList.remove('hidden');
+                    btn.disabled = false;
+                    btn.innerText = `执行${actName}`;
+                    btn.className = "game-btn border border-[#D2A270] text-[#D2A270] hover:bg-[#D2A270]/20 px-10 py-1.5 rounded text-sm";
+                    simLog(`环境指标异常，建议立即${actName}`, '#D2A270');
+                }
+            } else {
+                if (simData.winIndex !== -1) {
+                    if (!simData.interacted) {
+                        simData.score--;
+                        simLog(`错过了最佳处理时机，发酵质量下降。`, '#CD5C5C');
+                    }
+                    simData.winIndex = -1;
+                    prompt.innerHTML = '<span class="text-[#808080]">-- 平稳演化中 --</span>';
+                    btn.classList.add('hidden');
+                }
+            }
+        }
+
+        function simInteract() {
+            if (simData.status !== 'FERMENTING' || simData.interacted) return;
+            simData.interacted = true;
+            simData.score++;
+            
+            let btn = q('btn-interact');
+            btn.disabled = true;
+            btn.innerText = "已操作";
+            btn.className = "game-btn border border-[#333] text-[#666] px-10 py-1.5 rounded text-sm cursor-not-allowed";
+            simLog(`操作得当，核心环境恢复理想数值。`, '#6B8E23');
+        }
+
+        function simEnd(isAborted) {
+            simData.status = 'SETTLED';
+            q('btn-stop').disabled = true;
+            q('ui-prog-state').innerText = '状态：[ 沉淀结算 ]';
+            q('ui-action-prompt').innerHTML = '<span class="text-[#808080]">-- 批次结束 --</span>';
+            q('btn-interact').classList.add('hidden');
+
+            let outName = "不明废渣", qty = 1, col = "#CD5C5C";
+
+            if (!isAborted) {
+                let tc = 0, tn = 0;
+                simData.materials.forEach(m => { tc += m.c * m.qty; tn += m.ni * m.qty; });
+                let badRatio = (tn === 0 || tc === 0);
+
+                if (badRatio) {
+                    simLog(`因初始配比严重失衡，产生废档产物。`, '#CD5C5C');
+                } else if (simData.mode === 'aerobic') {
+                    if (simData.score >= 2) { outName = "特级好氧堆肥土"; col = "#6B8E23"; qty = 2; }
+                    else if (simData.score >= 0) { outName = "普通有机土"; col = "#E0E0E0"; }
+                    else { outName = "劣质酸化土"; col = "#D2A270"; }
+                } else {
+                    if (simData.score > 0) { 
+                        outName = "高浓缩厌氧沼液"; col = "#6B8E23"; qty = Math.floor(Math.random()*3)+2; 
+                    } else { 
+                        outName = "恶臭残渣"; col = "#CD5C5C"; simLog('获得 DEBUFF [沤肥满身]', '#CD5C5C');
+                    }
+                }
+            }
+
+            simData.materials = [];
+            simRenderMats();
+            simData.outputs.push({n: outName, qty: qty, c: col});
+            simRenderOuts();
+            simEvalCN();
+        }
+
+        function simRenderOuts() {
+            if (simData.outputs.length === 0) {
+                q('ui-out-empty').style.display = 'block';
+                q('ui-out-list').innerHTML = `<div class="text-[#666] text-center mt-10 text-sm" id="ui-out-empty">(等待产出...)</div>`;
+                q('btn-collect').disabled = true;
+                q('btn-discard').disabled = true;
+            } else {
+                q('ui-out-empty').style.display = 'none';
+                let html = '';
+                simData.outputs.forEach(o => {
+                    html += `<div class="flex justify-between border-b border-[#333] py-2 border-dashed text-sm"><span style="color:${o.c}">✦ ${o.n}</span><span class="text-[#808080]">x${o.qty}</span></div>`;
+                });
+                q('ui-out-list').innerHTML = html;
+                q('btn-collect').disabled = false;
+                q('btn-discard').disabled = false;
+            }
+        }
+
+        function simCollect() {
+            if (simData.outputs.length > 0) simLog(`已拾取: ${simData.outputs[0].n} x${simData.outputs[0].qty}`);
+            simData.outputs = [];
+            simRenderOuts();
+            simEvalCN();
+        }
+
+        function simDiscard() {
+            simData.outputs = [];
+            simLog('已销毁槽内所有残留物。', '#808080');
+            simRenderOuts();
+            simEvalCN();
+        }
+
+        const buildChart = () => {
+            const ctx = document.getElementById('timelineChart').getContext('2d');
+            
+            let aeroData = [];
+            for(let i=0; i<=1008; i+=12) {
+                if(i > 288) { aeroData.push(null); continue; }
+                let isWin = simData.rules.aerobic.win.some(w => i >= w.s && i <= w.e);
+                aeroData.push({x: i, y: isWin ? 80 : 30});
+            }
+
+            let anaeData = [];
+            for(let i=0; i<=1008; i+=12) {
+                let isWin = simData.rules.anaerobic.win.some(w => i >= w.s && i <= w.e);
+                anaeData.push({x: i, y: isWin ? 60 : 15});
+            }
+
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    datasets: [
+                        {
+                            label: '好氧堆肥活跃度 (总长288)',
+                            data: aeroData,
+                            borderColor: '#CD5C5C',
+                            backgroundColor: 'rgba(205, 92, 92, 0.1)',
+                            fill: true,
+                            stepped: true,
+                            borderWidth: 2,
+                            pointRadius: 0
+                        },
+                        {
+                            label: '厌氧气压值 (总长1008)',
+                            data: anaeData,
+                            borderColor: '#B8860B',
+                            backgroundColor: 'rgba(184, 134, 11, 0.1)',
+                            fill: true,
+                            stepped: true,
+                            borderWidth: 2,
+                            pointRadius: 0
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: { mode: 'index', intersect: false },
+                    plugins: {
+                        legend: { position: 'top' },
+                        tooltip: {
+                            callbacks: {
+                                label: (ctx) => {
+                                    if(ctx.raw.y > 40) return `⚠️ 交互窗口触发 (${ctx.dataset.label})`;
+                                    return `平稳期`;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: { type: 'linear', min: 0, max: 1008, title: { display: true, text: '时间轴 (Tick)' }, ticks: { stepSize: 96 } },
+                        y: { display: false, min: 0, max: 100 }
+                    }
+                }
+            });
+        };
+
+        window.addEventListener('DOMContentLoaded', () => {
+            buildChart();
+            simEvalCN();
+        });
+    </script>
+</body>
+</html>

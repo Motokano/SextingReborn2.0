@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "pools": {
+    "npc.station.compost_base.fallback": {
+      "lines": [
+        "一只制肥桶，桶箍有些松。"
+      ]
+    },
+    "npc.station.compost_base": {
+      "lines": [
+        "桶身封好了，投料和翻动都顺手多了。",
+        "先配好碳氮材料，再开桶处理，产出会稳很多。"
+      ],
+      "includePools": [
+        "npc.station.compost_base"
+      ],
+      "composeMode": "pick_pool"
+    },
+    "npc.station.compost_faulty": {
+      "lines": [
+        "先找点黏土和干柴，把桶箍和缝隙处理好，再谈堆肥。"
+      ],
+      "composeMode": "pick_pool"
+    }
+  }
+}

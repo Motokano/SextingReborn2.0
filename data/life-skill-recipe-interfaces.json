@@ -26,8 +26,8 @@
     "life_pharmacy": {
       "required_skill_id": "life_pharmacy",
       "recipe_processor_id": "processor.life_pharmacy.default",
-      "proficiency_usage_key": "life_pharmacy.placeholder_basic",
-      "default_method_id": "life_pharmacy.placeholder_basic",
+      "proficiency_usage_key": "life_pharmacy.crushing",
+      "default_method_id": "life_pharmacy.crushing",
       "allowed_station_tags": [
         "station_pharmacy"
       ],

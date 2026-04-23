@@ -94,6 +94,8 @@
         if (isDisabled(map, x, y)) return false;
         if (isBlocked(map, x, y)) return false;
         if (isCookingStationCell(x, y)) return false;
+        if (isPharmacyFacilityNpcBlockingWalk(x, y)) return false;
+        if (isCompostFacilityNpcBlockingWalk(x, y)) return false;
         return true;
     }
 
@@ -156,15 +158,37 @@
 
     function isBlockingStationAnnotation(ann) {
         if (ann == null || ann === '') return false;
-        var s = String(ann);
-        return s === '烹饪台' || s.indexOf('烹饪') >= 0 || s.indexOf('灶') >= 0;
+        var s = String(ann).trim();
+        var isCooking = s === '烹饪台' || s === '灶台' || s === '烹饪灶';
+        return isCooking;
     }
 
     /** 固定标注的烹饪台，或临时灶台实体（野外临时灶） */
     function isCookingStationCell(x, y) {
-        if (isBlockingStationAnnotation(getAnnotationAt(x, y))) return true;
+        var ann = getAnnotationAt(x, y);
+        if (ann && (String(ann) === '烹饪台' || String(ann).indexOf('烹饪') >= 0 || String(ann).indexOf('灶') >= 0)) return true;
         var rec = getEntityRecordAt(x, y);
         return !!(rec && String(rec.entity_id || '') === COOKING_TEMP_STATION_ENTITY_ID);
+    }
+
+    /** 制药台判定：使用标注法 */
+    function isPharmacyStationCell(x, y) {
+        var ann = getAnnotationAt(x, y);
+        if (ann) {
+            var s = String(ann).trim();
+            if (s === '制药台' || s === '药炉') return true;
+        }
+        return false;
+    }
+
+    /** 制肥桶判定：使用标注法 */
+    function isCompostStationCell(x, y) {
+        var ann = getAnnotationAt(x, y);
+        if (ann) {
+            var s = String(ann).trim();
+            if (s === '制肥桶') return true;
+        }
+        return false;
     }
 
     /**
@@ -187,11 +211,80 @@
         return null;
     }
 
-    /** 格上实体 NPC，或烹饪台格绑定的设施 NPC（供邻格点击与气泡逻辑统一） */
+    /**
+     * 地图上制药格绑定的「设施 NPC」id（与 map.npcs 互斥：格上无实体 NPC 时仍可对台走 NPC 菜单管线）。
+     * 优先 `pharmacy_station_interact_npc_by_cell["x,y"]`，否则回落 `pharmacy_station_interact_npc_id`。
+     */
+    function getPharmacyStationInteractNpcId(x, y) {
+        var map = getMap();
+        if (!map || !isPharmacyStationCell(x, y)) return null;
+        var by = map.pharmacy_station_interact_npc_by_cell;
+        if (by && typeof by === 'object') {
+            var k = (x | 0) + ',' + (y | 0);
+            if (Object.prototype.hasOwnProperty.call(by, k)) {
+                var v = by[k];
+                if (v != null && String(v).trim()) return String(v).trim();
+            }
+        }
+        var pid = map.pharmacy_station_interact_npc_id;
+        if (pid != null && String(pid).trim()) return String(pid).trim();
+        return null;
+    }
+
+    /**
+     * 地图上制肥桶格绑定的「设施 NPC」id。
+     * 优先 `compost_station_interact_npc_by_cell["x,y"]`，否则回落 `compost_station_interact_npc_id`。
+     */
+    function getCompostStationInteractNpcId(x, y) {
+        var map = getMap();
+        if (!map || !isCompostStationCell(x, y)) return null;
+        var by = map.compost_station_interact_npc_by_cell;
+        if (by && typeof by === 'object') {
+            var k = (x | 0) + ',' + (y | 0);
+            if (Object.prototype.hasOwnProperty.call(by, k)) {
+                var v = by[k];
+                if (v != null && String(v).trim()) return String(v).trim();
+            }
+        }
+        var pid = map.compost_station_interact_npc_id;
+        if (pid != null && String(pid).trim()) return String(pid).trim();
+        return null;
+    }
+
+    /**
+     * 制药台格本身不因标注挡行走；若配置了设施 NPC，则按 NPC 在场语义占格（与 map.npcs 不可走一致）。
+     * 未绑定 `pharmacy_station_interact_npc_*` 时该格可走。
+     */
+    function isPharmacyFacilityNpcBlockingWalk(x, y) {
+        var fid = getPharmacyStationInteractNpcId(x, y);
+        if (!fid) return false;
+        if (typeof global !== 'undefined' && global.NPCSystem && typeof global.NPCSystem.isNpcPresentNow === 'function') {
+            return global.NPCSystem.isNpcPresentNow(fid);
+        }
+        return true;
+    }
+
+    /**
+     * 制肥桶格与制药台同口径：若绑定设施 NPC，则按 NPC 在场语义占格；否则可走。
+     */
+    function isCompostFacilityNpcBlockingWalk(x, y) {
+        var fid = getCompostStationInteractNpcId(x, y);
+        if (!fid) return false;
+        if (typeof global !== 'undefined' && global.NPCSystem && typeof global.NPCSystem.isNpcPresentNow === 'function') {
+            return global.NPCSystem.isNpcPresentNow(fid);
+        }
+        return true;
+    }
+
+    /** 格上实体 NPC，或灶/制药台格绑定的设施 NPC（供邻格点击与气泡逻辑统一） */
     function getInteractNpcIdAt(x, y) {
         var nid = getNpcAt(x, y);
         if (nid) return nid;
-        return getCookingStationInteractNpcId(x, y);
+        nid = getCookingStationInteractNpcId(x, y);
+        if (nid) return nid;
+        nid = getPharmacyStationInteractNpcId(x, y);
+        if (nid) return nid;
+        return getCompostStationInteractNpcId(x, y);
     }
 
     function clamp(v, min, max) {
@@ -314,11 +407,15 @@
         getEntityAt: getEntityAt,
         getNpcAt: getNpcAt,
         getCookingStationInteractNpcId: getCookingStationInteractNpcId,
+        getPharmacyStationInteractNpcId: getPharmacyStationInteractNpcId,
+        getCompostStationInteractNpcId: getCompostStationInteractNpcId,
         getInteractNpcIdAt: getInteractNpcIdAt,
         getEnemyAt: getEnemyAt,
         getAnnotationAt: getAnnotationAt,
         isBlockingStationAnnotation: isBlockingStationAnnotation,
         isCookingStationCell: isCookingStationCell,
+        isPharmacyStationCell: isPharmacyStationCell,
+        isCompostStationCell: isCompostStationCell,
         isAdjacent: isAdjacent,
         canStandAt: canStandAt,
         jumpTo: jumpTo,

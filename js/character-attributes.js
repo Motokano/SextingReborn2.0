@@ -110,6 +110,112 @@
         return (cfg[key] !== undefined && cfg[key] !== null) ? cfg[key] : def;
     }
 
+    function normalizeDamageTypeId(v) {
+        var id = String(v || '').toLowerCase();
+        return DAMAGE_TYPES.indexOf(id) >= 0 ? id : null;
+    }
+
+    function toPct(raw) {
+        var v = Number(raw);
+        if (!isFinite(v)) return 0;
+        if (Math.abs(v) > 1) return v / 100;
+        return v;
+    }
+
+    function createDamageTypeModifierBag() {
+        return {
+            add_flat: { blunt: 0, slash: 0, pierce: 0 },
+            add_from_pct: [],
+            increase_pct: { blunt: 0, slash: 0, pierce: 0 },
+            convert_pct: { blunt_to_slash: 0, slash_to_pierce: 0 }
+        };
+    }
+
+    function mergeDamageTypeModifierBag(dst, src) {
+        if (!src || typeof src !== 'object') return dst;
+        var t;
+        if (src.add_flat && typeof src.add_flat === 'object') {
+            for (t in dst.add_flat) {
+                if (!dst.add_flat.hasOwnProperty(t)) continue;
+                dst.add_flat[t] += Number(src.add_flat[t]) || 0;
+            }
+        }
+        if (src.increase_pct && typeof src.increase_pct === 'object') {
+            for (t in dst.increase_pct) {
+                if (!dst.increase_pct.hasOwnProperty(t)) continue;
+                dst.increase_pct[t] += toPct(src.increase_pct[t]);
+            }
+        }
+        if (src.convert_pct && typeof src.convert_pct === 'object') {
+            dst.convert_pct.blunt_to_slash += toPct(src.convert_pct.blunt_to_slash);
+            dst.convert_pct.slash_to_pierce += toPct(src.convert_pct.slash_to_pierce);
+        }
+        if (Array.isArray(src.add_from_pct)) {
+            for (var i = 0; i < src.add_from_pct.length; i++) {
+                var ent = src.add_from_pct[i] || {};
+                var source = normalizeDamageTypeId(ent.source || ent.from);
+                var target = normalizeDamageTypeId(ent.target || ent.to);
+                var pct = toPct(ent.pct != null ? ent.pct : ent.value);
+                if (!source || !target || !pct) continue;
+                dst.add_from_pct.push({ source: source, target: target, pct: pct });
+            }
+        }
+        dst.convert_pct.blunt_to_slash = Math.max(0, Math.min(1, dst.convert_pct.blunt_to_slash));
+        dst.convert_pct.slash_to_pierce = Math.max(0, Math.min(1, dst.convert_pct.slash_to_pierce));
+        return dst;
+    }
+
+    function parseEnchantDamageTypeModifier(enc) {
+        if (!enc || !enc.effect_type || !enc.effect_params) return null;
+        var p = enc.effect_params || {};
+        var bag = createDamageTypeModifierBag();
+        if (enc.effect_type === 'damage_type_flat_bonus') {
+            var t1 = normalizeDamageTypeId(p.damage_type || p.type || p.target_damage_type);
+            if (!t1) return null;
+            bag.add_flat[t1] += Number(p.value) || 0;
+            return bag;
+        }
+        if (enc.effect_type === 'damage_type_increase_pct') {
+            var t2 = normalizeDamageTypeId(p.damage_type || p.type);
+            if (!t2) return null;
+            bag.increase_pct[t2] += toPct(p.pct != null ? p.pct : p.value);
+            return bag;
+        }
+        if (enc.effect_type === 'damage_type_convert_pct') {
+            var from = normalizeDamageTypeId(p.from_damage_type || p.from);
+            var to = normalizeDamageTypeId(p.to_damage_type || p.to);
+            if (!from || !to) return null;
+            if (from === 'blunt' && to === 'slash') bag.convert_pct.blunt_to_slash += toPct(p.pct != null ? p.pct : p.value);
+            if (from === 'slash' && to === 'pierce') bag.convert_pct.slash_to_pierce += toPct(p.pct != null ? p.pct : p.value);
+            return bag;
+        }
+        if (enc.effect_type === 'damage_type_gain_from_type_pct') {
+            var src = normalizeDamageTypeId(p.source_damage_type || p.source || p.from_damage_type);
+            var dst = normalizeDamageTypeId(p.target_damage_type || p.target || p.to_damage_type);
+            if (!src || !dst) return null;
+            bag.add_from_pct.push({ source: src, target: dst, pct: toPct(p.pct != null ? p.pct : p.value) });
+            return bag;
+        }
+        return null;
+    }
+
+    function getDamageTypeCombatModifiers() {
+        var bag = createDamageTypeModifierBag();
+        var IE = global.InventoryEquipment;
+        if (!IE || typeof IE.getState !== 'function' || typeof IE.getEnchantEntry !== 'function') return bag;
+        var eq = IE.getState() && IE.getState().equipment ? IE.getState().equipment : {};
+        for (var slot in eq) {
+            if (!Object.prototype.hasOwnProperty.call(eq, slot)) continue;
+            var inst = eq[slot];
+            if (!inst || !Array.isArray(inst.enchants)) continue;
+            for (var i = 0; i < inst.enchants.length; i++) {
+                var ench = IE.getEnchantEntry(inst.enchants[i]);
+                mergeDamageTypeModifierBag(bag, parseEnchantDamageTypeModifier(ench));
+            }
+        }
+        return bag;
+    }
+
     function getEffectiveAttr(attrId) {
         var v = getInnateAttr(attrId) + (state.acquired[attrId] || 0);
         return Math.max(0, v);
@@ -409,12 +515,12 @@
         return cache.combat_speed;
     }
 
-    /** 徒手基础威力 B_fist(S) = floor(650 * (1 - e^(-S/450)) / 2) */
+    /** 徒手拳底 B_fist = max(0, S_筋骨 / div)；div 默认 5，来自配置 fist_jingu_divisor */
     function getFistBasePower() {
         var S = getEffectiveAttr('jingu');
-        var cap = getCfg('fist_power_cap', 650);
-        var scale = getCfg('fist_jingu_scale', 450);
-        return Math.floor(cap * (1 - Math.exp(-S / scale)) / 2);
+        var div = getCfg('fist_jingu_divisor', 5);
+        if (!isFinite(div) || div <= 0) div = 5;
+        return Math.max(0, S / div);
     }
 
     /**
@@ -883,6 +989,7 @@
         getParryChance: getParryChance,
         getParryDamageReduce: getParryDamageReduce,
         getDominantLimbMultiplier: getDominantLimbMultiplier,
+        getDamageTypeCombatModifiers: getDamageTypeCombatModifiers,
         getBreathActual: getBreathActual,
         getCfg: getCfg,
         getBodyPartDestroyMax: getBodyPartDestroyMax,

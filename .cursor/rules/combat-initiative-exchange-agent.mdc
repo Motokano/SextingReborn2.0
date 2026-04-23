@@ -1,12 +1,14 @@
 ---
 description: 速度先手、同速同时提交、玩家发起交换与敌人还击 — 实现与数据字段索引，供改 scene-app / 管线 / 敌人表 / 近战 resolve 时遵循
-globs: "**/js/combat-initiative.js,**/js/combat-melee-resolve.js,**/js/combat-pipeline.js,**/js/combat-enemies.js,**/js/scene-app.js,**/data/combat-enemies.json,**/data/combat-pipeline.json,**/index.html,**/docs/design/07-combat-core.md,**/docs/design/14-implementation.md,**/.cursor/rules/game-design-reuse-contract-from-docs.mdc"
+globs: "**/js/combat-initiative.js,**/js/combat-melee-resolve.js,**/js/combat-pipeline.js,**/js/combat-enemies.js,**/js/scene-app.js,**/js/inventory-equipment.js,**/js/combat-parry.js,**/data/combat-enemies.json,**/data/combat-pipeline.json,**/index.html,**/docs/design/07-combat-core.md,**/docs/design/14-implementation.md,**/.cursor/rules/combat-map-melee-exchange-agent.mdc,**/.cursor/rules/game-design-reuse-contract-from-docs.mdc"
 alwaysApply: false
 ---
 
 # 先手 / 同速交换与敌人还击（Agent 规则）
 
 策划语义以 **`docs/design/07-combat-core.md`**「速度与先手、连击」为准；**取整战斗速度**公式见 **`docs/design/05-character-attributes.md`** §5.7。与 Buff、后遗症的分工：**命中/试探/驱散** 仍遵守 **`buff-system-agent.mdc`**、**`post-effects-agent.mdc`**；本规则只管**交换顺序、管线 dry-run、敌人还击数据字段**。
+
+**地图普攻肢序、普攻/招架互斥、二次选肢与招架日志**：见 **`.cursor/rules/combat-map-melee-exchange-agent.mdc`**（与本文分工：该文件不重复 dry-run / `simultaneous` 细节）。
 
 **全局合约摘要**：**`game-design-reuse-contract-from-docs.mdc`** §8.0（速度先手与同速同时提交）。
 
@@ -29,16 +31,16 @@ alwaysApply: false
 ## `CombatInitiative` 行为要点
 
 - **输入**：`playerSpeed`、`enemySpeed`（**已与 `CharacterAttributes.getCombatSpeed()` / 敌人表 `speed` 对齐的取整值**）、`attackerPostEffectIds`、`defenderPostEffectIds`（可选）、`skillId`、`moveId`。
-- **`initiative_always_first`**：仅当 `CombatPostEffects.validateSocket(pe, { skillId, moveId })` 通过且 `effect_type === 'initiative_always_first'` 时视为攻击方强制先手；防守方列表来自敌人 **`counter_post_effect_ids`**（见下）或将来扩展。
-- **双方均强制先手**：互抵后回退纯速度比较。
+- **合成顺序（与 `07` 一致）**：**先**对取整后的 `playerSpeed` / `enemySpeed` 得到结构（玩家先 / 敌先 / 同速→`simultaneous`），**再**判断 **`initiative_always_first`**（攻击方列表经 `validateSocket`；防守方来自 **`counter_post_effect_ids`** 等）；双方均强制则**互抵**后保持速度结构。
 - **输出**：`mode: 'sequential' | 'simultaneous'`；`firstStrike: 'player' | 'enemy'`（同速时 `firstStrike` 仅为占位，实际走同时提交）。
+- **`attackerPostEffectIds` 调用时机**：须对应**本击已确定**的出招肢与招式槽（`getPostEffectIdsForMoveSlot`）。地图普攻且**敌取整速度更高**、非显式三件套时，`attackEnemy` **推迟**首次 `resolvePlayerInitiatedExchange`，在敌方还击后 **`pickWorldMeleeAttackIntent`** 二次选肢并 **`recomputeSlotPowerAndPostIds`** 之后再调用一次（见 `07`「地图普攻与敌先还击」）；**不**因该结果回滚已发生的还击段，冲突时打 **`log.combat.initiative.enemy_speed_first_overrides_post_force`**。
 - **敌人还击占位 id**：`getEnemyAttackSkillId()` → **`__enemy_counter_attack__`**，`getEnemyAttackMoveId()` → **`enemy_counter_strike`**（**勿**在 `combat-skills.json` 与玩家技能混用同名业务含义，除非你有意统一表）。
 
 ## `attackEnemy` 分支（实现口径）
 
 - **`can_attack === false`**（或未配置且默认可还击时仍由表控制）：**不**执行敌人还击；同速时**不会**进入 `simultaneous` 双端 dry-run（退化为仅玩家一侧）。
 - **顺序 · 玩家先手**：`resolvePlayerVsEnemyAttack`（正常扣费）→ **`melee_hit_enemy_defender`** → 若可还击 → `resolveEnemyVsPlayerAttack` → **`melee_hit_player_defender`**。
-- **顺序 · 敌人先手**：先还击管线，再玩家 resolve + **`melee_hit_enemy_defender`**。
+- **顺序 · 敌人先手**：先还击管线，再玩家 resolve + **`melee_hit_enemy_defender`**。（**地图普攻**且 **Ve > Vp** 且非显式三件套时，还击**先于**首次 `resolvePlayerInitiatedExchange`；终稿肢上的先后手+后遗症在还击后补算，见上节。）
 - **同速且可还击**：两侧 resolve（玩家 **`deferResourceSpend: true`**）→ 两侧管线均设 **`simultaneousDryRun: true`** → **`flushPendingBuffApplies`（先玩家 ctx 再敌人 ctx）** → **`applyDeferredResourceSpendFromResolveResult`** → **`finalizeSimultaneousStrike`（先玩家再敌人）**。
 
 **熟练度**：仍以**玩家**攻击上下文上的 **`proficiencyDelta`** 为准，在交换末尾 **`InventoryEquipment.adjustSkillMoveUsage`** 一次。

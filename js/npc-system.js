@@ -9,6 +9,8 @@
     var registry = null; // { npcs: { [npcId]: { def, triggers } } }
     var npcDefCache = {};      // npcId -> def json
     var npcTriggersCache = {}; // npcId -> triggers json
+    /** npcId -> 合并后台词池文档（全局 dialogue_pools.json + 该 NPC 的 *_dialogue_pools.json，后者覆盖同名池） */
+    var dialoguePoolsMergedCache = {};
 
     // demo 存档：flags 与一次性触发记录（后续可替换为真实存档系统）
     var LS_FLAGS = 'cabi_demo_flags_v1';
@@ -143,6 +145,18 @@
             var k;
             for (k = 0; k < keys.length; k++) add(map.cooking_station_interact_npc_by_cell[keys[k]]);
         }
+        if (map && map.pharmacy_station_interact_npc_id != null) add(map.pharmacy_station_interact_npc_id);
+        if (map && map.pharmacy_station_interact_npc_by_cell && typeof map.pharmacy_station_interact_npc_by_cell === 'object') {
+            var pk = Object.keys(map.pharmacy_station_interact_npc_by_cell);
+            var pi;
+            for (pi = 0; pi < pk.length; pi++) add(map.pharmacy_station_interact_npc_by_cell[pk[pi]]);
+        }
+        if (map && map.compost_station_interact_npc_id != null) add(map.compost_station_interact_npc_id);
+        if (map && map.compost_station_interact_npc_by_cell && typeof map.compost_station_interact_npc_by_cell === 'object') {
+            var ck = Object.keys(map.compost_station_interact_npc_by_cell);
+            var ci;
+            for (ci = 0; ci < ck.length; ci++) add(map.compost_station_interact_npc_by_cell[ck[ci]]);
+        }
         return Object.keys(out);
     }
 
@@ -167,6 +181,174 @@
                 return tr;
             });
         });
+    }
+
+    function deriveDialoguePoolsPathFromDef(defPath) {
+        if (!defPath || typeof defPath !== 'string') return null;
+        if (!/\.json$/i.test(defPath)) return null;
+        return defPath.replace(/\.json$/i, '_dialogue_pools.json');
+    }
+
+    function normalizePoolsDoc(j) {
+        if (!j || typeof j !== 'object') return { schemaVersion: 1, pools: {} };
+        var out = { schemaVersion: j.schemaVersion != null ? j.schemaVersion : 1, pools: {} };
+        if (j.pools && typeof j.pools === 'object') out.pools = j.pools;
+        return out;
+    }
+
+    /** 先应用 globalDoc 的 pools，再用 npcDoc 覆盖同名键（专用文件优先）。 */
+    function mergePoolDocs(globalDoc, npcDoc) {
+        var g = normalizePoolsDoc(globalDoc);
+        var n = normalizePoolsDoc(npcDoc);
+        var pools = {};
+        var k;
+        for (k in g.pools) {
+            if (!Object.prototype.hasOwnProperty.call(g.pools, k)) continue;
+            pools[k] = g.pools[k];
+        }
+        for (k in n.pools) {
+            if (!Object.prototype.hasOwnProperty.call(n.pools, k)) continue;
+            pools[k] = n.pools[k];
+        }
+        return { schemaVersion: n.schemaVersion || g.schemaVersion || 1, pools: pools };
+    }
+
+    function fetchPoolsJson(url) {
+        if (!url || typeof fetch !== 'function') return Promise.resolve(null);
+        return fetch(url)
+            .then(function (r) { return r.ok ? r.json() : null; })
+            .catch(function () { return null; });
+    }
+
+    /**
+     * 加载某 NPC 闲聊可用的台词池：data/npc/dialogue_pools.json（共用）+ 注册表 dialogue_pools 或 def 同前缀 *_dialogue_pools.json。
+     */
+    function loadDialoguePoolsForNpc(npcId) {
+        var nid = (npcId != null) ? String(npcId).trim() : '';
+        if (!nid) {
+            return fetchPoolsJson('data/npc/dialogue_pools.json').then(function (g) {
+                return normalizePoolsDoc(g);
+            });
+        }
+        if (dialoguePoolsMergedCache[nid]) return Promise.resolve(dialoguePoolsMergedCache[nid]);
+        return resolveNpcFiles(nid).then(function (files) {
+            var perUrl = null;
+            if (files) {
+                if (files.dialogue_pools && String(files.dialogue_pools).trim()) {
+                    perUrl = String(files.dialogue_pools).trim();
+                } else if (files.def) {
+                    perUrl = deriveDialoguePoolsPathFromDef(files.def);
+                }
+            }
+            var globalUrl = 'data/npc/dialogue_pools.json';
+            return fetchPoolsJson(globalUrl).then(function (gJson) {
+                if (!perUrl || perUrl === globalUrl) {
+                    var only = mergePoolDocs(normalizePoolsDoc(null), gJson);
+                    dialoguePoolsMergedCache[nid] = only;
+                    return only;
+                }
+                return fetchPoolsJson(perUrl).then(function (pJson) {
+                    var merged = mergePoolDocs(gJson, pJson);
+                    dialoguePoolsMergedCache[nid] = merged;
+                    return merged;
+                });
+            });
+        });
+    }
+
+    /** 台词池行：兼容 string 或 { speaker, text, avatar? }（与事件 linesRich 口径一致） */
+    function normalizePoolLineForRuntime(raw) {
+        if (raw == null) return null;
+        if (typeof raw === 'string') {
+            var ts = String(raw).trim();
+            if (!ts) return null;
+            return { speaker: 'npc', text: String(raw), avatar: '' };
+        }
+        if (typeof raw === 'object') {
+            var sp = String(raw.speaker || raw.role || 'npc').trim() || 'npc';
+            var tx = (raw.text != null) ? String(raw.text) : (raw.content != null ? String(raw.content) : '');
+            if (!String(tx).trim()) return null;
+            var av = raw.avatar != null ? String(raw.avatar).trim() : '';
+            return { speaker: sp, text: (raw.text != null ? String(raw.text) : String(raw.content || '')), avatar: av };
+        }
+        return null;
+    }
+
+    function getDirectNonEmptyLines(pool) {
+        if (!pool || !Array.isArray(pool.lines)) return [];
+        var out = [];
+        for (var i = 0; i < pool.lines.length; i++) {
+            var n = normalizePoolLineForRuntime(pool.lines[i]);
+            if (n) out.push(n);
+        }
+        return out;
+    }
+
+    /** merge_lines：本池 lines + includePools 递归展开（防循环）；用于合成大池后随机一句 */
+    function collectMergedLines(doc, poolId, visiting) {
+        visiting = visiting || {};
+        if (visiting[poolId]) return [];
+        visiting[poolId] = true;
+        var pool = doc && doc.pools ? doc.pools[poolId] : null;
+        var out = [];
+        var direct = getDirectNonEmptyLines(pool);
+        for (var di = 0; di < direct.length; di++) out.push(direct[di]);
+        var inc = pool && Array.isArray(pool.includePools) ? pool.includePools : [];
+        for (var j = 0; j < inc.length; j++) {
+            var sid = inc[j] != null ? String(inc[j]).trim() : '';
+            if (!sid) continue;
+            var sub = collectMergedLines(doc, sid, visiting);
+            for (var k = 0; k < sub.length; k++) out.push(sub[k]);
+        }
+        visiting[poolId] = false;
+        return out;
+    }
+
+    /**
+     * pick_pool：只把「本池直接 lines」与「各引用池的直接 lines」当作子池，先随机子池再随机一句（不展开子池的 includePools）。
+     * merge_lines（默认）：本池 + includePools 递归合并全部台词后随机。
+     */
+    function pickFallbackLineFromDoc(poolId, doc) {
+        var pid = String(poolId || '').trim();
+        if (!pid) return null;
+        if (!doc || typeof doc !== 'object' || !doc.pools || typeof doc.pools !== 'object') return null;
+        var pool = doc.pools[pid];
+        if (!pool) return null;
+        var mode = pool.composeMode === 'pick_pool' ? 'pick_pool' : 'merge_lines';
+        if (mode === 'pick_pool') {
+            var buckets = [];
+            var ownL = getDirectNonEmptyLines(pool);
+            if (ownL.length) buckets.push(ownL);
+            var inc = Array.isArray(pool.includePools) ? pool.includePools : [];
+            for (var a = 0; a < inc.length; a++) {
+                var subId = inc[a] != null ? String(inc[a]).trim() : '';
+                if (!subId) continue;
+                var op = doc.pools[subId];
+                var ol = getDirectNonEmptyLines(op);
+                if (ol.length) buckets.push(ol);
+            }
+            if (!buckets.length) return null;
+            var pickB = buckets[Math.floor(Math.random() * buckets.length)];
+            return pickB[Math.floor(Math.random() * pickB.length)];
+        }
+        var all = collectMergedLines(doc, pid, {});
+        if (!all.length) return null;
+        return all[Math.floor(Math.random() * all.length)];
+    }
+
+    /** 用于 fallbackPoolRules 的 merge_pools：各池按 merge_lines 展开后拼接，再随机一句 */
+    function pickFallbackLineFromMergedPoolIds(poolIds, doc) {
+        if (!doc || typeof doc !== 'object' || !doc.pools || typeof doc.pools !== 'object') return null;
+        if (!poolIds || !poolIds.length) return null;
+        var merged = [];
+        for (var mi = 0; mi < poolIds.length; mi++) {
+            var pid = poolIds[mi] != null ? String(poolIds[mi]).trim() : '';
+            if (!pid) continue;
+            var chunk = collectMergedLines(doc, pid, {});
+            for (var mj = 0; mj < chunk.length; mj++) merged.push(chunk[mj]);
+        }
+        if (!merged.length) return null;
+        return merged[Math.floor(Math.random() * merged.length)];
     }
 
     function getSkillLevel(skillId) {
@@ -210,6 +392,7 @@
 
     function evalCondition(cond) {
         if (!cond || !cond.type) return false;
+        if (cond.type === 'true') return true;
         if (cond.type === 'flagEquals') {
             var f = getFlags();
             var key = String(cond.flag);
@@ -415,6 +598,96 @@
         return arr[Math.floor(Math.random() * arr.length)];
     }
 
+    /** 闲聊条目与 fallbackPoolRules 共用：requires / blocks + triggered 语义 */
+    function entryPassesDependencies(e) {
+        if (!e) return false;
+        var reqsRaw = Array.isArray(e.requires) ? e.requires : [];
+        var reqs = [];
+        for (var ri = 0; ri < reqsRaw.length; ri++) {
+            var rid0 = reqsRaw[ri];
+            if (rid0 == null || rid0 === '') continue;
+            var rs = String(rid0).trim();
+            if (!rs || rs === 'undefined' || rs === 'null') continue;
+            reqs.push(rs);
+        }
+        for (var rj = 0; rj < reqs.length; rj++) {
+            var rid1 = reqs[rj];
+            if (!rid1) continue;
+            if (!isTriggered(rid1)) return false;
+        }
+        var blksRaw = Array.isArray(e.blocks) ? e.blocks : [];
+        var blks = [];
+        for (var bi = 0; bi < blksRaw.length; bi++) {
+            var bid = blksRaw[bi];
+            if (bid == null || bid === '') continue;
+            var bs = String(bid).trim();
+            if (!bs || bs === 'undefined' || bs === 'null') continue;
+            blks.push(bs);
+        }
+        for (var bj = 0; bj < blks.length; bj++) {
+            var blkId = blks[bj];
+            if (!blkId) continue;
+            if (isTriggered(blkId)) return false;
+        }
+        return true;
+    }
+
+    function normalizeRulePoolIds(rule) {
+        var ids = [];
+        if (Array.isArray(rule.poolIds)) {
+            for (var i = 0; i < rule.poolIds.length; i++) {
+                var s = rule.poolIds[i] != null ? String(rule.poolIds[i]).trim() : '';
+                if (s) ids.push(s);
+            }
+        }
+        if (!ids.length && rule.poolId != null && String(rule.poolId).trim()) {
+            ids.push(String(rule.poolId).trim());
+        }
+        return ids;
+    }
+
+    /**
+     * 闲聊无事件命中时：按 NPC def 的 fallbackPoolRules **从上到下列表顺序** 检测；**仅第一条**
+     * 同时满足（id / repeatable 已触发跳过 / requires / blocks / condition / 有池 id）的规则生效。
+     * 其后规则即使也满足也不参与本轮。
+     * poolPickMode pick_one（默认）：在该规则 poolIds 中随机一个池 id → pickFallbackLineFromDoc。
+     * poolPickMode merge_pools：合并 poolIds 各池展开台词后随机一句 → pickFallbackLineFromMergedPoolIds。
+     * 无规则或无任何一条通过时回落到 fallbackDialoguePoolId。
+     * 注：match_weight 字段保留兼容旧档，**运行时不再使用**。
+     */
+    function resolveFallbackPick(def) {
+        var defaultPool = (def && def.fallbackDialoguePoolId) ? String(def.fallbackDialoguePoolId).trim() : '';
+        var rules = (def && Array.isArray(def.fallbackPoolRules)) ? def.fallbackPoolRules : [];
+        if (!rules.length) {
+            return { poolId: defaultPool, poolIds: null, poolPickMode: null, rule: null };
+        }
+        for (var i = 0; i < rules.length; i++) {
+            var rule = rules[i];
+            if (!rule) continue;
+            var rid = rule.id != null ? String(rule.id).trim() : '';
+            if (!rid) continue;
+            if (rule.repeatable === false && isTriggered(rid)) continue;
+            if (!entryPassesDependencies(rule)) continue;
+            if (!rule.condition || typeof rule.condition !== 'object' || !rule.condition.type) continue;
+            if (!evalCondition(rule.condition)) continue;
+            var poolIds = normalizeRulePoolIds(rule);
+            if (!poolIds.length) continue;
+
+            var pickMode = (rule.poolPickMode === 'merge_pools') ? 'merge_pools' : 'pick_one';
+            if (pickMode === 'merge_pools') {
+                return { poolId: null, poolIds: poolIds.slice(), poolPickMode: 'merge_pools', rule: rule };
+            }
+            var sub = pickRandom(poolIds);
+            return {
+                poolId: (sub && String(sub).trim()) ? String(sub).trim() : defaultPool,
+                poolIds: null,
+                poolPickMode: 'pick_one',
+                rule: rule
+            };
+        }
+        return { poolId: defaultPool, poolIds: null, poolPickMode: null, rule: null };
+    }
+
     function scanChatEntry(npcId) {
         return Promise.all([loadNpcDef(npcId), loadNpcTriggers(npcId)]).then(function (rows) {
             var def = rows[0];
@@ -425,41 +698,6 @@
 
             var candidates = [];
             var debug = [];
-
-            function entryPassesDependencies(e) {
-                if (!e) return false;
-                // requires：需要先触发指定 entryId（repeatable=false 才会写入 triggered list）
-                var reqsRaw = Array.isArray(e.requires) ? e.requires : [];
-                var reqs = [];
-                for (var ri = 0; ri < reqsRaw.length; ri++) {
-                    var rid = reqsRaw[ri];
-                    if (rid == null || rid === '') continue;
-                    var rs = String(rid).trim();
-                    if (!rs || rs === 'undefined' || rs === 'null') continue;
-                    reqs.push(rs);
-                }
-                for (var ri = 0; ri < reqs.length; ri++) {
-                    var rid = reqs[ri];
-                    if (!rid) continue;
-                    if (!isTriggered(rid)) return false;
-                }
-                // blocks：若触发过指定 entryId，则屏蔽
-                var blksRaw = Array.isArray(e.blocks) ? e.blocks : [];
-                var blks = [];
-                for (var bi = 0; bi < blksRaw.length; bi++) {
-                    var bid = blksRaw[bi];
-                    if (bid == null || bid === '') continue;
-                    var bs = String(bid).trim();
-                    if (!bs || bs === 'undefined' || bs === 'null') continue;
-                    blks.push(bs);
-                }
-                for (var bj = 0; bj < blks.length; bj++) {
-                    var blkId = blks[bj];
-                    if (!blkId) continue;
-                    if (isTriggered(blkId)) return false;
-                }
-                return true;
-            }
 
             for (var i = 0; i < tr.entries.length; i++) {
                 var e = tr.entries[i];
@@ -563,6 +801,20 @@
                 return tags.indexOf('cooking_station') >= 0;
             }
 
+            function shouldShowOpenPharmacyPanelButton(def0) {
+                if (!def0 || !def0.mainMenu || typeof def0.mainMenu !== 'object') return false;
+                if (def0.mainMenu.showOpenPharmacyPanel === true) return true;
+                var tagsP = Array.isArray(def0.tags) ? def0.tags : [];
+                return tagsP.indexOf('pharmacy_station') >= 0;
+            }
+
+            function shouldShowOpenCompostPanelButton(def0) {
+                if (!def0 || !def0.mainMenu || typeof def0.mainMenu !== 'object') return false;
+                if (def0.mainMenu.showOpenCompostPanel === true) return true;
+                var tagsC = Array.isArray(def0.tags) ? def0.tags : [];
+                return tagsC.indexOf('compost_station') >= 0;
+            }
+
             function tUi(key, fb) {
                 try {
                     if (global.UIText && typeof global.UIText.t === 'function') return global.UIText.t(key);
@@ -578,11 +830,35 @@
                     if (res.type === 'not_on_duty') return;
                     if (res.type === 'fallback') {
                         log('[NPCSystem] chat fallback: npc=' + String(npcId), 'system');
-                        global.DialogueUI.say({
-                            speakerRole: 'npc',
-                            speakerId: def.id,
-                            speakerName: def.displayTitle || def.name || 'NPC',
-                            text: '（摸鱼）……'
+                        var fbPick = resolveFallbackPick(def);
+                        loadDialoguePoolsForNpc(npcId).then(function (poolDoc) {
+                            var fbText = null;
+                            if (fbPick.poolPickMode === 'merge_pools' && fbPick.poolIds && fbPick.poolIds.length) {
+                                fbText = pickFallbackLineFromMergedPoolIds(fbPick.poolIds, poolDoc);
+                            }
+                            if (!fbText) fbText = pickFallbackLineFromDoc(fbPick.poolId, poolDoc);
+                            if (!fbText) fbText = pickFallbackLineFromDoc((def.fallbackDialoguePoolId && String(def.fallbackDialoguePoolId).trim()) ? String(def.fallbackDialoguePoolId).trim() : '', poolDoc);
+                            var fbLine = fbText;
+                            if (typeof fbLine === 'string') {
+                                fbLine = { speaker: 'npc', text: fbLine, avatar: '' };
+                            }
+                            if (!fbLine || !String(fbLine.text || '').trim()) {
+                                fbLine = { speaker: 'npc', text: '（摸鱼）……', avatar: '' };
+                            }
+                            global.DialogueUI.playLinesRich([{
+                                speaker: fbLine.speaker || 'npc',
+                                text: String(fbLine.text || ''),
+                                avatar: fbLine.avatar || ''
+                            }], {
+                                npcId: def.id,
+                                npcName: def.displayTitle || def.name || 'NPC',
+                                playerName: getPlayerName(),
+                                onQueueExhausted: function () {
+                                    if (fbPick.rule && fbPick.rule.repeatable === false && fbPick.rule.id) {
+                                        markTriggered(String(fbPick.rule.id).trim());
+                                    }
+                                }
+                            });
                         });
                         return;
                     }
@@ -647,6 +923,42 @@
                     cookBtn.title = tUi('npc.menu.open_cooking_panel_locked', '请先与灶台对话修好灶台');
                 }
                 btnWrap.appendChild(cookBtn);
+            }
+
+            if (shouldShowOpenPharmacyPanelButton(def)) {
+                var pharmBtn = mkBtn(tUi('npc.menu.open_pharmacy_panel', '使用制药台'), function () {
+                    if (global.SceneApp && typeof global.SceneApp.isPharmacyStationPanelBlockedByRepair === 'function'
+                        && global.SceneApp.isPharmacyStationPanelBlockedByRepair()) {
+                        try {
+                            if (global.SceneCtx && typeof global.SceneCtx.showMsg === 'function' && global.UIText && typeof global.UIText.t === 'function') {
+                                global.SceneCtx.showMsg(global.UIText.t('pharmacy.station.locked_until_repaired'), 'info');
+                            }
+                        } catch (eLp) { /* ignore */ }
+                        return;
+                    }
+                    closeMenu();
+                    if (global.SceneApp && typeof global.SceneApp.openPharmacyStationPanel === 'function') {
+                        global.SceneApp.openPharmacyStationPanel();
+                    }
+                });
+                if (global.SceneApp && typeof global.SceneApp.isPharmacyStationPanelBlockedByRepair === 'function'
+                    && global.SceneApp.isPharmacyStationPanelBlockedByRepair()) {
+                    pharmBtn.disabled = true;
+                    pharmBtn.style.opacity = '0.55';
+                    pharmBtn.style.cursor = 'not-allowed';
+                    pharmBtn.title = tUi('npc.menu.open_pharmacy_panel_locked', '请先与制药台对话，修好后再使用。');
+                }
+                btnWrap.appendChild(pharmBtn);
+            }
+
+            if (shouldShowOpenCompostPanelButton(def)) {
+                var compostBtn = mkBtn(tUi('npc.menu.open_compost_panel', '使用制肥桶'), function () {
+                    closeMenu();
+                    if (global.SceneApp && typeof global.SceneApp.openCompostStationPanel === 'function') {
+                        global.SceneApp.openCompostStationPanel();
+                    }
+                });
+                btnWrap.appendChild(compostBtn);
             }
 
             btnWrap.appendChild(mkBtn('离开', function () { closeMenu(); }));
@@ -715,12 +1027,23 @@
             removeTriggered('station.cooking.repair_intro');
             removeTriggered('station.cooking.repair_unlock');
         },
+        resetPharmacyStationRepairQuestFlags: function () {
+            setFlag('npc_station_pharmacy_base_repaired', false);
+            setFlag('pharmacy_base_station_repair_briefed', false);
+            removeTriggered('station.pharmacy.repair_intro');
+            removeTriggered('station.pharmacy.repair_unlock');
+        },
         isNpcPresentNow: function (npcId) {
             var def = npcDefCache[npcId];
             if (!def) return true;
             return isNpcOnDuty(def);
         },
         preloadNpc: function (npcId) { return loadNpcDef(npcId).then(function () { return loadNpcTriggers(npcId); }); },
+        /** 热重载台词池（清空按 NPC 合并缓存；下次闲聊会重新 fetch 共用 + 专用文件） */
+        reloadDialoguePools: function () {
+            dialoguePoolsMergedCache = {};
+            return Promise.resolve();
+        },
         /** 预加载地图上出现的 NPC def（供地块短名等同步读取 npcDefCache） */
         preloadNpcsFromMap: function (map) {
             var ids = collectNpcIdsFromMap(map);
@@ -742,6 +1065,8 @@
             if (!npcId) return '';
             var d = npcDefCache[String(npcId)];
             if (!d || typeof d !== 'object') return '';
+            var nl = d.npcLabel != null ? String(d.npcLabel).trim() : '';
+            if (nl) return nl;
             var dt = d.displayTitle != null ? String(d.displayTitle).trim() : '';
             if (dt) return dt;
             var nm = d.name != null ? String(d.name).trim() : '';

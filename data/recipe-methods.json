@@ -59,34 +59,166 @@
       },
       "requires_accessory_item_id": null
     },
-    "life_pharmacy.placeholder_basic": {
-      "method_id": "life_pharmacy.placeholder_basic",
+    "life_pharmacy.crushing": {
+      "method_id": "life_pharmacy.crushing",
       "recipe_system": "life_pharmacy",
       "cost": {
-        "fuel": 0,
-        "water": 1,
+        "fuel": 12,
+        "water": 0,
         "ticks": 1,
-        "stamina": 1
+        "stamina": 2
       },
-      "base_success_rate": 0.55,
+      "base_success_rate": 0.88,
       "required_skill_id": "life_pharmacy",
       "recipe_processor_id": "processor.life_pharmacy.default",
-      "proficiency_usage_key": "life_pharmacy.placeholder_basic",
+      "proficiency_usage_key": "life_pharmacy.crushing",
       "allowed_station_tags": [
         "station_pharmacy"
       ],
-      "unlock": [
-        {
-          "type": "npc_flag",
-          "npc_id": "mentor_herbalist",
-          "flag": "teach_pharmacy_basic"
-        }
-      ],
+      "unlock": [],
       "failure_output": {
         "item_id": "item.scrap.herb_dregs",
         "count": 1
       },
-      "requires_accessory_item_id": null
+      "requires_accessory_item_id": "tool_rolling_pin_pharmacy"
+    },
+    "life_pharmacy.maceration": {
+      "method_id": "life_pharmacy.maceration",
+      "recipe_system": "life_pharmacy",
+      "cost": {
+        "fuel": 10,
+        "water": 0,
+        "ticks": 2,
+        "stamina": 2
+      },
+      "base_success_rate": 0.86,
+      "required_skill_id": "life_pharmacy",
+      "recipe_processor_id": "processor.life_pharmacy.default",
+      "proficiency_usage_key": "life_pharmacy.maceration",
+      "allowed_station_tags": [
+        "station_pharmacy"
+      ],
+      "unlock": [],
+      "failure_output": {
+        "item_id": "item.scrap.herb_dregs",
+        "count": 1
+      },
+      "requires_accessory_item_id": "tool_strainer_pot_pharmacy"
+    },
+    "life_pharmacy.distillation": {
+      "method_id": "life_pharmacy.distillation",
+      "recipe_system": "life_pharmacy",
+      "cost": {
+        "fuel": 18,
+        "water": 0,
+        "ticks": 3,
+        "stamina": 3
+      },
+      "base_success_rate": 0.84,
+      "required_skill_id": "life_pharmacy",
+      "recipe_processor_id": "processor.life_pharmacy.default",
+      "proficiency_usage_key": "life_pharmacy.distillation",
+      "allowed_station_tags": [
+        "station_pharmacy"
+      ],
+      "unlock": [],
+      "failure_output": {
+        "item_id": "item.scrap.herb_dregs",
+        "count": 1
+      },
+      "requires_accessory_item_id": "tool_distiller_pharmacy"
+    },
+    "life_pharmacy.filtration": {
+      "method_id": "life_pharmacy.filtration",
+      "recipe_system": "life_pharmacy",
+      "cost": {
+        "fuel": 8,
+        "water": 0,
+        "ticks": 2,
+        "stamina": 2
+      },
+      "base_success_rate": 0.9,
+      "required_skill_id": "life_pharmacy",
+      "recipe_processor_id": "processor.life_pharmacy.default",
+      "proficiency_usage_key": "life_pharmacy.filtration",
+      "allowed_station_tags": [
+        "station_pharmacy"
+      ],
+      "unlock": [],
+      "failure_output": {
+        "item_id": "item.scrap.herb_dregs",
+        "count": 1
+      },
+      "requires_accessory_item_id": "tool_layer_filter_sheet_pharmacy"
+    },
+    "life_pharmacy.centrifugation": {
+      "method_id": "life_pharmacy.centrifugation",
+      "recipe_system": "life_pharmacy",
+      "cost": {
+        "fuel": 14,
+        "water": 0,
+        "ticks": 2,
+        "stamina": 3
+      },
+      "base_success_rate": 0.83,
+      "required_skill_id": "life_pharmacy",
+      "recipe_processor_id": "processor.life_pharmacy.default",
+      "proficiency_usage_key": "life_pharmacy.centrifugation",
+      "allowed_station_tags": [
+        "station_pharmacy"
+      ],
+      "unlock": [],
+      "failure_output": {
+        "item_id": "item.scrap.herb_dregs",
+        "count": 1
+      },
+      "requires_accessory_item_id": "tool_long_handle_flask_pharmacy"
+    },
+    "life_pharmacy.crystallization": {
+      "method_id": "life_pharmacy.crystallization",
+      "recipe_system": "life_pharmacy",
+      "cost": {
+        "fuel": 16,
+        "water": 0,
+        "ticks": 3,
+        "stamina": 2
+      },
+      "base_success_rate": 0.82,
+      "required_skill_id": "life_pharmacy",
+      "recipe_processor_id": "processor.life_pharmacy.default",
+      "proficiency_usage_key": "life_pharmacy.crystallization",
+      "allowed_station_tags": [
+        "station_pharmacy"
+      ],
+      "unlock": [],
+      "failure_output": {
+        "item_id": "item.scrap.herb_dregs",
+        "count": 1
+      },
+      "requires_accessory_item_id": "tool_steel_basin_pharmacy"
+    },
+    "life_pharmacy.tableting": {
+      "method_id": "life_pharmacy.tableting",
+      "recipe_system": "life_pharmacy",
+      "cost": {
+        "fuel": 10,
+        "water": 0,
+        "ticks": 1,
+        "stamina": 2
+      },
+      "base_success_rate": 0.87,
+      "required_skill_id": "life_pharmacy",
+      "recipe_processor_id": "processor.life_pharmacy.default",
+      "proficiency_usage_key": "life_pharmacy.tableting",
+      "allowed_station_tags": [
+        "station_pharmacy"
+      ],
+      "unlock": [],
+      "failure_output": {
+        "item_id": "item.scrap.herb_dregs",
+        "count": 1
+      },
+      "requires_accessory_item_id": "tool_garlic_press_pharmacy"
     },
     "life_weaving.placeholder_basic": {
       "method_id": "life_weaving.placeholder_basic",

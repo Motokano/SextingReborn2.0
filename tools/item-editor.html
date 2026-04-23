@@ -101,6 +101,14 @@
             box-shadow: var(--shadow);
             overflow:hidden;
         }
+        .panel-module-manager{
+            grid-column: 2;
+        }
+        @media (max-width: 1100px){
+            .panel-module-manager{
+                grid-column: auto;
+            }
+        }
         .panel .title{
             padding: 12px 14px;
             border-bottom: 1px solid var(--border);
@@ -197,6 +205,12 @@
             <input id="buff-file-input" type="file" accept=".json,application/json" style="display:none;" />
             <span class="hint" id="buff-options-status">未载入 Buff 选项</span>
         </div>
+        <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+            <button type="button" id="btn-load-item-modules">载入物品信息模块表</button>
+            <input id="item-modules-file-input" type="file" accept=".json,application/json" style="display:none;" />
+            <button type="button" id="btn-export-item-modules">导出物品信息模块表</button>
+            <span class="hint" id="item-modules-status">未载入模块表</span>
+        </div>
     </div>
 </div>
 
@@ -253,6 +267,44 @@
                 <button type="button" id="btn-export-items-json" title="简化：把每行转换为 items.json 形状">导出简化 items.json</button>
             </div>
             <div class="hint" id="export-hint" style="margin-top:10px;"></div>
+        </div>
+    </div>
+
+    <div class="panel panel-module-manager">
+        <div class="title">物品信息模块（item-info-modules）</div>
+        <div class="content">
+            <div class="hint">
+                管理独立模块表：module_set 下可配置多个模块。字段绑定按当前 CSV 整表表头读取；unlock（skill_id / level_min / locked_hint）按模块单独设置。
+            </div>
+            <div class="rowTop" style="margin-top:12px;">
+                <div class="grow">
+                    <label class="hint" style="display:block; margin-bottom:6px;">模块集选择</label>
+                    <select id="module-set-select"></select>
+                </div>
+                <button type="button" id="btn-module-set-add">新增模块集</button>
+                <button type="button" class="danger" id="btn-module-set-delete">删除模块集</button>
+            </div>
+            <div class="field">
+                <label>set_id</label>
+                <input id="module-set-id" placeholder="例如：module.food_basic" />
+            </div>
+            <div class="field">
+                <label>display_name</label>
+                <input id="module-set-display-name" placeholder="例如：熟食观察" />
+            </div>
+            <div class="field">
+                <label>modules（JSON）</label>
+                <textarea id="module-set-modules-json" style="min-height:220px;" placeholder='[{"module_id":"base","title":"基础识别","content":{"type":"text","text":"..."}}]'></textarea>
+            </div>
+            <div class="rowActions">
+                <button type="button" id="btn-module-add">新增模块</button>
+            </div>
+            <div id="module-set-visual-editor" style="display:grid; gap:10px;"></div>
+            <div class="rowActions">
+                <button type="button" class="primary" id="btn-module-set-save">保存当前模块集</button>
+                <button type="button" id="btn-module-set-reset">重置编辑区</button>
+            </div>
+            <div class="hint" id="module-set-hint" style="margin-top:8px;"></div>
         </div>
     </div>
 </div>
@@ -384,6 +436,7 @@
         fuel_points: '烹饪台添柴：每件消耗的该物品为灶台增加的燃料点数；≤0 视为不可燃',
         water_points: '烹饪台倒水：整件消耗，每件为灶台水槽增加的料理水点数；≤0 不可用于倒水',
         cooking_ingredient: '1/true/yes 表示可作烹饪投料（ multiset 盲配材料）',
+        pharmacy_ingredient: '1/true/yes 表示可作制药台投料（ multiset 盲配材料）',
         price_class: '贸易价值定位（life_good/material/rare/luxury）',
         volatility: '价格波动（low/mid/high）',
         region_restrict: '生成地区限制（0=全局，其它需与地区体系匹配）',
@@ -391,6 +444,7 @@
         accept_code: '商人接受货币短码',
         convert_to_high: '低级→高级兑换依据（"目标id,比例"）',
         usable_regions: '货币可用地区代号（分号分隔）',
+        info_module_set_id: '物品信息模块集引用 ID（用于模块化 tooltip）',
         satiety_restore: '食物：使用一次恢复饱食度',
         thirst_restore: '饮用/带水分消耗：使用一次恢复饮水度',
         nutrition_restore: '食物：使用一次恢复营养值',
@@ -412,8 +466,10 @@
         rows: [], // Array<obj>
         selectedRowIndex: 0,
         selectedColIndex: 0,
-        edibleBuffOptions: []
+        edibleBuffOptions: [],
+        itemInfoModules: { schema_version: 1, module_sets: {} }
     };
+    var moduleDraft = [];
 
     var $ = function(id){ return document.getElementById(id); };
     var el = {
@@ -423,6 +479,10 @@
         btnLoadBuffOptions: $('btn-load-buff-options'),
         buffFileInput: $('buff-file-input'),
         buffOptionsStatus: $('buff-options-status'),
+        btnLoadItemModules: $('btn-load-item-modules'),
+        itemModulesFileInput: $('item-modules-file-input'),
+        btnExportItemModules: $('btn-export-item-modules'),
+        itemModulesStatus: $('item-modules-status'),
 
         rowSelect: $('row-select'),
         rowSearch: $('row-search'),
@@ -442,7 +502,18 @@
         btnExportItemsJson: $('btn-export-items-json'),
 
         errBox: $('err-box'),
-        exportHint: $('export-hint')
+        exportHint: $('export-hint'),
+        moduleSetSelect: $('module-set-select'),
+        btnModuleSetAdd: $('btn-module-set-add'),
+        btnModuleSetDelete: $('btn-module-set-delete'),
+        moduleSetId: $('module-set-id'),
+        moduleSetDisplayName: $('module-set-display-name'),
+        moduleSetModulesJson: $('module-set-modules-json'),
+        btnModuleAdd: $('btn-module-add'),
+        moduleSetVisualEditor: $('module-set-visual-editor'),
+        btnModuleSetSave: $('btn-module-set-save'),
+        btnModuleSetReset: $('btn-module-set-reset'),
+        moduleSetHint: $('module-set-hint')
     };
 
     function isTruthy(v){
@@ -528,6 +599,16 @@
         if (changed) refreshColSelect();
     }
 
+    /** 制药投料标记：缺列时补上，默认空（不可投料） */
+    function ensurePharmacyIngredientColumn(){
+        if (state.headers.indexOf('pharmacy_ingredient') >= 0) return;
+        state.headers.push('pharmacy_ingredient');
+        for (var i = 0; i < state.rows.length; i++){
+            state.rows[i].pharmacy_ingredient = '';
+        }
+        refreshColSelect();
+    }
+
     function refreshBuffOptionsStatus(){
         if (!el.buffOptionsStatus) return;
         if (!state.edibleBuffOptions.length) {
@@ -574,6 +655,373 @@
             showError('读取 Buff 文件失败');
         };
         reader.readAsText(file);
+    }
+
+    function ensureInfoModuleSetColumn(){
+        if (state.headers.indexOf('info_module_set_id') >= 0) return;
+        state.headers.push('info_module_set_id');
+        for (var i = 0; i < state.rows.length; i++) {
+            state.rows[i].info_module_set_id = '';
+        }
+        refreshColSelect();
+    }
+
+    function getModuleSetIds(){
+        var o = state.itemInfoModules && state.itemInfoModules.module_sets ? state.itemInfoModules.module_sets : {};
+        var ids = Object.keys(o);
+        ids.sort();
+        return ids;
+    }
+
+    function refreshItemModulesStatus(){
+        if (!el.itemModulesStatus) return;
+        var ids = getModuleSetIds();
+        el.itemModulesStatus.textContent = ids.length ? ('已载入模块集：' + ids.length) : '未载入模块表';
+    }
+
+    function refreshModuleSetSelect(preferId){
+        if (!el.moduleSetSelect) return;
+        var ids = getModuleSetIds();
+        el.moduleSetSelect.innerHTML = '';
+        for (var i = 0; i < ids.length; i++) {
+            var op = document.createElement('option');
+            op.value = ids[i];
+            op.textContent = ids[i];
+            el.moduleSetSelect.appendChild(op);
+        }
+        if (!ids.length) {
+            el.moduleSetId.value = '';
+            el.moduleSetDisplayName.value = '';
+            el.moduleSetModulesJson.value = '[]';
+            if (el.moduleSetHint) el.moduleSetHint.textContent = '';
+            return;
+        }
+        var target = preferId && ids.indexOf(preferId) >= 0 ? preferId : ids[0];
+        el.moduleSetSelect.value = target;
+        loadModuleSetIntoEditor(target);
+    }
+
+    function loadModuleSetIntoEditor(setId){
+        var sets = state.itemInfoModules.module_sets || {};
+        var set = sets[setId] || null;
+        if (!set) return;
+        el.moduleSetId.value = String(set.set_id || setId || '');
+        el.moduleSetDisplayName.value = String(set.display_name || '');
+        moduleDraft = Array.isArray(set.modules) ? JSON.parse(JSON.stringify(set.modules)) : [];
+        el.moduleSetModulesJson.value = JSON.stringify(moduleDraft, null, 2);
+        renderModuleVisualEditor();
+        if (el.moduleSetHint) el.moduleSetHint.textContent = '';
+    }
+
+    function ensureModuleDraftSyncFromJson(){
+        var parsed = [];
+        try {
+            parsed = JSON.parse(String(el.moduleSetModulesJson.value || '[]'));
+            if (!Array.isArray(parsed)) parsed = [];
+        } catch (e0) {
+            parsed = [];
+        }
+        moduleDraft = JSON.parse(JSON.stringify(parsed));
+    }
+
+    function syncModulesJsonFromDraft(){
+        el.moduleSetModulesJson.value = JSON.stringify(moduleDraft, null, 2);
+    }
+
+    function renderModuleVisualEditor(){
+        if (!el.moduleSetVisualEditor) return;
+        el.moduleSetVisualEditor.innerHTML = '';
+        for (var i = 0; i < moduleDraft.length; i++) {
+            (function(idx){
+                var m = moduleDraft[idx] || {};
+                var box = document.createElement('div');
+                box.style.border = '1px solid var(--border)';
+                box.style.borderRadius = '10px';
+                box.style.padding = '10px';
+                box.style.background = 'rgba(148,163,184,0.06)';
+
+                function makeField(labelText, value, onInput) {
+                    var wrap = document.createElement('div');
+                    wrap.className = 'field';
+                    var lab = document.createElement('label');
+                    lab.textContent = labelText;
+                    var inp = document.createElement('input');
+                    inp.value = value == null ? '' : String(value);
+                    inp.addEventListener('input', function(){ onInput(inp.value); syncModulesJsonFromDraft(); });
+                    wrap.appendChild(lab);
+                    wrap.appendChild(inp);
+                    return wrap;
+                }
+
+                box.appendChild(makeField('module_id', m.module_id || '', function(v){ m.module_id = v; }));
+                box.appendChild(makeField('title', m.title || '', function(v){ m.title = v; }));
+                box.appendChild(makeField('icon', m.icon || '', function(v){ m.icon = v; }));
+
+                var unlockWrap = document.createElement('div');
+                unlockWrap.style.display = 'grid';
+                unlockWrap.style.gap = '8px';
+                unlockWrap.style.border = '1px dashed var(--border)';
+                unlockWrap.style.borderRadius = '8px';
+                unlockWrap.style.padding = '8px';
+                var unlockTitle = document.createElement('div');
+                unlockTitle.className = 'hint';
+                unlockTitle.textContent = '解锁条件';
+                unlockWrap.appendChild(unlockTitle);
+                var hasUnlockLine = document.createElement('label');
+                hasUnlockLine.style.display = 'flex';
+                hasUnlockLine.style.gap = '8px';
+                hasUnlockLine.style.alignItems = 'center';
+                var hasUnlock = document.createElement('input');
+                hasUnlock.type = 'checkbox';
+                hasUnlock.checked = !!(m.unlock && typeof m.unlock === 'object');
+                var hasUnlockText = document.createElement('span');
+                hasUnlockText.textContent = '启用解锁条件';
+                hasUnlockLine.appendChild(hasUnlock);
+                hasUnlockLine.appendChild(hasUnlockText);
+                unlockWrap.appendChild(hasUnlockLine);
+
+                function ensureUnlockObj() {
+                    if (!m.unlock || typeof m.unlock !== 'object') m.unlock = {};
+                }
+                var unlockGrid = document.createElement('div');
+                unlockGrid.style.display = hasUnlock.checked ? 'grid' : 'none';
+                unlockGrid.style.gap = '8px';
+                var skillField = makeField('unlock.skill_id', (m.unlock && m.unlock.skill_id) || '', function(v){
+                    ensureUnlockObj();
+                    m.unlock.skill_id = v;
+                });
+                var levelField = makeField('unlock.level_min', (m.unlock && m.unlock.level_min) || '', function(v){
+                    ensureUnlockObj();
+                    var n = parseInt(v, 10);
+                    m.unlock.level_min = isFinite(n) && n > 0 ? n : 0;
+                });
+                var hintField = makeField('unlock.locked_hint', (m.unlock && m.unlock.locked_hint) || '', function(v){
+                    ensureUnlockObj();
+                    m.unlock.locked_hint = v;
+                });
+                unlockGrid.appendChild(skillField);
+                unlockGrid.appendChild(levelField);
+                unlockGrid.appendChild(hintField);
+                unlockWrap.appendChild(unlockGrid);
+                hasUnlock.addEventListener('change', function(){
+                    if (!hasUnlock.checked) {
+                        delete m.unlock;
+                        unlockGrid.style.display = 'none';
+                    } else {
+                        ensureUnlockObj();
+                        if (m.unlock.level_min == null) m.unlock.level_min = 1;
+                        unlockGrid.style.display = 'grid';
+                    }
+                    syncModulesJsonFromDraft();
+                    renderModuleVisualEditor();
+                });
+                box.appendChild(unlockWrap);
+
+                var ctypeWrap = document.createElement('div');
+                ctypeWrap.className = 'field';
+                var ctypeLab = document.createElement('label');
+                ctypeLab.textContent = 'content.type';
+                var ctypeSel = document.createElement('select');
+                ['text','csv_field_text','list','kv'].forEach(function(t){
+                    var op = document.createElement('option');
+                    op.value = t; op.textContent = t; ctypeSel.appendChild(op);
+                });
+                var curType = m.content && m.content.type ? String(m.content.type) : 'text';
+                ctypeSel.value = (curType === 'list' || curType === 'kv' || curType === 'csv_field_text') ? curType : 'text';
+                ctypeSel.addEventListener('change', function(){
+                    var t = ctypeSel.value;
+                    if (!m.content || typeof m.content !== 'object') m.content = {};
+                    m.content.type = t;
+                    if (t === 'text' && m.content.text == null) m.content.text = '';
+                    if (t === 'csv_field_text') {
+                        if (m.content.field == null) m.content.field = '';
+                        if (m.content.fallback == null) m.content.fallback = '';
+                    }
+                    if (t === 'list' && !Array.isArray(m.content.items)) m.content.items = [];
+                    if (t === 'kv' && !Array.isArray(m.content.entries)) m.content.entries = [];
+                    syncModulesJsonFromDraft();
+                    renderModuleVisualEditor();
+                });
+                ctypeWrap.appendChild(ctypeLab);
+                ctypeWrap.appendChild(ctypeSel);
+                box.appendChild(ctypeWrap);
+
+                var cWrap = document.createElement('div');
+                cWrap.className = 'field';
+                var cLab = document.createElement('label');
+                cLab.textContent = 'content body';
+                var tNow = ctypeSel.value;
+                if (tNow === 'csv_field_text') {
+                    var bindWrap = document.createElement('div');
+                    bindWrap.style.display = 'grid';
+                    bindWrap.style.gap = '8px';
+                    var sel = document.createElement('select');
+                    var op0 = document.createElement('option');
+                    op0.value = '';
+                    op0.textContent = '选择 CSV 字段';
+                    sel.appendChild(op0);
+                    for (var h = 0; h < state.headers.length; h++) {
+                        var hk = state.headers[h];
+                        var hop = document.createElement('option');
+                        hop.value = hk;
+                        hop.textContent = hk;
+                        sel.appendChild(hop);
+                    }
+                    sel.value = (m.content && m.content.field) ? String(m.content.field) : '';
+                    sel.addEventListener('change', function(){
+                        if (!m.content || typeof m.content !== 'object') m.content = {};
+                        m.content.field = sel.value || '';
+                        syncModulesJsonFromDraft();
+                    });
+                    var fb = document.createElement('input');
+                    fb.placeholder = '字段为空时显示（fallback）';
+                    fb.value = (m.content && m.content.fallback) ? String(m.content.fallback) : '';
+                    fb.addEventListener('input', function(){
+                        if (!m.content || typeof m.content !== 'object') m.content = {};
+                        m.content.fallback = fb.value;
+                        syncModulesJsonFromDraft();
+                    });
+                    bindWrap.appendChild(sel);
+                    bindWrap.appendChild(fb);
+                    cWrap.appendChild(cLab);
+                    cWrap.appendChild(bindWrap);
+                } else {
+                    var cTa = document.createElement('textarea');
+                    cTa.style.minHeight = '90px';
+                    if (tNow === 'text') cTa.value = m.content && m.content.text ? String(m.content.text) : '';
+                    if (tNow === 'list') cTa.value = JSON.stringify((m.content && m.content.items) ? m.content.items : [], null, 2);
+                    if (tNow === 'kv') cTa.value = JSON.stringify((m.content && m.content.entries) ? m.content.entries : [], null, 2);
+                    cTa.addEventListener('input', function(){
+                        if (!m.content || typeof m.content !== 'object') m.content = {};
+                        if (tNow === 'text') m.content.text = cTa.value;
+                        if (tNow === 'list') { try { var a = JSON.parse(cTa.value); if (Array.isArray(a)) m.content.items = a; } catch (e2) { return; } }
+                        if (tNow === 'kv') { try { var b = JSON.parse(cTa.value); if (Array.isArray(b)) m.content.entries = b; } catch (e3) { return; } }
+                        syncModulesJsonFromDraft();
+                    });
+                    cWrap.appendChild(cLab);
+                    cWrap.appendChild(cTa);
+                }
+                box.appendChild(cWrap);
+
+                var acts = document.createElement('div');
+                acts.className = 'rowActions';
+                var delBtn = document.createElement('button');
+                delBtn.type = 'button';
+                delBtn.className = 'danger';
+                delBtn.textContent = '删除模块';
+                delBtn.addEventListener('click', function(){
+                    moduleDraft.splice(idx, 1);
+                    syncModulesJsonFromDraft();
+                    renderModuleVisualEditor();
+                });
+                acts.appendChild(delBtn);
+                box.appendChild(acts);
+                el.moduleSetVisualEditor.appendChild(box);
+            })(i);
+        }
+    }
+
+    function loadItemModulesFromObject(obj){
+        if (!obj || typeof obj !== 'object') return false;
+        var ms = obj.module_sets;
+        if (!ms || typeof ms !== 'object') return false;
+        state.itemInfoModules = {
+            schema_version: parseInt(obj.schema_version, 10) || 1,
+            module_sets: ms
+        };
+        refreshItemModulesStatus();
+        refreshModuleSetSelect();
+        ensureInfoModuleSetColumn();
+        renderRowEditor();
+        return true;
+    }
+
+    function loadItemModulesFromLocalFile(file){
+        clearError();
+        if (!file) {
+            showError('未选择模块表文件');
+            return;
+        }
+        var reader = new FileReader();
+        reader.onload = function(){
+            try {
+                var text = String(reader.result || '');
+                var obj = JSON.parse(text);
+                if (!loadItemModulesFromObject(obj)) throw new Error('item-info-modules.json 格式无效：需要 { module_sets: {} }');
+            } catch (e) {
+                showError('读取模块表失败：' + String(e && e.message ? e.message : e));
+            }
+        };
+        reader.onerror = function(){
+            showError('读取模块表失败');
+        };
+        reader.readAsText(file);
+    }
+
+    function exportItemModulesJson(){
+        var out = state.itemInfoModules && typeof state.itemInfoModules === 'object'
+            ? state.itemInfoModules
+            : { schema_version: 1, module_sets: {} };
+        download('item-info-modules_export_' + new Date().toISOString().slice(0,19).replace(/[:T]/g,'-') + '.json', JSON.stringify(out, null, 2), 'application/json;charset=utf-8');
+        if (el.moduleSetHint) el.moduleSetHint.textContent = '已导出模块表 JSON';
+    }
+
+    function addModuleSet(){
+        var base = 'module.new_set';
+        var i = 1;
+        var sets = state.itemInfoModules.module_sets || {};
+        var id = base + '_' + i;
+        while (Object.prototype.hasOwnProperty.call(sets, id)) {
+            i++;
+            id = base + '_' + i;
+        }
+        sets[id] = { set_id: id, display_name: '新模块集', modules: [] };
+        refreshItemModulesStatus();
+        refreshModuleSetSelect(id);
+    }
+
+    function deleteSelectedModuleSet(){
+        var sid = el.moduleSetSelect && el.moduleSetSelect.value ? String(el.moduleSetSelect.value) : '';
+        if (!sid) return;
+        if (!state.itemInfoModules.module_sets || !Object.prototype.hasOwnProperty.call(state.itemInfoModules.module_sets, sid)) return;
+        delete state.itemInfoModules.module_sets[sid];
+        refreshItemModulesStatus();
+        refreshModuleSetSelect();
+        renderRowEditor();
+    }
+
+    function saveCurrentModuleSet(){
+        clearError();
+        var sid = String(el.moduleSetId.value || '').trim();
+        if (!sid) {
+            showError('set_id 不能为空');
+            return;
+        }
+        var displayName = String(el.moduleSetDisplayName.value || '').trim();
+        var modules;
+        try {
+            modules = JSON.parse(String(el.moduleSetModulesJson.value || '[]'));
+        } catch (eJson) {
+            showError('modules JSON 解析失败：' + String(eJson && eJson.message ? eJson.message : eJson));
+            return;
+        }
+        if (!Array.isArray(modules)) {
+            showError('modules 必须是数组');
+            return;
+        }
+        moduleDraft = JSON.parse(JSON.stringify(modules));
+        if (!state.itemInfoModules.module_sets || typeof state.itemInfoModules.module_sets !== 'object') {
+            state.itemInfoModules.module_sets = {};
+        }
+        state.itemInfoModules.module_sets[sid] = {
+            set_id: sid,
+            display_name: displayName,
+            modules: modules
+        };
+        refreshItemModulesStatus();
+        refreshModuleSetSelect(sid);
+        renderRowEditor();
+        if (el.moduleSetHint) el.moduleSetHint.textContent = '已保存模块集：' + sid;
     }
 
     function showError(msg){
@@ -732,6 +1180,7 @@
         el.rowEditor.appendChild(usableWrap);
 
         ensureCookingStationColumns();
+        ensurePharmacyIngredientColumn();
         var cookWrap = document.createElement('div');
         cookWrap.className = 'field';
         var cookLab = document.createElement('label');
@@ -852,6 +1301,41 @@
         edibleWrap.appendChild(edibleBody);
         el.rowEditor.appendChild(edibleWrap);
 
+        ensureInfoModuleSetColumn();
+        var moduleBindWrap = document.createElement('div');
+        moduleBindWrap.className = 'field';
+        var moduleBindLab = document.createElement('label');
+        moduleBindLab.textContent = '信息模块集（快捷）';
+        var moduleBindBody = document.createElement('div');
+        moduleBindBody.style.display = 'grid';
+        moduleBindBody.style.gap = '8px';
+        var moduleHint = document.createElement('div');
+        moduleHint.className = 'hint';
+        moduleHint.textContent = '写入 info_module_set_id。留空则使用旧 tooltip 文案。';
+        moduleBindBody.appendChild(moduleHint);
+        var moduleSel = document.createElement('select');
+        var moduleOp0 = document.createElement('option');
+        moduleOp0.value = '';
+        moduleOp0.textContent = '不绑定模块集（回退旧 tooltip）';
+        moduleSel.appendChild(moduleOp0);
+        var msIds = getModuleSetIds();
+        for (var mi = 0; mi < msIds.length; mi++) {
+            var mid = msIds[mi];
+            var mset = state.itemInfoModules.module_sets[mid] || {};
+            var op = document.createElement('option');
+            op.value = mid;
+            op.textContent = mid + (mset.display_name ? (' / ' + mset.display_name) : '');
+            moduleSel.appendChild(op);
+        }
+        moduleSel.value = row.info_module_set_id == null ? '' : String(row.info_module_set_id);
+        moduleSel.addEventListener('change', function(){
+            row.info_module_set_id = moduleSel.value || '';
+        });
+        moduleBindBody.appendChild(moduleSel);
+        moduleBindWrap.appendChild(moduleBindLab);
+        moduleBindWrap.appendChild(moduleBindBody);
+        el.rowEditor.appendChild(moduleBindWrap);
+
         for (var i = 0; i < state.headers.length; i++){
             (function(){
                 var key = state.headers[i];
@@ -887,6 +1371,8 @@
         migrateLegacySpoilageInState();
         ensureSpoilageTicksColumn();
         ensureCookingStationColumns();
+        ensurePharmacyIngredientColumn();
+        ensureInfoModuleSetColumn();
 
         refreshRowSelect();
         refreshColSelect();
@@ -1087,6 +1573,51 @@
             loadBuffOptionsFromLocalFile(el.buffFileInput.files[0]);
         }
     });
+    if (el.btnLoadItemModules) el.btnLoadItemModules.addEventListener('click', function(){
+        clearError();
+        if (!el.itemModulesFileInput) return;
+        el.itemModulesFileInput.value = '';
+        el.itemModulesFileInput.click();
+    });
+    if (el.itemModulesFileInput) el.itemModulesFileInput.addEventListener('change', function(){
+        if (el.itemModulesFileInput.files && el.itemModulesFileInput.files[0]){
+            loadItemModulesFromLocalFile(el.itemModulesFileInput.files[0]);
+        }
+    });
+    if (el.btnExportItemModules) el.btnExportItemModules.addEventListener('click', function(){
+        exportItemModulesJson();
+    });
+    if (el.moduleSetSelect) el.moduleSetSelect.addEventListener('change', function(){
+        loadModuleSetIntoEditor(String(el.moduleSetSelect.value || ''));
+    });
+    if (el.btnModuleSetAdd) el.btnModuleSetAdd.addEventListener('click', function(){
+        addModuleSet();
+    });
+    if (el.btnModuleSetDelete) el.btnModuleSetDelete.addEventListener('click', function(){
+        deleteSelectedModuleSet();
+    });
+    if (el.btnModuleSetSave) el.btnModuleSetSave.addEventListener('click', function(){
+        saveCurrentModuleSet();
+    });
+    if (el.btnModuleSetReset) el.btnModuleSetReset.addEventListener('click', function(){
+        loadModuleSetIntoEditor(String(el.moduleSetSelect && el.moduleSetSelect.value ? el.moduleSetSelect.value : ''));
+    });
+    if (el.btnModuleAdd) el.btnModuleAdd.addEventListener('click', function(){
+        ensureModuleDraftSyncFromJson();
+        moduleDraft.push({
+            module_id: 'module_' + (moduleDraft.length + 1),
+            title: '新模块',
+            icon: '',
+            unlock: { skill_id: '', level_min: 1, locked_hint: '' },
+            content: { type: 'csv_field_text', field: '', fallback: '' }
+        });
+        syncModulesJsonFromDraft();
+        renderModuleVisualEditor();
+    });
+    if (el.moduleSetModulesJson) el.moduleSetModulesJson.addEventListener('input', function(){
+        ensureModuleDraftSyncFromJson();
+        renderModuleVisualEditor();
+    });
 
     el.btnLoadMaterials.addEventListener('click', function(){
         // 从 tools/ 相对 data/ 读取
@@ -1096,6 +1627,12 @@
     // 给页面一个轻量默认状态：也可以在未来改成加载其它表
     el.statusLine.textContent = '未加载 CSV（你可以选择本地文件，或点“载入示例”）';
     refreshBuffOptionsStatus();
+    refreshItemModulesStatus();
+    refreshModuleSetSelect();
+    fetch('../data/item-info-modules.json')
+        .then(function (r) { return r.ok ? r.json() : null; })
+        .then(function (obj) { if (obj) loadItemModulesFromObject(obj); })
+        .catch(function () { /* ignore */ });
 })();
 </script>
 </body>

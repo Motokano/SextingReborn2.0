@@ -1,0 +1,69 @@
+---
+description: 物品悬浮窗模块化（item-info-modules）数据、运行时与编辑器联动口径
+globs: data/item-info-modules.json,js/item-info-modules.js,js/scene-app.js,js/scene-renderer.js,tools/item-editor.html,tools/build-items-json.mjs,data/items/*.csv,data/items.json
+alwaysApply: false
+---
+
+# 物品悬浮窗模块化（Agent 规则）
+
+编辑物品悬浮窗、模块配置、CSV 字段绑定或 item-editor 时，遵循本规则，避免“默认属性块复活”或“CSV 新列无法被模块读取”。
+
+## 1) 单一事实源
+
+| 职责 | 位置 |
+|---|---|
+| 模块表（set + modules + unlock + content） | `data/item-info-modules.json` |
+| 物品与模块集绑定 | `data/items/*.csv` -> `info_module_set_id` -> `data/items.json` |
+| 运行时模块解析与渲染 | `js/item-info-modules.js` |
+| tooltip 统一入口 | `js/scene-app.js` -> `buildItemTooltipHtmlForTemplate` |
+| 快捷栏 tooltip 接线 | `js/scene-renderer.js`（复用 SceneApp 入口） |
+| 策划编辑入口 | `tools/item-editor.html` |
+
+## 2) 悬浮窗默认口径（强制）
+
+- 默认仅展示：名称 + 描述。
+- 其它信息（重量/品质/战斗属性/策划扩展字段）一律通过模块展示。
+- 禁止在 `scene-app` / `scene-renderer` 恢复并行“默认 attrs 大串”作为唯一来源。
+
+## 3) 模块结构（首版）
+
+- `module_sets[set_id]`：
+  - `set_id`
+  - `display_name`
+  - `modules[]`
+- `modules[]` 条目建议：
+  - `module_id`
+  - `title`
+  - `icon`（可选）
+  - `unlock`（可选）
+    - `skill_id`
+    - `level_min`
+    - `locked_hint`
+  - `content`
+
+## 4) content.type 口径（当前实现）
+
+- `text`：`content.text`
+- `list`：`content.items[]`
+- `kv`：`content.entries[]`（`{k,v}`）
+- `csv_field_text`：
+  - `content.field`：从 `tpl[field]` 读取
+  - `content.fallback`：字段空时回退文本
+
+## 5) CSV 与构建约定（强制）
+
+- 策划可在 CSV 新增字段供模块读取。
+- `tools/build-items-json.mjs` 必须保留非空扩展列写入 `items.json`，确保 `csv_field_text` 可读取。
+- `info_module_set_id` 必须从 CSV 映射到 `items.json`。
+
+## 6) item-editor 交互约定
+
+- 模块集管理面板位于右侧列（宽屏）；
+- 字段绑定下拉基于“当前 CSV 整表表头”；
+- 解锁条件允许按模块单独配置（`skill_id/level_min/locked_hint`）；
+- 保留 JSON 文本区与可视化编辑双向同步。
+
+## 7) 回退与容错
+
+- `info_module_set_id` 缺失或 set 不存在：仅显示名称+描述，不抛致命异常。
+- 模块表加载失败：保持基础 tooltip 可用。

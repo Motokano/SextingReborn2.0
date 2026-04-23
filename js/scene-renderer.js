@@ -414,6 +414,14 @@
         return 4;
     }
 
+    function hasVisibleDomDirectionIndicator() {
+        var el = document.getElementById('player-direction-indicator');
+        if (!el) return false;
+        var style = window.getComputedStyle ? window.getComputedStyle(el) : null;
+        if (!style) return true;
+        return style.display !== 'none' && style.visibility !== 'hidden' && style.opacity !== '0';
+    }
+
     function getFacingVisionMultiplier(st, gx, gy) {
         var cfg = getVisionFacingUiConfig();
         if (!cfg.enabled) return 1;
@@ -431,6 +439,45 @@
         if (ang <= cfg.frontHalfAngleDeg) return cfg.frontMul;
         if (ang <= cfg.sideHalfAngleDeg) return cfg.sideMul;
         return cfg.backMul;
+    }
+
+    /**
+     * 通用的实体朝向指示器绘制模块，可以在人物或敌人格子边缘的八个方向绘制箭头
+     */
+    function renderEntityDirectionIndicator(ctx, cx, cy, cellPx, dir, isEnemy) {
+        var fv = facingDirToVector(dir);
+        var baseAng = Math.atan2(fv.y, fv.x);
+        
+        // 沿朝向推到格子的边缘
+        var dist = cellPx * 0.44; 
+        var tipX = cx + Math.cos(baseAng) * dist;
+        var tipY = cy + Math.sin(baseAng) * dist;
+        var size = cellPx * 0.16;
+
+        ctx.save();
+        ctx.translate(tipX, tipY);
+        ctx.rotate(baseAng);
+
+        ctx.beginPath();
+        ctx.moveTo(size * 0.6, 0);
+        ctx.lineTo(-size * 0.6, size * 0.5);
+        ctx.lineTo(-size * 0.25, 0);
+        ctx.lineTo(-size * 0.6, -size * 0.5);
+        ctx.closePath();
+
+        var color = isEnemy ? 'rgba(239, 68, 68, 0.95)' : 'rgba(250, 230, 140, 0.95)';
+        var shadow = isEnemy ? 'rgba(220, 38, 38, 0.6)' : 'rgba(250, 230, 140, 0.6)';
+
+        ctx.fillStyle = color;
+        ctx.shadowColor = shadow;
+        ctx.shadowBlur = 6;
+        ctx.fill();
+
+        ctx.strokeStyle = 'rgba(20, 20, 20, 0.8)';
+        ctx.lineWidth = 1.5;
+        ctx.stroke();
+
+        ctx.restore();
     }
 
     function sampleNightDarknessByMinute(minuteOfDay, keyframes) {
@@ -507,59 +554,20 @@
     function renderFacingVisionOverlay(args) {
         if (!args || !args.ctx || !args.map || !args.state) return;
         var cfg = getVisionFacingUiConfig();
-        if (!cfg.enabled || !cfg.showConeOverlay) return;
+        // 若 DOM 朝向光标存在且可见，避免在 FX 层重复绘制第二个光标。
+        if (hasVisibleDomDirectionIndicator()) return;
         var ctx2d = args.ctx;
-        var map = args.map;
         var st = args.state;
         var cellPx = args.cellPx || 101;
         var cellToPx = args.cellToPx || function (x, y) { return { x: x * cellPx, y: y * cellPx }; };
-        var profile = getVisionRevealProfile();
-        var darkness = getDarknessAlphaNow();
-        var mapW = (map.width | 0) * cellPx;
-        var mapH = (map.height | 0) * cellPx;
-        if (!(mapW > 0) || !(mapH > 0)) return;
+        
         var p = cellToPx(st.x | 0, st.y | 0);
         var cx = p.x + cellPx / 2;
         var cy = p.y + cellPx / 2;
-        var fv = facingDirToVector(resolvePlayerFacingDir());
-        var baseAng = Math.atan2(fv.y, fv.x);
-        var halfRad = (Math.max(5, Math.min(175, cfg.sideHalfAngleDeg)) * Math.PI) / 180;
-        var radius = Math.max(1, profile.visualRadius) * cellPx;
-        // 夜间更明显，白天更轻。
-        var alphaMul = 0.55 + Math.min(1, Math.max(0, darkness * 1.2));
-        var coneAlpha = Math.min(1, Math.max(0, cfg.coneOpacity * alphaMul));
-        var edgeAlpha = Math.min(1, Math.max(0, cfg.edgeOpacity * alphaMul));
-        // 扇形切片：明显强化“背后看不到”，同时保留轻微前偏避免死板。
-        var forwardOffset = radius * 0.06;
-        var ccx = cx + fv.x * forwardOffset;
-        var ccy = cy + fv.y * forwardOffset;
-        // 扇尖更贴近人物格中心：从玩家中心沿朝向轻微前移一点作为扇形起点。
-        var tipX = cx + fv.x * (cellPx * 0.18);
-        var tipY = cy + fv.y * (cellPx * 0.18);
+        var currentDir = resolvePlayerFacingDir();
+        if (!Number.isFinite(Number(currentDir))) currentDir = 4;
 
-        ctx2d.save();
-        var grad = ctx2d.createRadialGradient(ccx, ccy, cellPx * 0.6, ccx, ccy, radius);
-        grad.addColorStop(0, 'rgba(250, 230, 140, ' + coneAlpha.toFixed(3) + ')');
-        grad.addColorStop(0.72, 'rgba(250, 230, 140, ' + (coneAlpha * 0.22).toFixed(3) + ')');
-        grad.addColorStop(1, 'rgba(250, 230, 140, 0)');
-        ctx2d.beginPath();
-        ctx2d.moveTo(tipX, tipY);
-        ctx2d.arc(ccx, ccy, radius, baseAng - halfRad, baseAng + halfRad, false);
-        ctx2d.closePath();
-        ctx2d.fillStyle = grad;
-        ctx2d.fill();
-
-        // 柔化处理：用轻微 blur 的外弧叠加，替代硬描边。
-        ctx2d.save();
-        ctx2d.shadowColor = 'rgba(250, 220, 120, ' + (edgeAlpha * 0.42).toFixed(3) + ')';
-        ctx2d.shadowBlur = 12;
-        ctx2d.strokeStyle = 'rgba(250, 220, 120, ' + (edgeAlpha * 0.28).toFixed(3) + ')';
-        ctx2d.lineWidth = 2;
-        ctx2d.beginPath();
-        ctx2d.arc(ccx, ccy, radius * 0.985, baseAng - halfRad, baseAng + halfRad, false);
-        ctx2d.stroke();
-        ctx2d.restore();
-        ctx2d.restore();
+        renderEntityDirectionIndicator(ctx2d, cx, cy, cellPx, currentDir, false);
     }
 
     /**
@@ -790,6 +798,9 @@
     }
 
     function formatItemAttributes(tpl, inst) {
+        if (window.SceneApp && typeof window.SceneApp.formatItemAttributes === 'function') {
+            return window.SceneApp.formatItemAttributes(tpl, inst);
+        }
         var ctx = getCtx();
         var IE = ctx ? ctx.IE : null;
         if (!tpl) return '';
@@ -815,6 +826,9 @@
     }
 
     function buildItemTooltipHtml(name, desc, attrs) {
+        if (window.SceneApp && typeof window.SceneApp.buildItemTooltipHtml === 'function') {
+            return window.SceneApp.buildItemTooltipHtml(name, desc, attrs);
+        }
         var html = '<div class="tooltip-name">' + (name || '').replace(/</g, '&lt;').replace(/>/g, '&gt;') + '</div>';
         if (desc) html += '<div class="tooltip-desc">' + (desc || '').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\n/g, '<br>') + '</div>';
         if (attrs) html += '<div class="tooltip-attrs">' + (attrs || '').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\n/g, '<br>') + '</div>';
@@ -945,8 +959,13 @@
             body.textContent = tpl ? IE.getDisplayName(tpl, tier, char).slice(0, 2) : it.item_id.slice(0, 2);
             var name = tpl ? IE.getDisplayName(tpl, tier, char) : it.item_id;
             var desc = tpl ? IE.getDisplayDesc(tpl, tier, char) : '';
-            var attrs = formatItemAttributes(tpl, it);
-            var tipHtml = buildItemTooltipHtml(name, desc, attrs);
+            var tipHtml = '';
+            if (window.SceneApp && typeof window.SceneApp.buildItemTooltipHtmlForTemplate === 'function') {
+                tipHtml = window.SceneApp.buildItemTooltipHtmlForTemplate(it.item_id, tpl, it, char);
+            } else {
+                var attrs = formatItemAttributes(tpl, it);
+                tipHtml = buildItemTooltipHtml(name, desc, attrs);
+            }
             slot.addEventListener('mouseenter', function (html, el) { return function () { showItemTooltip(html, el); }; }(tipHtml, slot));
             slot.addEventListener('mouseleave', function () { hideItemTooltip(); hideQuickBeltHoverMenuDelayed(); });
             slot.addEventListener('mouseenter', function () {
@@ -1115,12 +1134,16 @@
                 var portal = E.getPortalAt(gx, gy);
                 var entityId = E.getEntityAt(gx, gy);
                 var cookingStation = typeof E.isCookingStationCell === 'function' && E.isCookingStationCell(gx, gy);
+                var pharmacyStation = typeof E.isPharmacyStationCell === 'function' && E.isPharmacyStationCell(gx, gy);
+                var compostStation = typeof E.isCompostStationCell === 'function' && E.isCompostStationCell(gx, gy);
                 return {
                     walkable: walkable,
                     portal: !!portal,
                     gathering: (entityId === 'gathering_bush' || entityId === 'gathering_grass'),
                     cookingStation: cookingStation,
-                    adjacent: false,
+                    pharmacyStation: pharmacyStation,
+                    compostStation: compostStation,
+                                        adjacent: false,
                     groundCount: 0,
                     npc: false,
                     enemy: false,
@@ -1163,6 +1186,10 @@
                 var showGathering = hasGatheringPoint && canIdentify;
                 var cookingStationCell = typeof E.isCookingStationCell === 'function' && E.isCookingStationCell(gx, gy);
                 var showCookingStation = !!(cookingStationCell && canVisual && canIdentify);
+                var pharmacyStationCell = typeof E.isPharmacyStationCell === 'function' && E.isPharmacyStationCell(gx, gy);
+                var showPharmacyStation = !!(pharmacyStationCell && canVisual && canIdentify);
+                var compostStationCell = typeof E.isCompostStationCell === 'function' && E.isCompostStationCell(gx, gy);
+                var showCompostStation = !!(compostStationCell && canVisual && canIdentify);
                 var unknownPresence = false;
                 if (!canVisual) {
                     npcId = null;
@@ -1170,11 +1197,15 @@
                     rawGroundCount = 0;
                     showGathering = false;
                     showCookingStation = false;
+                    showPharmacyStation = false;
+                    showCompostStation = false;
                 } else if (!canIdentify) {
                     unknownPresence = !!(npcId || enemyId);
                     npcId = null;
                     enemyId = null;
                     showCookingStation = false;
+                    showPharmacyStation = false;
+                    showCompostStation = false;
                 }
                 var unknownGround = false;
                 if (rawGroundCount > 0 && !canIdentify) {
@@ -1198,6 +1229,8 @@
                     shownEnemyId = null;
                     gatheringBlurred = false;
                     showCookingStation = false;
+                    showPharmacyStation = false;
+                    showCompostStation = false;
                 }
                 var npcLabel = '';
                 if (npcId && window.NPCSystem && typeof window.NPCSystem.getNpcMapLabel === 'function') {
@@ -1214,6 +1247,8 @@
                     gathering: showGathering,
                     gatheringBlurred: gatheringBlurred,
                     cookingStation: showCookingStation,
+                    pharmacyStation: showPharmacyStation,
+                    compostStation: showCompostStation,
                     npc: !!npcId,
                     npcLabel: npcLabel,
                     enemy: !!enemyId,
@@ -1291,6 +1326,26 @@
             }
             if (map.cooking_station_interact_npc_id != null && String(map.cooking_station_interact_npc_id).trim()) {
                 parts.push('CSI=' + String(map.cooking_station_interact_npc_id).trim());
+            }
+            if (map.pharmacy_station_interact_npc_by_cell && typeof map.pharmacy_station_interact_npc_by_cell === 'object') {
+                var psk = Object.keys(map.pharmacy_station_interact_npc_by_cell).sort();
+                for (var pi = 0; pi < psk.length; pi++) {
+                    var pk = psk[pi];
+                    parts.push('P' + pk + '=' + String(map.pharmacy_station_interact_npc_by_cell[pk]));
+                }
+            }
+            if (map.pharmacy_station_interact_npc_id != null && String(map.pharmacy_station_interact_npc_id).trim()) {
+                parts.push('PSI=' + String(map.pharmacy_station_interact_npc_id).trim());
+            }
+            if (map.compost_station_interact_npc_by_cell && typeof map.compost_station_interact_npc_by_cell === 'object') {
+                var xsk = Object.keys(map.compost_station_interact_npc_by_cell).sort();
+                for (var xi = 0; xi < xsk.length; xi++) {
+                    var xk = xsk[xi];
+                    parts.push('X' + xk + '=' + String(map.compost_station_interact_npc_by_cell[xk]));
+                }
+            }
+            if (map.compost_station_interact_npc_id != null && String(map.compost_station_interact_npc_id).trim()) {
+                parts.push('XSI=' + String(map.compost_station_interact_npc_id).trim());
             }
             staticDataKey = parts.join('|');
         } catch (e) {
@@ -1391,6 +1446,7 @@
                             tips.push('敌人');
                         }
                     }
+                    if (meta.compostStation) tips.push('制肥桶');
                     if (meta.groundCount > 0) tips.push('地面有 ' + meta.groundCount + ' 件物品');
                     else if (meta.groundUnknown) tips.push('地面似乎有东西');
                     if (meta.leapTarget) tips.push('蹑步落点');
@@ -1420,6 +1476,7 @@
         var bubbleAddFuel = document.getElementById('player-action-add-fuel');
         var bubblePourWater = document.getElementById('player-action-pour-water');
         var bubbleCook = document.getElementById('player-action-cook');
+        var bubblePharmacy = document.getElementById('player-action-pharmacy');
         var bubbleGroundItems = document.getElementById('player-action-ground-items');
         var bubbleDiqiHuti = document.getElementById('player-action-diqi-huti');
         var canTakeWater = !!(ctx && ctx.actions && typeof ctx.actions.canTakeWaterAtCurrentTile === 'function' && ctx.actions.canTakeWaterAtCurrentTile());
@@ -1478,6 +1535,10 @@
         if (bubbleCook) {
             bubbleCook.style.display = 'none';
             bubbleCook.textContent = tNie('player.action.cook');
+        }
+        if (bubblePharmacy) {
+            bubblePharmacy.style.display = 'none';
+            bubblePharmacy.textContent = tNie('player.action.pharmacy');
         }
 
         var abGather = document.getElementById('action-bar-gather');
@@ -1606,7 +1667,8 @@
         showItemTooltip: showItemTooltip,
         hideItemTooltip: hideItemTooltip,
         buildItemTooltipHtml: buildItemTooltipHtml,
-        formatItemAttributes: formatItemAttributes
+        formatItemAttributes: formatItemAttributes,
+        renderEntityDirectionIndicator: renderEntityDirectionIndicator
     };
     window.VisionDebug = {
         on: function () { return window.SceneRenderer.setVisionDebugEnabled(true); },

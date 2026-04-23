@@ -1,0 +1,79 @@
+{
+  "schemaVersion": 1,
+  "id": "npc.station.compost_base",
+  "name": "破损的制肥桶",
+  "displayTitle": "制肥桶",
+  "npcLabel": "桶",
+  "sprite": "",
+  "appearanceSchedule": {
+    "start": "00:00",
+    "end": "23:59"
+  },
+  "location": {
+    "sceneId": "M0_Base_Inside_lv_1",
+    "x": 13,
+    "y": 14
+  },
+  "mainMenu": {
+    "showChat": true,
+    "showWorkWhen": "never",
+    "showOpenCompostPanel": true,
+    "showLeave": true
+  },
+  "behavior": {
+    "type": "workbench",
+    "origin": "base_hideout",
+    "description": "设施 NPC：邻格点制肥桶格走 interactNpc；闲聊走 triggers，使用制肥桶打开堆肥面板。"
+  },
+  "fallbackDialoguePoolId": "npc.station.compost_base.fallback",
+  "fallbackPoolRules": [
+    {
+      "id": "npc.station.compost_base",
+      "repeatable": true,
+      "match_weight": 1,
+      "poolPickMode": "pick_one",
+      "poolIds": [
+        "npc.station.compost_base"
+      ],
+      "requires": [],
+      "blocks": [],
+      "condition": {
+        "type": "flagEquals",
+        "flag": "npc_station_compost_base_repaired",
+        "value": true
+      }
+    },
+    {
+      "id": "npc.station.compost_faulty",
+      "repeatable": true,
+      "match_weight": 1,
+      "poolPickMode": "pick_one",
+      "poolIds": [
+        "npc.station.compost_faulty"
+      ],
+      "requires": [],
+      "blocks": [],
+      "condition": {
+        "type": "and",
+        "conds": [
+          {
+            "type": "flagEquals",
+            "flag": "compost_base_station_repair_briefed",
+            "value": true
+          },
+          {
+            "type": "flagEquals",
+            "flag": "npc_station_compost_base_repaired",
+            "value": false
+          }
+        ]
+      }
+    }
+  ],
+  "tags": [
+    "workbench",
+    "compost_station",
+    "non_combat",
+    "base_facility"
+  ]
+}

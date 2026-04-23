@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title data-ui="app.title"></title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;700;900&display=swap" />
     <style>
         * { box-sizing: border-box; }
         body {
@@ -127,6 +128,30 @@
         }
         #player-sprite .avatar .avatar-fallback {
             user-select: none;
+        }
+        #player-direction-indicator {
+            position: absolute;
+            width: 78px;
+            height: 78px;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%) rotate(180deg);
+            pointer-events: none;
+            transition: transform 0.15s cubic-bezier(0.2, 0.8, 0.2, 1);
+            z-index: -1;
+        }
+        #player-direction-indicator::before {
+            content: '';
+            position: absolute;
+            top: -6px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 0;
+            border-left: 7px solid transparent;
+            border-right: 7px solid transparent;
+            border-bottom: 12px solid rgba(250, 230, 140, 0.95);
+            filter: drop-shadow(0 0 4px rgba(250, 230, 140, 0.6));
         }
         .tile.gathering {
             border-color: rgba(120,180,80,0.45);
@@ -549,89 +574,169 @@
         .player-actions-submenu .player-action-item-row { width: 100%; margin: 4px 0; box-sizing: border-box; }
         /* 背包+装备面板：放大 + 微软雅黑 */
         #modal-backpack {
-            display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.65); z-index: 100;
+            display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.78); z-index: 100;
             align-items: center; justify-content: center; pointer-events: auto;
-            font-family: "Microsoft YaHei", "微软雅黑", "PingFang SC", sans-serif;
+            font-family: "Noto Serif SC", "Source Han Serif SC", "Microsoft YaHei", "微软雅黑", "PingFang SC", serif;
         }
         #modal-backpack.show { display: flex; }
         #modal-backpack .panel {
-            width: 96%; max-width: 1080px; max-height: 90vh;
-            background: #1c1612; border: 2px solid #d4a373; border-radius: 10px;
+            width: min(1320px, 98vw); height: min(860px, 92vh); max-height: 92vh;
+            background: #1a1512; border: 2px solid #4d4d45; border-radius: 10px;
             overflow: hidden; display: flex; flex-direction: column;
-            font-size: 15px;
+            box-shadow: 0 24px 64px rgba(0,0,0,0.65);
         }
-        #modal-backpack .panel-body { flex: 1; overflow-y: auto; padding: 22px 26px; display: flex; gap: 32px; }
-        #modal-backpack .panel-left { flex: 1; min-width: 0; }
-        #modal-backpack .panel-right { width: 280px; flex-shrink: 0; }
-        #modal-backpack .inv-region { margin-bottom: 20px; }
-        #modal-backpack .inv-region h4 {
-            font-size: 15px; font-weight: 700; color: rgba(251,191,36,0.95);
-            margin: 0 0 10px 0; letter-spacing: 0.06em;
+        #modal-backpack .bp-head {
+            height: 56px; flex-shrink: 0; display: flex; align-items: center; justify-content: space-between;
+            padding: 0 16px 0 20px; border-bottom: 2px solid #4d4d45; background: #252520;
         }
-        #modal-backpack .inv-grid { display: grid; grid-template-columns: repeat(6, 82px); gap: 7px; }
-        #modal-backpack .inv-slot {
-            width: 82px; height: 82px; border: 1px solid #4d3f35; background: rgba(0,0,0,0.35);
-            border-radius: 6px; display: flex; align-items: center; justify-content: center;
-            font-size: 13px; color: #e8e6e3; box-sizing: border-box; position: relative;
+        #modal-backpack .bp-title { margin: 0; font-size: 18px; color: #d3a060; letter-spacing: 0.12em; font-weight: 900; }
+        #modal-backpack .bp-head-right { display: flex; align-items: center; gap: 12px; }
+        #modal-backpack .bp-carry { font-size: 12px; color: #8e8e8e; font-family: "Microsoft YaHei", "微软雅黑", "PingFang SC", sans-serif; }
+        #modal-backpack #backpack-search {
+            width: 240px; max-width: 35vw; padding: 8px 10px; border-radius: 8px;
+            border: 2px solid #4d4d45; background: #1a1512; color: #e0d7c6; font-size: 13px;
+            font-family: "Microsoft YaHei", "微软雅黑", "PingFang SC", sans-serif;
         }
-        #modal-backpack .inv-slot:hover { border-color: #fbbf24; }
-        #modal-backpack .inv-slot .inv-slot-label {
-            flex: 1; overflow: hidden; text-overflow: ellipsis; font-size: 12px; line-height: 1.25;
-            padding: 6px 18px 18px 6px; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical;
+        #modal-backpack #backpack-search:focus { outline: none; border-color: #d3a060; }
+        #modal-backpack .bp-close {
+            width: 36px; height: 36px; border-radius: 8px; border: 1px solid #4d4d45;
+            background: #1a1512; color: #8e8e8e; cursor: pointer; font-size: 17px;
         }
-        #modal-backpack .inv-slot .inv-slot-drop {
-            position: absolute; right: 4px; bottom: 4px; padding: 3px 7px; font-size: 12px; line-height: 1.2;
-            background: #4d3f35; border: 1px solid #78716c; color: #e8e6e3; border-radius: 4px; cursor: pointer;
+        #modal-backpack .bp-close:hover { color: #fff; border-color: #d3a060; }
+        #modal-backpack .panel-body { flex: 1; min-height: 0; display: flex; }
+        #modal-backpack .bp-tabs {
+            width: 160px; flex-shrink: 0; border-right: 2px solid #4d4d45; background: #252520;
+            padding: 10px; display: flex; flex-direction: column; gap: 8px;
         }
-        #modal-backpack .inv-slot .inv-slot-use { left: 4px; right: auto; }
-        #modal-backpack .inv-slot .inv-slot-drop:hover { background: #5c4a3d; border-color: #fbbf24; }
-        #modal-backpack .inv-slot.inv-slot-equip { cursor: pointer; }
-        #modal-backpack .equip-action-btn {
-            position: absolute; right: 4px; top: 4px;
-            display: none;
-            padding: 3px 8px;
-            font-size: 12px;
-            line-height: 1.2;
-            background: #4d3f35; border: 1px solid #78716c;
-            color: #e8e6e3; border-radius: 6px;
-            cursor: pointer;
+        #modal-backpack .bp-tab-btn {
+            border: 2px solid #4d4d45; border-radius: 8px; background: #1a1512; color: #8e8e8e;
+            font-size: 12px; font-weight: 800; letter-spacing: 0.06em; padding: 10px 8px; cursor: pointer;
         }
-        #modal-backpack .inv-slot.inv-slot-equip:hover .equip-action-btn { display: inline-block; }
-        #modal-backpack .ground-region { margin-top: 20px; padding-top: 14px; border-top: 1px solid #4d3f35; }
-        #modal-backpack .ground-item-row {
-            display: flex; align-items: center; justify-content: space-between;
-            padding: 10px 12px; margin-bottom: 8px; background: rgba(45,36,30,0.85);
-            border: 1px solid #4d3f35; border-radius: 6px; gap: 12px;
+        #modal-backpack .bp-tab-btn:hover { border-color: #666; color: #d3a060; }
+        #modal-backpack .bp-tab-btn.active { border-color: #d3a060; color: #1a1512; background: #d3a060; }
+        #modal-backpack .bp-list {
+            width: 46%; min-width: 0; border-right: 2px solid #4d4d45; background: #1d1d18;
+            display: flex; flex-direction: column;
         }
-        #modal-backpack .ground-item-row .ground-item-name { color: #e8e6e3; font-size: 15px; flex: 1; }
-        #modal-backpack .ground-item-row .btn-pickup {
-            padding: 6px 14px; font-size: 14px; background: #4d3f35; border: 1px solid #78716c;
-            color: #e8e6e3; border-radius: 6px; cursor: pointer; flex-shrink: 0;
+        #modal-backpack .bp-list-head {
+            height: 42px; display: flex; align-items: center; padding: 0 14px; border-bottom: 1px solid #4d4d45;
+            color: #8e8e8e; font-size: 11px; font-weight: 900; letter-spacing: 0.1em; text-transform: uppercase;
         }
-        #modal-backpack .ground-item-row .btn-pickup:hover { background: #5c4a3d; border-color: #fbbf24; }
-        #modal-backpack .ground-item-row .btn-equip-from-ground { margin-left: 8px; }
+        #modal-backpack #backpack-item-list { flex: 1; overflow-y: auto; padding: 8px; }
+        #modal-backpack .bp-item-row {
+            border: 2px solid #4d4d45; border-radius: 8px; background: #252520; margin-bottom: 8px; padding: 10px 10px;
+            cursor: pointer; display: flex; align-items: flex-start; gap: 10px;
+        }
+        #modal-backpack .bp-item-row:hover { border-color: #666; background: #2f2c28; }
+        #modal-backpack .bp-item-row.selected { border-color: #ff8c00; box-shadow: 0 0 16px rgba(255,140,0,0.18); background: #2f2c26; }
+        #modal-backpack .bp-item-tier { width: 3px; border-radius: 6px; align-self: stretch; background: #6b6560; }
+        #modal-backpack .bp-item-main { flex: 1; min-width: 0; }
+        #modal-backpack .bp-item-name {
+            color: #e0d7c6; font-size: 14px; font-weight: 800; line-height: 1.35;
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+        }
+        #modal-backpack .bp-item-sub {
+            color: #8e8e8e; font-size: 12px; margin-top: 3px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+            overflow: hidden;
+            font-family: "Microsoft YaHei", "微软雅黑", "PingFang SC", sans-serif;
+        }
+        #modal-backpack .bp-item-meta { color: #6b6560; font-size: 11px; margin-top: 4px; }
+        #modal-backpack .bp-detail {
+            flex: 1; min-width: 0; display: flex; flex-direction: column; background: #1a1512;
+            min-height: 0;
+        }
+        #modal-backpack #backpack-detail {
+            flex: 1;
+            min-height: 0;
+            overflow-y: auto;
+            padding: 14px 16px;
+            border-bottom: 1px solid #4d4d45;
+        }
+        #modal-backpack .bp-equip-panel {
+            flex: 0 0 34%;
+            min-height: 180px;
+            max-height: 44%;
+            overflow-y: auto;
+            padding: 10px 16px 14px 16px;
+        }
+        #modal-backpack .bp-detail-empty { color: #6b6560; font-size: 14px; padding: 18px 6px; }
+        #modal-backpack .bp-detail-title { color: #e0d7c6; font-size: 20px; font-weight: 900; letter-spacing: 0.04em; margin-bottom: 6px; }
+        #modal-backpack .bp-detail-desc {
+            color: #a8a29e; font-size: 13px; line-height: 1.6; white-space: pre-wrap;
+            border-left: 2px solid #d3a060; padding-left: 10px; margin-bottom: 12px;
+            font-family: "Microsoft YaHei", "微软雅黑", "PingFang SC", sans-serif;
+        }
+        #modal-backpack .bp-detail-attrs {
+            color: #8e8e8e; font-size: 12px; white-space: pre-wrap; margin-bottom: 12px;
+            font-family: "Microsoft YaHei", "微软雅黑", "PingFang SC", sans-serif;
+        }
+        #modal-backpack .bp-detail-modules { margin-bottom: 12px; }
+        #modal-backpack #backpack-detail .tooltip-modules { margin-top: 2px; display: grid; gap: 6px; }
+        #modal-backpack #backpack-detail .tooltip-module { border: 1px solid #4d3f35; border-radius: 6px; padding: 7px 8px; background: rgba(0,0,0,0.12); }
+        #modal-backpack #backpack-detail .tooltip-module.is-locked { opacity: 0.78; }
+        #modal-backpack #backpack-detail .tooltip-module-title { font-size: 11px; font-weight: 700; color: #e8e6e3; margin-bottom: 4px; }
+        #modal-backpack #backpack-detail .tooltip-module-text { color: #bdb5ab; font-size: 11px; white-space: pre-wrap; }
+        #modal-backpack #backpack-detail .tooltip-module-list { margin: 0; padding-left: 16px; color: #bdb5ab; font-size: 11px; }
+        #modal-backpack #backpack-detail .tooltip-module-kv { display: grid; gap: 3px; }
+        #modal-backpack #backpack-detail .tooltip-module-kv-row { display: flex; justify-content: space-between; gap: 8px; color: #bdb5ab; font-size: 11px; }
+        #modal-backpack #backpack-detail .tooltip-module-k { color: #8e8a84; }
+        #modal-backpack #backpack-detail .tooltip-module-v { color: #d4cec3; text-align: right; }
+        #modal-backpack #backpack-detail .tooltip-module-locked-hint { color: #8e8a84; font-size: 11px; }
+        #modal-backpack .bp-detail-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 14px; }
+        #modal-backpack .bp-action-btn {
+            border: 1px solid #4d4d45; border-radius: 6px; background: #252520; color: #e0d7c6;
+            font-size: 12px; font-weight: 700; padding: 7px 12px; cursor: pointer;
+        }
+        #modal-backpack .bp-action-btn:hover { border-color: #d3a060; color: #d3a060; }
         #modal-backpack .equip-title {
-            font-size: 15px; font-weight: 700; color: rgba(251,191,36,0.95);
-            margin: 0 0 12px 0; letter-spacing: 0.06em;
+            font-size: 12px; font-weight: 900; color: #8e8e8e; margin: 0 0 8px 0; letter-spacing: 0.1em; text-transform: uppercase;
         }
         #modal-backpack .equip-list { display: flex; flex-direction: column; gap: 8px; }
         #modal-backpack .equip-row {
-            display: flex; align-items: center; justify-content: space-between;
-            padding: 10px 12px; background: rgba(45,36,30,0.85); border: 1px solid #4d3f35;
-            border-radius: 6px; gap: 10px;
+            display: flex; align-items: center; justify-content: space-between; gap: 8px;
+            background: #252520; border: 1px solid #4d4d45; border-radius: 6px; padding: 8px;
         }
-        #modal-backpack .equip-row .slot-name { color: #a8a29e; font-size: 14px; min-width: 88px; flex-shrink: 0; }
-        #modal-backpack .equip-row .item-name { color: #e8e6e3; font-size: 15px; flex: 1; min-width: 0; }
-        #modal-backpack .equip-row .btn-unequip {
-            padding: 6px 12px; font-size: 14px; background: #4d3f35; border: 1px solid #78716c;
-            color: #e8e6e3; border-radius: 6px; cursor: pointer; flex-shrink: 0;
+        #modal-backpack .equip-row .slot-name { color: #8e8e8e; font-size: 12px; min-width: 82px; }
+        #modal-backpack .equip-row .item-name {
+            color: #e0d7c6; font-size: 13px; flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
         }
-        #modal-backpack .equip-row .btn-unequip:hover { background: #5c4a3d; border-color: #fbbf24; }
-        #modal-backpack .panel-close {
-            padding: 14px; border-top: 1px solid #4d3f35; text-align: center; cursor: pointer;
-            color: #fbbf24; font-weight: 700; font-size: 16px;
+        #modal-backpack .equip-row .btn-unequip,
+        #modal-backpack .btn-pickup {
+            border: 1px solid #4d4d45; border-radius: 6px; background: #1a1512; color: #e0d7c6; cursor: pointer;
+            font-size: 12px; padding: 5px 9px;
         }
-        #modal-backpack .panel-close:hover { background: rgba(212,163,115,0.15); }
+        #modal-backpack .equip-row .btn-unequip:hover,
+        #modal-backpack .btn-pickup:hover { border-color: #d3a060; color: #d3a060; }
+        #modal-backpack .ground-item-row {
+            display: flex; align-items: center; justify-content: space-between; gap: 8px;
+            background: #252520; border: 1px solid #4d4d45; border-radius: 6px; padding: 8px; margin-bottom: 8px;
+        }
+        #modal-backpack .ground-item-row .ground-item-name { color: #e0d7c6; font-size: 13px; flex: 1; min-width: 0; }
+        #modal-backpack .ground-item-row .btn-equip-from-ground { margin-left: 6px; }
+        #modal-backpack #backpack-item-list,
+        #modal-backpack #backpack-detail,
+        #modal-backpack .bp-equip-panel {
+            scrollbar-width: thin;
+            scrollbar-color: rgba(211,160,96,0.65) rgba(26,21,18,0.35);
+        }
+        #modal-backpack #backpack-item-list::-webkit-scrollbar,
+        #modal-backpack #backpack-detail::-webkit-scrollbar,
+        #modal-backpack .bp-equip-panel::-webkit-scrollbar {
+            width: 8px;
+        }
+        #modal-backpack #backpack-item-list::-webkit-scrollbar-track,
+        #modal-backpack #backpack-detail::-webkit-scrollbar-track,
+        #modal-backpack .bp-equip-panel::-webkit-scrollbar-track {
+            background: rgba(26,21,18,0.4);
+            border-radius: 999px;
+        }
+        #modal-backpack #backpack-item-list::-webkit-scrollbar-thumb,
+        #modal-backpack #backpack-detail::-webkit-scrollbar-thumb,
+        #modal-backpack .bp-equip-panel::-webkit-scrollbar-thumb {
+            background: linear-gradient(180deg, #d3a060 0%, #8f6840 100%);
+            border-radius: 999px;
+            border: 1px solid rgba(26,21,18,0.4);
+        }
         /* 基地仓库（调试：全物品无限取） */
         #modal-base-warehouse {
             display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.65); z-index: 100;
@@ -674,308 +779,790 @@
             color: #fbbf24; font-weight: 700; font-size: 16px;
         }
         #modal-base-warehouse .bw-close:hover { background: rgba(212,163,115,0.15); }
-        /* 烹饪台 */
+        /* 烹饪台（视觉与 reference/combat_skill.html 色板、字体对齐） */
         #modal-cooking-station {
-            display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.70); z-index: 100;
+            display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.88); z-index: 100;
             align-items: center; justify-content: center; pointer-events: auto;
-            font-family: "Microsoft YaHei", "微软雅黑", "PingFang SC", sans-serif;
+            font-family: "Noto Serif SC", "Source Han Serif SC", "Noto Serif CJK SC", "SimSun", serif;
         }
         #modal-cooking-station.show { display: flex; }
         #modal-cooking-station .cs-panel {
             width: min(1100px, 96vw); height: min(720px, 88vh);
-            background: #1c1612; border: 2px solid rgba(212,163,115,0.30); border-radius: 12px;
+            background: #2d2d28; border: 2px solid #4d4d45; border-radius: 10px;
             overflow: hidden; display: flex; flex-direction: column; font-size: 14px;
-            box-shadow: 0 18px 48px rgba(0,0,0,0.55);
+            box-shadow: 0 24px 64px rgba(0,0,0,0.65);
+            position: relative;
+            color: #e0d7c6;
+            background-image: radial-gradient(120% 90% at 50% 0%, rgba(211,160,96,0.08), rgba(45,45,40,0) 45%);
+        }
+        #modal-cooking-station .cs-panel::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            box-shadow: inset 0 0 120px rgba(0,0,0,0.36);
         }
         #modal-cooking-station .cs-head {
-            padding: 14px 18px; border-bottom: 1px solid #4d3f35;
+            padding: 12px 18px; border-bottom: 2px solid #4d4d45; background: #1a1512;
             display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap;
         }
-        #modal-cooking-station .cs-head h2 { margin: 0; font-size: 17px; font-weight: 800; color: rgba(251,191,36,0.95); letter-spacing: 0.06em; }
-        #modal-cooking-station .cs-head .cs-hint { font-size: 13px; color: #a8a29e; flex: 1; min-width: 200px; }
-        #modal-cooking-station .cs-head .cs-close {
-            padding: 8px 12px; font-size: 14px; background: rgba(212,163,115,0.08); border: 1px solid #4d3f35;
-            color: #e8e6e3; border-radius: 8px; cursor: pointer; flex-shrink: 0; font-weight: 700;
+        #modal-cooking-station .cs-head h2 {
+            margin: 0; font-size: 1.05rem; font-weight: 900; color: #e0d7c6; letter-spacing: 0.06em;
+            position: relative; padding-left: 10px;
         }
-        #modal-cooking-station .cs-head .cs-close:hover { background: rgba(212,163,115,0.15); border-color: #fbbf24; }
+        #modal-cooking-station .cs-head h2::before {
+            content: '';
+            position: absolute; left: 0; top: 50%; width: 3px; height: 15px; border-radius: 2px;
+            transform: translateY(-50%);
+            background: linear-gradient(180deg, #ff8c00 0%, #d3a060 100%);
+        }
+        #modal-cooking-station .cs-head .cs-hint { font-size: 13px; color: #8e8e8e; flex: 1; min-width: 200px; line-height: 1.5; }
+        #modal-cooking-station .cs-head .cs-close {
+            padding: 8px 12px; font-size: 14px; background: transparent; border: none;
+            color: #8e8e8e; border-radius: 8px; cursor: pointer; flex-shrink: 0; font-weight: 800;
+        }
+        #modal-cooking-station .cs-head .cs-close:hover { color: #fff; background: rgba(185,28,28,0.18); }
         #modal-cooking-station .cs-body {
             flex: 1; overflow: hidden; min-height: 0;
-            display: grid; grid-template-columns: 1.2fr 1fr 0.9fr; gap: 12px;
-            padding: 12px 16px 18px;
+            display: grid; grid-template-columns: 1.15fr 1.05fr 0.95fr; gap: 12px;
+            padding: 12px 16px 18px; background: #1a1512;
         }
         #modal-cooking-station .cs-box {
-            border: 1px solid #4d3f35; border-radius: 10px; background: rgba(45,36,30,0.55);
+            border: 2px solid #4d4d45; border-radius: 10px; background: #252520;
             overflow: hidden; display: flex; flex-direction: column; min-height: 0;
         }
         #modal-cooking-station .cs-box .title {
-            padding: 10px 12px; border-bottom: 1px solid #4d3f35;
-            color: #e8e6e3; font-weight: 800; font-size: 13px; letter-spacing: 0.2px;
+            padding: 10px 12px; border-bottom: 2px solid #4d4d45;
+            color: #8e8e8e; font-weight: 900; font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase;
         }
         #modal-cooking-station .cs-subtitle {
-            margin: 0 0 8px 0; padding-top: 6px; border-top: 1px dashed rgba(120,113,108,0.35);
-            color: rgba(251,191,36,0.85); font-weight: 800; font-size: 12px; letter-spacing: 0.12em;
+            margin: 0 0 8px 0; padding-top: 6px; border-top: 1px dashed rgba(77,77,69,0.65);
+            color: #d3a060; font-weight: 800; font-size: 12px; letter-spacing: 0.08em;
         }
-        #modal-cooking-station .cs-box .content { padding: 10px 12px; overflow: auto; min-height: 0; }
+        #modal-cooking-station .cs-box .content { padding: 10px 12px; overflow: auto; min-height: 0; color: #e0d7c6; }
+        #modal-cooking-station .cs-box .content,
+        #modal-cooking-station .cs-ingredient-list,
+        #modal-cooking-station select {
+            scrollbar-width: thin;
+            scrollbar-color: rgba(211,160,96,0.7) rgba(26,21,18,0.55);
+        }
+        #modal-cooking-station .cs-box .content::-webkit-scrollbar,
+        #modal-cooking-station .cs-ingredient-list::-webkit-scrollbar {
+            width: 10px;
+            height: 10px;
+        }
+        #modal-cooking-station .cs-box .content::-webkit-scrollbar-track,
+        #modal-cooking-station .cs-ingredient-list::-webkit-scrollbar-track {
+            background: rgba(26,21,18,0.55);
+            border-radius: 10px;
+        }
+        #modal-cooking-station .cs-box .content::-webkit-scrollbar-thumb,
+        #modal-cooking-station .cs-ingredient-list::-webkit-scrollbar-thumb {
+            background: linear-gradient(180deg, rgba(211,160,96,0.88) 0%, rgba(155,112,64,0.92) 100%);
+            border-radius: 10px;
+            border: 2px solid rgba(26,21,18,0.65);
+        }
+        #modal-cooking-station .cs-box .content::-webkit-scrollbar-thumb:hover,
+        #modal-cooking-station .cs-ingredient-list::-webkit-scrollbar-thumb:hover {
+            background: linear-gradient(180deg, rgba(255,140,0,0.9) 0%, rgba(211,160,96,0.95) 100%);
+        }
         #modal-cooking-station .cs-method-list { display: flex; gap: 8px; flex-wrap: wrap; }
         #modal-cooking-station .btn-method {
-            padding: 7px 10px; font-size: 12px; background: rgba(0,0,0,0.22); border: 1px solid #4d3f35;
-            color: #e8e6e3; border-radius: 9px; cursor: pointer; font-weight: 800;
+            padding: 7px 10px; font-size: 12px; background: #1a1512; border: 2px solid #4d4d45;
+            color: #8e8e8e; border-radius: 9px; cursor: pointer; font-weight: 800;
         }
-        #modal-cooking-station .btn-method:hover { border-color: #78716c; }
-        #modal-cooking-station .btn-method.active { background: #fbbf24; color: #1c1612; border-color: #fbbf24; }
+        #modal-cooking-station .btn-method:hover { border-color: #666; color: #d3a060; }
+        #modal-cooking-station .btn-method.active {
+            background: #d3a060; color: #1a1512; border-color: #d3a060;
+            box-shadow: 0 0 12px rgba(255,140,0,0.22);
+        }
         #modal-cooking-station .cs-input-row {
             display: grid; grid-template-columns: 1fr 70px 70px; gap: 8px; align-items: center;
-            padding: 8px 0; border-bottom: 1px dashed rgba(120,113,108,0.35);
+            padding: 8px 0; border-bottom: 1px dashed rgba(77,77,69,0.55);
         }
         #modal-cooking-station .cs-input-row:last-child { border-bottom: none; }
-        #modal-cooking-station .cs-input-row .iname { color: #e8e6e3; font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-        #modal-cooking-station .cs-input-row .icnt { color: #a8a29e; font-size: 12px; text-align: right; }
+        #modal-cooking-station .cs-input-row .iname { color: #e0d7c6; font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        #modal-cooking-station .cs-input-row .icnt { color: #8e8e8e; font-size: 12px; text-align: right; }
         #modal-cooking-station .btn-mini {
-            padding: 6px 10px; font-size: 12px; background: rgba(212,163,115,0.08); border: 1px solid #4d3f35;
-            color: #e8e6e3; border-radius: 9px; cursor: pointer; font-weight: 800;
+            padding: 6px 10px; font-size: 12px; background: rgba(211,160,96,0.12); border: 2px solid #4d4d45;
+            color: #e0d7c6; border-radius: 9px; cursor: pointer; font-weight: 800;
         }
-        #modal-cooking-station .btn-mini:hover { background: rgba(212,163,115,0.15); border-color: #fbbf24; }
+        #modal-cooking-station .btn-mini:hover { border-color: #ff8c00; color: #ff8c00; background: rgba(211,160,96,0.18); }
         #modal-cooking-station .cs-add-row { display: grid; grid-template-columns: 1fr 92px 92px; gap: 8px; align-items: center; }
         #modal-cooking-station .cs-add-row.accessory { grid-template-columns: 1fr 92px; }
-        /* 材料选择：与基地仓库一致的行式列表 */
         #modal-cooking-station #cooking-ingredient-filter {
             width: 100%; max-width: 100%; padding: 8px 10px; border-radius: 8px; margin-bottom: 10px; box-sizing: border-box;
-            border: 1px solid #4d3f35; background: rgba(0,0,0,0.35); color: #e8e6e3; font-size: 13px;
+            border: 2px solid #4d4d45; background: rgba(0,0,0,0.35); color: #e0d7c6; font-size: 13px;
         }
         #modal-cooking-station .cs-ingredient-list {
             max-height: min(280px, 36vh); overflow-y: auto; padding-right: 4px;
         }
         #modal-cooking-station .cs-ingredient-row {
             display: flex; align-items: center; justify-content: space-between; gap: 10px;
-            padding: 8px 12px; margin-bottom: 6px; background: rgba(45,36,30,0.85);
-            border: 1px solid #4d3f35; border-radius: 6px;
+            padding: 8px 12px; margin-bottom: 6px; background: #1a1512;
+            border: 2px solid #4d4d45; border-radius: 8px;
         }
         #modal-cooking-station .cs-ingredient-row .cs-ing-left {
             flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px;
         }
-        #modal-cooking-station .cs-ingredient-row .cs-ing-name { color: #e8e6e3; font-size: 14px; font-weight: 700; }
-        #modal-cooking-station .cs-ingredient-row .cs-ing-id { font-size: 12px; color: #78716c; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        #modal-cooking-station .cs-ingredient-row .cs-ing-name { color: #e0d7c6; font-size: 14px; font-weight: 700; }
+        #modal-cooking-station .cs-ingredient-row .cs-ing-id { font-size: 12px; color: #8e8e8e; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
         #modal-cooking-station .cs-ingredient-row .cs-ing-counts {
-            font-size: 12px; color: #a8a29e; flex-shrink: 0; text-align: right; min-width: 7em;
+            font-size: 12px; color: #8e8e8e; flex-shrink: 0; text-align: right; min-width: 7em;
         }
         #modal-cooking-station .cs-ingredient-row .btn-add-ingredient {
-            padding: 6px 12px; font-size: 13px; background: #4d3f35; border: 1px solid #78716c;
-            color: #e8e6e3; border-radius: 6px; cursor: pointer; flex-shrink: 0; font-weight: 700;
+            padding: 6px 12px; font-size: 13px; background: #252520; border: 2px solid #4d4d45;
+            color: #e0d7c6; border-radius: 8px; cursor: pointer; flex-shrink: 0; font-weight: 800;
         }
-        #modal-cooking-station .cs-ingredient-row .btn-add-ingredient:hover:not(:disabled) { background: #5c4a3d; border-color: #fbbf24; }
+        #modal-cooking-station .cs-ingredient-row .btn-add-ingredient:hover:not(:disabled) { border-color: #d3a060; color: #d3a060; }
         #modal-cooking-station .cs-ingredient-row .btn-add-ingredient:disabled { opacity: 0.45; cursor: not-allowed; }
         #modal-cooking-station .cs-ingredient-row.cs-resource-pick { cursor: pointer; }
-        #modal-cooking-station .cs-ingredient-row.cs-resource-pick:hover { border-color: #78716c; }
+        #modal-cooking-station .cs-ingredient-row.cs-resource-pick:hover { border-color: #666; }
         #modal-cooking-station .cs-ingredient-row.cs-resource-pick.active {
-            border-color: #fbbf24;
-            box-shadow: 0 0 0 1px rgba(251,191,36,0.25);
+            border-color: #ff8c00;
+            box-shadow: 0 0 0 1px rgba(255,140,0,0.28);
         }
         #modal-cooking-station select, #modal-cooking-station input[type="number"] {
             width: 100%; padding: 8px 10px; border-radius: 8px;
-            border: 1px solid #4d3f35; background: rgba(0,0,0,0.35); color: #e8e6e3; font-size: 13px;
+            border: 2px solid #4d4d45; background: rgba(0,0,0,0.35); color: #e0d7c6; font-size: 13px;
         }
         #modal-cooking-station input[type="number"] { text-align: right; }
         #modal-cooking-station .cs-kv { display: flex; gap: 10px; flex-wrap: wrap; }
         #modal-cooking-station .cs-kv .kv {
-            padding: 8px 10px; border: 1px solid rgba(120,113,108,0.35); border-radius: 9px;
-            background: rgba(0,0,0,0.18); color: #e8e6e3; font-size: 12px;
+            padding: 8px 10px; border: 2px solid #4d4d45; border-radius: 9px;
+            background: rgba(0,0,0,0.22); color: #e0d7c6; font-size: 12px;
         }
-        #modal-cooking-station .cs-kv .kv.bad { border-color: rgba(185,28,28,0.6); color: #fecaca; }
+        #modal-cooking-station .cs-kv .kv.bad { border-color: rgba(185,28,28,0.65); color: #fecaca; }
         #modal-cooking-station .cs-actions { display: flex; gap: 10px; margin-top: 10px; flex-wrap: wrap; }
         #modal-cooking-station .cs-station-service { margin-top: 8px; }
         #modal-cooking-station .btn-start {
-            flex: 1; padding: 10px 12px; font-size: 14px; background: #fbbf24; border: 1px solid #fbbf24;
-            color: #1c1612; border-radius: 10px; cursor: pointer; font-weight: 900;
+            flex: 1; padding: 10px 12px; font-size: 14px; background: #d3a060; border: 2px solid #d3a060;
+            color: #1a1512; border-radius: 10px; cursor: pointer; font-weight: 900;
+            box-shadow: 0 0 14px rgba(255,140,0,0.2);
         }
-        #modal-cooking-station .btn-start:disabled { opacity: 0.65; cursor: not-allowed; }
+        #modal-cooking-station .btn-start:hover:not(:disabled) { filter: brightness(1.06); }
+        #modal-cooking-station .btn-start:disabled { opacity: 0.55; cursor: not-allowed; box-shadow: none; }
         #modal-cooking-station .btn-clear {
-            padding: 10px 12px; font-size: 14px; background: rgba(212,163,115,0.08); border: 1px solid #4d3f35;
-            color: #e8e6e3; border-radius: 10px; cursor: pointer; font-weight: 900;
+            padding: 10px 12px; font-size: 14px; background: #1a1512; border: 2px solid #4d4d45;
+            color: #e0d7c6; border-radius: 10px; cursor: pointer; font-weight: 900;
         }
-        #modal-cooking-station .btn-clear:hover { background: rgba(212,163,115,0.15); border-color: #fbbf24; }
+        #modal-cooking-station .btn-clear:hover { border-color: #d3a060; color: #d3a060; }
         #modal-cooking-station .cs-known-list { display: flex; flex-direction: column; gap: 8px; }
         #modal-cooking-station .btn-known {
             text-align: left; width: 100%; padding: 9px 10px; border-radius: 10px;
-            border: 1px solid #4d3f35; background: rgba(0,0,0,0.22); color: #e8e6e3; cursor: pointer; font-weight: 800; font-size: 12px;
+            border: 2px solid #4d4d45; background: #1a1512; color: #e0d7c6; cursor: pointer; font-weight: 800; font-size: 12px;
         }
-        #modal-cooking-station .btn-known:hover { border-color: #fbbf24; background: rgba(212,163,115,0.12); }
-        /* 战斗技能枢纽弹窗 - 参照 demo.html */
+        #modal-cooking-station .btn-known:hover { border-color: #ff8c00; color: #ff8c00; }
+        #modal-cooking-station .cs-active-craft {
+            border: 2px solid #4d4d45; border-radius: 10px; padding: 12px;
+            background: rgba(0,0,0,0.22);
+        }
+        #modal-cooking-station .cs-active-craft .label { color: #8e8e8e; font-size: 11px; font-weight: 900; letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 6px; }
+        #modal-cooking-station .cs-active-craft .main {
+            color: #e0d7c6; font-weight: 800; font-size: 14px; letter-spacing: 0.02em;
+            display: flex; justify-content: space-between; gap: 8px; align-items: baseline;
+        }
+        #modal-cooking-station .cs-active-craft .main span:last-child { color: #ff8c00; font-size: 12px; font-weight: 900; }
+        #modal-cooking-station .cs-active-craft .sub { color: #8e8e8e; font-size: 12px; margin-top: 6px; }
+        #modal-cooking-station .cs-active-craft .bar {
+            height: 6px; border-radius: 999px; background: rgba(77,77,69,0.55); margin-top: 10px; overflow: hidden;
+        }
+        #modal-cooking-station .cs-active-craft .bar > i {
+            display: block; height: 100%; width: 0;
+            background: linear-gradient(90deg, #ff8c00 0%, #d3a060 100%);
+        }
+        #modal-cooking-station #cooking-help-text { font-size: 13px; line-height: 1.65; color: #8e8e8e; }
+        #modal-cooking-station .cs-empty-hint { color: #8e8e8e; font-size: 13px; }
+        /* 制药台样式（复用烹饪台风格） */
+        #modal-pharmacy-station {
+            display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.88); z-index: 100;
+            align-items: center; justify-content: center; pointer-events: auto;
+            font-family: "Noto Serif SC", "Source Han Serif SC", "Noto Serif CJK SC", "SimSun", serif;
+        }
+        #modal-pharmacy-station.show { display: flex; }
+        #modal-pharmacy-station .cs-panel {
+            width: min(1100px, 96vw); height: min(720px, 88vh);
+            background: #2d2d28; border: 2px solid #4d4d45; border-radius: 10px;
+            overflow: hidden; display: flex; flex-direction: column; font-size: 14px;
+            box-shadow: 0 24px 64px rgba(0,0,0,0.65);
+            position: relative;
+            color: #e0d7c6;
+            background-image: radial-gradient(120% 90% at 50% 0%, rgba(211,160,96,0.08), rgba(45,45,40,0) 45%);
+        }
+        #modal-pharmacy-station .cs-panel::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            box-shadow: inset 0 0 120px rgba(0,0,0,0.36);
+        }
+        #modal-pharmacy-station .cs-head {
+            padding: 12px 18px; border-bottom: 2px solid #4d4d45; background: #1a1512;
+            display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap;
+        }
+        #modal-pharmacy-station .cs-head h2 {
+            margin: 0; font-size: 1.05rem; font-weight: 900; color: #e0d7c6; letter-spacing: 0.06em;
+            position: relative; padding-left: 10px;
+        }
+        #modal-pharmacy-station .cs-head h2::before {
+            content: '';
+            position: absolute; left: 0; top: 50%; width: 3px; height: 15px; border-radius: 2px;
+            transform: translateY(-50%);
+            background: linear-gradient(180deg, #ff8c00 0%, #d3a060 100%);
+        }
+        #modal-pharmacy-station .cs-head .cs-hint { font-size: 13px; color: #8e8e8e; flex: 1; min-width: 200px; line-height: 1.5; }
+        #modal-pharmacy-station .cs-head .cs-close {
+            padding: 8px 12px; font-size: 14px; background: transparent; border: none;
+            color: #8e8e8e; border-radius: 8px; cursor: pointer; flex-shrink: 0; font-weight: 800;
+        }
+        #modal-pharmacy-station .cs-head .cs-close:hover { color: #fff; background: rgba(185,28,28,0.18); }
+        #modal-pharmacy-station .cs-body {
+            flex: 1; overflow: hidden; min-height: 0;
+            display: grid; grid-template-columns: 1.2fr 1fr 0.9fr; gap: 12px;
+            padding: 12px 16px 18px; background: #1a1512;
+        }
+        #modal-pharmacy-station .cs-box {
+            border: 2px solid #4d4d45; border-radius: 10px; background: #252520;
+            overflow: hidden; display: flex; flex-direction: column; min-height: 0;
+        }
+        #modal-pharmacy-station .cs-box .title {
+            padding: 10px 12px; border-bottom: 2px solid #4d4d45;
+            color: #8e8e8e; font-weight: 900; font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase;
+        }
+        #modal-pharmacy-station .cs-subtitle {
+            margin: 0 0 8px 0; padding-top: 6px; border-top: 1px dashed rgba(77,77,69,0.65);
+            color: #d3a060; font-weight: 800; font-size: 12px; letter-spacing: 0.08em;
+        }
+        #modal-pharmacy-station .cs-box .content { padding: 10px 12px; overflow: auto; min-height: 0; color: #e0d7c6; }
+        #modal-pharmacy-station .cs-method-list { display: flex; gap: 8px; flex-wrap: wrap; }
+        #modal-pharmacy-station .btn-method {
+            padding: 7px 10px; font-size: 12px; background: #1a1512; border: 2px solid #4d4d45;
+            color: #8e8e8e; border-radius: 9px; cursor: pointer; font-weight: 800;
+        }
+        #modal-pharmacy-station .btn-method:hover { border-color: #666; color: #d3a060; }
+        #modal-pharmacy-station .btn-method.active {
+            background: #d3a060; color: #1a1512; border-color: #d3a060;
+            box-shadow: 0 0 12px rgba(255,140,0,0.22);
+        }
+        #modal-pharmacy-station .cs-input-row {
+            display: grid; grid-template-columns: 1fr 70px 70px; gap: 8px; align-items: center;
+            padding: 8px 0; border-bottom: 1px dashed rgba(77,77,69,0.55);
+        }
+        #modal-pharmacy-station .cs-input-row:last-child { border-bottom: none; }
+        #modal-pharmacy-station .cs-input-row .iname { color: #e0d7c6; font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        #modal-pharmacy-station .cs-input-row .icnt { color: #8e8e8e; font-size: 12px; text-align: right; }
+        #modal-pharmacy-station .btn-mini {
+            padding: 6px 10px; font-size: 12px; background: rgba(211,160,96,0.12); border: 2px solid #4d4d45;
+            color: #e0d7c6; border-radius: 9px; cursor: pointer; font-weight: 800;
+        }
+        #modal-pharmacy-station .btn-mini:hover { border-color: #ff8c00; color: #ff8c00; background: rgba(211,160,96,0.18); }
+        #modal-pharmacy-station .cs-add-row { display: grid; grid-template-columns: 1fr 92px 92px; gap: 8px; align-items: center; }
+        #modal-pharmacy-station .cs-add-row.accessory { grid-template-columns: 1fr 92px; }
+        #modal-pharmacy-station #pharmacy-ingredient-filter {
+            width: 100%; max-width: 100%; padding: 8px 10px; border-radius: 8px; margin-bottom: 10px; box-sizing: border-box;
+            border: 2px solid #4d4d45; background: rgba(0,0,0,0.35); color: #e0d7c6; font-size: 13px;
+        }
+        #modal-pharmacy-station .cs-ingredient-list {
+            max-height: min(280px, 36vh); overflow-y: auto; padding-right: 4px;
+        }
+        #modal-pharmacy-station .cs-ingredient-row {
+            display: flex; align-items: center; justify-content: space-between; gap: 10px;
+            padding: 8px 12px; margin-bottom: 6px; background: #1a1512;
+            border: 2px solid #4d4d45; border-radius: 8px;
+        }
+        #modal-pharmacy-station .cs-ingredient-row .cs-ing-left {
+            flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px;
+        }
+        #modal-pharmacy-station .cs-ingredient-row .cs-ing-name { color: #e0d7c6; font-size: 14px; font-weight: 700; }
+        #modal-pharmacy-station .cs-ingredient-row .cs-ing-id { font-size: 12px; color: #8e8e8e; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        #modal-pharmacy-station .cs-ingredient-row .cs-ing-counts {
+            font-size: 12px; color: #8e8e8e; flex-shrink: 0; text-align: right; min-width: 7em;
+        }
+        #modal-pharmacy-station .cs-ingredient-row .btn-add-ingredient {
+            padding: 6px 12px; font-size: 13px; background: #252520; border: 2px solid #4d4d45;
+            color: #e0d7c6; border-radius: 8px; cursor: pointer; flex-shrink: 0; font-weight: 800;
+        }
+        #modal-pharmacy-station .cs-ingredient-row .btn-add-ingredient:hover:not(:disabled) { border-color: #d3a060; color: #d3a060; }
+        #modal-pharmacy-station .cs-ingredient-row .btn-add-ingredient:disabled { opacity: 0.45; cursor: not-allowed; }
+        #modal-pharmacy-station .cs-ingredient-row.cs-resource-pick { cursor: pointer; }
+        #modal-pharmacy-station .cs-ingredient-row.cs-resource-pick:hover { border-color: #666; }
+        #modal-pharmacy-station .cs-ingredient-row.cs-resource-pick.active {
+            border-color: #ff8c00;
+            box-shadow: 0 0 0 1px rgba(255,140,0,0.28);
+        }
+        #modal-pharmacy-station select, #modal-pharmacy-station input[type="number"] {
+            width: 100%; padding: 8px 10px; border-radius: 8px;
+            border: 2px solid #4d4d45; background: rgba(0,0,0,0.35); color: #e0d7c6; font-size: 13px;
+        }
+        #modal-pharmacy-station input[type="number"] { text-align: right; }
+        #modal-pharmacy-station .cs-kv { display: flex; gap: 10px; flex-wrap: wrap; }
+        #modal-pharmacy-station .cs-kv .kv {
+            padding: 8px 10px; border: 2px solid #4d4d45; border-radius: 9px;
+            background: rgba(0,0,0,0.22); color: #e0d7c6; font-size: 12px;
+        }
+        #modal-pharmacy-station .cs-kv .kv.bad { border-color: rgba(185,28,28,0.65); color: #fecaca; }
+        #modal-pharmacy-station .cs-actions { display: flex; gap: 10px; margin-top: 10px; flex-wrap: wrap; }
+        #modal-pharmacy-station .cs-station-service { margin-top: 8px; }
+        #modal-pharmacy-station .btn-start {
+            flex: 1; padding: 10px 12px; font-size: 14px; background: #d3a060; border: 2px solid #d3a060;
+            color: #1a1512; border-radius: 10px; cursor: pointer; font-weight: 900;
+            box-shadow: 0 0 14px rgba(255,140,0,0.2);
+        }
+        #modal-pharmacy-station .btn-start:hover:not(:disabled) { filter: brightness(1.06); }
+        #modal-pharmacy-station .btn-start:disabled { opacity: 0.55; cursor: not-allowed; box-shadow: none; }
+        #modal-pharmacy-station .btn-clear {
+            padding: 10px 12px; font-size: 14px; background: #1a1512; border: 2px solid #4d4d45;
+            color: #e0d7c6; border-radius: 10px; cursor: pointer; font-weight: 900;
+        }
+        #modal-pharmacy-station .btn-clear:hover { border-color: #d3a060; color: #d3a060; }
+        #modal-pharmacy-station .cs-known-list { display: flex; flex-direction: column; gap: 8px; }
+        #modal-pharmacy-station .btn-known {
+            text-align: left; width: 100%; padding: 9px 10px; border-radius: 10px;
+            border: 2px solid #4d4d45; background: #1a1512; color: #e0d7c6; cursor: pointer; font-weight: 800; font-size: 12px;
+        }
+        #modal-pharmacy-station .btn-known:hover { border-color: #ff8c00; color: #ff8c00; }
+        #modal-pharmacy-station .cs-active-craft {
+            border: 2px solid #4d4d45; border-radius: 10px; padding: 12px;
+            background: rgba(0,0,0,0.22);
+        }
+        #modal-pharmacy-station .cs-active-craft .label { color: #8e8e8e; font-size: 11px; font-weight: 900; letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 6px; }
+        #modal-pharmacy-station .cs-active-craft .main {
+            color: #e0d7c6; font-weight: 800; font-size: 14px; letter-spacing: 0.02em;
+            display: flex; justify-content: space-between; gap: 8px; align-items: baseline;
+        }
+        #modal-pharmacy-station .cs-active-craft .main span:last-child { color: #ff8c00; font-size: 12px; font-weight: 900; }
+        #modal-pharmacy-station .cs-active-craft .sub { color: #8e8e8e; font-size: 12px; margin-top: 6px; }
+        #modal-pharmacy-station .cs-active-craft .bar {
+            height: 6px; border-radius: 999px; background: rgba(77,77,69,0.55); margin-top: 10px; overflow: hidden;
+        }
+        #modal-pharmacy-station .cs-active-craft .bar > i {
+            display: block; height: 100%; width: 0;
+            background: linear-gradient(90deg, #ff8c00 0%, #d3a060 100%);
+        }
+        #modal-pharmacy-station #pharmacy-help-text { font-size: 13px; line-height: 1.65; color: #8e8e8e; }
+        #modal-pharmacy-station .cs-empty-hint { color: #8e8e8e; font-size: 13px; }
+        /* 堆肥/沤肥统一设施面板 */
+        #modal-compost-station {
+            display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.88); z-index: 100;
+            align-items: center; justify-content: center; pointer-events: auto;
+            font-family: "Noto Serif SC", "Source Han Serif SC", "Noto Serif CJK SC", "SimSun", serif;
+        }
+        #modal-compost-station.show { display: flex; }
+        #modal-compost-station .cs-panel {
+            width: min(1180px, 96vw); height: min(760px, 90vh);
+            background: #2d2d28; border: 2px solid #4d4d45; border-radius: 10px;
+            overflow: hidden; display: flex; flex-direction: column; font-size: 14px;
+            box-shadow: 0 24px 64px rgba(0,0,0,0.65);
+            position: relative; color: #e0d7c6;
+            background-image: radial-gradient(120% 90% at 50% 0%, rgba(211,160,96,0.08), rgba(45,45,40,0) 45%);
+        }
+        #modal-compost-station .cs-panel::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            box-shadow: inset 0 0 120px rgba(0,0,0,0.36);
+        }
+        #modal-compost-station .cs-head {
+            padding: 12px 18px; border-bottom: 2px solid #4d4d45; background: #1a1512;
+            display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap;
+        }
+        #modal-compost-station .cs-head h2 {
+            margin: 0; font-size: 1.05rem; font-weight: 900; color: #e0d7c6; letter-spacing: 0.06em;
+            position: relative; padding-left: 10px;
+        }
+        #modal-compost-station .cs-head h2::before {
+            content: '';
+            position: absolute; left: 0; top: 50%; width: 3px; height: 15px; border-radius: 2px;
+            transform: translateY(-50%);
+            background: linear-gradient(180deg, #ff8c00 0%, #d3a060 100%);
+        }
+        #modal-compost-station .cs-tabs { display: flex; gap: 6px; align-items: flex-end; }
+        #modal-compost-station .cs-tab {
+            padding: 6px 12px 7px; border: none; border-bottom: 2px solid transparent;
+            background: transparent; color: #8e8e8e; font-size: 12px; font-weight: 800; letter-spacing: 0.05em; cursor: pointer;
+        }
+        #modal-compost-station .cs-tab:hover { color: #d3a060; }
+        #modal-compost-station .cs-tab.active { color: #ff8c00; border-bottom-color: #ff8c00; }
+        #modal-compost-station .cs-head .cs-hint { font-size: 12px; color: #8e8e8e; line-height: 1.5; }
+        #modal-compost-station .cs-head .cs-close {
+            padding: 8px 12px; font-size: 14px; background: transparent; border: none;
+            color: #8e8e8e; border-radius: 8px; cursor: pointer; flex-shrink: 0; font-weight: 800;
+        }
+        #modal-compost-station .cs-head .cs-close:hover { color: #fff; background: rgba(185,28,28,0.18); }
+        #modal-compost-station .cs-body {
+            flex: 1; overflow: hidden; min-height: 0;
+            display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px;
+            padding: 12px 16px 18px; background: #1a1512;
+        }
+        #modal-compost-station .cs-box {
+            border: 2px solid #4d4d45; border-radius: 10px; background: #252520;
+            overflow: hidden; display: flex; flex-direction: column; min-height: 0;
+        }
+        #modal-compost-station .cs-box .title {
+            padding: 10px 12px; border-bottom: 2px solid #4d4d45;
+            color: #8e8e8e; font-weight: 900; font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase;
+        }
+        #modal-compost-station .cs-box .content { padding: 10px 12px; overflow: auto; min-height: 0; color: #e0d7c6; }
+        #modal-compost-station .cs-subtitle {
+            margin: 0 0 8px 0; padding-top: 6px; border-top: 1px dashed rgba(77,77,69,0.65);
+            color: #d3a060; font-weight: 800; font-size: 12px; letter-spacing: 0.08em;
+        }
+        #modal-compost-station .cs-input-row {
+            display: grid; grid-template-columns: 1fr 64px 64px; gap: 8px; align-items: center;
+            padding: 8px 0; border-bottom: 1px dashed rgba(77,77,69,0.55);
+        }
+        #modal-compost-station .cs-input-row:last-child { border-bottom: none; }
+        #modal-compost-station .cs-input-row .iname { color: #e0d7c6; font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        #modal-compost-station .cs-input-row .icnt { color: #8e8e8e; font-size: 12px; text-align: right; }
+        #modal-compost-station .btn-mini {
+            padding: 6px 10px; font-size: 12px; background: rgba(211,160,96,0.12); border: 2px solid #4d4d45;
+            color: #e0d7c6; border-radius: 9px; cursor: pointer; font-weight: 800;
+        }
+        #modal-compost-station .btn-mini:hover { border-color: #ff8c00; color: #ff8c00; background: rgba(211,160,96,0.18); }
+        #modal-compost-station .cs-ingredient-list { max-height: min(280px, 36vh); overflow-y: auto; padding-right: 4px; }
+        #modal-compost-station .cs-ingredient-row {
+            display: flex; align-items: center; justify-content: space-between; gap: 10px;
+            padding: 8px 12px; margin-bottom: 6px; background: #1a1512;
+            border: 2px solid #4d4d45; border-radius: 8px;
+        }
+        #modal-compost-station .cs-ingredient-row .cs-ing-left { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+        #modal-compost-station .cs-ingredient-row .cs-ing-name { color: #e0d7c6; font-size: 14px; font-weight: 700; }
+        #modal-compost-station .cs-ingredient-row .cs-ing-id { font-size: 12px; color: #8e8e8e; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        #modal-compost-station .cs-ingredient-row .cs-ing-counts { font-size: 12px; color: #8e8e8e; flex-shrink: 0; text-align: right; min-width: 7em; }
+        #modal-compost-station .cs-ingredient-row .btn-add-ingredient {
+            padding: 6px 12px; font-size: 13px; background: #252520; border: 2px solid #4d4d45;
+            color: #e0d7c6; border-radius: 8px; cursor: pointer; flex-shrink: 0; font-weight: 800;
+        }
+        #modal-compost-station .cs-ingredient-row .btn-add-ingredient:hover:not(:disabled) { border-color: #d3a060; color: #d3a060; }
+        #modal-compost-station .cs-ingredient-row .btn-add-ingredient:disabled { opacity: 0.45; cursor: not-allowed; }
+        #modal-compost-station .cs-kv { display: flex; gap: 10px; flex-wrap: wrap; }
+        #modal-compost-station .cs-kv .kv {
+            padding: 8px 10px; border: 2px solid #4d4d45; border-radius: 9px;
+            background: rgba(0,0,0,0.22); color: #e0d7c6; font-size: 12px;
+        }
+        #modal-compost-station .cs-actions { display: flex; gap: 10px; margin-top: 10px; flex-wrap: wrap; }
+        #modal-compost-station .btn-start {
+            flex: 1; padding: 10px 12px; font-size: 14px; background: #d3a060; border: 2px solid #d3a060;
+            color: #1a1512; border-radius: 10px; cursor: pointer; font-weight: 900;
+        }
+        #modal-compost-station .btn-start:hover:not(:disabled) { filter: brightness(1.06); }
+        #modal-compost-station .btn-start:disabled { opacity: 0.55; cursor: not-allowed; }
+        #modal-compost-station .btn-clear {
+            padding: 10px 12px; font-size: 14px; background: #1a1512; border: 2px solid #4d4d45;
+            color: #e0d7c6; border-radius: 10px; cursor: pointer; font-weight: 900;
+        }
+        #modal-compost-station .btn-clear:hover { border-color: #d3a060; color: #d3a060; }
+        #modal-compost-station .cs-log {
+            font-size: 12px; line-height: 1.5; color: #a8a29e; border: 1px dashed rgba(77,77,69,0.8);
+            border-radius: 8px; padding: 8px; max-height: min(240px, 28vh); overflow-y: auto; background: rgba(0,0,0,0.2);
+        }
+        #modal-compost-station .cs-log .line { margin-bottom: 4px; }
+        #modal-compost-station .cs-log .line:last-child { margin-bottom: 0; }
+        /* 战斗技能枢纽弹窗（视觉参考 reference/combat_skill.html） */
         #modal-combat {
-            display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 100;
-            align-items: center; justify-content: center; padding: 24px; pointer-events: auto;
-            font-family: "Microsoft YaHei", "微软雅黑", "PingFang SC", sans-serif;
+            display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.92); z-index: 100;
+            align-items: center; justify-content: center; padding: 16px 24px; pointer-events: auto;
+            font-family: "Noto Serif SC", "Source Han Serif SC", "Microsoft YaHei", "微软雅黑", "PingFang SC", serif;
         }
         #modal-combat.show { display: flex; }
         #modal-combat .combat-panel {
-            width: 1200px; max-width: 98%; height: 780px; max-height: 90vh;
-            background: #1c1612; border: 2px solid rgba(212,163,115,0.3); border-radius: 16px;
-            box-shadow: 0 24px 48px rgba(0,0,0,0.5); display: flex; flex-direction: column; overflow: hidden;
+            width: min(1280px, 98vw); height: min(860px, 92vh); max-height: 92vh;
+            background: #2d2d28; border: 2px solid #4d4d45; border-radius: 10px;
+            box-shadow: 0 24px 64px rgba(0,0,0,0.65); display: flex; flex-direction: column; overflow: hidden;
+            position: relative;
+            background-image: radial-gradient(120% 90% at 50% 0%, rgba(211,160,96,0.08), rgba(45,45,40,0) 45%);
+        }
+        #modal-combat .combat-panel::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            box-shadow: inset 0 0 120px rgba(0,0,0,0.36);
         }
         #modal-combat .combat-header {
-            height: 64px; border-bottom: 1px solid #3d2d24; display: flex; align-items: center; justify-content: space-between;
-            padding: 0 40px; background: #1c1612; flex-shrink: 0;
+            height: 52px; flex-shrink: 0; display: flex; align-items: center; justify-content: space-between;
+            padding: 0 20px 0 24px; background: #1a1512; border-bottom: 2px solid #4d4d45;
         }
-        #modal-combat .combat-header h2 {
-            margin: 0; font-size: 1.25rem; font-weight: 800; color: #fff; letter-spacing: 0.6em; text-transform: uppercase;
+        #modal-combat .combat-header-left { display: flex; align-items: center; gap: 28px; min-width: 0; }
+        #modal-combat .combat-panel-title {
+            margin: 0; font-size: 1.05rem; font-weight: 900; color: #e0d7c6; letter-spacing: 0.06em; white-space: nowrap;
+            position: relative; padding-left: 10px;
         }
-        #modal-combat .combat-header .combat-subtitle {
-            font-size: 10px; color: #78716c; text-transform: uppercase; letter-spacing: 0.12em; margin-top: 4px; font-style: italic;
+        #modal-combat .combat-panel-title::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 50%;
+            width: 3px;
+            height: 15px;
+            border-radius: 2px;
+            transform: translateY(-50%);
+            background: linear-gradient(180deg, #ff8c00 0%, #d3a060 100%);
         }
+        #modal-combat .combat-main-tabs { display: flex; gap: 4px; align-items: flex-end; }
+        #modal-combat .combat-main-tab {
+            padding: 6px 14px 8px; font-size: 13px; font-weight: 800; border: none; border-bottom: 2px solid transparent;
+            background: transparent; color: #8e8e8e; cursor: pointer; letter-spacing: 0.04em;
+            transition: color 0.2s, border-color 0.2s;
+        }
+        #modal-combat .combat-main-tab:hover { color: #d3a060; }
+        #modal-combat .combat-main-tab.active { color: #ff8c00; border-bottom-color: #ff8c00; }
         #modal-combat .combat-close {
-            width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
-            background: transparent; border: none; color: #78716c; cursor: pointer; font-size: 18px;
+            width: 40px; height: 40px; border-radius: 8px; display: flex; align-items: center; justify-content: center;
+            background: transparent; border: none; color: #8e8e8e; cursor: pointer; font-size: 18px;
         }
-        #modal-combat .combat-close:hover { background: rgba(185,28,28,0.2); color: #fff; }
+        #modal-combat .combat-close:hover { color: #fff; background: rgba(185,28,28,0.18); }
         #modal-combat .combat-body { flex: 1; display: flex; overflow: hidden; min-height: 0; }
-        #modal-combat .combat-left {
-            width: 380px; border-right: 1px solid #3d2d24; display: flex; flex-direction: column; padding: 32px;
-            background: #18120e; overflow-y: auto; flex-shrink: 0;
+        #modal-combat .combat-cat-rail {
+            width: 80px; flex-shrink: 0; background: #252520; border-right: 2px solid #4d4d45;
+            display: flex; flex-direction: column; padding: 12px 0;
         }
-        #modal-combat .combat-hub-section { margin-bottom: 32px; }
+        #modal-combat .combat-cat-rail-inner {
+            display: flex; flex-direction: column; align-items: center; gap: 10px; overflow-y: auto; flex: 1; padding: 0 8px;
+        }
+        #modal-combat .combat-cat-rail-inner,
+        #modal-combat .combat-skill-list,
+        #modal-combat .combat-acupoint-list,
+        #modal-combat .combat-config-column {
+            scrollbar-width: thin;
+            scrollbar-color: rgba(211,160,96,0.6) rgba(26,21,18,0.3);
+        }
+        #modal-combat .combat-cat-rail-inner::-webkit-scrollbar,
+        #modal-combat .combat-skill-list::-webkit-scrollbar,
+        #modal-combat .combat-acupoint-list::-webkit-scrollbar,
+        #modal-combat .combat-config-column::-webkit-scrollbar {
+            width: 8px;
+        }
+        #modal-combat .combat-cat-rail-inner::-webkit-scrollbar-track,
+        #modal-combat .combat-skill-list::-webkit-scrollbar-track,
+        #modal-combat .combat-acupoint-list::-webkit-scrollbar-track,
+        #modal-combat .combat-config-column::-webkit-scrollbar-track {
+            background: rgba(26,21,18,0.4);
+            border-radius: 999px;
+        }
+        #modal-combat .combat-cat-rail-inner::-webkit-scrollbar-thumb,
+        #modal-combat .combat-skill-list::-webkit-scrollbar-thumb,
+        #modal-combat .combat-acupoint-list::-webkit-scrollbar-thumb,
+        #modal-combat .combat-config-column::-webkit-scrollbar-thumb {
+            background: linear-gradient(180deg, #d3a060 0%, #8f6840 100%);
+            border-radius: 999px;
+            border: 1px solid rgba(26,21,18,0.4);
+        }
+        #modal-combat .combat-cat-rail .combat-cat-btn {
+            width: 56px; min-height: 56px; padding: 8px 4px; border-radius: 10px; flex-direction: column; justify-content: center;
+            gap: 4px; font-size: 9px; font-weight: 900; letter-spacing: 0.02em; border: 2px solid #4d4d45; background: #1a1512; color: #8e8e8e;
+        }
+        #modal-combat .combat-cat-rail .combat-cat-btn:hover { border-color: #666; color: #d3a060; }
+        #modal-combat .combat-cat-rail .combat-cat-btn.active {
+            background: #d3a060; color: #1a1512; border-color: #d3a060; box-shadow: inset 0 1px 0 rgba(255,255,255,0.15);
+        }
+        #modal-combat .combat-cat-ico { font-size: 20px; line-height: 1; }
+        #modal-combat .combat-cat-lbl { font-size: 9px; font-weight: 900; text-align: center; line-height: 1.15; max-width: 52px; word-break: break-all; }
+        #modal-combat .combat-skill-column {
+            width: 280px; flex-shrink: 0; border-right: 2px solid #4d4d45; background: rgba(26,21,18,0.35);
+            display: flex; flex-direction: column; padding: 16px; gap: 10px; min-height: 0;
+        }
+        #modal-combat .combat-config-column {
+            flex: 1; min-width: 0; overflow-y: auto; padding: 20px 24px 20px; display: flex; flex-direction: column; gap: 18px;
+            scrollbar-width: thin; scrollbar-color: #4d4d45 transparent;
+        }
+        #modal-combat .combat-hub-section.combat-hub-compact { margin-bottom: 0; }
         #modal-combat .combat-hub-title {
-            font-size: 10px; font-weight: 800; color: #fbbf24; border-left: 2px solid #fbbf24; padding-left: 16px;
-            text-transform: uppercase; margin-bottom: 16px;
+            font-size: 10px; font-weight: 900; color: #8e8e8e; border-left: 2px solid #d3a060; padding-left: 10px;
+            text-transform: uppercase; letter-spacing: 0.12em; margin-bottom: 10px;
         }
-        #modal-combat .combat-hub-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        #modal-combat .combat-hub-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
         #modal-combat .combat-hub-node {
-            height: 80px; border-radius: 8px; border: 2px solid #4d3f35; background: #120e0c;
+            min-height: 68px; border-radius: 8px; border: 2px solid #4d4d45; background: #252520;
             display: flex; flex-direction: column; align-items: center; justify-content: center; transition: border-color 0.2s, background 0.2s;
         }
-        #modal-combat .combat-hub-node.active { border-color: #fbbf24; background: #2b211b; }
-        #modal-combat .combat-hub-node .hub-label { font-size: 8px; font-weight: 800; color: #78716c; text-transform: uppercase; margin-bottom: 4px; }
-        #modal-combat .combat-hub-node.active .hub-label { color: #fbbf24; }
-        #modal-combat .combat-hub-node .hub-value { font-size: 12px; font-weight: 800; color: #e8e6e3; }
-        #modal-combat .combat-hub-node .hub-value.empty { color: #57534e; font-style: italic; }
+        #modal-combat .combat-hub-node.active { border-color: #ff8c00; background: #2a2620; box-shadow: 0 0 12px rgba(255,140,0,0.12); }
+        #modal-combat .combat-hub-node .hub-label { font-size: 8px; font-weight: 800; color: #8e8e8e; text-transform: uppercase; margin-bottom: 4px; }
+        #modal-combat .combat-hub-node.active .hub-label { color: #ff8c00; }
+        #modal-combat .combat-hub-node .hub-value { font-size: 11px; font-weight: 800; color: #e0d7c6; text-align: center; padding: 0 6px; }
+        #modal-combat .combat-hub-node .hub-value.empty { color: #6b6560; font-style: italic; }
         #modal-combat .combat-limb-title {
-            font-size: 10px; font-weight: 800; color: #78716c; border-left: 2px solid #57534e; padding-left: 16px;
-            text-transform: uppercase; margin-bottom: 20px;
+            font-size: 10px; font-weight: 900; color: #8e8e8e; border-left: 2px solid #4d4d45; padding-left: 10px;
+            text-transform: uppercase; letter-spacing: 0.12em; margin: 4px 0 0;
         }
-        #modal-combat .combat-limb-list { display: flex; flex-direction: column; gap: 24px; }
-        #modal-combat .combat-limb-item { display: flex; flex-direction: column; gap: 10px; }
+        #modal-combat .combat-limb-grid {
+            display: grid; grid-template-columns: 1fr 1fr; gap: 12px;
+        }
+        #modal-combat .combat-limb-grid > .combat-strike-order-bar { grid-column: 1 / -1; }
+        #modal-combat .combat-strike-order-bar {
+            padding: 12px 14px; border: 2px solid #4d4d45; border-radius: 8px; background: #252520;
+        }
+        #modal-combat .strike-order-head { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+        #modal-combat .strike-order-label { font-size: 10px; font-weight: 900; color: #8e8e8e; letter-spacing: 0.1em; text-transform: uppercase; }
+        #modal-combat .strike-order-hint { cursor: help; font-size: 12px; color: #6b6560; user-select: none; }
+        #modal-combat .strike-order-chips { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+        #modal-combat .strike-chip {
+            display: inline-flex; align-items: center; gap: 6px; padding: 8px 14px; border-radius: 6px;
+            border: 2px solid #4d4d45; font-size: 12px; font-weight: 800; color: #8e8e8e; background: #1a1512;
+        }
+        #modal-combat .strike-chip .strike-chip-order {
+            font-size: 10px;
+            color: #6b6560;
+            min-width: 14px;
+            text-align: center;
+        }
+        #modal-combat .strike-chip .strike-chip-name { letter-spacing: 0.08em; }
+        #modal-combat .strike-chip .strike-chip-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 999px;
+            background: #ff8c00;
+            box-shadow: 0 0 10px rgba(255,140,0,0.6);
+        }
+        #modal-combat .strike-chip.strike-cursor {
+            border-color: #ff8c00; color: #ff8c00; box-shadow: 0 0 14px rgba(255,140,0,0.28); transform: scale(1.02);
+        }
+        #modal-combat .strike-chip.strike-cursor .strike-chip-order { color: #ff8c00; }
+        #modal-combat .btn-strike-swap {
+            min-width: 40px; padding: 6px 8px; border: 2px solid #4d4d45; border-radius: 6px; background: #1a1512;
+            color: #8e8e8e; font-size: 14px; cursor: pointer; line-height: 1;
+        }
+        #modal-combat .btn-strike-swap:hover { border-color: #ff8c00; color: #ff8c00; }
+        #modal-combat .combat-limb-item { display: flex; flex-direction: column; gap: 8px; }
         #modal-combat .combat-limb-item .limb-header {
-            display: flex; justify-content: space-between; align-items: center; font-size: 10px; font-weight: 800;
-            color: #78716c; text-transform: uppercase; letter-spacing: 0.1em;
+            display: flex; justify-content: space-between; align-items: center; font-size: 10px; font-weight: 900;
+            color: #8e8e8e; text-transform: uppercase; letter-spacing: 0.08em;
         }
-        #modal-combat .combat-limb-item .limb-priority { color: #fbbf24; }
-        #modal-combat .combat-limb-item .limb-priority-editor {
-            display: flex; flex-direction: column; align-items: flex-end; gap: 6px; flex-shrink: 0; max-width: 200px;
-        }
-        #modal-combat .combat-limb-item .limb-priority-label {
-            color: #a8a29e; font-size: 9px; font-weight: 800; letter-spacing: 0.06em; line-height: 1.2; text-align: right;
-        }
-        #modal-combat .combat-limb-item .limb-tier-btns {
-            display: flex; gap: 4px; flex-wrap: nowrap;
-        }
-        #modal-combat .combat-limb-item .btn-limb-tier {
-            min-width: 36px; padding: 4px 6px; border: 1px solid #57534e; border-radius: 6px;
-            background: #1c1612; color: #a8a29e; font-size: 10px; font-weight: 800; line-height: 1.2; cursor: pointer;
-            letter-spacing: 0.04em;
-        }
-        #modal-combat .combat-limb-item .btn-limb-tier:hover { border-color: #78716c; color: #e8e6e3; }
-        #modal-combat .combat-limb-item .btn-limb-tier.active {
-            border-color: #fbbf24; background: #2b211b; color: #fbbf24; box-shadow: 0 0 0 1px rgba(251,191,36,0.25);
+        #modal-combat .combat-limb-item .limb-order-badge {
+            font-size: 9px;
+            color: #6b6560;
+            border: 1px solid #4d4d45;
+            border-radius: 999px;
+            padding: 2px 6px;
+            background: #1a1512;
+            letter-spacing: 0.12em;
         }
         #modal-combat .combat-limb-item .limb-slots { display: flex; gap: 8px; }
         #modal-combat .combat-limb-slot {
-            flex: 1; height: 48px; border: 2px solid #4d3f35; border-radius: 8px; background: #120e0c;
+            flex: 1; min-height: 52px; border: 2px solid #4d4d45; border-radius: 8px; background: #252520;
             display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer;
             transition: border-color 0.2s, background 0.2s; font-size: 11px;
         }
-        #modal-combat .combat-limb-slot:hover { border-color: #78716c; }
-        #modal-combat .combat-limb-slot.selected { border-color: #fbbf24; background: #2b211b; }
-        #modal-combat .combat-limb-slot .slot-type { font-size: 7px; color: #57534e; text-transform: uppercase; }
-        #modal-combat .combat-limb-slot .slot-skill { font-size: 12px; font-weight: 800; color: #e8e6e3; }
-        #modal-combat .combat-right {
-            flex: 1; display: flex; flex-direction: column; padding: 40px; background: #1c1612; min-width: 0;
-        }
-        /* 顶部模式分页：战斗技能 / 经脉穴位 */
-        #modal-combat .combat-main-tabs {
-            display: flex; gap: 10px; margin-bottom: 24px; flex-wrap: wrap;
-        }
-        #modal-combat .combat-main-tab {
-            padding: 6px 18px; border-radius: 9999px; font-size: 12px; font-weight: 800;
-            border: 1px solid #4d3f35; background: #120e0c; color: #78716c;
-            cursor: pointer; text-transform: uppercase; letter-spacing: 0.16em;
-            transition: all 0.2s;
-        }
-        #modal-combat .combat-main-tab:hover { color: #fbbf24; border-color: #57534e; }
-        #modal-combat .combat-main-tab.active { background: #fbbf24; color: #1c1612; border-color: #fbbf24; }
-
-        #modal-combat .combat-category-tabs { display: flex; gap: 12px; margin-bottom: 40px; flex-wrap: wrap; }
-        /* 通用战斗/经脉分类按钮样式 */
+        #modal-combat .combat-limb-slot:hover { border-color: #666; }
+        #modal-combat .combat-limb-slot.selected { border-color: #ff8c00; background: #2a2620; box-shadow: 0 0 10px rgba(255,140,0,0.12); }
+        #modal-combat .combat-limb-slot .slot-type { font-size: 7px; font-weight: 800; color: #6b6560; text-transform: uppercase; }
+        #modal-combat .combat-limb-slot .slot-skill { font-size: 11px; font-weight: 800; color: #e0d7c6; }
         .combat-cat-btn {
-            display: flex; align-items: center; gap: 12px; padding: 10px 24px; border-radius: 9999px;
+            display: flex; align-items: center; gap: 8px; padding: 10px 18px; border-radius: 9999px;
             font-size: 12px; font-weight: 800; border: 2px solid #4d3f35; background: #120e0c; color: #78716c;
             cursor: pointer; transition: all 0.2s;
         }
         .combat-cat-btn:hover { color: #fbbf24; border-color: #57534e; }
         .combat-cat-btn.active { background: #fbbf24; color: #1c1612; border-color: #fbbf24; }
-        #modal-combat .combat-skill-list { flex: 1; overflow-y: auto; padding-right: 16px; display: flex; flex-direction: column; gap: 12px; }
+        /* 经脉总览等弹窗内横向分类条（非战斗面板左侧轨） */
+        .combat-category-tabs { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 12px; }
+        #modal-combat .combat-skill-list { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; min-height: 0; padding-right: 4px; }
         #modal-combat .combat-skill-item {
-            display: flex; align-items: center; justify-content: space-between; padding: 20px 32px; border-radius: 12px;
-            border: 2px solid #4d3f35; background: #14100e; cursor: pointer; transition: border-color 0.2s, background 0.2s;
+            padding: 14px 14px 12px; border-radius: 8px; border: 2px solid #4d4d45; background: #252520; cursor: pointer;
+            transition: border-color 0.2s, background 0.2s, box-shadow 0.2s;
         }
-        #modal-combat .combat-skill-item:hover { border-color: #57534e; }
-        #modal-combat .combat-skill-item.selected { border-color: #fbbf24; background: #2b211b; box-shadow: 0 8px 24px rgba(0,0,0,0.3); }
-        #modal-combat .combat-skill-item .skill-icon { font-size: 24px; margin-right: 24px; }
-        #modal-combat .combat-skill-item .skill-info .skill-name { font-size: 18px; font-weight: 800; letter-spacing: 0.12em; color: #fff; text-transform: uppercase; }
-        #modal-combat .combat-skill-item .skill-info .skill-meta { font-size: 10px; color: #fbbf24; font-weight: 800; text-transform: uppercase; margin-top: 4px; }
-        /* 经脉穴位列表样式（与技能列表风格统一） */
+        #modal-combat .combat-skill-item:hover { border-color: #666; }
+        #modal-combat .combat-skill-item.selected { border-color: #ff8c00; background: #2f2c26; box-shadow: 0 0 16px rgba(255,140,0,0.18); }
+        #modal-combat .combat-skill-item .skill-card-head { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 8px; }
+        #modal-combat .combat-skill-item .skill-ico { font-size: 22px; line-height: 1; flex-shrink: 0; }
+        #modal-combat .combat-skill-item .skill-card-head-main { flex: 1; min-width: 0; display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+        #modal-combat .combat-skill-item .skill-name { font-size: 14px; font-weight: 800; color: #e0d7c6; letter-spacing: 0.04em; }
+        #modal-combat .combat-skill-item .skill-lv-badge { font-size: 10px; font-weight: 900; color: #ff8c00; flex-shrink: 0; }
+        #modal-combat .combat-skill-item .skill-prof-bar-wrap {
+            height: 4px; border-radius: 99px; background: #1a1512; overflow: hidden; margin-bottom: 6px;
+        }
+        #modal-combat .combat-skill-item .skill-prof-bar-fill { height: 100%; background: #d3a060; border-radius: 99px; transition: width 0.2s; }
+        #modal-combat .combat-skill-item .skill-meta { font-size: 10px; font-weight: 800; color: #8e8e8e; letter-spacing: 0.04em; }
         #modal-combat .combat-acupoint-list {
-            flex: 1; overflow-y: auto; padding-right: 16px; display: flex; flex-direction: column; gap: 10px;
+            flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; min-height: 0; padding-right: 4px;
         }
         #modal-combat .combat-acupoint-item {
-            display: flex; flex-direction: column; padding: 16px 24px; border-radius: 12px;
-            border: 2px solid #4d3f35; background: #14100e; cursor: pointer;
+            display: flex; flex-direction: column; padding: 14px; border-radius: 8px;
+            border: 2px solid #4d4d45; background: #252520; cursor: pointer;
             transition: border-color 0.2s, background 0.2s;
+            gap: 8px;
         }
-        #modal-combat .combat-acupoint-item:hover { border-color: #57534e; }
-        #modal-combat .combat-acupoint-item.selected { border-color: #fbbf24; background: #2b211b; box-shadow: 0 8px 24px rgba(0,0,0,0.3); }
+        #modal-combat .combat-acupoint-item:hover { border-color: #666; }
+        #modal-combat .combat-acupoint-item.selected { border-color: #ff8c00; background: #2f2c26; box-shadow: 0 0 16px rgba(255,140,0,0.15); }
         #modal-combat .combat-acupoint-item .acupoint-name {
-            font-size: 15px; font-weight: 800; letter-spacing: 0.16em; color: #fff; text-transform: uppercase;
+            font-size: 14px; font-weight: 800; letter-spacing: 0.08em; color: #e0d7c6;
         }
         #modal-combat .combat-acupoint-item .acupoint-meta {
-            margin-top: 4px; font-size: 11px; color: #fbbf24; font-weight: 700;
+            margin-top: 4px; font-size: 11px; color: #ff8c00; font-weight: 700;
         }
         #modal-combat .combat-acupoint-item .acupoint-desc {
-            margin-top: 6px; font-size: 12px; color: #a8a29e;
+            margin-top: 6px; font-size: 12px; color: #8e8e8e;
         }
-
-        #modal-combat .combat-footer {
-            height: 240px; border-top: 1px solid #3d2d24; background: #1c1612; flex-shrink: 0;
-            display: flex; align-items: center; padding: 0 48px; gap: 48px;
+        #modal-combat .combat-seq-head { margin-top: 4px; }
+        #modal-combat .combat-seq-title {
+            margin: 0; font-size: 10px; font-weight: 900; color: #8e8e8e; letter-spacing: 0.14em; text-transform: uppercase;
         }
-        #modal-combat .combat-footer-left { flex: 1; display: flex; flex-direction: column; gap: 20px; min-width: 0; }
-        #modal-combat .combat-footer .skill-title { font-size: 1.875rem; font-weight: 800; color: #fff; letter-spacing: 0.3em; margin: 0; }
-        #modal-combat .combat-footer .skill-badges { display: flex; gap: 8px; align-items: baseline; }
-        #modal-combat .combat-footer .badge-level {
-            padding: 4px 12px; font-size: 10px; font-weight: 800; text-transform: uppercase;
-            background: #292524; color: #78716c;
+        #modal-combat .combat-seq-limb-suffix { color: #ff8c00; font-weight: 900; letter-spacing: 0.06em; margin-left: 6px; text-transform: none; }
+        #modal-combat .combat-selected-meta { display: flex; flex-direction: column; gap: 8px; }
+        #modal-combat .combat-selected-meta .skill-title {
+            margin: 0; font-size: 1.15rem; font-weight: 900; color: #e0d7c6; letter-spacing: 0.08em;
         }
-        #modal-combat .combat-footer .badge-prof {
-            padding: 4px 12px; font-size: 10px; font-weight: 800; text-transform: uppercase;
-            background: rgba(251,191,36,0.1); border: 1px solid rgba(251,191,36,0.3); color: #fbbf24;
+        #modal-combat .combat-selected-meta .skill-badges { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+        #modal-combat .badge-level {
+            padding: 4px 10px; font-size: 10px; font-weight: 800; text-transform: uppercase;
+            background: #1a1512; color: #8e8e8e; border-radius: 4px; border: 1px solid #4d4d45;
         }
+        #modal-combat .badge-prof {
+            padding: 4px 10px; font-size: 10px; font-weight: 800; text-transform: uppercase;
+            background: rgba(255,140,0,0.12); border: 1px solid rgba(255,140,0,0.35); color: #ff8c00; border-radius: 4px;
+        }
+        #modal-combat .combat-config-actions {
+            display: flex; flex-wrap: wrap; align-items: stretch; gap: 14px; margin-top: 4px;
+        }
+        #modal-combat .combat-panel-footer {
+            flex-shrink: 0; height: 32px; display: flex; align-items: center; justify-content: space-between; gap: 16px;
+            padding: 0 20px; background: #1a1512; border-top: 2px solid #4d4d45;
+            font-size: 9px; font-weight: 900; letter-spacing: 0.1em; text-transform: uppercase;
+        }
+        #modal-combat .combat-panel-footer-hint { color: #8e8e8e; }
+        #modal-combat .combat-panel-footer-sub { color: #6b6560; font-style: italic; text-transform: none; letter-spacing: 0.06em; }
+        #modal-combat .combat-pager { margin-top: 8px; display: flex; justify-content: space-between; align-items: center; font-size: 11px; color: #8e8e8e; }
+        #modal-combat .combat-pager-btn {
+            padding: 5px 12px; border-radius: 999px; border: 1px solid #4d4d45; background: #1a1512; color: #e0d7c6; font-size: 11px; font-weight: 800; cursor: pointer;
+        }
+        #modal-combat .combat-pager-btn:hover:not(:disabled) { border-color: #ff8c00; color: #ff8c00; }
+        #modal-combat .combat-pager-btn:disabled { opacity: 0.35; cursor: default; }
+        #modal-combat.combat-acupoint-mode .combat-cat-rail { width: 33.3333%; }
+        #modal-combat.combat-acupoint-mode .combat-cat-rail-inner { align-items: stretch; padding: 0 12px; }
+        #modal-combat.combat-acupoint-mode .combat-cat-rail .combat-cat-btn {
+            width: 100%;
+            min-height: 48px;
+            border-radius: 8px;
+            flex-direction: row;
+            justify-content: flex-start;
+            padding: 10px 12px;
+            font-size: 12px;
+            letter-spacing: 0.04em;
+            gap: 8px;
+        }
+        #modal-combat.combat-acupoint-mode .combat-cat-rail .combat-cat-lbl { font-size: 12px; max-width: none; word-break: break-word; text-align: left; }
+        #modal-combat.combat-acupoint-mode .combat-skill-column { width: 66.6667%; border-right: none; }
         #modal-combat .combat-debug-btn {
-            padding: 6px 10px; border-radius: 9999px;
-            background: rgba(251,191,36,0.08); border: 1px solid rgba(251,191,36,0.3);
-            color: #fbbf24; cursor: pointer; font-size: 10px; font-weight: 800;
-            text-transform: uppercase; letter-spacing: 0.08em;
+            padding: 5px 10px; border-radius: 999px;
+            background: rgba(255,140,0,0.1); border: 1px solid rgba(255,140,0,0.35);
+            color: #ff8c00; cursor: pointer; font-size: 10px; font-weight: 800;
+            letter-spacing: 0.06em;
         }
         #modal-combat .combat-debug-btn:hover {
-            background: #fbbf24; color: #1c1612; border-color: #fbbf24;
+            background: #d3a060; color: #1a1512; border-color: #d3a060;
         }
         #modal-combat #btn-debug-recipe-schema-errors { display: none; }
         #modal-combat .recipe-schema-debug-panel {
             display: none;
-            margin-top: 8px;
-            border: 1px solid #4d3f35;
+            margin-top: 4px;
+            border: 1px solid #4d4d45;
             border-radius: 8px;
-            background: #120e0c;
+            background: #1a1512;
             max-height: 180px;
             overflow: auto;
             font-size: 11px;
-            color: #e7e5e4;
+            color: #e0d7c6;
         }
         #modal-combat .recipe-schema-debug-panel.show { display: block; }
         #modal-combat .recipe-schema-debug-head,
@@ -991,10 +1578,10 @@
             position: sticky;
             top: 0;
             z-index: 1;
-            background: #1f1916;
+            background: #252520;
             font-weight: 800;
             text-transform: uppercase;
-            color: #fbbf24;
+            color: #d3a060;
         }
         #modal-combat .recipe-schema-debug-row:last-child { border-bottom: 0; }
         #modal-combat .recipe-schema-debug-row .col {
@@ -1006,56 +1593,115 @@
             color: #a8a29e;
         }
         #modal-combat .combat-move-node .debug-move-prof-btn {
-            position: absolute; right: 8px; bottom: 8px;
+            position: absolute; right: 6px; bottom: 6px;
             width: 44px; height: 20px; padding: 0;
             border-radius: 6px;
-            background: rgba(251,191,36,0.1); border: 1px solid rgba(251,191,36,0.35);
-            color: #fbbf24; cursor: pointer;
+            background: rgba(255,140,0,0.1); border: 1px solid rgba(255,140,0,0.35);
+            color: #ff8c00; cursor: pointer;
             font-size: 9px; font-weight: 800; text-transform: uppercase;
         }
         #modal-combat .combat-move-node .debug-move-prof-btn:hover {
-            background: #fbbf24; color: #1c1612; border-color: #fbbf24;
+            background: #d3a060; color: #1a1512; border-color: #d3a060;
         }
-        #modal-combat .combat-move-sequence { display: flex; flex-wrap: wrap; gap: 16px; padding: 8px 0; }
+        #modal-combat .combat-move-sequence { display: flex; flex-wrap: wrap; gap: 12px; padding: 4px 0 8px; align-items: stretch; }
         #modal-combat .combat-move-node {
-            width: 144px; height: 64px; border: 2px solid #4d3f35; border-radius: 8px; background: #120e0c;
-            display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer;
-            transition: border-color 0.2s, background 0.2s; position: relative;
+            flex: 1 1 160px; min-width: 148px; max-width: 220px; min-height: 112px;
+            border: 2px solid #4d4d45; border-radius: 8px; background: #252520;
+            display: flex; flex-direction: column; align-items: stretch; justify-content: flex-start; cursor: pointer;
+            transition: border-color 0.2s, background 0.2s, box-shadow 0.2s; position: relative;
+            padding: 10px 10px 30px; box-sizing: border-box;
         }
-        #modal-combat .combat-move-node:hover { border-color: #fbbf24; background: #2b211b; }
-        #modal-combat .combat-move-node.editing { border-color: #fbbf24; background: #2b211b; transform: scale(1.05); box-shadow: 0 8px 24px rgba(0,0,0,0.3); }
+        #modal-combat .combat-move-node.slot-active::after {
+            content: '';
+            position: absolute;
+            right: -3px;
+            bottom: -3px;
+            width: 14px;
+            height: 14px;
+            border-radius: 999px;
+            background: #1a1512;
+            border: 1px solid #4d4d45;
+            box-shadow: 0 0 10px rgba(255,140,0,0.28);
+        }
+        #modal-combat .combat-move-node:hover { border-color: #666; background: #2f2c28; }
+        #modal-combat .combat-move-node.editing {
+            border-color: #ff8c00; background: #2f2c26; box-shadow: 0 0 16px rgba(255,140,0,0.2);
+        }
+        #modal-combat .combat-move-node .node-head-row {
+            display: flex; justify-content: space-between; align-items: flex-start; gap: 6px; margin-bottom: 6px; width: 100%;
+        }
         #modal-combat .combat-move-node .node-index {
-            position: absolute; top: -8px; left: 8px; padding: 0 4px; background: #1c1612;
-            font-size: 9px; font-weight: 800; font-style: italic; color: #57534e;
+            font-size: 10px; font-weight: 900; color: #6b6560;
         }
-        #modal-combat .combat-move-node.slot-empty .node-name { color: #57534e; font-style: italic; }
-        #modal-combat .combat-move-node.editing .node-index { color: #fbbf24; }
+        #modal-combat .combat-move-variant-tag {
+            font-size: 9px; font-weight: 900; padding: 2px 6px; border-radius: 4px;
+            background: rgba(88,28,135,0.35); color: #c4b5fd; border: 1px solid rgba(109,40,217,0.5); text-transform: uppercase; letter-spacing: 0.04em;
+        }
+        #modal-combat .combat-move-node.slot-empty .node-name { color: #6b6560; font-style: italic; }
+        #modal-combat .combat-move-node.editing .node-index { color: #ff8c00; }
         #modal-combat #picker-move .picker-move-clear-slot {
             width: 100%; margin-bottom: 10px; padding: 8px 10px; border-radius: 8px; border: 1px dashed #57534e;
             background: #120e0c; color: #a8a29e; font-size: 11px; font-weight: 800; cursor: pointer; letter-spacing: 0.06em;
         }
-        #modal-combat #picker-move .picker-move-clear-slot:hover:not(:disabled) { border-color: #fbbf24; color: #fbbf24; }
+        #modal-combat #picker-move .picker-move-clear-slot:hover:not(:disabled) { border-color: #ff8c00; color: #ff8c00; }
         #modal-combat #picker-move .picker-move-clear-slot:disabled { opacity: 0.35; cursor: default; }
-        #modal-combat .combat-move-node .node-name { font-size: 12px; font-weight: 800; color: #e8e6e3; }
-        #modal-combat .combat-move-node .node-prof { font-size: 9px; color: #fbbf24; font-weight: 800; text-transform: uppercase; margin-top: 4px; opacity: 0.9; }
+        #modal-combat .combat-move-node .node-name { font-size: 13px; font-weight: 800; color: #e0d7c6; line-height: 1.35; width: 100%; word-break: break-word; }
+        #modal-combat .combat-move-node .node-prof { font-size: 9px; color: #ff8c00; font-weight: 800; text-transform: uppercase; margin-top: 4px; opacity: 0.95; }
         #modal-combat .combat-move-node .node-post {
-            margin-top: 2px; font-size: 9px; color: #a8a29e; font-weight: 700;
-            white-space: nowrap; max-width: 126px; overflow: hidden; text-overflow: ellipsis;
+            margin-top: 4px; font-size: 9px; color: #8e8e8e; font-weight: 700;
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis; width: 100%;
         }
-        #modal-combat .combat-move-node .node-post.empty { color: #57534e; }
-        #modal-combat .combat-move-node .btn-post-slot {
-            position: absolute; left: 8px; bottom: 8px;
-            min-width: 44px; height: 20px; padding: 0 6px;
+        #modal-combat .combat-move-node .node-post.empty { color: #6b6560; }
+        #modal-combat .combat-post-effect-bar {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            min-height: 32px;
+            padding: 6px 10px;
+            border: 2px solid #4d4d45;
+            border-radius: 8px;
+            background: #252520;
+            margin-bottom: 6px;
+        }
+        #modal-combat .combat-post-effect-bar .post-label {
+            font-size: 9px;
+            font-weight: 900;
+            color: #8e8e8e;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            white-space: nowrap;
+        }
+        #modal-combat .combat-post-effect-bar .post-value {
+            flex: 1;
+            min-width: 0;
+            font-size: 11px;
+            font-weight: 800;
+            color: #e0d7c6;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        #modal-combat .combat-post-effect-bar .post-value.empty {
+            color: #6b6560;
+            font-style: italic;
+        }
+        #modal-combat .btn-post-inline {
+            flex-shrink: 0;
+            min-width: 54px;
+            height: 22px;
+            padding: 0 8px;
             border-radius: 6px;
-            background: rgba(245, 158, 11, 0.1); border: 1px solid rgba(245, 158, 11, 0.35);
-            color: #fbbf24; cursor: pointer;
-            font-size: 9px; font-weight: 800; text-transform: uppercase;
+            background: rgba(255,140,0,0.1);
+            border: 1px solid rgba(255,140,0,0.35);
+            color: #ff8c00;
+            cursor: pointer;
+            font-size: 9px;
+            font-weight: 800;
         }
-        #modal-combat .combat-move-node .btn-post-slot:hover {
-            background: #f59e0b; color: #1c1612; border-color: #f59e0b;
-        }
-        #modal-combat .combat-move-node .btn-post-slot:disabled {
-            opacity: 0.35; cursor: not-allowed;
+        #modal-combat .btn-post-inline:hover {
+            background: #d3a060;
+            color: #1a1512;
+            border-color: #d3a060;
         }
         #modal-combat .combat-move-node .node-power-ctrl {
             position: absolute; top: 2px; right: 4px;
@@ -1076,35 +1722,41 @@
         }
         #modal-combat .combat-move-node .btn-power-step:disabled { opacity: 0.3; cursor: not-allowed; }
         #modal-combat .combat-variant-wrap .combat-variant-title {
-            font-size: 12px;
-            color: #c9b7a8;
-            margin-bottom: 6px;
+            font-size: 10px;
+            font-weight: 900;
+            color: #8e8e8e;
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+            border-left: 2px solid #4d4d45;
+            padding-left: 10px;
+            margin: 2px 0 6px;
         }
         #modal-combat .combat-variant-wrap .picker-empty-hint {
             font-size: 12px;
             color: #8f8a84;
         }
         #modal-combat .combat-variant-wrap .combat-variant-sequence { margin-top: 6px; }
-        #modal-combat .combat-footer-right { width: 256px; display: flex; flex-direction: column; gap: 16px; flex-shrink: 0; }
         #modal-combat .btn-deploy {
-            width: 100%; padding: 20px; border-radius: 8px; background: #fbbf24; color: #1c1612; font-weight: 800;
-            text-transform: uppercase; letter-spacing: 0.4em; border: none; cursor: pointer; font-size: 14px;
-            box-shadow: 0 8px 24px rgba(0,0,0,0.2); transition: background 0.2s;
+            flex: 1 1 200px; min-height: 48px; padding: 12px 20px; border-radius: 8px; background: #d3a060; color: #1a1512; font-weight: 900;
+            letter-spacing: 0.12em; border: none; cursor: pointer; font-size: 13px;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.35); transition: background 0.2s, transform 0.15s;
         }
-        #modal-combat .btn-deploy:hover { background: #fcd34d; }
-        #modal-combat .btn-deploy:active { transform: scale(0.98); }
+        #modal-combat .btn-deploy:hover:not(:disabled) { background: #e8b87a; }
+        #modal-combat .btn-deploy:active:not(:disabled) { transform: scale(0.98); }
+        #modal-combat .btn-deploy:disabled { opacity: 0.4; cursor: not-allowed; }
         #modal-combat .target-indicator {
-            font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.12em; color: #fbbf24;
-            text-align: center; background: rgba(0,0,0,0.4); padding: 8px 12px; border-radius: 4px; border: 1px solid #3d2d24;
+            flex: 1 1 180px; font-size: 10px; font-weight: 900; letter-spacing: 0.08em; color: #ff8c00;
+            text-align: center; background: #1a1512; padding: 10px 12px; border-radius: 8px; border: 2px dashed #4d4d45;
+            display: flex; align-items: center; justify-content: center;
         }
         /* 招式选择弹出层 */
         #picker-move {
-            display: none; position: fixed; z-index: 300; width: 192px; background: #1c1612; border: 2px solid #fbbf24;
-            border-radius: 8px; box-shadow: 0 16px 48px rgba(0,0,0,0.5); overflow: hidden;
+            display: none; position: fixed; z-index: 300; width: 200px; background: #2d2d28; border: 2px solid #ff8c00;
+            border-radius: 8px; box-shadow: 0 16px 48px rgba(0,0,0,0.55); overflow: hidden;
         }
         #picker-move.show { display: block; }
         #picker-move .picker-title {
-            padding: 8px; background: #261e18; font-size: 9px; font-weight: 800; color: #fbbf24;
+            padding: 8px; background: #1a1512; font-size: 9px; font-weight: 800; color: #ff8c00;
             text-transform: uppercase; letter-spacing: 0.12em; text-align: center;
         }
         #picker-move .picker-list { max-height: 256px; overflow-y: auto; }
@@ -1113,16 +1765,16 @@
             background: transparent; color: #e8e6e3; font-size: 12px; font-weight: 800; letter-spacing: 0.08em;
             cursor: pointer; display: flex; flex-direction: column; transition: background 0.2s, color 0.2s;
         }
-        #picker-move .picker-list button:hover { background: #fbbf24; color: #1c1612; }
-        #picker-move .picker-list button .move-prof { font-size: 9px; color: #fbbf24; font-weight: 800; }
-        #picker-move .picker-list button:hover .move-prof { color: #1c1612; }
+        #picker-move .picker-list button:hover { background: #d3a060; color: #1a1512; }
+        #picker-move .picker-list button .move-prof { font-size: 9px; color: #ff8c00; font-weight: 800; }
+        #picker-move .picker-list button:hover .move-prof { color: #1a1512; }
         #picker-post-effect {
-            display: none; position: fixed; z-index: 300; width: 240px; background: #1c1612; border: 2px solid #f59e0b;
-            border-radius: 8px; box-shadow: 0 16px 48px rgba(0,0,0,0.5); overflow: hidden;
+            display: none; position: fixed; z-index: 300; width: 248px; background: #2d2d28; border: 2px solid #d3a060;
+            border-radius: 8px; box-shadow: 0 16px 48px rgba(0,0,0,0.55); overflow: hidden;
         }
         #picker-post-effect.show { display: block; }
         #picker-post-effect .picker-title {
-            padding: 8px; background: #261e18; font-size: 9px; font-weight: 800; color: #f59e0b;
+            padding: 8px; background: #1a1512; font-size: 9px; font-weight: 800; color: #d3a060;
             text-transform: uppercase; letter-spacing: 0.12em; text-align: center;
         }
         #picker-post-effect .picker-list { max-height: 300px; overflow-y: auto; }
@@ -1131,13 +1783,13 @@
             background: transparent; color: #e8e6e3; font-size: 12px; font-weight: 700;
             cursor: pointer; display: flex; flex-direction: column; gap: 2px; transition: background 0.2s, color 0.2s;
         }
-        #picker-post-effect .picker-list button:hover { background: #f59e0b; color: #1c1612; }
+        #picker-post-effect .picker-list button:hover { background: #d3a060; color: #1a1512; }
         #picker-post-effect .picker-list .post-desc {
             font-size: 10px; color: #a8a29e;
             white-space: pre-line;
             word-break: break-word;
         }
-        #picker-post-effect .picker-list button:hover .post-desc { color: #2a2117; }
+        #picker-post-effect .picker-list button:hover .post-desc { color: #1a1512; }
 
         /* 生存技能总览弹窗 - 风格参考 demo.html 右侧 UI */
         #modal-survival {
@@ -1381,6 +2033,17 @@
         #item-tooltip .tooltip-name { font-size: 14px; font-weight: bold; color: #fbbf24; margin-bottom: 8px; padding-bottom: 6px; border-bottom: 1px solid #4d3f35; }
         #item-tooltip .tooltip-desc { color: #a8a29e; margin-bottom: 8px; white-space: pre-wrap; word-break: break-word; }
         #item-tooltip .tooltip-attrs { color: #78716c; font-size: 11px; white-space: pre-line; }
+        #item-tooltip .tooltip-modules { margin-top: 8px; display: grid; gap: 6px; }
+        #item-tooltip .tooltip-module { border: 1px solid #4d3f35; border-radius: 6px; padding: 7px 8px; background: rgba(0,0,0,0.12); }
+        #item-tooltip .tooltip-module.is-locked { opacity: 0.78; }
+        #item-tooltip .tooltip-module-title { font-size: 11px; font-weight: 700; color: #e8e6e3; margin-bottom: 4px; }
+        #item-tooltip .tooltip-module-text { color: #bdb5ab; font-size: 11px; white-space: pre-wrap; }
+        #item-tooltip .tooltip-module-list { margin: 0; padding-left: 16px; color: #bdb5ab; font-size: 11px; }
+        #item-tooltip .tooltip-module-kv { display: grid; gap: 3px; }
+        #item-tooltip .tooltip-module-kv-row { display: flex; justify-content: space-between; gap: 8px; color: #bdb5ab; font-size: 11px; }
+        #item-tooltip .tooltip-module-k { color: #8e8a84; }
+        #item-tooltip .tooltip-module-v { color: #d4cec3; text-align: right; }
+        #item-tooltip .tooltip-module-locked-hint { color: #8e8a84; font-size: 11px; }
 
         /* 底部对话框：头像 + 台词（固定高度，位于地图正下方） */
         #dialogue-panel {
@@ -1869,6 +2532,7 @@
         <div id="map-container">
             <div id="map-grid"></div>
             <div id="player-sprite">
+                <div id="player-direction-indicator"></div>
                 <div class="avatar" id="player-avatar">
                     <img id="player-avatar-img" class="avatar-img" src="" alt="">
                     <span class="avatar-fallback">👤</span>
@@ -1883,6 +2547,7 @@
                     <button type="button" id="player-action-add-fuel" class="action-btn" style="display:none;"></button>
                     <button type="button" id="player-action-pour-water" class="action-btn" style="display:none;"></button>
                     <button type="button" id="player-action-cook" class="action-btn" style="display:none;" data-ui="player.action.cook"></button>
+                    <button type="button" id="player-action-pharmacy" class="action-btn" style="display:none;" data-ui="player.action.pharmacy"></button>
                     <button type="button" id="player-action-ground-items" class="action-btn" style="display:none;" title="" data-ui="player.action.ground.items" data-ui-title="player.action.ground.items.title"></button>
                     <button type="button" id="player-action-diqi-huti" class="action-btn" style="display:none;" data-ui="player.action.diqi_huti"></button>
                 </div>
@@ -1968,7 +2633,6 @@
                     <button type="button" class="hud-btn" id="btn-player-actions" data-ui="btn.player.actions.title" data-ui-attr="title">⚙</button>
                     <div id="player-actions-submenu" class="player-actions-submenu" role="menu" aria-hidden="true"></div>
                 </div>
-                <button type="button" class="hud-btn" id="btn-acupoints" data-ui="btn.acupoints.title" data-ui-attr="title">🌀</button>
                 <button type="button" class="hud-btn" id="btn-life" data-ui="btn.special.title" data-ui-attr="title">✨</button>
                 <button type="button" class="hud-btn" id="btn-save" data-ui="btn.save.title" data-ui-attr="title">💾</button>
                 <button type="button" class="hud-btn" id="btn-reset-demo-save" data-ui="btn.reset.demo.title" data-ui-attr="title">🧹</button>
@@ -1977,20 +2641,34 @@
         <!-- 背包+装备面板：左物品栏、右装备栏 -->
         <div id="modal-backpack">
             <div class="panel">
-                <div class="panel-body">
-                    <div class="panel-left">
-                        <div class="inv-region" id="inv-region-pocket"><h4 data-ui="inv.pocket"></h4><div class="inv-grid" id="inv-grid-pocket"></div></div>
-                        <div class="inv-region" id="inv-region-vest"><h4 data-ui="inv.vest"></h4><div class="inv-grid" id="inv-grid-vest"></div></div>
-                        <div class="inv-region" id="inv-region-backpack"><h4 data-ui="inv.backpack"></h4><div class="inv-grid" id="inv-grid-backpack"></div></div>
-                        <div class="inv-region" id="inv-region-vehicle"><h4 data-ui="inv.vehicle"></h4><div class="inv-grid" id="inv-grid-vehicle"></div></div>
-                        <div class="inv-region ground-region" id="inv-region-ground"><h4 data-ui="inv.ground"></h4><div id="ground-items-list"></div></div>
-                    </div>
-                    <div class="panel-right">
-                        <h4 class="equip-title" data-ui="equip.title"></h4>
-                        <div class="equip-list" id="equip-list"></div>
+                <div class="bp-head">
+                    <h3 class="bp-title" data-ui="btn.backpack.title"></h3>
+                    <div class="bp-head-right">
+                        <span class="bp-carry" id="backpack-carry"></span>
+                        <input id="backpack-search" type="search" autocomplete="off" placeholder="搜索物品..." />
+                        <button type="button" class="bp-close" id="backpack-panel-close" data-ui="backpack.close" data-ui-attr="title">✕</button>
                     </div>
                 </div>
-                <div class="panel-close" id="backpack-panel-close" data-ui="backpack.close"></div>
+                <div class="panel-body">
+                    <aside class="bp-tabs" id="backpack-tabs">
+                        <button type="button" class="bp-tab-btn active" data-container="pocket" data-ui="inv.pocket"></button>
+                        <button type="button" class="bp-tab-btn" data-container="vest" data-ui="inv.vest"></button>
+                        <button type="button" class="bp-tab-btn" data-container="backpack" data-ui="inv.backpack"></button>
+                        <button type="button" class="bp-tab-btn" data-container="vehicle" data-ui="inv.vehicle"></button>
+                        <button type="button" class="bp-tab-btn" data-container="ground" data-ui="inv.ground"></button>
+                    </aside>
+                    <section class="bp-list">
+                        <div class="bp-list-head" id="backpack-list-title" data-ui="inv.backpack"></div>
+                        <div id="backpack-item-list"></div>
+                    </section>
+                    <section class="bp-detail">
+                        <div id="backpack-detail"></div>
+                        <div class="bp-equip-panel">
+                            <h4 class="equip-title" data-ui="equip.title"></h4>
+                            <div class="equip-list" id="equip-list"></div>
+                        </div>
+                    </section>
+                </div>
             </div>
         </div>
         <!-- 基地仓库：站在标注「仓库」的格子上打开；物品表全条目可无限取 1 件 -->
@@ -2010,7 +2688,6 @@
             <div class="cs-panel">
                 <div class="cs-head">
                     <h2 data-ui="cooking.modal.title"></h2>
-                    <span class="cs-hint" data-ui="cooking.modal.hint"></span>
                     <button type="button" class="cs-close" id="cooking-station-close" data-ui="cooking.modal.close"></button>
                 </div>
                 <div class="cs-body">
@@ -2042,6 +2719,8 @@
                                 <button type="button" class="btn-mini" id="cooking-add-accessory-btn" data-ui="cooking.btn.install_accessory"></button>
                             </div>
                         </div>
+                    </div>
+                    <div class="cs-box">
                         <div class="title" data-ui="cooking.section.status"></div>
                         <div class="content">
                             <div id="cooking-status-kv" class="cs-kv"></div>
@@ -2061,27 +2740,162 @@
                                 <button type="button" class="btn-clear" id="cooking-clear-btn" data-ui="cooking.btn.clear"></button>
                             </div>
                         </div>
-                    </div>
-                    <div class="cs-box">
-                        <div class="title" data-ui="cooking.section.help"></div>
-                        <div class="content" id="cooking-help-text"></div>
+                        <div class="title" data-ui="cooking.section.progress"></div>
+                        <div class="content">
+                            <div id="cooking-active-craft"></div>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
-        <!-- 战斗技能枢纽弹窗 -->
+        <!-- 制药台 -->
+        <div id="modal-pharmacy-station" aria-hidden="true">
+            <div class="cs-panel">
+                <div class="cs-head">
+                    <h2 data-ui="pharmacy.modal.title"></h2>
+                    <span class="cs-hint" data-ui="pharmacy.modal.hint"></span>
+                    <button type="button" class="cs-close" id="pharmacy-station-close" data-ui="pharmacy.modal.close"></button>
+                </div>
+                <div class="cs-body">
+                    <div class="cs-box">
+                        <div class="title" data-ui="pharmacy.section.inputs"></div>
+                        <div class="content">
+                            <div id="pharmacy-input-list"></div>
+                            <div style="height:10px"></div>
+                            <div class="cs-subtitle" data-ui="pharmacy.section.from_inventory"></div>
+                            <input type="search" id="pharmacy-ingredient-filter" autocomplete="off" data-ui="pharmacy.ingredient.search.placeholder" data-ui-attr="placeholder" placeholder="" />
+                            <div id="pharmacy-ingredient-list" class="cs-ingredient-list"></div>
+                        </div>
+                        <div class="title" data-ui="pharmacy.section.known_recipes"></div>
+                        <div class="content">
+                            <div id="pharmacy-known-list" class="cs-known-list"></div>
+                        </div>
+                    </div>
+                    <div class="cs-box">
+                        <div class="title" data-ui="pharmacy.section.method"></div>
+                        <div class="content">
+                            <div id="pharmacy-method-list" class="cs-method-list"></div>
+                        </div>
+                        <div class="title" data-ui="pharmacy.section.accessory"></div>
+                        <div class="content">
+                            <div id="pharmacy-accessory-list"></div>
+                            <div style="height:10px"></div>
+                            <div class="cs-add-row accessory">
+                                <select id="pharmacy-add-accessory"></select>
+                                <button type="button" class="btn-mini" id="pharmacy-add-accessory-btn" data-ui="pharmacy.btn.install_accessory"></button>
+                            </div>
+                        </div>
+                        <div class="title" data-ui="pharmacy.section.status"></div>
+                        <div class="content">
+                            <div id="pharmacy-status-kv" class="cs-kv"></div>
+                            <div style="height:10px"></div>
+                            <div class="cs-subtitle" data-ui="pharmacy.section.fuel_sources"></div>
+                            <div id="pharmacy-fuel-source-list" class="cs-ingredient-list"></div>
+                            <div style="height:10px"></div>
+                            <div class="cs-actions cs-station-service">
+                                <button type="button" class="btn-clear" id="pharmacy-modal-add-fuel-btn" data-ui="player.action.add_fuel"></button>
+                            </div>
+                            <div class="cs-actions">
+                                <button type="button" class="btn-start" id="pharmacy-start-btn" data-ui="pharmacy.btn.start"></button>
+                                <button type="button" class="btn-clear" id="pharmacy-clear-btn" data-ui="pharmacy.btn.clear"></button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="cs-box">
+                        <div class="title" data-ui="pharmacy.section.progress"></div>
+                        <div class="content">
+                            <div id="pharmacy-active-craft"></div>
+                        </div>
+                        <div class="title" data-ui="pharmacy.section.help"></div>
+                        <div class="content" id="pharmacy-help-text"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div id="modal-compost-station" aria-hidden="true">
+            <div class="cs-panel">
+                <div class="cs-head">
+                    <h2 data-ui="compost.modal.title"></h2>
+                    <div class="cs-tabs">
+                        <button type="button" class="cs-tab active" id="compost-tab-aerobic" data-mode="aerobic" data-ui="compost.tab.aerobic"></button>
+                        <button type="button" class="cs-tab" id="compost-tab-anaerobic" data-mode="anaerobic" data-ui="compost.tab.anaerobic"></button>
+                    </div>
+                    <span class="cs-hint" data-ui="compost.modal.hint"></span>
+                    <button type="button" class="cs-close" id="compost-station-close" data-ui="compost.modal.close"></button>
+                </div>
+                <div class="cs-body">
+                    <div class="cs-box">
+                        <div class="title" data-ui="compost.section.left"></div>
+                        <div class="content">
+                            <div id="compost-input-list"></div>
+                            <div style="height:10px"></div>
+                            <div class="cs-subtitle" data-ui="compost.section.from_inventory"></div>
+                            <div id="compost-ingredient-list" class="cs-ingredient-list"></div>
+                            <div style="height:10px"></div>
+                            <div class="cs-subtitle" data-ui="compost.section.inoculant"></div>
+                            <div id="compost-inoculant-list" class="cs-ingredient-list"></div>
+                            <div style="height:10px"></div>
+                            <div class="cs-subtitle" data-ui="compost.section.perception"></div>
+                            <div id="compost-perception-text" class="cs-empty-hint"></div>
+                        </div>
+                    </div>
+                    <div class="cs-box">
+                        <div class="title" data-ui="compost.section.middle"></div>
+                        <div class="content">
+                            <div id="compost-progress-kv" class="cs-kv"></div>
+                            <div style="height:10px"></div>
+                            <div class="cs-subtitle" data-ui="compost.section.window"></div>
+                            <div id="compost-window-text" class="cs-empty-hint"></div>
+                            <div class="cs-actions">
+                                <button type="button" class="btn-mini" id="compost-interact-best-btn"></button>
+                                <button type="button" class="btn-mini" id="compost-interact-mid-btn"></button>
+                                <button type="button" class="btn-mini" id="compost-interact-alt-btn"></button>
+                            </div>
+                            <div style="height:10px"></div>
+                            <div class="cs-subtitle" data-ui="compost.section.log"></div>
+                            <div id="compost-log-list" class="cs-log"></div>
+                        </div>
+                    </div>
+                    <div class="cs-box">
+                        <div class="title" data-ui="compost.section.right"></div>
+                        <div class="content">
+                            <div id="compost-result-list"></div>
+                            <div class="cs-actions">
+                                <button type="button" class="btn-start" id="compost-start-btn" data-ui="compost.btn.start"></button>
+                                <button type="button" class="btn-clear" id="compost-stop-btn" data-ui="compost.btn.stop"></button>
+                            </div>
+                            <div class="cs-actions">
+                                <button type="button" class="btn-start" id="compost-collect-btn" data-ui="compost.btn.collect"></button>
+                                <button type="button" class="btn-clear" id="compost-discard-btn" data-ui="compost.btn.discard"></button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- 战斗技能枢纽弹窗（布局参考 reference/combat_skill.html） -->
         <div id="modal-combat">
             <div class="combat-panel">
-                <div class="combat-header">
-                    <div>
-                        <h2 data-ui="combat.hub.title"></h2>
-                        <span class="combat-subtitle" data-ui="combat.hub.subtitle"></span>
+                <header class="combat-header">
+                    <div class="combat-header-left">
+                        <h2 class="combat-panel-title" data-ui="combat.panel.title"></h2>
+                        <nav class="combat-main-tabs" aria-label="模式">
+                            <button type="button" class="combat-main-tab active" data-mode="skills" data-ui="combat.tab.skills"></button>
+                            <button type="button" class="combat-main-tab" data-mode="acupoints" data-ui="combat.tab.acupoints"></button>
+                        </nav>
                     </div>
                     <button type="button" class="combat-close" id="combat-modal-close" aria-label="关闭">✖</button>
-                </div>
+                </header>
                 <div class="combat-body">
-                    <div class="combat-left">
-                        <div class="combat-hub-section">
+                    <aside class="combat-cat-rail" aria-label="分类">
+                        <div id="category-tabs" class="combat-cat-rail-inner"></div>
+                    </aside>
+                    <div class="combat-skill-column">
+                        <div id="skill-list" class="combat-skill-list"></div>
+                        <div id="acupoint-list" class="combat-acupoint-list"></div>
+                    </div>
+                    <div class="combat-config-column">
+                        <div class="combat-hub-section combat-hub-compact">
                             <div class="combat-hub-title" data-ui="combat.global.hub.title"></div>
                             <div class="combat-hub-grid">
                                 <div id="hub-breath" class="combat-hub-node">
@@ -2095,25 +2909,21 @@
                             </div>
                         </div>
                         <div class="combat-limb-title" data-ui="combat.limb.load.title"></div>
-                        <div id="limb-container" class="combat-limb-list"></div>
-                    </div>
-                    <div class="combat-right">
-                        <div class="combat-main-tabs">
-                            <button type="button" class="combat-main-tab active" data-mode="skills" data-ui="combat.tab.skills"></button>
+                        <div id="limb-container" class="combat-limb-list combat-limb-grid"></div>
+                        <div class="combat-seq-head">
+                            <h3 class="combat-seq-title">
+                                <span data-ui="combat.move_sequence.section"></span>
+                                <span id="combat-seq-limb-suffix" class="combat-seq-limb-suffix"></span>
+                            </h3>
                         </div>
-                        <div id="category-tabs" class="combat-category-tabs"></div>
-                        <div id="skill-list" class="combat-skill-list"></div>
-                    </div>
-                </div>
-                <div class="combat-footer">
-                    <div class="combat-footer-left">
-                        <div class="combat-footer-top">
+                        <div class="combat-selected-meta">
                             <h3 id="skill-title" class="skill-title">--</h3>
                             <div class="skill-badges">
                                 <span id="skill-level" class="badge-level" data-ui="combat.level.zero"></span>
                                 <span id="skill-prof" class="badge-prof" data-ui="combat.prof.zero"></span>
-                                    <button type="button" class="combat-debug-btn" id="btn-debug-combat-skill-plus50" title="调试：给当前战斗技能加 +50 级">+50级</button>
-                                    <button type="button" class="combat-debug-btn" id="btn-debug-recipe-schema-errors" data-ui="debug.recipe_schema.btn"></button>
+                                <button type="button" class="combat-debug-btn" id="btn-combat-post-effect-inline" data-ui="combat.post_effect.btn"></button>
+                                <button type="button" class="combat-debug-btn" id="btn-debug-combat-skill-plus50" title="调试：给当前战斗技能加 +50 级">+50级</button>
+                                <button type="button" class="combat-debug-btn" id="btn-debug-recipe-schema-errors" data-ui="debug.recipe_schema.btn"></button>
                             </div>
                         </div>
                         <div id="recipe-schema-debug-panel" class="recipe-schema-debug-panel">
@@ -2127,12 +2937,16 @@
                             <div id="recipe-schema-debug-list"></div>
                         </div>
                         <div id="move-sequence" class="combat-move-sequence"></div>
-                    </div>
-                    <div class="combat-footer-right">
-                        <button type="button" class="btn-deploy" id="btn-deploy-combat" data-ui="combat.deploy"></button>
-                        <div id="target-indicator" class="target-indicator" data-ui="combat.target.default"></div>
+                        <div class="combat-config-actions">
+                            <button type="button" class="btn-deploy" id="btn-deploy-combat" data-ui="combat.deploy"></button>
+                            <div id="target-indicator" class="target-indicator" data-ui="combat.target.default"></div>
+                        </div>
                     </div>
                 </div>
+                <footer class="combat-panel-footer">
+                    <span class="combat-panel-footer-hint" data-ui="combat.panel.footer.hint"></span>
+                    <span class="combat-panel-footer-sub" data-ui="combat.hub.subtitle"></span>
+                </footer>
             </div>
         </div>
         <!-- 招式选择弹出层 -->
@@ -2141,7 +2955,7 @@
             <div id="picker-list" class="picker-list"></div>
         </div>
         <div id="picker-post-effect">
-            <div class="picker-title">后遗症槽位</div>
+            <div class="picker-title" data-ui="picker.post_effect.title"></div>
             <div id="picker-post-effect-list" class="picker-list"></div>
         </div>
 
@@ -2330,6 +3144,8 @@
     <script src="js/survival-skills.js"></script>
     <script src="js/production-quality.js"></script>
     <script src="js/item-value.js"></script>
+    <script src="js/item-info-modules.js"></script>
+    <script src="js/compost-system.js"></script>
     <script src="js/gathering.js"></script>
     <script src="js/scene-animation.js"></script>
     <script src="js/core/tile-renderer-v2.js"></script>

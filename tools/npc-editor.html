@@ -191,6 +191,7 @@
             overflow:hidden;
         }
         .dlg-line .avatar-prev .glyph{ font-size: 12px; color: rgba(148,163,184,0.75); }
+        #dp-pool-lines-wrap .dp-pool-line { margin-bottom: 12px; }
 
         .tags-in{ display:flex; flex-wrap:wrap; gap: 6px; align-items:center; }
         .tags-in input{ flex: 1; min-width: 80px; }
@@ -247,7 +248,13 @@
 
         .empty-msg{ color: rgba(148,163,184,0.65); font-size: 13px; padding: 18px; text-align:center; border: 1px dashed rgba(148,163,184,0.18); border-radius: var(--radius); background: rgba(148,163,184,0.04); }
         .two-cols{ display:grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-        @media (max-width: 900px){ .two-cols{ grid-template-columns: 1fr; } .col-npc{ width: 100%; } }
+        @media (max-width: 900px){
+            .two-cols{ grid-template-columns: 1fr; }
+            .col-npc{ width: 100%; max-width: none; }
+            .dp-tab-layout { flex-direction: column; }
+            .dp-pool-sidebar { width: 100%; max-height: none; }
+            .dp-pool-list { max-height: 220px; }
+        }
 
         /* UX helpers */
         .toolbar .status-pill{
@@ -352,6 +359,113 @@
         .left-tab-btn.active{ color:var(--primary2); border-bottom-color:var(--primary2); }
         .left-tab-pane{ display:none; }
         .left-tab-pane.active{ display:block; }
+        .right-workbench-tabs {
+            display: flex;
+            gap: 0;
+            border-bottom: 1px solid var(--border);
+            flex-shrink: 0;
+            background: rgba(10,18,34,0.92);
+            padding: 0 8px;
+        }
+        .right-tab-btn {
+            appearance: none;
+            border: none;
+            border-bottom: 2px solid transparent;
+            background: transparent;
+            color: var(--muted);
+            cursor: pointer;
+            padding: 10px 16px;
+            font-size: 12px;
+            font-weight: 800;
+            letter-spacing: 0.06em;
+        }
+        .right-tab-btn:hover { color: var(--text); background: rgba(148,163,184,0.06); }
+        .right-tab-btn.active {
+            color: var(--primary2);
+            border-bottom-color: var(--primary2);
+        }
+        .right-workbench-body {
+            flex: 1;
+            min-height: 0;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        .right-tab-pane {
+            display: none;
+            flex: 1;
+            flex-direction: column;
+            min-height: 0;
+            overflow: hidden;
+        }
+        .right-tab-pane.active { display: flex; }
+        .right-pools-inner {
+            flex: 1;
+            overflow-y: auto;
+            padding: 12px 16px 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            min-height: 0;
+        }
+        .dp-tab-layout {
+            display: flex;
+            gap: 14px;
+            align-items: flex-start;
+            min-height: 320px;
+        }
+        .dp-pool-sidebar {
+            width: 260px;
+            flex-shrink: 0;
+            display: flex;
+            flex-direction: column;
+        }
+        .dp-pool-list {
+            flex: 1;
+            min-height: 120px;
+            max-height: calc(100vh - 220px);
+            overflow-y: auto;
+            border: 1px solid var(--border);
+            border-radius: var(--radiusSm);
+            background: rgba(0,0,0,0.18);
+        }
+        .dp-pool-item {
+            display: block;
+            width: 100%;
+            text-align: left;
+            border-radius: 0;
+            border: none;
+            border-bottom: 1px solid rgba(148,163,184,0.10);
+            padding: 10px 12px;
+            font-weight: 600;
+            font-size: 11px;
+            word-break: break-all;
+        }
+        .dp-pool-item:hover { background: rgba(148,163,184,0.10); }
+        .dp-pool-item.active {
+            background: rgba(96,165,250,0.16);
+            color: var(--primary2);
+            box-shadow: inset 3px 0 0 var(--primary);
+        }
+        .dp-pool-editor {
+            flex: 1;
+            min-width: 0;
+            border: 1px solid var(--border);
+            border-radius: var(--radiusSm);
+            padding: 12px;
+            background: rgba(0,0,0,0.14);
+        }
+
+        .fb-rule-card { transition: opacity .12s ease, box-shadow .12s ease; }
+        .fb-rule-card.fb-rule-dragging { opacity: 0.55; box-shadow: 0 0 0 2px rgba(96,165,250,0.5); }
+        .fb-rule-card.fb-rule-drag-over { outline: 2px dashed rgba(96,165,250,0.7); outline-offset: 3px; }
+        .fb-rule-card-head {
+            cursor: grab;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+        .fb-rule-card-head:active { cursor: grabbing; }
+        .fb-rule-grip { opacity: 0.55; font-size: 14px; letter-spacing: -2px; }
 
         .img-asset-card{
             display:flex; gap:10px; align-items:flex-start;
@@ -426,7 +540,9 @@
         <input type="file" id="file-import-triggers" accept=".json,application/json" style="display:none;" />
         <input type="file" id="file-import-skills" accept=".json,.md,text/markdown,application/json,text/plain" style="display:none;" />
         <input type="file" id="file-import-npc-registry" accept=".json,application/json" style="display:none;" />
+        <input type="file" id="file-import-dialogue-pools" accept=".json,application/json" style="display:none;" />
         <button type="button" id="btn-import-npc">从本地载入 NPC</button>
+        <button type="button" id="btn-import-dialogue-pools" title="从 JSON 文件载入当前 NPC 的台词池（路径与本体一致：data/npc/&lt;id&gt;_dialogue_pools.json）">载入台词池表</button>
         <a href="#" id="link-paste-npc" style="color:#8af; font-size:12px;">粘贴 NPC</a>
         <button type="button" id="btn-import-triggers">从本地载入事件</button>
         <a href="#" id="link-paste-triggers" style="color:#8af; font-size:12px;">粘贴事件</a>
@@ -436,8 +552,10 @@
         <button type="button" id="btn-import-items" title="用于条件 hasItem、效果 removeItem/giveItem 的物品搜索；file:// 打开时请用本地选择 data/items.json">载入物品表</button>
         <span id="items-catalog-count" style="color:#666; font-size:11px;">物品：未载入</span>
         <span class="break"></span>
+        <button type="button" id="btn-save-all-memory" title="把 NPC / 事件 / 台词池当前编辑内容统一写回内存，不下载文件">保存到内存</button>
         <button type="button" id="btn-export-registry">更新注册表</button>
         <button type="button" id="btn-export-npc" class="primary">保存 NPC</button>
+        <button type="button" id="btn-export-dialogue-pools">保存台词池表</button>
         <button type="button" id="btn-export-triggers" class="primary">保存事件</button>
         <label>当前 NPC ID <input type="text" id="inp-npc-id-readonly" readonly placeholder="先新建或导入" style="width:200px;color:#888;" /></label>
         <button type="button" id="btn-bind-project" title="绑定项目根目录后可直接写入 data/npc/，不再需要手动移文件">📁 绑定目录</button>
@@ -475,20 +593,26 @@
         </div>
 
         <div class="col-events">
-            <div class="events-list-wrap">
-                <h3>触发事件列表 <button type="button" id="btn-new-entry" style="margin-left:8px; padding:4px 10px;">+ 新增事件</button></h3>
-                <div class="search-row">
-                    <input type="text" id="entries-search" placeholder="搜索：id / 条件 / 标签（可重复）…" />
-                    <span class="chip" id="chip-repeatable">可重复</span>
-                    <span class="chip" id="chip-once">一次性</span>
-                    <span class="count" id="entries-count">0/0</span>
-                </div>
-                <div id="entries-list"></div>
-                <div id="entries-empty" class="empty-msg">暂无事件，点击「新增事件」添加；或导入事件 JSON。</div>
+            <div class="right-workbench-tabs">
+                <button type="button" class="right-tab-btn active" id="tab-btn-right-events" onclick="switchRightWorkbenchTab('events')">事件</button>
+                <button type="button" class="right-tab-btn" id="tab-btn-right-pools" onclick="switchRightWorkbenchTab('dialogue-pools')">台词池</button>
             </div>
-            <div class="event-edit-wrap">
-                <div id="entry-edit-placeholder" class="empty-msg">在左侧选中一条事件进行编辑，或新增事件。</div>
-                <div id="entry-edit-panel" style="display:none;">
+            <div class="right-workbench-body">
+                <div id="right-pane-events" class="right-tab-pane active">
+                    <div class="events-list-wrap">
+                        <h3>触发事件列表 <button type="button" id="btn-new-entry" style="margin-left:8px; padding:4px 10px;">+ 新增事件</button></h3>
+                        <div class="search-row">
+                            <input type="text" id="entries-search" placeholder="搜索：id / 条件 / 标签（可重复）…" />
+                            <span class="chip" id="chip-repeatable">可重复</span>
+                            <span class="chip" id="chip-once">一次性</span>
+                            <span class="count" id="entries-count">0/0</span>
+                        </div>
+                        <div id="entries-list"></div>
+                        <div id="entries-empty" class="empty-msg">暂无事件，点击「新增事件」添加；或导入事件 JSON。</div>
+                    </div>
+                    <div class="event-edit-wrap">
+                        <div id="entry-edit-placeholder" class="empty-msg">在上方列表选中一条事件进行编辑，或新增事件。</div>
+                        <div id="entry-edit-panel" style="display:none;">
                     <h3>编辑事件</h3>
                     <div class="section">
                         <div class="row">
@@ -516,6 +640,7 @@
                         <div class="row">
                             <label>条件类型</label>
                             <select id="entry-cond-type">
+                                <option value="true">恒为真 (true)</option>
                                 <option value="flagEquals">flag 等于 (flagEquals)</option>
                                 <option value="skillLevelEquals">技能等级等于 (skillLevelEquals)</option>
                                 <option value="skillLevelGte">技能等级 ≥ (skillLevelGte)</option>
@@ -591,13 +716,14 @@
                     </div>
                     <div class="section">
                         <div class="section-title">关系约束</div>
+                        <p class="hint" style="margin-top:0;">requires / blocks 仅填<strong>事件条目 id</strong>（依赖/屏蔽的是「已触发」记录），<strong>不要</strong>填 flag 名；旗标条件请写在上方「触发条件」。</p>
                         <div class="row">
                             <label>前置条目 ID（requires，逗号分隔）</label>
-                            <input type="text" id="entry-requires" placeholder="id1, id2" />
+                            <input type="text" id="entry-requires" placeholder="仅事件条目 id，如 station.cooking.repair_intro（已触发）" />
                         </div>
                         <div class="row">
                             <label>触发后屏蔽的条目 ID（blocks，逗号分隔）</label>
-                            <input type="text" id="entry-blocks" placeholder="id1, id2" />
+                            <input type="text" id="entry-blocks" placeholder="仅事件条目 id；不要用 flag 名" />
                         </div>
                     </div>
                     <div class="section">
@@ -614,7 +740,7 @@
                                     仅 NPC 台词
                                 </label>
                             </div>
-                            <p class="hint">每句可选择说话人（林经理/主角/旁白），并可上下移动调整顺序。</p>
+                            <p class="hint">每句可选择说话人（NPC / 主角 / 旁白），并可上下移动调整顺序。</p>
                         </div>
                         <div class="row">
                             <label><input type="checkbox" id="entry-hasOptions" /> 带选项分支</label>
@@ -654,6 +780,17 @@
                     <div class="btn-row">
                         <button type="button" id="btn-save-entry">保存当前事件</button>
                         <button type="button" id="btn-delete-entry" class="danger">删除此事件</button>
+                    </div>
+                </div>
+                </div>
+                </div>
+                <div id="right-pane-dialogue-pools" class="right-tab-pane">
+                    <div class="right-pools-inner">
+                        <p class="panel-note" style="margin:0; font-size:11px;">
+                            与本列「事件」同级：编辑当前 NPC 的摸鱼台词池文件（<code>data/npc/&lt;npc_id 点改下划线&gt;_dialogue_pools.json</code>；运行时另与共用 <code>dialogue_pools.json</code> 按池 id 合并，专用覆盖同名池），以及按 flag/技能等<strong>分部解锁</strong>（<code>fallbackPoolRules</code>）。<strong>规则自上而下匹配，同一轮仅第一条命中的规则生效；分部规则卡片左侧「⠿」标题栏可拖到另一条上排序。</strong>默认池 id 在左侧 NPC 表单的「无触发时的台词池 ID」。规则内 <strong>poolPickMode</strong>：<code>pick_one</code> 在多个池里随机选一个再抽一句；<code>merge_pools</code> 把所列池的台词合并后等权随机一句（如 A+B）。
+                        </p>
+                        <div id="dialogue-pools-tab-root"></div>
+                        <div id="dialogue-pools-fallback-rules-host"></div>
                     </div>
                 </div>
             </div>
@@ -833,12 +970,14 @@
                 id: 'npc.custom.unnamed',
                 name: '',
                 displayTitle: '',
+                npcLabel: '',
                 sprite: '',
                 appearanceSchedule: { start: '09:00', end: '17:30' },
                 location: { sceneId: 'base_main', x: 0, y: 0 },
                 mainMenu: { showChat: true, showWorkWhen: 'hasAvailableOrTurnIn', showLeave: true },
                 behavior: { type: 'supervisor', origin: 'mysterious_system', description: '' },
                 fallbackDialoguePoolId: '',
+                fallbackPoolRules: [],
                 tags: [],
                 _extra: {}
             };
@@ -865,24 +1004,29 @@
                 /** @type {{ id:string, sn:string, ph:string, hay:string }[]} */
                 itemsCatalog: [],
                 imageRootDirHandle: null, // File System Access API: /image 目录句柄（可选）
+                dialoguePoolsDoc: { schemaVersion: 1, pools: {} },
+                _dialoguePoolsHydrated: false,
                 ui: {
                     entriesSearch: '',
                     filterRepeatable: false,
-                    filterOnce: false
+                    filterOnce: false,
+                    dialoguePoolSearch: '',
+                    selectedDialoguePoolId: ''
                 },
-                dirty: { npc: false, entry: false }
+                dirty: { npc: false, entry: false, dialoguePools: false }
             };
 
             function setDirty(which, v) {
-                if (!state.dirty) state.dirty = { npc: false, entry: false };
+                if (!state.dirty) state.dirty = { npc: false, entry: false, dialoguePools: false };
                 if (which === 'npc') state.dirty.npc = !!v;
                 if (which === 'entry') state.dirty.entry = !!v;
+                if (which === 'dialoguePools') state.dirty.dialoguePools = !!v;
                 updateDirtyPill();
             }
             function updateDirtyPill() {
                 var pill = document.getElementById('dirty-pill');
                 if (!pill) return;
-                var dirty = !!(state.dirty && (state.dirty.npc || state.dirty.entry));
+                var dirty = !!(state.dirty && (state.dirty.npc || state.dirty.entry || state.dirty.dialoguePools));
                 pill.textContent = dirty ? '● 未保存' : '✓ 已保存';
                 pill.className = 'status-pill ' + (dirty ? 'dirty' : 'ok');
                 pill.title = dirty ? '存在未保存的修改（切换事件/导出会自动保存当前事件）' : '所有修改已保存到内存状态（建议及时导出 JSON）';
@@ -890,7 +1034,7 @@
 
             window.addEventListener('beforeunload', function (e) {
                 try {
-                    var dirty = !!(state.dirty && (state.dirty.npc || state.dirty.entry));
+                    var dirty = !!(state.dirty && (state.dirty.npc || state.dirty.entry || state.dirty.dialoguePools));
                     if (!dirty) return;
                     e.preventDefault();
                     e.returnValue = '';
@@ -927,6 +1071,7 @@
                 { group: '标识', id: 'npc-id', label: 'ID（唯一）', path: 'id', type: 'text', placeholder: 'npc.supervisor.xxx', required: true, help: '建议形如 npc.supervisor.linShuyao；导出文件名会把 . 替换成 _' },
                 { group: '标识', id: 'npc-name', label: '姓名', path: 'name', type: 'text', placeholder: '林书瑶', required: false },
                 { group: '标识', id: 'npc-displayTitle', label: '称呼（玩家看到的）', path: 'displayTitle', type: 'text', placeholder: '林经理', required: false },
+                { group: '标识', id: 'npc-npcLabel', label: '地图短标签（npcLabel）', path: 'npcLabel', type: 'text', placeholder: '人 / 店员 / 管理员', required: false, help: '用于地图格子上的短文本显示；未填时仍按 displayTitle/name 回退。' },
 
                 { group: '出现时间与位置', id: 'npc-schedule-start', label: '上班开始', path: 'appearanceSchedule.start', type: 'time', placeholder: '09:00', required: false },
                 { group: '出现时间与位置', id: 'npc-schedule-end', label: '上班结束', path: 'appearanceSchedule.end', type: 'time', placeholder: '17:30', required: false },
@@ -960,6 +1105,1117 @@
                 { group: '标签', id: 'npc-tags', label: '标签', path: 'tags', type: 'tags', required: false, help: '如 supervisor, guide_hidden, base_npc, non_combat' }
             ];
 
+            function ensureDialoguePoolsDocShape() {
+                if (!state.dialoguePoolsDoc || typeof state.dialoguePoolsDoc !== 'object') state.dialoguePoolsDoc = { schemaVersion: 1, pools: {} };
+                if (state.dialoguePoolsDoc.schemaVersion == null) state.dialoguePoolsDoc.schemaVersion = 1;
+                if (!isObj(state.dialoguePoolsDoc.pools)) state.dialoguePoolsDoc.pools = {};
+            }
+
+            function ensurePoolEntry(pid) {
+                ensureDialoguePoolsDocShape();
+                if (!pid) return;
+                if (!state.dialoguePoolsDoc.pools[pid]) {
+                    state.dialoguePoolsDoc.pools[pid] = { lines: [''], includePools: [], composeMode: 'merge_lines' };
+                }
+                var p = state.dialoguePoolsDoc.pools[pid];
+                if (!Array.isArray(p.lines)) p.lines = [''];
+                if (!Array.isArray(p.includePools)) p.includePools = [];
+                if (p.composeMode !== 'pick_pool' && p.composeMode !== 'merge_lines') p.composeMode = 'merge_lines';
+            }
+
+            function removePoolIdFromAllIncludes(deadId) {
+                ensureDialoguePoolsDocShape();
+                var keys = Object.keys(state.dialoguePoolsDoc.pools || {});
+                for (var i = 0; i < keys.length; i++) {
+                    var p = state.dialoguePoolsDoc.pools[keys[i]];
+                    if (!p || !Array.isArray(p.includePools)) continue;
+                    var next = [];
+                    for (var j = 0; j < p.includePools.length; j++) {
+                        if (String(p.includePools[j]).trim() !== deadId) next.push(p.includePools[j]);
+                    }
+                    p.includePools = next;
+                }
+            }
+
+            function patchReferencesRenamePoolId(oldId, newId) {
+                ensureDialoguePoolsDocShape();
+                var keys = Object.keys(state.dialoguePoolsDoc.pools || {});
+                for (var i = 0; i < keys.length; i++) {
+                    var p = state.dialoguePoolsDoc.pools[keys[i]];
+                    if (!p || !Array.isArray(p.includePools)) continue;
+                    for (var j = 0; j < p.includePools.length; j++) {
+                        if (String(p.includePools[j]).trim() === oldId) p.includePools[j] = newId;
+                    }
+                }
+                ensureNpcShape();
+                if (String(state.npc.fallbackDialoguePoolId || '').trim() === oldId) state.npc.fallbackDialoguePoolId = newId;
+                var frs = state.npc.fallbackPoolRules || [];
+                for (var r = 0; r < frs.length; r++) {
+                    var rr = frs[r];
+                    if (!rr || !Array.isArray(rr.poolIds)) continue;
+                    for (var k = 0; k < rr.poolIds.length; k++) {
+                        if (String(rr.poolIds[k]).trim() === oldId) rr.poolIds[k] = newId;
+                    }
+                }
+            }
+
+            /** 台词池 lines[]：string 或 { speaker, text, avatar? }，与事件 linesRich 对齐 */
+            function poolLineFromStored(raw) {
+                if (raw == null) return { speaker: 'npc', text: '', avatar: '' };
+                if (typeof raw === 'string') return { speaker: 'npc', text: String(raw), avatar: '' };
+                if (typeof raw === 'object') {
+                    return {
+                        speaker: String(raw.speaker || raw.role || 'npc').trim() || 'npc',
+                        text: raw.text != null ? String(raw.text) : (raw.content != null ? String(raw.content) : ''),
+                        avatar: raw.avatar != null ? String(raw.avatar) : ''
+                    };
+                }
+                return { speaker: 'npc', text: '', avatar: '' };
+            }
+
+            function poolLineToPersist(o) {
+                o = o || {};
+                var sp = String(o.speaker || 'npc').trim() || 'npc';
+                var tx = String(o.text != null ? o.text : '').trim();
+                var av = String(o.avatar != null ? o.avatar : '').trim();
+                if (sp === 'npc' && !av) return tx;
+                return { speaker: sp, text: tx, avatar: av };
+            }
+
+            function createDialoguePoolLineRow(pool, idx) {
+                var lines = pool.lines;
+                var model = poolLineFromStored(lines[idx]);
+                var wrap = document.createElement('div');
+                wrap.className = 'dlg-line dp-pool-line';
+
+                var top = document.createElement('div');
+                top.className = 'top';
+
+                var sel = document.createElement('select');
+                sel.className = 'dlg-speaker';
+                [['npc', 'NPC'], ['player', '主角'], ['narration', '旁白']].forEach(function (opt) {
+                    var o = document.createElement('option');
+                    o.value = opt[0];
+                    o.textContent = opt[1];
+                    sel.appendChild(o);
+                });
+                sel.value = model.speaker || 'npc';
+
+                var actions = document.createElement('div');
+                actions.className = 'actions';
+                var btnUp = document.createElement('button');
+                btnUp.type = 'button';
+                btnUp.textContent = '↑';
+                var btnDown = document.createElement('button');
+                btnDown.type = 'button';
+                btnDown.textContent = '↓';
+                var btnDel = document.createElement('button');
+                btnDel.type = 'button';
+                btnDel.textContent = '删除';
+                btnDel.className = 'danger';
+                btnDel.disabled = lines.length <= 1;
+                actions.appendChild(btnUp);
+                actions.appendChild(btnDown);
+                actions.appendChild(btnDel);
+                top.appendChild(sel);
+                top.appendChild(actions);
+                wrap.appendChild(top);
+
+                var ta = document.createElement('textarea');
+                ta.className = 'dlg-text';
+                ta.rows = 2;
+                ta.placeholder = '输入这一句台词…';
+                ta.value = model.text || '';
+
+                var avatarRow = document.createElement('div');
+                avatarRow.className = 'avatar-row';
+                var prev = document.createElement('div');
+                prev.className = 'avatar-prev';
+                var prevImg = document.createElement('img');
+                var prevGlyph = document.createElement('span');
+                prevGlyph.className = 'glyph';
+                prevGlyph.textContent = '像';
+                prev.appendChild(prevGlyph);
+                prev.appendChild(prevImg);
+                prevImg.style.display = 'none';
+                function setPreviewFromUrl(url) {
+                    url = (url || '').trim();
+                    if (!url) {
+                        prevImg.src = '';
+                        prevImg.style.display = 'none';
+                        prevGlyph.style.display = 'block';
+                        return;
+                    }
+                    prevImg.onload = function () {
+                        prevImg.style.display = 'block';
+                        prevGlyph.style.display = 'none';
+                    };
+                    prevImg.onerror = function () {
+                        prevImg.style.display = 'none';
+                        prevGlyph.style.display = 'block';
+                    };
+                    prevImg.src = url;
+                }
+                var inpAvatarPath = document.createElement('input');
+                inpAvatarPath.type = 'text';
+                inpAvatarPath.className = 'dlg-avatar-path';
+                inpAvatarPath.placeholder = '本句头像路径（可空），与事件台词一致';
+                inpAvatarPath.value = (model.avatar || '').trim();
+                inpAvatarPath.addEventListener('input', function () {
+                    setPreviewFromUrl(inpAvatarPath.value);
+                });
+                avatarRow.appendChild(prev);
+                avatarRow.appendChild(inpAvatarPath);
+                setPreviewFromUrl(inpAvatarPath.value);
+
+                function flushLine() {
+                    lines[idx] = poolLineToPersist({
+                        speaker: sel.value,
+                        text: ta.value,
+                        avatar: inpAvatarPath.value
+                    });
+                    setDirty('dialoguePools', true);
+                }
+                sel.addEventListener('change', flushLine);
+                ta.addEventListener('input', flushLine);
+                inpAvatarPath.addEventListener('change', flushLine);
+
+                wrap.appendChild(ta);
+                wrap.appendChild(avatarRow);
+
+                btnUp.addEventListener('click', function () {
+                    if (idx <= 0) return;
+                    var t = lines[idx - 1];
+                    lines[idx - 1] = lines[idx];
+                    lines[idx] = t;
+                    setDirty('dialoguePools', true);
+                    renderDialoguePoolsTab();
+                });
+                btnDown.addEventListener('click', function () {
+                    if (idx >= lines.length - 1) return;
+                    var t = lines[idx + 1];
+                    lines[idx + 1] = lines[idx];
+                    lines[idx] = t;
+                    setDirty('dialoguePools', true);
+                    renderDialoguePoolsTab();
+                });
+                btnDel.addEventListener('click', function () {
+                    if (lines.length <= 1) return;
+                    lines.splice(idx, 1);
+                    setDirty('dialoguePools', true);
+                    renderDialoguePoolsTab();
+                });
+
+                return wrap;
+            }
+
+            function renderDialoguePoolsTab() {
+                var root = document.getElementById('dialogue-pools-tab-root');
+                if (!root) return;
+                ensureDialoguePoolsDocShape();
+                if (!state.ui) state.ui = {};
+                if (state.ui.dialoguePoolSearch == null) state.ui.dialoguePoolSearch = '';
+                if (state.ui.selectedDialoguePoolId == null) state.ui.selectedDialoguePoolId = '';
+
+                var allKeys = Object.keys(state.dialoguePoolsDoc.pools || {}).sort();
+                var search = String(state.ui.dialoguePoolSearch || '').trim().toLowerCase();
+                var keys = allKeys;
+                if (search) {
+                    keys = allKeys.filter(function (k) { return String(k).toLowerCase().indexOf(search) >= 0; });
+                }
+
+                var sel = String(state.ui.selectedDialoguePoolId || '').trim();
+                if (sel && !state.dialoguePoolsDoc.pools[sel]) sel = '';
+                if (!sel && allKeys.length) sel = allKeys[0];
+                state.ui.selectedDialoguePoolId = sel;
+                if (sel) ensurePoolEntry(sel);
+
+                root.innerHTML = '';
+                var layout = document.createElement('div');
+                layout.className = 'dp-tab-layout';
+
+                var sidebar = document.createElement('div');
+                sidebar.className = 'dp-pool-sidebar';
+                var sbTitle = document.createElement('div');
+                sbTitle.className = 'section-title';
+                sbTitle.textContent = '台词池列表';
+                sidebar.appendChild(sbTitle);
+
+                var searchInp = document.createElement('input');
+                searchInp.type = 'text';
+                searchInp.placeholder = '搜索池 id…';
+                searchInp.value = state.ui.dialoguePoolSearch || '';
+                searchInp.style.marginBottom = '8px';
+                searchInp.addEventListener('input', function () {
+                    state.ui.dialoguePoolSearch = searchInp.value;
+                    renderDialoguePoolsTab();
+                });
+                sidebar.appendChild(searchInp);
+
+                var listEl = document.createElement('div');
+                listEl.className = 'dp-pool-list';
+                for (var li = 0; li < keys.length; li++) {
+                    (function (kid) {
+                        var row = document.createElement('button');
+                        row.type = 'button';
+                        row.className = 'dp-pool-item' + (kid === sel ? ' active' : '');
+                        row.textContent = kid;
+                        row.addEventListener('click', function () {
+                            state.ui.selectedDialoguePoolId = kid;
+                            renderDialoguePoolsTab();
+                        });
+                        listEl.appendChild(row);
+                    })(keys[li]);
+                }
+                if (!keys.length) {
+                    var em = document.createElement('div');
+                    em.className = 'hint';
+                    em.style.padding = '10px';
+                    em.textContent = allKeys.length ? '无匹配结果' : '暂无台词池';
+                    listEl.appendChild(em);
+                }
+                sidebar.appendChild(listEl);
+
+                var btnNew = document.createElement('button');
+                btnNew.type = 'button';
+                btnNew.textContent = '+ 新建池';
+                btnNew.className = 'primary';
+                btnNew.style.width = '100%';
+                btnNew.style.marginTop = '10px';
+                btnNew.addEventListener('click', function () {
+                    var nid = 'npc.custom.dialogue_pool_' + String(Date.now()).slice(-8);
+                    var guard = 0;
+                    while (state.dialoguePoolsDoc.pools[nid] && guard++ < 50) {
+                        nid = 'npc.custom.dialogue_pool_' + String(Math.floor(Math.random() * 1e9));
+                    }
+                    state.dialoguePoolsDoc.pools[nid] = { lines: [''], includePools: [], composeMode: 'merge_lines' };
+                    state.ui.selectedDialoguePoolId = nid;
+                    setDirty('dialoguePools', true);
+                    renderDialoguePoolsTab();
+                });
+                sidebar.appendChild(btnNew);
+
+                var btnDel = document.createElement('button');
+                btnDel.type = 'button';
+                btnDel.textContent = '删除当前池';
+                btnDel.className = 'danger';
+                btnDel.style.width = '100%';
+                btnDel.style.marginTop = '8px';
+                btnDel.disabled = !sel;
+                btnDel.addEventListener('click', function () {
+                    if (!sel) return;
+                    confirmDialog({
+                        title: '删除台词池',
+                        message: '确定删除「' + sel + '」？其它池 includePools 中的引用将被移除；NPC 上若仍填此 id 需自行修改。',
+                        okText: '删除',
+                        cancelText: '取消',
+                        danger: true
+                    }).then(function (ok) {
+                        if (!ok) return;
+                        delete state.dialoguePoolsDoc.pools[sel];
+                        removePoolIdFromAllIncludes(sel);
+                        state.ui.selectedDialoguePoolId = '';
+                        setDirty('dialoguePools', true);
+                        renderDialoguePoolsTab();
+                    });
+                });
+                sidebar.appendChild(btnDel);
+
+                layout.appendChild(sidebar);
+
+                var main = document.createElement('div');
+                main.className = 'dp-pool-editor';
+                if (!sel) {
+                    main.innerHTML = '<p class="hint">请选择左侧台词池，或点击「新建池」。</p>';
+                    layout.appendChild(main);
+                    root.appendChild(layout);
+                    return;
+                }
+
+                var pool = state.dialoguePoolsDoc.pools[sel];
+                var edTitle = document.createElement('div');
+                edTitle.className = 'section-title';
+                edTitle.textContent = '编辑台词池';
+                main.appendChild(edTitle);
+
+                var idRow = document.createElement('div');
+                idRow.className = 'row';
+                idRow.style.marginTop = '6px';
+                var idLab = document.createElement('label');
+                idLab.textContent = '池 ID';
+                idLab.style.minWidth = '72px';
+                var idInp2 = document.createElement('input');
+                idInp2.type = 'text';
+                idInp2.value = sel;
+                idInp2.style.flex = '1';
+                idInp2.addEventListener('change', function () {
+                    var nv = String(idInp2.value || '').trim();
+                    if (!nv || nv === sel) { idInp2.value = sel; return; }
+                    if (state.dialoguePoolsDoc.pools[nv]) {
+                        toast('warn', 'ID 已存在', '请使用未占用的池 id');
+                        idInp2.value = sel;
+                        return;
+                    }
+                    state.dialoguePoolsDoc.pools[nv] = state.dialoguePoolsDoc.pools[sel];
+                    delete state.dialoguePoolsDoc.pools[sel];
+                    patchReferencesRenamePoolId(sel, nv);
+                    state.ui.selectedDialoguePoolId = nv;
+                    setDirty('dialoguePools', true);
+                    setDirty('npc', true);
+                    renderDialoguePoolsTab();
+                });
+                idRow.appendChild(idLab);
+                idRow.appendChild(idInp2);
+                main.appendChild(idRow);
+
+                var modeRow = document.createElement('div');
+                modeRow.className = 'row';
+                modeRow.style.marginTop = '8px';
+                var modeLab = document.createElement('label');
+                modeLab.textContent = '组合模式';
+                modeLab.style.minWidth = '72px';
+                var modeSel = document.createElement('select');
+                modeSel.style.flex = '1';
+                var optM = document.createElement('option');
+                optM.value = 'merge_lines';
+                optM.textContent = 'merge_lines：合并本池 + 引用池全部台词后随机';
+                var optP = document.createElement('option');
+                optP.value = 'pick_pool';
+                optP.textContent = 'pick_pool：先随机选一个子池，再只从该池直接 lines 随机';
+                modeSel.appendChild(optM);
+                modeSel.appendChild(optP);
+                modeSel.value = pool.composeMode === 'pick_pool' ? 'pick_pool' : 'merge_lines';
+                modeSel.addEventListener('change', function () {
+                    pool.composeMode = modeSel.value === 'pick_pool' ? 'pick_pool' : 'merge_lines';
+                    setDirty('dialoguePools', true);
+                });
+                modeRow.appendChild(modeLab);
+                modeRow.appendChild(modeSel);
+                main.appendChild(modeRow);
+
+                var incRow = document.createElement('div');
+                incRow.className = 'row';
+                incRow.style.marginTop = '8px';
+                incRow.style.flexDirection = 'column';
+                incRow.style.alignItems = 'stretch';
+                var incLab = document.createElement('label');
+                incLab.textContent = '引用其它池 (includePools)';
+                incLab.style.marginBottom = '4px';
+                var incTa = document.createElement('textarea');
+                incTa.rows = 4;
+                incTa.placeholder = '每行一个台词池 id，可与上方 NPC 的 fallbackDialoguePoolId / 分部规则 poolIds 一致';
+                incTa.value = Array.isArray(pool.includePools) ? pool.includePools.join('\n') : '';
+                incTa.addEventListener('input', function () {
+                    pool.includePools = parseIdsMultilineOrComma(incTa.value);
+                    setDirty('dialoguePools', true);
+                });
+                incRow.appendChild(incLab);
+                incRow.appendChild(incTa);
+                main.appendChild(incRow);
+
+                var linesTitle = document.createElement('div');
+                linesTitle.className = 'section-title';
+                linesTitle.style.marginTop = '14px';
+                linesTitle.style.fontSize = '13px';
+                linesTitle.textContent = '本池台词（lines）';
+                main.appendChild(linesTitle);
+                var linesHint = document.createElement('p');
+                linesHint.className = 'hint';
+                linesHint.style.marginTop = '4px';
+                linesHint.textContent = '每句可选说话人（NPC / 主角 / 旁白）与可选逐句头像路径；纯 NPC 且无头像时导出仍为字符串，与旧数据兼容。';
+                main.appendChild(linesHint);
+
+                var lines = pool.lines;
+                var listWrap = document.createElement('div');
+                listWrap.id = 'dp-pool-lines-wrap';
+                for (var lj = 0; lj < lines.length; lj++) {
+                    listWrap.appendChild(createDialoguePoolLineRow(pool, lj));
+                }
+                main.appendChild(listWrap);
+                var addLine = document.createElement('button');
+                addLine.type = 'button';
+                addLine.textContent = '+ 添加一句';
+                addLine.style.marginTop = '8px';
+                addLine.addEventListener('click', function () {
+                    lines.push('');
+                    setDirty('dialoguePools', true);
+                    renderDialoguePoolsTab();
+                });
+                main.appendChild(addLine);
+
+                layout.appendChild(main);
+                root.appendChild(layout);
+            }
+
+            function appendNpcPoolTabHint(root) {
+                var sec = document.createElement('div');
+                sec.className = 'section';
+                var hp = document.createElement('p');
+                hp.className = 'hint';
+                hp.style.marginTop = '0';
+                hp.innerHTML = '摸鱼台词池列表与 <strong>分部规则</strong> 请在右侧 <strong>「台词池」</strong> 分页编辑；此处填写默认池 id（无规则或未命中时）。';
+                sec.appendChild(hp);
+                root.appendChild(sec);
+            }
+
+            function parseIdsMultilineOrComma(s) {
+                s = String(s || '').trim();
+                if (!s) return [];
+                var parts = s.split(/[\r\n,，;；]+/);
+                var out = [];
+                for (var pi = 0; pi < parts.length; pi++) {
+                    var t = String(parts[pi] || '').trim();
+                    if (t) out.push(t);
+                }
+                return out;
+            }
+
+            function syncFbCondJsonTextarea(wrap, cond) {
+                var ta = wrap.querySelector('.fb-cond-json');
+                if (!ta) return;
+                try {
+                    ta.value = JSON.stringify(cond != null ? cond : { type: 'true' }, null, 2);
+                } catch (eJ) {
+                    ta.value = '{\n  "type": "true"\n}';
+                }
+            }
+
+            function setFbCondFormVisibility(wrap, type) {
+                var show = function (sel, on) {
+                    var el = wrap.querySelector(sel);
+                    if (el) el.style.display = on ? 'block' : 'none';
+                };
+                show('.fb-cond-flag', type === 'flagEquals');
+                show('.fb-cond-skill', type === 'skillLevelEquals' || type === 'skillLevelGte' || type === 'survivalSkillLevelEquals' || type === 'survivalSkillLevelGte');
+                show('.fb-cond-post', type === 'postEffectObtainedGte');
+                show('.fb-cond-arc', type === 'lastCombatDefenderHitArcEquals' || type === 'lastCombatAttackerStrikeArcEquals');
+                show('.fb-cond-item', type === 'hasItem');
+                show('.fb-cond-multi', type === 'hasItemsAll');
+                var adv = wrap.querySelector('.fb-cond-adv');
+                var jsonRow = wrap.querySelector('.fb-cond-jsonrow');
+                if (type === 'true') {
+                    if (jsonRow) jsonRow.style.display = (adv && adv.checked) ? 'block' : 'none';
+                } else if (type === 'custom') {
+                    if (adv) adv.checked = true;
+                    if (jsonRow) jsonRow.style.display = 'block';
+                } else {
+                    if (jsonRow) jsonRow.style.display = (adv && adv.checked) ? 'block' : 'none';
+                }
+            }
+
+            function readFallbackConditionFromWrap(wrap) {
+                var typeEl = wrap.querySelector('.fb-cond-type');
+                var type = (typeEl && typeEl.value) || 'true';
+                var cond;
+                if (type === 'true') {
+                    cond = { type: 'true' };
+                    syncFbCondJsonTextarea(wrap, cond);
+                    return cond;
+                }
+                if (type === 'flagEquals') {
+                    var fn = wrap.querySelector('.fb-cond-flag-name');
+                    var fv = wrap.querySelector('.fb-cond-flag-value');
+                    cond = {
+                        type: 'flagEquals',
+                        flag: fn ? String(fn.value || '').trim() : '',
+                        value: (fv && fv.value === 'true')
+                    };
+                } else if (type === 'skillLevelEquals' || type === 'skillLevelGte' || type === 'survivalSkillLevelEquals' || type === 'survivalSkillLevelGte') {
+                    var sk = wrap.querySelector('.fb-cond-skill-id');
+                    var sl = wrap.querySelector('.fb-cond-skill-level');
+                    cond = { type: type, skillId: sk ? sk.value : '', level: sl ? (parseInt(sl.value, 10) || 0) : 0 };
+                } else if (type === 'postEffectObtainedGte') {
+                    var pe = wrap.querySelector('.fb-cond-post-count');
+                    cond = { type: 'postEffectObtainedGte', value: pe ? (parseInt(pe.value, 10) || 1) : 1 };
+                } else if (type === 'lastCombatDefenderHitArcEquals' || type === 'lastCombatAttackerStrikeArcEquals') {
+                    var ar = wrap.querySelector('.fb-cond-arc-value');
+                    cond = { type: type, value: String(ar && ar.value ? ar.value : 'front') };
+                } else if (type === 'hasItem') {
+                    var ii = wrap.querySelector('.fb-cond-item-id');
+                    var ic = wrap.querySelector('.fb-cond-item-count');
+                    cond = {
+                        type: 'hasItem',
+                        itemId: ii ? String(ii.value || '').trim() : '',
+                        count: ic ? Math.max(1, parseInt(ic.value, 10) || 1) : 1
+                    };
+                } else if (type === 'hasItemsAll') {
+                    var ml = wrap.querySelector('.fb-cond-multi-list');
+                    cond = buildConditionFromMultiRows(getCondMultiRowsFromList(ml));
+                } else if (type === 'custom') {
+                    var raw = (wrap.querySelector('.fb-cond-json') && wrap.querySelector('.fb-cond-json').value) || '';
+                    try {
+                        cond = raw.trim() ? JSON.parse(raw) : { type: 'true' };
+                    } catch (eC) {
+                        cond = { type: 'true' };
+                    }
+                } else {
+                    cond = { type: 'true' };
+                }
+                syncFbCondJsonTextarea(wrap, cond);
+                return cond;
+            }
+
+            function applyFallbackConditionToWrap(wrap, cond) {
+                cond = cond || { type: 'true' };
+                var type = resolveEditorCondType(cond);
+                var typeSel = wrap.querySelector('.fb-cond-type');
+                if (typeSel) typeSel.value = type;
+                setFbCondFormVisibility(wrap, type);
+                if (type === 'true') {
+                    syncFbCondJsonTextarea(wrap, { type: 'true' });
+                    return;
+                }
+                if (type === 'flagEquals') {
+                    var fn = wrap.querySelector('.fb-cond-flag-name');
+                    var fv = wrap.querySelector('.fb-cond-flag-value');
+                    if (fn) fn.value = cond.flag || '';
+                    if (fv) fv.value = String(!!cond.value);
+                } else if (type === 'skillLevelEquals' || type === 'skillLevelGte' || type === 'survivalSkillLevelEquals' || type === 'survivalSkillLevelGte') {
+                    var sk = wrap.querySelector('.fb-cond-skill-id');
+                    updateSkillSelectOptions(sk);
+                    if (sk) sk.value = cond.skillId || sk.value;
+                    var sl = wrap.querySelector('.fb-cond-skill-level');
+                    if (sl) sl.value = (cond.level != null ? cond.level : 0);
+                } else if (type === 'postEffectObtainedGte') {
+                    var pe = wrap.querySelector('.fb-cond-post-count');
+                    if (pe) pe.value = (cond.value != null ? cond.value : (cond.count != null ? cond.count : (cond.min != null ? cond.min : 1)));
+                } else if (type === 'lastCombatDefenderHitArcEquals' || type === 'lastCombatAttackerStrikeArcEquals') {
+                    var ar = wrap.querySelector('.fb-cond-arc-value');
+                    if (ar) ar.value = String(cond.value || cond.arc || 'front');
+                } else if (type === 'hasItem') {
+                    var ii = wrap.querySelector('.fb-cond-item-id');
+                    var ic = wrap.querySelector('.fb-cond-item-count');
+                    if (ii) ii.value = cond.itemId || '';
+                    if (ic) ic.value = (cond.count != null ? cond.count : 1);
+                    var csi = wrap.querySelector('.fb-cond-item-search');
+                    if (csi) csi.value = '';
+                } else if (type === 'hasItemsAll') {
+                    var rows = extractHasItemsFromAnd(cond);
+                    if (!rows.length) rows = [{ itemId: '', count: 1 }, { itemId: '', count: 1 }];
+                    var ml = wrap.querySelector('.fb-cond-multi-list');
+                    var idxFb = parseInt(wrap.dataset.ruleIndex, 10) || 0;
+                    function persistFbCond() {
+                        state.npc.fallbackPoolRules[idxFb].condition = readFallbackConditionFromWrap(wrap);
+                        setDirty('npc', true);
+                    }
+                    if (ml) renderCondMultiRows(rows, ml, { onBump: persistFbCond });
+                }
+                syncFbCondJsonTextarea(wrap, cond);
+            }
+
+            function mountFallbackConditionEditor(card, idx) {
+                var hint = document.createElement('p');
+                hint.className = 'hint';
+                hint.style.cssText = 'margin:4px 0 8px;font-size:11px;';
+                hint.innerHTML = '<strong>触发条件</strong>与左侧「事件」的 <code>condition</code> 相同（运行时 <code>evalCondition</code>）。<strong>requires</strong> 只能填<strong>已触发过的事件条目 id</strong>，不要填 flag；检测旗标请用下方「flag 等于」或「自定义」写 <code>and</code> / <code>or</code>。';
+                card.appendChild(hint);
+
+                var wrap = document.createElement('div');
+                wrap.className = 'fb-cond-wrap';
+                wrap.dataset.ruleIndex = String(idx);
+
+                function persist() {
+                    state.npc.fallbackPoolRules[idx].condition = readFallbackConditionFromWrap(wrap);
+                    setDirty('npc', true);
+                }
+
+                var rowType = document.createElement('div');
+                rowType.className = 'row';
+                rowType.style.marginTop = '4px';
+                var labT = document.createElement('label');
+                labT.textContent = '条件类型';
+                labT.style.cssText = 'min-width:120px;color:#94a3b8;font-size:12px;';
+                var sel = document.createElement('select');
+                sel.className = 'fb-cond-type';
+                sel.style.cssText = 'flex:1;min-width:200px;max-width:100%;';
+                var opts = [
+                    ['true', '恒为真 (true)'],
+                    ['flagEquals', 'flag 等于 (flagEquals)'],
+                    ['skillLevelEquals', '技能等级等于'],
+                    ['skillLevelGte', '技能等级 ≥'],
+                    ['survivalSkillLevelEquals', '生存技能等级等于'],
+                    ['survivalSkillLevelGte', '生存技能等级 ≥'],
+                    ['postEffectObtainedGte', '后遗症数量 ≥'],
+                    ['lastCombatDefenderHitArcEquals', '最近被击方位'],
+                    ['lastCombatAttackerStrikeArcEquals', '最近攻击方位'],
+                    ['hasItem', '背包持有物品（单种）'],
+                    ['hasItemsAll', '同时持有多种物品'],
+                    ['custom', '自定义（JSON）']
+                ];
+                for (var oi = 0; oi < opts.length; oi++) {
+                    var op = document.createElement('option');
+                    op.value = opts[oi][0];
+                    op.textContent = opts[oi][1];
+                    sel.appendChild(op);
+                }
+                sel.addEventListener('change', function () {
+                    applyFallbackConditionToWrap(wrap, sampleConditionForEditorType(sel.value));
+                    persist();
+                });
+                rowType.appendChild(labT);
+                rowType.appendChild(sel);
+                wrap.appendChild(rowType);
+
+                function mkSub(className) {
+                    var d = document.createElement('div');
+                    d.className = className;
+                    d.style.cssText = 'display:none;margin-top:6px;padding:8px;border:1px solid #333;border-radius:6px;background:#12121f;';
+                    return d;
+                }
+
+                var dFlag = mkSub('fb-cond-flag');
+                dFlag.innerHTML = '';
+                var r1 = document.createElement('div');
+                r1.className = 'row';
+                var l1 = document.createElement('label');
+                l1.textContent = 'flag 名称';
+                var fn = document.createElement('input');
+                fn.type = 'text';
+                fn.className = 'fb-cond-flag-name';
+                fn.placeholder = 'cooking_base_station_repair_briefed';
+                fn.style.cssText = 'flex:1;min-width:160px;';
+                fn.addEventListener('input', persist);
+                r1.appendChild(l1);
+                r1.appendChild(fn);
+                dFlag.appendChild(r1);
+                var r2 = document.createElement('div');
+                r2.className = 'row';
+                var l2 = document.createElement('label');
+                l2.textContent = 'flag 值';
+                var fv = document.createElement('select');
+                fv.className = 'fb-cond-flag-value';
+                fv.innerHTML = '<option value="true">true</option><option value="false">false</option>';
+                fv.addEventListener('change', persist);
+                r2.appendChild(l2);
+                r2.appendChild(fv);
+                dFlag.appendChild(r2);
+                wrap.appendChild(dFlag);
+
+                var dSkill = mkSub('fb-cond-skill');
+                var rs = document.createElement('div');
+                rs.className = 'row';
+                var lsk = document.createElement('label');
+                lsk.textContent = '技能 ID';
+                var sk = document.createElement('select');
+                sk.className = 'fb-cond-skill-id';
+                sk.style.cssText = 'flex:1;min-width:180px;';
+                rs.appendChild(lsk);
+                rs.appendChild(sk);
+                dSkill.appendChild(rs);
+                var rsl = document.createElement('div');
+                rsl.className = 'row';
+                var lsl = document.createElement('label');
+                lsl.textContent = '等级';
+                var sl = document.createElement('input');
+                sl.type = 'number';
+                sl.className = 'fb-cond-skill-level';
+                sl.min = '0';
+                sl.value = '0';
+                sl.style.width = '88px';
+                sk.addEventListener('change', persist);
+                sl.addEventListener('input', persist);
+                rsl.appendChild(lsl);
+                rsl.appendChild(sl);
+                dSkill.appendChild(rsl);
+                wrap.appendChild(dSkill);
+
+                var dPost = mkSub('fb-cond-post');
+                var rp = document.createElement('div');
+                rp.className = 'row';
+                var lp = document.createElement('label');
+                lp.textContent = '后遗症数量 ≥';
+                var pe = document.createElement('input');
+                pe.type = 'number';
+                pe.className = 'fb-cond-post-count';
+                pe.min = '1';
+                pe.value = '1';
+                pe.style.width = '88px';
+                pe.addEventListener('input', persist);
+                rp.appendChild(lp);
+                rp.appendChild(pe);
+                dPost.appendChild(rp);
+                wrap.appendChild(dPost);
+
+                var dArc = mkSub('fb-cond-arc');
+                var ra = document.createElement('div');
+                ra.className = 'row';
+                var la = document.createElement('label');
+                la.textContent = '方位';
+                var ar = document.createElement('select');
+                ar.className = 'fb-cond-arc-value';
+                ar.innerHTML = '<option value="front">front</option><option value="side">side</option><option value="back">back</option>';
+                ar.addEventListener('change', persist);
+                ra.appendChild(la);
+                ra.appendChild(ar);
+                dArc.appendChild(ra);
+                wrap.appendChild(dArc);
+
+                var dItem = mkSub('fb-cond-item');
+                var ri0 = document.createElement('div');
+                ri0.className = 'row';
+                var li0 = document.createElement('label');
+                li0.textContent = '物品 ID';
+                var ii = document.createElement('input');
+                ii.type = 'text';
+                ii.className = 'fb-cond-item-id';
+                ii.placeholder = 'ore_clay_raw';
+                ii.style.cssText = 'flex:1;min-width:160px;';
+                ri0.appendChild(li0);
+                ri0.appendChild(ii);
+                dItem.appendChild(ri0);
+                var rowQ = document.createElement('div');
+                rowQ.className = 'npc-item-search-row';
+                var qInp = document.createElement('input');
+                qInp.type = 'text';
+                qInp.className = 'npc-item-search fb-cond-item-search';
+                qInp.placeholder = '搜索物品…';
+                rowQ.appendChild(qInp);
+                dItem.appendChild(rowQ);
+                var sug = document.createElement('div');
+                sug.className = 'npc-item-suggest';
+                sug.setAttribute('role', 'listbox');
+                dItem.appendChild(sug);
+                wireNpcItemSearch(qInp, sug, ii);
+                ii.addEventListener('input', persist);
+                var ric = document.createElement('div');
+                ric.className = 'row';
+                var lic = document.createElement('label');
+                lic.textContent = '数量';
+                var ic = document.createElement('input');
+                ic.type = 'number';
+                ic.className = 'fb-cond-item-count';
+                ic.min = '1';
+                ic.value = '1';
+                ic.style.width = '72px';
+                ic.addEventListener('input', persist);
+                ric.appendChild(lic);
+                ric.appendChild(ic);
+                dItem.appendChild(ric);
+                wrap.appendChild(dItem);
+
+                var dMulti = mkSub('fb-cond-multi');
+                var lm = document.createElement('label');
+                lm.textContent = '多条持有（全部满足）';
+                lm.style.display = 'block';
+                lm.style.marginBottom = '6px';
+                dMulti.appendChild(lm);
+                var ml = document.createElement('div');
+                ml.className = 'fb-cond-multi-list';
+                dMulti.appendChild(ml);
+                var btnAdd = document.createElement('button');
+                btnAdd.type = 'button';
+                btnAdd.textContent = '+ 添加一条物品';
+                btnAdd.style.marginTop = '6px';
+                btnAdd.addEventListener('click', function () {
+                    ml.appendChild(createCondMultiItemRow({ itemId: '', count: 1 }, {
+                        listEl: ml,
+                        onBump: persist
+                    }));
+                    persist();
+                });
+                dMulti.appendChild(btnAdd);
+                wrap.appendChild(dMulti);
+
+                var rowAdv = document.createElement('div');
+                rowAdv.className = 'row';
+                rowAdv.style.marginTop = '6px';
+                var adv = document.createElement('label');
+                var advChk = document.createElement('input');
+                advChk.type = 'checkbox';
+                advChk.className = 'fb-cond-adv';
+                adv.appendChild(advChk);
+                adv.appendChild(document.createTextNode(' 显示条件 JSON（高级）'));
+                advChk.addEventListener('change', function () {
+                    setFbCondFormVisibility(wrap, (wrap.querySelector('.fb-cond-type') || {}).value || 'true');
+                });
+                rowAdv.appendChild(adv);
+                wrap.appendChild(rowAdv);
+
+                var jsonRow = document.createElement('div');
+                jsonRow.className = 'row fb-cond-jsonrow';
+                jsonRow.style.display = 'none';
+                var lj = document.createElement('label');
+                lj.textContent = '条件 JSON';
+                var ta = document.createElement('textarea');
+                ta.className = 'fb-cond-json code';
+                ta.rows = 5;
+                ta.style.cssText = 'width:100%;min-width:200px;font-family:ui-monospace,Menlo,monospace;font-size:11px;';
+                ta.addEventListener('change', function () {
+                    try {
+                        state.npc.fallbackPoolRules[idx].condition = JSON.parse(String(ta.value || '{}'));
+                        setDirty('npc', true);
+                    } catch (e2) {
+                        toast('error', '条件 JSON', (e2 && e2.message) ? e2.message : String(e2));
+                    }
+                });
+                jsonRow.appendChild(lj);
+                jsonRow.appendChild(ta);
+                wrap.appendChild(jsonRow);
+
+                card.appendChild(wrap);
+
+                var initCond = (state.npc.fallbackPoolRules[idx] && state.npc.fallbackPoolRules[idx].condition) != null
+                    ? state.npc.fallbackPoolRules[idx].condition
+                    : { type: 'true' };
+                applyFallbackConditionToWrap(wrap, initCond);
+            }
+
+            function buildFallbackRuleRow(rule, idx) {
+                ensureNpcShape();
+                if (!Array.isArray(state.npc.fallbackPoolRules)) state.npc.fallbackPoolRules = [];
+                rule = state.npc.fallbackPoolRules[idx] || {};
+                var card = document.createElement('div');
+                card.className = 'section fb-rule-card';
+                card.dataset.ruleIndex = String(idx);
+                card.style.cssText = 'margin-top:10px;padding:10px;border:1px solid #444;border-radius:8px;background:#1a1a2e;';
+                var head = document.createElement('div');
+                head.style.cssText = 'display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:8px;flex-wrap:wrap;';
+                var dragHandle = document.createElement('div');
+                dragHandle.className = 'fb-rule-card-head';
+                dragHandle.draggable = true;
+                dragHandle.title = '按住拖动到另一条规则上，调整「自上而下」匹配顺序';
+                dragHandle.style.cssText = 'display:flex;align-items:center;flex:1;min-width:120px;gap:8px;';
+                var grip = document.createElement('span');
+                grip.className = 'fb-rule-grip';
+                grip.setAttribute('aria-hidden', 'true');
+                grip.textContent = '⠿';
+                var lab = document.createElement('span');
+                lab.style.fontWeight = '600';
+                lab.textContent = '规则 #' + String(idx + 1) + '（顺序 ' + String(idx + 1) + '/' + String(state.npc.fallbackPoolRules.length) + '）';
+                dragHandle.appendChild(grip);
+                dragHandle.appendChild(lab);
+                dragHandle.addEventListener('dragstart', function (e) {
+                    e.dataTransfer.setData('application/x-fallback-rule-idx', String(idx));
+                    e.dataTransfer.effectAllowed = 'move';
+                    try {
+                        e.dataTransfer.setData('text/plain', String(idx));
+                    } catch (e0) { /* ignore */ }
+                    card.classList.add('fb-rule-dragging');
+                    window.__fbRuleDragSourceCard = card;
+                });
+                dragHandle.addEventListener('dragend', function () {
+                    card.classList.remove('fb-rule-dragging');
+                    window.__fbRuleDragSourceCard = null;
+                    try {
+                        document.querySelectorAll('.fb-rule-card.fb-rule-drag-over').forEach(function (n) {
+                            n.classList.remove('fb-rule-drag-over');
+                        });
+                    } catch (e1) { /* ignore */ }
+                });
+                card.addEventListener('dragover', function (e) {
+                    e.preventDefault();
+                    e.dataTransfer.dropEffect = 'move';
+                    if (window.__fbRuleDragSourceCard === card) return;
+                    card.classList.add('fb-rule-drag-over');
+                });
+                card.addEventListener('dragleave', function (e) {
+                    try {
+                        if (!card.contains(e.relatedTarget)) card.classList.remove('fb-rule-drag-over');
+                    } catch (e2) {
+                        card.classList.remove('fb-rule-drag-over');
+                    }
+                });
+                card.addEventListener('drop', function (e) {
+                    e.preventDefault();
+                    card.classList.remove('fb-rule-drag-over');
+                    var from = parseInt(e.dataTransfer.getData('application/x-fallback-rule-idx'), 10);
+                    if (!isFinite(from)) from = parseInt(e.dataTransfer.getData('text/plain'), 10);
+                    var to = parseInt(card.dataset.ruleIndex, 10);
+                    if (!isFinite(from) || !isFinite(to)) return;
+                    var arr = state.npc.fallbackPoolRules;
+                    if (from < 0 || from >= arr.length || to < 0 || to >= arr.length) return;
+                    if (from === to) return;
+                    var item = arr[from];
+                    var narr = arr.filter(function (_, i) { return i !== from; });
+                    narr.splice(to, 0, item);
+                    state.npc.fallbackPoolRules = narr;
+                    setDirty('npc', true);
+                    npcToForm();
+                });
+                var del = document.createElement('button');
+                del.type = 'button';
+                del.textContent = '删除';
+                del.addEventListener('click', function () {
+                    state.npc.fallbackPoolRules.splice(idx, 1);
+                    setDirty('npc', true);
+                    npcToForm();
+                });
+                head.appendChild(dragHandle);
+                head.appendChild(del);
+                card.appendChild(head);
+
+                function addRow(labelText, node) {
+                    var r = document.createElement('div');
+                    r.className = 'row';
+                    r.style.marginTop = '4px';
+                    r.style.flexWrap = 'wrap';
+                    var l = document.createElement('label');
+                    l.textContent = labelText;
+                    l.style.minWidth = '120px';
+                    l.style.color = '#94a3b8';
+                    l.style.fontSize = '12px';
+                    r.appendChild(l);
+                    r.appendChild(node);
+                    card.appendChild(r);
+                }
+
+                var idInp = document.createElement('input');
+                idInp.type = 'text';
+                idInp.value = rule.id != null ? String(rule.id) : '';
+                idInp.style.cssText = 'flex:1;min-width:180px;max-width:100%;';
+                idInp.addEventListener('input', function () {
+                    state.npc.fallbackPoolRules[idx].id = idInp.value.trim();
+                    setDirty('npc', true);
+                });
+                addRow('规则 id', idInp);
+
+                var repWrap = document.createElement('label');
+                repWrap.style.cssText = 'display:flex;align-items:center;gap:8px;';
+                var repChk = document.createElement('input');
+                repChk.type = 'checkbox';
+                repChk.checked = rule.repeatable !== false;
+                repWrap.appendChild(repChk);
+                repWrap.appendChild(document.createTextNode('可重复（不勾=一次性，听后与事件共用 triggered）'));
+                repChk.addEventListener('change', function () {
+                    state.npc.fallbackPoolRules[idx].repeatable = !!repChk.checked;
+                    setDirty('npc', true);
+                });
+                addRow('重复', repWrap);
+
+                var mw = document.createElement('input');
+                mw.type = 'number';
+                mw.min = '1';
+                mw.step = '1';
+                mw.style.width = '88px';
+                mw.value = String(rule.match_weight != null ? rule.match_weight : 1);
+                mw.addEventListener('input', function () {
+                    var n = parseInt(mw.value, 10);
+                    state.npc.fallbackPoolRules[idx].match_weight = isFinite(n) && n >= 1 ? n : 1;
+                    setDirty('npc', true);
+                });
+                addRow('match_weight（已废弃，运行时忽略）', mw);
+
+                var pickModeSel = document.createElement('select');
+                pickModeSel.style.cssText = 'flex:1;min-width:200px;max-width:100%;';
+                var pmCur = String(rule.poolPickMode || 'pick_one').trim();
+                if (pmCur !== 'merge_pools') pmCur = 'pick_one';
+                [['pick_one', 'pick_one — 在 poolIds 中随机选一个池'], ['merge_pools', 'merge_pools — 合并 poolIds 各池台词后随机一句']].forEach(function (opt) {
+                    var o = document.createElement('option');
+                    o.value = opt[0];
+                    o.textContent = opt[1];
+                    pickModeSel.appendChild(o);
+                });
+                pickModeSel.value = pmCur;
+                pickModeSel.addEventListener('change', function () {
+                    state.npc.fallbackPoolRules[idx].poolPickMode = pickModeSel.value === 'merge_pools' ? 'merge_pools' : 'pick_one';
+                    setDirty('npc', true);
+                });
+                addRow('poolPickMode', pickModeSel);
+
+                var poolsTa = document.createElement('textarea');
+                poolsTa.rows = 3;
+                poolsTa.placeholder = '每行一个台词池 ID（pick_one：随机选一池再抽一句；merge_pools：合并各池全部台词后随机一句）';
+                poolsTa.style.cssText = 'width:100%;min-width:200px;max-width:100%;';
+                poolsTa.value = Array.isArray(rule.poolIds) ? rule.poolIds.join('\n') : '';
+                poolsTa.addEventListener('input', function () {
+                    state.npc.fallbackPoolRules[idx].poolIds = parseIdsMultilineOrComma(poolsTa.value);
+                    setDirty('npc', true);
+                });
+                addRow('poolIds', poolsTa);
+
+                var reqTa = document.createElement('input');
+                reqTa.type = 'text';
+                reqTa.placeholder = '仅事件条目 id（已触发），如 station.cooking.repair_intro；不要填 flag';
+                reqTa.style.cssText = 'flex:1;min-width:200px;';
+                reqTa.value = Array.isArray(rule.requires) ? rule.requires.join(', ') : '';
+                reqTa.addEventListener('input', function () {
+                    state.npc.fallbackPoolRules[idx].requires = parseIdsMultilineOrComma(reqTa.value.replace(/,/g, '\n'));
+                    setDirty('npc', true);
+                });
+                addRow('requires（事件 id）', reqTa);
+
+                var blkTa = document.createElement('input');
+                blkTa.type = 'text';
+                blkTa.placeholder = '仅事件条目 id；不要用 flag 名';
+                blkTa.style.cssText = 'flex:1;min-width:200px;';
+                blkTa.value = Array.isArray(rule.blocks) ? rule.blocks.join(', ') : '';
+                blkTa.addEventListener('input', function () {
+                    state.npc.fallbackPoolRules[idx].blocks = parseIdsMultilineOrComma(blkTa.value.replace(/,/g, '\n'));
+                    setDirty('npc', true);
+                });
+                addRow('blocks', blkTa);
+
+                mountFallbackConditionEditor(card, idx);
+
+                return card;
+            }
+
+            function renderFallbackRulesPanel() {
+                var root = document.getElementById('dialogue-pools-fallback-rules-host');
+                if (!root) return;
+                root.innerHTML = '';
+                ensureNpcShape();
+                if (!Array.isArray(state.npc.fallbackPoolRules)) state.npc.fallbackPoolRules = [];
+                var outer = document.createElement('div');
+                outer.id = 'npc-fallback-rules-outer';
+                var sec = document.createElement('div');
+                sec.className = 'section';
+                var st = document.createElement('div');
+                st.className = 'section-title';
+                st.textContent = '分部解锁台词池（fallbackPoolRules）';
+                sec.appendChild(st);
+                var hint = document.createElement('p');
+                hint.className = 'hint';
+                hint.style.marginTop = '0';
+                hint.textContent = '闲聊无事件命中时：按列表顺序从上到下检测；仅第一条同时满足 condition / requires / blocks（及一次性 repeatable）的规则生效，后面规则不再看。每条卡片左侧「⠿」标题栏可拖到另一条上调整顺序。下方每条规则已提供与「事件」相同的可视化条件编辑；requires 仅填已触发的事件条目 id，旗标请用条件里的 flag 等于。未命中任一条时用左侧「默认台词池 ID」。match_weight 已废弃可删。';
+                sec.appendChild(hint);
+                var list = document.createElement('div');
+                list.id = 'npc-fallback-rules-list';
+                var rules = state.npc.fallbackPoolRules;
+                for (var ri = 0; ri < rules.length; ri++) {
+                    list.appendChild(buildFallbackRuleRow(rules[ri], ri));
+                }
+                list.addEventListener('dragover', function (e) {
+                    e.preventDefault();
+                    try { e.dataTransfer.dropEffect = 'move'; } catch (eListDrag) { /* ignore */ }
+                });
+                sec.appendChild(list);
+                var addBtn = document.createElement('button');
+                addBtn.type = 'button';
+                addBtn.textContent = '+ 添加分部规则';
+                addBtn.style.marginTop = '8px';
+                addBtn.addEventListener('click', function () {
+                    ensureNpcShape();
+                    if (!Array.isArray(state.npc.fallbackPoolRules)) state.npc.fallbackPoolRules = [];
+                    state.npc.fallbackPoolRules.push({
+                        id: 'fallback.rule.' + String(state.npc.fallbackPoolRules.length + 1),
+                        repeatable: true,
+                        poolPickMode: 'pick_one',
+                        poolIds: [],
+                        requires: [],
+                        blocks: [],
+                        condition: { type: 'true' }
+                    });
+                    setDirty('npc', true);
+                    npcToForm();
+                });
+                sec.appendChild(addBtn);
+                outer.appendChild(sec);
+                root.appendChild(outer);
+            }
+
+            function applyImportedDialoguePools(data) {
+                ensureDialoguePoolsDocShape();
+                var j = data && typeof data === 'object' ? data : {};
+                state.dialoguePoolsDoc = {
+                    schemaVersion: j.schemaVersion != null ? j.schemaVersion : 1,
+                    pools: (j.pools && typeof j.pools === 'object') ? j.pools : {}
+                };
+                state._dialoguePoolsHydrated = true;
+                setDirty('dialoguePools', false);
+                renderDialoguePoolsTab();
+            }
+
             function ensureNpcShape() {
                 var n = state.npc || {};
                 if (n.schemaVersion == null) n.schemaVersion = SCHEMA_VERSION;
@@ -968,6 +2224,7 @@
                 if (!isObj(n.mainMenu)) n.mainMenu = { showChat: true, showWorkWhen: 'hasAvailableOrTurnIn', showLeave: true };
                 if (!isObj(n.behavior)) n.behavior = { type: 'supervisor', origin: 'mysterious_system', description: '' };
                 if (!Array.isArray(n.tags)) n.tags = [];
+                if (!Array.isArray(n.fallbackPoolRules)) n.fallbackPoolRules = [];
                 if (!isObj(n._extra)) n._extra = {};
                 state.npc = n;
             }
@@ -1208,6 +2465,7 @@
                     spriteText.addEventListener('input', function () { updateSpritePreview(this.value.trim()); });
                 }
                 renderTagsList();
+                appendNpcPoolTabHint(root);
                 // initial validation
                 validateAndRenderNpcErrors();
             }
@@ -1482,14 +2740,36 @@
             function resolveEditorCondType(cond) {
                 cond = cond || {};
                 var t = cond.type || 'flagEquals';
+                if (t === 'true') return 'true';
                 if (t === 'and' && onlyHasItemConds(cond)) return 'hasItemsAll';
                 var known = {
+                    true: 1,
                     flagEquals: 1, skillLevelEquals: 1, skillLevelGte: 1, survivalSkillLevelEquals: 1, survivalSkillLevelGte: 1,
                     postEffectObtainedGte: 1, lastCombatDefenderHitArcEquals: 1, lastCombatAttackerStrikeArcEquals: 1,
                     hasItem: 1, hasItemsAll: 1, custom: 1
                 };
                 if (known[t]) return t;
                 return 'custom';
+            }
+
+            /** 与 entry-cond-type 的 onchange 样本一致，供分部规则条件编辑器复用 */
+            function sampleConditionForEditorType(type) {
+                var firstSkill = (state.skills && state.skills.length) ? state.skills[0] : 'survival_language';
+                if (type === 'true') return { type: 'true' };
+                if (type === 'flagEquals') return { type: 'flagEquals', flag: 'lsy_has_talked', value: false };
+                if (type === 'skillLevelEquals') return { type: 'skillLevelEquals', skillId: firstSkill, level: 0 };
+                if (type === 'skillLevelGte') return { type: 'skillLevelGte', skillId: firstSkill, level: 1 };
+                if (type === 'survivalSkillLevelEquals') return { type: 'survivalSkillLevelEquals', skillId: firstSkill, level: 0 };
+                if (type === 'survivalSkillLevelGte') return { type: 'survivalSkillLevelGte', skillId: firstSkill, level: 1 };
+                if (type === 'postEffectObtainedGte') return { type: 'postEffectObtainedGte', value: 1 };
+                if (type === 'lastCombatDefenderHitArcEquals') return { type: 'lastCombatDefenderHitArcEquals', value: 'back' };
+                if (type === 'lastCombatAttackerStrikeArcEquals') return { type: 'lastCombatAttackerStrikeArcEquals', value: 'back' };
+                if (type === 'hasItem') return { type: 'hasItem', itemId: 'item_xxx', count: 1 };
+                if (type === 'hasItemsAll') return { type: 'and', conds: [
+                    { type: 'hasItem', itemId: 'item_a', count: 1 },
+                    { type: 'hasItem', itemId: 'item_b', count: 1 }
+                ] };
+                return { type: 'custom' };
             }
 
             function buildConditionFromMultiRows(rows) {
@@ -1513,22 +2793,14 @@
             }
 
             function getCondMultiRowsFromDom() {
-                var list = document.getElementById('cond-items-multi-list');
-                if (!list) return [];
-                var nodes = list.querySelectorAll('.cond-multi-item-row');
-                var out = [];
-                for (var i = 0; i < nodes.length; i++) {
-                    var idEl = nodes[i].querySelector('.cond-multi-item-id');
-                    var cEl = nodes[i].querySelector('.cond-multi-item-count');
-                    out.push({
-                        itemId: idEl ? String(idEl.value || '').trim() : '',
-                        count: cEl ? Math.max(1, parseInt(cEl.value, 10) || 1) : 1
-                    });
-                }
-                return out;
+                return getCondMultiRowsFromList(document.getElementById('cond-items-multi-list'));
             }
 
-            function createCondMultiItemRow(data) {
+            /**
+             * @param {object} [ctx] listEl：多物品列表容器；onBump：行变更时回调（缺省同步事件条件 JSON + entry dirty）
+             */
+            function createCondMultiItemRow(data, ctx) {
+                ctx = ctx || {};
                 data = data || { itemId: '', count: 1 };
                 var wrap = document.createElement('div');
                 wrap.className = 'cond-multi-item-row';
@@ -1549,22 +2821,30 @@
                 cntInp.min = '1';
                 cntInp.value = String(data.count != null ? data.count : 1);
 
+                function getListHost() {
+                    return ctx.listEl || document.getElementById('cond-items-multi-list');
+                }
+                function bumpDefault() {
+                    syncCondJsonPreviewForMultiIfNeeded();
+                    setDirty('entry', true);
+                }
+
                 var btnRm = document.createElement('button');
                 btnRm.type = 'button';
                 btnRm.textContent = '删除此行';
                 btnRm.addEventListener('click', function () {
-                    var list = document.getElementById('cond-items-multi-list');
+                    var list = getListHost();
                     if (!list || !wrap.parentNode) return;
                     if (list.querySelectorAll('.cond-multi-item-row').length <= 1) {
                         idInp.value = '';
                         cntInp.value = '1';
-                        syncCondJsonPreviewForMultiIfNeeded();
-                        setDirty('entry', true);
+                        if (typeof ctx.onBump === 'function') ctx.onBump();
+                        else bumpDefault();
                         return;
                     }
                     wrap.parentNode.removeChild(wrap);
-                    syncCondJsonPreviewForMultiIfNeeded();
-                    setDirty('entry', true);
+                    if (typeof ctx.onBump === 'function') ctx.onBump();
+                    else bumpDefault();
                 });
 
                 top.appendChild(idInp);
@@ -1590,8 +2870,8 @@
                 wireNpcItemSearch(qInp, sug, idInp);
 
                 function bump() {
-                    syncCondJsonPreviewForMultiIfNeeded();
-                    setDirty('entry', true);
+                    if (typeof ctx.onBump === 'function') ctx.onBump();
+                    else bumpDefault();
                 }
                 idInp.addEventListener('input', bump);
                 cntInp.addEventListener('input', bump);
@@ -1599,13 +2879,29 @@
                 return wrap;
             }
 
-            function renderCondMultiRows(rows) {
-                var list = document.getElementById('cond-items-multi-list');
+            function getCondMultiRowsFromList(listEl) {
+                if (!listEl) return [];
+                var nodes = listEl.querySelectorAll('.cond-multi-item-row');
+                var out = [];
+                for (var i = 0; i < nodes.length; i++) {
+                    var idEl = nodes[i].querySelector('.cond-multi-item-id');
+                    var cEl = nodes[i].querySelector('.cond-multi-item-count');
+                    out.push({
+                        itemId: idEl ? String(idEl.value || '').trim() : '',
+                        count: cEl ? Math.max(1, parseInt(cEl.value, 10) || 1) : 1
+                    });
+                }
+                return out;
+            }
+
+            function renderCondMultiRows(rows, targetListEl, ctx) {
+                var list = targetListEl || document.getElementById('cond-items-multi-list');
                 if (!list) return;
                 list.innerHTML = '';
                 if (!rows || !rows.length) rows = [{ itemId: '', count: 1 }, { itemId: '', count: 1 }];
+                var rowCtx = ctx || {};
                 for (var i = 0; i < rows.length; i++) {
-                    list.appendChild(createCondMultiItemRow(rows[i]));
+                    list.appendChild(createCondMultiItemRow(rows[i], { listEl: list, onBump: rowCtx.onBump }));
                 }
             }
 
@@ -1911,21 +3207,29 @@
                 updateSkillSelectOptions();
             }
 
-            function updateSkillSelectOptions() {
-                var sel = document.getElementById('cond-skill-id');
-                if (!sel) return;
-                var cur = sel.value;
-                sel.innerHTML = '';
+            function updateSkillSelectOptions(targetSel) {
                 var skills = (state.skills && state.skills.length) ? state.skills : ['survival_language'];
-                for (var i = 0; i < skills.length; i++) {
-                    var opt = document.createElement('option');
-                    var sid = String(skills[i] == null ? '' : skills[i]);
-                    opt.value = sid;
-                    opt.textContent = sid;
-                    sel.appendChild(opt);
+                function fillOne(sel) {
+                    if (!sel) return;
+                    var cur = sel.value;
+                    sel.innerHTML = '';
+                    for (var i = 0; i < skills.length; i++) {
+                        var opt = document.createElement('option');
+                        var sid = String(skills[i] == null ? '' : skills[i]);
+                        opt.value = sid;
+                        opt.textContent = sid;
+                        sel.appendChild(opt);
+                    }
+                    if (cur && skills.indexOf(cur) !== -1) sel.value = cur;
+                    else sel.value = skills[0];
                 }
-                if (cur && skills.indexOf(cur) !== -1) sel.value = cur;
-                else sel.value = skills[0];
+                if (targetSel) {
+                    fillOne(targetSel);
+                    return;
+                }
+                fillOne(document.getElementById('cond-skill-id'));
+                var fbs = document.querySelectorAll('.fb-cond-skill-id');
+                for (var j = 0; j < fbs.length; j++) fillOne(fbs[j]);
             }
 
             document.getElementById('btn-import-skills').addEventListener('click', function () {
@@ -1998,6 +3302,17 @@
                     .catch(function () { /* file:// 或相对路径不可用 */ });
             })();
 
+            function tryFetchDialoguePoolsForCurrentNpc() {
+                if (typeof fetch !== 'function') return;
+                var id = (state.npc && state.npc.id) ? state.npc.id : 'npc';
+                var url = '../data/npc/' + id.replace(/\./g, '_') + '_dialogue_pools.json';
+                fetch(url)
+                    .then(function (r) { return r.ok ? r.json() : Promise.reject(new Error('HTTP ' + String(r.status))); })
+                    .then(function (j) { applyImportedDialoguePools(j); })
+                    .catch(function () { /* file:// 或文件不存在 */ });
+            }
+            tryFetchDialoguePoolsForCurrentNpc();
+
             function updateSpritePreview(spritePathOrUrl) {
                 var row = document.getElementById('npc-sprite-preview-row');
                 var img = document.getElementById('npc-sprite-preview');
@@ -2013,6 +3328,7 @@
 
             function npcToForm() {
                 renderNpcForm();
+                renderFallbackRulesPanel();
                 document.getElementById('inp-npc-id-readonly').value = (state.npc && state.npc.id) ? state.npc.id : '';
                 state.triggers.npcId = (state.npc && state.npc.id) ? state.npc.id : '';
                 updateDirtyPill();
@@ -2042,6 +3358,26 @@
                 }
                 chkTime('npc-schedule-start', getByPath(n, 'appearanceSchedule.start'));
                 chkTime('npc-schedule-end', getByPath(n, 'appearanceSchedule.end'));
+                var fpr = Array.isArray(n.fallbackPoolRules) ? n.fallbackPoolRules : [];
+                var seenFr = {};
+                for (var fi = 0; fi < fpr.length; fi++) {
+                    var fr = fpr[fi];
+                    if (!fr || typeof fr !== 'object') {
+                        errs.push({ fieldId: null, message: '分部台词池规则 #' + String(fi + 1) + ' 不是对象' });
+                        continue;
+                    }
+                    var fid = String(fr.id || '').trim();
+                    if (!fid) errs.push({ fieldId: null, message: '分部台词池规则 #' + String(fi + 1) + ' 缺少 id' });
+                    else if (seenFr[fid]) errs.push({ fieldId: null, message: '分部台词池规则 id 重复：' + fid });
+                    else seenFr[fid] = true;
+                    var pids = Array.isArray(fr.poolIds) ? fr.poolIds : [];
+                    if (!pids.length && !(fr.poolId && String(fr.poolId).trim())) {
+                        errs.push({ fieldId: null, message: '分部规则「' + (fid || '#') + '」至少填写一个 poolIds' });
+                    }
+                    if (fr.condition != null && typeof fr.condition === 'object' && !fr.condition.type) {
+                        errs.push({ fieldId: null, message: '分部规则「' + (fid || '#') + '」的 condition 缺少 type' });
+                    }
+                }
                 return errs;
             }
 
@@ -2144,6 +3480,7 @@
 
             function conditionSummary(cond) {
                 if (!cond || !cond.type) return '—';
+                if (cond.type === 'true') return '恒为真';
                 if (cond.type === 'flagEquals') return 'flag ' + (cond.flag || '?') + ' = ' + cond.value;
                 if (cond.type === 'skillLevelEquals') return '技能 ' + (cond.skillId || '?') + ' = ' + cond.level;
                 if (cond.type === 'skillLevelGte') return '技能 ' + (cond.skillId || '?') + ' ≥ ' + cond.level;
@@ -2361,7 +3698,9 @@
                 if (fMulti) fMulti.style.display = (type === 'hasItemsAll') ? 'block' : 'none';
                 var adv = document.getElementById('cond-advanced-toggle');
                 var jsonRow = document.getElementById('entry-cond-params');
-                if (type === 'custom') {
+                if (type === 'true') {
+                    if (jsonRow) jsonRow.style.display = (adv && adv.checked) ? 'block' : 'none';
+                } else if (type === 'custom') {
                     if (adv) adv.checked = true;
                     if (jsonRow) jsonRow.style.display = 'block';
                 } else {
@@ -2375,6 +3714,11 @@
                 document.getElementById('entry-cond-type').value = type;
                 setCondFormVisibility(type);
                 // 填各表单
+                if (type === 'true') {
+                    syncCondJsonBox({ type: 'true' });
+                    syncConditionItemsHintAboveEffects();
+                    return;
+                }
                 if (type === 'flagEquals') {
                     document.getElementById('cond-flag-name').value = cond.flag || '';
                     document.getElementById('cond-flag-value').value = String(!!cond.value);
@@ -2405,6 +3749,11 @@
             function readConditionFromForm() {
                 var type = document.getElementById('entry-cond-type').value;
                 var cond = { type: type };
+                if (type === 'true') {
+                    syncCondJsonBox({ type: 'true' });
+                    syncConditionItemsHintAboveEffects();
+                    return { type: 'true' };
+                }
                 if (type === 'flagEquals') {
                     cond.flag = document.getElementById('cond-flag-name').value.trim();
                     cond.value = (document.getElementById('cond-flag-value').value === 'true');
@@ -2450,7 +3799,7 @@
                 var sel = document.createElement('select');
                 sel.className = 'dlg-speaker';
                 var opts = [
-                    { v: 'npc', t: '林经理 / NPC' },
+                    { v: 'npc', t: 'NPC' },
                     { v: 'player', t: '主角' },
                     { v: 'narration', t: '旁白' }
                 ];
@@ -2805,7 +4154,13 @@
             document.getElementById('btn-cond-items-multi-add').addEventListener('click', function () {
                 var list = document.getElementById('cond-items-multi-list');
                 if (!list) return;
-                list.appendChild(createCondMultiItemRow({ itemId: '', count: 1 }));
+                list.appendChild(createCondMultiItemRow({ itemId: '', count: 1 }, {
+                    listEl: list,
+                    onBump: function () {
+                        syncCondJsonPreviewForMultiIfNeeded();
+                        setDirty('entry', true);
+                    }
+                }));
                 syncCondJsonPreviewForMultiIfNeeded();
                 setDirty('entry', true);
             });
@@ -2884,12 +4239,20 @@
                 state.npc = JSON.parse(JSON.stringify(defaultNpc));
                 state.triggers = { npcId: state.npc.id, entries: [] };
                 state.selectedEntryIndex = -1;
+                state.dialoguePoolsDoc = { schemaVersion: 1, pools: {} };
+                state._dialoguePoolsHydrated = true;
+                setDirty('dialoguePools', false);
                 npcToForm();
                 renderEntriesList();
+                try { renderDialoguePoolsTab(); } catch (eDpNew) { /* ignore */ }
                 document.getElementById('entry-edit-placeholder').style.display = 'block';
                 document.getElementById('entry-edit-panel').style.display = 'none';
                 setDirty('npc', false);
                 setDirty('entry', false);
+                try {
+                    if (state.projectDirHandle) refreshDialoguePoolsFromProject();
+                    else tryFetchDialoguePoolsForCurrentNpc();
+                } catch (eDpNew2) { /* ignore */ }
                 toast('info', '已新建', '已创建新的 NPC（记得导出保存）。', 2400);
             });
 
@@ -2928,6 +4291,23 @@
                 toast('success', '已保存', '当前事件已保存到内存状态（导出后才会写入文件）。', 2400);
             });
 
+            document.getElementById('btn-save-all-memory').addEventListener('click', function () {
+                try {
+                    formToNpc();
+                    if (state.selectedEntryIndex >= 0 && state.triggers && Array.isArray(state.triggers.entries)) {
+                        formToEntry(state.triggers.entries[state.selectedEntryIndex]);
+                    }
+                    ensureDialoguePoolsDocShape();
+                    renderEntriesList();
+                    setDirty('npc', false);
+                    setDirty('entry', false);
+                    setDirty('dialoguePools', false);
+                    toast('success', '已保存到内存', 'NPC / 事件 / 台词池已写回内存状态；请按需分别点「保存 NPC / 保存事件 / 保存台词池表」下载文件。', 3600);
+                } catch (eSaveMem) {
+                    toast('error', '保存到内存失败', (eSaveMem && eSaveMem.message) ? eSaveMem.message : String(eSaveMem));
+                }
+            });
+
             document.getElementById('btn-delete-entry').addEventListener('click', function () {
                 if (state.selectedEntryIndex < 0) return;
                 var cur = state.triggers.entries[state.selectedEntryIndex];
@@ -2961,19 +4341,21 @@
                 out.id = (data.id != null) ? data.id : out.id;
                 out.name = (data.name != null) ? data.name : out.name;
                 out.displayTitle = (data.displayTitle != null) ? data.displayTitle : out.displayTitle;
+                out.npcLabel = (data.npcLabel != null) ? data.npcLabel : out.npcLabel;
                 out.sprite = (data.sprite != null) ? data.sprite : out.sprite;
                 out.appearanceSchedule = (data.appearanceSchedule && typeof data.appearanceSchedule === 'object') ? data.appearanceSchedule : out.appearanceSchedule;
                 out.location = (data.location && typeof data.location === 'object') ? data.location : out.location;
                 out.mainMenu = (data.mainMenu && typeof data.mainMenu === 'object') ? data.mainMenu : out.mainMenu;
                 out.behavior = (data.behavior && typeof data.behavior === 'object') ? data.behavior : out.behavior;
                 out.fallbackDialoguePoolId = (data.fallbackDialoguePoolId != null) ? data.fallbackDialoguePoolId : out.fallbackDialoguePoolId;
+                out.fallbackPoolRules = Array.isArray(data.fallbackPoolRules) ? JSON.parse(JSON.stringify(data.fallbackPoolRules)) : out.fallbackPoolRules;
                 out.tags = Array.isArray(data.tags) ? data.tags : out.tags;
 
                 // unknown passthrough
                 var knownTop = {
-                    schemaVersion: 1, id: 1, name: 1, displayTitle: 1, sprite: 1,
+                    schemaVersion: 1, id: 1, name: 1, displayTitle: 1, npcLabel: 1, sprite: 1,
                     appearanceSchedule: 1, location: 1, mainMenu: 1, behavior: 1,
-                    fallbackDialoguePoolId: 1, tags: 1, _comment: 1
+                    fallbackDialoguePoolId: 1, fallbackPoolRules: 1, tags: 1, _comment: 1
                 };
                 out._extra = {};
                 for (var k in data) {
@@ -3059,6 +4441,7 @@
                 // 与导出文件名保持一致（避免手动对不上）
                 var defName = (npcId || 'npc').replace(/\./g, '_') + '.json';
                 var trigName = (npcId || 'npc').replace(/\./g, '_') + '_triggers.json';
+                var poolsName = (npcId || 'npc').replace(/\./g, '_') + '_dialogue_pools.json';
                 // 自动流程：让用户选择现有 npc_registry.json（不选就生成全新 registry）
                 var input = document.getElementById('file-import-npc-registry');
                 if (!input) return;
@@ -3071,11 +4454,15 @@
                     var mergeAndDownload = function (baseReg) {
                         var reg = baseReg && typeof baseReg === 'object' ? baseReg : {};
                         if (!reg.npcs || typeof reg.npcs !== 'object') reg.npcs = {};
-                        reg.npcs[npcId] = { def: 'data/npc/' + defName, triggers: 'data/npc/' + trigName };
+                        reg.npcs[npcId] = {
+                            def: 'data/npc/' + defName,
+                            triggers: 'data/npc/' + trigName,
+                            dialogue_pools: 'data/npc/' + poolsName
+                        };
                         download('npc_registry.json', exportJson(reg));
                         toast('success', '已生成注册表', 'npc_registry.json（请放入 data/npc/）');
                     };
-                    if (!file) return mergeAndDownload({ _comment: 'NPC 注册表：npcId -> 本体/事件配置文件路径。', npcs: {} });
+                    if (!file) return mergeAndDownload({ _comment: 'NPC 注册表：npcId -> 本体/事件/台词池路径。dialogue_pools 缺省时运行时按 def 同前缀推导 *_dialogue_pools.json。', npcs: {} });
                     var reader = new FileReader();
                     reader.onload = function () {
                         try {
@@ -3083,11 +4470,11 @@
                             mergeAndDownload(baseReg);
                         } catch (e) {
                             // 解析失败则仍然生成新 registry，避免卡住
-                            mergeAndDownload({ _comment: 'NPC 注册表：npcId -> 本体/事件配置文件路径。', npcs: {} });
+                            mergeAndDownload({ _comment: 'NPC 注册表：npcId -> 本体/事件/台词池路径。dialogue_pools 缺省时运行时按 def 同前缀推导 *_dialogue_pools.json。', npcs: {} });
                         }
                     };
                     reader.onerror = function () {
-                        mergeAndDownload({ _comment: 'NPC 注册表：npcId -> 本体/事件配置文件路径。', npcs: {} });
+                        mergeAndDownload({ _comment: 'NPC 注册表：npcId -> 本体/事件/台词池路径。dialogue_pools 缺省时运行时按 def 同前缀推导 *_dialogue_pools.json。', npcs: {} });
                     };
                     reader.readAsText(file, 'UTF-8');
                 };
@@ -3100,6 +4487,10 @@
                 state.triggers.npcId = state.npc.id;
                 npcToForm();
                 setDirty('npc', false);
+                try {
+                    if (state.projectDirHandle) refreshDialoguePoolsFromProject();
+                    else tryFetchDialoguePoolsForCurrentNpc();
+                } catch (eDpImp) { /* ignore */ }
             }
 
             document.getElementById('btn-import-npc').addEventListener('click', function () {
@@ -3182,23 +4573,7 @@
             });
 
             document.getElementById('entry-cond-type').addEventListener('change', function () {
-                var type = this.value;
-                var firstSkill = (state.skills && state.skills.length) ? state.skills[0] : 'survival_language';
-                var sample = (type === 'flagEquals') ? { type: 'flagEquals', flag: 'lsy_has_talked', value: false }
-                    : (type === 'skillLevelEquals') ? { type: 'skillLevelEquals', skillId: firstSkill, level: 0 }
-                    : (type === 'skillLevelGte') ? { type: 'skillLevelGte', skillId: firstSkill, level: 1 }
-                    : (type === 'survivalSkillLevelEquals') ? { type: 'survivalSkillLevelEquals', skillId: firstSkill, level: 0 }
-                    : (type === 'survivalSkillLevelGte') ? { type: 'survivalSkillLevelGte', skillId: firstSkill, level: 1 }
-                    : (type === 'postEffectObtainedGte') ? { type: 'postEffectObtainedGte', value: 1 }
-                    : (type === 'lastCombatDefenderHitArcEquals') ? { type: 'lastCombatDefenderHitArcEquals', value: 'back' }
-                    : (type === 'lastCombatAttackerStrikeArcEquals') ? { type: 'lastCombatAttackerStrikeArcEquals', value: 'back' }
-                    : (type === 'hasItem') ? { type: 'hasItem', itemId: 'item_xxx', count: 1 }
-                    : (type === 'hasItemsAll') ? { type: 'and', conds: [
-                        { type: 'hasItem', itemId: 'item_a', count: 1 },
-                        { type: 'hasItem', itemId: 'item_b', count: 1 }
-                    ] }
-                    : { type: 'custom' };
-                applyConditionToForm(sample);
+                applyConditionToForm(sampleConditionForEditorType(this.value));
             });
 
             // entry dirty tracking (delegation)
@@ -3268,6 +4643,7 @@
             updateSkillCount();
             updateSkillSelectOptions();
             renderEntriesList();
+            try { renderDialoguePoolsTab(); } catch (eDp0) { /* ignore */ }
             document.getElementById('entry-edit-placeholder').style.display = 'block';
             document.getElementById('entry-edit-panel').style.display = 'none';
             // v2 additions: project-directory binding, direct file save, image panel
@@ -3328,7 +4704,8 @@
                         state.imageRootDirHandle = imgDir;
                     } catch (e) { /* image dir doesn't exist yet, that's ok */ }
                     updateBindPill();
-                    toast('success', '已绑定目录', dir.name + '\n保存 NPC/事件 时将直接写入 data/npc/，无需手动移动文件。', 5000);
+                    await refreshDialoguePoolsFromProject();
+                    toast('success', '已绑定目录', dir.name + '\n保存 NPC/事件/台词池 时将直接写入 data/npc/，无需手动移动文件。', 5000);
                 } catch (err) {
                     if (err && err.name === 'AbortError') return;
                     toast('error', '绑定失败', (err && err.message) ? err.message : String(err));
@@ -3370,6 +4747,86 @@
                 }
             }
 
+            function buildDialoguePoolsExportObject() {
+                ensureDialoguePoolsDocShape();
+                var out = { schemaVersion: state.dialoguePoolsDoc.schemaVersion || 1, pools: {} };
+                var keys = Object.keys(state.dialoguePoolsDoc.pools || {});
+                for (var k = 0; k < keys.length; k++) {
+                    var pk = keys[k];
+                    var p = state.dialoguePoolsDoc.pools[pk];
+                    if (!p) continue;
+                    if (!Array.isArray(p.lines)) p.lines = [];
+                    var hasLine = false;
+                    for (var z = 0; z < p.lines.length; z++) {
+                        var lm = poolLineFromStored(p.lines[z]);
+                        if (String(lm.text || '').trim()) { hasLine = true; break; }
+                    }
+                    var hasInc = Array.isArray(p.includePools) && p.includePools.some(function (x) { return String(x || '').trim(); });
+                    if (!hasLine && !hasInc) continue;
+                    var entry = { lines: p.lines.map(function (x) { return poolLineToPersist(poolLineFromStored(x)); }) };
+                    if (hasInc) {
+                        entry.includePools = [];
+                        for (var ii = 0; ii < p.includePools.length; ii++) {
+                            var tid = String(p.includePools[ii] || '').trim();
+                            if (tid) entry.includePools.push(tid);
+                        }
+                    }
+                    if (p.composeMode === 'pick_pool') entry.composeMode = 'pick_pool';
+                    out.pools[pk] = entry;
+                }
+                return out;
+            }
+
+            async function refreshDialoguePoolsFromProject() {
+                ensureDialoguePoolsDocShape();
+                if (!state.projectDirHandle) return;
+                try {
+                    var raw = await readJsonFromProject(getDialoguePoolsJsonPath());
+                    if (raw) {
+                        var j = JSON.parse(raw);
+                        applyImportedDialoguePools(j);
+                    } else {
+                        state.dialoguePoolsDoc = { schemaVersion: 1, pools: {} };
+                        state._dialoguePoolsHydrated = true;
+                        renderDialoguePoolsTab();
+                    }
+                } catch (e) {
+                    state.dialoguePoolsDoc = { schemaVersion: 1, pools: {} };
+                    state._dialoguePoolsHydrated = true;
+                    renderDialoguePoolsTab();
+                }
+            }
+
+            async function doSaveDialoguePools(silent) {
+                ensureDialoguePoolsDocShape();
+                if (state && state.dirty && state.dirty.npc) {
+                    toast('warn', '仅保存了台词池', '你改了 fallbackPoolRules 顺序/条件，这些在 NPC 文件里。请再点「保存 NPC」。', 5200);
+                }
+                var out = buildDialoguePoolsExportObject();
+                var jsonStr = exportJson(out);
+                var path = getDialoguePoolsJsonPath();
+                if (state.projectDirHandle) {
+                    try {
+                        setBoundSaving('保存台词池…');
+                        await writeJsonToProject(path, jsonStr);
+                        setDirty('dialoguePools', false);
+                        setBoundOk('台词池已写入');
+                        if (!silent) toast('success', '已保存台词池', path);
+                        return true;
+                    } catch (err) {
+                        setBoundError('写入失败');
+                        if (!silent) toast('error', '保存失败', (err && err.message) ? err.message : String(err));
+                        return false;
+                    }
+                } else {
+                    var dlName = path.split('/').pop() || 'dialogue_pools.json';
+                    download(dlName, jsonStr);
+                    setDirty('dialoguePools', false);
+                    if (!silent) toast('success', '已下载', dlName + '（请放入 data/npc/）', 6000);
+                    return true;
+                }
+            }
+
             function getNpcJsonPath() {
                 var id = (state.npc && state.npc.id) ? state.npc.id : 'npc';
                 return 'data/npc/' + id.replace(/\./g, '_') + '.json';
@@ -3377,6 +4834,11 @@
             function getTriggersJsonPath() {
                 var id = (state.triggers && state.triggers.npcId) ? state.triggers.npcId : ((state.npc && state.npc.id) ? state.npc.id : 'npc');
                 return 'data/npc/' + id.replace(/\./g, '_') + '_triggers.json';
+            }
+
+            function getDialoguePoolsJsonPath() {
+                var id = (state.npc && state.npc.id) ? state.npc.id : 'npc';
+                return 'data/npc/' + id.replace(/\./g, '_') + '_dialogue_pools.json';
             }
 
             function scheduleAutoSave() {
@@ -3423,6 +4885,7 @@
                         setDirty('npc', false);
                         setBoundOk('NPC 已写入');
                         if (!silent) toast('success', '已保存 NPC', path);
+                        if (state.dirty && state.dirty.dialoguePools) await doSaveDialoguePools(true);
                         return true;
                     } catch (err) {
                         setBoundError('写入失败');
@@ -3434,6 +4897,9 @@
                     download(name, jsonStr);
                     setDirty('npc', false);
                     if (!silent) toast('success', '已下载 NPC', name + '\n（未绑定目录，请手动放入 data/npc/）', 6000);
+                    if (state.dirty && state.dirty.dialoguePools) {
+                        window.setTimeout(function () { doSaveDialoguePools(true); }, 400);
+                    }
                     return true;
                 }
             }
@@ -3477,11 +4943,33 @@
             }
 
             async function doSaveAll(silent) {
-                var dirty = !!(state.dirty && (state.dirty.npc || state.dirty.entry));
+                var dirty = !!(state.dirty && (state.dirty.npc || state.dirty.entry || state.dirty.dialoguePools));
                 if (!dirty) return;
                 if (state.dirty && state.dirty.npc) await doSaveNpc(silent);
                 if (state.dirty && state.dirty.entry) await doSaveTriggers(silent);
+                if (state.dirty && state.dirty.dialoguePools) await doSaveDialoguePools(silent);
             }
+
+            document.getElementById('btn-export-dialogue-pools').addEventListener('click', function () { doSaveDialoguePools(false); });
+            document.getElementById('btn-import-dialogue-pools').addEventListener('click', function () {
+                document.getElementById('file-import-dialogue-pools').click();
+            });
+            document.getElementById('file-import-dialogue-pools').addEventListener('change', function () {
+                var file = this.files && this.files[0];
+                this.value = '';
+                if (!file) return;
+                var reader = new FileReader();
+                reader.onload = function () {
+                    try {
+                        var data = JSON.parse(reader.result);
+                        applyImportedDialoguePools(data);
+                        toast('success', '已载入台词池表', '可编辑当前 NPC 对应池后点「保存台词池表」。', 3600);
+                    } catch (e) {
+                        toast('error', '导入失败', '台词池 JSON 解析失败：' + e.message);
+                    }
+                };
+                reader.readAsText(file, 'UTF-8');
+            });
 
             // Add "从目录打开 NPC" feature
             async function openNpcFromProject() {
@@ -3495,7 +4983,7 @@
                         .then(function (d) { return d.getDirectoryHandle('npc', { create: false }); });
                     var files = [];
                     for await (var entry of dataNpcDir.values()) {
-                        if (entry.kind === 'file' && entry.name.endsWith('.json') && !entry.name.endsWith('_triggers.json') && entry.name !== 'npc_registry.json') {
+                        if (entry.kind === 'file' && entry.name.endsWith('.json') && !entry.name.endsWith('_triggers.json') && !entry.name.endsWith('_dialogue_pools.json') && entry.name !== 'npc_registry.json' && entry.name !== 'dialogue_pools.json') {
                             files.push(entry.name);
                         }
                     }
@@ -3556,6 +5044,7 @@
                     } catch (te) {
                         toast('success', '已打开', chosen + '\n（未找到对应 _triggers.json）');
                     }
+                    await refreshDialoguePoolsFromProject();
                 } catch (err) {
                     if (err && err.name === 'NotFoundError') {
                         toast('warn', '目录不存在', '项目中没有 data/npc/ 目录，请先创建 NPC 并保存一次。');
@@ -3585,6 +5074,22 @@
                 btn.parentNode.replaceChild(fresh, btn);
                 fresh.addEventListener('click', function () { doSaveTriggers(false); });
             })();
+
+            // ─── Right workbench：事件 / 台词池 ───────────────────────────────
+            window.switchRightWorkbenchTab = function (name) {
+                var bEv = document.getElementById('tab-btn-right-events');
+                var bDp = document.getElementById('tab-btn-right-pools');
+                if (bEv) bEv.classList.toggle('active', name === 'events');
+                if (bDp) bDp.classList.toggle('active', name === 'dialogue-pools');
+                var ev = document.getElementById('right-pane-events');
+                var dp = document.getElementById('right-pane-dialogue-pools');
+                if (ev) ev.classList.toggle('active', name === 'events');
+                if (dp) dp.classList.toggle('active', name === 'dialogue-pools');
+                if (name === 'dialogue-pools') {
+                    renderDialoguePoolsTab();
+                    renderFallbackRulesPanel();
+                }
+            };
 
             // ─── Left panel tab switching ─────────────────────────────────────
             window.switchLeftTab = function (name) {

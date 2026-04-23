@@ -1,0 +1,337 @@
+{
+  "schema_version": 1,
+  "source_csv": "data/compost-events.csv",
+  "generated_at": "2026-04-21T08:45:56.377Z",
+  "events": {
+    "anaerobic_risk": {
+      "event_id": "anaerobic_risk",
+      "stage": "state",
+      "severity": "bad",
+      "best_action": "ventilate",
+      "secondary_action": "turn_pile",
+      "bad_action": "cover_keepwarm",
+      "enabled": true,
+      "variants": [
+        {
+          "text_variant_id": "v1",
+          "title": "厌氧风险",
+          "desc": "出现闷味，堆体有转厌氧风险。",
+          "success_text": "异味减弱，通气恢复。",
+          "fail_text": ""
+        }
+      ]
+    },
+    "anaerobic_vent_window_1": {
+      "event_id": "anaerobic_vent_window_1",
+      "stage": "state",
+      "severity": "info",
+      "best_action": "vent_gas",
+      "secondary_action": "none",
+      "bad_action": "leave_as_is",
+      "enabled": true,
+      "variants": [
+        {
+          "text_variant_id": "v1",
+          "title": "气压上浮·首次放气窗",
+          "desc": "桶内积气上升，建议及时拧开放气阀。",
+          "success_text": "放气顺畅，桶内压差恢复稳定。",
+          "fail_text": "未放气，桶内积气继续累积。"
+        }
+      ]
+    },
+    "anaerobic_vent_window_2": {
+      "event_id": "anaerobic_vent_window_2",
+      "stage": "state",
+      "severity": "info",
+      "best_action": "vent_gas",
+      "secondary_action": "none",
+      "bad_action": "leave_as_is",
+      "enabled": true,
+      "variants": [
+        {
+          "text_variant_id": "v1",
+          "title": "二次放气窗",
+          "desc": "进入后段发酵，仍需确认并释放桶内积气。",
+          "success_text": "二次放气完成，发酵过程保持平稳。",
+          "fail_text": "未放气，后段积气风险上升。"
+        }
+      ]
+    },
+    "clumping": {
+      "event_id": "clumping",
+      "stage": "state",
+      "severity": "warn",
+      "best_action": "break_clumps",
+      "secondary_action": "turn_pile",
+      "bad_action": "add_water",
+      "enabled": true,
+      "variants": [
+        {
+          "text_variant_id": "v1",
+          "title": "出现结块",
+          "desc": "材料团聚成块，空气不易进入内部。",
+          "success_text": "结构松散，通气改善。",
+          "fail_text": ""
+        },
+        {
+          "text_variant_id": "v2",
+          "title": "团聚加重",
+          "desc": "堆体出现较大硬块，内部交换受阻。",
+          "success_text": "硬块被打散，结构恢复均匀。",
+          "fail_text": ""
+        },
+        {
+          "text_variant_id": "v3",
+          "title": "板结征兆",
+          "desc": "物料局部板结，易形成闷堆区域。",
+          "success_text": "板结区域松解，通气效率提升。",
+          "fail_text": ""
+        }
+      ]
+    },
+    "contaminant_found": {
+      "event_id": "contaminant_found",
+      "stage": "state",
+      "severity": "warn",
+      "best_action": "remove_contaminant",
+      "secondary_action": "turn_pile",
+      "bad_action": "cover_keepwarm",
+      "enabled": true,
+      "variants": [
+        {
+          "text_variant_id": "v1",
+          "title": "发现杂质",
+          "desc": "批次混入不利分解的杂质，需要清理。",
+          "success_text": "杂质剔除，批次恢复。",
+          "fail_text": ""
+        }
+      ]
+    },
+    "decomposition_smooth": {
+      "event_id": "decomposition_smooth",
+      "stage": "state",
+      "severity": "good",
+      "best_action": "none",
+      "secondary_action": "turn_pile",
+      "bad_action": "add_water",
+      "enabled": true,
+      "variants": [
+        {
+          "text_variant_id": "v1",
+          "title": "分解顺畅",
+          "desc": "整体分解状态良好，暂无明显风险。",
+          "success_text": "状态继续稳定推进。",
+          "fail_text": ""
+        }
+      ]
+    },
+    "moisture_high": {
+      "event_id": "moisture_high",
+      "stage": "state",
+      "severity": "warn",
+      "best_action": "turn_pile",
+      "secondary_action": "ventilate",
+      "bad_action": "add_water",
+      "enabled": true,
+      "variants": [
+        {
+          "text_variant_id": "v1",
+          "title": "含水偏高",
+          "desc": "堆体偏湿，内部通气受阻。",
+          "success_text": "湿度下降，堆体变松。",
+          "fail_text": ""
+        }
+      ]
+    },
+    "moisture_low": {
+      "event_id": "moisture_low",
+      "stage": "state",
+      "severity": "warn",
+      "best_action": "add_water",
+      "secondary_action": "cover_keepwarm",
+      "bad_action": "ventilate",
+      "enabled": true,
+      "variants": [
+        {
+          "text_variant_id": "v1",
+          "title": "含水偏低",
+          "desc": "材料手感偏干，分解效率下降。",
+          "success_text": "湿润度恢复，气味转柔。",
+          "fail_text": ""
+        },
+        {
+          "text_variant_id": "v2",
+          "title": "偏干预警",
+          "desc": "堆体表层发松发轻，湿度不足影响分解。",
+          "success_text": "含水回到正常区间。",
+          "fail_text": ""
+        },
+        {
+          "text_variant_id": "v3",
+          "title": "水分不足",
+          "desc": "物料偏干导致升温与腐熟速度放缓。",
+          "success_text": "干燥感减弱，发酵活性恢复。",
+          "fail_text": ""
+        }
+      ]
+    },
+    "result_grade_high": {
+      "event_id": "result_grade_high",
+      "stage": "result",
+      "severity": "good",
+      "best_action": "",
+      "secondary_action": "",
+      "bad_action": "",
+      "enabled": true,
+      "variants": [
+        {
+          "text_variant_id": "v1",
+          "title": "腐熟完成·细",
+          "desc": "结构细腻、气味纯净，本批表现优秀。",
+          "success_text": "",
+          "fail_text": "本批达到优档基质。"
+        }
+      ]
+    },
+    "result_grade_low": {
+      "event_id": "result_grade_low",
+      "stage": "result",
+      "severity": "warn",
+      "best_action": "",
+      "secondary_action": "",
+      "bad_action": "",
+      "enabled": true,
+      "variants": [
+        {
+          "text_variant_id": "v1",
+          "title": "腐熟完成·散",
+          "desc": "结构偏松散，建议后续配方补强。",
+          "success_text": "",
+          "fail_text": "本批达到差档基质。"
+        }
+      ]
+    },
+    "result_grade_mid": {
+      "event_id": "result_grade_mid",
+      "stage": "result",
+      "severity": "info",
+      "best_action": "",
+      "secondary_action": "",
+      "bad_action": "",
+      "enabled": true,
+      "variants": [
+        {
+          "text_variant_id": "v1",
+          "title": "腐熟完成·匀",
+          "desc": "整体均衡，可作为常规基质使用。",
+          "success_text": "",
+          "fail_text": "本批达到中档基质。"
+        }
+      ]
+    },
+    "result_grade_void": {
+      "event_id": "result_grade_void",
+      "stage": "result",
+      "severity": "bad",
+      "best_action": "",
+      "secondary_action": "",
+      "bad_action": "",
+      "enabled": true,
+      "variants": [
+        {
+          "text_variant_id": "v1",
+          "title": "发酵失败",
+          "desc": "碳氮结构失衡，本批仅得到无用途废产物。",
+          "success_text": "",
+          "fail_text": "本批进入废产物档。"
+        }
+      ]
+    },
+    "righteousfire_combustion": {
+      "event_id": "righteousfire_combustion",
+      "stage": "state",
+      "severity": "bad",
+      "best_action": "ventilate",
+      "secondary_action": "turn_pile",
+      "bad_action": "cover_keepwarm",
+      "enabled": true,
+      "variants": [
+        {
+          "text_variant_id": "v1",
+          "title": "自燃风险",
+          "desc": "堆体内部温度异常升高，出现自燃征兆。",
+          "success_text": "明火被压制，温度开始回落。",
+          "fail_text": "热势持续，批次存在失控风险。"
+        },
+        {
+          "text_variant_id": "v2",
+          "title": "焦化前兆",
+          "desc": "堆体深处发烫并伴随焦糊气味，接近自燃边缘。",
+          "success_text": "灼热点被打散，热势明显回落。",
+          "fail_text": "热势继续积聚，风险进一步扩大。"
+        }
+      ]
+    },
+    "temp_optimal": {
+      "event_id": "temp_optimal",
+      "stage": "state",
+      "severity": "good",
+      "best_action": "none",
+      "secondary_action": "turn_pile",
+      "bad_action": "add_water",
+      "enabled": true,
+      "variants": [
+        {
+          "text_variant_id": "v1",
+          "title": "温度理想",
+          "desc": "堆体温度处于理想区间，状态稳定。",
+          "success_text": "状态继续保持稳定。",
+          "fail_text": ""
+        }
+      ]
+    },
+    "temp_overheat": {
+      "event_id": "temp_overheat",
+      "stage": "state",
+      "severity": "bad",
+      "best_action": "ventilate",
+      "secondary_action": "turn_pile",
+      "bad_action": "cover_keepwarm",
+      "enabled": true,
+      "variants": [
+        {
+          "text_variant_id": "v1",
+          "title": "堆体过热",
+          "desc": "中心温度偏高，可能导致菌群失衡。",
+          "success_text": "热峰回落，状态趋稳。",
+          "fail_text": ""
+        },
+        {
+          "text_variant_id": "v2",
+          "title": "高温警报",
+          "desc": "堆芯温度持续走高，已有热失衡趋势。",
+          "success_text": "温区回落到可控范围。",
+          "fail_text": ""
+        }
+      ]
+    },
+    "temp_rise_slow": {
+      "event_id": "temp_rise_slow",
+      "stage": "state",
+      "severity": "warn",
+      "best_action": "cover_keepwarm",
+      "secondary_action": "turn_pile",
+      "bad_action": "ventilate",
+      "enabled": true,
+      "variants": [
+        {
+          "text_variant_id": "v1",
+          "title": "温升偏慢",
+          "desc": "堆体升温不明显，分解活性不足。",
+          "success_text": "热感回升，发酵恢复。",
+          "fail_text": ""
+        }
+      ]
+    }
+  }
+}

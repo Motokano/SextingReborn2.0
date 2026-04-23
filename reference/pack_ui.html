@@ -1,0 +1,380 @@
+import React, { useState, useMemo } from 'react';
+import { Search, Package, User, ShoppingBag, Truck, MoveDown, Info, Shield, Sword, FlaskConical, ScrollText } from 'lucide-react';
+
+const App = () => {
+  // 模拟数据：物品品质颜色
+  const TIERS = {
+    POOR: { color: '#4a4a4a', label: '破损' },
+    COMMON: { color: '#8e8e8e', label: '凡品' },
+    FINE: { color: '#60a060', label: '良品' },
+    RARE: { color: '#5070a0', label: '精品' },
+    EPIC: { color: '#a050a0', label: '名品' },
+    DIVINE: { color: '#d3a060', label: '神品' },
+    UNKNOWN: { color: '#333333', label: '未知' }
+  };
+
+  // 模拟物品数据
+  const initialItems = [
+    {
+      id: 1,
+      name: '名剑·残雪',
+      shortDesc: '剑身覆霜，寒气逼人',
+      fullDesc: '传闻此剑曾折断于昆仑之巅，后经名匠以玄冰重铸。剑出鞘时，方圆十丈皆有霜降。',
+      tier: 'DIVINE',
+      type: '武器',
+      tags: ['锋利+12', '寒霜属性'],
+      weight: 4.5,
+      identifyLevel: 5,
+      stats: { '攻击力': '120-150', '内力加成': '+15%', '穿透': '20' },
+      actions: ['装备', '拆分', '丢弃']
+    },
+    {
+      id: 2,
+      name: '陈年女儿红',
+      shortDesc: '醇厚留香，舒筋活血',
+      fullDesc: '藏于绍兴老宅地下的陈年佳酿。饮后可短暂提升内力恢复速度。',
+      tier: 'FINE',
+      type: '消耗品',
+      tags: ['酒', '增益'],
+      weight: 1.0,
+      identifyLevel: 1,
+      stats: { '内力恢复': '+5/秒', '持续时间': '300秒' },
+      actions: ['饮用', '丢弃']
+    },
+    {
+      id: 3,
+      name: '晦涩的古卷',
+      shortDesc: '封皮磨损，文字难辨',
+      fullDesc: '一本用西域羊皮纸记载的武学残页，上面的文字似乎被某种内力加封了，需要极高的识字等级才能阅读。',
+      tier: 'UNKNOWN',
+      type: '秘籍',
+      tags: ['残缺', '未鉴定'],
+      weight: 0.5,
+      identifyLevel: 8,
+      // 修复：使用唯一的键名以避免对象字面量冲突
+      stats: { '秘籍残缺度': '60%', '记载武学': '???' },
+      actions: ['尝试阅读', '丢弃']
+    },
+    {
+      id: 4,
+      name: '粗布麻衣',
+      shortDesc: '寻常衣物，仅供遮体',
+      fullDesc: '江湖浪子最常见的装束。虽然防御力低下，但胜在轻便。',
+      tier: 'POOR',
+      type: '防具',
+      tags: ['防御+2'],
+      weight: 2.0,
+      identifyLevel: 1,
+      stats: { '防御力': '2', '闪避': '+1%' },
+      actions: ['装备', '丢弃']
+    },
+    {
+      id: 5,
+      name: '止血散',
+      shortDesc: '常见伤药',
+      fullDesc: '江湖行走必备良药，可快速止住外伤出血。',
+      tier: 'COMMON',
+      type: '消耗品',
+      tags: ['回血'],
+      weight: 0.2,
+      count: 5,
+      identifyLevel: 1,
+      stats: { '气血回复': '50' },
+      actions: ['使用', '拆分', '丢弃']
+    }
+  ];
+
+  const [selectedId, setSelectedId] = useState(1);
+  const [playerIdentifyLevel, setPlayerIdentifyLevel] = useState(10); 
+  const [currentTab, setCurrentTab] = useState('backpack');
+  const [searchQuery, setSearchQuery] = useState('');
+
+  const selectedItem = initialItems.find(i => i.id === selectedId);
+
+  // 过滤后的列表
+  const filteredItems = useMemo(() => {
+    return initialItems.filter(item => 
+      item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      item.type.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+  }, [searchQuery]);
+
+  // 工具函数：根据鉴别等级处理文本
+  const maskText = (text, itemLevel) => {
+    if (playerIdentifyLevel >= itemLevel) return text;
+    return text.split('').map(() => (Math.random() > 0.5 ? '？' : '＊')).join('');
+  };
+
+  const isIdentified = (itemLevel) => playerIdentifyLevel >= itemLevel;
+
+  return (
+    <div className="flex flex-col h-screen w-full bg-[#1a1512] text-[#e0d7c6] font-sans overflow-hidden">
+      
+      {/* 顶部标题与摘要 */}
+      <header className="flex items-center justify-between px-6 py-4 border-b-2 border-[#2d2d28] bg-[#252520]">
+        <div className="flex items-center gap-6">
+          <h1 className="text-2xl font-serif font-bold tracking-widest text-[#d3a060]">行囊</h1>
+          <div className="flex flex-col">
+            <div className="flex items-center gap-2 text-xs text-[#8e8e8e] mb-1">
+              <span>负重容量</span>
+              <span>8.2 / 20.0 kg</span>
+            </div>
+            <div className="w-48 h-1.5 bg-[#1a1512] rounded-full overflow-hidden border border-[#3d3d38]">
+              <div className="h-full bg-[#ff8c00]" style={{ width: '41%' }}></div>
+            </div>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-4">
+          <div className="relative">
+            <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#8e8e8e]" />
+            <input 
+              type="text" 
+              placeholder="搜索物品名称或类型..."
+              className="bg-[#1a1512] border-2 border-[#2d2d28] rounded-lg py-1.5 pl-10 pr-4 text-sm focus:border-[#d3a060] outline-none transition-colors w-64"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+          </div>
+          {/* 模拟设置：玩家眼力等级 */}
+          <div className="flex items-center gap-2 px-3 py-1 bg-[#2d2d28] rounded border border-[#3d3d38]">
+             <span className="text-[10px] text-[#8e8e8e]">当前眼力: Lv.{playerIdentifyLevel}</span>
+             <input 
+              type="range" min="1" max="10" 
+              value={playerIdentifyLevel} 
+              onChange={(e) => setPlayerIdentifyLevel(parseInt(e.target.value))}
+              className="w-16 accent-[#ff8c00]"
+             />
+          </div>
+        </div>
+      </header>
+
+      {/* 主体区域 */}
+      <main className="flex flex-1 overflow-hidden">
+        
+        {/* 左侧：容器导航 (12%) */}
+        <aside className="w-[12%] border-r-2 border-[#2d2d28] bg-[#1d1d18] flex flex-col py-4">
+          {[
+            { id: 'pocket', label: '贴身口袋', icon: <User size={18} /> },
+            { id: 'backpack', label: '行囊背包', icon: <Package size={18} /> },
+            { id: 'sleeve', label: '袖里乾坤', icon: <ShoppingBag size={18} /> },
+            { id: 'cart', label: '马车货箱', icon: <Truck size={18} /> },
+            { id: 'ground', label: '地面拾取', icon: <MoveDown size={18} /> },
+          ].map((tab) => (
+            <button
+              key={tab.id}
+              onClick={() => setCurrentTab(tab.id)}
+              className={`flex items-center gap-3 px-4 py-4 text-sm font-medium transition-all relative ${
+                currentTab === tab.id ? 'text-[#ff8c00] bg-[#252520]' : 'text-[#8e8e8e] hover:bg-[#252520]/50'
+              }`}
+            >
+              {tab.icon}
+              <span className="hidden lg:inline">{tab.label}</span>
+              {currentTab === tab.id && <div className="absolute left-0 top-0 bottom-0 w-1 bg-[#ff8c00]"></div>}
+            </button>
+          ))}
+        </aside>
+
+        {/* 中间：物品列表 (43%) */}
+        <section className="w-[43%] flex flex-col border-r-2 border-[#2d2d28] bg-[#1a1512]">
+          <div className="flex gap-2 p-3 bg-[#252520]/30 border-b border-[#2d2d28]">
+            {['全部', '武器', '防具', '丹药', '杂项'].map(f => (
+              <button key={f} className="px-3 py-1 text-[11px] rounded bg-[#2d2d28] border border-[#3d3d38] hover:border-[#d3a060] transition-colors">
+                {f}
+              </button>
+            ))}
+          </div>
+
+          <div className="flex-1 overflow-y-auto custom-scrollbar">
+            {filteredItems.map((item) => (
+              <div
+                key={item.id}
+                onClick={() => setSelectedId(item.id)}
+                className={`group flex items-center p-3 cursor-pointer transition-all border-b border-[#2d2d28] ${
+                  selectedId === item.id 
+                  ? 'bg-[#2d2d28] border-[#ff8c00] ring-1 ring-inset ring-[#ff8c00]/30' 
+                  : 'hover:bg-[#252520]'
+                }`}
+              >
+                {/* 侧边品质条 */}
+                <div 
+                  className="w-1 h-8 rounded-full mr-3" 
+                  style={{ backgroundColor: TIERS[item.tier].color }}
+                ></div>
+
+                <div className="flex-1">
+                  <div className="flex items-center justify-between mb-0.5">
+                    <span className={`font-bold ${selectedId === item.id ? 'text-[#ff8c00]' : 'text-[#e0d7c6]'}`}>
+                      {item.name} {item.count && <span className="text-[#8e8e8e] text-xs font-normal ml-1">x{item.count}</span>}
+                    </span>
+                    <span className="text-[10px] px-1.5 py-0.5 rounded border border-[#3d3d38] text-[#8e8e8e] group-hover:border-[#5d5d58]">
+                      {TIERS[item.tier].label}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <span className="text-[11px] text-[#8e8e8e]">{item.type}</span>
+                    <div className="flex gap-1">
+                      {item.tags.map(tag => (
+                        <span key={tag} className="text-[10px] text-[#d3a060] bg-[#d3a060]/5 px-1 uppercase tracking-tighter">
+                          {tag}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="text-right ml-4">
+                  <div className="text-[11px] text-[#8e8e8e]">{item.weight} kg</div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* 右侧：物品详情 (45%) */}
+        <section className="flex-1 bg-[#1d1d18] flex flex-col">
+          {selectedItem ? (
+            <>
+              <div className="p-8 flex-1 overflow-y-auto custom-scrollbar">
+                {/* 详情头部 */}
+                <div className="mb-6">
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="text-[11px] font-bold text-[#ff8c00] tracking-widest uppercase">{selectedItem.type}</span>
+                    <span className="w-1 h-1 rounded-full bg-[#4a4a4a]"></span>
+                    <span className="text-[11px] text-[#8e8e8e]">{TIERS[selectedItem.tier].label}</span>
+                  </div>
+                  <h2 className="text-3xl font-serif font-bold text-[#e0d7c6] mb-1">
+                    {selectedItem.name}
+                  </h2>
+                  <p className="text-[#d3a060] italic text-sm border-l-2 border-[#d3a060] pl-3 py-1">
+                    “{selectedItem.shortDesc}”
+                  </p>
+                </div>
+
+                {/* 描述区块 */}
+                <div className="mb-8 p-4 bg-[#252520] rounded-lg border border-[#2d2d28] relative">
+                  <div className="absolute -top-3 left-4 bg-[#1d1d18] px-2 text-[10px] text-[#8e8e8e] flex items-center gap-1">
+                    <ScrollText size={12} /> 卷宗详述
+                  </div>
+                  <p className="text-sm leading-relaxed text-[#a8a095]">
+                    {maskText(selectedItem.fullDesc, selectedItem.identifyLevel)}
+                  </p>
+                  {!isIdentified(selectedItem.identifyLevel) && (
+                    <div className="mt-4 flex items-center gap-2 text-[#ff8c00] text-xs bg-[#ff8c00]/5 p-2 rounded border border-[#ff8c00]/20">
+                      <Info size={14} />
+                      你的眼力等级不足以完全看清此物细节。
+                    </div>
+                  )}
+                </div>
+
+                {/* 属性模块 */}
+                <div className="grid grid-cols-2 gap-4">
+                  {Object.entries(selectedItem.stats).map(([key, value]) => (
+                    <div key={key} className="flex flex-col p-3 bg-[#252520]/50 border border-[#2d2d28] rounded-md hover:border-[#3d3d38] transition-colors">
+                      <span className="text-[10px] text-[#8e8e8e] uppercase mb-1 tracking-wider">
+                         {isIdentified(selectedItem.identifyLevel) ? key : '未知属性'}
+                      </span>
+                      <span className="text-base font-bold text-[#e0d7c6]">
+                        {isIdentified(selectedItem.identifyLevel) ? value : '???'}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+
+                {/* 额外信息块 */}
+                <div className="mt-6 pt-6 border-t border-[#2d2d28] flex justify-between text-[11px] text-[#8e8e8e]">
+                  <div className="flex gap-4">
+                    <span>重量: {selectedItem.weight} kg</span>
+                    <span>鉴别等级要求: {selectedItem.identifyLevel}</span>
+                  </div>
+                  <span>唯一识别码: ITEM_00{selectedItem.id}</span>
+                </div>
+              </div>
+
+              {/* 底部操作区 */}
+              <div className="p-6 bg-[#252520] border-t-2 border-[#2d2d28] grid grid-cols-3 gap-3">
+                <button className="flex items-center justify-center gap-2 py-3 px-4 bg-[#d3a060] hover:bg-[#ff8c00] text-[#1a1512] font-bold rounded shadow-lg transition-all active:scale-95">
+                  <Sword size={18} />
+                  {selectedItem.actions[0]}
+                </button>
+                <button className="flex items-center justify-center gap-2 py-3 px-4 bg-[#2d2d28] hover:bg-[#3d3d38] text-[#e0d7c6] font-bold rounded border border-[#3d3d38] transition-all active:scale-95">
+                   <FlaskConical size={18} />
+                   {selectedItem.actions[1] || '使用'}
+                </button>
+                <button className="flex items-center justify-center gap-2 py-3 px-4 bg-[#1a1512] hover:bg-red-900/20 hover:text-red-500 hover:border-red-900/50 text-[#8e8e8e] font-bold rounded border border-[#2d2d28] transition-all active:scale-95">
+                  丢弃
+                </button>
+              </div>
+            </>
+          ) : (
+            <div className="flex-1 flex items-center justify-center text-[#4a4a4a]">
+              <div className="text-center">
+                <Package size={48} className="mx-auto mb-4 opacity-10" />
+                <p className="font-serif italic text-lg opacity-50">尚未择取物品</p>
+              </div>
+            </div>
+          )}
+        </section>
+
+      </main>
+
+      {/* 底部状态条 */}
+      <footer className="px-6 py-2 bg-[#1a1512] border-t border-[#2d2d28] flex justify-between items-center text-[10px] text-[#4a4a4a] uppercase tracking-widest">
+        <div className="flex gap-6">
+          <span>[ESC] 关闭行囊</span>
+          <span>[鼠标右键] 快捷使用</span>
+          <span>[SHIFT+拖拽] 拆分堆叠</span>
+        </div>
+        <div>
+          SERVER-TIME: 12:47:04 | V0.8.2-BETA
+        </div>
+      </footer>
+
+      {/* 注入全局样式 */}
+      <style dangerouslySetInnerHTML={{ __html: `
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@700&display=swap');
+        
+        .font-serif {
+          font-family: 'Noto Serif SC', serif;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar {
+          width: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+          background: #1a1512;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+          background: #2d2d28;
+          border-radius: 2px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+          background: #d3a060;
+        }
+
+        /* 隐藏范围选择器默认样式并美化 */
+        input[type=range] {
+          -webkit-appearance: none;
+          background: transparent;
+        }
+        input[type=range]::-webkit-slider-runnable-track {
+          width: 100%;
+          height: 2px;
+          background: #3d3d38;
+          border-radius: 1px;
+        }
+        input[type=range]::-webkit-slider-thumb {
+          -webkit-appearance: none;
+          height: 10px;
+          width: 10px;
+          border-radius: 50%;
+          background: #ff8c00;
+          cursor: pointer;
+          margin-top: -4px;
+        }
+      `}} />
+    </div>
+  );
+};
+
+export default App;

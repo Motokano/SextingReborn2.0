@@ -259,8 +259,8 @@
     }
 
     /**
-     * 基本拳脚（unarmed_simple）：技能等级威力倍数 Base(L)，参与 W技 = Base(L)×(1+R招)×…
-     * L=1 → mult_at_1（默认 1），L=模板满级 → mult_at_max（默认 2）；t=(L-1)/(cap-1) 上 smoothstep，返回保留两位小数。
+     * 基本拳脚（unarmed_simple）与兵器（weapon_simple）：技能等级威力倍数 Base(L)。
+     * L=1 → mult_at_1，L=模板满级 → mult_at_max；t=(L-1)/(cap-1) 线性插值；weapon_simple 缺省常数时回落徒手常数。
      * @param {object} [character] 未使用；保留签名便于调用方统一传角色
      */
     function getBasePower(skillId, level, character) {
@@ -271,20 +271,30 @@
         var cap = getTemplateMaxLevel(skillId);
         level = Math.max(1, Math.min(cap, raw));
         var curve = sk.base_power_curve;
-        if (curve === 'unarmed_simple') {
+        if (curve === 'unarmed_simple' || curve === 'weapon_simple') {
             var c = config.constants || {};
-            var mult1 = c.base_power_unarmed_mult_at_1;
-            if (mult1 == null || !isFinite(Number(mult1))) mult1 = 1;
-            var multMax = c.base_power_unarmed_mult_at_max;
-            if (multMax == null || !isFinite(Number(multMax))) multMax = 2;
-            mult1 = Number(mult1);
-            multMax = Number(multMax);
+            var isWeapon = curve === 'weapon_simple';
+            var mult1 = isWeapon
+                ? (c.base_power_weapon_mult_at_1 != null && isFinite(Number(c.base_power_weapon_mult_at_1))
+                    ? Number(c.base_power_weapon_mult_at_1)
+                    : (c.base_power_unarmed_mult_at_1 != null && isFinite(Number(c.base_power_unarmed_mult_at_1))
+                        ? Number(c.base_power_unarmed_mult_at_1) : 1))
+                : (c.base_power_unarmed_mult_at_1 != null && isFinite(Number(c.base_power_unarmed_mult_at_1))
+                    ? Number(c.base_power_unarmed_mult_at_1) : 1);
+            var multMax = isWeapon
+                ? (c.base_power_weapon_mult_at_max != null && isFinite(Number(c.base_power_weapon_mult_at_max))
+                    ? Number(c.base_power_weapon_mult_at_max)
+                    : (c.base_power_unarmed_mult_at_max != null && isFinite(Number(c.base_power_unarmed_mult_at_max))
+                        ? Number(c.base_power_unarmed_mult_at_max) : 3.5))
+                : (c.base_power_unarmed_mult_at_max != null && isFinite(Number(c.base_power_unarmed_mult_at_max))
+                    ? Number(c.base_power_unarmed_mult_at_max) : 3.5);
+            if (!isFinite(mult1) || mult1 <= 0) mult1 = 1;
+            if (!isFinite(multMax) || multMax <= 0) multMax = 3.5;
             var denom = cap > 1 ? (cap - 1) : 1;
             var t = cap > 1 ? (level - 1) / denom : 0;
             if (t < 0) t = 0;
             if (t > 1) t = 1;
-            var s = t * t * (3 - 2 * t);
-            var mult = mult1 + (multMax - mult1) * s;
+            var mult = mult1 + (multMax - mult1) * t;
             return Math.round(mult * 100) / 100;
         }
         return 0;

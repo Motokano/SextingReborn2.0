@@ -1,0 +1,5 @@
+id,sn,placeholder_name,fn_before,fn,category,sub_category,weight,stack_limit,quality,tags,source,production_lines,spoilage_ticks,price_class,volatility,region_restrict,base_value,edible,edible_buff_id,usable,use_buff_id,fuel_points,cooking_ingredient,pharmacy_ingredient,info_module_set_id,fert_c,fert_n
+compost_matrix_grade_low,腐熟基质·散,散碎腐料,摸起来干散，颗粒粗细不均，还有点臭的土块。,触感松散的腐熟半成品，可作为土壤调理基料进入后续制造链，但本身不足以替代整块种植土。,material,compost_matrix,3.0,1,,material;compost;life_farming,compost,compost,0,material,low,0,120,,,,,,,,,42,3
+compost_matrix_grade_mid,腐熟基质·匀,均匀腐料,颗粒大小相近，不干不湿的土块。,质地均匀的腐熟半成品，作为基质半成品，后续需经制造流程才能换成可用的特殊土壤。,material,compost_matrix,3.0,1,,material;compost;life_farming,compost,compost,0,material,low,0,180,,,,,,,,,36,3
+compost_matrix_grade_high,腐熟基质·细,细腻腐料,手感细腻绵软，气味干净的土块。,细腻度较高的腐熟半成品，适合走高级制造线去压制与配土；仍不可直接当作终局换土土料使用。,material,compost_matrix,3.0,1,,material;compost;life_farming,compost,compost,0,material,mid,0,260,,,,,,,,,30,3
+compost_matrix_batch_void,发酵废坨,失败腐块,结块发硬，气味冲鼻又杂乱。,这批发酵失控留下的残渣，几乎没有任何农用价值；不配碳氮投料格，也无法进入换土制造链。,material,compost_waste,4.0,1,,material;compost;waste;life_farming,compost,compost,0,material,low,0,10,,,,,,,,,,

@@ -1,0 +1,55 @@
+---
+description: 背包新版面板（详情模块化与负重显示）实现口径
+globs: js/scene-app.js,index.html,js/item-info-modules.js,js/character-attributes.js,js/inventory-equipment.js
+alwaysApply: false
+---
+
+# 背包新版面板（Agent 规则）
+
+当修改背包面板（`#modal-backpack`）的详情区、负重显示、或与 tooltip 的信息一致性时，遵循本规则，避免回归到旧口径。
+
+## 本轮已落地输出（摘要）
+
+- 背包 UI 已改为：顶栏 + 左侧容器 Tab + 中列物品列表 + 右列详情 + 底部装备区。
+- 右侧详情已接入 `ItemInfoModules`，显示口径与 tooltip 一致。
+- 详情区已隐藏旧 `formatItemAttributes` 兜底块（无模块时不再显示旧属性大串）。
+- 背包负重已修正为与状态栏同源：`当前负重 / 负重上限`。
+- 背包三个滚动区（列表/详情/装备）已统一滚动条样式。
+
+## 1) 详情区信息口径（强制）
+
+- `js/scene-app.js` 的 `updateBackpackPanel -> renderDetail` 必须按顺序渲染：
+  1. 名称
+  2. 描述
+  3. 模块化信息（`ItemInfoModules.renderTooltipModulesHtml`）
+- 禁止在详情区恢复默认属性拼接（如 `formatItemAttributes` 大段文本）作为并行真相。
+- 模块渲染参数口径：
+  - `itemId: picked.item.item_id`
+  - `tpl: disp.tpl`
+  - `character: char`
+
+## 2) tooltip 与背包详情一致性（强制）
+
+- tooltip 入口仍是 `buildItemTooltipHtmlForTemplate`，默认 `名称 + 描述 + modules`。
+- 背包详情与 tooltip 必须共享同一模块 API（`ItemInfoModules.renderTooltipModulesHtml`）。
+- 允许样式不同，但展示字段口径必须一致。
+
+## 3) 负重显示口径（强制）
+
+- 背包顶栏 `#backpack-carry` 必须使用：
+  - 当前负重：`InventoryEquipment.getCurrentCarryWeight()`
+  - 负重上限：`CharacterAttributes.getCarryCapacity()`
+- 文案前缀统一复用 `ui('status.label.carry')`。
+- 禁止使用不存在/未导出的接口（如 `CharacterAttributes.getDerivedStats()`）读取负重上限。
+
+## 4) 样式与布局约束
+
+- 详情与装备区必须各自可滚动，不得互相覆盖。
+- `#backpack-detail` 内模块样式复用 tooltip 的 `tooltip-modules / tooltip-module-*` 语义类，避免重复命名造成样式分叉。
+- 修改布局时保留 `bp-equip-panel` 的独立滚动，不得让装备区挤压详情区到不可用。
+
+## 5) 禁止事项
+
+- 禁止在背包详情恢复“默认 attrs 大串 + 模块”双轨并行展示（会造成重复信息）。
+- 禁止背包负重与状态栏负重使用不同计算口径。
+- 禁止为同一信息再造第三套渲染入口（应复用 SceneApp 统一函数）。
