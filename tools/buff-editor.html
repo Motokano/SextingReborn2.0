@@ -371,6 +371,14 @@
           </div>
         </div>
 
+        <div class="field">
+          <label>基础信息：根级扩展字段（JSON 对象，可选）</label>
+          <div>
+            <textarea id="f-root-extra-json" class="mono" rows="4" placeholder='例如：{ "survival_listener": { "group_id": "survival_thirst", "attribute": "thirst", "range": { "min": 0.1, "max": 40.0, "include_min": true, "include_max": true } } }'></textarea>
+            <div class="mini">用于同一管线下的扩展配表（如生存监听区间、互斥组、离开即清策略等）。本编辑器会保留并回写这些根级字段。</div>
+          </div>
+        </div>
+
         <div class="grid2">
           <div class="field" style="margin:0;">
             <label>durationTicks（持续 tick）</label>
@@ -494,6 +502,7 @@
               <button type="button" id="btn-preset-dialogue">预设：对话触发</button>
               <button type="button" id="btn-preset-env">预设：环境触发</button>
               <button type="button" id="btn-preset-buff-watch">预设：Buff监听触发</button>
+              <button type="button" id="btn-preset-survival-listener">预设：生存监听Buff</button>
             </div>
             <div class="mini">留空表示不过滤（任何 event_name 都可能触发）。建议尽量填写，避免误触发。</div>
           </div>
@@ -681,6 +690,7 @@
         fJtFoodCategory: $('f-jt-food-category'),
         fJtFoodItem: $('f-jt-food-item'),
         fJtExtraJson: $('f-jt-extra-json'),
+        fRootExtraJson: $('f-root-extra-json'),
         fDuration: $('f-duration'),
         fMaxStacks: $('f-max-stacks'),
         fAddStacks: $('f-add-stacks'),
@@ -713,6 +723,7 @@
         btnPresetDialogue: $('btn-preset-dialogue'),
         btnPresetEnv: $('btn-preset-env'),
         btnPresetBuffWatch: $('btn-preset-buff-watch'),
+        btnPresetSurvivalListener: $('btn-preset-survival-listener'),
 
         selEffectTemplate: $('sel-effect-template'),
         btnEffectTemplateInsert: $('btn-effect-template-insert'),
@@ -736,6 +747,56 @@
       var watchEntryIndex = -1;
 
       function deepClone(obj){ return JSON.parse(JSON.stringify(obj)); }
+
+      var BUFF_KNOWN_ROOT_KEYS = {
+        buff_id: true,
+        name: true,
+        desc: true,
+        durationTicks: true,
+        maxStacks: true,
+        stacksAddOnApply: true,
+        priority: true,
+        listenerSide: true,
+        consumeMode: true,
+        consumeLayersFixed: true,
+        applyMode: true,
+        triggerEventKind: true,
+        triggerEventName: true,
+        triggerTags: true,
+        effects: true,
+        expire_effects: true,
+        judgment_tags: true
+      };
+
+      function getRootExtraFromBuff(b){
+        var out = {};
+        if (!b || typeof b !== 'object') return out;
+        var keys = Object.keys(b);
+        for (var i = 0; i < keys.length; i++){
+          var k = keys[i];
+          if (!BUFF_KNOWN_ROOT_KEYS[k]) out[k] = b[k];
+        }
+        return out;
+      }
+
+      function parseRootExtraJsonField(raw){
+        var s = String(raw || '').trim();
+        if (!s) return {};
+        var obj;
+        try{
+          obj = JSON.parse(s);
+        }catch(e){
+          throw new Error('根级扩展字段 JSON 解析失败：' + (e && e.message ? e.message : e));
+        }
+        if (!obj || typeof obj !== 'object' || Array.isArray(obj)){
+          throw new Error('根级扩展字段必须是 JSON 对象');
+        }
+        var keys = Object.keys(obj);
+        for (var i = 0; i < keys.length; i++){
+          if (BUFF_KNOWN_ROOT_KEYS[keys[i]]) throw new Error('根级扩展字段不允许覆盖内置字段：' + keys[i]);
+        }
+        return obj;
+      }
 
       /** 用于展示：从 judgment_tags 中去掉食物两键，其余序列化为「其它键」JSON */
       function judgmentTagsToExtraJson(jt){
@@ -1328,6 +1389,7 @@
           if (el.fJtFoodCategory) el.fJtFoodCategory.value = '';
           if (el.fJtFoodItem) el.fJtFoodItem.value = '';
           if (el.fJtExtraJson) el.fJtExtraJson.value = '';
+          if (el.fRootExtraJson) el.fRootExtraJson.value = '';
           el.fDuration.value = 0;
           el.fMaxStacks.value = 1;
           el.fAddStacks.value = 1;
@@ -1353,6 +1415,10 @@
         if (el.fJtFoodCategory) el.fJtFoodCategory.value = jt.food_category != null ? String(jt.food_category) : '';
         if (el.fJtFoodItem) el.fJtFoodItem.value = jt.food_item != null ? String(jt.food_item) : '';
         if (el.fJtExtraJson) el.fJtExtraJson.value = judgmentTagsToExtraJson(jt);
+        if (el.fRootExtraJson) {
+          var rootExtra = getRootExtraFromBuff(b);
+          el.fRootExtraJson.value = Object.keys(rootExtra).length ? JSON.stringify(rootExtra, null, 2) : '';
+        }
         el.fDuration.value = (b.durationTicks|0);
         el.fMaxStacks.value = (b.maxStacks|0) || 1;
         el.fAddStacks.value = (b.stacksAddOnApply|0);
@@ -1397,6 +1463,11 @@
         if (jtCat) jtBase.food_category = jtCat;
         if (jtItem) jtBase.food_item = jtItem;
         if (Object.keys(jtBase).length) b.judgment_tags = jtBase;
+        if (el.fRootExtraJson){
+          var extraRoot = parseRootExtraJsonField(el.fRootExtraJson.value);
+          var extraKeys = Object.keys(extraRoot);
+          for (var xr = 0; xr < extraKeys.length; xr++) b[extraKeys[xr]] = extraRoot[extraKeys[xr]];
+        }
 
         var rawEffects = String(el.fEffects.value || '').trim();
         if (rawEffects){
@@ -1901,6 +1972,18 @@
           el.fEventName.value = 'buff_state_changed';
           el.fTags.value = 'buff,player,state';
           showOk('已应用预设：Buff监听触发。');
+        } else if (kind === 'survival_listener') {
+          el.fDuration.value = 0;
+          el.fMaxStacks.value = 1;
+          el.fAddStacks.value = 1;
+          el.fListenerSide.value = 'self';
+          el.fConsumeMode.value = 'always';
+          el.fConsumeFixed.value = 0;
+          el.fApplyMode.value = 'always_apply';
+          el.fEventKind.value = 'world';
+          el.fEventName.value = 'attribute_changed,tick_advanced';
+          el.fTags.value = 'attribute,player,tick';
+          showOk('已应用预设：生存监听Buff。请在“根级扩展字段”填写 survival_listener 区间/互斥组。');
         }
         scheduleDraft();
       }
@@ -2015,6 +2098,7 @@
       el.btnPresetDialogue.addEventListener('click', function(){ applyEventPreset('dialogue'); });
       el.btnPresetEnv.addEventListener('click', function(){ applyEventPreset('env'); });
       el.btnPresetBuffWatch.addEventListener('click', function(){ applyEventPreset('buff_watch'); });
+      if (el.btnPresetSurvivalListener) el.btnPresetSurvivalListener.addEventListener('click', function(){ applyEventPreset('survival_listener'); });
       el.btnEffectsClear.addEventListener('click', function(){ el.fEffects.value=''; showOk('已清空 effects。'); });
       el.btnWatchBuildJson.addEventListener('click', function(){
         clearMsg();

@@ -1022,6 +1022,881 @@
         }
       ],
       "expire_effects": []
+    },
+    {
+      "buff_id": "survival_satiety_starving_zero",
+      "name": "饥肠辘辘",
+      "desc": "饱食=0：进入死亡倒计时并参与体重下降计时。",
+      "durationTicks": 1,
+      "maxStacks": 1,
+      "stacksAddOnApply": 1,
+      "priority": 92,
+      "listenerSide": "self",
+      "consumeMode": "always",
+      "consumeLayersFixed": 0,
+      "applyMode": "always_apply",
+      "triggerEventKind": [
+        "world"
+      ],
+      "triggerEventName": [
+        "tick_advanced"
+      ],
+      "triggerTags": [
+        "time",
+        "tick"
+      ],
+      "effects": [],
+      "expire_effects": [],
+      "survival_listener": {
+        "group_id": "survival_satiety",
+        "attribute": "satiety",
+        "range": { "min": 0, "max": 0, "include_min": true, "include_max": true }
+      }
+    },
+    {
+      "buff_id": "survival_satiety_extreme_hunger",
+      "name": "极度饥饿",
+      "desc": "饱食 0.1~9.9：体力/底气自然恢复显著下降。",
+      "durationTicks": 1,
+      "maxStacks": 1,
+      "stacksAddOnApply": 1,
+      "priority": 92,
+      "listenerSide": "self",
+      "consumeMode": "always",
+      "consumeLayersFixed": 0,
+      "applyMode": "always_apply",
+      "triggerEventKind": [
+        "world"
+      ],
+      "triggerEventName": [
+        "tick_advanced"
+      ],
+      "triggerTags": [
+        "time",
+        "tick"
+      ],
+      "effects": [],
+      "expire_effects": [],
+      "survival_listener": {
+        "group_id": "survival_satiety",
+        "attribute": "satiety",
+        "range": { "min": 0.1, "max": 10, "include_min": true, "include_max": false }
+      }
+    },
+    {
+      "buff_id": "survival_satiety_heavy_hunger",
+      "name": "重度饥饿",
+      "desc": "饱食 10~29.9：体力/底气自然恢复下降并参与体重下降计时。",
+      "durationTicks": 1,
+      "maxStacks": 1,
+      "stacksAddOnApply": 1,
+      "priority": 92,
+      "listenerSide": "self",
+      "consumeMode": "always",
+      "consumeLayersFixed": 0,
+      "applyMode": "always_apply",
+      "triggerEventKind": [
+        "world"
+      ],
+      "triggerEventName": [
+        "tick_advanced"
+      ],
+      "triggerTags": [
+        "time",
+        "tick"
+      ],
+      "effects": [],
+      "expire_effects": [],
+      "survival_listener": {
+        "group_id": "survival_satiety",
+        "attribute": "satiety",
+        "range": { "min": 10, "max": 30, "include_min": true, "include_max": false }
+      }
+    },
+    {
+      "buff_id": "survival_satiety_light_hunger",
+      "name": "轻度饥饿",
+      "desc": "饱食 30~59.9：体力自然恢复轻度下降。",
+      "durationTicks": 1,
+      "maxStacks": 1,
+      "stacksAddOnApply": 1,
+      "priority": 92,
+      "listenerSide": "self",
+      "consumeMode": "always",
+      "consumeLayersFixed": 0,
+      "applyMode": "always_apply",
+      "triggerEventKind": [
+        "world"
+      ],
+      "triggerEventName": [
+        "tick_advanced"
+      ],
+      "triggerTags": [
+        "time",
+        "tick"
+      ],
+      "effects": [],
+      "expire_effects": [],
+      "survival_listener": {
+        "group_id": "survival_satiety",
+        "attribute": "satiety",
+        "range": { "min": 30, "max": 60, "include_min": true, "include_max": false }
+      }
+    },
+    {
+      "buff_id": "survival_satiety_satiated",
+      "name": "充分进食",
+      "desc": "饱食 60~100：体力自然恢复提升。",
+      "durationTicks": 1,
+      "maxStacks": 1,
+      "stacksAddOnApply": 1,
+      "priority": 92,
+      "listenerSide": "self",
+      "consumeMode": "always",
+      "consumeLayersFixed": 0,
+      "applyMode": "always_apply",
+      "triggerEventKind": [
+        "world"
+      ],
+      "triggerEventName": [
+        "tick_advanced"
+      ],
+      "triggerTags": [
+        "time",
+        "tick"
+      ],
+      "effects": [],
+      "expire_effects": [],
+      "survival_listener": {
+        "group_id": "survival_satiety",
+        "attribute": "satiety",
+        "range": { "min": 60, "max": 100.1, "include_min": true, "include_max": false }
+      }
+    },
+    {
+      "buff_id": "survival_satiety_overeat",
+      "name": "吃太多",
+      "desc": "饱食 100.1~120：战斗出招速度下降。",
+      "durationTicks": 1,
+      "maxStacks": 1,
+      "stacksAddOnApply": 1,
+      "priority": 92,
+      "listenerSide": "self",
+      "consumeMode": "always",
+      "consumeLayersFixed": 0,
+      "applyMode": "always_apply",
+      "triggerEventKind": [
+        "world"
+      ],
+      "triggerEventName": [
+        "tick_advanced"
+      ],
+      "triggerTags": [
+        "time",
+        "tick"
+      ],
+      "effects": [],
+      "expire_effects": [],
+      "survival_listener": {
+        "group_id": "survival_satiety",
+        "attribute": "satiety",
+        "range": { "min": 100.1, "max": 120.1, "include_min": true, "include_max": false }
+      }
+    },
+    {
+      "buff_id": "survival_satiety_stuffed",
+      "name": "吃撑了",
+      "desc": "饱食 120.1~150：战斗出招速度大幅下降并参与体重增长计时。",
+      "durationTicks": 1,
+      "maxStacks": 1,
+      "stacksAddOnApply": 1,
+      "priority": 92,
+      "listenerSide": "self",
+      "consumeMode": "always",
+      "consumeLayersFixed": 0,
+      "applyMode": "always_apply",
+      "triggerEventKind": [
+        "world"
+      ],
+      "triggerEventName": [
+        "tick_advanced"
+      ],
+      "triggerTags": [
+        "time",
+        "tick"
+      ],
+      "effects": [],
+      "expire_effects": [],
+      "survival_listener": {
+        "group_id": "survival_satiety",
+        "attribute": "satiety",
+        "range": { "min": 120.1, "max": 150.1, "include_min": true, "include_max": false }
+      }
+    },
+    {
+      "buff_id": "survival_thirst_dehydrated_zero",
+      "name": "口干舌燥",
+      "desc": "饮水=0：底气恢复严重下降，并进入脱水死亡倒计时。",
+      "durationTicks": 1,
+      "maxStacks": 1,
+      "stacksAddOnApply": 1,
+      "priority": 92,
+      "listenerSide": "self",
+      "consumeMode": "always",
+      "consumeLayersFixed": 0,
+      "applyMode": "always_apply",
+      "triggerEventKind": [
+        "world"
+      ],
+      "triggerEventName": [
+        "tick_advanced"
+      ],
+      "triggerTags": [
+        "time",
+        "tick"
+      ],
+      "effects": [],
+      "expire_effects": [],
+      "survival_listener": {
+        "group_id": "survival_thirst",
+        "attribute": "thirst",
+        "range": { "min": 0, "max": 0, "include_min": true, "include_max": true }
+      }
+    },
+    {
+      "buff_id": "survival_thirst_dry",
+      "name": "口渴",
+      "desc": "饮水 0.1~40：底气自然恢复下降。",
+      "durationTicks": 1,
+      "maxStacks": 1,
+      "stacksAddOnApply": 1,
+      "priority": 92,
+      "listenerSide": "self",
+      "consumeMode": "always",
+      "consumeLayersFixed": 0,
+      "applyMode": "always_apply",
+      "triggerEventKind": [
+        "world"
+      ],
+      "triggerEventName": [
+        "tick_advanced"
+      ],
+      "triggerTags": [
+        "time",
+        "tick"
+      ],
+      "effects": [],
+      "expire_effects": [],
+      "survival_listener": {
+        "group_id": "survival_thirst",
+        "attribute": "thirst",
+        "range": { "min": 0.1, "max": 40.1, "include_min": true, "include_max": false }
+      }
+    },
+    {
+      "buff_id": "survival_thirst_hydrated",
+      "name": "饮水充足",
+      "desc": "饮水 40.1~100：底气自然恢复提升。",
+      "durationTicks": 1,
+      "maxStacks": 1,
+      "stacksAddOnApply": 1,
+      "priority": 92,
+      "listenerSide": "self",
+      "consumeMode": "always",
+      "consumeLayersFixed": 0,
+      "applyMode": "always_apply",
+      "triggerEventKind": [
+        "world"
+      ],
+      "triggerEventName": [
+        "tick_advanced"
+      ],
+      "triggerTags": [
+        "time",
+        "tick"
+      ],
+      "effects": [],
+      "expire_effects": [],
+      "survival_listener": {
+        "group_id": "survival_thirst",
+        "attribute": "thirst",
+        "range": { "min": 40.1, "max": 100.1, "include_min": true, "include_max": false }
+      }
+    },
+    {
+      "buff_id": "survival_nutrition_malnutrition",
+      "name": "营养不良",
+      "desc": "营养监听状态：底气自然恢复惩罚。",
+      "durationTicks": 1,
+      "maxStacks": 1,
+      "stacksAddOnApply": 1,
+      "priority": 92,
+      "listenerSide": "self",
+      "consumeMode": "always",
+      "consumeLayersFixed": 0,
+      "applyMode": "always_apply",
+      "triggerEventKind": [
+        "world"
+      ],
+      "triggerEventName": [
+        "tick_advanced"
+      ],
+      "triggerTags": [
+        "time",
+        "tick"
+      ],
+      "effects": [],
+      "expire_effects": [],
+      "survival_listener": {
+        "group_id": "survival_nutrition",
+        "attribute": "nutrition",
+        "range": { "min": 0, "max": 11, "include_min": true, "include_max": false }
+      }
+    },
+    {
+      "buff_id": "survival_nutrition_normal",
+      "name": "营养正常",
+      "desc": "营养监听状态：中性占位，不施加额外效果。",
+      "durationTicks": 1,
+      "maxStacks": 1,
+      "stacksAddOnApply": 1,
+      "priority": 92,
+      "listenerSide": "self",
+      "consumeMode": "always",
+      "consumeLayersFixed": 0,
+      "applyMode": "always_apply",
+      "triggerEventKind": [
+        "world"
+      ],
+      "triggerEventName": [
+        "tick_advanced"
+      ],
+      "triggerTags": [
+        "time",
+        "tick"
+      ],
+      "effects": [],
+      "expire_effects": [],
+      "survival_listener": {
+        "group_id": "survival_nutrition",
+        "attribute": "nutrition",
+        "range": { "min": 11, "max": 31, "include_min": true, "include_max": false }
+      }
+    },
+    {
+      "buff_id": "survival_nutrition_abundant",
+      "name": "营养充沛",
+      "desc": "营养监听状态：精力转潜能效率增益（由自修/学习链路读取）。",
+      "durationTicks": 1,
+      "maxStacks": 1,
+      "stacksAddOnApply": 1,
+      "priority": 92,
+      "listenerSide": "self",
+      "consumeMode": "always",
+      "consumeLayersFixed": 0,
+      "applyMode": "always_apply",
+      "triggerEventKind": [
+        "world"
+      ],
+      "triggerEventName": [
+        "tick_advanced"
+      ],
+      "triggerTags": [
+        "time",
+        "tick"
+      ],
+      "effects": [],
+      "expire_effects": [],
+      "survival_listener": {
+        "group_id": "survival_nutrition",
+        "attribute": "nutrition",
+        "range": { "min": 31, "max": 71, "include_min": true, "include_max": false }
+      }
+    },
+    {
+      "buff_id": "survival_nutrition_peak",
+      "name": "营养极境",
+      "desc": "营养监听状态：底气上限加成。",
+      "durationTicks": 1,
+      "maxStacks": 1,
+      "stacksAddOnApply": 1,
+      "priority": 92,
+      "listenerSide": "self",
+      "consumeMode": "always",
+      "consumeLayersFixed": 0,
+      "applyMode": "always_apply",
+      "triggerEventKind": [
+        "world"
+      ],
+      "triggerEventName": [
+        "tick_advanced"
+      ],
+      "triggerTags": [
+        "time",
+        "tick"
+      ],
+      "effects": [],
+      "expire_effects": [],
+      "survival_listener": {
+        "group_id": "survival_nutrition",
+        "attribute": "nutrition",
+        "range": { "min": 71, "max": 101, "include_min": true, "include_max": false }
+      }
+    },
+    {
+      "buff_id": "survival_mood_low",
+      "name": "心灰意冷",
+      "desc": "坏心情：全制作配方成功率 -15%。",
+      "durationTicks": 1,
+      "maxStacks": 1,
+      "stacksAddOnApply": 1,
+      "priority": 92,
+      "listenerSide": "self",
+      "consumeMode": "always",
+      "consumeLayersFixed": 0,
+      "applyMode": "always_apply",
+      "triggerEventKind": [
+        "world"
+      ],
+      "triggerEventName": [
+        "tick_advanced"
+      ],
+      "triggerTags": [
+        "time",
+        "tick"
+      ],
+      "effects": [
+        {
+          "type": "production_success_rate_delta_percent",
+          "params": {
+            "delta_percent": -15
+          }
+        }
+      ],
+      "expire_effects": [],
+      "survival_listener": {
+        "group_id": "survival_mood",
+        "attribute": "mood",
+        "range": { "type": "low" }
+      }
+    },
+    {
+      "buff_id": "survival_mood_high",
+      "name": "心情舒畅",
+      "desc": "好心情：全制作配方成功率 +10%，战斗获得潜能 +20%，战斗获得实战经验 +20%。",
+      "durationTicks": 1,
+      "maxStacks": 1,
+      "stacksAddOnApply": 1,
+      "priority": 92,
+      "listenerSide": "self",
+      "consumeMode": "always",
+      "consumeLayersFixed": 0,
+      "applyMode": "always_apply",
+      "triggerEventKind": [
+        "world"
+      ],
+      "triggerEventName": [
+        "tick_advanced"
+      ],
+      "triggerTags": [
+        "time",
+        "tick"
+      ],
+      "effects": [
+        {
+          "type": "production_success_rate_delta_percent",
+          "params": {
+            "delta_percent": 10
+          }
+        },
+        {
+          "type": "battle_potential_gain_multiplier",
+          "params": {
+            "multiplier": 1.2
+          }
+        },
+        {
+          "type": "battle_combat_experience_gain_multiplier",
+          "params": {
+            "multiplier": 1.2
+          }
+        }
+      ],
+      "expire_effects": [],
+      "survival_listener": {
+        "group_id": "survival_mood",
+        "attribute": "mood",
+        "range": { "type": "high" }
+      }
+    },
+    {
+      "buff_id": "survival_temp_extreme_cold",
+      "name": "极寒失温",
+      "desc": "处于极寒环境，体温会持续下滑。",
+      "durationTicks": 1,
+      "maxStacks": 1,
+      "stacksAddOnApply": 1,
+      "priority": 93,
+      "listenerSide": "self",
+      "consumeMode": "always",
+      "consumeLayersFixed": 0,
+      "applyMode": "always_apply",
+      "triggerEventKind": [
+        "world"
+      ],
+      "triggerEventName": [
+        "tick_advanced"
+      ],
+      "triggerTags": [
+        "time",
+        "tick"
+      ],
+      "effects": [],
+      "expire_effects": []
+    },
+    {
+      "buff_id": "survival_temp_extreme_hot",
+      "name": "极热升温",
+      "desc": "处于极热环境，体温会持续升高。",
+      "durationTicks": 1,
+      "maxStacks": 1,
+      "stacksAddOnApply": 1,
+      "priority": 93,
+      "listenerSide": "self",
+      "consumeMode": "always",
+      "consumeLayersFixed": 0,
+      "applyMode": "always_apply",
+      "triggerEventKind": [
+        "world"
+      ],
+      "triggerEventName": [
+        "tick_advanced"
+      ],
+      "triggerTags": [
+        "time",
+        "tick"
+      ],
+      "effects": [],
+      "expire_effects": []
+    },
+    {
+      "buff_id": "survival_dirty_messy",
+      "name": "邋里邋遢",
+      "desc": "肮脏度过高：无法与 NPC 互动。",
+      "durationTicks": 1,
+      "maxStacks": 1,
+      "stacksAddOnApply": 1,
+      "priority": 92,
+      "listenerSide": "self",
+      "consumeMode": "always",
+      "consumeLayersFixed": 0,
+      "applyMode": "always_apply",
+      "triggerEventKind": [
+        "world"
+      ],
+      "triggerEventName": [
+        "tick_advanced"
+      ],
+      "triggerTags": [
+        "time",
+        "tick"
+      ],
+      "effects": [],
+      "expire_effects": []
+    },
+    {
+      "buff_id": "survival_dirty_clean_refreshing",
+      "name": "干净清爽",
+      "desc": "肮脏度较低：每 tick 心情 +5。",
+      "durationTicks": 1,
+      "maxStacks": 1,
+      "stacksAddOnApply": 1,
+      "priority": 92,
+      "listenerSide": "self",
+      "consumeMode": "always",
+      "consumeLayersFixed": 0,
+      "applyMode": "always_apply",
+      "triggerEventKind": [
+        "world"
+      ],
+      "triggerEventName": [
+        "tick_advanced"
+      ],
+      "triggerTags": [
+        "time",
+        "tick"
+      ],
+      "effects": [
+        {
+          "type": "survival_delta",
+          "params": {
+            "mood": 5
+          }
+        }
+      ],
+      "expire_effects": []
+    },
+    {
+      "buff_id": "survival_stamina_exhausted",
+      "name": "筋疲力尽",
+      "desc": "体力为 0 的疲劳状态：仅用于门禁 stamina_cost>0 的动作。",
+      "durationTicks": 1,
+      "maxStacks": 1,
+      "stacksAddOnApply": 1,
+      "priority": 90,
+      "listenerSide": "self",
+      "consumeMode": "always",
+      "consumeLayersFixed": 0,
+      "applyMode": "always_apply",
+      "triggerEventKind": [
+        "world"
+      ],
+      "triggerEventName": [
+        "tick_advanced"
+      ],
+      "triggerTags": [
+        "time",
+        "tick"
+      ],
+      "effects": [],
+      "expire_effects": []
+    },
+    {
+      "buff_id": "survival_energy_depleted",
+      "name": "精力涣散",
+      "desc": "精力为 0 的状态。若在该状态下遭受扣除精力的攻击，将立即死亡。",
+      "durationTicks": 1,
+      "maxStacks": 1,
+      "stacksAddOnApply": 1,
+      "priority": 95,
+      "listenerSide": "self",
+      "consumeMode": "always",
+      "consumeLayersFixed": 0,
+      "applyMode": "always_apply",
+      "triggerEventKind": [
+        "world"
+      ],
+      "triggerEventName": [
+        "tick_advanced"
+      ],
+      "triggerTags": [
+        "time",
+        "tick"
+      ],
+      "effects": [],
+      "expire_effects": []
+    },
+    {
+      "buff_id": "survival_coma",
+      "name": "昏迷",
+      "desc": "昏迷中：期间无法移动、无法互动。",
+      "durationTicks": 10,
+      "maxStacks": 1,
+      "stacksAddOnApply": 1,
+      "priority": 100,
+      "listenerSide": "self",
+      "consumeMode": "always",
+      "consumeLayersFixed": 0,
+      "applyMode": "always_apply",
+      "triggerEventKind": [
+        "world"
+      ],
+      "triggerEventName": [
+        "tick_advanced"
+      ],
+      "triggerTags": [
+        "time",
+        "tick"
+      ],
+      "effects": [
+        {
+          "type": "disable_movement",
+          "params": {}
+        }
+      ],
+      "expire_effects": []
+    },
+    {
+      "buff_id": "survival_bmi_underweight",
+      "name": "BMI-偏瘦",
+      "desc": "偏瘦：招式速度 +5%；受到伤害 +5%（最终伤害阶段）。",
+      "durationTicks": 1,
+      "maxStacks": 1,
+      "stacksAddOnApply": 1,
+      "priority": 92,
+      "listenerSide": "self",
+      "consumeMode": "always",
+      "consumeLayersFixed": 0,
+      "applyMode": "always_apply",
+      "triggerEventKind": [
+        "world"
+      ],
+      "triggerEventName": [
+        "tick_advanced"
+      ],
+      "triggerTags": [
+        "time",
+        "tick"
+      ],
+      "effects": [
+        {
+          "type": "battle_move_speed_multiplier",
+          "params": {
+            "multiplier": 1.05
+          }
+        },
+        {
+          "type": "battle_final_damage_taken_multiplier",
+          "params": {
+            "multiplier": 1.05
+          }
+        }
+      ],
+      "expire_effects": [],
+      "survival_listener": {
+        "group_id": "survival_bmi",
+        "attribute": "bmi",
+        "range": {
+          "type": "underweight"
+        }
+      }
+    },
+    {
+      "buff_id": "survival_bmi_normal",
+      "name": "BMI-正常",
+      "desc": "正常：五维各 +5%（按先天为基底，增量计入后天并向下取整）。",
+      "durationTicks": 1,
+      "maxStacks": 1,
+      "stacksAddOnApply": 1,
+      "priority": 92,
+      "listenerSide": "self",
+      "consumeMode": "always",
+      "consumeLayersFixed": 0,
+      "applyMode": "always_apply",
+      "triggerEventKind": [
+        "world"
+      ],
+      "triggerEventName": [
+        "tick_advanced"
+      ],
+      "triggerTags": [
+        "time",
+        "tick"
+      ],
+      "effects": [
+        {
+          "type": "add_acquired_from_congenital_percent",
+          "params": {
+            "jingu_pct": 5,
+            "flexibility_pct": 5,
+            "breath_pct": 5,
+            "dexterity_pct": 5,
+            "focus_pct": 5,
+            "rounding": "floor"
+          }
+        }
+      ],
+      "expire_effects": [],
+      "survival_listener": {
+        "group_id": "survival_bmi",
+        "attribute": "bmi",
+        "range": {
+          "type": "normal"
+        }
+      }
+    },
+    {
+      "buff_id": "survival_bmi_overweight",
+      "name": "BMI-超重",
+      "desc": "超重：招式速度 -5%；筋骨 +10%（按先天为基底，增量计入后天并向下取整）。",
+      "durationTicks": 1,
+      "maxStacks": 1,
+      "stacksAddOnApply": 1,
+      "priority": 92,
+      "listenerSide": "self",
+      "consumeMode": "always",
+      "consumeLayersFixed": 0,
+      "applyMode": "always_apply",
+      "triggerEventKind": [
+        "world"
+      ],
+      "triggerEventName": [
+        "tick_advanced"
+      ],
+      "triggerTags": [
+        "time",
+        "tick"
+      ],
+      "effects": [
+        {
+          "type": "battle_move_speed_multiplier",
+          "params": {
+            "multiplier": 0.95
+          }
+        },
+        {
+          "type": "add_acquired_from_congenital_percent",
+          "params": {
+            "jingu_pct": 10,
+            "rounding": "floor"
+          }
+        }
+      ],
+      "expire_effects": [],
+      "survival_listener": {
+        "group_id": "survival_bmi",
+        "attribute": "bmi",
+        "range": {
+          "type": "overweight"
+        }
+      }
+    },
+    {
+      "buff_id": "survival_bmi_obese",
+      "name": "BMI-肥胖",
+      "desc": "肥胖：招式速度 -40%；筋骨 +20%、柔韧 +20%（按先天为基底，增量计入后天并向下取整）。",
+      "durationTicks": 1,
+      "maxStacks": 1,
+      "stacksAddOnApply": 1,
+      "priority": 92,
+      "listenerSide": "self",
+      "consumeMode": "always",
+      "consumeLayersFixed": 0,
+      "applyMode": "always_apply",
+      "triggerEventKind": [
+        "world"
+      ],
+      "triggerEventName": [
+        "tick_advanced"
+      ],
+      "triggerTags": [
+        "time",
+        "tick"
+      ],
+      "effects": [
+        {
+          "type": "battle_move_speed_multiplier",
+          "params": {
+            "multiplier": 0.6
+          }
+        },
+        {
+          "type": "add_acquired_from_congenital_percent",
+          "params": {
+            "jingu_pct": 20,
+            "flexibility_pct": 20,
+            "rounding": "floor"
+          }
+        }
+      ],
+      "expire_effects": [],
+      "survival_listener": {
+        "group_id": "survival_bmi",
+        "attribute": "bmi",
+        "range": {
+          "type": "obese"
+        }
+      }
     }
   ]
 }

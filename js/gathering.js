@@ -31,6 +31,12 @@
         return g && g.Survival && typeof g.Survival.getStamina === 'function';
     }
 
+    function isGatherActionDisabled() {
+        var g = typeof window !== 'undefined' ? window : (typeof global !== 'undefined' ? global : null);
+        if (!g || !g.BuffSystem || typeof g.BuffSystem.hasActionDisabled !== 'function') return false;
+        return !!g.BuffSystem.hasActionDisabled('player', 'gather');
+    }
+
     function synthesizeInstancesFromLegacy(points, lootTables) {
         var defaults = {};
         var instances = {};
@@ -189,6 +195,7 @@
      * @param {string} [gatheringInstanceId] - 可选实例 id
      */
     function doGather(mapEntityId, gatheringInstanceId) {
+        if (isGatherActionDisabled()) return { success: false, message: '当前状态无法进行采集' };
         var point = resolveGatheringPoint(mapEntityId, gatheringInstanceId);
         if (!point) return { success: false, message: '未知采集点' };
 
@@ -284,6 +291,7 @@
     }
 
     function canGather(mapEntityId, gatheringInstanceId) {
+        if (isGatherActionDisabled()) return false;
         var point = resolveGatheringPoint(mapEntityId, gatheringInstanceId);
         if (!point) return false;
         if ((point.wild_interaction_category || 'gathering') !== 'gathering') return false;

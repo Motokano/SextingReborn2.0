@@ -356,6 +356,12 @@
         return global.InventoryEquipment.getSkillLevel(skillId);
     }
 
+    function getCurrentBmiValue() {
+        if (!global.Survival || typeof global.Survival.getBMI !== 'function') return null;
+        var bmi = Number(global.Survival.getBMI());
+        return isFinite(bmi) ? bmi : null;
+    }
+
     function modifySkillLevel(skillId, delta, min) {
         if (!global.InventoryEquipment || typeof global.InventoryEquipment.getState !== 'function' || typeof global.InventoryEquipment.setState !== 'function') return;
         var st = global.InventoryEquipment.getState();
@@ -432,6 +438,25 @@
         if (cond.type === 'survivalSkillLevelGte') {
             if (!isRegisteredSurvivalSkillId(cond.skillId)) return false;
             return getSkillLevel(cond.skillId) >= (parseInt(cond.level, 10) || 0);
+        }
+        if (cond.type === 'bmiGte') {
+            var bmiV0 = getCurrentBmiValue();
+            var gteV = Number(cond.value);
+            if (bmiV0 == null || !isFinite(gteV)) return false;
+            return bmiV0 >= gteV;
+        }
+        if (cond.type === 'bmiLte') {
+            var bmiV1 = getCurrentBmiValue();
+            var lteV = Number(cond.value);
+            if (bmiV1 == null || !isFinite(lteV)) return false;
+            return bmiV1 <= lteV;
+        }
+        if (cond.type === 'bmiRange') {
+            var bmiV2 = getCurrentBmiValue();
+            var minV = Number(cond.min);
+            var maxV = Number(cond.max);
+            if (bmiV2 == null || !isFinite(minV) || !isFinite(maxV) || minV > maxV) return false;
+            return bmiV2 >= minV && bmiV2 <= maxV;
         }
         if (cond.type === 'characterHiddenEpithetEquals') {
             var wantEp = String(cond.epithet || '').trim();
@@ -764,6 +789,16 @@
         ensureMenuEl();
         Promise.all([loadNpcDef(npcId)]).then(function (rows) {
             var def = rows[0];
+            if (global.SceneApp && typeof global.SceneApp.guardPlayerActionBlocked === 'function') {
+                var act = global.SceneApp.ACTION_TYPES;
+                var npcActionType = (act && act.NPC_INTERACT) ? act.NPC_INTERACT : 'npc_interact';
+                if (global.SceneApp.guardPlayerActionBlocked(npcActionType)) return;
+            }
+            if (global.BuffSystem && typeof global.BuffSystem.hasBuffByBuffId === 'function'
+                && global.BuffSystem.hasBuffByBuffId('player', 'survival_dirty_messy')) {
+                log('你现在邋里邋遢，NPC 不愿与你互动。', 'warn');
+                return;
+            }
             if (!def) {
                 log('NPC 数据未加载：' + npcId + '（检查 npc_registry.json 路径）', 'warn');
                 return;

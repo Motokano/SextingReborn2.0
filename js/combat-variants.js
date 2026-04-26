@@ -110,8 +110,118 @@
         return true;
     }
 
+    function mergeEffectParamsDeep(base, patch) {
+        if (!patch || typeof patch !== 'object') return base;
+        if (!base || typeof base !== 'object') {
+            var o = {};
+            for (var b2 in patch) { if (Object.prototype.hasOwnProperty.call(patch, b2)) o[b2] = patch[b2]; }
+            return o;
+        }
+        var out = Object.assign({}, base);
+        for (var k in patch) {
+            if (!Object.prototype.hasOwnProperty.call(patch, k)) continue;
+            if (patch[k] && typeof patch[k] === 'object' && !Array.isArray(patch[k]) && base[k] && typeof base[k] === 'object' && !Array.isArray(base[k])) {
+                out[k] = mergeEffectParamsDeep(base[k], patch[k]);
+            } else {
+                out[k] = patch[k];
+            }
+        }
+        return out;
+    }
+
+    function computeVariantEffectiveLevel(v, getSkillLevelFn) {
+        if (!v) return 0;
+        var lb = v.level_basis;
+        if (lb && typeof lb === 'object' && lb.skill_id) {
+            var sid = String(lb.skill_id);
+            var lv = (typeof getSkillLevelFn === 'function') ? (getSkillLevelFn(sid) || 0) : 0;
+            var mult = lb.level_multiplier != null ? Number(lb.level_multiplier) : (lb.multiply != null ? Number(lb.multiply) : 1);
+            var add = lb.level_add != null ? Number(lb.level_add) : (lb.add != null ? Number(lb.add) : 0);
+            if (!isFinite(mult)) mult = 1;
+            if (!isFinite(add)) add = 0;
+            return lv * mult + add;
+        }
+        if (v.source_skill_id && typeof getSkillLevelFn === 'function') {
+            return getSkillLevelFn(String(v.source_skill_id)) || 0;
+        }
+        return 0;
+    }
+
+    /**
+     * @param {object} v 变式表条目
+     * @param {{getSkillLevel:function(string):number, getMoveUsage:function(string):object, CombatSkills:object}} deps
+     */
+    function isVariantUnlocked(v, deps) {
+        if (!v) return false;
+        if (!checkVariantUnlockConditions(v, deps)) return false;
+        var scope = String(v.assist_scope || 'active_moves');
+        return scope === 'active_moves' || scope === 'parry' || scope === 'both';
+    }
+
+    function checkVariantUnlockConditions(v, deps) {
+        var getSkillLevel = deps && typeof deps.getSkillLevel === 'function' ? deps.getSkillLevel : null;
+        var getMoveUsage = deps && typeof deps.getMoveUsage === 'function' ? deps.getMoveUsage : null;
+        var CS = deps && deps.CombatSkills;
+        var uarr = v.unlock;
+        if (!uarr || !Array.isArray(uarr) || uarr.length === 0) {
+            var sid0 = v.source_skill_id ? String(v.source_skill_id) : '';
+            var minL = parseInt(v.min_source_level, 10);
+            if (!isFinite(minL)) minL = 0;
+            if (sid0 && getSkillLevel) {
+                if (getSkillLevel(sid0) < minL) return false;
+            } else if (minL > 0 && !sid0) {
+                return false;
+            }
+            return true;
+        }
+        for (var i = 0; i < uarr.length; i++) {
+            var u = uarr[i];
+            if (!u || !u.type) return false;
+            if (u.type === 'skill_level_min') {
+                var skL = String(u.skill_id || '');
+                var needL = parseInt(u.level, 10);
+                if (!isFinite(needL)) needL = 0;
+                if (!getSkillLevel || (getSkillLevel(skL) || 0) < needL) return false;
+            } else if (u.type === 'move_proficiency_ratio_min') {
+                var ssk = String(u.skill_id || '');
+                var mid = String(u.move_id || '');
+                var needR = Number(u.ratio);
+                if (!isFinite(needR)) return false;
+                var mu = getMoveUsage && ssk ? getMoveUsage(ssk) : {};
+                var cnt = (mu && mu[mid] != null) ? parseInt(mu[mid], 10) || 0 : 0;
+                var pMax = u.proficiency_max_uses;
+                var ratio = 0;
+                if (CS && typeof CS.getProficiencyRatio === 'function') {
+                    ratio = CS.getProficiencyRatio(cnt, pMax);
+                } else if (CS && typeof CS.getMoveProficiencyRatio === 'function') {
+                    ratio = CS.getMoveProficiencyRatio(cnt);
+                } else {
+                    return false;
+                }
+                if (ratio < needR) return false;
+            } else {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    function applyTemplateParamOverrides(v, paramPatch) {
+        if (!v) return null;
+        if (!paramPatch || typeof paramPatch !== 'object') {
+            return v;
+        }
+        var out = {};
+        for (var k in v) {
+            if (Object.prototype.hasOwnProperty.call(v, k)) out[k] = v[k];
+        }
+        out.variant_effect_params = mergeEffectParamsDeep(v.variant_effect_params || {}, paramPatch);
+        return out;
+    }
+
     function resolveLinearScale(v, ctx) {
-        var srcLv = Number(ctx.source_skill_level || 0);
+        var srcLv = ctx.variant_effective_level != null ? Number(ctx.variant_effective_level) : Number(ctx.source_skill_level || 0);
+        if (!isFinite(srcLv)) srcLv = 0;
         var spec = v && v.scale_params_by_source_level;
         if (!spec || typeof spec !== 'object') return 1;
         var minLv = Number(spec.min_level != null ? spec.min_level : 0);
@@ -195,17 +305,21 @@
         for (var i = 0; i < variantIds.length; i++) {
             var vid = String(variantIds[i] || '');
             if (!vid) continue;
-            var v = getVariant(vid);
-            if (!v) continue;
-            if (!scopeAllows(v.assist_scope, targetKind)) continue;
-            if (!checkMoveFilters(v, ctx)) continue;
-            var trig = v.trigger || null;
+            var v0 = getVariant(vid);
+            if (!v0) continue;
+            if (!scopeAllows(v0.assist_scope, targetKind)) continue;
+            if (!checkMoveFilters(v0, ctx)) continue;
+            var trig = v0.trigger || null;
             if (!evaluateTrigger(trig, ctx)) continue;
-            var srcLv = 0;
-            if (IE && typeof IE.getSkillLevel === 'function' && v.source_skill_id) {
-                srcLv = IE.getSkillLevel(String(v.source_skill_id)) || 0;
+            var ovr = null;
+            if (IE && typeof IE.getVariantEffectParamOverride === 'function') {
+                ovr = IE.getVariantEffectParamOverride(vid);
             }
-            ctx.source_skill_level = srcLv;
+            var v = ovr ? applyTemplateParamOverrides(v0, ovr) : v0;
+            var getSk = IE && typeof IE.getSkillLevel === 'function' ? function (sid) { return IE.getSkillLevel(String(sid || '')) || 0; } : function () { return 0; };
+            var eff = computeVariantEffectiveLevel(v, getSk);
+            ctx.variant_effective_level = eff;
+            ctx.source_skill_level = eff;
             var scale = resolveLinearScale(v, ctx);
             var et = String(v.variant_effect_type || '');
             var fn = resolvers[et];
@@ -232,7 +346,14 @@
         getAllVariants: getAllVariants,
         registerVariantResolver: registerVariantResolver,
         applyToActiveContext: applyToActiveContext,
-        applyToParryContext: applyToParryContext
+        applyToParryContext: applyToParryContext,
+        isVariantUnlocked: isVariantUnlocked,
+        computeVariantEffectiveLevel: function (v) {
+            var IE = global.InventoryEquipment;
+            var g = IE && typeof IE.getSkillLevel === 'function' ? function (s) { return IE.getSkillLevel(s) || 0; } : function () { return 0; };
+            return computeVariantEffectiveLevel(v, g);
+        },
+        mergeEffectParamsForVariant: mergeEffectParamsDeep
     };
 })(typeof window !== 'undefined' ? window : this);
 

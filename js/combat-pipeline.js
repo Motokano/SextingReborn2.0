@@ -554,6 +554,15 @@
         if (ctx.forceZeroDamageByResourceInsufficient) {
             dmg = 0;
         }
+        if (dmg > 0 && global.BuffSystem && typeof global.BuffSystem.getBattleFinalDamageTakenMultiplier === 'function') {
+            var defOwnerId = null;
+            if (def.kind === 'player') defOwnerId = 'player';
+            else if (def.kind === 'enemy' && def.enemyId != null) defOwnerId = String(def.enemyId);
+            if (defOwnerId) {
+                var finalTakenMul = Number(global.BuffSystem.getBattleFinalDamageTakenMultiplier(defOwnerId)) || 1;
+                if (isFinite(finalTakenMul) && finalTakenMul > 0) dmg = dmg * finalTakenMul;
+            }
+        }
         dmg = Math.max(0, Math.floor(Number(dmg) || 0));
         ctx.finalDamage = dmg;
         if (isSimultaneousDryRun(ctx)) {

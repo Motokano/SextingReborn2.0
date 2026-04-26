@@ -24,6 +24,7 @@
     var pendingEvents = [];
     var pendingReady = { registry: false, buffs: false };
     var isEmittingBuffState = false;
+    var lastEnergyLethalTick = -1;
 
     function hasDebugEnabled() {
         try {
@@ -305,18 +306,165 @@
     }
 
     function hasMovementDisabled(ownerId) {
+        // 兼容旧 effect：disable_movement；并兼容新 effect：disable_actions(move)
+        return hasActionDisabled(ownerId, 'move');
+    }
+
+    function extractDisabledActionsFromEffect(effect) {
+        var out = {};
+        var e = effect || {};
+        var p = e.params || {};
+        if (e.type === 'disable_movement') {
+            out.move = true;
+            return out;
+        }
+        if (e.type !== 'disable_actions') return out;
+        var raw = [];
+        if (Array.isArray(p.action_types)) raw = p.action_types;
+        else if (Array.isArray(p.actions)) raw = p.actions;
+        else if (typeof p.action_type === 'string') raw = [p.action_type];
+        for (var i = 0; i < raw.length; i++) {
+            var key = String(raw[i] || '').trim().toLowerCase();
+            if (!key) continue;
+            if (key === 'movement') key = 'move';
+            out[key] = true;
+        }
+        return out;
+    }
+
+    function getDisabledActionMap(ownerId) {
         var oid = ownerId || PLAYER_OWNER_ID;
         var arr = instancesByOwner[oid] || [];
+        var out = {};
         for (var i = 0; i < arr.length; i++) {
             var inst = arr[i];
             if (!inst || !inst.template || (inst.stacks || 0) <= 0) continue;
             var effects = arrayOrEmpty(inst.template.effects);
             for (var j = 0; j < effects.length; j++) {
-                var e = effects[j] || {};
-                if (e.type === 'disable_movement') return true;
+                var m = extractDisabledActionsFromEffect(effects[j]);
+                var ks = Object.keys(m);
+                for (var k = 0; k < ks.length; k++) out[ks[k]] = true;
             }
         }
-        return false;
+        return out;
+    }
+
+    function getDisabledActions(ownerId) {
+        return Object.keys(getDisabledActionMap(ownerId));
+    }
+
+    function hasActionDisabled(ownerId, actionType) {
+        var map = getDisabledActionMap(ownerId);
+        if (actionType == null || actionType === '') return Object.keys(map).length > 0;
+        var key = String(actionType).trim().toLowerCase();
+        if (key === 'movement') key = 'move';
+        return !!map[key];
+    }
+
+    function getProductionSuccessRateDeltaPercent(ownerId) {
+        var oid = ownerId || PLAYER_OWNER_ID;
+        var arr = instancesByOwner[oid] || [];
+        var sum = 0;
+        var i, j, inst, effects, e, p, d, stacks;
+        for (i = 0; i < arr.length; i++) {
+            inst = arr[i];
+            if (!inst || !inst.template || (inst.stacks || 0) <= 0) continue;
+            effects = arrayOrEmpty(inst.template.effects);
+            stacks = Math.max(1, parseInt(inst.stacks, 10) || 1);
+            for (j = 0; j < effects.length; j++) {
+                e = effects[j] || {};
+                if (e.type !== 'production_success_rate_delta_percent') continue;
+                p = e.params || {};
+                d = safeNum(p.delta_percent, 0);
+                if (!isFinite(d) || d === 0) continue;
+                sum += d * stacks;
+            }
+        }
+        return sum;
+    }
+
+    function getBattlePotentialGainMultiplier(ownerId) {
+        var oid = ownerId || PLAYER_OWNER_ID;
+        var arr = instancesByOwner[oid] || [];
+        var mul = 1;
+        var i, j, inst, effects, e, p, m;
+        for (i = 0; i < arr.length; i++) {
+            inst = arr[i];
+            if (!inst || !inst.template || (inst.stacks || 0) <= 0) continue;
+            effects = arrayOrEmpty(inst.template.effects);
+            for (j = 0; j < effects.length; j++) {
+                e = effects[j] || {};
+                if (e.type !== 'battle_potential_gain_multiplier') continue;
+                p = e.params || {};
+                m = safeNum(p.multiplier, 1);
+                if (!isFinite(m) || m <= 0) continue;
+                mul *= m;
+            }
+        }
+        return mul;
+    }
+
+    function getBattleCombatExperienceGainMultiplier(ownerId) {
+        var oid = ownerId || PLAYER_OWNER_ID;
+        var arr = instancesByOwner[oid] || [];
+        var mul = 1;
+        var i, j, inst, effects, e, p, m;
+        for (i = 0; i < arr.length; i++) {
+            inst = arr[i];
+            if (!inst || !inst.template || (inst.stacks || 0) <= 0) continue;
+            effects = arrayOrEmpty(inst.template.effects);
+            for (j = 0; j < effects.length; j++) {
+                e = effects[j] || {};
+                if (e.type !== 'battle_combat_experience_gain_multiplier') continue;
+                p = e.params || {};
+                m = safeNum(p.multiplier, 1);
+                if (!isFinite(m) || m <= 0) continue;
+                mul *= m;
+            }
+        }
+        return mul;
+    }
+
+    function getBattleMoveSpeedMultiplier(ownerId) {
+        var oid = ownerId || PLAYER_OWNER_ID;
+        var arr = instancesByOwner[oid] || [];
+        var mul = 1;
+        var i, j, inst, effects, e, p, m;
+        for (i = 0; i < arr.length; i++) {
+            inst = arr[i];
+            if (!inst || !inst.template || (inst.stacks || 0) <= 0) continue;
+            effects = arrayOrEmpty(inst.template.effects);
+            for (j = 0; j < effects.length; j++) {
+                e = effects[j] || {};
+                if (e.type !== 'battle_move_speed_multiplier') continue;
+                p = e.params || {};
+                m = safeNum(p.multiplier, 1);
+                if (!isFinite(m) || m <= 0) continue;
+                mul *= m;
+            }
+        }
+        return mul;
+    }
+
+    function getBattleFinalDamageTakenMultiplier(ownerId) {
+        var oid = ownerId || PLAYER_OWNER_ID;
+        var arr = instancesByOwner[oid] || [];
+        var mul = 1;
+        var i, j, inst, effects, e, p, m;
+        for (i = 0; i < arr.length; i++) {
+            inst = arr[i];
+            if (!inst || !inst.template || (inst.stacks || 0) <= 0) continue;
+            effects = arrayOrEmpty(inst.template.effects);
+            for (j = 0; j < effects.length; j++) {
+                e = effects[j] || {};
+                if (e.type !== 'battle_final_damage_taken_multiplier') continue;
+                p = e.params || {};
+                m = safeNum(p.multiplier, 1);
+                if (!isFinite(m) || m <= 0) continue;
+                mul *= m;
+            }
+        }
+        return mul;
     }
 
     function registerRuntimeBuffTemplate(template) {
@@ -357,7 +505,10 @@
         }
         var nowTick = eventContext && typeof eventContext.tick === 'number' ? eventContext.tick : getTickNow();
         if (existing) {
-            existing.stacks = Math.min(tpl.maxStacks, Math.max(0, existing.stacks + tpl.stacksAddOnApply));
+            var currentStacks = Math.max(0, parseInt(existing.stacks, 10) || 0);
+            // 兼容旧存档/异常流程里的 0 层实例：重上时至少恢复到 1 层，避免 HUD 永久不显示。
+            if (currentStacks <= 0) currentStacks = 1;
+            existing.stacks = Math.min(tpl.maxStacks, Math.max(1, currentStacks + tpl.stacksAddOnApply));
             existing.expires_at_tick = nowTick + tpl.durationTicks;
             existing.template = tpl;
             debugLog('reapply ' + buffId + ' stacks=' + existing.stacks);
@@ -387,7 +538,10 @@
             var arr = instancesByOwner[owners[i]];
             for (var j = arr.length - 1; j >= 0; j--) {
                 var inst = arr[j];
-                if (inst.expires_at_tick <= tick) {
+                // 过期语义采用右开区间：[started_tick, expires_at_tick)
+                // 当 tick 恰好等于 expires_at_tick 时，仍允许该 tick 的事件链读取到实例；
+                // 仅当 tick 超过 expires_at_tick 才真正移除，避免 1tick 状态 Buff 被“同轮提前清空”。
+                if (inst.expires_at_tick < tick) {
                     applyExpireEffects(inst, tick);
                     arr.splice(j, 1);
                     changed = true;
@@ -415,7 +569,8 @@
                 inst.template = tpl;
                 if (tpl) {
                     anyTemplate = true;
-                    inst.stacks = Math.min(tpl.maxStacks, Math.max(0, toInt(inst.stacks, 1)));
+                    // Buff 实例的有效层数下限为 1；0 层实例会让状态 Buff“存在但不可见/不生效”。
+                    inst.stacks = Math.min(tpl.maxStacks, Math.max(1, toInt(inst.stacks, 1)));
                 } else {
                     inst.stacks = Math.max(0, toInt(inst.stacks, 1));
                 }
@@ -523,8 +678,9 @@
         return false;
     }
 
-    function applySurvivalDeltaParams(p) {
+    function applySurvivalDeltaParams(p, eventContext) {
         p = p && typeof p === 'object' ? p : {};
+        eventContext = eventContext && typeof eventContext === 'object' ? eventContext : {};
         var Surv = global && global.Survival;
         if (!Surv) return;
         var sat = safeNum(p.satiety, 0);
@@ -532,12 +688,49 @@
         var nut = safeNum(p.nutrition, 0);
         var sta = safeNum(p.stamina, 0);
         var ene = safeNum(p.energy, 0);
+        var mood = safeNum(p.mood, 0);
+        var lethalSwitch = true;
+        if (typeof Surv.getConfigValue === 'function') {
+            lethalSwitch = !!Surv.getConfigValue('energy_depleted_lethal_on_combat_drain', true);
+        }
+        var combatEventName = String(eventContext.event_name || '');
+        var isCombatEnergyDrainEvent = String(eventContext.event_kind || '') === 'combat'
+            && (combatEventName === 'attack_damage_applied'
+                || combatEventName === 'attack_subhit_resolved'
+                || combatEventName === 'attack_hit_roll_resolved');
+        var isCombatEnergyDrain = lethalSwitch
+            && ene < 0
+            && isCombatEnergyDrainEvent
+            && (typeof hasBuffByBuffId === 'function')
+            && hasBuffByBuffId(PLAYER_OWNER_ID, 'survival_energy_depleted');
         if (sat > 0 && typeof Surv.addSatiety === 'function') Surv.addSatiety(sat);
         if (thi > 0 && typeof Surv.addThirst === 'function') Surv.addThirst(thi);
         if (nut > 0 && typeof Surv.addNutrition === 'function') Surv.addNutrition(nut);
         if (sta < 0 && typeof Surv.consumeStamina === 'function') Surv.consumeStamina(-sta);
         if (ene > 0 && typeof Surv.addEnergy === 'function') Surv.addEnergy(ene);
         if (ene < 0 && typeof Surv.consumeEnergy === 'function') Surv.consumeEnergy(-ene);
+        if (mood !== 0 && typeof Surv.setState === 'function') {
+            var mCur = (typeof Surv.getState === 'function') ? (Surv.getState() || {}) : {};
+            Surv.setState({ mood: safeNum(mCur.mood, 0) + mood });
+        }
+        if (isCombatEnergyDrain) {
+            var tNow = Number(eventContext.tick);
+            if (!isFinite(tNow) || tNow < 0) tNow = getTickNow();
+            if (lastEnergyLethalTick !== tNow) {
+                if (typeof Surv.setDead === 'function') {
+                    Surv.setDead('energy_shatter');
+                } else if (typeof Surv.setState === 'function') {
+                    Surv.setState({ isDead: true, deathReason: 'energy_shatter' });
+                }
+                lastEnergyLethalTick = tNow;
+                if (global && global.GameLog && typeof global.GameLog.log === 'function') {
+                    var msg = (typeof global.ui === 'function')
+                        ? global.ui('survival.death.energy_shatter')
+                        : '精力涣散状态下遭受精力打击，精神崩溃死亡。';
+                    global.GameLog.log(msg, 'warn');
+                }
+            }
+        }
 
         // satiety/thirst/nutrition/stamina 正向增减（及前三者负向）统一走 setState，并由 Survival 内部 clamp。
         if ((sat < 0 || thi < 0 || nut < 0 || sta > 0) && typeof Surv.setState === 'function') {
@@ -561,7 +754,7 @@
         for (i = 0; i < ef.length; i++) {
             var e = ef[i] || {};
             if (e.type === 'survival_delta') {
-                applySurvivalDeltaParams(e.params || {});
+                applySurvivalDeltaParams(e.params || {}, null);
             }
         }
         if (global.SceneCtx && typeof global.SceneCtx.updateStatusPanel === 'function') {
@@ -583,7 +776,11 @@
                 continue;
             }
             if (type === 'survival_delta') {
-                applySurvivalDeltaParams(p);
+                applySurvivalDeltaParams(p, eventContext);
+                continue;
+            }
+            if (type === 'disable_movement' || type === 'disable_actions') {
+                // 被动型效果：由 hasMovementDisabled / hasActionDisabled 查询生效，不在此直接改状态。
                 continue;
             }
             if (type === 'apply_buff_if_has_buffs') {
@@ -629,6 +826,10 @@
 
     function recalcDerived() {
         var bonus = { jingu: 0, flexibility: 0, breath: 0, dexterity: 0, focus: 0 };
+        var caState = (global && global.CharacterAttributes && typeof global.CharacterAttributes.getState === 'function')
+            ? (global.CharacterAttributes.getState() || null)
+            : null;
+        var innate = (caState && caState.innate && typeof caState.innate === 'object') ? caState.innate : {};
         var owners = Object.keys(instancesByOwner);
         for (var i = 0; i < owners.length; i++) {
             var arr = instancesByOwner[owners[i]];
@@ -638,14 +839,30 @@
                 var effects = arrayOrEmpty(inst.template.effects);
                 for (var k = 0; k < effects.length; k++) {
                     var e = effects[k] || {};
-                    if (e.type !== 'add_stat_delta') continue;
-                    var p = e.params || {};
-                    var mul = Math.max(1, inst.stacks || 1);
-                    bonus.jingu += safeNum(p.jingu, 0) * mul;
-                    bonus.flexibility += safeNum(p.flexibility, 0) * mul;
-                    bonus.breath += safeNum(p.breath, 0) * mul;
-                    bonus.dexterity += safeNum(p.dexterity, 0) * mul;
-                    bonus.focus += safeNum(p.focus, 0) * mul;
+                    if (e.type === 'add_stat_delta') {
+                        var p = e.params || {};
+                        var mul = Math.max(1, inst.stacks || 1);
+                        bonus.jingu += safeNum(p.jingu, 0) * mul;
+                        bonus.flexibility += safeNum(p.flexibility, 0) * mul;
+                        bonus.breath += safeNum(p.breath, 0) * mul;
+                        bonus.dexterity += safeNum(p.dexterity, 0) * mul;
+                        bonus.focus += safeNum(p.focus, 0) * mul;
+                        continue;
+                    }
+                    if (e.type === 'add_acquired_from_congenital_percent') {
+                        var pp = e.params || {};
+                        var stacks = Math.max(1, parseInt(inst.stacks, 10) || 1);
+                        var jinguPct = safeNum(pp.jingu_pct, 0) * stacks;
+                        var flexibilityPct = safeNum(pp.flexibility_pct, 0) * stacks;
+                        var breathPct = safeNum(pp.breath_pct, 0) * stacks;
+                        var dexterityPct = safeNum(pp.dexterity_pct, 0) * stacks;
+                        var focusPct = safeNum(pp.focus_pct, 0) * stacks;
+                        if (jinguPct) bonus.jingu += Math.floor(safeNum(innate.jingu, 0) * jinguPct / 100);
+                        if (flexibilityPct) bonus.flexibility += Math.floor(safeNum(innate.flexibility, 0) * flexibilityPct / 100);
+                        if (breathPct) bonus.breath += Math.floor(safeNum(innate.breath, 0) * breathPct / 100);
+                        if (dexterityPct) bonus.dexterity += Math.floor(safeNum(innate.dexterity, 0) * dexterityPct / 100);
+                        if (focusPct) bonus.focus += Math.floor(safeNum(innate.focus, 0) * focusPct / 100);
+                    }
                 }
             }
         }
@@ -974,23 +1191,40 @@
         };
     }
 
+    function resyncSurvivalStateBuffsAfterReady() {
+        if (!global || !global.Survival) return;
+        var Surv = global.Survival;
+        if (typeof Surv.getState !== 'function' || typeof Surv.setState !== 'function') return;
+        try {
+            // Survival.setState 内部会统一重跑各生存段位 Buff 同步（satiety/thirst/nutrition/mood/temp/dirtyness/stamina/energy）。
+            Surv.setState(Surv.getState());
+        } catch (e) {
+            debugLog('resync survival buffs after ready failed: ' + String(e && e.message ? e.message : e));
+        }
+    }
+
     function init() {
         fetchJson('data/editor/buff_event_registry.json', function (obj) {
+            var wasReady = ready;
             registry.event_kinds = arrayOrEmpty(obj && obj.event_kinds);
             registry.event_names = arrayOrEmpty(obj && obj.event_names);
             registry.tags = arrayOrEmpty(obj && obj.tags);
             rebuildRegistrySets();
             pendingReady.registry = true;
             ready = pendingReady.registry && pendingReady.buffs;
+            if (!wasReady && ready) resyncSurvivalStateBuffsAfterReady();
             flushPendingEvents();
         }, function () {
+            var wasReady = ready;
             registry = { event_kinds: [], event_names: [], tags: [] };
             rebuildRegistrySets();
             pendingReady.registry = true;
             ready = pendingReady.registry && pendingReady.buffs;
+            if (!wasReady && ready) resyncSurvivalStateBuffsAfterReady();
             flushPendingEvents();
         });
         fetchJson('data/buffs.json', function (obj) {
+            var wasReady = ready;
             config.version = parseInt(obj && obj.version, 10) || 1;
             config.buffs = arrayOrEmpty(obj && obj.buffs).map(normalizeTemplate);
             rebuildIndexes();
@@ -998,14 +1232,17 @@
             applyPendingRestoreIfAny();
             pendingReady.buffs = true;
             ready = pendingReady.registry && pendingReady.buffs;
+            if (!wasReady && ready) resyncSurvivalStateBuffsAfterReady();
             flushPendingEvents();
         }, function () {
+            var wasReady = ready;
             config = { version: 1, buffs: [] };
             rebuildIndexes();
             loaded = true;
             applyPendingRestoreIfAny();
             pendingReady.buffs = true;
             ready = pendingReady.registry && pendingReady.buffs;
+            if (!wasReady && ready) resyncSurvivalStateBuffsAfterReady();
             flushPendingEvents();
         });
         patchHooks();
@@ -1027,6 +1264,13 @@
         },
         hasActiveSatietyDigestBuff: hasActiveSatietyDigestBuff,
         hasMovementDisabled: hasMovementDisabled,
+        hasActionDisabled: hasActionDisabled,
+        getDisabledActions: getDisabledActions,
+        getProductionSuccessRateDeltaPercent: getProductionSuccessRateDeltaPercent,
+        getBattlePotentialGainMultiplier: getBattlePotentialGainMultiplier,
+        getBattleCombatExperienceGainMultiplier: getBattleCombatExperienceGainMultiplier,
+        getBattleMoveSpeedMultiplier: getBattleMoveSpeedMultiplier,
+        getBattleFinalDamageTakenMultiplier: getBattleFinalDamageTakenMultiplier,
         registerRuntimeBuffTemplate: registerRuntimeBuffTemplate,
         removeBuffByBuffId: removeBuffByBuffId,
         triggerBuffPipeline: triggerBuffPipeline,

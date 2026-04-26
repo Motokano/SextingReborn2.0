@@ -156,13 +156,53 @@
             quick_belt: true,
             attrs: true
         },
+        /**
+         * 生存循环指标显示规则接口（默认全开）：
+         * - 值可为 boolean
+         * - 也可为函数 (survivalState, metricId) => boolean
+         */
+        survivalMetricVisibilityRules: {
+            satiety: true,
+            thirst: true,
+            mood: true,
+            nutrition: true,
+            dirtyness: true,
+            energy: true,
+            stamina: true,
+            weight: true
+        },
         /** 右上角 Buff 条（与 leftHudBlockVisibilityRules 共用 shouldShowLeftHudBlock('buff_hud')） */
         buffHudVisible: true,
         lastAttackedEnemyId: null,
+        /**
+         * 同一次 map 攻击交换内：本 tick 已作为招架承担肢登记的肢 id（与 combat-pipeline 互斥/日志一致）。
+         * `attackEnemy` 入口会 clear；`combat-pipeline` 在招架解析成功时经 recordPlayerExchangeParryLimb 累加（去重）。
+         */
+        playerExchangeParryLimbs: [],
+        /**
+         * 同一次交换内：玩家本击用于普攻的出招肢，招架承担肢时不得复用；玩家先手还击链内在玩家进攻管线后写入（见 attackEnemy）。
+         */
+        playerExchangeAttackLimb: null,
+        clearPlayerExchangeLimbLocks: function () {
+            this.playerExchangeParryLimbs = [];
+            this.playerExchangeAttackLimb = null;
+        },
+        recordPlayerExchangeParryLimb: function (limbId) {
+            if (!limbId) return;
+            if (!this.playerExchangeParryLimbs) this.playerExchangeParryLimbs = [];
+            if (this.playerExchangeParryLimbs.indexOf(limbId) < 0) {
+                this.playerExchangeParryLimbs.push(limbId);
+            }
+        },
         setLeftHudBlockVisibilityRule: function (blockId, rule) {
             if (!blockId) return;
             this.leftHudBlockVisibilityRules = this.leftHudBlockVisibilityRules || {};
             this.leftHudBlockVisibilityRules[blockId] = rule;
+        },
+        setSurvivalMetricVisibilityRule: function (metricId, rule) {
+            if (!metricId) return;
+            this.survivalMetricVisibilityRules = this.survivalMetricVisibilityRules || {};
+            this.survivalMetricVisibilityRules[String(metricId)] = rule;
         },
         shouldShowLeftHudBlock: function (blockId) {
             if (blockId === 'buff_hud') {
@@ -172,6 +212,17 @@
             var rule = rules[blockId];
             if (typeof rule === 'function') {
                 try { return !!rule(); } catch (e0) { return true; }
+            }
+            if (rule === undefined || rule === null) return true;
+            return !!rule;
+        },
+        shouldShowSurvivalMetric: function (metricId, survivalState) {
+            var key = metricId != null ? String(metricId) : '';
+            if (!key) return true;
+            var rules = this.survivalMetricVisibilityRules || {};
+            var rule = rules[key];
+            if (typeof rule === 'function') {
+                try { return !!rule(survivalState || null, key); } catch (e0) { return true; }
             }
             if (rule === undefined || rule === null) return true;
             return !!rule;
@@ -744,6 +795,23 @@
     var CREATION_ATTR_LABELS = { jingu: 'status.attr.jingu', flexibility: 'status.attr.flexibility', breath: 'status.attr.breath', dexterity: 'status.attr.dexterity', focus: 'status.attr.focus' };
     var creationInnate = { jingu: 10, flexibility: 10, breath: 10, dexterity: 10, focus: 10 };
     var CREATION_ATTR_MAX = 29;
+    var CREATION_HEIGHT_MIN = 140;
+    var CREATION_HEIGHT_MAX = 210;
+    var CREATION_HEIGHT_DEFAULT = 178;
+    var CREATION_TARGET_BMI = 22;
+
+    function clampCreationHeightCm(raw) {
+        var n = Math.round(Number(raw) || 0);
+        if (!isFinite(n) || n <= 0) n = CREATION_HEIGHT_DEFAULT;
+        if (n < CREATION_HEIGHT_MIN) n = CREATION_HEIGHT_MIN;
+        if (n > CREATION_HEIGHT_MAX) n = CREATION_HEIGHT_MAX;
+        return n;
+    }
+
+    function computeCreationDefaultWeightKg(heightCm) {
+        var h = clampCreationHeightCm(heightCm) / 100;
+        return Math.round(CREATION_TARGET_BMI * h * h * 10) / 10;
+    }
 
     function getCreationInnateSum() {
         return creationInnate.jingu + creationInnate.flexibility + creationInnate.breath + creationInnate.dexterity + creationInnate.focus;
@@ -870,6 +938,20 @@
             nameEl.__sceneAppCreationInputBound = true;
             nameEl.addEventListener('input', updateCreationConfirmButton);
         }
+        var heightEl = document.getElementById('creation-height');
+        if (heightEl) {
+            var cfgDefaultHeight = CREATION_HEIGHT_DEFAULT;
+            if (window.Survival && typeof window.Survival.getConfigValue === 'function') {
+                cfgDefaultHeight = clampCreationHeightCm(window.Survival.getConfigValue('height_cm_default', CREATION_HEIGHT_DEFAULT));
+            }
+            heightEl.value = String(cfgDefaultHeight);
+            if (!heightEl.__sceneAppCreationInputBound) {
+                heightEl.__sceneAppCreationInputBound = true;
+                heightEl.addEventListener('change', function () {
+                    heightEl.value = String(clampCreationHeightCm(heightEl.value));
+                });
+            }
+        }
         updateCreationConfirmButton();
         var btnConfirm = document.getElementById('btn-confirm-creation');
         if (btnConfirm && !btnConfirm.__sceneAppCreationConfirmBound) {
@@ -891,6 +973,9 @@
             var handEl = document.querySelector('input[name="creation-hand"]:checked');
             var legEl = document.querySelector('input[name="creation-leg"]:checked');
             var genderEl = document.querySelector('input[name="creation-gender"]:checked');
+            var heightEl = document.getElementById('creation-height');
+            var heightCm = clampCreationHeightCm(heightEl && heightEl.value != null ? heightEl.value : CREATION_HEIGHT_DEFAULT);
+            var initWeightKg = computeCreationDefaultWeightKg(heightCm);
             var gender = (genderEl && genderEl.value === 'female') ? 'female' : 'male';
             var prevHidden = [];
             try {
@@ -911,7 +996,11 @@
                 hidden_epithets: prevHidden
             });
             if (window.Survival && window.Survival.setState) {
-                window.Survival.setState({ gender_value: gender === 'female' ? 100 : 0 });
+                window.Survival.setState({
+                    gender_value: gender === 'female' ? 100 : 0,
+                    height_cm: heightCm,
+                    weight_kg: initWeightKg
+                });
             }
             CA.recalcCharacterStats({
                 getEquipmentState: function () { return IE.getState().equipment; },
@@ -1643,9 +1732,22 @@
             if (!el) return;
             el.style.display = visible ? '' : 'none';
         }
+        function shouldShowSurvivalMetric(metricId, survivalState) {
+            var ctx = window.SceneCtx;
+            if (ctx && typeof ctx.shouldShowSurvivalMetric === 'function') {
+                return !!ctx.shouldShowSurvivalMetric(metricId, survivalState || null);
+            }
+            return true;
+        }
+        function setSurvivalMetricDisplay(id, visible) {
+            var el = document.getElementById(id);
+            if (!el) return;
+            el.style.display = visible ? '' : 'none';
+        }
         setBlockDisplay('status-role-card', shouldShowBlock('role'));
         setBlockDisplay('status-limbs', shouldShowBlock('limbs'));
         setBlockDisplay('status-survival', shouldShowBlock('survival'));
+        setBlockDisplay('status-resources', shouldShowBlock('resources'));
         setBlockDisplay('quick-belt-dock', shouldShowBlock('quick_belt'));
         setBlockDisplay('status-attrs-block', shouldShowBlock('attrs'));
 
@@ -1674,6 +1776,12 @@
         var staminaBar = document.getElementById('status-stamina-bar');
         var energyText = document.getElementById('status-energy-text');
         var energyBar = document.getElementById('status-energy-bar');
+        var moodEl = document.getElementById('status-mood');
+        var moodBar = document.getElementById('status-mood-bar');
+        var nutritionEl = document.getElementById('status-nutrition');
+        var nutritionBar = document.getElementById('status-nutrition-bar');
+        var dirtynessEl = document.getElementById('status-dirtyness');
+        var dirtynessBar = document.getElementById('status-dirtyness-bar');
         var weightEl = document.getElementById('status-weight');
         if (!satietyText || !weightEl) {
             refreshPlayerActionsMenuUi();
@@ -1682,6 +1790,15 @@
 
         if (Surv && typeof Surv.getState === 'function') {
             var s = Surv.getState();
+            setSurvivalMetricDisplay('status-metric-satiety', shouldShowSurvivalMetric('satiety', s));
+            setSurvivalMetricDisplay('status-metric-thirst', shouldShowSurvivalMetric('thirst', s));
+            setSurvivalMetricDisplay('status-metric-mood', shouldShowSurvivalMetric('mood', s));
+            setSurvivalMetricDisplay('status-metric-nutrition', shouldShowSurvivalMetric('nutrition', s));
+            setSurvivalMetricDisplay('status-metric-dirtyness', shouldShowSurvivalMetric('dirtyness', s));
+            setSurvivalMetricDisplay('status-metric-energy', shouldShowSurvivalMetric('energy', s));
+            setSurvivalMetricDisplay('status-metric-stamina', shouldShowSurvivalMetric('stamina', s));
+            setSurvivalMetricDisplay('status-metric-weight', shouldShowSurvivalMetric('weight', s));
+
             var zone = Surv.getSatietyZone ? Surv.getSatietyZone() : 'normal';
             satietyText.textContent = getSatietyLabel(zone);
             satietyText.className = zone === 'normal' ? 'value ok' : (zone === 'starvation' || zone === 'severe' ? 'value danger' : 'value warn');
@@ -1702,6 +1819,33 @@
             energyText.textContent = s.energy.toFixed(1) + ' / ' + enMax;
             energyText.className = s.energy <= 0 ? 'value danger' : (s.energy < enMax * 0.3 ? 'value warn' : 'value ok');
             energyBar.style.width = enMax > 0 ? (s.energy / enMax * 100) + '%' : '0%';
+
+            if (moodEl) {
+                var moodValue = Math.round(Number(s.mood) || 0);
+                var moodRange = (Surv.getMoodRangeByValue && typeof Surv.getMoodRangeByValue === 'function')
+                    ? Surv.getMoodRangeByValue(moodValue)
+                    : 'normal';
+                var moodKey = moodRange === 'low' ? 'survival.mood.low'
+                    : (moodRange === 'high' ? 'survival.mood.high' : 'survival.mood.normal');
+                moodEl.textContent = ui(moodKey) + ' (' + moodValue + '/1000)';
+                moodEl.className = moodRange === 'low' ? 'value danger' : (moodRange === 'high' ? 'value ok' : 'value warn');
+                if (moodBar) {
+                    var moodPct = Math.max(0, Math.min(100, (moodValue / 1000) * 100));
+                    moodBar.style.width = moodPct + '%';
+                }
+            }
+            if (nutritionEl) {
+                var nutritionValue = Math.max(0, Math.min(100, Number(s.nutrition) || 0));
+                nutritionEl.textContent = Math.round(nutritionValue) + ' / 100';
+                nutritionEl.className = nutritionValue <= 10 ? 'value danger' : (nutritionValue < 40 ? 'value warn' : 'value ok');
+                if (nutritionBar) nutritionBar.style.width = nutritionValue + '%';
+            }
+            if (dirtynessEl) {
+                var dirtynessValue = Math.max(0, Math.min(100, Number(s.dirtyness) || 0));
+                dirtynessEl.textContent = Math.round(dirtynessValue) + ' / 100';
+                dirtynessEl.className = dirtynessValue >= 80 ? 'value danger' : (dirtynessValue >= 50 ? 'value warn' : 'value ok');
+                if (dirtynessBar) dirtynessBar.style.width = dirtynessValue + '%';
+            }
 
             var battleCard = document.getElementById('status-combat-resources-card');
             var battleWrap = document.getElementById('status-battle-resources');
@@ -1729,6 +1873,8 @@
 
             weightEl.textContent = s.weight_kg + ' kg';
             var carryEl = document.getElementById('status-carry');
+            var potentialEl = document.getElementById('status-potential');
+            var combatExpEl = document.getElementById('status-combat-experience');
             if (carryEl) {
                 var cap = (window.CharacterAttributes && typeof window.CharacterAttributes.getCarryCapacity === 'function')
                     ? window.CharacterAttributes.getCarryCapacity() : null;
@@ -1740,11 +1886,27 @@
                 else
                     carryEl.textContent = '—';
             }
+            if (potentialEl) {
+                var pVal = (IE && typeof IE.getPotential === 'function') ? IE.getPotential() : null;
+                potentialEl.textContent = (pVal == null) ? '—' : String(pVal);
+            }
+            if (combatExpEl) {
+                var cVal = (IE && typeof IE.getCombatExperience === 'function') ? IE.getCombatExperience() : null;
+                combatExpEl.textContent = (cVal == null) ? '—' : String(cVal);
+            }
         } else {
             satietyText.textContent = '—';
             satietyBar.style.width = '100%';
             thirstText.textContent = '—';
             thirstBar.style.width = '100%';
+            setSurvivalMetricDisplay('status-metric-satiety', shouldShowSurvivalMetric('satiety', null));
+            setSurvivalMetricDisplay('status-metric-thirst', shouldShowSurvivalMetric('thirst', null));
+            setSurvivalMetricDisplay('status-metric-mood', shouldShowSurvivalMetric('mood', null));
+            setSurvivalMetricDisplay('status-metric-nutrition', shouldShowSurvivalMetric('nutrition', null));
+            setSurvivalMetricDisplay('status-metric-dirtyness', shouldShowSurvivalMetric('dirtyness', null));
+            setSurvivalMetricDisplay('status-metric-energy', shouldShowSurvivalMetric('energy', null));
+            setSurvivalMetricDisplay('status-metric-stamina', shouldShowSurvivalMetric('stamina', null));
+            setSurvivalMetricDisplay('status-metric-weight', shouldShowSurvivalMetric('weight', null));
             if (gatherState) {
                 staminaText.textContent = gatherState.stamina + ' / ' + gatherState.stamina_max;
                 staminaBar.style.width = (gatherState.stamina_max > 0 ? (gatherState.stamina / gatherState.stamina_max * 100) : 0) + '%';
@@ -1754,8 +1916,25 @@
             }
             energyText.textContent = '—';
             energyBar.style.width = '100%';
+            if (moodEl) {
+                moodEl.textContent = '—';
+                moodEl.className = 'value';
+            }
+            if (moodBar) moodBar.style.width = '50%';
+            if (nutritionEl) {
+                nutritionEl.textContent = '—';
+                nutritionEl.className = 'value';
+            }
+            if (nutritionBar) nutritionBar.style.width = '100%';
+            if (dirtynessEl) {
+                dirtynessEl.textContent = '—';
+                dirtynessEl.className = 'value';
+            }
+            if (dirtynessBar) dirtynessBar.style.width = '0%';
             weightEl.textContent = '—';
             var carryEl = document.getElementById('status-carry');
+            var potentialEl = document.getElementById('status-potential');
+            var combatExpEl = document.getElementById('status-combat-experience');
             if (carryEl) {
                 var cap = (window.CharacterAttributes && typeof window.CharacterAttributes.getCarryCapacity === 'function') ? window.CharacterAttributes.getCarryCapacity() : null;
                 var current = (IE && typeof IE.getCurrentCarryWeight === 'function') ? IE.getCurrentCarryWeight() : null;
@@ -1763,6 +1942,8 @@
                 else if (cap != null) carryEl.textContent = '— / ' + cap.toFixed(1) + ' kg';
                 else carryEl.textContent = '—';
             }
+            if (potentialEl) potentialEl.textContent = '—';
+            if (combatExpEl) combatExpEl.textContent = '—';
         }
         refreshPlayerActionsMenuUi();
     }
@@ -2239,7 +2420,61 @@
         refreshRenderProfile(ms || 600);
     }
 
+    function isPlayerComaActive() {
+        return !!(window.BuffSystem
+            && typeof window.BuffSystem.hasBuffByBuffId === 'function'
+            && window.BuffSystem.hasBuffByBuffId('player', 'survival_coma'));
+    }
+
+    function guardPlayerComaBlocked() {
+        if (!isPlayerComaActive()) return false;
+        showMsg(ui('intro.blocked.action'), 'info');
+        return true;
+    }
+
+    var ACTION_TYPES = {
+        MOVE: 'move',
+        GATHER: 'gather',
+        CRAFT: 'craft',
+        NPC_INTERACT: 'npc_interact',
+        ITEM_USE: 'item_use'
+    };
+
+    function normalizeActionType(actionType) {
+        var key = String(actionType || '').trim().toLowerCase();
+        if (!key) return '';
+        if (key === 'movement') return ACTION_TYPES.MOVE;
+        return key;
+    }
+
+    function isPlayerActionDisabledByBuff(actionType) {
+        var key = normalizeActionType(actionType);
+        if (!key) return false;
+        var Buff = window.BuffSystem;
+        if (!Buff) return false;
+        if (key === ACTION_TYPES.MOVE && typeof Buff.hasMovementDisabled === 'function' && Buff.hasMovementDisabled('player')) {
+            return true;
+        }
+        if (typeof Buff.hasActionDisabled === 'function') {
+            return !!Buff.hasActionDisabled('player', key);
+        }
+        return false;
+    }
+
+    function guardPlayerActionBlocked(actionType, opts) {
+        if (!isPlayerActionDisabledByBuff(actionType)) return false;
+        var options = opts || {};
+        var msg = options.msg || ui('intro.blocked.action');
+        var kind = options.level || 'info';
+        showMsg(msg, kind);
+        return true;
+    }
+
     function onGatherTick() {
+        if (guardPlayerActionBlocked(ACTION_TYPES.GATHER)) {
+            stopGatheringIdle();
+            return;
+        }
         var st = E.getState();
         var rec = (E.getEntityRecordAt && typeof E.getEntityRecordAt === 'function') ? E.getEntityRecordAt(st.x, st.y) : null;
         var entityId = rec ? (rec.entity_id || null) : E.getEntityAt(st.x, st.y);
@@ -2263,6 +2498,8 @@
             showIntroBlockedMsg();
             return;
         }
+        if (guardPlayerComaBlocked()) return;
+        if (guardPlayerActionBlocked(ACTION_TYPES.GATHER)) return;
         var st = E.getState();
         var rec = (E.getEntityRecordAt && typeof E.getEntityRecordAt === 'function') ? E.getEntityRecordAt(st.x, st.y) : null;
         var entityId = rec ? (rec.entity_id || null) : E.getEntityAt(st.x, st.y);
@@ -2927,7 +3164,7 @@
         var baseSuccessRate = Math.max(0, Number(evalRes.success_rate) || 0);
         var bonusFromCookingLv = cookingLv * COOKING_SUCCESS_BONUS_PER_LEVEL;
         var successRateRaw = baseSuccessRate + bonusFromCookingLv;
-        var successRateFinal = Math.max(0, Math.min(1, successRateRaw));
+        var successRateFinal = getProductionSuccessRateWithMoodDelta(successRateRaw);
         var overflowRate = Math.max(0, successRateRaw - 1);
         var isMaxCookingLv = cookingLv >= COOKING_SKILL_MAX_LEVEL;
         evalRes.success = isMaxCookingLv ? true : (Math.random() < successRateFinal);
@@ -2995,6 +3232,15 @@
             finalizeCookingCraftNow(cs.active_craft);
         }
         if (cookingStationPanelOpen) renderCookingStationPanel();
+    }
+
+    function getProductionSuccessRateWithMoodDelta(baseRateRaw) {
+        var successRateRaw = Math.max(0, Number(baseRateRaw) || 0);
+        if (window.BuffSystem && typeof window.BuffSystem.getProductionSuccessRateDeltaPercent === 'function') {
+            var moodDeltaPct = Number(window.BuffSystem.getProductionSuccessRateDeltaPercent('player')) || 0;
+            successRateRaw += (moodDeltaPct / 100);
+        }
+        return Math.max(0, Math.min(1, successRateRaw));
     }
 
     function markPharmacyRecipeKnown(recipeId) {
@@ -3100,6 +3346,10 @@
                 base_output_quality_tier: pickBaseOutputQualityTier
             })
             : { success: true, output_quality_tier: 0, success_rate: 1 };
+        var pharmacySuccessRaw = Math.max(0, Number(evalRes.success_rate) || 0);
+        var pharmacySuccessFinal = getProductionSuccessRateWithMoodDelta(pharmacySuccessRaw);
+        evalRes.success_rate = pharmacySuccessFinal;
+        evalRes.success = Math.random() < pharmacySuccessFinal;
         var outputItemId = failId;
         if (evalRes.success) {
             if (pickMainOutput && pickMainOutput.item_id) outputItemId = String(pickMainOutput.item_id);
@@ -3161,6 +3411,9 @@
     }
 
     function tryPharmacyAtStation(methodId, inputItems) {
+        if (guardPlayerActionBlocked(ACTION_TYPES.CRAFT)) {
+            return { ok: false, reason: 'action_disabled', action_type: ACTION_TYPES.CRAFT };
+        }
         var stationCtx = getCurrentPharmacyStationContext();
         if (!stationCtx) return { ok: false, reason: 'not_on_pharmacy_station' };
         if (isPharmacyUiBlockedByRepairForContext(stationCtx)) {
@@ -4007,6 +4260,9 @@
      * 在该工艺下按投料 multiset 命中配方；**无命中亦扣料 + 扣技法资源** → 全局失败物（id 见 cooking-system-config.csv）；多命中加权选配方后再判成功率。
      */
     function tryCookAtStation(methodId, inputItems) {
+        if (guardPlayerActionBlocked(ACTION_TYPES.CRAFT)) {
+            return { ok: false, reason: 'action_disabled', action_type: ACTION_TYPES.CRAFT };
+        }
         var stationCtx = getCurrentCookingStationContext();
         if (!stationCtx) return { ok: false, reason: 'not_on_cooking_station' };
         if (isCookingUiBlockedByRepairForContext(stationCtx)) {
@@ -5011,6 +5267,7 @@
             showIntroBlockedMsg();
             return;
         }
+        if (guardPlayerComaBlocked()) return;
         if (cookingStationPanelOpen) return;
         if (!isOnCookingStationTile()) {
             showMsg(ui('cooking.station.not_on_tile'), 'info');
@@ -5666,6 +5923,7 @@
             showIntroBlockedMsg();
             return;
         }
+        if (guardPlayerComaBlocked()) return;
         if (pharmacyStationPanelOpen) return;
         if (!isOnPharmacyStationTile()) {
             showMsg(ui('pharmacy.station.not_on_tile'), 'info');
@@ -6438,6 +6696,7 @@
             showIntroBlockedMsg();
             return;
         }
+        if (guardPlayerComaBlocked()) return;
         if (compostStationPanelOpen) return;
         if (!isOnCompostStationTile()) {
             showMsg(ui('compost.station.not_on_tile'), 'info');
@@ -6568,6 +6827,9 @@
             var ret = window.CompostSystem.interact(mode, actionId, { advance_world_tick: true });
             if (ret && ret.ok) {
                 pushCompostLog(ui(ret.success ? 'compost.log.interact_ok' : 'compost.log.interact_fail'));
+                if (window.Survival && typeof window.Survival.addDirtyness === 'function') {
+                    window.Survival.addDirtyness(10);
+                }
             }
             renderCompostStationPanel();
         }
@@ -6984,6 +7246,22 @@
             return ui(LIMB_LABEL_KEYS[lid] || lid);
         }
 
+        function displaySkillName(skillId) {
+            var sk0 = CS.getSkill(skillId);
+            return (sk0 && sk0.name) ? sk0.name : String(skillId || '');
+        }
+        function displayMoveName(skillId, moveId) {
+            if (!moveId) return '';
+            var sk0 = CS.getSkill(skillId);
+            if (!sk0 || !Array.isArray(sk0.moves)) return String(moveId);
+            var mmi;
+            for (mmi = 0; mmi < sk0.moves.length; mmi++) {
+                var mvo = sk0.moves[mmi];
+                if (mvo && mvo.id === moveId) return mvo.name || String(moveId);
+            }
+            return String(moveId);
+        }
+
         function firstValidMoveForLimb(lid, skillId) {
             var pk = typeof IE.peekMoveIdForLimb === 'function' ? IE.peekMoveIdForLimb(lid) : null;
             var lv = IE.getSkillLevel(skillId);
@@ -7012,7 +7290,9 @@
             return null;
         }
 
-        var orderedLimbs = (typeof IE.getLimbStrikeOrder === 'function') ? IE.getLimbStrikeOrder() : LIMB_IDS.slice();
+        var orderedLimbs = (typeof IE.getLimbStrikeOrderSlice === 'function')
+            ? IE.getLimbStrikeOrderSlice()
+            : ((typeof IE.getLimbStrikeOrder === 'function') ? IE.getLimbStrikeOrder() : LIMB_IDS.slice());
         if (!Array.isArray(orderedLimbs) || !orderedLimbs.length) orderedLimbs = LIMB_IDS.slice();
         var rawCursor = (typeof IE.getLimbStrikeOrderCursor === 'function') ? IE.getLimbStrikeOrderCursor() : 0;
         var cursor = Math.floor(Number(rawCursor) || 0);
@@ -7043,7 +7323,7 @@
             out.moveId = fm0 || 'jab';
             out.advanceCursor = false;
             if (window.GameLog && typeof window.GameLog.log === 'function') {
-                window.GameLog.log(ui('log.combat.resolve.limb_pick_none'), 'warn');
+                window.GameLog.log(ui('log.combat.resolve.player_offense_skipped'), 'combat');
             }
             return out;
         }
@@ -7057,17 +7337,43 @@
             IE.advanceLimbStrikeOrderAfterAttack(out.limbId);
         }
 
-        var rowParts = [];
-        for (li = 0; li < candidates.length; li++) {
-            var c = candidates[li];
-            rowParts.push(limbLabel(c.lid));
+        var stepIdx = scanOrder.indexOf(picked.lid);
+        if (stepIdx < 0) stepIdx = 0;
+        var seqNameParts = [];
+        var sqi;
+        for (sqi = 0; sqi < orderedLimbs.length; sqi++) {
+            seqNameParts.push(limbLabel(orderedLimbs[sqi]));
         }
+        var metForbid = ctxMeta && ctxMeta.exchange_parry_limb_ids;
+        var parryIdList;
+        if (Array.isArray(metForbid) && metForbid.length) {
+            parryIdList = metForbid.map(function (x) { return String(x).trim(); }).filter(Boolean);
+        } else if (window.SceneCtx) {
+            parryIdList = (window.SceneCtx.playerExchangeParryLimbs && window.SceneCtx.playerExchangeParryLimbs.length)
+                ? window.SceneCtx.playerExchangeParryLimbs.slice() : [];
+        } else {
+            parryIdList = [];
+        }
+        var parryLabelParts = [];
+        var pvi;
+        for (pvi = 0; pvi < parryIdList.length; pvi++) {
+            parryLabelParts.push(limbLabel(parryIdList[pvi]));
+        }
+        var noneTxt = ui('log.combat.resolve.limb_pick_strike_forbid_empty');
         if (window.GameLog && typeof window.GameLog.log === 'function') {
-            window.GameLog.log(ui('log.combat.resolve.limb_pick', {
-                rows: rowParts.join(' → '),
-                sum: String(candidates.length),
-                roll: String(cursor),
-                picked: limbLabel(picked.lid)
+            window.GameLog.log(ui('log.combat.resolve.limb_pick_strike', {
+                seq: seqNameParts.join(' → '),
+                seqIds: orderedLimbs.join('、'),
+                cursor: String(cursor),
+                step: String(stepIdx),
+                forbid: parryLabelParts.length ? parryLabelParts.join('、') : noneTxt,
+                forbidId: parryIdList.length ? parryIdList.join('、') : noneTxt,
+                picked: limbLabel(picked.lid),
+                pickedId: String(picked.lid),
+                skillLabel: displaySkillName(picked.skillId),
+                skillId: String(picked.skillId),
+                moveLabel: displayMoveName(picked.skillId, out.moveId),
+                moveId: out.moveId != null ? String(out.moveId) : ''
             }), 'combat');
         }
         return out;
@@ -7187,6 +7493,45 @@
             var isGlobal = combatUIState.curCat === 'breath' || combatUIState.curCat === 'footwork';
             limbBox.style.opacity = isGlobal ? '0.2' : '1';
             limbBox.style.pointerEvents = isGlobal ? 'none' : 'auto';
+            var strikeOrder = (IE && typeof IE.getLimbStrikeOrderSlice === 'function') ? IE.getLimbStrikeOrderSlice() : limbIds.slice();
+            if (!Array.isArray(strikeOrder) || strikeOrder.length !== limbIds.length) strikeOrder = limbIds.slice();
+            var strikeCursor = (IE && typeof IE.getLimbStrikeOrderCursor === 'function') ? Number(IE.getLimbStrikeOrderCursor()) : 0;
+            if (!isFinite(strikeCursor)) strikeCursor = 0;
+            strikeCursor = ((Math.floor(strikeCursor) % strikeOrder.length) + strikeOrder.length) % strikeOrder.length;
+            var strikeOrderPos = {};
+            strikeOrder.forEach(function (lid, idx) { strikeOrderPos[String(lid)] = idx; });
+            var strikeBar = document.createElement('div');
+            strikeBar.className = 'combat-strike-order-bar';
+            var strikeHead = document.createElement('div');
+            strikeHead.className = 'strike-order-head';
+            strikeHead.innerHTML = '<span class="strike-order-label">' + ui('combat.strike_order.label') + '</span><span class="strike-order-hint" title="' + ui('combat.strike_order.hint') + '">ⓘ</span>';
+            strikeBar.appendChild(strikeHead);
+            var strikeChips = document.createElement('div');
+            strikeChips.className = 'strike-order-chips';
+            strikeOrder.forEach(function (lid, idx) {
+                var chip = document.createElement('span');
+                chip.className = 'strike-chip' + (idx === strikeCursor ? ' strike-cursor' : '');
+                chip.innerHTML = '<span class="strike-chip-order">' + String(idx + 1) + '</span><span class="strike-chip-name">' + ui(LIMB_LABELS[lid] || lid) + '</span>' + (idx === strikeCursor ? '<span class="strike-chip-dot"></span>' : '');
+                strikeChips.appendChild(chip);
+                if (idx < strikeOrder.length - 1) {
+                    var swapBtn = document.createElement('button');
+                    swapBtn.type = 'button';
+                    swapBtn.className = 'btn-strike-swap';
+                    swapBtn.textContent = '↔';
+                    swapBtn.title = ui('combat.strike_order.swap_pair');
+                    swapBtn.onclick = function (i, j) {
+                        return function (e) {
+                            e.stopPropagation();
+                            if (!IE || typeof IE.swapLimbStrikeOrderIndices !== 'function') return;
+                            IE.swapLimbStrikeOrderIndices(i, j);
+                            renderCombatModal();
+                        };
+                    }(idx, idx + 1);
+                    strikeChips.appendChild(swapBtn);
+                }
+            });
+            strikeBar.appendChild(strikeChips);
+            limbBox.appendChild(strikeBar);
             limbIds.forEach(function (lid) {
                 var limb = combatState.limbs[lid] || { active: null, parry: null };
                 var div = document.createElement('div');
@@ -7195,7 +7540,8 @@
                 var parryName = getCombatSkillName(limb.parry);
                 var isActiveSel = combatUIState.curPart === lid && combatUIState.curSlot === 'active';
                 var isParrySel = combatUIState.curPart === lid && combatUIState.curSlot === 'parry';
-                div.innerHTML = '<div class="limb-header"><span>' + (LIMB_ICONS[lid] || '') + ' ' + ui(LIMB_LABELS[lid] || lid) + '</span></div><div class="limb-slots"><div class="combat-limb-slot' + (isActiveSel ? ' selected' : '') + '" data-part="' + lid + '" data-slot="active"><span class="slot-type">' + ui('combat.slot.active') + '</span><span class="slot-skill">' + activeName + '</span></div><div class="combat-limb-slot' + (isParrySel ? ' selected' : '') + '" data-part="' + lid + '" data-slot="parry"><span class="slot-type">' + ui('combat.slot.parry') + '</span><span class="slot-skill">' + parryName + '</span></div></div>';
+                var orderBadge = strikeOrderPos[lid] != null ? ('#' + String(Number(strikeOrderPos[lid]) + 1)) : '--';
+                div.innerHTML = '<div class="limb-header"><span>' + (LIMB_ICONS[lid] || '') + ' ' + ui(LIMB_LABELS[lid] || lid) + '</span><span class="limb-order-badge">' + orderBadge + '</span></div><div class="limb-slots"><div class="combat-limb-slot' + (isActiveSel ? ' selected' : '') + '" data-part="' + lid + '" data-slot="active"><span class="slot-type">' + ui('combat.slot.active') + '</span><span class="slot-skill">' + activeName + '</span></div><div class="combat-limb-slot' + (isParrySel ? ' selected' : '') + '" data-part="' + lid + '" data-slot="parry"><span class="slot-type">' + ui('combat.slot.parry') + '</span><span class="slot-skill">' + parryName + '</span></div></div>';
                 div.querySelectorAll('.combat-limb-slot').forEach(function (slotEl) {
                     slotEl.onclick = function () {
                         combatUIState.curPart = slotEl.getAttribute('data-part');
@@ -7304,12 +7650,16 @@
         var seqBox = document.getElementById('move-sequence');
         var limbPartForSeq = combatUIState.curPart || 'lhand';
         var limbRowForSeq = combatState.limbs && combatState.limbs[limbPartForSeq];
-        var limbSeqMatchesSkill = !!(limbRowForSeq && limbRowForSeq.active === combatUIState.curSkillId);
-
-        if (!isAcupointMode && seqBox && selSkill && selSkill.moves && selSkill.moves.length && selSkill.category !== 'breath' && selSkill.category !== 'footwork' && selSkill.category !== 'parry' && limbSeqMatchesSkill) {
+        var slotForMoveSeq = combatUIState.curSlot || 'active';
+        /** 招式序列以该肢**已部署**的主动技能为准，不要求与左侧技能列表选中的项一致，避免列表与肢上部署不一致时整块序列为空。 */
+        var seqSkillId = (slotForMoveSeq === 'active' && limbRowForSeq && limbRowForSeq.active) ? String(limbRowForSeq.active) : null;
+        var seqSk = (seqSkillId && CS) ? CS.getSkill(seqSkillId) : null;
+        var skillLevelForSeq = (seqSkillId && IE) ? IE.getSkillLevel(seqSkillId) : 0;
+        var moveUsageForSeq = (seqSkillId && skillsState[seqSkillId] && skillsState[seqSkillId].move_usage) ? skillsState[seqSkillId].move_usage : {};
+        if (!isAcupointMode && seqBox && slotForMoveSeq === 'active' && seqSk && seqSk.moves && seqSk.moves.length && seqSk.category !== 'breath' && seqSk.category !== 'footwork' && seqSk.category !== 'parry' && seqSkillId) {
             seqBox.innerHTML = '';
-            var maxSlots = CS.getMaxSlotsForLevel(combatUIState.curSkillId, skillLevel);
-            var unlocked = CS.getUnlockedMoves(combatUIState.curSkillId, skillLevel);
+            var maxSlots = CS.getMaxSlotsForLevel(seqSkillId, skillLevelForSeq);
+            var unlocked = CS.getUnlockedMoves(seqSkillId, skillLevelForSeq);
             var seq = (combatState.move_sequences && Array.isArray(combatState.move_sequences[limbPartForSeq])) ? combatState.move_sequences[limbPartForSeq].slice() : [];
             var limbIdForPost = limbPartForSeq;
             var limbPostId = getLimbPostEffectId(combatState, limbIdForPost);
@@ -7326,7 +7676,7 @@
                 var moveName = isVariantSlot
                     ? ('[变式] ' + getVariantName(variantIdAtSlot))
                     : (moveObj ? moveObj.name : (rawMoveId ? rawMoveId : ui('combat.seq.slot_empty')));
-                var useCount = (moveUsage && moveObj && moveUsage[moveObj.id] != null) ? moveUsage[moveObj.id] : 0;
+                var useCount = (moveUsageForSeq && moveObj && moveUsageForSeq[moveObj.id] != null) ? moveUsageForSeq[moveObj.id] : 0;
                 var nodeProf = moveObj ? Math.floor(CS.getMoveProficiencyRatio(useCount) * 100) : 0;
                 var postText = limbPostId ? getPostEffectName(limbPostId) : (rawMoveId && !isVariantSlot ? '无后遗症' : '—');
                 var node = document.createElement('div');
@@ -7405,14 +7755,18 @@
                         IE.incrementSkillMoveUsage(skillId, mid, dUses);
                         renderCombatModal();
                     };
-                }(combatUIState.curSkillId, thisMoveId, moveObj);
+                }(seqSkillId, thisMoveId, moveObj);
                 node.appendChild(debugBtn);
                 node.onclick = function (idx, el) {
                     return function (e) {
                         e.stopPropagation();
                         combatUIState.editingSlot = idx;
                         openMovePicker(idx, el);
-                        renderCombatModal();
+                        if (typeof requestAnimationFrame === 'function') {
+                            requestAnimationFrame(function () { renderCombatModal(); });
+                        } else {
+                            setTimeout(function () { renderCombatModal(); }, 0);
+                        }
                     };
                 }(i, node);
                 seqBox.appendChild(node);
@@ -7593,31 +7947,40 @@
         var CS = window.CombatSkills;
         var picker = document.getElementById('picker-move');
         var listEl = document.getElementById('picker-list');
-        if (!picker || !listEl || !CS || !combatUIState.curSkillId) return;
+        if (!picker || !listEl || !CS) return;
         var part = combatUIState.curPart || 'lhand';
         var combatPre = IE.getCombatState();
         var limbRec = combatPre.limbs && combatPre.limbs[part];
-        if (!limbRec || limbRec.active !== combatUIState.curSkillId) {
+        if (!limbRec || !limbRec.active) {
             showMsg(ui('combat.seq.need_deploy'), 'warn');
             return;
         }
-        var skillLevel = IE ? IE.getSkillLevel(combatUIState.curSkillId) : 0;
-        var unlocked = CS.getUnlockedMoves(combatUIState.curSkillId, skillLevel);
+        var pickSkillId = String(limbRec.active);
+        var skillLevel = IE ? IE.getSkillLevel(pickSkillId) : 0;
+        var unlocked = CS.getUnlockedMoves(pickSkillId, skillLevel);
         var limbKeys = typeof window.getLimbActionTags === 'function' ? window.getLimbActionTags(part) : [];
         var skillsState = IE && IE.getState() && IE.getState().skills ? IE.getState().skills : {};
-        var moveUsage = (combatUIState.curSkillId && skillsState[combatUIState.curSkillId] && skillsState[combatUIState.curSkillId].move_usage) ? skillsState[combatUIState.curSkillId].move_usage : {};
-        listEl.innerHTML = '';
+        var moveUsage = (pickSkillId && skillsState[pickSkillId] && skillsState[pickSkillId].move_usage) ? skillsState[pickSkillId].move_usage : {};
+        var CV = window.CombatVariants;
+        var tabState = { current: (combatUIState && combatUIState.movePickerTab) ? combatUIState.movePickerTab : 'moves' };
+        if (tabState.current !== 'moves' && tabState.current !== 'variants') tabState.current = 'moves';
+        var unlockDeps = {
+            getSkillLevel: function (sid) { return IE.getSkillLevel(String(sid || '')) || 0; },
+            getMoveUsage: function (skid) {
+                var s = skillsState[skid];
+                return (s && s.move_usage && typeof s.move_usage === 'object') ? s.move_usage : {};
+            },
+            CombatSkills: CS
+        };
         function countFilledMoveSlots(s) {
             var c = 0;
-            var fi;
-            for (fi = 0; fi < s.length; fi++) {
+            for (var fi = 0; fi < s.length; fi++) {
                 if (s[fi] && String(s[fi]).indexOf('variant:') !== 0) c++;
             }
             return c;
         }
         var seqPreview = (combatPre.move_sequences && Array.isArray(combatPre.move_sequences[part])) ? combatPre.move_sequences[part].slice() : [];
-        var skillLevelPick = skillLevel;
-        var maxSlotsPick = CS.getMaxSlotsForLevel(combatUIState.curSkillId, skillLevelPick);
+        var maxSlotsPick = CS.getMaxSlotsForLevel(pickSkillId, skillLevel);
         while (seqPreview.length < maxSlotsPick) seqPreview.push('');
         seqPreview = seqPreview.slice(0, maxSlotsPick);
         while (seqPreview.length <= idx) seqPreview.push('');
@@ -7632,7 +7995,7 @@
         btnClearSlot.onclick = function () {
             var combat = IE.getCombatState();
             var seq = (combat.move_sequences && Array.isArray(combat.move_sequences[part])) ? combat.move_sequences[part].slice() : [];
-            var mx = CS.getMaxSlotsForLevel(combatUIState.curSkillId, IE.getSkillLevel(combatUIState.curSkillId));
+            var mx = CS.getMaxSlotsForLevel(pickSkillId, IE.getSkillLevel(pickSkillId));
             while (seq.length < mx) seq.push('');
             seq = seq.slice(0, mx);
             while (seq.length <= idx) seq.push('');
@@ -7650,70 +8013,39 @@
             if (!safeSetCombatState({ move_sequences: patchMs }, ui('combat.seq.clear_last_forbidden'))) return;
             if (IE && typeof IE.setMoveSlotPowerLevel === 'function') IE.setMoveSlotPowerLevel(part, idx, null);
             combatUIState.editingSlot = null;
+            combatUIState.movePickerTab = tabState.current;
             picker.classList.remove('show');
             renderCombatModal();
         };
-        listEl.appendChild(btnClearSlot);
-        unlocked.forEach(function (m) {
-            if (typeof CS.moveAllowedOnLimbByTagKeys === 'function' && !CS.moveAllowedOnLimbByTagKeys(m, limbKeys)) return;
-            var count = moveUsage[m.id] != null ? moveUsage[m.id] : 0;
-            var pct = Math.floor(CS.getMoveProficiencyRatio(count) * 100);
-            var btn = document.createElement('button');
-            btn.type = 'button';
-            btn.innerHTML = '<span>' + m.name + '</span><span class="move-prof">' + ui('combat.prof.short', { v: pct }) + '</span>';
-            btn.onclick = function () {
-                if (typeof CS.moveAllowedOnLimbByTagKeys === 'function' && !CS.moveAllowedOnLimbByTagKeys(m, limbKeys)) {
-                    showMsg(ui('combat.seq.limb_tag_blocked'), 'warn');
-                    return;
-                }
-                var combat = IE.getCombatState();
-                var seq = (combat.move_sequences && Array.isArray(combat.move_sequences[part])) ? combat.move_sequences[part].slice() : [];
-                var mxSel = CS.getMaxSlotsForLevel(combatUIState.curSkillId, IE.getSkillLevel(combatUIState.curSkillId));
-                while (seq.length < mxSel) seq.push('');
-                seq = seq.slice(0, mxSel);
-                while (seq.length <= idx) seq.push('');
-                seq[idx] = m.id;
-                var patchMs = {};
-                patchMs[part] = seq;
-                if (!safeSetCombatState({ move_sequences: patchMs }, ui('combat.seq.clear_last_forbidden'))) return;
-                if (IE && typeof IE.setMoveSlotPowerLevel === 'function') IE.setMoveSlotPowerLevel(part, idx, null);
-
-                combatUIState.editingSlot = null;
-                picker.classList.remove('show');
-                renderCombatModal();
-            };
-            listEl.appendChild(btn);
-        });
-        if (window.CombatVariants && typeof window.CombatVariants.getAllVariants === 'function') {
-            var allVar = window.CombatVariants.getAllVariants() || [];
+        function buildVariantPicker() {
+            if (!CV || typeof CV.getAllVariants !== 'function') return;
+            var allVar = CV.getAllVariants() || [];
             allVar.forEach(function (v) {
                 if (!v) return;
                 var vid = String(v.variant_id || v.id || '');
                 if (!vid) return;
                 var scope = String(v.assist_scope || 'active_moves');
                 if (scope !== 'active_moves' && scope !== 'both') return;
-                var sid = v.source_skill_id ? String(v.source_skill_id) : '';
-                var minLv = parseInt(v.min_source_level, 10);
-                if (!isFinite(minLv)) minLv = 0;
-                if (sid && IE.getSkillLevel(sid) < minLv) return;
+                if (typeof CV.isVariantUnlocked === 'function' && !CV.isVariantUnlocked(v, unlockDeps)) return;
                 var token = 'variant:' + vid;
                 var isDup = seqPreview.indexOf(token) >= 0;
                 var btnV = document.createElement('button');
                 btnV.type = 'button';
+                btnV.className = 'picker-pick-item';
                 var vName = (v.name_key && window.UIText && typeof window.UIText.t === 'function') ? window.UIText.t(v.name_key) : vid;
-                btnV.innerHTML = '<span>[变式] ' + vName + '</span><span class="move-prof">被动</span>';
+                btnV.innerHTML = '<span>' + vName + '</span><span class="move-prof">' + ui('combat.variant.badge', {}) + '</span>';
                 btnV.disabled = isDup;
-                btnV.title = isDup ? '同肢同变式唯一' : '';
+                btnV.title = isDup ? ui('combat.variant.dup_limb', {}) : '';
                 btnV.onclick = function () {
                     var combat = IE.getCombatState();
                     var seq = (combat.move_sequences && Array.isArray(combat.move_sequences[part])) ? combat.move_sequences[part].slice() : [];
-                    var mxSel = CS.getMaxSlotsForLevel(combatUIState.curSkillId, IE.getSkillLevel(combatUIState.curSkillId));
+                    var mxSel = CS.getMaxSlotsForLevel(pickSkillId, IE.getSkillLevel(pickSkillId));
                     while (seq.length < mxSel) seq.push('');
                     seq = seq.slice(0, mxSel);
                     while (seq.length <= idx) seq.push('');
                     for (var di = 0; di < seq.length; di++) {
                         if (di !== idx && seq[di] === token) {
-                            showMsg('同肢同变式唯一。', 'warn');
+                            showMsg(ui('combat.variant.dup_limb'), 'warn');
                             return;
                         }
                     }
@@ -7722,26 +8054,97 @@
                         showMsg(ui('combat.seq.clear_last_forbidden'), 'warn');
                         return;
                     }
-                    var patchMs = {};
-                    patchMs[part] = seq;
-                    if (!safeSetCombatState({ move_sequences: patchMs }, ui('combat.seq.clear_last_forbidden'))) return;
+                    var patchMs2 = {};
+                    patchMs2[part] = seq;
+                    if (!safeSetCombatState({ move_sequences: patchMs2 }, ui('combat.seq.clear_last_forbidden'))) return;
                     if (IE && typeof IE.setMoveSlotPowerLevel === 'function') IE.setMoveSlotPowerLevel(part, idx, null);
                     combatUIState.editingSlot = null;
+                    combatUIState.movePickerTab = 'variants';
                     picker.classList.remove('show');
                     renderCombatModal();
                 };
                 listEl.appendChild(btnV);
             });
         }
-        if (!listEl.children.length) {
-            var emptyHint = document.createElement('div');
-            emptyHint.className = 'picker-empty-hint';
-            emptyHint.style.padding = '8px 12px';
-            emptyHint.style.fontSize = '12px';
-            emptyHint.style.color = '#a8a29e';
-            emptyHint.textContent = ui('combat.seq.no_matching_moves');
-            listEl.appendChild(emptyHint);
+        function reflowPicker() {
+            listEl.innerHTML = '';
+            var tabRow = document.createElement('div');
+            tabRow.className = 'picker-tab-row';
+            var btnTMove = document.createElement('button');
+            btnTMove.type = 'button';
+            btnTMove.className = 'picker-tab-btn' + (tabState.current === 'moves' ? ' active' : '');
+            btnTMove.textContent = ui('picker.move.tab.moves');
+            btnTMove.setAttribute('aria-pressed', tabState.current === 'moves' ? 'true' : 'false');
+            var btnTVar = document.createElement('button');
+            btnTVar.type = 'button';
+            btnTVar.className = 'picker-tab-btn' + (tabState.current === 'variants' ? ' active' : '');
+            btnTVar.textContent = ui('picker.move.tab.variants');
+            btnTVar.setAttribute('aria-pressed', tabState.current === 'variants' ? 'true' : 'false');
+            btnTMove.onclick = function (e) {
+                e.stopPropagation();
+                if (tabState.current === 'moves') return;
+                tabState.current = 'moves';
+                if (combatUIState) combatUIState.movePickerTab = 'moves';
+                reflowPicker();
+            };
+            btnTVar.onclick = function (e) {
+                e.stopPropagation();
+                if (tabState.current === 'variants') return;
+                tabState.current = 'variants';
+                if (combatUIState) combatUIState.movePickerTab = 'variants';
+                reflowPicker();
+            };
+            tabRow.appendChild(btnTMove);
+            tabRow.appendChild(btnTVar);
+            listEl.appendChild(tabRow);
+            listEl.appendChild(btnClearSlot);
+            if (tabState.current === 'moves') {
+                unlocked.forEach(function (m) {
+                    if (typeof CS.moveAllowedOnLimbByTagKeys === 'function' && !CS.moveAllowedOnLimbByTagKeys(m, limbKeys)) return;
+                    var count = moveUsage[m.id] != null ? moveUsage[m.id] : 0;
+                    var pct = Math.floor(CS.getMoveProficiencyRatio(count) * 100);
+                    var btn = document.createElement('button');
+                    btn.type = 'button';
+                    btn.className = 'picker-pick-item';
+                    btn.innerHTML = '<span>' + m.name + '</span><span class="move-prof">' + ui('combat.prof.short', { v: pct }) + '</span>';
+                    btn.onclick = function () {
+                        if (typeof CS.moveAllowedOnLimbByTagKeys === 'function' && !CS.moveAllowedOnLimbByTagKeys(m, limbKeys)) {
+                            showMsg(ui('combat.seq.limb_tag_blocked'), 'warn');
+                            return;
+                        }
+                        var combat = IE.getCombatState();
+                        var seq = (combat.move_sequences && Array.isArray(combat.move_sequences[part])) ? combat.move_sequences[part].slice() : [];
+                        var mxSel = CS.getMaxSlotsForLevel(pickSkillId, IE.getSkillLevel(pickSkillId));
+                        while (seq.length < mxSel) seq.push('');
+                        seq = seq.slice(0, mxSel);
+                        while (seq.length <= idx) seq.push('');
+                        seq[idx] = m.id;
+                        var patchMs = {};
+                        patchMs[part] = seq;
+                        if (!safeSetCombatState({ move_sequences: patchMs }, ui('combat.seq.clear_last_forbidden'))) return;
+                        if (IE && typeof IE.setMoveSlotPowerLevel === 'function') IE.setMoveSlotPowerLevel(part, idx, null);
+                        combatUIState.editingSlot = null;
+                        combatUIState.movePickerTab = 'moves';
+                        picker.classList.remove('show');
+                        renderCombatModal();
+                    };
+                    listEl.appendChild(btn);
+                });
+            } else {
+                buildVariantPicker();
+            }
+            if (!listEl.querySelectorAll('.picker-pick-item').length) {
+                var emptyHint = document.createElement('div');
+                emptyHint.className = 'picker-empty-hint';
+                emptyHint.style.padding = '8px 12px';
+                emptyHint.style.fontSize = '12px';
+                emptyHint.style.color = '#a8a29e';
+                emptyHint.textContent = (tabState.current === 'moves') ? ui('combat.seq.no_matching_moves') : ui('picker.move.empty.variants');
+                listEl.appendChild(emptyHint);
+            }
         }
+        reflowPicker();
+        if (combatUIState) combatUIState.movePickerTab = tabState.current;
         var rect = anchorEl.getBoundingClientRect();
         picker.style.left = (rect.left) + 'px';
         picker.style.top = (rect.top - 200) + 'px';
@@ -7780,6 +8183,16 @@
         listEl.appendChild(btnClear);
 
         var all = window.CombatVariants.getAllVariants() || [];
+        var CVp = window.CombatVariants;
+        var skillsSt = IE.getState() && IE.getState().skills ? IE.getState().skills : {};
+        var unlockDepsP = {
+            getSkillLevel: function (sid) { return IE.getSkillLevel(String(sid || '')) || 0; },
+            getMoveUsage: function (skid) {
+                var s = skillsSt[skid];
+                return (s && s.move_usage && typeof s.move_usage === 'object') ? s.move_usage : {};
+            },
+            CombatSkills: window.CombatSkills
+        };
         var added = 0;
         all.forEach(function (v) {
             if (!v) return;
@@ -7787,10 +8200,7 @@
             if (!id) return;
             var scope = String(v.assist_scope || 'active_moves');
             if (scope !== 'parry' && scope !== 'both') return;
-            var minLv = parseInt(v.min_source_level, 10);
-            if (!isFinite(minLv)) minLv = 0;
-            var sid = v.source_skill_id ? String(v.source_skill_id) : '';
-            if (sid && IE.getSkillLevel(sid) < minLv) return;
+            if (CVp && typeof CVp.isVariantUnlocked === 'function' && !CVp.isVariantUnlocked(v, unlockDepsP)) return;
             var duplicate = false;
             for (var i = 0; i < cur.length; i++) {
                 if (i === slotIndex) continue;
@@ -8590,15 +9000,13 @@
             window.SceneCtx.actions = window.SceneCtx.actions || {};
             window.SceneCtx.actions.tryMoveTo = function (tx, ty, dx, dy) {
                 if (isStoryMovementLocked()) return;
+                if (guardPlayerComaBlocked()) return;
                 var ac = getActiveCookingCraft();
                 if (ac) {
                     showMsg(ui('cooking.move.blocked', { n: ac.remaining_ticks }), 'info');
                     return;
                 }
-                if (window.BuffSystem && typeof window.BuffSystem.hasMovementDisabled === 'function' && window.BuffSystem.hasMovementDisabled('player')) {
-                    showMsg(ui('intro.blocked.action'), 'info');
-                    return;
-                }
+                if (guardPlayerActionBlocked(ACTION_TYPES.MOVE)) return;
                 var st = E.getState();
                 var ddx = (dx != null) ? dx : (tx - st.x);
                 var ddy = (dy != null) ? dy : (ty - st.y);
@@ -8628,11 +9036,15 @@
                 }
             };
             window.SceneCtx.actions.attackEnemy = function (enemyId, ctxMeta) {
+                if (guardPlayerComaBlocked()) return;
                 if (isPreCreationGameplayRestricted()) {
                     showIntroBlockedMsg();
                     return;
                 }
                 ctxMeta = ctxMeta || {};
+                if (window.SceneCtx && typeof window.SceneCtx.clearPlayerExchangeLimbLocks === 'function') {
+                    window.SceneCtx.clearPlayerExchangeLimbLocks();
+                }
                 var st = (E && typeof E.getState === 'function') ? E.getState() : null;
                 if (window.SceneCtx) window.SceneCtx.lastAttackedEnemyId = enemyId != null ? String(enemyId) : null;
                 if (window.SceneCtx && typeof window.SceneCtx.exitFootworkNieBuMode === 'function') {
@@ -8872,6 +9284,7 @@
                             window.InventoryEquipment.advanceMoveSequenceCursorForLimb(atkCtx.limbId);
                         }
                         CP.runPipeline(pipeName, atkCtx);
+                        if (window.SceneCtx) window.SceneCtx.playerExchangeAttackLimb = atkCtx.limbId;
                         if (canEnemyCounter && CMR && typeof CMR.resolveEnemyVsPlayerAttack === 'function') {
                             rEnemyCounter = CMR.resolveEnemyVsPlayerAttack({ enemyId: enemyId, attackerSpeed: defSpeed });
                             atkCtxEnemy = buildEnemyCounterAtkCtx(rEnemyCounter, false);
@@ -8936,11 +9349,14 @@
                 if (typeof updateStatusPanel === 'function') updateStatusPanel();
             };
             window.SceneCtx.actions.interactNpc = function (npcId) {
+                if (guardPlayerComaBlocked()) return;
+                if (guardPlayerActionBlocked(ACTION_TYPES.NPC_INTERACT)) return;
                 if (typeof showMsg === 'function') showMsg(ui('log.system.try.interact.npc', { npcId: npcId }), 'system');
                 if (window.NPCSystem && typeof window.NPCSystem.openMenu === 'function') window.NPCSystem.openMenu(npcId);
             };
             window.SceneCtx.actions.tryIntentMove = function (tx, ty, dx, dy, source) {
                 if (isStoryMovementLocked()) return;
+                if (guardPlayerComaBlocked()) return;
                 var st = E.getState();
                 var ddx = (dx != null) ? dx : (tx - st.x);
                 var ddy = (dy != null) ? dy : (ty - st.y);
@@ -9048,6 +9464,7 @@
             };
             window.SceneCtx.actions.tryFootworkNieBuJump = function (gx, gy) {
                 if (isStoryMovementLocked()) return false;
+                if (guardPlayerComaBlocked()) return false;
                 if (isPreCreationGameplayRestricted()) {
                     showIntroBlockedMsg();
                     return false;
@@ -9309,11 +9726,18 @@
         return Buff.applyBuff('player', buffId, 'item:' + itemId, null);
     }
 
+    function toBoolFlag(v) {
+        if (v === true || v === 1) return true;
+        var s = String(v == null ? '' : v).trim().toLowerCase();
+        return s === '1' || s === 'true';
+    }
+
     function itemTemplateIsConsumable(tpl) {
         if (!tpl) return false;
-        var edibleRaw = tpl.edible;
-        var edible = edibleRaw === true || edibleRaw === 1 || edibleRaw === '1' || edibleRaw === 'true';
+        var edible = toBoolFlag(tpl.edible);
         if (edible && tpl.edible_buff_id && String(tpl.edible_buff_id).trim()) return true;
+        var usable = toBoolFlag(tpl.usable);
+        if (usable && tpl.use_buff_id && String(tpl.use_buff_id).trim()) return true;
         var ue = tpl.use_effect;
         return !!(ue && typeof ue === 'object');
     }
@@ -9321,12 +9745,17 @@
     function applyItemUseEffectFromTemplate(itemId, tpl) {
         var ue = tpl && tpl.use_effect;
         var Buff = window.BuffSystem;
-        var edibleRaw = tpl ? tpl.edible : null;
-        var edible = edibleRaw === true || edibleRaw === 1 || edibleRaw === '1' || edibleRaw === 'true';
+        var edible = toBoolFlag(tpl ? tpl.edible : null);
         var edibleBuffId = tpl && tpl.edible_buff_id ? String(tpl.edible_buff_id).trim() : '';
         if (edible && edibleBuffId && Buff && typeof Buff.applyBuff === 'function') {
             if (typeof Buff.hasBuffByBuffId === 'function' && Buff.hasBuffByBuffId('player', edibleBuffId)) return false;
             return Buff.applyBuff('player', edibleBuffId, 'item:' + itemId, null);
+        }
+        var usable = toBoolFlag(tpl ? tpl.usable : null);
+        var useBuffId = tpl && tpl.use_buff_id ? String(tpl.use_buff_id).trim() : '';
+        if (usable && useBuffId && Buff && typeof Buff.applyBuff === 'function') {
+            if (typeof Buff.hasBuffByBuffId === 'function' && Buff.hasBuffByBuffId('player', useBuffId)) return false;
+            return Buff.applyBuff('player', useBuffId, 'item:' + itemId, null);
         }
         if (!ue || typeof ue !== 'object') return false;
         if ((tpl && tpl.category) === 'food') return applyFoodDigestBuffFromTemplate(itemId, tpl);
@@ -9357,6 +9786,7 @@
         var inv = window.InventoryEquipment;
         if (!inv || typeof inv.takeItemFromContainer !== 'function') return false;
         var options = opts || {};
+        if (guardPlayerActionBlocked(ACTION_TYPES.ITEM_USE, { level: 'warn' })) return false;
         var arr = containerType === 'pocket' ? (inv.getPocketArray ? inv.getPocketArray() : [])
             : (containerType === 'vest' ? (inv.getVestArray ? inv.getVestArray() : [])
                 : (containerType === 'backpack' ? (inv.getBackpackArray ? inv.getBackpackArray() : [])
@@ -9465,6 +9895,9 @@
     window.SceneApp.isStoryMovementLocked = isStoryMovementLocked;
     window.SceneApp.isPreCreationGameplayRestricted = isPreCreationGameplayRestricted;
     window.SceneApp.tryUseQuickBeltDigit = tryUseQuickBeltDigit;
+    window.SceneApp.ACTION_TYPES = ACTION_TYPES;
+    window.SceneApp.isPlayerActionDisabledByBuff = isPlayerActionDisabledByBuff;
+    window.SceneApp.guardPlayerActionBlocked = guardPlayerActionBlocked;
     window.SceneApp.tryCookAtStation = tryCookAtStation;
     window.SceneApp.tryPharmacyAtStation = tryPharmacyAtStation;
     window.SceneApp.openCookingStationPanel = openCookingStationPanel;

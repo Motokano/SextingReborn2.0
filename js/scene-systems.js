@@ -46,6 +46,11 @@
                 return;
             }
             if (window.SceneApp && typeof window.SceneApp.isStoryMovementLocked === 'function' && window.SceneApp.isStoryMovementLocked()) return;
+            if (window.BuffSystem && typeof window.BuffSystem.hasBuffByBuffId === 'function'
+                && window.BuffSystem.hasBuffByBuffId('player', 'survival_coma')) {
+                e.preventDefault();
+                return;
+            }
             var dx = 0, dy = 0;
             switch (e.key) {
                 case 'ArrowUp':    case 'w': case 'W': dy = -1; break;

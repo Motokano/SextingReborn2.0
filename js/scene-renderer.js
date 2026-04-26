@@ -845,8 +845,15 @@
     function itemTemplateIsConsumableQuick(tpl) {
         if (!tpl) return false;
         var edibleRaw = tpl.edible;
-        var edible = edibleRaw === true || edibleRaw === 1 || edibleRaw === '1' || edibleRaw === 'true';
+        var edible = edibleRaw === true || edibleRaw === 1
+            || String(edibleRaw == null ? '' : edibleRaw).trim().toLowerCase() === '1'
+            || String(edibleRaw == null ? '' : edibleRaw).trim().toLowerCase() === 'true';
         if (edible && tpl.edible_buff_id && String(tpl.edible_buff_id).trim()) return true;
+        var usableRaw = tpl.usable;
+        var usable = usableRaw === true || usableRaw === 1
+            || String(usableRaw == null ? '' : usableRaw).trim().toLowerCase() === '1'
+            || String(usableRaw == null ? '' : usableRaw).trim().toLowerCase() === 'true';
+        if (usable && tpl.use_buff_id && String(tpl.use_buff_id).trim()) return true;
         var ue = tpl.use_effect;
         return !!(ue && typeof ue === 'object');
     }

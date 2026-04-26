@@ -1,0 +1,99 @@
+---
+description: 生存体温 Buff 化与心情制作成功率口径（本轮决策固化）
+globs: js/survival.js,js/scene-app.js,data/survival-config.json,data/buffs.json,data/editor/buff_event_registry.json,data/survival-skills.json,js/survival-skills.js,data/maps/**/*.json
+alwaysApply: true
+---
+
+# 生存体温 Buff 化 + 心情制作成功率（Agent 规则）
+
+本规则固化当前项目对“体温 Buff 化”和“心情影响制作成功率”的实现口径。编辑相关文件时必须遵守，避免回流旧机制或出现并行真相。
+
+## 1) 体温主链范围（强制）
+
+- 当前阶段只做**最小闭环**：
+  - 环境温度解析
+  - 极端判定
+  - 体温漂移
+  - 状态 Buff 同步
+  - 耐候计次
+  - 体温死亡判定
+- 不在本规则内扩展新玩法（如额外惩罚、更多状态层、额外 UI 体系）。
+
+## 2) 体温状态 Buff（强制）
+
+- 仅保留两个状态 Buff：
+  - `survival_temp_extreme_cold`
+  - `survival_temp_extreme_hot`
+- 不新增常温 `normal` 体温 Buff；常温以“无体温状态 Buff”表示。
+- 同一时刻玩家身上体温状态 Buff 最多一个（cold/hot 互斥；comfort 为 0 个）。
+
+## 3) 地图温度来源优先级（强制）
+
+环境温度 `E` 的读取优先级固定为：
+
+1. `ambient_temperature_by_season[currentSeason]`
+2. `ambient_temperature`
+3. `null`（表示宜人区 / comfort）
+
+当前实现阶段 `currentSeason` 固定为 `spring`（后续若接季节系统，统一替换读取入口）。
+
+## 4) 阈值与参数来源（强制）
+
+- 禁止在 JS 中写死体温阈值与漂移参数。
+- 统一从 `data/survival-config.json` 读取，至少包括：
+  - `body_temperature_extreme_cold_base_delta`
+  - `body_temperature_extreme_hot_base_delta`
+  - `weather_resist_threshold_delta_per_level`
+  - `weather_resist_max_level`
+  - `body_temperature_cold_move_ticks` / `body_temperature_cold_move_delta`
+  - `body_temperature_heat_move_ticks` / `body_temperature_heat_move_delta`
+  - `body_temperature_comfort_recover_per_tick`
+
+## 5) 体温死亡口径（强制）
+
+- 仍按“相对标准体温”判定死亡：
+  - 低温死亡：`body_temperature <= body_temperature_standard - body_temperature_death_below_standard`
+  - 高温死亡：`body_temperature >= body_temperature_standard + body_temperature_death_above_standard`
+
+## 6) 耐候（`survival_weather_resist`）口径（强制）
+
+- 唯一效果：提高极端温度触发阈值容忍度（`R = per_level * level`）。
+- 升级计次：仅在极寒/极热状态时每 tick 计次（当前实现可通过 `move_usage` 记 `extreme_temp_tick`）。
+- 等级上限受 `weather_resist_max_level` 约束。
+- 文案禁止回流“降低额外消耗”旧说法；`data/survival-skills.json` 与 `js/survival-skills.js` fallback 必须一致。
+
+## 7) 体温字段写入与接口（强制）
+
+- `Survival.setState()` 对 `body_temperature` 与 `body_temperature_standard` 必须：
+  - 使用同一上下限（`body_temperature_min/max`）
+  - 先 clamp 再 round1
+  - 静默夹紧（不抛错）
+- 运行时应提供统一读取接口（如 `getBodyTemperature()` / `getBodyTemperatureStandard()`），避免外围重复读写逻辑。
+
+## 8) 事件注册与发射（强制）
+
+- 体温状态切换事件：
+  - `event_kind = survival`
+  - `event_name = body_temperature_state_changed`
+- 相关 tags 需先在 `data/editor/buff_event_registry.json` 登记，再在运行时发射/配置中引用。
+
+## 9) 心情对制作成功率（强制）
+
+- 心情 Buff 对制作成功率的修正统一走：
+  - `BuffSystem.getProductionSuccessRateDeltaPercent('player')`
+- 口径：`successRateRaw += deltaPercent / 100`，随后 clamp 到 `[0,1]`。
+- 生产系统实现要求：
+  - 禁止每个系统各写一套心情加成公式；
+  - 优先走统一 helper（如 `getProductionSuccessRateWithMoodDelta`）后再落到各制作入口。
+
+## 10) 明确未接线项（防误判）
+
+- `survival_mood_high` 中的“战斗潜能 +20%”当前仍为**配置占位**。
+- 未正式接线前，禁止在评审/实现中宣称“潜能加成已生效”。
+- 若后续接线，需单独补充规则与验证清单。
+
+## 11) 禁止事项
+
+- 禁止恢复“过冷/过热导致饱食额外消耗”旧机制。
+- 禁止新增第三套体温状态真相（UI/脚本私算一套）。
+- 禁止地图温度字段命名分裂（统一 `ambient_temperature` / `ambient_temperature_by_season`）。

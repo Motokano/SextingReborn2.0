@@ -16,13 +16,17 @@ alwaysApply: true
 
 ## 核心语义（强制）
 
+- **变式是全局的**：满足 `unlock`（与旧回退 `source_skill_id`+`min_source_level`）及 `assist_scope`、同肢不重复、最低保留一主动招式等规则后，**即可**在任意**合法**槽里装配；**不**做「变式与某 `move_id` 专属配对接口」。`target_filters` 只影响**结算**时本击是否对当前 `move_id` 生效，**不**禁止把变式先装进槽里。
 - `assist_scope`：`active_moves | parry | both`。
 - `trigger` 缺省：恒 `true`。
 - `target_filters` 缺省：不限制。
 - 多段判定：按 sub-hit **每段独立**检查触发条件。
 - 同肢同 `variant_id` 唯一；不同 id 可叠加（互不覆盖）。
-- 来源等级缩放：按 `source_skill_id` 的**实际等级**线性缩放。
-- 来源等级不足（低于 `min_source_level`）：必须清空该肢对应变式槽。
+- 解锁：优先表字段 `unlock`（`skill_level_min` / `move_proficiency_ratio_min` 等，AND）；**缺省**时回退 `source_skill_id` + `min_source_level`（与 `CombatVariants.isVariantUnlocked` 一致）。
+- 有效等级与缩放：优先 `level_basis`（`skill_id` × `level_multiplier` + `level_add` 得等效等级，再代入 `scale_params_by_source_level`)；**无 `level_basis`** 时以 `source_skill_id` 等级为自变量（旧表兼容）。
+- 满条件失效（解锁或槽位非法）：必须清槽（`clearInvalidVariantSlots`）。
+- 效果参数外置：存档 `combat.variant_effect_param_overrides` 与模板 `variant_effect_params` 深合并；`setVariantEffectParamOverride` / `clearVariantEffectParamOverride` 为**唯一**建议写入入口。
+- 选取 UI：肢上招序列打开选取器时，**招式**与**变式**分**Tab/分页**（`picker.move.tab.*`）。
 
 ## 槽位与校验（强制）
 

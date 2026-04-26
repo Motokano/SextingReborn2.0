@@ -1,5 +1,5 @@
 {
-  "_comment": "变式定义表：variant_effect_type 独立于 Buff effect_type；默认 trigger 缺省恒 true，target_filters 缺省不限制。",
+  "_comment": "变式为全局可装配表：先决条件在 unlock/旧口径，与当前轮到哪招无关。target_filters 只约束结算时是否对当击 move_id 等生效。unlock[] 与 level_basis 见 11-skills 变式节。效果覆盖：combat.variant_effect_param_overrides。",
   "variants": {}
 }
 

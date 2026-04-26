@@ -5,6 +5,7 @@
     "action",
     "dialogue",
     "world",
+    "survival",
     "buff",
     "ui"
   ],
@@ -58,6 +59,10 @@
     "time_point_reached",
     "hub_action_resolved",
     "diqi_shield_absorbed",
+    "survival_state_changed",
+    "mood_state_changed",
+    "bmi_tier_changed",
+    "body_temperature_state_changed",
     "buff_state_changed"
   ],
   "tags": [
@@ -85,6 +90,9 @@
     "dialogue",
     "quest",
     "world",
+    "survival",
+    "survival_state",
+    "temperature",
     "ui",
     "attribute",
     "condition",
@@ -120,6 +128,9 @@
     "parry_shunt",
     "diqi_shield",
     "breath",
+    "temp_extreme_cold",
+    "temp_extreme_hot",
+    "temp_comfort",
     "tu_na",
     "xue_qi_hua_jing",
     "tu_qi_na_jing",
@@ -127,7 +138,12 @@
     "sit_meditation",
     "hit_arc_front",
     "hit_arc_side",
-    "hit_arc_back"
+    "hit_arc_back",
+    "mood",
+    "bmi_underweight",
+    "bmi_normal",
+    "bmi_overweight",
+    "bmi_obese"
   ]
 }
 

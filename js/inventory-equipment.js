@@ -47,6 +47,9 @@
 
     var GROUND_ITEM_DESPAWN_TICKS = 100;
 
+    /** 潜能值：技能学习/升级资源；当前按非负整数持久化。 */
+    var POTENTIAL_MIN = 0;
+
     /** 实战经验值：见 `docs/design/04-combat-exp.md`（上限 1000 亿；每 1 亿 +5% 全局伤害乘区） */
     var COMBAT_EXPERIENCE_MAX = 100000000000;
     var COMBAT_EXPERIENCE_UNIT = 100000000;
@@ -66,8 +69,49 @@
         combat: null,
         /** hub 动作冷却：key = "skillId:actionId" → 剩余 tick */
         hub_action_cooldowns: {},
+        potential: 0,
         combat_experience: 0
     };
+
+    function clampPotentialStored(n) {
+        var v = Math.floor(Number(n));
+        if (!isFinite(v) || v < POTENTIAL_MIN) return POTENTIAL_MIN;
+        return v;
+    }
+
+    function normalizePotentialState() {
+        if (state.potential == null || !isFinite(Number(state.potential))) state.potential = 0;
+        else state.potential = clampPotentialStored(state.potential);
+    }
+
+    function getPotential() {
+        normalizePotentialState();
+        return state.potential;
+    }
+
+    /** 增加潜能；delta 正整数，叠加前应用 Buff 倍率（若有）。 */
+    function addPotential(delta) {
+        var d = Math.floor(Number(delta));
+        if (!isFinite(d) || d <= 0) return getPotential();
+        if (global && global.BuffSystem && typeof global.BuffSystem.getBattlePotentialGainMultiplier === 'function') {
+            var mul = Number(global.BuffSystem.getBattlePotentialGainMultiplier('player')) || 1;
+            if (isFinite(mul) && mul > 0) d = Math.floor(d * mul);
+        }
+        if (d <= 0) return getPotential();
+        normalizePotentialState();
+        state.potential = clampPotentialStored(state.potential + d);
+        return state.potential;
+    }
+
+    /** 消耗潜能；不足时不扣除并返回 false。 */
+    function consumePotential(cost) {
+        var c = Math.floor(Number(cost));
+        if (!isFinite(c) || c <= 0) return true;
+        normalizePotentialState();
+        if (state.potential < c) return false;
+        state.potential = clampPotentialStored(state.potential - c);
+        return true;
+    }
 
     function clampCombatExperienceStored(n) {
         var v = Math.floor(Number(n));
@@ -97,6 +141,11 @@
     function addCombatExperience(delta) {
         var d = Math.floor(Number(delta));
         if (!isFinite(d) || d <= 0) return getCombatExperience();
+        if (global && global.BuffSystem && typeof global.BuffSystem.getBattleCombatExperienceGainMultiplier === 'function') {
+            var mul = Number(global.BuffSystem.getBattleCombatExperienceGainMultiplier('player')) || 1;
+            if (isFinite(mul) && mul > 0) d = Math.floor(d * mul);
+        }
+        if (d <= 0) return getCombatExperience();
         normalizeCombatExperienceState();
         state.combat_experience = clampCombatExperienceStored(state.combat_experience + d);
         return state.combat_experience;
@@ -127,7 +176,9 @@
             /** 地图普攻四肢出手顺序（须为 lhand/rhand/lfoot/rfoot 各出现一次的排列） */
             limb_strike_order: ['lhand', 'rhand', 'lfoot', 'rfoot'],
             /** 下一击从 limb_strike_order 的该下标开始扫描（0～3） */
-            limb_strike_order_cursor: 0
+            limb_strike_order_cursor: 0,
+            /** 变式效果参数覆盖（对 move-variants 模板的 variant_effect_params 深合并；清除键即复原表内原始） */
+            variant_effect_param_overrides: {}
         };
     }
 
@@ -372,6 +423,9 @@
         }
         if (state.combat.limb_strike_order_cursor == null || !isFinite(Number(state.combat.limb_strike_order_cursor))) {
             state.combat.limb_strike_order_cursor = 0;
+        }
+        if (!state.combat.variant_effect_param_overrides || typeof state.combat.variant_effect_param_overrides !== 'object') {
+            state.combat.variant_effect_param_overrides = {};
         }
         ensureLimbStrikeOrder();
         ensureMoveSequenceCursors();
@@ -1498,8 +1552,55 @@
         return s === 'parry' || s === 'both';
     }
 
+    function getVariantUnlockDeps() {
+        return {
+            getSkillLevel: getSkillLevel,
+            getMoveUsage: function (skillId) {
+                var e = state.skills[skillId];
+                return (e && e.move_usage && typeof e.move_usage === 'object') ? e.move_usage : {};
+            },
+            CombatSkills: typeof global !== 'undefined' ? global.CombatSkills : null
+        };
+    }
+
+    function getVariantEffectParamOverride(vid) {
+        ensureCombatState();
+        if (!vid) return null;
+        var o = state.combat.variant_effect_param_overrides;
+        if (!o || !o[vid] || typeof o[vid] !== 'object') return null;
+        var c = {};
+        for (var k in o[vid]) {
+            if (Object.prototype.hasOwnProperty.call(o[vid], k)) c[k] = o[vid][k];
+        }
+        return c;
+    }
+
+    function setVariantEffectParamOverride(vid, patch) {
+        if (!vid || !patch || typeof patch !== 'object') return;
+        ensureCombatState();
+        if (!state.combat.variant_effect_param_overrides) state.combat.variant_effect_param_overrides = {};
+        var s = String(vid);
+        var cur = state.combat.variant_effect_param_overrides[s] || {};
+        if (global.CombatVariants && typeof global.CombatVariants.mergeEffectParamsForVariant === 'function') {
+            state.combat.variant_effect_param_overrides[s] = global.CombatVariants.mergeEffectParamsForVariant(cur, patch);
+        } else {
+            var next = Object.assign({}, cur, patch);
+            state.combat.variant_effect_param_overrides[s] = next;
+        }
+    }
+
+    function clearVariantEffectParamOverride(vid) {
+        if (!vid) return;
+        ensureCombatState();
+        if (state.combat.variant_effect_param_overrides && state.combat.variant_effect_param_overrides[String(vid)] != null) {
+            delete state.combat.variant_effect_param_overrides[String(vid)];
+        }
+    }
+
     function clearInvalidVariantSlotsBySourceLevel() {
         ensureCombatState();
+        var CV = global.CombatVariants;
+        var deps = getVariantUnlockDeps();
         for (var i = 0; i < COMBAT_LIMB_IDS.length; i++) {
             var lid = COMBAT_LIMB_IDS[i];
             var seq = Array.isArray(state.combat.move_sequences[lid]) ? state.combat.move_sequences[lid].slice() : [];
@@ -1512,13 +1613,8 @@
                 var vid = rs.slice('variant:'.length);
                 var m = getVariantMeta(vid);
                 if (!m) { seq[ai] = ''; continue; }
-                var sid = m.source_skill_id ? String(m.source_skill_id) : '';
-                var minLv = parseInt(m.min_source_level, 10);
-                if (!isFinite(minLv)) minLv = 0;
-                if ((sid && getSkillLevel(sid) < minLv) || seenActive[vid]) {
-                    seq[ai] = '';
-                    continue;
-                }
+                if (CV && typeof CV.isVariantUnlocked === 'function' && !CV.isVariantUnlocked(m, deps)) { seq[ai] = ''; continue; }
+                if (seenActive[vid]) { seq[ai] = ''; continue; }
                 var scope = String(m.assist_scope || 'active_moves');
                 if (scope !== 'active_moves' && scope !== 'both') {
                     seq[ai] = '';
@@ -1538,10 +1634,8 @@
                 if (!pvid) continue;
                 var pm = getVariantMeta(pvid);
                 if (!pm) { parrySeq[pi] = null; continue; }
-                var psid = pm.source_skill_id ? String(pm.source_skill_id) : '';
-                var pmin = parseInt(pm.min_source_level, 10);
-                if (!isFinite(pmin)) pmin = 0;
-                if ((psid && getSkillLevel(psid) < pmin) || !variantScopeAllowsParry(pm) || seen[String(pvid)]) {
+                if (CV && typeof CV.isVariantUnlocked === 'function' && !CV.isVariantUnlocked(pm, deps)) { parrySeq[pi] = null; continue; }
+                if (!variantScopeAllowsParry(pm) || seen[String(pvid)]) {
                     parrySeq[pi] = null;
                     continue;
                 }
@@ -1683,6 +1777,7 @@
         }
         state.combat = getDefaultCombatState();
         state.hub_action_cooldowns = {};
+        state.potential = 0;
         state.combat_experience = 0;
         applyDefaultStarterCombatLayout();
         ensureMeridianStudiesSkillPresent();
@@ -1807,6 +1902,18 @@
                         out[lid] = (src && Array.isArray(src[lid])) ? src[lid].slice() : [];
                     }
                     return out;
+                })(),
+                variant_effect_param_overrides: (function () {
+                    var src = s.combat.variant_effect_param_overrides;
+                    if (!src || typeof src !== 'object') return {};
+                    var o = {};
+                    for (var vk in src) {
+                        if (!Object.prototype.hasOwnProperty.call(src, vk) || !src[vk] || typeof src[vk] !== 'object') continue;
+                        var inner = {};
+                        for (var ik in src[vk]) { if (src[vk].hasOwnProperty(ik)) inner[ik] = src[vk][ik]; }
+                        o[vk] = inner;
+                    }
+                    return o;
                 })()
             };
             var limbIds = COMBAT_LIMB_IDS;
@@ -1851,9 +1958,13 @@
                 if (hv > 0) state.hub_action_cooldowns[hk] = hv;
             }
         }
+        if (s.potential !== undefined && s.potential !== null) {
+            state.potential = clampPotentialStored(s.potential);
+        }
         if (s.combat_experience !== undefined && s.combat_experience !== null) {
             state.combat_experience = clampCombatExperienceStored(s.combat_experience);
         }
+        normalizePotentialState();
         normalizeCombatExperienceState();
         ensureCombatState();
         sanitizeCombatMoveSequencesAgainstLimbTags();
@@ -1915,6 +2026,18 @@
         ensureLimbStrikeOrder();
         combatCopy.limb_strike_order = state.combat.limb_strike_order.slice();
         combatCopy.limb_strike_order_cursor = state.combat.limb_strike_order_cursor;
+        combatCopy.variant_effect_param_overrides = {};
+        if (state.combat.variant_effect_param_overrides && typeof state.combat.variant_effect_param_overrides === 'object') {
+            for (var vpo in state.combat.variant_effect_param_overrides) {
+                if (!state.combat.variant_effect_param_overrides.hasOwnProperty(vpo)) continue;
+                if (state.combat.variant_effect_param_overrides[vpo] && typeof state.combat.variant_effect_param_overrides[vpo] === 'object') {
+                    var vo = state.combat.variant_effect_param_overrides[vpo];
+                    var vcopy = {};
+                    for (var vk in vo) { if (vo.hasOwnProperty(vk)) vcopy[vk] = vo[vk]; }
+                    combatCopy.variant_effect_param_overrides[vpo] = vcopy;
+                }
+            }
+        }
         var bonusCopy = {};
         for (var bj in state.skill_max_level_bonus) {
             if (state.skill_max_level_bonus.hasOwnProperty(bj)) bonusCopy[bj] = state.skill_max_level_bonus[bj];
@@ -1923,6 +2046,7 @@
         for (var ck in state.hub_action_cooldowns) {
             if (state.hub_action_cooldowns.hasOwnProperty(ck)) hubCd[ck] = state.hub_action_cooldowns[ck];
         }
+        normalizePotentialState();
         normalizeCombatExperienceState();
         return {
             equipment: eq,
@@ -1936,6 +2060,7 @@
             ground_items: groundCopy,
             combat: combatCopy,
             hub_action_cooldowns: hubCd,
+            potential: state.potential,
             combat_experience: state.combat_experience
         };
     }
@@ -1978,6 +2103,18 @@
         ensureLimbStrikeOrder();
         out.limb_strike_order = state.combat.limb_strike_order.slice();
         out.limb_strike_order_cursor = state.combat.limb_strike_order_cursor;
+        out.variant_effect_param_overrides = {};
+        if (c.variant_effect_param_overrides && typeof c.variant_effect_param_overrides === 'object') {
+            for (var vpi in c.variant_effect_param_overrides) {
+                if (!c.variant_effect_param_overrides.hasOwnProperty(vpi)) continue;
+                if (c.variant_effect_param_overrides[vpi] && typeof c.variant_effect_param_overrides[vpi] === 'object') {
+                    var via = c.variant_effect_param_overrides[vpi];
+                    var vic = {};
+                    for (var vib in via) { if (via.hasOwnProperty(vib)) vic[vib] = via[vib]; }
+                    out.variant_effect_param_overrides[vpi] = vic;
+                }
+            }
+        }
         return out;
     }
 
@@ -2062,6 +2199,17 @@
         if (partial.limb_strike_order || partial.limb_strike_order_cursor != null) {
             ensureLimbStrikeOrder();
         }
+        if (partial.variant_effect_param_overrides && typeof partial.variant_effect_param_overrides === 'object') {
+            if (!state.combat.variant_effect_param_overrides) state.combat.variant_effect_param_overrides = {};
+            for (var vps in partial.variant_effect_param_overrides) {
+                if (!Object.prototype.hasOwnProperty.call(partial.variant_effect_param_overrides, vps)) continue;
+                if (partial.variant_effect_param_overrides[vps] == null) {
+                    delete state.combat.variant_effect_param_overrides[vps];
+                } else if (typeof partial.variant_effect_param_overrides[vps] === 'object') {
+                    state.combat.variant_effect_param_overrides[vps] = partial.variant_effect_param_overrides[vps];
+                }
+            }
+        }
         sanitizeCombatMoveSequencesAgainstLimbTags();
         clearInvalidVariantSlotsBySourceLevel();
         if (!validateAtLeastOneMovePerActiveLimb()) {
@@ -2125,6 +2273,9 @@
         setCombatState: setCombatState,
         getActiveVariantIdsForLimb: getActiveVariantIdsForLimb,
         getParryVariantIdsForLimb: getParryVariantIdsForLimb,
+        getVariantEffectParamOverride: getVariantEffectParamOverride,
+        setVariantEffectParamOverride: setVariantEffectParamOverride,
+        clearVariantEffectParamOverride: clearVariantEffectParamOverride,
         peekMoveIdForLimb: peekMoveIdForLimb,
         peekMoveSlotIndexForLimb: peekMoveSlotIndexForLimb,
         getMoveSlotPowerLevel: getMoveSlotPowerLevel,
@@ -2138,6 +2289,9 @@
         getHubActionCooldownRemaining: getHubActionCooldownRemaining,
         setHubActionCooldownRemaining: setHubActionCooldownRemaining,
         tickHubActionCooldowns: tickHubActionCooldowns,
+        getPotential: getPotential,
+        addPotential: addPotential,
+        consumePotential: consumePotential,
         getCombatExperience: getCombatExperience,
         getCombatExperienceDamageMultiplier: getCombatExperienceDamageMultiplier,
         addCombatExperience: addCombatExperience

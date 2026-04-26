@@ -1,0 +1,62 @@
+# 体力（Stamina）资源语义 + Buff 管线接入（Agent 规则）
+
+编辑 `stamina`、生存恢复、动作门禁、`Survival` 状态机或相关 Buff 管线时，遵守本规则。目标是：**体力接入统一 Buff 管线，但不做区间监听分段**。
+
+## 1) 核心定位（强制）
+
+- `stamina` 是**行动资源**，不是分段状态条。
+- 允许接入统一 Buff 管线（便于统一门禁/显示/事件），但**禁止**把体力改成类似 `satiety/thirst` 的区间监听 Buff 组。
+- 禁止新增 `survival_stamina_*` 的多档位监听（如 low/mid/high 分段）作为体力主实现。
+
+## 2) 唯一体力状态 Buff（强制）
+
+- 唯一允许的体力状态 Buff：`stamina = 0` 时赋予“筋疲力尽”。
+- 推荐 `buff_id`：`survival_stamina_exhausted`（若历史 id 已存在，优先沿用既有 id，避免双真相）。
+- 该 Buff 语义：
+  - 仅禁止 `stamina_cost > 0` 的动作；
+  - 不额外引入战斗数值惩罚；
+  - 不承担体力恢复倍率分段职责。
+
+## 3) 计时与清除语义（强制）
+
+- `stamina = 0` 连续计时用于昏迷判定（当前口径：50 tick）。
+- **严格离开即清**：只要 `stamina > 0`，立即清除“筋疲力尽”并清零 `staminaZeroTicks`。
+- 计时不跨区继承，不保留残余进度。
+
+## 4) 体力恢复开关口径（强制）
+
+- 常态体力恢复默认不自动生效；仅在指定动作态开启时生效。
+- 当前运行时开关：`Survival.setStaminaRegenActionActive(active)`，状态位 `is_stamina_regen_action_active`。
+- 恢复公式必须保留并复用同一条：
+  - `(baseRegen + breathCoef * breathActual) * (1 + ningqiBonus) * satietyMultiplier`
+- 休息/睡眠恢复（`isResting`）与常态恢复动作开关是并行入口：
+  - `isResting=true` 时仍可走休息基底恢复；
+  - 非休息时仅当常态恢复动作开关开启才走常态基底恢复。
+
+## 5) 与饱食/饮水耦合（强制）
+
+- 体力与 `satiety/thirst` 的关系只能通过：
+  - 恢复公式乘子（如 `satietyMultiplier`）
+  - 动作门禁（如 `stamina_cost > 0` 拦截）
+- 禁止通过“体力分段监听 Buff”中转这些耦合逻辑。
+
+## 6) 存档与接口（实现约定）
+
+- 若新增/修改相关状态位，需确保 `Survival.getState/setState` 双向可持久化（当前包含 `is_stamina_regen_action_active`）。
+- 不得破坏既有 `stamina` 消耗入口（`consumeStamina`）与可行动判定（`canPerformStaminaOrEnergyAction`）的一致性。
+
+## 7) 禁止事项
+
+- 禁止把体力迁移成多区间监听并叠加多个体力 Buff。
+- 禁止在多个模块维护并行的“体力 0 点门禁”真相（统一以 `Survival` 判定为准）。
+- 禁止在未定义动作态的情况下恢复“每 tick 常态自动回体力”旧行为。
+
+## 8) 昏迷（Coma）补充约束（已定）
+
+- 昏迷使用独立 Buff（当前：`survival_coma`，持续 10 tick）。
+- 昏迷期间统一门禁：无法移动、无法互动（并阻断战斗/采集/设施入口等玩家主动行为）。
+- 触发昏迷后清空筋疲力尽计数；昏迷期间不累计该计数，避免“昏迷白亏计时”。
+- 昏迷期间不挂“筋疲力尽”显示态（如存在应移除）。
+- 昏迷结束后若 `stamina` 仍为 `0`，从**下一 tick**开始重新计算筋疲力尽计时。
+- 昏迷期间世界时间照常推进（不冻结全局 tick）。
+- 若同 tick 同时满足死亡与昏迷条件，按**死亡优先**处理（昏迷不再落地）。

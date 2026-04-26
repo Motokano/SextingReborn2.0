@@ -49,8 +49,22 @@
      */
     function resolvePlayerInitiatedExchange(o) {
         o = o || {};
-        var Vp = Math.floor(Number(o.playerSpeed)) || 0;
-        var Ve = Math.floor(Number(o.enemySpeed)) || 0;
+        var VpRaw = Number(o.playerSpeed);
+        var VeRaw = Number(o.enemySpeed);
+        if (!isFinite(VpRaw)) VpRaw = 0;
+        if (!isFinite(VeRaw)) VeRaw = 0;
+        var moveSpeedMulPlayer = 1;
+        var moveSpeedMulEnemy = 1;
+        if (global.BuffSystem && typeof global.BuffSystem.getBattleMoveSpeedMultiplier === 'function') {
+            moveSpeedMulPlayer = Number(global.BuffSystem.getBattleMoveSpeedMultiplier('player')) || 1;
+            if (o.enemyOwnerId != null && String(o.enemyOwnerId)) {
+                moveSpeedMulEnemy = Number(global.BuffSystem.getBattleMoveSpeedMultiplier(String(o.enemyOwnerId))) || 1;
+            }
+            if (!isFinite(moveSpeedMulPlayer) || moveSpeedMulPlayer <= 0) moveSpeedMulPlayer = 1;
+            if (!isFinite(moveSpeedMulEnemy) || moveSpeedMulEnemy <= 0) moveSpeedMulEnemy = 1;
+        }
+        var Vp = Math.floor(VpRaw * moveSpeedMulPlayer) || 0;
+        var Ve = Math.floor(VeRaw * moveSpeedMulEnemy) || 0;
         if (Vp < 1) Vp = 1;
         if (Ve < 1) Ve = 1;
 

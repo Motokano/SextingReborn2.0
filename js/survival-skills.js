@@ -23,7 +23,7 @@
         { id: 'survival_surgery', name: '手术', desc: '提升手术对肢体损毁值上限的临时修复比例。' },
         { id: 'survival_sleep', name: '睡眠', desc: '缩短通过睡眠恢复体力所需的 tick 数。' },
         { id: 'survival_ningqi', name: '凝气', desc: '每回合额外回复体力与底气，与呼吸属性共同决定回复速度。' },
-        { id: 'survival_weather_resist', name: '耐候', desc: '降低极端气候导致的体温波动与额外消耗。' }
+        { id: 'survival_weather_resist', name: '耐候', desc: '提高极端温度触发阈值容忍度（每级 +0.1°C）。' }
     ];
 
     var skillsTable = FALLBACK_SKILLS.map(function (r) {

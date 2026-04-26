@@ -30,6 +30,8 @@
 | 身体部位与状态 | [09-body-parts.md](09-body-parts.md) | 七部位、效果、损毁、手术 |
 | 敌人设计 | [10-enemies.md](10-enemies.md) | 敌人与主角差异、配置、掉落池 |
 | 技能系统 | [11-skills.md](11-skills.md) | 生存/生活/战斗/特殊、熟练度、战斗技能通用规则与示例 |
+| 体温 Buff 实施清单 | [24-temperature-buff-implementation-checklist.md](24-temperature-buff-implementation-checklist.md) | 体温重构部署清单：区域温度/四季、极寒极热 Buff、耐候阈值与升级接线、验收用例 |
+| 身高与 BMI（首版） | [25-height-bmi.md](25-height-bmi.md) | 身高字段、创建时 BMI=22 反算体重、WHO 分段、bmi_tier_changed 事件、NPC BMI 条件与旧档兼容 |
 | 烹饪系统（实现收口） | [21-cooking-system-benchmarks.md](21-cooking-system-benchmarks.md) | 烹饪当前实现口径：单次制作、统一配方路由优先、旧表兜底、图鉴双写兼容 |
 | 统一配方系统（实现口径） | [22-recipe-system-unified.md](22-recipe-system-unified.md) | 配方主表/工艺表/interface、schema 校验、route 优先级、兼容期双写约定 |
 | Buff / Debuff 系统 | [18-buff-system.md](18-buff-system.md) | 通用触发、分层消耗、命中/效果条件、调试开关 |

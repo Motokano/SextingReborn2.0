@@ -27,6 +27,37 @@
 - 作用：限制行动、限制移动、动作标签增减、临时功能封禁等。
 - 实现：在动作可执行判定阶段读取当前状态。
 
+### 18.2.1 生存状态监听边界（mood / diqi）
+
+- `mood` 允许使用“**数值 + 状态 Buff 映射**”模式：数值真相保持在 `Survival.state.mood`，状态 Buff 仅表达当前分段（如 low/normal/high）。
+- `mood` 分段切换可发 `event_kind=survival`、`event_name=mood_state_changed`，供监听链路使用。
+- `diqi`（底气）不走状态监听 Buff 分段；其真相始终为战斗资源本体（`diqi_current / diqi_max / diqi_cap_limit`）并在战斗/呼吸法链路直接结算。
+
+### 18.2.2 生存效果单一真相（强制）
+
+- 生存属性数值真相在 `Survival.state`（如 `satiety/thirst/nutrition/stamina/energy/mood/body_temperature`）。
+- Buff 负责两类事情：
+  - 监听 `survival` 事件并施加效果（如 `survival_delta`、状态类 effect）；
+  - 映射状态分段（如 `survival_mood_low/high`、`survival_temp_extreme_cold/hot`）。
+- 禁止并行维护“第二套生存结算真相”（例如在 UI 或子系统独立再算一套分段与惩罚）。
+- 生存数值变更后的对外广播统一走 `event_kind=survival` 事件：`survival_state_changed`、`mood_state_changed`、`body_temperature_state_changed`。
+
+### 18.2.3 `disable_actions` 与 `disable_movement` 边界（强制）
+
+- `disable_movement` 视为旧 effect 兼容写法，运行时等价于 `disable_actions(move)`。
+- `disable_actions` 是通用动作禁用 effect：
+  - 支持 `params.action_types`（数组）；
+  - 兼容 `params.actions`（数组）与 `params.action_type`（字符串）；
+  - `movement` 会被规范化为 `move`。
+- 边界定义：
+  - `disable_movement` / `disable_actions(move)` 只禁“移动动作”；
+  - 不自动禁用战斗、对话、背包、制作等其它动作；
+  - 其它动作禁用必须显式写入 `disable_actions` 的 action 列表。
+- 运行时查询口径：
+  - 是否禁移动：`hasMovementDisabled(ownerId)`；
+  - 是否禁某动作：`hasActionDisabled(ownerId, actionType)`；
+  - 当前禁用动作集合：`getDisabledActions(ownerId)`。
+
 ### C. 规则型（Rule Modifier）
 
 - 作用：改写判定规则（如伤害类型变换、招架封顶突破、特殊触发链等）。
@@ -153,7 +184,7 @@ type BuffEventContext = {
   event_id: string;             // 同一次动作/结算链唯一 ID，用于防重
   tick: number;
 
-  event_kind: "combat" | "action" | "dialogue" | "world" | "ui";
+  event_kind: "combat" | "action" | "dialogue" | "world" | "survival" | "buff" | "ui";
   event_name: string;
   tags?: string[];
 
@@ -163,8 +194,40 @@ type BuffEventContext = {
   hit_roll_success?: boolean;   // 命中判定是否成功（本项目 onHit 用此字段）
   effect_applied?: boolean;     // 是否对目标产生实际效果
   damage_applied?: number;      // 可选，便于扩展与调试
+  payload?: Record<string, any>;
 };
 ```
+
+### 18.5.1 生存事件标准口径（当前实现）
+
+- `survival_state_changed`
+  - `event_kind`: `survival`
+  - `tags`: `['survival','state','player','survival_state']`
+  - `payload`:
+    - `reason`
+    - `changed_fields`
+    - `before`
+    - `after`
+    - `extra`
+- `mood_state_changed`
+  - `event_kind`: `survival`
+  - `tags`: `['survival','mood','state','player']`
+  - `payload`:
+    - `old_range`
+    - `new_range`
+    - `mood`
+- `body_temperature_state_changed`
+  - `event_kind`: `survival`
+  - `tags`: `['survival','temperature','state','player', 'temp_extreme_cold|temp_extreme_hot|temp_comfort']`
+  - `payload`:
+    - `old_range`
+    - `new_range`
+    - `body_temperature`
+    - `body_temperature_standard`
+    - `ambient_temperature`
+    - `weather_resist_shift`
+
+以上事件名与 tag 必须先在 `data/editor/buff_event_registry.json` 注册，再在 `data/buffs.json` 与运行时调用中引用。
 
 ### 接口开放范围（强制）
 

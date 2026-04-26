@@ -293,6 +293,9 @@
         .progress-fill.thirst { background: rgba(29, 78, 216, 0.6); }
         .progress-fill.stamina { background: rgba(34, 197, 94, 0.6); }
         .progress-fill.energy { background: rgba(139, 92, 246, 0.6); }
+        .progress-fill.mood { background: rgba(236, 72, 153, 0.68); }
+        .progress-fill.nutrition { background: rgba(16, 185, 129, 0.7); }
+        .progress-fill.dirtyness { background: rgba(217, 119, 6, 0.7); }
         .role-card { background: rgba(45, 36, 30, 0.95); border: 2px solid rgba(212, 163, 115, 0.4); padding: 18px 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.3); margin-bottom: 14px; }
         .role-card h1 { font-size: 1.65rem; font-weight: 800; color: #fff; letter-spacing: 0.12em; margin: 0; line-height: 1.3; }
         .role-card .subtitle { font-size: 15px; color: #fbbf24; font-weight: 600; margin-top: 8px; letter-spacing: 0.06em; }
@@ -1759,6 +1762,16 @@
             padding: 8px; background: #1a1512; font-size: 9px; font-weight: 800; color: #ff8c00;
             text-transform: uppercase; letter-spacing: 0.12em; text-align: center;
         }
+        #picker-move .picker-tab-row {
+            display: flex; gap: 4px; margin-bottom: 6px; padding: 0 2px;
+        }
+        #picker-move .picker-tab-btn {
+            flex: 1; font-size: 11px; padding: 4px 8px; border-radius: 3px;
+            border: 1px solid #5c4d3a; background: #2a211b; color: #d4c4b0; cursor: pointer;
+        }
+        #picker-move .picker-tab-btn.active {
+            border-color: #d3a060; color: #1a1512; background: #d3a060; font-weight: 800;
+        }
         #picker-move .picker-list { max-height: 256px; overflow-y: auto; }
         #picker-move .picker-list button {
             width: 100%; padding: 16px; text-align: left; border: none; border-bottom: 1px solid rgba(61,45,36,0.5);
@@ -2373,6 +2386,23 @@
         #character-creation-card .creation-name::placeholder {
             color: #57534e;
         }
+        #character-creation-card .creation-height {
+            width: 100%;
+            padding: 10px 12px;
+            font-size: 14px;
+            color: #e8e6e3;
+            background: #26211d;
+            border: 1px solid #4d3f35;
+            border-radius: 6px;
+            box-sizing: border-box;
+        }
+        #character-creation-card .creation-height:focus {
+            outline: none;
+            border-color: #fbbf24;
+        }
+        #character-creation-card .creation-height::placeholder {
+            color: #57534e;
+        }
         #character-creation-card .attr-row {
             display: flex;
             align-items: center;
@@ -2504,6 +2534,10 @@
                 </div>
             </div>
             <div class="creation-field">
+                <label for="creation-height" data-ui="creation.height.label"></label>
+                <input type="number" id="creation-height" class="creation-height" min="140" max="210" step="1" value="178" data-ui="creation.height.placeholder" data-ui-attr="placeholder">
+            </div>
+            <div class="creation-field">
                 <label data-ui="creation.innate.label"></label>
                 <div id="creation-attr-rows"></div>
                 <div id="creation-points" class="creation-points"></div>
@@ -2583,24 +2617,41 @@
                     </div>
                     <div class="status-card" id="status-survival">
                         <div class="block-title" data-ui="status.block.survival"></div>
-                        <div class="survival-row">
+                        <div class="survival-row" id="status-metric-satiety">
                             <div class="row"><span class="label" data-ui="status.label.satiety"></span><span class="value" id="status-satiety-text"></span></div>
                             <div class="progress-wrap"><div class="progress-fill satiety" id="status-satiety-bar" style="width:100%"></div></div>
                         </div>
-                        <div class="survival-row" style="margin-top:12px">
+                        <div class="survival-row" id="status-metric-thirst" style="margin-top:12px">
                             <div class="row"><span class="label" data-ui="status.label.thirst"></span><span class="value" id="status-thirst-text"></span></div>
                             <div class="progress-wrap"><div class="progress-fill thirst" id="status-thirst-bar" style="width:100%"></div></div>
                         </div>
-                        <div class="survival-row" style="margin-top:12px">
+                        <div class="survival-row" id="status-metric-mood" style="margin-top:12px">
+                            <div class="row"><span class="label" data-ui="status.label.mood"></span><span class="value" id="status-mood">—</span></div>
+                            <div class="progress-wrap"><div class="progress-fill mood" id="status-mood-bar" style="width:50%"></div></div>
+                        </div>
+                        <div class="survival-row" id="status-metric-nutrition" style="margin-top:12px">
+                            <div class="row"><span class="label" data-ui="status.label.nutrition"></span><span class="value" id="status-nutrition">—</span></div>
+                            <div class="progress-wrap"><div class="progress-fill nutrition" id="status-nutrition-bar" style="width:100%"></div></div>
+                        </div>
+                        <div class="survival-row" id="status-metric-dirtyness" style="margin-top:12px">
+                            <div class="row"><span class="label" data-ui="status.label.dirtyness"></span><span class="value" id="status-dirtyness">—</span></div>
+                            <div class="progress-wrap"><div class="progress-fill dirtyness" id="status-dirtyness-bar" style="width:0%"></div></div>
+                        </div>
+                        <div class="survival-row" id="status-metric-stamina" style="margin-top:12px">
                             <div class="row"><span class="label" data-ui="status.label.stamina"></span><span class="value" id="status-stamina-text">—</span></div>
                             <div class="progress-wrap"><div class="progress-fill stamina" id="status-stamina-bar" style="width:100%"></div></div>
                         </div>
-                        <div class="survival-row" style="margin-top:12px">
+                        <div class="survival-row" id="status-metric-energy" style="margin-top:12px">
                             <div class="row"><span class="label" data-ui="status.label.energy"></span><span class="value" id="status-energy-text">—</span></div>
                             <div class="progress-wrap"><div class="progress-fill energy" id="status-energy-bar" style="width:100%"></div></div>
                         </div>
-                        <div class="row" style="margin-top:8px"><span class="label" data-ui="status.label.weight"></span><span class="value" id="status-weight">—</span></div>
+                        <div class="row" id="status-metric-weight" style="margin-top:8px"><span class="label" data-ui="status.label.weight"></span><span class="value" id="status-weight">—</span></div>
                         <div class="row" style="margin-top:4px"><span class="label" data-ui="status.label.carry"></span><span class="value" id="status-carry">—</span></div>
+                    </div>
+                    <div class="status-card" id="status-resources">
+                        <div class="block-title" data-ui="status.block.resources"></div>
+                        <div class="row"><span class="label" data-ui="status.label.potential"></span><span class="value" id="status-potential">—</span></div>
+                        <div class="row" style="margin-top:4px"><span class="label" data-ui="status.label.combat_experience"></span><span class="value" id="status-combat-experience">—</span></div>
                     </div>
                     <details class="details-block" id="status-attrs-block" open>
                         <summary><span data-ui="status.block.attrs"></span> <span>▼</span></summary>
