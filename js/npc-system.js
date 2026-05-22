@@ -534,9 +534,32 @@
         } catch (e1) { /* ignore */ }
     }
 
-    function applyEffects(effects) {
+    function buildAttrExpEventContext(effectType, effectParams, effectMeta) {
+        var meta = effectMeta || {};
+        var eventKind = meta.event_kind || 'dialogue';
+        var eventName = meta.event_name || 'npc_effect_applied';
+        var sourceId = meta.source_id || '';
+        var tick = -1;
+        try {
+            if (global.Survival && typeof global.Survival.getState === 'function') {
+                var st = global.Survival.getState() || {};
+                if (st.tickCount != null) tick = Math.max(0, Math.floor(Number(st.tickCount) || 0));
+            }
+        } catch (eTick) { /* ignore */ }
+        return {
+            event_kind: eventKind,
+            event_name: eventName,
+            source_id: sourceId,
+            effect_type: effectType || '',
+            effect_params: effectParams || {},
+            tick: tick
+        };
+    }
+
+    function applyEffects(effects, effectMeta) {
         if (!Array.isArray(effects)) return;
         var IE = global.InventoryEquipment;
+        var CA = global.CharacterAttributes;
         for (var i = 0; i < effects.length; i++) {
             var ef = effects[i];
             if (!ef || !ef.type) continue;
@@ -613,6 +636,65 @@
                     refreshAfterNpcInventoryMutation();
                 } catch (eCookW) {
                     log('[NPCSystem] Effect setCookingStationWater failed: ' + String(eCookW && eCookW.message ? eCookW.message : eCookW), 'warn');
+                }
+            }
+            if (ef.type === 'grantAttributeExp' && ef.params) {
+                var grantCtx = buildAttrExpEventContext(ef.type, ef.params, effectMeta);
+                if (!CA || typeof CA.grantAttributeExp !== 'function') {
+                    log('[NPCSystem] Effect grantAttributeExp skipped: CharacterAttributes.grantAttributeExp unavailable'
+                        + ' event=' + String(grantCtx.event_name)
+                        + ' source=' + String(grantCtx.source_id), 'warn');
+                    continue;
+                }
+                try {
+                    var grants = Array.isArray(ef.params.grants) ? ef.params.grants : [];
+                    var ownerId = ef.params.ownerId != null ? String(ef.params.ownerId).trim() : 'player';
+                    var grantRes = CA.grantAttributeExp(ownerId || 'player', grants, grantCtx);
+                    if (!grantRes || grantRes.ok !== true) {
+                        log('[NPCSystem] Effect grantAttributeExp failed: event=' + String(grantCtx.event_name)
+                            + ' source=' + String(grantCtx.source_id)
+                            + ' reason=' + String(grantRes && grantRes.reason ? grantRes.reason : 'unknown'), 'warn');
+                    } else {
+                        log('[NPCSystem] Effect grantAttributeExp applied: event=' + String(grantCtx.event_name)
+                            + ' source=' + String(grantCtx.source_id)
+                            + ' count=' + String(Array.isArray(grantRes.applied) ? grantRes.applied.length : 0), 'system');
+                    }
+                } catch (eGrantAttr) {
+                    log('[NPCSystem] Effect grantAttributeExp exception: event=' + String(grantCtx.event_name)
+                        + ' source=' + String(grantCtx.source_id)
+                        + ' err=' + String(eGrantAttr && eGrantAttr.message ? eGrantAttr.message : eGrantAttr), 'warn');
+                }
+            }
+            if (ef.type === 'settleAttributeExpOnce') {
+                var settleCtx = buildAttrExpEventContext(ef.type, ef.params || {}, effectMeta);
+                if (!CA || typeof CA.settleAttributeExpOnce !== 'function') {
+                    log('[NPCSystem] Effect settleAttributeExpOnce skipped: CharacterAttributes.settleAttributeExpOnce unavailable'
+                        + ' event=' + String(settleCtx.event_name)
+                        + ' source=' + String(settleCtx.source_id), 'warn');
+                    continue;
+                }
+                try {
+                    var ownerId2 = ef.params && ef.params.ownerId != null ? String(ef.params.ownerId).trim() : 'player';
+                    var settleRes = CA.settleAttributeExpOnce(ownerId2 || 'player', settleCtx);
+                    if (!settleRes || settleRes.ok !== true) {
+                        log('[NPCSystem] Effect settleAttributeExpOnce failed: event=' + String(settleCtx.event_name)
+                            + ' source=' + String(settleCtx.source_id)
+                            + ' reason=' + String(settleRes && settleRes.reason ? settleRes.reason : 'unknown'), 'warn');
+                    } else if (settleRes.dedup_skipped) {
+                        log('[NPCSystem] Effect settleAttributeExpOnce dedup skipped: event=' + String(settleCtx.event_name)
+                            + ' source=' + String(settleCtx.source_id), 'system');
+                    } else if (settleRes.lock_skipped) {
+                        log('[NPCSystem] Effect settleAttributeExpOnce lock skipped: event=' + String(settleCtx.event_name)
+                            + ' source=' + String(settleCtx.source_id), 'warn');
+                    } else {
+                        log('[NPCSystem] Effect settleAttributeExpOnce done: event=' + String(settleCtx.event_name)
+                            + ' source=' + String(settleCtx.source_id)
+                            + ' any_success=' + String(!!settleRes.any_success), 'system');
+                    }
+                } catch (eSettleAttr) {
+                    log('[NPCSystem] Effect settleAttributeExpOnce exception: event=' + String(settleCtx.event_name)
+                        + ' source=' + String(settleCtx.source_id)
+                        + ' err=' + String(eSettleAttr && eSettleAttr.message ? eSettleAttr.message : eSettleAttr), 'warn');
                 }
             }
         }
@@ -784,6 +866,9 @@
         return menuEl;
     }
     function closeMenu() { if (menuEl) menuEl.style.display = 'none'; }
+    function isMenuOpen() {
+        return !!(menuEl && menuEl.style && menuEl.style.display !== 'none');
+    }
 
     function openMenu(npcId) {
         ensureMenuEl();
@@ -850,6 +935,13 @@
                 return tagsC.indexOf('compost_station') >= 0;
             }
 
+            function shouldShowSleepAtBedButton(def0) {
+                if (!def0 || !def0.mainMenu || typeof def0.mainMenu !== 'object') return false;
+                if (def0.mainMenu.showSleepAtBed === true) return true;
+                var tagsB = Array.isArray(def0.tags) ? def0.tags : [];
+                return tagsB.indexOf('bed_station') >= 0;
+            }
+
             function tUi(key, fb) {
                 try {
                     if (global.UIText && typeof global.UIText.t === 'function') return global.UIText.t(key);
@@ -908,7 +1000,12 @@
                                 playerName: getPlayerName(),
                                 options: entry && entry.dialogue ? entry.dialogue.options : null,
                                 onQueueExhausted: function () {
-                                    applyEffects(entry.effects);
+                                    applyEffects(entry.effects, {
+                                        event_kind: 'dialogue',
+                                        event_name: 'npc_dialogue_entry_effects',
+                                        source_id: entry && entry.id ? String(entry.id) : '',
+                                        npc_id: def && def.id ? String(def.id) : ''
+                                    });
                                     if (entry.repeatable === false) markTriggered(entry.id);
                                     if (entry.id === 'supervisor.firstTalk_01'
                                         && global.CharacterAttributes
@@ -927,7 +1024,12 @@
                                 speakerName: def.displayTitle || def.name || 'NPC',
                                 text: entry.dialogue.lines.join('\n')
                             });
-                            applyEffects(entry.effects);
+                            applyEffects(entry.effects, {
+                                event_kind: 'dialogue',
+                                event_name: 'npc_dialogue_entry_effects',
+                                source_id: entry && entry.id ? String(entry.id) : '',
+                                npc_id: def && def.id ? String(def.id) : ''
+                            });
                             if (entry.repeatable === false) markTriggered(entry.id);
                         }
                     }
@@ -994,6 +1096,16 @@
                     }
                 });
                 btnWrap.appendChild(compostBtn);
+            }
+
+            if (shouldShowSleepAtBedButton(def)) {
+                var bedBtn = mkBtn(tUi('npc.menu.sleep_at_bed', '睡觉'), function () {
+                    closeMenu();
+                    if (global.SceneApp && typeof global.SceneApp.trySleepAtBed === 'function') {
+                        global.SceneApp.trySleepAtBed();
+                    }
+                });
+                btnWrap.appendChild(bedBtn);
             }
 
             btnWrap.appendChild(mkBtn('离开', function () { closeMenu(); }));
@@ -1107,6 +1219,7 @@
             var nm = d.name != null ? String(d.name).trim() : '';
             return nm || '';
         },
+        isMenuOpen: isMenuOpen,
         openMenu: openMenu,
         scanChatEntry: scanChatEntry,
         FLAG_PLAYER_EPITHET_USELESS: FLAG_PLAYER_EPITHET_USELESS,

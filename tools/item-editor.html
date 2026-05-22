@@ -104,11 +104,50 @@
         .panel-module-manager{
             grid-column: 2;
         }
+        .panel-field-rules{
+            grid-column: 1 / -1;
+        }
         @media (max-width: 1100px){
             .panel-module-manager{
                 grid-column: auto;
             }
         }
+        .colItem.no-rule{
+            border-color: rgba(251,191,36,0.45);
+            background: rgba(251,191,36,0.08);
+        }
+        .colItem .rule-line{
+            font-size: 11px;
+            color: var(--muted);
+            margin-top: 4px;
+            white-space: normal;
+            overflow-wrap: anywhere;
+            word-break: break-word;
+        }
+        .colItem .rule-line.warn{
+            color: #fcd34d;
+            font-weight: 900;
+        }
+        .field-rules-grid{
+            display:grid;
+            grid-template-columns: 280px 1fr;
+            gap: 14px;
+            align-items: start;
+        }
+        @media (max-width: 900px){ .field-rules-grid{ grid-template-columns: 1fr; } }
+        .validation-box{
+            margin-top: 12px;
+            padding: 10px 12px;
+            border: 1px dashed var(--border2);
+            border-radius: 10px;
+            background: rgba(148,163,184,0.06);
+            font-size: 12px;
+            color: var(--muted);
+            white-space: pre-wrap;
+            max-height: 220px;
+            overflow: auto;
+        }
+        .validation-box strong{ color: var(--text); }
         .panel .title{
             padding: 12px 14px;
             border-bottom: 1px solid var(--border);
@@ -139,14 +178,17 @@
         @media (max-width: 900px){ .grid2{ grid-template-columns: 1fr; } }
         .colList{ display:grid; gap: 8px; margin-top: 12px; }
         .colItem{
-            display:flex; gap: 10px; align-items:center;
+            display:flex; gap: 10px; align-items:flex-start;
+            flex-wrap: wrap;
             padding: 8px 10px;
             border: 1px solid var(--border);
             border-radius: 10px;
             background: rgba(148,163,184,0.08);
         }
+        .colItem .rule-line{ flex: 1 1 100%; order: 4; }
+        .colItem > button{ order: 5; margin-left: auto; }
         .colItem .colName{
-            flex: 1;
+            flex: 1 1 120px;
             min-width: 0;
             overflow:hidden;
             text-overflow: ellipsis;
@@ -154,7 +196,14 @@
             font-weight: 1000;
             font-size: 12px;
         }
-        .colItem .meta{ color: var(--muted2); font-size: 12px; overflow:hidden; white-space: nowrap; text-overflow: ellipsis; }
+        .colItem .meta{
+            flex: 2 1 180px;
+            color: var(--muted2);
+            font-size: 12px;
+            overflow:hidden;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+        }
         .field{
             display:grid;
             grid-template-columns: 180px 1fr;
@@ -210,6 +259,12 @@
             <input id="item-modules-file-input" type="file" accept=".json,application/json" style="display:none;" />
             <button type="button" id="btn-export-item-modules">导出物品信息模块表</button>
             <span class="hint" id="item-modules-status">未载入模块表</span>
+        </div>
+        <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+            <button type="button" id="btn-load-field-rules">载入字段显示规则表</button>
+            <input id="field-rules-file-input" type="file" accept=".json,application/json" style="display:none;" />
+            <button type="button" id="btn-export-field-rules">导出字段显示规则表</button>
+            <span class="hint" id="field-rules-toolbar-status">字段规则：未载入</span>
         </div>
     </div>
 </div>
@@ -270,11 +325,84 @@
         </div>
     </div>
 
+    <div class="panel panel-field-rules">
+        <div class="title">物品字段规则（字段字典）</div>
+        <div class="content">
+            <div class="hint">
+                编辑全局元数据 <code>item-field-display-rules.json</code>：决定各模板字段的主信息块、技能门闸、等级、renderer 等；<strong>不是</strong>某一行的字段值。低等级时显示 <code>locked_hint</code> 而非字段值。
+                <code>use_effect</code> / <code>satiety_restore</code> / <code>thirst_restore</code> / <code>nutrition_restore</code> 为旧轨，请在规则中标 <code>deprecated</code>，不鼓励继续填 CSV。
+            </div>
+            <div class="field-rules-grid" style="margin-top:12px;">
+                <div>
+                    <label class="hint" style="display:block; margin-bottom:6px;">字段名（CSV 表头 ∪ 规则表 fields）</label>
+                    <input id="field-rules-filter" placeholder="筛选字段名" style="width:100%; margin-bottom:8px;" />
+                    <select id="field-rules-field-select" size="14" style="width:100%; min-height:280px; font-family: ui-monospace, monospace;"></select>
+                    <div class="hint" id="field-rules-csv-exists" style="margin-top:8px;"></div>
+                </div>
+                <div>
+                    <label class="hint" style="display:block; margin-bottom:6px;">快捷模板（写入当前选中字段的规则草稿）</label>
+                    <div style="display:flex; flex-wrap:wrap; gap:8px; margin-bottom:10px;">
+                        <button type="button" id="btn-tpl-regular">常规信息</button>
+                        <button type="button" id="btn-tpl-cooking">烹饪工位信息</button>
+                        <button type="button" id="btn-tpl-food">食物细节</button>
+                        <button type="button" id="btn-tpl-pharmacy">制药信息</button>
+                        <button type="button" id="btn-tpl-planting">堆肥/种植信息</button>
+                        <button type="button" id="btn-tpl-hidden">隐藏/内部字段</button>
+                    </div>
+                    <div class="grid2">
+                        <div class="field">
+                            <label>primary_block</label>
+                            <select id="fr-primary-block"></select>
+                        </div>
+                        <div class="field">
+                            <label>reference_blocks（JSON 数组）</label>
+                            <input id="fr-reference-blocks" placeholder='例如: [] 或 ["cooking_station"]' />
+                        </div>
+                        <div class="field">
+                            <label>skill_id（空=不按生活技能门闸，存 JSON null）</label>
+                            <input id="fr-skill-id" placeholder="如 life_cooking / survival_language" />
+                        </div>
+                        <div class="field">
+                            <label>level_min</label>
+                            <input id="fr-level-min" type="number" step="1" min="0" value="0" />
+                        </div>
+                        <div class="field" style="grid-column: 1 / -1;">
+                            <label>locked_hint（低等级锁定文案）</label>
+                            <textarea id="fr-locked-hint" style="min-height:52px;"></textarea>
+                        </div>
+                        <div class="field">
+                            <label>renderer</label>
+                            <input id="fr-renderer" list="fr-renderer-list" placeholder="从列表选或手输 raw_text" />
+                            <datalist id="fr-renderer-list"></datalist>
+                        </div>
+                        <div class="field">
+                            <label>value_type</label>
+                            <input id="fr-value-type" placeholder="string / number / boolean / integer" />
+                        </div>
+                    </div>
+                    <label class="hint" style="display:flex; gap:8px; align-items:center; margin-top:8px;">
+                        <input type="checkbox" id="fr-visible-default" />
+                        visible_by_default
+                    </label>
+                    <label class="hint" style="display:flex; gap:8px; align-items:center; margin-top:6px;">
+                        <input type="checkbox" id="fr-deprecated" />
+                        deprecated（旧轨/废弃提示）
+                    </label>
+                    <div class="rowActions" style="margin-top:12px;">
+                        <button type="button" class="primary" id="btn-field-rule-apply">写入规则到内存</button>
+                        <button type="button" id="btn-field-rule-delete">删除该字段规则</button>
+                    </div>
+                    <div class="validation-box" id="field-rules-validation"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div class="panel panel-module-manager">
         <div class="title">物品信息模块（item-info-modules）</div>
         <div class="content">
             <div class="hint">
-                管理独立模块表：module_set 下可配置多个模块。字段绑定按当前 CSV 整表表头读取；unlock（skill_id / level_min / locked_hint）按模块单独设置。
+                特殊布局 / 额外文案 / 个别物品覆盖入口：module_set 与 <code>csv_field_text</code> 等仍可用。默认字段分块与技能门闸请以「物品字段规则」全局表为准；模块级 <code>unlock</code> 可与字段规则并存，但避免同一字段在多处重复配置造成口径分裂。
             </div>
             <div class="rowTop" style="margin-top:12px;">
                 <div class="grow">
@@ -445,9 +573,10 @@
         convert_to_high: '低级→高级兑换依据（"目标id,比例"）',
         usable_regions: '货币可用地区代号（分号分隔）',
         info_module_set_id: '物品信息模块集引用 ID（用于模块化 tooltip）',
-        satiety_restore: '食物：使用一次恢复饱食度',
-        thirst_restore: '饮用/带水分消耗：使用一次恢复饮水度',
-        nutrition_restore: '食物：使用一次恢复营养值',
+        satiety_restore: '【旧轨/废弃倾向】映射 use_effect.satiety；新轨请 edible + edible_buff_id，不建议继续填',
+        thirst_restore: '【旧轨/废弃倾向】映射 use_effect.thirst；不建议继续填',
+        nutrition_restore: '【旧轨/废弃倾向】映射 use_effect.nutrition；不建议继续填',
+        use_effect: '【旧轨】即时生存恢复子键容器；与 edible_buff 新轨并存时对账用，规则表请标 deprecated',
         usable: '是否可使用（1/0 或 true/false）',
         use_buff_id: '使用时触发的 Buff ID（来自 data/buffs.json）',
         edible: '是否可食用（1/0 或 true/false）',
@@ -467,7 +596,9 @@
         selectedRowIndex: 0,
         selectedColIndex: 0,
         edibleBuffOptions: [],
-        itemInfoModules: { schema_version: 1, module_sets: {} }
+        itemInfoModules: { schema_version: 1, module_sets: {} },
+        fieldDisplayRules: null,
+        selectedFieldRuleName: ''
     };
     var moduleDraft = [];
 
@@ -513,7 +644,33 @@
         moduleSetVisualEditor: $('module-set-visual-editor'),
         btnModuleSetSave: $('btn-module-set-save'),
         btnModuleSetReset: $('btn-module-set-reset'),
-        moduleSetHint: $('module-set-hint')
+        moduleSetHint: $('module-set-hint'),
+
+        btnLoadFieldRules: $('btn-load-field-rules'),
+        fieldRulesFileInput: $('field-rules-file-input'),
+        btnExportFieldRules: $('btn-export-field-rules'),
+        fieldRulesToolbarStatus: $('field-rules-toolbar-status'),
+        fieldRulesFilter: $('field-rules-filter'),
+        fieldRulesFieldSelect: $('field-rules-field-select'),
+        fieldRulesCsvExists: $('field-rules-csv-exists'),
+        frPrimaryBlock: $('fr-primary-block'),
+        frReferenceBlocks: $('fr-reference-blocks'),
+        frSkillId: $('fr-skill-id'),
+        frLevelMin: $('fr-level-min'),
+        frLockedHint: $('fr-locked-hint'),
+        frRenderer: $('fr-renderer'),
+        frValueType: $('fr-value-type'),
+        frVisibleDefault: $('fr-visible-default'),
+        frDeprecated: $('fr-deprecated'),
+        btnFieldRuleApply: $('btn-field-rule-apply'),
+        btnFieldRuleDelete: $('btn-field-rule-delete'),
+        fieldRulesValidation: $('field-rules-validation'),
+        btnTplRegular: $('btn-tpl-regular'),
+        btnTplCooking: $('btn-tpl-cooking'),
+        btnTplFood: $('btn-tpl-food'),
+        btnTplPharmacy: $('btn-tpl-pharmacy'),
+        btnTplPlanting: $('btn-tpl-planting'),
+        btnTplHidden: $('btn-tpl-hidden')
     };
 
     function isTruthy(v){
@@ -1024,6 +1181,472 @@
         if (el.moduleSetHint) el.moduleSetHint.textContent = '已保存模块集：' + sid;
     }
 
+    // ---------- 物品字段显示规则（全局元数据 item-field-display-rules.json） ----------
+    var DEFAULT_FIELD_RULE_BLOCKS = {
+        cooking_station: { display_name: '烹饪工位信息', default_skill_id: 'life_cooking', default_visible: false },
+        food_detail: { display_name: '食物细节', default_skill_id: 'life_cooking', default_visible: false },
+        legacy_use_effect: { display_name: '旧轨即时生存恢复（废弃，不进入新展示分块）', default_visible: false },
+        pharmacy: { display_name: '制药信息', default_skill_id: 'life_pharmacy', default_visible: false },
+        planting_compost: { display_name: '堆肥/种植信息', default_skill_id: 'life_planting', default_visible: false },
+        regular: { display_name: '常规信息', default_visible: true }
+    };
+
+    var FIELD_RULE_QUICK_TEMPLATES = {
+        regular: {
+            primary_block: 'regular',
+            reference_blocks: [],
+            skill_id: null,
+            level_min: 0,
+            locked_hint: '',
+            renderer: 'raw_text',
+            value_type: 'string',
+            visible_by_default: true,
+            deprecated: false
+        },
+        cooking_station: {
+            primary_block: 'cooking_station',
+            reference_blocks: [],
+            skill_id: 'life_cooking',
+            level_min: 1,
+            locked_hint: '烹饪经验不足，无法解读该字段',
+            renderer: 'number',
+            value_type: 'number',
+            visible_by_default: false,
+            deprecated: false
+        },
+        food_detail: {
+            primary_block: 'food_detail',
+            reference_blocks: [],
+            skill_id: 'life_cooking',
+            level_min: 2,
+            locked_hint: '烹饪经验不足，无法解读食物相关信息',
+            renderer: 'tick_duration',
+            value_type: 'integer',
+            visible_by_default: false,
+            deprecated: false
+        },
+        pharmacy: {
+            primary_block: 'pharmacy',
+            reference_blocks: [],
+            skill_id: 'life_pharmacy',
+            level_min: 1,
+            locked_hint: '制药经验不足，无法解读该字段',
+            renderer: 'bool_tag',
+            value_type: 'boolean',
+            visible_by_default: false,
+            deprecated: false
+        },
+        planting_compost: {
+            primary_block: 'planting_compost',
+            reference_blocks: [],
+            skill_id: 'life_planting',
+            level_min: 1,
+            locked_hint: '种植/堆肥经验不足，无法解读该字段',
+            renderer: 'number',
+            value_type: 'number',
+            visible_by_default: false,
+            deprecated: false
+        },
+        hidden_internal: {
+            primary_block: 'regular',
+            reference_blocks: [],
+            skill_id: null,
+            level_min: 0,
+            locked_hint: '',
+            renderer: 'hidden',
+            value_type: 'string',
+            visible_by_default: false,
+            deprecated: false
+        }
+    };
+
+    function normalizeFieldRulesPayload(obj){
+        obj = obj || {};
+        var blocks = obj.blocks && typeof obj.blocks === 'object' && Object.keys(obj.blocks).length
+            ? JSON.parse(JSON.stringify(obj.blocks))
+            : JSON.parse(JSON.stringify(DEFAULT_FIELD_RULE_BLOCKS));
+        var renderers = obj.renderers && typeof obj.renderers === 'object' ? JSON.parse(JSON.stringify(obj.renderers)) : {};
+        if (!renderers.raw_text) renderers.raw_text = { display_name: '原文', value_type_hint: 'string' };
+        return {
+            _comment: obj._comment,
+            schema_version: String(obj.schema_version != null ? obj.schema_version : '1.0.0'),
+            blocks: blocks,
+            fields: obj.fields && typeof obj.fields === 'object' ? JSON.parse(JSON.stringify(obj.fields)) : {},
+            renderers: renderers
+        };
+    }
+
+    function loadFieldRulesFromObject(obj){
+        state.fieldDisplayRules = normalizeFieldRulesPayload(obj);
+        refreshFieldRulesToolbarStatus();
+        refreshPrimaryBlockSelect();
+        refreshRendererDatalist();
+        refreshFieldRulesFieldSelect(true);
+        refreshColList();
+        renderFieldRulesValidation();
+        return true;
+    }
+
+    function loadFieldRulesFromLocalFile(file){
+        clearError();
+        if (!file){
+            showError('未选择字段规则文件');
+            return;
+        }
+        var reader = new FileReader();
+        reader.onload = function(){
+            try {
+                var text = String(reader.result || '');
+                var parsed = JSON.parse(text);
+                loadFieldRulesFromObject(parsed);
+            } catch (e) {
+                showError('读取字段规则失败：' + String(e && e.message ? e.message : e));
+            }
+        };
+        reader.onerror = function(){ showError('读取字段规则失败'); };
+        reader.readAsText(file);
+    }
+
+    function exportFieldRulesJson(){
+        var payload = state.fieldDisplayRules
+            ? normalizeFieldRulesPayload(state.fieldDisplayRules)
+            : normalizeFieldRulesPayload({});
+        var out = {
+            schema_version: payload.schema_version,
+            blocks: payload.blocks,
+            fields: payload.fields,
+            renderers: payload.renderers
+        };
+        if (state.fieldDisplayRules && state.fieldDisplayRules._comment) out._comment = state.fieldDisplayRules._comment;
+        download(
+            'item-field-display-rules_export_' + new Date().toISOString().slice(0, 19).replace(/[:T]/g, '-') + '.json',
+            JSON.stringify(out, null, 2),
+            'application/json;charset=utf-8'
+        );
+        refreshFieldRulesToolbarStatus();
+        if (el.fieldRulesToolbarStatus) {
+            el.fieldRulesToolbarStatus.textContent += ' | 已导出 JSON';
+        }
+    }
+
+    function refreshFieldRulesToolbarStatus(){
+        if (!el.fieldRulesToolbarStatus) return;
+        if (!state.fieldDisplayRules){
+            el.fieldRulesToolbarStatus.textContent = '字段规则：未载入';
+            return;
+        }
+        var n = state.fieldDisplayRules.fields ? Object.keys(state.fieldDisplayRules.fields).length : 0;
+        el.fieldRulesToolbarStatus.textContent =
+            '字段规则：已载入 | schema=' + state.fieldDisplayRules.schema_version + ' | fields=' + n;
+    }
+
+    function headerSetFromCsv(){
+        var o = {};
+        for (var i = 0; i < state.headers.length; i++) o[state.headers[i]] = true;
+        return o;
+    }
+
+    function getMergedFieldNames(){
+        var m = {};
+        for (var i = 0; i < state.headers.length; i++) m[state.headers[i]] = true;
+        if (state.fieldDisplayRules && state.fieldDisplayRules.fields){
+            var ks = Object.keys(state.fieldDisplayRules.fields);
+            for (var j = 0; j < ks.length; j++) m[ks[j]] = true;
+        }
+        var arr = Object.keys(m);
+        arr.sort();
+        return arr;
+    }
+
+    function refreshPrimaryBlockSelect(){
+        var sel = el.frPrimaryBlock;
+        if (!sel) return;
+        if (!state.fieldDisplayRules){
+            sel.innerHTML = '';
+            var op0 = document.createElement('option');
+            op0.value = 'regular';
+            op0.textContent = 'regular（请先载入规则表）';
+            sel.appendChild(op0);
+            return;
+        }
+        var blocks = state.fieldDisplayRules.blocks || {};
+        var keys = Object.keys(blocks);
+        keys.sort();
+        var cur = sel.value;
+        sel.innerHTML = '';
+        for (var i = 0; i < keys.length; i++){
+            var k = keys[i];
+            var op = document.createElement('option');
+            op.value = k;
+            var bn = blocks[k] && blocks[k].display_name ? String(blocks[k].display_name) : '';
+            op.textContent = bn ? (k + ' — ' + bn) : k;
+            sel.appendChild(op);
+        }
+        if (cur && keys.indexOf(cur) >= 0) sel.value = cur;
+        else if (keys.indexOf('regular') >= 0) sel.value = 'regular';
+        else if (keys.length) sel.value = keys[0];
+    }
+
+    function refreshRendererDatalist(){
+        var dl = $('fr-renderer-list');
+        if (!dl) return;
+        dl.innerHTML = '';
+        if (!state.fieldDisplayRules || !state.fieldDisplayRules.renderers){
+            var opx = document.createElement('option');
+            opx.value = 'raw_text';
+            dl.appendChild(opx);
+            return;
+        }
+        var ids = Object.keys(state.fieldDisplayRules.renderers);
+        ids.sort();
+        for (var i = 0; i < ids.length; i++){
+            var op = document.createElement('option');
+            op.value = ids[i];
+            dl.appendChild(op);
+        }
+        if (ids.indexOf('raw_text') < 0){
+            var op2 = document.createElement('option');
+            op2.value = 'raw_text';
+            dl.appendChild(op2);
+        }
+    }
+
+    function refreshFieldRulesFieldSelect(preserveSelection){
+        var sel = el.fieldRulesFieldSelect;
+        if (!sel) return;
+        var q = String(el.fieldRulesFilter && el.fieldRulesFilter.value ? el.fieldRulesFilter.value : '').trim().toLowerCase();
+        var names = getMergedFieldNames();
+        var prev = preserveSelection && state.selectedFieldRuleName ? state.selectedFieldRuleName : '';
+        sel.innerHTML = '';
+        var hset = headerSetFromCsv();
+        for (var i = 0; i < names.length; i++){
+            var n = names[i];
+            if (q && String(n).toLowerCase().indexOf(q) < 0) continue;
+            var opt = document.createElement('option');
+            opt.value = n;
+            opt.textContent = n + (hset[n] ? '' : ' [无CSV列]');
+            sel.appendChild(opt);
+        }
+        if (sel.options.length){
+            var foundPrev = false;
+            if (prev){
+                for (var j = 0; j < sel.options.length; j++){
+                    if (sel.options[j].value === prev){
+                        sel.selectedIndex = j;
+                        foundPrev = true;
+                        break;
+                    }
+                }
+            }
+            if (!foundPrev) sel.selectedIndex = 0;
+            state.selectedFieldRuleName = sel.value;
+            loadFieldRuleEditorFromSelection();
+        } else {
+            state.selectedFieldRuleName = '';
+            loadFieldRuleEditorFromSelection();
+        }
+        refreshFieldRulesCsvExists();
+    }
+
+    function refreshFieldRulesCsvExists(){
+        if (!el.fieldRulesCsvExists) return;
+        var name = state.selectedFieldRuleName || (el.fieldRulesFieldSelect && el.fieldRulesFieldSelect.value) || '';
+        if (!name){
+            el.fieldRulesCsvExists.textContent = '';
+            return;
+        }
+        el.fieldRulesCsvExists.textContent = headerSetFromCsv()[name]
+            ? '当前 CSV 含此列。'
+            : '当前 CSV 无此列（仅规则表或跨 CSV 字段）。';
+    }
+
+    function emptyFieldRuleDraft(){
+        return {
+            primary_block: 'regular',
+            reference_blocks: [],
+            skill_id: null,
+            level_min: 0,
+            locked_hint: '',
+            renderer: 'raw_text',
+            value_type: 'string',
+            visible_by_default: true,
+            deprecated: false
+        };
+    }
+
+    function mergeRuleDraft(base, tpl){
+        var out = JSON.parse(JSON.stringify(base));
+        Object.keys(tpl).forEach(function(k){ out[k] = tpl[k]; });
+        return out;
+    }
+
+    function readFieldRuleFromFormIntoDraft(){
+        var d = emptyFieldRuleDraft();
+        if (el.frPrimaryBlock) d.primary_block = String(el.frPrimaryBlock.value || 'regular');
+        var refRaw = String(el.frReferenceBlocks && el.frReferenceBlocks.value ? el.frReferenceBlocks.value : '').trim();
+        if (refRaw){
+            try { d.reference_blocks = JSON.parse(refRaw); } catch (e0) { d.reference_blocks = []; }
+        } else d.reference_blocks = [];
+        if (!Array.isArray(d.reference_blocks)) d.reference_blocks = [];
+        var sk = String(el.frSkillId && el.frSkillId.value ? el.frSkillId.value : '').trim();
+        d.skill_id = sk ? sk : null;
+        var lv = parseInt(String(el.frLevelMin && el.frLevelMin.value != null ? el.frLevelMin.value : '0'), 10);
+        d.level_min = isFinite(lv) && lv >= 0 ? lv : 0;
+        d.locked_hint = String(el.frLockedHint && el.frLockedHint.value ? el.frLockedHint.value : '');
+        d.renderer = String(el.frRenderer && el.frRenderer.value ? el.frRenderer.value : '').trim() || 'raw_text';
+        d.value_type = String(el.frValueType && el.frValueType.value ? el.frValueType.value : 'string').trim() || 'string';
+        d.visible_by_default = !!(el.frVisibleDefault && el.frVisibleDefault.checked);
+        d.deprecated = !!(el.frDeprecated && el.frDeprecated.checked);
+        return d;
+    }
+
+    function writeDraftToForm(d){
+        if (!el.frPrimaryBlock) return;
+        el.frPrimaryBlock.value = d.primary_block || 'regular';
+        el.frReferenceBlocks.value = JSON.stringify(Array.isArray(d.reference_blocks) ? d.reference_blocks : []);
+        el.frSkillId.value = d.skill_id != null ? String(d.skill_id) : '';
+        el.frLevelMin.value = String(d.level_min != null ? d.level_min : 0);
+        el.frLockedHint.value = d.locked_hint != null ? String(d.locked_hint) : '';
+        el.frRenderer.value = d.renderer != null ? String(d.renderer) : '';
+        el.frValueType.value = d.value_type != null ? String(d.value_type) : '';
+        el.frVisibleDefault.checked = !!d.visible_by_default;
+        el.frDeprecated.checked = !!d.deprecated;
+    }
+
+    function loadFieldRuleEditorFromSelection(){
+        if (!el.frPrimaryBlock) return;
+        if (!state.fieldDisplayRules){
+            writeDraftToForm(emptyFieldRuleDraft());
+            refreshFieldRulesCsvExists();
+            return;
+        }
+        var name = el.fieldRulesFieldSelect && el.fieldRulesFieldSelect.value ? el.fieldRulesFieldSelect.value : '';
+        state.selectedFieldRuleName = name;
+        var existing = name && state.fieldDisplayRules.fields[name]
+            ? JSON.parse(JSON.stringify(state.fieldDisplayRules.fields[name]))
+            : null;
+        writeDraftToForm(existing || emptyFieldRuleDraft());
+        refreshFieldRulesCsvExists();
+    }
+
+    function applyQuickTemplate(templateKey){
+        if (!state.fieldDisplayRules) state.fieldDisplayRules = normalizeFieldRulesPayload({});
+        refreshPrimaryBlockSelect();
+        refreshRendererDatalist();
+        var tpl = FIELD_RULE_QUICK_TEMPLATES[templateKey];
+        if (!tpl) return;
+        var cur = readFieldRuleFromFormIntoDraft();
+        writeDraftToForm(mergeRuleDraft(cur, tpl));
+    }
+
+    function persistCurrentFieldRuleToState(){
+        clearError();
+        if (!state.fieldDisplayRules) state.fieldDisplayRules = normalizeFieldRulesPayload({});
+        refreshPrimaryBlockSelect();
+        refreshRendererDatalist();
+        var name = el.fieldRulesFieldSelect && el.fieldRulesFieldSelect.value ? el.fieldRulesFieldSelect.value : '';
+        if (!name){
+            showError('请先在左侧列表选择字段名');
+            return;
+        }
+        var refRaw = String(el.frReferenceBlocks && el.frReferenceBlocks.value ? el.frReferenceBlocks.value : '').trim();
+        if (refRaw){
+            try {
+                var arr = JSON.parse(refRaw);
+                if (!Array.isArray(arr)) throw new Error('须为 JSON 数组');
+            } catch (eRef) {
+                showError('reference_blocks JSON 无效：' + String(eRef && eRef.message ? eRef.message : eRef));
+                return;
+            }
+        }
+        var d = readFieldRuleFromFormIntoDraft();
+        if (!state.fieldDisplayRules.fields) state.fieldDisplayRules.fields = {};
+        state.fieldDisplayRules.fields[name] = d;
+        state.selectedFieldRuleName = name;
+        refreshColList();
+        renderFieldRulesValidation();
+        refreshFieldRulesToolbarStatus();
+    }
+
+    function deleteCurrentFieldRule(){
+        if (!state.fieldDisplayRules) return;
+        var name = el.fieldRulesFieldSelect && el.fieldRulesFieldSelect.value ? el.fieldRulesFieldSelect.value : '';
+        if (!name || !state.fieldDisplayRules.fields || !state.fieldDisplayRules.fields[name]) return;
+        delete state.fieldDisplayRules.fields[name];
+        refreshFieldRulesFieldSelect(true);
+        refreshColList();
+        renderFieldRulesValidation();
+        refreshFieldRulesToolbarStatus();
+    }
+
+    function renderFieldRulesValidation(){
+        if (!el.fieldRulesValidation) return;
+        if (!state.fieldDisplayRules){
+            var hdr0 = state.headers || [];
+            el.fieldRulesValidation.textContent =
+                '尚未载入字段显示规则表：校验区将提示「全部表头无规则」；可先载入 data/item-field-display-rules.json 或使用「写入规则到内存」初始化。';
+            if (hdr0.length){
+                el.fieldRulesValidation.textContent +=
+                    '\n\n【CSV 无规则】' + hdr0.length + ' 个：\n' + hdr0.join(', ');
+            }
+            return;
+        }
+        var lines = [];
+        var hdr = state.headers || [];
+        var fields = state.fieldDisplayRules.fields || {};
+        var renderers = state.fieldDisplayRules.renderers || {};
+        var known = { raw_text: true };
+        Object.keys(renderers).forEach(function(k){ known[k] = true; });
+
+        var missing = [];
+        for (var i = 0; i < hdr.length; i++){
+            if (!fields[hdr[i]]) missing.push(hdr[i]);
+        }
+        lines.push(
+            missing.length
+                ? '【CSV 无规则】' + missing.length + ' 个：\n' + missing.join(', ')
+                : '【CSV 无规则】无 — 表头均已配置。'
+        );
+
+        var notInCsv = [];
+        var fk = Object.keys(fields);
+        var hset = headerSetFromCsv();
+        for (var j = 0; j < fk.length; j++){
+            if (!hset[fk[j]]) notInCsv.push(fk[j]);
+        }
+        lines.push('');
+        lines.push(
+            notInCsv.length
+                ? '【规则字段不在当前 CSV】' + notInCsv.length + ' 个（可能跨表或预留）：\n' + notInCsv.join(', ')
+                : '【规则字段不在当前 CSV】无。'
+        );
+
+        var badRen = [];
+        for (var k = 0; k < fk.length; k++){
+            var fid = fk[k];
+            var r = fields[fid];
+            var ren = r && r.renderer != null ? String(r.renderer).trim() : '';
+            if (!ren) badRen.push(fid + '：renderer 为空');
+            else if (!known[ren]) badRen.push(fid + '：renderer 未登记 — ' + ren);
+        }
+        lines.push('');
+        lines.push(
+            badRen.length ? '【renderer】\n' + badRen.join('\n') : '【renderer】未发现空值或未知（raw_text 视为合法）。'
+        );
+
+        el.fieldRulesValidation.textContent = lines.join('\n');
+    }
+
+    function getFieldRuleSummaryForKey(key){
+        if (!state.fieldDisplayRules || !state.fieldDisplayRules.fields || !state.fieldDisplayRules.fields[key]) return null;
+        var r = state.fieldDisplayRules.fields[key];
+        var sk = r.skill_id != null && r.skill_id !== '' ? String(r.skill_id) : '—';
+        var lv = r.level_min != null ? r.level_min : 0;
+        var pb = r.primary_block || '—';
+        var ren = r.renderer != null ? String(r.renderer) : '—';
+        return { line: pb + ' | ' + sk + ' | L' + lv + ' | ' + ren, deprecated: !!r.deprecated };
+    }
+
     function showError(msg){
         el.errBox.textContent = String(msg || '');
         el.errBox.style.display = 'block';
@@ -1095,13 +1718,42 @@
             var item = document.createElement('div');
             item.className = 'colItem';
 
+            var sum = getFieldRuleSummaryForKey(key);
+            if (!sum) item.classList.add('no-rule');
+
             var nm = document.createElement('div');
             nm.className = 'colName';
             nm.textContent = key;
+            nm.style.cursor = 'pointer';
+            nm.title = '点击在「物品字段规则」面板选中该字段';
+            nm.addEventListener('click', function(fieldKey){
+                return function(ev){
+                    ev.stopPropagation();
+                    if (!el.fieldRulesFieldSelect) return;
+                    for (var zi = 0; zi < el.fieldRulesFieldSelect.options.length; zi++){
+                        if (el.fieldRulesFieldSelect.options[zi].value === fieldKey){
+                            el.fieldRulesFieldSelect.selectedIndex = zi;
+                            el.fieldRulesFieldSelect.dispatchEvent(new Event('change'));
+                            try {
+                                el.fieldRulesFieldSelect.focus();
+                            } catch (eF) { /* ignore */ }
+                            break;
+                        }
+                    }
+                };
+            }(key));
 
             var meta = document.createElement('div');
             meta.className = 'meta';
             meta.textContent = FIELD_HINTS[key] || '（未定义提示）';
+
+            var ruleLine = document.createElement('div');
+            ruleLine.className = 'rule-line' + (sum ? '' : ' warn');
+            if (sum){
+                ruleLine.textContent = '规则：' + sum.line + (sum.deprecated ? ' | deprecated' : '');
+            } else {
+                ruleLine.textContent = '⚠ 未配置字段显示规则（item-field-display-rules.fields）';
+            }
 
             // 以列为单位渲染一个“快捷删除按钮”，但 id 列不可删
             var btn = document.createElement('button');
@@ -1118,6 +1770,7 @@
 
             item.appendChild(nm);
             item.appendChild(meta);
+            item.appendChild(ruleLine);
             item.appendChild(btn);
             el.colList.appendChild(item);
         }
@@ -1377,6 +2030,8 @@
         refreshRowSelect();
         refreshColSelect();
         renderRowEditor();
+        refreshFieldRulesFieldSelect(true);
+        renderFieldRulesValidation();
 
         el.statusLine.textContent = '已加载：' + (loadedFrom || 'CSV') + ' | 行数=' + state.rows.length + ' | 列数=' + state.headers.length;
         el.exportHint.textContent = '';
@@ -1426,6 +2081,8 @@
         el.newColDefault.value = '';
         refreshColSelect();
         renderRowEditor();
+        refreshFieldRulesFieldSelect(true);
+        renderFieldRulesValidation();
         clearError();
     }
 
@@ -1442,6 +2099,8 @@
         }
         refreshColSelect();
         renderRowEditor();
+        refreshFieldRulesFieldSelect(true);
+        renderFieldRulesValidation();
         el.exportHint.textContent = '已新增 quality_tier 列，并为全部行填入默认值 0。';
     }
 
@@ -1464,6 +2123,8 @@
         state.selectedColIndex = Math.max(0, Math.min(state.selectedColIndex, state.headers.length - 1));
         refreshColSelect();
         renderRowEditor();
+        refreshFieldRulesFieldSelect(true);
+        renderFieldRulesValidation();
     }
 
     function addRow(){
@@ -1555,6 +2216,16 @@
     });
     el.colSelect.addEventListener('change', function(){
         state.selectedColIndex = parseInt(el.colSelect.value, 10) || 0;
+        var hk = state.headers[state.selectedColIndex];
+        if (hk && el.fieldRulesFieldSelect){
+            for (var zi = 0; zi < el.fieldRulesFieldSelect.options.length; zi++){
+                if (el.fieldRulesFieldSelect.options[zi].value === hk){
+                    el.fieldRulesFieldSelect.selectedIndex = zi;
+                    el.fieldRulesFieldSelect.dispatchEvent(new Event('change'));
+                    break;
+                }
+            }
+        }
     });
     el.btnAddCol.addEventListener('click', function(){ addColumn(); });
     el.btnAddQualityCol.addEventListener('click', function(){ ensureQualityTierColumn(); });
@@ -1619,6 +2290,39 @@
         renderModuleVisualEditor();
     });
 
+    if (el.btnLoadFieldRules) el.btnLoadFieldRules.addEventListener('click', function(){
+        clearError();
+        if (!el.fieldRulesFileInput) return;
+        el.fieldRulesFileInput.value = '';
+        el.fieldRulesFileInput.click();
+    });
+    if (el.fieldRulesFileInput) el.fieldRulesFileInput.addEventListener('change', function(){
+        if (el.fieldRulesFileInput.files && el.fieldRulesFileInput.files[0]){
+            loadFieldRulesFromLocalFile(el.fieldRulesFileInput.files[0]);
+        }
+    });
+    if (el.btnExportFieldRules) el.btnExportFieldRules.addEventListener('click', function(){
+        exportFieldRulesJson();
+    });
+    if (el.fieldRulesFilter) el.fieldRulesFilter.addEventListener('input', function(){
+        refreshFieldRulesFieldSelect(true);
+    });
+    if (el.fieldRulesFieldSelect) el.fieldRulesFieldSelect.addEventListener('change', function(){
+        loadFieldRuleEditorFromSelection();
+    });
+    if (el.btnFieldRuleApply) el.btnFieldRuleApply.addEventListener('click', function(){
+        persistCurrentFieldRuleToState();
+    });
+    if (el.btnFieldRuleDelete) el.btnFieldRuleDelete.addEventListener('click', function(){
+        deleteCurrentFieldRule();
+    });
+    if (el.btnTplRegular) el.btnTplRegular.addEventListener('click', function(){ applyQuickTemplate('regular'); });
+    if (el.btnTplCooking) el.btnTplCooking.addEventListener('click', function(){ applyQuickTemplate('cooking_station'); });
+    if (el.btnTplFood) el.btnTplFood.addEventListener('click', function(){ applyQuickTemplate('food_detail'); });
+    if (el.btnTplPharmacy) el.btnTplPharmacy.addEventListener('click', function(){ applyQuickTemplate('pharmacy'); });
+    if (el.btnTplPlanting) el.btnTplPlanting.addEventListener('click', function(){ applyQuickTemplate('planting_compost'); });
+    if (el.btnTplHidden) el.btnTplHidden.addEventListener('click', function(){ applyQuickTemplate('hidden_internal'); });
+
     el.btnLoadMaterials.addEventListener('click', function(){
         // 从 tools/ 相对 data/ 读取
         loadFromUrl('../data/items/materials_all.csv');
@@ -1629,10 +2333,19 @@
     refreshBuffOptionsStatus();
     refreshItemModulesStatus();
     refreshModuleSetSelect();
+    refreshFieldRulesToolbarStatus();
+    refreshPrimaryBlockSelect();
+    refreshRendererDatalist();
+    refreshFieldRulesFieldSelect(false);
+    renderFieldRulesValidation();
     fetch('../data/item-info-modules.json')
         .then(function (r) { return r.ok ? r.json() : null; })
         .then(function (obj) { if (obj) loadItemModulesFromObject(obj); })
         .catch(function () { /* ignore */ });
+    fetch('../data/item-field-display-rules.json')
+        .then(function (r) { return r.ok ? r.json() : null; })
+        .then(function (obj) { if (obj) loadFieldRulesFromObject(obj); })
+        .catch(function () { refreshFieldRulesToolbarStatus(); });
 })();
 </script>
 </body>

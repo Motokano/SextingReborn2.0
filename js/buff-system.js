@@ -446,6 +446,28 @@
         return mul;
     }
 
+    function getBattleMoveSpeedDeltaPercent(ownerId) {
+        var oid = ownerId || PLAYER_OWNER_ID;
+        var arr = instancesByOwner[oid] || [];
+        var sum = 0;
+        var i, j, inst, effects, e, p, d, stacks;
+        for (i = 0; i < arr.length; i++) {
+            inst = arr[i];
+            if (!inst || !inst.template || (inst.stacks || 0) <= 0) continue;
+            effects = arrayOrEmpty(inst.template.effects);
+            stacks = Math.max(1, parseInt(inst.stacks, 10) || 1);
+            for (j = 0; j < effects.length; j++) {
+                e = effects[j] || {};
+                if (e.type !== 'battle_move_speed_delta_percent') continue;
+                p = e.params || {};
+                d = safeNum(p.delta_percent, 0);
+                if (!isFinite(d) || d === 0) continue;
+                sum += d * stacks;
+            }
+        }
+        return sum;
+    }
+
     function getBattleFinalDamageTakenMultiplier(ownerId) {
         var oid = ownerId || PLAYER_OWNER_ID;
         var arr = instancesByOwner[oid] || [];
@@ -688,6 +710,7 @@
         var nut = safeNum(p.nutrition, 0);
         var sta = safeNum(p.stamina, 0);
         var ene = safeNum(p.energy, 0);
+        var fat = safeNum(p.fatigue, 0);
         var mood = safeNum(p.mood, 0);
         var lethalSwitch = true;
         if (typeof Surv.getConfigValue === 'function') {
@@ -706,6 +729,7 @@
         if (sat > 0 && typeof Surv.addSatiety === 'function') Surv.addSatiety(sat);
         if (thi > 0 && typeof Surv.addThirst === 'function') Surv.addThirst(thi);
         if (nut > 0 && typeof Surv.addNutrition === 'function') Surv.addNutrition(nut);
+        if (fat !== 0 && typeof Surv.changeFatigue === 'function') Surv.changeFatigue(fat);
         if (sta < 0 && typeof Surv.consumeStamina === 'function') Surv.consumeStamina(-sta);
         if (ene > 0 && typeof Surv.addEnergy === 'function') Surv.addEnergy(ene);
         if (ene < 0 && typeof Surv.consumeEnergy === 'function') Surv.consumeEnergy(-ene);
@@ -1270,6 +1294,7 @@
         getBattlePotentialGainMultiplier: getBattlePotentialGainMultiplier,
         getBattleCombatExperienceGainMultiplier: getBattleCombatExperienceGainMultiplier,
         getBattleMoveSpeedMultiplier: getBattleMoveSpeedMultiplier,
+        getBattleMoveSpeedDeltaPercent: getBattleMoveSpeedDeltaPercent,
         getBattleFinalDamageTakenMultiplier: getBattleFinalDamageTakenMultiplier,
         registerRuntimeBuffTemplate: registerRuntimeBuffTemplate,
         removeBuffByBuffId: removeBuffByBuffId,

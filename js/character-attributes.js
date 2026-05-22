@@ -47,12 +47,42 @@
         dominant_leg: 'right',
         /** 曾获得过的后遗症 id 去重列表（统计「获得多少种」= length） */
         post_effects_obtained: [],
+        /** 属性经验系统（24）：五维独立池，attribute_level 作为后天来源之一并入统一重算 */
+        attribute_experience: {
+            jingu: { exp: 0, attribute_level: 0, total_gained: 0 },
+            flexibility: { exp: 0, attribute_level: 0, total_gained: 0 },
+            breath: { exp: 0, attribute_level: 0, total_gained: 0 },
+            dexterity: { exp: 0, attribute_level: 0, total_gained: 0 },
+            focus: { exp: 0, attribute_level: 0, total_gained: 0 }
+        },
         /** 七部位损毁累积值；键为 head/chest/abdomen/lhand/rhand/lfoot/rfoot（与 09、GAME_DESIGN 速查一致） */
         part_destroy: { head: 0, chest: 0, abdomen: 0, lhand: 0, rhand: 0, lfoot: 0, rfoot: 0 }
     };
 
     var LIMB_DESTROY_IDS = ['lhand', 'rhand', 'lfoot', 'rfoot'];
     var PART_DESTROY_IDS = ['head', 'chest', 'abdomen', 'lhand', 'rhand', 'lfoot', 'rfoot'];
+    var ATTRIBUTE_EXP_IDS = ATTR_IDS.slice();
+    var ATTR_EXP_GAMMA = 1.6;
+    var ATTR_EXP_PCAP = {
+        tier20: 0.80,
+        tier30: 0.72,
+        tier40: 0.64,
+        tier50Plus: 0.56
+    };
+    var ATTR_EXP_ESCALE = {
+        tier20: 5060.86,
+        tier30: 6447.65,
+        tier40: 7063.27,
+        tier50: 8330.74
+    };
+    var ATTR_EXP_DIFFICULTY_MULT_PER_TIER = 1.03;
+    var ATTR_EXP_TIER_MIN = 0;
+    var ATTR_EXP_TIER_MAX = 199;
+    var attrExpRuntime = {
+        settleLockByOwner: {},
+        lastSettledTickByOwner: {}
+    };
+    var attrExpDebugEnabled = false;
     /** 招架/受击语义：身体部位 id（与 combat-parry 一致）→ 战斗肢 id */
     var PARRY_BODY_PART_TO_LIMB = { left_arm: 'lhand', right_arm: 'rhand', left_leg: 'lfoot', right_leg: 'rfoot' };
 
@@ -91,6 +121,155 @@
             var pk = PART_DESTROY_IDS[pi];
             if (obj[pk] != null) mergePartDestroyScalar(pk, obj[pk]);
         }
+    }
+
+    function createDefaultAttributeExpEntry() {
+        return { exp: 0, attribute_level: 0, total_gained: 0 };
+    }
+
+    function normalizeAttributeExpEntry(raw) {
+        var entry = raw && typeof raw === 'object' ? raw : {};
+        return {
+            exp: Math.max(0, Math.floor(Number(entry.exp) || 0)),
+            attribute_level: Math.max(0, Math.floor(Number(entry.attribute_level) || 0)),
+            total_gained: Math.max(0, Math.floor(Number(entry.total_gained) || 0))
+        };
+    }
+
+    function ensureAttributeExperienceState() {
+        if (!state.attribute_experience || typeof state.attribute_experience !== 'object') {
+            state.attribute_experience = {};
+        }
+        for (var ai = 0; ai < ATTRIBUTE_EXP_IDS.length; ai++) {
+            var attrId = ATTRIBUTE_EXP_IDS[ai];
+            state.attribute_experience[attrId] = normalizeAttributeExpEntry(state.attribute_experience[attrId]);
+        }
+        return state.attribute_experience;
+    }
+
+    function buildAttributeExperienceSnapshot() {
+        var expState = ensureAttributeExperienceState();
+        var out = {};
+        for (var ai = 0; ai < ATTRIBUTE_EXP_IDS.length; ai++) {
+            var attrId = ATTRIBUTE_EXP_IDS[ai];
+            var e = expState[attrId] || createDefaultAttributeExpEntry();
+            out[attrId] = {
+                exp: e.exp,
+                attribute_level: e.attribute_level,
+                total_gained: e.total_gained
+            };
+        }
+        return out;
+    }
+
+    function normalizeOwnerId(ownerId) {
+        return String(ownerId || '').trim();
+    }
+
+    function getCurrentTickForAttributeExp(context) {
+        if (context && context.tick != null) {
+            var tCtx = Math.floor(Number(context.tick) || 0);
+            if (isFinite(tCtx) && tCtx >= 0) return tCtx;
+        }
+        var Surv = global.Survival;
+        if (Surv && typeof Surv.getState === 'function') {
+            var st = Surv.getState() || {};
+            if (st.tickCount != null) {
+                var t = Math.floor(Number(st.tickCount) || 0);
+                if (isFinite(t) && t >= 0) return t;
+            }
+        }
+        return -1;
+    }
+
+    function getAttrExpTierIndex(attributeLevel) {
+        var lvl = Math.max(0, Math.floor(Number(attributeLevel) || 0));
+        var tier = Math.floor(lvl / 10);
+        if (tier < ATTR_EXP_TIER_MIN) tier = ATTR_EXP_TIER_MIN;
+        if (tier > ATTR_EXP_TIER_MAX) tier = ATTR_EXP_TIER_MAX;
+        return tier;
+    }
+
+    function getAttrExpCurveParamsByTier(tierIdx) {
+        var t = Math.max(ATTR_EXP_TIER_MIN, Math.min(ATTR_EXP_TIER_MAX, Math.floor(Number(tierIdx) || 0)));
+        if (t < 3) return { p_cap: ATTR_EXP_PCAP.tier20, e_scale: ATTR_EXP_ESCALE.tier20 };
+        if (t === 3) return { p_cap: ATTR_EXP_PCAP.tier30, e_scale: ATTR_EXP_ESCALE.tier30 };
+        if (t === 4) return { p_cap: ATTR_EXP_PCAP.tier40, e_scale: ATTR_EXP_ESCALE.tier40 };
+        if (t === 5) return { p_cap: ATTR_EXP_PCAP.tier50Plus, e_scale: ATTR_EXP_ESCALE.tier50 };
+        var stepFrom50 = t - 5;
+        return {
+            p_cap: ATTR_EXP_PCAP.tier50Plus,
+            e_scale: ATTR_EXP_ESCALE.tier50 * Math.pow(ATTR_EXP_DIFFICULTY_MULT_PER_TIER, stepFrom50)
+        };
+    }
+
+    function calcAttrExpProbability(expCurrent, attributeLevelSnapshot) {
+        var E = Math.max(0, Math.floor(Number(expCurrent) || 0));
+        if (E <= 0) return 0;
+        var tierIdx = getAttrExpTierIndex(attributeLevelSnapshot);
+        var curve = getAttrExpCurveParamsByTier(tierIdx);
+        var pCap = Math.max(0, Math.min(0.999999, Number(curve.p_cap) || 0));
+        var eScale = Math.max(1, Number(curve.e_scale) || 1);
+        var ratio = E / eScale;
+        var inner = 1 - Math.exp(-Math.pow(ratio, ATTR_EXP_GAMMA));
+        var p = pCap * inner;
+        if (!isFinite(p)) return 0;
+        return Math.max(0, Math.min(pCap, p));
+    }
+
+    function sumFromAttributeExperience(attributeExperienceState) {
+        var out = { jingu: 0, flexibility: 0, breath: 0, dexterity: 0, focus: 0 };
+        if (!attributeExperienceState || typeof attributeExperienceState !== 'object') return out;
+        for (var ai = 0; ai < ATTRIBUTE_EXP_IDS.length; ai++) {
+            var attrId = ATTRIBUTE_EXP_IDS[ai];
+            var e = normalizeAttributeExpEntry(attributeExperienceState[attrId]);
+            out[attrId] = e.attribute_level;
+        }
+        return out;
+    }
+
+    function warnAttrExp(message, payload) {
+        if (typeof console !== 'undefined' && console && typeof console.warn === 'function') {
+            if (payload !== undefined) console.warn('[AttributeEXP]', message, payload);
+            else console.warn('[AttributeEXP]', message);
+        }
+    }
+    function logAttrExpDebug(payload) {
+        if (!attrExpDebugEnabled) return;
+        if (typeof console !== 'undefined' && console && typeof console.log === 'function') {
+            console.log('[AttributeEXP][DEBUG]', payload);
+        }
+    }
+
+    function getDefaultRecalcOptions() {
+        return {
+            getEquipmentState: function () {
+                return (global.InventoryEquipment && typeof global.InventoryEquipment.getState === 'function')
+                    ? (global.InventoryEquipment.getState().equipment || {})
+                    : {};
+            },
+            getSkillsState: function () {
+                return (global.InventoryEquipment && typeof global.InventoryEquipment.getState === 'function')
+                    ? (global.InventoryEquipment.getState().skills || {})
+                    : {};
+            },
+            getItemTemplate: function (itemId) {
+                return (global.InventoryEquipment && typeof global.InventoryEquipment.getItemTemplate === 'function')
+                    ? global.InventoryEquipment.getItemTemplate(itemId)
+                    : null;
+            },
+            getEnchantEntry: function (enchantId) {
+                return (global.InventoryEquipment && typeof global.InventoryEquipment.getEnchantEntry === 'function')
+                    ? global.InventoryEquipment.getEnchantEntry(enchantId)
+                    : null;
+            },
+            getStrengthLevel: function () {
+                var IE = global.InventoryEquipment;
+                if (!IE || typeof IE.getState !== 'function') return 0;
+                var st = IE.getState() || {};
+                return st.skills && st.skills.survival_strength ? (st.skills.survival_strength.level || 0) : 0;
+            }
+        };
     }
     // 供 Buff 等系统注入的后天五维修正（最终会并入 acquired 参与重算）
     var externalAcquiredBonus = { jingu: 0, flexibility: 0, breath: 0, dexterity: 0, focus: 0 };
@@ -276,6 +455,8 @@
         if (!skillsState || !skillAttrGainTable) return out;
         for (var skillId in skillAttrGainTable) {
             if (!skillAttrGainTable.hasOwnProperty(skillId)) continue;
+            // 设计口径：已下线“战斗技能等级 -> 后天五维”成长线。
+            if (String(skillId).indexOf('combat_') === 0) continue;
             var level = skillsState[skillId] && skillsState[skillId].level != null ? Math.max(0, parseInt(skillsState[skillId].level, 10)) : 0;
             var gains = skillAttrGainTable[skillId];
             if (!gains) continue;
@@ -323,9 +504,8 @@
     }
 
     /**
-     * 单招式 / hub_actions 熟练度达阈值时给予后天五维（与 post_effect_unlocks 同一套 R）。
-     * 配置：`data/combat-skills.json` 的 `moves[]`、**`hub_actions[]`** 上 `proficiency_attr_unlocks`，以及招架类 **`parry_proficiency_attr_unlocks`**（按 `parry_proficiency_usage_key` 计 R）。
-     * 依赖 global.CombatSkills；未加载时返回零。
+     * 历史兼容：曾用于“熟练度阈值 -> 后天五维”。
+     * 当前设计已下线该成长线，recalc 不再调用本函数；保留实现仅为兼容旧档/策划表回溯。
      */
     /** 招架类：按 `parry_proficiency_usage_key` 的 R 触发 `parry_proficiency_attr_unlocks` */
     function accumulateParryProficiencyAttrUnlocks(skTpl, moveUsage, getProfRatio, out) {
@@ -393,14 +573,13 @@
 
         var fromEquip = sumFromEquipment(equipmentState, getItemTemplate, getEnchantEntry);
         var fromSkills = sumFromSkills(skillsState, skillAttrGainTable);
-        var fromMoveProf = sumFromMoveProficiencyAttrUnlocks(skillsState);
-
-        // 基础后天来源：装备 + 技能等级表 + 招式熟练度阈值奖励
-        state.acquired.jingu = fromEquip.acquired.jingu + fromSkills.jingu + fromMoveProf.jingu;
-        state.acquired.flexibility = fromEquip.acquired.flexibility + fromSkills.flexibility + fromMoveProf.flexibility;
-        state.acquired.breath = fromEquip.acquired.breath + fromSkills.breath + fromMoveProf.breath;
-        state.acquired.dexterity = fromEquip.acquired.dexterity + fromSkills.dexterity + fromMoveProf.dexterity;
-        state.acquired.focus = fromEquip.acquired.focus + fromSkills.focus + fromMoveProf.focus;
+        var fromAttributeExp = sumFromAttributeExperience(state.attribute_experience);
+        // 基础后天来源：装备 + 技能等级表（已移除“熟练度阈值奖励后天五维”）
+        state.acquired.jingu = fromEquip.acquired.jingu + fromSkills.jingu + fromAttributeExp.jingu;
+        state.acquired.flexibility = fromEquip.acquired.flexibility + fromSkills.flexibility + fromAttributeExp.flexibility;
+        state.acquired.breath = fromEquip.acquired.breath + fromSkills.breath + fromAttributeExp.breath;
+        state.acquired.dexterity = fromEquip.acquired.dexterity + fromSkills.dexterity + fromAttributeExp.dexterity;
+        state.acquired.focus = fromEquip.acquired.focus + fromSkills.focus + fromAttributeExp.focus;
 
         // 外部来源（例如 Buff）统一并入后天
         state.acquired.jingu += externalAcquiredBonus.jingu || 0;
@@ -641,6 +820,7 @@
 
     function setState(s) {
         if (!s || typeof s !== 'object') return;
+        ensureAttributeExperienceState();
         if (s.innate) {
             ATTR_IDS.forEach(function (id) {
                 if (s.innate[id] != null) state.innate[id] = Math.max(0, Math.min(INNATE_MAX_ABSOLUTE, parseInt(s.innate[id], 10)));
@@ -705,6 +885,14 @@
                 if (!het || seenH[het]) continue;
                 seenH[het] = true;
                 state.hidden_epithets.push(het);
+            }
+        }
+        if (s.attribute_experience && typeof s.attribute_experience === 'object') {
+            for (var ae = 0; ae < ATTRIBUTE_EXP_IDS.length; ae++) {
+                var aid = ATTRIBUTE_EXP_IDS[ae];
+                if (Object.prototype.hasOwnProperty.call(s.attribute_experience, aid)) {
+                    state.attribute_experience[aid] = normalizeAttributeExpEntry(s.attribute_experience[aid]);
+                }
             }
         }
         try {
@@ -868,7 +1056,150 @@
         };
     }
 
+    /**
+     * 发放属性经验（仅入账，不触发重算）。
+     * 条目级容错：非法 attr_id/exp 仅跳过该条并告警，不中断整批。
+     */
+    function grantAttributeExp(ownerId, grants, context) {
+        var owner = normalizeOwnerId(ownerId);
+        if (owner !== 'player') return { ok: false, reason: 'unsupported_owner', applied: [] };
+        ensureAttributeExperienceState();
+        var applied = [];
+        if (!Array.isArray(grants)) return { ok: true, applied: applied };
+        for (var i = 0; i < grants.length; i++) {
+            var g = grants[i] || {};
+            var attrId = String(g.attr_id || '').trim();
+            if (ATTRIBUTE_EXP_IDS.indexOf(attrId) < 0) {
+                warnAttrExp('grantAttributeExp ignored invalid attr_id', { ownerId: owner, attr_id: g.attr_id, context: context });
+                continue;
+            }
+            var exp = Math.floor(Number(g.exp) || 0);
+            if (!(exp > 0)) {
+                warnAttrExp('grantAttributeExp ignored invalid exp', { ownerId: owner, attr_id: attrId, exp: g.exp, context: context });
+                continue;
+            }
+            state.attribute_experience[attrId].exp += exp;
+            state.attribute_experience[attrId].total_gained += exp;
+            applied.push({ attr_id: attrId, exp_applied: exp });
+        }
+        return { ok: true, applied: applied };
+    }
+
+    /**
+     * 结算一次属性经验：固定时序（快照->判定->批量落盘->统一重算一次）。
+     * 同 tick 去重 + 同 owner 重入锁，避免重复结算与并发重入。
+     */
+    function settleAttributeExpOnce(ownerId, context) {
+        var owner = normalizeOwnerId(ownerId);
+        if (owner !== 'player') {
+            return { ok: false, reason: 'unsupported_owner', dedup_skipped: false, lock_skipped: false, any_success: false, settled: [] };
+        }
+        ensureAttributeExperienceState();
+        var nowTick = getCurrentTickForAttributeExp(context);
+        if (nowTick >= 0 && attrExpRuntime.lastSettledTickByOwner[owner] === nowTick) {
+            return { ok: true, dedup_skipped: true, lock_skipped: false, any_success: false, settled: [] };
+        }
+        if (attrExpRuntime.settleLockByOwner[owner]) {
+            warnAttrExp('settleAttributeExpOnce skipped by reentry lock', { ownerId: owner, context: context });
+            return { ok: true, dedup_skipped: false, lock_skipped: true, any_success: false, settled: [] };
+        }
+        attrExpRuntime.settleLockByOwner[owner] = true;
+        try {
+            var rng = (context && typeof context.rng === 'function') ? context.rng : Math.random;
+            var snapshot = buildAttributeExperienceSnapshot();
+            var staged = {};
+            var settled = [];
+            var anySuccess = false;
+            for (var ai = 0; ai < ATTRIBUTE_EXP_IDS.length; ai++) {
+                var attrId = ATTRIBUTE_EXP_IDS[ai];
+                var before = snapshot[attrId] || createDefaultAttributeExpEntry();
+                var probability = calcAttrExpProbability(before.exp, before.attribute_level);
+                var roll = Number(rng());
+                if (!isFinite(roll)) roll = 1;
+                var success = before.exp > 0 && roll < probability;
+                var nextExp = success ? 0 : before.exp;
+                var nextLevel = before.attribute_level + (success ? 1 : 0);
+                staged[attrId] = {
+                    exp: nextExp,
+                    attribute_level: nextLevel,
+                    total_gained: before.total_gained
+                };
+                if (success) anySuccess = true;
+                settled.push({
+                    attr_id: attrId,
+                    exp_before: before.exp,
+                    attribute_level_before: before.attribute_level,
+                    probability: probability,
+                    success: success,
+                    exp_after: nextExp,
+                    attribute_level_after: nextLevel
+                });
+                logAttrExpDebug({
+                    tick: nowTick,
+                    ownerId: owner,
+                    attr_id: attrId,
+                    exp_before: before.exp,
+                    probability: probability,
+                    success: success,
+                    exp_after: nextExp,
+                    attribute_level_after: nextLevel
+                });
+            }
+            for (var si = 0; si < ATTRIBUTE_EXP_IDS.length; si++) {
+                var sid = ATTRIBUTE_EXP_IDS[si];
+                state.attribute_experience[sid] = staged[sid];
+            }
+            if (anySuccess) {
+                recalcCharacterStats(getDefaultRecalcOptions());
+            }
+            if (nowTick >= 0) attrExpRuntime.lastSettledTickByOwner[owner] = nowTick;
+            return {
+                ok: true,
+                dedup_skipped: false,
+                lock_skipped: false,
+                any_success: anySuccess,
+                settled: settled
+            };
+        } finally {
+            attrExpRuntime.settleLockByOwner[owner] = false;
+        }
+    }
+
+    function getAttributeExpState(ownerId) {
+        var owner = normalizeOwnerId(ownerId);
+        if (owner !== 'player') return {};
+        return buildAttributeExperienceSnapshot();
+    }
+
+    function previewAttributeExpProbability(ownerId, attr_id) {
+        var owner = normalizeOwnerId(ownerId);
+        var attrId = String(attr_id || '').trim();
+        if (owner !== 'player' || ATTRIBUTE_EXP_IDS.indexOf(attrId) < 0) {
+            return { ok: false, probability: 0 };
+        }
+        ensureAttributeExperienceState();
+        var e = state.attribute_experience[attrId];
+        var tierIdx = getAttrExpTierIndex(e.attribute_level);
+        return {
+            ok: true,
+            attr_id: attrId,
+            exp_current: e.exp,
+            attribute_level: e.attribute_level,
+            tier_index: tierIdx,
+            probability: calcAttrExpProbability(e.exp, e.attribute_level)
+        };
+    }
+
+    function setAttributeExpDebugEnabled(enabled) {
+        attrExpDebugEnabled = !!enabled;
+    }
+
+    function isAttributeExpDebugEnabled() {
+        return !!attrExpDebugEnabled;
+    }
+
     function getState() {
+        ensureAttributeExperienceState();
         return {
             characterName: state.characterName,
             characterGender: state.characterGender,
@@ -878,6 +1209,7 @@
             dominant_hand: state.dominant_hand,
             dominant_leg: state.dominant_leg,
             post_effects_obtained: state.post_effects_obtained.slice(),
+            attribute_experience: buildAttributeExperienceSnapshot(),
             part_destroy: {
                 head: state.part_destroy.head,
                 chest: state.part_destroy.chest,
@@ -908,6 +1240,13 @@
             dominant_hand: 'right',
             dominant_leg: 'right',
             post_effects_obtained: [],
+            attribute_experience: {
+                jingu: createDefaultAttributeExpEntry(),
+                flexibility: createDefaultAttributeExpEntry(),
+                breath: createDefaultAttributeExpEntry(),
+                dexterity: createDefaultAttributeExpEntry(),
+                focus: createDefaultAttributeExpEntry()
+            },
             part_destroy: { head: 0, chest: 0, abdomen: 0, lhand: 0, rhand: 0, lfoot: 0, rfoot: 0 },
             limb_destroy: { lhand: 0, rhand: 0, lfoot: 0, rfoot: 0 },
             hidden_epithets: []
@@ -1011,6 +1350,12 @@
         getPostEffectsObtainedIds: getPostEffectsObtainedIds,
         hasPostEffectObtained: hasPostEffectObtained,
         syncPostEffectsObtainedFromSkillsState: syncPostEffectsObtainedFromSkillsState,
+        grantAttributeExp: grantAttributeExp,
+        settleAttributeExpOnce: settleAttributeExpOnce,
+        getAttributeExpState: getAttributeExpState,
+        previewAttributeExpProbability: previewAttributeExpProbability,
+        setAttributeExpDebugEnabled: setAttributeExpDebugEnabled,
+        isAttributeExpDebugEnabled: isAttributeExpDebugEnabled,
 
         getHitBonusFromEquipment: function () { return cache.hit_bonus_from_equipment; }
     };

@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "pools": {
+    "npc.station.bed_base.fallback": {
+      "lines": [
+        "床铺看起来还能用。"
+      ]
+    },
+    "npc.station.bed_base": {
+      "lines": [
+        "累了就睡，醒来再继续做事。",
+        "睡前先确认自己是否疲劳，不然也睡不着。"
+      ],
+      "composeMode": "pick_pool"
+    }
+  }
+}

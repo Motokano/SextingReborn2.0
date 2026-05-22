@@ -55,6 +55,8 @@
         if (!isFinite(VeRaw)) VeRaw = 0;
         var moveSpeedMulPlayer = 1;
         var moveSpeedMulEnemy = 1;
+        var moveSpeedDeltaPctPlayer = 0;
+        var moveSpeedDeltaPctEnemy = 0;
         if (global.BuffSystem && typeof global.BuffSystem.getBattleMoveSpeedMultiplier === 'function') {
             moveSpeedMulPlayer = Number(global.BuffSystem.getBattleMoveSpeedMultiplier('player')) || 1;
             if (o.enemyOwnerId != null && String(o.enemyOwnerId)) {
@@ -62,9 +64,19 @@
             }
             if (!isFinite(moveSpeedMulPlayer) || moveSpeedMulPlayer <= 0) moveSpeedMulPlayer = 1;
             if (!isFinite(moveSpeedMulEnemy) || moveSpeedMulEnemy <= 0) moveSpeedMulEnemy = 1;
+            if (typeof global.BuffSystem.getBattleMoveSpeedDeltaPercent === 'function') {
+                moveSpeedDeltaPctPlayer = Number(global.BuffSystem.getBattleMoveSpeedDeltaPercent('player')) || 0;
+                if (o.enemyOwnerId != null && String(o.enemyOwnerId)) {
+                    moveSpeedDeltaPctEnemy = Number(global.BuffSystem.getBattleMoveSpeedDeltaPercent(String(o.enemyOwnerId))) || 0;
+                }
+            }
         }
-        var Vp = Math.floor(VpRaw * moveSpeedMulPlayer) || 0;
-        var Ve = Math.floor(VeRaw * moveSpeedMulEnemy) || 0;
+        var moveSpeedTotalMulPlayer = moveSpeedMulPlayer + (moveSpeedDeltaPctPlayer / 100);
+        var moveSpeedTotalMulEnemy = moveSpeedMulEnemy + (moveSpeedDeltaPctEnemy / 100);
+        if (!isFinite(moveSpeedTotalMulPlayer) || moveSpeedTotalMulPlayer <= 0) moveSpeedTotalMulPlayer = 0.05;
+        if (!isFinite(moveSpeedTotalMulEnemy) || moveSpeedTotalMulEnemy <= 0) moveSpeedTotalMulEnemy = 0.05;
+        var Vp = Math.floor(VpRaw * moveSpeedTotalMulPlayer) || 0;
+        var Ve = Math.floor(VeRaw * moveSpeedTotalMulEnemy) || 0;
         if (Vp < 1) Vp = 1;
         if (Ve < 1) Ve = 1;
 

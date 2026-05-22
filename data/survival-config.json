@@ -1,6 +1,7 @@
 {
   "satiety_max": 100.0,
   "satiety_overcap_max": 150.0,
+  "satiety_tick_decay_interval": 2,
   "satiety_tick_decay": 1.0,
   "satiety_listener_tick_refresh_interval": 1,
   "satiety_buff_tier_satiated_min": 60.0,
@@ -36,7 +37,17 @@
   "stamina_max": 100.0,
   "stamina_tick_regen_base": 0.5,
   "stamina_rest_tick_regen_base": 5.0,
+  "rest_action_stamina_regen_per_tick": 2.0,
+  "rest_action_extra_satiety_decay_per_tick": 1.0,
+  "rest_action_extra_thirst_decay_per_tick": 1.0,
+  "rest_action_auto_tick_seconds": 5,
   "stamina_zero_ticks_to_coma": 50,
+  "fatigue_min": 0.0,
+  "fatigue_max": 100.0,
+  "fatigue_gain_per_stamina_spent": 0.5,
+  "fatigue_tired_min": 50.0,
+  "fatigue_tired_max_exclusive": 80.0,
+  "fatigue_sleepy_min": 80.0,
   "breath_diqi_stamina_coef": 0.02,
 
   "energy_max": 100.0,
@@ -223,9 +234,5 @@
     "distance_shade_power": 1.28
   },
 
-  "skill_attr_gain": {
-    "combat_basic_unarmed": {
-      "jingu": { "threshold": 20, "value": 1 }
-    }
-  }
+  "skill_attr_gain": {}
 }

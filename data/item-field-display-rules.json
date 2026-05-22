@@ -1,0 +1,339 @@
+{
+  "_comment": "物品字段展示规则：仅描述 UI 分块与技能可见性契约，不改变模板数值或结算。运行时由 scene-app loadConfig 注入 ItemFieldDisplayRules；本表仍供 item-editor 与 audit 脚本对账。",
+  "schema_version": "1.0.0",
+  "blocks": {
+    "cooking_station": {
+      "display_name": "烹饪工位信息",
+      "default_skill_id": "life_cooking",
+      "default_visible": false
+    },
+    "food_detail": {
+      "display_name": "食物细节",
+      "default_skill_id": "life_cooking",
+      "default_visible": false
+    },
+    "legacy_use_effect": {
+      "display_name": "旧轨即时生存恢复（废弃，不进入新展示分块）",
+      "default_visible": false
+    },
+    "pharmacy": {
+      "display_name": "制药信息",
+      "default_skill_id": "life_pharmacy",
+      "default_visible": false
+    },
+    "planting_compost": {
+      "display_name": "堆肥/种植信息",
+      "default_skill_id": "life_planting",
+      "default_visible": false
+    },
+    "regular": {
+      "display_name": "常规信息",
+      "default_visible": true
+    }
+  },
+  "fields": {
+    "compost_inoculant_aerobic": {
+      "primary_block": "planting_compost",
+      "reference_blocks": [],
+      "skill_id": "life_planting",
+      "level_min": 2,
+      "locked_hint": "种植/堆肥经验不足，无法解读好氧菌剂信息",
+      "renderer": "bool_tag",
+      "value_type": "boolean",
+      "visible_by_default": false
+    },
+    "compost_inoculant_anaerobic": {
+      "primary_block": "planting_compost",
+      "reference_blocks": [],
+      "skill_id": "life_planting",
+      "level_min": 2,
+      "locked_hint": "种植/堆肥经验不足，无法解读厌氧菌剂信息",
+      "renderer": "bool_tag",
+      "value_type": "boolean",
+      "visible_by_default": false
+    },
+    "cooking_ingredient": {
+      "primary_block": "cooking_station",
+      "reference_blocks": [],
+      "skill_id": "life_cooking",
+      "level_min": 1,
+      "locked_hint": "烹饪经验不足，无法判断可否作为烹饪投料",
+      "renderer": "bool_tag",
+      "value_type": "boolean",
+      "visible_by_default": false
+    },
+    "desc_0": {
+      "primary_block": "regular",
+      "reference_blocks": [],
+      "skill_id": "survival_language",
+      "level_min": 0,
+      "locked_hint": "",
+      "renderer": "language_gated_desc",
+      "value_type": "string",
+      "visible_by_default": true
+    },
+    "desc_1": {
+      "primary_block": "regular",
+      "reference_blocks": [],
+      "skill_id": "survival_language",
+      "level_min": 0,
+      "locked_hint": "",
+      "renderer": "language_gated_desc",
+      "value_type": "string",
+      "visible_by_default": true
+    },
+    "desc_2": {
+      "primary_block": "regular",
+      "reference_blocks": [],
+      "skill_id": "survival_language",
+      "level_min": 0,
+      "locked_hint": "",
+      "renderer": "language_gated_desc",
+      "value_type": "string",
+      "visible_by_default": true
+    },
+    "edible": {
+      "primary_block": "regular",
+      "reference_blocks": [],
+      "skill_id": null,
+      "level_min": 0,
+      "locked_hint": "",
+      "renderer": "bool_tag",
+      "value_type": "boolean",
+      "visible_by_default": true
+    },
+    "edible_buff_id": {
+      "primary_block": "food_detail",
+      "reference_blocks": [],
+      "skill_id": "life_cooking",
+      "level_min": 3,
+      "locked_hint": "烹饪经验不足，无法判断食用后增益详情",
+      "renderer": "buff_summary",
+      "value_type": "string",
+      "visible_by_default": false
+    },
+    "fert_c": {
+      "primary_block": "planting_compost",
+      "reference_blocks": [],
+      "skill_id": "life_planting",
+      "level_min": 1,
+      "locked_hint": "种植/堆肥经验不足，无法读取碳贡献",
+      "renderer": "number",
+      "value_type": "number",
+      "visible_by_default": false
+    },
+    "fert_n": {
+      "primary_block": "planting_compost",
+      "reference_blocks": [],
+      "skill_id": "life_planting",
+      "level_min": 1,
+      "locked_hint": "种植/堆肥经验不足，无法读取氮贡献",
+      "renderer": "number",
+      "value_type": "number",
+      "visible_by_default": false
+    },
+    "fn": {
+      "primary_block": "regular",
+      "reference_blocks": [],
+      "skill_id": "survival_language",
+      "level_min": 4,
+      "locked_hint": "语言等级不足，无法显示完整鉴定描述",
+      "renderer": "language_gated_desc",
+      "value_type": "string",
+      "visible_by_default": true
+    },
+    "fn_before": {
+      "primary_block": "regular",
+      "reference_blocks": [],
+      "skill_id": "survival_language",
+      "level_min": 2,
+      "locked_hint": "语言等级不足，无法显示鉴定前描述",
+      "renderer": "language_gated_desc",
+      "value_type": "string",
+      "visible_by_default": true
+    },
+    "food_buff_duration_ticks": {
+      "primary_block": "food_detail",
+      "reference_blocks": [],
+      "skill_id": "life_cooking",
+      "level_min": 3,
+      "locked_hint": "烹饪经验不足，无法判断食物效果持续时间",
+      "renderer": "tick_duration",
+      "value_type": "integer",
+      "visible_by_default": false
+    },
+    "fuel_points": {
+      "primary_block": "cooking_station",
+      "reference_blocks": [],
+      "skill_id": "life_cooking",
+      "level_min": 1,
+      "locked_hint": "烹饪经验不足，无法判断灶台燃料价值",
+      "renderer": "number",
+      "value_type": "number",
+      "visible_by_default": false
+    },
+    "name": {
+      "primary_block": "regular",
+      "reference_blocks": [],
+      "skill_id": "survival_language",
+      "level_min": 0,
+      "locked_hint": "",
+      "renderer": "language_gated_name",
+      "value_type": "string",
+      "visible_by_default": true
+    },
+    "name_0": {
+      "primary_block": "regular",
+      "reference_blocks": [],
+      "skill_id": "survival_language",
+      "level_min": 0,
+      "locked_hint": "",
+      "renderer": "language_gated_name",
+      "value_type": "string",
+      "visible_by_default": true
+    },
+    "name_1": {
+      "primary_block": "regular",
+      "reference_blocks": [],
+      "skill_id": "survival_language",
+      "level_min": 0,
+      "locked_hint": "",
+      "renderer": "language_gated_name",
+      "value_type": "string",
+      "visible_by_default": true
+    },
+    "name_2": {
+      "primary_block": "regular",
+      "reference_blocks": [],
+      "skill_id": "survival_language",
+      "level_min": 0,
+      "locked_hint": "",
+      "renderer": "language_gated_name",
+      "value_type": "string",
+      "visible_by_default": true
+    },
+    "pharmacy_ingredient": {
+      "primary_block": "pharmacy",
+      "reference_blocks": [],
+      "skill_id": "life_pharmacy",
+      "level_min": 1,
+      "locked_hint": "制药经验不足，无法判断可否作为制药投料",
+      "renderer": "bool_tag",
+      "value_type": "boolean",
+      "visible_by_default": false
+    },
+    "placeholder_name": {
+      "primary_block": "regular",
+      "reference_blocks": [],
+      "skill_id": "survival_language",
+      "level_min": 0,
+      "locked_hint": "",
+      "renderer": "language_gated_name",
+      "value_type": "string",
+      "visible_by_default": true
+    },
+    "sn": {
+      "primary_block": "regular",
+      "reference_blocks": [],
+      "skill_id": "survival_language",
+      "level_min": 3,
+      "locked_hint": "语言等级不足，无法显示正式品名",
+      "renderer": "language_gated_name",
+      "value_type": "string",
+      "visible_by_default": true
+    },
+    "spoilage_ticks": {
+      "primary_block": "food_detail",
+      "reference_blocks": [],
+      "skill_id": "life_cooking",
+      "level_min": 2,
+      "locked_hint": "烹饪经验不足，无法判断保鲜/腐败情况",
+      "renderer": "tick_duration",
+      "value_type": "integer",
+      "visible_by_default": false
+    },
+    "use_effect.nutrition": {
+      "primary_block": "legacy_use_effect",
+      "reference_blocks": [],
+      "skill_id": null,
+      "level_min": 0,
+      "locked_hint": "",
+      "renderer": "hidden",
+      "value_type": "number",
+      "visible_by_default": false,
+      "deprecated": true
+    },
+    "use_effect.satiety": {
+      "primary_block": "legacy_use_effect",
+      "reference_blocks": [],
+      "skill_id": null,
+      "level_min": 0,
+      "locked_hint": "",
+      "renderer": "hidden",
+      "value_type": "number",
+      "visible_by_default": false,
+      "deprecated": true
+    },
+    "use_effect.thirst": {
+      "primary_block": "legacy_use_effect",
+      "reference_blocks": [],
+      "skill_id": null,
+      "level_min": 0,
+      "locked_hint": "",
+      "renderer": "hidden",
+      "value_type": "number",
+      "visible_by_default": false,
+      "deprecated": true
+    },
+    "water_points": {
+      "primary_block": "cooking_station",
+      "reference_blocks": [],
+      "skill_id": "life_cooking",
+      "level_min": 1,
+      "locked_hint": "烹饪经验不足，无法判断料理水价值",
+      "renderer": "number",
+      "value_type": "number",
+      "visible_by_default": false
+    },
+    "weight_kg": {
+      "primary_block": "regular",
+      "reference_blocks": [],
+      "skill_id": null,
+      "level_min": 0,
+      "locked_hint": "",
+      "renderer": "number",
+      "value_type": "number",
+      "visible_by_default": true
+    }
+  },
+  "renderers": {
+    "bool_tag": {
+      "display_name": "布尔标签",
+      "value_type_hint": "boolean"
+    },
+    "buff_summary": {
+      "display_name": "Buff 摘要",
+      "value_type_hint": "buff_id_string"
+    },
+    "hidden": {
+      "display_name": "不展示（占位/废弃轨）",
+      "value_type_hint": "any"
+    },
+    "language_gated_desc": {
+      "display_name": "语言门闸描述",
+      "value_type_hint": "string"
+    },
+    "language_gated_name": {
+      "display_name": "语言门闸名称",
+      "value_type_hint": "string"
+    },
+    "number": {
+      "display_name": "数值",
+      "value_type_hint": "number"
+    },
+    "tick_duration": {
+      "display_name": "Tick 时长",
+      "value_type_hint": "integer_ticks"
+    }
+  }
+}

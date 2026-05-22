@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>角色基础属性设定说明</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: #1c1815;
+      color: #e8e6e3;
+      font-family: "Noto Serif SC", "Microsoft YaHei", serif;
+      line-height: 1.55;
+      font-size: 14px;
+    }
+    .wrap { max-width: 960px; margin: 0 auto; padding: 20px 16px 48px; }
+    h1 {
+      font-size: 22px;
+      color: #d3a060;
+      margin: 0 0 6px;
+      border-bottom: 2px solid #4d4d45;
+      padding-bottom: 10px;
+    }
+    .sub { color: #8e8e8e; font-size: 12px; margin-bottom: 16px; }
+    nav.toc {
+      font-size: 13px;
+      margin-bottom: 20px;
+      padding: 10px 14px;
+      border: 1px solid #4d4d45;
+      border-radius: 8px;
+      background: #221c16;
+    }
+    nav.toc a { color: #7ab89a; text-decoration: none; margin-right: 10px; display: inline-block; margin-bottom: 4px; }
+    nav.toc a:hover { color: #d3a060; }
+    h2 {
+      font-size: 16px;
+      color: #7ab89a;
+      margin: 0 0 10px;
+    }
+    h3 {
+      font-size: 14px;
+      color: #d3a060;
+      margin: 16px 0 8px;
+    }
+    section {
+      border: 1px solid #4d4d45;
+      border-radius: 10px;
+      background: #1a1512;
+      padding: 14px 16px;
+      margin-bottom: 12px;
+    }
+    ul, ol { margin: 8px 0; padding-left: 1.2em; }
+    li { margin: 4px 0; }
+    .attr-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+      gap: 8px;
+      margin: 12px 0;
+    }
+    .attr-card {
+      border: 1px solid #5a8f7a;
+      background: #243028;
+      border-radius: 8px;
+      padding: 10px 12px;
+    }
+    .attr-card strong { color: #d3a060; display: block; margin-bottom: 4px; }
+    .attr-card span { font-size: 12px; color: #b8e0d0; }
+    .flow {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 6px;
+      margin: 12px 0;
+      font-size: 13px;
+    }
+    .flow .box {
+      border: 1px solid #5a8f7a;
+      background: #243028;
+      color: #b8e0d0;
+      padding: 6px 10px;
+      border-radius: 6px;
+    }
+    .flow .box.gold { border-color: #d3a060; color: #f0d8b0; }
+    .flow .arrow { color: #8e8e8e; }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+      margin: 10px 0;
+    }
+    th, td {
+      border: 1px solid #4d4d45;
+      padding: 8px 10px;
+      text-align: left;
+      vertical-align: top;
+    }
+    th { background: #251d17; color: #d3a060; }
+    td.num { text-align: right; font-variant-numeric: tabular-nums; }
+    .note {
+      border-left: 3px solid #d3a060;
+      padding: 8px 12px;
+      margin: 10px 0;
+      background: #221c16;
+      color: #d8cfbf;
+      font-size: 13px;
+    }
+    .note.warn { border-left-color: #c08070; }
+    .note.ok { border-left-color: #7ab89a; }
+    .ok { color: #7ab89a; }
+    .no { color: #c08070; }
+    code {
+      background: #251d17;
+      padding: 1px 5px;
+      border-radius: 4px;
+      font-size: 12px;
+      color: #d3a060;
+    }
+    .calc {
+      font-family: Consolas, "Microsoft YaHei", monospace;
+      background: #0f0d0b;
+      padding: 10px 12px;
+      border-radius: 6px;
+      border: 1px solid #333;
+      margin: 8px 0;
+      font-size: 13px;
+      color: #b8e0d0;
+      overflow-x: auto;
+      white-space: pre-wrap;
+    }
+    .dot { color: #7ab89a; }
+    .pill {
+      display: inline-block;
+      font-size: 11px;
+      padding: 2px 8px;
+      border-radius: 99px;
+      background: #251d17;
+      border: 1px solid #4d4d45;
+      color: #9ad4c4;
+      margin-right: 4px;
+    }
+    .pill.innate { border-color: #d3a060; color: #f0d8b0; }
+    .pill.acquired { border-color: #7ab89a; color: #b8e0d0; }
+    label { display: block; margin: 10px 0 4px; font-size: 13px; color: #d8cfbf; }
+    input[type="range"] { width: 100%; max-width: 360px; }
+    .demo-out { margin-top: 8px; font-size: 13px; color: #9ad4c4; }
+    .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    @media (max-width: 640px) { .two-col { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>角色基础属性设定说明</h1>
+    <p class="sub">与 <code>docs/design/05-character-attributes.md</code> 对齐 · 五项基础属性 · 先天/后天 · 衍生数值 · 战斗/生存运用 · 策划查阅用（非可玩 demo）</p>
+
+    <nav class="toc">
+      <a href="#s0">0 总览</a>
+      <a href="#s1">1 先天与后天</a>
+      <a href="#s2">2 衍生属性</a>
+      <a href="#s3">3 战斗运用</a>
+      <a href="#s4">4 生产与生存</a>
+      <a href="#s5">5 成长来源</a>
+      <a href="#s6">6 筋骨</a>
+      <a href="#s7">7 柔韧</a>
+      <a href="#s8">8 呼吸</a>
+      <a href="#s9">9 身手</a>
+      <a href="#s10">10 专注</a>
+      <a href="#s11">11 经脉概要</a>
+      <a href="#s12">12 物品栏</a>
+      <a href="#s13">13 速查</a>
+    </nav>
+
+    <section id="s0">
+      <h2>0. 五项基础属性总览</h2>
+      <p>角色拥有五项基础属性，既影响战斗，也作用于负重、恢复、学习等系统。公式中默认使用<strong>实际值 = 先天 + 后天</strong>；展示与成长设计上始终区分两者。</p>
+      <div class="attr-grid">
+        <div class="attr-card"><strong>筋骨</strong><span>近战伤害、负重；徒手曲线与兵器门槛/超额增伤</span></div>
+        <div class="attr-card"><strong>柔韧</strong><span>肢体基础防御（动态%）；部位×伤害类型微调</span></div>
+        <div class="attr-card"><strong>呼吸</strong><span>底气上限与恢复；与生存技能「凝气」叠加</span></div>
+        <div class="attr-card"><strong>身手</strong><span>战斗速度 → 先手、连击、命中率；步法提供 V<sub>base</sub></span></div>
+        <div class="attr-card"><strong>专注</strong><span>技能书学习效率；自修 tick 经验与精力→潜能效率</span></div>
+      </div>
+      <h3>惯用肢（创建时选定）</h3>
+      <ul>
+        <li><code>dominant_hand</code>（左/右）、<code>dominant_leg</code>（左/右）：仅影响伤害公式中的<strong>环境修正</strong>乘区。</li>
+        <li>本次<strong>出招肢体</strong>为惯用手或惯用腿 → 系数 <strong>1.1</strong>；否则 <strong>0.9</strong>（可配置 <code>dominant_limb_damage_mult</code> 等）。</li>
+      </ul>
+    </section>
+
+    <section id="s1">
+      <h2>1. 先天与后天 · 数据与缓存</h2>
+      <div class="two-col">
+        <div>
+          <p><span class="pill innate">先天</span>创建时决定，单项上限 <strong>40</strong>；捏人阶段单项最高 <strong>29</strong>（基础各 10 + 50 自由点，可下调基础换点）。</p>
+          <p><span class="pill acquired">后天</span>技能、装备、Buff、穴位等汇总；实际值可超过 40（先天上限不变）。</p>
+        </div>
+        <div>
+          <p class="note ok"><strong>统一重算</strong>：<code>recalcCharacterStats()</code> 内重算后天五维、<code>W<sub>max</sub></code> 等衍生值并写缓存；检查负重只读缓存。</p>
+        </div>
+      </div>
+      <h3>触发重算（须调用统一入口）</h3>
+      <ul>
+        <li>穿/脱/换装备；增删 Buff（含过期）；任意技能等级变化；</li>
+        <li>呼吸法挂载或状态变化（若影响属性）；永久加属性道具等。</li>
+      </ul>
+      <p class="note warn"><strong>战斗技能门槛</strong>：学习/使用门槛（如「筋骨≥X」）只与<strong>先天值</strong>比较，后天不参与；兵器 <code>req_innate_jingu</code> 同口径并推广至全战斗技能。</p>
+      <p class="note">参与公式时筋骨、柔韧、呼吸、身手、专注及技能等级<strong>最小为 0</strong>，负数视为 0。</p>
+    </section>
+
+    <section id="s2">
+      <h2>2. 衍生属性（由实际值计算）</h2>
+      <table>
+        <thead>
+          <tr><th>衍生属性</th><th>主要属性</th><th>要点</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><strong>负重上限 W<sub>max</sub></strong></td><td>筋骨、力量技能</td><td>W<sub>基础</sub>×(1+0.01×L<sub>力量</sub>+0.0005×S<sub>筋骨</sub>)；常数来自配置表</td></tr>
+          <tr><td><strong>徒手基础威力</strong></td><td>筋骨</td><td>饱和曲线 B<sub>fist</sub>(S)，非直接等于 S；见 §6</td></tr>
+          <tr><td><strong>肢体基础防御</strong></td><td>柔韧</td><td>DR = S/(S+3D)；见 §7 减伤链</td></tr>
+          <tr><td><strong>底气上限</strong></td><td>呼吸、呼吸法</td><td>N<sub>base</sub>×(1+c×S<sub>呼吸</sub>+ΣP)；呼吸法升级不直接抬当前上限</td></tr>
+          <tr><td><strong>底气恢复</strong></td><td>呼吸、凝气</td><td>默认约每 10 tick 恢复最大底气 ~10%（可配置）</td></tr>
+          <tr><td><strong>战斗速度</strong></td><td>身手、步法、装备</td><td>floor 后 + 步法每 10 级加成；max(1,·)；见 §9</td></tr>
+          <tr><td><strong>技能书学习</strong></td><td>专注</td><td>时间与消耗与专注成反比</td></tr>
+          <tr><td><strong>自修学习</strong></td><td>专注</td><td>每 tick 1 精力；潜能上限 Pot<sub>perEnergy</sub>；见 §10</td></tr>
+          <tr><td><strong>损毁增长 Q</strong></td><td>—</td><td>Q = floor(最终伤害)；柔韧仅通过减伤间接影响</td></tr>
+        </tbody>
+      </table>
+      <p class="note">公式常数（W<sub>基础</sub>、系数 k、呼吸/身手每点加成等）<strong>全部从配置表读取</strong>，不写死代码。</p>
+    </section>
+
+    <section id="s3">
+      <h2>3. 属性在战斗中的运用</h2>
+      <table>
+        <thead>
+          <tr><th>环节</th><th class="dot">筋骨</th><th class="dot">柔韧</th><th class="dot">呼吸</th><th class="dot">身手</th><th class="dot">专注</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>近战伤害</td><td class="dot">●</td><td>—</td><td>—</td><td>—</td><td>—</td></tr>
+          <tr><td>命中率</td><td>—</td><td>—</td><td>—</td><td class="dot">● 速度差/比</td><td>—</td></tr>
+          <tr><td>招架</td><td>—</td><td class="dot">●</td><td>—</td><td>—</td><td>—</td></tr>
+          <tr><td>出手顺序 / 连击</td><td>—</td><td>—</td><td>—</td><td class="dot">●</td><td>—</td></tr>
+          <tr><td>底气消耗与恢复</td><td>—</td><td>—</td><td class="dot">●</td><td>—</td><td>—</td></tr>
+          <tr><td>肢体减伤</td><td>—</td><td class="dot">● 基础防御 + 类型微调</td><td>—</td><td>—</td><td>—</td></tr>
+          <tr><td>肢体损毁</td><td>—</td><td>间接</td><td>—</td><td>—</td><td>—</td></tr>
+        </tbody>
+      </table>
+      <h3>减伤链顺序（物理：劈砍 / 戳刺 / 钝击）</h3>
+      <div class="flow">
+        <span class="box">底气护体 %</span>
+        <span class="arrow">→</span>
+        <span class="box">防具 %（按伤害类型）</span>
+        <span class="arrow">→</span>
+        <span class="box gold">基础防御（柔韧）</span>
+        <span class="arrow">→</span>
+        <span class="box">M<sub>部位,类型</sub></span>
+        <span class="arrow">→</span>
+        <span class="box">floor → 扣血 / 损毁 Q</span>
+      </div>
+      <p class="note">链内各步保留 1 位小数传递；仅最终扣血与损毁向下取整。</p>
+    </section>
+
+    <section id="s4">
+      <h2>4. 属性在生产与生存中的运用</h2>
+      <table>
+        <thead>
+          <tr><th>环节</th><th class="dot">筋骨</th><th class="dot">柔韧</th><th class="dot">呼吸</th><th class="dot">身手</th><th class="dot">专注</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>负重</td><td class="dot">●</td><td>—</td><td>—</td><td>—</td><td>—</td></tr>
+          <tr><td>体力 / 底气恢复</td><td>—</td><td>—</td><td class="dot">●</td><td>—</td><td>—</td></tr>
+          <tr><td>技能书 / 自修学习</td><td>—</td><td>—</td><td>—</td><td>—</td><td class="dot">●</td></tr>
+        </tbody>
+      </table>
+      <p>制造成功率、品质率由<strong>建筑、熟练度、配方与材料</strong>决定，五维主要影响<strong>可持续作业</strong>（负重、恢复、学习）。</p>
+    </section>
+
+    <section id="s5">
+      <h2>5. 后天成长来源简述</h2>
+      <ul>
+        <li><strong>装备与词条</strong>：六词条槽；「+筋骨」等一律计入后天（<code>/data/enchant.json</code>）。</li>
+        <li><strong>Buff / 料理 / 药品</strong>：临时后天，过期移除。</li>
+        <li><strong>战斗技能</strong>：<code>proficiency_attr_unlocks</code> 按招式熟练度一次性加后天五维；与后遗症分轨。</li>
+        <li><strong>生存技能</strong>：<code>skill_attr_gain</code> 等（见 survival-config）。</li>
+        <li><strong>极少数剧情/道具</strong>：可提升<strong>先天</strong>或先天上限，单独列出。</li>
+      </ul>
+    </section>
+
+    <section id="s6">
+      <h2>6. 筋骨细则</h2>
+      <h3>6.1 数值区间（实际值）</h3>
+      <table>
+        <thead><tr><th>阶段</th><th>典型筋骨</th></tr></thead>
+        <tbody>
+          <tr><td>新手</td><td>约 20～35</td></tr>
+          <tr><td>中期</td><td>约 300～400</td></tr>
+          <tr><td>长线后期</td><td>2000～3000+（边际递减设计）</td></tr>
+        </tbody>
+      </table>
+
+      <h3>6.2 徒手基础威力曲线</h3>
+      <div class="calc">B_fist(S) = floor( (650/2) × (1 - e^(-S/450)) )</div>
+      <p>指数尺度 450，cap 650 再整体 ÷2；前期增长明显，后期乏力。</p>
+      <label>试算：筋骨实际值 S = <span id="jinguVal">100</span></label>
+      <input type="range" id="jinguSlider" min="0" max="2000" value="100" step="10" />
+      <p class="demo-out" id="jinguOut"></p>
+
+      <h3>6.3 徒手 / 兵器伤害乘区（示意）</h3>
+      <div class="calc">D_徒手 = B_fist × T_手套 × F_技能 × F_呼吸法 × F_出力 × F_环境(含惯用肢) × F_实战
+
+D_兵器 = B_武器 × T_词条 × F_技能 × F_呼吸法 × M_兵器-筋骨 × F_出力 × F_环境 × F_实战</div>
+      <p class="note"><strong>基础威力由出招方式决定</strong>：徒手出招用 B_fist（即使用兵器类技能）；持兵器出招用武器基础威力（即使用拳脚类技能）。手套只看<strong>当前出招手</strong>。</p>
+
+      <h3>6.4 兵器 · 只看先天筋骨</h3>
+      <table>
+        <thead><tr><th>条件</th><th>效果</th></tr></thead>
+        <tbody>
+          <tr><td>S<sub>先天</sub> &lt; ½ Req</td><td class="no">无法装备/挥动</td></tr>
+          <tr><td>½ Req ≤ S &lt; Req</td><td>M<sub>门槛</sub> = 0.5～1.0 线性插值</td></tr>
+          <tr><td>S ≥ Req</td><td>M<sub>门槛</sub> = 1；M<sub>筋骨</sub> = 1 + 0.05×max(S−Req,0)，无上限</td></tr>
+        </tbody>
+      </table>
+      <p>字段 <code>req_innate_jingu</code> 默认 20；0 或负视为无门槛。</p>
+
+      <h3>6.5 徒手 vs 兵器锚点（先天 30，其他乘区相同）</h3>
+      <table>
+        <thead>
+          <tr><th class="num">S</th><th class="num">B<sub>fist</sub></th><th class="num">基准武器攻击 (Req=20)</th><th class="num">基准武器攻击 (Req=30)</th></tr>
+        </thead>
+        <tbody>
+          <tr><td class="num">30</td><td class="num">≈21</td><td class="num">≈14</td><td class="num">≈21</td></tr>
+          <tr><td class="num">200</td><td class="num">≈118</td><td class="num">≈79</td><td class="num">≈118</td></tr>
+          <tr><td class="num">500</td><td class="num">≈219</td><td class="num">≈146</td><td class="num">≈219</td></tr>
+          <tr><td class="num">1100</td><td class="num">≈298</td><td class="num">≈199</td><td class="num">≈298</td></tr>
+          <tr><td class="num">1800</td><td class="num">≈320</td><td class="num">≈214</td><td class="num">≈320</td></tr>
+        </tbody>
+      </table>
+
+      <h3>6.6 负重</h3>
+      <div class="calc">W = 装备 + 口袋 + 背心 + 背包内×m_背包
+W_max = W_基础 × (1 + 0.01×L_力量 + 0.0005×S_筋骨)   （W_基础 默认 25 kg）
+
+未超重: W ≤ W_max
+可移动超重: W_max &lt; W ≤ 1.5×W_max → C_move = 1 + k×(W/W_max − 1)，k 默认 20
+严重超重: W &gt; 1.5×W_max → 无法移动</div>
+      <ul>
+        <li>力量 <strong>100 级</strong>：计算 W 时不计左右手<strong>武器槽</strong>重量。</li>
+        <li>展示 W、W<sub>max</sub> 保留一位小数；判定用浮点。</li>
+        <li>载具为独立载重 W<sub>载具</sub>，不计入角色 W。</li>
+      </ul>
+    </section>
+
+    <section id="s7">
+      <h2>7. 柔韧细则</h2>
+      <h3>7.1 基础防御</h3>
+      <div class="calc">DR = S_柔韧 / (S_柔韧 + 3 × D_进)
+D_出 = D_进 × (1 − DR)</div>
+      <table>
+        <thead><tr><th class="num">柔韧</th><th class="num">进入伤害</th><th>DR</th><th class="num">输出</th></tr></thead>
+        <tbody>
+          <tr><td class="num">25</td><td class="num">20</td><td>29%</td><td class="num">≈14</td></tr>
+          <tr><td class="num">100</td><td class="num">50</td><td>40%</td><td class="num">≈30</td></tr>
+          <tr><td class="num">400</td><td class="num">100</td><td>57%</td><td class="num">≈43</td></tr>
+          <tr><td class="num">2000</td><td class="num">200</td><td>77%</td><td class="num">≈46</td></tr>
+        </tbody>
+      </table>
+      <label>试算：柔韧 S = <span id="flexVal">100</span>，进入伤害 D = <span id="flexDVal">50</span></label>
+      <input type="range" id="flexSlider" min="0" max="2500" value="100" step="25" />
+      <input type="range" id="flexDSlider" min="1" max="300" value="50" step="1" />
+      <p class="demo-out" id="flexOut"></p>
+
+      <h3>7.2 伤害类型微调 M<sub>部位,类型</sub>（基础防御之后）</h3>
+      <table>
+        <thead><tr><th>部位</th><th>劈砍</th><th>戳刺</th><th>钝击</th></tr></thead>
+        <tbody>
+          <tr><td>头</td><td>1.0</td><td>1.1</td><td>1.3</td></tr>
+          <tr><td>胸</td><td>1.0</td><td>1.2</td><td>1.1</td></tr>
+          <tr><td>腹</td><td>1.1</td><td>1.3</td><td>1.0</td></tr>
+          <tr><td>左/右手</td><td>1.0</td><td>1.0</td><td>1.1</td></tr>
+          <tr><td>左/右脚</td><td>0.9</td><td>1.0</td><td>1.1</td></tr>
+        </tbody>
+      </table>
+
+      <h3>7.3 损毁</h3>
+      <p>Q = floor(最终伤害)。部位未损毁 → +Q；已损毁 → 按 <code>09-body-parts</code> 重分配到未损毁部位。</p>
+    </section>
+
+    <section id="s8">
+      <h2>8. 呼吸（底气）</h2>
+      <div class="calc">最大底气 = floor( N_base × (1 + c_呼吸 × S_呼吸 + ΣP_其他) )
+c_呼吸 默认 0.01（breath_diqi_cap_pct_per_point）</div>
+      <ul>
+        <li>N<sub>base</sub> 由当前挂载呼吸法（<code>hubs.breath</code>）提供。</li>
+        <li>恢复：底气基础恢复 + 呼吸系数×S<sub>呼吸</sub>，再 ×(1+凝气加成)。</li>
+        <li>呼吸法威力乘区见 <code>11-skills</code> 8.3.3（<code>getBreathPowerMultiplier</code>）。</li>
+      </ul>
+    </section>
+
+    <section id="s9">
+      <h2>9. 身手（战斗速度）</h2>
+      <div class="calc">速度浮点 = V_base × (1 + 0.005×S_身手 + ΣP_装备等)
+V_base = 当前步法 combat_speed_base；无步法 hub → base_speed_no_footwork（默认 1）
+
+速度 = max(1, floor(速度浮点) + floor(L_步法/10) × combat_speed_per_10_levels)</div>
+      <ul>
+        <li>身手不设上下限；命中率由攻防<strong>速度值</strong>参与（见 07 / 08 命中流程）。</li>
+        <li>先手与同速「同时提交」见 <code>07-combat-core.md</code>。</li>
+      </ul>
+    </section>
+
+    <section id="s10">
+      <h2>10. 专注（自修学习）</h2>
+      <ul>
+        <li>每 tick 固定消耗 <strong>1 精力</strong>（<code>study_tick_energy_cost</code>）。</li>
+        <li>Pot<sub>perEnergy</sub> = 200 × (1 + 0.05 × (S<sub>专注</sub> − 10))，向下取整，最小 0。</li>
+        <li>当前潜能 &lt; 本 tick 所需 → <span class="no">自修立即停止</span>。</li>
+        <li>每 tick 经验 = 基础经验 × F<sub>专注</sub>（曲线来自配置）。</li>
+      </ul>
+      <label>试算：专注 S = <span id="focusVal">10</span></label>
+      <input type="range" id="focusSlider" min="0" max="80" value="10" step="1" />
+      <p class="demo-out" id="focusOut"></p>
+    </section>
+
+    <section id="s11">
+      <h2>11. 经脉与穴位（概要）</h2>
+      <ul>
+        <li><strong>穴位</strong>（<code>docs/穴位.csv</code>）：「底气上限+N」→ maxQi；「后天五维+X」→ 计入后天。</li>
+        <li><strong>经脉成就</strong>（先天五维各 +1，可叠加）：
+          <ul>
+            <li>任脉全通 → 各 +1</li>
+            <li>督脉全通 → 各 +1</li>
+            <li>任督同通 → 各再 +1</li>
+            <li>全部经脉全通 → 各再 +1</li>
+          </ul>
+        </li>
+      </ul>
+      <p>完整规则：<code>docs/design/12-meridians-and-acupoints.md</code></p>
+    </section>
+
+    <section id="s12">
+      <h2>12. 人物物品栏（四类容器）</h2>
+      <table>
+        <thead><tr><th>容器</th><th>要点</th><th>战斗内</th></tr></thead>
+        <tbody>
+          <tr><td><strong>口袋</strong></td><td>衣服提供 2～4 格；每格最多 1 个</td><td>直接使用，1 tick</td></tr>
+          <tr><td><strong>背心/弹挂</strong></td><td>1 槽；每格最多 1 个</td><td>同口袋</td></tr>
+          <tr><td><strong>背包</strong></td><td>1 槽；可堆叠；m<sub>背包</sub> 折扣计入 W</td><td>先开面板 1 tick，再用 1 tick</td></tr>
+          <tr><td><strong>载具</strong></td><td>同时拖 1 个；独立 W<sub>载具,max</sub></td><td>规则同背包；与角色互转每次 1 tick</td></tr>
+        </tbody>
+      </table>
+      <p><strong>默认放入顺序</strong>（产出/拾取/仓库取出）：背包 → 载具 → 弹挂 → 口袋 → 脚下。</p>
+      <p class="note warn">脱衣服/背心/背包：内容物转背包，无背包或满则<strong>掉脚下</strong>。地牢撤离/拖拽态死亡：载具及内容<strong>消失</strong>。</p>
+    </section>
+
+    <section id="s13">
+      <h2>13. 实现与文档速查</h2>
+      <table>
+        <thead><tr><th>主题</th><th>位置</th></tr></thead>
+        <tbody>
+          <tr><td>属性运行时</td><td><code>js/character-attributes.js</code></td></tr>
+          <tr><td>生存常数 / skill_attr_gain</td><td><code>data/survival-config.json</code></td></tr>
+          <tr><td>呼吸法威力</td><td><code>js/combat-skills.js</code> · <code>data/combat-skills.json</code></td></tr>
+          <tr><td>命中 / 招架 / 伤害</td><td><code>docs/design/08-hit-parry-damage.md</code></td></tr>
+          <tr><td>先手 / 速度</td><td><code>docs/design/07-combat-core.md</code></td></tr>
+          <tr><td>肢体损毁</td><td><code>docs/design/09-body-parts.md</code></td></tr>
+          <tr><td>招式熟练度 → 后天</td><td><code>proficiency_attr_unlocks</code> · <code>11-skills.md</code></td></tr>
+        </tbody>
+      </table>
+    </section>
+  </div>
+
+  <script>
+    (function () {
+      function fistPower(s) {
+        return Math.floor((650 / 2) * (1 - Math.exp(-s / 450)));
+      }
+      var jSlider = document.getElementById('jinguSlider');
+      var jVal = document.getElementById('jinguVal');
+      var jOut = document.getElementById('jinguOut');
+      function updateJingu() {
+        var s = Number(jSlider.value);
+        jVal.textContent = s;
+        var b = fistPower(s);
+        jOut.textContent = 'B_fist ≈ ' + b + '；Req=20 锚点武器攻击 ≈ ' + Math.round(b / 1.5) + '；Req=30 ≈ ' + b;
+      }
+      jSlider.addEventListener('input', updateJingu);
+      updateJingu();
+
+      function flexDR(s, d) {
+        if (s <= 0) return { dr: 0, out: d };
+        var dr = s / (s + 3 * d);
+        return { dr: dr, out: d * (1 - dr) };
+      }
+      var fSlider = document.getElementById('flexSlider');
+      var fDSlider = document.getElementById('flexDSlider');
+      var fVal = document.getElementById('flexVal');
+      var fDVal = document.getElementById('flexDVal');
+      var fOut = document.getElementById('flexOut');
+      function updateFlex() {
+        var s = Number(fSlider.value);
+        var d = Number(fDSlider.value);
+        fVal.textContent = s;
+        fDVal.textContent = d;
+        var r = flexDR(s, d);
+        fOut.textContent = 'DR ≈ ' + (r.dr * 100).toFixed(1) + '%，输出伤害 ≈ ' + r.out.toFixed(1);
+      }
+      fSlider.addEventListener('input', updateFlex);
+      fDSlider.addEventListener('input', updateFlex);
+      updateFlex();
+
+      var focusSlider = document.getElementById('focusSlider');
+      var focusVal = document.getElementById('focusVal');
+      var focusOut = document.getElementById('focusOut');
+      function updateFocus() {
+        var s = Number(focusSlider.value);
+        focusVal.textContent = s;
+        var pot = Math.floor(200 * (1 + 0.05 * (s - 10)));
+        if (pot < 0) pot = 0;
+        focusOut.textContent = '每 1 精力可消耗潜能上限 Pot_perEnergy = ' + pot + '（S=10 时为 200）';
+      }
+      focusSlider.addEventListener('input', updateFocus);
+      updateFocus();
+    })();
+  </script>
+</body>
+</html>

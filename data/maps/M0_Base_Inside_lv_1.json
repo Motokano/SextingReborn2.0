@@ -769,6 +769,9 @@
   "compost_station_interact_npc_by_cell": {
     "13,14": "npc.station.compost_base"
   },
+  "bed_station_interact_npc_by_cell": {
+    "11,14": "npc.station.bed_base"
+  },
   "enemies": [
     {
       "x": 12,
@@ -781,8 +784,7 @@
     "12,14": "烹饪台",
     "13,14": "制肥桶",
     "7,11": "黄历",
-    "3,15": "床",
-    "3,14": "床",
+    "11,14": "床",
     "9,12": "仓库",
     "10,12": "仓库",
     "9,13": "仓库",

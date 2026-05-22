@@ -58,17 +58,22 @@ alwaysApply: true
 3. `data/npc/<prefix>_dialogue_pools.json`（专用台词池，可与空 `pools` 起盘）  
 4. `npc_registry.json` 补 **三条路径**（含 **`dialogue_pools`**）
 
-## 5b) 设施台（灶台/制药台）与 NPC 绑定口径
+## 5b) 设施台（灶台/制药台/制肥桶/床位）与 NPC 绑定口径
 
 - 地图设施格若要走 `interactNpc` 菜单链路，需在地图写绑定：
  - 灶台：`cooking_station_interact_npc_by_cell["x,y"]`（或回退 `cooking_station_interact_npc_id`）
  - 制药台：`pharmacy_station_interact_npc_by_cell["x,y"]`（或回退 `pharmacy_station_interact_npc_id`）
+ - 制肥桶：`compost_station_interact_npc_by_cell["x,y"]`（或回退 `compost_station_interact_npc_id`）
+ - 床位：`bed_station_interact_npc_by_cell["x,y"]`（或回退 `bed_station_interact_npc_id`）
 - 运行时（`game-engine` / `scene-app`）约定：**有绑定 NPC 时**，邻格点台格优先走 `interactNpc`；**无绑定**才直接开对应工作台面板。
 - 设施 NPC 本体 `mainMenu` 开关：
  - 灶台使用 `showOpenCookingPanel`
  - 制药台使用 `showOpenPharmacyPanel`
-- 设施 NPC `tags` 建议分别使用 `cooking_station` / `pharmacy_station`，供菜单按钮与工具筛选复用。
+- 制肥桶使用 `showOpenCompostPanel`
+- 床位使用 `showSleepAtBed`
+- 设施 NPC `tags` 建议分别使用 `cooking_station` / `pharmacy_station` / `compost_station` / `bed_station`，供菜单按钮与工具筛选复用。
 - 若需要「修好前禁止使用工作台」，门控应与是否绑定设施 NPC 一致；不要只在 UI 按钮层做锁定而绕开 `tryCookAtStation` / `tryPharmacyAtStation` 的运行时拦截。
+- 统一部署约定：**新设施默认必须走 NPC 管线部署**（map 绑定 + interactNpc + mainMenu 按钮）；直开分支仅允许兼容旧内容，不作为新功能落地口径。
 
 ## 6) 禁止事项
 

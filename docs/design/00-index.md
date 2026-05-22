@@ -32,6 +32,9 @@
 | 技能系统 | [11-skills.md](11-skills.md) | 生存/生活/战斗/特殊、熟练度、战斗技能通用规则与示例 |
 | 体温 Buff 实施清单 | [24-temperature-buff-implementation-checklist.md](24-temperature-buff-implementation-checklist.md) | 体温重构部署清单：区域温度/四季、极寒极热 Buff、耐候阈值与升级接线、验收用例 |
 | 身高与 BMI（首版） | [25-height-bmi.md](25-height-bmi.md) | 身高字段、创建时 BMI=22 反算体重、WHO 分段、bmi_tier_changed 事件、NPC BMI 条件与旧档兼容 |
+| 物品数值区间随机 | [26-item-numeric-rolls-resolved-rolls.md](26-item-numeric-rolls-resolved-rolls.md) | `numeric_rolls` 模板区间、`resolved_rolls` 实例抽样、校验分层、先 roll 再品质、堆叠与货币约定（冻结规格） |
+| 物品模板字段分层盘点 | [27-item-template-fields-inventory.md](27-item-template-fields-inventory.md) | `items.json` / `equipment.json` / 实例分层、顶层键快照、`getItemTemplate` 合并口径；`npm run audit:item-keys` 复扫 |
+| 农业种植与灌溉系统 | [28-agriculture-irrigation.md](28-agriculture-irrigation.md) | 固定农业互动点、33x33 农业地图、水池/水渠、主干与支流识别、供水分配、作物受水来源、HTML demo 目标 |
 | 烹饪系统（实现收口） | [21-cooking-system-benchmarks.md](21-cooking-system-benchmarks.md) | 烹饪当前实现口径：单次制作、统一配方路由优先、旧表兜底、图鉴双写兼容 |
 | 统一配方系统（实现口径） | [22-recipe-system-unified.md](22-recipe-system-unified.md) | 配方主表/工艺表/interface、schema 校验、route 优先级、兼容期双写约定 |
 | Buff / Debuff 系统 | [18-buff-system.md](18-buff-system.md) | 通用触发、分层消耗、命中/效果条件、调试开关 |

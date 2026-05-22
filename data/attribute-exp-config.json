@@ -1,0 +1,316 @@
+{
+  "schema_version": 1,
+  "enabled": true,
+  "attributes": [
+    {
+      "attr_id": "jingu",
+      "enabled": true,
+      "default_state": {
+        "exp": 0,
+        "attribute_level": 0,
+        "total_gained": 0
+      },
+      "probability_curve": {
+        "mode": "exp_saturating_gamma",
+        "gamma": 1.6,
+        "level_step": 10,
+        "segments": [
+          {
+            "level_range": [20, 29],
+            "p_cap": 0.8,
+            "e_scale": 5060.86
+          },
+          {
+            "level_range": [30, 39],
+            "p_cap": 0.72,
+            "e_scale": 6447.65
+          },
+          {
+            "level_range": [40, 49],
+            "p_cap": 0.64,
+            "e_scale": 7063.27
+          },
+          {
+            "level_range": [50, 59],
+            "p_cap": 0.56,
+            "e_scale": 8330.74
+          }
+        ],
+        "tier_extension": {
+          "base_tier_level_range": [50, 59],
+          "from_level_range_start": [60, 69],
+          "to_level_range_end": [1991, 2000],
+          "difficulty_mult_per_tier": 1.03,
+          "e_scale_formula": "e_scale(base_tier) * pow(difficulty_mult_per_tier, tier_offset_from_60_69)",
+          "p_cap_strategy": "reuse_base_tier",
+          "clamp_level_range_at_and_above": [1991, 2000]
+        }
+      }
+    },
+    {
+      "attr_id": "flexibility",
+      "enabled": true,
+      "default_state": {
+        "exp": 0,
+        "attribute_level": 0,
+        "total_gained": 0
+      },
+      "probability_curve": {
+        "mode": "exp_saturating_gamma",
+        "gamma": 1.6,
+        "level_step": 10,
+        "segments": [
+          {
+            "level_range": [20, 29],
+            "p_cap": 0.8,
+            "e_scale": 5060.86
+          },
+          {
+            "level_range": [30, 39],
+            "p_cap": 0.72,
+            "e_scale": 6447.65
+          },
+          {
+            "level_range": [40, 49],
+            "p_cap": 0.64,
+            "e_scale": 7063.27
+          },
+          {
+            "level_range": [50, 59],
+            "p_cap": 0.56,
+            "e_scale": 8330.74
+          }
+        ],
+        "tier_extension": {
+          "base_tier_level_range": [50, 59],
+          "from_level_range_start": [60, 69],
+          "to_level_range_end": [1991, 2000],
+          "difficulty_mult_per_tier": 1.03,
+          "e_scale_formula": "e_scale(base_tier) * pow(difficulty_mult_per_tier, tier_offset_from_60_69)",
+          "p_cap_strategy": "reuse_base_tier",
+          "clamp_level_range_at_and_above": [1991, 2000]
+        }
+      }
+    },
+    {
+      "attr_id": "breath",
+      "enabled": true,
+      "default_state": {
+        "exp": 0,
+        "attribute_level": 0,
+        "total_gained": 0
+      },
+      "probability_curve": {
+        "mode": "exp_saturating_gamma",
+        "gamma": 1.6,
+        "level_step": 10,
+        "segments": [
+          {
+            "level_range": [20, 29],
+            "p_cap": 0.8,
+            "e_scale": 5060.86
+          },
+          {
+            "level_range": [30, 39],
+            "p_cap": 0.72,
+            "e_scale": 6447.65
+          },
+          {
+            "level_range": [40, 49],
+            "p_cap": 0.64,
+            "e_scale": 7063.27
+          },
+          {
+            "level_range": [50, 59],
+            "p_cap": 0.56,
+            "e_scale": 8330.74
+          }
+        ],
+        "tier_extension": {
+          "base_tier_level_range": [50, 59],
+          "from_level_range_start": [60, 69],
+          "to_level_range_end": [1991, 2000],
+          "difficulty_mult_per_tier": 1.03,
+          "e_scale_formula": "e_scale(base_tier) * pow(difficulty_mult_per_tier, tier_offset_from_60_69)",
+          "p_cap_strategy": "reuse_base_tier",
+          "clamp_level_range_at_and_above": [1991, 2000]
+        }
+      }
+    },
+    {
+      "attr_id": "dexterity",
+      "enabled": true,
+      "default_state": {
+        "exp": 0,
+        "attribute_level": 0,
+        "total_gained": 0
+      },
+      "probability_curve": {
+        "mode": "exp_saturating_gamma",
+        "gamma": 1.6,
+        "level_step": 10,
+        "segments": [
+          {
+            "level_range": [20, 29],
+            "p_cap": 0.8,
+            "e_scale": 5060.86
+          },
+          {
+            "level_range": [30, 39],
+            "p_cap": 0.72,
+            "e_scale": 6447.65
+          },
+          {
+            "level_range": [40, 49],
+            "p_cap": 0.64,
+            "e_scale": 7063.27
+          },
+          {
+            "level_range": [50, 59],
+            "p_cap": 0.56,
+            "e_scale": 8330.74
+          }
+        ],
+        "tier_extension": {
+          "base_tier_level_range": [50, 59],
+          "from_level_range_start": [60, 69],
+          "to_level_range_end": [1991, 2000],
+          "difficulty_mult_per_tier": 1.03,
+          "e_scale_formula": "e_scale(base_tier) * pow(difficulty_mult_per_tier, tier_offset_from_60_69)",
+          "p_cap_strategy": "reuse_base_tier",
+          "clamp_level_range_at_and_above": [1991, 2000]
+        }
+      }
+    },
+    {
+      "attr_id": "focus",
+      "enabled": true,
+      "default_state": {
+        "exp": 0,
+        "attribute_level": 0,
+        "total_gained": 0
+      },
+      "probability_curve": {
+        "mode": "exp_saturating_gamma",
+        "gamma": 1.6,
+        "level_step": 10,
+        "segments": [
+          {
+            "level_range": [20, 29],
+            "p_cap": 0.8,
+            "e_scale": 5060.86
+          },
+          {
+            "level_range": [30, 39],
+            "p_cap": 0.72,
+            "e_scale": 6447.65
+          },
+          {
+            "level_range": [40, 49],
+            "p_cap": 0.64,
+            "e_scale": 7063.27
+          },
+          {
+            "level_range": [50, 59],
+            "p_cap": 0.56,
+            "e_scale": 8330.74
+          }
+        ],
+        "tier_extension": {
+          "base_tier_level_range": [50, 59],
+          "from_level_range_start": [60, 69],
+          "to_level_range_end": [1991, 2000],
+          "difficulty_mult_per_tier": 1.03,
+          "e_scale_formula": "e_scale(base_tier) * pow(difficulty_mult_per_tier, tier_offset_from_60_69)",
+          "p_cap_strategy": "reuse_base_tier",
+          "clamp_level_range_at_and_above": [1991, 2000]
+        }
+      }
+    }
+  ],
+  "settlement": {
+    "event_kind": "attribute_exp",
+    "event_name": "attribute_exp_settlement",
+    "allow_multi_success_per_attr": false,
+    "tier_snapshot_mode": "pre_settlement_attribute_level",
+    "success_effects": {
+      "attr_increment": 1,
+      "attribute_level_increment": 1,
+      "exp_reset_to": 0
+    },
+    "failure_effects": {
+      "keep_exp": true,
+      "grant_exp_on_failure": false
+    }
+  },
+  "source_whitelist": {
+    "enabled": true,
+    "reject_unregistered_source": true,
+    "match_fields": ["source_id", "event_kind", "event_name"],
+    "allowed_sources": [
+      {
+        "source_id": "evt.training.wood_dummy_success",
+        "event_kind": "event",
+        "event_name": "training_wood_dummy_success",
+        "allow_grants": [
+          { "attr_id": "jingu", "fixed_exp": 30 },
+          { "attr_id": "focus", "fixed_exp": 20 }
+        ]
+      },
+      {
+        "source_id": "life.gathering.bush_success",
+        "event_kind": "life_skill",
+        "event_name": "gathering_bush_success",
+        "allow_grants": [
+          { "attr_id": "dexterity", "fixed_exp": 18 },
+          { "attr_id": "focus", "fixed_exp": 12 }
+        ]
+      },
+      {
+        "source_id": "item.use.breath_tonic_success",
+        "event_kind": "item_use",
+        "event_name": "use_breath_tonic_success",
+        "allow_grants": [
+          { "attr_id": "breath", "fixed_exp": 40 }
+        ]
+      }
+    ]
+  },
+  "source_examples": [
+    {
+      "source_id": "evt.training.wood_dummy_success",
+      "event_kind": "event",
+      "event_name": "training_wood_dummy_success",
+      "grants": [
+        { "attr_id": "jingu", "fixed_exp": 30 },
+        { "attr_id": "focus", "fixed_exp": 20 }
+      ],
+      "grant_on_success_only": true
+    },
+    {
+      "source_id": "life.gathering.bush_success",
+      "event_kind": "life_skill",
+      "event_name": "gathering_bush_success",
+      "grants": [
+        { "attr_id": "dexterity", "fixed_exp": 18 },
+        { "attr_id": "focus", "fixed_exp": 12 }
+      ],
+      "grant_on_success_only": true
+    },
+    {
+      "source_id": "item.use.breath_tonic_success",
+      "event_kind": "item_use",
+      "event_name": "use_breath_tonic_success",
+      "grants": [
+        { "attr_id": "breath", "fixed_exp": 40 }
+      ],
+      "grant_on_success_only": true
+    }
+  ],
+  "rules_contract": {
+    "use_attribute_level_not_level": true,
+    "grant_fixed_exp_only": true,
+    "grant_on_success_only": true,
+    "allow_multi_attr_grants_in_single_action": true
+  }
+}

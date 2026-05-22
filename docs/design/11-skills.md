@@ -305,18 +305,12 @@
     - 解锁仅表示「获得装配资格」；当前实现为**肢体级装配**：后遗症挂在 `lhand` / `rhand` / `lfoot` / `rfoot` 之一，对该肢体已装备并出手的招式生效。
     - 后遗症条目中用 **`valid_skill_ids` / `valid_move_ids`** 做运行时生效校验：即使后遗症已装在肢体上，仍仅在命中 `valid_*` 的技能/招式上生效。
     - **同肢同后遗症唯一**：同一 `post_effect_id` 在同一角色上、**同一条出招肢**（`lhand` / `rhand` / `lfoot` / `rfoot`）范围内**无论有多少招式槽，至多装配 1 份**。可在**四条肢各装配 1 份**同一 id（例如「不假思索」在左右手、左右脚各一，共 4 份同时生效），但**禁止**在同一肢体上对同一 id 重复装配（含多槽均装刺拳且各挂一次等情形）。
-  - **单招式熟练度 → 后天五维（与后遗症并列）**：
-    - 某招式可配置 **`proficiency_attr_unlocks`**：数组项为 `{ min_proficiency_ratio, acquired }`，其中 **`acquired`** 为对象，键为后天五维 id（`jingu` / `flexibility` / `breath` / `dexterity` / `focus`），值为**达到阈值时一次性计入**的整点数（可与 `14` 中 `skill_attr_gain` 的 id 命名一致）。
-    - **呼吸法**的 **`hub_actions[]`** 条目可同样配置 **`proficiency_attr_unlocks`**（及可选 **`proficiency_max_uses`**，缺省同全局 `move_proficiency_max_uses`）；熟练度计数一般写入存档 **`skills[skill_id].move_usage[hub_action_id]`**（与肢上招式共用字段名，仅 id 空间不重叠）。**例外（已定）**：**`combat_basic_breath`** 下 **`19` 动作菜单** 的 **血气化劲 / 吐气纳精 / 调息 / 吐纳** 成功结算**统一**累加 **`move_usage.tu_na`**（与 **`tu_na`** hub 条目的 **`proficiency_attr_unlocks`** 共用一条成长线），见 **`19` §6**。
-    - 当该招式 **\(R_{\text{move}} \ge \texttt{min\_proficiency\_ratio}\)**（与 `post_effect_unlocks`、50000 次满同一套 \(R_{\text{move}}\)）时，将 `acquired` 中各键**累加**进角色后天属性；在 **`recalcCharacterStats`** 中与装备、`skill_attr_gain` 同级汇总。
-    - **与装备无关**：只要存档中该技能条目的 **`move_usage`** 使该招式达到阈值即生效；**不**因未装备该技能而收回（与「基本拳脚」按技能等级给后天筋骨的口径一致：等级在就有贡献）。
-    - 多条目、多属性：同一招式可配置多项阈值（按序各自判定）；同一 `acquired` 内多键分别累加。
   - **解锁方式（实现约定）**：
-    - 每条战斗技能的**技能总熟练度档位**与对应可解锁的后遗症列表，在该技能的配置表中定义；**单招式解锁**见上，写在对应 **`moves[]`** 条目内；**呼吸法 hub 动作**的后遗症/后天奖励写在 **`hub_actions[]`** 条目内（若有）。
+    - 每条战斗技能的**技能总熟练度档位**与对应可解锁的后遗症列表，在该技能的配置表中定义；**单招式解锁**见上，写在对应 **`moves[]`** 条目内；**呼吸法 hub 动作**的后遗症解锁写在 **`hub_actions[]`** 条目内（若有）。
     - 设计战斗技能时，须同时给出：
       - 技能本身的等级曲线 `Base(L)`（**徒手/兵器**等需要时；招架等可省略或单条声明）；
       - 该技能下所有招式列表与招式熟练度规则（**仅适用于有招式槽的徒手/兵器**）；**呼吸法**写 **`hub_actions[]`** 与解锁等级、**不**写肢上招式槽；
-      - 技能总熟练度的奖励设计（在哪些熟练度百分比解锁哪些后遗症），**和/或**各招式的 `post_effect_unlocks`、**`proficiency_attr_unlocks`**（**和/或**各 **`hub_actions[]`** 条目的 `proficiency_attr_unlocks`）；
+      - 技能总熟练度的奖励设计（在哪些熟练度百分比解锁哪些后遗症），**和/或**各招式的 `post_effect_unlocks`（以及各 **`hub_actions[]`** 的后遗症解锁配置）；
       - （若适用）**等级上限依赖**：本技能等级不得超过哪条战斗技能的等级；若无则不必声明。
 
 - **变式（装备在招式槽的被动技能）**
@@ -491,7 +485,6 @@
       - **全局规则（摘要）**：同 tick **至多执行一条** 实际击退；先 **`cells` 最大子集**，再 **攻击方筋骨低** → **攻击方速度（取整）低** → **`event_id` 小**；**仅目标**；目标 **死亡/离场** **跳过**；**八邻域夹角最近** 离散方向；**阻挡即停**、**不挤人**；击退 **不耗移动权**、**不默认触发** 借机/陷阱；**存档与战斗图钳位** 允许。详见 **`07`**。  
       - **撞墙加伤**：路径未跑满 `cells`（含一步未动）时，本击 **最终伤害** 按 **`08` 第 5 条** 乘 **`wall_slam_final_damage_multiplier`**。  
     - **与试探 / 失衡**：**无**。  
-    - **熟练度奖励（后天属性）**：单招式熟练度 **\(R_{\text{move}} \ge 20\%\)** 时，**后天筋骨 +15**（配置 `proficiency_attr_unlocks`，与 `data/combat-skills.json` 中 `front_kick` 一致）。
 
   - **摆拳（`swing_punch`，已定）**  
     - **定位**：技能等级 **50** 解锁；**爆发 / 终结技**向；与 **试探**（`buff_probe`）的 **\(K_{\text{试探}}\)** 与 **清空** 规则仍以本节「刺拳：试探」为准，**不另增**其它招式特有条目。  
@@ -516,7 +509,6 @@
       - **层数与持续**：**最多 3 层**；**持续 8 tick**；再叠加时按 `18` **重置持续时间**并夹紧 `max_stacks`。  
       - **效果**：每层使 **最终招架几率** 减少 **5 个百分点**（在 `08` 柔韧倍率与默认硬上限之后做**加法**修正，再对招架几率 **clamp** 到合法区间，下限 0）。实现可汇总为 **`BuffSystem.getParryChanceDeltaPercent(防方 ownerId)`**。  
       - **与试探**：**无**（不叠、不清 `buff_probe`）。  
-    - **熟练度奖励（后天属性）**：单招式熟练度 **\(R_{\text{move}} \ge 20\%\)** 时，**后天柔韧 +15**（配置 `proficiency_attr_unlocks`，与 `data/combat-skills.json` 中 `whip_kick` 一致）。
     - **数据**：`/data/buffs.json`；`/data/editor/buff_event_registry.json` 标签含 **`move_whip_kick`**、**`off_balance`**、**`off_balance_pipeline_manual`**；effect 类型 **`parry_chance_delta_percent`** 见 `18.3.1`。
 
   - **动作标签**：须在 `05` / 装备与改造体系中可赋予肢体的标签集合内命名，并与实现枚举一致；若某肢缺标签，该招不能装入该肢槽位也不能释放。
@@ -561,28 +553,17 @@
   - 「基本拳脚」下各招式的熟练度计数、熟练度比例 \(R_{\text{move}}\) 等，仍按 8.3.1「招式与招式熟练度（参与伤害）」计数与 \(R_{\text{move}}\) 定义。**地图近战 resolve** 中 \(R_{\text{move}}\) 已并入加性增伤；文档记号 \(Final_{\text{move}}(L,P)=Base(L)(1+R_{\text{move}})\) 与**当前实现**在形式上不完全等同（实现另乘技艺总熟 \((1+R_{\text{skill\_total}})\) 与实战经验 \(F_{\text{实战经验}}\)）。
   - 该技能的**技能总熟练度**按 8.3.1 的算术平均折算；四招全满时技能总熟练度为 100%，用于解锁该技能对应的后遗症（构式）。
 
-- **永久属性加成（后天筋骨）**
-  - 「基本拳脚」作为长期修行的基础功法，按**技能当前等级**给予后天筋骨（配置驱动，见 `data/survival-config.json` 中 `skill_attr_gain`）：
-    - **每满 20 级**：**后天筋骨 +1**（即贡献为 \(\lfloor L/20\rfloor\) 点筋骨，\(L\) 为存档中的实际等级；20 级起第一档）。
-  - **1001 级特例**：\(\lfloor 1001/20\rfloor = \lfloor 1000/20\rfloor = 50\)，与满模板 1000 级相同，不额外多 1 点筋骨。
-  - **按招式熟练度的后天奖励**（与上并列、配置在 `data/combat-skills.json` 的 **`proficiency_attr_unlocks`**，见上「正蹬」「鞭腿」及 8.3.1「单招式熟练度 → 后天五维」）：
-    - **正蹬**（`front_kick`）：**\(R_{\text{move}} \ge 20\%\)** → **后天筋骨 +15**。
-    - **鞭腿**（`whip_kick`）：**\(R_{\text{move}} \ge 20\%\)** → **后天柔韧 +15**。
-  - 该加成为全局永久加成：
-    - 与当前是否装备「基本拳脚」无关，只要该技能等级达到阈值即生效。
-    - 招式熟练度奖励同样**仅依赖存档计数与阈值**，达到即计入后天；**`move_usage` 变化后须触发 `recalcCharacterStats`**（与升级、换装同级）。
-    - 加成计入后天部分，不会突破先天属性的 40 点上限设定，但会与先天值相加用于实际数值计算。
 
 #### 8.3.3 「基本呼吸法」
 
 - **配置 id**：`combat_basic_breath`（与 `data/combat-skills.json` 一致；显示名 **「基本呼吸法」**；挂载 **`hubs.breath`**）。**类型**：呼吸法（`category: breath`）；**难度**、**模板等级上限**等同其它战斗技能默认值（`max_level` 1000 等），除非单条覆盖。
 - **无肢上招式槽**：**`moves` 为空数组**；**不配** `slots_unlock_by_level`（或等价字段为 0 / 不声明）。不参与 8.3.1 所述**普攻链**与**出力成数槽**。
-- **Hub 配表 `hub_actions[]`**：每条为 **呼吸法特殊动作**的数据源（**非**肢上招式槽），至少 **`id`**、**`name`**、**`unlock_level`**、**`tick_cost`**、效果字段（如底气护体的 **`diqi_consume_ratio_of_max`** / **`diqi_consume_min`** / **`shield_tri_type_damage_reduce_pct`**）、可选 **`cooldown_ticks`**、**`battle_only`**、**`proficiency_attr_unlocks`** / **`proficiency_max_uses`**、可选 **`exclude_from_skill_total_proficiency`**（见下 **底气护体**）。**玩家执行入口**为 **`19`「动作」菜单**（血气化劲 / 吐气纳精 / 调息 / 底气护体）。
+- **Hub 配表 `hub_actions[]`**：每条为 **呼吸法特殊动作**的数据源（**非**肢上招式槽），至少 **`id`**、**`name`**、**`unlock_level`**、**`tick_cost`**、效果字段（如底气护体的 **`diqi_consume_ratio_of_max`** / **`diqi_consume_min`** / **`shield_tri_type_damage_reduce_pct`**）、可选 **`cooldown_ticks`**、**`battle_only`**、**`proficiency_max_uses`**、可选 **`exclude_from_skill_total_proficiency`**（见下 **底气护体**）。**玩家执行入口**为 **`19`「动作」菜单**（血气化劲 / 吐气纳精 / 调息 / 底气护体）。
 - **冷却存档**：**`skills[combat_basic_breath].hub_action_cooldown_ticks[hub_action_id]`**（剩余 tick），规则见 **`19` §6** 总述。
 - **`tu_na` 熟练度键（实现对齐）**：
   - 当前 `combat_basic_breath.hub_actions[]` 中**未定义独立 `tu_na` 动作条目**。
   - 运行时仍使用 `move_usage.tu_na` 作为呼吸法熟练度主键；由 **血气化劲 / 吐气纳精 / 调息** 等动作成功结算共同累加。
-  - `tiao_xi_once` 上挂有 `proficiency_usage_key: "tu_na"` 与 `proficiency_attr_unlocks`，因此 **\(R \ge 50\%\)** → **后天呼吸 +20** 已接线。
+  - `tiao_xi_once` 保留 `proficiency_usage_key: "tu_na"` 作为呼吸法熟练度计数键；不再用于后天五维奖励。
 - **底气护体**（`diqi_huti`，**50 级**解锁，见 `19` §6.6、`06` 底气护体示例）：
   - **消耗**：**`tick_cost`**（当前 **1**）、**`battle_only`**；先算 **\(B=\lfloor diqi_{\max}\times\texttt{diqi\_consume\_ratio\_of\_max}\rfloor\)**，再 **下限夹紧**：**\(C=\max(\texttt{diqi\_consume\_min},\,B)\)**（配置 **`diqi_consume_min`** 当前 **1**，与 `14` 底气/气力扣费 **`d_min`** 口径一致）。**`diqi_max=0`** → **整次失败**（不进入扣费）；**`diqi_current < C`** → 整次失败；成功则 **`diqi_current -= C`**，**护体容量 `shield_value = C`**。
   - **持续与叠加**：**无 tick 时长**；**`shield_value > 0` 时不可再次施展**（避免叠盾/刷新，直至护体被击破）。
@@ -631,8 +612,7 @@
 - **熟练度**  
   - **每次招架成功**（本次判定为招架成功、伤害未结算）计 **1 次使用**，写入 **`skills[combat_basic_parry].move_usage.parry_success`**（键名可由 `parry_proficiency_usage_key` 覆盖）。满熟练比例分母 **`parry_proficiency_max_uses`**，缺省同全局 `move_proficiency_max_uses`（如 50000）。  
   - **技能总熟练度**：`getSkillTotalProficiency(combat_basic_parry, move_usage)` 对招架类取 **该键单一 \(R\)**（非多招式平均）。  
-  - 结算侧在招架成功后调用 **`InventoryEquipment.incrementSkillMoveUsage(skillId, usageKey, 1)`**（内部 **`recalcCharacterStats`**，便于后续 `proficiency_attr_unlocks` 等扩展）。  
-  - **后天奖励（已定）**：**总熟练 \(R \ge 50\%\)** → **后天柔韧 +40**（配置 **`parry_proficiency_attr_unlocks`**，由 **`recalcCharacterStats`** 与招式熟练度奖励同链汇总）。
+  - 结算侧在招架成功后调用 **`InventoryEquipment.incrementSkillMoveUsage(skillId, usageKey, 1)`**（用于熟练度统计、后遗症/剧情条件等，不再驱动后天五维奖励）。
 
 - **学习与门槛**  
   - **初始默认未习得**（`level < 1` 或未入档）。**基本招架无额外学习门槛**；若将来某招架技能有筋骨/呼吸等要求，**仅在单条中显式声明**。  

@@ -673,7 +673,8 @@
             color: #8e8e8e; font-size: 12px; white-space: pre-wrap; margin-bottom: 12px;
             font-family: "Microsoft YaHei", "微软雅黑", "PingFang SC", sans-serif;
         }
-        #modal-backpack .bp-detail-modules { margin-bottom: 12px; }
+        #modal-backpack .bp-detail-modules,
+        #modal-backpack .bp-detail-field-rules { margin-bottom: 12px; }
         #modal-backpack #backpack-detail .tooltip-modules { margin-top: 2px; display: grid; gap: 6px; }
         #modal-backpack #backpack-detail .tooltip-module { border: 1px solid #4d3f35; border-radius: 6px; padding: 7px 8px; background: rgba(0,0,0,0.12); }
         #modal-backpack #backpack-detail .tooltip-module.is-locked { opacity: 0.78; }
@@ -1432,6 +1433,15 @@
             display: flex; justify-content: space-between; align-items: center; font-size: 10px; font-weight: 900;
             color: #8e8e8e; text-transform: uppercase; letter-spacing: 0.08em;
         }
+        #modal-combat .combat-limb-item .limb-header-right { display: flex; align-items: center; gap: 8px; }
+        #modal-combat .combat-limb-item .btn-limb-post-effect {
+            white-space: nowrap;
+            padding: 3px 8px;
+            font-size: 9px;
+            min-width: 84px;
+            height: 22px;
+            line-height: 1;
+        }
         #modal-combat .combat-limb-item .limb-order-badge {
             font-size: 9px;
             color: #6b6560;
@@ -1804,7 +1814,7 @@
         }
         #picker-post-effect .picker-list button:hover .post-desc { color: #1a1512; }
 
-        /* 生存技能总览弹窗 - 风格参考 demo.html 右侧 UI */
+        /* 技能总览弹窗（生存/生活/特殊三分页） - 风格参考 demo.html 右侧 UI */
         #modal-survival {
             display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 100;
             align-items: center; justify-content: center; padding: 24px; pointer-events: auto;
@@ -1832,18 +1842,50 @@
         }
         #modal-survival .btn-close:hover { background: rgba(185,28,28,0.25); color: #fff; }
         #modal-survival .survival-body {
-            flex: 1; display: flex; flex-direction: column; padding: 20px 28px 24px; min-height: 0; background: #1c1612;
+            flex: 1; display: flex; flex-direction: column; padding: 0 0 0; min-height: 0; background: #1c1612;
+        }
+        #modal-survival .skill-overview-tabs {
+            display: flex; align-items: flex-end; gap: 4px;
+            padding: 14px 28px 0; border-bottom: 1px solid #3d2d24; background: #1c1612;
+            flex-shrink: 0;
+        }
+        #modal-survival .skill-overview-tab {
+            padding: 8px 18px 10px; font-size: 13px; font-weight: 800; border: none;
+            border-bottom: 2px solid transparent; background: transparent; color: #78716c;
+            cursor: pointer; letter-spacing: 0.08em;
+            transition: color 0.2s, border-color 0.2s;
+        }
+        #modal-survival .skill-overview-tab:hover { color: #d3a060; }
+        #modal-survival .skill-overview-tab.active {
+            color: #fbbf24; border-bottom-color: #fbbf24;
         }
         #modal-survival .survival-table {
-            flex: 1; overflow-y: auto;
+            flex: 1; overflow-y: auto; padding: 14px 28px 24px;
+            scrollbar-width: thin;
+            scrollbar-color: rgba(211,160,96,0.6) rgba(26,21,18,0.3);
+        }
+        #modal-survival .survival-table::-webkit-scrollbar { width: 8px; }
+        #modal-survival .survival-table::-webkit-scrollbar-track {
+            background: rgba(26,21,18,0.4); border-radius: 999px;
+        }
+        #modal-survival .survival-table::-webkit-scrollbar-thumb {
+            background: linear-gradient(180deg, #d3a060 0%, #8f6840 100%);
+            border-radius: 999px; border: 1px solid rgba(26,21,18,0.4);
         }
         #modal-survival .survival-row {
             display: flex; align-items: center; justify-content: space-between;
             padding: 10px 4px; border-bottom: 1px solid rgba(63,63,70,0.4);
+            gap: 12px;
         }
         #modal-survival .survival-row:last-child { border-bottom: none; }
+        #modal-survival .survival-row-info {
+            display: flex; flex-direction: column; gap: 4px; min-width: 0; flex: 1;
+        }
         #modal-survival .survival-name {
             font-size: 13px; font-weight: 700; color: #e8e6e3;
+        }
+        #modal-survival .survival-desc {
+            font-size: 11px; color: #a8a29e; font-weight: 500; line-height: 1.5;
         }
         #modal-survival .survival-level {
             font-size: 12px; font-weight: 700; color: #fbbf24; white-space: nowrap;
@@ -1862,51 +1904,11 @@
             border-color: #fbbf24;
             background: rgba(60,45,36,0.92);
         }
+        #modal-survival .skill-overview-empty {
+            padding: 36px 6px; text-align: center; color: #78716c; font-size: 12px;
+        }
 
-        /* 特殊技能弹窗 - 复用生存技能总览的整体风格 */
-        #modal-special {
-            display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 100;
-            align-items: center; justify-content: center; padding: 24px; pointer-events: auto;
-            font-family: "Microsoft YaHei", "微软雅黑", "PingFang SC", sans-serif;
-        }
-        #modal-special.show { display: flex; }
-        #modal-special .survival-panel {
-            width: 880px; max-width: 96%; max-height: 80vh;
-            background: #1c1612; border: 2px solid rgba(212,163,115,0.3); border-radius: 16px;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.5); display: flex; flex-direction: column; overflow: hidden;
-        }
-        #modal-special .survival-header {
-            height: 60px; border-bottom: 1px solid #3d2d24; display: flex; align-items: center; justify-content: space-between;
-            padding: 0 32px; background: #1c1612; flex-shrink: 0;
-        }
-        #modal-special .survival-header h2 {
-            margin: 0; font-size: 1.1rem; font-weight: 800; color: #fff; letter-spacing: 0.4em; text-transform: uppercase;
-        }
-        #modal-special .survival-header .subtitle {
-            font-size: 10px; color: #78716c; text-transform: uppercase; letter-spacing: 0.12em; margin-top: 4px; font-style: italic;
-        }
-        #modal-special .btn-close {
-            width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
-            background: transparent; border: none; color: #78716c; cursor: pointer; font-size: 16px;
-        }
-        #modal-special .btn-close:hover { background: rgba(185,28,28,0.25); color: #fff; }
-        #modal-special .survival-body {
-            flex: 1; display: flex; flex-direction: column; padding: 20px 28px 24px; min-height: 0; background: #1c1612;
-        }
-        #modal-special .survival-table {
-            flex: 1; overflow-y: auto;
-        }
-        #modal-special .survival-row {
-            display: flex; align-items: center; justify-content: space-between;
-            padding: 10px 4px; border-bottom: 1px solid rgba(63,63,70,0.4);
-        }
-        #modal-special .survival-row:last-child { border-bottom: none; }
-        #modal-special .survival-name {
-            font-size: 13px; font-weight: 700; color: #e8e6e3;
-        }
-        #modal-special .survival-level {
-            font-size: 12px; font-weight: 700; color: #fbbf24; white-space: nowrap;
-        }
+        /* 旧 #modal-special 样式已并入 #modal-survival 「特殊技能」分页 */
 
         /* 存档弹窗 - 复用生存技能总览风格，表单区略窄 */
         #modal-save {
@@ -2641,6 +2643,10 @@
                             <div class="row"><span class="label" data-ui="status.label.stamina"></span><span class="value" id="status-stamina-text">—</span></div>
                             <div class="progress-wrap"><div class="progress-fill stamina" id="status-stamina-bar" style="width:100%"></div></div>
                         </div>
+                        <div class="survival-row" id="status-metric-fatigue" style="margin-top:12px">
+                            <div class="row"><span class="label" data-ui="status.label.fatigue"></span><span class="value" id="status-fatigue-text">—</span></div>
+                            <div class="progress-wrap"><div class="progress-fill mood" id="status-fatigue-bar" style="width:0%"></div></div>
+                        </div>
                         <div class="survival-row" id="status-metric-energy" style="margin-top:12px">
                             <div class="row"><span class="label" data-ui="status.label.energy"></span><span class="value" id="status-energy-text">—</span></div>
                             <div class="progress-wrap"><div class="progress-fill energy" id="status-energy-bar" style="width:100%"></div></div>
@@ -2663,6 +2669,16 @@
                             <div class="row"><span class="label" data-ui="status.attr.focus"></span><span class="value" id="status-attr-focus">—</span></div>
                         </div>
                     </details>
+                    <details class="details-block" id="status-attr-exp-block" open>
+                        <summary><span data-ui="status.block.attr_exp"></span> <span>▼</span></summary>
+                        <div class="details-body">
+                            <div class="row"><span class="label">筋骨经验</span><span class="value" id="status-attr-exp-exp-jingu">0</span><button type="button" id="status-attr-exp-debug-plus-jingu" title="调试：筋骨经验 +50000">+5万</button></div>
+                            <div class="row"><span class="label">柔韧经验</span><span class="value" id="status-attr-exp-exp-flexibility">0</span><button type="button" id="status-attr-exp-debug-plus-flexibility" title="调试：柔韧经验 +50000">+5万</button></div>
+                            <div class="row"><span class="label">呼吸经验</span><span class="value" id="status-attr-exp-exp-breath">0</span><button type="button" id="status-attr-exp-debug-plus-breath" title="调试：呼吸经验 +50000">+5万</button></div>
+                            <div class="row"><span class="label">身手经验</span><span class="value" id="status-attr-exp-exp-dexterity">0</span><button type="button" id="status-attr-exp-debug-plus-dexterity" title="调试：身手经验 +50000">+5万</button></div>
+                            <div class="row"><span class="label">专注经验</span><span class="value" id="status-attr-exp-exp-focus">0</span><button type="button" id="status-attr-exp-debug-plus-focus" title="调试：专注经验 +50000">+5万</button></div>
+                        </div>
+                    </details>
                 </div>
             </div>
             <!-- 右侧按钮：背包、生存技能、战斗技能、穴位、特殊技能 -->
@@ -2678,15 +2694,15 @@
             </div>
             <div id="right-hud">
                 <button type="button" class="hud-btn" id="btn-backpack" data-ui="btn.backpack.title" data-ui-attr="title">🎒</button>
-                <button type="button" class="hud-btn" id="btn-survival" data-ui="btn.survival.title" data-ui-attr="title">🌿</button>
+                <button type="button" class="hud-btn" id="btn-survival" data-ui="btn.skill_overview.title" data-ui-attr="title">🌿</button>
                 <button type="button" class="hud-btn" id="btn-combat" data-ui="btn.combat.title" data-ui-attr="title">⚔️</button>
                 <div class="hud-dropdown-wrap" id="player-actions-hud-wrap" style="display:none;">
                     <button type="button" class="hud-btn" id="btn-player-actions" data-ui="btn.player.actions.title" data-ui-attr="title">⚙</button>
                     <div id="player-actions-submenu" class="player-actions-submenu" role="menu" aria-hidden="true"></div>
                 </div>
-                <button type="button" class="hud-btn" id="btn-life" data-ui="btn.special.title" data-ui-attr="title">✨</button>
                 <button type="button" class="hud-btn" id="btn-save" data-ui="btn.save.title" data-ui-attr="title">💾</button>
                 <button type="button" class="hud-btn" id="btn-reset-demo-save" data-ui="btn.reset.demo.title" data-ui-attr="title">🧹</button>
+                <a class="hud-btn" id="btn-agriculture-demo" href="agriculture-standalone.html" title="农业水渠独立 Demo（单文件）" style="text-decoration:none;line-height:28px;">🌾</a>
             </div>
         </div>
         <!-- 背包+装备面板：左物品栏、右装备栏 -->
@@ -2972,7 +2988,6 @@
                             <div class="skill-badges">
                                 <span id="skill-level" class="badge-level" data-ui="combat.level.zero"></span>
                                 <span id="skill-prof" class="badge-prof" data-ui="combat.prof.zero"></span>
-                                <button type="button" class="combat-debug-btn" id="btn-combat-post-effect-inline" data-ui="combat.post_effect.btn"></button>
                                 <button type="button" class="combat-debug-btn" id="btn-debug-combat-skill-plus50" title="调试：给当前战斗技能加 +50 级">+50级</button>
                                 <button type="button" class="combat-debug-btn" id="btn-debug-recipe-schema-errors" data-ui="debug.recipe_schema.btn"></button>
                             </div>
@@ -3010,7 +3025,7 @@
             <div id="picker-post-effect-list" class="picker-list"></div>
         </div>
 
-        <!-- 生存技能总览弹窗 -->
+        <!-- 技能总览弹窗（生存/生活/特殊三分页） -->
         <div id="modal-survival">
             <div class="survival-panel">
                 <div class="survival-header">
@@ -3021,6 +3036,11 @@
                     <button type="button" class="btn-close" id="survival-modal-close" aria-label="关闭">✖</button>
                 </div>
                 <div class="survival-body">
+                    <nav class="skill-overview-tabs" aria-label="技能分页">
+                        <button type="button" class="skill-overview-tab active" data-skill-tab="survival" data-ui="skill.tab.survival"></button>
+                        <button type="button" class="skill-overview-tab" data-skill-tab="life" data-ui="skill.tab.life"></button>
+                        <button type="button" class="skill-overview-tab" data-skill-tab="special" data-ui="skill.tab.special"></button>
+                    </nav>
                     <div id="survival-skill-table" class="survival-table"></div>
                 </div>
             </div>
@@ -3071,23 +3091,8 @@
             </div>
         </div>
 
-        <!-- 特殊技能弹窗（先留空，后续填充具体技能） -->
-        <div id="modal-special">
-            <div class="survival-panel">
-                <div class="survival-header">
-                    <div>
-                        <h2 data-ui="special.modal.title"></h2>
-                        <div class="subtitle" data-ui="special.modal.subtitle"></div>
-                    </div>
-                    <button type="button" class="btn-close" id="special-modal-close" aria-label="关闭">✖</button>
-                </div>
-                <div class="survival-body">
-                    <div id="special-skill-table" class="survival-table">
-                        <!-- 预留：后续在此渲染特殊技能列表 -->
-                    </div>
-                </div>
-            </div>
-        </div>
+        <!-- 旧的特殊技能独立弹窗已并入「技能总览」的「特殊技能」分页（见 #modal-survival） -->
+
 
         <!-- 经脉穴位总览弹窗（独立于战斗技能枢纽） -->
         <div id="modal-acupoints">
@@ -3196,6 +3201,7 @@
     <script src="js/production-quality.js"></script>
     <script src="js/item-value.js"></script>
     <script src="js/item-info-modules.js"></script>
+    <script src="js/item-field-display-rules.js"></script>
     <script src="js/compost-system.js"></script>
     <script src="js/gathering.js"></script>
     <script src="js/scene-animation.js"></script>

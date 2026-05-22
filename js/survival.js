@@ -19,6 +19,7 @@
         dirtyness: 0,
         body_temperature: 37,
         body_temperature_standard: 37,
+        fatigue: 0,
         weight_kg: 60,
 
         tickCount: 0,
@@ -83,6 +84,10 @@
     var DIRTYNESS_RANGE_BUFF_IDS = [
         'survival_dirty_messy',
         'survival_dirty_clean_refreshing'
+    ];
+    var FATIGUE_RANGE_BUFF_IDS = [
+        'survival_fatigue',
+        'survival_fatigue_sleepy'
     ];
     var BMI_TIER_BUFF_IDS = [
         'survival_bmi_underweight',
@@ -228,6 +233,7 @@
             dirtyness: state.dirtyness,
             body_temperature: state.body_temperature,
             body_temperature_standard: state.body_temperature_standard,
+            fatigue: state.fatigue,
             weight_kg: state.weight_kg,
             height_cm: getHeightCm(),
             tickCount: state.tickCount,
@@ -279,6 +285,7 @@
         if (s.dirtyness !== undefined) state.dirtyness = clamp(Math.round(s.dirtyness), get('dirtyness_min', 0), get('dirtyness_max', 100));
         if (s.body_temperature !== undefined) state.body_temperature = round1(clamp(Number(s.body_temperature) || 0, get('body_temperature_min', 30), get('body_temperature_max', 42)));
         if (s.body_temperature_standard !== undefined) state.body_temperature_standard = round1(clamp(Number(s.body_temperature_standard) || 0, get('body_temperature_min', 30), get('body_temperature_max', 42)));
+        if (s.fatigue !== undefined) state.fatigue = round1(clamp(Number(s.fatigue) || 0, get('fatigue_min', 0), get('fatigue_max', 100)));
         if (s.weight_kg !== undefined) state.weight_kg = Math.max(0, s.weight_kg);
         if (s.height_cm !== undefined) {
             var hcm = Number(s.height_cm);
@@ -316,6 +323,7 @@
         syncMoodStateBuff();
         syncExtremeTemperatureBuff(getExtremeTemperatureState(resolveAmbientTemperatureForCurrentMap(), state.body_temperature_standard, computeTempThresholdShiftByWeatherResist()));
         syncDirtynessStateBuff();
+        syncFatigueStateBuff();
         syncBmiTierState();
         emitSurvivalStateChangedIfNeeded('set_state', beforeSnapshot, null);
     }
@@ -885,6 +893,7 @@
             dirtyness: Number(state.dirtyness),
             body_temperature: Number(state.body_temperature),
             body_temperature_standard: Number(state.body_temperature_standard),
+            fatigue: Number(state.fatigue),
             isDead: !!state.isDead,
             isComa: !!state.isComa
         };
@@ -1144,6 +1153,41 @@
         lastDirtynessRangeId = targetRange;
     }
 
+    function getFatigueRangeByValue(fatigueValue) {
+        var f = Number(fatigueValue);
+        if (!isFinite(f)) f = Number(state.fatigue) || 0;
+        f = round1(clamp(f, get('fatigue_min', 0), get('fatigue_max', 100)));
+        if (f >= get('fatigue_sleepy_min', 80)) return 'sleepy';
+        if (f > get('fatigue_tired_min', 50) && f < get('fatigue_tired_max_exclusive', 80)) return 'tired';
+        return 'normal';
+    }
+
+    function getFatigueRangeBuffId(rangeId) {
+        if (rangeId === 'tired') return 'survival_fatigue';
+        if (rangeId === 'sleepy') return 'survival_fatigue_sleepy';
+        return '';
+    }
+
+    function syncFatigueStateBuff() {
+        if (!global || !global.BuffSystem) return '';
+        var Buff = global.BuffSystem;
+        if (typeof Buff.applyBuff !== 'function' || typeof Buff.removeBuffByBuffId !== 'function') return '';
+        var targetRange = getFatigueRangeByValue(state.fatigue);
+        var targetBuffId = getFatigueRangeBuffId(targetRange);
+        var i;
+        for (i = 0; i < FATIGUE_RANGE_BUFF_IDS.length; i++) {
+            var bid = FATIGUE_RANGE_BUFF_IDS[i];
+            if (bid === targetBuffId) continue;
+            if (typeof Buff.hasBuffByBuffId !== 'function' || Buff.hasBuffByBuffId('player', bid)) {
+                Buff.removeBuffByBuffId('player', bid);
+            }
+        }
+        if (targetBuffId) {
+            Buff.applyBuff('player', targetBuffId, 'survival_fatigue_listener', { tick: getBuffApplyTick(), fatigue_range: targetRange });
+        }
+        return targetRange;
+    }
+
     function syncNutritionStateBuff() {
         if (!global || !global.BuffSystem) return;
         var Buff = global.BuffSystem;
@@ -1302,10 +1346,39 @@
     }
 
     function consumeStamina(amount) {
-        var a = amount || 0;
-        state.stamina = round1(Math.max(0, state.stamina - a));
+        var a = Math.max(0, Number(amount) || 0);
+        var before = round1(Math.max(0, Number(state.stamina) || 0));
+        state.stamina = round1(Math.max(0, before - a));
+        var actualCost = round1(Math.max(0, before - state.stamina));
+        if (actualCost > 0) {
+            var gainPerStamina = Number(get('fatigue_gain_per_stamina_spent', 0.5));
+            if (!isFinite(gainPerStamina) || gainPerStamina < 0) gainPerStamina = 0.5;
+            state.fatigue = round1(clamp(
+                state.fatigue + actualCost * gainPerStamina,
+                get('fatigue_min', 0),
+                get('fatigue_max', 100)
+            ));
+        }
         if (state.stamina > 0) state.staminaZeroTicks = 0;
         syncStaminaExhaustedBuff();
+        syncFatigueStateBuff();
+    }
+
+    function clearFatigue() {
+        state.fatigue = round1(clamp(0, get('fatigue_min', 0), get('fatigue_max', 100)));
+        syncFatigueStateBuff();
+    }
+
+    function changeFatigue(delta) {
+        var d = Number(delta) || 0;
+        if (!isFinite(d) || d === 0) return state.fatigue;
+        state.fatigue = round1(clamp(
+            state.fatigue + d,
+            get('fatigue_min', 0),
+            get('fatigue_max', 100)
+        ));
+        syncFatigueStateBuff();
+        return state.fatigue;
     }
 
     function consumeEnergy(amount) {
@@ -1393,6 +1466,7 @@
         syncThirstStateBuff();
         syncMoodStateBuff();
         syncDirtynessStateBuff();
+        syncFatigueStateBuff();
         var comaActive = hasComaBuffActive();
         state.isComa = comaActive;
         if (comaActive) {
@@ -1420,8 +1494,17 @@
         }
 
         // ---------- 饱食（仅状态衰减 + Buff 同步） ----------
-        var satDecay = get('satiety_tick_decay', 1);
-        state.satiety = round1(Math.max(0, state.satiety - satDecay));
+        var satietyInterval = get('satiety_tick_decay_interval', 1);
+        if (tick % satietyInterval === 0) {
+            var satDecay = get('satiety_tick_decay', 1);
+            state.satiety = round1(Math.max(0, state.satiety - satDecay));
+        }
+        if (state.isResting) {
+            var satExtraDecay = Number(get('rest_action_extra_satiety_decay_per_tick', 1));
+            if (isFinite(satExtraDecay) && satExtraDecay > 0) {
+                state.satiety = round1(Math.max(0, state.satiety - satExtraDecay));
+            }
+        }
         var satietyRange = syncSatietyStateBuff();
         var severeHungerSatietyMax = getSevereHungerSatietyMax();
         if (state.satiety <= 0) state.starvationTicks += 1;
@@ -1456,6 +1539,12 @@
             var thirstDecay = get('thirst_tick_decay_amount', 1);
             state.thirst = round1(Math.max(0, state.thirst - thirstDecay));
         }
+        if (state.isResting) {
+            var thirstExtraDecay = Number(get('rest_action_extra_thirst_decay_per_tick', 1));
+            if (isFinite(thirstExtraDecay) && thirstExtraDecay > 0) {
+                state.thirst = round1(Math.max(0, state.thirst - thirstExtraDecay));
+            }
+        }
         syncThirstStateBuff();
         if (state.thirst <= 0) state.thirstDeathTicks += 1;
         else state.thirstDeathTicks = 0;
@@ -1470,7 +1559,7 @@
         var staminaMax = get('stamina_max', 100);
         var baseRegen = 0;
         if (state.isResting) {
-            baseRegen = get('stamina_rest_tick_regen_base', 5);
+            baseRegen = get('rest_action_stamina_regen_per_tick', 2);
         } else if (state.is_stamina_regen_action_active) {
             // 常态恢复公式保留，仅在指定动作态开启时生效
             baseRegen = get('stamina_tick_regen_base', 0.5);
@@ -1597,6 +1686,7 @@
     function getComposure() { return state.composure; }
     function getNutrition() { return state.nutrition; }
     function getDirtyness() { return state.dirtyness; }
+    function getFatigue() { return state.fatigue; }
     function getWeightKg() { return state.weight_kg; }
     function getHeightCmValue() { return getHeightCm(); }
     function getBmiTier() { return getBmiTierByValue(getBMI()); }
@@ -1630,6 +1720,8 @@
         addSatiety: addSatiety,
         addThirst: addThirst,
         consumeStamina: consumeStamina,
+        clearFatigue: clearFatigue,
+        changeFatigue: changeFatigue,
         consumeEnergy: consumeEnergy,
         addNutrition: addNutrition,
         addDirtyness: addDirtyness,
@@ -1646,6 +1738,7 @@
         getComposure: getComposure,
         getNutrition: getNutrition,
         getDirtyness: getDirtyness,
+        getFatigue: getFatigue,
         getWeightKg: getWeightKg,
         getHeightCm: getHeightCmValue,
         getBMI: getBMI,

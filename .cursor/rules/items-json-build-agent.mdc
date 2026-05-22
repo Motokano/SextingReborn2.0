@@ -33,7 +33,7 @@ alwaysApply: false
 - `fn`
 - `desc_0`（来自 `fn`/`desc` 基底字段，作为描述 fallback）
 
-物品使用效果字段由恢复量列组合：
+物品使用效果字段由恢复量列组合（**deprecated：旧轨即时生存恢复**；新食用主轨为 `edible` + `edible_buff_id`，见 `food-buff-and-buff-watch-agent` / `27-item-template-fields-inventory` §8.4；对账 `npm run audit:item-field-rules`）：
 - `satiety_restore` → `use_effect.satiety`
 - `thirst_restore` → `use_effect.thirst`
 - `nutrition_restore` → `use_effect.nutrition`

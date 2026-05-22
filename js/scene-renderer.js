@@ -5,6 +5,9 @@
     }
 
     function isDialogueBlockingWorldInput() {
+        if (window.SceneApp && typeof window.SceneApp.isStoryMovementLocked === 'function') {
+            return !!window.SceneApp.isStoryMovementLocked();
+        }
         return !!(window.DialogueUI && typeof window.DialogueUI.isDialogueOpen === 'function' && window.DialogueUI.isDialogueOpen());
     }
 
@@ -1644,6 +1647,9 @@
                     }
                 }
                 if (lblPin === '—') lblPin = acPin;
+            } else if (partsp.length >= 2 && partsp[0] === 'action') {
+                if (partsp[1] === 'rest_toggle') lblPin = tNie('action.bar.pin.rest');
+                else lblPin = partsp[1];
             }
             pBtn.textContent = lblPin;
             pBtn.title = lblPin + ' · ' + tNie('action.bar.pin.right_clear');

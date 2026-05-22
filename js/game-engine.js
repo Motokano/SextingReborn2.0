@@ -96,6 +96,7 @@
         if (isCookingStationCell(x, y)) return false;
         if (isPharmacyFacilityNpcBlockingWalk(x, y)) return false;
         if (isCompostFacilityNpcBlockingWalk(x, y)) return false;
+        if (isBedStationCell(x, y)) return false;
         return true;
     }
 
@@ -191,6 +192,16 @@
         return false;
     }
 
+    /** 床设施判定：使用标注法 */
+    function isBedStationCell(x, y) {
+        var ann = getAnnotationAt(x, y);
+        if (ann) {
+            var s = String(ann).trim();
+            if (s === '床' || s === '床铺') return true;
+        }
+        return false;
+    }
+
     /**
      * 地图上烹饪格绑定的「设施 NPC」id（与 map.npcs 互斥：格上无实体 NPC 时仍可对灶走 NPC 菜单管线）。
      * 优先 `cooking_station_interact_npc_by_cell["x,y"]`，否则回落 `cooking_station_interact_npc_id`（该图任意烹饪台共用）。
@@ -252,6 +263,26 @@
     }
 
     /**
+     * 地图上床位格绑定的「设施 NPC」id。
+     * 优先 `bed_station_interact_npc_by_cell["x,y"]`，否则回落 `bed_station_interact_npc_id`。
+     */
+    function getBedStationInteractNpcId(x, y) {
+        var map = getMap();
+        if (!map || !isBedStationCell(x, y)) return null;
+        var by = map.bed_station_interact_npc_by_cell;
+        if (by && typeof by === 'object') {
+            var k = (x | 0) + ',' + (y | 0);
+            if (Object.prototype.hasOwnProperty.call(by, k)) {
+                var v = by[k];
+                if (v != null && String(v).trim()) return String(v).trim();
+            }
+        }
+        var bid = map.bed_station_interact_npc_id;
+        if (bid != null && String(bid).trim()) return String(bid).trim();
+        return null;
+    }
+
+    /**
      * 制药台格本身不因标注挡行走；若配置了设施 NPC，则按 NPC 在场语义占格（与 map.npcs 不可走一致）。
      * 未绑定 `pharmacy_station_interact_npc_*` 时该格可走。
      */
@@ -284,7 +315,9 @@
         if (nid) return nid;
         nid = getPharmacyStationInteractNpcId(x, y);
         if (nid) return nid;
-        return getCompostStationInteractNpcId(x, y);
+        nid = getCompostStationInteractNpcId(x, y);
+        if (nid) return nid;
+        return getBedStationInteractNpcId(x, y);
     }
 
     function clamp(v, min, max) {
@@ -409,6 +442,7 @@
         getCookingStationInteractNpcId: getCookingStationInteractNpcId,
         getPharmacyStationInteractNpcId: getPharmacyStationInteractNpcId,
         getCompostStationInteractNpcId: getCompostStationInteractNpcId,
+        getBedStationInteractNpcId: getBedStationInteractNpcId,
         getInteractNpcIdAt: getInteractNpcIdAt,
         getEnemyAt: getEnemyAt,
         getAnnotationAt: getAnnotationAt,
@@ -416,6 +450,7 @@
         isCookingStationCell: isCookingStationCell,
         isPharmacyStationCell: isPharmacyStationCell,
         isCompostStationCell: isCompostStationCell,
+        isBedStationCell: isBedStationCell,
         isAdjacent: isAdjacent,
         canStandAt: canStandAt,
         jumpTo: jumpTo,

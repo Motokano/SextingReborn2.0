@@ -1,0 +1,30 @@
+{
+  "npcId": "npc.station.bed_base",
+  "entries": [
+    {
+      "id": "station.bed.base_idle",
+      "entryType": "dialogue",
+      "entrySource": "chat",
+      "requires": [],
+      "blocks": [],
+      "dialogue": {
+        "linesRich": [
+          {
+            "speaker": "narration",
+            "text": "这张床虽然简陋，但能让你睡一觉。若你正处于疲劳状态，可在菜单里选择「睡觉」。",
+            "avatar": ""
+          }
+        ],
+        "lines": [
+          "这张床虽然简陋，但能让你睡一觉。若你正处于疲劳状态，可在菜单里选择「睡觉」。"
+        ],
+        "hasOptions": false,
+        "options": []
+      },
+      "effects": [],
+      "repeatable": true,
+      "scope": "global",
+      "causesNpcDisappear": false
+    }
+  ]
+}

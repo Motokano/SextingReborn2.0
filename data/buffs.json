@@ -1687,6 +1687,70 @@
       "expire_effects": []
     },
     {
+      "buff_id": "survival_fatigue",
+      "name": "疲劳",
+      "desc": "疲劳度大于 50 且小于 80：招式速度 -5%。",
+      "durationTicks": 1,
+      "maxStacks": 1,
+      "stacksAddOnApply": 1,
+      "priority": 92,
+      "listenerSide": "self",
+      "consumeMode": "always",
+      "consumeLayersFixed": 0,
+      "applyMode": "always_apply",
+      "triggerEventKind": [
+        "world"
+      ],
+      "triggerEventName": [
+        "tick_advanced"
+      ],
+      "triggerTags": [
+        "time",
+        "tick"
+      ],
+      "effects": [
+        {
+          "type": "battle_move_speed_delta_percent",
+          "params": {
+            "delta_percent": -5
+          }
+        }
+      ],
+      "expire_effects": []
+    },
+    {
+      "buff_id": "survival_fatigue_sleepy",
+      "name": "困得不行",
+      "desc": "疲劳度大于等于 80：招式速度 -30%。",
+      "durationTicks": 1,
+      "maxStacks": 1,
+      "stacksAddOnApply": 1,
+      "priority": 92,
+      "listenerSide": "self",
+      "consumeMode": "always",
+      "consumeLayersFixed": 0,
+      "applyMode": "always_apply",
+      "triggerEventKind": [
+        "world"
+      ],
+      "triggerEventName": [
+        "tick_advanced"
+      ],
+      "triggerTags": [
+        "time",
+        "tick"
+      ],
+      "effects": [
+        {
+          "type": "battle_move_speed_delta_percent",
+          "params": {
+            "delta_percent": -30
+          }
+        }
+      ],
+      "expire_effects": []
+    },
+    {
       "buff_id": "survival_coma",
       "name": "昏迷",
       "desc": "昏迷中：期间无法移动、无法互动。",

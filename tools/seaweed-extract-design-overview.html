@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>海藻精设定说明</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: #1c1815;
+      color: #e8e6e3;
+      font-family: "Noto Serif SC", "Microsoft YaHei", serif;
+      line-height: 1.55;
+      font-size: 14px;
+    }
+    .wrap { max-width: 920px; margin: 0 auto; padding: 20px 16px 48px; }
+    h1 {
+      font-size: 22px;
+      color: #d3a060;
+      margin: 0 0 6px;
+      border-bottom: 2px solid #4d4d45;
+      padding-bottom: 10px;
+    }
+    .sub { color: #8e8e8e; font-size: 12px; margin-bottom: 16px; }
+    nav.toc {
+      font-size: 13px;
+      margin-bottom: 20px;
+      padding: 10px 14px;
+      border: 1px solid #4d4d45;
+      border-radius: 8px;
+      background: #221c16;
+    }
+    nav.toc a { color: #7ab89a; text-decoration: none; margin-right: 12px; }
+    nav.toc a:hover { color: #d3a060; }
+    h2 {
+      font-size: 16px;
+      color: #7ab89a;
+      margin: 0 0 10px;
+    }
+    h3 {
+      font-size: 14px;
+      color: #d3a060;
+      margin: 16px 0 8px;
+    }
+    section {
+      border: 1px solid #4d4d45;
+      border-radius: 10px;
+      background: #1a1512;
+      padding: 14px 16px;
+      margin-bottom: 12px;
+    }
+    ul { margin: 8px 0; padding-left: 1.2em; }
+    li { margin: 4px 0; }
+    .flow {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 6px;
+      margin: 12px 0;
+      font-size: 13px;
+    }
+    .flow .box {
+      border: 1px solid #5a8f7a;
+      background: #243028;
+      color: #b8e0d0;
+      padding: 6px 10px;
+      border-radius: 6px;
+    }
+    .flow .arrow { color: #8e8e8e; }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+      margin: 10px 0;
+    }
+    th, td {
+      border: 1px solid #4d4d45;
+      padding: 8px 10px;
+      text-align: left;
+      vertical-align: top;
+    }
+    th { background: #251d17; color: #d3a060; }
+    .mini-grid {
+      display: inline-flex;
+      flex-direction: column;
+      gap: 4px;
+      margin: 12px 0;
+    }
+    .mini-row { display: flex; gap: 4px; align-items: center; }
+    .cell {
+      width: 56px;
+      height: 56px;
+      border: 1px solid #4d4d45;
+      border-radius: 6px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      font-size: 10px;
+      text-align: center;
+    }
+    .cell.channel { background: #1a2830; border-color: #3d6a7a; }
+    .cell.channel.wet { border-color: #5a9aaa; box-shadow: inset 0 0 12px rgba(90, 180, 200, 0.15); }
+    .cell.channel.bloom { border-color: #6a5a8a; background: #2a2838; box-shadow: inset 0 0 14px rgba(120, 90, 160, 0.25); }
+    .cell .val.bloom { color: #c8a0e0; }
+    .cell.channel.entry { border-style: dashed; opacity: 0.85; }
+    .cell.land { background: #3a2e22; }
+    .cell.venturi { background: #2a3530; border-color: #5a8f7a; }
+    .cell.crop { background: #2d3a28; border-color: #6a8f5a; }
+    .cell .tag { color: #8e8e8e; font-size: 9px; }
+    .cell .val { color: #9ad4c4; font-weight: bold; font-size: 11px; }
+    .cell .val.water { color: #7ab8d8; }
+    .cell .val.zero { color: #666; font-weight: normal; }
+    .legend { font-size: 12px; color: #8e8e8e; margin-top: 8px; }
+    .note {
+      border-left: 3px solid #d3a060;
+      padding: 8px 12px;
+      margin: 10px 0;
+      background: #221c16;
+      color: #d8cfbf;
+      font-size: 13px;
+    }
+    .note.warn { border-left-color: #c08070; }
+    .ok { color: #7ab89a; }
+    .no { color: #c08070; }
+    code {
+      background: #251d17;
+      padding: 1px 5px;
+      border-radius: 4px;
+      font-size: 12px;
+      color: #d3a060;
+    }
+    .calc {
+      font-family: Consolas, "Microsoft YaHei", monospace;
+      background: #0f0d0b;
+      padding: 10px 12px;
+      border-radius: 6px;
+      border: 1px solid #333;
+      margin: 8px 0;
+      font-size: 13px;
+      color: #b8e0d0;
+    }
+    label { display: block; margin: 10px 0 4px; font-size: 13px; color: #d8cfbf; }
+    input[type="range"] { width: 100%; max-width: 320px; }
+    .demo-out { margin-top: 8px; font-size: 13px; color: #9ad4c4; }
+    .checklist { list-style: none; padding-left: 0; }
+    .checklist li::before { content: "✓ "; color: #7ab89a; }
+    .checklist li.no::before { content: "✗ "; color: #c08070; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>海藻精（渠内输送与作物吸收）设定说明</h1>
+    <p class="sub">与 <code>docs/design/28-agriculture-irrigation.md</code> §4.3、§2.2d、§4b、§12.1、§15 对齐。非可玩 demo。</p>
+
+    <nav class="toc">
+      <a href="#s0">0 tick</a>
+      <a href="#s1">1 流程</a>
+      <a href="#s2">2 施肥器</a>
+      <a href="#s3">3 请求</a>
+      <a href="#s4">4 注入</a>
+      <a href="#s5">5 浓度</a>
+      <a href="#s6">6 吸收</a>
+      <a href="#s7a">7 水藻爆发</a>
+      <a href="#s7">8 配置</a>
+      <a href="#s8">9 速查</a>
+    </nav>
+
+    <section id="s0">
+      <h2>0. 每 tick 与重算顺序</h2>
+      <h3>每 tick（农业地图）</h3>
+      <div class="flow">
+        <span class="box">① 清水</span>
+        <span class="arrow">→</span>
+        <span class="box">② 海藻精</span>
+        <span class="arrow">→</span>
+        <span class="box">③ 水藻爆发判定</span>
+        <span class="arrow">→</span>
+        <span class="box">④ 吸水</span>
+        <span class="arrow">→</span>
+        <span class="box">⑤ 吸微量元素</span>
+        <span class="arrow">→</span>
+        <span class="box">⑥ 爆发扣健康</span>
+        <span class="arrow">→</span>
+        <span class="box">⑦ 其它</span>
+      </div>
+      <p class="note">⑤ 先照单吸收微量元素 → ⑥ 再扣健康（默认 −2，Buff 可减，≥0，健康 clamp）。③ 用①②后的 W/C <strong>实时</strong>判定。</p>
+
+      <h3>水道结构重算（§5）后</h3>
+      <ol>
+        <li>完成水道、主干/支流、清水可达与每格水量；</li>
+        <li><strong>立刻清空</strong>全场水渠上的海藻精浓度；</li>
+        <li>再同步作物海藻精<strong>请求</strong>登记 / 撤销。</li>
+      </ol>
+    </section>
+
+    <section id="s1">
+      <h2>1. 总流程</h2>
+      <div class="flow">
+        <span class="box">罐内海藻精效果<br>5000 tick</span>
+        <span class="arrow">→</span>
+        <span class="box">施肥器判水流归属</span>
+        <span class="arrow">→</span>
+        <span class="box">扫已登记请求</span>
+      </div>
+      <div class="flow">
+        <span class="box no">无请求 / 不可达 / 无邻接有水注入口</span>
+        <span class="arrow">→</span>
+        <span class="box">不维持浓度</span>
+      </div>
+      <div class="flow">
+        <span class="box ok">有请求且可达</span>
+        <span class="arrow">→</span>
+        <span class="box">择唯一方向</span>
+        <span class="arrow">→</span>
+        <span class="box">入口后均分至终点</span>
+        <span class="arrow">→</span>
+        <span class="box">每 tick 刷新状态</span>
+      </div>
+      <p class="note">
+        <strong>注入</strong> = 对路径上有水渠施加<strong>持续浓度状态</strong>（效果存续且本 tick 满足条件时刷新），不是一次性脉冲。<br>
+        <strong>默认 B 面</strong>：有水 + 海藻精即维持（§15.6）。<strong>超融合</strong>在场时全场文丘里切 <strong>A 面</strong>（按需，§15.1～§15.3）。
+      </p>
+    </section>
+
+    <section id="s2">
+      <h2>2. 文丘里施肥器</h2>
+      <h3>水流归属（只看水流）</h3>
+      <ul>
+        <li>自施肥器格<strong>四邻接有水水渠</strong>回溯到水池，得到主流 / 支流 #N。</li>
+        <li><strong>不看</strong>邻接耕地。</li>
+        <li>四邻接<strong>无有水渠</strong> → 无归属，<span class="no">不输送</span>。</li>
+      </ul>
+
+      <h3>A 面：扫描与响应</h3>
+      <table>
+        <thead>
+          <tr><th>施肥器归属</th><th>扫描范围</th><th>本 tick 注入次数</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>支流 #N</td><td>仅支流 #N</td><td>至多 1 次（该流 1 株作物）</td></tr>
+          <tr><td>主流</td><td>主流 → #1 → #2 …</td><td>可对<strong>每条水流各维持 1 次</strong></td></tr>
+        </tbody>
+      </table>
+      <ul>
+        <li>每条水流本 tick <strong>最多响应 1 株</strong>「已登记且可达」的请求作物（多株取扫描顺序第一株）。</li>
+        <li>只要检测到<strong>至少 1 株</strong>可达请求，即对该水流维持浓度（不必覆盖该流上所有请求株）。</li>
+        <li>多个施肥器 → <strong>不同来源</strong>，同格浓度<strong>相加</strong>。</li>
+        <li>择向：<strong>水流优先级</strong>（主流先于 #1…）+ 同流内 <code>下→右→左→上</code>。</li>
+        <li>可达：与清水相同，不能向<strong>更高</strong>的水渠爬升。</li>
+      </ul>
+
+      <p class="note warn">其它液态肥（如存量氮肥）<strong>不走</strong>渠内浓度系统，仅各自模板效果。</p>
+
+      <h3>超融合（全局切换）</h3>
+      <ul>
+        <li>建造 <strong>200 金</strong>，工程 10 tick / 5 体力每 tick（与其它设施一致）。</li>
+        <li>场上 ≥1 座 → 全场文丘里海藻精改为 <strong>A 面</strong>；全部拆除后恢复 <strong>B 面</strong> 默认。</li>
+      </ul>
+
+      <h3>B 面：常注（默认，无请求检测）</h3>
+      <ul>
+        <li>与 A 面共用：水流归属、扫描哪几条流、注入方向、§15.4 均分、多施肥器异来源相加。</li>
+        <li><strong>去掉</strong> §15.3 作物请求扫描；不读 <code>seaweedRequests</code>。</li>
+        <li>条件：罐内<strong>海藻精效果存续</strong> + 四邻<strong>有水渠</strong> + 能沿该水流抵达<strong>水流终点</strong> → 即维持浓度。</li>
+        <li>可润空渠（无作物也可有浓度）；作物吸收仍只看邻渠浓度，与是否登记请求无关。</li>
+      </ul>
+    </section>
+
+    <section id="s3">
+      <h2>3. 作物「请求海藻精」（仅 A 面输送门禁）</h2>
+      <ul>
+        <li>模板字段 <code>requests_seaweed_extract</code>（默认 <code>false</code>）。</li>
+        <li>为 <code>true</code> 时<strong>才可能</strong>登记请求；为 <code>false</code> <strong>从不</strong>登记。</li>
+      </ul>
+      <h3>登记条件与时机</h3>
+      <ul>
+        <li>必须<strong>四邻接至少一格有水水渠</strong>，且能按 §12 得到受水归属。</li>
+        <li>播种时无水 → <strong>不登记</strong>；<strong>首次满足前提的 tick</strong>或水道重算后再登记。</li>
+        <li>登记目标：<strong>主流</strong>一条；若归属支流 #N，再向<strong>支流 #N</strong>一条。</li>
+        <li>仅属主干时：只登主流。</li>
+      </ul>
+      <h3>撤销与成熟</h3>
+      <ul>
+        <li>收获、枯萎、清作物 → 撤销请求。</li>
+        <li>受水归属变更 → 撤销旧支流请求，按新归属重登。</li>
+        <li><strong>已成熟待收获</strong>：请求<strong>保留</strong>，施肥器仍可维持渠浓度（流经）；该作物<strong>不再吸收</strong>微量元素。</li>
+      </ul>
+      <p class="note">
+        <code>false</code> 不登记请求，但<strong>生长中</strong>若邻渠有浓度，仍可按 §6 吸收（与是否请求无关）。
+      </p>
+    </section>
+
+    <section id="s4">
+      <h2>4. 注入方向（每水流、每 tick）</h2>
+      <div class="mini-grid">
+        <div class="mini-row">
+          <div class="cell land"></div>
+          <div class="cell channel wet"><span class="tag">下游</span><span class="val">1.0</span></div>
+          <div class="cell land"></div>
+        </div>
+        <div class="mini-row">
+          <div class="cell channel wet"><span class="val water">💧</span></div>
+          <div class="cell venturi"><span class="tag">施肥器</span>★</div>
+          <div class="cell channel wet entry"><span class="tag">注入口</span><span class="val zero">0</span></div>
+        </div>
+        <div class="mini-row">
+          <div class="cell land"></div>
+          <div class="cell channel wet"></div>
+          <div class="cell crop"><span class="tag">作物</span>🌱</div>
+        </div>
+      </div>
+      <ul>
+        <li>先判<strong>唯一</strong>注入方向；该向邻格须为有水水渠，且沿本次水流可达目标/终点。</li>
+        <li>每施肥器对<strong>单次水流维持</strong>只朝<strong>一个方向</strong>写入，不四向同时注。</li>
+        <li><strong>注入口格</strong>不计入均分（浓度视为 0，见 §5）。</li>
+      </ul>
+    </section>
+
+    <section id="s5">
+      <h2>5. 浓度：均分、持续状态、叠加</h2>
+      <div class="calc">单格浓度 = 设定浓度 ÷ 入口<strong>后</strong>至该水流终点的有水渠格数</div>
+      <p>无水渠、注入口本身不参与均分与承载。</p>
+
+      <h3>互动试算（按施肥器等级）</h3>
+      <label>施肥器等级
+        <select id="sel-level" style="margin-left:8px;background:#251d17;color:#e8e6e3;border:1px solid #4d4d45;border-radius:4px;padding:4px 8px;">
+          <option value="1">1 级（5～10）</option>
+          <option value="2">2 级（3～15）</option>
+          <option value="3">3 级（1～20）</option>
+        </select>
+      </label>
+      <label>设定浓度 <span id="lbl-conc">10</span>
+        <input type="range" id="rng-conc" min="5" max="10" step="1" value="10" />
+      </label>
+      <label>入口<strong>后</strong>有水渠格数 <span id="lbl-cells">10</span>
+        <input type="range" id="rng-cells" min="1" max="20" value="10" />
+      </label>
+      <p class="demo-out" id="demo-split"></p>
+
+      <h3>持续状态</h3>
+      <ul>
+        <li>效果 tick 内存活且本 tick 该水流满足输送条件 → 按上式<strong>每 tick 刷新</strong>各格份额（同来源覆盖，不在同 tick 内累加同来源）。</li>
+        <li>本 tick 不满足 → 该施肥器在该水流<strong>不写入</strong>。</li>
+        <li>效果 tick 归零 → 该施肥器不再维持。</li>
+      </ul>
+
+      <h3>多来源叠加</h3>
+      <table>
+        <thead>
+          <tr><th>情况</th><th>规则</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>不同施肥器；同一施肥器同 tick 对主流 / #1 / #2 各维持一次</td>
+            <td class="ok"><strong>不同来源</strong> → 同格 <strong>Σ 相加</strong></td>
+          </tr>
+          <tr>
+            <td>同一来源对同一格重复结算</td>
+            <td class="no"><strong>不叠加</strong>，保留一份均分份额</td>
+          </tr>
+        </tbody>
+      </table>
+      <div class="mini-grid">
+        <div class="mini-row">
+          <div class="cell channel wet"><span class="tag">A</span><span class="val">1</span></div>
+          <div class="cell channel wet"><span class="tag">交汇</span><span class="val">3</span></div>
+          <div class="cell channel wet"><span class="tag">B</span><span class="val">2</span></div>
+        </div>
+      </div>
+      <p class="legend">例：A 入口后 10 格均分 → 1；B 入口后 3 格均分 → 2；交汇 = 3。无单格浓度硬顶。</p>
+      <p class="legend">清水水量与海藻精浓度分开存储；清水仍走 §8～§11。</p>
+    </section>
+
+    <section id="s6">
+      <h2>6. 作物吸收微量元素</h2>
+      <ul>
+        <li>与吸水<strong>同一 tick、同一 §12 来源水渠</strong>。</li>
+        <li>本 tick 吸收量 = 该格当前 <strong>海藻精浓度</strong>（0 则 0）。</li>
+        <li><strong>不扣减</strong>渠内浓度（只读）。</li>
+        <li>累加 <code>累计微量元素</code>；展示 1 位小数。</li>
+        <li>仅<strong>生长周期内</strong>；成熟后冻结不累计。</li>
+        <li>成熟/完美：各作物单独配微量元素区间；与水分组合为 <strong>AND</strong>（都满足才算，例如完美种植）。</li>
+      </ul>
+      <div class="flow">
+        <span class="box">唯一来源水渠</span>
+        <span class="arrow">→</span>
+        <span class="box">读水量 → 累计水分</span>
+        <span class="arrow">+</span>
+        <span class="box">读浓度 → 累计微量元素</span>
+      </div>
+    </section>
+
+    <section id="s7a">
+      <h2>7. 水藻爆发（浓度 × 水量）</h2>
+      <p>仅<strong>有水水渠</strong>（<code>W &gt; 0</code>）。记 <code>W</code> = 当前实际水量，<code>C</code> = 格上海藻精浓度。</p>
+      <div class="calc">爆发：C : W <strong>高于</strong> 2.5 : 1　⇔　C &gt; 2.5 × W</div>
+      <div class="calc">恢复：C ≤ 2.5 × W（恰为 2.5:1 时不爆发）</div>
+
+      <h3>互动：是否爆发</h3>
+      <label>水量 W <span id="lbl-w">5.0</span>
+        <input type="range" id="rng-w" min="0.1" max="20" step="0.1" value="5" />
+      </label>
+      <label>浓度 C <span id="lbl-c">8.0</span>
+        <input type="range" id="rng-c" min="0" max="20" step="0.1" value="8" />
+      </label>
+      <p class="demo-out" id="demo-bloom"></p>
+      <div class="mini-grid" id="bloom-preview" style="margin-top:12px"></div>
+
+      <h3>对作物</h3>
+      <ul>
+        <li>§12 <strong>唯一来源渠</strong>爆发 → 生长中作物：⑤ 先<strong>照单全收</strong>浓度，⑥ 再扣健康（默认 <strong>−2</strong>/tick）。</li>
+        <li>无 §12 来源、已成熟、<code>C≤0</code> 的渠：不扣 / 不爆发。</li>
+        <li>不要求作物发送请求；邻格爆发但非来源渠 → 不扣。</li>
+        <li>健康 ≤0 → §4b.1b <strong>枯萎</strong>。爆发不阻止施肥器继续送肥。</li>
+      </ul>
+      <h3>常量与表现</h3>
+      <table>
+        <thead><tr><th>策划常量</th><th>默认</th></tr></thead>
+        <tbody>
+          <tr><td><code>algae_bloom_concentration_ratio_threshold</code></td><td>2.5</td></tr>
+          <tr><td><code>algae_bloom_health_loss_per_tick</code></td><td>2</td></tr>
+        </tbody>
+      </table>
+      <ul>
+        <li>扣血走<strong>开放接口</strong>（Buff 可减），最终扣减 ≥0，健康 clamp。</li>
+        <li>地图 / demo 须显示爆发渠格样式；<strong>不要</strong>玩家提示条/飘字/日志。</li>
+        <li>多来源 <code>C</code> 相加后再比；高等级施肥器易配高浓度 → 易爆发（预期风险）。</li>
+      </ul>
+    </section>
+
+    <section id="s7">
+      <h2>8. 施肥器：海藻精罐与浓度 UI</h2>
+      <ul>
+        <li>物品 <code>liquid_seaweed_extract</code>：消耗 1 个注入，持续 <strong>5000 tick</strong>；可再次注入重置倒计时。</li>
+        <li>仅效果存续期间才可能维持渠内浓度。</li>
+        <li>施肥器 <strong>3 级</strong>；每次升级 <strong>5 金钱</strong>。</li>
+      </ul>
+      <table>
+        <thead>
+          <tr><th>等级</th><th>设定浓度可调范围</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>1 级</td><td><strong>5～10</strong></td></tr>
+          <tr><td>2 级</td><td><strong>3～15</strong></td></tr>
+          <tr><td>3 级</td><td><strong>1～20</strong></td></tr>
+        </tbody>
+      </table>
+      <ul>
+        <li>升级后若当前设定超出新等级范围，应<strong>夹紧</strong>到新范围内；默认建议 1 级取 <strong>5</strong> 或 <strong>7</strong>。</li>
+        <li><strong>无</strong>单格渠内浓度硬顶。</li>
+      </ul>
+    </section>
+
+    <section id="s8b">
+      <h2>8b. 埋地陶瓮（与渠内海藻精分轨）</h2>
+      <ul>
+        <li><strong>两条累计条（禁止混写）</strong>：海藻精 → <code>traceAbsorbed</code>（累计微量元素）；液态肥 → <code>fertilizerAbsorbed</code>（累计施肥值）。</li>
+        <li>海藻精：仅文丘里 → 渠内浓度 → 邻接耕地吸收微量元素（§4b.1c / §15）；<strong>请求</strong>见 §3（仅 A 面输送门禁）。</li>
+        <li>液态肥：仅埋地陶瓮 → 八邻 → 累加施肥值（§4b.1d，示范 <strong>+0.5/tick/瓮</strong>）；<strong>不是</strong>微量元素。</li>
+        <li><strong>液态肥请求（§4b.1f）</strong>：作物模板 <code>requests_liquid_fertilizer</code>；八邻有陶瓮时可登记；<strong>仅登记且模板为 true 的作物</strong>才接收瓮的施肥值（无渠网被动吸收）。</li>
+        <li>多瓮：同格作物在多个瓮八邻内时，<strong>按瓮数叠加</strong>；各瓮独立扣单位。</li>
+        <li>完美判定可选 <code>perfectMinFertilizer</code>，与水分/微量 <strong>AND</strong>；门槛宜低（约 12～22，示范肥 0.5/tick）。</li>
+        <li><strong>微量排斥作物</strong>（§4b.1g）：豆芽/莲子/芡实为<strong>致死</strong>；杏樱桃扁桃梨柠檬与三类豆为<strong>严重排斥</strong>。完美要求 <code>trace ≤ trace_safe_max</code>；排斥作物不登记海藻精请求，但邻渠仍会吸收浓度。</li>
+        <li>农业 tick 顺序见 <code>28-agriculture-irrigation.md</code> §15.0 步骤 <strong>5b</strong>。</li>
+      </ul>
+    </section>
+
+    <section id="s8">
+      <h2>9. 实现速查（禁止项）</h2>
+      <ul class="checklist">
+        <li>tick：清水 → 海藻精 → 爆发判定 → 吸水 → <strong>微量元素(trace)</strong> → <strong>陶瓮→施肥值(fert)</strong> → 爆发扣健康</li>
+        <li>爆发：C:W&gt;2.5:1；C≤0 不爆发；维持肥液不阻止</li>
+        <li>地图须显示爆发格；不要玩家向提示</li>
+        <li>重算后先清空渠浓度，再同步请求</li>
+        <li>注入 = 持续状态 + 每 tick 刷新，非一次性脉冲</li>
+        <li>注入口不计入均分；吸收不扣渠浓度</li>
+        <li>同水流每 tick 最多 1 株请求响应；主流施肥器可对多水流各维持 1 次</li>
+        <li>异来源相加；同来源同格不叠</li>
+        <li>默认 B 面：有水+海藻精即输送</li>
+        <li>超融合在场 → A 面（无请求不输送）</li>
+        <li class="no">施肥器无邻接有水渠时不输送</li>
+        <li class="no">其它液态肥不走渠内浓度</li>
+        <li class="no">不要求农业 UI 调试层展示逐格浓度/注入箭头</li>
+      </ul>
+    </section>
+  </div>
+
+  <script>
+    (function () {
+      var LEVEL_RANGE = { 1: { min: 5, max: 10 }, 2: { min: 3, max: 15 }, 3: { min: 1, max: 20 } };
+      var selLevel = document.getElementById("sel-level");
+      var rngConc = document.getElementById("rng-conc");
+      var rngCells = document.getElementById("rng-cells");
+      var lblConc = document.getElementById("lbl-conc");
+      var lblCells = document.getElementById("lbl-cells");
+      var out = document.getElementById("demo-split");
+
+      function applyLevelRange() {
+        var r = LEVEL_RANGE[Number(selLevel.value)] || LEVEL_RANGE[1];
+        var v = Number(rngConc.value);
+        rngConc.min = String(r.min);
+        rngConc.max = String(r.max);
+        if (v < r.min) rngConc.value = String(r.min);
+        else if (v > r.max) rngConc.value = String(r.max);
+      }
+
+      function update() {
+        applyLevelRange();
+        var c = Number(rngConc.value);
+        var n = Number(rngCells.value);
+        lblConc.textContent = String(c);
+        lblCells.textContent = String(n);
+        var per = n > 0 ? (c / n).toFixed(1) : "—";
+        var lv = selLevel.value;
+        var r = LEVEL_RANGE[lv];
+        out.textContent =
+          lv + " 级（" + r.min + "～" + r.max + "）设定浓度 " + c +
+          " ÷ 入口后 " + n + " 格 = 每格 " + per +
+          "（注入口为 0；1 位小数）";
+      }
+      selLevel.addEventListener("change", update);
+      rngConc.addEventListener("input", update);
+      rngCells.addEventListener("input", update);
+      update();
+
+      var rngW = document.getElementById("rng-w");
+      var rngC = document.getElementById("rng-c");
+      var lblW = document.getElementById("lbl-w");
+      var lblC = document.getElementById("lbl-c");
+      var outBloom = document.getElementById("demo-bloom");
+      var prev = document.getElementById("bloom-preview");
+
+      function isBloom(W, C) {
+        if (W <= 0) return false;
+        if (C <= 0) return false;
+        return C > 2.5 * W;
+      }
+
+      function updateBloom() {
+        var W = Number(rngW.value);
+        var C = Number(rngC.value);
+        lblW.textContent = W.toFixed(1);
+        lblC.textContent = C.toFixed(1);
+        var bloom = isBloom(W, C);
+        var ratioCw = W > 0 ? (C / W).toFixed(2) : "—";
+        outBloom.innerHTML = bloom
+          ? '<span class="no">水藻爆发</span>：C:W = ' + C.toFixed(1) + ":" + W.toFixed(1) +
+            "（C/W = " + ratioCw + " &gt; 2.5）→ 来源该渠的生长中作物健康 −2/tick"
+          : '<span class="ok">正常</span>：C:W 未高于 2.5:1（C/W = ' + ratioCw + "）";
+        prev.innerHTML =
+          '<div class="mini-row"><div class="cell channel wet' + (bloom ? " bloom" : "") + '">' +
+          '<span class="tag">水渠</span><span class="val water">' + W.toFixed(1) + "</span>" +
+          '<span class="val' + (bloom ? " bloom" : "") + '">C' + C.toFixed(1) + "</span></div>" +
+          '<div class="cell crop"><span class="tag">作物</span>' + (bloom ? "−2❤" : "—") + "</div></div>";
+      }
+      rngW.addEventListener("input", updateBloom);
+      rngC.addEventListener("input", updateBloom);
+      updateBloom();
+    })();
+  </script>
+</body>
+</html>

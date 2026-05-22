@@ -132,10 +132,7 @@
             "max": 50,
             "settlement": "floor_ratio_then_clamp_base_at_10_round_scale_min_1"
           },
-          "post_effect_slot_max": 1,
-          "proficiency_attr_unlocks": [
-            { "min_proficiency_ratio": 0.2, "acquired": { "jingu": 15 } }
-          ]
+          "post_effect_slot_max": 1
         },
         {
           "id": "swing_punch",
@@ -207,10 +204,7 @@
             "max": 50,
             "settlement": "floor_ratio_then_clamp_base_at_10_round_scale_min_1"
           },
-          "post_effect_slot_max": 1,
-          "proficiency_attr_unlocks": [
-            { "min_proficiency_ratio": 0.2, "acquired": { "flexibility": 15 } }
-          ]
+          "post_effect_slot_max": 1
         }
       ],
       "slots_unlock_by_level": [
@@ -287,9 +281,6 @@
       "parry_reduce_at_max": 0.5,
       "parry_proficiency_usage_key": "parry_success",
       "parry_proficiency_max_uses": 50000,
-      "parry_proficiency_attr_unlocks": [
-        { "min_proficiency_ratio": 0.5, "acquired": { "flexibility": 40 } }
-      ],
       "max_level": 1000,
       "level_cap_skill_id": null
     },
@@ -348,10 +339,7 @@
           },
           "unlock_level": 1,
           "tick_cost": 1,
-          "proficiency_usage_key": "tu_na",
-          "proficiency_attr_unlocks": [
-            { "min_proficiency_ratio": 0.5, "acquired": { "breath": 20 } }
-          ]
+          "proficiency_usage_key": "tu_na"
         },
         {
           "id": "diqi_huti",

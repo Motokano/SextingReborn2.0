@@ -1,0 +1,4720 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>农业水渠 Demo</title>
+  <style>
+    * { box-sizing: border-box; }
+    /* 耕地垄沟示意（内嵌 SVG，与作物 ::before 分层，互不覆盖） */
+    :root {
+      --tilled-soil-tex: url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 96 96%22%3E%3Crect width=%2296%22 height=%2296%22 fill=%22%234a3325%22/%3E%3Cg fill=%22none%22 stroke=%22%232a1a12%22 stroke-width=%221.8%22 stroke-linecap=%22round%22 opacity=%220.55%22%3E%3Cpath d=%22M0 11 L96 14%22/%3E%3Cpath d=%22M0 23 L96 26%22/%3E%3Cpath d=%22M0 35 L96 38%22/%3E%3Cpath d=%22M0 47 L96 50%22/%3E%3Cpath d=%22M0 59 L96 62%22/%3E%3Cpath d=%22M0 71 L96 74%22/%3E%3Cpath d=%22M0 83 L96 86%22/%3E%3C/g%3E%3Cg fill=%22none%22 stroke=%22%235c4535%22 stroke-width=%221.1%22 stroke-linecap=%22round%22 opacity=%220.32%22%3E%3Cpath d=%22M0 17 L96 20%22/%3E%3Cpath d=%22M0 29 L96 32%22/%3E%3Cpath d=%22M0 41 L96 44%22/%3E%3Cpath d=%22M0 53 L96 56%22/%3E%3Cpath d=%22M0 65 L96 68%22/%3E%3Cpath d=%22M0 77 L96 80%22/%3E%3C/g%3E%3Cellipse cx=%2270%22 cy=%2226%22 rx=%229%22 ry=%225%22 fill=%22%233d2818%22 opacity=%220.2%22 transform=%22rotate(-10 70 26)%22/%3E%3Cellipse cx=%2226%22 cy=%2272%22 rx=%2211%22 ry=%226%22 fill=%22%233d2818%22 opacity=%220.16%22 transform=%22rotate(6 26 72)%22/%3E%3C/svg%3E");
+    }
+    html, body { height: 100%; }
+    body {
+      margin: 0;
+      background: #1c1815;
+      color: #e8e6e3;
+      font-family: "Noto Serif SC", "Microsoft YaHei", serif;
+      overflow: hidden;
+    }
+    .app {
+      height: 100%;
+      display: grid;
+      grid-template-rows: auto 1fr;
+    }
+    .topbar {
+      border-bottom: 1px solid #4d4d45;
+      background: linear-gradient(180deg, #2a211a, #1a1512);
+      padding: 10px 14px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .title {
+      font-size: 18px;
+      color: #d3a060;
+      padding-right: 12px;
+      border-right: 2px solid #4d4d45;
+      margin-right: 4px;
+    }
+    .pill {
+      border: 1px solid #4d4d45;
+      border-radius: 999px;
+      padding: 4px 10px;
+      font-size: 12px;
+      color: #d8cfbf;
+      background: #251d17;
+    }
+    .toolbar {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-left: auto;
+      flex-wrap: wrap;
+    }
+    button {
+      border: 1px solid #4d4d45;
+      background: #2a221c;
+      color: #e0d7c6;
+      border-radius: 8px;
+      padding: 6px 10px;
+      cursor: pointer;
+    }
+    button:hover { border-color: #d3a060; color: #d3a060; }
+    button.active {
+      border-color: #ff8c00;
+      color: #ff8c00;
+      box-shadow: 0 0 16px rgba(255,140,0,0.18);
+    }
+    .layout {
+      min-height: 0;
+      display: grid;
+      grid-template-columns: minmax(640px, 1fr) 420px;
+      gap: 10px;
+      padding: 10px;
+    }
+    .panel {
+      border: 2px solid #4d4d45;
+      border-radius: 10px;
+      background: #1a1512;
+      box-shadow: 0 18px 40px rgba(0, 0, 0, 0.45);
+      min-height: 0;
+    }
+    .grid-panel {
+      display: grid;
+      grid-template-rows: auto 1fr;
+    }
+    .grid-head {
+      border-bottom: 1px solid #4d4d45;
+      padding: 8px 10px;
+      display: flex;
+      justify-content: space-between;
+      color: #8e8e8e;
+      font-size: 12px;
+    }
+    .grid-wrap {
+      overflow: hidden;
+      position: relative;
+      padding: 8px;
+      min-height: 0;
+      touch-action: none;
+      cursor: default;
+    }
+    .grid-wrap.panning { cursor: grabbing; }
+    .grid-wrap.space-pan { cursor: grab; }
+    .grid-stage {
+      transform-origin: 0 0;
+      width: max-content;
+      will-change: transform;
+    }
+    /* 与主游戏地图格对齐：GameEngine.CELL_PX / TileRendererV2 cellPx = 101 */
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(11, 101px);
+      grid-template-rows: repeat(11, 101px);
+      gap: 0;
+      width: max-content;
+    }
+    .cell {
+      box-sizing: border-box;
+      width: 101px;
+      height: 101px;
+      border: 1px solid #4d4d45;
+      border-radius: 4px;
+      background: #2a221c;
+      cursor: pointer;
+      position: relative;
+    }
+    .cell.selected { outline: 2px solid #ff8c00; z-index: 2; }
+    .cell.land { background: #32271f; }
+    .cell.land.tilled {
+      background-color: #4a3325;
+      background-image: var(--tilled-soil-tex);
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+    }
+    .cell.crop-growing::before,
+    .cell.crop-ready::before,
+    .cell.crop-failed::before {
+      content: "";
+      position: absolute;
+      left: 34px;
+      top: 24px;
+      width: 30px;
+      height: 42px;
+      z-index: 1;
+      border-radius: 16px 16px 8px 8px;
+      background: linear-gradient(180deg, #6fa35b, #315d34);
+      box-shadow: 0 0 0 3px rgba(0,0,0,0.18);
+      pointer-events: none;
+    }
+    .cell.crop-ready::before {
+      background: linear-gradient(180deg, #7fb36a, #d8a25c 65%, #8a5d36);
+    }
+    .cell.crop-failed::before {
+      background: linear-gradient(180deg, #8a6b4a, #5d4a38);
+      opacity: 0.75;
+    }
+    .cell.pool {
+      background: #37516b;
+      border-color: #5f7a96;
+      overflow: hidden;
+    }
+    .cell.pool::before {
+      content: "";
+      position: absolute;
+      inset: 7px;
+      border-radius: 12px;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 96 96'%3E%3Crect width='96' height='96' rx='10' fill='%232a211a'/%3E%3Cellipse cx='48' cy='51' rx='36' ry='28' fill='%23304b65'/%3E%3Cellipse cx='48' cy='47' rx='32' ry='22' fill='%236f9fbb'/%3E%3Cpath d='M18 45 C30 33 42 53 55 40 C66 30 74 38 80 45' fill='none' stroke='%23c9ecf2' stroke-width='5' stroke-linecap='round' opacity='.78'/%3E%3Cpath d='M20 58 C32 50 42 65 54 55 C65 47 74 52 80 58' fill='none' stroke='%23375f7a' stroke-width='7' stroke-linecap='round' opacity='.65'/%3E%3Cpath d='M13 31 C25 16 71 16 83 31' fill='none' stroke='%23735a44' stroke-width='8' stroke-linecap='round'/%3E%3Cpath d='M13 66 C25 82 71 82 83 66' fill='none' stroke='%23735a44' stroke-width='8' stroke-linecap='round'/%3E%3Cpath d='M18 29 C30 21 66 21 78 29 M18 68 C30 75 66 75 78 68' fill='none' stroke='%23b38a5e' stroke-width='3' stroke-linecap='round' opacity='.9'/%3E%3C/svg%3E");
+      background-size: cover;
+      background-position: center;
+      pointer-events: none;
+    }
+    .cell.venturi-fertilizer {
+      background: #2a3530;
+      border-color: #5a8f7a;
+      overflow: hidden;
+    }
+    .cell.venturi-fertilizer.venturi-effect-active {
+      border-color: #7ab89a;
+      box-shadow: inset 0 0 18px rgba(90, 143, 122, 0.35);
+    }
+    .cell.buried-pot-jar {
+      background: #3a2e24;
+      border-color: #8a6a4a;
+      overflow: hidden;
+    }
+    .cell.buried-pot-jar::before {
+      content: "";
+      position: absolute;
+      inset: 12px;
+      border-radius: 50% 50% 8px 8px;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 96 96'%3E%3Crect width='96' height='96' rx='8' fill='%232a211a'/%3E%3Cellipse cx='48' cy='58' rx='22' ry='18' fill='%235c4535' stroke='%23a08060' stroke-width='2'/%3E%3Cpath d='M32 42 Q48 28 64 42 L60 52 Q48 46 36 52 Z' fill='%236a5040' stroke='%23a08060' stroke-width='2'/%3E%3Crect x='44' y='18' width='8' height='8' rx='2' fill='%234a3828'/%3E%3C/svg%3E");
+      background-size: cover;
+      background-position: center;
+      pointer-events: none;
+    }
+    .cell.buried-pot-jar.jar-liquid-active {
+      border-color: #c09060;
+      box-shadow: inset 0 0 18px rgba(192, 144, 96, 0.35);
+    }
+    .cell.super-fusion {
+      background: #2e2438;
+      border-color: #9a7ac8;
+      overflow: hidden;
+    }
+    .cell.super-fusion::before {
+      content: "";
+      position: absolute;
+      inset: 10px;
+      border-radius: 12px;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 96 96'%3E%3Crect width='96' height='96' rx='10' fill='%231f1828'/%3E%3Ccircle cx='36' cy='48' r='14' fill='%235a4080' stroke='%23b89ae8' stroke-width='2'/%3E%3Ccircle cx='60' cy='48' r='14' fill='%234a3588' stroke='%23d4b8ff' stroke-width='2'/%3E%3Cpath d='M36 48 L60 48' stroke='%23e8d4ff' stroke-width='3' stroke-linecap='round'/%3E%3Cpath d='M48 28 L48 68' stroke='%239a7ac8' stroke-width='2' opacity='.6'/%3E%3C/svg%3E");
+      background-size: cover;
+      background-position: center;
+      pointer-events: none;
+    }
+    .cell.venturi-fertilizer::before {
+      content: "";
+      position: absolute;
+      inset: 10px;
+      border-radius: 10px;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 96 96'%3E%3Crect width='96' height='96' rx='8' fill='%231f2a26'/%3E%3Cpath d='M20 48h22l6-14h22v28H48l-6 14H20z' fill='%234a6b5c' stroke='%238fbcaa' stroke-width='2'/%3E%3Cellipse cx='72' cy='48' rx='8' ry='14' fill='%233d5a4d'/%3E%3Cpath d='M28 44h12v8H28z' fill='%235a8f7a' opacity='.85'/%3E%3C/svg%3E");
+      background-size: cover;
+      background-position: center;
+      pointer-events: none;
+    }
+    .cell.channel {
+      background: #3a3028;
+      overflow: hidden;
+    }
+    .cell.channel::before {
+      content: "";
+      position: absolute;
+      inset: 8px;
+      border-radius: 8px;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 96 96'%3E%3Crect width='96' height='96' fill='%233a3028'/%3E%3Cpath d='M12 49 C28 39 38 56 51 47 C65 38 75 43 84 50 L84 65 C69 55 58 70 45 61 C32 52 24 62 12 70 Z' fill='%235a4538'/%3E%3Cpath d='M12 43 C27 32 39 48 51 39 C64 30 74 34 84 42 L84 56 C69 48 59 62 46 53 C32 44 23 54 12 62 Z' fill='%236b8798'/%3E%3Cpath d='M17 43 C30 37 39 51 51 43 C63 35 72 38 80 43' fill='none' stroke='%23b9d5df' stroke-width='4' stroke-linecap='round' opacity='.75'/%3E%3Cpath d='M8 30 L88 20 M6 76 L90 69' stroke='%23251d17' stroke-width='5' stroke-linecap='round' opacity='.55'/%3E%3Cpath d='M15 27 L84 18 M13 79 L87 72' stroke='%23735a44' stroke-width='3' stroke-linecap='round' opacity='.8'/%3E%3C/svg%3E");
+      background-size: cover;
+      background-position: center;
+      opacity: 0.95;
+      pointer-events: none;
+    }
+    .cell.trunk { border-color: #d3a060; }
+    .cell.branch-water { border-color: #7ca6c7; }
+    .cell.branch-dry { border-color: #6b6560; opacity: 0.85; }
+    .cell.channel.algae-bloom {
+      border-color: #8a6aaa;
+      box-shadow: inset 0 0 16px rgba(120, 90, 160, 0.35);
+    }
+    .cell.channel.algae-bloom::before {
+      filter: hue-rotate(28deg) saturate(1.15);
+    }
+    .cell.has-water::after {
+      content: "";
+      position: absolute;
+      left: 14px;
+      right: 14px;
+      top: 46px;
+      height: 8px;
+      z-index: 2;
+      border-radius: 99px;
+      background: linear-gradient(90deg, rgba(102,151,185,0.65), rgba(149,198,223,0.9), rgba(102,151,185,0.65));
+      box-shadow: 0 0 8px rgba(102,151,185,0.55);
+    }
+    .cell-task-progress {
+      position: absolute;
+      left: 8px;
+      right: 8px;
+      bottom: 8px;
+      z-index: 3;
+      border: 1px solid rgba(211,160,96,0.75);
+      border-radius: 6px;
+      background: rgba(26, 21, 18, 0.9);
+      color: #e8e6e3;
+      font-size: 12px;
+      text-align: center;
+      line-height: 20px;
+      pointer-events: none;
+    }
+    .build-menu {
+      position: absolute;
+      z-index: 10;
+      min-width: 140px;
+      border: 1px solid #d3a060;
+      border-radius: 8px;
+      padding: 8px;
+      background: #221a15;
+      box-shadow: 0 12px 28px rgba(0, 0, 0, 0.45);
+      display: none;
+    }
+    .build-menu.open { display: grid; gap: 6px; }
+    .build-menu-title {
+      font-size: 12px;
+      color: #d3a060;
+    }
+    .build-menu button:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+      color: #8e8e8e;
+    }
+    .build-menu.has-venturi-panel { min-width: 220px; }
+    .build-menu-venturi-panel {
+      display: none;
+      gap: 6px;
+      padding: 6px 0 2px;
+      border-top: 1px solid #4d4d45;
+      margin-top: 2px;
+      font-size: 12px;
+      line-height: 1.45;
+    }
+    .build-menu-venturi-panel.open { display: grid; }
+    .venturi-panel-kv { color: #c9c0b1; }
+    .venturi-panel-kv strong { color: #7ab89a; font-weight: 600; }
+    .venturi-conc-label { margin: 2px 0 0; font-size: 11px; }
+    .venturi-conc-row {
+      display: grid;
+      grid-template-columns: 36px 1fr 36px;
+      align-items: center;
+      gap: 6px;
+    }
+    .venturi-conc-val {
+      text-align: center;
+      color: #7ab89a;
+      font-size: 14px;
+      font-weight: 600;
+    }
+    .venturi-conc-range {
+      width: 100%;
+      accent-color: #7ab89a;
+      margin: 0;
+    }
+    .venturi-conc-hint {
+      margin: 0;
+      font-size: 11px;
+      line-height: 1.35;
+    }
+    #btn-venturi-upgrade { width: 100%; }
+    .build-menu-crop-structures {
+      display: none;
+      gap: 4px;
+      border-top: 1px solid #4d4d45;
+      margin-top: 4px;
+      padding-top: 6px;
+    }
+    .build-menu-crop-structures.open {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+    }
+    .crop-struct-hint {
+      grid-column: 1 / -1;
+      font-size: 11px;
+      margin: 0 0 2px;
+    }
+    .build-menu-crop-structures .crop-struct-btn { font-size: 11px; padding: 4px 6px; }
+    .cell.land.tilled.crop-structure::after {
+      content: "";
+      position: absolute;
+      inset: 10px;
+      border-radius: 6px;
+      pointer-events: none;
+      z-index: 2;
+      box-sizing: border-box;
+    }
+    .cell.crop-structure-support_frame::after {
+      border: 2px solid rgba(180, 140, 90, 0.75);
+      background: linear-gradient(90deg, transparent 42%, rgba(180, 140, 90, 0.2) 42%, rgba(180, 140, 90, 0.2) 58%, transparent 58%),
+        linear-gradient(0deg, transparent 42%, rgba(180, 140, 90, 0.2) 42%, rgba(180, 140, 90, 0.2) 58%, transparent 58%);
+    }
+    .cell.crop-structure-protection_cage::after {
+      border: 2px dashed rgba(160, 180, 200, 0.8);
+      background-image: repeating-linear-gradient(0deg, rgba(160, 180, 200, 0.15) 0 1px, transparent 1px 8px),
+        repeating-linear-gradient(90deg, rgba(160, 180, 200, 0.15) 0 1px, transparent 1px 8px);
+    }
+    .cell.crop-structure-binding_strap::after {
+      border: 2px solid rgba(120, 90, 60, 0.7);
+      transform: rotate(-6deg);
+      box-shadow: inset 0 0 0 1px rgba(211, 160, 96, 0.25);
+    }
+    .cell.crop-structure-water_storage_ridge::after {
+      border: none;
+      border-bottom: 10px solid rgba(70, 120, 160, 0.55);
+      border-radius: 0 0 4px 4px;
+      inset: auto 6px 8px 6px;
+      height: 10px;
+    }
+    .cell.crop-structure-deep_pool::after {
+      border: 2px solid rgba(55, 90, 120, 0.85);
+      background: radial-gradient(ellipse at center, rgba(90, 150, 190, 0.35) 0%, rgba(40, 70, 95, 0.5) 70%);
+      inset: 18px;
+      border-radius: 50%;
+    }
+    .cell.crop-structure-shade_cover::after {
+      border: 2px solid rgba(90, 80, 110, 0.75);
+      background: linear-gradient(180deg, rgba(40, 35, 55, 0.55) 0%, transparent 55%);
+    }
+    .cell.crop-structure-canopy::after {
+      border: none;
+      border-top: 14px solid rgba(100, 75, 50, 0.65);
+      border-radius: 8px 8px 0 0;
+      inset: 6px 8px auto 8px;
+      height: 14px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+    }
+    .side {
+      display: grid;
+      grid-template-rows: auto auto 1fr;
+      gap: 10px;
+      padding: 10px;
+      overflow: auto;
+      scrollbar-color: rgba(211,160,96,0.65) rgba(255,255,255,0.06);
+    }
+    .card {
+      border: 1px solid #4d4d45;
+      border-radius: 8px;
+      background: #221a15;
+      padding: 10px;
+      font-size: 13px;
+      line-height: 1.5;
+    }
+    .card h3 {
+      margin: 0 0 8px;
+      color: #d3a060;
+      font-size: 14px;
+    }
+    .muted { color: #8e8e8e; }
+    .kv { display: grid; grid-template-columns: 130px 1fr; gap: 4px 6px; }
+    .crop-info-card[hidden] { display: none !important; }
+    .legend-list { display: grid; gap: 5px; }
+    .legend-item { display: flex; align-items: center; gap: 8px; }
+    .legend-dot {
+      width: 14px; height: 14px; border-radius: 4px; border: 1px solid #4d4d45;
+      flex: 0 0 auto;
+    }
+    .legend-dot.legend-dot-tilled {
+      background-color: #4a3325;
+      background-image: var(--tilled-soil-tex);
+      background-size: cover;
+      background-position: center;
+    }
+    .actions { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+    .tip-list { margin: 0; padding-left: 18px; color: #c9c0b1; }
+    .temp-backpack-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+    .temp-backpack-head h3 { margin: 0; }
+    .temp-backpack-count { color: #8e8e8e; font-size: 12px; }
+    .temp-backpack-grid {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 6px;
+    }
+    .temp-bag-slot {
+      min-height: 58px;
+      border: 2px solid #4d4d45;
+      border-radius: 8px;
+      background: #252520;
+      color: #8e8e8e;
+      padding: 6px;
+      display: grid;
+      align-content: space-between;
+      cursor: pointer;
+      font-family: "Microsoft YaHei", "微软雅黑", "PingFang SC", sans-serif;
+    }
+    .temp-bag-slot:hover {
+      border-color: #666;
+      background: #2f2c28;
+    }
+    .temp-bag-slot.selected {
+      border-color: #ff8c00;
+      box-shadow: 0 0 16px rgba(255,140,0,0.18);
+      background: #2f2c26;
+    }
+    .temp-bag-name {
+      color: #e0d7c6;
+      font-size: 12px;
+      font-weight: 800;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .temp-bag-meta {
+      color: #6b6560;
+      font-size: 11px;
+      text-align: right;
+    }
+    .temp-bag-empty {
+      color: #4d4d45;
+      font-size: 11px;
+      text-align: center;
+      align-self: center;
+    }
+    .shop-row {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      align-items: center;
+      gap: 8px;
+      border: 1px solid #4d4d45;
+      border-radius: 8px;
+      background: #252520;
+      padding: 8px;
+      font-family: "Microsoft YaHei", "微软雅黑", "PingFang SC", sans-serif;
+    }
+    .shop-item-name { color: #e0d7c6; font-size: 13px; font-weight: 800; }
+    .shop-item-meta { color: #8e8e8e; font-size: 12px; margin-top: 2px; }
+    .shop-message { margin-top: 8px; color: #8e8e8e; font-size: 12px; min-height: 18px; }
+    .item-menu {
+      position: fixed;
+      z-index: 20;
+      min-width: 150px;
+      border: 1px solid #d3a060;
+      border-radius: 8px;
+      padding: 8px;
+      background: #221a15;
+      box-shadow: 0 12px 28px rgba(0, 0, 0, 0.45);
+      display: none;
+    }
+    .item-menu.open { display: grid; gap: 6px; }
+    .item-menu-title { font-size: 12px; color: #d3a060; }
+    .shop-row + .shop-row { margin-top: 10px; }
+    .shop-trade-kv { margin-bottom: 8px; }
+    .shop-group-title {
+      font-size: 12px;
+      color: #d3a060;
+      margin: 12px 0 6px;
+    }
+    .shop-supplies { display: grid; gap: 8px; }
+    .shop-seed-list {
+      max-height: 300px;
+      overflow-y: auto;
+      display: grid;
+      gap: 8px;
+      padding-right: 4px;
+      scrollbar-color: rgba(211,160,96,0.65) rgba(255,255,255,0.06);
+    }
+    .seed-shop-group-label {
+      font-size: 11px;
+      color: #7ab89a;
+      margin: 4px 0 0;
+      grid-column: 1 / -1;
+    }
+    .shop-seed-list .shop-row { margin-top: 0; }
+    .build-menu-plant-crops {
+      display: none;
+      grid-template-columns: 1fr 1fr;
+      gap: 4px;
+      margin: 6px 0;
+    }
+    .build-menu-plant-crops.open { display: grid; }
+    .build-menu-plant-crops .plant-crop-btn {
+      font-size: 11px;
+      padding: 4px 6px;
+      text-align: left;
+    }
+    .build-menu-plant-hint {
+      font-size: 10px;
+      margin: 4px 0 2px;
+      grid-column: 1 / -1;
+    }
+    .modal-overlay[hidden] { display: none !important; }
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 25;
+      background: rgba(0, 0, 0, 0.55);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+    }
+    .modal-panel {
+      min-width: 280px;
+      max-width: 420px;
+      border: 1px solid #d3a060;
+      border-radius: 10px;
+      background: #221a15;
+      padding: 14px;
+      box-shadow: 0 16px 40px rgba(0, 0, 0, 0.5);
+    }
+    .modal-title { margin: 0 0 6px; font-size: 15px; color: #e8e6e3; }
+    .modal-hint { margin: 0 0 8px; font-size: 12px; line-height: 1.45; }
+    .soil-amend-list { display: grid; gap: 8px; margin-bottom: 12px; }
+    .soil-amend-pick-btn {
+      text-align: left;
+      padding: 10px 12px;
+      border-radius: 8px;
+      border: 1px solid #4d4d45;
+      background: #2a221c;
+      color: #e8e6e3;
+      font-size: 13px;
+      cursor: pointer;
+      font-family: inherit;
+    }
+    .soil-amend-pick-btn:hover { border-color: #d3a060; background: #32271f; }
+    #btn-soil-amend-cancel {
+      width: 100%;
+      padding: 8px;
+      border-radius: 8px;
+      border: 1px solid #4d4d45;
+      background: #252520;
+      color: #c9c0b1;
+      cursor: pointer;
+      font-family: inherit;
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <div class="topbar">
+      <div class="title">农业水渠 Demo</div>
+      <span class="pill" id="pill-tick">Tick: 0</span>
+      <span class="pill" id="pill-time">时间: 运行中</span>
+      <span class="pill" id="pill-stamina">体力: 100</span>
+      <span class="pill" id="pill-mode">模式: 查看</span>
+      <span class="pill" id="pill-task">工程: 无</span>
+      <div class="toolbar">
+        <button type="button" id="btn-pause">暂停</button>
+        <button type="button" id="btn-tick">手动 +1 Tick</button>
+        <button type="button" id="btn-run-seaweed-e2e" title="按 seaweed-extract-design-overview §9 自动跑通海藻精场景">§9 海藻精验收</button>
+        <span class="pill" id="pill-e2e" title="最近一次 §9 验收结果">验收: —</span>
+        <button type="button" data-mode="inspect" class="active mode-btn">查看</button>
+        <button type="button" data-mode="build" class="mode-btn">建造</button>
+        <button type="button" data-mode="remove" class="mode-btn">拆除</button>
+        <button type="button" data-mode="upgrade" class="mode-btn">升级</button>
+        <button type="button" id="btn-reset">重置地图</button>
+        <button type="button" id="btn-toggle-task-pause">暂停工程</button>
+        <button type="button" id="btn-cancel-task">取消工程</button>
+      </div>
+    </div>
+
+    <div class="layout">
+      <div class="panel grid-panel">
+        <div class="grid-head">
+          <span id="map-summary">11x11 农业地图（单格 101px，对齐主游戏），水池固定在 (0,0)</span>
+          <span id="water-summary">水池基础 200 / 当前 200.0</span>
+        </div>
+        <div class="grid-wrap" id="grid-viewport" title="滚轮缩放；左键按住拖拽平移地图；Alt+左键、中键、空格+左键也可平移">
+          <div class="grid-stage" id="grid-stage">
+            <div id="grid" class="grid" aria-label="农业地块网格"></div>
+          </div>
+          <div id="build-menu" class="build-menu" role="menu" aria-label="建造菜单">
+            <div class="build-menu-title" id="build-menu-title">建造</div>
+            <button type="button" id="btn-till-land">开垦耕地</button>
+            <button type="button" id="btn-remove-tilled-land">拆除耕地</button>
+            <div id="build-menu-crop-structures" class="build-menu-crop-structures" aria-label="耕地建造物">
+              <p class="crop-struct-hint muted">耕地建造物（预付 20 金 · 10 tick · 每 tick 5 体力，与埋地陶瓮一致）</p>
+              <button type="button" class="crop-struct-btn" data-crop-structure="support_frame">支架</button>
+              <button type="button" class="crop-struct-btn" data-crop-structure="protection_cage">保护笼</button>
+              <button type="button" class="crop-struct-btn" data-crop-structure="binding_strap">捆绑带</button>
+              <button type="button" class="crop-struct-btn" data-crop-structure="water_storage_ridge">蓄水田埂</button>
+              <button type="button" class="crop-struct-btn" data-crop-structure="deep_pool">深水池</button>
+              <button type="button" class="crop-struct-btn" data-crop-structure="shade_cover">遮光罩</button>
+              <button type="button" class="crop-struct-btn" data-crop-structure="canopy">顶棚</button>
+            </div>
+            <button type="button" id="btn-remove-crop-structure">拆除耕地建造物</button>
+            <div id="build-menu-plant-crops" class="build-menu-plant-crops" aria-label="种植作物">
+              <p class="build-menu-plant-hint muted">选择种子（消耗背包 1 粒）</p>
+              <div id="plant-crop-list" style="display:contents"></div>
+            </div>
+            <button type="button" id="btn-soil-amend">客土改良</button>
+            <button type="button" id="btn-harvest-crop">收获作物</button>
+            <button type="button" id="btn-build-venturi">文丘里施肥器</button>
+            <button type="button" id="btn-build-buried-pot-jar">埋地陶瓮（20 金）</button>
+            <button type="button" id="btn-build-super-fusion">超融合（200 金）</button>
+            <button type="button" id="btn-add-venturi-liquid">添加海藻精</button>
+            <div id="build-menu-venturi-panel" class="build-menu-venturi-panel" aria-label="文丘里施肥器设置">
+              <div class="venturi-panel-kv" id="venturi-panel-summary"></div>
+              <button type="button" id="btn-venturi-upgrade">升级施肥器（5 金）</button>
+              <div class="venturi-conc-label muted">海藻精输送浓度（设定值）</div>
+              <div class="venturi-conc-row">
+                <button type="button" id="btn-venturi-conc-minus" aria-label="降低浓度">−</button>
+                <span id="venturi-conc-value" class="venturi-conc-val">7</span>
+                <button type="button" id="btn-venturi-conc-plus" aria-label="提高浓度">＋</button>
+              </div>
+              <input type="range" id="venturi-conc-range" class="venturi-conc-range" min="5" max="10" step="1" value="7" />
+              <p id="venturi-conc-hint" class="venturi-conc-hint muted"></p>
+            </div>
+            <button type="button" id="btn-remove-venturi">拆除施肥器</button>
+            <button type="button" id="btn-add-buried-jar-liquid">添加液态肥</button>
+            <button type="button" id="btn-remove-buried-pot-jar">拆除埋地陶瓮</button>
+            <button type="button" id="btn-remove-super-fusion">拆除超融合</button>
+            <button type="button" id="btn-build-channel">水渠</button>
+            <button type="button" id="btn-upgrade-channel">升级水渠</button>
+            <button type="button" id="btn-downgrade-channel">降级水渠</button>
+            <button type="button" id="btn-remove-channel">拆除水渠</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel side">
+        <div class="card">
+          <h3>图例</h3>
+          <div class="legend-list">
+            <div class="legend-item"><span class="legend-dot" style="background:#37516b;border-color:#5f7a96"></span>水池</div>
+            <div class="legend-item"><span class="legend-dot" style="background:#32271f"></span>普通土地</div>
+            <div class="legend-item"><span class="legend-dot legend-dot-tilled"></span>耕地（已开垦）</div>
+            <div class="legend-item"><span class="legend-dot" style="background:#3a3028;border-color:#d3a060"></span>主干水渠</div>
+            <div class="legend-item"><span class="legend-dot" style="background:#3a3028;border-color:#7ca6c7"></span>有水支流</div>
+            <div class="legend-item"><span class="legend-dot" style="background:#3a3028;border-color:#6b6560"></span>无水水渠</div>
+            <div class="legend-item"><span class="legend-dot" style="background:#3a3028;border-color:#8a6aaa"></span>水藻爆发（有水渠）</div>
+            <div class="legend-item"><span class="legend-dot" style="background:#2a3530;border-color:#5a8f7a"></span>文丘里施肥器</div>
+            <div class="legend-item"><span class="legend-dot" style="background:#3a2e24;border-color:#8a6a4a"></span>埋地陶瓮</div>
+            <div class="legend-item"><span class="legend-dot" style="background:#2e2438;border-color:#9a7ac8"></span>超融合</div>
+            <div class="legend-item"><span class="legend-dot legend-dot-tilled" style="box-shadow:inset 0 0 0 2px rgba(211,160,96,0.7)"></span>耕地建造物（支架等，叠在耕地上）</div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3>选中地块</h3>
+          <div id="selected-info" class="kv"></div>
+        </div>
+
+        <div id="crop-info-card" class="card crop-info-card" hidden>
+          <h3>作物信息</h3>
+          <div id="crop-info" class="kv"></div>
+        </div>
+
+        <div class="card">
+          <h3>测试属性</h3>
+          <div class="kv">
+            <div class="muted">金钱</div>
+            <div id="money-info">50</div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3>商店</h3>
+          <div class="kv shop-trade-kv">
+            <div class="muted">交易额（累计）</div>
+            <div id="shop-trade-volume">0</div>
+          </div>
+          <div class="shop-supplies">
+            <div class="shop-row">
+              <div>
+                <div class="shop-item-name">冲积土（客土）</div>
+                <div class="shop-item-meta">20 金</div>
+              </div>
+              <button type="button" id="btn-buy-soil-alluvial">购买</button>
+            </div>
+            <div class="shop-row">
+              <div>
+                <div class="shop-item-name">海藻精</div>
+                <div class="shop-item-meta">5 金</div>
+              </div>
+              <button type="button" id="btn-buy-liquid-seaweed-extract">购买</button>
+            </div>
+            <div class="shop-row">
+              <div>
+                <div class="shop-item-name">液态氮肥（示范）</div>
+                <div class="shop-item-meta">8 金</div>
+              </div>
+              <button type="button" id="btn-buy-liquid-fertilizer-n">购买</button>
+            </div>
+          </div>
+          <div class="shop-group-title">种子</div>
+          <div id="shop-seed-list" class="shop-seed-list" aria-label="种子商店列表"></div>
+          <div id="shop-message" class="shop-message"></div>
+        </div>
+
+        <div class="card">
+          <div class="temp-backpack-head">
+            <h3>临时背包</h3>
+            <span class="temp-backpack-count" id="temp-backpack-count">0 / 25</span>
+          </div>
+          <div id="temp-backpack-grid" class="temp-backpack-grid" aria-label="测试用临时背包"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="item-menu" class="item-menu" role="menu" aria-label="物品菜单">
+    <div class="item-menu-title" id="item-menu-title">物品</div>
+    <button type="button" id="btn-sell-item">出售</button>
+  </div>
+
+  <div id="facility-liquid-modal" class="modal-overlay" hidden aria-modal="true" aria-labelledby="facility-liquid-title">
+    <div class="modal-panel" role="dialog">
+      <h3 class="modal-title" id="facility-liquid-title">添加液态肥</h3>
+      <div id="facility-liquid-list" class="soil-amend-list"></div>
+      <button type="button" id="btn-facility-liquid-cancel">取消</button>
+    </div>
+  </div>
+
+  <div id="soil-amend-modal" class="modal-overlay" hidden aria-modal="true" aria-labelledby="soil-amend-title">
+    <div class="modal-panel" role="dialog">
+      <h3 class="modal-title" id="soil-amend-title">客土改良 — 选择土壤道具</h3>
+      <div id="soil-amend-list" class="soil-amend-list"></div>
+      <button type="button" id="btn-soil-amend-cancel">取消</button>
+    </div>
+  </div>
+
+  <!-- 种子商店 / 作物参数：改 data/*.json 后运行 node tools/seed-tier-classification.mjs && node tools/gen-agriculture-crop-defs.mjs -->
+  <script src="agriculture-seed-shop.embed.js"></script>
+  <script src="agriculture-crop-defs.embed.js"></script>
+  <script>
+    (function () {
+      var SIZE = 11;
+      var POOL_X = 0;
+      var POOL_Y = 0;
+      var BASE_POOL_WATER = 200;
+      var DEFAULT_CHANNEL_CAPACITY = 2;
+      var CHANNEL_CAPACITY_STEP = 2;
+      var CHANNEL_CAPACITY_CHANGE_COST = 5;
+      /** 文丘里施肥器 / 埋地陶瓮 / 耕地建造物：建造预付金钱；工程 tick/体力与 TASK_* 一致 */
+      var VENTURI_BUILD_COST_MONEY = 20;
+      var BURIED_POT_JAR_BUILD_COST_MONEY = 20;
+      var SUPER_FUSION_BUILD_COST_MONEY = 200;
+      var CROP_STRUCTURE_BUILD_COST_MONEY = 20;
+      /** §2.2f 耕地建造物（仅可建在已开垦耕地上） */
+      var CROP_STRUCTURE_DEFS = {
+        support_frame: { id: "support_frame", name: "支架" },
+        protection_cage: { id: "protection_cage", name: "保护笼" },
+        binding_strap: { id: "binding_strap", name: "捆绑带" },
+        water_storage_ridge: { id: "water_storage_ridge", name: "蓄水田埂" },
+        deep_pool: { id: "deep_pool", name: "深水池" },
+        shade_cover: { id: "shade_cover", name: "遮光罩" },
+        canopy: { id: "canopy", name: "顶棚" }
+      };
+      /** §4.3 水藻爆发 */
+      var ALGAE_BLOOM_RATIO_THRESHOLD = 2.5;
+      var ALGAE_BLOOM_HEALTH_LOSS_PER_TICK = 2;
+      /** §2.2d 文丘里等级与设定浓度 */
+      var VENTURI_MAX_LEVEL = 3;
+      var VENTURI_UPGRADE_COST_MONEY = 5;
+      var VENTURI_CONC_RANGE_BY_LEVEL = { 1: { min: 5, max: 10 }, 2: { min: 3, max: 15 }, 3: { min: 1, max: 20 } };
+      var VENTURI_DEFAULT_SET_CONC = 7;
+      /** 文丘里海藻精输送：A面=检测作物请求；B面=有水+海藻精即维持（见 §15.6） */
+      var VENTURI_SEAWEED_LOGIC_A = "a";
+      var VENTURI_SEAWEED_LOGIC_B = "b";
+      var VENTURI_SEAWEED_LOGIC_DEFAULT = VENTURI_SEAWEED_LOGIC_B;
+      var LIQUID_SEAWEED_EXTRACT_ITEM_ID = "liquid_seaweed_extract";
+      /**
+       * 农业液态肥登记（正式服按 injectFacility 分设施；两条作物累计分轨）
+       * venturi_fertilizer + 海藻精 → 渠内浓度 → 作物 traceAbsorbed（累计微量元素），不写 fertilizerAbsorbed
+       * buried_pot_jar + 液态肥 → 八邻施加 → 作物 fertilizerAbsorbed（累计施肥值），不写 traceAbsorbed
+       * @type {Record<string, { name: string, injectFacility: string, fertilizerPerTick?: number, effectDurationTicks?: number }>}
+       */
+      var AGRICULTURE_INJECTABLE_LIQUIDS = {
+        liquid_fertilizer_n: { name: "液态氮肥（示范）", injectFacility: "buried_pot_jar", fertilizerPerTick: 0.5 },
+        liquid_seaweed_extract: { name: "海藻精", injectFacility: "venturi_fertilizer", effectDurationTicks: 5000 }
+      };
+      var VENTURI_INJECTABLE_LIQUIDS = AGRICULTURE_INJECTABLE_LIQUIDS;
+      var DEFAULT_SOIL_TYPE = "赤红壤";
+      var TEMP_BACKPACK_SIZE = 25;
+      var INITIAL_MONEY = 50;
+      var TASK_TICKS = 10;
+      var TASK_STAMINA_PER_TICK = 5;
+      var RECOVER_STAMINA_PER_TICK = 5;
+      var MAX_STAMINA = 100;
+      var TICK_MS = 1000;
+      var DEFAULT_CROP_HEALTH_MAX = 100;
+      var CROP_DEFS = {};
+      var CROP_DEF_BY_SEED = {};
+      var CROP_DEFS_LOADED = false;
+      var SHOP_ITEMS = {
+        soilAlluvial: { itemId: "soil_amend_alluvial", name: "冲积土（客土）", price: 20 },
+        liquidFertilizerN: { itemId: "liquid_fertilizer_n", name: "液态氮肥（示范）", price: 8 },
+        liquidSeaweedExtract: { itemId: "liquid_seaweed_extract", name: "海藻精", price: 5 }
+      };
+      var SEED_SHOP_CATALOG = [];
+      var SEED_SHOP_GROUP_LABELS = {};
+      var SEED_SHOP_GROUP_ORDER = ["grain", "veg", "aromatics", "spice", "fruit"];
+      var SEED_SHOP_TIER_LABELS = {};
+      var SEED_SHOP_TIER_ORDER = [1, 2, 3, 4, 5];
+      var SEED_TIER_TRADE_UNLOCK = { 1: 0, 2: 2000, 3: 4000, 4: 6000, 5: 8000 };
+      var SEED_TIER_TRADE_UNLOCK_STEP = 2000;
+      /** 可用于客土改良的背包道具 id → 目标土壤种类（写入 cell.soilType） */
+      var SOIL_AMEND_ITEMS = {
+        soil_amend_alluvial: { soilType: "冲积土" }
+      };
+      var DEMO_SELL_PRICE_RULE = { seed_ratio: 0.5, crop_ratio: 0.8, min: 3 };
+      var ITEM_SELL_PRICES = {
+        soil_amend_alluvial: 8,
+        liquid_fertilizer_n: 3,
+        liquid_seaweed_extract: 2
+      };
+      function demoSellPriceFromShop(shopPrice, ratio) {
+        var min = Number(DEMO_SELL_PRICE_RULE.min) || 3;
+        var r = Number(ratio);
+        if (!(r > 0)) r = 0.5;
+        return Math.max(min, Math.round((Number(shopPrice) || 10) * r));
+      }
+      function seedSellPrice(shopPrice) {
+        return demoSellPriceFromShop(shopPrice, DEMO_SELL_PRICE_RULE.seed_ratio);
+      }
+      function cropSellPrice(shopPrice) {
+        return demoSellPriceFromShop(shopPrice, DEMO_SELL_PRICE_RULE.crop_ratio);
+      }
+      function applySeedShopCatalog(doc) {
+        SEED_SHOP_CATALOG = (doc && doc.seeds) ? doc.seeds.slice() : [];
+        SEED_SHOP_GROUP_LABELS = (doc && doc.groups) ? doc.groups : {};
+        SEED_SHOP_TIER_LABELS = (doc && doc.tiers) ? doc.tiers : {};
+        SEED_SHOP_TIER_ORDER = (doc && doc.tier_order && doc.tier_order.length) ? doc.tier_order.slice() : [1, 2, 3, 4, 5];
+        if (doc && doc.tier_trade_unlock) {
+          SEED_TIER_TRADE_UNLOCK = doc.tier_trade_unlock;
+        }
+        if (doc && doc.tier_trade_unlock_step != null) {
+          SEED_TIER_TRADE_UNLOCK_STEP = Number(doc.tier_trade_unlock_step) || 2000;
+        }
+        if (doc && doc.demo_sell_price) {
+          DEMO_SELL_PRICE_RULE = {
+            seed_ratio: Number(doc.demo_sell_price.seed_ratio) || 0.5,
+            crop_ratio: Number(doc.demo_sell_price.crop_ratio) || 0.8,
+            min: Number(doc.demo_sell_price.min) || 3
+          };
+        }
+        for (var i = 0; i < SEED_SHOP_CATALOG.length; i++) {
+          var s = SEED_SHOP_CATALOG[i];
+          ITEM_SELL_PRICES[s.item_id] = seedSellPrice(s.price);
+          var harvestId = s.harvest_item_id;
+          if (harvestId) ITEM_SELL_PRICES[harvestId] = cropSellPrice(s.price);
+        }
+      }
+      function applyCropDefs(doc) {
+        CROP_DEFS = (doc && doc.crops) ? doc.crops : {};
+        CROP_DEF_BY_SEED = {};
+        for (var cid in CROP_DEFS) {
+          if (!Object.prototype.hasOwnProperty.call(CROP_DEFS, cid)) continue;
+          var d = CROP_DEFS[cid];
+          if (d && d.seedItemId) CROP_DEF_BY_SEED[d.seedItemId] = d;
+        }
+        CROP_DEFS_LOADED = Object.keys(CROP_DEFS).length > 0;
+      }
+      function getCropDefBySeedItemId(seedItemId) {
+        return CROP_DEF_BY_SEED[seedItemId] || null;
+      }
+      function formatCropWaterBand(def) {
+        if (!def) return "";
+        var sensHint = formatTraceSensitivityHint(def);
+        var trace = sensHint
+          ? sensHint
+          : (def.perfectMinTrace == null
+            ? "无微量要求"
+            : ("微量 " + def.perfectMinTrace + (def.perfectMaxTrace != null ? ("~" + def.perfectMaxTrace) : "+")));
+        var fert = def.perfectMinFertilizer == null
+          ? "无施肥要求"
+          : ("施肥 " + def.perfectMinFertilizer + (def.perfectMaxFertilizer != null ? ("~" + def.perfectMaxFertilizer) : "+"));
+        var req = [];
+        if (cropDefRequestsSeaweedExtract(def)) req.push("请求海藻精");
+        if (cropDefRequestsLiquidFertilizer(def)) req.push("请求液态肥");
+        var reqLine = req.length ? (" · " + req.join("/")) : "";
+        var structLine = cropStructureRequirementHint(def);
+        return "成熟 " + def.minWater + "~" + def.maxWater + " · 完美水 " + def.perfectMinWater + "~" + def.perfectMaxWater + " · " + trace + " · " + fert +
+          (structLine ? (" · " + structLine) : "") + reqLine;
+      }
+      function loadCropDefs(done) {
+        if (window.AGRICULTURE_CROP_DEFS) {
+          applyCropDefs(window.AGRICULTURE_CROP_DEFS);
+          if (typeof done === "function") done(true);
+          return;
+        }
+        fetch(projectDataUrl("data/agriculture-crop-defs.json"))
+          .then(function (r) {
+            if (!r.ok) throw new Error("http " + r.status);
+            return r.json();
+          })
+          .then(function (doc) {
+            applyCropDefs(doc);
+            if (typeof done === "function") done(true);
+          })
+          .catch(function () {
+            applyCropDefs({ crops: { peanut: {
+              cropId: "peanut", tier: 2, name: "花生", seedItemId: "seed_peanut", seedName: "花生种子",
+              productItemId: "herb_peanut", productName: "花生", growthTicks: 100, minWater: 100, maxWater: 300,
+              perfectMinWater: 150, perfectMaxWater: 250, perfectMinTrace: 50, requests_seaweed_extract: true,
+              harvestMin: 2, harvestMax: 3
+            } } });
+            if (typeof done === "function") done(false);
+          });
+      }
+      function listPlantableCropDefsForCell(c) {
+        if (!c || c.kind !== "land" || !c.tilled || c.crop) return [];
+        var out = [];
+        for (var i = 0; i < state.tempBackpack.length; i++) {
+          var it = state.tempBackpack[i];
+          if (!it || it.count < 1) continue;
+          var def = getCropDefBySeedItemId(it.id);
+          if (!def) continue;
+          var seen = false;
+          for (var j = 0; j < out.length; j++) {
+            if (out[j].cropId === def.cropId) { seen = true; break; }
+          }
+          if (!seen) out.push(def);
+        }
+        out.sort(function (a, b) {
+          return (a.tier || 0) - (b.tier || 0) || a.name.localeCompare(b.name, "zh");
+        });
+        return out;
+      }
+      function renderPlantCropButtons(menuCell) {
+        var panel = el.plantCropPanel;
+        var list = el.plantCropList;
+        if (!panel || !list) return;
+        var defs = listPlantableCropDefsForCell(menuCell);
+        if (!defs.length) {
+          panel.classList.remove("open");
+          list.innerHTML = "";
+          return;
+        }
+        panel.classList.add("open");
+        var html = "";
+        for (var di = 0; di < defs.length; di++) {
+          var d = defs[di];
+          var structOk = plotHasRequiredCropStructure(menuCell, d);
+          var hasSeed = hasTempItem(d.seedItemId, 1);
+          var disabled = !hasSeed || !structOk;
+          html += "<button type='button' class='plant-crop-btn' data-crop-id='" + d.cropId + "'" +
+            (disabled ? " disabled" : "") + ">" + d.name + "</button>";
+        }
+        list.innerHTML = html;
+      }
+      /** Live Server 从项目根或 tools/ 打开时，统一解析 data/ 路径 */
+      function projectDataUrl(rel) {
+        var p = window.location.pathname || "/";
+        if (/\/tools\//i.test(p)) return "../" + rel;
+        return rel;
+      }
+      function loadSeedShopCatalog(done) {
+        if (window.AGRICULTURE_SEED_SHOP) {
+          applySeedShopCatalog(window.AGRICULTURE_SEED_SHOP);
+          if (typeof done === "function") done(true);
+          return;
+        }
+        fetch(projectDataUrl("data/agriculture-seed-shop.json"))
+          .then(function (r) {
+            if (!r.ok) throw new Error("http " + r.status);
+            return r.json();
+          })
+          .then(function (doc) {
+            applySeedShopCatalog(doc);
+            if (typeof done === "function") done(true);
+          })
+          .catch(function () {
+            applySeedShopCatalog({
+              groups: {
+                grain: "粮食 / 主食",
+                veg: "蔬菜 / 根茎",
+                aromatics: "葱姜蒜 / 香辛菜",
+                spice: "香料 / 种子类",
+                fruit: "水果 / 坚果 / 经济作物"
+              },
+              seeds: [{ item_id: "seed_peanut", name: "花生种子", price: 10, harvest_item_id: "herb_peanut", group: "fruit" }],
+              demo_sell_price: { seed_ratio: 0.5, crop_ratio: 0.8, min: 3 }
+            });
+            state.shopMessage = "种子表未加载；仅显示花生种子。请运行 npm run build:seeds-farming 或检查 agriculture-seed-shop.embed.js。";
+            if (typeof done === "function") done(false);
+          });
+      }
+      function getSeedTierTradeUnlockRequired(tier) {
+        var t = Number(tier) || 1;
+        var map = SEED_TIER_TRADE_UNLOCK;
+        if (map) {
+          if (map[t] != null) return Math.max(0, Number(map[t]) || 0);
+          if (map[String(t)] != null) return Math.max(0, Number(map[String(t)]) || 0);
+        }
+        return t <= 1 ? 0 : (t - 1) * (Number(SEED_TIER_TRADE_UNLOCK_STEP) || 2000);
+      }
+
+      function isSeedTierTradeUnlocked(st, tier) {
+        var req = getSeedTierTradeUnlockRequired(tier);
+        if (req <= 0) return true;
+        return (Number(st && st.shopTradeVolume) || 0) >= req;
+      }
+
+      function getSeedShopRowByItemId(itemId) {
+        for (var i = 0; i < SEED_SHOP_CATALOG.length; i++) {
+          if (SEED_SHOP_CATALOG[i].item_id === itemId) return SEED_SHOP_CATALOG[i];
+        }
+        return null;
+      }
+
+      function renderSeedShop() {
+        if (!el.shopSeedList) return;
+        var html = "";
+        for (var ti = 0; ti < SEED_SHOP_TIER_ORDER.length; ti++) {
+          var tierKey = SEED_SHOP_TIER_ORDER[ti];
+          if (!isSeedTierTradeUnlocked(state, tierKey)) continue;
+          var tierLabel = SEED_SHOP_TIER_LABELS[tierKey] || ("第 " + tierKey + " 档");
+          var tierRows = [];
+          for (var si = 0; si < SEED_SHOP_CATALOG.length; si++) {
+            var rowTier = Number(SEED_SHOP_CATALOG[si].tier) || 0;
+            if (rowTier === tierKey) tierRows.push(SEED_SHOP_CATALOG[si]);
+          }
+          if (!tierRows.length) continue;
+          tierRows.sort(function (a, b) { return a.price - b.price || a.name.localeCompare(b.name, "zh"); });
+          html += "<div class='seed-shop-group-label'>" + tierLabel + "</div>";
+          for (var ri = 0; ri < tierRows.length; ri++) {
+            var row = tierRows[ri];
+            var afford = state.money >= row.price;
+            html += "<div class='shop-row'>" +
+              "<div><div class='shop-item-name'>" + row.name + "</div>" +
+              "<div class='shop-item-meta'>" + row.price + " 金</div></div>" +
+              "<button type='button' class='btn-buy-seed' data-item-id='" + row.item_id + "' data-item-name='" + row.name.replace(/'/g, "&#39;") + "' data-price='" + row.price + "' data-tier='" + tierKey + "'" +
+              (afford ? "" : " disabled") + ">" + (afford ? "购买" : "金钱不足") + "</button></div>";
+          }
+        }
+        el.shopSeedList.innerHTML = html || "<div class='muted'>暂无种子条目</div>";
+      }
+      var DIRS = [
+        { dx: 0, dy: 1, key: "down" },
+        { dx: 1, dy: 0, key: "right" },
+        { dx: -1, dy: 0, key: "left" },
+        { dx: 0, dy: -1, key: "up" }
+      ];
+      /** §2.2e 埋地陶瓮施肥：八方向（含斜角） */
+      var DIRS_8 = [
+        { dx: 0, dy: 1 }, { dx: 1, dy: 0 }, { dx: -1, dy: 0 }, { dx: 0, dy: -1 },
+        { dx: 1, dy: 1 }, { dx: -1, dy: 1 }, { dx: 1, dy: -1 }, { dx: -1, dy: -1 }
+      ];
+      var FACILITY_LIQUID_EMPTY_MSG = {
+        venturi_fertilizer: "背包中无可用物品",
+        buried_pot_jar: "背包中无可用物品"
+      };
+
+      function keyOf(x, y) { return x + "," + y; }
+      function round1(n) { return Math.round((n || 0) * 10) / 10; }
+      function inBounds(x, y) { return x >= 0 && x < SIZE && y >= 0 && y < SIZE; }
+
+      function venturiConcRangeForLevel(level) {
+        var lv = Math.max(1, Math.min(VENTURI_MAX_LEVEL, Number(level) || 1));
+        return VENTURI_CONC_RANGE_BY_LEVEL[lv] || VENTURI_CONC_RANGE_BY_LEVEL[1];
+      }
+
+      function clampVenturiSetConc(level, setConc) {
+        var r = venturiConcRangeForLevel(level);
+        var v = Number(setConc);
+        if (!(v >= 0)) v = VENTURI_DEFAULT_SET_CONC;
+        if (v < r.min) v = r.min;
+        if (v > r.max) v = r.max;
+        return v;
+      }
+
+      function ensureVenturiCellFields(c) {
+        if (!isVenturiCell(c)) return;
+        if (c.venturiLevel == null) c.venturiLevel = 1;
+        c.venturiLevel = Math.max(1, Math.min(VENTURI_MAX_LEVEL, Number(c.venturiLevel) || 1));
+        if (c.seaweedSetConcentration == null && c.venturiSetConc != null) {
+          c.seaweedSetConcentration = c.venturiSetConc;
+        }
+        c.seaweedSetConcentration = clampVenturiSetConc(c.venturiLevel, c.seaweedSetConcentration);
+        delete c.venturiSetConc;
+      }
+
+      /** §4.3：C:W 高于阈值 :1 时爆发；C<=0 或 W<=0 不爆发（每 tick 实时，不跨 tick 锁存） */
+      function isAlgaeBloom(W, C) {
+        var w = Number(W) || 0;
+        var c = Number(C) || 0;
+        if (w <= 0 || c <= 0) return false;
+        return c > ALGAE_BLOOM_RATIO_THRESHOLD * w;
+      }
+
+      function isChannelAlgaeBloom(water, concentration) {
+        return isAlgaeBloom(water, concentration);
+      }
+
+      /** Buff/装备等对水藻爆发伤害的修正入口；最终扣减 ≥ 0 */
+      function resolveAlgaeBloomHealthLoss(baseLoss) {
+        var loss = Number(baseLoss);
+        if (!(loss >= 0)) loss = 0;
+        return loss;
+      }
+
+      function clearAllChannelSeaweedConcentration(state) {
+        for (var y = 0; y < SIZE; y++) {
+          for (var x = 0; x < SIZE; x++) {
+            var c = cell(state, x, y);
+            if (!isChannelCell(c)) continue;
+            c.seaweedConcentration = 0;
+          }
+        }
+      }
+
+      function ensureSeaweedRequestsState(state) {
+        if (!state.seaweedRequests) {
+          state.seaweedRequests = { mainstream: [], byBranch: {} };
+        }
+        if (!state.seaweedRequests.mainstream) state.seaweedRequests.mainstream = [];
+        if (!state.seaweedRequests.byBranch) state.seaweedRequests.byBranch = {};
+      }
+
+      function cropDefRequestsSeaweedExtract(def) {
+        if (!def) return false;
+        if (def.requestsSeaweedExtract === true || def.requests_seaweed_extract === true) return true;
+        return false;
+      }
+
+      function cropDefRequestsLiquidFertilizer(def) {
+        if (!def) return false;
+        if (def.requestsLiquidFertilizer === true || def.requests_liquid_fertilizer === true) return true;
+        return false;
+      }
+
+      function cropTraceSensitivity(def) {
+        if (!def || !def.trace_sensitivity) return null;
+        return def.trace_sensitivity === "lethal" || def.trace_sensitivity === "severe"
+          ? def.trace_sensitivity
+          : null;
+      }
+
+      function formatTraceSensitivityHint(def) {
+        var sens = cropTraceSensitivity(def);
+        if (!sens) return "";
+        if (sens === "lethal") {
+          return "微量排斥·致死：安全≤" + def.trace_safe_max + "，≥" + def.trace_lethal_at + " 窒息枯死";
+        }
+        return "微量排斥·严重：安全≤" + def.trace_safe_max + "，≥" + def.trace_fail_harvest_at + " 落果无收";
+      }
+
+      /** §4b.1g：吸收微量后的排斥扣血 */
+      function applyTraceSensitivityToPlot(state, x, y) {
+        var c = cell(state, x, y);
+        if (!c.crop || c.crop.settled) return;
+        var def = CROP_DEFS[c.crop.cropId];
+        var sens = cropTraceSensitivity(def);
+        if (!sens) return;
+        var trace = round1(c.crop.traceAbsorbed || 0);
+        var safeMax = Number(def.trace_safe_max);
+        if (!(safeMax >= 0)) return;
+        var hm = c.crop.healthMax != null ? Number(c.crop.healthMax) : DEFAULT_CROP_HEALTH_MAX;
+        if (!(hm > 0)) hm = DEFAULT_CROP_HEALTH_MAX;
+        var hc = c.crop.healthCurrent != null ? Number(c.crop.healthCurrent) : hm;
+        var loss = 0;
+        if (sens === "lethal") {
+          var lethalAt = Number(def.trace_lethal_at);
+          if (!(lethalAt > safeMax)) lethalAt = safeMax + 4;
+          if (trace >= lethalAt) {
+            loss = Number(def.trace_lethal_loss_per_tick) || 60;
+          } else if (trace > safeMax) {
+            loss = Number(def.trace_stress_loss_per_tick) || 4;
+          } else if (trace > 0) {
+            loss = 1;
+          }
+        } else if (sens === "severe" && trace > safeMax) {
+          loss = Number(def.trace_toxic_health_loss_per_tick) || 2;
+        }
+        if (loss > 0) {
+          c.crop.healthMax = hm;
+          c.crop.healthCurrent = Math.min(hm, Math.max(0, hc - loss));
+          if (applyGrowingCropHealthDeath(c)) {
+            syncPlotSeaweedRequests(state, x, y);
+            syncPlotFertilizerRequests(state, x, y);
+          }
+        }
+      }
+
+      function agriTickStep5aTraceSensitivity(state) {
+        for (var y = 0; y < SIZE; y++) {
+          for (var x = 0; x < SIZE; x++) {
+            applyTraceSensitivityToPlot(state, x, y);
+          }
+        }
+      }
+
+      function cropPerfectTraceOk(def, trace) {
+        var sens = cropTraceSensitivity(def);
+        if (sens) {
+          var safeMax = Number(def.trace_safe_max);
+          if (!(safeMax >= 0)) return true;
+          return trace <= safeMax;
+        }
+        if (def.perfectMinTrace == null) return true;
+        if (trace < def.perfectMinTrace) return false;
+        if (def.perfectMaxTrace != null && trace > def.perfectMaxTrace) return false;
+        return true;
+      }
+
+      function ensureFertilizerRequestsState(state) {
+        if (!state.fertilizerRequests) state.fertilizerRequests = [];
+      }
+
+      /** §4b.1f：八邻至少一格埋地陶瓮 */
+      function hasAdjacentBuriedPotJar(state, x, y) {
+        var found = false;
+        forEachNeighbor8(x, y, function (nx, ny) {
+          if (isBuriedPotJarCell(cell(state, nx, ny))) found = true;
+        });
+        return found;
+      }
+
+      function fertilizerRequestListHasPlot(list, x, y) {
+        if (!list) return false;
+        for (var i = 0; i < list.length; i++) {
+          if (list[i].x === x && list[i].y === y) return true;
+        }
+        return false;
+      }
+
+      function isFertilizerRequestEntryStillValid(state, entry) {
+        if (!entry || !inBounds(entry.x, entry.y)) return false;
+        var c = cell(state, entry.x, entry.y);
+        if (!c.crop) return false;
+        var def = CROP_DEFS[c.crop.cropId];
+        if (!cropDefRequestsLiquidFertilizer(def)) return false;
+        if (!hasAdjacentBuriedPotJar(state, entry.x, entry.y)) return false;
+        return true;
+      }
+
+      function removePlotFromFertilizerRequests(state, x, y) {
+        ensureFertilizerRequestsState(state);
+        state.fertilizerRequests = state.fertilizerRequests.filter(function (e) {
+          return e.x !== x || e.y !== y;
+        });
+      }
+
+      function registerPlotFertilizerRequestsIfEligible(state, x, y) {
+        var c = cell(state, x, y);
+        if (!c.crop) return;
+        var def = CROP_DEFS[c.crop.cropId];
+        if (!cropDefRequestsLiquidFertilizer(def)) return;
+        if (!hasAdjacentBuriedPotJar(state, x, y)) return;
+        ensureFertilizerRequestsState(state);
+        var entry = { x: x, y: y, cropId: c.crop.cropId };
+        if (!fertilizerRequestListHasPlot(state.fertilizerRequests, x, y)) {
+          state.fertilizerRequests.push(entry);
+        }
+      }
+
+      function syncPlotFertilizerRequests(state, x, y) {
+        removePlotFromFertilizerRequests(state, x, y);
+        registerPlotFertilizerRequestsIfEligible(state, x, y);
+      }
+
+      function syncCropFertilizerRequests(state) {
+        ensureFertilizerRequestsState(state);
+        var kept = [];
+        for (var i = 0; i < state.fertilizerRequests.length; i++) {
+          if (isFertilizerRequestEntryStillValid(state, state.fertilizerRequests[i])) {
+            kept.push(state.fertilizerRequests[i]);
+          }
+        }
+        state.fertilizerRequests = kept;
+        for (var y = 0; y < SIZE; y++) {
+          for (var x = 0; x < SIZE; x++) {
+            registerPlotFertilizerRequestsIfEligible(state, x, y);
+          }
+        }
+      }
+
+      /** 埋地陶瓮建成/拆除后，刷新八邻作物登记 */
+      function syncFertilizerRequestsNearBuriedJar(state, jx, jy) {
+        forEachNeighbor8(jx, jy, function (nx, ny) {
+          syncPlotFertilizerRequests(state, nx, ny);
+        });
+      }
+
+      /** §4b.1a：四邻接至少一格有水水渠（不含水池） */
+      function hasAdjacentWetChannel(state, x, y) {
+        var found = false;
+        forEachNeighbor(x, y, function (nx, ny) {
+          var nc = cell(state, nx, ny);
+          if (isChannelCell(nc) && (Number(nc.water) || 0) > 0) found = true;
+        });
+        return found;
+      }
+
+      /** 受水归属为支流 #N 时返回 N；仅主干/水池归属返回 null */
+      function getBranchIndexForSeaweedRegistration(source) {
+        if (!source) return null;
+        if (source.kind === "pool") return null;
+        if (source.isTrunk) return null;
+        var bi = Number(source.branchIndex);
+        if (bi > 0) return bi;
+        return null;
+      }
+
+      function seaweedRequestListHasPlot(list, x, y) {
+        if (!list) return false;
+        for (var i = 0; i < list.length; i++) {
+          if (list[i].x === x && list[i].y === y) return true;
+        }
+        return false;
+      }
+
+      function isSeaweedRequestEntryStillValid(state, entry) {
+        if (!entry || !inBounds(entry.x, entry.y)) return false;
+        var c = cell(state, entry.x, entry.y);
+        if (!c.crop) return false;
+        var def = CROP_DEFS[c.crop.cropId];
+        if (!cropDefRequestsSeaweedExtract(def)) return false;
+        if (!hasAdjacentWetChannel(state, entry.x, entry.y)) return false;
+        if (!getIrrigationSourceForPlot(state, entry.x, entry.y)) return false;
+        return true;
+      }
+
+      function shouldSeaweedRequestOnBranch(state, x, y, branchIndex) {
+        var source = getIrrigationSourceForPlot(state, x, y);
+        return getBranchIndexForSeaweedRegistration(source) === branchIndex;
+      }
+
+      function removePlotFromSeaweedRequests(state, x, y) {
+        ensureSeaweedRequestsState(state);
+        var sr = state.seaweedRequests;
+        sr.mainstream = sr.mainstream.filter(function (e) { return e.x !== x || e.y !== y; });
+        for (var bk in sr.byBranch) {
+          if (!Object.prototype.hasOwnProperty.call(sr.byBranch, bk)) continue;
+          sr.byBranch[bk] = sr.byBranch[bk].filter(function (e) { return e.x !== x || e.y !== y; });
+          if (!sr.byBranch[bk].length) delete sr.byBranch[bk];
+        }
+      }
+
+      function registerPlotSeaweedRequestsIfEligible(state, x, y) {
+        var c = cell(state, x, y);
+        if (!c.crop) return;
+        var def = CROP_DEFS[c.crop.cropId];
+        if (!cropDefRequestsSeaweedExtract(def)) return;
+        if (!hasAdjacentWetChannel(state, x, y)) return;
+        var source = getIrrigationSourceForPlot(state, x, y);
+        if (!source) return;
+        ensureSeaweedRequestsState(state);
+        var sr = state.seaweedRequests;
+        var entry = { x: x, y: y, cropId: c.crop.cropId };
+        if (!seaweedRequestListHasPlot(sr.mainstream, x, y)) sr.mainstream.push(entry);
+        var branchIdx = getBranchIndexForSeaweedRegistration(source);
+        if (branchIdx != null) {
+          if (!sr.byBranch[branchIdx]) sr.byBranch[branchIdx] = [];
+          if (!seaweedRequestListHasPlot(sr.byBranch[branchIdx], x, y)) {
+            sr.byBranch[branchIdx].push(entry);
+          }
+        }
+      }
+
+      /** 单格：先撤销再按当前归属重登（§4b.1a 受水变更） */
+      function syncPlotSeaweedRequests(state, x, y) {
+        removePlotFromSeaweedRequests(state, x, y);
+        registerPlotSeaweedRequestsIfEligible(state, x, y);
+      }
+
+      /** §5 / 每 tick：全表扫描，撤销无效、补登有效 */
+      function syncCropSeaweedExtractRequests(state) {
+        ensureSeaweedRequestsState(state);
+        var sr = state.seaweedRequests;
+        var prunedMain = [];
+        for (var i = 0; i < sr.mainstream.length; i++) {
+          if (isSeaweedRequestEntryStillValid(state, sr.mainstream[i])) prunedMain.push(sr.mainstream[i]);
+        }
+        var prunedByBranch = {};
+        for (var bk in sr.byBranch) {
+          if (!Object.prototype.hasOwnProperty.call(sr.byBranch, bk)) continue;
+          var branchIdx = Number(bk);
+          var list = sr.byBranch[bk];
+          var kept = [];
+          for (var j = 0; j < list.length; j++) {
+            var e = list[j];
+            if (!isSeaweedRequestEntryStillValid(state, e)) continue;
+            if (!shouldSeaweedRequestOnBranch(state, e.x, e.y, branchIdx)) continue;
+            kept.push(e);
+          }
+          if (kept.length) prunedByBranch[bk] = kept;
+        }
+        sr.mainstream = prunedMain;
+        sr.byBranch = prunedByBranch;
+        for (var y = 0; y < SIZE; y++) {
+          for (var x = 0; x < SIZE; x++) {
+            registerPlotSeaweedRequestsIfEligible(state, x, y);
+          }
+        }
+      }
+
+      function isSeaweedEffectVenturi(c) {
+        if (!isVenturiCell(c) || !c.venturiLiquid) return false;
+        if (c.venturiLiquid.itemId !== LIQUID_SEAWEED_EXTRACT_ITEM_ID) return false;
+        if (c.venturiLiquid.effectTicksRemaining == null || c.venturiLiquid.effectTicksRemaining <= 0) return false;
+        return true;
+      }
+
+      function flowKindKey(flow) {
+        if (!flow) return "";
+        return flow.kind === "trunk" ? "trunk" : "branch:" + flow.index;
+      }
+
+      function flowPriorityRank(flow) {
+        if (!flow) return 9999;
+        if (flow.kind === "trunk") return 0;
+        return Number(flow.index) || 9999;
+      }
+
+      function compareFlowPriority(a, b) {
+        return flowPriorityRank(a) - flowPriorityRank(b);
+      }
+
+      function getChannelFlowTag(c) {
+        if (!isChannelCell(c) || (Number(c.water) || 0) <= 0) return null;
+        if (c.isTrunk) return { kind: "trunk" };
+        var bi = Number(c.branchIndex);
+        if (bi > 0) return { kind: "branch", index: bi };
+        return null;
+      }
+
+      function getBranchByIndex(state, branchIndex) {
+        if (!state.branches) return null;
+        for (var i = 0; i < state.branches.length; i++) {
+          if (state.branches[i].index === branchIndex) return state.branches[i];
+        }
+        return null;
+      }
+
+      function getFlowPath(state, flow) {
+        if (!flow) return [];
+        if (flow.kind === "trunk") return state.trunkPath || [];
+        var br = getBranchByIndex(state, flow.index);
+        return br ? br.path : [];
+      }
+
+      function getFlowEndpoint(state, flow) {
+        var path = getFlowPath(state, flow);
+        if (!path.length) return null;
+        return path[path.length - 1];
+      }
+
+      function buildFlowPathKeySet(state, flow) {
+        var set = {};
+        var path = getFlowPath(state, flow);
+        for (var i = 0; i < path.length; i++) set[keyOf(path[i].x, path[i].y)] = true;
+        return set;
+      }
+
+      function channelBelongsToFlow(state, x, y, flow) {
+        var c = cell(state, x, y);
+        if (!isChannelCell(c) || (Number(c.water) || 0) <= 0) return false;
+        var k = keyOf(x, y);
+        var pathSet = buildFlowPathKeySet(state, flow);
+        if (pathSet[k]) return true;
+        if (flow.kind === "trunk") return !!c.isTrunk;
+        return Number(c.branchIndex) === flow.index;
+      }
+
+      function buildFlowWetCellSet(state, flow) {
+        var set = {};
+        var path = getFlowPath(state, flow);
+        for (var i = 0; i < path.length; i++) {
+          var p = path[i];
+          var cc = cell(state, p.x, p.y);
+          if ((Number(cc.water) || 0) > 0) set[keyOf(p.x, p.y)] = true;
+        }
+        return set;
+      }
+
+      /** 施肥器水流归属：四邻接有水渠中取优先级最高（主流 > #1 > #2…） */
+      function getVenturiFlowAttribution(state, vx, vy) {
+        var best = null;
+        forEachNeighbor(vx, vy, function (nx, ny) {
+          var nc = cell(state, nx, ny);
+          var tag = getChannelFlowTag(nc);
+          if (!tag) return;
+          if (!best || compareFlowPriority(tag, best) < 0) best = tag;
+        });
+        return best;
+      }
+
+      function getFlowsToMaintainForVenturi(state, attribution) {
+        if (!attribution) return [];
+        if (attribution.kind === "branch") return [attribution];
+        var flows = [{ kind: "trunk" }];
+        if (state.branches) {
+          for (var i = 0; i < state.branches.length; i++) {
+            flows.push({ kind: "branch", index: state.branches[i].index });
+          }
+        }
+        return flows;
+      }
+
+      function getSeaweedRequestListForFlow(state, flow) {
+        ensureSeaweedRequestsState(state);
+        if (flow.kind === "trunk") return state.seaweedRequests.mainstream.slice();
+        var bi = flow.index;
+        return (state.seaweedRequests.byBranch[bi] || []).slice();
+      }
+
+      function seaweedBfsOnFlow(state, flowSet, startX, startY, goalKeys) {
+        var sk = keyOf(startX, startY);
+        if (!flowSet[sk]) return false;
+        var goalMap = {};
+        for (var g = 0; g < goalKeys.length; g++) goalMap[goalKeys[g]] = true;
+        if (goalMap[sk]) return true;
+        var q = [{ x: startX, y: startY }];
+        var seen = {};
+        seen[sk] = true;
+        while (q.length) {
+          var cur = q.shift();
+          var curCell = cell(state, cur.x, cur.y);
+          var hitGoal = false;
+          forEachNeighbor(cur.x, cur.y, function (nx, ny) {
+            if (hitGoal) return;
+            var nk = keyOf(nx, ny);
+            if (seen[nk] || !flowSet[nk]) return;
+            var nc = cell(state, nx, ny);
+            if ((Number(nc.water) || 0) <= 0) return;
+            if (nc.height > curCell.height) return;
+            if (goalMap[nk]) {
+              hitGoal = true;
+              return;
+            }
+            seen[nk] = true;
+            q.push({ x: nx, y: ny });
+          });
+          if (hitGoal) return true;
+        }
+        return false;
+      }
+
+      function canReachCropOnFlow(state, flow, entryX, entryY, cropX, cropY) {
+        var flowSet = buildFlowWetCellSet(state, flow);
+        var goals = [];
+        forEachNeighbor(cropX, cropY, function (nx, ny) {
+          var nk = keyOf(nx, ny);
+          if (flowSet[nk]) goals.push(nk);
+        });
+        if (!goals.length) return false;
+        return seaweedBfsOnFlow(state, flowSet, entryX, entryY, goals);
+      }
+
+      function canReachFlowEndpointOnFlow(state, flow, entryX, entryY) {
+        var end = getFlowEndpoint(state, flow);
+        if (!end) return false;
+        var flowSet = buildFlowWetCellSet(state, flow);
+        return seaweedBfsOnFlow(state, flowSet, entryX, entryY, [keyOf(end.x, end.y)]);
+      }
+
+      function pickInjectionForFlow(state, vx, vy, flow, request) {
+        for (var i = 0; i < DIRS.length; i++) {
+          var ex = vx + DIRS[i].dx;
+          var ey = vy + DIRS[i].dy;
+          if (!inBounds(ex, ey)) continue;
+          if (!channelBelongsToFlow(state, ex, ey, flow)) continue;
+          var reachCrop = request
+            ? canReachCropOnFlow(state, flow, ex, ey, request.x, request.y)
+            : false;
+          var reachEnd = canReachFlowEndpointOnFlow(state, flow, ex, ey);
+          if (reachCrop || reachEnd) return { entryX: ex, entryY: ey, dirIndex: i };
+        }
+        return null;
+      }
+
+      function pickFirstReachableRequestForFlow(state, vx, vy, flow) {
+        var list = getSeaweedRequestListForFlow(state, flow);
+        for (var i = 0; i < list.length; i++) {
+          var e = list[i];
+          if (!isSeaweedRequestEntryStillValid(state, e)) continue;
+          if (pickInjectionForFlow(state, vx, vy, flow, e)) return e;
+        }
+        return null;
+      }
+
+      function indexOnFlowPath(path, x, y) {
+        for (var i = 0; i < path.length; i++) {
+          if (path[i].x === x && path[i].y === y) return i;
+        }
+        return -1;
+      }
+
+      /** §15.4：注入口之后至水流终点之间的有水渠格（不含注入口） */
+      function getPostEntryWetCells(state, flow, entryX, entryY) {
+        var path = getFlowPath(state, flow);
+        var entryIdx = indexOnFlowPath(path, entryX, entryY);
+        if (entryIdx >= 0) {
+          var out = [];
+          for (var j = entryIdx + 1; j < path.length; j++) {
+            var cc = cell(state, path[j].x, path[j].y);
+            if ((Number(cc.water) || 0) > 0) out.push({ x: path[j].x, y: path[j].y });
+          }
+          return dedupeCoordCells(out);
+        }
+        var end = getFlowEndpoint(state, flow);
+        if (!end) return [];
+        var flowSet = buildFlowWetCellSet(state, flow);
+        if (!flowSet[keyOf(entryX, entryY)]) return [];
+        var distToEnd = {};
+        for (var p = 0; p < path.length; p++) {
+          distToEnd[keyOf(path[p].x, path[p].y)] = path.length - 1 - p;
+        }
+        var collected = [];
+        var cx = entryX;
+        var cy = entryY;
+        var seen = {};
+        seen[keyOf(cx, cy)] = true;
+        while (!(cx === end.x && cy === end.y)) {
+          var curCell = cell(state, cx, cy);
+          var best = null;
+          var bestD = Infinity;
+          forEachNeighbor(cx, cy, function (nx, ny) {
+            var nk = keyOf(nx, ny);
+            if (seen[nk] || !flowSet[nk]) return;
+            var nc = cell(state, nx, ny);
+            if ((Number(nc.water) || 0) <= 0 || nc.height > curCell.height) return;
+            var d = distToEnd[nk];
+            if (d == null || d >= bestD) return;
+            bestD = d;
+            best = { x: nx, y: ny };
+          });
+          if (!best) break;
+          collected.push(best);
+          seen[keyOf(best.x, best.y)] = true;
+          cx = best.x;
+          cy = best.y;
+        }
+        return dedupeCoordCells(collected);
+      }
+
+      /** §15.4：均分路径坐标去重，避免同来源同格被重复计入分母导致浓度过低 */
+      function dedupeCoordCells(cells) {
+        var seen = {};
+        var out = [];
+        for (var i = 0; i < cells.length; i++) {
+          var k = keyOf(cells[i].x, cells[i].y);
+          if (seen[k]) continue;
+          seen[k] = true;
+          out.push(cells[i]);
+        }
+        return out;
+      }
+
+      function getSeaweedSetConcentration(c) {
+        ensureVenturiCellFields(c);
+        return Number(c.seaweedSetConcentration) || VENTURI_DEFAULT_SET_CONC;
+      }
+
+      function getVenturiSetConcentration(c) {
+        return getSeaweedSetConcentration(c);
+      }
+
+      function tryUpgradeVenturiAt(x, y) {
+        var c = cell(state, x, y);
+        if (!isVenturiCell(c)) return false;
+        ensureVenturiCellFields(c);
+        if (c.venturiLevel >= VENTURI_MAX_LEVEL) {
+          state.shopMessage = "施肥器已满级（" + VENTURI_MAX_LEVEL + " 级）。";
+          return false;
+        }
+        if (state.money < VENTURI_UPGRADE_COST_MONEY) {
+          state.shopMessage = "金钱不足（升级需 " + VENTURI_UPGRADE_COST_MONEY + " 金）。";
+          return false;
+        }
+        state.money -= VENTURI_UPGRADE_COST_MONEY;
+        c.venturiLevel += 1;
+        c.seaweedSetConcentration = clampVenturiSetConc(c.venturiLevel, c.seaweedSetConcentration);
+        state.shopMessage = "文丘里施肥器已升至 " + c.venturiLevel + " 级（可调浓度 "
+          + venturiConcRangeForLevel(c.venturiLevel).min + "～" + venturiConcRangeForLevel(c.venturiLevel).max + "）。";
+        return true;
+      }
+
+      function setSeaweedSetConcentrationAt(x, y, value) {
+        var c = cell(state, x, y);
+        if (!isVenturiCell(c)) return false;
+        ensureVenturiCellFields(c);
+        if (!isSeaweedEffectVenturi(c)) {
+          state.shopMessage = "仅海藻精效果存续期间可调节输送浓度；液态氮肥不走渠内浓度。";
+          return false;
+        }
+        c.seaweedSetConcentration = clampVenturiSetConc(c.venturiLevel, value);
+        return true;
+      }
+
+      function stepSeaweedSetConcentrationAt(x, y, delta) {
+        var c = cell(state, x, y);
+        if (!isVenturiCell(c)) return false;
+        return setSeaweedSetConcentrationAt(x, y, getSeaweedSetConcentration(c) + (Number(delta) || 0));
+      }
+
+      function formatVenturiPanelSummary(c) {
+        ensureVenturiCellFields(c);
+        var vr = venturiConcRangeForLevel(c.venturiLevel);
+        var liqLine = formatVenturiLiquidText(c.venturiLiquid);
+        var effectLine = "无海藻精效果";
+        if (isSeaweedEffectVenturi(c)) {
+          var vl = c.venturiLiquid;
+          var max = vl.effectDurationTicks || (venturiInjectMeta(vl.itemId) || {}).effectDurationTicks || 0;
+          effectLine = "海藻精效果剩余 <strong>" + vl.effectTicksRemaining + "</strong> / " + max + " tick";
+        }
+        return "等级 <strong>" + c.venturiLevel + "</strong> / " + VENTURI_MAX_LEVEL
+          + "<br>可调浓度 <strong>" + vr.min + "～" + vr.max + "</strong>"
+          + "<br>当前设定 <strong>" + c.seaweedSetConcentration + "</strong>"
+          + "<br>肥液 <strong>" + liqLine + "</strong>"
+          + "<br>" + effectLine;
+      }
+
+      function syncVenturiBuildMenuPanel(menuCell) {
+        if (!el.venturiPanel || !isVenturiCell(menuCell)) return;
+        ensureVenturiCellFields(menuCell);
+        var vr = venturiConcRangeForLevel(menuCell.venturiLevel);
+        var seaweedActive = isSeaweedEffectVenturi(menuCell);
+        var atMax = menuCell.venturiLevel >= VENTURI_MAX_LEVEL;
+        el.venturiPanelSummary.innerHTML = formatVenturiPanelSummary(menuCell);
+        el.venturiUpgrade.disabled = atMax || state.money < VENTURI_UPGRADE_COST_MONEY;
+        el.venturiUpgrade.textContent = atMax
+          ? "已满级（" + VENTURI_MAX_LEVEL + " 级）"
+          : ("升级施肥器（" + VENTURI_UPGRADE_COST_MONEY + " 金）");
+        if (atMax) {
+          el.venturiUpgrade.title = "施肥器已达最高等级";
+        } else if (state.money < VENTURI_UPGRADE_COST_MONEY) {
+          el.venturiUpgrade.title = "金钱不足";
+        } else {
+          el.venturiUpgrade.removeAttribute("title");
+        }
+        var conc = getSeaweedSetConcentration(menuCell);
+        el.venturiConcValue.textContent = String(conc);
+        el.venturiConcRange.min = String(vr.min);
+        el.venturiConcRange.max = String(vr.max);
+        el.venturiConcRange.value = String(conc);
+        el.venturiConcMinus.disabled = !seaweedActive || conc <= vr.min;
+        el.venturiConcPlus.disabled = !seaweedActive || conc >= vr.max;
+        el.venturiConcRange.disabled = !seaweedActive;
+        var sfN = countSuperFusionOnMap(state);
+        el.venturiConcHint.textContent = seaweedActive
+          ? (getVenturiSeaweedLogicMode(state) === VENTURI_SEAWEED_LOGIC_B
+            ? "B面（默认）：有水+海藻精即维持。场上有超融合时全场文丘里切 A 面。"
+            : "A面：场上有超融合（" + sfN + " 座），仅在有作物请求且可达时维持。")
+          : "需注入海藻精且效果存续中方可调节；液态氮肥不走此浓度。";
+      }
+
+      /**
+       * §15.1～§15.4（A面）/ §15.6（B面）：海藻精渠内维持与浓度均分（每 tick 全量刷新，多来源相加）
+       */
+      function processSeaweedExtractMaintain(state) {
+        clearAllChannelSeaweedConcentration(state);
+        var perCellBySource = {};
+        var logicMode = getVenturiSeaweedLogicMode(state);
+        var sideB = logicMode === VENTURI_SEAWEED_LOGIC_B;
+
+        for (var vy = 0; vy < SIZE; vy++) {
+          for (var vx = 0; vx < SIZE; vx++) {
+            var vc = cell(state, vx, vy);
+            if (!isSeaweedEffectVenturi(vc)) continue;
+            if (!hasAdjacentWetChannel(state, vx, vy)) continue;
+
+            var attribution = getVenturiFlowAttribution(state, vx, vy);
+            if (!attribution) continue;
+
+            var flowsToRun = getFlowsToMaintainForVenturi(state, attribution);
+            var setConc = getSeaweedSetConcentration(vc);
+            var venturiSourcePrefix = keyOf(vx, vy);
+
+            for (var fi = 0; fi < flowsToRun.length; fi++) {
+              var flow = flowsToRun[fi];
+              var injection;
+              if (sideB) {
+                injection = pickInjectionForFlow(state, vx, vy, flow, null);
+              } else {
+                var request = pickFirstReachableRequestForFlow(state, vx, vy, flow);
+                if (!request) continue;
+                injection = pickInjectionForFlow(state, vx, vy, flow, request);
+              }
+              if (!injection) continue;
+
+              var distCells = dedupeCoordCells(getPostEntryWetCells(state, flow, injection.entryX, injection.entryY));
+              if (!distCells.length) continue;
+
+              var share = setConc / distCells.length;
+              var sourceId = venturiSourcePrefix + ":" + flowKindKey(flow);
+
+              for (var di = 0; di < distCells.length; di++) {
+                var dk = keyOf(distCells[di].x, distCells[di].y);
+                if (!perCellBySource[dk]) perCellBySource[dk] = {};
+                perCellBySource[dk][sourceId] = round1(share);
+              }
+            }
+          }
+        }
+
+        for (var ck in perCellBySource) {
+          if (!Object.prototype.hasOwnProperty.call(perCellBySource, ck)) continue;
+          var parts = perCellBySource[ck];
+          var sum = 0;
+          for (var sid in parts) {
+            if (!Object.prototype.hasOwnProperty.call(parts, sid)) continue;
+            sum += parts[sid];
+          }
+          var pt = decodeKey(ck);
+          var ch = cell(state, pt.x, pt.y);
+          if (isChannelCell(ch)) ch.seaweedConcentration = round1(sum);
+        }
+      }
+
+      function heightOf(y) { return SIZE - 1 - y; }
+      function byLowestHeightThenX(a, b) { return a.y !== b.y ? b.y - a.y : a.x - b.x; }
+      function byHighestHeightThenX(a, b) { return a.y !== b.y ? a.y - b.y : a.x - b.x; }
+      function comparePathCost(a, b) {
+        if (a.steps !== b.steps) return a.steps - b.steps;
+        if (a.sumX !== b.sumX) return a.sumX - b.sumX;
+        if (a.turns !== b.turns) return a.turns - b.turns;
+        return a.dirRank - b.dirRank;
+      }
+
+      function createTempBackpack() {
+        var slots = new Array(TEMP_BACKPACK_SIZE).fill(null);
+        return slots;
+      }
+
+      function createInitialState() {
+        var map = [];
+        for (var y = 0; y < SIZE; y++) {
+          var row = [];
+          for (var x = 0; x < SIZE; x++) {
+            row.push({
+              x: x,
+              y: y,
+              height: heightOf(y),
+              soilType: DEFAULT_SOIL_TYPE,
+              tilled: false,
+              cropStructure: null,
+              crop: null,
+              previousCropId: null,
+              kind: (x === POOL_X && y === POOL_Y) ? "pool" : "land",
+              capacity: 0,
+              water: 0,
+              seaweedConcentration: 0,
+              algaeBloom: false,
+              branchIndex: -1,
+              isTrunk: false,
+              sourceParent: null,
+              venturiLiquid: null,
+              venturiLevel: 1,
+              seaweedSetConcentration: VENTURI_DEFAULT_SET_CONC
+            });
+          }
+          map.push(row);
+        }
+        return {
+          tick: 0,
+          paused: false,
+          mode: "inspect",
+          stamina: MAX_STAMINA,
+          selected: { x: 0, y: 0 },
+          selectedTempBackpackSlot: -1,
+          tempBackpack: createTempBackpack(),
+          money: INITIAL_MONEY,
+          shopTradeVolume: 0,
+          shopMessage: "",
+          itemMenu: null,
+          soilAmendPicker: null,
+          task: null,
+          buildMenu: null,
+          basePoolWater: BASE_POOL_WATER,
+          poolCurrent: BASE_POOL_WATER,
+          channels: {},
+          trunkPath: [],
+          branches: [],
+          /** §4b.1a 海藻精请求登记 */
+          seaweedRequests: { mainstream: [], byBranch: {} },
+          /** §4b.1f 液态肥请求登记（埋地陶瓮八邻） */
+          fertilizerRequests: [],
+          map: map
+        };
+      }
+
+      function isSuperFusionCell(c) { return c.kind === "super_fusion"; }
+
+      function countSuperFusionOnMap(st) {
+        var n = 0;
+        for (var y = 0; y < SIZE; y++) {
+          for (var x = 0; x < SIZE; x++) {
+            if (isSuperFusionCell(cell(st, x, y))) n++;
+          }
+        }
+        return n;
+      }
+
+      function anySuperFusionOnMap(st) {
+        return countSuperFusionOnMap(st) > 0;
+      }
+
+      /** 文丘里有效逻辑：默认 B；场上有超融合 → A（§2.2g） */
+      function getVenturiSeaweedLogicMode(st) {
+        return anySuperFusionOnMap(st) ? VENTURI_SEAWEED_LOGIC_A : VENTURI_SEAWEED_LOGIC_B;
+      }
+
+      function venturiSeaweedLogicLabel(mode) {
+        return mode === VENTURI_SEAWEED_LOGIC_B ? "B面" : "A面";
+      }
+
+      function clonePoint(p) { return { x: p.x, y: p.y }; }
+      function cell(state, x, y) { return state.map[y][x]; }
+      function isChannelCell(c) { return c.kind === "channel"; }
+      function isPoolCell(c) { return c.kind === "pool"; }
+      function isVenturiCell(c) { return c.kind === "venturi_fertilizer"; }
+      function isBuriedPotJarCell(c) { return c.kind === "buried_pot_jar"; }
+      function isFacilityCell(c) { return isVenturiCell(c) || isBuriedPotJarCell(c); }
+      function cropStructureDef(id) {
+        return id ? CROP_STRUCTURE_DEFS[id] : null;
+      }
+      function cropStructureDisplayName(id) {
+        var d = cropStructureDef(id);
+        return d ? d.name : (id || "-");
+      }
+      function hasCropStructure(c) {
+        return !!(c && c.cropStructure && cropStructureDef(c.cropStructure));
+      }
+
+      function cropRequiredStructureId(def) {
+        if (!def) return null;
+        return def.required_crop_structure_id || def.requiredCropStructureId || null;
+      }
+
+      function plotHasRequiredCropStructure(c, def) {
+        var req = cropRequiredStructureId(def);
+        if (!req) return true;
+        return hasCropStructure(c) && c.cropStructure === req;
+      }
+
+      function cropStructureRequirementHint(def) {
+        var req = cropRequiredStructureId(def);
+        if (!req) return "";
+        return "需建造物「" + cropStructureDisplayName(req) + "」";
+      }
+      function canBuildCropStructure(c) {
+        return c.kind === "land" && c.tilled && !c.crop && !hasCropStructure(c);
+      }
+      function canRemoveCropStructure(c) {
+        return c.kind === "land" && c.tilled && hasCropStructure(c) && !c.crop;
+      }
+      function isAgricultureInjectableItemId(itemId) {
+        return !!(itemId && AGRICULTURE_INJECTABLE_LIQUIDS[itemId]);
+      }
+      function isVenturiInjectableItemId(itemId) { return isAgricultureInjectableItemId(itemId); }
+      function injectableMeta(itemId) {
+        return itemId ? AGRICULTURE_INJECTABLE_LIQUIDS[itemId] : null;
+      }
+      function isInjectableForFacility(itemId, facilityKind) {
+        var meta = injectableMeta(itemId);
+        return !!(meta && meta.injectFacility === facilityKind);
+      }
+      function venturiInjectMeta(itemId) { return injectableMeta(itemId); }
+      function injectableIsTimedEffectItem(itemId) {
+        var meta = injectableMeta(itemId);
+        return !!(meta && meta.injectFacility === "venturi_fertilizer" && meta.effectDurationTicks > 0);
+      }
+      function venturiIsTimedEffectItem(itemId) { return injectableIsTimedEffectItem(itemId); }
+      function facilityLiquidIsActive(vl) {
+        if (!vl) return false;
+        if (vl.effectTicksRemaining != null) return vl.effectTicksRemaining > 0;
+        return !!(vl.units && vl.units > 0);
+      }
+      function venturiLiquidIsActive(vl) { return facilityLiquidIsActive(vl); }
+      function getInjectableFertilizerPerTick(itemId) {
+        if (!isInjectableForFacility(itemId, "buried_pot_jar")) return 0;
+        var meta = injectableMeta(itemId);
+        var v = meta && meta.fertilizerPerTick;
+        return v != null && v > 0 ? Number(v) : 0;
+      }
+      function listInjectableItemIdsForFacility(facilityKind) {
+        var ids = [];
+        for (var id in AGRICULTURE_INJECTABLE_LIQUIDS) {
+          if (Object.prototype.hasOwnProperty.call(AGRICULTURE_INJECTABLE_LIQUIDS, id)
+            && isInjectableForFacility(id, facilityKind)) ids.push(id);
+        }
+        return ids;
+      }
+      function formatFacilityLiquidText(vl) {
+        if (!vl || !facilityLiquidIsActive(vl)) return "空罐";
+        var meta = injectableMeta(vl.itemId);
+        var nm = vl.name || (meta && meta.name) || vl.itemId;
+        if (vl.effectTicksRemaining != null) {
+          var max = vl.effectDurationTicks || (meta && meta.effectDurationTicks) || 0;
+          return nm + " 生效中 " + vl.effectTicksRemaining + " / " + max + " tick · 渠内浓度→微量元素";
+        }
+        var fert = getInjectableFertilizerPerTick(vl.itemId);
+        return nm + " ×" + vl.units + " 单位 · 八邻→施肥值+" + fert + "/tick";
+      }
+      function formatVenturiLiquidText(vl) { return formatFacilityLiquidText(vl); }
+      function getFacilityLiquidOnCell(c) {
+        if (isVenturiCell(c)) return c.venturiLiquid;
+        if (isBuriedPotJarCell(c)) return c.jarLiquid;
+        return null;
+      }
+      function setFacilityLiquidOnCell(c, vl) {
+        if (isVenturiCell(c)) c.venturiLiquid = vl;
+        else if (isBuriedPotJarCell(c)) c.jarLiquid = vl;
+      }
+      function processFacilityTimedEffects(state) {
+        for (var y = 0; y < SIZE; y++) {
+          for (var x = 0; x < SIZE; x++) {
+            var c = cell(state, x, y);
+            var liq = getFacilityLiquidOnCell(c);
+            if (!liq || liq.effectTicksRemaining == null) continue;
+            liq.effectTicksRemaining -= 1;
+            if (liq.effectTicksRemaining <= 0) setFacilityLiquidOnCell(c, null);
+          }
+        }
+      }
+      function processVenturiTimedEffects(state) { processFacilityTimedEffects(state); }
+
+      function forEachNeighbor8(x, y, fn) {
+        for (var i = 0; i < DIRS_8.length; i++) {
+          var nx = x + DIRS_8[i].dx;
+          var ny = y + DIRS_8[i].dy;
+          if (inBounds(nx, ny)) fn(nx, ny, i);
+        }
+      }
+
+      function forEachNeighbor(x, y, fn) {
+        for (var i = 0; i < DIRS.length; i++) {
+          var nx = x + DIRS[i].dx;
+          var ny = y + DIRS[i].dy;
+          if (inBounds(nx, ny)) fn(nx, ny, i);
+        }
+      }
+
+      function resetHydrationFields(state) {
+        for (var y = 0; y < SIZE; y++) {
+          for (var x = 0; x < SIZE; x++) {
+            var c = cell(state, x, y);
+            c.water = 0;
+            c.seaweedConcentration = 0;
+            c.algaeBloom = false;
+            c.isTrunk = false;
+            c.branchIndex = -1;
+            c.sourceParent = null;
+          }
+        }
+      }
+
+      function buildChannelSet(state) {
+        var set = {};
+        for (var y = 0; y < SIZE; y++) {
+          for (var x = 0; x < SIZE; x++) {
+            var c = cell(state, x, y);
+            if (c.kind === "channel") set[keyOf(x, y)] = true;
+          }
+        }
+        return set;
+      }
+
+      function computeReachableChannels(state, channels) {
+        var reachable = {};
+        var parent = {};
+        var q = [{ x: POOL_X, y: POOL_Y }];
+        var seen = { "0,0": true };
+        while (q.length) {
+          var cur = q.shift();
+          var curCell = cell(state, cur.x, cur.y);
+          forEachNeighbor(cur.x, cur.y, function (nx, ny) {
+            var nk = keyOf(nx, ny);
+            if (seen[nk]) return;
+            if (!channels[nk]) return;
+            var nCell = cell(state, nx, ny);
+            if (nCell.height > curCell.height) return;
+            seen[nk] = true;
+            reachable[nk] = true;
+            parent[nk] = keyOf(cur.x, cur.y);
+            q.push({ x: nx, y: ny });
+          });
+        }
+        return { reachable: reachable, bfsParent: parent };
+      }
+
+      function decodeKey(k) {
+        var s = k.split(",");
+        return { x: Number(s[0]), y: Number(s[1]) };
+      }
+
+      // 寻路用稳定的多键排序成本，保证每次重算输出一致。
+      function findPreferredPath(state, channels, allowedTargets, targetKey) {
+        var best = {};
+        var prev = {};
+        var startK = keyOf(POOL_X, POOL_Y);
+        best[startK] = { steps: 0, sumX: 0, turns: 0, dirRank: 0, lastDir: -1 };
+        var open = [startK];
+        while (open.length) {
+          open.sort(function (ka, kb) { return comparePathCost(best[ka], best[kb]); });
+          var curK = open.shift();
+          var cur = decodeKey(curK);
+          var curCell = cell(state, cur.x, cur.y);
+          for (var i = 0; i < DIRS.length; i++) {
+            var nx = cur.x + DIRS[i].dx;
+            var ny = cur.y + DIRS[i].dy;
+            if (!inBounds(nx, ny)) continue;
+            var nk = keyOf(nx, ny);
+            if (nk !== targetKey && !channels[nk]) continue;
+            if (nk !== targetKey && !allowedTargets[nk]) continue;
+            var nCell = cell(state, nx, ny);
+            if (nCell.kind !== "pool" && nCell.kind !== "channel") continue;
+            if (nCell.height > curCell.height) continue;
+            var curCost = best[curK];
+            var nextCost = {
+              steps: curCost.steps + 1,
+              sumX: curCost.sumX + nx,
+              turns: curCost.turns + ((curCost.lastDir === -1 || curCost.lastDir === i) ? 0 : 1),
+              dirRank: curCost.dirRank * 10 + (i + 1),
+              lastDir: i
+            };
+            if (!best[nk] || comparePathCost(nextCost, best[nk]) < 0) {
+              best[nk] = nextCost;
+              prev[nk] = curK;
+              if (open.indexOf(nk) === -1) open.push(nk);
+            }
+          }
+        }
+        if (!best[targetKey]) return [];
+        var path = [];
+        var k = targetKey;
+        while (k && k !== startK) {
+          path.push(decodeKey(k));
+          k = prev[k];
+        }
+        path.reverse();
+        return path;
+      }
+
+      function computeTrunkAndBranches(state, reachable) {
+        var reachableList = Object.keys(reachable).map(decodeKey);
+        reachableList.sort(byLowestHeightThenX);
+        var trunkTarget = reachableList[0] || null;
+        var trunkPath = [];
+        var trunkSet = {};
+        if (trunkTarget) {
+          trunkPath = findPreferredPath(state, state.channels, reachable, keyOf(trunkTarget.x, trunkTarget.y));
+          for (var i = 0; i < trunkPath.length; i++) trunkSet[keyOf(trunkPath[i].x, trunkPath[i].y)] = true;
+        }
+
+        var candidates = [];
+        for (var r in reachable) {
+          if (!trunkSet[r]) candidates.push(decodeKey(r));
+        }
+        // 支流从最高高度层开始轮询；同层靠近 x=0 的终点优先。
+        candidates.sort(byHighestHeightThenX);
+
+        var branches = [];
+        var usedTargets = {};
+        for (var c = 0; c < candidates.length; c++) {
+          var target = candidates[c];
+          var tk = keyOf(target.x, target.y);
+          if (usedTargets[tk]) continue;
+          var path = findPreferredPath(state, state.channels, reachable, tk);
+          if (!path.length) continue;
+          branches.push({
+            index: branches.length + 1,
+            target: clonePoint(target),
+            path: path
+          });
+          usedTargets[tk] = true;
+        }
+        return { trunkPath: trunkPath, trunkSet: trunkSet, branches: branches };
+      }
+
+      function allocateTrunk(state, trunkPath) {
+        var pool = state.basePoolWater;
+        if (!trunkPath.length) {
+          state.poolCurrent = round1(pool);
+          return { used: 0, waterByKey: {}, suppliedSet: {}, poolCurrentAfterTrunk: round1(pool), branchBudget: round1(pool) };
+        }
+        var caps = 0;
+        for (var i = 0; i < trunkPath.length; i++) caps += cell(state, trunkPath[i].x, trunkPath[i].y).capacity;
+        var waterByKey = {};
+        var suppliedSet = {};
+        var used = 0;
+
+        if (pool < caps) {
+          var unit = round1(pool / (trunkPath.length + 1));
+          state.poolCurrent = unit;
+          var prev = unit;
+          for (var j = 0; j < trunkPath.length; j++) {
+            var tc = cell(state, trunkPath[j].x, trunkPath[j].y);
+            var w = round1(Math.min(unit, tc.capacity, prev));
+            tc.water = w;
+            tc.isTrunk = true;
+            tc.sourceParent = (j === 0) ? keyOf(POOL_X, POOL_Y) : keyOf(trunkPath[j - 1].x, trunkPath[j - 1].y);
+            waterByKey[keyOf(tc.x, tc.y)] = w;
+            suppliedSet[keyOf(tc.x, tc.y)] = true;
+            used += w;
+            prev = w;
+          }
+          return { used: round1(used), waterByKey: waterByKey, suppliedSet: suppliedSet, poolCurrentAfterTrunk: unit, branchBudget: 0 };
+        }
+
+        var remain = pool;
+        var source = pool;
+        for (var k = 0; k < trunkPath.length; k++) {
+          var pc = cell(state, trunkPath[k].x, trunkPath[k].y);
+          var val = round1(Math.min(pc.capacity, source, remain));
+          pc.water = val;
+          pc.isTrunk = true;
+          pc.sourceParent = (k === 0) ? keyOf(POOL_X, POOL_Y) : keyOf(trunkPath[k - 1].x, trunkPath[k - 1].y);
+          waterByKey[keyOf(pc.x, pc.y)] = val;
+          suppliedSet[keyOf(pc.x, pc.y)] = true;
+          used += val;
+          remain = round1(Math.max(0, remain - val));
+          source = val;
+        }
+        state.poolCurrent = round1(Math.max(0, pool - used));
+        return { used: round1(used), waterByKey: waterByKey, suppliedSet: suppliedSet, poolCurrentAfterTrunk: state.poolCurrent, branchBudget: state.poolCurrent };
+      }
+
+      function allocateOneBranch(state, branch, poolRemain, suppliedSet, waterByKey) {
+        if (poolRemain <= 0) return { used: 0, remain: 0 };
+        var freshNodes = [];
+        for (var i = 0; i < branch.path.length; i++) {
+          var pk = keyOf(branch.path[i].x, branch.path[i].y);
+          if (!suppliedSet[pk]) freshNodes.push(branch.path[i]);
+        }
+        if (!freshNodes.length) return { used: 0, remain: poolRemain };
+
+        var sumCaps = 0;
+        for (var j = 0; j < freshNodes.length; j++) sumCaps += cell(state, freshNodes[j].x, freshNodes[j].y).capacity;
+        var avgMode = poolRemain < sumCaps;
+        var unit = avgMode ? round1(poolRemain / freshNodes.length) : null;
+        var used = 0;
+
+        for (var p = 0; p < branch.path.length; p++) {
+          var cur = branch.path[p];
+          var ck = keyOf(cur.x, cur.y);
+          var cc = cell(state, cur.x, cur.y);
+          if (suppliedSet[ck]) continue;
+
+          var parentK = (p === 0) ? keyOf(POOL_X, POOL_Y) : keyOf(branch.path[p - 1].x, branch.path[p - 1].y);
+          cc.sourceParent = parentK;
+          var sourceWater = (parentK === keyOf(POOL_X, POOL_Y))
+            ? state.poolCurrent
+            : (waterByKey[parentK] != null ? waterByKey[parentK] : 0);
+          var desired = avgMode ? unit : cc.capacity;
+          var w = round1(Math.min(desired, cc.capacity, sourceWater, poolRemain));
+          cc.water = w;
+          if (!cc.isTrunk) cc.branchIndex = branch.index;
+          waterByKey[ck] = w;
+          suppliedSet[ck] = true;
+          used += w;
+          poolRemain = round1(Math.max(0, poolRemain - w));
+          if (poolRemain <= 0) break;
+        }
+        return { used: round1(used), remain: poolRemain };
+      }
+
+      function allocateWater(state, trunkPath, branches) {
+        var trunk = allocateTrunk(state, trunkPath);
+        var poolRemain = trunk.branchBudget;
+        var suppliedSet = trunk.suppliedSet;
+        var waterByKey = trunk.waterByKey;
+
+        for (var i = 0; i < branches.length; i++) {
+          var result = allocateOneBranch(state, branches[i], poolRemain, suppliedSet, waterByKey);
+          poolRemain = result.remain;
+          if (poolRemain <= 0) break;
+        }
+        state.poolCurrent = round1(poolRemain);
+        return { poolRemain: poolRemain, waterByKey: waterByKey };
+      }
+
+      function shortestPathLenToPool(state, start) {
+        var startK = keyOf(start.x, start.y);
+        var q = [{ x: start.x, y: start.y, d: 0 }];
+        var seen = {};
+        seen[startK] = true;
+        while (q.length) {
+          var cur = q.shift();
+          if (cur.x === POOL_X && cur.y === POOL_Y) return cur.d;
+          var curCell = cell(state, cur.x, cur.y);
+          forEachNeighbor(cur.x, cur.y, function (nx, ny) {
+            var nk = keyOf(nx, ny);
+            if (seen[nk]) return;
+            var nc = cell(state, nx, ny);
+            if (!isPoolCell(nc) && !isChannelCell(nc)) return;
+            if (curCell.height > nc.height && !(nx === POOL_X && ny === POOL_Y)) {
+              // 逆向走回水池时，允许逆向遍历已成图渠道。
+            }
+            seen[nk] = true;
+            q.push({ x: nx, y: ny, d: cur.d + 1 });
+          });
+        }
+        return 9999;
+      }
+
+      function getIrrigationSourceForPlot(state, x, y) {
+        var candidates = [];
+        forEachNeighbor(x, y, function (nx, ny) {
+          var c = cell(state, nx, ny);
+          var water = 0;
+          if (isPoolCell(c)) water = state.poolCurrent;
+          else if (isChannelCell(c)) water = c.water;
+          if (water <= 0) return;
+          candidates.push({
+            x: nx,
+            y: ny,
+            water: water,
+            height: c.height,
+            dist: (isPoolCell(c) ? 0 : shortestPathLenToPool(state, { x: nx, y: ny })),
+            kind: c.kind,
+            isTrunk: !!c.isTrunk,
+            branchIndex: c.branchIndex
+          });
+        });
+        if (!candidates.length) return null;
+        candidates.sort(function (a, b) {
+          if (a.dist !== b.dist) return a.dist - b.dist;
+          if (a.x !== b.x) return a.x - b.x;
+          if (a.height !== b.height) return b.height - a.height;
+          return 0;
+        });
+        return candidates[0];
+      }
+
+      function recomputeIrrigationNetwork(state) {
+        resetHydrationFields(state);
+        state.channels = buildChannelSet(state);
+        var reach = computeReachableChannels(state, state.channels);
+        var network = computeTrunkAndBranches(state, reach.reachable);
+        state.trunkPath = network.trunkPath;
+        state.branches = network.branches;
+        allocateWater(state, network.trunkPath, network.branches);
+        clearAllChannelSeaweedConcentration(state);
+        syncCropSeaweedExtractRequests(state);
+        syncCropFertilizerRequests(state);
+        return state;
+      }
+
+      /** §15.0 农业地图每 tick 固定顺序（①～5b～⑦） */
+      function runAgricultureMapTick(state) {
+        agriTickStep1FreshWater(state);
+        syncCropSeaweedExtractRequests(state);
+        syncCropFertilizerRequests(state);
+        agriTickStep2SeaweedMaintain(state);
+        agriTickStep3AlgaeBloomJudgment(state);
+        agriTickStep4CropAbsorbWater(state);
+        agriTickStep5CropAbsorbTraceElements(state);
+        agriTickStep5aTraceSensitivity(state);
+        agriTickStep5bBuriedJarFertilizer(state);
+        agriTickStep6AlgaeBloomHealthLoss(state);
+        agriTickStep7CropGrowthAndMisc(state);
+      }
+
+      /** �?清水分配（沿用已缓存主干/支流结构） */
+      function agriTickStep1FreshWater(state) {
+        if (state.trunkPath && state.branches) {
+          allocateWater(state, state.trunkPath, state.branches);
+        }
+      }
+
+      /** �?海藻精维持 / 注入（§15.1～§15.4） */
+      function agriTickStep2SeaweedMaintain(state) {
+        processSeaweedExtractMaintain(state);
+      }
+
+      /** �?水藻爆发判定（不跨 tick 锁存，每 tick 按 W/C 重算） */
+      function agriTickStep3AlgaeBloomJudgment(state) {
+        processAlgaeBloomFlags(state);
+      }
+
+      function processAlgaeBloomFlags(state) {
+        for (var y = 0; y < SIZE; y++) {
+          for (var x = 0; x < SIZE; x++) {
+            var c = cell(state, x, y);
+            if (!isChannelCell(c)) continue;
+            c.algaeBloom = isAlgaeBloom(c.water, c.seaweedConcentration);
+          }
+        }
+      }
+
+      /** §12 唯一滋养来源渠是否处于水藻爆发（水池不适用 §4.3） */
+      function isPlotIrrigationSourceAlgaeBloom(state, plotX, plotY) {
+        var source = getIrrigationSourceForPlot(state, plotX, plotY);
+        if (!source || source.kind !== "channel") return false;
+        var ch = cell(state, source.x, source.y);
+        return !!(ch.algaeBloom && ch.water > 0);
+      }
+
+      function applyGrowingCropHealthDeath(c) {
+        if (!c.crop || c.crop.settled) return false;
+        var hm = c.crop.healthMax != null ? Number(c.crop.healthMax) : DEFAULT_CROP_HEALTH_MAX;
+        if (!(hm > 0)) hm = DEFAULT_CROP_HEALTH_MAX;
+        var hc = c.crop.healthCurrent != null ? Number(c.crop.healthCurrent) : hm;
+        c.crop.healthMax = hm;
+        c.crop.healthCurrent = Math.min(hm, Math.max(0, hc));
+        if (c.crop.healthCurrent <= 0) {
+          c.previousCropId = c.crop.cropId;
+          c.crop = null;
+          return true;
+        }
+        return false;
+      }
+
+      /** �?作物吸收水分（§4.2�?*/
+      function agriTickStep4CropAbsorbWater(state) {
+        for (var y = 0; y < SIZE; y++) {
+          for (var x = 0; x < SIZE; x++) {
+            var c = cell(state, x, y);
+            if (!c.crop || c.crop.settled) continue;
+            if (applyGrowingCropHealthDeath(c)) syncPlotSeaweedRequests(state, x, y);
+            if (!c.crop) continue;
+            var source = getIrrigationSourceForPlot(state, x, y);
+            if (source) c.crop.waterAbsorbed = round1(c.crop.waterAbsorbed + source.water);
+          }
+        }
+      }
+
+      /** �?tick 可从 §12 滋养来源读取的海藻精浓度（水池无浓度） */
+      function getSeaweedConcentrationFromIrrigationSource(state, source) {
+        if (!source || source.kind !== "channel") return 0;
+        var ch = cell(state, source.x, source.y);
+        return round1(ch.seaweedConcentration || 0);
+      }
+
+      /** �?作物吸收微量元素（�?b.1c / §12.1：与吸水同源、同 tick，不扣渠浓度） */
+      /** §4b.1d：埋地陶瓮液态肥 → 仅累加 fertilizerAbsorbed；每瓮独立扫描八邻，同格多瓮效果相加 */
+      function agriTickStep5bBuriedJarFertilizer(state) {
+        for (var y = 0; y < SIZE; y++) {
+          for (var x = 0; x < SIZE; x++) {
+            var jar = cell(state, x, y);
+            if (!isBuriedPotJarCell(jar)) continue;
+            var liq = jar.jarLiquid;
+            if (!facilityLiquidIsActive(liq)) continue;
+            var perTick = getInjectableFertilizerPerTick(liq.itemId);
+            if (!(perTick > 0)) continue;
+            var appliedAny = false;
+            forEachNeighbor8(x, y, function (nx, ny) {
+              var plot = cell(state, nx, ny);
+              if (plot.kind !== "land" || !plot.crop || plot.crop.settled) return;
+              var plotDef = CROP_DEFS[plot.crop.cropId];
+              if (!cropDefRequestsLiquidFertilizer(plotDef)) return;
+              if (applyGrowingCropHealthDeath(plot)) {
+                syncPlotSeaweedRequests(state, nx, ny);
+                syncPlotFertilizerRequests(state, nx, ny);
+              }
+              if (!plot.crop || plot.crop.settled) return;
+              plot.crop.fertilizerAbsorbed = round1((plot.crop.fertilizerAbsorbed || 0) + perTick);
+              appliedAny = true;
+            });
+            if (liq.effectTicksRemaining != null) continue;
+            if (liq.units && appliedAny) {
+              liq.units -= 1;
+              if (liq.units <= 0) jar.jarLiquid = null;
+            }
+          }
+        }
+      }
+
+      /** §4b.1c：渠内海藻精浓度 → 仅累加 traceAbsorbed（微量元素），不写 fertilizerAbsorbed */
+      function agriTickStep5CropAbsorbTraceElements(state) {
+        for (var y = 0; y < SIZE; y++) {
+          for (var x = 0; x < SIZE; x++) {
+            var c = cell(state, x, y);
+            if (!c.crop || c.crop.settled) continue;
+            if (applyGrowingCropHealthDeath(c)) syncPlotSeaweedRequests(state, x, y);
+            if (!c.crop) continue;
+            var source = getIrrigationSourceForPlot(state, x, y);
+            if (!source) continue;
+            var absorbed = getSeaweedConcentrationFromIrrigationSource(state, source);
+            if (!(absorbed > 0)) continue;
+            c.crop.traceAbsorbed = round1((c.crop.traceAbsorbed || 0) + absorbed);
+            applyTraceSensitivityToPlot(state, x, y);
+          }
+        }
+      }
+
+      /** �?水藻爆发扣健康（§4.3：生长中 + §12 来源渠爆发） */
+      function agriTickStep6AlgaeBloomHealthLoss(state) {
+        processAlgaeBloomHealthDamage(state);
+      }
+
+      function processAlgaeBloomHealthDamage(state) {
+        var loss = resolveAlgaeBloomHealthLoss(ALGAE_BLOOM_HEALTH_LOSS_PER_TICK);
+        if (!(loss > 0)) return;
+        for (var y = 0; y < SIZE; y++) {
+          for (var x = 0; x < SIZE; x++) {
+            var c = cell(state, x, y);
+            if (!c.crop || c.crop.settled) continue;
+            if (!isPlotIrrigationSourceAlgaeBloom(state, x, y)) continue;
+            var hm = c.crop.healthMax != null ? Number(c.crop.healthMax) : DEFAULT_CROP_HEALTH_MAX;
+            if (!(hm > 0)) hm = DEFAULT_CROP_HEALTH_MAX;
+            var hc = c.crop.healthCurrent != null ? Number(c.crop.healthCurrent) : hm;
+            c.crop.healthMax = hm;
+            c.crop.healthCurrent = Math.min(hm, Math.max(0, hc - loss));
+            if (applyGrowingCropHealthDeath(c)) syncPlotSeaweedRequests(state, x, y);
+          }
+        }
+      }
+
+      /** �?生长倒计时、罐内效果 tick、健康枯萎复检） */
+      function agriTickStep7CropGrowthAndMisc(state) {
+        processFacilityTimedEffects(state);
+        for (var y = 0; y < SIZE; y++) {
+          for (var x = 0; x < SIZE; x++) {
+            var c = cell(state, x, y);
+            if (!c.crop || c.crop.settled) continue;
+            if (applyGrowingCropHealthDeath(c)) syncPlotSeaweedRequests(state, x, y);
+            if (!c.crop) continue;
+            c.crop.remainingTicks -= 1;
+            if (c.crop.remainingTicks <= 0) settleCrop(c);
+            if (applyGrowingCropHealthDeath(c)) syncPlotSeaweedRequests(state, x, y);
+          }
+        }
+      }
+
+      /** §9 海藻精验收场景坐标（池在 0,0；主干沿 y=0 向东） */
+      var E2E_SEAWEED_LAYOUT = {
+        channels: [[1, 0], [2, 0], [3, 0]],
+        /** 邻主干 (1,0)，可对主流+#1+#2 各维持一次（§15.2） */
+        venturi: [1, 1],
+        crop: [3, 1],
+        injectEntry: [1, 0],
+        dilutedChannel: [3, 0]
+      };
+
+      function demoAddTempItem(st, itemId, name, count) {
+        var add = count || 1;
+        for (var i = 0; i < TEMP_BACKPACK_SIZE; i++) {
+          var item = st.tempBackpack[i];
+          if (item && item.id === itemId) {
+            item.count += add;
+            return true;
+          }
+        }
+        for (var j = 0; j < TEMP_BACKPACK_SIZE; j++) {
+          if (!st.tempBackpack[j]) {
+            st.tempBackpack[j] = { id: itemId, name: name, count: add };
+            return true;
+          }
+        }
+        return false;
+      }
+
+      function addShopTradeVolume(st, amount) {
+        if (!st) return;
+        var n = Math.max(0, Math.round(Number(amount) || 0));
+        if (n <= 0) return;
+        st.shopTradeVolume = (Number(st.shopTradeVolume) || 0) + n;
+      }
+
+      function demoBuyShopItemOn(st, shopKey) {
+        var si = SHOP_ITEMS[shopKey];
+        if (!si || st.money < si.price) return false;
+        st.money -= si.price;
+        addShopTradeVolume(st, si.price);
+        return demoAddTempItem(st, si.itemId, si.name, 1);
+      }
+
+      function demoPlaceChannelAt(st, x, y) {
+        if (!inBounds(x, y)) return false;
+        var c = cell(st, x, y);
+        if (c.kind === "pool") return false;
+        c.kind = "channel";
+        c.capacity = DEFAULT_CHANNEL_CAPACITY;
+        c.water = 0;
+        c.seaweedConcentration = 0;
+        c.algaeBloom = false;
+        c.tilled = false;
+        c.crop = null;
+        c.venturiLiquid = null;
+        return true;
+      }
+
+      function demoPlaceVenturiAt(st, x, y) {
+        if (!inBounds(x, y)) return false;
+        var c = cell(st, x, y);
+        if (c.kind === "pool") return false;
+        c.kind = "venturi_fertilizer";
+        c.tilled = false;
+        c.crop = null;
+        c.capacity = 0;
+        c.water = 0;
+        c.seaweedConcentration = 0;
+        c.algaeBloom = false;
+        c.venturiLiquid = null;
+        c.venturiLevel = 1;
+        c.seaweedSetConcentration = VENTURI_DEFAULT_SET_CONC;
+        ensureVenturiCellFields(c);
+        return true;
+      }
+
+      function demoPlaceBuriedPotJarAt(st, x, y) {
+        if (!inBounds(x, y)) return false;
+        var c = cell(st, x, y);
+        if (c.kind === "pool") return false;
+        c.kind = "buried_pot_jar";
+        c.tilled = false;
+        c.crop = null;
+        c.capacity = 0;
+        c.water = 0;
+        c.seaweedConcentration = 0;
+        c.algaeBloom = false;
+        c.jarLiquid = null;
+        return true;
+      }
+
+      function demoTillAt(st, x, y) {
+        var c = cell(st, x, y);
+        if (c.kind !== "land") return false;
+        c.tilled = true;
+        return true;
+      }
+
+      function demoInjectSeaweedEffectAt(st, x, y) {
+        var c = cell(st, x, y);
+        if (!isVenturiCell(c)) return false;
+        var meta = VENTURI_INJECTABLE_LIQUIDS[LIQUID_SEAWEED_EXTRACT_ITEM_ID];
+        var dur = meta.effectDurationTicks;
+        c.venturiLiquid = {
+          itemId: LIQUID_SEAWEED_EXTRACT_ITEM_ID,
+          name: meta.name,
+          effectDurationTicks: dur,
+          effectTicksRemaining: dur
+        };
+        return true;
+      }
+
+      function demoInjectSeaweedFromBackpackAt(st, x, y) {
+        var slot = -1;
+        for (var i = 0; i < TEMP_BACKPACK_SIZE; i++) {
+          var it = st.tempBackpack[i];
+          if (it && it.id === LIQUID_SEAWEED_EXTRACT_ITEM_ID && it.count > 0) {
+            slot = i;
+            break;
+          }
+        }
+        if (slot < 0) return false;
+        st.tempBackpack[slot].count -= 1;
+        if (st.tempBackpack[slot].count <= 0) st.tempBackpack[slot] = null;
+        return demoInjectSeaweedEffectAt(st, x, y);
+      }
+
+      function demoSetSeaweedConcentrationOn(st, x, y, value) {
+        var c = cell(st, x, y);
+        if (!isVenturiCell(c) || !isSeaweedEffectVenturi(c)) return false;
+        ensureVenturiCellFields(c);
+        c.seaweedSetConcentration = clampVenturiSetConc(c.venturiLevel, value);
+        return true;
+      }
+
+      function demoPlantPeanutAt(st, x, y) {
+        var c = cell(st, x, y);
+        if (c.kind !== "land" || !c.tilled || c.crop) return false;
+        var def = CROP_DEFS.peanut;
+        var hMax = def.healthMax != null ? Number(def.healthMax) : DEFAULT_CROP_HEALTH_MAX;
+        c.crop = {
+          cropId: def.cropId,
+          name: def.name,
+          remainingTicks: def.growthTicks,
+          totalTicks: def.growthTicks,
+          waterAbsorbed: 0,
+          traceAbsorbed: 0,
+          fertilizerAbsorbed: 0,
+          healthMax: hMax,
+          healthCurrent: hMax,
+          settled: false,
+          result: "growing",
+          resultLabel: "生长中",
+          harvestItemId: def.productItemId,
+          harvestItemName: def.productName,
+          harvestCount: 0
+        };
+        syncPlotSeaweedRequests(st, x, y);
+        return true;
+      }
+
+      function demoAdvanceMapTicks(st, n) {
+        var count = Number(n) || 0;
+        for (var t = 0; t < count; t++) {
+          st.tick += 1;
+          runAgricultureMapTick(st);
+        }
+      }
+
+      function seaweedRequestsIncludePlot(st, x, y) {
+        ensureSeaweedRequestsState(st);
+        var sr = st.seaweedRequests;
+        if (seaweedRequestListHasPlot(sr.mainstream, x, y)) return true;
+        for (var bk in sr.byBranch) {
+          if (!Object.prototype.hasOwnProperty.call(sr.byBranch, bk)) continue;
+          if (seaweedRequestListHasPlot(sr.byBranch[bk], x, y)) return true;
+        }
+        return false;
+      }
+
+      function allChannelSeaweedConcentrationZero(st) {
+        for (var y = 0; y < SIZE; y++) {
+          for (var x = 0; x < SIZE; x++) {
+            var c = cell(st, x, y);
+            if (!isChannelCell(c)) continue;
+            if (round1(c.seaweedConcentration || 0) !== 0) return false;
+          }
+        }
+        return true;
+      }
+
+      /**
+       * §9 清单端到端：挖渠→文丘里→买/注入海藻精→浓度10→邻渠花生→tick 观测→改渠重算→断言。
+       * 不弹玩家向提示；结果供控制台 / pill-e2e / shopMessage 查看。
+       */
+      function runSeaweedExtractE2EAcceptance() {
+        var steps = [];
+        var errors = [];
+        var layout = E2E_SEAWEED_LAYOUT;
+        var cx = layout.crop[0];
+        var cy = layout.crop[1];
+        var vx = layout.venturi[0];
+        var vy = layout.venturi[1];
+        var ex = layout.injectEntry[0];
+        var ey = layout.injectEntry[1];
+        var dx = layout.dilutedChannel[0];
+        var dy = layout.dilutedChannel[1];
+
+        function assert(cond, msg) {
+          if (!cond) throw new Error(msg);
+        }
+        function step(name, fn) {
+          try {
+            fn();
+            steps.push({ name: name, ok: true });
+          } catch (e) {
+            var em = e && e.message ? e.message : String(e);
+            errors.push(name + ": " + em);
+            steps.push({ name: name, ok: false, error: em });
+          }
+        }
+
+        var st = createInitialState();
+        st.paused = true;
+        st.money = 100;
+
+        step("1 挖渠连通池", function () {
+          for (var i = 0; i < layout.channels.length; i++) {
+            assert(demoPlaceChannelAt(st, layout.channels[i][0], layout.channels[i][1]), "放置水渠失败");
+          }
+          recomputeIrrigationNetwork(st);
+          assert(Object.keys(st.channels).length >= 3, "应至少连通3格水渠");
+          assert(st.trunkPath && st.trunkPath.length >= 1, "应有主干路径");
+          assert(cell(st, dx, dy).water > 0, "下游渠格应有水");
+        });
+
+        step("2 文丘里 + 购买/注入海藻精 + 浓度10", function () {
+          assert(demoPlaceVenturiAt(st, vx, vy), "放置文丘里失败");
+          recomputeIrrigationNetwork(st);
+          assert(demoBuyShopItemOn(st, "liquidSeaweedExtract"), "购买海藻精失败");
+          assert(demoInjectSeaweedFromBackpackAt(st, vx, vy), "注入海藻精失败");
+          assert(isSeaweedEffectVenturi(cell(st, vx, vy)), "海藻精效果应存续");
+          assert(demoSetSeaweedConcentrationOn(st, vx, vy, 10), "设定浓度10失败");
+          assert(getSeaweedSetConcentration(cell(st, vx, vy)) === 10, "设定浓度应为10");
+        });
+
+        step("3 种花生于邻渠并登记请求", function () {
+          assert(demoTillAt(st, cx, cy), "开垦失败");
+          assert(demoPlantPeanutAt(st, cx, cy), "种植失败");
+          syncCropSeaweedExtractRequests(st);
+          assert(cropDefRequestsSeaweedExtract(CROP_DEFS.peanut), "花生应请求海藻精");
+          assert(hasAdjacentWetChannel(st, cx, cy), "花生应邻接有水渠");
+          assert(seaweedRequestsIncludePlot(st, cx, cy), "应登记海藻精请求");
+        });
+
+        step("4 推进 tick：浓度 / 微量元素 / 爆发 / 注入口为0", function () {
+          demoAdvanceMapTicks(st, 1);
+          var entryCh = cell(st, ex, ey);
+          var downCh = cell(st, dx, dy);
+          var plot = cell(st, cx, cy);
+          assert(round1(entryCh.seaweedConcentration || 0) === 0,
+            "注入口浓度应为0，实际=" + round1(entryCh.seaweedConcentration || 0));
+          assert(downCh.seaweedConcentration > 0, "下游渠应有海藻精浓度");
+          assert(plot.crop && plot.crop.traceAbsorbed > 0, "应吸收微量元素");
+          if (isAlgaeBloom(downCh.water, downCh.seaweedConcentration)) {
+            processAlgaeBloomFlags(st);
+            assert(downCh.algaeBloom === true, "下游渠应标记 algaeBloom");
+            var healthBeforeBloom = plot.crop.healthCurrent;
+            demoAdvanceMapTicks(st, 2);
+            assert(plot.crop.healthCurrent < healthBeforeBloom,
+              "爆发应扣健康（前=" + healthBeforeBloom + " 后=" + plot.crop.healthCurrent + "）");
+          } else {
+            assert(!isPlotIrrigationSourceAlgaeBloom(st, cx, cy), "未达 C:W>2.5:1 时不应爆发");
+            var hcStill = plot.crop.healthCurrent;
+            demoAdvanceMapTicks(st, 2);
+            assert(plot.crop.healthCurrent === hcStill, "无爆发时不应扣健康");
+            downCh.seaweedConcentration = round1(downCh.seaweedConcentration + 1.1);
+            processAlgaeBloomFlags(st);
+            assert(downCh.algaeBloom === true, "抬高下游 C 后应显示爆发样式");
+            var hcBloom = plot.crop.healthCurrent;
+            processAlgaeBloomHealthDamage(st);
+            assert(plot.crop.healthCurrent < hcBloom, "爆发态应扣健康");
+          }
+        });
+
+        step("5 改渠重算：浓度清零 + 请求重同步", function () {
+          assert(demoPlaceChannelAt(st, 4, 0), "延长主干失败");
+          recomputeIrrigationNetwork(st);
+          assert(allChannelSeaweedConcentrationZero(st), "重算后全场渠浓度应立刻为0");
+          syncCropSeaweedExtractRequests(st);
+          assert(seaweedRequestsIncludePlot(st, cx, cy), "重算后海藻精请求应仍在");
+          assert(isSeaweedRequestEntryStillValid(st, { x: cx, y: cy }), "请求条目应仍有效");
+        });
+
+        step("6 重算后下一 tick 恢复维持", function () {
+          demoAdvanceMapTicks(st, 1);
+          var entryCh = cell(st, ex, ey);
+          var downCh = cell(st, dx, dy);
+          assert(round1(entryCh.seaweedConcentration || 0) === 0, "恢复后注入口仍应为0");
+          assert(downCh.seaweedConcentration > 0, "恢复后下游应重新有浓度");
+        });
+
+        return {
+          ok: errors.length === 0,
+          errors: errors,
+          steps: steps,
+          finalTick: st.tick,
+          snapshot: {
+            entryConcentration: round1(cell(st, ex, ey).seaweedConcentration || 0),
+            downstreamConcentration: round1(cell(st, dx, dy).seaweedConcentration || 0),
+            downstreamBloom: !!cell(st, dx, dy).algaeBloom,
+            cropTrace: round1((cell(st, cx, cy).crop && cell(st, cx, cy).crop.traceAbsorbed) || 0),
+            cropHealth: cell(st, cx, cy).crop ? cell(st, cx, cy).crop.healthCurrent : null
+          }
+        };
+      }
+
+      /**
+       * window.AgricultureIrrigationDemo — 调试/§9 验收导出：
+       * createInitialState, recomputeIrrigationNetwork, runAgricultureMapTick,
+       * runSeaweedExtractE2EAcceptance（§9 端到端）, processSeaweedExtractMaintain,
+       * isAlgaeBloom / processAlgaeBloomFlags / processAlgaeBloomHealthDamage, …
+       */
+      window.AgricultureIrrigationDemo = {
+        createInitialState: createInitialState,
+        recomputeIrrigationNetwork: recomputeIrrigationNetwork,
+        allocateWater: allocateWater,
+        getIrrigationSourceForPlot: getIrrigationSourceForPlot,
+        constants: {
+          size: SIZE,
+          poolX: POOL_X,
+          poolY: POOL_Y,
+          basePoolWater: BASE_POOL_WATER,
+          defaultChannelCapacity: DEFAULT_CHANNEL_CAPACITY,
+          channelCapacityStep: CHANNEL_CAPACITY_STEP,
+          channelCapacityChangeCost: CHANNEL_CAPACITY_CHANGE_COST,
+          defaultSoilType: DEFAULT_SOIL_TYPE,
+          venturiBuildCostMoney: VENTURI_BUILD_COST_MONEY,
+          buriedPotJarBuildCostMoney: BURIED_POT_JAR_BUILD_COST_MONEY,
+          superFusionBuildCostMoney: SUPER_FUSION_BUILD_COST_MONEY,
+          cropStructureBuildCostMoney: CROP_STRUCTURE_BUILD_COST_MONEY,
+          cropStructureDefs: CROP_STRUCTURE_DEFS,
+          taskTicks: TASK_TICKS,
+          taskStaminaPerTick: TASK_STAMINA_PER_TICK,
+          venturiInjectableItemIds: listInjectableItemIdsForFacility("venturi_fertilizer"),
+          buriedJarInjectableItemIds: listInjectableItemIdsForFacility("buried_pot_jar"),
+          agricultureInjectableLiquids: AGRICULTURE_INJECTABLE_LIQUIDS,
+          algaeBloomRatioThreshold: ALGAE_BLOOM_RATIO_THRESHOLD,
+          algaeBloomHealthLossPerTick: ALGAE_BLOOM_HEALTH_LOSS_PER_TICK,
+          venturiMaxLevel: VENTURI_MAX_LEVEL,
+          venturiUpgradeCostMoney: VENTURI_UPGRADE_COST_MONEY,
+          venturiConcRangeByLevel: VENTURI_CONC_RANGE_BY_LEVEL,
+          venturiDefaultSetConc: VENTURI_DEFAULT_SET_CONC,
+          seaweedDefaultSetConcentration: VENTURI_DEFAULT_SET_CONC,
+          liquidSeaweedExtractItemId: LIQUID_SEAWEED_EXTRACT_ITEM_ID,
+          venturiSeaweedLogicA: VENTURI_SEAWEED_LOGIC_A,
+          venturiSeaweedLogicB: VENTURI_SEAWEED_LOGIC_B,
+          venturiSeaweedLogicDefault: VENTURI_SEAWEED_LOGIC_DEFAULT
+        },
+        getVenturiSeaweedLogicMode: getVenturiSeaweedLogicMode,
+        anySuperFusionOnMap: anySuperFusionOnMap,
+        countSuperFusionOnMap: countSuperFusionOnMap,
+        runAgricultureMapTick: runAgricultureMapTick,
+        runSeaweedExtractE2EAcceptance: runSeaweedExtractE2EAcceptance,
+        dedupeCoordCells: dedupeCoordCells,
+        isAlgaeBloom: isAlgaeBloom,
+        isChannelAlgaeBloom: isChannelAlgaeBloom,
+        processAlgaeBloomFlags: processAlgaeBloomFlags,
+        processAlgaeBloomHealthDamage: processAlgaeBloomHealthDamage,
+        isPlotIrrigationSourceAlgaeBloom: isPlotIrrigationSourceAlgaeBloom,
+        resolveAlgaeBloomHealthLoss: resolveAlgaeBloomHealthLoss,
+        clampVenturiSetConc: clampVenturiSetConc,
+        canBuildCropStructure: canBuildCropStructure,
+        canRemoveCropStructure: canRemoveCropStructure,
+        cropStructureDisplayName: cropStructureDisplayName,
+        startCropStructureBuildTask: startCropStructureBuildTask,
+        clearAllChannelSeaweedConcentration: clearAllChannelSeaweedConcentration,
+        syncCropSeaweedExtractRequests: syncCropSeaweedExtractRequests,
+        syncPlotSeaweedRequests: syncPlotSeaweedRequests,
+        cropDefRequestsSeaweedExtract: cropDefRequestsSeaweedExtract,
+        hasAdjacentWetChannel: hasAdjacentWetChannel,
+        processSeaweedExtractMaintain: processSeaweedExtractMaintain,
+        getVenturiFlowAttribution: getVenturiFlowAttribution,
+        getPostEntryWetCells: getPostEntryWetCells,
+        getSeaweedSetConcentration: getSeaweedSetConcentration,
+        getVenturiSetConcentration: getVenturiSetConcentration,
+        tryUpgradeVenturiAt: tryUpgradeVenturiAt,
+        setSeaweedSetConcentrationAt: setSeaweedSetConcentrationAt,
+        agriTickStep5bBuriedJarFertilizer: agriTickStep5bBuriedJarFertilizer,
+        forEachNeighbor8: forEachNeighbor8,
+        getInjectableFertilizerPerTick: getInjectableFertilizerPerTick,
+        facilityLiquidIsActive: facilityLiquidIsActive
+      };
+
+      var state = createInitialState();
+      recomputeIrrigationNetwork(state);
+
+      var viewport = {
+        panX: 0,
+        panY: 0,
+        scale: 1,
+        minScale: 0.35,
+        maxScale: 4
+      };
+      var pan = {
+        active: false,
+        pointerId: null,
+        startClientX: 0,
+        startClientY: 0,
+        origPanX: 0,
+        origPanY: 0,
+        moved: false
+      };
+      var spaceHeld = false;
+      var suppressNextClick = false;
+      /** 左键拖拽平移：按下后超过阈值再进入 pan，避免与单击选格冲突 */
+      var leftDragCandidate = null;
+      var LEFT_DRAG_THRESHOLD_PX = 6;
+
+      var el = {
+        gridWrap: document.getElementById("grid-viewport"),
+        gridStage: document.getElementById("grid-stage"),
+        grid: document.getElementById("grid"),
+        tick: document.getElementById("pill-tick"),
+        time: document.getElementById("pill-time"),
+        stamina: document.getElementById("pill-stamina"),
+        mode: document.getElementById("pill-mode"),
+        task: document.getElementById("pill-task"),
+        summary: document.getElementById("map-summary"),
+        waterSummary: document.getElementById("water-summary"),
+        selected: document.getElementById("selected-info"),
+        cropInfoCard: document.getElementById("crop-info-card"),
+        cropInfo: document.getElementById("crop-info"),
+        moneyInfo: document.getElementById("money-info"),
+        shopTradeVolume: document.getElementById("shop-trade-volume"),
+        shopMessage: document.getElementById("shop-message"),
+        shopSeedList: document.getElementById("shop-seed-list"),
+        buySoilAlluvial: document.getElementById("btn-buy-soil-alluvial"),
+        pause: document.getElementById("btn-pause"),
+        buildSuperFusion: document.getElementById("btn-build-super-fusion"),
+        removeSuperFusion: document.getElementById("btn-remove-super-fusion"),
+        tickBtn: document.getElementById("btn-tick"),
+        runSeaweedE2e: document.getElementById("btn-run-seaweed-e2e"),
+        pillE2e: document.getElementById("pill-e2e"),
+        reset: document.getElementById("btn-reset"),
+        toggleTaskPause: document.getElementById("btn-toggle-task-pause"),
+        cancelTask: document.getElementById("btn-cancel-task"),
+        tempBackpackGrid: document.getElementById("temp-backpack-grid"),
+        tempBackpackCount: document.getElementById("temp-backpack-count"),
+        itemMenu: document.getElementById("item-menu"),
+        itemMenuTitle: document.getElementById("item-menu-title"),
+        sellItem: document.getElementById("btn-sell-item"),
+        soilAmendModal: document.getElementById("soil-amend-modal"),
+        soilAmendList: document.getElementById("soil-amend-list"),
+        soilAmendCancel: document.getElementById("btn-soil-amend-cancel"),
+        buildMenu: document.getElementById("build-menu"),
+        buildMenuTitle: document.getElementById("build-menu-title"),
+        tillLand: document.getElementById("btn-till-land"),
+        removeTilledLand: document.getElementById("btn-remove-tilled-land"),
+        cropStructuresPanel: document.getElementById("build-menu-crop-structures"),
+        removeCropStructure: document.getElementById("btn-remove-crop-structure"),
+        plantCropPanel: document.getElementById("build-menu-plant-crops"),
+        plantCropList: document.getElementById("plant-crop-list"),
+        soilAmend: document.getElementById("btn-soil-amend"),
+        harvestCrop: document.getElementById("btn-harvest-crop"),
+        buildChannel: document.getElementById("btn-build-channel"),
+        upgradeChannel: document.getElementById("btn-upgrade-channel"),
+        downgradeChannel: document.getElementById("btn-downgrade-channel"),
+        removeChannel: document.getElementById("btn-remove-channel"),
+        buildVenturi: document.getElementById("btn-build-venturi"),
+        buildBuriedPotJar: document.getElementById("btn-build-buried-pot-jar"),
+        addVenturiLiquid: document.getElementById("btn-add-venturi-liquid"),
+        addBuriedJarLiquid: document.getElementById("btn-add-buried-jar-liquid"),
+        removeVenturi: document.getElementById("btn-remove-venturi"),
+        removeBuriedPotJar: document.getElementById("btn-remove-buried-pot-jar"),
+        facilityLiquidModal: document.getElementById("facility-liquid-modal"),
+        facilityLiquidTitle: document.getElementById("facility-liquid-title"),
+        facilityLiquidList: document.getElementById("facility-liquid-list"),
+        facilityLiquidCancel: document.getElementById("btn-facility-liquid-cancel"),
+        venturiPanel: document.getElementById("build-menu-venturi-panel"),
+        venturiPanelSummary: document.getElementById("venturi-panel-summary"),
+        venturiUpgrade: document.getElementById("btn-venturi-upgrade"),
+        venturiConcMinus: document.getElementById("btn-venturi-conc-minus"),
+        venturiConcPlus: document.getElementById("btn-venturi-conc-plus"),
+        venturiConcValue: document.getElementById("venturi-conc-value"),
+        venturiConcRange: document.getElementById("venturi-conc-range"),
+        venturiConcHint: document.getElementById("venturi-conc-hint"),
+        buyLiquidFertilizerN: document.getElementById("btn-buy-liquid-fertilizer-n"),
+        buyLiquidSeaweedExtract: document.getElementById("btn-buy-liquid-seaweed-extract")
+      };
+
+      function applyViewport() {
+        var s = viewport.scale;
+        var x = viewport.panX;
+        var y = viewport.panY;
+        el.gridStage.style.transform = "translate(" + x + "px," + y + "px) scale(" + s + ")";
+      }
+
+      function centerViewport() {
+        var vw = el.gridWrap.clientWidth;
+        var vh = el.gridWrap.clientHeight;
+        var gw = el.grid.offsetWidth;
+        var gh = el.grid.offsetHeight;
+        var scaledW = gw * viewport.scale;
+        var scaledH = gh * viewport.scale;
+        viewport.panX = Math.round((vw - scaledW) / 2);
+        viewport.panY = Math.round((vh - scaledH) / 2);
+        applyViewport();
+      }
+
+      function resetViewport() {
+        viewport.scale = 1;
+        centerViewport();
+      }
+
+      function shouldStartImmediatePan(e) {
+        if (e.button === 1) return true;
+        if (e.button === 0 && e.altKey) return true;
+        if (e.button === 0 && spaceHeld) return true;
+        return false;
+      }
+
+      function beginPanFromPointer(e, startClientX, startClientY, origPanX, origPanY) {
+        e.preventDefault();
+        hideBuildMenu();
+        hideItemMenu();
+        closeSoilAmendPicker();
+        pan.active = true;
+        pan.pointerId = e.pointerId;
+        pan.startClientX = startClientX;
+        pan.startClientY = startClientY;
+        pan.origPanX = origPanX;
+        pan.origPanY = origPanY;
+        pan.moved = false;
+        el.gridWrap.classList.add("panning");
+        try {
+          el.gridWrap.setPointerCapture(e.pointerId);
+        } catch (err) {}
+      }
+
+      function onViewportPointerDown(e) {
+        if (shouldStartImmediatePan(e)) {
+          beginPanFromPointer(e, e.clientX, e.clientY, viewport.panX, viewport.panY);
+          return;
+        }
+        if (e.button === 0 && !e.altKey && !spaceHeld) {
+          leftDragCandidate = {
+            pointerId: e.pointerId,
+            sx: e.clientX,
+            sy: e.clientY,
+            ox: viewport.panX,
+            oy: viewport.panY
+          };
+        }
+      }
+
+      function updatePanFromPointer(e) {
+        var dx = e.clientX - pan.startClientX;
+        var dy = e.clientY - pan.startClientY;
+        if (Math.abs(dx) + Math.abs(dy) > 2) pan.moved = true;
+        viewport.panX = pan.origPanX + dx;
+        viewport.panY = pan.origPanY + dy;
+        applyViewport();
+      }
+
+      function onDocumentPointerMove(e) {
+        if (pan.active && (pan.pointerId == null || e.pointerId === pan.pointerId)) {
+          e.preventDefault();
+          updatePanFromPointer(e);
+          return;
+        }
+        if (leftDragCandidate && !pan.active && e.pointerId === leftDragCandidate.pointerId) {
+          var dx = e.clientX - leftDragCandidate.sx;
+          var dy = e.clientY - leftDragCandidate.sy;
+          if (Math.abs(dx) + Math.abs(dy) >= LEFT_DRAG_THRESHOLD_PX) {
+            beginPanFromPointer(e, leftDragCandidate.sx, leftDragCandidate.sy, leftDragCandidate.ox, leftDragCandidate.oy);
+            leftDragCandidate = null;
+            pan.moved = true;
+            updatePanFromPointer(e);
+          }
+        }
+      }
+
+      function endPanIfActive(e) {
+        if (!pan.active) return;
+        if (pan.pointerId != null && e.pointerId !== pan.pointerId) return;
+        var pid = e.pointerId;
+        pan.active = false;
+        el.gridWrap.classList.remove("panning");
+        if (pan.moved) suppressNextClick = true;
+        pan.moved = false;
+        pan.pointerId = null;
+        try {
+          el.gridWrap.releasePointerCapture(pid);
+        } catch (err2) {}
+      }
+
+      function onDocumentPointerUp(e) {
+        endPanIfActive(e);
+        if (leftDragCandidate && e.pointerId === leftDragCandidate.pointerId) {
+          leftDragCandidate = null;
+        }
+      }
+      function onViewportWheel(e) {
+        e.preventDefault();
+        hideBuildMenu();
+        hideItemMenu();
+        closeVenturiAddPicker();
+        var rect = el.gridWrap.getBoundingClientRect();
+        var mx = e.clientX - rect.left;
+        var my = e.clientY - rect.top;
+        var delta = e.deltaY;
+        var factor = delta < 0 ? 1.12 : 1 / 1.12;
+        var newScale = Math.max(viewport.minScale, Math.min(viewport.maxScale, viewport.scale * factor));
+        if (Math.abs(newScale - viewport.scale) < 1e-6) return;
+        var cx = (mx - viewport.panX) / viewport.scale;
+        var cy = (my - viewport.panY) / viewport.scale;
+        viewport.panX = mx - cx * newScale;
+        viewport.panY = my - cy * newScale;
+        viewport.scale = newScale;
+        applyViewport();
+      }
+
+      function buildGridDom() {
+        var frag = document.createDocumentFragment();
+        for (var y = 0; y < SIZE; y++) {
+          for (var x = 0; x < SIZE; x++) {
+            var d = document.createElement("div");
+            d.className = "cell";
+            d.dataset.x = String(x);
+            d.dataset.y = String(y);
+            d.title = "(" + x + "," + y + ")";
+            frag.appendChild(d);
+          }
+        }
+        el.grid.appendChild(frag);
+      }
+
+      function hasInjectableLiquidInBackpackFor(facilityKind) {
+        for (var i = 0; i < TEMP_BACKPACK_SIZE; i++) {
+          var it = state.tempBackpack[i];
+          if (it && isInjectableForFacility(it.id, facilityKind) && it.count > 0) return true;
+        }
+        return false;
+      }
+      function hasInjectableLiquidInBackpack() {
+        return hasInjectableLiquidInBackpackFor("venturi_fertilizer")
+          || hasInjectableLiquidInBackpackFor("buried_pot_jar");
+      }
+
+      /** 背包是否还能接收该 itemId 整堆合并（同 id 可并入已有格；否则需至少 1 个空槽） */
+      function canBackpackAcceptStack(itemId) {
+        for (var i = 0; i < TEMP_BACKPACK_SIZE; i++) {
+          var it = state.tempBackpack[i];
+          if (it && it.id === itemId) return true;
+        }
+        for (var j = 0; j < TEMP_BACKPACK_SIZE; j++) {
+          if (!state.tempBackpack[j]) return true;
+        }
+        return false;
+      }
+
+      function canRemoveVenturi(c) {
+        if (!isVenturiCell(c)) return false;
+        var liq = c.venturiLiquid;
+        if (!liq || !liq.units) return true;
+        return canBackpackAcceptStack(liq.itemId);
+      }
+
+      function canRemoveBuriedPotJar(c) {
+        if (!isBuriedPotJarCell(c)) return false;
+        var liq = c.jarLiquid;
+        if (!liq || !liq.units) return true;
+        return canBackpackAcceptStack(liq.itemId);
+      }
+
+      function closeFacilityLiquidPicker() {
+        state.facilityLiquidPicker = null;
+        if (el.facilityLiquidModal) {
+          el.facilityLiquidModal.hidden = true;
+          el.facilityLiquidList.innerHTML = "";
+        }
+      }
+      function closeVenturiAddPicker() { closeFacilityLiquidPicker(); }
+
+      function openFacilityLiquidPicker(x, y) {
+        var c0 = cell(state, x, y);
+        var facilityKind = c0.kind;
+        if (facilityKind !== "venturi_fertilizer" && facilityKind !== "buried_pot_jar") return;
+        hideBuildMenu();
+        state.facilityLiquidPicker = { x: x, y: y, facilityKind: facilityKind };
+        var list = el.facilityLiquidList;
+        list.innerHTML = "";
+        var liqNow = getFacilityLiquidOnCell(c0);
+        if (el.facilityLiquidTitle) {
+          el.facilityLiquidTitle.textContent = facilityKind === "buried_pot_jar"
+            ? "埋地陶瓮 — 添加液态肥"
+            : "文丘里施肥器 — 添加海藻精";
+        }
+        var found = false;
+        for (var i = 0; i < TEMP_BACKPACK_SIZE; i++) {
+          var it = state.tempBackpack[i];
+          if (!it || !isInjectableForFacility(it.id, facilityKind)) continue;
+          found = true;
+          var btn = document.createElement("button");
+          btn.type = "button";
+          btn.className = "facility-liquid-pick-btn";
+          btn.dataset.slot = String(i);
+          btn.textContent = it.name + " ×" + it.count;
+          if (liqNow && facilityLiquidIsActive(liqNow) && liqNow.itemId !== it.id) {
+            btn.disabled = true;
+          }
+          list.appendChild(btn);
+        }
+        if (!found) {
+          list.innerHTML = "<div class='muted'>" + (FACILITY_LIQUID_EMPTY_MSG[facilityKind] || "背包中没有可注入物品") + "</div>";
+        }
+        el.facilityLiquidModal.hidden = false;
+      }
+      function openVenturiAddPicker(x, y) {
+        var c0 = cell(state, x, y);
+        if (!isVenturiCell(c0)) return;
+        openFacilityLiquidPicker(x, y);
+      }
+      function openBuriedJarAddPicker(x, y) {
+        var c0 = cell(state, x, y);
+        if (!isBuriedPotJarCell(c0)) return;
+        openFacilityLiquidPicker(x, y);
+      }
+
+      function tryInjectFacilityLiquid(x, y, facilityKind, slotIndex) {
+        var c0 = cell(state, x, y);
+        if (c0.kind !== facilityKind) return;
+        var it = state.tempBackpack[slotIndex];
+        if (!it || !isInjectableForFacility(it.id, facilityKind)) {
+          state.shopMessage = facilityKind === "buried_pot_jar"
+            ? "该物品不能装入埋地陶瓮（仅液态肥）。"
+            : "该物品不能装入文丘里施肥器（仅海藻精）。";
+          return;
+        }
+        var liqNow = getFacilityLiquidOnCell(c0);
+        if (liqNow && facilityLiquidIsActive(liqNow) && liqNow.itemId !== it.id) {
+          state.shopMessage = "罐内已有其它肥液，无法混装。";
+          return;
+        }
+        if (!takeTempSlotCount(slotIndex, 1)) return;
+        var meta = injectableMeta(it.id);
+        var nm = (meta && meta.name) || it.name;
+        if (injectableIsTimedEffectItem(it.id)) {
+          var dur = meta.effectDurationTicks;
+          var wasReset = liqNow && liqNow.itemId === it.id && liqNow.effectTicksRemaining != null;
+          var newLiq = {
+            itemId: it.id,
+            name: nm,
+            effectDurationTicks: dur,
+            effectTicksRemaining: dur
+          };
+          setFacilityLiquidOnCell(c0, newLiq);
+          var facilityLabel = facilityKind === "buried_pot_jar" ? "埋地陶瓮" : "文丘里施肥器";
+          state.shopMessage = wasReset
+            ? "已重新注入「" + nm + "」至" + facilityLabel + "，倒计时重置为 " + dur + " tick（邻接耕地累加累计微量元素）。"
+            : "已注入「" + nm + "」至" + facilityLabel + "，持续 " + dur + " tick（渠内浓度→累计微量元素，非施肥值）。";
+          closeFacilityLiquidPicker();
+          return;
+        }
+        if (!liqNow || !liqNow.units) {
+          setFacilityLiquidOnCell(c0, { itemId: it.id, name: nm, units: 1 });
+        } else {
+          liqNow.units += 1;
+        }
+        liqNow = getFacilityLiquidOnCell(c0);
+        var fert = getInjectableFertilizerPerTick(it.id);
+        state.shopMessage = "已注入「" + nm + "」至埋地陶瓮（罐内 " + liqNow.units + " 单位；八邻作物 +" + fert + " 累计施肥值/tick，非微量元素）。";
+        closeFacilityLiquidPicker();
+      }
+      function tryInjectVenturiLiquid(x, y, slotIndex) {
+        tryInjectFacilityLiquid(x, y, "venturi_fertilizer", slotIndex);
+      }
+
+      function hideBuildMenu() {
+        state.buildMenu = null;
+        el.buildMenu.classList.remove("open");
+      }
+
+      function hideItemMenu() {
+        state.itemMenu = null;
+        if (el && el.itemMenu) el.itemMenu.classList.remove("open");
+      }
+
+      function openTileMenu(x, y, e) {
+        closeSoilAmendPicker();
+        closeFacilityLiquidPicker();
+        var rect = el.gridWrap.getBoundingClientRect();
+        var left = Math.max(8, Math.min(el.gridWrap.clientWidth - 150, e.clientX - rect.left + 8));
+        var top = Math.max(8, Math.min(el.gridWrap.clientHeight - 90, e.clientY - rect.top + 8));
+        state.buildMenu = { x: x, y: y, left: left, top: top };
+      }
+
+      function renderBuildMenu() {
+        if (!state.buildMenu || state.task) {
+          el.buildMenu.classList.remove("open");
+          return;
+        }
+        var menuCell = cell(state, state.buildMenu.x, state.buildMenu.y);
+        var isVenturi = isVenturiCell(menuCell);
+        var isBuriedJar = isBuriedPotJarCell(menuCell);
+        var isSuperFusion = isSuperFusionCell(menuCell);
+        var isLand = menuCell.kind === "land";
+        var canHarvest = !!(menuCell.crop && menuCell.crop.settled);
+        el.buildMenu.style.left = state.buildMenu.left + "px";
+        el.buildMenu.style.top = state.buildMenu.top + "px";
+        if (isVenturi) {
+          el.buildMenuTitle.textContent = "文丘里施肥器 (" + state.buildMenu.x + "," + state.buildMenu.y + ")";
+        } else if (isBuriedJar) {
+          el.buildMenuTitle.textContent = "埋地陶瓮 (" + state.buildMenu.x + "," + state.buildMenu.y + ")";
+        } else if (isSuperFusion) {
+          el.buildMenuTitle.textContent = "超融合 (" + state.buildMenu.x + "," + state.buildMenu.y + ")";
+        } else if (menuCell.kind === "channel") {
+          el.buildMenuTitle.textContent = "水渠操作 (" + state.buildMenu.x + "," + state.buildMenu.y + ")";
+        } else {
+          el.buildMenuTitle.textContent = "地块操作 (" + state.buildMenu.x + "," + state.buildMenu.y + ")";
+        }
+        el.tillLand.style.display = isLand && !menuCell.tilled && !menuCell.crop ? "" : "none";
+        el.removeTilledLand.style.display = isLand && menuCell.tilled && !menuCell.crop && !hasCropStructure(menuCell) ? "" : "none";
+        var showCropStructBuild = isLand && canBuildCropStructure(menuCell);
+        if (el.cropStructuresPanel) {
+          if (showCropStructBuild) {
+            el.cropStructuresPanel.classList.add("open");
+            var structBtns = el.cropStructuresPanel.querySelectorAll(".crop-struct-btn");
+            for (var sb = 0; sb < structBtns.length; sb++) {
+              var sbBtn = structBtns[sb];
+              var sid = sbBtn.getAttribute("data-crop-structure");
+              var moneyOk = state.money >= CROP_STRUCTURE_BUILD_COST_MONEY;
+              sbBtn.disabled = !moneyOk;
+              sbBtn.title = moneyOk
+                ? ("预付 " + CROP_STRUCTURE_BUILD_COST_MONEY + " 金 · " + TASK_TICKS + " tick")
+                : ("金钱不足（需 " + CROP_STRUCTURE_BUILD_COST_MONEY + "）");
+            }
+          } else {
+            el.cropStructuresPanel.classList.remove("open");
+          }
+        }
+        if (el.removeCropStructure) {
+          el.removeCropStructure.style.display = isLand && hasCropStructure(menuCell) ? "" : "none";
+          el.removeCropStructure.disabled = !canRemoveCropStructure(menuCell);
+          if (isLand && hasCropStructure(menuCell) && el.removeCropStructure.disabled) {
+            el.removeCropStructure.title = "格上有作物时须先收获或清除作物";
+          } else if (isLand && hasCropStructure(menuCell)) {
+            el.removeCropStructure.textContent = "拆除「" + cropStructureDisplayName(menuCell.cropStructure) + "」";
+            el.removeCropStructure.title = TASK_TICKS + " tick · 每 tick " + TASK_STAMINA_PER_TICK + " 体力";
+          } else {
+            el.removeCropStructure.textContent = "拆除耕地建造物";
+            el.removeCropStructure.removeAttribute("title");
+          }
+        }
+        if (el.plantCropPanel) {
+          if (isLand && menuCell.tilled && !menuCell.crop && CROP_DEFS_LOADED) {
+            renderPlantCropButtons(menuCell);
+          } else if (el.plantCropPanel) {
+            el.plantCropPanel.classList.remove("open");
+            if (el.plantCropList) el.plantCropList.innerHTML = "";
+          }
+        }
+        el.soilAmend.style.display = isLand ? "" : "none";
+        var soilAct = canSoilAmendAct(menuCell);
+        el.soilAmend.disabled = !soilAct;
+        if (!isLand) {
+          el.soilAmend.removeAttribute("title");
+        } else if (hasCropStructure(menuCell)) {
+          el.soilAmend.title = "客土改良须先拆除耕地建造物。";
+        } else if (menuCell.tilled) {
+          el.soilAmend.title = "客土改良仅可在未开垦土地上使用（请先拆除耕地）。";
+        } else if (!hasSoilAmendItemInBackpack()) {
+          el.soilAmend.title = "背包中需有客土道具（如冲积土）。";
+        } else {
+          el.soilAmend.removeAttribute("title");
+        }
+        el.harvestCrop.style.display = canHarvest ? "" : "none";
+        el.buildVenturi.style.display = isLand && canBuild(menuCell) ? "" : "none";
+        el.buildBuriedPotJar.style.display = isLand && canBuild(menuCell) ? "" : "none";
+        if (el.buildBuriedPotJar) {
+          el.buildBuriedPotJar.disabled = state.money < BURIED_POT_JAR_BUILD_COST_MONEY;
+          el.buildBuriedPotJar.title = el.buildBuriedPotJar.disabled
+            ? "金钱不足（需 " + BURIED_POT_JAR_BUILD_COST_MONEY + "）"
+            : "预付 " + BURIED_POT_JAR_BUILD_COST_MONEY + " 金，工程 " + TASK_TICKS + " tick（每 tick " + TASK_STAMINA_PER_TICK + " 体力）";
+        }
+        if (el.buildSuperFusion) {
+          el.buildSuperFusion.style.display = isLand && canBuild(menuCell) ? "" : "none";
+          el.buildSuperFusion.disabled = state.money < SUPER_FUSION_BUILD_COST_MONEY;
+          el.buildSuperFusion.title = el.buildSuperFusion.disabled
+            ? "金钱不足（需 " + SUPER_FUSION_BUILD_COST_MONEY + "）"
+            : "预付 " + SUPER_FUSION_BUILD_COST_MONEY + " 金 · 全场文丘里切 A 面（按需施肥）";
+        }
+        el.buildChannel.style.display = isLand && canBuild(menuCell) ? "" : "none";
+        el.addVenturiLiquid.style.display = isVenturi ? "" : "none";
+        el.addVenturiLiquid.disabled = !hasInjectableLiquidInBackpackFor("venturi_fertilizer");
+        if (isVenturi && el.addVenturiLiquid.disabled) {
+          el.addVenturiLiquid.title = "背包中需有海藻精";
+        } else {
+          el.addVenturiLiquid.removeAttribute("title");
+        }
+        el.removeVenturi.style.display = isVenturi ? "" : "none";
+        el.removeVenturi.disabled = isVenturi && !canRemoveVenturi(menuCell);
+        if (isVenturi && el.removeVenturi.disabled) {
+          el.removeVenturi.title = "背包需能容纳罐内全部肥液后才可拆除";
+        } else {
+          el.removeVenturi.removeAttribute("title");
+        }
+        el.removeBuriedPotJar.style.display = isBuriedJar ? "" : "none";
+        el.removeBuriedPotJar.disabled = isBuriedJar && !canRemoveBuriedPotJar(menuCell);
+        if (isBuriedJar && el.removeBuriedPotJar.disabled) {
+          el.removeBuriedPotJar.title = "背包需能容纳罐内全部肥液后才可拆除";
+        } else {
+          el.removeBuriedPotJar.removeAttribute("title");
+        }
+        if (el.removeSuperFusion) {
+          el.removeSuperFusion.style.display = isSuperFusion ? "" : "none";
+          el.removeSuperFusion.disabled = false;
+          el.removeSuperFusion.title = TASK_TICKS + " tick · 每 tick " + TASK_STAMINA_PER_TICK + " 体力";
+        }
+        if (el.addBuriedJarLiquid) {
+          el.addBuriedJarLiquid.style.display = isBuriedJar ? "" : "none";
+          el.addBuriedJarLiquid.disabled = !hasInjectableLiquidInBackpackFor("buried_pot_jar");
+          if (isBuriedJar && el.addBuriedJarLiquid.disabled) {
+            el.addBuriedJarLiquid.title = "背包中需有液态肥（不可使用海藻精）";
+          } else {
+            el.addBuriedJarLiquid.removeAttribute("title");
+          }
+        }
+        if (el.venturiPanel) {
+          if (isVenturi) {
+            el.venturiPanel.classList.add("open");
+            el.buildMenu.classList.add("has-venturi-panel");
+            syncVenturiBuildMenuPanel(menuCell);
+          } else {
+            el.venturiPanel.classList.remove("open");
+            el.buildMenu.classList.remove("has-venturi-panel");
+          }
+        }
+        el.upgradeChannel.style.display = canUpgrade(menuCell) ? "" : "none";
+        el.downgradeChannel.style.display = canDowngrade(menuCell) ? "" : "none";
+        el.removeChannel.style.display = canRemove(menuCell) ? "" : "none";
+        el.buildMenu.classList.add("open");
+      }
+
+      function openItemMenu(slotIndex, e) {
+        var item = state.tempBackpack[slotIndex];
+        if (!item) {
+          hideItemMenu();
+          return;
+        }
+        var left = Math.max(8, Math.min(window.innerWidth - 160, e.clientX + 8));
+        var top = Math.max(8, Math.min(window.innerHeight - 90, e.clientY + 8));
+        state.itemMenu = { slotIndex: slotIndex, left: left, top: top };
+      }
+
+      function renderItemMenu() {
+        if (!state.itemMenu) {
+          el.itemMenu.classList.remove("open");
+          return;
+        }
+        var item = state.tempBackpack[state.itemMenu.slotIndex];
+        if (!item) {
+          hideItemMenu();
+          return;
+        }
+        var price = ITEM_SELL_PRICES[item.id] || 0;
+        el.itemMenu.style.left = state.itemMenu.left + "px";
+        el.itemMenu.style.top = state.itemMenu.top + "px";
+        el.itemMenuTitle.textContent = item.name + " x" + item.count + (price > 0 ? (" · " + price + " 金") : "");
+        el.sellItem.textContent = price > 0 ? "出售" : "不可出售";
+        el.sellItem.disabled = price <= 0;
+        el.itemMenu.classList.add("open");
+      }
+
+      function modeText(mode, task) {
+        if (mode === "build") return "建造";
+        if (mode === "remove") return "拆除";
+        if (mode === "upgrade") return "升级";
+        if (mode === "downgrade") return "降级";
+        if (mode === "till") return "开垦";
+        if (mode === "remove_tilled") return "拆除耕地";
+        if (mode === "soil_amend") return "客土改良";
+        if (mode === "build_venturi") return "建造文丘里施肥器";
+        if (mode === "remove_venturi") return "拆除文丘里施肥器";
+        if (mode === "build_buried_pot_jar") return "建造埋地陶瓮";
+        if (mode === "remove_buried_pot_jar") return "拆除埋地陶瓮";
+        if (mode === "build_super_fusion") return "建造超融合";
+        if (mode === "remove_super_fusion") return "拆除超融合";
+        if (mode === "build_crop_structure") {
+          return "建造·" + cropStructureDisplayName(task && task.structureId);
+        }
+        if (mode === "remove_crop_structure") {
+          var rn = task && task.structureId ? cropStructureDisplayName(task.structureId) : "";
+          return rn ? ("拆除·" + rn) : "拆除耕地建造物";
+        }
+        return "查看";
+      }
+
+      function taskText() {
+        if (!state.task) return "工程: 无";
+        var paused = state.task.paused ? " 已暂停" : "";
+        return "工程: " + modeText(state.task.type, state.task) + paused + " (" + state.task.progress + "/" + TASK_TICKS + ")";
+      }
+
+      function renderSelectedInfo() {
+        var s = state.selected;
+        var c = cell(state, s.x, s.y);
+        var source = getIrrigationSourceForPlot(state, s.x, s.y);
+        var kindText = c.kind === "pool" ? "水池"
+          : (c.kind === "channel" ? "水渠"
+            : (isVenturiCell(c) ? "文丘里施肥器"
+              : (isBuriedPotJarCell(c) ? "埋地陶瓮"
+                : (isSuperFusionCell(c) ? "超融合" : "土地"))));
+        var branchText = c.isTrunk ? "主干" : (c.branchIndex > 0 ? ("支流#" + c.branchIndex) : "-");
+        var currentWaterText = c.kind === "pool" ? state.poolCurrent.toFixed(1) : c.water.toFixed(1);
+        var sourceText = "-";
+        if (source) {
+          var sk = source.kind === "pool"
+            ? "水池"
+            : (source.isTrunk ? "主干水渠" : ("支流水渠#" + source.branchIndex));
+          sourceText = sk + " (" + source.x + "," + source.y + ") / " + source.water.toFixed(1);
+        }
+        var superFusionLine = "";
+        if (isSuperFusionCell(c)) {
+          var eff = getVenturiSeaweedLogicMode(state);
+          superFusionLine =
+            "<div class='muted'>效果</div><div>全场文丘里海藻精 → " + venturiSeaweedLogicLabel(eff) + "（" + (eff === VENTURI_SEAWEED_LOGIC_A ? "检测作物请求" : "常注") + "）</div>" +
+            "<div class='muted'>场上超融合</div><div>" + countSuperFusionOnMap(state) + " 座</div>";
+        }
+        var venturiLine = "";
+        if (isVenturiCell(c)) {
+          var vLogic = getVenturiSeaweedLogicMode(state);
+          ensureVenturiCellFields(c);
+          var vr = venturiConcRangeForLevel(c.venturiLevel);
+          var effectTicksLine = "无海藻精效果";
+          if (isSeaweedEffectVenturi(c)) {
+            var vlSel = c.venturiLiquid;
+            var maxSel = vlSel.effectDurationTicks || (venturiInjectMeta(vlSel.itemId) || {}).effectDurationTicks || 0;
+            effectTicksLine = "海藻精效果剩余 " + vlSel.effectTicksRemaining + " / " + maxSel + " tick";
+          }
+          venturiLine =
+            "<div class='muted'>当前输送逻辑</div><div>" + venturiSeaweedLogicLabel(vLogic)
+            + (anySuperFusionOnMap(state) ? "（超融合）" : "（默认 B）") + "</div>" +
+            "<div class='muted'>等级</div><div>" + c.venturiLevel + " / " + VENTURI_MAX_LEVEL + "</div>" +
+            "<div class='muted'>可调浓度范围</div><div>" + vr.min + "～" + vr.max + "</div>" +
+            "<div class='muted'>当前设定浓度</div><div>" + c.seaweedSetConcentration + "</div>" +
+            "<div class='muted'>肥液</div><div>" + formatVenturiLiquidText(c.venturiLiquid) + "</div>" +
+            "<div class='muted'>罐内效果</div><div>" + effectTicksLine + "</div>";
+        }
+        var jarLine = "";
+        if (isBuriedPotJarCell(c)) {
+          var perJar = c.jarLiquid && facilityLiquidIsActive(c.jarLiquid)
+            ? getInjectableFertilizerPerTick(c.jarLiquid.itemId) : 0;
+          jarLine =
+            "<div class='muted'>肥液</div><div>" + formatFacilityLiquidText(c.jarLiquid) + "</div>" +
+            "<div class='muted'>八邻→累计施肥值</div><div>" + (perJar > 0 ? ("生长中作物 +" + perJar + " / tick（fertilizerAbsorbed）") : "无（空罐或非液态肥）") + "</div>" +
+            "<div class='muted'>说明</div><div class='muted' style='font-size:11px'>不增加累计微量元素；海藻精走文丘里+水渠</div>";
+        }
+        var seaweedLine = "";
+        if (isChannelCell(c)) {
+          var concSel = round1(c.seaweedConcentration || 0);
+          seaweedLine =
+            "<div class='muted'>海藻精浓度（渠内）</div><div>" + concSel.toFixed(1) + "</div>" +
+            "<div class='muted'>邻接作物吸收为</div><div>累计微量元素（非施肥值）</div>" +
+            "<div class='muted'>水藻爆发</div><div>" + (c.algaeBloom ? "是" : "否") + "</div>";
+        }
+        el.selected.innerHTML =
+          "<div class='muted'>坐标</div><div>(" + s.x + "," + s.y + ")</div>" +
+          "<div class='muted'>高度</div><div>" + c.height + "</div>" +
+          "<div class='muted'>土壤种类</div><div>" + c.soilType + "</div>" +
+          "<div class='muted'>是否耕地</div><div>" + (c.tilled ? "是" : "否") + "</div>" +
+          (c.kind === "land" && hasCropStructure(c)
+            ? ("<div class='muted'>耕地建造物</div><div>" + cropStructureDisplayName(c.cropStructure) + " (" + c.cropStructure + ")</div>")
+            : "") +
+          "<div class='muted'>上一轮作</div><div>" + (c.previousCropId || "-") + "</div>" +
+          venturiLine +
+          superFusionLine +
+          jarLine +
+          seaweedLine +
+          "<div class='muted'>类型</div><div>" + kindText + "</div>" +
+          "<div class='muted'>容量</div><div>" + (c.kind === "channel" ? c.capacity : "-") + "</div>" +
+          "<div class='muted'>当前水量</div><div>" + currentWaterText + "</div>" +
+          "<div class='muted'>归属</div><div>" + branchText + "</div>" +
+          "<div class='muted'>被谁滋养</div><div>" + sourceText + "</div>";
+      }
+
+      function renderCropInfo() {
+        var s = state.selected;
+        var c = cell(state, s.x, s.y);
+        var card = el.cropInfoCard;
+        if (!c.crop) {
+          card.hidden = true;
+          el.cropInfo.innerHTML = "";
+          return;
+        }
+        card.hidden = false;
+        var cr = c.crop;
+        var def = CROP_DEFS[cr.cropId];
+        var hm0 = cr.healthMax != null ? cr.healthMax : DEFAULT_CROP_HEALTH_MAX;
+        var hc0 = cr.healthCurrent != null ? cr.healthCurrent : hm0;
+        var phase = cr.settled ? ("已结算 · " + cr.resultLabel) : "生长中";
+        var sensLine = def && cropTraceSensitivity(def)
+          ? ("<div class='muted'>微量排斥</div><div>" + formatTraceSensitivityHint(def) + "</div>")
+          : "";
+        var reqFlags = def
+          ? ((cropDefRequestsSeaweedExtract(def) ? "海藻精请求 " : "") + (cropDefRequestsLiquidFertilizer(def) ? "液态肥请求 " : "") || "无登记请求")
+          : "";
+        var structReqLine = def && cropRequiredStructureId(def)
+          ? ("<div class='muted'>种植建造物</div><div>须「" + cropStructureDisplayName(cropRequiredStructureId(def)) +
+            "」" + (hasCropStructure(c) && c.cropStructure === cropRequiredStructureId(def) ? "（已满足）" : "（未满足）") + "</div>")
+          : "";
+        var bandLine = def
+          ? ("<div class='muted'>档位 / 阈值</div><div>" + (def.tier || "-") + " 档 · " + formatCropWaterBand(def) + "</div>" +
+            structReqLine +
+            "<div class='muted'>请求登记</div><div>" + reqFlags.trim() + "</div>")
+          : "";
+        var ticksLine = cr.settled
+          ? ("<div class='muted'>生长总时</div><div>" + cr.totalTicks + " tick</div>")
+          : ("<div class='muted'>剩余生长</div><div>" + cr.remainingTicks + " / " + cr.totalTicks + " tick</div>");
+        var harvestLine = cr.settled
+          ? ("<div class='muted'>预计收获</div><div>" + cr.harvestItemName + " × " + cr.harvestCount + "</div>" +
+            "<div class='muted'>结算结果</div><div>" + cr.result + "</div>")
+          : "";
+        el.cropInfo.innerHTML =
+          "<div class='muted'>所在坐</div><div>(" + s.x + "," + s.y + ")</div>" +
+          "<div class='muted'>作物 id</div><div>" + cr.cropId + "</div>" +
+          "<div class='muted'>名称</div><div>" + cr.name + "</div>" +
+          bandLine +
+          sensLine +
+          "<div class='muted'>阶段</div><div>" + phase + "</div>" +
+          ticksLine +
+          "<div class='muted'>累计水分</div><div>" + cr.waterAbsorbed.toFixed(1) + "</div>" +
+          "<div class='muted'>累计微量元素</div><div>" + round1(cr.traceAbsorbed || 0).toFixed(1) + "</div>" +
+          "<div class='muted'>累计施肥值</div><div>" + round1(cr.fertilizerAbsorbed || 0).toFixed(1) + "</div>" +
+          "<div class='muted'>健康</div><div>" + hc0 + " / " + hm0 + "</div>" +
+          harvestLine;
+      }
+
+      function renderTempBackpack() {
+        var html = "";
+        var used = 0;
+        for (var i = 0; i < TEMP_BACKPACK_SIZE; i++) {
+          var item = state.tempBackpack[i];
+          var cls = "temp-bag-slot" + (state.selectedTempBackpackSlot === i ? " selected" : "");
+          if (item) {
+            used += 1;
+            html += "<div class='" + cls + "' data-temp-slot='" + i + "' title='" + item.id + "'>" +
+              "<div class='temp-bag-name'>" + item.name + "</div>" +
+              "<div class='temp-bag-meta'>x" + item.count + "</div>" +
+              "</div>";
+          } else {
+            html += "<div class='" + cls + "' data-temp-slot='" + i + "'>" +
+              "<div class='temp-bag-empty'></div>" +
+              "</div>";
+          }
+        }
+        el.tempBackpackGrid.innerHTML = html;
+        el.tempBackpackCount.textContent = used + " / " + TEMP_BACKPACK_SIZE;
+      }
+
+      function hasTempItem(itemId, count) {
+        var need = count || 1;
+        for (var i = 0; i < TEMP_BACKPACK_SIZE; i++) {
+          var item = state.tempBackpack[i];
+          if (item && item.id === itemId && item.count >= need) return true;
+        }
+        return false;
+      }
+
+      function takeTempItem(itemId, count) {
+        var need = count || 1;
+        for (var i = 0; i < TEMP_BACKPACK_SIZE; i++) {
+          var item = state.tempBackpack[i];
+          if (!item || item.id !== itemId || item.count < need) continue;
+          item.count -= need;
+          if (item.count <= 0) state.tempBackpack[i] = null;
+          return true;
+        }
+        return false;
+      }
+
+      function addTempItem(itemId, name, count) {
+        var add = count || 1;
+        for (var i = 0; i < TEMP_BACKPACK_SIZE; i++) {
+          var item = state.tempBackpack[i];
+          if (item && item.id === itemId) {
+            item.count += add;
+            return true;
+          }
+        }
+        for (var j = 0; j < TEMP_BACKPACK_SIZE; j++) {
+          if (!state.tempBackpack[j]) {
+            state.tempBackpack[j] = { id: itemId, name: name, count: add };
+            return true;
+          }
+        }
+        return false;
+      }
+
+      function takeTempSlotCount(slotIndex, count) {
+        var need = count || 1;
+        var item = state.tempBackpack[slotIndex];
+        if (!item || item.count < need) return false;
+        item.count -= need;
+        if (item.count <= 0) state.tempBackpack[slotIndex] = null;
+        return true;
+      }
+
+      function hasSoilAmendItemInBackpack() {
+        for (var i = 0; i < TEMP_BACKPACK_SIZE; i++) {
+          var it = state.tempBackpack[i];
+          if (it && SOIL_AMEND_ITEMS[it.id]) return true;
+        }
+        return false;
+      }
+
+      /** 客土改良可执行：土地、未开垦、背包内有登记道�?*/
+      function canSoilAmendAct(c) {
+        return c.kind === "land" && !c.tilled && hasSoilAmendItemInBackpack();
+      }
+
+      function canOpenLandBuildMenu(c) {
+        if (c.kind !== "land") return false;
+        return canBuild(c) || canTill(c) || canRemoveTilled(c) || cellHasPlantableCropOption(c) || canHarvest(c)
+          || canBuildCropStructure(c) || canRemoveCropStructure(c) || hasCropStructure(c);
+      }
+
+      function closeSoilAmendPicker() {
+        state.soilAmendPicker = null;
+        if (el.soilAmendModal) {
+          el.soilAmendModal.hidden = true;
+          el.soilAmendList.innerHTML = "";
+        }
+      }
+
+      function openSoilAmendPicker(x, y) {
+        var c0 = cell(state, x, y);
+        if (!canSoilAmendAct(c0)) return;
+        hideBuildMenu();
+        closeVenturiAddPicker();
+        state.soilAmendPicker = { x: x, y: y };
+        var list = el.soilAmendList;
+        list.innerHTML = "";
+        var found = false;
+        for (var i = 0; i < TEMP_BACKPACK_SIZE; i++) {
+          var it = state.tempBackpack[i];
+          if (!it) continue;
+          var rec = SOIL_AMEND_ITEMS[it.id];
+          if (!rec) continue;
+          found = true;
+          var btn = document.createElement("button");
+          btn.type = "button";
+          btn.className = "soil-amend-pick-btn";
+          btn.dataset.slot = String(i);
+          btn.textContent = it.name + " ×" + it.count;
+          list.appendChild(btn);
+        }
+        if (!found) {
+          list.innerHTML = "<div class='muted'>背包中没有可用的客土道具</div>";
+        }
+        el.soilAmendModal.hidden = false;
+      }
+
+      function startSoilAmendTask(x, y, itemId, itemName, soilType) {
+        state.task = {
+          type: "soil_amend",
+          x: x,
+          y: y,
+          progress: 0,
+          paused: false,
+          soilType: soilType,
+          refundItemId: itemId,
+          refundItemName: itemName
+        };
+        closeSoilAmendPicker();
+      }
+
+      function buyShopItem(shopItem) {
+        var seedRow = getSeedShopRowByItemId(shopItem.itemId);
+        if (seedRow) {
+          var tierReq = getSeedTierTradeUnlockRequired(seedRow.tier);
+          var tradeVol = Number(state.shopTradeVolume) || 0;
+          if (tradeVol < tierReq) {
+            state.shopMessage = seedRow.name + " 属 " + (seedRow.tier || "?") + " 档种子，需累计交易额 "
+              + tierReq + " 才可购买（当前 " + tradeVol + "）。";
+            return false;
+          }
+        }
+        if (state.money < shopItem.price) {
+          state.shopMessage = "金钱不足。";
+          return false;
+        }
+        if (!addTempItem(shopItem.itemId, shopItem.name, 1)) {
+          state.shopMessage = "临时背包已满。";
+          return false;
+        }
+        state.money -= shopItem.price;
+        addShopTradeVolume(state, shopItem.price);
+        state.shopMessage = "购买成功：" + shopItem.name + " x1（交易额 +" + shopItem.price + "）";
+        return true;
+      }
+
+      function sellTempBackpackItem(slotIndex) {
+        var item = state.tempBackpack[slotIndex];
+        if (!item) return false;
+        var price = ITEM_SELL_PRICES[item.id] || 0;
+        if (price <= 0) {
+          state.shopMessage = "该物品暂不可出售。";
+          return false;
+        }
+        item.count -= 1;
+        state.money += price;
+        addShopTradeVolume(state, price);
+        state.shopMessage = "出售成功：" + item.name + " x1，获得 " + price + " 金钱（交易额 +" + price + "）。";
+        if (item.count <= 0) {
+          state.tempBackpack[slotIndex] = null;
+          hideItemMenu();
+        }
+        return true;
+      }
+
+      function render() {
+        el.tick.textContent = "Tick: " + state.tick;
+        el.time.textContent = "时间: " + (state.paused ? "已暂停" : "运行中");
+        el.stamina.textContent = "体力: " + state.stamina.toFixed(1);
+        el.mode.textContent = "模式: " + modeText(state.mode);
+        el.task.textContent = taskText();
+        el.moneyInfo.textContent = String(state.money);
+        if (el.shopTradeVolume) {
+          el.shopTradeVolume.textContent = String(state.shopTradeVolume || 0);
+        }
+        el.shopMessage.textContent = state.shopMessage || "";
+        el.summary.textContent = SIZE + "x" + SIZE + " · 101px/格（对齐主游戏 CELL_PX）· 主干: " + state.trunkPath.length + " / 支流: " + state.branches.length + " / 水渠: " + Object.keys(state.channels).length;
+        el.waterSummary.textContent = "水池基础 " + state.basePoolWater.toFixed(1) + " / 当前 " + state.poolCurrent.toFixed(1);
+        el.pause.textContent = state.paused ? "恢复" : "暂停";
+        el.toggleTaskPause.textContent = state.task && state.task.paused ? "继续工程" : "暂停工程";
+        el.toggleTaskPause.disabled = !state.task;
+
+        var nodes = el.grid.children;
+        for (var i = 0; i < nodes.length; i++) {
+          var d = nodes[i];
+          var x = Number(d.dataset.x);
+          var y = Number(d.dataset.y);
+          var c = cell(state, x, y);
+          var cls = ["cell"];
+          if (c.kind === "pool") cls.push("pool");
+          else if (c.kind === "channel") {
+            cls.push("channel");
+            if (c.isTrunk) cls.push("trunk");
+            else if (c.water > 0) cls.push("branch-water");
+            else cls.push("branch-dry");
+            if (c.algaeBloom && c.water > 0) cls.push("algae-bloom");
+          } else if (isVenturiCell(c)) {
+            cls.push("venturi-fertilizer");
+            if (venturiLiquidIsActive(c.venturiLiquid)) cls.push("venturi-effect-active");
+          } else if (isBuriedPotJarCell(c)) {
+            cls.push("buried-pot-jar");
+            if (facilityLiquidIsActive(c.jarLiquid)) cls.push("jar-liquid-active");
+          } else if (isSuperFusionCell(c)) {
+            cls.push("super-fusion");
+          } else {
+            cls.push("land");
+            if (c.tilled) cls.push("tilled");
+            if (hasCropStructure(c)) {
+              cls.push("crop-structure", "crop-structure-" + c.cropStructure);
+            }
+          }
+          if (c.crop) {
+            cls.push(c.crop.settled
+              ? (c.crop.result === "withered" || c.crop.result === "flooded" || c.crop.result === "trace_toxic"
+                ? "crop-failed"
+                : "crop-ready")
+              : "crop-growing");
+          }
+          if (c.water > 0) cls.push("has-water");
+          if (x === state.selected.x && y === state.selected.y) cls.push("selected");
+          d.className = cls.join(" ");
+          var titleExtra = isChannelCell(c)
+            ? " C=" + round1(c.seaweedConcentration || 0).toFixed(1) + (c.algaeBloom ? " 爆发" : "")
+            : (hasCropStructure(c) ? " 建造物=" + cropStructureDisplayName(c.cropStructure) : "");
+          d.title = "(" + x + "," + y + ") h=" + c.height + " water=" + c.water.toFixed(1) + titleExtra;
+          if (state.task && state.task.x === x && state.task.y === y) {
+            var taskPrefix = state.task.paused ? "暂停 " : "";
+            d.innerHTML = "<div class='cell-task-progress'>" + taskPrefix + state.task.progress + "/" + TASK_TICKS + "</div>";
+          } else {
+            d.innerHTML = "";
+          }
+        }
+        renderSelectedInfo();
+        renderCropInfo();
+        renderTempBackpack();
+        renderBuildMenu();
+        renderItemMenu();
+        renderSeedShop();
+      }
+
+      function canRemove(c) { return c.kind === "channel"; }
+      function canUpgrade(c) { return c.kind === "channel"; }
+      function canDowngrade(c) { return c.kind === "channel" && c.capacity > DEFAULT_CHANNEL_CAPACITY; }
+
+      function canBuild(c) { return c.kind === "land" && !c.crop && !hasCropStructure(c); }
+      function canTill(c) { return c.kind === "land" && !c.tilled && !c.crop; }
+      function canRemoveTilled(c) { return c.kind === "land" && c.tilled && !c.crop && !hasCropStructure(c); }
+      function canPlantCrop(c, def) {
+        return c.kind === "land" && c.tilled && !c.crop && def &&
+          hasTempItem(def.seedItemId, 1) && plotHasRequiredCropStructure(c, def);
+      }
+
+      function cellHasPlantableCropOption(c) {
+        var defs = listPlantableCropDefsForCell(c);
+        for (var i = 0; i < defs.length; i++) {
+          if (canPlantCrop(c, defs[i])) return true;
+        }
+        return false;
+      }
+      function canHarvest(c) { return c.kind === "land" && c.crop && c.crop.settled; }
+
+      function plantCrop(c, def) {
+        if (!canPlantCrop(c, def)) {
+          if (def && cropRequiredStructureId(def) && !plotHasRequiredCropStructure(c, def)) {
+            state.shopMessage = "无法种植「" + def.name + "」：须先在耕地上建造「" +
+              cropStructureDisplayName(cropRequiredStructureId(def)) + "」。";
+          }
+          return false;
+        }
+        if (!takeTempItem(def.seedItemId, 1)) return false;
+        var hMax = def.healthMax != null ? Number(def.healthMax) : DEFAULT_CROP_HEALTH_MAX;
+        if (!(hMax > 0)) hMax = DEFAULT_CROP_HEALTH_MAX;
+        var hCur = def.healthCurrent != null ? Number(def.healthCurrent) : hMax;
+        if (!(hCur >= 0)) hCur = hMax;
+        if (hCur > hMax) hCur = hMax;
+        c.crop = {
+          cropId: def.cropId,
+          name: def.name,
+          remainingTicks: def.growthTicks,
+          totalTicks: def.growthTicks,
+          waterAbsorbed: 0,
+          traceAbsorbed: 0,
+          fertilizerAbsorbed: 0,
+          healthMax: hMax,
+          healthCurrent: hCur,
+          settled: false,
+          result: "growing",
+          resultLabel: "生长中",
+          harvestItemId: def.productItemId,
+          harvestItemName: def.productName,
+          harvestCount: 0
+        };
+        syncPlotSeaweedRequests(state, c.x, c.y);
+        syncPlotFertilizerRequests(state, c.x, c.y);
+        return true;
+      }
+
+      function settleCrop(c) {
+        var crop = c.crop;
+        if (!crop || crop.settled) return;
+        var def = CROP_DEFS[crop.cropId];
+        var water = crop.waterAbsorbed;
+        crop.remainingTicks = 0;
+        crop.settled = true;
+        if (water < def.minWater) {
+          crop.result = "withered";
+          crop.resultLabel = "水分不足枯萎";
+          crop.harvestCount = 0;
+        } else if (water > def.maxWater) {
+          crop.result = "flooded";
+          crop.resultLabel = "水分过多淹死";
+          crop.harvestCount = 0;
+        } else if (
+          cropTraceSensitivity(def) === "severe" &&
+          def.trace_fail_harvest_at != null &&
+          round1(crop.traceAbsorbed || 0) >= Number(def.trace_fail_harvest_at)
+        ) {
+          crop.result = "trace_toxic";
+          crop.resultLabel = "微量过剩·盐害灼伤落果";
+          crop.harvestCount = 0;
+        } else {
+          var baseCount = def.harvestMin + Math.floor(Math.random() * (def.harvestMax - def.harvestMin + 1));
+          var trace = round1(crop.traceAbsorbed || 0);
+          var fert = round1(crop.fertilizerAbsorbed || 0);
+          var perfectWater = water > def.perfectMinWater && water < def.perfectMaxWater;
+          var perfectTrace = cropPerfectTraceOk(def, trace);
+          var perfectFert = def.perfectMinFertilizer == null || fert >= def.perfectMinFertilizer;
+          if (def.perfectMaxFertilizer != null && fert > def.perfectMaxFertilizer) perfectFert = false;
+          var perfect = perfectWater && perfectTrace && perfectFert;
+          crop.result = perfect ? "perfect" : "mature";
+          crop.resultLabel = perfect ? "完美成熟" : "普通成熟";
+          crop.harvestCount = perfect ? baseCount * 2 : baseCount;
+        }
+      }
+
+      function harvestCrop(c) {
+        if (!canHarvest(c)) return false;
+        var crop = c.crop;
+        if (crop.harvestCount > 0 && !addTempItem(crop.harvestItemId, crop.harvestItemName, crop.harvestCount)) return false;
+        c.previousCropId = crop.cropId;
+        c.crop = null;
+        syncPlotSeaweedRequests(state, c.x, c.y);
+        syncPlotFertilizerRequests(state, c.x, c.y);
+        return true;
+      }
+
+      function startVenturiBuildTask(x, y) {
+        if (state.money < VENTURI_BUILD_COST_MONEY) {
+          state.shopMessage = "金钱不足（建造文丘里施肥器需 " + VENTURI_BUILD_COST_MONEY + "）。";
+          return false;
+        }
+        state.money -= VENTURI_BUILD_COST_MONEY;
+        state.task = {
+          type: "build_venturi",
+          x: x,
+          y: y,
+          progress: 0,
+          paused: false,
+          prepaidMoney: VENTURI_BUILD_COST_MONEY
+        };
+        hideBuildMenu();
+        return true;
+      }
+
+      function startBuriedPotJarBuildTask(x, y) {
+        if (state.money < BURIED_POT_JAR_BUILD_COST_MONEY) {
+          state.shopMessage = "金钱不足（建造埋地陶瓮需 " + BURIED_POT_JAR_BUILD_COST_MONEY + "）。";
+          return false;
+        }
+        state.money -= BURIED_POT_JAR_BUILD_COST_MONEY;
+        state.task = {
+          type: "build_buried_pot_jar",
+          x: x,
+          y: y,
+          progress: 0,
+          paused: false,
+          prepaidMoney: BURIED_POT_JAR_BUILD_COST_MONEY
+        };
+        hideBuildMenu();
+        return true;
+      }
+
+      function startSuperFusionBuildTask(x, y) {
+        if (state.money < SUPER_FUSION_BUILD_COST_MONEY) {
+          state.shopMessage = "金钱不足（建造超融合需 " + SUPER_FUSION_BUILD_COST_MONEY + "）。";
+          return false;
+        }
+        state.money -= SUPER_FUSION_BUILD_COST_MONEY;
+        state.task = {
+          type: "build_super_fusion",
+          x: x,
+          y: y,
+          progress: 0,
+          paused: false,
+          prepaidMoney: SUPER_FUSION_BUILD_COST_MONEY
+        };
+        hideBuildMenu();
+        return true;
+      }
+
+      function startCropStructureBuildTask(x, y, structureId) {
+        if (!cropStructureDef(structureId)) {
+          state.shopMessage = "未知耕地建造物类型。";
+          return false;
+        }
+        var c0 = cell(state, x, y);
+        if (!canBuildCropStructure(c0)) {
+          state.shopMessage = "仅可在已开垦且无作物、无其它建造物的耕地上建造。";
+          return false;
+        }
+        if (state.money < CROP_STRUCTURE_BUILD_COST_MONEY) {
+          state.shopMessage = "金钱不足（建造「" + cropStructureDisplayName(structureId) + "」需 " + CROP_STRUCTURE_BUILD_COST_MONEY + "）。";
+          return false;
+        }
+        state.money -= CROP_STRUCTURE_BUILD_COST_MONEY;
+        state.task = {
+          type: "build_crop_structure",
+          structureId: structureId,
+          x: x,
+          y: y,
+          progress: 0,
+          paused: false,
+          prepaidMoney: CROP_STRUCTURE_BUILD_COST_MONEY
+        };
+        hideBuildMenu();
+        return true;
+      }
+
+      function startTask(type, x, y) {
+        state.task = { type: type, x: x, y: y, progress: 0, paused: false };
+        hideBuildMenu();
+      }
+
+      function startPaidTask(type, x, y, cost) {
+        if (state.money < cost) {
+          state.shopMessage = "金钱不足，无法开始工程。";
+          return false;
+        }
+        state.money -= cost;
+        startTask(type, x, y);
+        return true;
+      }
+
+      function applyTask(task) {
+        var c = cell(state, task.x, task.y);
+        if (task.type === "build") {
+          c.kind = "channel";
+          c.capacity = DEFAULT_CHANNEL_CAPACITY;
+          c.seaweedConcentration = 0;
+          c.algaeBloom = false;
+          c.tilled = false;
+          c.cropStructure = null;
+          c.crop = null;
+        } else if (task.type === "remove") {
+          c.kind = "land";
+          c.capacity = 0;
+          c.water = 0;
+          c.tilled = false;
+          c.crop = null;
+        } else if (task.type === "upgrade") {
+          c.capacity += CHANNEL_CAPACITY_STEP;
+        } else if (task.type === "downgrade") {
+          c.capacity = Math.max(DEFAULT_CHANNEL_CAPACITY, c.capacity - CHANNEL_CAPACITY_STEP);
+        } else if (task.type === "till") {
+          c.tilled = true;
+        } else if (task.type === "remove_tilled") {
+          c.tilled = false;
+        } else if (task.type === "soil_amend") {
+          if (c.kind === "land") c.soilType = task.soilType;
+        } else if (task.type === "build_venturi") {
+          c.kind = "venturi_fertilizer";
+          c.tilled = false;
+          c.crop = null;
+          c.capacity = 0;
+          c.water = 0;
+          c.seaweedConcentration = 0;
+          c.algaeBloom = false;
+          c.venturiLiquid = null;
+          c.venturiLevel = 1;
+          c.seaweedSetConcentration = VENTURI_DEFAULT_SET_CONC;
+          ensureVenturiCellFields(c);
+        } else if (task.type === "remove_venturi") {
+          var liqR = c.venturiLiquid;
+          if (liqR && liqR.units) {
+            var nmR = liqR.name || (VENTURI_INJECTABLE_LIQUIDS[liqR.itemId] && VENTURI_INJECTABLE_LIQUIDS[liqR.itemId].name) || liqR.itemId;
+            addTempItem(liqR.itemId, nmR, liqR.units);
+          }
+          c.venturiLiquid = null;
+          c.kind = "land";
+          c.capacity = 0;
+          c.water = 0;
+          c.tilled = false;
+          c.crop = null;
+        } else if (task.type === "build_buried_pot_jar") {
+          c.kind = "buried_pot_jar";
+          c.tilled = false;
+          c.crop = null;
+          c.capacity = 0;
+          c.water = 0;
+          c.seaweedConcentration = 0;
+          c.algaeBloom = false;
+          c.jarLiquid = null;
+          syncFertilizerRequestsNearBuriedJar(state, task.x, task.y);
+        } else if (task.type === "remove_buried_pot_jar") {
+          var liqJar = c.jarLiquid;
+          if (liqJar && liqJar.units) {
+            var nmJar = liqJar.name || (injectableMeta(liqJar.itemId) && injectableMeta(liqJar.itemId).name) || liqJar.itemId;
+            addTempItem(liqJar.itemId, nmJar, liqJar.units);
+          }
+          c.jarLiquid = null;
+          c.kind = "land";
+          c.capacity = 0;
+          c.water = 0;
+          c.tilled = false;
+          c.crop = null;
+          syncFertilizerRequestsNearBuriedJar(state, task.x, task.y);
+        } else if (task.type === "build_super_fusion") {
+          c.kind = "super_fusion";
+          c.tilled = false;
+          c.crop = null;
+          c.cropStructure = null;
+          c.capacity = 0;
+          c.water = 0;
+          c.seaweedConcentration = 0;
+          c.algaeBloom = false;
+        } else if (task.type === "remove_super_fusion") {
+          c.kind = "land";
+          c.capacity = 0;
+          c.water = 0;
+          c.tilled = false;
+          c.crop = null;
+        } else if (task.type === "build_crop_structure") {
+          if (c.kind === "land" && c.tilled) c.cropStructure = task.structureId;
+        } else if (task.type === "remove_crop_structure") {
+          c.cropStructure = null;
+        }
+      }
+
+      function onCellClick(x, y, e) {
+        state.selected = { x: x, y: y };
+        var c = cell(state, x, y);
+        if (state.task) { hideBuildMenu(); render(); return; }
+
+        if (canBuild(c) || canRemove(c) || canHarvest(c) || canOpenLandBuildMenu(c) || isFacilityCell(c)) openTileMenu(x, y, e);
+        else {
+          hideBuildMenu();
+          if (state.mode === "upgrade" && canUpgrade(c)) startTask("upgrade", x, y);
+        }
+        render();
+      }
+
+      function tickOnce() {
+        state.tick += 1;
+        if (state.task) {
+          if (state.task.paused) {
+            state.stamina = round1(Math.min(MAX_STAMINA, state.stamina + RECOVER_STAMINA_PER_TICK));
+          } else if (state.stamina >= TASK_STAMINA_PER_TICK) {
+            state.stamina = round1(Math.max(0, state.stamina - TASK_STAMINA_PER_TICK));
+            state.task.progress += 1;
+            if (state.task.progress >= TASK_TICKS) {
+              applyTask(state.task);
+              state.task = null;
+              recomputeIrrigationNetwork(state);
+            }
+          } else {
+            // 体力不足时工程暂停，但角色仍会恢复体力，避免卡死在施工状态。?
+            state.stamina = round1(Math.min(MAX_STAMINA, state.stamina + RECOVER_STAMINA_PER_TICK));
+          }
+        } else {
+          state.stamina = round1(Math.min(MAX_STAMINA, state.stamina + RECOVER_STAMINA_PER_TICK));
+        }
+        runAgricultureMapTick(state);
+        render();
+      }
+
+      function bind() {
+        el.gridWrap.addEventListener("wheel", onViewportWheel, { passive: false });
+        el.gridWrap.addEventListener("pointerdown", onViewportPointerDown);
+        document.addEventListener("pointermove", onDocumentPointerMove, { passive: false, capture: true });
+        document.addEventListener("pointerup", onDocumentPointerUp, { capture: true });
+        document.addEventListener("pointercancel", onDocumentPointerUp, { capture: true });
+        el.gridWrap.addEventListener("auxclick", function (e) {
+          if (e.button === 1) e.preventDefault();
+        });
+
+        document.addEventListener("keydown", function (e) {
+          if (e.code !== "Space") return;
+          if (e.repeat) return;
+          var tag = (e.target && e.target.tagName) || "";
+          if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT" || e.target.isContentEditable) return;
+          e.preventDefault();
+          spaceHeld = true;
+          el.gridWrap.classList.add("space-pan");
+        });
+        document.addEventListener("keyup", function (e) {
+          if (e.code !== "Space") return;
+          spaceHeld = false;
+          el.gridWrap.classList.remove("space-pan");
+        });
+        window.addEventListener("blur", function () {
+          spaceHeld = false;
+          el.gridWrap.classList.remove("space-pan");
+          leftDragCandidate = null;
+          if (pan.active) {
+            pan.active = false;
+            pan.pointerId = null;
+            pan.moved = false;
+            el.gridWrap.classList.remove("panning");
+          }
+        });
+
+        el.grid.addEventListener("click", function (e) {
+          if (suppressNextClick) {
+            e.preventDefault();
+            e.stopPropagation();
+            suppressNextClick = false;
+            return;
+          }
+          var t = e.target && e.target.closest ? e.target.closest(".cell") : e.target;
+          if (!t || !t.dataset || t.dataset.x == null) return;
+          onCellClick(Number(t.dataset.x), Number(t.dataset.y), e);
+        });
+        el.tillLand.addEventListener("click", function (e) {
+          e.stopPropagation();
+          if (!state.buildMenu || state.task) return;
+          var c = cell(state, state.buildMenu.x, state.buildMenu.y);
+          if (canTill(c)) startTask("till", state.buildMenu.x, state.buildMenu.y);
+          render();
+        });
+        el.removeTilledLand.addEventListener("click", function (e) {
+          e.stopPropagation();
+          if (!state.buildMenu || state.task) return;
+          var c = cell(state, state.buildMenu.x, state.buildMenu.y);
+          if (canRemoveTilled(c)) startTask("remove_tilled", state.buildMenu.x, state.buildMenu.y);
+          render();
+        });
+        if (el.cropStructuresPanel) {
+          el.cropStructuresPanel.addEventListener("click", function (e) {
+            e.stopPropagation();
+            if (!state.buildMenu || state.task) return;
+            var b = e.target && e.target.closest ? e.target.closest(".crop-struct-btn") : null;
+            if (!b || b.disabled) return;
+            var sid = b.getAttribute("data-crop-structure");
+            if (!sid) return;
+            var cSt = cell(state, state.buildMenu.x, state.buildMenu.y);
+            if (!canBuildCropStructure(cSt)) return;
+            if (startCropStructureBuildTask(state.buildMenu.x, state.buildMenu.y, sid)) render();
+          });
+        }
+        if (el.removeCropStructure) {
+          el.removeCropStructure.addEventListener("click", function (e) {
+            e.stopPropagation();
+            if (!state.buildMenu || state.task) return;
+            var cRm = cell(state, state.buildMenu.x, state.buildMenu.y);
+            if (!canRemoveCropStructure(cRm)) return;
+            state.task = {
+              type: "remove_crop_structure",
+              structureId: cRm.cropStructure,
+              x: state.buildMenu.x,
+              y: state.buildMenu.y,
+              progress: 0,
+              paused: false
+            };
+            hideBuildMenu();
+            render();
+          });
+        }
+        if (el.plantCropList) {
+          el.plantCropList.addEventListener("click", function (e) {
+            var b = e.target && e.target.closest ? e.target.closest(".plant-crop-btn") : null;
+            if (!b || !b.dataset.cropId) return;
+            e.stopPropagation();
+            if (!state.buildMenu || state.task) return;
+            var c = cell(state, state.buildMenu.x, state.buildMenu.y);
+            var def = CROP_DEFS[b.dataset.cropId];
+            if (canPlantCrop(c, def)) plantCrop(c, def);
+            hideBuildMenu();
+            render();
+          });
+        }
+        el.soilAmend.addEventListener("click", function (e) {
+          e.stopPropagation();
+          if (!state.buildMenu || state.task) return;
+          var c = cell(state, state.buildMenu.x, state.buildMenu.y);
+          if (!canSoilAmendAct(c)) return;
+          openSoilAmendPicker(state.buildMenu.x, state.buildMenu.y);
+          render();
+        });
+        el.soilAmendList.addEventListener("click", function (e) {
+          var b = e.target && e.target.closest ? e.target.closest(".soil-amend-pick-btn") : null;
+          if (!b || b.dataset.slot == null) return;
+          if (state.task) return;
+          var slot = Number(b.dataset.slot);
+          var it = state.tempBackpack[slot];
+          if (!it) return;
+          var rec = SOIL_AMEND_ITEMS[it.id];
+          if (!rec) return;
+          var pick = state.soilAmendPicker;
+          if (!pick) return;
+          var cellAt = cell(state, pick.x, pick.y);
+          if (!canSoilAmendAct(cellAt)) return;
+          var itemId = it.id;
+          var itemName = it.name;
+          if (!takeTempSlotCount(slot, 1)) return;
+          startSoilAmendTask(pick.x, pick.y, itemId, itemName, rec.soilType);
+          render();
+        });
+        el.soilAmendCancel.addEventListener("click", function (e) {
+          e.stopPropagation();
+          closeSoilAmendPicker();
+          render();
+        });
+        el.soilAmendModal.addEventListener("click", function (e) {
+          if (e.target === el.soilAmendModal) {
+            closeSoilAmendPicker();
+            render();
+          }
+        });
+        el.harvestCrop.addEventListener("click", function (e) {
+          e.stopPropagation();
+          if (!state.buildMenu || state.task) return;
+          var c = cell(state, state.buildMenu.x, state.buildMenu.y);
+          if (canHarvest(c)) harvestCrop(c);
+          hideBuildMenu();
+          render();
+        });
+        el.buildChannel.addEventListener("click", function (e) {
+          e.stopPropagation();
+          if (!state.buildMenu || state.task) return;
+          var c = cell(state, state.buildMenu.x, state.buildMenu.y);
+          if (canBuild(c)) startTask("build", state.buildMenu.x, state.buildMenu.y);
+          render();
+        });
+        el.upgradeChannel.addEventListener("click", function (e) {
+          e.stopPropagation();
+          if (!state.buildMenu || state.task) return;
+          var c = cell(state, state.buildMenu.x, state.buildMenu.y);
+          if (canUpgrade(c)) startPaidTask("upgrade", state.buildMenu.x, state.buildMenu.y, CHANNEL_CAPACITY_CHANGE_COST);
+          render();
+        });
+        el.downgradeChannel.addEventListener("click", function (e) {
+          e.stopPropagation();
+          if (!state.buildMenu || state.task) return;
+          var c = cell(state, state.buildMenu.x, state.buildMenu.y);
+          if (canDowngrade(c)) startPaidTask("downgrade", state.buildMenu.x, state.buildMenu.y, CHANNEL_CAPACITY_CHANGE_COST);
+          render();
+        });
+        el.removeChannel.addEventListener("click", function (e) {
+          e.stopPropagation();
+          if (!state.buildMenu || state.task) return;
+          var c = cell(state, state.buildMenu.x, state.buildMenu.y);
+          if (canRemove(c)) startTask("remove", state.buildMenu.x, state.buildMenu.y);
+          render();
+        });
+        el.buildVenturi.addEventListener("click", function (e) {
+          e.stopPropagation();
+          if (!state.buildMenu || state.task) return;
+          var c = cell(state, state.buildMenu.x, state.buildMenu.y);
+          if (canBuild(c)) startVenturiBuildTask(state.buildMenu.x, state.buildMenu.y);
+          render();
+        });
+        el.buildBuriedPotJar.addEventListener("click", function (e) {
+          e.stopPropagation();
+          if (!state.buildMenu || state.task) return;
+          var c = cell(state, state.buildMenu.x, state.buildMenu.y);
+          if (canBuild(c)) startBuriedPotJarBuildTask(state.buildMenu.x, state.buildMenu.y);
+          render();
+        });
+        if (el.buildSuperFusion) {
+          el.buildSuperFusion.addEventListener("click", function (e) {
+            e.stopPropagation();
+            if (!state.buildMenu || state.task) return;
+            var cSf = cell(state, state.buildMenu.x, state.buildMenu.y);
+            if (canBuild(cSf)) startSuperFusionBuildTask(state.buildMenu.x, state.buildMenu.y);
+            render();
+          });
+        }
+        el.addVenturiLiquid.addEventListener("click", function (e) {
+          e.stopPropagation();
+          if (!state.buildMenu || state.task) return;
+          var c = cell(state, state.buildMenu.x, state.buildMenu.y);
+          if (isVenturiCell(c)) openVenturiAddPicker(state.buildMenu.x, state.buildMenu.y);
+          render();
+        });
+        if (el.addBuriedJarLiquid) {
+          el.addBuriedJarLiquid.addEventListener("click", function (e) {
+            e.stopPropagation();
+            if (!state.buildMenu || state.task) return;
+            var c = cell(state, state.buildMenu.x, state.buildMenu.y);
+            if (isBuriedPotJarCell(c)) openBuriedJarAddPicker(state.buildMenu.x, state.buildMenu.y);
+            render();
+          });
+        }
+        el.removeVenturi.addEventListener("click", function (e) {
+          e.stopPropagation();
+          if (!state.buildMenu || state.task) return;
+          var c = cell(state, state.buildMenu.x, state.buildMenu.y);
+          if (canRemoveVenturi(c)) startTask("remove_venturi", state.buildMenu.x, state.buildMenu.y);
+          render();
+        });
+        el.removeBuriedPotJar.addEventListener("click", function (e) {
+          e.stopPropagation();
+          if (!state.buildMenu || state.task) return;
+          var cJar = cell(state, state.buildMenu.x, state.buildMenu.y);
+          if (canRemoveBuriedPotJar(cJar)) startTask("remove_buried_pot_jar", state.buildMenu.x, state.buildMenu.y);
+          render();
+        });
+        if (el.removeSuperFusion) {
+          el.removeSuperFusion.addEventListener("click", function (e) {
+            e.stopPropagation();
+            if (!state.buildMenu || state.task) return;
+            var cSfRm = cell(state, state.buildMenu.x, state.buildMenu.y);
+            if (isSuperFusionCell(cSfRm)) startTask("remove_super_fusion", state.buildMenu.x, state.buildMenu.y);
+            render();
+          });
+        }
+        if (el.venturiUpgrade) {
+          el.venturiUpgrade.addEventListener("click", function (e) {
+            e.stopPropagation();
+            if (!state.buildMenu || state.task) return;
+            if (tryUpgradeVenturiAt(state.buildMenu.x, state.buildMenu.y)) render();
+          });
+        }
+        if (el.venturiConcMinus) {
+          el.venturiConcMinus.addEventListener("click", function (e) {
+            e.stopPropagation();
+            if (!state.buildMenu || state.task) return;
+            if (stepSeaweedSetConcentrationAt(state.buildMenu.x, state.buildMenu.y, -1)) render();
+          });
+        }
+        if (el.venturiConcPlus) {
+          el.venturiConcPlus.addEventListener("click", function (e) {
+            e.stopPropagation();
+            if (!state.buildMenu || state.task) return;
+            if (stepSeaweedSetConcentrationAt(state.buildMenu.x, state.buildMenu.y, 1)) render();
+          });
+        }
+        if (el.venturiConcRange) {
+          el.venturiConcRange.addEventListener("input", function (e) {
+            e.stopPropagation();
+            if (!state.buildMenu || state.task) return;
+            if (setSeaweedSetConcentrationAt(state.buildMenu.x, state.buildMenu.y, Number(el.venturiConcRange.value))) render();
+          });
+        }
+        el.facilityLiquidList.addEventListener("click", function (e) {
+          var b = e.target && e.target.closest ? e.target.closest(".facility-liquid-pick-btn") : null;
+          if (!b || b.disabled || b.dataset.slot == null) return;
+          if (state.task) return;
+          var slot = Number(b.dataset.slot);
+          var pick = state.facilityLiquidPicker;
+          if (!pick) return;
+          tryInjectFacilityLiquid(pick.x, pick.y, pick.facilityKind, slot);
+          render();
+        });
+        el.facilityLiquidCancel.addEventListener("click", function (e) {
+          e.stopPropagation();
+          closeFacilityLiquidPicker();
+          render();
+        });
+        el.facilityLiquidModal.addEventListener("click", function (e) {
+          if (e.target === el.facilityLiquidModal) {
+            closeFacilityLiquidPicker();
+            render();
+          }
+        });
+        el.tempBackpackGrid.addEventListener("click", function (e) {
+          var t = e.target && e.target.closest ? e.target.closest(".temp-bag-slot") : e.target;
+          if (!t || !t.dataset || t.dataset.tempSlot == null) return;
+          state.selectedTempBackpackSlot = Number(t.dataset.tempSlot);
+          openItemMenu(state.selectedTempBackpackSlot, e);
+          render();
+        });
+        el.sellItem.addEventListener("click", function () {
+          if (!state.itemMenu) return;
+          sellTempBackpackItem(state.itemMenu.slotIndex);
+          render();
+        });
+        if (el.shopSeedList) {
+          el.shopSeedList.addEventListener("click", function (e) {
+            var b = e.target && e.target.closest ? e.target.closest(".btn-buy-seed") : null;
+            if (!b || b.disabled) return;
+            buyShopItem({
+              itemId: b.getAttribute("data-item-id"),
+              name: b.getAttribute("data-item-name"),
+              price: Number(b.getAttribute("data-price")) || 0
+            });
+            render();
+          });
+        }
+        el.buySoilAlluvial.addEventListener("click", function () {
+          buyShopItem(SHOP_ITEMS.soilAlluvial);
+          render();
+        });
+        el.buyLiquidFertilizerN.addEventListener("click", function () {
+          buyShopItem(SHOP_ITEMS.liquidFertilizerN);
+          render();
+        });
+        el.buyLiquidSeaweedExtract.addEventListener("click", function () {
+          buyShopItem(SHOP_ITEMS.liquidSeaweedExtract);
+          render();
+        });
+        var modeBtns = document.querySelectorAll(".mode-btn");
+        for (var i = 0; i < modeBtns.length; i++) {
+          modeBtns[i].addEventListener("click", function () {
+            var btns = document.querySelectorAll(".mode-btn");
+            for (var j = 0; j < btns.length; j++) btns[j].classList.remove("active");
+            this.classList.add("active");
+            state.mode = this.dataset.mode;
+            hideBuildMenu();
+            hideItemMenu();
+            closeSoilAmendPicker();
+            closeVenturiAddPicker();
+            render();
+          });
+        }
+        el.pause.addEventListener("click", function () {
+          state.paused = !state.paused;
+          render();
+        });
+        el.tickBtn.addEventListener("click", tickOnce);
+        if (el.runSeaweedE2e) {
+          el.runSeaweedE2e.addEventListener("click", function () {
+            state.paused = true;
+            var result = runSeaweedExtractE2EAcceptance();
+            if (el.pillE2e) {
+              el.pillE2e.textContent = result.ok ? "验收: 通过" : "验收: 失败";
+              el.pillE2e.title = result.ok
+                ? "§9 全部步骤通过"
+                : result.errors.join("\n");
+            }
+            state.shopMessage = result.ok
+              ? "§9 海藻精端到端验收通过（" + result.steps.length + " 步）。"
+              : "§9 验收失败：" + (result.errors[0] || "未知");
+            if (!result.ok) console.error("[AgricultureIrrigationDemo] §9 E2E failed", result);
+            else console.info("[AgricultureIrrigationDemo] §9 E2E passed", result.snapshot);
+            render();
+          });
+        }
+        el.reset.addEventListener("click", function () {
+          state = createInitialState();
+          hideItemMenu();
+          closeSoilAmendPicker();
+          closeVenturiAddPicker();
+          recomputeIrrigationNetwork(state);
+          resetViewport();
+          render();
+        });
+        el.toggleTaskPause.addEventListener("click", function () {
+          if (!state.task) return;
+          state.task.paused = !state.task.paused;
+          render();
+        });
+        el.cancelTask.addEventListener("click", function () {
+          if (state.task && state.task.prepaidMoney) {
+            state.money += state.task.prepaidMoney;
+          }
+          if (state.task && state.task.type === "soil_amend" && state.task.refundItemId) {
+            addTempItem(state.task.refundItemId, state.task.refundItemName, 1);
+          }
+          state.task = null;
+          hideBuildMenu();
+          render();
+        });
+      }
+
+      buildGridDom();
+      bind();
+      loadSeedShopCatalog(function () {
+        loadCropDefs(function () {
+          render();
+          resetViewport();
+        });
+      });
+      setInterval(function () {
+        if (!state.paused) tickOnce();
+      }, TICK_MS);
+    })();
+  </script>
+</body>
+</html>

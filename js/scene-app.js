@@ -73,6 +73,7 @@
     var gatheringIdleTimer = null;
     var gatheringIdleAt = null;
     var tiaoXiIdleTimer = null;
+    var restIdleTimer = null;
     var tiaoXiCapModeNotified = false;
     var timeHudVisible = true;
     var combatRenderProfileTimer = null;
@@ -81,6 +82,14 @@
         var n = parseInt(idleTickMs, 10);
         if (!isFinite(n) || n < 200) n = 3000;
         return n;
+    }
+
+    function getRestAutoTickMs() {
+        var Surv = window.Survival;
+        var cfg = Surv && typeof Surv.getConfig === 'function' ? Surv.getConfig() : null;
+        var sec = cfg ? Number(cfg.rest_action_auto_tick_seconds) : 5;
+        if (!isFinite(sec) || sec <= 0) sec = 5;
+        return Math.max(1000, Math.floor(sec * 1000));
     }
 
     // Shared context for renderer/systems
@@ -169,6 +178,7 @@
             dirtyness: true,
             energy: true,
             stamina: true,
+            fatigue: true,
             weight: true
         },
         /** 右上角 Buff 条（与 leftHudBlockVisibilityRules 共用 shouldShowLeftHudBlock('buff_hud')） */
@@ -228,7 +238,10 @@
             return !!rule;
         },
         /**
-         * 快捷动作栏 · 固定槽（常态动作）：玩家在「动作」菜单点 📌 登记，token 形如 hub|skillId|actionId。
+         * 快捷动作栏 · 固定槽（常态动作）：玩家在「动作」菜单点 📌 登记。
+         * 支持 token：
+         * - hub|skillId|actionId
+         * - action|actionId
          * 与情境动作（采集/脚下/护体等）分离，见 .cursor/rules/quick-action-bar-agent.mdc
          */
         action_bar_slots: [null, null, null, null],
@@ -248,10 +261,18 @@
                     var v = arr[j];
                     if (v == null || v === '') continue;
                     var s = String(v).trim();
-                    if (s.indexOf('hub|') !== 0) continue;
-                    var parts = s.split('|');
-                    if (parts.length < 3 || !parts[1] || !parts[2]) continue;
-                    out[j] = s;
+                    if (s.indexOf('hub|') === 0) {
+                        var partsHub = s.split('|');
+                        if (partsHub.length < 3 || !partsHub[1] || !partsHub[2]) continue;
+                        out[j] = s;
+                        continue;
+                    }
+                    if (s.indexOf('action|') === 0) {
+                        var partsAction = s.split('|');
+                        if (partsAction.length < 2 || !partsAction[1]) continue;
+                        if (partsAction[1] !== 'rest_toggle') continue;
+                        out[j] = s;
+                    }
                 }
             }
             this.action_bar_slots = out;
@@ -282,9 +303,27 @@
             throw err;
         }
     }
+    var ATTR_EXP_DEBUG_STORAGE_KEY = 'cabi_attr_exp_debug_enabled_v1';
+
+    function getAttrExpDebugEnabledFromStorage() {
+        try {
+            if (typeof localStorage === 'undefined') return false;
+            return localStorage.getItem(ATTR_EXP_DEBUG_STORAGE_KEY) === '1';
+        } catch (e) {
+            return false;
+        }
+    }
+
+    function setAttrExpDebugEnabledToStorage(enabled) {
+        try {
+            if (typeof localStorage === 'undefined') return;
+            localStorage.setItem(ATTR_EXP_DEBUG_STORAGE_KEY, enabled ? '1' : '0');
+        } catch (e) { /* ignore storage failure */ }
+    }
 
     function isStoryMovementLocked() {
         if (window.DialogueUI && typeof window.DialogueUI.isDialogueOpen === 'function' && window.DialogueUI.isDialogueOpen()) return true;
+        if (window.NPCSystem && typeof window.NPCSystem.isMenuOpen === 'function' && window.NPCSystem.isMenuOpen()) return true;
         var ov = document.getElementById('character-creation-overlay');
         if (ov && !ov.classList.contains('hidden')) return true;
         return false;
@@ -592,6 +631,26 @@
         return html;
     }
 
+    function buildItemFieldRulesHtmlAppend(itemId, tpl, inst, character) {
+        try {
+            if (!window.ItemFieldDisplayRules || typeof window.ItemFieldDisplayRules.renderFieldBlocksHtml !== 'function') return '';
+            return window.ItemFieldDisplayRules.renderFieldBlocksHtml({
+                itemId: itemId,
+                tpl: tpl,
+                inst: inst,
+                character: character,
+                buffLookup: function (buffId) {
+                    if (!window.BuffSystem || typeof window.BuffSystem.getBuffTemplate !== 'function') return null;
+                    try {
+                        var bt = window.BuffSystem.getBuffTemplate(buffId);
+                        if (!bt) return null;
+                        return { name: bt.name || '', buff_id: bt.buff_id || buffId };
+                    } catch (eB) { return null; }
+                }
+            }) || '';
+        } catch (e) { return ''; }
+    }
+
     function buildItemTooltipHtmlForTemplate(itemId, tpl, inst, character) {
         var tier = IE && IE.getItemDisplayTier ? IE.getItemDisplayTier(itemId, character) : 0;
         var name = tpl && IE && IE.getDisplayName ? IE.getDisplayName(tpl, tier, character) : String(itemId || '');
@@ -608,6 +667,8 @@
                 if (modulesHtml) html += modulesHtml;
             }
         } catch (e) { /* ignore */ }
+        var fieldRulesHtml = buildItemFieldRulesHtmlAppend(itemId, tpl, inst, character);
+        if (fieldRulesHtml) html += fieldRulesHtml;
         return html;
     }
 
@@ -636,6 +697,7 @@
             fetch(base + 'recipe-methods.json').then(function (r) { return r.ok ? r.json() : { methods: {} }; }).catch(function () { return { methods: {} }; }),
             fetch(base + 'life-skill-recipe-interfaces.json').then(function (r) { return r.ok ? r.json() : { interfaces: {} }; }).catch(function () { return { interfaces: {} }; }),
             fetch(base + 'item-info-modules.json').then(function (r) { return r.ok ? r.json() : { module_sets: {} }; }).catch(function () { return { module_sets: {} }; }),
+            fetch(base + 'item-field-display-rules.json').then(function (r) { return r.ok ? r.json() : null; }).catch(function () { return null; }),
             fetch(base + 'compost-events.json').then(function (r) { return r.ok ? r.json() : { events: {} }; }).catch(function () { return { events: {} }; }),
             fetch(base + 'compost-event-actions.csv').then(function (r) { return r.ok ? r.text() : ''; }).catch(function () { return ''; })
         ]).then(function (arr) {
@@ -729,11 +791,14 @@
             if (window.ItemInfoModules && typeof window.ItemInfoModules.setTable === 'function') {
                 window.ItemInfoModules.setTable(arr[21]);
             }
+            if (window.ItemFieldDisplayRules && typeof window.ItemFieldDisplayRules.setTable === 'function') {
+                window.ItemFieldDisplayRules.setTable(arr[22] && typeof arr[22] === 'object' ? arr[22] : null);
+            }
             if (window.CompostSystem) {
                 if (typeof window.CompostSystem.setEventsTable === 'function') {
-                    window.CompostSystem.setEventsTable(arr[22]);
+                    window.CompostSystem.setEventsTable(arr[23]);
                 }
-                compostEventActionDisplayById = parseCompostEventActionsCsv(arr[23] != null ? String(arr[23]) : '');
+                compostEventActionDisplayById = parseCompostEventActionsCsv(arr[24] != null ? String(arr[24]) : '');
                 if (typeof window.CompostSystem.setConfig === 'function') {
                     window.CompostSystem.setConfig({
                         aerobic_duration_ticks: 288,
@@ -1186,6 +1251,13 @@
         return { skillId: parts[1], actionId: parts[2] };
     }
 
+    function parseActionQuickBarToken(tok) {
+        if (!tok || String(tok).indexOf('action|') !== 0) return null;
+        var parts = String(tok).split('|');
+        if (parts.length < 2 || !parts[1]) return null;
+        return { actionId: parts[1] };
+    }
+
     function getQuickBarPinLabel(skillId, actionId) {
         var CS = window.CombatSkills;
         if (!CS || typeof CS.getSkill !== 'function') return actionId || '—';
@@ -1200,6 +1272,15 @@
 
     function pinHubToQuickBar(skillId, actionId) {
         var tok = 'hub|' + skillId + '|' + actionId;
+        return pinTokenToQuickBar(tok);
+    }
+
+    function pinActionToQuickBar(actionId) {
+        var tok = 'action|' + actionId;
+        return pinTokenToQuickBar(tok);
+    }
+
+    function pinTokenToQuickBar(tok) {
         var slots = window.SceneCtx.getActionBarSlots();
         var i;
         for (i = 0; i < ACTION_BAR_PIN_SLOTS; i++) {
@@ -1235,7 +1316,19 @@
         }
         var idx = slotIndex | 0;
         var slots = window.SceneCtx.getActionBarSlots();
-        var parsed = parseHubQuickBarToken(slots[idx]);
+        var token = slots[idx];
+        var parsedAction = parseActionQuickBarToken(token);
+        if (parsedAction) {
+            if (parsedAction.actionId === 'rest_toggle') {
+                setRestingActionActive(!(window.Survival && window.Survival.getState && window.Survival.getState().isResting), { showMsg: true });
+                if (window.SceneRenderer) window.SceneRenderer.render();
+                updateStatusPanel();
+                return;
+            }
+            showMsg(ui('action.bar.pin.unknown'), 'info');
+            return;
+        }
+        var parsed = parseHubQuickBarToken(token);
         if (!parsed) return;
         var sk = parsed.skillId;
         var act = parsed.actionId;
@@ -1372,6 +1465,38 @@
         var breathId = 'combat_basic_breath';
         var footworkId = 'combat_basic_footwork';
         var hubs = IE.getCombatState && IE.getCombatState().hubs ? IE.getCombatState().hubs : {};
+        if (Surv && typeof Surv.getState === 'function' && typeof Surv.setResting === 'function') {
+            var survState = Surv.getState() || {};
+            var isResting = !!survState.isResting;
+            var btnRest = document.createElement('button');
+            btnRest.type = 'button';
+            btnRest.className = 'player-action-item';
+            btnRest.setAttribute('role', 'menuitem');
+            btnRest.textContent = isResting ? ui('player.action.rest.stop') : ui('player.action.rest.start');
+            btnRest.title = isResting ? ui('player.action.rest.stop.hint') : ui('player.action.rest.start.hint');
+            btnRest.addEventListener('click', function (ev) {
+                ev.stopPropagation();
+                setRestingActionActive(!isResting, { showMsg: true });
+                closePlayerActionsSubmenu();
+                if (window.SceneRenderer) window.SceneRenderer.render();
+                updateStatusPanel();
+            });
+            var restRow = document.createElement('div');
+            restRow.className = 'player-action-item-row';
+            restRow.appendChild(btnRest);
+            var pinRest = document.createElement('button');
+            pinRest.type = 'button';
+            pinRest.className = 'player-action-pin';
+            pinRest.setAttribute('aria-label', ui('action.bar.pin.hint'));
+            pinRest.title = ui('action.bar.pin.hint');
+            pinRest.textContent = '📌';
+            pinRest.addEventListener('click', function (ev) {
+                ev.stopPropagation();
+                pinActionToQuickBar('rest_toggle');
+            });
+            restRow.appendChild(pinRest);
+            sub.appendChild(restRow);
+        }
         var breathLv = typeof IE.getSkillLevel === 'function' ? IE.getSkillLevel(breathId) : 0;
         if (CS && breathLv >= 1) {
             var sk = typeof CS.getSkill === 'function' ? CS.getSkill(breathId) : null;
@@ -1550,7 +1675,7 @@
         var IE = window.InventoryEquipment;
         var CS = window.CombatSkills;
         var breathId = 'combat_basic_breath';
-        var cnt = 0;
+        var cnt = 1; // 常驻动作：休息
         if (IE && typeof IE.getSkillLevel === 'function' && CS && typeof CS.getSkill === 'function' && IE.getSkillLevel(breathId) >= 1) {
             var sk = CS.getSkill(breathId);
             if (sk && sk.hub_actions) {
@@ -1570,6 +1695,14 @@
     }
 
     function updateStatusPanel(gatherState) {
+        var SurvForRest = window.Survival;
+        if (SurvForRest && typeof SurvForRest.getState === 'function') {
+            var restState = SurvForRest.getState() || {};
+            if (restState.isResting) startRestIdleTimer();
+            else stopRestIdleTimer();
+        } else {
+            stopRestIdleTimer();
+        }
         function getEnemyDisplayName(enemyId) {
             var id = enemyId != null ? String(enemyId) : '';
             if (!id) return '';
@@ -1766,6 +1899,16 @@
                 if (extra > 0) el.textContent = baseInn + '+' + extra + '=' + eff;
                 else el.textContent = String(eff);
             });
+            var attrExpState = (typeof CA.getAttributeExpState === 'function')
+                ? CA.getAttributeExpState('player')
+                : {};
+            attrIds.forEach(function (id) {
+                var expEl = document.getElementById('status-attr-exp-exp-' + id);
+                if (!expEl) return;
+                var e = attrExpState && attrExpState[id] ? attrExpState[id] : { attribute_level: 0, exp: 0 };
+                var exp = Math.max(0, Math.floor(Number(e.exp) || 0));
+                expEl.textContent = String(exp);
+            });
         }
         var Surv = window.Survival;
         var satietyText = document.getElementById('status-satiety-text');
@@ -1774,6 +1917,8 @@
         var thirstBar = document.getElementById('status-thirst-bar');
         var staminaText = document.getElementById('status-stamina-text');
         var staminaBar = document.getElementById('status-stamina-bar');
+        var fatigueText = document.getElementById('status-fatigue-text');
+        var fatigueBar = document.getElementById('status-fatigue-bar');
         var energyText = document.getElementById('status-energy-text');
         var energyBar = document.getElementById('status-energy-bar');
         var moodEl = document.getElementById('status-mood');
@@ -1797,6 +1942,7 @@
             setSurvivalMetricDisplay('status-metric-dirtyness', shouldShowSurvivalMetric('dirtyness', s));
             setSurvivalMetricDisplay('status-metric-energy', shouldShowSurvivalMetric('energy', s));
             setSurvivalMetricDisplay('status-metric-stamina', shouldShowSurvivalMetric('stamina', s));
+            setSurvivalMetricDisplay('status-metric-fatigue', shouldShowSurvivalMetric('fatigue', s));
             setSurvivalMetricDisplay('status-metric-weight', shouldShowSurvivalMetric('weight', s));
 
             var zone = Surv.getSatietyZone ? Surv.getSatietyZone() : 'normal';
@@ -1814,6 +1960,19 @@
             staminaText.textContent = s.stamina.toFixed(1) + ' / ' + stamMax;
             staminaText.className = s.stamina <= 0 ? 'value danger' : (s.stamina < stamMax * 0.3 ? 'value warn' : 'value ok');
             staminaBar.style.width = stamMax > 0 ? (s.stamina / stamMax * 100) + '%' : '0%';
+
+            if (fatigueText) {
+                var fatigueValue = Math.max(0, Math.min(100, Number(s.fatigue) || 0));
+                var fatigueState = 'normal';
+                if (fatigueValue >= 80) fatigueState = 'sleepy';
+                else if (fatigueValue > 50 && fatigueValue < 80) fatigueState = 'tired';
+                var fatigueStateKey = fatigueState === 'sleepy'
+                    ? 'survival.fatigue.sleepy'
+                    : (fatigueState === 'tired' ? 'survival.fatigue.tired' : 'survival.fatigue.normal');
+                fatigueText.textContent = ui(fatigueStateKey) + ' (' + fatigueValue.toFixed(1) + '/100.0)';
+                fatigueText.className = fatigueState === 'sleepy' ? 'value danger' : (fatigueState === 'tired' ? 'value warn' : 'value ok');
+                if (fatigueBar) fatigueBar.style.width = fatigueValue + '%';
+            }
 
             var enMax = s.energy_max || 100;
             energyText.textContent = s.energy.toFixed(1) + ' / ' + enMax;
@@ -1906,6 +2065,7 @@
             setSurvivalMetricDisplay('status-metric-dirtyness', shouldShowSurvivalMetric('dirtyness', null));
             setSurvivalMetricDisplay('status-metric-energy', shouldShowSurvivalMetric('energy', null));
             setSurvivalMetricDisplay('status-metric-stamina', shouldShowSurvivalMetric('stamina', null));
+            setSurvivalMetricDisplay('status-metric-fatigue', shouldShowSurvivalMetric('fatigue', null));
             setSurvivalMetricDisplay('status-metric-weight', shouldShowSurvivalMetric('weight', null));
             if (gatherState) {
                 staminaText.textContent = gatherState.stamina + ' / ' + gatherState.stamina_max;
@@ -1916,6 +2076,11 @@
             }
             energyText.textContent = '—';
             energyBar.style.width = '100%';
+            if (fatigueText) {
+                fatigueText.textContent = '—';
+                fatigueText.className = 'value';
+            }
+            if (fatigueBar) fatigueBar.style.width = '0%';
             if (moodEl) {
                 moodEl.textContent = '—';
                 moodEl.className = 'value';
@@ -1975,6 +2140,46 @@
         tiaoXiCapModeNotified = false;
         setIdleActionType('');
         if (withMsg !== false) showMsg('已停止挂机调息', 'info');
+    }
+
+    function stopRestIdleTimer() {
+        if (!restIdleTimer) return;
+        clearInterval(restIdleTimer);
+        restIdleTimer = null;
+    }
+
+    function startRestIdleTimer() {
+        if (restIdleTimer) return;
+        restIdleTimer = setInterval(function () {
+            var Surv = window.Survival;
+            if (!Surv || typeof Surv.getState !== 'function' || typeof Surv.advanceTick !== 'function') {
+                stopRestIdleTimer();
+                return;
+            }
+            var st = Surv.getState() || {};
+            if (!st.isResting) {
+                stopRestIdleTimer();
+                return;
+            }
+            Surv.advanceTick();
+            if (window.SceneRenderer) window.SceneRenderer.render();
+            updateStatusPanel();
+        }, getRestAutoTickMs());
+    }
+
+    function setRestingActionActive(active, opts) {
+        var options = opts || {};
+        var Surv = window.Survival;
+        if (!Surv || typeof Surv.setResting !== 'function' || typeof Surv.getState !== 'function') return false;
+        var before = !!((Surv.getState() || {}).isResting);
+        var next = !!active;
+        Surv.setResting(next);
+        if (next) startRestIdleTimer();
+        else stopRestIdleTimer();
+        if (before !== next && options.showMsg !== false) {
+            showMsg(ui(next ? 'player.action.rest.enabled' : 'player.action.rest.disabled'), 'info');
+        }
+        return before !== next;
     }
 
     function onTiaoXiIdleTick() {
@@ -2298,6 +2503,11 @@
         return t === '制肥桶';
     }
 
+    function isBedStationAnnotationText(s) {
+        var t = String(s || '').trim();
+        return t === '床' || t === '床铺';
+    }
+
     function getCurrentCompostStationContext() {
         if (!E || typeof E.getState !== 'function') return null;
         var st = E.getState();
@@ -2306,6 +2516,28 @@
             var ann = (E.getAnnotationAt && typeof E.getAnnotationAt === 'function') ? E.getAnnotationAt(x, y) : null;
             var s = ann != null ? String(ann) : '';
             if (isCompostStationAnnotationText(s)) {
+                hit = {
+                    station_type: 'main',
+                    map_id: st.mapId,
+                    x: x,
+                    y: y
+                };
+                return true;
+            }
+            return false;
+        });
+        if (hit) return hit;
+        return null;
+    }
+
+    function getCurrentBedStationContext() {
+        if (!E || typeof E.getState !== 'function') return null;
+        var st = E.getState();
+        var hit = null;
+        forEachAdjacentCell(st.x, st.y, function (x, y) {
+            var ann = (E.getAnnotationAt && typeof E.getAnnotationAt === 'function') ? E.getAnnotationAt(x, y) : null;
+            var s = ann != null ? String(ann) : '';
+            if (isBedStationAnnotationText(s)) {
                 hit = {
                     station_type: 'main',
                     map_id: st.mapId,
@@ -2430,6 +2662,61 @@
         if (!isPlayerComaActive()) return false;
         showMsg(ui('intro.blocked.action'), 'info');
         return true;
+    }
+
+    var BED_FATIGUE_BUFF_IDS = ['survival_fatigue', 'survival_fatigue_sleepy'];
+
+    function hasBedSleepDebuff() {
+        var Buff = window.BuffSystem;
+        if (!Buff || typeof Buff.hasBuffByBuffId !== 'function') return false;
+        for (var i = 0; i < BED_FATIGUE_BUFF_IDS.length; i++) {
+            if (Buff.hasBuffByBuffId('player', BED_FATIGUE_BUFF_IDS[i])) return true;
+        }
+        return false;
+    }
+
+    function settleSleepAttributeExpOnce() {
+        var CA = window.CharacterAttributes;
+        if (!CA || typeof CA.settleAttributeExpOnce !== 'function') return { ok: false, any_success: false };
+        return CA.settleAttributeExpOnce('player', { reason: 'bed_sleep', source: 'facility_bed' }) || { ok: false, any_success: false };
+    }
+
+    function executeBedSleepAction() {
+        if (!isOnBedStationTile()) {
+            showMsg(ui('bed.sleep.not_on_tile'), 'info');
+            return false;
+        }
+        if (!hasBedSleepDebuff()) {
+            showMsg(ui('bed.sleep.require_fatigue_debuff'), 'info');
+            return false;
+        }
+        var ask = ui('bed.sleep.confirm');
+        if (typeof window.confirm === 'function' && !window.confirm(ask)) return false;
+        var i;
+        for (i = 0; i < 48; i++) {
+            if (window.Survival && typeof window.Survival.advanceTick === 'function') window.Survival.advanceTick();
+            if (i === 47) {
+                if (window.Survival && typeof window.Survival.clearFatigue === 'function') window.Survival.clearFatigue();
+                var settleRet = settleSleepAttributeExpOnce();
+                if (settleRet && settleRet.ok && settleRet.any_success) {
+                    showMsg(ui('bed.sleep.attr_exp_upgraded'), 'success');
+                }
+            }
+        }
+        showMsg(ui('bed.sleep.done'), 'success');
+        if (typeof updateStatusPanel === 'function') updateStatusPanel();
+        if (typeof updateBackpackPanel === 'function') updateBackpackPanel();
+        if (window.SceneRenderer) window.SceneRenderer.render();
+        return true;
+    }
+
+    function trySleepAtBed() {
+        if (isPreCreationGameplayRestricted()) {
+            showIntroBlockedMsg();
+            return false;
+        }
+        if (guardPlayerComaBlocked()) return false;
+        return executeBedSleepAction();
     }
 
     var ACTION_TYPES = {
@@ -4075,6 +4362,10 @@
         return !!getCurrentCompostStationContext();
     }
 
+    function isOnBedStationTile() {
+        return !!getCurrentBedStationContext();
+    }
+
     function canPourWaterAtCurrentTile() {
         if (isPreCreationGameplayRestricted()) return false;
         if (!isOnCookingStationTile()) return false;
@@ -4556,6 +4847,13 @@
                 modWrap.className = 'bp-detail-modules';
                 modWrap.innerHTML = modulesHtml;
                 detailEl.appendChild(modWrap);
+            }
+            var fieldAppend = buildItemFieldRulesHtmlAppend(picked.item.item_id, disp.tpl, picked.item, char);
+            if (fieldAppend) {
+                var fieldWrap = document.createElement('div');
+                fieldWrap.className = 'bp-detail-field-rules';
+                fieldWrap.innerHTML = fieldAppend;
+                detailEl.appendChild(fieldWrap);
             }
 
             var actions = document.createElement('div');
@@ -6050,6 +6348,8 @@
 
     var compostStationPanelOpen = false;
     var compostEventActionDisplayById = {};
+    var PLANTING_SKILL_ID = 'life_planting';
+    var LEGACY_FARMING_SKILL_ID = 'life_farming';
     var compostStationUiState = {
         mode: 'aerobic',
         staged_inputs: [],
@@ -6087,10 +6387,46 @@
 
     function addCompostProficiencyForAction(actionType) {
         if (!IE || typeof IE.incrementSkillMoveUsage !== 'function') return;
+        ensureLifePlantingSkillEntry();
         var actionKey = String(actionType || '').trim() || 'compost_action';
-        IE.incrementSkillMoveUsage('life_farming', actionKey, 1);
+        IE.incrementSkillMoveUsage(PLANTING_SKILL_ID, actionKey, 1);
         var mountedBreathSkillId = getMountedBreathSkillIdForCompostProficiency();
         if (mountedBreathSkillId) IE.incrementSkillMoveUsage(mountedBreathSkillId, 'tu_na', 1);
+    }
+
+    function ensureLifePlantingSkillEntry() {
+        if (!IE || typeof IE.getState !== 'function') return false;
+        var st = IE.getState();
+        if (!st || typeof st !== 'object') return false;
+        if (!st.skills || typeof st.skills !== 'object') st.skills = {};
+
+        var changed = false;
+        var planting = st.skills[PLANTING_SKILL_ID];
+        var legacy = st.skills[LEGACY_FARMING_SKILL_ID];
+        if (!planting || typeof planting !== 'object') {
+            if (legacy && typeof legacy === 'object') {
+                st.skills[PLANTING_SKILL_ID] = {
+                    level: Math.max(1, parseInt(legacy.level, 10) || 1),
+                    move_usage: legacy.move_usage && typeof legacy.move_usage === 'object'
+                        ? Object.assign({}, legacy.move_usage)
+                        : {}
+                };
+            } else {
+                st.skills[PLANTING_SKILL_ID] = { level: 1, move_usage: {} };
+            }
+            planting = st.skills[PLANTING_SKILL_ID];
+            changed = true;
+        }
+        if ((parseInt(planting.level, 10) || 0) < 1) {
+            planting.level = 1;
+            changed = true;
+        }
+        if (!planting.move_usage || typeof planting.move_usage !== 'object') {
+            planting.move_usage = {};
+            changed = true;
+        }
+        if (changed) recalcCharacterStatsFromIE();
+        return true;
     }
 
     function getCompostStartGuardState(mode, stagedTotals) {
@@ -6702,6 +7038,7 @@
             showMsg(ui('compost.station.not_on_tile'), 'info');
             return;
         }
+        ensureLifePlantingSkillEntry();
         if (window.Survival && typeof window.Survival.advanceTick === 'function') window.Survival.advanceTick();
         compostStationPanelOpen = true;
         var modal = document.getElementById('modal-compost-station');
@@ -7104,8 +7441,27 @@
 
     var survivalPanelOpen = false;
     var acupointPanelOpen = false;
-    var specialPanelOpen = false;
     var savePanelOpen = false;
+    var currentSkillOverviewTab = 'survival';
+
+    /** 生活技能展示表：与 docs/design/11-skills.md §8.2 一致；id 与已落地的 life_* 前缀对齐。 */
+    var LIFE_SKILL_TABLE = [
+        { id: 'life_fishing', nameKey: 'life.skill.fishing.name', descKey: 'life.skill.fishing.desc' },
+        { id: 'life_mining', nameKey: 'life.skill.mining.name', descKey: 'life.skill.mining.desc' },
+        { id: 'life_logging', nameKey: 'life.skill.logging.name', descKey: 'life.skill.logging.desc' },
+        { id: 'life_hunting', nameKey: 'life.skill.hunting.name', descKey: 'life.skill.hunting.desc' },
+        { id: 'life_gathering', nameKey: 'life.skill.gathering.name', descKey: 'life.skill.gathering.desc' },
+        { id: 'life_planting', nameKey: 'life.skill.planting.name', descKey: 'life.skill.planting.desc' },
+        { id: 'life_animal_husbandry', nameKey: 'life.skill.animal_husbandry.name', descKey: 'life.skill.animal_husbandry.desc' },
+        { id: 'life_cooking', nameKey: 'life.skill.cooking.name', descKey: 'life.skill.cooking.desc' },
+        { id: 'life_forging', nameKey: 'life.skill.forging.name', descKey: 'life.skill.forging.desc' },
+        { id: 'life_pharmacy', nameKey: 'life.skill.pharmacy.name', descKey: 'life.skill.pharmacy.desc' },
+        { id: 'life_weaving', nameKey: 'life.skill.weaving.name', descKey: 'life.skill.weaving.desc' },
+        { id: 'life_manufacturing', nameKey: 'life.skill.manufacturing.name', descKey: 'life.skill.manufacturing.desc' },
+        { id: 'life_enchant', nameKey: 'life.skill.enchant.name', descKey: 'life.skill.enchant.desc' },
+        { id: 'life_trade', nameKey: 'life.skill.trade.name', descKey: 'life.skill.trade.desc' },
+        { id: 'life_appraisal', nameKey: 'life.skill.appraisal.name', descKey: 'life.skill.appraisal.desc' }
+    ];
 
     function getSaveCredentials() {
         var accEl = document.getElementById('save-input-account');
@@ -7532,6 +7888,43 @@
             });
             strikeBar.appendChild(strikeChips);
             limbBox.appendChild(strikeBar);
+            var selSkillForPost = CS && combatUIState.curSkillId ? CS.getSkill(combatUIState.curSkillId) : null;
+            var canEditPost = !!selSkillForPost && combatUIState.curCat !== 'breath' && combatUIState.curCat !== 'footwork';
+            var obtainedPostIds = (window.CharacterAttributes && typeof window.CharacterAttributes.getPostEffectsObtainedIds === 'function')
+                ? window.CharacterAttributes.getPostEffectsObtainedIds()
+                : [];
+            function limbHasAnyEquippablePostEffect(lid) {
+                if (!window.PostEffects || typeof window.PostEffects.getPostEffect !== 'function') return false;
+                var limb = combatState && combatState.limbs ? combatState.limbs[lid] : null;
+                var activeSkillId = (limb && limb.active) ? String(limb.active) : '';
+                if (!activeSkillId) return false;
+                var seq = (combatState && combatState.move_sequences && Array.isArray(combatState.move_sequences[lid]))
+                    ? combatState.move_sequences[lid]
+                    : [];
+                var moveIds = [];
+                for (var i = 0; i < seq.length; i++) {
+                    var rid = seq[i] ? String(seq[i]) : '';
+                    if (!rid) continue;
+                    if (rid.indexOf('variant:') === 0) continue;
+                    moveIds.push(rid);
+                }
+                for (var pi = 0; pi < obtainedPostIds.length; pi++) {
+                    var pid = obtainedPostIds[pi] ? String(obtainedPostIds[pi]) : '';
+                    if (!pid) continue;
+                    var pe = window.PostEffects.getPostEffect(pid);
+                    if (!pe || !pe.id) continue;
+                    if (Array.isArray(pe.valid_skill_ids) && pe.valid_skill_ids.length && pe.valid_skill_ids.indexOf(activeSkillId) < 0) continue;
+                    if (Array.isArray(pe.valid_move_ids) && pe.valid_move_ids.length) {
+                        var okMove = false;
+                        for (var mi = 0; mi < moveIds.length; mi++) {
+                            if (pe.valid_move_ids.indexOf(moveIds[mi]) >= 0) { okMove = true; break; }
+                        }
+                        if (!okMove) continue;
+                    }
+                    return true;
+                }
+                return false;
+            }
             limbIds.forEach(function (lid) {
                 var limb = combatState.limbs[lid] || { active: null, parry: null };
                 var div = document.createElement('div');
@@ -7541,7 +7934,31 @@
                 var isActiveSel = combatUIState.curPart === lid && combatUIState.curSlot === 'active';
                 var isParrySel = combatUIState.curPart === lid && combatUIState.curSlot === 'parry';
                 var orderBadge = strikeOrderPos[lid] != null ? ('#' + String(Number(strikeOrderPos[lid]) + 1)) : '--';
-                div.innerHTML = '<div class="limb-header"><span>' + (LIMB_ICONS[lid] || '') + ' ' + ui(LIMB_LABELS[lid] || lid) + '</span><span class="limb-order-badge">' + orderBadge + '</span></div><div class="limb-slots"><div class="combat-limb-slot' + (isActiveSel ? ' selected' : '') + '" data-part="' + lid + '" data-slot="active"><span class="slot-type">' + ui('combat.slot.active') + '</span><span class="slot-skill">' + activeName + '</span></div><div class="combat-limb-slot' + (isParrySel ? ' selected' : '') + '" data-part="' + lid + '" data-slot="parry"><span class="slot-type">' + ui('combat.slot.parry') + '</span><span class="slot-skill">' + parryName + '</span></div></div>';
+                div.innerHTML = '<div class="limb-header"><span>' + (LIMB_ICONS[lid] || '') + ' ' + ui(LIMB_LABELS[lid] || lid) + '</span><div class="limb-header-right"><span class="limb-order-badge">' + orderBadge + '</span><span class="limb-post-btn-wrap"></span></div></div><div class="limb-slots"><div class="combat-limb-slot' + (isActiveSel ? ' selected' : '') + '" data-part="' + lid + '" data-slot="active"><span class="slot-type">' + ui('combat.slot.active') + '</span><span class="slot-skill">' + activeName + '</span></div><div class="combat-limb-slot' + (isParrySel ? ' selected' : '') + '" data-part="' + lid + '" data-slot="parry"><span class="slot-type">' + ui('combat.slot.parry') + '</span><span class="slot-skill">' + parryName + '</span></div></div>';
+
+                var btnWrap = div.querySelector('.limb-post-btn-wrap');
+                if (btnWrap) {
+                    if (limbHasAnyEquippablePostEffect(lid)) {
+                        var equippedPostId = getLimbPostEffectId(combatState, lid);
+                        var equippedPostName = equippedPostId ? getPostEffectName(equippedPostId) : '';
+                        var btnPost = document.createElement('button');
+                        btnPost.type = 'button';
+                        btnPost.className = 'combat-debug-btn btn-limb-post-effect';
+                        btnPost.setAttribute('data-ui', 'combat.post_effect.btn');
+                        btnPost.textContent = equippedPostName ? ('后遗症: ' + equippedPostName) : '后遗症';
+                        btnPost.disabled = !canEditPost;
+                        btnPost.onclick = (function (targetLid, anchorEl) {
+                            return function (e) {
+                                if (e && typeof e.stopPropagation === 'function') e.stopPropagation();
+                                if (anchorEl && anchorEl.disabled) return;
+                                combatUIState.curPart = targetLid;
+                                if (!combatUIState.curSlot) combatUIState.curSlot = 'active';
+                                openLimbPostEffectPicker(anchorEl, targetLid);
+                            };
+                        })(lid, btnPost);
+                        btnWrap.appendChild(btnPost);
+                    }
+                }
                 div.querySelectorAll('.combat-limb-slot').forEach(function (slotEl) {
                     slotEl.onclick = function () {
                         combatUIState.curPart = slotEl.getAttribute('data-part');
@@ -7575,19 +7992,6 @@
         var profPct = selSkill && CS && selSkill.category !== 'footwork' ? Math.floor(CS.getSkillTotalProficiency(combatUIState.curSkillId, moveUsage) * 100) : 0;
         if (levelEl) levelEl.textContent = ui('combat.level', { v: skillLevel });
         if (profEl) profEl.textContent = (selSkill && selSkill.category === 'footwork') ? ui('combat.prof.not_applicable') : ui('combat.prof.total', { v: profPct });
-        var btnPostInline = document.getElementById('btn-combat-post-effect-inline');
-        if (btnPostInline) {
-            var limbForPost = combatUIState.curPart || 'lhand';
-            var equippedPostId = getLimbPostEffectId(combatState, limbForPost);
-            var equippedPostName = equippedPostId ? getPostEffectName(equippedPostId) : '';
-            btnPostInline.textContent = equippedPostName ? ('后遗症: ' + equippedPostName) : '后遗症';
-            btnPostInline.disabled = !selSkill || combatUIState.curCat === 'breath' || combatUIState.curCat === 'footwork';
-            btnPostInline.onclick = function (e) {
-                if (e && typeof e.stopPropagation === 'function') e.stopPropagation();
-                if (btnPostInline.disabled) return;
-                openLimbPostEffectPicker(btnPostInline, limbForPost);
-            };
-        }
         renderRecipeSchemaValidationDebugList();
 
         // Deploy slot validation:
@@ -8257,6 +8661,15 @@
         if (!combat) return;
         if (!combat.post_effect_sequences || typeof combat.post_effect_sequences !== 'object') combat.post_effect_sequences = {};
         var curPostId = combat.post_effect_sequences[limbId] ? String(combat.post_effect_sequences[limbId]) : null;
+        var limbActiveSkillId = combat.limbs && combat.limbs[limbId] && combat.limbs[limbId].active ? String(combat.limbs[limbId].active) : '';
+        var socketMoveIds = [];
+        var seq = (combat.move_sequences && Array.isArray(combat.move_sequences[limbId])) ? combat.move_sequences[limbId] : [];
+        for (var mi = 0; mi < seq.length; mi++) {
+            var rid = seq[mi] ? String(seq[mi]) : '';
+            if (!rid) continue;
+            if (rid.indexOf('variant:') === 0) continue;
+            socketMoveIds.push(rid);
+        }
 
         function escapePickerHtml(s) {
             return String(s)
@@ -8288,6 +8701,15 @@
             var pe = allPost[ai];
             if (!pe || !pe.id) continue;
             if (obtainedIds.indexOf(pe.id) < 0) continue;
+            if (!limbActiveSkillId) continue;
+            if (Array.isArray(pe.valid_skill_ids) && pe.valid_skill_ids.length && pe.valid_skill_ids.indexOf(limbActiveSkillId) < 0) continue;
+            if (Array.isArray(pe.valid_move_ids) && pe.valid_move_ids.length) {
+                var okMove = false;
+                for (var mj = 0; mj < socketMoveIds.length; mj++) {
+                    if (pe.valid_move_ids.indexOf(socketMoveIds[mj]) >= 0) { okMove = true; break; }
+                }
+                if (!okMove) continue;
+            }
             hasAny = true;
             var name = pe.name_key && window.UIText && typeof window.UIText.t === 'function' ? window.UIText.t(pe.name_key) : pe.id;
             var desc = pe.desc_key && window.UIText && typeof window.UIText.t === 'function' ? window.UIText.t(pe.desc_key) : '';
@@ -8433,6 +8855,32 @@
             renderRecipeSchemaValidationDebugList();
         });
     }
+    var attrExpDebugToggle = document.getElementById('status-attr-exp-debug-toggle');
+    if (attrExpDebugToggle) {
+        attrExpDebugToggle.addEventListener('change', function (ev) {
+            var enabled = !!(ev && ev.target && ev.target.checked);
+            if (window.CharacterAttributes && typeof window.CharacterAttributes.setAttributeExpDebugEnabled === 'function') {
+                window.CharacterAttributes.setAttributeExpDebugEnabled(enabled);
+            }
+            setAttrExpDebugEnabledToStorage(enabled);
+        });
+    }
+    if (window.CharacterAttributes && typeof window.CharacterAttributes.setAttributeExpDebugEnabled === 'function') {
+        window.CharacterAttributes.setAttributeExpDebugEnabled(getAttrExpDebugEnabledFromStorage());
+    }
+    ['jingu', 'flexibility', 'breath', 'dexterity', 'focus'].forEach(function (attrId) {
+        var btn = document.getElementById('status-attr-exp-debug-plus-' + attrId);
+        if (!btn) return;
+        btn.addEventListener('click', function () {
+            var CA = window.CharacterAttributes;
+            if (!CA || typeof CA.grantAttributeExp !== 'function') return;
+            var res = CA.grantAttributeExp('player', [{ attr_id: attrId, exp: 50000 }], { source: 'status_attr_exp_debug_button' });
+            if (window.GameLog && res && Array.isArray(res.applied) && res.applied.length > 0) {
+                window.GameLog.log('[调试] 属性经验 +' + String(res.applied[0].exp_applied) + ' → ' + String(attrId), 'system');
+            }
+            if (typeof updateStatusPanel === 'function') updateStatusPanel();
+        });
+    });
     document.addEventListener('click', function () {
         var hadOpenPicker = false;
         var movePickerAny = document.getElementById('picker-move');
@@ -8454,71 +8902,118 @@
         }
     });
 
-    function renderSurvivalModal() {
-        var wrap = document.getElementById('survival-skill-table');
-        if (!wrap) return;
-        wrap.innerHTML = '';
+    /** 通用：给指定技能 id 加等级；触发属性重算与 UI 刷新。 */
+    function addSkillLevelGeneric(skillId, plus, opts) {
+        var IE = window.InventoryEquipment;
+        if (!IE || typeof IE.getState !== 'function' || !skillId) return;
+        var st = IE.getState();
+        if (!st.skills || typeof st.skills !== 'object') st.skills = {};
+        if (!st.skills[skillId] || typeof st.skills[skillId] !== 'object') st.skills[skillId] = { level: 0, move_usage: {} };
+        var before = Math.max(0, parseInt(st.skills[skillId].level, 10) || 0);
+        var delta = Math.max(1, parseInt(plus, 10) || 1);
+        st.skills[skillId].level = before + delta;
+        if (!st.skills[skillId].move_usage || typeof st.skills[skillId].move_usage !== 'object') st.skills[skillId].move_usage = {};
+        if (opts && opts.gameLog && window.GameLog) {
+            window.GameLog.log(ui('log.debug.proficiency.skill_level', {
+                skillId: String(skillId),
+                before: String(before),
+                after: String(st.skills[skillId].level),
+                delta: String(delta)
+            }), 'system');
+        }
+        if (window.CharacterAttributes && typeof window.CharacterAttributes.recalcCharacterStats === 'function') {
+            window.CharacterAttributes.recalcCharacterStats({
+                getEquipmentState: function () { return IE.getState().equipment; },
+                getSkillsState: function () { return IE.getState().skills; },
+                getItemTemplate: IE.getItemTemplate,
+                getEnchantEntry: IE.getEnchantEntry,
+                getStrengthLevel: function () { return IE.getSkillLevel('survival_strength'); }
+            });
+        }
+        if (typeof updateStatusPanel === 'function') updateStatusPanel();
+        if (opts && opts.refreshCombat && combatPanelOpen) renderCombatModal();
+        renderSurvivalModal();
+    }
+
+    function buildSkillRow(opts) {
+        var IE = window.InventoryEquipment;
+        var row = document.createElement('div');
+        row.className = 'survival-row';
+
+        var info = document.createElement('div');
+        info.className = 'survival-row-info';
+        var nameEl = document.createElement('div');
+        nameEl.className = 'survival-name';
+        nameEl.textContent = opts.name || '';
+        info.appendChild(nameEl);
+        if (opts.desc) {
+            var descEl = document.createElement('div');
+            descEl.className = 'survival-desc';
+            descEl.textContent = opts.desc;
+            info.appendChild(descEl);
+        }
+
+        var levelEl = document.createElement('div');
+        levelEl.className = 'survival-level';
+        var lv = (IE && typeof IE.getSkillLevel === 'function') ? IE.getSkillLevel(opts.skillId) : 0;
+        var levelLabel = (lv || 0) + ' 级';
+        if (opts.levelSuffix) levelLabel += ' ' + opts.levelSuffix;
+        levelEl.textContent = levelLabel;
+
+        var plusBtn = document.createElement('button');
+        plusBtn.type = 'button';
+        plusBtn.className = 'survival-plus-btn';
+        plusBtn.textContent = ui('survival.btn.plus_one');
+        plusBtn.onclick = function () {
+            addSkillLevelGeneric(opts.skillId, 1, opts.addOpts || {});
+        };
+
+        row.appendChild(info);
+        row.appendChild(levelEl);
+        row.appendChild(plusBtn);
+        return row;
+    }
+
+    function renderSkillOverviewSurvivalTab(wrap) {
         var list = (window.SurvivalSkills && typeof window.SurvivalSkills.getAll === 'function')
             ? window.SurvivalSkills.getAll()
             : [];
-        var IE = window.InventoryEquipment;
-        function addSurvivalSkillLevel(skillId, plus) {
-            if (!IE || typeof IE.getState !== 'function' || !skillId) return;
-            var st = IE.getState();
-            if (!st.skills || typeof st.skills !== 'object') st.skills = {};
-            if (!st.skills[skillId] || typeof st.skills[skillId] !== 'object') st.skills[skillId] = { level: 0, move_usage: {} };
-            var before = Math.max(0, parseInt(st.skills[skillId].level, 10) || 0);
-            var delta = Math.max(1, parseInt(plus, 10) || 1);
-            st.skills[skillId].level = before + delta;
-            if (!st.skills[skillId].move_usage || typeof st.skills[skillId].move_usage !== 'object') st.skills[skillId].move_usage = {};
-            if (window.GameLog) {
-                window.GameLog.log(ui('log.debug.proficiency.skill_level', {
-                    skillId: String(skillId),
-                    before: String(before),
-                    after: String(st.skills[skillId].level),
-                    delta: String(delta)
-                }), 'system');
-            }
-            if (window.CharacterAttributes && typeof window.CharacterAttributes.recalcCharacterStats === 'function') {
-                window.CharacterAttributes.recalcCharacterStats({
-                    getEquipmentState: function () { return IE.getState().equipment; },
-                    getSkillsState: function () { return IE.getState().skills; },
-                    getItemTemplate: IE.getItemTemplate,
-                    getEnchantEntry: IE.getEnchantEntry,
-                    getStrengthLevel: function () { return IE.getSkillLevel('survival_strength'); }
-                });
-            }
-            if (typeof updateStatusPanel === 'function') updateStatusPanel();
-            renderSurvivalModal();
+        if (!list.length) {
+            var empty = document.createElement('div');
+            empty.className = 'skill-overview-empty';
+            empty.textContent = ui('skill.tab.empty.survival');
+            wrap.appendChild(empty);
+            return;
         }
         list.forEach(function (sk) {
-            var row = document.createElement('div');
-            row.className = 'survival-row';
-            var nameEl = document.createElement('div');
-            nameEl.className = 'survival-name';
-            nameEl.textContent = sk.name;
-            var levelEl = document.createElement('div');
-            levelEl.className = 'survival-level';
-            var lv = IE && typeof IE.getSkillLevel === 'function'
-                ? IE.getSkillLevel(sk.id)
-                : 0;
-            levelEl.textContent = (lv || 0) + ' 级';
-            var plusBtn = document.createElement('button');
-            plusBtn.type = 'button';
-            plusBtn.className = 'survival-plus-btn';
-            plusBtn.textContent = ui('survival.btn.plus_one');
-            plusBtn.onclick = function () { addSurvivalSkillLevel(sk.id, 1); };
-            row.appendChild(nameEl);
-            row.appendChild(levelEl);
-            row.appendChild(plusBtn);
-            wrap.appendChild(row);
+            wrap.appendChild(buildSkillRow({
+                skillId: sk.id,
+                name: sk.name,
+                desc: sk.desc,
+                addOpts: { gameLog: true }
+            }));
         });
     }
 
-    function renderSpecialModal() {
-        var wrap = document.getElementById('special-skill-table');
-        if (!wrap) return;
-        wrap.innerHTML = '';
+    function renderSkillOverviewLifeTab(wrap) {
+        if (!LIFE_SKILL_TABLE.length) {
+            var empty = document.createElement('div');
+            empty.className = 'skill-overview-empty';
+            empty.textContent = ui('skill.tab.empty.life');
+            wrap.appendChild(empty);
+            return;
+        }
+        LIFE_SKILL_TABLE.forEach(function (sk) {
+            wrap.appendChild(buildSkillRow({
+                skillId: sk.id,
+                name: ui(sk.nameKey),
+                desc: ui(sk.descKey),
+                addOpts: { gameLog: true }
+            }));
+        });
+    }
+
+    function renderSkillOverviewSpecialTab(wrap) {
         var IE = window.InventoryEquipment;
         var meridianSkillId = (IE && IE.SPECIAL_MERIDIAN_STUDIES_SKILL_ID)
             ? IE.SPECIAL_MERIDIAN_STUDIES_SKILL_ID
@@ -8526,52 +9021,34 @@
         var lv = (IE && typeof IE.getSkillLevel === 'function')
             ? Math.max(0, parseInt(IE.getSkillLevel(meridianSkillId), 10) || 0)
             : 0;
-        function addSpecialSkillLevel(skillId, plus) {
-            if (!IE || typeof IE.getState !== 'function' || !skillId) return;
-            var st = IE.getState();
-            if (!st.skills || typeof st.skills !== 'object') st.skills = {};
-            if (!st.skills[skillId] || typeof st.skills[skillId] !== 'object') st.skills[skillId] = { level: 0, move_usage: {} };
-            var before = Math.max(0, parseInt(st.skills[skillId].level, 10) || 0);
-            var delta = Math.max(1, parseInt(plus, 10) || 1);
-            st.skills[skillId].level = before + delta;
-            if (!st.skills[skillId].move_usage || typeof st.skills[skillId].move_usage !== 'object') st.skills[skillId].move_usage = {};
-            if (window.CharacterAttributes && typeof window.CharacterAttributes.recalcCharacterStats === 'function') {
-                window.CharacterAttributes.recalcCharacterStats({
-                    getEquipmentState: function () { return IE.getState().equipment; },
-                    getSkillsState: function () { return IE.getState().skills; },
-                    getItemTemplate: IE.getItemTemplate,
-                    getEnchantEntry: IE.getEnchantEntry,
-                    getStrengthLevel: function () { return IE.getSkillLevel('survival_strength'); }
-                });
-            }
-            if (typeof updateStatusPanel === 'function') updateStatusPanel();
-            if (combatPanelOpen) renderCombatModal();
-            renderSpecialModal();
+        var suffix = lv >= 1 ? ui('special.skill.meridian_studies.unlocked') : ui('special.skill.meridian_studies.locked');
+        wrap.appendChild(buildSkillRow({
+            skillId: meridianSkillId,
+            name: ui('special.skill.meridian_studies.name'),
+            desc: ui('special.skill.meridian_studies.desc'),
+            levelSuffix: suffix,
+            addOpts: { refreshCombat: true }
+        }));
+    }
+
+    function renderSurvivalModal() {
+        var wrap = document.getElementById('survival-skill-table');
+        if (!wrap) return;
+        wrap.innerHTML = '';
+        var tabBtns = document.querySelectorAll('#modal-survival .skill-overview-tab');
+        if (tabBtns && tabBtns.length) {
+            tabBtns.forEach(function (btn) {
+                var tabId = btn.getAttribute('data-skill-tab') || 'survival';
+                btn.classList.toggle('active', currentSkillOverviewTab === tabId);
+            });
         }
-
-        var row = document.createElement('div');
-        row.className = 'survival-row';
-        var left = document.createElement('div');
-        left.className = 'survival-name';
-        var name = ui('special.skill.meridian_studies.name');
-        var desc = ui('special.skill.meridian_studies.desc');
-        left.innerHTML = '<div>' + name + '</div><div style="margin-top:4px;font-size:11px;color:#a8a29e;font-weight:500;">' + desc + '</div>';
-
-        var right = document.createElement('div');
-        right.className = 'survival-level';
-        var unlockText = lv >= 1 ? '（已解锁穴位分页）' : '（1级解锁穴位分页）';
-        right.textContent = String(lv) + ' 级 ' + unlockText + ' ';
-
-        var plusBtn = document.createElement('button');
-        plusBtn.type = 'button';
-        plusBtn.className = 'survival-plus-btn';
-        plusBtn.textContent = ui('survival.btn.plus_one');
-        plusBtn.onclick = function () { addSpecialSkillLevel(meridianSkillId, 1); };
-
-        row.appendChild(left);
-        row.appendChild(right);
-        row.appendChild(plusBtn);
-        wrap.appendChild(row);
+        if (currentSkillOverviewTab === 'life') {
+            renderSkillOverviewLifeTab(wrap);
+        } else if (currentSkillOverviewTab === 'special') {
+            renderSkillOverviewSpecialTab(wrap);
+        } else {
+            renderSkillOverviewSurvivalTab(wrap);
+        }
     }
 
     function renderAcupointModal() {
@@ -8734,8 +9211,14 @@
         }
     }
 
-    function openSurvivalPanel() {
-        if (survivalPanelOpen) return;
+    function openSurvivalPanel(initialTab) {
+        if (initialTab === 'life' || initialTab === 'special' || initialTab === 'survival') {
+            currentSkillOverviewTab = initialTab;
+        }
+        if (survivalPanelOpen) {
+            renderSurvivalModal();
+            return;
+        }
         if (window.Survival && typeof window.Survival.advanceTick === 'function') window.Survival.advanceTick();
         survivalPanelOpen = true;
         var modal = document.getElementById('modal-survival');
@@ -8801,34 +9284,6 @@
         render();
     }
 
-    function openSpecialPanel() {
-        if (specialPanelOpen) return;
-        if (window.Survival && typeof window.Survival.advanceTick === 'function') window.Survival.advanceTick();
-        specialPanelOpen = true;
-        var modal = document.getElementById('modal-special');
-        if (modal) modal.classList.add('show');
-        var left = document.getElementById('left-hud');
-        if (left) {
-            left.style.opacity = '0.1';
-            left.style.pointerEvents = 'none';
-        }
-        renderSpecialModal();
-    }
-
-    function closeSpecialPanel() {
-        if (!specialPanelOpen) return;
-        if (window.Survival && typeof window.Survival.advanceTick === 'function') window.Survival.advanceTick();
-        specialPanelOpen = false;
-        var modal = document.getElementById('modal-special');
-        if (modal) modal.classList.remove('show');
-        var left = document.getElementById('left-hud');
-        if (left) {
-            left.style.opacity = '';
-            left.style.pointerEvents = '';
-        }
-        render();
-    }
-
     if (document.getElementById('btn-survival')) {
         document.getElementById('btn-survival').addEventListener('click', function () {
             if (survivalPanelOpen) closeSurvivalPanel(); else openSurvivalPanel();
@@ -8838,14 +9293,18 @@
         document.getElementById('survival-modal-close').addEventListener('click', closeSurvivalPanel);
     }
 
-    if (document.getElementById('btn-life')) {
-        document.getElementById('btn-life').addEventListener('click', function () {
-            if (specialPanelOpen) closeSpecialPanel(); else openSpecialPanel();
+    (function bindSkillOverviewTabs() {
+        var tabBtns = document.querySelectorAll('#modal-survival .skill-overview-tab');
+        if (!tabBtns || !tabBtns.length) return;
+        tabBtns.forEach(function (btn) {
+            btn.addEventListener('click', function () {
+                var tabId = btn.getAttribute('data-skill-tab') || 'survival';
+                if (tabId !== 'survival' && tabId !== 'life' && tabId !== 'special') tabId = 'survival';
+                currentSkillOverviewTab = tabId;
+                renderSurvivalModal();
+            });
         });
-    }
-    if (document.getElementById('special-modal-close')) {
-        document.getElementById('special-modal-close').addEventListener('click', closeSpecialPanel);
-    }
+    })();
 
     if (document.getElementById('btn-acupoints')) {
         document.getElementById('btn-acupoints').addEventListener('click', function () {
@@ -9013,11 +9472,13 @@
                 var fromX = st.x;
                 var fromY = st.y;
                 if (E.moveTo(tx, ty)) {
+                    var restStoppedByMove = setRestingActionActive(false, { showMsg: false });
                     if (window.SceneCtx && typeof window.SceneCtx.exitFootworkNieBuMode === 'function') {
                         window.SceneCtx.exitFootworkNieBuMode(fromX, fromY);
                     }
                     setFacingFromMove(ddx, ddy);
                     stopGatheringIdle();
+                    if (restStoppedByMove) showMsg(ui('player.action.rest.cancelled_by_move'), 'info');
                     if (window.SceneCtx && typeof window.SceneCtx.pushDirtyCell === 'function') {
                         window.SceneCtx.pushDirtyCell(fromX, fromY);
                         window.SceneCtx.pushDirtyCell(tx, ty);
@@ -9518,11 +9979,13 @@
                     return false;
                 }
                 if (IE.setHubActionCooldownRemaining) IE.setHubActionCooldownRemaining(SKILL_ID, ACTION_ID, cooldownTicks);
+                var restStoppedByMove = setRestingActionActive(false, { showMsg: false });
                 stopGatheringIdle();
                 if (typeof window.SceneCtx.exitFootworkNieBuMode === 'function') {
                     window.SceneCtx.exitFootworkNieBuMode(fromX, fromY, radius);
                 }
                 setFacingFromMove(gx - fromX, gy - fromY);
+                if (restStoppedByMove) showMsg(ui('player.action.rest.cancelled_by_move'), 'info');
                 if (window.SceneCtx && typeof window.SceneCtx.pushDirtyCell === 'function') {
                     window.SceneCtx.pushDirtyCell(fromX, fromY);
                     window.SceneCtx.pushDirtyCell(gx, gy);
@@ -9906,6 +10369,7 @@
     window.SceneApp.closePharmacyStationPanel = closePharmacyStationPanel;
     window.SceneApp.openCompostStationPanel = openCompostStationPanel;
     window.SceneApp.closeCompostStationPanel = closeCompostStationPanel;
+    window.SceneApp.trySleepAtBed = trySleepAtBed;
     window.SceneApp.isCookingStationPanelBlockedByRepair = isCookingUiBlockedByRepair;
     window.SceneApp.isPharmacyStationPanelBlockedByRepair = isPharmacyUiBlockedByRepair;
     window.SceneApp.resetCookingStateForNewCharacter = resetCookingStateForNewCharacter;
