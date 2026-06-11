@@ -1,12 +1,13 @@
 /**
  * 游戏实时日志模块
- * 在游戏下方显示行为与战斗信息；默认全宽贴底，可拖移与四向调整大小（存档恢复布局）。
+ * 在游戏下方显示行为与战斗信息；默认全宽贴底，可拖移与四向调整大小（仅当前会话，不跨刷新/读档持久化）。
  */
 (function (global) {
     'use strict';
 
     var MAX_LINES = 80;
-    var PANEL_POS_KEY = 'game_log_panel_pos';
+    /** 旧版曾写入 localStorage；启动时清除，避免恢复左下角窄条布局 */
+    var LEGACY_PANEL_POS_KEY = 'game_log_panel_pos';
     var CONTAINER_ID = 'game-log-lines';
     var MIN_PANEL_H = 64;
     var MIN_PANEL_W = 220;
@@ -126,18 +127,6 @@
         panel.style.right = 'auto';
     }
 
-    function savePanelRect(panel) {
-        try {
-            var r = panel.getBoundingClientRect();
-            localStorage.setItem(PANEL_POS_KEY, JSON.stringify({
-                left: r.left,
-                bottom: window.innerHeight - r.bottom,
-                width: r.width,
-                height: r.height
-            }));
-        } catch (err) { /* ignore */ }
-    }
-
     /** 与 CSS 一致：贴底、横向铺满视口 */
     function applyDefaultFullWidthBottom(panel) {
         panel.style.position = 'fixed';
@@ -153,9 +142,12 @@
     function resetLogPanelLayout() {
         var panel = document.getElementById('game-log-panel');
         if (!panel) return;
-        try { localStorage.removeItem(PANEL_POS_KEY); } catch (e) { /* ignore */ }
         applyDefaultFullWidthBottom(panel);
         syncQuickBeltDockPosition();
+    }
+
+    function clearLegacyPanelLayoutStorage() {
+        try { localStorage.removeItem(LEGACY_PANEL_POS_KEY); } catch (e) { /* ignore */ }
     }
 
     function bindPanelChrome() {
@@ -166,37 +158,8 @@
         var leftHandle = panel && panel.querySelector('.game-log-resize-handle-left');
         if (!panel || !header) return;
 
-        function applySaved() {
-            try {
-                var raw = localStorage.getItem(PANEL_POS_KEY);
-                if (!raw) return;
-                var o = JSON.parse(raw);
-                if (o.left == null || o.bottom == null) return;
-                var effL = Math.max(0, o.left);
-                var maxW = maxPanelWidthForLeft(effL);
-                var effW = o.width != null
-                    ? Math.min(maxW, Math.max(MIN_PANEL_W, o.width))
-                    : maxW;
-                panel.style.position = 'fixed';
-                panel.style.left = effL + 'px';
-                panel.style.right = 'auto';
-                panel.style.bottom = Math.max(0, o.bottom) + 'px';
-                panel.style.top = 'auto';
-                panel.style.width = effW + 'px';
-                if (o.height != null) {
-                    var h = Math.max(MIN_PANEL_H, Math.min(maxPanelHeight(), o.height));
-                    panel.style.height = h + 'px';
-                }
-                clampPanelHorizontal(panel);
-            } catch (e) { /* ignore */ }
-        }
-
-        applySaved();
-        try {
-            if (!localStorage.getItem(PANEL_POS_KEY)) applyDefaultFullWidthBottom(panel);
-        } catch (e) {
-            applyDefaultFullWidthBottom(panel);
-        }
+        clearLegacyPanelLayoutStorage();
+        applyDefaultFullWidthBottom(panel);
 
         function ensureFixedPixelBox() {
             var r = panel.getBoundingClientRect();
@@ -321,7 +284,6 @@
             if (rightHandle) rightHandle.classList.remove('log-resize-active');
             if (leftHandle) leftHandle.classList.remove('log-resize-active');
             clampPanelHorizontal(panel);
-            savePanelRect(panel);
             syncQuickBeltDockPosition();
             mode = null;
         });
@@ -329,7 +291,6 @@
         header.addEventListener('dblclick', function (e) {
             if (e.target && e.target.closest && e.target.closest('button')) return;
             resetLogPanelLayout();
-            savePanelRect(panel);
         });
 
         var resizeT = null;
@@ -338,7 +299,6 @@
             resizeT = setTimeout(function () {
                 resizeT = null;
                 clampPanelHorizontal(panel);
-                savePanelRect(panel);
                 syncQuickBeltDockPosition();
             }, 80);
         });
@@ -393,7 +353,6 @@
         clampLogPanelForLeftHud: function () {
             var p = document.getElementById('game-log-panel');
             clampPanelHorizontal(p);
-            if (p) savePanelRect(p);
             syncQuickBeltDockPosition();
         },
         syncQuickBeltDock: syncQuickBeltDockPosition

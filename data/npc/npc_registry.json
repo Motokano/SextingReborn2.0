@@ -25,6 +25,16 @@
       "def": "data/npc/npc_station_bed_base.json",
       "triggers": "data/npc/npc_station_bed_base_triggers.json",
       "dialogue_pools": "data/npc/npc_station_bed_base_dialogue_pools.json"
+    },
+    "npc.station.agriculture_base": {
+      "def": "data/npc/npc_station_agriculture_base.json",
+      "triggers": "data/npc/npc_station_agriculture_base_triggers.json",
+      "dialogue_pools": "data/npc/npc_station_agriculture_base_dialogue_pools.json"
+    },
+    "npc.station.warehouse_base": {
+      "def": "data/npc/npc_station_warehouse_base.json",
+      "triggers": "data/npc/npc_station_warehouse_base_triggers.json",
+      "dialogue_pools": "data/npc/npc_station_warehouse_base_dialogue_pools.json"
     }
   }
 }

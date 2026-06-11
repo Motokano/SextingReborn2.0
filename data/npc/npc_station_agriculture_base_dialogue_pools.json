@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "pools": {
+    "npc.station.agriculture_base.fallback": {
+      "lines": [
+        "一小块规整的农田，旁边留着引水与施肥的接口。"
+      ]
+    },
+    "npc.station.agriculture_base": {
+      "lines": [
+        "想种地就打开农田面板，挖渠、客土、播种都在里面办。",
+        "关上面板时工程会停住，但地里作物仍跟着时间走。"
+      ],
+      "composeMode": "pick_pool"
+    }
+  }
+}

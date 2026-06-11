@@ -34,7 +34,10 @@
 | 身高与 BMI（首版） | [25-height-bmi.md](25-height-bmi.md) | 身高字段、创建时 BMI=22 反算体重、WHO 分段、bmi_tier_changed 事件、NPC BMI 条件与旧档兼容 |
 | 物品数值区间随机 | [26-item-numeric-rolls-resolved-rolls.md](26-item-numeric-rolls-resolved-rolls.md) | `numeric_rolls` 模板区间、`resolved_rolls` 实例抽样、校验分层、先 roll 再品质、堆叠与货币约定（冻结规格） |
 | 物品模板字段分层盘点 | [27-item-template-fields-inventory.md](27-item-template-fields-inventory.md) | `items.json` / `equipment.json` / 实例分层、顶层键快照、`getItemTemplate` 合并口径；`npm run audit:item-keys` 复扫 |
-| 农业种植与灌溉系统 | [28-agriculture-irrigation.md](28-agriculture-irrigation.md) | 固定农业互动点、33x33 农业地图、水池/水渠、主干与支流识别、供水分配、作物受水来源、HTML demo 目标 |
+| 农业种植与灌溉系统 | [28-agriculture-irrigation.md](28-agriculture-irrigation.md) | 固定农业互动点、**11×11** 农业地图（§1、§16）、水池/水渠、主干与支流识别、供水分配、作物受水来源；本体接入见 §16 |
+| 藏身处账号仓库 | [29-hideout-warehouse.md](29-hideout-warehouse.md) | `hideout_warehouse` 存档、100→700 格、NPC 入口、堆叠/实例、腐败与冷藏、远驿、升级与 `warehouse-upgrades.json` |
+| 仓库 UI 外部设计 Prompt | [hideout-warehouse-ui-agent-prompt.md](hideout-warehouse-ui-agent-prompt.md) | 给无仓库访问权的前端 Agent：战斗技能/背包主题对齐、布局与交付物 |
+| 账号仓库移植 · 分 Agent Prompt | [hideout-warehouse-port-agent-prompts.md](hideout-warehouse-port-agent-prompts.md) | W0～W9 执行顺序、全局约束、各 agent 可复制 Prompt、文件归属 |
 | 烹饪系统（实现收口） | [21-cooking-system-benchmarks.md](21-cooking-system-benchmarks.md) | 烹饪当前实现口径：单次制作、统一配方路由优先、旧表兜底、图鉴双写兼容 |
 | 统一配方系统（实现口径） | [22-recipe-system-unified.md](22-recipe-system-unified.md) | 配方主表/工艺表/interface、schema 校验、route 优先级、兼容期双写约定 |
 | Buff / Debuff 系统 | [18-buff-system.md](18-buff-system.md) | 通用触发、分层消耗、命中/效果条件、调试开关 |

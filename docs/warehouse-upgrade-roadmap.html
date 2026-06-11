@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>藏身处仓库 · 升级路线图（材料表）</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; background: #1c1815; color: #e8e6e3;
+      font-family: "Noto Serif SC", "Microsoft YaHei", serif;
+      line-height: 1.55; font-size: 14px;
+    }
+    .wrap { max-width: 1180px; margin: 0 auto; padding: 20px 16px 64px; }
+    h1 {
+      font-size: 24px; color: #d3a060; margin: 0 0 6px;
+      border-bottom: 2px solid #4d4d45; padding-bottom: 10px;
+    }
+    .sub { color: #8e8e8e; font-size: 12px; margin-bottom: 16px; }
+    .note {
+      border-left: 3px solid #d3a060; padding: 10px 14px; margin: 16px 0;
+      background: #221c16; font-size: 13px; color: #d8cfbf;
+    }
+    .note-cold { border-left-color: #507a9a; }
+    .note-warn { border-left-color: #8a5050; }
+    .cap-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 4px; margin: 10px 0 4px; font-size: 11px; }
+    .cap-bar span { padding: 3px 8px; border-radius: 4px; border: 1px solid #4d4d45; background: #251d17; color: #b8b0a8; }
+    .cap-bar span.hi { border-color: #507a9a; color: #9ad0e8; background: #283040; }
+    .cap-bar .arr { color: #6a6a6a; border: none; background: none; padding: 0 2px; }
+    .tier-section { margin-bottom: 28px; }
+    .tier-head {
+      display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap;
+      margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px solid #4d4d45;
+    }
+    .tier-head h2 { margin: 0; font-size: 18px; color: #7ab89a; }
+    .tier-head .tier-when { font-size: 12px; color: #8e8e8e; }
+    .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 14px; }
+    .card {
+      border: 1px solid #4d4d45; border-radius: 10px; background: #1a1512;
+      padding: 14px 16px; cursor: pointer; transition: border-color 0.15s, background 0.15s;
+    }
+    .card:hover { border-color: #5a8f7a; background: #1e1915; }
+    .card.selected { border-color: #d3a060; background: #251d17; }
+    .card.card-cold { border-color: #3a5060; }
+    .card-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; margin-bottom: 8px; }
+    .card-id { font-size: 11px; color: #7ab89a; font-weight: bold; }
+    .drive { font-size: 10px; padding: 2px 8px; border-radius: 999px; white-space: nowrap; border: 1px solid #6a5a40; color: #d3a060; background: #2a2218; }
+    .drive-s { border-color: #5a8f7a; color: #9ad4c4; background: #243028; }
+    .drive-a { border-color: #6a5a40; color: #d3a060; background: #2a2218; }
+    .drive-b { border-color: #507a8a; color: #9ad0e8; background: #283040; }
+    .drive-adv { border-color: #6a8aaa; color: #b8d8f0; background: #2a3545; }
+    .card-name { font-size: 16px; color: #e8e6e3; margin: 0 0 6px; }
+    .card-hook { font-size: 13px; color: #d3a060; margin: 0 0 8px; font-style: italic; }
+    .card-brief { font-size: 12px; color: #8e8e8e; margin: 0 0 8px; line-height: 1.45; }
+    .cost-mini { font-size: 11px; color: #b8b0a8; margin: 0; padding: 0; list-style: none; }
+    .cost-mini li { margin: 2px 0; }
+    .cost-mini code { font-size: 10px; color: #7ab89a; }
+    .card-meta { margin-top: 8px; font-size: 10px; color: #6a6a6a; }
+    .detail-panel {
+      border: 1px solid #4d4d45; border-radius: 10px; background: #1a1512;
+      padding: 16px 18px; margin-top: 24px;
+    }
+    .detail-panel h2 { font-size: 17px; color: #7ab89a; margin: 0 0 8px; }
+    .detail-body { font-size: 13px; color: #d8cfbf; }
+    .detail-body ul { padding-left: 20px; }
+    table.mat {
+      width: 100%; border-collapse: collapse; font-size: 12px; margin: 10px 0;
+    }
+    table.mat th, table.mat td {
+      border: 1px solid #4d4d45; padding: 6px 8px; text-align: left; vertical-align: top;
+    }
+    table.mat th { background: #251d17; color: #d3a060; }
+    table.mat code { color: #9ad0e8; font-size: 11px; }
+    table.mat tr:hover td { background: #1e1915; }
+    table.summary { margin-top: 24px; }
+    table.summary td:nth-child(3) { font-size: 11px; color: #b8b0a8; }
+    .flow {
+      display: flex; flex-wrap: wrap; align-items: center; gap: 6px;
+      margin: 14px 0 22px; font-size: 11px;
+    }
+    .flow .box { border: 1px solid #5a8f7a; background: #243028; color: #b8e0d0; padding: 4px 8px; border-radius: 6px; }
+    .flow .box.cold { border-color: #507a9a; background: #283040; color: #9ad0e8; }
+    .flow .arrow { color: #8e8e8e; }
+    footer { margin-top: 28px; font-size: 11px; color: #6a6a6a; text-align: center; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>藏身处账号仓库 · 升级路线图</h1>
+    <p class="sub">100→700 格 · 14 付费节点 · 材料均来自现有 <code>data/items.json</code>（与农业建造表同形 <code>inputs[]</code>）</p>
+
+    <div class="note">
+      <strong>定案摘要：</strong>单 save slot 绑定 · NPC 入口 · A0 剧情 flag 开仓 · 开局免费 100 格+自动叠放 · 限格不限重 · 死亡不清仓 · 关游戏冻结 tick · 远驿当次地牢仅存入 · 冷藏整仓冻结腐败。
+      正本 <code>docs/design/29-hideout-warehouse.md</code>
+    </div>
+    <div class="note">
+      <strong>格位（U-A）：</strong>
+      <div class="cap-bar">
+        <span>100</span><span class="arr">→</span><span>200</span><span class="arr">→</span>
+        <span>350</span><span class="arr">→</span><span>500</span><span class="arr">→</span><span class="hi">700</span>
+      </div>
+      升级消耗结构：<code>inputs[]</code> + 可选 <code>task_ticks</code> / <code>stamina_per_tick</code>（对齐农业工程，默认 10×5）。
+    </div>
+
+    <div class="note note-cold">
+      <strong>冷藏 U-G3：</strong>冻结 <code>spoilage_elapsed_ticks</code>；可腐败判定 <code>tpl.spoilage_ticks &gt; 0</code>。
+    </div>
+
+    <div class="flow">
+      <span class="box">100</span><span class="arrow">→</span>
+      <span class="box">A1/C1/B1</span><span class="arrow">→</span>
+      <span class="box">C2/D1/A2</span><span class="arrow">→</span>
+      <span class="box">F1/F2/A3</span><span class="arrow">→</span>
+      <span class="box">A4</span><span class="arrow">→</span>
+      <span class="box cold">G3 冷藏</span>
+    </div>
+
+    <div id="tiers"></div>
+
+    <div class="detail-panel" id="detailPanel">
+      <h2>升级详情</h2>
+      <p style="color:#8e8e8e;font-size:13px">点击卡片查看完整材料表与 qol_id。</p>
+    </div>
+
+    <h2 style="color:#7ab89a;font-size:17px;margin:28px 0 12px">全节点材料一览</h2>
+    <div id="summaryTable"></div>
+
+    <h2 style="color:#7ab89a;font-size:17px;margin:28px 0 12px">本表涉及材料 id（现有物品）</h2>
+    <div id="materialIndex"></div>
+
+    <footer>warehouse-upgrade-roadmap.html · v6 · 材料表草案 · 落盘 data/warehouse-upgrades.json</footer>
+  </div>
+
+  <script>
+    /** 展示名；实现时从 items.json sn 读取 */
+    var ITEM_SN = {
+      wood_bits: "木屑", wood_bamboo_green: "青竹杆", wood_plank_soft: "轻木板", wood_oak: "橡木",
+      wood_zelkova: "榉木", wood_shrub_dry: "干枯灌木", wood_firewood_dry: "干木材",
+      supply_rope_hemp_short: "短麻绳", supply_bandage_cloth: "布制绷带", supply_torch_bamboo: "竹火把",
+      ore_clay_raw: "陶土", ore_iron_raw: "铁质矿石", ore_iron_ore: "铁矿", ore_limestone: "石灰石",
+      ore_copper_raw: "粗铜矿石", ore_steel_ingot: "钢锭", ore_cast_iron: "铸铁",
+      ore_water_pure_soft: "纯净软水", ore_salt_sea: "精海盐", ore_salt_sea_coarse: "海盐粗粒",
+      ore_salt_rock: "岩盐", hunt_bone_common: "兽骨", herb_leaf_fresh: "清香叶",
+      herb_root_bitter: "苦根草", herb_kombu: "真昆布", herb_maize: "玉米粒",
+      compost_matrix_grade_mid: "腐熟基质·匀", compost_matrix_grade_high: "腐熟基质·细",
+      tool_sewing_kit_cloth: "缝纫工具包", tool_layer_filter_sheet_pharmacy: "分层过滤片",
+      tool_bucket_water_empty: "水桶", tool_bucket_water_full: "满水桶", tool_mortar_pestle_cooking: "研磨钵与杵",
+      tool_fermentation_jar_cooking: "陶发酵坛", tool_pickling_jar_cooking: "腌缸（玻璃罐）",
+      tool_pickaxe_iron_simple: "简易矿镐", armor_cloth_rag_shirt: "粗布衣",
+      textile_cocoon_wild: "野蚕茧"
+    };
+
+    function inp(id, count) {
+      return { item_id: id, count: count, sn: ITEM_SN[id] || id };
+    }
+
+    var UPGRADES = [
+      {
+        tier: 1, tierTitle: "第一档 · 立刻变好用", tierWhen: "早期 · 100 格塞满",
+        nodes: [
+          {
+            id: "U-A1", name: "扩仓 I", drive: "S", cap: "100 → 200",
+            hook: "「多 100 格」", brief: "木竹绳搭货架；最低门槛扩格。",
+            req: "A0", phase: 1, qol: ["capacity_200"],
+            task_ticks: 10, stamina_per_tick: 5,
+            inputs: [
+              inp("wood_bits", 10), inp("wood_bamboo_green", 6), inp("supply_rope_hemp_short", 4),
+              inp("wood_shrub_dry", 6)
+            ],
+            unlocks: ["capacity: 200"]
+          },
+          {
+            id: "U-C1", name: "顺手存取", drive: "A",
+            hook: "「双击进仓」", brief: "滑轨与绳扣；双向快取快存。",
+            req: "A0", phase: 1, qol: ["qol_quick_transfer"],
+            task_ticks: 5, stamina_per_tick: 5,
+            inputs: [
+              inp("wood_bits", 4), inp("supply_rope_hemp_short", 3), inp("wood_cork", 2),
+              inp("supply_bandage_cloth", 2)
+            ],
+            unlocks: ["双击存/取", "stackable 取1/全"]
+          },
+          {
+            id: "U-B1", name: "一键理仓", drive: "S",
+            hook: "「几百格变整齐」", brief: "木板隔断 + 绳扎；压空位排序邻接。",
+            req: "A0", phase: 1, qol: ["qol_tidy_one_click"],
+            task_ticks: 10, stamina_per_tick: 5,
+            inputs: [
+              inp("wood_plank_soft", 8), inp("supply_rope_hemp_short", 4), inp("wood_bits", 6),
+              inp("ore_clay_raw", 3)
+            ],
+            unlocks: ["紧凑 + 排序 + 同 id 邻接"]
+          }
+        ]
+      },
+      {
+        tier: 2, tierTitle: "第二档 · 回家一波流", tierWhen: "定居倒货",
+        nodes: [
+          {
+            id: "U-C2", name: "估格整备", drive: "S",
+            hook: "「一键清包前先估格」", brief: "背架式木架 + 骨扣；批量存入预览。",
+            req: "U-C1", phase: 2, qol: ["qol_deposit_all", "qol_slot_preview"],
+            task_ticks: 10, stamina_per_tick: 5,
+            inputs: [
+              inp("wood_plank_soft", 6), inp("wood_bamboo_green", 4), inp("supply_rope_hemp_short", 5),
+              inp("hunt_bone_common", 4), inp("tool_bucket_water_empty", 1)
+            ],
+            unlocks: ["预览占 N 格", "唯一实例每件 +1"]
+          },
+          {
+            id: "U-D1", name: "仓内账册", drive: "A",
+            hook: "「还剩几格？」", brief: "账页、滤格、铜签；筛选统计预警。",
+            req: "U-B1", phase: 2, qol: ["qol_ledger"],
+            task_ticks: 8, stamina_per_tick: 5,
+            inputs: [
+              inp("supply_bandage_cloth", 6), inp("tool_layer_filter_sheet_pharmacy", 8),
+              inp("tool_sewing_kit_cloth", 1), inp("ore_copper_raw", 2),
+              inp("herb_leaf_fresh", 10)
+            ],
+            unlocks: ["筛选", "件数/count 统计", "≤20 格预警"]
+          },
+          {
+            id: "U-A2", name: "扩仓 II", drive: "S", cap: "200 → 350",
+            hook: "「再加 150 格」", brief: "轻木 + 橡木梁；第二档扩建。",
+            req: "U-A1", phase: 2, qol: ["capacity_350"],
+            task_ticks: 15, stamina_per_tick: 5,
+            inputs: [
+              inp("wood_plank_soft", 14), inp("wood_oak", 6), inp("supply_rope_hemp_short", 8),
+              inp("ore_iron_raw", 3), inp("ore_limestone", 4)
+            ],
+            unlocks: ["capacity: 350"]
+          }
+        ]
+      },
+      {
+        tier: 3, tierTitle: "第三档 · 生产不用搬", tierWhen: "农业 / 易腐囤货",
+        nodes: [
+          {
+            id: "U-F1", name: "常备套", drive: "S",
+            hook: "「一键出库清单」", brief: "清单板 + 桶 + 绳；1 组 preset。",
+            req: "U-C2 + U-D1", phase: 3, qol: ["qol_preset_loadout"],
+            task_ticks: 10, stamina_per_tick: 5,
+            inputs: [
+              inp("wood_plank_soft", 8), inp("wood_bamboo_green", 6), inp("supply_rope_hemp_short", 6),
+              inp("tool_bucket_water_empty", 1), inp("herb_maize", 4), inp("textile_cocoon_wild", 5)
+            ],
+            unlocks: ["1 组 loadout", "缺件清单"]
+          },
+          {
+            id: "U-F2", name: "工料仓", drive: "S",
+            hook: "「设施直接扣仓」", brief: "陶槽 + 研钵 + 药滤；接烹饪/农业/制药/制肥。",
+            req: "U-F1", phase: 3, qol: ["qol_craft_stash"],
+            task_ticks: 12, stamina_per_tick: 5,
+            inputs: [
+              inp("ore_clay_raw", 10), inp("wood_plank_soft", 6), inp("tool_mortar_pestle_cooking", 1),
+              inp("tool_layer_filter_sheet_pharmacy", 6), inp("herb_root_bitter", 4),
+              inp("supply_rope_hemp_short", 4)
+            ],
+            unlocks: ["仓+身总量", "配方一键补料"]
+          },
+          {
+            id: "U-E1", name: "封签与星标", drive: "A",
+            hook: "「这几格别被扫走」", brief: "陶封 + 铜钉 + 岩盐；锁定与星标。",
+            req: "U-C2", phase: 3, qol: ["qol_lock_and_pin"],
+            task_ticks: 8, stamina_per_tick: 5,
+            inputs: [
+              inp("ore_clay_raw", 6), inp("ore_copper_raw", 4), inp("supply_rope_hemp_short", 3),
+              inp("ore_salt_rock", 4), inp("ore_cast_iron", 1)
+            ],
+            unlocks: ["实例锁定", "星标置顶筛选"]
+          },
+          {
+            id: "U-A3", name: "扩仓 III", drive: "A", cap: "350 → 500",
+            hook: "「350 仍满 → 500」", brief: "石灰砌体 + 铁箍 + 陶砖。",
+            req: "U-A2", phase: 3, qol: ["capacity_500"],
+            task_ticks: 18, stamina_per_tick: 5,
+            inputs: [
+              inp("ore_clay_raw", 14), inp("ore_limestone", 10), inp("wood_plank_soft", 10),
+              inp("ore_iron_raw", 6), inp("supply_rope_hemp_short", 6),
+              inp("compost_matrix_grade_mid", 2)
+            ],
+            unlocks: ["capacity: 500", "虚拟滚动"]
+          }
+        ]
+      },
+      {
+        tier: 4, tierTitle: "第四档 · 终局仓政", tierWhen: "700 格 · 冷藏 · 地牢",
+        nodes: [
+          {
+            id: "U-A4", name: "扩仓 IV（满仓）", drive: "S", cap: "500 → 700",
+            hook: "「材料轨终局 700」", brief: "钢梁 + 橡榉 + 匀基质保温层。",
+            req: "U-A3", phase: 4, qol: ["capacity_700"],
+            task_ticks: 25, stamina_per_tick: 5,
+            inputs: [
+              inp("wood_plank_soft", 20), inp("wood_oak", 10), inp("wood_zelkova", 8),
+              inp("ore_steel_ingot", 3), inp("ore_limestone", 12), inp("compost_matrix_grade_mid", 4),
+              inp("supply_rope_hemp_short", 10), inp("ore_iron_ore", 4)
+            ],
+            unlocks: ["capacity: 700"]
+          },
+          {
+            id: "U-G3", name: "冷藏", drive: "adv", cold: true,
+            hook: "「易腐品进仓不烂」", brief: "双层陶瓮 + 发酵坛密封 + 盐水冷媒（岩盐/粗海盐/满水桶）。",
+            req: "U-A3 + U-F2", phase: 4, qol: ["qol_cold_storage"],
+            task_ticks: 20, stamina_per_tick: 5,
+            inputs: [
+              inp("ore_clay_raw", 16), inp("tool_fermentation_jar_cooking", 1),
+              inp("tool_pickling_jar_cooking", 1), inp("compost_matrix_grade_high", 3),
+              inp("ore_water_pure_soft", 8), inp("ore_salt_sea", 6), inp("herb_kombu", 4),
+              inp("ore_salt_rock", 8), inp("ore_salt_sea_coarse", 6), inp("tool_bucket_water_full", 2)
+            ],
+            unlocks: ["cold_storage", "冻结 spoilage_elapsed_ticks"]
+          },
+          {
+            id: "U-C3", name: "饱和取出", drive: "A",
+            hook: "「出门前塞满背包」", brief: "搬运带与粗布兜。",
+            req: "U-C1", phase: 4, qol: ["qol_withdraw_fill"],
+            task_ticks: 8, stamina_per_tick: 5,
+            inputs: [
+              inp("supply_rope_hemp_short", 8), inp("armor_cloth_rag_shirt", 2),
+              inp("wood_plank_soft", 4), inp("supply_bandage_cloth", 6)
+            ],
+            unlocks: ["取到四容器满"]
+          },
+          {
+            id: "U-F3", name: "常备库 ×3", drive: "B",
+            hook: "「三套 loadout 切换」", brief: "多层清单架。",
+            req: "U-F1", phase: 4, qol: ["qol_preset_x3"],
+            task_ticks: 12, stamina_per_tick: 5,
+            inputs: [
+              inp("wood_plank_soft", 12), inp("wood_bamboo_green", 8), inp("supply_rope_hemp_short", 10),
+              inp("tool_sewing_kit_cloth", 2), inp("wood_oak", 4)
+            ],
+            unlocks: ["3 组 preset"]
+          },
+          {
+            id: "U-G1", name: "分栏视图", drive: "B",
+            hook: "「700 格要 Tab」", brief: "榉木分隔 + 竹签。",
+            req: "U-D1 + U-A3", phase: 4, qol: ["qol_tab_view"],
+            task_ticks: 10, stamina_per_tick: 5,
+            inputs: [
+              inp("wood_plank_soft", 10), inp("wood_zelkova", 6), inp("supply_rope_hemp_short", 6),
+              inp("wood_bamboo_green", 4), inp("supply_torch_bamboo", 2)
+            ],
+            unlocks: ["虚拟 Tab", "易腐 Tab"]
+          },
+          {
+            id: "U-G2", name: "远驿", drive: "A",
+            hook: "「地牢临时开仓」", brief: "驿路标杆：竹杆火把 + 铜线铁件 + 石灰界石（剧情解锁后装设）。",
+            req: "U-A4 + 剧情", phase: 4, qol: ["qol_dungeon_access"],
+            task_ticks: 15, stamina_per_tick: 5,
+            inputs: [
+              inp("wood_plank_soft", 8), inp("wood_bamboo_green", 6), inp("supply_rope_hemp_short", 8),
+              inp("supply_torch_bamboo", 4), inp("ore_copper_raw", 6), inp("ore_iron_raw", 4),
+              inp("ore_steel_ingot", 2), inp("ore_limestone", 4)
+            ],
+            unlocks: ["facility grant", "同一账号仓"]
+          }
+        ]
+      }
+    ];
+
+    ITEM_SN.wood_cork = "软木塞";
+
+    function formatInputs(inputs) {
+      return inputs.map(function (x) {
+        return x.sn + " ×" + x.count + " <code>" + x.item_id + "</code>";
+      }).join(" · ");
+    }
+
+    function inputsHtml(inputs) {
+      var h = "<table class=\"mat\"><thead><tr><th>物品</th><th>id</th><th>数量</th></tr></thead><tbody>";
+      inputs.forEach(function (x) {
+        h += "<tr><td>" + x.sn + "</td><td><code>" + x.item_id + "</code></td><td>" + x.count + "</td></tr>";
+      });
+      return h + "</tbody></table>";
+    }
+
+    function renderTiers() {
+      var root = document.getElementById("tiers");
+      root.innerHTML = "";
+      UPGRADES.forEach(function (tier) {
+        var sec = document.createElement("div");
+        sec.className = "tier-section";
+        sec.innerHTML = "<div class=\"tier-head\"><h2>" + tier.tierTitle + "</h2><span class=\"tier-when\">" + tier.tierWhen + "</span></div>";
+        var cards = document.createElement("div");
+        cards.className = "cards";
+        tier.nodes.forEach(function (n) {
+          var card = document.createElement("div");
+          card.className = "card" + (n.cold ? " card-cold" : "");
+          var driveCls = n.drive === "S" ? "drive-s" : n.drive === "A" ? "drive-a" : n.drive === "adv" ? "drive-adv" : "drive-b";
+          var driveLabel = n.drive === "adv" ? "高级" : n.drive + " 驱动";
+          var costLines = n.inputs.slice(0, 4).map(function (x) {
+            return "<li>" + x.sn + " ×" + x.count + " <code>" + x.item_id + "</code></li>";
+          }).join("");
+          if (n.inputs.length > 4) costLines += "<li>…共 " + n.inputs.length + " 项</li>";
+          card.innerHTML =
+            "<div class=\"card-top\"><span class=\"card-id\">" + n.id + "</span><span class=\"drive " + driveCls + "\">" + driveLabel + "</span></div>" +
+            "<h3 class=\"card-name\">" + n.name + (n.cold ? " ❄" : "") + "</h3>" +
+            "<p class=\"card-hook\">" + n.hook + "</p>" +
+            "<p class=\"card-brief\">" + n.brief + "</p>" +
+            "<ul class=\"cost-mini\">" + costLines + "</ul>" +
+            "<div class=\"card-meta\">工程 " + n.task_ticks + " tick × " + n.stamina_per_tick + " 体/tick · 前置：" + n.req + "</div>";
+          card.addEventListener("click", function () { selectNode(n, card); });
+          cards.appendChild(card);
+        });
+        sec.appendChild(cards);
+        root.appendChild(sec);
+      });
+    }
+
+    function selectNode(n, cardEl) {
+      document.querySelectorAll(".card").forEach(function (c) { c.classList.remove("selected"); });
+      cardEl.classList.add("selected");
+      var driveCls = n.drive === "S" ? "s" : n.drive === "A" ? "a" : n.drive === "adv" ? "adv" : "b";
+      document.getElementById("detailPanel").innerHTML =
+        "<h2>" + n.id + " · " + n.name + " <span class=\"drive drive-" + driveCls + "\">" + (n.drive === "adv" ? "高级" : n.drive) + "</span></h2>" +
+        (n.cap ? "<p><strong>格位：</strong>" + n.cap + "</p>" : "") +
+        "<p class=\"card-hook\" style=\"color:#d3a060;font-style:italic\">" + n.hook + "</p>" +
+        "<div class=\"detail-body\">" +
+        "<p>" + n.brief + "</p>" +
+        "<p><strong>qol_id：</strong><code>" + n.qol.join(", ") + "</code></p>" +
+        "<p><strong>前置：</strong>" + n.req + "</p>" +
+        "<p><strong>工程：</strong>" + n.task_ticks + " tick，每 tick " + n.stamina_per_tick + " 体力</p>" +
+        "<p><strong>材料 inputs：</strong></p>" + inputsHtml(n.inputs) +
+        "<p><strong>解锁：</strong></p><ul>" + n.unlocks.map(function (u) { return "<li>" + u + "</li>"; }).join("") + "</ul>" +
+        "</div>";
+    }
+
+    function renderSummary() {
+      var html = "<table class=\"mat summary\"><thead><tr><th>节点</th><th>名称</th><th>材料（sn × count · id）</th><th>工程</th></tr></thead><tbody>";
+      UPGRADES.forEach(function (tier) {
+        tier.nodes.forEach(function (n) {
+          html += "<tr><td><code>" + n.id + "</code></td><td>" + n.name + (n.cap ? "<br><small>" + n.cap + "</small>" : "") + "</td>" +
+            "<td>" + formatInputs(n.inputs) + "</td>" +
+            "<td>" + n.task_ticks + "t×" + n.stamina_per_tick + "体</td></tr>";
+        });
+      });
+      document.getElementById("summaryTable").innerHTML = html + "</tbody></table>";
+    }
+
+    function renderMaterialIndex() {
+      var used = {};
+      UPGRADES.forEach(function (tier) {
+        tier.nodes.forEach(function (n) {
+          n.inputs.forEach(function (x) { used[x.item_id] = (used[x.item_id] || 0) + x.count; });
+        });
+      });
+      var ids = Object.keys(used).sort();
+      var html = "<table class=\"mat\"><thead><tr><th>item_id</th><th>sn</th><th>全表合计需求</th></tr></thead><tbody>";
+      ids.forEach(function (id) {
+        html += "<tr><td><code>" + id + "</code></td><td>" + (ITEM_SN[id] || "—") + "</td><td>" + used[id] + "</td></tr>";
+      });
+      document.getElementById("materialIndex").innerHTML = html + "</tbody></table><p style=\"font-size:11px;color:#8e8e8e\">合计 " + ids.length + " 种材料 id（均应在 items.json 存在）。</p>";
+    }
+
+    renderTiers();
+    renderSummary();
+    renderMaterialIndex();
+  </script>
+</body>
+</html>

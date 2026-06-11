@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "pools": {
+    "npc.station.warehouse_base.fallback": {
+      "lines": [
+        "木架与铁栏围成的储物区，沉重物资堆在这里最稳妥。"
+      ]
+    },
+    "npc.station.warehouse_base": {
+      "lines": [
+        "要存东西就打开藏身处仓库，身上四容器里的都能手动存进去。",
+        "账号仓是真库存；动作栏里的调试取物不扣仓格，别混用。"
+      ],
+      "composeMode": "pick_pool"
+    }
+  }
+}

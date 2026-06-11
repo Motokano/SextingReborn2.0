@@ -1,0 +1,38 @@
+{
+  "schema_version": 1,
+  "_comment": "物品模板缺农业字段时的回退；正式以 items.json 的 agriculture_* / grants_soil_id 为准。",
+  "injectables": {
+    "liquid_seaweed_extract": {
+      "inject_facility": "venturi_fertilizer",
+      "agriculture_venturi_injectable": true,
+      "agriculture_venturi_effect_duration_ticks": 5000
+    },
+    "fertilizer_basic_low": {
+      "inject_facility": "buried_pot_jar",
+      "agriculture_buried_jar_injectable": true,
+      "agriculture_fertilizer_per_tick": 0.35,
+      "is_anaerobic_fertilizer": true
+    },
+    "fertilizer_basic": {
+      "inject_facility": "buried_pot_jar",
+      "agriculture_buried_jar_injectable": true,
+      "agriculture_fertilizer_per_tick": 0.5,
+      "is_anaerobic_fertilizer": true
+    },
+    "fertilizer_compost_plus": {
+      "inject_facility": "buried_pot_jar",
+      "agriculture_buried_jar_injectable": true,
+      "agriculture_fertilizer_per_tick": 0.75,
+      "is_anaerobic_fertilizer": true
+    }
+  },
+  "soil_amend_fallback": {
+    "soil_amend_yellow_cotton": "soil_yellow_cotton",
+    "soil_amend_cinnamon": "soil_cinnamon",
+    "soil_amend_purple": "soil_purple",
+    "soil_amend_red": "soil_red",
+    "soil_amend_alpine_meadow": "soil_alpine_meadow",
+    "soil_amend_paddy": "soil_paddy",
+    "soil_amend_black": "soil_black"
+  }
+}

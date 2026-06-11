@@ -129,6 +129,115 @@
         return sceneUi;
     }
 
+    var AGRICULTURE_MAP_SCHEMA_VERSION = 1;
+
+    function cloneJsonDeep(v) {
+        try { return JSON.parse(JSON.stringify(v)); } catch (eClone) { return null; }
+    }
+
+    function createDefaultAgricultureMapState() {
+        if (global.AgricultureMap && typeof global.AgricultureMap.createDefaultState === 'function') {
+            try { return global.AgricultureMap.createDefaultState(); } catch (eDef) { /* ignore */ }
+        }
+        return null;
+    }
+
+    function getAgricultureMapRuntimeState() {
+        if (global.SceneApp && typeof global.SceneApp.getAgricultureMapState === 'function') {
+            try {
+                var viaApp = global.SceneApp.getAgricultureMapState();
+                if (viaApp && typeof viaApp === 'object') return viaApp;
+            } catch (eApp) { /* ignore */ }
+        }
+        if (global.SceneCtx && global.SceneCtx.agriculture_map_state && typeof global.SceneCtx.agriculture_map_state === 'object') {
+            return global.SceneCtx.agriculture_map_state;
+        }
+        return null;
+    }
+
+    function setAgricultureMapRuntimeState(state) {
+        if (!state || typeof state !== 'object') return;
+        if (global.SceneApp && typeof global.SceneApp.setAgricultureMapState === 'function') {
+            try {
+                global.SceneApp.setAgricultureMapState(state);
+                return;
+            } catch (eSetApp) { /* ignore */ }
+        }
+        if (global.SceneCtx) {
+            global.SceneCtx.agriculture_map_state = state;
+        }
+    }
+
+    function normalizeAgricultureMapPersist(raw) {
+        if (!raw || typeof raw !== 'object') return null;
+        if (coerceNumber(raw.schema_version, 0) !== AGRICULTURE_MAP_SCHEMA_VERSION) return null;
+        var st = raw.state;
+        if (!st || typeof st !== 'object' || !Array.isArray(st.map)) return null;
+        var cloned = cloneJsonDeep(st);
+        if (!cloned) return null;
+        return {
+            schema_version: AGRICULTURE_MAP_SCHEMA_VERSION,
+            state: cloned
+        };
+    }
+
+    /** 与 scene-app / GameTime 一致：主世界 totalTicks 为农业 state.tick 唯一权威。 */
+    function getWorldTotalTicksForAgriculture() {
+        if (global.GameTime && typeof global.GameTime.getState === 'function') {
+            var ts = global.GameTime.getState();
+            if (ts && typeof ts.totalTicks === 'number' && isFinite(ts.totalTicks)) {
+                return Math.max(0, Math.floor(ts.totalTicks));
+            }
+        }
+        if (global.Survival && typeof global.Survival.getState === 'function') {
+            var ss = global.Survival.getState();
+            if (ss && ss.tickCount != null) return Math.max(0, Math.floor(Number(ss.tickCount) || 0));
+        }
+        return 0;
+    }
+
+    function syncAgricultureMapTickMirror(state) {
+        if (!state || typeof state !== 'object') return;
+        state.tick = getWorldTotalTicksForAgriculture();
+    }
+
+    function buildAgricultureMapPersist() {
+        var runtime = getAgricultureMapRuntimeState();
+        if (!runtime) return null;
+        var cloned = cloneJsonDeep(runtime);
+        if (!cloned) return null;
+        syncAgricultureMapTickMirror(cloned);
+        return {
+            schema_version: AGRICULTURE_MAP_SCHEMA_VERSION,
+            state: cloned
+        };
+    }
+
+    function applyAgricultureMapFromSnapshot(snapshot) {
+        if (!snapshot || typeof snapshot !== 'object') return;
+        if (!Object.prototype.hasOwnProperty.call(snapshot, 'agriculture_map')) {
+            var legacyDef = createDefaultAgricultureMapState();
+            if (legacyDef) {
+                syncAgricultureMapTickMirror(legacyDef);
+                setAgricultureMapRuntimeState(legacyDef);
+            }
+            return;
+        }
+        var raw = snapshot.agriculture_map;
+        if (raw == null) return;
+        var normalized = normalizeAgricultureMapPersist(raw);
+        if (normalized && normalized.state) {
+            syncAgricultureMapTickMirror(normalized.state);
+            setAgricultureMapRuntimeState(normalized.state);
+            return;
+        }
+        var corruptDef = createDefaultAgricultureMapState();
+        if (corruptDef) {
+            syncAgricultureMapTickMirror(corruptDef);
+            setAgricultureMapRuntimeState(corruptDef);
+        }
+    }
+
     function assertSnapshotShape(snapshot) {
         if (!snapshot || typeof snapshot !== 'object') return false;
         if (snapshot.schemaVersion !== SCHEMA_VERSION) return false;
@@ -177,8 +286,24 @@
             EntityAppearance: global.EntityAppearance,
             BuffSystem: global.BuffSystem,
             NPCSystem: global.NPCSystem,
-            CompostSystem: global.CompostSystem
+            CompostSystem: global.CompostSystem,
+            HideoutWarehouse: global.HideoutWarehouse
         };
+    }
+
+    function applyHideoutWarehouseFromSnapshot(snapshot) {
+        if (!global.HideoutWarehouse) return;
+        if (!snapshot || typeof snapshot !== 'object') return;
+        if (!Object.prototype.hasOwnProperty.call(snapshot, 'hideout_warehouse')
+            || snapshot.hideout_warehouse == null) {
+            if (typeof global.HideoutWarehouse.setState === 'function') {
+                global.HideoutWarehouse.setState(global.HideoutWarehouse.createDefaultState());
+            }
+            return;
+        }
+        if (typeof global.HideoutWarehouse.setState === 'function') {
+            global.HideoutWarehouse.setState(snapshot.hideout_warehouse);
+        }
     }
 
     function buildSnapshot() {
@@ -285,6 +410,12 @@
                 var kra = deriveKnownCookingRecipeIds(global.SceneCtx);
                 su.known_cooking_recipe_ids = kra.slice();
                 su.known_recipe_ids_by_system = { cooking: kra.slice() };
+                if (global.SceneCtx.agriculture_unlocked === true) {
+                    su.agriculture_unlocked = true;
+                }
+                if (global.SceneCtx.agriculture_auto_tick === true) {
+                    su.agriculture_auto_tick = true;
+                }
                 if (Object.keys(su).length) sceneUiPersist = su;
             } catch (eSceneUi) { sceneUiPersist = null; }
         }
@@ -326,6 +457,13 @@
             try { compostPersist = mods.CompostSystem.getState(); } catch (eCompost) { compostPersist = null; }
         }
 
+        var agricultureMapPersist = buildAgricultureMapPersist();
+
+        var hideoutWarehousePersist = null;
+        if (mods.HideoutWarehouse && typeof mods.HideoutWarehouse.getState === 'function') {
+            try { hideoutWarehousePersist = mods.HideoutWarehouse.getState(); } catch (eHw) { hideoutWarehousePersist = null; }
+        }
+
         return {
             schemaVersion: SCHEMA_VERSION,
             saveGeneration: saveGeneration,
@@ -342,7 +480,9 @@
                 sceneUi: sceneUiPersist
             },
             buffs: buffsPersist,
-            compost: compostPersist
+            compost: compostPersist,
+            agriculture_map: agricultureMapPersist,
+            hideout_warehouse: hideoutWarehousePersist
         };
     }
 
@@ -413,6 +553,9 @@
             try { mods.CompostSystem.setState(snapshot.compost); } catch (eCompost) { /* ignore */ }
         }
 
+        applyAgricultureMapFromSnapshot(snapshot);
+        applyHideoutWarehouseFromSnapshot(snapshot);
+
         if (global.SceneCtx && snapshot.player && snapshot.player.sceneUi) {
             try {
                 var su = snapshot.player.sceneUi;
@@ -421,6 +564,12 @@
                 }
                 if (su && su.facing_dir != null && typeof global.SceneCtx.setFacingDir === 'function') {
                     global.SceneCtx.setFacingDir(su.facing_dir);
+                }
+                if (su && su.agriculture_unlocked === true) {
+                    global.SceneCtx.agriculture_unlocked = true;
+                }
+                if (su && su.agriculture_auto_tick === true) {
+                    global.SceneCtx.agriculture_auto_tick = true;
                 }
                 if (su && su.cooking_station && typeof su.cooking_station === 'object') {
                     var cst = su.cooking_station;
@@ -481,6 +630,10 @@
                     : {};
                 global.SceneCtx.known_recipe_ids_by_system.cooking = Array.isArray(su.known_cooking_recipe_ids) ? su.known_cooking_recipe_ids.slice() : [];
             } catch (eAb) { /* ignore */ }
+        }
+
+        if (global.GameLog && typeof global.GameLog.resetLogPanelLayout === 'function') {
+            try { global.GameLog.resetLogPanelLayout(); } catch (eLogPanel) { /* ignore */ }
         }
 
         return true;
@@ -866,6 +1019,10 @@
 
     SaveSystem.buildSnapshotForDebug = function () {
         return buildSnapshot();
+    };
+
+    SaveSystem.applySnapshotForDebug = function (snapshot) {
+        return applySnapshot(snapshot);
     };
 
     SaveSystem.getStatus = function () {

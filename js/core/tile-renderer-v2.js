@@ -80,6 +80,8 @@
                 if (meta.cookingStation) return '#3d2b1f';
                 if (meta.pharmacyStation) return '#1e2d2c';
                 if (meta.compostStation) return '#2f2f18';
+                if (meta.agricultureStation) return '#243820';
+                if (meta.warehouseStation) return '#2a2838';
                 return '#3d2a2a';
             }
             if (meta.portal) return '#2a2d35';
@@ -95,6 +97,8 @@
                 if (meta.cookingStation) return 'rgba(251,146,60,0.5)';
                 if (meta.pharmacyStation) return 'rgba(45,212,191,0.45)';
                 if (meta.compostStation) return 'rgba(202,138,4,0.45)';
+                if (meta.agricultureStation) return 'rgba(74,222,128,0.45)';
+                if (meta.warehouseStation) return 'rgba(211,160,96,0.5)';
                 return 'rgba(180,80,80,0.4)';
             }
             if (meta.portal) return 'rgba(100,200,255,0.35)';
@@ -158,9 +162,9 @@
                     dynamicCtx.arc(x + w / 2, y + h / 2, 8, 0, Math.PI * 2);
                     dynamicCtx.fill();
                 }
-            } else if (meta.cookingStation || meta.pharmacyStation || meta.compostStation) {
-                var stationLabel = meta.cookingStation ? '灶' : (meta.pharmacyStation ? '制药台' : '制肥桶');
-                dynamicCtx.fillStyle = 'rgba(251,146,60,0.95)';
+            } else if (meta.cookingStation || meta.pharmacyStation || meta.compostStation || meta.agricultureStation || meta.warehouseStation) {
+                var stationLabel = meta.cookingStation ? '灶' : (meta.pharmacyStation ? '制药台' : (meta.compostStation ? '制肥桶' : (meta.warehouseStation ? '仓' : '农')));
+                dynamicCtx.fillStyle = meta.agricultureStation ? 'rgba(74,222,128,0.95)' : (meta.warehouseStation ? 'rgba(211,160,96,0.95)' : 'rgba(251,146,60,0.95)');
                 dynamicCtx.font = 'bold 20px "Microsoft YaHei","PingFang SC",sans-serif';
                 var stationLabelWidth = dynamicCtx.measureText(stationLabel).width;
                 dynamicCtx.fillText(stationLabel, x + w / 2 - stationLabelWidth / 2, y + h / 2 + 7);

@@ -1,6 +1,6 @@
 {
-  "schema_version": 2,
-  "design_note": "成熟区间宽裕；完美可配水分+微量+施肥值(AND)。trace_sensitivity：lethal/severe 为微量排斥作物，见 trace_sensitivity_catalog。",
+  "schema_version": 3,
+  "design_note": "成熟硬门槛后按生长分结算产量：每正分+25%产量，每负分-25%（负分惩罚封顶-50%）。各档 score_dimensions 控制参与维；perfect* 区间为各维 2 分闭区间。",
   "crop_structure_requirements": {
     "support_frame": [
       "cucumber",
@@ -65,202 +65,445 @@
       ]
     }
   },
+  "tier_scoring_summary": {
+    "1": {
+      "label": "仅水分+土+轮作；水分高分窗极宽",
+      "typical_max_positive_score": 4
+    },
+    "2": {
+      "label": "水分+土+轮作；部分作物接入微量（田园精品）",
+      "typical_max_positive_score": 8
+    },
+    "3": {
+      "label": "水+微量+肥+土+轮作；窗口中等",
+      "typical_max_positive_score": 8
+    },
+    "4": {
+      "label": "全维计分；可登记海藻精+液态肥；窗口偏窄",
+      "typical_max_positive_score": 8
+    },
+    "5": {
+      "label": "全维计分且窗口最窄；高值作物",
+      "typical_max_positive_score": 8
+    }
+  },
   "tier_growth_summary": {
-    "1": "生长快、枯/淹宽容、完美窗口很宽、无微量要求",
-    "2": "花生锚点或同档：中等周期与窗口",
-    "3": "略长周期、完美需适量浇水；微量门槛偏低",
-    "4": "更长周期；可请求海藻精+液态肥；完美可含水/微量/施肥",
-    "5": "最长周期仍≤175tick；双请求+完美三指标（门槛仍偏松）"
+    "1": "仅水分+土+轮作；水分高分窗极宽",
+    "2": "水分+土+轮作；部分作物接入微量（田园精品）",
+    "3": "水+微量+肥+土+轮作；窗口中等",
+    "4": "全维计分；可登记海藻精+液态肥；窗口偏窄",
+    "5": "全维计分且窗口最窄；高值作物"
+  },
+  "growth_score_rules": {
+    "yield_per_positive_point": 0.25,
+    "yield_per_negative_point": 0.25,
+    "negative_penalty_cap": 0.5,
+    "water_perfect_interval": "closed",
+    "dimension_scores": {
+      "water": "xeric：完美窗偏低，超 waterlogged_above 生长分0；hydrophilic/aquatic 窗偏高；均受土壤锁值影响入账",
+      "trace": "score_dimensions.trace=false不参与；排斥作物≤safe_max得2否则0",
+      "fertilizer": "score_dimensions.fertilizer=false不参与",
+      "soil": "偏好+1；不适-1；其余0（CROP_SOIL_AFFINITY 按八种土编排；融合透滤/酸性固磷等见 demo）",
+      "rotation": "跨group或豆科后种非豆科+1；黑土连作同作物-1；黄绵土豆科后+1"
+    }
+  },
+  "water_profile_labels": {
+    "xeric": "耐旱忌涝",
+    "mesic": "常规",
+    "hydrophilic": "喜湿",
+    "aquatic": "水生"
+  },
+  "starter_crop_catalog": {
+    "entries": [
+      {
+        "crop_id": "maize",
+        "starter_sequence": 1,
+        "tier": 1,
+        "seed_item_id": "seed_maize"
+      },
+      {
+        "crop_id": "carrot",
+        "starter_sequence": 2,
+        "tier": 1,
+        "seed_item_id": "seed_carrot"
+      },
+      {
+        "crop_id": "radish_white",
+        "starter_sequence": 2,
+        "tier": 1,
+        "seed_item_id": "seed_radish_white"
+      },
+      {
+        "crop_id": "potato",
+        "starter_sequence": 3,
+        "tier": 1,
+        "seed_item_id": "seed_potato"
+      }
+    ]
   },
   "crops": {
     "maize": {
       "cropId": "maize",
       "tier": 1,
+      "group": "grain",
+      "nitrogen_fixing": false,
       "name": "玉米",
       "seedItemId": "seed_maize",
       "seedName": "玉米种子",
       "productItemId": "herb_maize",
       "productName": "玉米",
-      "growthTicks": 85,
-      "minWater": 70,
-      "maxWater": 375,
-      "perfectMinWater": 128,
-      "perfectMaxWater": 318,
+      "growthTicks": 80,
+      "minWater": 58,
+      "maxWater": 404,
+      "perfectMinWater": 93,
+      "perfectMaxWater": 247,
       "perfectMinTrace": null,
       "perfectMaxTrace": null,
+      "score_dimensions": {
+        "water": true,
+        "trace": false,
+        "fertilizer": false,
+        "soil": true,
+        "rotation": true
+      },
       "requests_seaweed_extract": false,
       "requests_liquid_fertilizer": false,
       "perfectMinFertilizer": null,
       "perfectMaxFertilizer": null,
+      "soil_scoring": {
+        "preferred": [
+          "黄绵土",
+          "褐土",
+          "盐碱土"
+        ],
+        "unsuitable": [
+          "水稻土"
+        ]
+      },
+      "soil_tags": [
+        "salt_tolerant"
+      ],
       "harvestMin": 3,
       "harvestMax": 5,
-      "growNote": "耐旱广种，一季收"
+      "starter_recommended": true,
+      "starter_sequence": 1,
+      "water_profile": "xeric",
+      "waterlogged_above": 302
     },
     "rice": {
       "cropId": "rice",
       "tier": 1,
+      "group": "grain",
+      "nitrogen_fixing": false,
       "name": "大米",
       "seedItemId": "seed_rice",
       "seedName": "大米种子",
       "productItemId": "herb_rice",
       "productName": "大米",
-      "growthTicks": 85,
-      "minWater": 96,
-      "maxWater": 395,
-      "perfectMinWater": 139,
-      "perfectMaxWater": 353,
+      "growthTicks": 80,
+      "minWater": 92,
+      "maxWater": 436,
+      "perfectMinWater": 164,
+      "perfectMaxWater": 421,
       "perfectMinTrace": null,
       "perfectMaxTrace": null,
+      "score_dimensions": {
+        "water": true,
+        "trace": false,
+        "fertilizer": false,
+        "soil": true,
+        "rotation": true
+      },
       "requests_seaweed_extract": false,
       "requests_liquid_fertilizer": false,
       "perfectMinFertilizer": null,
       "perfectMaxFertilizer": null,
+      "soil_scoring": {
+        "preferred": [
+          "水稻土",
+          "紫色土"
+        ],
+        "unsuitable": [
+          "盐碱土",
+          "黄绵土"
+        ]
+      },
+      "soil_tags": [],
       "harvestMin": 3,
       "harvestMax": 5,
-      "growNote": "水田主食，需稳水；种植需「蓄水田埂」",
-      "required_crop_structure_id": "water_storage_ridge"
+      "required_crop_structure_id": "water_storage_ridge",
+      "water_profile": "hydrophilic"
     },
     "rice_bomba": {
       "cropId": "rice_bomba",
       "tier": 3,
+      "group": "grain",
+      "nitrogen_fixing": false,
       "name": "粳米",
       "seedItemId": "seed_rice_bomba",
       "seedName": "粳米种子",
       "productItemId": "herb_rice_bomba",
       "productName": "粳米",
-      "growthTicks": 112,
-      "minWater": 90,
-      "maxWater": 295,
-      "perfectMinWater": 149,
-      "perfectMaxWater": 237,
-      "perfectMinTrace": 30,
+      "growthTicks": 108,
+      "minWater": 106,
+      "maxWater": 346,
+      "perfectMinWater": 186,
+      "perfectMaxWater": 314,
+      "perfectMinTrace": 24,
       "perfectMaxTrace": null,
+      "score_dimensions": {
+        "water": true,
+        "trace": true,
+        "fertilizer": true,
+        "soil": true,
+        "rotation": true
+      },
       "requests_seaweed_extract": false,
       "requests_liquid_fertilizer": true,
-      "perfectMinFertilizer": 12,
-      "perfectMaxFertilizer": null,
+      "perfectMinFertilizer": 9,
+      "perfectMaxFertilizer": 78,
+      "soil_scoring": {
+        "preferred": [
+          "水稻土",
+          "紫色土",
+          "典型黑土"
+        ],
+        "unsuitable": [
+          "盐碱土",
+          "黄绵土"
+        ]
+      },
+      "soil_tags": [],
       "harvestMin": 2,
       "harvestMax": 3,
-      "growNote": "短粒稻，需精细水肥；种植需「蓄水田埂」",
-      "required_crop_structure_id": "water_storage_ridge"
+      "required_crop_structure_id": "water_storage_ridge",
+      "water_profile": "hydrophilic"
     },
     "rice_basmati": {
       "cropId": "rice_basmati",
       "tier": 4,
+      "group": "grain",
+      "nitrogen_fixing": false,
       "name": "长粒香米",
       "seedItemId": "seed_rice_basmati",
       "seedName": "长粒香米种子",
       "productItemId": "herb_rice_basmati",
       "productName": "长粒香米",
-      "growthTicks": 128,
-      "minWater": 100,
-      "maxWater": 280,
-      "perfectMinWater": 154,
-      "perfectMaxWater": 226,
-      "perfectMinTrace": 36,
+      "growthTicks": 124,
+      "minWater": 116,
+      "maxWater": 324,
+      "perfectMinWater": 184,
+      "perfectMaxWater": 302,
+      "perfectMinTrace": 34,
       "perfectMaxTrace": 88,
+      "score_dimensions": {
+        "water": true,
+        "trace": true,
+        "fertilizer": true,
+        "soil": true,
+        "rotation": true
+      },
       "requests_seaweed_extract": true,
       "requests_liquid_fertilizer": true,
-      "perfectMinFertilizer": 18,
-      "perfectMaxFertilizer": 85,
+      "perfectMinFertilizer": 16,
+      "perfectMaxFertilizer": 80,
+      "soil_scoring": {
+        "preferred": [
+          "水稻土",
+          "紫色土"
+        ],
+        "unsuitable": [
+          "盐碱土",
+          "黄绵土"
+        ]
+      },
+      "soil_tags": [],
       "harvestMin": 1,
       "harvestMax": 3,
-      "growNote": "长粒香稻，溢价米；种植需「蓄水田埂」",
-      "required_crop_structure_id": "water_storage_ridge"
+      "required_crop_structure_id": "water_storage_ridge",
+      "water_profile": "hydrophilic"
     },
     "rice_glutinous_round": {
       "cropId": "rice_glutinous_round",
       "tier": 3,
+      "group": "grain",
+      "nitrogen_fixing": false,
       "name": "圆糯米",
       "seedItemId": "seed_rice_glutinous_round",
       "seedName": "圆糯米种子",
       "productItemId": "herb_rice_glutinous_round",
       "productName": "圆糯米",
-      "growthTicks": 112,
-      "minWater": 90,
-      "maxWater": 295,
-      "perfectMinWater": 149,
-      "perfectMaxWater": 237,
-      "perfectMinTrace": 30,
+      "growthTicks": 108,
+      "minWater": 106,
+      "maxWater": 346,
+      "perfectMinWater": 188,
+      "perfectMaxWater": 311,
+      "perfectMinTrace": 20,
       "perfectMaxTrace": null,
+      "score_dimensions": {
+        "water": true,
+        "trace": true,
+        "fertilizer": true,
+        "soil": true,
+        "rotation": true
+      },
       "requests_seaweed_extract": false,
       "requests_liquid_fertilizer": true,
-      "perfectMinFertilizer": 12,
-      "perfectMaxFertilizer": null,
+      "perfectMinFertilizer": 10,
+      "perfectMaxFertilizer": 78,
+      "soil_scoring": {
+        "preferred": [
+          "水稻土",
+          "紫色土",
+          "典型黑土"
+        ],
+        "unsuitable": [
+          "盐碱土",
+          "黄绵土"
+        ]
+      },
+      "soil_tags": [],
       "harvestMin": 2,
       "harvestMax": 3,
-      "growNote": "糯稻，水分敏感；种植需「蓄水田埂」",
-      "required_crop_structure_id": "water_storage_ridge"
+      "required_crop_structure_id": "water_storage_ridge",
+      "water_profile": "hydrophilic"
     },
     "wheat": {
       "cropId": "wheat",
       "tier": 1,
+      "group": "grain",
+      "nitrogen_fixing": false,
       "name": "小麦",
       "seedItemId": "seed_wheat",
       "seedName": "小麦种子",
       "productItemId": "herb_wheat",
       "productName": "小麦",
-      "growthTicks": 85,
-      "minWater": 70,
-      "maxWater": 360,
-      "perfectMinWater": 120,
-      "perfectMaxWater": 310,
+      "growthTicks": 80,
+      "minWater": 62,
+      "maxWater": 386,
+      "perfectMinWater": 87,
+      "perfectMaxWater": 242,
       "perfectMinTrace": null,
       "perfectMaxTrace": null,
+      "score_dimensions": {
+        "water": true,
+        "trace": false,
+        "fertilizer": false,
+        "soil": true,
+        "rotation": true
+      },
       "requests_seaweed_extract": false,
       "requests_liquid_fertilizer": false,
       "perfectMinFertilizer": null,
       "perfectMaxFertilizer": null,
+      "soil_scoring": {
+        "preferred": [
+          "褐土",
+          "典型黑土",
+          "黄绵土"
+        ],
+        "unsuitable": [
+          "水稻土",
+          "盐碱土"
+        ]
+      },
+      "soil_tags": [
+        "salt_tolerant"
+      ],
       "harvestMin": 3,
       "harvestMax": 5,
-      "growNote": "冬夏麦，田间常规"
+      "water_profile": "xeric",
+      "waterlogged_above": 292
     },
     "wheat_durum": {
       "cropId": "wheat_durum",
       "tier": 3,
+      "group": "grain",
+      "nitrogen_fixing": false,
       "name": "硬质小麦",
       "seedItemId": "seed_wheat_durum",
       "seedName": "硬质小麦种子",
       "productItemId": "herb_wheat_durum",
       "productName": "硬质小麦",
-      "growthTicks": 112,
-      "minWater": 90,
-      "maxWater": 295,
-      "perfectMinWater": 149,
-      "perfectMaxWater": 237,
-      "perfectMinTrace": 30,
+      "growthTicks": 108,
+      "minWater": 86,
+      "maxWater": 308,
+      "perfectMinWater": 119,
+      "perfectMaxWater": 174,
+      "perfectMinTrace": 26,
       "perfectMaxTrace": null,
+      "score_dimensions": {
+        "water": true,
+        "trace": true,
+        "fertilizer": true,
+        "soil": true,
+        "rotation": true
+      },
       "requests_seaweed_extract": false,
       "requests_liquid_fertilizer": true,
-      "perfectMinFertilizer": 12,
-      "perfectMaxFertilizer": null,
+      "perfectMinFertilizer": 10,
+      "perfectMaxFertilizer": 78,
+      "soil_scoring": {
+        "preferred": [
+          "褐土",
+          "黄绵土"
+        ],
+        "unsuitable": [
+          "水稻土",
+          "盐碱土"
+        ]
+      },
+      "soil_tags": [
+        "salt_tolerant"
+      ],
       "harvestMin": 2,
       "harvestMax": 3,
-      "growNote": "硬质麦，筋道面用"
+      "water_profile": "xeric",
+      "waterlogged_above": 221
     },
     "euryale": {
       "cropId": "euryale",
       "tier": 4,
+      "group": "grain",
+      "nitrogen_fixing": false,
       "name": "芡实",
       "seedItemId": "seed_euryale",
       "seedName": "芡实种子",
       "productItemId": "herb_euryale",
       "productName": "芡实",
-      "growthTicks": 128,
-      "minWater": 118,
-      "maxWater": 315,
-      "perfectMinWater": 169,
-      "perfectMaxWater": 265,
+      "growthTicks": 124,
+      "minWater": 116,
+      "maxWater": 324,
+      "perfectMinWater": 195,
+      "perfectMaxWater": 319,
       "perfectMinTrace": null,
       "perfectMaxTrace": 8,
+      "score_dimensions": {
+        "water": true,
+        "trace": true,
+        "fertilizer": true,
+        "soil": true,
+        "rotation": true
+      },
       "requests_seaweed_extract": false,
       "requests_liquid_fertilizer": true,
-      "perfectMinFertilizer": 18,
-      "perfectMaxFertilizer": 85,
+      "perfectMinFertilizer": 14,
+      "perfectMaxFertilizer": 84,
+      "soil_scoring": {
+        "preferred": [
+          "水稻土",
+          "紫色土"
+        ],
+        "unsuitable": [
+          "盐碱土",
+          "黄绵土"
+        ]
+      },
+      "soil_tags": [],
       "harvestMin": 1,
       "harvestMax": 3,
-      "growNote": "池栽芡实；忌海藻精进入灌溉水",
       "required_crop_structure_id": "deep_pool",
+      "water_profile": "aquatic",
       "trace_safe_max": 8,
       "trace_lethal_at": 14,
       "trace_stress_loss_per_tick": 4,
@@ -270,98 +513,188 @@
     "tomato": {
       "cropId": "tomato",
       "tier": 2,
+      "group": "veg",
+      "nitrogen_fixing": false,
       "name": "番茄",
       "seedItemId": "seed_tomato",
       "seedName": "番茄种子",
       "productItemId": "herb_tomato",
       "productName": "番茄",
-      "growthTicks": 100,
-      "minWater": 98,
-      "maxWater": 310,
-      "perfectMinWater": 152,
-      "perfectMaxWater": 256,
-      "perfectMinTrace": 38,
+      "growthTicks": 98,
+      "minWater": 92,
+      "maxWater": 318,
+      "perfectMinWater": 165,
+      "perfectMaxWater": 288,
+      "perfectMinTrace": 34,
       "perfectMaxTrace": null,
+      "score_dimensions": {
+        "water": true,
+        "trace": true,
+        "fertilizer": false,
+        "soil": true,
+        "rotation": true
+      },
       "requests_seaweed_extract": false,
       "requests_liquid_fertilizer": false,
       "perfectMinFertilizer": null,
       "perfectMaxFertilizer": null,
+      "soil_scoring": {
+        "preferred": [
+          "褐土",
+          "紫色土",
+          "典型黑土"
+        ],
+        "unsuitable": [
+          "盐碱土",
+          "水稻土"
+        ]
+      },
+      "soil_tags": [
+        "heat_loving"
+      ],
       "harvestMin": 2,
       "harvestMax": 4,
-      "growNote": "育苗移栽；种植需「保护笼」",
-      "required_crop_structure_id": "protection_cage"
+      "required_crop_structure_id": "protection_cage",
+      "water_profile": "hydrophilic"
     },
     "tomato_green": {
       "cropId": "tomato_green",
       "tier": 2,
+      "group": "veg",
+      "nitrogen_fixing": false,
       "name": "绿番茄",
       "seedItemId": "seed_tomato_green",
       "seedName": "绿番茄种子",
       "productItemId": "herb_tomato_green",
       "productName": "绿番茄",
-      "growthTicks": 100,
-      "minWater": 98,
-      "maxWater": 310,
-      "perfectMinWater": 152,
-      "perfectMaxWater": 256,
-      "perfectMinTrace": 38,
+      "growthTicks": 98,
+      "minWater": 92,
+      "maxWater": 318,
+      "perfectMinWater": 164,
+      "perfectMaxWater": 289,
+      "perfectMinTrace": 32,
       "perfectMaxTrace": null,
+      "score_dimensions": {
+        "water": true,
+        "trace": true,
+        "fertilizer": false,
+        "soil": true,
+        "rotation": true
+      },
       "requests_seaweed_extract": false,
       "requests_liquid_fertilizer": false,
       "perfectMinFertilizer": null,
       "perfectMaxFertilizer": null,
+      "soil_scoring": {
+        "preferred": [
+          "褐土",
+          "紫色土",
+          "典型黑土"
+        ],
+        "unsuitable": [
+          "盐碱土",
+          "水稻土"
+        ]
+      },
+      "soil_tags": [
+        "heat_loving"
+      ],
       "harvestMin": 2,
       "harvestMax": 4,
-      "growNote": "硬果腌渍品种；种植需「保护笼」",
-      "required_crop_structure_id": "protection_cage"
+      "required_crop_structure_id": "protection_cage",
+      "water_profile": "hydrophilic"
     },
     "cucumber": {
       "cropId": "cucumber",
       "tier": 1,
+      "group": "veg",
+      "nitrogen_fixing": false,
       "name": "黄瓜",
       "seedItemId": "seed_cucumber",
       "seedName": "黄瓜种子",
       "productItemId": "herb_cucumber",
       "productName": "黄瓜",
-      "growthTicks": 85,
-      "minWater": 70,
-      "maxWater": 360,
-      "perfectMinWater": 120,
-      "perfectMaxWater": 310,
+      "growthTicks": 80,
+      "minWater": 72,
+      "maxWater": 378,
+      "perfectMinWater": 126,
+      "perfectMaxWater": 372,
       "perfectMinTrace": null,
       "perfectMaxTrace": null,
+      "score_dimensions": {
+        "water": true,
+        "trace": false,
+        "fertilizer": false,
+        "soil": true,
+        "rotation": true
+      },
       "requests_seaweed_extract": false,
       "requests_liquid_fertilizer": false,
       "perfectMinFertilizer": null,
       "perfectMaxFertilizer": null,
+      "soil_scoring": {
+        "preferred": [
+          "褐土",
+          "紫色土",
+          "典型黑土"
+        ],
+        "unsuitable": [
+          "盐碱土",
+          "黄绵土"
+        ]
+      },
+      "soil_tags": [
+        "heat_loving"
+      ],
       "harvestMin": 3,
       "harvestMax": 5,
-      "growNote": "架栽脆瓜，夏季常见；种植需「支架」",
-      "required_crop_structure_id": "support_frame"
+      "required_crop_structure_id": "support_frame",
+      "water_profile": "hydrophilic"
     },
     "sprout": {
       "cropId": "sprout",
       "tier": 1,
+      "group": "veg",
+      "nitrogen_fixing": false,
       "name": "豆芽",
       "seedItemId": "seed_sprout",
       "seedName": "豆芽种",
       "productItemId": "herb_sprout",
       "productName": "豆芽",
-      "growthTicks": 41,
-      "minWater": 58,
-      "maxWater": 390,
-      "perfectMinWater": 114,
-      "perfectMaxWater": 334,
+      "growthTicks": 40,
+      "minWater": 55,
+      "maxWater": 406,
+      "perfectMinWater": 119,
+      "perfectMaxWater": 343,
       "perfectMinTrace": null,
       "perfectMaxTrace": 4,
+      "score_dimensions": {
+        "water": true,
+        "trace": true,
+        "fertilizer": false,
+        "soil": true,
+        "rotation": true
+      },
       "requests_seaweed_extract": false,
       "requests_liquid_fertilizer": false,
       "perfectMinFertilizer": null,
       "perfectMaxFertilizer": null,
+      "soil_scoring": {
+        "preferred": [
+          "典型黑土",
+          "褐土",
+          "紫色土"
+        ],
+        "unsuitable": [
+          "水稻土",
+          "盐碱土"
+        ]
+      },
+      "soil_tags": [],
       "harvestMin": 3,
       "harvestMax": 5,
-      "growNote": "忌渠内海藻精；微量过量即水体腐败窒息",
       "required_crop_structure_id": "shade_cover",
+      "water_profile": "mesic",
       "trace_safe_max": 4,
       "trace_lethal_at": 8,
       "trace_stress_loss_per_tick": 5,
@@ -371,49 +704,97 @@
     "potato": {
       "cropId": "potato",
       "tier": 1,
+      "group": "veg",
+      "nitrogen_fixing": false,
       "name": "土豆",
       "seedItemId": "seed_potato",
       "seedName": "土豆种子",
       "productItemId": "herb_potato",
       "productName": "土豆",
-      "growthTicks": 81,
-      "minWater": 70,
-      "maxWater": 360,
-      "perfectMinWater": 112,
-      "perfectMaxWater": 318,
+      "growthTicks": 75,
+      "minWater": 66,
+      "maxWater": 390,
+      "perfectMinWater": 116,
+      "perfectMaxWater": 340,
       "perfectMinTrace": null,
       "perfectMaxTrace": null,
+      "score_dimensions": {
+        "water": true,
+        "trace": false,
+        "fertilizer": false,
+        "soil": true,
+        "rotation": true
+      },
       "requests_seaweed_extract": false,
       "requests_liquid_fertilizer": false,
       "perfectMinFertilizer": null,
       "perfectMaxFertilizer": null,
+      "soil_scoring": {
+        "preferred": [
+          "红壤",
+          "典型黑土",
+          "紫色土"
+        ],
+        "unsuitable": [
+          "盐碱土",
+          "水稻土"
+        ]
+      },
+      "soil_tags": [
+        "acid_loving"
+      ],
       "harvestMin": 3,
       "harvestMax": 5,
-      "growNote": "种薯下沟，易管"
+      "starter_recommended": true,
+      "starter_sequence": 3,
+      "water_profile": "mesic"
     },
     "green_beans": {
       "cropId": "green_beans",
       "tier": 2,
+      "group": "veg",
+      "nitrogen_fixing": true,
       "name": "扁豆",
       "seedItemId": "seed_green_beans",
       "seedName": "扁豆种子",
       "productItemId": "herb_green_beans",
       "productName": "扁豆",
-      "growthTicks": 100,
-      "minWater": 98,
-      "maxWater": 310,
-      "perfectMinWater": 152,
-      "perfectMaxWater": 256,
+      "growthTicks": 98,
+      "minWater": 92,
+      "maxWater": 318,
+      "perfectMinWater": 147,
+      "perfectMaxWater": 263,
       "perfectMinTrace": null,
       "perfectMaxTrace": 20,
+      "score_dimensions": {
+        "water": true,
+        "trace": true,
+        "fertilizer": false,
+        "soil": true,
+        "rotation": true
+      },
       "requests_seaweed_extract": false,
       "requests_liquid_fertilizer": false,
       "perfectMinFertilizer": null,
       "perfectMaxFertilizer": null,
+      "soil_scoring": {
+        "preferred": [
+          "红壤",
+          "黄绵土",
+          "褐土"
+        ],
+        "unsuitable": [
+          "水稻土",
+          "盐碱土"
+        ]
+      },
+      "soil_tags": [
+        "acid_loving"
+      ],
       "harvestMin": 2,
       "harvestMax": 4,
-      "growNote": "豆科；微量过剩易盐害落荚",
       "required_crop_structure_id": "support_frame",
+      "water_profile": "mesic",
       "trace_safe_max": 20,
       "trace_fail_harvest_at": 36,
       "trace_toxic_health_loss_per_tick": 2.5,
@@ -422,26 +803,49 @@
     "garrofo": {
       "cropId": "garrofo",
       "tier": 2,
+      "group": "veg",
+      "nitrogen_fixing": true,
       "name": "大白芸豆",
       "seedItemId": "seed_garrofo",
       "seedName": "大白芸豆种子",
       "productItemId": "herb_garrofo",
       "productName": "大白芸豆",
-      "growthTicks": 100,
-      "minWater": 98,
-      "maxWater": 310,
-      "perfectMinWater": 152,
-      "perfectMaxWater": 256,
+      "growthTicks": 98,
+      "minWater": 92,
+      "maxWater": 318,
+      "perfectMinWater": 147,
+      "perfectMaxWater": 263,
       "perfectMinTrace": null,
       "perfectMaxTrace": 22,
+      "score_dimensions": {
+        "water": true,
+        "trace": true,
+        "fertilizer": false,
+        "soil": true,
+        "rotation": true
+      },
       "requests_seaweed_extract": false,
       "requests_liquid_fertilizer": false,
       "perfectMinFertilizer": null,
       "perfectMaxFertilizer": null,
+      "soil_scoring": {
+        "preferred": [
+          "红壤",
+          "黄绵土",
+          "褐土"
+        ],
+        "unsuitable": [
+          "水稻土",
+          "盐碱土"
+        ]
+      },
+      "soil_tags": [
+        "acid_loving"
+      ],
       "harvestMin": 2,
       "harvestMax": 4,
-      "growNote": "大芸豆；忌海藻精浓灌溉",
       "required_crop_structure_id": "support_frame",
+      "water_profile": "mesic",
       "trace_safe_max": 22,
       "trace_fail_harvest_at": 38,
       "trace_toxic_health_loss_per_tick": 2.5,
@@ -450,26 +854,49 @@
     "beans_white_haricot": {
       "cropId": "beans_white_haricot",
       "tier": 1,
+      "group": "veg",
+      "nitrogen_fixing": true,
       "name": "白扁豆",
       "seedItemId": "seed_beans_white_haricot",
       "seedName": "白扁豆种子",
       "productItemId": "herb_beans_white_haricot",
       "productName": "白扁豆",
-      "growthTicks": 85,
-      "minWater": 70,
-      "maxWater": 360,
-      "perfectMinWater": 120,
-      "perfectMaxWater": 310,
+      "growthTicks": 80,
+      "minWater": 66,
+      "maxWater": 378,
+      "perfectMinWater": 114,
+      "perfectMaxWater": 330,
       "perfectMinTrace": null,
       "perfectMaxTrace": 20,
+      "score_dimensions": {
+        "water": true,
+        "trace": true,
+        "fertilizer": false,
+        "soil": true,
+        "rotation": true
+      },
       "requests_seaweed_extract": false,
       "requests_liquid_fertilizer": false,
       "perfectMinFertilizer": null,
       "perfectMaxFertilizer": null,
+      "soil_scoring": {
+        "preferred": [
+          "红壤",
+          "黄绵土",
+          "褐土"
+        ],
+        "unsuitable": [
+          "水稻土",
+          "盐碱土"
+        ]
+      },
+      "soil_tags": [
+        "acid_loving"
+      ],
       "harvestMin": 3,
       "harvestMax": 5,
-      "growNote": "豆科扁豆；微量上限低",
       "required_crop_structure_id": "support_frame",
+      "water_profile": "mesic",
       "trace_safe_max": 20,
       "trace_fail_harvest_at": 36,
       "trace_toxic_health_loss_per_tick": 2.5,
@@ -478,602 +905,1179 @@
     "beet": {
       "cropId": "beet",
       "tier": 2,
+      "group": "veg",
+      "nitrogen_fixing": false,
       "name": "红甜菜",
       "seedItemId": "seed_beet",
       "seedName": "红甜菜种子",
       "productItemId": "herb_beet",
       "productName": "红甜菜",
-      "growthTicks": 100,
-      "minWater": 98,
-      "maxWater": 310,
-      "perfectMinWater": 152,
-      "perfectMaxWater": 256,
-      "perfectMinTrace": 38,
+      "growthTicks": 98,
+      "minWater": 92,
+      "maxWater": 318,
+      "perfectMinWater": 159,
+      "perfectMaxWater": 295,
+      "perfectMinTrace": 28,
       "perfectMaxTrace": null,
+      "score_dimensions": {
+        "water": true,
+        "trace": true,
+        "fertilizer": false,
+        "soil": true,
+        "rotation": true
+      },
       "requests_seaweed_extract": false,
       "requests_liquid_fertilizer": false,
       "perfectMinFertilizer": null,
       "perfectMaxFertilizer": null,
+      "soil_scoring": {
+        "preferred": [
+          "典型黑土",
+          "紫色土",
+          "褐土"
+        ],
+        "unsuitable": [
+          "盐碱土",
+          "黄绵土"
+        ]
+      },
+      "soil_tags": [],
       "harvestMin": 2,
       "harvestMax": 4,
-      "growNote": "甜菜根，常规管理"
+      "water_profile": "hydrophilic"
     },
     "cabbage": {
       "cropId": "cabbage",
       "tier": 1,
+      "group": "veg",
+      "nitrogen_fixing": false,
       "name": "白菜",
       "seedItemId": "seed_cabbage",
       "seedName": "白菜种子",
       "productItemId": "herb_cabbage",
       "productName": "白菜",
-      "growthTicks": 85,
-      "minWater": 70,
-      "maxWater": 360,
-      "perfectMinWater": 120,
-      "perfectMaxWater": 310,
+      "growthTicks": 80,
+      "minWater": 66,
+      "maxWater": 378,
+      "perfectMinWater": 119,
+      "perfectMaxWater": 372,
       "perfectMinTrace": null,
       "perfectMaxTrace": null,
+      "score_dimensions": {
+        "water": true,
+        "trace": false,
+        "fertilizer": false,
+        "soil": true,
+        "rotation": true
+      },
       "requests_seaweed_extract": false,
       "requests_liquid_fertilizer": false,
       "perfectMinFertilizer": null,
       "perfectMaxFertilizer": null,
+      "soil_scoring": {
+        "preferred": [
+          "典型黑土",
+          "水稻土",
+          "紫色土"
+        ],
+        "unsuitable": [
+          "盐碱土",
+          "黄绵土"
+        ]
+      },
+      "soil_tags": [],
       "harvestMin": 3,
       "harvestMax": 5,
-      "growNote": "秋冬包心，常规菜"
+      "water_profile": "hydrophilic"
     },
     "carrot": {
       "cropId": "carrot",
       "tier": 1,
+      "group": "veg",
+      "nitrogen_fixing": false,
       "name": "胡萝卜",
       "seedItemId": "seed_carrot",
       "seedName": "胡萝卜种子",
       "productItemId": "herb_carrot",
       "productName": "胡萝卜",
-      "growthTicks": 85,
-      "minWater": 70,
-      "maxWater": 360,
-      "perfectMinWater": 120,
-      "perfectMaxWater": 310,
+      "growthTicks": 80,
+      "minWater": 56,
+      "maxWater": 378,
+      "perfectMinWater": 82,
+      "perfectMaxWater": 237,
       "perfectMinTrace": null,
       "perfectMaxTrace": null,
+      "score_dimensions": {
+        "water": true,
+        "trace": false,
+        "fertilizer": false,
+        "soil": true,
+        "rotation": true
+      },
       "requests_seaweed_extract": false,
       "requests_liquid_fertilizer": false,
       "perfectMinFertilizer": null,
       "perfectMaxFertilizer": null,
+      "soil_scoring": {
+        "preferred": [
+          "褐土",
+          "黄绵土",
+          "典型黑土"
+        ],
+        "unsuitable": [
+          "水稻土"
+        ]
+      },
+      "soil_tags": [
+        "salt_tolerant"
+      ],
       "harvestMin": 3,
       "harvestMax": 5,
-      "growNote": "撒沟直根，易种"
+      "starter_recommended": true,
+      "starter_sequence": 2,
+      "water_profile": "xeric",
+      "waterlogged_above": 286
     },
     "konjac": {
       "cropId": "konjac",
       "tier": 4,
+      "group": "veg",
+      "nitrogen_fixing": false,
       "name": "魔芋",
       "seedItemId": "seed_konjac",
       "seedName": "魔芋种子",
       "productItemId": "herb_konjac",
       "productName": "魔芋",
-      "growthTicks": 138,
-      "minWater": 100,
-      "maxWater": 280,
-      "perfectMinWater": 154,
-      "perfectMaxWater": 226,
-      "perfectMinTrace": 28,
-      "perfectMaxTrace": 88,
+      "growthTicks": 131,
+      "minWater": 96,
+      "maxWater": 278,
+      "perfectMinWater": 163,
+      "perfectMaxWater": 250,
+      "perfectMinTrace": 16,
+      "perfectMaxTrace": 94,
+      "score_dimensions": {
+        "water": true,
+        "trace": true,
+        "fertilizer": true,
+        "soil": true,
+        "rotation": true
+      },
       "requests_seaweed_extract": true,
       "requests_liquid_fertilizer": true,
-      "perfectMinFertilizer": 18,
-      "perfectMaxFertilizer": 85,
+      "perfectMinFertilizer": 13,
+      "perfectMaxFertilizer": 84,
+      "soil_scoring": {
+        "preferred": [
+          "红壤",
+          "紫色土"
+        ],
+        "unsuitable": [
+          "盐碱土",
+          "黄绵土"
+        ]
+      },
+      "soil_tags": [
+        "acid_loving"
+      ],
       "harvestMin": 1,
       "harvestMax": 3,
-      "growNote": "魔芋，收后须处理"
+      "water_profile": "hydrophilic"
     },
     "radish_white": {
       "cropId": "radish_white",
       "tier": 1,
+      "group": "veg",
+      "nitrogen_fixing": false,
       "name": "白萝卜",
       "seedItemId": "seed_radish_white",
       "seedName": "白萝卜种子",
       "productItemId": "herb_radish_white",
       "productName": "白萝卜",
-      "growthTicks": 85,
-      "minWater": 70,
-      "maxWater": 360,
-      "perfectMinWater": 120,
-      "perfectMaxWater": 310,
+      "growthTicks": 70,
+      "minWater": 66,
+      "maxWater": 378,
+      "perfectMinWater": 86,
+      "perfectMaxWater": 240,
       "perfectMinTrace": null,
       "perfectMaxTrace": null,
+      "score_dimensions": {
+        "water": true,
+        "trace": false,
+        "fertilizer": false,
+        "soil": true,
+        "rotation": true
+      },
       "requests_seaweed_extract": false,
       "requests_liquid_fertilizer": false,
       "perfectMinFertilizer": null,
       "perfectMaxFertilizer": null,
+      "soil_scoring": {
+        "preferred": [
+          "褐土",
+          "黄绵土",
+          "典型黑土"
+        ],
+        "unsuitable": [
+          "水稻土"
+        ]
+      },
+      "soil_tags": [
+        "salt_tolerant"
+      ],
       "harvestMin": 3,
       "harvestMax": 5,
-      "growNote": "快生根茎"
+      "starter_recommended": true,
+      "starter_sequence": 2,
+      "water_profile": "xeric",
+      "waterlogged_above": 288
     },
     "celery": {
       "cropId": "celery",
       "tier": 3,
+      "group": "veg",
+      "nitrogen_fixing": false,
       "name": "西芹",
       "seedItemId": "seed_celery",
       "seedName": "西芹种子",
       "productItemId": "herb_celery",
       "productName": "西芹",
-      "growthTicks": 112,
-      "minWater": 90,
-      "maxWater": 295,
-      "perfectMinWater": 149,
-      "perfectMaxWater": 237,
-      "perfectMinTrace": 30,
+      "growthTicks": 108,
+      "minWater": 96,
+      "maxWater": 300,
+      "perfectMinWater": 172,
+      "perfectMaxWater": 265,
+      "perfectMinTrace": 26,
       "perfectMaxTrace": null,
+      "score_dimensions": {
+        "water": true,
+        "trace": true,
+        "fertilizer": true,
+        "soil": true,
+        "rotation": true
+      },
       "requests_seaweed_extract": false,
       "requests_liquid_fertilizer": true,
-      "perfectMinFertilizer": 12,
-      "perfectMaxFertilizer": null,
+      "perfectMinFertilizer": 8,
+      "perfectMaxFertilizer": 78,
+      "soil_scoring": {
+        "preferred": [
+          "典型黑土",
+          "水稻土",
+          "紫色土"
+        ],
+        "unsuitable": [
+          "盐碱土",
+          "黄绵土"
+        ]
+      },
+      "soil_tags": [],
       "harvestMin": 2,
       "harvestMax": 3,
-      "growNote": "西芹育苗，水分要求高"
+      "water_profile": "hydrophilic"
     },
     "bamboo_shoot": {
       "cropId": "bamboo_shoot",
       "tier": 5,
+      "group": "veg",
+      "nitrogen_fixing": false,
       "name": "竹笋",
       "seedItemId": "seed_bamboo_shoot",
       "seedName": "竹笋种子",
       "productItemId": "herb_bamboo_shoot",
       "productName": "竹笋",
-      "growthTicks": 175,
-      "minWater": 110,
-      "maxWater": 255,
-      "perfectMinWater": 159,
-      "perfectMaxWater": 207,
-      "perfectMinTrace": 42,
-      "perfectMaxTrace": 82,
+      "growthTicks": 170,
+      "minWater": 104,
+      "maxWater": 253,
+      "perfectMinWater": 155,
+      "perfectMaxWater": 203,
+      "perfectMinTrace": 40,
+      "perfectMaxTrace": 68,
+      "score_dimensions": {
+        "water": true,
+        "trace": true,
+        "fertilizer": true,
+        "soil": true,
+        "rotation": true
+      },
       "requests_seaweed_extract": true,
       "requests_liquid_fertilizer": true,
       "perfectMinFertilizer": 22,
-      "perfectMaxFertilizer": 80,
+      "perfectMaxFertilizer": 66,
+      "soil_scoring": {
+        "preferred": [
+          "红壤",
+          "紫色土",
+          "水稻土"
+        ],
+        "unsuitable": [
+          "盐碱土",
+          "黄绵土"
+        ]
+      },
+      "soil_tags": [
+        "acid_loving"
+      ],
       "harvestMin": 1,
       "harvestMax": 2,
-      "growNote": "竹鞭发笋，多年生"
+      "water_profile": "mesic"
     },
     "onion": {
       "cropId": "onion",
       "tier": 2,
+      "group": "aromatics",
+      "nitrogen_fixing": false,
       "name": "洋葱",
       "seedItemId": "seed_onion",
       "seedName": "洋葱种子",
       "productItemId": "herb_onion",
       "productName": "洋葱",
-      "growthTicks": 100,
-      "minWater": 98,
-      "maxWater": 310,
-      "perfectMinWater": 152,
-      "perfectMaxWater": 256,
-      "perfectMinTrace": 38,
+      "growthTicks": 98,
+      "minWater": 92,
+      "maxWater": 318,
+      "perfectMinWater": 153,
+      "perfectMaxWater": 257,
+      "perfectMinTrace": 27,
       "perfectMaxTrace": null,
+      "score_dimensions": {
+        "water": true,
+        "trace": true,
+        "fertilizer": false,
+        "soil": true,
+        "rotation": true
+      },
       "requests_seaweed_extract": false,
       "requests_liquid_fertilizer": false,
       "perfectMinFertilizer": null,
       "perfectMaxFertilizer": null,
+      "soil_scoring": {
+        "preferred": [
+          "褐土",
+          "黄绵土",
+          "典型黑土"
+        ],
+        "unsuitable": [
+          "水稻土",
+          "盐碱土"
+        ]
+      },
+      "soil_tags": [],
       "harvestMin": 2,
       "harvestMax": 4,
-      "growNote": "育苗球葱"
+      "water_profile": "mesic"
     },
     "garlic": {
       "cropId": "garlic",
       "tier": 2,
+      "group": "aromatics",
+      "nitrogen_fixing": false,
       "name": "大蒜",
       "seedItemId": "seed_garlic",
       "seedName": "大蒜种子",
       "productItemId": "herb_garlic",
       "productName": "大蒜",
-      "growthTicks": 100,
-      "minWater": 98,
-      "maxWater": 310,
-      "perfectMinWater": 152,
-      "perfectMaxWater": 256,
-      "perfectMinTrace": 38,
+      "growthTicks": 98,
+      "minWater": 92,
+      "maxWater": 318,
+      "perfectMinWater": 151,
+      "perfectMaxWater": 259,
+      "perfectMinTrace": 25,
       "perfectMaxTrace": null,
+      "score_dimensions": {
+        "water": true,
+        "trace": true,
+        "fertilizer": false,
+        "soil": true,
+        "rotation": true
+      },
       "requests_seaweed_extract": false,
       "requests_liquid_fertilizer": false,
       "perfectMinFertilizer": null,
       "perfectMaxFertilizer": null,
+      "soil_scoring": {
+        "preferred": [
+          "褐土",
+          "黄绵土",
+          "典型黑土"
+        ],
+        "unsuitable": [
+          "水稻土",
+          "盐碱土"
+        ]
+      },
+      "soil_tags": [],
       "harvestMin": 2,
       "harvestMax": 4,
-      "growNote": "蒜瓣下种"
+      "water_profile": "mesic"
     },
     "ginger": {
       "cropId": "ginger",
       "tier": 3,
+      "group": "aromatics",
+      "nitrogen_fixing": false,
       "name": "生姜",
       "seedItemId": "seed_ginger",
       "seedName": "生姜种子",
       "productItemId": "herb_ginger",
       "productName": "生姜",
-      "growthTicks": 112,
-      "minWater": 90,
-      "maxWater": 295,
-      "perfectMinWater": 149,
-      "perfectMaxWater": 237,
-      "perfectMinTrace": 30,
+      "growthTicks": 108,
+      "minWater": 86,
+      "maxWater": 300,
+      "perfectMinWater": 153,
+      "perfectMaxWater": 233,
+      "perfectMinTrace": 21,
       "perfectMaxTrace": null,
+      "score_dimensions": {
+        "water": true,
+        "trace": true,
+        "fertilizer": true,
+        "soil": true,
+        "rotation": true
+      },
       "requests_seaweed_extract": false,
       "requests_liquid_fertilizer": true,
-      "perfectMinFertilizer": 12,
-      "perfectMaxFertilizer": null,
+      "perfectMinFertilizer": 8,
+      "perfectMaxFertilizer": 78,
+      "soil_scoring": {
+        "preferred": [
+          "红壤",
+          "紫色土"
+        ],
+        "unsuitable": [
+          "盐碱土",
+          "黄绵土"
+        ]
+      },
+      "soil_tags": [
+        "acid_loving"
+      ],
       "harvestMin": 2,
       "harvestMax": 3,
-      "growNote": "姜块暖畦；种植需「顶棚」",
-      "required_crop_structure_id": "canopy"
+      "required_crop_structure_id": "canopy",
+      "water_profile": "mesic"
     },
     "shallot": {
       "cropId": "shallot",
       "tier": 3,
+      "group": "aromatics",
+      "nitrogen_fixing": false,
       "name": "红葱头",
       "seedItemId": "seed_shallot",
       "seedName": "红葱头种子",
       "productItemId": "herb_shallot",
       "productName": "红葱头",
-      "growthTicks": 112,
-      "minWater": 90,
-      "maxWater": 295,
-      "perfectMinWater": 149,
-      "perfectMaxWater": 237,
-      "perfectMinTrace": 30,
+      "growthTicks": 108,
+      "minWater": 86,
+      "maxWater": 300,
+      "perfectMinWater": 153,
+      "perfectMaxWater": 233,
+      "perfectMinTrace": 23,
       "perfectMaxTrace": null,
+      "score_dimensions": {
+        "water": true,
+        "trace": true,
+        "fertilizer": true,
+        "soil": true,
+        "rotation": true
+      },
       "requests_seaweed_extract": false,
       "requests_liquid_fertilizer": true,
-      "perfectMinFertilizer": 12,
-      "perfectMaxFertilizer": null,
+      "perfectMinFertilizer": 8,
+      "perfectMaxFertilizer": 78,
+      "soil_scoring": {
+        "preferred": [
+          "红壤",
+          "紫色土",
+          "褐土"
+        ],
+        "unsuitable": [
+          "盐碱土",
+          "水稻土"
+        ]
+      },
+      "soil_tags": [
+        "acid_loving"
+      ],
       "harvestMin": 2,
       "harvestMax": 3,
-      "growNote": "红葱头，炼油用"
+      "water_profile": "mesic"
     },
     "leek": {
       "cropId": "leek",
       "tier": 3,
+      "group": "aromatics",
+      "nitrogen_fixing": false,
       "name": "韭葱",
       "seedItemId": "seed_leek",
       "seedName": "韭葱种子",
       "productItemId": "herb_leek",
       "productName": "韭葱",
-      "growthTicks": 112,
-      "minWater": 90,
-      "maxWater": 295,
-      "perfectMinWater": 149,
-      "perfectMaxWater": 237,
-      "perfectMinTrace": 30,
+      "growthTicks": 108,
+      "minWater": 86,
+      "maxWater": 300,
+      "perfectMinWater": 156,
+      "perfectMaxWater": 230,
+      "perfectMinTrace": 25,
       "perfectMaxTrace": null,
+      "score_dimensions": {
+        "water": true,
+        "trace": true,
+        "fertilizer": true,
+        "soil": true,
+        "rotation": true
+      },
       "requests_seaweed_extract": false,
       "requests_liquid_fertilizer": true,
-      "perfectMinFertilizer": 12,
-      "perfectMaxFertilizer": null,
+      "perfectMinFertilizer": 9,
+      "perfectMaxFertilizer": 78,
+      "soil_scoring": {
+        "preferred": [
+          "红壤",
+          "褐土",
+          "典型黑土"
+        ],
+        "unsuitable": [
+          "盐碱土",
+          "水稻土"
+        ]
+      },
+      "soil_tags": [
+        "acid_loving"
+      ],
       "harvestMin": 2,
       "harvestMax": 3,
-      "growNote": "韭葱白管，周期略长"
+      "water_profile": "mesic"
     },
     "scallion": {
       "cropId": "scallion",
       "tier": 2,
+      "group": "aromatics",
+      "nitrogen_fixing": false,
       "name": "大葱",
       "seedItemId": "seed_scallion",
       "seedName": "大葱种子",
       "productItemId": "herb_scallion",
       "productName": "大葱",
-      "growthTicks": 100,
-      "minWater": 98,
-      "maxWater": 310,
-      "perfectMinWater": 152,
-      "perfectMaxWater": 256,
-      "perfectMinTrace": 38,
+      "growthTicks": 98,
+      "minWater": 92,
+      "maxWater": 318,
+      "perfectMinWater": 147,
+      "perfectMaxWater": 263,
+      "perfectMinTrace": 23,
       "perfectMaxTrace": null,
+      "score_dimensions": {
+        "water": true,
+        "trace": true,
+        "fertilizer": false,
+        "soil": true,
+        "rotation": true
+      },
       "requests_seaweed_extract": false,
       "requests_liquid_fertilizer": false,
       "perfectMinFertilizer": null,
       "perfectMaxFertilizer": null,
+      "soil_scoring": {
+        "preferred": [
+          "褐土",
+          "紫色土",
+          "典型黑土"
+        ],
+        "unsuitable": [
+          "盐碱土",
+          "水稻土"
+        ]
+      },
+      "soil_tags": [],
       "harvestMin": 2,
       "harvestMax": 4,
-      "growNote": "长管葱，常规"
+      "water_profile": "mesic"
     },
     "cilantro": {
       "cropId": "cilantro",
       "tier": 3,
+      "group": "aromatics",
+      "nitrogen_fixing": false,
       "name": "芫荽",
       "seedItemId": "seed_cilantro",
       "seedName": "芫荽种子",
       "productItemId": "herb_cilantro",
       "productName": "芫荽",
-      "growthTicks": 112,
-      "minWater": 90,
-      "maxWater": 295,
-      "perfectMinWater": 149,
-      "perfectMaxWater": 237,
-      "perfectMinTrace": 30,
+      "growthTicks": 108,
+      "minWater": 86,
+      "maxWater": 300,
+      "perfectMinWater": 157,
+      "perfectMaxWater": 229,
+      "perfectMinTrace": 21,
       "perfectMaxTrace": null,
+      "score_dimensions": {
+        "water": true,
+        "trace": true,
+        "fertilizer": true,
+        "soil": true,
+        "rotation": true
+      },
       "requests_seaweed_extract": false,
       "requests_liquid_fertilizer": true,
-      "perfectMinFertilizer": 12,
-      "perfectMaxFertilizer": null,
+      "perfectMinFertilizer": 7,
+      "perfectMaxFertilizer": 78,
+      "soil_scoring": {
+        "preferred": [
+          "褐土",
+          "紫色土",
+          "典型黑土"
+        ],
+        "unsuitable": [
+          "盐碱土",
+          "黄绵土"
+        ]
+      },
+      "soil_tags": [],
       "harvestMin": 2,
       "harvestMax": 3,
-      "growNote": "香菜，温度敏感"
+      "water_profile": "mesic"
     },
     "star_anise": {
       "cropId": "star_anise",
       "tier": 5,
+      "group": "spice",
+      "nitrogen_fixing": false,
       "name": "八角",
       "seedItemId": "seed_star_anise",
       "seedName": "八角种子",
       "productItemId": "herb_star_anise",
       "productName": "八角",
-      "growthTicks": 175,
-      "minWater": 110,
-      "maxWater": 255,
+      "growthTicks": 170,
+      "minWater": 104,
+      "maxWater": 253,
       "perfectMinWater": 159,
-      "perfectMaxWater": 207,
-      "perfectMinTrace": 42,
-      "perfectMaxTrace": 82,
+      "perfectMaxWater": 199,
+      "perfectMinTrace": 46,
+      "perfectMaxTrace": 59,
+      "score_dimensions": {
+        "water": true,
+        "trace": true,
+        "fertilizer": true,
+        "soil": true,
+        "rotation": true
+      },
       "requests_seaweed_extract": true,
       "requests_liquid_fertilizer": true,
-      "perfectMinFertilizer": 22,
-      "perfectMaxFertilizer": 80,
+      "perfectMinFertilizer": 26,
+      "perfectMaxFertilizer": 66,
+      "soil_scoring": {
+        "preferred": [
+          "红壤",
+          "紫色土"
+        ],
+        "unsuitable": [
+          "盐碱土",
+          "黄绵土"
+        ]
+      },
+      "soil_tags": [
+        "acid_loving"
+      ],
       "harvestMin": 1,
       "harvestMax": 2,
-      "growNote": "八角树，多年成树"
+      "water_profile": "mesic"
     },
     "sesame": {
       "cropId": "sesame",
       "tier": 4,
+      "group": "spice",
+      "nitrogen_fixing": false,
       "name": "芝麻",
       "seedItemId": "seed_sesame",
       "seedName": "芝麻种子",
       "productItemId": "herb_sesame",
       "productName": "芝麻",
-      "growthTicks": 128,
-      "minWater": 100,
-      "maxWater": 280,
-      "perfectMinWater": 154,
-      "perfectMaxWater": 226,
-      "perfectMinTrace": 36,
+      "growthTicks": 124,
+      "minWater": 96,
+      "maxWater": 278,
+      "perfectMinWater": 158,
+      "perfectMaxWater": 216,
+      "perfectMinTrace": 38,
       "perfectMaxTrace": 88,
+      "score_dimensions": {
+        "water": true,
+        "trace": true,
+        "fertilizer": true,
+        "soil": true,
+        "rotation": true
+      },
       "requests_seaweed_extract": true,
       "requests_liquid_fertilizer": true,
       "perfectMinFertilizer": 18,
-      "perfectMaxFertilizer": 85,
+      "perfectMaxFertilizer": 84,
+      "soil_scoring": {
+        "preferred": [
+          "黄绵土",
+          "褐土",
+          "红壤"
+        ],
+        "unsuitable": [
+          "水稻土",
+          "盐碱土"
+        ]
+      },
+      "soil_tags": [
+        "acid_loving"
+      ],
       "harvestMin": 1,
       "harvestMax": 3,
-      "growNote": "油料小粒，成熟齐收"
+      "water_profile": "mesic"
     },
     "pumpkin_seed": {
       "cropId": "pumpkin_seed",
       "tier": 4,
+      "group": "spice",
+      "nitrogen_fixing": false,
       "name": "南瓜籽",
       "seedItemId": "seed_pumpkin_seed",
       "seedName": "南瓜籽种子",
       "productItemId": "herb_pumpkin_seed",
       "productName": "南瓜籽",
-      "growthTicks": 128,
-      "minWater": 100,
-      "maxWater": 280,
-      "perfectMinWater": 154,
-      "perfectMaxWater": 226,
-      "perfectMinTrace": 36,
+      "growthTicks": 124,
+      "minWater": 96,
+      "maxWater": 293,
+      "perfectMinWater": 166,
+      "perfectMaxWater": 224,
+      "perfectMinTrace": 34,
       "perfectMaxTrace": 88,
+      "score_dimensions": {
+        "water": true,
+        "trace": true,
+        "fertilizer": true,
+        "soil": true,
+        "rotation": true
+      },
       "requests_seaweed_extract": true,
       "requests_liquid_fertilizer": true,
-      "perfectMinFertilizer": 18,
-      "perfectMaxFertilizer": 85,
+      "perfectMinFertilizer": 16,
+      "perfectMaxFertilizer": 84,
+      "soil_scoring": {
+        "preferred": [
+          "褐土",
+          "紫色土",
+          "典型黑土"
+        ],
+        "unsuitable": [
+          "盐碱土",
+          "水稻土"
+        ]
+      },
+      "soil_tags": [],
       "harvestMin": 1,
       "harvestMax": 3,
-      "growNote": "南瓜兼籽，蔓生占地"
+      "water_profile": "mesic"
     },
     "turmeric": {
       "cropId": "turmeric",
       "tier": 4,
+      "group": "spice",
+      "nitrogen_fixing": false,
       "name": "姜黄",
       "seedItemId": "seed_turmeric",
       "seedName": "姜黄种子",
       "productItemId": "herb_turmeric",
       "productName": "姜黄",
-      "growthTicks": 128,
-      "minWater": 100,
-      "maxWater": 280,
-      "perfectMinWater": 150,
-      "perfectMaxWater": 230,
-      "perfectMinTrace": 32,
+      "growthTicks": 124,
+      "minWater": 96,
+      "maxWater": 278,
+      "perfectMinWater": 155,
+      "perfectMaxWater": 219,
+      "perfectMinTrace": 37,
       "perfectMaxTrace": 88,
+      "score_dimensions": {
+        "water": true,
+        "trace": true,
+        "fertilizer": true,
+        "soil": true,
+        "rotation": true
+      },
       "requests_seaweed_extract": true,
       "requests_liquid_fertilizer": true,
-      "perfectMinFertilizer": 18,
-      "perfectMaxFertilizer": 85,
+      "perfectMinFertilizer": 19,
+      "perfectMaxFertilizer": 78,
+      "soil_scoring": {
+        "preferred": [
+          "红壤",
+          "紫色土"
+        ],
+        "unsuitable": [
+          "盐碱土",
+          "黄绵土"
+        ]
+      },
+      "soil_tags": [
+        "acid_loving"
+      ],
       "harvestMin": 1,
       "harvestMax": 3,
-      "growNote": "姜黄块根，染色用"
+      "water_profile": "mesic"
     },
     "cumin": {
       "cropId": "cumin",
       "tier": 5,
+      "group": "spice",
+      "nitrogen_fixing": false,
       "name": "孜然",
       "seedItemId": "seed_cumin",
       "seedName": "孜然种子",
       "productItemId": "herb_cumin",
       "productName": "孜然",
-      "growthTicks": 148,
-      "minWater": 105,
-      "maxWater": 270,
-      "perfectMinWater": 154,
-      "perfectMaxWater": 222,
-      "perfectMinTrace": 38,
-      "perfectMaxTrace": 82,
+      "growthTicks": 142,
+      "minWater": 94,
+      "maxWater": 255,
+      "perfectMinWater": 121,
+      "perfectMaxWater": 140,
+      "perfectMinTrace": 45,
+      "perfectMaxTrace": 56,
+      "score_dimensions": {
+        "water": true,
+        "trace": true,
+        "fertilizer": true,
+        "soil": true,
+        "rotation": true
+      },
       "requests_seaweed_extract": true,
       "requests_liquid_fertilizer": true,
-      "perfectMinFertilizer": 22,
-      "perfectMaxFertilizer": 80,
+      "perfectMinFertilizer": 28,
+      "perfectMaxFertilizer": 66,
+      "soil_scoring": {
+        "preferred": [
+          "黄绵土",
+          "褐土",
+          "高山草甸土"
+        ],
+        "unsuitable": [
+          "水稻土",
+          "盐碱土"
+        ]
+      },
+      "soil_tags": [
+        "salt_tolerant"
+      ],
       "harvestMin": 1,
       "harvestMax": 2,
-      "growNote": "孜然，干旱区精细管理"
+      "water_profile": "xeric",
+      "waterlogged_above": 180
     },
     "coriander_seed": {
       "cropId": "coriander_seed",
       "tier": 4,
+      "group": "spice",
+      "nitrogen_fixing": false,
       "name": "芫荽子",
       "seedItemId": "seed_coriander_seed",
       "seedName": "芫荽子种子",
       "productItemId": "herb_coriander_seed",
       "productName": "芫荽子",
-      "growthTicks": 128,
-      "minWater": 100,
-      "maxWater": 280,
-      "perfectMinWater": 150,
-      "perfectMaxWater": 230,
-      "perfectMinTrace": 32,
+      "growthTicks": 124,
+      "minWater": 96,
+      "maxWater": 278,
+      "perfectMinWater": 155,
+      "perfectMaxWater": 219,
+      "perfectMinTrace": 33,
       "perfectMaxTrace": 88,
+      "score_dimensions": {
+        "water": true,
+        "trace": true,
+        "fertilizer": true,
+        "soil": true,
+        "rotation": true
+      },
       "requests_seaweed_extract": true,
       "requests_liquid_fertilizer": true,
-      "perfectMinFertilizer": 18,
-      "perfectMaxFertilizer": 85,
+      "perfectMinFertilizer": 17,
+      "perfectMaxFertilizer": 84,
+      "soil_scoring": {
+        "preferred": [
+          "褐土",
+          "紫色土",
+          "高山草甸土"
+        ],
+        "unsuitable": [
+          "盐碱土",
+          "水稻土"
+        ]
+      },
+      "soil_tags": [],
       "harvestMin": 1,
       "harvestMax": 3,
-      "growNote": "芫荽籽，香料兼种"
+      "water_profile": "mesic"
     },
     "fennel_seed": {
       "cropId": "fennel_seed",
       "tier": 4,
+      "group": "spice",
+      "nitrogen_fixing": false,
       "name": "小茴香子",
       "seedItemId": "seed_fennel_seed",
       "seedName": "小茴香子种子",
       "productItemId": "herb_fennel_seed",
       "productName": "小茴香子",
-      "growthTicks": 128,
-      "minWater": 100,
-      "maxWater": 280,
-      "perfectMinWater": 150,
-      "perfectMaxWater": 230,
-      "perfectMinTrace": 32,
+      "growthTicks": 124,
+      "minWater": 96,
+      "maxWater": 278,
+      "perfectMinWater": 155,
+      "perfectMaxWater": 219,
+      "perfectMinTrace": 35,
       "perfectMaxTrace": 88,
+      "score_dimensions": {
+        "water": true,
+        "trace": true,
+        "fertilizer": true,
+        "soil": true,
+        "rotation": true
+      },
       "requests_seaweed_extract": true,
       "requests_liquid_fertilizer": true,
       "perfectMinFertilizer": 18,
-      "perfectMaxFertilizer": 85,
+      "perfectMaxFertilizer": 84,
+      "soil_scoring": {
+        "preferred": [
+          "褐土",
+          "紫色土",
+          "高山草甸土"
+        ],
+        "unsuitable": [
+          "盐碱土",
+          "水稻土"
+        ]
+      },
+      "soil_tags": [],
       "harvestMin": 1,
       "harvestMax": 3,
-      "growNote": "小茴香，香料专种"
+      "water_profile": "mesic"
     },
     "mustard_seed": {
       "cropId": "mustard_seed",
       "tier": 3,
+      "group": "spice",
+      "nitrogen_fixing": false,
       "name": "芥末籽",
       "seedItemId": "seed_mustard_seed",
       "seedName": "芥末籽种子",
       "productItemId": "herb_mustard_seed",
       "productName": "芥末籽",
-      "growthTicks": 112,
-      "minWater": 90,
-      "maxWater": 295,
-      "perfectMinWater": 145,
-      "perfectMaxWater": 241,
-      "perfectMinTrace": 26,
+      "growthTicks": 108,
+      "minWater": 86,
+      "maxWater": 300,
+      "perfectMinWater": 153,
+      "perfectMaxWater": 233,
+      "perfectMinTrace": 31,
       "perfectMaxTrace": null,
+      "score_dimensions": {
+        "water": true,
+        "trace": true,
+        "fertilizer": true,
+        "soil": true,
+        "rotation": true
+      },
       "requests_seaweed_extract": false,
       "requests_liquid_fertilizer": true,
       "perfectMinFertilizer": 12,
-      "perfectMaxFertilizer": null,
+      "perfectMaxFertilizer": 78,
+      "soil_scoring": {
+        "preferred": [
+          "褐土",
+          "黄绵土",
+          "典型黑土"
+        ],
+        "unsuitable": [
+          "水稻土",
+          "盐碱土"
+        ]
+      },
+      "soil_tags": [],
       "harvestMin": 2,
       "harvestMax": 3,
-      "growNote": "芥末籽，香料作物"
+      "water_profile": "mesic"
     },
     "chili_kashmir": {
       "cropId": "chili_kashmir",
       "tier": 5,
+      "group": "spice",
+      "nitrogen_fixing": false,
       "name": "克什米尔辣椒",
       "seedItemId": "seed_chili_kashmir",
       "seedName": "克什米尔辣椒种子",
       "productItemId": "herb_chili_kashmir",
       "productName": "克什米尔辣椒",
-      "growthTicks": 148,
-      "minWater": 105,
-      "maxWater": 270,
-      "perfectMinWater": 154,
-      "perfectMaxWater": 222,
-      "perfectMinTrace": 38,
-      "perfectMaxTrace": 82,
+      "growthTicks": 142,
+      "minWater": 100,
+      "maxWater": 265,
+      "perfectMinWater": 158,
+      "perfectMaxWater": 208,
+      "perfectMinTrace": 41,
+      "perfectMaxTrace": 60,
+      "score_dimensions": {
+        "water": true,
+        "trace": true,
+        "fertilizer": true,
+        "soil": true,
+        "rotation": true
+      },
       "requests_seaweed_extract": true,
       "requests_liquid_fertilizer": true,
-      "perfectMinFertilizer": 22,
-      "perfectMaxFertilizer": 80,
+      "perfectMinFertilizer": 25,
+      "perfectMaxFertilizer": 66,
+      "soil_scoring": {
+        "preferred": [
+          "红壤",
+          "紫色土",
+          "褐土"
+        ],
+        "unsuitable": [
+          "盐碱土",
+          "水稻土"
+        ]
+      },
+      "soil_tags": [
+        "heat_loving",
+        "acid_loving"
+      ],
       "harvestMin": 1,
       "harvestMax": 2,
-      "growNote": "克什米尔椒，高价值香料"
+      "water_profile": "mesic"
     },
     "chili_red": {
       "cropId": "chili_red",
       "tier": 3,
+      "group": "spice",
+      "nitrogen_fixing": false,
       "name": "红辣椒",
       "seedItemId": "seed_chili_red",
       "seedName": "红辣椒种子",
       "productItemId": "herb_chili_red",
       "productName": "红辣椒",
-      "growthTicks": 112,
-      "minWater": 90,
-      "maxWater": 295,
-      "perfectMinWater": 149,
-      "perfectMaxWater": 237,
-      "perfectMinTrace": 30,
+      "growthTicks": 108,
+      "minWater": 86,
+      "maxWater": 300,
+      "perfectMinWater": 159,
+      "perfectMaxWater": 227,
+      "perfectMinTrace": 36,
       "perfectMaxTrace": null,
+      "score_dimensions": {
+        "water": true,
+        "trace": true,
+        "fertilizer": true,
+        "soil": true,
+        "rotation": true
+      },
       "requests_seaweed_extract": false,
       "requests_liquid_fertilizer": true,
-      "perfectMinFertilizer": 12,
-      "perfectMaxFertilizer": null,
+      "perfectMinFertilizer": 14,
+      "perfectMaxFertilizer": 78,
+      "soil_scoring": {
+        "preferred": [
+          "红壤",
+          "紫色土",
+          "褐土"
+        ],
+        "unsuitable": [
+          "盐碱土",
+          "水稻土"
+        ]
+      },
+      "soil_tags": [
+        "heat_loving",
+        "acid_loving"
+      ],
       "harvestMin": 2,
       "harvestMax": 3,
-      "growNote": "红椒，温热气候"
+      "water_profile": "mesic"
     },
     "plantain": {
       "cropId": "plantain",
       "tier": 4,
+      "group": "fruit",
+      "nitrogen_fixing": false,
       "name": "大蕉",
       "seedItemId": "seed_plantain",
       "seedName": "大蕉种子",
       "productItemId": "herb_plantain",
       "productName": "大蕉",
-      "growthTicks": 141,
-      "minWater": 100,
-      "maxWater": 280,
-      "perfectMinWater": 154,
-      "perfectMaxWater": 226,
-      "perfectMinTrace": 36,
-      "perfectMaxTrace": 88,
+      "growthTicks": 134,
+      "minWater": 98,
+      "maxWater": 272,
+      "perfectMinWater": 159,
+      "perfectMaxWater": 211,
+      "perfectMinTrace": 34,
+      "perfectMaxTrace": 94,
+      "score_dimensions": {
+        "water": true,
+        "trace": true,
+        "fertilizer": true,
+        "soil": true,
+        "rotation": true
+      },
       "requests_seaweed_extract": true,
       "requests_liquid_fertilizer": true,
-      "perfectMinFertilizer": 18,
-      "perfectMaxFertilizer": 85,
+      "perfectMinFertilizer": 19,
+      "perfectMaxFertilizer": 84,
+      "soil_scoring": {
+        "preferred": [
+          "红壤",
+          "紫色土",
+          "水稻土"
+        ],
+        "unsuitable": [
+          "盐碱土",
+          "黄绵土"
+        ]
+      },
+      "soil_tags": [
+        "acid_loving"
+      ],
       "harvestMin": 1,
       "harvestMax": 3,
-      "growNote": "大蕉芽苗，热带移栽；种植需「捆绑带」",
-      "required_crop_structure_id": "binding_strap"
+      "required_crop_structure_id": "binding_strap",
+      "water_profile": "mesic"
     },
     "almond": {
       "cropId": "almond",
       "tier": 5,
+      "group": "fruit",
+      "nitrogen_fixing": false,
       "name": "杏仁",
       "seedItemId": "seed_almond",
       "seedName": "杏仁种子",
       "productItemId": "herb_almond",
       "productName": "杏仁",
-      "growthTicks": 175,
-      "minWater": 110,
-      "maxWater": 255,
-      "perfectMinWater": 159,
-      "perfectMaxWater": 207,
+      "growthTicks": 170,
+      "minWater": 106,
+      "maxWater": 247,
+      "perfectMinWater": 157,
+      "perfectMaxWater": 197,
       "perfectMinTrace": null,
       "perfectMaxTrace": 25,
+      "score_dimensions": {
+        "water": true,
+        "trace": true,
+        "fertilizer": true,
+        "soil": true,
+        "rotation": true
+      },
       "requests_seaweed_extract": false,
       "requests_liquid_fertilizer": true,
-      "perfectMinFertilizer": 22,
-      "perfectMaxFertilizer": 80,
+      "perfectMinFertilizer": 21,
+      "perfectMaxFertilizer": 66,
+      "soil_scoring": {
+        "preferred": [
+          "褐土",
+          "紫色土",
+          "典型黑土"
+        ],
+        "unsuitable": [
+          "盐碱土",
+          "黄绵土"
+        ]
+      },
+      "soil_tags": [],
       "harvestMin": 1,
       "harvestMax": 2,
-      "growNote": "敏感果树；忌高浓度海藻精",
+      "water_profile": "mesic",
       "trace_safe_max": 25,
       "trace_fail_harvest_at": 41,
       "trace_toxic_health_loss_per_tick": 3,
@@ -1082,72 +2086,140 @@
     "peanut": {
       "cropId": "peanut",
       "tier": 2,
+      "group": "fruit",
+      "nitrogen_fixing": true,
       "name": "花生",
       "seedItemId": "seed_peanut",
       "seedName": "花生种子",
       "productItemId": "herb_peanut",
       "productName": "花生",
-      "growthTicks": 100,
-      "minWater": 100,
-      "maxWater": 300,
-      "perfectMinWater": 150,
-      "perfectMaxWater": 250,
-      "perfectMinTrace": 50,
+      "growthTicks": 98,
+      "minWater": 94,
+      "maxWater": 312,
+      "perfectMinWater": 153,
+      "perfectMaxWater": 253,
+      "perfectMinTrace": 30,
       "perfectMaxTrace": null,
-      "requests_seaweed_extract": true,
-      "requests_liquid_fertilizer": true,
-      "perfectMinFertilizer": 15,
+      "score_dimensions": {
+        "water": true,
+        "trace": true,
+        "fertilizer": false,
+        "soil": true,
+        "rotation": true
+      },
+      "requests_seaweed_extract": false,
+      "requests_liquid_fertilizer": false,
+      "perfectMinFertilizer": null,
       "perfectMaxFertilizer": null,
+      "soil_scoring": {
+        "preferred": [
+          "红壤",
+          "黄绵土",
+          "褐土"
+        ],
+        "unsuitable": [
+          "盐碱土",
+          "水稻土"
+        ]
+      },
+      "soil_tags": [
+        "acid_loving"
+      ],
       "harvestMin": 2,
-      "harvestMax": 3,
-      "growNote": "地下结荚，基准作物"
+      "harvestMax": 4,
+      "water_profile": "mesic"
     },
     "sugarcane": {
       "cropId": "sugarcane",
       "tier": 2,
+      "group": "fruit",
+      "nitrogen_fixing": false,
       "name": "甘蔗",
       "seedItemId": "seed_sugarcane",
       "seedName": "甘蔗种子",
       "productItemId": "herb_sugarcane",
       "productName": "甘蔗",
-      "growthTicks": 115,
-      "minWater": 98,
-      "maxWater": 330,
-      "perfectMinWater": 162,
-      "perfectMaxWater": 266,
+      "growthTicks": 110,
+      "minWater": 94,
+      "maxWater": 334,
+      "perfectMinWater": 166,
+      "perfectMaxWater": 262,
       "perfectMinTrace": 38,
       "perfectMaxTrace": null,
+      "score_dimensions": {
+        "water": true,
+        "trace": true,
+        "fertilizer": false,
+        "soil": true,
+        "rotation": true
+      },
       "requests_seaweed_extract": false,
       "requests_liquid_fertilizer": false,
       "perfectMinFertilizer": null,
       "perfectMaxFertilizer": null,
+      "soil_scoring": {
+        "preferred": [
+          "红壤",
+          "紫色土",
+          "水稻土"
+        ],
+        "unsuitable": [
+          "盐碱土",
+          "黄绵土"
+        ]
+      },
+      "soil_tags": [
+        "acid_loving"
+      ],
       "harvestMin": 2,
       "harvestMax": 4,
-      "growNote": "蔗节埋条，耗地；种植需「捆绑带」",
-      "required_crop_structure_id": "binding_strap"
+      "required_crop_structure_id": "binding_strap",
+      "water_profile": "mesic"
     },
     "lemon": {
       "cropId": "lemon",
       "tier": 5,
+      "group": "fruit",
+      "nitrogen_fixing": false,
       "name": "柠檬",
       "seedItemId": "seed_lemon",
       "seedName": "柠檬种子",
       "productItemId": "herb_lemon",
       "productName": "柠檬",
-      "growthTicks": 175,
-      "minWater": 110,
-      "maxWater": 255,
-      "perfectMinWater": 159,
-      "perfectMaxWater": 207,
+      "growthTicks": 170,
+      "minWater": 106,
+      "maxWater": 247,
+      "perfectMinWater": 157,
+      "perfectMaxWater": 197,
       "perfectMinTrace": null,
       "perfectMaxTrace": 25,
+      "score_dimensions": {
+        "water": true,
+        "trace": true,
+        "fertilizer": true,
+        "soil": true,
+        "rotation": true
+      },
       "requests_seaweed_extract": false,
       "requests_liquid_fertilizer": true,
-      "perfectMinFertilizer": 22,
-      "perfectMaxFertilizer": 80,
+      "perfectMinFertilizer": 21,
+      "perfectMaxFertilizer": 66,
+      "soil_scoring": {
+        "preferred": [
+          "红壤",
+          "紫色土"
+        ],
+        "unsuitable": [
+          "盐碱土",
+          "黄绵土"
+        ]
+      },
+      "soil_tags": [
+        "acid_loving"
+      ],
       "harvestMin": 1,
       "harvestMax": 2,
-      "growNote": "柑橘类敏感；海藻精宜远离",
+      "water_profile": "mesic",
       "trace_safe_max": 25,
       "trace_fail_harvest_at": 41,
       "trace_toxic_health_loss_per_tick": 3,
@@ -1156,25 +2228,46 @@
     "apricot": {
       "cropId": "apricot",
       "tier": 5,
+      "group": "fruit",
+      "nitrogen_fixing": false,
       "name": "杏子",
       "seedItemId": "seed_apricot",
       "seedName": "杏子种子",
       "productItemId": "herb_apricot",
       "productName": "杏子",
-      "growthTicks": 175,
-      "minWater": 110,
-      "maxWater": 255,
-      "perfectMinWater": 159,
-      "perfectMaxWater": 207,
+      "growthTicks": 170,
+      "minWater": 106,
+      "maxWater": 247,
+      "perfectMinWater": 157,
+      "perfectMaxWater": 197,
       "perfectMinTrace": null,
       "perfectMaxTrace": 26,
+      "score_dimensions": {
+        "water": true,
+        "trace": true,
+        "fertilizer": true,
+        "soil": true,
+        "rotation": true
+      },
       "requests_seaweed_extract": false,
       "requests_liquid_fertilizer": true,
-      "perfectMinFertilizer": 22,
-      "perfectMaxFertilizer": 80,
+      "perfectMinFertilizer": 21,
+      "perfectMaxFertilizer": 66,
+      "soil_scoring": {
+        "preferred": [
+          "褐土",
+          "紫色土",
+          "典型黑土"
+        ],
+        "unsuitable": [
+          "盐碱土",
+          "黄绵土"
+        ]
+      },
+      "soil_tags": [],
       "harvestMin": 1,
       "harvestMax": 2,
-      "growNote": "敏感果树；微量过剩盐害灼伤落果",
+      "water_profile": "mesic",
       "trace_safe_max": 26,
       "trace_fail_harvest_at": 42,
       "trace_toxic_health_loss_per_tick": 3,
@@ -1183,25 +2276,46 @@
     "pear": {
       "cropId": "pear",
       "tier": 5,
+      "group": "fruit",
+      "nitrogen_fixing": false,
       "name": "梨",
       "seedItemId": "seed_pear",
       "seedName": "梨种子",
       "productItemId": "herb_pear",
       "productName": "梨",
-      "growthTicks": 175,
-      "minWater": 110,
-      "maxWater": 255,
-      "perfectMinWater": 159,
-      "perfectMaxWater": 207,
+      "growthTicks": 170,
+      "minWater": 106,
+      "maxWater": 247,
+      "perfectMinWater": 157,
+      "perfectMaxWater": 197,
       "perfectMinTrace": null,
       "perfectMaxTrace": 26,
+      "score_dimensions": {
+        "water": true,
+        "trace": true,
+        "fertilizer": true,
+        "soil": true,
+        "rotation": true
+      },
       "requests_seaweed_extract": false,
       "requests_liquid_fertilizer": true,
-      "perfectMinFertilizer": 22,
-      "perfectMaxFertilizer": 80,
+      "perfectMinFertilizer": 21,
+      "perfectMaxFertilizer": 66,
+      "soil_scoring": {
+        "preferred": [
+          "褐土",
+          "紫色土",
+          "典型黑土"
+        ],
+        "unsuitable": [
+          "盐碱土",
+          "黄绵土"
+        ]
+      },
+      "soil_tags": [],
       "harvestMin": 1,
       "harvestMax": 2,
-      "growNote": "敏感果树；微量过剩灼伤",
+      "water_profile": "mesic",
       "trace_safe_max": 26,
       "trace_fail_harvest_at": 42,
       "trace_toxic_health_loss_per_tick": 3,
@@ -1210,25 +2324,46 @@
     "cherry": {
       "cropId": "cherry",
       "tier": 5,
+      "group": "fruit",
+      "nitrogen_fixing": false,
       "name": "樱桃",
       "seedItemId": "seed_cherry",
       "seedName": "樱桃种子",
       "productItemId": "herb_cherry",
       "productName": "樱桃",
-      "growthTicks": 175,
-      "minWater": 110,
-      "maxWater": 255,
-      "perfectMinWater": 159,
-      "perfectMaxWater": 207,
+      "growthTicks": 170,
+      "minWater": 106,
+      "maxWater": 247,
+      "perfectMinWater": 157,
+      "perfectMaxWater": 197,
       "perfectMinTrace": null,
       "perfectMaxTrace": 24,
+      "score_dimensions": {
+        "water": true,
+        "trace": true,
+        "fertilizer": true,
+        "soil": true,
+        "rotation": true
+      },
       "requests_seaweed_extract": false,
       "requests_liquid_fertilizer": true,
-      "perfectMinFertilizer": 22,
-      "perfectMaxFertilizer": 80,
+      "perfectMinFertilizer": 21,
+      "perfectMaxFertilizer": 66,
+      "soil_scoring": {
+        "preferred": [
+          "褐土",
+          "紫色土",
+          "典型黑土"
+        ],
+        "unsuitable": [
+          "盐碱土",
+          "黄绵土"
+        ]
+      },
+      "soil_tags": [],
       "harvestMin": 1,
       "harvestMax": 2,
-      "growNote": "敏感果树；微量过剩易落果",
+      "water_profile": "mesic",
       "trace_safe_max": 24,
       "trace_fail_harvest_at": 40,
       "trace_toxic_health_loss_per_tick": 3,
@@ -1237,49 +2372,90 @@
     "chestnut": {
       "cropId": "chestnut",
       "tier": 4,
+      "group": "fruit",
+      "nitrogen_fixing": false,
       "name": "板栗",
       "seedItemId": "seed_chestnut",
       "seedName": "板栗种子",
       "productItemId": "herb_chestnut",
       "productName": "板栗",
-      "growthTicks": 156,
-      "minWater": 105,
-      "maxWater": 265,
-      "perfectMinWater": 155,
-      "perfectMaxWater": 215,
-      "perfectMinTrace": 36,
-      "perfectMaxTrace": 88,
+      "growthTicks": 149,
+      "minWater": 102,
+      "maxWater": 260,
+      "perfectMinWater": 156,
+      "perfectMaxWater": 206,
+      "perfectMinTrace": 40,
+      "perfectMaxTrace": 72,
+      "score_dimensions": {
+        "water": true,
+        "trace": true,
+        "fertilizer": true,
+        "soil": true,
+        "rotation": true
+      },
       "requests_seaweed_extract": true,
       "requests_liquid_fertilizer": true,
-      "perfectMinFertilizer": 18,
-      "perfectMaxFertilizer": 85,
+      "perfectMinFertilizer": 20,
+      "perfectMaxFertilizer": 84,
+      "soil_scoring": {
+        "preferred": [
+          "褐土",
+          "紫色土",
+          "高山草甸土"
+        ],
+        "unsuitable": [
+          "盐碱土",
+          "黄绵土"
+        ]
+      },
+      "soil_tags": [],
       "harvestMin": 1,
       "harvestMax": 3,
-      "growNote": "板栗，成树后收"
+      "water_profile": "mesic"
     },
     "lotus_seed": {
       "cropId": "lotus_seed",
       "tier": 5,
+      "group": "fruit",
+      "nitrogen_fixing": false,
       "name": "莲子",
       "seedItemId": "seed_lotus_seed",
       "seedName": "莲子种子",
       "productItemId": "herb_lotus_seed",
       "productName": "莲子",
-      "growthTicks": 148,
-      "minWater": 123,
-      "maxWater": 305,
-      "perfectMinWater": 172,
-      "perfectMaxWater": 256,
+      "growthTicks": 142,
+      "minWater": 122,
+      "maxWater": 297,
+      "perfectMinWater": 204,
+      "perfectMaxWater": 287,
       "perfectMinTrace": null,
       "perfectMaxTrace": 8,
+      "score_dimensions": {
+        "water": true,
+        "trace": true,
+        "fertilizer": true,
+        "soil": true,
+        "rotation": true
+      },
       "requests_seaweed_extract": false,
       "requests_liquid_fertilizer": true,
-      "perfectMinFertilizer": 22,
-      "perfectMaxFertilizer": 80,
+      "perfectMinFertilizer": 21,
+      "perfectMaxFertilizer": 66,
+      "soil_scoring": {
+        "preferred": [
+          "水稻土",
+          "紫色土"
+        ],
+        "unsuitable": [
+          "盐碱土",
+          "黄绵土"
+        ]
+      },
+      "soil_tags": [],
       "harvestMin": 1,
       "harvestMax": 2,
-      "growNote": "清水池栽；海藻精污染池水易烂种",
       "required_crop_structure_id": "deep_pool",
+      "water_profile": "aquatic",
       "trace_safe_max": 8,
       "trace_lethal_at": 15,
       "trace_stress_loss_per_tick": 4,

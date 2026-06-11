@@ -699,7 +699,13 @@
             fetch(base + 'item-info-modules.json').then(function (r) { return r.ok ? r.json() : { module_sets: {} }; }).catch(function () { return { module_sets: {} }; }),
             fetch(base + 'item-field-display-rules.json').then(function (r) { return r.ok ? r.json() : null; }).catch(function () { return null; }),
             fetch(base + 'compost-events.json').then(function (r) { return r.ok ? r.json() : { events: {} }; }).catch(function () { return { events: {} }; }),
-            fetch(base + 'compost-event-actions.csv').then(function (r) { return r.ok ? r.text() : ''; }).catch(function () { return ''; })
+            fetch(base + 'compost-event-actions.csv').then(function (r) { return r.ok ? r.text() : ''; }).catch(function () { return ''; }),
+            fetch(base + 'agriculture-build-costs.json').then(function (r) { return r.ok ? r.json() : null; }).catch(function () { return null; }),
+            fetch(base + 'agriculture-item-params.json').then(function (r) { return r.ok ? r.json() : null; }).catch(function () { return null; }),
+            fetch(base + 'agriculture-crop-defs.json').then(function (r) { return r.ok ? r.json() : null; }).catch(function () { return null; }),
+            fetch(base + 'agriculture-soils.json').then(function (r) { return r.ok ? r.json() : null; }).catch(function () { return null; }),
+            fetch(base + 'agriculture-pool-upgrades.json').then(function (r) { return r.ok ? r.json() : null; }).catch(function () { return null; }),
+            fetch(base + 'warehouse-upgrades.json').then(function (r) { return r.ok ? r.json() : null; }).catch(function () { return null; })
         ]).then(function (arr) {
             if (!arr[0]) throw new Error('[SceneApp] ui_text_zhCN.json missing');
             if (!window.UIText || typeof window.UIText.setDict !== 'function') throw new Error('[SceneApp] UIText module missing');
@@ -793,6 +799,17 @@
             }
             if (window.ItemFieldDisplayRules && typeof window.ItemFieldDisplayRules.setTable === 'function') {
                 window.ItemFieldDisplayRules.setTable(arr[22] && typeof arr[22] === 'object' ? arr[22] : null);
+            }
+            if (window.AgricultureConfig && typeof window.AgricultureConfig.setTables === 'function') {
+                window.AgricultureConfig.setTables(arr[25], arr[26], arr[29]);
+            }
+            agricultureCropDefsDoc = arr[27] && typeof arr[27] === 'object' ? arr[27] : null;
+            agricultureSoilsDoc = arr[28] && typeof arr[28] === 'object' ? arr[28] : null;
+            if (window.HideoutWarehouse && typeof window.HideoutWarehouse.setUpgradeTable === 'function') {
+                window.HideoutWarehouse.setUpgradeTable(arr[30] && typeof arr[30] === 'object' ? arr[30] : null);
+            }
+            if (window.AgricultureMap && typeof window.AgricultureMap.bindEnv === 'function') {
+                try { window.AgricultureMap.bindEnv(buildAgricultureEnv()); } catch (eAgEnv) { /* ignore */ }
             }
             if (window.CompostSystem) {
                 if (typeof window.CompostSystem.setEventsTable === 'function') {
@@ -1080,6 +1097,9 @@
             hideCreationOverlay();
             updateRoleNameFromCharacter();
             syncIntroShellUi();
+            if (window.GameLog && typeof window.GameLog.resetLogPanelLayout === 'function') {
+                window.GameLog.resetLogPanelLayout();
+            }
             if (window.GameLog) window.GameLog.log(ui('log.system.creation.done', { name: name }), 'system');
             render();
         };
@@ -2919,7 +2939,7 @@
     }
 
     function hasItemById(itemId) {
-        return !!findFirstContainerSlotByItemId(itemId);
+        return getInventoryCountByItemId(itemId) > 0;
     }
 
     function getItemWaterPoints(itemId) {
@@ -2946,7 +2966,12 @@
     }
 
     function getInventoryCountByItemId(itemId) {
-        if (!IE || !itemId) return 0;
+        if (!itemId) return 0;
+        var HW = window.HideoutWarehouse;
+        if (HW && typeof HW.countItemEverywhere === 'function') {
+            return HW.countItemEverywhere(itemId);
+        }
+        if (!IE) return 0;
         var total = 0;
         var groups = [
             IE.getPocketArray ? IE.getPocketArray() : [],
@@ -3104,10 +3129,37 @@
     }
 
     function consumeInventoryItemsByList(inputList) {
+        var normalized = normalizeCookingInputs(inputList);
+        if (!normalized.length) return { ok: true, consumed: [] };
+
+        var HW = window.HideoutWarehouse;
+        if (HW && typeof HW.consumeItems === 'function') {
+            var pay = HW.consumeItems(normalized);
+            if (!pay || !pay.ok) return { ok: false, consumed: [] };
+            var out = [];
+            var rows = pay.consumed || [];
+            var ri;
+            for (ri = 0; ri < rows.length; ri++) {
+                var row = rows[ri];
+                if (!row || !row.item_id) continue;
+                var cnt = row.count != null ? parseInt(row.count, 10) : 1;
+                if (!isFinite(cnt) || cnt < 1) cnt = 1;
+                var j;
+                for (j = 0; j < cnt; j++) {
+                    out.push({
+                        item_id: String(row.item_id),
+                        count: 1,
+                        quality_tier: row.quality_tier != null ? row.quality_tier : 0
+                    });
+                }
+            }
+            return { ok: true, consumed: out, rawConsumed: rows };
+        }
+
         var consumed = [];
         var i;
-        for (i = 0; i < inputList.length; i++) {
-            var entry = inputList[i] || {};
+        for (i = 0; i < normalized.length; i++) {
+            var entry = normalized[i] || {};
             var id = entry.item_id != null ? String(entry.item_id) : '';
             var need = parseInt(entry.count, 10);
             if (!id || !isFinite(need) || need <= 0) continue;
@@ -3895,15 +3947,38 @@
         return false;
     }
 
-    function patchSurvivalTickForCookingCraftOnce() {
+    /** 主世界 tick 唯一权威：GameTime.totalTicks（存档 time.totalTicks）；Survival.tickCount 仅作未加载 GameTime 时的回退。 */
+    function getWorldTotalTicks() {
+        if (window.GameTime && typeof window.GameTime.getState === 'function') {
+            var ts = window.GameTime.getState();
+            if (ts && typeof ts.totalTicks === 'number' && isFinite(ts.totalTicks)) {
+                return Math.max(0, Math.floor(ts.totalTicks));
+            }
+        }
+        if (window.Survival && typeof window.Survival.getState === 'function') {
+            var ss = window.Survival.getState();
+            if (ss && ss.tickCount != null) return Math.max(0, Math.floor(Number(ss.tickCount) || 0));
+        }
+        return 0;
+    }
+
+    /** agriculture_map.state.tick 仅为世界时间的镜像，禁止独立递增。 */
+    function syncAgricultureMapTickMirror(st) {
+        if (!st || typeof st !== 'object') return;
+        st.tick = getWorldTotalTicks();
+    }
+
+    function patchSurvivalTickForWorldSystemsOnce() {
         if (!window.Survival || typeof window.Survival.advanceTick !== 'function') return;
-        if (window.Survival.__cookingCraftPatched) return;
+        if (window.Survival.__worldSystemsTickPatched) return;
         var oldAdvance = window.Survival.advanceTick;
         window.Survival.advanceTick = function () {
             var ret = oldAdvance.apply(this, arguments);
             try { resolveNpcHardOccupancyAfterWorldTick(); } catch (e2) { /* ignore */ }
             try { tickCookingTempStationsAfterWorldTick(); } catch (e1) { /* ignore */ }
             try { tickCookingCraftAfterWorldTick(); } catch (e0) { /* ignore */ }
+            try { tickPharmacyTempStationsAfterWorldTick(); } catch (eP1) { /* ignore */ }
+            try { tickPharmacyCraftAfterWorldTick(); } catch (eP0) { /* ignore */ }
             try {
                 if (window.CompostSystem && typeof window.CompostSystem.onWorldTick === 'function') {
                     window.CompostSystem.onWorldTick();
@@ -3912,32 +3987,21 @@
             try {
                 if (compostStationPanelOpen) renderCompostStationPanel();
             } catch (e4) { /* ignore */ }
+            try { tickHideoutWarehouseAfterWorldTick(); } catch (eHwTick) { /* ignore */ }
+            try { tickAgricultureAfterWorldTick(); } catch (eAg) { /* ignore */ }
             return ret;
         };
+        window.Survival.__worldSystemsTickPatched = true;
         window.Survival.__cookingCraftPatched = true;
+        window.Survival.__pharmacyCraftPatched = true;
     }
 
-    // === Auto-generated Pharmacy Helper ===
+    function patchSurvivalTickForCookingCraftOnce() {
+        patchSurvivalTickForWorldSystemsOnce();
+    }
+
     function patchSurvivalTickForPharmacyCraftOnce() {
-        if (!window.Survival || typeof window.Survival.advanceTick !== 'function') return;
-        if (window.Survival.__pharmacyCraftPatched) return;
-        var oldAdvance = window.Survival.advanceTick;
-        window.Survival.advanceTick = function () {
-            var ret = oldAdvance.apply(this, arguments);
-            try { resolveNpcHardOccupancyAfterWorldTick(); } catch (e2) { /* ignore */ }
-            try { tickPharmacyTempStationsAfterWorldTick(); } catch (e1) { /* ignore */ }
-            try { tickPharmacyCraftAfterWorldTick(); } catch (e0) { /* ignore */ }
-            try {
-                if (window.CompostSystem && typeof window.CompostSystem.onWorldTick === 'function') {
-                    window.CompostSystem.onWorldTick();
-                }
-            } catch (e3) { /* ignore */ }
-            try {
-                if (compostStationPanelOpen) renderCompostStationPanel();
-            } catch (e4) { /* ignore */ }
-            return ret;
-        };
-        window.Survival.__pharmacyCraftPatched = true;
+        patchSurvivalTickForWorldSystemsOnce();
     }
 
     var COOKING_SKILL_MAX_LEVEL = 100;
@@ -7062,6 +7126,860 @@
         render();
     }
 
+    // ---------------------------
+    // Agriculture (global tick + SceneApp API) — A3
+    // ---------------------------
+    var agriculturePanelOpen = false;
+    var agricultureAutoTickTimer = null;
+    var agricultureMapState = null;
+    var agricultureCropDefsDoc = null;
+    var agricultureSoilsDoc = null;
+    /** @type {{ buildId: string, spec: object, consumed: Array }|null} */
+    var agricultureTaskMeta = null;
+
+    var AGRICULTURE_BUILD_TASK_BY_ID = {
+        channel_dig: 'build',
+        channel_remove: 'remove',
+        channel_upgrade: 'upgrade',
+        channel_downgrade: 'downgrade',
+        land_reclaim: 'till',
+        land_remove_reclaim: 'remove_tilled',
+        venturi_fertilizer: 'build_venturi',
+        venturi_fertilizer_remove: 'remove_venturi',
+        buried_pot_jar: 'build_buried_pot_jar',
+        buried_pot_jar_remove: 'remove_buried_pot_jar',
+        super_fusion: 'build_super_fusion',
+        super_fusion_remove: 'remove_super_fusion',
+        crop_structure_remove: 'remove_crop_structure'
+    };
+
+    function buildAgricultureEnv() {
+        var AC = window.AgricultureConfig;
+        return {
+            cropDefsDoc: agricultureCropDefsDoc,
+            soilsDoc: agricultureSoilsDoc,
+            resolveInjectParams: AC && typeof AC.getInjectableParams === 'function'
+                ? function (itemId) {
+                    var p = AC.getInjectableParams(itemId);
+                    if (!p || !p.item_id) return null;
+                    var out = {
+                        name: itemId,
+                        injectFacility: p.inject_facility || ''
+                    };
+                    if (p.agriculture_fertilizer_per_tick != null && isFinite(p.agriculture_fertilizer_per_tick)) {
+                        out.fertilizerPerTick = Number(p.agriculture_fertilizer_per_tick);
+                    }
+                    if (p.agriculture_venturi_effect_duration_ticks != null) {
+                        out.effectDurationTicks = Math.max(1, Math.floor(Number(p.agriculture_venturi_effect_duration_ticks)));
+                    }
+                    if (IE && typeof IE.getItemTemplate === 'function') {
+                        var tpl = IE.getItemTemplate(itemId);
+                        if (tpl && tpl.sn) out.name = String(tpl.sn);
+                    }
+                    return out;
+                }
+                : undefined
+        };
+    }
+
+    function isAgricultureUnlocked() {
+        return !!(window.SceneCtx && window.SceneCtx.agriculture_unlocked);
+    }
+
+    function unlockAgriculture() {
+        if (!window.SceneCtx) return;
+        window.SceneCtx.agriculture_unlocked = true;
+        ensureAgricultureMapState();
+    }
+
+    function ensureAgricultureMapState() {
+        if (agricultureMapState && typeof agricultureMapState === 'object') {
+            syncAgricultureMapTickMirror(agricultureMapState);
+            if (window.SceneCtx) window.SceneCtx.agriculture_map_state = agricultureMapState;
+            return agricultureMapState;
+        }
+        if (window.AgricultureMap && typeof window.AgricultureMap.createDefaultState === 'function') {
+            try {
+                agricultureMapState = window.AgricultureMap.createDefaultState();
+                syncAgricultureMapTickMirror(agricultureMapState);
+                if (window.SceneCtx) window.SceneCtx.agriculture_map_state = agricultureMapState;
+            } catch (eDefAg) { /* ignore */ }
+        }
+        return agricultureMapState;
+    }
+
+    function cloneAgricultureMapState(state) {
+        if (!state || typeof state !== 'object') return null;
+        try { return JSON.parse(JSON.stringify(state)); } catch (eClone) { return null; }
+    }
+
+    function getAgricultureMapStateMutable() {
+        return ensureAgricultureMapState();
+    }
+
+    function getAgricultureMapStateReadonly() {
+        return cloneAgricultureMapState(getAgricultureMapStateMutable());
+    }
+
+    function setAgricultureMapState(state) {
+        if (!state || typeof state !== 'object') return;
+        syncAgricultureMapTickMirror(state);
+        agricultureMapState = state;
+        if (window.SceneCtx) window.SceneCtx.agriculture_map_state = state;
+    }
+
+    function getAgricultureTaskSpecFromMeta(meta) {
+        if (meta && meta.spec) return meta.spec;
+        if (window.AgricultureConfig && typeof window.AgricultureConfig.getTaskDefaults === 'function') {
+            return window.AgricultureConfig.getTaskDefaults();
+        }
+        return { task_ticks: 10, stamina_per_tick: 5 };
+    }
+
+    function getAgricultureConstructionCtx(spec) {
+        var taskSpec = spec || getAgricultureTaskSpecFromMeta(agricultureTaskMeta);
+        return {
+            panelOpen: true,
+            taskTicks: taskSpec.task_ticks != null ? taskSpec.task_ticks : 10,
+            staminaPerTick: taskSpec.stamina_per_tick != null ? taskSpec.stamina_per_tick : 5,
+            getStamina: function () {
+                var Surv = window.Survival;
+                if (!Surv || typeof Surv.getState !== 'function') return 0;
+                return Number((Surv.getState() || {}).stamina) || 0;
+            },
+            setStamina: function (v) {
+                var Surv = window.Survival;
+                if (!Surv || typeof Surv.setState !== 'function') return;
+                Surv.setState({ stamina: Number(v) || 0 });
+            }
+        };
+    }
+
+    function tickHideoutWarehouseAfterWorldTick() {
+        var HW = window.HideoutWarehouse;
+        if (!HW) return;
+
+        var spoilChanged = false;
+        if (typeof HW.tickSpoilage === 'function') {
+            try {
+                var spoilResult = HW.tickSpoilage();
+                spoilChanged = !!(spoilResult && (spoilResult.warehouse_spoiled > 0
+                    || spoilResult.inventory_spoiled > 0));
+            } catch (eSpoil) { /* ignore */ }
+        }
+
+        if (spoilChanged
+            || (window.HideoutWarehousePanel && typeof window.HideoutWarehousePanel.isOpen === 'function'
+                && window.HideoutWarehousePanel.isOpen())) {
+            if (window.HideoutWarehousePanel && typeof window.HideoutWarehousePanel.render === 'function') {
+                try { window.HideoutWarehousePanel.render(); } catch (eHwUi) { /* ignore */ }
+            }
+        }
+        if (window.SceneCtx && typeof window.SceneCtx.updateStatusPanel === 'function') {
+            try { window.SceneCtx.updateStatusPanel(); } catch (eSt) { /* ignore */ }
+        }
+    }
+
+    function isHideoutWarehouseConstructionLive() {
+        return !!(window.HideoutWarehousePanel
+            && typeof window.HideoutWarehousePanel.isConstructionLive === 'function'
+            && window.HideoutWarehousePanel.isConstructionLive());
+    }
+
+    function tickAgricultureAfterWorldTick() {
+        if (!isAgricultureUnlocked()) return;
+        var AM = window.AgricultureMap;
+        if (!AM || typeof AM.runAgricultureMapTick !== 'function') return;
+        var st = ensureAgricultureMapState();
+        if (!st) return;
+        var env = buildAgricultureEnv();
+        try { AM.runAgricultureMapTick(st, env); } catch (eRun) { /* ignore */ }
+        syncAgricultureMapTickMirror(st);
+        if (agriculturePanelOpen && st.task && typeof AM.advanceConstructionTask === 'function') {
+            var prevHadTask = !!st.task;
+            try {
+                AM.advanceConstructionTask(st, getAgricultureConstructionCtx());
+            } catch (eConstr) { /* ignore */ }
+            if (prevHadTask && !st.task) agricultureTaskMeta = null;
+        }
+        if (agriculturePanelOpen && window.AgriculturePanel && typeof window.AgriculturePanel.update === 'function') {
+            try { window.AgriculturePanel.update(st); } catch (eUi) { /* ignore */ }
+        }
+    }
+
+    function resolveAgricultureBuildTask(buildId) {
+        var id = String(buildId || '').trim();
+        if (!id) return null;
+        if (id.indexOf('crop_structure_') === 0 && id !== 'crop_structure_remove') {
+            return { taskType: 'build_crop_structure', structureId: id.slice('crop_structure_'.length) };
+        }
+        var taskType = AGRICULTURE_BUILD_TASK_BY_ID[id];
+        if (!taskType) return null;
+        return { taskType: taskType, structureId: null };
+    }
+
+    function validateAgricultureBuildTarget(st, buildId, x, y) {
+        var AM = window.AgricultureMap;
+        if (!AM || typeof AM.cell !== 'function') return { ok: false, reason: 'agriculture_map_missing' };
+        var c = AM.cell(st, x, y);
+        if (!c) return { ok: false, reason: 'out_of_bounds' };
+        var id = String(buildId || '').trim();
+        var defCap = AM.constants && AM.constants.defaultChannelCapacity != null
+            ? Number(AM.constants.defaultChannelCapacity) : 2;
+        if (id === 'channel_dig') {
+            if (c.kind !== 'land' || c.crop || c.cropStructure) return { ok: false, reason: 'invalid_cell' };
+        } else if (id === 'channel_remove' || id === 'channel_upgrade') {
+            if (c.kind !== 'channel') return { ok: false, reason: 'not_channel' };
+        } else if (id === 'channel_downgrade') {
+            if (c.kind !== 'channel') return { ok: false, reason: 'not_channel' };
+            if ((Number(c.capacity) || defCap) <= defCap) return { ok: false, reason: 'channel_at_min_capacity' };
+        } else if (id === 'land_reclaim') {
+            if (c.kind !== 'land' || c.tilled || c.crop) return { ok: false, reason: 'invalid_cell' };
+        } else if (id === 'land_remove_reclaim') {
+            if (c.kind !== 'land' || !c.tilled || c.crop || c.cropStructure) return { ok: false, reason: 'invalid_cell' };
+        } else if (id === 'venturi_fertilizer' || id === 'buried_pot_jar' || id === 'super_fusion') {
+            if (c.kind !== 'land' || c.crop || c.cropStructure) return { ok: false, reason: 'invalid_cell' };
+        } else if (id.indexOf('crop_structure_') === 0 && id !== 'crop_structure_remove') {
+            if (c.kind !== 'land' || !c.tilled || c.crop || c.cropStructure) return { ok: false, reason: 'invalid_cell' };
+        }
+        return { ok: true };
+    }
+
+    function refundAgricultureTaskInputs(meta) {
+        if (!meta || !meta.spec || meta.spec.refund_inputs_on_cancel !== true) return;
+        if (!IE || typeof IE.putItemIntoDefaultContainer !== 'function') return;
+        var consumed = Array.isArray(meta.consumed) ? meta.consumed : [];
+        var i;
+        for (i = 0; i < consumed.length; i++) {
+            var row = consumed[i];
+            if (!row || !row.item_id) continue;
+            IE.putItemIntoDefaultContainer({
+                item_id: row.item_id,
+                count: Math.max(1, Math.floor(Number(row.count) || 1)),
+                quality_tier: 0
+            });
+        }
+    }
+
+    function addAgricultureHarvestProficiency(count) {
+        var n = Math.max(0, Math.floor(Number(count) || 0));
+        if (n < 1) return;
+        ensureLifePlantingSkillEntry();
+        if (IE && typeof IE.incrementSkillMoveUsage === 'function') {
+            IE.incrementSkillMoveUsage(PLANTING_SKILL_ID, 'harvest', n);
+            recalcCharacterStatsFromIE();
+        }
+    }
+
+    function findCropDefByCropId(cropId) {
+        var id = String(cropId || '').trim();
+        if (!id || !agricultureCropDefsDoc || !agricultureCropDefsDoc.crops) return null;
+        return agricultureCropDefsDoc.crops[id] || null;
+    }
+
+    function findCropDefBySeedItemId(seedItemId) {
+        var sid = String(seedItemId || '').trim();
+        if (!sid || !agricultureCropDefsDoc || !agricultureCropDefsDoc.crops) return null;
+        var crops = agricultureCropDefsDoc.crops;
+        var k;
+        for (k in crops) {
+            if (!Object.prototype.hasOwnProperty.call(crops, k)) continue;
+            var d = crops[k];
+            if (d && String(d.seedItemId || '') === sid) return d;
+        }
+        return null;
+    }
+
+    function getSoilDisplayName(soilId) {
+        var id = String(soilId || '').trim();
+        if (agricultureSoilsDoc && agricultureSoilsDoc.soils && agricultureSoilsDoc.soils[id]) {
+            return String(agricultureSoilsDoc.soils[id].display_name || id);
+        }
+        return id;
+    }
+
+    function tryAgricultureInjectFacilityLiquid(st, x, y, facilityKind, itemId) {
+        var AM = window.AgricultureMap;
+        if (!AM || typeof AM.cell !== 'function') return { ok: false, reason: 'agriculture_map_missing' };
+        var c = AM.cell(st, x, y);
+        if (!c || c.kind !== facilityKind) return { ok: false, reason: 'wrong_facility' };
+        var AC = window.AgricultureConfig;
+        if (!AC || typeof AC.getInjectableParams !== 'function') return { ok: false, reason: 'config_missing' };
+        var p = AC.getInjectableParams(itemId);
+        if (!p) return { ok: false, reason: 'not_injectable' };
+        if (facilityKind === 'venturi_fertilizer' && !p.agriculture_venturi_injectable) {
+            return { ok: false, reason: 'not_venturi_injectable' };
+        }
+        if (facilityKind === 'buried_pot_jar' && !p.agriculture_buried_jar_injectable) {
+            return { ok: false, reason: 'not_jar_injectable' };
+        }
+        if (facilityKind === 'venturi_fertilizer' && typeof AM.tryInjectSeaweedEffectAt === 'function') {
+            var env = buildAgricultureEnv();
+            var inj = AM.tryInjectSeaweedEffectAt(st, env, x, y);
+            if (inj && inj.ok) return { ok: true, facility: facilityKind, item_id: itemId };
+            return inj || { ok: false, reason: 'inject_failed' };
+        }
+        var liqNow = c.jarLiquid;
+        if (liqNow && liqNow.itemId && liqNow.itemId !== itemId && liqNow.units > 0) {
+            return { ok: false, reason: 'jar_mixed_liquid' };
+        }
+        var nm = getSoilDisplayName(itemId);
+        if (IE && typeof IE.getItemTemplate === 'function') {
+            var tpl = IE.getItemTemplate(itemId);
+            if (tpl && tpl.sn) nm = String(tpl.sn);
+        }
+        if (!liqNow || !liqNow.units) {
+            c.jarLiquid = { itemId: itemId, name: nm, units: 1 };
+        } else {
+            liqNow.units += 1;
+        }
+        return { ok: true, facility: facilityKind, item_id: itemId };
+    }
+
+    function tryAgricultureAction(actionId, params) {
+        params = params || {};
+        if (!isAgricultureUnlocked()) return { ok: false, reason: 'agriculture_locked' };
+        var AM = window.AgricultureMap;
+        var API = window.AgriculturePlayerItems;
+        if (!AM) return { ok: false, reason: 'agriculture_map_missing' };
+        var st = ensureAgricultureMapState();
+        if (!st) return { ok: false, reason: 'no_map_state' };
+        var action = String(actionId || '').trim();
+        var x = Math.floor(Number(params.x));
+        var y = Math.floor(Number(params.y));
+        var env = buildAgricultureEnv();
+
+        if (action === 'advance_ticks') {
+            if (!agriculturePanelOpen) return { ok: false, reason: 'panel_closed' };
+            var n = Math.max(1, Math.floor(Number(params.n) || 1));
+            var advanced = 0;
+            var i;
+            var lastResult = null;
+            for (i = 0; i < n; i++) {
+                lastResult = tickAgriculturePanelWorldOnce();
+                if (!lastResult || !lastResult.ok) break;
+                advanced += 1;
+                if (lastResult.death) break;
+            }
+            if (advanced <= 0) {
+                return { ok: false, reason: (lastResult && lastResult.reason) || 'tick_failed' };
+            }
+            return { ok: true, advanced: advanced, tick: getWorldTotalTicks() };
+        }
+
+        if (action === 'cancel_task') {
+            if (!st.task) return { ok: false, reason: 'no_task' };
+            refundAgricultureTaskInputs(agricultureTaskMeta);
+            st.task = null;
+            agricultureTaskMeta = null;
+            return { ok: true, cancelled: true };
+        }
+
+        if (action === 'start_build_task') {
+            if (st.task) return { ok: false, reason: 'task_busy' };
+            var buildId = String(params.buildId || '').trim();
+            var taskMeta = resolveAgricultureBuildTask(buildId);
+            if (!taskMeta) return { ok: false, reason: 'unknown_build' };
+            var targetCheck = validateAgricultureBuildTarget(st, buildId, x, y);
+            if (!targetCheck || !targetCheck.ok) return targetCheck || { ok: false, reason: 'invalid_cell' };
+            if (!API || typeof API.payBuildCost !== 'function') return { ok: false, reason: 'player_items_missing' };
+            var pay = API.payBuildCost(buildId);
+            if (!pay || !pay.ok) return { ok: false, reason: (pay && pay.reason) || 'pay_failed', buildId: buildId };
+            if (API.canAffordTaskStamina && typeof API.canAffordTaskStamina === 'function' && !API.canAffordTaskStamina(pay.spec)) {
+                refundAgricultureTaskInputs({ spec: pay.spec, consumed: pay.consumed });
+                return { ok: false, reason: 'insufficient_stamina' };
+            }
+            st.task = {
+                type: taskMeta.taskType,
+                x: x,
+                y: y,
+                progress: 0,
+                paused: false
+            };
+            if (taskMeta.structureId) st.task.structureId = taskMeta.structureId;
+            if (params.soilId) st.task.soilId = String(params.soilId);
+            if (params.soilType) st.task.soilType = String(params.soilType);
+            agricultureTaskMeta = { buildId: buildId, spec: pay.spec, consumed: pay.consumed || [] };
+            return { ok: true, task: st.task, buildId: buildId };
+        }
+
+        if (action === 'start_soil_amend_task') {
+            if (st.task) return { ok: false, reason: 'task_busy' };
+            var amendItemId = String(params.itemId || '').trim();
+            var AC = window.AgricultureConfig;
+            if (!AC || typeof AC.getGrantsSoilId !== 'function') return { ok: false, reason: 'config_missing' };
+            var grantsSoil = AC.getGrantsSoilId(amendItemId);
+            if (!grantsSoil) return { ok: false, reason: 'not_soil_amend' };
+            if (!API || typeof API.consumeInputs !== 'function') return { ok: false, reason: 'player_items_missing' };
+            var amendPay = API.consumeInputs([{ item_id: amendItemId, count: 1 }]);
+            if (!amendPay || !amendPay.ok) return { ok: false, reason: (amendPay && amendPay.reason) || 'insufficient_items' };
+            st.task = {
+                type: 'soil_amend',
+                x: x,
+                y: y,
+                progress: 0,
+                paused: false,
+                soilId: grantsSoil,
+                soilType: getSoilDisplayName(grantsSoil),
+                itemId: amendItemId
+            };
+            agricultureTaskMeta = {
+                buildId: 'soil_amend:' + amendItemId,
+                spec: window.AgricultureConfig.getTaskDefaults ? window.AgricultureConfig.getTaskDefaults() : { task_ticks: 10, stamina_per_tick: 5 },
+                consumed: amendPay.consumed || []
+            };
+            return { ok: true, task: st.task, soilId: grantsSoil };
+        }
+
+        if (action === 'start_venturi_upgrade') {
+            if (st.task) return { ok: false, reason: 'task_busy' };
+            if (!AM.cell) return { ok: false, reason: 'agriculture_map_missing' };
+            var vc = AM.cell(st, x, y);
+            if (!vc || vc.kind !== 'venturi_fertilizer') return { ok: false, reason: 'not_venturi' };
+            var fromLv = Math.max(1, Math.floor(Number(vc.venturiLevel) || 1));
+            if (!API || typeof API.payVenturiUpgrade !== 'function') return { ok: false, reason: 'player_items_missing' };
+            var upPay = API.payVenturiUpgrade(fromLv);
+            if (!upPay || !upPay.ok) return { ok: false, reason: (upPay && upPay.reason) || 'upgrade_pay_failed' };
+            if (!API.canAffordTaskStamina(upPay.spec)) {
+                refundAgricultureTaskInputs({ spec: upPay.spec, consumed: upPay.consumed });
+                return { ok: false, reason: 'insufficient_stamina' };
+            }
+            st.task = { type: 'upgrade_venturi', x: x, y: y, progress: 0, paused: false };
+            agricultureTaskMeta = { buildId: 'venturi_upgrade:' + fromLv, spec: upPay.spec, consumed: upPay.consumed || [] };
+            return { ok: true, task: st.task, from_level: fromLv };
+        }
+
+        if (action === 'start_pool_upgrade') {
+            if (st.task) return { ok: false, reason: 'task_busy' };
+            if (!AM.cell) return { ok: false, reason: 'agriculture_map_missing' };
+            var pc = AM.cell(st, x, y);
+            if (!pc || pc.kind !== 'pool') return { ok: false, reason: 'not_pool' };
+            var poolFromLv = typeof AM.getPoolLevel === 'function'
+                ? AM.getPoolLevel(st)
+                : Math.max(1, Math.floor(Number(st.pool_level) || 1));
+            var ACpool = window.AgricultureConfig;
+            var poolMaxLv = ACpool && typeof ACpool.getPoolMaxLevel === 'function' ? ACpool.getPoolMaxLevel() : 4;
+            if (poolFromLv >= poolMaxLv) return { ok: false, reason: 'pool_max_level' };
+            if (!API || typeof API.payPoolUpgrade !== 'function') return { ok: false, reason: 'player_items_missing' };
+            var poolPay = API.payPoolUpgrade(poolFromLv);
+            if (!poolPay || !poolPay.ok) return { ok: false, reason: (poolPay && poolPay.reason) || 'upgrade_pay_failed' };
+            if (!API.canAffordTaskStamina(poolPay.spec)) {
+                refundAgricultureTaskInputs({ spec: poolPay.spec, consumed: poolPay.consumed });
+                return { ok: false, reason: 'insufficient_stamina' };
+            }
+            st.task = { type: 'upgrade_pool', x: x, y: y, progress: 0, paused: false };
+            agricultureTaskMeta = {
+                buildId: 'pool_upgrade:' + poolFromLv,
+                spec: poolPay.spec,
+                consumed: poolPay.consumed || []
+            };
+            return { ok: true, task: st.task, from_level: poolFromLv };
+        }
+
+        if (action === 'pool_theft_set') {
+            if (typeof AM.getPoolLevel !== 'function') return { ok: false, reason: 'agriculture_map_missing' };
+            if (AM.getPoolLevel(st) < 2) return { ok: false, reason: 'pool_theft_locked' };
+            if (!st.pool_theft) {
+                st.pool_theft = { enabled: false, victim_branch_index: 1, gain_branch_index: 2 };
+            }
+            if (params.enabled != null) st.pool_theft.enabled = !!params.enabled;
+            if (params.victim_branch_index != null) {
+                st.pool_theft.victim_branch_index = Math.max(1, Math.floor(Number(params.victim_branch_index) || 1));
+            }
+            if (params.gain_branch_index != null) {
+                st.pool_theft.gain_branch_index = Math.max(1, Math.floor(Number(params.gain_branch_index) || 2));
+            }
+            if (st.pool_theft.victim_branch_index >= st.pool_theft.gain_branch_index) {
+                st.pool_theft.gain_branch_index = st.pool_theft.victim_branch_index + 1;
+            }
+            return { ok: true, pool_theft: st.pool_theft };
+        }
+
+        if (action === 'step_venturi_concentration') {
+            if (typeof AM.cell !== 'function' || typeof AM.trySetSeaweedConcentrationAt !== 'function') {
+                return { ok: false, reason: 'unavailable' };
+            }
+            var vcConc = AM.cell(st, x, y);
+            if (!vcConc || vcConc.kind !== 'venturi_fertilizer') return { ok: false, reason: 'not_venturi' };
+            var curConc = Number(vcConc.seaweedSetConcentration);
+            if (!(curConc >= 0)) curConc = 7;
+            var delta = Number(params.delta != null ? params.delta : params.step);
+            if (!isFinite(delta) || delta === 0) return { ok: false, reason: 'missing_params' };
+            return AM.trySetSeaweedConcentrationAt(st, x, y, curConc + delta);
+        }
+
+        if (action === 'plant') {
+            if (st.task) return { ok: false, reason: 'task_busy' };
+            var cropId = String(params.cropId || '').trim();
+            var cropDef = findCropDefByCropId(cropId);
+            if (!cropDef) return { ok: false, reason: 'unknown_crop' };
+            var seedId = String(params.seedItemId || cropDef.seedItemId || '').trim();
+            if (!seedId) return { ok: false, reason: 'no_seed' };
+            if (!API || typeof API.consumeInputs !== 'function') return { ok: false, reason: 'player_items_missing' };
+            var seedPay = API.consumeInputs([{ item_id: seedId, count: 1 }]);
+            if (!seedPay || !seedPay.ok) return { ok: false, reason: (seedPay && seedPay.reason) || 'no_seed' };
+            var plantRes = typeof AM.tryPlantCropAt === 'function'
+                ? AM.tryPlantCropAt(st, env, x, y, cropId)
+                : { ok: false, reason: 'plant_unavailable' };
+            if (!plantRes || !plantRes.ok) {
+                if (Array.isArray(seedPay.consumed)) {
+                    refundAgricultureTaskInputs({ spec: { refund_inputs_on_cancel: true }, consumed: seedPay.consumed });
+                }
+                return plantRes || { ok: false, reason: 'plant_failed' };
+            }
+            return plantRes;
+        }
+
+        if (action === 'harvest') {
+            if (st.task) return { ok: false, reason: 'task_busy' };
+            var harvestPeek = typeof AM.peekHarvestAt === 'function' ? AM.peekHarvestAt : AM.tryHarvestAt;
+            if (typeof harvestPeek !== 'function') return { ok: false, reason: 'harvest_unavailable' };
+            var harvestPreview = harvestPeek(st, x, y);
+            if (!harvestPreview || !harvestPreview.ok) return harvestPreview || { ok: false, reason: 'not_harvestable' };
+            var wantCount = Math.max(0, Math.floor(Number(harvestPreview.harvestCount) || 0));
+            var itemId = String(harvestPreview.itemId || '').trim();
+            var placed = 0;
+            if (wantCount > 0 && itemId && IE && typeof IE.putItemIntoDefaultContainer === 'function') {
+                var hi;
+                for (hi = 0; hi < wantCount; hi++) {
+                    var pr = IE.putItemIntoDefaultContainer({ item_id: itemId, count: 1, quality_tier: 0 });
+                    if (pr && pr.placed) placed += 1;
+                    else break;
+                }
+            }
+            if (wantCount > 0 && placed === 0) {
+                return {
+                    ok: false,
+                    reason: 'inventory_full',
+                    cropId: harvestPreview.cropId,
+                    itemId: itemId,
+                    harvestCount: wantCount,
+                    placedCount: 0,
+                    result: harvestPreview.result
+                };
+            }
+            if (placed > 0 && typeof AM.commitHarvestAt === 'function' && placed === wantCount) {
+                AM.commitHarvestAt(st, x, y);
+            } else if (placed > 0 && placed < wantCount && typeof AM.cell === 'function') {
+                var plotAfterPartial = AM.cell(st, x, y);
+                if (plotAfterPartial && plotAfterPartial.crop) {
+                    plotAfterPartial.crop.harvestCount = Math.max(0, wantCount - placed);
+                }
+            }
+            addAgricultureHarvestProficiency(placed);
+            return {
+                ok: true,
+                cropId: harvestPreview.cropId,
+                itemId: itemId,
+                harvestCount: wantCount,
+                placedCount: placed,
+                result: harvestPreview.result
+            };
+        }
+
+        if (action === 'inject_facility') {
+            if (st.task) return { ok: false, reason: 'task_busy' };
+            var facilityKind = String(params.facilityKind || params.facility || '').trim();
+            var injectItemId = String(params.itemId || '').trim();
+            if (!facilityKind || !injectItemId) return { ok: false, reason: 'missing_params' };
+            if (!API || typeof API.consumeInputs !== 'function') return { ok: false, reason: 'player_items_missing' };
+            var liqPay = API.consumeInputs([{ item_id: injectItemId, count: 1 }]);
+            if (!liqPay || !liqPay.ok) return { ok: false, reason: (liqPay && liqPay.reason) || 'insufficient_items' };
+            var injRes = tryAgricultureInjectFacilityLiquid(st, x, y, facilityKind, injectItemId);
+            if (!injRes || !injRes.ok) {
+                refundAgricultureTaskInputs({ spec: { refund_inputs_on_cancel: true }, consumed: liqPay.consumed });
+                return injRes || { ok: false, reason: 'inject_failed' };
+            }
+            return injRes;
+        }
+
+        if (action === 'set_venturi_concentration') {
+            if (typeof AM.trySetSeaweedConcentrationAt !== 'function') return { ok: false, reason: 'unavailable' };
+            return AM.trySetSeaweedConcentrationAt(st, x, y, params.value != null ? params.value : params.concentration);
+        }
+
+        if (action === 'till') {
+            if (st.task) return { ok: false, reason: 'task_busy' };
+            return typeof AM.tryTillAt === 'function' ? AM.tryTillAt(st, x, y) : { ok: false, reason: 'unavailable' };
+        }
+
+        if (action === 'unlock') {
+            unlockAgriculture();
+            return { ok: true, unlocked: true };
+        }
+
+        return { ok: false, reason: 'unknown_action', actionId: action };
+    }
+
+    function payAgricultureBuildCost(buildId) {
+        if (!window.AgriculturePlayerItems || typeof window.AgriculturePlayerItems.payBuildCost !== 'function') {
+            return { ok: false, reason: 'player_items_missing' };
+        }
+        return window.AgriculturePlayerItems.payBuildCost(buildId);
+    }
+
+    function isAgricultureAutoTickEnabled() {
+        return !!(window.SceneCtx && window.SceneCtx.agriculture_auto_tick === true);
+    }
+
+    function setAgricultureAutoTickEnabled(enabled) {
+        if (window.SceneCtx) window.SceneCtx.agriculture_auto_tick = !!enabled;
+        if (enabled) startAgricultureAutoTickIfNeeded();
+        else stopAgricultureAutoTick();
+        if (agriculturePanelOpen && window.AgriculturePanel && typeof window.AgriculturePanel.syncAutoTickToggle === 'function') {
+            try { window.AgriculturePanel.syncAutoTickToggle(!!enabled); } catch (eSync) { /* ignore */ }
+        }
+    }
+
+    function stopAgricultureAutoTick() {
+        if (!agricultureAutoTickTimer) return;
+        try { clearInterval(agricultureAutoTickTimer); } catch (e0) { /* ignore */ }
+        agricultureAutoTickTimer = null;
+    }
+
+    function startAgricultureAutoTickIfNeeded() {
+        if (!isAgricultureAutoTickEnabled() || !agriculturePanelOpen) return;
+        if (agricultureAutoTickTimer) return;
+        agricultureAutoTickTimer = setInterval(onAgricultureAutoTick, getIdleTickMs());
+    }
+
+    function afterAgricultureWorldTicksAdvanced(tickResult) {
+        if (typeof updateStatusPanel === 'function') updateStatusPanel();
+        var Surv = window.Survival;
+        var dead = !!(Surv && typeof Surv.isDead === 'function' && Surv.isDead());
+        var coma = !!(tickResult && tickResult.coma) || isPlayerComaActive();
+        if (dead) {
+            stopAgricultureAutoTick();
+            if (agriculturePanelOpen) {
+                closeAgriculturePanel();
+                showMsg(ui('agriculture.msg.tick_stopped_death'), 'warn');
+            }
+            if (window.SceneRenderer) window.SceneRenderer.render();
+            return;
+        }
+        if (coma) {
+            stopAgricultureAutoTick();
+            if (agriculturePanelOpen) closeAgriculturePanel();
+            if (window.SceneRenderer) window.SceneRenderer.render();
+            return;
+        }
+        updateAgriculturePanel();
+    }
+
+    function tickAgriculturePanelWorldOnce() {
+        if (!agriculturePanelOpen) return { ok: false, reason: 'panel_closed' };
+        var Surv = window.Survival;
+        if (!Surv || typeof Surv.advanceTick !== 'function') return { ok: false, reason: 'survival_missing' };
+        if (typeof Surv.isDead === 'function' && Surv.isDead()) return { ok: false, reason: 'dead' };
+        if (isPlayerComaActive()) return { ok: false, reason: 'coma' };
+        var tickResult = Surv.advanceTick();
+        afterAgricultureWorldTicksAdvanced(tickResult);
+        return {
+            ok: true,
+            tick: getWorldTotalTicks(),
+            death: tickResult && tickResult.death ? tickResult.death : null
+        };
+    }
+
+    function onAgricultureAutoTick() {
+        if (!agriculturePanelOpen || !isAgricultureAutoTickEnabled()) {
+            stopAgricultureAutoTick();
+            return;
+        }
+        var r = tickAgriculturePanelWorldOnce();
+        if (!r || !r.ok) {
+            if (r && (r.reason === 'dead' || r.reason === 'coma')) stopAgricultureAutoTick();
+            return;
+        }
+        if (r.death) stopAgricultureAutoTick();
+    }
+
+    function openAgriculturePanel() {
+        if (isPreCreationGameplayRestricted()) {
+            showIntroBlockedMsg();
+            return;
+        }
+        if (guardPlayerComaBlocked()) return;
+        if (agriculturePanelOpen) return;
+        unlockAgriculture();
+        ensureLifePlantingSkillEntry();
+        if (window.Survival && typeof window.Survival.advanceTick === 'function') window.Survival.advanceTick();
+        agriculturePanelOpen = true;
+        var modal = document.getElementById('modal-agriculture');
+        if (modal) {
+            modal.classList.add('show');
+            modal.setAttribute('aria-hidden', 'false');
+        }
+        var st = getAgricultureMapStateMutable();
+        if (window.AgriculturePanel && typeof window.AgriculturePanel.render === 'function') {
+            try { window.AgriculturePanel.render(st); } catch (eRender) { /* ignore */ }
+        }
+        if (window.AgriculturePanel && typeof window.AgriculturePanel.syncAutoTickToggle === 'function') {
+            try { window.AgriculturePanel.syncAutoTickToggle(isAgricultureAutoTickEnabled()); } catch (eSync) { /* ignore */ }
+        }
+        startAgricultureAutoTickIfNeeded();
+        render();
+    }
+
+    function closeAgriculturePanel() {
+        if (!agriculturePanelOpen) return;
+        stopAgricultureAutoTick();
+        hideItemTooltip();
+        if (window.Survival && typeof window.Survival.advanceTick === 'function') window.Survival.advanceTick();
+        agriculturePanelOpen = false;
+        var modal = document.getElementById('modal-agriculture');
+        if (modal) {
+            modal.classList.remove('show');
+            modal.setAttribute('aria-hidden', 'true');
+        }
+        render();
+    }
+
+    function updateAgriculturePanel() {
+        if (!agriculturePanelOpen) return;
+        var st = ensureAgricultureMapState();
+        if (window.AgriculturePanel && typeof window.AgriculturePanel.update === 'function') {
+            try { window.AgriculturePanel.update(st); } catch (eUpAg) { /* ignore */ }
+        }
+    }
+
+    function displayNameForItemId(itemId) {
+        var id = String(itemId || '').trim();
+        if (!id) return '';
+        if (IE && typeof IE.getItemTemplate === 'function') {
+            var tpl = IE.getItemTemplate(id);
+            var char = window.SceneCtx && window.SceneCtx.character;
+            if (tpl && typeof IE.getDisplayName === 'function') {
+                return String(IE.getDisplayName(tpl, null, char) || tpl.sn || id);
+            }
+            if (tpl && tpl.sn) return String(tpl.sn);
+        }
+        return id;
+    }
+
+    function getAgriculturePlantOptions() {
+        var API = window.AgriculturePlayerItems;
+        if (!API || typeof API.listSeeds !== 'function') return [];
+        var rows = API.listSeeds();
+        var seen = {};
+        var out = [];
+        var i;
+        for (i = 0; i < rows.length; i++) {
+            var row = rows[i];
+            if (!row || !row.item_id) continue;
+            var def = findCropDefBySeedItemId(row.item_id);
+            if (!def || !def.cropId) continue;
+            var key = def.cropId + '|' + row.item_id;
+            if (seen[key]) continue;
+            seen[key] = true;
+            out.push({
+                seedItemId: row.item_id,
+                cropId: def.cropId,
+                name: displayNameForItemId(row.item_id),
+                count: row.count
+            });
+        }
+        out.sort(function (a, b) { return String(a.name).localeCompare(String(b.name), 'zh'); });
+        return out;
+    }
+
+    function getAgricultureSoilAmendmentOptions() {
+        var API = window.AgriculturePlayerItems;
+        if (!API || typeof API.listSoilAmendments !== 'function') return [];
+        var rows = API.listSoilAmendments();
+        var out = [];
+        var i;
+        for (i = 0; i < rows.length; i++) {
+            var row = rows[i];
+            if (!row || !row.item_id) continue;
+            out.push({
+                itemId: row.item_id,
+                name: displayNameForItemId(row.item_id),
+                count: row.count
+            });
+        }
+        return out;
+    }
+
+    function getAgricultureInjectables(facilityKind) {
+        var API = window.AgriculturePlayerItems;
+        var kind = String(facilityKind || '').trim();
+        var rows = [];
+        if (!API) return rows;
+        if (kind === 'venturi_fertilizer' && typeof API.listVenturiInjectables === 'function') {
+            rows = API.listVenturiInjectables();
+        } else if (kind === 'buried_pot_jar' && typeof API.listJarInjectables === 'function') {
+            rows = API.listJarInjectables();
+        }
+        var out = [];
+        var i;
+        for (i = 0; i < rows.length; i++) {
+            var row = rows[i];
+            if (!row || !row.item_id) continue;
+            out.push({
+                itemId: row.item_id,
+                name: displayNameForItemId(row.item_id),
+                count: row.count
+            });
+        }
+        return out;
+    }
+
+    (function bindAgriculturePanelCloseOnce() {
+        var closeBtn = document.getElementById('agriculture-panel-close');
+        if (closeBtn && !closeBtn.__agriBound) {
+            closeBtn.__agriBound = true;
+            closeBtn.addEventListener('click', closeAgriculturePanel);
+        }
+    })();
+
+    var hideoutWarehousePanelOpen = false;
+
+    function openHideoutWarehousePanel() {
+        if (isPreCreationGameplayRestricted()) {
+            showIntroBlockedMsg();
+            return;
+        }
+        if (guardPlayerComaBlocked()) return;
+        if (hideoutWarehousePanelOpen) return;
+        hideoutWarehousePanelOpen = true;
+        if (window.HideoutWarehousePanel && typeof window.HideoutWarehousePanel.bindOnce === 'function') {
+            window.HideoutWarehousePanel.bindOnce();
+        }
+        if (window.HideoutWarehousePanel && typeof window.HideoutWarehousePanel.open === 'function') {
+            window.HideoutWarehousePanel.open();
+        } else {
+            var modal = document.getElementById('modal-hideout-warehouse');
+            if (modal) {
+                modal.classList.add('show');
+                modal.setAttribute('aria-hidden', 'false');
+            }
+        }
+        render();
+    }
+
+    function closeHideoutWarehousePanel() {
+        if (!hideoutWarehousePanelOpen) return;
+        if (window.HideoutWarehousePanel && typeof window.HideoutWarehousePanel.close === 'function') {
+            var closeResult = window.HideoutWarehousePanel.close();
+            if (closeResult && closeResult.ok === false) return;
+        } else {
+            var modal = document.getElementById('modal-hideout-warehouse');
+            if (modal) {
+                modal.classList.remove('show');
+                modal.setAttribute('aria-hidden', 'true');
+            }
+        }
+        hideoutWarehousePanelOpen = false;
+        render();
+    }
+
+    (function bindHideoutWarehousePanelOnce() {
+        if (window.HideoutWarehousePanel && typeof window.HideoutWarehousePanel.bindOnce === 'function') {
+            window.HideoutWarehousePanel.bindOnce();
+        }
+    })();
+
     (function bindCompostStationPanel() {
         var tabA = document.getElementById('compost-tab-aerobic');
         var tabN = document.getElementById('compost-tab-anaerobic');
@@ -7099,30 +8017,25 @@
                     }
                 })
                 : { c_total: 0, n_total: 0 };
-            var consumed = [];
-            for (var x = 0; x < compostStationUiState.staged_inputs.length; x++) {
-                var sid = String(compostStationUiState.staged_inputs[x] || '');
-                var slot = findFirstContainerSlotByItemId(sid);
-                if (!slot) continue;
-                var taken = IE.takeItemFromContainer(slot.containerType, slot.index);
-                if (taken && taken.success && taken.item) consumed.push(taken.item);
+            var payInputs = consumeInventoryItemsByList(list);
+            if (!payInputs.ok) {
+                showCompostStartBlockedHint('insufficient_inputs');
+                return;
             }
             var inoculantId = String(compostStationUiState.staged_inoculant_item_id || '');
-            var inocTaken = null;
+            var inocPay = null;
             if (inoculantId) {
-                var inocSlot = findFirstContainerSlotByItemId(inoculantId);
-                if (!inocSlot) {
-                    putItemsBack(consumed);
+                inocPay = consumeInventoryItemsByList([{ item_id: inoculantId, count: 1 }]);
+                if (!inocPay.ok) {
+                    var HWundo = window.HideoutWarehouse;
+                    if (HWundo && typeof HWundo.refundConsumed === 'function' && payInputs.rawConsumed) {
+                        HWundo.refundConsumed(payInputs.rawConsumed);
+                    } else if (payInputs.consumed && payInputs.consumed.length) {
+                        putItemsBack(payInputs.consumed);
+                    }
                     showCompostStartBlockedHint('inoculant_missing_inventory');
                     return;
                 }
-                var inocTake = IE.takeItemFromContainer(inocSlot.containerType, inocSlot.index);
-                if (!inocTake || !inocTake.success || !inocTake.item) {
-                    putItemsBack(consumed);
-                    showCompostStartBlockedHint('inoculant_missing_inventory');
-                    return;
-                }
-                inocTaken = inocTake.item;
             }
             var ret = window.CompostSystem.startBatch(mode, {
                 materials: list,
@@ -7131,8 +8044,19 @@
                 inoculant_item_id: inoculantId || null
             });
             if (!ret || ret.ok !== true) {
-                if (inocTaken) putItemsBack([inocTaken]);
-                putItemsBack(consumed);
+                var HWref = window.HideoutWarehouse;
+                if (HWref && typeof HWref.refundConsumed === 'function' && payInputs.rawConsumed) {
+                    HWref.refundConsumed(payInputs.rawConsumed);
+                } else if (payInputs.consumed && payInputs.consumed.length) {
+                    putItemsBack(payInputs.consumed);
+                }
+                if (inocPay) {
+                    if (HWref && typeof HWref.refundConsumed === 'function' && inocPay.rawConsumed) {
+                        HWref.refundConsumed(inocPay.rawConsumed);
+                    } else if (inocPay.consumed && inocPay.consumed.length) {
+                        putItemsBack(inocPay.consumed);
+                    }
+                }
                 showCompostStartBlockedHint(ret && ret.reason ? ret.reason : 'slot_not_ready');
                 return;
             }
@@ -7253,7 +8177,11 @@
             var id = ids[i];
             var tpl = IE.getItemTemplate(id);
             var tier = IE.getItemDisplayTier ? IE.getItemDisplayTier(id, char0) : 0;
-            var disp = tpl && IE.getDisplayName ? IE.getDisplayName(tpl, tier, char0) : id;
+            var disp = tpl && IE.getDisplayName ? IE.getDisplayName(tpl, tier, char0) : '';
+            if (!disp && tpl) {
+                disp = tpl.sn || tpl.placeholder_name || ui('hideout_warehouse.item.unknown');
+            }
+            if (!disp) disp = ui('hideout_warehouse.item.unknown');
             if (f) {
                 if (String(id).toLowerCase().indexOf(f) < 0 && String(disp).toLowerCase().indexOf(f) < 0) continue;
             }
@@ -7262,9 +8190,6 @@
             var nameEl = document.createElement('div');
             nameEl.className = 'wname';
             nameEl.textContent = disp;
-            var idEl = document.createElement('div');
-            idEl.className = 'wid';
-            idEl.textContent = id;
             var btn = document.createElement('button');
             btn.type = 'button';
             btn.className = 'btn-take-one';
@@ -7276,7 +8201,6 @@
                 row.addEventListener('mouseleave', hideItemTooltip);
             }
             row.appendChild(nameEl);
-            row.appendChild(idEl);
             row.appendChild(btn);
             frag.appendChild(row);
         }
@@ -7292,7 +8216,9 @@
         var r = IE.putItemIntoDefaultContainer({ item_id: itemId, count: 1, quality_tier: 0 });
         var char0 = IE.getCharacterForDisplay ? IE.getCharacterForDisplay() : null;
         var tier0 = IE.getItemDisplayTier ? IE.getItemDisplayTier(itemId, char0) : 0;
-        var dispName = tpl && IE.getDisplayName ? IE.getDisplayName(tpl, tier0, char0) : itemId;
+        var dispName = tpl && IE.getDisplayName ? IE.getDisplayName(tpl, tier0, char0) : '';
+        if (!dispName && tpl) dispName = tpl.sn || tpl.placeholder_name || ui('hideout_warehouse.item.unknown');
+        if (!dispName) dispName = ui('hideout_warehouse.item.unknown');
         if (r.placed) {
             showMsg(ui('warehouse.take.ok', { name: dispName }), 'success');
         } else {
@@ -9417,8 +10343,8 @@
             if (window.SaveSystem && typeof window.SaveSystem.init === 'function') {
                 window.SaveSystem.init({ saveIntervalTicks: 50 });
             }
-            // 固定 tick 烹饪：挂接 world tick 递减（避免单次调用瞬推）
-            patchSurvivalTickForCookingCraftOnce();
+            // 世界 tick 后置：烹饪/制药/制肥/农业等（单一 patch，避免重复结算）
+            patchSurvivalTickForWorldSystemsOnce();
             var mapsPromise = bootstrapMapsFromJson();
             function afterMaps() {
                 if (window.SaveSystem && typeof window.SaveSystem.loadRealtime === 'function') {
@@ -9460,6 +10386,10 @@
             window.SceneCtx.actions.tryMoveTo = function (tx, ty, dx, dy) {
                 if (isStoryMovementLocked()) return;
                 if (guardPlayerComaBlocked()) return;
+                if (isHideoutWarehouseConstructionLive()) {
+                    showMsg(ui('hideout_warehouse.move.blocked'), 'info');
+                    return;
+                }
                 var ac = getActiveCookingCraft();
                 if (ac) {
                     showMsg(ui('cooking.move.blocked', { n: ac.remaining_ticks }), 'info');
@@ -9818,6 +10748,10 @@
             window.SceneCtx.actions.tryIntentMove = function (tx, ty, dx, dy, source) {
                 if (isStoryMovementLocked()) return;
                 if (guardPlayerComaBlocked()) return;
+                if (isHideoutWarehouseConstructionLive()) {
+                    showMsg(ui('hideout_warehouse.move.blocked'), 'info');
+                    return;
+                }
                 var st = E.getState();
                 var ddx = (dx != null) ? dx : (tx - st.x);
                 var ddy = (dy != null) ? dy : (ty - st.y);
@@ -10370,6 +11304,24 @@
     window.SceneApp.openCompostStationPanel = openCompostStationPanel;
     window.SceneApp.closeCompostStationPanel = closeCompostStationPanel;
     window.SceneApp.trySleepAtBed = trySleepAtBed;
+    window.SceneApp.openAgriculturePanel = openAgriculturePanel;
+    window.SceneApp.closeAgriculturePanel = closeAgriculturePanel;
+    window.SceneApp.openHideoutWarehousePanel = openHideoutWarehousePanel;
+    window.SceneApp.closeHideoutWarehousePanel = closeHideoutWarehousePanel;
+    window.SceneApp.updateAgriculturePanel = updateAgriculturePanel;
+    window.SceneApp.isAgricultureAutoTickEnabled = isAgricultureAutoTickEnabled;
+    window.SceneApp.setAgricultureAutoTickEnabled = setAgricultureAutoTickEnabled;
+    window.SceneApp.getWorldTotalTicks = getWorldTotalTicks;
+    window.SceneApp.getAgricultureMapState = getAgricultureMapStateReadonly;
+    window.SceneApp.getAgricultureMapStateMutable = getAgricultureMapStateMutable;
+    window.SceneApp.setAgricultureMapState = setAgricultureMapState;
+    window.SceneApp.tryAgricultureAction = tryAgricultureAction;
+    window.SceneApp.getAgriculturePlantOptions = getAgriculturePlantOptions;
+    window.SceneApp.getAgricultureSoilAmendmentOptions = getAgricultureSoilAmendmentOptions;
+    window.SceneApp.getAgricultureInjectables = getAgricultureInjectables;
+    window.SceneApp.payBuildCost = payAgricultureBuildCost;
+    window.SceneApp.isAgricultureUnlocked = isAgricultureUnlocked;
+    window.SceneApp.unlockAgriculture = unlockAgriculture;
     window.SceneApp.isCookingStationPanelBlockedByRepair = isCookingUiBlockedByRepair;
     window.SceneApp.isPharmacyStationPanelBlockedByRepair = isPharmacyUiBlockedByRepair;
     window.SceneApp.resetCookingStateForNewCharacter = resetCookingStateForNewCharacter;

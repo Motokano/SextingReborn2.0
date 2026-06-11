@@ -2,7 +2,8 @@
  * 将 data/items/*.csv 合并为 data/items.json（单一运行时数据源）。
  * 用法：node tools/build-items-json.mjs
  * 合并顺序（先出现的 id 优先，后表重复 id 会跳过并打印警告）：
- *   consumables_base → materials_all → product_base → currency_base
+ *   consumables_base → materials_all → seeds_farming → product_base → currency_base
+ *   → compost_matrix_base → fertilizer_anaerobic_base → agriculture_injectables_base → soil_amendments_base
  */
 import fs from 'fs';
 import path from 'path';
@@ -16,9 +17,13 @@ const OUT = path.join(ROOT, 'data', 'items.json');
 const MERGE_FILES = [
   'consumables_base.csv',
   'materials_all.csv',
+  'seeds_farming.csv',
   'product_base.csv',
   'currency_base.csv',
-  'compost_matrix_base.csv'
+  'compost_matrix_base.csv',
+  'fertilizer_anaerobic_base.csv',
+  'agriculture_injectables_base.csv',
+  'soil_amendments_base.csv'
 ];
 
 function parseCsv(text) {

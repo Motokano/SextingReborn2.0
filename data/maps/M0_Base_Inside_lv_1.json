@@ -772,6 +772,13 @@
   "bed_station_interact_npc_by_cell": {
     "11,14": "npc.station.bed_base"
   },
+  "agriculture_station_interact_npc_by_cell": {
+    "10,14": "npc.station.agriculture_base"
+  },
+  "warehouse_station_interact_npc_id": "npc.station.warehouse_base",
+  "warehouse_station_interact_npc_by_cell": {
+    "14,12": "npc.station.warehouse_base"
+  },
   "enemies": [
     {
       "x": 12,
@@ -784,13 +791,10 @@
     "12,14": "烹饪台",
     "13,14": "制肥桶",
     "7,11": "黄历",
+    "10,14": "农业",
     "11,14": "床",
-    "9,12": "仓库",
-    "10,12": "仓库",
-    "9,13": "仓库",
-    "10,13": "仓库",
     "13,6": "房屋升级",
-    "14,12": "水缸",
+    "14,12": "仓库",
     "14,13": "水缸",
     "11,8": "风干架",
     "10,8": "风干架",

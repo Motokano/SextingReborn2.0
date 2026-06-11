@@ -26,9 +26,14 @@
   - 不可种植。
   - 不可改造成水渠。
   - 不作为普通土地使用。
-- 水池未来可以升级，但第一版暂不开放操作。
+- 水池可升级（材料 + 面板内工程 tick，无农业商店金钱）；升级主特效见 **§8.4 支流窃流**、**§8.5 蓄水池**（配合主游戏天气）。
 - 水池基础属性：
-  - `基础水分滋养度 = 200`
+  - `基础水分滋养度 = 200`（等级 1 常态灌溉预算；更高等级见 `data/agriculture-pool-upgrades.json`，首版可不抬该常数）
+- 水池等级梯（首版）：
+  - **2**：解锁支流窃流（`transfer_cap = 2`）。
+  - **3**：解锁蓄水池（旱涝缓冲，见 §8.5）；窃流 cap 仍为 2。
+  - **4**：窃流 `transfer_cap = 4`；**窃流溢流回蓄**（§8.6）；蓄水池能力保留。
+- **升级消耗**：主游戏见 `data/agriculture-build-costs.json` → `upgrades.pool_level`（材料 + 工程 tick）；Demo 见 §8.5 Demo 注。
 
 ### 2.2 高度
 
@@ -42,11 +47,92 @@
   - `y = 10` 行最低。
 - 农业地图地块高度固定，不会被玩家行为改变。
 
-### 2.2b 土壤种类
+### 2.2b 土壤种类与锁值（锁水 / 锁肥 / 锁微量元素）
 
-- 每一个地块拥有属性：`土壤种类`。
-- 第一版默认土壤种类为：`赤红壤`。
-- 当前 demo 仅展示该属性，暂不参与灌溉、作物或施工计算。
+- 每一个已开垦耕地维护 **`soil_id`**（展示名 `土壤种类`）；客土改良、制造链 **`grants_soil_id`** 物品写入该字段。
+- 第一版地图默认 **`soil_saline_alkali`**（展示名 **盐碱土**，西北内陆/滨海）。
+- 土壤模板主表（建议）：**`data/agriculture-soils.json`** → `soils[soil_id]`。
+
+#### 土壤的两条独立作用轨（勿混用）
+
+| 作用轨 | 时机 | 影响 |
+|--------|------|------|
+| **锁值（本小节，默认）** | 生长中**每 tick** 吸收水分 / 微量元素 / 施肥值时 | 决定「外部供给 → 作物累计条」的**基础转化效率**（`water/fertilizer/trace_retention`） |
+| **土性融合（§2.2g，`fusion_gated`）** | 场上**至少一座超融合**时，与文丘里 A 面**同一全局条件** | `absorption_modifiers`、`special_effect` 及关联轮作/tick 修正；**拆除超融合后立即关闭** |
+| **土种偏好（§4b.3 `soil_scoring`）** | **成熟收获**算生长分时 | 偏好土 **+1** 分、不适土 **-1** 分；**始终生效**，与是否超融合**无关** |
+
+#### 锁值字段（每 `soil_id` 必配）
+
+| 字段 | 含义 | 取值 |
+|------|------|------|
+| `water_retention` | **锁水率**：灌溉供给转化为作物水分的比例 | `0.0～1.0`（展示可写百分比） |
+| `fertilizer_retention` | **锁肥率**：埋地陶瓮等施加的施肥值转化为作物累计的比例 | 同上 |
+| `trace_retention` | **锁微量元素率**：渠内海藻精浓度转化为作物累计的比例 | 同上 |
+
+缺省实现：未登记 `soil_id` 时三类锁值均回退 **`1.0`**（100%，与改前 demo 行为一致）。
+
+#### 每 tick 转化公式（与 §4.1 一致：不作用于土地本身）
+
+锁值只乘在**作物吸收步**，不改变水渠格上的 `W` / 海藻精浓度 `C`，也不在土地上累积「滞留水分池」。
+
+- **水分**（§4.2，来源格实际水量 `W_src`）  
+  `ΔwaterAbsorbed = W_src × water_retention(soil_id)`  
+  例：锁水 **80%**、来源水渠本 tick 水量 **2.0** → 作物 **+1.6** 累计水分。
+- **微量元素**（§4b.1c，来源格浓度 `C_src`）  
+  `ΔtraceAbsorbed = C_src × trace_retention(soil_id)`（作物模板另有 `trace_absorption_multiplier` 时先乘模板再乘锁值，或等价合并为一条乘区，实现择一即可）。
+- **施肥值**（§4b.1d，单瓮施加量 `F_pt`）  
+  `ΔfertilizerAbsorbed += F_pt × fertilizer_retention(soil_id)`（超融合激活时，再乘 `fusion_gated.absorption_modifiers.fertilizer_multiplier`，缺省 1）；多瓮八邻叠加时，**每瓮贡献各自乘锁值后再相加**。
+- **微量元素 / 施肥值乘区**：`fusion_gated.absorption_modifiers` 的 `trace_multiplier` / `fertilizer_multiplier` 仅在 **`anySuperFusionOnMap === true`** 时叠乘；未激活时只用三项 `*_retention`。
+
+计算过程保留小数；写入作物累计条时 **保留 1 位小数**（与现有 `waterAbsorbed` / `traceAbsorbed` / `fertilizerAbsorbed` 一致）。
+
+#### 八种土壤与锁值（权威：`data/agriculture-soils.json`）
+
+| `soil_id` | 展示名 | 分布 | 锁水 | 锁肥 | 锁微量 | 现实取向摘要 |
+|-----------|--------|------|------|------|--------|----------------|
+| `soil_yellow_cotton` | 黄绵土 | 黄土高原 | 0.68 | 0.58 | 0.55 | 有机质极低、干旱侵蚀 |
+| `soil_cinnamon` | 褐土 | 华北平原 | 0.72 | 0.74 | 0.70 | 石灰性、半干旱、中等肥力 |
+| `soil_purple` | 紫色土 | 四川盆地 | 0.81 | 0.86 | 0.84 | 矿物母质肥沃、坡地易淋洗 |
+| `soil_red` | 红壤 | 江南华南 | 0.73 | 0.62 | 0.58 | 酸性淋溶、磷固定 |
+| `soil_saline_alkali` | 盐碱土 | 西北/滨海 | 0.48 | 0.40 | 0.38 | **默认土**；盐害与结构差，三项最低 |
+| `soil_alpine_meadow` | 高山草甸土 | 青藏高原 | 0.77 | 0.73 | 0.66 | 草毡保水、冷凉慢释放 |
+| `soil_paddy` | 水稻土 | 长江中下游 | 0.93 | 0.90 | 0.82 | 水耕熟化，保水极强 |
+| `soil_black` | 典型黑土 | 东北平原 | 0.91 | 0.94 | 0.88 | 腐殖质深厚；**非全能最优**（见下表） |
+
+#### 八种土壤 `fusion_gated`（需超融合激活，§2.2g）
+
+主表字段 **`fusion_gated`**：`absorption_modifiers`（可选）、`special_effect`（展示 + `effect_id` 驱动 demo 逻辑）。**无超融合时仅三项锁值生效**；`soil_scoring` / `water_profile` 仍始终生效。
+
+| `effect_id` | 土 | 激活后特色（demo 已接） |
+|-------------|-----|-------------------------|
+| `filtration` | 盐碱土 | 耐盐标签土种 +1、非耐盐 −1；xeric 涝害线 ×1.15 |
+| `loose_drain` | 黄绵土 | 瓮肥入账 ×0.92；每 tick 进水后扣累计肥 4%；豆科后非豆科轮作 +2 |
+| `calcareous_steady` | 褐土 | 产量倍率下限 0.9；微量 2 分封顶 1 分 |
+| `mineral_rich` | 紫色土 | 微量入账 ×1.12；要海藻精作物微量窗 ±10%；排斥微量 safe×0.9 |
+| `acidic_fixation` | 红壤 | 瓮肥入账 ×0.88；喜酸作物施肥窗 ±10%；喜湿叶菜土种 −1 |
+| `ponding` | 水稻土 | xeric 生长 tick +10%；喜湿/水生涝害线 ×1.18；上一季水生 20 tick 缓释肥 +0.2/tick |
+| `humus_bank` | 典型黑土 | 瓮肥入账 ×1.08；连作同作物 −1（第2季）/−2（第3季+）；无瓮肥 tick 腐殖 +0.2 |
+| `cold_meadow` | 高山草甸土 | 生长 tick **+6%**；换 **group** 轮作分 **+2**（默认 +1）；连作同作物**不**像黑土那样额外扣分 |
+
+#### 作物 `water_profile`（`agriculture-crop-defs.json`）
+
+| 值 | 含义 | 生长分 / 土种 |
+|----|------|----------------|
+| `xeric` | 耐旱忌涝；完美水分窗偏低；超 `waterlogged_above` 生长分 0 | 偏好盐碱/黄绵/褐土；不适水稻土 |
+| `mesic` | 常规 | 按作物组与档位分土 |
+| `hydrophilic` | 喜湿；完美窗偏高 | 偏好水稻土/黑土/紫色土；不适盐碱/黄绵 |
+| `aquatic` | 水生/池栽 | 同喜湿，更依赖水稻土 |
+
+客土改良 / 制造链：物品带 **`grants_soil_id`** 指向上表 `soil_id`；demo 客土道具 `soil_amend_*` 写入耕地 `soil_id` 与展示名。
+
+#### UI 与对玩家可见性
+
+- 选中耕地：展示当前 `土壤种类`、三项锁值（百分比）、以及 **土性是否已融合**（场上有超融合时显示 `fusion_gated.special_effect` 摘要）。
+- 作物详情（可选）：本 tick 有效吸收可展示「来源供给 × 锁值 = 实际入账」（调试层即可，非强制）。
+
+#### 与 §23 肥料桶 / 地块肥力的关系
+
+- **§23.7** 的 `soil_fertility`、`growth_time_mult` 为地块**限时肥力 buff**（缩成熟时间），与 **`fertilizerAbsorbed` 累计条**、与本节**锁肥率**分轨；同 tick 若两套并存，各自按各自规则结算，禁止合并为单一「肥力」真相。
 
 ### 2.2c 耕地与上一轮作物
 
@@ -54,15 +140,15 @@
 - **种子物品**：`data/items/seeds_farming.csv` → `items.json`（`category: seed`，`harvest_item_id` 指向对应产物如 `herb_peanut`；列 **`seed_tier`** 为 1～5 档）；农业 demo 商店表 **`data/agriculture-seed-shop.json`**（每种种子含 **`tier`**、**`price`**、**`grow_note`**；维护脚本 **`node tools/seed-tier-classification.mjs`**）。
 - **五档口径**（现实价值 + 种植难度，每档 10 种）：**1 大宗易种**（玉米/稻/麦/土豆等主食与常见菜）→ **5 珍稀高值**（八角/樱桃/扁桃等多年生或精细管理作物）。档次越高：**种子售价越高**（约 6～24 金）、后续作物模板宜配置更长生长周期、更窄水分/微量元素窗口、或池栽/嫁接等前置（具体数值在种植篇按作物落地）。
 - **售价基准**：二档 **花生种子 10** 金为锚点；同档内按现实批发/零售价差微调，非精确汇率。
-- **生长默认参数**：`data/agriculture-crop-defs.json`（`tools/gen-agriculture-crop-defs.mjs` 由种子表生成）。设计原则：**成熟区间宽裕**（枯/淹阈值宽，普通成熟易达成）；**完美区间随档位略收窄**（高档需更稳的水与适量微量元素，但不把枯/淹窗口卡死）。档位摘要：
+- **生长默认参数**：`data/agriculture-crop-defs.json`（`tools/gen-agriculture-crop-defs.mjs` 由种子表生成）。设计原则：**成熟区间宽裕**（枯/淹阈值宽，普通成熟易达成）；**高分水分窗**随档位略收窄；**产量由生长分连续映射**（§4b.3），不设玩家可见的「完美」档位。档位摘要：
 
-| 档 | 生长 tick（约） | 成熟水分带 | 完美水分窗 | 完美微量 |
-|----|----------------|------------|------------|----------|
-| 1 | 40～95 | 很宽（如 70～360+） | 很宽，**不要求**微量 | — |
-| 2 | 100（花生锚点） | 100～300 | 150～250 | ≥50（仅花生等示范） |
-| 3 | 110～120 | 略窄 | 中等 | ≥30（门槛偏低） |
-| 4 | 125～140 | 中等 | 较窄 | 36～88（可登记海藻精请求） |
-| 5 | 145～175 | 仍 ≥120 带宽 | 最窄但仍可玩 | 42～82 |
+| 档 | 生长 tick（约） | 成熟水分带 | 高分水分窗 | 生长分参与维（典型） | 理论正分上限（约） |
+|----|----------------|------------|------------|----------------------|-------------------|
+| 1 | 40～95 | 很宽 | 很宽 | 水 + 土 + 轮作 | 6 |
+| 2 | 98～100 | 中等 | 中等 | 水 + 土 + 轮作；部分 + 微量（番茄/花生/甘蔗等） | 8 |
+| 3 | 108～120 | 略窄 | 中等 | 水 + 微量 + 肥 + 土 + 轮作 | 8 |
+| 4 | 124～140 | 中等 | 较窄 | 全维；可登记海藻精 + 液态肥 | 8 |
+| 5 | 142～175 | 仍宽裕 | 最窄 | 全维最严；果树/香料多不适红壤/盐碱土 | 8 |
 
 - 形态修正：豆芽 **fast**（短周期）；稻/芡实/莲 **aquatic**（提高需水但放宽淹上限）；果树类 **tree**（周期 ×1.22，上限 175 tick）；香料 **spice**（微量门槛略降）。
 - 农业 demo 从该表加载 **`CROP_DEFS`**，耕地建造菜单按背包种子动态列出种植按钮。
@@ -71,7 +157,7 @@
 - 开垦 / 拆除耕地均为 `10 tick` 工程，每 `1 tick` 消耗 `5` 体力。
 - 每个地块拥有属性：`上一轮作物`。
 - `上一轮作物` 记录该地块最近一次「已结束种植周期」的作物 id：包括**正常收获**写入，以及**生长中健康度归零枯萎**时写入（作物从格子上消失，耕地与开垦状态保留，可再播种）。
-- 当前 demo 仅记录该字段；后续作物成熟判定可读取它作为辅助条件。
+- 当前 demo 已记录该字段；**生长分**轮作维读取它（跨 group 或豆科后种非豆科 +1 分，连作 0 分）。
 
 ### 2.2d 文丘里施肥器（地块设施）
 
@@ -116,8 +202,11 @@
 - **定位**：种植地图上的独立地块类型（与水渠、耕地、文丘里、埋地陶瓮互斥同格）；不参与水渠网络；**不可种植**。
 - **建造**：工程 **10 tick**，每 **1 tick** 消耗 **5** 体力；开始时支付 **200** 金钱（取消工程退回金钱）。
 - **拆除**：工程 **10 tick**，每 **1 tick** 消耗 **5** 体力；不另收/退金钱；无罐内物资。
-- **唯一效果（全局）**：地图上**存在至少一座**超融合时，**全场所有**文丘里施肥器的海藻精输送逻辑切换为 **A 面**（§15.1～§15.3，检测作物请求）；**不存在**超融合时，文丘里默认 **B 面**（§15.6，常注）。与超融合格坐标无关，**不按距离**；多座超融合不叠加额外效果。
-- **扩展预留**：后续可为其它双逻辑装置登记「默认面 / 超融合切换面」；首版仅文丘里海藻精。
+- **全局效果（与坐标无关；多座不叠加）**：地图上**存在至少一座**超融合时：
+  1. **文丘里**：全场海藻精输送切换 **A 面**（§15.1～§15.3，检测作物请求）；无超融合时默认 **B 面**（§15.6，常注）。
+  2. **土性融合**：全场已开垦耕地的 **`fusion_gated`** 特性激活（吸收乘区、`special_effect` 关联的轮作/tick 修正等，§2.2b）。
+- **拆除超融合**：上述两项**立即**回退（文丘里 → B 面；土性融合关闭），与建造/拆除工程完成 tick 同步，不保留延迟。
+- **扩展预留**：后续可为其它双逻辑装置登记「默认态 / 超融合切换态」；首版文丘里 + 土性融合共用同一 `anySuperFusionOnMap` 条件。
 
 ### 2.2f 耕地建造物（支架 / 保护笼等）
 
@@ -249,6 +338,7 @@
 - 水池根据当前实际滋养度滋养上下左右邻接地块上的作物。
 - 有水水渠根据自身当前实际水量滋养上下左右邻接地块上的作物。
 - 无水水渠不产生滋养。
+- 作物入账水分 = 来源格实际水量 × 该地块 **`water_retention`**（§2.2b）；**不**扣减来源格水量，**不**写入土地湿度。
 
 水量精度：
 
@@ -342,12 +432,12 @@
 - **每 tick 流程（与 §4.2 水分对齐）**：
   1. 按 §12 为作物选定本 tick 唯一滋养来源水渠（与吸收水分**同一来源、同一 tick**）。
   2. 读取该来源格当前 **`海藻精浓度`**（§12.1）。
-  3. 本 tick 吸收量 = 该浓度值（不乘 tick 系数，除非作物模板另有 `trace_absorption_multiplier` 等字段）。
+  3. 本 tick 吸收量 = 该浓度值 × 耕地 **`trace_retention`**（§2.2b）；作物模板另有 `trace_absorption_multiplier` 时纳入同一乘区。
   4. 累加到作物实例 **`累计微量元素`**；展示保留 **1 位小数**。
 - **不扣减渠内浓度**：吸收只读来源格浓度，**不**降低该格或其它格的海藻精浓度（与吸水不扣渠内水量同构）。
 - **不作用于土地**：只作用于邻接水源的**作物**。
 - **与请求的关系**：`requests_seaweed_extract` 仅管是否**登记输送请求**；**吸收**只看来源格浓度——**凡生长中作物**每 tick 均按本节累计（与是否发送请求无关）；`false` 模板不登记但仍可吸收。
-- **成熟结算**：各作物**单独**配置 `累计微量元素` 区间与阈值；与水分区间组合判定时，**完美种植等品质须水分条件与微量元素条件同时满足（AND）**；未配置微量元素判定的作物只记录不判定。**水藻爆发不参与**成熟/完美区间判定（仅影响健康与当 tick 吸收量）。
+- **成熟结算（可收获硬门槛）**：各作物单独配置水分枯/淹阈值；severe 微量达 `trace_fail_harvest_at` 绝收。**通过门槛后**才计算 **§4b.3 生长分** 决定产量；未配置微量/施肥评分的作物该维不参与计分。**水藻爆发不参与**生长分（仅影响健康与当 tick 吸收量）。
 
 ### 4b.1g 微量排斥作物（海藻精累计 `traceAbsorbed`）
 
@@ -356,7 +446,7 @@
 | 字段 | 说明 |
 |------|------|
 | `trace_sensitivity` | `lethal`（绝对致死）或 `severe`（严重排斥）；缺省视为无排斥 |
-| `trace_safe_max` | 安全上限：累计微量 **≤ 此值** 才可能完美；超过则进入排斥 |
+| `trace_safe_max` | 安全上限：排斥作物微量维 **≤ 此值得 2 分**；超过则 0 分（severe 达 `trace_fail_harvest_at` 仍绝收） |
 | `trace_lethal_at` | 仅 `lethal`：累计 **≥** 此值本 tick 按致死扣血（常伴随健康归零枯萎） |
 | `trace_stress_loss_per_tick` | `lethal` 且 `safe < trace < lethal` 时每 tick 扣健康 |
 | `trace_lethal_loss_per_tick` | `lethal` 且 `trace ≥ lethal` 时每 tick 扣健康（宜一次致死） |
@@ -373,7 +463,7 @@
 **规则摘要**
 
 - 排斥作物 **`requests_seaweed_extract` 恒为 false**（不向水网登记海藻精需求）；邻渠有浓度仍会因 §4b.1c **被动吸收**，故须**清水灌溉或极低浓度**，与 B 面常注风险相关。
-- **完美微量**：排斥作物改为「低微量完美」——`trace ≤ trace_safe_max`（非 `perfectMinTrace` 下限）。
+- **微量生长分**：排斥作物为「低微量高分」——`trace ≤ trace_safe_max` → 2 分，否则 0 分（非 `perfectMinTrace` 下限）。
 - **吸收后**每 tick 在步骤 5 之后执行排斥扣血（demo：`agriTickStep5aTraceSensitivity`）。
 - 数据表：`data/agriculture-crop-defs.json`（`tools/gen-agriculture-crop-defs.mjs`）。
 
@@ -385,7 +475,7 @@
 - **与施加的关系（demo 口径）**：
   - **`requests_liquid_fertilizer === true`**：该作物在陶瓮 **八邻**范围内时，才接收 §4b.1d 的 `fertilizerPerTick` 累加（陶瓮本 tick 可扣单位）。
   - **`false`**：即使紧贴陶瓮也**不**累加施肥值（与海藻精「不登记仍可吸收渠内浓度」不同——液态肥无渠网，只有瓮邻施加这一条路）。
-- **完美判定（可选）**：模板可配 **`perfectMinFertilizer`** / **`perfectMaxFertilizer`**；与水分、微量元素组合时仍为 **AND**；未配置则完美判定不看施肥值。门槛宜低于微量元素（示范肥 `0.5/tick`，约 20～30 tick 邻瓮即可达标），避免为难玩家。
+- **施肥生长分（可选）**：模板可配 **`perfectMinFertilizer`** / **`perfectMaxFertilizer`**；闭区间内 2 分、可收获但未进窗 1 分；**未配置则该维不参与生长分**。
 
 ### 4b.1e 微量元素与施肥值分轨（强制）
 
@@ -394,7 +484,7 @@
 | **累计微量元素** | `traceAbsorbed` | §12 滋养来源水渠格的 **海藻精浓度**（文丘里 + 海藻精，§4b.1c / §15） | 埋地陶瓮、液态肥 |
 | **累计施肥值** | `fertilizerAbsorbed` | §2.2e 埋地陶瓮八邻 **液态肥** `fertilizerPerTick`（§4b.1d） | 渠内海藻精浓度、文丘里 |
 
-- 两字段**独立累加、独立展示**；成熟判定：**水分**为共性门槛；**微量元素** / **施肥值** 是否参与完美由模板 `perfectMinTrace` / `perfectMinFertilizer` 是否配置决定（**AND**）。花生示范可同时请求海藻精与液态肥（见 §4b.2 与作物表）。
+- 两字段**独立累加、独立展示**；**可收获**由水分枯/淹与 severe 绝收等硬门槛决定；**微量元素** / **施肥值** 是否参与生长分由模板是否配置 `perfectMinTrace` / `perfectMinFertilizer` 决定（未配置不参与）。花生示范可同时请求海藻精与液态肥（见 §4b.2 与作物表）。
 
 ### 4b.1d 施肥值（埋地陶瓮）
 
@@ -403,25 +493,39 @@
 - **每 tick 流程**：
   1. 遍历所有 **`buried_pot_jar`** 格，若罐内肥液未生效则跳过。
   2. 读取该肥液登记项的 **`agriculture_fertilizer_per_tick`**（demo：`fertilizerPerTick`）。
-  3. 对陶瓮格 **八邻接**每一格：若为 `land` 且存在**生长中**作物，则 `fertilizerAbsorbed += fertilizerPerTick`（展示 **1 位小数**）。**所有瓮每 tick 各执行一遍**；同株作物可被多瓮叠加。
+  3. 对陶瓮格 **八邻接**每一格：若为 `land` 且存在**生长中**作物，则 `fertilizerAbsorbed += fertilizerPerTick × 该地块 fertilizer_retention`（§2.2b；展示 **1 位小数**）。**所有瓮每 tick 各执行一遍**；同株作物可被多瓮叠加。
   4. **存量型**：本 tick 若步骤 3 至少命中一株作物，**该瓮**罐内 **`units -= 1`**；`units <= 0` 则清空该瓮肥液。
   5. **持续效果型**：不在此步扣道具；倒计时在步骤 7 与其它罐内效果一并递减。
 - **不作用于空耕地**：无作物邻格不累计；有作物才累计。
-- **与微量元素**：独立字段、独立来源；成熟判定若将来接入施肥区间，与水分/微量元素组合方式由作物模板单独配置（首版 demo 仅累计展示）。
+- **与微量元素**：独立字段、独立来源；生长分各维由作物模板与 §4b.3 统一结算。
 
-### 4b.2 花生
+### 4b.3 生长分与产量（收获量）
 
-- 种子：`花生种子`。
-- 作物：`花生`。
-- 生长周期：`100 tick`。
-- 生长周期内累计吸收水分滋养度。
-- 成熟结算：
-  - 累计水分 `< 100`：水分吸收不足，作物枯萎，无果实。
-  - 累计水分 `> 300`：作物被淹，无果实。
-  - 累计水分 `>= 100` 且 `<= 300`：普通成熟，正常结算果实。
-  - 累计水分 `> 150` 且 `< 250`：完美种植，产物数量 `x2`。
-- 普通成熟收获 `2-3` 个花生进入物品栏。
-- 完美种植在普通成熟数量基础上 `x2`。
+- **时机**：仅当作物已通过 **§4b 可收获硬门槛**（水分在成熟带内、未枯死、未 severe 绝收等）之后计算；**只决定收获数量**，不向玩家展示分数或「完美」档位名。
+- **单维得分**（参与则计入；未配置微量/肥维**不参与**）：
+
+| 维度 | 2 分 | 1 分 | 0 分 | 特殊 |
+|------|------|------|------|------|
+| **水分** | 闭区间 `[perfectMinWater, perfectMaxWater]` | 在 `[minWater, maxWater]` 内但未进高分窗 | （绝收，不进评分） | 必参与 |
+| **微量元素** | 配置窗内或排斥作物 `≤ trace_safe_max` | 可收获但未进窗 | 排斥作物超 safe 未绝收 | 未配 `perfectMinTrace` 且无 `trace_sensitivity` 不参与 |
+| **施肥值** | 闭区间 `[perfectMinFertilizer, perfectMaxFertilizer]`（缺上限仅看下限） | 可收获但未进窗 | — | 未配 `perfectMinFertilizer` 不参与 |
+| **土壤** | — | — | — | 偏好土 **+1**；不适土 **-1**；其余 **0**（`soil_scoring`） |
+| **轮作** | — | 跨 `group` 或豆科后种非豆科 **+2**（高山草甸土融合跨组 **+3**；黄绵土融合豆科后茬 **+3**） | 连作/同组/首开垦 **0** | 读 `上一轮作物` |
+
+- **产量倍数**：
+  - `正分 = Σ(各维 score > 0)`；`负分 = Σ(|score| where score < 0)`（当前仅不适土产生负分）。
+  - `yieldMultiplier = 1 + 0.25 × 正分 − min(0.25 × 负分, 0.50)`。
+  - `baseCount` 在 `harvestMin～harvestMax` 随机；`harvestCount = max(1, floor(baseCount × yieldMultiplier))`。
+- **后台**：可存档 `growthScorePositive` / `growthScoreNegative` / `yieldMultiplier` 供调试；UI 仅显示收获数量与「成熟」。
+- **数据**：`data/agriculture-crop-defs.json` 含 `growth_score_rules` 与各作物 `group`、`soil_scoring`、`nitrogen_fixing`。
+
+### 4b.2 花生（二档）
+
+- 种子：`花生种子`（二档经济作物；**非**全维示范田）。
+- 作物：`花生`；**豆科**（`nitrogen_fixing`），利于轮作后茬。
+- 生长周期：与同档一致（约 `98 tick`，由 `gen-agriculture-crop-defs.mjs` 生成）。
+- 生长分参与：**水分 + 微量（二档田园接入）+ 土 + 轮作**；**不**登记海藻精 / 液态肥请求（与番茄、甘蔗等同档口径）。
+- 成熟结算：与其它作物相同——先过水分枯/淹硬门槛，再按 **§4b.3** 计产量；基础收获 `2～4`。
 - 玩家左键点击已结算、可收获的作物时，弹出收获选项。
 - 点击收获后，地块作物被移除，地块恢复为无作物状态，并记录 `上一轮作物`。
 
@@ -605,6 +709,131 @@ x=0 x=1 x=2
 - 则它只占用水池 `2`。
 
 共享流经点即使被多个支流经过，也只按实际水量占用一次。
+
+---
+
+## 8.4 支流窃流（池升级特效）
+
+**定位**：在同一 tick、**不增加** `basePoolWater` 的前提下，把**牺牲支流**本 tick 已落在渠格上的清水总量减少，再把等量（首版无损耗）灌入**受益支流**的渠格；每格仍受 **`capacity` 硬上限**。
+
+### 8.4.1 玩家设置（存档）
+
+`agriculture_map.pool_theft`（池等级 ≥ 2 且升级解锁后可用）：
+
+| 字段 | 含义 |
+|------|------|
+| `enabled` | 是否启用 |
+| `victim_branch_index` | 牺牲支流编号（与 `branch.index` 一致，从 1 起） |
+| `gain_branch_index` | 受益支流编号 |
+
+**约束**：`victim_branch_index < gain_branch_index`（只从**分配顺序更靠前**的支流扣，补给更靠后的支流）；**不得**选主干道；两指数不同且对应支流本 tick 存在。
+
+### 8.4.2 扣水：整条支路总水量（比例缩）
+
+在 §8.1 清水分配**完成之后**（§15.0 步骤 **1b**）：
+
+1. 收集牺牲支流上所有渠格（`branchIndex === victim`，且非 `isTrunk`），求 **`W_victim = Σ water`**。
+2. `transfer = min(THEFT_TRANSFER_CAP, W_victim)`（`THEFT_TRANSFER_CAP` 由池等级查表，如 2～4）。
+3. 若 `W_victim > 0` 且 `transfer > 0`，对牺牲支流**每一格**（同上集合）：
+   - `water := round1(water × (W_victim - transfer) / W_victim)`  
+   即该支路**总水量减少 `transfer`**，各格按原比例同步缩小（不是从终点逐格抠）。
+
+不扣：池 `poolCurrent`、主干道渠格、其它支流、作物 `waterAbsorbed`；不搬 `seaweedConcentration`。
+
+### 8.4.3 加水：按 headroom 比例灌入受益支流
+
+1. 收集受益支流同类渠格，算 `headroom_i = capacity - water`，`H = Σ headroom`。
+2. 若 `H = 0`，本 tick 受益侧**实际灌入 `delivered = 0`**；`pool_level < 4` 时未灌入的 `transfer` **作废**；`pool_level >= 4` 时见 **§8.6**（溢流进蓄水池）。
+3. 若 `H > 0`：每格增加 `transfer × headroom_i / H`，落格 `round1`，且 **`water ≤ capacity`**；记本 tick 受益侧实际灌入总量为 **`delivered`**（实现按落格增量汇总，含舍入误差）。
+4. **`pool_level >= 4`**：`overflow = max(0, transfer - delivered)`，按 **§8.6** 计入 `pool_reservoir`（`delivered` 已含 `H < transfer` 时只灌满空余的情形）。
+
+### 8.4.4 与 §9、浓度的关系
+
+- §9 主干不足时，支流格上 `water` 可能为 0 → `W_victim = 0`，本 tick 窃流无效。
+- 牺牲支路缩 `W` 后 `C` 不变，可能出现 **C/W 升高**、更易爆发；窃流只挪清水。
+
+---
+
+## 8.5 蓄水池（池三级 · 配合天气）
+
+**定位**：不提高常态 `基础PoolWater = 200`。主游戏**游戏内一日**根据天气/事件给出当日池预算 `pool_budget_effective_day`；农业地图**每个全局 tick** 用同一数值，在清水分配前与蓄水池结算，得到本 tick 用于 §8～§11 的 **`pool_budget_for_allocation`**（仍常以 200 灌渠，旱时由蓄水池补差）。
+
+**解锁**：`pool_level >= 3`（配置见 `data/agriculture-pool-upgrades.json` → `reservoir`）。
+
+### 8.5.1 输入（主游戏 → 农业）
+
+| 字段 | 含义 |
+|------|------|
+| `pool_budget_effective_day` | 当日天气/事件后的池预算（无事件时 = 200）。**同一游戏日内所有农业 tick 相同**；跨日由天气系统更新。 |
+
+农业模块**不**自行 roll 天气；只读主游戏注入（或 demo 调试覆盖）。
+
+### 8.5.2 蓄水池存档
+
+`agriculture_map.pool_reservoir`：
+
+| 字段 | 含义 |
+|------|------|
+| `stored` | 当前蓄水量，`0 .. capacity_max` |
+| `capacity_max` | 上限，首版 **50000**（升级表可读） |
+
+常态基线 **`baseline_pool_water = 200`**（与 §2.1 一致）。
+
+### 8.5.3 每 tick 结算（步骤 0，早于 §8.1）
+
+记 `E = pool_budget_effective_day`，`B = baseline_pool_water`（200），`R = pool_reservoir.stored`，`Cap = capacity_max`。
+
+1. **涝（`E > B`）**  
+   - `surplus = E - B`  
+   - `R := min(Cap, R + surplus)`；若 `R + surplus > Cap`，超出部分**浪费**（不进渠、不回池面）。  
+   - `pool_budget_for_allocation = B`（本 tick 灌渠仍按 200，不因暴雨本 tick 变为 230）。
+
+2. **旱（`E < B`）**  
+   - `deficit = B - E`  
+   - `draw = min(deficit, R)`；`R := R - draw`  
+   - `pool_budget_for_allocation = E + draw`（最多补回 **B**；蓄水池空则低于 B）。
+
+3. **平（`E === B`）**  
+   - `pool_budget_for_allocation = B`；`R` 不变。
+
+本 tick 清水分配、§9 主干不足判定、池 `poolCurrent` 初始可分配量均以 **`pool_budget_for_allocation`** 为源头预算（实现可与 `state.basePoolWater` 本 tick 快照对齐，勿与升级表静态 `base_pool_water` 混名）。
+
+### 8.5.4 与其它规则
+
+- **§8.4 窃流**（步骤 1b）：仅挪支路渠格清水；**默认**不改动 `pool_reservoir.stored`。**例外**：`pool_level >= 4` 且本 tick 窃流产生 **§8.6 溢流** 时，在 1b 末尾回蓄。
+- **不抬永久 200**：天气只改当日 `E`；蓄水池为**跨 tick / 跨日**缓冲。
+- **Demo**：可无完整天气；侧栏下拉注入 `pool_budget_effective_day`（如晴 200 / 雨 230 / 旱 150）验证蓄放；金币升级 **1→2：100、2→3：200、3→4：350**（`tools/agriculture-irrigation-demo.html`，与主游戏材料表分离）。
+
+---
+
+## 8.6 窃流溢流回蓄（池四级）
+
+**定位**：与 **§8.5** 共用同一 `pool_reservoir`；不提高常态 200，不在本 tick 因溢流而额外灌渠。
+
+**解锁**：`pool_level >= 4`（`data/agriculture-pool-upgrades.json` → `theft_overflow_to_reservoir: true`）。须已具备 §8.5 蓄水池（四级配置保留 `reservoir.enabled`）。
+
+### 8.6.1 触发与计量
+
+在 **§8.4** 本 tick 已扣牺牲支路水量、并完成 **§8.4.3** 向受益支路灌入后：
+
+- `overflow = max(0, transfer - delivered)`  
+  - `transfer`：本 tick 计划从牺牲支路移出的水量（§8.4.2）。  
+  - `delivered`：受益支路渠格**实际增加**的水量之和（含 `round1` 汇总；`H = 0` 时为 0）。
+
+### 8.6.2 回蓄规则
+
+- 若 `overflow > 0`：`pool_reservoir.stored := min(capacity_max, stored + overflow)`。
+- 若 `stored + overflow > capacity_max`：超出 **capacity_max** 的部分**浪费**（与 §8.5.3 涝溢一致）。
+- **不进**本 tick `poolCurrent`、不直接加受益/牺牲支路其它格、不搬 `seaweedConcentration`。
+- 旱日步骤 0 可从 `stored` 扣减以补 `pool_budget_for_allocation`（§8.5.3），与天气入蓄共用同一库存。
+
+### 8.6.3 与等级梯关系
+
+| 等级 | 窃流 cap | 蓄水池 | 窃流未灌满时 |
+|------|----------|--------|----------------|
+| 2 | 2 | — | 作废 |
+| 3 | 2 | 天气涝/旱 | 作废 |
+| 4 | 4 | 天气涝/旱 | **溢流回蓄** |
 
 ---
 
@@ -831,7 +1060,7 @@ x=0 x=1 x=2
 - Demo 右侧信息栏提供测试用属性 `金钱`，初始值为 `50`，暂不接主游戏存档。
 - Demo 右侧信息栏提供测试用商店；第一版售卖 `花生种子`，售价 `10` 金钱 / 个，购买后进入临时背包。
 - 商店附带测试属性 **交易额**：每次在商店**购买**或向商店**售出**物品时，按当笔成交的金钱数额累计（购买扣款额、售出到账额均计入）；与建造/升级等其它金钱消耗无关。
-- **种子档位购买门槛**（`data/agriculture-seed-shop.json` → `tier_trade_unlock`）：**一档**无门槛；**二档**起需达到对应累计交易额——二档 `2000`，之后每升一档在前一档基础上 **+2000**（三档 `4000`、四档 `6000`、五档 `8000`）。未达标时 Demo **不列出**该档种子（列表底部一行提示下一档门槛与当前交易额）；冲积土/肥液等非种子商品不受此限。
+- **种子档位购买门槛**（`data/agriculture-seed-shop.json` → `tier_trade_unlock`）：**一档**无门槛；**二档**起需达到对应累计交易额——二档 `2000`，之后每升一档在前一档基础上 **+2000**（三档 `4000`、四档 `6000`、五档 `8000`）。未达标时 Demo **不列出**该档种子（列表底部一行提示下一档门槛与当前交易额）；客土/肥液等非种子商品不受此限。
 - Demo 临时背包开局为空；点击背包物品可出售。售出价由 `agriculture-seed-shop.json` 的 **`demo_sell_price`** 与种子 **`price`** 推导（与主游戏物品表无关）：**种子** `max(min, round(种子商店价 × seed_ratio))`，**对应作物** `max(min, round(种子商店价 × crop_ratio))`；默认 `seed_ratio=0.5`、`crop_ratio=0.8`、`min=3`（例：花生种子买 10 → 种子卖 5、花生卖 8）。作物 `item_id` 取种子行的 **`harvest_item_id`**。
 
 ---
@@ -851,7 +1080,9 @@ x=0 x=1 x=2
 
 每个全局 tick，农业地图相关结算**固定顺序**为：
 
-1. **清水分配**（§8～§11，含水池 / 主干 / 支流水量）；
+0. **蓄水池与当日池预算**（§8.5，`pool_level >= 3`：由 `pool_budget_effective_day` 与 `pool_reservoir` 得出 `pool_budget_for_allocation`；未解锁则 `pool_budget_for_allocation = 200` 或当日 `E` 若主游戏已统一注入）；
+1. **清水分配**（§8～§11，含水池 / 主干 / 支流水量；源头预算为步骤 0 的 `pool_budget_for_allocation`）；
+1b. **支流窃流**（§8.4～§8.6：牺牲支路比例缩 → 受益支路按 headroom 灌入；`pool_level >= 4` 时未灌满的 `overflow` 记入 `pool_reservoir`）；
 2. **海藻精维持 / 注入**（§15.1～§15.4，所有生效中的施肥器）；
 3. **水藻爆发判定**（§4.3，逐格更新有水水渠 `algae_bloom`）；
 4. **作物吸收水分**（§4.2）；
@@ -978,4 +1209,54 @@ x=0 x=1 x=2
 - 施肥器等级与浓度范围见 §2.2d 表。
 - §4.3 常量表与 `algae_bloom` 地图样式：农业实现 + demo 必须；**不要求**玩家向提示/日志。
 - 农业 UI **不要求**调试层展示请求标记 / 注入方向 / 逐格浓度（策划对账用日志可选）。
+
+---
+
+## 16. 本体接入：库存与建造（已定案）
+
+本节单独阅读即可把握本体移植的 tick 分工、库存扣物、入口与首版范围；规则细节仍以 §1～§15 与下列数据表为准：
+
+- **`data/agriculture-crop-defs.json`**：作物模板、生长分、收获产出
+- **`data/agriculture-soils.json`**：土壤锁值与土性融合
+- **`data/agriculture-build-costs.json`**（`schema_version` 2）、**`data/agriculture-item-params.json`**
+
+§2.2d～§2.2f 等小节中残留的 **Demo 金钱 / 临时背包 / 商店** 表述**不适用于本体**；本体建造与升级以 **§16.5** 材料表为准。
+
+### 16.1 入口、地图与首版范围
+
+- **单图 `11×11`**（`x,y = 0..10`，水池 `(0,0)`，默认盐碱土等见 §1）；**不以**旧索引或 demo 中的 33×33 为准。
+- **入口**：仅藏身处农业 NPC；玩家**邻格点格** `interactNpc` 打开农业面板（新内容走 NPC 管线，直开面板仅作旧内容兼容）。
+- **首版全量（一次交付）**：种植 + 收获 + 灌溉 + 文丘里 / 埋瓮 / 超融合 + 客土 + 耕地建造物；**不分**「无灌溉先试玩」阶段。
+
+### 16.2 全局 tick 与工程进度（分工）
+
+- **作物生长（全局）**：玩家解锁农业后，**每个 world tick** 须执行 **1 次** `runAgricultureMapTick`（任意当前地图、**面板开闭无关**）；地图内结算顺序见 **§15.0**。
+- **工程（仅开面板）**：挖渠、拆渠、开垦、文丘里 / 埋瓮 / 超融合 / 耕地建造物等**工程 task 的 tick 推进**，仅在 **`agriculturePanelOpen === true`** 时结算；**关面板冻结工程进度**，作物仍随全局 tick 生长。
+- **面板内耗时操作**：须调用与制肥一致的统一 **`advanceTick(n)`** 推进 world tick；**禁止**农业私有时钟。
+
+### 16.3 库存与扣物
+
+- **无独立农业经济**：不实现 Demo 的金钱、商店、交易额；种子与投入品仅来自主游戏物品链。
+- **库存范围**：扫描并扣减 **口袋 / 背心 / 背包 / 载具**（`inventory_vehicle` 在已绑定载具时）及 **`hideout_warehouse`**（藏身处账号仓库，见 [29-hideout-warehouse.md](29-hideout-warehouse.md)）。**玩家可选「优先扣仓」**（`prefer_deduct_warehouse`）；未勾选时默认先扫身上四容器。扣物仍走 **`AgriculturePlayerItems`** 统一枚举，农业业务逻辑不改。
+- **扣物唯一入口**：`AgriculturePlayerItems` + `AgricultureConfig`（`js/agriculture-player-items.js`、`js/agriculture-config.js`）；**禁止**农业 UI 自写扣物逻辑。
+- **种子列表**：`items.json` 中 `sub_category === 'seed'`（或等价 tags）；农业 UI 只列出上述容器内 `count > 0` 的种子，播种扣 1。
+- **客土**：制造产物，物品带 **`grants_soil_id`**（缺省时见 `data/agriculture-item-params.json` → `soil_amend_fallback`）；对空茬耕地使用并扣 1 件。
+- **海藻精 / 液态肥**：同上容器；注入资格与数值读物品模板，缺省读 `agriculture-item-params.json` → `injectables`。埋地陶瓮 **`agriculture_fertilizer_per_tick`** 按沤肥三档产物区分（示例 id：`fertilizer_basic_low` / `fertilizer_basic` / `fertilizer_compost_plus`）。
+
+### 16.4 收获、累计条与熟练度
+
+- **`traceAbsorbed` / `fertilizerAbsorbed` 分轨**：渠内微量元素与埋瓮施肥值各自累计（§4b.1c / §4b.1d），**禁止**混写或互相抵扣。
+- **收获熟练度**：实际**入背包成功**的 **`harvestCount` 份** → `life_planting` 熟练度 **+harvestCount**；调用 `incrementSkillMoveUsage('life_planting', 'harvest', n)` 后须 **`recalcCharacterStats()`**（背包满导致未入袋的份数不计）。
+
+### 16.5 建造与升级
+
+- **不扣金钱**；开工扣 **`data/agriculture-build-costs.json`** 的 `inputs`，工程消耗 **`task_ticks` × `stamina_per_tick`**（默认 10 tick × 5 体力）；文丘里升级同理（材料 + tick）。取消工程且条目 `refund_inputs_on_cancel` 时退回已扣材料。
+- **建造材料（已定案，`schema_version` 3）**：仅用 `items.json` 已有 id——竹木：`wood_bamboo_green` / `wood_plank_soft` / `wood_shrub_dry`；陶：`ore_clay_raw`；绑扎：`supply_rope_hemp_short`；堆肥基质：`compost_matrix_grade_low`（开垦/填渠）/ **`compost_matrix_grade_high`**（超融合）；**挖渠**：青竹杆；**开垦**：枯灌木+散碎腐熟基质；**升级水渠**：陶土抹渠壁+竹加固；**文丘里**：陶+竹+轻木板+绳；**埋地陶瓮**：陶土×4 + **`tool_pickling_jar_cooking`（腌缸广口密封，不扣灶台饭锅/酸奶发酵坛）**；**超融合**：木板+竹+陶+绳+细腐熟基质；文丘里 2→3 级 **`ore_iron_raw`**×1。拆除不耗材。完整条目见 **`data/agriculture-build-costs.json`**。
+
+### 16.6 后续 agent 与运行时模块
+
+- **物品链待 A6**：见 **`docs/design/agriculture-a6-items-checklist.md`**（`seeds_farming.csv` 并入构建；沤肥三档肥、海藻精、客土 `grants_soil_id` 进物品表）。
+- **运行时模块（勿重写契约层）**：`js/agriculture-config.js`、`js/agriculture-player-items.js`；`loadConfig` 已 fetch `agriculture-build-costs.json`、`agriculture-item-params.json` 并注入上述模块。
+- **分 agent 实施**：复制用 Prompt 见 **`docs/design/agriculture-port-agent-prompts.md`**（含全局硬约束全文）。
+- **Standalone 试玩页**：规则与公式以 **`js/agriculture-map.js`** 为单一真相源；改规则先改该模块，再执行 `npm run build:agriculture-standalone`（或等价构建脚本）生成 HTML；**禁止**长期维护 demo 与本体两套并行公式。
 

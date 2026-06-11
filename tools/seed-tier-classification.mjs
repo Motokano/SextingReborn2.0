@@ -34,7 +34,7 @@ const TIER_META = {
   seed_garlic: { tier: 2, price: 8, grow_note: '蒜瓣下种' },
   seed_scallion: { tier: 2, price: 7, grow_note: '长管葱，常规' },
   seed_garrofo: { tier: 2, price: 9, grow_note: '大芸豆，煮汤用' },
-  seed_peanut: { tier: 2, price: 10, grow_note: '地下结荚，基准作物' },
+  seed_peanut: { tier: 2, price: 10, grow_note: '地下结荚，二档豆科' },
   seed_sugarcane: { tier: 2, price: 8, grow_note: '蔗节埋条，耗地' },
 
   seed_rice_bomba: { tier: 3, price: 10, grow_note: '短粒稻，需精细水肥' },

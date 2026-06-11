@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>藏身处账号仓库 UI Mockup</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@700;900&display=swap');
+
+        :root {
+            --color-mask: rgba(0,0,0,0.92);
+            --color-panel-bg: #2d2d28;
+            --color-deep-bg: #1a1512;
+            --color-card-bg: #252520;
+            --color-border: #4d4d45;
+            --color-gold: #d3a060;
+            --color-orange: #ff8c00;
+            --color-text-main: #e0d7c6;
+            --color-text-sub: #8e8e8e;
+            --color-text-weak: #6b6560;
+            --color-text-desc: #bdb5ab;
+            --color-hover-border: #666666;
+            --color-close-hover: rgba(185,28,28,0.18);
+            --color-frost: #9ad0e8;
+        }
+
+        body {
+            background-color: #000;
+            background-image: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0IiBoZWlnaHQ9IjQiPgo8cmVjdCB3aWR0aD0iNCIgaGVpZ2h0PSI0IiBmaWxsPSIjMTExIj48L3JlY3Q+CjxyZWN0IHdpZHRoPSIxIiBoZWlnaHQ9IjEiIGZpbGw9IiMyMjIiPjwvcmVjdD4KPC9zdmc+');
+            font-family: 'Microsoft YaHei', 'PingFang SC', sans-serif;
+            color: var(--color-text-main);
+            margin: 0;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            user-select: none;
+        }
+
+        .serif-title { font-family: 'Noto Serif SC', serif; }
+
+        /* 全屏遮罩与 Modal 容器 */
+        .modal-overlay {
+            position: fixed; inset: 0;
+            background: var(--color-mask);
+            display: flex; justify-content: center; align-items: center;
+            z-index: 10;
+        }
+        
+        .modal-container {
+            width: min(1280px, 98vw);
+            height: min(860px, 92vh);
+            background-color: var(--color-panel-bg);
+            background-image: radial-gradient(circle at 50% 0%, rgba(211,160,96,0.08) 0%, transparent 60%);
+            border: 2px solid var(--color-border);
+            border-radius: 8px;
+            box-shadow: inset 0 0 120px rgba(0,0,0,0.36), 0 20px 50px rgba(0,0,0,0.8);
+            display: flex; flex-direction: column;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* 统一边框和滚动条 */
+        .b-main { border: 2px solid var(--color-border); }
+        .b-b-main { border-bottom: 2px solid var(--color-border); }
+        .b-t-main { border-top: 2px solid var(--color-border); }
+        .b-r-main { border-right: 2px solid var(--color-border); }
+        .b-l-main { border-left: 2px solid var(--color-border); }
+        
+        .radius-main { border-radius: 8px; }
+
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: var(--color-deep-bg); }
+        ::-webkit-scrollbar-thumb { background: linear-gradient(var(--color-gold), #8f6840); border-radius: 3px; }
+
+        /* 左侧 Tab */
+        .combat-cat-btn {
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            height: 70px; border-bottom: 2px solid var(--color-border);
+            color: var(--color-text-sub); font-weight: 700; cursor: pointer;
+            transition: all 0.2s;
+        }
+        .combat-cat-btn:hover { background: rgba(255,255,255,0.05); }
+        .combat-cat-btn.active {
+            background-color: var(--color-gold);
+            color: var(--color-deep-bg);
+            border-bottom: 2px solid var(--color-gold);
+        }
+
+        /* 仓格 (Slot) */
+        .slot-cell {
+            background: var(--color-card-bg);
+            border: 2px solid var(--color-border);
+            border-radius: 8px;
+            aspect-ratio: 1;
+            position: relative;
+            cursor: pointer;
+            display: flex; justify-content: center; align-items: center;
+            transition: all 0.15s ease;
+        }
+        .slot-cell:hover:not(.selected) { border-color: var(--color-hover-border); }
+        .slot-cell.selected {
+            border-color: var(--color-orange);
+            box-shadow: inset 0 0 10px rgba(255,140,0,0.18), 0 0 8px rgba(255,140,0,0.12);
+        }
+        .slot-cell.locked { opacity: 0.6; }
+        
+        .slot-badge-star { position: absolute; top: 4px; right: 4px; color: var(--color-gold); font-size: 10px; line-height: 1;}
+        .slot-badge-rot { position: absolute; bottom: 4px; left: 4px; color: var(--color-orange); font-size: 10px; font-weight: bold;}
+        .slot-badge-frost { position: absolute; bottom: 4px; left: 4px; color: var(--color-frost); font-size: 10px;}
+        .slot-badge-lock { position: absolute; top: 4px; left: 4px; color: var(--color-text-sub); font-size: 10px;}
+        .slot-count { position: absolute; bottom: 4px; right: 4px; font-size: 11px; font-weight: bold; color: var(--color-text-main);}
+
+        /* 按钮 */
+        .btn-primary {
+            background: transparent; border: 2px solid var(--color-gold); color: var(--color-gold);
+            padding: 6px 16px; border-radius: 4px; font-weight: bold; font-size: 14px; cursor: pointer;
+            transition: all 0.2s;
+        }
+        .btn-primary:hover { background: rgba(211,160,96,0.1); }
+        .btn-secondary {
+            background: var(--color-card-bg); border: 2px solid var(--color-border); color: var(--color-text-main);
+            padding: 4px 12px; border-radius: 4px; font-size: 13px; cursor: pointer;
+        }
+        .btn-secondary:hover { border-color: var(--color-hover-border); }
+        .btn-disabled {
+            border-color: var(--color-border) !important; color: var(--color-text-weak) !important;
+            cursor: not-allowed; background: transparent !important;
+        }
+
+        /* 模块化小标题 */
+        .combat-hub-title {
+            font-size: 11px; font-weight: 900; color: var(--color-text-sub);
+            border-left: 3px solid var(--color-gold); padding-left: 8px;
+            letter-spacing: 1px; margin-bottom: 8px; text-transform: uppercase;
+        }
+
+        /* 进度条 */
+        .progress-track { background: var(--color-deep-bg); border: 2px solid var(--color-border); height: 12px; border-radius: 6px; overflow: hidden; }
+        .progress-fill { background: var(--color-gold); height: 100%; width: 40%; }
+
+        /* 工具切换面板 (仅作演示用) */
+        .demo-tools { position: fixed; top: 10px; left: 10px; z-index: 100; display: flex; gap: 8px; background: rgba(0,0,0,0.8); padding: 10px; border: 1px solid var(--color-border); border-radius: 8px;}
+        .demo-tools button { background: #333; color: white; border: 1px solid #555; padding: 4px 8px; cursor: pointer; border-radius: 4px; font-size: 12px; }
+        .demo-tools button:hover { background: var(--color-gold); color: #000; }
+    </style>
+</head>
+<body>
+
+    <!-- 演示用控制器 -->
+    <div class="demo-tools">
+        <span style="color:#8e8e8e; font-size:12px; line-height: 24px;">视图切换：</span>
+        <button onclick="switchView('default')">藏身处(默认)</button>
+        <button onclick="switchView('outpost')">远驿(地牢态)</button>
+        <button onclick="switchView('frost')">冷藏开启态</button>
+        <button onclick="switchView('upgrade')">打开扩建面板</button>
+    </div>
+
+    <!-- 弹窗容器 -->
+    <div class="modal-overlay">
+        <div class="modal-container">
+            
+            <!-- Header -->
+            <header class="h-[52px] flex items-center justify-between px-4 b-b-main" style="background-color: var(--color-deep-bg);">
+                <div class="flex items-center gap-4">
+                    <!-- 标题装饰线 -->
+                    <div class="w-[3px] h-[24px]" style="background: linear-gradient(to bottom, var(--color-orange), var(--color-gold));"></div>
+                    <h1 class="text-[18px] serif-title font-bold tracking-wide">藏身处仓库</h1>
+                    
+                    <!-- 动态状态角标 -->
+                    <div id="header-badge-outpost" class="hidden px-2 py-0.5 rounded text-[11px] font-bold" style="border: 1px solid var(--color-orange); color: var(--color-orange); background: rgba(255,140,0,0.1);">
+                        远驿 · 仅可存入
+                    </div>
+                    <div id="header-badge-frost" class="hidden px-2 py-0.5 rounded text-[11px] font-bold flex items-center gap-1" style="border: 1px solid var(--color-frost); color: var(--color-frost); background: rgba(154,208,232,0.1);">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M2 12h20M4.93 4.93l14.14 14.14M4.93 19.07L19.07 4.93M9 5l3-3 3 3M5 9l-3 3 3 3M15 19l-3 3-3-3M19 15l3-3-3-3"/></svg>
+                        冷藏中
+                    </div>
+                </div>
+
+                <div class="flex items-center gap-4">
+                    <!-- 容量指示 -->
+                    <div class="text-[13px]" style="color: var(--color-text-sub);">
+                        已用 <span id="capacity-num" style="color: var(--color-text-main); font-weight: bold;">73</span> / 100 格
+                    </div>
+                    
+                    <!-- 操作区 -->
+                    <div class="flex items-center gap-2 b-l-main pl-4 ml-2">
+                        <button class="btn-secondary" title="优先级设置/合并同类项">⚙</button>
+                        <button class="btn-secondary">一键理仓</button>
+                        <button class="btn-primary" onclick="switchView('upgrade')">扩建</button>
+                        <button class="w-[32px] h-[32px] flex items-center justify-center rounded transition-colors" style="color: var(--color-text-sub);" onmouseover="this.style.background='var(--color-close-hover)'; this.style.color='white'" onmouseout="this.style.background='transparent'; this.style.color='var(--color-text-sub)'">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                        </button>
+                    </div>
+                </div>
+            </header>
+
+            <!-- 核心三栏区域 -->
+            <div class="flex flex-1 overflow-hidden relative">
+                
+                <!-- 左轨 (Tabs) -->
+                <div class="w-[80px] flex-shrink-0 b-r-main flex flex-col" style="background-color: var(--color-card-bg);">
+                    <div class="combat-cat-btn active">全部</div>
+                    <div class="combat-cat-btn">材料</div>
+                    <div class="combat-cat-btn">装备</div>
+                    <div class="combat-cat-btn text-[12px]">已锁定</div>
+                    <div class="combat-cat-btn text-[12px]">星标 ★</div>
+                </div>
+
+                <!-- 中列 (网格) -->
+                <div class="flex-1 flex flex-col p-4 overflow-hidden relative">
+                    <!-- 虚拟滚动说明 -->
+                    <div class="flex justify-between items-end mb-2">
+                        <div class="combat-hub-title !mb-0">仓储区 A1</div>
+                        <div class="text-[11px] tracking-wider" style="color: var(--color-text-sub);">第 1 / 7 页 · 每页 100 格</div>
+                    </div>
+                    
+                    <!-- 网格本体 -->
+                    <div class="grid grid-cols-10 gap-2 overflow-y-auto pr-2 pb-2 content-start flex-1">
+                        <!-- 选中状态的物品 -->
+                        <div class="slot-cell selected">
+                            <div class="text-[12px] font-bold text-center leading-tight">高密度<br>合金</div>
+                            <div class="slot-count">×45</div>
+                            <div class="slot-badge-star">★</div>
+                        </div>
+                        
+                        <!-- 锁定状态的装备 (单体) -->
+                        <div class="slot-cell locked">
+                            <div class="slot-badge-lock">🔒</div>
+                            <div class="text-[12px] text-center" style="color: var(--color-text-sub);">战术<br>砍刀</div>
+                        </div>
+
+                        <!-- 易腐物品 (正常态) -->
+                        <div class="slot-cell item-perishable">
+                            <div class="text-[12px] text-center">生肉<br>块</div>
+                            <div class="slot-count">×12</div>
+                            <div class="slot-badge-rot badge-text">易腐</div>
+                        </div>
+
+                        <!-- 普通材料堆叠 -->
+                        <div class="slot-cell"><div class="text-[12px] text-center">粗布</div><div class="slot-count">×99</div></div>
+                        <div class="slot-cell"><div class="text-[12px] text-center">废铁</div><div class="slot-count">×80</div></div>
+                        <div class="slot-cell"><div class="text-[12px] text-center">螺母</div><div class="slot-count">×120</div></div>
+                        
+                        <!-- 空格 (渲染部分占位) -->
+                        <script>
+                            for(let i=0; i<44; i++) {
+                                document.write('<div class="slot-cell"><span class="italic" style="color: var(--color-text-weak); font-size: 11px;">空</span></div>');
+                            }
+                        </script>
+                    </div>
+
+                    <!-- 分页器 (模拟 .combat-pager) -->
+                    <div class="h-[32px] mt-2 flex justify-center items-center gap-2 b-t-main pt-2">
+                        <button class="btn-secondary !px-2 !py-1 text-[12px] btn-disabled">◀</button>
+                        <span class="text-[12px] font-bold" style="color: var(--color-text-main);">1</span>
+                        <span class="text-[12px]" style="color: var(--color-text-weak);">/</span>
+                        <span class="text-[12px]" style="color: var(--color-text-sub);">7</span>
+                        <button class="btn-secondary !px-2 !py-1 text-[12px]">▶</button>
+                    </div>
+                </div>
+
+                <!-- 右列 (详情) -->
+                <div class="w-[300px] flex-shrink-0 b-l-main p-4 flex flex-col overflow-y-auto" style="background-color: var(--color-deep-bg);">
+                    <!-- 物品名称与基础信息 -->
+                    <div class="flex justify-between items-start mb-4">
+                        <div>
+                            <h2 class="text-[20px] font-bold serif-title leading-none mb-1">高密度合金</h2>
+                            <div class="text-[11px]" style="color: var(--color-text-sub);">基础材料 · id: mat_alloy_h</div>
+                        </div>
+                        <div class="w-[4px] h-[24px]" style="background-color: var(--color-gold);"></div>
+                    </div>
+
+                    <!-- 属性模块 -->
+                    <div class="b-main radius-main p-3 mb-4" style="background: rgba(0,0,0,0.12);">
+                        <div class="combat-hub-title">物品规格</div>
+                        <div class="flex justify-between text-[13px] mb-1">
+                            <span style="color: var(--color-text-sub);">单格堆叠上限</span>
+                            <span class="font-bold">99</span>
+                        </div>
+                        <div class="flex justify-between text-[13px] mb-1">
+                            <span style="color: var(--color-text-sub);">当前格总重</span>
+                            <span>22.5 kg</span>
+                        </div>
+                        <div class="flex justify-between text-[13px]">
+                            <span style="color: var(--color-text-sub);">来源</span>
+                            <span>回收/精炼</span>
+                        </div>
+                    </div>
+
+                    <!-- 描述模块 -->
+                    <div class="mb-6 flex-1">
+                        <div class="combat-hub-title">描述说明</div>
+                        <p class="text-[13px] leading-relaxed" style="color: var(--color-text-desc);">
+                            经过高温熔炼与锻打的致密金属块。是升级藏身处高级设施（如 3 级发电机、防爆门）的核心建材。重量极大，建议存放于仓库中，通过工料桥接功能直接消耗。
+                        </p>
+                    </div>
+
+                    <!-- 操作区 -->
+                    <div class="flex flex-col gap-2 mt-auto">
+                        <div class="flex gap-2">
+                            <button class="btn-secondary flex-1">设为星标 ★</button>
+                            <button class="btn-secondary flex-1">封签锁定 🔒</button>
+                        </div>
+                        <button class="btn-primary w-full py-2 text-[16px] btn-action-withdraw">取出至背包 (45)</button>
+                        <button class="btn-secondary w-full py-2 btn-action-withdraw">仅取出 1 个</button>
+                        <div id="withdraw-hint" class="text-center text-[11px] mt-1 hidden" style="color: var(--color-orange);">地牢远驿模式下禁止取出</div>
+                    </div>
+                </div>
+
+                <!-- 扩建升级面板 (子层 Modal，默认隐藏) -->
+                <div id="upgrade-panel" class="absolute inset-0 z-20 flex hidden" style="background-color: var(--color-panel-bg);">
+                    <!-- 左侧：节点列表 -->
+                    <div class="w-[400px] b-r-main flex flex-col" style="background-color: var(--color-deep-bg);">
+                        <div class="h-[52px] flex items-center px-4 b-b-main">
+                            <div class="combat-hub-title !mb-0 text-[14px]">藏身处扩建工程</div>
+                        </div>
+                        <div class="flex-1 overflow-y-auto p-4 flex flex-col gap-3">
+                            <!-- 已完成节点 -->
+                            <div class="b-main radius-main p-3 cursor-pointer opacity-60 relative" style="background-color: var(--color-card-bg);">
+                                <div class="absolute top-2 right-2 text-[10px] b-main px-1" style="color:var(--color-text-sub)">已部署</div>
+                                <div class="text-[10px]" style="color: var(--color-text-sub);">U-A1 · 基础工程</div>
+                                <div class="font-bold text-[15px] mb-1">仓储区清障 I</div>
+                                <div class="text-[12px] text-[var(--color-text-desc)]">容量 100 格 → 200 格</div>
+                            </div>
+                            
+                            <!-- 可建节点 (选中态) -->
+                            <div class="b-main radius-main p-3 cursor-pointer relative" style="background-color: var(--color-card-bg); border-color: var(--color-orange); box-shadow: inset 0 0 10px rgba(255,140,0,0.1);">
+                                <div class="absolute top-2 right-2 text-[10px] px-1 font-bold" style="border: 1px solid var(--color-gold); color:var(--color-gold);">S 级协议</div>
+                                <div class="text-[10px]" style="color: var(--color-text-sub);">U-G3 · 特种设施</div>
+                                <div class="font-bold text-[15px] mb-1" style="color: var(--color-orange);">低温休眠舱 (冷藏)</div>
+                                <div class="text-[12px] text-[var(--color-text-desc)]">冻结全仓易腐物品的时间流逝。</div>
+                            </div>
+
+                            <!-- 材料不足节点 -->
+                            <div class="b-main radius-main p-3 cursor-pointer relative" style="background-color: var(--color-card-bg);">
+                                <div class="absolute top-2 right-2 text-[10px] px-1" style="color:rgba(185,28,28,0.8); border: 1px solid rgba(185,28,28,0.5);">材料不足</div>
+                                <div class="text-[10px]" style="color: var(--color-text-sub);">U-C1 · 交互协议</div>
+                                <div class="font-bold text-[15px] mb-1">顺手存取模块</div>
+                                <div class="text-[12px] text-[var(--color-text-desc)]">解锁双击物品快速转移功能。</div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- 右侧：升级确认详情 -->
+                    <div class="flex-1 p-6 flex flex-col relative">
+                        <button class="absolute top-4 right-4 text-[24px] leading-none" style="color: var(--color-text-sub);" onclick="switchView('default')">×</button>
+                        
+                        <div class="combat-hub-title text-[14px] mb-4">工程蓝图鉴定</div>
+                        <h2 class="text-[28px] font-bold serif-title mb-2">低温休眠舱改装</h2>
+                        <p class="text-[14px] mb-8" style="color: var(--color-text-desc);">接入藏身处主供电网，将特定网格区域的环境温度降至绝对零度边缘。彻底停止所有带有「易腐」标签物品的腐烂计时器。</p>
+
+                        <div class="combat-hub-title">工程要求</div>
+                        <div class="grid grid-cols-2 gap-4 mb-8">
+                            <div class="b-main radius-main p-3 flex justify-between items-center" style="background: rgba(0,0,0,0.2);">
+                                <span class="text-[13px]">大功率压缩机</span>
+                                <span class="font-bold text-[13px]" style="color: var(--color-gold);">1 / 1</span>
+                            </div>
+                            <div class="b-main radius-main p-3 flex justify-between items-center" style="background: rgba(0,0,0,0.2);">
+                                <span class="text-[13px]">高密度合金</span>
+                                <span class="font-bold text-[13px]" style="color: var(--color-gold);">45 / 20</span>
+                            </div>
+                            <div class="b-main radius-main p-3 flex justify-between items-center" style="background: rgba(0,0,0,0.2);">
+                                <span class="text-[13px]">液氮罐</span>
+                                <span class="font-bold text-[13px]" style="color: var(--color-gold);">3 / 2</span>
+                            </div>
+                            <div class="b-main radius-main p-3 flex justify-between items-center" style="background: rgba(0,0,0,0.2);">
+                                <span class="text-[13px] flex items-center gap-1">⏱ 工程耗时</span>
+                                <span class="font-bold text-[13px]">30 Tick (5体力/Tick)</span>
+                            </div>
+                        </div>
+
+                        <div class="mt-auto flex gap-4 items-center">
+                            <div class="flex-1">
+                                <div class="text-[11px] mb-1" style="color: var(--color-text-sub);">扣料优先级：已开启「优先从仓库扣除」</div>
+                                <button class="btn-primary w-full py-3 text-[16px] tracking-widest">启动扩建工程</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- 底栏：人物侧栏 (水平平铺) -->
+            <div class="h-[120px] b-t-main p-3 flex gap-4 overflow-x-auto" style="background-color: var(--color-deep-bg);">
+                <!-- 容器组件模板 -->
+                <div class="flex flex-col min-w-[200px]">
+                    <div class="flex justify-between items-center mb-1">
+                        <span class="text-[12px] font-bold" style="color: var(--color-text-sub);">口袋 (Pockets)</span>
+                        <button class="text-[10px] b-main px-1 rounded hover:border-[#d3a060] hover:text-[#d3a060] transition-colors" style="color: var(--color-text-weak);">整包存入 ↑</button>
+                    </div>
+                    <div class="flex gap-1">
+                        <div class="w-[40px] h-[40px] b-main radius-main flex items-center justify-center text-[10px] text-center bg-[#252520]">绷带</div>
+                        <div class="w-[40px] h-[40px] b-main radius-main flex items-center justify-center text-[10px] text-center bg-[#252520]">止痛药</div>
+                        <div class="w-[40px] h-[40px] b-main radius-main flex items-center justify-center text-[10px] text-center bg-[#252520]"><span style="color:var(--color-text-weak)">空</span></div>
+                        <div class="w-[40px] h-[40px] b-main radius-main flex items-center justify-center text-[10px] text-center bg-[#252520]"><span style="color:var(--color-text-weak)">空</span></div>
+                    </div>
+                </div>
+
+                <div class="w-[2px] bg-[#4d4d45] h-full my-auto opacity-50"></div>
+
+                <div class="flex flex-col min-w-[240px]">
+                    <div class="flex justify-between items-center mb-1">
+                        <span class="text-[12px] font-bold" style="color: var(--color-text-sub);">战术背心 (Vest)</span>
+                        <button class="text-[10px] b-main px-1 rounded hover:border-[#d3a060] hover:text-[#d3a060] transition-colors" style="color: var(--color-text-weak);">整包存入 ↑</button>
+                    </div>
+                    <div class="flex gap-1 flex-wrap h-[84px] overflow-hidden">
+                         <!-- 生成几个小格子 -->
+                         <script>
+                            for(let i=0; i<10; i++) document.write('<div class="w-[40px] h-[40px] b-main radius-main flex items-center justify-center text-[10px] bg-[#252520]"><span style="color:var(--color-text-weak)">空</span></div>');
+                        </script>
+                    </div>
+                </div>
+
+                <div class="w-[2px] bg-[#4d4d45] h-full my-auto opacity-50"></div>
+
+                <div class="flex flex-col flex-1">
+                    <div class="flex justify-between items-center mb-1">
+                        <span class="text-[12px] font-bold" style="color: var(--color-text-sub);">拾荒背包 (Backpack)</span>
+                        <button class="text-[10px] b-main px-1 rounded hover:border-[#d3a060] hover:text-[#d3a060] transition-colors" style="color: var(--color-text-weak);">整包存入 ↑</button>
+                    </div>
+                    <div class="flex gap-1 flex-wrap h-[84px] overflow-hidden">
+                        <div class="w-[40px] h-[40px] b-main radius-main flex items-center justify-center text-[10px] text-center bg-[#252520]">废电路</div>
+                        <div class="w-[40px] h-[40px] b-main radius-main flex items-center justify-center text-[10px] text-center bg-[#252520]">铜线</div>
+                        <script>
+                            for(let i=0; i<14; i++) document.write('<div class="w-[40px] h-[40px] b-main radius-main flex items-center justify-center text-[10px] bg-[#252520]"><span style="color:var(--color-text-weak)">空</span></div>');
+                        </script>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Footer (全局 Hint) -->
+            <footer class="h-[32px] flex items-center justify-between px-4 b-t-main text-[10px] tracking-wide" style="background-color: var(--color-deep-bg); color: var(--color-text-weak);">
+                <div>SYSTEM HINT // 拖放或双击物品可快速转移。仓库内存取不消耗 TICK 时间。</div>
+                <div style="color: var(--color-text-sub);">[ 账号仓物品不受死亡惩罚影响，永久保留 ]</div>
+            </footer>
+
+        </div>
+    </div>
+
+    <!-- 交互脚本：控制视图切换 -->
+    <script>
+        function switchView(state) {
+            const btnWithdraw = document.querySelectorAll('.btn-action-withdraw');
+            const hintWithdraw = document.getElementById('withdraw-hint');
+            const badgeOutpost = document.getElementById('header-badge-outpost');
+            const badgeFrost = document.getElementById('header-badge-frost');
+            const perishableBadges = document.querySelectorAll('.item-perishable .badge-text');
+            const upgradePanel = document.getElementById('upgrade-panel');
+
+            // Reset
+            upgradePanel.classList.add('hidden');
+            badgeOutpost.classList.add('hidden');
+            badgeFrost.classList.add('hidden');
+            btnWithdraw.forEach(b => {
+                b.classList.remove('btn-disabled');
+                b.disabled = false;
+            });
+            hintWithdraw.classList.add('hidden');
+            perishableBadges.forEach(b => {
+                b.innerText = '易腐';
+                b.style.color = 'var(--color-orange)';
+            });
+
+            // Apply State
+            if (state === 'outpost') {
+                badgeOutpost.classList.remove('hidden');
+                badgeOutpost.classList.add('flex');
+                btnWithdraw.forEach(b => {
+                    b.classList.add('btn-disabled');
+                    b.disabled = true;
+                });
+                hintWithdraw.classList.remove('hidden');
+            } else if (state === 'frost') {
+                badgeFrost.classList.remove('hidden');
+                perishableBadges.forEach(b => {
+                    b.innerText = '已冻结';
+                    b.style.color = 'var(--color-frost)';
+                });
+            } else if (state === 'upgrade') {
+                upgradePanel.classList.remove('hidden');
+            }
+        }
+    </script>
+</body>
+</html>

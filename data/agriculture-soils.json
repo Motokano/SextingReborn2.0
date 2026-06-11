@@ -1,0 +1,277 @@
+{
+
+  "schema_version": 4,
+
+  "design_note": "默认仅三项锁值生效；fusion_gated 内特性需场上存在超融合（§2.2g，与文丘里 A 面同一全局条件）才激活。吸收公式见 docs/design/28-agriculture-irrigation.md §2.2b。",
+
+  "soils": {
+
+    "soil_yellow_cotton": {
+
+      "soil_id": "soil_yellow_cotton",
+
+      "display_name": "黄绵土",
+
+      "region": "黄土高原（陕甘宁）",
+
+      "water_retention": 0.68,
+
+      "fertilizer_retention": 0.58,
+
+      "trace_retention": 0.55,
+
+      "fusion_gated": {
+
+        "absorption_modifiers": { "fertilizer_multiplier": 0.92 },
+
+        "special_effect": {
+
+          "effect_id": "loose_drain",
+
+          "label": "疏松淋溶",
+
+          "summary": "瓮肥×0.92；进水扣累计肥4%；豆科后非豆科轮作+2"
+
+        }
+
+      },
+
+      "design_note": "黄土母质、有机质极低"
+
+    },
+
+    "soil_cinnamon": {
+
+      "soil_id": "soil_cinnamon",
+
+      "display_name": "褐土",
+
+      "region": "华北平原（中原）",
+
+      "water_retention": 0.72,
+
+      "fertilizer_retention": 0.74,
+
+      "trace_retention": 0.7,
+
+      "fusion_gated": {
+
+        "special_effect": {
+
+          "effect_id": "calcareous_steady",
+
+          "label": "石灰稳态",
+
+          "summary": "产量倍率下限0.9；微量2分封顶1分"
+
+        }
+
+      },
+
+      "design_note": "石灰性、春旱、中等肥力"
+
+    },
+
+    "soil_purple": {
+
+      "soil_id": "soil_purple",
+
+      "display_name": "紫色土",
+
+      "region": "四川盆地（巴蜀）",
+
+      "water_retention": 0.81,
+
+      "fertilizer_retention": 0.86,
+
+      "trace_retention": 0.84,
+
+      "fusion_gated": {
+
+        "absorption_modifiers": { "trace_multiplier": 1.12 },
+
+        "special_effect": {
+
+          "effect_id": "mineral_rich",
+
+          "label": "矿质富集",
+
+          "summary": "微量×1.12；要海藻精作物窗+10%；排斥微量safe×0.9"
+
+        }
+
+      },
+
+      "design_note": "矿物养分丰富、坡地易冲刷"
+
+    },
+
+    "soil_red": {
+
+      "soil_id": "soil_red",
+
+      "display_name": "红壤",
+
+      "region": "江南及华南（两广/福建）",
+
+      "water_retention": 0.73,
+
+      "fertilizer_retention": 0.62,
+
+      "trace_retention": 0.58,
+
+      "fusion_gated": {
+
+        "absorption_modifiers": { "fertilizer_multiplier": 0.88 },
+
+        "special_effect": {
+
+          "effect_id": "acidic_fixation",
+
+          "label": "酸性固磷",
+
+          "summary": "瓮肥×0.88；喜酸作物施肥窗+10%；喜湿叶菜土种-1"
+
+        }
+
+      },
+
+      "design_note": "酸性淋溶、铁铝富集"
+
+    },
+
+    "soil_saline_alkali": {
+
+      "soil_id": "soil_saline_alkali",
+
+      "display_name": "盐碱土",
+
+      "region": "西北内陆/滨海（西域/渤海）",
+
+      "water_retention": 0.48,
+
+      "fertilizer_retention": 0.4,
+
+      "trace_retention": 0.38,
+
+      "fusion_gated": {
+
+        "special_effect": {
+
+          "effect_id": "filtration",
+
+          "label": "透滤",
+
+          "summary": "耐盐作物土种+1/涝害线+15%；非耐盐土种-1"
+
+        }
+
+      },
+
+      "design_note": "盐害与结构差；锁水三项最低"
+
+    },
+
+    "soil_alpine_meadow": {
+
+      "soil_id": "soil_alpine_meadow",
+
+      "display_name": "高山草甸土",
+
+      "region": "青藏高原（昆仑/天山）",
+
+      "water_retention": 0.77,
+
+      "fertilizer_retention": 0.73,
+
+      "trace_retention": 0.66,
+
+      "fusion_gated": {
+
+        "special_effect": {
+
+          "effect_id": "cold_meadow",
+
+          "label": "草毡轮牧",
+
+          "summary": "生长+6%；换 group 轮作+2；连作同作物不额外惩罚"
+
+        }
+
+      },
+
+      "design_note": "草毡保水；融合后宜轮作、忌连作耗竭（与黑土对照）"
+
+    },
+
+    "soil_paddy": {
+
+      "soil_id": "soil_paddy",
+
+      "display_name": "水稻土",
+
+      "region": "长江中下游（江南水乡）",
+
+      "water_retention": 0.93,
+
+      "fertilizer_retention": 0.9,
+
+      "trace_retention": 0.82,
+
+      "fusion_gated": {
+
+        "special_effect": {
+
+          "effect_id": "ponding",
+
+          "label": "滞涝",
+
+          "summary": "xeric周期+10%；喜湿/水生涝害线+18%；上一季水生缓释肥20tick"
+
+        }
+
+      },
+
+      "design_note": "水耕熟化、潴育层发达"
+
+    },
+
+    "soil_black": {
+
+      "soil_id": "soil_black",
+
+      "display_name": "典型黑土",
+
+      "region": "东北平原（辽东/关外）",
+
+      "water_retention": 0.91,
+
+      "fertilizer_retention": 0.94,
+
+      "trace_retention": 0.88,
+
+      "fusion_gated": {
+
+        "absorption_modifiers": { "fertilizer_multiplier": 1.08 },
+
+        "special_effect": {
+
+          "effect_id": "humus_bank",
+
+          "label": "腐殖宝库",
+
+          "summary": "瓮肥×1.08；连作-1/-2；无瓮肥tick+0.2腐殖缓释"
+
+        }
+
+      },
+
+      "design_note": "腐殖质深厚、肥力高但忌连作"
+
+    }
+
+  }
+
+}
+
+

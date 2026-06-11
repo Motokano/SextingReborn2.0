@@ -96,22 +96,119 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      justify-content: center;
+      justify-content: flex-end;
       font-size: 10px;
       text-align: center;
+      position: relative;
+      overflow: hidden;
+      padding-bottom: 3px;
+      gap: 1px;
     }
-    .cell.channel { background: #1a2830; border-color: #3d6a7a; }
-    .cell.channel.wet { border-color: #5a9aaa; box-shadow: inset 0 0 12px rgba(90, 180, 200, 0.15); }
-    .cell.channel.bloom { border-color: #6a5a8a; background: #2a2838; box-shadow: inset 0 0 14px rgba(120, 90, 160, 0.25); }
-    .cell .val.bloom { color: #c8a0e0; }
-    .cell.channel.entry { border-style: dashed; opacity: 0.85; }
-    .cell.land { background: #3a2e22; }
+    .cell .tag,
+    .cell .val {
+      position: relative;
+      z-index: 2;
+      line-height: 1.15;
+      text-shadow: 0 0 4px rgba(26, 21, 18, 0.95), 0 1px 2px rgba(26, 21, 18, 0.9);
+    }
+    .cell::before {
+      content: "";
+      position: absolute;
+      inset: 3px;
+      border-radius: 4px;
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+      pointer-events: none;
+      z-index: 0;
+    }
+    .cell.land { background: #32271f; }
+    .cell.land::before {
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 96 96'%3E%3Crect width='96' height='96' fill='%2332271f'/%3E%3Cpath d='M8 28h80M8 44h80M8 60h80M8 76h80' stroke='%235a4538' stroke-width='3' opacity='.55'/%3E%3Cpath d='M12 20 C30 14 66 14 84 20' fill='none' stroke='%234a3828' stroke-width='4'/%3E%3Cellipse cx='48' cy='52' rx='28' ry='18' fill='%234a3325' opacity='.5'/%3E%3C/svg%3E");
+    }
+    .cell.channel { background: #3a3028; border-color: #5a6a78; }
+    .cell.channel::before {
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 96 96'%3E%3Crect width='96' height='96' fill='%233a3028'/%3E%3Cpath d='M12 49 C28 39 38 56 51 47 C65 38 75 43 84 50 L84 65 C69 55 58 70 45 61 C32 52 24 62 12 70 Z' fill='%235a4538'/%3E%3Cpath d='M12 43 C27 32 39 48 51 39 C64 30 74 34 84 42 L84 56 C69 48 59 62 46 53 C32 44 23 54 12 62 Z' fill='%236b8798'/%3E%3Cpath d='M17 43 C30 37 39 51 51 43 C63 35 72 38 80 43' fill='none' stroke='%23b9d5df' stroke-width='4' stroke-linecap='round' opacity='.75'/%3E%3Cpath d='M8 30 L88 20 M6 76 L90 69' stroke='%23251d17' stroke-width='5' stroke-linecap='round' opacity='.55'/%3E%3C/svg%3E");
+      opacity: 0.92;
+    }
+    .cell.channel.wet { border-color: #5a9aaa; box-shadow: inset 0 0 10px rgba(90, 180, 200, 0.2); }
+    .cell.channel.wet::after {
+      content: "";
+      position: absolute;
+      left: 8px;
+      right: 8px;
+      top: 22px;
+      height: 5px;
+      z-index: 1;
+      border-radius: 99px;
+      background: linear-gradient(90deg, rgba(102,151,185,0.55), rgba(149,198,223,0.85), rgba(102,151,185,0.55));
+      pointer-events: none;
+    }
+    .cell.channel.bloom { border-color: #8a6aaa; box-shadow: inset 0 0 12px rgba(120, 90, 160, 0.35); }
+    .cell.channel.bloom::before {
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 96 96'%3E%3Crect width='96' height='96' fill='%232a2838'/%3E%3Cpath d='M12 49 C28 39 38 56 51 47 C65 38 75 43 84 50 L84 65 C69 55 58 70 45 61 C32 52 24 62 12 70 Z' fill='%234a3848'/%3E%3Cpath d='M12 43 C27 32 39 48 51 39 C64 30 74 34 84 42 L84 56 C69 48 59 62 46 53 C32 44 23 54 12 62 Z' fill='%235a5a78'/%3E%3Ccircle cx='28' cy='38' r='8' fill='%238a6aaa' opacity='.85'/%3E%3Ccircle cx='52' cy='32' r='10' fill='%23a080c8' opacity='.9'/%3E%3Ccircle cx='72' cy='42' r='7' fill='%237a5a9a'/%3E%3Ccircle cx='40' cy='58' r='9' fill='%239070b0' opacity='.8'/%3E%3Ccircle cx='64' cy='55' r='8' fill='%23b89ae8' opacity='.75'/%3E%3C/svg%3E");
+    }
+    .cell .val.bloom { color: #d8b8f0; }
+    .cell.channel.entry { border-style: dashed; border-color: #7ab89a; }
+    .cell.channel.entry::after {
+      content: "↓";
+      position: absolute;
+      top: 4px;
+      right: 5px;
+      z-index: 3;
+      font-size: 11px;
+      font-weight: bold;
+      color: #7ab89a;
+      line-height: 1;
+      text-shadow: 0 0 4px rgba(26, 21, 18, 0.95);
+    }
     .cell.venturi { background: #2a3530; border-color: #5a8f7a; }
+    .cell.venturi::before {
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 96 96'%3E%3Crect width='96' height='96' rx='8' fill='%231f2a26'/%3E%3Cpath d='M20 48h22l6-14h22v28H48l-6 14H20z' fill='%234a6b5c' stroke='%238fbcaa' stroke-width='2'/%3E%3Cellipse cx='72' cy='48' rx='8' ry='14' fill='%233d5a4d'/%3E%3Cpath d='M28 44h12v8H28z' fill='%235a8f7a' opacity='.85'/%3E%3C/svg%3E");
+    }
     .cell.crop { background: #2d3a28; border-color: #6a8f5a; }
-    .cell .tag { color: #8e8e8e; font-size: 9px; }
-    .cell .val { color: #9ad4c4; font-weight: bold; font-size: 11px; }
-    .cell .val.water { color: #7ab8d8; }
-    .cell .val.zero { color: #666; font-weight: normal; }
+    .cell.crop::before {
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 96 96'%3E%3Crect width='96' height='96' fill='%232d3a28'/%3E%3Cpath d='M48 78 L48 42' stroke='%235a7048' stroke-width='5' stroke-linecap='round'/%3E%3Cellipse cx='48' cy='34' rx='22' ry='26' fill='%236fa35b'/%3E%3Cellipse cx='38' cy='40' rx='10' ry='14' fill='%237fb36a' opacity='.85'/%3E%3Cellipse cx='58' cy='38' rx='9' ry='13' fill='%235a8f4a' opacity='.9'/%3E%3C/svg%3E");
+    }
+    .cell.crop.hurt::after {
+      content: "♥";
+      position: absolute;
+      top: 3px;
+      left: 5px;
+      z-index: 3;
+      font-size: 10px;
+      color: #e08080;
+      text-shadow: 0 0 4px rgba(26, 21, 18, 0.95);
+    }
+    .cell .tag { color: #c9c0b1; font-size: 8px; }
+    .cell .val { color: #9ad4c4; font-weight: bold; font-size: 10px; }
+    .cell .val.water { color: #a8d8f0; }
+    .cell .val.zero { color: #888; font-weight: normal; }
+    .icon-legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px 16px;
+      margin: 12px 0 16px;
+      padding: 10px 12px;
+      border: 1px solid #4d4d45;
+      border-radius: 8px;
+      background: #221c16;
+      font-size: 12px;
+      color: #c9c0b1;
+    }
+    .icon-legend-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .icon-legend .cell {
+      width: 44px;
+      height: 44px;
+      flex-shrink: 0;
+      font-size: 0;
+    }
+    .icon-legend .cell .tag,
+    .icon-legend .cell .val { display: none; }
     .legend { font-size: 12px; color: #8e8e8e; margin-top: 8px; }
     .note {
       border-left: 3px solid #d3a060;
@@ -153,6 +250,16 @@
   <div class="wrap">
     <h1>海藻精（渠内输送与作物吸收）设定说明</h1>
     <p class="sub">与 <code>docs/design/28-agriculture-irrigation.md</code> §4.3、§2.2d、§4b、§12.1、§15 对齐。非可玩 demo。</p>
+
+    <div class="icon-legend" aria-label="图示图例">
+      <div class="icon-legend-item"><div class="cell land" title="耕地"></div><span>耕地</span></div>
+      <div class="icon-legend-item"><div class="cell channel wet" title="有水水渠"></div><span>有水水渠</span></div>
+      <div class="icon-legend-item"><div class="cell channel" title="无水/干渠"></div><span>无水渠</span></div>
+      <div class="icon-legend-item"><div class="cell channel wet entry" title="注入口"></div><span>注入口（虚线+↓）</span></div>
+      <div class="icon-legend-item"><div class="cell venturi" title="文丘里施肥器"></div><span>文丘里施肥器</span></div>
+      <div class="icon-legend-item"><div class="cell crop" title="作物"></div><span>作物</span></div>
+      <div class="icon-legend-item"><div class="cell channel wet bloom" title="水藻爆发"></div><span>水藻爆发渠</span></div>
+    </div>
 
     <nav class="toc">
       <a href="#s0">0 tick</a>
@@ -301,14 +408,14 @@
           <div class="cell land"></div>
         </div>
         <div class="mini-row">
-          <div class="cell channel wet"><span class="val water">💧</span></div>
-          <div class="cell venturi"><span class="tag">施肥器</span>★</div>
+          <div class="cell channel wet"><span class="tag">邻渠</span><span class="val water">W</span></div>
+          <div class="cell venturi"><span class="tag">施肥器</span></div>
           <div class="cell channel wet entry"><span class="tag">注入口</span><span class="val zero">0</span></div>
         </div>
         <div class="mini-row">
           <div class="cell land"></div>
           <div class="cell channel wet"></div>
-          <div class="cell crop"><span class="tag">作物</span>🌱</div>
+          <div class="cell crop"><span class="tag">作物</span></div>
         </div>
       </div>
       <ul>
@@ -551,9 +658,10 @@
           : '<span class="ok">正常</span>：C:W 未高于 2.5:1（C/W = ' + ratioCw + "）";
         prev.innerHTML =
           '<div class="mini-row"><div class="cell channel wet' + (bloom ? " bloom" : "") + '">' +
-          '<span class="tag">水渠</span><span class="val water">' + W.toFixed(1) + "</span>" +
+          '<span class="tag">水渠</span><span class="val water">W' + W.toFixed(1) + "</span>" +
           '<span class="val' + (bloom ? " bloom" : "") + '">C' + C.toFixed(1) + "</span></div>" +
-          '<div class="cell crop"><span class="tag">作物</span>' + (bloom ? "−2❤" : "—") + "</div></div>";
+          '<div class="cell crop' + (bloom ? " hurt" : "") + '"><span class="tag">作物</span>' +
+          (bloom ? '<span class="val no">−2</span>' : '<span class="val zero">—</span>') + "</div></div>";
       }
       rngW.addEventListener("input", updateBloom);
       rngC.addEventListener("input", updateBloom);

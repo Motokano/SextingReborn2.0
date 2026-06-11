@@ -1,0 +1,502 @@
+{
+
+  "schema_version": 3,
+
+  "_comment": "本体农业建造/升级：inputs + 工程 tick + 体力。材料均须存在于 items.json。埋瓮扣腌缸（广口密封、贴厌氧肥），不扣灶台饭锅/酸奶发酵坛。",
+
+  "task_defaults": {
+
+    "task_ticks": 10,
+
+    "stamina_per_tick": 5
+
+  },
+
+  "builds": {
+
+    "channel_dig": {
+
+      "label_key": "agriculture.build.channel_dig",
+
+      "inputs": [{ "item_id": "wood_bamboo_green", "count": 1 }],
+
+      "task_ticks": 10,
+
+      "stamina_per_tick": 5,
+
+      "refund_inputs_on_cancel": true
+
+    },
+
+    "channel_remove": {
+
+      "label_key": "agriculture.build.channel_remove",
+
+      "inputs": [],
+
+      "task_ticks": 10,
+
+      "stamina_per_tick": 5
+
+    },
+
+    "channel_upgrade": {
+
+      "label_key": "agriculture.build.channel_upgrade",
+
+      "inputs": [
+
+        { "item_id": "ore_clay_raw", "count": 3 },
+
+        { "item_id": "wood_bamboo_green", "count": 1 }
+
+      ],
+
+      "task_ticks": 10,
+
+      "stamina_per_tick": 5,
+
+      "refund_inputs_on_cancel": true
+
+    },
+
+    "channel_downgrade": {
+
+      "label_key": "agriculture.build.channel_downgrade",
+
+      "inputs": [{ "item_id": "compost_matrix_grade_low", "count": 1 }],
+
+      "task_ticks": 10,
+
+      "stamina_per_tick": 5,
+
+      "refund_inputs_on_cancel": true
+
+    },
+
+    "land_reclaim": {
+
+      "label_key": "agriculture.build.land_reclaim",
+
+      "inputs": [
+
+        { "item_id": "wood_shrub_dry", "count": 2 },
+
+        { "item_id": "compost_matrix_grade_low", "count": 1 }
+
+      ],
+
+      "task_ticks": 10,
+
+      "stamina_per_tick": 5,
+
+      "refund_inputs_on_cancel": true
+
+    },
+
+    "land_remove_reclaim": {
+
+      "label_key": "agriculture.build.land_remove_reclaim",
+
+      "inputs": [],
+
+      "task_ticks": 10,
+
+      "stamina_per_tick": 5
+
+    },
+
+    "venturi_fertilizer": {
+
+      "label_key": "agriculture.build.venturi_fertilizer",
+
+      "inputs": [
+
+        { "item_id": "ore_clay_raw", "count": 2 },
+
+        { "item_id": "wood_bamboo_green", "count": 2 },
+
+        { "item_id": "wood_plank_soft", "count": 1 },
+
+        { "item_id": "supply_rope_hemp_short", "count": 1 }
+
+      ],
+
+      "task_ticks": 10,
+
+      "stamina_per_tick": 5,
+
+      "refund_inputs_on_cancel": true
+
+    },
+
+    "venturi_fertilizer_remove": {
+
+      "label_key": "agriculture.build.venturi_fertilizer_remove",
+
+      "inputs": [],
+
+      "task_ticks": 10,
+
+      "stamina_per_tick": 5
+
+    },
+
+    "buried_pot_jar": {
+
+      "label_key": "agriculture.build.buried_pot_jar",
+
+      "inputs": [
+
+        { "item_id": "ore_clay_raw", "count": 4 },
+
+        { "item_id": "tool_pickling_jar_cooking", "count": 1 }
+
+      ],
+
+      "task_ticks": 10,
+
+      "stamina_per_tick": 5,
+
+      "refund_inputs_on_cancel": true
+
+    },
+
+    "buried_pot_jar_remove": {
+
+      "label_key": "agriculture.build.buried_pot_jar_remove",
+
+      "inputs": [],
+
+      "task_ticks": 10,
+
+      "stamina_per_tick": 5
+
+    },
+
+    "super_fusion": {
+
+      "label_key": "agriculture.build.super_fusion",
+
+      "inputs": [
+
+        { "item_id": "wood_plank_soft", "count": 4 },
+
+        { "item_id": "wood_bamboo_green", "count": 4 },
+
+        { "item_id": "ore_clay_raw", "count": 4 },
+
+        { "item_id": "supply_rope_hemp_short", "count": 2 },
+
+        { "item_id": "compost_matrix_grade_high", "count": 1 }
+
+      ],
+
+      "task_ticks": 10,
+
+      "stamina_per_tick": 5,
+
+      "refund_inputs_on_cancel": true
+
+    },
+
+    "super_fusion_remove": {
+
+      "label_key": "agriculture.build.super_fusion_remove",
+
+      "inputs": [],
+
+      "task_ticks": 10,
+
+      "stamina_per_tick": 5
+
+    },
+
+    "crop_structure_support_frame": {
+
+      "label_key": "agriculture.build.crop_structure",
+
+      "inputs": [
+
+        { "item_id": "wood_bamboo_green", "count": 3 },
+
+        { "item_id": "supply_rope_hemp_short", "count": 1 }
+
+      ],
+
+      "task_ticks": 10,
+
+      "stamina_per_tick": 5,
+
+      "refund_inputs_on_cancel": true
+
+    },
+
+    "crop_structure_protection_cage": {
+
+      "inputs": [
+
+        { "item_id": "wood_plank_soft", "count": 2 },
+
+        { "item_id": "wood_bamboo_green", "count": 3 },
+
+        { "item_id": "supply_rope_hemp_short", "count": 2 }
+
+      ],
+
+      "task_ticks": 10,
+
+      "stamina_per_tick": 5,
+
+      "refund_inputs_on_cancel": true
+
+    },
+
+    "crop_structure_binding_strap": {
+
+      "inputs": [{ "item_id": "supply_rope_hemp_short", "count": 3 }],
+
+      "task_ticks": 10,
+
+      "stamina_per_tick": 5,
+
+      "refund_inputs_on_cancel": true
+
+    },
+
+    "crop_structure_water_storage_ridge": {
+
+      "inputs": [
+
+        { "item_id": "ore_clay_raw", "count": 5 },
+
+        { "item_id": "wood_plank_soft", "count": 1 }
+
+      ],
+
+      "task_ticks": 10,
+
+      "stamina_per_tick": 5,
+
+      "refund_inputs_on_cancel": true
+
+    },
+
+    "crop_structure_deep_pool": {
+
+      "inputs": [
+
+        { "item_id": "ore_clay_raw", "count": 8 },
+
+        { "item_id": "wood_plank_soft", "count": 1 }
+
+      ],
+
+      "task_ticks": 10,
+
+      "stamina_per_tick": 5,
+
+      "refund_inputs_on_cancel": true
+
+    },
+
+    "crop_structure_shade_cover": {
+
+      "inputs": [
+
+        { "item_id": "wood_plank_soft", "count": 3 },
+
+        { "item_id": "wood_bamboo_green", "count": 2 },
+
+        { "item_id": "supply_rope_hemp_short", "count": 2 }
+
+      ],
+
+      "task_ticks": 10,
+
+      "stamina_per_tick": 5,
+
+      "refund_inputs_on_cancel": true
+
+    },
+
+    "crop_structure_canopy": {
+
+      "inputs": [
+
+        { "item_id": "wood_plank_soft", "count": 4 },
+
+        { "item_id": "wood_bamboo_green", "count": 2 },
+
+        { "item_id": "supply_rope_hemp_short", "count": 2 }
+
+      ],
+
+      "task_ticks": 10,
+
+      "stamina_per_tick": 5,
+
+      "refund_inputs_on_cancel": true
+
+    },
+
+    "crop_structure_remove": {
+
+      "inputs": [],
+
+      "task_ticks": 10,
+
+      "stamina_per_tick": 5
+
+    }
+
+  },
+
+  "upgrades": {
+
+    "venturi_fertilizer_level": {
+
+      "max_level": 3,
+
+      "steps": [
+
+        {
+
+          "from_level": 1,
+
+          "to_level": 2,
+
+          "inputs": [
+
+            { "item_id": "ore_clay_raw", "count": 2 },
+
+            { "item_id": "wood_bamboo_green", "count": 1 }
+
+          ],
+
+          "task_ticks": 10,
+
+          "stamina_per_tick": 5,
+
+          "refund_inputs_on_cancel": true
+
+        },
+
+        {
+
+          "from_level": 2,
+
+          "to_level": 3,
+
+          "inputs": [
+
+            { "item_id": "ore_clay_raw", "count": 3 },
+
+            { "item_id": "wood_plank_soft", "count": 1 },
+
+            { "item_id": "ore_iron_raw", "count": 1 }
+
+          ],
+
+          "task_ticks": 10,
+
+          "stamina_per_tick": 5,
+
+          "refund_inputs_on_cancel": true
+
+        }
+
+      ]
+
+    },
+
+    "pool_level": {
+
+      "max_level": 4,
+
+      "steps": [
+
+        {
+
+          "from_level": 1,
+
+          "to_level": 2,
+
+          "label_key": "agriculture.pool.upgrade_to_2",
+
+          "inputs": [
+
+            { "item_id": "wood_bamboo_green", "count": 3 },
+
+            { "item_id": "supply_rope_hemp_short", "count": 2 }
+
+          ],
+
+          "task_ticks": 10,
+
+          "stamina_per_tick": 5,
+
+          "refund_inputs_on_cancel": true
+
+        },
+
+        {
+
+          "from_level": 2,
+
+          "to_level": 3,
+
+          "label_key": "agriculture.pool.upgrade_to_3",
+
+          "inputs": [
+
+            { "item_id": "ore_clay_raw", "count": 6 },
+
+            { "item_id": "wood_plank_soft", "count": 2 }
+
+          ],
+
+          "task_ticks": 10,
+
+          "stamina_per_tick": 5,
+
+          "refund_inputs_on_cancel": true
+
+        },
+
+        {
+
+          "from_level": 3,
+
+          "to_level": 4,
+
+          "label_key": "agriculture.pool.upgrade_to_4",
+
+          "inputs": [
+
+            { "item_id": "ore_clay_raw", "count": 4 },
+
+            { "item_id": "wood_plank_soft", "count": 3 },
+
+            { "item_id": "ore_iron_raw", "count": 2 },
+
+            { "item_id": "supply_rope_hemp_short", "count": 2 }
+
+          ],
+
+          "task_ticks": 10,
+
+          "stamina_per_tick": 5,
+
+          "refund_inputs_on_cancel": true
+
+        }
+
+      ]
+
+    }
+
+  }
+
+}
+

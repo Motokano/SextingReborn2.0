@@ -157,6 +157,18 @@
             var ci;
             for (ci = 0; ci < ck.length; ci++) add(map.compost_station_interact_npc_by_cell[ck[ci]]);
         }
+        if (map && map.agriculture_station_interact_npc_id != null) add(map.agriculture_station_interact_npc_id);
+        if (map && map.agriculture_station_interact_npc_by_cell && typeof map.agriculture_station_interact_npc_by_cell === 'object') {
+            var agk = Object.keys(map.agriculture_station_interact_npc_by_cell);
+            var agi;
+            for (agi = 0; agi < agk.length; agi++) add(map.agriculture_station_interact_npc_by_cell[agk[agi]]);
+        }
+        if (map && map.warehouse_station_interact_npc_id != null) add(map.warehouse_station_interact_npc_id);
+        if (map && map.warehouse_station_interact_npc_by_cell && typeof map.warehouse_station_interact_npc_by_cell === 'object') {
+            var whk = Object.keys(map.warehouse_station_interact_npc_by_cell);
+            var whi;
+            for (whi = 0; whi < whk.length; whi++) add(map.warehouse_station_interact_npc_by_cell[whk[whi]]);
+        }
         return Object.keys(out);
     }
 
@@ -935,6 +947,20 @@
                 return tagsC.indexOf('compost_station') >= 0;
             }
 
+            function shouldShowOpenAgriculturePanelButton(def0) {
+                if (!def0 || !def0.mainMenu || typeof def0.mainMenu !== 'object') return false;
+                if (def0.mainMenu.showOpenAgriculturePanel === true) return true;
+                var tagsA = Array.isArray(def0.tags) ? def0.tags : [];
+                return tagsA.indexOf('agriculture_station') >= 0;
+            }
+
+            function shouldShowOpenHideoutWarehousePanelButton(def0) {
+                if (!def0 || !def0.mainMenu || typeof def0.mainMenu !== 'object') return false;
+                if (def0.mainMenu.showOpenHideoutWarehousePanel === true) return true;
+                var tagsW = Array.isArray(def0.tags) ? def0.tags : [];
+                return tagsW.indexOf('warehouse_station') >= 0;
+            }
+
             function shouldShowSleepAtBedButton(def0) {
                 if (!def0 || !def0.mainMenu || typeof def0.mainMenu !== 'object') return false;
                 if (def0.mainMenu.showSleepAtBed === true) return true;
@@ -1096,6 +1122,26 @@
                     }
                 });
                 btnWrap.appendChild(compostBtn);
+            }
+
+            if (shouldShowOpenAgriculturePanelButton(def)) {
+                var agBtn = mkBtn(tUi('npc.menu.open_agriculture_panel', '管理农田'), function () {
+                    closeMenu();
+                    if (global.SceneApp && typeof global.SceneApp.openAgriculturePanel === 'function') {
+                        global.SceneApp.openAgriculturePanel();
+                    }
+                });
+                btnWrap.appendChild(agBtn);
+            }
+
+            if (shouldShowOpenHideoutWarehousePanelButton(def)) {
+                var whBtn = mkBtn(tUi('npc.menu.open_hideout_warehouse_panel', '打开藏身处仓库'), function () {
+                    closeMenu();
+                    if (global.SceneApp && typeof global.SceneApp.openHideoutWarehousePanel === 'function') {
+                        global.SceneApp.openHideoutWarehousePanel();
+                    }
+                });
+                btnWrap.appendChild(whBtn);
             }
 
             if (shouldShowSleepAtBedButton(def)) {

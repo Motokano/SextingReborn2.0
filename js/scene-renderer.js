@@ -1146,6 +1146,8 @@
                 var cookingStation = typeof E.isCookingStationCell === 'function' && E.isCookingStationCell(gx, gy);
                 var pharmacyStation = typeof E.isPharmacyStationCell === 'function' && E.isPharmacyStationCell(gx, gy);
                 var compostStation = typeof E.isCompostStationCell === 'function' && E.isCompostStationCell(gx, gy);
+                var agricultureStation = typeof E.isAgricultureStationCell === 'function' && E.isAgricultureStationCell(gx, gy);
+                var warehouseStation = typeof E.isWarehouseStationCell === 'function' && E.isWarehouseStationCell(gx, gy);
                 return {
                     walkable: walkable,
                     portal: !!portal,
@@ -1153,6 +1155,8 @@
                     cookingStation: cookingStation,
                     pharmacyStation: pharmacyStation,
                     compostStation: compostStation,
+                    agricultureStation: agricultureStation,
+                    warehouseStation: warehouseStation,
                                         adjacent: false,
                     groundCount: 0,
                     npc: false,
@@ -1200,6 +1204,10 @@
                 var showPharmacyStation = !!(pharmacyStationCell && canVisual && canIdentify);
                 var compostStationCell = typeof E.isCompostStationCell === 'function' && E.isCompostStationCell(gx, gy);
                 var showCompostStation = !!(compostStationCell && canVisual && canIdentify);
+                var agricultureStationCell = typeof E.isAgricultureStationCell === 'function' && E.isAgricultureStationCell(gx, gy);
+                var showAgricultureStation = !!(agricultureStationCell && canVisual && canIdentify);
+                var warehouseStationCell = typeof E.isWarehouseStationCell === 'function' && E.isWarehouseStationCell(gx, gy);
+                var showWarehouseStation = !!(warehouseStationCell && canVisual && canIdentify);
                 var unknownPresence = false;
                 if (!canVisual) {
                     npcId = null;
@@ -1209,6 +1217,8 @@
                     showCookingStation = false;
                     showPharmacyStation = false;
                     showCompostStation = false;
+                    showAgricultureStation = false;
+                    showWarehouseStation = false;
                 } else if (!canIdentify) {
                     unknownPresence = !!(npcId || enemyId);
                     npcId = null;
@@ -1216,6 +1226,8 @@
                     showCookingStation = false;
                     showPharmacyStation = false;
                     showCompostStation = false;
+                    showAgricultureStation = false;
+                    showWarehouseStation = false;
                 }
                 var unknownGround = false;
                 if (rawGroundCount > 0 && !canIdentify) {
@@ -1241,6 +1253,8 @@
                     showCookingStation = false;
                     showPharmacyStation = false;
                     showCompostStation = false;
+                    showAgricultureStation = false;
+                    showWarehouseStation = false;
                 }
                 var npcLabel = '';
                 if (npcId && window.NPCSystem && typeof window.NPCSystem.getNpcMapLabel === 'function') {
@@ -1259,6 +1273,8 @@
                     cookingStation: showCookingStation,
                     pharmacyStation: showPharmacyStation,
                     compostStation: showCompostStation,
+                    agricultureStation: showAgricultureStation,
+                    warehouseStation: showWarehouseStation,
                     npc: !!npcId,
                     npcLabel: npcLabel,
                     enemy: !!enemyId,
@@ -1356,6 +1372,26 @@
             }
             if (map.compost_station_interact_npc_id != null && String(map.compost_station_interact_npc_id).trim()) {
                 parts.push('XSI=' + String(map.compost_station_interact_npc_id).trim());
+            }
+            if (map.agriculture_station_interact_npc_by_cell && typeof map.agriculture_station_interact_npc_by_cell === 'object') {
+                var agsk = Object.keys(map.agriculture_station_interact_npc_by_cell).sort();
+                for (var agi = 0; agi < agsk.length; agi++) {
+                    var agk = agsk[agi];
+                    parts.push('G' + agk + '=' + String(map.agriculture_station_interact_npc_by_cell[agk]));
+                }
+            }
+            if (map.agriculture_station_interact_npc_id != null && String(map.agriculture_station_interact_npc_id).trim()) {
+                parts.push('GSI=' + String(map.agriculture_station_interact_npc_id).trim());
+            }
+            if (map.warehouse_station_interact_npc_by_cell && typeof map.warehouse_station_interact_npc_by_cell === 'object') {
+                var whsk = Object.keys(map.warehouse_station_interact_npc_by_cell).sort();
+                for (var whi = 0; whi < whsk.length; whi++) {
+                    var whk = whsk[whi];
+                    parts.push('W' + whk + '=' + String(map.warehouse_station_interact_npc_by_cell[whk]));
+                }
+            }
+            if (map.warehouse_station_interact_npc_id != null && String(map.warehouse_station_interact_npc_id).trim()) {
+                parts.push('WSI=' + String(map.warehouse_station_interact_npc_id).trim());
             }
             staticDataKey = parts.join('|');
         } catch (e) {
@@ -1457,6 +1493,7 @@
                         }
                     }
                     if (meta.compostStation) tips.push('制肥桶');
+                    if (meta.agricultureStation) tips.push('农田');
                     if (meta.groundCount > 0) tips.push('地面有 ' + meta.groundCount + ' 件物品');
                     else if (meta.groundUnknown) tips.push('地面似乎有东西');
                     if (meta.leapTarget) tips.push('蹑步落点');

@@ -21,7 +21,9 @@
       "harvest_item_id": "herb_maize",
       "group": "grain",
       "tier": 1,
-      "grow_note": "耐旱广种，一季收"
+      "grow_note": "耐旱广种，一季收",
+      "starter_recommended": true,
+      "starter_sequence": 1
     },
     {
       "item_id": "seed_rice",
@@ -129,7 +131,9 @@
       "harvest_item_id": "herb_potato",
       "group": "veg",
       "tier": 1,
-      "grow_note": "种薯下沟，易管"
+      "grow_note": "种薯下沟，易管",
+      "starter_recommended": true,
+      "starter_sequence": 3
     },
     {
       "item_id": "seed_green_beans",
@@ -183,7 +187,9 @@
       "harvest_item_id": "herb_carrot",
       "group": "veg",
       "tier": 1,
-      "grow_note": "撒沟直根，易种"
+      "grow_note": "撒沟直根，易种",
+      "starter_recommended": true,
+      "starter_sequence": 2
     },
     {
       "item_id": "seed_konjac",
@@ -201,7 +207,9 @@
       "harvest_item_id": "herb_radish_white",
       "group": "veg",
       "tier": 1,
-      "grow_note": "快生根茎"
+      "grow_note": "快生根茎",
+      "starter_recommended": true,
+      "starter_sequence": 2
     },
     {
       "item_id": "seed_celery",
@@ -399,7 +407,7 @@
       "harvest_item_id": "herb_peanut",
       "group": "fruit",
       "tier": 2,
-      "grow_note": "地下结荚，基准作物"
+      "grow_note": "地下结荚，二档豆科"
     },
     {
       "item_id": "seed_sugarcane",
@@ -486,5 +494,33 @@
     "4": 6000,
     "5": 8000
   },
-  "tier_trade_unlock_step": 2000
+  "tier_trade_unlock_step": 2000,
+  "starter_crop_catalog": {
+    "entries": [
+      {
+        "crop_id": "maize",
+        "seed_item_id": "seed_maize",
+        "starter_sequence": 1,
+        "tier": 1
+      },
+      {
+        "crop_id": "carrot",
+        "seed_item_id": "seed_carrot",
+        "starter_sequence": 2,
+        "tier": 1
+      },
+      {
+        "crop_id": "radish_white",
+        "seed_item_id": "seed_radish_white",
+        "starter_sequence": 2,
+        "tier": 1
+      },
+      {
+        "crop_id": "potato",
+        "seed_item_id": "seed_potato",
+        "starter_sequence": 3,
+        "tier": 1
+      }
+    ]
+  }
 }

@@ -1,0 +1,244 @@
+{
+
+  "npcId": "npc.station.agriculture_base",
+
+  "entries": [
+
+    {
+
+      "id": "station.agriculture.starter_kit",
+
+      "entryType": "dialogue",
+
+      "entrySource": "chat",
+
+      "condition": {
+
+        "type": "flagEquals",
+
+        "flag": "agriculture_starter_kit_received",
+
+        "value": false
+
+      },
+
+      "requires": [],
+
+      "blocks": [],
+
+      "dialogue": {
+
+        "linesRich": [
+
+          {
+
+            "speaker": "narration",
+
+            "text": "田埂边放着一小包种子、几瓶肥液和一袋客土，像是前人留下的试种物资。你一并收进背包，准备开田。",
+
+            "avatar": ""
+
+          }
+
+        ],
+
+        "lines": [
+
+          "田埂边放着一小包种子、几瓶肥液和一袋客土，像是前人留下的试种物资。你一并收进背包，准备开田。"
+
+        ],
+
+        "hasOptions": false,
+
+        "options": []
+
+      },
+
+      "effects": [
+
+        {
+
+          "type": "giveItem",
+
+          "params": {
+
+            "itemId": "seed_maize",
+
+            "count": 1
+
+          }
+
+        },
+
+        {
+
+          "type": "giveItem",
+
+          "params": {
+
+            "itemId": "seed_peanut",
+
+            "count": 1
+
+          }
+
+        },
+
+        {
+
+          "type": "giveItem",
+
+          "params": {
+
+            "itemId": "soil_amend_paddy",
+
+            "count": 1
+
+          }
+
+        },
+
+        {
+
+          "type": "giveItem",
+
+          "params": {
+
+            "itemId": "liquid_seaweed_extract",
+
+            "count": 1
+
+          }
+
+        },
+
+        {
+
+          "type": "giveItem",
+
+          "params": {
+
+            "itemId": "fertilizer_basic_low",
+
+            "count": 1
+
+          }
+
+        },
+
+        {
+
+          "type": "giveItem",
+
+          "params": {
+
+            "itemId": "fertilizer_basic",
+
+            "count": 1
+
+          }
+
+        },
+
+        {
+
+          "type": "giveItem",
+
+          "params": {
+
+            "itemId": "fertilizer_compost_plus",
+
+            "count": 1
+
+          }
+
+        },
+
+        {
+
+          "type": "setFlag",
+
+          "params": {
+
+            "flag": "agriculture_starter_kit_received",
+
+            "value": true
+
+          }
+
+        }
+
+      ],
+
+      "repeatable": false,
+
+      "scope": "global",
+
+      "causesNpcDisappear": false
+
+    },
+
+    {
+
+      "id": "station.agriculture.base_idle",
+
+      "entryType": "dialogue",
+
+      "entrySource": "chat",
+
+      "condition": {
+
+        "type": "flagEquals",
+
+        "flag": "agriculture_starter_kit_received",
+
+        "value": true
+
+      },
+
+      "requires": [],
+
+      "blocks": [],
+
+      "dialogue": {
+
+        "linesRich": [
+
+          {
+
+            "speaker": "narration",
+
+            "text": "这片小块耕地连着灌溉与肥力管线。邻格点这里对话，可在菜单里打开农田管理。",
+
+            "avatar": ""
+
+          }
+
+        ],
+
+        "lines": [
+
+          "这片小块耕地连着灌溉与肥力管线。邻格点这里对话，可在菜单里打开农田管理。"
+
+        ],
+
+        "hasOptions": false,
+
+        "options": []
+
+      },
+
+      "effects": [],
+
+      "repeatable": true,
+
+      "scope": "global",
+
+      "causesNpcDisappear": false
+
+    }
+
+  ]
+
+}
+

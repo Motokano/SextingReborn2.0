@@ -1,0 +1,8 @@
+id,sn,placeholder_name,fn_before,fn,category,sub_category,weight,stack_limit,quality,tags,source,production_lines,spoilage_ticks,price_class,volatility,region_restrict,base_value,edible,edible_buff_id,usable,use_buff_id,fuel_points,cooking_ingredient,pharmacy_ingredient,info_module_set_id,fert_c,fert_n,grants_soil_id
+soil_amend_yellow_cotton,黄绵土客土,黄土袋,干松黄土，摸着像粉,整袋客土，可改良耕地为黄绵土。,material,soil_amendment,2.5,1,white,material;soil;agriculture;life_farming,manufacturing,manufacturing,0,material,low,0,140,,,,,,,,,,,soil_yellow_cotton
+soil_amend_cinnamon,褐土客土,褐土袋,偏红褐土块，闻着有铁锈味,整袋客土，可改良耕地为褐土。,material,soil_amendment,2.5,1,white,material;soil;agriculture;life_farming,manufacturing,manufacturing,0,material,low,0,160,,,,,,,,,,,soil_cinnamon
+soil_amend_purple,紫色土客土,紫土袋,紫灰细土，手感绵,整袋客土，可改良耕地为紫色土。,material,soil_amendment,2.5,1,white,material;soil;agriculture;life_farming,manufacturing,manufacturing,0,material,mid,0,200,,,,,,,,,,,soil_purple
+soil_amend_red,红壤客土,红壤袋,砖红细土，偏酸,整袋客土，可改良耕地为红壤。,material,soil_amendment,2.5,1,white,material;soil;agriculture;life_farming,manufacturing,manufacturing,0,material,low,0,160,,,,,,,,,,,soil_red
+soil_amend_alpine_meadow,高山草甸土客土,草甸土袋,黑褐腐殖土，草根碎多,整袋客土，可改良耕地为高山草甸土。,material,soil_amendment,2.5,1,white,material;soil;agriculture;life_farming,manufacturing,manufacturing,0,material,mid,0,180,,,,,,,,,,,soil_alpine_meadow
+soil_amend_paddy,水稻土客土,水稻土袋,青灰黏土，闻着稻茬味,整袋客土，可改良耕地为水稻土。,material,soil_amendment,2.5,1,white,material;soil;agriculture;life_farming,manufacturing,manufacturing,0,material,mid,0,220,,,,,,,,,,,soil_paddy
+soil_amend_black,典型黑土客土,黑土袋,乌亮细土，油润,整袋客土，可改良耕地为典型黑土。,material,soil_amendment,2.5,1,white,material;soil;agriculture;life_farming,manufacturing,manufacturing,0,material,mid,0,240,,,,,,,,,,,soil_black

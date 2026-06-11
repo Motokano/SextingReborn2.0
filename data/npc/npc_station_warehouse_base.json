@@ -1,0 +1,49 @@
+{
+  "schemaVersion": 1,
+  "id": "npc.station.warehouse_base",
+  "name": "藏身处仓库",
+  "displayTitle": "仓库",
+  "npcLabel": "仓",
+  "sprite": "",
+  "appearanceSchedule": {
+    "start": "00:00",
+    "end": "23:59"
+  },
+  "location": {
+    "sceneId": "M0_Base_Inside_lv_1",
+    "x": 14,
+    "y": 12
+  },
+  "mainMenu": {
+    "showChat": true,
+    "showWorkWhen": "never",
+    "showOpenHideoutWarehousePanel": true,
+    "showLeave": true
+  },
+  "behavior": {
+    "type": "workbench",
+    "origin": "base_hideout",
+    "description": "设施 NPC：邻格点仓库格走 interactNpc；闲聊走 triggers，打开藏身处账号仓库面板。"
+  },
+  "fallbackDialoguePoolId": "npc.station.warehouse_base.fallback",
+  "fallbackPoolRules": [
+    {
+      "id": "npc.station.warehouse_base",
+      "repeatable": true,
+      "match_weight": 1,
+      "poolPickMode": "pick_one",
+      "poolIds": [
+        "npc.station.warehouse_base"
+      ],
+      "requires": [],
+      "blocks": [],
+      "condition": null
+    }
+  ],
+  "tags": [
+    "workbench",
+    "warehouse_station",
+    "non_combat",
+    "base_facility"
+  ]
+}

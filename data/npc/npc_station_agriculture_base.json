@@ -1,0 +1,49 @@
+{
+  "schemaVersion": 1,
+  "id": "npc.station.agriculture_base",
+  "name": "藏身处农田",
+  "displayTitle": "农田",
+  "npcLabel": "农",
+  "sprite": "",
+  "appearanceSchedule": {
+    "start": "00:00",
+    "end": "23:59"
+  },
+  "location": {
+    "sceneId": "M0_Base_Inside_lv_1",
+    "x": 10,
+    "y": 14
+  },
+  "mainMenu": {
+    "showChat": true,
+    "showWorkWhen": "never",
+    "showOpenAgriculturePanel": true,
+    "showLeave": true
+  },
+  "behavior": {
+    "type": "workbench",
+    "origin": "base_hideout",
+    "description": "设施 NPC：邻格点农业格走 interactNpc；闲聊走 triggers，使用农田打开农业面板。"
+  },
+  "fallbackDialoguePoolId": "npc.station.agriculture_base.fallback",
+  "fallbackPoolRules": [
+    {
+      "id": "npc.station.agriculture_base",
+      "repeatable": true,
+      "match_weight": 1,
+      "poolPickMode": "pick_one",
+      "poolIds": [
+        "npc.station.agriculture_base"
+      ],
+      "requires": [],
+      "blocks": [],
+      "condition": null
+    }
+  ],
+  "tags": [
+    "workbench",
+    "agriculture_station",
+    "non_combat",
+    "base_facility"
+  ]
+}

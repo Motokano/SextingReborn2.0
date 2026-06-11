@@ -1,0 +1,39 @@
+{
+  "schema_version": 2,
+  "design_note": "水池等级：L2 窃流；L3 蓄水池(天气)；L4 cap4+窃流溢流回蓄。常态 base_pool_water=200 不抬。",
+  "baseline_pool_water": 200,
+  "levels": {
+    "1": {
+      "level": 1,
+      "label_key": "agriculture.pool.level.1",
+      "base_pool_water": 200,
+      "branch_theft": { "enabled": false, "transfer_cap": 0 },
+      "reservoir": { "enabled": false, "capacity_max": 0 },
+      "theft_overflow_to_reservoir": false
+    },
+    "2": {
+      "level": 2,
+      "label_key": "agriculture.pool.level.2",
+      "base_pool_water": 200,
+      "branch_theft": { "enabled": true, "transfer_cap": 2 },
+      "reservoir": { "enabled": false, "capacity_max": 0 },
+      "theft_overflow_to_reservoir": false
+    },
+    "3": {
+      "level": 3,
+      "label_key": "agriculture.pool.level.3",
+      "base_pool_water": 200,
+      "branch_theft": { "enabled": true, "transfer_cap": 2 },
+      "reservoir": { "enabled": true, "capacity_max": 50000 },
+      "theft_overflow_to_reservoir": false
+    },
+    "4": {
+      "level": 4,
+      "label_key": "agriculture.pool.level.4",
+      "base_pool_water": 200,
+      "branch_theft": { "enabled": true, "transfer_cap": 4 },
+      "reservoir": { "enabled": true, "capacity_max": 50000 },
+      "theft_overflow_to_reservoir": true
+    }
+  }
+}

@@ -94,9 +94,11 @@
         if (isDisabled(map, x, y)) return false;
         if (isBlocked(map, x, y)) return false;
         if (isCookingStationCell(x, y)) return false;
+        if (isAgricultureStationCell(x, y)) return false;
         if (isPharmacyFacilityNpcBlockingWalk(x, y)) return false;
         if (isCompostFacilityNpcBlockingWalk(x, y)) return false;
         if (isBedStationCell(x, y)) return false;
+        if (isWarehouseStationCell(x, y)) return false;
         return true;
     }
 
@@ -192,12 +194,32 @@
         return false;
     }
 
+    /** 农业互动点判定：使用标注法（与灶台同口径，格不可走） */
+    function isAgricultureStationCell(x, y) {
+        var ann = getAnnotationAt(x, y);
+        if (ann) {
+            var s = String(ann).trim();
+            if (s === '农业' || s === '农田' || s.indexOf('农业') >= 0) return true;
+        }
+        return false;
+    }
+
     /** 床设施判定：使用标注法 */
     function isBedStationCell(x, y) {
         var ann = getAnnotationAt(x, y);
         if (ann) {
             var s = String(ann).trim();
             if (s === '床' || s === '床铺') return true;
+        }
+        return false;
+    }
+
+    /** 藏身处账号仓库设施判定：使用标注法 */
+    function isWarehouseStationCell(x, y) {
+        var ann = getAnnotationAt(x, y);
+        if (ann) {
+            var s = String(ann).trim();
+            if (s === '仓库') return true;
         }
         return false;
     }
@@ -263,6 +285,26 @@
     }
 
     /**
+     * 地图上农业格绑定的「设施 NPC」id。
+     * 优先 `agriculture_station_interact_npc_by_cell["x,y"]`，否则回落 `agriculture_station_interact_npc_id`。
+     */
+    function getAgricultureStationInteractNpcId(x, y) {
+        var map = getMap();
+        if (!map || !isAgricultureStationCell(x, y)) return null;
+        var by = map.agriculture_station_interact_npc_by_cell;
+        if (by && typeof by === 'object') {
+            var k = (x | 0) + ',' + (y | 0);
+            if (Object.prototype.hasOwnProperty.call(by, k)) {
+                var v = by[k];
+                if (v != null && String(v).trim()) return String(v).trim();
+            }
+        }
+        var aid = map.agriculture_station_interact_npc_id;
+        if (aid != null && String(aid).trim()) return String(aid).trim();
+        return null;
+    }
+
+    /**
      * 地图上床位格绑定的「设施 NPC」id。
      * 优先 `bed_station_interact_npc_by_cell["x,y"]`，否则回落 `bed_station_interact_npc_id`。
      */
@@ -279,6 +321,26 @@
         }
         var bid = map.bed_station_interact_npc_id;
         if (bid != null && String(bid).trim()) return String(bid).trim();
+        return null;
+    }
+
+    /**
+     * 地图上仓库格绑定的「设施 NPC」id。
+     * 优先 `warehouse_station_interact_npc_by_cell["x,y"]`，否则回落 `warehouse_station_interact_npc_id`。
+     */
+    function getWarehouseStationInteractNpcId(x, y) {
+        var map = getMap();
+        if (!map || !isWarehouseStationCell(x, y)) return null;
+        var by = map.warehouse_station_interact_npc_by_cell;
+        if (by && typeof by === 'object') {
+            var k = (x | 0) + ',' + (y | 0);
+            if (Object.prototype.hasOwnProperty.call(by, k)) {
+                var v = by[k];
+                if (v != null && String(v).trim()) return String(v).trim();
+            }
+        }
+        var wid = map.warehouse_station_interact_npc_id;
+        if (wid != null && String(wid).trim()) return String(wid).trim();
         return null;
     }
 
@@ -316,6 +378,10 @@
         nid = getPharmacyStationInteractNpcId(x, y);
         if (nid) return nid;
         nid = getCompostStationInteractNpcId(x, y);
+        if (nid) return nid;
+        nid = getAgricultureStationInteractNpcId(x, y);
+        if (nid) return nid;
+        nid = getWarehouseStationInteractNpcId(x, y);
         if (nid) return nid;
         return getBedStationInteractNpcId(x, y);
     }
@@ -442,7 +508,9 @@
         getCookingStationInteractNpcId: getCookingStationInteractNpcId,
         getPharmacyStationInteractNpcId: getPharmacyStationInteractNpcId,
         getCompostStationInteractNpcId: getCompostStationInteractNpcId,
+        getAgricultureStationInteractNpcId: getAgricultureStationInteractNpcId,
         getBedStationInteractNpcId: getBedStationInteractNpcId,
+        getWarehouseStationInteractNpcId: getWarehouseStationInteractNpcId,
         getInteractNpcIdAt: getInteractNpcIdAt,
         getEnemyAt: getEnemyAt,
         getAnnotationAt: getAnnotationAt,
@@ -450,7 +518,9 @@
         isCookingStationCell: isCookingStationCell,
         isPharmacyStationCell: isPharmacyStationCell,
         isCompostStationCell: isCompostStationCell,
+        isAgricultureStationCell: isAgricultureStationCell,
         isBedStationCell: isBedStationCell,
+        isWarehouseStationCell: isWarehouseStationCell,
         isAdjacent: isAdjacent,
         canStandAt: canStandAt,
         jumpTo: jumpTo,

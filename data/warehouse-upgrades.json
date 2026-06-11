@@ -1,0 +1,301 @@
+{
+  "schema_version": 1,
+  "_comment": "藏身处 hideout_warehouse 升级节点。设计正本 docs/design/29-hideout-warehouse.md",
+  "task_defaults": {
+    "task_ticks": 10,
+    "stamina_per_tick": 5,
+    "panel_tick_ms": 2000
+  },
+  "base_capacity": 100,
+  "a0_unlock": {
+    "_note": "开局剧情 flag，具体 flag 名由剧情落盘；满足后方可开仓与扩建",
+    "requires_flag": null
+  },
+  "base_free_qol_ids": [
+    "capacity_100",
+    "deposit_manual_four_containers",
+    "deposit_auto_stack",
+    "withdraw_to_character_default_order"
+  ],
+  "capacity_ladder": [100, 200, 350, 500, 700],
+  "route_pick": {
+    "_note": "首档三选一开局；未 discovered 的节点在 UI 完全隐藏",
+    "route_starts": ["U-A1", "U-C1", "U-B1"]
+  },
+  "upgrades": {
+    "U-A1": {
+      "name": "扩仓 I",
+      "route_id": "capacity",
+      "phase": 1,
+      "drive": "S",
+      "requires": ["A0"],
+      "qol_ids": ["capacity_200"],
+      "capacity_after": 200,
+      "task_ticks": 10,
+      "stamina_per_tick": 5,
+      "inputs": [
+        { "item_id": "wood_bits", "count": 10 },
+        { "item_id": "wood_bamboo_green", "count": 6 },
+        { "item_id": "supply_rope_hemp_short", "count": 4 },
+        { "item_id": "wood_shrub_dry", "count": 6 }
+      ]
+    },
+    "U-C1": {
+      "name": "顺手存取",
+      "route_id": "access",
+      "phase": 1,
+      "drive": "A",
+      "requires": ["A0"],
+      "qol_ids": ["qol_quick_transfer"],
+      "task_ticks": 5,
+      "stamina_per_tick": 5,
+      "inputs": [
+        { "item_id": "wood_bits", "count": 4 },
+        { "item_id": "supply_rope_hemp_short", "count": 3 },
+        { "item_id": "wood_cork", "count": 2 },
+        { "item_id": "supply_bandage_cloth", "count": 2 }
+      ]
+    },
+    "U-B1": {
+      "name": "一键理仓",
+      "route_id": "tidy",
+      "phase": 1,
+      "drive": "S",
+      "requires": ["A0"],
+      "qol_ids": ["qol_tidy_one_click"],
+      "task_ticks": 10,
+      "stamina_per_tick": 5,
+      "inputs": [
+        { "item_id": "wood_plank_soft", "count": 8 },
+        { "item_id": "supply_rope_hemp_short", "count": 4 },
+        { "item_id": "wood_bits", "count": 6 },
+        { "item_id": "ore_clay_raw", "count": 3 }
+      ]
+    },
+    "U-C2": {
+      "name": "估格整备",
+      "phase": 2,
+      "drive": "S",
+      "requires": ["U-C1"],
+      "qol_ids": ["qol_deposit_all", "qol_slot_preview"],
+      "task_ticks": 10,
+      "stamina_per_tick": 5,
+      "inputs": [
+        { "item_id": "wood_plank_soft", "count": 6 },
+        { "item_id": "wood_bamboo_green", "count": 4 },
+        { "item_id": "supply_rope_hemp_short", "count": 5 },
+        { "item_id": "hunt_bone_common", "count": 4 },
+        { "item_id": "tool_bucket_water_empty", "count": 1 }
+      ]
+    },
+    "U-D1": {
+      "name": "仓内账册",
+      "phase": 2,
+      "drive": "A",
+      "requires": ["U-B1"],
+      "qol_ids": ["qol_ledger"],
+      "task_ticks": 8,
+      "stamina_per_tick": 5,
+      "inputs": [
+        { "item_id": "supply_bandage_cloth", "count": 6 },
+        { "item_id": "tool_layer_filter_sheet_pharmacy", "count": 8 },
+        { "item_id": "tool_sewing_kit_cloth", "count": 1 },
+        { "item_id": "ore_copper_raw", "count": 2 },
+        { "item_id": "herb_leaf_fresh", "count": 10 }
+      ]
+    },
+    "U-A2": {
+      "name": "扩仓 II",
+      "phase": 2,
+      "drive": "S",
+      "requires": ["U-A1"],
+      "qol_ids": ["capacity_350"],
+      "capacity_after": 350,
+      "task_ticks": 15,
+      "stamina_per_tick": 5,
+      "inputs": [
+        { "item_id": "wood_plank_soft", "count": 14 },
+        { "item_id": "wood_oak", "count": 6 },
+        { "item_id": "supply_rope_hemp_short", "count": 8 },
+        { "item_id": "ore_iron_raw", "count": 3 },
+        { "item_id": "ore_limestone", "count": 4 }
+      ]
+    },
+    "U-F1": {
+      "name": "常备套",
+      "phase": 3,
+      "drive": "S",
+      "requires": ["U-C2", "U-D1"],
+      "qol_ids": ["qol_preset_loadout"],
+      "task_ticks": 10,
+      "stamina_per_tick": 5,
+      "inputs": [
+        { "item_id": "wood_plank_soft", "count": 8 },
+        { "item_id": "wood_bamboo_green", "count": 6 },
+        { "item_id": "supply_rope_hemp_short", "count": 6 },
+        { "item_id": "tool_bucket_water_empty", "count": 1 },
+        { "item_id": "herb_maize", "count": 4 },
+        { "item_id": "textile_cocoon_wild", "count": 5 }
+      ]
+    },
+    "U-F2": {
+      "name": "工料仓",
+      "phase": 3,
+      "drive": "S",
+      "requires": ["U-F1"],
+      "qol_ids": ["qol_craft_stash"],
+      "task_ticks": 12,
+      "stamina_per_tick": 5,
+      "inputs": [
+        { "item_id": "ore_clay_raw", "count": 10 },
+        { "item_id": "wood_plank_soft", "count": 6 },
+        { "item_id": "tool_mortar_pestle_cooking", "count": 1 },
+        { "item_id": "tool_layer_filter_sheet_pharmacy", "count": 6 },
+        { "item_id": "herb_root_bitter", "count": 4 },
+        { "item_id": "supply_rope_hemp_short", "count": 4 }
+      ]
+    },
+    "U-E1": {
+      "name": "封签与星标",
+      "phase": 3,
+      "drive": "A",
+      "requires": ["U-C2"],
+      "qol_ids": ["qol_lock_and_pin"],
+      "task_ticks": 8,
+      "stamina_per_tick": 5,
+      "inputs": [
+        { "item_id": "ore_clay_raw", "count": 6 },
+        { "item_id": "ore_copper_raw", "count": 4 },
+        { "item_id": "supply_rope_hemp_short", "count": 3 },
+        { "item_id": "ore_salt_rock", "count": 4 },
+        { "item_id": "ore_cast_iron", "count": 1 }
+      ]
+    },
+    "U-A3": {
+      "name": "扩仓 III",
+      "phase": 3,
+      "drive": "A",
+      "requires": ["U-A2"],
+      "qol_ids": ["capacity_500"],
+      "capacity_after": 500,
+      "task_ticks": 18,
+      "stamina_per_tick": 5,
+      "inputs": [
+        { "item_id": "ore_clay_raw", "count": 14 },
+        { "item_id": "ore_limestone", "count": 10 },
+        { "item_id": "wood_plank_soft", "count": 10 },
+        { "item_id": "ore_iron_raw", "count": 6 },
+        { "item_id": "supply_rope_hemp_short", "count": 6 },
+        { "item_id": "compost_matrix_grade_mid", "count": 2 }
+      ]
+    },
+    "U-A4": {
+      "name": "扩仓 IV",
+      "phase": 4,
+      "drive": "S",
+      "requires": ["U-A3"],
+      "qol_ids": ["capacity_700"],
+      "capacity_after": 700,
+      "task_ticks": 25,
+      "stamina_per_tick": 5,
+      "inputs": [
+        { "item_id": "wood_plank_soft", "count": 20 },
+        { "item_id": "wood_oak", "count": 10 },
+        { "item_id": "wood_zelkova", "count": 8 },
+        { "item_id": "ore_steel_ingot", "count": 3 },
+        { "item_id": "ore_limestone", "count": 12 },
+        { "item_id": "compost_matrix_grade_mid", "count": 4 },
+        { "item_id": "supply_rope_hemp_short", "count": 10 },
+        { "item_id": "ore_iron_ore", "count": 4 }
+      ]
+    },
+    "U-G3": {
+      "name": "冷藏",
+      "phase": 4,
+      "drive": "adv",
+      "requires": ["U-A3", "U-F2"],
+      "qol_ids": ["qol_cold_storage"],
+      "task_ticks": 20,
+      "stamina_per_tick": 5,
+      "inputs": [
+        { "item_id": "ore_clay_raw", "count": 16 },
+        { "item_id": "tool_fermentation_jar_cooking", "count": 1 },
+        { "item_id": "tool_pickling_jar_cooking", "count": 1 },
+        { "item_id": "compost_matrix_grade_high", "count": 3 },
+        { "item_id": "ore_water_pure_soft", "count": 8 },
+        { "item_id": "ore_salt_sea", "count": 6 },
+        { "item_id": "herb_kombu", "count": 4 },
+        { "item_id": "ore_salt_rock", "count": 8 },
+        { "item_id": "ore_salt_sea_coarse", "count": 6 },
+        { "item_id": "tool_bucket_water_full", "count": 2 }
+      ]
+    },
+    "U-C3": {
+      "name": "饱和取出",
+      "phase": 4,
+      "drive": "A",
+      "requires": ["U-C1"],
+      "qol_ids": ["qol_withdraw_fill"],
+      "task_ticks": 8,
+      "stamina_per_tick": 5,
+      "inputs": [
+        { "item_id": "supply_rope_hemp_short", "count": 8 },
+        { "item_id": "armor_cloth_rag_shirt", "count": 2 },
+        { "item_id": "wood_plank_soft", "count": 4 },
+        { "item_id": "supply_bandage_cloth", "count": 6 }
+      ]
+    },
+    "U-F3": {
+      "name": "常备库 ×3",
+      "phase": 4,
+      "drive": "B",
+      "requires": ["U-F1"],
+      "qol_ids": ["qol_preset_x3"],
+      "task_ticks": 12,
+      "stamina_per_tick": 5,
+      "inputs": [
+        { "item_id": "wood_plank_soft", "count": 12 },
+        { "item_id": "wood_bamboo_green", "count": 8 },
+        { "item_id": "supply_rope_hemp_short", "count": 10 },
+        { "item_id": "tool_sewing_kit_cloth", "count": 2 },
+        { "item_id": "wood_oak", "count": 4 }
+      ]
+    },
+    "U-G1": {
+      "name": "分栏视图",
+      "phase": 4,
+      "drive": "B",
+      "requires": ["U-D1", "U-A3"],
+      "qol_ids": ["qol_tab_view"],
+      "task_ticks": 10,
+      "stamina_per_tick": 5,
+      "inputs": [
+        { "item_id": "wood_plank_soft", "count": 10 },
+        { "item_id": "wood_zelkova", "count": 6 },
+        { "item_id": "supply_rope_hemp_short", "count": 6 },
+        { "item_id": "wood_bamboo_green", "count": 4 },
+        { "item_id": "supply_torch_bamboo", "count": 2 }
+      ]
+    },
+    "U-G2": {
+      "name": "远驿",
+      "phase": 4,
+      "drive": "A",
+      "requires": ["U-A4"],
+      "requires_story": true,
+      "qol_ids": ["qol_dungeon_access"],
+      "task_ticks": 15,
+      "stamina_per_tick": 5,
+      "inputs": [
+        { "item_id": "wood_plank_soft", "count": 8 },
+        { "item_id": "wood_bamboo_green", "count": 6 },
+        { "item_id": "supply_rope_hemp_short", "count": 8 },
+        { "item_id": "supply_torch_bamboo", "count": 4 },
+        { "item_id": "ore_copper_raw", "count": 6 },
+        { "item_id": "ore_iron_raw", "count": 4 },
+        { "item_id": "ore_steel_ingot", "count": 2 },
+        { "item_id": "ore_limestone", "count": 4 }
+      ]
+    }
+  }
+}
