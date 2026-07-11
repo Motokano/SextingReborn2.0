@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>潮碧物语 — 完整剧情大纲（遮天 / Blackout）</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: #1c1815;
+      color: #e8e6e3;
+      font-family: "Noto Serif SC", "Microsoft YaHei", serif;
+      line-height: 1.55;
+      font-size: 14px;
+    }
+    .wrap { max-width: 1000px; margin: 0 auto; padding: 20px 16px 48px; }
+    h1 {
+      font-size: 22px;
+      color: #d3a060;
+      margin: 0 0 6px;
+      border-bottom: 2px solid #4d4d45;
+      padding-bottom: 10px;
+    }
+    .sub { color: #8e8e8e; font-size: 12px; margin-bottom: 16px; }
+    nav.toc {
+      font-size: 13px;
+      margin-bottom: 20px;
+      padding: 10px 14px;
+      border: 1px solid #4d4d45;
+      border-radius: 8px;
+      background: #221c16;
+    }
+    nav.toc a { color: #7ab89a; text-decoration: none; margin-right: 10px; display: inline-block; margin-bottom: 4px; }
+    nav.toc a:hover { color: #d3a060; }
+    h2 { font-size: 16px; color: #7ab89a; margin: 24px 0 10px; scroll-margin-top: 12px; }
+    h3 { font-size: 14px; color: #d3a060; margin: 16px 0 8px; }
+    h4 { font-size: 13px; color: #b8e0d0; margin: 12px 0 6px; }
+    section {
+      border: 1px solid #4d4d45;
+      border-radius: 10px;
+      background: #1a1512;
+      padding: 14px 16px;
+      margin-bottom: 12px;
+    }
+    ul, ol { margin: 8px 0; padding-left: 1.2em; }
+    li { margin: 4px 0; }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+      margin: 10px 0;
+    }
+    th, td {
+      border: 1px solid #4d4d45;
+      padding: 6px 10px;
+      text-align: left;
+      vertical-align: top;
+    }
+    th { background: #243028; color: #d3a060; }
+    tr:nth-child(even) td { background: #1e1a16; }
+    pre {
+      background: #0f0d0b;
+      border: 1px solid #4d4d45;
+      border-radius: 8px;
+      padding: 12px 14px;
+      overflow-x: auto;
+      font-size: 12px;
+      line-height: 1.45;
+      color: #b8e0d0;
+    }
+    .warlord-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 10px;
+      margin: 12px 0;
+    }
+    .warlord-card {
+      border: 1px solid #5a8f7a;
+      background: #243028;
+      border-radius: 8px;
+      padding: 12px 14px;
+    }
+    .warlord-card h4 { margin-top: 0; color: #d3a060; }
+    .warlord-card .tag { font-size: 11px; color: #8e8e8e; margin-bottom: 6px; }
+    .flow {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 6px;
+      margin: 12px 0;
+      font-size: 13px;
+    }
+    .flow .box {
+      border: 1px solid #5a8f7a;
+      background: #243028;
+      color: #b8e0d0;
+      padding: 6px 10px;
+      border-radius: 6px;
+    }
+    .flow .box.gold { border-color: #d3a060; color: #f0d8b0; }
+    .flow .box.red { border-color: #c08070; color: #e8c0b8; }
+    .flow .arrow { color: #8e8e8e; }
+    .note {
+      font-size: 12px;
+      color: #8e8e8e;
+      border-left: 3px solid #d3a060;
+      padding-left: 10px;
+      margin: 10px 0;
+    }
+    .ui-strip {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin: 10px 0;
+    }
+    .ui-chip {
+      font-size: 11px;
+      padding: 4px 8px;
+      border-radius: 4px;
+      background: #2d241e;
+      border: 1px solid #4d4d45;
+      color: #8e8e8e;
+    }
+    .ui-chip.strike { text-decoration: line-through; opacity: 0.5; }
+    footer { margin-top: 32px; font-size: 12px; color: #6e6e6e; }
+    a { color: #7ab89a; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>潮碧物语 — 完整剧情大纲</h1>
+    <p class="sub">终局任务「遮天」（英 <strong>Blackout</strong>）及世界观定稿 · Markdown：<code>docs/design/30-story-outline-blackout.md</code></p>
+
+    <nav class="toc">
+      <strong>目录</strong><br />
+      <a href="#vol1">第一卷：世界</a>
+      <a href="#vol2">第二卷：七阀</a>
+      <a href="#vol3">第三卷：硅叶</a>
+      <a href="#vol4">第四卷：林书瑶</a>
+      <a href="#vol5">第五卷：主角</a>
+      <a href="#vol6">第六卷：遮天 / Blackout</a>
+      <a href="#vol7">第七卷：尾声</a>
+      <a href="#appendix">附录：反向信号发生器</a>
+    </nav>
+
+    <!-- 第一卷 -->
+    <h2 id="vol1">第一卷：世界</h2>
+    <section>
+      <h3>大陆</h3>
+      <p>架空大陆，借壳<strong>广东省</strong>地理轮廓。山在北，海在南，平原在中。珠江口将大陆劈成两半。</p>
+      <h3>末世程度</h3>
+      <p>类似<strong>民国末年</strong>：有粮、有铁、有路、有人，缺秩序。个人武力压制下退回军阀割据。</p>
+      <h3>人口与起始点</h3>
+      <ul>
+        <li>总人口约 <strong>12～15 万</strong></li>
+        <li>起始点：<strong>金木镇</strong>（深圳内陆/东莞交界）</li>
+      </ul>
+      <h3>语言</h3>
+      <p>大陆语言与地球汉语类似<strong>粤语与客家话</strong>的关系；林书瑶教入门语言，语言技能卡多项解锁。</p>
+      <h3>登天</h3>
+      <p>旧时代集体共识，书上写「半步已过，再往前便是登天」——<strong>登天不存在</strong>，但是精神支柱。七阀均为半步登天。</p>
+      <h3>观测层（隐藏）</h3>
+      <ul>
+        <li>外星综艺《荒野求生》，收视率第四第五，预算紧张</li>
+        <li>本季全新一季，此前参赛者不在本星球</li>
+        <li>林书瑶 = 外包观测员；硅叶 = 外星文明提前数十年撒播的基础设施，本季选为拍摄地后才正式接入信号网络</li>
+        <li>主角 = 2026 地球人，精神穿越 + 克隆体</li>
+      </ul>
+    </section>
+
+    <!-- 第二卷 -->
+    <h2 id="vol2">第二卷：七阀</h2>
+    <section>
+      <p class="note">来源：盲精哑毒跛招积、孤儿暗哑底、卷毛蛊惑咸湿四眼龟、软饭青面仔。万里挑一习武天才，枭雄逢乱世起势。</p>
+      <pre>
+         北（韶关·清远）
+    ┌──────────────────────┐
+    │      瞎子算账         │
+    ├──────────┬─────────────┤
+    │ 哑巴熬药  │   没爹崽    │
+    │ (西临广西)│             │
+    ├──────────┼─────────────┤
+    │   四眼   │  金木镇(起始) │
+    │ (广州佛山)│             │
+    ├──────────┼─────────────┤
+    │  青面仔  │  中山/虎门   │
+    ├──────────┴─────────────┤
+    │ 瘸子(西南)  卷毛(东南)   │
+    └──────── 珠江口 水道 ──────┘
+      </pre>
+      <div class="warlord-grid">
+        <div class="warlord-card">
+          <h4>1. 瞎子算账</h4>
+          <div class="tag">盲精 · 韶关/清远 · 情报/债务</div>
+          <p>眼瞎了，脑子却亮。卖情报、追债、守山口，手底下约三千人。真正吓人的不是刀——是你想杀他之前，他先把你的秘密画在山道木板上，然后放你带着秘密回去。十年前瘸子带两千人打上来，他公示了瘸子整支部队的行军细节，瘸子走到半山腰就撤了。</p>
+        </div>
+        <div class="warlord-card">
+          <h4>2. 哑巴熬药</h4>
+          <div class="tag">哑毒 · 肇庆/云浮 · 贩毒至广西</div>
+          <p>不会说话，有个妹妹替他对外谈买卖、看人靠不靠谱。药田藏在化工厂底下，货经青面仔的线卖到广西。不靠杀人控场，靠断药——停供三天，对方自己会把首领绑来求他。</p>
+        </div>
+        <div class="warlord-card">
+          <h4>3. 瘸子扬尘</h4>
+          <div class="tag">跛招积 · 湛江/茂名/阳江 · 武器</div>
+          <p>脾气大、架子大，全大陆的刀多半从他炉子里出。茂名深处有口四百度以上的主锻炉，里面打了一把十年没成型的刀；腿是炉炸时废的。要他办大事，得凑十二个人来求见——要看你有几个人肯替你卖命。平时在他地盘逛，没这规矩。</p>
+        </div>
+        <div class="warlord-card">
+          <h4>4. 没爹崽</h4>
+          <div class="tag">孤儿暗哑底 · 河源/梅州 · 暗杀</div>
+          <p>不知道爹是谁。手下只有编号，散在矿坑、驿站、各地暗点里，上面看不见指挥部在哪。他杀过其他六阀里的人——几乎每一个都杀过。</p>
+        </div>
+        <div class="warlord-card">
+          <h4>5. 卷毛</h4>
+          <div class="tag">卷毛蛊惑 · 汕尾/惠州 · 邪教</div>
+          <p>沿海渡口起家，沿水道传教。信徒干活交粮、逢年过节上供；药丸圣水跟哑巴换货。至于他传的那些教义，他自己一个字都不信。</p>
+        </div>
+        <div class="warlord-card">
+          <h4>6. 四眼</h4>
+          <div class="tag">咸湿四眼龟 · 广州/佛山 · 妓院/人口/赌城</div>
+          <p>大陆上唯一还算城市的地方。妓院、人口、赌城都在他手里；前门书铺兼做公证。大家都要靠这座城聚散人货、认字据，动他等于掀了全大陆的买卖台子。七人里最会做生意。</p>
+        </div>
+        <div class="warlord-card">
+          <h4>7. 青面仔</h4>
+          <div class="tag">软饭青面仔 · 中山/虎门 · 运输/暗道</div>
+          <p>脸色发青，靠三个女人站起来的——跟瘸子妹妹学账本，跟哑巴女管事记过贩毒路线，跟四眼妈妈桑建过暗线。卡住了全大陆的运输咽喉：明面上护镖队，真货走地下暗道。谁撞破暗道，没爹崽替他清理，他每年付一笔维护费。六方都需要他运货，所以六方都不敢动他。</p>
+        </div>
+      </div>
+      <p><strong>主角</strong>：没名没姓、没来历，没人关心，正好在各阀地盘里乱走。<strong>林书瑶</strong>：比主角早来两个月，七阀里还没几个人注意到她。</p>
+    </section>
+
+    <!-- 第三卷 -->
+    <h2 id="vol3">第三卷：硅叶</h2>
+    <section>
+      <ul>
+        <li>硅叶是外星文明**提前数十年撒播**的改造植物；节目组选定本季后才正式接入信号网络。违反《原始生态保护公约》，节目太糊无人深究。</li>
+        <li>旧时代配方公开，全民普及如腌咸菜</li>
+        <li>浸布 + 呼吸法灌底气 → 挡刀箭，枪还在但无人用</li>
+        <li>七阀强在底气精度，非垄断硅叶本身</li>
+        <li>硅叶 = 双向信号中继器，数据汇聚<strong>原始株</strong>（白叶背面，观测站门口）</li>
+      </ul>
+    </section>
+
+    <!-- 第四卷 -->
+    <h2 id="vol4">第四卷：林书瑶</h2>
+    <section>
+      <table>
+        <tr><th>项</th><th>内容</th></tr>
+        <tr><td>表面</td><td>邮差；摸鱼、槟榔、烟；9:00～17:30 固定出现/消失；从不送信</td></tr>
+        <tr><td>实际</td><td>外包「外场观测运维（初级）」；比主角早约两个月</td></tr>
+        <tr><td>籍贯</td><td>地球人（广州），遣返 2026 天河区</td></tr>
+        <tr><td>工作</td><td>植入监测器；UI = 设备输出；存档/死亡 = 克隆体覆盖与回收</td></tr>
+        <tr><td>物资</td><td>本部调拨（槟榔大陆不产）；每两周申请</td></tr>
+        <tr><td>战力</td><td>就是强，不需要理由；前中期任务逐步侧面透露</td></tr>
+        <tr><td>合同</td><td>保护拍摄设备为最高优先，其次保护拍摄对象；遮天 = 破坏设备 → 激活合同</td></tr>
+        <tr><td>七阀口径</td><td>私下称「林经理」；终局七人齐聚金木镇观战圈，看她与主角一战</td></tr>
+      </table>
+    </section>
+
+    <!-- 第五卷 -->
+    <h2 id="vol5">第五卷：主角</h2>
+    <section>
+      <ul>
+        <li>2026 广州，午休拿外卖，一眨眼到大陆；此前记忆空白</li>
+        <li><strong>精神穿越</strong> + 克隆体；存档 = 神经数据覆盖备用体</li>
+        <li>死亡：旧体溶解（林回收），新体醒来，技能 -50、装备全失</li>
+        <li>地狱 = 数据传输几秒自循环碎片</li>
+        <li>基地/藏身处 = 赖活底气；认识槟榔但从不注意林书瑶异常</li>
+        <li>地球肉身：广州某医院，深度昏迷，判定植物人</li>
+      </ul>
+    </section>
+
+    <!-- 第六卷 -->
+    <h2 id="vol6">第六卷：遮天 / Blackout（终局任务）</h2>
+    <p class="note">对外命名：中文「遮天」；英文 <strong>Blackout</strong>（升雾断讯、全星对外失联）。</p>
+    <section>
+      <h3>触发</h3>
+      <p>长期生存后注意到林书瑶异常；试探闲聊，她嚼槟榔慢半拍 → 找答案。</p>
+
+      <h3>第一步：瞎子 → 老吕</h3>
+      <p>纸条四字：<strong>「摄像头还在」</strong>。老吕：旧军工信号分析员，地下三十年，靠旧时代物资仓库存活至今。发现硅叶信号网络 + 原始株位置。六个零件是他三十年前亲手藏在各地的——他出不去了，只能让主角去取。要六个零件拼反向信号发生器。</p>
+      <p>台词：「你还记得你在 2026 年拿了的那份外卖吗？」</p>
+
+      <h3>第二步：六劫</h3>
+      <table>
+        <tr><th>劫</th><th>零件</th><th>地点</th><th>对手</th><th>要点</th></tr>
+        <tr><td>一</td><td>回火管</td><td>瘸子 · 主锻炉</td><td>护炉队 8 人</td><td>400℃+，衣耐久每 3 回合 -1</td></tr>
+        <tr><td>二</td><td>冷沉罐</td><td>哑巴 · 毒王池</td><td>护田队 12 人</td><td>三层地形，纯粹拳战</td></tr>
+        <tr><td>三</td><td>陈浆罐</td><td>卷毛 · 渡口祖缸</td><td>护缸四徒</td><td>四人同步；说需要罐子，第一拳就出</td></tr>
+        <tr><td>四</td><td>聚光筒</td><td>没爹崽 · 矿坑隧道</td><td>守道队 8 人</td><td>巷道围杀；近身卸镜筒</td></tr>
+        <tr><td>五</td><td>扼流圈</td><td>青面仔 · 地听站</td><td>自动哨 6 台</td><td>绕后重置；补半页波形账</td></tr>
+        <tr><td>六</td><td>蒸馏釜</td><td>四眼 · 赌城顶楼</td><td>阿九</td><td>呼吸与出拳不同步破预读</td></tr>
+      </table>
+
+      <h3>第三步：七阀齐聚金木镇</h3>
+      <p>六劫收束后，主角携反向信号发生器直奔金木镇观测站。七阀互相不通气，却在同一夜往金木镇赶。</p>
+      <p>七阀私下称林书瑶<strong>「林经理」</strong>（听岔设备字样 + 笑她朝九晚五像管事的）。</p>
+      <table>
+        <tr><th>阀</th><th>到场</th><th>外圈方位</th><th>理由</th></tr>
+        <tr><td>青面仔</td><td>最先</td><td>暗道出口</td><td>扼流圈被拆、波形账被补</td></tr>
+        <tr><td>卷毛</td><td>第二</td><td>南水道红幡</td><td>陈浆罐被夺；曾派人探金木镇一人未归</td></tr>
+        <tr><td>没爹崽</td><td>已在</td><td>东岭矿道口</td><td>聚光筒在此被卸；眼线报「擦线的人回巢了」</td></tr>
+        <tr><td>四眼</td><td>随后</td><td>北侧废楼</td><td>蒸馏釜输局——最大一盘不能不在场</td></tr>
+        <tr><td>瞎子</td><td>同行</td><td>北坡风道</td><td>主角债迹 + 空白页指向同一坐标</td></tr>
+        <tr><td>哑巴</td><td>同行</td><td>西侧田埂</td><td>冷沉罐失窃；妹妹说观测味最浓</td></tr>
+        <tr><td>瘸子</td><td>最慢</td><td>西南油库台</td><td>回火管被拔；十二人使节凑不齐，拄拐亲至</td></tr>
+      </table>
+      <p class="note"><strong>观战规矩</strong>：踏进战圈帮任何一方 → 另六方联手拦（冷和延伸）。没人喊停，没人递刀。</p>
+
+      <h3>第四步：林书瑶 · 终局战（七阀在场）</h3>
+      <p><strong>开战</strong>：主角掏铁盒往白叶走。林书瑶靠在门边嚼槟榔：「那个叶子，别碰。」主角没停。她把槟榔渣往地上一吐，站起来：「我再说一次——别碰。」主角继续走。她没再说第三遍，起了势。</p>
+      <p><strong>阶段一</strong>：完整 BOSS 战，全游戏最复杂技能组合（持续迭代）。七人开打即震——林书瑶拳路不属于大陆任何一派，主角硬吃一拳能站起来，七人里至少四个在心里估算过自己吃那一下能不能站稳。</p>
+      <p>可切反应镜头轮替（每段极短）：<br>
+      瞎子「不对，她不是慢一帧，是<strong>不需要快</strong>」<br>
+      哑巴铜杵第一次搁脚边（妹妹译：「他说这一拳能打死一个人」）<br>
+      瘸子「我打了四十年铁，没见过这种发力」<br>
+      没爹崽「擦线的人，来了两个」<br>
+      卷毛「我骗了十五年的人，没见过不用出底牌的人」<br>
+      四眼「这盘局我没法开——她上限我算不出来」<br>
+      青面仔「……这两个疯子在打什么」</p>
+      <p><strong>阶段二（演出）</strong>：UI 逐层消失（主角主观）。<strong>外圈</strong>：四眼收起赌筹「不看了，输不起」；哑巴攥紧铜杵；卷毛眉头越皱越紧。1001 全身冲撞将其打得飞穿观测站；她退开：「叶子在那，自己来。」<strong>外圈</strong>：林像没料到——没爹崽笑「妈的，打中了」；瘸子拐杖敲地；卷毛长呼一口气。</p>
+      <div class="ui-strip">
+        <span class="ui-chip strike">Buff HUD</span>
+        <span class="ui-chip strike">生存条</span>
+        <span class="ui-chip strike">快捷栏</span>
+        <span class="ui-chip strike">战斗日志</span>
+        <span class="ui-chip strike">快捷腰带</span>
+        <span class="ui-chip strike">状态卡</span>
+        <span class="ui-chip strike">肢体检视</span>
+        <span class="ui-chip strike">全 HUD</span>
+      </div>
+
+      <h3>第五步：遮天</h3>
+      <p>铁盒接白叶 → 升雾约 1 分钟 → 对外永久失联。林书瑶通讯中断：「不错」。七阀<strong>仍在观战圈外</strong>，同步各见遮天。</p>
+
+      <h4>七阀各见遮天（观战圈现场）</h4>
+      <p class="note">与升雾同步切镜；不知综艺真相。散场后七人离镇，路线错开，像从未同桌看过这一战。</p>
+
+      <div class="warlord-grid">
+        <div class="warlord-card">
+          <h4>1. 瞎子 · 北坡</h4>
+          <p>侧耳听雾：林子同时咽了一口气。低声：「她那一拳打在我身上，北山三千人拦不住。」空白页盲文敲「她走了」。</p>
+        </div>
+        <div class="warlord-card">
+          <h4>2. 哑巴 · 西侧</h4>
+          <p>看星灭。妹妹译：「他说最猛的疯子不如这个女的十分之一。」当众烧广西路线图——看了这一仗，那点生意没意思了。</p>
+        </div>
+        <div class="warlord-card">
+          <h4>3. 瘸子 · 西南台</h4>
+          <p>白叶亮光如炉心回火。拄拐：「妈的怪物……也是怪物。」护炉队加倍——知道自己打了十年的刀，打不过刚才三分钟。</p>
+        </div>
+        <div class="warlord-card">
+          <h4>4. 没爹崽 · 矿道口</h4>
+          <p>嘬牙花子：「这辈子别找这两个人。」下「三天不动」令——不是服软，是他知道他杀不了这两个人。</p>
+        </div>
+        <div class="warlord-card">
+          <h4>5. 卷毛 · 南水道</h4>
+          <p>推开信徒：「闭嘴。你们拜的东西不如她一拳。」大笑：「我骗了十五年的人，被两个不骗人的疯子打服了。」</p>
+        </div>
+        <div class="warlord-card">
+          <h4>6. 四眼 · 废楼</h4>
+          <p>赌镜黑屏；擦眼镜：「这两个人打的不是拳，是我这辈子算不清的数。」临走：「金木镇的局别碰了，碰了也是输。」</p>
+        </div>
+        <div class="warlord-card">
+          <h4>7. 青面仔 · 暗道口</h4>
+          <p>地听针坠底。喝茶：「以后路过金木镇多绕两步，别挡这两个人的路。」波形账只留「金木镇，两个人，一场雾」锁匣。</p>
+        </div>
+      </div>
+
+      <h3>主线结构</h3>
+      <div class="flow">
+        <span class="box">认知裂开</span><span class="arrow">→</span>
+        <span class="box">瞎子/老吕</span><span class="arrow">→</span>
+        <span class="box gold">六劫</span><span class="arrow">→</span>
+        <span class="box">七阀齐聚（好奇，只看不帮）</span><span class="arrow">→</span>
+        <span class="box red">林经理战</span><span class="arrow">→</span>
+        <span class="box gold">Blackout/升雾</span><span class="arrow">→</span>
+        <span class="box dim">尾声</span>
+      </div>
+    </section>
+
+    <!-- 第七卷 -->
+    <h2 id="vol7">第七卷：尾声</h2>
+    <section>
+      <h3>星际追责</h3>
+      <ul>
+        <li>检察署：硅叶非法引入 + 信号遮蔽层</li>
+        <li>奎格玛娱乐集团罚款；第七频道整改；《荒野求生》解散</li>
+        <li>林书瑶：不予追究（无越权）</li>
+      </ul>
+      <h3>遣返</h3>
+      <p>新规禁止雇佣未开化星球生物。林书瑶属地球人，失业遣返 <strong>广州 · 2026</strong>。招聘 APP 推邮局兼职；她不找主角。</p>
+      <p class="note">「那颗星球的位置，除了她没人记得了。」</p>
+    </section>
+
+    <!-- 附录 -->
+    <h2 id="appendix">附录：反向信号发生器</h2>
+    <section>
+      <p>用硅叶材料发射<strong>反相位</strong>波，经原始株根须改频 → 全大陆硅叶升雾 → 对外失联。运行约 <strong>1 分钟</strong>（冷沉罐散热极限）。</p>
+      <table>
+        <tr><th>零件</th><th>作用</th><th>为何必须</th></tr>
+        <tr><td>陈浆罐</td><td>信号源</td><td>十年陈浆产生反相杂波</td></tr>
+        <tr><td>蒸馏釜</td><td>提纯</td><td>提高纤维浓度</td></tr>
+        <tr><td>冷沉罐</td><td>散热</td><td>防十秒内炸膛</td></tr>
+        <tr><td>扼流圈</td><td>调频</td><td>滤成硅叶网一致频率</td></tr>
+        <tr><td>回火管</td><td>导热+天线</td><td>耐高温金属管发射</td></tr>
+        <tr><td>聚光筒</td><td>定向</td><td>束信号对准白叶叶脉轴</td></tr>
+      </table>
+      <pre>陈浆 → 蒸馏浓缩 → 冷沉降温 → 扼流圈滤频 → 回火管发射 → 聚光筒对准白叶
+→ 根须改频 → 全大陆升雾 → 对外失联</pre>
+    </section>
+
+    <footer>
+      文档版本：剧情讨论定稿 · 终局 BOSS 技能表、林书瑶弧线细节、主角遮天后去向待补充
+    </footer>
+  </div>
+</body>
+</html>

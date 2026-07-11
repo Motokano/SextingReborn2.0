@@ -1,0 +1,1492 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>战斗逻辑设定说明</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: #1c1815;
+      color: #e8e6e3;
+      font-family: "Noto Serif SC", "Microsoft YaHei", serif;
+      line-height: 1.55;
+      font-size: 14px;
+    }
+    .wrap { max-width: 1000px; margin: 0 auto; padding: 20px 16px 48px; }
+    h1 {
+      font-size: 22px;
+      color: #d3a060;
+      margin: 0 0 6px;
+      border-bottom: 2px solid #4d4d45;
+      padding-bottom: 10px;
+    }
+    .sub { color: #8e8e8e; font-size: 12px; margin-bottom: 16px; }
+    nav.toc {
+      font-size: 13px;
+      margin-bottom: 20px;
+      padding: 10px 14px;
+      border: 1px solid #4d4d45;
+      border-radius: 8px;
+      background: #221c16;
+    }
+    nav.toc a { color: #7ab89a; text-decoration: none; margin-right: 10px; display: inline-block; margin-bottom: 4px; }
+    nav.toc a:hover { color: #d3a060; }
+    h2 { font-size: 16px; color: #7ab89a; margin: 0 0 10px; }
+    h3 { font-size: 14px; color: #d3a060; margin: 16px 0 8px; }
+    h4 { font-size: 13px; color: #b8e0d0; margin: 12px 0 6px; }
+    section {
+      border: 1px solid #4d4d45;
+      border-radius: 10px;
+      background: #1a1512;
+      padding: 14px 16px;
+      margin-bottom: 12px;
+    }
+    ul, ol { margin: 8px 0; padding-left: 1.2em; }
+    li { margin: 4px 0; }
+    .pillar-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 8px;
+      margin: 12px 0;
+    }
+    .pillar-card {
+      border: 1px solid #5a8f7a;
+      background: #243028;
+      border-radius: 8px;
+      padding: 10px 12px;
+    }
+    .pillar-card strong { color: #d3a060; display: block; margin-bottom: 4px; }
+    .pillar-card span { font-size: 12px; color: #b8e0d0; }
+    .flow {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 6px;
+      margin: 12px 0;
+      font-size: 13px;
+    }
+    .flow .box {
+      border: 1px solid #5a8f7a;
+      background: #243028;
+      color: #b8e0d0;
+      padding: 6px 10px;
+      border-radius: 6px;
+    }
+    .flow .box.gold { border-color: #d3a060; color: #f0d8b0; }
+    .flow .box.red { border-color: #c08070; color: #e8c0b8; }
+    .flow .box.dim { border-color: #4d4d45; color: #8e8e8e; }
+    .flow .arrow { color: #8e8e8e; }
+    .flow.vertical {
+      flex-direction: column;
+      align-items: stretch;
+      max-width: 520px;
+    }
+    .flow.vertical .row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .flow.vertical .arrow { align-self: center; }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+      margin: 10px 0;
+    }
+    th, td {
+      border: 1px solid #4d4d45;
+      padding: 8px 10px;
+      text-align: left;
+      vertical-align: top;
+    }
+    th { background: #251d17; color: #d3a060; }
+    td.num { text-align: right; font-variant-numeric: tabular-nums; }
+    .note {
+      border-left: 3px solid #d3a060;
+      padding: 8px 12px;
+      margin: 10px 0;
+      background: #221c16;
+      color: #d8cfbf;
+      font-size: 13px;
+    }
+    .note.warn { border-left-color: #c08070; }
+    .note.ok { border-left-color: #7ab89a; }
+    code {
+      background: #251d17;
+      padding: 1px 5px;
+      border-radius: 4px;
+      font-size: 12px;
+      color: #d3a060;
+    }
+    .calc {
+      font-family: Consolas, "Microsoft YaHei", monospace;
+      background: #0f0d0b;
+      padding: 10px 12px;
+      border-radius: 6px;
+      border: 1px solid #333;
+      margin: 8px 0;
+      font-size: 13px;
+      color: #b8e0d0;
+      overflow-x: auto;
+      white-space: pre-wrap;
+    }
+    .pill {
+      display: inline-block;
+      font-size: 11px;
+      padding: 2px 8px;
+      border-radius: 99px;
+      background: #251d17;
+      border: 1px solid #4d4d45;
+      color: #9ad4c4;
+      margin-right: 4px;
+    }
+    .pill.combat { border-color: #c08070; color: #e8c0b8; }
+    .pill.data { border-color: #7ab89a; color: #b8e0d0; }
+    .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .doc-list { font-size: 12px; color: #8e8e8e; }
+    .doc-list a { color: #7ab89a; }
+    @media (max-width: 640px) { .two-col { grid-template-columns: 1fr; } }
+
+    /* —— 战斗过程模拟器 —— */
+    #sim { border-color: #5a8f7a; }
+    #sim h2 { color: #d3a060; }
+    .sim-layout {
+      display: grid;
+      grid-template-columns: 280px 1fr;
+      gap: 14px;
+      align-items: start;
+    }
+    @media (max-width: 800px) { .sim-layout { grid-template-columns: 1fr; } }
+    .sim-panel {
+      border: 1px solid #4d4d45;
+      border-radius: 8px;
+      background: #221c16;
+      padding: 12px;
+    }
+    .sim-panel h3 { margin-top: 0; font-size: 13px; }
+    .sim-field { margin-bottom: 10px; }
+    .sim-field label {
+      display: block;
+      font-size: 12px;
+      color: #b8b0a4;
+      margin-bottom: 3px;
+    }
+    .sim-field input[type="number"],
+    .sim-field select {
+      width: 100%;
+      background: #0f0d0b;
+      border: 1px solid #4d4d45;
+      color: #e8e6e3;
+      padding: 5px 8px;
+      border-radius: 4px;
+      font-size: 13px;
+    }
+    .sim-field input[type="range"] { width: 100%; }
+    .sim-field .range-val { font-size: 12px; color: #9ad4c4; }
+    .sim-field.inline { display: flex; align-items: center; gap: 8px; }
+    .sim-field.inline label { margin: 0; flex: 1; }
+    .sim-field.inline input[type="checkbox"] { width: auto; }
+    .sim-btns { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; }
+    .sim-btns button {
+      background: #243028;
+      border: 1px solid #5a8f7a;
+      color: #b8e0d0;
+      padding: 6px 12px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 13px;
+      font-family: inherit;
+    }
+    .sim-btns button:hover { border-color: #d3a060; color: #f0d8b0; }
+    .sim-btns button.primary { background: #3a2a18; border-color: #d3a060; color: #f0d8b0; }
+    .sim-btns button:disabled { opacity: 0.45; cursor: not-allowed; }
+    .sim-status-bar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 12px;
+      font-size: 12px;
+    }
+    .sim-chip {
+      padding: 4px 10px;
+      border-radius: 6px;
+      background: #251d17;
+      border: 1px solid #4d4d45;
+    }
+    .sim-chip.player { border-color: #7ab89a; }
+    .sim-chip.enemy { border-color: #c08070; }
+    .sim-timeline {
+      max-height: 420px;
+      overflow-y: auto;
+      padding-right: 4px;
+    }
+    .sim-step {
+      border-left: 3px solid #4d4d45;
+      padding: 8px 10px 8px 12px;
+      margin-bottom: 8px;
+      background: #1a1512;
+      border-radius: 0 6px 6px 0;
+      opacity: 0.45;
+      transition: opacity 0.2s, border-color 0.2s;
+    }
+    .sim-step.active {
+      opacity: 1;
+      border-left-color: #d3a060;
+      background: #221c16;
+    }
+    .sim-step.done { opacity: 0.85; border-left-color: #5a8f7a; }
+    .sim-step.skip { opacity: 0.35; }
+    .sim-step-head {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 4px;
+    }
+    .sim-step-num {
+      font-size: 11px;
+      color: #8e8e8e;
+      min-width: 2.2em;
+    }
+    .sim-step-title { font-weight: bold; color: #d3a060; font-size: 13px; }
+    .sim-step-tag {
+      font-size: 10px;
+      padding: 1px 6px;
+      border-radius: 99px;
+      background: #251d17;
+      color: #9ad4c4;
+    }
+    .sim-step-tag.fail { color: #e8c0b8; border: 1px solid #c08070; }
+    .sim-step-tag.ok { color: #b8e0d0; border: 1px solid #5a8f7a; }
+    .sim-step-body { font-size: 12px; color: #c8c0b4; margin: 0; }
+    .sim-step-formula {
+      font-family: Consolas, monospace;
+      font-size: 11px;
+      color: #9ad4c4;
+      margin-top: 6px;
+      padding: 6px 8px;
+      background: #0f0d0b;
+      border-radius: 4px;
+      white-space: pre-wrap;
+    }
+    .sim-progress {
+      height: 4px;
+      background: #333;
+      border-radius: 2px;
+      margin-bottom: 10px;
+      overflow: hidden;
+    }
+    .sim-progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #5a8f7a, #d3a060);
+      width: 0%;
+      transition: width 0.25s;
+    }
+    .sim-map {
+      display: grid;
+      grid-template-columns: repeat(3, 36px);
+      grid-template-rows: repeat(3, 36px);
+      gap: 2px;
+      margin: 10px auto;
+      width: fit-content;
+    }
+    .sim-cell {
+      background: #251d17;
+      border: 1px solid #4d4d45;
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+    }
+    .sim-cell.actor { background: #243028; border-color: #7ab89a; }
+    .sim-cell.foe { background: #302420; border-color: #c08070; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>战斗逻辑设定说明</h1>
+    <p class="sub">
+      汇总 <code>docs/design/</code> 战斗相关设计文档 · 风来的西林式回合 · 8 向格战 · 命中/招架/伤害链 · 策划查阅用（非可玩 demo）
+    </p>
+
+    <nav class="toc">
+      <a href="#sim" style="color:#d3a060;font-weight:bold">▶ 战斗过程模拟</a>
+      <a href="#s0">0 总览</a>
+      <a href="#s1">1 节奏与格战</a>
+      <a href="#s2">2 战斗资源</a>
+      <a href="#s3">3 速度与先手</a>
+      <a href="#s4">4 地图普攻交换</a>
+      <a href="#s5">5 单次交换流程</a>
+      <a href="#s6">6 命中率</a>
+      <a href="#s7">7 原始伤害</a>
+      <a href="#s8">8 三类型后处理</a>
+      <a href="#s9">9 招架段</a>
+      <a href="#s10">10 减伤链</a>
+      <a href="#s11">11 肢体与损毁</a>
+      <a href="#s12">12 战斗技能体系</a>
+      <a href="#s13">13 基本拳脚示例</a>
+      <a href="#s14">14 后遗症与变式</a>
+      <a href="#s15">15 Buff 与战斗事件</a>
+      <a href="#s16">16 敌人</a>
+      <a href="#s17">17 击退与撞墙</a>
+      <a href="#s18">18 实现索引</a>
+      <a href="#s19">19 文档出处</a>
+    </nav>
+
+    <section id="sim">
+      <h2>互动：完整战斗过程模拟</h2>
+      <p class="sub" style="margin-bottom:12px">按设计文档公式逐步演算一次<strong>玩家发起普攻</strong>的交换（含先后手、命中、招架、伤害链、还击、tick 末击退）。数值为教学近似，常数对齐 <code>survival-config.json</code>。</p>
+
+      <div class="sim-layout">
+        <div class="sim-panel">
+          <h3>场景参数</h3>
+          <div class="sim-field">
+            <label>招式</label>
+            <select id="sim-move">
+              <option value="jab">刺拳 jab（M=0.8，叠试探）</option>
+              <option value="front_kick">正蹬 front_kick（M=1.2，击退）</option>
+              <option value="swing_punch">摆拳 swing_punch（M=1.4，消费试探）</option>
+              <option value="whip_kick">鞭腿 whip_kick（M=1.0，叠失衡）</option>
+            </select>
+          </div>
+          <div class="sim-field">
+            <label>出招肢 / guard 互斥</label>
+            <select id="sim-limb">
+              <option value="rhand">右手 rhand</option>
+              <option value="lhand">左手 lhand</option>
+              <option value="rfoot">右脚 rfoot</option>
+              <option value="lfoot">左脚 lfoot</option>
+            </select>
+          </div>
+          <div class="sim-field">
+            <label>成数 k（1～12）<span class="range-val" id="sim-k-val">10</span></label>
+            <input type="range" id="sim-k" min="1" max="12" value="10" />
+          </div>
+          <div class="sim-field">
+            <label>受击部位（固定抽样）</label>
+            <select id="sim-hit-part">
+              <option value="chest">胸 chest</option>
+              <option value="head">头 head</option>
+              <option value="abdomen">腹 abdomen</option>
+              <option value="left_arm">左臂 left_arm</option>
+            </select>
+          </div>
+          <hr style="border-color:#4d4d45;margin:12px 0" />
+          <div class="sim-field"><label>玩家速度（取整）</label><input type="number" id="sim-vp" value="12" min="1" /></div>
+          <div class="sim-field"><label>敌人速度（取整）</label><input type="number" id="sim-ve" value="10" min="1" /></div>
+          <div class="sim-field inline">
+            <label>玩家装配「不假思索」</label>
+            <input type="checkbox" id="sim-post-force" />
+          </div>
+          <div class="sim-field"><label>筋骨（徒手底）</label><input type="number" id="sim-jingu" value="50" min="0" /></div>
+          <div class="sim-field"><label>技能等级 L</label><input type="number" id="sim-sklv" value="50" min="1" max="1000" /></div>
+          <div class="sim-field"><label>招式熟练度 R_move（0～1）</label><input type="number" id="sim-rmove" value="0.2" min="0" max="1" step="0.05" /></div>
+          <div class="sim-field"><label>技能总熟 R_skill（0～1）</label><input type="number" id="sim-rskill" value="0.15" min="0" max="1" step="0.05" /></div>
+          <div class="sim-field"><label>实战经验（亿）</label><input type="number" id="sim-cexp" value="0" min="0" step="1" /></div>
+          <hr style="border-color:#4d4d45;margin:12px 0" />
+          <div class="sim-field"><label>气力当前 / 上限</label>
+            <div style="display:flex;gap:6px"><input type="number" id="sim-qi-c" value="80" min="0" style="flex:1" /><input type="number" id="sim-qi-m" value="100" min="1" style="flex:1" /></div>
+          </div>
+          <div class="sim-field"><label>底气当前 / 上限</label>
+            <div style="display:flex;gap:6px"><input type="number" id="sim-dq-c" value="60" min="0" style="flex:1" /><input type="number" id="sim-dq-m" value="100" min="1" style="flex:1" /></div>
+          </div>
+          <div class="sim-field"><label>玩家柔韧（招架/减伤）</label><input type="number" id="sim-flex-p" value="20" min="0" /></div>
+          <div class="sim-field"><label>敌人 HP</label><input type="number" id="sim-ehp" value="120" min="1" /></div>
+          <div class="sim-field"><label>敌人招架率（无柔韧）</label><input type="number" id="sim-eparry" value="0.1" min="0" max="1" step="0.05" /></div>
+          <div class="sim-field"><label>敌人卸力比例</label><input type="number" id="sim-eparry-reduce" value="0.1" min="0" max="1" step="0.05" /></div>
+          <div class="sim-field"><label>敌人身体减伤</label><input type="number" id="sim-ebody" value="0.1" min="0" max="0.9" step="0.05" /></div>
+          <div class="sim-field"><label>敌人还击伤害</label><input type="number" id="sim-ecounter" value="10" min="0" /></div>
+          <div class="sim-field inline">
+            <label>敌人可还击</label>
+            <input type="checkbox" id="sim-can-counter" checked />
+          </div>
+          <div class="sim-field inline">
+            <label>随机种子（0=每次重掷）</label>
+            <input type="checkbox" id="sim-seed-fix" />
+          </div>
+          <div class="sim-btns">
+            <button type="button" class="primary" id="sim-run">生成完整流程</button>
+            <button type="button" id="sim-prev" disabled>上一步</button>
+            <button type="button" id="sim-next" disabled>下一步</button>
+            <button type="button" id="sim-auto" disabled>自动播放</button>
+            <button type="button" id="sim-reset">重置</button>
+          </div>
+        </div>
+
+        <div class="sim-panel">
+          <div class="sim-map" aria-hidden="true">
+            <div class="sim-cell"></div><div class="sim-cell foe" title="敌人">👹</div><div class="sim-cell"></div>
+            <div class="sim-cell"></div><div class="sim-cell"></div><div class="sim-cell"></div>
+            <div class="sim-cell"></div><div class="sim-cell actor" title="玩家">🧍</div><div class="sim-cell"></div>
+          </div>
+          <div class="sim-status-bar" id="sim-status"></div>
+          <div class="sim-progress"><div class="sim-progress-fill" id="sim-progress"></div></div>
+          <div class="sim-timeline" id="sim-timeline">
+            <p style="color:#8e8e8e;font-size:13px;margin:0">点击「生成完整流程」后，将在此按时间顺序展示每一次交换内的全部结算步骤。</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="s0">
+      <h2>0. 战斗设计总览</h2>
+      <p>本作战斗是<strong>格子地图上的回合制近战</strong>：玩家与敌人各占一格、不可叠格；「相碰」指邻接交战而非走入敌格。一次完整交战消耗玩家本回合行动份额，并按<strong>西林式节奏</strong>推进——玩家动一次，场上敌人各动一次。</p>
+      <div class="pillar-grid">
+        <div class="pillar-card"><strong>格战与输入</strong><span>8 向移动/攻击；朝敌格移动意图可转普攻；正前方 1 格单体</span></div>
+        <div class="pillar-card"><strong>先后手</strong><span>取整速度比决定先手；同速双段演算后同时提交</span></div>
+        <div class="pillar-card"><strong>命中 → 招架 → 减伤</strong><span>速度参与命中；柔韧参与招架与基础防御</span></div>
+        <div class="pillar-card"><strong>肢上技能</strong><span>四肢各装主动+招架；招式槽/变式槽/成数分槽</span></div>
+        <div class="pillar-card"><strong>资源</strong><span>气力（战斗中）；底气（生存+催发）；无「气劲」</span></div>
+        <div class="pillar-card"><strong>构筑层</strong><span>后遗症、变式、Buff 经统一事件管线触发</span></div>
+      </div>
+      <p class="note ok"><strong>属性口径</strong>：战斗公式使用「先天 + 后天」实际值；经脉/穴位间接影响底气与五维，不改变本节流程骨架（见 <code>12-meridians-and-acupoints.md</code>）。</p>
+    </section>
+
+    <section id="s1">
+      <h2>1. 节奏、格战与回合消耗</h2>
+      <h3>占格与「相碰」</h3>
+      <ul>
+        <li>玩家与敌人<strong>不得共占同一格</strong>；朝敌人格发出移动意图时，若在攻击范围内则<strong>不入敌格</strong>，改为邻侧触发攻击。</li>
+        <li>一次由玩家发起、进入完整战斗流程的交战 = 消耗<strong>一次行动份额</strong> + 跑完该回合战斗结算链路。</li>
+      </ul>
+      <h3>消耗回合的动作</h3>
+      <ul>
+        <li><span class="pill combat">耗回合</span>移动一格、普攻、使用技能、使用道具、等待</li>
+        <li><span class="pill">不耗回合</span>纯查看等（后续定义）</li>
+      </ul>
+      <h3>战斗节奏</h3>
+      <p class="note">风来的西林式：<strong>玩家每行动一次 → 所有敌人各行动一次</strong>。方向与范围：8 向；普攻默认<strong>正前方 1 格单体</strong>。</p>
+    </section>
+
+    <section id="s2">
+      <h2>2. 战斗资源与出力成数</h2>
+      <div class="two-col">
+        <div>
+          <h3>气力值（QiLi）</h3>
+          <ul>
+            <li><strong>仅战斗中启用</strong>；快耗、快消。</li>
+            <li>施展依赖气力的招式扣 <code>qi_li_current</code>。</li>
+            <li>本回合<strong>未发生气力消耗</strong>时，回合末恢复 <code>qi_li_max × qi_li_regen_pct_per_turn</code>（默认约 25%）。</li>
+            <li>基本呼吸法「吐纳」可战斗中固定回复 50 点（有冷却），与回合末回气<strong>不互斥</strong>。</li>
+          </ul>
+        </div>
+        <div>
+          <h3>底气（DiQi）</h3>
+          <ul>
+            <li>生存向资源；自然恢复、行气、呼吸法护体等见 <code>06-survival.md</code>。</li>
+            <li>部分招式在 10 成（或按配置）除气力外还可扣底气。</li>
+            <li>可参与<strong>底气催发伤害乘区</strong>（与成数挂钩）。</li>
+          </ul>
+        </div>
+      </div>
+      <p class="note warn"><strong>无「气劲」</strong>：战斗消耗仅由气力与/或底气组成；不存在第三条同名资源。</p>
+
+      <h3>出力成数（1～12 成）</h3>
+      <ul>
+        <li>伤害与资源消耗与成数挂钩：\(F_{\text{出力}} = \text{成数}/10\)；10 成基准消耗 × 成数/10。</li>
+        <li>模板提供 <code>default_power_level</code>、<code>power_level_min/max</code>。</li>
+        <li><strong>生效成数</strong>来自当前招式槽位存档的 <code>power_level</code>（分槽配置，每槽可不同）。</li>
+      </ul>
+
+      <h3>资源不足仍出手（已定）</h3>
+      <ul>
+        <li>应扣量<strong>始终按槽位成数 \(k\)</strong> 计算；实际扣除 <code>min(应扣, 当前)</code>，扣至 0、不记负。</li>
+        <li>本击仍走完整命中/招架/伤害流程。</li>
+        <li><strong>当前实现约束</strong>：气力或底气任一不足以覆盖应扣量时，<strong>本击最终伤害强制为 0</strong>（保留流程反馈，禁止资源透支打伤害）。</li>
+      </ul>
+
+      <h3>头顶气力条（反馈 HUD）</h3>
+      <ul>
+        <li>仅 <code>inCombat=true</code> 且气力未满时显示玩家条；需特殊技能 <code>special_battle_sense ≥ 1</code>。</li>
+        <li>敌人气力条：玩家 <code>special_battle_sense ≥ 3</code> 时可见。</li>
+      </ul>
+    </section>
+
+    <section id="s3">
+      <h2>3. 战斗速度、先手、连击与同速</h2>
+      <h3>速度公式（玩家）</h3>
+      <div class="calc">V_base ← hubs.footwork 当前步法的 combat_speed_base（无步法 → base_speed_no_footwork，默认 1）
+
+速度(浮点) = V_base × (1 + 0.005×身手 + Σ装备等%)
+速度(取整) = max(1, floor(浮点) + ⌊步法等级/10⌋ × combat_speed_per_10_levels)</div>
+      <p>敌人速度为配置表<strong>直接整数</strong>，不走身手/步法公式（见 §16）。</p>
+
+      <h3>先手语义（一次交换内）</h3>
+      <ul>
+        <li><strong>先手方</strong>先完整跑完本侧：命中 roll → 招架 → 减伤 → 扣血/损毁/资源/Buff/即时效果。</li>
+        <li><strong>后手方</strong>在先手全部结束后才开始；若先手已击杀/失能，后手<strong>不再还击</strong>。</li>
+        <li>速度<strong>高者先手</strong>（取整后比较）。</li>
+      </ul>
+
+      <h3>同速：同时结算</h3>
+      <ol>
+        <li>以交换<strong>起始快照</strong>先演算玩家侧待提交变更集（不写 HP）。</li>
+        <li>在同一快照上演算敌人侧变更集。</li>
+        <li><strong>同时提交</strong>两侧结果——允许互中、同归。</li>
+      </ol>
+
+      <h3>先手例外（后遗症）</h3>
+      <p>攻击方本击 <code>move_id</code> 在出招肢已装配 <code>initiative_always_first</code> 后遗症时，<strong>在速度结构之后</strong>强制攻击方严格先手；双方均有则<strong>互抵</strong>回退速度结构。连击段数仍仅由速度倍率决定。</p>
+
+      <h3>连击</h3>
+      <table>
+        <thead><tr><th>速度倍率</th><th>连击段数（先手方）</th></tr></thead>
+        <tbody>
+          <tr><td>≥ 2× 对方</td><td>2 段</td></tr>
+          <tr><td>≥ 3×</td><td>3 段</td></tr>
+          <tr><td>≥ 4×</td><td>4 段</td></tr>
+        </tbody>
+      </table>
+      <p>每段独立命中/招架/伤害/扣费；慢速方在对方连击全部结束后<strong>还手一次</strong>。</p>
+    </section>
+
+    <section id="s4">
+      <h2>4. 地图普攻：肢序、互斥与敌先还击</h2>
+      <h3>出手顺序（取代旧 priority）</h3>
+      <ul>
+        <li>存档 <code>limb_strike_order</code>：四肢各出现一次的排列 + <code>limb_strike_order_cursor</code> 游标。</li>
+        <li>自动普攻按顺序扫描，跳过空槽/标签不符/损毁肢。</li>
+      </ul>
+      <h3>同一次交换内：普攻肢 vs 招架肢互斥</h3>
+      <ul>
+        <li>某肢已用于普攻出手，则本 tick <strong>不可再作 guard_limb</strong> 承担招架。</li>
+        <li>躯干受击时在剩余候选肢中按 <code>lhand → rhand → lfoot → rfoot</code> 取首条未损毁肢。</li>
+      </ul>
+      <h3>敌速更高时的二次选肢</h3>
+      <p>地图普攻且<strong>非显式三件套</strong>（未同时指定 skill_id + limb_id + move_id）时：若敌方取整速度更高，须<strong>先结算敌方还击</strong>，再按肢序二次选定本击实际出手肢与招式，并重新解析成数/后遗症。<strong>不回滚</strong>已发生的还击；与终稿「强制玩家先手」冲突时仅打提示日志。</p>
+    </section>
+
+    <section id="s5">
+      <h2>5. 单次攻击交换：结算流水线</h2>
+      <div class="flow vertical">
+        <div class="row"><span class="box gold">输入 / 选肢 / 成数 / 资源意图</span></div>
+        <span class="arrow">↓</span>
+        <div class="row"><span class="box">先后手判定（速度 + 后遗症例外）</span></div>
+        <span class="arrow">↓</span>
+        <div class="row"><span class="box">命中 roll（速度比 + 命中词条）</span></div>
+        <span class="arrow">↓ 失败则本段结束</span>
+        <div class="row"><span class="box">Buff/后遗症：命中成功触发（含 0 伤仍触发项）</span></div>
+        <span class="arrow">↓</span>
+        <div class="row"><span class="box">招架段：解析 guard_limb → 掷骰 / 卸力</span></div>
+        <span class="arrow">↓</span>
+        <div class="row"><span class="box">计算 raw → 三类型后处理</span></div>
+        <span class="arrow">↓</span>
+        <div class="row"><span class="box">减伤链（护体→防具→基础防御→类型微调）</span></div>
+        <span class="arrow">↓</span>
+        <div class="row"><span class="box">落地 finalDamage（floor）→ 扣 HP / 损毁 Q</span></div>
+        <span class="arrow">↓</span>
+        <div class="row"><span class="box dim">tick 末：击退队列坍缩（至多一条）</span></div>
+      </div>
+      <p class="note"><strong>多 sub-hit</strong>：同一 tick 内每段攻击独立 <code>event_id</code>，Buff 消耗/效果按段独立判定（见 §15）。</p>
+    </section>
+
+    <section id="s6">
+      <h2>6. 命中率</h2>
+      <p>由攻防双方<strong>取整后速度</strong>参与；同速基础约 80%～85%；<strong>无法达到 100%</strong>（有硬上限）。</p>
+      <div class="calc">r = V_攻 / max(V_防, ε)
+
+r ≥ 1：P_base = P_eq + (P_max - P_eq) × ln(r) / (L + ln(r))，clamp 到 [P_eq, P_max]
+r &lt; 1：P_base = P_eq × r + P_min × (1 - r)，clamp 到 [P_min, P_eq]
+
+P_命中 = min(P_base + B_命中, C_命中)    （C_命中 &lt; 1，如 0.99）</div>
+      <table>
+        <thead><tr><th>配置字段</th><th>含义</th></tr></thead>
+        <tbody>
+          <tr><td><code>hit_base_at_equal_speed</code></td><td>同速基础命中率 \(P_{\text{eq}}\)</td></tr>
+          <tr><td><code>hit_base_max</code></td><td>仅速度侧基础上限</td></tr>
+          <tr><td><code>hit_base_min</code></td><td>攻方更慢时下限</td></tr>
+          <tr><td><code>hit_final_cap</code></td><td>最终上限 \(C_{\text{命中}}\)</td></tr>
+          <tr><td><code>hit_curve_L</code>、<code>hit_epsilon</code></td><td>曲线常数、防除零</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section id="s7">
+      <h2>7. 原始伤害（减伤前）</h2>
+      <h3>玩家近战 raw（地图 resolve 口径）</h3>
+      <div class="calc">raw = max(0, B_底 × 增伤 × (1 + R_技能总熟) × F_实战经验 × k/10)
+
+资源门闸：气力或底气任一不足应扣量 → raw = 0（流程仍走）</div>
+
+      <h4>底数 B_底</h4>
+      <table>
+        <thead><tr><th>技能类型</th><th>底数来源</th></tr></thead>
+        <tbody>
+          <tr><td>徒手 unarmed</td><td>筋骨实际值 / fist_jingu_divisor（默认除数 5）</td></tr>
+          <tr><td>兵器 weapon</td><td>对应手持槽武器 <code>weapon_attack_power</code></td></tr>
+        </tbody>
+      </table>
+
+      <h4>增伤（加性块，含招式熟练度）</h4>
+      <div class="calc">增伤 = 1 + Σ(x-1) + R_move
+      = 1 + (Base(L)-1) + (呼吸法威力-1) + (M_move-1) + (G-1) + (K_试探-1) + (惯用肢-1) + R_move</div>
+      <ul>
+        <li><code>Base(L)</code>：技能等级曲线；<code>R_move</code>：该招式使用次数 / 50000，满 100%。</li>
+        <li><code>G</code>：手套/鞋或武器 <code>skill_coef</code>；惯用肢出招 ±10%。</li>
+        <li><code>K_试探</code>：仅摆拳且持有 buff_probe 时 = 1 + 0.05×层数。</li>
+        <li><code>1+R_技能总熟</code>：该技能所有招式熟练度<strong>算术平均</strong>（独立乘区）。</li>
+        <li><code>F_实战经验</code>：每 1 亿实战经验 +5% 全局伤害，上限 1000 亿（见 §16 旁注）。</li>
+      </ul>
+
+      <h3>文档层原始伤害（08 广义口径）</h3>
+      <div class="calc">rawDamage = 武器基础伤害 × W_coef × 实战经验 × 环境 × 暴击 × 底气催发
+
+W_coef = W_skill × M_move × G × K_试探
+武器基础伤害：徒手=筋骨；兵器=武器表基础伤害</div>
+    </section>
+
+    <section id="s8">
+      <h2>8. 三类型伤害后处理</h2>
+      <p>主公式产出 <code>rawDamage</code> 与初始 <code>damageType</code> 后，注入三类型池 <code>{ blunt, slash, pierce }</code>。<strong>全程保留小数</strong>，仅最终扣血 <code>floor</code>。</p>
+      <div class="flow">
+        <span class="box">注入 typed[damageType]</span>
+        <span class="arrow">→</span>
+        <span class="box">前置注入 add_flat / add_from_pct</span>
+        <span class="arrow">→</span>
+        <span class="box">首轮 increase_pct 增伤</span>
+        <span class="arrow">→</span>
+        <span class="box gold">单向转换 blunt→slash、slash→pierce</span>
+        <span class="arrow">→</span>
+        <span class="box">转换后二次增伤（仅新增分量）</span>
+        <span class="arrow">→</span>
+        <span class="box">进入减伤链（分类型结算后汇总）</span>
+      </div>
+      <p class="note warn"><strong>禁止反向转换</strong>（如 slash→blunt），防止结算递归。配置字段：<code>damage_type_effects</code>（招式/物品/词条）。</p>
+      <h4>对账示例</h4>
+      <div class="calc">输入：20 blunt，增伤 blunt +20%，slash +20%，转换 blunt→slash 20%
+→ 首轮：24 blunt → 转换：19.2 blunt + 4.8 slash → 二次增伤 slash：5.76 slash
+结果：19.2 blunt + 5.76 slash（落地前不取整）</div>
+    </section>
+
+    <section id="s9">
+      <h2>9. 招架段（命中成功后）</h2>
+      <h3>解析承担招架肢 guard_limb</h3>
+      <table>
+        <thead><tr><th>受击部位</th><th>guard_limb 规则</th></tr></thead>
+        <tbody>
+          <tr><td>四肢（left_arm 等）</td><td>固定对应该肢；已损毁则<strong>跳过整段招架</strong></td></tr>
+          <tr><td>头 / 胸 / 腹</td><td>按 lhand → rhand → lfoot → rfoot 取<strong>首条未损毁</strong>肢</td></tr>
+          <tr><td>四肢均已损毁</td><td>跳过招架段</td></tr>
+        </tbody>
+      </table>
+
+      <h3>招架数值</h3>
+      <ul>
+        <li>等级 = 招架槽所挂战斗技能等级（不单独计招架等级）。</li>
+        <li>raw = 基础值 × (1 + 系数 × 柔韧)；默认硬顶：招架率 75%、卸力 50%（可被效果突破）。</li>
+        <li>再叠加 Buff 百分点修正（如失衡每层 −5%），clamp 到合法区间。</li>
+        <li>敌人<strong>不享受柔韧加成</strong>，直接用配置基础值。</li>
+      </ul>
+
+      <h3>结果</h3>
+      <div class="flow">
+        <span class="box ok">招架成功</span>
+        <span class="arrow">→</span>
+        <span class="box">伤害记 0；可叠 debuff（命中已成功项仍生效）</span>
+      </div>
+      <div class="flow">
+        <span class="box red">招架失败</span>
+        <span class="arrow">→</span>
+        <span class="box">硬减伤 ×(1−卸力比)</span>
+        <span class="arrow">→</span>
+        <span class="box">进入减伤链</span>
+      </div>
+      <p class="note">行气时被攻击：招架判定自动失败。本段<strong>不消耗</strong>气力/底气（基本招架无消耗）。</p>
+    </section>
+
+    <section id="s10">
+      <h2>10. 减伤链（招架失败且卸力后）</h2>
+      <div class="flow">
+        <span class="box">底气护体 %</span>
+        <span class="arrow">→</span>
+        <span class="box">防具减伤（头/衣分部位，三类型各一档）</span>
+        <span class="arrow">→</span>
+        <span class="box">基础防御 DR = S_柔/(S_柔+3D)</span>
+        <span class="arrow">→</span>
+        <span class="box">伤害类型微调 M_部位,类型</span>
+        <span class="arrow">→</span>
+        <span class="box gold">floor → 扣 HP / 损毁 Q</span>
+      </div>
+      <ul>
+        <li>防具基础减伤与词条 <code>armor_bonus</code>：<strong>乘算</strong>剩余比例。</li>
+        <li>敌人用配置<strong>内功减伤</strong>与<strong>身体减伤</strong>替代玩家柔韧动态防御。</li>
+        <li>链内保留小数传递；仅最终扣血与损毁增加值向下取整。</li>
+      </ul>
+      <h3>撞墙加伤（与击退联动）</h3>
+      <p>tick 末击退未跑满格数时，在<strong>减伤链全部完成后、写 HP 前</strong>，最终伤害 × <code>wall_slam_final_damage_multiplier</code>（默认 1.3）再 floor。</p>
+    </section>
+
+    <section id="s11">
+      <h2>11. 命中部位与肢体损毁</h2>
+      <h3>七部位</h3>
+      <p>头、胸、腹、左手、右手、左脚、右脚。命中部位按招式<strong>权重随机</strong>（躯干偏高、头偏低等由招式表配置）。</p>
+      <h3>部位效果（摘要）</h3>
+      <table>
+        <thead><tr><th>部位</th><th>效果要点</th><th>损毁满值</th></tr></thead>
+        <tbody>
+          <tr><td>头</td><td>眩晕无法行动（可自恢）</td><td class="num">50</td></tr>
+          <tr><td>胸</td><td>仅算伤害</td><td class="num">100</td></tr>
+          <tr><td>腹</td><td>一次性降低饱食/饮水</td><td class="num">80</td></tr>
+          <tr><td>手</td><td>命中/招架下降；几率骨折</td><td class="num">100</td></tr>
+          <tr><td>脚</td><td>暂时无法移动；几率骨折</td><td class="num">100</td></tr>
+        </tbody>
+      </table>
+      <h3>损毁累积与重分配</h3>
+      <ul>
+        <li>损毁增加值 \(Q = \lfloor\)最终伤害\(\rfloor\)（与扣血同源）。</li>
+        <li>命中部位<strong>未损毁</strong>：\(Q\) 全部加在该部位（受上限封顶）。</li>
+        <li>命中部位<strong>已损毁</strong>：\(Q\) 均分到其余未损毁部位（余数按 头→胸→腹→四肢 顺序 +1）。</li>
+        <li>七部位均已损毁：本次 \(Q\) 作废。</li>
+        <li>损毁满后失去功能（四肢无法出招/招架等）。</li>
+      </ul>
+    </section>
+
+    <section id="s12">
+      <h2>12. 战斗技能五分类</h2>
+      <table>
+        <thead><tr><th>类别</th><th>挂载</th><th>招式槽</th><th>要点</th></tr></thead>
+        <tbody>
+          <tr><td><strong>徒手</strong></td><td>四肢主动槽</td><td>有</td><td>筋骨为武器基础伤害；肢上招式循环</td></tr>
+          <tr><td><strong>兵器</strong></td><td>四肢主动槽</td><td>有</td><td>武器 attack_power 为底；先天筋骨门槛</td></tr>
+          <tr><td><strong>呼吸法</strong></td><td>hubs.breath</td><td>无</td><td>吐纳、护体、breath_power_multiplier</td></tr>
+          <tr><td><strong>步法</strong></td><td>hubs.footwork</td><td>无熟练度</td><td>提供 V_base；仅间接影响命中（速度）</td></tr>
+          <tr><td><strong>招架</strong></td><td>四肢招架槽</td><td>无招式</td><td>数值随等级；可挂招架变式槽</td></tr>
+        </tbody>
+      </table>
+
+      <h3>肢上布局（主动链）</h3>
+      <ul>
+        <li>每肢：<strong>1 主动战斗技能 + 1 招架技能</strong>。</li>
+        <li>招式槽与变式槽<strong>共用</strong>：同槽二选一；每肢至少保留 <strong>1 个主动招式</strong>。</li>
+        <li>每槽可存 <code>power_level</code>（1～12）；变式不参与招式指针轮转。</li>
+        <li>招架变式槽：每肢最多 5 槽，招架等级每 200 级开 1 槽。</li>
+        <li>出招顺序：<code>limb_strike_order</code> 排列 + 游标（非旧 priority）。</li>
+      </ul>
+
+      <h3>熟练度双轨</h3>
+      <table>
+        <thead><tr><th>类型</th><th>计数</th><th>用途</th></tr></thead>
+        <tbody>
+          <tr><td>招式熟练度 R_move</td><td>命中并完成伤害 +1；50000 次满</td><td>参与<strong>单次伤害</strong>增伤区</td></tr>
+          <tr><td>技能总熟练度</td><td>所有招式 R 的算术平均</td><td><strong>不参与单次伤害</strong>；解锁后遗症/构式</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section id="s13">
+      <h2>13. 「基本拳脚」招式示例</h2>
+      <p>技能 id：<code>combat_basic_unarmed</code>。四招：刺拳、正蹬（1 级）；摆拳、鞭腿（50 级）。</p>
+      <table>
+        <thead>
+          <tr>
+            <th>招式</th><th>标签</th><th>M_move</th><th>气力(10成)</th><th>特色机制</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>jab</code> 刺拳</td><td>挥拳</td><td class="num">0.8</td><td>qi_li_max×20%</td>
+            <td>命中叠试探 buff_probe；≥20% 熟练解锁「不假思索」先手后遗症</td>
+          </tr>
+          <tr>
+            <td><code>front_kick</code> 正蹬</td><td>踢击</td><td class="num">1.2</td><td>qi_li_max×25%</td>
+            <td>招架失败 → tick 末击退；撞墙伤害 ×1.3</td>
+          </tr>
+          <tr>
+            <td><code>swing_punch</code> 摆拳</td><td>挥拳</td><td class="num">1.4</td><td>qi_li_max×25%</td>
+            <td>消费试探 K_试探；≥20% 熟练解锁「破相」驱散；被招架仍清空试探</td>
+          </tr>
+          <tr>
+            <td><code>whip_kick</code> 鞭腿</td><td>踢击</td><td class="num">1.0</td><td>qi_li_max×25%</td>
+            <td>命中叠失衡（每层招架 −5%）；被招架至 0 伤仍叠层</td>
+          </tr>
+        </tbody>
+      </table>
+      <p class="note">底气消耗（四招共用口径）：10 成基准 <code>diqi_max×10%</code> → floor → 夹紧 [1,50] → ×(k/10) → round → max(1,·)。施展时即按槽位成数扣费。</p>
+
+      <h3>试探（buff_probe）速记</h3>
+      <ul>
+        <li>刺拳命中 roll 成功叠层（最多 3）；摆拳算伤时 K = 1 + 0.05×层数。</li>
+        <li>摆拳命中成功且伤害结算完成（含 0 伤）→ <strong>整实例清空</strong>（非逐层扣）。</li>
+        <li>多 sub-hit：全部段结算完后统一判定是否清空。</li>
+      </ul>
+    </section>
+
+    <section id="s14">
+      <h2>14. 后遗症（构式）与变式</h2>
+      <div class="two-col">
+        <div>
+          <h3>后遗症 Post Effects</h3>
+          <ul>
+            <li>由技能总熟练度或单招式熟练度解锁；须<strong>装配</strong>才生效。</li>
+            <li>装配在出招肢；<strong>同肢同 id 唯一</strong>（四肢可各一份）。</li>
+            <li>可改规则：如 <code>initiative_always_first</code>、驱散增益、伤害类型改写等。</li>
+            <li>数据：<code>data/post-effects.json</code> + 招式 <code>post_effect_unlocks</code>。</li>
+          </ul>
+        </div>
+        <div>
+          <h3>变式 Variants</h3>
+          <ul>
+            <li>与主动招式<strong>共用槽位</strong>；全局解锁后可装任意合法槽。</li>
+            <li>不参与招式轮转；<code>target_filters</code> 只约束结算是否生效。</li>
+            <li>独立 effect 体系（不复用 Buff effect 目录）。</li>
+            <li>可辅助主动招式或招架（<code>assist_scope</code>）。</li>
+            <li>数据：<code>data/move-variants.json</code>。</li>
+          </ul>
+        </div>
+      </div>
+      <p class="note ok">伤害修饰分两类：<strong>加性增伤区</strong>（Increased/Decreased）与<strong>独立总增乘区</strong>（More/Less，多条相加后一次乘算）。</p>
+    </section>
+
+    <section id="s15">
+      <h2>15. Buff 系统与战斗事件</h2>
+      <h3>命中语义（强制）</h3>
+      <ul>
+        <li><code>consume_mode = on_hit_roll_success</code>：只看命中 roll 是否成功。</li>
+        <li>招架致 0 伤<strong>仍算命中成功</strong>，消耗/叠层照常（试探、失衡、驱散等）。</li>
+      </ul>
+      <h3>推荐战斗事件名</h3>
+      <table>
+        <thead><tr><th>阶段</th><th>event_kind</th><th>event_name</th></tr></thead>
+        <tbody>
+          <tr><td>命中判定已出</td><td>combat</td><td><code>attack_hit_roll_resolved</code></td></tr>
+          <tr><td>伤害已写入（含 0）</td><td>combat</td><td><code>attack_damage_applied</code></td></tr>
+          <tr><td>单 sub-hit 结束</td><td>combat</td><td><code>attack_subhit_resolved</code></td></tr>
+          <tr><td>招架肢解析</td><td>combat</td><td><code>parry_guard_limb_resolved</code> 等</td></tr>
+        </tbody>
+      </table>
+      <p>每 sub-hit 须唯一 <code>event_id</code>；新增事件/tag 须先登记 <code>buff_event_registry.json</code>。</p>
+      <h3>命中方位（Hit Arc）</h3>
+      <p>相对夹角 ≤45° 为正面、45°～120° 侧面、&gt;120° 背面；事件 payload 带 <code>defender_hit_arc</code> / <code>attacker_strike_arc</code>，供 Buff/NPC 条件过滤，默认不直接改命中公式。</p>
+    </section>
+
+    <section id="s16">
+      <h2>16. 敌人（精简模型）</h2>
+      <p>与玩家共用<strong>七部位、命中权重、损毁规则、招架流程、三类型减伤</strong>；数值来源精简为表配置。</p>
+      <table>
+        <thead><tr><th>字段</th><th>说明</th></tr></thead>
+        <tbody>
+          <tr><td><code>speed</code></td><td>整数，直接参与先手/命中/连击</td></tr>
+          <tr><td><code>can_attack</code></td><td>false 时不还击、不进入同速双端提交</td></tr>
+          <tr><td><code>attack_damage_min/max</code></td><td>还击伤害区间随机</td></tr>
+          <tr><td><code>parry_rate</code> / 卸力</td><td>无柔韧加成</td></tr>
+          <tr><td><code>inner/body_damage_reduce</code></td><td>替代玩家柔韧基础防御</td></tr>
+          <tr><td><code>qi_li_max</code>、恢复</td><td>简化气力条；无完整底气体系</td></tr>
+          <tr><td>护体字段</td><td>可选 shield 减伤与容量</td></tr>
+          <tr><td><code>loot_table</code></td><td>掉落池 + 每项爆率</td></tr>
+        </tbody>
+      </table>
+      <p class="note">敌人攻击动作装备在肢体上；肢体损毁则该肢动作不可用。可与玩家共用 <code>mechanic_shared_with_enemy: true</code> 的 Buff/后遗症模板。</p>
+
+      <h3>实战经验值（玩家）</h3>
+      <div class="calc">F_实战经验 = 1 + clamp(combat_experience) / 1e8 × 0.05
+上限 1000 亿；战斗胜利获得，永不回退；碾压弱敌不再获得</div>
+    </section>
+
+    <section id="s17">
+      <h2>17. tick 末击退队列</h2>
+      <ul>
+        <li><strong>时机</strong>：本 tick 全部命中/招架/伤害/连击结束后执行；伤害中途不改坐标。</li>
+        <li><strong>同 tick 至多一条</strong>：先取 <code>cells</code> 最大子集 → 攻击方筋骨低者优先 → 速度低者优先 → <code>event_id</code> 字典序最小。</li>
+        <li><strong>入队条件</strong>：命中成功且招架失败（未完全免伤），如正蹬 <code>on_parry_failed_at_tick_end_displace_target</code>。</li>
+        <li><strong>方向</strong>：away_from_actor → 八邻域中与攻击向量夹角最小的可走格。</li>
+        <li><strong>阻挡</strong>：地形/边界/占格实体均阻挡，不挤开；未跑满格数触发撞墙加伤。</li>
+        <li>不消耗目标移动权；不默认触发借机/陷阱。</li>
+      </ul>
+    </section>
+
+    <section id="s18">
+      <h2>18. 实现索引（代码与数据）</h2>
+      <table>
+        <thead><tr><th>职责</th><th>位置</th></tr></thead>
+        <tbody>
+          <tr><td>地图普攻编排、选肢</td><td><code>js/scene-app.js</code> → <code>attackEnemy</code>、<code>pickWorldMeleeAttackIntent</code></td></tr>
+          <tr><td>先后手 / 同速提交</td><td><code>js/combat-initiative.js</code></td></tr>
+          <tr><td>玩家 raw 伤害 / 三类型池</td><td><code>js/combat-melee-resolve.js</code></td></tr>
+          <tr><td>管线阶段 / 击退 / dry-run</td><td><code>js/combat-pipeline.js</code></td></tr>
+          <tr><td>招架段 / guard_limb</td><td><code>js/combat-parry.js</code></td></tr>
+          <tr><td>技能 / 熟练度 / 招架数值</td><td><code>js/combat-skills.js</code>、<code>data/combat-skills.json</code></td></tr>
+          <tr><td>后遗症 / 变式</td><td><code>js/post-effects.js</code>、<code>js/combat-variants.js</code></td></tr>
+          <tr><td>Buff 触发</td><td><code>js/buff-system.js</code>、<code>data/buffs.json</code></td></tr>
+          <tr><td>肢序 / 槽位 / 成数存档</td><td><code>js/inventory-equipment.js</code></td></tr>
+          <tr><td>损毁 / 筋骨</td><td><code>js/character-attributes.js</code>、<code>data/survival-config.json</code></td></tr>
+          <tr><td>敌人模板</td><td><code>data/combat-enemies.json</code>、<code>js/combat-enemies.js</code></td></tr>
+          <tr><td>命中/招架常数</td><td><code>data/survival-config.json</code>（hit_*、parry_*）</td></tr>
+          <tr><td>管线配置</td><td><code>data/combat-pipeline.json</code></td></tr>
+        </tbody>
+      </table>
+      <p class="note">脚本加载顺序（节选）：<code>combat-post-effects.js</code> → <code>combat-initiative.js</code> → <code>combat-pipeline.js</code> → <code>combat-melee-resolve.js</code></p>
+    </section>
+
+    <section id="s19">
+      <h2>19. 设计文档出处</h2>
+      <p class="doc-list">本页内容主要汇编自以下文档（以仓库 <code>docs/design/</code> 为准）：</p>
+      <ul class="doc-list">
+        <li><strong>战斗核心</strong> — <code>07-combat-core.md</code>（节奏、资源、速度、先手、连击、击退、成数）</li>
+        <li><strong>命中/招架/伤害</strong> — <code>08-hit-parry-damage.md</code></li>
+        <li><strong>角色属性</strong> — <code>05-character-attributes.md</code>（五维、战斗速度 §5.7、减伤）</li>
+        <li><strong>战斗技能</strong> — <code>11-skills.md</code> §8.3（五分类、槽位、熟练度、基本拳脚）</li>
+        <li><strong>肢体损毁</strong> — <code>09-body-parts.md</code></li>
+        <li><strong>敌人</strong> — <code>10-enemies.md</code></li>
+        <li><strong>实战经验</strong> — <code>04-combat-exp.md</code></li>
+        <li><strong>Buff 系统</strong> — <code>18-buff-system.md</code></li>
+        <li><strong>实现索引</strong> — <code>14-implementation.md</code></li>
+        <li><strong>动作系统</strong> — <code>19-action-system.md</code>（吐纳等 hub 动作入口）</li>
+      </ul>
+      <p class="note ok" style="margin-top:12px">用浏览器直接打开本文件即可查阅；配色与 <code>tools/character-attributes-design-overview.html</code> 保持一致，便于与属性说明对照阅读。</p>
+    </section>
+  </div>
+
+  <script>
+  (function () {
+    'use strict';
+
+    var CFG = {
+      hit_eq: 0.825, hit_max: 0.95, hit_min: 0.05, hit_cap: 0.99, hit_L: 2, hit_eps: 1e-6,
+      parry_flex: 0.005, parry_chance_cap: 0.75, parry_damage_reduce_cap: 0.5,
+      fist_div: 5, def_D: 3,
+      parry_l1: 0.15, parry_lmax: 0.45, reduce_l1: 0.20, reduce_lmax: 0.50,
+      enemy_parry_reduce: 0.1,
+      wall_slam: 1.3
+    };
+
+    var MOVES = {
+      jab: { name: '刺拳', M: 0.8, qi_r: 0.2, dq_r: 0.1, probeStack: true, knockback: false },
+      front_kick: { name: '正蹬', M: 1.2, qi_r: 0.25, dq_r: 0.1, probeStack: false, knockback: true },
+      swing_punch: { name: '摆拳', M: 1.4, qi_r: 0.25, dq_r: 0.1, probeStack: false, consumeProbe: true, knockback: false },
+      whip_kick: { name: '鞭腿', M: 1.0, qi_r: 0.25, dq_r: 0.1, offBalance: true, knockback: false }
+    };
+
+    var LIMB_GUARD_ORDER = ['lhand', 'rhand', 'lfoot', 'rfoot'];
+    var LIMB_LABEL = { lhand: '左手', rhand: '右手', lfoot: '左脚', rfoot: '右脚' };
+    var STRUCK_TO_GUARD = { left_arm: 'lhand', right_arm: 'rhand', left_leg: 'lfoot', right_leg: 'rfoot' };
+
+    var steps = [];
+    var stepIdx = -1;
+    var autoTimer = null;
+    var rngState = 12345;
+
+    function $(id) { return document.getElementById(id); }
+
+    function mulberry32(a) {
+      return function () {
+        var t = a += 0x6D2B79F5;
+        t = Math.imul(t ^ t >>> 15, t | 1);
+        t ^= t + Math.imul(t ^ t >>> 7, t | 61);
+        return ((t ^ t >>> 14) >>> 0) / 4294967296;
+      };
+    }
+
+    function getRng() {
+      if ($('sim-seed-fix').checked) return mulberry32(42);
+      rngState = (rngState * 1103515245 + 12345) & 0x7fffffff;
+      return mulberry32(rngState);
+    }
+
+    function clamp(v, lo, hi) {
+      if (!isFinite(v)) return lo;
+      if (!isFinite(hi)) hi = v;
+      if (!isFinite(lo)) lo = v;
+      return Math.max(lo, Math.min(hi, v));
+    }
+    function pct(n) { return isFinite(n) ? (n * 100).toFixed(1) + '%' : '—'; }
+    function fmt(n, d) { d = d == null ? 2 : d; return isFinite(n) ? Number(n).toFixed(d) : '—'; }
+
+    function calcHitRate(vAtt, vDef) {
+      var r = vAtt / Math.max(vDef, CFG.hit_eps);
+      var p;
+      if (r >= 1) {
+        var ln = Math.log(r);
+        p = CFG.hit_eq + (CFG.hit_max - CFG.hit_eq) * ln / (CFG.hit_L + ln);
+        p = clamp(p, CFG.hit_eq, CFG.hit_max);
+      } else {
+        p = CFG.hit_eq * r + CFG.hit_min * (1 - r);
+        p = clamp(p, CFG.hit_min, CFG.hit_eq);
+      }
+      return clamp(p, 0, CFG.hit_cap);
+    }
+
+    function calcBasePower(L) {
+      var t = clamp((L - 1) / 999, 0, 1);
+      return 1 + t;
+    }
+
+    function resourceCost(maxVal, ratio, k) {
+      var B = clamp(Math.floor(maxVal * ratio), 1, 50);
+      var C = B * (k / 10);
+      return Math.max(1, Math.round(C));
+    }
+
+    function resolveInitiative(vp, ve, postForce) {
+      if (vp > ve) return { mode: 'sequential', first: 'player', note: '玩家速度更高 → 玩家先手' };
+      if (ve > vp) return { mode: 'sequential', first: 'enemy', note: '敌人速度更高 → 敌先还击结构' };
+      var mode = 'simultaneous';
+      var first = 'player';
+      var note = '同速 → 双段演算后同时提交';
+      if (postForce) {
+        note += '；装配「不假思索」→ 强制玩家严格先手（与速度合成后）';
+        first = 'player';
+        mode = 'sequential';
+      }
+      return { mode: mode, first: first, note: note };
+    }
+
+    function comboCount(vFast, vSlow) {
+      if (vSlow <= 0) return 1;
+      var ratio = vFast / vSlow;
+      if (ratio >= 4) return 4;
+      if (ratio >= 3) return 3;
+      if (ratio >= 2) return 2;
+      return 1;
+    }
+
+    function resolveGuardLimb(hitPart, forbiddenLimbs) {
+      forbiddenLimbs = forbiddenLimbs || [];
+      if (STRUCK_TO_GUARD[hitPart]) {
+        var fixed = STRUCK_TO_GUARD[hitPart];
+        if (forbiddenLimbs.indexOf(fixed) >= 0) {
+          return { guard: null, torso: false, skipped: true, reason: '受击肢已用于本 tick 普攻' };
+        }
+        return { guard: fixed, torso: false, skipped: false };
+      }
+      for (var i = 0; i < LIMB_GUARD_ORDER.length; i++) {
+        var g = LIMB_GUARD_ORDER[i];
+        if (forbiddenLimbs.indexOf(g) >= 0) continue;
+        return { guard: g, torso: true, skipped: false };
+      }
+      return { guard: null, torso: true, skipped: true, reason: '无可用招架肢' };
+    }
+
+    function parryPlayerValues(level, flex) {
+      var t = clamp((level - 1) / 999, 0, 1);
+      var baseS = CFG.parry_l1 + (CFG.parry_lmax - CFG.parry_l1) * t;
+      var baseR = CFG.reduce_l1 + (CFG.reduce_lmax - CFG.reduce_l1) * t;
+      var rawS = baseS * (1 + CFG.parry_flex * flex);
+      var rawR = baseR * (1 + CFG.parry_flex * flex);
+      return {
+        chance: clamp(rawS, 0, CFG.parry_chance_cap),
+        reduce: clamp(rawR, 0, CFG.parry_damage_reduce_cap)
+      };
+    }
+
+    function buildStep(tag, title, body, formula, status) {
+      return { tag: tag || '', title: title, body: body, formula: formula || '', status: status || '' };
+    }
+
+    function readInputs() {
+      return {
+        moveId: $('sim-move').value,
+        limb: $('sim-limb').value,
+        k: Number($('sim-k').value),
+        hitPart: $('sim-hit-part').value,
+        vp: Math.floor(Number($('sim-vp').value)) || 1,
+        ve: Math.floor(Number($('sim-ve').value)) || 1,
+        postForce: $('sim-post-force').checked,
+        jingu: Number($('sim-jingu').value) || 0,
+        skLv: Number($('sim-sklv').value) || 1,
+        rMove: clamp(Number($('sim-rmove').value) || 0, 0, 1),
+        rSkill: clamp(Number($('sim-rskill').value) || 0, 0, 1),
+        cExpYi: Number($('sim-cexp').value) || 0,
+        qiC: Number($('sim-qi-c').value) || 0,
+        qiM: Number($('sim-qi-m').value) || 100,
+        dqC: Number($('sim-dq-c').value) || 0,
+        dqM: Number($('sim-dq-m').value) || 100,
+        flexP: Number($('sim-flex-p').value) || 0,
+        eHp: Number($('sim-ehp').value) || 1,
+        eParry: clamp(Number($('sim-eparry').value) || 0, 0, 1),
+        eParryReduce: clamp(Number($('sim-eparry-reduce').value) || CFG.enemy_parry_reduce, 0, 1),
+        eBody: clamp(Number($('sim-ebody').value) || 0, 0, 0.99),
+        eCounter: Number($('sim-ecounter').value) || 0,
+        canCounter: $('sim-can-counter').checked
+      };
+    }
+
+    function simulateStrike(side, inp, move, segLabel, rng, ctx) {
+      var isPlayer = side === 'player';
+      var attV = isPlayer ? inp.vp : inp.ve;
+      var defV = isPlayer ? inp.ve : inp.vp;
+      var out = [];
+
+      out.push(buildStep('exchange', segLabel + ' · 段开始',
+        (isPlayer ? '玩家' : '敌人') + ' 出手 · 招式「' + move.name + '」· 成数 ' + inp.k + ' 成',
+        '攻击方速度 ' + attV + ' vs 防守方 ' + defV));
+
+      var qiCost = 0, dqCost = 0;
+      if (isPlayer) {
+        qiCost = resourceCost(inp.qiM, move.qi_r, inp.k);
+        dqCost = resourceCost(inp.dqM, move.dq_r, inp.k);
+        var qiOk = inp.qiC >= qiCost;
+        var dqOk = inp.dqC >= dqCost;
+        out.push(buildStep('resource', '资源意图与扣费',
+          '气力应扣 ' + qiCost + '（当前 ' + inp.qiC + '）· 底气应扣 ' + dqCost + '（当前 ' + inp.dqC + '）',
+          '应扣始终按槽位成数 k=' + inp.k + ' 计算；实扣 min(应扣, 当前)',
+          qiOk && dqOk ? 'ok' : 'fail'));
+        inp.qiC = Math.max(0, inp.qiC - Math.min(qiCost, inp.qiC));
+        inp.dqC = Math.max(0, inp.dqC - Math.min(dqCost, inp.dqC));
+        ctx.resourceGate = !(qiOk && dqOk);
+      }
+
+      var pHit = calcHitRate(attV, defV);
+      var rollHit = rng();
+      var hitSuccess = rollHit < pHit;
+      out.push(buildStep('combat', '命中 roll',
+        'P_命中=' + pct(pHit) + ' · 骰=' + fmt(rollHit, 4) + ' → ' + (hitSuccess ? '命中成功' : '未命中'),
+        'r=' + fmt(attV / Math.max(defV, CFG.hit_eps), 3) + ' · 同速基础≈82.5%',
+        hitSuccess ? 'ok' : 'fail'));
+
+      if (!hitSuccess) {
+        out.push(buildStep('end', '本段结束', '未命中：无招架、无伤害、无熟练度+1', '', 'skip'));
+        return { steps: out, damage: 0, hitSuccess: false };
+      }
+
+      if (isPlayer && move.probeStack) {
+        ctx.probe = Math.min(3, (ctx.probe || 0) + 1);
+        out.push(buildStep('buff', 'Buff：试探叠层',
+          '刺拳命中 roll 成功 → buff_probe 层数 ' + ctx.probe + '/3（招架致 0 伤仍叠）',
+          'event: attack_hit_roll_resolved + tag move_jab', 'ok'));
+      }
+      if (isPlayer && move.offBalance) {
+        ctx.offBal = Math.min(3, (ctx.offBal || 0) + 1);
+        out.push(buildStep('buff', 'Buff：失衡叠层',
+          '鞭腿命中 → 目标失衡 ' + ctx.offBal + ' 层（每层招架 −5%）',
+          'parry_chance_delta_percent · 招架后仍叠', 'ok'));
+      }
+
+      var forbidden = isPlayer ? [] : [inp.limb];
+      var guardInfo = resolveGuardLimb(inp.hitPart, forbidden);
+      if (guardInfo.skipped) {
+        out.push(buildStep('parry', '招架段跳过',
+          guardInfo.reason || '无法解析 guard_limb',
+          'parry_phase_skipped', 'skip'));
+        var rawSkip = isPlayer && !ctx.resourceGate ? Math.max(0, inp.jingu / CFG.fist_div) : (isPlayer ? 0 : inp.eCounter);
+        var finalSkip = Math.floor(rawSkip * (isPlayer ? 1 : (1 - inp.eBody)));
+        if (isPlayer) { ctx.eHp = Math.max(0, ctx.eHp - finalSkip); }
+        else { ctx.pHp = Math.max(0, (ctx.pHp || 100) - finalSkip); }
+        out.push(buildStep('result', '无招架 · 直接减伤链',
+          '最终伤害 ' + finalSkip, '', finalSkip > 0 ? 'ok' : ''));
+        return { steps: out, damage: finalSkip, hitSuccess: true, parryOk: false };
+      }
+      var guard = guardInfo.guard;
+      out.push(buildStep('parry', '招架肢解析',
+        '受击部位 ' + inp.hitPart + ' → 承担招架肢 ' + LIMB_LABEL[guard] + '（' + guard + '）' +
+        (guardInfo.torso ? ' · 躯干受击按 lhand→rhand→lfoot→rfoot' : ' · 四肢受击固定对肢') +
+        (forbidden.length ? ' · 排除本 tick 普攻肢 ' + forbidden.join(',') : ''),
+        'event: parry_guard_limb_resolved'));
+
+      var parryChance, parryReduce;
+      if (isPlayer) {
+        parryChance = inp.eParry;
+        parryReduce = inp.eParryReduce;
+      } else {
+        var pv = parryPlayerValues(inp.skLv, inp.flexP);
+        parryChance = pv.chance;
+        parryReduce = pv.reduce;
+        if (ctx.offBal) {
+          parryChance = clamp(parryChance - 0.05 * ctx.offBal, 0, CFG.parry_chance_cap);
+        }
+      }
+      var rollParry = rng();
+      var parryOk = rollParry < parryChance;
+      out.push(buildStep('parry', '招架掷骰',
+        '招架率 ' + pct(parryChance) + ' · 卸力 ' + pct(parryReduce) + ' · 骰=' + fmt(rollParry, 4) +
+        ' → ' + (parryOk ? '招架成功（伤害记 0）' : '招架失败 → 进入卸力与减伤链'),
+        '', parryOk ? 'ok' : 'fail'));
+
+      if (parryOk) {
+        if (isPlayer && move.consumeProbe && ctx.probe > 0) {
+          out.push(buildStep('buff', '试探清空',
+            '摆拳命中且结算完成（含被招架 0 伤）→ 移除整个 buff_probe 实例', '', 'ok'));
+          ctx.probe = 0;
+        }
+        out.push(buildStep('end', '本段结束', '招架完全免伤 · HP 不变', '', 'skip'));
+        return { steps: out, damage: 0, hitSuccess: true, parryOk: true };
+      }
+
+      var raw = 0;
+      if (isPlayer) {
+        if (ctx.resourceGate) {
+          out.push(buildStep('damage', '资源门闸',
+            '气力或底气不足应扣量 → raw 强制为 0（流程仍走）', '', 'fail'));
+        } else {
+          var B = Math.max(0, inp.jingu / CFG.fist_div);
+          var baseL = calcBasePower(inp.skLv);
+          var Kprobe = 1;
+          if (inp.moveId === 'swing_punch') {
+            Kprobe = 1 + 0.05 * (ctx.probe || 0);
+          }
+          var zEng = 1 + (baseL - 1) + (move.M - 1) + inp.rMove + 0;
+          zEng = Math.max(0, zEng);
+          var zSkill = 1 + inp.rSkill;
+          var zExp = 1 + clamp(inp.cExpYi, 0, 1000) * 0.05;
+          raw = Math.max(0, B * zEng * zSkill * zExp * (inp.k / 10) * Kprobe);
+          out.push(buildStep('damage', 'raw 伤害计算',
+            '底数 B=' + fmt(B) + ' · 增伤=' + fmt(zEng) + ' · 技艺总熟×' + fmt(zSkill) +
+            ' · 实战经验×' + fmt(zExp) + (Kprobe > 1 ? ' · K_试探=' + fmt(Kprobe) : ''),
+            'raw = max(0, B × 增伤 × (1+R_skill) × F_exp × k/10)\n= ' + fmt(raw)));
+        }
+      } else {
+        raw = inp.eCounter;
+        out.push(buildStep('damage', '敌人还击 raw', '配置区间简化为固定 ' + raw + ' 钝击', ''));
+      }
+
+      var afterShunt = raw * (1 - parryReduce);
+      out.push(buildStep('mitigate', '卸力硬减伤',
+        '卸力比例 ' + pct(parryReduce) + ' → 剩余 ' + fmt(afterShunt) + ' 进入减伤链',
+        '顺序：护体(略) → 防具(略) → 基础防御 → 类型微调'));
+
+      var defenderIsPlayer = !isPlayer;
+      var afterMit = afterShunt;
+      var mitDetail;
+      if (defenderIsPlayer) {
+        var flexDef = inp.flexP;
+        var D = CFG.def_D * Math.max(afterMit, 0);
+        var dr = flexDef <= 0 ? 0 : clamp(flexDef / (flexDef + 3 * D), 0, 0.95);
+        afterMit = afterMit * (1 - dr);
+        mitDetail = '玩家柔韧防御 DR=' + fmt(flexDef) + '/(' + fmt(flexDef) + '+3×' + fmt(D) + ')=' + pct(dr);
+      } else {
+        afterMit = afterMit * (1 - inp.eBody);
+        mitDetail = '敌人身体减伤 ' + pct(inp.eBody);
+      }
+      var finalD = Math.floor(Math.max(0, afterMit));
+
+      out.push(buildStep('mitigate', '减伤链',
+        mitDetail + ' → 链后≈' + fmt(afterMit) + ' → floor → ' + finalD,
+        '损毁 Q = floor(最终伤害) = ' + finalD));
+
+      if (isPlayer) {
+        ctx.eHp = Math.max(0, ctx.eHp - finalD);
+        out.push(buildStep('result', '写入 HP / 损毁',
+          '敌人 HP：' + (ctx.eHp + finalD) + ' → ' + ctx.eHp +
+          ' · 命中部位 ' + inp.hitPart + ' 损毁 +=' + finalD,
+          'event: attack_damage_applied', finalD > 0 ? 'ok' : ''));
+      } else {
+        ctx.pHp = Math.max(0, (ctx.pHp || 100) - finalD);
+        out.push(buildStep('result', '玩家受击',
+          '玩家 HP：' + ((ctx.pHp || 100) + finalD) + ' → ' + ctx.pHp, '', finalD > 0 ? 'fail' : ''));
+      }
+
+      if (isPlayer && move.knockback) {
+        ctx.knockQueue = ctx.knockQueue || [];
+        ctx.knockQueue.push({ cells: 1, mult: CFG.wall_slam, blocked: rng() < 0.35 });
+        out.push(buildStep('displace', '击退入队',
+          '正蹬招架失败 → tick 末位移 1 格（away_from_actor）',
+          '同 tick 多条击退按 cells→筋骨→速度→event_id 坍缩为一条', 'ok'));
+      }
+
+      if (isPlayer && move.consumeProbe && ctx.probe > 0) {
+        out.push(buildStep('buff', '试探清空',
+          '摆拳命中且伤害结算完成 → 移除 buff_probe（' + ctx.probe + ' 层）', '', 'ok'));
+        ctx.probe = 0;
+      }
+
+      if (isPlayer && move.offBalance === undefined && move.probeStack) { /* jab only stacked */ }
+
+      return { steps: out, damage: finalD, hitSuccess: true, parryOk: false };
+    }
+
+    function runSimulation() {
+      var inp = readInputs();
+      var move = MOVES[inp.moveId];
+      var rng = getRng();
+      steps = [];
+      var ctx = { eHp: inp.eHp, pHp: 100, probe: 0, offBal: 0, knockQueue: [] };
+
+      steps.push(buildStep('meta', '① 交换开始',
+        '玩家地图普攻 · 肢 ' + LIMB_LABEL[inp.limb] + ' · 消耗本回合行动份额',
+        '风来的西林节奏：玩家动一次 → 敌人各动一次'));
+
+      var init = resolveInitiative(inp.vp, inp.ve, inp.postForce);
+      steps.push(buildStep('initiative', '② 先后手判定',
+        init.note + (inp.vp !== inp.ve
+          ? ' · 玩家连击段数上限 ' + comboCount(inp.vp, inp.ve) + ' · 敌人 ' + comboCount(inp.ve, inp.vp)
+          : ''),
+        '玩家 V=' + inp.vp + ' · 敌人 V=' + inp.ve + ' · 模式=' + init.mode));
+
+      var enemyFirst = init.first === 'enemy' && init.mode === 'sequential';
+      if (enemyFirst && inp.canCounter) {
+        steps.push(buildStep('initiative', '③ 敌先还击（地图普攻）',
+          '非显式三件套且敌速更高 → 先结算敌方还击，再二次选肢（本模拟简化为固定玩家肢/招）',
+          '终稿后遗症在还击后重算 resolvePlayerInitiatedExchange'));
+        var counter = simulateStrike('enemy', Object.assign({}, inp), { name: '还击', M: 1, qi_r: 0, dq_r: 0 }, '敌人还击', rng, ctx);
+        steps = steps.concat(counter.steps);
+        if (ctx.pHp <= 0) {
+          steps.push(buildStep('end', '玩家失能', '还击后玩家 HP≤0 → 跳过玩家本击', '', 'fail'));
+          finishBuild();
+          return;
+        }
+      }
+
+      var striker = init.mode === 'simultaneous' ? 'both' : (enemyFirst ? 'player' : init.first);
+      var pCombo = comboCount(inp.vp, inp.ve);
+      var eCombo = comboCount(inp.ve, inp.vp);
+
+      if (striker === 'player' || striker === 'both') {
+        var comboN = striker === 'both' ? 1 : pCombo;
+        for (var c = 0; c < comboN; c++) {
+          var label = '玩家攻击' + (comboN > 1 ? '（连击 ' + (c + 1) + '/' + comboN + '）' : '');
+          var seg = simulateStrike('player', inp, move, label, rng, ctx);
+          steps = steps.concat(seg.steps);
+          if (ctx.eHp <= 0) break;
+        }
+      }
+
+      if (striker === 'enemy' && inp.canCounter && !enemyFirst) {
+        var eComboN = eCombo;
+        for (var e = 0; e < eComboN; e++) {
+          var elabel = '敌人还击' + (eComboN > 1 ? '（连击 ' + (e + 1) + '/' + eComboN + '）' : '');
+          var eseg = simulateStrike('enemy', Object.assign({}, inp), { name: '还击', M: 1, qi_r: 0, dq_r: 0 }, elabel, rng, ctx);
+          steps = steps.concat(eseg.steps);
+        }
+      } else if (striker === 'both' && inp.canCounter) {
+        steps.push(buildStep('initiative', '同速：敌人侧演算',
+          '在同一快照上演算敌人还击变更集（本步展示简化为顺序列出）', ''));
+        var simE = simulateStrike('enemy', Object.assign({}, inp), { name: '还击', M: 1, qi_r: 0, dq_r: 0 }, '同速·敌人段', rng, ctx);
+        steps = steps.concat(simE.steps);
+        steps.push(buildStep('initiative', '同速：同时提交',
+          '两侧 HP/Buff/资源变更一并生效（允许互中、同归）', ''));
+      } else if (striker === 'player' && inp.canCounter && !enemyFirst && ctx.eHp > 0) {
+        var rc = simulateStrike('enemy', Object.assign({}, inp), { name: '还击', M: 1, qi_r: 0, dq_r: 0 }, '敌人还击', rng, ctx);
+        steps = steps.concat(rc.steps);
+      }
+
+      if (ctx.knockQueue && ctx.knockQueue.length) {
+        var kb = ctx.knockQueue[0];
+        var wall = kb.blocked;
+        steps.push(buildStep('displace', 'tick 末击退坍缩',
+          '队列 ' + ctx.knockQueue.length + ' 条 → 执行 cells=' + kb.cells +
+          (wall ? ' · 撞阻未跑满 → 撞墙乘子 ×' + kb.mult : ' · 位移完成'),
+          wall ? '在减伤后、写 HP 前对最终伤害 ×' + kb.mult + '（本模拟已在结果步展示基础伤害）' : ''));
+      }
+
+      steps.push(buildStep('meta', '⑩ 交换结束',
+        '敌人 HP=' + ctx.eHp + ' · 玩家 HP=' + (ctx.pHp || 100) +
+        (ctx.probe ? ' · 试探剩余 ' + ctx.probe + ' 层' : '') +
+        (ctx.offBal ? ' · 失衡 ' + ctx.offBal + ' 层' : ''),
+        '推进 tick · 玩家本回合行动份额已消耗'));
+
+      finishBuild();
+    }
+
+    function finishBuild() {
+      stepIdx = -1;
+      renderTimeline();
+      updateStatus();
+      $('sim-next').disabled = steps.length === 0;
+      $('sim-prev').disabled = true;
+      $('sim-auto').disabled = steps.length === 0;
+    }
+
+    function renderTimeline() {
+      var el = $('sim-timeline');
+      if (!steps.length) {
+        el.innerHTML = '<p style="color:#8e8e8e;font-size:13px;margin:0">点击「生成完整流程」开始。</p>';
+        $('sim-progress').style.width = '0%';
+        return;
+      }
+      var html = '';
+      for (var i = 0; i < steps.length; i++) {
+        var s = steps[i];
+        var cls = 'sim-step';
+        if (i < stepIdx) cls += ' done';
+        else if (i === stepIdx) cls += ' active';
+        else if (s.status === 'skip') cls += ' skip';
+        var tagCls = 'sim-step-tag' + (s.status === 'ok' ? ' ok' : s.status === 'fail' ? ' fail' : '');
+        html += '<div class="' + cls + '" data-idx="' + i + '">';
+        html += '<div class="sim-step-head"><span class="sim-step-num">' + (i + 1) + '</span>';
+        html += '<span class="sim-step-title">' + s.title + '</span>';
+        if (s.tag) html += '<span class="' + tagCls + '">' + s.tag + '</span>';
+        html += '</div><p class="sim-step-body">' + s.body + '</p>';
+        if (s.formula) html += '<div class="sim-step-formula">' + s.formula + '</div>';
+        html += '</div>';
+      }
+      el.innerHTML = html;
+      var pctDone = stepIdx < 0 ? 0 : ((stepIdx + 1) / steps.length * 100);
+      $('sim-progress').style.width = pctDone + '%';
+      var active = el.querySelector('.sim-step.active');
+      if (active) active.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+    }
+
+    function updateStatus() {
+      var bar = $('sim-status');
+      if (!steps.length || stepIdx < 0) {
+        bar.innerHTML = '<span class="sim-chip">待开始</span>';
+        return;
+      }
+      var s = steps[stepIdx];
+      bar.innerHTML =
+        '<span class="sim-chip player">步骤 ' + (stepIdx + 1) + '/' + steps.length + '</span>' +
+        '<span class="sim-chip">' + s.title + '</span>';
+    }
+
+    function goStep(delta) {
+      if (!steps.length) return;
+      stepIdx = clamp(stepIdx + delta, -1, steps.length - 1);
+      renderTimeline();
+      updateStatus();
+      $('sim-prev').disabled = stepIdx <= -1;
+      $('sim-next').disabled = stepIdx >= steps.length - 1;
+    }
+
+    function stopAuto() {
+      if (autoTimer) { clearInterval(autoTimer); autoTimer = null; }
+      $('sim-auto').textContent = '自动播放';
+    }
+
+    $('sim-k').addEventListener('input', function () {
+      $('sim-k-val').textContent = $('sim-k').value;
+    });
+
+    $('sim-run').addEventListener('click', function () {
+      stopAuto();
+      try {
+        runSimulation();
+        goStep(1);
+      } catch (err) {
+        console.error(err);
+        $('sim-timeline').innerHTML =
+          '<div class="sim-step active" style="opacity:1;border-left-color:#c08070">' +
+          '<div class="sim-step-head"><span class="sim-step-title">模拟出错</span></div>' +
+          '<p class="sim-step-body">' + String(err.message || err) + '</p></div>';
+        $('sim-status').innerHTML = '<span class="sim-chip" style="border-color:#c08070">错误</span>';
+      }
+    });
+
+    $('sim-next').addEventListener('click', function () { goStep(1); });
+    $('sim-prev').addEventListener('click', function () { goStep(-1); });
+
+    $('sim-auto').addEventListener('click', function () {
+      if (autoTimer) { stopAuto(); return; }
+      if (!steps.length) runSimulation();
+      if (stepIdx < 0) goStep(1);
+      $('sim-auto').textContent = '停止';
+      autoTimer = setInterval(function () {
+        if (stepIdx >= steps.length - 1) { stopAuto(); return; }
+        goStep(1);
+      }, 900);
+    });
+
+    $('sim-reset').addEventListener('click', function () {
+      stopAuto();
+      steps = [];
+      stepIdx = -1;
+      renderTimeline();
+      updateStatus();
+      $('sim-next').disabled = true;
+      $('sim-prev').disabled = true;
+      $('sim-auto').disabled = true;
+    });
+
+    $('sim-timeline').addEventListener('click', function (e) {
+      var node = e.target.closest('.sim-step');
+      if (!node) return;
+      stepIdx = Number(node.getAttribute('data-idx'));
+      renderTimeline();
+      updateStatus();
+      $('sim-prev').disabled = stepIdx <= -1;
+      $('sim-next').disabled = stepIdx >= steps.length - 1;
+    });
+  })();
+  </script>
+</body>
+</html>
