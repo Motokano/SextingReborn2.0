@@ -190,7 +190,7 @@
   function renderAnimals(st, lv) {
     var list = el('livestock-animal-list');
     if (!list) return;
-    var rows = st.animals.map(function (a) {
+    var rows = st.animals.filter(function (a) { return !a.dead; }).map(function (a) {
       var sel = a.uid === selectedAnimalUid ? ' selected' : '';
       var sat = (lv >= 10) ? a.satiety.toFixed(0) : satietyStage(a.satiety);
       var hp = (lv >= 70) ? a.hp.toFixed(0) : hpStage(a.hp);
@@ -320,9 +320,15 @@
     if (!box) return;
     var collectRows = [];
     var slaughterRows = [];
+    var corpseRows = [];
     st.animals.forEach(function (a) {
       var sp = window.LivestockState.getSpecies(a.species_id);
-      if (!sp || !sp.products) return;
+      if (!sp) return;
+      if (a.dead) {
+        corpseRows.push('<div class="product-row">💀 ' + speciesName(a.species_id) + ' ' + genderGlyph(a.gender) + ' <span class="meta">' + (a.death_cause === 'disease' ? '病死' : '饿死') + '</span></div>');
+        return;
+      }
+      if (!sp.products) return;
       if (sp.products.living && sp.products.living.length) {
         collectRows.push('<div class="product-row">' + speciesIcon(a.species_id) + ' ' + speciesName(a.species_id) + ' ' + genderGlyph(a.gender) + ' <span class="meta">' + livingText(a, sp) + '</span></div>');
       }
@@ -330,7 +336,8 @@
     });
     box.innerHTML =
       '<div class="product-col"><h3 class="section-title">活体采集</h3>' + (collectRows.join('') || '<div class="empty-hint">无可采集动物</div>') + '</div>' +
-      '<div class="product-col"><h3 class="section-title">屠宰</h3>' + (slaughterRows.join('') || '<div class="empty-hint">无可屠宰动物</div>') + '</div>';
+      '<div class="product-col"><h3 class="section-title">屠宰</h3>' + (slaughterRows.join('') || '<div class="empty-hint">无可屠宰动物</div>') + '</div>' +
+      '<div class="product-col"><h3 class="section-title">尸体</h3>' + (corpseRows.join('') || '<div class="empty-hint">无尸体</div>') + '</div>';
   }
   function livingText(a, sp) {
     var parts = [];

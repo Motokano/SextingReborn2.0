@@ -3999,6 +3999,7 @@
             } catch (e4) { /* ignore */ }
             try { tickHideoutWarehouseAfterWorldTick(); } catch (eHwTick) { /* ignore */ }
             try { tickAgricultureAfterWorldTick(); } catch (eAg) { /* ignore */ }
+            try { tickLivestockAfterWorldTick(); } catch (eLs) { /* ignore */ }
             return ret;
         };
         window.Survival.__worldSystemsTickPatched = true;
@@ -7898,6 +7899,13 @@
         if (window.LivestockPanel && typeof window.LivestockPanel.render === 'function') {
             try { window.LivestockPanel.render(); } catch (eUpLs) { /* ignore */ }
         }
+    }
+
+    function tickLivestockAfterWorldTick() {
+        if (window.LivestockState && typeof window.LivestockState.advanceTick === 'function') {
+            try { window.LivestockState.advanceTick(); } catch (eLsTick) { /* ignore */ }
+        }
+        if (livestockPanelOpen) updateLivestockPanel();
     }
 
     function displayNameForItemId(itemId) {

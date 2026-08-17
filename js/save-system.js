@@ -464,6 +464,11 @@
             try { hideoutWarehousePersist = mods.HideoutWarehouse.getState(); } catch (eHw) { hideoutWarehousePersist = null; }
         }
 
+        var livestockPersist = null;
+        if (global.LivestockState && typeof global.LivestockState.getState === 'function') {
+            try { livestockPersist = global.LivestockState.getState(); } catch (eLs) { livestockPersist = null; }
+        }
+
         return {
             schemaVersion: SCHEMA_VERSION,
             saveGeneration: saveGeneration,
@@ -482,7 +487,8 @@
             buffs: buffsPersist,
             compost: compostPersist,
             agriculture_map: agricultureMapPersist,
-            hideout_warehouse: hideoutWarehousePersist
+            hideout_warehouse: hideoutWarehousePersist,
+            livestock: livestockPersist
         };
     }
 
@@ -555,6 +561,12 @@
 
         applyAgricultureMapFromSnapshot(snapshot);
         applyHideoutWarehouseFromSnapshot(snapshot);
+
+        if (global.LivestockState && typeof global.LivestockState.setState === 'function') {
+            if (snapshot.livestock && typeof snapshot.livestock === 'object') {
+                try { global.LivestockState.setState(snapshot.livestock); } catch (eLs) { /* ignore */ }
+            }
+        }
 
         if (global.SceneCtx && snapshot.player && snapshot.player.sceneUi) {
             try {
