@@ -7856,6 +7856,42 @@
 
     var livestockPanelOpen = false;
     var livestockPanelInited = false;
+    var livestockAutoTickTimer = null;
+
+    function isLivestockAutoTickEnabled() {
+        return !!(window.SceneCtx && window.SceneCtx.livestock_auto_tick === true);
+    }
+
+    function setLivestockAutoTickEnabled(enabled) {
+        if (window.SceneCtx) window.SceneCtx.livestock_auto_tick = !!enabled;
+        if (window.LivestockPanel && typeof window.LivestockPanel.syncAutoTickToggle === 'function') {
+            try { window.LivestockPanel.syncAutoTickToggle(!!enabled); } catch (eSync) { /* ignore */ }
+        }
+        if (enabled) startLivestockAutoTickIfNeeded();
+        else stopLivestockAutoTick();
+    }
+
+    function stopLivestockAutoTick() {
+        if (!livestockAutoTickTimer) return;
+        try { clearInterval(livestockAutoTickTimer); } catch (eClr) { /* ignore */ }
+        livestockAutoTickTimer = null;
+    }
+
+    function startLivestockAutoTickIfNeeded() {
+        if (!isLivestockAutoTickEnabled() || !livestockPanelOpen) return;
+        if (livestockAutoTickTimer) return;
+        livestockAutoTickTimer = setInterval(onLivestockAutoTick, getIdleTickMs());
+    }
+
+    function onLivestockAutoTick() {
+        if (!livestockPanelOpen || !isLivestockAutoTickEnabled()) {
+            stopLivestockAutoTick();
+            return;
+        }
+        var Surv = window.Survival;
+        if (!Surv || typeof Surv.advanceTick !== 'function') return;
+        try { Surv.advanceTick(); } catch (eTick) { /* ignore */ }
+    }
 
     function openLivestockPanel() {
         if (isPreCreationGameplayRestricted()) {
@@ -7879,12 +7915,17 @@
             if (typeof window.LivestockPanel.render === 'function') {
                 try { window.LivestockPanel.render(); } catch (eRender) { /* ignore */ }
             }
+            if (typeof window.LivestockPanel.syncAutoTickToggle === 'function') {
+                try { window.LivestockPanel.syncAutoTickToggle(isLivestockAutoTickEnabled()); } catch (eSync) { /* ignore */ }
+            }
         }
+        startLivestockAutoTickIfNeeded();
         render();
     }
 
     function closeLivestockPanel() {
         if (!livestockPanelOpen) return;
+        stopLivestockAutoTick();
         livestockPanelOpen = false;
         var modal = document.getElementById('modal-livestock');
         if (modal) {
@@ -11374,6 +11415,8 @@
     window.SceneApp.openLivestockPanel = openLivestockPanel;
     window.SceneApp.closeLivestockPanel = closeLivestockPanel;
     window.SceneApp.updateLivestockPanel = updateLivestockPanel;
+    window.SceneApp.setLivestockAutoTickEnabled = setLivestockAutoTickEnabled;
+    window.SceneApp.isLivestockAutoTickEnabled = isLivestockAutoTickEnabled;
     window.SceneApp.openHideoutWarehousePanel = openHideoutWarehousePanel;
     window.SceneApp.closeHideoutWarehousePanel = closeHideoutWarehousePanel;
     window.SceneApp.updateAgriculturePanel = updateAgriculturePanel;

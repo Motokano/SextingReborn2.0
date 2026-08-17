@@ -251,9 +251,12 @@
       '<div class="detail-perk">' + ((lv >= 50) ? (perkText(a.perks, lv) || '无 Perk') : 'Perk 不可见（畜牧 Lv.50 解锁）') + '</div>' +
       '<div class="kv-list">' + prodRows + '</div>' +
       '<div class="detail-actions">' +
-      '<button class="lv-btn" data-move="' + a.uid + '">迁移</button>' +
+      '<button type="button" class="lv-btn' + (a.zone_id === 'z1' ? ' active' : '') + '" data-move="z1">迁到 Z1</button>' +
+      '<button type="button" class="lv-btn' + (a.zone_id === 'z2' ? ' active' : '') + '" data-move="z2">迁到 Z2</button>' +
+      '<button type="button" class="lv-btn' + (a.zone_id === 'z3' ? ' active' : '') + '" data-move="z3">迁到 Z3</button>' +
+      '<button type="button" class="lv-btn' + (a.zone_id === 'z4' ? ' active' : '') + '" data-move="z4">迁到 Z4</button>' +
       '</div>';
-    bindMoveButton();
+    bindMoveButtons();
   }
 
   function bindAnimalRows() {
@@ -265,18 +268,17 @@
       });
     }
   }
-  function bindMoveButton() {
-    var btn = document.querySelector('#livestock-animal-detail [data-move]');
-    if (!btn) return;
-    btn.addEventListener('click', function () {
-      var uid = this.getAttribute('data-move');
-      var next = { z1: 'z2', z2: 'z3', z3: 'z4', z4: 'z1' };
-      var a = null;
-      var st = window.LivestockState.getState();
-      for (var i = 0; i < st.animals.length; i++) if (st.animals[i].uid === uid) { a = st.animals[i]; break; }
-      if (a) window.LivestockState.moveAnimal(uid, next[a.zone_id] || 'z1');
-      render();
-    });
+  function bindMoveButtons() {
+    var btns = document.querySelectorAll('#livestock-animal-detail [data-move]');
+    for (var i = 0; i < btns.length; i++) {
+      btns[i].addEventListener('click', function () {
+        var zoneId = this.getAttribute('data-move');
+        if (selectedAnimalUid && window.LivestockState) {
+          window.LivestockState.moveAnimal(selectedAnimalUid, zoneId);
+        }
+        render();
+      });
+    }
   }
 
   /* ---------- 模块 ---------- */
@@ -349,10 +351,24 @@
   }
 
   /* ---------- 入口 ---------- */
+  function syncAutoTickToggle(enabled) {
+    var btn = el('livestock-tick-toggle');
+    if (!btn) return;
+    btn.classList.toggle('on', !!enabled);
+    btn.textContent = enabled ? '时间流逝：开' : '时间流逝：关';
+  }
+
   function init() {
     var close = el('livestock-close');
     if (close) close.addEventListener('click', function () {
       if (window.SceneApp && typeof window.SceneApp.closeLivestockPanel === 'function') window.SceneApp.closeLivestockPanel();
+    });
+    var toggle = el('livestock-tick-toggle');
+    if (toggle) toggle.addEventListener('click', function () {
+      var SceneApp = window.SceneApp;
+      if (!SceneApp || typeof SceneApp.setLivestockAutoTickEnabled !== 'function') return;
+      var next = !(typeof SceneApp.isLivestockAutoTickEnabled === 'function' && SceneApp.isLivestockAutoTickEnabled());
+      SceneApp.setLivestockAutoTickEnabled(next);
     });
     var tabs = document.querySelectorAll('#modal-livestock .tab-btn');
     for (var i = 0; i < tabs.length; i++) {
@@ -364,6 +380,7 @@
     init: init,
     render: render,
     setTab: setTab,
+    syncAutoTickToggle: syncAutoTickToggle,
     setSelectedAnimal: function (uid) { selectedAnimalUid = uid; }
   };
 })();

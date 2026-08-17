@@ -3058,6 +3058,13 @@
             padding: 6px 14px; cursor: pointer; font-size: 12px;
         }
         #modal-livestock .lv-btn:hover { background: rgba(211,160,96,0.15); }
+        #modal-livestock .lv-btn.active { background: #d3a060; color: #1a1512; }
+        #modal-livestock .lv-toggle {
+            background: #1a1512; border: 1px solid #4d4d45; color: #8e8e8e; border-radius: 4px;
+            padding: 5px 12px; cursor: pointer; font-size: 12px; margin-right: 12px; transition: all 0.2s;
+        }
+        #modal-livestock .lv-toggle:hover { border-color: #d3a060; color: #d3a060; }
+        #modal-livestock .lv-toggle.on { border-color: #ff8c00; color: #ff8c00; background: rgba(255,140,0,0.12); }
         #modal-livestock .empty-hint { color: #6b6560; font-size: 13px; padding: 14px 4px; }
 
         /* 模块 Tab */
@@ -3833,6 +3840,7 @@
                     <div class="lv-title">牧场</div>
                     <div class="lv-badge" id="livestock-rotate-badge">⟳ 下次旋转 - tick</div>
                     <div class="lv-badge" id="livestock-level-badge" style="border-color:#4d4d45;color:#8e8e8e;">畜牧 Lv.-</div>
+                    <button type="button" class="lv-toggle" id="livestock-tick-toggle">时间流逝：关</button>
                     <button type="button" class="lv-close" id="livestock-close" aria-label="关闭">✕</button>
                 </div>
                 <div class="lv-body">
