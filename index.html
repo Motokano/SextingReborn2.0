@@ -3003,6 +3003,9 @@
         }
         #modal-livestock .zone-cell:hover { border-color: #666; }
         #modal-livestock .zone-cell.selected { border-color: #ff8c00; box-shadow: 0 0 12px rgba(255,140,0,0.15); }
+        #modal-livestock .zone-cell.drop-target { border-color: #ff8c00; box-shadow: 0 0 18px rgba(255,140,0,0.4); background: #2f2c26; }
+        #modal-livestock .animal-item[draggable="true"] { cursor: grab; }
+        #modal-livestock .animal-item[draggable="true"]:active { cursor: grabbing; }
         #modal-livestock .eco-overlay { position: absolute; inset: 0; pointer-events: none; border-radius: 2px; }
         #modal-livestock .eco-grass-low { background-color: rgba(90,140,70,0.20); }
         #modal-livestock .eco-pollution { background-image: radial-gradient(circle at center, rgba(60,40,30,0.45) 0%, transparent 80%); }

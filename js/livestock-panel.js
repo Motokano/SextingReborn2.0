@@ -121,7 +121,7 @@
         '<div class="eco-overlay ' + ecoOverlayClass(zoneId, z) + '"></div>' +
         '<div class="zone-header"><span>' + zoneLabel[zoneId] + '</span><span>' + ecoText + '</span></div>' +
         '<div class="animal-list">' +
-        speciesRow('cattle', counts.cattle) + speciesRow('sheep', counts.sheep) + speciesRow('pig', counts.pig) + speciesRow('chicken', counts.chicken) +
+        speciesRow('cattle', counts.cattle, zoneId) + speciesRow('sheep', counts.sheep, zoneId) + speciesRow('pig', counts.pig, zoneId) + speciesRow('chicken', counts.chicken, zoneId) +
         '</div></div>';
     }
     function armHtml(armId, vertical) {
@@ -148,11 +148,15 @@
 
     bindZoneClicks();
     bindArmClicks();
+    bindDragDrop();
   }
 
-  function speciesRow(speciesId, count) {
+  function speciesRow(speciesId, count, zoneId) {
     var dim = count === 0 ? ' style="color: var(--text-hint)"' : '';
-    return '<div class="animal-item"' + dim + '><span class="icon-' + speciesId + '">' + speciesIcon(speciesId) + '</span> × ' + count + '</div>';
+    var draggable = count > 0 ? ' draggable="true"' : '';
+    return '<div class="animal-item"' + dim + draggable +
+      ' data-species="' + speciesId + '" data-zone="' + zoneId + '">' +
+      '<span class="icon-' + speciesId + '">' + speciesIcon(speciesId) + '</span> × ' + count + '</div>';
   }
   function moduleIcon(moduleId) {
     var m = window.LivestockState.getModule(moduleId);
@@ -182,6 +186,70 @@
     for (var i = 0; i < arms.length; i++) {
       arms[i].addEventListener('click', function () {
         setTab('modules');
+      });
+    }
+  }
+
+  var dragState = null;
+
+  function moveOneAnimal(fromZone, speciesId, toZone) {
+    var st = window.LivestockState.getState();
+    if (!st) return;
+    for (var i = 0; i < st.animals.length; i++) {
+      var a = st.animals[i];
+      if (!a.dead && a.zone_id === fromZone && a.species_id === speciesId) {
+        window.LivestockState.moveAnimal(a.uid, toZone);
+        return;
+      }
+    }
+  }
+
+  function clearDragHighlight() {
+    var zones = document.querySelectorAll('#livestock-overview-grid .zone-cell.drop-target');
+    for (var i = 0; i < zones.length; i++) zones[i].classList.remove('drop-target');
+  }
+
+  function bindDragDrop() {
+    var items = document.querySelectorAll('#livestock-overview-grid .animal-item[draggable="true"]');
+    for (var i = 0; i < items.length; i++) {
+      items[i].addEventListener('dragstart', function (e) {
+        dragState = {
+          speciesId: this.getAttribute('data-species'),
+          fromZone: this.getAttribute('data-zone')
+        };
+        if (e.dataTransfer) {
+          e.dataTransfer.effectAllowed = 'move';
+          try { e.dataTransfer.setData('text/plain', dragState.speciesId); } catch (err) { /* ignore */ }
+        }
+      });
+      items[i].addEventListener('dragend', function () {
+        dragState = null;
+        clearDragHighlight();
+      });
+    }
+
+    var zones = document.querySelectorAll('#livestock-overview-grid .zone-cell');
+    for (var j = 0; j < zones.length; j++) {
+      zones[j].addEventListener('dragover', function (e) {
+        if (!dragState) return;
+        e.preventDefault();
+        if (e.dataTransfer) e.dataTransfer.dropEffect = 'move';
+        this.classList.add('drop-target');
+      });
+      zones[j].addEventListener('dragleave', function (e) {
+        this.classList.remove('drop-target');
+      });
+      zones[j].addEventListener('drop', function (e) {
+        e.preventDefault();
+        this.classList.remove('drop-target');
+        var targetZone = this.getAttribute('data-zone');
+        if (!dragState || dragState.fromZone === targetZone) {
+          dragState = null;
+          return;
+        }
+        moveOneAnimal(dragState.fromZone, dragState.speciesId, targetZone);
+        dragState = null;
+        render();
       });
     }
   }
