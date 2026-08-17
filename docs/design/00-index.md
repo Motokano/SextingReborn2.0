@@ -47,7 +47,8 @@
 | 玩家间交易 | [13-p2p-trading.md](13-p2p-trading.md) | 交易码、接头暗号、兑换与时效 |
 | 实现约定 | [14-implementation.md](14-implementation.md) | 技术栈、配置表、存档、字段中英对照 |
 | 地图视野 UI | [20-map-vision-ui.md](20-map-vision-ui.md) | 昼夜/距离分层/朝向倍率/格级遮挡与身后三邻格（仅显示） |
-| 剧情大纲（遮天 / Blackout） | [30-story-outline-zhetian.md](30-story-outline-zhetian.md) | 世界观、七阀、硅叶、林书瑶、主角、终局「遮天」（英 Blackout）及尾声；HTML 见 `tools/story-outline-zhetian.html` |
+| 剧情大纲（遮天 / Blackout） | [30-story-outline-blackout.md](30-story-outline-blackout.md) | 世界观、七阀、硅叶、林书瑶、主角、终局「遮天」（英 Blackout）及尾声；HTML 见 `tools/story-outline-zhetian.html` |
+| 畜牧系统（草案） | [31-livestock-husbandry.md](31-livestock-husbandry.md) | 十字机械牧场、四区域顺时针旋转、动物个体/体重/饥饿、草高/板结/污染/疾病与血量、产出/屠宰/繁殖、Perk 遗传、畜牧技能、饲料料肉比、19 模块两层分工 |
 | 后续可补充 | [15-todo.md](15-todo.md) | 敌人 AI、异常状态、技能形态等 |
 | 实现进度快照 | [implementation-progress.md](../implementation-progress.md) | 相对本索引的代码落地进度与下一步建议（非设计正本） |
 
