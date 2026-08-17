@@ -50,6 +50,7 @@
 | 剧情大纲（遮天 / Blackout） | [30-story-outline-blackout.md](30-story-outline-blackout.md) | 世界观、七阀、硅叶、林书瑶、主角、终局「遮天」（英 Blackout）及尾声；HTML 见 `tools/story-outline-zhetian.html` |
 | 畜牧系统（草案） | [31-livestock-husbandry.md](31-livestock-husbandry.md) | 十字机械牧场、四区域顺时针旋转、动物个体/体重/饥饿、草高/板结/污染/疾病与血量、产出/屠宰/繁殖、Perk 遗传、畜牧技能、饲料料肉比、19 模块两层分工 |
 | 畜牧可扩展性架构（实现约定） | [32-livestock-architecture.md](32-livestock-architecture.md) | 数据驱动三表（物种/模块/Perk）、动物实例模型、生态变量接口、声明式 effect_type + handler、Perk modifier key 目录、扩展流程与存档迁移 |
+| 畜牧 UI 外部设计 Prompt | [livestock-ui-agent-prompt.md](livestock-ui-agent-prompt.md) | 给无仓库访问权的 UI Agent：牧场控制面板四 Tab（总览装置俯视图/动物/模块/产出）、背包战斗主题对齐、信息分级、旋转倒计时 |
 | 后续可补充 | [15-todo.md](15-todo.md) | 敌人 AI、异常状态、技能形态等 |
 | 实现进度快照 | [implementation-progress.md](../implementation-progress.md) | 相对本索引的代码落地进度与下一步建议（非设计正本） |
 
