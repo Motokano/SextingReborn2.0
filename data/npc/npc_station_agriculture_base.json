@@ -18,6 +18,7 @@
     "showChat": true,
     "showWorkWhen": "never",
     "showOpenAgriculturePanel": true,
+    "showOpenLivestockPanel": true,
     "showLeave": true
   },
   "behavior": {

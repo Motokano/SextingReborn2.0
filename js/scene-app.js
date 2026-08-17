@@ -705,7 +705,10 @@
             fetch(base + 'agriculture-crop-defs.json').then(function (r) { return r.ok ? r.json() : null; }).catch(function () { return null; }),
             fetch(base + 'agriculture-soils.json').then(function (r) { return r.ok ? r.json() : null; }).catch(function () { return null; }),
             fetch(base + 'agriculture-pool-upgrades.json').then(function (r) { return r.ok ? r.json() : null; }).catch(function () { return null; }),
-            fetch(base + 'warehouse-upgrades.json').then(function (r) { return r.ok ? r.json() : null; }).catch(function () { return null; })
+            fetch(base + 'warehouse-upgrades.json').then(function (r) { return r.ok ? r.json() : null; }).catch(function () { return null; }),
+            fetch(base + 'livestock-species.json').then(function (r) { return r.ok ? r.json() : { species: {} }; }).catch(function () { return { species: {} }; }),
+            fetch(base + 'livestock-modules.json').then(function (r) { return r.ok ? r.json() : { modules: {} }; }).catch(function () { return { modules: {} }; }),
+            fetch(base + 'livestock-perks.json').then(function (r) { return r.ok ? r.json() : { perks: {} }; }).catch(function () { return { perks: {} }; })
         ]).then(function (arr) {
             if (!arr[0]) throw new Error('[SceneApp] ui_text_zhCN.json missing');
             if (!window.UIText || typeof window.UIText.setDict !== 'function') throw new Error('[SceneApp] UIText module missing');
@@ -807,6 +810,13 @@
             agricultureSoilsDoc = arr[28] && typeof arr[28] === 'object' ? arr[28] : null;
             if (window.HideoutWarehouse && typeof window.HideoutWarehouse.setUpgradeTable === 'function') {
                 window.HideoutWarehouse.setUpgradeTable(arr[30] && typeof arr[30] === 'object' ? arr[30] : null);
+            }
+            if (window.LivestockState && typeof window.LivestockState.setConfig === 'function') {
+                window.LivestockState.setConfig(
+                    (arr[31] && arr[31].species) || {},
+                    (arr[32] && arr[32].modules) || {},
+                    (arr[33] && arr[33].perks) || {}
+                );
             }
             if (window.AgricultureMap && typeof window.AgricultureMap.bindEnv === 'function') {
                 try { window.AgricultureMap.bindEnv(buildAgricultureEnv()); } catch (eAgEnv) { /* ignore */ }
@@ -7843,6 +7853,53 @@
         }
     }
 
+    var livestockPanelOpen = false;
+    var livestockPanelInited = false;
+
+    function openLivestockPanel() {
+        if (isPreCreationGameplayRestricted()) {
+            showIntroBlockedMsg();
+            return;
+        }
+        if (guardPlayerComaBlocked()) return;
+        if (livestockPanelOpen) return;
+        livestockPanelOpen = true;
+        var modal = document.getElementById('modal-livestock');
+        if (modal) {
+            modal.classList.add('show');
+            modal.setAttribute('aria-hidden', 'false');
+        }
+        if (window.LivestockState) window.LivestockState.ensureState();
+        if (window.LivestockPanel) {
+            if (!livestockPanelInited && typeof window.LivestockPanel.init === 'function') {
+                try { window.LivestockPanel.init(); } catch (eInit) { /* ignore */ }
+                livestockPanelInited = true;
+            }
+            if (typeof window.LivestockPanel.render === 'function') {
+                try { window.LivestockPanel.render(); } catch (eRender) { /* ignore */ }
+            }
+        }
+        render();
+    }
+
+    function closeLivestockPanel() {
+        if (!livestockPanelOpen) return;
+        livestockPanelOpen = false;
+        var modal = document.getElementById('modal-livestock');
+        if (modal) {
+            modal.classList.remove('show');
+            modal.setAttribute('aria-hidden', 'true');
+        }
+        render();
+    }
+
+    function updateLivestockPanel() {
+        if (!livestockPanelOpen) return;
+        if (window.LivestockPanel && typeof window.LivestockPanel.render === 'function') {
+            try { window.LivestockPanel.render(); } catch (eUpLs) { /* ignore */ }
+        }
+    }
+
     function displayNameForItemId(itemId) {
         var id = String(itemId || '').trim();
         if (!id) return '';
@@ -11306,6 +11363,9 @@
     window.SceneApp.trySleepAtBed = trySleepAtBed;
     window.SceneApp.openAgriculturePanel = openAgriculturePanel;
     window.SceneApp.closeAgriculturePanel = closeAgriculturePanel;
+    window.SceneApp.openLivestockPanel = openLivestockPanel;
+    window.SceneApp.closeLivestockPanel = closeLivestockPanel;
+    window.SceneApp.updateLivestockPanel = updateLivestockPanel;
     window.SceneApp.openHideoutWarehousePanel = openHideoutWarehousePanel;
     window.SceneApp.closeHideoutWarehousePanel = closeHideoutWarehousePanel;
     window.SceneApp.updateAgriculturePanel = updateAgriculturePanel;

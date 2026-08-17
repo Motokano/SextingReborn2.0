@@ -2947,6 +2947,149 @@
             opacity: 0.5;
             cursor: not-allowed;
         }
+        /* ====== 牧场控制面板 #modal-livestock（样式基准 reference/live_ui.html） ====== */
+        #modal-livestock {
+            display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.92); z-index: 120;
+            justify-content: center; align-items: center;
+        }
+        #modal-livestock.show { display: flex; }
+        #modal-livestock .lv-panel {
+            width: min(1280px, 98vw); height: min(860px, 92vh);
+            background: radial-gradient(circle at top, rgba(211,160,96,0.08), transparent 60%), #2d2d28;
+            border: 2px solid #4d4d45; border-radius: 8px;
+            box-shadow: inset 0 0 120px rgba(0,0,0,0.36), 0 10px 30px rgba(0,0,0,0.8);
+            display: flex; flex-direction: column; position: relative; overflow: hidden;
+        }
+        #modal-livestock .lv-header {
+            height: 52px; background: #1a1512; border-bottom: 2px solid #4d4d45;
+            display: flex; align-items: center; padding: 0 20px; position: relative; flex-shrink: 0;
+        }
+        #modal-livestock .header-ribbon { position: absolute; left: 0; top: 0; bottom: 0; width: 3px; background: linear-gradient(to bottom, #ff8c00, #d3a060); }
+        #modal-livestock .lv-title { font-family: "Noto Serif SC", serif; font-size: 20px; font-weight: bold; color: #e0d7c6; margin-right: 24px; }
+        #modal-livestock .lv-badge {
+            background: #1a1512; border: 1px solid #d3a060; color: #d3a060; font-size: 12px;
+            padding: 4px 10px; border-radius: 4px; margin-right: 12px; display: flex; align-items: center; gap: 6px;
+        }
+        #modal-livestock .lv-close { margin-left: auto; cursor: pointer; font-size: 18px; color: #8e8e8e; padding: 4px 10px; border-radius: 4px; background: none; border: none; }
+        #modal-livestock .lv-close:hover { background: rgba(185,28,28,0.18); color: #fff; }
+        #modal-livestock .lv-body { flex: 1; display: flex; overflow: hidden; min-height: 0; }
+        #modal-livestock .lv-rail {
+            width: 80px; background: #252520; border-right: 2px solid #4d4d45;
+            display: flex; flex-direction: column; padding-top: 10px; flex-shrink: 0;
+        }
+        #modal-livestock .tab-btn {
+            height: 60px; display: flex; justify-content: center; align-items: center;
+            color: #e0d7c6; cursor: pointer; font-size: 14px; font-weight: bold;
+            border-left: 3px solid transparent; transition: all 0.2s; user-select: none;
+        }
+        #modal-livestock .tab-btn:hover { background: #2d2d28; color: #d3a060; }
+        #modal-livestock .tab-btn.active { background: #d3a060; color: #1a1512; border-left-color: #ff8c00; }
+        #modal-livestock .lv-main { flex: 1; overflow: hidden; display: flex; }
+        #modal-livestock .lv-view { flex: 1; display: flex; padding: 20px; overflow: auto; }
+        #modal-livestock .lv-view.hidden { display: none; }
+        #modal-livestock .lv-footer {
+            height: 32px; background: #1a1512; border-top: 2px solid #4d4d45;
+            display: flex; align-items: center; padding: 0 20px; color: #6b6560; font-size: 10px; letter-spacing: 1px; text-transform: uppercase; flex-shrink: 0;
+        }
+
+        /* 总览俯视图 */
+        #modal-livestock .overview-grid {
+            display: grid; grid-template-columns: 280px 120px 280px; grid-template-rows: 240px 120px 240px;
+            gap: 12px; margin: auto;
+        }
+        #modal-livestock .zone-cell {
+            background: #252520; border: 2px solid #4d4d45; border-radius: 4px; padding: 14px;
+            position: relative; cursor: pointer; transition: all 0.2s; overflow: hidden;
+        }
+        #modal-livestock .zone-cell:hover { border-color: #666; }
+        #modal-livestock .zone-cell.selected { border-color: #ff8c00; box-shadow: 0 0 12px rgba(255,140,0,0.15); }
+        #modal-livestock .eco-overlay { position: absolute; inset: 0; pointer-events: none; border-radius: 2px; }
+        #modal-livestock .eco-grass-low { background-color: rgba(90,140,70,0.20); }
+        #modal-livestock .eco-pollution { background-image: radial-gradient(circle at center, rgba(60,40,30,0.45) 0%, transparent 80%); }
+        #modal-livestock .eco-compact { border: 1px dashed rgba(0,0,0,0.35); }
+        #modal-livestock .zone-header { display: flex; justify-content: space-between; font-size: 11px; color: #8e8e8e; margin-bottom: 12px; position: relative; z-index: 2; gap: 6px; }
+        #modal-livestock .animal-list { position: relative; z-index: 2; display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+        #modal-livestock .animal-item { display: flex; align-items: center; gap: 6px; font-size: 13px; color: #e0d7c6; }
+        #modal-livestock .icon-cattle { color: #8c6b4a; }
+        #modal-livestock .icon-sheep { color: #c4bcad; }
+        #modal-livestock .icon-pig { color: #9e7571; }
+        #modal-livestock .icon-chicken { color: #b38b42; }
+        #modal-livestock .arm-cell {
+            background: #1a1512; border: 2px solid #4d4d45; border-radius: 4px;
+            display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 8px; cursor: pointer;
+        }
+        #modal-livestock .arm-cell:hover { border-color: #666; }
+        #modal-livestock .arm-vertical { flex-direction: column; }
+        #modal-livestock .arm-horizontal { flex-direction: row; }
+        #modal-livestock .axis-cell {
+            background: #1a1512; border: 2px solid #d3a060; border-radius: 50%;
+            display: flex; justify-content: center; align-items: center; flex-direction: column;
+            position: relative; cursor: pointer; box-shadow: inset 0 0 15px rgba(211,160,96,0.2);
+        }
+        #modal-livestock .module-slots { display: flex; gap: 5px; flex-wrap: wrap; justify-content: center; padding: 0 8px; font-size: 14px; }
+        #modal-livestock .arm-label { font-size: 10px; color: #8e8e8e; }
+        #modal-livestock .rotate-indicator {
+            position: absolute; bottom: -6px; right: -6px; color: #d3a060; background: #1a1512; border-radius: 50%;
+            width: 22px; height: 22px; display: flex; align-items: center; justify-content: center; font-size: 13px; border: 1px solid #d3a060;
+        }
+
+        /* 动物 Tab */
+        #modal-livestock .animal-list-col { width: 55%; border-right: 2px solid #4d4d45; overflow-y: auto; padding-right: 12px; display: flex; flex-direction: column; gap: 8px; }
+        #modal-livestock .animal-row {
+            background: #252520; border: 2px solid #4d4d45; border-radius: 6px; padding: 10px 12px;
+            cursor: pointer; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; transition: all 0.2s;
+        }
+        #modal-livestock .animal-row:hover { border-color: #666; }
+        #modal-livestock .animal-row.selected { border-color: #ff8c00; box-shadow: 0 0 12px rgba(255,140,0,0.18); background: #2f2c26; }
+        #modal-livestock .animal-ico { font-size: 18px; }
+        #modal-livestock .animal-name { color: #e0d7c6; font-size: 14px; font-weight: 800; }
+        #modal-livestock .animal-meta { color: #8e8e8e; font-size: 11px; }
+        #modal-livestock .animal-perk { color: #bdb5ab; font-size: 11px; width: 100%; }
+        #modal-livestock .badge-preg { color: #ff8c00; font-size: 11px; font-weight: 900; margin-left: 4px; }
+        #modal-livestock .animal-detail-col { flex: 1; padding-left: 16px; overflow-y: auto; }
+        #modal-livestock .detail-title { color: #e0d7c6; font-size: 20px; font-weight: 900; margin-bottom: 10px; }
+        #modal-livestock .kv-list { display: grid; gap: 4px; margin-bottom: 10px; }
+        #modal-livestock .kv-row { display: flex; justify-content: space-between; gap: 8px; color: #bdb5ab; font-size: 12px; }
+        #modal-livestock .kv-row span:first-child { color: #8e8e8e; }
+        #modal-livestock .detail-perk { color: #bdb5ab; font-size: 12px; margin-bottom: 10px; }
+        #modal-livestock .detail-actions { display: flex; gap: 8px; }
+        #modal-livestock .lv-btn {
+            background: none; border: 1px solid #d3a060; color: #d3a060; border-radius: 4px;
+            padding: 6px 14px; cursor: pointer; font-size: 12px;
+        }
+        #modal-livestock .lv-btn:hover { background: rgba(211,160,96,0.15); }
+        #modal-livestock .empty-hint { color: #6b6560; font-size: 13px; padding: 14px 4px; }
+
+        /* 模块 Tab */
+        #modal-livestock .module-content { display: flex; gap: 16px; width: 100%; overflow: auto; }
+        #modal-livestock .module-left { width: 45%; border-right: 2px solid #4d4d45; padding-right: 12px; overflow-y: auto; }
+        #modal-livestock .module-right { flex: 1; overflow-y: auto; }
+        #modal-livestock .section-title { color: #8e8e8e; font-size: 11px; font-weight: 900; letter-spacing: 0.08em; margin: 0 0 10px; padding-left: 8px; border-left: 2px solid #d3a060; text-transform: uppercase; }
+        #modal-livestock .arm-card { background: #252520; border: 2px solid #4d4d45; border-radius: 6px; padding: 10px; margin-bottom: 10px; }
+        #modal-livestock .arm-card-title { color: #e0d7c6; font-size: 13px; font-weight: 800; margin-bottom: 6px; }
+        #modal-livestock .arm-slots { display: grid; gap: 4px; }
+        #modal-livestock .module-slot { display: flex; justify-content: space-between; font-size: 11px; color: #8e8e8e; }
+        #modal-livestock .module-slot.filled .slot-val { color: #d3a060; }
+        #modal-livestock .module-list { display: grid; gap: 8px; }
+        #modal-livestock .module-card {
+            background: #252520; border: 2px solid #4d4d45; border-radius: 6px; padding: 10px 12px;
+            display: grid; grid-template-columns: 28px auto auto; gap: 4px 10px; align-items: center; transition: all 0.2s;
+        }
+        #modal-livestock .module-card:hover { border-color: #666; }
+        #modal-livestock .module-ico { font-size: 18px; grid-row: span 2; }
+        #modal-livestock .module-name { color: #e0d7c6; font-size: 13px; font-weight: 800; }
+        #modal-livestock .module-tier { color: #ff8c00; font-size: 10px; font-weight: 800; text-align: right; }
+        #modal-livestock .module-desc { color: #8e8e8e; font-size: 11px; grid-column: 2 / -1; }
+
+        /* 产出 Tab */
+        #modal-livestock .product-content { display: flex; gap: 16px; width: 100%; }
+        #modal-livestock .product-col { flex: 1; overflow-y: auto; }
+        #modal-livestock .product-row {
+            background: #252520; border: 2px solid #4d4d45; border-radius: 6px; padding: 10px 12px;
+            margin-bottom: 8px; color: #e0d7c6; font-size: 13px; display: flex; gap: 8px; align-items: center;
+        }
+        #modal-livestock .product-row .meta { color: #8e8e8e; font-size: 11px; margin-left: auto; }
+
     </style>
 </head>
 <body>
@@ -3682,6 +3825,36 @@
                 </div>
             </div>
         </div>
+
+        <div id="modal-livestock" aria-hidden="true">
+            <div class="lv-panel">
+                <div class="lv-header">
+                    <div class="header-ribbon"></div>
+                    <div class="lv-title">牧场</div>
+                    <div class="lv-badge" id="livestock-rotate-badge">⟳ 下次旋转 - tick</div>
+                    <div class="lv-badge" id="livestock-level-badge" style="border-color:#4d4d45;color:#8e8e8e;">畜牧 Lv.-</div>
+                    <button type="button" class="lv-close" id="livestock-close" aria-label="关闭">✕</button>
+                </div>
+                <div class="lv-body">
+                    <div class="lv-rail">
+                        <div class="tab-btn active" data-tab="overview">总览</div>
+                        <div class="tab-btn" data-tab="animals">动物</div>
+                        <div class="tab-btn" data-tab="modules">模块</div>
+                        <div class="tab-btn" data-tab="products">产出</div>
+                    </div>
+                    <div class="lv-main">
+                        <div class="lv-view" data-view="overview"><div id="livestock-overview-grid" class="overview-grid"></div></div>
+                        <div class="lv-view hidden" data-view="animals">
+                            <div id="livestock-animal-list" class="animal-list-col"></div>
+                            <div id="livestock-animal-detail" class="animal-detail-col"></div>
+                        </div>
+                        <div class="lv-view hidden" data-view="modules"><div id="livestock-module-content" class="module-content"></div></div>
+                        <div class="lv-view hidden" data-view="products"><div id="livestock-product-content" class="product-content"></div></div>
+                    </div>
+                </div>
+                <div class="lv-footer">旋转不可控 · 动物随顺时针迁移 · 畜牧等级提升可解锁更多信息</div>
+            </div>
+        </div>
     </div>
 
     <div id="dialogue-input-blocker" aria-hidden="true"></div>
@@ -3786,6 +3959,8 @@
     <script src="js/scene-renderer.js"></script>
     <script src="js/scene-systems.js"></script>
     <script src="js/save-system.js"></script>
+    <script src="js/livestock-state.js"></script>
+    <script src="js/livestock-panel.js"></script>
     <script src="js/recipe-system.js"></script>
     <script src="js/scene-app.js"></script>
     <script src="js/bootstrap.js"></script>

@@ -961,6 +961,13 @@
                 return tagsW.indexOf('warehouse_station') >= 0;
             }
 
+            function shouldShowOpenLivestockPanelButton(def0) {
+                if (!def0 || !def0.mainMenu || typeof def0.mainMenu !== 'object') return false;
+                if (def0.mainMenu.showOpenLivestockPanel === true) return true;
+                var tagsL = Array.isArray(def0.tags) ? def0.tags : [];
+                return tagsL.indexOf('livestock_station') >= 0;
+            }
+
             function shouldShowSleepAtBedButton(def0) {
                 if (!def0 || !def0.mainMenu || typeof def0.mainMenu !== 'object') return false;
                 if (def0.mainMenu.showSleepAtBed === true) return true;
@@ -1142,6 +1149,16 @@
                     }
                 });
                 btnWrap.appendChild(whBtn);
+            }
+
+            if (shouldShowOpenLivestockPanelButton(def)) {
+                var lsBtn = mkBtn(tUi('npc.menu.open_livestock_panel', '管理牧场'), function () {
+                    closeMenu();
+                    if (global.SceneApp && typeof global.SceneApp.openLivestockPanel === 'function') {
+                        global.SceneApp.openLivestockPanel();
+                    }
+                });
+                btnWrap.appendChild(lsBtn);
             }
 
             if (shouldShowSleepAtBedButton(def)) {

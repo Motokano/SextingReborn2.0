@@ -1,0 +1,199 @@
+{
+  "schema_version": 1,
+  "_comment": "畜牧模块表。数值对应 docs/design/31-livestock-husbandry.md §11。体量 tier: small/medium/large/axis。",
+  "tier_meta": {
+    "small": { "label": "小型", "upgrade_ticks": 10, "slots_note": "1 面" },
+    "medium": { "label": "中型", "upgrade_ticks": 20, "slots_note": "2-3 面" },
+    "large": { "label": "大型", "upgrade_ticks": 30, "slots_note": "4-5 面" },
+    "axis": { "label": "轴心", "upgrade_ticks": 40, "slots_note": "轴心位" }
+  },
+  "modules": {
+    "feed_trough": {
+      "module_id": "feed_trough",
+      "name_key": "livestock.module.feed_trough",
+      "name": "饲料槽",
+      "tier": "small",
+      "layer": "第一层",
+      "slots": { "side": 1 },
+      "axis_slot": null,
+      "effect_type": "feed_trough",
+      "desc": "自动投喂对应区域内的动物，容量 100 单位标准饲料。"
+    },
+    "sprinkler": {
+      "module_id": "sprinkler",
+      "name_key": "livestock.module.sprinkler",
+      "name": "蓄水喷头",
+      "tier": "small",
+      "layer": "第一层",
+      "slots": { "bottom": 1 },
+      "axis_slot": null,
+      "effect_type": "sprinkler",
+      "desc": "草生长速率加成，覆盖夹持两区。"
+    },
+    "clean_brush": {
+      "module_id": "clean_brush",
+      "name_key": "livestock.module.clean_brush",
+      "name": "局部清污刷",
+      "tier": "small",
+      "layer": "第一层",
+      "slots": { "bottom": 1 },
+      "axis_slot": null,
+      "effect_type": "clean_brush",
+      "desc": "每轮旋转结束时降污，覆盖夹持两区。"
+    },
+    "auto_collect": {
+      "module_id": "auto_collect",
+      "name_key": "livestock.module.auto_collect",
+      "name": "手动采集臂",
+      "tier": "small",
+      "layer": "第一层",
+      "slots": { "front": 1 },
+      "axis_slot": null,
+      "effect_type": "auto_collect",
+      "desc": "自动收割夹持两区内冷却完毕的活体产物。"
+    },
+    "coop": {
+      "module_id": "coop",
+      "name_key": "livestock.module.coop",
+      "name": "鸡笼",
+      "tier": "medium",
+      "layer": "第一层",
+      "slots": { "inner": 1, "bottom": 1 },
+      "axis_slot": null,
+      "effect_type": "coop",
+      "desc": "容纳鸡，鸡啄虫降污 + 产蛋，可容纳 5 只。"
+    },
+    "feed_preprocess": {
+      "module_id": "feed_preprocess",
+      "name_key": "livestock.module.feed_preprocess",
+      "name": "饲料预处理",
+      "tier": "medium",
+      "layer": "第一层",
+      "slots": { "inner": 1, "front": 1 },
+      "axis_slot": null,
+      "effect_type": "feed_preprocess",
+      "desc": "投入作物原料生成标准饲料（1 单位 = 10 营养）。"
+    },
+    "tiller": {
+      "module_id": "tiller",
+      "name_key": "livestock.module.tiller",
+      "name": "土壤翻耕器",
+      "tier": "medium",
+      "layer": "第一层",
+      "slots": { "front": 1, "bottom": 1 },
+      "axis_slot": null,
+      "effect_type": "tiller",
+      "desc": "持续松土，覆盖夹持两区。"
+    },
+    "seeder": {
+      "module_id": "seeder",
+      "name_key": "livestock.module.seeder",
+      "name": "草籽播种器",
+      "tier": "medium",
+      "layer": "第一层",
+      "slots": { "bottom": 1, "side": 1 },
+      "axis_slot": null,
+      "effect_type": "seeder",
+      "desc": "草高低于阈值时叠加生长加成。"
+    },
+    "manure_net": {
+      "module_id": "manure_net",
+      "name_key": "livestock.module.manure_net",
+      "name": "粪肥拦截网",
+      "tier": "medium",
+      "layer": "第一层",
+      "slots": { "bottom": 1, "side": 1 },
+      "axis_slot": null,
+      "effect_type": "manure_net",
+      "desc": "区内羊的污染产出衰减。"
+    },
+    "pasture_arm": {
+      "module_id": "pasture_arm",
+      "name_key": "livestock.module.pasture_arm",
+      "name": "牧草管理臂",
+      "tier": "large",
+      "layer": "第一层",
+      "slots": { "inner": 1, "front": 1, "bottom": 1, "top": 1, "side": 1 },
+      "axis_slot": null,
+      "effect_type": "pasture_arm",
+      "desc": "翻耕 + 播种 + 洒水三合一，覆盖夹持两区。"
+    },
+    "clinic_arm": {
+      "module_id": "clinic_arm",
+      "name_key": "livestock.module.clinic_arm",
+      "name": "自动诊疗臂",
+      "tier": "large",
+      "layer": "第一层",
+      "slots": { "inner": 1, "front": 1, "side": 2 },
+      "axis_slot": null,
+      "effect_type": "heal",
+      "desc": "自动检测并治疗夹持两区内的病畜。"
+    },
+    "feed_refine": {
+      "module_id": "feed_refine",
+      "name_key": "livestock.module.feed_refine",
+      "name": "饲料精加工臂",
+      "tier": "large",
+      "layer": "第一层",
+      "slots": { "inner": 1, "front": 1, "top": 1, "side": 1 },
+      "axis_slot": null,
+      "effect_type": "feed_refine",
+      "desc": "饲料预处理 + 自动补槽 + 精加工加成。"
+    },
+    "link_schedule": {
+      "module_id": "link_schedule",
+      "name_key": "livestock.module.link_schedule",
+      "name": "联动作业臂",
+      "tier": "large",
+      "layer": "第二层",
+      "slots": { "inner": 1, "front": 1, "bottom": 1, "side": 1 },
+      "axis_slot": null,
+      "effect_type": "link_schedule",
+      "desc": "中继调度器，让另一根臂的第一层模块完成后自动接力下一步。"
+    },
+    "waste_heat_recycle": {
+      "module_id": "waste_heat_recycle",
+      "name_key": "livestock.module.waste_heat_recycle",
+      "name": "废热回收臂",
+      "tier": "large",
+      "layer": "第二层",
+      "slots": { "inner": 1, "bottom": 1, "top": 1, "side": 1 },
+      "axis_slot": null,
+      "effect_type": "waste_heat_recycle",
+      "desc": "自身不清污，从已发生的污染下降中提取肥料/沼气/虫粉。"
+    },
+    "slaughter": {
+      "module_id": "slaughter",
+      "name_key": "livestock.module.slaughter",
+      "name": "屠宰模块",
+      "tier": "axis",
+      "layer": "轴心",
+      "slots": {},
+      "axis_slot": 1,
+      "effect_type": "slaughter",
+      "desc": "猪牛羊屠宰（默认已装轴心位 1）。"
+    },
+    "warehouse_hub": {
+      "module_id": "warehouse_hub",
+      "name_key": "livestock.module.warehouse_hub",
+      "name": "中央仓储枢纽",
+      "tier": "axis",
+      "layer": "轴心",
+      "slots": {},
+      "axis_slot": 2,
+      "effect_type": "warehouse_hub",
+      "desc": "自动收集四臂采集产物到轴心缓存。"
+    },
+    "climate_control": {
+      "module_id": "climate_control",
+      "name_key": "livestock.module.climate_control",
+      "name": "气候调控塔",
+      "tier": "axis",
+      "layer": "轴心",
+      "slots": {},
+      "axis_slot": 2,
+      "effect_type": "climate_control",
+      "desc": "全局环境微调（晴朗/阴凉/湿润三模式）。"
+    }
+  }
+}

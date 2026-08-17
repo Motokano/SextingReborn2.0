@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>牧场控制面板</title>
+<style>
+  /* ====== 基础重置 & 字体 ====== */
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background-color: #000;
+    color: #e0d7c6;
+    font-family: "Microsoft YaHei", "PingFang SC", sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    overflow: hidden;
+  }
+
+  /* ====== 色板与变量 ====== */
+  :root {
+    --bg-modal: #2d2d28;
+    --bg-dark: #1a1512;
+    --bg-card: #252520;
+    --border-main: #4d4d45;
+    --accent-gold: #d3a060;
+    --accent-orange: #ff8c00;
+    --text-main: #e0d7c6;
+    --text-sub: #8e8e8e;
+    --text-hint: #6b6560;
+    --eco-grass: rgba(90, 140, 70, 0.28);
+    --eco-pollution: rgba(60, 40, 30, 0.45);
+    --eco-compact: rgba(0, 0, 0, 0.35);
+  }
+
+  /* ====== 全屏 Modal 骨架 ====== */
+  .modal-livestock {
+    width: min(1280px, 98vw);
+    height: min(860px, 92vh);
+    background: radial-gradient(circle at top, rgba(211,160,96,0.08), transparent 60%), var(--bg-modal);
+    border: 2px solid var(--border-main);
+    border-radius: 8px;
+    box-shadow: inset 0 0 120px rgba(0,0,0,0.36), 0 10px 30px rgba(0,0,0,0.8);
+    display: flex;
+    flex-direction: column;
+    position: relative;
+  }
+
+  /* Header */
+  .modal-header {
+    height: 52px;
+    background-color: var(--bg-dark);
+    border-bottom: 2px solid var(--border-main);
+    display: flex;
+    align-items: center;
+    padding: 0 20px;
+    position: relative;
+  }
+  .header-ribbon {
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 3px;
+    background: linear-gradient(to bottom, var(--accent-orange), var(--accent-gold));
+  }
+  .header-title {
+    font-family: "Noto Serif SC", serif;
+    font-size: 20px;
+    font-weight: bold;
+    margin-right: 30px;
+  }
+  .header-badge {
+    background-color: var(--bg-dark);
+    border: 1px solid var(--accent-gold);
+    color: var(--accent-gold);
+    font-size: 12px;
+    padding: 4px 10px;
+    border-radius: 4px;
+    margin-right: 15px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .close-btn {
+    margin-left: auto;
+    cursor: pointer;
+    font-size: 18px;
+    color: var(--text-sub);
+    padding: 4px 10px;
+    border-radius: 4px;
+  }
+  .close-btn:hover {
+    background-color: rgba(185,28,28,0.18);
+    color: #fff;
+  }
+
+  /* Body Layout */
+  .modal-body {
+    flex: 1;
+    display: flex;
+    overflow: hidden;
+  }
+
+  /* 左轨 Tab */
+  .left-rail {
+    width: 80px;
+    background-color: var(--bg-card);
+    border-right: 2px solid var(--border-main);
+    display: flex;
+    flex-direction: column;
+    padding-top: 10px;
+  }
+  .tab-btn {
+    height: 60px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: var(--text-main);
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: bold;
+    border-left: 3px solid transparent;
+    transition: all 0.2s;
+  }
+  .tab-btn:hover { background-color: var(--bg-modal); color: var(--accent-gold); }
+  .tab-btn.active {
+    background-color: var(--accent-gold);
+    color: var(--bg-dark);
+    border-left-color: var(--accent-orange);
+  }
+
+  /* 中间视图区 - 装置俯视图 */
+  .main-content {
+    flex: 1;
+    padding: 30px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  .overview-grid {
+    display: grid;
+    grid-template-columns: 280px 120px 280px;
+    grid-template-rows: 240px 120px 240px;
+    gap: 15px;
+  }
+
+  /* 区域卡片 (Z1-Z4) */
+  .zone-cell {
+    background-color: var(--bg-card);
+    border: 2px solid var(--border-main);
+    border-radius: 4px;
+    padding: 15px;
+    position: relative;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .zone-cell:hover { border-color: #666; }
+  .zone-cell.selected {
+    border-color: var(--accent-orange);
+    box-shadow: 0 0 12px rgba(255,140,0,0.15);
+  }
+  
+  /* 生态覆盖层 */
+  .eco-overlay {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    border-radius: 2px;
+  }
+  .eco-grass { background-color: var(--eco-grass); }
+  .eco-pollution { background-image: radial-gradient(circle at center, var(--eco-pollution) 0%, transparent 80%); }
+  .eco-compact { border: 1px dashed var(--eco-compact); }
+
+  .zone-header {
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+    color: var(--text-sub);
+    margin-bottom: 15px;
+    position: relative;
+    z-index: 2;
+  }
+  .animal-list {
+    position: relative;
+    z-index: 2;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+  .animal-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+  }
+  .icon-cow { color: #8c6b4a; }
+  .icon-sheep { color: #c4bcad; }
+  .icon-pig { color: #9e7571; }
+  .icon-chicken { color: #b38b42; }
+
+  /* 机械臂与轴心 */
+  .arm-cell {
+    background-color: var(--bg-dark);
+    border: 2px solid var(--border-main);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+  }
+  .arm-cell:hover { border-color: #666; }
+  .arm-vertical { flex-direction: column; }
+  .arm-horizontal { flex-direction: row; }
+  
+  .axis-cell {
+    background-color: var(--bg-dark);
+    border: 2px solid var(--accent-gold);
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    position: relative;
+    box-shadow: inset 0 0 15px rgba(211,160,96,0.2);
+  }
+  .module-slots {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    justify-content: center;
+    padding: 0 10px;
+  }
+  .slot-icon {
+    font-size: 14px;
+    color: var(--text-sub);
+  }
+  .arm-label {
+    font-size: 10px;
+    color: var(--text-sub);
+    margin-bottom: 4px;
+  }
+
+  /* 旋转指示器 */
+  .rotate-indicator {
+    position: absolute;
+    bottom: -10px;
+    right: -10px;
+    color: var(--accent-gold);
+    background: var(--bg-dark);
+    border-radius: 50%;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    border: 1px solid var(--accent-gold);
+  }
+
+  /* Footer */
+  .modal-footer {
+    height: 32px;
+    background-color: var(--bg-dark);
+    border-top: 2px solid var(--border-main);
+    display: flex;
+    align-items: center;
+    padding: 0 20px;
+    color: var(--text-hint);
+    font-size: 10px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+</style>
+</head>
+<body>
+
+<div class="modal-livestock">
+  <!-- Header -->
+  <div class="modal-header">
+    <div class="header-ribbon"></div>
+    <div class="header-title">牧场</div>
+    <div class="header-badge">
+      <span>⟳</span> 下次旋转 862 tick
+    </div>
+    <div class="header-badge" style="border-color: var(--border-main); color: var(--text-sub);">
+      畜牧 Lv.90
+    </div>
+    <div class="close-btn">✕</div>
+  </div>
+
+  <!-- Body -->
+  <div class="modal-body">
+    <!-- 左侧轨 -->
+    <div class="left-rail">
+      <div class="tab-btn active">总览</div>
+      <div class="tab-btn">动物</div>
+      <div class="tab-btn">模块</div>
+      <div class="tab-btn">产出</div>
+    </div>
+
+    <!-- 中间内容 (俯视图) -->
+    <div class="main-content">
+      <div class="overview-grid">
+        
+        <!-- Z1 左上区域 -->
+        <div class="zone-cell selected">
+          <div class="eco-overlay eco-grass"></div>
+          <div class="zone-header">
+            <span>Z1 左上区域</span>
+            <span>🌿 茂盛 · ☢️ 干净</span>
+          </div>
+          <div class="animal-list">
+            <div class="animal-item"><span class="icon-cow">🐄</span> × 2</div>
+            <div class="animal-item"><span class="icon-sheep">🐑</span> × 1</div>
+            <div class="animal-item" style="color: var(--text-hint)"><span class="icon-pig">🐖</span> × 0</div>
+            <div class="animal-item"><span class="icon-chicken">🐔</span> × 5</div>
+          </div>
+        </div>
+
+        <!-- 一号臂 (上) -->
+        <div class="arm-cell arm-vertical">
+          <span class="arm-label">一号臂</span>
+          <div class="module-slots">
+            <span class="slot-icon">⚙️</span>
+            <span class="slot-icon">🐔</span>
+            <span class="slot-icon">🚰</span>
+            <span class="slot-icon">➖</span>
+            <span class="slot-icon">➖</span>
+            <span class="slot-icon">➖</span>
+          </div>
+        </div>
+
+        <!-- Z2 右上区域 -->
+        <div class="zone-cell">
+          <div class="zone-header">
+            <span>Z2 右上区域</span>
+            <span>🌿 适中 · ☢️ 轻微</span>
+          </div>
+          <div class="animal-list">
+            <div class="animal-item"><span class="icon-cow">🐄</span> × 1</div>
+            <div class="animal-item"><span class="icon-sheep">🐑</span> × 4</div>
+            <div class="animal-item"><span class="icon-pig">🐖</span> × 2</div>
+            <div class="animal-item" style="color: var(--text-hint)"><span class="icon-chicken">🐔</span> × 0</div>
+          </div>
+        </div>
+
+        <!-- 四号臂 (左) -->
+        <div class="arm-cell arm-horizontal">
+          <span class="arm-label" style="margin-bottom:0; margin-right:4px;">四号</span>
+          <div class="module-slots" style="flex-direction: column;">
+            <span class="slot-icon">⚙️</span>
+            <span class="slot-icon">➖</span>
+            <span class="slot-icon">➖</span>
+          </div>
+        </div>
+
+        <!-- 轴心 -->
+        <div class="axis-cell">
+          <span class="arm-label" style="color: var(--accent-gold)">轴心</span>
+          <div class="module-slots">
+            <span class="slot-icon">🔪</span>
+            <span class="slot-icon">📦</span>
+          </div>
+          <div class="rotate-indicator">⟳</div>
+        </div>
+
+        <!-- 二号臂 (右) -->
+        <div class="arm-cell arm-horizontal">
+          <div class="module-slots" style="flex-direction: column;">
+            <span class="slot-icon">⚙️</span>
+            <span class="slot-icon">🚰</span>
+            <span class="slot-icon">➖</span>
+          </div>
+          <span class="arm-label" style="margin-bottom:0; margin-left:4px;">二号</span>
+        </div>
+
+        <!-- Z4 左下区域 -->
+        <div class="zone-cell">
+          <div class="eco-overlay eco-compact"></div>
+          <div class="zone-header">
+            <span>Z4 左下区域</span>
+            <span>🪨 严重 · ☢️ 中度</span>
+          </div>
+          <div class="animal-list">
+            <div class="animal-item" style="color: var(--text-hint)"><span class="icon-cow">🐄</span> × 0</div>
+            <div class="animal-item"><span class="icon-sheep">🐑</span> × 3</div>
+            <div class="animal-item"><span class="icon-pig">🐖</span> × 2</div>
+            <div class="animal-item" style="color: var(--text-hint)"><span class="icon-chicken">🐔</span> × 0</div>
+          </div>
+        </div>
+
+        <!-- 三号臂 (下) -->
+        <div class="arm-cell arm-vertical">
+          <div class="module-slots">
+            <span class="slot-icon">⚙️</span>
+            <span class="slot-icon">➖</span>
+            <span class="slot-icon">➖</span>
+            <span class="slot-icon">➖</span>
+            <span class="slot-icon">➖</span>
+            <span class="slot-icon">➖</span>
+          </div>
+          <span class="arm-label" style="margin-top: 4px; margin-bottom: 0;">三号臂</span>
+        </div>
+
+        <!-- Z3 右下区域 -->
+        <div class="zone-cell">
+          <div class="eco-overlay eco-pollution"></div>
+          <div class="zone-header">
+            <span>Z3 右下区域</span>
+            <span>🌿 秃 · ☢️ 严重</span>
+          </div>
+          <div class="animal-list">
+            <div class="animal-item" style="color: var(--text-hint)"><span class="icon-cow">🐄</span> × 0</div>
+            <div class="animal-item" style="color: var(--text-hint)"><span class="icon-sheep">🐑</span> × 0</div>
+            <div class="animal-item"><span class="icon-pig">🐖</span> × 5</div>
+            <div class="animal-item"><span class="icon-chicken">🐔</span> × 1</div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <div class="modal-footer">
+    旋转不可控 · 动物随顺时针迁移 · 畜牧等级提升可解锁更多信息
+  </div>
+</div>
+
+</body>
+</html>

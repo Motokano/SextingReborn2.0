@@ -1,0 +1,42 @@
+{
+  "schema_version": 1,
+  "_comment": "畜牧 Perk 表。数值对应 docs/design/31-livestock-husbandry.md §8.4。modifiers 用统一 key 目录(见 docs/design/32)。",
+  "rarity_weight": { "common": 50, "uncommon": 30, "rare": 15, "very_rare": 5 },
+  "perks": {
+    "big_eater": { "perk_id": "big_eater", "name": "大胃王", "rarity": "common", "species": ["cattle", "sheep", "pig"], "requires": null, "modifiers": { "satiety_drain_mult": 1.2 } },
+    "light_eater": { "perk_id": "light_eater", "name": "耐饿", "rarity": "common", "species": ["cattle", "sheep", "pig"], "requires": null, "modifiers": { "satiety_drain_mult": 0.8 } },
+    "fast_growth": { "perk_id": "fast_growth", "name": "早熟", "rarity": "common", "species": ["cattle", "sheep", "pig"], "requires": null, "modifiers": { "growth_rate_mult": 1.15 } },
+    "slow_growth": { "perk_id": "slow_growth", "name": "晚熟", "rarity": "common", "species": ["cattle", "sheep", "pig"], "requires": null, "modifiers": { "growth_rate_mult": 0.85 } },
+    "quick_growth_chicken": { "perk_id": "quick_growth_chicken", "name": "好养", "rarity": "common", "species": ["chicken"], "requires": null, "modifiers": { "growth_rate_mult": 1.15 } },
+    "slow_growth_chicken": { "perk_id": "slow_growth_chicken", "name": "难养", "rarity": "common", "species": ["chicken"], "requires": null, "modifiers": { "growth_rate_mult": 0.85 } },
+    "more_eggs": { "perk_id": "more_eggs", "name": "多蛋", "rarity": "common", "species": ["chicken"], "requires": null, "modifiers": { "product_cooldown_mult_egg": 0.8 } },
+    "fewer_eggs": { "perk_id": "fewer_eggs", "name": "少蛋", "rarity": "common", "species": ["chicken"], "requires": null, "modifiers": { "product_cooldown_mult_egg": 1.2 } },
+
+    "easy_fat": { "perk_id": "easy_fat", "name": "易胖", "rarity": "uncommon", "species": ["cattle", "sheep", "pig"], "requires": null, "modifiers": { "feed_conversion_mult": 1.2 } },
+    "hard_gainer": { "perk_id": "hard_gainer", "name": "干吃不长", "rarity": "uncommon", "species": ["cattle", "sheep", "pig"], "requires": null, "modifiers": { "feed_conversion_mult": 0.8 } },
+    "hardy": { "perk_id": "hardy", "name": "壮实", "rarity": "uncommon", "species": ["cattle", "sheep", "pig"], "requires": null, "modifiers": { "disease_resist_mult": 0.6 } },
+    "frail": { "perk_id": "frail", "name": "体弱", "rarity": "uncommon", "species": ["cattle", "sheep", "pig"], "requires": null, "modifiers": { "disease_resist_mult": 1.5 } },
+    "fertile": { "perk_id": "fertile", "name": "多产", "rarity": "uncommon", "species": ["cattle", "sheep", "pig"], "requires": null, "modifiers": { "fertility_mult": 1.3 } },
+    "barren": { "perk_id": "barren", "name": "难孕", "rarity": "uncommon", "species": ["cattle", "sheep", "pig"], "requires": null, "modifiers": { "fertility_mult": 0.6 } },
+
+    "high_yield": { "perk_id": "high_yield", "name": "高产", "rarity": "rare", "species": ["cattle", "sheep"], "requires": { "gender": "female" }, "modifiers": { "product_cooldown_mult_milk": 0.7, "product_cooldown_mult_wool": 0.7 } },
+    "low_yield": { "perk_id": "low_yield", "name": "低产", "rarity": "rare", "species": ["cattle", "sheep"], "requires": { "gender": "female" }, "modifiers": { "product_cooldown_mult_milk": 1.3, "product_cooldown_mult_wool": 1.3 } },
+    "meaty": { "perk_id": "meaty", "name": "肉用", "rarity": "rare", "species": ["cattle", "sheep", "pig"], "requires": null, "modifiers": { "slaughter_yield_mult": 1.3 } },
+    "lean": { "perk_id": "lean", "name": "骨感", "rarity": "rare", "species": ["cattle", "sheep", "pig"], "requires": null, "modifiers": { "slaughter_yield_mult": 0.7 } },
+    "heavy_hoof": { "perk_id": "heavy_hoof", "name": "重蹄", "rarity": "rare", "species": ["cattle"], "requires": null, "modifiers": { "trample_mult": 1.5 } },
+    "light_hoof": { "perk_id": "light_hoof", "name": "轻蹄", "rarity": "rare", "species": ["cattle"], "requires": null, "modifiers": { "trample_mult": 0.6 } },
+    "dirty_sheep": { "perk_id": "dirty_sheep", "name": "脏羊", "rarity": "rare", "species": ["sheep"], "requires": null, "modifiers": { "pollution_rate_mult": 1.5 } },
+    "clean_sheep": { "perk_id": "clean_sheep", "name": "净羊", "rarity": "rare", "species": ["sheep"], "requires": null, "modifiers": { "pollution_rate_mult": 0.5 } },
+    "fast_graze": { "perk_id": "fast_graze", "name": "能啃", "rarity": "rare", "species": ["cattle", "sheep"], "requires": null, "modifiers": { "graze_rate_mult": 1.3 } },
+    "picky_eater": { "perk_id": "picky_eater", "name": "挑食", "rarity": "rare", "species": ["cattle", "sheep"], "requires": null, "modifiers": { "graze_rate_mult": 0.7 } },
+
+    "crossbreed_swine": { "perk_id": "crossbreed_swine", "name": "越界播种", "rarity": "very_rare", "species": ["pig"], "requires": { "gender": "male" }, "mechanic": "crossbreed_swine", "params": { "trigger_chance": 0.15, "cooldown_ticks": 10000 } },
+    "species_mutant": { "perk_id": "species_mutant", "name": "物种突变", "rarity": "very_rare", "species": ["pig"], "requires": null, "mechanic": "species_mutant", "params": { "mutate_chance": 0.2, "mutate_to": "sheep" } },
+    "earth_cry": { "perk_id": "earth_cry", "name": "地鸣", "rarity": "very_rare", "species": ["cattle", "sheep", "pig"], "requires": { "gender": "male" }, "mechanic": "earth_cry", "params": { "cooldown_ticks": 10000 } },
+    "pheromone": { "perk_id": "pheromone", "name": "信息素", "rarity": "very_rare", "species": ["cattle", "sheep", "pig"], "requires": { "gender": "female" }, "mechanic": "pheromone", "params": { "trigger_chance": 0.5 } },
+    "parthenogenesis": { "perk_id": "parthenogenesis", "name": "孤雌", "rarity": "very_rare", "species": ["cattle", "sheep", "pig"], "requires": { "gender": "female" }, "mechanic": "parthenogenesis", "params": {} },
+    "chain_pregnancy": { "perk_id": "chain_pregnancy", "name": "连坐", "rarity": "very_rare", "species": ["cattle", "sheep", "pig"], "requires": { "gender": "female" }, "mechanic": "chain_pregnancy", "params": { "trigger_chance": 0.1 } },
+    "hermaphrodite": { "perk_id": "hermaphrodite", "name": "雌雄同体", "rarity": "very_rare", "species": ["cattle", "sheep", "pig"], "requires": null, "mechanic": "hermaphrodite", "params": {} },
+    "eternal_spring": { "perk_id": "eternal_spring", "name": "四季如春", "rarity": "very_rare", "species": ["cattle", "sheep", "pig"], "requires": { "gender": "female" }, "mechanic": "eternal_spring", "params": {} }
+  }
+}

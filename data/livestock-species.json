@@ -1,0 +1,242 @@
+{
+  "schema_version": 1,
+  "_comment": "畜牧物种表。数值对应 docs/design/31-livestock-husbandry.md；新增动物=加一条，无需改代码。",
+  "species": {
+    "cattle": {
+      "species_id": "cattle",
+      "name_key": "livestock.species.cattle",
+      "name": "牛（水牛）",
+      "icon": "🐄",
+      "growth": {
+        "birth_weight_kg": 4.5,
+        "graze_cap_kg": 150,
+        "wean_weight_kg": null,
+        "fatten_cap_kg": 600,
+        "maturity_ticks": 10000,
+        "graze_growth_rate_kg_per_tick": 0.01455,
+        "satiety_grow_threshold": 70,
+        "satiety_stall_threshold": 30
+      },
+      "satiety": {
+        "drain_per_tick": 0.0222,
+        "starvation_to_zero_ticks": 4500,
+        "starvation_dying_ticks": 1500
+      },
+      "graze": {
+        "edible_min_m": 0.4,
+        "edible_max_m": null,
+        "comfort_min_m": 0.6,
+        "comfort_max_m": null,
+        "comfort_rate_m_per_tick": 0.0005,
+        "non_comfort_mult": 0.8,
+        "satiety_regen_per_tick": 0.05
+      },
+      "feed": {
+        "nutrition_per_kg_meat": 80,
+        "feed_units_per_tick": 0.72,
+        "feed_replenishes_satiety": false,
+        "feed_units_per_satiety": null
+      },
+      "reproduction": {
+        "pregnancy_ticks": 5000,
+        "postpartum_cooldown_ticks": 5000,
+        "litter_size": [1, 1],
+        "base_pregnancy_rate_per_tick": 0.0002
+      },
+      "lifespan_ticks": null,
+      "ecosystem_impact": {
+        "trample_per_tick": 0.045,
+        "pollution_pct_per_tick": 0,
+        "root_clean_per_tick": 0,
+        "pollution_clean_pct_per_tick": 0
+      },
+      "products": {
+        "living": [
+          { "product_id": "milk", "item_id": "hus_milk_buffalo", "cooldown_ticks": 432, "hp_cost": 0, "min_hp": 0 },
+          { "product_id": "blood", "item_id": "hus_beef_blood", "cooldown_ticks": 1008, "hp_cost": 10, "min_hp": 50 }
+        ],
+        "slaughter": {
+          "meat_item_ids": ["hus_beef_steak"],
+          "offal_item_ids": ["hus_beef_heart", "hus_beef_liver", "hus_beef_kidney", "hus_beef_tripe", "hus_beef_omasum", "hus_beef_intestine", "hus_beef_tongue", "hus_beef_lung", "hus_beef_brain", "hus_beef_marrow", "hus_beef_blood"],
+          "byproduct_item_ids": ["hus_beef_hide", "hus_beef_bone", "hus_beef_horn", "hus_beef_tallow"]
+        }
+      },
+      "perk_pool": [
+        "big_eater", "light_eater", "fast_growth", "slow_growth", "easy_fat", "hard_gainer",
+        "hardy", "frail", "fertile", "barren", "high_yield", "low_yield", "meaty", "lean",
+        "heavy_hoof", "light_hoof", "fast_graze", "picky_eater",
+        "earth_cry", "pheromone", "parthenogenesis", "chain_pregnancy", "hermaphrodite", "eternal_spring"
+      ]
+    },
+    "sheep": {
+      "species_id": "sheep",
+      "name_key": "livestock.species.sheep",
+      "name": "羊",
+      "icon": "🐑",
+      "growth": {
+        "birth_weight_kg": 0.6,
+        "graze_cap_kg": 20,
+        "wean_weight_kg": null,
+        "fatten_cap_kg": 80,
+        "maturity_ticks": 6400,
+        "graze_growth_rate_kg_per_tick": 0.00303,
+        "satiety_grow_threshold": 70,
+        "satiety_stall_threshold": 30
+      },
+      "satiety": {
+        "drain_per_tick": 0.0267,
+        "starvation_to_zero_ticks": 3750,
+        "starvation_dying_ticks": 1250
+      },
+      "graze": {
+        "edible_min_m": 0,
+        "edible_max_m": 0.8,
+        "comfort_min_m": 0,
+        "comfort_max_m": 0.6,
+        "comfort_rate_m_per_tick": 0.0003,
+        "non_comfort_mult": 0.8,
+        "satiety_regen_per_tick": 0.05
+      },
+      "feed": {
+        "nutrition_per_kg_meat": 50,
+        "feed_units_per_tick": 0.06,
+        "feed_replenishes_satiety": false,
+        "feed_units_per_satiety": null
+      },
+      "reproduction": {
+        "pregnancy_ticks": 2680,
+        "postpartum_cooldown_ticks": 2680,
+        "litter_size": [1, 2],
+        "base_pregnancy_rate_per_tick": 0.000373
+      },
+      "lifespan_ticks": null,
+      "ecosystem_impact": {
+        "trample_per_tick": 0.005,
+        "pollution_pct_per_tick": 0.02,
+        "root_clean_per_tick": 0,
+        "pollution_clean_pct_per_tick": 0
+      },
+      "products": {
+        "living": [
+          { "product_id": "wool", "item_id": "hus_wool", "cooldown_ticks": 4000, "hp_cost": 0, "min_hp": 0 },
+          { "product_id": "blood", "item_id": "hus_mutton_blood", "cooldown_ticks": 1008, "hp_cost": 10, "min_hp": 50 }
+        ],
+        "slaughter": {
+          "meat_item_ids": ["hus_mutton_chop", "hus_mutton", "hus_mutton_leg"],
+          "offal_item_ids": ["hus_mutton_heart", "hus_mutton_liver", "hus_mutton_kidney", "hus_mutton_tripe", "hus_mutton_intestine", "hus_mutton_tongue", "hus_mutton_lung", "hus_mutton_brain", "hus_mutton_blood"],
+          "byproduct_item_ids": ["hus_mutton_hide", "hus_mutton_bone", "hus_mutton_tallow"]
+        }
+      },
+      "perk_pool": [
+        "big_eater", "light_eater", "fast_growth", "slow_growth", "easy_fat", "hard_gainer",
+        "hardy", "frail", "fertile", "barren", "high_yield", "low_yield", "meaty", "lean",
+        "dirty_sheep", "clean_sheep", "fast_graze", "picky_eater",
+        "earth_cry", "pheromone", "parthenogenesis", "chain_pregnancy", "hermaphrodite", "eternal_spring"
+      ]
+    },
+    "pig": {
+      "species_id": "pig",
+      "name_key": "livestock.species.pig",
+      "name": "猪",
+      "icon": "🐖",
+      "growth": {
+        "birth_weight_kg": 0.9,
+        "graze_cap_kg": null,
+        "wean_weight_kg": 30,
+        "fatten_cap_kg": 120,
+        "maturity_ticks": 1617,
+        "graze_growth_rate_kg_per_tick": 0.018,
+        "satiety_grow_threshold": 70,
+        "satiety_stall_threshold": 30
+      },
+      "satiety": {
+        "drain_per_tick": 0.0333,
+        "starvation_to_zero_ticks": 3000,
+        "starvation_dying_ticks": 1000
+      },
+      "graze": null,
+      "feed": {
+        "nutrition_per_kg_meat": 30,
+        "feed_units_per_tick": 0.054,
+        "feed_replenishes_satiety": true,
+        "feed_units_per_satiety": 10
+      },
+      "reproduction": {
+        "pregnancy_ticks": 2040,
+        "postpartum_cooldown_ticks": 2040,
+        "litter_size": [3, 4],
+        "base_pregnancy_rate_per_tick": 0.00049
+      },
+      "lifespan_ticks": null,
+      "ecosystem_impact": {
+        "trample_per_tick": 0,
+        "pollution_pct_per_tick": -0.01,
+        "root_clean_per_tick": -0.045,
+        "pollution_clean_pct_per_tick": 0
+      },
+      "products": {
+        "living": [
+          { "product_id": "blood", "item_id": "hus_pork_blood", "cooldown_ticks": 1008, "hp_cost": 10, "min_hp": 50 }
+        ],
+        "slaughter": {
+          "meat_item_ids": ["hus_pork_chop", "hus_pork_meat_ground"],
+          "offal_item_ids": ["hus_pork_heart", "hus_pork_liver", "hus_pork_kidney", "hus_pork_stomach", "hus_pork_large_intestine", "hus_pork_small_intestine", "hus_pig_tongue", "hus_pork_lung", "hus_pork_brain", "hus_pork_ear", "hus_pork_blood"],
+          "byproduct_item_ids": ["hus_pork_rind", "hus_pork_bone", "hus_pig_lard", "hus_pork_lard"]
+        }
+      },
+      "perk_pool": [
+        "big_eater", "light_eater", "fast_growth", "slow_growth", "easy_fat", "hard_gainer",
+        "hardy", "frail", "fertile", "barren", "meaty", "lean",
+        "crossbreed_swine", "species_mutant",
+        "earth_cry", "pheromone", "parthenogenesis", "chain_pregnancy", "hermaphrodite", "eternal_spring"
+      ]
+    },
+    "chicken": {
+      "species_id": "chicken",
+      "name_key": "livestock.species.chicken",
+      "name": "鸡",
+      "icon": "🐔",
+      "growth": {
+        "birth_weight_kg": 0.05,
+        "graze_cap_kg": null,
+        "wean_weight_kg": null,
+        "fatten_cap_kg": 2.5,
+        "maturity_ticks": null,
+        "graze_growth_rate_kg_per_tick": null,
+        "satiety_grow_threshold": 70,
+        "satiety_stall_threshold": 30
+      },
+      "satiety": {
+        "drain_per_tick": 0.0556,
+        "starvation_to_zero_ticks": 1800,
+        "starvation_dying_ticks": 600
+      },
+      "graze": null,
+      "feed": {
+        "nutrition_per_kg_meat": 20,
+        "feed_units_per_tick": null,
+        "feed_replenishes_satiety": false,
+        "feed_units_per_satiety": null
+      },
+      "reproduction": null,
+      "lifespan_ticks": 15000,
+      "ecosystem_impact": {
+        "trample_per_tick": 0,
+        "pollution_pct_per_tick": 0,
+        "root_clean_per_tick": 0,
+        "pollution_clean_pct_per_tick": 0
+      },
+      "products": {
+        "living": [
+          { "product_id": "egg", "item_id": "hus_egg", "cooldown_ticks": 288, "hp_cost": 0, "min_hp": 0 }
+        ],
+        "slaughter": {
+          "meat_item_ids": ["hus_chicken_thigh", "hus_chicken_breast", "hus_chicken_meat"],
+          "offal_item_ids": ["hus_chicken_blood", "hus_chicken_gizzard", "hus_chicken_liver", "hus_chicken_heart", "hus_chicken_intestine"],
+          "byproduct_item_ids": ["hus_chicken_skin", "hus_chicken_bone"]
+        }
+      },
+      "perk_pool": ["quick_growth_chicken", "slow_growth_chicken", "more_eggs", "fewer_eggs"]
+    }
+  }
+}
