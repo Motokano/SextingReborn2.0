@@ -372,7 +372,7 @@
 
 | 产出 | 来源 | 冷却 |
 |---|---|---|
-| 牛乳 | 牛 | 432 tick（3天） |
+| 水牛奶 | 牛（水牛） | 432 tick（3天） |
 | 羊毛 | 羊 | 4000 tick |
 | 牛血 | 牛 | 1008 tick（7天） |
 | 羊血 | 羊 | 1008 tick |
@@ -382,7 +382,7 @@
 - 收获为**按需操作**，冷却仅是最小间隔，非强制定期任务
 - 每只动物有独立冷却期
 - 抽血（牛血/羊血/猪血）每次 **-10 血量**；血量 < 50 时禁止抽血（与 §5.4 血量系统联动）
-- 怀孕不影响产奶：怀孕牛照常按冷却产奶（牛犊出生即吃草，不需母乳）
+- 怀孕不影响产奶：怀孕牛照常按冷却产水牛奶（牛犊出生即吃草，不需母乳）
 
 ### 6.2 屠宰产出
 
@@ -424,6 +424,109 @@
 
 - 猪牛羊：轴心屠宰模块（**默认已装在轴心位 1，开局即可用**），控制面板选择动物执行，消耗时间体力
 - 鸡：打开鸡笼模块直接执行
+
+### 6.4 产出契约（item_id 对齐）
+
+所有产出映射到 `items.json` 的 item_id；「已有」表示 `hus_*` 已存在，「新增」需在实现时补入。价值走 `price_class + volatility`（贸易定价），肥料值走 `fert_c / fert_n`。
+
+#### 活体产出
+
+| 产出 | item_id | 状态 | 下游用途 |
+|---|---|---|---|
+| 水牛奶 | hus_milk_buffalo | 已有 | 烹饪 / 乳制品 |
+| 羊毛 | hus_wool | 新增 | 纺织 |
+| 牛血 | hus_beef_blood | 新增 | 烹饪 / 入药 |
+| 羊血 | hus_mutton_blood | 新增 | 烹饪 / 入药 |
+| 猪血 | hus_pork_blood | 新增 | 烹饪 / 入药 |
+| 鸡蛋 | hus_egg | 已有 | 烹饪 |
+
+#### 牛屠宰产出
+
+| 产出 | item_id | 状态 | 下游用途 |
+|---|---|---|---|
+| 牛排（主肉） | hus_beef_steak | 新增 | 烹饪 |
+| 牛心 | hus_beef_heart | 新增 | 烹饪 |
+| 牛肝 | hus_beef_liver | 新增 | 烹饪 |
+| 牛肾 | hus_beef_kidney | 新增 | 烹饪 |
+| 牛肚 | hus_beef_tripe | 新增 | 烹饪 |
+| 牛百叶 | hus_beef_omasum | 新增 | 烹饪 |
+| 牛肠 | hus_beef_intestine | 新增 | 烹饪 |
+| 牛舌 | hus_beef_tongue | 已有 | 烹饪 |
+| 牛肺 | hus_beef_lung | 新增 | 烹饪 |
+| 牛脑 | hus_beef_brain | 新增 | 烹饪 |
+| 牛骨髓 | hus_beef_marrow | 新增 | 烹饪 |
+| 牛血 | hus_beef_blood | 新增 | 烹饪 / 入药 |
+| 牛皮 | hus_beef_hide | 新增 | 皮革 / 装备 |
+| 牛骨 | hus_beef_bone | 已有 | 骨粉 / 熬汤 |
+| 牛角 | hus_beef_horn | 新增 | 工具 / 入药 |
+| 牛脂/牛油 | hus_beef_tallow | 新增 | 烹饪油脂 |
+
+#### 羊屠宰产出
+
+| 产出 | item_id | 状态 | 下游用途 |
+|---|---|---|---|
+| 羊排 | hus_mutton_chop | 新增 | 烹饪 |
+| 羊肉 | hus_mutton | 已有 | 烹饪 |
+| 羊腿 | hus_mutton_leg | 新增 | 烹饪 |
+| 羊心 | hus_mutton_heart | 新增 | 烹饪 |
+| 羊肝 | hus_mutton_liver | 新增 | 烹饪 |
+| 羊肾 | hus_mutton_kidney | 新增 | 烹饪 |
+| 羊肚 | hus_mutton_tripe | 新增 | 烹饪 |
+| 羊肠 | hus_mutton_intestine | 新增 | 烹饪 |
+| 羊舌 | hus_mutton_tongue | 新增 | 烹饪 |
+| 羊肺 | hus_mutton_lung | 新增 | 烹饪 |
+| 羊脑 | hus_mutton_brain | 新增 | 烹饪 |
+| 羊血 | hus_mutton_blood | 新增 | 烹饪 / 入药 |
+| 羊皮 | hus_mutton_hide | 新增 | 皮革 / 装备 |
+| 羊骨 | hus_mutton_bone | 新增 | 骨粉 / 熬汤 |
+| 羊脂/羊油 | hus_mutton_tallow | 新增 | 烹饪油脂 |
+
+#### 猪屠宰产出
+
+| 产出 | item_id | 状态 | 下游用途 |
+|---|---|---|---|
+| 猪排 | hus_pork_chop | 新增 | 烹饪 |
+| 猪肉 | hus_pork_meat_ground | 已有 | 烹饪 |
+| 猪心 | hus_pork_heart | 新增 | 烹饪 |
+| 猪肝 | hus_pork_liver | 新增 | 烹饪 |
+| 猪腰 | hus_pork_kidney | 新增 | 烹饪 |
+| 猪肚 | hus_pork_stomach | 已有 | 烹饪 |
+| 猪大肠 | hus_pork_large_intestine | 新增 | 烹饪 |
+| 猪小肠 | hus_pork_small_intestine | 新增 | 烹饪 |
+| 猪舌 | hus_pig_tongue | 已有 | 烹饪 |
+| 猪肺 | hus_pork_lung | 新增 | 烹饪 |
+| 猪脑 | hus_pork_brain | 新增 | 烹饪 |
+| 猪耳 | hus_pork_ear | 新增 | 烹饪 |
+| 猪血 | hus_pork_blood | 新增 | 烹饪 / 入药 |
+| 猪皮 | hus_pork_rind | 已有 | 皮革 / 装备 |
+| 猪骨 | hus_pork_bone | 已有 | 骨粉 / 熬汤 |
+| 猪板油 | hus_pig_lard | 已有 | 烹饪油脂 |
+| 猪油 | hus_pork_lard | 已有 | 烹饪油脂 |
+
+#### 鸡屠宰产出
+
+| 产出 | item_id | 状态 | 下游用途 |
+|---|---|---|---|
+| 鸡腿肉 | hus_chicken_thigh | 新增 | 烹饪 |
+| 鸡胸肉 | hus_chicken_breast | 新增 | 烹饪 |
+| 鸡血 | hus_chicken_blood | 新增 | 烹饪 / 入药 |
+| 鸡胗 | hus_chicken_gizzard | 新增 | 烹饪 |
+| 鸡肝 | hus_chicken_liver | 新增 | 烹饪 |
+| 鸡心 | hus_chicken_heart | 新增 | 烹饪 |
+| 鸡肠 | hus_chicken_intestine | 新增 | 烹饪 |
+| 鸡皮 | hus_chicken_skin | 新增 | 烹饪 / 皮革 |
+| 鸡骨 | hus_chicken_bone | 已有 | 骨粉 / 熬汤 |
+| 鸡肉 | hus_chicken_meat | 已有 | 烹饪 |
+
+#### 副产物（废热回收臂 §11.5.2）
+
+| 产出 | item_id | 状态 | 下游用途 |
+|---|---|---|---|
+| 有机肥料 | compost_matrix_*（复用农业） | 已有 | 农业施肥 |
+| 沼气 | hus_biogas | 新增 | 燃料 |
+| 虫粉 | hus_insect_powder | 新增 | 鸡饲料 |
+
+> 新增物品合计约 50 个；具体 `weight_kg` / `price_class` / `volatility` / `spoilage_ticks` / `fert_c` / `fert_n` 等字段在实现阶段补入 `items.json`（对齐 `hus_*` 现有条目结构）。
 
 ---
 
