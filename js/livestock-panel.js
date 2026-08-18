@@ -106,9 +106,7 @@
     // 3x3: z1, arm1, z2, arm4, axis, arm2, z4, arm3, z3
     function zoneHtml(zoneId) {
       var z = st.zones[zoneId] || {};
-      var animals = st.animals.filter(function (a) { return a.zone_id === zoneId; });
-      var counts = { cattle: 0, sheep: 0, pig: 0, chicken: 0 };
-      animals.forEach(function (a) { if (counts[a.species_id] != null) counts[a.species_id]++; });
+      var animals = st.animals.filter(function (a) { return a.location_type === 'zone' && a.zone_id === zoneId && !a.dead; });
       var eco = [];
       if (lv >= 10) eco.push('🌿 ' + grassStage(z.grass_height));
       if (lv >= 20) eco.push('☢️ ' + pollutionStage(z.pollution));
@@ -117,12 +115,12 @@
       if (lv >= 60) eco.push('板结 ' + (z.compaction == null ? '-' : z.compaction));
       var ecoText = eco.join(' · ') || '（生态信息未解锁）';
       var sel = selectedZoneId === zoneId ? ' selected' : '';
+      var animalHtml = animals.map(function (a) { return animalChip(a); }).join('') ||
+        '<div class="empty-hint" style="padding:2px;font-size:11px;">空</div>';
       return '<div class="zone-cell' + sel + '" data-zone="' + zoneId + '">' +
         '<div class="eco-overlay ' + ecoOverlayClass(zoneId, z) + '"></div>' +
         '<div class="zone-header"><span>' + zoneLabel[zoneId] + '</span><span>' + ecoText + '</span></div>' +
-        '<div class="animal-list">' +
-        speciesRow('cattle', counts.cattle, zoneId) + speciesRow('sheep', counts.sheep, zoneId) + speciesRow('pig', counts.pig, zoneId) + speciesRow('chicken', counts.chicken, zoneId) +
-        '</div></div>';
+        '<div class="animal-list">' + animalHtml + '</div></div>';
     }
     function armHtml(armId, vertical) {
       var a = st.arms[armId] || {};
@@ -130,8 +128,10 @@
       var icons = mods.map(function (m) { return moduleIcon(m); }).join('');
       if (!icons) icons = '➖';
       var lbl = { arm1: '一号臂', arm2: '二号臂', arm3: '三号臂', arm4: '四号臂' }[armId];
+      var chickens = st.animals.filter(function (x) { return x.location_type === 'coop' && x.arm_id === armId && !x.dead; });
+      var chickenHtml = chickens.length ? '<div class="coop-animals">' + chickens.map(function (c) { return animalChip(c, true); }).join('') + '</div>' : '';
       return '<div class="arm-cell ' + (vertical ? 'arm-vertical' : 'arm-horizontal') + '" data-arm="' + armId + '">' +
-        '<span class="arm-label">' + lbl + '</span><div class="module-slots">' + icons + '</div></div>';
+        '<span class="arm-label">' + lbl + '</span><div class="module-slots">' + icons + '</div>' + chickenHtml + '</div>';
     }
     function axisHtml() {
       var mods = [st.axis.slot1, st.axis.slot2].filter(Boolean);
@@ -151,12 +151,14 @@
     bindDragDrop();
   }
 
-  function speciesRow(speciesId, count, zoneId) {
-    var dim = count === 0 ? ' style="color: var(--text-hint)"' : '';
-    var draggable = count > 0 ? ' draggable="true"' : '';
-    return '<div class="animal-item"' + dim + draggable +
-      ' data-species="' + speciesId + '" data-zone="' + zoneId + '">' +
-      '<span class="icon-' + speciesId + '">' + speciesIcon(speciesId) + '</span> × ' + count + '</div>';
+  function animalChip(a, isCoop) {
+    var draggable = !isCoop ? ' draggable="true"' : '';
+    var g = genderGlyph(a.gender);
+    var title = speciesName(a.species_id) + ' ' + g + ' · ' + a.weight_kg.toFixed(1) + 'kg';
+    var zoneAttr = a.location_type === 'zone' ? ' data-zone="' + a.zone_id + '"' : '';
+    return '<div class="animal-item' + (isCoop ? ' animal-coop' : '') + '"' + draggable + zoneAttr +
+      ' data-uid="' + a.uid + '" title="' + title + '">' +
+      '<span class="icon-' + a.species_id + '">' + speciesIcon(a.species_id) + '</span>' + g + '</div>';
   }
   function moduleIcon(moduleId) {
     var m = window.LivestockState.getModule(moduleId);
@@ -192,18 +194,6 @@
 
   var dragState = null;
 
-  function moveOneAnimal(fromZone, speciesId, toZone) {
-    var st = window.LivestockState.getState();
-    if (!st) return;
-    for (var i = 0; i < st.animals.length; i++) {
-      var a = st.animals[i];
-      if (!a.dead && a.zone_id === fromZone && a.species_id === speciesId) {
-        window.LivestockState.moveAnimal(a.uid, toZone);
-        return;
-      }
-    }
-  }
-
   function clearDragHighlight() {
     var zones = document.querySelectorAll('#livestock-overview-grid .zone-cell.drop-target');
     for (var i = 0; i < zones.length; i++) zones[i].classList.remove('drop-target');
@@ -214,12 +204,12 @@
     for (var i = 0; i < items.length; i++) {
       items[i].addEventListener('dragstart', function (e) {
         dragState = {
-          speciesId: this.getAttribute('data-species'),
+          uid: this.getAttribute('data-uid'),
           fromZone: this.getAttribute('data-zone')
         };
         if (e.dataTransfer) {
           e.dataTransfer.effectAllowed = 'move';
-          try { e.dataTransfer.setData('text/plain', dragState.speciesId); } catch (err) { /* ignore */ }
+          try { e.dataTransfer.setData('text/plain', dragState.uid); } catch (err) { /* ignore */ }
         }
       });
       items[i].addEventListener('dragend', function () {
@@ -247,7 +237,7 @@
           dragState = null;
           return;
         }
-        moveOneAnimal(dragState.fromZone, dragState.speciesId, targetZone);
+        window.LivestockState.moveAnimal(dragState.uid, targetZone);
         dragState = null;
         render();
       });
@@ -267,7 +257,7 @@
       return '<div class="animal-row' + sel + '" data-uid="' + a.uid + '">' +
         '<span class="animal-ico">' + speciesIcon(a.species_id) + '</span>' +
         '<span class="animal-name">' + speciesName(a.species_id) + ' ' + genderGlyph(a.gender) + preg + '</span>' +
-        '<span class="animal-meta">' + a.weight_kg.toFixed(1) + 'kg · 饱 ' + sat + ' · 血 ' + hp + ' · ' + zoneName(a.zone_id) + '</span>' +
+        '<span class="animal-meta">' + a.weight_kg.toFixed(1) + 'kg · 饱 ' + sat + ' · 血 ' + hp + ' · ' + locationName(a) + '</span>' +
         '<span class="animal-perk">' + perk + '</span>' +
         '</div>';
     }).join('');
@@ -280,6 +270,12 @@
   function satietyStage(s) { if (s == null) return '-'; if (s < 30) return '饥饿'; if (s < 70) return '正常'; return '饱足'; }
   function hpStage(h) { if (h == null) return '-'; if (h < 30) return '重病'; if (h < 60) return '患病'; if (h < 90) return '亚健康'; return '健康'; }
   function zoneName(z) { return { z1: 'Z1', z2: 'Z2', z3: 'Z3', z4: 'Z4' }[z] || z; }
+  function locationName(a) {
+    if (a.location_type === 'coop') {
+      return { arm1: '一号臂·鸡笼', arm2: '二号臂·鸡笼', arm3: '三号臂·鸡笼', arm4: '四号臂·鸡笼' }[a.arm_id] || (a.arm_id + '·鸡笼');
+    }
+    return locationName(a);
+  }
   function perkText(perks, lv) {
     if (!perks || !perks.length) return '';
     var names = perks.map(function (p) {
@@ -314,15 +310,17 @@
       '<div class="kv-row"><span>饱腹</span><span>' + ((lv >= 10) ? a.satiety.toFixed(0) : satietyStage(a.satiety)) + '</span></div>' +
       '<div class="kv-row"><span>血量</span><span>' + ((lv >= 70) ? a.hp.toFixed(0) : hpStage(a.hp)) + '</span></div>' +
       '<div class="kv-row"><span>怀孕</span><span>' + ((lv >= 30 && a.pregnant) ? '剩余 ' + a.pregnant.remaining_ticks + ' tick' : ((lv >= 30) ? '无' : '不可见')) + '</span></div>' +
-      '<div class="kv-row"><span>所在区</span><span>' + zoneName(a.zone_id) + '</span></div>' +
+      '<div class="kv-row"><span>所在区</span><span>' + locationName(a) + '</span></div>' +
       '</div>' +
       '<div class="detail-perk">' + ((lv >= 50) ? (perkText(a.perks, lv) || '无 Perk') : 'Perk 不可见（畜牧 Lv.50 解锁）') + '</div>' +
       '<div class="kv-list">' + prodRows + '</div>' +
       '<div class="detail-actions">' +
-      '<button type="button" class="lv-btn' + (a.zone_id === 'z1' ? ' active' : '') + '" data-move="z1">迁到 Z1</button>' +
-      '<button type="button" class="lv-btn' + (a.zone_id === 'z2' ? ' active' : '') + '" data-move="z2">迁到 Z2</button>' +
-      '<button type="button" class="lv-btn' + (a.zone_id === 'z3' ? ' active' : '') + '" data-move="z3">迁到 Z3</button>' +
-      '<button type="button" class="lv-btn' + (a.zone_id === 'z4' ? ' active' : '') + '" data-move="z4">迁到 Z4</button>' +
+      (a.location_type === 'zone'
+        ? '<button type="button" class="lv-btn' + (a.zone_id === 'z1' ? ' active' : '') + '" data-move="z1">迁到 Z1</button>' +
+          '<button type="button" class="lv-btn' + (a.zone_id === 'z2' ? ' active' : '') + '" data-move="z2">迁到 Z2</button>' +
+          '<button type="button" class="lv-btn' + (a.zone_id === 'z3' ? ' active' : '') + '" data-move="z3">迁到 Z3</button>' +
+          '<button type="button" class="lv-btn' + (a.zone_id === 'z4' ? ' active' : '') + '" data-move="z4">迁到 Z4</button>'
+        : '<span class="empty-hint" style="padding:0;">鸡笼动物，不参与区域迁移</span>') +
       '</div>';
     bindMoveButtons();
   }

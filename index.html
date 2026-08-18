@@ -3011,8 +3011,13 @@
         #modal-livestock .eco-pollution { background-image: radial-gradient(circle at center, rgba(60,40,30,0.45) 0%, transparent 80%); }
         #modal-livestock .eco-compact { border: 1px dashed rgba(0,0,0,0.35); }
         #modal-livestock .zone-header { display: flex; justify-content: space-between; font-size: 11px; color: #8e8e8e; margin-bottom: 12px; position: relative; z-index: 2; gap: 6px; }
-        #modal-livestock .animal-list { position: relative; z-index: 2; display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-        #modal-livestock .animal-item { display: flex; align-items: center; gap: 6px; font-size: 13px; color: #e0d7c6; }
+        #modal-livestock .animal-list { position: relative; z-index: 2; display: flex; flex-wrap: wrap; gap: 4px; }
+        #modal-livestock .animal-item {
+            display: inline-flex; align-items: center; gap: 2px; font-size: 13px; color: #e0d7c6;
+            border: 1px solid #4d4d45; border-radius: 4px; padding: 1px 5px; background: rgba(0,0,0,0.18);
+        }
+        #modal-livestock .animal-item.animal-coop { background: rgba(211,160,96,0.08); }
+        #modal-livestock .coop-animals { position: relative; z-index: 2; display: flex; flex-wrap: wrap; gap: 3px; justify-content: center; padding: 0 4px; }
         #modal-livestock .icon-cattle { color: #8c6b4a; }
         #modal-livestock .icon-sheep { color: #c4bcad; }
         #modal-livestock .icon-pig { color: #9e7571; }

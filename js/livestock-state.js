@@ -1,6 +1,8 @@
 /*
  * 畜牧系统 - 运行时状态 + tick 生态结算
- * 负责：加载三表配置、维护牧场运行时状态、每 tick 结算（吃草/饥饿/成长/疾病/旋转/繁殖）、存档读写。
+ * 动物归属模型：
+ *   - 区域动物（牛/羊/猪）：location_type='zone'，绑定 zone_id，吃草/拱地，旋转时顺时针迁区
+ *   - 鸡笼动物（鸡）：location_type='coop'，绑定 arm_id（鸡笼装在机械臂内部），不迁区，清污作用于该臂夹持两区
  */
 (function () {
   'use strict';
@@ -35,12 +37,20 @@
   function allModules() { return MODULES; }
   function allPerks() { return PERKS; }
 
-  function makeAnimal(speciesId, gender, zoneId, opts) {
+  // 鸡笼动物默认归属：装鸡笼（inner === 'coop'）的臂
+  function findCoopArm(arms) {
+    for (var k in arms) {
+      if (arms[k] && arms[k].inner === 'coop') return k;
+    }
+    return 'arm1';
+  }
+
+  function makeAnimal(speciesId, gender, locType, locId, opts) {
     opts = opts || {};
     var sp = getSpecies(speciesId);
     var birth = (sp && sp.growth && sp.growth.birth_weight_kg != null) ? sp.growth.birth_weight_kg : 0;
     var cap = (sp && sp.growth && sp.growth.fatten_cap_kg) ? sp.growth.fatten_cap_kg : birth;
-    return {
+    var a = {
       uid: newUid(),
       species_id: speciesId,
       gender: gender,
@@ -51,10 +61,13 @@
       perks: opts.perks || [],
       pregnant: opts.pregnant || null,
       cooldowns: opts.cooldowns || {},
-      zone_id: zoneId,
+      location_type: locType || 'zone',
+      zone_id: locType === 'coop' ? null : locId,
+      arm_id: locType === 'coop' ? locId : null,
       dead: false,
       death_cause: null
     };
+    return a;
   }
 
   function initDemoState() {
@@ -74,27 +87,43 @@
         z3: { grass_height: 0.1, compaction: 60, pollution: 90 },
         z4: { grass_height: 0.3, compaction: 85, pollution: 55 }
       },
+      arm_zones: {
+        arm1: ['z1', 'z2'],
+        arm2: ['z2', 'z3'],
+        arm3: ['z3', 'z4'],
+        arm4: ['z4', 'z1']
+      },
       arms: arms,
       axis: { slot1: 'slaughter', slot2: null },
       animals: [
-        makeAnimal('cattle', 'female', 'z1', { perks: ['hardy'] }),
-        makeAnimal('cattle', 'male', 'z1', { weight_kg: 300 }),
-        makeAnimal('sheep', 'female', 'z1', { perks: ['clean_sheep'] }),
-        makeAnimal('chicken', 'female', 'z1', {}), makeAnimal('chicken', 'female', 'z1', {}),
-        makeAnimal('chicken', 'female', 'z1', {}), makeAnimal('chicken', 'female', 'z1', {}),
-        makeAnimal('chicken', 'female', 'z1', {}),
-        makeAnimal('cattle', 'female', 'z2', { weight_kg: 150 }),
-        makeAnimal('sheep', 'female', 'z2', {}), makeAnimal('sheep', 'male', 'z2', {}),
-        makeAnimal('sheep', 'female', 'z2', {}), makeAnimal('sheep', 'female', 'z2', {}),
-        makeAnimal('pig', 'female', 'z2', { pregnant: { father_uid: null, remaining_ticks: 1500 } }),
-        makeAnimal('pig', 'male', 'z2', {}),
-        makeAnimal('sheep', 'female', 'z4', {}), makeAnimal('sheep', 'male', 'z4', {}),
-        makeAnimal('sheep', 'female', 'z4', {}),
-        makeAnimal('pig', 'female', 'z4', {}), makeAnimal('pig', 'male', 'z4', {}),
-        makeAnimal('pig', 'female', 'z3', {}), makeAnimal('pig', 'male', 'z3', {}),
-        makeAnimal('pig', 'female', 'z3', {}), makeAnimal('pig', 'female', 'z3', {}),
-        makeAnimal('pig', 'female', 'z3', {}),
-        makeAnimal('chicken', 'female', 'z3', {})
+        // 区域动物（牛/羊/猪）
+        makeAnimal('cattle', 'female', 'zone', 'z1', { perks: ['hardy'] }),
+        makeAnimal('cattle', 'male', 'zone', 'z1', { weight_kg: 300 }),
+        makeAnimal('sheep', 'female', 'zone', 'z1', { perks: ['clean_sheep'] }),
+        makeAnimal('cattle', 'female', 'zone', 'z2', { weight_kg: 150 }),
+        makeAnimal('sheep', 'female', 'zone', 'z2', {}),
+        makeAnimal('sheep', 'male', 'zone', 'z2', {}),
+        makeAnimal('sheep', 'female', 'zone', 'z2', {}),
+        makeAnimal('sheep', 'female', 'zone', 'z2', {}),
+        makeAnimal('pig', 'female', 'zone', 'z2', { pregnant: { father_uid: null, remaining_ticks: 1500 } }),
+        makeAnimal('pig', 'male', 'zone', 'z2', {}),
+        makeAnimal('sheep', 'female', 'zone', 'z4', {}),
+        makeAnimal('sheep', 'male', 'zone', 'z4', {}),
+        makeAnimal('sheep', 'female', 'zone', 'z4', {}),
+        makeAnimal('pig', 'female', 'zone', 'z4', {}),
+        makeAnimal('pig', 'male', 'zone', 'z4', {}),
+        makeAnimal('pig', 'female', 'zone', 'z3', {}),
+        makeAnimal('pig', 'male', 'zone', 'z3', {}),
+        makeAnimal('pig', 'female', 'zone', 'z3', {}),
+        makeAnimal('pig', 'female', 'zone', 'z3', {}),
+        makeAnimal('pig', 'female', 'zone', 'z3', {}),
+        // 鸡笼动物（鸡，在 arm1 的鸡笼）
+        makeAnimal('chicken', 'female', 'coop', 'arm1', {}),
+        makeAnimal('chicken', 'female', 'coop', 'arm1', {}),
+        makeAnimal('chicken', 'female', 'coop', 'arm1', {}),
+        makeAnimal('chicken', 'female', 'coop', 'arm1', {}),
+        makeAnimal('chicken', 'female', 'coop', 'arm1', {}),
+        makeAnimal('chicken', 'female', 'coop', 'arm1', {})
       ]
     };
   }
@@ -104,11 +133,27 @@
 
   function setState(incoming) {
     if (!incoming || typeof incoming !== 'object') return;
+    if (!incoming.arm_zones) {
+      incoming.arm_zones = { arm1: ['z1', 'z2'], arm2: ['z2', 'z3'], arm3: ['z3', 'z4'], arm4: ['z4', 'z1'] };
+    }
+    var coopArm = findCoopArm(incoming.arms || {});
     if (Array.isArray(incoming.animals)) {
       incoming.animals.forEach(function (a) {
         if (a.dead == null) a.dead = false;
         if (a.death_cause == null) a.death_cause = null;
         if (!a.cooldowns) a.cooldowns = {};
+        // 旧档迁移：无 location_type 的默认为 zone；鸡迁移到鸡笼
+        if (!a.location_type) {
+          if (a.species_id === 'chicken') {
+            a.location_type = 'coop';
+            a.arm_id = coopArm;
+            a.zone_id = null;
+          } else {
+            a.location_type = 'zone';
+            a.arm_id = null;
+            a.zone_id = a.zone_id || 'z1';
+          }
+        }
       });
     }
     state = incoming;
@@ -128,13 +173,21 @@
     for (var i = 0; i < st.animals.length; i++) {
       if (st.animals[i].uid === uid) { a = st.animals[i]; break; }
     }
-    if (a && st.zones[zoneId]) a.zone_id = zoneId;
+    // 只有区域动物可跨区迁移
+    if (a && a.location_type === 'zone' && st.zones[zoneId]) {
+      a.zone_id = zoneId;
+    }
     return a;
   }
 
   function animalsInZone(zoneId) {
     var st = ensureState();
-    return st.animals.filter(function (a) { return a.zone_id === zoneId && !a.dead; });
+    return st.animals.filter(function (a) { return a.location_type === 'zone' && a.zone_id === zoneId && !a.dead; });
+  }
+
+  function animalsInCoop(armId) {
+    var st = ensureState();
+    return st.animals.filter(function (a) { return a.location_type === 'coop' && a.arm_id === armId && !a.dead; });
   }
 
   /* ================= tick 生态结算 ================= */
@@ -142,11 +195,20 @@
   var ZONE_NEXT = { z1: 'z2', z2: 'z3', z3: 'z4', z4: 'z1' };
 
   function rotateClockwise(st) {
+    // 区域动物顺时针迁区
     for (var i = 0; i < st.animals.length; i++) {
       var a = st.animals[i];
-      if (a.dead) continue;
+      if (a.dead || a.location_type !== 'zone') continue;
       a.zone_id = ZONE_NEXT[a.zone_id] || a.zone_id;
     }
+    // 装置顺时针转：臂转到下一个位置，夹持区域轮转（arm1 接替 arm2 的位置）
+    var old = st.arm_zones || {};
+    st.arm_zones = {
+      arm1: old.arm2 || ['z2', 'z3'],
+      arm2: old.arm3 || ['z3', 'z4'],
+      arm3: old.arm4 || ['z4', 'z1'],
+      arm4: old.arm1 || ['z1', 'z2']
+    };
   }
 
   function advanceTick() {
@@ -179,6 +241,11 @@
   }
 
   function tickAnimal(st, a, sp, births) {
+    if (a.location_type === 'coop') {
+      tickCoopAnimal(st, a, sp);
+      return;
+    }
+
     var zone = st.zones[a.zone_id];
     if (!zone) return;
 
@@ -217,8 +284,8 @@
       }
     }
 
-    // 疾病扣血（鸡笼隔离，鸡不参与）
-    if (a.species_id !== 'chicken') tickDisease(a, zone.pollution);
+    // 疾病扣血
+    tickDisease(a, zone.pollution);
 
     // 年龄
     a.age_ticks = (a.age_ticks || 0) + 1;
@@ -238,9 +305,34 @@
     }
   }
 
+  function tickCoopAnimal(st, a, sp) {
+    // 鸡笼动物：鸡不吃草、不受区域疾病；吃虫子（鸡笼清污）+ 长肉 + 寿命
+    var zones = (st.arm_zones && st.arm_zones[a.arm_id]) || [];
+    // 鸡笼清污：每鸡每 tick 降污 7%/1000 = 0.007%，作用于该臂夹持两区
+    for (var i = 0; i < zones.length; i++) {
+      var z = st.zones[zones[i]];
+      if (!z) continue;
+      z.pollution = clamp(z.pollution - 0.007, 0, 100);
+      // 吃虫子恢复饱腹（污染充足时）
+      if (z.pollution > 0) {
+        a.satiety = clamp(a.satiety + 0.02, 0, 100);
+      }
+    }
+    a.satiety = clamp(a.satiety - sp.satiety.drain_per_tick, 0, 100);
+    tickWeight(a, sp);
+    a.age_ticks = (a.age_ticks || 0) + 1;
+    // 鸡寿命：15000 tick 自然死亡
+    if (sp.lifespan_ticks && a.age_ticks >= sp.lifespan_ticks) {
+      a.dead = true;
+      a.death_cause = 'old';
+    }
+    for (var k in a.cooldowns) {
+      if (a.cooldowns[k] > 0) a.cooldowns[k]--;
+    }
+  }
+
   function tickWeight(a, sp) {
     var g = sp.growth;
-    // 草饲阶段（牛/羊）：饱腹三段式
     if (g.graze_growth_rate_kg_per_tick != null) {
       var cap = g.graze_cap_kg != null ? g.graze_cap_kg : g.fatten_cap_kg;
       if (a.satiety > g.satiety_grow_threshold) {
@@ -249,12 +341,10 @@
         a.weight_kg = Math.max(g.birth_weight_kg, a.weight_kg - g.graze_growth_rate_kg_per_tick);
       }
     }
-    // 猪：饲料料肉比（饱腹 >70 才长，生长 = feed_units × 10 / 每kg肉营养）
     if (a.species_id === 'pig' && a.satiety > 70 && sp.feed && sp.feed.feed_units_per_tick) {
       var pigGrowth = sp.feed.feed_units_per_tick * 10 / sp.feed.nutrition_per_kg_meat;
       if (a.weight_kg < g.fatten_cap_kg) a.weight_kg = Math.min(g.fatten_cap_kg, a.weight_kg + pigGrowth);
     }
-    // 鸡：虫子长肉（约 0.63kg/轮 → 0.00063/tick）
     if (a.species_id === 'chicken' && a.satiety > 70) {
       if (a.weight_kg < g.fatten_cap_kg) a.weight_kg = Math.min(g.fatten_cap_kg, a.weight_kg + 0.00063);
     }
@@ -282,6 +372,7 @@
       var calf = makeAnimal(
         mother.species_id,
         Math.random() < 0.5 ? 'male' : 'female',
+        'zone',
         mother.zone_id,
         { weight_kg: sp.growth.birth_weight_kg, age_ticks: 0, satiety: 80 }
       );
@@ -303,6 +394,7 @@
     allPerks: allPerks,
     moveAnimal: moveAnimal,
     animalsInZone: animalsInZone,
+    animalsInCoop: animalsInCoop,
     advanceTick: advanceTick
   };
 })();
