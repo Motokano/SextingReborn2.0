@@ -274,7 +274,7 @@
     if (a.location_type === 'coop') {
       return { arm1: '一号臂·鸡笼', arm2: '二号臂·鸡笼', arm3: '三号臂·鸡笼', arm4: '四号臂·鸡笼' }[a.arm_id] || (a.arm_id + '·鸡笼');
     }
-    return locationName(a);
+    return zoneName(a.zone_id);
   }
   function perkText(perks, lv) {
     if (!perks || !perks.length) return '';
