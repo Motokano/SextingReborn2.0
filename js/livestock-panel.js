@@ -436,6 +436,19 @@
     return placed;
   }
 
+  function addExp(delta) {
+    var IE = window.InventoryEquipment;
+    if (IE && typeof IE.incrementSkillMoveUsage === 'function') {
+      IE.incrementSkillMoveUsage('survival_livestock', 'livestock_action', delta);
+    }
+  }
+
+  function logMsg(msg, type) {
+    if (window.GameLog && typeof window.GameLog.log === 'function') {
+      window.GameLog.log(msg, type || 'info');
+    }
+  }
+
   function collectAllProducts(uid) {
     var st = window.LivestockState.getState();
     var a = null;
@@ -443,6 +456,7 @@
     if (!a) return;
     var sp = window.LivestockState.getSpecies(a.species_id);
     var got = [];
+    var hpBefore = a.hp;
     (sp && sp.products && sp.products.living || []).forEach(function (p) {
       var r = window.LivestockState.collectProduct(uid, p.product_id);
       if (r.ok) {
@@ -450,14 +464,35 @@
         got.push(p.product_id);
       }
     });
+    if (got.length) {
+      addExp(100);
+      logMsg('采集 ' + speciesName(a.species_id) + ' ' + genderGlyph(a.gender) + '：' + got.join('、') + '，畜牧经验 +100', 'success');
+      if (hpBefore !== a.hp) {
+        logMsg('抽血使 ' + speciesName(a.species_id) + ' 血量 ' + hpBefore + ' → ' + a.hp, 'warn');
+      }
+    }
     feedbackMsg = got.length ? ('已采集：' + got.join('、') + ' → 已入背包') : '无可采集（冷却中或血量不足）';
     render();
   }
 
+  function slaughterExp(speciesId, weight) {
+    if (speciesId === 'chicken') return 25;
+    return Math.max(1, Math.floor(weight));
+  }
+
   function doSlaughter(uid) {
+    var st = window.LivestockState.getState();
+    var a = null;
+    for (var i = 0; i < st.animals.length; i++) if (st.animals[i].uid === uid) { a = st.animals[i]; break; }
+    var spName = a ? speciesName(a.species_id) : '';
+    var weight = a ? a.weight_kg : 0;
+    var speciesId = a ? a.species_id : '';
     var r = window.LivestockState.slaughterAnimal(uid);
     if (r.ok) {
       var n = giveItems(r.items);
+      var exp = slaughterExp(speciesId, weight);
+      addExp(exp);
+      logMsg('屠宰 ' + spName + '（' + weight.toFixed(1) + 'kg），获得 ' + n + ' 件物品，畜牧经验 +' + exp, 'success');
       feedbackMsg = '屠宰完成：' + n + ' 件物品已入背包';
     } else {
       feedbackMsg = '屠宰失败';
