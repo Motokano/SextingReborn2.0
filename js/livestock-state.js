@@ -190,6 +190,57 @@
     return st.animals.filter(function (a) { return a.location_type === 'coop' && a.arm_id === armId && !a.dead; });
   }
 
+  function findAnimal(uid) {
+    var st = ensureState();
+    for (var i = 0; i < st.animals.length; i++) {
+      if (st.animals[i].uid === uid) return st.animals[i];
+    }
+    return null;
+  }
+
+  // 采集活体产物（奶/毛/血/蛋）。返回 { ok, item_id?, count?, reason? }
+  function collectProduct(uid, productId) {
+    var a = findAnimal(uid);
+    if (!a || a.dead) return { ok: false, reason: 'not_found' };
+    var sp = getSpecies(a.species_id);
+    var prod = null;
+    (sp && sp.products && sp.products.living || []).forEach(function (p) {
+      if (p.product_id === productId) prod = p;
+    });
+    if (!prod) return { ok: false, reason: 'no_product' };
+    if ((a.cooldowns && a.cooldowns[productId]) > 0) {
+      return { ok: false, reason: 'cooldown', remaining: a.cooldowns[productId] };
+    }
+    if (prod.min_hp > 0 && a.hp < prod.min_hp) {
+      return { ok: false, reason: 'low_hp' };
+    }
+    a.cooldowns[productId] = prod.cooldown_ticks;
+    if (prod.hp_cost > 0) {
+      a.hp = clamp(a.hp - prod.hp_cost, 0, 100);
+      if (a.hp <= 0) { a.dead = true; a.death_cause = 'blood_loss'; }
+    }
+    return { ok: true, item_id: prod.item_id, count: 1 };
+  }
+
+  // 屠宰动物，产出肉/器官/副产物。返回 { ok, items:[{item_id,count}], reason? }
+  function slaughterAnimal(uid) {
+    var a = findAnimal(uid);
+    if (!a || a.dead) return { ok: false, reason: 'not_found' };
+    var sp = getSpecies(a.species_id);
+    if (!sp || !sp.products || !sp.products.slaughter) return { ok: false, reason: 'no_products' };
+    var sl = sp.products.slaughter;
+    var items = [];
+    var meatBlocks = Math.max(1, Math.floor((a.weight_kg || 0) * 0.5 / 5));
+    if (sl.meat_item_ids && sl.meat_item_ids.length) {
+      items.push({ item_id: sl.meat_item_ids[0], count: meatBlocks });
+    }
+    (sl.offal_item_ids || []).forEach(function (id) { items.push({ item_id: id, count: 1 }); });
+    (sl.byproduct_item_ids || []).forEach(function (id) { items.push({ item_id: id, count: 1 }); });
+    a.dead = true;
+    a.death_cause = 'slaughter';
+    return { ok: true, items: items };
+  }
+
   /* ================= tick 生态结算 ================= */
 
   var ZONE_NEXT = { z1: 'z2', z2: 'z3', z3: 'z4', z4: 'z1' };
@@ -395,6 +446,8 @@
     moveAnimal: moveAnimal,
     animalsInZone: animalsInZone,
     animalsInCoop: animalsInCoop,
+    collectProduct: collectProduct,
+    slaughterAnimal: slaughterAnimal,
     advanceTick: advanceTick
   };
 })();

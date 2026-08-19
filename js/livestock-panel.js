@@ -9,6 +9,7 @@
   var currentTab = 'overview';
   var selectedAnimalUid = null;
   var selectedZoneId = null;
+  var feedbackMsg = null;
 
   function getLivestockLevel() {
     // MVP：默认 90 展示完整信息；后续接 InventoryEquipment.skills.survival_livestock.level
@@ -87,6 +88,8 @@
     if (badge) badge.textContent = '⟳ 下次旋转 ' + st.rotation_ticks_remaining + ' tick';
     var lvBadge = el('livestock-level-badge');
     if (lvBadge) lvBadge.textContent = '畜牧 Lv.' + lv;
+    var footer = document.querySelector('#modal-livestock .lv-footer');
+    if (footer) footer.textContent = feedbackMsg || '旋转不可控 · 动物随顺时针迁移 · 畜牧等级提升可解锁更多信息';
 
     renderOverview(st, lv);
     renderAnimals(st, lv);
@@ -393,19 +396,25 @@
       var sp = window.LivestockState.getSpecies(a.species_id);
       if (!sp) return;
       if (a.dead) {
-        corpseRows.push('<div class="product-row">💀 ' + speciesName(a.species_id) + ' ' + genderGlyph(a.gender) + ' <span class="meta">' + (a.death_cause === 'disease' ? '病死' : '饿死') + '</span></div>');
+        var cause = a.death_cause === 'disease' ? '病死' : (a.death_cause === 'slaughter' ? '屠宰' : (a.death_cause === 'blood_loss' ? '失血' : '饿死'));
+        corpseRows.push('<div class="product-row">💀 ' + speciesName(a.species_id) + ' ' + genderGlyph(a.gender) + ' <span class="meta">' + cause + '</span></div>');
         return;
       }
       if (!sp.products) return;
       if (sp.products.living && sp.products.living.length) {
-        collectRows.push('<div class="product-row">' + speciesIcon(a.species_id) + ' ' + speciesName(a.species_id) + ' ' + genderGlyph(a.gender) + ' <span class="meta">' + livingText(a, sp) + '</span></div>');
+        collectRows.push('<div class="product-row">' + speciesIcon(a.species_id) + ' ' + speciesName(a.species_id) + ' ' + genderGlyph(a.gender) +
+          ' <span class="meta">' + livingText(a, sp) + '</span>' +
+          '<button type="button" class="lv-btn" data-collect="' + a.uid + '">采集</button></div>');
       }
-      slaughterRows.push('<div class="product-row">' + speciesIcon(a.species_id) + ' ' + speciesName(a.species_id) + ' ' + genderGlyph(a.gender) + ' <span class="meta">' + a.weight_kg.toFixed(1) + ' kg</span></div>');
+      slaughterRows.push('<div class="product-row">' + speciesIcon(a.species_id) + ' ' + speciesName(a.species_id) + ' ' + genderGlyph(a.gender) +
+        ' <span class="meta">' + a.weight_kg.toFixed(1) + ' kg</span>' +
+        '<button type="button" class="lv-btn" data-slaughter="' + a.uid + '">屠宰</button></div>');
     });
     box.innerHTML =
       '<div class="product-col"><h3 class="section-title">活体采集</h3>' + (collectRows.join('') || '<div class="empty-hint">无可采集动物</div>') + '</div>' +
       '<div class="product-col"><h3 class="section-title">屠宰</h3>' + (slaughterRows.join('') || '<div class="empty-hint">无可屠宰动物</div>') + '</div>' +
       '<div class="product-col"><h3 class="section-title">尸体</h3>' + (corpseRows.join('') || '<div class="empty-hint">无尸体</div>') + '</div>';
+    bindProductButtons();
   }
   function livingText(a, sp) {
     var parts = [];
@@ -414,6 +423,61 @@
       parts.push(p.product_id + (cd > 0 ? '(冷却' + cd + ')' : '✓'));
     });
     return parts.join(' ');
+  }
+
+  function giveItems(items) {
+    var IE = window.InventoryEquipment;
+    if (!IE || typeof IE.giveCarriedItemsByTemplateId !== 'function') return 0;
+    var placed = 0;
+    items.forEach(function (it) {
+      var r = IE.giveCarriedItemsByTemplateId(it.item_id, it.count, 0);
+      placed += (r && r.placed) || 0;
+    });
+    return placed;
+  }
+
+  function collectAllProducts(uid) {
+    var st = window.LivestockState.getState();
+    var a = null;
+    for (var i = 0; i < st.animals.length; i++) if (st.animals[i].uid === uid) { a = st.animals[i]; break; }
+    if (!a) return;
+    var sp = window.LivestockState.getSpecies(a.species_id);
+    var got = [];
+    (sp && sp.products && sp.products.living || []).forEach(function (p) {
+      var r = window.LivestockState.collectProduct(uid, p.product_id);
+      if (r.ok) {
+        giveItems([{ item_id: r.item_id, count: r.count }]);
+        got.push(p.product_id);
+      }
+    });
+    feedbackMsg = got.length ? ('已采集：' + got.join('、') + ' → 已入背包') : '无可采集（冷却中或血量不足）';
+    render();
+  }
+
+  function doSlaughter(uid) {
+    var r = window.LivestockState.slaughterAnimal(uid);
+    if (r.ok) {
+      var n = giveItems(r.items);
+      feedbackMsg = '屠宰完成：' + n + ' 件物品已入背包';
+    } else {
+      feedbackMsg = '屠宰失败';
+    }
+    render();
+  }
+
+  function bindProductButtons() {
+    var collects = document.querySelectorAll('#livestock-product-content [data-collect]');
+    for (var i = 0; i < collects.length; i++) {
+      collects[i].addEventListener('click', function () {
+        collectAllProducts(this.getAttribute('data-collect'));
+      });
+    }
+    var slaughters = document.querySelectorAll('#livestock-product-content [data-slaughter]');
+    for (var j = 0; j < slaughters.length; j++) {
+      slaughters[j].addEventListener('click', function () {
+        doSlaughter(this.getAttribute('data-slaughter'));
+      });
+    }
   }
 
   /* ---------- 入口 ---------- */
