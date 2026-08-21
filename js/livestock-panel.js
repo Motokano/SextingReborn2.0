@@ -427,13 +427,24 @@
 
   function giveItems(items) {
     var IE = window.InventoryEquipment;
-    if (!IE || typeof IE.giveCarriedItemsByTemplateId !== 'function') return 0;
-    var placed = 0;
+    if (!IE) return { placed: 0, dropped: 0 };
+    var E = window.GameEngine;
+    var pos = E && typeof E.getState === 'function' ? E.getState() : null;
+    var placed = 0, dropped = 0;
     items.forEach(function (it) {
-      var r = IE.giveCarriedItemsByTemplateId(it.item_id, it.count, 0);
-      placed += (r && r.placed) || 0;
+      var c = Math.max(1, Math.floor(it.count) || 1);
+      for (var i = 0; i < c; i++) {
+        var inst = { item_id: it.item_id, count: 1, quality_tier: 0 };
+        var pr = (typeof IE.putItemIntoDefaultContainer === 'function') ? IE.putItemIntoDefaultContainer(inst) : null;
+        if (pr && pr.placed) {
+          placed++;
+        } else if (pos && typeof IE.addItemToGround === 'function') {
+          IE.addItemToGround(pos.mapId, pos.x, pos.y, inst);
+          dropped++;
+        }
+      }
     });
-    return placed;
+    return { placed: placed, dropped: dropped };
   }
 
   function addExp(delta) {
@@ -456,11 +467,13 @@
     if (!a) return;
     var sp = window.LivestockState.getSpecies(a.species_id);
     var got = [];
+    var dropped = 0;
     var hpBefore = a.hp;
     (sp && sp.products && sp.products.living || []).forEach(function (p) {
       var r = window.LivestockState.collectProduct(uid, p.product_id);
       if (r.ok) {
-        giveItems([{ item_id: r.item_id, count: r.count }]);
+        var gres = giveItems([{ item_id: r.item_id, count: r.count }]);
+        dropped += gres.dropped;
         got.push(p.product_id);
       }
     });
@@ -469,6 +482,9 @@
       logMsg('采集 ' + speciesName(a.species_id) + ' ' + genderGlyph(a.gender) + '：' + got.join('、') + '，畜牧经验 +100', 'success');
       if (hpBefore !== a.hp) {
         logMsg('抽血使 ' + speciesName(a.species_id) + ' 血量 ' + hpBefore + ' → ' + a.hp, 'warn');
+      }
+      if (dropped > 0) {
+        logMsg('背包已满，' + dropped + ' 件产物掉落在地面', 'warn');
       }
     }
     feedbackMsg = got.length ? ('已采集：' + got.join('、') + ' → 已入背包') : '无可采集（冷却中或血量不足）';
@@ -489,10 +505,11 @@
     var speciesId = a ? a.species_id : '';
     var r = window.LivestockState.slaughterAnimal(uid);
     if (r.ok) {
-      var n = giveItems(r.items);
+      var gres = giveItems(r.items);
+      var n = gres.placed;
       var exp = slaughterExp(speciesId, weight);
       addExp(exp);
-      logMsg('屠宰 ' + spName + '（' + weight.toFixed(1) + 'kg），获得 ' + n + ' 件物品，畜牧经验 +' + exp, 'success');
+      logMsg('屠宰 ' + spName + '（' + weight.toFixed(1) + 'kg），获得 ' + n + ' 件物品' + (gres.dropped > 0 ? '（' + gres.dropped + ' 件掉落地面）' : '') + '，畜牧经验 +' + exp, 'success');
       feedbackMsg = '屠宰完成：' + n + ' 件物品已入背包';
     } else {
       feedbackMsg = '屠宰失败';
