@@ -477,39 +477,83 @@
     render();
   }
 
-  function doFeed(armId) {
+  var feedTargetArm = null;
+
+  function listFeedCropsInInventory() {
     var IE = window.InventoryEquipment;
-    var cropId = null;
-    if (IE) {
-      var containers = [];
-      if (typeof IE.getPocketArray === 'function') containers = containers.concat(IE.getPocketArray() || []);
-      if (typeof IE.getVestArray === 'function') containers = containers.concat(IE.getVestArray() || []);
-      if (typeof IE.getBackpackArray === 'function') containers = containers.concat(IE.getBackpackArray() || []);
-      for (var i = 0; i < containers.length; i++) {
-        var cell = containers[i];
-        if (cell && cell.item_id && window.LivestockState.getCropNutrition(cell.item_id) != null) {
-          cropId = cell.item_id;
-          break;
-        }
-      }
-    }
-    if (!cropId) {
-      feedbackMsg = '背包没有可作饲料的作物';
-      logMsg('投喂失败：背包没有可作饲料的作物', 'warn');
-      render();
+    var crops = [];
+    if (!IE) return crops;
+    var containers = [];
+    if (typeof IE.getPocketArray === 'function') containers = containers.concat(IE.getPocketArray() || []);
+    if (typeof IE.getVestArray === 'function') containers = containers.concat(IE.getVestArray() || []);
+    if (typeof IE.getBackpackArray === 'function') containers = containers.concat(IE.getBackpackArray() || []);
+    var seen = {};
+    containers.forEach(function (cell) {
+      if (!cell || !cell.item_id) return;
+      if (window.LivestockState.getCropNutrition(cell.item_id) == null) return;
+      if (seen[cell.item_id]) return;
+      seen[cell.item_id] = 1;
+      var cnt = (typeof IE.countCarriedItemsByTemplateId === 'function')
+        ? IE.countCarriedItemsByTemplateId(cell.item_id) : (cell.count || 1);
+      crops.push({ item_id: cell.item_id, count: cnt });
+    });
+    crops.sort(function (a, b) { return (window.LivestockState.getCropNutrition(b.item_id) - window.LivestockState.getCropNutrition(a.item_id)); });
+    return crops;
+  }
+
+  function openFeedPicker(armId) {
+    feedTargetArm = armId;
+    var picker = el('livestock-feed-picker');
+    if (!picker) return;
+    renderFeedPicker();
+    picker.classList.remove('hidden');
+  }
+
+  function closeFeedPicker() {
+    feedTargetArm = null;
+    var picker = el('livestock-feed-picker');
+    if (picker) picker.classList.add('hidden');
+  }
+
+  function renderFeedPicker() {
+    var list = el('livestock-feed-picker-list');
+    if (!list) return;
+    var crops = listFeedCropsInInventory();
+    if (!crops.length) {
+      list.innerHTML = '<div class="empty-hint">背包没有可作饲料的作物</div>';
       return;
     }
+    list.innerHTML = crops.map(function (c) {
+      var nut = window.LivestockState.getCropNutrition(c.item_id);
+      return '<div class="lv-feed-row">' +
+        '<span class="feed-name">' + itemDisplayName(c.item_id) + '</span>' +
+        '<span class="feed-meta">营养 ' + nut + ' · 库存 ' + c.count + '</span>' +
+        '<button type="button" class="lv-btn" data-feed-crop="' + c.item_id + '">投 1</button>' +
+        '</div>';
+    }).join('');
+    var btns = list.querySelectorAll('[data-feed-crop]');
+    for (var i = 0; i < btns.length; i++) {
+      btns[i].addEventListener('click', function () {
+        doFeedCrop(this.getAttribute('data-feed-crop'));
+      });
+    }
+  }
+
+  function doFeedCrop(cropId) {
+    if (!feedTargetArm) { closeFeedPicker(); render(); return; }
+    var IE = window.InventoryEquipment;
     if (IE && typeof IE.removeCarriedItemsByTemplateId === 'function') {
       var rem = IE.removeCarriedItemsByTemplateId(cropId, 1);
-      if (!rem.ok) { feedbackMsg = '扣除作物失败'; render(); return; }
+      if (!rem.ok) { feedbackMsg = '扣除作物失败'; renderFeedPicker(); return; }
     }
-    var r = window.LivestockState.addFeedToTrough(armId, cropId, 1);
+    var r = window.LivestockState.addFeedToTrough(feedTargetArm, cropId, 1);
     if (r.ok) {
       feedbackMsg = '投喂 ' + itemDisplayName(cropId) + '，饲料 +' + r.added.toFixed(1) + '（当前 ' + r.total.toFixed(1) + '/100）';
       logMsg('投喂 ' + itemDisplayName(cropId) + ' 到饲料槽', 'success');
     } else {
       feedbackMsg = '投喂失败：' + reasonText(r);
     }
+    renderFeedPicker();
     render();
   }
 
@@ -572,7 +616,7 @@
     for (var f = 0; f < feeds.length; f++) {
       feeds[f].addEventListener('click', function (e) {
         e.stopPropagation();
-        doFeed(this.getAttribute('data-feed'));
+        openFeedPicker(this.getAttribute('data-feed'));
       });
     }
   }
@@ -748,6 +792,8 @@
     for (var i = 0; i < tabs.length; i++) {
       tabs[i].addEventListener('click', function () { setTab(this.getAttribute('data-tab')); });
     }
+    var feedClose = el('livestock-feed-picker-close');
+    if (feedClose) feedClose.addEventListener('click', function () { closeFeedPicker(); });
   }
 
   window.LivestockPanel = {
