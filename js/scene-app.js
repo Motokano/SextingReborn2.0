@@ -4125,7 +4125,8 @@
         if (!ent.move_usage || typeof ent.move_usage !== 'object') { ent.move_usage = {}; changed = true; }
         var uses = Math.max(0, parseInt(ent.move_usage.livestock_action, 10) || 0);
         var mappedLv = getLivestockLevelByUses(uses);
-        if ((parseInt(ent.level, 10) || 0) !== mappedLv) {
+        // 只升不降：曲线等级高于当前才升，低于当前保持（兼容手动调试改等级）
+        if (mappedLv > Math.max(1, parseInt(ent.level, 10) || 1)) {
             ent.level = mappedLv;
             changed = true;
         }
@@ -4143,7 +4144,7 @@
         var ent = st.skills.life_animal_husbandry;
         var nextLv = getLivestockLevelByUses(newUses);
         var curLv = Math.max(1, parseInt(ent.level, 10) || 1);
-        if (nextLv !== curLv) {
+        if (nextLv > curLv) {
             ent.level = nextLv;
             recalcCharacterStatsFromIE();
         }
