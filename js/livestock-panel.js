@@ -381,9 +381,12 @@
             '<button type="button" class="lv-btn" data-dismount="' + aid + '|' + sk + '">拆</button>' +
             '</span></div>';
         }
-        return '<div class="module-slot empty-slot" data-arm="' + aid + '" data-slot="' + sk + '">' +
+        var mountable = selectedModuleId ? canMountHere(aid, sk, selectedModuleId) : false;
+        var emptyCls = mountable ? ' empty-slot mountable' : ' empty-slot';
+        var emptyVal = mountable ? '点此装配' : '空';
+        return '<div class="module-slot' + emptyCls + '" data-arm="' + aid + '" data-slot="' + sk + '">' +
           '<span class="slot-key">' + label + '</span>' +
-          '<span class="slot-val">' + (selectedModuleId ? '点此装配' : '空') + '</span></div>';
+          '<span class="slot-val">' + emptyVal + '</span></div>';
       }).join('');
       return '<div class="arm-card"><div class="arm-card-title">' + armNames[aid] + '</div><div class="arm-slots">' + slotHtml + '</div></div>';
     }).join('');
@@ -415,6 +418,17 @@
     bindModuleButtons();
   }
   function tierLabel(t) { return { small: '小型', medium: '中型', large: '大型', axis: '轴心' }[t] || t; }
+
+  function canMountHere(armId, slotKey, moduleId) {
+    var m = window.LivestockState.getModule(moduleId);
+    if (!m) return false;
+    if (armId === 'axis') {
+      var axisNum = parseInt(String(slotKey).replace('slot', ''), 10);
+      return m.axis_slot === axisNum;
+    }
+    var slots = window.LivestockState.expandModuleSlots(m);
+    return slots.indexOf(slotKey) >= 0;
+  }
 
   function reasonText(r) {
     var map = {
@@ -476,7 +490,7 @@
         render();
       });
     }
-    var empties = document.querySelectorAll('#livestock-module-content .module-slot.empty-slot');
+    var empties = document.querySelectorAll('#livestock-module-content .module-slot.empty-slot.mountable');
     for (var j = 0; j < empties.length; j++) {
       empties[j].addEventListener('click', function () {
         if (!selectedModuleId) return;
