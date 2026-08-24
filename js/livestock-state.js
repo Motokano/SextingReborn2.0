@@ -409,6 +409,35 @@
     return { ok: true, added: added, total: trough.feed_units };
   }
 
+  /* ================= 手动操作（§12） ================= */
+
+  function cleanZone(zoneId, amount) {
+    var st = ensureState();
+    var z = st.zones[zoneId];
+    if (!z) return { ok: false, reason: 'no_zone' };
+    z.pollution = clamp((z.pollution || 0) - (amount || 10), 0, 100);
+    return { ok: true, pollution: z.pollution };
+  }
+
+  function tillZone(zoneId, amount) {
+    var st = ensureState();
+    var z = st.zones[zoneId];
+    if (!z) return { ok: false, reason: 'no_zone' };
+    z.compaction = clamp((z.compaction || 0) - (amount || 10), 0, 100);
+    return { ok: true, compaction: z.compaction };
+  }
+
+  function feedChickens(armId) {
+    var st = ensureState();
+    var chicks = st.animals.filter(function (a) { return a.location_type === 'coop' && a.arm_id === armId && !a.dead; });
+    var fed = 0;
+    chicks.forEach(function (c) {
+      c.satiety = clamp((c.satiety || 0) + 20, 0, 100);
+      fed++;
+    });
+    return { ok: true, fed: fed };
+  }
+
   /* ================= 模块装配 / 拆卸 / 升级 ================= */
 
   var ARM_SLOT_KEYS = ['inner', 'front', 'bottom', 'top', 'cw_side', 'ccw_side'];
@@ -867,6 +896,9 @@
     getCropNutrition: getCropNutrition,
     getModifier: getModifier,
     rollPerks: rollPerks,
+    cleanZone: cleanZone,
+    tillZone: tillZone,
+    feedChickens: feedChickens,
     advanceTick: advanceTick
   };
 })();

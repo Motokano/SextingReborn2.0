@@ -125,7 +125,11 @@
       return '<div class="zone-cell' + sel + '" data-zone="' + zoneId + '">' +
         '<div class="eco-overlay ' + ecoOverlayClass(zoneId, z) + '"></div>' +
         '<div class="zone-header"><span>' + zoneLabel[zoneId] + '</span><div class="zone-eco">' + ecoText + '</div></div>' +
-        '<div class="animal-list">' + animalHtml + '</div></div>';
+        '<div class="animal-list">' + animalHtml + '</div>' +
+        '<div class="zone-actions">' +
+        '<button type="button" class="lv-btn" data-clean="' + zoneId + '">清扫</button>' +
+        '<button type="button" class="lv-btn" data-till="' + zoneId + '">松土</button>' +
+        '</div></div>';
     }
     function armHtml(armId, vertical) {
       var a = st.arms[armId] || {};
@@ -154,6 +158,7 @@
     bindZoneClicks();
     bindArmClicks();
     bindDragDrop();
+    bindZoneActions();
   }
 
   function animalChip(a, isCoop) {
@@ -185,6 +190,22 @@
       zones[i].addEventListener('click', function () {
         selectedZoneId = this.getAttribute('data-zone');
         render();
+      });
+    }
+  }
+  function bindZoneActions() {
+    var cleans = document.querySelectorAll('#livestock-overview-grid [data-clean]');
+    for (var i = 0; i < cleans.length; i++) {
+      cleans[i].addEventListener('click', function (e) {
+        e.stopPropagation();
+        doClean(this.getAttribute('data-clean'));
+      });
+    }
+    var tills = document.querySelectorAll('#livestock-overview-grid [data-till]');
+    for (var j = 0; j < tills.length; j++) {
+      tills[j].addEventListener('click', function (e) {
+        e.stopPropagation();
+        doTill(this.getAttribute('data-till'));
       });
     }
   }
@@ -379,6 +400,8 @@
           if (mid === 'feed_trough') {
             extra = ' 饲料 ' + (inst.feed_units != null ? inst.feed_units.toFixed(1) : '0') + '/100';
             extraActions = '<button type="button" class="lv-btn" data-feed="' + aid + '">投喂</button>';
+          } else if (mid === 'coop') {
+            extraActions = '<button type="button" class="lv-btn" data-feed-chickens="' + aid + '">喂鸡</button>';
           }
           return '<div class="module-slot filled" data-arm="' + aid + '" data-slot="' + sk + '">' +
             '<span class="slot-key">' + label + '</span>' +
@@ -581,6 +604,51 @@
     render();
   }
 
+  function trySpendStamina(amount) {
+    var Surv = window.Survival;
+    if (!Surv) return { ok: true };
+    if (typeof Surv.canPerformStaminaOrEnergyAction === 'function' && !Surv.canPerformStaminaOrEnergyAction()) {
+      return { ok: false, reason: 'stamina_blocked' };
+    }
+    if (typeof Surv.consumeStamina === 'function') {
+      Surv.consumeStamina(amount || 10);
+    }
+    return { ok: true };
+  }
+
+  function doClean(zoneId) {
+    var spend = trySpendStamina(10);
+    if (!spend.ok) { feedbackMsg = '体力不足，无法清扫'; logMsg('清扫失败：体力不足', 'warn'); render(); return; }
+    var r = window.LivestockState.cleanZone(zoneId, 10);
+    if (r.ok) {
+      feedbackMsg = '清扫完成：区域污染 → ' + Math.round(r.pollution) + '%（-10 体力）';
+      logMsg('清扫区域 ' + zoneName(zoneId) + '，污染 -10%', 'success');
+    }
+    render();
+  }
+
+  function doTill(zoneId) {
+    var spend = trySpendStamina(10);
+    if (!spend.ok) { feedbackMsg = '体力不足，无法松土'; logMsg('松土失败：体力不足', 'warn'); render(); return; }
+    var r = window.LivestockState.tillZone(zoneId, 10);
+    if (r.ok) {
+      feedbackMsg = '松土完成：区域板结 → ' + Math.round(r.compaction) + '（-10 体力）';
+      logMsg('松土区域 ' + zoneName(zoneId) + '，板结 -10', 'success');
+    }
+    render();
+  }
+
+  function doFeedChickens(armId) {
+    var r = window.LivestockState.feedChickens(armId);
+    if (r.ok && r.fed > 0) {
+      feedbackMsg = '已喂食 ' + r.fed + ' 只鸡（饱腹 +20）';
+      logMsg('喂食鸡笼 ' + r.fed + ' 只鸡', 'success');
+    } else {
+      feedbackMsg = '鸡笼里没有鸡';
+    }
+    render();
+  }
+
   function bindModuleButtons() {
     var cards = document.querySelectorAll('#livestock-module-content .module-card');
     for (var i = 0; i < cards.length; i++) {
@@ -618,6 +686,13 @@
       feeds[f].addEventListener('click', function (e) {
         e.stopPropagation();
         openFeedPicker(this.getAttribute('data-feed'));
+      });
+    }
+    var feedChickens = document.querySelectorAll('#livestock-module-content [data-feed-chickens]');
+    for (var fc = 0; fc < feedChickens.length; fc++) {
+      feedChickens[fc].addEventListener('click', function (e) {
+        e.stopPropagation();
+        doFeedChickens(this.getAttribute('data-feed-chickens'));
       });
     }
   }
