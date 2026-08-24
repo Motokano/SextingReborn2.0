@@ -41,6 +41,82 @@
   function allModules() { return MODULES; }
   function allPerks() { return PERKS; }
 
+  // §8.3 常见度权重
+  var RARITY_WEIGHT = { common: 50, uncommon: 30, rare: 15, very_rare: 5 };
+
+  // 聚合动物身上所有生效 Perk 的指定 modifier（乘法聚合，默认 1）
+  function getModifier(animal, key) {
+    var mult = 1;
+    var perks = (animal && animal.perks) || [];
+    for (var i = 0; i < perks.length; i++) {
+      var pdef = getPerk(perks[i]);
+      if (!pdef || !pdef.modifiers) continue;
+      // 跨种 Perk 不生效但保留（§8.5）
+      if (pdef.species && pdef.species.indexOf(animal.species_id) < 0) continue;
+      if (pdef.requires) {
+        if (pdef.requires.gender && animal.gender !== pdef.requires.gender) continue;
+      }
+      var val = pdef.modifiers[key];
+      if (val != null) mult *= Number(val);
+    }
+    return mult;
+  }
+
+  // 按稀有度权重从物种 Perk 池抽 1 个
+  function pickPerkByRarity(pool) {
+    if (!pool || !pool.length) return null;
+    var total = 0;
+    var weighted = [];
+    pool.forEach(function (pid) {
+      var pdef = getPerk(pid);
+      var w = pdef && RARITY_WEIGHT[pdef.rarity] ? RARITY_WEIGHT[pdef.rarity] : 1;
+      total += w;
+      weighted.push({ id: pid, w: w });
+    });
+    var r = Math.random() * total;
+    for (var i = 0; i < weighted.length; i++) {
+      r -= weighted[i].w;
+      if (r <= 0) return weighted[i].id;
+    }
+    return weighted.length ? weighted[weighted.length - 1].id : null;
+  }
+
+  // §8.1 抽取 0-4 个 Perk（纯随机，可白板）
+  function rollPerks(speciesId) {
+    var sp = getSpecies(speciesId);
+    if (!sp || !sp.perk_pool || !sp.perk_pool.length) return [];
+    var count = randInt(0, 4);
+    var out = [];
+    for (var i = 0; i < count; i++) {
+      var perk = pickPerkByRarity(sp.perk_pool);
+      if (perk && out.indexOf(perk) < 0) out.push(perk);
+    }
+    return out;
+  }
+
+  // §8.5 遗传：父母各抽 1-2 个，合并去重，最多 4 不补位
+  function inheritPerks(fatherPerks, motherPerks) {
+    function sample(list) {
+      if (!list || !list.length) return [];
+      var n = Math.min(list.length, randInt(1, 2));
+      var picked = [];
+      var idx = list.slice();
+      for (var i = 0; i < n && idx.length; i++) {
+        var r = Math.floor(Math.random() * idx.length);
+        picked.push(idx.splice(r, 1)[0]);
+      }
+      return picked;
+    }
+    var merged = sample(fatherPerks).concat(sample(motherPerks));
+    var seen = {};
+    var out = [];
+    merged.forEach(function (p) {
+      if (p && !seen[p]) { seen[p] = 1; out.push(p); }
+    });
+    while (out.length > 4) out.pop();
+    return out;
+  }
+
   // 鸡笼动物默认归属：装鸡笼（inner 模块实例的 module_id === 'coop'）的臂
   function findCoopArm(arms) {
     for (var k in arms) {
@@ -267,7 +343,7 @@
     if (prod.min_hp > 0 && a.hp < prod.min_hp) {
       return { ok: false, reason: 'low_hp' };
     }
-    a.cooldowns[productId] = prod.cooldown_ticks;
+    a.cooldowns[productId] = Math.round(prod.cooldown_ticks * getModifier(a, 'product_cooldown_mult_' + productId));
     if (prod.hp_cost > 0) {
       a.hp = clamp(a.hp - prod.hp_cost, 0, 100);
       if (a.hp <= 0) { a.dead = true; a.death_cause = 'blood_loss'; }
@@ -283,7 +359,7 @@
     if (!sp || !sp.products || !sp.products.slaughter) return { ok: false, reason: 'no_products' };
     var sl = sp.products.slaughter;
     var items = [];
-    var meatBlocks = Math.max(1, Math.floor((a.weight_kg || 0) * 0.5 / 5));
+    var meatBlocks = Math.max(1, Math.floor((a.weight_kg || 0) * 0.5 / 5 * getModifier(a, 'slaughter_yield_mult')));
     if (sl.meat_item_ids && sl.meat_item_ids.length) {
       items.push({ item_id: sl.meat_item_ids[0], count: meatBlocks });
     }
@@ -567,7 +643,7 @@
       var edible = h >= sp.graze.edible_min_m && (sp.graze.edible_max_m == null || h <= sp.graze.edible_max_m);
       if (edible) {
         var inComfort = h >= sp.graze.comfort_min_m && (sp.graze.comfort_max_m == null || h <= sp.graze.comfort_max_m);
-        var rate = sp.graze.comfort_rate_m_per_tick * (inComfort ? 1 : sp.graze.non_comfort_mult);
+        var rate = sp.graze.comfort_rate_m_per_tick * (inComfort ? 1 : sp.graze.non_comfort_mult) * getModifier(a, 'graze_rate_mult');
         zone.grass_height = Math.max(0, h - rate);
         a.satiety = clamp(a.satiety + sp.graze.satiety_regen_per_tick, 0, 100);
       }
@@ -588,12 +664,12 @@
           trough.feed_units = Math.max(0, trough.feed_units - take);
           a.satiety = clamp(a.satiety + take * 10, 0, 100);
         }
-        // 长肉（饱腹 > 70 才长，料肉比）
+        // 长肉（饱腹 > 70 才长，料肉比 × feed_conversion_mult）
         if (a.satiety > 70 && sp.feed && sp.feed.feed_units_per_tick) {
           var growthUnits = sp.feed.feed_units_per_tick;
           if (trough.feed_units >= growthUnits) {
             trough.feed_units -= growthUnits;
-            var pigGrowth = growthUnits * 10 / sp.feed.nutrition_per_kg_meat;
+            var pigGrowth = growthUnits * 10 / sp.feed.nutrition_per_kg_meat * getModifier(a, 'feed_conversion_mult');
             if (a.weight_kg < sp.growth.fatten_cap_kg) {
               a.weight_kg = Math.min(sp.growth.fatten_cap_kg, a.weight_kg + pigGrowth);
             }
@@ -602,17 +678,17 @@
       }
     }
 
-    // 饱腹下降
-    a.satiety = clamp(a.satiety - sp.satiety.drain_per_tick, 0, 100);
+    // 饱腹下降（satiety_drain_mult）
+    a.satiety = clamp(a.satiety - sp.satiety.drain_per_tick * getModifier(a, 'satiety_drain_mult'), 0, 100);
 
     // 体重成长（牛/羊草饲、鸡虫子；猪长肉已在上方饲料分支）
     tickWeight(a, sp);
 
     // 生态影响：踩踏 / 污染（羊）
     if (sp.ecosystem_impact) {
-      zone.compaction = clamp(zone.compaction + sp.ecosystem_impact.trample_per_tick, 0, 100);
+      zone.compaction = clamp(zone.compaction + sp.ecosystem_impact.trample_per_tick * getModifier(a, 'trample_mult'), 0, 100);
       if (sp.ecosystem_impact.pollution_pct_per_tick > 0) {
-        zone.pollution = clamp(zone.pollution + sp.ecosystem_impact.pollution_pct_per_tick, 0, 100);
+        zone.pollution = clamp(zone.pollution + sp.ecosystem_impact.pollution_pct_per_tick * getModifier(a, 'pollution_rate_mult'), 0, 100);
       }
     }
 
@@ -662,8 +738,22 @@
       return true;
     });
     if (!hasMale) return;
-    if (Math.random() < (sp.reproduction.base_pregnancy_rate_per_tick || 0.0002)) {
-      a.pregnant = { father_uid: null, remaining_ticks: sp.reproduction.pregnancy_ticks };
+    // 找同区公畜作为父本（遗传用）
+    var father = null;
+    for (var fi = 0; fi < st.animals.length; fi++) {
+      var cand = st.animals[fi];
+      if (cand.dead || cand.uid === a.uid || cand.species_id !== a.species_id) continue;
+      if (cand.location_type !== 'zone' || cand.zone_id !== a.zone_id) continue;
+      if (cand.gender !== 'male' && cand.gender !== 'hermaphrodite') continue;
+      if (sp.growth.maturity_ticks != null && (cand.age_ticks || 0) < sp.growth.maturity_ticks) continue;
+      if (cand.hp <= 90) continue;
+      father = cand;
+      break;
+    }
+    if (!father) return;
+    var pregRate = (sp.reproduction.base_pregnancy_rate_per_tick || 0.0002) * getModifier(a, 'fertility_mult');
+    if (Math.random() < pregRate) {
+      a.pregnant = { father_uid: father.uid, remaining_ticks: sp.reproduction.pregnancy_ticks };
     }
   }
 
@@ -680,7 +770,7 @@
         a.satiety = clamp(a.satiety + 0.02, 0, 100);
       }
     }
-    a.satiety = clamp(a.satiety - sp.satiety.drain_per_tick, 0, 100);
+    a.satiety = clamp(a.satiety - sp.satiety.drain_per_tick * getModifier(a, 'satiety_drain_mult'), 0, 100);
     tickWeight(a, sp);
     a.age_ticks = (a.age_ticks || 0) + 1;
     // 鸡寿命：15000 tick 自然死亡
@@ -695,17 +785,18 @@
 
   function tickWeight(a, sp) {
     var g = sp.growth;
+    var growthMult = getModifier(a, 'growth_rate_mult');
     if (g.graze_growth_rate_kg_per_tick != null) {
       var cap = g.graze_cap_kg != null ? g.graze_cap_kg : g.fatten_cap_kg;
       if (a.satiety > g.satiety_grow_threshold) {
-        if (a.weight_kg < cap) a.weight_kg = Math.min(cap, a.weight_kg + g.graze_growth_rate_kg_per_tick);
+        if (a.weight_kg < cap) a.weight_kg = Math.min(cap, a.weight_kg + g.graze_growth_rate_kg_per_tick * growthMult);
       } else if (a.satiety < g.satiety_stall_threshold) {
         a.weight_kg = Math.max(g.birth_weight_kg, a.weight_kg - g.graze_growth_rate_kg_per_tick);
       }
     }
     // 猪长肉已在 tickAnimal 的饲料分支处理（真实消耗饲料槽饲料）
     if (a.species_id === 'chicken' && a.satiety > 70) {
-      if (a.weight_kg < g.fatten_cap_kg) a.weight_kg = Math.min(g.fatten_cap_kg, a.weight_kg + 0.00063);
+      if (a.weight_kg < g.fatten_cap_kg) a.weight_kg = Math.min(g.fatten_cap_kg, a.weight_kg + 0.00063 * growthMult);
     }
   }
 
@@ -717,7 +808,7 @@
     else if (pollution < 90) drain = 0.03;
     else drain = 0.05;
     if (drain > 0) {
-      a.hp = clamp(a.hp - drain, 0, 100);
+      a.hp = clamp(a.hp - drain * getModifier(a, 'disease_resist_mult'), 0, 100);
       if (a.hp <= 0) { a.dead = true; a.death_cause = 'disease'; }
     } else if (pollution < 30 && a.satiety > 70) {
       a.hp = clamp(a.hp + 0.02, 0, 100);
@@ -726,14 +817,21 @@
 
   function giveBirth(st, mother, sp, births) {
     if (!sp.reproduction) return;
+    var father = null;
+    if (mother.pregnant && mother.pregnant.father_uid) {
+      for (var f = 0; f < st.animals.length; f++) {
+        if (st.animals[f].uid === mother.pregnant.father_uid) { father = st.animals[f]; break; }
+      }
+    }
     var litter = randInt(sp.reproduction.litter_size[0], sp.reproduction.litter_size[1]);
+    var inherited = inheritPerks(father ? father.perks : [], mother.perks || []);
     for (var i = 0; i < litter; i++) {
       var calf = makeAnimal(
         mother.species_id,
         Math.random() < 0.5 ? 'male' : 'female',
         'zone',
         mother.zone_id,
-        { weight_kg: sp.growth.birth_weight_kg, age_ticks: 0, satiety: 80 }
+        { weight_kg: sp.growth.birth_weight_kg, age_ticks: 0, satiety: 80, perks: inherited.slice() }
       );
       births.push(calf);
     }
@@ -767,6 +865,8 @@
     findTroughForZone: findTroughForZone,
     addFeedToTrough: addFeedToTrough,
     getCropNutrition: getCropNutrition,
+    getModifier: getModifier,
+    rollPerks: rollPerks,
     advanceTick: advanceTick
   };
 })();
