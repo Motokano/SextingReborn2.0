@@ -11,6 +11,7 @@
   var MODULES = {};
   var PERKS = {};
   var BUILD_COSTS = {};
+  var FEED_CROPS = {};
   var state = null;
   var uidSeq = 1;
 
@@ -25,11 +26,12 @@
     return 'livestock_' + (uidSeq++);
   }
 
-  function setConfig(species, modules, perks, buildCosts) {
+  function setConfig(species, modules, perks, buildCosts, feedCrops) {
     SPECIES = species || {};
     MODULES = modules || {};
     PERKS = perks || {};
     BUILD_COSTS = buildCosts || {};
+    FEED_CROPS = feedCrops || {};
   }
 
   function getSpecies(speciesId) { return SPECIES[speciesId] || null; }
@@ -47,9 +49,11 @@
     return 'arm1';
   }
 
-  // 模块实例：{ module_id, level, upgrading_remaining }
+  // 模块实例：{ module_id, level, upgrading_remaining, feed_units? }
   function makeModuleInstance(moduleId) {
-    return { module_id: moduleId, level: 1, upgrading_remaining: 0 };
+    var inst = { module_id: moduleId, level: 1, upgrading_remaining: 0 };
+    if (moduleId === 'feed_trough') inst.feed_units = 0;
+    return inst;
   }
   function getSlotModuleId(slot) {
     if (!slot) return null;
@@ -57,10 +61,15 @@
   }
   function normalizeModuleSlot(slot) {
     if (!slot) return null;
-    if (typeof slot === 'string') return { module_id: slot, level: 1, upgrading_remaining: 0 };
+    if (typeof slot === 'string') {
+      var inst = { module_id: slot, level: 1, upgrading_remaining: 0 };
+      if (slot === 'feed_trough') inst.feed_units = 0;
+      return inst;
+    }
     if (slot.module_id == null) return null;
     if (slot.level == null) slot.level = 1;
     if (slot.upgrading_remaining == null) slot.upgrading_remaining = 0;
+    if (slot.module_id === 'feed_trough' && slot.feed_units == null) slot.feed_units = 0;
     return slot;
   }
 
@@ -273,6 +282,45 @@
     a.dead = true;
     a.death_cause = 'slaughter';
     return { ok: true, items: items };
+  }
+
+  /* ================= 饲料 ================= */
+
+  function getCropNutrition(itemId) {
+    return FEED_CROPS[itemId] != null ? Number(FEED_CROPS[itemId]) : null;
+  }
+
+  // 找投喂某区域的饲料槽（装在 cw_side，面朝该区）
+  function findTroughForZone(zoneId) {
+    var st = ensureState();
+    for (var ak in st.arms) {
+      var arm = st.arms[ak];
+      var trough = arm && arm.cw_side;
+      if (!trough || isShadowSlot(trough) || getSlotModuleId(trough) !== 'feed_trough') continue;
+      var zones = (st.arm_zones && st.arm_zones[ak]) || [];
+      // 面朝区域 = arm_zones 第二个
+      if (zones[1] === zoneId) return trough;
+    }
+    return null;
+  }
+
+  // 投喂作物到饲料槽（直接投，营养值÷10 = 单位数）
+  function addFeedToTrough(armId, cropItemId, count) {
+    var nut = getCropNutrition(cropItemId);
+    if (nut == null) return { ok: false, reason: 'not_feed_crop' };
+    var st = ensureState();
+    var arm = st.arms[armId];
+    var trough = arm && arm.cw_side;
+    if (!trough || isShadowSlot(trough) || getSlotModuleId(trough) !== 'feed_trough') {
+      return { ok: false, reason: 'no_trough' };
+    }
+    if (trough.feed_units == null) trough.feed_units = 0;
+    var c = Math.max(1, Math.floor(Number(count) || 1));
+    var add = (nut / 10) * c;
+    var before = trough.feed_units;
+    trough.feed_units = clamp(trough.feed_units + add, 0, 100);
+    var added = trough.feed_units - before;
+    return { ok: true, added: added, total: trough.feed_units };
   }
 
   /* ================= 模块装配 / 拆卸 / 升级 ================= */
@@ -515,19 +563,39 @@
       }
     }
 
-    // 猪：拱地保底 + 松土 + 降污
+    // 猪：拱地保底 + 松土降污 + 吃饲料（补饱腹 + 长肉）
     if (a.species_id === 'pig') {
       if (a.satiety < 10) a.satiety = Math.min(10, a.satiety + 0.03);
       if (sp.ecosystem_impact) {
         zone.compaction = clamp(zone.compaction + sp.ecosystem_impact.root_clean_per_tick, 0, 100);
         zone.pollution = clamp(zone.pollution + sp.ecosystem_impact.pollution_pct_per_tick, 0, 100);
       }
+      var trough = findTroughForZone(a.zone_id);
+      if (trough && trough.feed_units > 0) {
+        // 补饱腹（1 单位 = 10 饱腹）
+        if (a.satiety < 100) {
+          var take = Math.min(trough.feed_units, 0.05);
+          trough.feed_units = Math.max(0, trough.feed_units - take);
+          a.satiety = clamp(a.satiety + take * 10, 0, 100);
+        }
+        // 长肉（饱腹 > 70 才长，料肉比）
+        if (a.satiety > 70 && sp.feed && sp.feed.feed_units_per_tick) {
+          var growthUnits = sp.feed.feed_units_per_tick;
+          if (trough.feed_units >= growthUnits) {
+            trough.feed_units -= growthUnits;
+            var pigGrowth = growthUnits * 10 / sp.feed.nutrition_per_kg_meat;
+            if (a.weight_kg < sp.growth.fatten_cap_kg) {
+              a.weight_kg = Math.min(sp.growth.fatten_cap_kg, a.weight_kg + pigGrowth);
+            }
+          }
+        }
+      }
     }
 
     // 饱腹下降
     a.satiety = clamp(a.satiety - sp.satiety.drain_per_tick, 0, 100);
 
-    // 体重成长
+    // 体重成长（牛/羊草饲、鸡虫子；猪长肉已在上方饲料分支）
     tickWeight(a, sp);
 
     // 生态影响：踩踏 / 污染（羊）
@@ -595,10 +663,7 @@
         a.weight_kg = Math.max(g.birth_weight_kg, a.weight_kg - g.graze_growth_rate_kg_per_tick);
       }
     }
-    if (a.species_id === 'pig' && a.satiety > 70 && sp.feed && sp.feed.feed_units_per_tick) {
-      var pigGrowth = sp.feed.feed_units_per_tick * 10 / sp.feed.nutrition_per_kg_meat;
-      if (a.weight_kg < g.fatten_cap_kg) a.weight_kg = Math.min(g.fatten_cap_kg, a.weight_kg + pigGrowth);
-    }
+    // 猪长肉已在 tickAnimal 的饲料分支处理（真实消耗饲料槽饲料）
     if (a.species_id === 'chicken' && a.satiety > 70) {
       if (a.weight_kg < g.fatten_cap_kg) a.weight_kg = Math.min(g.fatten_cap_kg, a.weight_kg + 0.00063);
     }
@@ -657,6 +722,9 @@
     canBuildModule: canBuildModule,
     getBuildStep: getBuildStep,
     expandModuleSlots: expandModuleSlots,
+    findTroughForZone: findTroughForZone,
+    addFeedToTrough: addFeedToTrough,
+    getCropNutrition: getCropNutrition,
     advanceTick: advanceTick
   };
 })();

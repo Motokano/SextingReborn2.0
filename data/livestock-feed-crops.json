@@ -1,0 +1,21 @@
+{
+  "schema_version": 1,
+  "_comment": "作物→营养值（对应 docs/design/31 §10.2）。投喂时 营养值÷10 = 标准饲料单位数。",
+  "crops": {
+    "herb_maize": 10,
+    "herb_wheat": 9,
+    "herb_wheat_durum": 9,
+    "herb_rice": 9,
+    "herb_potato": 2,
+    "herb_beet": 2,
+    "herb_carrot": 1,
+    "herb_radish_white": 1,
+    "herb_cabbage": 1,
+    "herb_peanut": 15,
+    "herb_green_beans": 10,
+    "herb_beans_white_haricot": 10,
+    "herb_garrofo": 10,
+    "herb_sesame": 17,
+    "herb_pumpkin_seed": 16
+  }
+}
