@@ -13,11 +13,11 @@
   var selectedModuleId = null;
 
   function getLivestockLevel() {
-    // MVP：默认 90 展示完整信息；后续接 InventoryEquipment.skills.survival_livestock.level
+    // 读 survival_livestock 技能等级；未习得（0 级）时回退 90 展示完整信息（MVP 测试友好）
     try {
       if (window.InventoryEquipment && typeof window.InventoryEquipment.getSkillLevel === 'function') {
         var lv = window.InventoryEquipment.getSkillLevel('survival_livestock');
-        if (lv != null) return lv;
+        if (lv > 0) return lv;
       }
     } catch (e) { /* ignore */ }
     return 90;
