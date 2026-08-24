@@ -91,9 +91,9 @@
 
   function initDemoState() {
     var arms = {
-      arm1: { inner: makeModuleInstance('coop'), front: null, bottom: makeModuleInstance('sprinkler'), top: null, cw_side: null, ccw_side: null },
+      arm1: { inner: makeModuleInstance('coop'), front: null, bottom: { shadow: true, module_id: 'coop' }, top: null, cw_side: null, ccw_side: null },
       arm2: { inner: null, front: null, bottom: null, top: null, cw_side: makeModuleInstance('feed_trough'), ccw_side: null },
-      arm3: { inner: null, front: null, bottom: null, top: null, cw_side: null, ccw_side: null },
+      arm3: { inner: null, front: null, bottom: makeModuleInstance('sprinkler'), top: null, cw_side: null, ccw_side: null },
       arm4: { inner: null, front: null, bottom: null, top: null, cw_side: null, ccw_side: null }
     };
 
@@ -279,6 +279,25 @@
 
   var ARM_SLOT_KEYS = ['inner', 'front', 'bottom', 'top', 'cw_side', 'ccw_side'];
 
+  // 展开模块占用的面（modules.json 的 side 键 → cw_side/ccw_side）
+  function expandModuleSlots(m) {
+    var out = [];
+    var s = (m && m.slots) || {};
+    for (var k in s) {
+      if (k === 'side') {
+        out.push('cw_side');
+        if (Number(s[k]) >= 2) out.push('ccw_side');
+      } else {
+        out.push(k);
+      }
+    }
+    return out;
+  }
+
+  function isShadowSlot(slot) {
+    return !!(slot && slot.shadow === true);
+  }
+
   function getArmOrAxis(armId) {
     var st = ensureState();
     if (armId === 'axis') return { container: st.axis, isAxis: true };
@@ -294,17 +313,17 @@
     if (!holder) return { ok: false, reason: 'unknown_arm' };
 
     if (holder.isAxis) {
-      // 轴心：slot1/slot2 必须匹配模块的 axis_slot
       var axisNum = parseInt(String(slotKey).replace('slot', ''), 10);
       if (m.axis_slot !== axisNum) return { ok: false, reason: 'axis_slot_mismatch' };
-    } else {
-      // 臂：模块占面必须含该 slot
-      if (!m.slots || !m.slots[slotKey]) return { ok: false, reason: 'slot_mismatch' };
-      // 内部空间互斥
-      if (m.slots.inner && holder.container.inner) return { ok: false, reason: 'inner_occupied' };
+      if (holder.container[slotKey]) return { ok: false, reason: 'slot_occupied' };
+      return { ok: true };
     }
 
-    if (holder.container[slotKey]) return { ok: false, reason: 'slot_occupied' };
+    var slots = expandModuleSlots(m);
+    if (slots.indexOf(slotKey) < 0) return { ok: false, reason: 'slot_mismatch' };
+    for (var i = 0; i < slots.length; i++) {
+      if (holder.container[slots[i]]) return { ok: false, reason: 'slot_occupied' };
+    }
     return { ok: true };
   }
 
@@ -341,7 +360,7 @@
     return { ok: true };
   }
 
-  // 装配（= 首次建造，消耗 Lv1→2 档材料）
+  // 装配（= 首次建造，消耗 Lv1→2 档材料；臂上跨面模块：主位存实例，其余面存影子）
   function buildModule(armId, slotKey, moduleId) {
     var m = getModule(moduleId);
     if (!m) return { ok: false, reason: 'unknown_module' };
@@ -351,18 +370,34 @@
     var consume = tryConsumeMaterials(step && step.inputs);
     if (!consume.ok) return consume;
     var holder = getArmOrAxis(armId);
+    if (holder.isAxis) {
+      holder.container[slotKey] = makeModuleInstance(moduleId);
+      return { ok: true };
+    }
     holder.container[slotKey] = makeModuleInstance(moduleId);
+    var slots = expandModuleSlots(m);
+    for (var i = 0; i < slots.length; i++) {
+      if (slots[i] !== slotKey) {
+        holder.container[slots[i]] = { shadow: true, module_id: moduleId };
+      }
+    }
     return { ok: true };
   }
 
-  // 拆卸（不退材料）
+  // 拆卸（不退材料；清空主位 + 其影子面）
   function dismountModule(armId, slotKey) {
     var holder = getArmOrAxis(armId);
     if (!holder) return { ok: false, reason: 'unknown_arm' };
     var inst = holder.container[slotKey];
     if (!inst) return { ok: false, reason: 'slot_empty' };
+    if (isShadowSlot(inst)) return { ok: false, reason: 'shadow_slot' };
     if (inst.upgrading_remaining > 0) return { ok: false, reason: 'upgrading' };
+    var moduleId = inst.module_id;
     holder.container[slotKey] = null;
+    for (var sk in holder.container) {
+      var v = holder.container[sk];
+      if (v && v.shadow && v.module_id === moduleId) holder.container[sk] = null;
+    }
     return { ok: true };
   }
 
@@ -372,6 +407,7 @@
     if (!holder) return { ok: false, reason: 'unknown_arm' };
     var inst = holder.container[slotKey];
     if (!inst) return { ok: false, reason: 'slot_empty' };
+    if (isShadowSlot(inst)) return { ok: false, reason: 'shadow_slot' };
     if (inst.level >= 5) return { ok: false, reason: 'max_level' };
     if (inst.upgrading_remaining > 0) return { ok: false, reason: 'upgrading' };
     var m = getModule(inst.module_id);
@@ -383,7 +419,7 @@
     return { ok: true, ticks: inst.upgrading_remaining };
   }
 
-  // 每 tick 推进升级工程
+  // 每 tick 推进升级工程（跳过影子位）
   function tickUpgrades() {
     var st = ensureState();
     var containers = [];
@@ -394,7 +430,7 @@
       if (!cont || typeof cont !== 'object') continue;
       for (var sk in cont) {
         var inst = cont[sk];
-        if (!inst || typeof inst !== 'object') continue;
+        if (!inst || typeof inst !== 'object' || isShadowSlot(inst)) continue;
         if (inst.upgrading_remaining > 0) {
           inst.upgrading_remaining--;
           if (inst.upgrading_remaining <= 0) {
@@ -620,6 +656,7 @@
     startUpgrade: startUpgrade,
     canBuildModule: canBuildModule,
     getBuildStep: getBuildStep,
+    expandModuleSlots: expandModuleSlots,
     advanceTick: advanceTick
   };
 })();

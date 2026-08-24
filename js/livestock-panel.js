@@ -364,6 +364,12 @@
         var mid = inst && inst.module_id;
         var m = mid ? window.LivestockState.getModule(mid) : null;
         var label = (aid === 'axis') ? ('位' + sk.replace('slot', '')) : armSlotLabels[sk];
+        if (inst && inst.shadow) {
+          // 影子位：被跨面模块占用
+          return '<div class="module-slot shadow-slot">' +
+            '<span class="slot-key">' + label + '</span>' +
+            '<span class="slot-val">被 ' + (m ? m.name : mid) + ' 占用</span></div>';
+        }
         if (m) {
           var upgrading = inst.upgrading_remaining > 0;
           var lvText = 'Lv' + inst.level + (upgrading ? ' · 升级中 ' + inst.upgrading_remaining + 't' : '');
@@ -382,6 +388,7 @@
       return '<div class="arm-card"><div class="arm-card-title">' + armNames[aid] + '</div><div class="arm-slots">' + slotHtml + '</div></div>';
     }).join('');
 
+    var slotNames = { inner: '内部', front: '前端', bottom: '底面', top: '上表面', cw_side: '顺侧', ccw_side: '逆侧' };
     var mods = window.LivestockState.allModules();
     var tierOrder = { '第一层': 1, '第二层': 2, '轴心': 3 };
     var modList = Object.keys(mods).map(function (k) { return mods[k]; })
@@ -390,12 +397,15 @@
         var sel = selectedModuleId === m.module_id ? ' selected' : '';
         var step = window.LivestockState.getBuildStep(m.tier, 1);
         var cost = step && step.inputs ? step.inputs.map(function (i) { return i.item_id + '×' + i.count; }).join(' ') : '';
+        var faces = (m.axis_slot != null)
+          ? ('轴心位' + m.axis_slot)
+          : window.LivestockState.expandModuleSlots(m).map(function (s) { return slotNames[s] || s; }).join('+');
         return '<div class="module-card' + sel + '" data-module="' + m.module_id + '">' +
           '<span class="module-ico">' + moduleIcon(m.module_id) + '</span>' +
           '<span class="module-name">' + m.name + '</span>' +
           '<span class="module-tier">' + m.layer + ' · ' + tierLabel(m.tier) + '</span>' +
           '<span class="module-desc">' + m.desc + '</span>' +
-          '<span class="module-cost">建造：' + (cost || '—') + '</span></div>';
+          '<span class="module-cost">占面：' + faces + ' · 建造：' + (cost || '—') + '</span></div>';
       }).join('');
 
     box.innerHTML =
@@ -410,7 +420,8 @@
     var map = {
       unknown_module: '未知模块', unknown_arm: '未知位置', axis_slot_mismatch: '轴心位不匹配',
       slot_mismatch: '该模块不能装在此面', inner_occupied: '内部空间已被占用', slot_occupied: '该位已有模块',
-      lack_material: '材料不足', slot_empty: '该位为空', upgrading: '升级中', max_level: '已满级'
+      lack_material: '材料不足', slot_empty: '该位为空', upgrading: '升级中', max_level: '已满级',
+      shadow_slot: '该面被跨面模块占用'
     };
     var base = map[r.reason] || r.reason;
     if (r.reason === 'lack_material') {
