@@ -328,7 +328,7 @@
   }
 
   function getBuildStep(tier, fromLevel) {
-    var tc = (BUILD_COSTS && BUILD_COSTS.costs && BUILD_COSTS.costs[tier]) || null;
+    var tc = (BUILD_COSTS && BUILD_COSTS[tier]) || null;
     if (!tc || !Array.isArray(tc.steps)) return null;
     for (var i = 0; i < tc.steps.length; i++) {
       if (tc.steps[i].from === fromLevel) return tc.steps[i];
@@ -337,7 +337,7 @@
   }
 
   function getUpgradeTicks(tier) {
-    var tc = (BUILD_COSTS && BUILD_COSTS.costs && BUILD_COSTS.costs[tier]) || null;
+    var tc = (BUILD_COSTS && BUILD_COSTS[tier]) || null;
     return tc && tc.upgrade_ticks ? tc.upgrade_ticks : 20;
   }
 
