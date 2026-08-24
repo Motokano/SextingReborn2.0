@@ -751,7 +751,7 @@ Perk 可选 `requires` 字段。条件不满足时 **Perk 不生效但保留**�
 
 ### 8.6 可见性（技能控制）
 
-受 `survival_livestock` 技能等级控制，完整映射见 §9（畜牧技能体系）：
+受 `life_animal_husbandry` 技能等级控制，完整映射见 §9（畜牧技能体系）：
 
 | 技能等级 | Perk 可见 |
 |---|---|
@@ -775,14 +775,14 @@ Perk 可选 `requires` 字段。条件不满足时 **Perk 不生效但保留**�
 ### 9.1 技能定义
 
 ```
-id: "survival_livestock"
+id: "life_animal_husbandry"
 name: "畜牧"
 desc: "管理牧场、照料动物、识别个体特质的能力。等级越高，对动物的了解越深。"
 ```
 
-- 元数据写入 `data/survival-skills.json`，并同步 `js/survival-skills.js` 的 `FALLBACK_SKILLS`
-- 等级存档在 `InventoryEquipment` 的 `skills.survival_livestock.level`
-- 等级上限 100（生存技能标准，与 `survival_weather_resist` 一致）
+- 畜牧是**生活技能**（与烹饪/采集等同类），ID 为 `life_animal_husbandry`（`LIFE_SKILL_TABLE` 已有，UI key `life.skill.animal_husbandry.*`）
+- 等级存档在 `InventoryEquipment` 的 `skills.life_animal_husbandry.level`
+- 等级上限 100（生活技能标准，与烹饪一致）
 
 ### 9.2 升级曲线（linear 一致）
 

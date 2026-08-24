@@ -4098,6 +4098,57 @@
         }
     }
 
+    // ===== 畜牧（生活技能 life_animal_husbandry）：习得 + move_usage 曲线升级 =====
+    var LIVESTOCK_MAX_PROFICIENCY_USES = 5000000;
+    var LIVESTOCK_SKILL_MAX_LEVEL = 100;
+
+    function getLivestockLevelByUses(uses) {
+        var u = Math.max(0, parseInt(uses, 10) || 0);
+        var ratio = Math.max(0, Math.min(1, u / LIVESTOCK_MAX_PROFICIENCY_USES));
+        return Math.max(1, Math.min(LIVESTOCK_SKILL_MAX_LEVEL, 1 + Math.floor(ratio * (LIVESTOCK_SKILL_MAX_LEVEL - 1))));
+    }
+
+    function ensureLifeAnimalHusbandrySkillEntry() {
+        if (!IE || typeof IE.getState !== 'function') return false;
+        var st = IE.getState();
+        if (!st || typeof st !== 'object') return false;
+        if (!st.skills || typeof st.skills !== 'object') st.skills = {};
+        if (!st.skills.life_animal_husbandry || typeof st.skills.life_animal_husbandry !== 'object') {
+            st.skills.life_animal_husbandry = { level: 1, move_usage: {} };
+            recalcCharacterStatsFromIE();
+            return true;
+        }
+        var changed = false;
+        var ent = st.skills.life_animal_husbandry;
+        var lv = Math.max(0, parseInt(ent.level, 10) || 0);
+        if (lv < 1) { ent.level = 1; changed = true; }
+        if (!ent.move_usage || typeof ent.move_usage !== 'object') { ent.move_usage = {}; changed = true; }
+        var uses = Math.max(0, parseInt(ent.move_usage.livestock_action, 10) || 0);
+        var mappedLv = getLivestockLevelByUses(uses);
+        if ((parseInt(ent.level, 10) || 0) !== mappedLv) {
+            ent.level = mappedLv;
+            changed = true;
+        }
+        if (changed) recalcCharacterStatsFromIE();
+        return true;
+    }
+
+    function addLivestockProficiency(delta) {
+        if (!IE || typeof IE.incrementSkillMoveUsage !== 'function' || typeof IE.getState !== 'function') return;
+        if (!ensureLifeAnimalHusbandrySkillEntry()) return;
+        var d = Math.max(1, parseInt(delta, 10) || 1);
+        var newUses = IE.incrementSkillMoveUsage('life_animal_husbandry', 'livestock_action', d);
+        var st = IE.getState();
+        if (!st || !st.skills || !st.skills.life_animal_husbandry) return;
+        var ent = st.skills.life_animal_husbandry;
+        var nextLv = getLivestockLevelByUses(newUses);
+        var curLv = Math.max(1, parseInt(ent.level, 10) || 1);
+        if (nextLv !== curLv) {
+            ent.level = nextLv;
+            recalcCharacterStatsFromIE();
+        }
+    }
+
     var DEFAULT_COOKING_INSTALLED_ACCESSORIES = [];
 
     function getCookingStationState() {
@@ -7904,6 +7955,7 @@
         }
         if (guardPlayerComaBlocked()) return;
         if (livestockPanelOpen) return;
+        ensureLifeAnimalHusbandrySkillEntry();
         livestockPanelOpen = true;
         var modal = document.getElementById('modal-livestock');
         if (modal) {
@@ -11421,6 +11473,8 @@
     window.SceneApp.updateLivestockPanel = updateLivestockPanel;
     window.SceneApp.setLivestockAutoTickEnabled = setLivestockAutoTickEnabled;
     window.SceneApp.isLivestockAutoTickEnabled = isLivestockAutoTickEnabled;
+    window.SceneApp.addLivestockProficiency = addLivestockProficiency;
+    window.SceneApp.ensureLifeAnimalHusbandrySkillEntry = ensureLifeAnimalHusbandrySkillEntry;
     window.SceneApp.openHideoutWarehousePanel = openHideoutWarehousePanel;
     window.SceneApp.closeHideoutWarehousePanel = closeHideoutWarehousePanel;
     window.SceneApp.updateAgriculturePanel = updateAgriculturePanel;

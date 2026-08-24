@@ -13,10 +13,10 @@
   var selectedModuleId = null;
 
   function getLivestockLevel() {
-    // 读 survival_livestock 技能等级；未习得（0 级）时回退 90 展示完整信息（MVP 测试友好）
+    // 读生活技能 life_animal_husbandry 等级；未习得（0 级）时回退 90 展示完整信息（MVP 测试友好）
     try {
       if (window.InventoryEquipment && typeof window.InventoryEquipment.getSkillLevel === 'function') {
-        var lv = window.InventoryEquipment.getSkillLevel('survival_livestock');
+        var lv = window.InventoryEquipment.getSkillLevel('life_animal_husbandry');
         if (lv > 0) return lv;
       }
     } catch (e) { /* ignore */ }
@@ -684,9 +684,8 @@
   }
 
   function addExp(delta) {
-    var IE = window.InventoryEquipment;
-    if (IE && typeof IE.incrementSkillMoveUsage === 'function') {
-      IE.incrementSkillMoveUsage('survival_livestock', 'livestock_action', delta);
+    if (window.SceneApp && typeof window.SceneApp.addLivestockProficiency === 'function') {
+      window.SceneApp.addLivestockProficiency(delta);
     }
   }
 
