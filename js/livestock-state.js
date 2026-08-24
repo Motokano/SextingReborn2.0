@@ -88,6 +88,7 @@
       hp: opts.hp != null ? opts.hp : 100,
       perks: opts.perks || [],
       pregnant: opts.pregnant || null,
+      reproduction_cooldown: opts.reproduction_cooldown || 0,
       cooldowns: opts.cooldowns || {},
       location_type: locType || 'zone',
       zone_id: locType === 'coop' ? null : locId,
@@ -154,6 +155,14 @@
         makeAnimal('chicken', 'female', 'coop', 'arm1', {})
       ]
     };
+
+    // demo 动物设为成年，便于测试繁殖（鸡 maturity 为 null，跳过）
+    state.animals.forEach(function (a) {
+      var sp = getSpecies(a.species_id);
+      if (sp && sp.growth && sp.growth.maturity_ticks != null) {
+        a.age_ticks = sp.growth.maturity_ticks;
+      }
+    });
   }
 
   function getState() { return state; }
@@ -185,6 +194,7 @@
         if (a.dead == null) a.dead = false;
         if (a.death_cause == null) a.death_cause = null;
         if (!a.cooldowns) a.cooldowns = {};
+        if (a.reproduction_cooldown == null) a.reproduction_cooldown = 0;
         // 旧档迁移：无 location_type 的默认为 zone；鸡迁移到鸡笼
         if (!a.location_type) {
           if (a.species_id === 'chicken') {
@@ -617,6 +627,9 @@
       if (a.cooldowns[k] > 0) a.cooldowns[k]--;
     }
 
+    // 产后冷却递减
+    if ((a.reproduction_cooldown || 0) > 0) a.reproduction_cooldown--;
+
     // 怀孕推进
     if (a.pregnant) {
       a.pregnant.remaining_ticks--;
@@ -624,6 +637,33 @@
         giveBirth(st, a, sp, births);
         a.pregnant = null;
       }
+    } else {
+      // 受孕判定（成年母畜 + 同区公畜 + 条件满足）
+      tryReproduce(st, a, sp);
+    }
+  }
+
+  function tryReproduce(st, a, sp) {
+    if (!sp.reproduction) return;
+    if (a.gender !== 'female' && a.gender !== 'hermaphrodite') return;
+    if (sp.growth.maturity_ticks != null && (a.age_ticks || 0) < sp.growth.maturity_ticks) return;
+    if (a.pregnant) return;
+    if ((a.reproduction_cooldown || 0) > 0) return;
+    if (a.hp <= 90) return;
+    var zone = st.zones[a.zone_id];
+    if (!zone || zone.pollution >= 30) return;
+    var hasMale = st.animals.some(function (other) {
+      if (other.dead || other.uid === a.uid) return false;
+      if (other.species_id !== a.species_id) return false;
+      if (other.location_type !== 'zone' || other.zone_id !== a.zone_id) return false;
+      if (other.gender !== 'male' && other.gender !== 'hermaphrodite') return false;
+      if (sp.growth.maturity_ticks != null && (other.age_ticks || 0) < sp.growth.maturity_ticks) return false;
+      if (other.hp <= 90) return false;
+      return true;
+    });
+    if (!hasMale) return;
+    if (Math.random() < (sp.reproduction.base_pregnancy_rate_per_tick || 0.0002)) {
+      a.pregnant = { father_uid: null, remaining_ticks: sp.reproduction.pregnancy_ticks };
     }
   }
 
@@ -697,6 +737,8 @@
       );
       births.push(calf);
     }
+    // 产后冷却（= 产后冷却 tick）
+    mother.reproduction_cooldown = sp.reproduction.postpartum_cooldown_ticks || 0;
   }
 
   window.LivestockState = {
