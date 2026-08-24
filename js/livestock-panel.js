@@ -116,14 +116,15 @@
       if (lv >= 20) eco.push('☢️ ' + pollutionStage(z.pollution));
       if (lv >= 30) eco.push('🪨 ' + compactionStage(z.compaction));
       if (lv >= 40) eco.push('草 ' + (z.grass_height == null ? '-' : z.grass_height.toFixed(2)) + 'm');
-      if (lv >= 60) eco.push('板结 ' + (z.compaction == null ? '-' : z.compaction));
-      var ecoText = eco.join(' · ') || '（生态信息未解锁）';
+      if (lv >= 60) eco.push('板结 ' + (z.compaction == null ? '-' : Math.round(z.compaction)));
+      var ecoHtml = eco.map(function (e) { return '<div class="eco-line">' + e + '</div>'; }).join('');
+      var ecoText = ecoHtml || '<div class="eco-line">生态信息未解锁</div>';
       var sel = selectedZoneId === zoneId ? ' selected' : '';
       var animalHtml = animals.map(function (a) { return animalChip(a); }).join('') ||
         '<div class="empty-hint" style="padding:2px;font-size:11px;">空</div>';
       return '<div class="zone-cell' + sel + '" data-zone="' + zoneId + '">' +
         '<div class="eco-overlay ' + ecoOverlayClass(zoneId, z) + '"></div>' +
-        '<div class="zone-header"><span>' + zoneLabel[zoneId] + '</span><span>' + ecoText + '</span></div>' +
+        '<div class="zone-header"><span>' + zoneLabel[zoneId] + '</span><div class="zone-eco">' + ecoText + '</div></div>' +
         '<div class="animal-list">' + animalHtml + '</div></div>';
     }
     function armHtml(armId, vertical) {
@@ -284,14 +285,14 @@
     if (!perks || !perks.length) return '';
     var names = perks.map(function (p) {
       var pdef = window.LivestockState.getPerk(p);
-      if (!pdef) return p;
-      if (lv >= 90 && pdef.modifiers) {
-        var mods = Object.keys(pdef.modifiers).map(function (k) { return k + ' ' + pdef.modifiers[k]; }).join(' ');
-        return pdef.name + '(' + mods + ')';
-      }
-      return pdef.name;
+      return pdef ? pdef.name : p;
     });
-    return 'Perk: ' + names.join('、');
+    return '特性：' + names.join('、');
+  }
+
+  var PRODUCT_NAMES = { milk: '奶', wool: '毛', blood: '血', egg: '蛋' };
+  function productName(id) {
+    return PRODUCT_NAMES[id] || id;
   }
 
   function renderAnimalDetail(st, lv) {
@@ -304,7 +305,7 @@
     var prod = (sp && sp.products && sp.products.living) ? sp.products.living : [];
     var prodRows = prod.map(function (p) {
       var cd = (a.cooldowns && a.cooldowns[p.product_id]) || 0;
-      return '<div class="kv-row"><span>' + p.product_id + '</span><span>' + (cd > 0 ? '冷却 ' + cd + ' tick' : '可采集') + '</span></div>';
+      return '<div class="kv-row"><span>' + productName(p.product_id) + '</span><span>' + (cd > 0 ? '冷却 ' + cd + ' tick' : '可采集') + '</span></div>';
     }).join('') || '<div class="kv-row"><span>活体产出</span><span>无</span></div>';
     box.innerHTML =
       '<div class="detail-title">' + speciesName(a.species_id) + ' ' + genderGlyph(a.gender) + '</div>' +
@@ -316,7 +317,7 @@
       '<div class="kv-row"><span>怀孕</span><span>' + ((lv >= 30 && a.pregnant) ? '剩余 ' + a.pregnant.remaining_ticks + ' tick' : ((lv >= 30) ? '无' : '不可见')) + '</span></div>' +
       '<div class="kv-row"><span>所在区</span><span>' + locationName(a) + '</span></div>' +
       '</div>' +
-      '<div class="detail-perk">' + ((lv >= 50) ? (perkText(a.perks, lv) || '无 Perk') : 'Perk 不可见（畜牧 Lv.50 解锁）') + '</div>' +
+      '<div class="detail-perk">' + ((lv >= 50) ? (perkText(a.perks, lv) || '无特性') : '特性不可见（畜牧 Lv.50 解锁）') + '</div>' +
       '<div class="kv-list">' + prodRows + '</div>' +
       '<div class="detail-actions">' +
       (a.location_type === 'zone'
@@ -656,7 +657,7 @@
     var parts = [];
     sp.products.living.forEach(function (p) {
       var cd = (a.cooldowns && a.cooldowns[p.product_id]) || 0;
-      parts.push(p.product_id + (cd > 0 ? '(冷却' + cd + ')' : '✓'));
+      parts.push(productName(p.product_id) + (cd > 0 ? '(冷却' + cd + ')' : '✓'));
     });
     return parts.join(' ');
   }
@@ -714,7 +715,7 @@
     });
     if (got.length) {
       addExp(100);
-      logMsg('采集 ' + speciesName(a.species_id) + ' ' + genderGlyph(a.gender) + '：' + got.join('、') + '，畜牧经验 +100', 'success');
+      logMsg('采集 ' + speciesName(a.species_id) + ' ' + genderGlyph(a.gender) + '：' + got.map(productName).join('、') + '，畜牧经验 +100', 'success');
       if (hpBefore !== a.hp) {
         logMsg('抽血使 ' + speciesName(a.species_id) + ' 血量 ' + hpBefore + ' → ' + a.hp, 'warn');
       }
@@ -722,7 +723,7 @@
         logMsg('背包已满，' + dropped + ' 件产物掉落在地面', 'warn');
       }
     }
-    feedbackMsg = got.length ? ('已采集：' + got.join('、') + ' → 已入背包') : '无可采集（冷却中或血量不足）';
+    feedbackMsg = got.length ? ('已采集：' + got.map(productName).join('、') + ' → 已入背包') : '无可采集（冷却中或血量不足）';
     render();
   }
 
