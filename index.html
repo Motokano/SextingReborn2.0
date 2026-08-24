@@ -3083,18 +3083,24 @@
         #modal-livestock .arm-card { background: #252520; border: 2px solid #4d4d45; border-radius: 6px; padding: 10px; margin-bottom: 10px; }
         #modal-livestock .arm-card-title { color: #e0d7c6; font-size: 13px; font-weight: 800; margin-bottom: 6px; }
         #modal-livestock .arm-slots { display: grid; gap: 4px; }
-        #modal-livestock .module-slot { display: flex; justify-content: space-between; font-size: 11px; color: #8e8e8e; }
+        #modal-livestock .module-slot { display: flex; justify-content: space-between; align-items: center; gap: 6px; font-size: 11px; color: #8e8e8e; }
         #modal-livestock .module-slot.filled .slot-val { color: #d3a060; }
+        #modal-livestock .module-slot.empty-slot { cursor: pointer; border: 1px dashed #4d4d45; border-radius: 4px; padding: 2px 4px; }
+        #modal-livestock .module-slot.empty-slot:hover { border-color: #ff8c00; color: #ff8c00; }
+        #modal-livestock .module-slot .slot-actions { display: flex; gap: 4px; flex-shrink: 0; }
+        #modal-livestock .module-slot .slot-actions .lv-btn { padding: 2px 6px; font-size: 10px; }
         #modal-livestock .module-list { display: grid; gap: 8px; }
         #modal-livestock .module-card {
             background: #252520; border: 2px solid #4d4d45; border-radius: 6px; padding: 10px 12px;
-            display: grid; grid-template-columns: 28px auto auto; gap: 4px 10px; align-items: center; transition: all 0.2s;
+            display: grid; grid-template-columns: 28px auto auto; gap: 4px 10px; align-items: center; transition: all 0.2s; cursor: pointer;
         }
         #modal-livestock .module-card:hover { border-color: #666; }
+        #modal-livestock .module-card.selected { border-color: #ff8c00; box-shadow: 0 0 12px rgba(255,140,0,0.18); background: #2f2c26; }
         #modal-livestock .module-ico { font-size: 18px; grid-row: span 2; }
         #modal-livestock .module-name { color: #e0d7c6; font-size: 13px; font-weight: 800; }
         #modal-livestock .module-tier { color: #ff8c00; font-size: 10px; font-weight: 800; text-align: right; }
         #modal-livestock .module-desc { color: #8e8e8e; font-size: 11px; grid-column: 2 / -1; }
+        #modal-livestock .module-cost { color: #bdb5ab; font-size: 10px; grid-column: 2 / -1; }
 
         /* 产出 Tab */
         #modal-livestock .product-content { display: flex; gap: 16px; width: 100%; }

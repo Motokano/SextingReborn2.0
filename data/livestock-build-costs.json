@@ -1,0 +1,107 @@
+{
+  "schema_version": 1,
+  "_comment": "畜牧模块装配/升级材料。首次建造=steps[0](Lv1→2)；升级到 N = steps[N-2]。对应 docs/design/31 §11.2 平衡后材料表。",
+  "costs": {
+    "small": {
+      "upgrade_ticks": 10,
+      "steps": [
+        { "from": 1, "to": 2, "inputs": [
+          { "item_id": "wood_bamboo_green", "count": 2 },
+          { "item_id": "supply_rope_hemp_short", "count": 1 }
+        ]},
+        { "from": 2, "to": 3, "inputs": [
+          { "item_id": "wood_bamboo_green", "count": 3 },
+          { "item_id": "supply_rope_hemp_short", "count": 2 }
+        ]},
+        { "from": 3, "to": 4, "inputs": [
+          { "item_id": "wood_bamboo_green", "count": 4 },
+          { "item_id": "supply_rope_hemp_short", "count": 3 }
+        ]},
+        { "from": 4, "to": 5, "inputs": [
+          { "item_id": "wood_bamboo_green", "count": 5 },
+          { "item_id": "supply_rope_hemp_short", "count": 3 },
+          { "item_id": "ore_iron_raw", "count": 1 }
+        ]}
+      ]
+    },
+    "medium": {
+      "upgrade_ticks": 20,
+      "steps": [
+        { "from": 1, "to": 2, "inputs": [
+          { "item_id": "wood_bamboo_green", "count": 4 },
+          { "item_id": "supply_rope_hemp_short", "count": 3 },
+          { "item_id": "ore_iron_raw", "count": 2 }
+        ]},
+        { "from": 2, "to": 3, "inputs": [
+          { "item_id": "wood_bamboo_green", "count": 5 },
+          { "item_id": "supply_rope_hemp_short", "count": 4 },
+          { "item_id": "ore_iron_raw", "count": 3 }
+        ]},
+        { "from": 3, "to": 4, "inputs": [
+          { "item_id": "wood_plank_soft", "count": 3 },
+          { "item_id": "supply_rope_hemp_short", "count": 4 },
+          { "item_id": "ore_iron_raw", "count": 3 },
+          { "item_id": "ore_cast_iron", "count": 1 }
+        ]},
+        { "from": 4, "to": 5, "inputs": [
+          { "item_id": "wood_plank_soft", "count": 4 },
+          { "item_id": "supply_rope_hemp_short", "count": 5 },
+          { "item_id": "ore_iron_raw", "count": 4 },
+          { "item_id": "ore_cast_iron", "count": 2 }
+        ]}
+      ]
+    },
+    "large": {
+      "upgrade_ticks": 30,
+      "steps": [
+        { "from": 1, "to": 2, "inputs": [
+          { "item_id": "wood_plank_soft", "count": 3 },
+          { "item_id": "supply_rope_hemp_short", "count": 3 },
+          { "item_id": "ore_iron_raw", "count": 3 }
+        ]},
+        { "from": 2, "to": 3, "inputs": [
+          { "item_id": "wood_plank_soft", "count": 4 },
+          { "item_id": "supply_rope_hemp_short", "count": 4 },
+          { "item_id": "ore_iron_raw", "count": 4 },
+          { "item_id": "ore_cast_iron", "count": 1 }
+        ]},
+        { "from": 3, "to": 4, "inputs": [
+          { "item_id": "wood_plank_soft", "count": 5 },
+          { "item_id": "supply_rope_hemp_short", "count": 4 },
+          { "item_id": "ore_iron_raw", "count": 5 },
+          { "item_id": "ore_cast_iron", "count": 2 }
+        ]},
+        { "from": 4, "to": 5, "inputs": [
+          { "item_id": "wood_plank_soft", "count": 6 },
+          { "item_id": "supply_rope_hemp_short", "count": 5 },
+          { "item_id": "ore_iron_raw", "count": 6 },
+          { "item_id": "ore_cast_iron", "count": 3 },
+          { "item_id": "ore_steel_ingot", "count": 1 }
+        ]}
+      ]
+    },
+    "axis": {
+      "upgrade_ticks": 40,
+      "steps": [
+        { "from": 1, "to": 2, "inputs": [
+          { "item_id": "ore_iron_raw", "count": 4 },
+          { "item_id": "ore_cast_iron", "count": 2 }
+        ]},
+        { "from": 2, "to": 3, "inputs": [
+          { "item_id": "ore_iron_raw", "count": 5 },
+          { "item_id": "ore_cast_iron", "count": 3 }
+        ]},
+        { "from": 3, "to": 4, "inputs": [
+          { "item_id": "ore_iron_raw", "count": 6 },
+          { "item_id": "ore_cast_iron", "count": 4 },
+          { "item_id": "ore_steel_ingot", "count": 1 }
+        ]},
+        { "from": 4, "to": 5, "inputs": [
+          { "item_id": "ore_iron_raw", "count": 8 },
+          { "item_id": "ore_cast_iron", "count": 5 },
+          { "item_id": "ore_steel_ingot", "count": 2 }
+        ]}
+      ]
+    }
+  }
+}

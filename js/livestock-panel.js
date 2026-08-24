@@ -10,6 +10,7 @@
   var selectedAnimalUid = null;
   var selectedZoneId = null;
   var feedbackMsg = null;
+  var selectedModuleId = null;
 
   function getLivestockLevel() {
     // MVP：默认 90 展示完整信息；后续接 InventoryEquipment.skills.survival_livestock.level
@@ -359,10 +360,24 @@
     var armHtml = Object.keys(armNames).map(function (aid) {
       var slots = (aid === 'axis') ? { slot1: st.axis.slot1, slot2: st.axis.slot2 } : st.arms[aid];
       var slotHtml = Object.keys(slots).map(function (sk) {
-        var mod = slots[sk];
-        var m = mod ? window.LivestockState.getModule(mod) : null;
-        return '<div class="module-slot' + (mod ? ' filled' : '') + '"><span class="slot-key">' + (aid === 'axis' ? ('位' + sk.replace('slot', '')) : armSlotLabels[sk]) + '</span>' +
-          '<span class="slot-val">' + (m ? m.name : '空') + '</span></div>';
+        var inst = slots[sk];
+        var mid = inst && inst.module_id;
+        var m = mid ? window.LivestockState.getModule(mid) : null;
+        var label = (aid === 'axis') ? ('位' + sk.replace('slot', '')) : armSlotLabels[sk];
+        if (m) {
+          var upgrading = inst.upgrading_remaining > 0;
+          var lvText = 'Lv' + inst.level + (upgrading ? ' · 升级中 ' + inst.upgrading_remaining + 't' : '');
+          return '<div class="module-slot filled" data-arm="' + aid + '" data-slot="' + sk + '">' +
+            '<span class="slot-key">' + label + '</span>' +
+            '<span class="slot-val">' + m.name + ' ' + lvText + '</span>' +
+            '<span class="slot-actions">' +
+            '<button type="button" class="lv-btn" data-upgrade="' + aid + '|' + sk + '">升级</button>' +
+            '<button type="button" class="lv-btn" data-dismount="' + aid + '|' + sk + '">拆</button>' +
+            '</span></div>';
+        }
+        return '<div class="module-slot empty-slot" data-arm="' + aid + '" data-slot="' + sk + '">' +
+          '<span class="slot-key">' + label + '</span>' +
+          '<span class="slot-val">' + (selectedModuleId ? '点此装配' : '空') + '</span></div>';
       }).join('');
       return '<div class="arm-card"><div class="arm-card-title">' + armNames[aid] + '</div><div class="arm-slots">' + slotHtml + '</div></div>';
     }).join('');
@@ -372,18 +387,108 @@
     var modList = Object.keys(mods).map(function (k) { return mods[k]; })
       .sort(function (a, b) { return (tierOrder[a.layer] - tierOrder[b.layer]) || a.name.localeCompare(b.name, 'zh'); })
       .map(function (m) {
-        return '<div class="module-card" data-module="' + m.module_id + '">' +
+        var sel = selectedModuleId === m.module_id ? ' selected' : '';
+        var step = window.LivestockState.getBuildStep(m.tier, 1);
+        var cost = step && step.inputs ? step.inputs.map(function (i) { return i.item_id + '×' + i.count; }).join(' ') : '';
+        return '<div class="module-card' + sel + '" data-module="' + m.module_id + '">' +
           '<span class="module-ico">' + moduleIcon(m.module_id) + '</span>' +
           '<span class="module-name">' + m.name + '</span>' +
-          '<span class="module-tier">' + m.layer + ' · ' + (window.LivestockState.getState() && false ? '' : '') + tierLabel(m.tier) + '</span>' +
-          '<span class="module-desc">' + m.desc + '</span></div>';
+          '<span class="module-tier">' + m.layer + ' · ' + tierLabel(m.tier) + '</span>' +
+          '<span class="module-desc">' + m.desc + '</span>' +
+          '<span class="module-cost">建造：' + (cost || '—') + '</span></div>';
       }).join('');
 
     box.innerHTML =
-      '<div class="module-left"><h3 class="section-title">装置模块位</h3>' + armHtml + '</div>' +
+      '<div class="module-left"><h3 class="section-title">装置模块位（点模块库选中，再点空位装配）</h3>' + armHtml + '</div>' +
       '<div class="module-right"><h3 class="section-title">模块库</h3><div class="module-list">' + modList + '</div></div>';
+
+    bindModuleButtons();
   }
   function tierLabel(t) { return { small: '小型', medium: '中型', large: '大型', axis: '轴心' }[t] || t; }
+
+  function reasonText(r) {
+    var map = {
+      unknown_module: '未知模块', unknown_arm: '未知位置', axis_slot_mismatch: '轴心位不匹配',
+      slot_mismatch: '该模块不能装在此面', inner_occupied: '内部空间已被占用', slot_occupied: '该位已有模块',
+      lack_material: '材料不足', slot_empty: '该位为空', upgrading: '升级中', max_level: '已满级'
+    };
+    var base = map[r.reason] || r.reason;
+    if (r.reason === 'lack_material') {
+      base += '（' + r.item_id + ' 需 ' + r.need + '，现有 ' + (r.have || 0) + '）';
+    }
+    return base;
+  }
+
+  function doBuild(armId, slotKey, moduleId) {
+    var m = window.LivestockState.getModule(moduleId);
+    var r = window.LivestockState.buildModule(armId, slotKey, moduleId);
+    if (r.ok) {
+      feedbackMsg = '已装配 ' + (m ? m.name : moduleId);
+      logMsg('装配模块 ' + (m ? m.name : moduleId), 'success');
+    } else {
+      feedbackMsg = '装配失败：' + reasonText(r);
+      logMsg('装配失败：' + reasonText(r), 'warn');
+    }
+    selectedModuleId = null;
+    render();
+  }
+
+  function doDismount(armId, slotKey) {
+    var r = window.LivestockState.dismountModule(armId, slotKey);
+    if (r.ok) {
+      feedbackMsg = '已拆卸（材料不退还）';
+      logMsg('拆卸模块（材料不退还）', 'info');
+    } else {
+      feedbackMsg = '拆卸失败：' + reasonText(r);
+    }
+    render();
+  }
+
+  function doUpgrade(armId, slotKey) {
+    var r = window.LivestockState.startUpgrade(armId, slotKey);
+    if (r.ok) {
+      feedbackMsg = '开始升级（工程 ' + r.ticks + ' tick）';
+      logMsg('开始模块升级（工程 ' + r.ticks + ' tick）', 'success');
+    } else {
+      feedbackMsg = '升级失败：' + reasonText(r);
+      logMsg('升级失败：' + reasonText(r), 'warn');
+    }
+    render();
+  }
+
+  function bindModuleButtons() {
+    var cards = document.querySelectorAll('#livestock-module-content .module-card');
+    for (var i = 0; i < cards.length; i++) {
+      cards[i].addEventListener('click', function () {
+        selectedModuleId = this.getAttribute('data-module');
+        feedbackMsg = '已选中模块，点击左侧空位装配';
+        render();
+      });
+    }
+    var empties = document.querySelectorAll('#livestock-module-content .module-slot.empty-slot');
+    for (var j = 0; j < empties.length; j++) {
+      empties[j].addEventListener('click', function () {
+        if (!selectedModuleId) return;
+        doBuild(this.getAttribute('data-arm'), this.getAttribute('data-slot'), selectedModuleId);
+      });
+    }
+    var dismounts = document.querySelectorAll('#livestock-module-content [data-dismount]');
+    for (var k = 0; k < dismounts.length; k++) {
+      dismounts[k].addEventListener('click', function (e) {
+        e.stopPropagation();
+        var p = this.getAttribute('data-dismount').split('|');
+        doDismount(p[0], p[1]);
+      });
+    }
+    var upgrades = document.querySelectorAll('#livestock-module-content [data-upgrade]');
+    for (var m2 = 0; m2 < upgrades.length; m2++) {
+      upgrades[m2].addEventListener('click', function (e) {
+        e.stopPropagation();
+        var p = this.getAttribute('data-upgrade').split('|');
+        doUpgrade(p[0], p[1]);
+      });
+    }
+  }
 
   /* ---------- 产出 ---------- */
   function renderProducts(st, lv) {

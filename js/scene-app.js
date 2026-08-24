@@ -708,7 +708,8 @@
             fetch(base + 'warehouse-upgrades.json').then(function (r) { return r.ok ? r.json() : null; }).catch(function () { return null; }),
             fetch(base + 'livestock-species.json').then(function (r) { return r.ok ? r.json() : { species: {} }; }).catch(function () { return { species: {} }; }),
             fetch(base + 'livestock-modules.json').then(function (r) { return r.ok ? r.json() : { modules: {} }; }).catch(function () { return { modules: {} }; }),
-            fetch(base + 'livestock-perks.json').then(function (r) { return r.ok ? r.json() : { perks: {} }; }).catch(function () { return { perks: {} }; })
+            fetch(base + 'livestock-perks.json').then(function (r) { return r.ok ? r.json() : { perks: {} }; }).catch(function () { return { perks: {} }; }),
+            fetch(base + 'livestock-build-costs.json').then(function (r) { return r.ok ? r.json() : { costs: {} }; }).catch(function () { return { costs: {} }; })
         ]).then(function (arr) {
             if (!arr[0]) throw new Error('[SceneApp] ui_text_zhCN.json missing');
             if (!window.UIText || typeof window.UIText.setDict !== 'function') throw new Error('[SceneApp] UIText module missing');
@@ -815,7 +816,8 @@
                 window.LivestockState.setConfig(
                     (arr[31] && arr[31].species) || {},
                     (arr[32] && arr[32].modules) || {},
-                    (arr[33] && arr[33].perks) || {}
+                    (arr[33] && arr[33].perks) || {},
+                    (arr[34] && arr[34].costs) || {}
                 );
             }
             if (window.AgricultureMap && typeof window.AgricultureMap.bindEnv === 'function') {

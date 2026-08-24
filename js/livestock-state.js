@@ -10,6 +10,7 @@
   var SPECIES = {};
   var MODULES = {};
   var PERKS = {};
+  var BUILD_COSTS = {};
   var state = null;
   var uidSeq = 1;
 
@@ -24,10 +25,11 @@
     return 'livestock_' + (uidSeq++);
   }
 
-  function setConfig(species, modules, perks) {
+  function setConfig(species, modules, perks, buildCosts) {
     SPECIES = species || {};
     MODULES = modules || {};
     PERKS = perks || {};
+    BUILD_COSTS = buildCosts || {};
   }
 
   function getSpecies(speciesId) { return SPECIES[speciesId] || null; }
@@ -37,12 +39,29 @@
   function allModules() { return MODULES; }
   function allPerks() { return PERKS; }
 
-  // 鸡笼动物默认归属：装鸡笼（inner === 'coop'）的臂
+  // 鸡笼动物默认归属：装鸡笼（inner 模块实例的 module_id === 'coop'）的臂
   function findCoopArm(arms) {
     for (var k in arms) {
-      if (arms[k] && arms[k].inner === 'coop') return k;
+      if (arms[k] && getSlotModuleId(arms[k].inner) === 'coop') return k;
     }
     return 'arm1';
+  }
+
+  // 模块实例：{ module_id, level, upgrading_remaining }
+  function makeModuleInstance(moduleId) {
+    return { module_id: moduleId, level: 1, upgrading_remaining: 0 };
+  }
+  function getSlotModuleId(slot) {
+    if (!slot) return null;
+    return typeof slot === 'string' ? slot : slot.module_id;
+  }
+  function normalizeModuleSlot(slot) {
+    if (!slot) return null;
+    if (typeof slot === 'string') return { module_id: slot, level: 1, upgrading_remaining: 0 };
+    if (slot.module_id == null) return null;
+    if (slot.level == null) slot.level = 1;
+    if (slot.upgrading_remaining == null) slot.upgrading_remaining = 0;
+    return slot;
   }
 
   function makeAnimal(speciesId, gender, locType, locId, opts) {
@@ -72,8 +91,8 @@
 
   function initDemoState() {
     var arms = {
-      arm1: { inner: 'coop', front: null, bottom: 'sprinkler', top: null, cw_side: null, ccw_side: null },
-      arm2: { inner: null, front: null, bottom: null, top: null, cw_side: 'feed_trough', ccw_side: null },
+      arm1: { inner: makeModuleInstance('coop'), front: null, bottom: makeModuleInstance('sprinkler'), top: null, cw_side: null, ccw_side: null },
+      arm2: { inner: null, front: null, bottom: null, top: null, cw_side: makeModuleInstance('feed_trough'), ccw_side: null },
       arm3: { inner: null, front: null, bottom: null, top: null, cw_side: null, ccw_side: null },
       arm4: { inner: null, front: null, bottom: null, top: null, cw_side: null, ccw_side: null }
     };
@@ -94,7 +113,7 @@
         arm4: ['z4', 'z1']
       },
       arms: arms,
-      axis: { slot1: 'slaughter', slot2: null },
+      axis: { slot1: makeModuleInstance('slaughter'), slot2: null },
       animals: [
         // 区域动物（牛/羊/猪）
         makeAnimal('cattle', 'female', 'zone', 'z1', { perks: ['hardy'] }),
@@ -135,6 +154,21 @@
     if (!incoming || typeof incoming !== 'object') return;
     if (!incoming.arm_zones) {
       incoming.arm_zones = { arm1: ['z1', 'z2'], arm2: ['z2', 'z3'], arm3: ['z3', 'z4'], arm4: ['z4', 'z1'] };
+    }
+    // 模块位迁移：旧字符串 → 实例
+    if (incoming.arms && typeof incoming.arms === 'object') {
+      for (var ak in incoming.arms) {
+        var arm = incoming.arms[ak];
+        if (!arm || typeof arm !== 'object') continue;
+        for (var sk in arm) {
+          arm[sk] = normalizeModuleSlot(arm[sk]);
+        }
+      }
+    }
+    if (incoming.axis && typeof incoming.axis === 'object') {
+      for (var xk in incoming.axis) {
+        incoming.axis[xk] = normalizeModuleSlot(incoming.axis[xk]);
+      }
     }
     var coopArm = findCoopArm(incoming.arms || {});
     if (Array.isArray(incoming.animals)) {
@@ -241,6 +275,136 @@
     return { ok: true, items: items };
   }
 
+  /* ================= 模块装配 / 拆卸 / 升级 ================= */
+
+  var ARM_SLOT_KEYS = ['inner', 'front', 'bottom', 'top', 'cw_side', 'ccw_side'];
+
+  function getArmOrAxis(armId) {
+    var st = ensureState();
+    if (armId === 'axis') return { container: st.axis, isAxis: true };
+    if (st.arms && st.arms[armId]) return { container: st.arms[armId], isAxis: false };
+    return null;
+  }
+
+  // 检查模块能否装到某位（占面/互斥）
+  function canBuildModule(armId, slotKey, moduleId) {
+    var m = getModule(moduleId);
+    if (!m) return { ok: false, reason: 'unknown_module' };
+    var holder = getArmOrAxis(armId);
+    if (!holder) return { ok: false, reason: 'unknown_arm' };
+
+    if (holder.isAxis) {
+      // 轴心：slot1/slot2 必须匹配模块的 axis_slot
+      var axisNum = parseInt(String(slotKey).replace('slot', ''), 10);
+      if (m.axis_slot !== axisNum) return { ok: false, reason: 'axis_slot_mismatch' };
+    } else {
+      // 臂：模块占面必须含该 slot
+      if (!m.slots || !m.slots[slotKey]) return { ok: false, reason: 'slot_mismatch' };
+      // 内部空间互斥
+      if (m.slots.inner && holder.container.inner) return { ok: false, reason: 'inner_occupied' };
+    }
+
+    if (holder.container[slotKey]) return { ok: false, reason: 'slot_occupied' };
+    return { ok: true };
+  }
+
+  function getBuildStep(tier, fromLevel) {
+    var tc = (BUILD_COSTS && BUILD_COSTS.costs && BUILD_COSTS.costs[tier]) || null;
+    if (!tc || !Array.isArray(tc.steps)) return null;
+    for (var i = 0; i < tc.steps.length; i++) {
+      if (tc.steps[i].from === fromLevel) return tc.steps[i];
+    }
+    return null;
+  }
+
+  function getUpgradeTicks(tier) {
+    var tc = (BUILD_COSTS && BUILD_COSTS.costs && BUILD_COSTS.costs[tier]) || null;
+    return tc && tc.upgrade_ticks ? tc.upgrade_ticks : 20;
+  }
+
+  function tryConsumeMaterials(inputs) {
+    var IE = window.InventoryEquipment;
+    if (!IE) return { ok: false, reason: 'no_inventory' };
+    if (!inputs || !inputs.length) return { ok: true };
+    for (var i = 0; i < inputs.length; i++) {
+      var have = (typeof IE.countCarriedItemsByTemplateId === 'function')
+        ? IE.countCarriedItemsByTemplateId(inputs[i].item_id) : 0;
+      if (have < inputs[i].count) {
+        return { ok: false, reason: 'lack_material', item_id: inputs[i].item_id, need: inputs[i].count, have: have };
+      }
+    }
+    for (var j = 0; j < inputs.length; j++) {
+      if (typeof IE.removeCarriedItemsByTemplateId === 'function') {
+        IE.removeCarriedItemsByTemplateId(inputs[j].item_id, inputs[j].count);
+      }
+    }
+    return { ok: true };
+  }
+
+  // 装配（= 首次建造，消耗 Lv1→2 档材料）
+  function buildModule(armId, slotKey, moduleId) {
+    var m = getModule(moduleId);
+    if (!m) return { ok: false, reason: 'unknown_module' };
+    var chk = canBuildModule(armId, slotKey, moduleId);
+    if (!chk.ok) return chk;
+    var step = getBuildStep(m.tier, 1);
+    var consume = tryConsumeMaterials(step && step.inputs);
+    if (!consume.ok) return consume;
+    var holder = getArmOrAxis(armId);
+    holder.container[slotKey] = makeModuleInstance(moduleId);
+    return { ok: true };
+  }
+
+  // 拆卸（不退材料）
+  function dismountModule(armId, slotKey) {
+    var holder = getArmOrAxis(armId);
+    if (!holder) return { ok: false, reason: 'unknown_arm' };
+    var inst = holder.container[slotKey];
+    if (!inst) return { ok: false, reason: 'slot_empty' };
+    if (inst.upgrading_remaining > 0) return { ok: false, reason: 'upgrading' };
+    holder.container[slotKey] = null;
+    return { ok: true };
+  }
+
+  // 开始升级（消耗对应档材料 + 进入工程等待期）
+  function startUpgrade(armId, slotKey) {
+    var holder = getArmOrAxis(armId);
+    if (!holder) return { ok: false, reason: 'unknown_arm' };
+    var inst = holder.container[slotKey];
+    if (!inst) return { ok: false, reason: 'slot_empty' };
+    if (inst.level >= 5) return { ok: false, reason: 'max_level' };
+    if (inst.upgrading_remaining > 0) return { ok: false, reason: 'upgrading' };
+    var m = getModule(inst.module_id);
+    if (!m) return { ok: false, reason: 'unknown_module' };
+    var step = getBuildStep(m.tier, inst.level);
+    var consume = tryConsumeMaterials(step && step.inputs);
+    if (!consume.ok) return consume;
+    inst.upgrading_remaining = getUpgradeTicks(m.tier);
+    return { ok: true, ticks: inst.upgrading_remaining };
+  }
+
+  // 每 tick 推进升级工程
+  function tickUpgrades() {
+    var st = ensureState();
+    var containers = [];
+    if (st.arms) for (var ak in st.arms) containers.push(st.arms[ak]);
+    if (st.axis) containers.push(st.axis);
+    for (var c = 0; c < containers.length; c++) {
+      var cont = containers[c];
+      if (!cont || typeof cont !== 'object') continue;
+      for (var sk in cont) {
+        var inst = cont[sk];
+        if (!inst || typeof inst !== 'object') continue;
+        if (inst.upgrading_remaining > 0) {
+          inst.upgrading_remaining--;
+          if (inst.upgrading_remaining <= 0) {
+            inst.level = clamp(inst.level + 1, 1, 5);
+          }
+        }
+      }
+    }
+  }
+
   /* ================= tick 生态结算 ================= */
 
   var ZONE_NEXT = { z1: 'z2', z2: 'z3', z3: 'z4', z4: 'z1' };
@@ -264,6 +428,9 @@
 
   function advanceTick() {
     var st = ensureState();
+
+    // 0. 模块升级工程推进
+    tickUpgrades();
 
     // 1. 旋转倒计时
     st.rotation_ticks_remaining--;
@@ -448,6 +615,11 @@
     animalsInCoop: animalsInCoop,
     collectProduct: collectProduct,
     slaughterAnimal: slaughterAnimal,
+    buildModule: buildModule,
+    dismountModule: dismountModule,
+    startUpgrade: startUpgrade,
+    canBuildModule: canBuildModule,
+    getBuildStep: getBuildStep,
     advanceTick: advanceTick
   };
 })();
