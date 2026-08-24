@@ -399,7 +399,7 @@
       .map(function (m) {
         var sel = selectedModuleId === m.module_id ? ' selected' : '';
         var step = window.LivestockState.getBuildStep(m.tier, 1);
-        var cost = step && step.inputs ? step.inputs.map(function (i) { return i.item_id + '×' + i.count; }).join(' ') : '';
+        var cost = step && step.inputs ? step.inputs.map(function (i) { return itemDisplayName(i.item_id) + '×' + i.count; }).join(' ') : '';
         var faces = (m.axis_slot != null)
           ? ('轴心位' + m.axis_slot)
           : window.LivestockState.expandModuleSlots(m).map(function (s) { return slotNames[s] || s; }).join('+');
@@ -430,6 +430,18 @@
     return slots.indexOf(slotKey) >= 0;
   }
 
+  function itemDisplayName(itemId) {
+    var IE = window.InventoryEquipment;
+    if (!IE || typeof IE.getItemTemplate !== 'function') return itemId;
+    var tpl = IE.getItemTemplate(itemId);
+    if (!tpl) return itemId;
+    if (typeof IE.getDisplayName === 'function') {
+      var char = window.SceneCtx && window.SceneCtx.character;
+      return String(IE.getDisplayName(tpl, null, char) || tpl.sn || itemId);
+    }
+    return tpl.sn || itemId;
+  }
+
   function reasonText(r) {
     var map = {
       unknown_module: '未知模块', unknown_arm: '未知位置', axis_slot_mismatch: '轴心位不匹配',
@@ -439,7 +451,7 @@
     };
     var base = map[r.reason] || r.reason;
     if (r.reason === 'lack_material') {
-      base += '（' + r.item_id + ' 需 ' + r.need + '，现有 ' + (r.have || 0) + '）';
+      base += '（' + itemDisplayName(r.item_id) + ' 需 ' + r.need + '，现有 ' + (r.have || 0) + '）';
     }
     return base;
   }
