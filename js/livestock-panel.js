@@ -112,11 +112,14 @@
       var z = st.zones[zoneId] || {};
       var animals = st.animals.filter(function (a) { return a.location_type === 'zone' && a.zone_id === zoneId && !a.dead; });
       var eco = [];
-      if (lv >= 10) eco.push('🌿 ' + grassStage(z.grass_height));
-      if (lv >= 20) eco.push('☢️ ' + pollutionStage(z.pollution));
-      if (lv >= 30) eco.push('🪨 ' + compactionStage(z.compaction));
+      // 生态阶段（三段式模糊提示）始终可见，玩家任何等级都能感知区域状态
+      eco.push('🌿 ' + grassStage(z.grass_height));
+      eco.push('☢️ ' + pollutionStage(z.pollution));
+      eco.push('🪨 ' + compactionStage(z.compaction));
+      // 精确数值按等级解锁
       if (lv >= 40) eco.push('草 ' + (z.grass_height == null ? '-' : z.grass_height.toFixed(2)) + 'm');
-      if (lv >= 60) eco.push('板结 ' + (z.compaction == null ? '-' : Math.round(z.compaction)));
+      if (lv >= 50) eco.push('☢️ ' + (z.pollution == null ? '-' : Math.round(z.pollution)) + '%');
+      if (lv >= 60) eco.push('🪨 ' + (z.compaction == null ? '-' : Math.round(z.compaction)));
       var ecoHtml = eco.map(function (e) { return '<div class="eco-line">' + e + '</div>'; }).join('');
       var ecoText = ecoHtml || '<div class="eco-line">生态信息未解锁</div>';
       var sel = selectedZoneId === zoneId ? ' selected' : '';
