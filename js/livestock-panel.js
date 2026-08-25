@@ -136,20 +136,20 @@
     }
     function armHtml(armId, vertical) {
       var a = st.arms[armId] || {};
-      var mods = [a.inner, a.front, a.bottom, a.top, a.cw_side, a.ccw_side].filter(Boolean);
-      var icons = mods.map(function (m) { return moduleIcon(m); }).join('');
-      if (!icons) icons = '➖';
+      var mods = [a.inner, a.front, a.bottom, a.top, a.cw_side, a.ccw_side].filter(function (inst) { return inst && !inst.shadow; });
+      var chips = mods.map(moduleChip).join('');
+      if (!chips) chips = '<span class="ov-module-chip ov-module-empty">空</span>';
       var lbl = { arm1: '一号臂', arm2: '二号臂', arm3: '三号臂', arm4: '四号臂' }[armId];
       var chickens = st.animals.filter(function (x) { return x.location_type === 'coop' && x.arm_id === armId && !x.dead; });
       var chickenHtml = chickens.length ? '<div class="coop-animals">' + chickens.map(function (c) { return animalChip(c, true); }).join('') + '</div>' : '';
       return '<div class="arm-cell ' + (vertical ? 'arm-vertical' : 'arm-horizontal') + '" data-arm="' + armId + '">' +
-        '<span class="arm-label">' + lbl + '</span><div class="module-slots">' + icons + '</div>' + chickenHtml + '</div>';
+        '<span class="arm-label">' + lbl + '</span><div class="module-slots">' + chips + '</div>' + chickenHtml + '</div>';
     }
     function axisHtml() {
-      var mods = [st.axis.slot1, st.axis.slot2].filter(Boolean);
-      var icons = mods.map(moduleIcon).join('') || '➖';
+      var mods = [st.axis.slot1, st.axis.slot2].filter(function (inst) { return inst && !inst.shadow; });
+      var chips = mods.map(moduleChip).join('') || '<span class="ov-module-chip ov-module-empty">空</span>';
       return '<div class="axis-cell" data-arm="axis"><span class="arm-label">轴心</span>' +
-        '<div class="module-slots">' + icons + '</div>' +
+        '<div class="module-slots">' + chips + '</div>' +
         '<div class="rotate-indicator">⟳</div></div>';
     }
 
@@ -178,6 +178,15 @@
     if (!m) return '➖';
     var map = { feed_trough: '🥣', sprinkler: '🚿', clean_brush: '🧹', auto_collect: '🤖', coop: '🐔', feed_preprocess: '🌾', tiller: '⛏️', seeder: '🌱', manure_net: '🕸️', pasture_arm: '🌿', heal: '💉', feed_refine: '⚙️', link_schedule: '🔗', waste_heat_recycle: '♻️', slaughter: '🔪', warehouse_hub: '📦', climate_control: '🌤️' };
     return map[m.effect_type] || '⚙️';
+  }
+  function moduleChip(inst) {
+    var m = inst && inst.module_id ? window.LivestockState.getModule(inst.module_id) : null;
+    if (!m) return '';
+    var upgrading = inst.upgrading_remaining > 0;
+    var cls = 'ov-module-chip' + (upgrading ? ' upgrading' : '');
+    var lvText = 'Lv' + inst.level + (upgrading ? '⏳' : '');
+    return '<span class="' + cls + '" title="' + m.name + ' Lv' + inst.level + (upgrading ? '（升级中 ' + inst.upgrading_remaining + 't）' : '') + ' · ' + m.desc + '">' +
+      moduleIcon(inst.module_id) + ' ' + m.name + ' ' + lvText + '</span>';
   }
   function ecoOverlayClass(zoneId, z) {
     var cls = [];

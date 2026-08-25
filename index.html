@@ -3059,6 +3059,13 @@
             position: relative; cursor: pointer; box-shadow: inset 0 0 15px rgba(211,160,96,0.2);
         }
         #modal-livestock .module-slots { display: flex; gap: 5px; flex-wrap: wrap; justify-content: center; padding: 0 8px; font-size: 14px; }
+        #modal-livestock .ov-module-chip {
+            display: inline-flex; align-items: center; gap: 3px; font-size: 11px; line-height: 1.4;
+            color: #d3a060; background: rgba(211,160,96,0.10); border: 1px solid #5a4a33; border-radius: 4px; padding: 1px 6px;
+            white-space: nowrap;
+        }
+        #modal-livestock .ov-module-chip.ov-module-empty { color: #6b6560; background: transparent; border-style: dashed; border-color: #3a3a35; }
+        #modal-livestock .ov-module-chip.upgrading { border-color: #ff8c00; color: #ff8c00; }
         #modal-livestock .arm-label { font-size: 10px; color: #8e8e8e; }
         #modal-livestock .rotate-indicator {
             position: absolute; bottom: -6px; right: -6px; color: #d3a060; background: #1a1512; border-radius: 50%;
