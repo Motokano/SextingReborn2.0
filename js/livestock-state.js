@@ -62,6 +62,45 @@
     return mult;
   }
 
+  // 机制类 Perk 判定（§8.4）：跨种不生效但保留
+  function hasPerk(animal, perkId) {
+    if (!animal || !Array.isArray(animal.perks) || animal.perks.indexOf(perkId) < 0) return false;
+    var pdef = getPerk(perkId);
+    if (!pdef) return false;
+    if (pdef.species && pdef.species.indexOf(animal.species_id) < 0) return false;
+    if (pdef.requires && pdef.requires.gender && animal.gender !== pdef.requires.gender) return false;
+    return true;
+  }
+
+  // §8.4 相邻区：与某区共享机械臂的所有其他区（如 z1 ↔ arm1(z1,z2) ↔ z2、arm4(z4,z1) ↔ z4）
+  function adjacentZones(st, zoneId) {
+    var out = [];
+    var az = st.arm_zones || {};
+    for (var ak in az) {
+      var zs = az[ak];
+      if (!Array.isArray(zs) || zs.indexOf(zoneId) < 0) continue;
+      for (var i = 0; i < zs.length; i++) {
+        if (zs[i] !== zoneId && out.indexOf(zs[i]) < 0) out.push(zs[i]);
+      }
+    }
+    return out;
+  }
+
+  function isMature(a, sp) {
+    return !(sp.growth && sp.growth.maturity_ticks != null && (a.age_ticks || 0) < sp.growth.maturity_ticks);
+  }
+
+  // §8.4 标准怀孕条件（不含性别/公畜存在性）
+  function canConceive(a, sp, zone) {
+    if (!sp.reproduction) return false;
+    if (a.pregnant) return false;
+    if ((a.reproduction_cooldown || 0) > 0) return false;
+    if (a.hp <= 90) return false;
+    if (!isMature(a, sp)) return false;
+    if (zone && zone.pollution >= 30) return false;
+    return true;
+  }
+
   // 按稀有度权重从物种 Perk 池抽 1 个
   function pickPerkByRarity(pool) {
     if (!pool || !pool.length) return null;
@@ -171,7 +210,10 @@
       arm_id: locType === 'coop' ? locId : null,
       dead: false,
       death_cause: null,
-      starvation_ticks: 0
+      starvation_ticks: 0,
+      earth_cry_cooldown: 0,
+      crossbreed_cooldown: 0,
+      pheromone_cooldown: 0
     };
     return a;
   }
@@ -271,6 +313,9 @@
         if (a.dead == null) a.dead = false;
         if (a.death_cause == null) a.death_cause = null;
         if (a.starvation_ticks == null) a.starvation_ticks = 0;
+        if (a.earth_cry_cooldown == null) a.earth_cry_cooldown = 0;
+        if (a.crossbreed_cooldown == null) a.crossbreed_cooldown = 0;
+        if (a.pheromone_cooldown == null) a.pheromone_cooldown = 0;
         if (!a.cooldowns) a.cooldowns = {};
         if (a.reproduction_cooldown == null) a.reproduction_cooldown = 0;
         // 旧档迁移：无 location_type 的默认为 zone；鸡迁移到鸡笼
@@ -781,6 +826,63 @@
     };
   }
 
+  // §8.4 每轮旋转前结算的机制 Perk（地鸣 / 越界播种）
+  function tickRotationPerks(st) {
+    var zones = st.zones || {};
+    st.animals.forEach(function (male) {
+      if (male.dead || male.location_type !== 'zone') return;
+      var sp = getSpecies(male.species_id);
+      if (!sp || !sp.reproduction) return;
+
+      // 地鸣（§8.4）：公畜所在区域共享机械臂的相邻两区，所有同物种成年母畜独立过一遍怀孕判定；判定后公畜冷却 10000 tick
+      if (male.gender === 'male' && hasPerk(male, 'earth_cry') && (male.earth_cry_cooldown || 0) <= 0) {
+        var adj = adjacentZones(st, male.zone_id);
+        var acted = false;
+        // 每轮一次结算 → 概率用「一轮等效概率」= 1-(1-p)^1000（羊≈31%、猪≈39%、牛≈18%）
+        var baseP = sp.reproduction.base_pregnancy_rate_per_tick || 0.0002;
+        var roundP = 1 - Math.pow(1 - baseP, 1000);
+        adj.forEach(function (zid) {
+          var zone = zones[zid];
+          if (!zone || zone.pollution >= 30) return;
+          st.animals.forEach(function (female) {
+            if (female.dead || female.uid === male.uid) return;
+            if (female.species_id !== male.species_id) return;
+            if (female.location_type !== 'zone' || female.zone_id !== zid) return;
+            if (female.gender !== 'female' && female.gender !== 'hermaphrodite') return;
+            if (!canConceive(female, sp, zone)) return;
+            acted = true;
+            var pregRate = roundP * getModifier(female, 'fertility_mult');
+            if (Math.random() < pregRate) {
+              female.pregnant = { father_uid: male.uid, remaining_ticks: sp.reproduction.pregnancy_ticks };
+            }
+          });
+        });
+        if (acted) male.earth_cry_cooldown = 10000;
+      }
+
+      // 越界播种（§8.4）：猪公 → 相邻两区成年母羊 15% 产猪崽（Perk 池从父猪+母羊合并）；成功后冷却 10000 tick
+      if (male.species_id === 'pig' && male.gender === 'male' && hasPerk(male, 'crossbreed_swine') && (male.crossbreed_cooldown || 0) <= 0) {
+        var adjZ = adjacentZones(st, male.zone_id);
+        var sheepSp = getSpecies('sheep');
+        adjZ.forEach(function (zid) {
+          var zone = zones[zid];
+          if (!zone || zone.pollution >= 30) return;
+          st.animals.forEach(function (ewe) {
+            if (ewe.dead || ewe.uid === male.uid) return;
+            if (ewe.species_id !== 'sheep') return;
+            if (ewe.location_type !== 'zone' || ewe.zone_id !== zid) return;
+            if (ewe.gender !== 'female') return;
+            if (!canConceive(ewe, sheepSp, zone)) return;
+            if (Math.random() < 0.15) {
+              ewe.pregnant = { father_uid: male.uid, remaining_ticks: sheepSp.reproduction.pregnancy_ticks, crossbreed: true };
+              male.crossbreed_cooldown = 10000;
+            }
+          });
+        });
+      }
+    });
+  }
+
   function advanceTick() {
     var st = ensureState();
 
@@ -793,6 +895,8 @@
     // 2. 旋转倒计时
     st.rotation_ticks_remaining--;
     if (st.rotation_ticks_remaining <= 0) {
+      // 旋转前结算机制 Perk（地鸣/越界播种，§8.4）
+      tickRotationPerks(st);
       rotateClockwise(st);
       st.rotation_ticks_remaining = st.rotation_total_ticks;
     }
@@ -921,6 +1025,11 @@
     // 产后冷却递减
     if ((a.reproduction_cooldown || 0) > 0) a.reproduction_cooldown--;
 
+    // 机制 Perk 冷却递减（地鸣/越界播种/信息素）
+    if ((a.earth_cry_cooldown || 0) > 0) a.earth_cry_cooldown--;
+    if ((a.crossbreed_cooldown || 0) > 0) a.crossbreed_cooldown--;
+    if ((a.pheromone_cooldown || 0) > 0) a.pheromone_cooldown--;
+
     // 怀孕推进
     if (a.pregnant) {
       a.pregnant.remaining_ticks--;
@@ -937,39 +1046,100 @@
   function tryReproduce(st, a, sp) {
     if (!sp.reproduction) return;
     if (a.gender !== 'female' && a.gender !== 'hermaphrodite') return;
-    if (sp.growth.maturity_ticks != null && (a.age_ticks || 0) < sp.growth.maturity_ticks) return;
-    if (a.pregnant) return;
-    if ((a.reproduction_cooldown || 0) > 0) return;
-    if (a.hp <= 90) return;
     var zone = st.zones[a.zone_id];
-    if (!zone || zone.pollution >= 30) return;
-    var hasMale = st.animals.some(function (other) {
-      if (other.dead || other.uid === a.uid) return false;
-      if (other.species_id !== a.species_id) return false;
-      if (other.location_type !== 'zone' || other.zone_id !== a.zone_id) return false;
-      if (other.gender !== 'male' && other.gender !== 'hermaphrodite') return false;
-      if (sp.growth.maturity_ticks != null && (other.age_ticks || 0) < sp.growth.maturity_ticks) return false;
-      if (other.hp <= 90) return false;
-      return true;
-    });
-    if (!hasMale) return;
-    // 找同区公畜作为父本（遗传用）
-    var father = null;
-    for (var fi = 0; fi < st.animals.length; fi++) {
-      var cand = st.animals[fi];
-      if (cand.dead || cand.uid === a.uid || cand.species_id !== a.species_id) continue;
-      if (cand.location_type !== 'zone' || cand.zone_id !== a.zone_id) continue;
-      if (cand.gender !== 'male' && cand.gender !== 'hermaphrodite') continue;
-      if (sp.growth.maturity_ticks != null && (cand.age_ticks || 0) < sp.growth.maturity_ticks) continue;
-      if (cand.hp <= 90) continue;
-      father = cand;
+    if (!canConceive(a, sp, zone)) return;
+
+    // 雌雄同体（§8.4）：可与自己配对（父本=自己）
+    var selfMale = a.gender === 'hermaphrodite';
+
+    // 同区公畜候选
+    function maleCandidates(sameZone) {
+      var list = [];
+      st.animals.forEach(function (other) {
+        if (other.dead || other.uid === a.uid) return;
+        if (other.species_id !== a.species_id) return;
+        if (other.location_type !== 'zone') return;
+        if (sameZone && other.zone_id !== a.zone_id) return;
+        if (other.gender !== 'male' && other.gender !== 'hermaphrodite') return;
+        if (!isMature(other, sp)) return;
+        if (other.hp <= 90) return;
+        list.push(other);
+      });
+      return list;
+    }
+
+    // 标准怀孕判定（按 fertility_mult）
+    function rollPregnancy(father) {
+      var pregRate = (sp.reproduction.base_pregnancy_rate_per_tick || 0.0002) * getModifier(a, 'fertility_mult');
+      if (Math.random() < pregRate) {
+        a.pregnant = { father_uid: father ? father.uid : null, remaining_ticks: sp.reproduction.pregnancy_ticks };
+        return true;
+      }
+      return false;
+    }
+
+    // 孤雌（§8.4）：不需要公畜即可自主受孕
+    if (hasPerk(a, 'parthenogenesis')) {
+      if (rollPregnancy(null)) {
+        triggerChainPregnancy(st, a, sp);
+      }
+      return;
+    }
+
+    // 常规：同区公畜
+    var same = maleCandidates(true);
+    var father = same.length ? same[0] : null;
+    if (!father && selfMale) father = a; // 雌雄同体自配
+    if (father) {
+      if (rollPregnancy(father)) {
+        triggerChainPregnancy(st, a, sp);
+      }
+      return;
+    }
+
+    // 信息素（§8.4）：同区无公畜时，邻区公畜以 50% 概率纳入候选；每轮每只母畜限一次（冷却=一轮）
+    if (hasPerk(a, 'pheromone') && (a.pheromone_cooldown || 0) <= 0) {
+      var adj = adjacentZones(st, a.zone_id);
+      var adjFather = null;
+      // 邻区中的同物种公畜
+      for (var ai = 0; ai < adj.length && !adjFather; ai++) {
+        var cands = maleCandidates(false);
+        for (var ci = 0; ci < cands.length; ci++) {
+          if (cands[ci].zone_id === adj[ai]) { adjFather = cands[ci]; break; }
+        }
+      }
+      if (adjFather && Math.random() < 0.5) {
+        if (rollPregnancy(adjFather)) {
+          triggerChainPregnancy(st, a, sp);
+        }
+      }
+      a.pheromone_cooldown = 1000; // 每轮一次
+    }
+  }
+
+  // 连坐（§8.4）：持有者成功怀孕时，同区同物种其他成年母畜 10% 同时怀孕（父本取同区公畜）；连坐怀孕的不再触发连坐
+  function triggerChainPregnancy(st, mother, sp) {
+    if (!hasPerk(mother, 'chain_pregnancy')) return;
+    var chainFather = null;
+    for (var i = 0; i < st.animals.length; i++) {
+      var c = st.animals[i];
+      if (c.dead || c.uid === mother.uid || c.species_id !== mother.species_id) continue;
+      if (c.location_type !== 'zone' || c.zone_id !== mother.zone_id) continue;
+      if (c.gender !== 'male' && c.gender !== 'hermaphrodite') continue;
+      if (!isMature(c, sp) || c.hp <= 90) continue;
+      chainFather = c;
       break;
     }
-    if (!father) return;
-    var pregRate = (sp.reproduction.base_pregnancy_rate_per_tick || 0.0002) * getModifier(a, 'fertility_mult');
-    if (Math.random() < pregRate) {
-      a.pregnant = { father_uid: father.uid, remaining_ticks: sp.reproduction.pregnancy_ticks };
-    }
+    st.animals.forEach(function (other) {
+      if (other.dead || other.uid === mother.uid) return;
+      if (other.species_id !== mother.species_id) return;
+      if (other.location_type !== 'zone' || other.zone_id !== mother.zone_id) return;
+      if (other.gender !== 'female' && other.gender !== 'hermaphrodite') return;
+      if (!canConceive(other, sp, st.zones[other.zone_id])) return;
+      if (Math.random() < 0.1) {
+        other.pregnant = { father_uid: chainFather ? chainFather.uid : null, remaining_ticks: sp.reproduction.pregnancy_ticks, chained: true };
+      }
+    });
   }
 
   // 尸体污染（§3.3）：尸体不清理则持续向所在区域加污染
@@ -1076,20 +1246,39 @@
         if (st.animals[f].uid === mother.pregnant.father_uid) { father = st.animals[f]; break; }
       }
     }
+    // 越界播种（§8.4）：猪公×羊母产猪崽，Perk 池从父猪+母羊合并抽取
+    var crossbreed = mother.pregnant && mother.pregnant.crossbreed === true;
+    var calfSpecies = crossbreed ? 'pig' : mother.species_id;
+    var calfSp = getSpecies(calfSpecies) || sp;
+    // 孤雌（§8.4）：后代全雌，父本为空 → 多一次随机补位
+    var partheno = !father && hasPerk(mother, 'parthenogenesis');
+    var inherited;
+    if (partheno) {
+      inherited = inheritPerks([], mother.perks || []);
+      var extra = pickPerkByRarity((calfSp && calfSp.perk_pool) || []);
+      if (extra && inherited.indexOf(extra) < 0) inherited.push(extra);
+      while (inherited.length > 4) inherited.pop();
+    } else {
+      inherited = inheritPerks(father ? father.perks : [], mother.perks || []);
+    }
     var litter = randInt(sp.reproduction.litter_size[0], sp.reproduction.litter_size[1]);
-    var inherited = inheritPerks(father ? father.perks : [], mother.perks || []);
     for (var i = 0; i < litter; i++) {
+      // 物种突变（§8.4）：持有者（猪）正常繁殖时猪崽 20% 变羊
+      var finalSpecies = calfSpecies;
+      var mutant = hasPerk(father, 'species_mutant') || hasPerk(mother, 'species_mutant');
+      if (mutant && calfSpecies === 'pig' && Math.random() < 0.2) finalSpecies = 'sheep';
+      var finalSp = getSpecies(finalSpecies) || calfSp;
       var calf = makeAnimal(
-        mother.species_id,
-        Math.random() < 0.5 ? 'male' : 'female',
+        finalSpecies,
+        partheno ? 'female' : (Math.random() < 0.5 ? 'male' : 'female'),
         'zone',
         mother.zone_id,
-        { weight_kg: sp.growth.birth_weight_kg, age_ticks: 0, satiety: 80, perks: inherited.slice() }
+        { weight_kg: finalSp.growth.birth_weight_kg, age_ticks: 0, satiety: 80, perks: inherited.slice() }
       );
       births.push(calf);
     }
-    // 产后冷却（= 产后冷却 tick）
-    mother.reproduction_cooldown = sp.reproduction.postpartum_cooldown_ticks || 0;
+    // 产后冷却（= 产后冷却 tick）；四季如春（§8.4）消除产后冷却
+    mother.reproduction_cooldown = hasPerk(mother, 'eternal_spring') ? 0 : (sp.reproduction.postpartum_cooldown_ticks || 0);
   }
 
   window.LivestockState = {
