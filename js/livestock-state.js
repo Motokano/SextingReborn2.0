@@ -1056,7 +1056,13 @@
     else drain = 0.05;
     if (drain > 0) {
       a.hp = clamp(a.hp - drain * getModifier(a, 'disease_resist_mult'), 0, 100);
-      if (a.hp <= 0) { a.dead = true; a.death_cause = 'disease'; }
+      if (a.hp <= 0) { a.dead = true; a.death_cause = 'disease'; return; }
+      // 即死判定（§5.4）：污染 > 90% 每 tick 0.1% 概率当场死亡，即使血量仍高
+      if (pollution > 90 && Math.random() < 0.001) {
+        a.dead = true;
+        a.death_cause = 'disease';
+        return;
+      }
     } else if (pollution < 30 && a.satiety > 70) {
       a.hp = clamp(a.hp + 0.02, 0, 100);
     }
