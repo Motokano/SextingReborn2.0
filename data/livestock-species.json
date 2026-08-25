@@ -89,9 +89,9 @@
         "starvation_dying_ticks": 1250
       },
       "graze": {
-        "edible_min_m": 0,
+        "edible_min_m": 0.1,
         "edible_max_m": 0.8,
-        "comfort_min_m": 0,
+        "comfort_min_m": 0.1,
         "comfort_max_m": 0.6,
         "comfort_rate_m_per_tick": 0.0003,
         "non_comfort_mult": 0.8,

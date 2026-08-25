@@ -170,7 +170,8 @@
       zone_id: locType === 'coop' ? null : locId,
       arm_id: locType === 'coop' ? locId : null,
       dead: false,
-      death_cause: null
+      death_cause: null,
+      starvation_ticks: 0
     };
     return a;
   }
@@ -269,6 +270,7 @@
       incoming.animals.forEach(function (a) {
         if (a.dead == null) a.dead = false;
         if (a.death_cause == null) a.death_cause = null;
+        if (a.starvation_ticks == null) a.starvation_ticks = 0;
         if (!a.cooldowns) a.cooldowns = {};
         if (a.reproduction_cooldown == null) a.reproduction_cooldown = 0;
         // 旧档迁移：无 location_type 的默认为 zone；鸡迁移到鸡笼
@@ -353,6 +355,7 @@
 
   // 屠宰动物，产出肉/器官/副产物。返回 { ok, items:[{item_id,count}], reason? }
   function slaughterAnimal(uid) {
+    var st = ensureState();
     var a = findAnimal(uid);
     if (!a || a.dead) return { ok: false, reason: 'not_found' };
     var sp = getSpecies(a.species_id);
@@ -365,9 +368,24 @@
     }
     (sl.offal_item_ids || []).forEach(function (id) { items.push({ item_id: id, count: 1 }); });
     (sl.byproduct_item_ids || []).forEach(function (id) { items.push({ item_id: id, count: 1 }); });
-    a.dead = true;
-    a.death_cause = 'slaughter';
+    // 屠宰即清（§3.3）：正常屠宰已即时产出肉皮骨，尸体不留场
+    var idx = st.animals.indexOf(a);
+    if (idx >= 0) st.animals.splice(idx, 1);
     return { ok: true, items: items };
+  }
+
+  // 清理尸体（病死/饿死/失血/老死），返回 { ok, cause? }
+  function cleanCorpse(uid) {
+    var st = ensureState();
+    for (var i = 0; i < st.animals.length; i++) {
+      var a = st.animals[i];
+      if (a.uid === uid && a.dead) {
+        var cause = a.death_cause || 'unknown';
+        st.animals.splice(i, 1);
+        return { ok: true, cause: cause };
+      }
+    }
+    return { ok: false, reason: 'not_found' };
   }
 
   /* ================= 饲料 ================= */
@@ -800,7 +818,10 @@
     }
     for (var b = 0; b < births.length; b++) st.animals.push(births[b]);
 
-    // 6. 清理本轮临时字段
+    // 6. 尸体持续污染（§3.3）
+    tickCorpses(st);
+
+    // 7. 清理本轮临时字段
     clearModuleTempFields();
   }
 
@@ -856,6 +877,20 @@
 
     // 饱腹下降（satiety_drain_mult）
     a.satiety = clamp(a.satiety - sp.satiety.drain_per_tick * getModifier(a, 'satiety_drain_mult'), 0, 100);
+
+    // 饿死链（§4.2/§5.4）：饱腹归零进入濒死倒计时，倒计时结束饿死；喂食可挽救
+    // 猪例外（§4.6）：拱地保底饱腹 10，不会饿死，只会瘦到皮包骨
+    if (a.species_id !== 'pig') {
+      if (a.satiety <= 0) {
+        a.starvation_ticks = (a.starvation_ticks || 0) + 1;
+        if (sp.satiety.starvation_dying_ticks && a.starvation_ticks >= sp.satiety.starvation_dying_ticks) {
+          a.dead = true;
+          a.death_cause = 'starvation';
+        }
+      } else {
+        a.starvation_ticks = 0;
+      }
+    }
 
     // 体重成长（牛/羊草饲、鸡虫子；猪长肉已在上方饲料分支）
     tickWeight(a, sp);
@@ -937,6 +972,28 @@
     }
   }
 
+  // 尸体污染（§3.3）：尸体不清理则持续向所在区域加污染
+  function tickCorpses(st) {
+    var rates = { disease: 0.006, starvation: 0.003, blood_loss: 0.002, old: 0.002 };
+    for (var i = 0; i < st.animals.length; i++) {
+      var a = st.animals[i];
+      if (!a.dead) continue;
+      var rate = rates[a.death_cause] != null ? rates[a.death_cause] : 0;
+      if (rate <= 0) continue;
+      if (a.location_type === 'coop' && a.arm_id) {
+        // 鸡尸体在鸡笼内，作用于该臂夹持两区（同鸡笼清污口径）
+        var zones = (st.arm_zones && st.arm_zones[a.arm_id]) || [];
+        for (var zi = 0; zi < zones.length; zi++) {
+          var cz = st.zones[zones[zi]];
+          if (cz) cz.pollution = clamp(cz.pollution + rate, 0, 100);
+        }
+      } else if (a.zone_id) {
+        var z = st.zones[a.zone_id];
+        if (z) z.pollution = clamp(z.pollution + rate, 0, 100);
+      }
+    }
+  }
+
   function tickCoopAnimal(st, a, sp) {
     // 鸡笼动物：鸡不吃草、不受区域疾病；吃虫子（鸡笼清污）+ 长肉 + 寿命
     var zones = (st.arm_zones && st.arm_zones[a.arm_id]) || [];
@@ -951,6 +1008,16 @@
       }
     }
     a.satiety = clamp(a.satiety - sp.satiety.drain_per_tick * getModifier(a, 'satiety_drain_mult'), 0, 100);
+    // 鸡饿死链（§4.2）：饱腹归零进入濒死倒计时
+    if (a.satiety <= 0) {
+      a.starvation_ticks = (a.starvation_ticks || 0) + 1;
+      if (sp.satiety.starvation_dying_ticks && a.starvation_ticks >= sp.satiety.starvation_dying_ticks) {
+        a.dead = true;
+        a.death_cause = 'starvation';
+      }
+    } else {
+      a.starvation_ticks = 0;
+    }
     tickWeight(a, sp);
     a.age_ticks = (a.age_ticks || 0) + 1;
     // 鸡寿命：15000 tick 自然死亡
@@ -1036,6 +1103,7 @@
     animalsInCoop: animalsInCoop,
     collectProduct: collectProduct,
     slaughterAnimal: slaughterAnimal,
+    cleanCorpse: cleanCorpse,
     buildModule: buildModule,
     dismountModule: dismountModule,
     startUpgrade: startUpgrade,

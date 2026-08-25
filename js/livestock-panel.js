@@ -125,10 +125,15 @@
       var sel = selectedZoneId === zoneId ? ' selected' : '';
       var animalHtml = animals.map(function (a) { return animalChip(a); }).join('') ||
         '<div class="empty-hint" style="padding:2px;font-size:11px;">空</div>';
+      var corpses = st.animals.filter(function (a) { return a.location_type === 'zone' && a.zone_id === zoneId && a.dead; });
+      var corpseHtml = corpses.length
+        ? '<div class="corpse-line" title="' + corpses.map(function (c) { return speciesName(c.species_id) + '（' + corpseCauseText(c) + '）'; }).join('、') + '">💀 尸体 ×' + corpses.length + '（' + corpses.map(function (c) { return corpsePollutionText(c.death_cause); })[0] + '）<button type="button" class="lv-btn" data-clean-zone-corpse="' + zoneId + '">清理</button></div>'
+        : '';
       return '<div class="zone-cell' + sel + '" data-zone="' + zoneId + '">' +
         '<div class="eco-overlay ' + ecoOverlayClass(zoneId, z) + '"></div>' +
         '<div class="zone-header"><span>' + zoneLabel[zoneId] + '</span><div class="zone-eco">' + ecoText + '</div></div>' +
         '<div class="animal-list">' + animalHtml + '</div>' +
+        corpseHtml +
         '<div class="zone-actions">' +
         '<button type="button" class="lv-btn" data-clean="' + zoneId + '">清扫</button>' +
         '<button type="button" class="lv-btn" data-till="' + zoneId + '">松土</button>' +
@@ -142,6 +147,11 @@
       var lbl = { arm1: '一号臂', arm2: '二号臂', arm3: '三号臂', arm4: '四号臂' }[armId];
       var chickens = st.animals.filter(function (x) { return x.location_type === 'coop' && x.arm_id === armId && !x.dead; });
       var chickenHtml = chickens.length ? '<div class="coop-animals">' + chickens.map(function (c) { return animalChip(c, true); }).join('') + '</div>' : '';
+      var deadChickens = st.animals.filter(function (x) { return x.location_type === 'coop' && x.arm_id === armId && x.dead; });
+      if (deadChickens.length) {
+        chickenHtml += '<div class="corpse-line" title="' + deadChickens.map(function (c) { return speciesName(c.species_id) + '（' + corpseCauseText(c) + '）'; }).join('、') + '">💀 ×' + deadChickens.length +
+          '<button type="button" class="lv-btn" data-clean-arm-corpse="' + armId + '">清理</button></div>';
+      }
       return '<div class="arm-cell ' + (vertical ? 'arm-vertical' : 'arm-horizontal') + '" data-arm="' + armId + '">' +
         '<span class="arm-label">' + lbl + '</span><div class="module-slots">' + chips + '</div>' + chickenHtml + '</div>';
     }
@@ -218,6 +228,20 @@
       tills[j].addEventListener('click', function (e) {
         e.stopPropagation();
         doTill(this.getAttribute('data-till'));
+      });
+    }
+    var zoneCorpses = document.querySelectorAll('#livestock-overview-grid [data-clean-zone-corpse]');
+    for (var zc = 0; zc < zoneCorpses.length; zc++) {
+      zoneCorpses[zc].addEventListener('click', function (e) {
+        e.stopPropagation();
+        doCleanZoneCorpses(this.getAttribute('data-clean-zone-corpse'));
+      });
+    }
+    var armCorpses = document.querySelectorAll('#livestock-overview-grid [data-clean-arm-corpse]');
+    for (var ac = 0; ac < armCorpses.length; ac++) {
+      armCorpses[ac].addEventListener('click', function (e) {
+        e.stopPropagation();
+        doCleanArmCorpses(this.getAttribute('data-clean-arm-corpse'));
       });
     }
   }
@@ -724,8 +748,12 @@
       var sp = window.LivestockState.getSpecies(a.species_id);
       if (!sp) return;
       if (a.dead) {
-        var cause = a.death_cause === 'disease' ? '病死' : (a.death_cause === 'slaughter' ? '屠宰' : (a.death_cause === 'blood_loss' ? '失血' : '饿死'));
-        corpseRows.push('<div class="product-row">💀 ' + speciesName(a.species_id) + ' ' + genderGlyph(a.gender) + ' <span class="meta">' + cause + '</span></div>');
+        var cause = corpseCauseText(a);
+        var loc = a.location_type === 'coop' ? ('鸡笼' + (a.arm_id || '')) : (a.zone_id ? ('区域 ' + a.zone_id.toUpperCase()) : '');
+        var pollHint = corpsePollutionText(a.death_cause);
+        corpseRows.push('<div class="product-row">💀 ' + speciesName(a.species_id) + ' ' + genderGlyph(a.gender) +
+          ' <span class="meta">' + cause + ' · ' + loc + ' · ' + pollHint + '</span>' +
+          '<button type="button" class="lv-btn" data-clean-corpse="' + a.uid + '">清理(+50)</button></div>');
         return;
       }
       if (!sp.products) return;
@@ -743,6 +771,15 @@
       '<div class="product-col"><h3 class="section-title">屠宰</h3>' + (slaughterRows.join('') || '<div class="empty-hint">无可屠宰动物</div>') + '</div>' +
       '<div class="product-col"><h3 class="section-title">尸体</h3>' + (corpseRows.join('') || '<div class="empty-hint">无尸体</div>') + '</div>';
     bindProductButtons();
+  }
+  function corpseCauseText(a) {
+    var map = { disease: '病死', starvation: '饿死', blood_loss: '失血', old: '老死' };
+    return map[a.death_cause] || '死亡';
+  }
+  function corpsePollutionText(cause) {
+    var rate = { disease: 0.006, starvation: 0.003, blood_loss: 0.002, old: 0.002 }[cause] || 0;
+    if (rate <= 0) return '无污染';
+    return '污染 +' + (rate * 1000).toFixed(0) + '‰/t';
   }
   function livingText(a, sp) {
     var parts = [];
@@ -844,6 +881,44 @@
     render();
   }
 
+  function doCleanCorpse(uid) {
+    var r = window.LivestockState.cleanCorpse(uid);
+    if (r.ok) {
+      addExp(50);
+      logMsg('清理尸体，畜牧经验 +50', 'success');
+      feedbackMsg = '尸体已清理';
+    } else {
+      feedbackMsg = '尸体不存在';
+    }
+    render();
+  }
+
+  function cleanCorpsesWhere(matchFn) {
+    var st = window.LivestockState.getState();
+    var n = 0;
+    for (var i = st.animals.length - 1; i >= 0; i--) {
+      var a = st.animals[i];
+      if (a.dead && matchFn(a)) {
+        st.animals.splice(i, 1);
+        n++;
+      }
+    }
+    if (n > 0) {
+      addExp(50 * n);
+      logMsg('清理 ' + n + ' 具尸体，畜牧经验 +' + (50 * n), 'success');
+      feedbackMsg = '清理 ' + n + ' 具尸体';
+    } else {
+      feedbackMsg = '此处无尸体';
+    }
+    render();
+  }
+  function doCleanZoneCorpses(zoneId) {
+    cleanCorpsesWhere(function (a) { return a.location_type === 'zone' && a.zone_id === zoneId; });
+  }
+  function doCleanArmCorpses(armId) {
+    cleanCorpsesWhere(function (a) { return a.location_type === 'coop' && a.arm_id === armId; });
+  }
+
   function bindProductButtons() {
     var collects = document.querySelectorAll('#livestock-product-content [data-collect]');
     for (var i = 0; i < collects.length; i++) {
@@ -855,6 +930,12 @@
     for (var j = 0; j < slaughters.length; j++) {
       slaughters[j].addEventListener('click', function () {
         doSlaughter(this.getAttribute('data-slaughter'));
+      });
+    }
+    var corpses = document.querySelectorAll('#livestock-product-content [data-clean-corpse]');
+    for (var c = 0; c < corpses.length; c++) {
+      corpses[c].addEventListener('click', function () {
+        doCleanCorpse(this.getAttribute('data-clean-corpse'));
       });
     }
   }
