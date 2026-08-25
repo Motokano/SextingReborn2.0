@@ -406,9 +406,11 @@
           } else if (mid === 'coop') {
             extraActions = '<button type="button" class="lv-btn" data-feed-chickens="' + aid + '">喂鸡</button>';
           }
+          var effText = window.LivestockState.getModuleEffectText(mid, inst.level);
           return '<div class="module-slot filled" data-arm="' + aid + '" data-slot="' + sk + '">' +
             '<span class="slot-key">' + label + '</span>' +
             '<span class="slot-val">' + m.name + ' ' + lvText + extra + '</span>' +
+            (effText ? '<span class="module-effect slot-effect">' + effText + '</span>' : '') +
             '<span class="slot-actions">' +
             extraActions +
             '<button type="button" class="lv-btn" data-upgrade="' + aid + '|' + sk + '">升级</button>' +
@@ -437,11 +439,13 @@
         var faces = (m.axis_slot != null)
           ? ('轴心位' + m.axis_slot)
           : window.LivestockState.expandModuleSlots(m).map(function (s) { return slotNames[s] || s; }).join('+');
+        var effText = window.LivestockState.getModuleEffectText(m.module_id, 1);
         return '<div class="module-card' + sel + '" data-module="' + m.module_id + '">' +
           '<span class="module-ico">' + moduleIcon(m.module_id) + '</span>' +
           '<span class="module-name">' + m.name + '</span>' +
           '<span class="module-tier">' + m.layer + ' · ' + tierLabel(m.tier) + '</span>' +
           '<span class="module-desc">' + m.desc + '</span>' +
+          (effText ? '<span class="module-effect">效果：' + effText + '</span>' : '') +
           '<span class="module-cost">占面：' + faces + ' · 建造：' + (cost || '—') + '</span></div>';
       }).join('');
 

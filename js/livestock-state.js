@@ -604,6 +604,144 @@
     }
   }
 
+  /* ================= 模块效果（§11.4 数值） ================= */
+
+  var MODULE_EFFECTS = {
+    sprinkler:    { growth: [0.15, 0.20, 0.25, 0.30, 0.40], decompact: [0, 0, 0.002, 0, 0.004] },
+    clean_brush:  { per_round: [3, 4, 5, 6, 8] },
+    tiller:       { per_tick: [0.04, 0.05, 0.06, 0.08, 0.10] },
+    seeder:       { threshold: [0.3, 0.4, 0.4, 0.5, 0.5], growth: [0.50, 0.50, 0.75, 0.75, 1.00] },
+    manure_net:   { sheep_reduce: [0.50, 0.55, 0.60, 0.65, 0.75], trample_reduce: [0, 0, 0, 0.10, 0.15] },
+    pasture_arm:  { per_tick: [0.04, 0.05, 0.06, 0.08, 0.10], growth: [0.20, 0.25, 0.30, 0.35, 0.40], seed_growth: [0.50, 0.50, 0.75, 0.75, 1.00], seed_threshold: 0.4 },
+    clinic_arm:   { heal: [0.01, 0.02, 0.03, 0.05, 0.08], count: [2, 3, 4, 5, 6] }
+  };
+
+  function healAnimalsInZones(st, zoneList, heal, count) {
+    var candidates = [];
+    st.animals.forEach(function (a) {
+      if (a.dead || a.location_type !== 'zone') return;
+      var z = st.zones[a.zone_id];
+      if (z && zoneList.indexOf(z) >= 0 && a.hp < 100) candidates.push(a);
+    });
+    candidates.sort(function (a, b) { return a.hp - b.hp; });
+    for (var i = 0; i < Math.min(count, candidates.length); i++) {
+      candidates[i].hp = clamp(candidates[i].hp + heal, 0, 100);
+    }
+  }
+
+  // 模块效果文案（供面板展示；数值与 MODULE_EFFECTS 一一对应）
+  function getModuleEffectText(moduleId, level) {
+    var eff = MODULE_EFFECTS[moduleId];
+    if (!eff) return '';
+    var lv = clamp(level || 1, 1, 5);
+    var idx = lv - 1;
+    var pct = function (v) { return Math.round(v * 100) + '%'; };
+    var arr = function (a) { return a[idx]; };
+    if (moduleId === 'sprinkler') {
+      var parts = ['草生长 +' + pct(arr(eff.growth))];
+      if (arr(eff.decompact) > 0) parts.push('降压实 ' + (arr(eff.decompact) * 1000).toFixed(0) + '‰/t');
+      return parts.join('；');
+    }
+    if (moduleId === 'clean_brush') {
+      return '每轮降污 ' + (arr(eff.per_round) / 10).toFixed(1) + '%';
+    }
+    if (moduleId === 'tiller') {
+      return '降压实 ' + (arr(eff.per_tick) * 100).toFixed(0) + '%/t';
+    }
+    if (moduleId === 'seeder') {
+      return '草 < ' + pct(arr(eff.threshold)) + ' 时生长 +' + pct(arr(eff.growth));
+    }
+    if (moduleId === 'manure_net') {
+      var mp = ['羊污染 -' + pct(arr(eff.sheep_reduce))];
+      if (arr(eff.trample_reduce) > 0) mp.push('踩踏 -' + pct(arr(eff.trample_reduce)));
+      return mp.join('；');
+    }
+    if (moduleId === 'pasture_arm') {
+      var pp = ['降压实 ' + (arr(eff.per_tick) * 100).toFixed(0) + '%/t', '草生长 +' + pct(arr(eff.growth))];
+      pp.push('草 < ' + pct(eff.seed_threshold) + ' 时生长 +' + pct(arr(eff.seed_growth)));
+      return pp.join('；');
+    }
+    if (moduleId === 'clinic_arm') {
+      return '每轮治疗 ' + (arr(eff.heal) * 100).toFixed(0) + '% × ' + arr(eff.count) + ' 只';
+    }
+    return '';
+  }
+
+  // 每 tick 结算模块效果：作用于该臂夹持两区（通过 zone 临时字段传递）
+  function tickModules(st) {
+    for (var ak in st.arms) {
+      var arm = st.arms[ak];
+      if (!arm || typeof arm !== 'object') continue;
+      var zones = (st.arm_zones && st.arm_zones[ak]) || [];
+      var zoneList = [];
+      for (var zi = 0; zi < zones.length; zi++) {
+        var z = st.zones[zones[zi]];
+        if (z) zoneList.push(z);
+      }
+      if (!zoneList.length) continue;
+
+      var growthBonus = 0, decompact = 0, cleanPerTick = 0;
+      var seedThreshold = null, seedGrowth = 0;
+      var sheepReduce = 0, trampleReduce = 0;
+      var clinicHeal = 0, clinicCount = 0;
+
+      var mods = [arm.inner, arm.front, arm.bottom, arm.top, arm.cw_side, arm.ccw_side];
+      for (var mi = 0; mi < mods.length; mi++) {
+        var inst = mods[mi];
+        if (!inst || inst.shadow || !inst.module_id) continue;
+        var mid = inst.module_id;
+        var lv = Math.max(1, Math.min(5, inst.level || 1));
+        var idx = lv - 1;
+        var eff = MODULE_EFFECTS[mid];
+        if (!eff) continue;
+        if (mid === 'sprinkler') {
+          growthBonus += eff.growth[idx];
+          decompact += eff.decompact[idx] || 0;
+        } else if (mid === 'clean_brush') {
+          cleanPerTick += eff.per_round[idx] / 1000;
+        } else if (mid === 'tiller') {
+          decompact += eff.per_tick[idx];
+        } else if (mid === 'seeder') {
+          seedThreshold = Math.max(seedThreshold || 0, eff.threshold[idx]);
+          seedGrowth = Math.max(seedGrowth, eff.growth[idx]);
+        } else if (mid === 'manure_net') {
+          sheepReduce = Math.max(sheepReduce, eff.sheep_reduce[idx]);
+          trampleReduce = Math.max(trampleReduce, eff.trample_reduce[idx]);
+        } else if (mid === 'pasture_arm') {
+          decompact += eff.per_tick[idx];
+          growthBonus += eff.growth[idx];
+          seedThreshold = Math.max(seedThreshold || 0, eff.seed_threshold);
+          seedGrowth = Math.max(seedGrowth, eff.seed_growth[idx]);
+        } else if (mid === 'clinic_arm') {
+          clinicHeal = Math.max(clinicHeal, eff.heal[idx]);
+          clinicCount = Math.max(clinicCount, eff.count[idx]);
+        }
+      }
+
+      zoneList.forEach(function (z) {
+        if (decompact > 0) z.compaction = clamp(z.compaction - decompact, 0, 100);
+        if (cleanPerTick > 0) z.pollution = clamp(z.pollution - cleanPerTick, 0, 100);
+        z._mg = (z._mg || 1) * (1 + growthBonus);
+        if (seedThreshold != null && z.grass_height != null && z.grass_height < seedThreshold) {
+          z._mg = z._mg * (1 + seedGrowth);
+        }
+        if (sheepReduce > 0) z._sr = Math.max(z._sr || 0, sheepReduce);
+        if (trampleReduce > 0) z._tr = Math.max(z._tr || 0, trampleReduce);
+      });
+      if (clinicHeal > 0) healAnimalsInZones(st, zoneList, clinicHeal, clinicCount);
+    }
+  }
+
+  function clearModuleTempFields() {
+    var st = ensureState();
+    for (var zid in st.zones) {
+      var z = st.zones[zid];
+      if (z._mg != null) delete z._mg;
+      if (z._sr != null) delete z._sr;
+      if (z._tr != null) delete z._tr;
+    }
+  }
+
   /* ================= tick 生态结算 ================= */
 
   var ZONE_NEXT = { z1: 'z2', z2: 'z3', z3: 'z4', z4: 'z1' };
@@ -628,24 +766,30 @@
   function advanceTick() {
     var st = ensureState();
 
-    // 0. 模块升级工程推进
+    // 0. 清理上轮模块临时字段
+    clearModuleTempFields();
+
+    // 1. 模块升级工程推进
     tickUpgrades();
 
-    // 1. 旋转倒计时
+    // 2. 旋转倒计时
     st.rotation_ticks_remaining--;
     if (st.rotation_ticks_remaining <= 0) {
       rotateClockwise(st);
       st.rotation_ticks_remaining = st.rotation_total_ticks;
     }
 
-    // 2. 区域生态：草自然生长
+    // 3. 模块效果结算（作用于夹持区域，写入 _mg/_sr/_tr 临时字段）
+    tickModules(st);
+
+    // 4. 区域生态：草自然生长（受模块加成）
     for (var zid in st.zones) {
       var z = st.zones[zid];
       var growthFactor = (100 - (z.compaction || 0)) * 0.009 + 0.1;
-      z.grass_height = clamp((z.grass_height || 0) + (0.8 / 1000) * growthFactor, 0, 1.5);
+      z.grass_height = clamp((z.grass_height || 0) + (0.8 / 1000) * growthFactor * (z._mg || 1), 0, 1.5);
     }
 
-    // 3. 每只动物结算
+    // 5. 每只动物结算
     var births = [];
     for (var i = 0; i < st.animals.length; i++) {
       var a = st.animals[i];
@@ -655,6 +799,9 @@
       tickAnimal(st, a, sp, births);
     }
     for (var b = 0; b < births.length; b++) st.animals.push(births[b]);
+
+    // 6. 清理本轮临时字段
+    clearModuleTempFields();
   }
 
   function tickAnimal(st, a, sp, births) {
@@ -715,9 +862,13 @@
 
     // 生态影响：踩踏 / 污染（羊）
     if (sp.ecosystem_impact) {
-      zone.compaction = clamp(zone.compaction + sp.ecosystem_impact.trample_per_tick * getModifier(a, 'trample_mult'), 0, 100);
+      var trampleMult = getModifier(a, 'trample_mult');
+      var trampleReduce = zone._tr || 0;
+      zone.compaction = clamp(zone.compaction + sp.ecosystem_impact.trample_per_tick * trampleMult * (1 - trampleReduce), 0, 100);
       if (sp.ecosystem_impact.pollution_pct_per_tick > 0) {
-        zone.pollution = clamp(zone.pollution + sp.ecosystem_impact.pollution_pct_per_tick * getModifier(a, 'pollution_rate_mult'), 0, 100);
+        var pollMult = getModifier(a, 'pollution_rate_mult');
+        var sheepReduce = (a.species_id === 'sheep') ? (zone._sr || 0) : 0;
+        zone.pollution = clamp(zone.pollution + sp.ecosystem_impact.pollution_pct_per_tick * pollMult * (1 - sheepReduce), 0, 100);
       }
     }
 
@@ -899,6 +1050,7 @@
     cleanZone: cleanZone,
     tillZone: tillZone,
     feedChickens: feedChickens,
+    getModuleEffectText: getModuleEffectText,
     advanceTick: advanceTick
   };
 })();
