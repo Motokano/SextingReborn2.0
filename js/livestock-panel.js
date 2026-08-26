@@ -586,6 +586,7 @@
 
   var feedTargetArm = null;
   var feedPickerMode = null;
+  var initBound = false;
 
   function listFeedCropsInInventory() {
     var IE = window.InventoryEquipment;
@@ -1144,6 +1145,9 @@
   }
 
   function init() {
+    // 防重复绑定：多次调用（如场景层重载/热更新）不叠加事件监听
+    if (initBound) return;
+    initBound = true;
     var close = el('livestock-close');
     if (close) close.addEventListener('click', function () {
       if (window.SceneApp && typeof window.SceneApp.closeLivestockPanel === 'function') window.SceneApp.closeLivestockPanel();
