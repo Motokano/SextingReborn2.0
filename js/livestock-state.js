@@ -347,7 +347,8 @@
   }
 
   // 采集活体产物（奶/毛/血/蛋）。返回 { ok, item_id?, count?, reason? }
-  function collectProduct(uid, productId) {
+  // cooldownMult（可选）：模块冷却减免，如 0.95 = 冷却 -5%
+  function collectProduct(uid, productId, cooldownMult) {
     var a = findAnimal(uid);
     if (!a || a.dead) return { ok: false, reason: 'not_found' };
     var sp = getSpecies(a.species_id);
@@ -362,7 +363,8 @@
     if (prod.min_hp > 0 && a.hp < prod.min_hp) {
       return { ok: false, reason: 'low_hp' };
     }
-    a.cooldowns[productId] = Math.round(prod.cooldown_ticks * getModifier(a, 'product_cooldown_mult_' + productId));
+    var cm = (cooldownMult != null && cooldownMult > 0) ? cooldownMult : 1;
+    a.cooldowns[productId] = Math.round(prod.cooldown_ticks * getModifier(a, 'product_cooldown_mult_' + productId) * cm);
     if (prod.hp_cost > 0) {
       a.hp = clamp(a.hp - prod.hp_cost, 0, 100);
       if (a.hp <= 0) { a.dead = true; a.death_cause = 'blood_loss'; }
@@ -648,7 +650,8 @@
     seeder:       { threshold: [0.3, 0.4, 0.4, 0.5, 0.5], growth: [0.50, 0.50, 0.75, 0.75, 1.00] },
     manure_net:   { sheep_reduce: [0.50, 0.55, 0.60, 0.65, 0.75], trample_reduce: [0, 0, 0, 0.10, 0.15] },
     pasture_arm:  { per_tick: [0.04, 0.05, 0.06, 0.08, 0.10], growth: [0.20, 0.25, 0.30, 0.35, 0.40], seed_growth: [0.50, 0.50, 0.75, 0.75, 1.00], seed_threshold: 0.4 },
-    clinic_arm:   { heal: [0.01, 0.02, 0.03, 0.05, 0.08], count: [2, 3, 4, 5, 6] }
+    clinic_arm:   { heal: [0.01, 0.02, 0.03, 0.05, 0.08], count: [2, 3, 4, 5, 6] },
+    auto_collect: { cooldown_mult: [1.00, 0.95, 0.90, 0.85, 0.80], clean_corpse: [false, false, false, true, true] }
   };
 
   function healAnimalsInZones(st, zoneList, heal, count) {
@@ -699,6 +702,12 @@
     if (moduleId === 'clinic_arm') {
       return '每轮治疗 ' + (arr(eff.heal) * 100).toFixed(0) + '% × ' + arr(eff.count) + ' 只';
     }
+    if (moduleId === 'auto_collect') {
+      var ap = ['自动采集'];
+      if (arr(eff.cooldown_mult) < 1) ap.push('冷却 -' + Math.round((1 - arr(eff.cooldown_mult)) * 100) + '%');
+      if (arr(eff.clean_corpse)) ap.push('Lv4+ 自动清尸');
+      return ap.join('；');
+    }
     return '';
   }
 
@@ -719,6 +728,7 @@
       var seedThreshold = null, seedGrowth = 0;
       var sheepReduce = 0, trampleReduce = 0;
       var clinicHeal = 0, clinicCount = 0;
+      var autoCollectActive = false, autoCdMult = 1, autoCleanCorpse = false;
 
       var mods = [arm.inner, arm.front, arm.bottom, arm.top, arm.cw_side, arm.ccw_side];
       for (var mi = 0; mi < mods.length; mi++) {
@@ -750,6 +760,11 @@
         } else if (mid === 'clinic_arm') {
           clinicHeal = Math.max(clinicHeal, eff.heal[idx]);
           clinicCount = Math.max(clinicCount, eff.count[idx]);
+        } else if (mid === 'auto_collect') {
+          // 多臂多采集臂取最优（冷却减免最小 / 清尸能力）
+          autoCollectActive = true;
+          autoCdMult = Math.min(autoCdMult, eff.cooldown_mult[idx] || 1);
+          if (eff.clean_corpse && eff.clean_corpse[idx]) autoCleanCorpse = true;
         }
       }
 
@@ -764,6 +779,33 @@
         if (trampleReduce > 0) z._tr = Math.max(z._tr || 0, trampleReduce);
       });
       if (clinicHeal > 0) healAnimalsInZones(st, zoneList, clinicHeal, clinicCount);
+
+      // 手动采集臂（§11.4）：自动收割夹持两区冷却完毕的活体产物；Lv4+ 自动清尸
+      if (autoCollectActive) {
+        st.pending_auto_items = st.pending_auto_items || [];
+        // 自动采集（不给经验，§9.3 只给手动）
+        st.animals.forEach(function (a) {
+          if (a.dead || a.location_type !== 'zone') return;
+          if (zones.indexOf(a.zone_id) < 0) return;
+          var asp = getSpecies(a.species_id);
+          if (!asp || !asp.products || !asp.products.living) return;
+          asp.products.living.forEach(function (p) {
+            var r = collectProduct(a.uid, p.product_id, autoCdMult);
+            if (r.ok) {
+              st.pending_auto_items.push({ item_id: r.item_id, count: r.count, uid: a.uid });
+            }
+          });
+        });
+        // Lv4+ 自动清尸（§9.3 不给经验，尸体直接移除）
+        if (autoCleanCorpse) {
+          for (var ci = st.animals.length - 1; ci >= 0; ci--) {
+            var c = st.animals[ci];
+            if (c.dead && c.location_type === 'zone' && zones.indexOf(c.zone_id) >= 0) {
+              st.animals.splice(ci, 1);
+            }
+          }
+        }
+      }
     }
   }
 
@@ -775,6 +817,14 @@
       if (z._sr != null) delete z._sr;
       if (z._tr != null) delete z._tr;
     }
+  }
+
+  // 取出并清空自动采集队列（手动采集臂产出，场景层消费发背包）
+  function drainAutoCollectItems() {
+    var st = ensureState();
+    var out = Array.isArray(st.pending_auto_items) ? st.pending_auto_items : [];
+    st.pending_auto_items = [];
+    return out;
   }
 
   /* ================= tick 生态结算 ================= */
@@ -1286,6 +1336,7 @@
     tillZone: tillZone,
     feedChickens: feedChickens,
     getModuleEffectText: getModuleEffectText,
+    drainAutoCollectItems: drainAutoCollectItems,
     advanceTick: advanceTick
   };
 })();

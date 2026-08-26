@@ -8003,6 +8003,38 @@
         if (window.LivestockState && typeof window.LivestockState.advanceTick === 'function') {
             try { window.LivestockState.advanceTick(); } catch (eLsTick) { /* ignore */ }
         }
+        // 手动采集臂自动产出 → 发背包（§11.4；自动采集/自动清尸不给经验）
+        try {
+            if (window.LivestockState && typeof window.LivestockState.drainAutoCollectItems === 'function') {
+                var pending = window.LivestockState.drainAutoCollectItems();
+                if (pending && pending.length) {
+                    var placedItems = 0, droppedItems = 0;
+                    pending.forEach(function (pit) {
+                        if (!pit || !pit.item_id) return;
+                        var inst = { item_id: pit.item_id, count: Math.max(1, Math.floor(pit.count) || 1), quality_tier: 0 };
+                        if (IE && typeof IE.putItemIntoDefaultContainer === 'function') {
+                            var pr = IE.putItemIntoDefaultContainer(inst);
+                            if (pr && pr.placed) {
+                                placedItems++;
+                            } else {
+                                var E = window.GameEngine;
+                                var gpos = E && typeof E.getState === 'function' ? E.getState() : null;
+                                if (gpos && typeof IE.addItemToGround === 'function') {
+                                    IE.addItemToGround(gpos.mapId, gpos.x, gpos.y, inst);
+                                    droppedItems++;
+                                }
+                            }
+                        }
+                    });
+                    if (placedItems > 0 || droppedItems > 0) {
+                        var logTxt = '手动采集臂自动收获 ' + placedItems + ' 件产物' + (droppedItems > 0 ? '（' + droppedItems + ' 件背包满掉落地面）' : '');
+                        if (window.GameLog && typeof window.GameLog.log === 'function') {
+                            window.GameLog.log(logTxt, 'info');
+                        }
+                    }
+                }
+            }
+        } catch (eAuto) { /* ignore */ }
         if (livestockPanelOpen) updateLivestockPanel();
     }
 
