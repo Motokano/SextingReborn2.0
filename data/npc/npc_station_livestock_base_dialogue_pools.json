@@ -1,0 +1,19 @@
+{
+  "schemaVersion": 1,
+  "pools": {
+    "npc.station.livestock_base.fallback": {
+      "lines": [
+        "牧场入口的护栏上挂着操作说明，字迹已经有些褪色。"
+      ]
+    },
+    "npc.station.livestock_base": {
+      "lines": [
+        "牧场面板里有模块装配和动物管理，没事就来看看。",
+        "草长满的区域最适合先放牛——它们会把草啃低，羊才有得吃。",
+        "猪不用吃草，拱地就能活，喂饲料还能长肉。",
+        "鸡得装鸡笼才养得了，笼子挂在机械臂内部空间。"
+      ],
+      "composeMode": "pick_pool"
+    }
+  }
+}

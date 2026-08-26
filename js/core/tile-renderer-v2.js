@@ -81,6 +81,7 @@
                 if (meta.pharmacyStation) return '#1e2d2c';
                 if (meta.compostStation) return '#2f2f18';
                 if (meta.agricultureStation) return '#243820';
+                if (meta.livestockStation) return '#3d3018';
                 if (meta.warehouseStation) return '#2a2838';
                 return '#3d2a2a';
             }
@@ -89,6 +90,7 @@
             if (meta.groundCount > 0) return '#332a24';
             if (meta.pharmacyStation) return '#243530';
             if (meta.compostStation) return '#363620';
+            if (meta.livestockStation) return '#3a3118';
             return '#312a24';
         }
 
@@ -98,6 +100,7 @@
                 if (meta.pharmacyStation) return 'rgba(45,212,191,0.45)';
                 if (meta.compostStation) return 'rgba(202,138,4,0.45)';
                 if (meta.agricultureStation) return 'rgba(74,222,128,0.45)';
+                if (meta.livestockStation) return 'rgba(255,140,0,0.55)';
                 if (meta.warehouseStation) return 'rgba(211,160,96,0.5)';
                 return 'rgba(180,80,80,0.4)';
             }
@@ -106,6 +109,7 @@
             if (meta.groundCount > 0) return 'rgba(212,163,115,0.5)';
             if (meta.pharmacyStation) return 'rgba(45,212,191,0.22)';
             if (meta.compostStation) return 'rgba(202,138,4,0.22)';
+            if (meta.livestockStation) return 'rgba(255,140,0,0.28)';
             return 'rgba(255,255,255,0.08)';
         }
 
@@ -162,9 +166,9 @@
                     dynamicCtx.arc(x + w / 2, y + h / 2, 8, 0, Math.PI * 2);
                     dynamicCtx.fill();
                 }
-            } else if (meta.cookingStation || meta.pharmacyStation || meta.compostStation || meta.agricultureStation || meta.warehouseStation) {
-                var stationLabel = meta.cookingStation ? '灶' : (meta.pharmacyStation ? '制药台' : (meta.compostStation ? '制肥桶' : (meta.warehouseStation ? '仓' : '农')));
-                dynamicCtx.fillStyle = meta.agricultureStation ? 'rgba(74,222,128,0.95)' : (meta.warehouseStation ? 'rgba(211,160,96,0.95)' : 'rgba(251,146,60,0.95)');
+            } else if (meta.cookingStation || meta.pharmacyStation || meta.compostStation || meta.agricultureStation || meta.livestockStation || meta.warehouseStation) {
+                var stationLabel = meta.cookingStation ? '灶' : (meta.pharmacyStation ? '制药台' : (meta.compostStation ? '制肥桶' : (meta.agricultureStation ? '农' : (meta.livestockStation ? '牧' : '仓'))));
+                dynamicCtx.fillStyle = meta.agricultureStation ? 'rgba(74,222,128,0.95)' : (meta.livestockStation ? 'rgba(255,140,0,0.95)' : (meta.warehouseStation ? 'rgba(211,160,96,0.95)' : 'rgba(251,146,60,0.95)'));
                 dynamicCtx.font = 'bold 20px "Microsoft YaHei","PingFang SC",sans-serif';
                 var stationLabelWidth = dynamicCtx.measureText(stationLabel).width;
                 dynamicCtx.fillText(stationLabel, x + w / 2 - stationLabelWidth / 2, y + h / 2 + 7);

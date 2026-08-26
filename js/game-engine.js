@@ -95,6 +95,7 @@
         if (isBlocked(map, x, y)) return false;
         if (isCookingStationCell(x, y)) return false;
         if (isAgricultureStationCell(x, y)) return false;
+        if (isLivestockStationCell(x, y)) return false;
         if (isPharmacyFacilityNpcBlockingWalk(x, y)) return false;
         if (isCompostFacilityNpcBlockingWalk(x, y)) return false;
         if (isBedStationCell(x, y)) return false;
@@ -204,6 +205,16 @@
         return false;
     }
 
+    /** 畜牧互动点判定：使用标注法（同农业口径，格不可走） */
+    function isLivestockStationCell(x, y) {
+        var ann = getAnnotationAt(x, y);
+        if (ann) {
+            var s = String(ann).trim();
+            if (s === '畜牧' || s === '牧场' || s.indexOf('畜牧') >= 0 || s.indexOf('牧场') >= 0) return true;
+        }
+        return false;
+    }
+
     /** 床设施判定：使用标注法 */
     function isBedStationCell(x, y) {
         var ann = getAnnotationAt(x, y);
@@ -305,6 +316,26 @@
     }
 
     /**
+     * 地图上畜牧格绑定的「设施 NPC」id。
+     * 优先 `livestock_station_interact_npc_by_cell["x,y"]`，否则回落 `livestock_station_interact_npc_id`。
+     */
+    function getLivestockStationInteractNpcId(x, y) {
+        var map = getMap();
+        if (!map || !isLivestockStationCell(x, y)) return null;
+        var by = map.livestock_station_interact_npc_by_cell;
+        if (by && typeof by === 'object') {
+            var k = (x | 0) + ',' + (y | 0);
+            if (Object.prototype.hasOwnProperty.call(by, k)) {
+                var v = by[k];
+                if (v != null && String(v).trim()) return String(v).trim();
+            }
+        }
+        var lid = map.livestock_station_interact_npc_id;
+        if (lid != null && String(lid).trim()) return String(lid).trim();
+        return null;
+    }
+
+    /**
      * 地图上床位格绑定的「设施 NPC」id。
      * 优先 `bed_station_interact_npc_by_cell["x,y"]`，否则回落 `bed_station_interact_npc_id`。
      */
@@ -380,6 +411,8 @@
         nid = getCompostStationInteractNpcId(x, y);
         if (nid) return nid;
         nid = getAgricultureStationInteractNpcId(x, y);
+        if (nid) return nid;
+        nid = getLivestockStationInteractNpcId(x, y);
         if (nid) return nid;
         nid = getWarehouseStationInteractNpcId(x, y);
         if (nid) return nid;
@@ -509,6 +542,7 @@
         getPharmacyStationInteractNpcId: getPharmacyStationInteractNpcId,
         getCompostStationInteractNpcId: getCompostStationInteractNpcId,
         getAgricultureStationInteractNpcId: getAgricultureStationInteractNpcId,
+        getLivestockStationInteractNpcId: getLivestockStationInteractNpcId,
         getBedStationInteractNpcId: getBedStationInteractNpcId,
         getWarehouseStationInteractNpcId: getWarehouseStationInteractNpcId,
         getInteractNpcIdAt: getInteractNpcIdAt,
@@ -519,6 +553,7 @@
         isPharmacyStationCell: isPharmacyStationCell,
         isCompostStationCell: isCompostStationCell,
         isAgricultureStationCell: isAgricultureStationCell,
+        isLivestockStationCell: isLivestockStationCell,
         isBedStationCell: isBedStationCell,
         isWarehouseStationCell: isWarehouseStationCell,
         isAdjacent: isAdjacent,

@@ -163,6 +163,12 @@
             var agi;
             for (agi = 0; agi < agk.length; agi++) add(map.agriculture_station_interact_npc_by_cell[agk[agi]]);
         }
+        if (map && map.livestock_station_interact_npc_id != null) add(map.livestock_station_interact_npc_id);
+        if (map && map.livestock_station_interact_npc_by_cell && typeof map.livestock_station_interact_npc_by_cell === 'object') {
+            var lsk = Object.keys(map.livestock_station_interact_npc_by_cell);
+            var lsi;
+            for (lsi = 0; lsi < lsk.length; lsi++) add(map.livestock_station_interact_npc_by_cell[lsk[lsi]]);
+        }
         if (map && map.warehouse_station_interact_npc_id != null) add(map.warehouse_station_interact_npc_id);
         if (map && map.warehouse_station_interact_npc_by_cell && typeof map.warehouse_station_interact_npc_by_cell === 'object') {
             var whk = Object.keys(map.warehouse_station_interact_npc_by_cell);

@@ -775,6 +775,9 @@
   "agriculture_station_interact_npc_by_cell": {
     "10,14": "npc.station.agriculture_base"
   },
+  "livestock_station_interact_npc_by_cell": {
+    "9,14": "npc.station.livestock_base"
+  },
   "warehouse_station_interact_npc_id": "npc.station.warehouse_base",
   "warehouse_station_interact_npc_by_cell": {
     "14,12": "npc.station.warehouse_base"
@@ -791,6 +794,7 @@
     "12,14": "烹饪台",
     "13,14": "制肥桶",
     "7,11": "黄历",
+    "9,14": "畜牧",
     "10,14": "农业",
     "11,14": "床",
     "13,6": "房屋升级",

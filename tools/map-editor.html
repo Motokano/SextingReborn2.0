@@ -87,6 +87,8 @@
         .cell.entity-grass::after { content: '草'; font-size: 11px; color: #6f8; }
         .cell.npc { background: #3d3d4a; border-color: rgba(150,120,220,0.7); }
         .cell.npc::after { content: '人'; font-size: 11px; color: #c9b3ff; }
+        .cell.station { background: #4a3d2d; border-color: rgba(240,180,90,0.75); }
+        .cell.station::after { content: '设'; font-size: 11px; color: #ffc97a; }
         .cell .mark {
             position: relative;
             z-index: 1;
@@ -254,6 +256,26 @@
                 <p class="hint">地图用 npc_id 引用 NPC。本编辑器仅维护坐标与 npc_id。可点工具栏「载入 NPC 注册表」从 data/npc/npc_registry.json 导入 NPC 列表。</p>
                 <button type="button" id="btn-apply-npc">应用 NPC</button>
             </div>
+            <div class="row" id="panel-station">
+                <label>设施绑定（xxx_station_interact_npc_by_cell）</label>
+                <select id="inp-station-kind">
+                    <option value="">无</option>
+                    <option value="cooking_station">烹饪台</option>
+                    <option value="pharmacy_station">制药台</option>
+                    <option value="compost_station">制肥桶</option>
+                    <option value="agriculture_station">农田</option>
+                    <option value="livestock_station">牧场</option>
+                    <option value="bed_station">床</option>
+                    <option value="warehouse_station">仓库</option>
+                </select>
+                <label style="margin-top:8px;">设施 NPC</label>
+                <select id="inp-station-npc-id">
+                    <option value="">无</option>
+                </select>
+                <p class="hint">把设施格绑定到一个 NPC（优先按格 by_cell，可选回落 * 全图 id）。绑定的 NPC 需在 npc_registry.json 中注册，主菜单里配置对应面板按钮。</p>
+                <button type="button" id="btn-apply-station">应用绑定</button>
+                <button type="button" id="btn-clear-station">清除绑定</button>
+            </div>
             <div class="row" id="panel-note">
                 <label>格子注释（导出到 annotations，不进 tooltip/title）</label>
                 <textarea id="inp-note" placeholder="比如：这里是Boss房入口 / 需要放事件触发 / 视觉标记等"></textarea>
@@ -279,9 +301,22 @@
                 portals: [],
                 entities: [],   // [{ x, y, entity_id, gathering_instance_id? }, ...]
                 npcs: [],       // [{ x, y, npc_id: 'npc.supervisor.linShuyao' }, ...]
+                stations: [],   // [{ kind: 'livestock_station'|..., cellKey: 'x,y', npcId }, ...] 设施格绑定
                 terrains: [],   // [{ x, y, terrain_id: 'ground' }, ...] 稀疏层，可扩展，旧引擎不读也不影响
                 annotations: {} // { "x,y": "text" } 编辑器专用，不参与导出
             };
+
+            // 设施类型：kind -> { byCellField, fallbackField, annotationHint }
+            var STATION_KINDS = {
+                cooking_station:  { byCell: 'cooking_station_interact_npc_by_cell',  fallback: 'cooking_station_interact_npc_id',  hint: '烹饪台' },
+                pharmacy_station: { byCell: 'pharmacy_station_interact_npc_by_cell', fallback: 'pharmacy_station_interact_npc_id', hint: '制药台' },
+                compost_station:  { byCell: 'compost_station_interact_npc_by_cell',  fallback: 'compost_station_interact_npc_id',  hint: '制肥桶' },
+                agriculture_station: { byCell: 'agriculture_station_interact_npc_by_cell', fallback: 'agriculture_station_interact_npc_id', hint: '农田' },
+                livestock_station:   { byCell: 'livestock_station_interact_npc_by_cell',   fallback: 'livestock_station_interact_npc_id',   hint: '牧场' },
+                bed_station:      { byCell: 'bed_station_interact_npc_by_cell',      fallback: 'bed_station_interact_npc_id',      hint: '床' },
+                warehouse_station:{ byCell: 'warehouse_station_interact_npc_by_cell',fallback: 'warehouse_station_interact_npc_id',hint: '仓库' }
+            };
+            var STATION_KIND_KEYS = Object.keys(STATION_KINDS);
 
             var ui = {
                 showNotes: true,
@@ -442,6 +477,71 @@
                 if (npcId) state.npcs.push({ x: x, y: y, npc_id: npcId });
             }
 
+            /** 获取某格指定类型的设施绑定记录 */
+            function getStationAt(x, y, kind) {
+                var k = x + ',' + y;
+                for (var i = 0; i < state.stations.length; i++) {
+                    if (state.stations[i].kind === kind && state.stations[i].cellKey === k) return state.stations[i];
+                }
+                return null;
+            }
+            /** 某格绑定的所有设施类型 */
+            function getStationKindsAt(x, y) {
+                var k = x + ',' + y;
+                var out = [];
+                for (var i = 0; i < state.stations.length; i++) {
+                    if (state.stations[i].cellKey === k && out.indexOf(state.stations[i].kind) < 0) out.push(state.stations[i].kind);
+                }
+                return out;
+            }
+            /** 设置某格指定类型的设施绑定（npcId 为空则移除） */
+            function setStationAt(x, y, kind, npcId) {
+                var k = x + ',' + y;
+                for (var i = state.stations.length - 1; i >= 0; i--) {
+                    if (state.stations[i].kind === kind && state.stations[i].cellKey === k) state.stations.splice(i, 1);
+                }
+                if (npcId) state.stations.push({ kind: kind, cellKey: k, npcId: String(npcId).trim() });
+            }
+            /** 从地图 JSON 收集设施绑定（by_cell + 回落 id） */
+            function collectStationsFromMap(data) {
+                var out = [];
+                STATION_KIND_KEYS.forEach(function (kind) {
+                    var cfg = STATION_KINDS[kind];
+                    var by = data && data[cfg.byCell];
+                    if (by && typeof by === 'object') {
+                        Object.keys(by).forEach(function (ck) {
+                            var v = by[ck];
+                            if (v != null && String(v).trim()) out.push({ kind: kind, cellKey: ck, npcId: String(v).trim() });
+                        });
+                    }
+                    var fb = data && data[cfg.fallback];
+                    if (fb != null && String(fb).trim()) {
+                        out.push({ kind: kind, cellKey: '*', npcId: String(fb).trim() });
+                    }
+                });
+                return out;
+            }
+            /** 导出设施绑定：by_cell 对象 + 全图回落 id */
+            function buildStationsExport() {
+                var byCell = {};
+                var fallbacks = {};
+                state.stations.forEach(function (s) {
+                    if (s.cellKey === '*') {
+                        fallbacks[s.kind] = s.npcId;
+                        return;
+                    }
+                    if (!byCell[s.kind]) byCell[s.kind] = {};
+                    byCell[s.kind][s.cellKey] = s.npcId;
+                });
+                var out = {};
+                STATION_KIND_KEYS.forEach(function (kind) {
+                    var cfg = STATION_KINDS[kind];
+                    if (byCell[kind] && Object.keys(byCell[kind]).length) out[cfg.byCell] = byCell[kind];
+                    if (fallbacks[kind]) out[cfg.fallback] = fallbacks[kind];
+                });
+                return out;
+            }
+
             function isWalkable(x, y) {
                 if (!isEnabled(x, y)) return false;
                 return state.walkable[y][x];
@@ -482,6 +582,11 @@
                             else if (eid === 'gathering_grass') cell.classList.add('entity-grass');
                             var npcId = getNpcAt(x, y);
                             if (npcId) cell.classList.add('npc');
+                            var stationKinds = getStationKindsAt(x, y);
+                            if (stationKinds.length) {
+                                cell.classList.add('station');
+                                mark.textContent = stationKinds[0] === 'livestock_station' ? '牧' : '设';
+                            }
                         }
                         var t = x + ',' + y;
                         if (!isEnabled(x, y)) t += ' 空洞';
@@ -493,6 +598,12 @@
                             else if (eid === 'gathering_grass') t += ' 草丛';
                             var npcId = getNpcAt(x, y);
                             if (npcId) t += ' NPC:' + npcId;
+                            var stationKinds = getStationKindsAt(x, y);
+                            for (var sti = 0; sti < stationKinds.length; sti++) {
+                                var stk = stationKinds[sti];
+                                var stRec = getStationAt(x, y, stk);
+                                if (stRec) t += ' 设施:' + stk + '→' + stRec.npcId;
+                            }
                             // 注释不进入 title，避免“具体渲染”出现
                         }
                         cell.title = t;
@@ -737,6 +848,7 @@
                     document.getElementById('panel-entity').style.display = 'none';
                     document.getElementById('panel-terrain').style.display = 'none';
                     document.getElementById('panel-npc').style.display = 'none';
+                    document.getElementById('panel-station').style.display = 'none';
                     document.getElementById('panel-note').style.display = 'none';
                     return;
                 }
@@ -746,6 +858,7 @@
                 document.getElementById('panel-entity').style.display = 'block';
                 document.getElementById('panel-terrain').style.display = 'block';
                 document.getElementById('panel-npc').style.display = 'block';
+                document.getElementById('panel-station').style.display = 'block';
                 document.getElementById('panel-note').style.display = 'block';
 
                 if (selected.length === 1) {
@@ -768,6 +881,18 @@
                     var tid = getTerrainAt(x, y);
                     var terrSel = document.getElementById('inp-terrain-id');
                     if (terrSel) terrSel.value = tid || '';
+                    // 设施绑定：单选时展示第一个存在的绑定类型
+                    var kinds = getStationKindsAt(x, y);
+                    var stKindSel = document.getElementById('inp-station-kind');
+                    var stNpcSel = document.getElementById('inp-station-npc-id');
+                    if (kinds.length) {
+                        stKindSel.value = kinds[0];
+                        var stRec = getStationAt(x, y, kinds[0]);
+                        stNpcSel.value = stRec ? stRec.npcId : '';
+                    } else {
+                        stKindSel.value = '';
+                        stNpcSel.value = '';
+                    }
                 } else {
                     var allEn = true, noneEn = true, allWalk = true, noneWalk = true;
                     for (var i = 0; i < selected.length; i++) {
@@ -903,6 +1028,40 @@
                 updateCellInfo();
             }
 
+            function applyStation() {
+                if (selected.length === 0) return;
+                var kind = (document.getElementById('inp-station-kind').value || '').trim();
+                var npcId = (document.getElementById('inp-station-npc-id').value || '').trim();
+                for (var i = 0; i < selected.length; i++) {
+                    var x = selected[i].x, y = selected[i].y;
+                    if (!isEnabled(x, y)) continue;
+                    if (!kind) continue;
+                    setStationAt(x, y, kind, npcId || null);
+                    // 设施格按引擎语义应不可走（畜牧/农业等标注判定），自动不可走
+                    if (npcId && state.walkable[y] && state.walkable[y][x]) {
+                        state.walkable[y][x] = false;
+                        npcAutoBlocked[keyXY(x, y)] = true;
+                    }
+                }
+                renderGrid();
+                highlightSelected();
+                updateCellInfo();
+            }
+
+            function clearStation() {
+                if (selected.length === 0) return;
+                for (var i = 0; i < selected.length; i++) {
+                    var x = selected[i].x, y = selected[i].y;
+                    if (!isEnabled(x, y)) continue;
+                    for (var j = state.stations.length - 1; j >= 0; j--) {
+                        if (state.stations[j].cellKey === x + ',' + y) state.stations.splice(j, 1);
+                    }
+                }
+                renderGrid();
+                highlightSelected();
+                updateCellInfo();
+            }
+
             function applyEnabled() {
                 if (selected.length === 0) return;
                 var en = document.getElementById('inp-enabled').checked;
@@ -970,6 +1129,15 @@
             document.getElementById('btn-apply-entity').addEventListener('click', applyEntity);
             document.getElementById('btn-apply-terrain').addEventListener('click', applyTerrain);
             document.getElementById('btn-apply-npc').addEventListener('click', applyNpc);
+            document.getElementById('btn-apply-station').addEventListener('click', applyStation);
+            document.getElementById('btn-clear-station').addEventListener('click', clearStation);
+            // 设施类型切换时保留当前格的对应绑定值
+            document.getElementById('inp-station-kind').addEventListener('change', function () {
+                var first = getFirstSelected();
+                if (!first || first.x < 0) return;
+                var stRec = getStationAt(first.x, first.y, this.value);
+                document.getElementById('inp-station-npc-id').value = stRec ? stRec.npcId : '';
+            });
             document.getElementById('btn-apply-note').addEventListener('click', function () { applyNote(); });
             document.getElementById('btn-clear-note').addEventListener('click', function () { applyNote(''); document.getElementById('inp-note').value = ''; });
 
@@ -989,6 +1157,7 @@
                 state.portals = [];
                 state.entities = [];
                 state.npcs = [];
+                state.stations = [];
                 state.annotations = {};
                 initGrid();
                 document.getElementById('inp-width').value = state.width;
@@ -1040,6 +1209,7 @@
                 state.portals = Array.isArray(data.portals) ? JSON.parse(JSON.stringify(data.portals)) : [];
                 state.entities = Array.isArray(data.entities) ? JSON.parse(JSON.stringify(data.entities)) : [];
                 state.npcs = Array.isArray(data.npcs) ? JSON.parse(JSON.stringify(data.npcs)) : [];
+                state.stations = collectStationsFromMap(data);
                 state.terrains = Array.isArray(data.terrains) ? JSON.parse(JSON.stringify(data.terrains)) : [];
                 // 注释直接来自 JSON（annotations）
                 state.annotations = (data.annotations && typeof data.annotations === 'object') ? JSON.parse(JSON.stringify(data.annotations)) : {};
@@ -1086,7 +1256,7 @@
                         else if (!state.walkable[y][x]) blocks.push({ x: x, y: y });
                     }
                 }
-                return {
+                var out = {
                     map_id: state.mapId,
                     name: state.name,
                     width: state.width,
@@ -1113,6 +1283,14 @@
                     terrains: state.terrains && state.terrains.length ? state.terrains.map(function (t) { return { x: t.x, y: t.y, terrain_id: t.terrain_id }; }) : undefined,
                     annotations: (state.annotations && Object.keys(state.annotations).length) ? state.annotations : undefined
                 };
+                // 设施绑定展开到顶层（与原地图 JSON 格式一致：xxx_station_interact_npc_by_cell / _id）
+                if (state.stations.length) {
+                    var stExp = buildStationsExport();
+                    for (var sk in stExp) {
+                        if (Object.prototype.hasOwnProperty.call(stExp, sk)) out[sk] = stExp[sk];
+                    }
+                }
+                return out;
             }
 
             function importFromJsonText(raw) {
@@ -1258,6 +1436,10 @@
             applyEntity = function () { _origApplyEntity(); emitState(); };
             var _origApplyNpc = applyNpc;
             applyNpc = function () { _origApplyNpc(); emitState(); };
+            var _origApplyStation = applyStation;
+            applyStation = function () { _origApplyStation(); emitState(); };
+            var _origClearStation = clearStation;
+            clearStation = function () { _origClearStation(); emitState(); };
             var _origApplyEnabled = applyEnabled;
             applyEnabled = function () { _origApplyEnabled(); emitState(); };
             var _origApplyWalkable = applyWalkable;

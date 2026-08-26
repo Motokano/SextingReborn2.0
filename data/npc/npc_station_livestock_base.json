@@ -1,9 +1,9 @@
 {
   "schemaVersion": 1,
-  "id": "npc.station.agriculture_base",
-  "name": "藏身处农田",
-  "displayTitle": "农田",
-  "npcLabel": "农",
+  "id": "npc.station.livestock_base",
+  "name": "藏身处牧场",
+  "displayTitle": "牧场",
+  "npcLabel": "牧",
   "sprite": "",
   "appearanceSchedule": {
     "start": "00:00",
@@ -11,29 +11,29 @@
   },
   "location": {
     "sceneId": "M0_Base_Inside_lv_1",
-    "x": 10,
+    "x": 9,
     "y": 14
   },
   "mainMenu": {
     "showChat": true,
     "showWorkWhen": "never",
-    "showOpenAgriculturePanel": true,
+    "showOpenLivestockPanel": true,
     "showLeave": true
   },
   "behavior": {
     "type": "workbench",
     "origin": "base_hideout",
-    "description": "设施 NPC：邻格点农业格走 interactNpc；闲聊走 triggers，使用农田打开农业面板。"
+    "description": "设施 NPC：邻格点畜牧格走 interactNpc；闲聊走 triggers，使用牧场打开畜牧面板。"
   },
-  "fallbackDialoguePoolId": "npc.station.agriculture_base.fallback",
+  "fallbackDialoguePoolId": "npc.station.livestock_base.fallback",
   "fallbackPoolRules": [
     {
-      "id": "npc.station.agriculture_base",
+      "id": "npc.station.livestock_base",
       "repeatable": true,
       "match_weight": 1,
       "poolPickMode": "pick_one",
       "poolIds": [
-        "npc.station.agriculture_base"
+        "npc.station.livestock_base"
       ],
       "requires": [],
       "blocks": [],
@@ -42,7 +42,7 @@
   ],
   "tags": [
     "workbench",
-    "agriculture_station",
+    "livestock_station",
     "non_combat",
     "base_facility"
   ]

@@ -1,0 +1,57 @@
+{
+  "npcId": "npc.station.livestock_base",
+  "entries": [
+    {
+      "id": "station.livestock.base_guide",
+      "entryType": "dialogue",
+      "entrySource": "chat",
+      "condition": null,
+      "requires": [],
+      "blocks": [],
+      "dialogue": {
+        "linesRich": [
+          {
+            "speaker": "narration",
+            "text": "牧场装置静静停着，四根机械臂还没挂上任何模块，区域里的草倒是长满了。得先捉来种畜、装上模块，它才会转起来。",
+            "avatar": ""
+          }
+        ],
+        "lines": [
+          "牧场装置静静停着，四根机械臂还没挂上任何模块，区域里的草倒是长满了。得先捉来种畜、装上模块，它才会转起来。"
+        ],
+        "hasOptions": false,
+        "options": []
+      },
+      "effects": [],
+      "repeatable": true,
+      "scope": "global",
+      "causesNpcDisappear": false
+    },
+    {
+      "id": "station.livestock.base_panel_hint",
+      "entryType": "dialogue",
+      "entrySource": "chat",
+      "condition": null,
+      "requires": [],
+      "blocks": [],
+      "dialogue": {
+        "linesRich": [
+          {
+            "speaker": "narration",
+            "text": "在菜单里点「管理牧场」可以打开控制面板：模块装配、动物迁移、采集屠宰都从那里操作。",
+            "avatar": ""
+          }
+        ],
+        "lines": [
+          "在菜单里点「管理牧场」可以打开控制面板：模块装配、动物迁移、采集屠宰都从那里操作。"
+        ],
+        "hasOptions": false,
+        "options": []
+      },
+      "effects": [],
+      "repeatable": true,
+      "scope": "global",
+      "causesNpcDisappear": false
+    }
+  ]
+}
