@@ -264,6 +264,17 @@
     if (!incoming.arm_zones) {
       incoming.arm_zones = { arm1: ['z1', 'z2'], arm2: ['z2', 'z3'], arm3: ['z3', 'z4'], arm4: ['z4', 'z1'] };
     }
+    // 防御：zones 缺省/坏项兜底（损坏档健壮性）
+    if (!incoming.zones || typeof incoming.zones !== 'object') {
+      incoming.zones = { z1: { grass_height: 1.5, compaction: 0, pollution: 0 }, z2: { grass_height: 1.5, compaction: 0, pollution: 0 }, z3: { grass_height: 1.5, compaction: 0, pollution: 0 }, z4: { grass_height: 1.5, compaction: 0, pollution: 0 } };
+    }
+    for (var zn in incoming.zones) {
+      var zc = incoming.zones[zn];
+      if (!zc || typeof zc !== 'object') incoming.zones[zn] = { grass_height: 1.5, compaction: 0, pollution: 0 };
+    }
+    // 防御：animals 非数组/含 null 项过滤
+    if (!Array.isArray(incoming.animals)) incoming.animals = [];
+    incoming.animals = incoming.animals.filter(function (a) { return a && typeof a === 'object'; });
     // 模块位迁移：旧字符串 → 实例
     if (incoming.arms && typeof incoming.arms === 'object') {
       for (var ak in incoming.arms) {
@@ -290,6 +301,8 @@
         if (a.pheromone_cooldown == null) a.pheromone_cooldown = 0;
         if (!a.cooldowns) a.cooldowns = {};
         if (a.reproduction_cooldown == null) a.reproduction_cooldown = 0;
+        // 防御：pregnant 必须是对象或 null（损坏档兜底）
+        if (a.pregnant != null && (typeof a.pregnant !== 'object' || Array.isArray(a.pregnant))) a.pregnant = null;
         // 旧档迁移：无 location_type 的默认为 zone；鸡迁移到鸡笼
         if (!a.location_type) {
           if (a.species_id === 'chicken') {
