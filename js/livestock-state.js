@@ -1725,7 +1725,8 @@
   function tickWeight(a, sp) {
     var g = sp.growth;
     var growthMult = getModifier(a, 'growth_rate_mult');
-    if (g.graze_growth_rate_kg_per_tick != null) {
+    // 猪不吃草（§4.6）：长肉全程靠饲料槽，已在 tickAnimal 饲料分支处理，此处跳过避免双倍长肉
+    if (a.species_id !== 'pig' && g.graze_growth_rate_kg_per_tick != null) {
       var cap = g.graze_cap_kg != null ? g.graze_cap_kg : g.fatten_cap_kg;
       if (a.satiety > g.satiety_grow_threshold) {
         if (a.weight_kg < cap) a.weight_kg = Math.min(cap, a.weight_kg + g.graze_growth_rate_kg_per_tick * growthMult);
