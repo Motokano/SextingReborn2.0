@@ -219,10 +219,11 @@
   }
 
   function initDemoState() {
+    // 空牧场开局（§8.7 初始不赠送动物）：无模块、无动物、生态全净、草长满
     var arms = {
-      arm1: { inner: makeModuleInstance('coop'), front: null, bottom: { shadow: true, module_id: 'coop' }, top: null, cw_side: null, ccw_side: null },
-      arm2: { inner: null, front: null, bottom: null, top: null, cw_side: makeModuleInstance('feed_trough'), ccw_side: null },
-      arm3: { inner: null, front: null, bottom: makeModuleInstance('sprinkler'), top: null, cw_side: null, ccw_side: null },
+      arm1: { inner: null, front: null, bottom: null, top: null, cw_side: null, ccw_side: null },
+      arm2: { inner: null, front: null, bottom: null, top: null, cw_side: null, ccw_side: null },
+      arm3: { inner: null, front: null, bottom: null, top: null, cw_side: null, ccw_side: null },
       arm4: { inner: null, front: null, bottom: null, top: null, cw_side: null, ccw_side: null }
     };
 
@@ -230,10 +231,10 @@
       rotation_ticks_remaining: 862,
       rotation_total_ticks: 1000,
       zones: {
-        z1: { grass_height: 1.2, compaction: 10, pollution: 5 },
-        z2: { grass_height: 0.7, compaction: 30, pollution: 25 },
-        z3: { grass_height: 0.1, compaction: 60, pollution: 90 },
-        z4: { grass_height: 0.3, compaction: 85, pollution: 55 }
+        z1: { grass_height: 1.5, compaction: 0, pollution: 0 },
+        z2: { grass_height: 1.5, compaction: 0, pollution: 0 },
+        z3: { grass_height: 1.5, compaction: 0, pollution: 0 },
+        z4: { grass_height: 1.5, compaction: 0, pollution: 0 }
       },
       arm_zones: {
         arm1: ['z1', 'z2'],
@@ -242,37 +243,8 @@
         arm4: ['z4', 'z1']
       },
       arms: arms,
-      axis: { slot1: makeModuleInstance('slaughter'), slot2: null },
-      animals: [
-        // 区域动物（牛/羊/猪）
-        makeAnimal('cattle', 'female', 'zone', 'z1', { perks: ['hardy'] }),
-        makeAnimal('cattle', 'male', 'zone', 'z1', { weight_kg: 300 }),
-        makeAnimal('sheep', 'female', 'zone', 'z1', { perks: ['clean_sheep'] }),
-        makeAnimal('cattle', 'female', 'zone', 'z2', { weight_kg: 150 }),
-        makeAnimal('sheep', 'female', 'zone', 'z2', {}),
-        makeAnimal('sheep', 'male', 'zone', 'z2', {}),
-        makeAnimal('sheep', 'female', 'zone', 'z2', {}),
-        makeAnimal('sheep', 'female', 'zone', 'z2', {}),
-        makeAnimal('pig', 'female', 'zone', 'z2', { pregnant: { father_uid: null, remaining_ticks: 1500 } }),
-        makeAnimal('pig', 'male', 'zone', 'z2', {}),
-        makeAnimal('sheep', 'female', 'zone', 'z4', {}),
-        makeAnimal('sheep', 'male', 'zone', 'z4', {}),
-        makeAnimal('sheep', 'female', 'zone', 'z4', {}),
-        makeAnimal('pig', 'female', 'zone', 'z4', {}),
-        makeAnimal('pig', 'male', 'zone', 'z4', {}),
-        makeAnimal('pig', 'female', 'zone', 'z3', {}),
-        makeAnimal('pig', 'male', 'zone', 'z3', {}),
-        makeAnimal('pig', 'female', 'zone', 'z3', {}),
-        makeAnimal('pig', 'female', 'zone', 'z3', {}),
-        makeAnimal('pig', 'female', 'zone', 'z3', {}),
-        // 鸡笼动物（鸡，在 arm1 的鸡笼）
-        makeAnimal('chicken', 'female', 'coop', 'arm1', {}),
-        makeAnimal('chicken', 'female', 'coop', 'arm1', {}),
-        makeAnimal('chicken', 'female', 'coop', 'arm1', {}),
-        makeAnimal('chicken', 'female', 'coop', 'arm1', {}),
-        makeAnimal('chicken', 'female', 'coop', 'arm1', {}),
-        makeAnimal('chicken', 'female', 'coop', 'arm1', {})
-      ]
+      axis: { slot1: null, slot2: null },
+      animals: []
     };
 
     // demo 动物设为成年，便于测试繁殖（鸡 maturity 为 null，跳过）
