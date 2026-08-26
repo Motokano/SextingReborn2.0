@@ -438,6 +438,36 @@
             extraActions = '<button type="button" class="lv-btn" data-feed="' + aid + '">投喂</button>';
           } else if (mid === 'coop') {
             extraActions = '<button type="button" class="lv-btn" data-feed-chickens="' + aid + '">喂鸡</button>';
+          } else if (mid === 'feed_preprocess' || mid === 'feed_refine') {
+            var queueN = inst.input_queue ? inst.input_queue.reduce(function (s, q) { return s + q.count; }, 0) : 0;
+            extra = ' 队列 ' + queueN + ' 作物' + (mid === 'feed_refine' && inst.refine_cache > 0 ? ' · 精料缓存 ' + inst.refine_cache.toFixed(1) : '');
+            extraActions = '<button type="button" class="lv-btn" data-process="' + aid + '">投入作物</button>';
+          } else if (mid === 'climate_control') {
+            var modeNames = { off: '关闭', sunny: '晴朗', shade: '阴凉', humid: '湿润' };
+            var cdC = inst.mode_switch_cooldown || 0;
+            extra = ' 模式 ' + (modeNames[inst.mode] || '关闭') + (cdC > 0 ? ' · 切换冷却 ' + cdC + 't' : '');
+            extraActions =
+              '<button type="button" class="lv-btn" data-climate="sunny">晴朗</button>' +
+              '<button type="button" class="lv-btn" data-climate="shade">阴凉</button>' +
+              (inst.level >= 2 ? '<button type="button" class="lv-btn" data-climate="humid">湿润</button>' : '') +
+              '<button type="button" class="lv-btn" data-climate="off">关闭</button>';
+          } else if (mid === 'waste_heat_recycle') {
+            var hmNames = { fertilizer: '肥料', fuel: '沼气', feed: '虫粉' };
+            var outN = inst.output_queue ? inst.output_queue.reduce(function (s, q) { return s + q.count; }, 0) : 0;
+            extra = ' 模式 ' + (hmNames[inst.mode] || '肥料') + ' · 产出 ' + outN + ' 份' + (inst.points ? '（' + inst.points.toFixed(0) + ' 点）' : '');
+            extraActions =
+              '<button type="button" class="lv-btn" data-heat-mode="fertilizer">肥料</button>' +
+              (inst.level >= 2 ? '<button type="button" class="lv-btn" data-heat-mode="fuel">沼气</button>' : '') +
+              (inst.level >= 4 ? '<button type="button" class="lv-btn" data-heat-mode="feed">虫粉</button>' : '') +
+              (outN > 0 ? '<button type="button" class="lv-btn" data-heat-take="1">提取</button>' : '');
+          } else if (mid === 'link_schedule') {
+            var rulesOn = inst.enabled_rules || [];
+            var ruleNames = { till_seed: '翻耕→播种', grass_feed: '草高→投喂', clean_collect: '清净→采集' };
+            extra = ' 联动 ' + (rulesOn.length ? rulesOn.map(function (r) { return ruleNames[r] || r; }).join('、') : '无');
+            extraActions = Object.keys(ruleNames).map(function (rid) {
+              var on = rulesOn.indexOf(rid) >= 0;
+              return '<button type="button" class="lv-btn ' + (on ? 'lv-toggle on' : 'lv-toggle') + '" data-link-rule="' + rid + '">' + ruleNames[rid] + '</button>';
+            }).join('');
           } else if (mid === 'warehouse_hub') {
             var cap = window.LivestockState.getWarehouseCapacity();
             var usage = window.LivestockState.getWarehouseUsage();
@@ -551,6 +581,7 @@
   }
 
   var feedTargetArm = null;
+  var feedPickerMode = null;
 
   function listFeedCropsInInventory() {
     var IE = window.InventoryEquipment;
@@ -574,8 +605,9 @@
     return crops;
   }
 
-  function openFeedPicker(armId) {
+  function openFeedPicker(armId, mode) {
     feedTargetArm = armId;
+    feedPickerMode = mode || 'feed';
     var picker = el('livestock-feed-picker');
     if (!picker) return;
     renderFeedPicker();
@@ -584,6 +616,7 @@
 
   function closeFeedPicker() {
     feedTargetArm = null;
+    feedPickerMode = null;
     var picker = el('livestock-feed-picker');
     if (picker) picker.classList.add('hidden');
   }
@@ -596,12 +629,13 @@
       list.innerHTML = '<div class="empty-hint">背包没有可作饲料的作物</div>';
       return;
     }
+    var modeLabel = feedPickerMode === 'process' ? '投入加工' : '投 1';
     list.innerHTML = crops.map(function (c) {
       var nut = window.LivestockState.getCropNutrition(c.item_id);
       return '<div class="lv-feed-row">' +
         '<span class="feed-name">' + itemDisplayName(c.item_id) + '</span>' +
         '<span class="feed-meta">营养 ' + nut + ' · 库存 ' + c.count + '</span>' +
-        '<button type="button" class="lv-btn" data-feed-crop="' + c.item_id + '">投 1</button>' +
+        '<button type="button" class="lv-btn" data-feed-crop="' + c.item_id + '">' + modeLabel + '</button>' +
         '</div>';
     }).join('');
     var btns = list.querySelectorAll('[data-feed-crop]');
@@ -619,12 +653,22 @@
       var rem = IE.removeCarriedItemsByTemplateId(cropId, 1);
       if (!rem.ok) { feedbackMsg = '扣除作物失败'; renderFeedPicker(); return; }
     }
-    var r = window.LivestockState.addFeedToTrough(feedTargetArm, cropId, 1);
-    if (r.ok) {
-      feedbackMsg = '投喂 ' + itemDisplayName(cropId) + '，饲料 +' + r.added.toFixed(1) + '（当前 ' + r.total.toFixed(1) + '/100）';
-      logMsg('投喂 ' + itemDisplayName(cropId) + ' 到饲料槽', 'success');
+    if (feedPickerMode === 'process') {
+      var rp = window.LivestockState.feedProcessInput(feedTargetArm, cropId, 1);
+      if (rp.ok) {
+        feedbackMsg = '投入 ' + itemDisplayName(cropId) + ' 到加工队列';
+        logMsg('投入 ' + itemDisplayName(cropId) + ' 到饲料加工', 'success');
+      } else {
+        feedbackMsg = '加工失败：' + reasonText(rp);
+      }
     } else {
-      feedbackMsg = '投喂失败：' + reasonText(r);
+      var r = window.LivestockState.addFeedToTrough(feedTargetArm, cropId, 1);
+      if (r.ok) {
+        feedbackMsg = '投喂 ' + itemDisplayName(cropId) + '，饲料 +' + r.added.toFixed(1) + '（当前 ' + r.total.toFixed(1) + '/100）';
+        logMsg('投喂 ' + itemDisplayName(cropId) + ' 到饲料槽', 'success');
+      } else {
+        feedbackMsg = '投喂失败：' + reasonText(r);
+      }
     }
     renderFeedPicker();
     render();
@@ -751,6 +795,84 @@
         doWarehouseTake();
       });
     }
+    var processBtns = document.querySelectorAll('#livestock-module-content [data-process]');
+    for (var pb = 0; pb < processBtns.length; pb++) {
+      processBtns[pb].addEventListener('click', function (e) {
+        e.stopPropagation();
+        openFeedPicker(this.getAttribute('data-process'), 'process');
+      });
+    }
+    var climateBtns = document.querySelectorAll('#livestock-module-content [data-climate]');
+    for (var cb = 0; cb < climateBtns.length; cb++) {
+      climateBtns[cb].addEventListener('click', function (e) {
+        e.stopPropagation();
+        doClimateMode(this.getAttribute('data-climate'));
+      });
+    }
+    var heatModeBtns = document.querySelectorAll('#livestock-module-content [data-heat-mode]');
+    for (var hb = 0; hb < heatModeBtns.length; hb++) {
+      heatModeBtns[hb].addEventListener('click', function (e) {
+        e.stopPropagation();
+        doHeatMode(this.getAttribute('data-heat-mode'));
+      });
+    }
+    var heatTakes = document.querySelectorAll('#livestock-module-content [data-heat-take]');
+    for (var ht = 0; ht < heatTakes.length; ht++) {
+      heatTakes[ht].addEventListener('click', function (e) {
+        e.stopPropagation();
+        doHeatTake();
+      });
+    }
+    var linkBtns = document.querySelectorAll('#livestock-module-content [data-link-rule]');
+    for (var lb = 0; lb < linkBtns.length; lb++) {
+      linkBtns[lb].addEventListener('click', function (e) {
+        e.stopPropagation();
+        doLinkToggle(this.getAttribute('data-link-rule'));
+      });
+    }
+  }
+
+  function doClimateMode(mode) {
+    var r = window.LivestockState.climateSetMode(mode);
+    if (r.ok) {
+      feedbackMsg = '气候模式：' + ({ sunny: '晴朗', shade: '阴凉', humid: '湿润', off: '关闭' }[mode] || mode) + (r.cooldown ? '（冷却 ' + r.cooldown + 't）' : '');
+      logMsg(feedbackMsg, 'success');
+    } else {
+      feedbackMsg = '切换失败：' + reasonText(r);
+      logMsg(feedbackMsg, 'warn');
+    }
+    render();
+  }
+
+  function doHeatMode(mode) {
+    var r = window.LivestockState.wasteHeatSetMode(mode);
+    if (r.ok) {
+      feedbackMsg = '废热回收模式：' + ({ fertilizer: '肥料', fuel: '沼气', feed: '虫粉' }[mode] || mode);
+      logMsg(feedbackMsg, 'success');
+    } else {
+      feedbackMsg = '切换失败：' + reasonText(r);
+    }
+    render();
+  }
+
+  function doHeatTake() {
+    var items = window.LivestockState.wasteHeatTakeAll();
+    if (!items || !items.length) { feedbackMsg = '无产出可提取'; render(); return; }
+    var gres = giveItems(items);
+    feedbackMsg = '提取废热产出 ' + gres.placed + ' 件' + (gres.dropped > 0 ? '（' + gres.dropped + ' 件掉落地面）' : '');
+    logMsg(feedbackMsg, 'success');
+    render();
+  }
+
+  function doLinkToggle(ruleId) {
+    var r = window.LivestockState.linkScheduleToggleRule(ruleId);
+    if (r.ok) {
+      feedbackMsg = '联动规则已' + (r.enabled.indexOf(ruleId) >= 0 ? '启用' : '停用');
+      logMsg(feedbackMsg, 'success');
+    } else {
+      feedbackMsg = '切换失败：' + reasonText(r);
+    }
+    render();
   }
 
   // 提取中央仓储枢纽缓存全部产物（§11.6.1）

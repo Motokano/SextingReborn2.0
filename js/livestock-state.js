@@ -652,7 +652,21 @@
     pasture_arm:  { per_tick: [0.04, 0.05, 0.06, 0.08, 0.10], growth: [0.20, 0.25, 0.30, 0.35, 0.40], seed_growth: [0.50, 0.50, 0.75, 0.75, 1.00], seed_threshold: 0.4 },
     clinic_arm:   { heal: [0.01, 0.02, 0.03, 0.05, 0.08], count: [2, 3, 4, 5, 6] },
     auto_collect: { cooldown_mult: [1.00, 0.95, 0.90, 0.85, 0.80], clean_corpse: [false, false, false, true, true] },
-    warehouse_hub: { capacity: [50, 80, 120, 160, 200] }
+    warehouse_hub: { capacity: [50, 80, 120, 160, 200] },
+    // 饲料预处理（§10.3/§11.3.2）：投入作物 → 标准饲料自动入同臂槽（营养值÷10 = 单位）
+    feed_preprocess: { transfer_units_per_tick: [0.5, 0.75, 1.0, 1.5, 2.0] },
+    // 饲料精加工臂（§11.4）：预处理 + 自动补槽 + 精加工倍率
+    feed_refine: { refine_mult: [1.2, 1.25, 1.3, 1.35, 1.4], cache_capacity: [0, 0, 0, 0, 50] },
+    // 气候调控塔（§11.6.2）：三模式全局（模式在实例 mode 字段）
+    climate_control: {
+      sunny:    { grass: 0.25, satiety: 0.20 },
+      shade:    { grass: -0.15, satiety: -0.20 },
+      humid:    { pollution_clean: 0.01, compaction_up: 0.003 }
+    },
+    // 联动作业臂（§11.5.1）：调度点数/轮
+    link_schedule: { dispatch_points: [2, 2, 3, 3, 4], rules_enabled: [1, 2, 2, 2, 2] },
+    // 废热回收臂（§11.5.2）：转化率（按模式）
+    waste_heat_recycle: { convert_rate: [0.20, 0.20, 0.25, 0.25, 0.35] }
   };
 
   function healAnimalsInZones(st, zoneList, heal, count) {
@@ -712,11 +726,33 @@
     if (moduleId === 'warehouse_hub') {
       return '缓存 ' + arr(eff.capacity) + ' 格 · 自动收集四臂采集产物';
     }
+    if (moduleId === 'feed_preprocess') {
+      return '作物→标准饲料（1 单位 = 10 营养）自动入同臂槽';
+    }
+    if (moduleId === 'feed_refine') {
+      var fp = ['精加工 ×' + arr(eff.refine_mult).toFixed(2).replace(/0$/, '')];
+      if (arr(eff.cache_capacity) > 0) fp.push('缓存 ' + arr(eff.cache_capacity) + ' 单位优先消耗');
+      return fp.join('；');
+    }
+    if (moduleId === 'climate_control') {
+      return '全局三模式：晴朗/阴凉/湿润（Lv4 强度+50%）';
+    }
+    if (moduleId === 'link_schedule') {
+      return '调度 ' + arr(eff.dispatch_points) + ' 点/轮 · 联动规则 ' + arr(eff.rules_enabled) + ' 条';
+    }
+    if (moduleId === 'waste_heat_recycle') {
+      return '降污 ×' + Math.round(arr(eff.convert_rate) * 100) + '% 回收（肥料/沼气/虫粉）';
+    }
     return '';
   }
 
   // 每 tick 结算模块效果：作用于该臂夹持两区（通过 zone 临时字段传递）
   function tickModules(st) {
+    // 废热回收追踪：记录本 tick 污染基线（全四区，Lv3+ 可回收相邻区）
+    st._waste_heat_drop = st._waste_heat_drop || 0;
+    var pollBefore = {};
+    for (var pzid in st.zones) pollBefore[pzid] = st.zones[pzid].pollution || 0;
+
     for (var ak in st.arms) {
       var arm = st.arms[ak];
       if (!arm || typeof arm !== 'object') continue;
@@ -769,6 +805,26 @@
           autoCollectActive = true;
           autoCdMult = Math.min(autoCdMult, eff.cooldown_mult[idx] || 1);
           if (eff.clean_corpse && eff.clean_corpse[idx]) autoCleanCorpse = true;
+        } else if (mid === 'feed_preprocess') {
+          // 饲料预处理（§10.3）：作物 → 标准饲料自动入同臂槽
+          tickFeedProcessing(st, inst, 1);
+        } else if (mid === 'feed_refine') {
+          // 饲料精加工臂（§11.4）：倍率加工 + 自动补槽
+          var rmult = eff.refine_mult[idx] || 1.2;
+          tickFeedProcessing(st, inst, rmult);
+          // Lv4 自动补相邻臂的饲料槽（向同臂之外的所有槽匀补精加工缓存）
+          if (lv >= 4 && inst.refine_cache > 0) {
+            for (var oak in st.arms) {
+              var oarm = st.arms[oak];
+              var otrough = findTroughOnArm(oarm);
+              if (otrough && otrough !== findTroughOnArm(arm)) {
+                var give = Math.min(inst.refine_cache, 1);
+                inst.refine_cache -= give;
+                addUnitsToTrough(otrough, give);
+                if (inst.refine_cache <= 0) break;
+              }
+            }
+          }
         }
       }
 
@@ -815,6 +871,18 @@
             }
           }
         }
+      }
+    }
+
+    // 废热回收追踪：累计全四区本 tick 污染净下降（§11.5.2）
+    var heatInst = getWasteHeatRecycle();
+    if (heatInst) {
+      var lvHeat = Math.max(1, Math.min(5, heatInst.level || 1));
+      for (var bzid in st.zones) {
+        var bz = st.zones[bzid];
+        var before = pollBefore[bzid] != null ? pollBefore[bzid] : 0;
+        var now = bz.pollution || 0;
+        if (now < before) st._waste_heat_drop += (before - now);
       }
     }
   }
@@ -873,6 +941,313 @@
     if (items[itemId] == null) items[itemId] = 0;
     items[itemId]++;
     return true;
+  }
+
+  // 找某臂上的饲料槽实例（cw/ccw_side）
+  function findTroughOnArm(arm) {
+    if (!arm) return null;
+    var t = arm.cw_side;
+    if (t && !isShadowSlot(t) && getSlotModuleId(t) === 'feed_trough') return t;
+    t = arm.ccw_side;
+    if (t && !isShadowSlot(t) && getSlotModuleId(t) === 'feed_trough') return t;
+    return null;
+  }
+
+  // 向饲料槽补单位（返回实际补入量）
+  function addUnitsToTrough(trough, units) {
+    if (!trough) return 0;
+    if (trough.feed_units == null) trough.feed_units = 0;
+    var before = trough.feed_units;
+    trough.feed_units = clamp(trough.feed_units + units, 0, 100);
+    return trough.feed_units - before;
+  }
+
+  // 投入作物到预处理/精加工臂：消耗玩家背包作物，入加工队列（§10.3）
+  // 返回 { ok, added_units?, reason? }
+  function feedProcessInput(armId, cropItemId, count) {
+    var st = ensureState();
+    var arm = st.arms[armId];
+    var inst = null;
+    if (arm) {
+      for (var s = 0; s < ARM_SLOT_KEYS.length; s++) {
+        var sl = arm[ARM_SLOT_KEYS[s]];
+        if (sl && !isShadowSlot(sl) && (sl.module_id === 'feed_preprocess' || sl.module_id === 'feed_refine')) { inst = sl; break; }
+      }
+    }
+    if (!inst) return { ok: false, reason: 'no_processor' };
+    var nut = getCropNutrition(cropItemId);
+    if (nut == null) return { ok: false, reason: 'not_feed_crop' };
+    var c = Math.max(1, Math.floor(Number(count) || 1));
+    var IE = window.InventoryEquipment;
+    if (!IE || typeof IE.takeItemFromDefaultContainer !== 'function') return { ok: false, reason: 'no_inventory' };
+    var removed = 0;
+    for (var i = 0; i < c; i++) {
+      var r = IE.takeItemFromDefaultContainer(cropItemId, 1);
+      if (r && r.success) removed++;
+      else break;
+    }
+    if (removed <= 0) return { ok: false, reason: 'not_enough_crop' };
+    if (!inst.input_queue) inst.input_queue = [];
+    inst.input_queue.push({ item_id: cropItemId, nutrition: nut, count: removed });
+    return { ok: true, added: removed };
+  }
+
+  // 每 tick 加工队列 → 标准饲料入槽（预处理/精加工共用；refine 有倍率）
+  function tickFeedProcessing(st, inst, refineMult) {
+    if (!inst || !inst.input_queue || !inst.input_queue.length) return;
+    var arm = findArmForModuleInstance(st, inst);
+    var trough = arm ? findTroughOnArm(arm) : null;
+    // 精加工 Lv5：可缓存 50 单位（优先入缓存，缓存满再入槽）
+    var cacheCap = 0;
+    var eff = MODULE_EFFECTS.feed_refine;
+    if (inst.module_id === 'feed_refine' && eff) {
+      cacheCap = eff.cache_capacity[Math.max(0, Math.min(4, (inst.level || 1) - 1))] || 0;
+    }
+    if (!inst.refine_cache) inst.refine_cache = 0;
+    var mult = refineMult || 1;
+    var q = inst.input_queue[0];
+    // 单 tick 处理 1 个作物 → nutrition÷10 × mult 单位
+    var units = (q.nutrition / 10) * mult;
+    q.count--;
+    if (q.count <= 0) inst.input_queue.shift();
+    var left = units;
+    if (cacheCap > 0 && inst.refine_cache < cacheCap) {
+      var intoCache = Math.min(left, cacheCap - inst.refine_cache);
+      inst.refine_cache += intoCache;
+      left -= intoCache;
+    }
+    if (left > 0 && trough) {
+      addUnitsToTrough(trough, left);
+    }
+  }
+
+  function findArmForModuleInstance(st, targetInst) {
+    for (var ak in st.arms) {
+      var arm = st.arms[ak];
+      if (!arm || typeof arm !== 'object') continue;
+      for (var s = 0; s < ARM_SLOT_KEYS.length; s++) {
+        if (arm[ARM_SLOT_KEYS[s]] === targetInst) return arm;
+      }
+    }
+    return null;
+  }
+
+  // 轴心位2 的气候调控塔实例（§11.6.2）；未装返回 null
+  function getClimateControl() {
+    var st = ensureState();
+    var axis = st.axis || {};
+    var inst = axis.slot2;
+    if (!inst || isShadowSlot(inst) || inst.module_id !== 'climate_control') return null;
+    if (inst.mode == null) inst.mode = 'off';
+    if (inst.mode_switch_cooldown == null) inst.mode_switch_cooldown = 0;
+    return inst;
+  }
+
+  // 切换气候模式（§11.6.2）：晴朗/阴凉/湿润/关闭；冷却 2000 tick（Lv3 1500 / Lv5 1000）
+  function climateSetMode(mode) {
+    var inst = getClimateControl();
+    if (!inst) return { ok: false, reason: 'no_climate_tower' };
+    if (mode === inst.mode) return { ok: true, mode: mode };
+    if ((inst.mode_switch_cooldown || 0) > 0) {
+      return { ok: false, reason: 'cooldown', remaining: inst.mode_switch_cooldown };
+    }
+    var lv = Math.max(1, Math.min(5, inst.level || 1));
+    // 模式解锁：Lv1 晴+阴；Lv2 湿润
+    if (mode === 'humid' && lv < 2) return { ok: false, reason: 'locked', need_level: 2 };
+    if (mode !== 'off' && mode !== 'sunny' && mode !== 'shade' && mode !== 'humid') {
+      return { ok: false, reason: 'unknown_mode' };
+    }
+    inst.mode = mode;
+    var cd = lv >= 5 ? 1000 : (lv >= 3 ? 1500 : 2000);
+    inst.mode_switch_cooldown = cd;
+    return { ok: true, mode: mode, cooldown: cd };
+  }
+
+  // 当前气候修正（供 tick 应用）：返回 { grassMult, satietyMult, pollutionClean, compactionUp }
+  function getClimateModifiers() {
+    var inst = getClimateControl();
+    if (!inst || !inst.mode || inst.mode === 'off') {
+      return { grassMult: 1, satietyMult: 1, pollutionClean: 0, compactionUp: 0 };
+    }
+    var eff = MODULE_EFFECTS.climate_control;
+    var cfg = eff && eff[inst.mode];
+    if (!cfg) return { grassMult: 1, satietyMult: 1, pollutionClean: 0, compactionUp: 0 };
+    var lv = Math.max(1, Math.min(5, inst.level || 1));
+    // Lv4 效果强度 +50%（增益和代价同步）
+    var k = lv >= 4 ? 1.5 : 1;
+    return {
+      grassMult: 1 + (cfg.grass || 0) * k,
+      satietyMult: 1 + (cfg.satiety || 0) * k,
+      pollutionClean: (cfg.pollution_clean || 0) * k,
+      compactionUp: (cfg.compaction_up || 0) * k
+    };
+  }
+
+  // 废热回收臂实例（§11.5.2）；未装返回 null
+  function getWasteHeatRecycle() {
+    var st = ensureState();
+    for (var ak in st.arms) {
+      var arm = st.arms[ak];
+      if (!arm || typeof arm !== 'object') continue;
+      for (var s = 0; s < ARM_SLOT_KEYS.length; s++) {
+        var sl = arm[ARM_SLOT_KEYS[s]];
+        if (sl && !isShadowSlot(sl) && sl.module_id === 'waste_heat_recycle') return sl;
+      }
+    }
+    return null;
+  }
+
+  // 切换废热回收模式（§11.5.2）：肥料/燃料/饲料；冷却 500 tick；Lv2 燃料 / Lv4 饲料
+  function wasteHeatSetMode(mode) {
+    var inst = getWasteHeatRecycle();
+    if (!inst) return { ok: false, reason: 'no_heat_arm' };
+    if (mode === inst.mode) return { ok: true, mode: mode };
+    if ((inst.mode_switch_cooldown || 0) > 0) {
+      return { ok: false, reason: 'cooldown', remaining: inst.mode_switch_cooldown };
+    }
+    var lv = Math.max(1, Math.min(5, inst.level || 1));
+    if (mode === 'fuel' && lv < 2) return { ok: false, reason: 'locked', need_level: 2 };
+    if (mode === 'feed' && lv < 4) return { ok: false, reason: 'locked', need_level: 4 };
+    if (mode !== 'fertilizer' && mode !== 'fuel' && mode !== 'feed') {
+      return { ok: false, reason: 'unknown_mode' };
+    }
+    inst.mode = mode;
+    inst.mode_switch_cooldown = 500;
+    return { ok: true, mode: mode };
+  }
+
+  // 废热回收产出映射
+  function wasteHeatOutputItem(mode) {
+    return mode === 'fuel' ? 'hus_biogas' : (mode === 'feed' ? 'hus_insect_powder' : 'fertilizer_basic');
+  }
+
+  // 每 tick 结算废热回收：夹持两区污染下降量 × 转化率 = 资源点；100 点 = 1 份产出
+  // 依赖 tickModules 先记录本 tick 降污量（st._waste_heat_pollution_drop[armId]）
+  function tickWasteHeat(st) {
+    var inst = getWasteHeatRecycle();
+    if (!inst) return;
+    if ((inst.mode_switch_cooldown || 0) > 0) inst.mode_switch_cooldown--;
+    var lv = Math.max(1, Math.min(5, inst.level || 1));
+    var eff = MODULE_EFFECTS.waste_heat_recycle;
+    var rate = (eff && eff.convert_rate[lv - 1]) || 0.2;
+    // Lv3+ 可回收相邻区域：追踪全部四区降污
+    var trackAll = lv >= 3;
+    if (!inst.points) inst.points = 0;
+    if (!st._waste_heat_drop) st._waste_heat_drop = 0;
+    var drop = st._waste_heat_drop || 0;
+    if (drop > 0) {
+      inst.points += drop * 100 * rate; // 污染 1% = 100 点当量
+    }
+    st._waste_heat_drop = 0;
+    if (!inst.output_queue) inst.output_queue = [];
+    while (inst.points >= 100) {
+      inst.points -= 100;
+      inst.output_queue.push({ item_id: wasteHeatOutputItem(inst.mode || 'fertilizer'), count: 1 });
+    }
+  }
+
+  // 提取废热回收产出
+  function wasteHeatTakeAll() {
+    var inst = getWasteHeatRecycle();
+    if (!inst || !inst.output_queue || !inst.output_queue.length) return [];
+    var out = inst.output_queue.slice();
+    inst.output_queue = [];
+    return out;
+  }
+
+  // 联动作业臂实例（§11.5.1）；未装返回 null
+  function getLinkSchedule() {
+    var st = ensureState();
+    for (var ak in st.arms) {
+      var arm = st.arms[ak];
+      if (!arm || typeof arm !== 'object') continue;
+      for (var s = 0; s < ARM_SLOT_KEYS.length; s++) {
+        var sl = arm[ARM_SLOT_KEYS[s]];
+        if (sl && !isShadowSlot(sl) && sl.module_id === 'link_schedule') {
+          return { inst: sl, arm: arm, armId: ak };
+        }
+      }
+    }
+    return null;
+  }
+
+  // 切换联动规则启用（§11.5.1 Lv2+ 手动切换）：rules = ['till_seed','grass_feed','clean_collect']
+  function linkScheduleToggleRule(ruleId) {
+    var ls = getLinkSchedule();
+    if (!ls) return { ok: false, reason: 'no_link_arm' };
+    var lv = Math.max(1, Math.min(5, ls.inst.level || 1));
+    var eff = MODULE_EFFECTS.link_schedule;
+    var maxRules = (eff && eff.rules_enabled[lv - 1]) || 1;
+    if (!ls.inst.enabled_rules) ls.inst.enabled_rules = [];
+    if (ls.inst.enabled_rules.indexOf(ruleId) >= 0) {
+      ls.inst.enabled_rules = ls.inst.enabled_rules.filter(function (r) { return r !== ruleId; });
+      return { ok: true, enabled: ls.inst.enabled_rules };
+    }
+    if (ls.inst.enabled_rules.length >= maxRules) {
+      return { ok: false, reason: 'rule_limit', limit: maxRules };
+    }
+    ls.inst.enabled_rules.push(ruleId);
+    return { ok: true, enabled: ls.inst.enabled_rules.slice() };
+  }
+
+  // 每轮旋转前结算联动（§11.5.1）：调度点数/轮，检测夹持两区条件触发接力
+  function tickLinkSchedule(st) {
+    var ls = getLinkSchedule();
+    if (!ls || !ls.inst || !ls.inst.enabled_rules || !ls.inst.enabled_rules.length) return;
+    var lv = Math.max(1, Math.min(5, ls.inst.level || 1));
+    var eff = MODULE_EFFECTS.link_schedule;
+    if (ls.inst.dispatch == null) ls.inst.dispatch = (eff && eff.dispatch_points[lv - 1]) || 2;
+    ls.inst.dispatch = (eff && eff.dispatch_points[lv - 1]) || 2; // 每轮重置
+    var points = ls.inst.dispatch;
+    var zones = (st.arm_zones && st.arm_zones[ls.armId]) || [];
+    ls.inst.enabled_rules.forEach(function (ruleId) {
+      if (points <= 0) return;
+      var z = zones.length ? st.zones[zones[0]] : null;
+      var z2 = zones.length > 1 ? st.zones[zones[1]] : null;
+      if (ruleId === 'till_seed') {
+        // 板结 < 20 → 播种（草低时加速生长）
+        [z, z2].forEach(function (zz) {
+          if (!zz || points <= 0) return;
+          if ((zz.compaction || 0) < 20 && (zz.grass_height || 0) < 0.8) {
+            zz._seed_once = 0.5; // 播种一次：草生长当轮 +50%
+            points--;
+          }
+        });
+      } else if (ruleId === 'grass_feed') {
+        // 草高 > 1.0 → 该臂夹持区投喂优先级（饲料槽优先补饱腹）
+        [z, z2].forEach(function (zz) {
+          if (!zz || points <= 0) return;
+          if ((zz.grass_height || 0) > 1.0) {
+            zz._feed_priority = true;
+            points--;
+          }
+        });
+      } else if (ruleId === 'clean_collect') {
+        // 污染 < 10% → 自动采集一轮（直接触发一次采集）
+        [z, z2].forEach(function (zz) {
+          if (!zz || points <= 0) return;
+          if ((zz.pollution || 0) < 10) {
+            st.animals.forEach(function (a) {
+              if (a.dead || a.location_type !== 'zone' || a.zone_id !== zones[zones.indexOf(zz)]) return;
+              var asp = getSpecies(a.species_id);
+              if (!asp || !asp.products || !asp.products.living) return;
+              asp.products.living.forEach(function (p) {
+                var r = collectProduct(a.uid, p.product_id, 1);
+                if (r.ok) {
+                  if (getWarehouseHub()) warehouseAdd(r.item_id);
+                  else {
+                    st.pending_auto_items = st.pending_auto_items || [];
+                    st.pending_auto_items.push({ item_id: r.item_id, count: r.count, uid: a.uid });
+                  }
+                }
+              });
+            });
+            points--;
+          }
+        });
+      }
+    });
+    ls.inst.dispatch = points;
   }
 
   // 提取缓存全部产物；返回 [{item_id, count}]，并清空缓存
@@ -971,6 +1346,7 @@
 
     // 0. 清理上轮模块临时字段
     clearModuleTempFields();
+    st._waste_heat_drop = 0;
 
     // 1. 模块升级工程推进
     tickUpgrades();
@@ -980,6 +1356,8 @@
     if (st.rotation_ticks_remaining <= 0) {
       // 旋转前结算机制 Perk（地鸣/越界播种，§8.4）
       tickRotationPerks(st);
+      // 旋转前结算联动臂（§11.5.1）
+      tickLinkSchedule(st);
       rotateClockwise(st);
       st.rotation_ticks_remaining = st.rotation_total_ticks;
     }
@@ -987,11 +1365,19 @@
     // 3. 模块效果结算（作用于夹持区域，写入 _mg/_sr/_tr 临时字段）
     tickModules(st);
 
-    // 4. 区域生态：草自然生长（受模块加成）
+    // 4. 区域生态：草自然生长（受模块加成 + 气候）
+    var climate = getClimateModifiers();
     for (var zid in st.zones) {
       var z = st.zones[zid];
       var growthFactor = (100 - (z.compaction || 0)) * 0.009 + 0.1;
-      z.grass_height = clamp((z.grass_height || 0) + (0.8 / 1000) * growthFactor * (z._mg || 1), 0, 1.5);
+      z.grass_height = clamp((z.grass_height || 0) + (0.8 / 1000) * growthFactor * (z._mg || 1) * climate.grassMult, 0, 1.5);
+      // 湿润模式：污染自然消散 / 板结恶化（§11.6.2）
+      if (climate.pollutionClean > 0) {
+        z.pollution = clamp((z.pollution || 0) - climate.pollutionClean, 0, 100);
+      }
+      if (climate.compactionUp > 0) {
+        z.compaction = clamp((z.compaction || 0) + climate.compactionUp, 0, 100);
+      }
     }
 
     // 5. 每只动物结算
@@ -1008,7 +1394,10 @@
     // 6. 尸体持续污染（§3.3）
     tickCorpses(st);
 
-    // 7. 清理本轮临时字段
+    // 7. 废热回收结算（§11.5.2，消费本 tick 降污量）
+    tickWasteHeat(st);
+
+    // 8. 清理本轮临时字段
     clearModuleTempFields();
   }
 
@@ -1062,8 +1451,9 @@
       }
     }
 
-    // 饱腹下降（satiety_drain_mult）
-    a.satiety = clamp(a.satiety - sp.satiety.drain_per_tick * getModifier(a, 'satiety_drain_mult'), 0, 100);
+    // 饱腹下降（satiety_drain_mult × 气候）
+    var climateSat = getClimateModifiers().satietyMult;
+    a.satiety = clamp(a.satiety - sp.satiety.drain_per_tick * getModifier(a, 'satiety_drain_mult') * climateSat, 0, 100);
 
     // 饿死链（§4.2/§5.4）：饱腹归零进入濒死倒计时，倒计时结束饿死；喂食可挽救
     // 猪例外（§4.6）：拱地保底饱腹 10，不会饿死，只会瘦到皮包骨
@@ -1260,7 +1650,7 @@
         a.satiety = clamp(a.satiety + 0.02, 0, 100);
       }
     }
-    a.satiety = clamp(a.satiety - sp.satiety.drain_per_tick * getModifier(a, 'satiety_drain_mult'), 0, 100);
+    a.satiety = clamp(a.satiety - sp.satiety.drain_per_tick * getModifier(a, 'satiety_drain_mult') * getClimateModifiers().satietyMult, 0, 100);
     // 鸡饿死链（§4.2）：饱腹归零进入濒死倒计时
     if (a.satiety <= 0) {
       a.starvation_ticks = (a.starvation_ticks || 0) + 1;
@@ -1402,6 +1792,15 @@
     getWarehouseCapacity: getWarehouseCapacity,
     getWarehouseUsage: getWarehouseUsage,
     warehouseTakeAll: warehouseTakeAll,
+    feedProcessInput: feedProcessInput,
+    getClimateControl: getClimateControl,
+    climateSetMode: climateSetMode,
+    getClimateModifiers: getClimateModifiers,
+    getWasteHeatRecycle: getWasteHeatRecycle,
+    wasteHeatSetMode: wasteHeatSetMode,
+    wasteHeatTakeAll: wasteHeatTakeAll,
+    getLinkSchedule: getLinkSchedule,
+    linkScheduleToggleRule: linkScheduleToggleRule,
     advanceTick: advanceTick
   };
 })();
