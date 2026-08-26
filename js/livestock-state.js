@@ -748,11 +748,6 @@
 
   // 每 tick 结算模块效果：作用于该臂夹持两区（通过 zone 临时字段传递）
   function tickModules(st) {
-    // 废热回收追踪：记录本 tick 污染基线（全四区，Lv3+ 可回收相邻区）
-    st._waste_heat_drop = st._waste_heat_drop || 0;
-    var pollBefore = {};
-    for (var pzid in st.zones) pollBefore[pzid] = st.zones[pzid].pollution || 0;
-
     for (var ak in st.arms) {
       var arm = st.arms[ak];
       if (!arm || typeof arm !== 'object') continue;
@@ -873,18 +868,6 @@
         }
       }
     }
-
-    // 废热回收追踪：累计全四区本 tick 污染净下降（§11.5.2）
-    var heatInst = getWasteHeatRecycle();
-    if (heatInst) {
-      var lvHeat = Math.max(1, Math.min(5, heatInst.level || 1));
-      for (var bzid in st.zones) {
-        var bz = st.zones[bzid];
-        var before = pollBefore[bzid] != null ? pollBefore[bzid] : 0;
-        var now = bz.pollution || 0;
-        if (now < before) st._waste_heat_drop += (before - now);
-      }
-    }
   }
 
   function clearModuleTempFields() {
@@ -988,7 +971,13 @@
     }
     if (removed <= 0) return { ok: false, reason: 'not_enough_crop' };
     if (!inst.input_queue) inst.input_queue = [];
-    inst.input_queue.push({ item_id: cropItemId, nutrition: nut, count: removed });
+    // 同类作物合并队列项
+    var merged = null;
+    for (var qi = 0; qi < inst.input_queue.length; qi++) {
+      if (inst.input_queue[qi].item_id === cropItemId && inst.input_queue[qi].nutrition === nut) { merged = inst.input_queue[qi]; break; }
+    }
+    if (merged) merged.count += removed;
+    else inst.input_queue.push({ item_id: cropItemId, nutrition: nut, count: removed });
     return { ok: true, added: removed };
   }
 
@@ -1121,8 +1110,8 @@
     return mode === 'fuel' ? 'hus_biogas' : (mode === 'feed' ? 'hus_insect_powder' : 'fertilizer_basic');
   }
 
-  // 每 tick 结算废热回收：夹持两区污染下降量 × 转化率 = 资源点；100 点 = 1 份产出
-  // 依赖 tickModules 先记录本 tick 降污量（st._waste_heat_pollution_drop[armId]）
+  // 每 tick 结算废热回收：全 tick 污染净下降量 × 转化率 = 资源点；100 点 = 1 份产出
+  // 基线在 advanceTick 开头记录（st._waste_heat_baseline），覆盖鸡笼/猪/清污刷/手动/湿润等所有降污来源
   function tickWasteHeat(st) {
     var inst = getWasteHeatRecycle();
     if (!inst) return;
@@ -1130,15 +1119,33 @@
     var lv = Math.max(1, Math.min(5, inst.level || 1));
     var eff = MODULE_EFFECTS.waste_heat_recycle;
     var rate = (eff && eff.convert_rate[lv - 1]) || 0.2;
-    // Lv3+ 可回收相邻区域：追踪全部四区降污
-    var trackAll = lv >= 3;
     if (!inst.points) inst.points = 0;
-    if (!st._waste_heat_drop) st._waste_heat_drop = 0;
-    var drop = st._waste_heat_drop || 0;
+    var drop = 0;
+    var base = st._waste_heat_baseline || {};
+    // 作用范围（§11.5.2）：Lv1-2 该臂夹持两区；Lv3+ 全四区（可回收相邻区域）
+    var grasp = null;
+    if (lv < 3) {
+      var heatArm = null;
+      for (var hak in st.arms) {
+        var hArm = st.arms[hak];
+        if (!hArm || typeof hArm !== 'object') continue;
+        for (var hs = 0; hs < ARM_SLOT_KEYS.length; hs++) {
+          var hsl = hArm[ARM_SLOT_KEYS[hs]];
+          if (hsl && !isShadowSlot(hsl) && hsl.module_id === 'waste_heat_recycle') { heatArm = hArm; break; }
+        }
+        if (heatArm) { grasp = (st.arm_zones && st.arm_zones[hak]) || []; break; }
+      }
+    }
+    for (var zid in st.zones) {
+      if (grasp && grasp.indexOf(zid) < 0) continue;
+      var b = base[zid] != null ? base[zid] : 0;
+      var now = st.zones[zid].pollution || 0;
+      if (now < b) drop += (b - now);
+    }
+    st._waste_heat_baseline = null;
     if (drop > 0) {
       inst.points += drop * 100 * rate; // 污染 1% = 100 点当量
     }
-    st._waste_heat_drop = 0;
     if (!inst.output_queue) inst.output_queue = [];
     while (inst.points >= 100) {
       inst.points -= 100;
@@ -1347,6 +1354,9 @@
     // 0. 清理上轮模块临时字段
     clearModuleTempFields();
     st._waste_heat_drop = 0;
+    // 废热回收（§11.5.2）：记录本 tick 四区污染基线，全程追踪所有降污来源
+    st._waste_heat_baseline = {};
+    for (var pzid in st.zones) st._waste_heat_baseline[pzid] = st.zones[pzid].pollution || 0;
 
     // 1. 模块升级工程推进
     tickUpgrades();
