@@ -416,6 +416,7 @@
   // 找投喂某区域的饲料槽（装在 cw_side，面朝该区）
   function findTroughForZone(zoneId) {
     var st = ensureState();
+    var zone = st.zones[zoneId];
     for (var ak in st.arms) {
       var arm = st.arms[ak];
       var trough = arm && arm.cw_side;
@@ -423,6 +424,15 @@
       var zones = (st.arm_zones && st.arm_zones[ak]) || [];
       // 面朝区域 = arm_zones 第二个
       if (zones[1] === zoneId) return trough;
+    }
+    // 联动（§11.5.1 grass_feed）：草高 >1.0 时切换投喂优先级——该区动物可吃任意面朝区槽
+    if (zone && zone._feed_priority) {
+      for (var ak2 in st.arms) {
+        var arm2 = st.arms[ak2];
+        var t2 = arm2 && arm2.cw_side;
+        if (!t2 || isShadowSlot(t2) || getSlotModuleId(t2) !== 'feed_trough') continue;
+        if (t2.feed_units > 0) return t2;
+      }
     }
     return null;
   }
@@ -877,6 +887,8 @@
       if (z._mg != null) delete z._mg;
       if (z._sr != null) delete z._sr;
       if (z._tr != null) delete z._tr;
+      if (z._seed_once != null) delete z._seed_once;
+      if (z._feed_priority != null) delete z._feed_priority;
     }
   }
 
@@ -1380,7 +1392,8 @@
     for (var zid in st.zones) {
       var z = st.zones[zid];
       var growthFactor = (100 - (z.compaction || 0)) * 0.009 + 0.1;
-      z.grass_height = clamp((z.grass_height || 0) + (0.8 / 1000) * growthFactor * (z._mg || 1) * climate.grassMult, 0, 1.5);
+      var seedMult = z._seed_once != null ? (1 + z._seed_once) : 1; // 联动播种（§11.5.1 till_seed）
+      z.grass_height = clamp((z.grass_height || 0) + (0.8 / 1000) * growthFactor * (z._mg || 1) * climate.grassMult * seedMult, 0, 1.5);
       // 湿润模式：污染自然消散 / 板结恶化（§11.6.2）
       if (climate.pollutionClean > 0) {
         z.pollution = clamp((z.pollution || 0) - climate.pollutionClean, 0, 100);
