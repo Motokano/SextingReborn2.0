@@ -651,7 +651,8 @@
     manure_net:   { sheep_reduce: [0.50, 0.55, 0.60, 0.65, 0.75], trample_reduce: [0, 0, 0, 0.10, 0.15] },
     pasture_arm:  { per_tick: [0.04, 0.05, 0.06, 0.08, 0.10], growth: [0.20, 0.25, 0.30, 0.35, 0.40], seed_growth: [0.50, 0.50, 0.75, 0.75, 1.00], seed_threshold: 0.4 },
     clinic_arm:   { heal: [0.01, 0.02, 0.03, 0.05, 0.08], count: [2, 3, 4, 5, 6] },
-    auto_collect: { cooldown_mult: [1.00, 0.95, 0.90, 0.85, 0.80], clean_corpse: [false, false, false, true, true] }
+    auto_collect: { cooldown_mult: [1.00, 0.95, 0.90, 0.85, 0.80], clean_corpse: [false, false, false, true, true] },
+    warehouse_hub: { capacity: [50, 80, 120, 160, 200] }
   };
 
   function healAnimalsInZones(st, zoneList, heal, count) {
@@ -707,6 +708,9 @@
       if (arr(eff.cooldown_mult) < 1) ap.push('冷却 -' + Math.round((1 - arr(eff.cooldown_mult)) * 100) + '%');
       if (arr(eff.clean_corpse)) ap.push('Lv4+ 自动清尸');
       return ap.join('；');
+    }
+    if (moduleId === 'warehouse_hub') {
+      return '缓存 ' + arr(eff.capacity) + ' 格 · 自动收集四臂采集产物';
     }
     return '';
   }
@@ -782,6 +786,8 @@
 
       // 手动采集臂（§11.4）：自动收割夹持两区冷却完毕的活体产物；Lv4+ 自动清尸
       if (autoCollectActive) {
+        // 有中央仓储枢纽（§11.6.1）时产物入轴心缓存，否则进背包队列
+        var hasHub = !!getWarehouseHub();
         st.pending_auto_items = st.pending_auto_items || [];
         // 自动采集（不给经验，§9.3 只给手动）
         st.animals.forEach(function (a) {
@@ -792,7 +798,11 @@
           asp.products.living.forEach(function (p) {
             var r = collectProduct(a.uid, p.product_id, autoCdMult);
             if (r.ok) {
-              st.pending_auto_items.push({ item_id: r.item_id, count: r.count, uid: a.uid });
+              if (hasHub) {
+                warehouseAdd(r.item_id);
+              } else {
+                st.pending_auto_items.push({ item_id: r.item_id, count: r.count, uid: a.uid });
+              }
             }
           });
         });
@@ -824,6 +834,57 @@
     var st = ensureState();
     var out = Array.isArray(st.pending_auto_items) ? st.pending_auto_items : [];
     st.pending_auto_items = [];
+    return out;
+  }
+
+  // 轴心位2 的中央仓储枢纽实例（§11.6.1）；未装返回 null
+  function getWarehouseHub() {
+    var st = ensureState();
+    var axis = st.axis || {};
+    var inst = axis.slot2;
+    if (!inst || isShadowSlot(inst) || inst.module_id !== 'warehouse_hub') return null;
+    if (!inst.cache || typeof inst.cache !== 'object') inst.cache = { items: {}, capacity: undefined };
+    return inst;
+  }
+
+  // 仓储缓存容量（按等级；未装返回 0）
+  function getWarehouseCapacity() {
+    var hub = getWarehouseHub();
+    if (!hub) return 0;
+    var lv = Math.max(1, Math.min(5, hub.level || 1));
+    var eff = MODULE_EFFECTS.warehouse_hub;
+    return (eff && eff.capacity[lv - 1]) || 50;
+  }
+
+  // 仓储当前占用（格数，每种产物 1 格）
+  function getWarehouseUsage() {
+    var hub = getWarehouseHub();
+    if (!hub || !hub.cache || !hub.cache.items) return 0;
+    return Object.keys(hub.cache.items).length;
+  }
+
+  // 产物入缓存（有仓储枢纽时）；满则返回 false（产物仍走背包）
+  function warehouseAdd(itemId) {
+    var hub = getWarehouseHub();
+    if (!hub || !hub.cache) return false;
+    var cap = getWarehouseCapacity();
+    if (getWarehouseUsage() >= cap) return false;
+    var items = hub.cache.items;
+    if (items[itemId] == null) items[itemId] = 0;
+    items[itemId]++;
+    return true;
+  }
+
+  // 提取缓存全部产物；返回 [{item_id, count}]，并清空缓存
+  function warehouseTakeAll() {
+    var hub = getWarehouseHub();
+    if (!hub || !hub.cache || !hub.cache.items) return [];
+    var out = [];
+    var items = hub.cache.items;
+    for (var k in items) {
+      if (items[k] > 0) out.push({ item_id: k, count: items[k] });
+    }
+    hub.cache.items = {};
     return out;
   }
 
@@ -1337,6 +1398,10 @@
     feedChickens: feedChickens,
     getModuleEffectText: getModuleEffectText,
     drainAutoCollectItems: drainAutoCollectItems,
+    getWarehouseHub: getWarehouseHub,
+    getWarehouseCapacity: getWarehouseCapacity,
+    getWarehouseUsage: getWarehouseUsage,
+    warehouseTakeAll: warehouseTakeAll,
     advanceTick: advanceTick
   };
 })();

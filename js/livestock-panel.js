@@ -438,6 +438,15 @@
             extraActions = '<button type="button" class="lv-btn" data-feed="' + aid + '">投喂</button>';
           } else if (mid === 'coop') {
             extraActions = '<button type="button" class="lv-btn" data-feed-chickens="' + aid + '">喂鸡</button>';
+          } else if (mid === 'warehouse_hub') {
+            var cap = window.LivestockState.getWarehouseCapacity();
+            var usage = window.LivestockState.getWarehouseUsage();
+            var lvHub = Math.max(1, Math.min(5, inst.level || 1));
+            extra = ' 缓存 ' + usage + '/' + cap;
+            if (lvHub >= 2 && cap > 0 && usage / cap > 0.8) extra += ' ⚠️';
+            if (usage > 0) {
+              extraActions = '<button type="button" class="lv-btn" data-warehouse-take="axis">提取</button>';
+            }
           }
           var effText = window.LivestockState.getModuleEffectText(mid, inst.level);
           return '<div class="module-slot filled" data-arm="' + aid + '" data-slot="' + sk + '">' +
@@ -735,6 +744,27 @@
         doFeedChickens(this.getAttribute('data-feed-chickens'));
       });
     }
+    var whTakes = document.querySelectorAll('#livestock-module-content [data-warehouse-take]');
+    for (var wt = 0; wt < whTakes.length; wt++) {
+      whTakes[wt].addEventListener('click', function (e) {
+        e.stopPropagation();
+        doWarehouseTake();
+      });
+    }
+  }
+
+  // 提取中央仓储枢纽缓存全部产物（§11.6.1）
+  function doWarehouseTake() {
+    var items = window.LivestockState.warehouseTakeAll();
+    if (!items || !items.length) {
+      feedbackMsg = '缓存为空';
+      render();
+      return;
+    }
+    var gres = giveItems(items);
+    feedbackMsg = '提取缓存 ' + gres.placed + ' 件产物' + (gres.dropped > 0 ? '（' + gres.dropped + ' 件掉落地面）' : '');
+    logMsg(feedbackMsg, 'success');
+    render();
   }
 
   /* ---------- 产出 ---------- */
