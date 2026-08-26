@@ -1432,6 +1432,23 @@
       }
     }
 
+    // 牛/羊育肥（§10.5）：草饲到顶后需饲料槽才能继续增重至育肥上限；
+    // 饲料只长肉不补饱腹（饱腹靠吃草），饱腹 > 70 才吃
+    if ((a.species_id === 'cattle' || a.species_id === 'sheep') && sp.feed && sp.feed.feed_units_per_tick) {
+      var grazeTop = sp.growth.graze_cap_kg != null ? sp.growth.graze_cap_kg : sp.growth.fatten_cap_kg;
+      if (a.weight_kg >= grazeTop && a.weight_kg < sp.growth.fatten_cap_kg && a.satiety > 70) {
+        var fTrough = findTroughForZone(a.zone_id);
+        if (fTrough && fTrough.feed_units > 0) {
+          var fUnits = sp.feed.feed_units_per_tick;
+          if (fTrough.feed_units >= fUnits) {
+            fTrough.feed_units -= fUnits;
+            var fGrowth = fUnits * 10 / sp.feed.nutrition_per_kg_meat * getModifier(a, 'feed_conversion_mult');
+            a.weight_kg = Math.min(sp.growth.fatten_cap_kg, a.weight_kg + fGrowth);
+          }
+        }
+      }
+    }
+
     // 猪：拱地保底 + 松土降污 + 吃饲料（补饱腹 + 长肉）
     if (a.species_id === 'pig') {
       if (a.satiety < 10) a.satiety = Math.min(10, a.satiety + 0.03);
@@ -1659,6 +1676,15 @@
       if (z.pollution > 0) {
         a.satiety = clamp(a.satiety + 0.02, 0, 100);
       }
+    }
+    // 鸡吃同臂饲料槽（§11.3.1）：无虫子可吃时吃饲料补饱腹（维持虫子长肉满速）
+    var coopArm = st.arms[a.arm_id];
+    var cTrough = findTroughOnArm(coopArm);
+    if (cTrough && cTrough.feed_units > 0 && a.satiety < 90) {
+      var cTake = Math.min(cTrough.feed_units, 0.01);
+      cTrough.feed_units = Math.max(0, cTrough.feed_units - cTake);
+      // 1 单位 = 10 营养 = 10 饱腹（§10.5 口径）
+      a.satiety = clamp(a.satiety + cTake * 10, 0, 100);
     }
     a.satiety = clamp(a.satiety - sp.satiety.drain_per_tick * getModifier(a, 'satiety_drain_mult') * getClimateModifiers().satietyMult, 0, 100);
     // 鸡饿死链（§4.2）：饱腹归零进入濒死倒计时
