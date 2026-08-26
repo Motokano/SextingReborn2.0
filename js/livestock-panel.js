@@ -557,11 +557,15 @@
       unknown_module: '未知模块', unknown_arm: '未知位置', axis_slot_mismatch: '轴心位不匹配',
       slot_mismatch: '该模块不能装在此面', inner_occupied: '内部空间已被占用', slot_occupied: '该位已有模块',
       lack_material: '材料不足', slot_empty: '该位为空', upgrading: '升级中', max_level: '已满级',
-      shadow_slot: '该面被跨面模块占用'
+      shadow_slot: '该面被跨面模块占用',
+      not_found: '未找到动物', no_product: '该动物无此产物', cooldown: '冷却中', low_hp: '血量不足'
     };
     var base = map[r.reason] || r.reason;
     if (r.reason === 'lack_material') {
       base += '（' + itemDisplayName(r.item_id) + ' 需 ' + r.need + '，现有 ' + (r.have || 0) + '）';
+    }
+    if (r.reason === 'cooldown' && r.remaining != null) {
+      base += '（剩 ' + r.remaining + ' tick）';
     }
     return base;
   }
@@ -910,9 +914,17 @@
       }
       if (!sp.products) return;
       if (sp.products.living && sp.products.living.length) {
+        // C2：每个产物独立按钮 + 「全部」批量
+        var prodBtns = sp.products.living.map(function (p) {
+          var cd = (a.cooldowns && a.cooldowns[p.product_id]) || 0;
+          var ready = cd <= 0;
+          return '<button type="button" class="lv-btn' + (ready ? '' : ' lv-btn-dim') + '" data-collect-one="' + a.uid + '|' + p.product_id + '"' +
+            (ready ? '' : ' disabled') + '>' + productName(p.product_id) + (cd > 0 ? ' ' + cd : '') + '</button>';
+        }).join('');
         collectRows.push('<div class="product-row">' + speciesIcon(a.species_id) + ' ' + speciesName(a.species_id) + ' ' + genderGlyph(a.gender) +
           ' <span class="meta">' + livingText(a, sp) + '</span>' +
-          '<button type="button" class="lv-btn" data-collect="' + a.uid + '">采集</button></div>');
+          '<span class="product-btns">' + prodBtns +
+          '<button type="button" class="lv-btn" data-collect="' + a.uid + '">全部</button></span></div>');
       }
       slaughterRows.push('<div class="product-row">' + speciesIcon(a.species_id) + ' ' + speciesName(a.species_id) + ' ' + genderGlyph(a.gender) +
         ' <span class="meta">' + a.weight_kg.toFixed(1) + ' kg</span>' +
@@ -1007,6 +1019,30 @@
     render();
   }
 
+  // C2：采集单个产物（挤奶/剪毛/抽血/收蛋分开点选）
+  function collectSingleProduct(uid, productId) {
+    var st = window.LivestockState.getState();
+    var a = null;
+    for (var i = 0; i < st.animals.length; i++) if (st.animals[i].uid === uid) { a = st.animals[i]; break; }
+    if (!a) return;
+    var sp = window.LivestockState.getSpecies(a.species_id);
+    var hpBefore = a.hp;
+    var r = window.LivestockState.collectProduct(uid, productId);
+    if (r.ok) {
+      var gres = giveItems([{ item_id: r.item_id, count: r.count }]);
+      addExp(100);
+      var msg = '采集 ' + speciesName(a.species_id) + ' ' + genderGlyph(a.gender) + '：' + productName(productId) + '，畜牧经验 +100';
+      if (hpBefore !== a.hp) msg += '（抽血 ' + hpBefore + '→' + a.hp + '）';
+      if (gres.dropped > 0) msg += '；背包已满，' + gres.dropped + ' 件掉落地面';
+      logMsg(msg, 'success');
+      feedbackMsg = '已采集：' + productName(productId) + ' → 已入背包';
+    } else {
+      feedbackMsg = '采集失败：' + reasonText(r);
+      logMsg(feedbackMsg, 'warn');
+    }
+    render();
+  }
+
   function slaughterExp(speciesId, weight) {
     if (speciesId === 'chicken') return 25;
     return Math.max(1, Math.floor(weight));
@@ -1076,6 +1112,13 @@
     for (var i = 0; i < collects.length; i++) {
       collects[i].addEventListener('click', function () {
         collectAllProducts(this.getAttribute('data-collect'));
+      });
+    }
+    var collectOnes = document.querySelectorAll('#livestock-product-content [data-collect-one]');
+    for (var o = 0; o < collectOnes.length; o++) {
+      collectOnes[o].addEventListener('click', function () {
+        var p = this.getAttribute('data-collect-one').split('|');
+        collectSingleProduct(p[0], p[1]);
       });
     }
     var slaughters = document.querySelectorAll('#livestock-product-content [data-slaughter]');
