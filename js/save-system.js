@@ -287,7 +287,8 @@
             BuffSystem: global.BuffSystem,
             NPCSystem: global.NPCSystem,
             CompostSystem: global.CompostSystem,
-            HideoutWarehouse: global.HideoutWarehouse
+            HideoutWarehouse: global.HideoutWarehouse,
+            Muscles: global.Muscles
         };
     }
 
@@ -469,6 +470,11 @@
             try { livestockPersist = global.LivestockState.getState(); } catch (eLs) { livestockPersist = null; }
         }
 
+        var musclesPersist = null;
+        if (mods.Muscles && typeof mods.Muscles.getState === 'function') {
+            try { musclesPersist = mods.Muscles.getState(); } catch (eMus) { musclesPersist = null; }
+        }
+
         return {
             schemaVersion: SCHEMA_VERSION,
             saveGeneration: saveGeneration,
@@ -488,7 +494,8 @@
             compost: compostPersist,
             agriculture_map: agricultureMapPersist,
             hideout_warehouse: hideoutWarehousePersist,
-            livestock: livestockPersist
+            livestock: livestockPersist,
+            muscles: musclesPersist
         };
     }
 
@@ -539,6 +546,11 @@
         // setDemoState 会整包覆盖 flags，需按角色 epithet 再对齐无用之人 flag
         if (mods.NPCSystem && typeof mods.NPCSystem.syncPlayerEpithetFlags === 'function') {
             try { mods.NPCSystem.syncPlayerEpithetFlags(); } catch (e5b) { /* ignore */ }
+        }
+
+        // 肌肉解锁记录：必须在属性重算之前恢复，使肌肉加成进入本次重算
+        if (snapshot.muscles && mods.Muscles && typeof mods.Muscles.setState === 'function') {
+            try { mods.Muscles.setState(snapshot.muscles); } catch (eMus) { /* ignore */ }
         }
 
         // Recalc derived stats once before buff restore.
@@ -868,17 +880,17 @@
 
     // Optional convenience prompts (for manual testing)
     SaveSystem.openExportPrompt = async function () {
-        var account = global.prompt ? global.prompt('输入账号(account)：') : '';
-        var password = global.prompt ? global.prompt('输入密码(password)：') : '';
+        var account = global.prompt ? global.prompt((global.UIText && global.UIText.t) ? global.UIText.t('save.prompt.account') : 'account') : '';
+        var password = global.prompt ? global.prompt((global.UIText && global.UIText.t) ? global.UIText.t('save.prompt.password') : 'password') : '';
         if (!account || !password) return null;
         var code = await SaveSystem.exportSaveCode({ account: account, password: password });
         return code;
     };
 
     SaveSystem.openImportPrompt = async function (code) {
-        if (!code && global.prompt) code = global.prompt('粘贴存档码(code)：') || '';
-        var account = global.prompt ? global.prompt('输入账号(account)：') : '';
-        var password = global.prompt ? global.prompt('输入密码(password)：') : '';
+        if (!code && global.prompt) code = global.prompt((global.UIText && global.UIText.t) ? global.UIText.t('save.prompt.code') : 'code') || '';
+        var account = global.prompt ? global.prompt((global.UIText && global.UIText.t) ? global.UIText.t('save.prompt.account') : 'account') : '';
+        var password = global.prompt ? global.prompt((global.UIText && global.UIText.t) ? global.UIText.t('save.prompt.password') : 'password') : '';
         if (!code || !account || !password) return false;
         var r = await SaveSystem.importSaveCode(code, { account: account, password: password });
         return !!(r && r.ok);

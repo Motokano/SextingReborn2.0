@@ -23,7 +23,7 @@ alwaysApply: false
 - **死亡**：仓内容 **不清**（见 `03-death-and-insurance.md`）。
 - **容量**：限格不限重；基础 **100 格**；**不做**负重 \(W\) 检查。
 - **堆叠**：模板 **`stack_limit > 1`** 默认可仓内叠 `count`；**`deposit_auto_stack`** 为 **开局免费**。
-- **实例**：完整物品实例（装备、`quality_tier`、未鉴定状态等）原样存取。
+- **实例**：完整物品实例（装备、`resolved_rolls`、未鉴定状态等）原样存取。
 - **展示**：`getDisplayName` / `getDisplayDesc` 须传 **`character`**。
 - **入口**：**设施 NPC**（`warehouse_station_interact_npc_*` + `interactNpc` + 主菜单开面板）；**非**默认直开 modal。
 - **A0**：开局剧情 **flag** 解锁正式开仓（flag id 由剧情配置；`warehouse-upgrades.json` 中 `requires` 含 `A0`）。

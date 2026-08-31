@@ -414,6 +414,13 @@
       "entity_id": "gathering_grass"
     }
   ],
+  "enemies": [
+    {
+      "x": 7,
+      "y": 5,
+      "enemy_id": "enemy.street_thug"
+    }
+  ],
   "annotations": {
     "1,7": "树",
     "5,11": "树",

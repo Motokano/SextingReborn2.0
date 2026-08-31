@@ -1,0 +1,24 @@
+{
+  "map_id": "test_combat",
+  "name": "战斗测试场",
+  "width": 10,
+  "height": 10,
+  "blocks": [],
+  "portals": [
+    {
+      "x": 5,
+      "y": 8,
+      "target_map_id": "M0_Base_Inside_lv_1",
+      "target_x": 6,
+      "target_y": 14,
+      "label": "回藏身处"
+    }
+  ],
+  "enemies": [
+    {
+      "x": 5,
+      "y": 5,
+      "enemy_id": "enemy.street_thug"
+    }
+  ]
+}

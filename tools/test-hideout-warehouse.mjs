@@ -181,7 +181,6 @@ function testEquipmentRoundTrip(HW, ctx, IE) {
   const inst = {
     item_id: "armor_cloth_rag_shirt",
     count: 1,
-    quality_tier: 4,
     enchants: [{ id: "test_enchant", value: 2 }]
   };
 
@@ -192,7 +191,6 @@ function testEquipmentRoundTrip(HW, ctx, IE) {
 
   const slotIdx = dep.slotIndex;
   const stored = HW.getState().slots[slotIdx];
-  assert(stored.quality_tier === 4, "quality_tier 保留");
   assert(stored.enchants[0].id === "test_enchant", "enchants 保留");
 
   const wd = HW.withdrawSlot(slotIdx);
@@ -202,7 +200,6 @@ function testEquipmentRoundTrip(HW, ctx, IE) {
 
   const out = IE.state.inventory_backpack[wd.placed.index];
   assert(out.item_id === inst.item_id, "item_id 一致");
-  assert(out.quality_tier === 4, "取出 quality 一致");
   assert(out.enchants[0].value === 2, "取出 enchants 一致");
 }
 

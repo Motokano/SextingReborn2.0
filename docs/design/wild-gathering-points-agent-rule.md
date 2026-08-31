@@ -36,9 +36,9 @@
 - **`entity_id`** 与分类分工：地图可用 `entity_id` 区分视觉子类型；**授权哪条技能**以 `wild_interaction_category` 为准。
 - **现行数据**：未写字段时实现可默认 `gathering`；**新配点应显式写出**。
 
-## 采集点实例与分物品品质硬上限
+## 采集点实例与地图引用
 
-- **主配置**：`data/gathering_point_instances.json`（`defaults` + `instances[].loot_rows`）。每行可设 **`quality_tier_max`（1～6）**：熟练度上修后的**硬上限**；缺省等同 **6**。
+- **主配置**：`data/gathering_point_instances.json`（`defaults` + `instances[].loot_rows`）。每行为 **`item_id` + `weight`**，稀有度由物品身份承担（品质系统已移除）。
 - **地图引用**：格子上可选 **`gathering_instance_id`**；未写则用 `defaults[entity_id]`。
 - **工具**：`tools/gathering-point-editor.html`（与 `data/items.json` 联动下拉选物品）；地图绑定 `tools/map-editor.html`。
 - **地牢**：随机生成时实体列表与野外相同字段即可，参见 `data/editor/dungeon_gathering_presets.example.json`。

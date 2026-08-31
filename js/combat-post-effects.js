@@ -67,8 +67,42 @@
         /* 先手在 07 速度比较前查询装配；管线内不重复处理 */
     }
 
+    /** 目标 owner：敌方按 enemyId、玩家按 'player' */
+    function defenderOwnerId(ctx) {
+        var def = (ctx && ctx.defender) || {};
+        if (def.kind === 'enemy' && def.enemyId != null) return String(def.enemyId);
+        return 'player';
+    }
+
+    /** 伤上加伤（extend_target_debuff_duration）：命中时延长目标全部非增益 Buff 剩余持续（11-skills 8.3.6） */
+    function resolverExtendTargetDebuffDuration(ctx, pe) {
+        var pp = (pe && pe.effect_params) || {};
+        var ticks = parseInt(pp.extend_ticks, 10) || 0;
+        if (ticks <= 0) return;
+        if (global.BuffSystem && typeof global.BuffSystem.extendNonBeneficialBuffs === 'function') {
+            global.BuffSystem.extendNonBeneficialBuffs(defenderOwnerId(ctx), ticks);
+        }
+    }
+
+    /** 痛打落水狗（damage_scale_by_target_debuff_stacks）：按目标非增益 Buff 总层数写入最终伤害乘区（11-skills 8.3.6） */
+    function resolverDamageScaleByTargetDebuffStacks(ctx, pe) {
+        var pp = (pe && pe.effect_params) || {};
+        var perStack = Number(pp.per_stack_multiplier);
+        if (!isFinite(perStack) || perStack <= 0) return;
+        var maxStacks = parseInt(pp.max_stacks, 10);
+        if (!isFinite(maxStacks) || maxStacks <= 0) maxStacks = Infinity;
+        if (global.BuffSystem && typeof global.BuffSystem.getNonBeneficialBuffStacks === 'function') {
+            var stacks = global.BuffSystem.getNonBeneficialBuffStacks(defenderOwnerId(ctx));
+            if (stacks <= 0) return;
+            stacks = Math.min(stacks, maxStacks);
+            ctx.targetDebuffDamageMultiplier = 1 + perStack * stacks;
+        }
+    }
+
     registerPostEffectResolver('dispel_one_beneficial_buff_on_target', resolverDispelStub);
     registerPostEffectResolver('initiative_always_first', resolverInitiativeNoop);
+    registerPostEffectResolver('extend_target_debuff_duration', resolverExtendTargetDebuffDuration);
+    registerPostEffectResolver('damage_scale_by_target_debuff_stacks', resolverDamageScaleByTargetDebuffStacks);
 
     global.CombatPostEffects = {
         setTable: setTable,

@@ -55,14 +55,7 @@ function createSandbox() {
       if (skillId === 'combat_basic_fist') {
         return {
           category: 'fist',
-          moves: [
-            {
-              id: 'jab',
-              proficiency_attr_unlocks: [
-                { min_proficiency_ratio: 0.2, acquired: { jingu: 999 } }
-              ]
-            }
-          ]
+          moves: [{ id: 'jab' }]
         };
       }
       return null;

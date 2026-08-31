@@ -37,8 +37,8 @@
         deathReason: null,
         isComa: false,
 
-        /** 战斗：气力（快耗快消）、底气、底气护体剩余盾量（见 07 / 11 基本呼吸法） */
-        qi_li_current: 100,
+        /** 战斗：呼吸条（气力，形态由呼吸法 breath_bar 定义，见 07）、底气、底气护体剩余盾量（见 07 / 11 基本呼吸法） */
+        qi_li_current: 0,
         diqi_current: 0,
         diqi_cap_limit: 0,
         diqi_cap_limit_flat_bonuses: {},
@@ -46,6 +46,10 @@
         diqi_shield_remaining: 0,
         last_sit_meditation_gain: 0,
         sit_meditation_interrupt_this_tick: false,
+        /** 自修学习（05 5.8 / 11 技能升级）：挂机动作，每 tick 扣精力→转化潜能→技能经验→升级 */
+        is_study_active: false,
+        study_skill_id: null,
+        study_stop_reason: null,
         /** 自上一次 advanceTick 起是否发生过 consumeQiLi 的实际扣减（用于 07 空闲回气） */
         qi_li_spent_this_tick: false
     };
@@ -246,6 +250,9 @@
             isResting: state.isResting,
             is_stamina_regen_action_active: !!state.is_stamina_regen_action_active,
             is_sit_meditation_active: !!state.is_sit_meditation_active,
+            is_study_active: !!state.is_study_active,
+            study_skill_id: state.study_skill_id || null,
+            study_stop_reason: state.study_stop_reason || null,
             isDead: state.isDead,
             deathReason: state.deathReason || null,
             isComa: state.isComa,
@@ -294,6 +301,9 @@
         if (s.isResting !== undefined) state.isResting = !!s.isResting;
         if (s.is_stamina_regen_action_active !== undefined) state.is_stamina_regen_action_active = !!s.is_stamina_regen_action_active;
         if (s.is_sit_meditation_active !== undefined) state.is_sit_meditation_active = !!s.is_sit_meditation_active;
+        if (s.is_study_active !== undefined) state.is_study_active = !!s.is_study_active;
+        if (s.study_skill_id !== undefined) state.study_skill_id = s.study_skill_id == null ? null : String(s.study_skill_id || '');
+        if (s.study_stop_reason !== undefined) state.study_stop_reason = s.study_stop_reason == null ? null : String(s.study_stop_reason || '');
         if (s.isDead !== undefined) state.isDead = !!s.isDead;
         if (s.deathReason !== undefined) state.deathReason = s.deathReason == null ? null : String(s.deathReason || '');
         if (s.isComa !== undefined) state.isComa = !!s.isComa;
@@ -304,10 +314,14 @@
         if (s.diqi_cap_limit_flat_bonuses && typeof s.diqi_cap_limit_flat_bonuses === 'object') {
             state.diqi_cap_limit_flat_bonuses = normalizeDiqiCapLimitBonuses(s.diqi_cap_limit_flat_bonuses);
         }
-        var diqiCapLoad = Math.max(0, Math.round(Number(s.diqi_max != null ? s.diqi_max : s.diqi_max_effective) || 0));
-        state.diqi_max_effective = diqiCapLoad;
-        if (state.diqi_cap_limit > 0) {
-            state.diqi_max_effective = Math.min(state.diqi_max_effective, state.diqi_cap_limit);
+        // 只有传入状态带 diqi_max 时才加载上限：Buff 等局部状态（如 survival_delta）不含底气字段，
+        // 若此处无条件覆盖会把「调息突破」刚提升的 diqi_max 清零重建（06 §6.1.11 行气突破被打断）。
+        if (s.diqi_max !== undefined || s.diqi_max_effective !== undefined) {
+            var diqiCapLoad = Math.max(0, Math.round(Number(s.diqi_max != null ? s.diqi_max : s.diqi_max_effective) || 0));
+            state.diqi_max_effective = diqiCapLoad;
+            if (state.diqi_cap_limit > 0) {
+                state.diqi_max_effective = Math.min(state.diqi_max_effective, state.diqi_cap_limit);
+            }
         }
         if (s.diqi_current !== undefined) {
             var capD = state.diqi_max_effective > 0 ? state.diqi_max_effective : 9999;
@@ -328,8 +342,34 @@
         emitSurvivalStateChangedIfNeeded('set_state', beforeSnapshot, null);
     }
 
+    /** 获取当前挂载呼吸法及其 breath_bar（呼吸条形态定义）；未挂载或无 breath_bar 返回 null（07「气力值＝呼吸条」） */
+    function getMountedBreath() {
+        if (typeof global === 'undefined' || !global.InventoryEquipment || typeof global.InventoryEquipment.getCombatState !== 'function') return null;
+        var combatState = global.InventoryEquipment.getCombatState() || {};
+        var bid = (combatState.hubs && combatState.hubs.breath) || null;
+        if (!bid) return null;
+        if (!global.CombatSkills || typeof global.CombatSkills.getSkill !== 'function') return null;
+        var sk = global.CombatSkills.getSkill(bid);
+        var bar = (sk && sk.breath_bar) || null;
+        return bar ? { skillId: String(bid), breathBar: bar } : null;
+    }
+
+    /** 呼吸条上限：由挂载呼吸法 breath_bar.max_base（+可选 max_growth 线性成长）给出；未挂载 → 0（07） */
     function getQiLiMax() {
-        return Math.max(1, get('qi_li_max', 100));
+        var mb = getMountedBreath();
+        if (!mb) return 0;
+        var bb = mb.breathBar;
+        var base = Number(bb.max_base);
+        if (!isFinite(base) || base <= 0) base = 0;
+        var growth = bb.max_growth;
+        if (growth && typeof growth === 'object' && growth.type === 'linear' && isFinite(Number(growth.per_level))) {
+            var lv = 0;
+            if (global && global.InventoryEquipment && typeof global.InventoryEquipment.getSkillLevel === 'function') {
+                lv = Math.max(0, parseInt(global.InventoryEquipment.getSkillLevel(mb.skillId), 10) || 0);
+            }
+            base += Math.floor(lv * Number(growth.per_level));
+        }
+        return Math.max(0, Math.floor(base));
     }
 
     function normalizeDiqiCapLimitBonuses(map) {
@@ -359,7 +399,14 @@
     }
 
     function recomputeDiqiCapLimitAndClamp() {
-        var cap = computeDiqiCapLimitFromBreath();
+        // 与 refreshDiqiMaxFromBreath 用同一呼吸属性口径：不传 breathEffective 会算出无属性加成的 cap（10 vs 10.1），
+        // 两函数交替写 diqi_cap_limit 造成 maxChanged 恒真、把调息溢出夹回上限（06 §6.1.11）。
+        var breathEff = 0;
+        if (typeof global !== 'undefined' && global.CharacterAttributes && typeof global.CharacterAttributes.getEffectiveAttr === 'function') {
+            breathEff = Number(global.CharacterAttributes.getEffectiveAttr('breath')) || 0;
+        }
+        var cap = computeDiqiCapLimitFromBreath(breathEff);
+        var prevMax = state.diqi_max_effective;
         state.diqi_cap_limit = cap;
         if (cap <= 0) {
             state.diqi_max_effective = 0;
@@ -368,10 +415,17 @@
             return;
         }
         state.diqi_max_effective = clamp(state.diqi_max_effective, 0, cap);
-        state.diqi_current = round1(clamp(state.diqi_current, 0, state.diqi_max_effective));
-        if (state.diqi_shield_remaining > state.diqi_current && state.diqi_shield_remaining > 0) {
-            state.diqi_shield_remaining = Math.min(state.diqi_shield_remaining, Math.floor(state.diqi_current));
+        var maxChanged = state.diqi_max_effective !== prevMax;
+        if (maxChanged) {
+            // 上限真的变了（如失去加成/营养段位下调）：current 夹紧到新上限（06 §6.1.11 夹紧规则）
+            state.diqi_current = round1(clamp(state.diqi_current, 0, state.diqi_max_effective));
+        } else {
+            // 上限未变：保留「行气突破」溢出区间（current 可累积到 2*max-1，06 §6.1.11 突破与封顶溢出）
+            var keepUpper = Math.max(0, state.diqi_max_effective);
+            if (cap > 0) keepUpper = Math.max(keepUpper, 2 * state.diqi_max_effective - 1);
+            state.diqi_current = round1(clamp(state.diqi_current, 0, keepUpper));
         }
+        // 37 §4.3：盾池独立于底气值（旧「盾量 = 消耗底气量」规则废弃），不再按 diqi_current 夹紧
     }
 
     function setDiqiCapLimitFlatBonus(sourceTag, value) {
@@ -403,10 +457,16 @@
         if (typeof global !== 'undefined' && global.InventoryEquipment && typeof global.InventoryEquipment.getSkillLevel === 'function') {
             lv = Math.max(0, parseInt(global.InventoryEquipment.getSkillLevel('combat_basic_breath'), 10) || 0);
         }
+        // 呼吸法等级 = 底气容量基准 N_base（05 5.1）
         var cap = lv;
+        // 呼吸属性乘区（05 5.1）：N_base × (1 + breath_diqi_cap_pct_per_point × S_呼吸)；内部保留小数，仅展示取整
+        var breathPct = Number(get('breath_diqi_cap_pct_per_point', 0.01));
+        if (!isFinite(breathPct)) breathPct = 0.01;
+        var b = Number(breathEffective) || 0;
+        if (b > 0) cap = cap * (1 + breathPct * b);
         var nPeakPct = Number(get('nutrition_peak_diqi_cap_pct', 0));
         if (isFinite(nPeakPct) && nPeakPct > 0 && getNutritionTier() === 'peak') {
-            cap += Math.max(0, Math.floor(lv * nPeakPct));
+            cap += Math.max(0, lv * nPeakPct);
         }
         cap += sumDiqiCapLimitFlatBonuses();
         var hardMax = Number(get('diqi_cap_limit_hard_max', 999999));
@@ -415,11 +475,13 @@
     }
 
     /**
-     * 属性重算后调用：更新 diqi 上限并夹紧 current；护体盾不超过 current 逻辑在扣盾侧处理
+     * 属性重算后调用：更新 diqi 上限并夹紧 current；护体盾池独立于底气值（37 §4.3），只由受击吸收扣减
      */
     function refreshDiqiMaxFromBreath(breathEffective) {
-        var prevCap = Math.max(0, Math.round(Number(state.diqi_cap_limit) || 0));
-        var prevMax = Math.max(0, Math.round(Number(state.diqi_max_effective) || 0));
+        // 与原始值（含小数）比较：cap/max 内部保留小数，四舍五入会导致 10.1 !== 10 恒成立，
+        // 使 maxChanged 永远为 true、把「调息突破」的溢出区间反复夹回上限（06 §6.1.11 行气突破被打断）。
+        var prevCap = Math.max(0, Number(state.diqi_cap_limit) || 0);
+        var prevMax = Math.max(0, Number(state.diqi_max_effective) || 0);
         var cap = computeDiqiCapLimitFromBreath(breathEffective);
         state.diqi_cap_limit = cap;
         if (cap <= 0) {
@@ -443,9 +505,7 @@
             }
             state.diqi_current = round1(clamp(state.diqi_current, 0, keepUpper));
         }
-        if (state.diqi_shield_remaining > state.diqi_current && state.diqi_shield_remaining > 0) {
-            state.diqi_shield_remaining = Math.min(state.diqi_shield_remaining, Math.floor(state.diqi_current));
-        }
+        // 37 §4.3：盾池独立于底气值（旧「盾量 = 消耗底气量」规则废弃），不再按 diqi_current 夹紧
     }
 
     /**
@@ -508,8 +568,8 @@
     }
 
     function initBattleResourcesFull() {
-        var qm = getQiLiMax();
-        state.qi_li_current = qm;
+        // 07「常驻资源」：呼吸条为装备呼吸法即存在的常驻资源，进战斗不重置当前值（无满条、无清零）；
+        // 本函数仅初始化底气与护体等战斗相关生存资源。
         if (typeof global !== 'undefined' && global.CharacterAttributes && typeof global.CharacterAttributes.getEffectiveAttr === 'function') {
             refreshDiqiMaxFromBreath(global.CharacterAttributes.getEffectiveAttr('breath'));
         } else {
@@ -534,6 +594,25 @@
         state.qi_li_current = round1(Math.max(0, state.qi_li_current - take));
         if (take > 0) state.qi_li_spent_this_tick = true;
         return take;
+    }
+
+    /** 核心条件不满足分支：呼吸条扣至 0 并标记本轮已消耗（07「核心条件不满足时的结算」） */
+    function drainQiLi() {
+        state.qi_li_current = 0;
+        state.qi_li_spent_this_tick = true;
+    }
+
+    /** 切换呼吸法时读取新呼吸法的初始状态（07「切换」）：qi_li_current = breath_bar.initial_state.qi_li（缺省 0）；并标记本轮已消耗（防切换当轮立刻回气） */
+    function applyBreathInitialState() {
+        var mb = getMountedBreath();
+        var v = 0;
+        if (mb && mb.breathBar && mb.breathBar.initial_state) {
+            var qv = Number(mb.breathBar.initial_state.qi_li);
+            if (isFinite(qv) && qv > 0) v = qv;
+        }
+        var mx = getQiLiMax();
+        state.qi_li_current = round1(clamp(v, 0, mx > 0 ? mx : 0));
+        state.qi_li_spent_this_tick = true;
     }
 
     function consumeDiqi(amount) {
@@ -579,9 +658,7 @@
         }
         var curCap = Math.max(0, state.diqi_max_effective);
         state.diqi_current = round1(clamp(state.diqi_current, 0, curCap));
-        if (state.diqi_shield_remaining > state.diqi_current && state.diqi_shield_remaining > 0) {
-            state.diqi_shield_remaining = Math.min(state.diqi_shield_remaining, Math.floor(state.diqi_current));
-        }
+        // 37 §4.3：盾池独立于底气值（旧「盾量 = 消耗底气量」规则废弃），不再按 diqi_current 夹紧
         return {
             diqi_current: state.diqi_current,
             diqi_max: state.diqi_max_effective,
@@ -1364,6 +1441,33 @@
         syncFatigueStateBuff();
     }
 
+    /**
+     * 进食/饮水转换（新资源模型）：消耗饱食/饮水 → 恢复体力（储备燃料转行动货币）。
+     * 饱食/饮水不足则失败且不扣任何资源。
+     * @param {number} satCost - 消耗饱食
+     * @param {number} thirstCost - 消耗饮水
+     * @param {number} staminaGain - 恢复体力
+     * @returns {{ok:boolean, reason?:string, stamina_gain?:number, satiety_cost?:number, thirst_cost?:number}}
+     */
+    function applyFoodConversion(satCost, thirstCost, staminaGain) {
+        var sc = Math.max(0, Number(satCost) || 0);
+        var tc = Math.max(0, Number(thirstCost) || 0);
+        var sg = Math.max(0, Number(staminaGain) || 0);
+        if (sc <= 0 && tc <= 0) return { ok: false, reason: 'no_cost' };
+        if (state.satiety < sc) return { ok: false, reason: 'low_satiety' };
+        if (state.thirst < tc) return { ok: false, reason: 'low_thirst' };
+        state.satiety = round1(Math.max(0, state.satiety - sc));
+        state.thirst = round1(Math.max(0, state.thirst - tc));
+        if (sg > 0) {
+            state.stamina = round1(Math.min(get('stamina_max', 100), state.stamina + sg));
+        }
+        if (state.stamina > 0) state.staminaZeroTicks = 0;
+        syncStaminaExhaustedBuff();
+        syncSatietyStateBuff();
+        syncThirstStateBuff();
+        return { ok: true, stamina_gain: sg, satiety_cost: sc, thirst_cost: tc };
+    }
+
     function clearFatigue() {
         state.fatigue = round1(clamp(0, get('fatigue_min', 0), get('fatigue_max', 100)));
         syncFatigueStateBuff();
@@ -1475,13 +1579,29 @@
             clearStaminaExhaustedBuffIfAny();
         }
 
-        // 07：本 tick 推进前，若自上一 tick 以来未扣除过气力，则按上限比例回气（与其它 addQiLi 不互斥）
-        if (!state.qi_li_spent_this_tick) {
-            var pct = get('qi_li_regen_pct_per_turn', 0.5);
-            if (typeof pct !== 'number' || !isFinite(pct)) pct = 0.25;
-            pct = clamp(pct, 0, 1);
-            var regenAmt = Math.floor(getQiLiMax() * pct);
-            if (regenAmt > 0) addQiLi(regenAmt);
+        // 呼吸条（气力）恢复（07「回合自然恢复」）：呼吸条为常驻资源，每个 tick 收束判定（战斗中一轮=一 tick）；
+        // 读当前挂载呼吸法 breath_bar.regen；condition=no_negative_delta_this_round 时本 tick 出过招（consumeQiLi/drainQiLi 已标记 spent）则不回；呼吸法未配 regen 则不回。
+        var breathRegen = null;
+        var breathMb = getMountedBreath();
+        if (breathMb && breathMb.breathBar && breathMb.breathBar.regen) breathRegen = breathMb.breathBar.regen;
+        var qMaxNow = getQiLiMax();
+        if (breathRegen && qMaxNow > 0) {
+            var condOk = true;
+            if (breathRegen.condition === 'no_negative_delta_this_round') {
+                condOk = !state.qi_li_spent_this_tick;
+            }
+            if (condOk) {
+                var regenAmt = 0;
+                if (breathRegen.type === 'flat') {
+                    regenAmt = Math.max(0, Math.floor(Number(breathRegen.per_round) || 0));
+                } else {
+                    var pctR = Number(breathRegen.per_round);
+                    if (!isFinite(pctR)) pctR = 0;
+                    pctR = clamp(pctR, 0, 1);
+                    regenAmt = Math.floor(qMaxNow * pctR);
+                }
+                if (regenAmt > 0) addQiLi(regenAmt);
+            }
         }
         state.qi_li_spent_this_tick = false;
 
@@ -1493,18 +1613,9 @@
             global.GameTime.advanceTicks(1);
         }
 
-        // ---------- 饱食（仅状态衰减 + Buff 同步） ----------
-        var satietyInterval = get('satiety_tick_decay_interval', 1);
-        if (tick % satietyInterval === 0) {
-            var satDecay = get('satiety_tick_decay', 1);
-            state.satiety = round1(Math.max(0, state.satiety - satDecay));
-        }
-        if (state.isResting) {
-            var satExtraDecay = Number(get('rest_action_extra_satiety_decay_per_tick', 1));
-            if (isFinite(satExtraDecay) && satExtraDecay > 0) {
-                state.satiety = round1(Math.max(0, state.satiety - satExtraDecay));
-            }
-        }
+        // ---------- 饱食（新资源模型：无被动衰减） ----------
+        // 设计决策（用户定，2025）：饱食只在「进食/调息恢复体力」时被消耗（储备燃料），不再每 tick 漏。
+        // 下方仅保留 状态追踪 + Buff 同步 + 体重/死亡 逻辑（由进食/调息造成的 satiety 变化驱动）。
         var satietyRange = syncSatietyStateBuff();
         var severeHungerSatietyMax = getSevereHungerSatietyMax();
         if (state.satiety <= 0) state.starvationTicks += 1;
@@ -1533,18 +1644,8 @@
             return result;
         }
 
-        // ---------- 饮水（仅状态衰减 + Buff 同步） ----------
-        var thirstInterval = get('thirst_tick_decay_interval', 2);
-        if (tick % thirstInterval === 0) {
-            var thirstDecay = get('thirst_tick_decay_amount', 1);
-            state.thirst = round1(Math.max(0, state.thirst - thirstDecay));
-        }
-        if (state.isResting) {
-            var thirstExtraDecay = Number(get('rest_action_extra_thirst_decay_per_tick', 1));
-            if (isFinite(thirstExtraDecay) && thirstExtraDecay > 0) {
-                state.thirst = round1(Math.max(0, state.thirst - thirstExtraDecay));
-            }
-        }
+        // ---------- 饮水（新资源模型：无被动衰减） ----------
+        // 同上：饮水只在「进食/调息恢复体力」时消耗，不再每 tick 漏；死亡计时器仅在饮水被吃到 0 时启动。
         syncThirstStateBuff();
         if (state.thirst <= 0) state.thirstDeathTicks += 1;
         else state.thirstDeathTicks = 0;
@@ -1569,6 +1670,14 @@
         var ningqi = (typeof getNingqiBonus === 'function' ? getNingqiBonus() : 0) || 0;
         var regen = (baseRegen + coef * breath) * (1 + ningqi) * getStaminaRegenMultiplier();
         state.stamina = round1(Math.min(staminaMax, state.stamina + regen));
+        // 站立基础代谢（用户定，2025）：不休息/不调息时每 tick 扣基础体力（时间流逝本身有代价；
+        // 休息/调息正在恢复，豁免）。饱食/饮水不受影响（仍只在恢复时消耗）。
+        if (!state.isResting && !state.is_sit_meditation_active) {
+            var passiveDrain = Number(get('stamina_passive_drain_per_tick', 0.2));
+            if (isFinite(passiveDrain) && passiveDrain > 0) {
+                state.stamina = round1(Math.max(0, state.stamina - passiveDrain));
+            }
+        }
         syncStaminaExhaustedBuff();
         if (state.stamina <= 0 && !comaActive) {
             state.staminaZeroTicks += 1;
@@ -1660,8 +1769,25 @@
                     state.sit_meditation_interrupt_this_tick = false;
                     state.last_sit_meditation_gain = 0;
                 } else {
-                    // 调息可在 current>=max 时继续累积，用于触发“烧蓝换上限”与封顶溢出区间。
-                    applySitMeditationDiqiOnce();
+                    // 调息（新资源模型）：每 tick 消耗饱食/饮水 → 恢复体力 + 底气（坐食消化）。
+                    // 饱食/饮水不足 → 中断调息（下一 tick 停止），不恢复。
+                    var tiaoSatCost = Number(get('tiao_xi_satiety_cost_per_tick', 1));
+                    var tiaoThirstCost = Number(get('tiao_xi_thirst_cost_per_tick', 0.5));
+                    if (!isFinite(tiaoSatCost)) tiaoSatCost = 1;
+                    if (!isFinite(tiaoThirstCost)) tiaoThirstCost = 0.5;
+                    if (state.satiety >= tiaoSatCost && state.thirst >= tiaoThirstCost) {
+                        state.satiety = round1(Math.max(0, state.satiety - tiaoSatCost));
+                        state.thirst = round1(Math.max(0, state.thirst - tiaoThirstCost));
+                        var tiaoStaGain = Number(get('tiao_xi_stamina_gain_per_tick', 2));
+                        if (isFinite(tiaoStaGain) && tiaoStaGain > 0) {
+                            state.stamina = round1(Math.min(get('stamina_max', 100), state.stamina + tiaoStaGain));
+                        }
+                        // 调息可在 current>=max 时继续累积，用于触发“烧蓝换上限”与封顶溢出区间。
+                        applySitMeditationDiqiOnce();
+                    } else {
+                        state.sit_meditation_interrupt_this_tick = true;
+                        state.last_sit_meditation_gain = 0;
+                    }
                 }
             } else if (state.diqi_current < dMax) {
                 var breath = Math.max(0, (typeof getBreathActual === 'function' ? getBreathActual() : 10));
@@ -1671,6 +1797,22 @@
             }
         }
         if (!state.is_sit_meditation_active) state.sit_meditation_interrupt_this_tick = false;
+
+        // ---------- 自修学习（05 5.8：挂机，每 tick 扣精力→转化潜能→技能经验→升级） ----------
+        if (state.is_study_active) {
+            var studyRes = settleStudyOnce();
+            if (studyRes.leveled > 0 && typeof global !== 'undefined' && global.GameLog && typeof global.GameLog.log === 'function') {
+                var studyName = '';
+                if (global.CombatSkills && typeof global.CombatSkills.getSkill === 'function') {
+                    var studySk = global.CombatSkills.getSkill(state.study_skill_id);
+                    if (studySk && studySk.name) studyName = String(studySk.name);
+                }
+                global.GameLog.log(studyUiText('log.system.study.level_up', { name: studyName, level: String(studyRes.leveled) }), 'system');
+            }
+            if (!studyRes.ok && state.study_stop_reason && typeof global !== 'undefined' && global.GameLog && typeof global.GameLog.log === 'function') {
+                global.GameLog.log(studyUiText('log.system.study.stopped_' + String(state.study_stop_reason), {}), 'warn');
+            }
+        }
         emitSurvivalStateChangedIfNeeded('tick', beforeSnapshot, { coma: !!result.coma });
 
         return result;
@@ -1693,6 +1835,104 @@
     function isDead() { return state.isDead; }
     function getDeathReason() { return state.deathReason || null; }
     function isComa() { return state.isComa; }
+
+    // ---------- 自修学习（05 5.8 / 11 §8.3.1 技能升级主干） ----------
+
+    /** 安全取 UI 文案（失败回退 key 本身） */
+    function studyUiText(key, vars) {
+        try {
+            if (typeof global !== 'undefined' && global.UIText && typeof global.UIText.t === 'function') {
+                return global.UIText.t(key, vars);
+            }
+        } catch (e) { /* ignore */ }
+        return key;
+    }
+
+    /** Pot_perEnergy：每 1 点精力可转化的潜能上限（专注正相关，05 5.8） */
+    function computeStudyPotentialCap() {
+        var base = Number(get('study_potential_per_energy_base', 200));
+        if (!isFinite(base)) base = 200;
+        var baseline = Number(get('focus_baseline', 10));
+        if (!isFinite(baseline)) baseline = 10;
+        var pct = Number(get('focus_potential_per_energy_pct_per_point', 0.05));
+        if (!isFinite(pct)) pct = 0.05;
+        var focus = 0;
+        if (typeof global !== 'undefined' && global.CharacterAttributes && typeof global.CharacterAttributes.getEffectiveAttr === 'function') {
+            focus = Math.max(0, Number(global.CharacterAttributes.getEffectiveAttr('focus')) || 0);
+        }
+        return Math.max(0, Math.floor(base * (1 + pct * (focus - baseline))));
+    }
+
+    /** 开始自修某技能（挂机）；返回 { ok, reason } */
+    function startStudy(skillId) {
+        if (!skillId) return { ok: false, reason: 'no_skill' };
+        if (state.isDead) return { ok: false, reason: 'dead' };
+        var IE = global.InventoryEquipment;
+        if (!IE || typeof IE.getSkillLevel !== 'function') return { ok: false, reason: 'no_ie' };
+        var lv = IE.getSkillLevel(skillId);
+        var cap = Number.MAX_SAFE_INTEGER;
+        if (typeof IE.getProgressionSkillCap === 'function') {
+            var c = parseInt(IE.getProgressionSkillCap(skillId), 10);
+            if (isFinite(c)) cap = Math.max(0, c);
+        }
+        if (lv >= cap) return { ok: false, reason: 'max_level' };
+        state.is_study_active = true;
+        state.study_skill_id = String(skillId);
+        state.study_stop_reason = null;
+        return { ok: true, reason: null };
+    }
+
+    function stopStudy(reason) {
+        state.is_study_active = false;
+        state.study_skill_id = null;
+        state.study_stop_reason = reason || null;
+    }
+
+    function isStudyActive() { return !!state.is_study_active; }
+    function getStudySkillId() { return state.study_skill_id || null; }
+    function getStudyStopReason() { return state.study_stop_reason || null; }
+    function getStudyState() {
+        return {
+            active: !!state.is_study_active,
+            skillId: state.study_skill_id || null,
+            stopReason: state.study_stop_reason || null,
+            potentialPerEnergy: computeStudyPotentialCap()
+        };
+    }
+
+    /**
+     * 自修单 tick 结算（05 5.8）：扣 1 精力 → 转化至多 Pot_perEnergy 潜能 → 技能经验 → 按成本曲线升级。
+     * 条件不满足（精力/潜能不足/到上限）时自动停止。
+     */
+    function settleStudyOnce() {
+        var out = { ok: false, gained: 0, leveled: 0, reason: null };
+        if (!state.is_study_active || state.isDead) return out;
+        var skillId = state.study_skill_id;
+        var IE = global.InventoryEquipment;
+        if (!skillId || !IE || typeof IE.getStudyExp !== 'function') {
+            stopStudy('invalid');
+            out.reason = 'invalid';
+            return out;
+        }
+        var energyCost = Number(get('study_tick_energy_cost', 1));
+        if (!isFinite(energyCost) || energyCost <= 0) energyCost = 1;
+        if (getEnergy() < energyCost) { stopStudy('no_energy'); out.reason = 'no_energy'; return out; }
+        var potCap = computeStudyPotentialCap();
+        if (potCap <= 0) { stopStudy('no_focus'); out.reason = 'no_focus'; return out; }
+        if (typeof IE.getPotential !== 'function' || IE.getPotential() < potCap) { stopStudy('no_potential'); out.reason = 'no_potential'; return out; }
+        var lv = IE.getSkillLevel(skillId);
+        var cap = (typeof IE.getProgressionSkillCap === 'function') ? IE.getProgressionSkillCap(skillId) : Number.MAX_SAFE_INTEGER;
+        if (lv >= cap) { stopStudy('max_level'); out.reason = 'max_level'; return out; }
+
+        consumeEnergy(energyCost);
+        IE.consumePotential(potCap);
+        IE.addStudyExp(skillId, potCap);
+        var adv = IE.tryAdvanceSkillLevel(skillId);
+        out.ok = true;
+        out.gained = potCap;
+        out.leveled = adv ? adv.leveled : 0;
+        return out;
+    }
 
     global.Survival = {
         setConfig: setConfig,
@@ -1720,6 +1960,7 @@
         addSatiety: addSatiety,
         addThirst: addThirst,
         consumeStamina: consumeStamina,
+        applyFoodConversion: applyFoodConversion,
         clearFatigue: clearFatigue,
         changeFatigue: changeFatigue,
         consumeEnergy: consumeEnergy,
@@ -1749,10 +1990,13 @@
         isComa: isComa,
 
         getQiLiMax: getQiLiMax,
+        getMountedBreath: getMountedBreath,
         refreshDiqiMaxFromBreath: refreshDiqiMaxFromBreath,
         initBattleResourcesFull: initBattleResourcesFull,
         addQiLi: addQiLi,
         consumeQiLi: consumeQiLi,
+        drainQiLi: drainQiLi,
+        applyBreathInitialState: applyBreathInitialState,
         consumeDiqi: consumeDiqi,
         getDiqiShieldRemaining: getDiqiShieldRemaining,
         setDiqiShieldRemaining: setDiqiShieldRemaining,
@@ -1763,6 +2007,14 @@
         changeDiqi: changeDiqi,
         applyDiqiShieldToDamage: applyDiqiShieldToDamage,
         addEnergy: addEnergy,
+        computeStudyPotentialCap: computeStudyPotentialCap,
+        startStudy: startStudy,
+        stopStudy: stopStudy,
+        isStudyActive: isStudyActive,
+        getStudySkillId: getStudySkillId,
+        getStudyStopReason: getStudyStopReason,
+        getStudyState: getStudyState,
+        settleStudyOnce: settleStudyOnce,
         applySitMeditationDiqiOnce: applySitMeditationDiqiOnce,
         setSitMeditationActive: setSitMeditationActive,
         isSitMeditationActive: isSitMeditationActive,

@@ -170,7 +170,6 @@
       <div class="row">
         <label>required_skill_level_min：<input id="requiredLevelInput" type="number" min="1" value="1" /></label>
         <label>match_weight：<input id="matchWeightInput" type="number" min="0.000001" step="0.1" value="1" /></label>
-        <label>base_output_quality_tier：<input id="qualityTierInput" type="number" min="1" max="6" value="1" /></label>
       </div>
       <div class="row">
         <label>proficiency_usage_key：<input id="proficiencyKeyInput" style="width:280px" /></label>
@@ -271,7 +270,6 @@
         recipeIdInput: document.getElementById('recipeIdInput'),
         requiredLevelInput: document.getElementById('requiredLevelInput'),
         matchWeightInput: document.getElementById('matchWeightInput'),
-        qualityTierInput: document.getElementById('qualityTierInput'),
         proficiencyKeyInput: document.getElementById('proficiencyKeyInput'),
         requiredSkillIdInput: document.getElementById('requiredSkillIdInput'),
         processorSelect: document.getElementById('processorSelect'),
@@ -597,7 +595,6 @@
           bonus_outputs: [],
           required_skill_level_min: 1,
           proficiency_usage_key: (systemId || 'life_cooking') + '.new_recipe',
-          base_output_quality_tier: 1,
           required_skill_id: null,
           recipe_processor_id: null,
           base_success_rate: null,
@@ -719,7 +716,6 @@
         el.recipeIdInput.value = recipe.recipe_id || '';
         el.requiredLevelInput.value = Number(recipe.required_skill_level_min || 1);
         el.matchWeightInput.value = Number(recipe.match_weight || 1);
-        el.qualityTierInput.value = Number(recipe.base_output_quality_tier || 1);
         el.proficiencyKeyInput.value = recipe.proficiency_usage_key || '';
         el.requiredSkillIdInput.value = recipe.required_skill_id == null ? '' : String(recipe.required_skill_id);
         el.processorSelect.value = recipe.recipe_processor_id == null ? '' : String(recipe.recipe_processor_id);
@@ -1017,7 +1013,6 @@
           bonus_outputs: readBonusRows(),
           required_skill_level_min: toClampedInt(el.requiredLevelInput.value, 1, null, 1),
           proficiency_usage_key: String(el.proficiencyKeyInput.value || '').trim(),
-          base_output_quality_tier: toClampedInt(el.qualityTierInput.value, 1, 6, 1),
           required_skill_id: parseNullableString(el.requiredSkillIdInput.value),
           recipe_processor_id: parseNullableString(el.processorSelect.value),
           base_success_rate: parseNullableNumber(el.successRateInput.value),

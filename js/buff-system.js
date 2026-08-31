@@ -256,6 +256,27 @@
         return sum;
     }
 
+    /** 命中率修正（百分点，每层 delta_per_stack 求和；如「眼花」对目标作为攻击方时 −5pp/层）。见 11-skills 8.3.6。 */
+    function getHitChanceDeltaPercent(ownerId) {
+        var oid = ownerId || PLAYER_OWNER_ID;
+        var arr = instancesByOwner[oid] || [];
+        var sum = 0;
+        var i, j, inst, effects, e, p, d;
+        for (i = 0; i < arr.length; i++) {
+            inst = arr[i];
+            if (!inst || !inst.template || inst.stacks <= 0) continue;
+            effects = arrayOrEmpty(inst.template.effects);
+            for (j = 0; j < effects.length; j++) {
+                e = effects[j] || {};
+                if (e.type !== 'hit_chance_delta_percent') continue;
+                p = e.params || {};
+                d = safeNum(p.delta_per_stack, 0);
+                sum += d * safeNum(inst.stacks, 0);
+            }
+        }
+        return sum;
+    }
+
     function removeBuffByBuffId(ownerId, buffId) {
         var oid = ownerId || PLAYER_OWNER_ID;
         var bid = String(buffId || '');
@@ -483,10 +504,53 @@
                 p = e.params || {};
                 m = safeNum(p.multiplier, 1);
                 if (!isFinite(m) || m <= 0) continue;
-                mul *= m;
+                // 按层数线性缩放：每层 ×m（淤伤 3 层 ×1.10 → ×1.30），见 11-skills 8.3.6
+                mul *= (1 + (m - 1) * Math.max(1, parseInt(inst.stacks, 10) || 1));
             }
         }
         return mul;
+    }
+
+    /**
+     * 延长某 owner 全部非增益 Buff 实例的剩余持续（expires_at_tick + ticks）。
+     * 「非增益」= 模板 dispel_pool 非 'beneficial'（增益不延长）。返回被延长的实例数。见 11-skills 8.3.6 伤上加伤。
+     */
+    function extendNonBeneficialBuffs(ownerId, ticks) {
+        var oid = ownerId || PLAYER_OWNER_ID;
+        var arr = instancesByOwner[oid] || [];
+        var n = parseInt(ticks, 10) || 0;
+        if (n <= 0) return 0;
+        var count = 0;
+        var i, inst;
+        for (i = 0; i < arr.length; i++) {
+            inst = arr[i];
+            if (!inst || (inst.stacks || 0) <= 0 || !inst.template) continue;
+            if (inst.template.dispel_pool === 'beneficial') continue;
+            if (inst.expires_at_tick == null) continue;
+            inst.expires_at_tick = inst.expires_at_tick + n;
+            count++;
+        }
+        if (count) {
+            recalcDerived();
+            notifyBuffHudRefresh();
+            emitBuffStateChanged(oid, 'extend_duration', { ticks: n, buffs: count });
+        }
+        return count;
+    }
+
+    /** 某 owner 全部非增益 Buff 的总层数（dispel_pool 非 'beneficial'）。见 11-skills 8.3.6 痛打落水狗。 */
+    function getNonBeneficialBuffStacks(ownerId) {
+        var oid = ownerId || PLAYER_OWNER_ID;
+        var arr = instancesByOwner[oid] || [];
+        var sum = 0;
+        var i, inst;
+        for (i = 0; i < arr.length; i++) {
+            inst = arr[i];
+            if (!inst || !inst.template || (inst.stacks || 0) <= 0) continue;
+            if (inst.template.dispel_pool === 'beneficial') continue;
+            sum += Math.max(0, parseInt(inst.stacks, 10) || 0);
+        }
+        return sum;
     }
 
     function registerRuntimeBuffTemplate(template) {
@@ -1282,6 +1346,9 @@
         getBuffTemplate: getBuffTemplate,
         getBuffStacksSum: getBuffStacksSum,
         getParryChanceDeltaPercent: getParryChanceDeltaPercent,
+        getHitChanceDeltaPercent: getHitChanceDeltaPercent,
+        getNonBeneficialBuffStacks: getNonBeneficialBuffStacks,
+        extendNonBeneficialBuffs: extendNonBeneficialBuffs,
         hasBuffByBuffId: hasBuffByBuffId,
         hasBuffMatchingJudgmentTags: function (ownerId, requiredTags) {
             return ownerHasBuffMatchingJudgmentTags(ownerId, requiredTags);

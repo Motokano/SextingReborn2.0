@@ -108,7 +108,7 @@
       "skill_id": "life_cooking",
       "level_min": 3,
       "locked_hint": "烹饪经验不足，无法判断食用后增益详情",
-      "renderer": "buff_summary",
+      "renderer": "food_restore",
       "value_type": "string",
       "visible_by_default": false
     },
@@ -313,6 +313,10 @@
     },
     "buff_summary": {
       "display_name": "Buff 摘要",
+      "value_type_hint": "buff_id_string"
+    },
+    "food_restore": {
+      "display_name": "食物恢复摘要（消化 buff 总量）",
       "value_type_hint": "buff_id_string"
     },
     "hidden": {

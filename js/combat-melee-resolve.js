@@ -227,11 +227,11 @@
 
     /**
      * 14-implementation：B=clamp(floor(Dmax*r),dmin,dmax)，C=B*(k/10)，扣量=max(1,round(C))，实扣 min(扣量,当前)。
+     * 仅用于底气（方案 1）；呼吸条（气力）改走 computeBreathMoveCost（见下）。
      */
     function computeIntendedResourceCost(dMax, costCfg, k) {
         if (!costCfg || dMax == null || !isFinite(Number(dMax)) || Number(dMax) <= 0) return 0;
-        var ratio = costCfg.ratio_of_qi_li_max_at_10_power != null ? Number(costCfg.ratio_of_qi_li_max_at_10_power)
-            : (costCfg.ratio_of_diqi_max_at_10_power != null ? Number(costCfg.ratio_of_diqi_max_at_10_power) : 0);
+        var ratio = costCfg.ratio_of_diqi_max_at_10_power != null ? Number(costCfg.ratio_of_diqi_max_at_10_power) : 0;
         if (!isFinite(ratio) || ratio <= 0) return 0;
         var dmin = costCfg.min != null ? Number(costCfg.min) : 1;
         var dmax = costCfg.max != null ? Number(costCfg.max) : 50;
@@ -239,6 +239,54 @@
         B = clamp(B, dmin, dmax);
         var C = B * (k / 10);
         return Math.max(1, Math.round(C));
+    }
+
+    /** 动作标签 → breath_bar.action_delta 档位键的映射（挥拳→punch、踢击→kick 等；实现登记，见 11 8.3.3） */
+    var BREATH_TAG_ALIAS = {
+        '挥拳': 'punch',
+        '踢击': 'kick'
+    };
+
+    /**
+     * 呼吸条（气力）消耗 = 挂载呼吸法 action_delta 按动作标签档位（move_overrides 可覆盖）× 成数 k/10（07 / 11 8.3.3）。
+     * 返回 { amount, direction }：direction<0 为消耗（核心条件 pay_move_cost）；direction>0 为回气（无核心条件）；无档位返回 null。
+     * pct_of_max（默认）：amount = max(1, round(clamp(floor(qiMax*|value|),1,50) * k/10))；
+     * flat：amount = max(1, round(|value| * k/10))（scale_by_power:false 时不缩放）。
+     */
+    function computeBreathMoveCost(breathBar, moveId, limbTags, powerK, qiMax) {
+        if (!breathBar || !breathBar.action_delta) return null;
+        var tags = Array.isArray(limbTags) ? limbTags : [];
+        var entry = null;
+        for (var i = 0; i < tags.length; i++) {
+            var t = String(tags[i]);
+            var key = null;
+            if (breathBar.action_delta[t]) key = t;
+            else if (BREATH_TAG_ALIAS[t] && breathBar.action_delta[BREATH_TAG_ALIAS[t]]) key = BREATH_TAG_ALIAS[t];
+            if (key) { entry = breathBar.action_delta[key]; break; }
+        }
+        if (!entry) return null;
+        var val = Number(entry.value);
+        if (!isFinite(val) || val === 0) return null;
+        if (entry.move_overrides && entry.move_overrides[moveId] != null) {
+            var ov = Number(entry.move_overrides[moveId]);
+            if (isFinite(ov) && ov !== 0) val = ov;
+        }
+        var scale = entry.scale_by_power !== false;
+        var k = isFinite(Number(powerK)) ? Number(powerK) : 10;
+        var amount;
+        if (entry.type === 'flat') {
+            amount = Math.abs(val);
+            if (scale) amount = amount * (k / 10);
+            amount = Math.max(1, Math.round(amount));
+        } else {
+            var absR = Math.abs(val);
+            if (absR > 1) absR = 1;
+            var B = Math.floor(Number(qiMax) * absR);
+            B = clamp(B, 1, 50);
+            var C = B * (k / 10);
+            amount = Math.max(1, Math.round(C));
+        }
+        return { amount: amount, direction: val < 0 ? -1 : 1 };
     }
 
     function mapHitPartToModifierKey(hitPart) {
@@ -294,13 +342,21 @@
         return isFinite(c) && c > 0 ? c : 1;
     }
 
-    function getSkillCoefForLimb(IE, limbId) {
+    function getSkillCoefForLimb(IE, limbId, form) {
         if (!IE || typeof IE.getState !== 'function' || typeof IE.getItemTemplate !== 'function') return 1;
         var slot = limbToEquipSlot(limbId);
         var eq = IE.getState().equipment && IE.getState().equipment[slot];
         if (!eq || !eq.item_id) return 1;
         var tpl = IE.getItemTemplate(eq.item_id);
-        var c = tpl && tpl.skill_coef != null ? Number(tpl.skill_coef) : 1;
+        if (!tpl) return 1;
+        // 新模型：分形态系数表（39 §2.2），按出手招式的 form 查系数
+        if (tpl.form_coefs && typeof tpl.form_coefs === 'object') {
+            var fc = form != null ? tpl.form_coefs[form] : null;
+            var v = fc != null ? Number(fc) : 1; // 无该形态系数 = 1.0
+            return isFinite(v) && v > 0 ? v : 1;
+        }
+        // 旧模型：单一 skill_coef（兼容鞋等未迁移装备）
+        var c = tpl.skill_coef != null ? Number(tpl.skill_coef) : 1;
         return isFinite(c) && c > 0 ? c : 1;
     }
 
@@ -407,22 +463,52 @@
         var sk = CS.getSkill(skillId);
         var category = sk && sk.category;
 
+        // 来源标识：区分「玩家攻击」与「敌人还击」，避免日志看不出伤害源
+        logLine('log.combat.resolve.source_player', {}, 'combat');
         var Vatk = CA && typeof CA.getCombatSpeed === 'function' ? CA.getCombatSpeed() : 1;
         var Vdef = opts.defenderSpeed != null ? Number(opts.defenderSpeed) : 10;
         if (!isFinite(Vdef) || Vdef < 0) Vdef = 10;
 
         var P = CA && typeof CA.getHitRate === 'function' ? CA.getHitRate(Vatk, Vdef) : 0.8;
-        var hitRollSuccess = Math.random() < P;
-        logLine('log.combat.resolve.hit', {
-            vAtk: String(Vatk),
-            vDef: String(Vdef),
-            pct: String(Math.round(P * 1000) / 10),
-            result: hitRollSuccess ? tUi('log.combat.resolve.hit_ok') : tUi('log.combat.resolve.hit_miss')
-        }, 'combat');
-
-        var hitPart = sampleHitPart(move);
-        var partLabelKey = HIT_PART_LABEL_KEYS[hitPart] || hitPart;
-        logLine('log.combat.resolve.part', { part: tUi(partLabelKey) });
+        // 多段（hit_segments>1）：每段独立命中 roll 与部位抽样（18.6 每段唯一事件 id）；主结果取第一段，段数组交管线逐段结算（11-skills 8.3.6）
+        var segCount = Math.max(1, parseInt(move.hit_segments, 10) || 1);
+        if (segCount > 4) segCount = 4;
+        var segments = null;
+        var hitRollSuccess;
+        var hitPart;
+        var hitPartModifierKey;
+        function segLogHit(sHit, sPart) {
+            logLine('log.combat.resolve.hit', {
+                vAtk: String(Vatk),
+                vDef: String(Vdef),
+                pct: String(Math.round(P * 1000) / 10),
+                result: sHit ? tUi('log.combat.resolve.hit_ok') : tUi('log.combat.resolve.hit_miss')
+            }, 'combat');
+            var plk = HIT_PART_LABEL_KEYS[sPart] || sPart;
+            logLine('log.combat.resolve.part', { part: tUi(plk) });
+        }
+        if (segCount > 1) {
+            segments = [];
+            var si;
+            for (si = 0; si < segCount; si++) {
+                var sHit = Math.random() < P;
+                var sPart = sampleHitPart(move);
+                segLogHit(sHit, sPart);
+                segments.push({
+                    hitRollSuccess: sHit,
+                    hitPart: sPart,
+                    hitPartModifierKey: mapHitPartToModifierKey(sPart)
+                });
+            }
+            hitRollSuccess = segments[0].hitRollSuccess;
+            hitPart = segments[0].hitPart;
+            hitPartModifierKey = segments[0].hitPartModifierKey;
+        } else {
+            hitRollSuccess = Math.random() < P;
+            hitPart = sampleHitPart(move);
+            hitPartModifierKey = mapHitPartToModifierKey(hitPart);
+            segLogHit(hitRollSuccess, hitPart);
+        }
 
         var skillLv = IE.getSkillLevel(skillId);
         var skillsState = typeof IE.getSkillsState === 'function' ? (IE.getSkillsState() || {}) : {};
@@ -433,12 +519,17 @@
         if (!isFinite(baseL) || baseL <= 0) baseL = 1;
 
         var breathMult = 1;
+        var breathBar = null;
         if (IE.getCombatState) {
             var hubs = IE.getCombatState().hubs || {};
             var bid = hubs.breath;
             if (bid && CS.getBreathPowerMultiplier) {
                 var bu = (skillsState[bid] && skillsState[bid].move_usage) || {};
                 breathMult = CS.getBreathPowerMultiplier(bid, bu);
+            }
+            if (bid && CS.getSkill) {
+                var skB = CS.getSkill(bid);
+                if (skB && skB.breath_bar) breathBar = skB.breath_bar;
             }
         }
         if (!isFinite(breathMult) || breathMult <= 0) breathMult = 1;
@@ -447,7 +538,7 @@
         if (!isFinite(Mmove) || Mmove <= 0) Mmove = 1;
         var G = category === 'weapon'
             ? getWeaponSkillCoefForLimb(IE, limbId)
-            : getSkillCoefForLimb(IE, limbId);
+            : getSkillCoefForLimb(IE, limbId, move && move.form);
 
         var sProbe = 0;
         if (moveId === 'swing_punch') sProbe = getBuffProbeStacks('player');
@@ -464,6 +555,16 @@
             baseWeapon = getWeaponAttackPowerForLimb(IE, limbId);
             if ((!baseWeapon || baseWeapon <= 0) && (limbId === 'lfoot' || limbId === 'rfoot')) {
                 logLine('log.combat.resolve.weapon_foot_base', { limb: String(limbId) }, 'warn');
+            }
+            // 兵器门槛惩罚区（05 5.5.3）：先天筋骨不足 Req 时线性减伤 50%~100%；无任何筋骨增伤
+            var wtpl = getWeaponItemTemplateForLimb(IE, limbId);
+            var wreq = (wtpl && wtpl.req_innate_jingu != null) ? Number(wtpl.req_innate_jingu) : NaN;
+            var wt = (CA && typeof CA.getWeaponThresholdAndBonus === 'function')
+                ? CA.getWeaponThresholdAndBonus(isFinite(wreq) ? wreq : undefined)
+                : null;
+            if (wt) {
+                // 防御：装备门槛已拦截 canUse=false；旧档残留时按最低惩罚（0.5）处理
+                baseWeapon = baseWeapon * (wt.canUse ? wt.M_threshold : 0.5);
             }
         } else {
             baseWeapon = CA && typeof CA.getFistBasePower === 'function' ? CA.getFistBasePower() : 0;
@@ -514,6 +615,8 @@
         var typedDamage = typedEval.typedDamage;
         rawDamage = sumTypedDamage(typedDamage);
 
+        // 伤害链拆解（调试日志，默认收敛）：乘区细节仅在 window.__COMBAT_DEBUG_CHAIN === true 时输出（展示层简化，08「设计意图」）
+        if (typeof window !== 'undefined' && window.__COMBAT_DEBUG_CHAIN === true) {
         logLine('log.combat.resolve.chain', {
             baseTag: tUi(category === 'weapon' ? 'log.combat.resolve.base_tag_weapon' : 'log.combat.resolve.base_tag_unarmed'),
             bf: String(Math.round(baseWeapon * 100) / 100),
@@ -534,17 +637,17 @@
         });
         logLine('log.combat.resolve.chain', {
             baseTag: 'typed(initial/inject/inc1/convert/inc2)',
-            bf: '',
-            zEng: '',
-            addD: '',
-            zExp: '',
-            rCombatExp: '',
-            rMove: '',
-            mMove: '',
-            g: '',
-            kProbe: '',
-            dom: '',
-            k: '',
+            bf: String(Math.round(baseWeapon * 100) / 100),
+            zEng: String(Math.round(dmgBonusMult * 1000) / 1000),
+            addD: String(Math.round(dmgBonusAdd * 1000) / 1000),
+            zExp: String(Math.round(independentMult * 1000) / 1000),
+            rCombatExp: String(combatExpVal),
+            rMove: String(Math.round(Rmove * 1000) / 1000),
+            mMove: String(Mmove),
+            g: String(G),
+            kProbe: String(Math.round(Kprobe * 1000) / 1000),
+            dom: String(dom),
+            k: String(powerK),
             raw: [
                 'B:' + Math.round((typedEval.stages.initial.blunt || 0) * 100) / 100 + '/' + Math.round((typedEval.stages.initial.slash || 0) * 100) / 100 + '/' + Math.round((typedEval.stages.initial.pierce || 0) * 100) / 100,
                 'I:' + Math.round((typedEval.stages.afterInject.blunt || 0) * 100) / 100 + '/' + Math.round((typedEval.stages.afterInject.slash || 0) * 100) / 100 + '/' + Math.round((typedEval.stages.afterInject.pierce || 0) * 100) / 100,
@@ -553,8 +656,9 @@
                 'P2:' + Math.round((typedEval.stages.afterIncrease2.blunt || 0) * 100) / 100 + '/' + Math.round((typedEval.stages.afterIncrease2.slash || 0) * 100) / 100 + '/' + Math.round((typedEval.stages.afterIncrease2.pierce || 0) * 100) / 100
             ].join(' ')
         }, 'combat');
+        }
 
-        var qiMax = Surv && typeof Surv.getQiLiMax === 'function' ? Surv.getQiLiMax() : 100;
+        var qiMax = Surv && typeof Surv.getQiLiMax === 'function' ? Surv.getQiLiMax() : 0;
         var diqiMax = 0;
         if (Surv && typeof Surv.getState === 'function') {
             var ss = Surv.getState();
@@ -562,7 +666,10 @@
         }
         if (!isFinite(diqiMax) || diqiMax <= 0) diqiMax = 1;
 
-        var qiIntended = computeIntendedResourceCost(qiMax, move.qi_li_cost, powerK);
+        // 呼吸条（气力）：消耗由挂载呼吸法 action_delta 按动作标签档位给出（招式不再自带气力消耗，见 07/11 8.3.3）
+        var breathCost = computeBreathMoveCost(breathBar, moveId, move && move.required_limb_tags, powerK, qiMax);
+        var qiIntended = breathCost && breathCost.direction < 0 ? breathCost.amount : 0;
+        var qiRestoreAmt = breathCost && breathCost.direction > 0 ? breathCost.amount : 0;
         var diqiIntended = computeIntendedResourceCost(diqiMax, move.diqi_cost, powerK);
         var qiCurrent = Infinity;
         var diqiCurrent = Infinity;
@@ -573,27 +680,37 @@
             if (!isFinite(qiCurrent) || qiCurrent < 0) qiCurrent = 0;
             if (!isFinite(diqiCurrent) || diqiCurrent < 0) diqiCurrent = 0;
         }
+        // 核心条件（气力 pay_move_cost）不满足 → 由管线在减伤链后按标记把最终伤害置 0（走完整链，07「核心条件不满足时的结算」）；
+        // 底气不足不再归零（08/07：实扣 min、伤害照常）。
         var insufficientQi = qiIntended > 0 && qiCurrent < qiIntended;
         var insufficientDiqi = diqiIntended > 0 && diqiCurrent < diqiIntended;
-        var forceZeroDamageByResourceInsufficient = insufficientQi || insufficientDiqi;
-        if (forceZeroDamageByResourceInsufficient) {
-            rawDamage = 0;
-            typedDamage = createEmptyTypedDamage();
-        }
+        var coreConditionUnsatisfied = insufficientQi;
+        var forceZeroDamageByResourceInsufficient = coreConditionUnsatisfied;
 
         var qiSpent = 0;
         var diqiSpent = 0;
         var deferSpend = !!opts.deferResourceSpend;
         if (!deferSpend) {
-            if (Surv && typeof Surv.consumeQiLi === 'function' && qiIntended > 0) {
-                qiSpent = Surv.consumeQiLi(qiIntended);
-                var stQ = Surv.getState();
-                logLine('log.combat.resolve.qi', {
-                    intend: String(qiIntended),
-                    act: String(qiSpent),
-                    cur: String(stQ.qi_li_current != null ? Math.round(stQ.qi_li_current) : 0),
-                    max: String(qiMax)
-                });
+            if (qiIntended > 0) {
+                if (coreConditionUnsatisfied) {
+                    // 不满足分支：气力扣至 0（drainQiLi）
+                    if (Surv && typeof Surv.drainQiLi === 'function') Surv.drainQiLi();
+                    qiSpent = qiCurrent > 0 ? Math.min(qiIntended, qiCurrent) : 0;
+                } else if (Surv && typeof Surv.consumeQiLi === 'function') {
+                    qiSpent = Surv.consumeQiLi(qiIntended);
+                }
+                if (Surv && typeof Surv.getState === 'function') {
+                    var stQ = Surv.getState();
+                    logLine('log.combat.resolve.qi', {
+                        intend: String(qiIntended),
+                        act: String(qiSpent),
+                        cur: String(stQ.qi_li_current != null ? Math.round(stQ.qi_li_current) : 0),
+                        max: String(qiMax)
+                    });
+                }
+            }
+            if (qiRestoreAmt > 0 && Surv && typeof Surv.addQiLi === 'function') {
+                Surv.addQiLi(qiRestoreAmt);
             }
             if (Surv && typeof Surv.consumeDiqi === 'function' && diqiIntended > 0) {
                 diqiSpent = Surv.consumeDiqi(diqiIntended);
@@ -617,7 +734,8 @@
             moveId: moveId,
             limbId: limbId,
             powerLevel: powerK,
-            hitPartModifierKey: mapHitPartToModifierKey(hitPart),
+            hitPartModifierKey: hitPartModifierKey,
+            segments: segments,
             wSkill: dmgBonusMult * independentMult,
             wCoef: dmgBonusMult,
             skillTotalMult: 1,
@@ -634,8 +752,10 @@
             hitChance: P,
             qiIntended: qiIntended,
             qiSpent: qiSpent,
+            qiRestoreAmt: qiRestoreAmt,
             diqiIntended: diqiIntended,
             diqiSpent: diqiSpent,
+            coreConditionUnsatisfied: coreConditionUnsatisfied,
             forceZeroDamageByResourceInsufficient: forceZeroDamageByResourceInsufficient,
             insufficientQiForIntendedCost: insufficientQi,
             insufficientDiqiForIntendedCost: insufficientDiqi,
@@ -660,7 +780,22 @@
         var Vdef = CA && typeof CA.getCombatSpeed === 'function' ? CA.getCombatSpeed() : 1;
         if (!isFinite(Vdef) || Vdef < 1) Vdef = 1;
         var P = CA && typeof CA.getHitRate === 'function' ? CA.getHitRate(Vatk, Vdef) : 0.8;
+        // 眼花类（hit_chance_delta_percent）：按敌方自身非增益 Buff 修正其命中率（11-skills 8.3.6 扩展#1）
+        if (global.BuffSystem && typeof global.BuffSystem.getHitChanceDeltaPercent === 'function') {
+            var hcDelta = Number(global.BuffSystem.getHitChanceDeltaPercent(String(enemyId))) || 0;
+            if (isFinite(hcDelta) && hcDelta !== 0) {
+                P = Math.min(0.99, Math.max(0, P + hcDelta / 100));
+            }
+        }
         var hitRollSuccess = Math.random() < P;
+        // 来源标识：区分「玩家攻击」与「敌人还击」（攻方=敌人）
+        var enemyLabel = String(enemyId || '');
+        try {
+            if (global.UIText && typeof global.UIText.t === 'function') {
+                enemyLabel = global.UIText.t('enemy.name.' + String(enemyId).replace(/\./g, '_'));
+            }
+        } catch (eLb) { /* ignore */ }
+        logLine('log.combat.resolve.source_enemy', { attacker: enemyLabel }, 'combat');
         logLine('log.combat.resolve.hit', {
             vAtk: String(Math.floor(Vatk)),
             vDef: String(Math.floor(Vdef)),
@@ -677,29 +812,58 @@
             dmgMin = dmgMax;
             dmgMax = tmp;
         }
-        var rawDamage = hitRollSuccess ? Math.floor(dmgMin + Math.random() * (dmgMax - dmgMin + 1)) : 0;
+        // 敌人攻击动作（10-enemies）：有 actions 且气力可负担时按动作结算；否则回退 attack_damage_* 通用还击
         var damageType = normalizeDamageType((tpl && tpl.attack_damage_type) ? String(tpl.attack_damage_type) : 'blunt');
+        var mvId = null;
+        // 实例键（enemyMapId/enemyIndex）用于肢体损毁联动：动作装备肢体已损毁则不可用（10-enemies）
+        var eMapId = opts.enemyMapId != null ? opts.enemyMapId : null;
+        var eIndex = opts.enemyIndex != null ? parseInt(opts.enemyIndex, 10) : null;
+        var action = CE && typeof CE.pickEnemyAction === 'function' ? CE.pickEnemyAction(enemyId, eMapId, eIndex) : null;
+        var hitPart = 'chest';
+        var limbId = 'rhand';
+        var qiSpent = 0;
+        if (action) {
+            var aMin = Number(action.power_min);
+            var aMax = Number(action.power_max);
+            if (isFinite(aMin) && aMin >= 0) dmgMin = aMin;
+            if (isFinite(aMax) && aMax >= 0) dmgMax = aMax;
+            if (dmgMax < dmgMin) {
+                var tmp2 = dmgMin;
+                dmgMin = dmgMax;
+                dmgMax = tmp2;
+            }
+            damageType = normalizeDamageType(action.damage_type ? String(action.damage_type) : 'blunt');
+            hitPart = CE && typeof CE.sampleHitPartForAction === 'function'
+                ? CE.sampleHitPartForAction(action) : 'chest';
+            limbId = action.limb || 'rhand';
+            mvId = action.id || mvId;
+            qiSpent = CE && typeof CE.consumeEnemyQi === 'function'
+                ? CE.consumeEnemyQi(enemyId, action.qi_cost) : 0;
+        }
+        var rawDamage = hitRollSuccess ? Math.floor(dmgMin + Math.random() * (dmgMax - dmgMin + 1)) : 0;
         var typedDamage = createEmptyTypedDamage();
         typedDamage[damageType] = rawDamage;
         var skId = global.CombatInitiative && typeof global.CombatInitiative.getEnemyAttackSkillId === 'function'
             ? global.CombatInitiative.getEnemyAttackSkillId() : '__enemy_counter_attack__';
-        var mvId = global.CombatInitiative && typeof global.CombatInitiative.getEnemyAttackMoveId === 'function'
-            ? global.CombatInitiative.getEnemyAttackMoveId() : 'enemy_counter_strike';
+        if (!mvId) {
+            mvId = global.CombatInitiative && typeof global.CombatInitiative.getEnemyAttackMoveId === 'function'
+                ? global.CombatInitiative.getEnemyAttackMoveId() : 'enemy_counter_strike';
+        }
 
         return {
             rawDamage: rawDamage,
             typedDamage: typedDamage,
             hitRollSuccess: hitRollSuccess,
-            hitPart: 'chest',
+            hitPart: hitPart,
             damageType: damageType,
             skillId: skId,
             moveId: mvId,
-            limbId: 'rhand',
+            limbId: limbId,
             powerLevel: 10,
-            hitPartModifierKey: mapHitPartToModifierKey('chest'),
+            hitPartModifierKey: mapHitPartToModifierKey(hitPart),
             hitChance: P,
             qiIntended: 0,
-            qiSpent: 0,
+            qiSpent: qiSpent,
             diqiIntended: 0,
             diqiSpent: 0,
             forceZeroDamageByResourceInsufficient: false,
@@ -710,14 +874,18 @@
         };
     }
 
-    /** 同速同时提交：在两侧 dry 管线结束后扣玩家本击气力/底气 */
+    /** 同速同时提交：在两侧 dry 管线结束后扣玩家本击气力/底气（核心条件不满足时扣至 0，07「核心条件不满足时的结算」） */
     function applyDeferredResourceSpendFromResolveResult(r) {
         if (!r || !r.deferredResourceSpend) return;
         var Surv = global.Survival;
         var qiIntended = r.qiIntendedForCommit != null ? Number(r.qiIntendedForCommit) : Number(r.qiIntended) || 0;
         var diqiIntended = r.diqiIntendedForCommit != null ? Number(r.diqiIntendedForCommit) : Number(r.diqiIntended) || 0;
-        if (Surv && typeof Surv.consumeQiLi === 'function' && qiIntended > 0) {
-            Surv.consumeQiLi(qiIntended);
+        if (qiIntended > 0) {
+            if (r.coreConditionUnsatisfied) {
+                if (Surv && typeof Surv.drainQiLi === 'function') Surv.drainQiLi();
+            } else if (Surv && typeof Surv.consumeQiLi === 'function') {
+                Surv.consumeQiLi(qiIntended);
+            }
         }
         if (Surv && typeof Surv.consumeDiqi === 'function' && diqiIntended > 0) {
             Surv.consumeDiqi(diqiIntended);
@@ -726,6 +894,7 @@
 
     global.CombatMeleeResolve = {
         computeIntendedResourceCost: computeIntendedResourceCost,
+        computeBreathMoveCost: computeBreathMoveCost,
         mapHitPartToModifierKey: mapHitPartToModifierKey,
         limbToWeaponSlot: limbToWeaponSlot,
         getWeaponAttackPowerForLimb: getWeaponAttackPowerForLimb,

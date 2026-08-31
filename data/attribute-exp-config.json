@@ -244,8 +244,9 @@
     }
   },
   "source_whitelist": {
-    "enabled": true,
-    "reject_unregistered_source": true,
+    "_comment": "登记示例（非强制）：玩家任何行为都可发放属性经验（细水长流，见 01 哲学）；本表仅用于盘点/防误配，不拦截未登记来源。",
+    "enabled": false,
+    "reject_unregistered_source": false,
     "match_fields": ["source_id", "event_kind", "event_name"],
     "allowed_sources": [
       {
@@ -272,6 +273,14 @@
         "event_name": "use_breath_tonic_success",
         "allow_grants": [
           { "attr_id": "breath", "fixed_exp": 40 }
+        ]
+      },
+      {
+        "source_id": "evt.combat.parry_success",
+        "event_kind": "combat",
+        "event_name": "parry_roll_succeeded",
+        "allow_grants": [
+          { "attr_id": "flexibility", "fixed_exp": 15 }
         ]
       }
     ]
@@ -303,6 +312,15 @@
       "event_name": "use_breath_tonic_success",
       "grants": [
         { "attr_id": "breath", "fixed_exp": 40 }
+      ],
+      "grant_on_success_only": true
+    },
+    {
+      "source_id": "evt.combat.parry_success",
+      "event_kind": "combat",
+      "event_name": "parry_roll_succeeded",
+      "grants": [
+        { "attr_id": "flexibility", "fixed_exp": 15 }
       ],
       "grant_on_success_only": true
     }

@@ -79,12 +79,27 @@
         {
           "id": "diqi_shield",
           "handler": "builtin.diqi_shield_player",
-          "_doc": "玩家受击：护体层先于最终伤害占位"
+          "_doc": "玩家受击：激活盾层（37 §4.3）先于最终伤害占位"
+        },
+        {
+          "id": "flex_defense",
+          "handler": "builtin.flexibility_defense_player",
+          "_doc": "玩家受击：柔韧基础防御 DR=柔韧/(柔韧+3D)（37 §5，05 5.6.2）"
+        },
+        {
+          "id": "type_modifier",
+          "handler": "builtin.damage_type_modifier_player",
+          "_doc": "玩家受击：部位伤害类型微调系数 M[部位][类型]（37 §5，05 5.6.2）"
         },
         {
           "id": "damage_resolve_stub",
           "handler": "builtin.damage_stub",
           "buff_event_name": "attack_damage_applied"
+        },
+        {
+          "id": "stun_accumulate",
+          "handler": "builtin.stun_accumulate_player",
+          "_doc": "玩家受击：眩晕累积（37 §9.2，k13）——命中头大幅累积，头防具抗眩晕比例减免；≥100 眩晕 1 回合"
         }
       ]
     }
@@ -98,6 +113,16 @@
     },
     "dispel_one_beneficial_buff_on_target": {
       "resolver": "dispel_one_beneficial_buff_on_target",
+      "hooks": ["hit_roll_success"],
+      "mechanic_shared_with_enemy": true
+    },
+    "extend_target_debuff_duration": {
+      "resolver": "extend_target_debuff_duration",
+      "hooks": ["hit_roll_success"],
+      "mechanic_shared_with_enemy": true
+    },
+    "damage_scale_by_target_debuff_stacks": {
+      "resolver": "damage_scale_by_target_debuff_stacks",
       "hooks": ["hit_roll_success"],
       "mechanic_shared_with_enemy": true
     }

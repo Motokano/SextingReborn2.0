@@ -12,7 +12,7 @@ alwaysApply: true
 
 - 统一入口：`js/scene-app.js` 的 `buildItemTooltipHtmlForTemplate(itemId, tpl, inst, character)`。
 - **默认 tooltip 仅显示**：名称 + 描述。
-- 重量/品质/减伤/槽位等“额外属性”**不再默认显示**；若需展示，必须走 `item-info-modules` 的模块配置。
+- 重量/减伤/槽位等“额外属性”**不再默认显示**；若需展示，必须走 `item-info-modules` 的模块配置。
 - `scene-renderer`（快捷栏）应优先复用 `SceneApp.buildItemTooltipHtmlForTemplate`，避免并行维护第二套拼装逻辑。
 
 ## 1) 语言等级阈值（强制）

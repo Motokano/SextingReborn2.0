@@ -207,6 +207,99 @@
       "expire_effects": []
     },
     {
+      "buff_id": "buff_dazzled",
+      "name": "眼花",
+      "desc": "眼前发花，出手失准。作为攻击方时命中率每层 -5 个百分点，最多 3 层；持续 6 tick。",
+      "durationTicks": 6,
+      "maxStacks": 3,
+      "stacksAddOnApply": 1,
+      "priority": 44,
+      "listenerSide": "self",
+      "consumeMode": "always",
+      "consumeLayersFixed": 0,
+      "applyMode": "always_apply",
+      "triggerEventKind": [
+        "combat"
+      ],
+      "triggerEventName": [
+        "attack_hit_roll_resolved"
+      ],
+      "triggerTags": [
+        "dazzled_pipeline_manual"
+      ],
+      "effects": [
+        {
+          "type": "hit_chance_delta_percent",
+          "params": {
+            "delta_per_stack": -5
+          }
+        }
+      ],
+      "expire_effects": []
+    },
+    {
+      "buff_id": "buff_limping",
+      "name": "跛足",
+      "desc": "膝踝受创，步履蹒跚。先手速度每层 -20%，最多 2 层；持续 6 tick。",
+      "durationTicks": 6,
+      "maxStacks": 2,
+      "stacksAddOnApply": 1,
+      "priority": 44,
+      "listenerSide": "self",
+      "consumeMode": "always",
+      "consumeLayersFixed": 0,
+      "applyMode": "always_apply",
+      "triggerEventKind": [
+        "combat"
+      ],
+      "triggerEventName": [
+        "attack_hit_roll_resolved"
+      ],
+      "triggerTags": [
+        "limping_pipeline_manual"
+      ],
+      "effects": [
+        {
+          "type": "battle_move_speed_delta_percent",
+          "params": {
+            "delta_percent": -20
+          }
+        }
+      ],
+      "expire_effects": []
+    },
+    {
+      "buff_id": "buff_bruised",
+      "name": "淤伤",
+      "desc": "旧伤未愈，越打越疼。受击最终伤害每层 ×1.10，最多 3 层；持续 8 tick。",
+      "durationTicks": 8,
+      "maxStacks": 3,
+      "stacksAddOnApply": 1,
+      "priority": 44,
+      "listenerSide": "self",
+      "consumeMode": "always",
+      "consumeLayersFixed": 0,
+      "applyMode": "always_apply",
+      "triggerEventKind": [
+        "combat"
+      ],
+      "triggerEventName": [
+        "attack_damage_applied"
+      ],
+      "triggerTags": [
+        "bruised_pipeline_manual"
+      ],
+      "effects": [
+        {
+          "type": "battle_final_damage_taken_multiplier",
+          "params": {
+            "multiplier": 1.1
+          }
+        }
+      ],
+      "expire_effects": []
+    },
+    {
       "buff_id": "buff_chain_probe",
       "name": "链式探针",
       "desc": "用于验证 trigger_event 链路防环与深度限制的稳定性。",

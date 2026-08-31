@@ -249,6 +249,12 @@
         var caps = getParryCaps();
         rate = clamp(rate, 0, caps.chance);
         red = clamp(red, 0, caps.shunt);
+        // 招架修正（失衡类）：读取防方 owner 的修正（11-skills 8.3.6 扩展#2；修正「失衡」对敌无效的既有缺口）
+        if (d.kind === 'enemy' && d.enemyId != null
+            && global.BuffSystem && typeof global.BuffSystem.getParryChanceDeltaPercent === 'function') {
+            var pDelta = Number(global.BuffSystem.getParryChanceDeltaPercent(String(d.enemyId))) || 0;
+            if (isFinite(pDelta) && pDelta !== 0) rate = clamp(rate + pDelta / 100, 0, caps.chance);
+        }
         if (!ctx.hitRollSuccess) return ctx;
         if (rate <= 0) {
             ctx.parrySucceeded = false;
@@ -289,6 +295,17 @@
         if (!CP || !IE || typeof CP.resolveParryPhaseContext !== 'function') {
             ctx.parrySucceeded = false;
             ctx.damageAfterParry = ctx.rawDamage;
+            return ctx;
+        }
+        // 眩晕中（k13，37 §9.2）：本回合无法行动 → 招架自动失败
+        if (typeof IE.isPlayerStunned === 'function' && IE.isPlayerStunned()) {
+            ctx.parryPhaseSkipped = true;
+            ctx.skipReason = 'stunned';
+            ctx.parrySucceeded = false;
+            ctx.damageAfterParry = ctx.rawDamage;
+            if (!isSimultaneousDryRun(ctx)) {
+                emitCombat(phase.buff_event_skip || 'parry_phase_skipped', ['parry', 'parry_skip'], { reason: 'stunned' }, ctx.eventIdSuffix);
+            }
             return ctx;
         }
         var combatState = IE.getCombatState ? IE.getCombatState() : {};
@@ -369,12 +386,31 @@
             var deltaPct = global.BuffSystem.getParryChanceDeltaPercent('player') || 0;
             pChance = clamp(pChance + deltaPct / 100, 0, caps.chance);
         }
+        // 步法招架侧固定效果（k17，11 §8.3.4 / 39 §6.4）：挂载步法技能的招架率/卸力加成 × 鞋 footwork_coef（左右取更差）
+        if (typeof IE.getFootworkParryBonus === 'function') {
+            var fwBonus = IE.getFootworkParryBonus();
+            if (fwBonus && (fwBonus.chance || fwBonus.reduce)) {
+                pChance = clamp(pChance + fwBonus.chance, 0, caps.chance);
+                pReduce = clamp(pReduce + fwBonus.reduce, 0, caps.shunt);
+            }
+        }
         if (rnd() < pChance) {
             ctx.parrySucceeded = true;
             ctx.damageAfterParry = 0;
             if (IE.incrementSkillMoveUsage && CS && typeof CS.getParryProficiencyUsageKey === 'function') {
                 var uk = CS.getParryProficiencyUsageKey(pctx.parrySkillId);
                 if (uk) IE.incrementSkillMoveUsage(pctx.parrySkillId, uk, 1);
+            }
+            // 招架成功 → 柔韧属性经验（24 属性经验；低幅补充，睡眠结算；进食/睡眠为主通道）
+            // 数值与 data/attribute-exp-config.json 的 evt.combat.parry_success 保持一致
+            if (!isSimultaneousDryRun(ctx) && global.CharacterAttributes && typeof global.CharacterAttributes.grantAttributeExp === 'function') {
+                try {
+                    global.CharacterAttributes.grantAttributeExp('player', [{ attr_id: 'flexibility', exp: 15 }], {
+                        source_id: 'evt.combat.parry_success',
+                        event_kind: 'combat',
+                        event_name: 'parry_roll_succeeded'
+                    });
+                } catch (eGrant) { /* ignore */ }
             }
             if (typeof CP.logParryRollSuccess === 'function') CP.logParryRollSuccess();
             if (!isSimultaneousDryRun(ctx)) {
@@ -484,8 +520,29 @@
         return ctx;
     }
 
-    function phaseDiqiShieldPlayer(ctx, phase) {
-        var d = ctx.defender;
+    /**
+     * 伤害落地后的损毁写入（09-body-parts「损毁写入」+ 10-enemies HP/死亡）：
+     * - defender 为玩家 → CharacterAttributes.applyCombatDestroy（部位损毁累积）
+     * - defender 为敌人 → CombatEnemies.onEnemyDamageResolved（扣实例 HP + 敌人部位损毁 + 死亡标记）
+     * 命中失败（finalDamage=0）时无写入。
+     */
+    function applyDestroyToDefender(ctx) {
+        if (!ctx || ctx.hitRollSuccess === false) return;
+        var def = ctx.defender || {};
+        var dmg = Math.max(0, Math.floor(Number(ctx.finalDamage) || 0));
+        if (dmg <= 0) return;
+        if (def.kind === 'player') {
+            if (global.CharacterAttributes && typeof global.CharacterAttributes.applyCombatDestroy === 'function') {
+                global.CharacterAttributes.applyCombatDestroy(ctx.hitPart, dmg);
+            }
+        } else if (def.kind === 'enemy') {
+            if (global.CombatEnemies && typeof global.CombatEnemies.onEnemyDamageResolved === 'function') {
+                global.CombatEnemies.onEnemyDamageResolved(ctx);
+            }
+        }
+    }
+
+    function phaseDiqiShieldPlayer(ctx, phase) {        var d = ctx.defender;
         var baseD = ctx.damageAfterParry != null ? ctx.damageAfterParry : ctx.rawDamage;
         baseD = Math.max(0, Number(baseD) || 0);
         ctx.damageBeforeDiqiShield = baseD;
@@ -500,7 +557,12 @@
             ctx.diqiShieldAbsorbed = 0;
             return ctx;
         }
-        var pct = getDiqiHutiShieldReducePct();
+        var pct = 0;
+        // 新激活盾（37 §4.3）：盾的减伤比例 = 命中部位对应板位模块减伤（空板=0；未激活时盾量为 0，applyDiqiShieldToDamage 自动透传）
+        var IE = global.InventoryEquipment;
+        if (IE && typeof IE.getPlateDamageReduce === 'function') {
+            pct = IE.getPlateDamageReduce(ctx.hitPart || 'chest', ctx.damageType || 'blunt');
+        }
         var r = Surv.applyDiqiShieldToDamage(baseD, pct);
         ctx.damageAfterDiqiShield = r.outDamage;
         ctx.diqiShieldAbsorbed = r.absorbed;
@@ -510,6 +572,165 @@
                 damage_in: baseD,
                 damage_out: r.outDamage
             }, ctx.eventIdSuffix || 'shield');
+        }
+        return ctx;
+    }
+
+    /** 玩家受击：柔韧基础防御（DR = 柔韧/(柔韧+3D)，05 5.6.2；按 typed 分类型算） */
+    function phaseFlexibilityDefensePlayer(ctx, phase) {
+        var def = ctx.defender || {};
+        if (def.kind !== 'player' || ctx.hitRollSuccess === false) {
+            ctx.damageAfterFlex = ctx.hitRollSuccess === false ? 0 : (ctx.damageAfterDiqiShield != null ? ctx.damageAfterDiqiShield : ctx.rawDamage);
+            return ctx;
+        }
+        var td = { blunt: 0, slash: 0, pierce: 0 };
+        var src = ctx.typedDamage;
+        if (src && typeof src === 'object') {
+            td.blunt = Math.max(0, Number(src.blunt) || 0);
+            td.slash = Math.max(0, Number(src.slash) || 0);
+            td.pierce = Math.max(0, Number(src.pierce) || 0);
+            // 招架/盾已按标量削减：按比值把 typed 分量缩放到当前标量，保证与 damageAfterDiqiShield 一致
+            var scalarD = ctx.damageAfterDiqiShield != null ? ctx.damageAfterDiqiShield : (ctx.damageAfterParry != null ? ctx.damageAfterParry : ctx.rawDamage);
+            scalarD = Math.max(0, Number(scalarD) || 0);
+            var typedTotal = td.blunt + td.slash + td.pierce;
+            if (typedTotal > 0 && scalarD >= 0 && typedTotal !== scalarD) {
+                var ratio = scalarD / typedTotal;
+                td.blunt *= ratio;
+                td.slash *= ratio;
+                td.pierce *= ratio;
+            }
+        } else {
+            var dt = ctx.damageType || 'blunt';
+            var d0 = ctx.damageAfterDiqiShield != null ? ctx.damageAfterDiqiShield : ctx.rawDamage;
+            td[dt] = Math.max(0, Number(d0) || 0);
+        }
+        var CA = global.CharacterAttributes;
+        if (CA && typeof CA.applyBaseDefense === 'function') {
+            td.blunt = CA.applyBaseDefense(td.blunt);
+            td.slash = CA.applyBaseDefense(td.slash);
+            td.pierce = CA.applyBaseDefense(td.pierce);
+        }
+        ctx.damageAfterFlex = td.blunt + td.slash + td.pierce;
+        ctx.damageAfterFlexTyped = td;
+        return ctx;
+    }
+
+    /** 玩家受击：伤害类型微调系数（M[部位][类型]，05 5.6.2） */
+    function phaseDamageTypeModifierPlayer(ctx, phase) {
+        var def = ctx.defender || {};
+        if (def.kind !== 'player' || ctx.hitRollSuccess === false) {
+            ctx.damageAfterModifier = ctx.hitRollSuccess === false ? 0 : (ctx.damageAfterFlex != null ? ctx.damageAfterFlex : ctx.rawDamage);
+            return ctx;
+        }
+        var td = ctx.damageAfterFlexTyped;
+        if (!td || typeof td !== 'object') {
+            td = { blunt: 0, slash: 0, pierce: 0 };
+            var scalarF = ctx.damageAfterFlex != null ? ctx.damageAfterFlex : (ctx.damageAfterDiqiShield != null ? ctx.damageAfterDiqiShield : ctx.rawDamage);
+            var dtF = ctx.damageType || 'blunt';
+            td[dtF] = Math.max(0, Number(scalarF) || 0);
+        }
+        var CA = global.CharacterAttributes;
+        var modKey = ctx.hitPartModifierKey;
+        if (!modKey && global.CombatMeleeResolve && typeof global.CombatMeleeResolve.mapHitPartToModifierKey === 'function') {
+            modKey = global.CombatMeleeResolve.mapHitPartToModifierKey(ctx.hitPart || 'chest');
+        }
+        if (CA && typeof CA.getDamageTypeModifier === 'function') {
+            td.blunt *= CA.getDamageTypeModifier(modKey || 'chest', 'blunt');
+            td.slash *= CA.getDamageTypeModifier(modKey || 'chest', 'slash');
+            td.pierce *= CA.getDamageTypeModifier(modKey || 'chest', 'pierce');
+        }
+        ctx.damageAfterModifier = td.blunt + td.slash + td.pierce;
+        ctx.damageAfterModifierTyped = td;
+        return ctx;
+    }
+
+    /** 命中头的基础眩晕值（k13，37 §9.2）：招式 stun_head_hit > 技能 stun_head_hit > 全局 stun_head_hit_base；钝击打头 ×stun_head_hit_blunt_mult（震荡致晕） */
+    function getStunBaseForHit(ctx) {
+        var base = 35;
+        var found = false;
+        var CS = global.CombatSkills;
+        if (CS && typeof CS.getSkill === 'function' && ctx.skillId) {
+            try {
+                var sk = CS.getSkill(ctx.skillId);
+                if (sk) {
+                    if (ctx.moveId && Array.isArray(sk.moves)) {
+                        for (var mi = 0; mi < sk.moves.length; mi++) {
+                            var mvTpl = sk.moves[mi];
+                            if (mvTpl && mvTpl.id === ctx.moveId && mvTpl.stun_head_hit != null) {
+                                var mv = Number(mvTpl.stun_head_hit);
+                                if (isFinite(mv) && mv >= 0) { base = Math.floor(mv); found = true; }
+                                break;
+                            }
+                        }
+                    }
+                    if (!found && sk.stun_head_hit != null) {
+                        var sv = Number(sk.stun_head_hit);
+                        if (isFinite(sv) && sv >= 0) { base = Math.floor(sv); found = true; }
+                    }
+                }
+            } catch (eS) { /* ignore */ }
+        }
+        if (!found && global.CharacterAttributes && typeof global.CharacterAttributes.getCfg === 'function') {
+            var b = Number(global.CharacterAttributes.getCfg('stun_head_hit_base', 35));
+            if (isFinite(b) && b >= 0) base = Math.floor(b);
+        }
+        if ((ctx.damageType || 'blunt') === 'blunt') {
+            var mult = 1.5;
+            if (global.CharacterAttributes && typeof global.CharacterAttributes.getCfg === 'function') {
+                var m = Number(global.CharacterAttributes.getCfg('stun_head_hit_blunt_mult', 1.5));
+                if (isFinite(m) && m > 0) mult = m;
+            }
+            base = Math.round(base * mult);
+        }
+        return base;
+    }
+
+    /** 非头部位的技能显式声明眩晕（37 §9.2：除非攻击技能显式声明「命中某部位 +X 眩晕」） */
+    function getDeclaredStunForPart(ctx, hitPart) {
+        var CS = global.CombatSkills;
+        if (!CS || typeof CS.getSkill !== 'function' || !ctx.skillId) return 0;
+        try {
+            var sk = CS.getSkill(ctx.skillId);
+            if (sk && sk.stun_per_part && typeof sk.stun_per_part === 'object') {
+                var v = Number(sk.stun_per_part[hitPart]);
+                if (isFinite(v) && v > 0) return Math.floor(v);
+            }
+        } catch (eD) { /* ignore */ }
+        return 0;
+    }
+
+    /** 玩家受击：眩晕累积（37 §9.2，k13）——命中头大幅累积（抗眩晕比例减免）；≥100 触发眩晕 1 回合 */
+    function phaseStunAccumulatePlayer(ctx, phase) {
+        var def = ctx.defender || {};
+        if (def.kind !== 'player' || ctx.hitRollSuccess === false) return ctx;
+        var IE = global.InventoryEquipment;
+        if (!IE || typeof IE.addPlayerStun !== 'function' || typeof IE.getHeadAntiStunPct !== 'function') return ctx;
+        var hitPart = ctx.hitPart || 'chest';
+        var gain = (hitPart === 'head') ? getStunBaseForHit(ctx) : getDeclaredStunForPart(ctx, hitPart);
+        if (gain <= 0) return ctx;
+        var resist = IE.getHeadAntiStunPct();
+        var net = Math.max(1, Math.round(gain * (1 - resist)));
+        var r = IE.addPlayerStun(net);
+        if (!isSimultaneousDryRun(ctx)) {
+            if (global.GameLog && typeof global.GameLog.log === 'function' && global.UIText && typeof global.UIText.t === 'function') {
+                try {
+                    global.GameLog.log(global.UIText.t('combat.log.stun_head_hit', {
+                        gain: String(gain),
+                        resist: String(Math.round(resist * 100)),
+                        net: String(net),
+                        value: String(r.value)
+                    }), 'damage');
+                } catch (eL) { /* ignore */ }
+            }
+            emitCombat('stun_accumulated', ['combat', 'stun'], { gain: net, value: r.value }, ctx.eventIdSuffix || 'stun');
+            if (r.triggered) {
+                if (global.GameLog && typeof global.GameLog.log === 'function' && global.UIText && typeof global.UIText.t === 'function') {
+                    try {
+                        global.GameLog.log(global.UIText.t('combat.log.stun_triggered', {}), 'system');
+                    } catch (eT) { /* ignore */ }
+                }
+                emitCombat('stun_triggered', ['combat', 'stun'], { value: 0 }, ctx.eventIdSuffix || 'stun');
+            }
         }
         return ctx;
     }
@@ -538,9 +759,6 @@
                     relative_angle_deg: Math.round(dirInfoMiss.angleDeg || 0)
                 }, ctx.eventIdSuffix);
             }
-            if (global.CombatEnemies && typeof global.CombatEnemies.onEnemyDamageResolved === 'function') {
-                global.CombatEnemies.onEnemyDamageResolved(ctx);
-            }
             recordDirectionalCombatSnapshot(ctx, 0);
             return ctx;
         }
@@ -548,6 +766,8 @@
         var dmg;
         if (def.kind === 'enemy' && ctx.damageAfterEnemyMitigation != null) {
             dmg = ctx.damageAfterEnemyMitigation;
+        } else if (def.kind === 'player' && ctx.damageAfterModifier != null) {
+            dmg = ctx.damageAfterModifier;
         } else {
             dmg = ctx.damageAfterDiqiShield != null ? ctx.damageAfterDiqiShield : (ctx.damageAfterParry != null ? ctx.damageAfterParry : ctx.rawDamage);
         }
@@ -562,6 +782,10 @@
                 var finalTakenMul = Number(global.BuffSystem.getBattleFinalDamageTakenMultiplier(defOwnerId)) || 1;
                 if (isFinite(finalTakenMul) && finalTakenMul > 0) dmg = dmg * finalTakenMul;
             }
+        }
+        // 痛打落水狗（damage_scale_by_target_debuff_stacks）：后遗症解析器写入的最终伤害乘区（11-skills 8.3.6 扩展#5 消费点）
+        if (ctx.targetDebuffDamageMultiplier != null && isFinite(ctx.targetDebuffDamageMultiplier) && ctx.targetDebuffDamageMultiplier > 0) {
+            dmg = dmg * ctx.targetDebuffDamageMultiplier;
         }
         dmg = Math.max(0, Math.floor(Number(dmg) || 0));
         ctx.finalDamage = dmg;
@@ -586,9 +810,7 @@
                 relative_angle_deg: Math.round(dirInfoDmg.angleDeg || 0)
             }, ctx.eventIdSuffix);
         }
-        if (global.CombatEnemies && typeof global.CombatEnemies.onEnemyDamageResolved === 'function') {
-            global.CombatEnemies.onEnemyDamageResolved(ctx);
-        }
+        applyDestroyToDefender(ctx);
         recordDirectionalCombatSnapshot(ctx, dmg);
         return ctx;
     }
@@ -604,9 +826,7 @@
         if (global.CombatPostEffects && typeof global.CombatPostEffects.runPostEffectsForHook === 'function') {
             global.CombatPostEffects.runPostEffectsForHook(sub, 'hit_roll_success');
         }
-        if (p.defenderKind === 'enemy' && global.CombatEnemies && typeof global.CombatEnemies.onEnemyDamageResolved === 'function') {
-            global.CombatEnemies.onEnemyDamageResolved(sub);
-        }
+        applyDestroyToDefender(sub);
         if (!global.BuffSystem || typeof global.BuffSystem.triggerBuffPipeline !== 'function') return;
         var tick = 0;
         if (global.GameTime && typeof global.GameTime.getState === 'function') {
@@ -677,6 +897,9 @@
         'builtin.post_effects_hook': phasePostEffectsHook,
         'builtin.enemy_damage_mitigation': phaseEnemyDamageMitigation,
         'builtin.diqi_shield_player': phaseDiqiShieldPlayer,
+        'builtin.flexibility_defense_player': phaseFlexibilityDefensePlayer,
+        'builtin.damage_type_modifier_player': phaseDamageTypeModifierPlayer,
+        'builtin.stun_accumulate_player': phaseStunAccumulatePlayer,
         'builtin.damage_stub': phaseDamageStub
     };
 
@@ -684,12 +907,64 @@
         var pipe = config.pipelines && config.pipelines[pipelineName];
         if (!pipe || !pipe.phases) return ctx;
         ctx.pipelineName = pipelineName;
-        var i;
-        for (i = 0; i < pipe.phases.length; i++) {
-            var phase = pipe.phases[i];
-            var h = phase.handler;
-            var fn = customHandlers[h] || builtins[h];
-            if (fn) ctx = fn(ctx, phase) || ctx;
+        // 多段（hit_segments>1）：每段独立跑完整管线（独立命中/招架/叠 Buff/唯一事件 id），整招聚合回写（11-skills 8.3.6 扩展#4）
+        var segs = ctx.segments && ctx.segments.length > 1 ? ctx.segments : null;
+        if (!segs) {
+            var i;
+            for (i = 0; i < pipe.phases.length; i++) {
+                var phase = pipe.phases[i];
+                var h = phase.handler;
+                var fn = customHandlers[h] || builtins[h];
+                if (fn) ctx = fn(ctx, phase) || ctx;
+            }
+            return ctx;
+        }
+        var segResults = [];
+        var anyHit = false;
+        var sumFinal = 0;
+        var mergedPending = [];
+        var si;
+        for (si = 0; si < segs.length; si++) {
+            var s = segs[si] || {};
+            var sCtx = Object.assign({}, ctx, {
+                hitRollSuccess: !!s.hitRollSuccess,
+                hitPart: s.hitPart || ctx.hitPart,
+                hitPartModifierKey: s.hitPartModifierKey != null ? s.hitPartModifierKey : ctx.hitPartModifierKey,
+                rawDamage: s.rawDamage != null ? s.rawDamage : ctx.rawDamage,
+                subhit_index: si,
+                is_last_subhit: si === segs.length - 1,
+                eventIdSuffix: String(ctx.eventIdSuffix || ctx.moveId || '') + '_s' + si,
+                segments: null
+            });
+            var i2;
+            for (i2 = 0; i2 < pipe.phases.length; i2++) {
+                var phase2 = pipe.phases[i2];
+                var fn2 = customHandlers[phase2.handler] || builtins[phase2.handler];
+                if (fn2) sCtx = fn2(sCtx, phase2) || sCtx;
+            }
+            if (sCtx.hitRollSuccess) anyHit = true;
+            var segDmg = sCtx.finalDamage != null ? (Number(sCtx.finalDamage) || 0) : 0;
+            sumFinal += segDmg;
+            if (Array.isArray(sCtx.pendingBuffApplies) && sCtx.pendingBuffApplies.length) {
+                mergedPending = mergedPending.concat(sCtx.pendingBuffApplies);
+            }
+            segResults.push(sCtx);
+        }
+        ctx.hitRollSuccess = anyHit;
+        ctx.finalDamage = sumFinal;
+        ctx.pendingBuffApplies = mergedPending;
+        ctx.segmentsResults = segResults;
+        if (ctx.simultaneousDryRun) {
+            var pendingFinal = 0;
+            for (var sri = 0; sri < segResults.length; sri++) {
+                var sp = segResults[sri].simultaneousPendingDamage;
+                if (sp && sp.finalDamage != null) pendingFinal += Number(sp.finalDamage) || 0;
+            }
+            ctx.simultaneousPendingDamage = {
+                defenderKind: (ctx.defender && ctx.defender.kind) || '',
+                finalDamage: pendingFinal,
+                ctxRef: ctx
+            };
         }
         return ctx;
     }

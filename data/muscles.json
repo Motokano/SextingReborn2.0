@@ -1,0 +1,6001 @@
+{
+  "version": 3,
+  "resource_name": "muscle_points",
+  "resource_display": "肌力点数",
+  "groups": [
+    {
+      "id": "head",
+      "name": "头",
+      "icon": "🗣️",
+      "type": "axial",
+      "limb": null
+    },
+    {
+      "id": "neck",
+      "name": "颈",
+      "icon": "🦒",
+      "type": "axial",
+      "limb": null
+    },
+    {
+      "id": "back",
+      "name": "背",
+      "icon": "🏔️",
+      "type": "axial",
+      "limb": null
+    },
+    {
+      "id": "chest",
+      "name": "胸",
+      "icon": "🫁",
+      "type": "axial",
+      "limb": null
+    },
+    {
+      "id": "abdomen",
+      "name": "腹",
+      "icon": "🔥",
+      "type": "axial",
+      "limb": null
+    },
+    {
+      "id": "pelvis",
+      "name": "盆底会阴",
+      "icon": "🔻",
+      "type": "axial",
+      "limb": null
+    },
+    {
+      "id": "shoulder_l",
+      "name": "左肩带",
+      "icon": "🫳",
+      "type": "side",
+      "side": "L",
+      "limb": "lhand"
+    },
+    {
+      "id": "shoulder_r",
+      "name": "右肩带",
+      "icon": "🫴",
+      "type": "side",
+      "side": "R",
+      "limb": "rhand"
+    },
+    {
+      "id": "upperarm_l",
+      "name": "左上臂",
+      "icon": "💪",
+      "type": "side",
+      "side": "L",
+      "limb": "lhand"
+    },
+    {
+      "id": "upperarm_r",
+      "name": "右上臂",
+      "icon": "💪",
+      "type": "side",
+      "side": "R",
+      "limb": "rhand"
+    },
+    {
+      "id": "forearm_l",
+      "name": "左前臂",
+      "icon": "🦾",
+      "type": "side",
+      "side": "L",
+      "limb": "lhand"
+    },
+    {
+      "id": "forearm_r",
+      "name": "右前臂",
+      "icon": "🦾",
+      "type": "side",
+      "side": "R",
+      "limb": "rhand"
+    },
+    {
+      "id": "hand_l",
+      "name": "左手",
+      "icon": "✋",
+      "type": "side",
+      "side": "L",
+      "limb": "lhand"
+    },
+    {
+      "id": "hand_r",
+      "name": "右手",
+      "icon": "✋",
+      "type": "side",
+      "side": "R",
+      "limb": "rhand"
+    },
+    {
+      "id": "hip_l",
+      "name": "左髋",
+      "icon": "🦵",
+      "type": "side",
+      "side": "L",
+      "limb": "lfoot"
+    },
+    {
+      "id": "hip_r",
+      "name": "右髋",
+      "icon": "🦵",
+      "type": "side",
+      "side": "R",
+      "limb": "rfoot"
+    },
+    {
+      "id": "thigh_l",
+      "name": "左大腿",
+      "icon": "🍗",
+      "type": "side",
+      "side": "L",
+      "limb": "lfoot"
+    },
+    {
+      "id": "thigh_r",
+      "name": "右大腿",
+      "icon": "🍗",
+      "type": "side",
+      "side": "R",
+      "limb": "rfoot"
+    },
+    {
+      "id": "calf_l",
+      "name": "左小腿",
+      "icon": "🦶",
+      "type": "side",
+      "side": "L",
+      "limb": "lfoot"
+    },
+    {
+      "id": "calf_r",
+      "name": "右小腿",
+      "icon": "🦶",
+      "type": "side",
+      "side": "R",
+      "limb": "rfoot"
+    },
+    {
+      "id": "foot_l",
+      "name": "左脚",
+      "icon": "👣",
+      "type": "side",
+      "side": "L",
+      "limb": "lfoot"
+    },
+    {
+      "id": "foot_r",
+      "name": "右脚",
+      "icon": "👣",
+      "type": "side",
+      "side": "R",
+      "limb": "rfoot"
+    }
+  ],
+  "muscles": [
+    {
+      "id": "head_frontalis_L",
+      "name": "额肌（左）",
+      "group": "head",
+      "effects": [
+        {
+          "type": "flexibility",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "head_frontalis_R",
+      "name": "额肌（右）",
+      "group": "head",
+      "effects": [
+        {
+          "type": "flexibility",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "head_occipitalis_L",
+      "name": "枕肌（左）",
+      "group": "head",
+      "effects": [
+        {
+          "type": "flexibility",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "head_occipitalis_R",
+      "name": "枕肌（右）",
+      "group": "head",
+      "effects": [
+        {
+          "type": "flexibility",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "head_orbicularis_oculi_L",
+      "name": "眼轮匝肌（左）",
+      "group": "head",
+      "effects": [
+        {
+          "type": "flexibility",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "head_orbicularis_oculi_R",
+      "name": "眼轮匝肌（右）",
+      "group": "head",
+      "effects": [
+        {
+          "type": "flexibility",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "head_corrugator_supercilii_L",
+      "name": "皱眉肌（左）",
+      "group": "head",
+      "effects": [
+        {
+          "type": "flexibility",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "head_corrugator_supercilii_R",
+      "name": "皱眉肌（右）",
+      "group": "head",
+      "effects": [
+        {
+          "type": "flexibility",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "head_depressor_supercilii_L",
+      "name": "降眉肌（左）",
+      "group": "head",
+      "effects": [
+        {
+          "type": "flexibility",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "head_depressor_supercilii_R",
+      "name": "降眉肌（右）",
+      "group": "head",
+      "effects": [
+        {
+          "type": "flexibility",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "head_nasalis_L",
+      "name": "鼻肌（左）",
+      "group": "head",
+      "effects": [
+        {
+          "type": "flexibility",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "head_nasalis_R",
+      "name": "鼻肌（右）",
+      "group": "head",
+      "effects": [
+        {
+          "type": "flexibility",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "head_levator_labii_alaque_nasi_L",
+      "name": "提上唇鼻翼肌（左）",
+      "group": "head",
+      "effects": [
+        {
+          "type": "flexibility",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "head_levator_labii_alaque_nasi_R",
+      "name": "提上唇鼻翼肌（右）",
+      "group": "head",
+      "effects": [
+        {
+          "type": "flexibility",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "head_levator_labii_superioris_L",
+      "name": "提上唇肌（左）",
+      "group": "head",
+      "effects": [
+        {
+          "type": "flexibility",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "head_levator_labii_superioris_R",
+      "name": "提上唇肌（右）",
+      "group": "head",
+      "effects": [
+        {
+          "type": "flexibility",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "head_zygomaticus_minor_L",
+      "name": "颧小肌（左）",
+      "group": "head",
+      "effects": [
+        {
+          "type": "flexibility",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "head_zygomaticus_minor_R",
+      "name": "颧小肌（右）",
+      "group": "head",
+      "effects": [
+        {
+          "type": "flexibility",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "head_zygomaticus_major_L",
+      "name": "颧大肌（左）",
+      "group": "head",
+      "effects": [
+        {
+          "type": "flexibility",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "head_zygomaticus_major_R",
+      "name": "颧大肌（右）",
+      "group": "head",
+      "effects": [
+        {
+          "type": "flexibility",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "head_levator_anguli_oris_L",
+      "name": "提口角肌（左）",
+      "group": "head",
+      "effects": [
+        {
+          "type": "flexibility",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "head_levator_anguli_oris_R",
+      "name": "提口角肌（右）",
+      "group": "head",
+      "effects": [
+        {
+          "type": "flexibility",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "head_risorius_L",
+      "name": "笑肌（左）",
+      "group": "head",
+      "effects": [
+        {
+          "type": "flexibility",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "head_risorius_R",
+      "name": "笑肌（右）",
+      "group": "head",
+      "effects": [
+        {
+          "type": "flexibility",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "head_depressor_anguli_oris_L",
+      "name": "降口角肌（左）",
+      "group": "head",
+      "effects": [
+        {
+          "type": "flexibility",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "head_depressor_anguli_oris_R",
+      "name": "降口角肌（右）",
+      "group": "head",
+      "effects": [
+        {
+          "type": "flexibility",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "head_depressor_labii_inferioris_L",
+      "name": "降下唇肌（左）",
+      "group": "head",
+      "effects": [
+        {
+          "type": "flexibility",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "head_depressor_labii_inferioris_R",
+      "name": "降下唇肌（右）",
+      "group": "head",
+      "effects": [
+        {
+          "type": "flexibility",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "head_mentalis_L",
+      "name": "颏肌（左）",
+      "group": "head",
+      "effects": [
+        {
+          "type": "flexibility",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "head_mentalis_R",
+      "name": "颏肌（右）",
+      "group": "head",
+      "effects": [
+        {
+          "type": "flexibility",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "head_buccinator_L",
+      "name": "颊肌（左）",
+      "group": "head",
+      "effects": [
+        {
+          "type": "flexibility",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "head_buccinator_R",
+      "name": "颊肌（右）",
+      "group": "head",
+      "effects": [
+        {
+          "type": "flexibility",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "head_orbicularis_oris_L",
+      "name": "口轮匝肌（左）",
+      "group": "head",
+      "effects": [
+        {
+          "type": "flexibility",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "head_orbicularis_oris_R",
+      "name": "口轮匝肌（右）",
+      "group": "head",
+      "effects": [
+        {
+          "type": "flexibility",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "head_masseter_L",
+      "name": "咬肌（左）",
+      "group": "head",
+      "effects": [
+        {
+          "type": "flexibility",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "head_masseter_R",
+      "name": "咬肌（右）",
+      "group": "head",
+      "effects": [
+        {
+          "type": "flexibility",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "head_temporalis_L",
+      "name": "颞肌（左）",
+      "group": "head",
+      "effects": [
+        {
+          "type": "flexibility",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "head_temporalis_R",
+      "name": "颞肌（右）",
+      "group": "head",
+      "effects": [
+        {
+          "type": "flexibility",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "head_medial_pterygoid_L",
+      "name": "翼内肌（左）",
+      "group": "head",
+      "effects": [
+        {
+          "type": "flexibility",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "head_medial_pterygoid_R",
+      "name": "翼内肌（右）",
+      "group": "head",
+      "effects": [
+        {
+          "type": "flexibility",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "head_lateral_pterygoid_L",
+      "name": "翼外肌（左）",
+      "group": "head",
+      "effects": [
+        {
+          "type": "flexibility",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "head_lateral_pterygoid_R",
+      "name": "翼外肌（右）",
+      "group": "head",
+      "effects": [
+        {
+          "type": "flexibility",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "neck_platysma_L",
+      "name": "颈阔肌（左）",
+      "group": "neck",
+      "effects": [
+        {
+          "type": "breath",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "neck_platysma_R",
+      "name": "颈阔肌（右）",
+      "group": "neck",
+      "effects": [
+        {
+          "type": "breath",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "neck_sternocleidomastoid_L",
+      "name": "胸锁乳突肌（左）",
+      "group": "neck",
+      "effects": [
+        {
+          "type": "breath",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "neck_sternocleidomastoid_R",
+      "name": "胸锁乳突肌（右）",
+      "group": "neck",
+      "effects": [
+        {
+          "type": "breath",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "neck_scalenus_anterior_L",
+      "name": "前斜角肌（左）",
+      "group": "neck",
+      "effects": [
+        {
+          "type": "breath",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "neck_scalenus_anterior_R",
+      "name": "前斜角肌（右）",
+      "group": "neck",
+      "effects": [
+        {
+          "type": "breath",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "neck_scalenus_medius_L",
+      "name": "中斜角肌（左）",
+      "group": "neck",
+      "effects": [
+        {
+          "type": "breath",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "neck_scalenus_medius_R",
+      "name": "中斜角肌（右）",
+      "group": "neck",
+      "effects": [
+        {
+          "type": "breath",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "neck_scalenus_posterior_L",
+      "name": "后斜角肌（左）",
+      "group": "neck",
+      "effects": [
+        {
+          "type": "breath",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "neck_scalenus_posterior_R",
+      "name": "后斜角肌（右）",
+      "group": "neck",
+      "effects": [
+        {
+          "type": "breath",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "neck_digastric_L",
+      "name": "二腹肌（左）",
+      "group": "neck",
+      "effects": [
+        {
+          "type": "breath",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "neck_digastric_R",
+      "name": "二腹肌（右）",
+      "group": "neck",
+      "effects": [
+        {
+          "type": "breath",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "neck_stylohyoid_L",
+      "name": "茎突舌骨肌（左）",
+      "group": "neck",
+      "effects": [
+        {
+          "type": "breath",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "neck_stylohyoid_R",
+      "name": "茎突舌骨肌（右）",
+      "group": "neck",
+      "effects": [
+        {
+          "type": "breath",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "neck_mylohyoid_L",
+      "name": "下颌舌骨肌（左）",
+      "group": "neck",
+      "effects": [
+        {
+          "type": "breath",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "neck_mylohyoid_R",
+      "name": "下颌舌骨肌（右）",
+      "group": "neck",
+      "effects": [
+        {
+          "type": "breath",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "neck_geniohyoid_L",
+      "name": "颏舌骨肌（左）",
+      "group": "neck",
+      "effects": [
+        {
+          "type": "breath",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "neck_geniohyoid_R",
+      "name": "颏舌骨肌（右）",
+      "group": "neck",
+      "effects": [
+        {
+          "type": "breath",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "neck_sternohyoid_L",
+      "name": "胸骨舌骨肌（左）",
+      "group": "neck",
+      "effects": [
+        {
+          "type": "breath",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "neck_sternohyoid_R",
+      "name": "胸骨舌骨肌（右）",
+      "group": "neck",
+      "effects": [
+        {
+          "type": "breath",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "neck_sternothyroid_L",
+      "name": "胸骨甲状肌（左）",
+      "group": "neck",
+      "effects": [
+        {
+          "type": "breath",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "neck_sternothyroid_R",
+      "name": "胸骨甲状肌（右）",
+      "group": "neck",
+      "effects": [
+        {
+          "type": "breath",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "neck_thyrohyoid_L",
+      "name": "甲状舌骨肌（左）",
+      "group": "neck",
+      "effects": [
+        {
+          "type": "breath",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "neck_thyrohyoid_R",
+      "name": "甲状舌骨肌（右）",
+      "group": "neck",
+      "effects": [
+        {
+          "type": "breath",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "neck_omohyoid_L",
+      "name": "肩胛舌骨肌（左）",
+      "group": "neck",
+      "effects": [
+        {
+          "type": "breath",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "neck_omohyoid_R",
+      "name": "肩胛舌骨肌（右）",
+      "group": "neck",
+      "effects": [
+        {
+          "type": "breath",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "neck_levator_scapulae_L",
+      "name": "肩胛提肌（左）",
+      "group": "neck",
+      "effects": [
+        {
+          "type": "breath",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "neck_levator_scapulae_R",
+      "name": "肩胛提肌（右）",
+      "group": "neck",
+      "effects": [
+        {
+          "type": "breath",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "neck_splenius_capitis_L",
+      "name": "头夹肌（左）",
+      "group": "neck",
+      "effects": [
+        {
+          "type": "breath",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "neck_splenius_capitis_R",
+      "name": "头夹肌（右）",
+      "group": "neck",
+      "effects": [
+        {
+          "type": "breath",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "neck_splenius_cervicis_L",
+      "name": "颈夹肌（左）",
+      "group": "neck",
+      "effects": [
+        {
+          "type": "breath",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "neck_splenius_cervicis_R",
+      "name": "颈夹肌（右）",
+      "group": "neck",
+      "effects": [
+        {
+          "type": "breath",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "back_trapezius_L",
+      "name": "斜方肌（左）",
+      "group": "back",
+      "effects": [
+        {
+          "type": "jingu",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "back_trapezius_R",
+      "name": "斜方肌（右）",
+      "group": "back",
+      "effects": [
+        {
+          "type": "jingu",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "back_latissimus_dorsi_L",
+      "name": "背阔肌（左）",
+      "group": "back",
+      "effects": [
+        {
+          "type": "jingu",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "back_latissimus_dorsi_R",
+      "name": "背阔肌（右）",
+      "group": "back",
+      "effects": [
+        {
+          "type": "jingu",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "back_teres_major_L",
+      "name": "大圆肌（左）",
+      "group": "back",
+      "effects": [
+        {
+          "type": "jingu",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "back_teres_major_R",
+      "name": "大圆肌（右）",
+      "group": "back",
+      "effects": [
+        {
+          "type": "jingu",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "back_rhomboid_minor_L",
+      "name": "小菱形肌（左）",
+      "group": "back",
+      "effects": [
+        {
+          "type": "jingu",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "back_rhomboid_minor_R",
+      "name": "小菱形肌（右）",
+      "group": "back",
+      "effects": [
+        {
+          "type": "jingu",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "back_rhomboid_major_L",
+      "name": "大菱形肌（左）",
+      "group": "back",
+      "effects": [
+        {
+          "type": "jingu",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "back_rhomboid_major_R",
+      "name": "大菱形肌（右）",
+      "group": "back",
+      "effects": [
+        {
+          "type": "jingu",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "back_serratus_posterior_superior_L",
+      "name": "上后锯肌（左）",
+      "group": "back",
+      "effects": [
+        {
+          "type": "jingu",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "back_serratus_posterior_superior_R",
+      "name": "上后锯肌（右）",
+      "group": "back",
+      "effects": [
+        {
+          "type": "jingu",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "back_serratus_posterior_inferior_L",
+      "name": "下后锯肌（左）",
+      "group": "back",
+      "effects": [
+        {
+          "type": "jingu",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "back_serratus_posterior_inferior_R",
+      "name": "下后锯肌（右）",
+      "group": "back",
+      "effects": [
+        {
+          "type": "jingu",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "back_iliocostalis_L",
+      "name": "髂肋肌（左）",
+      "group": "back",
+      "effects": [
+        {
+          "type": "jingu",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "back_iliocostalis_R",
+      "name": "髂肋肌（右）",
+      "group": "back",
+      "effects": [
+        {
+          "type": "jingu",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "back_longissimus_L",
+      "name": "最长肌（左）",
+      "group": "back",
+      "effects": [
+        {
+          "type": "jingu",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "back_longissimus_R",
+      "name": "最长肌（右）",
+      "group": "back",
+      "effects": [
+        {
+          "type": "jingu",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "back_spinalis_L",
+      "name": "棘肌（左）",
+      "group": "back",
+      "effects": [
+        {
+          "type": "jingu",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "back_spinalis_R",
+      "name": "棘肌（右）",
+      "group": "back",
+      "effects": [
+        {
+          "type": "jingu",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "back_semispinalis_capitis_L",
+      "name": "头半棘肌（左）",
+      "group": "back",
+      "effects": [
+        {
+          "type": "jingu",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "back_semispinalis_capitis_R",
+      "name": "头半棘肌（右）",
+      "group": "back",
+      "effects": [
+        {
+          "type": "jingu",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "back_semispinalis_cervicis_L",
+      "name": "颈半棘肌（左）",
+      "group": "back",
+      "effects": [
+        {
+          "type": "jingu",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "back_semispinalis_cervicis_R",
+      "name": "颈半棘肌（右）",
+      "group": "back",
+      "effects": [
+        {
+          "type": "jingu",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "back_semispinalis_thoracis_L",
+      "name": "胸半棘肌（左）",
+      "group": "back",
+      "effects": [
+        {
+          "type": "jingu",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "back_semispinalis_thoracis_R",
+      "name": "胸半棘肌（右）",
+      "group": "back",
+      "effects": [
+        {
+          "type": "jingu",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "back_multifidus_L",
+      "name": "多裂肌（左）",
+      "group": "back",
+      "effects": [
+        {
+          "type": "jingu",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "back_multifidus_R",
+      "name": "多裂肌（右）",
+      "group": "back",
+      "effects": [
+        {
+          "type": "jingu",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "back_rotatores_L",
+      "name": "回旋肌（左）",
+      "group": "back",
+      "effects": [
+        {
+          "type": "jingu",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "back_rotatores_R",
+      "name": "回旋肌（右）",
+      "group": "back",
+      "effects": [
+        {
+          "type": "jingu",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "chest_pectoralis_major_L",
+      "name": "胸大肌（左）",
+      "group": "chest",
+      "effects": [
+        {
+          "type": "breath",
+          "delta": 2
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "chest_pectoralis_major_R",
+      "name": "胸大肌（右）",
+      "group": "chest",
+      "effects": [
+        {
+          "type": "breath",
+          "delta": 2
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "chest_pectoralis_minor_L",
+      "name": "胸小肌（左）",
+      "group": "chest",
+      "effects": [
+        {
+          "type": "breath",
+          "delta": 2
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "chest_pectoralis_minor_R",
+      "name": "胸小肌（右）",
+      "group": "chest",
+      "effects": [
+        {
+          "type": "breath",
+          "delta": 2
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "chest_subclavius_L",
+      "name": "锁骨下肌（左）",
+      "group": "chest",
+      "effects": [
+        {
+          "type": "breath",
+          "delta": 2
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "chest_subclavius_R",
+      "name": "锁骨下肌（右）",
+      "group": "chest",
+      "effects": [
+        {
+          "type": "breath",
+          "delta": 2
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "chest_serratus_anterior_L",
+      "name": "前锯肌（左）",
+      "group": "chest",
+      "effects": [
+        {
+          "type": "breath",
+          "delta": 2
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "chest_serratus_anterior_R",
+      "name": "前锯肌（右）",
+      "group": "chest",
+      "effects": [
+        {
+          "type": "breath",
+          "delta": 2
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "chest_external_intercostal_L",
+      "name": "肋间外肌（左）",
+      "group": "chest",
+      "effects": [
+        {
+          "type": "breath",
+          "delta": 2
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "chest_external_intercostal_R",
+      "name": "肋间外肌（右）",
+      "group": "chest",
+      "effects": [
+        {
+          "type": "breath",
+          "delta": 2
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "chest_internal_intercostal_L",
+      "name": "肋间内肌（左）",
+      "group": "chest",
+      "effects": [
+        {
+          "type": "breath",
+          "delta": 2
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "chest_internal_intercostal_R",
+      "name": "肋间内肌（右）",
+      "group": "chest",
+      "effects": [
+        {
+          "type": "breath",
+          "delta": 2
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "chest_innermost_intercostal_L",
+      "name": "肋间最内肌（左）",
+      "group": "chest",
+      "effects": [
+        {
+          "type": "breath",
+          "delta": 2
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "chest_innermost_intercostal_R",
+      "name": "肋间最内肌（右）",
+      "group": "chest",
+      "effects": [
+        {
+          "type": "breath",
+          "delta": 2
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "chest_transversus_thoracis_L",
+      "name": "胸横肌（左）",
+      "group": "chest",
+      "effects": [
+        {
+          "type": "breath",
+          "delta": 2
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "chest_transversus_thoracis_R",
+      "name": "胸横肌（右）",
+      "group": "chest",
+      "effects": [
+        {
+          "type": "breath",
+          "delta": 2
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "chest_diaphragm",
+      "name": "膈肌",
+      "group": "chest",
+      "effects": [
+        {
+          "type": "maxQi",
+          "delta": 10
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "abdomen_rectus_abdominis_L",
+      "name": "腹直肌（左）",
+      "group": "abdomen",
+      "effects": [
+        {
+          "type": "flexibility",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "abdomen_rectus_abdominis_R",
+      "name": "腹直肌（右）",
+      "group": "abdomen",
+      "effects": [
+        {
+          "type": "flexibility",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "abdomen_external_oblique_L",
+      "name": "腹外斜肌（左）",
+      "group": "abdomen",
+      "effects": [
+        {
+          "type": "flexibility",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "abdomen_external_oblique_R",
+      "name": "腹外斜肌（右）",
+      "group": "abdomen",
+      "effects": [
+        {
+          "type": "flexibility",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "abdomen_internal_oblique_L",
+      "name": "腹内斜肌（左）",
+      "group": "abdomen",
+      "effects": [
+        {
+          "type": "flexibility",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "abdomen_internal_oblique_R",
+      "name": "腹内斜肌（右）",
+      "group": "abdomen",
+      "effects": [
+        {
+          "type": "flexibility",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "abdomen_transversus_abdominis_L",
+      "name": "腹横肌（左）",
+      "group": "abdomen",
+      "effects": [
+        {
+          "type": "flexibility",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "abdomen_transversus_abdominis_R",
+      "name": "腹横肌（右）",
+      "group": "abdomen",
+      "effects": [
+        {
+          "type": "flexibility",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "abdomen_quadratus_lumborum_L",
+      "name": "腰方肌（左）",
+      "group": "abdomen",
+      "effects": [
+        {
+          "type": "flexibility",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "abdomen_quadratus_lumborum_R",
+      "name": "腰方肌（右）",
+      "group": "abdomen",
+      "effects": [
+        {
+          "type": "flexibility",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "pelvis_superficial_transversus_perinei_L",
+      "name": "会阴浅横肌（左）",
+      "group": "pelvis",
+      "effects": [
+        {
+          "type": "breath",
+          "delta": 2
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "pelvis_superficial_transversus_perinei_R",
+      "name": "会阴浅横肌（右）",
+      "group": "pelvis",
+      "effects": [
+        {
+          "type": "breath",
+          "delta": 2
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "pelvis_deep_transversus_perinei_L",
+      "name": "会阴深横肌（左）",
+      "group": "pelvis",
+      "effects": [
+        {
+          "type": "breath",
+          "delta": 2
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "pelvis_deep_transversus_perinei_R",
+      "name": "会阴深横肌（右）",
+      "group": "pelvis",
+      "effects": [
+        {
+          "type": "breath",
+          "delta": 2
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "pelvis_ischiocavernosus_L",
+      "name": "坐骨海绵体肌（左）",
+      "group": "pelvis",
+      "effects": [
+        {
+          "type": "breath",
+          "delta": 2
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "pelvis_ischiocavernosus_R",
+      "name": "坐骨海绵体肌（右）",
+      "group": "pelvis",
+      "effects": [
+        {
+          "type": "breath",
+          "delta": 2
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "pelvis_bulbospongiosus_L",
+      "name": "球海绵体肌（左）",
+      "group": "pelvis",
+      "effects": [
+        {
+          "type": "breath",
+          "delta": 2
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "pelvis_bulbospongiosus_R",
+      "name": "球海绵体肌（右）",
+      "group": "pelvis",
+      "effects": [
+        {
+          "type": "breath",
+          "delta": 2
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "pelvis_iliococcygeus_L",
+      "name": "髂尾肌（左）",
+      "group": "pelvis",
+      "effects": [
+        {
+          "type": "breath",
+          "delta": 2
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "pelvis_iliococcygeus_R",
+      "name": "髂尾肌（右）",
+      "group": "pelvis",
+      "effects": [
+        {
+          "type": "breath",
+          "delta": 2
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "pelvis_pubococcygeus_L",
+      "name": "耻尾肌（左）",
+      "group": "pelvis",
+      "effects": [
+        {
+          "type": "breath",
+          "delta": 2
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "pelvis_pubococcygeus_R",
+      "name": "耻尾肌（右）",
+      "group": "pelvis",
+      "effects": [
+        {
+          "type": "breath",
+          "delta": 2
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "pelvis_puborectalis_L",
+      "name": "耻骨直肠肌（左）",
+      "group": "pelvis",
+      "effects": [
+        {
+          "type": "breath",
+          "delta": 2
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "pelvis_puborectalis_R",
+      "name": "耻骨直肠肌（右）",
+      "group": "pelvis",
+      "effects": [
+        {
+          "type": "breath",
+          "delta": 2
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "pelvis_coccygeus_L",
+      "name": "尾骨肌（左）",
+      "group": "pelvis",
+      "effects": [
+        {
+          "type": "breath",
+          "delta": 2
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "pelvis_coccygeus_R",
+      "name": "尾骨肌（右）",
+      "group": "pelvis",
+      "effects": [
+        {
+          "type": "breath",
+          "delta": 2
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "shoulder_l_deltoid_l",
+      "name": "三角肌（左）",
+      "group": "shoulder_l",
+      "effects": [
+        {
+          "type": "dexterity",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "shoulder_r_deltoid_r",
+      "name": "三角肌（右）",
+      "group": "shoulder_r",
+      "effects": [
+        {
+          "type": "dexterity",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "shoulder_l_supraspinatus_l",
+      "name": "冈上肌（左）",
+      "group": "shoulder_l",
+      "effects": [
+        {
+          "type": "dexterity",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "shoulder_r_supraspinatus_r",
+      "name": "冈上肌（右）",
+      "group": "shoulder_r",
+      "effects": [
+        {
+          "type": "dexterity",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "shoulder_l_infraspinatus_l",
+      "name": "冈下肌（左）",
+      "group": "shoulder_l",
+      "effects": [
+        {
+          "type": "dexterity",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "shoulder_r_infraspinatus_r",
+      "name": "冈下肌（右）",
+      "group": "shoulder_r",
+      "effects": [
+        {
+          "type": "dexterity",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "shoulder_l_teres_minor_l",
+      "name": "小圆肌（左）",
+      "group": "shoulder_l",
+      "effects": [
+        {
+          "type": "dexterity",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "shoulder_r_teres_minor_r",
+      "name": "小圆肌（右）",
+      "group": "shoulder_r",
+      "effects": [
+        {
+          "type": "dexterity",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "shoulder_l_subscapularis_l",
+      "name": "肩胛下肌（左）",
+      "group": "shoulder_l",
+      "effects": [
+        {
+          "type": "dexterity",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "shoulder_r_subscapularis_r",
+      "name": "肩胛下肌（右）",
+      "group": "shoulder_r",
+      "effects": [
+        {
+          "type": "dexterity",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "upperarm_l_biceps_brachii_l",
+      "name": "肱二头肌（左）",
+      "group": "upperarm_l",
+      "effects": [
+        {
+          "type": "jingu",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "upperarm_r_biceps_brachii_r",
+      "name": "肱二头肌（右）",
+      "group": "upperarm_r",
+      "effects": [
+        {
+          "type": "jingu",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "upperarm_l_brachialis_l",
+      "name": "肱肌（左）",
+      "group": "upperarm_l",
+      "effects": [
+        {
+          "type": "jingu",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "upperarm_r_brachialis_r",
+      "name": "肱肌（右）",
+      "group": "upperarm_r",
+      "effects": [
+        {
+          "type": "jingu",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "upperarm_l_coracobrachialis_l",
+      "name": "喙肱肌（左）",
+      "group": "upperarm_l",
+      "effects": [
+        {
+          "type": "jingu",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "upperarm_r_coracobrachialis_r",
+      "name": "喙肱肌（右）",
+      "group": "upperarm_r",
+      "effects": [
+        {
+          "type": "jingu",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "upperarm_l_triceps_brachii_l",
+      "name": "肱三头肌（左）",
+      "group": "upperarm_l",
+      "effects": [
+        {
+          "type": "jingu",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "upperarm_r_triceps_brachii_r",
+      "name": "肱三头肌（右）",
+      "group": "upperarm_r",
+      "effects": [
+        {
+          "type": "jingu",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "upperarm_l_anconeus_l",
+      "name": "肘肌（左）",
+      "group": "upperarm_l",
+      "effects": [
+        {
+          "type": "jingu",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "upperarm_r_anconeus_r",
+      "name": "肘肌（右）",
+      "group": "upperarm_r",
+      "effects": [
+        {
+          "type": "jingu",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "forearm_l_pronator_teres_l",
+      "name": "旋前圆肌（左）",
+      "group": "forearm_l",
+      "effects": [
+        {
+          "type": "dexterity",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "forearm_r_pronator_teres_r",
+      "name": "旋前圆肌（右）",
+      "group": "forearm_r",
+      "effects": [
+        {
+          "type": "dexterity",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "forearm_l_flexor_carpi_radialis_l",
+      "name": "桡侧腕屈肌（左）",
+      "group": "forearm_l",
+      "effects": [
+        {
+          "type": "dexterity",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "forearm_r_flexor_carpi_radialis_r",
+      "name": "桡侧腕屈肌（右）",
+      "group": "forearm_r",
+      "effects": [
+        {
+          "type": "dexterity",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "forearm_l_palmaris_longus_l",
+      "name": "掌长肌（左）",
+      "group": "forearm_l",
+      "effects": [
+        {
+          "type": "dexterity",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "forearm_r_palmaris_longus_r",
+      "name": "掌长肌（右）",
+      "group": "forearm_r",
+      "effects": [
+        {
+          "type": "dexterity",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "forearm_l_flexor_carpi_ulnaris_l",
+      "name": "尺侧腕屈肌（左）",
+      "group": "forearm_l",
+      "effects": [
+        {
+          "type": "dexterity",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "forearm_r_flexor_carpi_ulnaris_r",
+      "name": "尺侧腕屈肌（右）",
+      "group": "forearm_r",
+      "effects": [
+        {
+          "type": "dexterity",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "forearm_l_flexor_digitorum_superficialis_l",
+      "name": "指浅屈肌（左）",
+      "group": "forearm_l",
+      "effects": [
+        {
+          "type": "dexterity",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "forearm_r_flexor_digitorum_superficialis_r",
+      "name": "指浅屈肌（右）",
+      "group": "forearm_r",
+      "effects": [
+        {
+          "type": "dexterity",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "forearm_l_flexor_digitorum_profundus_l",
+      "name": "指深屈肌（左）",
+      "group": "forearm_l",
+      "effects": [
+        {
+          "type": "dexterity",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "forearm_r_flexor_digitorum_profundus_r",
+      "name": "指深屈肌（右）",
+      "group": "forearm_r",
+      "effects": [
+        {
+          "type": "dexterity",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "forearm_l_flexor_pollicis_longus_l",
+      "name": "拇长屈肌（左）",
+      "group": "forearm_l",
+      "effects": [
+        {
+          "type": "dexterity",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "forearm_r_flexor_pollicis_longus_r",
+      "name": "拇长屈肌（右）",
+      "group": "forearm_r",
+      "effects": [
+        {
+          "type": "dexterity",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "forearm_l_pronator_quadratus_l",
+      "name": "旋前方肌（左）",
+      "group": "forearm_l",
+      "effects": [
+        {
+          "type": "dexterity",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "forearm_r_pronator_quadratus_r",
+      "name": "旋前方肌（右）",
+      "group": "forearm_r",
+      "effects": [
+        {
+          "type": "dexterity",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "forearm_l_brachioradialis_l",
+      "name": "肱桡肌（左）",
+      "group": "forearm_l",
+      "effects": [
+        {
+          "type": "dexterity",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "forearm_r_brachioradialis_r",
+      "name": "肱桡肌（右）",
+      "group": "forearm_r",
+      "effects": [
+        {
+          "type": "dexterity",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "forearm_l_extensor_carpi_radialis_longus_l",
+      "name": "桡侧腕长伸肌（左）",
+      "group": "forearm_l",
+      "effects": [
+        {
+          "type": "dexterity",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "forearm_r_extensor_carpi_radialis_longus_r",
+      "name": "桡侧腕长伸肌（右）",
+      "group": "forearm_r",
+      "effects": [
+        {
+          "type": "dexterity",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "forearm_l_extensor_carpi_radialis_brevis_l",
+      "name": "桡侧腕短伸肌（左）",
+      "group": "forearm_l",
+      "effects": [
+        {
+          "type": "dexterity",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "forearm_r_extensor_carpi_radialis_brevis_r",
+      "name": "桡侧腕短伸肌（右）",
+      "group": "forearm_r",
+      "effects": [
+        {
+          "type": "dexterity",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "forearm_l_extensor_digitorum_l",
+      "name": "指伸肌（左）",
+      "group": "forearm_l",
+      "effects": [
+        {
+          "type": "dexterity",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "forearm_r_extensor_digitorum_r",
+      "name": "指伸肌（右）",
+      "group": "forearm_r",
+      "effects": [
+        {
+          "type": "dexterity",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "forearm_l_extensor_digiti_minimi_l",
+      "name": "小指伸肌（左）",
+      "group": "forearm_l",
+      "effects": [
+        {
+          "type": "dexterity",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "forearm_r_extensor_digiti_minimi_r",
+      "name": "小指伸肌（右）",
+      "group": "forearm_r",
+      "effects": [
+        {
+          "type": "dexterity",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "forearm_l_extensor_carpi_ulnaris_l",
+      "name": "尺侧腕伸肌（左）",
+      "group": "forearm_l",
+      "effects": [
+        {
+          "type": "dexterity",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "forearm_r_extensor_carpi_ulnaris_r",
+      "name": "尺侧腕伸肌（右）",
+      "group": "forearm_r",
+      "effects": [
+        {
+          "type": "dexterity",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "forearm_l_supinator_l",
+      "name": "旋后肌（左）",
+      "group": "forearm_l",
+      "effects": [
+        {
+          "type": "dexterity",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "forearm_r_supinator_r",
+      "name": "旋后肌（右）",
+      "group": "forearm_r",
+      "effects": [
+        {
+          "type": "dexterity",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "forearm_l_abductor_pollicis_longus_l",
+      "name": "拇长展肌（左）",
+      "group": "forearm_l",
+      "effects": [
+        {
+          "type": "dexterity",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "forearm_r_abductor_pollicis_longus_r",
+      "name": "拇长展肌（右）",
+      "group": "forearm_r",
+      "effects": [
+        {
+          "type": "dexterity",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "forearm_l_extensor_pollicis_brevis_l",
+      "name": "拇短伸肌（左）",
+      "group": "forearm_l",
+      "effects": [
+        {
+          "type": "dexterity",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "forearm_r_extensor_pollicis_brevis_r",
+      "name": "拇短伸肌（右）",
+      "group": "forearm_r",
+      "effects": [
+        {
+          "type": "dexterity",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "forearm_l_extensor_pollicis_longus_l",
+      "name": "拇长伸肌（左）",
+      "group": "forearm_l",
+      "effects": [
+        {
+          "type": "dexterity",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "forearm_r_extensor_pollicis_longus_r",
+      "name": "拇长伸肌（右）",
+      "group": "forearm_r",
+      "effects": [
+        {
+          "type": "dexterity",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "forearm_l_extensor_indicis_l",
+      "name": "示指伸肌（左）",
+      "group": "forearm_l",
+      "effects": [
+        {
+          "type": "dexterity",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "forearm_r_extensor_indicis_r",
+      "name": "示指伸肌（右）",
+      "group": "forearm_r",
+      "effects": [
+        {
+          "type": "dexterity",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "hand_l_abductor_pollicis_brevis_l",
+      "name": "拇短展肌（左）",
+      "group": "hand_l",
+      "effects": [
+        {
+          "type": "dexterity",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "hand_r_abductor_pollicis_brevis_r",
+      "name": "拇短展肌（右）",
+      "group": "hand_r",
+      "effects": [
+        {
+          "type": "dexterity",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "hand_l_flexor_pollicis_brevis_l",
+      "name": "拇短屈肌（左）",
+      "group": "hand_l",
+      "effects": [
+        {
+          "type": "dexterity",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "hand_r_flexor_pollicis_brevis_r",
+      "name": "拇短屈肌（右）",
+      "group": "hand_r",
+      "effects": [
+        {
+          "type": "dexterity",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "hand_l_opponens_pollicis_l",
+      "name": "拇对掌肌（左）",
+      "group": "hand_l",
+      "effects": [
+        {
+          "type": "dexterity",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "hand_r_opponens_pollicis_r",
+      "name": "拇对掌肌（右）",
+      "group": "hand_r",
+      "effects": [
+        {
+          "type": "dexterity",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "hand_l_adductor_pollicis_l",
+      "name": "拇收肌（左）",
+      "group": "hand_l",
+      "effects": [
+        {
+          "type": "dexterity",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "hand_r_adductor_pollicis_r",
+      "name": "拇收肌（右）",
+      "group": "hand_r",
+      "effects": [
+        {
+          "type": "dexterity",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "hand_l_abductor_digiti_minimi_l",
+      "name": "小指展肌（左）",
+      "group": "hand_l",
+      "effects": [
+        {
+          "type": "dexterity",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "hand_r_abductor_digiti_minimi_r",
+      "name": "小指展肌（右）",
+      "group": "hand_r",
+      "effects": [
+        {
+          "type": "dexterity",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "hand_l_flexor_digiti_minimi_brevis_l",
+      "name": "小指短屈肌（左）",
+      "group": "hand_l",
+      "effects": [
+        {
+          "type": "dexterity",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "hand_r_flexor_digiti_minimi_brevis_r",
+      "name": "小指短屈肌（右）",
+      "group": "hand_r",
+      "effects": [
+        {
+          "type": "dexterity",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "hand_l_opponens_digiti_minimi_l",
+      "name": "小指对掌肌（左）",
+      "group": "hand_l",
+      "effects": [
+        {
+          "type": "dexterity",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "hand_r_opponens_digiti_minimi_r",
+      "name": "小指对掌肌（右）",
+      "group": "hand_r",
+      "effects": [
+        {
+          "type": "dexterity",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "hand_l_palmaris_brevis_l",
+      "name": "掌短肌（左）",
+      "group": "hand_l",
+      "effects": [
+        {
+          "type": "dexterity",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "hand_r_palmaris_brevis_r",
+      "name": "掌短肌（右）",
+      "group": "hand_r",
+      "effects": [
+        {
+          "type": "dexterity",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "hand_l_lumbrical_1_l",
+      "name": "第一蚓状肌（左）",
+      "group": "hand_l",
+      "effects": [
+        {
+          "type": "dexterity",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "hand_r_lumbrical_1_r",
+      "name": "第一蚓状肌（右）",
+      "group": "hand_r",
+      "effects": [
+        {
+          "type": "dexterity",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "hand_l_lumbrical_2_l",
+      "name": "第二蚓状肌（左）",
+      "group": "hand_l",
+      "effects": [
+        {
+          "type": "dexterity",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "hand_r_lumbrical_2_r",
+      "name": "第二蚓状肌（右）",
+      "group": "hand_r",
+      "effects": [
+        {
+          "type": "dexterity",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "hand_l_lumbrical_3_l",
+      "name": "第三蚓状肌（左）",
+      "group": "hand_l",
+      "effects": [
+        {
+          "type": "dexterity",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "hand_r_lumbrical_3_r",
+      "name": "第三蚓状肌（右）",
+      "group": "hand_r",
+      "effects": [
+        {
+          "type": "dexterity",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "hand_l_lumbrical_4_l",
+      "name": "第四蚓状肌（左）",
+      "group": "hand_l",
+      "effects": [
+        {
+          "type": "dexterity",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "hand_r_lumbrical_4_r",
+      "name": "第四蚓状肌（右）",
+      "group": "hand_r",
+      "effects": [
+        {
+          "type": "dexterity",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "hand_l_dorsal_interosseous_1_l",
+      "name": "第一骨间背侧肌（左）",
+      "group": "hand_l",
+      "effects": [
+        {
+          "type": "dexterity",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "hand_r_dorsal_interosseous_1_r",
+      "name": "第一骨间背侧肌（右）",
+      "group": "hand_r",
+      "effects": [
+        {
+          "type": "dexterity",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "hand_l_dorsal_interosseous_2_l",
+      "name": "第二骨间背侧肌（左）",
+      "group": "hand_l",
+      "effects": [
+        {
+          "type": "dexterity",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "hand_r_dorsal_interosseous_2_r",
+      "name": "第二骨间背侧肌（右）",
+      "group": "hand_r",
+      "effects": [
+        {
+          "type": "dexterity",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "hand_l_dorsal_interosseous_3_l",
+      "name": "第三骨间背侧肌（左）",
+      "group": "hand_l",
+      "effects": [
+        {
+          "type": "dexterity",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "hand_r_dorsal_interosseous_3_r",
+      "name": "第三骨间背侧肌（右）",
+      "group": "hand_r",
+      "effects": [
+        {
+          "type": "dexterity",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "hand_l_dorsal_interosseous_4_l",
+      "name": "第四骨间背侧肌（左）",
+      "group": "hand_l",
+      "effects": [
+        {
+          "type": "dexterity",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "hand_r_dorsal_interosseous_4_r",
+      "name": "第四骨间背侧肌（右）",
+      "group": "hand_r",
+      "effects": [
+        {
+          "type": "dexterity",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "hand_l_palmar_interosseous_1_l",
+      "name": "第一骨间掌侧肌（左）",
+      "group": "hand_l",
+      "effects": [
+        {
+          "type": "dexterity",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "hand_r_palmar_interosseous_1_r",
+      "name": "第一骨间掌侧肌（右）",
+      "group": "hand_r",
+      "effects": [
+        {
+          "type": "dexterity",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "hand_l_palmar_interosseous_2_l",
+      "name": "第二骨间掌侧肌（左）",
+      "group": "hand_l",
+      "effects": [
+        {
+          "type": "dexterity",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "hand_r_palmar_interosseous_2_r",
+      "name": "第二骨间掌侧肌（右）",
+      "group": "hand_r",
+      "effects": [
+        {
+          "type": "dexterity",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "hand_l_palmar_interosseous_3_l",
+      "name": "第三骨间掌侧肌（左）",
+      "group": "hand_l",
+      "effects": [
+        {
+          "type": "dexterity",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "hand_r_palmar_interosseous_3_r",
+      "name": "第三骨间掌侧肌（右）",
+      "group": "hand_r",
+      "effects": [
+        {
+          "type": "dexterity",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "hip_l_gluteus_maximus_l",
+      "name": "臀大肌（左）",
+      "group": "hip_l",
+      "effects": [
+        {
+          "type": "jingu",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "hip_r_gluteus_maximus_r",
+      "name": "臀大肌（右）",
+      "group": "hip_r",
+      "effects": [
+        {
+          "type": "jingu",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "hip_l_gluteus_medius_l",
+      "name": "臀中肌（左）",
+      "group": "hip_l",
+      "effects": [
+        {
+          "type": "jingu",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "hip_r_gluteus_medius_r",
+      "name": "臀中肌（右）",
+      "group": "hip_r",
+      "effects": [
+        {
+          "type": "jingu",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "hip_l_gluteus_minimus_l",
+      "name": "臀小肌（左）",
+      "group": "hip_l",
+      "effects": [
+        {
+          "type": "jingu",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "hip_r_gluteus_minimus_r",
+      "name": "臀小肌（右）",
+      "group": "hip_r",
+      "effects": [
+        {
+          "type": "jingu",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "hip_l_tensor_fasciae_latae_l",
+      "name": "阔筋膜张肌（左）",
+      "group": "hip_l",
+      "effects": [
+        {
+          "type": "jingu",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "hip_r_tensor_fasciae_latae_r",
+      "name": "阔筋膜张肌（右）",
+      "group": "hip_r",
+      "effects": [
+        {
+          "type": "jingu",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "hip_l_piriformis_l",
+      "name": "梨状肌（左）",
+      "group": "hip_l",
+      "effects": [
+        {
+          "type": "jingu",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "hip_r_piriformis_r",
+      "name": "梨状肌（右）",
+      "group": "hip_r",
+      "effects": [
+        {
+          "type": "jingu",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "hip_l_obturator_internus_l",
+      "name": "闭孔内肌（左）",
+      "group": "hip_l",
+      "effects": [
+        {
+          "type": "jingu",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "hip_r_obturator_internus_r",
+      "name": "闭孔内肌（右）",
+      "group": "hip_r",
+      "effects": [
+        {
+          "type": "jingu",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "hip_l_gemellus_superior_l",
+      "name": "上孖肌（左）",
+      "group": "hip_l",
+      "effects": [
+        {
+          "type": "jingu",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "hip_r_gemellus_superior_r",
+      "name": "上孖肌（右）",
+      "group": "hip_r",
+      "effects": [
+        {
+          "type": "jingu",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "hip_l_gemellus_inferior_l",
+      "name": "下孖肌（左）",
+      "group": "hip_l",
+      "effects": [
+        {
+          "type": "jingu",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "hip_r_gemellus_inferior_r",
+      "name": "下孖肌（右）",
+      "group": "hip_r",
+      "effects": [
+        {
+          "type": "jingu",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "hip_l_quadratus_femoris_l",
+      "name": "股方肌（左）",
+      "group": "hip_l",
+      "effects": [
+        {
+          "type": "jingu",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "hip_r_quadratus_femoris_r",
+      "name": "股方肌（右）",
+      "group": "hip_r",
+      "effects": [
+        {
+          "type": "jingu",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "hip_l_obturator_externus_l",
+      "name": "闭孔外肌（左）",
+      "group": "hip_l",
+      "effects": [
+        {
+          "type": "jingu",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "hip_r_obturator_externus_r",
+      "name": "闭孔外肌（右）",
+      "group": "hip_r",
+      "effects": [
+        {
+          "type": "jingu",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "hip_l_iliacus_l",
+      "name": "髂肌（左）",
+      "group": "hip_l",
+      "effects": [
+        {
+          "type": "jingu",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "hip_r_iliacus_r",
+      "name": "髂肌（右）",
+      "group": "hip_r",
+      "effects": [
+        {
+          "type": "jingu",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "hip_l_psoas_major_l",
+      "name": "腰大肌（左）",
+      "group": "hip_l",
+      "effects": [
+        {
+          "type": "jingu",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "hip_r_psoas_major_r",
+      "name": "腰大肌（右）",
+      "group": "hip_r",
+      "effects": [
+        {
+          "type": "jingu",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "hip_l_psoas_minor_l",
+      "name": "腰小肌（左）",
+      "group": "hip_l",
+      "effects": [
+        {
+          "type": "jingu",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "hip_r_psoas_minor_r",
+      "name": "腰小肌（右）",
+      "group": "hip_r",
+      "effects": [
+        {
+          "type": "jingu",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "thigh_l_rectus_femoris_l",
+      "name": "股直肌（左）",
+      "group": "thigh_l",
+      "effects": [
+        {
+          "type": "jingu",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "thigh_r_rectus_femoris_r",
+      "name": "股直肌（右）",
+      "group": "thigh_r",
+      "effects": [
+        {
+          "type": "jingu",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "thigh_l_vastus_lateralis_l",
+      "name": "股外侧肌（左）",
+      "group": "thigh_l",
+      "effects": [
+        {
+          "type": "jingu",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "thigh_r_vastus_lateralis_r",
+      "name": "股外侧肌（右）",
+      "group": "thigh_r",
+      "effects": [
+        {
+          "type": "jingu",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "thigh_l_vastus_medialis_l",
+      "name": "股内侧肌（左）",
+      "group": "thigh_l",
+      "effects": [
+        {
+          "type": "jingu",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "thigh_r_vastus_medialis_r",
+      "name": "股内侧肌（右）",
+      "group": "thigh_r",
+      "effects": [
+        {
+          "type": "jingu",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "thigh_l_vastus_intermedius_l",
+      "name": "股中间肌（左）",
+      "group": "thigh_l",
+      "effects": [
+        {
+          "type": "jingu",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "thigh_r_vastus_intermedius_r",
+      "name": "股中间肌（右）",
+      "group": "thigh_r",
+      "effects": [
+        {
+          "type": "jingu",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "thigh_l_sartorius_l",
+      "name": "缝匠肌（左）",
+      "group": "thigh_l",
+      "effects": [
+        {
+          "type": "jingu",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "thigh_r_sartorius_r",
+      "name": "缝匠肌（右）",
+      "group": "thigh_r",
+      "effects": [
+        {
+          "type": "jingu",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "thigh_l_semitendinosus_l",
+      "name": "半腱肌（左）",
+      "group": "thigh_l",
+      "effects": [
+        {
+          "type": "jingu",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "thigh_r_semitendinosus_r",
+      "name": "半腱肌（右）",
+      "group": "thigh_r",
+      "effects": [
+        {
+          "type": "jingu",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "thigh_l_semimembranosus_l",
+      "name": "半膜肌（左）",
+      "group": "thigh_l",
+      "effects": [
+        {
+          "type": "jingu",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "thigh_r_semimembranosus_r",
+      "name": "半膜肌（右）",
+      "group": "thigh_r",
+      "effects": [
+        {
+          "type": "jingu",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "thigh_l_biceps_femoris_long_l",
+      "name": "股二头肌长头（左）",
+      "group": "thigh_l",
+      "effects": [
+        {
+          "type": "jingu",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "thigh_r_biceps_femoris_long_r",
+      "name": "股二头肌长头（右）",
+      "group": "thigh_r",
+      "effects": [
+        {
+          "type": "jingu",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "thigh_l_biceps_femoris_short_l",
+      "name": "股二头肌短头（左）",
+      "group": "thigh_l",
+      "effects": [
+        {
+          "type": "jingu",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "thigh_r_biceps_femoris_short_r",
+      "name": "股二头肌短头（右）",
+      "group": "thigh_r",
+      "effects": [
+        {
+          "type": "jingu",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "thigh_l_adductor_longus_l",
+      "name": "长收肌（左）",
+      "group": "thigh_l",
+      "effects": [
+        {
+          "type": "jingu",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "thigh_r_adductor_longus_r",
+      "name": "长收肌（右）",
+      "group": "thigh_r",
+      "effects": [
+        {
+          "type": "jingu",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "thigh_l_adductor_brevis_l",
+      "name": "短收肌（左）",
+      "group": "thigh_l",
+      "effects": [
+        {
+          "type": "jingu",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "thigh_r_adductor_brevis_r",
+      "name": "短收肌（右）",
+      "group": "thigh_r",
+      "effects": [
+        {
+          "type": "jingu",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "thigh_l_adductor_magnus_l",
+      "name": "大收肌（左）",
+      "group": "thigh_l",
+      "effects": [
+        {
+          "type": "jingu",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "thigh_r_adductor_magnus_r",
+      "name": "大收肌（右）",
+      "group": "thigh_r",
+      "effects": [
+        {
+          "type": "jingu",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "thigh_l_gracilis_l",
+      "name": "股薄肌（左）",
+      "group": "thigh_l",
+      "effects": [
+        {
+          "type": "jingu",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "thigh_r_gracilis_r",
+      "name": "股薄肌（右）",
+      "group": "thigh_r",
+      "effects": [
+        {
+          "type": "jingu",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "thigh_l_pectineus_l",
+      "name": "耻骨肌（左）",
+      "group": "thigh_l",
+      "effects": [
+        {
+          "type": "jingu",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "thigh_r_pectineus_r",
+      "name": "耻骨肌（右）",
+      "group": "thigh_r",
+      "effects": [
+        {
+          "type": "jingu",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "calf_l_tibialis_anterior_l",
+      "name": "胫骨前肌（左）",
+      "group": "calf_l",
+      "effects": [
+        {
+          "type": "flexibility",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "calf_r_tibialis_anterior_r",
+      "name": "胫骨前肌（右）",
+      "group": "calf_r",
+      "effects": [
+        {
+          "type": "flexibility",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "calf_l_extensor_hallucis_longus_l",
+      "name": "拇长伸肌（左）",
+      "group": "calf_l",
+      "effects": [
+        {
+          "type": "flexibility",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "calf_r_extensor_hallucis_longus_r",
+      "name": "拇长伸肌（右）",
+      "group": "calf_r",
+      "effects": [
+        {
+          "type": "flexibility",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "calf_l_extensor_digitorum_longus_l",
+      "name": "趾长伸肌（左）",
+      "group": "calf_l",
+      "effects": [
+        {
+          "type": "flexibility",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "calf_r_extensor_digitorum_longus_r",
+      "name": "趾长伸肌（右）",
+      "group": "calf_r",
+      "effects": [
+        {
+          "type": "flexibility",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "calf_l_peroneus_tertius_l",
+      "name": "第三腓骨肌（左）",
+      "group": "calf_l",
+      "effects": [
+        {
+          "type": "flexibility",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "calf_r_peroneus_tertius_r",
+      "name": "第三腓骨肌（右）",
+      "group": "calf_r",
+      "effects": [
+        {
+          "type": "flexibility",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "calf_l_peroneus_longus_l",
+      "name": "腓骨长肌（左）",
+      "group": "calf_l",
+      "effects": [
+        {
+          "type": "flexibility",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "calf_r_peroneus_longus_r",
+      "name": "腓骨长肌（右）",
+      "group": "calf_r",
+      "effects": [
+        {
+          "type": "flexibility",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "calf_l_peroneus_brevis_l",
+      "name": "腓骨短肌（左）",
+      "group": "calf_l",
+      "effects": [
+        {
+          "type": "flexibility",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "calf_r_peroneus_brevis_r",
+      "name": "腓骨短肌（右）",
+      "group": "calf_r",
+      "effects": [
+        {
+          "type": "flexibility",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "calf_l_gastrocnemius_l",
+      "name": "腓肠肌（左）",
+      "group": "calf_l",
+      "effects": [
+        {
+          "type": "flexibility",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "calf_r_gastrocnemius_r",
+      "name": "腓肠肌（右）",
+      "group": "calf_r",
+      "effects": [
+        {
+          "type": "flexibility",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "calf_l_soleus_l",
+      "name": "比目鱼肌（左）",
+      "group": "calf_l",
+      "effects": [
+        {
+          "type": "flexibility",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "calf_r_soleus_r",
+      "name": "比目鱼肌（右）",
+      "group": "calf_r",
+      "effects": [
+        {
+          "type": "flexibility",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "calf_l_plantaris_l",
+      "name": "跖肌（左）",
+      "group": "calf_l",
+      "effects": [
+        {
+          "type": "flexibility",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "calf_r_plantaris_r",
+      "name": "跖肌（右）",
+      "group": "calf_r",
+      "effects": [
+        {
+          "type": "flexibility",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "calf_l_popliteus_l",
+      "name": "腘肌（左）",
+      "group": "calf_l",
+      "effects": [
+        {
+          "type": "flexibility",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "calf_r_popliteus_r",
+      "name": "腘肌（右）",
+      "group": "calf_r",
+      "effects": [
+        {
+          "type": "flexibility",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "calf_l_tibialis_posterior_l",
+      "name": "胫骨后肌（左）",
+      "group": "calf_l",
+      "effects": [
+        {
+          "type": "flexibility",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "calf_r_tibialis_posterior_r",
+      "name": "胫骨后肌（右）",
+      "group": "calf_r",
+      "effects": [
+        {
+          "type": "flexibility",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "calf_l_flexor_hallucis_longus_l",
+      "name": "拇长屈肌（左）",
+      "group": "calf_l",
+      "effects": [
+        {
+          "type": "flexibility",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "calf_r_flexor_hallucis_longus_r",
+      "name": "拇长屈肌（右）",
+      "group": "calf_r",
+      "effects": [
+        {
+          "type": "flexibility",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "calf_l_flexor_digitorum_longus_l",
+      "name": "趾长屈肌（左）",
+      "group": "calf_l",
+      "effects": [
+        {
+          "type": "flexibility",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "calf_r_flexor_digitorum_longus_r",
+      "name": "趾长屈肌（右）",
+      "group": "calf_r",
+      "effects": [
+        {
+          "type": "flexibility",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "foot_l_extensor_digitorum_brevis_l",
+      "name": "趾短伸肌（左）",
+      "group": "foot_l",
+      "effects": [
+        {
+          "type": "dexterity",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "foot_r_extensor_digitorum_brevis_r",
+      "name": "趾短伸肌（右）",
+      "group": "foot_r",
+      "effects": [
+        {
+          "type": "dexterity",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "foot_l_extensor_hallucis_brevis_l",
+      "name": "拇短伸肌（左）",
+      "group": "foot_l",
+      "effects": [
+        {
+          "type": "dexterity",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "foot_r_extensor_hallucis_brevis_r",
+      "name": "拇短伸肌（右）",
+      "group": "foot_r",
+      "effects": [
+        {
+          "type": "dexterity",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "foot_l_abductor_hallucis_l",
+      "name": "拇展肌（左）",
+      "group": "foot_l",
+      "effects": [
+        {
+          "type": "dexterity",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "foot_r_abductor_hallucis_r",
+      "name": "拇展肌（右）",
+      "group": "foot_r",
+      "effects": [
+        {
+          "type": "dexterity",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "foot_l_flexor_hallucis_brevis_l",
+      "name": "拇短屈肌（左）",
+      "group": "foot_l",
+      "effects": [
+        {
+          "type": "dexterity",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "foot_r_flexor_hallucis_brevis_r",
+      "name": "拇短屈肌（右）",
+      "group": "foot_r",
+      "effects": [
+        {
+          "type": "dexterity",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "foot_l_adductor_hallucis_l",
+      "name": "拇收肌（左）",
+      "group": "foot_l",
+      "effects": [
+        {
+          "type": "dexterity",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "foot_r_adductor_hallucis_r",
+      "name": "拇收肌（右）",
+      "group": "foot_r",
+      "effects": [
+        {
+          "type": "dexterity",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "foot_l_abductor_digiti_minimi_l",
+      "name": "小趾展肌（左）",
+      "group": "foot_l",
+      "effects": [
+        {
+          "type": "dexterity",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "foot_r_abductor_digiti_minimi_r",
+      "name": "小趾展肌（右）",
+      "group": "foot_r",
+      "effects": [
+        {
+          "type": "dexterity",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "foot_l_flexor_digiti_minimi_brevis_l",
+      "name": "小趾短屈肌（左）",
+      "group": "foot_l",
+      "effects": [
+        {
+          "type": "dexterity",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "foot_r_flexor_digiti_minimi_brevis_r",
+      "name": "小趾短屈肌（右）",
+      "group": "foot_r",
+      "effects": [
+        {
+          "type": "dexterity",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "foot_l_flexor_digitorum_brevis_l",
+      "name": "趾短屈肌（左）",
+      "group": "foot_l",
+      "effects": [
+        {
+          "type": "dexterity",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "foot_r_flexor_digitorum_brevis_r",
+      "name": "趾短屈肌（右）",
+      "group": "foot_r",
+      "effects": [
+        {
+          "type": "dexterity",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "foot_l_quadratus_plantae_l",
+      "name": "足底方肌（左）",
+      "group": "foot_l",
+      "effects": [
+        {
+          "type": "dexterity",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "foot_r_quadratus_plantae_r",
+      "name": "足底方肌（右）",
+      "group": "foot_r",
+      "effects": [
+        {
+          "type": "dexterity",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "foot_l_lumbrical_1_l",
+      "name": "第一足蚓状肌（左）",
+      "group": "foot_l",
+      "effects": [
+        {
+          "type": "dexterity",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "foot_r_lumbrical_1_r",
+      "name": "第一足蚓状肌（右）",
+      "group": "foot_r",
+      "effects": [
+        {
+          "type": "dexterity",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "foot_l_lumbrical_2_l",
+      "name": "第二足蚓状肌（左）",
+      "group": "foot_l",
+      "effects": [
+        {
+          "type": "dexterity",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "foot_r_lumbrical_2_r",
+      "name": "第二足蚓状肌（右）",
+      "group": "foot_r",
+      "effects": [
+        {
+          "type": "dexterity",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "foot_l_lumbrical_3_l",
+      "name": "第三足蚓状肌（左）",
+      "group": "foot_l",
+      "effects": [
+        {
+          "type": "dexterity",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "foot_r_lumbrical_3_r",
+      "name": "第三足蚓状肌（右）",
+      "group": "foot_r",
+      "effects": [
+        {
+          "type": "dexterity",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "foot_l_lumbrical_4_l",
+      "name": "第四足蚓状肌（左）",
+      "group": "foot_l",
+      "effects": [
+        {
+          "type": "dexterity",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "foot_r_lumbrical_4_r",
+      "name": "第四足蚓状肌（右）",
+      "group": "foot_r",
+      "effects": [
+        {
+          "type": "dexterity",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "foot_l_plantar_interosseous_1_l",
+      "name": "第一足底骨间肌（左）",
+      "group": "foot_l",
+      "effects": [
+        {
+          "type": "dexterity",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "foot_r_plantar_interosseous_1_r",
+      "name": "第一足底骨间肌（右）",
+      "group": "foot_r",
+      "effects": [
+        {
+          "type": "dexterity",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "foot_l_plantar_interosseous_2_l",
+      "name": "第二足底骨间肌（左）",
+      "group": "foot_l",
+      "effects": [
+        {
+          "type": "dexterity",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "foot_r_plantar_interosseous_2_r",
+      "name": "第二足底骨间肌（右）",
+      "group": "foot_r",
+      "effects": [
+        {
+          "type": "dexterity",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "foot_l_plantar_interosseous_3_l",
+      "name": "第三足底骨间肌（左）",
+      "group": "foot_l",
+      "effects": [
+        {
+          "type": "dexterity",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "foot_r_plantar_interosseous_3_r",
+      "name": "第三足底骨间肌（右）",
+      "group": "foot_r",
+      "effects": [
+        {
+          "type": "dexterity",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "foot_l_dorsal_interosseous_1_l",
+      "name": "第一足背骨间肌（左）",
+      "group": "foot_l",
+      "effects": [
+        {
+          "type": "dexterity",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "foot_r_dorsal_interosseous_1_r",
+      "name": "第一足背骨间肌（右）",
+      "group": "foot_r",
+      "effects": [
+        {
+          "type": "dexterity",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "foot_l_dorsal_interosseous_2_l",
+      "name": "第二足背骨间肌（左）",
+      "group": "foot_l",
+      "effects": [
+        {
+          "type": "dexterity",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "foot_r_dorsal_interosseous_2_r",
+      "name": "第二足背骨间肌（右）",
+      "group": "foot_r",
+      "effects": [
+        {
+          "type": "dexterity",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "foot_l_dorsal_interosseous_3_l",
+      "name": "第三足背骨间肌（左）",
+      "group": "foot_l",
+      "effects": [
+        {
+          "type": "dexterity",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "foot_r_dorsal_interosseous_3_r",
+      "name": "第三足背骨间肌（右）",
+      "group": "foot_r",
+      "effects": [
+        {
+          "type": "dexterity",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "foot_l_dorsal_interosseous_4_l",
+      "name": "第四足背骨间肌（左）",
+      "group": "foot_l",
+      "effects": [
+        {
+          "type": "dexterity",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "foot_r_dorsal_interosseous_4_r",
+      "name": "第四足背骨间肌（右）",
+      "group": "foot_r",
+      "effects": [
+        {
+          "type": "dexterity",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "head_levator_palpebrae_superioris_L",
+      "name": "上睑提肌（左）",
+      "group": "head",
+      "effects": [
+        {
+          "type": "flexibility",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "head_levator_palpebrae_superioris_R",
+      "name": "上睑提肌（右）",
+      "group": "head",
+      "effects": [
+        {
+          "type": "flexibility",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "head_superior_rectus_L",
+      "name": "上直肌（左）",
+      "group": "head",
+      "effects": [
+        {
+          "type": "flexibility",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "head_superior_rectus_R",
+      "name": "上直肌（右）",
+      "group": "head",
+      "effects": [
+        {
+          "type": "flexibility",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "head_inferior_rectus_L",
+      "name": "下直肌（左）",
+      "group": "head",
+      "effects": [
+        {
+          "type": "flexibility",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "head_inferior_rectus_R",
+      "name": "下直肌（右）",
+      "group": "head",
+      "effects": [
+        {
+          "type": "flexibility",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "head_medial_rectus_L",
+      "name": "内直肌（左）",
+      "group": "head",
+      "effects": [
+        {
+          "type": "flexibility",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "head_medial_rectus_R",
+      "name": "内直肌（右）",
+      "group": "head",
+      "effects": [
+        {
+          "type": "flexibility",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "head_lateral_rectus_L",
+      "name": "外直肌（左）",
+      "group": "head",
+      "effects": [
+        {
+          "type": "flexibility",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "head_lateral_rectus_R",
+      "name": "外直肌（右）",
+      "group": "head",
+      "effects": [
+        {
+          "type": "flexibility",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "head_superior_oblique_L",
+      "name": "上斜肌（左）",
+      "group": "head",
+      "effects": [
+        {
+          "type": "flexibility",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "head_superior_oblique_R",
+      "name": "上斜肌（右）",
+      "group": "head",
+      "effects": [
+        {
+          "type": "flexibility",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "head_inferior_oblique_L",
+      "name": "下斜肌（左）",
+      "group": "head",
+      "effects": [
+        {
+          "type": "flexibility",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "head_inferior_oblique_R",
+      "name": "下斜肌（右）",
+      "group": "head",
+      "effects": [
+        {
+          "type": "flexibility",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "head_auricularis_anterior_L",
+      "name": "耳前肌（左）",
+      "group": "head",
+      "effects": [
+        {
+          "type": "flexibility",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "head_auricularis_anterior_R",
+      "name": "耳前肌（右）",
+      "group": "head",
+      "effects": [
+        {
+          "type": "flexibility",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "head_auricularis_superior_L",
+      "name": "耳上肌（左）",
+      "group": "head",
+      "effects": [
+        {
+          "type": "flexibility",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "head_auricularis_superior_R",
+      "name": "耳上肌（右）",
+      "group": "head",
+      "effects": [
+        {
+          "type": "flexibility",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "head_auricularis_posterior_L",
+      "name": "耳后肌（左）",
+      "group": "head",
+      "effects": [
+        {
+          "type": "flexibility",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "head_auricularis_posterior_R",
+      "name": "耳后肌（右）",
+      "group": "head",
+      "effects": [
+        {
+          "type": "flexibility",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "head_genioglossus_L",
+      "name": "颏舌肌（左）",
+      "group": "head",
+      "effects": [
+        {
+          "type": "flexibility",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "head_genioglossus_R",
+      "name": "颏舌肌（右）",
+      "group": "head",
+      "effects": [
+        {
+          "type": "flexibility",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "head_hyoglossus_L",
+      "name": "舌骨舌肌（左）",
+      "group": "head",
+      "effects": [
+        {
+          "type": "flexibility",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "head_hyoglossus_R",
+      "name": "舌骨舌肌（右）",
+      "group": "head",
+      "effects": [
+        {
+          "type": "flexibility",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "head_styloglossus_L",
+      "name": "茎突舌肌（左）",
+      "group": "head",
+      "effects": [
+        {
+          "type": "flexibility",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "head_styloglossus_R",
+      "name": "茎突舌肌（右）",
+      "group": "head",
+      "effects": [
+        {
+          "type": "flexibility",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "head_tensor_veli_palatini_L",
+      "name": "腭帆张肌（左）",
+      "group": "head",
+      "effects": [
+        {
+          "type": "flexibility",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "head_tensor_veli_palatini_R",
+      "name": "腭帆张肌（右）",
+      "group": "head",
+      "effects": [
+        {
+          "type": "flexibility",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "head_levator_veli_palatini_L",
+      "name": "腭帆提肌（左）",
+      "group": "head",
+      "effects": [
+        {
+          "type": "flexibility",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "head_levator_veli_palatini_R",
+      "name": "腭帆提肌（右）",
+      "group": "head",
+      "effects": [
+        {
+          "type": "flexibility",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "head_palatoglossus_L",
+      "name": "腭舌肌（左）",
+      "group": "head",
+      "effects": [
+        {
+          "type": "flexibility",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "head_palatoglossus_R",
+      "name": "腭舌肌（右）",
+      "group": "head",
+      "effects": [
+        {
+          "type": "flexibility",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "head_palatopharyngeus_L",
+      "name": "腭咽肌（左）",
+      "group": "head",
+      "effects": [
+        {
+          "type": "flexibility",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "head_palatopharyngeus_R",
+      "name": "腭咽肌（右）",
+      "group": "head",
+      "effects": [
+        {
+          "type": "flexibility",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "head_musculus_uvulae",
+      "name": "悬雍垂肌",
+      "group": "head",
+      "effects": [
+        {
+          "type": "flexibility",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "head_superior_pharyngeal_constrictor_L",
+      "name": "咽上缩肌（左）",
+      "group": "head",
+      "effects": [
+        {
+          "type": "flexibility",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "head_superior_pharyngeal_constrictor_R",
+      "name": "咽上缩肌（右）",
+      "group": "head",
+      "effects": [
+        {
+          "type": "flexibility",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "head_middle_pharyngeal_constrictor_L",
+      "name": "咽中缩肌（左）",
+      "group": "head",
+      "effects": [
+        {
+          "type": "flexibility",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "head_middle_pharyngeal_constrictor_R",
+      "name": "咽中缩肌（右）",
+      "group": "head",
+      "effects": [
+        {
+          "type": "flexibility",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "head_inferior_pharyngeal_constrictor_L",
+      "name": "咽下缩肌（左）",
+      "group": "head",
+      "effects": [
+        {
+          "type": "flexibility",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "head_inferior_pharyngeal_constrictor_R",
+      "name": "咽下缩肌（右）",
+      "group": "head",
+      "effects": [
+        {
+          "type": "flexibility",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "head_stylopharyngeus_L",
+      "name": "茎突咽肌（左）",
+      "group": "head",
+      "effects": [
+        {
+          "type": "flexibility",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "head_stylopharyngeus_R",
+      "name": "茎突咽肌（右）",
+      "group": "head",
+      "effects": [
+        {
+          "type": "flexibility",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "head_salpingopharyngeus_L",
+      "name": "咽鼓管咽肌（左）",
+      "group": "head",
+      "effects": [
+        {
+          "type": "flexibility",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "head_salpingopharyngeus_R",
+      "name": "咽鼓管咽肌（右）",
+      "group": "head",
+      "effects": [
+        {
+          "type": "flexibility",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "neck_longus_capitis_L",
+      "name": "头长肌（左）",
+      "group": "neck",
+      "effects": [
+        {
+          "type": "breath",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "neck_longus_capitis_R",
+      "name": "头长肌（右）",
+      "group": "neck",
+      "effects": [
+        {
+          "type": "breath",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "neck_longus_colli_L",
+      "name": "颈长肌（左）",
+      "group": "neck",
+      "effects": [
+        {
+          "type": "breath",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "neck_longus_colli_R",
+      "name": "颈长肌（右）",
+      "group": "neck",
+      "effects": [
+        {
+          "type": "breath",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "neck_rectus_capitis_anterior_L",
+      "name": "头前直肌（左）",
+      "group": "neck",
+      "effects": [
+        {
+          "type": "breath",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "neck_rectus_capitis_anterior_R",
+      "name": "头前直肌（右）",
+      "group": "neck",
+      "effects": [
+        {
+          "type": "breath",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "neck_rectus_capitis_lateralis_L",
+      "name": "头侧直肌（左）",
+      "group": "neck",
+      "effects": [
+        {
+          "type": "breath",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "neck_rectus_capitis_lateralis_R",
+      "name": "头侧直肌（右）",
+      "group": "neck",
+      "effects": [
+        {
+          "type": "breath",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "back_rectus_capitis_posterior_major_L",
+      "name": "头后大直肌（左）",
+      "group": "back",
+      "effects": [
+        {
+          "type": "jingu",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "back_rectus_capitis_posterior_major_R",
+      "name": "头后大直肌（右）",
+      "group": "back",
+      "effects": [
+        {
+          "type": "jingu",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "back_rectus_capitis_posterior_minor_L",
+      "name": "头后小直肌（左）",
+      "group": "back",
+      "effects": [
+        {
+          "type": "jingu",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "back_rectus_capitis_posterior_minor_R",
+      "name": "头后小直肌（右）",
+      "group": "back",
+      "effects": [
+        {
+          "type": "jingu",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "back_obliquus_capitis_superior_L",
+      "name": "头上斜肌（左）",
+      "group": "back",
+      "effects": [
+        {
+          "type": "jingu",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "back_obliquus_capitis_superior_R",
+      "name": "头上斜肌（右）",
+      "group": "back",
+      "effects": [
+        {
+          "type": "jingu",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "back_obliquus_capitis_inferior_L",
+      "name": "头下斜肌（左）",
+      "group": "back",
+      "effects": [
+        {
+          "type": "jingu",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "back_obliquus_capitis_inferior_R",
+      "name": "头下斜肌（右）",
+      "group": "back",
+      "effects": [
+        {
+          "type": "jingu",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "back_intertransversarii_L",
+      "name": "横突间肌（左）",
+      "group": "back",
+      "effects": [
+        {
+          "type": "jingu",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "back_intertransversarii_R",
+      "name": "横突间肌（右）",
+      "group": "back",
+      "effects": [
+        {
+          "type": "jingu",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "back_interspinales_L",
+      "name": "棘间肌（左）",
+      "group": "back",
+      "effects": [
+        {
+          "type": "jingu",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "back_interspinales_R",
+      "name": "棘间肌（右）",
+      "group": "back",
+      "effects": [
+        {
+          "type": "jingu",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "back_iliocostalis_lumborum_L",
+      "name": "腰髂肋肌（左）",
+      "group": "back",
+      "effects": [
+        {
+          "type": "jingu",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "back_iliocostalis_lumborum_R",
+      "name": "腰髂肋肌（右）",
+      "group": "back",
+      "effects": [
+        {
+          "type": "jingu",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "back_iliocostalis_thoracis_L",
+      "name": "胸髂肋肌（左）",
+      "group": "back",
+      "effects": [
+        {
+          "type": "jingu",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "back_iliocostalis_thoracis_R",
+      "name": "胸髂肋肌（右）",
+      "group": "back",
+      "effects": [
+        {
+          "type": "jingu",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "back_iliocostalis_cervicis_L",
+      "name": "颈髂肋肌（左）",
+      "group": "back",
+      "effects": [
+        {
+          "type": "jingu",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "back_iliocostalis_cervicis_R",
+      "name": "颈髂肋肌（右）",
+      "group": "back",
+      "effects": [
+        {
+          "type": "jingu",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "back_longissimus_capitis_L",
+      "name": "头最长肌（左）",
+      "group": "back",
+      "effects": [
+        {
+          "type": "jingu",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "back_longissimus_capitis_R",
+      "name": "头最长肌（右）",
+      "group": "back",
+      "effects": [
+        {
+          "type": "jingu",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "back_longissimus_cervicis_L",
+      "name": "颈最长肌（左）",
+      "group": "back",
+      "effects": [
+        {
+          "type": "jingu",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "back_longissimus_cervicis_R",
+      "name": "颈最长肌（右）",
+      "group": "back",
+      "effects": [
+        {
+          "type": "jingu",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "back_longissimus_thoracis_L",
+      "name": "胸最长肌（左）",
+      "group": "back",
+      "effects": [
+        {
+          "type": "jingu",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "back_longissimus_thoracis_R",
+      "name": "胸最长肌（右）",
+      "group": "back",
+      "effects": [
+        {
+          "type": "jingu",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "back_spinalis_capitis_L",
+      "name": "头棘肌（左）",
+      "group": "back",
+      "effects": [
+        {
+          "type": "jingu",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "back_spinalis_capitis_R",
+      "name": "头棘肌（右）",
+      "group": "back",
+      "effects": [
+        {
+          "type": "jingu",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "back_spinalis_cervicis_L",
+      "name": "颈棘肌（左）",
+      "group": "back",
+      "effects": [
+        {
+          "type": "jingu",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "back_spinalis_cervicis_R",
+      "name": "颈棘肌（右）",
+      "group": "back",
+      "effects": [
+        {
+          "type": "jingu",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "back_spinalis_thoracis_L",
+      "name": "胸棘肌（左）",
+      "group": "back",
+      "effects": [
+        {
+          "type": "jingu",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "back_spinalis_thoracis_R",
+      "name": "胸棘肌（右）",
+      "group": "back",
+      "effects": [
+        {
+          "type": "jingu",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "head_superior_longitudinal_lingual",
+      "name": "舌上纵肌",
+      "group": "head",
+      "effects": [
+        {
+          "type": "flexibility",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "head_inferior_longitudinal_lingual",
+      "name": "舌下纵肌",
+      "group": "head",
+      "effects": [
+        {
+          "type": "flexibility",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "head_transverse_lingual",
+      "name": "舌横肌",
+      "group": "head",
+      "effects": [
+        {
+          "type": "flexibility",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "head_vertical_lingual",
+      "name": "舌垂直肌",
+      "group": "head",
+      "effects": [
+        {
+          "type": "flexibility",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "pelvis_external_anal_sphincter",
+      "name": "肛门外括约肌",
+      "group": "pelvis",
+      "effects": [
+        {
+          "type": "breath",
+          "delta": 2
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "head_procerus_L",
+      "name": "降眉间肌（左）",
+      "group": "head",
+      "effects": [
+        {
+          "type": "flexibility",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "head_procerus_R",
+      "name": "降眉间肌（右）",
+      "group": "head",
+      "effects": [
+        {
+          "type": "flexibility",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "head_tensor_tympani_L",
+      "name": "鼓膜张肌（左）",
+      "group": "head",
+      "effects": [
+        {
+          "type": "flexibility",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "head_tensor_tympani_R",
+      "name": "鼓膜张肌（右）",
+      "group": "head",
+      "effects": [
+        {
+          "type": "flexibility",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "head_stapedius_L",
+      "name": "镫骨肌（左）",
+      "group": "head",
+      "effects": [
+        {
+          "type": "flexibility",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "head_stapedius_R",
+      "name": "镫骨肌（右）",
+      "group": "head",
+      "effects": [
+        {
+          "type": "flexibility",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "neck_cricothyroid_L",
+      "name": "环甲肌（左）",
+      "group": "neck",
+      "effects": [
+        {
+          "type": "breath",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "neck_cricothyroid_R",
+      "name": "环甲肌（右）",
+      "group": "neck",
+      "effects": [
+        {
+          "type": "breath",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "neck_posterior_cricoarytenoid_L",
+      "name": "环杓后肌（左）",
+      "group": "neck",
+      "effects": [
+        {
+          "type": "breath",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "neck_posterior_cricoarytenoid_R",
+      "name": "环杓后肌（右）",
+      "group": "neck",
+      "effects": [
+        {
+          "type": "breath",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "neck_lateral_cricoarytenoid_L",
+      "name": "环杓侧肌（左）",
+      "group": "neck",
+      "effects": [
+        {
+          "type": "breath",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "neck_lateral_cricoarytenoid_R",
+      "name": "环杓侧肌（右）",
+      "group": "neck",
+      "effects": [
+        {
+          "type": "breath",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "neck_transverse_arytenoid",
+      "name": "杓横肌",
+      "group": "neck",
+      "effects": [
+        {
+          "type": "breath",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "neck_oblique_arytenoid_L",
+      "name": "杓斜肌（左）",
+      "group": "neck",
+      "effects": [
+        {
+          "type": "breath",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "neck_oblique_arytenoid_R",
+      "name": "杓斜肌（右）",
+      "group": "neck",
+      "effects": [
+        {
+          "type": "breath",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "neck_thyroarytenoid_L",
+      "name": "甲杓肌（左）",
+      "group": "neck",
+      "effects": [
+        {
+          "type": "breath",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "neck_thyroarytenoid_R",
+      "name": "甲杓肌（右）",
+      "group": "neck",
+      "effects": [
+        {
+          "type": "breath",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "neck_vocalis_L",
+      "name": "声带肌（左）",
+      "group": "neck",
+      "effects": [
+        {
+          "type": "breath",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "neck_vocalis_R",
+      "name": "声带肌（右）",
+      "group": "neck",
+      "effects": [
+        {
+          "type": "breath",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "neck_aryepiglotticus_L",
+      "name": "会厌肌（左）",
+      "group": "neck",
+      "effects": [
+        {
+          "type": "breath",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "neck_aryepiglotticus_R",
+      "name": "会厌肌（右）",
+      "group": "neck",
+      "effects": [
+        {
+          "type": "breath",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "back_levatores_costarum_L",
+      "name": "肋提肌（左）",
+      "group": "back",
+      "effects": [
+        {
+          "type": "jingu",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "back_levatores_costarum_R",
+      "name": "肋提肌（右）",
+      "group": "back",
+      "effects": [
+        {
+          "type": "jingu",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "back_subcostales_L",
+      "name": "肋下肌（左）",
+      "group": "back",
+      "effects": [
+        {
+          "type": "jingu",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "back_subcostales_R",
+      "name": "肋下肌（右）",
+      "group": "back",
+      "effects": [
+        {
+          "type": "jingu",
+          "delta": 1
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "chest_sternalis_L",
+      "name": "胸骨肌（左）",
+      "group": "chest",
+      "effects": [
+        {
+          "type": "breath",
+          "delta": 2
+        }
+      ],
+      "unlock_cost": 1
+    },
+    {
+      "id": "chest_sternalis_R",
+      "name": "胸骨肌（右）",
+      "group": "chest",
+      "effects": [
+        {
+          "type": "breath",
+          "delta": 2
+        }
+      ],
+      "unlock_cost": 1
+    }
+  ],
+  "passives": [
+    {
+      "id": "post_no_second_thought",
+      "name_key": "posteffect.no_second_thought.name",
+      "desc_key": "posteffect.no_second_thought.desc",
+      "allowed_groups": [
+        "hand_l",
+        "hand_r",
+        "upperarm_l",
+        "upperarm_r",
+        "shoulder_l",
+        "shoulder_r",
+        "forearm_l",
+        "forearm_r"
+      ],
+      "slots_cost": 1,
+      "post_effect_id": "post_no_second_thought"
+    },
+    {
+      "id": "post_po_xiang",
+      "name_key": "posteffect.po_xiang.name",
+      "desc_key": "posteffect.po_xiang.desc",
+      "allowed_groups": [
+        "hand_l",
+        "hand_r",
+        "upperarm_l",
+        "upperarm_r",
+        "shoulder_l",
+        "shoulder_r",
+        "forearm_l",
+        "forearm_r"
+      ],
+      "slots_cost": 1,
+      "post_effect_id": "post_po_xiang"
+    },
+    {
+      "id": "post_wound_on_wound",
+      "name_key": "posteffect.wound_on_wound.name",
+      "desc_key": "posteffect.wound_on_wound.desc",
+      "allowed_groups": [
+        "hand_l",
+        "hand_r",
+        "forearm_l",
+        "forearm_r",
+        "upperarm_l",
+        "upperarm_r",
+        "shoulder_l",
+        "shoulder_r",
+        "foot_l",
+        "foot_r",
+        "calf_l",
+        "calf_r",
+        "thigh_l",
+        "thigh_r",
+        "hip_l",
+        "hip_r"
+      ],
+      "slots_cost": 1,
+      "post_effect_id": "post_wound_on_wound"
+    },
+    {
+      "id": "post_dog_beat_down",
+      "name_key": "posteffect.dog_beat_down.name",
+      "desc_key": "posteffect.dog_beat_down.desc",
+      "allowed_groups": [
+        "hand_l",
+        "hand_r",
+        "forearm_l",
+        "forearm_r",
+        "upperarm_l",
+        "upperarm_r",
+        "shoulder_l",
+        "shoulder_r",
+        "foot_l",
+        "foot_r",
+        "calf_l",
+        "calf_r",
+        "thigh_l",
+        "thigh_r",
+        "hip_l",
+        "hip_r"
+      ],
+      "slots_cost": 1,
+      "post_effect_id": "post_dog_beat_down"
+    }
+  ]
+}

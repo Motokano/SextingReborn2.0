@@ -21,6 +21,88 @@
       "attack_damage_min": 4,
       "attack_damage_max": 10,
       "attack_damage_type": "blunt"
+    },
+    "enemy.street_thug": {
+      "_doc": "最简单的基础敌对单位（10-enemies 示例）：会还手、无招架、无减伤、无特殊机制。玩家初始战斗速度约 1（身手 10 × 步法基础 1），速度 2 下玩家命中约 46%、地痞命中约 86%，伤害低，前期可打赢；与「流氓散手」同源定位（用同一套脏招：挥拳/踹膝/推搡，均为低配版）。actions[] 为攻击动作列表（10-enemies 敌人动作系统）；未配 actions 或气力不足时回退 attack_damage_* 通用还击。AI：aggro_radius 内主动追击、贴脸攻击（attack_interval_ticks 冷却）、超出 leash_radius 脱战回巢。掉落池待掉落系统接线后补。",
+      "speed": 2,
+      "body_part_destroy_max": {
+        "head": 20,
+        "chest": 28,
+        "abdomen": 24,
+        "lhand": 36,
+        "rhand": 36,
+        "lfoot": 36,
+        "rfoot": 36
+      },
+      "inner_damage_reduce": 0,
+      "body_damage_reduce": 0,
+      "parry_rate": 0,
+      "parry_damage_reduce": 0,
+      "can_attack": true,
+      "attack_damage_min": 2,
+      "attack_damage_max": 6,
+      "attack_damage_type": "blunt",
+      "aggro_radius": 5,
+      "leash_radius": 8,
+      "move_interval_ticks": 1,
+      "qi_li_max": 0,
+      "qi_li_regen_per_turn": 0,
+      "actions": [
+        {
+          "id": "thug_punch",
+          "name_key": "enemy.action.thug_punch",
+          "limb": "rhand",
+          "power_min": 2,
+          "power_max": 4,
+          "damage_type": "blunt",
+          "qi_cost": 0,
+          "hit_part_weights": {
+            "head": 0.1,
+            "chest": 0.5,
+            "abdomen": 0.2,
+            "left_arm": 0.05,
+            "right_arm": 0.05,
+            "left_leg": 0.05,
+            "right_leg": 0.05
+          }
+        },
+        {
+          "id": "thug_knee",
+          "name_key": "enemy.action.thug_knee",
+          "limb": "rfoot",
+          "power_min": 3,
+          "power_max": 6,
+          "damage_type": "blunt",
+          "qi_cost": 0,
+          "hit_part_weights": {
+            "head": 0,
+            "chest": 0.1,
+            "abdomen": 0.2,
+            "left_arm": 0,
+            "right_arm": 0,
+            "left_leg": 0.35,
+            "right_leg": 0.35
+          }
+        },
+        {
+          "id": "thug_shove",
+          "name_key": "enemy.action.thug_shove",
+          "limb": "lhand",
+          "power_min": 2,
+          "power_max": 3,
+          "damage_type": "blunt",
+          "qi_cost": 0,
+          "hit_part_weights": {
+            "head": 0,
+            "chest": 0.4,
+            "abdomen": 0.3,
+            "left_arm": 0.1,
+            "right_arm": 0.1,
+            "left_leg": 0.05,
+            "right_leg": 0.05
+          }
+        }
+      ]
     }
   }
 }

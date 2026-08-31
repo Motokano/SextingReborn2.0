@@ -1,5 +1,5 @@
 {
-  "_comment": "战斗后遗症（构式）：由技能/招式熟练度解锁，装配在招式槽上。同一 post_effect_id 同一条出招肢至多装配 1 份（四肢可各 1 份）。effect_type 与先手等见 docs/design/11-skills.md、07-combat-core.md。mechanic_shared_with_enemy：与敌人共用同一 effect_type / Buff 语义（招架、位移、驱散等），敌人侧在敌表或管线上下文中挂载等价 post_effect_ids 即可。design_meta 见 combat-skills.json constants.design_meta_template。装配范围：未写 valid_skill_ids / valid_move_ids（或二者均为空数组）时，已解锁的后遗症可装到任意具备 post_effect_slot_max 的招式；仅当条目显式列出 valid_* 时才限制技能/招式。",
+  "_comment": "战斗后遗症（效果层）：34 号草案阶段三起，装配口径改为「肌群大型被动」——data/muscles.json 的 passives 段声明 allowed_groups/slots_cost，装配到已全通肌群槽；本条只保留效果定义（effect_type/effect_params/valid_* 运行时二次校验）。valid_move_ids：未写或空数组时任意招式生效；显式列出时仅对命中 id 的招式生效。effect_type 与先手等见 docs/design/11-skills.md、07-combat-core.md。mechanic_shared_with_enemy：与敌人共用同一 effect_type / Buff 语义，敌人侧在敌表或管线上下文中挂载等价 post_effect_ids 即可。",
   "post_no_second_thought": {
     "id": "post_no_second_thought",
     "name_key": "posteffect.no_second_thought.name",
@@ -7,6 +7,7 @@
     "scope": "move_socket",
     "effect_type": "initiative_always_first",
     "effect_params": {},
+    "valid_move_ids": ["jab"],
     "mechanic_shared_with_enemy": true,
     "design_meta": {
       "sheet_row_id": "PE_NO_SECOND_THOUGHT",
@@ -27,11 +28,57 @@
       "apply_when_parry_zero_damage": true,
       "count": 1
     },
+    "valid_move_ids": ["swing_punch"],
     "mechanic_shared_with_enemy": true,
     "design_meta": {
       "sheet_row_id": "PE_PO_XIANG",
       "doc_anchor": "11-skills swing_punch",
       "tags": ["dispel", "post_effect"],
+      "wip_status": "live",
+      "applies_to": ["player", "enemy"]
+    }
+  },
+  "post_wound_on_wound": {
+    "id": "post_wound_on_wound",
+    "name_key": "posteffect.wound_on_wound.name",
+    "desc_key": "posteffect.wound_on_wound.desc",
+    "scope": "self_skill",
+    "effect_type": "extend_target_debuff_duration",
+    "effect_params": {
+      "trigger": "hit_roll_success",
+      "apply_when_parry_zero_damage": true,
+      "extend_ticks": 3,
+      "scope": "all_non_beneficial"
+    },
+    "valid_skill_ids": ["combat_rogue_sanda"],
+    "mechanic_shared_with_enemy": true,
+    "design_meta": {
+      "sheet_row_id": "PE_WOUND_ON_WOUND",
+      "doc_anchor": "11-skills 8.3.6 poke_eye",
+      "tags": ["debuff_extend", "post_effect", "status_suppression"],
+      "wip_status": "live",
+      "applies_to": ["player", "enemy"]
+    }
+  },
+  "post_dog_beat_down": {
+    "id": "post_dog_beat_down",
+    "name_key": "posteffect.dog_beat_down.name",
+    "desc_key": "posteffect.dog_beat_down.desc",
+    "scope": "self_skill",
+    "effect_type": "damage_scale_by_target_debuff_stacks",
+    "effect_params": {
+      "trigger": "hit_roll_success",
+      "apply_when_parry_zero_damage": true,
+      "per_stack_multiplier": 0.05,
+      "max_stacks": 12,
+      "count_mode": "non_beneficial_stacks"
+    },
+    "valid_skill_ids": ["combat_rogue_sanda"],
+    "mechanic_shared_with_enemy": true,
+    "design_meta": {
+      "sheet_row_id": "PE_DOG_BEAT_DOWN",
+      "doc_anchor": "11-skills 8.3.6 slap_combo",
+      "tags": ["debuff_scale", "post_effect", "status_suppression"],
       "wip_status": "live",
       "applies_to": ["player", "enemy"]
     }

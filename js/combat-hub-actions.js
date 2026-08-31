@@ -63,10 +63,11 @@
     function resolveEffectType(ha) {
         if (ha.hub_effect) return String(ha.hub_effect);
         if (ha.diqi_consume_ratio_of_max != null) return 'diqi_shield';
-        if (ha.qi_li_restore != null && !ha.diqi_consume_ratio_of_max) return 'restore_qi_li';
+        // 「吐纳」已取消（19 §6.4）：qi_li_restore 不再作为 hub 效果类型；呼吸条恢复仅由 breath_bar.regen 被动模型负责
         return '';
     }
 
+    /** @deprecated 吐纳已取消（19 §6.4）：保留函数体仅为避免 reason_key 断链，实际不会再被 resolveEffectType 命中 */
     function tryExecuteRestoreQiLi(skillId, actionId, ha, IE, Surv, options, result) {
         var add = parseInt(ha.qi_li_restore, 10);
         if (!isFinite(add)) add = 0;
@@ -92,12 +93,14 @@
             result.reason_key = 'combat.hub.fail.diqi_max_zero';
             return;
         }
-        var ratio = Number(ha.diqi_consume_ratio_of_max);
-        if (!isFinite(ratio) || ratio < 0) ratio = 0;
-        var B = Math.floor(dMax * ratio);
-        var dMin = ha.diqi_consume_min != null ? parseInt(ha.diqi_consume_min, 10) : 1;
-        if (!isFinite(dMin) || dMin < 1) dMin = 1;
-        var C = Math.max(dMin, B);
+        // 新激活（37 §4.2/§4.3）：读躯干防具的基础盾量与模块消耗；无防具（裸奔）不可激活
+        var armorInfo = (IE && typeof IE.getArmorShieldInfo === 'function') ? IE.getArmorShieldInfo() : null;
+        if (!armorInfo || !armorInfo.equipped || armorInfo.baseShield <= 0) {
+            result.reason_key = 'combat.hub.fail.no_armor';
+            return;
+        }
+        var shieldCap = Math.max(1, Math.floor(armorInfo.baseShield));
+        var C = Math.max(1, Math.floor(armorInfo.baseShield * (1 + armorInfo.moduleCostSum)));
         var dCur = st.diqi_current != null ? st.diqi_current : 0;
         if (dCur < C) {
             result.reason_key = 'combat.hub.fail.diqi_low';
@@ -108,12 +111,12 @@
         } else if (typeof Surv.consumeDiqi === 'function') {
             Surv.consumeDiqi(C);
         }
-        if (typeof Surv.setDiqiShieldRemaining === 'function') Surv.setDiqiShieldRemaining(C);
+        if (typeof Surv.setDiqiShieldRemaining === 'function') Surv.setDiqiShieldRemaining(shieldCap);
         advanceActionTicks(Surv, ha.tick_cost);
         if (IE.incrementSkillMoveUsage) IE.incrementSkillMoveUsage(skillId, 'diqi_huti', 1);
         result.ok = true;
         result.reason_key = 'combat.hub.ok.diqi_huti';
-        result.shield_value = C;
+        result.shield_value = shieldCap;
         emitHubResolved(Surv, skillId, actionId, ['diqi_shield', actionId]);
     }
 
@@ -168,6 +171,13 @@
             result.reason_key = 'combat.hub.fail.tiao_xi.diqi_max';
             return;
         }
+        // 调息（新资源模型）：消耗饱食/饮水恢复体力+底气——储备不足无法开始
+        var tiaoSatCost = getCfgNum('tiao_xi_satiety_cost_per_tick', 1);
+        var tiaoThirstCost = getCfgNum('tiao_xi_thirst_cost_per_tick', 0.5);
+        if ((st0.satiety != null && st0.satiety < tiaoSatCost) || (st0.thirst != null && st0.thirst < tiaoThirstCost)) {
+            result.reason_key = 'combat.hub.fail.tiao_xi.no_food';
+            return;
+        }
         if (typeof Surv.setSitMeditationActive === 'function') Surv.setSitMeditationActive(true);
         try {
             advanceActionTicks(Surv, ha.tick_cost);
@@ -182,6 +192,43 @@
         emitHubResolved(Surv, skillId, actionId, ['tiao_xi', 'sit_meditation']);
     }
 
+    /** 读取 survival-config 数值（与管线 getCfg 同口径） */
+    function getCfgNum(key, def) {
+        try {
+            if (global.CharacterAttributes && typeof global.CharacterAttributes.getCfg === 'function') {
+                var v = Number(global.CharacterAttributes.getCfg(key, def));
+                if (isFinite(v)) return v;
+            }
+        } catch (eCfg) { /* ignore */ }
+        return def;
+    }
+
+    /** 进食/饮水（新资源模型）：消耗饱食/饮水 → 恢复体力（储备燃料转行动货币） */
+    function tryExecuteEatRecovery(skillId, actionId, ha, IE, Surv, result) {
+        var satCost = ha.eat_satiety_cost != null ? Number(ha.eat_satiety_cost) : getCfgNum('eat_satiety_cost', 10);
+        var thirstCost = ha.eat_thirst_cost != null ? Number(ha.eat_thirst_cost) : getCfgNum('eat_thirst_cost', 5);
+        var staminaGain = ha.eat_stamina_gain != null ? Number(ha.eat_stamina_gain) : getCfgNum('eat_stamina_gain', 20);
+        if (typeof Surv.applyFoodConversion !== 'function') {
+            result.reason_key = 'combat.hub.fail.modules';
+            return;
+        }
+        var r = Surv.applyFoodConversion(satCost, thirstCost, staminaGain);
+        if (!r.ok) {
+            if (r.reason === 'low_satiety') result.reason_key = 'combat.hub.fail.eat.low_satiety';
+            else if (r.reason === 'low_thirst') result.reason_key = 'combat.hub.fail.eat.low_thirst';
+            else result.reason_key = 'combat.hub.fail.eat.invalid';
+            return;
+        }
+        advanceActionTicks(Surv, ha.tick_cost);
+        incrementBreathTuNaLine(IE, skillId);
+        result.ok = true;
+        result.reason_key = 'combat.hub.ok.eat';
+        result.stamina_gain = r.stamina_gain;
+        result.satiety_cost = r.satiety_cost;
+        result.thirst_cost = r.thirst_cost;
+        emitHubResolved(Surv, skillId, actionId, ['eat_recovery', actionId]);
+    }
+
     function tryExecuteHubAction(skillId, actionId, options) {
         options = options || {};
         var result = { ok: false, reason_key: 'combat.hub.fail.unknown' };
@@ -194,6 +241,11 @@
         }
         if (!skillId || !actionId) {
             result.reason_key = 'combat.hub.fail.params';
+            return result;
+        }
+        // 眩晕中（k13，37 §9.2）：本回合无法行动 → 吞掉本次动作
+        if (IE && typeof IE.consumePlayerStunRoundIfBlocking === 'function' && IE.consumePlayerStunRoundIfBlocking()) {
+            result.reason_key = 'combat.hub.fail.stunned';
             return result;
         }
         if (IE.getSkillLevel(skillId) < 1) {
@@ -244,6 +296,9 @@
                 break;
             case 'tiao_xi_once':
                 tryExecuteTiaoXiOnce(skillId, actionId, ha, IE, Surv, result);
+                break;
+            case 'eat_recovery':
+                tryExecuteEatRecovery(skillId, actionId, ha, IE, Surv, result);
                 break;
             default:
                 result.reason_key = 'combat.hub.fail.unimplemented';

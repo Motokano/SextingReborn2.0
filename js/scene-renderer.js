@@ -808,23 +808,26 @@
         var IE = ctx ? ctx.IE : null;
         if (!tpl) return '';
         var lines = [];
-        if (tpl.weight_kg != null) lines.push('重量：' + tpl.weight_kg + ' kg');
-        if (tpl.pocket_slots != null) lines.push('口袋：' + tpl.pocket_slots + ' 格');
-        if (tpl.vest_slots != null) lines.push('背心栏：' + tpl.vest_slots + ' 格');
-        if (tpl.backpack_slots != null) lines.push('背包：' + tpl.backpack_slots + ' 格');
-        if (tpl.backpack_weight_factor != null) lines.push('背包减重：' + (tpl.backpack_weight_factor * 100) + '%');
+        if (tpl.weight_kg != null) lines.push(tQuick('item.tooltip.weight', null, { v: tpl.weight_kg }));
+        if (tpl.pocket_slots != null) lines.push(tQuick('item.tooltip.pocket', null, { v: tpl.pocket_slots }));
+        if (tpl.vest_slots != null) lines.push(tQuick('item.tooltip.vest', null, { v: tpl.vest_slots }));
+        if (tpl.backpack_slots != null) lines.push(tQuick('item.tooltip.backpack', null, { v: tpl.backpack_slots }));
+        if (tpl.backpack_weight_factor != null) lines.push(tQuick('item.tooltip.backpack_weight', null, { v: tpl.backpack_weight_factor * 100 }));
         if (tpl.damage_reduce_slash_pct != null || tpl.damage_reduce_pierce_pct != null || tpl.damage_reduce_blunt_pct != null) {
             var dr = [];
-            if (tpl.damage_reduce_slash_pct != null && tpl.damage_reduce_slash_pct > 0) dr.push('劈砍 ' + (tpl.damage_reduce_slash_pct * 100) + '%');
-            if (tpl.damage_reduce_pierce_pct != null && tpl.damage_reduce_pierce_pct > 0) dr.push('戳刺 ' + (tpl.damage_reduce_pierce_pct * 100) + '%');
-            if (tpl.damage_reduce_blunt_pct != null && tpl.damage_reduce_blunt_pct > 0) dr.push('钝击 ' + (tpl.damage_reduce_blunt_pct * 100) + '%');
-            if (dr.length) lines.push('减伤：' + dr.join('、'));
+            if (tpl.damage_reduce_slash_pct != null && tpl.damage_reduce_slash_pct > 0) dr.push(tQuick('item.tooltip.slash', null, { v: tpl.damage_reduce_slash_pct * 100 }));
+            if (tpl.damage_reduce_pierce_pct != null && tpl.damage_reduce_pierce_pct > 0) dr.push(tQuick('item.tooltip.pierce', null, { v: tpl.damage_reduce_pierce_pct * 100 }));
+            if (tpl.damage_reduce_blunt_pct != null && tpl.damage_reduce_blunt_pct > 0) dr.push(tQuick('item.tooltip.blunt', null, { v: tpl.damage_reduce_blunt_pct * 100 }));
+            if (dr.length) lines.push(tQuick('item.tooltip.damage_reduce', null, { v: dr.join('、') }));
         }
-        if (tpl.skill_coef != null) lines.push('技能系数：' + tpl.skill_coef);
-        if (tpl.req_innate_jingu != null) lines.push('先天筋骨要求：' + tpl.req_innate_jingu);
-        if (tpl.enchant_slots != null) lines.push('词条槽：' + tpl.enchant_slots);
-        var q = (inst && inst.quality_tier != null) ? inst.quality_tier : tpl.quality_tier;
-        if (q != null && IE && IE.QUALITY_NAMES) lines.push('品质：' + (IE.QUALITY_NAMES[q] || '—'));
+        if (tpl.form_coefs && typeof tpl.form_coefs === 'object') {
+            var fcParts = [];
+            for (var fk in tpl.form_coefs) if (tpl.form_coefs.hasOwnProperty(fk)) fcParts.push(fk + ' ' + tpl.form_coefs[fk]);
+            if (fcParts.length) lines.push(tQuick('item.tooltip.form_coefs', null, { v: fcParts.join(' / ') }));
+        }
+        if (tpl.skill_coef != null) lines.push(tQuick('item.tooltip.skill_coef', null, { v: tpl.skill_coef }));
+        if (tpl.req_innate_jingu != null) lines.push(tQuick('item.tooltip.req_jingu', null, { v: tpl.req_innate_jingu }));
+        if (tpl.enchant_slots != null) lines.push(tQuick('item.tooltip.enchant_slots', null, { v: tpl.enchant_slots }));
         return lines.length ? lines.join('\n') : '';
     }
 
@@ -1037,7 +1040,7 @@
             var pit = pocketArr[pk];
             if (pit && pit.item_id) {
                 var pTier = (typeof IE.getItemDisplayTier === 'function') ? IE.getItemDisplayTier(pit.item_id, char) : '';
-                keyParts.push(pit.item_id + ':' + (pit.count || 1) + ':' + (pit.quality_tier || '') + ':' + pTier);
+                keyParts.push(pit.item_id + ':' + (pit.count || 1) + ':' + pTier);
             } else {
                 keyParts.push('-');
             }
@@ -1047,7 +1050,7 @@
             var vit = vestArr[vk];
             if (vit && vit.item_id) {
                 var vTier = (typeof IE.getItemDisplayTier === 'function') ? IE.getItemDisplayTier(vit.item_id, char) : '';
-                keyParts.push(vit.item_id + ':' + (vit.count || 1) + ':' + (vit.quality_tier || '') + ':' + vTier);
+                keyParts.push(vit.item_id + ':' + (vit.count || 1) + ':' + vTier);
             } else {
                 keyParts.push('-');
             }
@@ -1151,7 +1154,7 @@
                 var warehouseStation = typeof E.isWarehouseStationCell === 'function' && E.isWarehouseStationCell(gx, gy);
                 return {
                     walkable: walkable,
-                    portal: !!portal,
+                    portal: portal,
                     gathering: (entityId === 'gathering_bush' || entityId === 'gathering_grass'),
                     cookingStation: cookingStation,
                     pharmacyStation: pharmacyStation,
@@ -1274,7 +1277,7 @@
                     adjacent: adjacent,
                     leapTarget: leapTarget,
                     walkable: walkable,
-                    portal: !!portal,
+                    portal: portal,
                     gathering: showGathering,
                     gatheringBlurred: gatheringBlurred,
                     cookingStation: showCookingStation,
@@ -1486,14 +1489,14 @@
                     }
                     var meta = latestFrame.getDynamicMetaAt(hit.x, hit.y);
                     var tips = [];
-                    if (!meta.walkable) tips.push('不可走');
-                    if (meta.portal) tips.push('传送点');
-                    if (meta.gathering) tips.push('采集点');
-                    else if (meta.gatheringBlurred) tips.push('附近似乎有可采资源');
-                    if (meta.unknownPresence) tips.push('有未知动静');
+                    if (!meta.walkable) tips.push(tQuick('map.tip.not_walkable'));
+                    if (meta.portal) tips.push(tQuick('map.tip.portal'));
+                    if (meta.gathering) tips.push(tQuick('map.tip.gathering'));
+                    else if (meta.gatheringBlurred) tips.push(tQuick('map.tip.gathering_nearby'));
+                    if (meta.unknownPresence) tips.push(tQuick('map.tip.unknown_presence'));
                     if (meta.npc) {
                         if (meta.npcLabel && String(meta.npcLabel).trim()) tips.push(String(meta.npcLabel).trim());
-                        else tips.push('可对话');
+                        else tips.push(tQuick('map.tip.talkable'));
                     }
                     if (meta.enemy) {
                         if (meta.enemyId === 'enemy.training_dummy_wooden') {
@@ -1506,16 +1509,26 @@
                             } catch (eTip) {
                                 tips.push('训练木桩');
                             }
+                        } else if (meta.enemyId === 'enemy.street_thug') {
+                            try {
+                                if (window.UIText && typeof window.UIText.t === 'function') {
+                                    tips.push(window.UIText.t('map.tooltip.enemy.street_thug'));
+                                } else {
+                                    tips.push('地痞');
+                                }
+                            } catch (eTip) {
+                                tips.push('地痞');
+                            }
                         } else {
-                            tips.push('敌人');
+                            tips.push(tQuick('map.tip.enemy'));
                         }
                     }
-                    if (meta.compostStation) tips.push('制肥桶');
-                    if (meta.agricultureStation) tips.push('农田');
-                    if (meta.livestockStation) tips.push('牧场');
-                    if (meta.groundCount > 0) tips.push('地面有 ' + meta.groundCount + ' 件物品');
-                    else if (meta.groundUnknown) tips.push('地面似乎有东西');
-                    if (meta.leapTarget) tips.push('蹑步落点');
+                    if (meta.compostStation) tips.push(tQuick('map.tip.compost_station'));
+                    if (meta.agricultureStation) tips.push(tQuick('map.tip.agriculture_station'));
+                    if (meta.livestockStation) tips.push(tQuick('map.tip.livestock_station'));
+                    if (meta.groundCount > 0) tips.push(tQuick('map.tip.ground_items', null, { n: meta.groundCount }));
+                    else if (meta.groundUnknown) tips.push(tQuick('map.tip.ground_unknown'));
+                    if (meta.leapTarget) tips.push(tQuick('map.tip.leap_target'));
                     grid.title = tips.join(' · ');
                 });
             });
@@ -1546,17 +1559,8 @@
         var bubbleGroundItems = document.getElementById('player-action-ground-items');
         var bubbleDiqiHuti = document.getElementById('player-action-diqi-huti');
         var canTakeWater = !!(ctx && ctx.actions && typeof ctx.actions.canTakeWaterAtCurrentTile === 'function' && ctx.actions.canTakeWaterAtCurrentTile());
-        var adjEnemyCombat = ctx && typeof ctx.hasAdjacentEnemyForCombat === 'function' ? !!ctx.hasAdjacentEnemyForCombat() : false;
-        var breathSkillId = 'combat_basic_breath';
+        // 激活防具不再显示头顶气泡/动作栏上下文按钮：改由快捷栏 📌 收藏使用（k11 QoL）
         var diqiHutiOk = false;
-        if (IE && E && window.CombatSkills && adjEnemyCombat) {
-            var breathLv = typeof IE.getSkillLevel === 'function' ? IE.getSkillLevel(breathSkillId) : 0;
-            var hubsB = IE.getCombatState && IE.getCombatState().hubs ? IE.getCombatState().hubs : null;
-            if (breathLv >= 50 && hubsB && hubsB.breath === breathSkillId) {
-                var shRem = (window.Survival && typeof window.Survival.getDiqiShieldRemaining === 'function') ? window.Survival.getDiqiShieldRemaining() : 0;
-                if (shRem <= 0) diqiHutiOk = true;
-            }
-        }
         var tNie = function (key, vars) {
             try {
                 if (window.UIText && typeof window.UIText.t === 'function') return window.UIText.t(key, vars);
@@ -1575,7 +1579,7 @@
             if (showBubble) {
                 bubbleGather.style.display = (!isIdling && canGather) ? 'inline-block' : 'none';
                 bubbleGather.disabled = !canGather;
-                bubbleGather.textContent = pointName ? '采集 · ' + pointName + '（挂机）' : '采集（挂机）';
+                bubbleGather.textContent = pointName ? tQuick('map.btn.gather_idle', null, { name: pointName }) : tQuick('map.btn.gather_idle_no_name');
                 bubbleStop.style.display = isIdling ? 'inline-block' : 'none';
             } else {
                 bubbleGather.style.display = 'none';
@@ -1584,7 +1588,7 @@
         }
         if (bubbleGroundItems) {
             bubbleGroundItems.style.display = hasGroundItems ? 'inline-block' : 'none';
-            bubbleGroundItems.textContent = hasGroundItems ? '📦 脚下 ' + groundAtPlayer.length + ' 件' : '📦 脚下物品';
+            bubbleGroundItems.textContent = hasGroundItems ? tQuick('map.btn.ground_items_count', null, { n: groundAtPlayer.length }) : tQuick('map.btn.ground_items');
         }
         if (bubbleTakeWater) {
             bubbleTakeWater.style.display = canTakeWater ? 'inline-block' : 'none';

@@ -13,7 +13,7 @@ alwaysApply: false
 - **主范式**：菜谱/藏身处设施；**先选灶台工艺**再投料盲配；**开做即扣材料 + 技法资源**（燃料/水/tick/体力），失败不退料；全局唯一失败物 id 由 **`cooking-system-config.csv`** 指定。
 - **食用单轨**：料理成品必须 **`edible` + `edible_buff_id`**（与 `food-buff-and-buff-watch-agent` 一致）。
 - **并行与上限**：不设主食/饮品槽位计数上限；进食门闸见 **21.4.2**。
-- **技法 vs 配方**：**燃料、水槽、world `craft_ticks`、`stamina_cost`、默认 `base_success_rate` 只读 `cooking-methods.json`**；配方只提供 `inputs` / `output` / 可选覆写成功率与品质等，**不在配方上配燃料或 tick**。
+- **技法 vs 配方**：**燃料、水槽、world `craft_ticks`、`stamina_cost`、默认 `base_success_rate` 只读 `cooking-methods.json`**；配方只提供 `inputs` / `output` / 可选覆写成功率等，**不在配方上配燃料或 tick**。
 - **配件门禁**：技法可选 **`requires_accessory_item_id`**；灶台 **`SceneCtx.cooking_station_runtime.installed_accessory_item_ids`** 须含该 id；默认新档含 `tool_pot_clay_cooking` 以便煮/炖可测，可用 **`SceneApp.setCookingStationAccessories`** 调整。
 - **体力**：**开做时一次性**扣 `stamina_cost`，**不**再按每 world tick 扣体力；`cooking-system-config.csv` 的 `cooking_stamina_per_tick` 为废弃占位。
 - **燃料槽 / 水槽**：上限各 **1000**；物品字段见 **`items-json-build-agent`**（`fuel_points` / `water_points`）、**`cooking_ingredient`**。

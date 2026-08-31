@@ -756,7 +756,7 @@
                             <button type="button" id="btn-effects-add-giveItem" title="追加一条 giveItem，对话结束后发放到背包">+ 添加 giveItem（发物品）</button>
                             <button type="button" id="btn-effects-from-cond-removeItem" title="从当前条件树抽取所有 hasItem（含 and 中与 flag 混合），追加 removeItem">从物品条件生成 removeItem（扣物）</button>
                         </div>
-                        <p class="hint">物品语义：<strong>条件</strong>里的 hasItem / 多物品检测只判断背包是否够，<strong>不扣</strong>。<strong>效果</strong>里 <code>removeItem</code> 在对话播完后的 <code>applyEffects</code> 中扣除；<code>giveItem</code> 发放物品（可选 <code>quality_tier</code>）。常见组合：条件 <code>and</code>（旗标 + hasItem）→ 对话 → effects 依次 <code>removeItem</code> → <code>setFlag</code>（与 <code>js/npc-system.js</code> 一致）。<strong>注意</strong>：当前 runtime 对 effects 为顺序执行，<code>removeItem</code> 短少时不会自动中止后续 <code>setFlag</code>；若需原子维修需另行改代码。</p>
+                        <p class="hint">物品语义：<strong>条件</strong>里的 hasItem / 多物品检测只判断背包是否够，<strong>不扣</strong>。<strong>效果</strong>里 <code>removeItem</code> 在对话播完后的 <code>applyEffects</code> 中扣除；<code>giveItem</code> 发放物品。常见组合：条件 <code>and</code>（旗标 + hasItem）→ 对话 → effects 依次 <code>removeItem</code> → <code>setFlag</code>（与 <code>js/npc-system.js</code> 一致）。<strong>注意</strong>：当前 runtime 对 effects 为顺序执行，<code>removeItem</code> 短少时不会自动中止后续 <code>setFlag</code>；若需原子维修需另行改代码。</p>
                         <p class="hint" style="margin-top:6px;">effects 类型以运行时为准：<code>setFlag</code>、<code>modifySkillLevel</code>、<code>modifySkillMaxLevelBonus</code>、<code>removeItem</code>、<code>giveItem</code>、<code>setCookingStationWater</code>（<code>params.unlimited</code> 布尔，仅主灶台料理水）；其它字符串会被静默跳过。</p>
                     </div>
                     <div class="section">
@@ -2966,11 +2966,9 @@
                 var show = (tl === 'removeitem' || tl === 'giveitem' || tl === 'hasitem');
                 wrap.style.display = show ? 'block' : 'none';
                 var rowRm = wrap.querySelector('.effect-inv-row-remove');
-                var rowGive = wrap.querySelector('.effect-inv-row-give');
                 var stWrap = wrap.querySelector('.effect-inv-strict-wrap');
                 var badNote = wrap.querySelector('.effect-inv-runtime-note');
                 if (rowRm) rowRm.style.display = (tl === 'removeitem' || tl === 'hasitem') ? 'flex' : 'none';
-                if (rowGive) rowGive.style.display = (tl === 'giveitem') ? 'flex' : 'none';
                 if (stWrap) stWrap.style.display = (tl === 'removeitem') ? '' : 'none';
                 if (badNote) badNote.style.display = (tl === 'hasitem') ? 'block' : 'none';
             }
@@ -2988,11 +2986,9 @@
                 var idInp = wrap.querySelector('.effect-inv-item-id');
                 var cntInp = wrap.querySelector('.effect-inv-count');
                 var stInp = wrap.querySelector('.effect-inv-strict');
-                var qtInp = wrap.querySelector('.effect-inv-quality');
                 if (idInp) idInp.value = (p.itemId != null ? String(p.itemId) : '');
                 if (cntInp) cntInp.value = String((p.count != null && p.count > 0) ? p.count : 1);
                 if (stInp) stInp.checked = (p.strict !== false);
-                if (qtInp) qtInp.value = String(p.quality_tier != null ? p.quality_tier : 0);
             }
 
             function flushOneEffectInvToParams(div) {
@@ -3005,19 +3001,13 @@
                 var idInp = wrap.querySelector('.effect-inv-item-id');
                 var cntInp = wrap.querySelector('.effect-inv-count');
                 var stInp = wrap.querySelector('.effect-inv-strict');
-                var qtInp = wrap.querySelector('.effect-inv-quality');
                 var params = parseEffectParamsFromTa(ta);
                 if (idInp) params.itemId = String(idInp.value || '').trim();
                 if (cntInp) params.count = Math.max(1, parseInt(cntInp.value, 10) || 1);
                 if (tl === 'removeitem') {
                     params.strict = !!(stInp && stInp.checked);
-                    delete params.quality_tier;
-                } else if (tl === 'giveitem') {
-                    params.quality_tier = qtInp ? Math.max(0, parseInt(qtInp.value, 10) || 0) : 0;
-                    delete params.strict;
                 } else {
                     delete params.strict;
-                    delete params.quality_tier;
                 }
                 ta.value = JSON.stringify(params, null, 2);
             }
@@ -3084,20 +3074,7 @@
                 rowRm.appendChild(cntInp);
                 rowRm.appendChild(stLab);
 
-                var rowGive = document.createElement('div');
-                rowGive.className = 'row-mini effect-inv-row-give';
-                var qtLab = document.createElement('label');
-                qtLab.textContent = '品质档 quality_tier';
-                var qtInp = document.createElement('input');
-                qtInp.type = 'number';
-                qtInp.className = 'effect-inv-quality';
-                qtInp.min = '0';
-                qtInp.value = '0';
-                rowGive.appendChild(qtLab);
-                rowGive.appendChild(qtInp);
-
                 wrap.appendChild(rowRm);
-                wrap.appendChild(rowGive);
 
                 var badNote = document.createElement('div');
                 badNote.className = 'effect-inv-runtime-note';
@@ -3116,7 +3093,6 @@
                 idInp.addEventListener('input', bump);
                 cntInp.addEventListener('input', bump);
                 stInp.addEventListener('change', bump);
-                qtInp.addEventListener('input', bump);
                 paramsTa.addEventListener('blur', function () { populateEffectInvFromParams(div); });
 
                 typeInp.addEventListener('input', function () {
@@ -4188,10 +4164,10 @@
                     return;
                 }
                 var effects = collectEffectsArrayFromDom();
-                effects.push({ type: 'giveItem', params: { itemId: '', count: 1, quality_tier: 0 } });
+                effects.push({ type: 'giveItem', params: { itemId: '', count: 1 } });
                 renderEffectsList(effects);
                 setDirty('entry', true);
-                toast('info', '已添加', '请在列表最后一项填写物品 id / 数量；需要品质档时改 quality_tier。', 3200);
+                toast('info', '已添加', '请在列表最后一项填写物品 id / 数量。', 3200);
             });
 
             document.getElementById('btn-effects-from-cond-removeItem').addEventListener('click', function () {

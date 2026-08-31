@@ -47,7 +47,7 @@ flowchart LR
 
 以下为一次性全表扫描得到的键集合（字典序）；**非上限**——任意 CSV 新列在非空时可写入模板（见构建脚本末尾扩展列逻辑）。
 
-`accept_code`, `base_value`, `category`, `compost_inoculant_aerobic`, `compost_inoculant_anaerobic`, `convert_to_high`, `cooking_ingredient`, `desc_0`, `edible`, `edible_buff_id`, `fert_c`, `fert_n`, `fn`, `fn_before`, `food_buff_duration_ticks`, `fuel_points`, `info_module_set_id`, `item_id`, `name`, `name_0`, `placeholder_name`, `price_class`, `production_lines`, `quality`, `region_restrict`, `skill_coef`, `sn`, `source`, `spoilage_ticks`, `stack_limit`, `sub_category`, `tags`, `usable_regions`, `volatility`, `water_points`, `weapon_attack_power`, `weight_kg`
+`accept_code`, `base_value`, `category`, `compost_inoculant_aerobic`, `compost_inoculant_anaerobic`, `convert_to_high`, `cooking_ingredient`, `desc_0`, `edible`, `edible_buff_id`, `fert_c`, `fert_n`, `fn`, `fn_before`, `food_buff_duration_ticks`, `fuel_points`, `info_module_set_id`, `item_id`, `name`, `name_0`, `placeholder_name`, `price_class`, `production_lines`, `region_restrict`, `skill_coef`, `sn`, `source`, `spoilage_ticks`, `stack_limit`, `sub_category`, `tags`, `usable_regions`, `volatility`, `water_points`, `weapon_attack_power`, `weight_kg`
 
 ---
 
@@ -63,7 +63,7 @@ flowchart LR
 
 当前扫描约 **18** 种（若新增装备条目带有 `backpack_slots` 等，键集合会增加）：
 
-`damage_reduce_blunt_pct`, `damage_reduce_pierce_pct`, `damage_reduce_slash_pct`, `desc_0`, `desc_1`, `desc_2`, `display_skill_id`, `enchant_slots`, `equip_slot`, `id`, `name_0`, `name_1`, `name_2`, `pocket_slots`, `quality_tier`, `skill_coef`, `vest_slots`, `weight_kg`
+`damage_reduce_blunt_pct`, `damage_reduce_pierce_pct`, `damage_reduce_slash_pct`, `desc_0`, `desc_1`, `desc_2`, `display_skill_id`, `enchant_slots`, `equip_slot`, `id`, `name_0`, `name_1`, `name_2`, `pocket_slots`, `skill_coef`, `vest_slots`, `weight_kg`
 
 文件头注释还约定背心/背包可有 `backpack_slots`、`backpack_weight_factor` 等——**条目未配置则不会出现在键统计中**。
 
@@ -89,7 +89,6 @@ flowchart LR
 
 - `item_id`（必填）
 - `count`（可选）
-- `quality_tier`（可选）
 - `enchants`（可选数组）
 - `ground_drop_tick`（可选，地面丢弃）
 
@@ -160,7 +159,6 @@ flowchart LR
 | `compost_inoculant_anaerobic` | 堆肥/种植信息 | `life_planting` | 2 | 厌氧菌剂 |
 | `category` / `sub_category` / `tags` / `source` / `production_lines` | 分类与来源 | 默认隐藏 | - | 可用于筛选/辅助路由，后续按字段规则开放 |
 | `stack_limit` / `stack_max` | 容器/堆叠信息 | 默认隐藏 | - | 通用背包/容器规则 |
-| `quality` / `quality_tier` | 品质信息 | 默认隐藏 | - | 当前先不绑定，未来可接鉴定 |
 | `base_value` / `price_class` / `volatility` / `region_restrict` / `usable_regions` / `accept_code` / `convert_to_high` | 经济/区域信息 | 默认隐藏 | - | 贸易/鉴定口径未定 |
 | `usable` / `use_buff_id` | 通用使用信息 | 默认隐藏 | - | 非食用、非料理效果 |
 | `weapon_attack_power` / `attack_power` / `skill_coef` / `req_innate_jingu` / `damage_type_effects` | 战斗信息 | 默认隐藏 | - | 不归生活技能，后续可接战斗/鉴定 |

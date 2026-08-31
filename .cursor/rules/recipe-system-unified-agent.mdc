@@ -36,7 +36,6 @@ alwaysApply: true
 - 成长/制作字段：
   - `required_skill_level_min`
   - `proficiency_usage_key`
-  - `base_output_quality_tier`
 - 可选覆盖字段（覆盖 method 默认）：
   - `required_skill_id`
   - `recipe_processor_id`
@@ -80,7 +79,7 @@ alwaysApply: true
 - 产出模型：
   - `main_output`：成功固定产出
   - `bonus_outputs[]`：成功后逐条独立概率判定（可同时命中多个）
-- 副产物品质：与主产物同口径，参与技能驱动品质上修。
+- 副产物与主产物同口径：成功固定产出 `main_output` + 逐条独立概率 `bonus_outputs`（无品质档）。
 
 ## 8) 成本/时间/成长时机（强制）
 
@@ -119,5 +118,5 @@ alwaysApply: true
 ## 13) 禁止事项
 
 - 禁止并行维护第二套“配方主数据真相”。
-- 禁止在烹饪迁移阶段私改平衡口径（成功率、品质曲线、熟练度时机）。
+- 禁止在烹饪迁移阶段私改平衡口径（成功率、熟练度时机）。
 - 禁止删除旧字段兼容而不提供迁移/双写。

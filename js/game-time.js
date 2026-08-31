@@ -90,14 +90,27 @@
 
     function getTimePeriodLabel() {
         var p = getTimePeriod();
-        if (p === 'morning') return '早上';
-        if (p === 'noon') return '中午';
-        if (p === 'afternoon') return '下午';
-        return '晚上';
+        if (global && global.UIText && typeof global.UIText.t === 'function') {
+            try {
+                return global.UIText.t('game.time.' + p);
+            } catch (e) {
+                // i18n 未就绪/缺键时回退时段 id：BuffSystem.init 会在 ui_text 加载前调用 getState，展示文案不得崩启动
+                return p;
+            }
+        }
+        return p;
     }
 
     function getDisplayString() {
-        return '第' + getYear() + '年 第' + getDayOfYear() + '天 ' + pad2(getHour()) + ':' + pad2(getMinute());
+        var y = getYear(), d = getDayOfYear(), hh = pad2(getHour()), mm = pad2(getMinute());
+        if (global && global.UIText && typeof global.UIText.t === 'function') {
+            try {
+                return global.UIText.t('game.time.format', { y: y, d: d, hh: hh, mm: mm });
+            } catch (e) {
+                // 同上：i18n 未就绪时回退数字格式
+            }
+        }
+        return y + '-' + d + ' ' + hh + ':' + mm;
     }
 
     function advanceTicks(ticks) {

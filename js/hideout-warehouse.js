@@ -235,9 +235,7 @@
         var tpl = getItemTemplate(a.item_id);
         if (tpl && tpl.enchant_slots != null && coerceInt(tpl.enchant_slots, 0) > 0) return false;
         if (!isWarehouseStackable(tpl)) return false;
-        var qa = a.quality_tier != null ? coerceInt(a.quality_tier, 0) : 0;
-        var qb = b.quality_tier != null ? coerceInt(b.quality_tier, 0) : 0;
-        return qa === qb;
+        return true;
     }
 
     function ensureState() {
@@ -701,8 +699,7 @@
             if (row.source === 'container' && IE && typeof IE.putItemIntoDefaultContainer === 'function') {
                 IE.putItemIntoDefaultContainer({
                     item_id: row.item_id,
-                    count: row.count != null ? coerceInt(row.count, 1) : 1,
-                    quality_tier: row.quality_tier != null ? row.quality_tier : 0
+                    count: row.count != null ? coerceInt(row.count, 1) : 1
                 });
             }
         }
@@ -792,8 +789,7 @@
                 container: pick.container,
                 index: pick.index,
                 item_id: want,
-                count: take,
-                quality_tier: 0
+                count: take
             });
             remaining -= take;
         }

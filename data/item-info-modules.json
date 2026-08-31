@@ -92,6 +92,93 @@
           }
         }
       ]
+    },
+    "module.equipment_armor": {
+      "set_id": "module.equipment_armor",
+      "display_name": "防具观察",
+      "modules": [
+        {
+          "module_id": "capacity",
+          "title": "容量细节",
+          "icon": "box",
+          "unlock": {
+            "skill_id": "survival_language",
+            "level_min": 3,
+            "locked_hint": "看不出这件装备能装多少东西"
+          },
+          "content": {
+            "type": "tpl_kv",
+            "entries": [
+              { "field": "pocket_slots", "label_key": "item.attr.pocket_slots" },
+              { "field": "vest_slots", "label_key": "item.attr.vest_slots" },
+              { "field": "backpack_slots", "label_key": "item.attr.backpack_slots" }
+            ]
+          }
+        },
+        {
+          "module_id": "armor_stats",
+          "title": "防护细节",
+          "icon": "shield",
+          "unlock": {
+            "skill_id": "survival_language",
+            "level_min": 4,
+            "locked_hint": "阅读能力不足，难以判断这件防具的防护细节"
+          },
+          "content": {
+            "type": "tpl_kv",
+            "entries": [
+              { "field": "base_shield", "label_key": "item.attr.base_shield" },
+              {
+                "field": "module_slots",
+                "label_key": "item.attr.module_slots",
+                "array_map": {
+                  "chest": "胸", "abdomen": "腹", "arm_l": "左臂", "arm_r": "右臂",
+                  "leg_l": "左腿", "leg_r": "右腿", "shell": "盔体", "liner": "内衬", "face": "护面"
+                }
+              },
+              { "field": "damage_reduce_blunt_pct", "label_key": "item.attr.dr.blunt", "pct": true },
+              { "field": "damage_reduce_slash_pct", "label_key": "item.attr.dr.slash", "pct": true },
+              { "field": "damage_reduce_pierce_pct", "label_key": "item.attr.dr.pierce", "pct": true }
+            ]
+          }
+        },
+        {
+          "module_id": "combat_detail",
+          "title": "战斗细节",
+          "icon": "swords",
+          "unlock": {
+            "skill_id": "survival_language",
+            "level_min": 5,
+            "locked_hint": "看不出这件装备在招式上的用法"
+          },
+          "content": {
+            "type": "tpl_kv",
+            "entries": [
+              { "field": "form_coefs", "label_key": "item.attr.form_coefs" },
+              { "field": "move_cost_mod", "label_key": "item.attr.move_cost_mod", "pct": true },
+              { "field": "parry_coef", "label_key": "item.attr.parry_coef" },
+              { "field": "speed_coef", "label_key": "item.attr.speed_coef" },
+              { "field": "req_innate_jingu", "label_key": "item.attr.req_innate_jingu" }
+            ]
+          }
+        },
+        {
+          "module_id": "upgrade_potential",
+          "title": "改造潜力",
+          "icon": "wrench",
+          "unlock": {
+            "skill_id": "survival_language",
+            "level_min": 5,
+            "locked_hint": "看不出这件装备还有多少改造空间"
+          },
+          "content": {
+            "type": "tpl_kv",
+            "entries": [
+              { "field": "enchant_slots", "label_key": "item.attr.enchant_slots" }
+            ]
+          }
+        }
+      ]
     }
   }
 }

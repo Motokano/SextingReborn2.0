@@ -16,6 +16,8 @@
     "build:seaweed-extract-overview": "npm run build:seaweed-extract-standalone",
     "build:cooking-methods": "node tools/build-cooking-methods-json.mjs",
     "audit:item-keys": "node tools/audit-item-template-keys.mjs",
-    "audit:item-field-rules": "node tools/audit-item-field-display-rules.mjs"
+    "audit:item-field-rules": "node tools/audit-item-field-display-rules.mjs",
+    "audit:convert": "node tools/audit-convert-direction.mjs",
+    "test:ui-windows": "node tools/test-ui-windows.mjs"
   }
 }

@@ -85,7 +85,6 @@ function makeItem(def) {
     category: category,
     sub_category: sub,
     stack_limit: 20,
-    quality: 'white',
     tags: 'material' + (edible ? ';food;perishable' : ''),
     source: 'husbandry',
     spoilage_ticks: spoil,

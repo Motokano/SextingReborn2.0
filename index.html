@@ -575,6 +575,35 @@
         .player-actions-submenu .player-action-item:hover:not(:disabled) { border-color: #fbbf24; background: rgba(45, 36, 30, 0.9); }
         .player-actions-submenu .player-action-item:disabled { opacity: 0.45; cursor: not-allowed; }
         .player-actions-submenu .player-action-item-row { width: 100%; margin: 4px 0; box-sizing: border-box; }
+        /* UI 自由窗口 · 窗口列表菜单（36-ui-windows.md M3） */
+        .ui-windows-menu {
+            display: none; position: absolute; right: calc(100% + 12px); top: 50%; transform: translateY(-50%);
+            min-width: 220px; max-width: min(300px, 85vw); max-height: min(480px, 75vh); overflow-y: auto;
+            background: rgba(28, 22, 18, 0.98); border: 2px solid #4d3f35; border-radius: 8px; padding: 8px 6px;
+            box-shadow: 0 8px 28px rgba(0,0,0,0.5); z-index: 120; pointer-events: auto;
+        }
+        .ui-windows-menu.open { display: block; }
+        .ui-windows-menu .uwm-title {
+            font-size: 11px; font-weight: 800; letter-spacing: 0.12em;
+            color: rgba(251, 191, 36, 0.85); padding: 4px 10px 8px;
+        }
+        .ui-windows-menu .uwm-row {
+            display: flex; align-items: center; gap: 8px; width: 100%; text-align: left;
+            padding: 7px 10px; margin: 2px 0; border-radius: 6px;
+            border: 1px solid #3d2d24; background: rgba(0,0,0,0.35);
+            color: #e8e6e3; font-size: 13px; font-family: inherit; cursor: pointer;
+        }
+        .ui-windows-menu .uwm-row:hover { border-color: #fbbf24; background: rgba(45, 36, 30, 0.9); }
+        .ui-windows-menu .uwm-row input[type="checkbox"] { accent-color: #fbbf24; margin: 0; flex: 0 0 auto; }
+        .ui-windows-menu .uwm-row .uwm-label { flex: 1; }
+        .ui-windows-menu .uwm-sep { border: 0; border-top: 1px solid #3d2d24; margin: 8px 6px; }
+        .ui-windows-menu .uwm-btn {
+            display: block; width: 100%; text-align: left; padding: 8px 10px; margin: 2px 0;
+            border-radius: 6px; border: 1px solid #3d2d24; background: rgba(0,0,0,0.35);
+            color: #a8a29e; font-size: 13px; font-family: inherit; cursor: pointer;
+        }
+        .ui-windows-menu .uwm-btn:hover:not(:disabled) { border-color: #fbbf24; color: #fde68a; background: rgba(45, 36, 30, 0.9); }
+        .ui-windows-menu .uwm-btn:disabled { opacity: 0.45; cursor: not-allowed; }
         /* 背包+装备面板：放大 + 微软雅黑 */
         #modal-backpack {
             display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.78); z-index: 100;
@@ -686,6 +715,7 @@
         #modal-backpack #backpack-detail .tooltip-module-k { color: #8e8a84; }
         #modal-backpack #backpack-detail .tooltip-module-v { color: #d4cec3; text-align: right; }
         #modal-backpack #backpack-detail .tooltip-module-locked-hint { color: #8e8a84; font-size: 11px; }
+        #modal-backpack #backpack-detail .tooltip-module-req { color: #d3a060; font-size: 11px; margin-top: 2px; }
         #modal-backpack .bp-detail-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 14px; }
         #modal-backpack .bp-action-btn {
             border: 1px solid #4d4d45; border-radius: 6px; background: #252520; color: #e0d7c6;
@@ -696,10 +726,59 @@
             font-size: 12px; font-weight: 900; color: #8e8e8e; margin: 0 0 8px 0; letter-spacing: 0.1em; text-transform: uppercase;
         }
         #modal-backpack .equip-list { display: flex; flex-direction: column; gap: 8px; }
+        #modal-backpack .equip-group-title {
+            font-size: 11px; font-weight: 900; color: #d3a060; letter-spacing: 0.08em;
+            margin: 6px 0 0 0; text-transform: uppercase;
+        }
+        #modal-backpack .equip-modules {
+            border: 1px solid #4d4d45; border-radius: 6px; background: #201a14;
+            padding: 8px; margin: 2px 0 8px 0;
+        }
+        #modal-backpack .equip-modules-title {
+            font-size: 10px; font-weight: 900; color: #8e8e8e; letter-spacing: 0.08em;
+            text-transform: uppercase; margin-bottom: 6px;
+        }
+        #modal-backpack .equip-modules-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; }
+        #modal-backpack .equip-module-slot {
+            display: flex; align-items: center; gap: 6px;
+            border: 1px dashed #4d4d45; border-radius: 5px; padding: 4px 6px; background: #1a1512;
+        }
+        #modal-backpack .equip-module-slot.filled { border-style: solid; border-color: #5a8f7a; }
+        #modal-backpack .equip-module-slot .m-label { color: #8e8e8e; font-size: 10px; min-width: 22px; }
+        #modal-backpack .equip-module-slot .m-name { color: #e0d7c6; font-size: 11px; flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        #modal-backpack .equip-module-slot .m-empty { color: #5d5d55; font-size: 11px; flex: 1; }
+        #modal-backpack .btn-module-add,
+        #modal-backpack .btn-module-remove {
+            border: 1px solid #4d4d45; border-radius: 4px; background: #1a1512; color: #d3a060;
+            font-size: 10px; padding: 2px 6px; cursor: pointer;
+        }
+        #modal-backpack .btn-module-add:hover, #modal-backpack .btn-module-remove:hover { border-color: #d3a060; }
+        .module-picker-overlay {
+            position: fixed; inset: 0; background: rgba(0,0,0,0.55); z-index: 1200;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .module-picker {
+            width: 320px; max-height: 70vh; overflow-y: auto;
+            background: #1a1512; border: 1px solid #4d4d45; border-radius: 10px; padding: 10px 12px;
+        }
+        .module-picker-head {
+            display: flex; justify-content: space-between; align-items: center;
+            font-size: 13px; color: #d3a060; font-weight: 700; margin-bottom: 8px;
+        }
+        .module-picker-empty { color: #8e8e8e; font-size: 12px; padding: 10px 4px; }
+        .module-picker-item {
+            border: 1px solid #4d4d45; border-radius: 6px; padding: 6px 8px; margin-bottom: 5px; cursor: pointer;
+        }
+        .module-picker-item:hover { border-color: #d3a060; }
+        .module-picker-item .pi-name { color: #e0d7c6; font-size: 12px; font-weight: 700; display: block; }
+        .module-picker-item .pi-desc { color: #8e8e8e; font-size: 10px; display: block; margin-top: 2px; }
         #modal-backpack .equip-row {
             display: flex; align-items: center; justify-content: space-between; gap: 8px;
             background: #252520; border: 1px solid #4d4d45; border-radius: 6px; padding: 8px;
         }
+        #modal-backpack .equip-row.has-item { cursor: pointer; }
+        #modal-backpack .equip-row.has-item:hover { border-color: #d3a060; }
+        #modal-backpack .equip-row.selected { border-color: #d3a060; box-shadow: 0 0 0 1px rgba(211,160,96,0.35); }
         #modal-backpack .equip-row .slot-name { color: #8e8e8e; font-size: 12px; min-width: 82px; }
         #modal-backpack .equip-row .item-name {
             color: #e0d7c6; font-size: 13px; flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
@@ -1763,27 +1842,27 @@
         }
         #modal-combat .combat-cat-rail-inner,
         #modal-combat .combat-skill-list,
-        #modal-combat .combat-acupoint-list,
+        #modal-combat .combat-muscle-list,
         #modal-combat .combat-config-column {
             scrollbar-width: thin;
             scrollbar-color: rgba(211,160,96,0.6) rgba(26,21,18,0.3);
         }
         #modal-combat .combat-cat-rail-inner::-webkit-scrollbar,
         #modal-combat .combat-skill-list::-webkit-scrollbar,
-        #modal-combat .combat-acupoint-list::-webkit-scrollbar,
+        #modal-combat .combat-muscle-list::-webkit-scrollbar,
         #modal-combat .combat-config-column::-webkit-scrollbar {
             width: 8px;
         }
         #modal-combat .combat-cat-rail-inner::-webkit-scrollbar-track,
         #modal-combat .combat-skill-list::-webkit-scrollbar-track,
-        #modal-combat .combat-acupoint-list::-webkit-scrollbar-track,
+        #modal-combat .combat-muscle-list::-webkit-scrollbar-track,
         #modal-combat .combat-config-column::-webkit-scrollbar-track {
             background: rgba(26,21,18,0.4);
             border-radius: 999px;
         }
         #modal-combat .combat-cat-rail-inner::-webkit-scrollbar-thumb,
         #modal-combat .combat-skill-list::-webkit-scrollbar-thumb,
-        #modal-combat .combat-acupoint-list::-webkit-scrollbar-thumb,
+        #modal-combat .combat-muscle-list::-webkit-scrollbar-thumb,
         #modal-combat .combat-config-column::-webkit-scrollbar-thumb {
             background: linear-gradient(180deg, #d3a060 0%, #8f6840 100%);
             border-radius: 999px;
@@ -1904,7 +1983,7 @@
         }
         .combat-cat-btn:hover { color: #fbbf24; border-color: #57534e; }
         .combat-cat-btn.active { background: #fbbf24; color: #1c1612; border-color: #fbbf24; }
-        /* 经脉总览等弹窗内横向分类条（非战斗面板左侧轨） */
+        /* 肌肉总览等弹窗内横向分类条（非战斗面板左侧轨） */
         .combat-category-tabs { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 12px; }
         #modal-combat .combat-skill-list { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; min-height: 0; padding-right: 4px; }
         #modal-combat .combat-skill-item {
@@ -1923,24 +2002,24 @@
         }
         #modal-combat .combat-skill-item .skill-prof-bar-fill { height: 100%; background: #d3a060; border-radius: 99px; transition: width 0.2s; }
         #modal-combat .combat-skill-item .skill-meta { font-size: 10px; font-weight: 800; color: #8e8e8e; letter-spacing: 0.04em; }
-        #modal-combat .combat-acupoint-list {
+        #modal-combat .combat-muscle-list {
             flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; min-height: 0; padding-right: 4px;
         }
-        #modal-combat .combat-acupoint-item {
+        #modal-combat .combat-muscle-item {
             display: flex; flex-direction: column; padding: 14px; border-radius: 8px;
             border: 2px solid #4d4d45; background: #252520; cursor: pointer;
             transition: border-color 0.2s, background 0.2s;
             gap: 8px;
         }
-        #modal-combat .combat-acupoint-item:hover { border-color: #666; }
-        #modal-combat .combat-acupoint-item.selected { border-color: #ff8c00; background: #2f2c26; box-shadow: 0 0 16px rgba(255,140,0,0.15); }
-        #modal-combat .combat-acupoint-item .acupoint-name {
+        #modal-combat .combat-muscle-item:hover { border-color: #666; }
+        #modal-combat .combat-muscle-item.selected { border-color: #ff8c00; background: #2f2c26; box-shadow: 0 0 16px rgba(255,140,0,0.15); }
+        #modal-combat .combat-muscle-item .muscle-name {
             font-size: 14px; font-weight: 800; letter-spacing: 0.08em; color: #e0d7c6;
         }
-        #modal-combat .combat-acupoint-item .acupoint-meta {
+        #modal-combat .combat-muscle-item .muscle-meta {
             margin-top: 4px; font-size: 11px; color: #ff8c00; font-weight: 700;
         }
-        #modal-combat .combat-acupoint-item .acupoint-desc {
+        #modal-combat .combat-muscle-item .muscle-desc {
             margin-top: 6px; font-size: 12px; color: #8e8e8e;
         }
         #modal-combat .combat-seq-head { margin-top: 4px; }
@@ -1977,9 +2056,9 @@
         }
         #modal-combat .combat-pager-btn:hover:not(:disabled) { border-color: #ff8c00; color: #ff8c00; }
         #modal-combat .combat-pager-btn:disabled { opacity: 0.35; cursor: default; }
-        #modal-combat.combat-acupoint-mode .combat-cat-rail { width: 33.3333%; }
-        #modal-combat.combat-acupoint-mode .combat-cat-rail-inner { align-items: stretch; padding: 0 12px; }
-        #modal-combat.combat-acupoint-mode .combat-cat-rail .combat-cat-btn {
+        #modal-combat.combat-muscle-mode .combat-cat-rail { width: 33.3333%; }
+        #modal-combat.combat-muscle-mode .combat-cat-rail-inner { align-items: stretch; padding: 0 12px; }
+        #modal-combat.combat-muscle-mode .combat-cat-rail .combat-cat-btn {
             width: 100%;
             min-height: 48px;
             border-radius: 8px;
@@ -1990,8 +2069,8 @@
             letter-spacing: 0.04em;
             gap: 8px;
         }
-        #modal-combat.combat-acupoint-mode .combat-cat-rail .combat-cat-lbl { font-size: 12px; max-width: none; word-break: break-word; text-align: left; }
-        #modal-combat.combat-acupoint-mode .combat-skill-column { width: 66.6667%; border-right: none; }
+        #modal-combat.combat-muscle-mode .combat-cat-rail .combat-cat-lbl { font-size: 12px; max-width: none; word-break: break-word; text-align: left; }
+        #modal-combat.combat-muscle-mode .combat-skill-column { width: 66.6667%; border-right: none; }
         #modal-combat .combat-debug-btn {
             padding: 5px 10px; border-radius: 999px;
             background: rgba(255,140,0,0.1); border: 1px solid rgba(255,140,0,0.35);
@@ -2227,28 +2306,44 @@
         #picker-move .picker-list button:hover { background: #d3a060; color: #1a1512; }
         #picker-move .picker-list button .move-prof { font-size: 9px; color: #ff8c00; font-weight: 800; }
         #picker-move .picker-list button:hover .move-prof { color: #1a1512; }
-        #picker-post-effect {
-            display: none; position: fixed; z-index: 300; width: 248px; background: #2d2d28; border: 2px solid #d3a060;
-            border-radius: 8px; box-shadow: 0 16px 48px rgba(0,0,0,0.55); overflow: hidden;
+
+        /* 肌群大型被动装配面板（34 号草案 §3，阶段三） */
+        #modal-combat .combat-muscle-passive-panel {
+            flex: 0 0 auto; max-height: 42%; overflow-y: auto; margin-bottom: 10px;
+            border: 2px solid #4d4d45; border-radius: 8px; background: #201b17;
+            padding: 10px 12px; display: flex; flex-direction: column; gap: 8px;
         }
-        #picker-post-effect.show { display: block; }
-        #picker-post-effect .picker-title {
-            padding: 8px; background: #1a1512; font-size: 9px; font-weight: 800; color: #d3a060;
-            text-transform: uppercase; letter-spacing: 0.12em; text-align: center;
+        #modal-combat .combat-muscle-passive-panel .mp-header {
+            font-size: 10px; font-weight: 900; color: #d3a060; letter-spacing: 0.14em; text-transform: uppercase;
         }
-        #picker-post-effect .picker-list { max-height: 300px; overflow-y: auto; }
-        #picker-post-effect .picker-list button {
-            width: 100%; padding: 12px; text-align: left; border: none; border-bottom: 1px solid rgba(61,45,36,0.5);
-            background: transparent; color: #e8e6e3; font-size: 12px; font-weight: 700;
-            cursor: pointer; display: flex; flex-direction: column; gap: 2px; transition: background 0.2s, color 0.2s;
+        #modal-combat .combat-muscle-passive-panel .mp-slots-summary {
+            font-size: 11px; color: #8e8e8e;
         }
-        #picker-post-effect .picker-list button:hover { background: #d3a060; color: #1a1512; }
-        #picker-post-effect .picker-list .post-desc {
-            font-size: 10px; color: #a8a29e;
-            white-space: pre-line;
-            word-break: break-word;
+        #modal-combat .combat-muscle-passive-panel .mp-passive {
+            display: flex; flex-direction: column; gap: 4px; padding: 8px 10px;
+            border: 1px solid rgba(61,45,36,0.6); border-radius: 6px; background: #252520;
         }
-        #picker-post-effect .picker-list button:hover .post-desc { color: #1a1512; }
+        #modal-combat .combat-muscle-passive-panel .mp-passive-row {
+            display: flex; align-items: center; justify-content: space-between; gap: 10px;
+        }
+        #modal-combat .combat-muscle-passive-panel .mp-passive-name {
+            font-size: 13px; font-weight: 800; color: #e0d7c6;
+        }
+        #modal-combat .combat-muscle-passive-panel .mp-passive-desc {
+            font-size: 11px; color: #a8a29e; white-space: pre-line; word-break: break-word;
+        }
+        #modal-combat .combat-muscle-passive-panel .mp-passive-meta {
+            font-size: 10px; color: #8e8e8e;
+        }
+        #modal-combat .combat-muscle-passive-panel .mp-btn {
+            padding: 4px 12px; border-radius: 9999px; border: 1px solid #d3a060; background: transparent;
+            color: #d3a060; font-size: 11px; font-weight: 800; cursor: pointer; flex-shrink: 0;
+        }
+        #modal-combat .combat-muscle-passive-panel .mp-btn:hover:not(:disabled) { background: #d3a060; color: #1a1512; }
+        #modal-combat .combat-muscle-passive-panel .mp-btn:disabled { opacity: 0.4; cursor: default; border-color: #4d4d45; color: #8e8e8e; }
+        #modal-combat .combat-muscle-passive-panel .mp-equipped {
+            border-color: #ff8c00; background: #2f2c26;
+        }
 
         /* 技能总览弹窗（生存/生活/特殊三分页） - 风格参考 demo.html 右侧 UI */
         #modal-survival {
@@ -2404,80 +2499,6 @@
         #modal-save .save-actions button.primary:hover { background: #facc15; border-color: #facc15; }
         #modal-save .save-divider { height: 1px; background: rgba(63,63,70,0.5); margin: 6px 0; }
 
-        /* 经脉穴位总览中的单行样式（在生存技能基础上稍微精致一点） */
-        #modal-acupoints .survival-row {
-            padding: 10px 8px;
-            border-bottom: 1px solid rgba(63,63,70,0.4);
-            display: flex; align-items: center; justify-content: space-between;
-            gap: 12px;
-        }
-        #modal-acupoints .survival-row:last-child { border-bottom: none; }
-        #modal-acupoints .acupoint-info {
-            display: flex; flex-direction: column; gap: 4px;
-        }
-        #modal-acupoints .acupoint-name-main {
-            font-size: 13px; font-weight: 700; color: #e8e6e3;
-        }
-        #modal-acupoints .acupoint-meta {
-            font-size: 11px; color: #a8a29e;
-        }
-        #modal-acupoints .acupoint-unlock-btn {
-            padding: 4px 10px;
-            border-radius: 9999px;
-            border: 1px solid #fbbf24;
-            background: #fbbf24;
-            color: #1c1612;
-            font-size: 11px;
-            font-weight: 800;
-            cursor: pointer;
-            white-space: nowrap;
-            transition: all 0.15s;
-        }
-        #modal-acupoints .acupoint-unlock-btn:hover:not(:disabled) {
-            background: #facc15;
-            border-color: #facc15;
-        }
-        #modal-acupoints .acupoint-unlock-btn:disabled,
-        #modal-acupoints .acupoint-unlock-btn.unlocked {
-            background: transparent;
-            border-color: #4d3f35;
-            color: #78716c;
-            cursor: default;
-        }
-
-        /* 经脉穴位总览弹窗 - UI 延续生存技能风格 */
-        #modal-acupoints {
-            display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 100;
-            align-items: center; justify-content: center; padding: 24px; pointer-events: auto;
-            font-family: "Microsoft YaHei", "微软雅黑", "PingFang SC", sans-serif;
-        }
-        #modal-acupoints.show { display: flex; }
-        #modal-acupoints .survival-panel {
-            width: 880px; max-width: 96%; max-height: 80vh;
-            background: #1c1612; border: 2px solid rgba(212,163,115,0.3); border-radius: 16px;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.5); display: flex; flex-direction: column; overflow: hidden;
-        }
-        #modal-acupoints .survival-header {
-            height: 60px; border-bottom: 1px solid #3d2d24; display: flex; align-items: center; justify-content: space-between;
-            padding: 0 32px; background: #1c1612; flex-shrink: 0;
-        }
-        #modal-acupoints .survival-header h2 {
-            margin: 0; font-size: 1.1rem; font-weight: 800; color: #fff; letter-spacing: 0.4em; text-transform: uppercase;
-        }
-        #modal-acupoints .survival-header .subtitle {
-            font-size: 10px; color: #78716c; text-transform: uppercase; letter-spacing: 0.12em; margin-top: 4px; font-style: italic;
-        }
-        #modal-acupoints .btn-close {
-            width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
-            background: transparent; border: none; color: #78716c; cursor: pointer; font-size: 16px;
-        }
-        #modal-acupoints .btn-close:hover { background: rgba(185,28,28,0.25); color: #fff; }
-        #modal-acupoints .survival-body {
-            flex: 1; display: flex; flex-direction: column; padding: 20px 28px 24px; min-height: 0; background: #1c1612;
-        }
-        #modal-acupoints .survival-table {
-            flex: 1; overflow-y: auto;
-        }
         /* 物品信息悬浮窗（替代浏览器 title） */
         #item-tooltip { display: none; position: fixed; z-index: 10000; min-width: 200px; max-width: 320px; padding: 12px 14px; background: rgba(28, 22, 18, 0.98); border: 2px solid #d4a373; border-radius: 8px; box-shadow: 0 8px 24px rgba(0,0,0,0.5); pointer-events: none; font-size: 12px; line-height: 1.45; color: #e8e6e3; }
         #item-tooltip.show { display: block; }
@@ -2495,6 +2516,7 @@
         #item-tooltip .tooltip-module-k { color: #8e8a84; }
         #item-tooltip .tooltip-module-v { color: #d4cec3; text-align: right; }
         #item-tooltip .tooltip-module-locked-hint { color: #8e8a84; font-size: 11px; }
+        #item-tooltip .tooltip-module-req { color: #d3a060; font-size: 11px; margin-top: 2px; }
 
         /* 底部对话框：头像 + 台词（固定高度，位于地图正下方） */
         #dialogue-panel {
@@ -2732,6 +2754,115 @@
             cursor: grabbing;
             background: rgba(45, 34, 28, 0.95);
         }
+        /* UI 自由窗口（docs/design/36-ui-windows.md）：拖拽/缩放公共状态类 */
+        .ui-window-dragging { cursor: grabbing !important; user-select: none; }
+        .ui-window-resize-active { background: rgba(251, 191, 36, 0.38) !important; }
+        .ui-window-title {
+            cursor: move;
+            user-select: none;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+        }
+        .ui-window-close {
+            cursor: pointer;
+            border: none;
+            background: transparent;
+            color: #78716c;
+            font-size: 12px;
+            line-height: 1;
+            padding: 2px 4px;
+        }
+        .ui-window-close:hover { color: #fbbf24; }
+        /* UI 自由窗口 · 悬浮把手（M2：左侧状态块 / buff-hud）：
+           绝对定位不占文档流，hover 宿主时浮现；拖动把手 = .ui-window-grip */
+        .ui-window-grip {
+            position: absolute;
+            top: 6px;
+            right: 54px; /* 与 min(30px) / close(8px) 横向排开，避免重叠 */
+            cursor: move;
+            font-size: 12px;
+            line-height: 1;
+            color: rgba(251, 191, 36, 0.5);
+            padding: 2px 4px;
+            border-radius: 4px;
+            user-select: none;
+            opacity: 0;
+            transition: opacity 0.15s;
+            z-index: 6;
+            pointer-events: none; /* 未浮现时不可点击，杜绝拦截相邻按钮 */
+        }
+        .ui-window-host:hover .ui-window-grip { pointer-events: auto; }
+        .ui-window-grip:hover { color: #fbbf24; opacity: 1; }
+        .ui-window-host { position: relative; }
+        .ui-window-host .ui-window-close,
+        .ui-window-host .ui-window-min {
+            position: absolute;
+            top: 6px;
+            z-index: 6;
+            opacity: 0;
+            transition: opacity 0.15s;
+            padding: 2px 4px;
+            cursor: pointer;
+            border: none;
+            background: transparent;
+            color: #78716c;
+            font-size: 12px;
+            line-height: 1;
+        }
+        .ui-window-host .ui-window-close { right: 8px; }
+        .ui-window-host .ui-window-min { right: 30px; }
+        .ui-window-close:hover, .ui-window-min:hover { color: #fbbf24; }
+        .ui-window-host:hover .ui-window-grip,
+        .ui-window-host:hover .ui-window-close,
+        .ui-window-host:hover .ui-window-min { opacity: 1; }
+        /* details 折叠块：把手放 summary 行内、箭头左侧，避免点击折叠冲突 */
+        .details-block summary .ui-window-grip {
+            position: static;
+            margin-right: 8px;
+            opacity: 0;
+        }
+        .details-block:hover summary .ui-window-grip { opacity: 1; }
+        /* UI 自由窗口 · 最小化任务条（RO 式：窗口收起后画面上的可拖拽小条） */
+        .ui-window-bar {
+            position: fixed;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 8px 4px 10px;
+            background: rgba(28, 22, 18, 0.96);
+            border: 1px solid #4d3f35;
+            border-radius: 6px;
+            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.45);
+            cursor: move;
+            user-select: none;
+            z-index: 38; /* 低于对话屏蔽层 z-40 */
+            font-family: "Microsoft YaHei", "微软雅黑", "PingFang SC", sans-serif;
+            max-width: 220px;
+        }
+        .ui-window-bar:hover { border-color: #fbbf24; }
+        .ui-window-bar.ui-window-bar-dragging { cursor: grabbing; background: rgba(45, 36, 30, 0.98); }
+        .ui-window-bar .ui-window-bar-label {
+            font-size: 12px;
+            font-weight: 700;
+            color: #e8e6e3;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .ui-window-bar .ui-window-bar-restore {
+            cursor: pointer;
+            border: 1px solid rgba(251, 191, 36, 0.45);
+            background: rgba(0, 0, 0, 0.35);
+            color: #fde68a;
+            font-size: 12px;
+            line-height: 1;
+            padding: 3px 6px;
+            border-radius: 4px;
+            flex: 0 0 auto;
+        }
+        .ui-window-bar .ui-window-bar-restore:hover { border-color: #fbbf24; color: #fff; background: rgba(45, 36, 30, 0.9); }
         #game-log-panel .game-log-lines {
             flex: 1;
             overflow-y: auto;
@@ -3244,26 +3375,35 @@
                 </div>
             </div>
             <div id="left-hud">
-                <div class="role-card" id="status-role-card">
+                <div class="role-card ui-window-host" id="status-role-card">
+                    <span class="ui-window-grip" data-ui="ui.windows.grip" data-ui-attr="title" title="" aria-hidden="true">⠿</span>
+                    <button type="button" class="ui-window-min" data-ui="ui.windows.minimize_hint" data-ui-attr="title" title="">—</button><button type="button" class="ui-window-close" data-ui="ui.windows.close" data-ui-attr="title" title="">✕</button>
                     <h1 id="status-role-name" data-ui="status.role.default"></h1>
                     <p class="subtitle" id="status-gender-line"></p>
                 </div>
                 <div id="status-scroll">
-                    <div class="status-card" id="status-limbs">
+                    <div class="status-card ui-window-host" id="status-limbs">
+                        <span class="ui-window-grip" data-ui="ui.windows.grip" data-ui-attr="title" title="" aria-hidden="true">⠿</span>
+                        <button type="button" class="ui-window-min" data-ui="ui.windows.minimize_hint" data-ui-attr="title" title="">—</button><button type="button" class="ui-window-close" data-ui="ui.windows.close" data-ui-attr="title" title="">✕</button>
                         <div class="block-title" data-ui="status.block.limbs"></div>
                         <div id="limb-rows"></div>
                     </div>
-                    <div class="status-card" id="status-combat-resources-card" style="display:none">
+                    <div class="status-card ui-window-host" id="status-combat-resources-card" style="display:none">
+                        <span class="ui-window-grip" data-ui="ui.windows.grip" data-ui-attr="title" title="" aria-hidden="true">⠿</span>
+                        <button type="button" class="ui-window-min" data-ui="ui.windows.minimize_hint" data-ui-attr="title" title="">—</button><button type="button" class="ui-window-close" data-ui="ui.windows.close" data-ui-attr="title" title="">✕</button>
                         <div class="block-title" data-ui="status.block.battle_resources"></div>
                         <div id="status-battle-resources" class="survival-row">
                             <div class="row"><span class="label" data-ui="status.label.qi_li"></span><span class="value" id="status-qi-li-text">—</span></div>
                             <div class="progress-wrap"><div class="progress-fill stamina" id="status-qi-li-bar" style="width:0%"></div></div>
-                            <div class="row" style="margin-top:8px"><span class="label" data-ui="status.label.diqi"></span><span class="value" id="status-diqi-text">—</span></div>
+                            <div class="row" style="margin-top:8px"><span class="label" data-ui="status.label.diqi"></span><span class="value" id="status-diqi-text">—</span><button type="button" id="status-diqi-debug-plus50" title="调试：底气上限 +50" style="margin-left:6px;">+50</button></div>
                             <div class="progress-wrap"><div class="progress-fill thirst" id="status-diqi-bar" style="width:0%"></div></div>
                             <div class="row" style="margin-top:6px"><span class="label" data-ui="status.label.diqi_shield"></span><span class="value" id="status-diqi-shield-text">—</span></div>
+                            <div class="row" style="margin-top:6px"><span class="label" data-ui="status.label.stun"></span><span class="value" id="status-stun-text">—</span><button type="button" id="status-stun-debug-plus50" title="调试：眩晕值 +50" style="margin-left:6px;">+50</button></div>
                         </div>
                     </div>
-                    <div class="status-card" id="status-survival">
+                    <div class="status-card ui-window-host" id="status-survival">
+                        <span class="ui-window-grip" data-ui="ui.windows.grip" data-ui-attr="title" title="" aria-hidden="true">⠿</span>
+                        <button type="button" class="ui-window-min" data-ui="ui.windows.minimize_hint" data-ui-attr="title" title="">—</button><button type="button" class="ui-window-close" data-ui="ui.windows.close" data-ui-attr="title" title="">✕</button>
                         <div class="block-title" data-ui="status.block.survival"></div>
                         <div class="survival-row" id="status-metric-satiety">
                             <div class="row"><span class="label" data-ui="status.label.satiety"></span><span class="value" id="status-satiety-text"></span></div>
@@ -3300,13 +3440,17 @@
                         <div class="row" id="status-metric-weight" style="margin-top:8px"><span class="label" data-ui="status.label.weight"></span><span class="value" id="status-weight">—</span></div>
                         <div class="row" style="margin-top:4px"><span class="label" data-ui="status.label.carry"></span><span class="value" id="status-carry">—</span></div>
                     </div>
-                    <div class="status-card" id="status-resources">
+                    <div class="status-card ui-window-host" id="status-resources">
+                        <span class="ui-window-grip" data-ui="ui.windows.grip" data-ui-attr="title" title="" aria-hidden="true">⠿</span>
+                        <button type="button" class="ui-window-min" data-ui="ui.windows.minimize_hint" data-ui-attr="title" title="">—</button><button type="button" class="ui-window-close" data-ui="ui.windows.close" data-ui-attr="title" title="">✕</button>
                         <div class="block-title" data-ui="status.block.resources"></div>
                         <div class="row"><span class="label" data-ui="status.label.potential"></span><span class="value" id="status-potential">—</span></div>
                         <div class="row" style="margin-top:4px"><span class="label" data-ui="status.label.combat_experience"></span><span class="value" id="status-combat-experience">—</span></div>
+                        <div class="row" style="margin-top:4px"><span class="label" data-ui="status.label.study"></span><span class="value" id="status-study">—</span></div>
                     </div>
-                    <details class="details-block" id="status-attrs-block" open>
-                        <summary><span data-ui="status.block.attrs"></span> <span>▼</span></summary>
+                    <details class="details-block ui-window-host" id="status-attrs-block" open>
+                        <summary><span class="ui-window-grip" data-ui="ui.windows.grip" data-ui-attr="title" title="" aria-hidden="true">⠿</span><span data-ui="status.block.attrs"></span> <span>▼</span></summary>
+                        <button type="button" class="ui-window-min" data-ui="ui.windows.minimize_hint" data-ui-attr="title" title="">—</button><button type="button" class="ui-window-close" data-ui="ui.windows.close" data-ui-attr="title" title="">✕</button>
                         <div class="details-body">
                             <div class="row"><span class="label" data-ui="status.attr.jingu"></span><span class="value" id="status-attr-jingu">—</span></div>
                             <div class="row"><span class="label" data-ui="status.attr.flexibility"></span><span class="value" id="status-attr-flexibility">—</span></div>
@@ -3315,8 +3459,9 @@
                             <div class="row"><span class="label" data-ui="status.attr.focus"></span><span class="value" id="status-attr-focus">—</span></div>
                         </div>
                     </details>
-                    <details class="details-block" id="status-attr-exp-block" open>
-                        <summary><span data-ui="status.block.attr_exp"></span> <span>▼</span></summary>
+                    <details class="details-block ui-window-host" id="status-attr-exp-block" open>
+                        <summary><span class="ui-window-grip" data-ui="ui.windows.grip" data-ui-attr="title" title="" aria-hidden="true">⠿</span><span data-ui="status.block.attr_exp"></span> <span>▼</span></summary>
+                        <button type="button" class="ui-window-min" data-ui="ui.windows.minimize_hint" data-ui-attr="title" title="">—</button><button type="button" class="ui-window-close" data-ui="ui.windows.close" data-ui-attr="title" title="">✕</button>
                         <div class="details-body">
                             <div class="row"><span class="label">筋骨经验</span><span class="value" id="status-attr-exp-exp-jingu">0</span><button type="button" id="status-attr-exp-debug-plus-jingu" title="调试：筋骨经验 +50000">+5万</button></div>
                             <div class="row"><span class="label">柔韧经验</span><span class="value" id="status-attr-exp-exp-flexibility">0</span><button type="button" id="status-attr-exp-debug-plus-flexibility" title="调试：柔韧经验 +50000">+5万</button></div>
@@ -3327,8 +3472,10 @@
                     </details>
                 </div>
             </div>
-            <!-- 右侧按钮：背包、生存技能、战斗技能、穴位、特殊技能 -->
-            <div id="buff-hud" aria-label="buff hud">
+            <!-- 右侧按钮：背包、生存技能、战斗技能、肌肉、特殊技能 -->
+            <div id="buff-hud" class="ui-window-host" aria-label="buff hud">
+                <span class="ui-window-grip" data-ui="ui.windows.grip" data-ui-attr="title" title="" aria-hidden="true">⠿</span>
+                <button type="button" class="ui-window-min" data-ui="ui.windows.minimize_hint" data-ui-attr="title" title="">—</button><button type="button" class="ui-window-close" data-ui="ui.windows.close" data-ui-attr="title" title="">✕</button>
                 <div class="buff-hud-section">
                     <div class="buff-hud-title" id="buff-hud-self-title"></div>
                     <div id="buff-hud-player-chips" class="buff-hud-chips"></div>
@@ -3339,6 +3486,10 @@
                 </div>
             </div>
             <div id="right-hud">
+                <div class="hud-dropdown-wrap" id="ui-windows-hud-wrap">
+                    <button type="button" class="hud-btn" id="btn-ui-windows" data-ui="ui.windows.menu" data-ui-attr="title" title="">📑</button>
+                    <div id="ui-windows-menu" class="ui-windows-menu" role="menu" aria-hidden="true"></div>
+                </div>
                 <button type="button" class="hud-btn" id="btn-backpack" data-ui="btn.backpack.title" data-ui-attr="title">🎒</button>
                 <button type="button" class="hud-btn" id="btn-survival" data-ui="btn.skill_overview.title" data-ui-attr="title">🌿</button>
                 <button type="button" class="hud-btn" id="btn-combat" data-ui="btn.combat.title" data-ui-attr="title">⚔️</button>
@@ -3729,7 +3880,7 @@
                         <h2 class="combat-panel-title" data-ui="combat.panel.title"></h2>
                         <nav class="combat-main-tabs" aria-label="模式">
                             <button type="button" class="combat-main-tab active" data-mode="skills" data-ui="combat.tab.skills"></button>
-                            <button type="button" class="combat-main-tab" data-mode="acupoints" data-ui="combat.tab.acupoints"></button>
+                            <button type="button" class="combat-main-tab" data-mode="muscles" data-ui="combat.tab.muscles"></button>
                         </nav>
                     </div>
                     <button type="button" class="combat-close" id="combat-modal-close" aria-label="关闭">✖</button>
@@ -3740,7 +3891,8 @@
                     </aside>
                     <div class="combat-skill-column">
                         <div id="skill-list" class="combat-skill-list"></div>
-                        <div id="acupoint-list" class="combat-acupoint-list"></div>
+                        <div id="muscle-passive-panel" class="combat-muscle-passive-panel" style="display:none"></div>
+                        <div id="muscle-list" class="combat-muscle-list"></div>
                     </div>
                     <div class="combat-config-column">
                         <div class="combat-hub-section combat-hub-compact">
@@ -3800,10 +3952,6 @@
         <div id="picker-move">
             <div class="picker-title" data-ui="picker.move.title"></div>
             <div id="picker-list" class="picker-list"></div>
-        </div>
-        <div id="picker-post-effect">
-            <div class="picker-title" data-ui="picker.post_effect.title"></div>
-            <div id="picker-post-effect-list" class="picker-list"></div>
         </div>
 
         <!-- 技能总览弹窗（生存/生活/特殊三分页） -->
@@ -3873,25 +4021,6 @@
         </div>
 
         <!-- 旧的特殊技能独立弹窗已并入「技能总览」的「特殊技能」分页（见 #modal-survival） -->
-
-
-        <!-- 经脉穴位总览弹窗（独立于战斗技能枢纽） -->
-        <div id="modal-acupoints">
-            <div class="survival-panel">
-                <div class="survival-header">
-                    <div>
-                        <h2 data-ui="acupoints.modal.title"></h2>
-                        <div class="subtitle" data-ui="acupoints.modal.subtitle"></div>
-                    </div>
-                    <button type="button" class="btn-close" id="acupoint-modal-close" aria-label="关闭">✖</button>
-                </div>
-                <div class="survival-body">
-                    <div id="acupoint-cat-tabs" class="combat-category-tabs"></div>
-                    <div id="acupoint-table" class="survival-table"></div>
-                    <div id="acupoint-pager"></div>
-                </div>
-            </div>
-        </div>
 
         <div id="modal-livestock" aria-hidden="true">
             <div class="lv-panel">
@@ -3989,6 +4118,7 @@
     </div>
 
     <script src="js/ui-text.js"></script>
+    <script src="js/ui-windows.js"></script>
     <script src="js/game-engine.js"></script>
     <script src="js/entity-appearance.js"></script>
     <script src="assets/vendor/react/react.production.min.js"></script>
@@ -4010,9 +4140,11 @@
     <script src="js/combat-post-effects.js"></script>
     <script src="js/combat-initiative.js"></script>
     <script src="js/combat-pipeline.js"></script>
+    <script src="js/convert-rules.js"></script>
     <script src="js/combat-enemies.js"></script>
     <script src="js/combat-melee-resolve.js"></script>
-    <script src="js/acupoints.js"></script>
+    
+    <script src="js/muscles.js"></script>
     <script src="js/survival-skills.js"></script>
     <script src="js/production-quality.js"></script>
     <script src="js/item-value.js"></script>

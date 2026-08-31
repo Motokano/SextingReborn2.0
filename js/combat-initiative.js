@@ -9,14 +9,14 @@
     var MOVE_ID_ENEMY_ATTACK = 'enemy_counter_strike';
 
     /**
-     * 从战斗配置中取当前肢体装配的后遗症 id 列表（肢体级）。
+     * 玩家当前攻击生效的后遗症 id 列表（34 号草案阶段三：来源为肌群大型被动的装配；
+     * 生效边界见 Muscles.getEquippedPostEffectIdsForAttack —— 招式形态调用装配肌群才触发，
+     * 侧肌群槽仅同侧出招、中轴肌群槽左右同生效；招式维度的二次校验由 valid_move_ids 在结算时完成）。
+     * @param {{limbId?: string, formTags?: string[]}} [attackInfo] 出招肢体 + 招式形态标签（required_limb_tags）
      */
-    function getPostEffectIdsForMoveSlot(IE, limbId, skillId, moveId) {
-        if (!IE || typeof IE.getCombatState !== 'function' || !limbId || !skillId || !moveId) return [];
-        var c = IE.getCombatState();
-        if (!c || !c.post_effect_sequences) return [];
-        var pid = c.post_effect_sequences[limbId];
-        return pid ? [String(pid)] : [];
+    function getPlayerPostEffectIds(attackInfo) {
+        if (!global.Muscles || typeof global.Muscles.getEquippedPostEffectIdsForAttack !== 'function') return [];
+        return global.Muscles.getEquippedPostEffectIdsForAttack(attackInfo || null);
     }
 
     function hasInitiativeAlwaysFirstAmong(postEffectIds, skillId, moveId) {
@@ -37,7 +37,7 @@
 
     /**
      * 玩家发起普攻交换时的先后手（不含连击多段，由上层按段重复调用或扩展）。
-     * 约定：**先**按取整速度比较先后/同速；**再**叠玩家/敌方 `initiative_always_first` 类后遗症（`attackerPostEffectIds` 依赖本击**已确定**的出招肢与招式槽；地图普攻敌先还击时在 `attackEnemy` 内须推迟到二次选肢后，见 `07-combat-core`）。
+     * 约定：**先**按取整速度比较先后/同速；**再**叠玩家/敌方 `initiative_always_first` 类后遗症（`attackerPostEffectIds` 来源为肌群大型被动的装配，见 `getPlayerPostEffectIds`；地图普攻敌先还击时在 `attackEnemy` 内须推迟到二次选肢后，见 `07-combat-core`）。
      * @param {object} o
      * @param {number} o.playerSpeed 取整后
      * @param {number} o.enemySpeed 取整后
@@ -75,8 +75,9 @@
         var moveSpeedTotalMulEnemy = moveSpeedMulEnemy + (moveSpeedDeltaPctEnemy / 100);
         if (!isFinite(moveSpeedTotalMulPlayer) || moveSpeedTotalMulPlayer <= 0) moveSpeedTotalMulPlayer = 0.05;
         if (!isFinite(moveSpeedTotalMulEnemy) || moveSpeedTotalMulEnemy <= 0) moveSpeedTotalMulEnemy = 0.05;
-        var Vp = Math.floor(VpRaw * moveSpeedTotalMulPlayer) || 0;
-        var Ve = Math.floor(VeRaw * moveSpeedTotalMulEnemy) || 0;
+        // 保留小数比较（05 5.7：内部小数，仅展示取整）；同速 = 精确相等时同时结算
+        var Vp = (VpRaw * moveSpeedTotalMulPlayer) || 0;
+        var Ve = (VeRaw * moveSpeedTotalMulEnemy) || 0;
         if (Vp < 1) Vp = 1;
         if (Ve < 1) Ve = 1;
 
@@ -137,7 +138,7 @@
     }
 
     global.CombatInitiative = {
-        getPostEffectIdsForMoveSlot: getPostEffectIdsForMoveSlot,
+        getPlayerPostEffectIds: getPlayerPostEffectIds,
         hasInitiativeAlwaysFirstAmong: hasInitiativeAlwaysFirstAmong,
         resolvePlayerInitiatedExchange: resolvePlayerInitiatedExchange,
         getEnemyAttackSkillId: getEnemyAttackSkillId,

@@ -23,6 +23,11 @@
     return 90;
   }
 
+  function t(key, vars) {
+    if (window.UIText && typeof window.UIText.t === 'function') return window.UIText.t(key, vars);
+    return key;
+  }
+
   function esc(s) {
     return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
       return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
@@ -30,25 +35,25 @@
   }
 
   function grassStage(h) {
-    if (h == null) return '秃';
-    if (h < 0.3) return '秃';
-    if (h < 0.6) return '稀疏';
-    if (h < 1.0) return '适中';
-    return '茂盛';
+    if (h == null) return t('livestock.grass.bare');
+    if (h < 0.3) return t('livestock.grass.bare');
+    if (h < 0.6) return t('livestock.grass.sparse');
+    if (h < 1.0) return t('livestock.grass.moderate');
+    return t('livestock.grass.lush');
   }
   function compactionStage(c) {
-    if (c == null) return '疏松';
-    if (c < 30) return '疏松';
-    if (c < 55) return '略硬';
-    if (c < 80) return '板结';
-    return '严重';
+    if (c == null) return t('livestock.compact.loose');
+    if (c < 30) return t('livestock.compact.loose');
+    if (c < 55) return t('livestock.compact.slightly_hard');
+    if (c < 80) return t('livestock.compact.crusty');
+    return t('livestock.compact.severe');
   }
   function pollutionStage(p) {
-    if (p == null) return '干净';
-    if (p < 30) return '干净';
-    if (p < 50) return '轻微';
-    if (p < 70) return '中度';
-    return '严重';
+    if (p == null) return t('livestock.pollution.clean');
+    if (p < 30) return t('livestock.pollution.clean');
+    if (p < 50) return t('livestock.pollution.slight');
+    if (p < 70) return t('livestock.pollution.moderate');
+    return t('livestock.pollution.severe');
   }
 
   function speciesIcon(speciesId) {
@@ -86,11 +91,11 @@
     var lv = getLivestockLevel();
     // 旋转倒计时
     var badge = el('livestock-rotate-badge');
-    if (badge) badge.textContent = '⟳ 下次旋转 ' + st.rotation_ticks_remaining + ' tick';
+    if (badge) badge.textContent = t('livestock.badge.rotate', { v: st.rotation_ticks_remaining });
     var lvBadge = el('livestock-level-badge');
-    if (lvBadge) lvBadge.textContent = '畜牧 Lv.' + lv;
+    if (lvBadge) lvBadge.textContent = t('livestock.badge.level', { v: lv });
     var footer = document.querySelector('#modal-livestock .lv-footer');
-    if (footer) footer.textContent = feedbackMsg || '旋转不可控 · 动物随顺时针迁移 · 畜牧等级提升可解锁更多信息';
+    if (footer) footer.textContent = feedbackMsg || t('livestock.footer.hint');
 
     renderOverview(st, lv);
     renderAnimals(st, lv);
@@ -103,7 +108,7 @@
     var grid = el('livestock-overview-grid');
     if (!grid) return;
     var zoneOrder = ['z1', 'z2', 'z3', 'z4'];
-    var zoneLabel = { z1: 'Z1 左上区域', z2: 'Z2 右上区域', z3: 'Z3 右下区域', z4: 'Z4 左下区域' };
+    var zoneLabel = { z1: t('livestock.zone.z1'), z2: t('livestock.zone.z2'), z3: t('livestock.zone.z3'), z4: t('livestock.zone.z4') };
     var armOrder = ['arm1', 'arm4', 'arm2', 'arm3'];
 
     var cells = [];
@@ -117,17 +122,17 @@
       eco.push('☢️ ' + pollutionStage(z.pollution));
       eco.push('🪨 ' + compactionStage(z.compaction));
       // 精确数值按等级解锁
-      if (lv >= 40) eco.push('草 ' + (z.grass_height == null ? '-' : z.grass_height.toFixed(2)) + 'm');
-      if (lv >= 50) eco.push('☢️ ' + (z.pollution == null ? '-' : Math.round(z.pollution)) + '%');
-      if (lv >= 60) eco.push('🪨 ' + (z.compaction == null ? '-' : Math.round(z.compaction)));
+      if (lv >= 40) eco.push(t('livestock.eco.grass', { v: (z.grass_height == null ? '-' : z.grass_height.toFixed(2)) }));
+      if (lv >= 50) eco.push(t('livestock.eco.pollution', { v: (z.pollution == null ? '-' : Math.round(z.pollution)) }));
+      if (lv >= 60) eco.push(t('livestock.eco.compaction', { v: (z.compaction == null ? '-' : Math.round(z.compaction)) }));
       var ecoHtml = eco.map(function (e) { return '<div class="eco-line">' + e + '</div>'; }).join('');
-      var ecoText = ecoHtml || '<div class="eco-line">生态信息未解锁</div>';
+      var ecoText = ecoHtml || '<div class="eco-line">' + t('livestock.eco.locked') + '</div>';
       var sel = selectedZoneId === zoneId ? ' selected' : '';
       var animalHtml = animals.map(function (a) { return animalChip(a); }).join('') ||
-        '<div class="empty-hint" style="padding:2px;font-size:11px;">空</div>';
+        '<div class="empty-hint" style="padding:2px;font-size:11px;">' + t('livestock.empty') + '</div>';
       var corpses = st.animals.filter(function (a) { return a.location_type === 'zone' && a.zone_id === zoneId && a.dead; });
       var corpseHtml = corpses.length
-        ? '<div class="corpse-line" title="' + corpses.map(function (c) { return speciesName(c.species_id) + '（' + corpseCauseText(c) + '）'; }).join('、') + '">💀 尸体 ×' + corpses.length + '（' + corpses.map(function (c) { return corpsePollutionText(c.death_cause); })[0] + '）<button type="button" class="lv-btn" data-clean-zone-corpse="' + zoneId + '">清理</button></div>'
+        ? '<div class="corpse-line" title="' + corpses.map(function (c) { return speciesName(c.species_id) + '（' + corpseCauseText(c) + '）'; }).join(t('livestock.join.sep')) + '">' + t('livestock.corpse.zone', { n: corpses.length, cause: corpses.map(function (c) { return corpsePollutionText(c.death_cause); })[0] }) + '<button type="button" class="lv-btn" data-clean-zone-corpse="' + zoneId + '">' + t('livestock.btn.clear_corpse') + '</button></div>'
         : '';
       return '<div class="zone-cell' + sel + '" data-zone="' + zoneId + '">' +
         '<div class="eco-overlay ' + ecoOverlayClass(zoneId, z) + '"></div>' +
@@ -135,30 +140,30 @@
         '<div class="animal-list">' + animalHtml + '</div>' +
         corpseHtml +
         '<div class="zone-actions">' +
-        '<button type="button" class="lv-btn" data-clean="' + zoneId + '">清扫</button>' +
-        '<button type="button" class="lv-btn" data-till="' + zoneId + '">松土</button>' +
+        '<button type="button" class="lv-btn" data-clean="' + zoneId + '">' + t('livestock.btn.clean') + '</button>' +
+        '<button type="button" class="lv-btn" data-till="' + zoneId + '">' + t('livestock.btn.till') + '</button>' +
         '</div></div>';
     }
     function armHtml(armId, vertical) {
       var a = st.arms[armId] || {};
       var mods = [a.inner, a.front, a.bottom, a.top, a.cw_side, a.ccw_side].filter(function (inst) { return inst && !inst.shadow; });
       var chips = mods.map(moduleChip).join('');
-      if (!chips) chips = '<span class="ov-module-chip ov-module-empty">空</span>';
-      var lbl = { arm1: '一号臂', arm2: '二号臂', arm3: '三号臂', arm4: '四号臂' }[armId];
+      if (!chips) chips = '<span class="ov-module-chip ov-module-empty">' + t('livestock.empty') + '</span>';
+      var lbl = { arm1: t('livestock.arm.1'), arm2: t('livestock.arm.2'), arm3: t('livestock.arm.3'), arm4: t('livestock.arm.4') }[armId];
       var chickens = st.animals.filter(function (x) { return x.location_type === 'coop' && x.arm_id === armId && !x.dead; });
       var chickenHtml = chickens.length ? '<div class="coop-animals">' + chickens.map(function (c) { return animalChip(c, true); }).join('') + '</div>' : '';
       var deadChickens = st.animals.filter(function (x) { return x.location_type === 'coop' && x.arm_id === armId && x.dead; });
       if (deadChickens.length) {
-        chickenHtml += '<div class="corpse-line" title="' + deadChickens.map(function (c) { return speciesName(c.species_id) + '（' + corpseCauseText(c) + '）'; }).join('、') + '">💀 ×' + deadChickens.length +
-          '<button type="button" class="lv-btn" data-clean-arm-corpse="' + armId + '">清理</button></div>';
+        chickenHtml += '<div class="corpse-line" title="' + deadChickens.map(function (c) { return speciesName(c.species_id) + '（' + corpseCauseText(c) + '）'; }).join(t('livestock.join.sep')) + '">' + t('livestock.corpse.arm', { n: deadChickens.length }) +
+          '<button type="button" class="lv-btn" data-clean-arm-corpse="' + armId + '">' + t('livestock.btn.clear_corpse') + '</button></div>';
       }
       return '<div class="arm-cell ' + (vertical ? 'arm-vertical' : 'arm-horizontal') + '" data-arm="' + armId + '">' +
         '<span class="arm-label">' + lbl + '</span><div class="module-slots">' + chips + '</div>' + chickenHtml + '</div>';
     }
     function axisHtml() {
       var mods = [st.axis.slot1, st.axis.slot2].filter(function (inst) { return inst && !inst.shadow; });
-      var chips = mods.map(moduleChip).join('') || '<span class="ov-module-chip ov-module-empty">空</span>';
-      return '<div class="axis-cell" data-arm="axis"><span class="arm-label">轴心</span>' +
+      var chips = mods.map(moduleChip).join('') || '<span class="ov-module-chip ov-module-empty">' + t('livestock.empty') + '</span>';
+      return '<div class="axis-cell" data-arm="axis"><span class="arm-label">' + t('livestock.axis') + '</span>' +
         '<div class="module-slots">' + chips + '</div>' +
         '<div class="rotate-indicator">⟳</div></div>';
     }
@@ -195,7 +200,7 @@
     var upgrading = inst.upgrading_remaining > 0;
     var cls = 'ov-module-chip' + (upgrading ? ' upgrading' : '');
     var lvText = 'Lv' + inst.level + (upgrading ? '⏳' : '');
-    return '<span class="' + cls + '" title="' + m.name + ' Lv' + inst.level + (upgrading ? '（升级中 ' + inst.upgrading_remaining + 't）' : '') + ' · ' + m.desc + '">' +
+    return '<span class="' + cls + '" title="' + m.name + ' Lv' + inst.level + (upgrading ? t('livestock.module.upgrading_title', { v: inst.upgrading_remaining }) : '') + ' · ' + m.desc + '">' +
       moduleIcon(inst.module_id) + ' ' + m.name + ' ' + lvText + '</span>';
   }
   function ecoOverlayClass(zoneId, z) {
@@ -314,27 +319,27 @@
       var sel = a.uid === selectedAnimalUid ? ' selected' : '';
       var sat = (lv >= 10) ? a.satiety.toFixed(0) : satietyStage(a.satiety);
       var hp = (lv >= 70) ? a.hp.toFixed(0) : hpStage(a.hp);
-      var preg = (a.pregnant && lv >= 30) ? '<span class="badge-preg">孕</span>' : '';
+      var preg = (a.pregnant && lv >= 30) ? '<span class="badge-preg">' + t('livestock.pregnant') + '</span>' : '';
       var perk = (lv >= 50) ? perkText(a.perks, lv) : '';
       return '<div class="animal-row' + sel + '" data-uid="' + a.uid + '">' +
         '<span class="animal-ico">' + speciesIcon(a.species_id) + '</span>' +
         '<span class="animal-name">' + speciesName(a.species_id) + ' ' + genderGlyph(a.gender) + preg + '</span>' +
-        '<span class="animal-meta">' + a.weight_kg.toFixed(1) + 'kg · 饱 ' + sat + ' · 血 ' + hp + ' · ' + locationName(a) + '</span>' +
+        '<span class="animal-meta">' + t('livestock.animal.meta', { w: a.weight_kg.toFixed(1), sat: sat, hp: hp, loc: locationName(a) }) + '</span>' +
         '<span class="animal-perk">' + perk + '</span>' +
         '</div>';
     }).join('');
-    list.innerHTML = rows || '<div class="empty-hint">暂无动物</div>';
+    list.innerHTML = rows || '<div class="empty-hint">' + t('livestock.animal.none') + '</div>';
     bindAnimalRows();
 
     renderAnimalDetail(st, lv);
   }
 
-  function satietyStage(s) { if (s == null) return '-'; if (s < 30) return '饥饿'; if (s < 70) return '正常'; return '饱足'; }
-  function hpStage(h) { if (h == null) return '-'; if (h < 30) return '重病'; if (h < 60) return '患病'; if (h < 90) return '亚健康'; return '健康'; }
+  function satietyStage(s) { if (s == null) return '-'; if (s < 30) return t('livestock.satiety.hungry'); if (s < 70) return t('livestock.satiety.normal'); return t('livestock.satiety.full'); }
+  function hpStage(h) { if (h == null) return '-'; if (h < 30) return t('livestock.hp.critical'); if (h < 60) return t('livestock.hp.sick'); if (h < 90) return t('livestock.hp.subhealthy'); return t('livestock.hp.healthy'); }
   function zoneName(z) { return { z1: 'Z1', z2: 'Z2', z3: 'Z3', z4: 'Z4' }[z] || z; }
   function locationName(a) {
     if (a.location_type === 'coop') {
-      return { arm1: '一号臂·鸡笼', arm2: '二号臂·鸡笼', arm3: '三号臂·鸡笼', arm4: '四号臂·鸡笼' }[a.arm_id] || (a.arm_id + '·鸡笼');
+      return { arm1: t('livestock.location.coop_arm', { arm: t('livestock.arm.1') }), arm2: t('livestock.location.coop_arm', { arm: t('livestock.arm.2') }), arm3: t('livestock.location.coop_arm', { arm: t('livestock.arm.3') }), arm4: t('livestock.location.coop_arm', { arm: t('livestock.arm.4') }) }[a.arm_id] || (a.arm_id + t('livestock.location.coop_arm', { arm: '' }));
     }
     return zoneName(a.zone_id);
   }
@@ -344,7 +349,7 @@
       var pdef = window.LivestockState.getPerk(p);
       return pdef ? pdef.name : p;
     });
-    return '特性：' + names.join('、');
+    return t('livestock.perk.label', { names: names.join(t('livestock.join.sep')) });
   }
 
   var PRODUCT_NAMES = { milk: '奶', wool: '毛', blood: '血', egg: '蛋' };
@@ -357,32 +362,32 @@
     if (!box) return;
     var a = null;
     for (var i = 0; i < st.animals.length; i++) if (st.animals[i].uid === selectedAnimalUid) { a = st.animals[i]; break; }
-    if (!a) { box.innerHTML = '<div class="empty-hint">选中一只动物查看详情</div>'; return; }
+    if (!a) { box.innerHTML = '<div class="empty-hint">' + t('livestock.animal.detail_empty') + '</div>'; return; }
     var sp = window.LivestockState.getSpecies(a.species_id);
     var prod = (sp && sp.products && sp.products.living) ? sp.products.living : [];
     var prodRows = prod.map(function (p) {
       var cd = (a.cooldowns && a.cooldowns[p.product_id]) || 0;
-      return '<div class="kv-row"><span>' + productName(p.product_id) + '</span><span>' + (cd > 0 ? '冷却 ' + cd + ' tick' : '可采集') + '</span></div>';
-    }).join('') || '<div class="kv-row"><span>活体产出</span><span>无</span></div>';
+      return '<div class="kv-row"><span>' + productName(p.product_id) + '</span><span>' + (cd > 0 ? t('livestock.cooldown', { v: cd }) : t('livestock.collectable')) + '</span></div>';
+    }).join('') || '<div class="kv-row"><span>' + t('livestock.product.living') + '</span><span>' + t('livestock.product.none') + '</span></div>';
     box.innerHTML =
       '<div class="detail-title">' + speciesName(a.species_id) + ' ' + genderGlyph(a.gender) + '</div>' +
       '<div class="kv-list">' +
-      '<div class="kv-row"><span>阶段</span><span>' + (a.age_ticks < (sp && sp.growth && sp.growth.maturity_ticks ? sp.growth.maturity_ticks : 0) ? '幼体' : '成年') + '</span></div>' +
-      '<div class="kv-row"><span>体重</span><span>' + a.weight_kg.toFixed(1) + ' kg</span></div>' +
-      '<div class="kv-row"><span>饱腹</span><span>' + ((lv >= 10) ? a.satiety.toFixed(0) : satietyStage(a.satiety)) + '</span></div>' +
-      '<div class="kv-row"><span>血量</span><span>' + ((lv >= 70) ? a.hp.toFixed(0) : hpStage(a.hp)) + '</span></div>' +
-      '<div class="kv-row"><span>怀孕</span><span>' + ((lv >= 30 && a.pregnant) ? '剩余 ' + a.pregnant.remaining_ticks + ' tick' : ((lv >= 30) ? '无' : '不可见')) + '</span></div>' +
-      '<div class="kv-row"><span>所在区</span><span>' + locationName(a) + '</span></div>' +
+      '<div class="kv-row"><span>' + t('livestock.detail.stage') + '</span><span>' + (a.age_ticks < (sp && sp.growth && sp.growth.maturity_ticks ? sp.growth.maturity_ticks : 0) ? t('livestock.age.young') : t('livestock.age.adult')) + '</span></div>' +
+      '<div class="kv-row"><span>' + t('livestock.detail.weight') + '</span><span>' + a.weight_kg.toFixed(1) + ' kg</span></div>' +
+      '<div class="kv-row"><span>' + t('livestock.detail.satiety') + '</span><span>' + ((lv >= 10) ? a.satiety.toFixed(0) : satietyStage(a.satiety)) + '</span></div>' +
+      '<div class="kv-row"><span>' + t('livestock.detail.hp') + '</span><span>' + ((lv >= 70) ? a.hp.toFixed(0) : hpStage(a.hp)) + '</span></div>' +
+      '<div class="kv-row"><span>' + t('livestock.detail.pregnant') + '</span><span>' + ((lv >= 30 && a.pregnant) ? t('livestock.pregnant.remaining', { v: a.pregnant.remaining_ticks }) : ((lv >= 30) ? t('livestock.none') : t('livestock.invisible'))) + '</span></div>' +
+      '<div class="kv-row"><span>' + t('livestock.detail.location') + '</span><span>' + locationName(a) + '</span></div>' +
       '</div>' +
-      '<div class="detail-perk">' + ((lv >= 50) ? (perkText(a.perks, lv) || '无特性') : '特性不可见（畜牧 Lv.50 解锁）') + '</div>' +
+      '<div class="detail-perk">' + ((lv >= 50) ? (perkText(a.perks, lv) || t('livestock.perk.none')) : t('livestock.perk.locked')) + '</div>' +
       '<div class="kv-list">' + prodRows + '</div>' +
       '<div class="detail-actions">' +
       (a.location_type === 'zone'
-        ? '<button type="button" class="lv-btn' + (a.zone_id === 'z1' ? ' active' : '') + '" data-move="z1">迁到 Z1</button>' +
-          '<button type="button" class="lv-btn' + (a.zone_id === 'z2' ? ' active' : '') + '" data-move="z2">迁到 Z2</button>' +
-          '<button type="button" class="lv-btn' + (a.zone_id === 'z3' ? ' active' : '') + '" data-move="z3">迁到 Z3</button>' +
-          '<button type="button" class="lv-btn' + (a.zone_id === 'z4' ? ' active' : '') + '" data-move="z4">迁到 Z4</button>'
-        : '<span class="empty-hint" style="padding:0;">鸡笼动物，不参与区域迁移</span>') +
+        ? '<button type="button" class="lv-btn' + (a.zone_id === 'z1' ? ' active' : '') + '" data-move="z1">' + t('livestock.btn.move_to', { zone: 'Z1' }) + '</button>' +
+          '<button type="button" class="lv-btn' + (a.zone_id === 'z2' ? ' active' : '') + '" data-move="z2">' + t('livestock.btn.move_to', { zone: 'Z2' }) + '</button>' +
+          '<button type="button" class="lv-btn' + (a.zone_id === 'z3' ? ' active' : '') + '" data-move="z3">' + t('livestock.btn.move_to', { zone: 'Z3' }) + '</button>' +
+          '<button type="button" class="lv-btn' + (a.zone_id === 'z4' ? ' active' : '') + '" data-move="z4">' + t('livestock.btn.move_to', { zone: 'Z4' }) + '</button>'
+        : '<span class="empty-hint" style="padding:0;">' + t('livestock.coop_no_move') + '</span>') +
       '</div>';
     bindMoveButtons();
   }
@@ -413,57 +418,57 @@
   function renderModules(st, lv) {
     var box = el('livestock-module-content');
     if (!box) return;
-    var armNames = { arm1: '一号臂', arm2: '二号臂', arm3: '三号臂', arm4: '四号臂', axis: '轴心' };
-    var armSlotLabels = { inner: '内部', front: '前端', bottom: '底面', top: '上表面', cw_side: '顺侧', ccw_side: '逆侧' };
+    var armNames = { arm1: t('livestock.arm.1'), arm2: t('livestock.arm.2'), arm3: t('livestock.arm.3'), arm4: t('livestock.arm.4'), axis: t('livestock.axis') };
+    var armSlotLabels = { inner: t('livestock.slot.inner'), front: t('livestock.slot.front'), bottom: t('livestock.slot.bottom'), top: t('livestock.slot.top'), cw_side: t('livestock.slot.cw'), ccw_side: t('livestock.slot.ccw') };
     var armHtml = Object.keys(armNames).map(function (aid) {
       var slots = (aid === 'axis') ? { slot1: st.axis.slot1, slot2: st.axis.slot2 } : st.arms[aid];
       var slotHtml = Object.keys(slots).map(function (sk) {
         var inst = slots[sk];
         var mid = inst && inst.module_id;
         var m = mid ? window.LivestockState.getModule(mid) : null;
-        var label = (aid === 'axis') ? ('位' + sk.replace('slot', '')) : armSlotLabels[sk];
+        var label = (aid === 'axis') ? (t('livestock.axis_slot_prefix') + sk.replace('slot', '')) : armSlotLabels[sk];
         if (inst && inst.shadow) {
           // 影子位：被跨面模块占用
           return '<div class="module-slot shadow-slot">' +
             '<span class="slot-key">' + label + '</span>' +
-            '<span class="slot-val">被 ' + (m ? m.name : mid) + ' 占用</span></div>';
+            '<span class="slot-val">' + t('livestock.slot.occupied_by', { name: (m ? m.name : mid) }) + '</span></div>';
         }
         if (m) {
           var upgrading = inst.upgrading_remaining > 0;
-          var lvText = 'Lv' + inst.level + (upgrading ? ' · 升级中 ' + inst.upgrading_remaining + 't' : '');
+          var lvText = 'Lv' + inst.level + (upgrading ? t('livestock.module.upgrading', { v: inst.upgrading_remaining }) : '');
           var extra = '';
           var extraActions = '';
           if (mid === 'feed_trough') {
-            extra = ' 饲料 ' + (inst.feed_units != null ? inst.feed_units.toFixed(1) : '0') + '/100';
-            extraActions = '<button type="button" class="lv-btn" data-feed="' + aid + '">投喂</button>';
+            extra = t('livestock.feed_units', { v: (inst.feed_units != null ? inst.feed_units.toFixed(1) : '0') });
+            extraActions = '<button type="button" class="lv-btn" data-feed="' + aid + '">' + t('livestock.btn.feed') + '</button>';
           } else if (mid === 'coop') {
-            extraActions = '<button type="button" class="lv-btn" data-feed-chickens="' + aid + '">喂鸡</button>';
+            extraActions = '<button type="button" class="lv-btn" data-feed-chickens="' + aid + '">' + t('livestock.btn.feed_chickens') + '</button>';
           } else if (mid === 'feed_preprocess' || mid === 'feed_refine') {
             var queueN = inst.input_queue ? inst.input_queue.reduce(function (s, q) { return s + q.count; }, 0) : 0;
-            extra = ' 队列 ' + queueN + ' 作物' + (mid === 'feed_refine' && inst.refine_cache > 0 ? ' · 精料缓存 ' + inst.refine_cache.toFixed(1) : '');
-            extraActions = '<button type="button" class="lv-btn" data-process="' + aid + '">投入作物</button>';
+            extra = t('livestock.queue_crops', { n: queueN }) + (mid === 'feed_refine' && inst.refine_cache > 0 ? t('livestock.refine_cache', { v: inst.refine_cache.toFixed(1) }) : '');
+            extraActions = '<button type="button" class="lv-btn" data-process="' + aid + '">' + t('livestock.btn.process') + '</button>';
           } else if (mid === 'climate_control') {
-            var modeNames = { off: '关闭', sunny: '晴朗', shade: '阴凉', humid: '湿润' };
+            var modeNames = { off: t('livestock.mode.off'), sunny: t('livestock.mode.sunny'), shade: t('livestock.mode.shade'), humid: t('livestock.mode.humid') };
             var cdC = inst.mode_switch_cooldown || 0;
-            extra = ' 模式 ' + (modeNames[inst.mode] || '关闭') + (cdC > 0 ? ' · 切换冷却 ' + cdC + 't' : '');
+            extra = t('livestock.mode_label', { mode: (modeNames[inst.mode] || t('livestock.mode.off')) }) + (cdC > 0 ? t('livestock.switch_cooldown', { v: cdC }) : '');
             extraActions =
-              '<button type="button" class="lv-btn" data-climate="sunny">晴朗</button>' +
-              '<button type="button" class="lv-btn" data-climate="shade">阴凉</button>' +
-              (inst.level >= 2 ? '<button type="button" class="lv-btn" data-climate="humid">湿润</button>' : '') +
-              '<button type="button" class="lv-btn" data-climate="off">关闭</button>';
+              '<button type="button" class="lv-btn" data-climate="sunny">' + t('livestock.mode.sunny') + '</button>' +
+              '<button type="button" class="lv-btn" data-climate="shade">' + t('livestock.mode.shade') + '</button>' +
+              (inst.level >= 2 ? '<button type="button" class="lv-btn" data-climate="humid">' + t('livestock.mode.humid') + '</button>' : '') +
+              '<button type="button" class="lv-btn" data-climate="off">' + t('livestock.mode.off') + '</button>';
           } else if (mid === 'waste_heat_recycle') {
-            var hmNames = { fertilizer: '肥料', fuel: '沼气', feed: '虫粉' };
+            var hmNames = { fertilizer: t('livestock.mode.fertilizer'), fuel: t('livestock.mode.fuel'), feed: t('livestock.mode.feed') };
             var outN = inst.output_queue ? inst.output_queue.reduce(function (s, q) { return s + q.count; }, 0) : 0;
-            extra = ' 模式 ' + (hmNames[inst.mode] || '肥料') + ' · 产出 ' + outN + ' 份' + (inst.points ? '（' + inst.points.toFixed(0) + ' 点）' : '');
+            extra = t('livestock.mode_label', { mode: (hmNames[inst.mode] || t('livestock.mode.fertilizer')) }) + t('livestock.output_count', { n: outN }) + (inst.points ? t('livestock.points_suffix', { v: inst.points.toFixed(0) }) : '');
             extraActions =
-              '<button type="button" class="lv-btn" data-heat-mode="fertilizer">肥料</button>' +
-              (inst.level >= 2 ? '<button type="button" class="lv-btn" data-heat-mode="fuel">沼气</button>' : '') +
-              (inst.level >= 4 ? '<button type="button" class="lv-btn" data-heat-mode="feed">虫粉</button>' : '') +
-              (outN > 0 ? '<button type="button" class="lv-btn" data-heat-take="1">提取</button>' : '');
+              '<button type="button" class="lv-btn" data-heat-mode="fertilizer">' + t('livestock.mode.fertilizer') + '</button>' +
+              (inst.level >= 2 ? '<button type="button" class="lv-btn" data-heat-mode="fuel">' + t('livestock.mode.fuel') + '</button>' : '') +
+              (inst.level >= 4 ? '<button type="button" class="lv-btn" data-heat-mode="feed">' + t('livestock.mode.feed') + '</button>' : '') +
+              (outN > 0 ? '<button type="button" class="lv-btn" data-heat-take="1">' + t('livestock.btn.extract') + '</button>' : '');
           } else if (mid === 'link_schedule') {
             var rulesOn = inst.enabled_rules || [];
-            var ruleNames = { till_seed: '翻耕→播种', grass_feed: '草高→投喂', clean_collect: '清净→采集' };
-            extra = ' 联动 ' + (rulesOn.length ? rulesOn.map(function (r) { return ruleNames[r] || r; }).join('、') : '无');
+            var ruleNames = { till_seed: t('livestock.rule.till_seed'), grass_feed: t('livestock.rule.grass_feed'), clean_collect: t('livestock.rule.clean_collect') };
+            extra = t('livestock.link_label', { rules: (rulesOn.length ? rulesOn.map(function (r) { return ruleNames[r] || r; }).join(t('livestock.join.sep')) : t('livestock.link_none')) });
             extraActions = Object.keys(ruleNames).map(function (rid) {
               var on = rulesOn.indexOf(rid) >= 0;
               return '<button type="button" class="lv-btn ' + (on ? 'lv-toggle on' : 'lv-toggle') + '" data-link-rule="' + rid + '">' + ruleNames[rid] + '</button>';
@@ -472,10 +477,10 @@
             var cap = window.LivestockState.getWarehouseCapacity();
             var usage = window.LivestockState.getWarehouseUsage();
             var lvHub = Math.max(1, Math.min(5, inst.level || 1));
-            extra = ' 缓存 ' + usage + '/' + cap;
+            extra = t('livestock.cache_usage', { v: usage, cap: cap });
             if (lvHub >= 2 && cap > 0 && usage / cap > 0.8) extra += ' ⚠️';
             if (usage > 0) {
-              extraActions = '<button type="button" class="lv-btn" data-warehouse-take="axis">提取</button>';
+              extraActions = '<button type="button" class="lv-btn" data-warehouse-take="axis">' + t('livestock.btn.extract') + '</button>';
             }
           }
           var effText = window.LivestockState.getModuleEffectText(mid, inst.level);
@@ -485,13 +490,13 @@
             (effText ? '<span class="module-effect slot-effect">' + effText + '</span>' : '') +
             '<span class="slot-actions">' +
             extraActions +
-            '<button type="button" class="lv-btn" data-upgrade="' + aid + '|' + sk + '">升级</button>' +
-            '<button type="button" class="lv-btn" data-dismount="' + aid + '|' + sk + '">拆</button>' +
+            '<button type="button" class="lv-btn" data-upgrade="' + aid + '|' + sk + '">' + t('livestock.btn.upgrade') + '</button>' +
+            '<button type="button" class="lv-btn" data-dismount="' + aid + '|' + sk + '">' + t('livestock.btn.dismount') + '</button>' +
             '</span></div>';
         }
         var mountable = selectedModuleId ? canMountHere(aid, sk, selectedModuleId) : false;
         var emptyCls = mountable ? ' empty-slot mountable' : ' empty-slot';
-        var emptyVal = mountable ? '点此装配' : '空';
+        var emptyVal = mountable ? t('livestock.slot.mountable') : t('livestock.empty');
         return '<div class="module-slot' + emptyCls + '" data-arm="' + aid + '" data-slot="' + sk + '">' +
           '<span class="slot-key">' + label + '</span>' +
           '<span class="slot-val">' + emptyVal + '</span></div>';
@@ -499,9 +504,9 @@
       return '<div class="arm-card"><div class="arm-card-title">' + armNames[aid] + '</div><div class="arm-slots">' + slotHtml + '</div></div>';
     }).join('');
 
-    var slotNames = { inner: '内部', front: '前端', bottom: '底面', top: '上表面', cw_side: '顺侧', ccw_side: '逆侧' };
+    var slotNames = { inner: t('livestock.slot.inner'), front: t('livestock.slot.front'), bottom: t('livestock.slot.bottom'), top: t('livestock.slot.top'), cw_side: t('livestock.slot.cw'), ccw_side: t('livestock.slot.ccw') };
     var mods = window.LivestockState.allModules();
-    var tierOrder = { '第一层': 1, '第二层': 2, '轴心': 3 };
+    var tierOrder = { [t('livestock.tier.1')]: 1, [t('livestock.tier.2')]: 2, [t('livestock.axis')]: 3 };
     var modList = Object.keys(mods).map(function (k) { return mods[k]; })
       .sort(function (a, b) { return (tierOrder[a.layer] - tierOrder[b.layer]) || a.name.localeCompare(b.name, 'zh'); })
       .map(function (m) {
@@ -509,7 +514,7 @@
         var step = window.LivestockState.getBuildStep(m.tier, 1);
         var cost = step && step.inputs ? step.inputs.map(function (i) { return itemDisplayName(i.item_id) + '×' + i.count; }).join(' ') : '';
         var faces = (m.axis_slot != null)
-          ? ('轴心位' + m.axis_slot)
+          ? t('livestock.axis_slot_full', { v: m.axis_slot })
           : window.LivestockState.expandModuleSlots(m).map(function (s) { return slotNames[s] || s; }).join('+');
         var effText = window.LivestockState.getModuleEffectText(m.module_id, 1);
         return '<div class="module-card' + sel + '" data-module="' + m.module_id + '">' +
@@ -517,17 +522,17 @@
           '<span class="module-name">' + m.name + '</span>' +
           '<span class="module-tier">' + m.layer + ' · ' + tierLabel(m.tier) + '</span>' +
           '<span class="module-desc">' + m.desc + '</span>' +
-          (effText ? '<span class="module-effect">效果：' + effText + '</span>' : '') +
-          '<span class="module-cost">占面：' + faces + ' · 建造：' + (cost || '—') + '</span></div>';
+          (effText ? '<span class="module-effect">' + t('livestock.effect_label', { v: effText }) + '</span>' : '') +
+          '<span class="module-cost">' + t('livestock.cost_label', { faces: faces, cost: (cost || '—') }) + '</span></div>';
       }).join('');
 
     box.innerHTML =
-      '<div class="module-left"><h3 class="section-title">装置模块位（点模块库选中，再点空位装配）</h3>' + armHtml + '</div>' +
-      '<div class="module-right"><h3 class="section-title">模块库</h3><div class="module-list">' + modList + '</div></div>';
+      '<div class="module-left"><h3 class="section-title">' + t('livestock.module_slots_title') + '</h3>' + armHtml + '</div>' +
+      '<div class="module-right"><h3 class="section-title">' + t('livestock.module_library_title') + '</h3><div class="module-list">' + modList + '</div></div>';
 
     bindModuleButtons();
   }
-  function tierLabel(t) { return { small: '小型', medium: '中型', large: '大型', axis: '轴心' }[t] || t; }
+  function tierLabel(t) { var m = { small: t('livestock.tier.small'), medium: t('livestock.tier.medium'), large: t('livestock.tier.large'), axis: t('livestock.tier.axis') }; return m[t] || t; }
 
   function canMountHere(armId, slotKey, moduleId) {
     var m = window.LivestockState.getModule(moduleId);
@@ -554,18 +559,18 @@
 
   function reasonText(r) {
     var map = {
-      unknown_module: '未知模块', unknown_arm: '未知位置', axis_slot_mismatch: '轴心位不匹配',
-      slot_mismatch: '该模块不能装在此面', inner_occupied: '内部空间已被占用', slot_occupied: '该位已有模块',
-      lack_material: '材料不足', slot_empty: '该位为空', upgrading: '升级中', max_level: '已满级',
-      shadow_slot: '该面被跨面模块占用',
-      not_found: '未找到动物', no_product: '该动物无此产物', cooldown: '冷却中', low_hp: '血量不足'
+      unknown_module: t('livestock.reason.unknown_module'), unknown_arm: t('livestock.reason.unknown_arm'), axis_slot_mismatch: t('livestock.reason.axis_slot_mismatch'),
+      slot_mismatch: t('livestock.reason.slot_mismatch'), inner_occupied: t('livestock.reason.inner_occupied'), slot_occupied: t('livestock.reason.slot_occupied'),
+      lack_material: t('livestock.reason.lack_material'), slot_empty: t('livestock.reason.slot_empty'), upgrading: t('livestock.reason.upgrading'), max_level: t('livestock.reason.max_level'),
+      shadow_slot: t('livestock.reason.shadow_slot'),
+      not_found: t('livestock.reason.not_found'), no_product: t('livestock.reason.no_product'), cooldown: t('livestock.reason.cooldown'), low_hp: t('livestock.reason.low_hp')
     };
     var base = map[r.reason] || r.reason;
     if (r.reason === 'lack_material') {
-      base += '（' + itemDisplayName(r.item_id) + ' 需 ' + r.need + '，现有 ' + (r.have || 0) + '）';
+      base += t('livestock.reason.lack_material_detail', { item: itemDisplayName(r.item_id), need: r.need, have: (r.have || 0) });
     }
     if (r.reason === 'cooldown' && r.remaining != null) {
-      base += '（剩 ' + r.remaining + ' tick）';
+      base += t('livestock.reason.cooldown_detail', { v: r.remaining });
     }
     return base;
   }
@@ -574,11 +579,11 @@
     var m = window.LivestockState.getModule(moduleId);
     var r = window.LivestockState.buildModule(armId, slotKey, moduleId);
     if (r.ok) {
-      feedbackMsg = '已装配 ' + (m ? m.name : moduleId);
-      logMsg('装配模块 ' + (m ? m.name : moduleId), 'success');
+      feedbackMsg = t('livestock.msg.assembled', { name: (m ? m.name : moduleId) });
+      logMsg(t('livestock.log.assemble', { name: (m ? m.name : moduleId) }), 'success');
     } else {
-      feedbackMsg = '装配失败：' + reasonText(r);
-      logMsg('装配失败：' + reasonText(r), 'warn');
+      feedbackMsg = t('livestock.msg.assemble_fail', { reason: reasonText(r) });
+      logMsg(t('livestock.msg.assemble_fail', { reason: reasonText(r) }), 'warn');
     }
     selectedModuleId = null;
     render();
@@ -631,15 +636,15 @@
     if (!list) return;
     var crops = listFeedCropsInInventory();
     if (!crops.length) {
-      list.innerHTML = '<div class="empty-hint">背包没有可作饲料的作物</div>';
+      list.innerHTML = '<div class="empty-hint">' + t('livestock.feed.empty_crops') + '</div>';
       return;
     }
-    var modeLabel = feedPickerMode === 'process' ? '投入加工' : '投 1';
+    var modeLabel = feedPickerMode === 'process' ? t('livestock.feed.mode_process') : t('livestock.feed.mode_feed');
     list.innerHTML = crops.map(function (c) {
       var nut = window.LivestockState.getCropNutrition(c.item_id);
       return '<div class="lv-feed-row">' +
         '<span class="feed-name">' + itemDisplayName(c.item_id) + '</span>' +
-        '<span class="feed-meta">营养 ' + nut + ' · 库存 ' + c.count + '</span>' +
+        '<span class="feed-meta">' + t('livestock.feed.meta', { nut: nut, n: c.count }) + '</span>' +
         '<button type="button" class="lv-btn" data-feed-crop="' + c.item_id + '">' + modeLabel + '</button>' +
         '</div>';
     }).join('');
@@ -656,23 +661,23 @@
     var IE = window.InventoryEquipment;
     if (IE && typeof IE.removeCarriedItemsByTemplateId === 'function') {
       var rem = IE.removeCarriedItemsByTemplateId(cropId, 1);
-      if (!rem.ok) { feedbackMsg = '扣除作物失败'; renderFeedPicker(); return; }
+      if (!rem.ok) { feedbackMsg = t('livestock.msg.deduct_crop_fail'); renderFeedPicker(); return; }
     }
     if (feedPickerMode === 'process') {
       var rp = window.LivestockState.feedProcessInput(feedTargetArm, cropId, 1);
       if (rp.ok) {
-        feedbackMsg = '投入 ' + itemDisplayName(cropId) + ' 到加工队列';
-        logMsg('投入 ' + itemDisplayName(cropId) + ' 到饲料加工', 'success');
+        feedbackMsg = t('livestock.msg.feed_add', { name: itemDisplayName(cropId) });
+        logMsg(t('livestock.log.feed_add', { name: itemDisplayName(cropId) }), 'success');
       } else {
-        feedbackMsg = '加工失败：' + reasonText(rp);
+        feedbackMsg = t('livestock.msg.process_fail', { reason: reasonText(rp) });
       }
     } else {
       var r = window.LivestockState.addFeedToTrough(feedTargetArm, cropId, 1);
       if (r.ok) {
-        feedbackMsg = '投喂 ' + itemDisplayName(cropId) + '，饲料 +' + r.added.toFixed(1) + '（当前 ' + r.total.toFixed(1) + '/100）';
-        logMsg('投喂 ' + itemDisplayName(cropId) + ' 到饲料槽', 'success');
+        feedbackMsg = t('livestock.msg.feed', { name: itemDisplayName(cropId), added: r.added.toFixed(1), total: r.total.toFixed(1) });
+        logMsg(t('livestock.log.feed', { name: itemDisplayName(cropId) }), 'success');
       } else {
-        feedbackMsg = '投喂失败：' + reasonText(r);
+        feedbackMsg = t('livestock.msg.feed_fail', { reason: reasonText(r) });
       }
     }
     renderFeedPicker();
@@ -682,10 +687,10 @@
   function doDismount(armId, slotKey) {
     var r = window.LivestockState.dismountModule(armId, slotKey);
     if (r.ok) {
-      feedbackMsg = '已拆卸（材料不退还）';
-      logMsg('拆卸模块（材料不退还）', 'info');
+      feedbackMsg = t('livestock.msg.dismantled');
+      logMsg(t('livestock.log.dismantle'), 'info');
     } else {
-      feedbackMsg = '拆卸失败：' + reasonText(r);
+      feedbackMsg = t('livestock.msg.dismantle_fail', { reason: reasonText(r) });
     }
     render();
   }
@@ -693,11 +698,11 @@
   function doUpgrade(armId, slotKey) {
     var r = window.LivestockState.startUpgrade(armId, slotKey);
     if (r.ok) {
-      feedbackMsg = '开始升级（工程 ' + r.ticks + ' tick）';
-      logMsg('开始模块升级（工程 ' + r.ticks + ' tick）', 'success');
+      feedbackMsg = t('livestock.msg.upgrade_start', { ticks: r.ticks });
+      logMsg(t('livestock.log.upgrade_start', { ticks: r.ticks }), 'success');
     } else {
-      feedbackMsg = '升级失败：' + reasonText(r);
-      logMsg('升级失败：' + reasonText(r), 'warn');
+      feedbackMsg = t('livestock.msg.upgrade_fail', { reason: reasonText(r) });
+      logMsg(t('livestock.msg.upgrade_fail', { reason: reasonText(r) }), 'warn');
     }
     render();
   }
@@ -716,22 +721,22 @@
 
   function doClean(zoneId) {
     var spend = trySpendStamina(10);
-    if (!spend.ok) { feedbackMsg = '体力不足，无法清扫'; logMsg('清扫失败：体力不足', 'warn'); render(); return; }
+    if (!spend.ok) { feedbackMsg = t('livestock.msg.no_stamina_clean'); logMsg(t('livestock.log.clean_fail_stamina'), 'warn'); render(); return; }
     var r = window.LivestockState.cleanZone(zoneId, 10);
     if (r.ok) {
-      feedbackMsg = '清扫完成：区域污染 → ' + Math.round(r.pollution) + '%（-10 体力）';
-      logMsg('清扫区域 ' + zoneName(zoneId) + '，污染 -10%', 'success');
+      feedbackMsg = t('livestock.msg.clean_done', { p: Math.round(r.pollution) });
+      logMsg(t('livestock.log.clean_zone', { zone: zoneName(zoneId) }), 'success');
     }
     render();
   }
 
   function doTill(zoneId) {
     var spend = trySpendStamina(10);
-    if (!spend.ok) { feedbackMsg = '体力不足，无法松土'; logMsg('松土失败：体力不足', 'warn'); render(); return; }
+    if (!spend.ok) { feedbackMsg = t('livestock.msg.no_stamina_till'); logMsg(t('livestock.log.till_fail_stamina'), 'warn'); render(); return; }
     var r = window.LivestockState.tillZone(zoneId, 10);
     if (r.ok) {
-      feedbackMsg = '松土完成：区域板结 → ' + Math.round(r.compaction) + '（-10 体力）';
-      logMsg('松土区域 ' + zoneName(zoneId) + '，板结 -10', 'success');
+      feedbackMsg = t('livestock.msg.till_done', { c: Math.round(r.compaction) });
+      logMsg(t('livestock.log.till_zone', { zone: zoneName(zoneId) }), 'success');
     }
     render();
   }
@@ -739,10 +744,10 @@
   function doFeedChickens(armId) {
     var r = window.LivestockState.feedChickens(armId);
     if (r.ok && r.fed > 0) {
-      feedbackMsg = '已喂食 ' + r.fed + ' 只鸡（饱腹 +20）';
-      logMsg('喂食鸡笼 ' + r.fed + ' 只鸡', 'success');
+      feedbackMsg = t('livestock.msg.fed', { n: r.fed });
+      logMsg(t('livestock.log.feed_chickens', { n: r.fed }), 'success');
     } else {
-      feedbackMsg = '鸡笼里没有鸡';
+      feedbackMsg = t('livestock.msg.no_chickens');
     }
     render();
   }
@@ -752,7 +757,7 @@
     for (var i = 0; i < cards.length; i++) {
       cards[i].addEventListener('click', function () {
         selectedModuleId = this.getAttribute('data-module');
-        feedbackMsg = '已选中模块，点击左侧空位装配';
+        feedbackMsg = t('livestock.msg.select_module_first');
         render();
       });
     }
@@ -840,10 +845,10 @@
   function doClimateMode(mode) {
     var r = window.LivestockState.climateSetMode(mode);
     if (r.ok) {
-      feedbackMsg = '气候模式：' + ({ sunny: '晴朗', shade: '阴凉', humid: '湿润', off: '关闭' }[mode] || mode) + (r.cooldown ? '（冷却 ' + r.cooldown + 't）' : '');
+      feedbackMsg = t('livestock.msg.climate_mode', { mode: ({ sunny: t('livestock.mode.sunny'), shade: t('livestock.mode.shade'), humid: t('livestock.mode.humid'), off: t('livestock.mode.off') }[mode] || mode), cooldown: r.cooldown ? t('livestock.msg.cooldown_suffix', { v: r.cooldown }) : '' });
       logMsg(feedbackMsg, 'success');
     } else {
-      feedbackMsg = '切换失败：' + reasonText(r);
+      feedbackMsg = t('livestock.msg.switch_fail', { reason: reasonText(r) });
       logMsg(feedbackMsg, 'warn');
     }
     render();
@@ -852,19 +857,19 @@
   function doHeatMode(mode) {
     var r = window.LivestockState.wasteHeatSetMode(mode);
     if (r.ok) {
-      feedbackMsg = '废热回收模式：' + ({ fertilizer: '肥料', fuel: '沼气', feed: '虫粉' }[mode] || mode);
+      feedbackMsg = t('livestock.msg.heat_mode', { mode: ({ fertilizer: t('livestock.mode.fertilizer'), fuel: t('livestock.mode.fuel'), feed: t('livestock.mode.feed') }[mode] || mode) });
       logMsg(feedbackMsg, 'success');
     } else {
-      feedbackMsg = '切换失败：' + reasonText(r);
+      feedbackMsg = t('livestock.msg.switch_fail', { reason: reasonText(r) });
     }
     render();
   }
 
   function doHeatTake() {
     var items = window.LivestockState.wasteHeatTakeAll();
-    if (!items || !items.length) { feedbackMsg = '无产出可提取'; render(); return; }
+    if (!items || !items.length) { feedbackMsg = t('livestock.msg.no_output'); render(); return; }
     var gres = giveItems(items);
-    feedbackMsg = '提取废热产出 ' + gres.placed + ' 件' + (gres.dropped > 0 ? '（' + gres.dropped + ' 件掉落地面）' : '');
+    feedbackMsg = t('livestock.msg.heat_extract', { n: gres.placed, extra: gres.dropped > 0 ? t('livestock.msg.dropped_suffix', { n: gres.dropped }) : '' });
     logMsg(feedbackMsg, 'success');
     render();
   }
@@ -872,10 +877,10 @@
   function doLinkToggle(ruleId) {
     var r = window.LivestockState.linkScheduleToggleRule(ruleId);
     if (r.ok) {
-      feedbackMsg = '联动规则已' + (r.enabled.indexOf(ruleId) >= 0 ? '启用' : '停用');
+      feedbackMsg = t('livestock.msg.rule_toggled', { state: r.enabled.indexOf(ruleId) >= 0 ? t('livestock.state.enabled') : t('livestock.state.disabled') });
       logMsg(feedbackMsg, 'success');
     } else {
-      feedbackMsg = '切换失败：' + reasonText(r);
+      feedbackMsg = t('livestock.msg.switch_fail', { reason: reasonText(r) });
     }
     render();
   }
@@ -884,12 +889,12 @@
   function doWarehouseTake() {
     var items = window.LivestockState.warehouseTakeAll();
     if (!items || !items.length) {
-      feedbackMsg = '缓存为空';
+      feedbackMsg = t('livestock.msg.cache_empty');
       render();
       return;
     }
     var gres = giveItems(items);
-    feedbackMsg = '提取缓存 ' + gres.placed + ' 件产物' + (gres.dropped > 0 ? '（' + gres.dropped + ' 件掉落地面）' : '');
+    feedbackMsg = t('livestock.msg.cache_extract', { n: gres.placed, extra: gres.dropped > 0 ? t('livestock.msg.dropped_suffix', { n: gres.dropped }) : '' });
     logMsg(feedbackMsg, 'success');
     render();
   }
@@ -906,11 +911,11 @@
       if (!sp) return;
       if (a.dead) {
         var cause = corpseCauseText(a);
-        var loc = a.location_type === 'coop' ? ('鸡笼' + (a.arm_id || '')) : (a.zone_id ? ('区域 ' + a.zone_id.toUpperCase()) : '');
+        var loc = a.location_type === 'coop' ? t('livestock.loc.coop', { v: (a.arm_id || '') }) : (a.zone_id ? t('livestock.loc.zone', { v: a.zone_id.toUpperCase() }) : '');
         var pollHint = corpsePollutionText(a.death_cause);
         corpseRows.push('<div class="product-row">💀 ' + speciesName(a.species_id) + ' ' + genderGlyph(a.gender) +
           ' <span class="meta">' + cause + ' · ' + loc + ' · ' + pollHint + '</span>' +
-          '<button type="button" class="lv-btn" data-clean-corpse="' + a.uid + '">清理(+50)</button></div>');
+          '<button type="button" class="lv-btn" data-clean-corpse="' + a.uid + '">' + t('livestock.btn.clean_corpse50') + '</button></div>');
         return;
       }
       if (!sp.products) return;
@@ -925,32 +930,32 @@
         collectRows.push('<div class="product-row">' + speciesIcon(a.species_id) + ' ' + speciesName(a.species_id) + ' ' + genderGlyph(a.gender) +
           ' <span class="meta">' + livingText(a, sp) + '</span>' +
           '<span class="product-btns">' + prodBtns +
-          '<button type="button" class="lv-btn" data-collect="' + a.uid + '">全部</button></span></div>');
+          '<button type="button" class="lv-btn" data-collect="' + a.uid + '">' + t('livestock.btn.collect_all') + '</button></span></div>');
       }
       slaughterRows.push('<div class="product-row">' + speciesIcon(a.species_id) + ' ' + speciesName(a.species_id) + ' ' + genderGlyph(a.gender) +
         ' <span class="meta">' + a.weight_kg.toFixed(1) + ' kg</span>' +
-        '<button type="button" class="lv-btn" data-slaughter="' + a.uid + '">屠宰</button></div>');
+        '<button type="button" class="lv-btn" data-slaughter="' + a.uid + '">' + t('livestock.btn.slaughter') + '</button></div>');
     });
     box.innerHTML =
-      '<div class="product-col"><h3 class="section-title">活体采集</h3>' + (collectRows.join('') || '<div class="empty-hint">无可采集动物</div>') + '</div>' +
-      '<div class="product-col"><h3 class="section-title">屠宰</h3>' + (slaughterRows.join('') || '<div class="empty-hint">无可屠宰动物</div>') + '</div>' +
-      '<div class="product-col"><h3 class="section-title">尸体</h3>' + (corpseRows.join('') || '<div class="empty-hint">无尸体</div>') + '</div>';
+      '<div class="product-col"><h3 class="section-title">' + t('livestock.tab.collect') + '</h3>' + (collectRows.join('') || '<div class="empty-hint">' + t('livestock.collect.none') + '</div>') + '</div>' +
+      '<div class="product-col"><h3 class="section-title">' + t('livestock.tab.slaughter') + '</h3>' + (slaughterRows.join('') || '<div class="empty-hint">' + t('livestock.slaughter.none') + '</div>') + '</div>' +
+      '<div class="product-col"><h3 class="section-title">' + t('livestock.tab.corpse') + '</h3>' + (corpseRows.join('') || '<div class="empty-hint">' + t('livestock.corpse.none') + '</div>') + '</div>';
     bindProductButtons();
   }
   function corpseCauseText(a) {
-    var map = { disease: '病死', starvation: '饿死', blood_loss: '失血', old: '老死' };
-    return map[a.death_cause] || '死亡';
+    var map = { disease: t('livestock.corpse_cause.disease'), starvation: t('livestock.corpse_cause.starvation'), blood_loss: t('livestock.corpse_cause.blood_loss'), old: t('livestock.corpse_cause.old') };
+    return map[a.death_cause] || t('livestock.corpse_cause.death');
   }
   function corpsePollutionText(cause) {
     var rate = { disease: 0.006, starvation: 0.003, blood_loss: 0.002, old: 0.002 }[cause] || 0;
-    if (rate <= 0) return '无污染';
-    return '污染 +' + (rate * 1000).toFixed(0) + '‰/t';
+    if (rate <= 0) return t('livestock.pollution.none');
+    return t('livestock.pollution.rate', { v: (rate * 1000).toFixed(0) });
   }
   function livingText(a, sp) {
     var parts = [];
     sp.products.living.forEach(function (p) {
       var cd = (a.cooldowns && a.cooldowns[p.product_id]) || 0;
-      parts.push(productName(p.product_id) + (cd > 0 ? '(冷却' + cd + ')' : '✓'));
+      parts.push(productName(p.product_id) + (cd > 0 ? t('livestock.product.cooldown', { v: cd }) : '✓'));
     });
     return parts.join(' ');
   }
@@ -964,7 +969,7 @@
     items.forEach(function (it) {
       var c = Math.max(1, Math.floor(it.count) || 1);
       for (var i = 0; i < c; i++) {
-        var inst = { item_id: it.item_id, count: 1, quality_tier: 0 };
+        var inst = { item_id: it.item_id, count: 1 };
         var pr = (typeof IE.putItemIntoDefaultContainer === 'function') ? IE.putItemIntoDefaultContainer(inst) : null;
         if (pr && pr.placed) {
           placed++;
@@ -1008,15 +1013,15 @@
     });
     if (got.length) {
       addExp(100);
-      logMsg('采集 ' + speciesName(a.species_id) + ' ' + genderGlyph(a.gender) + '：' + got.map(productName).join('、') + '，畜牧经验 +100', 'success');
+      logMsg(t('livestock.log.collect', { species: speciesName(a.species_id), gender: genderGlyph(a.gender), items: got.map(productName).join(t('livestock.join.sep')) }), 'success');
       if (hpBefore !== a.hp) {
-        logMsg('抽血使 ' + speciesName(a.species_id) + ' 血量 ' + hpBefore + ' → ' + a.hp, 'warn');
+        logMsg(t('livestock.log.blood', { species: speciesName(a.species_id), from: hpBefore, to: a.hp }), 'warn');
       }
       if (dropped > 0) {
-        logMsg('背包已满，' + dropped + ' 件产物掉落在地面', 'warn');
+        logMsg(t('livestock.log.backpack_full', { n: dropped }), 'warn');
       }
     }
-    feedbackMsg = got.length ? ('已采集：' + got.map(productName).join('、') + ' → 已入背包') : '无可采集（冷却中或血量不足）';
+    feedbackMsg = got.length ? t('livestock.msg.collected_multi', { items: got.map(productName).join(t('livestock.join.sep')) }) : t('livestock.msg.collect_none');
     render();
   }
 
@@ -1032,13 +1037,13 @@
     if (r.ok) {
       var gres = giveItems([{ item_id: r.item_id, count: r.count }]);
       addExp(100);
-      var msg = '采集 ' + speciesName(a.species_id) + ' ' + genderGlyph(a.gender) + '：' + productName(productId) + '，畜牧经验 +100';
-      if (hpBefore !== a.hp) msg += '（抽血 ' + hpBefore + '→' + a.hp + '）';
-      if (gres.dropped > 0) msg += '；背包已满，' + gres.dropped + ' 件掉落地面';
+      var msg = t('livestock.log.collect_one', { species: speciesName(a.species_id), gender: genderGlyph(a.gender), item: productName(productId) });
+      if (hpBefore !== a.hp) msg += t('livestock.log.blood_suffix', { from: hpBefore, to: a.hp });
+      if (gres.dropped > 0) msg += t('livestock.log.dropped_suffix2', { n: gres.dropped });
       logMsg(msg, 'success');
-      feedbackMsg = '已采集：' + productName(productId) + ' → 已入背包';
+      feedbackMsg = t('livestock.msg.collected', { item: productName(productId) });
     } else {
-      feedbackMsg = '采集失败：' + reasonText(r);
+      feedbackMsg = t('livestock.msg.collect_fail', { reason: reasonText(r) });
       logMsg(feedbackMsg, 'warn');
     }
     render();
@@ -1062,10 +1067,10 @@
       var n = gres.placed;
       var exp = slaughterExp(speciesId, weight);
       addExp(exp);
-      logMsg('屠宰 ' + spName + '（' + weight.toFixed(1) + 'kg），获得 ' + n + ' 件物品' + (gres.dropped > 0 ? '（' + gres.dropped + ' 件掉落地面）' : '') + '，畜牧经验 +' + exp, 'success');
-      feedbackMsg = '屠宰完成：' + n + ' 件物品已入背包';
+      logMsg(t('livestock.log.slaughter', { species: spName, weight: weight.toFixed(1), n: n, extra: gres.dropped > 0 ? t('livestock.msg.dropped_suffix', { n: gres.dropped }) : '', exp: exp }), 'success');
+      feedbackMsg = t('livestock.msg.slaughter_done', { n: n });
     } else {
-      feedbackMsg = '屠宰失败';
+      feedbackMsg = t('livestock.msg.slaughter_fail');
     }
     render();
   }
@@ -1074,10 +1079,10 @@
     var r = window.LivestockState.cleanCorpse(uid);
     if (r.ok) {
       addExp(50);
-      logMsg('清理尸体，畜牧经验 +50', 'success');
-      feedbackMsg = '尸体已清理';
+      logMsg(t('livestock.log.corpse_clean'), 'success');
+      feedbackMsg = t('livestock.msg.corpse_cleaned');
     } else {
-      feedbackMsg = '尸体不存在';
+      feedbackMsg = t('livestock.msg.no_corpse');
     }
     render();
   }
@@ -1094,10 +1099,10 @@
     }
     if (n > 0) {
       addExp(50 * n);
-      logMsg('清理 ' + n + ' 具尸体，畜牧经验 +' + (50 * n), 'success');
-      feedbackMsg = '清理 ' + n + ' 具尸体';
+      logMsg(t('livestock.log.corpse_clean_n', { n: n, exp: (50 * n) }), 'success');
+      feedbackMsg = t('livestock.msg.corpse_clean_n', { n: n });
     } else {
-      feedbackMsg = '此处无尸体';
+      feedbackMsg = t('livestock.msg.no_corpse_here');
     }
     render();
   }
@@ -1141,7 +1146,7 @@
     var btn = el('livestock-tick-toggle');
     if (!btn) return;
     btn.classList.toggle('on', !!enabled);
-    btn.textContent = enabled ? '时间流逝：开' : '时间流逝：关';
+    btn.textContent = enabled ? t('livestock.timeflow.on') : t('livestock.timeflow.off');
   }
 
   function init() {

@@ -56,7 +56,9 @@
         M0_Base_Outside_lv_1: { map_id: 'M0_Base_Outside_lv_1', name: '', width: 16, height: 16, blocks: [], portals: [] },
         M0_Field_01: { map_id: 'M0_Field_01', name: '', width: 16, height: 16, blocks: [], portals: [] },
         M0_Field_02: { map_id: 'M0_Field_02', name: '', width: 16, height: 16, blocks: [], portals: [] },
-        M0_JInmuTown_01: { map_id: 'M0_JinmuTown_01', name: '', width: 18, height: 18, blocks: [], portals: [] }
+        M0_JInmuTown_01: { map_id: 'M0_JinmuTown_01', name: '', width: 18, height: 18, blocks: [], portals: [] },
+        /** 临时战斗测试场（验证 07/08 战斗闭环用）；真实数据在 data/maps/test_combat.json */
+        test_combat: { map_id: 'test_combat', name: '', width: 10, height: 10, blocks: [], portals: [] }
     };
 
     var state = {

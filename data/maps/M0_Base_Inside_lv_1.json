@@ -751,6 +751,14 @@
       "target_x": 7,
       "target_y": 5,
       "label": "出门"
+    },
+    {
+      "x": 6,
+      "y": 15,
+      "target_map_id": "test_combat",
+      "target_x": 5,
+      "target_y": 8,
+      "label": "战斗测试"
     }
   ],
   "npcs": [

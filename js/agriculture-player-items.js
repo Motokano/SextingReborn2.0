@@ -231,8 +231,7 @@
                 ok: true,
                 item: {
                     item_id: cell.item_id,
-                    count: takeN,
-                    quality_tier: cell.quality_tier != null ? cell.quality_tier : 0
+                    count: takeN
                 },
                 consumed: mapHideoutConsumedRows(pay.consumed)
             };
@@ -268,8 +267,7 @@
             ok: true,
             item: {
                 item_id: lastTaken.item_id,
-                count: takeN,
-                quality_tier: lastTaken.quality_tier != null ? lastTaken.quality_tier : 0
+                count: takeN
             }
         };
     }

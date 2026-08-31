@@ -11,7 +11,7 @@
   | 力量负重系数（每级力量 +x% 总负重） | `strength_carry_weight_pct_per_level` | 0.01 |
   | 基础移动体力（未超重时每格消耗） | `move_energy_cost_base` | 1 |
   | 超重体力系数 k（每超 10% 加 k×0.1 体力） | `move_energy_overweight_k` | 20 |
-  | 兵器先天筋骨超额增伤系数（每超 1 点 +x%） | `weapon_innate_jingu_bonus_pct_per_point` | 0.05 |
+  | 兵器先天筋骨要求默认值（无 `req_innate_jingu` 时） | `weapon_req_innate_jingu_default` | 20 |
   | 呼吸每点对底气上限加成（+x%） | `breath_diqi_cap_pct_per_point` | 0.01 |
   | 身手每点对速度加成（+x%） | `dexterity_speed_pct_per_point` | 0.005 |
   | 未挂载步法 hub 时默认 \(V_{\text{base}}\) | `base_speed_no_footwork`（兼容旧键 `base_speed_no_qinggong`） | 1 |
@@ -43,11 +43,11 @@
 - **超重体力系数 k**：`overweight_k` → `move_energy_overweight_k`
 - **k_筋骨 偏移**：`k_jingu_offset` → `melee_jingu_offset`
 - **k_筋骨 除数**：`k_jingu_divisor` → `melee_jingu_divisor`
-- **兵器先天筋骨超额增伤系数**：`weapon_jingu_bonus_coef` → `weapon_innate_jingu_bonus_pct_per_point`
+- **兵器先天增伤（已取消）**：兵器**无**先天筋骨增伤（徒手特色，见 `05` 5.5.3）；旧键 `weapon_jingu_bonus_coef` / `weapon_innate_jingu_bonus_pct_per_point` 已废弃删除。
 
 - **武器表**：武器应有属性（含 `req_innate_jingu` 等）在后续设计「武器属性」时一并汇总，再出表结构。
-- **技能/招式配置**：出力相关（默认成数、**气力/底气**基础或比例消耗、体力等）以 **`skill_id`** 关联；具体为每招式一行或嵌套在技能 JSON 内，以实际策划表结构为准。
-- **底气 / 气力比例消耗取整（与 `11-skills` 刺拳及同类一致）**：凡配置为「**方案 1**」的扣 **底气** 或扣 **气力值**（先定十成基准再 × 成数/10，且基准夹紧 `[min,max]`）：**步骤 A** \(B=\mathrm{clamp}(\lfloor D_{\max}\times r\rfloor,\,d_{\min},\,d_{\max})\)，其中 \(D_{\max}\) 分别为当前 `diqi_max` 或 `qi_li_max`，\(r\) 与 \(d_{\min},d_{\max}\) 来自招式配置（刺拳示例：底气 \(r=0.1\)、夹紧 \([1,50]\)；气力 \(r=0.2\)、夹紧 \([1,50]\)）；**步骤 B** \(C=B\times(k/10)\)，\(k\) 为成数；**步骤 C** 实际扣除整数 \(\max(1,\,\mathrm{round}(C))\)，再与 `diqi_current` 或 `qi_li_current` 取 min 扣减。全项目统一，勿混用「先乘成数再夹紧」或其它取整函数，除非新招式在文档中单条声明例外。
+- **技能/招式配置**：出力相关（默认成数、**底气**基础或比例消耗、体力等）以 **`skill_id`** 关联；具体为每招式一行或嵌套在技能 JSON 内，以实际策划表结构为准。**呼吸条（气力）变动不在招式配置中声明**：由呼吸法 **`breath_bar.action_delta`**（按动作标签档位）定义，见 `11` 8.3.3。
+- **底气比例消耗取整（与 `11-skills` 刺拳及同类一致）**：凡配置为「**方案 1**」的扣 **底气**（先定十成基准再 × 成数/10，且基准夹紧 `[min,max]`）：**步骤 A** \(B=\mathrm{clamp}(\lfloor D_{\max}\times r\rfloor,\,d_{\min},\,d_{\max})\)，其中 \(D_{\max}\) 为当前 `diqi_max`，\(r\) 与 \(d_{\min},d_{\max}\) 来自招式配置（刺拳示例：底气 \(r=0.1\)、夹紧 \([1,50]\)）；**步骤 B** \(C=B\times(k/10)\)，\(k\) 为成数；**步骤 C** 实际扣除整数 \(\max(1,\,\mathrm{round}(C))\)，再与 `diqi_current` 取 min 扣减。全项目统一，勿混用「先乘成数再夹紧」或其它取整函数，除非新招式在文档中单条声明例外。**气力（呼吸条）不走本公式，改走核心条件模式**：其消耗 = 呼吸法 `action_delta` 档位值 × k/10 缩放（可为正/负，夹紧 `[0, qi_li_max]`）；出招前检查核心条件 `usage_conditions.check`（默认 `pay_move_cost`），**不满足**时按 `on_unsatisfied` 接管（默认 **伤害降为 0 + 气力扣至 0 + 仍走完整命中/招架/减伤链**），见 `07`、`11` 8.3.3。
 - **徒手 \(W_{\text{coef}}\) 合成顺序**：与 `11-skills` 8.3.2 一致：**\(W_{\text{skill}}\) → 招式乘子 \(M_{\text{move}}\)（`move_power_multiplier`，默认 1；刺拳 0.8、正蹬 1.2、鞭腿 1.0、摆拳 1.4，余见 `11`）→ 手套 \(G\) → 试探 \(K_{\text{试探}}\)**（仅摆拳 `swing_punch`），再与武器基础伤害相乘。
 - **呼吸法威力 \(F_{\text{呼吸法威力}}\)**：挂载 **`hubs.breath`** 的技能若为 `category: breath` 且配置了 **`breath_power_multiplier`**，算伤侧调用 **`CombatSkills.getBreathPowerMultiplier(skillId, move_usage)`**（见 `11` 8.3.3、`05` 5.5.2）；**应乘入 \(W_{\text{skill}}\)**，与 `Base(L)`、招式熟练度等顺序以 `11`/`08` 为准。未挂载或非 breath：**1**。
 - **三类型伤害后处理（新增）**：`resolvePlayerVsEnemyAttack` 在主公式产出 `rawDamage` + `damageType` 后进入三类型池 `typedDamage={blunt,slash,pierce}`。结算顺序固定：**前置注入（`add_flat`/`add_from_pct`）→ 首轮类型增伤（`increase_pct`）→ 单向转换（仅 `blunt_to_slash`、`slash_to_pierce`，同向多条先求和一次转换）→ 转换后二次增伤（仅新增目标类型分量）**。全程保留小数，仅 `finalDamage` 落地时 `floor`。禁止反向转换，避免递归套娃。实现接线：`js/combat-melee-resolve.js`（生成 `typedDamage`）、`js/scene-app.js`（透传上下文）、`js/combat-pipeline.js`（敌方按三类型分量减伤后汇总）。
@@ -59,18 +59,19 @@
 
 | 主题 | 依据 | 摘要 |
 |------|------|------|
-| 肢上招式熟练度与后天奖励 | `11` 8.3.1、`05` 5.4 | `proficiency_attr_unlocks`；`move_usage`；`recalcCharacterStats` |
-| 基本拳脚分轨 | `11` 8.3.2、agent 规则 | 后遗症 vs `proficiency_attr_unlocks` |
+| 肢上招式熟练度 | `11` 8.3.1、`05` 5.4 | `move_usage`；**不再提供后天五维**（`proficiency_attr_unlocks` 机制已删除，见 05 5.4） |
+| 基本拳脚分轨 | `11` 8.3.2、agent 规则 | 后遗症 vs 招式熟练度解锁（后遗症已迁肌群大型被动，见 `34`） |
 | **基本呼吸法** 显示名 | `data/combat-skills.json`、`19` §6、`11` 8.3.3 | 全文统一 **「基本呼吸法」**；技能 ID 仍为 **`combat_basic_breath`** |
-| **吐纳** 入口 | `19` §6.4、`11` 8.3.3 | **「动作」**二级菜单；**不**要求武学枢纽独立战斗条（可选快捷除外） |
-| **冷却** | `19` §6 总述 | **`skills[combat_basic_breath].hub_action_cooldown_ticks[hub_action_id]`**（如 **`tu_na`**），战斗 tick 递减 |
-| **熟练度累计** | `19` §6 总述 | **血气化劲 / 吐气纳精 / 调息 / 吐纳** 成功结算均 **`move_usage.tu_na` +1**；调息 **每成功 1 tick** +1 |
-| **底气护体** `diqi_huti` | `19` §6.6、`11` 8.3.3、`06` 底气护体示例 | **≥50** 级；**战斗**；**\(B=\lfloor diqi_{\max}\times r\rfloor\)**，`r`=`diqi_consume_ratio_of_max`（0.5）；**\(C=\max(d_{\min},B)\)**，`d_{\min}`=`diqi_consume_min`（**1**，底气消耗下限夹紧）；**`diqi_max=0`** 整次失败 → **`shield_value=C`**；**三系 25%**（`shield_tri_type_damage_reduce_pct`）；**无 duration tick**；**护体未破不可重复开**；**不累加 `tu_na`** |
-| **`getSkillTotalProficiency` hub 排除** | `11` 8.3.3、`js/combat-skills.js` | **`hub_actions[].exclude_from_skill_total_proficiency: true`** 的条目 **不参与** 算术平均（**底气护体** 已用，避免稀释吐纳对 **`breath_power_multiplier`** 的影响） |
+| **呼吸条（气力）** | `07`「气力值＝呼吸条」、`11` 8.3.3 | **形态完全由呼吸法 `breath_bar` 定义**：上限（`max_base`/`max_growth`，可成长/不成长/倒扣）、恢复（`regen`，按完整轮次）、动作档位变动值（`action_delta`，按动作标签，**可为正/负**，按成数 \(k\) 缩放）、状态（`states` 预留）；**未挂载呼吸法 → 无呼吸条**；**切换呼吸法 = 1 tick + 清零重攒** |
+| **吐纳** 入口 | `19` §6.4（已取消）、`11` 8.3.3 | **已取消**：呼吸条恢复无主动回气动作，仅由 `breath_bar.regen` 被动模型负责 |
+| **冷却** | `19` §6 总述 | **`skills[combat_basic_breath].hub_action_cooldown_ticks[hub_action_id]`**，战斗 tick 递减 |
+| **熟练度累计** | `19` §6 总述 | **血气化劲 / 吐气纳精 / 调息** 成功结算均 **`move_usage.tu_na` +1**；调息 **每成功 1 tick** +1 |
+| **底气护体** `diqi_huti` | `19` §6.6、`11` 8.3.3、`06` 底气护体示例；⚠️ **机制已迁移，见 [37](37-equipment-modular-armor.md)**（激活模块化防具：消耗 = 基础盾量×(1+Σ模块消耗%)；盾减伤 = 板位模块减伤；盾量 = 基础盾量；必须装备防具） | **≥50** 级；**战斗**；**\(B=\lfloor diqi_{\max}\times r\rfloor\)**，`r`=`diqi_consume_ratio_of_max`（0.5）；**\(C=\max(d_{\min},B)\)**，`d_{\min}`=`diqi_consume_min`（**1**，底气消耗下限夹紧）；**`diqi_max=0`** 整次失败 → **`shield_value=C`**；**三系 25%**（`shield_tri_type_damage_reduce_pct`）；**无 duration tick**；**护体未破不可重复开**；**不累加 `tu_na`** |
+| **`getSkillTotalProficiency` hub 排除** | `11` 8.3.3、`js/combat-skills.js` | **`hub_actions[].exclude_from_skill_total_proficiency: true`** 的条目 **不参与** 算术平均（**底气护体** 已用，避免稀释呼吸法熟练度 `tu_na` 对 **`breath_power_multiplier`** 的影响） |
 | 呼吸法威力 | `11` 8.3.3、`getBreathPowerMultiplier` | `base` 1.0；总熟练 ≥50% → +0.3 |
-| 新呼吸法 | `11` 8.3.3 | **沿用** `hub_actions` + `breath_power_multiplier` |
+| 新呼吸法 | `11` 8.3.3 | **沿用** `breath_bar`（呼吸条定义）+ `hub_actions` + `breath_power_multiplier` |
 | 新步法 | `11` 8.3.4 | **`category: footwork`**、`hubs.footwork`、**`combat_speed_base`**、**无熟练度**、`hub_actions` 仅动作/Buff |
-| **基本招架** | `11` 8.3.5、`08` 招架结算阶段、`getParryValues`、`js/combat-parry.js` | 仅招架槽；**1→满级**线性 **15%→45%** / **20%→50%**；**成功** **`move_usage.parry_success` +1**；**R≥50%** → 后天柔韧 **+40**（`parry_proficiency_attr_unlocks`）；**肢位选取 / 跳过 / 日志 / 事件** 见 `08` 与 **`CombatParry`**；registry **`parry_*`** 事件 |
+| **基本招架** | `11` 8.3.5、`08` 招架结算阶段、`getParryValues`、`js/combat-parry.js` | 仅招架槽；**1→满级**线性 **15%→45%** / **20%→50%**；**成功** **`move_usage.parry_success` +1**（仅招架数值与剧情/后遗症条件，**不提供后天五维**）；**肢位选取 / 跳过 / 日志 / 事件** 见 `08` 与 **`CombatParry`**；registry **`parry_*`** 事件 |
 | Buff/试探 | `18`、`11` | 既有规则 |
 
 **技能存档字段补充（实现须持久化）**：在 `skills[skill_id]` 上除 **`level`**、**`move_usage`** 外，呼吸法相关可增加 **`hub_action_cooldown_ticks?: { [string]: number }`**（剩余冷却 tick）；缺省键视为 0。
@@ -78,8 +79,8 @@
 #### 尚待实现（非策划缺口）
 
 - **战斗结算接线**：\(F_{\text{呼吸法威力}}\) 乘入 \(W_{\text{skill}}\) 的代码路径；**多 hub 切换**时以 **出手前一刻** `hubs.breath` 为准（实现登记）。
-- **速度先手与同时结算（`07`）**：已接线 **`js/combat-initiative.js`** + **`SceneCtx.actions.attackEnemy`**：**速度不等**时先手方先跑满管线再跑后手还击（敌人还击用 **`CombatMeleeResolve.resolveEnemyVsPlayerAttack`** + **`melee_hit_player_defender`**）；**同速**且敌人 **`can_attack !== false`** 时走 **`simultaneousDryRun`**（招式命中 Buff 入队 + 伤害入队）再 **`flushPendingBuffApplies` / `finalizeSimultaneousStrike`**；**`initiative_always_first`** 由 **`resolvePlayerInitiatedExchange`** 在**取整速度**得到先后/同速结构之后，再与强制先手互抵合成（见 `combat-initiative.js`）。**地图普攻、敌取整速度更高且非显式三件套**时，先后手解析**推迟**到还击后二次选肢完毕，再调用一次（终稿肢上的槽位后遗症）。局限：后手「失能短路」待敌人 HP/离场接入；同 tick 内其它系统对「同时提交」的观测顺序以当前 commit 为准。Agent 维护约定见 **`.cursor/rules/combat-initiative-exchange-agent.mdc`**。
-- **非战斗扩展**：吐纳 **`battle_only`** 已约束；若将来大地图回气，单独立项。
+- **速度先手与同时结算（`07`）**：已接线 **`js/combat-initiative.js`** + **`SceneCtx.actions.attackEnemy`**：**速度不等**时先手方先跑满管线再跑后手还击（敌人还击用 **`CombatMeleeResolve.resolveEnemyVsPlayerAttack`** + **`melee_hit_player_defender`**）；**同速**且敌人 **`can_attack !== false`** 时走 **`simultaneousDryRun`**（招式命中 Buff 入队 + 伤害入队）再 **`flushPendingBuffApplies` / `finalizeSimultaneousStrike`**；**`initiative_always_first`** 由 **`resolvePlayerInitiatedExchange`** 在**取整速度**得到先后/同速结构之后，再与强制先手互抵合成（见 `combat-initiative.js`）。**地图普攻、敌取整速度更高且非显式三件套**时，先后手解析**推迟**到还击后二次选肢完毕，再调用一次（终稿肢上的槽位后遗症）。局限：后手「失能短路」（玩家作为后手被击失能）待玩家 HP/死亡链接入；敌人侧 HP/死亡已接入（玩家先手打死敌人 → 跳过该敌人本交换还击，见 `10`）；同 tick 内其它系统对「同时提交」的观测顺序以当前 commit 为准。Agent 维护约定见 **`.cursor/rules/combat-initiative-exchange-agent.mdc`**。
+- **非战斗扩展**：呼吸条（气力）为战斗内资源；若将来大地图回气/呼吸法联动，单独立项（呼吸法 `breath_bar.regen` 的判定点当前为完整轮次收束，见 `07`）。
 
 ### 战斗管线与后遗症分派（可扩展落地）
 
@@ -100,8 +101,9 @@
 - **物品三种名字与三种描述**：同一物品在配置中提供 **name_0 / name_1 / name_2**（三种名字）与 **desc_0 / desc_1 / desc_2**（三种描述）；UI 与系统根据当前档位显示对应名字与描述。档位由**开放技能判断接口**决定。
 - **开放技能判断接口**：实现须提供接口（如 `getItemDisplayTier(itemId, character)` 或等价），根据**当前玩家**在物品配置中 `display_skill_id` 所指技能上的**等级**，返回档位 0 / 1 / 2，进而决定使用 name_0/1/2 与 desc_0/1/2 的哪一档。档位阈值从**配置表**读取（如全局常数表字段 `item_display_tier_threshold_1`、`item_display_tier_threshold_2`）；**当前实现可留空**，只要后续配置其他物品时能通过该字段调参即可，未配置时由实现约定默认值。UI 与任何需要展示物品名称、描述的地方均**必须**通过该接口取得档位后再取对应文案，不得写死单档。
 - **技能等级存储**：角色技能等级建议存于 `character.skills`，结构为 `{ [skill_id]: { level: number } }`（或等价 `character.skill_levels: { [skill_id]: number }`）；未习得技能时等级视为 0。展示档位接口通过 `character.skills[display_skill_id].level`（或等价）读取等级。语言技能 ID 为 `survival_language`（见 11 技能系统）。
-- **技能等级 → 后天属性**：`data/survival-config.json` 中 `skill_attr_gain`：`{ [skill_id]: { [attr_id]: { threshold, value } } }`。`recalcCharacterStats` 默认从 `CharacterAttributes` 已加载的配置读取；也可在调用时传入 `skillAttrGainTable` 覆盖。结算规则：`level >= threshold` 时该项后天 += `value * floor(level / threshold)`（与 `character-attributes.js` 的 `sumFromSkills` 一致）。当前「基本拳脚」为每 20 级 +1 后天筋骨（见 `11-skills`）。
-- **战斗后遗症（构式）**：`/data/post-effects.json` 定义 `post_effect_id`、文案 key、`effect_type`（如 **`initiative_always_first`**、**`dispel_one_beneficial_buff_on_target`**）、`valid_skill_ids` / `valid_move_ids`、`effect_params`（如驱散是否在招架 0 伤后仍触发）。招式在 `combat-skills.json` 的 `moves[]` 内可含 **`post_effect_unlocks`**（`min_proficiency_ratio` + `post_effect_id`）与（历史字段）`post_effect_slot_max`。当前实现存档采用**肢体级装配**：`combat.post_effect_sequences[limbId] = post_effect_id | null`；旧档 `post_effect_sequences[limbId][skillId][slot]` 读取时做兼容迁移。**装配校验**：同一 `post_effect_id` 在同一肢体内**至多出现一次**（四肢可各一次）。**`initiative_always_first` 参与交换顺序**时，以 **`resolvePlayerInitiatedExchange`** 为准：先取整速度结构，再读**本击已确定的出招肢体**装配（地图普攻敌先还击时须在二次选肢后调用）。**驱散类**须在 **命中 roll 成功** 且（若配置）**招架后**仍执行的节点调用 BuffSystem，候选池见 `18`。
+- **技能等级 → 后天属性（已下线）**：`skill_attr_gain` 整条成长线已下线（`05` 5.4）：表为空且 `combat_*` 显式跳过，`sumFromSkills` 仅保留函数体防旧档/工具误用，**不产生任何后天属性**。
+- **技能成长主干（已接线：自修）**：`05` 5.8 + `11` §8.3.1——**自修**（`Survival.startStudy/stopStudy`，挂机）：每 tick 扣 `study_tick_energy_cost` 精力 → 转化至多 `Pot_perEnergy`（专注决定，`computeStudyPotentialCap`）潜能（`IE.consumePotential`）→ 该技能 `study_exp` 累加（`IE.addStudyExp`）→ 按 `getPotentialCostForLevel` 成本曲线推进等级（`IE.tryAdvanceSkillLevel`）；精力/潜能不足或到可练上限自动停止。存档字段：`skills[skillId].study_exp`（升级进度，不持久化为潜能）+ `Survival` 的 `is_study_active/study_skill_id`。**师傅传授（一次 10 精力同曲线）暂缓**：后续由部分 NPC 附带该功能（NPC 配置可传授技能 + 可传授上限），当前游戏无师傅角色、不实现。
+- **战斗后遗症（构式）**：`/data/post-effects.json` 定义 `post_effect_id`、文案 key、`effect_type`（如 **`initiative_always_first`**、**`dispel_one_beneficial_buff_on_target`**）、`valid_skill_ids` / `valid_move_ids`、`effect_params`（如驱散是否在招架 0 伤后仍触发）。招式在 `combat-skills.json` 的 `moves[]` 内可含 **`post_effect_unlocks`**（`min_proficiency_ratio` + `post_effect_id`）与（历史字段）`post_effect_slot_max`。当前实现存档采用**肢体级装配**：`combat.post_effect_sequences[limbId] = post_effect_id | null`；旧档 `post_effect_sequences[limbId][skillId][slot]` 读取时做兼容迁移。**装配校验**：同一 `post_effect_id` 在同一肢体内**至多出现一次**（四肢可各一次）。**`initiative_always_first` 参与交换顺序**时，以 **`resolvePlayerInitiatedExchange`** 为准：先按小数速度得到先后/同速结构，再读**本击已确定的出招肢体**装配（地图普攻敌先还击时须在二次选肢后调用）。**驱散类**须在 **命中 roll 成功** 且（若配置）**招架后**仍执行的节点调用 BuffSystem，候选池见 `18`。
 - **已获得后遗症（后台-only）**：`CharacterAttributes` 状态含 **`post_effects_obtained: string[]`**（去重 id）。**不向玩家默认状态栏/角色面板展示**；仅供 **`getPostEffectsObtainedCount()`**、**`getPostEffectsObtainedIds()`**、**`hasPostEffectObtained(post_effect_id)`** 及 **`syncPostEffectsObtainedFromSkillsState()`**（可手动调用）供剧情、NPC 条件、成就等判断。前三个查询接口在读取前会内部 **`syncPostEffectsObtainedFromSkillsState()`**（按 `skills[*].move_usage` 与 `post_effect_unlocks` 合并熟练度解锁）。剧情直发奖用 **`registerPostEffectObtained(id)`**。随角色存档读写。
 - **变式（招式槽被动）**：建议单表 **`/data/move-variants.json`** 定义（与后续 UI/数据导出对齐）。装配位置与招式槽同层，但语义是**被动**：作用于其所在肢体的主动招式结算上下文。**变式为全局面板资源**：先决条件只由表 `unlock` 等决定，**不**与「某条招式专属配对接口」；`target_filters` 仅影响结算时是否对当击招式生效（见 `11-skills` 变式节）。
   - **数据字段建议（关键项）**：
@@ -131,13 +133,13 @@
 - **防具减伤与词条**：头部/衣服防具的减伤与词条 `armor_bonus` 的叠加为**乘算**：例如基础减伤比例 \(r_{\text{base}}\)、词条加成比例 \(r_{\text{enc}}\)，最终减伤后剩余伤害比例 = \((1 - r_{\text{base}}) \times (1 - r_{\text{enc}})\)（具体公式以 08 为准）。**词条叠加**：同一装备上多个词条之间**相加**（同类型效果数值相加）；**单词条有上限**，上限在词条配置或全局常数中定义。**词条展示**：词条名称与描述**不受**三档名字/描述技能判断影响，使用词条表内单一 `name` 即可。
 - **新手套装**：新游戏初始装备写入配置 `default_equipment`（见 `/data/default_equipment.json`）；**仅在新游戏初始化时**根据该表写入 `character.equipment`。**死亡后**全部装备消失，实现时**不得**在死亡/复活流程中再次读取 `default_equipment` 发放装备，复活后装备栏为空。
 - **物品表结构（一大表多小表）**：**可以**采用一大表下多小表的结构。**getItemTemplate(item_id)** 建议**先查 equipment、再查 items/consumables 等**；若两表均无该 id，返回 null 或由实现约定（如打日志、视为无效），调用方须处理无模板情况。两种方式均需保证通过 `item_id` 能唯一解析到模板，且装备与消耗品 ID 不冲突。
-- **消耗品与材料**：**无词条**，仅有**品质**；**同品质可堆叠**。**品质为单一字段**，不做三档名字/描述展示。物品栏格内格式为 `{ item_id, count, quality? }` 或等价，不包含 enchants。
-- **品质六档（与 02 一致）**：全游戏**品质统一**采用「二、区域结构」2.1 的**六档**：**粗糙 → 普通 → 精良 → 稀有 → 史诗 → 传说**（对应颜色：灰 → 白 → 绿 → 蓝 → 紫 → 橙）。消耗品、材料、**装备**的品质均与此六档一致；实现时可用枚举或数字 0～5 对应上述六档，配置与代码内统一引用。
+- **消耗品与材料**：**无词条**，可堆叠；物品栏格内格式为 `{ item_id, count }` 或等价，不包含 enchants。
+- **品质系统已移除**：全游戏不再有「品质 / 品质档 / 品质色条」。物品差异由**物品身份（不同 item_id）**与**数值区间（numeric_rolls）**承担；迁移细节见 `41-quality-removal.md`。
 - **脱下背心/背包后容器**：迁移完成后 **inventory_vest / inventory_backpack 置为 []**；快捷腰带格数 = 当前 pocket_slots + vest_slots（无衣服/无背心时对应为 0）。
 - **新游戏初始物品栏**：**一律为空**（inventory_pocket、inventory_vest、inventory_backpack、inventory_vehicle 均为 []），仅通过 default_equipment 穿戴初始装备。
 - **技能未习得**：未习得技能在角色数据中存为 **level: 0**（如 `character.skills[skill_id].level === 0`）；展示档位接口在技能不存在或 level 为 0 时按**档位 0** 处理。
 - **装备穿戴校验**：穿戴时**须校验**该物品模板的 `equip_slot` 与当前槽位一致（禁止衣服穿到 head 等）；装备实例的 **enchants 数量不得超过** 该模板的 **enchant_slots**（如 6）。
-- **装备品质**：装备与消耗品/材料一样具备**品质**，与 02 六档一致（粗糙→普通→精良→稀有→史诗→传说）；在装备模板与实例中均有 **quality_tier**（或等价字段），与物品品质枚举共用；同品质装备可依设计决定是否参与堆叠或仅作展示与数值用。
+- **装备差异**：装备的差异化由**模板属性差异**、**词条**与 **numeric_rolls 数值区间**（实例 `resolved_rolls`）承担，不设品质档。
 - **载具存储**：拖拽态下需存**载具模板 ID 或实例 ID**（或载具类型 ID + 实例标识）；载具内物品每格格式与口袋/背心/背包一致（`{ item_id, count?, enchants? }`）。此约定作为实现标准。
 - **词条上限**：**单个词条的效果上限**（即每条词条单颗效果不超过其 cap），在词条表内为每条词条单独配置上限字段（如 `cap` 或 `max_value`）；实现时应用该词条效果时夹紧至该上限。
 
@@ -164,7 +166,7 @@
     - `inventory_vest`：背心/弹挂内物品（格数由当前装备的背心配置决定）。
     - `inventory_backpack`：背包内物品（格数由当前装备的背包配置决定）。
     - `inventory_vehicle` 或等效：**拖拽态载具**需单独存储，建议包含 **当前绑定载具的实例 ID（或载具类型 ID + 实例标识）** 以及 **该载具内物品列表**；若载具为世界实体，则场景/地图数据中需能存储“某格上的载具实体及其物品栏”，载入时根据是否处于拖拽态决定载具栏是否并入角色数据展示。
-  - `equipment`：当前装备，按槽位存储**装备实例**（每槽 `{ item_id, enchants?: string[], quality_tier? }` 或 null）；**空槽一律写 null**，不省略键，便于遍历与读档一致。
+  - `equipment`：当前装备，按槽位存储**装备实例**（每槽 `{ item_id, enchants?: string[], resolved_rolls? }` 或 null）；**空槽一律写 null**，不省略键，便于遍历与读档一致。
   - 其他：如地图进度、任务状态、生产建筑、仓库等，按需扩展。
 - **与交易系统的关联**：玩家间交易依赖**特征码**标识交易双方；交易码解密后含双方特征码与交易物品信息。生成交易码时会**自动重新生成存档码**并更新**存档世代**，避免通过载入旧存档取回已交出的物品。详见「九（附）、玩家间交易系统」。
 

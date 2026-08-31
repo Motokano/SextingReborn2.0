@@ -34,6 +34,14 @@
         } catch (e1) { /* ignore */ }
     }
 
+    /** i18n 文案读取（容错）：缺键/未加载回退 fb。模块级定义，供 ensureMenuEl 等顶层函数与 openMenu 共用。 */
+    function tUi(key, fb) {
+        try {
+            if (global.UIText && typeof global.UIText.t === 'function') return global.UIText.t(key);
+        } catch (eT) { /* ignore */ }
+        return fb;
+    }
+
     function safeJsonParse(raw, fallback) { try { return JSON.parse(raw); } catch (e) { return fallback; } }
     function getFlags() { return safeJsonParse(localStorage.getItem(LS_FLAGS) || '{}', {}); }
     function setFlag(k, v) { var f = getFlags(); f[String(k)] = v; localStorage.setItem(LS_FLAGS, JSON.stringify(f)); }
@@ -623,9 +631,8 @@
                 var gid = ef.params.itemId != null ? String(ef.params.itemId).trim() : '';
                 var gc = ef.params.count != null ? Math.floor(Number(ef.params.count)) : 1;
                 if (!isFinite(gc) || gc < 1) gc = 1;
-                var gq = ef.params.quality_tier;
                 if (gid) {
-                    var gr = IE.giveCarriedItemsByTemplateId(gid, gc, gq);
+                    var gr = IE.giveCarriedItemsByTemplateId(gid, gc);
                     log('[NPCSystem] Effect giveItem: ' + gid + ' x' + String(gc) + ' → placed=' + String(gr.placed)
                         + ' ok=' + String(!!gr.ok) + (gr.shortfall ? (' shortfall=' + String(gr.shortfall)) : ''), gr.ok ? 'system' : 'warn');
                     if (gr.placed > 0) refreshAfterNpcInventoryMutation();
@@ -877,7 +884,7 @@
             '<div style="position:absolute; left:50%; top:50%; transform:translate(-50%,-50%); width:320px; background:#252525; border:1px solid #444; border-radius:8px; padding:14px;">' +
             '  <div id="npc-menu-title" style="color:#ddd; font-weight:bold; margin-bottom:10px;">NPC</div>' +
             '  <div id="npc-menu-buttons" style="display:flex; gap:8px; flex-wrap:wrap;"></div>' +
-            '  <div style="margin-top:10px; color:#666; font-size:12px;">提示：需要靠近 NPC 才能对话</div>' +
+            '  <div style="margin-top:10px; color:#666; font-size:12px;">' + tUi('npc.menu.close_hint') + '</div>' +
             '</div>';
         document.body.appendChild(menuEl);
         menuEl.addEventListener('click', function (e) { if (e.target === menuEl) closeMenu(); });
@@ -899,7 +906,7 @@
             }
             if (global.BuffSystem && typeof global.BuffSystem.hasBuffByBuffId === 'function'
                 && global.BuffSystem.hasBuffByBuffId('player', 'survival_dirty_messy')) {
-                log('你现在邋里邋遢，NPC 不愿与你互动。', 'warn');
+                log(tUi('npc.msg.dirty_rejected'), 'warn');
                 return;
             }
             if (!def) {
@@ -981,14 +988,7 @@
                 return tagsB.indexOf('bed_station') >= 0;
             }
 
-            function tUi(key, fb) {
-                try {
-                    if (global.UIText && typeof global.UIText.t === 'function') return global.UIText.t(key);
-                } catch (eT) { /* ignore */ }
-                return fb;
-            }
-
-            btnWrap.appendChild(mkBtn('闲聊', function () {
+            btnWrap.appendChild(mkBtn(tUi('npc.menu.chat'), function () {
                 closeMenu();
                 log('[NPCSystem] NPC chat clicked: npc=' + String(npcId), 'system');
                 scanChatEntry(npcId).then(function (res) {
@@ -1177,7 +1177,7 @@
                 btnWrap.appendChild(bedBtn);
             }
 
-            btnWrap.appendChild(mkBtn('离开', function () { closeMenu(); }));
+            btnWrap.appendChild(mkBtn(tUi('npc.menu.leave'), function () { closeMenu(); }));
         });
     }
 

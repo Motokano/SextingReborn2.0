@@ -10,11 +10,37 @@
             .replace(/>/g, '&gt;');
     }
 
+    function t(key, vars) {
+        if (global && global.UIText && typeof global.UIText.t === 'function') {
+            return global.UIText.t(key, vars);
+        }
+        return key;
+    }
+
     function getSkillLevel(character, skillId) {
         if (!character || !character.skills || !skillId) return 0;
         var rec = character.skills[skillId];
         var lv = rec && rec.level != null ? parseInt(rec.level, 10) : 0;
         return isFinite(lv) && lv > 0 ? lv : 0;
+    }
+
+    /** 技能显示名：先查生存技能表，再查战斗技能表，兜底返回原始 id */
+    function getSkillDisplayName(skillId) {
+        var sid = String(skillId || '').trim();
+        if (!sid) return sid;
+        try {
+            if (global.SurvivalSkills && typeof global.SurvivalSkills.getById === 'function') {
+                var s1 = global.SurvivalSkills.getById(sid);
+                if (s1 && s1.name) return String(s1.name);
+            }
+        } catch (e1) { /* ignore */ }
+        try {
+            if (global.CombatSkills && typeof global.CombatSkills.getSkill === 'function') {
+                var s2 = global.CombatSkills.getSkill(sid);
+                if (s2 && s2.name) return String(s2.name);
+            }
+        } catch (e2) { /* ignore */ }
+        return sid;
     }
 
     function normalizeContentHtml(content, tpl) {
@@ -49,6 +75,40 @@
                 rows += '<div class="tooltip-module-kv-row"><span class="tooltip-module-k">' + esc(e.k || '') + '</span><span class="tooltip-module-v">' + esc(e.v || '') + '</span></div>';
             }
             return '<div class="tooltip-module-kv">' + rows + '</div>';
+        }
+        if (t === 'tpl_kv') {
+            // 从物品模板动态读取字段渲染（防具数值走此类型，技能解锁后可见）
+            var entriesT = Array.isArray(content.entries) ? content.entries : [];
+            var outT = '';
+            for (var e2 = 0; e2 < entriesT.length; e2++) {
+                var en = entriesT[e2] || {};
+                var f = String(en.field || '').trim();
+                if (!f || !tpl || tpl[f] == null) continue;
+                var rawT = tpl[f];
+                var vStrT = '';
+                if (en.pct === true && typeof rawT === 'number' && isFinite(rawT)) {
+                    vStrT = String(Math.round(rawT * 100));
+                } else if (Array.isArray(rawT)) {
+                    var mapT = (en.array_map && typeof en.array_map === 'object') ? en.array_map : null;
+                    var partsT = [];
+                    for (var a2 = 0; a2 < rawT.length; a2++) {
+                        var kk2 = String(rawT[a2]);
+                        partsT.push(mapT && mapT[kk2] != null ? mapT[kk2] : kk2);
+                    }
+                    vStrT = partsT.join('/');
+                } else if (typeof rawT === 'object' && rawT !== null) {
+                    // 对象字段（如 form_coefs {拳:1.0,掌:1.0}）→ "拳 1.0 / 掌 1.0"
+                    var objParts = [];
+                    for (var ok2 in rawT) {
+                        if (rawT.hasOwnProperty(ok2)) objParts.push(ok2 + ' ' + rawT[ok2]);
+                    }
+                    vStrT = objParts.join(' / ');
+                } else {
+                    vStrT = String(rawT);
+                }
+                outT += '<div class="tooltip-module-text">' + esc(t(en.label_key || f, { v: vStrT })) + '</div>';
+            }
+            return outT;
         }
         return '';
     }
@@ -92,16 +152,21 @@
         var html = '<div class="tooltip-modules">';
         for (var i = 0; i < set.modules.length; i++) {
             var m = set.modules[i] || {};
-            var title = esc(m.title || m.module_id || '模块');
+            var title = esc(m.title || m.module_id || t('item_info.module_default'));
             var st = evalUnlock(m.unlock, chara);
             html += '<div class="tooltip-module' + (st.unlocked ? '' : ' is-locked') + '">';
             html += '<div class="tooltip-module-title">' + title + '</div>';
             if (st.unlocked) {
-                html += normalizeContentHtml(m.content, tpl || {});
+                var contentHtml = normalizeContentHtml(m.content, tpl || {});
+                if (contentHtml) html += contentHtml;
             } else {
+                // 统一锁定样式：风味提示 + 明确的「需要什么技能、差几级」要求行（item_info.locked_hint）
                 var need = Math.max(0, st.level - st.current);
-                var hint = st.lockedHint || ('需 ' + st.skillId + ' 达到 ' + st.level + ' 级（还差 ' + need + ' 级）');
-                html += '<div class="tooltip-module-locked-hint">' + esc(hint) + '</div>';
+                var hint = st.lockedHint || '';
+                var skillName = getSkillDisplayName(st.skillId);
+                var reqLine = t('item_info.locked_hint', { skillId: skillName, level: st.level, need: need });
+                if (hint) html += '<div class="tooltip-module-locked-hint">' + esc(hint) + '</div>';
+                html += '<div class="tooltip-module-req">' + esc(reqLine) + '</div>';
             }
             html += '</div>';
         }

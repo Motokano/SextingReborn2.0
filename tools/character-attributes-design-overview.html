@@ -174,7 +174,7 @@
       <h2>0. 五项基础属性总览</h2>
       <p>角色拥有五项基础属性，既影响战斗，也作用于负重、恢复、学习等系统。公式中默认使用<strong>实际值 = 先天 + 后天</strong>；展示与成长设计上始终区分两者。</p>
       <div class="attr-grid">
-        <div class="attr-card"><strong>筋骨</strong><span>近战伤害、负重；徒手曲线与兵器门槛/超额增伤</span></div>
+        <div class="attr-card"><strong>筋骨</strong><span>近战伤害、负重；徒手曲线与兵器门槛/惩罚区（无增伤）</span></div>
         <div class="attr-card"><strong>柔韧</strong><span>肢体基础防御（动态%）；部位×伤害类型微调</span></div>
         <div class="attr-card"><strong>呼吸</strong><span>底气上限与恢复；与生存技能「凝气」叠加</span></div>
         <div class="attr-card"><strong>身手</strong><span>战斗速度 → 先手、连击、命中率；步法提供 V<sub>base</sub></span></div>
@@ -271,16 +271,17 @@
           <tr><td>技能书 / 自修学习</td><td>—</td><td>—</td><td>—</td><td>—</td><td class="dot">●</td></tr>
         </tbody>
       </table>
-      <p>制造成功率、品质率由<strong>建筑、熟练度、配方与材料</strong>决定，五维主要影响<strong>可持续作业</strong>（负重、恢复、学习）。</p>
+      <p>制造成功率、产量由<strong>建筑、熟练度、配方与材料</strong>决定，五维主要影响<strong>可持续作业</strong>（负重、恢复、学习）。</p>
     </section>
 
     <section id="s5">
       <h2>5. 后天成长来源简述</h2>
       <ul>
+        <li><strong>属性经验（24）</strong>：进食/睡眠主通道，按食物精致程度给不同幅度经验；招架成功低幅补柔韧。</li>
+        <li><strong>肌肉系统（34）</strong>：解锁肌肉 → 后天四维（不奖励专注），全通肌群获大型被动容量。</li>
         <li><strong>装备与词条</strong>：六词条槽；「+筋骨」等一律计入后天（<code>/data/enchant.json</code>）。</li>
         <li><strong>Buff / 料理 / 药品</strong>：临时后天，过期移除。</li>
-        <li><strong>战斗技能</strong>：<code>proficiency_attr_unlocks</code> 按招式熟练度一次性加后天五维；与后遗症分轨。</li>
-        <li><strong>生存技能</strong>：<code>skill_attr_gain</code> 等（见 survival-config）。</li>
+        <li><strong>已下线</strong>：技能等级（<code>skill_attr_gain</code> 空表）与招式/技能熟练度（<code>proficiency_attr_unlocks</code> 机制已删除）不再提供后天五维。</li>
         <li><strong>极少数剧情/道具</strong>：可提升<strong>先天</strong>或先天上限，单独列出。</li>
       </ul>
     </section>
@@ -462,7 +463,7 @@ V_base = 当前步法 combat_speed_base；无步法 hub → base_speed_no_footwo
           <tr><td>命中 / 招架 / 伤害</td><td><code>docs/design/08-hit-parry-damage.md</code></td></tr>
           <tr><td>先手 / 速度</td><td><code>docs/design/07-combat-core.md</code></td></tr>
           <tr><td>肢体损毁</td><td><code>docs/design/09-body-parts.md</code></td></tr>
-          <tr><td>招式熟练度 → 后天</td><td><code>proficiency_attr_unlocks</code> · <code>11-skills.md</code></td></tr>
+          <tr><td>熟练度 → 后天（已下线）</td><td>机制已删除；熟练度仅驱动招架/呼吸法/后遗症条件</td></tr>
         </tbody>
       </table>
     </section>

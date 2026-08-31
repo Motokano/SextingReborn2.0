@@ -74,7 +74,6 @@ for (const r of list) {
     bonus_outputs: [],
     required_skill_level_min: 1,
     proficiency_usage_key: rid,
-    base_output_quality_tier: r.base_output_quality_tier != null ? Math.max(0, Math.floor(Number(r.base_output_quality_tier))) : 0,
     required_skill_id: null,
     recipe_processor_id: null,
     base_success_rate: r.base_success_rate != null ? Math.max(0, Math.min(1, Number(r.base_success_rate))) : null,

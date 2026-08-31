@@ -1,0 +1,212 @@
+{
+  "_comment": "模块表（数据契约见 docs/design/38-equipment-data-contract.md §2）。模块 = 独立物品，装在防具槽点上。字段：install_slots(可安装槽点候选)、occupies(安装后实际占用，省略=默认被安装槽点)、max_per_armor(同防具数量上限，省略=不限)、weight_kg、activation_cost_pct(额外底气消耗%，可负=减耗)、effects(基础属性，声明式)、special(特殊模块)、segments(复合模块分部位段)、special_effect(特殊效果，全部激活才生效)、enchant_slot(附魔位数=1)。数值为草案，平衡后调。",
+  "mod_leather_pad": {
+    "id": "mod_leather_pad",
+    "name": "皮垫",
+    "desc": "处理过的兽皮软垫，缓冲钝击震荡。",
+    "install_slots": ["clothing.abdomen"],
+    "weight_kg": 0.5,
+    "activation_cost_pct": 0.08,
+    "effects": [
+      { "effect_type": "armor_bonus", "effect_params": { "blunt_pct": 0.10, "slash_pct": 0.04 } }
+    ],
+    "special": false,
+    "enchant_slot": 1
+  },
+  "mod_bamboo_plate": {
+    "id": "mod_bamboo_plate",
+    "name": "竹片板",
+    "desc": "青竹削片编缝，轻而硬，挡劈砍。",
+    "install_slots": ["clothing.arm_l"],
+    "weight_kg": 0.3,
+    "activation_cost_pct": 0.06,
+    "effects": [
+      { "effect_type": "armor_bonus", "effect_params": { "slash_pct": 0.10, "pierce_pct": 0.04 } }
+    ],
+    "special": false,
+    "enchant_slot": 1
+  },
+  "mod_bone_plate": {
+    "id": "mod_bone_plate",
+    "name": "骨板",
+    "desc": "磨削兽骨缀成硬板，骨架加固。",
+    "install_slots": ["clothing.leg_l"],
+    "weight_kg": 0.4,
+    "activation_cost_pct": 0.06,
+    "effects": [
+      { "effect_type": "armor_bonus", "effect_params": { "blunt_pct": 0.08 } }
+    ],
+    "special": false,
+    "enchant_slot": 1
+  },
+  "mod_silk_pad": {
+    "id": "mod_silk_pad",
+    "name": "丝垫",
+    "desc": "家蚕丝缝的软垫，抗割且极轻。",
+    "install_slots": ["clothing.arm_r"],
+    "weight_kg": 0.15,
+    "activation_cost_pct": 0.05,
+    "effects": [
+      { "effect_type": "armor_bonus", "effect_params": { "pierce_pct": 0.08 } }
+    ],
+    "special": false,
+    "enchant_slot": 1
+  },
+  "mod_steel_plate": {
+    "id": "mod_steel_plate",
+    "name": "钢板",
+    "desc": "锻打钢片，硬挡利器，沉得压身。",
+    "install_slots": ["clothing.chest"],
+    "weight_kg": 2.0,
+    "activation_cost_pct": 0.20,
+    "effects": [
+      { "effect_type": "armor_bonus", "effect_params": { "slash_pct": 0.22, "pierce_pct": 0.15, "blunt_pct": 0.05 } }
+    ],
+    "special": false,
+    "enchant_slot": 1
+  },
+  "mod_wood_plate": {
+    "id": "mod_wood_plate",
+    "name": "木片板",
+    "desc": "硬木削片，聊胜于无的兜底。",
+    "install_slots": ["clothing.leg_r"],
+    "weight_kg": 0.6,
+    "activation_cost_pct": 0.04,
+    "effects": [
+      { "effect_type": "armor_bonus", "effect_params": { "slash_pct": 0.06 } }
+    ],
+    "special": false,
+    "enchant_slot": 1
+  },
+  "mod_impact_redirect": {
+    "id": "mod_impact_redirect",
+    "name": "卸力甲",
+    "desc": "特殊模块（占胸腹两板）：受到钝击伤害一律按劈砍结算。",
+    "install_slots": ["clothing.chest"],
+    "occupies": ["clothing.chest", "clothing.abdomen"],
+    "weight_kg": 1.4,
+    "activation_cost_pct": 0.30,
+    "effects": [
+      { "effect_type": "armor_bonus", "effect_params": { "blunt_pct": 0.08, "slash_pct": 0.06 } }
+    ],
+    "special": true,
+    "special_effect": { "effect_type": "damage_type_convert", "effect_params": { "from": "blunt", "to": "slash" } },
+    "enchant_slot": 1
+  },
+  "mod_hooded_coat": {
+    "id": "mod_hooded_coat",
+    "name": "兜帽大衣",
+    "desc": "复合模块（套装件）：占胸腹板位 + 盔体槽，一体式硅叶浸布。",
+    "install_slots": ["clothing.chest"],
+    "occupies": ["clothing.chest", "clothing.abdomen", "head.shell"],
+    "weight_kg": 2.1,
+    "activation_cost_pct": 0.25,
+    "segments": {
+      "head":     { "effects": [ { "effect_type": "armor_bonus", "effect_params": { "blunt_pct": 0.12, "slash_pct": 0.06 } } ] },
+      "clothing": { "effects": [ { "effect_type": "armor_bonus", "effect_params": { "slash_pct": 0.15, "pierce_pct": 0.10 } } ] }
+    },
+    "special": true,
+    "special_effect": { "effect_type": "damage_type_convert", "effect_params": { "from": "slash", "to": "pierce" } },
+    "enchant_slot": 1
+  },
+  "mod_helm_iron_shell": {
+    "id": "mod_helm_iron_shell",
+    "name": "铁盔体",
+    "desc": "铸铁盔壳，硬挡利器，不缓冲震荡。",
+    "install_slots": ["head.shell"],
+    "weight_kg": 1.5,
+    "activation_cost_pct": 0,
+    "effects": [
+      { "effect_type": "armor_bonus", "effect_params": { "slash_pct": 0.20, "pierce_pct": 0.15, "blunt_pct": 0.05 } }
+    ],
+    "special": false,
+    "enchant_slot": 1
+  },
+  "mod_helm_leather_shell": {
+    "id": "mod_helm_leather_shell",
+    "name": "皮盔体",
+    "desc": "鞣皮盔壳，缓冲震荡，挡不住利器。",
+    "install_slots": ["head.shell"],
+    "weight_kg": 0.4,
+    "activation_cost_pct": 0,
+    "effects": [
+      { "effect_type": "armor_bonus", "effect_params": { "blunt_pct": 0.15, "slash_pct": 0.08, "pierce_pct": 0.05 } }
+    ],
+    "special": false,
+    "enchant_slot": 1
+  },
+  "mod_helm_silica_shell": {
+    "id": "mod_helm_silica_shell",
+    "name": "硅叶盔体",
+    "desc": "硅叶浸布的盔壳，轻而抗穿刺。",
+    "install_slots": ["head.shell"],
+    "weight_kg": 0.5,
+    "activation_cost_pct": 0,
+    "effects": [
+      { "effect_type": "armor_bonus", "effect_params": { "pierce_pct": 0.20, "slash_pct": 0.10, "blunt_pct": 0.10 } }
+    ],
+    "special": false,
+    "enchant_slot": 1
+  },
+  "mod_helm_soft_liner": {
+    "id": "mod_helm_soft_liner",
+    "name": "软内衬",
+    "desc": "缓冲内衬，抗眩晕的核心。",
+    "install_slots": ["head.liner"],
+    "weight_kg": 0.1,
+    "activation_cost_pct": 0,
+    "effects": [
+      { "effect_type": "anti_stun", "effect_params": { "anti_stun_pct": 0.40 } }
+    ],
+    "special": false,
+    "enchant_slot": 1
+  },
+  "mod_helm_hard_liner": {
+    "id": "mod_helm_hard_liner",
+    "name": "硬内衬",
+    "desc": "硬质内衬，补强减伤，不抗震荡。",
+    "install_slots": ["head.liner"],
+    "weight_kg": 0.3,
+    "activation_cost_pct": 0,
+    "effects": [
+      { "effect_type": "armor_bonus", "effect_params": { "slash_pct": 0.06, "pierce_pct": 0.06 } }
+    ],
+    "special": false,
+    "enchant_slot": 1
+  },
+  "mod_face_lamp": {
+    "id": "mod_face_lamp",
+    "name": "头灯",
+    "desc": "护面功能件：黑暗中照明，命中率提高。（条件：夜间生效，实现待接）",
+    "install_slots": ["head.face"],
+    "weight_kg": 0.2,
+    "activation_cost_pct": 0,
+    "effects": [
+      { "effect_type": "hit_bonus", "effect_params": { "hit_pct": 0.10 } }
+    ],
+    "special": false,
+    "enchant_slot": 1
+  },
+  "mod_face_goggles": {
+    "id": "mod_face_goggles",
+    "name": "护目镜",
+    "desc": "护面功能件：防沙尘致盲。（效果实现待接）",
+    "install_slots": ["head.face"],
+    "weight_kg": 0.1,
+    "activation_cost_pct": 0,
+    "effects": [],
+    "special": false,
+    "enchant_slot": 1
+  },
+  "mod_face_plume": {
+    "id": "mod_face_plume",
+    "name": "盔缨",
+    "desc": "护面装饰件：红缨缀盔，纯外观/社交用途。",
+    "install_slots": ["head.face"],
+    "weight_kg": 0.05,
+    "activation_cost_pct": 0,
+    "effects": [],
+    "special": false,
+    "enchant_slot": 1
+  }
+}

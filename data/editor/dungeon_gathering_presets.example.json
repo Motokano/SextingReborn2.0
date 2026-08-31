@@ -12,7 +12,7 @@
         "x": 8,
         "y": 5,
         "entity_id": "gathering_bush",
-        "gathering_instance_id": "gp_example_per_item_quality_cap"
+        "gathering_instance_id": "gp_example_mining_placeholder"
       }
     ]
   },

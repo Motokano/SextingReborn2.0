@@ -26,7 +26,7 @@
 </head>
 <body>
     <h1>采集点实例编辑器</h1>
-    <p class="hint">编辑 <code>data/gathering_point_instances.json</code>：实例可被地图格 <code>gathering_instance_id</code> 引用；每行掉落可设 <code>quality_tier_max</code>（1～6，熟练度上修后的<strong>硬上限</strong>）。<strong>掉落物品</strong>与仓库 <code>data/items.json</code> 联动：先载入物品表，再在可搜索输入框中筛选 <code>item_id</code>（仍可手填未入库 id）。保存后请将 JSON 覆盖到仓库 <code>data/gathering_point_instances.json</code>。</p>
+    <p class="hint">编辑 <code>data/gathering_point_instances.json</code>：实例可被地图格 <code>gathering_instance_id</code> 引用；每行掉落为 <code>item_id + weight</code>（稀有度由物品身份承担，品质系统已移除）。<strong>掉落物品</strong>与仓库 <code>data/items.json</code> 联动：先载入物品表，再在可搜索输入框中筛选 <code>item_id</code>（仍可手填未入库 id）。保存后请将 JSON 覆盖到仓库 <code>data/gathering_point_instances.json</code>。</p>
     <div class="toolbar">
         <button type="button" id="btn-fetch-items">载入 items.json</button>
         <button type="button" id="btn-file-items">选择物品 JSON</button>
@@ -72,7 +72,7 @@
             <textarea class="raw" id="ta-defaults" placeholder='{ "gathering_bush": "gp_std_bush" }'></textarea>
             <label>掉落表 loot_rows</label>
             <table>
-                <thead><tr><th>物品（items.json）</th><th>weight</th><th>quality_tier（基础 1～6）</th><th>quality_tier_max（硬上限 1～6）</th><th></th></tr></thead>
+                <thead><tr><th>物品（items.json）</th><th>weight</th><th></th></tr></thead>
                 <tbody id="loot-tbody"></tbody>
             </table>
         </div>
@@ -179,7 +179,7 @@
     }
 
     function addLootRowEl(row) {
-        row = row || { item_id: '', weight: 10, quality_tier: 1, quality_tier_max: 6 };
+        row = row || { item_id: '', weight: 10 };
         var tr = document.createElement('tr');
         var tdItem = document.createElement('td');
         tdItem.className = 'cell-item-wrap';
@@ -195,10 +195,6 @@
 
         var tdW = document.createElement('td');
         tdW.innerHTML = '<input type="number" class="cell-w" step="1" min="0" value="' + (row.weight != null ? row.weight : 10) + '" />';
-        var tdQ = document.createElement('td');
-        tdQ.innerHTML = '<input type="number" class="cell-q" step="1" min="1" max="6" value="' + (row.quality_tier != null ? row.quality_tier : 1) + '" />';
-        var tdQm = document.createElement('td');
-        tdQm.innerHTML = '<input type="number" class="cell-qmax" step="1" min="1" max="6" value="' + (row.quality_tier_max != null ? row.quality_tier_max : 6) + '" />';
         var tdDel = document.createElement('td');
         var btn = document.createElement('button');
         btn.type = 'button';
@@ -208,10 +204,8 @@
         tdDel.appendChild(btn);
         tr.appendChild(tdItem);
         tr.appendChild(tdW);
-        tr.appendChild(tdQ);
-        tr.appendChild(tdQm);
         tr.appendChild(tdDel);
-        tr.querySelectorAll('.cell-w, .cell-q, .cell-qmax').forEach(function (inp) {
+        tr.querySelectorAll('.cell-w').forEach(function (inp) {
             inp.addEventListener('input', function () { saveFormToData(); refreshFullJson(); });
         });
         document.getElementById('loot-tbody').appendChild(tr);
@@ -228,9 +222,7 @@
             if (!item_id) continue;
             out.push({
                 item_id: item_id,
-                weight: Number(tr.querySelector('.cell-w').value) || 0,
-                quality_tier: Math.max(1, Math.min(6, parseInt(tr.querySelector('.cell-q').value, 10) || 1)),
-                quality_tier_max: Math.max(1, Math.min(6, parseInt(tr.querySelector('.cell-qmax').value, 10) || 6))
+                weight: Number(tr.querySelector('.cell-w').value) || 0
             });
         }
         return out;
@@ -293,7 +285,7 @@
             base_gathering_success_rate: 0.6,
             stamina_cost: 2,
             tool_required: false,
-            loot_rows: [{ item_id: 'herb_green', weight: 10, quality_tier: 1, quality_tier_max: 6 }]
+            loot_rows: [{ item_id: 'herb_green', weight: 10 }]
         };
         syncSelect();
         document.getElementById('sel-instance').value = nid;

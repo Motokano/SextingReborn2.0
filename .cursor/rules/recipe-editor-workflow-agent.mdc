@@ -30,7 +30,7 @@
    - 支持增删多行 `inputs`，每行至少 `item_id` + `count`。
 
 5. **定义配方属性**
-   - 需可视化编辑：`enabled`、`required_skill_level_min`、`match_weight`、`base_output_quality_tier`、`proficiency_usage_key`。
+   - 需可视化编辑：`enabled`、`required_skill_level_min`、`match_weight`、`proficiency_usage_key`。
    - 可选覆盖字段（允许 null）：`required_skill_id`、`recipe_processor_id`、`base_success_rate`、`allowed_station_tags`、`failure_output`。
 
 6. **定义配方产出**

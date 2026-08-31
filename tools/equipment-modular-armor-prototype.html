@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>装备栏 · 模块化防具 UI 原型</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: #1c1815;
+    color: #e0d7c6;
+    font-family: "Noto Serif SC", "Microsoft YaHei", serif;
+    font-size: 13px;
+    line-height: 1.5;
+    padding: 18px;
+  }
+  .proto-title { font-size: 17px; color: #d3a060; margin-bottom: 2px; letter-spacing: 0.06em; }
+  .proto-sub { color: #8e8e8e; font-size: 11px; margin-bottom: 14px; }
+
+  /* 顶部状态条（模拟 HUD） */
+  .hud {
+    display: flex; gap: 10px; align-items: center; flex-wrap: wrap;
+    background: #1a1512; border: 1px solid #4d4d45; border-radius: 8px;
+    padding: 8px 12px; margin-bottom: 14px;
+  }
+  .hud .stat { font-size: 12px; color: #8e8e8e; }
+  .hud .stat b { color: #e0d7c6; font-weight: 600; }
+  .bar-wrap { width: 150px; height: 10px; background: #252520; border: 1px solid #4d4d45; border-radius: 5px; overflow: hidden; position: relative; }
+  .bar-fill { height: 100%; width: 0%; background: #d3a060; transition: width 0.25s; }
+  .bar-fill.stun { background: #c65a4a; }
+  .bar-fill.shield { background: #7ab89a; }
+  .bar-label { position: absolute; inset: 0; font-size: 8px; line-height: 10px; text-align: center; color: #fff; text-shadow: 0 0 2px #000; }
+
+  /* 三栏主体 */
+  .proto-body { display: grid; grid-template-columns: 210px 1fr 250px; gap: 12px; align-items: start; }
+  @media (max-width: 900px) { .proto-body { grid-template-columns: 1fr; } }
+  .panel { background: #1a1512; border: 1px solid #4d4d45; border-radius: 10px; padding: 12px; }
+  .panel-title {
+    font-size: 11px; font-weight: 900; color: #d3a060; letter-spacing: 0.1em;
+    text-transform: uppercase; margin-bottom: 10px;
+  }
+  .group-title { font-size: 10px; font-weight: 900; color: #8e8e8e; letter-spacing: 0.08em; margin: 8px 0 4px; text-transform: uppercase; }
+
+  /* 装备栏 */
+  .equip-slot {
+    display: flex; align-items: center; justify-content: space-between; gap: 8px;
+    background: #252520; border: 1px solid #4d4d45; border-radius: 6px;
+    padding: 6px 8px; margin-bottom: 5px; cursor: pointer; transition: border-color 0.15s;
+  }
+  .equip-slot:hover { border-color: #8e8e8e; }
+  .equip-slot.active { border-color: #d3a060; background: #2c2620; }
+  .equip-slot .slot-name { color: #8e8e8e; font-size: 11px; min-width: 52px; }
+  .equip-slot .slot-item { color: #e0d7c6; font-size: 12px; flex: 1; text-align: right; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .equip-slot .slot-item.empty { color: #5d5d55; }
+
+  /* 模块槽 */
+  .armor-head {
+    display: flex; justify-content: space-between; align-items: baseline;
+    margin-bottom: 8px;
+  }
+  .armor-head .name { font-size: 14px; color: #e0d7c6; font-weight: 700; }
+  .armor-head .tag { font-size: 10px; color: #7ab89a; border: 1px solid #5a8f7a; border-radius: 4px; padding: 1px 6px; }
+  .kv { display: grid; grid-template-columns: auto 1fr; gap: 2px 10px; font-size: 12px; margin-bottom: 10px; }
+  .kv .k { color: #8e8e8e; }
+  .kv .v { color: #e0d7c6; text-align: right; }
+
+  .mod-slot-title { font-size: 11px; color: #8e8e8e; margin: 10px 0 5px; display: flex; justify-content: space-between; }
+  .mod-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+  .mod-slot {
+    border: 1px dashed #4d4d45; border-radius: 6px; padding: 7px 9px; cursor: pointer;
+    background: #1e1a15; transition: border-color 0.15s;
+  }
+  .mod-slot.filled { border-style: solid; border-color: #5a8f7a; background: #1f2720; }
+  .mod-slot.special { border-color: #b08a3a; background: #2a2215; }
+  .mod-slot:hover { border-color: #d3a060; }
+  .mod-slot .m-name { font-size: 12px; color: #e0d7c6; }
+  .mod-slot .m-sub { font-size: 10px; color: #8e8e8e; margin-top: 2px; }
+  .mod-slot .m-cost { font-size: 10px; color: #c65a4a; }
+  .mod-slot .m-cost.minus { color: #7ab89a; }
+  .mod-slot.empty .m-name { color: #5d5d55; }
+
+  /* 模块/激活详情 */
+  .detail-name { font-size: 14px; color: #e0d7c6; font-weight: 700; margin-bottom: 4px; }
+  .detail-desc { font-size: 11px; color: #8e8e8e; margin-bottom: 8px; }
+  .attr-line { display: flex; justify-content: space-between; font-size: 12px; padding: 3px 0; border-bottom: 1px dotted #35352f; }
+  .attr-line .k { color: #8e8e8e; }
+  .attr-line .v { color: #e0d7c6; }
+  .attr-line .v.good { color: #7ab89a; }
+  .attr-line .v.bad { color: #c65a4a; }
+  .enchant-box { margin-top: 8px; border: 1px solid #5a8f7a; border-radius: 6px; padding: 6px 8px; background: #1f2720; }
+  .enchant-box .t { font-size: 10px; color: #7ab89a; margin-bottom: 2px; }
+  .enchant-box .v { font-size: 12px; color: #b8e0d0; }
+
+  .activate-panel { margin-top: 12px; border: 1px solid #4d4d45; border-radius: 8px; padding: 10px; background: #201a14; }
+  .activate-panel .ap-title { font-size: 11px; font-weight: 900; color: #d3a060; margin-bottom: 6px; }
+  .btn {
+    display: block; width: 100%; margin-top: 8px; padding: 8px;
+    border: 1px solid #d3a060; border-radius: 6px; background: #2c2620; color: #d3a060;
+    font-family: inherit; font-size: 13px; cursor: pointer; transition: background 0.15s;
+  }
+  .btn:hover { background: #3a3128; }
+  .btn.active { background: #d3a060; color: #1a1512; font-weight: 700; }
+  .shield-bar { margin-top: 8px; }
+  .shield-bar .bar-label { line-height: 12px; }
+  .shield-bar .bar-wrap { width: 100%; height: 12px; }
+
+  .hint { font-size: 10px; color: #5d5d55; margin-top: 12px; line-height: 1.6; }
+  .demo-btns { display: flex; gap: 6px; margin-top: 6px; flex-wrap: wrap; }
+  .demo-btns .btn { width: auto; margin: 0; padding: 4px 10px; font-size: 11px; }
+</style>
+</head>
+<body>
+
+<div class="proto-title">装备栏 · 模块化防具 UI 原型</div>
+<div class="proto-sub">静态演示（数据写死，不进游戏逻辑）— 依据 docs/design/37-equipment-modular-armor.md</div>
+
+<!-- 顶部 HUD：负重 / 底气 / 眩晕条 -->
+<div class="hud">
+  <span class="stat">负重 <b id="hud-carry">14.8</b> / 32.0 kg</span>
+  <span class="stat">底气 <b id="hud-diqi">36</b> / 72</span>
+  <span class="stat">眩晕值</span>
+  <div class="bar-wrap"><div class="bar-fill stun" id="bar-stun"></div><div class="bar-label" id="label-stun">0 / 100</div></div>
+  <div class="demo-btns">
+    <button class="btn" onclick="demoStun(30)">被打头 +30</button>
+    <button class="btn" onclick="demoStun(-1)">衰减 -1</button>
+  </div>
+</div>
+
+<div class="proto-body">
+
+  <!-- 左栏：装备栏（10 槽） -->
+  <div class="panel">
+    <div class="panel-title">装备栏</div>
+    <div id="equip-list"></div>
+  </div>
+
+  <!-- 中栏：选中槽位详情（躯干 6 板位 / 头盔 3 槽） -->
+  <div class="panel">
+    <div class="panel-title">装备详情</div>
+    <div id="armor-detail"></div>
+  </div>
+
+  <!-- 右栏：模块详情 + 激活面板 -->
+  <div class="panel">
+    <div class="panel-title">模块 / 激活</div>
+    <div id="mod-detail"></div>
+  </div>
+
+</div>
+
+<div class="hint">
+  原型说明：① 左栏点击「衣服/战斗服」→ 中栏显示 6 板位模块槽（胸/腹/左臂/右臂/左腿/右腿），点击板位 → 右栏显示模块属性；② 点击「头/皮盔」→ 显示 3 槽（盔体/内衬/护面），护面为万能功能槽（电筒，不参与减伤）；③ 战斗服选中时右栏有「激活底气护体」——演示激活后盾 + 部位减伤的变化；④ 顶部眩晕条可手动演示累积（≥100 眩晕 1 回合）。所有数据均为静态演示值。
+</div>
+
+<script>
+// ===== 静态演示数据（依据 37 号文档） =====
+
+// 眩晕演示状态
+var stunValue = 0;
+function demoStun(delta) {
+  stunValue = Math.max(0, Math.min(100, stunValue + delta));
+  var bar = document.getElementById('bar-stun');
+  var label = document.getElementById('label-stun');
+  bar.style.width = stunValue + '%';
+  label.textContent = stunValue + ' / 100' + (stunValue >= 100 ? '（眩晕 1 回合）' : '');
+}
+
+// 装备槽位（10 槽，分组）
+var EQUIP_SLOTS = [
+  { group: '出招装备' },
+  { id: 'weapon_left',  name: '左手武器', item: null },
+  { id: 'weapon_right', name: '右手武器', item: null },
+  { id: 'glove_left',   name: '左手套',   item: null },
+  { id: 'glove_right',  name: '右手套',   item: null },
+  { id: 'shoe_left',    name: '左脚',     item: null },
+  { id: 'shoe_right',   name: '右脚',     item: null },
+  { group: '防具' },
+  { id: 'head',     name: '头',   item: '皮盔' },
+  { id: 'clothing', name: '衣服', item: '战斗服' },
+  { group: '载物' },
+  { id: 'vest',     name: '背心', item: null },
+  { id: 'backpack', name: '背包', item: null }
+];
+
+// 战斗服（躯干防具 · 6 板位）
+var battleSuit = {
+  name: '战斗服', slot: 'clothing', tag: '激活制',
+  baseShield: 24,
+  pocket: 3, weight: 1.2,
+  plates: {
+    chest:  { name: '凯夫拉片', special: false, dmg: '劈砍 12% · 戳刺 6% · 钝击 4%', cost: '+10%', enchant: '防御力 +5', desc: '硅叶浸布硬片，主挡劈砍。' },
+    abdomen:{ name: '空', empty: true },
+    arm_l:  { name: '皮内衬', special: false, dmg: '钝击 10% · 劈砍 4%', cost: '+8%', enchant: '身手 +1', desc: '柔软缓冲，防震荡。' },
+    arm_r:  { name: '空', empty: true },
+    leg_l:  { name: '空', empty: true },
+    leg_r:  { name: '空', empty: true }
+  }
+};
+
+// 皮盔（头盔 · 3 槽）
+var leatherHelm = {
+  name: '皮盔', slot: 'head', tag: '常驻 · 不激活',
+  dmg: '钝击 15% · 劈砍 8% · 戳刺 5%',
+  antiStun: '抗眩晕 40%',
+  weight: 0.4,
+  modules: {
+    shell:  { name: '皮制盔体', cost: '', dmg: '钝击 15% · 劈砍 8% · 戳刺 5%', desc: '软盔体，防震荡不防利器。' },
+    liner:  { name: '软内衬', cost: '', antiStun: '抗眩晕 +40%', desc: '缓冲冲击，抗晕核心。' },
+    face:   { name: '头灯', cost: '', func: '夜间命中率 +10%', desc: '万能功能槽：不参与减伤结算。' }
+  }
+};
+
+// 当前选中
+var currentSlot = 'clothing';
+var currentPlate = null;
+var activated = false;
+
+function esc(s) { return String(s == null ? '' : s); }
+
+// ===== 左栏：渲染装备栏 =====
+function renderEquipList() {
+  var list = document.getElementById('equip-list');
+  var html = '';
+  for (var i = 0; i < EQUIP_SLOTS.length; i++) {
+    var s = EQUIP_SLOTS[i];
+    if (s.group) { html += '<div class="group-title">' + esc(s.group) + '</div>'; continue; }
+    var active = (s.id === currentSlot) ? ' active' : '';
+    var itemCls = s.item ? '' : ' empty';
+    html += '<div class="equip-slot' + active + '" onclick="selectSlot(\'' + s.id + '\')">' +
+      '<span class="slot-name">' + esc(s.name) + '</span>' +
+      '<span class="slot-item' + itemCls + '">' + esc(s.item || '空') + '</span></div>';
+  }
+  list.innerHTML = html;
+}
+
+// ===== 中栏：渲染选中详情 =====
+function renderDetail() {
+  var el = document.getElementById('armor-detail');
+  if (currentSlot === 'clothing') { el.innerHTML = battleSuitHtml(); }
+  else if (currentSlot === 'head') { el.innerHTML = helmHtml(); }
+  else {
+    var s = null;
+    for (var i = 0; i < EQUIP_SLOTS.length; i++) if (EQUIP_SLOTS[i].id === currentSlot) s = EQUIP_SLOTS[i];
+    el.innerHTML = '<div class="armor-head"><span class="name">' + esc(s ? s.name : '') + '</span></div>' +
+      '<div class="hint">该槽位为旧模型（常驻属性/词条），不参与模块化系统。原型暂只演示「衣服」与「头」。</div>';
+  }
+}
+
+function battleSuitHtml() {
+  var a = activated;
+  var html = '<div class="armor-head"><span class="name">战斗服</span><span class="tag">' + (a ? '已激活' : '未激活 · 白板') + '</span></div>';
+  html += '<div class="kv">' +
+    '<span class="k">基础盾量</span><span class="v">' + battleSuit.baseShield + '</span>' +
+    '<span class="k">口袋</span><span class="v">' + battleSuit.pocket + ' 格（常驻）</span>' +
+    '<span class="k">重量</span><span class="v">' + battleSuit.weight + ' kg</span>' +
+    '<span class="k">减伤</span><span class="v">' + (a ? '按板位生效' : '无（未激活）') + '</span></div>';
+  html += '<div class="mod-slot-title"><span>6 板位 · 模块槽</span><span style="color:#8e8e8e">点击查看模块</span></div>';
+  html += '<div class="mod-grid">';
+  var plateDefs = [
+    ['chest', '胸'], ['abdomen', '腹'], ['arm_l', '左臂'], ['arm_r', '右臂'], ['leg_l', '左腿'], ['leg_r', '右腿']
+  ];
+  for (var i = 0; i < plateDefs.length; i++) {
+    var key = plateDefs[i][0], label = plateDefs[i][1];
+    var m = battleSuit.plates[key];
+    var cls = 'mod-slot' + (m.empty ? ' empty' : (m.special ? ' special' : ' filled'));
+    var sub = m.empty ? '空' : (m.dmg + (m.enchant ? ' · ' + m.enchant : ''));
+    var cost = m.empty ? '' : '<div class="m-cost' + (m.cost.indexOf('-') === 0 ? ' minus' : '') + '">激活消耗 ' + m.cost + '</div>';
+    html += '<div class="' + cls + '" onclick="selectPlate(\'' + key + '\')">' +
+      '<div class="m-name">' + (m.empty ? '空 · ' + label : m.name) + '</div>' +
+      '<div class="m-sub">' + esc(sub) + '</div>' + cost + '</div>';
+  }
+  html += '</div>';
+  return html;
+}
+
+function helmHtml() {
+  var html = '<div class="armor-head"><span class="name">皮盔</span><span class="tag">常驻 · 不激活</span></div>';
+  html += '<div class="kv">' +
+    '<span class="k">减伤</span><span class="v">钝击 15% · 劈砍 8% · 戳刺 5%</span>' +
+    '<span class="k">抗眩晕</span><span class="v">40% 比例减免</span>' +
+    '<span class="k">重量</span><span class="v">0.4 kg</span></div>';
+  html += '<div class="mod-slot-title"><span>3 槽 · 模块</span></div>';
+  var defs = [
+    ['shell', '盔体（减伤赛道）'], ['liner', '内衬（抗晕）'], ['face', '护面（万能功能槽）']
+  ];
+  for (var i = 0; i < defs.length; i++) {
+    var key = defs[i][0], label = defs[i][1];
+    var m = leatherHelm.modules[key];
+    var sub = m.dmg || m.antiStun || m.func || '';
+    html += '<div class="mod-slot filled" onclick="selectPlate(\'' + key + '\', true)">' +
+      '<div class="m-name">' + esc(m.name) + '</div>' +
+      '<div class="m-sub">' + esc(label + '：' + sub) + '</div></div>';
+  }
+  return html;
+}
+
+// ===== 右栏：模块详情 / 激活 =====
+function selectSlot(id) {
+  currentSlot = id;
+  currentPlate = null;
+  activated = false;
+  renderEquipList();
+  renderDetail();
+  renderModDetail();
+}
+
+function selectPlate(key, isHelm) {
+  currentPlate = { key: key, helm: !!isHelm };
+  renderModDetail();
+}
+
+function renderModDetail() {
+  var el = document.getElementById('mod-detail');
+  if (currentSlot === 'clothing') {
+    if (currentPlate && !battleSuit.plates[currentPlate.key].empty) {
+      var m = battleSuit.plates[currentPlate.key];
+      var plateLabel = { chest: '胸', abdomen: '腹', arm_l: '左臂', arm_r: '右臂', leg_l: '左腿', leg_r: '右腿' }[currentPlate.key];
+      el.innerHTML =
+        '<div class="detail-name">' + esc(m.name) + '</div>' +
+        '<div class="detail-desc">' + esc(plateLabel + '板位 · ' + m.desc) + '</div>' +
+        '<div class="attr-line"><span class="k">基础属性</span><span class="v">' + esc(m.dmg) + '</span></div>' +
+        '<div class="enchant-box"><div class="t">附魔（1 条）</div><div class="v">' + esc(m.enchant) + '</div></div>' +
+        '<div class="attr-line" style="margin-top:8px"><span class="k">激活消耗</span><span class="v bad">' + esc(m.cost) + '</span></div>';
+      return;
+    }
+    el.innerHTML = activatePanelHtml();
+  } else if (currentSlot === 'head') {
+    if (currentPlate) {
+      var hm = leatherHelm.modules[currentPlate.key];
+      var faceTag = currentPlate.key === 'face' ? '<div class="attr-line"><span class="k">类型</span><span class="v good">万能功能槽 · 不参与减伤</span></div>' : '';
+      el.innerHTML =
+        '<div class="detail-name">' + esc(hm.name) + '</div>' +
+        '<div class="detail-desc">' + esc(hm.desc) + '</div>' +
+        (hm.dmg ? '<div class="attr-line"><span class="k">减伤</span><span class="v">' + esc(hm.dmg) + '</span></div>' : '') +
+        (hm.antiStun ? '<div class="attr-line"><span class="k">抗眩晕</span><span class="v good">' + esc(hm.antiStun) + '</span></div>' : '') +
+        (hm.func ? '<div class="attr-line"><span class="k">功能</span><span class="v good">' + esc(hm.func) + '</span></div>' : '') +
+        faceTag;
+    } else {
+      el.innerHTML = '<div class="hint">点击上方槽位查看模块详情。护面槽为万能功能槽——不提供被动减伤，可装照明 / 感知 / 装饰 / 攻击向效果等任意模块。</div>';
+    }
+  } else {
+    el.innerHTML = '<div class="hint">选择一个装备查看详情。原型演示重点：「衣服 / 战斗服」（6 板位 + 激活）与「头 / 皮盔」（3 槽 + 万能护面槽）。</div>';
+  }
+}
+
+function activatePanelHtml() {
+  // 汇总模块消耗
+  var sum = 0;
+  for (var k in battleSuit.plates) {
+    var m = battleSuit.plates[k];
+    if (!m.empty) sum += parseInt(m.cost.replace('%', ''), 10) || 0;
+  }
+  var cost = battleSuit.baseShield * (1 + sum / 100);
+  var html = '<div class="activate-panel">' +
+    '<div class="ap-title">激活 · 底气护体</div>' +
+    '<div class="attr-line"><span class="k">基础盾量</span><span class="v">' + battleSuit.baseShield + '</span></div>' +
+    '<div class="attr-line"><span class="k">模块消耗汇总</span><span class="v bad">+' + sum + '%</span></div>' +
+    '<div class="attr-line"><span class="k">激活成本</span><span class="v">' + cost.toFixed(1) + ' 底气</span></div>' +
+    '<button class="btn' + (activated ? ' active' : '') + '" onclick="toggleActivate()">' + (activated ? '护体生效中 · 点击撤下' : '激活底气护体') + '</button>';
+  if (activated) {
+    html += '<div class="shield-bar"><div class="bar-wrap"><div class="bar-fill shield" style="width:100%"></div><div class="bar-label">盾量 ' + battleSuit.baseShield + '</div></div></div>';
+    html += '<div class="attr-line" style="margin-top:6px"><span class="k">胸板</span><span class="v good">劈砍 -12% 减免扣盾</span></div>';
+    html += '<div class="attr-line"><span class="k">左臂板</span><span class="v good">钝击 -10% 减免扣盾</span></div>';
+  } else {
+    html += '<div class="hint" style="margin-top:8px">未激活 = 白板：无减伤、无盾，仅口袋 / 重量常驻。<br>“不运功，硅叶甲就是件普通衣服。”</div>';
+  }
+  html += '</div>';
+  return html;
+}
+
+function toggleActivate() {
+  activated = !activated;
+  renderDetail();
+  renderModDetail();
+}
+
+// 初始化
+renderEquipList();
+renderDetail();
+renderModDetail();
+demoStun(0);
+</script>
+</body>
+</html>

@@ -15,27 +15,19 @@
       "loot_rows": [
         {
           "item_id": "herb_pecan",
-          "weight": 20,
-          "quality_tier": 1,
-          "quality_tier_max": 6
+          "weight": 20
         },
         {
           "item_id": "herb_sour_plum",
-          "weight": 20,
-          "quality_tier": 2,
-          "quality_tier_max": 6
+          "weight": 20
         },
         {
           "item_id": "herb_chestnut",
-          "weight": 20,
-          "quality_tier": 2,
-          "quality_tier_max": 6
+          "weight": 20
         },
         {
           "item_id": "herb_almond",
-          "weight": 20,
-          "quality_tier": 3,
-          "quality_tier_max": 6
+          "weight": 20
         }
       ]
     },
@@ -50,68 +42,34 @@
       "loot_rows": [
         {
           "item_id": "herb_green",
-          "weight": 40,
-          "quality_tier": 1,
-          "quality_tier_max": 6
-        },
-        {
-          "item_id": "herb_green",
-          "weight": 30,
-          "quality_tier": 2,
-          "quality_tier_max": 6
+          "weight": 72
         },
         {
           "item_id": "herb_bitter",
-          "weight": 25,
-          "quality_tier": 2,
-          "quality_tier_max": 6
+          "weight": 35
         },
         {
           "item_id": "herb_sweet",
-          "weight": 15,
-          "quality_tier": 3,
-          "quality_tier_max": 6
-        },
-        {
-          "item_id": "herb_bitter",
-          "weight": 10,
-          "quality_tier": 4,
-          "quality_tier_max": 6
-        },
-        {
-          "item_id": "herb_sweet",
-          "weight": 5,
-          "quality_tier": 5,
-          "quality_tier_max": 6
-        },
-        {
-          "item_id": "herb_green",
-          "weight": 2,
-          "quality_tier": 6,
-          "quality_tier_max": 6
+          "weight": 20
         }
       ]
     },
-    "gp_example_per_item_quality_cap": {
-      "instance_id": "gp_example_per_item_quality_cap",
+    "gp_example_mining_placeholder": {
+      "instance_id": "gp_example_mining_placeholder",
       "map_entity_id": "gathering_bush",
       "wild_interaction_category": "mining",
-      "display_name": "示例：分物品品质硬上限（草≤2档、苦≤3档，占位挖矿类）",
+      "display_name": "示例：占位挖矿类采集点",
       "base_gathering_success_rate": 0.55,
       "stamina_cost": 3,
       "tool_required": false,
       "loot_rows": [
         {
           "item_id": "herb_green",
-          "weight": 30,
-          "quality_tier": 1,
-          "quality_tier_max": 2
+          "weight": 30
         },
         {
           "item_id": "herb_bitter",
-          "weight": 20,
-          "quality_tier": 1,
-          "quality_tier_max": 3
+          "weight": 20
         }
       ]
     }

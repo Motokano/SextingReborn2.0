@@ -705,6 +705,11 @@
     }
   }
 
+  function t(key, vars) {
+    if (global && global.UIText && typeof global.UIText.t === 'function') return global.UIText.t(key, vars);
+    return key;
+  }
+
   // 模块效果文案（供面板展示；数值与 MODULE_EFFECTS 一一对应）
   function getModuleEffectText(moduleId, level) {
     var eff = MODULE_EFFECTS[moduleId];
@@ -714,57 +719,57 @@
     var pct = function (v) { return Math.round(v * 100) + '%'; };
     var arr = function (a) { return a[idx]; };
     if (moduleId === 'sprinkler') {
-      var parts = ['草生长 +' + pct(arr(eff.growth))];
-      if (arr(eff.decompact) > 0) parts.push('降压实 ' + (arr(eff.decompact) * 1000).toFixed(0) + '‰/t');
+      var parts = [t('livestock.effect.grass_growth', { v: pct(arr(eff.growth)) })];
+      if (arr(eff.decompact) > 0) parts.push(t('livestock.effect.decompact', { v: (arr(eff.decompact) * 1000).toFixed(0) }));
       return parts.join('；');
     }
     if (moduleId === 'clean_brush') {
-      return '每轮降污 ' + (arr(eff.per_round) / 10).toFixed(1) + '%';
+      return t('livestock.effect.clean_brush', { v: (arr(eff.per_round) / 10).toFixed(1) });
     }
     if (moduleId === 'tiller') {
-      return '降压实 ' + (arr(eff.per_tick) * 100).toFixed(0) + '%/t';
+      return t('livestock.effect.tiller', { v: (arr(eff.per_tick) * 100).toFixed(0) });
     }
     if (moduleId === 'seeder') {
-      return '草 < ' + pct(arr(eff.threshold)) + ' 时生长 +' + pct(arr(eff.growth));
+      return t('livestock.effect.seeder', { threshold: pct(arr(eff.threshold)), v: pct(arr(eff.growth)) });
     }
     if (moduleId === 'manure_net') {
-      var mp = ['羊污染 -' + pct(arr(eff.sheep_reduce))];
-      if (arr(eff.trample_reduce) > 0) mp.push('踩踏 -' + pct(arr(eff.trample_reduce)));
+      var mp = [t('livestock.effect.sheep_reduce', { v: pct(arr(eff.sheep_reduce)) })];
+      if (arr(eff.trample_reduce) > 0) mp.push(t('livestock.effect.trample_reduce', { v: pct(arr(eff.trample_reduce)) }));
       return mp.join('；');
     }
     if (moduleId === 'pasture_arm') {
-      var pp = ['降压实 ' + (arr(eff.per_tick) * 100).toFixed(0) + '%/t', '草生长 +' + pct(arr(eff.growth))];
-      pp.push('草 < ' + pct(eff.seed_threshold) + ' 时生长 +' + pct(arr(eff.seed_growth)));
+      var pp = [t('livestock.effect.tiller', { v: (arr(eff.per_tick) * 100).toFixed(0) }), t('livestock.effect.grass_growth', { v: pct(arr(eff.growth)) })];
+      pp.push(t('livestock.effect.seeder', { threshold: pct(eff.seed_threshold), v: pct(arr(eff.seed_growth)) }));
       return pp.join('；');
     }
     if (moduleId === 'clinic_arm') {
-      return '每轮治疗 ' + (arr(eff.heal) * 100).toFixed(0) + '% × ' + arr(eff.count) + ' 只';
+      return t('livestock.effect.clinic', { v: (arr(eff.heal) * 100).toFixed(0), n: arr(eff.count) });
     }
     if (moduleId === 'auto_collect') {
-      var ap = ['自动采集'];
-      if (arr(eff.cooldown_mult) < 1) ap.push('冷却 -' + Math.round((1 - arr(eff.cooldown_mult)) * 100) + '%');
-      if (arr(eff.clean_corpse)) ap.push('Lv4+ 自动清尸');
+      var ap = [t('livestock.effect.auto_collect')];
+      if (arr(eff.cooldown_mult) < 1) ap.push(t('livestock.effect.cooldown_reduce', { v: Math.round((1 - arr(eff.cooldown_mult)) * 100) }));
+      if (arr(eff.clean_corpse)) ap.push(t('livestock.effect.auto_clean_corpse'));
       return ap.join('；');
     }
     if (moduleId === 'warehouse_hub') {
-      return '缓存 ' + arr(eff.capacity) + ' 格 · 自动收集四臂采集产物';
+      return t('livestock.effect.warehouse_hub', { v: arr(eff.capacity) });
     }
     if (moduleId === 'feed_preprocess') {
-      return '作物→标准饲料（1 单位 = 10 营养）自动入同臂槽';
+      return t('livestock.effect.feed_preprocess');
     }
     if (moduleId === 'feed_refine') {
-      var fp = ['精加工 ×' + arr(eff.refine_mult).toFixed(2).replace(/0$/, '')];
-      if (arr(eff.cache_capacity) > 0) fp.push('缓存 ' + arr(eff.cache_capacity) + ' 单位优先消耗');
+      var fp = [t('livestock.effect.refine', { v: arr(eff.refine_mult).toFixed(2).replace(/0$/, '') })];
+      if (arr(eff.cache_capacity) > 0) fp.push(t('livestock.effect.cache_priority', { v: arr(eff.cache_capacity) }));
       return fp.join('；');
     }
     if (moduleId === 'climate_control') {
-      return '全局三模式：晴朗/阴凉/湿润（Lv4 强度+50%）';
+      return t('livestock.effect.climate_control');
     }
     if (moduleId === 'link_schedule') {
-      return '调度 ' + arr(eff.dispatch_points) + ' 点/轮 · 联动规则 ' + arr(eff.rules_enabled) + ' 条';
+      return t('livestock.effect.link_schedule', { v: arr(eff.dispatch_points), n: arr(eff.rules_enabled) });
     }
     if (moduleId === 'waste_heat_recycle') {
-      return '降污 ×' + Math.round(arr(eff.convert_rate) * 100) + '% 回收（肥料/沼气/虫粉）';
+      return t('livestock.effect.waste_heat', { v: Math.round(arr(eff.convert_rate) * 100) });
     }
     return '';
   }

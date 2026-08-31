@@ -44,7 +44,7 @@ W9 联调总验收
   · 账号仓 hideout_warehouse：真库存，存档字段独立，读写唯一入口 js/hideout-warehouse.js（HideoutWarehouse）。
 - 限格不限重：存入/取出均不触发角色 W/Wmax 超重判定（05 §5.5.6）。
 - 堆叠：模板 stack_limit>1 默认可仓内叠 count；deposit_auto_stack 为开局免费能力。
-- 实例：装备/未鉴定/quality_tier/resolved_rolls 等完整实例原样存取。
+- 实例：装备/未鉴定/resolved_rolls 等完整实例原样存取。
 - 展示：getDisplayName/getDisplayDesc 必须传 character（语言等级规则）。
 - 取出放入顺序：背包 → 载具（已绑且未超载）→ 背心 → 口袋；仍满则脚下（05 §5.5.5）。
 - 首版开仓：按 29 §4 默认开放（100 格、四容器手动存）；A0 在 warehouse-upgrades.json 中为逻辑占位，运行时默认视为已满足，勿阻断 NPC 开仓。
@@ -370,7 +370,7 @@ W9 联调总验收
 清单（29 §13 + 本包补充）：
 - [ ] node tools/test-hideout-warehouse.mjs 通过
 - [ ] NPC 邻格 → 打开 #modal-hideout-warehouse（非 modal-base-warehouse）
-- [ ] 100 格默认；deposit_auto_stack 叠堆；装备实例 quality/鉴定往返
+- [ ] 100 格默认；deposit_auto_stack 叠堆；装备实例 resolved_rolls/鉴定往返
 - [ ] 取出顺序：背包→载具→背心→口袋→脚下
 - [ ] 存入不触发超重；取出触发 putItemIntoDefaultContainer 链
 - [ ] 分页：capacity=700 时 7 页无卡顿

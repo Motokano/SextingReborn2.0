@@ -174,6 +174,15 @@
                 dynamicCtx.fillText(stationLabel, x + w / 2 - stationLabelWidth / 2, y + h / 2 + 7);
             }
 
+            if (meta.portal && meta.portal.label) {
+                var plab = String(meta.portal.label).trim();
+                if (plab.length > 6) plab = plab.slice(0, 6);
+                dynamicCtx.fillStyle = 'rgba(125,211,252,0.95)';
+                dynamicCtx.font = 'bold 12px "Microsoft YaHei","PingFang SC",sans-serif';
+                var ptw = dynamicCtx.measureText(plab).width;
+                dynamicCtx.fillText(plab, x + w / 2 - ptw / 2, y + h / 2 + 7);
+            }
+
             if (meta.groundCount > 0) {
                 dynamicCtx.fillStyle = 'rgba(212,163,115,0.95)';
                 dynamicCtx.font = '14px sans-serif';

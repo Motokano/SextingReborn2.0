@@ -1,7 +1,7 @@
 /**
  * 采集系统 — 设计见 docs/design/11-skills.md 8.2.2 + gathering_point_instances
  * 地图格 entity_id 为视觉键；可选 gathering_instance_id 引用 data/gathering_point_instances.json 中的实例。
- * 不枯竭；每行 loot 可配 quality_tier_max（1～6）为熟练度上修后的硬上限。
+ * 不枯竭；每行 loot 为 item_id + weight；行可选 rare_weight（100% 熟练度时稀有行的权重倍率加成）。
  */
 (function (global) {
     'use strict';
@@ -9,7 +9,10 @@
     var GATHERING_MAX_PROFICIENCY = 5000000;
     var STAMINA_COST = 2;
     var MAX_INVENTORY_SLOTS = 30;
-    var QUALITY_NAMES = ['粗糙', '普通', '精良', '稀有', '史诗', '传说'];
+    function t(key, vars) {
+        if (global && global.UIText && typeof global.UIText.t === 'function') return global.UIText.t(key, vars);
+        return key;
+    }
 
     var config = {
         gathering_points: {},
@@ -53,8 +56,7 @@
                 rows.push({
                     item_id: r.item_id,
                     weight: r.weight,
-                    quality_tier: r.quality_tier,
-                    quality_tier_max: r.quality_tier_max != null ? r.quality_tier_max : 6
+                    rare_weight: r.rare_weight != null ? Number(r.rare_weight) : 0
                 });
             }
             instances[gid] = {
@@ -137,20 +139,6 @@
         return character.inventory.length >= MAX_INVENTORY_SLOTS;
     }
 
-    function normalizeQualityTier(rawTier) {
-        if (rawTier == null) return 0;
-        var v = Number(rawTier);
-        if (Number.isNaN(v)) return 0;
-        if (v >= 1 && v <= 6) return Math.max(0, Math.min(5, v - 1));
-        return Math.max(0, Math.min(5, v));
-    }
-
-    /** 行级品质上限：1～6 → 最大允许 internal tier（0～5）；缺省 6 = 传说 */
-    function rowMaxQualityInternal(row) {
-        if (!row || row.quality_tier_max == null) return 5;
-        return normalizeQualityTier(row.quality_tier_max);
-    }
-
     function resolveInstanceId(mapEntityId, instanceIdOpt) {
         if (instanceIdOpt && config.instances[instanceIdOpt]) return instanceIdOpt;
         if (mapEntityId && config.instanceDefaults[mapEntityId]) return config.instanceDefaults[mapEntityId];
@@ -168,26 +156,29 @@
         return inst;
     }
 
-    function rollLootRow(lootTable) {
+    /**
+     * 按权重抽取一行；行可选 rare_weight（0～∞）：熟练度 P% 时该行权重 ×（1 + P/100 × rare_weight），
+     * 实现「熟练度提高稀有物品行权重」（设计 11-skills 8.2.2 步骤 3）。
+     */
+    function rollLootRow(lootTable, proficiencyPct) {
         if (!lootTable || lootTable.length === 0) return null;
+        var pct = Math.max(0, Math.min(100, Number(proficiencyPct) || 0));
         var total = 0;
-        for (var i = 0; i < lootTable.length; i++) total += Number(lootTable[i].weight) || 0;
+        var weights = [];
+        for (var i = 0; i < lootTable.length; i++) {
+            var w = Number(lootTable[i].weight) || 0;
+            var rw = Number(lootTable[i].rare_weight) || 0;
+            var eff = w * (1 + (pct / 100) * rw);
+            weights.push(eff);
+            total += eff;
+        }
         if (total <= 0) return lootTable[0] || null;
         var r = Math.random() * total;
         for (var j = 0; j < lootTable.length; j++) {
-            r -= Number(lootTable[j].weight) || 0;
+            r -= weights[j];
             if (r <= 0) return lootTable[j];
         }
         return lootTable[lootTable.length - 1];
-    }
-
-    function tryQualityUpgrade(qualityTier) {
-        qualityTier = normalizeQualityTier(qualityTier);
-        if (qualityTier >= 5) return 5;
-        var pct = getProficiencyPercent();
-        var chance = Math.min(1, pct / 100);
-        if (Math.random() < chance) return Math.min(5, qualityTier + 1);
-        return qualityTier;
     }
 
     /**
@@ -195,23 +186,23 @@
      * @param {string} [gatheringInstanceId] - 可选实例 id
      */
     function doGather(mapEntityId, gatheringInstanceId) {
-        if (isGatherActionDisabled()) return { success: false, message: '当前状态无法进行采集' };
+        if (isGatherActionDisabled()) return { success: false, message: t('gathering.msg.action_disabled') };
         var point = resolveGatheringPoint(mapEntityId, gatheringInstanceId);
-        if (!point) return { success: false, message: '未知采集点' };
+        if (!point) return { success: false, message: t('gathering.msg.unknown_point') };
 
         var cat = point.wild_interaction_category || 'gathering';
         if (cat !== 'gathering') {
-            return { success: false, message: '该资源需要「' + cat + '」类技能互动（当前仅开放徒手采集类）' };
+            return { success: false, message: t('gathering.msg.need_skill', { skill: cat }) };
         }
 
         var Surv = useSurvival() ? (typeof window !== 'undefined' ? window : global).Survival : null;
         if (Surv && !Surv.canPerformStaminaOrEnergyAction()) {
-            return { success: false, message: '饱食度过低或体力耗尽，无法进行消耗体力/精力的动作' };
+            return { success: false, message: t('gathering.msg.low_stamina_full') };
         }
         var staminaNow = Surv ? Surv.getStamina() : character.stamina;
         var cost = point.stamina_cost != null ? point.stamina_cost : STAMINA_COST;
-        if (staminaNow < cost) return { success: false, message: '体力不足' };
-        if (isInventoryFull()) return { success: false, message: '背包已满' };
+        if (staminaNow < cost) return { success: false, message: t('gathering.msg.no_stamina') };
+        if (isInventoryFull()) return { success: false, message: t('gathering.msg.inventory_full') };
 
         var base = point.base_gathering_success_rate != null ? point.base_gathering_success_rate : 0.6;
         var proficiencyPct = getProficiencyPercent();
@@ -222,25 +213,20 @@
 
         var roll = Math.random();
         if (roll >= successRate) {
-            return { success: false, message: '采集失败', consumedStamina: true };
+            return { success: false, message: t('gathering.msg.fail'), consumedStamina: true };
         }
 
         var lootTable = point.loot_rows;
         if (!lootTable || lootTable.length === 0) {
             if (cat === 'gathering') addGatheringProficiencyDelta(1);
-            return { success: true, message: '采集成功但无产出', consumedStamina: true };
+            return { success: true, message: t('gathering.msg.no_output'), consumedStamina: true };
         }
 
-        var row = rollLootRow(lootTable);
+        var row = rollLootRow(lootTable, getProficiencyPercent());
         if (!row) {
             if (cat === 'gathering') addGatheringProficiencyDelta(1);
-            return { success: true, message: '采集成功但无产出', consumedStamina: true };
+            return { success: true, message: t('gathering.msg.no_output'), consumedStamina: true };
         }
-
-        var qualityTier = normalizeQualityTier(row.quality_tier);
-        qualityTier = tryQualityUpgrade(qualityTier);
-        var capInt = rowMaxQualityInternal(row);
-        qualityTier = Math.min(qualityTier, capInt);
 
         var itemDef = config.items[row.item_id];
         var itemName = itemDef && itemDef.name ? itemDef.name : row.item_id;
@@ -253,11 +239,9 @@
                 itemName = gIE.getDisplayName(tplG, tierG, chG);
             }
         }
-        var qualityName = QUALITY_NAMES[qualityTier] || '粗糙';
-
         var g = typeof window !== 'undefined' ? window : (typeof global !== 'undefined' ? global : null);
         if (g && g.InventoryEquipment && typeof g.InventoryEquipment.putItemIntoDefaultContainer === 'function') {
-            var itemInstance = { item_id: row.item_id, quality_tier: qualityTier, count: 1 };
+            var itemInstance = { item_id: row.item_id, count: 1 };
             var placed = g.InventoryEquipment.putItemIntoDefaultContainer(itemInstance);
             if (!placed.placed) {
                 if (g.GameEngine && typeof g.GameEngine.getState === 'function') {
@@ -269,10 +253,10 @@
                 if (typeof global !== 'undefined' && global.Survival && typeof global.Survival.advanceTick === 'function') {
                     global.Survival.advanceTick();
                 }
-                return { success: true, message: '获得 ' + qualityName + ' ' + itemName + '（已掉落在脚下）', consumedStamina: true };
+                return { success: true, message: t('gathering.msg.dropped', { item: itemName }), consumedStamina: true };
             }
         } else {
-            character.inventory.push({ item_id: row.item_id, quality_tier: qualityTier });
+            character.inventory.push({ item_id: row.item_id });
         }
         if (cat === 'gathering') addGatheringProficiencyDelta(1);
 
@@ -281,11 +265,9 @@
             success: true,
             gathered: {
                 item_id: row.item_id,
-                quality_tier: qualityTier,
-                item_name: itemName,
-                quality_name: qualityName
+                item_name: itemName
             },
-            message: '获得 ' + qualityName + ' ' + itemName,
+            message: t('gathering.msg.got', { item: itemName }),
             consumedStamina: true
         };
     }
@@ -306,7 +288,6 @@
 
     global.Gathering = {
         GATHERING_MAX_PROFICIENCY: GATHERING_MAX_PROFICIENCY,
-        QUALITY_NAMES: QUALITY_NAMES,
         MAX_INVENTORY_SLOTS: MAX_INVENTORY_SLOTS,
         setConfig: setConfig,
         getCharacterState: getCharacterState,

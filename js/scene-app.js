@@ -338,7 +338,7 @@
         try {
             showMsg(ui('intro.blocked.action'), 'info');
         } catch (e0) {
-            showMsg('现在还无法使用。', 'info');
+            showMsg(ui('scene.msg.not_available_yet'), 'info');
         }
     }
 
@@ -403,7 +403,7 @@
         if (!ids.length || typeof fetch !== 'function') return;
 
         return Promise.all(ids.map(function (id) {
-            return fetch('data/maps/' + id + '.json')
+            return fetch('data/maps/' + id + '.json?t=' + Date.now())
                 .then(function (r) { return r.ok ? r.json() : null; })
                 .then(function (json) { return { id: id, json: json }; })
                 .catch(function () { return { id: id, json: null }; });
@@ -555,10 +555,16 @@
     }
 
     var defaultGatheringPoints = { gathering_bush: { gathering_point_id: 'gathering_bush', display_name: 'gathering_bush', base_gathering_success_rate: 0.6, loot_table_id: 'loot_bush', stamina_cost: 2, tool_required: false }, gathering_grass: { gathering_point_id: 'gathering_grass', display_name: 'gathering_grass', base_gathering_success_rate: 0.6, loot_table_id: 'loot_grass', stamina_cost: 2, tool_required: false } };
-    var defaultLootTables = { loot_bush: [ { item_id: 'wild_fruit_red', weight: 40, quality_tier: 1 }, { item_id: 'wild_fruit_red', weight: 30, quality_tier: 2 }, { item_id: 'wild_fruit_purple', weight: 25, quality_tier: 2 }, { item_id: 'wild_fruit_yellow', weight: 15, quality_tier: 3 }, { item_id: 'wild_fruit_purple', weight: 10, quality_tier: 4 }, { item_id: 'wild_fruit_yellow', weight: 5, quality_tier: 5 }, { item_id: 'wild_fruit_red', weight: 2, quality_tier: 6 } ], loot_grass: [ { item_id: 'herb_green', weight: 40, quality_tier: 1 }, { item_id: 'herb_green', weight: 30, quality_tier: 2 }, { item_id: 'herb_bitter', weight: 25, quality_tier: 2 }, { item_id: 'herb_sweet', weight: 15, quality_tier: 3 }, { item_id: 'herb_bitter', weight: 10, quality_tier: 4 }, { item_id: 'herb_sweet', weight: 5, quality_tier: 5 }, { item_id: 'herb_green', weight: 2, quality_tier: 6 } ] };
+    var defaultLootTables = { loot_bush: [ { item_id: 'wild_fruit_red', weight: 72 }, { item_id: 'wild_fruit_purple', weight: 35 }, { item_id: 'wild_fruit_yellow', weight: 20 } ], loot_grass: [ { item_id: 'herb_green', weight: 72 }, { item_id: 'herb_bitter', weight: 35 }, { item_id: 'herb_sweet', weight: 20 } ] };
     var defaultItems = { wild_fruit_red: { item_id: 'wild_fruit_red', name: 'wild_fruit_red', weight_kg: 0.1 }, wild_fruit_purple: { item_id: 'wild_fruit_purple', name: 'wild_fruit_purple', weight_kg: 0.1 }, wild_fruit_yellow: { item_id: 'wild_fruit_yellow', name: 'wild_fruit_yellow', weight_kg: 0.1 }, herb_green: { item_id: 'herb_green', name: 'herb_green', weight_kg: 0.1 }, herb_bitter: { item_id: 'herb_bitter', name: 'herb_bitter', weight_kg: 0.1 }, herb_sweet: { item_id: 'herb_sweet', name: 'herb_sweet', weight_kg: 0.1 } };
 
-    var EQUIP_SLOT_LABELS = { head: 'equip.slot.head', clothing: 'equip.slot.clothing', vest: 'equip.slot.vest', backpack: 'equip.slot.backpack', weapon_left: 'equip.slot.weapon_left', weapon_right: 'equip.slot.weapon_right', glove_left: 'equip.slot.glove_left', glove_right: 'equip.slot.glove_right', shoe_left: 'equip.slot.shoe_left', shoe_right: 'equip.slot.shoe_right', ring_left: 'equip.slot.ring_left', ring_right: 'equip.slot.ring_right', earring_left: 'equip.slot.earring_left', earring_right: 'equip.slot.earring_right', necklace: 'equip.slot.necklace' };
+    var EQUIP_SLOT_LABELS = { head: 'equip.slot.head', clothing: 'equip.slot.clothing', vest: 'equip.slot.vest', backpack: 'equip.slot.backpack', weapon_left: 'equip.slot.weapon_left', weapon_right: 'equip.slot.weapon_right', glove_left: 'equip.slot.glove_left', glove_right: 'equip.slot.glove_right', shoe_left: 'equip.slot.shoe_left', shoe_right: 'equip.slot.shoe_right' };
+    // 装备栏分三组：出招装备（肢体出招读取）、防具（减伤链）、载物（容器，非护甲）
+    var EQUIP_SLOT_GROUPS = [
+        { label: 'equip.group.strike', slots: ['weapon_left', 'weapon_right', 'glove_left', 'glove_right', 'shoe_left', 'shoe_right'] },
+        { label: 'equip.group.armor', slots: ['head', 'clothing'] },
+        { label: 'equip.group.carry', slots: ['vest', 'backpack'] }
+    ];
     var BODY_PART_IDS = ['head', 'chest', 'belly', 'lhand', 'rhand', 'lfoot', 'rfoot'];
     var BODY_PART_LABELS = { head: 'body.part.head', chest: 'body.part.chest', belly: 'body.part.belly', lhand: 'body.part.lhand', rhand: 'body.part.rhand', lfoot: 'body.part.lfoot', rfoot: 'body.part.rfoot' };
     var ARM_ACTION_TAGS = ['combat.action.punch', 'combat.action.push_palm', 'combat.action.finger_jab'];
@@ -605,23 +611,11 @@
     function formatItemAttributes(tpl, inst) {
         if (!tpl) return '';
         var lines = [];
+        // 仅保留通用属性（重量/背包减重/技能系数——武器与装备共用）；
+        // 装备专属细节（口袋/背心栏/形态系数/词条槽/先天要求等）改由 info_module（module.equipment_armor）按技能解锁显示。
         if (tpl.weight_kg != null) lines.push(ui('item.attr.weight', { v: tpl.weight_kg }));
-        if (tpl.pocket_slots != null) lines.push(ui('item.attr.pocket_slots', { v: tpl.pocket_slots }));
-        if (tpl.vest_slots != null) lines.push(ui('item.attr.vest_slots', { v: tpl.vest_slots }));
-        if (tpl.backpack_slots != null) lines.push(ui('item.attr.backpack_slots', { v: tpl.backpack_slots }));
         if (tpl.backpack_weight_factor != null) lines.push(ui('item.attr.backpack_weight_factor', { v: Math.round(tpl.backpack_weight_factor * 100) }));
-        if (tpl.damage_reduce_slash_pct != null || tpl.damage_reduce_pierce_pct != null || tpl.damage_reduce_blunt_pct != null) {
-            var dr = [];
-            if (tpl.damage_reduce_slash_pct != null && tpl.damage_reduce_slash_pct > 0) dr.push(ui('item.attr.dr.slash', { v: Math.round(tpl.damage_reduce_slash_pct * 100) }));
-            if (tpl.damage_reduce_pierce_pct != null && tpl.damage_reduce_pierce_pct > 0) dr.push(ui('item.attr.dr.pierce', { v: Math.round(tpl.damage_reduce_pierce_pct * 100) }));
-            if (tpl.damage_reduce_blunt_pct != null && tpl.damage_reduce_blunt_pct > 0) dr.push(ui('item.attr.dr.blunt', { v: Math.round(tpl.damage_reduce_blunt_pct * 100) }));
-            if (dr.length) lines.push(ui('item.attr.damage_reduce', { v: dr.join(ui('punct.join.dot')) }));
-        }
         if (tpl.skill_coef != null) lines.push(ui('item.attr.skill_coef', { v: tpl.skill_coef }));
-        if (tpl.req_innate_jingu != null) lines.push(ui('item.attr.req_innate_jingu', { v: tpl.req_innate_jingu }));
-        if (tpl.enchant_slots != null) lines.push(ui('item.attr.enchant_slots', { v: tpl.enchant_slots }));
-        var q = (inst && inst.quality_tier != null) ? inst.quality_tier : tpl.quality_tier;
-        if (q != null && IE && IE.QUALITY_NAMES) lines.push(ui('item.attr.quality', { v: (IE.QUALITY_NAMES[q] || ui('common.dash')) }));
         return lines.length ? lines.join('\n') : '';
     }
     function buildItemTooltipHtml(name, desc, attrs) {
@@ -644,7 +638,25 @@
                     try {
                         var bt = window.BuffSystem.getBuffTemplate(buffId);
                         if (!bt) return null;
-                        return { name: bt.name || '', buff_id: bt.buff_id || buffId };
+                        // 汇总 survival_delta（每 tick 恢复）供食物恢复摘要渲染（k35，43 消化模型）
+                        var sd = { satiety: 0, thirst: 0, nutrition: 0 };
+                        if (Array.isArray(bt.effects)) {
+                            for (var ei = 0; ei < bt.effects.length; ei++) {
+                                var ef = bt.effects[ei];
+                                if (ef && ef.type === 'survival_delta' && ef.params && typeof ef.params === 'object') {
+                                    var p = ef.params;
+                                    if (p.satiety != null) sd.satiety += Number(p.satiety) || 0;
+                                    if (p.thirst != null) sd.thirst += Number(p.thirst) || 0;
+                                    if (p.nutrition != null) sd.nutrition += Number(p.nutrition) || 0;
+                                }
+                            }
+                        }
+                        return {
+                            name: bt.name || '',
+                            buff_id: bt.buff_id || buffId,
+                            durationTicks: bt.durationTicks != null ? (parseInt(bt.durationTicks, 10) || 0) : 0,
+                            survivalDelta: sd
+                        };
                     } catch (eB) { return null; }
                 }
             }) || '';
@@ -655,8 +667,8 @@
         var tier = IE && IE.getItemDisplayTier ? IE.getItemDisplayTier(itemId, character) : 0;
         var name = tpl && IE && IE.getDisplayName ? IE.getDisplayName(tpl, tier, character) : String(itemId || '');
         var desc = tpl && IE && IE.getDisplayDesc ? IE.getDisplayDesc(tpl, tier, character) : '';
-        // 默认只显示“名称 + 描述”，其它信息统一走 ItemInfoModules 配置。
-        var html = buildItemTooltipHtml(name, desc, '');
+        var attrsText = (typeof formatItemAttributes === 'function') ? formatItemAttributes(tpl, inst) : '';
+        var html = buildItemTooltipHtml(name, desc, attrsText);
         try {
             if (window.ItemInfoModules && typeof window.ItemInfoModules.renderTooltipModulesHtml === 'function') {
                 var modulesHtml = window.ItemInfoModules.renderTooltipModulesHtml({
@@ -710,7 +722,8 @@
             fetch(base + 'livestock-modules.json').then(function (r) { return r.ok ? r.json() : { modules: {} }; }).catch(function () { return { modules: {} }; }),
             fetch(base + 'livestock-perks.json').then(function (r) { return r.ok ? r.json() : { perks: {} }; }).catch(function () { return { perks: {} }; }),
             fetch(base + 'livestock-build-costs.json').then(function (r) { return r.ok ? r.json() : { costs: {} }; }).catch(function () { return { costs: {} }; }),
-            fetch(base + 'livestock-feed-crops.json').then(function (r) { return r.ok ? r.json() : { crops: {} }; }).catch(function () { return { crops: {} }; })
+            fetch(base + 'livestock-feed-crops.json').then(function (r) { return r.ok ? r.json() : { crops: {} }; }).catch(function () { return { crops: {} }; }),
+            fetch(base + 'modules.json').then(function (r) { return r.ok ? r.json() : {}; }).catch(function () { return {}; })
         ]).then(function (arr) {
             if (!arr[0]) throw new Error('[SceneApp] ui_text_zhCN.json missing');
             if (!window.UIText || typeof window.UIText.setDict !== 'function') throw new Error('[SceneApp] UIText module missing');
@@ -734,7 +747,8 @@
                 window.ProductionQuality.setConfig(survCfg);
             }
             var starterEquipFallback = {
-                clothing: 'eq_clothing_commute',
+                head: 'eq_head_leather_helm',
+                clothing: 'eq_clothing_combat_suit',
                 vest: 'eq_vest_hoodie',
                 shoe_left: 'eq_shoe_left_sport',
                 shoe_right: 'eq_shoe_right_sport'
@@ -858,6 +872,7 @@
                 equipment: arr[5],
                 items: arr[3],
                 enchant: arr[6],
+                modules: arr[36] || {},
                 default_equipment: defaultEquipMerged,
                 item_display_tier_threshold_1: survCfg.item_display_tier_threshold_1,
                 item_display_tier_threshold_2: survCfg.item_display_tier_threshold_2
@@ -1552,8 +1567,8 @@
                     var dis = false;
                     var hint = '';
                     if (ha.id === 'tiao_xi_once' && tiaoXiIdleTimer) {
-                        btnRow.textContent = (ha.name || ha.id) + '（挂机中）';
-                        hint = '点击停止挂机调息';
+                        btnRow.textContent = (ha.name || ha.id) + ui('scene.gather.idle_suffix');
+                        hint = ui('scene.meditation.stop_hint');
                     }
                     if (!mounted) {
                         dis = true;
@@ -1611,6 +1626,11 @@
                             }
                             else if (actionId === 'tu_qi_na_jing') showMsg(ui('combat.hub.ok.tu_qi', { e: r.energy_gain != null ? r.energy_gain : 1 }), 'success');
                             else if (actionId === 'tiao_xi_once') showMsg(ui('combat.hub.ok.tiao_xi', { n: r.diqi_gained != null ? r.diqi_gained : 0 }), 'success');
+                            else if (actionId === 'jin_shi') showMsg(ui('combat.hub.ok.eat', {
+                                gain: r.stamina_gain != null ? String(r.stamina_gain) : '0',
+                                sat: r.satiety_cost != null ? String(r.satiety_cost) : '0',
+                                thirst: r.thirst_cost != null ? String(r.thirst_cost) : '0'
+                            }), 'success');
                             else {
                                 var hubOkVars = {};
                                 if (r.qi_li_restored != null) hubOkVars.n = r.qi_li_restored;
@@ -1628,7 +1648,8 @@
                     pinBtn.setAttribute('aria-label', ui('action.bar.pin.hint'));
                     pinBtn.title = ui('action.bar.pin.hint');
                     pinBtn.textContent = '📌';
-                    pinBtn.disabled = !!dis;
+                    // 收藏与执行状态解耦：只要已解锁且挂载即可收藏（冷却/盾未破等瞬时状态不影响收藏）
+                    pinBtn.disabled = !mounted || breathLv < ul;
                     (function (pinEl, actionIdForPin) {
                         pinEl.addEventListener('click', function (ev) {
                             ev.stopPropagation();
@@ -1728,6 +1749,18 @@
         rebuildPlayerActionsSubmenu(sub);
     }
 
+    /** UI 自由窗口：左侧状态区 DOM id → 窗口 id（36-ui-windows.md M2；setBlockDisplay 门控合并用） */
+    var LEFT_HUD_DOM_TO_WINDOW = {
+        'status-role-card': 'win-role',
+        'status-limbs': 'win-limbs',
+        'status-combat-resources-card': 'win-battle-resources',
+        'status-survival': 'win-survival',
+        'status-resources': 'win-resources',
+        'status-attrs-block': 'win-attrs',
+        'status-attr-exp-block': 'win-attr-exp',
+        'buff-hud': 'win-buff'
+    };
+
     function updateStatusPanel(gatherState) {
         var SurvForRest = window.Survival;
         if (SurvForRest && typeof SurvForRest.getState === 'function') {
@@ -1776,8 +1809,8 @@
 
                 // 鼠标悬浮：复用物品说明的同一套 tooltip（#item-tooltip）
                 var buffDesc = inst.template && inst.template.desc ? String(inst.template.desc) : '';
-                var attrs = '层数：' + String(stacks);
-                if (rem != null) attrs += '\n剩余：' + String(rem) + 't';
+                var attrs = ui('scene.buff.stacks', { v: String(stacks) });
+                if (rem != null) attrs += '\n' + ui('scene.buff.remaining', { v: String(rem) });
                 var tipHtml = buildItemTooltipHtml(buffName, buffDesc, attrs);
                 chip.addEventListener('mouseenter', function () {
                     showItemTooltip(tipHtml, chip);
@@ -1797,10 +1830,10 @@
             var enemyTitle = document.getElementById('buff-hud-enemy-title');
             if (!hud || !playerEl || !enemyEl) return;
             if (!shouldShowBlock('buff_hud')) {
-                hud.style.display = 'none';
+                setBlockDisplay('buff-hud', false);
                 return;
             }
-            hud.style.display = 'none';
+            setBlockDisplay('buff-hud', false);
             if (selfTitle) selfTitle.textContent = ui('buff.hud.self');
             var nowTick = getBuffHudNowTick();
             if (!window.BuffSystem || typeof window.BuffSystem.getState !== 'function') {
@@ -1854,10 +1887,10 @@
                 return inst && inst.buff_id && (parseInt(inst.stacks, 10) || 0) > 0;
             });
             if (!selfHas && !enemyHas) {
-                hud.style.display = 'none';
+                setBlockDisplay('buff-hud', false);
                 return;
             }
-            hud.style.display = '';
+            setBlockDisplay('buff-hud', true);
 
             if (enemyTitle) {
                 enemyTitle.textContent = chosenEnemyId
@@ -1895,9 +1928,14 @@
             return true;
         }
         function setBlockDisplay(id, visible) {
+            // 已注册窗口经 UIWindows 合并玩家偏好（游戏门控 && 玩家偏好）；未注册/无管线时回退直接显隐
+            var winId = LEFT_HUD_DOM_TO_WINDOW[id];
+            if (winId && window.UIWindows && typeof window.UIWindows.setGameVisible === 'function') {
+                window.UIWindows.setGameVisible(winId, !!visible);
+                return;
+            }
             var el = document.getElementById(id);
-            if (!el) return;
-            el.style.display = visible ? '' : 'none';
+            if (el) el.style.display = visible ? '' : 'none';
         }
         function shouldShowSurvivalMetric(metricId, survivalState) {
             var ctx = window.SceneCtx;
@@ -2043,10 +2081,10 @@
             var battleCard = document.getElementById('status-combat-resources-card');
             var battleWrap = document.getElementById('status-battle-resources');
             var showBattleCardByRule = shouldShowBlock('combat_resources');
-            if (battleCard) battleCard.style.display = showBattleCardByRule ? '' : 'none';
+            if (battleCard) setBlockDisplay('status-combat-resources-card', showBattleCardByRule);
             if (battleWrap) {
                 if (showBattleCardByRule) {
-                    var qm = s.qi_li_max != null ? s.qi_li_max : (Surv.getQiLiMax ? Surv.getQiLiMax() : 100);
+                    var qm = s.qi_li_max != null ? s.qi_li_max : (Surv.getQiLiMax ? Surv.getQiLiMax() : 0);
                     var qc = s.qi_li_current != null ? s.qi_li_current : 0;
                     var dmax = s.diqi_max != null ? s.diqi_max : 0;
                     var dc = s.diqi_current != null ? s.diqi_current : 0;
@@ -2056,11 +2094,27 @@
                     var dqText = document.getElementById('status-diqi-text');
                     var dqBar = document.getElementById('status-diqi-bar');
                     var shText = document.getElementById('status-diqi-shield-text');
-                    if (qiText) qiText.textContent = qc.toFixed(0) + ' / ' + qm;
+                    if (qiText) qiText.textContent = qm > 0 ? (qc.toFixed(0) + ' / ' + qm) : '—';
                     if (qiBar) qiBar.style.width = qm > 0 ? (Math.min(100, (qc / qm) * 100)) + '%' : '0%';
-                    if (dqText) dqText.textContent = dmax > 0 ? (dc.toFixed(1) + ' / ' + dmax) : '—';
+                    if (dqText) dqText.textContent = dmax > 0 ? ((dc % 1 === 0 ? String(Math.round(dc)) : dc.toFixed(1)) + ' / ' + dmax) : '—';
                     if (dqBar) dqBar.style.width = dmax > 0 ? (Math.min(100, (dc / dmax) * 100)) + '%' : '0%';
                     if (shText) shText.textContent = dsh > 0 ? String(Math.floor(dsh)) : '—';
+                    var stunText = document.getElementById('status-stun-text');
+                    if (stunText) {
+                        var stunVal = 0;
+                        try {
+                            if (window.InventoryEquipment && typeof window.InventoryEquipment.getPlayerStunValue === 'function') {
+                                stunVal = window.InventoryEquipment.getPlayerStunValue();
+                            }
+                        } catch (eSt) { /* ignore */ }
+                        var stunActive = false;
+                        try {
+                            if (window.InventoryEquipment && typeof window.InventoryEquipment.isPlayerStunned === 'function') {
+                                stunActive = window.InventoryEquipment.isPlayerStunned();
+                            }
+                        } catch (eSt2) { /* ignore */ }
+                        stunText.textContent = stunActive ? (String(stunVal) + '（眩晕中）') : String(stunVal);
+                    }
                 }
             }
 
@@ -2086,6 +2140,25 @@
             if (combatExpEl) {
                 var cVal = (IE && typeof IE.getCombatExperience === 'function') ? IE.getCombatExperience() : null;
                 combatExpEl.textContent = (cVal == null) ? '—' : String(cVal);
+            }
+            var studyEl = document.getElementById('status-study');
+            if (studyEl) {
+                if (window.Survival && typeof window.Survival.getStudyState === 'function' && window.Survival.getStudyState().active) {
+                    var stSkillId = window.Survival.getStudySkillId();
+                    var stName = stSkillId || '—';
+                    if (window.CombatSkills && typeof window.CombatSkills.getSkill === 'function') {
+                        var stSk = window.CombatSkills.getSkill(stSkillId);
+                        if (stSk && stSk.name) stName = stSk.name;
+                    }
+                    var stEnergy = (window.Survival && typeof window.Survival.getEnergy === 'function') ? window.Survival.getEnergy() : null;
+                    var stPot = (IE && typeof IE.getPotential === 'function') ? IE.getPotential() : null;
+                    var stParts = [stName];
+                    if (stEnergy != null) stParts.push(ui('status.label.energy') + ' ' + stEnergy);
+                    if (stPot != null) stParts.push(ui('status.label.potential') + ' ' + stPot);
+                    studyEl.textContent = stParts.join(' · ');
+                } else {
+                    studyEl.textContent = '—';
+                }
             }
         } else {
             satietyText.textContent = '—';
@@ -2173,7 +2246,7 @@
         tiaoXiIdleTimer = null;
         tiaoXiCapModeNotified = false;
         setIdleActionType('');
-        if (withMsg !== false) showMsg('已停止挂机调息', 'info');
+        if (withMsg !== false) showMsg(ui('scene.msg.meditation_stopped'), 'info');
     }
 
     function stopRestIdleTimer() {
@@ -2253,7 +2326,7 @@
         }
         if (tiaoXiIdleTimer) return;
         if (gatheringIdleTimer) {
-            showMsg('请先停止采集挂机', 'info');
+            showMsg(ui('scene.msg.stop_gathering_first'), 'info');
             return;
         }
         var CHA = window.CombatHubActions;
@@ -2283,7 +2356,7 @@
         }
         tiaoXiIdleTimer = setInterval(onTiaoXiIdleTick, getIdleTickMs());
         setIdleActionType('tiao_xi');
-        showMsg('开始挂机调息', 'info');
+        showMsg(ui('scene.msg.meditation_started'), 'info');
         if (window.SceneRenderer) window.SceneRenderer.render();
         updateStatusPanel();
     }
@@ -2783,6 +2856,11 @@
     }
 
     function guardPlayerActionBlocked(actionType, opts) {
+        // 眩晕中（k13，37 §9.2）：本回合无法行动——吞掉本次动作（移动/采集/制作/交互/用物等）
+        if (IE && typeof IE.consumePlayerStunRoundIfBlocking === 'function' && IE.consumePlayerStunRoundIfBlocking()) {
+            showMsg(ui('combat.log.stun_blocked_action'), 'warn');
+            return true;
+        }
         if (!isPlayerActionDisabledByBuff(actionType)) return false;
         var options = opts || {};
         var msg = options.msg || ui('intro.blocked.action');
@@ -2827,7 +2905,7 @@
         var gatheringInst = rec && rec.gathering_instance_id ? String(rec.gathering_instance_id) : null;
         if (!entityId || !G.canGather(entityId, gatheringInst)) return;
         if (tiaoXiIdleTimer) {
-            showMsg('请先停止挂机调息', 'info');
+            showMsg(ui('scene.msg.stop_meditation_first'), 'info');
             return;
         }
         if (gatheringIdleTimer) return;
@@ -3162,8 +3240,7 @@
                 for (j = 0; j < cnt; j++) {
                     out.push({
                         item_id: String(row.item_id),
-                        count: 1,
-                        quality_tier: row.quality_tier != null ? row.quality_tier : 0
+                        count: 1
                     });
                 }
             }
@@ -3243,8 +3320,7 @@
                 failure_output: failOut,
                 base_success_rate: (route && route.base_success_rate != null)
                     ? route.base_success_rate
-                    : (method && method.base_success_rate != null ? method.base_success_rate : null),
-                base_output_quality_tier: (recipe && recipe.base_output_quality_tier != null) ? recipe.base_output_quality_tier : 0
+                    : (method && method.base_success_rate != null ? method.base_success_rate : null)
             };
         });
         cookingRecipeProcessorRegistered = true;
@@ -3269,8 +3345,7 @@
                 failure_output: failOut,
                 base_success_rate: (route && route.base_success_rate != null)
                     ? route.base_success_rate
-                    : (method && method.base_success_rate != null ? method.base_success_rate : null),
-                base_output_quality_tier: (recipe && recipe.base_output_quality_tier != null) ? recipe.base_output_quality_tier : 0
+                    : (method && method.base_success_rate != null ? method.base_success_rate : null)
             };
         });
         pharmacyRecipeProcessorRegistered = true;
@@ -3435,8 +3510,8 @@
         var selected = normalizeCookingInputs(craft.inputs || []);
         var matched = matchCookingRecipesByInputs(selected, mid);
 
-        function grantItemOrDrop(itemId, qualityTier) {
-            var outInst = { item_id: itemId, count: 1, quality_tier: qualityTier || 0 };
+        function grantItemOrDrop(itemId) {
+            var outInst = { item_id: itemId, count: 1 };
             var placed = IE.putItemIntoDefaultContainer(outInst);
             if (!placed || !placed.placed) {
                 var st0 = E.getState();
@@ -3445,7 +3520,7 @@
         }
 
         if (forceFailure) {
-            grantItemOrDrop(failId, 0);
+            grantItemOrDrop(failId);
             showMsg(ui('cooking.msg.done_fail', { item: failId }), 'warn');
             if (typeof updateBackpackPanel === 'function') updateBackpackPanel();
             if (typeof updateStatusPanel === 'function') updateStatusPanel();
@@ -3456,7 +3531,6 @@
         var pick = null;
         var pickRecipeId = '';
         var pickBaseSuccessRate = null;
-        var pickBaseOutputQualityTier = 0;
         var pickMainOutput = null;
         var pickBonusOutputs = [];
         var pickFailureOutput = null;
@@ -3468,7 +3542,6 @@
             pickBonusOutputs = Array.isArray(routeData.bonus_outputs) ? routeData.bonus_outputs : [];
             pickFailureOutput = routeData.failure_output && typeof routeData.failure_output === 'object' ? routeData.failure_output : null;
             pickBaseSuccessRate = routeData.base_success_rate;
-            pickBaseOutputQualityTier = routeData.base_output_quality_tier != null ? routeData.base_output_quality_tier : 0;
             if (pickMainOutput && pickMainOutput.item_id) {
                 pick = {
                     output_item_id: String(pickMainOutput.item_id),
@@ -3482,7 +3555,7 @@
         }
         if (!pick) {
             if (!matched.length) {
-                grantItemOrDrop(failId, 0);
+                grantItemOrDrop(failId);
                 showMsg(ui('cooking.msg.no_recipe_fail', { item: failId }), 'warn');
                 if (typeof updateBackpackPanel === 'function') updateBackpackPanel();
                 if (typeof updateStatusPanel === 'function') updateStatusPanel();
@@ -3491,7 +3564,7 @@
             }
             pick = pickCookingRecipeWeighted(matched);
             if (!pick) {
-                grantItemOrDrop(failId, 0);
+                grantItemOrDrop(failId);
                 showMsg(ui('cooking.msg.done_fail', { item: failId }), 'warn');
                 if (typeof updateBackpackPanel === 'function') updateBackpackPanel();
                 if (typeof updateStatusPanel === 'function') updateStatusPanel();
@@ -3500,7 +3573,6 @@
             }
             pickRecipeId = pick.recipe_id ? String(pick.recipe_id) : '';
             pickBaseSuccessRate = pick.base_success_rate != null ? pick.base_success_rate : (m ? m.base_success_rate : 1);
-            pickBaseOutputQualityTier = pick.base_output_quality_tier != null ? pick.base_output_quality_tier : 0;
         }
 
         var pq = window.ProductionQuality;
@@ -3510,10 +3582,9 @@
                 base_success_rate: pickBaseSuccessRate != null ? pickBaseSuccessRate : (m ? m.base_success_rate : 1),
                 // 烹饪系统单独处理技能成功率与溢出品质，不复用通用 skill_level 乘区。
                 skill_level: 0,
-                input_items: Array.isArray(craft.consumed_items) ? craft.consumed_items.slice() : [],
-                base_output_quality_tier: pickBaseOutputQualityTier
+                input_items: Array.isArray(craft.consumed_items) ? craft.consumed_items.slice() : []
             })
-            : { success: true, output_quality_tier: 0, success_rate: 1 };
+            : { success: true, success_rate: 1 };
         var baseSuccessRate = Math.max(0, Number(evalRes.success_rate) || 0);
         var bonusFromCookingLv = cookingLv * COOKING_SUCCESS_BONUS_PER_LEVEL;
         var successRateRaw = baseSuccessRate + bonusFromCookingLv;
@@ -3522,13 +3593,6 @@
         var isMaxCookingLv = cookingLv >= COOKING_SKILL_MAX_LEVEL;
         evalRes.success = isMaxCookingLv ? true : (Math.random() < successRateFinal);
         evalRes.success_rate = successRateFinal;
-        if (evalRes.success) {
-            var qOut = (evalRes.output_quality_tier != null) ? Number(evalRes.output_quality_tier) : 0;
-            if ((Math.random() < Math.max(0, Math.min(1, overflowRate))) && qOut < 5) qOut += 1;
-            evalRes.output_quality_tier = qOut;
-        } else {
-            evalRes.output_quality_tier = null;
-        }
 
         var outputItemId = failId;
         if (evalRes.success) {
@@ -3539,11 +3603,10 @@
         } else if (pick && pick.failure_output && pick.failure_output.item_id) {
             outputItemId = String(pick.failure_output.item_id);
         }
-        var outputQuality = evalRes.success ? (evalRes.output_quality_tier != null ? evalRes.output_quality_tier : 0) : 0;
         if (evalRes.success && pickRecipeId) markCookingRecipeKnown(pickRecipeId);
         if (evalRes.success) addCookingSuccessProficiency();
 
-        grantItemOrDrop(outputItemId, outputQuality);
+        grantItemOrDrop(outputItemId);
         if (evalRes.success && Array.isArray(pickBonusOutputs) && pickBonusOutputs.length) {
             var bi;
             for (bi = 0; bi < pickBonusOutputs.length; bi++) {
@@ -3556,7 +3619,7 @@
                 bchance = Math.max(0, Math.min(1, bchance));
                 if (Math.random() >= bchance) continue;
                 var bk;
-                for (bk = 0; bk < bcnt; bk++) grantItemOrDrop(bid, outputQuality);
+                for (bk = 0; bk < bcnt; bk++) grantItemOrDrop(bid);
             }
         }
         showMsg(
@@ -3622,8 +3685,8 @@
         var selected = normalizePharmacyInputs(craft.inputs || []);
         var matched = matchPharmacyRecipesByInputs(selected, mid);
 
-        function grantItemOrDrop(itemId, qualityTier) {
-            var outInst = { item_id: itemId, count: 1, quality_tier: qualityTier || 0 };
+        function grantItemOrDrop(itemId) {
+            var outInst = { item_id: itemId, count: 1 };
             var placed = IE.putItemIntoDefaultContainer(outInst);
             if (!placed || !placed.placed) {
                 var st0 = E.getState();
@@ -3632,7 +3695,7 @@
         }
 
         if (forceFailure) {
-            grantItemOrDrop(failId, 0);
+            grantItemOrDrop(failId);
             showMsg(ui('pharmacy.msg.done_fail', { item: failId }), 'warn');
             if (typeof updateBackpackPanel === 'function') updateBackpackPanel();
             if (typeof updateStatusPanel === 'function') updateStatusPanel();
@@ -3643,7 +3706,6 @@
         var pick = null;
         var pickRecipeId = '';
         var pickBaseSuccessRate = null;
-        var pickBaseOutputQualityTier = 0;
         var pickMainOutput = null;
         var pickBonusOutputs = [];
         var pickFailureOutput = null;
@@ -3655,7 +3717,6 @@
             pickBonusOutputs = Array.isArray(routeData.bonus_outputs) ? routeData.bonus_outputs : [];
             pickFailureOutput = routeData.failure_output && typeof routeData.failure_output === 'object' ? routeData.failure_output : null;
             pickBaseSuccessRate = routeData.base_success_rate;
-            pickBaseOutputQualityTier = routeData.base_output_quality_tier != null ? routeData.base_output_quality_tier : 0;
             if (pickMainOutput && pickMainOutput.item_id) {
                 pick = {
                     output_item_id: String(pickMainOutput.item_id),
@@ -3669,7 +3730,7 @@
         }
         if (!pick) {
             if (!matched.length) {
-                grantItemOrDrop(failId, 0);
+                grantItemOrDrop(failId);
                 showMsg(ui('pharmacy.msg.no_recipe_fail', { item: failId }), 'warn');
                 if (typeof updateBackpackPanel === 'function') updateBackpackPanel();
                 if (typeof updateStatusPanel === 'function') updateStatusPanel();
@@ -3678,7 +3739,7 @@
             }
             pick = pickPharmacyRecipeWeighted(matched);
             if (!pick) {
-                grantItemOrDrop(failId, 0);
+                grantItemOrDrop(failId);
                 showMsg(ui('pharmacy.msg.done_fail', { item: failId }), 'warn');
                 if (typeof updateBackpackPanel === 'function') updateBackpackPanel();
                 if (typeof updateStatusPanel === 'function') updateStatusPanel();
@@ -3687,7 +3748,6 @@
             }
             pickRecipeId = pick.recipe_id ? String(pick.recipe_id) : '';
             pickBaseSuccessRate = pick.base_success_rate != null ? pick.base_success_rate : (m ? m.base_success_rate : 1);
-            pickBaseOutputQualityTier = pick.base_output_quality_tier != null ? pick.base_output_quality_tier : 0;
         }
 
         var pq = window.ProductionQuality;
@@ -3695,10 +3755,9 @@
             ? pq.evaluateProduction({
                 base_success_rate: pickBaseSuccessRate != null ? pickBaseSuccessRate : (m ? m.base_success_rate : 1),
                 skill_level: 0,
-                input_items: Array.isArray(craft.consumed_items) ? craft.consumed_items.slice() : [],
-                base_output_quality_tier: pickBaseOutputQualityTier
+                input_items: Array.isArray(craft.consumed_items) ? craft.consumed_items.slice() : []
             })
-            : { success: true, output_quality_tier: 0, success_rate: 1 };
+            : { success: true, success_rate: 1 };
         var pharmacySuccessRaw = Math.max(0, Number(evalRes.success_rate) || 0);
         var pharmacySuccessFinal = getProductionSuccessRateWithMoodDelta(pharmacySuccessRaw);
         evalRes.success_rate = pharmacySuccessFinal;
@@ -3712,10 +3771,9 @@
         } else if (pick && pick.failure_output && pick.failure_output.item_id) {
             outputItemId = String(pick.failure_output.item_id);
         }
-        var outputQuality = evalRes.success ? (evalRes.output_quality_tier != null ? evalRes.output_quality_tier : 0) : 0;
         if (evalRes.success && pickRecipeId) markPharmacyRecipeKnown(pickRecipeId);
 
-        grantItemOrDrop(outputItemId, outputQuality);
+        grantItemOrDrop(outputItemId);
         if (evalRes.success && Array.isArray(pickBonusOutputs) && pickBonusOutputs.length) {
             var bi;
             for (bi = 0; bi < pickBonusOutputs.length; bi++) {
@@ -3728,7 +3786,7 @@
                 bchance = Math.max(0, Math.min(1, bchance));
                 if (Math.random() >= bchance) continue;
                 var bk;
-                for (bk = 0; bk < bcnt; bk++) grantItemOrDrop(bid, outputQuality);
+                for (bk = 0; bk < bcnt; bk++) grantItemOrDrop(bid);
             }
         }
         showMsg(
@@ -3947,7 +4005,7 @@
             if (!window.NPCSystem.isNpcPresentNow(npcId)) continue;
             var target = findAdjacentStandableCellAround(nx, ny);
             if (!target) {
-                showMsg('NPC 上班占位冲突：周围无可用格，玩家暂留原地。', 'warn');
+                showMsg(ui('scene.msg.npc_occupy_conflict'), 'warn');
                 return false;
             }
             E.setState(st.mapId, target.x, target.y);
@@ -3955,7 +4013,7 @@
                 window.SceneCtx.pushDirtyCell(nx, ny);
                 window.SceneCtx.pushDirtyCell(target.x, target.y);
             }
-            showMsg('NPC 已上班，你被挤到了旁边。', 'info');
+            showMsg(ui('scene.msg.npc_pushed_away'), 'info');
             return true;
         }
         return false;
@@ -3982,6 +4040,262 @@
         st.tick = getWorldTotalTicks();
     }
 
+    /**
+     * 敌人攻击玩家：构建「玩家受击」管线上下文（模块级，供反击与 AI 主动攻击共用）。
+     * @param {object} rE resolveEnemyVsPlayerAttack 结果
+     * @param {boolean} simDry 同速同时提交干跑
+     * @param {object} opts { enemyId, facingDir, ex, ey, px, py }
+     */
+    function buildEnemyCounterAtkCtx(rE, simDry, opts) {
+        opts = opts || {};
+        var re = rE || {};
+        var eid = opts.enemyId != null ? String(opts.enemyId) : '';
+        var facing = opts.facingDir != null ? opts.facingDir : 4;
+        return {
+            eventIdSuffix: eid + '_' + String(re.moveId || 'counter') + (simDry ? '_sim' : ''),
+            hitRollSuccess: !!re.hitRollSuccess,
+            hitPart: re.hitPart || 'chest',
+            moveId: re.moveId || 'enemy_counter_strike',
+            skillId: re.skillId || '__enemy_counter_attack__',
+            limbId: re.limbId || 'rhand',
+            damageType: re.damageType || 'blunt',
+            hitPartModifierKey: re.hitPartModifierKey || null,
+            moveTags: [],
+            subhit_index: 0,
+            is_last_subhit: true,
+            rawDamage: isFinite(re.rawDamage) ? re.rawDamage : 0,
+            forceZeroDamageByResourceInsufficient: false,
+            simultaneousDryRun: !!simDry,
+            attacker: {
+                kind: 'enemy',
+                enemyId: eid,
+                postEffectIds: [],
+                facingDir: facing,
+                pos: { x: opts.ex, y: opts.ey }
+            },
+            defender: {
+                kind: 'player',
+                facingDir: (window.PlayerFacing && typeof window.PlayerFacing.getDir === 'function') ? window.PlayerFacing.getDir() : 4,
+                pos: { x: opts.px, y: opts.py }
+            }
+        };
+    }
+
+    // 敌人「本玩家动作内已反击」标记（transient）：attackEnemy 反击后置位，tick 钩子消费后清空。
+    // 用途：AI 攻击去重——敌人每 tick（每玩家动作）恰好行动 1 次（反击计为该动作的攻击，AI 不再补刀）。
+    var enemyCounterAttackFlags = {};
+
+    /** 在当前地图 enemies[] 中按 enemy_id（可选坐标）定位实例下标；找不到返回 -1。 */
+    function findEnemyInstanceIndex(enemyId, x, y) {
+        try {
+            var stNow = (E && typeof E.getState === 'function') ? E.getState() : null;
+            var mapNow = (E && typeof E.getMap === 'function') ? E.getMap() : null;
+            if (!stNow || !mapNow || !Array.isArray(mapNow.enemies)) return -1;
+            for (var i = 0; i < mapNow.enemies.length; i++) {
+                var rec = mapNow.enemies[i];
+                if (!rec || rec.enemy_id !== enemyId) continue;
+                if (x != null && y != null && (rec.x !== x || rec.y !== y)) continue;
+                return i;
+            }
+        } catch (e) { /* ignore */ }
+        return -1;
+    }
+
+    /** 敌人死亡落地：drain 死亡队列，从当前地图移除实例（坐标脏格重绘）+ 死亡日志。攻击结算后调用。 */
+    function settleEnemyKills() {
+        try {
+            if (!window.CombatEnemies) return;
+            // 1) 肢体失能日志（部位被打满瞬间，先于死亡输出）
+            if (typeof window.CombatEnemies.drainEnemyLimbLossQueue === 'function') {
+                var limbLoss = window.CombatEnemies.drainEnemyLimbLossQueue();
+                var ll, lp;
+                for (ll = 0; ll < limbLoss.length; ll++) {
+                    var llName = limbLoss[ll].enemyId;
+                    try {
+                        if (window.UIText && typeof window.UIText.t === 'function') {
+                            llName = window.UIText.t('enemy.name.' + String(limbLoss[ll].enemyId).replace(/\./g, '_'));
+                        }
+                    } catch (eL) { /* ignore */ }
+                    for (lp = 0; lp < limbLoss[ll].parts.length; lp++) {
+                        var partKey = limbLoss[ll].parts[lp];
+                        var partName = ui('body.part.' + partKey);
+                        var msgKey = (partKey === 'lfoot' || partKey === 'rfoot')
+                            ? 'combat.log.enemy_limb_destroyed_leg'
+                            : 'combat.log.enemy_limb_destroyed';
+                        if (window.GameLog && typeof window.GameLog.log === 'function') {
+                            window.GameLog.log(ui(msgKey, { enemyId: llName, part: partName }), 'system');
+                        }
+                    }
+                }
+            }
+            // 2) 死亡落地：drain 死亡队列 → 移除地图实例 + 死亡日志
+            if (typeof window.CombatEnemies.drainEnemyKillQueue !== 'function') return;
+            var kills = window.CombatEnemies.drainEnemyKillQueue();
+            if (!kills || !kills.length) return;
+            var mapK = (E && typeof E.getMap === 'function') ? E.getMap() : null;
+            if (mapK && Array.isArray(mapK.enemies)) {
+                var deadIdx = [];
+                var kd, di;
+                for (kd = 0; kd < kills.length; kd++) {
+                    if (String(mapK.map_id || '') !== String(kills[kd].mapId || '')) continue;
+                    di = kills[kd].index;
+                    if (di >= 0 && di < mapK.enemies.length && mapK.enemies[di] && mapK.enemies[di].enemy_id === kills[kd].enemyId) {
+                        deadIdx.push(di);
+                    }
+                }
+                deadIdx.sort(function (a, b) { return b - a; });
+                for (var rm = 0; rm < deadIdx.length; rm++) {
+                    var ri = deadIdx[rm];
+                    var recGone = mapK.enemies[ri] || {};
+                    if (window.SceneCtx && typeof window.SceneCtx.pushDirtyCell === 'function') {
+                        window.SceneCtx.pushDirtyCell(recGone.x, recGone.y);
+                    }
+                    mapK.enemies.splice(ri, 1);
+                }
+            }
+            var kl, kName;
+            for (kl = 0; kl < kills.length; kl++) {
+                kName = kills[kl].enemyId;
+                try {
+                    if (window.UIText && typeof window.UIText.t === 'function') {
+                        kName = window.UIText.t('enemy.name.' + String(kills[kl].enemyId).replace(/\./g, '_'));
+                    }
+                } catch (eK) { /* ignore */ }
+                if (window.GameLog && typeof window.GameLog.log === 'function') {
+                    window.GameLog.log(ui('combat.log.enemy_killed', { enemyId: kName }), 'system');
+                }
+            }
+        } catch (eKill) {
+            if (window.console && typeof window.console.error === 'function') window.console.error('[enemy kill settle failed]', eKill);
+        }
+    }
+
+    /** 计算「本动作已反击」标记键（mapId|i{index}），与 AI 去重口径一致；找不到实例返回 null。 */
+    function enemyCounterAttackFlagKey(enemyId) {
+        try {
+            var stNow = (E && typeof E.getState === 'function') ? E.getState() : null;
+            var mapNow = (E && typeof E.getMap === 'function') ? E.getMap() : null;
+            if (!stNow || !mapNow || !Array.isArray(mapNow.enemies)) return null;
+            for (var i = 0; i < mapNow.enemies.length; i++) {
+                if (mapNow.enemies[i] && mapNow.enemies[i].enemy_id === enemyId) {
+                    return String(mapNow.map_id || '') + '|i' + i;
+                }
+            }
+        } catch (e) { /* ignore */ }
+        return null;
+    }
+
+    /**
+     * 敌人 AI 落地（每 tick 一次）：移动敌人（改写 map.enemies 坐标 + 脏格重绘），并对贴脸敌人执行主动攻击（复用玩家受击管线）。
+     * 决策逻辑见 CombatEnemies.updateEnemyAI（纯逻辑）；本函数只做场景落地。
+     */
+    function tickEnemiesAfterWorldTick() {
+        if (!window.CombatEnemies || typeof window.CombatEnemies.updateEnemyAI !== 'function') return;
+        var st = (E && typeof E.getState === 'function') ? E.getState() : null;
+        if (!st) return;
+        var map = (E && typeof E.getMap === 'function') ? E.getMap() : null;
+        if (!map || !Array.isArray(map.enemies) || !map.enemies.length) return;
+        var occ = {};
+        var i, n;
+        for (i = 0; i < map.enemies.length; i++) {
+            n = map.enemies[i] || {};
+            occ[String(n.x) + ',' + String(n.y)] = i;
+        }
+        var flags = enemyCounterAttackFlags;
+        enemyCounterAttackFlags = {};
+        var mapIdStr = String(map.map_id || '');
+        var plan;
+        try {
+            plan = window.CombatEnemies.updateEnemyAI({
+                map: map,
+                playerX: st.x,
+                playerY: st.y,
+                tick: getWorldTotalTicks(),
+                isWalkable: function (x, y) {
+                    try { return E.isWalkable(x, y); } catch (e) { return false; }
+                },
+                isBlockedByOther: function (x, y, skipIdx) {
+                    var k = String(x) + ',' + String(y);
+                    if (occ[k] != null && occ[k] !== skipIdx) return true;
+                    try {
+                        if (E.getPortalAt && E.getPortalAt(x, y)) return true;
+                        if (E.getInteractNpcIdAt && E.getInteractNpcIdAt(x, y)) return true;
+                    } catch (e2) { /* ignore */ }
+                    return false;
+                },
+                didActThisTick: function (index) {
+                    return !!flags[mapIdStr + '|i' + (index | 0)];
+                }
+            });
+        } catch (eAi) {
+            return;
+        }
+        var m, mv, rec, atk;
+        for (m = 0; m < plan.moves.length; m++) {
+            mv = plan.moves[m];
+            rec = map.enemies[mv.index];
+            if (!rec) continue;
+            rec.x = mv.toX;
+            rec.y = mv.toY;
+            if (window.CombatEnemies.setFacingDir && window.CombatEnemies.dirFromDelta) {
+                var ddx = mv.toX - mv.fromX;
+                var ddy = mv.toY - mv.fromY;
+                window.CombatEnemies.setFacingDir(mv.enemyId, map.map_id, mv.toX, mv.toY, window.CombatEnemies.dirFromDelta(ddx, ddy));
+            }
+            if (window.SceneCtx && typeof window.SceneCtx.pushDirtyCell === 'function') {
+                window.SceneCtx.pushDirtyCell(mv.fromX, mv.fromY);
+                window.SceneCtx.pushDirtyCell(mv.toX, mv.toY);
+            }
+        }
+        for (m = 0; m < plan.attacks.length; m++) {
+            atk = plan.attacks[m];
+            try { runEnemyAttackOnPlayer(atk.enemyId, atk.x, atk.y); }
+            catch (eAtk) { if (window.console && typeof window.console.error === 'function') window.console.error('[AI attack failed]', atk, eAtk); }
+        }
+    }
+
+    /** 敌人主动攻击玩家：走与还击相同的「玩家受击」管线（命中/招架/减伤）。 */
+    function runEnemyAttackOnPlayer(enemyId, ex, ey) {
+        var CMR = window.CombatMeleeResolve;
+        var CP = window.CombatPipeline;
+        if (!CMR || typeof CMR.resolveEnemyVsPlayerAttack !== 'function' || !CP || typeof CP.runPipeline !== 'function') return;
+        var stP = (E && typeof E.getState === 'function') ? E.getState() : null;
+        if (!stP) return;
+        // 敌人眩晕（k13，37 §9.2）：眩晕中本 tick 无法行动 → 跳过本击
+        if (window.CombatEnemies && typeof window.CombatEnemies.isEnemyStunned === 'function'
+            && window.CombatEnemies.isEnemyStunned(stP.mapId, findEnemyInstanceIndex(enemyId, ex, ey))) return;
+        var tpl = window.CombatEnemies && window.CombatEnemies.getById ? window.CombatEnemies.getById(enemyId) : null;
+        var atkSpeed = tpl && tpl.speed != null ? Number(tpl.speed) : 10;
+        if (!isFinite(atkSpeed) || atkSpeed < 1) atkSpeed = 10;
+        var facingDir = 4;
+        if (window.CombatEnemies && typeof window.CombatEnemies.ensureFacingTowardTarget === 'function') {
+            facingDir = window.CombatEnemies.ensureFacingTowardTarget(enemyId, stP.mapId, ex, ey, stP.x, stP.y);
+        }
+        var rE = CMR.resolveEnemyVsPlayerAttack({
+            enemyId: enemyId,
+            attackerSpeed: atkSpeed,
+            enemyMapId: stP.mapId != null ? stP.mapId : null,
+            enemyIndex: findEnemyInstanceIndex(enemyId, ex, ey)
+        });
+        var atkCtx = buildEnemyCounterAtkCtx(rE, false, {
+            enemyId: enemyId,
+            facingDir: facingDir,
+            ex: ex,
+            ey: ey,
+            px: stP.x,
+            py: stP.y
+        });
+        CP.runPipeline('melee_hit_player_defender', atkCtx);
+        if (window.GameLog && atkCtx.finalDamage != null && typeof window.GameLog.log === 'function') {
+            try {
+                window.GameLog.log(ui('log.combat.resolve.summary', {
+                    dmg: String(Math.round(atkCtx.finalDamage)),
+                    parry: atkCtx.parrySucceeded ? ui('log.combat.pipeline.parry_yes') : ui('log.combat.pipeline.parry_no')
+                }) + ui('combat.log.enemy_attack'), 'damage');
+            } catch (eLog) { /* ignore */ }
+        }
+    }
+
     function patchSurvivalTickForWorldSystemsOnce() {
         if (!window.Survival || typeof window.Survival.advanceTick !== 'function') return;
         if (window.Survival.__worldSystemsTickPatched) return;
@@ -4004,11 +4318,54 @@
             try { tickHideoutWarehouseAfterWorldTick(); } catch (eHwTick) { /* ignore */ }
             try { tickAgricultureAfterWorldTick(); } catch (eAg) { /* ignore */ }
             try { tickLivestockAfterWorldTick(); } catch (eLs) { /* ignore */ }
+            try { tickEnemiesAfterWorldTick(); } catch (eEn) { /* ignore */ }
+            try { tickPlayerStunDecay(); } catch (eStunD) { /* ignore */ }
             return ret;
         };
         window.Survival.__worldSystemsTickPatched = true;
         window.Survival.__cookingCraftPatched = true;
         window.Survival.__pharmacyCraftPatched = true;
+    }
+
+    /** 玩家眩晕衰减（37 §9.2，k13）：-1/tick（战斗外慢慢恢复；战斗内单击累积远大于衰减） */
+    function tickPlayerStunDecay() {
+        var IE2 = window.InventoryEquipment;
+        if (!IE2 || typeof IE2.getPlayerStunValue !== 'function' || typeof IE2.setPlayerStunValue !== 'function') return;
+        var cur = IE2.getPlayerStunValue();
+        if (cur > 0) IE2.setPlayerStunValue(cur - 1);
+    }
+
+    /** 移动体力成本（k17 补全，05 5.5.4）：每格 = 1 × (1+鞋moveCostMod) × 超重系数；超重 k=20（每超 10% +2 体力） */
+    function computeMoveStaminaCost() {
+        var base = 1;
+        try {
+            if (window.CharacterAttributes && typeof window.CharacterAttributes.getCfg === 'function') {
+                var b = Number(window.CharacterAttributes.getCfg('move_stamina_base', 1));
+                if (isFinite(b) && b > 0) base = b;
+            }
+        } catch (eB) { /* ignore */ }
+        var shoeMod = 0;
+        if (window.InventoryEquipment && typeof window.InventoryEquipment.getShoeSharedMods === 'function') {
+            try { shoeMod = Number(window.InventoryEquipment.getShoeSharedMods().moveCostMod) || 0; } catch (eS) { shoeMod = 0; }
+        }
+        var cost = base * (1 + shoeMod);
+        try {
+            var IEw = window.InventoryEquipment;
+            var CAw = window.CharacterAttributes;
+            if (IEw && typeof IEw.getCurrentCarryWeight === 'function' && CAw && typeof CAw.getCarryCapacity === 'function') {
+                var W = Number(IEw.getCurrentCarryWeight()) || 0;
+                var Wmax = Number(CAw.getCarryCapacity()) || 1;
+                if (W > Wmax && Wmax > 0) {
+                    var k = 20;
+                    try {
+                        var kk = Number(window.CharacterAttributes.getCfg('move_stamina_overload_k', 20));
+                        if (isFinite(kk) && kk >= 0) k = kk;
+                    } catch (eK) { /* ignore */ }
+                    cost = cost * (1 + k * ((W - Wmax) / Wmax));
+                }
+            }
+        } catch (eO) { /* ignore */ }
+        return Math.max(0.1, Math.round(cost * 10) / 10);
     }
 
     function patchSurvivalTickForCookingCraftOnce() {
@@ -4320,7 +4677,7 @@
         }
         if (!removed) return { ok: false, reason: 'not_installed', item_id: id };
         if (!IE || typeof IE.putItemIntoDefaultContainer !== 'function') return { ok: false, reason: 'inventory_api_missing' };
-        var inst = { item_id: id, count: 1, quality_tier: 0 };
+        var inst = { item_id: id, count: 1 };
         var placed = IE.putItemIntoDefaultContainer(inst);
         if (!placed || !placed.placed) {
             var st = E && typeof E.getState === 'function' ? E.getState() : null;
@@ -4353,7 +4710,7 @@
         }
         if (!removed) return { ok: false, reason: 'not_installed', item_id: id };
         if (!IE || typeof IE.putItemIntoDefaultContainer !== 'function') return { ok: false, reason: 'inventory_api_missing' };
-        var inst = { item_id: id, count: 1, quality_tier: 0 };
+        var inst = { item_id: id, count: 1 };
         var placed = IE.putItemIntoDefaultContainer(inst);
         if (!placed || !placed.placed) {
             var st = E && typeof E.getState === 'function' ? E.getState() : null;
@@ -4561,7 +4918,7 @@
             showMsg(ui('cooking.take_water.fail_consume'), 'warn');
             return;
         }
-        var placed = IE.putItemIntoDefaultContainer({ item_id: 'tool_bucket_water_full', count: 1, quality_tier: 0 });
+        var placed = IE.putItemIntoDefaultContainer({ item_id: 'tool_bucket_water_full', count: 1 });
         if (!placed || !placed.placed) {
             // 背包塞不下时回滚空桶，避免道具吞没
             IE.putItemIntoDefaultContainer(taken.item);
@@ -4786,7 +5143,8 @@
         container: 'backpack',
         selectedContainer: 'backpack',
         selectedIndex: -1,
-        search: ''
+        search: '',
+        equipDetailSlot: null
     };
 
     function updateBackpackPanel() {
@@ -4914,7 +5272,7 @@
             }
             listEl.innerHTML = '';
             if (!rows.length) {
-                listEl.innerHTML = '<div class="bp-detail-empty">当前容器没有可显示物品。</div>';
+                listEl.innerHTML = '<div class="bp-detail-empty">' + ui('scene.bp.empty') + '</div>';
                 return { rows: rows, picked: null };
             }
             var picked = pickRowFromState(rows);
@@ -4936,6 +5294,7 @@
                 node.addEventListener('mouseleave', hideItemTooltip);
                 node.onclick = (function (r) {
                     return function () {
+                        backpackUIState.equipDetailSlot = null;
                         backpackUIState.selectedContainer = backpackUIState.container;
                         backpackUIState.selectedIndex = r.index;
                         updateBackpackPanel();
@@ -4946,12 +5305,22 @@
             return { rows: rows, picked: picked };
         }
 
-        function renderDetail(picked) {
+        function renderDetail(listPicked) {
             var detailEl = document.getElementById('backpack-detail');
             if (!detailEl) return;
             detailEl.innerHTML = '';
+            var picked = listPicked;
+            // 装备栏行被点击时：详情区改显已穿装备的信息
+            if (backpackUIState.equipDetailSlot != null) {
+                var eqInst = ieState.equipment && ieState.equipment[backpackUIState.equipDetailSlot];
+                if (eqInst && eqInst.item_id) {
+                    picked = { source: 'equipment', index: backpackUIState.equipDetailSlot, item: eqInst };
+                } else {
+                    backpackUIState.equipDetailSlot = null;
+                }
+            }
             if (!picked || !picked.item || !picked.item.item_id) {
-                detailEl.innerHTML = '<div class="bp-detail-empty">尚未选中物品。</div>';
+                detailEl.innerHTML = '<div class="bp-detail-empty">' + ui('scene.bp.no_selection') + '</div>';
                 return;
             }
             var disp = resolveRowDisplay(picked);
@@ -4963,6 +5332,13 @@
             desc.className = 'bp-detail-desc';
             desc.textContent = disp.desc || '';
             detailEl.appendChild(desc);
+            var attrsText = (typeof formatItemAttributes === 'function') ? formatItemAttributes(disp.tpl, picked.item) : '';
+            if (attrsText) {
+                var attrsDiv = document.createElement('div');
+                attrsDiv.className = 'bp-detail-attrs';
+                attrsDiv.textContent = attrsText;
+                detailEl.appendChild(attrsDiv);
+            }
             var modulesHtml = '';
             try {
                 if (window.ItemInfoModules && typeof window.ItemInfoModules.renderTooltipModulesHtml === 'function') {
@@ -4997,7 +5373,20 @@
                 btn.onclick = onClick;
                 actions.appendChild(btn);
             }
-            if (picked.source !== 'ground') {
+            if (picked.source === 'equipment') {
+                addActionBtn(ui('inv.unequip'), function () {
+                    var old = IE.unequip(picked.index, groundPos);
+                    if (old) {
+                        var placed = IE.putItemIntoDefaultContainer(old);
+                        if (!placed || !placed.placed) IE.addItemToGround(groundPos.mapId, groundPos.x, groundPos.y, old);
+                        showMsg(ui('log.info.unequipped'), 'info');
+                        markCellDirty(groundPos.mapId, groundPos.x, groundPos.y);
+                    }
+                    backpackUIState.equipDetailSlot = null;
+                    updateBackpackPanel();
+                    render();
+                });
+            } else if (picked.source !== 'ground') {
                 if (itemTemplateIsConsumable(disp.tpl)) {
                     addActionBtn(ui('inv.use'), function () { tryUseItemFromContainer(picked.source, picked.index); });
                 }
@@ -5041,41 +5430,247 @@
             if (!equipList || !IE.EQUIP_SLOT_IDS) return;
             equipList.innerHTML = '';
             var eqState = ieState.equipment || {};
-            for (var s = 0; s < IE.EQUIP_SLOT_IDS.length; s++) {
-                var slotId = IE.EQUIP_SLOT_IDS[s];
-                var row = document.createElement('div');
-                row.className = 'equip-row';
-                var labelKey = EQUIP_SLOT_LABELS[slotId] || slotId;
-                var label = (labelKey && String(labelKey).indexOf('equip.slot.') === 0) ? ui(labelKey) : labelKey;
-                var eq = eqState[slotId];
-                var itemName = ui('common.dash');
-                if (eq && eq.item_id) {
-                    var eqTpl = IE.getItemTemplate(eq.item_id);
-                    var eqTier = IE.getItemDisplayTier ? IE.getItemDisplayTier(eq.item_id, char) : 0;
-                    itemName = eqTpl ? IE.getDisplayName(eqTpl, eqTier, char) : eq.item_id;
+            for (var g = 0; g < EQUIP_SLOT_GROUPS.length; g++) {
+                var group = EQUIP_SLOT_GROUPS[g];
+                var gTitle = document.createElement('div');
+                gTitle.className = 'equip-group-title';
+                gTitle.textContent = ui(group.label);
+                equipList.appendChild(gTitle);
+                for (var s = 0; s < group.slots.length; s++) {
+                    var slotId = group.slots[s];
+                    if (IE.EQUIP_SLOT_IDS.indexOf(slotId) < 0) continue;
+                    var row = document.createElement('div');
+                    row.className = 'equip-row';
+                    var labelKey = EQUIP_SLOT_LABELS[slotId] || slotId;
+                    var label = (labelKey && String(labelKey).indexOf('equip.slot.') === 0) ? ui(labelKey) : labelKey;
+                    var eq = eqState[slotId];
+                    var eqTpl = (eq && eq.item_id) ? IE.getItemTemplate(eq.item_id) : null;
+                    var itemName = ui('common.dash');
+                    if (eq && eq.item_id) {
+                        var eqTier = IE.getItemDisplayTier ? IE.getItemDisplayTier(eq.item_id, char) : 0;
+                        itemName = eqTpl ? IE.getDisplayName(eqTpl, eqTier, char) : eq.item_id;
+                    }
+                    var hasItem = !!(eq && eq.item_id);
+                    if (hasItem) row.className = 'equip-row has-item';
+                    if (hasItem && backpackUIState.equipDetailSlot === slotId) row.className = 'equip-row has-item selected';
+                    row.innerHTML = '<span class="slot-name">' + escHtml(label) + '</span><span class="item-name">' + escHtml(itemName) + '</span>';
+                    if (hasItem) {
+                        var tipHtml = buildItemTooltipHtmlForTemplate(eq.item_id, eqTpl, eq, char);
+                        row.addEventListener('mouseenter', function (h, el) { return function () { showItemTooltip(h, el); }; }(tipHtml, row));
+                        row.addEventListener('mouseleave', hideItemTooltip);
+                        row.onclick = (function (sid) {
+                            return function () {
+                                backpackUIState.equipDetailSlot = sid;
+                                updateBackpackPanel();
+                            };
+                        })(slotId);
+                    }
+                    var unequipBtn = document.createElement('button');
+                    unequipBtn.type = 'button';
+                    unequipBtn.className = 'btn-unequip';
+                    unequipBtn.textContent = ui('inv.unequip');
+                    unequipBtn.disabled = !eq || !eq.item_id;
+                    unequipBtn.onclick = (function (sid) {
+                        return function (ev) {
+                            if (ev && ev.stopPropagation) ev.stopPropagation();
+                            if (backpackUIState.equipDetailSlot === sid) backpackUIState.equipDetailSlot = null;
+                            var old = IE.unequip(sid, groundPos);
+                            if (old) {
+                                var placed = IE.putItemIntoDefaultContainer(old);
+                                if (!placed.placed) IE.addItemToGround(groundPos.mapId, groundPos.x, groundPos.y, old);
+                                showMsg(ui('log.info.unequipped'), 'info');
+                                markCellDirty(groundPos.mapId, groundPos.x, groundPos.y);
+                            }
+                            updateBackpackPanel();
+                            render();
+                        };
+                    })(slotId);
+                    row.appendChild(unequipBtn);
+                    equipList.appendChild(row);
+                    // 模块化防具：行下展开模块区（槽点网格 + 装/卸）
+                    var tplEq = eqTpl;
+                    if (tplEq && Array.isArray(tplEq.module_slots) && tplEq.module_slots.length) {
+                        renderModuleArea(equipList, slotId, eq, tplEq);
+                    }
                 }
-                row.innerHTML = '<span class="slot-name">' + escHtml(label) + '</span><span class="item-name">' + escHtml(itemName) + '</span>';
-                var unequipBtn = document.createElement('button');
-                unequipBtn.type = 'button';
-                unequipBtn.className = 'btn-unequip';
-                unequipBtn.textContent = ui('inv.unequip');
-                unequipBtn.disabled = !eq || !eq.item_id;
-                unequipBtn.onclick = (function (sid) {
-                    return function () {
-                        var old = IE.unequip(sid, groundPos);
-                        if (old) {
-                            var placed = IE.putItemIntoDefaultContainer(old);
-                            if (!placed.placed) IE.addItemToGround(groundPos.mapId, groundPos.x, groundPos.y, old);
-                            showMsg(ui('log.info.unequipped'), 'info');
-                            markCellDirty(groundPos.mapId, groundPos.x, groundPos.y);
-                        }
-                        updateBackpackPanel();
-                        render();
-                    };
-                })(slotId);
-                row.appendChild(unequipBtn);
-                equipList.appendChild(row);
             }
+        }
+
+        // 槽点显示名（数据契约 38 §1）
+        var PLATE_LABELS = {
+            'clothing.chest': '胸', 'clothing.abdomen': '腹',
+            'clothing.arm_l': '左臂', 'clothing.arm_r': '右臂',
+            'clothing.leg_l': '左腿', 'clothing.leg_r': '右腿',
+            'head.shell': '盔体', 'head.liner': '内衬', 'head.face': '护面'
+        };
+
+        /**
+         * 查找占用某槽点的模块（含复合模块反向查找：数据只挂主槽位，occupies 为唯一事实源，契约 38 §4）
+         * @returns {{ slotId: string, plateKey: string, inst: object }|null} 数据存储位置 + 实例（卸下用）
+         */
+        function getModuleOwner(slotId, plateKey) {
+            var eq = ieState.equipment[slotId];
+            // 直接占用
+            if (eq && eq.modules && eq.modules[plateKey]) {
+                return { slotId: slotId, plateKey: plateKey, inst: eq.modules[plateKey] };
+            }
+            // 同底材其他槽点的复合模块 occupies 覆盖该槽点
+            if (eq && eq.modules) {
+                for (var pk in eq.modules) {
+                    var inst = eq.modules[pk];
+                    if (!inst || !inst.item_id) continue;
+                    var mTpl = IE.getModuleTemplate(inst.item_id);
+                    if (mTpl && Array.isArray(mTpl.occupies) && mTpl.occupies.indexOf(slotId + '.' + plateKey) >= 0) {
+                        return { slotId: slotId, plateKey: pk, inst: inst };
+                    }
+                }
+            }
+            // 跨底材：head 槽点被 clothing 上的复合模块占用
+            if (slotId === 'head') {
+                var ceq = ieState.equipment.clothing;
+                if (ceq && ceq.modules) {
+                    for (var pk2 in ceq.modules) {
+                        var inst2 = ceq.modules[pk2];
+                        if (!inst2 || !inst2.item_id) continue;
+                        var mTpl2 = IE.getModuleTemplate(inst2.item_id);
+                        if (mTpl2 && Array.isArray(mTpl2.occupies) && mTpl2.occupies.indexOf('head.' + plateKey) >= 0) {
+                            return { slotId: 'clothing', plateKey: pk2, inst: inst2 };
+                        }
+                    }
+                }
+            }
+            return null;
+        }
+
+        /** 渲染模块化防具的模块区（槽点网格） */
+        function renderModuleArea(equipList, slotId, eq, tpl) {
+            var wrap = document.createElement('div');
+            wrap.className = 'equip-modules';
+            var title = document.createElement('div');
+            title.className = 'equip-modules-title';
+            title.textContent = ui('inv.module.title');
+            wrap.appendChild(title);
+            var grid = document.createElement('div');
+            grid.className = 'equip-modules-grid';
+            for (var i = 0; i < tpl.module_slots.length; i++) {
+                var plate = tpl.module_slots[i];
+                var owner = getModuleOwner(slotId, plate);
+                var inst = owner ? owner.inst : null;
+                var cell = document.createElement('div');
+                cell.className = 'equip-module-slot' + (inst ? ' filled' : '');
+                var label = PLATE_LABELS[slotId + '.' + plate] || plate;
+                if (inst && inst.item_id) {
+                    var mTpl = IE.getModuleTemplate(inst.item_id);
+                    var mName = mTpl ? mTpl.name : inst.item_id;
+                    cell.innerHTML = '<span class="m-label">' + escHtml(label) + '</span><span class="m-name">' + escHtml(mName) + '</span>';
+                    var rmBtn = document.createElement('button');
+                    rmBtn.type = 'button';
+                    rmBtn.className = 'btn-module-remove';
+                    rmBtn.textContent = ui('inv.module.remove');
+                    rmBtn.onclick = (function (os, op) {
+                        return function () {
+                            var res = IE.uninstallModule(os, op);
+                            if (res.success && res.item) {
+                                var placed = IE.putItemIntoDefaultContainer(res.item);
+                                if (!placed.placed) IE.addItemToGround(groundPos.mapId, groundPos.x, groundPos.y, res.item);
+                                markCellDirty(groundPos.mapId, groundPos.x, groundPos.y);
+                            }
+                            updateBackpackPanel();
+                            render();
+                        };
+                    })(owner.slotId, owner.plateKey);
+                    cell.appendChild(rmBtn);
+                } else {
+                    cell.innerHTML = '<span class="m-label">' + escHtml(label) + '</span><span class="m-empty">' + ui('inv.module.empty') + '</span>';
+                    var addBtn = document.createElement('button');
+                    addBtn.type = 'button';
+                    addBtn.className = 'btn-module-add';
+                    addBtn.textContent = ui('inv.module.install');
+                    addBtn.onclick = (function (sid, pk) {
+                        return function () { openModulePicker(sid, pk); };
+                    })(slotId, plate);
+                    cell.appendChild(addBtn);
+                }
+                grid.appendChild(cell);
+            }
+            wrap.appendChild(grid);
+            equipList.appendChild(wrap);
+        }
+
+        /** 打开模块选择弹层：从四类容器过滤可装到该槽点的模块 */
+        function openModulePicker(slotId, plateKey) {
+            var list = [];
+            var sources = [
+                { type: 'pocket', arr: IE.getPocketArray ? IE.getPocketArray() : null },
+                { type: 'vest', arr: IE.getVestArray ? IE.getVestArray() : null },
+                { type: 'backpack', arr: IE.getBackpackArray ? IE.getBackpackArray() : null },
+                { type: 'vehicle', arr: IE.getVehicleArray ? IE.getVehicleArray() : null }
+            ];
+            for (var s = 0; s < sources.length; s++) {
+                var src = sources[s];
+                if (!src.arr) continue;
+                for (var i = 0; i < src.arr.length; i++) {
+                    var inst = src.arr[i];
+                    if (!inst || !inst.item_id) continue;
+                    var mTpl = IE.getModuleTemplate(inst.item_id);
+                    if (!mTpl) continue;
+                    var installSlots = (Array.isArray(mTpl.install_slots) && mTpl.install_slots.length)
+                        ? mTpl.install_slots
+                        : (Array.isArray(mTpl.occupies) ? mTpl.occupies : []);
+                    if (installSlots.indexOf(slotId + '.' + plateKey) >= 0) {
+                        list.push({ type: src.type, index: i, inst: inst, tpl: mTpl });
+                    }
+                }
+            }
+            var overlay = document.createElement('div');
+            overlay.className = 'module-picker-overlay';
+            var box = document.createElement('div');
+            box.className = 'module-picker';
+            var head = document.createElement('div');
+            head.className = 'module-picker-head';
+            var label = PLATE_LABELS[slotId + '.' + plateKey] || plateKey;
+            head.innerHTML = '<span>' + escHtml(ui('inv.module.picker_title') + ' · ' + label) + '</span>';
+            var closeBtn = document.createElement('button');
+            closeBtn.type = 'button';
+            closeBtn.className = 'bp-close';
+            closeBtn.textContent = '✕';
+            closeBtn.onclick = function () { if (overlay.parentNode) overlay.parentNode.removeChild(overlay); };
+            head.appendChild(closeBtn);
+            box.appendChild(head);
+            if (!list.length) {
+                var none = document.createElement('div');
+                none.className = 'module-picker-empty';
+                none.textContent = ui('inv.module.picker_none');
+                box.appendChild(none);
+            } else {
+                for (var k = 0; k < list.length; k++) {
+                    var entry = list[k];
+                    var item = document.createElement('div');
+                    item.className = 'module-picker-item';
+                    item.innerHTML = '<span class="pi-name">' + escHtml(entry.tpl.name || entry.inst.item_id) + '</span>' +
+                        '<span class="pi-desc">' + escHtml(entry.tpl.desc || '') + '</span>';
+                    item.onclick = (function (ent) {
+                        return function () {
+                            var taken = IE.takeItemFromContainer(ent.type, ent.index);
+                            if (!taken.success || !taken.item) return;
+                            var res = IE.installModule(slotId, plateKey, taken.item);
+                            if (!res.success && taken.item) {
+                                var placed = IE.putItemIntoDefaultContainer(taken.item);
+                                if (!placed.placed) IE.addItemToGround(groundPos.mapId, groundPos.x, groundPos.y, taken.item);
+                                showMsg(res.message || ui('inv.module.install_fail'), 'error');
+                            } else if (res.success) {
+                                showMsg(ui('inv.module.installed'), 'info');
+                            }
+                            if (overlay.parentNode) overlay.parentNode.removeChild(overlay);
+                            updateBackpackPanel();
+                            render();
+                        };
+                    })(entry);
+                    box.appendChild(item);
+                }
+            }
+            overlay.appendChild(box);
+            document.body.appendChild(overlay);
         }
 
         var carryEl = document.getElementById('backpack-carry');
@@ -6624,7 +7219,7 @@
             }
         }
         for (var i = 0; i < tryCount; i++) {
-            var placedTry = IE.putItemIntoDefaultContainer({ item_id: itemId, count: 1, quality_tier: 0 });
+            var placedTry = IE.putItemIntoDefaultContainer({ item_id: itemId, count: 1 });
             if (!placedTry || !placedTry.placed) break;
             canPut += 1;
         }
@@ -7316,8 +7911,15 @@
             },
             setStamina: function (v) {
                 var Surv = window.Survival;
-                if (!Surv || typeof Surv.setState !== 'function') return;
-                Surv.setState({ stamina: Number(v) || 0 });
+                if (!Surv) return;
+                var target = Number(v) || 0;
+                var cur = Number((Surv.getState ? Surv.getState() : {}).stamina) || 0;
+                // 走 consumeStamina（累积疲劳 + 同步耗尽 Buff），与其他行动口径一致；增值才直写
+                if (target < cur && typeof Surv.consumeStamina === 'function') {
+                    Surv.consumeStamina(cur - target);
+                } else if (typeof Surv.setState === 'function') {
+                    Surv.setState({ stamina: target });
+                }
             }
         };
     }
@@ -7422,8 +8024,7 @@
             if (!row || !row.item_id) continue;
             IE.putItemIntoDefaultContainer({
                 item_id: row.item_id,
-                count: Math.max(1, Math.floor(Number(row.count) || 1)),
-                quality_tier: 0
+                count: Math.max(1, Math.floor(Number(row.count) || 1))
             });
         }
     }
@@ -7709,7 +8310,7 @@
             if (wantCount > 0 && itemId && IE && typeof IE.putItemIntoDefaultContainer === 'function') {
                 var hi;
                 for (hi = 0; hi < wantCount; hi++) {
-                    var pr = IE.putItemIntoDefaultContainer({ item_id: itemId, count: 1, quality_tier: 0 });
+                    var pr = IE.putItemIntoDefaultContainer({ item_id: itemId, count: 1 });
                     if (pr && pr.placed) placed += 1;
                     else break;
                 }
@@ -8011,7 +8612,7 @@
                     var placedItems = 0, droppedItems = 0;
                     pending.forEach(function (pit) {
                         if (!pit || !pit.item_id) return;
-                        var inst = { item_id: pit.item_id, count: Math.max(1, Math.floor(pit.count) || 1), quality_tier: 0 };
+                        var inst = { item_id: pit.item_id, count: Math.max(1, Math.floor(pit.count) || 1) };
                         if (IE && typeof IE.putItemIntoDefaultContainer === 'function') {
                             var pr = IE.putItemIntoDefaultContainer(inst);
                             if (pr && pr.placed) {
@@ -8027,7 +8628,7 @@
                         }
                     });
                     if (placedItems > 0 || droppedItems > 0) {
-                        var logTxt = '手动采集臂自动收获 ' + placedItems + ' 件产物' + (droppedItems > 0 ? '（' + droppedItems + ' 件背包满掉落地面）' : '');
+                        var logTxt = ui('scene.gather_arm.auto_result', { n: placedItems, extra: droppedItems > 0 ? ui('scene.gather_arm.dropped', { n: droppedItems }) : '' });
                         if (window.GameLog && typeof window.GameLog.log === 'function') {
                             window.GameLog.log(logTxt, 'info');
                         }
@@ -8408,7 +9009,7 @@
         if (!IE || !itemId) return;
         var tpl = IE.getItemTemplate(itemId);
         if (!tpl) return;
-        var r = IE.putItemIntoDefaultContainer({ item_id: itemId, count: 1, quality_tier: 0 });
+        var r = IE.putItemIntoDefaultContainer({ item_id: itemId, count: 1 });
         var char0 = IE.getCharacterForDisplay ? IE.getCharacterForDisplay() : null;
         var tier0 = IE.getItemDisplayTier ? IE.getItemDisplayTier(itemId, char0) : 0;
         var dispName = tpl && IE.getDisplayName ? IE.getDisplayName(tpl, tier0, char0) : '';
@@ -8430,7 +9031,7 @@
             return;
         }
         if (!isAdjacentToWarehouseTile()) {
-            showMsg('需要站在仓库旁边才能打开仓库。', 'info');
+            showMsg(ui('scene.msg.warehouse_stand_nearby'), 'info');
             return;
         }
         if (baseWarehousePanelOpen) return;
@@ -8504,9 +9105,9 @@
         curPart: 'rhand',
         curSlot: 'active',
         editingSlot: null,
-        curAcupointCat: 'du',
-        curAcupointId: null,
-        acupointPage: 0,
+        curMuscleCat: '',
+        curMuscleId: null,
+        musclePage: 0,
         recipeSchemaListOpen: false
     };
 
@@ -8561,7 +9162,6 @@
     var LIMB_ICONS = { lhand: '🤚', rhand: '🤚', lfoot: '👣', rfoot: '👣' };
 
     var survivalPanelOpen = false;
-    var acupointPanelOpen = false;
     var savePanelOpen = false;
     var currentSkillOverviewTab = 'survival';
 
@@ -8652,16 +9252,56 @@
         document.getElementById('left-hud').style.opacity = '';
         document.getElementById('left-hud').style.pointerEvents = '';
         document.getElementById('picker-move').classList.remove('show');
-        var postPicker = document.getElementById('picker-post-effect');
-        if (postPicker) postPicker.classList.remove('show');
         combatUIState.editingSlot = null;
         render();
     }
 
     function getCombatSkillName(skillId) {
+        // 防御：旧格式/损坏存档可能把技能槽存成数组或逗号串，一律取最后一个有效 id
+        if (Array.isArray(skillId)) {
+            for (var ai = skillId.length - 1; ai >= 0; ai--) {
+                if (typeof skillId[ai] === 'string' && String(skillId[ai]).trim()) { skillId = String(skillId[ai]).trim(); break; }
+            }
+            if (Array.isArray(skillId)) skillId = null;
+        }
+        if (typeof skillId === 'string' && skillId.indexOf(',') >= 0) {
+            var parts = skillId.split(',');
+            skillId = null;
+            for (var pi = parts.length - 1; pi >= 0; pi--) {
+                if (String(parts[pi]).trim()) { skillId = String(parts[pi]).trim(); break; }
+            }
+        }
         if (!skillId) return ui('combat.empty');
         var sk = window.CombatSkills && window.CombatSkills.getSkill(skillId);
         return (sk && sk.name) ? sk.name : skillId;
+    }
+
+    /** 招式显示名：按技能 id + 招式 id 从 combat-skills 配置取 name；找不到退回 moveId。 */
+    function getMoveDisplayName(skillId, moveId) {
+        if (!moveId) return '';
+        var CS = window.CombatSkills;
+        var sk = CS && typeof CS.getSkill === 'function' ? CS.getSkill(skillId) : null;
+        if (!sk || !Array.isArray(sk.moves)) return String(moveId);
+        for (var i = 0; i < sk.moves.length; i++) {
+            var m = sk.moves[i];
+            if (m && m.id === moveId) return m.name || String(moveId);
+        }
+        return String(moveId);
+    }
+
+    /** 招式形态标签（required_limb_tags），供肌群被动侧向近似判定（34 §3.4 中间态口径） */
+    function getFormTagsForMove(skillId, moveId) {
+        var CS = window.CombatSkills;
+        if (!CS || typeof CS.getSkill !== 'function' || !skillId || !moveId) return [];
+        var sk = CS.getSkill(String(skillId));
+        if (!sk || !Array.isArray(sk.moves)) return [];
+        for (var i = 0; i < sk.moves.length; i++) {
+            var m = sk.moves[i];
+            if (m && m.id === moveId) {
+                return Array.isArray(m.required_limb_tags) ? m.required_limb_tags.slice() : [];
+            }
+        }
+        return [];
     }
 
     function buildDefaultMoveSequenceArray(CS, IE, skillId, limbId) {
@@ -8688,12 +9328,12 @@
         try {
             var ok = IE.setCombatState(patch);
             if (ok === false) {
-                showMsg(failMsg || '战斗配置不合法，已拒绝保存。', 'warn');
+                showMsg(failMsg || ui('combat.cfg.invalid'), 'warn');
                 return false;
             }
             return true;
         } catch (e) {
-            showMsg((failMsg || '战斗配置不合法，已拒绝保存。') + (e && e.message ? (' ' + e.message) : ''), 'warn');
+            showMsg((failMsg || ui('combat.cfg.invalid')) + (e && e.message ? (' ' + e.message) : ''), 'warn');
             return false;
         }
     }
@@ -8856,30 +9496,196 @@
         return out;
     }
 
+    /** 大型被动装配面板（34 号草案 §3，阶段三）：列出全部大型被动 + 已全通肌群槽，支持装卸 */
+    function renderMusclePassivePanel(isMuscleMode) {
+        var panel = document.getElementById('muscle-passive-panel');
+        if (!panel) return;
+        if (!isMuscleMode) {
+            panel.style.display = 'none';
+            return;
+        }
+        panel.style.display = 'block';
+        panel.innerHTML = '';
+
+        var AP = window.Muscles;
+        if (!AP || typeof AP.getPassives !== 'function') return;
+
+        var groups = AP.getGroups();
+        var groupNameById = {};
+        groups.forEach(function (g) { groupNameById[g.id] = g.name; });
+        var completed = (AP.getCompletedGroups && typeof AP.getCompletedGroups === 'function') ? AP.getCompletedGroups() : [];
+        var equippedMap = (AP.getEquippedMap && typeof AP.getEquippedMap === 'function') ? AP.getEquippedMap() : {};
+        var passives = AP.getPassives();
+
+        function passiveName(p) {
+            return (p.name_key && window.UIText && typeof window.UIText.t === 'function') ? window.UIText.t(p.name_key) : p.id;
+        }
+        function groupLabel(gid) { return groupNameById[gid] || gid; }
+
+        var header = document.createElement('div');
+        header.className = 'mp-header';
+        header.textContent = ui('muscle.passive.title');
+        panel.appendChild(header);
+
+        var summary = document.createElement('div');
+        summary.className = 'mp-slots-summary';
+        summary.textContent = ui('muscle.passive.slots', { n: String(completed.length), total: String(groups.length) });
+        panel.appendChild(summary);
+
+        if (!passives.length) {
+            var empty = document.createElement('div');
+            empty.className = 'mp-slots-summary';
+            empty.textContent = ui('muscle.passive.empty');
+            panel.appendChild(empty);
+            return;
+        }
+
+        passives.forEach(function (p) {
+            if (!p || !p.id) return;
+            var isEquipped = false;
+            var equippedAt = '';
+            for (var g in equippedMap) {
+                if (Object.prototype.hasOwnProperty.call(equippedMap, g) && equippedMap[g] === p.id) { isEquipped = true; equippedAt = g; break; }
+            }
+            var card = document.createElement('div');
+            card.className = 'mp-passive' + (isEquipped ? ' mp-equipped' : '');
+
+            var row = document.createElement('div');
+            row.className = 'mp-passive-row';
+            var nameEl = document.createElement('div');
+            nameEl.className = 'mp-passive-name';
+            nameEl.textContent = passiveName(p);
+            row.appendChild(nameEl);
+            var metaEl = document.createElement('div');
+            metaEl.className = 'mp-passive-meta';
+            var cost = Math.max(1, parseInt(p.slots_cost, 10) || 1);
+            var allowedNames = (Array.isArray(p.allowed_groups) ? p.allowed_groups : []).map(groupLabel).join('、');
+            metaEl.textContent = ui('muscle.passive.cost', { n: String(cost) }) + ' · ' + ui('muscle.passive.allowed', { groups: allowedNames });
+            row.appendChild(metaEl);
+            card.appendChild(row);
+
+            var descEl = document.createElement('div');
+            descEl.className = 'mp-passive-desc';
+            descEl.textContent = (p.desc_key && window.UIText && typeof window.UIText.t === 'function') ? window.UIText.t(p.desc_key) : '';
+            card.appendChild(descEl);
+
+            var actionRow = document.createElement('div');
+            actionRow.className = 'mp-passive-row';
+            if (isEquipped) {
+                var atEl = document.createElement('div');
+                atEl.className = 'mp-passive-meta';
+                atEl.textContent = ui('muscle.passive.equipped_at', { group: groupLabel(equippedAt) });
+                actionRow.appendChild(atEl);
+                var btnUnequip = document.createElement('button');
+                btnUnequip.type = 'button';
+                btnUnequip.className = 'mp-btn';
+                btnUnequip.textContent = ui('muscle.passive.unequip');
+                btnUnequip.onclick = (function (pid) {
+                    return function () {
+                        var r = AP.unequipPassive(pid);
+                        if (r && r.ok && window.GameLog) {
+                            window.GameLog.log(ui('log.system.muscle.passive_unequipped', { name: passiveName(p) }), 'system');
+                        }
+                        renderCombatModal();
+                    };
+                })(p.id);
+                actionRow.appendChild(btnUnequip);
+            } else {
+                // 找第一个可装配的允许肌群槽（cost=1 时装任一群；cost>1 时须全部允许群就绪）
+                var targetGroup = null;
+                if (cost === 1) {
+                    (Array.isArray(p.allowed_groups) ? p.allowed_groups : []).forEach(function (gid) {
+                        if (targetGroup) return;
+                        var chk = AP.canEquipPassive(p.id, gid);
+                        if (chk && chk.ok) targetGroup = gid;
+                    });
+                } else {
+                    var chkAll = AP.canEquipPassive(p.id, null);
+                    if (chkAll && chkAll.ok && Array.isArray(p.allowed_groups) && p.allowed_groups.length) {
+                        targetGroup = p.allowed_groups[0];
+                    }
+                }
+                var reasonEl = document.createElement('div');
+                reasonEl.className = 'mp-passive-meta';
+                reasonEl.textContent = (function () {
+                    var eqMap = AP.getEquippedMap ? AP.getEquippedMap() : {};
+                    for (var gx in eqMap) { if (Object.prototype.hasOwnProperty.call(eqMap, gx) && eqMap[gx] === p.id) return ui('muscle.passive.already_equipped'); }
+                    var anyOccupied = false;
+                    var anyNotComplete = false;
+                    var anyOk = false;
+                    var allowedArr = Array.isArray(p.allowed_groups) ? p.allowed_groups : [];
+                    for (var ai = 0; ai < allowedArr.length; ai++) {
+                        var chk = AP.canEquipPassive(p.id, allowedArr[ai]);
+                        if (!chk) continue;
+                        if (chk.ok) { anyOk = true; break; }
+                        if (chk.reason === 'slot_occupied') anyOccupied = true;
+                        if (chk.reason === 'group_not_complete') anyNotComplete = true;
+                    }
+                    if (anyOk) return '';
+                    if (anyOccupied) return ui('muscle.passive.slot_occupied');
+                    if (anyNotComplete) return ui('muscle.passive.need_group', { groups: allowedNames });
+                    return ui('muscle.passive.need_group', { groups: allowedNames });
+                })();
+                actionRow.appendChild(reasonEl);
+                var btnEquip = document.createElement('button');
+                btnEquip.type = 'button';
+                btnEquip.className = 'mp-btn';
+                btnEquip.textContent = ui('muscle.passive.equip');
+                btnEquip.disabled = !targetGroup;
+                if (targetGroup) {
+                    btnEquip.onclick = (function (pid, gid) {
+                        return function () {
+                            var r = AP.equipPassive(pid, gid);
+                            if (r && r.ok && window.GameLog) {
+                                window.GameLog.log(ui('log.system.muscle.passive_equipped', { name: passiveName(p), group: groupLabel(gid) }), 'system');
+                            }
+                            renderCombatModal();
+                        };
+                    })(p.id, targetGroup);
+                }
+                actionRow.appendChild(btnEquip);
+            }
+            card.appendChild(actionRow);
+            panel.appendChild(card);
+        });
+    }
+
     function renderCombatModal() {
         var CS = window.CombatSkills;
-        var AP = window.Acupoints;
-        var combatState = IE && IE.getCombatState ? IE.getCombatState() : { limbs: {}, hubs: { breath: null, footwork: null }, move_sequences: {}, skill_move_sequences: {}, move_sequence_cursors: {}, post_effect_sequences: {} };
+        var AP = window.Muscles;
+        var combatState = IE && IE.getCombatState ? IE.getCombatState() : { limbs: {}, hubs: { breath: null, footwork: null }, move_sequences: {}, skill_move_sequences: {}, move_sequence_cursors: {} };
         var limbIds = IE && IE.COMBAT_LIMB_IDS ? IE.COMBAT_LIMB_IDS.slice() : ['lhand', 'rhand', 'lfoot', 'rfoot'];
-        var meridianSkillId = (IE && IE.SPECIAL_MERIDIAN_STUDIES_SKILL_ID) ? IE.SPECIAL_MERIDIAN_STUDIES_SKILL_ID : 'special_meridian_studies';
-        var meridianLv = IE && typeof IE.getSkillLevel === 'function' ? IE.getSkillLevel(meridianSkillId) : 0;
-        var acupointsUnlocked = meridianLv >= 1;
+        var anatomySkillId = (IE && IE.SPECIAL_MERIDIAN_STUDIES_SKILL_ID) ? IE.SPECIAL_MERIDIAN_STUDIES_SKILL_ID : 'special_meridian_studies';
+        var anatomyLv = IE && typeof IE.getSkillLevel === 'function' ? IE.getSkillLevel(anatomySkillId) : 0;
+        var musclesUnlocked = anatomyLv >= 1;
 
         var mainTabs = document.querySelectorAll('#modal-combat .combat-main-tab');
-        if (!acupointsUnlocked && combatUIState.mode === 'acupoints') combatUIState.mode = 'skills';
-        var isAcupointMode = combatUIState.mode === 'acupoints';
+        if (!musclesUnlocked && combatUIState.mode === 'muscles') combatUIState.mode = 'skills';
+        var isMuscleMode = combatUIState.mode === 'muscles';
         var combatModal = document.getElementById('modal-combat');
-        if (combatModal) combatModal.classList.toggle('combat-acupoint-mode', isAcupointMode);
+        if (combatModal) combatModal.classList.toggle('combat-muscle-mode', isMuscleMode);
 
         if (mainTabs && mainTabs.length) {
             mainTabs.forEach(function (btn) {
                 var mode = btn.getAttribute('data-mode') || 'skills';
-                if (mode === 'acupoints') btn.style.display = acupointsUnlocked ? '' : 'none';
+                if (mode === 'muscles') btn.style.display = musclesUnlocked ? '' : 'none';
                 btn.classList.toggle('active', combatUIState.mode === mode);
                 btn.onclick = function () {
-                    if (mode === 'acupoints' && !acupointsUnlocked) return;
+                    if (mode === 'muscles' && !musclesUnlocked) return;
                     combatUIState.mode = mode;
-                    if (mode === 'acupoints') combatUIState.acupointPage = 0;
+                    if (mode === 'muscles') {
+                        combatUIState.musclePage = 0;
+                        // 进入肌肉分页时清掉可能残留的旧肌群/肌肉选择（防止首屏空白与跨肌群误解锁）
+                        var AP = window.Muscles;
+                        var acCats = AP && typeof AP.getCategories === 'function' ? AP.getCategories() : [];
+                        if (acCats.length && !acCats.some(function (c) { return c.id === combatUIState.curMuscleCat; })) {
+                            combatUIState.curMuscleCat = acCats[0].id;
+                        }
+                        var listAp = AP && combatUIState.curMuscleCat ? AP.getMuscleEntriesByGroup(combatUIState.curMuscleCat) : [];
+                        if (!listAp.some(function (x) { return x.id === combatUIState.curMuscleId; })) {
+                            combatUIState.curMuscleId = listAp.length ? listAp[0].id : null;
+                        }
+                    }
                     renderCombatModal();
                 };
             });
@@ -8887,16 +9693,16 @@
 
         var catBox = document.getElementById('category-tabs');
         var skillListEl = document.getElementById('skill-list');
-        var acListEl = document.getElementById('acupoint-list');
+        var acListEl = document.getElementById('muscle-list');
 
         if (catBox) catBox.innerHTML = '';
         if (skillListEl) {
-            skillListEl.style.display = isAcupointMode ? 'none' : 'flex';
-            if (!isAcupointMode) skillListEl.innerHTML = '';
+            skillListEl.style.display = isMuscleMode ? 'none' : 'flex';
+            if (!isMuscleMode) skillListEl.innerHTML = '';
         }
         if (acListEl) {
-            acListEl.style.display = isAcupointMode ? 'flex' : 'none';
-            if (isAcupointMode) acListEl.innerHTML = '';
+            acListEl.style.display = isMuscleMode ? 'flex' : 'none';
+            if (isMuscleMode) acListEl.innerHTML = '';
         }
         var hubSectionEl = document.querySelector('#modal-combat .combat-hub-section');
         var limbTitleEl = document.querySelector('#modal-combat .combat-limb-title');
@@ -8905,15 +9711,17 @@
         var selectedMetaEl = document.querySelector('#modal-combat .combat-selected-meta');
         var seqWrapEl = document.getElementById('move-sequence');
         var configColEl = document.querySelector('#modal-combat .combat-config-column');
-        if (hubSectionEl) hubSectionEl.style.display = isAcupointMode ? 'none' : '';
-        if (limbTitleEl) limbTitleEl.style.display = isAcupointMode ? 'none' : '';
-        if (limbContainerEl) limbContainerEl.style.display = isAcupointMode ? 'none' : '';
-        if (seqHeadEl) seqHeadEl.style.display = isAcupointMode ? 'none' : '';
-        if (selectedMetaEl) selectedMetaEl.style.display = isAcupointMode ? 'none' : '';
-        if (seqWrapEl) seqWrapEl.style.display = isAcupointMode ? 'none' : '';
-        if (configColEl) configColEl.style.display = isAcupointMode ? 'none' : '';
+        if (hubSectionEl) hubSectionEl.style.display = isMuscleMode ? 'none' : '';
+        if (limbTitleEl) limbTitleEl.style.display = isMuscleMode ? 'none' : '';
+        if (limbContainerEl) limbContainerEl.style.display = isMuscleMode ? 'none' : '';
+        if (seqHeadEl) seqHeadEl.style.display = isMuscleMode ? 'none' : '';
+        if (selectedMetaEl) selectedMetaEl.style.display = isMuscleMode ? 'none' : '';
+        if (seqWrapEl) seqWrapEl.style.display = isMuscleMode ? 'none' : '';
+        if (configColEl) configColEl.style.display = isMuscleMode ? 'none' : '';
 
-        if (CS && !isAcupointMode) {
+        renderMusclePassivePanel(isMuscleMode);
+
+        if (CS && !isMuscleMode) {
             var cats = CS.getCategories();
             if (catBox) {
                 cats.forEach(function (c) {
@@ -8957,7 +9765,7 @@
         var hubFootwork = document.getElementById('hub-footwork');
         var valBreath = document.getElementById('val-breath');
         var valFootwork = document.getElementById('val-footwork');
-        if (!isAcupointMode) {
+        if (!isMuscleMode) {
             if (hubBreath) hubBreath.classList.toggle('active', !!combatState.hubs.breath);
             if (hubFootwork) hubFootwork.classList.toggle('active', !!combatState.hubs.footwork);
             if (valBreath) { valBreath.textContent = getCombatSkillName(combatState.hubs.breath) || ui('combat.not.loaded'); valBreath.classList.toggle('empty', !combatState.hubs.breath); }
@@ -8965,7 +9773,7 @@
         }
 
         var limbBox = document.getElementById('limb-container');
-        if (!isAcupointMode && limbBox && combatState.limbs) {
+        if (!isMuscleMode && limbBox && combatState.limbs) {
             limbBox.innerHTML = '';
             var isGlobal = combatUIState.curCat === 'breath' || combatUIState.curCat === 'footwork';
             limbBox.style.opacity = isGlobal ? '0.2' : '1';
@@ -9009,43 +9817,6 @@
             });
             strikeBar.appendChild(strikeChips);
             limbBox.appendChild(strikeBar);
-            var selSkillForPost = CS && combatUIState.curSkillId ? CS.getSkill(combatUIState.curSkillId) : null;
-            var canEditPost = !!selSkillForPost && combatUIState.curCat !== 'breath' && combatUIState.curCat !== 'footwork';
-            var obtainedPostIds = (window.CharacterAttributes && typeof window.CharacterAttributes.getPostEffectsObtainedIds === 'function')
-                ? window.CharacterAttributes.getPostEffectsObtainedIds()
-                : [];
-            function limbHasAnyEquippablePostEffect(lid) {
-                if (!window.PostEffects || typeof window.PostEffects.getPostEffect !== 'function') return false;
-                var limb = combatState && combatState.limbs ? combatState.limbs[lid] : null;
-                var activeSkillId = (limb && limb.active) ? String(limb.active) : '';
-                if (!activeSkillId) return false;
-                var seq = (combatState && combatState.move_sequences && Array.isArray(combatState.move_sequences[lid]))
-                    ? combatState.move_sequences[lid]
-                    : [];
-                var moveIds = [];
-                for (var i = 0; i < seq.length; i++) {
-                    var rid = seq[i] ? String(seq[i]) : '';
-                    if (!rid) continue;
-                    if (rid.indexOf('variant:') === 0) continue;
-                    moveIds.push(rid);
-                }
-                for (var pi = 0; pi < obtainedPostIds.length; pi++) {
-                    var pid = obtainedPostIds[pi] ? String(obtainedPostIds[pi]) : '';
-                    if (!pid) continue;
-                    var pe = window.PostEffects.getPostEffect(pid);
-                    if (!pe || !pe.id) continue;
-                    if (Array.isArray(pe.valid_skill_ids) && pe.valid_skill_ids.length && pe.valid_skill_ids.indexOf(activeSkillId) < 0) continue;
-                    if (Array.isArray(pe.valid_move_ids) && pe.valid_move_ids.length) {
-                        var okMove = false;
-                        for (var mi = 0; mi < moveIds.length; mi++) {
-                            if (pe.valid_move_ids.indexOf(moveIds[mi]) >= 0) { okMove = true; break; }
-                        }
-                        if (!okMove) continue;
-                    }
-                    return true;
-                }
-                return false;
-            }
             limbIds.forEach(function (lid) {
                 var limb = combatState.limbs[lid] || { active: null, parry: null };
                 var div = document.createElement('div');
@@ -9055,31 +9826,8 @@
                 var isActiveSel = combatUIState.curPart === lid && combatUIState.curSlot === 'active';
                 var isParrySel = combatUIState.curPart === lid && combatUIState.curSlot === 'parry';
                 var orderBadge = strikeOrderPos[lid] != null ? ('#' + String(Number(strikeOrderPos[lid]) + 1)) : '--';
-                div.innerHTML = '<div class="limb-header"><span>' + (LIMB_ICONS[lid] || '') + ' ' + ui(LIMB_LABELS[lid] || lid) + '</span><div class="limb-header-right"><span class="limb-order-badge">' + orderBadge + '</span><span class="limb-post-btn-wrap"></span></div></div><div class="limb-slots"><div class="combat-limb-slot' + (isActiveSel ? ' selected' : '') + '" data-part="' + lid + '" data-slot="active"><span class="slot-type">' + ui('combat.slot.active') + '</span><span class="slot-skill">' + activeName + '</span></div><div class="combat-limb-slot' + (isParrySel ? ' selected' : '') + '" data-part="' + lid + '" data-slot="parry"><span class="slot-type">' + ui('combat.slot.parry') + '</span><span class="slot-skill">' + parryName + '</span></div></div>';
+                div.innerHTML = '<div class="limb-header"><span>' + (LIMB_ICONS[lid] || '') + ' ' + ui(LIMB_LABELS[lid] || lid) + '</span><div class="limb-header-right"><span class="limb-order-badge">' + orderBadge + '</span></div></div><div class="limb-slots"><div class="combat-limb-slot' + (isActiveSel ? ' selected' : '') + '" data-part="' + lid + '" data-slot="active"><span class="slot-type">' + ui('combat.slot.active') + '</span><span class="slot-skill">' + activeName + '</span></div><div class="combat-limb-slot' + (isParrySel ? ' selected' : '') + '" data-part="' + lid + '" data-slot="parry"><span class="slot-type">' + ui('combat.slot.parry') + '</span><span class="slot-skill">' + parryName + '</span></div></div>';
 
-                var btnWrap = div.querySelector('.limb-post-btn-wrap');
-                if (btnWrap) {
-                    if (limbHasAnyEquippablePostEffect(lid)) {
-                        var equippedPostId = getLimbPostEffectId(combatState, lid);
-                        var equippedPostName = equippedPostId ? getPostEffectName(equippedPostId) : '';
-                        var btnPost = document.createElement('button');
-                        btnPost.type = 'button';
-                        btnPost.className = 'combat-debug-btn btn-limb-post-effect';
-                        btnPost.setAttribute('data-ui', 'combat.post_effect.btn');
-                        btnPost.textContent = equippedPostName ? ('后遗症: ' + equippedPostName) : '后遗症';
-                        btnPost.disabled = !canEditPost;
-                        btnPost.onclick = (function (targetLid, anchorEl) {
-                            return function (e) {
-                                if (e && typeof e.stopPropagation === 'function') e.stopPropagation();
-                                if (anchorEl && anchorEl.disabled) return;
-                                combatUIState.curPart = targetLid;
-                                if (!combatUIState.curSlot) combatUIState.curSlot = 'active';
-                                openLimbPostEffectPicker(anchorEl, targetLid);
-                            };
-                        })(lid, btnPost);
-                        btnWrap.appendChild(btnPost);
-                    }
-                }
                 div.querySelectorAll('.combat-limb-slot').forEach(function (slotEl) {
                     slotEl.onclick = function () {
                         combatUIState.curPart = slotEl.getAttribute('data-part');
@@ -9096,12 +9844,12 @@
         var levelEl = document.getElementById('skill-level');
         var profEl = document.getElementById('skill-prof');
         if (titleEl) {
-            if (!isAcupointMode) {
+            if (!isMuscleMode) {
                 titleEl.textContent = selSkill ? selSkill.name : '--';
-            } else if (AP && combatUIState.curAcupointId) {
-                var catId = combatUIState.curAcupointCat;
-                var listApTitle = AP.getAcupointsByCategory(catId);
-                var curAp = listApTitle.find(function (x) { return x.id === combatUIState.curAcupointId; });
+            } else if (AP && combatUIState.curMuscleId) {
+                var catId = combatUIState.curMuscleCat;
+                var listApTitle = AP.getMuscleEntriesByGroup(catId);
+                var curAp = listApTitle.find(function (x) { return x.id === combatUIState.curMuscleId; });
                 titleEl.textContent = curAp ? curAp.name : '--';
             } else {
                 titleEl.textContent = '--';
@@ -9121,9 +9869,9 @@
         var btnDeploy = document.getElementById('btn-deploy-combat');
         if (btnDeploy) {
             var canDeploy = true;
-            btnDeploy.textContent = isAcupointMode ? ui('acupoint.btn.unlock') : ui('combat.deploy');
-            if (isAcupointMode) {
-                canDeploy = !!combatUIState.curAcupointId;
+            btnDeploy.textContent = isMuscleMode ? ui('muscle.btn.unlock') : ui('combat.deploy');
+            if (isMuscleMode) {
+                canDeploy = !!combatUIState.curMuscleId;
             } else if (combatUIState.curCat !== 'breath' && combatUIState.curCat !== 'footwork') {
                 if (!selSkill) {
                     canDeploy = false;
@@ -9134,21 +9882,6 @@
                 }
             }
             btnDeploy.disabled = !canDeploy;
-        }
-
-        function getPostEffectName(postId) {
-            if (!postId || !window.PostEffects || typeof window.PostEffects.getPostEffect !== 'function') return '';
-            var pe = window.PostEffects.getPostEffect(postId);
-            if (!pe) return String(postId);
-            if (pe.name_key && window.UIText && typeof window.UIText.t === 'function') return window.UIText.t(pe.name_key);
-            return pe.id || String(postId);
-        }
-
-        function getLimbPostEffectId(combatState, limbId) {
-            if (!combatState || !combatState.post_effect_sequences) return null;
-            var v = combatState.post_effect_sequences[limbId];
-            if (v == null || v === '') return null;
-            return String(v);
         }
 
         function getVariantName(variantId) {
@@ -9180,108 +9913,44 @@
         var seqSkillId = (slotForMoveSeq === 'active' && limbRowForSeq && limbRowForSeq.active) ? String(limbRowForSeq.active) : null;
         var seqSk = (seqSkillId && CS) ? CS.getSkill(seqSkillId) : null;
         var skillLevelForSeq = (seqSkillId && IE) ? IE.getSkillLevel(seqSkillId) : 0;
-        var moveUsageForSeq = (seqSkillId && skillsState[seqSkillId] && skillsState[seqSkillId].move_usage) ? skillsState[seqSkillId].move_usage : {};
-        if (!isAcupointMode && seqBox && slotForMoveSeq === 'active' && seqSk && seqSk.moves && seqSk.moves.length && seqSk.category !== 'breath' && seqSk.category !== 'footwork' && seqSk.category !== 'parry' && seqSkillId) {
+        if (!isMuscleMode && combatUIState.curCat !== 'breath' && combatUIState.curCat !== 'footwork'
+            && seqBox && slotForMoveSeq === 'active' && seqSk && seqSk.moves && seqSk.moves.length
+            && seqSk.category !== 'breath' && seqSk.category !== 'footwork' && seqSk.category !== 'parry' && seqSkillId) {
             seqBox.innerHTML = '';
             var maxSlots = CS.getMaxSlotsForLevel(seqSkillId, skillLevelForSeq);
-            var unlocked = CS.getUnlockedMoves(seqSkillId, skillLevelForSeq);
+            var unlockedSeq = CS.getUnlockedMoves(seqSkillId, skillLevelForSeq);
+            var moveUsageSeq = (skillsState[seqSkillId] && skillsState[seqSkillId].move_usage) ? skillsState[seqSkillId].move_usage : {};
             var seq = (combatState.move_sequences && Array.isArray(combatState.move_sequences[limbPartForSeq])) ? combatState.move_sequences[limbPartForSeq].slice() : [];
-            var limbIdForPost = limbPartForSeq;
-            var limbPostId = getLimbPostEffectId(combatState, limbIdForPost);
             while (seq.length < maxSlots) seq.push('');
             seq = seq.slice(0, maxSlots);
             for (var i = 0; i < maxSlots; i++) {
                 var rawMoveId = seq[i] ? String(seq[i]) : '';
                 var isVariantSlot = rawMoveId.indexOf('variant:') === 0;
                 var variantIdAtSlot = isVariantSlot ? rawMoveId.slice('variant:'.length) : '';
-                var moveObj = null;
-                if (rawMoveId && !isVariantSlot) {
-                    moveObj = unlocked.find(function (m) { return m.id === rawMoveId; }) || null;
+                // 11-skills 设计变更：每肢 = 1 主动技能 + 槽1（该肢可用招式）+ 槽2..N（变式槽）
+                var moveName;
+                var nodeProfTxt = '';
+                if (i === 0) {
+                    // 槽1：招式（可从技能在该肢可用的招式中选）
+                    var mo = null;
+                    var mi2;
+                    for (mi2 = 0; mi2 < unlockedSeq.length; mi2++) {
+                        if (unlockedSeq[mi2].id === rawMoveId) { mo = unlockedSeq[mi2]; break; }
+                    }
+                    moveName = mo ? mo.name : (rawMoveId ? rawMoveId : ui('combat.seq.slot_empty'));
+                    if (mo) {
+                        var uc = moveUsageSeq[mo.id] != null ? moveUsageSeq[mo.id] : 0;
+                        var pr = Math.floor(CS.getMoveProficiencyRatio(uc) * 100);
+                        nodeProfTxt = '<span class="node-prof">' + ui('combat.prof.node', { v: pr }) + '</span>';
+                    }
+                } else {
+                    moveName = isVariantSlot
+                        ? ('[' + ui('combat.variant.label') + '] ' + getVariantName(variantIdAtSlot))
+                        : ui('combat.seq.slot_empty');
                 }
-                var moveName = isVariantSlot
-                    ? ('[变式] ' + getVariantName(variantIdAtSlot))
-                    : (moveObj ? moveObj.name : (rawMoveId ? rawMoveId : ui('combat.seq.slot_empty')));
-                var useCount = (moveUsageForSeq && moveObj && moveUsageForSeq[moveObj.id] != null) ? moveUsageForSeq[moveObj.id] : 0;
-                var nodeProf = moveObj ? Math.floor(CS.getMoveProficiencyRatio(useCount) * 100) : 0;
-                var postText = limbPostId ? getPostEffectName(limbPostId) : (rawMoveId && !isVariantSlot ? '无后遗症' : '—');
                 var node = document.createElement('div');
                 node.className = 'combat-move-node' + (combatUIState.editingSlot === i ? ' editing' : '') + (!rawMoveId ? ' slot-empty' : '');
-                node.innerHTML = '<span class="node-index">' + String(i + 1).padStart(2, '0') + '</span><span class="node-name">' + moveName + '</span><span class="node-prof">' + ui('combat.prof.node', { v: nodeProf }) + '</span><span class="node-post' + (limbPostId ? '' : ' empty') + '">' + postText + '</span>';
-
-                // 成数控件（仅主动招式槽）
-                if (rawMoveId && !isVariantSlot && moveObj && IE && typeof IE.getMoveSlotPowerLevel === 'function') {
-                    var plStored = IE.getMoveSlotPowerLevel(limbPartForSeq, i);
-                    var plMin = moveObj.power_level_min != null ? Number(moveObj.power_level_min) : 1;
-                    var plMax = moveObj.power_level_max != null ? Number(moveObj.power_level_max) : 12;
-                    var plDef = moveObj.default_power_level != null ? Number(moveObj.default_power_level) : 10;
-                    var plShow = plStored != null ? plStored : plDef;
-                    var powerCtrl = document.createElement('div');
-                    powerCtrl.className = 'node-power-ctrl';
-                    var btnMinus = document.createElement('button');
-                    btnMinus.type = 'button';
-                    btnMinus.className = 'btn-power-step';
-                    btnMinus.textContent = '−';
-                    btnMinus.disabled = plShow <= plMin;
-                    var powerVal = document.createElement('span');
-                    powerVal.className = 'node-power-val';
-                    powerVal.textContent = plShow + '成';
-                    var btnPlus = document.createElement('button');
-                    btnPlus.type = 'button';
-                    btnPlus.className = 'btn-power-step';
-                    btnPlus.textContent = '+';
-                    btnPlus.disabled = plShow >= plMax;
-                    btnMinus.onclick = function (slotIdx, limbId, cur, min) {
-                        return function (e) {
-                            e.stopPropagation();
-                            if (!IE || typeof IE.setMoveSlotPowerLevel !== 'function') return;
-                            IE.setMoveSlotPowerLevel(limbId, slotIdx, Math.max(min, cur - 1));
-                            renderCombatModal();
-                        };
-                    }(i, limbPartForSeq, plShow, plMin);
-                    btnPlus.onclick = function (slotIdx, limbId, cur, max) {
-                        return function (e) {
-                            e.stopPropagation();
-                            if (!IE || typeof IE.setMoveSlotPowerLevel !== 'function') return;
-                            IE.setMoveSlotPowerLevel(limbId, slotIdx, Math.min(max, cur + 1));
-                            renderCombatModal();
-                        };
-                    }(i, limbPartForSeq, plShow, plMax);
-                    powerCtrl.appendChild(btnMinus);
-                    powerCtrl.appendChild(powerVal);
-                    powerCtrl.appendChild(btnPlus);
-                    node.appendChild(powerCtrl);
-                }
-
-                // Debug: 一键让该招式熟练度 +10%（用于测试 post-effects）
-                var debugBtn = document.createElement('button');
-                debugBtn.type = 'button';
-                debugBtn.className = 'debug-move-prof-btn';
-                debugBtn.textContent = '+10%';
-                var thisMoveId = (moveObj && moveObj.id && rawMoveId) ? String(moveObj.id) : '';
-                debugBtn.disabled = !thisMoveId;
-                debugBtn.onclick = function (skillId, mid, moveTemplate) {
-                    return function (e) {
-                        e.stopPropagation();
-                        if (!skillId || !mid) return;
-                        var curLevel = IE.getSkillLevel(skillId);
-                        if (curLevel < 1) {
-                            var st = IE.getState();
-                            if (!st.skills || typeof st.skills !== 'object') st.skills = {};
-                            if (!st.skills[skillId] || typeof st.skills[skillId] !== 'object') st.skills[skillId] = { level: 1, move_usage: {} };
-                            if (st.skills[skillId].level == null) st.skills[skillId].level = 1;
-                            if (!st.skills[skillId].move_usage || typeof st.skills[skillId].move_usage !== 'object') st.skills[skillId].move_usage = {};
-                        }
-
-                        var maxU = (moveTemplate && moveTemplate.proficiency_max_uses != null)
-                            ? moveTemplate.proficiency_max_uses
-                            : (CS && typeof CS.getMoveProficiencyMax === 'function' ? CS.getMoveProficiencyMax() : 50000);
-                        var dUses = Math.floor(Number(maxU) * 0.1);
-                        if (!isFinite(dUses) || dUses <= 0) dUses = 1;
-                        IE.incrementSkillMoveUsage(skillId, mid, dUses);
-                        renderCombatModal();
-                    };
-                }(seqSkillId, thisMoveId, moveObj);
-                node.appendChild(debugBtn);
+                node.innerHTML = '<span class="node-index">' + String(i + 1).padStart(2, '0') + '</span><span class="node-name">' + moveName + '</span>' + nodeProfTxt;
                 node.onclick = function (idx, el) {
                     return function (e) {
                         e.stopPropagation();
@@ -9300,8 +9969,7 @@
             // 主动链变式与招式共槽，直接在槽位中编辑，不单独渲染列表。
         } else if (seqBox) {
             seqBox.innerHTML = '';
-            // 招架槽下显示招架变式槽
-            if (!isAcupointMode && combatUIState.curSlot === 'parry' && limbRowForSeq && limbRowForSeq.parry) {
+            if (!isMuscleMode && combatUIState.curSlot === 'parry' && limbRowForSeq && limbRowForSeq.parry) {
                 var parrySkillIdForLimb = limbRowForSeq.parry;
                 var capPv = getParryVariantSlotCap(parrySkillIdForLimb);
                 var pWrap = document.createElement('div');
@@ -9345,47 +10013,55 @@
 
         var targetEl = document.getElementById('target-indicator');
         if (targetEl) {
-            if (!isAcupointMode) {
+            if (!isMuscleMode) {
                 if (combatUIState.curCat === 'breath') targetEl.textContent = ui('combat.target.hub.breath');
                 else if (combatUIState.curCat === 'footwork') targetEl.textContent = ui('combat.target.hub.footwork');
                 else targetEl.textContent = ui('combat.target.limb', { limb: ui(LIMB_LABELS[combatUIState.curPart] || combatUIState.curPart), slot: ui(combatUIState.curSlot === 'active' ? 'combat.slot.active' : 'combat.slot.parry') });
             } else {
-                targetEl.textContent = ui('combat.target.acupoint');
+                targetEl.textContent = ui('combat.target.muscle');
             }
         }
 
-        if (AP && isAcupointMode && catBox && acListEl) {
+        if (AP && isMuscleMode && catBox && acListEl) {
             var acCats = AP.getCategories();
-            if (!combatUIState.curAcupointCat && acCats.length) combatUIState.curAcupointCat = acCats[0].id;
+            // 兜底：默认/残留的肌群 id 不在当前数据表内时，重置到首个真实肌群（防止首屏空白）
+            if (acCats.length && !acCats.some(function (c) { return c.id === combatUIState.curMuscleCat; })) {
+                combatUIState.curMuscleCat = acCats[0].id;
+            }
             acCats.forEach(function (c) {
                 var btn = document.createElement('button');
                 btn.type = 'button';
-                btn.className = 'combat-cat-btn' + (combatUIState.curAcupointCat === c.id ? ' active' : '');
+                btn.className = 'combat-cat-btn' + (combatUIState.curMuscleCat === c.id ? ' active' : '');
                 btn.textContent = (c.icon ? c.icon + ' ' : '') + c.label;
                 btn.onclick = function () {
-                    combatUIState.curAcupointCat = c.id;
-                    combatUIState.acupointPage = 0;
-                    var listAp2 = AP.getAcupointsByCategory(c.id);
-                    combatUIState.curAcupointId = listAp2.length ? listAp2[0].id : null;
+                    combatUIState.curMuscleCat = c.id;
+                    combatUIState.musclePage = 0;
+                    var listAp2 = AP.getMuscleEntriesByGroup(c.id);
+                    combatUIState.curMuscleId = listAp2.length ? listAp2[0].id : null;
                     renderCombatModal();
                 };
                 catBox.appendChild(btn);
             });
 
-            var listAp = AP.getAcupointsByCategory(combatUIState.curAcupointCat);
+            var listAp = AP.getMuscleEntriesByGroup(combatUIState.curMuscleCat);
+            // 兜底：当前选中肌肉不属于当前肌群（跨肌群残留）时重置
+            if (!listAp.some(function (x) { return x.id === combatUIState.curMuscleId; })) {
+                combatUIState.curMuscleId = listAp.length ? listAp[0].id : null;
+            }
             var pageSize = 18;
             var total = listAp.length;
             var maxPage = total ? Math.max(0, Math.ceil(total / pageSize) - 1) : 0;
-            if (combatUIState.acupointPage > maxPage) combatUIState.acupointPage = maxPage;
-            if (combatUIState.acupointPage < 0) combatUIState.acupointPage = 0;
-            var start = combatUIState.acupointPage * pageSize;
+            if (combatUIState.musclePage > maxPage) combatUIState.musclePage = maxPage;
+            if (combatUIState.musclePage < 0) combatUIState.musclePage = 0;
+            var start = combatUIState.musclePage * pageSize;
             var end = Math.min(start + pageSize, total);
 
-            function unlockAcupointForCombat(acupointId, acupointName) {
-                if (!AP || !acupointId) return;
-                var changed = AP.unlock(acupointId);
+            function unlockMuscleForCombat(muscleId, muscleName) {
+                if (!AP || !muscleId) return;
+                var unlockRes = AP.unlock(muscleId);
+                var changed = !!(unlockRes && unlockRes.ok);
                 if (changed && window.GameLog) {
-                    window.GameLog.log(ui('log.system.acupoint.unlocked', { id: (acupointName || acupointId) }), 'system');
+                    window.GameLog.log(ui('log.system.muscle.unlocked', { id: (muscleName || muscleId) }), 'system');
                 }
                 if (changed && window.CharacterAttributes && typeof window.CharacterAttributes.recalcCharacterStats === 'function' && window.InventoryEquipment) {
                     window.CharacterAttributes.recalcCharacterStats({
@@ -9403,26 +10079,26 @@
             for (var i = start; i < end; i++) {
                 var a = listAp[i];
                 var div = document.createElement('div');
-                var isSel = combatUIState.curAcupointId === a.id;
-                div.className = 'combat-acupoint-item' + (isSel ? ' selected' : '');
+                var isSel = combatUIState.curMuscleId === a.id;
+                div.className = 'combat-muscle-item' + (isSel ? ' selected' : '');
                 var isUnlocked = AP.isUnlocked(a.id);
-                var meta = ui(isUnlocked ? 'acupoint.meta.unlocked' : 'acupoint.meta.locked', { effects: (a.effectsText || '') });
-                div.innerHTML = '<div class="acupoint-name">' + a.name + '</div><div class="acupoint-meta">' + meta + '</div>';
+                var meta = ui(isUnlocked ? 'muscle.meta.unlocked' : 'muscle.meta.locked', { effects: (a.effectsText || '') });
+                div.innerHTML = '<div class="muscle-name">' + a.name + '</div><div class="muscle-meta">' + meta + '</div>';
                 var unlockBtn = document.createElement('button');
                 unlockBtn.type = 'button';
                 unlockBtn.className = 'combat-pager-btn';
-                unlockBtn.textContent = isUnlocked ? ui('acupoint.btn.unlocked') : ui('acupoint.btn.unlock');
+                unlockBtn.textContent = isUnlocked ? ui('muscle.btn.unlocked') : ui('muscle.btn.unlock');
                 unlockBtn.disabled = !!isUnlocked;
                 unlockBtn.onclick = function (id, name) {
                     return function (e) {
                         if (e && typeof e.stopPropagation === 'function') e.stopPropagation();
-                        unlockAcupointForCombat(id, name);
+                        unlockMuscleForCombat(id, name);
                     };
                 }(a.id, a.name);
                 div.appendChild(unlockBtn);
                 div.onclick = function (id) {
                     return function () {
-                        combatUIState.curAcupointId = id;
+                        combatUIState.curMuscleId = id;
                         renderCombatModal();
                     };
                 }(a.id);
@@ -9437,25 +10113,25 @@
                 btnPrev.type = 'button';
                 btnPrev.className = 'combat-pager-btn';
                 btnPrev.textContent = ui('pager.prev');
-                btnPrev.disabled = combatUIState.acupointPage <= 0;
+                btnPrev.disabled = combatUIState.musclePage <= 0;
                 if (!btnPrev.disabled) {
                     btnPrev.onclick = function () {
-                        combatUIState.acupointPage--;
+                        combatUIState.musclePage--;
                         renderCombatModal();
                     };
                 }
 
                 var info = document.createElement('span');
-                info.textContent = ui('pager.info', { cur: (combatUIState.acupointPage + 1), max: (maxPage + 1), total: total });
+                info.textContent = ui('pager.info', { cur: (combatUIState.musclePage + 1), max: (maxPage + 1), total: total });
 
                 var btnNext = document.createElement('button');
                 btnNext.type = 'button';
                 btnNext.className = 'combat-pager-btn';
                 btnNext.textContent = ui('pager.next');
-                btnNext.disabled = combatUIState.acupointPage >= maxPage;
+                btnNext.disabled = combatUIState.musclePage >= maxPage;
                 if (!btnNext.disabled) {
                     btnNext.onclick = function () {
-                        combatUIState.acupointPage++;
+                        combatUIState.musclePage++;
                         renderCombatModal();
                     };
                 }
@@ -9485,10 +10161,9 @@
         var unlocked = CS.getUnlockedMoves(pickSkillId, skillLevel);
         var limbKeys = typeof window.getLimbActionTags === 'function' ? window.getLimbActionTags(part) : [];
         var skillsState = IE && IE.getState() && IE.getState().skills ? IE.getState().skills : {};
-        var moveUsage = (pickSkillId && skillsState[pickSkillId] && skillsState[pickSkillId].move_usage) ? skillsState[pickSkillId].move_usage : {};
         var CV = window.CombatVariants;
-        var tabState = { current: (combatUIState && combatUIState.movePickerTab) ? combatUIState.movePickerTab : 'moves' };
-        if (tabState.current !== 'moves' && tabState.current !== 'variants') tabState.current = 'moves';
+        // 11-skills 设计变更：每肢 = 1 主动技能 + 槽1（该肢可用招式）+ 槽2..N（变式槽）；idx===0 开招式页，其余开变式页
+        var tabState = { current: (idx === 0 ? 'moves' : 'variants') };
         var unlockDeps = {
             getSkillLevel: function (sid) { return IE.getSkillLevel(String(sid || '')) || 0; },
             getMoveUsage: function (skid) {
@@ -9497,26 +10172,19 @@
             },
             CombatSkills: CS
         };
-        function countFilledMoveSlots(s) {
-            var c = 0;
-            for (var fi = 0; fi < s.length; fi++) {
-                if (s[fi] && String(s[fi]).indexOf('variant:') !== 0) c++;
-            }
-            return c;
-        }
         var seqPreview = (combatPre.move_sequences && Array.isArray(combatPre.move_sequences[part])) ? combatPre.move_sequences[part].slice() : [];
         var maxSlotsPick = CS.getMaxSlotsForLevel(pickSkillId, skillLevel);
         while (seqPreview.length < maxSlotsPick) seqPreview.push('');
         seqPreview = seqPreview.slice(0, maxSlotsPick);
         while (seqPreview.length <= idx) seqPreview.push('');
-        var filledPreview = countFilledMoveSlots(seqPreview);
-        var canClearSlot = !!(seqPreview[idx] && filledPreview > 1);
+        // 11-skills 设计变更：槽位只装变式，任意已装槽均可清空（无「至少保留一个招式」限制）
+        var canClearSlot = !!seqPreview[idx];
         var btnClearSlot = document.createElement('button');
         btnClearSlot.type = 'button';
         btnClearSlot.className = 'picker-move-clear-slot';
         btnClearSlot.textContent = ui('combat.seq.clear_slot');
         btnClearSlot.disabled = !canClearSlot;
-        btnClearSlot.title = canClearSlot ? '' : (seqPreview[idx] ? ui('combat.seq.clear_last_forbidden') : ui('combat.seq.already_empty'));
+        btnClearSlot.title = canClearSlot ? '' : ui('combat.seq.already_empty');
         btnClearSlot.onclick = function () {
             var combat = IE.getCombatState();
             var seq = (combat.move_sequences && Array.isArray(combat.move_sequences[part])) ? combat.move_sequences[part].slice() : [];
@@ -9528,14 +10196,10 @@
                 showMsg(ui('combat.seq.already_empty'), 'warn');
                 return;
             }
-            if (countFilledMoveSlots(seq) <= 1) {
-                showMsg(ui('combat.seq.clear_last_forbidden'), 'warn');
-                return;
-            }
             seq[idx] = '';
             var patchMs = {};
             patchMs[part] = seq;
-            if (!safeSetCombatState({ move_sequences: patchMs }, ui('combat.seq.clear_last_forbidden'))) return;
+            if (!safeSetCombatState({ move_sequences: patchMs }, ui('combat.seq.already_empty'))) return;
             if (IE && typeof IE.setMoveSlotPowerLevel === 'function') IE.setMoveSlotPowerLevel(part, idx, null);
             combatUIState.editingSlot = null;
             combatUIState.movePickerTab = tabState.current;
@@ -9575,13 +10239,9 @@
                         }
                     }
                     seq[idx] = token;
-                    if (countFilledMoveSlots(seq) < 1) {
-                        showMsg(ui('combat.seq.clear_last_forbidden'), 'warn');
-                        return;
-                    }
                     var patchMs2 = {};
                     patchMs2[part] = seq;
-                    if (!safeSetCombatState({ move_sequences: patchMs2 }, ui('combat.seq.clear_last_forbidden'))) return;
+                    if (!safeSetCombatState({ move_sequences: patchMs2 }, ui('combat.seq.already_empty'))) return;
                     if (IE && typeof IE.setMoveSlotPowerLevel === 'function') IE.setMoveSlotPowerLevel(part, idx, null);
                     combatUIState.editingSlot = null;
                     combatUIState.movePickerTab = 'variants';
@@ -9593,40 +10253,16 @@
         }
         function reflowPicker() {
             listEl.innerHTML = '';
-            var tabRow = document.createElement('div');
-            tabRow.className = 'picker-tab-row';
-            var btnTMove = document.createElement('button');
-            btnTMove.type = 'button';
-            btnTMove.className = 'picker-tab-btn' + (tabState.current === 'moves' ? ' active' : '');
-            btnTMove.textContent = ui('picker.move.tab.moves');
-            btnTMove.setAttribute('aria-pressed', tabState.current === 'moves' ? 'true' : 'false');
-            var btnTVar = document.createElement('button');
-            btnTVar.type = 'button';
-            btnTVar.className = 'picker-tab-btn' + (tabState.current === 'variants' ? ' active' : '');
-            btnTVar.textContent = ui('picker.move.tab.variants');
-            btnTVar.setAttribute('aria-pressed', tabState.current === 'variants' ? 'true' : 'false');
-            btnTMove.onclick = function (e) {
-                e.stopPropagation();
-                if (tabState.current === 'moves') return;
-                tabState.current = 'moves';
-                if (combatUIState) combatUIState.movePickerTab = 'moves';
-                reflowPicker();
-            };
-            btnTVar.onclick = function (e) {
-                e.stopPropagation();
-                if (tabState.current === 'variants') return;
-                tabState.current = 'variants';
-                if (combatUIState) combatUIState.movePickerTab = 'variants';
-                reflowPicker();
-            };
-            tabRow.appendChild(btnTMove);
-            tabRow.appendChild(btnTVar);
-            listEl.appendChild(tabRow);
+            // 11-skills 设计变更：每肢 = 1 主动技能 + 槽1（该肢可用招式）+ 槽2..N（变式槽）
+            if (combatUIState) combatUIState.movePickerTab = tabState.current;
             listEl.appendChild(btnClearSlot);
-            if (tabState.current === 'moves') {
+            if (idx === 0) {
+                // 槽1：招式选择（该技能在该肢可用的招式）
+                var anyMove = false;
                 unlocked.forEach(function (m) {
                     if (typeof CS.moveAllowedOnLimbByTagKeys === 'function' && !CS.moveAllowedOnLimbByTagKeys(m, limbKeys)) return;
-                    var count = moveUsage[m.id] != null ? moveUsage[m.id] : 0;
+                    anyMove = true;
+                    var count = (skillsState[pickSkillId] && skillsState[pickSkillId].move_usage && skillsState[pickSkillId].move_usage[m.id] != null) ? skillsState[pickSkillId].move_usage[m.id] : 0;
                     var pct = Math.floor(CS.getMoveProficiencyRatio(count) * 100);
                     var btn = document.createElement('button');
                     btn.type = 'button';
@@ -9643,10 +10279,10 @@
                         while (seq.length < mxSel) seq.push('');
                         seq = seq.slice(0, mxSel);
                         while (seq.length <= idx) seq.push('');
-                        seq[idx] = m.id;
+                        seq[0] = m.id;
                         var patchMs = {};
                         patchMs[part] = seq;
-                        if (!safeSetCombatState({ move_sequences: patchMs }, ui('combat.seq.clear_last_forbidden'))) return;
+                        if (!safeSetCombatState({ move_sequences: patchMs }, ui('combat.seq.already_empty'))) return;
                         if (IE && typeof IE.setMoveSlotPowerLevel === 'function') IE.setMoveSlotPowerLevel(part, idx, null);
                         combatUIState.editingSlot = null;
                         combatUIState.movePickerTab = 'moves';
@@ -9655,17 +10291,27 @@
                     };
                     listEl.appendChild(btn);
                 });
+                if (!anyMove) {
+                    var emptyMoveHint = document.createElement('div');
+                    emptyMoveHint.className = 'picker-empty-hint';
+                    emptyMoveHint.style.padding = '8px 12px';
+                    emptyMoveHint.style.fontSize = '12px';
+                    emptyMoveHint.style.color = '#a8a29e';
+                    emptyMoveHint.textContent = ui('combat.seq.no_matching_moves');
+                    listEl.appendChild(emptyMoveHint);
+                }
             } else {
+                // 槽2..N：变式选择
                 buildVariantPicker();
-            }
-            if (!listEl.querySelectorAll('.picker-pick-item').length) {
-                var emptyHint = document.createElement('div');
-                emptyHint.className = 'picker-empty-hint';
-                emptyHint.style.padding = '8px 12px';
-                emptyHint.style.fontSize = '12px';
-                emptyHint.style.color = '#a8a29e';
-                emptyHint.textContent = (tabState.current === 'moves') ? ui('combat.seq.no_matching_moves') : ui('picker.move.empty.variants');
-                listEl.appendChild(emptyHint);
+                if (!listEl.querySelectorAll('.picker-pick-item').length) {
+                    var emptyHint = document.createElement('div');
+                    emptyHint.className = 'picker-empty-hint';
+                    emptyHint.style.padding = '8px 12px';
+                    emptyHint.style.fontSize = '12px';
+                    emptyHint.style.color = '#a8a29e';
+                    emptyHint.textContent = ui('picker.move.empty.variants');
+                    listEl.appendChild(emptyHint);
+                }
             }
         }
         reflowPicker();
@@ -9691,7 +10337,7 @@
 
         var btnClear = document.createElement('button');
         btnClear.type = 'button';
-        btnClear.textContent = '清空此槽';
+        btnClear.textContent = ui('combat.slot.clear');
         btnClear.disabled = !cur[slotIndex];
         btnClear.onclick = function () {
             var c2 = IE.getCombatState();
@@ -9701,7 +10347,7 @@
             arr = arr.slice(0, cap);
             arr[slotIndex] = null;
             c2.parry_variant_sequences[limbId] = arr;
-            if (!safeSetCombatState({ parry_variant_sequences: c2.parry_variant_sequences }, '招架变式保存失败。')) return;
+            if (!safeSetCombatState({ parry_variant_sequences: c2.parry_variant_sequences }, ui('combat.deploy.parry_variant_save_fail'))) return;
             picker.classList.remove('show');
             renderCombatModal();
         };
@@ -9734,7 +10380,7 @@
             var btn = document.createElement('button');
             btn.type = 'button';
             var nm = (v.name_key && window.UIText && typeof window.UIText.t === 'function') ? window.UIText.t(v.name_key) : id;
-            btn.textContent = nm + (duplicate ? '（同肢已存在）' : '');
+            btn.textContent = nm + (duplicate ? ui('combat.variant.parry.duplicate_limb') : '');
             btn.disabled = duplicate;
             btn.onclick = function () {
                 var c2 = IE.getCombatState();
@@ -9744,7 +10390,7 @@
                 arr = arr.slice(0, cap);
                 arr[slotIndex] = id;
                 c2.parry_variant_sequences[limbId] = arr;
-                if (!safeSetCombatState({ parry_variant_sequences: c2.parry_variant_sequences }, '招架变式保存失败。')) return;
+                if (!safeSetCombatState({ parry_variant_sequences: c2.parry_variant_sequences }, ui('combat.deploy.parry_variant_save_fail'))) return;
                 picker.classList.remove('show');
                 renderCombatModal();
             };
@@ -9757,7 +10403,7 @@
             hint.style.padding = '8px 12px';
             hint.style.fontSize = '12px';
             hint.style.color = '#a8a29e';
-            hint.textContent = '没有可装配的招架变式';
+            hint.textContent = ui('combat.variant.parry.none_available');
             listEl.appendChild(hint);
         }
         var rect = anchorEl.getBoundingClientRect();
@@ -9766,108 +10412,21 @@
         picker.classList.add('show');
     }
 
-    function openLimbPostEffectPicker(anchorEl, limbId) {
-        var picker = document.getElementById('picker-post-effect');
-        var listEl = document.getElementById('picker-post-effect-list');
-        if (!picker || !listEl || !limbId || !IE) return;
-        listEl.innerHTML = '';
-
-        var obtainedIds = (window.CharacterAttributes && typeof window.CharacterAttributes.getPostEffectsObtainedIds === 'function')
-            ? window.CharacterAttributes.getPostEffectsObtainedIds()
-            : [];
-        var allPost = (window.PostEffects && typeof window.PostEffects.getAllPostEffects === 'function')
-            ? window.PostEffects.getAllPostEffects()
-            : [];
-        var combat = IE.getCombatState ? IE.getCombatState() : null;
-        if (!combat) return;
-        if (!combat.post_effect_sequences || typeof combat.post_effect_sequences !== 'object') combat.post_effect_sequences = {};
-        var curPostId = combat.post_effect_sequences[limbId] ? String(combat.post_effect_sequences[limbId]) : null;
-        var limbActiveSkillId = combat.limbs && combat.limbs[limbId] && combat.limbs[limbId].active ? String(combat.limbs[limbId].active) : '';
-        var socketMoveIds = [];
-        var seq = (combat.move_sequences && Array.isArray(combat.move_sequences[limbId])) ? combat.move_sequences[limbId] : [];
-        for (var mi = 0; mi < seq.length; mi++) {
-            var rid = seq[mi] ? String(seq[mi]) : '';
-            if (!rid) continue;
-            if (rid.indexOf('variant:') === 0) continue;
-            socketMoveIds.push(rid);
-        }
-
-        function escapePickerHtml(s) {
-            return String(s)
-                .replace(/&/g, '&amp;')
-                .replace(/</g, '&lt;')
-                .replace(/>/g, '&gt;')
-                .replace(/"/g, '&quot;');
-        }
-
-        function addOption(label, desc, onClick) {
-            var btn = document.createElement('button');
-            btn.type = 'button';
-            var lab = escapePickerHtml(label);
-            var d = desc ? escapePickerHtml(desc) : '';
-            btn.innerHTML = '<span>' + lab + '</span>' + (d ? ('<span class="post-desc">' + d + '</span>') : '');
-            btn.onclick = onClick;
-            listEl.appendChild(btn);
-        }
-
-        addOption('清空槽位', '移除当前装配', function () {
-            combat.post_effect_sequences[limbId] = null;
-            if (!safeSetCombatState({ post_effect_sequences: combat.post_effect_sequences }, '后遗症保存失败。')) return;
-            picker.classList.remove('show');
-            renderCombatModal();
-        });
-
-        var hasAny = false;
-        for (var ai = 0; ai < allPost.length; ai++) {
-            var pe = allPost[ai];
-            if (!pe || !pe.id) continue;
-            if (obtainedIds.indexOf(pe.id) < 0) continue;
-            if (!limbActiveSkillId) continue;
-            if (Array.isArray(pe.valid_skill_ids) && pe.valid_skill_ids.length && pe.valid_skill_ids.indexOf(limbActiveSkillId) < 0) continue;
-            if (Array.isArray(pe.valid_move_ids) && pe.valid_move_ids.length) {
-                var okMove = false;
-                for (var mj = 0; mj < socketMoveIds.length; mj++) {
-                    if (pe.valid_move_ids.indexOf(socketMoveIds[mj]) >= 0) { okMove = true; break; }
-                }
-                if (!okMove) continue;
-            }
-            hasAny = true;
-            var name = pe.name_key && window.UIText && typeof window.UIText.t === 'function' ? window.UIText.t(pe.name_key) : pe.id;
-            var desc = pe.desc_key && window.UIText && typeof window.UIText.t === 'function' ? window.UIText.t(pe.desc_key) : '';
-            addOption(name, desc, (function (postId) {
-                return function () {
-                    if (curPostId && curPostId === postId) {
-                        picker.classList.remove('show');
-                        return;
-                    }
-                    combat.post_effect_sequences[limbId] = postId;
-                    if (!safeSetCombatState({ post_effect_sequences: combat.post_effect_sequences }, '后遗症保存失败。')) return;
-                    picker.classList.remove('show');
-                    renderCombatModal();
-                };
-            })(pe.id));
-        }
-
-        if (!hasAny) {
-            addOption('暂无可装后遗症', '先通过熟练度解锁并满足该招式可装配限制', function () {});
-            listEl.lastChild.disabled = true;
-        }
-
-        var rect = anchorEl.getBoundingClientRect();
-        picker.style.left = (rect.left) + 'px';
-        picker.style.top = (rect.top - 260) + 'px';
-        picker.classList.add('show');
-    }
 
     function handleDeployCombat() {
         var CS = window.CombatSkills;
-        var AP = window.Acupoints;
+        var AP = window.Muscles;
 
-        if (combatUIState.mode === 'acupoints') {
-            if (!AP || !combatUIState.curAcupointId) return;
-            var changed = AP.unlock(combatUIState.curAcupointId);
+        if (combatUIState.mode === 'muscles') {
+            if (!AP || !combatUIState.curMuscleId) return;
+            // 防御：确认选中肌肉仍属于当前肌群（跨肌群残留时拒绝解锁）
+            var catList = AP.getMuscleEntriesByGroup(combatUIState.curMuscleCat);
+            var validMuscle = catList.some(function (x) { return x.id === combatUIState.curMuscleId; });
+            if (!validMuscle) return;
+            var unlockRes2 = AP.unlock(combatUIState.curMuscleId);
+            var changed = !!(unlockRes2 && unlockRes2.ok);
             if (changed && window.GameLog) {
-                window.GameLog.log(ui('log.system.acupoint.unlocked', { id: combatUIState.curAcupointId }), 'system');
+                window.GameLog.log(ui('log.system.muscle.unlocked', { id: combatUIState.curMuscleId }), 'system');
             }
             if (changed && window.CharacterAttributes && typeof window.CharacterAttributes.recalcCharacterStats === 'function' && window.InventoryEquipment) {
                 window.CharacterAttributes.recalcCharacterStats({
@@ -9889,16 +10448,22 @@
         if (!sk) return;
         var combat = IE.getCombatState();
         if (combatUIState.curCat === 'breath') {
+            var prevBreath = combat.hubs.breath;
             combat.hubs.breath = skillId;
-            if (!safeSetCombatState({ hubs: { breath: skillId } }, '内息核心装配失败。')) return;
+            if (!safeSetCombatState({ hubs: { breath: skillId } }, ui('combat.deploy.breath_mount_fail'))) return;
+            if (prevBreath !== skillId && window.Survival) {
+                // 07「切换」：切换呼吸法 = 消耗 1 tick + 读取新呼吸法的初始状态（initial_state，基本呼吸法 qi_li=0）
+                if (typeof window.Survival.applyBreathInitialState === 'function') window.Survival.applyBreathInitialState();
+                if (typeof window.Survival.advanceTick === 'function') window.Survival.advanceTick();
+            }
         } else if (combatUIState.curCat === 'footwork') {
             combat.hubs.footwork = skillId;
-            if (!safeSetCombatState({ hubs: { footwork: skillId } }, '步法核心装配失败。')) return;
+            if (!safeSetCombatState({ hubs: { footwork: skillId } }, ui('combat.deploy.footwork_mount_fail'))) return;
         } else {
             var slotIsParry = combatUIState.curSlot === 'parry';
             var skillIsParry = !!(sk.only_parry || sk.category === 'parry');
             if (slotIsParry !== skillIsParry) {
-                showMsg(slotIsParry ? '该槽位只能装配招架技能。' : '招架技能不能装配到进攻槽位。', 'warn');
+                showMsg(slotIsParry ? ui('combat.deploy.parry_slot_only') : ui('combat.deploy.parry_no_active_slot'), 'warn');
                 return;
             }
             var part = combatUIState.curPart;
@@ -9914,7 +10479,7 @@
                 mc[part] = 0;
                 deployPatch.move_sequence_cursors = mc;
             }
-            if (!safeSetCombatState(deployPatch, '技能装配失败。')) return;
+            if (!safeSetCombatState(deployPatch, ui('combat.deploy.skill_mount_fail'))) return;
         }
         if (window.GameLog) window.GameLog.log(ui('log.system.combat.deployed', { name: (sk.name || skillId) }), 'system');
         renderCombatModal();
@@ -9997,29 +10562,54 @@
             if (!CA || typeof CA.grantAttributeExp !== 'function') return;
             var res = CA.grantAttributeExp('player', [{ attr_id: attrId, exp: 50000 }], { source: 'status_attr_exp_debug_button' });
             if (window.GameLog && res && Array.isArray(res.applied) && res.applied.length > 0) {
-                window.GameLog.log('[调试] 属性经验 +' + String(res.applied[0].exp_applied) + ' → ' + String(attrId), 'system');
+                window.GameLog.log('[debug] attr_exp ' + String(res.applied[0].exp_applied) + ' -> ' + String(attrId), 'system');
             }
             if (typeof updateStatusPanel === 'function') updateStatusPanel();
         });
     });
+    var diqiDbgBtn = document.getElementById('status-diqi-debug-plus50');
+    if (diqiDbgBtn) {
+        diqiDbgBtn.addEventListener('click', function () {
+            var Surv = window.Survival;
+            if (!Surv || typeof Surv.changeDiqi !== 'function') return;
+            var res = Surv.changeDiqi({ maxDelta: 50, capLimitDelta: 50, sourceTag: 'debug_diqi_max_plus50' });
+            if (window.GameLog && typeof window.GameLog.log === 'function') {
+                window.GameLog.log('[debug] diqi_max -> ' + String(res.diqi_max) + ' (cur ' + String(res.diqi_current) + ')', 'system');
+            }
+            if (typeof updateStatusPanel === 'function') updateStatusPanel();
+            if (window.SceneRenderer && typeof window.SceneRenderer.render === 'function') window.SceneRenderer.render();
+        });
+    }
+    var stunDbgBtn = document.getElementById('status-stun-debug-plus50');
+    if (stunDbgBtn) {
+        stunDbgBtn.addEventListener('click', function () {
+            var IE2 = window.InventoryEquipment;
+            if (!IE2 || typeof IE2.addPlayerStun !== 'function') return;
+            // 与真实命中头结算同口径：先吃抗眩晕比例减免（37 §9.2）
+            var resistDbg = (typeof IE2.getHeadAntiStunPct === 'function') ? IE2.getHeadAntiStunPct() : 0;
+            var netDbg = Math.max(1, Math.round(50 * (1 - resistDbg)));
+            var r = IE2.addPlayerStun(netDbg);
+            if (window.GameLog && typeof window.GameLog.log === 'function') {
+                window.GameLog.log('[debug] 模拟打头眩晕 +50 → 抗眩晕 ' + String(Math.round(resistDbg * 100)) + '% 减免后 +' + String(netDbg)
+                    + '，当前 ' + String(r.value) + (r.triggered ? '（触发眩晕，本回合无法行动）' : ''), 'system');
+            }
+            if (typeof updateStatusPanel === 'function') updateStatusPanel();
+            if (window.SceneRenderer && typeof window.SceneRenderer.render === 'function') window.SceneRenderer.render();
+        });
+    }
     document.addEventListener('click', function () {
         var hadOpenPicker = false;
         var movePickerAny = document.getElementById('picker-move');
-        var postPickerAny = document.getElementById('picker-post-effect');
         if (movePickerAny && movePickerAny.classList.contains('show')) hadOpenPicker = true;
-        if (postPickerAny && postPickerAny.classList.contains('show')) hadOpenPicker = true;
         if (combatUIState.editingSlot != null) {
             combatUIState.editingSlot = null;
             var picker = document.getElementById('picker-move');
             if (picker) picker.classList.remove('show');
-            var postPicker = document.getElementById('picker-post-effect');
-            if (postPicker) postPicker.classList.remove('show');
             if (combatPanelOpen) renderCombatModal();
             return;
         }
         if (hadOpenPicker) {
             if (movePickerAny) movePickerAny.classList.remove('show');
-            if (postPickerAny) postPickerAny.classList.remove('show');
         }
     });
 
@@ -10077,8 +10667,18 @@
         var levelEl = document.createElement('div');
         levelEl.className = 'survival-level';
         var lv = (IE && typeof IE.getSkillLevel === 'function') ? IE.getSkillLevel(opts.skillId) : 0;
-        var levelLabel = (lv || 0) + ' 级';
+        var levelLabel = (lv || 0) + ui('combat.level.suffix');
         if (opts.levelSuffix) levelLabel += ' ' + opts.levelSuffix;
+        // 自修进度（05 5.8）：study_exp / 下一级潜能成本
+        var sExp = (IE && typeof IE.getStudyExp === 'function') ? IE.getStudyExp(opts.skillId) : 0;
+        if (sExp > 0 && window.CombatSkills && typeof window.CombatSkills.getPotentialCostForLevel === 'function') {
+            var clObj = IE.getState().skills || {};
+            var costNow = window.CombatSkills.getPotentialCostForLevel(opts.skillId, lv || 0, {
+                skills: clObj,
+                skill_max_level_bonus: (IE.getState().skill_max_level_bonus || {})
+            });
+            levelLabel += ' · ' + ui('survival.study.progress', { exp: String(sExp), cost: String(costNow || '—') });
+        }
         levelEl.textContent = levelLabel;
 
         var plusBtn = document.createElement('button');
@@ -10089,9 +10689,36 @@
             addSkillLevelGeneric(opts.skillId, 1, opts.addOpts || {});
         };
 
+        // 自修开关（05 5.8 / 11 技能升级主干）
+        var studyBtn = document.createElement('button');
+        studyBtn.type = 'button';
+        studyBtn.className = 'survival-plus-btn';
+        var isStudying = !!(window.Survival && typeof window.Survival.isStudyActive === 'function' && window.Survival.isStudyActive()
+            && window.Survival.getStudySkillId() === opts.skillId);
+        studyBtn.textContent = ui(isStudying ? 'survival.btn.stop_study' : 'survival.btn.study');
+        studyBtn.onclick = (function (skillId, name) {
+            return function () {
+                if (!window.Survival || typeof window.Survival.startStudy !== 'function') return;
+                if (window.Survival.isStudyActive() && window.Survival.getStudySkillId() === skillId) {
+                    window.Survival.stopStudy();
+                    if (window.GameLog) window.GameLog.log(ui('log.system.study.stopped_manual'), 'info');
+                } else {
+                    var r = window.Survival.startStudy(skillId);
+                    if (r && r.ok) {
+                        if (window.GameLog) window.GameLog.log(ui('log.system.study.started', { name: name || skillId }), 'system');
+                    } else if (window.GameLog) {
+                        window.GameLog.log(ui('log.system.study.start_fail_' + ((r && r.reason) || 'invalid')), 'warn');
+                    }
+                }
+                renderSurvivalModal();
+                if (typeof updateStatusPanel === 'function') updateStatusPanel();
+            };
+        })(opts.skillId, opts.name || '');
+
         row.appendChild(info);
         row.appendChild(levelEl);
         row.appendChild(plusBtn);
+        row.appendChild(studyBtn);
         return row;
     }
 
@@ -10136,15 +10763,15 @@
 
     function renderSkillOverviewSpecialTab(wrap) {
         var IE = window.InventoryEquipment;
-        var meridianSkillId = (IE && IE.SPECIAL_MERIDIAN_STUDIES_SKILL_ID)
+        var anatomySkillId = (IE && IE.SPECIAL_MERIDIAN_STUDIES_SKILL_ID)
             ? IE.SPECIAL_MERIDIAN_STUDIES_SKILL_ID
             : 'special_meridian_studies';
         var lv = (IE && typeof IE.getSkillLevel === 'function')
-            ? Math.max(0, parseInt(IE.getSkillLevel(meridianSkillId), 10) || 0)
+            ? Math.max(0, parseInt(IE.getSkillLevel(anatomySkillId), 10) || 0)
             : 0;
         var suffix = lv >= 1 ? ui('special.skill.meridian_studies.unlocked') : ui('special.skill.meridian_studies.locked');
         wrap.appendChild(buildSkillRow({
-            skillId: meridianSkillId,
+            skillId: anatomySkillId,
             name: ui('special.skill.meridian_studies.name'),
             desc: ui('special.skill.meridian_studies.desc'),
             levelSuffix: suffix,
@@ -10172,165 +10799,6 @@
         }
     }
 
-    function renderAcupointModal() {
-        var AP = window.Acupoints;
-        var catBox = document.getElementById('acupoint-cat-tabs');
-        var table = document.getElementById('acupoint-table');
-        var pagerBox = document.getElementById('acupoint-pager');
-        if (!AP || !catBox || !table) return;
-
-        catBox.innerHTML = '';
-        table.innerHTML = '';
-        if (pagerBox) pagerBox.innerHTML = '';
-
-        var acCats = AP.getCategories ? AP.getCategories() : [];
-        if (!combatUIState.curAcupointCat && acCats.length) combatUIState.curAcupointCat = acCats[0].id;
-
-        catBox.style.display = 'flex';
-        catBox.style.flexWrap = 'wrap';
-        catBox.style.gap = '8px';
-        catBox.style.marginBottom = '12px';
-
-        acCats.forEach(function (c) {
-            var btn = document.createElement('button');
-            btn.type = 'button';
-            btn.className = 'combat-cat-btn' + (combatUIState.curAcupointCat === c.id ? ' active' : '');
-            btn.textContent = (c.icon ? c.icon + ' ' : '') + c.label;
-            btn.onclick = function () {
-                combatUIState.curAcupointCat = c.id;
-                combatUIState.acupointPage = 0;
-                var listAp2 = AP.getAcupointsByCategory(c.id);
-                combatUIState.curAcupointId = listAp2.length ? listAp2[0].id : null;
-                renderAcupointModal();
-            };
-            catBox.appendChild(btn);
-        });
-
-        var listAp = AP.getAcupointsByCategory(combatUIState.curAcupointCat);
-        var pageSize = 18;
-        var total = listAp.length;
-        var maxPage = total ? Math.max(0, Math.ceil(total / pageSize) - 1) : 0;
-        if (combatUIState.acupointPage > maxPage) combatUIState.acupointPage = maxPage;
-        if (combatUIState.acupointPage < 0) combatUIState.acupointPage = 0;
-        var start = combatUIState.acupointPage * pageSize;
-        var end = Math.min(start + pageSize, total);
-
-        for (var i = start; i < end; i++) {
-            var a = listAp[i];
-            var row = document.createElement('div');
-            var unlocked = AP.isUnlocked ? AP.isUnlocked(a.id) : false;
-            row.className = 'survival-row';
-
-            var infoWrap = document.createElement('div');
-            infoWrap.className = 'acupoint-info';
-
-            var nameEl = document.createElement('div');
-            nameEl.className = 'acupoint-name-main';
-            nameEl.textContent = a.name;
-
-            var metaEl = document.createElement('div');
-            metaEl.className = 'acupoint-meta';
-            var metaText = ui(unlocked ? 'acupoint.meta.unlocked' : 'acupoint.meta.locked', { effects: (a.effectsText || '') });
-            metaEl.textContent = metaText;
-
-            infoWrap.appendChild(nameEl);
-            infoWrap.appendChild(metaEl);
-            row.appendChild(infoWrap);
-
-            var btn = document.createElement('button');
-            btn.type = 'button';
-            btn.className = 'acupoint-unlock-btn' + (unlocked ? ' unlocked' : '');
-            btn.textContent = unlocked ? ui('acupoint.btn.unlocked') : ui('acupoint.btn.unlock');
-            btn.disabled = !!unlocked;
-            if (!unlocked) {
-                (function (acupointId, acupointName) {
-                    btn.onclick = function () {
-                        if (!AP || !AP.unlock) return;
-                        var changed = AP.unlock(acupointId);
-                        if (changed) {
-                            if (window.GameLog) {
-                                window.GameLog.log(
-                                    ui('log.system.acupoint.unlocked', { id: (acupointName || acupointId) }),
-                                    'system'
-                                );
-                            }
-                            if (window.CharacterAttributes && typeof window.CharacterAttributes.recalcCharacterStats === 'function' && window.InventoryEquipment) {
-                                window.CharacterAttributes.recalcCharacterStats({
-                                    getEquipmentState: function () { return window.InventoryEquipment.getState().equipment; },
-                                    getSkillsState: function () { return window.InventoryEquipment.getState().skills; },
-                                    getItemTemplate: window.InventoryEquipment.getItemTemplate,
-                                    getEnchantEntry: window.InventoryEquipment.getEnchantEntry,
-                                    getStrengthLevel: function () { return window.InventoryEquipment.getSkillLevel('survival_strength'); }
-                                });
-                            }
-                            if (typeof updateStatusPanel === 'function') {
-                                updateStatusPanel();
-                            }
-                        }
-                        renderAcupointModal();
-                    };
-                })(a.id, a.name);
-            }
-            row.appendChild(btn);
-
-            table.appendChild(row);
-        }
-
-        if (pagerBox && total > pageSize) {
-            pagerBox.innerHTML = '';
-            pagerBox.style.marginTop = '8px';
-            pagerBox.style.display = 'flex';
-            pagerBox.style.justifyContent = 'space-between';
-            pagerBox.style.alignItems = 'center';
-            pagerBox.style.fontSize = '11px';
-            pagerBox.style.color = '#a8a29e';
-
-            var btnPrev = document.createElement('button');
-            btnPrev.type = 'button';
-            btnPrev.textContent = ui('pager.prev');
-            btnPrev.disabled = combatUIState.acupointPage <= 0;
-            btnPrev.style.padding = '4px 10px';
-            btnPrev.style.borderRadius = '9999px';
-            btnPrev.style.border = '1px solid #4d3f35';
-            btnPrev.style.background = '#120e0c';
-            btnPrev.style.color = '#e8e6e3';
-            btnPrev.style.cursor = btnPrev.disabled ? 'default' : 'pointer';
-            if (!btnPrev.disabled) {
-                btnPrev.onclick = function () {
-                    combatUIState.acupointPage--;
-                    renderAcupointModal();
-                };
-            } else {
-                btnPrev.style.opacity = '0.4';
-            }
-
-            var info = document.createElement('span');
-            info.textContent = ui('pager.info', { cur: (combatUIState.acupointPage + 1), max: (maxPage + 1), total: total });
-
-            var btnNext = document.createElement('button');
-            btnNext.type = 'button';
-            btnNext.textContent = ui('pager.next');
-            btnNext.disabled = combatUIState.acupointPage >= maxPage;
-            btnNext.style.padding = '4px 10px';
-            btnNext.style.borderRadius = '9999px';
-            btnNext.style.border = '1px solid #4d3f35';
-            btnNext.style.background = '#120e0c';
-            btnNext.style.color = '#e8e6e3';
-            btnNext.style.cursor = btnNext.disabled ? 'default' : 'pointer';
-            if (!btnNext.disabled) {
-                btnNext.onclick = function () {
-                    combatUIState.acupointPage++;
-                    renderAcupointModal();
-                };
-            } else {
-                btnNext.style.opacity = '0.4';
-            }
-
-            pagerBox.appendChild(btnPrev);
-            pagerBox.appendChild(info);
-            pagerBox.appendChild(btnNext);
-        }
-    }
 
     function openSurvivalPanel(initialTab) {
         if (initialTab === 'life' || initialTab === 'special' || initialTab === 'survival') {
@@ -10352,44 +10820,6 @@
         renderSurvivalModal();
     }
 
-    function openAcupointPanel() {
-        if (acupointPanelOpen) return;
-        if (window.Survival && typeof window.Survival.advanceTick === 'function') window.Survival.advanceTick();
-        acupointPanelOpen = true;
-        var modal = document.getElementById('modal-acupoints');
-        if (modal) modal.classList.add('show');
-        var left = document.getElementById('left-hud');
-        if (left) {
-            left.style.opacity = '0.1';
-            left.style.pointerEvents = 'none';
-        }
-        var AP = window.Acupoints;
-        if (AP && AP.getCategories) {
-            var acCats = AP.getCategories();
-            if (!combatUIState.curAcupointCat && acCats.length) combatUIState.curAcupointCat = acCats[0].id;
-            var listAp = combatUIState.curAcupointCat && AP.getAcupointsByCategory
-                ? AP.getAcupointsByCategory(combatUIState.curAcupointCat)
-                : [];
-            if (!combatUIState.curAcupointId && listAp.length) {
-                combatUIState.curAcupointId = listAp[0].id;
-            }
-        }
-        renderAcupointModal();
-    }
-
-    function closeAcupointPanel() {
-        if (!acupointPanelOpen) return;
-        if (window.Survival && typeof window.Survival.advanceTick === 'function') window.Survival.advanceTick();
-        acupointPanelOpen = false;
-        var modal = document.getElementById('modal-acupoints');
-        if (modal) modal.classList.remove('show');
-        var left = document.getElementById('left-hud');
-        if (left) {
-            left.style.opacity = '';
-            left.style.pointerEvents = '';
-        }
-        render();
-    }
 
     function closeSurvivalPanel() {
         if (!survivalPanelOpen) return;
@@ -10427,13 +10857,21 @@
         });
     })();
 
-    if (document.getElementById('btn-acupoints')) {
-        document.getElementById('btn-acupoints').addEventListener('click', function () {
-            if (acupointPanelOpen) closeAcupointPanel(); else openAcupointPanel();
+    // 肌肉数据表异步加载完成后：补一次属性重算（存档恢复早于数据到达时）并刷新面板
+    if (typeof document !== 'undefined') {
+        document.addEventListener('muscles:data-loaded', function () {
+            if (window.CharacterAttributes && typeof window.CharacterAttributes.recalcCharacterStats === 'function' && window.InventoryEquipment) {
+                window.CharacterAttributes.recalcCharacterStats({
+                    getEquipmentState: function () { return window.InventoryEquipment.getState().equipment; },
+                    getSkillsState: function () { return window.InventoryEquipment.getState().skills; },
+                    getItemTemplate: window.InventoryEquipment.getItemTemplate,
+                    getEnchantEntry: window.InventoryEquipment.getEnchantEntry,
+                    getStrengthLevel: function () { return window.InventoryEquipment.getSkillLevel('survival_strength'); }
+                });
+            }
+            if (typeof updateStatusPanel === 'function') updateStatusPanel();
+            if (combatPanelOpen) renderCombatModal();
         });
-    }
-    if (document.getElementById('acupoint-modal-close')) {
-        document.getElementById('acupoint-modal-close').addEventListener('click', closeAcupointPanel);
     }
 
     if (document.getElementById('btn-save')) {
@@ -10532,7 +10970,239 @@
         });
     }
 
+    /**
+     * UI 自由窗口（docs/design/36-ui-windows.md M2）：注册左侧状态区 7 块 + buff-hud。
+     * - defaultPos 'dock'：未自定义时清空内联定位，回退 CSS/文档流 → 默认布局与现版一致。
+     * - gameVisible：认知门控查询（shouldShowLeftHudBlock），未解锁不占位。
+     * - 游戏门控写入口：setBlockDisplay / renderBuffHud 经 UIWindows.setGameVisible（见下）。
+     */
+    function registerUiWindows() {
+        if (!window.UIWindows || typeof window.UIWindows.registerPanel !== 'function') return;
+        var U = window.UIWindows;
+        function blockVisible(blockId) {
+            var ctx = window.SceneCtx;
+            if (ctx && typeof ctx.shouldShowLeftHudBlock === 'function') {
+                return !!ctx.shouldShowLeftHudBlock(blockId);
+            }
+            return true;
+        }
+        U.registerPanel('win-role', {
+            type: 'free', titleKey: 'ui.windows.role',
+            el: function () { return document.getElementById('status-role-card'); },
+            defaultPos: 'dock', minW: 160, minH: 64,
+            closable: true, resizable: false,
+            dragHandle: '.ui-window-grip',
+            gameVisible: function () { return blockVisible('role'); }
+        });
+        U.registerPanel('win-limbs', {
+            type: 'free', titleKey: 'ui.windows.limbs',
+            el: function () { return document.getElementById('status-limbs'); },
+            defaultPos: 'dock', minW: 160, minH: 64,
+            closable: true, resizable: false,
+            dragHandle: '.ui-window-grip',
+            gameVisible: function () { return blockVisible('limbs'); }
+        });
+        U.registerPanel('win-battle-resources', {
+            type: 'free', titleKey: 'ui.windows.battle_resources',
+            el: function () { return document.getElementById('status-combat-resources-card'); },
+            defaultPos: 'dock', minW: 160, minH: 64,
+            closable: true, resizable: false,
+            dragHandle: '.ui-window-grip',
+            gameVisible: function () { return blockVisible('combat_resources'); }
+        });
+        U.registerPanel('win-survival', {
+            type: 'free', titleKey: 'ui.windows.survival',
+            el: function () { return document.getElementById('status-survival'); },
+            defaultPos: 'dock', minW: 180, minH: 80,
+            closable: true, resizable: false,
+            dragHandle: '.ui-window-grip',
+            gameVisible: function () { return blockVisible('survival'); }
+        });
+        U.registerPanel('win-resources', {
+            type: 'free', titleKey: 'ui.windows.resources',
+            el: function () { return document.getElementById('status-resources'); },
+            defaultPos: 'dock', minW: 160, minH: 64,
+            closable: true, resizable: false,
+            dragHandle: '.ui-window-grip',
+            gameVisible: function () { return blockVisible('resources'); }
+        });
+        U.registerPanel('win-attrs', {
+            type: 'free', titleKey: 'ui.windows.attrs',
+            el: function () { return document.getElementById('status-attrs-block'); },
+            defaultPos: 'dock', minW: 160, minH: 64,
+            closable: true, resizable: false,
+            dragHandle: '.ui-window-grip',
+            gameVisible: function () { return blockVisible('attrs'); }
+        });
+        U.registerPanel('win-attr-exp', {
+            type: 'free', titleKey: 'ui.windows.attr_exp',
+            el: function () { return document.getElementById('status-attr-exp-block'); },
+            defaultPos: 'dock', minW: 160, minH: 64,
+            closable: true, resizable: false,
+            dragHandle: '.ui-window-grip',
+            gameVisible: function () { return blockVisible('attrs'); } // 属性经验跟随五维门控
+        });
+        U.registerPanel('win-buff', {
+            type: 'free', titleKey: 'ui.windows.buff',
+            el: function () { return document.getElementById('buff-hud'); },
+            defaultPos: 'dock', minW: 160, minH: 64,
+            closable: true, resizable: false,
+            dragHandle: '.ui-window-grip',
+            gameVisible: function () { return blockVisible('buff_hud'); }
+        });
+        // 锚定窗口：仅显隐（位置由 CSS 管，不持久化位置）
+        U.registerPanel('win-time', {
+            type: 'anchored', titleKey: 'ui.windows.time',
+            el: function () { return document.getElementById('top-hud'); },
+            closable: true
+        });
+        U.registerPanel('win-actions-right', {
+            type: 'anchored', titleKey: 'ui.windows.right_actions',
+            el: function () { return document.getElementById('right-hud'); },
+            closable: true
+        });
+        U.registerPanel('win-bottom', {
+            type: 'anchored', titleKey: 'ui.windows.bottom_bar',
+            el: function () { return document.getElementById('bottom-hud-stack'); },
+            closable: true,
+            onVisibility: function (el, visible) {
+                // 底部栏（动作栏+快捷腰带）贴日志上沿：显示/隐藏后需重新同步
+                if (window.GameLog && typeof window.GameLog.syncQuickBeltDock === 'function') {
+                    window.GameLog.syncQuickBeltDock();
+                }
+            }
+        });
+        U.registerPanel('win-dialogue', {
+            type: 'anchored', titleKey: 'ui.windows.dialogue',
+            el: function () { return document.getElementById('dialogue-panel'); },
+            closable: true,
+            displayManaged: false // 对话面板 DOM 显隐归 DialogueUI 管（.show class）；管线只记玩家偏好
+        });
+        if (typeof U.init === 'function') U.init();
+        initUiWindowsMenu();
+    }
+
+    // ---------------------------------------------------------------
+    // 窗口列表菜单（仿 RO 窗口列表；docs/design/36-ui-windows.md M3）
+    // ---------------------------------------------------------------
+    var uiWindowsMenuOpen = false;
+
+    function rebuildUiWindowsMenu() {
+        var menu = document.getElementById('ui-windows-menu');
+        if (!menu) return;
+        if (!window.UIWindows || typeof window.UIWindows.getPanelList !== 'function') return;
+        var items = window.UIWindows.getPanelList();
+        var html = '<div class="uwm-title">' + ui('ui.windows.menu.title') + '</div>';
+        for (var i = 0; i < items.length; i++) {
+            var it = items[i];
+            var label = ui(it.titleKey);
+            var checked = it.visible ? ' checked' : '';
+            var disabled = it.closable ? '' : ' disabled';
+            html += '<button type="button" class="uwm-row" data-win-id="' + it.id + '"' + disabled + '>' +
+                '<input type="checkbox"' + checked + disabled + ' />' +
+                '<span class="uwm-label">' + label + '</span></button>';
+        }
+        html += '<hr class="uwm-sep" />';
+        var locked = window.UIWindows.getLock ? window.UIWindows.getLock() : false;
+        html += '<button type="button" class="uwm-row" id="uwm-lock">' +
+            '<input type="checkbox"' + (locked ? ' checked' : '') + ' id="uwm-lock-check" />' +
+            '<span class="uwm-label">' + ui('ui.windows.lock') + '</span></button>';
+        html += '<button type="button" class="uwm-btn" id="uwm-reset">' + ui('ui.windows.reset') + '</button>';
+        menu.innerHTML = html;
+
+        var rows = menu.querySelectorAll('.uwm-row[data-win-id]');
+        for (var j = 0; j < rows.length; j++) {
+            (function (row) {
+                row.addEventListener('click', function (e) {
+                    if (e.target && e.target.closest && e.target.closest('input')) return; // checkbox 自身的 change 处理
+                    var winId = row.getAttribute('data-win-id');
+                    if (!winId) return;
+                    var cb = row.querySelector('input[type="checkbox"]');
+                    if (!cb) return;
+                    cb.checked = !cb.checked;
+                    window.UIWindows.setVisible(winId, cb.checked);
+                });
+                var cb = row.querySelector('input[type="checkbox"]');
+                if (cb) {
+                    cb.addEventListener('change', function () {
+                        var winId = row.getAttribute('data-win-id');
+                        if (!winId) return;
+                        window.UIWindows.setVisible(winId, cb.checked);
+                    });
+                }
+            })(rows[j]);
+        }
+        var lockBtn = menu.querySelector('#uwm-lock');
+        if (lockBtn) {
+            lockBtn.addEventListener('click', function (e) {
+                if (e.target && e.target.closest && e.target.closest('input')) return;
+                var cb = document.getElementById('uwm-lock-check');
+                if (!cb) return;
+                cb.checked = !cb.checked;
+                window.UIWindows.setLock(cb.checked);
+            });
+        }
+        var lockCb = document.getElementById('uwm-lock-check');
+        if (lockCb) {
+            lockCb.addEventListener('change', function () {
+                window.UIWindows.setLock(lockCb.checked);
+            });
+        }
+        var resetBtn = document.getElementById('uwm-reset');
+        if (resetBtn) {
+            resetBtn.addEventListener('click', function () {
+                window.UIWindows.resetAll();
+                rebuildUiWindowsMenu(); // 重置后刷新勾选状态
+            });
+        }
+    }
+
+    function openUiWindowsMenu() {
+        var menu = document.getElementById('ui-windows-menu');
+        if (!menu) return;
+        rebuildUiWindowsMenu();
+        menu.classList.add('open');
+        menu.setAttribute('aria-hidden', 'false');
+        uiWindowsMenuOpen = true;
+    }
+
+    function closeUiWindowsMenu() {
+        var menu = document.getElementById('ui-windows-menu');
+        if (!menu) return;
+        menu.classList.remove('open');
+        menu.setAttribute('aria-hidden', 'true');
+        uiWindowsMenuOpen = false;
+    }
+
+    function initUiWindowsMenu() {
+        var btn = document.getElementById('btn-ui-windows');
+        if (!btn) return;
+        btn.addEventListener('click', function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+            if (uiWindowsMenuOpen) closeUiWindowsMenu();
+            else openUiWindowsMenu();
+        });
+        // 点击外部关闭
+        document.addEventListener('click', function (e) {
+            if (!uiWindowsMenuOpen) return;
+            var btn2 = document.getElementById('btn-ui-windows');
+            var menu = document.getElementById('ui-windows-menu');
+            if (btn2 && btn2.contains(e.target)) return;
+            if (menu && menu.contains(e.target)) return;
+            closeUiWindowsMenu();
+        });
+        // 与玩家动作菜单互斥：打开玩家动作菜单时先关窗口列表
+        var playerBtn = document.getElementById('btn-player-actions');
+        if (playerBtn) {
+            playerBtn.addEventListener('click', function () {
+                closeUiWindowsMenu();
+            });
+        }
+    }
+
     function init() {
+        registerUiWindows();
         loadConfig().then(function () {
             // i18n 已就绪（UIText.setDict 已完成）后再进行地图合并渲染
             if (window.SaveSystem && typeof window.SaveSystem.init === 'function') {
@@ -10591,12 +11261,22 @@
                     return;
                 }
                 if (guardPlayerActionBlocked(ACTION_TYPES.MOVE)) return;
+                // 移动耗体力（k17 补全，05 5.5.4）：每格 = 1 × (1+鞋moveCostMod) × 超重系数；体力不足无法移动
+                var moveStaminaCost = computeMoveStaminaCost();
+                var survSt = (window.Survival && typeof window.Survival.getState === 'function') ? window.Survival.getState() : null;
+                if (moveStaminaCost > 0 && survSt && Number(survSt.stamina || 0) < moveStaminaCost) {
+                    showMsg(ui('log.info.move_no_stamina'), 'warn');
+                    return;
+                }
                 var st = E.getState();
                 var ddx = (dx != null) ? dx : (tx - st.x);
                 var ddy = (dy != null) ? dy : (ty - st.y);
                 var fromX = st.x;
                 var fromY = st.y;
                 if (E.moveTo(tx, ty)) {
+                    if (moveStaminaCost > 0 && window.Survival && typeof window.Survival.consumeStamina === 'function') {
+                        window.Survival.consumeStamina(moveStaminaCost);
+                    }
                     var restStoppedByMove = setRestingActionActive(false, { showMsg: false });
                     if (window.SceneCtx && typeof window.SceneCtx.exitFootworkNieBuMode === 'function') {
                         window.SceneCtx.exitFootworkNieBuMode(fromX, fromY);
@@ -10623,6 +11303,11 @@
             };
             window.SceneCtx.actions.attackEnemy = function (enemyId, ctxMeta) {
                 if (guardPlayerComaBlocked()) return;
+                // 眩晕中（k13，37 §9.2）：本回合无法行动
+                if (IE && typeof IE.consumePlayerStunRoundIfBlocking === 'function' && IE.consumePlayerStunRoundIfBlocking()) {
+                    showMsg(ui('combat.log.stun_blocked_action'), 'warn');
+                    return;
+                }
                 if (isPreCreationGameplayRestricted()) {
                     showIntroBlockedMsg();
                     return;
@@ -10642,6 +11327,8 @@
                     var defenderBase = {
                         kind: 'enemy',
                         enemyId: enemyId,
+                        mapId: st && st.mapId != null ? st.mapId : null,
+                        index: findEnemyInstanceIndex(enemyId, ctxMeta.x, ctxMeta.y),
                         parry_rate: ctxMeta.enemy_parry_rate != null ? Number(ctxMeta.enemy_parry_rate) : 0,
                         parry_damage_reduce: ctxMeta.enemy_parry_reduce != null ? Number(ctxMeta.enemy_parry_reduce) : 0
                     };
@@ -10654,6 +11341,36 @@
                     var skUse = ctxMeta.skill_id != null ? ctxMeta.skill_id : intent.skillId;
                     var mvUse = ctxMeta.move_id != null ? ctxMeta.move_id : intent.moveId;
 
+                    // 出招肢本 tick 禁止招架（肢体互斥）：攻击发起时就标记，不受先后手影响（combat-pipeline 311 读取）
+                    if (window.SceneCtx) window.SceneCtx.playerExchangeAttackLimb = limbUse;
+
+                    // 出手日志（结算前宣告攻击，避免“发动攻击”出现在结算之后）：用已确定的 skUse/mvUse/limbUse
+                    var enemyLogLabel = enemyId;
+                    try {
+                        if (window.UIText && typeof window.UIText.t === 'function') {
+                            enemyLogLabel = window.UIText.t('enemy.name.' + String(enemyId).replace(/\./g, '_'));
+                        }
+                    } catch (eLabel) { /* 无专用名时退回 id */ }
+                    var skIdLog = skUse;
+                    var mvIdLog = mvUse;
+                    var limbIdLog = limbUse;
+                    var modeTag = ui('log.system.attack.mode.auto');
+                    try {
+                        if (ctxMeta.skill_id != null && ctxMeta.limb_id != null && ctxMeta.move_id != null) {
+                            modeTag = ui('log.system.attack.mode.explicit');
+                        }
+                    } catch (eMode) { /* ignore */ }
+                    showMsg(ui('log.system.attack.enemy', {
+                        enemyId: enemyLogLabel,
+                        modeTag: modeTag,
+                        limbLabel: limbIdLog ? ui('body.part.' + String(limbIdLog)) : '',
+                        limbId: limbIdLog != null ? String(limbIdLog) : '',
+                        skillLabel: skIdLog ? getCombatSkillName(skIdLog) : '',
+                        skillId: skIdLog != null ? String(skIdLog) : '',
+                        moveLabel: (skIdLog && mvIdLog) ? getMoveDisplayName(skIdLog, mvIdLog) : '',
+                        moveId: mvIdLog != null ? String(mvIdLog) : ''
+                    }), 'system');
+
                     // 读取该肢当前槽位成数（ctxMeta 显式传入时优先）
                     var _slotPwr = ctxMeta.power_level != null ? Number(ctxMeta.power_level) : null;
                     if (_slotPwr == null && IE && typeof IE.peekMoveSlotIndexForLimb === 'function') {
@@ -10665,8 +11382,11 @@
 
                     var postIds = ctxMeta.post_effect_ids;
                     if (!postIds && ctxMeta.post_effect_id) postIds = [ctxMeta.post_effect_id];
-                    if ((!postIds || !postIds.length) && window.CombatInitiative && typeof window.CombatInitiative.getPostEffectIdsForMoveSlot === 'function' && window.InventoryEquipment) {
-                        postIds = window.CombatInitiative.getPostEffectIdsForMoveSlot(window.InventoryEquipment, limbUse, skUse, mvUse);
+                    if ((!postIds || !postIds.length) && window.CombatInitiative && typeof window.CombatInitiative.getPlayerPostEffectIds === 'function') {
+                        postIds = window.CombatInitiative.getPlayerPostEffectIds({
+                            limbId: limbUse,
+                            formTags: getFormTagsForMove(skUse, mvUse)
+                        });
                     }
                     if (!Array.isArray(postIds)) postIds = [];
                     var defPostIds = Array.isArray(defenderBase.counter_post_effect_ids) ? defenderBase.counter_post_effect_ids : [];
@@ -10680,6 +11400,7 @@
                         initPlan = window.CombatInitiative.resolvePlayerInitiatedExchange({
                             playerSpeed: plSpeed,
                             enemySpeed: defSpeed,
+                            enemyOwnerId: enemyId != null ? String(enemyId) : null,
                             attackerPostEffectIds: postIds,
                             defenderPostEffectIds: defPostIds,
                             skillId: skUse,
@@ -10716,19 +11437,7 @@
                         var lmId0 = r0 ? r0.limbId : (ctxMeta.limb_id || 'lhand');
                         var dmgType0 = r0 ? r0.damageType : 'blunt';
                         var modKey0 = r0 ? r0.hitPartModifierKey : null;
-                        var moveTags0 = [];
-                        if (window.CombatSkills && typeof window.CombatSkills.getSkill === 'function') {
-                            var skObj0 = window.CombatSkills.getSkill(skId0);
-                            if (skObj0 && Array.isArray(skObj0.moves)) {
-                                for (var mi0 = 0; mi0 < skObj0.moves.length; mi0++) {
-                                    var mObj0 = skObj0.moves[mi0];
-                                    if (mObj0 && mObj0.id === mvId0) {
-                                        if (Array.isArray(mObj0.required_limb_tags)) moveTags0 = mObj0.required_limb_tags.slice();
-                                        break;
-                                    }
-                                }
-                            }
-                        }
+                        var moveTags0 = getFormTagsForMove(skId0, mvId0);
                         return {
                             eventIdSuffix: String(enemyId) + '_' + String(mvId0),
                             hitRollSuccess: hitOk0,
@@ -10741,6 +11450,7 @@
                             moveTags: moveTags0,
                             subhit_index: 0,
                             is_last_subhit: true,
+                            segments: r0 && r0.segments && r0.segments.length > 1 ? r0.segments : null,
                             rawDamage: rawDmg0,
                             forceZeroDamageByResourceInsufficient: !!(r0 && r0.forceZeroDamageByResourceInsufficient),
                             simultaneousDryRun: !!simDry,
@@ -10765,43 +11475,14 @@
                         };
                     }
 
-                    function buildEnemyCounterAtkCtx(rE, simDry) {
-                        var re = rE || {};
-                        return {
-                            eventIdSuffix: String(enemyId) + '_' + String(re.moveId || 'counter') + (simDry ? '_sim' : ''),
-                            hitRollSuccess: !!re.hitRollSuccess,
-                            hitPart: re.hitPart || 'chest',
-                            moveId: re.moveId || 'enemy_counter_strike',
-                            skillId: re.skillId || '__enemy_counter_attack__',
-                            limbId: 'rhand',
-                            damageType: re.damageType || 'blunt',
-                            hitPartModifierKey: re.hitPartModifierKey || null,
-                            moveTags: [],
-                            subhit_index: 0,
-                            is_last_subhit: true,
-                            rawDamage: isFinite(re.rawDamage) ? re.rawDamage : 0,
-                            forceZeroDamageByResourceInsufficient: false,
-                            simultaneousDryRun: !!simDry,
-                            attacker: {
-                                kind: 'enemy',
-                                enemyId: enemyId,
-                                postEffectIds: [],
-                                facingDir: defenderFacingDir,
-                                pos: { x: ctxMeta.x, y: ctxMeta.y }
-                            },
-                            defender: {
-                                kind: 'player',
-                                facingDir: (window.PlayerFacing && typeof window.PlayerFacing.getDir === 'function') ? window.PlayerFacing.getDir() : 4,
-                                pos: { x: ctxMeta.fromX, y: ctxMeta.fromY }
-                            }
-                        };
-                    }
-
                     var pipeName = ctxMeta.pipeline || 'melee_hit_enemy_defender';
                     var r = null;
                     var atkCtx = null;
                     var rEnemyCounter = null;
                     var atkCtxEnemy = null;
+                    // 敌人眩晕（k13，37 §9.2）：眩晕中本回合无法行动 → 跳过其本击还击/先手
+                    var enemyStunnedNow = !!(window.CombatEnemies && typeof window.CombatEnemies.isEnemyStunned === 'function'
+                        && defenderBase && window.CombatEnemies.isEnemyStunned(defenderBase.mapId, defenderBase.index));
 
                     if (useSimultaneous && CMR && typeof CMR.resolvePlayerVsEnemyAttack === 'function' && typeof CMR.resolveEnemyVsPlayerAttack === 'function') {
                         r = CMR.resolvePlayerVsEnemyAttack({
@@ -10812,34 +11493,58 @@
                             defenderSpeed: defSpeed,
                             deferResourceSpend: true
                         });
-                        rEnemyCounter = CMR.resolveEnemyVsPlayerAttack({ enemyId: enemyId, attackerSpeed: defSpeed });
+                        if (!enemyStunnedNow) {
+                            rEnemyCounter = CMR.resolveEnemyVsPlayerAttack({
+                                enemyId: enemyId,
+                                attackerSpeed: defSpeed,
+                                enemyMapId: defenderBase.mapId,
+                                enemyIndex: defenderBase.index
+                            });
+                        }
                         atkCtx = buildPlayerAtkCtx(r, postIds, true);
-                        atkCtxEnemy = buildEnemyCounterAtkCtx(rEnemyCounter, true);
+                        if (!enemyStunnedNow) {
+                            atkCtxEnemy = buildEnemyCounterAtkCtx(rEnemyCounter, true, { enemyId: enemyId, facingDir: defenderFacingDir, ex: ctxMeta.x, ey: ctxMeta.y, px: ctxMeta.fromX, py: ctxMeta.fromY });
+                        }
                         if (intent.advanceCursor && window.InventoryEquipment && typeof window.InventoryEquipment.advanceMoveSequenceCursorForLimb === 'function') {
                             window.InventoryEquipment.advanceMoveSequenceCursorForLimb(atkCtx.limbId);
                         }
                         CP.runPipeline(pipeName, atkCtx);
-                        CP.runPipeline('melee_hit_player_defender', atkCtxEnemy);
+                        if (atkCtxEnemy) CP.runPipeline('melee_hit_player_defender', atkCtxEnemy);
                         if (typeof CP.flushPendingBuffApplies === 'function') {
                             CP.flushPendingBuffApplies(atkCtx);
-                            CP.flushPendingBuffApplies(atkCtxEnemy);
+                            if (atkCtxEnemy) CP.flushPendingBuffApplies(atkCtxEnemy);
                         }
                         if (typeof CMR.applyDeferredResourceSpendFromResolveResult === 'function') {
                             CMR.applyDeferredResourceSpendFromResolveResult(r);
                         }
                         if (typeof CP.finalizeSimultaneousStrike === 'function') {
                             CP.finalizeSimultaneousStrike(atkCtx);
-                            CP.finalizeSimultaneousStrike(atkCtxEnemy);
+                            if (atkCtxEnemy) CP.finalizeSimultaneousStrike(atkCtxEnemy);
+                        }
+                        {
+                            var _ckSim = enemyCounterAttackFlagKey(enemyId);
+                            if (_ckSim) enemyCounterAttackFlags[_ckSim] = true;
                         }
                     } else if (enemyActsFirst && CMR && typeof CMR.resolveEnemyVsPlayerAttack === 'function' && typeof CMR.resolvePlayerVsEnemyAttack === 'function') {
-                        rEnemyCounter = CMR.resolveEnemyVsPlayerAttack({ enemyId: enemyId, attackerSpeed: defSpeed });
-                        atkCtxEnemy = buildEnemyCounterAtkCtx(rEnemyCounter, false);
-                        CP.runPipeline('melee_hit_player_defender', atkCtxEnemy);
-                        if (window.GameLog && atkCtxEnemy.finalDamage != null && typeof window.GameLog.log === 'function') {
-                            window.GameLog.log(ui('log.combat.resolve.summary', {
-                                dmg: String(Math.round(atkCtxEnemy.finalDamage)),
-                                parry: atkCtxEnemy.parrySucceeded ? ui('log.combat.pipeline.parry_yes') : ui('log.combat.pipeline.parry_no')
-                            }) + '（先手还击）', 'damage');
+                        if (!enemyStunnedNow) {
+                            rEnemyCounter = CMR.resolveEnemyVsPlayerAttack({
+                                enemyId: enemyId,
+                                attackerSpeed: defSpeed,
+                                enemyMapId: defenderBase.mapId,
+                                enemyIndex: defenderBase.index
+                            });
+                            atkCtxEnemy = buildEnemyCounterAtkCtx(rEnemyCounter, false, { enemyId: enemyId, facingDir: defenderFacingDir, ex: ctxMeta.x, ey: ctxMeta.y, px: ctxMeta.fromX, py: ctxMeta.fromY });
+                            CP.runPipeline('melee_hit_player_defender', atkCtxEnemy);
+                            {
+                                var _ckEf = enemyCounterAttackFlagKey(enemyId);
+                                if (_ckEf) enemyCounterAttackFlags[_ckEf] = true;
+                            }
+                            if (window.GameLog && atkCtxEnemy.finalDamage != null && typeof window.GameLog.log === 'function') {
+                                window.GameLog.log(ui('log.combat.resolve.summary', {
+                                    dmg: String(Math.round(atkCtxEnemy.finalDamage)),
+                                    parry: atkCtxEnemy.parrySucceeded ? ui('log.combat.pipeline.parry_yes') : ui('log.combat.pipeline.parry_no')
+                                }) + ui('combat.log.first_strike_reply'), 'damage');
+                            }
                         }
                         r = CMR.resolvePlayerVsEnemyAttack({
                             skillId: skUse,
@@ -10870,16 +11575,32 @@
                             window.InventoryEquipment.advanceMoveSequenceCursorForLimb(atkCtx.limbId);
                         }
                         CP.runPipeline(pipeName, atkCtx);
-                        if (window.SceneCtx) window.SceneCtx.playerExchangeAttackLimb = atkCtx.limbId;
-                        if (canEnemyCounter && CMR && typeof CMR.resolveEnemyVsPlayerAttack === 'function') {
-                            rEnemyCounter = CMR.resolveEnemyVsPlayerAttack({ enemyId: enemyId, attackerSpeed: defSpeed });
-                            atkCtxEnemy = buildEnemyCounterAtkCtx(rEnemyCounter, false);
+                        // 出招肢已在攻击发起时标记（playerExchangeAttackLimb），此处不再重复设置
+                        // 07「先击杀即避免再挨对方本击」：玩家段把敌人打死 → 跳过敌人还击段
+                        var enemyDeadNow = false;
+                        try {
+                            if (window.CombatEnemies && typeof window.CombatEnemies.isEnemyDead === 'function') {
+                                enemyDeadNow = window.CombatEnemies.isEnemyDead(defenderBase.mapId, defenderBase.index);
+                            }
+                        } catch (eD) { /* ignore */ }
+                        if (canEnemyCounter && !enemyDeadNow && !enemyStunnedNow && CMR && typeof CMR.resolveEnemyVsPlayerAttack === 'function') {
+                            rEnemyCounter = CMR.resolveEnemyVsPlayerAttack({
+                                enemyId: enemyId,
+                                attackerSpeed: defSpeed,
+                                enemyMapId: defenderBase.mapId,
+                                enemyIndex: defenderBase.index
+                            });
+                            atkCtxEnemy = buildEnemyCounterAtkCtx(rEnemyCounter, false, { enemyId: enemyId, facingDir: defenderFacingDir, ex: ctxMeta.x, ey: ctxMeta.y, px: ctxMeta.fromX, py: ctxMeta.fromY });
                             CP.runPipeline('melee_hit_player_defender', atkCtxEnemy);
+                            {
+                                var _ckNm = enemyCounterAttackFlagKey(enemyId);
+                                if (_ckNm) enemyCounterAttackFlags[_ckNm] = true;
+                            }
                             if (window.GameLog && atkCtxEnemy.finalDamage != null && typeof window.GameLog.log === 'function') {
                                 window.GameLog.log(ui('log.combat.resolve.summary', {
                                     dmg: String(Math.round(atkCtxEnemy.finalDamage)),
                                     parry: atkCtxEnemy.parrySucceeded ? ui('log.combat.pipeline.parry_yes') : ui('log.combat.pipeline.parry_no')
-                                }) + '（还击）', 'damage');
+                                }) + ui('combat.log.reply'), 'damage');
                             }
                         }
                     }
@@ -10900,14 +11621,8 @@
                         }), 'damage');
                     }
                     ctxMeta.damageText = hitOk ? String(Math.round(atkCtx.finalDamage != null ? atkCtx.finalDamage : 0)) : ui('log.combat.resolve.hit_miss');
+                    settleEnemyKills();
                 }
-                var enemyLogLabel = enemyId;
-                try {
-                    if (window.UIText && typeof window.UIText.t === 'function') {
-                        enemyLogLabel = window.UIText.t('enemy.name.' + String(enemyId).replace(/\./g, '_'));
-                    }
-                } catch (eLabel) { /* 无专用名时退回 id */ }
-                showMsg(ui('log.system.attack.enemy', { enemyId: enemyLogLabel }), 'system');
                 if (window.SceneAnimation && typeof window.SceneAnimation.emit === 'function') {
                     var stNow = E.getState ? E.getState() : null;
                     window.SceneAnimation.emit('combat:attack', {
@@ -11299,8 +12014,8 @@
         var name = (tpl.sn || tpl.name || itemId);
         Buff.registerRuntimeBuffTemplate({
             buff_id: buffId,
-            name: '消化中·' + name,
-            desc: '食物正在消化中，按 tick 持续生效。',
+            name: ui('scene.food.digesting_name', { name: name }),
+            desc: ui('scene.food.digesting_desc'),
             durationTicks: dur,
             maxStacks: 1,
             stacksAddOnApply: 1,

@@ -9,7 +9,7 @@
 - 策划可为物品模板配置 **`numeric_rolls`**：对指定字段声明**数值区间**（策划直接指定 `min` / `max`，**不使用 `ratio` 相对模板倍率**）。
 - 物品**生成新实例时一次性抽样**，结果写入实例 **`resolved_rolls`**（字段名 → 数值）。
 - **禁止**在查询/UI/tick 中重复随机。
-- **估值**：`base_value` 链路与现有 **`quality_tier` 乘算**兼容；合成顺序见 §6。
+- **估值**：`base_value` 直接作为物品基线价值（品质乘算已随品质系统移除）；合成顺序见 §6。
 - **旧存档**：实例无 `resolved_rolls` 时，业务读数回退模板字段（行为与「未启用浮动」一致）；**读档不自动补 roll**。
 
 ---
@@ -98,7 +98,7 @@
 
 ---
 
-## 6. 实例：`resolved_rolls` 与品质合成顺序
+## 6. 实例：`resolved_rolls` 与估值合成顺序
 
 ### 6.1 存放
 
@@ -108,10 +108,8 @@
 ### 6.2 `base_value` 与 `ItemValue`
 
 - **先 roll**：`B = resolved_rolls.base_value ?? tpl.base_value`（`B` 可为小数）。
-- **再品质**：与现有 `ItemValue` 一致，例如  
-  `effective = Math.round(B * (1 + value_bonus_per_quality_tier * q))`  
-  （最终标价取整策略以现有 `js/item-value.js` 为准。）
-- **其它字段**：默认仅使用 `resolved_rolls` 中的抽样值，**不自动叠品质乘区**；若未来某字段也要乘品质，须单列清单并改文档。
+- **有效基价**：`effective = Math.round(B)`——**不再乘品质系数**（品质系统已移除）；最终标价取整策略以现有 `js/item-value.js` 为准。
+- **其它字段**：默认仅使用 `resolved_rolls` 中的抽样值；如需对某字段做额外修正，须单列清单并改文档。
 
 ---
 
@@ -168,4 +166,4 @@
 
 | 日期 | 说明 |
 |------|------|
-| （创建） | 初版：绝对区间、`resolved_rolls`、全闭区间、整数 `floor`、黑名单硬错误、区间非法 warning 整段跳过、先 roll 再 quality、仅货币可堆且无浮动、除黑名单外皆可浮动、允许小数。 |
+| （创建） | 初版：绝对区间、`resolved_rolls`、全闭区间、整数 `floor`、黑名单硬错误、区间非法 warning 整段跳过、先 roll 再估值（无品质乘算）、仅货币可堆且无浮动、除黑名单外皆可浮动、允许小数。 |

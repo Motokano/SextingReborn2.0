@@ -9,8 +9,7 @@
         { "item_id": "ore_water_pure_soft", "count": 1 },
         { "item_id": "ore_salt_sea", "count": 1 }
       ],
-      "output_item_id": "food_stew_meat_simple",
-      "base_output_quality_tier": 0
+      "output_item_id": "food_stew_meat_simple"
     },
     {
       "recipe_id": "cook_fish_soup_clear",
@@ -21,8 +20,7 @@
         { "item_id": "ore_salt_sea", "count": 1 }
       ],
       "output_item_id": "food_fish_soup_clear",
-      "match_weight": 1,
-      "base_output_quality_tier": 0
+      "match_weight": 1
     },
     {
       "recipe_id": "cook_flatbread_plain",
@@ -32,8 +30,7 @@
         { "item_id": "ore_water_pure_soft", "count": 1 },
         { "item_id": "ore_salt_sea", "count": 1 }
       ],
-      "output_item_id": "food_flatbread_plain",
-      "base_output_quality_tier": 0
+      "output_item_id": "food_flatbread_plain"
     },
     {
       "recipe_id": "cook_mvp_beef_brisket_clear_stew",
@@ -46,8 +43,7 @@
         { "item_id": "ore_salt_sea", "count": 1 },
         { "item_id": "ore_water_pure_soft", "count": 1 }
       ],
-      "output_item_id": "food_dish_beef_brisket_stew",
-      "base_output_quality_tier": 0
+      "output_item_id": "food_dish_beef_brisket_stew"
     },
     {
       "recipe_id": "cook_mvp_pig_trotter_bean_soup",
@@ -59,8 +55,7 @@
         { "item_id": "ore_salt_sea", "count": 1 },
         { "item_id": "ore_water_pure_soft", "count": 1 }
       ],
-      "output_item_id": "food_dish_pig_trotter_bean_soup",
-      "base_output_quality_tier": 0
+      "output_item_id": "food_dish_pig_trotter_bean_soup"
     },
     {
       "recipe_id": "cook_mvp_whitefish_soup_deluxe",
@@ -73,8 +68,7 @@
         { "item_id": "ore_water_pure_soft", "count": 1 }
       ],
       "output_item_id": "food_dish_whitefish_soup_deluxe",
-      "match_weight": 9,
-      "base_output_quality_tier": 0
+      "match_weight": 9
     },
     {
       "recipe_id": "cook_mvp_chicken_dice_chili",
@@ -86,8 +80,7 @@
         { "item_id": "herb_ginger", "count": 1 },
         { "item_id": "hus_pork_lard", "count": 1 }
       ],
-      "output_item_id": "food_dish_chicken_dice_stirfry",
-      "base_output_quality_tier": 0
+      "output_item_id": "food_dish_chicken_dice_stirfry"
     },
     {
       "recipe_id": "cook_mvp_squid_stirfry",
@@ -99,8 +92,7 @@
         { "item_id": "hus_pork_lard", "count": 1 },
         { "item_id": "ore_salt_sea", "count": 1 }
       ],
-      "output_item_id": "food_dish_squid_stirfry",
-      "base_output_quality_tier": 0
+      "output_item_id": "food_dish_squid_stirfry"
     },
     {
       "recipe_id": "cook_mvp_beef_onion_stirfry",
@@ -112,8 +104,7 @@
         { "item_id": "hus_pork_lard", "count": 1 },
         { "item_id": "ore_salt_sea", "count": 1 }
       ],
-      "output_item_id": "food_dish_beef_onion_stirfry",
-      "base_output_quality_tier": 0
+      "output_item_id": "food_dish_beef_onion_stirfry"
     },
     {
       "recipe_id": "cook_mvp_salt_grilled_whitefish",
@@ -124,8 +115,7 @@
         { "item_id": "herb_lemon", "count": 1 },
         { "item_id": "wood_charcoal", "count": 1 }
       ],
-      "output_item_id": "food_dish_salt_grilled_whitefish",
-      "base_output_quality_tier": 0
+      "output_item_id": "food_dish_salt_grilled_whitefish"
     },
     {
       "recipe_id": "cook_mvp_applewood_roast_turkey",
@@ -136,8 +126,7 @@
         { "item_id": "wood_apple", "count": 1 },
         { "item_id": "herb_rosemary", "count": 1 }
       ],
-      "output_item_id": "food_dish_applewood_turkey_roast",
-      "base_output_quality_tier": 0
+      "output_item_id": "food_dish_applewood_turkey_roast"
     },
     {
       "recipe_id": "cook_mvp_roasted_potato_herbs",
@@ -148,8 +137,7 @@
         { "item_id": "herb_thyme", "count": 1 },
         { "item_id": "ore_salt_sea", "count": 1 }
       ],
-      "output_item_id": "food_dish_roasted_potato_herbs",
-      "base_output_quality_tier": 0
+      "output_item_id": "food_dish_roasted_potato_herbs"
     },
     {
       "recipe_id": "cook_mvp_steamed_egg",
@@ -159,8 +147,7 @@
         { "item_id": "ore_water_pure_soft", "count": 1 },
         { "item_id": "ore_salt_sea", "count": 1 }
       ],
-      "output_item_id": "food_dish_steamed_egg_custard",
-      "base_output_quality_tier": 0
+      "output_item_id": "food_dish_steamed_egg_custard"
     },
     {
       "recipe_id": "cook_mvp_lotus_glutinous_chicken",
@@ -172,8 +159,7 @@
         { "item_id": "herb_shiitake", "count": 1 },
         { "item_id": "ore_salt_sea", "count": 1 }
       ],
-      "output_item_id": "food_dish_lotus_glutinous_chicken",
-      "base_output_quality_tier": 0
+      "output_item_id": "food_dish_lotus_glutinous_chicken"
     },
     {
       "recipe_id": "cook_mvp_steamed_bream",
@@ -184,8 +170,7 @@
         { "item_id": "herb_ginger", "count": 1 },
         { "item_id": "ore_salt_sea", "count": 1 }
       ],
-      "output_item_id": "food_dish_steamed_bream",
-      "base_output_quality_tier": 0
+      "output_item_id": "food_dish_steamed_bream"
     },
     {
       "recipe_id": "cook_mvp_fried_potato",
@@ -195,8 +180,7 @@
         { "item_id": "hus_pork_lard", "count": 1 },
         { "item_id": "ore_salt_sea", "count": 1 }
       ],
-      "output_item_id": "food_dish_fried_potato_chunks",
-      "base_output_quality_tier": 0
+      "output_item_id": "food_dish_fried_potato_chunks"
     },
     {
       "recipe_id": "cook_mvp_river_shrimp_soft_fry",
@@ -208,8 +192,7 @@
         { "item_id": "ore_salt_sea", "count": 1 },
         { "item_id": "hus_pork_lard", "count": 1 }
       ],
-      "output_item_id": "food_dish_river_shrimp_soft_fry",
-      "base_output_quality_tier": 0
+      "output_item_id": "food_dish_river_shrimp_soft_fry"
     },
     {
       "recipe_id": "cook_mvp_salted_cucumber",
@@ -219,8 +202,7 @@
         { "item_id": "ore_salt_sea", "count": 1 },
         { "item_id": "herb_garlic", "count": 1 }
       ],
-      "output_item_id": "food_dish_salted_cucumber",
-      "base_output_quality_tier": 0
+      "output_item_id": "food_dish_salted_cucumber"
     },
     {
       "recipe_id": "cook_mvp_herb_cured_pork",
@@ -232,8 +214,7 @@
         { "item_id": "herb_thyme", "count": 1 },
         { "item_id": "herb_garlic", "count": 1 }
       ],
-      "output_item_id": "food_dish_herb_cured_pork_slices",
-      "base_output_quality_tier": 0
+      "output_item_id": "food_dish_herb_cured_pork_slices"
     },
     {
       "recipe_id": "cook_mvp_beet_kvass",
@@ -244,8 +225,7 @@
         { "item_id": "herb_sugar_white", "count": 1 },
         { "item_id": "ore_water_pure_soft", "count": 1 }
       ],
-      "output_item_id": "food_dish_beet_kvass",
-      "base_output_quality_tier": 0
+      "output_item_id": "food_dish_beet_kvass"
     },
     {
       "recipe_id": "cook_mvp_buffalo_yogurt",
@@ -254,8 +234,7 @@
         { "item_id": "hus_milk_buffalo", "count": 1 },
         { "item_id": "herb_sugar_white", "count": 1 }
       ],
-      "output_item_id": "food_dish_buffalo_yogurt",
-      "base_output_quality_tier": 0
+      "output_item_id": "food_dish_buffalo_yogurt"
     },
     {
       "recipe_id": "cook_mvp_sesame_garlic_salad",
@@ -267,8 +246,7 @@
         { "item_id": "ore_salt_sea", "count": 1 },
         { "item_id": "herb_cucumber", "count": 1 }
       ],
-      "output_item_id": "food_dish_sesame_garlic_salad",
-      "base_output_quality_tier": 0
+      "output_item_id": "food_dish_sesame_garlic_salad"
     },
     {
       "recipe_id": "cook_mvp_mustard_beef_tongue",
@@ -279,8 +257,7 @@
         { "item_id": "ore_salt_sea", "count": 1 },
         { "item_id": "herb_lemon", "count": 1 }
       ],
-      "output_item_id": "food_dish_mustard_beef_tongue",
-      "base_output_quality_tier": 0
+      "output_item_id": "food_dish_mustard_beef_tongue"
     }
   ]
 }

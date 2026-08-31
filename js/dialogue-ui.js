@@ -285,6 +285,11 @@
         ensureBound();
         var panel = $(PANEL_ID);
         if (!panel) return;
+        // 对话安全（docs/design/36-ui-windows.md §4.5）：玩家在窗口列表里隐藏过对话面板时，
+        // 触发对话强制恢复显示（仅本次会话，不持久化）——对话是叙事核心，不可因误隐藏错过台词。
+        if (global.UIWindows && typeof global.UIWindows.forceVisible === 'function') {
+            try { global.UIWindows.forceVisible('win-dialogue'); } catch (eF) { /* ignore */ }
+        }
         setDialogueInputBlockerVisible(true);
         mountDialogueTextRenderer();
         lastActiveEl = document.activeElement || null;

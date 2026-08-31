@@ -417,7 +417,9 @@
     }
 
     /**
-     * 某肢装配技能时，按等级槽位数生成默认招式序列（仅含该肢动作标签允许的已解锁招式）。
+     * 某肢装配技能时，按等级槽位数生成默认招式序列。
+     * 11-skills（设计变更）：每肢 = 1 主动技能 + 槽1（该肢可用招式，可选）+ 槽2..N（变式槽）。
+     * 默认序列：槽1 = 该技能在该肢上的**第一个可用招式**（技能 moves 顺序 + 肢体动作标签过滤），槽 2..N 全空（留给变式）。
      */
     function buildDefaultMoveSequenceForLimb(skillId, limbId, level) {
         var sk = getSkill(skillId);
@@ -428,14 +430,19 @@
         var limbKeys = typeof global !== 'undefined' && global.getLimbActionTags
             ? global.getLimbActionTags(limbId)
             : getDefaultLimbTagKeysForLimbId(limbId);
-        var allowed = unlocked.filter(function (m) {
-            return moveAllowedOnLimbByTagKeys(m, limbKeys);
-        });
+        var firstMove = '';
+        var mi;
+        for (mi = 0; mi < unlocked.length; mi++) {
+            if (moveAllowedOnLimbByTagKeys(unlocked[mi], limbKeys)) {
+                firstMove = unlocked[mi].id;
+                break;
+            }
+        }
         var out = [];
+        out.push(firstMove);
         var i;
-        for (i = 0; i < maxSlots; i++) {
-            if (allowed[i]) out.push(allowed[i].id);
-            else out.push('');
+        for (i = 1; i < maxSlots; i++) {
+            out.push('');
         }
         return out;
     }

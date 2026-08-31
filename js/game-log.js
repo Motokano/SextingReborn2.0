@@ -1,6 +1,9 @@
 /**
  * 游戏实时日志模块
- * 在游戏下方显示行为与战斗信息；默认全宽贴底，可拖移与四向调整大小（仅当前会话，不跨刷新/读档持久化）。
+ * 在游戏下方显示行为与战斗信息；默认全宽贴底。
+ * 面板拖拽/缩放/持久化已迁移至 UIWindows 管线（docs/design/36-ui-windows.md，win-log 窗口）。
+ * 本文件保留内容逻辑与公开 API 兼容：log / clear / getLineCount / bindDragScroll /
+ * bindPanelChrome / bindPanelPositionDrag / resetLogPanelLayout / clampLogPanelForLeftHud / syncQuickBeltDock。
  */
 (function (global) {
     'use strict';
@@ -11,7 +14,6 @@
     var CONTAINER_ID = 'game-log-lines';
     var MIN_PANEL_H = 64;
     var MIN_PANEL_W = 220;
-    var VIEW_MARGIN_RIGHT = 8;
     var TYPE_CLASS = {
         info: 'log-info',
         success: 'log-success',
@@ -93,42 +95,48 @@
             list.scrollTop = list.scrollHeight;
     }
 
-    function parsePx(styleVal, fallback) {
-        var n = parseFloat(styleVal);
-        return isFinite(n) ? n : fallback;
+    function clearLegacyPanelLayoutStorage() {
+        try { localStorage.removeItem(LEGACY_PANEL_POS_KEY); } catch (e) { /* ignore */ }
     }
 
-    function maxPanelHeight() {
-        return Math.max(MIN_PANEL_H, Math.floor(window.innerHeight * 0.72));
+    /**
+     * 面板拖拽/缩放：注册 win-log 到 UIWindows 管线。
+     * 未加载 UIWindows（脚本顺序异常）时静默降级：仅保留内容日志，面板不可拖（可接受）。
+     */
+    function bindPanelChrome() {
+        if (!global.UIWindows || typeof global.UIWindows.registerPanel !== 'function') return;
+        clearLegacyPanelLayoutStorage();
+        global.UIWindows.registerPanel('win-log', {
+            type: 'free',
+            titleKey: 'ui.windows.log',
+            el: function () { return document.getElementById('game-log-panel'); },
+            defaultPos: 'fullwidth-bottom',
+            defaultSize: { h: 100 },
+            minW: MIN_PANEL_W,
+            minH: MIN_PANEL_H,
+            closable: false,        // M1：暂不加关闭按钮（M3 窗口列表菜单再开）
+            resizable: true,
+            dragHandle: '.game-log-header',
+            handles: {
+                top: '.game-log-resize-handle-top',
+                left: '.game-log-resize-handle-left',
+                right: '.game-log-resize-handle-right'
+            },
+            dblclickReset: true,
+            onLayout: syncQuickBeltDockPosition
+        });
+        if (typeof global.UIWindows.init === 'function') global.UIWindows.init();
     }
 
-    function maxPanelWidthForLeft(leftPx) {
-        return Math.max(MIN_PANEL_W, window.innerWidth - VIEW_MARGIN_RIGHT - leftPx);
-    }
-
-    /** 不超出视口左右边界、宽度不低于最小值 */
-    function clampPanelHorizontal(panel) {
+    /** 兼容旧调用：重置日志面板为默认贴底全宽（委托管线） */
+    function resetLogPanelLayout() {
+        if (global.UIWindows && typeof global.UIWindows.resetWindow === 'function') {
+            global.UIWindows.resetWindow('win-log');
+            return;
+        }
+        // 降级：直接回默认并同步快捷腰带
+        var panel = document.getElementById('game-log-panel');
         if (!panel) return;
-        var r = panel.getBoundingClientRect();
-        var l = r.left;
-        var w = r.width;
-        if (l < 0) {
-            w = Math.max(MIN_PANEL_W, w + l);
-            l = 0;
-        }
-        var maxW = maxPanelWidthForLeft(l);
-        if (w > maxW) w = maxW;
-        if (w < MIN_PANEL_W) w = MIN_PANEL_W;
-        if (l + w > window.innerWidth - VIEW_MARGIN_RIGHT) {
-            l = Math.max(0, window.innerWidth - VIEW_MARGIN_RIGHT - w);
-        }
-        panel.style.left = Math.round(l) + 'px';
-        panel.style.width = Math.round(w) + 'px';
-        panel.style.right = 'auto';
-    }
-
-    /** 与 CSS 一致：贴底、横向铺满视口 */
-    function applyDefaultFullWidthBottom(panel) {
         panel.style.position = 'fixed';
         panel.style.left = '0';
         panel.style.right = '0';
@@ -137,172 +145,14 @@
         panel.style.top = 'auto';
         panel.style.height = '100px';
         panel.style.maxHeight = '';
-    }
-
-    function resetLogPanelLayout() {
-        var panel = document.getElementById('game-log-panel');
-        if (!panel) return;
-        applyDefaultFullWidthBottom(panel);
         syncQuickBeltDockPosition();
     }
 
-    function clearLegacyPanelLayoutStorage() {
-        try { localStorage.removeItem(LEGACY_PANEL_POS_KEY); } catch (e) { /* ignore */ }
-    }
-
-    function bindPanelChrome() {
-        var panel = document.getElementById('game-log-panel');
-        var header = panel && panel.querySelector('.game-log-header');
-        var topHandle = panel && panel.querySelector('.game-log-resize-handle-top');
-        var rightHandle = panel && panel.querySelector('.game-log-resize-handle-right');
-        var leftHandle = panel && panel.querySelector('.game-log-resize-handle-left');
-        if (!panel || !header) return;
-
-        clearLegacyPanelLayoutStorage();
-        applyDefaultFullWidthBottom(panel);
-
-        function ensureFixedPixelBox() {
-            var r = panel.getBoundingClientRect();
-            panel.style.position = 'fixed';
-            panel.style.left = r.left + 'px';
-            panel.style.width = Math.min(r.width, maxPanelWidthForLeft(r.left)) + 'px';
-            panel.style.right = 'auto';
-            panel.style.bottom = (window.innerHeight - r.bottom) + 'px';
-            panel.style.top = 'auto';
-            panel.style.height = Math.min(r.height, maxPanelHeight()) + 'px';
-            clampPanelHorizontal(panel);
+    /** 兼容旧调用：把日志面板 clamp 回视口（委托管线） */
+    function clampLogPanelForLeftHud() {
+        if (global.UIWindows && typeof global.UIWindows.clampWindow === 'function') {
+            global.UIWindows.clampWindow('win-log');
         }
-
-        var mode = null;
-        var startX = 0;
-        var startY = 0;
-        var startLeft = 0;
-        var startBottom = 0;
-        var startW = 0;
-        var startH = 0;
-
-        header.addEventListener('mousedown', function (e) {
-            if (e.button !== 0) return;
-            if (e.target && e.target.closest && e.target.closest('button')) return;
-            mode = 'move';
-            ensureFixedPixelBox();
-            startX = e.clientX;
-            startY = e.clientY;
-            startLeft = parsePx(panel.style.left, 0);
-            startBottom = parsePx(panel.style.bottom, 0);
-            header.classList.add('log-panel-dragging');
-            e.preventDefault();
-        });
-
-        if (topHandle) {
-            topHandle.addEventListener('mousedown', function (e) {
-                if (e.button !== 0) return;
-                e.preventDefault();
-                e.stopPropagation();
-                mode = 'height';
-                ensureFixedPixelBox();
-                startY = e.clientY;
-                startH = panel.getBoundingClientRect().height;
-                topHandle.classList.add('log-resize-active');
-            });
-        }
-
-        if (rightHandle) {
-            rightHandle.addEventListener('mousedown', function (e) {
-                if (e.button !== 0) return;
-                e.preventDefault();
-                e.stopPropagation();
-                mode = 'width';
-                ensureFixedPixelBox();
-                startX = e.clientX;
-                startW = panel.getBoundingClientRect().width;
-                rightHandle.classList.add('log-resize-active');
-            });
-        }
-
-        if (leftHandle) {
-            leftHandle.addEventListener('mousedown', function (e) {
-                if (e.button !== 0) return;
-                e.preventDefault();
-                e.stopPropagation();
-                mode = 'widthLeft';
-                ensureFixedPixelBox();
-                startX = e.clientX;
-                var rr = panel.getBoundingClientRect();
-                startLeft = rr.left;
-                startW = rr.width;
-                leftHandle.classList.add('log-resize-active');
-            });
-        }
-
-        document.addEventListener('mousemove', function (e) {
-            if (!mode) return;
-            if (mode === 'move') {
-                var dx = e.clientX - startX;
-                var dy = e.clientY - startY;
-                var rect = panel.getBoundingClientRect();
-                var w = rect.width;
-                var h = rect.height;
-                var newL = startLeft + dx;
-                var newB = startBottom - dy;
-                newL = Math.max(0, Math.min(newL, window.innerWidth - w));
-                newB = Math.max(0, Math.min(newB, window.innerHeight - h));
-                panel.style.left = newL + 'px';
-                panel.style.bottom = newB + 'px';
-            } else if (mode === 'height') {
-                var dyH = e.clientY - startY;
-                var newH = Math.round(startH - dyH);
-                if (newH < MIN_PANEL_H) newH = MIN_PANEL_H;
-                if (newH > maxPanelHeight()) newH = maxPanelHeight();
-                panel.style.height = newH + 'px';
-            } else if (mode === 'width') {
-                var dxW = e.clientX - startX;
-                var newW = Math.round(startW + dxW);
-                var l = parsePx(panel.style.left, 0);
-                var maxW = maxPanelWidthForLeft(l);
-                if (newW < MIN_PANEL_W) newW = MIN_PANEL_W;
-                if (newW > maxW) newW = maxW;
-                panel.style.width = newW + 'px';
-            } else if (mode === 'widthLeft') {
-                var dxL = e.clientX - startX;
-                var rightEdge = startLeft + startW;
-                var maxL = rightEdge - MIN_PANEL_W;
-                var newL2 = Math.round(startLeft + dxL);
-                if (newL2 < 0) newL2 = 0;
-                if (newL2 > maxL) newL2 = maxL;
-                var newW2 = rightEdge - newL2;
-                panel.style.left = newL2 + 'px';
-                panel.style.width = newW2 + 'px';
-            }
-            syncQuickBeltDockPosition();
-        });
-
-        document.addEventListener('mouseup', function () {
-            if (!mode) return;
-            if (mode === 'move') header.classList.remove('log-panel-dragging');
-            if (topHandle) topHandle.classList.remove('log-resize-active');
-            if (rightHandle) rightHandle.classList.remove('log-resize-active');
-            if (leftHandle) leftHandle.classList.remove('log-resize-active');
-            clampPanelHorizontal(panel);
-            syncQuickBeltDockPosition();
-            mode = null;
-        });
-
-        header.addEventListener('dblclick', function (e) {
-            if (e.target && e.target.closest && e.target.closest('button')) return;
-            resetLogPanelLayout();
-        });
-
-        var resizeT = null;
-        window.addEventListener('resize', function () {
-            if (resizeT) clearTimeout(resizeT);
-            resizeT = setTimeout(function () {
-                resizeT = null;
-                clampPanelHorizontal(panel);
-                syncQuickBeltDockPosition();
-            }, 80);
-        });
-
         syncQuickBeltDockPosition();
     }
 
@@ -350,11 +200,7 @@
         bindPanelPositionDrag: bindPanelChrome,
         bindPanelChrome: bindPanelChrome,
         resetLogPanelLayout: resetLogPanelLayout,
-        clampLogPanelForLeftHud: function () {
-            var p = document.getElementById('game-log-panel');
-            clampPanelHorizontal(p);
-            syncQuickBeltDockPosition();
-        },
+        clampLogPanelForLeftHud: clampLogPanelForLeftHud,
         syncQuickBeltDock: syncQuickBeltDockPosition
     };
 

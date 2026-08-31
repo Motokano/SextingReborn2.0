@@ -1,41 +1,42 @@
 /**
  * 物品栏与装备栏系统 - 按设计文档 02-regions、05、14-implementation
- * 四类容器：口袋、背心、背包、载具；15 个装备槽；快捷腰带 = 口袋 + 背心（先口袋后背心）
+ * 四类容器：口袋、背心、背包、载具；10 个装备槽；快捷腰带 = 口袋 + 背心（先口袋后背心）
  * getItemTemplate 先 equipment 再 items；装备穿戴校验；死亡清空、新游戏仅 default_equipment
  */
 (function (global) {
     'use strict';
 
-    /** 装备槽位 ID（呼吸法、步法、招架为技能而非装备，不占装备槽；招架在肢体技能栏配置；饰品分五槽） */
+    /** 装备槽位 ID（呼吸法、步法、招架为技能而非装备，不占装备槽；招架在肢体技能栏配置）。分三组：出招装备（武器/手套/鞋）、防具（头/衣服）、载物（背心/背包） */
     var EQUIP_SLOT_IDS = [
         'head', 'clothing', 'vest', 'backpack',
         'weapon_left', 'weapon_right',
         'glove_left', 'glove_right',
-        'shoe_left', 'shoe_right',
-        'ring_left', 'ring_right', 'earring_left', 'earring_right', 'necklace'
+        'shoe_left', 'shoe_right'
     ];
 
-    /** 品质六档：粗糙→普通→精良→稀有→史诗→传说，0～5 */
-    var QUALITY_TIERS = [0, 1, 2, 3, 4, 5];
-    var QUALITY_NAMES = ['粗糙', '普通', '精良', '稀有', '史诗', '传说'];
+    function t(key, vars) {
+        if (global && global.UIText && typeof global.UIText.t === 'function') return global.UIText.t(key, vars);
+        return key;
+    }
 
     var equipmentTable = {};
     var itemsTable = {};
     var enchantTable = {};
+    var moduleTable = {};
     var defaultEquipmentConfig = {};
     var displayTierThreshold1 = null;
     var displayTierThreshold2 = null;
 
-    /** 特殊技能：经络学（0 级未入门；≥1 解锁战斗配置中的经脉/穴位分页） */
-    var SPECIAL_MERIDIAN_STUDIES_SKILL_ID = 'special_meridian_studies';
+    /** 特殊技能：解剖学（0 级未入门；≥1 解锁战斗配置中的肌肉分页） */
+    var SPECIAL_ANATOMY_STUDIES_SKILL_ID = 'special_meridian_studies';
 
-    function ensureMeridianStudiesSkillPresent() {
+    function ensureAnatomyStudiesSkillPresent() {
         if (!state.skills || typeof state.skills !== 'object') state.skills = {};
-        if (!state.skills[SPECIAL_MERIDIAN_STUDIES_SKILL_ID] || typeof state.skills[SPECIAL_MERIDIAN_STUDIES_SKILL_ID] !== 'object') {
-            state.skills[SPECIAL_MERIDIAN_STUDIES_SKILL_ID] = { level: 0, move_usage: {} };
+        if (!state.skills[SPECIAL_ANATOMY_STUDIES_SKILL_ID] || typeof state.skills[SPECIAL_ANATOMY_STUDIES_SKILL_ID] !== 'object') {
+            state.skills[SPECIAL_ANATOMY_STUDIES_SKILL_ID] = { level: 0, move_usage: {} };
             return;
         }
-        var ent = state.skills[SPECIAL_MERIDIAN_STUDIES_SKILL_ID];
+        var ent = state.skills[SPECIAL_ANATOMY_STUDIES_SKILL_ID];
         if (ent.level == null) ent.level = 0;
         var z = parseInt(ent.level, 10);
         if (!isFinite(z) || z < 0) ent.level = 0;
@@ -165,7 +166,7 @@
             skill_move_sequences: {},
             /** 各肢招式槽轮询下标（对应该肢 move_sequences 中非空槽位序列） */
             move_sequence_cursors: { lhand: 0, rhand: 0, lfoot: 0, rfoot: 0 },
-            /** 后遗症装配（肢体级）：post_effect_sequences[limbId] = post_effect_id|null */
+            /** 废弃字段（34 号草案阶段三起）：后遗症装配已迁移至肌群大型被动（Muscles.equipPassive）；此处仅保留以兼容旧存档读取，战斗不再读取 */
             post_effect_sequences: {},
             /** 主动链变式装配：variant_sequences[limbId] = [variant_id, ...] */
             variant_sequences: { lhand: [], rhand: [], lfoot: [], rfoot: [] },
@@ -178,7 +179,11 @@
             /** 下一击从 limb_strike_order 的该下标开始扫描（0～3） */
             limb_strike_order_cursor: 0,
             /** 变式效果参数覆盖（对 move-variants 模板的 variant_effect_params 深合并；清除键即复原表内原始） */
-            variant_effect_param_overrides: {}
+            variant_effect_param_overrides: {},
+            /** 眩晕累积值 0-100（37 §9.2，k13）：命中头累积，-1/tick 衰减，≥100 触发眩晕 */
+            stun_value: 0,
+            /** 眩晕回合数：>0 = 眩晕中（下一次行动被吞，本回合无法行动） */
+            stun_rounds_left: 0
         };
     }
 
@@ -376,6 +381,32 @@
         }
     }
 
+    /** 规范化肢体的技能槽值：必须为单技能 id 字符串。旧格式/损坏存档可能存数组或逗号串（如 ['a','b'] 或 'a,b'），
+     *  取「最后一个」元素（最近写入的）；非法/空值归一为 null。见 11-skills：每肢 1 主动 + 1 招架。 */
+    function normalizeLimbSkillValue(v) {
+        if (typeof v === 'string') {
+            var s = String(v).trim();
+            if (!s) return null;
+            if (s.indexOf(',') >= 0) {
+                var parts = s.split(',');
+                for (var pi = parts.length - 1; pi >= 0; pi--) {
+                    var pv = String(parts[pi]).trim();
+                    if (pv) return pv;
+                }
+                return null;
+            }
+            return s;
+        }
+        if (Array.isArray(v)) {
+            for (var ai = v.length - 1; ai >= 0; ai--) {
+                var ev = v[ai];
+                if (typeof ev === 'string' && String(ev).trim()) return String(ev).trim();
+            }
+            return null;
+        }
+        return null;
+    }
+
     function ensureCombatState() {
         if (!state.combat || typeof state.combat !== 'object') {
             state.combat = getDefaultCombatState();
@@ -392,7 +423,14 @@
         var j;
         for (j = 0; j < limbIds.length; j++) {
             var lidNorm = limbIds[j];
-            var lr = state.combat.limbs[lidNorm];
+            var lrN = state.combat.limbs[lidNorm];
+            if (lrN) {
+                lrN.active = normalizeLimbSkillValue(lrN.active);
+                lrN.parry = normalizeLimbSkillValue(lrN.parry);
+            }
+        }
+        for (j = 0; j < limbIds.length; j++) {
+            var lr = state.combat.limbs[limbIds[j]];
             if (lr && Object.prototype.hasOwnProperty.call(lr, 'priority')) {
                 try { delete lr.priority; } catch (eDel) { lr.priority = undefined; }
             }
@@ -427,6 +465,11 @@
         if (!state.combat.variant_effect_param_overrides || typeof state.combat.variant_effect_param_overrides !== 'object') {
             state.combat.variant_effect_param_overrides = {};
         }
+        // 眩晕累积（37 §9.2，k13）：0-100 战斗状态字段；stun_rounds_left>0 = 眩晕中（下一次行动被吞）
+        if (typeof state.combat.stun_value !== 'number' || !isFinite(state.combat.stun_value)) state.combat.stun_value = 0;
+        state.combat.stun_value = Math.max(0, Math.min(100, Math.floor(state.combat.stun_value)));
+        if (typeof state.combat.stun_rounds_left !== 'number' || !isFinite(state.combat.stun_rounds_left)) state.combat.stun_rounds_left = 0;
+        state.combat.stun_rounds_left = Math.max(0, Math.floor(state.combat.stun_rounds_left));
         ensureLimbStrikeOrder();
         ensureMoveSequenceCursors();
     }
@@ -554,6 +597,237 @@
         return enchantTable[encId] || null;
     }
 
+    /** 根据模块 ID 返回模块模板（data/modules.json，数据契约 38 §2） */
+    function getModuleTemplate(moduleId) {
+        if (!moduleId) return null;
+        return moduleTable[moduleId] || null;
+    }
+
+    /** 判断模块模板是否跨槽位占用（复合模块：occupies 同时含 clothing.* 与 head.*） */
+    function hasCrossSlotOccupancy(modTpl) {
+        if (!modTpl || !Array.isArray(modTpl.occupies)) return false;
+        var hasClothing = false, hasHead = false;
+        for (var i = 0; i < modTpl.occupies.length; i++) {
+            var oc = String(modTpl.occupies[i] || '');
+            if (oc.indexOf('clothing.') === 0) hasClothing = true;
+            else if (oc.indexOf('head.') === 0) hasHead = true;
+        }
+        return hasClothing && hasHead;
+    }
+
+    /** 读取指定槽点的已装模块实例 */
+    function getInstalledModuleAt(slotId, plateKey) {
+        var eq = state.equipment[slotId];
+        if (eq && eq.modules && eq.modules[plateKey]) return eq.modules[plateKey];
+        return null;
+    }
+
+    /** 命中部位 → 躯干板位映射（37 §3.2；头不归躯干防具） */
+    var HIT_PART_TO_PLATE = {
+        'chest': 'clothing.chest',
+        'abdomen': 'clothing.abdomen',
+        'left_arm': 'clothing.arm_l',
+        'right_arm': 'clothing.arm_r',
+        'left_leg': 'clothing.leg_l',
+        'right_leg': 'clothing.leg_r'
+    };
+
+    /**
+     * 读取当前躯干防具的激活信息（37 §4.2）：基础盾量 + Σ模块额外消耗%
+     * @returns {{ baseShield: number, moduleCostSum: number, equipped: boolean }}
+     */
+    function getArmorShieldInfo() {
+        var eq = state.equipment.clothing;
+        if (!eq || !eq.item_id) return { baseShield: 0, moduleCostSum: 0, equipped: false };
+        var tpl = getItemTemplate(eq.item_id);
+        if (!tpl || tpl.base_shield == null) return { baseShield: 0, moduleCostSum: 0, equipped: false };
+        var baseShield = Number(tpl.base_shield) || 0;
+        var costSum = 0;
+        if (eq.modules && typeof eq.modules === 'object') {
+            for (var pk in eq.modules) {
+                var mi = eq.modules[pk];
+                if (!mi || !mi.item_id) continue;
+                var mTpl = getModuleTemplate(mi.item_id);
+                if (mTpl && mTpl.activation_cost_pct != null) costSum += Number(mTpl.activation_cost_pct) || 0;
+            }
+        }
+        return { baseShield: baseShield, moduleCostSum: costSum, equipped: true };
+    }
+
+    /** 单模块对某伤害类型的减伤比例（基础 effects + 附魔，乘算，08 防具×词条口径） */
+    function moduleReduceForDamageType(moduleInst, damageType) {
+        if (!moduleInst || !moduleInst.item_id) return 0;
+        var key = damageType === 'slash' ? 'slash_pct' : (damageType === 'pierce' ? 'pierce_pct' : 'blunt_pct');
+        var keep = 1;
+        var mTpl = getModuleTemplate(moduleInst.item_id);
+        if (mTpl && Array.isArray(mTpl.effects)) {
+            for (var i = 0; i < mTpl.effects.length; i++) {
+                var e = mTpl.effects[i];
+                if (e && e.effect_type === 'armor_bonus' && e.effect_params && e.effect_params[key] != null) {
+                    var v = Number(e.effect_params[key]);
+                    if (isFinite(v) && v > 0) keep *= (1 - Math.min(1, v));
+                }
+            }
+        }
+        if (moduleInst.enchant_id) {
+            var enc = getEnchantEntry(moduleInst.enchant_id);
+            if (enc && enc.effect_type === 'armor_bonus' && enc.effect_params && enc.effect_params[key] != null) {
+                var v2 = Number(enc.effect_params[key]);
+                if (isFinite(v2) && v2 > 0) keep *= (1 - Math.min(1, v2));
+            }
+        }
+        return Math.max(0, 1 - keep);
+    }
+
+    /**
+     * 命中部位对应的躯干板位模块减伤比例（激活盾的减伤比例，37 §4.3）
+     * 命中头部或无躯干防具 → 0；空板 → 0（激活盾对空板无减伤）
+     * @param {string} hitPart - 'chest'|'abdomen'|'left_arm'|... 
+     * @param {string} damageType - 'blunt'|'slash'|'pierce'
+     */
+    function getPlateDamageReduce(hitPart, damageType) {
+        var plateKey = HIT_PART_TO_PLATE[hitPart];
+        if (!plateKey) return 0;
+        var inst = getInstalledModuleAt('clothing', plateKey.slice('clothing.'.length));
+        if (!inst) return 0;
+        return moduleReduceForDamageType(inst, damageType);
+    }
+
+    // ---- 眩晕累积（37 §9.2，k13）----
+
+    /** 玩家眩晕值（0-100，战斗状态字段，存档持久化） */
+    function getPlayerStunValue() {
+        ensureCombatState();
+        return Math.max(0, Math.min(100, Math.floor(Number(state.combat.stun_value) || 0)));
+    }
+
+    /** 直接设置玩家眩晕值（衰减/调试用；不触发眩晕判定，0-100 夹紧） */
+    function setPlayerStunValue(v) {
+        ensureCombatState();
+        state.combat.stun_value = Math.max(0, Math.min(100, Math.floor(Number(v) || 0)));
+    }
+
+    /** 玩家眩晕中（下一次行动将被吞，本回合无法行动） */
+    function isPlayerStunned() {
+        ensureCombatState();
+        return state.combat.stun_rounds_left > 0;
+    }
+
+    /**
+     * 玩家眩晕累积：加 stun 值；≥100 → 归 0 + 眩晕 1 回合（stun_rounds_left=1）。
+     * @returns {{triggered:boolean, value:number}} triggered=是否触发眩晕
+     */
+    function addPlayerStun(amount) {
+        ensureCombatState();
+        var a = Math.max(0, Math.floor(Number(amount) || 0));
+        if (a <= 0) return { triggered: false, value: getPlayerStunValue() };
+        state.combat.stun_value = Math.min(100, state.combat.stun_value + a);
+        var triggered = false;
+        if (state.combat.stun_value >= 100) {
+            state.combat.stun_value = 0;
+            state.combat.stun_rounds_left = 1;
+            triggered = true;
+        }
+        return { triggered: triggered, value: state.combat.stun_value };
+    }
+
+    /** 玩家眩晕回合消费：若眩晕中则吞掉本次行动并清空回合，返回 true（调用方应拦截该动作） */
+    function consumePlayerStunRoundIfBlocking() {
+        ensureCombatState();
+        if (state.combat.stun_rounds_left <= 0) return false;
+        state.combat.stun_rounds_left = 0;
+        return true;
+    }
+
+    /**
+     * 头部抗眩晕豁免%（37 §9.2/§9.4，头防具专属）：Σ 已装头模块 anti_stun 效果（软内衬等），
+     * 封顶 stun_resist_cap（默认 60%，头永远是威胁）；其他槽位/模块/词条不提供。
+     */
+    function getHeadAntiStunPct() {
+        var eq = state.equipment && state.equipment.head;
+        if (!eq || !eq.item_id) return 0;
+        var total = 0;
+        if (eq.modules && typeof eq.modules === 'object') {
+            for (var pk in eq.modules) {
+                var mi = eq.modules[pk];
+                if (!mi || !mi.item_id) continue;
+                var mTpl = getModuleTemplate(mi.item_id);
+                if (!mTpl || !Array.isArray(mTpl.effects)) continue;
+                for (var i = 0; i < mTpl.effects.length; i++) {
+                    var e = mTpl.effects[i];
+                    if (e && e.effect_type === 'anti_stun' && e.effect_params && e.effect_params.anti_stun_pct != null) {
+                        total += Number(e.effect_params.anti_stun_pct) || 0;
+                    }
+                }
+            }
+        }
+        var cap = 0.6;
+        try {
+            if (global.CharacterAttributes && typeof global.CharacterAttributes.getCfg === 'function') {
+                var c = Number(global.CharacterAttributes.getCfg('stun_resist_cap', 0.6));
+                if (isFinite(c) && c >= 0) cap = c;
+            }
+        } catch (eCap) { /* ignore */ }
+        return Math.min(cap, Math.max(0, total));
+    }
+
+    // ---- 鞋子结算（k17，39 §6.5/§6.6）----
+
+    function getShoeTemplate(side) {
+        var slot = side === 'left' ? 'shoe_left' : 'shoe_right';
+        var eq = state.equipment && state.equipment[slot];
+        if (!eq || !eq.item_id) return null;
+        return getItemTemplate(eq.item_id);
+    }
+
+    /**
+     * 全身共享维度（39 §6.6 左右取更差）：移动体力修正取 max（更耗体力者决定全身）、
+     * 招架加成/速度加成取 min（加成更低者决定全身）；裸脚 = 0 / 1.0 / 1.0（中性）。
+     * 招架加成与速度加成拆开（重靴只加招架不加速度，运动鞋只加速度不加招架）。
+     * @returns {{moveCostMod:number, parryCoef:number, speedCoef:number}}
+     */
+    function getShoeSharedMods() {
+        var L = getShoeTemplate('left');
+        var R = getShoeTemplate('right');
+        function mod(tpl, key, def) {
+            if (!tpl || tpl[key] == null) return def;
+            var v = Number(tpl[key]);
+            return isFinite(v) ? v : def;
+        }
+        return {
+            moveCostMod: Math.max(mod(L, 'move_cost_mod', 0), mod(R, 'move_cost_mod', 0)),
+            parryCoef: Math.min(mod(L, 'parry_coef', 1), mod(R, 'parry_coef', 1)),
+            speedCoef: Math.min(mod(L, 'speed_coef', 1), mod(R, 'speed_coef', 1))
+        };
+    }
+
+    /**
+     * 步法招架侧固定效果（k17，11 §8.3.4 / 39 §6.4）：挂载步法技能的招架率/卸力加成 × 鞋 parry_coef（左右取更差）。
+     * 未挂载步法或无加成 → {chance:0, reduce:0}。
+     * @returns {{chance:number, reduce:number}}
+     */
+    function getFootworkParryBonus() {
+        ensureCombatState();
+        var hubs = state.combat && state.combat.hubs;
+        var fwId = hubs && hubs.footwork;
+        if (!fwId) return { chance: 0, reduce: 0 };
+        var CS = global.CombatSkills;
+        var sk = (CS && typeof CS.getSkill === 'function') ? CS.getSkill(fwId) : null;
+        if (!sk) return { chance: 0, reduce: 0 };
+        var c = sk.parry_chance_bonus != null ? Number(sk.parry_chance_bonus) : 0;
+        var r = sk.parry_damage_reduce_bonus != null ? Number(sk.parry_damage_reduce_bonus) : 0;
+        if (!isFinite(c) || c <= 0) c = 0;
+        if (!isFinite(r) || r <= 0) r = 0;
+        if (c <= 0 && r <= 0) return { chance: 0, reduce: 0 };
+        var shoe = getShoeSharedMods();
+        return { chance: c * shoe.parryCoef, reduce: r * shoe.parryCoef };
+    }
+
+    /** 鞋子速度加成（k17）：左右取更差（speed_coef，裸脚 1.0），喂给战斗速度结算 */
+    function getShoeSpeedCoef() {
+        return getShoeSharedMods().speedCoef;
+    }
+
     /**
      * 先查 equipment、再查 items；无则返回 null
      */
@@ -561,6 +835,7 @@
         if (!itemId) return null;
         if (equipmentTable[itemId]) return equipmentTable[itemId];
         if (itemsTable[itemId]) return itemsTable[itemId];
+        if (moduleTable[itemId]) return moduleTable[itemId];
         return null;
     }
 
@@ -570,9 +845,9 @@
     }
 
     /**
-     * 含品质档的有效基价（贸易/任务/事件）：模板 base_value × (1 + 每档加成 × 档)，见全局 ItemValue。
+     * 有效基价（贸易/任务/事件）：round(模板 base_value)，品质系统已移除（见 docs/design/41-quality-removal.md）。
      * @param {string} itemId
-     * @param {object|number|null} [instanceOrTier] 实例 { quality_tier, ... }，或仅品质档；缺省用模板 quality_tier
+     * @param {object|number|null} [instanceOrTier] 旧接口兼容：实例或品质档，已不参与数值
      * @returns {number}
      */
     function getEffectiveBaseValue(itemId, instanceOrTier) {
@@ -581,8 +856,6 @@
             var opts = {};
             if (instanceOrTier != null && typeof instanceOrTier === 'object' && !Array.isArray(instanceOrTier)) {
                 opts.instance = instanceOrTier;
-            } else if (instanceOrTier != null) {
-                opts.quality_tier = instanceOrTier;
             }
             return IV.getEffectiveBaseValue(itemId, opts);
         }
@@ -832,10 +1105,9 @@
         var id = String(itemId || '').trim();
         var c = Math.max(1, Math.floor(Number(count) || 1));
         if (!id || !getItemTemplate(id)) return { ok: false, placed: 0, requested: c, shortfall: c };
-        var qt = qualityTier != null ? Math.max(0, Math.floor(Number(qualityTier))) : 0;
         var placed = 0;
         for (var i = 0; i < c; i++) {
-            var pr = putItemIntoDefaultContainer({ item_id: id, count: 1, quality_tier: qt });
+            var pr = putItemIntoDefaultContainer({ item_id: id, count: 1 });
             if (!pr || !pr.placed) {
                 return { ok: false, placed: placed, requested: c, shortfall: c - placed };
             }
@@ -912,15 +1184,12 @@
             var canStack = canStackInSlot(itemInstance, null);
             for (var i = 0; i < backpackSlots; i++) {
                 var existing = arr[i] || null;
-                var instQ = itemInstance && itemInstance.quality_tier != null ? itemInstance.quality_tier : 0;
-                var existQ = existing && existing.quality_tier != null ? existing.quality_tier : 0;
                 if (canStack && existing && existing.item_id === itemInstance.item_id
-                    && instQ === existQ
                     && !(existing.enchants && existing.enchants.length)) {
                     var count = (existing.count || 1) + (itemInstance.count || 1);
                     var maxStack = getMaxStack(itemInstance.item_id);
                     if (count <= maxStack) {
-                        arr[i] = { item_id: existing.item_id, count: count, quality_tier: existing.quality_tier };
+                        arr[i] = { item_id: existing.item_id, count: count };
                         state.inventory_backpack = arr;
                         return { placed: true, container: 'backpack', index: i };
                     }
@@ -995,11 +1264,6 @@
         if (tpl.enchant_slots != null && tpl.enchant_slots > 0) return false;
         if (instance.enchants && instance.enchants.length) return false;
         if (existing && (existing.enchants && existing.enchants.length)) return false;
-        if (existing) {
-            var instQ = instance && instance.quality_tier != null ? instance.quality_tier : 0;
-            var existQ = existing && existing.quality_tier != null ? existing.quality_tier : 0;
-            if (instQ !== existQ) return false;
-        }
         return true;
     }
 
@@ -1007,14 +1271,19 @@
         var tpl = getItemTemplate(itemId);
         if (!tpl) return 1;
         if (tpl.enchant_slots != null && tpl.enchant_slots > 0) return 1;
+        if (moduleTable[itemId]) return 1; // 模块为唯一实例（可带附魔），不可堆叠（契约 38 §2）
         return (tpl.stack_max != null) ? Math.max(1, parseInt(tpl.stack_max, 10)) : 99;
     }
 
     function copyItemInstance(inst) {
         var c = { item_id: inst.item_id };
         if (inst.count != null) c.count = inst.count;
-        if (inst.quality_tier != null) c.quality_tier = inst.quality_tier;
         if (inst.enchants && inst.enchants.length) c.enchants = inst.enchants.slice();
+        if (inst.enchant_id != null) c.enchant_id = inst.enchant_id;      // 模块附魔（契约 38 §4）
+        if (inst.modules && typeof inst.modules === 'object') {           // 模块化防具实例（契约 38 §4）
+            c.modules = {};
+            for (var mk in inst.modules) c.modules[mk] = inst.modules[mk];
+        }
         if (inst.ground_drop_tick != null) c.ground_drop_tick = Math.max(0, Math.floor(Number(inst.ground_drop_tick) || 0));
         return c;
     }
@@ -1067,16 +1336,36 @@
      * 返回 { success: boolean, message?: string }
      */
     function equip(slotId, instance) {
-        if (EQUIP_SLOT_IDS.indexOf(slotId) < 0) return { success: false, message: '无效槽位' };
-        if (!instance || !instance.item_id) return { success: false, message: '无效物品' };
+        if (EQUIP_SLOT_IDS.indexOf(slotId) < 0) return { success: false, message: t('inv.equip.invalid_slot') };
+        if (!instance || !instance.item_id) return { success: false, message: t('inv.equip.invalid_item') };
         var tpl = getItemTemplate(instance.item_id);
-        if (!tpl) return { success: false, message: '未知物品' };
-        if (tpl.equip_slot !== slotId) return { success: false, message: '装备槽位不匹配' };
+        if (!tpl) return { success: false, message: t('inv.equip.unknown_item') };
+        if (tpl.equip_slot !== slotId) return { success: false, message: t('inv.equip.slot_mismatch') };
         var maxEnchants = (tpl.enchant_slots != null) ? parseInt(tpl.enchant_slots, 10) : 6;
         var enc = instance.enchants;
-        if (enc && enc.length > maxEnchants) return { success: false, message: '词条数量超过上限' };
+        if (enc && enc.length > maxEnchants) return { success: false, message: t('inv.equip.enchant_over') };
 
-        state.equipment[slotId] = copyItemInstance(instance);
+        // 兵器门槛（05 5.5.3）：先天筋骨 < 0.5×Req 不能装备/挥动
+        if ((slotId === 'weapon_left' || slotId === 'weapon_right')
+            && global.CharacterAttributes && typeof global.CharacterAttributes.canUseWeapon === 'function') {
+            var wreqT = tpl.req_innate_jingu != null ? Number(tpl.req_innate_jingu) : undefined;
+            if (!global.CharacterAttributes.canUseWeapon(wreqT)) {
+                return { success: false, message: t('inv.equip.weapon_req_innate_jingu') };
+            }
+        }
+
+        var inst = copyItemInstance(instance);
+        // 模块化底材：实例化为槽点结构（modules 对象），词条随模块走（37 §4 / 契约 38 §4）
+        if (Array.isArray(tpl.module_slots) && tpl.module_slots.length > 0) {
+            var mods = {};
+            for (var msi = 0; msi < tpl.module_slots.length; msi++) mods[tpl.module_slots[msi]] = null;
+            if (inst.modules && typeof inst.modules === 'object') {
+                for (var mki in inst.modules) if (mods.hasOwnProperty(mki)) mods[mki] = inst.modules[mki];
+            }
+            inst.modules = mods;
+            delete inst.enchants;
+        }
+        state.equipment[slotId] = inst;
         if (typeof global !== 'undefined' && global.CharacterAttributes && typeof global.CharacterAttributes.recalcCharacterStats === 'function') {
             global.CharacterAttributes.recalcCharacterStats({
                 getEquipmentState: function () { return state.equipment; },
@@ -1087,6 +1376,98 @@
             });
         }
         return { success: true };
+    }
+
+    /**
+     * 安装模块到防具槽点（模块化底材专用，数据契约 38 §2/§7）
+     * 校验：槽点存在、模块 occupies 匹配、占用冲突、复合模块 head 底材在场
+     * @param {string} slotId - 'clothing' | 'head'
+     * @param {string} plateKey - 槽点（如 'chest' / 'shell'）
+     * @param {{ item_id: string, enchant_id?: string|null }} moduleInstance
+     * @returns {{ success: boolean, message?: string }}
+     */
+    function installModule(slotId, plateKey, moduleInstance) {
+        if (!moduleInstance || !moduleInstance.item_id) return { success: false, message: t('inv.module.invalid_module') };
+        var eq = state.equipment[slotId];
+        if (!eq || !eq.item_id) return { success: false, message: t('inv.module.no_armor') };
+        var tpl = getItemTemplate(eq.item_id);
+        if (!tpl || !Array.isArray(tpl.module_slots) || tpl.module_slots.indexOf(plateKey) < 0)
+            return { success: false, message: t('inv.module.invalid_plate') };
+        var modTpl = getModuleTemplate(moduleInstance.item_id);
+        if (!modTpl) return { success: false, message: t('inv.module.unknown_module') };
+        // 可安装槽点校验（install_slots，兼容旧 occupies 单槽语义）（契约 38 §2）
+        var installSlots = (Array.isArray(modTpl.install_slots) && modTpl.install_slots.length)
+            ? modTpl.install_slots
+            : (Array.isArray(modTpl.occupies) ? modTpl.occupies : []);
+        if (installSlots.indexOf(slotId + '.' + plateKey) < 0)
+            return { success: false, message: t('inv.module.slot_mismatch') };
+        // 实际占用集合（occupies 省略 = 默认占用被安装的槽点）
+        var occupied = (Array.isArray(modTpl.occupies) && modTpl.occupies.length)
+            ? modTpl.occupies
+            : [slotId + '.' + plateKey];
+        // 数量上限：同种模块在同一防具上的已装数（契约 38 §2 max_per_armor）
+        if (modTpl.max_per_armor != null && countModulesOnArmor(slotId, moduleInstance.item_id) >= modTpl.max_per_armor)
+            return { success: false, message: t('inv.module.max_count') };
+        // 复合模块：必须 head 底材在场（37 §3.5 / 契约 38 §7.3）
+        if (hasCrossSlotOccupancy(modTpl) && !(state.equipment.head && state.equipment.head.item_id))
+            return { success: false, message: t('inv.module.need_head') };
+        // 占用冲突：occupies 声明的所有槽点都不可被其他模块占用（契约 38 §7.2）
+        for (var i = 0; i < occupied.length; i++) {
+            var oc = String(occupied[i]);
+            var dot = oc.indexOf('.');
+            if (dot < 0) continue;
+            var s = oc.slice(0, dot), p = oc.slice(dot + 1);
+            var existing = getInstalledModuleAt(s, p);
+            if (existing && existing.item_id !== moduleInstance.item_id)
+                return { success: false, message: t('inv.module.occupied') };
+        }
+        // 复合模块挂在主槽位（clothing）的模块列表，occupies 为唯一事实源（契约 38 §4）
+        // 装备实例可能没有 modules 字段（新手装/新物品未初始化）→ 先确保存在
+        if (!eq.modules || typeof eq.modules !== 'object') eq.modules = {};
+        eq.modules[plateKey] = { item_id: moduleInstance.item_id, enchant_id: moduleInstance.enchant_id || null };
+        recalcCharacterStatsForEquipment();
+        return { success: true };
+    }
+
+    /** 统计同一防具（底材）上同种模块的已装数量（max_per_armor 上限用） */
+    function countModulesOnArmor(slotId, moduleId) {
+        var eq = state.equipment[slotId];
+        var n = 0;
+        if (eq && eq.modules) {
+            for (var pk in eq.modules) {
+                var inst = eq.modules[pk];
+                if (inst && inst.item_id === moduleId) n++;
+            }
+        }
+        return n;
+    }
+
+    /**
+     * 卸下防具槽点上的模块（复合模块：从主槽位卸下）
+     * @param {string} slotId
+     * @param {string} plateKey
+     * @returns {{ success: boolean, item?: object }}
+     */
+    function uninstallModule(slotId, plateKey) {
+        var eq = state.equipment[slotId];
+        if (!eq || !eq.modules || !eq.modules[plateKey]) return { success: false };
+        var item = eq.modules[plateKey];
+        eq.modules[plateKey] = null;
+        recalcCharacterStatsForEquipment();
+        return { success: true, item: item };
+    }
+
+    /** 模块/词条变化后重算角色属性 */
+    function recalcCharacterStatsForEquipment() {
+        if (typeof global !== 'undefined' && global.CharacterAttributes && typeof global.CharacterAttributes.recalcCharacterStats === 'function') {
+            global.CharacterAttributes.recalcCharacterStats({
+                getEquipmentState: function () { return state.equipment; },
+                getSkillsState: function () { return state.skills; },
+                getItemTemplate: getItemTemplate,
+                getEnchantEntry: getEnchantEntry,
+                getStrengthLevel: function () { return getSkillLevel('survival_strength'); }
+            });
+        }
     }
 
     /**
@@ -1223,9 +1604,9 @@
      */
     function dropItemToGround(containerType, index, mapId, x, y) {
         var key = getGroundItemKey(mapId, x, y);
-        if (!key) return { success: false, message: '无效的位置，无法丢弃' };
+        if (!key) return { success: false, message: t('inv.drop.invalid_pos') };
         var taken = takeItemFromContainer(containerType, index);
-        if (!taken.success || !taken.item) return { success: false, message: '无法取出物品' };
+        if (!taken.success || !taken.item) return { success: false, message: t('inv.drop.take_fail') };
         addItemToGround(mapId, x, y, taken.item);
         return { success: true };
     }
@@ -1237,13 +1618,13 @@
     function pickUpFromGround(mapId, x, y, index) {
         var key = getGroundItemKey(mapId, x, y);
         var arr = state.ground_items[key];
-        if (!arr || index < 0 || index >= arr.length) return { success: false, message: '该位置无物品' };
+        if (!arr || index < 0 || index >= arr.length) return { success: false, message: t('inv.pickup.no_item') };
         var item = removeItemFromGround(mapId, x, y, index);
-        if (!item) return { success: false, message: '拾取失败' };
+        if (!item) return { success: false, message: t('inv.pickup.fail') };
         var placed = putItemIntoDefaultContainer(item);
         if (placed.placed) return { success: true, placed: true };
         addItemToGround(mapId, x, y, item);
-        return { success: false, placed: false, message: '背包已满' };
+        return { success: false, placed: false, message: t('inv.pickup.inventory_full') };
     }
 
     /**
@@ -1257,21 +1638,21 @@
     function equipFromGround(mapId, x, y, index) {
         var key = getGroundItemKey(mapId, x, y);
         var arr = state.ground_items[key];
-        if (!arr || index < 0 || index >= arr.length) return { success: false, message: '该位置无物品' };
+        if (!arr || index < 0 || index >= arr.length) return { success: false, message: t('inv.pickup.no_item') };
         var item = removeItemFromGround(mapId, x, y, index);
         if (!item || !item.item_id) {
             if (item) addItemToGround(mapId, x, y, item);
-            return { success: false, message: '拾取失败' };
+            return { success: false, message: t('inv.pickup.fail') };
         }
         var tpl = getItemTemplate(item.item_id);
         if (!tpl || !tpl.equip_slot) {
             addItemToGround(mapId, x, y, item);
-            return { success: false, message: '不是装备' };
+            return { success: false, message: t('inv.pickup.not_equipment') };
         }
         var slotId = tpl.equip_slot;
         if (EQUIP_SLOT_IDS.indexOf(slotId) < 0) {
             addItemToGround(mapId, x, y, item);
-            return { success: false, message: '无效槽位' };
+            return { success: false, message: t('inv.equip.invalid_slot') };
         }
         var optGround = { mapId: mapId, x: x, y: y };
         var current = state.equipment[slotId];
@@ -1344,7 +1725,8 @@
      * initNewGame 始终以此为底，再被 default_equipment 配置覆盖，避免未 setConfig 或配置为空时不发装。
      */
     var BUILTIN_NEWGAME_EQUIPMENT = {
-        clothing: 'eq_clothing_commute',
+        head: 'eq_head_leather_helm',
+        clothing: 'eq_clothing_combat_suit',
         vest: 'eq_vest_hoodie',
         shoe_left: 'eq_shoe_left_sport',
         shoe_right: 'eq_shoe_right_sport'
@@ -1354,27 +1736,42 @@
      * 新手装备的内置模板。当 equipment.json 未加载（如 file://）时，getItemTemplate 仍能返回这些条目，避免显示「空」或裸 id。
      */
     var BUILTIN_EQUIPMENT_TEMPLATES = {
-        eq_clothing_commute: {
-            id: 'eq_clothing_commute',
-            quality_tier: 0,
-            name_0: '灰扑扑的外套',
-            name_1: '通勤外套',
-            name_2: '通勤套服',
-            desc_0: '一件能穿的外套，兜里能塞点东西，好像能挡一点伤。',
-            desc_1: '日常通勤用的套服，两格口袋；对劈砍、钝击有一定防护。',
-            desc_2: '通勤套服，劈砍抗性 5%、钝击抗性 10%，提供两格口袋。',
+        eq_clothing_combat_suit: {
+            id: 'eq_clothing_combat_suit',
+            name_0: '灰布战斗服',
+            name_1: '战斗服',
+            name_2: '战斗服',
+            desc_0: '一件耐穿的作战外套，能挂上不少东西。',
+            desc_1: '模块化战斗服：可插入护片模块；需呼吸法激活以发挥防护。',
+            desc_2: '模块化战斗服底材，提供六个板位模块槽；激活后防护生效。',
             display_skill_id: 'survival_language',
+            info_module_set_id: 'module.equipment_armor',
             equip_slot: 'clothing',
-            enchant_slots: 6,
-            weight_kg: 0.5,
-            pocket_slots: 2,
-            damage_reduce_slash_pct: 0.05,
-            damage_reduce_pierce_pct: 0,
-            damage_reduce_blunt_pct: 0.10
+            material: 'leather',
+            base_shield: 24,
+            module_slots: ['chest', 'abdomen', 'arm_l', 'arm_r', 'leg_l', 'leg_r'],
+            pocket_slots: 3,
+            enchant_slots: 0,
+            weight_kg: 1.2
+        },
+        eq_head_leather_helm: {
+            id: 'eq_head_leather_helm',
+            name_0: '旧皮盔',
+            name_1: '皮盔',
+            name_2: '皮盔',
+            desc_0: '鞣过的兽皮缝成的帽子，能护一点头。',
+            desc_1: '模块化头盔底材：盔体/内衬/护面三个模块槽，常驻生效。',
+            desc_2: '模块化头盔底材，三个模块槽（盔体/内衬/护面）；不接激活体系。',
+            display_skill_id: 'survival_language',
+            info_module_set_id: 'module.equipment_armor',
+            equip_slot: 'head',
+            material: 'leather',
+            module_slots: ['shell', 'liner', 'face'],
+            enchant_slots: 0,
+            weight_kg: 0.4
         },
         eq_vest_hoodie: {
             id: 'eq_vest_hoodie',
-            quality_tier: 0,
             name_0: '带帽的厚衫',
             name_1: '连帽衫',
             name_2: '连帽衫',
@@ -1389,7 +1786,6 @@
         },
         eq_shoe_left_sport: {
             id: 'eq_shoe_left_sport',
-            quality_tier: 0,
             name_0: '左脚运动鞋',
             name_1: '运动鞋',
             name_2: '运动鞋',
@@ -1397,14 +1793,17 @@
             desc_1: '左脚的运动鞋，脚上出招时系数 1.0。',
             desc_2: '左脚运动鞋，脚部战斗技能系数 1.0。',
             display_skill_id: 'survival_language',
+            info_module_set_id: 'module.equipment_armor',
             equip_slot: 'shoe_left',
             enchant_slots: 6,
             weight_kg: 0.25,
-            skill_coef: 1.0
+            form_coefs: { '踹': 1.0, '扫': 1.2, '踏': 1.0 },
+            move_cost_mod: -0.10,
+            parry_coef: 0.95,
+            speed_coef: 1.15
         },
         eq_shoe_right_sport: {
             id: 'eq_shoe_right_sport',
-            quality_tier: 0,
             name_0: '右脚运动鞋',
             name_1: '运动鞋',
             name_2: '运动鞋',
@@ -1412,13 +1811,22 @@
             desc_1: '右脚的运动鞋，脚上出招时系数 1.0。',
             desc_2: '右脚运动鞋，脚部战斗技能系数 1.0。',
             display_skill_id: 'survival_language',
+            info_module_set_id: 'module.equipment_armor',
             equip_slot: 'shoe_right',
             enchant_slots: 6,
             weight_kg: 0.25,
-            skill_coef: 1.0
+            form_coefs: { '踹': 1.0, '扫': 1.2, '踏': 1.0 },
+            move_cost_mod: -0.10,
+            parry_coef: 0.95,
+            speed_coef: 1.15
         }
     };
 
+    /**
+     * 招式序列清洗（11-skills 设计变更）：每肢 = 1 主动技能 + 槽1（该肢可用招式）+ 槽2..N（变式槽）。
+     * - 槽 0（下标 0）：必须为该主动技能在该肢上的合法可用招式；空/非法时回填第一个可用招式。
+     * - 槽 1..N-1：只保留变式（'variant:' 条目），旧档/旧数据里混入的主动招式一律移除。
+     */
     function sanitizeCombatMoveSequencesAgainstLimbTags() {
         var CS = typeof global !== 'undefined' && global.CombatSkills;
         if (!CS || typeof CS.getSkill !== 'function' || typeof CS.moveAllowedOnLimbByTagKeys !== 'function') return;
@@ -1432,93 +1840,44 @@
             if (!skillId) continue;
             var sk = CS.getSkill(skillId);
             if (!sk || !sk.moves || !sk.moves.length) continue;
-            var seq = state.combat.move_sequences[lid];
-            if (!Array.isArray(seq) || !seq.length) continue;
-            var limbKeys = (getTags ? getTags(lid) : null) || (typeof CS.getDefaultLimbTagKeysForLimbId === 'function' ? CS.getDefaultLimbTagKeysForLimbId(lid) : []);
-            var si;
-            var changed = false;
-            for (si = 0; si < seq.length; si++) {
-                var mid = seq[si];
-                if (!mid) continue;
-                if (String(mid).indexOf('variant:') === 0) continue;
-                var mj;
-                var moveObj = null;
-                for (mj = 0; mj < sk.moves.length; mj++) {
-                    if (sk.moves[mj] && sk.moves[mj].id === mid) {
-                        moveObj = sk.moves[mj];
-                        break;
-                    }
-                }
-                if (!moveObj || !CS.moveAllowedOnLimbByTagKeys(moveObj, limbKeys)) {
-                    seq[si] = '';
-                    changed = true;
-                    // 肢体级后遗症不随单槽清空；是否生效由运行时 validateSocket 判定。
-                }
-            }
-            if (changed) state.combat.move_sequences[lid] = seq.slice();
-        }
-    }
-
-    /**
-     * 每肢进攻技能至少保留 1 个非空招式槽（轮转依赖 getCompactMoveIdsForLimb）。
-     * 在标签清洗之后调用。
-     */
-    function ensureMinimumOneFilledMovePerLimb() {
-        var CS = typeof global !== 'undefined' && global.CombatSkills;
-        if (!CS || typeof CS.getSkill !== 'function' || typeof CS.getUnlockedMoves !== 'function' || typeof CS.getMaxSlotsForLevel !== 'function') return;
-        ensureCombatState();
-        var getTags = typeof global !== 'undefined' && typeof global.getLimbActionTags === 'function' ? global.getLimbActionTags : null;
-        var li;
-        for (li = 0; li < COMBAT_LIMB_IDS.length; li++) {
-            var lid = COMBAT_LIMB_IDS[li];
-            var limbRec = state.combat.limbs[lid];
-            var skillId = limbRec && limbRec.active;
-            if (!skillId) continue;
-            var sk = CS.getSkill(skillId);
-            if (!sk || !sk.moves || !sk.moves.length) continue;
             if (sk.category !== 'unarmed' && sk.category !== 'weapon') continue;
             var lv = getSkillLevel(skillId);
-            var maxSlots = CS.getMaxSlotsForLevel(skillId, lv);
+            var maxSlots = CS.getMaxSlotsForLevel ? CS.getMaxSlotsForLevel(skillId, lv) : 0;
             if (!maxSlots || maxSlots < 1) continue;
-            var seq = Array.isArray(state.combat.move_sequences[lid]) ? state.combat.move_sequences[lid].slice() : [];
-            while (seq.length < maxSlots) seq.push('');
-            seq = seq.slice(0, maxSlots);
-            var filled = 0;
-            var si;
-            for (si = 0; si < seq.length; si++) {
-                if (seq[si] && String(seq[si]).indexOf('variant:') !== 0) filled++;
-            }
-            if (filled >= 1) {
-                state.combat.move_sequences[lid] = seq;
-                continue;
-            }
+            var seq = state.combat.move_sequences[lid];
+            if (!Array.isArray(seq)) seq = [];
             var limbKeys = (getTags ? getTags(lid) : null) || (typeof CS.getDefaultLimbTagKeysForLimbId === 'function' ? CS.getDefaultLimbTagKeysForLimbId(lid) : []);
-            var unlocked = CS.getUnlockedMoves(skillId, lv);
-            var pick = null;
-            var uidx;
-            if (typeof CS.moveAllowedOnLimbByTagKeys === 'function') {
-                for (uidx = 0; uidx < unlocked.length; uidx++) {
-                    if (CS.moveAllowedOnLimbByTagKeys(unlocked[uidx], limbKeys)) {
-                        pick = unlocked[uidx].id;
-                        break;
-                    }
-                }
-            }
-            if (!pick && unlocked[0]) pick = unlocked[0].id;
-            if (!pick) {
-                state.combat.move_sequences[lid] = seq;
-                continue;
-            }
-            var placed = false;
-            for (si = 0; si < seq.length; si++) {
-                if (!seq[si]) {
-                    seq[si] = pick;
-                    placed = true;
+            // 槽 1 招式（moves 顺序第一个该肢可用的）
+            var firstMoveId = '';
+            var unlocked = (typeof CS.getUnlockedMoves === 'function') ? CS.getUnlockedMoves(skillId, lv) : sk.moves;
+            var ui2;
+            for (ui2 = 0; ui2 < unlocked.length; ui2++) {
+                if (CS.moveAllowedOnLimbByTagKeys(unlocked[ui2], limbKeys)) {
+                    firstMoveId = unlocked[ui2].id;
                     break;
                 }
             }
-            if (!placed) seq[0] = pick;
-            state.combat.move_sequences[lid] = seq;
+            var slot0 = (seq[0] && String(seq[0]).indexOf('variant:') !== 0) ? String(seq[0]) : '';
+            if (slot0) {
+                var valid0 = false;
+                var vi;
+                for (vi = 0; vi < unlocked.length; vi++) {
+                    if (unlocked[vi].id === slot0 && CS.moveAllowedOnLimbByTagKeys(unlocked[vi], limbKeys)) { valid0 = true; break; }
+                }
+                if (!valid0) slot0 = '';
+            }
+            if (!slot0) slot0 = firstMoveId;
+            // 槽 2..N-1：只留变式
+            var kept = [slot0];
+            var si;
+            for (si = 1; si < seq.length && si < maxSlots; si++) {
+                var item = seq[si];
+                if (item && String(item).indexOf('variant:') === 0) {
+                    kept.push(String(item));
+                }
+            }
+            while (kept.length < maxSlots) kept.push('');
+            state.combat.move_sequences[lid] = kept.slice(0, maxSlots);
         }
     }
 
@@ -1645,6 +2004,11 @@
         }
     }
 
+    /**
+     * 主动技能肢体合法性校验（11-skills 设计变更后放宽）：
+     * 每肢 = 1 主动技能 + N 变式槽，不再要求序列含主动招式（出招回退技能第一可用招式），
+     * 因此这里只校验 active 技能 id 存在且非空；历史保留为 no-op 恒真，避免旧存档被拒。
+     */
     function validateAtLeastOneMovePerActiveLimb() {
         ensureCombatState();
         var CS = typeof global !== 'undefined' && global.CombatSkills;
@@ -1654,13 +2018,7 @@
             var activeSkillId = limbRec.active;
             if (!activeSkillId) continue;
             var sk = CS && typeof CS.getSkill === 'function' ? CS.getSkill(activeSkillId) : null;
-            if (!sk || (sk.category !== 'unarmed' && sk.category !== 'weapon')) continue;
-            var seq = Array.isArray(state.combat.move_sequences[lid]) ? state.combat.move_sequences[lid] : [];
-            var hasMove = false;
-            for (var si = 0; si < seq.length; si++) {
-                if (seq[si] && String(seq[si]).indexOf('variant:') !== 0) { hasMove = true; break; }
-            }
-            if (!hasMove) return false;
+            if (!sk) return false; // active 指向不存在的技能才视为非法
         }
         return true;
     }
@@ -1694,7 +2052,7 @@
         if (!skillId) return;
         minLevel = Math.max(1, parseInt(minLevel, 10) || 1);
         if (!state.skills[skillId] || typeof state.skills[skillId] !== 'object') {
-            state.skills[skillId] = { level: minLevel, move_usage: {} };
+            state.skills[skillId] = { level: minLevel, move_usage: {}, study_exp: 0 };
             return;
         }
         var lv = parseInt(state.skills[skillId].level, 10);
@@ -1702,6 +2060,74 @@
         if (!state.skills[skillId].move_usage || typeof state.skills[skillId].move_usage !== 'object') {
             state.skills[skillId].move_usage = {};
         }
+        if (state.skills[skillId].study_exp == null) state.skills[skillId].study_exp = 0;
+    }
+
+    /** 存档/创建后规范化技能记录：level / move_usage / study_exp（自修进度，05 5.8） */
+    function normalizeSkillsState() {
+        if (!state.skills || typeof state.skills !== 'object') return;
+        for (var sid in state.skills) {
+            if (!Object.prototype.hasOwnProperty.call(state.skills, sid)) continue;
+            var ent = state.skills[sid];
+            if (!ent || typeof ent !== 'object') continue;
+            if (ent.level == null) ent.level = 0;
+            ent.level = Math.max(0, parseInt(ent.level, 10) || 0);
+            if (!ent.move_usage || typeof ent.move_usage !== 'object') ent.move_usage = {};
+            if (ent.study_exp == null) ent.study_exp = 0;
+            ent.study_exp = Math.max(0, Math.floor(Number(ent.study_exp) || 0));
+        }
+    }
+
+    /** 自修进度（study_exp）：该技能已转化但未用于升级的潜能经验 */
+    function getStudyExp(skillId) {
+        var ent = state.skills && state.skills[skillId];
+        if (!ent) return 0;
+        var v = parseInt(ent.study_exp, 10);
+        return isFinite(v) && v > 0 ? v : 0;
+    }
+
+    function addStudyExp(skillId, amount) {
+        if (!skillId) return 0;
+        if (!state.skills[skillId] || typeof state.skills[skillId] !== 'object') {
+            state.skills[skillId] = { level: 0, move_usage: {}, study_exp: 0 };
+        }
+        var ent = state.skills[skillId];
+        if (!ent.move_usage || typeof ent.move_usage !== 'object') ent.move_usage = {};
+        var cur = parseInt(ent.study_exp, 10);
+        if (!isFinite(cur) || cur < 0) cur = 0;
+        var d = Math.floor(Number(amount) || 0);
+        ent.study_exp = d > 0 ? cur + d : cur;
+        return ent.study_exp;
+    }
+
+    /**
+     * 用该技能 study_exp 按潜能成本曲线推进等级（11 §8.3.1：getPotentialCostForLevel × 难度系数）。
+     * 返回 { leveled, level, study_exp_remaining }；不直接消耗全局潜能（转化时已扣）。
+     */
+    function tryAdvanceSkillLevel(skillId) {
+        var ent = state.skills && state.skills[skillId];
+        if (!ent) return { leveled: 0, level: 0, study_exp_remaining: 0 };
+        var cap = getProgressionSkillCap(skillId);
+        var CS = global.CombatSkills;
+        var getCost = (CS && typeof CS.getPotentialCostForLevel === 'function') ? CS.getPotentialCostForLevel : null;
+        var characterLike = { skills: state.skills || {}, skill_max_level_bonus: state.skill_max_level_bonus || {} };
+        var leveled = 0;
+        var guard = 0;
+        while (guard < 100000) {
+            var lv = parseInt(ent.level, 10) || 0;
+            if (lv >= cap) break;
+            var cost = getCost ? parseInt(getCost(skillId, lv, characterLike), 10) : 0;
+            if (!(cost > 0) || (ent.study_exp || 0) < cost) break;
+            ent.study_exp = Math.max(0, (ent.study_exp || 0) - cost);
+            ent.level = lv + 1;
+            leveled++;
+            guard++;
+        }
+        return {
+            leveled: leveled,
+            level: parseInt(ent.level, 10) || 0,
+            study_exp_remaining: Math.floor(ent.study_exp || 0)
+        };
     }
 
     /**
@@ -1730,7 +2156,7 @@
 
     /** 旧档或无战斗技能条目时补足（不覆盖已有装配） */
     function ensureCombatBasicsMigrated() {
-        ensureMeridianStudiesSkillPresent();
+        ensureAnatomyStudiesSkillPresent();
         if (getSkillLevel('combat_basic_unarmed') >= 1) return;
         applyDefaultStarterCombatLayout();
         if (typeof global !== 'undefined' && global.CharacterAttributes && typeof global.CharacterAttributes.recalcCharacterStats === 'function') {
@@ -1773,14 +2199,24 @@
         for (var key in merged) {
             if (!merged.hasOwnProperty(key) || EQUIP_SLOT_IDS.indexOf(key) < 0) continue;
             var itemId = merged[key];
-            if (itemId) state.equipment[key] = { item_id: String(itemId), enchants: [] };
+            if (!itemId) continue;
+            var inst = { item_id: String(itemId), enchants: [] };
+            // 模块化底材：与 equip() 同构——实例化槽点结构（modules 对象），词条随模块走（37 §4 / 契约 38 §4）
+            var tplS = getItemTemplate(String(itemId));
+            if (tplS && Array.isArray(tplS.module_slots) && tplS.module_slots.length > 0) {
+                var modsS = {};
+                for (var msi2 = 0; msi2 < tplS.module_slots.length; msi2++) modsS[tplS.module_slots[msi2]] = null;
+                inst.modules = modsS;
+                delete inst.enchants;
+            }
+            state.equipment[key] = inst;
         }
         state.combat = getDefaultCombatState();
         state.hub_action_cooldowns = {};
         state.potential = 0;
         state.combat_experience = 0;
         applyDefaultStarterCombatLayout();
-        ensureMeridianStudiesSkillPresent();
+        ensureAnatomyStudiesSkillPresent();
     }
 
     function hubCooldownKey(skillId, actionId) {
@@ -1825,6 +2261,7 @@
             : Object.assign({}, BUILTIN_EQUIPMENT_TEMPLATES);
         if (cfg.items) itemsTable = cfg.items;
         if (cfg.enchant) enchantTable = cfg.enchant;
+        if (cfg.modules && typeof cfg.modules === 'object') moduleTable = cfg.modules;
         if (cfg.default_equipment && typeof cfg.default_equipment === 'object') {
             defaultEquipmentConfig = cfg.default_equipment;
         }
@@ -1847,6 +2284,7 @@
         if (s.inventory_vehicle) state.inventory_vehicle = s.inventory_vehicle.slice();
         if (s.bound_vehicle_id !== undefined) state.bound_vehicle_id = s.bound_vehicle_id;
         if (s.skills) state.skills = s.skills;
+        normalizeSkillsState();
         if (s.skill_max_level_bonus && typeof s.skill_max_level_bonus === 'object') {
             state.skill_max_level_bonus = {};
             for (var bk in s.skill_max_level_bonus) {
@@ -1854,7 +2292,7 @@
             }
         }
         clampSkillLevelsToProgressionCaps();
-        ensureMeridianStudiesSkillPresent();
+        ensureAnatomyStudiesSkillPresent();
         if (s.ground_items && typeof s.ground_items === 'object') {
             for (var gk in s.ground_items) {
                 if (s.ground_items.hasOwnProperty(gk) && Array.isArray(s.ground_items[gk]))
@@ -2218,11 +2656,25 @@
     }
 
     global.InventoryEquipment = {
-        SPECIAL_MERIDIAN_STUDIES_SKILL_ID: SPECIAL_MERIDIAN_STUDIES_SKILL_ID,
+        SPECIAL_ANATOMY_STUDIES_SKILL_ID: SPECIAL_ANATOMY_STUDIES_SKILL_ID,
         EQUIP_SLOT_IDS: EQUIP_SLOT_IDS,
+        getModuleTemplate: getModuleTemplate,
+        installModule: installModule,
+        uninstallModule: uninstallModule,
+        hasCrossSlotOccupancy: hasCrossSlotOccupancy,
+        getInstalledModuleAt: getInstalledModuleAt,
+        getArmorShieldInfo: getArmorShieldInfo,
+        getPlateDamageReduce: getPlateDamageReduce,
+        getPlayerStunValue: getPlayerStunValue,
+        setPlayerStunValue: setPlayerStunValue,
+        isPlayerStunned: isPlayerStunned,
+        addPlayerStun: addPlayerStun,
+        consumePlayerStunRoundIfBlocking: consumePlayerStunRoundIfBlocking,
+        getHeadAntiStunPct: getHeadAntiStunPct,
+        getShoeSharedMods: getShoeSharedMods,
+        getFootworkParryBonus: getFootworkParryBonus,
+        getShoeSpeedCoef: getShoeSpeedCoef,
         COMBAT_LIMB_IDS: COMBAT_LIMB_IDS,
-        QUALITY_TIERS: QUALITY_TIERS,
-        QUALITY_NAMES: QUALITY_NAMES,
         setConfig: setConfig,
         setState: setState,
         getState: getState,
@@ -2292,6 +2744,10 @@
         getPotential: getPotential,
         addPotential: addPotential,
         consumePotential: consumePotential,
+        getStudyExp: getStudyExp,
+        addStudyExp: addStudyExp,
+        tryAdvanceSkillLevel: tryAdvanceSkillLevel,
+        getProgressionSkillCap: getProgressionSkillCap,
         getCombatExperience: getCombatExperience,
         getCombatExperienceDamageMultiplier: getCombatExperienceDamageMultiplier,
         addCombatExperience: addCombatExperience

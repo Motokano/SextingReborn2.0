@@ -274,8 +274,8 @@
     // 供 Buff 等系统注入的后天五维修正（最终会并入 acquired 参与重算）
     var externalAcquiredBonus = { jingu: 0, flexibility: 0, breath: 0, dexterity: 0, focus: 0 };
 
-    // 经脉穴位带来的“先天五维”奖励（每次重算时覆盖写入）
-    var innateBonusFromAcupoints = { jingu: 0, flexibility: 0, breath: 0, dexterity: 0, focus: 0 };
+    // 肌肉/来源带来的“先天五维”奖励缓存（每次重算时覆盖写入；先天成就待定，见 34 §6）
+    var innateBonusFromMuscles = { jingu: 0, flexibility: 0, breath: 0, dexterity: 0, focus: 0 };
 
     /** 缓存：重算后写入，公式与 UI 只读缓存 */
     var cache = {
@@ -406,7 +406,7 @@
 
     function getInnateAttr(attrId) {
         var base = getBaseInnateAttr(attrId);
-        var bonus = innateBonusFromAcupoints[attrId] != null ? innateBonusFromAcupoints[attrId] : 0;
+        var bonus = innateBonusFromMuscles[attrId] != null ? innateBonusFromMuscles[attrId] : 0;
         return Math.max(0, base + bonus);
     }
 
@@ -421,27 +421,37 @@
         if (!equipmentState || !getItemTemplate || !getEnchantEntry) return { acquired: acquired, hit_bonus: hitBonus };
 
         var slotIds = ['head', 'clothing', 'vest', 'backpack', 'weapon_left', 'weapon_right',
-            'glove_left', 'glove_right', 'shoe_left', 'shoe_right', 'ring_left', 'ring_right', 'earring_left', 'earring_right', 'necklace'];
-        for (var i = 0; i < slotIds.length; i++) {
-            var eq = equipmentState[slotIds[i]];
-            if (!eq || !eq.item_id || !eq.enchants || !eq.enchants.length) continue;
-            for (var j = 0; j < eq.enchants.length; j++) {
-                var enc = getEnchantEntry(eq.enchants[j]);
-                if (!enc || enc.effect_type !== 'stat_bonus' && enc.effect_type !== 'hit_bonus') continue;
-                if (enc.effect_type === 'stat_bonus' && enc.effect_params) {
-                    var sid = enc.effect_params.stat_id;
-                    var val = enc.effect_params.value;
-                    if (sid && acquired[sid] !== undefined && typeof val === 'number') {
-                        var cap = (enc.cap != null) ? enc.cap : 999;
-                        var current = acquired[sid];
-                        acquired[sid] = current + Math.max(-cap, Math.min(cap, val));
-                    }
-                }
-                if (enc.effect_type === 'hit_bonus' && enc.effect_params && typeof enc.effect_params.hit_pct === 'number') {
-                    var hcap = (enc.cap != null) ? enc.cap : 1;
-                    hitBonus += Math.max(-hcap, Math.min(hcap, enc.effect_params.hit_pct));
+            'glove_left', 'glove_right', 'shoe_left', 'shoe_right'];
+        function applyEnchant(encId) {
+            var enc = getEnchantEntry(encId);
+            if (!enc || enc.effect_type !== 'stat_bonus' && enc.effect_type !== 'hit_bonus') return;
+            if (enc.effect_type === 'stat_bonus' && enc.effect_params) {
+                var sid = enc.effect_params.stat_id;
+                var val = enc.effect_params.value;
+                if (sid && acquired[sid] !== undefined && typeof val === 'number') {
+                    var cap = (enc.cap != null) ? enc.cap : 999;
+                    var current = acquired[sid];
+                    acquired[sid] = current + Math.max(-cap, Math.min(cap, val));
                 }
             }
+            if (enc.effect_type === 'hit_bonus' && enc.effect_params && typeof enc.effect_params.hit_pct === 'number') {
+                var hcap = (enc.cap != null) ? enc.cap : 1;
+                hitBonus += Math.max(-hcap, Math.min(hcap, enc.effect_params.hit_pct));
+            }
+        }
+        for (var i = 0; i < slotIds.length; i++) {
+            var eq = equipmentState[slotIds[i]];
+            if (!eq || !eq.item_id) continue;
+            // 模块化防具（37/38）：词条来自模块实例的 enchant_id
+            if (eq.modules && typeof eq.modules === 'object') {
+                for (var mk in eq.modules) {
+                    var mi = eq.modules[mk];
+                    if (mi && mi.enchant_id) applyEnchant(mi.enchant_id);
+                }
+                continue;
+            }
+            if (!eq.enchants || !eq.enchants.length) continue;
+            for (var j = 0; j < eq.enchants.length; j++) applyEnchant(eq.enchants[j]);
         }
         return { acquired: acquired, hit_bonus: hitBonus };
     }
@@ -455,7 +465,7 @@
         if (!skillsState || !skillAttrGainTable) return out;
         for (var skillId in skillAttrGainTable) {
             if (!skillAttrGainTable.hasOwnProperty(skillId)) continue;
-            // 设计口径：已下线“战斗技能等级 -> 后天五维”成长线。
+            // 整条"技能等级 -> 后天五维"成长线已下线（05 5.4）：skill_attr_gain 空表 + combat_* 显式跳过，仅保留函数体防旧档/工具误用
             if (String(skillId).indexOf('combat_') === 0) continue;
             var level = skillsState[skillId] && skillsState[skillId].level != null ? Math.max(0, parseInt(skillsState[skillId].level, 10)) : 0;
             var gains = skillAttrGainTable[skillId];
@@ -470,84 +480,6 @@
                         out[attr] += perLevel * level;
                 }
             }
-        }
-        return out;
-    }
-
-    function accumulateProficiencyAttrUnlocks(entries, moveUsage, getProfRatio, out) {
-        if (!entries || !entries.length) return;
-        var ei;
-        for (ei = 0; ei < entries.length; ei++) {
-            var ent = entries[ei];
-            if (!ent || !ent.id || !ent.proficiency_attr_unlocks || !ent.proficiency_attr_unlocks.length) continue;
-            var usageKey = ent.proficiency_usage_key ? String(ent.proficiency_usage_key) : ent.id;
-            var uses = moveUsage[usageKey] != null ? parseInt(moveUsage[usageKey], 10) || 0 : 0;
-            var maxU = ent.proficiency_max_uses != null ? ent.proficiency_max_uses : null;
-            var r = getProfRatio(uses, maxU);
-            var ui;
-            for (ui = 0; ui < ent.proficiency_attr_unlocks.length; ui++) {
-                var u = ent.proficiency_attr_unlocks[ui];
-                if (!u || u.min_proficiency_ratio == null) continue;
-                var minR = Number(u.min_proficiency_ratio);
-                if (!(r >= minR)) continue;
-                var acq = u.acquired;
-                if (!acq || typeof acq !== 'object') continue;
-                var aid;
-                for (aid in acq) {
-                    if (!acq.hasOwnProperty(aid)) continue;
-                    if (out[aid] === undefined) continue;
-                    var add = acq[aid];
-                    if (typeof add === 'number' && isFinite(add)) out[aid] += add;
-                }
-            }
-        }
-    }
-
-    /**
-     * 历史兼容：曾用于“熟练度阈值 -> 后天五维”。
-     * 当前设计已下线该成长线，recalc 不再调用本函数；保留实现仅为兼容旧档/策划表回溯。
-     */
-    /** 招架类：按 `parry_proficiency_usage_key` 的 R 触发 `parry_proficiency_attr_unlocks` */
-    function accumulateParryProficiencyAttrUnlocks(skTpl, moveUsage, getProfRatio, out) {
-        if (!skTpl || skTpl.category !== 'parry' || !skTpl.parry_proficiency_attr_unlocks || !skTpl.parry_proficiency_attr_unlocks.length) return;
-        var pKey = skTpl.parry_proficiency_usage_key || 'parry_success';
-        var pMax = skTpl.parry_proficiency_max_uses != null ? skTpl.parry_proficiency_max_uses : null;
-        var uses = moveUsage[pKey] != null ? parseInt(moveUsage[pKey], 10) || 0 : 0;
-        var r = getProfRatio(uses, pMax);
-        var pi;
-        for (pi = 0; pi < skTpl.parry_proficiency_attr_unlocks.length; pi++) {
-            var pu = skTpl.parry_proficiency_attr_unlocks[pi];
-            if (!pu || pu.min_proficiency_ratio == null) continue;
-            if (!(r >= Number(pu.min_proficiency_ratio))) continue;
-            var acq = pu.acquired;
-            if (!acq || typeof acq !== 'object') continue;
-            var aid;
-            for (aid in acq) {
-                if (!acq.hasOwnProperty(aid)) continue;
-                if (out[aid] === undefined) continue;
-                var add = acq[aid];
-                if (typeof add === 'number' && isFinite(add)) out[aid] += add;
-            }
-        }
-    }
-
-    function sumFromMoveProficiencyAttrUnlocks(skillsState) {
-        var out = { jingu: 0, flexibility: 0, breath: 0, dexterity: 0, focus: 0 };
-        if (!skillsState || typeof global === 'undefined' || !global.CombatSkills) return out;
-        var CS = global.CombatSkills;
-        var getSkill = CS.getSkill;
-        var getProfRatio = CS.getProficiencyRatio;
-        if (typeof getSkill !== 'function' || typeof getProfRatio !== 'function') return out;
-        for (var skillId in skillsState) {
-            if (!skillsState.hasOwnProperty(skillId)) continue;
-            var skTpl = getSkill(skillId);
-            if (!skTpl) continue;
-            if (skTpl.category === 'footwork') continue;
-            var entry = skillsState[skillId];
-            var moveUsage = (entry && entry.move_usage && typeof entry.move_usage === 'object') ? entry.move_usage : {};
-            accumulateProficiencyAttrUnlocks(skTpl.moves || [], moveUsage, getProfRatio, out);
-            accumulateProficiencyAttrUnlocks(skTpl.hub_actions || [], moveUsage, getProfRatio, out);
-            accumulateParryProficiencyAttrUnlocks(skTpl, moveUsage, getProfRatio, out);
         }
         return out;
     }
@@ -588,25 +520,20 @@
         state.acquired.dexterity += externalAcquiredBonus.dexterity || 0;
         state.acquired.focus += externalAcquiredBonus.focus || 0;
 
-        // 经脉穴位来源：后天五维 + 先天五维（任督/全通成就）
+        // 肌肉来源（替代原经脉穴位，见 34-muscle-system-rework.md）：后天四维（不奖励专注）+ 底气上限 maxQi；先天成就待定（34 §6）
         var extraMaxQi = 0;
-        for (var k in innateBonusFromAcupoints) {
-            if (innateBonusFromAcupoints.hasOwnProperty(k)) innateBonusFromAcupoints[k] = 0;
+        for (var k in innateBonusFromMuscles) {
+            if (innateBonusFromMuscles.hasOwnProperty(k)) innateBonusFromMuscles[k] = 0;
         }
-        if (typeof global !== 'undefined' && global.Acupoints && typeof global.Acupoints.getStatBonus === 'function') {
-            var bonus = global.Acupoints.getStatBonus() || {};
+        if (typeof global !== 'undefined' && global.Muscles && typeof global.Muscles.getStatBonus === 'function') {
+            var bonus = global.Muscles.getStatBonus() || {};
             var acq = bonus.acquired || {};
-            var inn = bonus.innate || {};
             state.acquired.jingu       += acq.jingu       || 0;
             state.acquired.flexibility += acq.flexibility || 0;
             state.acquired.breath      += acq.breath      || 0;
             state.acquired.dexterity   += acq.dexterity   || 0;
             state.acquired.focus       += acq.focus       || 0;
-            innateBonusFromAcupoints.jingu       = inn.jingu       || 0;
-            innateBonusFromAcupoints.flexibility = inn.flexibility || 0;
-            innateBonusFromAcupoints.breath      = inn.breath      || 0;
-            innateBonusFromAcupoints.dexterity   = inn.dexterity   || 0;
-            innateBonusFromAcupoints.focus       = inn.focus       || 0;
+            // innate（先天成就）保持 0：原任督/全通先天奖励的去留见 34 §6 未决项
             extraMaxQi = bonus.maxQi || 0;
         }
 
@@ -672,12 +599,21 @@
             }
         }
         var speedFloat = vBase * (1 + dexPct * dexterity + speedPctFromEquip);
-        cache.combat_speed = Math.max(1, Math.floor(speedFloat) + footworkSpeedFlat);
+        // 鞋子速度加成（k17，39 §6.4 闪避侧重）：左右取更差，乘到战斗速度上（运动鞋/钉鞋加速，重靴不加成）
+        var shoeSpeedCoef = 1;
+        if (typeof global !== 'undefined' && global.InventoryEquipment && typeof global.InventoryEquipment.getShoeSpeedCoef === 'function') {
+            try {
+                var ssc = Number(global.InventoryEquipment.getShoeSpeedCoef());
+                if (isFinite(ssc) && ssc > 0) shoeSpeedCoef = ssc;
+            } catch (eShoe) { shoeSpeedCoef = 1; }
+        }
+        // 内部保留小数（每点身手都有真实增量，05 5.7）；仅展示层取整
+        cache.combat_speed = Math.max(1, (speedFloat + footworkSpeedFlat) * shoeSpeedCoef);
         cache.hit_bonus_from_equipment = fromEquip.hit_bonus || 0;
 
-        // 穴位「底气上限+N」→ Survival.diqi_cap_limit 的扁平加成（见 computeDiqiCapLimitFromBreath）
+        // 肌肉「底气上限+N」→ Survival.diqi_cap_limit 的扁平加成（见 computeDiqiCapLimitFromBreath）
         if (typeof global !== 'undefined' && global.Survival && typeof global.Survival.setDiqiCapLimitFlatBonus === 'function') {
-            global.Survival.setDiqiCapLimitFlatBonus('acupoints', Math.max(0, Math.round(Number(extraMaxQi) || 0)));
+            global.Survival.setDiqiCapLimitFlatBonus('muscles', Math.max(0, Math.round(Number(extraMaxQi) || 0)));
         }
         if (typeof global !== 'undefined' && global.Survival && typeof global.Survival.refreshDiqiMaxFromBreath === 'function') {
             global.Survival.refreshDiqiMaxFromBreath(breath);
@@ -689,22 +625,42 @@
         return cache.carry_capacity;
     }
 
-    /** 战斗速度（取整后，用于先手/连击/命中） */
+    /** 战斗速度（内部保留小数，用于先手/连击/命中；仅展示取整，见 05 5.7） */
     function getCombatSpeed() {
         return cache.combat_speed;
     }
 
-    /** 徒手拳底 B_fist = max(0, S_筋骨 / div)；div 默认 5，来自配置 fist_jingu_divisor */
+    /** 徒手拳底 B_fist（05 5.5.2 分段曲线）：S ≤ fist_lin_segment_max 线性（每点 fist_lin_gain_per_point），
+     *  高段接原饱和尾（cap/div 封顶、fist_curve_scale 衰减）——低段手感更稳，500+/800+ 锚点与旧表一致。
+     *  配置字段 fist_base_cap/fist_curve_scale/fist_base_div/fist_lin_segment_max/fist_lin_gain_per_point */
     function getFistBasePower() {
         var S = getEffectiveAttr('jingu');
-        var div = getCfg('fist_jingu_divisor', 5);
-        if (!isFinite(div) || div <= 0) div = 5;
-        return Math.max(0, S / div);
+        var cap = getCfg('fist_base_cap', 650);
+        var scale = getCfg('fist_curve_scale', 450);
+        var div = getCfg('fist_base_div', 2);
+        var linMax = getCfg('fist_lin_segment_max', 150);
+        var linGain = getCfg('fist_lin_gain_per_point', 0.7);
+        if (!isFinite(cap) || cap <= 0) cap = 650;
+        if (!isFinite(scale) || scale <= 0) scale = 450;
+        if (!isFinite(div) || div <= 0) div = 2;
+        if (!isFinite(linMax) || linMax < 0) linMax = 150;
+        if (!isFinite(linGain) || linGain < 0) linGain = 0.7;
+        var raw;
+        if (S <= linMax) {
+            raw = linGain * S;
+        } else {
+            var linValue = linGain * linMax;
+            var tailCap = cap / div - linValue;
+            if (tailCap <= 0) tailCap = 0;
+            raw = linValue + tailCap * (1 - Math.exp(-(S - linMax) / scale));
+        }
+        return Math.max(0, Math.floor(raw));
     }
 
     /**
-     * 兵器筋骨：门槛修正 M_threshold 与超额增伤 M_jingu，仅看先天筋骨。
-     * 返回 { canUse: boolean, M_threshold: number, M_jingu: number, M_total: number }
+     * 兵器筋骨（05 5.5.3）：只作**门槛判定**——先天筋骨决定"能不能用"与"惩罚区减伤"；
+     * **不提供任何增伤**（先天增伤是徒手技能专属特色，见 05 5.5.2/5.5.3）。
+     * 返回 { canUse: boolean, M_threshold: number, M_total: number }（M_total = M_threshold）
      */
     function getWeaponThresholdAndBonus(weaponReqJingu) {
         var req = weaponReqJingu != null ? Math.max(0, parseInt(weaponReqJingu, 10)) : getCfg('weapon_req_innate_jingu_default', 20);
@@ -712,17 +668,14 @@
         var halfReq = req / 2;
 
         if (S < halfReq)
-            return { canUse: false, M_threshold: 0, M_jingu: 0, M_total: 0 };
+            return { canUse: false, M_threshold: 0, M_total: 0 };
 
         var M_threshold = 1;
         if (S < req) {
             var t = (S - halfReq) / halfReq;
             M_threshold = 0.5 + 0.5 * t;
         }
-        var bonusPct = getCfg('weapon_innate_jingu_bonus_pct_per_point', 0.05);
-        var M_jingu = 1 + bonusPct * Math.max(0, S - req);
-        var M_total = M_threshold * M_jingu;
-        return { canUse: true, M_threshold: M_threshold, M_jingu: M_jingu, M_total: M_total };
+        return { canUse: true, M_threshold: M_threshold, M_total: M_threshold };
     }
 
     /** 能否装备/挥动该兵器（先天筋骨 >= 0.5 * req） */
@@ -913,6 +866,54 @@
 
     function getLimbDestroy(limbId) {
         return getPartDestroy(limbId);
+    }
+
+    /** 规范部位空间（head/chest/abdomen/left_arm/right_arm/left_leg/right_leg）→ 运行时损毁键（head/chest/abdomen/lhand/rhand/lfoot/rfoot） */
+    function normalizeDestroyKeyForCombat(rawId) {
+        var k = String(rawId || '').trim();
+        if (k === 'belly') return 'abdomen';
+        if (k === 'left_arm') return 'lhand';
+        if (k === 'right_arm') return 'rhand';
+        if (k === 'left_leg') return 'lfoot';
+        if (k === 'right_leg') return 'rfoot';
+        return k;
+    }
+
+    /**
+     * 战斗受击损毁写入（09-body-parts「损毁写入」规则，玩家侧；敌人侧同规则在 combat-enemies）：
+     * Q = 本次最终伤害（已取整）。命中部位未损毁 → Q 全加该部位（封顶溢出作废）；
+     * 已损毁 → Q 均分到未损毁部位（每部位先 floor(Q/n)，余数按 头→胸→腹→左手→右手→左脚→右脚 顺序 +1）；全损毁 → Q 作废。
+     * @param {string} hitPartId 规范或运行时部位键（left_arm / lhand 等均可）
+     * @param {number} q 损毁增加值（最终伤害）
+     */
+    function applyCombatDestroy(hitPartId, q) {
+        q = Math.max(0, Math.floor(Number(q) || 0));
+        if (q <= 0) return;
+        var k = normalizeDestroyKeyForCombat(hitPartId);
+        if (PART_DESTROY_IDS.indexOf(k) < 0) k = 'chest';
+        var cur = getPartDestroy(k);
+        var mx = getBodyPartDestroyMax(k);
+        if (cur < mx) {
+            state.part_destroy[k] = Math.min(mx, cur + q);
+            return;
+        }
+        var open = [];
+        for (var i = 0; i < PART_DESTROY_IDS.length; i++) {
+            var pk = PART_DESTROY_IDS[i];
+            if (getPartDestroy(pk) < getBodyPartDestroyMax(pk)) open.push(pk);
+        }
+        if (!open.length) return;
+        var base = Math.floor(q / open.length);
+        var rem = q % open.length;
+        for (var j = 0; j < open.length; j++) {
+            var ok = open[j];
+            var addj = base + (j < rem ? 1 : 0);
+            if (addj <= 0) continue;
+            var cj = getPartDestroy(ok);
+            var mj = getBodyPartDestroyMax(ok);
+            var av = Math.min(addj, mj - cj);
+            if (av > 0) state.part_destroy[ok] = cj + av;
+        }
     }
 
     /**
@@ -1334,6 +1335,7 @@
         getBodyPartDestroyMax: getBodyPartDestroyMax,
         getPartDestroy: getPartDestroy,
         getLimbDestroy: getLimbDestroy,
+        applyCombatDestroy: applyCombatDestroy,
         isBodyPartDestroyedForParry: isBodyPartDestroyedForParry,
         tryApplyXueQiHuaJing: tryApplyXueQiHuaJing,
         getCharacterName: getCharacterName,

@@ -25,7 +25,7 @@
 | 状态抽离（进行中） | `js/core/game-state-core.js`（框架无关核心，与迁移文档方向一致）。 |
 | 生存（对照 06） | `js/survival.js`、`data/survival-config.json`。 |
 | 角色与装备栏（对照 05 / 14 子集） | `js/character-attributes.js`、`js/inventory-equipment.js`（含战斗子状态、死亡清空装备等）。 |
-| 采集与生产 | `js/gathering.js`、`js/production-quality.js`、`data/gathering_point_instances.json`（实例/掉落/品质硬上限）、`data/gathering_points.json`（兼容）、`tools/gathering-point-editor.html` 等。 |
+| 采集与生产 | `js/gathering.js`、`js/production-quality.js`、`data/gathering_point_instances.json`（实例/掉落）、`data/gathering_points.json`（兼容）、`tools/gathering-point-editor.html` 等。 |
 | 技能 | `js/combat-skills.js`、`js/survival-skills.js`、`data/combat-skills.json`。 |
 | Buff（对照 18） | `js/buff-system.js`、`data/buffs.json`、`data/editor/buff_event_registry.json`。 |
 | 经脉/穴位（对照 12） | `js/acupoints.js`。 |
@@ -33,6 +33,7 @@
 | 贸易 UI 试验 | `js/trade_canvas_ui.js`、`js/trade_context.js`、`js/trade_layout.js` 等（界面与数据结构，**非** capitalism 全文规则引擎）。 |
 | 游戏时间 | `js/game-time.js`（`totalTicks` 与 Buff 等系统衔接）。 |
 | 日志 | `js/game-log.js`。 |
+| UI 自由窗口（M1～M4 全量，36） | `js/ui-windows.js`（注册表/拖拽/持久化校验/clamp/锁定/重置/演出 API/`getPanelList`/`displayManaged`/`minimize`+`restore` 任务条/`forceVisible`）+ `js/game-log.js` 迁移 win-log + `js/dialogue-ui.js` 对话安全 + `js/scene-app.js` 注册 8 free + 4 anchored 窗口与窗口列表菜单；含最小化任务条（RO 式）、认知门控合并、intro-shell 兼容；`npm run test:ui-windows` 冒烟 23 用例全过；文档 §6 验收 11 条全过。待定：快捷键/窗口合并/宽度缩放/布局导出。 |
 
 ---
 

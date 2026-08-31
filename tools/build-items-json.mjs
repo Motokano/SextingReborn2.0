@@ -159,7 +159,6 @@ function rowToItem(o, filename) {
   if (o.sub_category) item.sub_category = o.sub_category;
   // 全局口径：所有物品可堆叠数固定为 1
   item.stack_limit = 1;
-  if (o.quality) item.quality = o.quality;
   if (o.tags) item.tags = o.tags;
   if (o.source) item.source = o.source;
   if (o.production_lines) item.production_lines = o.production_lines;
@@ -218,7 +217,7 @@ function rowToItem(o, filename) {
   // 保留 CSV 新增扩展列（用于策划自定义 tooltip 模块字段等）
   const handled = {
     id: 1, sn: 1, placeholder_name: 1, fn_before: 1, fn: 1,
-    category: 1, sub_category: 1, weight: 1, stack_limit: 1, quality: 1,
+    category: 1, sub_category: 1, weight: 1, stack_limit: 1,
     tags: 1, source: 1, production_lines: 1, spoilage_ticks: 1, spoilage: 1,
     price_class: 1, volatility: 1, region_restrict: 1, base_value: 1,
     satiety_restore: 1, thirst_restore: 1, nutrition_restore: 1,

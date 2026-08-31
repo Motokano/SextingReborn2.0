@@ -79,6 +79,44 @@
         return getSkillLevel(character, sid) >= need;
     }
 
+    /** 技能显示名：生存技能表 → 战斗技能表 → 生活技能 ui 键（life.skill.xxx.name）→ 原始 id */
+    function getSkillDisplayName(skillId) {
+        var sid = String(skillId || '').trim();
+        if (!sid) return sid;
+        try {
+            if (global.SurvivalSkills && typeof global.SurvivalSkills.getById === 'function') {
+                var s1 = global.SurvivalSkills.getById(sid);
+                if (s1 && s1.name) return String(s1.name);
+            }
+        } catch (e1) { /* ignore */ }
+        try {
+            if (global.CombatSkills && typeof global.CombatSkills.getSkill === 'function') {
+                var s2 = global.CombatSkills.getSkill(sid);
+                if (s2 && s2.name) return String(s2.name);
+            }
+        } catch (e2) { /* ignore */ }
+        if (sid.indexOf('life_') === 0) {
+            var lifeName = safeT('life.skill.' + sid.slice(5) + '.name', {});
+            if (lifeName && lifeName.indexOf('life.skill.') !== 0) return lifeName;
+        }
+        return sid;
+    }
+
+    /** 与 ItemInfoModules 一致的锁定要求行文案（item_info.locked_hint + tooltip-module-req 样式） */
+    function buildLockedReqHtml(rule, character) {
+        var sid = rule.skill_id != null && rule.skill_id !== '' ? String(rule.skill_id).trim() : '';
+        if (!sid) return '';
+        var need = Math.max(0, parseInt(rule.level_min, 10) || 0);
+        var cur = getSkillLevel(character, sid);
+        var remain = Math.max(0, need - cur);
+        var reqLine = safeT('item_info.locked_hint', {
+            skillId: getSkillDisplayName(sid),
+            level: need,
+            need: remain
+        });
+        return '<span class="tooltip-module-req">' + esc(reqLine) + '</span>';
+    }
+
     function safeT(key, vars) {
         try {
             if (global.UIText && typeof global.UIText.t === 'function') return global.UIText.t(key, vars);
@@ -122,6 +160,31 @@
         return safeT('item.field.buff_summary_fallback', { id: esc(id) });
     }
 
+    /** 食物恢复摘要（k35，43 消化模型）：buff 的 survival_delta（每 tick）× durationTicks → 恢复总量 */
+    function renderFoodRestore(buffId, buffLookup) {
+        var id = String(buffId || '').trim();
+        if (!id) return '';
+        var info = null;
+        if (typeof buffLookup === 'function') {
+            try { info = buffLookup(id); } catch (e) { /* ignore */ }
+        }
+        var sd = info && info.survivalDelta;
+        var dur = info && info.durationTicks > 0 ? info.durationTicks : 1;
+        var parts = [];
+        if (sd) {
+            function round1(v) { return Math.round(v * 10) / 10; }
+            if (sd.satiety) parts.push(safeT('item.food.restore.satiety', { v: round1(sd.satiety * dur) }));
+            if (sd.thirst) parts.push(safeT('item.food.restore.thirst', { v: round1(sd.thirst * dur) }));
+            if (sd.nutrition) parts.push(safeT('item.food.restore.nutrition', { v: round1(sd.nutrition * dur) }));
+        }
+        var name = info && info.name ? String(info.name).trim() : '';
+        if (!parts.length) {
+            if (name) return esc(name) + ' <span class="tooltip-field-buff-id">(' + esc(id) + ')</span>';
+            return safeT('item.field.buff_summary_fallback', { id: esc(id) });
+        }
+        return (name ? esc(name) + '：' : '') + parts.join(' · ');
+    }
+
     function renderValueHtml(rule, rawVal, buffLookup) {
         var ren = String(rule.renderer || '').trim();
         if (ren === 'raw_text') return '<span class="tooltip-module-v">' + esc(rawVal) + '</span>';
@@ -129,6 +192,7 @@
         if (ren === 'number') return '<span class="tooltip-module-v">' + formatNumber(rawVal) + '</span>';
         if (ren === 'tick_duration') return '<span class="tooltip-module-v">' + formatTicks(rawVal) + '</span>';
         if (ren === 'buff_summary') return '<span class="tooltip-module-v">' + renderBuffSummary(rawVal, buffLookup) + '</span>';
+        if (ren === 'food_restore') return '<span class="tooltip-module-v">' + renderFoodRestore(rawVal, buffLookup) + '</span>';
         return '';
     }
 
@@ -205,7 +269,9 @@
                         if (!inner) inner = '<span class="tooltip-module-v">' + esc(row.rawVal) + '</span>';
                         html += inner.indexOf('tooltip-module-v') >= 0 ? inner : '<span class="tooltip-module-v">' + inner + '</span>';
                     } else {
-                        html += '<span class="tooltip-module-locked-hint">' + esc(String(row.rule.locked_hint || '').trim()) + '</span>';
+                        var hintText = String(row.rule.locked_hint || '').trim();
+                        if (hintText) html += '<span class="tooltip-module-locked-hint">' + esc(hintText) + '</span>';
+                        html += buildLockedReqHtml(row.rule, character);
                     }
                     html += '</div>';
                 }

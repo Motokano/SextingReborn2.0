@@ -1,38 +1,40 @@
 # item-field-display-rules 审计运行记录
 
-- **日期**：2026-05-11  
-- **命令**：`npm run audit:item-keys`、`npm run audit:item-field-rules`  
-- **仓库**：SextingReborn2.0  
+- **日期**：2026-05-11（初）；**品质系统移除后复跑**（2026，`quality` / `quality_tier` 已从模板移除）
+- **命令**：`npm run audit:item-keys`、`npm run audit:item-field-rules`
+- **仓库**：SextingReborn2.0
 
 ## audit:item-keys
 
 ```
-[audit-item-template-keys] data/items.json template key count: 37
-accept_code, base_value, category, compost_inoculant_aerobic, compost_inoculant_anaerobic, convert_to_high, cooking_ingredient, desc_0, edible, edible_buff_id, fert_c, fert_n, fn, fn_before, food_buff_duration_ticks, fuel_points, info_module_set_id, item_id, name, name_0, placeholder_name, price_class, production_lines, quality, region_restrict, skill_coef, sn, source, spoilage_ticks, stack_limit, sub_category, tags, usable_regions, volatility, water_points, weapon_attack_power, weight_kg
+[audit-item-template-keys] data/items.json template key count: 45
+accept_code, agriculture_buried_jar_injectable, agriculture_fertilizer_per_tick, agriculture_venturi_effect_duration_ticks, agriculture_venturi_injectable, base_value, category, compost_inoculant_aerobic, compost_inoculant_anaerobic, convert_to_high, cooking_ingredient, desc_0, edible, edible_buff_id, fert_c, fert_n, fn, fn_before, food_buff_duration_ticks, fuel_points, grants_soil_id, harvest_item_id, info_module_set_id, inject_facility, is_anaerobic_fertilizer, item_id, name, name_0, placeholder_name, price_class, production_lines, region_restrict, seed_tier, skill_coef, sn, source, spoilage_ticks, stack_limit, sub_category, tags, usable_regions, volatility, water_points, weapon_attack_power, weight_kg
 
-[audit-item-template-keys] data/equipment.json template key count: 18
-damage_reduce_blunt_pct, damage_reduce_pierce_pct, damage_reduce_slash_pct, desc_0, desc_1, desc_2, display_skill_id, enchant_slots, equip_slot, id, name_0, name_1, name_2, pocket_slots, quality_tier, skill_coef, vest_slots, weight_kg
+[audit-item-template-keys] data/equipment.json template key count: 22
+base_shield, damage_reduce_blunt_pct, damage_reduce_pierce_pct, damage_reduce_slash_pct, desc_0, desc_1, desc_2, display_skill_id, enchant_slots, equip_slot, form_coefs, id, limb_tags, material, module_slots, name_0, name_1, name_2, pocket_slots, skill_coef, vest_slots, weight_kg
 
-[audit-item-template-keys] union (items ∪ equipment) key count: 51
-accept_code, base_value, category, compost_inoculant_aerobic, compost_inoculant_anaerobic, convert_to_high, cooking_ingredient, damage_reduce_blunt_pct, damage_reduce_pierce_pct, damage_reduce_slash_pct, desc_0, desc_1, desc_2, display_skill_id, edible, edible_buff_id, enchant_slots, equip_slot, fert_c, fert_n, fn, fn_before, food_buff_duration_ticks, fuel_points, id, info_module_set_id, item_id, name, name_0, name_1, name_2, placeholder_name, pocket_slots, price_class, production_lines, quality, quality_tier, region_restrict, skill_coef, sn, source, spoilage_ticks, stack_limit, sub_category, tags, usable_regions, vest_slots, volatility, water_points, weapon_attack_power, weight_kg
+[audit-item-template-keys] union (items ∪ equipment) key count: 63
+accept_code, agriculture_buried_jar_injectable, agriculture_fertilizer_per_tick, agriculture_venturi_effect_duration_ticks, agriculture_venturi_injectable, base_shield, base_value, category, compost_inoculant_aerobic, compost_inoculant_anaerobic, convert_to_high, cooking_ingredient, damage_reduce_blunt_pct, damage_reduce_pierce_pct, damage_reduce_slash_pct, desc_0, desc_1, desc_2, display_skill_id, edible, edible_buff_id, enchant_slots, equip_slot, fert_c, fert_n, fn, fn_before, food_buff_duration_ticks, form_coefs, fuel_points, grants_soil_id, harvest_item_id, id, info_module_set_id, inject_facility, is_anaerobic_fertilizer, item_id, limb_tags, material, module_slots, name, name_0, name_1, name_2, placeholder_name, pocket_slots, price_class, production_lines, region_restrict, seed_tier, skill_coef, sn, source, spoilage_ticks, stack_limit, sub_category, tags, usable_regions, vest_slots, volatility, water_points, weapon_attack_power, weight_kg
 
 [audit-item-template-keys] no use_effect objects found in items.json (no subkeys to list).
 ```
+
+> 注：`quality`（items）与 `quality_tier`（equipment）已不在键清单中——品质系统移除完成（见 `41-quality-removal.md`）。计数较旧快照（37/18/51）增长是因为新增了农业/畜牧字段（`agriculture_*`、`harvest_item_id`、`seed_tier`、`form_coefs`、`limb_tags`、`material`、`module_slots`、`base_shield` 等），与品质移除无关。
 
 ## audit:item-field-rules
 
 ### 1) 模板字段路径并集
 
-- items：37 个不同字段；equipment：18 个；并集 51 个（与 `audit:item-keys` 一致，本脚本不额外展开 `use_effect.*` 除非 JSON 中存在该对象）。
+- items：45 个不同字段；equipment：22 个；并集 63 个（与 `audit:item-keys` 一致，本脚本不额外展开 `use_effect.*` 除非 JSON 中存在该对象）。
 
 ### 2) 规则表有、模板从未出现
 
 - `pharmacy_ingredient`（规则已配置，当前 `items.json` 无该键——待 CSV 填 `pharmacy_ingredient` 并构建后会出现）
 - `use_effect.nutrition` / `use_effect.satiety` / `use_effect.thirst`（deprecated 占位；当前无 `use_effect` 数据）
 
-### 3) 模板有、规则表未覆盖（28 个）
+### 3) 模板有、规则表未覆盖（40 个）
 
-`accept_code`, `base_value`, `category`, `convert_to_high`, `damage_reduce_blunt_pct`, `damage_reduce_pierce_pct`, `damage_reduce_slash_pct`, `display_skill_id`, `enchant_slots`, `equip_slot`, `id`, `info_module_set_id`, `item_id`, `pocket_slots`, `price_class`, `production_lines`, `quality`, `quality_tier`, `region_restrict`, `skill_coef`, `source`, `stack_limit`, `sub_category`, `tags`, `usable_regions`, `vest_slots`, `volatility`, `weapon_attack_power`
+`accept_code`, `agriculture_buried_jar_injectable`, `agriculture_fertilizer_per_tick`, `agriculture_venturi_effect_duration_ticks`, `agriculture_venturi_injectable`, `base_shield`, `base_value`, `category`, `convert_to_high`, `damage_reduce_blunt_pct`, `damage_reduce_pierce_pct`, `damage_reduce_slash_pct`, `display_skill_id`, `enchant_slots`, `equip_slot`, `form_coefs`, `grants_soil_id`, `harvest_item_id`, `id`, `info_module_set_id`, `inject_facility`, `is_anaerobic_fertilizer`, `item_id`, `limb_tags`, `material`, `module_slots`, `pocket_slots`, `price_class`, `production_lines`, `region_restrict`, `seed_tier`, `skill_coef`, `source`, `stack_limit`, `sub_category`, `tags`, `usable_regions`, `vest_slots`, `volatility`, `weapon_attack_power`
 
 （与 `27-item-template-fields-inventory.md` §8.2「默认隐藏」块一致，属预期缺口，供后续补规则。）
 
@@ -60,12 +62,12 @@ accept_code, base_value, category, compost_inoculant_aerobic, compost_inoculant_
 ========================================================================
 1) 模板字段路径（扁平 + use_effect.*）
 ========================================================================
-items.json 不同字段数: 37
-equipment.json 不同字段数: 18
-并集 items ∪ equipment 字段数: 51
+items.json 不同字段数: 45
+equipment.json 不同字段数: 22
+并集 items ∪ equipment 字段数: 63
 
 并集字段列表（字典序）：
-accept_code, base_value, category, compost_inoculant_aerobic, compost_inoculant_anaerobic, convert_to_high, cooking_ingredient, damage_reduce_blunt_pct, damage_reduce_pierce_pct, damage_reduce_slash_pct, desc_0, desc_1, desc_2, display_skill_id, edible, edible_buff_id, enchant_slots, equip_slot, fert_c, fert_n, fn, fn_before, food_buff_duration_ticks, fuel_points, id, info_module_set_id, item_id, name, name_0, name_1, name_2, placeholder_name, pocket_slots, price_class, production_lines, quality, quality_tier, region_restrict, skill_coef, sn, source, spoilage_ticks, stack_limit, sub_category, tags, usable_regions, vest_slots, volatility, water_points, weapon_attack_power, weight_kg
+accept_code, agriculture_buried_jar_injectable, agriculture_fertilizer_per_tick, agriculture_venturi_effect_duration_ticks, agriculture_venturi_injectable, base_shield, base_value, category, compost_inoculant_aerobic, compost_inoculant_anaerobic, convert_to_high, cooking_ingredient, damage_reduce_blunt_pct, damage_reduce_pierce_pct, damage_reduce_slash_pct, desc_0, desc_1, desc_2, display_skill_id, edible, edible_buff_id, enchant_slots, equip_slot, fert_c, fert_n, fn, fn_before, food_buff_duration_ticks, form_coefs, fuel_points, grants_soil_id, harvest_item_id, id, info_module_set_id, inject_facility, is_anaerobic_fertilizer, item_id, limb_tags, material, module_slots, name, name_0, name_1, name_2, placeholder_name, pocket_slots, price_class, production_lines, region_restrict, seed_tier, skill_coef, sn, source, spoilage_ticks, stack_limit, sub_category, tags, usable_regions, vest_slots, volatility, water_points, weapon_attack_power, weight_kg
 
 ========================================================================
 2) 规则表有定义、但当前 items/equipment 模板从未出现的字段
@@ -78,8 +80,13 @@ accept_code, base_value, category, compost_inoculant_aerobic, compost_inoculant_
 ========================================================================
 3) 当前模板出现、但 item-field-display-rules.json 未覆盖的字段
 ========================================================================
-  数量: 28
+  数量: 40
   - accept_code
+  - agriculture_buried_jar_injectable
+  - agriculture_fertilizer_per_tick
+  - agriculture_venturi_effect_duration_ticks
+  - agriculture_venturi_injectable
+  - base_shield
   - base_value
   - category
   - convert_to_high
@@ -89,15 +96,22 @@ accept_code, base_value, category, compost_inoculant_aerobic, compost_inoculant_
   - display_skill_id
   - enchant_slots
   - equip_slot
+  - form_coefs
+  - grants_soil_id
+  - harvest_item_id
   - id
   - info_module_set_id
+  - inject_facility
+  - is_anaerobic_fertilizer
   - item_id
+  - limb_tags
+  - material
+  - module_slots
   - pocket_slots
   - price_class
   - production_lines
-  - quality
-  - quality_tier
   - region_restrict
+  - seed_tier
   - skill_coef
   - source
   - stack_limit
