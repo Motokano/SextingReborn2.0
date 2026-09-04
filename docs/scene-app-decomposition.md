@@ -205,6 +205,10 @@ js/item-use.js  window.ItemUse      // applyItemUseEffectFromTemplate / tryUseIt
     - scene-app 删 55 行访问器定义；`resetCookingStateForNewCharacter` 改调模块工厂；28 处调用改走 `CookingStation/PharmacyStation.getState()`。
   - **P1c-2（DI 基座已落地，待搬移）**：UI 依赖注入基座——两站模块新增 `setUiDeps(deps)`（deps: ui/showMsg/render/getItemDisplayNameSafe/markCellDirty），scene-app init 注入一次（避免把闭包 infra 塞进 window）；后续 craft 生命周期/面板搬移时函数体改走 deps.ui/showMsg。
   - **策略定案（2026 拆解）**：闭包 infra（ui/showMsg/render/tooltip 系列）不随迁，统一经「模块 setUiDeps(DI)」注入；面板 DOM 仍以「面板模块 + SceneHud.refresh 通道」为目标，P1c 其余子刀逐批执行。
+  - **P1c-2b（已提交）**：统一配方路由解析簇迁出（route resolvers 依赖最轻）。
+    - `CookingStation.tryResolveCookingByUnifiedRoute` / `PharmacyStation.tryResolvePharmacyByUnifiedRoute`（走 RecipeSystem.craft + 经 DI 触发处理器注册）；`PharmacyStation.getPharmacyMethodDisplayName`（UIText 兜底）；`StationCraftCore.readMethodCostValue`（工艺成本读取，通用）。
+    - DI 增键 registerCookingProcessor/registerPharmacyProcessor（scene-app init 注入闭包注册函数）；setUiDeps 改为合并语义。
+    - scene-app 删 68 行；11 处调用重接；语法 + 实机冒烟通过。scene-app 当前 12076 行。
 - **P1c（待办）**：站点规则与面板迁出（配 infra 桥，见 P1 实测 deps：ui/showMsg/render/tooltip 系列/`isPreCreationGameplayRestricted` 等）；compost 面板 → `compost-panel.js`。
 
 ## 5. 风险与对策

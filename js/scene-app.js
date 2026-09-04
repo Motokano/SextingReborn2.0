@@ -3102,74 +3102,6 @@
         pharmacyRecipeProcessorRegistered = true;
     }
 
-    function readMethodCostValue(methodObj, key, legacyKey) {
-        var m = methodObj && typeof methodObj === 'object' ? methodObj : {};
-        var cost = m.cost && typeof m.cost === 'object' ? m.cost : null;
-        var v = cost && cost[key] != null ? Number(cost[key]) : NaN;
-        if (!isFinite(v)) v = Number(m[legacyKey]);
-        if (!isFinite(v)) v = 0;
-        return Math.max(0, Math.floor(v));
-    }
-
-    function getPharmacyMethodDisplayName(methodId, methodObj) {
-        var mid = methodId != null ? String(methodId) : '';
-        var m = methodObj && typeof methodObj === 'object' ? methodObj : {};
-        if (m.name != null && String(m.name).trim() !== '') return String(m.name);
-        var keyRaw = mid.indexOf('life_pharmacy.') === 0 ? mid.slice('life_pharmacy.'.length) : mid;
-        var key = 'pharmacy.method.' + keyRaw;
-        try {
-            if (window.UIText && typeof window.UIText.t === 'function') {
-                return window.UIText.t(key);
-            }
-        } catch (e0) { /* fallback */ }
-        return mid;
-    }
-
-    function tryResolveCookingByUnifiedRoute(methodId, selectedInputs) {
-        if (!window.RecipeSystem || typeof window.RecipeSystem.craft !== 'function') {
-            return { ok: false, reason: 'recipe_system_unavailable' };
-        }
-        registerCookingRecipeProcessorIfNeeded();
-        var ret = window.RecipeSystem.craft({
-            recipe_system: CookingStation.recipeSystemId,
-            method_id: StationCraftCore.toUnifiedCookingMethodId(methodId),
-            inputs: Array.isArray(selectedInputs) ? selectedInputs : []
-        });
-        if (!ret || ret.ok !== true) {
-            return {
-                ok: false,
-                reason: 'recipe_system_craft_failed',
-                error: ret && ret.error ? ret.error : null
-            };
-        }
-        var data = ret.result && typeof ret.result === 'object' ? ret.result : {};
-        return { ok: true, data: data };
-    }
-
-    // === Auto-generated Pharmacy Helper ===
-    function tryResolvePharmacyByUnifiedRoute(methodId, selectedInputs) {
-        if (!window.RecipeSystem || typeof window.RecipeSystem.craft !== 'function') {
-            return { ok: false, reason: 'recipe_system_unavailable' };
-        }
-        if (typeof registerPharmacyRecipeProcessorIfNeeded === 'function') {
-            registerPharmacyRecipeProcessorIfNeeded();
-        }
-        var ret = window.RecipeSystem.craft({
-            recipe_system: PharmacyStation.recipeSystemId,
-            method_id: StationCraftCore.toUnifiedPharmacyMethodId(methodId),
-            inputs: Array.isArray(selectedInputs) ? selectedInputs : []
-        });
-        if (!ret || ret.ok !== true) {
-            return {
-                ok: false,
-                reason: 'recipe_system_craft_failed',
-                error: ret && ret.error ? ret.error : null
-            };
-        }
-        var data = ret.result && typeof ret.result === 'object' ? ret.result : {};
-        return { ok: true, data: data };
-    }
-
     function getActiveCookingCraft() {
         var cs = CookingStation.getState();
         var ac = cs && cs.active_craft && typeof cs.active_craft === 'object' ? cs.active_craft : null;
@@ -3270,7 +3202,7 @@
         var pickMainOutput = null;
         var pickBonusOutputs = [];
         var pickFailureOutput = null;
-        var unifiedRet = tryResolveCookingByUnifiedRoute(mid, selected);
+        var unifiedRet = CookingStation.tryResolveCookingByUnifiedRoute(mid, selected);
         if (unifiedRet.ok && unifiedRet.data) {
             var routeData = unifiedRet.data;
             pickRecipeId = routeData.selected_recipe_id || '';
@@ -3433,7 +3365,7 @@
         var pickMainOutput = null;
         var pickBonusOutputs = [];
         var pickFailureOutput = null;
-        var unifiedRet = tryResolvePharmacyByUnifiedRoute(mid, selected);
+        var unifiedRet = PharmacyStation.tryResolvePharmacyByUnifiedRoute(mid, selected);
         if (unifiedRet.ok && unifiedRet.data) {
             var routeData = unifiedRet.data;
             pickRecipeId = routeData.selected_recipe_id || '';
@@ -3582,9 +3514,9 @@
             }
         }
 
-        var needFuel = readMethodCostValue(m, 'fuel', 'fuel_cost');
-        var needTicks = readMethodCostValue(m, 'ticks', 'craft_ticks');
-        var needStamina = readMethodCostValue(m, 'stamina', 'stamina_cost');
+        var needFuel = StationCraftCore.readMethodCostValue(m, 'fuel', 'fuel_cost');
+        var needTicks = StationCraftCore.readMethodCostValue(m, 'ticks', 'craft_ticks');
+        var needStamina = StationCraftCore.readMethodCostValue(m, 'stamina', 'stamina_cost');
         var cs = PharmacyStation.getState();
         var curFuel = parseInt(cs.fuel_points, 10) || 0;
         if (curFuel < needFuel) return { ok: false, reason: 'insufficient_fuel', need: needFuel, current: curFuel };
@@ -6429,8 +6361,8 @@
             methodWrap.innerHTML = '';
             var mids = PharmacyStation.getMethods() ? Object.keys(PharmacyStation.getMethods()) : [];
             mids.sort(function (a, b) {
-                var na = getPharmacyMethodDisplayName(a, PharmacyStation.getMethods()[a]);
-                var nb = getPharmacyMethodDisplayName(b, PharmacyStation.getMethods()[b]);
+                var na = PharmacyStation.getPharmacyMethodDisplayName(a, PharmacyStation.getMethods()[a]);
+                var nb = PharmacyStation.getPharmacyMethodDisplayName(b, PharmacyStation.getMethods()[b]);
                 return na.localeCompare(nb, 'zh-Hans-CN');
             });
             for (var mx = 0; mx < mids.length; mx++) {
@@ -6440,7 +6372,7 @@
                 var btn = document.createElement('button');
                 btn.type = 'button';
                 btn.className = 'btn-method' + (String(idm) === String(mid) ? ' active' : '');
-                btn.textContent = getPharmacyMethodDisplayName(idm, mObj);
+                btn.textContent = PharmacyStation.getPharmacyMethodDisplayName(idm, mObj);
                 btn.setAttribute('data-method-id', idm);
                 btn.onclick = (function (xid) { return function () { setPharmacyMethodId(xid); renderPharmacyStationPanel(); }; })(idm);
                 methodWrap.appendChild(btn);
@@ -6592,9 +6524,9 @@
         var mSel = (PharmacyStation.getMethods() && mid && PharmacyStation.getMethods()[String(mid)]) ? PharmacyStation.getMethods()[String(mid)] : null;
         var cs = PharmacyStation.getState();
         var curFuel = parseInt(cs.fuel_points, 10) || 0;
-        var needFuel = mSel ? readMethodCostValue(mSel, 'fuel', 'fuel_cost') : 0;
-        var needTicks = mSel ? readMethodCostValue(mSel, 'ticks', 'craft_ticks') : 0;
-        var needStamina = mSel ? readMethodCostValue(mSel, 'stamina', 'stamina_cost') : 0;
+        var needFuel = mSel ? StationCraftCore.readMethodCostValue(mSel, 'fuel', 'fuel_cost') : 0;
+        var needTicks = mSel ? StationCraftCore.readMethodCostValue(mSel, 'ticks', 'craft_ticks') : 0;
+        var needStamina = mSel ? StationCraftCore.readMethodCostValue(mSel, 'stamina', 'stamina_cost') : 0;
         var survState = window.Survival && typeof window.Survival.getState === 'function' ? window.Survival.getState() : null;
         var curStamina = survState ? Number(survState.stamina || 0) : 0;
         var activeCraft = getActivePharmacyCraft();
@@ -10934,7 +10866,9 @@
             showMsg: showMsg,
             render: render,
             getItemDisplayNameSafe: getItemDisplayNameSafe,
-            markCellDirty: markCellDirty
+            markCellDirty: markCellDirty,
+            registerCookingProcessor: registerCookingRecipeProcessorIfNeeded,
+            registerPharmacyProcessor: registerPharmacyRecipeProcessorIfNeeded
         };
         if (window.CookingStation && typeof window.CookingStation.setUiDeps === 'function') {
             window.CookingStation.setUiDeps(stationUiDeps);

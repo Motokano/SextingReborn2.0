@@ -98,13 +98,55 @@
      */
     var uiDeps = {};
     function setUiDeps(deps) {
-        if (deps && typeof deps === 'object') uiDeps = deps;
+        if (deps && typeof deps === 'object') uiDeps = Object.assign({}, uiDeps, deps);
     }
     function ui(key, vars) {
         return (typeof uiDeps.ui === 'function') ? uiDeps.ui(key, vars) : (key != null ? String(key) : '');
     }
     function showMsg(text, kind) {
         if (typeof uiDeps.showMsg === 'function') uiDeps.showMsg(text, kind);
+    }
+
+    /** 触发统一配方处理器注册（依赖注入；对应 scene-app registerPharmacyRecipeProcessorIfNeeded）。 */
+    function registerPharmacyProcessor() {
+        if (typeof uiDeps.registerPharmacyProcessor === 'function') uiDeps.registerPharmacyProcessor();
+    }
+
+    /** 统一配方路由解析：走 RecipeSystem.craft（原 scene-app tryResolvePharmacyByUnifiedRoute 逐字迁移）。 */
+    function tryResolvePharmacyByUnifiedRoute(methodId, selectedInputs) {
+        if (!global.RecipeSystem || typeof global.RecipeSystem.craft !== 'function') {
+            return { ok: false, reason: 'recipe_system_unavailable' };
+        }
+        registerPharmacyProcessor();
+        var ret = global.RecipeSystem.craft({
+            recipe_system: RECIPE_SYSTEM_ID,
+            method_id: StationCraftCore.toUnifiedPharmacyMethodId(methodId),
+            inputs: Array.isArray(selectedInputs) ? selectedInputs : []
+        });
+        if (!ret || ret.ok !== true) {
+            return {
+                ok: false,
+                reason: 'recipe_system_craft_failed',
+                error: ret && ret.error ? ret.error : null
+            };
+        }
+        var data = ret.result && typeof ret.result === 'object' ? ret.result : {};
+        return { ok: true, data: data };
+    }
+
+    /** 制药方法显示名（name 字段优先，否则 UIText pharmacy.method.<id> 兜底；原 scene-app 逐字迁移）。 */
+    function getPharmacyMethodDisplayName(methodId, methodObj) {
+        var mid = methodId != null ? String(methodId) : '';
+        var m = methodObj && typeof methodObj === 'object' ? methodObj : {};
+        if (m.name != null && String(m.name).trim() !== '') return String(m.name);
+        var keyRaw = mid.indexOf('life_pharmacy.') === 0 ? mid.slice('life_pharmacy.'.length) : mid;
+        var key = 'pharmacy.method.' + keyRaw;
+        try {
+            if (global.UIText && typeof global.UIText.t === 'function') {
+                return global.UIText.t(key);
+            }
+        } catch (e0) { /* fallback */ }
+        return mid;
     }
 
     global.PharmacyStation = {
@@ -118,6 +160,8 @@
         getState: getState,
         setUiDeps: setUiDeps,
         ui: ui,
-        showMsg: showMsg
+        showMsg: showMsg,
+        tryResolvePharmacyByUnifiedRoute: tryResolvePharmacyByUnifiedRoute,
+        getPharmacyMethodDisplayName: getPharmacyMethodDisplayName
     };
 })(typeof window !== 'undefined' ? window : globalThis);

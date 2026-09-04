@@ -106,7 +106,7 @@
      */
     var uiDeps = {};
     function setUiDeps(deps) {
-        if (deps && typeof deps === 'object') uiDeps = deps;
+        if (deps && typeof deps === 'object') uiDeps = Object.assign({}, uiDeps, deps);
     }
     function getUiDeps() { return uiDeps; }
     function ui(key, vars) {
@@ -114,6 +114,33 @@
     }
     function showMsg(text, kind) {
         if (typeof uiDeps.showMsg === 'function') uiDeps.showMsg(text, kind);
+    }
+
+    /** 触发统一配方处理器注册（依赖注入；对应 scene-app registerCookingRecipeProcessorIfNeeded）。 */
+    function registerCookingProcessor() {
+        if (typeof uiDeps.registerCookingProcessor === 'function') uiDeps.registerCookingProcessor();
+    }
+
+    /** 统一配方路由解析：走 RecipeSystem.craft（原 scene-app tryResolveCookingByUnifiedRoute 逐字迁移）。 */
+    function tryResolveCookingByUnifiedRoute(methodId, selectedInputs) {
+        if (!global.RecipeSystem || typeof global.RecipeSystem.craft !== 'function') {
+            return { ok: false, reason: 'recipe_system_unavailable' };
+        }
+        registerCookingProcessor();
+        var ret = global.RecipeSystem.craft({
+            recipe_system: RECIPE_SYSTEM_ID,
+            method_id: StationCraftCore.toUnifiedCookingMethodId(methodId),
+            inputs: Array.isArray(selectedInputs) ? selectedInputs : []
+        });
+        if (!ret || ret.ok !== true) {
+            return {
+                ok: false,
+                reason: 'recipe_system_craft_failed',
+                error: ret && ret.error ? ret.error : null
+            };
+        }
+        var data = ret.result && typeof ret.result === 'object' ? ret.result : {};
+        return { ok: true, data: data };
     }
 
     global.CookingStation = {
@@ -128,6 +155,7 @@
         getState: getState,
         setUiDeps: setUiDeps,
         ui: ui,
-        showMsg: showMsg
+        showMsg: showMsg,
+        tryResolveCookingByUnifiedRoute: tryResolveCookingByUnifiedRoute
     };
 })(typeof window !== 'undefined' ? window : globalThis);

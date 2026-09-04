@@ -226,6 +226,16 @@
         return 'life_pharmacy.' + s;
     }
 
+    /** 读取方法成本字段（cost[key] 优先，legacyKey 兜底；原 scene-app readMethodCostValue 逐字迁移）。 */
+    function readMethodCostValue(methodObj, key, legacyKey) {
+        var m = methodObj && typeof methodObj === 'object' ? methodObj : {};
+        var cost = m.cost && typeof m.cost === 'object' ? m.cost : null;
+        var v = cost && cost[key] != null ? Number(cost[key]) : NaN;
+        if (!isFinite(v)) v = Number(m[legacyKey]);
+        if (!isFinite(v)) v = 0;
+        return Math.max(0, Math.floor(v));
+    }
+
     global.StationCraftCore = {
         normalizeCookingInputs: normalizeCookingInputs,
         normalizePharmacyInputs: normalizePharmacyInputs,
@@ -238,6 +248,7 @@
         consumeInventoryItemsByList: consumeInventoryItemsByList,
         putItemsBack: putItemsBack,
         toUnifiedCookingMethodId: toUnifiedCookingMethodId,
-        toUnifiedPharmacyMethodId: toUnifiedPharmacyMethodId
+        toUnifiedPharmacyMethodId: toUnifiedPharmacyMethodId,
+        readMethodCostValue: readMethodCostValue
     };
 })(typeof window !== 'undefined' ? window : globalThis);
