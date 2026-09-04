@@ -34,7 +34,7 @@
 | 玩家间交易 | [13-p2p-trading.md](docs/design/13-p2p-trading.md) |
 | 实现约定 | [14-implementation.md](docs/design/14-implementation.md) |
 | 启动加载与解耦约定（实现补充） | [17-loading-and-decoupling.md](docs/design/17-loading-and-decoupling.md) |
-| 后续可补充 | [15-todo.md](docs/design/15-todo.md) |
+| 后续可补充 | [15-todo.md](docs/design/_archive/15-todo.md) |
 | **实现进度快照（仓库对照）** | [docs/implementation-progress.md](docs/implementation-progress.md) |
 
 ---

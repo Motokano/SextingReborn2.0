@@ -5,7 +5,7 @@
 **复跑统计**：
 
 - `npm run audit:item-keys`（[`tools/audit-item-template-keys.mjs`](../../tools/audit-item-template-keys.mjs)）：扫描 [`data/items.json`](../../data/items.json)、[`data/equipment.json`](../../data/equipment.json) 各表顶层模板键、**并集**键列表，以及 `use_effect` 子键（若存在）。
-- `npm run audit:item-field-rules`（[`tools/audit-item-field-display-rules.mjs`](../../tools/audit-item-field-display-rules.mjs)）：模板字段路径与 [`data/item-field-display-rules.json`](../../data/item-field-display-rules.json) 对账，并输出 CSV/JSON 中旧轨恢复列与 `use_effect` 出现情况。最近一次落盘输出见 [`27-item-field-rules-audit-last-run.md`](27-item-field-rules-audit-last-run.md)。
+- `npm run audit:item-field-rules`（[`tools/audit-item-field-display-rules.mjs`](../../tools/audit-item-field-display-rules.mjs)）：模板字段路径与 [`data/item-field-display-rules.json`](../../data/item-field-display-rules.json) 对账，并输出 CSV/JSON 中旧轨恢复列与 `use_effect` 出现情况。历史落盘输出见 [`_archive/27-item-field-rules-audit-last-run.md`](_archive/27-item-field-rules-audit-last-run.md)（运行日志已归档；可直接复跑上述命令生成新输出）。
 
 输出随数据变化可能与下文快照略有出入。
 

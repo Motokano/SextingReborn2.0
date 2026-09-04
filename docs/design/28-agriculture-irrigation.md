@@ -1266,8 +1266,8 @@ x=0 x=1 x=2
 
 ### 16.6 后续 agent 与运行时模块
 
-- **物品链待 A6**：见 **`docs/design/agriculture-a6-items-checklist.md`**（`seeds_farming.csv` 并入构建；沤肥三档肥、海藻精、客土 `grants_soil_id` 进物品表）。
+- **物品链待 A6**：见 **`docs/agents/agriculture-a6-items-checklist.md`**（`seeds_farming.csv` 并入构建；沤肥三档肥、海藻精、客土 `grants_soil_id` 进物品表）。
 - **运行时模块（勿重写契约层）**：`js/agriculture-config.js`、`js/agriculture-player-items.js`；`loadConfig` 已 fetch `agriculture-build-costs.json`、`agriculture-item-params.json` 并注入上述模块。
-- **分 agent 实施**：复制用 Prompt 见 **`docs/design/agriculture-port-agent-prompts.md`**（含全局硬约束全文）。
+- **分 agent 实施**：复制用 Prompt 见 **`docs/agents/agriculture-port-agent-prompts.md`**（含全局硬约束全文）。
 - **Standalone 试玩页**：规则与公式以 **`js/agriculture-map.js`** 为单一真相源；改规则先改该模块，再执行 `npm run build:agriculture-standalone`（或等价构建脚本）生成 HTML；**禁止**长期维护 demo 与本体两套并行公式。
 

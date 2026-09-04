@@ -219,7 +219,7 @@ A4 UI ║ A5 世界入口（并行，依赖 A3 公开 API）
 【农业移植 · 全局硬约束】
 （粘贴上文「全局约束」全文）
 
-权威清单：docs/design/agriculture-a6-items-checklist.md（逐条完成并勾选）。
+权威清单：docs/agents/agriculture-a6-items-checklist.md（逐条完成并勾选）。
 
 核心交付：
 - A6-1：seeds_farming.csv 并入 tools/build-items-json.mjs → npm run build:items；修正 isSeedStack 认 category seed + sub_category farming
@@ -485,7 +485,7 @@ S7 联调总验收（Phase 2 清单）
 ### Prompt
 
 ```text
-你是数据 agent。任务：完成 docs/design/agriculture-a6-items-checklist.md 未勾项。
+你是数据 agent。任务：完成 docs/agents/agriculture-a6-items-checklist.md 未勾项。
 
 【农业 Phase 2 · 全局硬约束】
 （粘贴 Phase 2 全局约束 + Phase 1 全局约束 inventory 段）

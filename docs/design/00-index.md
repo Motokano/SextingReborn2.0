@@ -30,19 +30,19 @@
 | 身体部位与状态 | [09-body-parts.md](09-body-parts.md) | 七部位、效果、损毁、手术 |
 | 敌人设计 | [10-enemies.md](10-enemies.md) | 敌人与主角差异、配置、掉落池 |
 | 技能系统 | [11-skills.md](11-skills.md) | 生存/生活/战斗/特殊、熟练度、战斗技能通用规则与示例 |
-| 体温 Buff 实施清单 | [24-temperature-buff-implementation-checklist.md](24-temperature-buff-implementation-checklist.md) | 体温重构部署清单：区域温度/四季、极寒极热 Buff、耐候阈值与升级接线、验收用例 |
+| 生存 Buff 管线回归清单(原 24-temperature,已去编号改名) | [survival-buff-regression-checklist.md](survival-buff-regression-checklist.md) | 体温重构部署清单：区域温度/四季、极寒极热 Buff、耐候阈值与升级接线、验收用例 |
 | 身高与 BMI（首版） | [25-height-bmi.md](25-height-bmi.md) | 身高字段、创建时 BMI=22 反算体重、WHO 分段、bmi_tier_changed 事件、NPC BMI 条件与旧档兼容 |
 | 物品数值区间随机 | [26-item-numeric-rolls-resolved-rolls.md](26-item-numeric-rolls-resolved-rolls.md) | `numeric_rolls` 模板区间、`resolved_rolls` 实例抽样、校验分层、先 roll 再估值（无品质乘算）、堆叠与货币约定（冻结规格） |
 | 物品模板字段分层盘点 | [27-item-template-fields-inventory.md](27-item-template-fields-inventory.md) | `items.json` / `equipment.json` / 实例分层、顶层键快照、`getItemTemplate` 合并口径；`npm run audit:item-keys` 复扫 |
 | 农业种植与灌溉系统 | [28-agriculture-irrigation.md](28-agriculture-irrigation.md) | 固定农业互动点、**11×11** 农业地图（§1、§16）、水池/水渠、主干与支流识别、供水分配、作物受水来源；本体接入见 §16 |
 | 藏身处账号仓库 | [29-hideout-warehouse.md](29-hideout-warehouse.md) | `hideout_warehouse` 存档、100→700 格、NPC 入口、堆叠/实例、腐败与冷藏、远驿、升级与 `warehouse-upgrades.json` |
-| 仓库 UI 外部设计 Prompt | [hideout-warehouse-ui-agent-prompt.md](hideout-warehouse-ui-agent-prompt.md) | 给无仓库访问权的前端 Agent：战斗技能/背包主题对齐、布局与交付物 |
-| 账号仓库移植 · 分 Agent Prompt | [hideout-warehouse-port-agent-prompts.md](hideout-warehouse-port-agent-prompts.md) | W0～W9 执行顺序、全局约束、各 agent 可复制 Prompt、文件归属 |
+| 仓库 UI 外部设计 Prompt(已迁 docs/agents) | [../agents/hideout-warehouse-ui-agent-prompt.md](../agents/hideout-warehouse-ui-agent-prompt.md) | 给无仓库访问权的前端 Agent：战斗技能/背包主题对齐、布局与交付物 |
+| 账号仓库移植 · 分 Agent Prompt(已迁 docs/agents) | [../agents/hideout-warehouse-port-agent-prompts.md](../agents/hideout-warehouse-port-agent-prompts.md) | W0～W9 执行顺序、全局约束、各 agent 可复制 Prompt、文件归属 |
 | 烹饪系统（实现收口） | [21-cooking-system-benchmarks.md](21-cooking-system-benchmarks.md) | 烹饪当前实现口径：单次制作、统一配方路由优先、旧表兜底、图鉴双写兼容 |
 | 统一配方系统（实现口径） | [22-recipe-system-unified.md](22-recipe-system-unified.md) | 配方主表/工艺表/interface、schema 校验、route 优先级、兼容期双写约定 |
 | Buff / Debuff 系统 | [18-buff-system.md](18-buff-system.md) | 通用触发、分层消耗、命中/效果条件、调试开关 |
 | 动作系统 | [19-action-system.md](19-action-system.md) | 条件解锁的特殊指令、菜单执行、Tick、可选限次耗尽隐藏、与 hubs 呼吸法/步法对齐 |
-| 气力→呼吸条迁移 | [33-breath-bar-migration.md](33-breath-bar-migration.md) | 气力改为呼吸法 `breath_bar` 定义后的代码迁移清单：survival / melee-resolve / hub-actions / scene-app 四处改造点、行为对照表与验收用例 |
+| 气力→呼吸条迁移(已归档:已完成) | [_archive/33-breath-bar-migration.md](_archive/33-breath-bar-migration.md) | 气力改为呼吸法 `breath_bar` 定义后的代码迁移清单：survival / melee-resolve / hub-actions / scene-app 四处改造点、行为对照表与验收用例 |
 | 肌肉系统（取代原经脉穴位） | [34-muscle-system-rework.md](34-muscle-system-rework.md) | 取代 `12`：穴位→肌肉（22 肌群 × 478 全量，数据 `data/muscles.json`）；任督/全通成就→肌群全通解锁大型被动容量；后遗症→大型被动（allowed_groups+slots_cost）、招式三维（数值/形态/效果）分工。阶段一/二已落地、阶段三（大型被动）已部分落地 |
 | 代码文案规范 | [35-code-i18n-guideline.md](35-code-i18n-guideline.md) | 工具边界（防 mojibake）、key 命名规则、i18n 抽离四步流程、边界判定、分批计划 |
 | UI 自由窗口系统 | [36-ui-windows.md](36-ui-windows.md) | 仿 RO 浮动窗口：拖拽/缩放/显隐/锁定/重置、设备级持久化、认知门控合并、8 层 UI 演出 API、落地阶段 |
@@ -60,8 +60,8 @@
 | 剧情大纲（遮天 / Blackout） | [30-story-outline-blackout.md](30-story-outline-blackout.md) | 世界观、七阀、硅叶、林书瑶、主角、终局「遮天」（英 Blackout）及尾声；HTML 见 `tools/story-outline-zhetian.html` |
 | 畜牧系统（草案） | [31-livestock-husbandry.md](31-livestock-husbandry.md) | 十字机械牧场、四区域顺时针旋转、动物个体/体重/饥饿、草高/板结/污染/疾病与血量、产出/屠宰/繁殖、Perk 遗传、畜牧技能、饲料料肉比、19 模块两层分工 |
 | 畜牧可扩展性架构（实现约定） | [32-livestock-architecture.md](32-livestock-architecture.md) | 数据驱动三表（物种/模块/Perk）、动物实例模型、生态变量接口、声明式 effect_type + handler、Perk modifier key 目录、扩展流程与存档迁移 |
-| 畜牧 UI 外部设计 Prompt | [livestock-ui-agent-prompt.md](livestock-ui-agent-prompt.md) | 给无仓库访问权的 UI Agent：牧场控制面板四 Tab（总览装置俯视图/动物/模块/产出）、背包战斗主题对齐、信息分级、旋转倒计时 |
-| 后续可补充 | [15-todo.md](15-todo.md) | 敌人 AI、异常状态、技能形态等 |
+| 畜牧 UI 外部设计 Prompt(已迁 docs/agents) | [../agents/livestock-ui-agent-prompt.md](../agents/livestock-ui-agent-prompt.md) | 给无仓库访问权的 UI Agent：牧场控制面板四 Tab（总览装置俯视图/动物/模块/产出）、背包战斗主题对齐、信息分级、旋转倒计时 |
+| 后续可补充(已归档,开放项转看板) | [_archive/15-todo.md](_archive/15-todo.md) | 敌人 AI、异常状态、技能形态等(见看板 k142/144/146/148) |
 | 实现进度快照 | [implementation-progress.md](../implementation-progress.md) | 相对本索引的代码落地进度与下一步建议（非设计正本） |
 
 ---

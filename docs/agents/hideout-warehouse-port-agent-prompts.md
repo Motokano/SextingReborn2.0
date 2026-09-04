@@ -1,7 +1,7 @@
 # 藏身处账号仓库 · 分 Agent Prompt 包
 
 > **用法**：每个任务复制对应 **「Prompt」** 整段给独立 agent。所有 agent 必须先读 **「全局约束」** 与 `docs/design/29-hideout-warehouse.md`。  
-> **UI 视觉正本**：`reference/code_artifact.html`（外部设计稿）；主题对齐说明见 `docs/design/hideout-warehouse-ui-agent-prompt.md`。  
+> **UI 视觉正本**：`reference/code_artifact.html`（外部设计稿）；主题对齐说明见 `docs/agents/hideout-warehouse-ui-agent-prompt.md`。  
 > **仓库路径**：`SextingReborn2.0`（Windows 示例：`c:\Users\admin\Desktop\SextingReborn2.0`）。
 
 ---
@@ -134,7 +134,7 @@ W9 联调总验收
 视觉参照：
 - reference/code_artifact.html（三栏 + 底栏四容器 + 扩建 overlay + footer）
 - #modal-combat 尺寸与 token（min(1280px,98vw) × min(860px,92vh)、combat-hub-title、combat-cat-btn、combat-pager）
-- docs/design/hideout-warehouse-ui-agent-prompt.md §0 色板
+- docs/agents/hideout-warehouse-ui-agent-prompt.md §0 色板
 
 交付：
 1. index.html 新增 #modal-hideout-warehouse（与 #modal-base-warehouse 并存），结构含固定 id：
@@ -393,7 +393,7 @@ W9 联调总验收
 | 文件/目录 | 主责 |
 |-----------|------|
 | `reference/code_artifact.html` | W2 视觉参照（只读） |
-| `docs/design/hideout-warehouse-ui-agent-prompt.md` | W2 主题约束 |
+| `docs/agents/hideout-warehouse-ui-agent-prompt.md` | W2 主题约束 |
 | `docs/design/29-hideout-warehouse.md` | W0、全员 |
 | `data/warehouse-upgrades.json` | W1/W5/W7 |
 | `js/hideout-warehouse.js` | W1、W5/W6/W8 扩展 |
@@ -411,7 +411,7 @@ W9 联调总验收
 
 ## 外部 UI Agent 专用（仅 W2 可转发）
 
-若 agent **无法访问仓库**，只交付静态 HTML：复制 `docs/design/hideout-warehouse-ui-agent-prompt.md` 全文（--- PROMPT 开始 --- 至结束），产出物落盘为 `reference/code_artifact.html` 更新版；**W2 负责**转写进 `index.html`，不接 Tailwind。
+若 agent **无法访问仓库**，只交付静态 HTML：复制 `docs/agents/hideout-warehouse-ui-agent-prompt.md` 全文（--- PROMPT 开始 --- 至结束），产出物落盘为 `reference/code_artifact.html` 更新版；**W2 负责**转写进 `index.html`，不接 Tailwind。
 
 ---
 

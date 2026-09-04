@@ -187,8 +187,8 @@
 | 职责 | 路径 |
 |------|------|
 | 设计正本 | 本文件 |
-| 分 Agent Prompt 包 | `docs/design/hideout-warehouse-port-agent-prompts.md`（W0～W9、全局约束） |
-| UI 外部 Agent Prompt | `docs/design/hideout-warehouse-ui-agent-prompt.md` |
+| 分 Agent Prompt 包 | `docs/agents/hideout-warehouse-port-agent-prompts.md`（W0～W9、全局约束） |
+| UI 外部 Agent Prompt | `docs/agents/hideout-warehouse-ui-agent-prompt.md` |
 | UI 视觉参照（只读） | `reference/code_artifact.html` |
 | 升级数据 | `data/warehouse-upgrades.json` |
 | 路线图 HTML | `warehouse-upgrade-roadmap.html` |
