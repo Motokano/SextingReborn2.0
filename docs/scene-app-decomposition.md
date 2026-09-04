@@ -216,6 +216,9 @@ js/item-use.js  window.ItemUse      // applyItemUseEffectFromTemplate / tryUseIt
   - **P6a（已提交）**：物品使用规则核心迁 `js/item-use.js`（ItemUse）。
     - 迁出 5 函数（applyFoodDigestBuffFromTemplate/toBoolFlag/itemTemplateIsConsumable/applyItemUseEffectFromTemplate/grantFoodAttributeExp）+ 进食经验反馈通道 `lastFoodExpGrantText`（模块自持，容器使用入口读后清 → `ItemUse.takeLastFoodExpGrantText()`）。
     - 依赖注入 setUiDeps({ ui })；scene-app 删 166 行；外部 3 处重接 + 通道 1 处改造；零残留；语法 + 实机冒烟通过。scene-app 当前 11582 行。
+  - **P5a（已提交）**：物品 tooltip 簇迁 `js/scene-ui.js`（SceneUi）。
+    - 迁出 6 函数（showItemTooltip/hideItemTooltip + tooltipEl/tooltipHideTimer DOM 态、buildItemTooltipHtml/ForTemplate、formatItemAttributes、buildItemFieldRulesHtmlAppend）。
+    - DI setUiDeps({ ui })；scene-app 删 107 行；35 处调用重接；零残留；实机冒烟通过。scene-app 当前 11478 行。本模块是 P5 scene-ui 种子，后续面板/HUD 的 tooltip 依赖已可外部解析。
 - **P1c（待办）**：站点规则与面板迁出（配 infra 桥，见 P1 实测 deps：ui/showMsg/render/tooltip 系列/`isPreCreationGameplayRestricted` 等）；compost 面板 → `compost-panel.js`。
 
 ## 5. 风险与对策

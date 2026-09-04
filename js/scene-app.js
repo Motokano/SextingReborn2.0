@@ -567,113 +567,6 @@
         rfoot: FOOT_ACTION_TAGS.slice()
     };
 
-    var tooltipEl = null;
-    var tooltipHideTimer = null;
-    function showItemTooltip(html, anchorEl) {
-        if (!tooltipEl) tooltipEl = document.getElementById('item-tooltip');
-        if (!tooltipEl || !html) return;
-        tooltipEl.innerHTML = html;
-        tooltipEl.style.left = '-9999px';
-        tooltipEl.style.top = '0';
-        tooltipEl.classList.add('show');
-        if (tooltipHideTimer) { clearTimeout(tooltipHideTimer); tooltipHideTimer = null; }
-        requestAnimationFrame(function () {
-            var rect = anchorEl.getBoundingClientRect();
-            var tr = tooltipEl.getBoundingClientRect();
-            var tw = tr.width || 220;
-            var th = tr.height || 100;
-            var pad = 12;
-            var left = rect.right + pad;
-            var top = rect.top;
-            if (left + tw > window.innerWidth - pad) left = rect.left - tw - pad;
-            if (left < pad) left = pad;
-            if (top + th > window.innerHeight - pad) top = window.innerHeight - th - pad;
-            if (top < pad) top = pad;
-            tooltipEl.style.left = left + 'px';
-            tooltipEl.style.top = top + 'px';
-        });
-    }
-    function hideItemTooltip() {
-        if (!tooltipEl) tooltipEl = document.getElementById('item-tooltip');
-        if (tooltipEl) tooltipEl.classList.remove('show');
-    }
-
-    function formatItemAttributes(tpl, inst) {
-        if (!tpl) return '';
-        var lines = [];
-        // 仅保留通用属性（重量/背包减重/技能系数——武器与装备共用）；
-        // 装备专属细节（口袋/背心栏/形态系数/词条槽/先天要求等）改由 info_module（module.equipment_armor）按技能解锁显示。
-        if (tpl.weight_kg != null) lines.push(ui('item.attr.weight', { v: tpl.weight_kg }));
-        if (tpl.backpack_weight_factor != null) lines.push(ui('item.attr.backpack_weight_factor', { v: Math.round(tpl.backpack_weight_factor * 100) }));
-        if (tpl.skill_coef != null) lines.push(ui('item.attr.skill_coef', { v: tpl.skill_coef }));
-        return lines.length ? lines.join('\n') : '';
-    }
-    function buildItemTooltipHtml(name, desc, attrs) {
-        var html = '<div class="tooltip-name">' + (name || '').replace(/</g, '&lt;').replace(/>/g, '&gt;') + '</div>';
-        if (desc) html += '<div class="tooltip-desc">' + (desc || '').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\n/g, '<br>') + '</div>';
-        if (attrs) html += '<div class="tooltip-attrs">' + (attrs || '').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\n/g, '<br>') + '</div>';
-        return html;
-    }
-
-    function buildItemFieldRulesHtmlAppend(itemId, tpl, inst, character) {
-        try {
-            if (!window.ItemFieldDisplayRules || typeof window.ItemFieldDisplayRules.renderFieldBlocksHtml !== 'function') return '';
-            return window.ItemFieldDisplayRules.renderFieldBlocksHtml({
-                itemId: itemId,
-                tpl: tpl,
-                inst: inst,
-                character: character,
-                buffLookup: function (buffId) {
-                    if (!window.BuffSystem || typeof window.BuffSystem.getBuffTemplate !== 'function') return null;
-                    try {
-                        var bt = window.BuffSystem.getBuffTemplate(buffId);
-                        if (!bt) return null;
-                        // 汇总 survival_delta（每 tick 恢复）供食物恢复摘要渲染（k35，43 消化模型）
-                        var sd = { satiety: 0, thirst: 0, nutrition: 0 };
-                        if (Array.isArray(bt.effects)) {
-                            for (var ei = 0; ei < bt.effects.length; ei++) {
-                                var ef = bt.effects[ei];
-                                if (ef && ef.type === 'survival_delta' && ef.params && typeof ef.params === 'object') {
-                                    var p = ef.params;
-                                    if (p.satiety != null) sd.satiety += Number(p.satiety) || 0;
-                                    if (p.thirst != null) sd.thirst += Number(p.thirst) || 0;
-                                    if (p.nutrition != null) sd.nutrition += Number(p.nutrition) || 0;
-                                }
-                            }
-                        }
-                        return {
-                            name: bt.name || '',
-                            buff_id: bt.buff_id || buffId,
-                            durationTicks: bt.durationTicks != null ? (parseInt(bt.durationTicks, 10) || 0) : 0,
-                            survivalDelta: sd
-                        };
-                    } catch (eB) { return null; }
-                }
-            }) || '';
-        } catch (e) { return ''; }
-    }
-
-    function buildItemTooltipHtmlForTemplate(itemId, tpl, inst, character) {
-        var tier = IE && IE.getItemDisplayTier ? IE.getItemDisplayTier(itemId, character) : 0;
-        var name = tpl && IE && IE.getDisplayName ? IE.getDisplayName(tpl, tier, character) : String(itemId || '');
-        var desc = tpl && IE && IE.getDisplayDesc ? IE.getDisplayDesc(tpl, tier, character) : '';
-        var attrsText = (typeof formatItemAttributes === 'function') ? formatItemAttributes(tpl, inst) : '';
-        var html = buildItemTooltipHtml(name, desc, attrsText);
-        try {
-            if (window.ItemInfoModules && typeof window.ItemInfoModules.renderTooltipModulesHtml === 'function') {
-                var modulesHtml = window.ItemInfoModules.renderTooltipModulesHtml({
-                    itemId: itemId,
-                    tpl: tpl,
-                    character: character
-                });
-                if (modulesHtml) html += modulesHtml;
-            }
-        } catch (e) { /* ignore */ }
-        var fieldRulesHtml = buildItemFieldRulesHtmlAppend(itemId, tpl, inst, character);
-        if (fieldRulesHtml) html += fieldRulesHtml;
-        return html;
-    }
-
     function loadConfig() {
         var base = 'data/';
         return Promise.all([
@@ -1241,9 +1134,9 @@
                         var tagStr = arr.length ? arr.join(ui('punct.join.dot')) : ui('common.dash');
                         html += '<div class="tooltip-attrs">' + ui('tooltip.action.tags', { v: tagStr }).replace(/</g, '&lt;').replace(/>/g, '&gt;') + '</div>';
                     }
-                    showItemTooltip(html, row);
+                    SceneUi.showItemTooltip(html, row);
                 });
-                row.addEventListener('mouseleave', hideItemTooltip);
+                row.addEventListener('mouseleave', SceneUi.hideItemTooltip);
             })(partId, label);
             container.appendChild(row);
         }
@@ -1814,12 +1707,12 @@
                 var buffDesc = inst.template && inst.template.desc ? String(inst.template.desc) : '';
                 var attrs = ui('scene.buff.stacks', { v: String(stacks) });
                 if (rem != null) attrs += '\n' + ui('scene.buff.remaining', { v: String(rem) });
-                var tipHtml = buildItemTooltipHtml(buffName, buffDesc, attrs);
+                var tipHtml = SceneUi.buildItemTooltipHtml(buffName, buffDesc, attrs);
                 chip.addEventListener('mouseenter', function () {
-                    showItemTooltip(tipHtml, chip);
+                    SceneUi.showItemTooltip(tipHtml, chip);
                 });
                 chip.addEventListener('mouseleave', function () {
-                    hideItemTooltip();
+                    SceneUi.hideItemTooltip();
                 });
                 containerEl.appendChild(chip);
             });
@@ -4601,9 +4494,9 @@
                     '<div class="bp-item-sub">' + escHtml(disp.desc || '') + '</div>' +
                     '<div class="bp-item-meta">' + escHtml(row.item.item_id || '') + '</div>' +
                     '</div>';
-                var tipHtml = buildItemTooltipHtmlForTemplate(row.item.item_id, disp.tpl, row.item, char);
-                node.addEventListener('mouseenter', function (h, el) { return function () { showItemTooltip(h, el); }; }(tipHtml, node));
-                node.addEventListener('mouseleave', hideItemTooltip);
+                var tipHtml = SceneUi.buildItemTooltipHtmlForTemplate(row.item.item_id, disp.tpl, row.item, char);
+                node.addEventListener('mouseenter', function (h, el) { return function () { SceneUi.showItemTooltip(h, el); }; }(tipHtml, node));
+                node.addEventListener('mouseleave', SceneUi.hideItemTooltip);
                 node.onclick = (function (r) {
                     return function () {
                         backpackUIState.equipDetailSlot = null;
@@ -4644,7 +4537,7 @@
             desc.className = 'bp-detail-desc';
             desc.textContent = disp.desc || '';
             detailEl.appendChild(desc);
-            var attrsText = (typeof formatItemAttributes === 'function') ? formatItemAttributes(disp.tpl, picked.item) : '';
+            var attrsText = (typeof SceneUi.formatItemAttributes === 'function') ? SceneUi.formatItemAttributes(disp.tpl, picked.item) : '';
             if (attrsText) {
                 var attrsDiv = document.createElement('div');
                 attrsDiv.className = 'bp-detail-attrs';
@@ -4667,7 +4560,7 @@
                 modWrap.innerHTML = modulesHtml;
                 detailEl.appendChild(modWrap);
             }
-            var fieldAppend = buildItemFieldRulesHtmlAppend(picked.item.item_id, disp.tpl, picked.item, char);
+            var fieldAppend = SceneUi.buildItemFieldRulesHtmlAppend(picked.item.item_id, disp.tpl, picked.item, char);
             if (fieldAppend) {
                 var fieldWrap = document.createElement('div');
                 fieldWrap.className = 'bp-detail-field-rules';
@@ -4767,9 +4660,9 @@
                     if (hasItem && backpackUIState.equipDetailSlot === slotId) row.className = 'equip-row has-item selected';
                     row.innerHTML = '<span class="slot-name">' + escHtml(label) + '</span><span class="item-name">' + escHtml(itemName) + '</span>';
                     if (hasItem) {
-                        var tipHtml = buildItemTooltipHtmlForTemplate(eq.item_id, eqTpl, eq, char);
-                        row.addEventListener('mouseenter', function (h, el) { return function () { showItemTooltip(h, el); }; }(tipHtml, row));
-                        row.addEventListener('mouseleave', hideItemTooltip);
+                        var tipHtml = SceneUi.buildItemTooltipHtmlForTemplate(eq.item_id, eqTpl, eq, char);
+                        row.addEventListener('mouseenter', function (h, el) { return function () { SceneUi.showItemTooltip(h, el); }; }(tipHtml, row));
+                        row.addEventListener('mouseleave', SceneUi.hideItemTooltip);
                         row.onclick = (function (sid) {
                             return function () {
                                 backpackUIState.equipDetailSlot = sid;
@@ -5216,9 +5109,9 @@
                     var tpl = IE.getItemTemplate(iid);
                     if (tpl) {
                         var tier = IE.getItemDisplayTier ? IE.getItemDisplayTier(iid, char0) : 0;
-                        var tipHtml = buildItemTooltipHtmlForTemplate(iid, tpl, null, char0);
-                        row.addEventListener('mouseenter', function (h, elRef) { return function () { showItemTooltip(h, elRef); }; }(tipHtml, row));
-                        row.addEventListener('mouseleave', hideItemTooltip);
+                        var tipHtml = SceneUi.buildItemTooltipHtmlForTemplate(iid, tpl, null, char0);
+                        row.addEventListener('mouseenter', function (h, elRef) { return function () { SceneUi.showItemTooltip(h, elRef); }; }(tipHtml, row));
+                        row.addEventListener('mouseleave', SceneUi.hideItemTooltip);
                     }
                 }
             } catch (eTip) { /* ignore */ }
@@ -5322,9 +5215,9 @@
                             var tpl = IE.getItemTemplate(iid);
                             if (tpl) {
                                 var tier = IE.getItemDisplayTier ? IE.getItemDisplayTier(iid, char0) : 0;
-                                var tipHtml = buildItemTooltipHtmlForTemplate(iid, tpl, null, char0);
-                                row.addEventListener('mouseenter', function (h, elRef) { return function () { showItemTooltip(h, elRef); }; }(tipHtml, row));
-                                row.addEventListener('mouseleave', hideItemTooltip);
+                                var tipHtml = SceneUi.buildItemTooltipHtmlForTemplate(iid, tpl, null, char0);
+                                row.addEventListener('mouseenter', function (h, elRef) { return function () { SceneUi.showItemTooltip(h, elRef); }; }(tipHtml, row));
+                                row.addEventListener('mouseleave', SceneUi.hideItemTooltip);
                             }
                         }
                     } catch (eTip) { /* ignore */ }
@@ -5888,9 +5781,9 @@
                     var tpl = IE.getItemTemplate(iid);
                     if (tpl) {
                         var tier = IE.getItemDisplayTier ? IE.getItemDisplayTier(iid, char0) : 0;
-                        var tipHtml = buildItemTooltipHtmlForTemplate(iid, tpl, null, char0);
-                        row.addEventListener('mouseenter', function (h, elRef) { return function () { showItemTooltip(h, elRef); }; }(tipHtml, row));
-                        row.addEventListener('mouseleave', hideItemTooltip);
+                        var tipHtml = SceneUi.buildItemTooltipHtmlForTemplate(iid, tpl, null, char0);
+                        row.addEventListener('mouseenter', function (h, elRef) { return function () { SceneUi.showItemTooltip(h, elRef); }; }(tipHtml, row));
+                        row.addEventListener('mouseleave', SceneUi.hideItemTooltip);
                     }
                 }
             } catch (eTip) { /* ignore */ }
@@ -5981,9 +5874,9 @@
                             var tpl = IE.getItemTemplate(iid);
                             if (tpl) {
                                 var tier = IE.getItemDisplayTier ? IE.getItemDisplayTier(iid, char0) : 0;
-                                var tipHtml = buildItemTooltipHtmlForTemplate(iid, tpl, null, char0);
-                                row.addEventListener('mouseenter', function (h, elRef) { return function () { showItemTooltip(h, elRef); }; }(tipHtml, row));
-                                row.addEventListener('mouseleave', hideItemTooltip);
+                                var tipHtml = SceneUi.buildItemTooltipHtmlForTemplate(iid, tpl, null, char0);
+                                row.addEventListener('mouseenter', function (h, elRef) { return function () { SceneUi.showItemTooltip(h, elRef); }; }(tipHtml, row));
+                                row.addEventListener('mouseleave', SceneUi.hideItemTooltip);
                             }
                         }
                     } catch (eTip) { /* ignore */ }
@@ -7804,7 +7697,7 @@
     function closeAgriculturePanel() {
         if (!agriculturePanelOpen) return;
         stopAgricultureAutoTick();
-        hideItemTooltip();
+        SceneUi.hideItemTooltip();
         if (window.Survival && typeof window.Survival.advanceTick === 'function') window.Survival.advanceTick();
         agriculturePanelOpen = false;
         var modal = document.getElementById('modal-agriculture');
@@ -8304,9 +8197,9 @@
             btn.setAttribute('data-item-id', id);
             btn.textContent = ui('warehouse.take.one');
             if (tpl) {
-                var tipHtml = buildItemTooltipHtmlForTemplate(id, tpl, null, char0);
-                row.addEventListener('mouseenter', function (h, elRef) { return function () { showItemTooltip(h, elRef); }; }(tipHtml, row));
-                row.addEventListener('mouseleave', hideItemTooltip);
+                var tipHtml = SceneUi.buildItemTooltipHtmlForTemplate(id, tpl, null, char0);
+                row.addEventListener('mouseenter', function (h, elRef) { return function () { SceneUi.showItemTooltip(h, elRef); }; }(tipHtml, row));
+                row.addEventListener('mouseleave', SceneUi.hideItemTooltip);
             }
             row.appendChild(nameEl);
             row.appendChild(btn);
@@ -10548,6 +10441,10 @@
         if (window.ItemUse && typeof window.ItemUse.setUiDeps === 'function') {
             window.ItemUse.setUiDeps({ ui: ui });
         }
+        // 场景 UI 工具（P5）：SceneUi 依赖注入（ui 文案取词）
+        if (window.SceneUi && typeof window.SceneUi.setUiDeps === 'function') {
+            window.SceneUi.setUiDeps({ ui: ui });
+        }
         registerUiWindows();
         loadConfig().then(function () {
             // i18n 已就绪（UIText.setDict 已完成）后再进行地图合并渲染
@@ -11540,11 +11437,11 @@
         markCellDirty(String(mapId || ''), Math.floor(Number(x)), Math.floor(Number(y)));
         if (window.SceneRenderer) window.SceneRenderer.render();
     };
-    window.SceneApp.buildItemTooltipHtml = buildItemTooltipHtml;
-    window.SceneApp.buildItemTooltipHtmlForTemplate = buildItemTooltipHtmlForTemplate;
-    window.SceneApp.formatItemAttributes = formatItemAttributes;
-    window.SceneApp.showItemTooltip = showItemTooltip;
-    window.SceneApp.hideItemTooltip = hideItemTooltip;
+    window.SceneApp.buildItemTooltipHtml = SceneUi.buildItemTooltipHtml;
+    window.SceneApp.buildItemTooltipHtmlForTemplate = SceneUi.buildItemTooltipHtmlForTemplate;
+    window.SceneApp.formatItemAttributes = SceneUi.formatItemAttributes;
+    window.SceneApp.showItemTooltip = SceneUi.showItemTooltip;
+    window.SceneApp.hideItemTooltip = SceneUi.hideItemTooltip;
     window.SceneApp.executeQuickBarPinnedSlot = executeQuickBarPinnedSlot;
     window.SceneApp.clearQuickBarPinSlot = clearQuickBarPinSlot;
 
