@@ -2926,37 +2926,6 @@
         if (window.SceneRenderer) window.SceneRenderer.render();
     }
 
-    function findFirstContainerSlotByItemId(itemId) {
-        if (!IE || !itemId) return null;
-        var targets = [
-            { type: 'pocket', arr: IE.getPocketArray ? IE.getPocketArray() : [] },
-            { type: 'vest', arr: IE.getVestArray ? IE.getVestArray() : [] },
-            { type: 'backpack', arr: IE.getBackpackArray ? IE.getBackpackArray() : [] }
-        ];
-        var t, i;
-        for (t = 0; t < targets.length; t++) {
-            var arr = targets[t].arr;
-            if (!Array.isArray(arr)) continue;
-            for (i = 0; i < arr.length; i++) {
-                var cell = arr[i];
-                if (!cell || !cell.item_id) continue;
-                if (String(cell.item_id) === String(itemId)) {
-                    return { containerType: targets[t].type, index: i };
-                }
-            }
-        }
-        return null;
-    }
-
-    function getInventoryContainerArray(containerType) {
-        if (!IE) return null;
-        var t = containerType != null ? String(containerType) : '';
-        if (t === 'pocket') return IE.getPocketArray ? IE.getPocketArray() : null;
-        if (t === 'vest') return IE.getVestArray ? IE.getVestArray() : null;
-        if (t === 'backpack') return IE.getBackpackArray ? IE.getBackpackArray() : null;
-        return null;
-    }
-
     function cookingResourceSlotKey(containerType, index) {
         return String(containerType || '') + '|' + String(Math.floor(Number(index)));
     }
@@ -2973,7 +2942,7 @@
 
     function resolveCookingSlotOrFirst(forcedSlot, predicateFn) {
         if (forcedSlot && forcedSlot.containerType != null && forcedSlot.index != null) {
-            var arrF = getInventoryContainerArray(forcedSlot.containerType);
+            var arrF = InventoryHelpers.getInventoryContainerArray(forcedSlot.containerType);
             var ix = Math.floor(Number(forcedSlot.index));
             if (!Array.isArray(arrF) || !(ix >= 0) || ix >= arrF.length) return null;
             var cellF = arrF[ix];
@@ -3035,7 +3004,7 @@
     }
 
     function hasItemById(itemId) {
-        return getInventoryCountByItemId(itemId) > 0;
+        return InventoryHelpers.getInventoryCountByItemId(itemId) > 0;
     }
 
     function getItemWaterPoints(itemId) {
@@ -3059,33 +3028,6 @@
     function isItemAllowedPharmacyIngredient(itemId) {
         var tpl = getItemTemplateSafe(itemId);
         return !!(tpl && tpl.pharmacy_ingredient === true);
-    }
-
-    function getInventoryCountByItemId(itemId) {
-        if (!itemId) return 0;
-        var HW = window.HideoutWarehouse;
-        if (HW && typeof HW.countItemEverywhere === 'function') {
-            return HW.countItemEverywhere(itemId);
-        }
-        if (!IE) return 0;
-        var total = 0;
-        var groups = [
-            IE.getPocketArray ? IE.getPocketArray() : [],
-            IE.getVestArray ? IE.getVestArray() : [],
-            IE.getBackpackArray ? IE.getBackpackArray() : []
-        ];
-        var g, i;
-        for (g = 0; g < groups.length; g++) {
-            var arr = groups[g];
-            if (!Array.isArray(arr)) continue;
-            for (i = 0; i < arr.length; i++) {
-                var cell = arr[i];
-                if (!cell || !cell.item_id) continue;
-                if (String(cell.item_id) !== String(itemId)) continue;
-                total += (cell.count != null && cell.count > 0) ? parseInt(cell.count, 10) : 1;
-            }
-        }
-        return total;
     }
 
     function normalizeCookingInputs(rawInputs) {
@@ -3260,7 +3202,7 @@
             if (!id || !isFinite(need) || need <= 0) continue;
             var k;
             for (k = 0; k < need; k++) {
-                var slot = findFirstContainerSlotByItemId(id);
+                var slot = InventoryHelpers.findFirstContainerSlotByItemId(id);
                 if (!slot) return { ok: false, consumed: consumed };
                 var taken = IE.takeItemFromContainer(slot.containerType, slot.index);
                 if (!taken || !taken.success || !taken.item) return { ok: false, consumed: consumed };
@@ -3857,7 +3799,7 @@
             if (!isItemAllowedPharmacyIngredient(sid)) {
                 return { ok: false, reason: 'not_pharmacy_ingredient', item_id: sid };
             }
-            if (getInventoryCountByItemId(sid) < selected[i].count) {
+            if (InventoryHelpers.getInventoryCountByItemId(sid) < selected[i].count) {
                 return { ok: false, reason: 'missing_input_items', item_id: sid };
             }
         }
@@ -4668,7 +4610,7 @@
         var out = [];
         for (i = 0; i < allow.length; i++) {
             var id = allow[i];
-            var have = getInventoryCountByItemId(id);
+            var have = InventoryHelpers.getInventoryCountByItemId(id);
             if (have <= 0) continue;
             if (installedSet[id]) continue;
             out.push({ item_id: id, count: have });
@@ -4686,7 +4628,7 @@
         var out = [];
         for (i = 0; i < allow.length; i++) {
             var id = allow[i];
-            var have = getInventoryCountByItemId(id);
+            var have = InventoryHelpers.getInventoryCountByItemId(id);
             if (have <= 0) continue;
             if (installedSet[id]) continue;
             out.push({ item_id: id, count: have });
@@ -4705,7 +4647,7 @@
         for (i = 0; i < arr.length; i++) {
             if (String(arr[i]) === id) return { ok: false, reason: 'already_installed', item_id: id };
         }
-        var slot = findFirstContainerSlotByItemId(id);
+        var slot = InventoryHelpers.findFirstContainerSlotByItemId(id);
         if (!slot) return { ok: false, reason: 'missing_item', item_id: id };
         if (!IE || typeof IE.takeItemFromContainer !== 'function') return { ok: false, reason: 'inventory_api_missing' };
         var taken = IE.takeItemFromContainer(slot.containerType, slot.index);
@@ -4727,7 +4669,7 @@
         for (i = 0; i < arr.length; i++) {
             if (String(arr[i]) === id) return { ok: false, reason: 'already_installed', item_id: id };
         }
-        var slot = findFirstContainerSlotByItemId(id);
+        var slot = InventoryHelpers.findFirstContainerSlotByItemId(id);
         if (!slot) return { ok: false, reason: 'missing_item', item_id: id };
         if (!IE || typeof IE.takeItemFromContainer !== 'function') return { ok: false, reason: 'inventory_api_missing' };
         var taken = IE.takeItemFromContainer(slot.containerType, slot.index);
@@ -4985,7 +4927,7 @@
             showMsg(ui('cooking.take_water.stop_gather_first'), 'info');
             return;
         }
-        var slot = findFirstContainerSlotByItemId('tool_bucket_water_empty');
+        var slot = InventoryHelpers.findFirstContainerSlotByItemId('tool_bucket_water_empty');
         if (!slot) {
             showMsg(ui('cooking.take_water.no_bucket'), 'info');
             return;
@@ -5148,7 +5090,7 @@
             if (!isItemAllowedCookingIngredient(sid)) {
                 return { ok: false, reason: 'not_cooking_ingredient', item_id: sid };
             }
-            if (getInventoryCountByItemId(sid) < selected[i].count) {
+            if (InventoryHelpers.getInventoryCountByItemId(sid) < selected[i].count) {
                 return { ok: false, reason: 'missing_input_items', item_id: sid };
             }
         }
@@ -5872,7 +5814,7 @@
                 var id = String(cell.item_id);
                 if (seen[id]) continue;
                 if (!isItemAllowedCookingIngredient(id)) continue;
-                if (getInventoryCountByItemId(id) <= 0) continue;
+                if (InventoryHelpers.getInventoryCountByItemId(id) <= 0) continue;
                 seen[id] = true;
                 out.push(id);
             }
@@ -5917,7 +5859,7 @@
             showMsg(ui('cooking.try.fail.not_ingredient', { item: iid }), 'info');
             return;
         }
-        var have = getInventoryCountByItemId(iid);
+        var have = InventoryHelpers.getInventoryCountByItemId(iid);
         var staged = getStagedCookingCountForItem(iid);
         if (have <= 0 || staged >= have) {
             showMsg(ui('cooking.try.fail.missing_inputs', { item: getItemDisplayNameSafe(iid) }), 'info');
@@ -5944,7 +5886,7 @@
             var disp = getItemDisplayNameSafe(iid);
             if (f && String(iid).toLowerCase().indexOf(f) < 0 && String(disp).toLowerCase().indexOf(f) < 0) continue;
             nShown++;
-            var have = getInventoryCountByItemId(iid);
+            var have = InventoryHelpers.getInventoryCountByItemId(iid);
             var staged = getStagedCookingCountForItem(iid);
             var canAdd = have > 0 && staged < have;
             var row = document.createElement('div');
@@ -6544,7 +6486,7 @@
                 var id = String(cell.item_id);
                 if (seen[id]) continue;
                 if (!isItemAllowedPharmacyIngredient(id)) continue;
-                if (getInventoryCountByItemId(id) <= 0) continue;
+                if (InventoryHelpers.getInventoryCountByItemId(id) <= 0) continue;
                 seen[id] = true;
                 out.push(id);
             }
@@ -6589,7 +6531,7 @@
             showMsg(ui('pharmacy.try.fail.not_ingredient', { item: iid }), 'info');
             return;
         }
-        var have = getInventoryCountByItemId(iid);
+        var have = InventoryHelpers.getInventoryCountByItemId(iid);
         var staged = getStagedPharmacyCountForItem(iid);
         if (have <= 0 || staged >= have) {
             showMsg(ui('pharmacy.try.fail.missing_inputs', { item: getItemDisplayNameSafe(iid) }), 'info');
@@ -6616,7 +6558,7 @@
             var disp = getItemDisplayNameSafe(iid);
             if (f && String(iid).toLowerCase().indexOf(f) < 0 && String(disp).toLowerCase().indexOf(f) < 0) continue;
             nShown++;
-            var have = getInventoryCountByItemId(iid);
+            var have = InventoryHelpers.getInventoryCountByItemId(iid);
             var staged = getStagedPharmacyCountForItem(iid);
             var canAdd = have > 0 && staged < have;
             var row = document.createElement('div');
@@ -7257,7 +7199,7 @@
         if (!inoculantId || !isItemAllowedCompostInoculant(inoculantId, m)) {
             return { canStart: false, reason: 'inoculant_required' };
         }
-        if (getInventoryCountByItemId(inoculantId) <= getStagedCompostCountForItem(inoculantId)) {
+        if (InventoryHelpers.getInventoryCountByItemId(inoculantId) <= getStagedCompostCountForItem(inoculantId)) {
             return { canStart: false, reason: 'inoculant_missing_inventory' };
         }
         return { canStart: true, reason: 'ok' };
@@ -7291,7 +7233,7 @@
         var canPut = 0;
         function rollbackInserted(itemId, n) {
             for (var t = 0; t < n; t++) {
-                var s = findFirstContainerSlotByItemId(itemId);
+                var s = InventoryHelpers.findFirstContainerSlotByItemId(itemId);
                 if (!s) break;
                 IE.takeItemFromContainer(s.containerType, s.index);
             }
@@ -7364,7 +7306,7 @@
                 var id = String(cell.item_id);
                 if (seen[id]) continue;
                 if (!isItemAllowedCompostInoculant(id, m)) continue;
-                if (getInventoryCountByItemId(id) <= 0) continue;
+                if (InventoryHelpers.getInventoryCountByItemId(id) <= 0) continue;
                 seen[id] = true;
                 out.push(id);
             }
@@ -7377,7 +7319,7 @@
         var m = mode === 'anaerobic' ? 'anaerobic' : 'aerobic';
         var id = iid != null ? String(iid) : '';
         if (!id || !isItemAllowedCompostInoculant(id, m)) return;
-        var have = getInventoryCountByItemId(id);
+        var have = InventoryHelpers.getInventoryCountByItemId(id);
         var staged = getStagedCompostCountForItem(id);
         if (have <= staged) return;
         compostStationUiState.staged_inoculant_item_id = id;
@@ -7402,7 +7344,7 @@
                 var id = String(cell.item_id);
                 if (seen[id]) continue;
                 if (!isItemAllowedCompostIngredient(id)) continue;
-                if (getInventoryCountByItemId(id) <= 0) continue;
+                if (InventoryHelpers.getInventoryCountByItemId(id) <= 0) continue;
                 seen[id] = true;
                 out.push(id);
             }
@@ -7476,7 +7418,7 @@
         if (!compostStationPanelOpen) return;
         iid = iid != null ? String(iid) : '';
         if (!iid || !isItemAllowedCompostIngredient(iid)) return;
-        var have = getInventoryCountByItemId(iid);
+        var have = InventoryHelpers.getInventoryCountByItemId(iid);
         var reserved = getReservedCompostCountForItem(iid, compostStationUiState.mode);
         if (reserved >= have) return;
         compostStationUiState.staged_inputs.push(iid);
@@ -7492,7 +7434,7 @@
         for (oi = 0; oi < opts.length; oi++) {
             var iid = opts[oi];
             var disp = getItemDisplayNameSafe(iid);
-            var have = getInventoryCountByItemId(iid);
+            var have = InventoryHelpers.getInventoryCountByItemId(iid);
             var reserved = getReservedCompostCountForItem(iid, compostStationUiState.mode);
             var canAdd = have > reserved;
             var row = document.createElement('div');
@@ -7556,7 +7498,7 @@
             left.appendChild(idEl);
             var countsEl = document.createElement('div');
             countsEl.className = 'cs-ing-counts';
-            countsEl.textContent = ui('compost.ingredient.available_fmt', { have: String(getInventoryCountByItemId(iid)) });
+            countsEl.textContent = ui('compost.ingredient.available_fmt', { have: String(InventoryHelpers.getInventoryCountByItemId(iid)) });
             var btn = document.createElement('button');
             btn.type = 'button';
             btn.className = 'btn-add-ingredient';

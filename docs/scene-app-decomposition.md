@@ -175,7 +175,14 @@ js/item-use.js  window.ItemUse      // applyItemUseEffectFromTemplate / tryUseIt
   - `scene-app.js` 内 **50 处裸调 `updateStatusPanel()` → `SceneHud.refresh('status')`**（±1:1 纯替换，定义与 `SceneCtx.updateStatusPanel` 兼容桥未动）。
   - 外部调用方（buff-system/npc-system/scene-renderer/scene-systems 共 9 处，经 `SceneCtx.updateStatusPanel`，其中 scene-renderer 传 `gatherState`）**暂走兼容桥**，随各自切片迁出时再切 `SceneHud.refresh('status', ...)`。
   - 冒烟：本地实机启动正常（无 BOOT FAILED，场景进入）；无头浏览器无法点击持续动画页（actionability 超时），交互路径待人工在已开的游戏页确认。
-- **P0-批次2（待办）**：同法迁移 `updateBackpackPanel`（40 裸调）→ `SceneHud.refresh('backpack')`；再视需要覆盖 `renderCombatModal` 等高频刷新点，或把其余直调留待各自切片迁出时顺手切（推荐后者，减少无谓 churn）。
+- **P0-批次2（决定：跳过批量迁移）**：`updateBackpackPanel`（40 裸调）等其余刷新点留在 scene-app 内时直调无害，留待各自切片迁出时顺手切 `SceneHud.refresh('backpack')`，减少无谓 churn。
+- **P1a（已提交）**：物品栏纯读 helper 外移（站点切片地基）。
+  - 依赖实测：站点切片候选 = 68 函数、外部闭包依赖 88 个，其中 `getInventoryCountByItemId`(18 处引用) 等**纯读 IE 状态**的 helper 是切站点的前置瓶颈。
+  - 新增 `js/inventory-helpers.js`（window.InventoryHelpers）：`findFirstContainerSlotByItemId` / `getInventoryContainerArray` / `getInventoryCountByItemId` 自 scene-app 原样迁出（行为零变，只读 IE/HideoutWarehouse）。
+  - scene-app 删除 3 个本地定义，24 处引用 ±1:1 重接 `InventoryHelpers.*`；`index.html` 挂载于 scene-hud 之前。
+  - 冒烟：本地实机启动正常，页面状态与改动前一致。
+- **P1b（待办）**：站点 config/数据持有（`cookingMethods/Recipes`、`pharmacyMethods/Recipes`、failure item、temp station 常量）与 craft 运行时状态（active craft、known recipes、temp station runtime）迁 `cooking-station.js` / `pharmacy-station.js`（`LivestockState` 型：createDefaultState/getState/setState/advanceWorldTicks）；`sceneUi.knownRecipes` 存档键留兼容层。
+- **P1c（待办）**：站点规则与面板迁出（配 infra 桥，见 P1 实测 deps：ui/showMsg/render/tooltip 系列/`isPreCreationGameplayRestricted` 等）；compost 面板 → `compost-panel.js`。
 
 ## 5. 风险与对策
 
