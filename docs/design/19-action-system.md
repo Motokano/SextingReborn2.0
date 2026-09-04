@@ -95,19 +95,7 @@
 
 ### 6.6 底气护体（`diqi_huti`）
 
-> ⚠️ **已迁移**：本动作的机制已改造为「**激活模块化躯干防具**」——消耗 = 基础盾量 × (1+Σ模块消耗%)；盾减伤比例 = 板位模块减伤；盾量 = 基础盾量；**必须装备防具**（裸奔不可激活）。新正本见 **[37-equipment-modular-armor.md](37-equipment-modular-armor.md)**；下文旧数值（50% 消耗、盾量 = 消耗底气、固定 25%）保留作历史上下文，落地时以 37 为准。
-
-- **解锁**：**`combat_basic_breath` 等级 ≥ 50**；**`hubs.breath`** 须挂载本技能（与 §6.5 一致，无挂载则建议整次失败或禁用）。
-- **入口**：**「动作」**二级菜单；**仅战斗**（`battle_only`）：非战斗 **整次失败**（`19` §4）。
-- **消耗 tick**：成功执行后推进 **`tick_cost`**（与 `hub_actions.diqi_huti` 一致，当前 **1**）；失败不推 tick。
-- **底气消耗与护体容量**：
-  - **应扣底气**：先 **\(B=\lfloor diqi_{\max} \times 0.5 \rfloor\)**（与 **`diqi_consume_ratio_of_max`** 一致），再 **下限夹紧** **\(C=\max(1,\,B)\)**（配置 **`diqi_consume_min`**，当前 **1**）。若 **`diqi_max = 0`** → **整次失败**（不进入扣费）。
-  - 若 **`diqi_current < C`** → **整次失败**（不扣底气、不推 tick、有提示）。
-  - **成功**：**`diqi_current -= C`**（经统一底气接口夹紧）；**护体容量 `shield_value` = C**（与 `06`「底气护体与统一接口」一致：**盾的「血量」= 本次消耗的底气量**）。
-- **持续时间**：**无** `expires_at_tick` 类持续时间；**只要 `shield_value > 0` 即视为护体存在**，与 `06`「直到被伤害消耗完」一致。
-- **重复施展**：若战斗状态中 **已由本动作维持的护体仍未破**（`shield_value > 0`）→ **整次失败**（不消耗底气与 tick），避免叠盾或刷新；**护体归零后**可再次支付 **\(C\)** 重开。
-- **减伤**：护体存在时，在减伤链 **底气护体** 一步对 **劈砍、戳刺、钝击** **均为 25%** 百分比减伤（配置 **`shield_tri_type_damage_reduce_pct`**，当前 **0.25**）；**被本层减去的伤害数值**从 **`shield_value`** 扣除，细则与 `06`/`08` 对齐。
-- **熟练度与呼吸法威力**：**不**写入 **`move_usage.tu_na`**；亦不纳入 **`getSkillTotalProficiency(combat_basic_breath, …)`** 的算术平均（数据 **`exclude_from_skill_total_proficiency: true`**），避免稀释呼吸法熟练度对 **`breath_power_multiplier`** 的贡献。若日后需统计施展次数，可用独立键 **`move_usage.diqi_huti`**，仍以 **`exclude_from_skill_total_proficiency`** 排除在总熟练平均之外。
+> ⚠️ **已迁移（正文旧数值段已移除，历史见文末「附：已归档旧口径索引」）**：本动作机制已改造为「激活模块化躯干防具」——激活消耗 = 基础盾量 × (1+Σ模块消耗%)、盾减伤比例 = 板位模块减伤、盾量 = 基础盾量、**必须装备防具**（裸奔不可激活）。**现行正本见 [37-equipment-modular-armor.md](37-equipment-modular-armor.md)（§4）**；旧数值（50% 消耗、盾量 = 消耗底气、固定 25%）不再作为落地依据，落地一律以 37 为准。
 
 ---
 
@@ -121,3 +109,15 @@
 ---
 
 *文档版本：初版，与实装 `combat.hubs` 对齐。*
+
+---
+
+## 附：已归档旧口径索引
+
+> 从正文移除的旧口径在此登记备查；**完整原文见 git 历史**（本文件迁移前的提交版本），若日后整档归档则存放于 `docs/design/_archive/`。下列内容仅作历史参考，**不得**作为落地依据。
+
+- **§6.6 底气护体（`diqi_huti`）旧数值（已废弃，现行见 [37-equipment-modular-armor.md](37-equipment-modular-armor.md) §4）**：迁移前旧口径为——
+  - 消耗 = `floor(diqi_max × 0.5)`（配置 `diqi_consume_ratio_of_max`），下限夹紧 `max(1, B)`（配置 `diqi_consume_min`）；
+  - **护体容量 / 盾量 = 本次消耗的底气量**（`shield_value = C`，即「盾的血量 = 消耗的底气量」）；
+  - 减伤链「底气护体」一步对劈砍 / 戳刺 / 钝击 **固定 25%** 减伤（`shield_tri_type_damage_reduce_pct = 0.25`）；
+  - 无 duration（`shield_value > 0` 即护体存在）、护体未破不可重复施展；不计 `tu_na`（`exclude_from_skill_total_proficiency: true`）。
