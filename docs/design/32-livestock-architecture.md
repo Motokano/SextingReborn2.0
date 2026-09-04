@@ -120,6 +120,7 @@
       "module_id": "feed_trough",
       "name_key": "livestock.module.feed_trough",
       "tier": "small",                    // small | medium | large | axis
+      "requires_power": false,            // k93：需电标记——small/medium 无电可转；large（臂）与 axis（仓储/气候）需电；axis 屠宰为手动操作，不耗电
       "slots": { "side": 1 },             // 占面（内部/前端/底面/上表面/侧面/轴心）
       "axis_slot": null,                  // axis 模块：1 | 2
       "upgrade_material_tier": "small",   // §11.2 升级材料模板档位
@@ -151,6 +152,7 @@
 **要点**：
 - 每个 `level` 的 `effects[]` 是**声明式**的：运行时 `registerEffectHandler(effect_type, fn)` 解释，`params` 是纯数据。
 - 新增模块 = 加一条配置 + 组合现有 `effect_type`；**只有全新机制**才需要 `registerEffectHandler` 注册新 handler。
+- `requires_power`（k93）：**生产力墙，非分档锁**——缺电时该模块的 tick 效果停摆（tickModules 跳过、气候/废热/联动/仓储入口拒绝），但**装配/升级不受影响**（不按 tier 锁装配）。**手动操作不耗电**：屠宰（猪牛羊走轴心位、鸡走鸡笼）为玩家手动动作，不受电力墙限制。运行入口：`LivestockState.moduleRequiresPower(moduleId)` / `isModulePowered(moduleId)` / `setPowerAvailable(bool)`；缺电时面板显示「停摆」标记。
 - 内置 `effect_type` 目录（首版）：`feed_trough`、`feed_preprocess`、`slaughter`、`coop`（鸡笼）、`sprinkler`、`clean_brush`、`auto_collect`、`tiller`、`seeder`、`manure_net`、`pasture_arm`、`heal`、`pause_disease_spread`、`feed_refine`、`link_schedule`、`waste_heat_recycle`、`warehouse_hub`、`climate_control`、`collect_corpse`、`forward_corpse`。此目录可增。
 
 ### 2.3 Perk 表 `data/livestock-perks.json`

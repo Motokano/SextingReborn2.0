@@ -57,7 +57,19 @@
 ## 四、电池与电箱（非采集材料）
 
 - **掉落**：敌人身上少量掉落；浅层小兵掉五号/干电池（一次性），越深掉率越高、容量越大（深层稀有蓄电池）。
-- **电箱**：深层专属、稀疏、单箱电量有限；投币式放置 → 并行充电 → 提示 X tick 充满 → 可离开、回来取；附近刷敌人（只打玩家，不打电箱）。详细规则见电池经济设计（待落文档）。
+- **电箱**：深层专属、稀疏、单箱电量有限；投币式放置 → 并行充电 → 提示 X tick 充满 → 可离开、回来取；附近刷敌人（只打玩家，不打电箱）。详细规则见[45 电池经济数值骨架](45-battery-economy.md)（§五 预留口径，数值待 k91 实现时回填）。
+
+### 四·1 实现记录（k89，电池物品 + 敌人掉落）
+
+- **电池物品**（`data/items.json` + `materials_all.csv`，双写防 build:items 丢失）：
+  - `battery_aa` 五号电池（一次性干电池）：容量 100、电量 100、地区 0（全局）、`base_value` 80；
+  - `battery_rechargeable` 充电电池：容量 400、地区 8（D6）、`base_value` 400；
+  - `battery_storage` 蓄电池：容量 1500、地区 9（D7）、`base_value` 1000。
+  - **新字段**：`battery_capacity`（容量）/ `battery_charge`（电量）——`build-items-json.mjs` 支持（电量缺省 = 容量满电）；实例可带 `battery_charge` 表示当前电量（`copyItemInstance` 保留），tooltip 实例值优先于模板（`item-field-display-rules.js`）。
+- **敌人掉落数据**：`data/enemy_drops.json` —— `battery_tiers` 四档（1-4 / 5-8 / 9-12 / 13-16，与 dungeon-loot `tierIndexForFloor` 对齐）：浅层只出五号，深层出充电/蓄电，掉率逐档上升（0.25→0.55）；`charge_roll` 电量 = 容量 × 30%~100%（拾荒/偷电半电 lore）；`enemies` 表可按敌人调 `chance_mult`（`enemy.street_thug` 0.8 作首个接线示例）。
+- **纯逻辑**：`js/enemy-drops.js`（`rollEnemyBatteryDrop`：掉率 → 权重抽项 → 地区门控 → 电量 roll；可单测）。**运行时接线（敌人死亡 → 结算掉落入包）已落地**（k89 收尾：`scene-app.js` `settleEnemyBatteryDrops`，背包满则掉尸体格；`combat.log.enemy_drop_battery*` 日志；map.floor / map.region_code 缺省地表）。
+- **牧场供电消费端**（最小闭环）：`data/livestock-modules.json` 需电模块加 `power_drain_per_tick`（大型臂 1 / 轴心仓储·气候 2，schema v3）；`livestock-state.js` 新增 `power_charge` 储能（起步 500，旧档 `power_available` 迁移）+ `addPowerCharge/getPowerCharge/currentPowerDrainPerTick/drainPowerForTick`，每 tick 末按需电模块合计扣电、耗尽停摆（k93 生产力墙复用）；畜牧面板「🔋 塞电池」弹层把背包电池整格塞入储能（`livestock-panel.js` + `#livestock-power-picker`）。数值已由[45 电池经济数值骨架](45-battery-economy.md)锚定（打一次洞 ≈ 1000 电 = 大型臂 1 轮），与实现一致。
+- **校验**：`npm run test:enemy-drops`（`tools/test-enemy-drops.mjs`）、`npm run test:livestock-power-feed`（`tools/smoke-k89-power-feed.mjs`，新增）、`npm run test:livestock-power`（k93 回归）——物品字段、四档结构、掉率/地区/电量边界、储能扣电/耗尽/塞电恢复、旧档迁移。
 
 ## 五、15 道终局菜稀料覆盖核对
 
@@ -76,3 +88,13 @@
 - **`tags`**：新增 `dungeon_only` / `surface_only` 标签，供掉落池与生成器过滤。
 - **掉落表**：每座地牢配一张 `loot_table`（行 = `item_id` + `weight`，无品质档），地牢生成器按层数档位选表。
 - **新材料的 `sn` / `placeholder_name` / `fn_before` / `fn`** 按 `capitalism/items_template_and_style.md` 规范补写。
+
+### 七·1 实现记录（k85，已落地）
+
+- **地区编码注册表**：`data/regions.json`（新文件）。`region_restrict`：`0` = 全局；`1` 地表；`2` 新手地牢；`3`~`9` = D1~D7。**跨区物品填 `0`**（如 `ore_iron_raw` 地表+D4、`electronic_wire` D6+D7、`ore_spirit_crystal` D2+D4），由各地 loot_table 精确门控。
+- **标签**：`dungeon_only`（76 个）/ `surface_only`（48 个）已打在 `data/items.json` 与 `data/items/*.csv`（materials_all / consumables_base 两表，防 `npm run build:items` 丢改动）；跨区物品不带粗标签（纯地牢跨区如 `electronic_wire`/`ore_spirit_crystal` 仍带 `dungeon_only`）。
+- **掉落表**：`data/loot_tables.json` 新增 9 张地区表——`loot_surface`（平铺数组）+ `loot_beginner`、`loot_d1`~`loot_d7`（`{ tiers: [4 档 × {item_id, weight}] }`）。行仅 `item_id + weight`，无品质档。
+- **层数档位**：`tierIndex = clamp((floor-1)/4)`（1-4 主题基础款 / 5-8 进阶 / 9-12 稀有 / 13-16 独有，与 44 §三对齐）。选表逻辑唯一事实源：`js/dungeon-loot.js`（`getRows` / `tierIndexForFloor` / `roll` / `filterRowsByRegion`）。
+- **新手地牢**：`region_gated=false`（regions.json）——它是地表池的高品质来源（§二.3），`loot_beginner` 显式枚举地表材料并调权重，生成器不做 region_restrict 过滤；七座主题地牢与地表 `region_gated=true`。
+- **电池**（`battery_rechargeable`/`battery_storage`）：按 §一.5 **不进采集池**——不入任何 loot_table，仅打 `dungeon_only` + 地区码（D6/D7）供敌人掉落（k89）使用。
+- **校验**：`npm run test:dungeon-loot`（`tools/test-dungeon-loot.mjs`）——层数→档位、表结构、行 id 存在性、地区一致性、电池不泄漏、标签分布。补数据可重跑 `tools/apply-k85-material-regions.mjs`（`--dry-run` 先看计划）。

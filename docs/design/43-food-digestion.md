@@ -27,7 +27,7 @@
 - 设计一种**几乎不给经验、特别好做、唯一价值 = 高效回饱食**的料理，原型是**压缩饼干**：
   - **大量饱食**：satiety_total 高、c ≈1.3（净 +0.3/tick，真正的高效保底，单吃能把人从饥饿线上拉起来）；
   - **吃了会口渴**：`thirst_restore` 为**负值**（吃一块即时扣饮水，如 -15）——代价明确，吃压缩饼干必须配水；
-  - **方便携带**：低重量、高堆叠（如 stack 上限高）、长保质（干燥食物不腐败或极慢腐败）——适合远征背一大包。
+  - **方便携带**：低重量、长保质（干燥食物不腐败或极慢腐败）——适合远征背一大包；**默认不堆叠**（全局口径：所有物品不可堆叠，一格一块）。
 - **与饮水系统咬合**：饮水是即时恢复 → 吃饼干 → 即时口渴 → 喝水补 → 形成「压缩饼干 + 水壶」的出征组合。
 - **饱食与经验解耦**：苦力菜管生存（回饱食），精致/均衡菜管成长（给经验）。
 - **前期保底**：前期必须保证玩家解锁至少一道苦力菜，穷玩家永远有办法爬出饥饿坑。
@@ -54,6 +54,8 @@
 - 每道菜带**构成标签**：`主食 / 荤 / 素 / 其他`。
 - 一餐覆盖类别越多 → 均衡度越高 → **营养值档位**越高（充沛 ×1.3 潜能、极境 底气上限 +15%）→ 属性经验倍率越高——**让玩家有意识地保持荤素平衡**。
 - 与餐位档**正交**：档位定强度（饱食），构成定均衡（经验）。**苦力菜构成简单（基本无均衡贡献）、经验 ≈ 0**，进一步坐实「吃好 = 配齐 = 成长」。
+- **已实装（k79，详见 `44-meal-balance-attribute-exp.md`）**：活性消化 buff 扫描构成（`staple/meat/veg` 覆盖，`other` 不计）→ 均衡档（单一/搭配/均衡）→ `buff_meal_balance_mixed/balanced` 每 tick 补营养（+1/+2）→ 营养值档位 → 进食经验倍率（充沛 ×1.5、极境 ×2、营养不良 ×0.5）。
+- **配套（k79）**：34 道菜消化 buff 的营养 per-tick 微量调（档位梯度 snack 0.05~0.15 … banquet 0.6~0.8），均衡 buff 才是营养值主驱动——否则任何一道菜都把营养灌爆 100，均衡链失效。
 
 ## 四、饮水（即时恢复，不走消化曲线）
 
@@ -68,6 +70,8 @@
 
 ## 六、饭盒（一餐的物品化）
 
+> **【46 修订】本节"合成式"方案已废弃**：饭盒改走**灶台挂件 + 手动烹饪装盒**方案（半盒亦可食、挂回须清空等），完整设计见 `46-lunchbox-design.md`。本节容量/占格/腐败/暴食/均衡等数值规则仍被 46 沿用。
+
 - **合成式**：空饭盒（道具）+ 菜 → 合成「XX 饭盒」→ 吃 = 整盒一次触发全部菜的组合效果。**支持批量制作**（一次做多份）。
 - **容量升级线**：小 2 格 → 标准 3 格（主食+荤+素模板）→ 大 4 格（塞 4 格大菜）。
 - **整数占格**：小食/家常/精致 1，宴席 2-3，盛宴 3-4。
@@ -80,7 +84,7 @@
 - **触发**：饱食进入**过量区间（100.1~150，现有 `satiety_overcap` 机制）** → 消化不良「顶得难受」：恢复倒挂（消化变慢/效果打折）、行动变慢、心情下降，直到消化完。
 - **盛宴为什么不暴食**：慢释放（c≈1.0 × 120-180t）的交付总量被同窗口衰减抵消，非饱腹时吃净变化≈0，不会顶进过量区间；只有**本来就饱还硬塞大菜**（或连吃多道菜把饱食打进 100+）才触发消化不良。
 - **长期后果**：持续过量 → 体重增长（`satiety_weight_gain_ticks_stuffed = 144` → +1kg）。
-- 现有 `survival_satiety_overeat` / `stuffed` 的 effects 为空（desc 写了出招速度未接线）——重构时把消化不良效果真正接上。
+- **已接线（k77）**：`survival_satiety_overeat`（100.1-120）→ 行动慢 ×0.85 + 心情 -1/tick；`survival_satiety_stuffed`（120.1-150）→ 行动慢 ×0.6 + 心情 -2/tick + 饱食额外流失 -1/tick（消化打折，加速脱离过量区间）。
 
 ## 八、数据字段清单
 
@@ -94,6 +98,7 @@
 - `nutrition_contribution`：营养贡献（可并入现有 `nutrition_restore`）
 - `thirst_restore`：沿用（即时恢复）
 - `edible_buff_id`：该菜的**效果 buff**（非消化）——零食类用高数值 buff（快速供能）
+- `attr_exp_grants`（可选，k79）：单菜覆盖进食经验发放维度（如 `["jingu","flexibility"]`）；缺省走 `survival-config.meal_exp_dims_by_tier` 档位默认
 - 饭盒成品：`packed_meal_items: [item_id...]`
 
 **生存 / Buff**：
@@ -105,11 +110,15 @@
 ## 九、与现有系统接线
 
 - **「消化中」buff 已存在（34 个）**：升级数值即可，不需新机制。
-- **同 buff_id 禁止重复食用（21 已定）**：同菜不叠、异菜叠加——天然支撑组合模型。
-- **过量区间入口已存在**：`addSatiety` 的 `hasActiveSatietyDigestBuff` 判定沿用。
+- **同 buff_id 禁止重复食用（21 已定）**：同菜不叠、异菜叠加——天然支撑组合模型（食用逻辑 `scene-app.applyItemUseEffectFromTemplate` 已保证：已有同 buff 时食用返回 false）。**【46 修订，废止】：同种菜重复 = 刷新持续时间、不叠层（全局生效，含普通吃同款菜；满盒食用逐菜多次结算）。见 `46-lunchbox-design.md`。**
+- **被动衰减已恢复（2025「无被动衰减」储备模型废止，用户定）**：饱食每 tick `-1`（`satiety_tick_decay`）；饮水恢复被动衰减（每 2 tick -1，`thirst_tick_decay_interval/amount`，因调息不再消耗饮水，否则饮水系统失效）；**调息（行气）不再消耗饱食/饮水**，只恢复体力+底气（时间为代价）。
+- **消化曲线运行时构成**：`Survival.advanceTick` 先扣基础衰减，buff 管线（buff-system 补丁包装 advanceTick → `tick_advanced`）再叠加「消化中」buff 的 `survival_delta` → 每 tick 净变化 = -1 + Σ活性贡献（43 §二）。
+- **过量区间入口已存在**：`addSatiety` 的 `hasActiveSatietyDigestBuff` 判定沿用；消化 buff 的 survival_delta 走 `Survival.setState`（夹紧至 150），多菜叠加可顶进过量区间 → 消化不良（k77）。
 - **体重 / 饿死**：沿用（144t → +1kg；饱食 0 → 432t 死亡倒计时）。
-- **饮水**：维持即时恢复，不动。
+- **饮水**：恢复即时（`thirst_restore`），恢复被动衰减（见上）。
 - **睡眠**：只结算经验，不参与消化。
+- **进食经验（k79，见 44）**：食用成功 → `scene-app.grantFoodAttributeExp` 按餐位档基值 × 营养档位倍率发放属性经验（苦力菜跳过）→ 睡眠 `settleAttributeExpOnce` 概率结算（24 通道）。
+- **均衡判定（k79，见 44）**：`buff-system.getActiveFoodDigestCompositions` 扫描活性消化 buff 的 `judgment_tags.meal_composition` → `survival.syncMealBalanceBuff` 每 tick 重挂均衡 buff（+1/+2 营养/tick）。
 - **批量制作**：烹饪支持批量，饭盒装盒同理。
 
 ## 十、数值锚点（均可调）
@@ -119,11 +128,128 @@
 | 基础衰减 | -1.0 /tick |
 | 档位总量 | 小食 10-15 / 家常 30-35 / 精致 45-55 / 宴席 65-85 / 盛宴 120-180 |
 | 档位时长 | 小食 20-30t / 家常 40-55t / 精致 50-65t / 宴席 60-80t / 盛宴 120-180t |
-| 苦力菜（压缩饼干式） | c ≈1.3（净 +0.3/tick），高饱食总量，`thirst_restore` 负值（口渴代价），低重/高堆叠/长保质，经验 ≈0 |
+| 苦力菜（压缩饼干式） | c ≈1.3（净 +0.3/tick），高饱食总量，`thirst_restore` 负值（口渴代价），低重/长保质（默认不堆叠），经验 ≈0 |
 | 消化不良触发 | 饱食进入过量区间（100.1~150） |
 | 标准饭盒 | 3 格（升级线 2/3/4） |
 
 ## 十一、待定 / 后续
 
-- 零食「快速供能」buff 的具体数值与效果类型（体力恢复/精力/行动速度/心情，待定）。
+- ~~零食「快速供能」buff 的具体数值与效果类型（体力恢复/精力/行动速度/心情，待定）~~ → **已定（k81，见 §十三）**：小食档 = 快速供能战斗粮——饱食弱但 buff 数值高（体力恢复/精力/心情/战斗出手速度）。
 - 饭盒可否放快捷栏战斗中食用（盛宴慢消化 → 战斗中吃意义有限，小食仍是战斗粮）。
+
+---
+
+## 十二、菜品档位归属表（34 道实装 · k65 基础表）
+
+> 数据依据：`data/buffs.json` 34 个 `buff_food_*` 的 `judgment_tags.food_item` 映射。
+> `satiety_total`（饱食总量）与 `digestion_ticks`（消化时长）为草案值，`c = satiety_total ÷ digestion_ticks` 自动推导。
+> 构成 `meal_composition`：`staple / meat / veg / other`（营养均衡第二轴判定用）。
+> 消化 buff 的 `nutrition` per-tick 已于 k79 微量调（见 `44` §三），此处不再列。
+
+### 餐前小食（总量 10-15 · 时长 20-30t）
+
+> k81：各小食的「快速供能」效果（体力/精力/心情/战斗出手速度）数值见 §十三；本节 `satiety_total` / `digestion_ticks` 不变。
+
+| item_id | 菜品 | 构成 | satiety_total | digestion_ticks | c | 备注 |
+|---|---|---|---|---|---|---|
+| `food_herb_tea_bitter` | 苦根茶 | other | 10 | 25 | 0.40 | 饮 |
+| `food_dish_beet_kvass` | 甜菜发酵饮 | other | 12 | 25 | 0.48 | 饮 |
+| `food_dish_buffalo_yogurt` | 水牛酸奶 | other | 15 | 25 | 0.60 | 乳 |
+| `food_dish_salted_cucumber` | 盐渍黄瓜 | veg | 12 | 25 | 0.48 | 腌渍小菜 |
+| `food_dish_steamed_egg_custard` | 蒸水蛋 | other | 14 | 25 | 0.56 | 轻食 |
+| `food_dried_meat_strip` | 风干肉条 | meat | 14 | 30 | 0.47 | 干粮零食 |
+| `food_cooking_fail_generic` | 糊灶残渣 | other | 5 | 15 | 0.33 | 失败物，最低 |
+| `herb_bitter` | 涩堇草 | veg | 8 | 20 | 0.40 | 生食 |
+| `herb_green` | 青草尖 | veg | 9 | 20 | 0.45 | 生食 |
+| `herb_sweet` | 甘花茎 | veg | 10 | 20 | 0.50 | 生食 |
+| `wild_fruit_red` | 红火莓 | other | 10 | 20 | 0.50 | 生食 |
+| `wild_fruit_purple` | 紫苏果 | other | 12 | 22 | 0.55 | 生食 |
+| `wild_fruit_yellow` | 黄肚柑 | other | 14 | 25 | 0.56 | 生食 |
+| `herb_pecan` | 山核桃仁 | other | 15 | 25 | 0.60 | 坚果 |
+| `herb_sour_plum` | 酸梅 | other | 10 | 20 | 0.50 | 果 |
+
+### 家常菜肴（总量 30-35 · 时长 40-55t）
+
+| item_id | 菜品 | 构成 | satiety_total | digestion_ticks | c | 备注 |
+|---|---|---|---|---|---|---|
+| `food_stew_meat_simple` | 肉末杂煮 | meat | 32 | 45 | 0.71 | |
+| `food_fish_soup_clear` | 清汤鱼羹 | meat | 30 | 40 | 0.75 | |
+| `food_flatbread_plain` | 粗面饼 | staple | 40 | 30 | 1.33 | **workhorse（苦力菜·早期保底）** |
+| `food_dish_fried_potato_chunks` | 炸土豆块 | veg | 30 | 40 | 0.75 | |
+| `food_dish_steamed_bream` | 清蒸鲂鱼 | meat | 32 | 45 | 0.71 | |
+| `food_dish_salt_grilled_whitefish` | 盐烤白身鱼 | meat | 33 | 45 | 0.73 | |
+| `food_dish_roasted_potato_herbs` | 烤土豆佐香草 | veg | 33 | 45 | 0.73 | |
+
+### 精致佳肴（总量 45-55 · 时长 50-65t）
+
+| item_id | 菜品 | 构成 | satiety_total | digestion_ticks | c | 备注 |
+|---|---|---|---|---|---|---|
+| `food_dish_applewood_turkey_roast` | 苹果木烤火鸡块 | meat | 50 | 55 | 0.91 | 烟熏工艺 |
+| `food_dish_mustard_beef_tongue` | 黄芥末蘸牛舌 | meat | 48 | 55 | 0.87 | 内脏处理 |
+| `food_dish_beef_onion_stirfry` | 洋葱牛肉快炒 | meat | 46 | 50 | 0.92 | |
+| `food_dish_squid_stirfry` | 爆炒鱿鱼 | meat | 45 | 50 | 0.90 | |
+| `food_dish_chicken_dice_stirfry` | 小炒鸡丁 | meat | 45 | 50 | 0.90 | |
+| `food_dish_sesame_garlic_salad` | 芝麻蒜香拌菜 | veg | 45 | 50 | 0.90 | |
+
+### 宴席大菜（总量 65-85 · 时长 60-80t）
+
+| item_id | 菜品 | 构成 | satiety_total | digestion_ticks | c | 备注 |
+|---|---|---|---|---|---|---|
+| `food_dish_beef_brisket_stew` | 清炖牛腩 | meat | 75 | 70 | 1.07 | 慢炖 |
+| `food_dish_pig_trotter_bean_soup` | 猪蹄豆汤 | meat | 70 | 70 | 1.00 | 慢炖 |
+| `food_dish_whitefish_soup_deluxe` | 清汤鱼羹（强化） | meat | 68 | 65 | 1.05 | |
+| `food_dish_river_shrimp_soft_fry` | 软炸河虾仁 | meat | 65 | 60 | 1.08 | |
+| `food_dish_lotus_glutinous_chicken` | 荷叶糯米鸡 | meat | 72 | 70 | 1.03 | 包裹蒸 |
+| `food_dish_herb_cured_pork_slices` | 香草腌肉片 | meat | 65 | 65 | 1.00 | 腌制 |
+
+### 饕餮盛宴（预留 · 总量 120-180 · 时长 120-180t · c≈1.1）
+
+- **当前 34 道实装菜无盛宴档**——15 道终局菜（`life-cooking-final-goals`）实装后归入此档，c≈1.1（慢续航，一盅顶一路）。
+- 苦力菜正体（压缩饼干式，c≈1.3、口渴代价、便携）见 `k73`；`food_flatbread_plain` 为早期替代。
+
+### 构成统计（均衡判定用）
+
+- staple：粗面饼（1）
+- meat：肉末杂煮、清汤鱼羹、清蒸鲂鱼、盐烤白身鱼、苹果木烤火鸡、牛舌、牛肉快炒、鱿鱼、鸡丁、牛腩、猪蹄汤、白鱼汤强化、河虾仁、糯米鸡、腌肉片、肉干（16）
+- veg：盐渍黄瓜、涩堇草、青草尖、甘花茎、炸土豆块、烤土豆、芝麻沙拉（7）
+- other：苦根茶、甜菜饮、酸奶、蒸水蛋、糊灶残渣、野果×3、山核桃、酸梅（10）
+
+---
+
+## 十三、零食快速供能 buff（k81 · 已实装）
+
+> 定位：**小食档 = 快速供能（战斗粮）**——饱食弱（维持用途有限），但 buff 数值高（体力恢复 / 精力 / 心情 / 战斗出手速度），鼓励随身携带、战前战后吃。
+> 载体：升级 14 个小食档菜品的 `edible_buff_id` 静态 buff（`data/buffs.json`，标记 `quick_energy: true`）——保留 §十二 的弱饱食消化数值（`satiety_total` / `digestion_ticks` / `nutrition` per-tick 均不变），新增：
+> - `survival_delta` 增加 `stamina`（体力恢复）、`energy`（精力）、`mood`（心情）per-tick；
+> - `battle_move_speed_multiplier` ×1.10：**战斗出手速度 +10%**（普攻交换先后手判定，`combat-initiative.resolvePlayerInitiatedExchange` 消费；与 k77 消化不良 ×0.85/×0.6 同效果键位、方向相反；不影响地图移动）；
+> - 食用仍受「同 buff 不可重复食用」（21 已定）约束：效果期内不能连吃，天然限制堆叠；
+> - **排除** `food_cooking_fail_generic`（糊灶残渣：失败物占位，不配高数值，保持弱饱食仅够果腹）。
+
+### 数值（per-tick · 括号内为效果期总量 = per-tick × duration）
+
+| item_id | 菜品 | dur | 体力 | 精力 | 心情 | 出手速度 | 饱食总量 |
+|---|---|---|---|---|---|---|---|
+| `food_herb_tea_bitter` | 苦根茶 | 25 | 0.48 (12) | 0.48 (12) | 0.30 (8) | ×1.10 | 10 |
+| `food_dish_beet_kvass` | 甜菜发酵饮 | 25 | 0.48 (12) | 0.32 (8) | 0.40 (10) | ×1.10 | 12 |
+| `food_dish_buffalo_yogurt` | 水牛酸奶 | 25 | 0.80 (20) | 0.32 (8) | 1.00 (25) | ×1.10 | 15 |
+| `food_dish_salted_cucumber` | 盐渍黄瓜 | 25 | 0.64 (16) | 0.32 (8) | 0.40 (10) | ×1.10 | 12 |
+| `food_dish_steamed_egg_custard` | 蒸水蛋 | 25 | 0.80 (20) | 0.32 (8) | 0.80 (20) | ×1.10 | 14 |
+| `food_dried_meat_strip` | 风干肉条 | 30 | 0.87 (26) | 0.33 (10) | 0.50 (15) | ×1.10 | 14 |
+| `herb_bitter` | 涩堇草 | 20 | 0.90 (18) | 0.50 (10) | 0.25 (5) | ×1.10 | 8 |
+| `herb_green` | 青草尖 | 20 | 0.90 (18) | 0.40 (8) | 0.25 (5) | ×1.10 | 9 |
+| `herb_sweet` | 甘花茎 | 20 | 0.90 (18) | 0.40 (8) | 0.50 (10) | ×1.10 | 10 |
+| `wild_fruit_red` | 红火莓 | 20 | 0.90 (18) | 0.40 (8) | 0.75 (15) | ×1.10 | 10 |
+| `wild_fruit_purple` | 紫苏果 | 22 | 0.91 (20) | 0.36 (8) | 0.68 (15) | ×1.10 | 12 |
+| `wild_fruit_yellow` | 黄肚柑 | 25 | 0.80 (20) | 0.32 (8) | 0.60 (15) | ×1.10 | 14 |
+| `herb_pecan` | 山核桃仁 | 25 | 0.80 (20) | 0.32 (8) | 0.80 (20) | ×1.10 | 15 |
+| `herb_sour_plum` | 酸梅 | 20 | 0.80 (16) | 0.40 (8) | 0.75 (15) | ×1.10 | 10 |
+
+> 注：山核桃仁 / 酸梅 仍保留「组合腹泻」与「效果结束 +1 营养」（§十二 原机制）；饮品类（苦根茶/甜菜饮/酸梅等）的 `thirst` per-tick 不变。
+
+### 数值锚点（均可调）
+
+- **体力总量 12~26**：对标一次「进食」转化的 `eat_stamina_gain`（20）上下，短窗口（20-30t）内拉回约 1/4 上限——「快速」= 窗口短、单位 tick 高（对比盛宴 120-180t 慢续航）；
+- **精力总量 8~12**（上限 100）：够撑 8-12 tick 自修或数次高耗精力行动；提神类（苦根茶 12、涩堇草 10）偏高；
+- **心情总量 5~25**（0-1000 刻度、中心 500、回归 5/tick）：小幅提振不喧宾夺主；治愈系（酸奶 25、蛋羹/山核桃 20）偏高；
+- **战斗出手速度 ×1.10 恒定**：普攻交换先手判定更有利（与消化不良 ×0.85/×0.6 可互相抵消一部分；影响出手先后/同时结算，不改变地图移动速度）；
+- **弱饱食（总量 8-15）**：不会把胃顶进过量区间，与「战斗粮」定位一致；「维持 vs 恢复」仍按 §二 公式计算。

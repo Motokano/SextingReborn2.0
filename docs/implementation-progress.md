@@ -28,7 +28,7 @@
 | 采集与生产 | `js/gathering.js`、`js/production-quality.js`、`data/gathering_point_instances.json`（实例/掉落）、`data/gathering_points.json`（兼容）、`tools/gathering-point-editor.html` 等。 |
 | 技能 | `js/combat-skills.js`、`js/survival-skills.js`、`data/combat-skills.json`。 |
 | Buff（对照 18） | `js/buff-system.js`、`data/buffs.json`、`data/editor/buff_event_registry.json`。 |
-| 经脉/穴位（对照 12） | `js/acupoints.js`。 |
+| 肌肉系统（对照 34，取代原 12 穴位） | `js/muscles.js`、`data/muscles.json`（22 肌群 × 478 块 + 大型被动；含存档、肌群槽装配 UI）。旧 `js/acupoints.js` 已不存在。 |
 | NPC / 对话 | `js/npc-system.js`、`js/dialogue-ui.js`、`data/npc/*`；Svelte 对话迁移见 `docs/migration/svelte-ui-rewrite.md`。 |
 | 贸易 UI 试验 | `js/trade_canvas_ui.js`、`js/trade_context.js`、`js/trade_layout.js` 等（界面与数据结构，**非** capitalism 全文规则引擎）。 |
 | 游戏时间 | `js/game-time.js`（`totalTicks` 与 Buff 等系统衔接）。 |

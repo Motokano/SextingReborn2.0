@@ -43,13 +43,15 @@
 | Buff / Debuff 系统 | [18-buff-system.md](18-buff-system.md) | 通用触发、分层消耗、命中/效果条件、调试开关 |
 | 动作系统 | [19-action-system.md](19-action-system.md) | 条件解锁的特殊指令、菜单执行、Tick、可选限次耗尽隐藏、与 hubs 呼吸法/步法对齐 |
 | 气力→呼吸条迁移 | [33-breath-bar-migration.md](33-breath-bar-migration.md) | 气力改为呼吸法 `breath_bar` 定义后的代码迁移清单：survival / melee-resolve / hub-actions / scene-app 四处改造点、行为对照表与验收用例 |
-| 肌肉系统重构（草案） | [34-muscle-system-rework.md](34-muscle-system-rework.md) | 穴位→肌肉（22 肌群 × 478 全量）、后遗症/变式→大型被动（allowed_groups+slots_cost）、招式三维（数值/形态/效果）分工 |
+| 肌肉系统（取代原经脉穴位） | [34-muscle-system-rework.md](34-muscle-system-rework.md) | 取代 `12`：穴位→肌肉（22 肌群 × 478 全量，数据 `data/muscles.json`）；任督/全通成就→肌群全通解锁大型被动容量；后遗症→大型被动（allowed_groups+slots_cost）、招式三维（数值/形态/效果）分工。阶段一/二已落地、阶段三（大型被动）已部分落地 |
 | 代码文案规范 | [35-code-i18n-guideline.md](35-code-i18n-guideline.md) | 工具边界（防 mojibake）、key 命名规则、i18n 抽离四步流程、边界判定、分批计划 |
 | UI 自由窗口系统 | [36-ui-windows.md](36-ui-windows.md) | 仿 RO 浮动窗口：拖拽/缩放/显隐/锁定/重置、设备级持久化、认知门控合并、8 层 UI 演出 API、落地阶段 |
 | 模块化躯干防具与新底气护体 | [37-equipment-modular-armor.md](37-equipment-modular-armor.md) | 躯干防具模块化（底材 + 6 板位模块 + 激活制）；底气护体改造为「激活防具」；硅叶世界观衔接；减伤链迁移 |
 | 装备数据契约（模块化 schema） | [38-equipment-data-contract.md](38-equipment-data-contract.md) | 模块表/防具模板/实例格式、槽点命名空间、effect_type 目录、modifier key、校验规则、开放扩展（实现地基） |
 | 手套与出招装备改造体系 | [39-glove-and-outfitting.md](39-glove-and-outfitting.md) | 手套=徒手流武器（两层标签+分形态系数）；打造三阶段；改造件/通货做装/特殊装备骨架 |
 | 战斗场景与可互动元素 | [40-combat-scene.md](40-combat-scene.md) | 简单类可互动元素（一次性动作范式）+ 酒瓶实例；固定/随机位置；场地伤害/掩体/机关与生成流派预留 |
+| 地牢敌人完成度梯度 | [44-dungeon-enemy-gradient.md](44-dungeon-enemy-gradient.md) | 16 层 × 4 档敌人完成度框架（对齐 42）：成长标尺/威胁画像/经验阶梯/情报与六劫挂钩；旗舰敌人 + 轮换 roster |
+| 电池经济数值骨架 | [45-battery-economy.md](45-battery-economy.md) | 电力锚线（打一次洞 ≈ 1000 电 = 大型臂 1 轮）；电池容量档位、16 层掉落曲线、牧场需电模块耗电、起步储能；电箱数值预留（k91 暂缓） |
 | NPC 与任务模板 | [16-npc-and-quest-template.md](16-npc-and-quest-template.md) | NPC 行为模板、触发条目模板、任务模板、林书瑶首例与 2 条触发条目 |
 | 贸易与旅行商人 | 见下「贸易子模块表」 | 并入 capitalism 多文件 |
 | 玩家间交易 | [13-p2p-trading.md](13-p2p-trading.md) | 交易码、接头暗号、兑换与时效 |
