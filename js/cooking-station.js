@@ -98,6 +98,24 @@
         return s;
     }
 
+    /**
+     * UI 依赖注入（P1c-2 起，搬入的制作/面板逻辑经 deps 调用主 JS 的闭包 infra，
+     * 避免把 ui/showMsg/render 等塞进 window）。由 scene-app init 注入一次。
+     * deps 可用键：ui / showMsg / render / getItemDisplayNameSafe / markCellDirty
+     *           / updateBackpackPanel / updateStatusPanel（渐次补充）。
+     */
+    var uiDeps = {};
+    function setUiDeps(deps) {
+        if (deps && typeof deps === 'object') uiDeps = deps;
+    }
+    function getUiDeps() { return uiDeps; }
+    function ui(key, vars) {
+        return (typeof uiDeps.ui === 'function') ? uiDeps.ui(key, vars) : (key != null ? String(key) : '');
+    }
+    function showMsg(text, kind) {
+        if (typeof uiDeps.showMsg === 'function') uiDeps.showMsg(text, kind);
+    }
+
     global.CookingStation = {
         setConfig: setConfig,
         getMethods: getMethods,
@@ -107,6 +125,9 @@
         recipeSystemId: RECIPE_SYSTEM_ID,
         markRecipeKnown: markRecipeKnown,
         createDefaultState: createDefaultState,
-        getState: getState
+        getState: getState,
+        setUiDeps: setUiDeps,
+        ui: ui,
+        showMsg: showMsg
     };
 })(typeof window !== 'undefined' ? window : globalThis);

@@ -10927,6 +10927,21 @@
         if (window.SceneHud && typeof window.SceneHud.register === 'function') {
             window.SceneHud.register('status', updateStatusPanel);
         }
+        // 站点模块 UI 依赖注入（P1c-2 DI 基座）：搬入模块的函数经 deps 调主 JS 闭包 infra，
+        // 不把 ui/showMsg/render 等塞进 window。
+        var stationUiDeps = {
+            ui: ui,
+            showMsg: showMsg,
+            render: render,
+            getItemDisplayNameSafe: getItemDisplayNameSafe,
+            markCellDirty: markCellDirty
+        };
+        if (window.CookingStation && typeof window.CookingStation.setUiDeps === 'function') {
+            window.CookingStation.setUiDeps(stationUiDeps);
+        }
+        if (window.PharmacyStation && typeof window.PharmacyStation.setUiDeps === 'function') {
+            window.PharmacyStation.setUiDeps(stationUiDeps);
+        }
         registerUiWindows();
         loadConfig().then(function () {
             // i18n 已就绪（UIText.setDict 已完成）后再进行地图合并渲染

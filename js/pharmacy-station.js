@@ -93,6 +93,20 @@
         return s;
     }
 
+    /**
+     * UI 依赖注入（P1c-2 起；见 cooking-station.js setUiDeps 说明）。
+     */
+    var uiDeps = {};
+    function setUiDeps(deps) {
+        if (deps && typeof deps === 'object') uiDeps = deps;
+    }
+    function ui(key, vars) {
+        return (typeof uiDeps.ui === 'function') ? uiDeps.ui(key, vars) : (key != null ? String(key) : '');
+    }
+    function showMsg(text, kind) {
+        if (typeof uiDeps.showMsg === 'function') uiDeps.showMsg(text, kind);
+    }
+
     global.PharmacyStation = {
         setConfig: setConfig,
         getMethods: getMethods,
@@ -101,6 +115,9 @@
         recipeSystemId: RECIPE_SYSTEM_ID,
         markRecipeKnown: markRecipeKnown,
         createDefaultState: createDefaultState,
-        getState: getState
+        getState: getState,
+        setUiDeps: setUiDeps,
+        ui: ui,
+        showMsg: showMsg
     };
 })(typeof window !== 'undefined' ? window : globalThis);

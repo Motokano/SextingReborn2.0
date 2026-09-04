@@ -200,6 +200,11 @@ js/item-use.js  window.ItemUse      // applyItemUseEffectFromTemplate / tryUseIt
     - 新模块容纳 12 函数（normalize×2/toCountMap/recipeInputsSatisfiedBySelected/match×2/pick×2/consumeInventoryItemsByList/putItemsBack/toUnified×2）逐字搬移，模块内互引自洽零改写；`putItemsBack`/`consumeInventoryItemsByList` 为烹饪/制药/沤肥三方共享（沤肥调用见原 8810-8850）。
     - scene-app 删 207 行定义；34 处调用改走 `StationCraftCore.*`；语法 + 实机冒烟通过。
   - **P1b-4 / P1c（待办）**：站点规则余部（`getCookingStationState`/`getPharmacyStationState` 访问器、craft 生命周期 finalize/tick、temp station 运行时、`tryCookAtStation` 等）与面板 DOM 迁出；前置 = infra 桥（ui/showMsg/render/updateBackpackPanel 等，见 P1 依赖实测）。
+  - **P1c-1（已提交 86a1a06）**：站点运行时状态访问器迁模块。
+    - 两站模块新增 `createDefaultState` / `getState`（原 getXxxStationState 逐字迁移：SceneCtx 懒初始化 + fuel/water/water_unlimited/accessories/active_craft 归一化）。
+    - scene-app 删 55 行访问器定义；`resetCookingStateForNewCharacter` 改调模块工厂；28 处调用改走 `CookingStation/PharmacyStation.getState()`。
+  - **P1c-2（DI 基座已落地，待搬移）**：UI 依赖注入基座——两站模块新增 `setUiDeps(deps)`（deps: ui/showMsg/render/getItemDisplayNameSafe/markCellDirty），scene-app init 注入一次（避免把闭包 infra 塞进 window）；后续 craft 生命周期/面板搬移时函数体改走 deps.ui/showMsg。
+  - **策略定案（2026 拆解）**：闭包 infra（ui/showMsg/render/tooltip 系列）不随迁，统一经「模块 setUiDeps(DI)」注入；面板 DOM 仍以「面板模块 + SceneHud.refresh 通道」为目标，P1c 其余子刀逐批执行。
 - **P1c（待办）**：站点规则与面板迁出（配 infra 桥，见 P1 实测 deps：ui/showMsg/render/tooltip 系列/`isPreCreationGameplayRestricted` 等）；compost 面板 → `compost-panel.js`。
 
 ## 5. 风险与对策
