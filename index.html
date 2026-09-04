@@ -1545,6 +1545,7 @@
             background: #2d2d28; border: 2px solid #4d4d45; border-radius: 10px;
             overflow: hidden; display: flex; flex-direction: column; font-size: 14px;
             box-shadow: 0 24px 64px rgba(0,0,0,0.65); color: #e0d7c6;
+            position: relative;
             background-image: radial-gradient(120% 90% at 50% 0%, rgba(211,160,96,0.08), rgba(45,45,40,0) 45%);
         }
         #modal-agriculture .agri-head {
@@ -1666,6 +1667,32 @@
         #modal-agriculture .agri-world-strip {
             flex: 1 1 100%; width: 100%; font-size: 11px; color: #a89880; line-height: 1.4;
         }
+        #modal-agriculture .agri-power-badge {
+            padding: 6px 12px; border-radius: 999px; border: 1px solid #4d4d45;
+            background: #221c18; color: #8e8e8e; font-size: 12px; font-weight: 700; white-space: nowrap;
+        }
+        #modal-agriculture .agri-power-badge.on { border-color: #6a9a50; color: #9fc08a; }
+        #modal-agriculture .agri-power-badge.off { border-color: #8b4040; color: #e08a8a; }
+        #modal-agriculture .agri-power-picker {
+            position: absolute; right: 16px; bottom: 64px; z-index: 40; width: min(360px, 92%);
+            background: #2d2d28; border: 2px solid #4d4d45; border-radius: 10px; box-shadow: 0 16px 48px rgba(0,0,0,0.6);
+        }
+        #modal-agriculture .agri-power-picker.hidden { display: none; }
+        #modal-agriculture .agri-power-picker-head {
+            padding: 8px 12px; border-bottom: 1px solid #4d4d45; display: flex; justify-content: space-between; align-items: center;
+            font-size: 12px; font-weight: 800; color: #e0d7c6;
+        }
+        #modal-agriculture .agri-power-picker-head span { cursor: pointer; color: #8e8e8e; padding: 2px 8px; }
+        #modal-agriculture .agri-power-picker-head span:hover { color: #fff; background: rgba(185,28,28,0.18); }
+        #modal-agriculture .agri-power-picker-list { padding: 8px; overflow-y: auto; display: grid; gap: 6px; max-height: 240px; }
+        #modal-agriculture .agri-power-row {
+            display: flex; align-items: center; gap: 8px; padding: 6px 8px;
+            border: 1px solid #4d4d45; border-radius: 8px; background: #221c18; font-size: 12px;
+        }
+        #modal-agriculture .agri-power-row .feed-name { flex: 1; }
+        #modal-agriculture .agri-power-row .feed-meta { color: #8e8e8e; font-size: 11px; }
+        #modal-agriculture .agri-power-row .agri-act-btn { padding: 3px 10px; font-size: 11px; flex-shrink: 0; }
+        #modal-agriculture .agri-power-empty { padding: 12px; font-size: 12px; color: #8e8e8e; }
         #modal-agriculture .agri-status-msg { flex: 1; font-size: 12px; color: #8e8e8e; min-width: 120px; }
         #modal-compost-station .cs-panel {
             width: min(1180px, 96vw); height: min(760px, 90vh);
@@ -3271,6 +3298,10 @@
         #modal-livestock .module-ico { font-size: 18px; grid-row: span 2; }
         #modal-livestock .module-name { color: #e0d7c6; font-size: 13px; font-weight: 800; }
         #modal-livestock .module-tier { color: #ff8c00; font-size: 10px; font-weight: 800; text-align: right; }
+        #modal-livestock .module-power { color: #f59e0b; font-size: 10px; font-weight: 800; text-align: right; grid-column: 2 / -1; }
+        #modal-livestock .module-stalled { color: #f87171; font-size: 10px; font-weight: 800; margin-left: 6px; }
+        #modal-livestock .module-slot.filled.stalled .slot-val { color: #f87171; }
+        #modal-livestock .ov-module-chip.stalled { border-color: #b91c1c; color: #f87171; }
         #modal-livestock .module-desc { color: #8e8e8e; font-size: 11px; grid-column: 2 / -1; }
         #modal-livestock .module-effect { color: #7fb069; font-size: 11px; grid-column: 2 / -1; font-weight: 600; }
         #modal-livestock .module-slot .slot-effect { grid-column: auto; font-size: 10px; }
@@ -3865,10 +3896,16 @@
                 </div>
                 <footer class="agri-foot">
                     <span id="agriculture-world-strip" class="agri-world-strip" aria-live="polite"></span>
+                    <span id="agriculture-power-badge" class="agri-power-badge" style="display:none;">⚡</span>
+                    <button type="button" id="agriculture-power-feed-btn" class="agri-act-btn" style="display:none;" title="把背包里的电池塞进农田储能">🔋 塞电池</button>
                     <button type="button" id="agriculture-auto-tick-toggle" aria-pressed="false"></button>
                     <button type="button" class="primary" id="agriculture-advance-tick" data-ui="agriculture.btn.advance_tick"></button>
                     <button type="button" id="agriculture-cancel-task" data-ui="agriculture.btn.cancel_task"></button>
                     <span id="agriculture-status-msg" class="agri-status-msg"></span>
+                    <div id="agriculture-power-picker" class="agri-power-picker hidden">
+                        <div class="agri-power-picker-head">塞电池给农田供电<span id="agriculture-power-picker-close">✕</span></div>
+                        <div id="agriculture-power-picker-list" class="agri-power-picker-list"></div>
+                    </div>
                 </footer>
             </div>
         </div>
@@ -4029,6 +4066,8 @@
                     <div class="lv-title">牧场</div>
                     <div class="lv-badge" id="livestock-rotate-badge">⟳ 下次旋转 - tick</div>
                     <div class="lv-badge" id="livestock-level-badge" style="border-color:#4d4d45;color:#8e8e8e;">畜牧 Lv.-</div>
+                    <div class="lv-badge" id="livestock-power-badge" style="border-color:#4d4d45;color:#8e8e8e;">⚡ 供电</div>
+                    <button type="button" class="lv-toggle" id="livestock-power-feed-btn" title="把背包里的电池塞进牧场储能">🔋 塞电池</button>
                     <button type="button" class="lv-toggle" id="livestock-tick-toggle">时间流逝：关</button>
                     <button type="button" class="lv-close" id="livestock-close" aria-label="关闭">✕</button>
                 </div>
@@ -4053,6 +4092,10 @@
                 <div id="livestock-feed-picker" class="lv-feed-picker hidden">
                     <div class="lv-feed-picker-head">投喂饲料<span id="livestock-feed-picker-close">✕</span></div>
                     <div id="livestock-feed-picker-list" class="lv-feed-picker-list"></div>
+                </div>
+                <div id="livestock-power-picker" class="lv-feed-picker hidden">
+                    <div class="lv-feed-picker-head">塞电池给牧场供电<span id="livestock-power-picker-close">✕</span></div>
+                    <div id="livestock-power-picker-list" class="lv-feed-picker-list"></div>
                 </div>
             </div>
         </div>
@@ -4158,6 +4201,8 @@
     <script src="js/hideout-warehouse.js"></script>
     <script src="js/hideout-warehouse-panel.js"></script>
     <script src="js/gathering.js"></script>
+    <script src="js/dungeon-loot.js"></script>
+    <script src="js/enemy-drops.js"></script>
     <script src="js/scene-animation.js"></script>
     <script src="js/core/tile-renderer-v2.js"></script>
     <script src="js/scene-renderer.js"></script>
@@ -4168,6 +4213,7 @@
     <script src="js/recipe-system.js"></script>
     <script src="js/scene-app.js"></script>
     <script src="js/bootstrap.js"></script>
+    <script src="js/debug-hash-router.js"></script>
     
 </body>
 </html>

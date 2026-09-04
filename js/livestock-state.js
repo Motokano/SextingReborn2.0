@@ -41,6 +41,85 @@
   function allModules() { return MODULES; }
   function allPerks() { return PERKS; }
 
+  // 模块是否需电（k93）：读 requires_power 字段；缺省按 tier 回退——small/medium 无电可转，large（臂）/axis（屠宰/仓储/气候）需电
+  function moduleRequiresPower(moduleId) {
+    var m = getModule(moduleId);
+    if (!m) return false;
+    if (typeof m.requires_power === 'boolean') return m.requires_power;
+    return m.tier === 'large' || m.tier === 'axis';
+  }
+
+  // 牧场是否供电（k89 电池经济最小闭环：由 power_charge 储能驱动；power_available 为派生缓存）
+  // 每 tick 扣电：需电模块合计 power_drain_per_tick；储能耗尽 → 供电中断 → 需电模块停摆（k93 生产力墙）
+  function isPowerAvailable() {
+    var st = ensureState();
+    return st.power_charge > 0;
+  }
+  // 兼容旧接口：true = 塞一块起步电（1 点）使供电恢复；false = 清空储能（断电）
+  function setPowerAvailable(v) {
+    var st = ensureState();
+    if (v === false) st.power_charge = 0;
+    else if ((st.power_charge || 0) <= 0) st.power_charge = 1;
+    return st.power_charge > 0;
+  }
+  /** 每 tick 各需电模块耗电速率（数据源：模块表 power_drain_per_tick；缺省按 tier 回退，非需电模块恒为 0）。 */
+  function modulePowerDrainPerTick(moduleId) {
+    var m = getModule(moduleId);
+    if (!m) return 0;
+    if (!moduleRequiresPower(moduleId)) return 0;
+    if (m.power_drain_per_tick != null && isFinite(Number(m.power_drain_per_tick))) {
+      return Math.max(0, Number(m.power_drain_per_tick));
+    }
+    if (m.tier === 'large') return 1;
+    if (m.tier === 'axis') return 2;
+    return 0;
+  }
+  /** 当前装配中的需电模块合计每 tick 耗电（含轴心位；shadow 不算；气候塔 off 不耗电） */
+  function currentPowerDrainPerTick() {
+    var st = ensureState();
+    var total = 0;
+    var containers = [];
+    if (st.arms) for (var ak in st.arms) containers.push(st.arms[ak]);
+    if (st.axis) containers.push(st.axis);
+    for (var c = 0; c < containers.length; c++) {
+      var cont = containers[c];
+      if (!cont || typeof cont !== 'object') continue;
+      for (var sk in cont) {
+        var inst = cont[sk];
+        if (!inst || typeof inst !== 'object' || inst.shadow) continue;
+        if (!inst.module_id || !moduleRequiresPower(inst.module_id)) continue;
+        // 气候塔 off 模式不产生效果 → 不耗电（§11.6.2：mode 缺省 off）
+        if (inst.module_id === 'climate_control' && (!inst.mode || inst.mode === 'off')) continue;
+        total += modulePowerDrainPerTick(inst.module_id);
+      }
+    }
+    return total;
+  }
+  /** 每 tick 扣电（advanceTick 开头调用）：有电且装了需电模块才扣。 */
+  function drainPowerForTick() {
+    var st = ensureState();
+    var drain = currentPowerDrainPerTick();
+    if (drain <= 0 || (st.power_charge || 0) <= 0) return st.power_charge || 0;
+    st.power_charge = Math.max(0, (st.power_charge || 0) - drain);
+    return st.power_charge;
+  }
+  /** 塞入储能（电池充电入口；amount 为电量点数，负值忽略）。 */
+  function addPowerCharge(amount) {
+    var st = ensureState();
+    var a = Math.floor(Number(amount) || 0);
+    if (a <= 0) return { ok: false, charge: st.power_charge || 0, reason: 'invalid_amount' };
+    st.power_charge = (st.power_charge || 0) + a;
+    return { ok: true, charge: st.power_charge, added: a };
+  }
+  function getPowerCharge() {
+    var st = ensureState();
+    return st.power_charge || 0;
+  }
+  // 模块当前是否可产出（生产力墙：需电模块缺电 → 停摆；非分档锁，装配/升级不受 tier 限制）
+  function isModulePowered(moduleId) {
+    return !moduleRequiresPower(moduleId) || isPowerAvailable();
+  }
+
   // §8.3 常见度权重
   var RARITY_WEIGHT = { common: 50, uncommon: 30, rare: 15, very_rare: 5 };
 
@@ -230,6 +309,8 @@
     state = {
       rotation_ticks_remaining: 862,
       rotation_total_ticks: 1000,
+      // 牧场储能（k89 电池经济最小闭环）：起步 500 点；需电模块每 tick 扣电，耗尽停摆 → 需塞电池（数值 k87 精调）
+      power_charge: 500,
       zones: {
         z1: { grass_height: 1.5, compaction: 0, pollution: 0 },
         z2: { grass_height: 1.5, compaction: 0, pollution: 0 },
@@ -261,6 +342,12 @@
 
   function setState(incoming) {
     if (!incoming || typeof incoming !== 'object') return;
+    // 储能迁移（k89 电池经济最小闭环）：旧档 power_available=true → 给起步 500；false → 0（断电）
+    if (incoming.power_charge == null) {
+      incoming.power_charge = (incoming.power_available === false) ? 0 : 500;
+    }
+    incoming.power_charge = Math.max(0, Math.floor(Number(incoming.power_charge) || 0));
+    delete incoming.power_available;
     if (!incoming.arm_zones) {
       incoming.arm_zones = { arm1: ['z1', 'z2'], arm2: ['z2', 'z3'], arm3: ['z3', 'z4'], arm4: ['z4', 'z1'] };
     }
@@ -390,6 +477,7 @@
     var st = ensureState();
     var a = findAnimal(uid);
     if (!a || a.dead) return { ok: false, reason: 'not_found' };
+    // 屠宰为手动操作（k93）：猪牛羊走轴心屠宰位、鸡走鸡笼（§11.3.4）均不耗电，无电力墙
     var sp = getSpecies(a.species_id);
     if (!sp || !sp.products || !sp.products.slaughter) return { ok: false, reason: 'no_products' };
     var sl = sp.products.slaughter;
@@ -706,7 +794,10 @@
   }
 
   function t(key, vars) {
-    if (global && global.UIText && typeof global.UIText.t === 'function') return global.UIText.t(key, vars);
+    // 本文件为无参 IIFE（浏览器挂 window.LivestockState），不能裸引 global；
+    // Node 冒烟测试设 globalThis.global，浏览器回退 window
+    var root = (typeof global !== 'undefined' && global) || (typeof window !== 'undefined' ? window : globalThis);
+    if (root && root.UIText && typeof root.UIText.t === 'function') return root.UIText.t(key, vars);
     return key;
   }
 
@@ -798,6 +889,8 @@
         var inst = mods[mi];
         if (!inst || inst.shadow || !inst.module_id) continue;
         var mid = inst.module_id;
+        // 生产力墙（k93）：需电模块缺电 → 本 tick 停摆（效果不结算）；非分档锁，装配/升级不受影响
+        if (!isModulePowered(mid)) continue;
         var lv = Math.max(1, Math.min(5, inst.level || 1));
         var idx = lv - 1;
         var eff = MODULE_EFFECTS[mid];
@@ -865,8 +958,9 @@
 
       // 手动采集臂（§11.4）：自动收割夹持两区冷却完毕的活体产物；Lv4+ 自动清尸
       if (autoCollectActive) {
-        // 有中央仓储枢纽（§11.6.1）时产物入轴心缓存，否则进背包队列
-        var hasHub = !!getWarehouseHub();
+        // 有中央仓储枢纽（§11.6.1）时产物入轴心缓存，否则进背包队列；
+        // 枢纽为需电模块（k93）：缺电时采集产物回落背包，不入缓存
+        var hasHub = isModulePowered('warehouse_hub') && !!getWarehouseHub();
         st.pending_auto_items = st.pending_auto_items || [];
         // 自动采集（不给经验，§9.3 只给手动）
         st.animals.forEach(function (a) {
@@ -1066,6 +1160,8 @@
   function climateSetMode(mode) {
     var inst = getClimateControl();
     if (!inst) return { ok: false, reason: 'no_climate_tower' };
+    // 气候调控塔为需电模块（k93）：缺电 → 拒绝切换（停摆）
+    if (!isModulePowered('climate_control')) return { ok: false, reason: 'no_power' };
     if (mode === inst.mode) return { ok: true, mode: mode };
     if ((inst.mode_switch_cooldown || 0) > 0) {
       return { ok: false, reason: 'cooldown', remaining: inst.mode_switch_cooldown };
@@ -1084,6 +1180,10 @@
 
   // 当前气候修正（供 tick 应用）：返回 { grassMult, satietyMult, pollutionClean, compactionUp }
   function getClimateModifiers() {
+    // 气候调控塔为需电模块（k93）：缺电 → 全局修正归零（停摆）
+    if (!isModulePowered('climate_control')) {
+      return { grassMult: 1, satietyMult: 1, pollutionClean: 0, compactionUp: 0 };
+    }
     var inst = getClimateControl();
     if (!inst || !inst.mode || inst.mode === 'off') {
       return { grassMult: 1, satietyMult: 1, pollutionClean: 0, compactionUp: 0 };
@@ -1120,6 +1220,8 @@
   function wasteHeatSetMode(mode) {
     var inst = getWasteHeatRecycle();
     if (!inst) return { ok: false, reason: 'no_heat_arm' };
+    // 废热回收臂为需电模块（k93）：缺电 → 拒绝切换（停摆）
+    if (!isModulePowered('waste_heat_recycle')) return { ok: false, reason: 'no_power' };
     if (mode === inst.mode) return { ok: true, mode: mode };
     if ((inst.mode_switch_cooldown || 0) > 0) {
       return { ok: false, reason: 'cooldown', remaining: inst.mode_switch_cooldown };
@@ -1145,6 +1247,8 @@
   function tickWasteHeat(st) {
     var inst = getWasteHeatRecycle();
     if (!inst) return;
+    // 废热回收臂为需电模块（k93）：缺电 → 不回收（停摆）
+    if (!isModulePowered('waste_heat_recycle')) return;
     if ((inst.mode_switch_cooldown || 0) > 0) inst.mode_switch_cooldown--;
     var lv = Math.max(1, Math.min(5, inst.level || 1));
     var eff = MODULE_EFFECTS.waste_heat_recycle;
@@ -1231,6 +1335,8 @@
   function tickLinkSchedule(st) {
     var ls = getLinkSchedule();
     if (!ls || !ls.inst || !ls.inst.enabled_rules || !ls.inst.enabled_rules.length) return;
+    // 联动作业臂为需电模块（k93）：缺电 → 调度停摆
+    if (!isModulePowered('link_schedule')) return;
     var lv = Math.max(1, Math.min(5, ls.inst.level || 1));
     var eff = MODULE_EFFECTS.link_schedule;
     if (ls.inst.dispatch == null) ls.inst.dispatch = (eff && eff.dispatch_points[lv - 1]) || 2;
@@ -1271,7 +1377,8 @@
               asp.products.living.forEach(function (p) {
                 var r = collectProduct(a.uid, p.product_id, 1);
                 if (r.ok) {
-                  if (getWarehouseHub()) warehouseAdd(r.item_id);
+                  // 仓储枢纽为需电模块（k93）：缺电时产物回落背包队列
+                  if (isModulePowered('warehouse_hub') && getWarehouseHub()) warehouseAdd(r.item_id);
                   else {
                     st.pending_auto_items = st.pending_auto_items || [];
                     st.pending_auto_items.push({ item_id: r.item_id, count: r.count, uid: a.uid });
@@ -1437,6 +1544,10 @@
 
     // 7. 废热回收结算（§11.5.2，消费本 tick 降污量）
     tickWasteHeat(st);
+
+    // 7.5 供电扣电（k89 电池经济最小闭环）：本 tick 结算用到的电在 tick 末扣除，
+    //     储能耗尽 → 下一 tick 需电模块停摆（isPowerAvailable 由 power_charge>0 派生）
+    drainPowerForTick();
 
     // 8. 清理本轮临时字段
     clearModuleTempFields();
@@ -1834,6 +1945,15 @@
     allSpecies: allSpecies,
     allModules: allModules,
     allPerks: allPerks,
+    moduleRequiresPower: moduleRequiresPower,
+    isPowerAvailable: isPowerAvailable,
+    setPowerAvailable: setPowerAvailable,
+    modulePowerDrainPerTick: modulePowerDrainPerTick,
+    currentPowerDrainPerTick: currentPowerDrainPerTick,
+    drainPowerForTick: drainPowerForTick,
+    addPowerCharge: addPowerCharge,
+    getPowerCharge: getPowerCharge,
+    isModulePowered: isModulePowered,
     moveAnimal: moveAnimal,
     animalsInZone: animalsInZone,
     animalsInCoop: animalsInCoop,

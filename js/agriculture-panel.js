@@ -336,6 +336,162 @@
         btn.setAttribute('aria-pressed', enabled ? 'true' : 'false');
     }
 
+    /* ---------- 农田电力（k89 电池经济扩展：只超融合耗电，45 §四·农业） ---------- */
+    function hasSuperFusionOnMap(st) {
+        if (!st || !st.map) return false;
+        var AM = getMapApi();
+        if (AM && typeof AM.countSuperFusionOnMap === 'function') return AM.countSuperFusionOnMap(st) > 0;
+        var i, j;
+        for (j = 0; j < st.map.length; j++) {
+            var row = st.map[j];
+            if (!row) continue;
+            for (i = 0; i < row.length; i++) {
+                if (row[i] && row[i].kind === 'super_fusion') return true;
+            }
+        }
+        return false;
+    }
+
+    function isSuperFusionPowered(st) {
+        var AM = getMapApi();
+        if (AM && typeof AM.isSuperFusionPowered === 'function') return AM.isSuperFusionPowered(st);
+        return hasSuperFusionOnMap(st) && (st && st.power_charge > 0);
+    }
+
+    function renderPowerBadge(st) {
+        var badge = document.getElementById('agriculture-power-badge');
+        var feedBtn = document.getElementById('agriculture-power-feed-btn');
+        if (!badge || !feedBtn) return;
+        var hasFusion = hasSuperFusionOnMap(st);
+        var charge = (st && st.power_charge > 0) ? st.power_charge : 0;
+        var powered = isSuperFusionPowered(st);
+        if (hasFusion) {
+            badge.style.display = '';
+            feedBtn.style.display = '';
+            badge.className = 'agri-power-badge ' + (powered ? 'on' : 'off');
+            badge.textContent = powered
+                ? t('agriculture.power.badge_on', { v: charge, d: 1 })
+                : t('agriculture.power.badge_off', { v: charge });
+        } else {
+            badge.style.display = '';
+            feedBtn.style.display = 'none';
+            badge.className = 'agri-power-badge';
+            badge.textContent = t('agriculture.power.badge_no_load', { v: charge });
+        }
+    }
+
+    function listBatteriesInInventory() {
+        var IE = global.InventoryEquipment;
+        var out = [];
+        if (!IE) return out;
+        var containers = [];
+        if (typeof IE.getPocketArray === 'function') containers = containers.concat(IE.getPocketArray() || []);
+        if (typeof IE.getVestArray === 'function') containers = containers.concat(IE.getVestArray() || []);
+        if (typeof IE.getBackpackArray === 'function') containers = containers.concat(IE.getBackpackArray() || []);
+        if (typeof IE.getVehicleArray === 'function') containers = containers.concat(IE.getVehicleArray() || []);
+        containers.forEach(function (cell) {
+            if (!cell || !cell.item_id) return;
+            if (String(cell.item_id).indexOf('battery_') !== 0) return;
+            out.push({ item_id: cell.item_id, count: cell.count || 1 });
+        });
+        out.sort(function (a, b) { return a.item_id.localeCompare(b.item_id); });
+        return out;
+    }
+
+    function openPowerPicker(st) {
+        var picker = document.getElementById('agriculture-power-picker');
+        if (!picker) return;
+        renderPowerPicker(st);
+        picker.classList.remove('hidden');
+    }
+
+    function closePowerPicker() {
+        var picker = document.getElementById('agriculture-power-picker');
+        if (picker) picker.classList.add('hidden');
+    }
+
+    function renderPowerPicker(st) {
+        var list = document.getElementById('agriculture-power-picker-list');
+        if (!list) return;
+        var bats = listBatteriesInInventory();
+        if (!bats.length) {
+            list.innerHTML = '<div class="agri-power-empty">' + t('agriculture.power.no_battery') + '</div>';
+            return;
+        }
+        list.innerHTML = bats.map(function (b) {
+            return '<div class="agri-power-row">' +
+                '<span class="feed-name">' + escapeHtml(getItemDisplayName(b.item_id)) + '</span>' +
+                '<span class="feed-meta">' + t('agriculture.power.battery_meta', { n: b.count }) + '</span>' +
+                '<button type="button" class="agri-act-btn" title="' + t('agriculture.power.feed_hint') + '" data-agri-power-feed="' + b.item_id + '">' + t('agriculture.power.feed_btn') + '</button>' +
+                '</div>';
+        }).join('');
+        var btns = list.querySelectorAll('[data-agri-power-feed]');
+        for (var i = 0; i < btns.length; i++) {
+            (function (btn) {
+                btn.addEventListener('click', function () {
+                    doPowerFeed(btn.getAttribute('data-agri-power-feed'));
+                });
+            })(btns[i]);
+        }
+    }
+
+    /** 整格塞入一颗电池：电量并入农田储能（k89 残电口径，0 电不可塞）；storage 由 map.js 持有 */
+    function doPowerFeed(batteryId) {
+        var IE = global.InventoryEquipment;
+        var AM = getMapApi();
+        if (!IE || !AM) {
+            setStatus('agriculture.msg.api_missing');
+            return;
+        }
+        var st = getMapStateMutable();
+        if (!st) {
+            setStatus('agriculture.msg.api_missing');
+            return;
+        }
+        var containers = [
+            { key: 'pocket', arr: typeof IE.getPocketArray === 'function' ? IE.getPocketArray() : [] },
+            { key: 'vest', arr: typeof IE.getVestArray === 'function' ? IE.getVestArray() : [] },
+            { key: 'backpack', arr: typeof IE.getBackpackArray === 'function' ? IE.getBackpackArray() : [] },
+            { key: 'vehicle', arr: typeof IE.getVehicleArray === 'function' ? IE.getVehicleArray() : [] }
+        ];
+        var found = null;
+        var c, i;
+        for (c = 0; c < containers.length && !found; c++) {
+            var arr = containers[c].arr || [];
+            for (i = 0; i < arr.length; i++) {
+                var cell = arr[i];
+                if (cell && cell.item_id === batteryId) {
+                    var tpl = (typeof IE.getItemTemplate === 'function') ? IE.getItemTemplate(batteryId) : null;
+                    var amount = 0;
+                    if (cell.battery_charge != null) {
+                        amount = Number(cell.battery_charge);
+                    } else if (tpl && tpl.battery_charge != null) {
+                        amount = Number(tpl.battery_charge);
+                    } else if (tpl && tpl.battery_capacity != null) {
+                        amount = Number(tpl.battery_capacity);
+                    }
+                    if (!(amount > 0)) { found = { empty: true }; break; }
+                    var taken = (typeof IE.takeItemFromContainer === 'function')
+                        ? IE.takeItemFromContainer(containers[c].key, i)
+                        : null;
+                    if (!taken || !taken.success) { found = { empty: true }; break; }
+                    var r = AM.addPowerCharge(st, Math.floor(amount));
+                    found = { added: Math.floor(amount), charge: (r && r.charge) || st.power_charge || 0 };
+                    break;
+                }
+            }
+        }
+        closePowerPicker();
+        if (found && found.empty) {
+            setStatus('agriculture.power.feed_fail_no_charge');
+        } else if (found && found.added) {
+            setStatus('agriculture.power.feed_ok', { v: found.added, total: found.charge });
+        } else {
+            setStatus('agriculture.power.no_battery');
+        }
+        render(getMapStateMutable());
+    }
+
     function renderWorldStrip() {
         var el = document.getElementById('agriculture-world-strip');
         if (!el) return;
@@ -387,6 +543,20 @@
             cancelBtn.__agriPanelBound = true;
             cancelBtn.addEventListener('click', function () {
                 runAction('cancel_task', {});
+            });
+        }
+        var powerFeedBtn = document.getElementById('agriculture-power-feed-btn');
+        if (powerFeedBtn && !powerFeedBtn.__agriPanelBound) {
+            powerFeedBtn.__agriPanelBound = true;
+            powerFeedBtn.addEventListener('click', function () {
+                openPowerPicker(getMapStateMutable());
+            });
+        }
+        var powerPickerClose = document.getElementById('agriculture-power-picker-close');
+        if (powerPickerClose && !powerPickerClose.__agriPanelBound) {
+            powerPickerClose.__agriPanelBound = true;
+            powerPickerClose.addEventListener('click', function () {
+                closePowerPicker();
             });
         }
     }
@@ -476,7 +646,13 @@
         rows.push({ k: t('agriculture.detail.coord'), v: x + ', ' + y });
         rows.push({ k: t('agriculture.detail.kind'), v: cellKindLabel(c) });
         if (c.kind === 'land' || c.tilled) {
-            rows.push({ k: t('agriculture.detail.soil'), v: (c.soilType || c.soilId || '-') });
+            var soilLabel = (c.soilType || c.soilId || '-');
+            var AMsoil = getMapApi();
+            var defSoil = (AMsoil && AMsoil.constants && AMsoil.constants.defaultSoilId) || 'soil_saline_alkali';
+            if (c.soilId && c.soilId !== defSoil && !isSuperFusionPowered(st)) {
+                soilLabel += t('agriculture.detail.soil_inactive');
+            }
+            rows.push({ k: t('agriculture.detail.soil'), v: soilLabel });
             rows.push({
                 k: t('agriculture.detail.tilled'),
                 v: c.tilled ? t('agriculture.detail.yes') : t('agriculture.detail.no')
@@ -511,6 +687,14 @@
             rows.push({
                 k: t('agriculture.detail.venturi_conc'),
                 v: String(c.seaweedSetConcentration || '-') + ' (' + concRange.min + '–' + concRange.max + ')'
+            });
+        }
+        if (isSuperFusionCell(c)) {
+            rows.push({
+                k: t('agriculture.detail.fusion_power'),
+                v: isSuperFusionPowered(st)
+                    ? t('agriculture.power.fusion_on')
+                    : t('agriculture.power.fusion_off')
             });
         }
         if (isBuriedJarCell(c) && c.jarLiquid && c.jarLiquid.itemId) {
@@ -872,6 +1056,7 @@
         var SA2 = getSceneApp();
         syncAutoTickToggle(SA2 && typeof SA2.isAgricultureAutoTickEnabled === 'function' && SA2.isAgricultureAutoTickEnabled());
         renderWorldStrip();
+        renderPowerBadge(st);
     }
 
     function update(mapState) {

@@ -47,6 +47,38 @@
         }
       ]
     },
+    "module.battery": {
+      "set_id": "module.battery",
+      "display_name": "电池观察",
+      "modules": [
+        {
+          "module_id": "base",
+          "title": "电量细节",
+          "icon": "zap",
+          "content": {
+            "type": "tpl_kv",
+            "entries": [
+              { "field": "battery_capacity", "label_key": "item.attr.battery_capacity" },
+              { "field": "battery_charge", "label_key": "item.attr.battery_charge" }
+            ]
+          }
+        },
+        {
+          "module_id": "lore",
+          "title": "来历传闻",
+          "icon": "scroll",
+          "unlock": {
+            "skill_id": "survival_language",
+            "level_min": 3,
+            "locked_hint": "读写能力不足，难分辨电池上的旧标与来路"
+          },
+          "content": {
+            "type": "text",
+            "text": "军阀把电攥在手里，城里供着电网、乡下断了电。拾荒的、偷电的、倒卖电池的都靠这东西吃饭——有电的电池，比钱还硬。充电电池虽标着「可反复充电」，可如今通电的插座都插着军阀的线——能重新喂饱它们的电箱，多半只在那些深地牢里。"
+          }
+        }
+      ]
+    },
     "module.food_basic": {
       "set_id": "module.food_basic",
       "display_name": "熟食观察",

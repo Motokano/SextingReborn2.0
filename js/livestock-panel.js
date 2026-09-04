@@ -94,6 +94,19 @@
     if (badge) badge.textContent = t('livestock.badge.rotate', { v: st.rotation_ticks_remaining });
     var lvBadge = el('livestock-level-badge');
     if (lvBadge) lvBadge.textContent = t('livestock.badge.level', { v: lv });
+    var powerBadge = el('livestock-power-badge');
+    if (powerBadge) {
+      var on = window.LivestockState.isPowerAvailable();
+      var charge = window.LivestockState.getPowerCharge();
+      var drain = window.LivestockState.currentPowerDrainPerTick();
+      if (on) {
+        powerBadge.textContent = t('livestock.power.on_charge', { v: charge, d: drain });
+      } else {
+        powerBadge.textContent = t('livestock.power.off');
+      }
+      powerBadge.style.borderColor = on ? '#4d4d45' : '#b91c1c';
+      powerBadge.style.color = on ? '#8e8e8e' : '#ff8c00';
+    }
     var footer = document.querySelector('#modal-livestock .lv-footer');
     if (footer) footer.textContent = feedbackMsg || t('livestock.footer.hint');
 
@@ -198,10 +211,11 @@
     var m = inst && inst.module_id ? window.LivestockState.getModule(inst.module_id) : null;
     if (!m) return '';
     var upgrading = inst.upgrading_remaining > 0;
-    var cls = 'ov-module-chip' + (upgrading ? ' upgrading' : '');
+    var stalled = (m.requires_power && !window.LivestockState.isPowerAvailable());
+    var cls = 'ov-module-chip' + (upgrading ? ' upgrading' : '') + (stalled ? ' stalled' : '');
     var lvText = 'Lv' + inst.level + (upgrading ? '⏳' : '');
     return '<span class="' + cls + '" title="' + m.name + ' Lv' + inst.level + (upgrading ? t('livestock.module.upgrading_title', { v: inst.upgrading_remaining }) : '') + ' · ' + m.desc + '">' +
-      moduleIcon(inst.module_id) + ' ' + m.name + ' ' + lvText + '</span>';
+      moduleIcon(inst.module_id) + ' ' + m.name + ' ' + lvText + (stalled ? ' ⚡' : '') + '</span>';
   }
   function ecoOverlayClass(zoneId, z) {
     var cls = [];
@@ -484,9 +498,11 @@
             }
           }
           var effText = window.LivestockState.getModuleEffectText(mid, inst.level);
-          return '<div class="module-slot filled" data-arm="' + aid + '" data-slot="' + sk + '">' +
+          // 生产力墙（k93）：需电模块缺电 → 停摆标记
+          var stalled = (m.requires_power && !window.LivestockState.isPowerAvailable()) ? ' <span class="module-stalled">' + t('livestock.power.stalled') + '</span>' : '';
+          return '<div class="module-slot filled' + (stalled ? ' stalled' : '') + '" data-arm="' + aid + '" data-slot="' + sk + '">' +
             '<span class="slot-key">' + label + '</span>' +
-            '<span class="slot-val">' + m.name + ' ' + lvText + extra + '</span>' +
+            '<span class="slot-val">' + m.name + ' ' + lvText + extra + stalled + '</span>' +
             (effText ? '<span class="module-effect slot-effect">' + effText + '</span>' : '') +
             '<span class="slot-actions">' +
             extraActions +
@@ -517,10 +533,12 @@
           ? t('livestock.axis_slot_full', { v: m.axis_slot })
           : window.LivestockState.expandModuleSlots(m).map(function (s) { return slotNames[s] || s; }).join('+');
         var effText = window.LivestockState.getModuleEffectText(m.module_id, 1);
+        var powerTag = m.requires_power ? '<span class="module-power">' + t('livestock.power.requires') + '</span>' : '';
         return '<div class="module-card' + sel + '" data-module="' + m.module_id + '">' +
           '<span class="module-ico">' + moduleIcon(m.module_id) + '</span>' +
           '<span class="module-name">' + m.name + '</span>' +
           '<span class="module-tier">' + m.layer + ' · ' + tierLabel(m.tier) + '</span>' +
+          powerTag +
           '<span class="module-desc">' + m.desc + '</span>' +
           (effText ? '<span class="module-effect">' + t('livestock.effect_label', { v: effText }) + '</span>' : '') +
           '<span class="module-cost">' + t('livestock.cost_label', { faces: faces, cost: (cost || '—') }) + '</span></div>';
@@ -563,6 +581,7 @@
       slot_mismatch: t('livestock.reason.slot_mismatch'), inner_occupied: t('livestock.reason.inner_occupied'), slot_occupied: t('livestock.reason.slot_occupied'),
       lack_material: t('livestock.reason.lack_material'), slot_empty: t('livestock.reason.slot_empty'), upgrading: t('livestock.reason.upgrading'), max_level: t('livestock.reason.max_level'),
       shadow_slot: t('livestock.reason.shadow_slot'),
+      no_power: t('livestock.reason.no_power'),
       not_found: t('livestock.reason.not_found'), no_product: t('livestock.reason.no_product'), cooldown: t('livestock.reason.cooldown'), low_hp: t('livestock.reason.low_hp')
     };
     var base = map[r.reason] || r.reason;
@@ -629,6 +648,112 @@
     feedPickerMode = null;
     var picker = el('livestock-feed-picker');
     if (picker) picker.classList.add('hidden');
+  }
+
+  /* ---------- 电池投喂（k89 电池经济最小闭环）：把背包电池整格塞入牧场储能 ---------- */
+  function listBatteriesInInventory() {
+    var IE = window.InventoryEquipment;
+    var out = [];
+    if (!IE) return out;
+    var containers = [];
+    if (typeof IE.getPocketArray === 'function') containers = containers.concat(IE.getPocketArray() || []);
+    if (typeof IE.getVestArray === 'function') containers = containers.concat(IE.getVestArray() || []);
+    if (typeof IE.getBackpackArray === 'function') containers = containers.concat(IE.getBackpackArray() || []);
+    if (typeof IE.getVehicleArray === 'function') containers = containers.concat(IE.getVehicleArray() || []);
+    containers.forEach(function (cell) {
+      if (!cell || !cell.item_id) return;
+      if (String(cell.item_id).indexOf('battery_') !== 0) return;
+      out.push({ item_id: cell.item_id, count: cell.count || 1 });
+    });
+    out.sort(function (a, b) { return a.item_id.localeCompare(b.item_id); });
+    return out;
+  }
+
+  function openPowerPicker() {
+    var picker = el('livestock-power-picker');
+    if (!picker) return;
+    renderPowerPicker();
+    picker.classList.remove('hidden');
+  }
+  function closePowerPicker() {
+    var picker = el('livestock-power-picker');
+    if (picker) picker.classList.add('hidden');
+  }
+
+  function renderPowerPicker() {
+    var list = el('livestock-power-picker-list');
+    if (!list) return;
+    var bats = listBatteriesInInventory();
+    var cap = window.LivestockState.getPowerCharge();
+    if (!bats.length) {
+      list.innerHTML = '<div class="empty-hint">' + t('livestock.power.no_battery') + '</div>';
+      return;
+    }
+    list.innerHTML = bats.map(function (b) {
+      var tpl = itemDisplayName(b.item_id);
+      return '<div class="lv-feed-row">' +
+        '<span class="feed-name">' + tpl + '</span>' +
+        '<span class="feed-meta">' + t('livestock.power.battery_meta', { n: b.count }) + '</span>' +
+        '<button type="button" class="lv-btn" title="' + t('livestock.power.feed_hint') + '" data-power-feed="' + b.item_id + '">' + t('livestock.power.feed_btn') + '</button>' +
+        '</div>';
+    }).join('');
+    var btns = list.querySelectorAll('[data-power-feed]');
+    for (var i = 0; i < btns.length; i++) {
+      btns[i].addEventListener('click', function () {
+        doPowerFeed(this.getAttribute('data-power-feed'));
+      });
+    }
+  }
+
+  /** 整格塞入一颗电池：取背包电池实例 → 电量并入储能 → 该格清空 */
+  function doPowerFeed(batteryId) {
+    var IE = window.InventoryEquipment;
+    if (!IE) return;
+    var containers = [
+      { key: 'pocket', arr: typeof IE.getPocketArray === 'function' ? IE.getPocketArray() : [] },
+      { key: 'vest', arr: typeof IE.getVestArray === 'function' ? IE.getVestArray() : [] },
+      { key: 'backpack', arr: typeof IE.getBackpackArray === 'function' ? IE.getBackpackArray() : [] },
+      { key: 'vehicle', arr: typeof IE.getVehicleArray === 'function' ? IE.getVehicleArray() : [] }
+    ];
+    var found = null;
+    for (var c = 0; c < containers.length && !found; c++) {
+      var arr = containers[c].arr || [];
+      for (var i = 0; i < arr.length; i++) {
+        var cell = arr[i];
+        if (cell && cell.item_id === batteryId) {
+          // 整格塞入：可供电量 = 实例 battery_charge（掉落半电）；实例无该字段 = 满电，用模板电量/容量
+          // 注意：实例显式 battery_charge:0（废电）也必须尊重，不回退模板满电（k89 边界）
+          var tpl = (typeof IE.getItemTemplate === 'function') ? IE.getItemTemplate(batteryId) : null;
+          var amount = 0;
+          if (cell.battery_charge != null) {
+            amount = Number(cell.battery_charge);
+          } else if (tpl && tpl.battery_charge != null) {
+            amount = Number(tpl.battery_charge);
+          } else if (tpl && tpl.battery_capacity != null) {
+            amount = Number(tpl.battery_capacity);
+          }
+          if (!(amount > 0)) { found = { empty: true }; break; }
+          var taken = (typeof IE.takeItemFromContainer === 'function')
+            ? IE.takeItemFromContainer(containers[c].key, i)
+            : null;
+          if (!taken || !taken.success) { found = { empty: true }; break; }
+          var r = window.LivestockState.addPowerCharge(Math.floor(amount));
+          found = { added: Math.floor(amount), charge: r.charge };
+          break;
+        }
+      }
+    }
+    closePowerPicker();
+    if (found && found.empty) {
+      feedbackMsg = t('livestock.power.feed_fail_no_charge');
+      logMsg(t('livestock.power.feed_fail_no_charge'), 'warn');
+    } else if (found && found.added) {
+      feedbackMsg = t('livestock.power.feed_ok', { v: found.added, total: found.charge });
+      logMsg(t('livestock.power.feed_ok', { v: found.added, total: found.charge }), 'success');
+    } else {
+      feedbackMsg = t('livestock.power.no_battery');
+    }
+    render();
   }
 
   function renderFeedPicker() {
@@ -1170,6 +1295,10 @@
     }
     var feedClose = el('livestock-feed-picker-close');
     if (feedClose) feedClose.addEventListener('click', function () { closeFeedPicker(); });
+    var powerFeedBtn = el('livestock-power-feed-btn');
+    if (powerFeedBtn) powerFeedBtn.addEventListener('click', function () { openPowerPicker(); });
+    var powerClose = el('livestock-power-picker-close');
+    if (powerClose) powerClose.addEventListener('click', function () { closePowerPicker(); });
   }
 
   window.LivestockPanel = {

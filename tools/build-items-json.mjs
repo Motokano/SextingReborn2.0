@@ -214,6 +214,14 @@ function rowToItem(o, filename) {
   const scf = numOrNull(o.skill_coef);
   if (scf != null && scf > 0) item.skill_coef = scf;
 
+  // 电池（k89）：容量/电量整数字段——容量 >0 才写；电量缺省视为满电（= 容量）
+  const bcap = intOrNull(o.battery_capacity);
+  if (bcap != null && bcap > 0) {
+    item.battery_capacity = bcap;
+    const bchr = intOrNull(o.battery_charge);
+    item.battery_charge = (bchr != null && bchr >= 0) ? Math.min(bchr, bcap) : bcap;
+  }
+
   // 保留 CSV 新增扩展列（用于策划自定义 tooltip 模块字段等）
   const handled = {
     id: 1, sn: 1, placeholder_name: 1, fn_before: 1, fn: 1,
@@ -228,7 +236,8 @@ function rowToItem(o, filename) {
     fuel_points: 1, water_points: 1,
     weapon_attack_power: 1, skill_coef: 1,
     accept_code: 1, convert_to_high: 1, usable_regions: 1,
-    info_module_set_id: 1
+    info_module_set_id: 1,
+    battery_capacity: 1, battery_charge: 1
   };
   Object.keys(o).forEach((k) => {
     if (handled[k]) return;

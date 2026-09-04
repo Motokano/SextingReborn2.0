@@ -1,0 +1,49 @@
+{
+  "version": 1,
+  "note": "敌人电池掉落（k89，接 42 §四）：浅层小兵掉五号/干电池（一次性），越深掉率越高、容量越大（深层稀有蓄电池）。tier 与 dungeon-loot tierIndexForFloor 对齐（1-4/5-8/9-12/13-16）。行内物品 region_restrict 门控（0=全局；8=D6 充电电池；9=D7 蓄电池），跨区掉落由过滤剔除。电量 roll：掉落电池电量 = 容量 × [charge_roll.min_pct, charge_roll.max_pct] 随机（拾荒/偷电半电 lore）。运行时接线（敌人死亡→按本表结算掉落入包）见 k169。",
+  "battery_tiers": [
+    {
+      "tier": 0,
+      "label": "主题基础款（1-4 层）",
+      "chance": 0.25,
+      "pool": [
+        { "item_id": "battery_aa", "weight": 100 }
+      ]
+    },
+    {
+      "tier": 1,
+      "label": "进阶（5-8 层）",
+      "chance": 0.35,
+      "pool": [
+        { "item_id": "battery_aa", "weight": 60 },
+        { "item_id": "battery_rechargeable", "weight": 40 }
+      ]
+    },
+    {
+      "tier": 2,
+      "label": "稀有（9-12 层）",
+      "chance": 0.45,
+      "pool": [
+        { "item_id": "battery_aa", "weight": 20 },
+        { "item_id": "battery_rechargeable", "weight": 60 },
+        { "item_id": "battery_storage", "weight": 20 }
+      ]
+    },
+    {
+      "tier": 3,
+      "label": "独有（13-16 层）",
+      "chance": 0.55,
+      "pool": [
+        { "item_id": "battery_rechargeable", "weight": 40 },
+        { "item_id": "battery_storage", "weight": 60 }
+      ]
+    }
+  ],
+  "charge_roll": {
+    "min_pct": 30,
+    "max_pct": 100
+  },
+  "enemies": {
+    "enemy.street_thug": { "chance_mult": 0.8, "note": "地表小兵：浅层五号概率更低，作 k89 首个接线示例（42 §四 浅层小兵掉五号）。" }
+  }
+}

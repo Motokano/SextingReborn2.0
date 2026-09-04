@@ -136,6 +136,27 @@
       "allowed_station_tags": null,
       "match_weight": 1
     },
+    "life_cooking.cook_compressed_biscuit": {
+      "recipe_id": "life_cooking.cook_compressed_biscuit",
+      "recipe_system": "life_cooking",
+      "method_id": "life_cooking.roast_bake",
+      "enabled": true,
+      "inputs": [
+        { "item_id": "herb_wheat_flour", "count": 2 },
+        { "item_id": "ore_water_pure_soft", "count": 1 },
+        { "item_id": "ore_salt_sea", "count": 1 }
+      ],
+      "main_output": { "item_id": "food_compressed_biscuit", "count": 1 },
+      "bonus_outputs": [],
+      "required_skill_level_min": 1,
+      "proficiency_usage_key": "life_cooking.cook_compressed_biscuit",
+      "required_skill_id": null,
+      "recipe_processor_id": null,
+      "base_success_rate": null,
+      "failure_output": null,
+      "allowed_station_tags": null,
+      "match_weight": 1
+    },
     "life_cooking.cook_mvp_beef_brisket_clear_stew": {
       "recipe_id": "life_cooking.cook_mvp_beef_brisket_clear_stew",
       "recipe_system": "life_cooking",

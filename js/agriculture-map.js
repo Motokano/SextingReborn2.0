@@ -56,6 +56,13 @@
       /** §4.3 水藻爆发 */
       var ALGAE_BLOOM_RATIO_THRESHOLD = 2.5;
       var ALGAE_BLOOM_HEALTH_LOSS_PER_TICK = 2;
+      /** 农业电力（k89 电池经济扩展，45 §四·农业）：只超融合耗电。
+       * 供电激活 = 文丘里 A 面 + 土性融合（§2.2g gate 加「储能>0」条件）；断电 → 立即回退 B 面/融合关。
+       * 起步储能与牧场 500 同口径；drain 与大型臂同档 1/tick（一次洞 1000 电 ≈ 融合跑 1000 tick ≈ 8-12 茬作物）。
+       * 多座超融合效果不叠加（§2.2g）→ 电费也不按座数叠（只要有 ≥1 座通电超融合即 1/tick）。
+       */
+      var SUPER_FUSION_POWER_DRAIN_PER_TICK = 1;
+      var AGRICULTURE_POWER_START = 500;
       /** §2.2d 文丘里等级与设定浓度 */
       var VENTURI_MAX_LEVEL = 3;
       var VENTURI_UPGRADE_COST_MONEY = 5;
@@ -188,9 +195,12 @@
         if (soil.special_effect) legacy.special_effect = soil.special_effect;
         return legacy;
       }
-      /** 与文丘里 A 面同一条件：场上至少一座超融合（§2.2g） */
+      /** 与文丘里 A 面同一条件：场上至少一座超融合且农业储能 > 0（§2.2g + 45 §四·农业电力） */
+      function isSuperFusionPowered(st) {
+        return anySuperFusionOnMap(st) && (st && st.power_charge > 0);
+      }
       function isSoilFusionActive(st) {
-        return anySuperFusionOnMap(st);
+        return isSuperFusionPowered(st);
       }
             function getSoilDef(soilId) {
         if (soilId && SOIL_DEFS[soilId]) return SOIL_DEFS[soilId];
@@ -239,8 +249,12 @@
         if (!prevDef) return false;
         return prevDef.water_profile === "aquatic" || prevDef.water_profile === "hydrophilic";
       }
+      /** 客土生效土：供电超融合在场时用客土后的 soil_id；否则一律默认盐碱土（§2.2b 客土激活门） */
+      function getEffectiveSoilIdForAbsorption(plotCell, st) {
+        return isSoilFusionActive(st) ? getPlotSoilId(plotCell) : DEFAULT_SOIL_ID;
+      }
       function getSoilRetentionRate(plotCell, kind, st) {
-        var soil = getSoilDef(getPlotSoilId(plotCell));
+        var soil = getSoilDef(getEffectiveSoilIdForAbsorption(plotCell, st));
         var base = soil[kind + "_retention"];
         if (!(base >= 0)) base = 1;
         var mul = 1;
@@ -602,6 +616,8 @@
 
       function scoreSoilDimension(def, soilType, cell, st) {
         if (!soilScoreParticipates(def)) return null;
+        // 客土激活门：土种偏好休眠，须供电超融合才参与生长分（§2.2b）
+        if (!isSoilFusionActive(st)) return null;
         var sc = def.soil_scoring;
         var preferred = sc.preferred || [];
         var unsuitable = sc.unsuitable || [];
@@ -1269,6 +1285,8 @@
           channels: {},
           trunkPath: [],
           branches: [],
+          /** 农业独立储能（45 §四·农业电力）：超融合需电；起步 500（与牧场同口径） */
+          power_charge: AGRICULTURE_POWER_START,
           /** §4b.1a 海藻精请求登记 */
           seaweedRequests: { mainstream: [], byBranch: {} },
           /** §4b.1f 液态肥请求登记（埋地陶瓮八邻） */
@@ -1571,9 +1589,9 @@
         return countSuperFusionOnMap(st) > 0;
       }
 
-      /** 文丘里有效逻辑：默认 B；场上有超融合 → A（§2.2g） */
+      /** 文丘里有效逻辑：默认 B；场上有供电超融合 → A（§2.2g + 45 §四·农业电力） */
       function getVenturiSeaweedLogicMode(st) {
-        return anySuperFusionOnMap(st) ? VENTURI_SEAWEED_LOGIC_A : VENTURI_SEAWEED_LOGIC_B;
+        return isSuperFusionPowered(st) ? VENTURI_SEAWEED_LOGIC_A : VENTURI_SEAWEED_LOGIC_B;
       }
 
       function venturiSeaweedLogicLabel(mode) {
@@ -2473,7 +2491,40 @@
 
       function runAgricultureMapTick(state, env) {
         bindEnv(env);
+        var poweredBefore = isSuperFusionPowered(state);
         runAgricultureMapTickCore(state);
+        // 45 §四·农业电力：每 tick 末扣电——有供电超融合在场 1/tick，扣到 0（耗尽 → 下一 tick 起 gate 关）
+        var ch = (state && state.power_charge > 0) ? state.power_charge : 0;
+        if (poweredBefore && ch > 0) {
+          state.power_charge = Math.max(0, ch - SUPER_FUSION_POWER_DRAIN_PER_TICK);
+        }
+        // 翻转（供电 → 断电）与拆除超融合同语义：已种作物生长刻度按新 gate 重算
+        if (poweredBefore && !isSuperFusionPowered(state) && anySuperFusionOnMap(state)) {
+          syncAllCropGrowthTicksForFusionChange(state);
+        }
+      }
+
+      function getPowerCharge(st) {
+        if (!st || !(st.power_charge > 0)) return 0;
+        return st.power_charge;
+      }
+
+      /** 农业当前每 tick 耗电：有供电超融合在场即 1/tick（多座不叠加，§2.2g 同 gate） */
+      function currentPowerDrainPerTick(st) {
+        return isSuperFusionPowered(st) ? SUPER_FUSION_POWER_DRAIN_PER_TICK : 0;
+      }
+
+      /** 塞电池：储能 += 电量（k89 整格放电口径）；来电翻转 gate → 已种作物刻度按融合态重算 */
+      function addPowerCharge(st, amount) {
+        if (!st) return { ok: false, reason: 'no_state' };
+        var a = Math.floor(Number(amount) || 0);
+        if (!(a > 0)) return { ok: false, reason: 'invalid_amount', charge: st.power_charge || 0 };
+        var poweredBefore = isSuperFusionPowered(st);
+        st.power_charge = (st.power_charge || 0) + a;
+        if (!poweredBefore && isSuperFusionPowered(st)) {
+          syncAllCropGrowthTicksForFusionChange(st);
+        }
+        return { ok: true, charge: st.power_charge, added: a };
       }
 
       function tryTillAt(state, x, y) {
@@ -2671,6 +2722,10 @@
         applyPoolLevelUpgrade: applyPoolLevelUpgrade,
         venturiConcRangeForLevel: venturiConcRangeForLevel,
         cell: cell,
+        isSuperFusionPowered: isSuperFusionPowered,
+        getPowerCharge: getPowerCharge,
+        addPowerCharge: addPowerCharge,
+        currentPowerDrainPerTick: currentPowerDrainPerTick,
         constants: {
           size: SIZE,
           poolX: POOL_X,
@@ -2684,7 +2739,9 @@
           taskTicks: TASK_TICKS,
           taskStaminaPerTick: TASK_STAMINA_PER_TICK,
           liquidSeaweedExtractItemId: LIQUID_SEAWEED_EXTRACT_ITEM_ID,
-          algaeBloomRatioThreshold: ALGAE_BLOOM_RATIO_THRESHOLD
+          algaeBloomRatioThreshold: ALGAE_BLOOM_RATIO_THRESHOLD,
+          superFusionPowerDrainPerTick: SUPER_FUSION_POWER_DRAIN_PER_TICK,
+          agriculturePowerStart: AGRICULTURE_POWER_START
         },
         isAlgaeBloom: isAlgaeBloom,
         getIrrigationSourceForPlot: getIrrigationSourceForPlot,

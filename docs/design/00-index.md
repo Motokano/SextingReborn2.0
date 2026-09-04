@@ -82,6 +82,7 @@
 |------|------|------|
 | 生存 Buff 回归清单 | [survival-buff-regression-checklist.md](survival-buff-regression-checklist.md) | 原 24-temperature-buff-implementation-checklist（去编号改名）；06/18 附属验收清单，勾选状态以当前代码为准 |
 | 实现进度快照 | [implementation-progress.md](../implementation-progress.md) | 相对本索引的代码落地进度与下一步建议（非设计正本；2026-03 快照，需按需刷新） |
+| scene-app 组合根化拆解 | [scene-app-decomposition.md](../scene-app-decomposition.md) | 把 `js/scene-app.js`（12480 行上帝对象）收敛为组合根的执行计划：分块表、目标模块图与 API 契约、P0–P6 迁移顺序、风险；配套底稿 [refactor-scene-app-inventory.md](../refactor-scene-app-inventory.md)（370 函数/111 变量行号清单） |
 | 归档（`_archive/`） | [_archive/README.md](_archive/README.md) | 归档索引；含 12（经脉，被 34 取代）、33（呼吸条迁移，已完成）、15（todo，开放项转看板 k142/144/146/148）、23-compost-ui-mapping（UI 映射，已落地）、27-item-field-rules-audit-last-run（审计日志）、21-cooking-benchmarks-history（21 下篇） |
 | Agent prompt / 清单（已迁 `docs/agents/`） | [../agents/README 索引占位](../agents/README.md) | agriculture-a6-checklist、agriculture-port、hideout-warehouse-port/ui、livestock-ui、wild-gathering 规则副本（若 README 未建，见各文件头） |
 

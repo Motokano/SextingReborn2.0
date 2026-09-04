@@ -158,6 +158,8 @@
             /** 实例因到期或层数耗尽被移除时执行（不经事件管线）；目前实现 survival_delta */
             expire_effects: arrayOrEmpty(t.expire_effects),
             food_digest: !!t.food_digest,
+            /** k81：零食「快速供能」标记（小食档高数值 buff：体力/精力/心情 + 战斗移速） */
+            quick_energy: !!t.quick_energy,
             judgment_tags: normalizeJudgmentTags(t.judgment_tags),
             /** 见 design/18：beneficial 可被「破相」等驱散；缺省不可选 */
             dispel_pool: t.dispel_pool === 'beneficial' ? 'beneficial' : '',
@@ -324,6 +326,21 @@
             }
         }
         return false;
+    }
+
+    /** k79：返回活性「消化中」buff 的构成标签（judgment_tags.meal_composition；不含空值），供均衡判定扫描。 */
+    function getActiveFoodDigestCompositions(ownerId) {
+        var oid = ownerId || PLAYER_OWNER_ID;
+        var arr = instancesByOwner[oid] || [];
+        var out = [];
+        for (var i = 0; i < arr.length; i++) {
+            var inst = arr[i];
+            if (!inst || !inst.template || !inst.template.food_digest || (inst.stacks || 0) <= 0) continue;
+            var jt = inst.template.judgment_tags || {};
+            var comp = String(jt.meal_composition || '').trim();
+            if (comp) out.push(comp);
+        }
+        return out;
     }
 
     function hasMovementDisabled(ownerId) {
@@ -1354,6 +1371,7 @@
             return ownerHasBuffMatchingJudgmentTags(ownerId, requiredTags);
         },
         hasActiveSatietyDigestBuff: hasActiveSatietyDigestBuff,
+        getActiveFoodDigestCompositions: getActiveFoodDigestCompositions,
         hasMovementDisabled: hasMovementDisabled,
         hasActionDisabled: hasActionDisabled,
         getDisabledActions: getDisabledActions,

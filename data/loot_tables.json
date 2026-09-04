@@ -8,5 +8,350 @@
     { "item_id": "herb_green", "weight": 72 },
     { "item_id": "herb_bitter", "weight": 35 },
     { "item_id": "herb_sweet", "weight": 20 }
-  ]
+  ],
+  "loot_surface": [
+    { "item_id": "wood_shrub_dry", "weight": 85 },
+    { "item_id": "wood_bits", "weight": 80 },
+    { "item_id": "wood_firewood", "weight": 70 },
+    { "item_id": "wood_oak", "weight": 55 },
+    { "item_id": "wood_zelkova", "weight": 50 },
+    { "item_id": "wood_birch", "weight": 45 },
+    { "item_id": "wood_bamboo_green", "weight": 40 },
+    { "item_id": "wood_charcoal", "weight": 35 },
+    { "item_id": "ore_clay_raw", "weight": 75 },
+    { "item_id": "ore_limestone", "weight": 65 },
+    { "item_id": "ore_salt_sea", "weight": 55 },
+    { "item_id": "ore_salt_sea_coarse", "weight": 50 },
+    { "item_id": "ore_salt_rock", "weight": 45 },
+    { "item_id": "ore_copper_raw", "weight": 35 },
+    { "item_id": "ore_iron_raw", "weight": 30 },
+    { "item_id": "herb_green", "weight": 80 },
+    { "item_id": "herb_leaf_fresh", "weight": 70 },
+    { "item_id": "herb_bitter", "weight": 60 },
+    { "item_id": "herb_root_bitter", "weight": 55 },
+    { "item_id": "herb_onion", "weight": 50 },
+    { "item_id": "herb_scallion", "weight": 50 },
+    { "item_id": "herb_garlic", "weight": 48 },
+    { "item_id": "herb_ginger", "weight": 46 },
+    { "item_id": "herb_shiitake", "weight": 45 },
+    { "item_id": "herb_shallot", "weight": 44 },
+    { "item_id": "herb_sweet", "weight": 45 },
+    { "item_id": "herb_vine_red", "weight": 40 },
+    { "item_id": "herb_parsley", "weight": 35 },
+    { "item_id": "herb_cilantro", "weight": 35 },
+    { "item_id": "herb_thyme", "weight": 32 },
+    { "item_id": "herb_oregano", "weight": 32 },
+    { "item_id": "herb_rosemary", "weight": 32 },
+    { "item_id": "herb_sage", "weight": 30 },
+    { "item_id": "herb_bay_leaf", "weight": 30 },
+    { "item_id": "herb_mushroom_floral", "weight": 30 },
+    { "item_id": "herb_dill", "weight": 28 },
+    { "item_id": "herb_mustard_yellow", "weight": 25 },
+    { "item_id": "herb_peanut", "weight": 25 },
+    { "item_id": "wild_fruit_red", "weight": 72 },
+    { "item_id": "wild_fruit_purple", "weight": 35 },
+    { "item_id": "wild_fruit_yellow", "weight": 20 },
+    { "item_id": "herb_cherry", "weight": 22 },
+    { "item_id": "herb_chestnut", "weight": 22 },
+    { "item_id": "herb_pear", "weight": 20 },
+    { "item_id": "herb_lemon", "weight": 18 },
+    { "item_id": "herb_pecan", "weight": 15 },
+    { "item_id": "hunt_bone_common", "weight": 55 },
+    { "item_id": "hunt_meat_rabbit", "weight": 40 },
+    { "item_id": "hunt_meat_boar", "weight": 32 },
+    { "item_id": "hunt_meat_deer", "weight": 28 },
+    { "item_id": "hunt_squab", "weight": 25 },
+    { "item_id": "hunt_turkey", "weight": 20 },
+    { "item_id": "hunt_salo", "weight": 15 },
+    { "item_id": "textile_cocoon_wild", "weight": 25 }
+  ],
+  "loot_beginner": {
+    "tiers": [
+      [
+        { "item_id": "wood_bits", "weight": 90 },
+        { "item_id": "wood_shrub_dry", "weight": 85 },
+        { "item_id": "wood_firewood", "weight": 80 },
+        { "item_id": "ore_clay_raw", "weight": 80 },
+        { "item_id": "herb_green", "weight": 85 },
+        { "item_id": "herb_leaf_fresh", "weight": 75 },
+        { "item_id": "wild_fruit_red", "weight": 75 },
+        { "item_id": "herb_bitter", "weight": 60 },
+        { "item_id": "hunt_bone_common", "weight": 60 },
+        { "item_id": "ore_salt_sea_coarse", "weight": 55 },
+        { "item_id": "wood_bamboo_green", "weight": 50 }
+      ],
+      [
+        { "item_id": "wood_oak", "weight": 60 },
+        { "item_id": "wood_zelkova", "weight": 55 },
+        { "item_id": "wood_birch", "weight": 55 },
+        { "item_id": "ore_limestone", "weight": 65 },
+        { "item_id": "ore_salt_sea", "weight": 60 },
+        { "item_id": "ore_copper_raw", "weight": 45 },
+        { "item_id": "herb_sweet", "weight": 50 },
+        { "item_id": "herb_shiitake", "weight": 50 },
+        { "item_id": "herb_root_bitter", "weight": 55 },
+        { "item_id": "herb_onion", "weight": 50 },
+        { "item_id": "herb_garlic", "weight": 48 },
+        { "item_id": "wild_fruit_purple", "weight": 40 },
+        { "item_id": "hunt_meat_rabbit", "weight": 45 },
+        { "item_id": "textile_cocoon_wild", "weight": 30 },
+        { "item_id": "ore_salt_rock", "weight": 45 }
+      ],
+      [
+        { "item_id": "ore_iron_raw", "weight": 35 },
+        { "item_id": "wood_charcoal", "weight": 40 },
+        { "item_id": "herb_vine_red", "weight": 40 },
+        { "item_id": "herb_mushroom_floral", "weight": 35 },
+        { "item_id": "herb_parsley", "weight": 35 },
+        { "item_id": "herb_cilantro", "weight": 35 },
+        { "item_id": "herb_thyme", "weight": 32 },
+        { "item_id": "herb_rosemary", "weight": 32 },
+        { "item_id": "herb_cherry", "weight": 25 },
+        { "item_id": "herb_pear", "weight": 22 },
+        { "item_id": "herb_lemon", "weight": 20 },
+        { "item_id": "wild_fruit_yellow", "weight": 25 },
+        { "item_id": "hunt_meat_boar", "weight": 35 },
+        { "item_id": "hunt_squab", "weight": 30 },
+        { "item_id": "herb_peanut", "weight": 28 }
+      ],
+      [
+        { "item_id": "hunt_meat_deer", "weight": 30 },
+        { "item_id": "hunt_turkey", "weight": 25 },
+        { "item_id": "hunt_salo", "weight": 18 },
+        { "item_id": "herb_chestnut", "weight": 25 },
+        { "item_id": "herb_pecan", "weight": 18 },
+        { "item_id": "herb_dill", "weight": 28 },
+        { "item_id": "herb_bay_leaf", "weight": 28 },
+        { "item_id": "herb_sage", "weight": 28 },
+        { "item_id": "herb_oregano", "weight": 28 },
+        { "item_id": "herb_mustard_yellow", "weight": 25 },
+        { "item_id": "herb_ginger", "weight": 40 },
+        { "item_id": "herb_shallot", "weight": 40 },
+        { "item_id": "herb_scallion", "weight": 40 }
+      ]
+    ]
+  },
+  "loot_d1": {
+    "tiers": [
+      [
+        { "item_id": "wood_pine", "weight": 60 },
+        { "item_id": "resin_pine", "weight": 50 },
+        { "item_id": "ore_granite", "weight": 55 },
+        { "item_id": "herb_juniper_berry", "weight": 45 },
+        { "item_id": "hunt_mountain_goat", "weight": 40 },
+        { "item_id": "herb_alpine_herb", "weight": 35 }
+      ],
+      [
+        { "item_id": "wood_pine", "weight": 40 },
+        { "item_id": "resin_pine", "weight": 35 },
+        { "item_id": "herb_alpine_herb", "weight": 30 },
+        { "item_id": "herb_bamboo_shoot_winter", "weight": 30 },
+        { "item_id": "herb_black_pepper_whole", "weight": 25 },
+        { "item_id": "hunt_feather", "weight": 20 }
+      ],
+      [
+        { "item_id": "herb_black_pepper_whole", "weight": 18 },
+        { "item_id": "herb_cardamom_black", "weight": 15 },
+        { "item_id": "herb_cardamom_green", "weight": 15 },
+        { "item_id": "herb_nutmeg", "weight": 12 },
+        { "item_id": "hunt_feather", "weight": 15 }
+      ],
+      [
+        { "item_id": "herb_cardamom_black", "weight": 10 },
+        { "item_id": "herb_mace", "weight": 10 },
+        { "item_id": "herb_clove", "weight": 10 },
+        { "item_id": "herb_nutmeg", "weight": 8 },
+        { "item_id": "herb_mushroom_floral", "weight": 8 }
+      ]
+    ]
+  },
+  "loot_d2": {
+    "tiers": [
+      [
+        { "item_id": "ore_water_pure_soft", "weight": 55 },
+        { "item_id": "ore_lime_water", "weight": 50 },
+        { "item_id": "ore_salt_black", "weight": 45 },
+        { "item_id": "herb_goji", "weight": 40 },
+        { "item_id": "chem_reagent", "weight": 25 }
+      ],
+      [
+        { "item_id": "herb_goji", "weight": 30 },
+        { "item_id": "herb_poison_plant", "weight": 30 },
+        { "item_id": "hunt_venom_sac", "weight": 25 },
+        { "item_id": "herb_ginseng", "weight": 25 },
+        { "item_id": "chem_reagent", "weight": 25 }
+      ],
+      [
+        { "item_id": "herb_root_bitter", "weight": 25 },
+        { "item_id": "herb_vanilla_pod", "weight": 15 },
+        { "item_id": "hunt_venom_sac", "weight": 15 },
+        { "item_id": "herb_saffron", "weight": 10 },
+        { "item_id": "ore_spirit_crystal", "weight": 10 }
+      ],
+      [
+        { "item_id": "herb_ginseng", "weight": 15 },
+        { "item_id": "herb_vanilla_pod", "weight": 10 },
+        { "item_id": "herb_saffron", "weight": 8 },
+        { "item_id": "ore_spirit_crystal", "weight": 8 }
+      ]
+    ]
+  },
+  "loot_d3": {
+    "tiers": [
+      [
+        { "item_id": "ore_scrap_metal", "weight": 60 },
+        { "item_id": "wood_firewood_rubber", "weight": 45 },
+        { "item_id": "wood_firewood_fruit", "weight": 45 },
+        { "item_id": "ore_cast_iron", "weight": 35 }
+      ],
+      [
+        { "item_id": "ore_cast_iron", "weight": 30 },
+        { "item_id": "ore_iron_sand_highcarbon", "weight": 30 },
+        { "item_id": "ore_steel_ingot", "weight": 25 },
+        { "item_id": "wood_charcoal_fruit", "weight": 40 },
+        { "item_id": "ore_sulfur", "weight": 20 }
+      ],
+      [
+        { "item_id": "ore_iron_sand_highcarbon", "weight": 20 },
+        { "item_id": "ore_sulfur", "weight": 15 },
+        { "item_id": "ore_steel_ingot", "weight": 15 },
+        { "item_id": "oil_heavy", "weight": 18 },
+        { "item_id": "forge_flux", "weight": 20 }
+      ],
+      [
+        { "item_id": "ore_iron_sand_highcarbon", "weight": 15 },
+        { "item_id": "ore_steel_ingot", "weight": 12 },
+        { "item_id": "oil_heavy", "weight": 12 },
+        { "item_id": "forge_flux", "weight": 12 }
+      ]
+    ]
+  },
+  "loot_d4": {
+    "tiers": [
+      [
+        { "item_id": "hunt_horn", "weight": 45 }
+      ],
+      [
+        { "item_id": "hunt_horn", "weight": 30 },
+        { "item_id": "ore_silver_raw", "weight": 20 }
+      ],
+      [
+        { "item_id": "ore_copper_raw", "weight": 30 },
+        { "item_id": "ore_iron_raw", "weight": 25 },
+        { "item_id": "ore_limestone", "weight": 25 },
+        { "item_id": "ore_gold_raw", "weight": 15 },
+        { "item_id": "ore_silver_raw", "weight": 15 },
+        { "item_id": "gem_ruby", "weight": 10 },
+        { "item_id": "ore_spirit_crystal", "weight": 12 }
+      ],
+      [
+        { "item_id": "hunt_horn", "weight": 20 },
+        { "item_id": "ore_iron_raw", "weight": 20 },
+        { "item_id": "ore_gold_raw", "weight": 12 },
+        { "item_id": "gem_ruby", "weight": 8 },
+        { "item_id": "gem_sapphire", "weight": 8 },
+        { "item_id": "ore_spirit_crystal", "weight": 8 }
+      ]
+    ]
+  },
+  "loot_d5": {
+    "tiers": [
+      [
+        { "item_id": "hunt_shrimp", "weight": 50 },
+        { "item_id": "hunt_mussel", "weight": 45 },
+        { "item_id": "hunt_cockle", "weight": 40 },
+        { "item_id": "textile_coir", "weight": 40 },
+        { "item_id": "wood_coconut", "weight": 35 },
+        { "item_id": "herb_kombu", "weight": 30 }
+      ],
+      [
+        { "item_id": "hunt_fish_bonito", "weight": 35 },
+        { "item_id": "hunt_fish_eel", "weight": 30 },
+        { "item_id": "hunt_crab", "weight": 25 },
+        { "item_id": "herb_cacao_pod", "weight": 25 },
+        { "item_id": "herb_galangal", "weight": 25 },
+        { "item_id": "herb_laksa_leaf", "weight": 25 },
+        { "item_id": "herb_candlenut", "weight": 25 },
+        { "item_id": "herb_bunga_kantan", "weight": 20 }
+      ],
+      [
+        { "item_id": "ore_salt_sea", "weight": 30 },
+        { "item_id": "hunt_abalone", "weight": 15 },
+        { "item_id": "hunt_scallop_dried", "weight": 15 },
+        { "item_id": "hunt_crab", "weight": 15 },
+        { "item_id": "hunt_sea_cucumber", "weight": 12 },
+        { "item_id": "hunt_fish_maw", "weight": 12 },
+        { "item_id": "herb_cacao_pod", "weight": 15 }
+      ],
+      [
+        { "item_id": "hunt_fish_eel", "weight": 15 },
+        { "item_id": "hunt_cockle", "weight": 20 },
+        { "item_id": "hunt_abalone", "weight": 10 },
+        { "item_id": "hunt_scallop_dried", "weight": 10 },
+        { "item_id": "hunt_sea_cucumber", "weight": 8 },
+        { "item_id": "hunt_fish_maw", "weight": 8 }
+      ]
+    ]
+  },
+  "loot_d6": {
+    "tiers": [
+      [
+        { "item_id": "item_glass", "weight": 40 },
+        { "item_id": "wood_orange", "weight": 35 },
+        { "item_id": "wood_apple", "weight": 35 },
+        { "item_id": "wood_olive", "weight": 30 },
+        { "item_id": "herb_orange_peel_dried", "weight": 30 },
+        { "item_id": "paper_scrap", "weight": 30 }
+      ],
+      [
+        { "item_id": "electronic_wire", "weight": 30 },
+        { "item_id": "leather_fine", "weight": 25 },
+        { "item_id": "textile_cocoon_domestic", "weight": 25 },
+        { "item_id": "paper_scrap", "weight": 25 },
+        { "item_id": "item_porcelain", "weight": 20 },
+        { "item_id": "food_wine", "weight": 20 }
+      ],
+      [
+        { "item_id": "electronic_wire", "weight": 20 },
+        { "item_id": "electronic_component", "weight": 18 },
+        { "item_id": "leather_fine", "weight": 18 },
+        { "item_id": "food_wine", "weight": 15 },
+        { "item_id": "item_porcelain", "weight": 12 }
+      ],
+      [
+        { "item_id": "item_glass", "weight": 25 },
+        { "item_id": "electronic_wire", "weight": 18 },
+        { "item_id": "paper_scrap", "weight": 15 },
+        { "item_id": "electronic_component", "weight": 12 },
+        { "item_id": "item_porcelain", "weight": 10 }
+      ]
+    ]
+  },
+  "loot_d7": {
+    "tiers": [
+      [
+        { "item_id": "metal_pipe", "weight": 50 },
+        { "item_id": "mechanical_parts", "weight": 25 },
+        { "item_id": "supply_crate_old", "weight": 25 }
+      ],
+      [
+        { "item_id": "metal_pipe", "weight": 40 },
+        { "item_id": "mechanical_parts", "weight": 30 },
+        { "item_id": "electronic_wire", "weight": 25 },
+        { "item_id": "generator_parts", "weight": 15 }
+      ],
+      [
+        { "item_id": "mechanical_parts", "weight": 20 },
+        { "item_id": "electronic_wire", "weight": 18 },
+        { "item_id": "supply_crate_old", "weight": 15 },
+        { "item_id": "generator_parts", "weight": 12 }
+      ],
+      [
+        { "item_id": "metal_pipe", "weight": 25 },
+        { "item_id": "mechanical_parts", "weight": 15 },
+        { "item_id": "supply_crate_old", "weight": 10 },
+        { "item_id": "generator_parts", "weight": 10 }
+      ]
+    ]
+  }
 }

@@ -1389,6 +1389,79 @@
         return 1;
     }
 
+    // ---------- k79 营养均衡第二轴（43 §三）：主食/荤/素 覆盖 → 均衡 → 营养值档位 → 属性经验倍率 ----------
+
+    /** 均衡判定：活性「消化中」buff 的构成覆盖（主食/荤/素，other 不计）；返回 { level, count, categories } */
+    function getMealBalanceInfo() {
+        var comps = [];
+        if (global && global.BuffSystem && typeof global.BuffSystem.getActiveFoodDigestCompositions === 'function') {
+            comps = global.BuffSystem.getActiveFoodDigestCompositions('player') || [];
+        }
+        var categories = [];
+        var idx;
+        for (idx = 0; idx < comps.length; idx++) {
+            var c = String(comps[idx] || '').trim();
+            if (c !== 'staple' && c !== 'meat' && c !== 'veg') continue;
+            if (categories.indexOf(c) < 0) categories.push(c);
+        }
+        var count = categories.length;
+        var minCfg = get('meal_balance_min_categories', null);
+        var mixedMin = (minCfg && typeof minCfg === 'object' && minCfg.mixed != null) ? Number(minCfg.mixed) : 2;
+        var balancedMin = (minCfg && typeof minCfg === 'object' && minCfg.balanced != null) ? Number(minCfg.balanced) : 3;
+        if (!isFinite(mixedMin) || mixedMin < 1) mixedMin = 2;
+        if (!isFinite(balancedMin) || balancedMin < 1) balancedMin = 3;
+        var level = 'single';
+        if (count >= balancedMin) level = 'balanced';
+        else if (count >= mixedMin) level = 'mixed';
+        return { level: level, count: count, categories: categories };
+    }
+
+    function getMealBalanceLevel() {
+        return getMealBalanceInfo().level;
+    }
+
+    function getMealBalanceBuffIdByLevel(level) {
+        if (level === 'balanced') return 'buff_meal_balance_balanced';
+        if (level === 'mixed') return 'buff_meal_balance_mixed';
+        return '';
+    }
+
+    /** 均衡 buff 同步：每 tick 重挂（durationTicks 1，与营养/疲劳等段位 buff 同模式）；单一（<2 类）不挂。 */
+    function syncMealBalanceBuff() {
+        if (!global || !global.BuffSystem) return '';
+        var Buff = global.BuffSystem;
+        if (typeof Buff.applyBuff !== 'function' || typeof Buff.removeBuffByBuffId !== 'function') return '';
+        var info = getMealBalanceInfo();
+        var targetBuffId = getMealBalanceBuffIdByLevel(info.level);
+        var balanceBuffIds = ['buff_meal_balance_mixed', 'buff_meal_balance_balanced'];
+        var i;
+        for (i = 0; i < balanceBuffIds.length; i++) {
+            var bid = balanceBuffIds[i];
+            if (bid === targetBuffId) continue;
+            if (typeof Buff.hasBuffByBuffId !== 'function' || Buff.hasBuffByBuffId('player', bid)) {
+                Buff.removeBuffByBuffId('player', bid);
+            }
+        }
+        if (targetBuffId) {
+            Buff.applyBuff('player', targetBuffId, 'survival_meal_balance_listener', { tick: getBuffApplyTick(), balance_level: info.level, categories: info.categories });
+        }
+        return info.level;
+    }
+
+    /** 营养档位 → 属性经验倍率（k79；24 §24.5a D：充沛×1.5、极境×2、营养不良×0.5） */
+    function getNutritionExpMultiplier() {
+        var tier = getNutritionTier();
+        var cfg = get('nutrition_tier_exp_mult', null);
+        if (cfg && typeof cfg === 'object' && cfg[tier] != null) {
+            var m = Number(cfg[tier]);
+            if (isFinite(m) && m > 0) return m;
+        }
+        if (tier === 'abundant') return 1.5;
+        if (tier === 'peak') return 2;
+        if (tier === 'malnutrition') return 0.5;
+        return 1;
+    }
+
     /** 定力对心情变动幅度的系数 K_comp = 1 + 0.05 * (10 - composure) */
     function getComposureMoodFactor() {
         var center = get('composure_center', 10);
@@ -1532,7 +1605,8 @@
     function addNutrition(amount) {
         if (amount <= 0) return;
         var maxVal = get('nutrition_max', 100);
-        state.nutrition = clamp(state.nutrition + Math.round(amount), 0, maxVal);
+        // k79：保留小数（均衡 buff 与菜的微量营养为小数级，Math.round 会吞掉）
+        state.nutrition = clamp(round1(state.nutrition + amount), 0, maxVal);
         syncNutritionStateBuff();
     }
 
@@ -1566,6 +1640,7 @@
         syncStaminaExhaustedBuff();
         syncEnergyDepletedBuff();
         syncNutritionStateBuff();
+        syncMealBalanceBuff();
         syncSatietyStateBuff();
         syncThirstStateBuff();
         syncMoodStateBuff();
@@ -1613,9 +1688,12 @@
             global.GameTime.advanceTicks(1);
         }
 
-        // ---------- 饱食（新资源模型：无被动衰减） ----------
-        // 设计决策（用户定，2025）：饱食只在「进食/调息恢复体力」时被消耗（储备燃料），不再每 tick 漏。
-        // 下方仅保留 状态追踪 + Buff 同步 + 体重/死亡 逻辑（由进食/调息造成的 satiety 变化驱动）。
+        // ---------- 饱食（43 消化模型：-1/tick 被动衰减 + 活性消化菜贡献叠加） ----------
+        // 先扣基础衰减；「消化中」buff 的 survival_delta 在 advanceTick 之后由 buff 管线（tick_advanced）叠加，
+        // 净变化 = -1（基础衰减）+ Σ活性消化菜贡献（43 §二）。调息不再消耗饱食（2025 储备模型已废止）。
+        var satDecay = Number(get('satiety_tick_decay', 1));
+        if (!isFinite(satDecay) || satDecay < 0) satDecay = 1;
+        if (state.satiety > 0) state.satiety = round1(Math.max(0, state.satiety - satDecay));
         var satietyRange = syncSatietyStateBuff();
         var severeHungerSatietyMax = getSevereHungerSatietyMax();
         if (state.satiety <= 0) state.starvationTicks += 1;
@@ -1644,8 +1722,14 @@
             return result;
         }
 
-        // ---------- 饮水（新资源模型：无被动衰减） ----------
-        // 同上：饮水只在「进食/调息恢复体力」时消耗，不再每 tick 漏；死亡计时器仅在饮水被吃到 0 时启动。
+        // ---------- 饮水（43 配套：恢复被动衰减，调息不再消耗） ----------
+        // 饮水即时恢复（thirst_restore）；衰减按 06 §6.1.2（每 thirst_tick_decay_interval tick -1）；死亡计时器仅在饮水为 0 时启动。
+        var thirstInterval = get('thirst_tick_decay_interval', 2);
+        if (thirstInterval > 0 && tick % thirstInterval === 0) {
+            var thirstDecay = Number(get('thirst_tick_decay_amount', 1));
+            if (!isFinite(thirstDecay) || thirstDecay < 0) thirstDecay = 1;
+            if (state.thirst > 0) state.thirst = round1(Math.max(0, state.thirst - thirstDecay));
+        }
         syncThirstStateBuff();
         if (state.thirst <= 0) state.thirstDeathTicks += 1;
         else state.thirstDeathTicks = 0;
@@ -1670,8 +1754,8 @@
         var ningqi = (typeof getNingqiBonus === 'function' ? getNingqiBonus() : 0) || 0;
         var regen = (baseRegen + coef * breath) * (1 + ningqi) * getStaminaRegenMultiplier();
         state.stamina = round1(Math.min(staminaMax, state.stamina + regen));
-        // 站立基础代谢（用户定，2025）：不休息/不调息时每 tick 扣基础体力（时间流逝本身有代价；
-        // 休息/调息正在恢复，豁免）。饱食/饮水不受影响（仍只在恢复时消耗）。
+        // 站立基础代谢：不休息/不调息时每 tick 扣基础体力（时间流逝本身有代价；
+        // 休息/调息正在恢复，豁免）。饱食/饮水走各自被动衰减（见上）。
         if (!state.isResting && !state.is_sit_meditation_active) {
             var passiveDrain = Number(get('stamina_passive_drain_per_tick', 0.2));
             if (isFinite(passiveDrain) && passiveDrain > 0) {
@@ -1769,25 +1853,13 @@
                     state.sit_meditation_interrupt_this_tick = false;
                     state.last_sit_meditation_gain = 0;
                 } else {
-                    // 调息（新资源模型）：每 tick 消耗饱食/饮水 → 恢复体力 + 底气（坐食消化）。
-                    // 饱食/饮水不足 → 中断调息（下一 tick 停止），不恢复。
-                    var tiaoSatCost = Number(get('tiao_xi_satiety_cost_per_tick', 1));
-                    var tiaoThirstCost = Number(get('tiao_xi_thirst_cost_per_tick', 0.5));
-                    if (!isFinite(tiaoSatCost)) tiaoSatCost = 1;
-                    if (!isFinite(tiaoThirstCost)) tiaoThirstCost = 0.5;
-                    if (state.satiety >= tiaoSatCost && state.thirst >= tiaoThirstCost) {
-                        state.satiety = round1(Math.max(0, state.satiety - tiaoSatCost));
-                        state.thirst = round1(Math.max(0, state.thirst - tiaoThirstCost));
-                        var tiaoStaGain = Number(get('tiao_xi_stamina_gain_per_tick', 2));
-                        if (isFinite(tiaoStaGain) && tiaoStaGain > 0) {
-                            state.stamina = round1(Math.min(get('stamina_max', 100), state.stamina + tiaoStaGain));
-                        }
-                        // 调息可在 current>=max 时继续累积，用于触发“烧蓝换上限”与封顶溢出区间。
-                        applySitMeditationDiqiOnce();
-                    } else {
-                        state.sit_meditation_interrupt_this_tick = true;
-                        state.last_sit_meditation_gain = 0;
+                    // 调息（43 消化模型）：不再消耗饱食/饮水（时间为代价），恢复体力 + 底气。
+                    var tiaoStaGain = Number(get('tiao_xi_stamina_gain_per_tick', 2));
+                    if (isFinite(tiaoStaGain) && tiaoStaGain > 0) {
+                        state.stamina = round1(Math.min(get('stamina_max', 100), state.stamina + tiaoStaGain));
                     }
+                    // 调息可在 current>=max 时继续累积，用于触发“烧蓝换上限”与封顶溢出区间。
+                    applySitMeditationDiqiOnce();
                 }
             } else if (state.diqi_current < dMax) {
                 var breath = Math.max(0, (typeof getBreathActual === 'function' ? getBreathActual() : 10));
@@ -1947,6 +2019,10 @@
         getSatietyZone: getSatietyZone,
         getNutritionTier: getNutritionTier,
         getNutritionPotPerEnergyMultiplier: getNutritionPotPerEnergyMultiplier,
+        getMealBalanceInfo: getMealBalanceInfo,
+        getMealBalanceLevel: getMealBalanceLevel,
+        syncMealBalanceBuff: syncMealBalanceBuff,
+        getNutritionExpMultiplier: getNutritionExpMultiplier,
         getMoodRangeByValue: getMoodRangeByValue,
         syncMoodStateBuff: syncMoodStateBuff,
         getBodyTemperature: getBodyTemperature,

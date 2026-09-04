@@ -723,7 +723,8 @@
             fetch(base + 'livestock-perks.json').then(function (r) { return r.ok ? r.json() : { perks: {} }; }).catch(function () { return { perks: {} }; }),
             fetch(base + 'livestock-build-costs.json').then(function (r) { return r.ok ? r.json() : { costs: {} }; }).catch(function () { return { costs: {} }; }),
             fetch(base + 'livestock-feed-crops.json').then(function (r) { return r.ok ? r.json() : { crops: {} }; }).catch(function () { return { crops: {} }; }),
-            fetch(base + 'modules.json').then(function (r) { return r.ok ? r.json() : {}; }).catch(function () { return {}; })
+            fetch(base + 'modules.json').then(function (r) { return r.ok ? r.json() : {}; }).catch(function () { return {}; }),
+            fetch(base + 'enemy_drops.json').then(function (r) { return r.ok ? r.json() : null; }).catch(function () { return null; })
         ]).then(function (arr) {
             if (!arr[0]) throw new Error('[SceneApp] ui_text_zhCN.json missing');
             if (!window.UIText || typeof window.UIText.setDict !== 'function') throw new Error('[SceneApp] UIText module missing');
@@ -761,6 +762,9 @@
                 window.SurvivalSkills.setTable(arr[12]);
             }
             if (window.CombatEnemies && arr[14]) window.CombatEnemies.setTable(arr[14]);
+            if (window.EnemyDrops && typeof window.EnemyDrops.setConfig === 'function') {
+                window.EnemyDrops.setConfig(arr[37] || null);
+            }
             cookingMethods = (arr[15] && arr[15].methods && typeof arr[15].methods === 'object') ? arr[15].methods : {};
             cookingRecipes = (arr[16] && Array.isArray(arr[16].recipes)) ? arr[16].recipes : [];
             pharmacyMethods = (arr[19] && arr[19].methods && typeof arr[19].methods === 'object') ? arr[19].methods : {};
@@ -4128,11 +4132,12 @@
                     }
                 }
             }
-            // 2) 死亡落地：drain 死亡队列 → 移除地图实例 + 死亡日志
+            // 2) 死亡落地：drain 死亡队列 → 移除地图实例 + 死亡日志 + 电池掉落（k89 运行时接线）
             if (typeof window.CombatEnemies.drainEnemyKillQueue !== 'function') return;
             var kills = window.CombatEnemies.drainEnemyKillQueue();
             if (!kills || !kills.length) return;
             var mapK = (E && typeof E.getMap === 'function') ? E.getMap() : null;
+            var deadPos = []; // { enemyId, x, y } —— 移除前记录坐标，供掉落到尸体格
             if (mapK && Array.isArray(mapK.enemies)) {
                 var deadIdx = [];
                 var kd, di;
@@ -4141,6 +4146,7 @@
                     di = kills[kd].index;
                     if (di >= 0 && di < mapK.enemies.length && mapK.enemies[di] && mapK.enemies[di].enemy_id === kills[kd].enemyId) {
                         deadIdx.push(di);
+                        deadPos.push({ enemyId: kills[kd].enemyId, x: mapK.enemies[di].x | 0, y: mapK.enemies[di].y | 0 });
                     }
                 }
                 deadIdx.sort(function (a, b) { return b - a; });
@@ -4153,6 +4159,7 @@
                     mapK.enemies.splice(ri, 1);
                 }
             }
+            settleEnemyBatteryDrops(kills, mapK, deadPos);
             var kl, kName;
             for (kl = 0; kl < kills.length; kl++) {
                 kName = kills[kl].enemyId;
@@ -4167,6 +4174,77 @@
             }
         } catch (eKill) {
             if (window.console && typeof window.console.error === 'function') window.console.error('[enemy kill settle failed]', eKill);
+        }
+    }
+
+    /**
+     * 敌人电池掉落运行时（k89）：敌人死亡 → EnemyDrops.rollEnemyBatteryDrop →
+     * 掉入背包（putItemIntoDefaultContainer，失败则掉到尸体格地面）。
+     * floor/regionCode：优先取地图元数据（地牢生成器 k97/k101 会写 floor / region_code）；
+     * 缺省回退 floor=1、regionCode=1（地表），保证现有地表敌人（如基地门口地痞）按浅层档位掉五号。
+     */
+    function settleEnemyBatteryDrops(kills, mapK, deadPos) {
+        try {
+            if (!window.EnemyDrops || typeof window.EnemyDrops.rollEnemyBatteryDrop !== 'function') return;
+            if (!IE || typeof IE.putItemIntoDefaultContainer !== 'function' || typeof IE.getItemTemplate !== 'function') return;
+            if (!kills || !kills.length) return;
+            var floor = 1, regionCode = 1;
+            if (mapK && typeof mapK === 'object') {
+                if (mapK.floor != null && isFinite(Number(mapK.floor))) floor = Math.max(1, Math.floor(Number(mapK.floor)));
+                if (mapK.region_code != null && isFinite(Number(mapK.region_code))) regionCode = Math.floor(Number(mapK.region_code));
+            }
+            // items 映射：EnemyDrops 需要 region_restrict + battery_capacity 查模板
+            var itemsMap = {};
+            var allIds = (typeof IE.getAllItemIds === 'function') ? IE.getAllItemIds() : [];
+            for (var ii = 0; ii < allIds.length; ii++) {
+                var tplI = IE.getItemTemplate(allIds[ii]);
+                if (tplI) itemsMap[allIds[ii]] = tplI;
+            }
+            for (var kl2 = 0; kl2 < kills.length; kl2++) {
+                var drop = window.EnemyDrops.rollEnemyBatteryDrop({
+                    enemyId: kills[kl2].enemyId,
+                    floor: floor,
+                    regionCode: regionCode,
+                    items: itemsMap
+                });
+                if (!drop || !drop.item_id) continue;
+                var inst = { item_id: drop.item_id, count: 1 };
+                if (drop.battery_charge != null && isFinite(Number(drop.battery_charge))) inst.battery_charge = Math.max(0, Math.floor(Number(drop.battery_charge)));
+                var placed = IE.putItemIntoDefaultContainer(inst);
+                var dropName = String(drop.item_id);
+                var dropTpl = IE.getItemTemplate(drop.item_id);
+                if (dropTpl && dropTpl.name) dropName = dropTpl.name;
+                var capTxt = '';
+                var capV = dropTpl && dropTpl.battery_capacity != null ? Number(dropTpl.battery_capacity) : 0;
+                if (capV > 0) capTxt = ui('combat.log.enemy_drop_battery_detail', { charge: String(inst.battery_charge != null ? inst.battery_charge : capV), cap: String(capV) });
+                var dropEnemyName = String(kills[kl2].enemyId);
+                try {
+                    if (window.UIText && typeof window.UIText.t === 'function') {
+                        dropEnemyName = window.UIText.t('enemy.name.' + String(kills[kl2].enemyId).replace(/\./g, '_'));
+                    }
+                } catch (eN) { /* ignore */ }
+                if (!placed.placed) {
+                    // 背包满 → 掉到尸体格
+                    var gx = null, gy = null;
+                    for (var dp = 0; dp < deadPos.length; dp++) {
+                        if (String(deadPos[dp].enemyId) === String(kills[kl2].enemyId)) { gx = deadPos[dp].x; gy = deadPos[dp].y; break; }
+                    }
+                    if (gx == null && E && typeof E.getState === 'function') {
+                        var stD = E.getState();
+                        if (stD && stD.mapId != null && stD.x != null) { gx = stD.x; gy = stD.y; }
+                    }
+                    if (gx != null && typeof IE.addItemToGround === 'function') {
+                        IE.addItemToGround(mapK ? mapK.map_id : null, gx, gy, inst);
+                    }
+                    if (window.GameLog && typeof window.GameLog.log === 'function') {
+                        window.GameLog.log(ui('combat.log.enemy_drop_battery_ground', { enemyId: dropEnemyName, item: dropName, detail: capTxt }), 'system');
+                    }
+                } else if (window.GameLog && typeof window.GameLog.log === 'function') {
+                    window.GameLog.log(ui('combat.log.enemy_drop_battery', { enemyId: dropEnemyName, item: dropName, detail: capTxt }), 'system');
+                }
+            }
+        } catch (eDrop) {
+            if (window.console && typeof window.console.error === 'function') window.console.error('[enemy battery drop failed]', eDrop);
         }
     }
 
@@ -12028,7 +12106,12 @@
             triggerEventName: ['tick_advanced'],
             triggerTags: ['time', 'tick'],
             effects: [{ type: 'survival_delta', params: perTick }],
-            food_digest: true
+            food_digest: true,
+            judgment_tags: {
+                food_item: itemId,
+                meal_composition: tpl.meal_composition ? String(tpl.meal_composition).trim() : '',
+                meal_tier: tpl.meal_tier ? String(tpl.meal_tier).trim() : ''
+            }
         });
         return Buff.applyBuff('player', buffId, 'item:' + itemId, null);
     }
@@ -12056,7 +12139,9 @@
         var edibleBuffId = tpl && tpl.edible_buff_id ? String(tpl.edible_buff_id).trim() : '';
         if (edible && edibleBuffId && Buff && typeof Buff.applyBuff === 'function') {
             if (typeof Buff.hasBuffByBuffId === 'function' && Buff.hasBuffByBuffId('player', edibleBuffId)) return false;
-            return Buff.applyBuff('player', edibleBuffId, 'item:' + itemId, null);
+            var okEdible = Buff.applyBuff('player', edibleBuffId, 'item:' + itemId, null);
+            if (okEdible) grantFoodAttributeExp(itemId, tpl);
+            return okEdible;
         }
         var usable = toBoolFlag(tpl ? tpl.usable : null);
         var useBuffId = tpl && tpl.use_buff_id ? String(tpl.use_buff_id).trim() : '';
@@ -12065,7 +12150,11 @@
             return Buff.applyBuff('player', useBuffId, 'item:' + itemId, null);
         }
         if (!ue || typeof ue !== 'object') return false;
-        if ((tpl && tpl.category) === 'food') return applyFoodDigestBuffFromTemplate(itemId, tpl);
+        if ((tpl && tpl.category) === 'food') {
+            var okFood = applyFoodDigestBuffFromTemplate(itemId, tpl);
+            if (okFood) grantFoodAttributeExp(itemId, tpl);
+            return okFood;
+        }
         var Surv = window.Survival;
         if (!Surv) return false;
         var n;
@@ -12087,6 +12176,54 @@
             if (isFinite(n) && n !== 0) { Surv.addEnergy(n); any = true; }
         }
         return any;
+    }
+
+    /** k79：进食经验（24 §24.5a 对齐餐位档 + 营养档位倍率；苦力菜 workhorse≈0 直接跳过）。结果写入 lastFoodExpGrantText 供食用反馈。 */
+    var lastFoodExpGrantText = '';
+
+    function grantFoodAttributeExp(itemId, tpl) {
+        lastFoodExpGrantText = '';
+        var CA = window.CharacterAttributes;
+        var Surv = window.Survival;
+        if (!CA || typeof CA.grantAttributeExp !== 'function' || !Surv || !tpl) {
+            return { granted: false, reason: 'no_system' };
+        }
+        if (toBoolFlag(tpl.workhorse)) return { granted: false, reason: 'workhorse' };
+        var tier = tpl.meal_tier ? String(tpl.meal_tier).trim() : '';
+        if (!tier) return { granted: false, reason: 'no_meal_tier' };
+        var expCfg = (typeof Surv.getConfigValue === 'function') ? Surv.getConfigValue('meal_exp_by_tier', null) : null;
+        var base = (expCfg && expCfg[tier] != null) ? Number(expCfg[tier]) : 0;
+        if (!isFinite(base) || !(base > 0)) return { granted: false, reason: 'no_base_exp' };
+        var dimsCfg = (typeof Surv.getConfigValue === 'function') ? Surv.getConfigValue('meal_exp_dims_by_tier', null) : null;
+        var dims = [];
+        if (Array.isArray(tpl.attr_exp_grants) && tpl.attr_exp_grants.length) {
+            dims = tpl.attr_exp_grants.slice();
+        } else if (dimsCfg && Array.isArray(dimsCfg[tier])) {
+            dims = dimsCfg[tier].slice();
+        }
+        if (!dims.length) return { granted: false, reason: 'no_dims' };
+        var mult = (typeof Surv.getNutritionExpMultiplier === 'function') ? Number(Surv.getNutritionExpMultiplier()) : 1;
+        if (!isFinite(mult) || mult <= 0) mult = 1;
+        var grants = [];
+        var i;
+        for (i = 0; i < dims.length; i++) {
+            var attrId = String(dims[i] || '').trim();
+            if (!attrId) continue;
+            grants.push({ attr_id: attrId, exp: Math.max(1, Math.round(base * mult)) });
+        }
+        if (!grants.length) return { granted: false, reason: 'no_dims' };
+        var res = CA.grantAttributeExp('player', grants, { source: 'item.use.food', item_id: itemId, meal_tier: tier });
+        var applied = (res && Array.isArray(res.applied)) ? res.applied : [];
+        if (!applied.length) return { granted: false, reason: 'no_applied' };
+        var parts = [];
+        for (i = 0; i < applied.length; i++) {
+            var a = applied[i] || {};
+            var an = (typeof ui === 'function') ? ui('status.attr.' + String(a.attr_id || '')) : '';
+            if (!an) an = String(a.attr_id || '');
+            parts.push(an + '+' + String(a.exp_applied != null ? a.exp_applied : ''));
+        }
+        if (parts.length) lastFoodExpGrantText = '（' + parts.join(' ') + '）';
+        return { granted: true, applied: applied };
     }
 
     function tryUseItemFromContainer(containerType, index, opts) {
@@ -12119,7 +12256,11 @@
         var char0 = inv.getCharacterForDisplay ? inv.getCharacterForDisplay() : null;
         var tier0 = inv.getItemDisplayTier ? inv.getItemDisplayTier(itemId, char0) : 0;
         var dispName = inv.getDisplayName ? inv.getDisplayName(tpl, tier0, char0) : itemId;
-        if (!options.silent) showMsg(ui('item.use.ok', { name: dispName }), 'success');
+        var useOkMsg = ui('item.use.ok', { name: dispName });
+        var expText = lastFoodExpGrantText;
+        lastFoodExpGrantText = '';
+        if (expText) useOkMsg += ' ' + expText;
+        if (!options.silent) showMsg(useOkMsg, 'success');
         if (window.Survival && typeof window.Survival.advanceTick === 'function') window.Survival.advanceTick();
         if (typeof updateStatusPanel === 'function') updateStatusPanel();
         if (typeof backpackPanelOpen !== 'undefined' && backpackPanelOpen && typeof updateBackpackPanel === 'function') updateBackpackPanel();
@@ -12305,5 +12446,35 @@
     window.SceneApp.hideItemTooltip = hideItemTooltip;
     window.SceneApp.executeQuickBarPinnedSlot = executeQuickBarPinnedSlot;
     window.SceneApp.clearQuickBarPinSlot = clearQuickBarPinSlot;
+
+    // ── 调试直达：URL ?panel=xxx（可加 &tab=）在游戏就绪后自动打开对应面板 ──
+    // 供开发预览（better-sidebar 浏览器 / agent 验证）直接跳到指定 UI，无需手动导航。
+    window.SceneApp.openBackpackPanel = openBackpackPanel;
+    window.SceneApp.openBaseWarehousePanel = openBaseWarehousePanel;
+    window.SceneApp.openSavePanel = openSavePanel;
+    window.SceneApp.openCombatPanel = openCombatPanel;
+    window.SceneApp.openSurvivalPanel = openSurvivalPanel;
+    window.SceneApp.openUiWindowsMenu = openUiWindowsMenu;
+    window.SceneApp.debugPanelOpeners = {
+        backpack: openBackpackPanel,
+        agriculture: openAgriculturePanel,
+        livestock: openLivestockPanel,
+        hideout: openHideoutWarehousePanel,
+        baseWarehouse: openBaseWarehousePanel,
+        cooking: openCookingStationPanel,
+        pharmacy: openPharmacyStationPanel,
+        compost: openCompostStationPanel,
+        combat: openCombatPanel,
+        survival: openSurvivalPanel,
+        save: openSavePanel,
+        uiMenu: openUiWindowsMenu
+    };
+    window.SceneApp.debugOpenPanel = function (name, tab) {
+        var fn = window.SceneApp.debugPanelOpeners[name];
+        if (typeof fn !== 'function') return false;
+        if (name === 'survival' && tab) fn(tab);
+        else fn();
+        return true;
+    };
 })();
 

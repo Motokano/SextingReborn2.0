@@ -175,6 +175,8 @@
         if (!st || typeof st !== 'object' || !Array.isArray(st.map)) return null;
         var cloned = cloneJsonDeep(st);
         if (!cloned) return null;
+        /** 45 §四·农业电力：旧档无储能字段 → 补起步 500（与畜牧 power_charge 迁移口径一致） */
+        if (cloned.power_charge == null) cloned.power_charge = 500;
         return {
             schema_version: AGRICULTURE_MAP_SCHEMA_VERSION,
             state: cloned

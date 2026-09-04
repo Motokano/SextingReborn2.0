@@ -205,8 +205,9 @@
             if (!baseRule || typeof baseRule !== 'object') continue;
             var rule = Object.assign({}, baseRule, { _fieldKey: fk });
             if (!isFieldVisible(rule, character)) continue;
-            var rawVal = getNestedValue(tpl, fk);
-            if (rawVal === undefined && inst) rawVal = getNestedValue(inst, fk);
+            // 实例值优先（电池电量等实例字段会覆盖模板满电默认值），模板兜底（k89）
+            var rawVal = getNestedValue(inst, fk);
+            if (rawVal === undefined) rawVal = getNestedValue(tpl, fk);
             var unlocked = skillUnlocked(rule, character);
             if (unlocked) {
                 if (isEmptyValue(rawVal)) {

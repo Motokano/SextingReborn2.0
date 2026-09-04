@@ -1285,6 +1285,7 @@
             for (var mk in inst.modules) c.modules[mk] = inst.modules[mk];
         }
         if (inst.ground_drop_tick != null) c.ground_drop_tick = Math.max(0, Math.floor(Number(inst.ground_drop_tick) || 0));
+        if (inst.battery_charge != null) c.battery_charge = Math.max(0, Math.floor(Number(inst.battery_charge) || 0)); // 电池电量（k89）
         return c;
     }
 

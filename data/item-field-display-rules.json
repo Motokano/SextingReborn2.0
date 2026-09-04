@@ -212,6 +212,26 @@
       "value_type": "string",
       "visible_by_default": true
     },
+    "battery_capacity": {
+      "primary_block": "regular",
+      "reference_blocks": [],
+      "skill_id": null,
+      "level_min": 0,
+      "locked_hint": "",
+      "renderer": "number",
+      "value_type": "integer",
+      "visible_by_default": true
+    },
+    "battery_charge": {
+      "primary_block": "regular",
+      "reference_blocks": [],
+      "skill_id": null,
+      "level_min": 0,
+      "locked_hint": "",
+      "renderer": "number",
+      "value_type": "integer",
+      "visible_by_default": true
+    },
     "pharmacy_ingredient": {
       "primary_block": "pharmacy",
       "reference_blocks": [],

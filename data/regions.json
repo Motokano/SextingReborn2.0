@@ -1,0 +1,89 @@
+{
+  "version": 1,
+  "note": "地区编码注册表（k85，接 42 §七）。region_restrict 约定：0 = 全局（不限地区，可由各地 loot_table 精确门控）；非 0 = 限定地区，该材料只在对应地区生成池出现。跨区材料填 0（仍可携带 dungeon_only / surface_only 粗标签）。地牢按层数档位选表：tierIndex = clamp((floor-1)/4)，取 loot_table.tiers[tierIndex]。",
+  "regions": {
+    "surface": {
+      "code": 1,
+      "name": "地表",
+      "scope": "野外 / 基地 / 城镇 / 家外田地",
+      "type": "surface",
+      "region_gated": true,
+      "loot_table": "loot_surface"
+    },
+    "dungeon_beginner": {
+      "code": 2,
+      "name": "新手地牢",
+      "scope": "入门档：地表池高品质来源（权重/掉率按档，42 §二.3）",
+      "type": "dungeon",
+      "region_gated": false,
+      "loot_table": "loot_beginner"
+    },
+    "dungeon_d1": {
+      "code": 3,
+      "name": "D1 高山哨塔",
+      "scope": "北·山区·情报暗哨·森林香料",
+      "type": "dungeon",
+      "region_gated": true,
+      "loot_table": "loot_d1"
+    },
+    "dungeon_d2": {
+      "code": 4,
+      "name": "D2 化工厂药田",
+      "scope": "西·毒与药",
+      "type": "dungeon",
+      "region_gated": true,
+      "loot_table": "loot_d2"
+    },
+    "dungeon_d3": {
+      "code": 5,
+      "name": "D3 主锻炉",
+      "scope": "西南·铁与火",
+      "type": "dungeon",
+      "region_gated": true,
+      "loot_table": "loot_d3"
+    },
+    "dungeon_d4": {
+      "code": 6,
+      "name": "D4 矿坑拳场",
+      "scope": "东·矿与暗杀",
+      "type": "dungeon",
+      "region_gated": true,
+      "loot_table": "loot_d4"
+    },
+    "dungeon_d5": {
+      "code": 7,
+      "name": "D5 沿岸堂口",
+      "scope": "东南·南洋热带香料与海产",
+      "type": "dungeon",
+      "region_gated": true,
+      "loot_table": "loot_d5"
+    },
+    "dungeon_d6": {
+      "code": 8,
+      "name": "D6 城市废墟",
+      "scope": "广州佛山·消费电子/信息/奢侈品",
+      "type": "dungeon",
+      "region_gated": true,
+      "loot_table": "loot_d6"
+    },
+    "dungeon_d7": {
+      "code": 9,
+      "name": "D7 地下暗道",
+      "scope": "中山虎门·旧设施/电力/运输",
+      "type": "dungeon",
+      "region_gated": true,
+      "loot_table": "loot_d7"
+    }
+  },
+  "loot_tier": {
+    "floors_per_tier": 4,
+    "tiers": [
+      { "index": 0, "floors": [1, 4], "label": "主题基础款" },
+      { "index": 1, "floors": [5, 8], "label": "进阶" },
+      { "index": 2, "floors": [9, 12], "label": "稀有" },
+      { "index": 3, "floors": [13, 16], "label": "独有" }
+    ],
+    "table_shape": "loot_* 为 { tiers: [ [ {item_id, weight}, ... ], ×4 ] }；地表 loot_surface 为平铺数组（无档位）。行仅 item_id + weight，无品质档（41：稀有度=物品身份）。",
+    "batteries": "电池（battery_*）不进采集池（42 §一.5）：不入 loot_table，仅打 region/dungeon_only 标签供敌人掉落（k89）使用——掉落数据 data/enemy_drops.json（battery_tiers 四档 + enemies 调权），纯逻辑 js/enemy-drops.js（rollEnemyBatteryDrop），运行时接线见 k169。"
+  }
+}

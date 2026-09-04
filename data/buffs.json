@@ -345,8 +345,9 @@
     {
       "buff_id": "buff_food_pecan_walnut",
       "name": "山核桃仁",
-      "desc": "每回合 +4 饱食；效果结束时 +1 营养。",
-      "durationTicks": 6,
+      "desc": "快速供能：共 25 回合，每回合恢复饱食 0.6、体力 0.8、精力 0.32、心情 0.8，战斗出手速度 ×1.10；效果结束时 +1 营养。饱食总量低，适合随身携带当战斗粮。",
+      "quick_energy": true,
+      "durationTicks": 25,
       "maxStacks": 1,
       "stacksAddOnApply": 1,
       "priority": 70,
@@ -368,7 +369,17 @@
         {
           "type": "survival_delta",
           "params": {
-            "satiety": 4
+            "satiety": 0.6,
+            "nutrition": 0.1,
+            "stamina": 0.8,
+            "energy": 0.32,
+            "mood": 0.8
+          }
+        },
+        {
+          "type": "battle_move_speed_multiplier",
+          "params": {
+            "multiplier": 1.1
           }
         },
         {
@@ -393,14 +404,16 @@
       ],
       "judgment_tags": {
         "food_category": "nut",
-        "food_item": "herb_pecan"
+        "food_item": "herb_pecan",
+        "meal_composition": "other"
       }
     },
     {
       "buff_id": "buff_food_herb_sour_plum",
       "name": "酸梅",
-      "desc": "每回合 +2 饮水/饱食；效果结束时 +1 营养。",
-      "durationTicks": 5,
+      "desc": "快速供能：共 20 回合，每回合恢复饱食 0.5、饮水 2、体力 0.8、精力 0.4、心情 0.75，战斗出手速度 ×1.10；效果结束时 +1 营养。饱食总量低，适合随身携带当战斗粮。",
+      "quick_energy": true,
+      "durationTicks": 20,
       "maxStacks": 1,
       "stacksAddOnApply": 1,
       "priority": 70,
@@ -422,8 +435,18 @@
         {
           "type": "survival_delta",
           "params": {
-            "satiety": 2,
-            "thirst": 2
+            "satiety": 0.5,
+            "thirst": 2,
+            "nutrition": 0.06,
+            "stamina": 0.8,
+            "energy": 0.4,
+            "mood": 0.75
+          }
+        },
+        {
+          "type": "battle_move_speed_multiplier",
+          "params": {
+            "multiplier": 1.1
           }
         },
         {
@@ -448,14 +471,15 @@
       ],
       "judgment_tags": {
         "food_category": "fruit",
-        "food_item": "herb_sour_plum"
+        "food_item": "herb_sour_plum",
+        "meal_composition": "other"
       }
     },
     {
       "buff_id": "buff_food_stew_meat_simple",
       "name": "肉末杂煮·消化",
-      "desc": "消化中：每回合少量恢复饱食、饮水与营养（共 10 回合）。",
-      "durationTicks": 10,
+      "desc": "消化中：每回合少量恢复饱食、饮水与营养（共 45 回合）。",
+      "durationTicks": 45,
       "maxStacks": 1,
       "stacksAddOnApply": 1,
       "priority": 65,
@@ -463,23 +487,38 @@
       "consumeMode": "always",
       "consumeLayersFixed": 0,
       "applyMode": "always_apply",
-      "triggerEventKind": ["world"],
-      "triggerEventName": ["tick_advanced"],
-      "triggerTags": ["time", "tick"],
+      "triggerEventKind": [
+        "world"
+      ],
+      "triggerEventName": [
+        "tick_advanced"
+      ],
+      "triggerTags": [
+        "time",
+        "tick"
+      ],
       "effects": [
         {
           "type": "survival_delta",
-          "params": { "satiety": 2.5, "thirst": 0.8, "nutrition": 3 }
+          "params": {
+            "satiety": 0.71,
+            "thirst": 0.8,
+            "nutrition": 0.3
+          }
         }
       ],
       "expire_effects": [],
-      "judgment_tags": { "food_category": "cooked", "food_item": "food_stew_meat_simple" }
+      "judgment_tags": {
+        "food_category": "cooked",
+        "food_item": "food_stew_meat_simple",
+        "meal_composition": "meat"
+      }
     },
     {
       "buff_id": "buff_food_flatbread_plain",
       "name": "粗面饼·消化",
-      "desc": "消化中：每回合少量恢复饱食与营养（共 10 回合）。",
-      "durationTicks": 10,
+      "desc": "消化中：每回合少量恢复饱食与营养（共 30 回合）。",
+      "durationTicks": 30,
       "maxStacks": 1,
       "stacksAddOnApply": 1,
       "priority": 65,
@@ -487,20 +526,38 @@
       "consumeMode": "always",
       "consumeLayersFixed": 0,
       "applyMode": "always_apply",
-      "triggerEventKind": ["world"],
-      "triggerEventName": ["tick_advanced"],
-      "triggerTags": ["time", "tick"],
+      "triggerEventKind": [
+        "world"
+      ],
+      "triggerEventName": [
+        "tick_advanced"
+      ],
+      "triggerTags": [
+        "time",
+        "tick"
+      ],
       "effects": [
-        { "type": "survival_delta", "params": { "satiety": 1.8, "nutrition": 1 } }
+        {
+          "type": "survival_delta",
+          "params": {
+            "satiety": 1.33,
+            "nutrition": 0.2
+          }
+        }
       ],
       "expire_effects": [],
-      "judgment_tags": { "food_category": "cooked", "food_item": "food_flatbread_plain" }
+      "judgment_tags": {
+        "food_category": "cooked",
+        "food_item": "food_flatbread_plain",
+        "meal_composition": "staple"
+      }
     },
     {
       "buff_id": "buff_food_herb_tea_bitter",
-      "name": "苦根茶·消化",
-      "desc": "消化中：每回合少量恢复饱食、饮水与营养（共 10 回合）。",
-      "durationTicks": 10,
+      "name": "苦根茶·快速供能",
+      "desc": "快速供能：共 25 回合，每回合恢复饱食 0.4、饮水 1.5、体力 0.48、精力 0.48、心情 0.3，战斗出手速度 ×1.10；饱食总量低，适合随身携带当战斗粮。",
+      "quick_energy": true,
+      "durationTicks": 25,
       "maxStacks": 1,
       "stacksAddOnApply": 1,
       "priority": 65,
@@ -508,20 +565,47 @@
       "consumeMode": "always",
       "consumeLayersFixed": 0,
       "applyMode": "always_apply",
-      "triggerEventKind": ["world"],
-      "triggerEventName": ["tick_advanced"],
-      "triggerTags": ["time", "tick"],
+      "triggerEventKind": [
+        "world"
+      ],
+      "triggerEventName": [
+        "tick_advanced"
+      ],
+      "triggerTags": [
+        "time",
+        "tick"
+      ],
       "effects": [
-        { "type": "survival_delta", "params": { "satiety": 0.2, "thirst": 1.5, "nutrition": 1.5 } }
+        {
+          "type": "survival_delta",
+          "params": {
+            "satiety": 0.4,
+            "thirst": 1.5,
+            "nutrition": 0.08,
+            "stamina": 0.48,
+            "energy": 0.48,
+            "mood": 0.3
+          }
+        },
+        {
+          "type": "battle_move_speed_multiplier",
+          "params": {
+            "multiplier": 1.1
+          }
+        }
       ],
       "expire_effects": [],
-      "judgment_tags": { "food_category": "cooked", "food_item": "food_herb_tea_bitter" }
+      "judgment_tags": {
+        "food_category": "cooked",
+        "food_item": "food_herb_tea_bitter",
+        "meal_composition": "other"
+      }
     },
     {
       "buff_id": "buff_food_fish_soup_clear",
       "name": "清汤鱼羹·消化",
-      "desc": "消化中：每回合少量恢复饱食、饮水与营养（共 10 回合）。",
-      "durationTicks": 10,
+      "desc": "消化中：每回合少量恢复饱食、饮水与营养（共 40 回合）。",
+      "durationTicks": 40,
       "maxStacks": 1,
       "stacksAddOnApply": 1,
       "priority": 65,
@@ -529,20 +613,39 @@
       "consumeMode": "always",
       "consumeLayersFixed": 0,
       "applyMode": "always_apply",
-      "triggerEventKind": ["world"],
-      "triggerEventName": ["tick_advanced"],
-      "triggerTags": ["time", "tick"],
+      "triggerEventKind": [
+        "world"
+      ],
+      "triggerEventName": [
+        "tick_advanced"
+      ],
+      "triggerTags": [
+        "time",
+        "tick"
+      ],
       "effects": [
-        { "type": "survival_delta", "params": { "satiety": 2.2, "thirst": 2, "nutrition": 5 } }
+        {
+          "type": "survival_delta",
+          "params": {
+            "satiety": 0.75,
+            "thirst": 2,
+            "nutrition": 0.3
+          }
+        }
       ],
       "expire_effects": [],
-      "judgment_tags": { "food_category": "cooked", "food_item": "food_fish_soup_clear" }
+      "judgment_tags": {
+        "food_category": "cooked",
+        "food_item": "food_fish_soup_clear",
+        "meal_composition": "meat"
+      }
     },
     {
       "buff_id": "buff_food_dried_meat_strip",
-      "name": "风干肉条·消化",
-      "desc": "消化中：每回合少量恢复饱食与营养（共 10 回合）。",
-      "durationTicks": 10,
+      "name": "风干肉条·快速供能",
+      "desc": "快速供能：共 30 回合，每回合恢复饱食 0.47、体力 0.87、精力 0.33、心情 0.5，战斗出手速度 ×1.10；饱食总量低，适合随身携带当战斗粮。",
+      "quick_energy": true,
+      "durationTicks": 30,
       "maxStacks": 1,
       "stacksAddOnApply": 1,
       "priority": 65,
@@ -550,20 +653,46 @@
       "consumeMode": "always",
       "consumeLayersFixed": 0,
       "applyMode": "always_apply",
-      "triggerEventKind": ["world"],
-      "triggerEventName": ["tick_advanced"],
-      "triggerTags": ["time", "tick"],
+      "triggerEventKind": [
+        "world"
+      ],
+      "triggerEventName": [
+        "tick_advanced"
+      ],
+      "triggerTags": [
+        "time",
+        "tick"
+      ],
       "effects": [
-        { "type": "survival_delta", "params": { "satiety": 1.5, "nutrition": 3.5 } }
+        {
+          "type": "survival_delta",
+          "params": {
+            "satiety": 0.47,
+            "nutrition": 0.15,
+            "stamina": 0.87,
+            "energy": 0.33,
+            "mood": 0.5
+          }
+        },
+        {
+          "type": "battle_move_speed_multiplier",
+          "params": {
+            "multiplier": 1.1
+          }
+        }
       ],
       "expire_effects": [],
-      "judgment_tags": { "food_category": "cooked", "food_item": "food_dried_meat_strip" }
+      "judgment_tags": {
+        "food_category": "cooked",
+        "food_item": "food_dried_meat_strip",
+        "meal_composition": "meat"
+      }
     },
     {
       "buff_id": "buff_food_cooking_fail_generic",
       "name": "糊灶残渣·消化",
-      "desc": "勉强下咽：每回合极少量饱食（共 10 回合）。",
-      "durationTicks": 10,
+      "desc": "勉强下咽：每回合极少量饱食（共 15 回合）。",
+      "durationTicks": 15,
       "maxStacks": 1,
       "stacksAddOnApply": 1,
       "priority": 65,
@@ -571,18 +700,38 @@
       "consumeMode": "always",
       "consumeLayersFixed": 0,
       "applyMode": "always_apply",
-      "triggerEventKind": ["world"],
-      "triggerEventName": ["tick_advanced"],
-      "triggerTags": ["time", "tick"],
-      "effects": [{ "type": "survival_delta", "params": { "satiety": 0.2 } }],
+      "triggerEventKind": [
+        "world"
+      ],
+      "triggerEventName": [
+        "tick_advanced"
+      ],
+      "triggerTags": [
+        "time",
+        "tick"
+      ],
+      "effects": [
+        {
+          "type": "survival_delta",
+          "params": {
+            "satiety": 0.33,
+            "nutrition": 0
+          }
+        }
+      ],
       "expire_effects": [],
-      "judgment_tags": { "food_category": "cooking_fail", "food_item": "food_cooking_fail_generic" }
+      "judgment_tags": {
+        "food_category": "cooking_fail",
+        "food_item": "food_cooking_fail_generic",
+        "meal_composition": "other"
+      }
     },
     {
       "buff_id": "buff_food_herb_bitter",
-      "name": "涩堇草·消化",
-      "desc": "咀嚼消化中：每回合少量饱食、饮水与营养（共 10 回合）。",
-      "durationTicks": 10,
+      "name": "涩堇草·快速供能",
+      "desc": "快速供能：共 20 回合，每回合恢复饱食 0.4、饮水 1.3、体力 0.9、精力 0.5、心情 0.25，战斗出手速度 ×1.10；饱食总量低，适合随身携带当战斗粮。",
+      "quick_energy": true,
+      "durationTicks": 20,
       "maxStacks": 1,
       "stacksAddOnApply": 1,
       "priority": 65,
@@ -590,20 +739,48 @@
       "consumeMode": "always",
       "consumeLayersFixed": 0,
       "applyMode": "always_apply",
-      "triggerEventKind": ["world"],
-      "triggerEventName": ["tick_advanced"],
-      "triggerTags": ["time", "tick"],
+      "triggerEventKind": [
+        "world"
+      ],
+      "triggerEventName": [
+        "tick_advanced"
+      ],
+      "triggerTags": [
+        "time",
+        "tick"
+      ],
       "effects": [
-        { "type": "survival_delta", "params": { "satiety": 0.1, "thirst": 1.3, "nutrition": 1.5 } }
+        {
+          "type": "survival_delta",
+          "params": {
+            "satiety": 0.4,
+            "thirst": 1.3,
+            "nutrition": 0.08,
+            "stamina": 0.9,
+            "energy": 0.5,
+            "mood": 0.25
+          }
+        },
+        {
+          "type": "battle_move_speed_multiplier",
+          "params": {
+            "multiplier": 1.1
+          }
+        }
       ],
       "expire_effects": [],
-      "judgment_tags": { "food_category": "herb_raw", "food_item": "herb_bitter" }
+      "judgment_tags": {
+        "food_category": "herb_raw",
+        "food_item": "herb_bitter",
+        "meal_composition": "veg"
+      }
     },
     {
       "buff_id": "buff_food_herb_green",
-      "name": "青草尖·消化",
-      "desc": "咀嚼消化中：每回合少量饮水与营养（共 10 回合）。",
-      "durationTicks": 10,
+      "name": "青草尖·快速供能",
+      "desc": "快速供能：共 20 回合，每回合恢复饱食 0.45、饮水 1.8、体力 0.9、精力 0.4、心情 0.25，战斗出手速度 ×1.10；饱食总量低，适合随身携带当战斗粮。",
+      "quick_energy": true,
+      "durationTicks": 20,
       "maxStacks": 1,
       "stacksAddOnApply": 1,
       "priority": 65,
@@ -611,18 +788,48 @@
       "consumeMode": "always",
       "consumeLayersFixed": 0,
       "applyMode": "always_apply",
-      "triggerEventKind": ["world"],
-      "triggerEventName": ["tick_advanced"],
-      "triggerTags": ["time", "tick"],
-      "effects": [{ "type": "survival_delta", "params": { "thirst": 1.8, "nutrition": 0.5 } }],
+      "triggerEventKind": [
+        "world"
+      ],
+      "triggerEventName": [
+        "tick_advanced"
+      ],
+      "triggerTags": [
+        "time",
+        "tick"
+      ],
+      "effects": [
+        {
+          "type": "survival_delta",
+          "params": {
+            "thirst": 1.8,
+            "nutrition": 0.06,
+            "satiety": 0.45,
+            "stamina": 0.9,
+            "energy": 0.4,
+            "mood": 0.25
+          }
+        },
+        {
+          "type": "battle_move_speed_multiplier",
+          "params": {
+            "multiplier": 1.1
+          }
+        }
+      ],
       "expire_effects": [],
-      "judgment_tags": { "food_category": "herb_raw", "food_item": "herb_green" }
+      "judgment_tags": {
+        "food_category": "herb_raw",
+        "food_item": "herb_green",
+        "meal_composition": "veg"
+      }
     },
     {
       "buff_id": "buff_food_herb_sweet",
-      "name": "甘花茎·消化",
-      "desc": "咀嚼消化中：每回合少量饱食、饮水与营养（共 10 回合）。",
-      "durationTicks": 10,
+      "name": "甘花茎·快速供能",
+      "desc": "快速供能：共 20 回合，每回合恢复饱食 0.5、饮水 0.8、体力 0.9、精力 0.4、心情 0.5，战斗出手速度 ×1.10；饱食总量低，适合随身携带当战斗粮。",
+      "quick_energy": true,
+      "durationTicks": 20,
       "maxStacks": 1,
       "stacksAddOnApply": 1,
       "priority": 65,
@@ -630,20 +837,48 @@
       "consumeMode": "always",
       "consumeLayersFixed": 0,
       "applyMode": "always_apply",
-      "triggerEventKind": ["world"],
-      "triggerEventName": ["tick_advanced"],
-      "triggerTags": ["time", "tick"],
+      "triggerEventKind": [
+        "world"
+      ],
+      "triggerEventName": [
+        "tick_advanced"
+      ],
+      "triggerTags": [
+        "time",
+        "tick"
+      ],
       "effects": [
-        { "type": "survival_delta", "params": { "satiety": 0.5, "thirst": 0.8, "nutrition": 0.5 } }
+        {
+          "type": "survival_delta",
+          "params": {
+            "satiety": 0.5,
+            "thirst": 0.8,
+            "nutrition": 0.06,
+            "stamina": 0.9,
+            "energy": 0.4,
+            "mood": 0.5
+          }
+        },
+        {
+          "type": "battle_move_speed_multiplier",
+          "params": {
+            "multiplier": 1.1
+          }
+        }
       ],
       "expire_effects": [],
-      "judgment_tags": { "food_category": "herb_raw", "food_item": "herb_sweet" }
+      "judgment_tags": {
+        "food_category": "herb_raw",
+        "food_item": "herb_sweet",
+        "meal_composition": "veg"
+      }
     },
     {
       "buff_id": "buff_food_wild_fruit_red",
-      "name": "红火莓·消化",
-      "desc": "咀嚼消化中：每回合少量饱食与营养（共 10 回合）。",
-      "durationTicks": 10,
+      "name": "红火莓·快速供能",
+      "desc": "快速供能：共 20 回合，每回合恢复饱食 0.5、体力 0.9、精力 0.4、心情 0.75，战斗出手速度 ×1.10；饱食总量低，适合随身携带当战斗粮。",
+      "quick_energy": true,
+      "durationTicks": 20,
       "maxStacks": 1,
       "stacksAddOnApply": 1,
       "priority": 65,
@@ -651,18 +886,47 @@
       "consumeMode": "always",
       "consumeLayersFixed": 0,
       "applyMode": "always_apply",
-      "triggerEventKind": ["world"],
-      "triggerEventName": ["tick_advanced"],
-      "triggerTags": ["time", "tick"],
-      "effects": [{ "type": "survival_delta", "params": { "satiety": 1, "nutrition": 1.5 } }],
+      "triggerEventKind": [
+        "world"
+      ],
+      "triggerEventName": [
+        "tick_advanced"
+      ],
+      "triggerTags": [
+        "time",
+        "tick"
+      ],
+      "effects": [
+        {
+          "type": "survival_delta",
+          "params": {
+            "satiety": 0.5,
+            "nutrition": 0.08,
+            "stamina": 0.9,
+            "energy": 0.4,
+            "mood": 0.75
+          }
+        },
+        {
+          "type": "battle_move_speed_multiplier",
+          "params": {
+            "multiplier": 1.1
+          }
+        }
+      ],
       "expire_effects": [],
-      "judgment_tags": { "food_category": "berry", "food_item": "wild_fruit_red" }
+      "judgment_tags": {
+        "food_category": "berry",
+        "food_item": "wild_fruit_red",
+        "meal_composition": "other"
+      }
     },
     {
       "buff_id": "buff_food_wild_fruit_purple",
-      "name": "紫苏果·消化",
-      "desc": "咀嚼消化中：每回合少量饱食与营养（共 10 回合）。",
-      "durationTicks": 10,
+      "name": "紫苏果·快速供能",
+      "desc": "快速供能：共 22 回合，每回合恢复饱食 0.55、体力 0.91、精力 0.36、心情 0.68，战斗出手速度 ×1.10；饱食总量低，适合随身携带当战斗粮。",
+      "quick_energy": true,
+      "durationTicks": 22,
       "maxStacks": 1,
       "stacksAddOnApply": 1,
       "priority": 65,
@@ -670,18 +934,47 @@
       "consumeMode": "always",
       "consumeLayersFixed": 0,
       "applyMode": "always_apply",
-      "triggerEventKind": ["world"],
-      "triggerEventName": ["tick_advanced"],
-      "triggerTags": ["time", "tick"],
-      "effects": [{ "type": "survival_delta", "params": { "satiety": 1.6, "nutrition": 1 } }],
+      "triggerEventKind": [
+        "world"
+      ],
+      "triggerEventName": [
+        "tick_advanced"
+      ],
+      "triggerTags": [
+        "time",
+        "tick"
+      ],
+      "effects": [
+        {
+          "type": "survival_delta",
+          "params": {
+            "satiety": 0.55,
+            "nutrition": 0.08,
+            "stamina": 0.91,
+            "energy": 0.36,
+            "mood": 0.68
+          }
+        },
+        {
+          "type": "battle_move_speed_multiplier",
+          "params": {
+            "multiplier": 1.1
+          }
+        }
+      ],
       "expire_effects": [],
-      "judgment_tags": { "food_category": "berry", "food_item": "wild_fruit_purple" }
+      "judgment_tags": {
+        "food_category": "berry",
+        "food_item": "wild_fruit_purple",
+        "meal_composition": "other"
+      }
     },
     {
       "buff_id": "buff_food_wild_fruit_yellow",
-      "name": "黄肚柑·消化",
-      "desc": "咀嚼消化中：每回合少量饱食、饮水与营养（共 10 回合）。",
-      "durationTicks": 10,
+      "name": "黄肚柑·快速供能",
+      "desc": "快速供能：共 25 回合，每回合恢复饱食 0.56、饮水 0.4、体力 0.8、精力 0.32、心情 0.6，战斗出手速度 ×1.10；饱食总量低，适合随身携带当战斗粮。",
+      "quick_energy": true,
+      "durationTicks": 25,
       "maxStacks": 1,
       "stacksAddOnApply": 1,
       "priority": 65,
@@ -689,20 +982,47 @@
       "consumeMode": "always",
       "consumeLayersFixed": 0,
       "applyMode": "always_apply",
-      "triggerEventKind": ["world"],
-      "triggerEventName": ["tick_advanced"],
-      "triggerTags": ["time", "tick"],
+      "triggerEventKind": [
+        "world"
+      ],
+      "triggerEventName": [
+        "tick_advanced"
+      ],
+      "triggerTags": [
+        "time",
+        "tick"
+      ],
       "effects": [
-        { "type": "survival_delta", "params": { "satiety": 0.8, "thirst": 0.4, "nutrition": 0.5 } }
+        {
+          "type": "survival_delta",
+          "params": {
+            "satiety": 0.56,
+            "thirst": 0.4,
+            "nutrition": 0.08,
+            "stamina": 0.8,
+            "energy": 0.32,
+            "mood": 0.6
+          }
+        },
+        {
+          "type": "battle_move_speed_multiplier",
+          "params": {
+            "multiplier": 1.1
+          }
+        }
       ],
       "expire_effects": [],
-      "judgment_tags": { "food_category": "berry", "food_item": "wild_fruit_yellow" }
+      "judgment_tags": {
+        "food_category": "berry",
+        "food_item": "wild_fruit_yellow",
+        "meal_composition": "other"
+      }
     },
     {
       "buff_id": "buff_food_dish_beef_brisket_stew",
       "name": "清炖牛腩·消化",
-      "desc": "消化中：每回合恢复较多饱食、饮水与营养（约 12 回合）。若已具有相同效果，不可重复食用。",
-      "durationTicks": 12,
+      "desc": "消化中：每回合恢复较多饱食、饮水与营养（约 70 回合）。若已具有相同效果，不可重复食用。",
+      "durationTicks": 70,
       "maxStacks": 1,
       "stacksAddOnApply": 1,
       "priority": 65,
@@ -710,18 +1030,38 @@
       "consumeMode": "always",
       "consumeLayersFixed": 0,
       "applyMode": "always_apply",
-      "triggerEventKind": ["world"],
-      "triggerEventName": ["tick_advanced"],
-      "triggerTags": ["time", "tick"],
-      "effects": [{ "type": "survival_delta", "params": { "satiety": 2.8, "thirst": 1, "nutrition": 3.5 } }],
+      "triggerEventKind": [
+        "world"
+      ],
+      "triggerEventName": [
+        "tick_advanced"
+      ],
+      "triggerTags": [
+        "time",
+        "tick"
+      ],
+      "effects": [
+        {
+          "type": "survival_delta",
+          "params": {
+            "satiety": 1.07,
+            "thirst": 1,
+            "nutrition": 0.65
+          }
+        }
+      ],
       "expire_effects": [],
-      "judgment_tags": { "food_category": "cooked", "food_item": "food_dish_beef_brisket_stew" }
+      "judgment_tags": {
+        "food_category": "cooked",
+        "food_item": "food_dish_beef_brisket_stew",
+        "meal_composition": "meat"
+      }
     },
     {
       "buff_id": "buff_food_dish_pig_trotter_bean_soup",
       "name": "猪蹄豆汤·消化",
-      "desc": "消化中：每回合恢复饱食、饮水与营养（约 12 回合）。若已具有相同效果，不可重复食用。",
-      "durationTicks": 12,
+      "desc": "消化中：每回合恢复饱食、饮水与营养（约 70 回合）。若已具有相同效果，不可重复食用。",
+      "durationTicks": 70,
       "maxStacks": 1,
       "stacksAddOnApply": 1,
       "priority": 65,
@@ -729,18 +1069,38 @@
       "consumeMode": "always",
       "consumeLayersFixed": 0,
       "applyMode": "always_apply",
-      "triggerEventKind": ["world"],
-      "triggerEventName": ["tick_advanced"],
-      "triggerTags": ["time", "tick"],
-      "effects": [{ "type": "survival_delta", "params": { "satiety": 2.6, "thirst": 1.2, "nutrition": 3.2 } }],
+      "triggerEventKind": [
+        "world"
+      ],
+      "triggerEventName": [
+        "tick_advanced"
+      ],
+      "triggerTags": [
+        "time",
+        "tick"
+      ],
+      "effects": [
+        {
+          "type": "survival_delta",
+          "params": {
+            "satiety": 1,
+            "thirst": 1.2,
+            "nutrition": 0.62
+          }
+        }
+      ],
       "expire_effects": [],
-      "judgment_tags": { "food_category": "cooked", "food_item": "food_dish_pig_trotter_bean_soup" }
+      "judgment_tags": {
+        "food_category": "cooked",
+        "food_item": "food_dish_pig_trotter_bean_soup",
+        "meal_composition": "meat"
+      }
     },
     {
       "buff_id": "buff_food_dish_whitefish_soup_deluxe",
       "name": "清汤鱼羹（强化）·消化",
-      "desc": "消化中：每回合恢复饱食、饮水与营养（约 12 回合）。若已具有相同效果，不可重复食用。",
-      "durationTicks": 12,
+      "desc": "消化中：每回合恢复饱食、饮水与营养（约 65 回合）。若已具有相同效果，不可重复食用。",
+      "durationTicks": 65,
       "maxStacks": 1,
       "stacksAddOnApply": 1,
       "priority": 65,
@@ -748,18 +1108,38 @@
       "consumeMode": "always",
       "consumeLayersFixed": 0,
       "applyMode": "always_apply",
-      "triggerEventKind": ["world"],
-      "triggerEventName": ["tick_advanced"],
-      "triggerTags": ["time", "tick"],
-      "effects": [{ "type": "survival_delta", "params": { "satiety": 2.4, "thirst": 2.2, "nutrition": 4.5 } }],
+      "triggerEventKind": [
+        "world"
+      ],
+      "triggerEventName": [
+        "tick_advanced"
+      ],
+      "triggerTags": [
+        "time",
+        "tick"
+      ],
+      "effects": [
+        {
+          "type": "survival_delta",
+          "params": {
+            "satiety": 1.05,
+            "thirst": 2.2,
+            "nutrition": 0.7
+          }
+        }
+      ],
       "expire_effects": [],
-      "judgment_tags": { "food_category": "cooked", "food_item": "food_dish_whitefish_soup_deluxe" }
+      "judgment_tags": {
+        "food_category": "cooked",
+        "food_item": "food_dish_whitefish_soup_deluxe",
+        "meal_composition": "meat"
+      }
     },
     {
       "buff_id": "buff_food_dish_chicken_dice_stirfry",
       "name": "小炒鸡丁·消化",
-      "desc": "消化中：每回合恢复饱食与营养（约 10 回合）。若已具有相同效果，不可重复食用。",
-      "durationTicks": 10,
+      "desc": "消化中：每回合恢复饱食与营养（约 50 回合）。若已具有相同效果，不可重复食用。",
+      "durationTicks": 50,
       "maxStacks": 1,
       "stacksAddOnApply": 1,
       "priority": 65,
@@ -767,18 +1147,38 @@
       "consumeMode": "always",
       "consumeLayersFixed": 0,
       "applyMode": "always_apply",
-      "triggerEventKind": ["world"],
-      "triggerEventName": ["tick_advanced"],
-      "triggerTags": ["time", "tick"],
-      "effects": [{ "type": "survival_delta", "params": { "satiety": 2.2, "thirst": 0.5, "nutrition": 2.6 } }],
+      "triggerEventKind": [
+        "world"
+      ],
+      "triggerEventName": [
+        "tick_advanced"
+      ],
+      "triggerTags": [
+        "time",
+        "tick"
+      ],
+      "effects": [
+        {
+          "type": "survival_delta",
+          "params": {
+            "satiety": 0.9,
+            "thirst": 0.5,
+            "nutrition": 0.42
+          }
+        }
+      ],
       "expire_effects": [],
-      "judgment_tags": { "food_category": "cooked", "food_item": "food_dish_chicken_dice_stirfry" }
+      "judgment_tags": {
+        "food_category": "cooked",
+        "food_item": "food_dish_chicken_dice_stirfry",
+        "meal_composition": "meat"
+      }
     },
     {
       "buff_id": "buff_food_dish_squid_stirfry",
       "name": "爆炒鱿鱼·消化",
-      "desc": "消化中：每回合恢复饱食与营养（约 10 回合）。若已具有相同效果，不可重复食用。",
-      "durationTicks": 10,
+      "desc": "消化中：每回合恢复饱食与营养（约 50 回合）。若已具有相同效果，不可重复食用。",
+      "durationTicks": 50,
       "maxStacks": 1,
       "stacksAddOnApply": 1,
       "priority": 65,
@@ -786,18 +1186,38 @@
       "consumeMode": "always",
       "consumeLayersFixed": 0,
       "applyMode": "always_apply",
-      "triggerEventKind": ["world"],
-      "triggerEventName": ["tick_advanced"],
-      "triggerTags": ["time", "tick"],
-      "effects": [{ "type": "survival_delta", "params": { "satiety": 2.1, "thirst": 0.4, "nutrition": 2.8 } }],
+      "triggerEventKind": [
+        "world"
+      ],
+      "triggerEventName": [
+        "tick_advanced"
+      ],
+      "triggerTags": [
+        "time",
+        "tick"
+      ],
+      "effects": [
+        {
+          "type": "survival_delta",
+          "params": {
+            "satiety": 0.9,
+            "thirst": 0.4,
+            "nutrition": 0.42
+          }
+        }
+      ],
       "expire_effects": [],
-      "judgment_tags": { "food_category": "cooked", "food_item": "food_dish_squid_stirfry" }
+      "judgment_tags": {
+        "food_category": "cooked",
+        "food_item": "food_dish_squid_stirfry",
+        "meal_composition": "meat"
+      }
     },
     {
       "buff_id": "buff_food_dish_beef_onion_stirfry",
       "name": "洋葱牛肉快炒·消化",
-      "desc": "消化中：每回合恢复饱食与营养（约 10 回合）。若已具有相同效果，不可重复食用。",
-      "durationTicks": 10,
+      "desc": "消化中：每回合恢复饱食与营养（约 50 回合）。若已具有相同效果，不可重复食用。",
+      "durationTicks": 50,
       "maxStacks": 1,
       "stacksAddOnApply": 1,
       "priority": 65,
@@ -805,18 +1225,38 @@
       "consumeMode": "always",
       "consumeLayersFixed": 0,
       "applyMode": "always_apply",
-      "triggerEventKind": ["world"],
-      "triggerEventName": ["tick_advanced"],
-      "triggerTags": ["time", "tick"],
-      "effects": [{ "type": "survival_delta", "params": { "satiety": 2.3, "thirst": 0.5, "nutrition": 2.7 } }],
+      "triggerEventKind": [
+        "world"
+      ],
+      "triggerEventName": [
+        "tick_advanced"
+      ],
+      "triggerTags": [
+        "time",
+        "tick"
+      ],
+      "effects": [
+        {
+          "type": "survival_delta",
+          "params": {
+            "satiety": 0.92,
+            "thirst": 0.5,
+            "nutrition": 0.42
+          }
+        }
+      ],
       "expire_effects": [],
-      "judgment_tags": { "food_category": "cooked", "food_item": "food_dish_beef_onion_stirfry" }
+      "judgment_tags": {
+        "food_category": "cooked",
+        "food_item": "food_dish_beef_onion_stirfry",
+        "meal_composition": "meat"
+      }
     },
     {
       "buff_id": "buff_food_dish_salt_grilled_whitefish",
       "name": "盐烤白身鱼·消化",
-      "desc": "消化中：每回合恢复饱食与营养（约 11 回合）。若已具有相同效果，不可重复食用。",
-      "durationTicks": 11,
+      "desc": "消化中：每回合恢复饱食与营养（约 45 回合）。若已具有相同效果，不可重复食用。",
+      "durationTicks": 45,
       "maxStacks": 1,
       "stacksAddOnApply": 1,
       "priority": 65,
@@ -824,18 +1264,38 @@
       "consumeMode": "always",
       "consumeLayersFixed": 0,
       "applyMode": "always_apply",
-      "triggerEventKind": ["world"],
-      "triggerEventName": ["tick_advanced"],
-      "triggerTags": ["time", "tick"],
-      "effects": [{ "type": "survival_delta", "params": { "satiety": 2.3, "thirst": 0.6, "nutrition": 3 } }],
+      "triggerEventKind": [
+        "world"
+      ],
+      "triggerEventName": [
+        "tick_advanced"
+      ],
+      "triggerTags": [
+        "time",
+        "tick"
+      ],
+      "effects": [
+        {
+          "type": "survival_delta",
+          "params": {
+            "satiety": 0.73,
+            "thirst": 0.6,
+            "nutrition": 0.3
+          }
+        }
+      ],
       "expire_effects": [],
-      "judgment_tags": { "food_category": "cooked", "food_item": "food_dish_salt_grilled_whitefish" }
+      "judgment_tags": {
+        "food_category": "cooked",
+        "food_item": "food_dish_salt_grilled_whitefish",
+        "meal_composition": "meat"
+      }
     },
     {
       "buff_id": "buff_food_dish_applewood_turkey_roast",
       "name": "苹果木烤火鸡块·消化",
-      "desc": "消化中：每回合恢复饱食与营养（约 11 回合）。若已具有相同效果，不可重复食用。",
-      "durationTicks": 11,
+      "desc": "消化中：每回合恢复饱食与营养（约 55 回合）。若已具有相同效果，不可重复食用。",
+      "durationTicks": 55,
       "maxStacks": 1,
       "stacksAddOnApply": 1,
       "priority": 65,
@@ -843,18 +1303,38 @@
       "consumeMode": "always",
       "consumeLayersFixed": 0,
       "applyMode": "always_apply",
-      "triggerEventKind": ["world"],
-      "triggerEventName": ["tick_advanced"],
-      "triggerTags": ["time", "tick"],
-      "effects": [{ "type": "survival_delta", "params": { "satiety": 2.5, "thirst": 0.4, "nutrition": 3.1 } }],
+      "triggerEventKind": [
+        "world"
+      ],
+      "triggerEventName": [
+        "tick_advanced"
+      ],
+      "triggerTags": [
+        "time",
+        "tick"
+      ],
+      "effects": [
+        {
+          "type": "survival_delta",
+          "params": {
+            "satiety": 0.91,
+            "thirst": 0.4,
+            "nutrition": 0.45
+          }
+        }
+      ],
       "expire_effects": [],
-      "judgment_tags": { "food_category": "cooked", "food_item": "food_dish_applewood_turkey_roast" }
+      "judgment_tags": {
+        "food_category": "cooked",
+        "food_item": "food_dish_applewood_turkey_roast",
+        "meal_composition": "meat"
+      }
     },
     {
       "buff_id": "buff_food_dish_roasted_potato_herbs",
       "name": "烤土豆佐香草·消化",
-      "desc": "消化中：每回合恢复饱食与营养（约 10 回合）。若已具有相同效果，不可重复食用。",
-      "durationTicks": 10,
+      "desc": "消化中：每回合恢复饱食与营养（约 45 回合）。若已具有相同效果，不可重复食用。",
+      "durationTicks": 45,
       "maxStacks": 1,
       "stacksAddOnApply": 1,
       "priority": 65,
@@ -862,18 +1342,39 @@
       "consumeMode": "always",
       "consumeLayersFixed": 0,
       "applyMode": "always_apply",
-      "triggerEventKind": ["world"],
-      "triggerEventName": ["tick_advanced"],
-      "triggerTags": ["time", "tick"],
-      "effects": [{ "type": "survival_delta", "params": { "satiety": 1.9, "thirst": 0.3, "nutrition": 1.8 } }],
+      "triggerEventKind": [
+        "world"
+      ],
+      "triggerEventName": [
+        "tick_advanced"
+      ],
+      "triggerTags": [
+        "time",
+        "tick"
+      ],
+      "effects": [
+        {
+          "type": "survival_delta",
+          "params": {
+            "satiety": 0.73,
+            "thirst": 0.3,
+            "nutrition": 0.25
+          }
+        }
+      ],
       "expire_effects": [],
-      "judgment_tags": { "food_category": "cooked", "food_item": "food_dish_roasted_potato_herbs" }
+      "judgment_tags": {
+        "food_category": "cooked",
+        "food_item": "food_dish_roasted_potato_herbs",
+        "meal_composition": "veg"
+      }
     },
     {
       "buff_id": "buff_food_dish_steamed_egg_custard",
-      "name": "蒸水蛋·消化",
-      "desc": "消化中：每回合少量恢复饱食、饮水与营养（约 10 回合）。若已具有相同效果，不可重复食用。",
-      "durationTicks": 10,
+      "name": "蒸水蛋·快速供能",
+      "desc": "快速供能：共 25 回合，每回合恢复饱食 0.56、饮水 1、体力 0.8、精力 0.32、心情 0.8，战斗出手速度 ×1.10；饱食总量低，适合随身携带当战斗粮。",
+      "quick_energy": true,
+      "durationTicks": 25,
       "maxStacks": 1,
       "stacksAddOnApply": 1,
       "priority": 65,
@@ -881,18 +1382,47 @@
       "consumeMode": "always",
       "consumeLayersFixed": 0,
       "applyMode": "always_apply",
-      "triggerEventKind": ["world"],
-      "triggerEventName": ["tick_advanced"],
-      "triggerTags": ["time", "tick"],
-      "effects": [{ "type": "survival_delta", "params": { "satiety": 1.5, "thirst": 1, "nutrition": 2 } }],
+      "triggerEventKind": [
+        "world"
+      ],
+      "triggerEventName": [
+        "tick_advanced"
+      ],
+      "triggerTags": [
+        "time",
+        "tick"
+      ],
+      "effects": [
+        {
+          "type": "survival_delta",
+          "params": {
+            "satiety": 0.56,
+            "thirst": 1,
+            "nutrition": 0.12,
+            "stamina": 0.8,
+            "energy": 0.32,
+            "mood": 0.8
+          }
+        },
+        {
+          "type": "battle_move_speed_multiplier",
+          "params": {
+            "multiplier": 1.1
+          }
+        }
+      ],
       "expire_effects": [],
-      "judgment_tags": { "food_category": "cooked", "food_item": "food_dish_steamed_egg_custard" }
+      "judgment_tags": {
+        "food_category": "cooked",
+        "food_item": "food_dish_steamed_egg_custard",
+        "meal_composition": "other"
+      }
     },
     {
       "buff_id": "buff_food_dish_lotus_glutinous_chicken",
       "name": "荷叶糯米鸡·消化",
-      "desc": "消化中：每回合恢复饱食与营养（约 12 回合）。若已具有相同效果，不可重复食用。",
-      "durationTicks": 12,
+      "desc": "消化中：每回合恢复饱食与营养（约 70 回合）。若已具有相同效果，不可重复食用。",
+      "durationTicks": 70,
       "maxStacks": 1,
       "stacksAddOnApply": 1,
       "priority": 65,
@@ -900,18 +1430,38 @@
       "consumeMode": "always",
       "consumeLayersFixed": 0,
       "applyMode": "always_apply",
-      "triggerEventKind": ["world"],
-      "triggerEventName": ["tick_advanced"],
-      "triggerTags": ["time", "tick"],
-      "effects": [{ "type": "survival_delta", "params": { "satiety": 2.7, "thirst": 0.5, "nutrition": 3 } }],
+      "triggerEventKind": [
+        "world"
+      ],
+      "triggerEventName": [
+        "tick_advanced"
+      ],
+      "triggerTags": [
+        "time",
+        "tick"
+      ],
+      "effects": [
+        {
+          "type": "survival_delta",
+          "params": {
+            "satiety": 1.03,
+            "thirst": 0.5,
+            "nutrition": 0.62
+          }
+        }
+      ],
       "expire_effects": [],
-      "judgment_tags": { "food_category": "cooked", "food_item": "food_dish_lotus_glutinous_chicken" }
+      "judgment_tags": {
+        "food_category": "cooked",
+        "food_item": "food_dish_lotus_glutinous_chicken",
+        "meal_composition": "meat"
+      }
     },
     {
       "buff_id": "buff_food_dish_steamed_bream",
       "name": "清蒸鲂鱼·消化",
-      "desc": "消化中：每回合恢复饱食与营养（约 11 回合）。若已具有相同效果，不可重复食用。",
-      "durationTicks": 11,
+      "desc": "消化中：每回合恢复饱食与营养（约 45 回合）。若已具有相同效果，不可重复食用。",
+      "durationTicks": 45,
       "maxStacks": 1,
       "stacksAddOnApply": 1,
       "priority": 65,
@@ -919,18 +1469,38 @@
       "consumeMode": "always",
       "consumeLayersFixed": 0,
       "applyMode": "always_apply",
-      "triggerEventKind": ["world"],
-      "triggerEventName": ["tick_advanced"],
-      "triggerTags": ["time", "tick"],
-      "effects": [{ "type": "survival_delta", "params": { "satiety": 2.4, "thirst": 0.8, "nutrition": 3.4 } }],
+      "triggerEventKind": [
+        "world"
+      ],
+      "triggerEventName": [
+        "tick_advanced"
+      ],
+      "triggerTags": [
+        "time",
+        "tick"
+      ],
+      "effects": [
+        {
+          "type": "survival_delta",
+          "params": {
+            "satiety": 0.71,
+            "thirst": 0.8,
+            "nutrition": 0.3
+          }
+        }
+      ],
       "expire_effects": [],
-      "judgment_tags": { "food_category": "cooked", "food_item": "food_dish_steamed_bream" }
+      "judgment_tags": {
+        "food_category": "cooked",
+        "food_item": "food_dish_steamed_bream",
+        "meal_composition": "meat"
+      }
     },
     {
       "buff_id": "buff_food_dish_fried_potato_chunks",
       "name": "炸土豆块·消化",
-      "desc": "消化中：每回合恢复饱食与营养（约 10 回合）。若已具有相同效果，不可重复食用。",
-      "durationTicks": 10,
+      "desc": "消化中：每回合恢复饱食与营养（约 40 回合）。若已具有相同效果，不可重复食用。",
+      "durationTicks": 40,
       "maxStacks": 1,
       "stacksAddOnApply": 1,
       "priority": 65,
@@ -938,18 +1508,38 @@
       "consumeMode": "always",
       "consumeLayersFixed": 0,
       "applyMode": "always_apply",
-      "triggerEventKind": ["world"],
-      "triggerEventName": ["tick_advanced"],
-      "triggerTags": ["time", "tick"],
-      "effects": [{ "type": "survival_delta", "params": { "satiety": 2, "thirst": 0.2, "nutrition": 2.2 } }],
+      "triggerEventKind": [
+        "world"
+      ],
+      "triggerEventName": [
+        "tick_advanced"
+      ],
+      "triggerTags": [
+        "time",
+        "tick"
+      ],
+      "effects": [
+        {
+          "type": "survival_delta",
+          "params": {
+            "satiety": 0.75,
+            "thirst": 0.2,
+            "nutrition": 0.25
+          }
+        }
+      ],
       "expire_effects": [],
-      "judgment_tags": { "food_category": "cooked", "food_item": "food_dish_fried_potato_chunks" }
+      "judgment_tags": {
+        "food_category": "cooked",
+        "food_item": "food_dish_fried_potato_chunks",
+        "meal_composition": "veg"
+      }
     },
     {
       "buff_id": "buff_food_dish_river_shrimp_soft_fry",
       "name": "软炸河虾仁·消化",
-      "desc": "消化中：每回合恢复饱食与营养（约 10 回合）。若已具有相同效果，不可重复食用。",
-      "durationTicks": 10,
+      "desc": "消化中：每回合恢复饱食与营养（约 60 回合）。若已具有相同效果，不可重复食用。",
+      "durationTicks": 60,
       "maxStacks": 1,
       "stacksAddOnApply": 1,
       "priority": 65,
@@ -957,18 +1547,39 @@
       "consumeMode": "always",
       "consumeLayersFixed": 0,
       "applyMode": "always_apply",
-      "triggerEventKind": ["world"],
-      "triggerEventName": ["tick_advanced"],
-      "triggerTags": ["time", "tick"],
-      "effects": [{ "type": "survival_delta", "params": { "satiety": 2.2, "thirst": 0.3, "nutrition": 3.2 } }],
+      "triggerEventKind": [
+        "world"
+      ],
+      "triggerEventName": [
+        "tick_advanced"
+      ],
+      "triggerTags": [
+        "time",
+        "tick"
+      ],
+      "effects": [
+        {
+          "type": "survival_delta",
+          "params": {
+            "satiety": 1.08,
+            "thirst": 0.3,
+            "nutrition": 0.62
+          }
+        }
+      ],
       "expire_effects": [],
-      "judgment_tags": { "food_category": "cooked", "food_item": "food_dish_river_shrimp_soft_fry" }
+      "judgment_tags": {
+        "food_category": "cooked",
+        "food_item": "food_dish_river_shrimp_soft_fry",
+        "meal_composition": "meat"
+      }
     },
     {
       "buff_id": "buff_food_dish_salted_cucumber",
-      "name": "盐渍黄瓜·消化",
-      "desc": "消化中：每回合少量恢复饱食与饮水（约 8 回合）。若已具有相同效果，不可重复食用。",
-      "durationTicks": 8,
+      "name": "盐渍黄瓜·快速供能",
+      "desc": "快速供能：共 25 回合，每回合恢复饱食 0.48、饮水 1、体力 0.64、精力 0.32、心情 0.4，战斗出手速度 ×1.10；饱食总量低，适合随身携带当战斗粮。",
+      "quick_energy": true,
+      "durationTicks": 25,
       "maxStacks": 1,
       "stacksAddOnApply": 1,
       "priority": 65,
@@ -976,18 +1587,47 @@
       "consumeMode": "always",
       "consumeLayersFixed": 0,
       "applyMode": "always_apply",
-      "triggerEventKind": ["world"],
-      "triggerEventName": ["tick_advanced"],
-      "triggerTags": ["time", "tick"],
-      "effects": [{ "type": "survival_delta", "params": { "satiety": 0.6, "thirst": 1, "nutrition": 0.9 } }],
+      "triggerEventKind": [
+        "world"
+      ],
+      "triggerEventName": [
+        "tick_advanced"
+      ],
+      "triggerTags": [
+        "time",
+        "tick"
+      ],
+      "effects": [
+        {
+          "type": "survival_delta",
+          "params": {
+            "satiety": 0.48,
+            "thirst": 1,
+            "nutrition": 0.1,
+            "stamina": 0.64,
+            "energy": 0.32,
+            "mood": 0.4
+          }
+        },
+        {
+          "type": "battle_move_speed_multiplier",
+          "params": {
+            "multiplier": 1.1
+          }
+        }
+      ],
       "expire_effects": [],
-      "judgment_tags": { "food_category": "cooked", "food_item": "food_dish_salted_cucumber" }
+      "judgment_tags": {
+        "food_category": "cooked",
+        "food_item": "food_dish_salted_cucumber",
+        "meal_composition": "veg"
+      }
     },
     {
       "buff_id": "buff_food_dish_herb_cured_pork_slices",
       "name": "香草腌肉片·消化",
-      "desc": "消化中：每回合少量恢复饱食与营养（约 9 回合）。若已具有相同效果，不可重复食用。",
-      "durationTicks": 9,
+      "desc": "消化中：每回合少量恢复饱食与营养（约 65 回合）。若已具有相同效果，不可重复食用。",
+      "durationTicks": 65,
       "maxStacks": 1,
       "stacksAddOnApply": 1,
       "priority": 65,
@@ -995,18 +1635,39 @@
       "consumeMode": "always",
       "consumeLayersFixed": 0,
       "applyMode": "always_apply",
-      "triggerEventKind": ["world"],
-      "triggerEventName": ["tick_advanced"],
-      "triggerTags": ["time", "tick"],
-      "effects": [{ "type": "survival_delta", "params": { "satiety": 1.4, "thirst": 0.5, "nutrition": 1.6 } }],
+      "triggerEventKind": [
+        "world"
+      ],
+      "triggerEventName": [
+        "tick_advanced"
+      ],
+      "triggerTags": [
+        "time",
+        "tick"
+      ],
+      "effects": [
+        {
+          "type": "survival_delta",
+          "params": {
+            "satiety": 1,
+            "thirst": 0.5,
+            "nutrition": 0.6
+          }
+        }
+      ],
       "expire_effects": [],
-      "judgment_tags": { "food_category": "cooked", "food_item": "food_dish_herb_cured_pork_slices" }
+      "judgment_tags": {
+        "food_category": "cooked",
+        "food_item": "food_dish_herb_cured_pork_slices",
+        "meal_composition": "meat"
+      }
     },
     {
       "buff_id": "buff_food_dish_beet_kvass",
-      "name": "甜菜发酵饮·消化",
-      "desc": "消化中：每回合偏重复饮水与少量营养（约 10 回合）。若已具有相同效果，不可重复食用。",
-      "durationTicks": 10,
+      "name": "甜菜发酵饮·快速供能",
+      "desc": "快速供能：共 25 回合，每回合恢复饱食 0.48、饮水 2.8、体力 0.48、精力 0.32、心情 0.4，战斗出手速度 ×1.10；饱食总量低，适合随身携带当战斗粮。",
+      "quick_energy": true,
+      "durationTicks": 25,
       "maxStacks": 1,
       "stacksAddOnApply": 1,
       "priority": 65,
@@ -1014,18 +1675,48 @@
       "consumeMode": "always",
       "consumeLayersFixed": 0,
       "applyMode": "always_apply",
-      "triggerEventKind": ["world"],
-      "triggerEventName": ["tick_advanced"],
-      "triggerTags": ["time", "tick"],
-      "effects": [{ "type": "survival_delta", "params": { "satiety": 0.4, "thirst": 2.8, "nutrition": 1.3 } }],
+      "triggerEventKind": [
+        "world"
+      ],
+      "triggerEventName": [
+        "tick_advanced"
+      ],
+      "triggerTags": [
+        "time",
+        "tick"
+      ],
+      "effects": [
+        {
+          "type": "survival_delta",
+          "params": {
+            "satiety": 0.48,
+            "thirst": 2.8,
+            "nutrition": 0.08,
+            "stamina": 0.48,
+            "energy": 0.32,
+            "mood": 0.4
+          }
+        },
+        {
+          "type": "battle_move_speed_multiplier",
+          "params": {
+            "multiplier": 1.1
+          }
+        }
+      ],
       "expire_effects": [],
-      "judgment_tags": { "food_category": "cooked", "food_item": "food_dish_beet_kvass" }
+      "judgment_tags": {
+        "food_category": "cooked",
+        "food_item": "food_dish_beet_kvass",
+        "meal_composition": "other"
+      }
     },
     {
       "buff_id": "buff_food_dish_buffalo_yogurt",
-      "name": "水牛酸奶·消化",
-      "desc": "消化中：每回合恢复营养与少量饱食（约 10 回合）。若已具有相同效果，不可重复食用。",
-      "durationTicks": 10,
+      "name": "水牛酸奶·快速供能",
+      "desc": "快速供能：共 25 回合，每回合恢复饱食 0.6、饮水 0.6、体力 0.8、精力 0.32、心情 1，战斗出手速度 ×1.10；饱食总量低，适合随身携带当战斗粮。",
+      "quick_energy": true,
+      "durationTicks": 25,
       "maxStacks": 1,
       "stacksAddOnApply": 1,
       "priority": 65,
@@ -1033,18 +1724,47 @@
       "consumeMode": "always",
       "consumeLayersFixed": 0,
       "applyMode": "always_apply",
-      "triggerEventKind": ["world"],
-      "triggerEventName": ["tick_advanced"],
-      "triggerTags": ["time", "tick"],
-      "effects": [{ "type": "survival_delta", "params": { "satiety": 0.9, "thirst": 0.6, "nutrition": 2.6 } }],
+      "triggerEventKind": [
+        "world"
+      ],
+      "triggerEventName": [
+        "tick_advanced"
+      ],
+      "triggerTags": [
+        "time",
+        "tick"
+      ],
+      "effects": [
+        {
+          "type": "survival_delta",
+          "params": {
+            "satiety": 0.6,
+            "thirst": 0.6,
+            "nutrition": 0.12,
+            "stamina": 0.8,
+            "energy": 0.32,
+            "mood": 1
+          }
+        },
+        {
+          "type": "battle_move_speed_multiplier",
+          "params": {
+            "multiplier": 1.1
+          }
+        }
+      ],
       "expire_effects": [],
-      "judgment_tags": { "food_category": "cooked", "food_item": "food_dish_buffalo_yogurt" }
+      "judgment_tags": {
+        "food_category": "cooked",
+        "food_item": "food_dish_buffalo_yogurt",
+        "meal_composition": "other"
+      }
     },
     {
       "buff_id": "buff_food_dish_sesame_garlic_salad",
       "name": "芝麻蒜香拌菜·消化",
-      "desc": "消化中：每回合少量恢复饱食与营养（约 9 回合）。若已具有相同效果，不可重复食用。",
-      "durationTicks": 9,
+      "desc": "消化中：每回合少量恢复饱食与营养（约 50 回合）。若已具有相同效果，不可重复食用。",
+      "durationTicks": 50,
       "maxStacks": 1,
       "stacksAddOnApply": 1,
       "priority": 65,
@@ -1052,18 +1772,38 @@
       "consumeMode": "always",
       "consumeLayersFixed": 0,
       "applyMode": "always_apply",
-      "triggerEventKind": ["world"],
-      "triggerEventName": ["tick_advanced"],
-      "triggerTags": ["time", "tick"],
-      "effects": [{ "type": "survival_delta", "params": { "satiety": 1.3, "thirst": 0.6, "nutrition": 2.1 } }],
+      "triggerEventKind": [
+        "world"
+      ],
+      "triggerEventName": [
+        "tick_advanced"
+      ],
+      "triggerTags": [
+        "time",
+        "tick"
+      ],
+      "effects": [
+        {
+          "type": "survival_delta",
+          "params": {
+            "satiety": 0.9,
+            "thirst": 0.6,
+            "nutrition": 0.4
+          }
+        }
+      ],
       "expire_effects": [],
-      "judgment_tags": { "food_category": "cooked", "food_item": "food_dish_sesame_garlic_salad" }
+      "judgment_tags": {
+        "food_category": "cooked",
+        "food_item": "food_dish_sesame_garlic_salad",
+        "meal_composition": "veg"
+      }
     },
     {
       "buff_id": "buff_food_dish_mustard_beef_tongue",
       "name": "黄芥末蘸牛舌·消化",
-      "desc": "消化中：每回合恢复饱食与营养（约 10 回合）。若已具有相同效果，不可重复食用。",
-      "durationTicks": 10,
+      "desc": "消化中：每回合恢复饱食与营养（约 55 回合）。若已具有相同效果，不可重复食用。",
+      "durationTicks": 55,
       "maxStacks": 1,
       "stacksAddOnApply": 1,
       "priority": 65,
@@ -1071,12 +1811,32 @@
       "consumeMode": "always",
       "consumeLayersFixed": 0,
       "applyMode": "always_apply",
-      "triggerEventKind": ["world"],
-      "triggerEventName": ["tick_advanced"],
-      "triggerTags": ["time", "tick"],
-      "effects": [{ "type": "survival_delta", "params": { "satiety": 2.4, "thirst": 0.5, "nutrition": 3.1 } }],
+      "triggerEventKind": [
+        "world"
+      ],
+      "triggerEventName": [
+        "tick_advanced"
+      ],
+      "triggerTags": [
+        "time",
+        "tick"
+      ],
+      "effects": [
+        {
+          "type": "survival_delta",
+          "params": {
+            "satiety": 0.87,
+            "thirst": 0.5,
+            "nutrition": 0.45
+          }
+        }
+      ],
       "expire_effects": [],
-      "judgment_tags": { "food_category": "cooked", "food_item": "food_dish_mustard_beef_tongue" }
+      "judgment_tags": {
+        "food_category": "cooked",
+        "food_item": "food_dish_mustard_beef_tongue",
+        "meal_composition": "meat"
+      }
     },
     {
       "buff_id": "buff_pecan_plum_diarrhoea",
@@ -1143,7 +1903,12 @@
       "survival_listener": {
         "group_id": "survival_satiety",
         "attribute": "satiety",
-        "range": { "min": 0, "max": 0, "include_min": true, "include_max": true }
+        "range": {
+          "min": 0,
+          "max": 0,
+          "include_min": true,
+          "include_max": true
+        }
       }
     },
     {
@@ -1173,7 +1938,12 @@
       "survival_listener": {
         "group_id": "survival_satiety",
         "attribute": "satiety",
-        "range": { "min": 0.1, "max": 10, "include_min": true, "include_max": false }
+        "range": {
+          "min": 0.1,
+          "max": 10,
+          "include_min": true,
+          "include_max": false
+        }
       }
     },
     {
@@ -1203,7 +1973,12 @@
       "survival_listener": {
         "group_id": "survival_satiety",
         "attribute": "satiety",
-        "range": { "min": 10, "max": 30, "include_min": true, "include_max": false }
+        "range": {
+          "min": 10,
+          "max": 30,
+          "include_min": true,
+          "include_max": false
+        }
       }
     },
     {
@@ -1233,7 +2008,12 @@
       "survival_listener": {
         "group_id": "survival_satiety",
         "attribute": "satiety",
-        "range": { "min": 30, "max": 60, "include_min": true, "include_max": false }
+        "range": {
+          "min": 30,
+          "max": 60,
+          "include_min": true,
+          "include_max": false
+        }
       }
     },
     {
@@ -1263,13 +2043,18 @@
       "survival_listener": {
         "group_id": "survival_satiety",
         "attribute": "satiety",
-        "range": { "min": 60, "max": 100.1, "include_min": true, "include_max": false }
+        "range": {
+          "min": 60,
+          "max": 100.1,
+          "include_min": true,
+          "include_max": false
+        }
       }
     },
     {
       "buff_id": "survival_satiety_overeat",
       "name": "吃太多",
-      "desc": "饱食 100.1~120：战斗出招速度下降。",
+      "desc": "饱食 100.1~120：消化不良——行动变慢，心情下降。",
       "durationTicks": 1,
       "maxStacks": 1,
       "stacksAddOnApply": 1,
@@ -1288,18 +2073,36 @@
         "time",
         "tick"
       ],
-      "effects": [],
+      "effects": [
+        {
+          "type": "battle_move_speed_multiplier",
+          "params": {
+            "multiplier": 0.85
+          }
+        },
+        {
+          "type": "survival_delta",
+          "params": {
+            "mood": -1
+          }
+        }
+      ],
       "expire_effects": [],
       "survival_listener": {
         "group_id": "survival_satiety",
         "attribute": "satiety",
-        "range": { "min": 100.1, "max": 120.1, "include_min": true, "include_max": false }
+        "range": {
+          "min": 100.1,
+          "max": 120.1,
+          "include_min": true,
+          "include_max": false
+        }
       }
     },
     {
       "buff_id": "survival_satiety_stuffed",
       "name": "吃撑了",
-      "desc": "饱食 120.1~150：战斗出招速度大幅下降并参与体重增长计时。",
+      "desc": "饱食 120.1~150：消化不良——行动明显变慢，心情下降，消化打折（饱食额外流失）。参与体重增长计时。",
       "durationTicks": 1,
       "maxStacks": 1,
       "stacksAddOnApply": 1,
@@ -1318,12 +2121,31 @@
         "time",
         "tick"
       ],
-      "effects": [],
+      "effects": [
+        {
+          "type": "battle_move_speed_multiplier",
+          "params": {
+            "multiplier": 0.6
+          }
+        },
+        {
+          "type": "survival_delta",
+          "params": {
+            "mood": -2,
+            "satiety": -1
+          }
+        }
+      ],
       "expire_effects": [],
       "survival_listener": {
         "group_id": "survival_satiety",
         "attribute": "satiety",
-        "range": { "min": 120.1, "max": 150.1, "include_min": true, "include_max": false }
+        "range": {
+          "min": 120.1,
+          "max": 150.1,
+          "include_min": true,
+          "include_max": false
+        }
       }
     },
     {
@@ -1353,7 +2175,12 @@
       "survival_listener": {
         "group_id": "survival_thirst",
         "attribute": "thirst",
-        "range": { "min": 0, "max": 0, "include_min": true, "include_max": true }
+        "range": {
+          "min": 0,
+          "max": 0,
+          "include_min": true,
+          "include_max": true
+        }
       }
     },
     {
@@ -1383,7 +2210,12 @@
       "survival_listener": {
         "group_id": "survival_thirst",
         "attribute": "thirst",
-        "range": { "min": 0.1, "max": 40.1, "include_min": true, "include_max": false }
+        "range": {
+          "min": 0.1,
+          "max": 40.1,
+          "include_min": true,
+          "include_max": false
+        }
       }
     },
     {
@@ -1413,7 +2245,12 @@
       "survival_listener": {
         "group_id": "survival_thirst",
         "attribute": "thirst",
-        "range": { "min": 40.1, "max": 100.1, "include_min": true, "include_max": false }
+        "range": {
+          "min": 40.1,
+          "max": 100.1,
+          "include_min": true,
+          "include_max": false
+        }
       }
     },
     {
@@ -1443,7 +2280,12 @@
       "survival_listener": {
         "group_id": "survival_nutrition",
         "attribute": "nutrition",
-        "range": { "min": 0, "max": 11, "include_min": true, "include_max": false }
+        "range": {
+          "min": 0,
+          "max": 11,
+          "include_min": true,
+          "include_max": false
+        }
       }
     },
     {
@@ -1473,7 +2315,12 @@
       "survival_listener": {
         "group_id": "survival_nutrition",
         "attribute": "nutrition",
-        "range": { "min": 11, "max": 31, "include_min": true, "include_max": false }
+        "range": {
+          "min": 11,
+          "max": 31,
+          "include_min": true,
+          "include_max": false
+        }
       }
     },
     {
@@ -1503,7 +2350,12 @@
       "survival_listener": {
         "group_id": "survival_nutrition",
         "attribute": "nutrition",
-        "range": { "min": 31, "max": 71, "include_min": true, "include_max": false }
+        "range": {
+          "min": 31,
+          "max": 71,
+          "include_min": true,
+          "include_max": false
+        }
       }
     },
     {
@@ -1533,7 +2385,12 @@
       "survival_listener": {
         "group_id": "survival_nutrition",
         "attribute": "nutrition",
-        "range": { "min": 71, "max": 101, "include_min": true, "include_max": false }
+        "range": {
+          "min": 71,
+          "max": 101,
+          "include_min": true,
+          "include_max": false
+        }
       }
     },
     {
@@ -1570,7 +2427,9 @@
       "survival_listener": {
         "group_id": "survival_mood",
         "attribute": "mood",
-        "range": { "type": "low" }
+        "range": {
+          "type": "low"
+        }
       }
     },
     {
@@ -1619,7 +2478,9 @@
       "survival_listener": {
         "group_id": "survival_mood",
         "attribute": "mood",
-        "range": { "type": "high" }
+        "range": {
+          "type": "high"
+        }
       }
     },
     {
@@ -2053,6 +2914,114 @@
         "range": {
           "type": "obese"
         }
+      }
+    },
+    {
+      "buff_id": "buff_food_compressed_biscuit",
+      "name": "压缩饼干·消化",
+      "desc": "消化中：每回合恢复较多饱食（共 38 回合）。口干舌燥，记得喝水。",
+      "durationTicks": 38,
+      "maxStacks": 1,
+      "stacksAddOnApply": 1,
+      "priority": 65,
+      "listenerSide": "self",
+      "consumeMode": "always",
+      "consumeLayersFixed": 0,
+      "applyMode": "always_apply",
+      "triggerEventKind": [
+        "world"
+      ],
+      "triggerEventName": [
+        "tick_advanced"
+      ],
+      "triggerTags": [
+        "time",
+        "tick"
+      ],
+      "effects": [
+        {
+          "type": "survival_delta",
+          "params": {
+            "satiety": 1.32,
+            "nutrition": 0
+          }
+        }
+      ],
+      "expire_effects": [],
+      "judgment_tags": {
+        "food_category": "cooked",
+        "food_item": "food_compressed_biscuit",
+        "meal_composition": "staple"
+      }
+    },
+    {
+      "buff_id": "buff_meal_balance_mixed",
+      "name": "膳食搭配",
+      "desc": "消化中的菜覆盖 2 类构成（主食/荤/素），每回合额外恢复 1 点营养。",
+      "durationTicks": 1,
+      "maxStacks": 1,
+      "stacksAddOnApply": 1,
+      "priority": 91,
+      "listenerSide": "self",
+      "consumeMode": "always",
+      "consumeLayersFixed": 0,
+      "applyMode": "always_apply",
+      "triggerEventKind": [
+        "world"
+      ],
+      "triggerEventName": [
+        "tick_advanced"
+      ],
+      "triggerTags": [
+        "time",
+        "tick"
+      ],
+      "effects": [
+        {
+          "type": "survival_delta",
+          "params": {
+            "nutrition": 1
+          }
+        }
+      ],
+      "expire_effects": [],
+      "meal_balance": {
+        "level": "mixed"
+      }
+    },
+    {
+      "buff_id": "buff_meal_balance_balanced",
+      "name": "膳食均衡",
+      "desc": "消化中的菜覆盖主食、荤、素三类构成，每回合额外恢复 2 点营养。",
+      "durationTicks": 1,
+      "maxStacks": 1,
+      "stacksAddOnApply": 1,
+      "priority": 91,
+      "listenerSide": "self",
+      "consumeMode": "always",
+      "consumeLayersFixed": 0,
+      "applyMode": "always_apply",
+      "triggerEventKind": [
+        "world"
+      ],
+      "triggerEventName": [
+        "tick_advanced"
+      ],
+      "triggerTags": [
+        "time",
+        "tick"
+      ],
+      "effects": [
+        {
+          "type": "survival_delta",
+          "params": {
+            "nutrition": 2
+          }
+        }
+      ],
+      "expire_effects": [],
+      "meal_balance": {
+        "level": "balanced"
       }
     }
   ]

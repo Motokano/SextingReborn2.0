@@ -123,6 +123,40 @@
   "nutrition_abundant_pot_per_energy_mult": 1.3,
   "nutrition_peak_diqi_cap_pct": 0.15,
 
+  "nutrition_tier_exp_mult": {
+    "_comment": "k79：营养档位 → 属性经验倍率（进食经验结算时快照当前档位；24 §24.5a D 对齐：充沛×1.5、极境×2，营养不良×0.5）",
+    "malnutrition": 0.5,
+    "normal": 1.0,
+    "abundant": 1.5,
+    "peak": 2.0
+  },
+  "meal_exp_by_tier": {
+    "_comment": "k79：餐位档 → 每维每餐属性经验（24 §24.5a A 表对齐；苦力菜 workhorse≈0 不在此表，由食用逻辑直接跳过）",
+    "snack": 2,
+    "home": 6,
+    "refined": 20,
+    "banquet": 65,
+    "feast": 250
+  },
+  "meal_exp_dims_by_tier": {
+    "_comment": "k79：餐位档默认发放维度（T3+ 多维；单菜可用 items.json 的 attr_exp_grants 覆盖）",
+    "snack": ["jingu"],
+    "home": ["jingu"],
+    "refined": ["jingu", "flexibility"],
+    "banquet": ["jingu", "flexibility", "breath"],
+    "feast": ["jingu", "flexibility", "breath"]
+  },
+  "meal_balance_min_categories": {
+    "_comment": "k79：均衡判定（主食/荤/素 覆盖类别数下限）；other 不计入",
+    "mixed": 2,
+    "balanced": 3
+  },
+  "meal_balance_nutrition_per_tick": {
+    "_comment": "k79：均衡 buff 营养恢复（每 tick，消化期持续）；搭配 +1、均衡 +2",
+    "mixed": 1,
+    "balanced": 2
+  },
+
   "dirtyness_min": 0,
   "dirtyness_max": 100,
   "dirtyness_initial": 0,
