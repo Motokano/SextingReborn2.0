@@ -2,6 +2,12 @@
 // 用法：node tools/serve-live.mjs [端口] [根目录]
 // 默认：端口 8000，根目录 = 项目根（本文件上一级）
 // 功能：静态文件服务 + 文件变更时通过 SSE 推送页面自动刷新（改代码不用手动 F5）
+//
+// 禁用自动刷新（手动测试/游玩时避免被中途刷新打断）：
+//   全局（所有页面不注入刷新脚本、不挂 watcher）：
+//     LIVE_RELOAD=0 node tools/serve-live.mjs
+//   单标签页（仅该页不自动刷新，其余标签照常 live-reload）：
+//     打开 http://127.0.0.1:8000/?no_reload
 import { createServer } from 'node:http'
 import { readFile, stat } from 'node:fs/promises'
 import { watch as watchSync } from 'node:fs'
@@ -10,6 +16,9 @@ import { fileURLToPath } from 'node:url'
 
 const PORT = Number(process.argv[2] || process.env.PORT || 8000)
 const ROOT = resolve(process.argv[3] || join(fileURLToPath(new URL('.', import.meta.url)), '..'))
+
+/** 自动刷新总开关：LIVE_RELOAD=0 时全局禁用（不注入脚本、不挂 watcher、不广播）。 */
+const RELOAD_ENABLED = process.env.LIVE_RELOAD !== '0' && process.env.LIVE_RELOAD !== 'false'
 
 const MIME = {
   '.html': 'text/html; charset=utf-8',
@@ -118,7 +127,9 @@ const server = createServer(async (req, res) => {
 
   const type = MIME[extname(target).toLowerCase()] || 'application/octet-stream'
   let body = await readFile(target)
-  if (type.startsWith('text/html') && req.method !== 'HEAD') {
+  // 单标签页免刷：URL 带 no_reload 时不注入刷新脚本（该页永不被广播刷新）
+  const noReloadReq = url.searchParams.has('no_reload')
+  if (type.startsWith('text/html') && RELOAD_ENABLED && !noReloadReq && req.method !== 'HEAD') {
     body = Buffer.from(body.toString('utf8').replace('</body>', RELOAD_SCRIPT + '</body>'))
   }
   res.writeHead(200, { 'Content-Type': type, 'Cache-Control': 'no-store' })
@@ -151,6 +162,7 @@ function mountWatch(dir, recursive) {
   watchers.add(watcher)
 }
 for (const dir of WATCH_ROOTS) {
+  if (!RELOAD_ENABLED) break // 全局禁用时不再挂 watcher
   const recursive = dir !== '' // 子目录递归，根目录浅层
   try { mountWatch(dir, recursive) }
   catch (err) {
