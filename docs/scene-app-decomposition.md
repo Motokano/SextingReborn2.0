@@ -181,7 +181,11 @@ js/item-use.js  window.ItemUse      // applyItemUseEffectFromTemplate / tryUseIt
   - 新增 `js/inventory-helpers.js`（window.InventoryHelpers）：`findFirstContainerSlotByItemId` / `getInventoryContainerArray` / `getInventoryCountByItemId` 自 scene-app 原样迁出（行为零变，只读 IE/HideoutWarehouse）。
   - scene-app 删除 3 个本地定义，24 处引用 ±1:1 重接 `InventoryHelpers.*`；`index.html` 挂载于 scene-hud 之前。
   - 冒烟：本地实机启动正常，页面状态与改动前一致。
-- **P1b（待办）**：站点 config/数据持有（`cookingMethods/Recipes`、`pharmacyMethods/Recipes`、failure item、temp station 常量）与 craft 运行时状态（active craft、known recipes、temp station runtime）迁 `cooking-station.js` / `pharmacy-station.js`（`LivestockState` 型：createDefaultState/getState/setState/advanceWorldTicks）；`sceneUi.knownRecipes` 存档键留兼容层。
+- **P1b（侦察完成，待实现）**：站点 config/数据持有与 craft 运行时迁 `cooking-station.js` / `pharmacy-station.js`。
+  - **侦察结论（利好）**：站点运行时状态**本就不在 scene-app 闭包**，而是挂在 `window.SceneCtx` 上：`cooking_station_runtime`（fuel/water/accessories/`active_craft`）、`pharmacy_station_runtime`、`cooking_temp_stations_runtime`、`known_cooking_recipes`/`known_pharmacy_recipes`/`known_recipe_ids_by_system`（图鉴，迁移期双写）。
+  - **持久化契约已外置**：save-system（`buildSnapshot` §sceneUi，行 ~352-424）**直接读 `SceneCtx` 字段**（含 `active_craft.station_ref`、temp station 数组、`deriveKnownCookingRecipeIds(SceneCtx)`、`agriculture_unlocked`），不依赖 scene-app 函数 → **状态位置不变 = 存档零风险**，切片只搬"触碰这些字段的代码"。
+  - 唯一仍在闭包的状态：config 持有（`cookingMethods/Recipes`、`pharmacyMethods/Recipes`、failure item，`loadConfig` 768-773 装载）与 craft idle 计时器（`setInterval`，属场景胶水，留 scene-app 或由模块暴露 start/stop）。
+  - **P1b 具体方案**：新增 `cooking-station.js`/`pharmacy-station.js`，提供 `setConfig(cfg)`（loadConfig 改一行委托）、`getState()` = 透传 `SceneCtx.*_station_runtime`、`advanceWorldTicks(n)` 等纯函数接口；先搬 config 装载 + craft 推进/finalize 逻辑族（`finalizeCookingCraftNow` 等，依赖 analyzer 清单），UI 面板与 infra 桥（ui/showMsg/render/tooltip 系列）留 P1c 一并处理。
 - **P1c（待办）**：站点规则与面板迁出（配 infra 桥，见 P1 实测 deps：ui/showMsg/render/tooltip 系列/`isPreCreationGameplayRestricted` 等）；compost 面板 → `compost-panel.js`。
 
 ## 5. 风险与对策
