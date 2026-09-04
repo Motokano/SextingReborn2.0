@@ -238,6 +238,10 @@ js/item-use.js  window.ItemUse      // applyItemUseEffectFromTemplate / tryUseIt
     - `CookingStation`/`PharmacyStation` 各收 5 配件/解锁函数（ids 收集/候选/安装/卸载/isXMethodUnlockedAtStation——临时灶台 allowed_methods 与配件双路校验）。
     - DI 增 getCurrentCookingStationContext/getCurrentPharmacyStationContext 键；修复原 pharmacy options 引用未定义 ids 收集器的潜伏死路径（模块内补齐）。
     - 删除前先扫残留定义（流程固化）；scene-app 删 263 行、26 处重接零残留。scene-app 当前 10597 行。
+  - **②-准备刀（已提交）**：站点上下文簇迁 `js/station-context.js`（StationContext，257 行移出）。
+    - 迁出 21 函数（forEachAdjacentCell/注解判定×4/上下文探测×4/修复门控族/格位谓词）+ 2 解锁 flag 常量（COOKING/PHARMACY_BASE_STATION_UNLOCK_FLAG）。
+    - 面板与交互所需的站点探测全部外部可解析 → 为三站点面板模块化铺路。
+    - 逐函数精确删除 + 先扫残留定义；token 重接 30 处；DI 对象键名二次修复（改字符串键）；实机冒烟通过。scene-app 当前 10340 行。
 - **P1c（待办）**：站点规则与面板迁出（配 infra 桥，见 P1 实测 deps：ui/showMsg/render/tooltip 系列/`isPreCreationGameplayRestricted` 等）；compost 面板 → `compost-panel.js`。
 
 ## 5. 风险与对策

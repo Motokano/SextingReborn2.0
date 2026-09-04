@@ -2267,214 +2267,6 @@
         return E.getMaps();
     }
 
-    function forEachAdjacentCell(x, y, fn) {
-        var dy;
-        for (dy = -1; dy <= 1; dy++) {
-            var dx;
-            for (dx = -1; dx <= 1; dx++) {
-                if (!dx && !dy) continue;
-                var rx = (x | 0) + dx;
-                var ry = (y | 0) + dy;
-                if (fn(rx, ry) === true) return true;
-            }
-        }
-        return false;
-    }
-
-    function isCookingStationAnnotationText(s) {
-        if (!s) return false;
-        var t = String(s).trim();
-        if (t === '制药台' || t === '药炉') return false;
-        return t === '烹饪台' || t === '灶台' || t === '烹饪灶' || t.indexOf('烹饪') >= 0 || t.indexOf('灶') >= 0;
-    }
-
-    function isPharmacyStationAnnotationText(s) {
-        if (!s) return false;
-        var t = String(s).trim();
-        return t === '制药台' || t === '药炉';
-    }
-
-    // 口径：烹饪设施仅允许邻接交互，不允许站在同格交互。
-    function getCurrentCookingStationContext() {
-        if (!E || typeof E.getState !== 'function') return null;
-        var st = E.getState();
-        var hit = null;
-        forEachAdjacentCell(st.x, st.y, function (x, y) {
-            var rec = (E.getEntityRecordAt && typeof E.getEntityRecordAt === 'function') ? E.getEntityRecordAt(x, y) : null;
-            if (CookingStation.isCookingTempStationEntity(rec)) {
-                var temp = CookingStation.findCookingTempStationAt(st.mapId, x, y) || CookingStation.normalizeTempStationEntry(Object.assign({ map_id: st.mapId }, rec));
-                hit = {
-                    station_type: 'temp',
-                    map_id: st.mapId,
-                    x: x,
-                    y: y,
-                    temp_station: temp
-                };
-                return true;
-            }
-            var ann = (E.getAnnotationAt && typeof E.getAnnotationAt === 'function') ? E.getAnnotationAt(x, y) : null;
-            var s = ann != null ? String(ann) : '';
-            if (isCookingStationAnnotationText(s)) {
-                hit = {
-                    station_type: 'main',
-                    map_id: st.mapId,
-                    x: x,
-                    y: y
-                };
-                return true;
-            }
-            return false;
-        });
-        if (hit) return hit;
-        return null;
-    }
-
-    // === Auto-generated Pharmacy Helper ===
-    function getCurrentPharmacyStationContext() {
-        if (!E || typeof E.getState !== 'function') return null;
-        var st = E.getState();
-        var hit = null;
-        forEachAdjacentCell(st.x, st.y, function (x, y) {
-            var rec = (E.getEntityRecordAt && typeof E.getEntityRecordAt === 'function') ? E.getEntityRecordAt(x, y) : null;
-            if (isPharmacyTempStationEntity(rec)) {
-                var temp = findPharmacyTempStationAt(st.mapId, x, y) || CookingStation.normalizeTempStationEntry(Object.assign({ map_id: st.mapId }, rec));
-                hit = {
-                    station_type: 'temp',
-                    map_id: st.mapId,
-                    x: x,
-                    y: y,
-                    temp_station: temp
-                };
-                return true;
-            }
-            var ann = (E.getAnnotationAt && typeof E.getAnnotationAt === 'function') ? E.getAnnotationAt(x, y) : null;
-            var s = ann != null ? String(ann) : '';
-            if (isPharmacyStationAnnotationText(s)) {
-                hit = {
-                    station_type: 'main',
-                    map_id: st.mapId,
-                    x: x,
-                    y: y
-                };
-                return true;
-            }
-            return false;
-        });
-        if (hit) return hit;
-        return null;
-    }
-
-    function isCompostStationAnnotationText(s) {
-        var t = String(s || '').trim();
-        return t === '制肥桶';
-    }
-
-    function isBedStationAnnotationText(s) {
-        var t = String(s || '').trim();
-        return t === '床' || t === '床铺';
-    }
-
-    function getCurrentCompostStationContext() {
-        if (!E || typeof E.getState !== 'function') return null;
-        var st = E.getState();
-        var hit = null;
-        forEachAdjacentCell(st.x, st.y, function (x, y) {
-            var ann = (E.getAnnotationAt && typeof E.getAnnotationAt === 'function') ? E.getAnnotationAt(x, y) : null;
-            var s = ann != null ? String(ann) : '';
-            if (isCompostStationAnnotationText(s)) {
-                hit = {
-                    station_type: 'main',
-                    map_id: st.mapId,
-                    x: x,
-                    y: y
-                };
-                return true;
-            }
-            return false;
-        });
-        if (hit) return hit;
-        return null;
-    }
-
-    function getCurrentBedStationContext() {
-        if (!E || typeof E.getState !== 'function') return null;
-        var st = E.getState();
-        var hit = null;
-        forEachAdjacentCell(st.x, st.y, function (x, y) {
-            var ann = (E.getAnnotationAt && typeof E.getAnnotationAt === 'function') ? E.getAnnotationAt(x, y) : null;
-            var s = ann != null ? String(ann) : '';
-            if (isBedStationAnnotationText(s)) {
-                hit = {
-                    station_type: 'main',
-                    map_id: st.mapId,
-                    x: x,
-                    y: y
-                };
-                return true;
-            }
-            return false;
-        });
-        if (hit) return hit;
-        return null;
-    }
-
-    /** 当前地图格是否配置了「灶格 → 设施 NPC」绑定（见 map.cooking_station_interact_npc_*） */
-    function isCookingStationCellRepairGated(mapId, x, y) {
-        if (!E || typeof E.getMap !== 'function' || typeof E.getCookingStationInteractNpcId !== 'function') return false;
-        var map = E.getMap();
-        if (!map || String(map.map_id || '') !== String(mapId || '')) return false;
-        return !!E.getCookingStationInteractNpcId(x | 0, y | 0);
-    }
-
-    /** 与烹饪对称：仅当地图为制药格绑定了设施 NPC 时，才走 `PHARMACY_BASE_STATION_UNLOCK_FLAG` 维修门控 */
-    function isPharmacyStationCellRepairGated(mapId, x, y) {
-        if (!E || typeof E.getMap !== 'function' || typeof E.getPharmacyStationInteractNpcId !== 'function') return false;
-        var map = E.getMap();
-        if (!map || String(map.map_id || '') !== String(mapId || '')) return false;
-        return !!E.getPharmacyStationInteractNpcId(x | 0, y | 0);
-    }
-
-    /**
-     * 主灶台且地图绑定了设施 NPC 时：未解锁 `COOKING_BASE_STATION_UNLOCK_FLAG` 则禁止打开烹饪 UI、倒水添柴、tryCookAtStation。
-     * 临时灶 / 无绑定格不受此限制。
-     */
-    function isCookingUiBlockedByRepairForContext(stationCtx) {
-        if (!stationCtx || stationCtx.station_type === 'temp') return false;
-        if (!isCookingStationCellRepairGated(stationCtx.map_id, stationCtx.x, stationCtx.y)) return false;
-        if (!window.NPCSystem || typeof window.NPCSystem.isDemoFlagTrue !== 'function') return true;
-        return !window.NPCSystem.isDemoFlagTrue(COOKING_BASE_STATION_UNLOCK_FLAG);
-    }
-
-    // === Auto-generated Pharmacy Helper ===
-    function isPharmacyUiBlockedByRepairForContext(stationCtx) {
-        if (!stationCtx || stationCtx.station_type === 'temp') return false;
-        if (!isPharmacyStationCellRepairGated(stationCtx.map_id, stationCtx.x, stationCtx.y)) return false;
-        if (!window.NPCSystem || typeof window.NPCSystem.isDemoFlagTrue !== 'function') return true;
-        return !window.NPCSystem.isDemoFlagTrue(PHARMACY_BASE_STATION_UNLOCK_FLAG);
-    }
-
-    function isCookingUiBlockedByRepair() {
-        return isCookingUiBlockedByRepairForContext(getCurrentCookingStationContext());
-    }
-
-    function isPharmacyUiBlockedByRepair() {
-        return isPharmacyUiBlockedByRepairForContext(getCurrentPharmacyStationContext());
-    }
-
-    function isAdjacentToWarehouseTile() {
-        if (!E || typeof E.getState !== 'function' || typeof E.getAnnotationAt !== 'function') return false;
-        var st = E.getState();
-        var ok = false;
-        forEachAdjacentCell(st.x, st.y, function (x, y) {
-            if (E.getAnnotationAt(x, y) === '仓库') {
-                ok = true;
-                return true;
-            }
-            return false;
-        });
-        return ok;
-    }
-
     function hasAdjacentEnemyNow() {
         if (!E || typeof E.getState !== 'function' || typeof E.getEnemyAt !== 'function') return false;
         var st = E.getState();
@@ -2548,7 +2340,7 @@
     }
 
     function executeBedSleepAction() {
-        if (!isOnBedStationTile()) {
+        if (!StationContext.isOnBedStationTile()) {
             showMsg(ui('bed.sleep.not_on_tile'), 'info');
             return false;
         }
@@ -2865,9 +2657,9 @@
         if (guardPlayerActionBlocked(ACTION_TYPES.CRAFT)) {
             return { ok: false, reason: 'action_disabled', action_type: ACTION_TYPES.CRAFT };
         }
-        var stationCtx = getCurrentPharmacyStationContext();
+        var stationCtx = StationContext.getCurrentPharmacyStationContext();
         if (!stationCtx) return { ok: false, reason: 'not_on_pharmacy_station' };
-        if (isPharmacyUiBlockedByRepairForContext(stationCtx)) {
+        if (StationContext.isPharmacyUiBlockedByRepairForContext(stationCtx)) {
             return { ok: false, reason: 'pharmacy_station_repair_locked' };
         }
         if (methodId == null || !Array.isArray(inputItems)) return { ok: false, reason: 'bad_args' };
@@ -2953,39 +2745,6 @@
         };
     }
 
-    function findAdjacentStandableCellAround(x, y) {
-        if (!E || typeof E.canStandAt !== 'function') return null;
-        var dirsR1 = [
-            { dx: 0, dy: -1 },
-            { dx: 1, dy: 0 },
-            { dx: 0, dy: 1 },
-            { dx: -1, dy: 0 },
-            { dx: 1, dy: -1 },
-            { dx: 1, dy: 1 },
-            { dx: -1, dy: 1 },
-            { dx: -1, dy: -1 }
-        ];
-        var dirsR2 = [
-            { dx: 0, dy: -2 }, { dx: 1, dy: -2 }, { dx: 2, dy: -2 }, { dx: 2, dy: -1 },
-            { dx: 2, dy: 0 }, { dx: 2, dy: 1 }, { dx: 2, dy: 2 }, { dx: 1, dy: 2 },
-            { dx: 0, dy: 2 }, { dx: -1, dy: 2 }, { dx: -2, dy: 2 }, { dx: -2, dy: 1 },
-            { dx: -2, dy: 0 }, { dx: -2, dy: -1 }, { dx: -2, dy: -2 }, { dx: -1, dy: -2 }
-        ];
-        var i;
-        for (i = 0; i < dirsR1.length; i++) {
-            var nx = (x | 0) + dirsR1[i].dx;
-            var ny = (y | 0) + dirsR1[i].dy;
-            if (E.canStandAt(nx, ny)) return { x: nx, y: ny };
-        }
-        for (i = 0; i < dirsR2.length; i++) {
-            var nx2 = (x | 0) + dirsR2[i].dx;
-            var ny2 = (y | 0) + dirsR2[i].dy;
-            if (E.canStandAt(nx2, ny2)) return { x: nx2, y: ny2 };
-        }
-        return null;
-    }
-
-    // NPC 上班后强占其工作格：若玩家占格，立即挤到该格邻近可用位（不额外推进 tick）。
     function resolveNpcHardOccupancyAfterWorldTick() {
         if (!E || typeof E.getState !== 'function' || typeof E.getMap !== 'function' || typeof E.setState !== 'function') return false;
         if (!window.NPCSystem || typeof window.NPCSystem.isNpcPresentNow !== 'function') return false;
@@ -3005,7 +2764,7 @@
             var npcId = n.npc_id != null ? String(n.npc_id) : '';
             if (!npcId) continue;
             if (!window.NPCSystem.isNpcPresentNow(npcId)) continue;
-            var target = findAdjacentStandableCellAround(nx, ny);
+            var target = StationContext.findAdjacentStandableCellAround(nx, ny);
             if (!target) {
                 showMsg(ui('scene.msg.npc_occupy_conflict'), 'warn');
                 return false;
@@ -3146,27 +2905,11 @@
         }
     }
 
-    function isOnCookingStationTile() {
-        return !!getCurrentCookingStationContext();
-    }
-
-    function isOnPharmacyStationTile() {
-        return !!getCurrentPharmacyStationContext();
-    }
-
-    function isOnCompostStationTile() {
-        return !!getCurrentCompostStationContext();
-    }
-
-    function isOnBedStationTile() {
-        return !!getCurrentBedStationContext();
-    }
-
     function canPourWaterAtCurrentTile() {
         if (isPreCreationGameplayRestricted()) return false;
-        if (!isOnCookingStationTile()) return false;
-        if (isCookingUiBlockedByRepair()) return false;
-        var pourCtx = getCurrentCookingStationContext();
+        if (!StationContext.isOnCookingStationTile()) return false;
+        if (StationContext.isCookingUiBlockedByRepair()) return false;
+        var pourCtx = StationContext.getCurrentCookingStationContext();
         if (pourCtx && pourCtx.station_type === 'main' && CookingStation.getState().water_unlimited) return false;
         var slot = findFirstContainerSlotByPredicate(function (cell) {
             return StationCraftCore.getItemWaterPoints(cell.item_id) > 0;
@@ -3175,8 +2918,8 @@
     }
     function canAddFuelAtCurrentTile() {
         if (isPreCreationGameplayRestricted()) return false;
-        if (!isOnCookingStationTile()) return false;
-        if (isCookingUiBlockedByRepair()) return false;
+        if (!StationContext.isOnCookingStationTile()) return false;
+        if (StationContext.isCookingUiBlockedByRepair()) return false;
         var slot = findFirstContainerSlotByPredicate(function (cell) {
             return StationCraftCore.getItemFuelPoints(cell.item_id) > 0;
         });
@@ -3247,15 +2990,15 @@
             showIntroBlockedMsg();
             return;
         }
-        if (!isOnCookingStationTile()) {
+        if (!StationContext.isOnCookingStationTile()) {
             showMsg(ui('cooking.station.not_on_tile'), 'info');
             return;
         }
-        if (isCookingUiBlockedByRepair()) {
+        if (StationContext.isCookingUiBlockedByRepair()) {
             showMsg(ui('cooking.station.locked_until_repaired'), 'info');
             return;
         }
-        var pourCtx0 = getCurrentCookingStationContext();
+        var pourCtx0 = StationContext.getCurrentCookingStationContext();
         if (pourCtx0 && pourCtx0.station_type === 'main' && CookingStation.getState().water_unlimited) {
             showMsg(ui('cooking.pour_water.main_already_unlimited'), 'info');
             return;
@@ -3299,11 +3042,11 @@
             showIntroBlockedMsg();
             return;
         }
-        if (!isOnCookingStationTile()) {
+        if (!StationContext.isOnCookingStationTile()) {
             showMsg(ui('cooking.station.not_on_tile'), 'info');
             return;
         }
-        if (isCookingUiBlockedByRepair()) {
+        if (StationContext.isCookingUiBlockedByRepair()) {
             showMsg(ui('cooking.station.locked_until_repaired'), 'info');
             return;
         }
@@ -3350,9 +3093,9 @@
         if (guardPlayerActionBlocked(ACTION_TYPES.CRAFT)) {
             return { ok: false, reason: 'action_disabled', action_type: ACTION_TYPES.CRAFT };
         }
-        var stationCtx = getCurrentCookingStationContext();
+        var stationCtx = StationContext.getCurrentCookingStationContext();
         if (!stationCtx) return { ok: false, reason: 'not_on_cooking_station' };
-        if (isCookingUiBlockedByRepairForContext(stationCtx)) {
+        if (StationContext.isCookingUiBlockedByRepairForContext(stationCtx)) {
             return { ok: false, reason: 'cooking_station_repair_locked' };
         }
         if (methodId == null || !Array.isArray(inputItems)) return { ok: false, reason: 'bad_args' };
@@ -4541,7 +4284,7 @@
                 kvWrap.appendChild(d);
             }
             addKv(ui('cooking.kv.fuel', { cur: curFuel, max: COOKING_FUEL_MAX_POINTS, need: needFuel }), curFuel < needFuel);
-            var panelCtx = getCurrentCookingStationContext();
+            var panelCtx = StationContext.getCurrentCookingStationContext();
             var mainWaterUnl = !!(panelCtx && panelCtx.station_type === 'main' && cs.water_unlimited);
             if (mainWaterUnl) {
                 addKv(ui('cooking.kv.water_unlimited', { need: needWater }), false);
@@ -4601,11 +4344,11 @@
         }
         if (guardPlayerComaBlocked()) return;
         if (cookingStationPanelOpen) return;
-        if (!isOnCookingStationTile()) {
+        if (!StationContext.isOnCookingStationTile()) {
             showMsg(ui('cooking.station.not_on_tile'), 'info');
             return;
         }
-        if (isCookingUiBlockedByRepair()) {
+        if (StationContext.isCookingUiBlockedByRepair()) {
             showMsg(ui('cooking.station.locked_until_repaired'), 'info');
             return;
         }
@@ -5257,11 +5000,11 @@
         }
         if (guardPlayerComaBlocked()) return;
         if (pharmacyStationPanelOpen) return;
-        if (!isOnPharmacyStationTile()) {
+        if (!StationContext.isOnPharmacyStationTile()) {
             showMsg(ui('pharmacy.station.not_on_tile'), 'info');
             return;
         }
-        if (isPharmacyUiBlockedByRepair()) {
+        if (StationContext.isPharmacyUiBlockedByRepair()) {
             showMsg(ui('pharmacy.station.locked_until_repaired'), 'info');
             return;
         }
@@ -6068,7 +5811,7 @@
         }
         if (guardPlayerComaBlocked()) return;
         if (compostStationPanelOpen) return;
-        if (!isOnCompostStationTile()) {
+        if (!StationContext.isOnCompostStationTile()) {
             showMsg(ui('compost.station.not_on_tile'), 'info');
             return;
         }
@@ -7338,7 +7081,7 @@
             showIntroBlockedMsg();
             return;
         }
-        if (!isAdjacentToWarehouseTile()) {
+        if (!StationContext.isAdjacentToWarehouseTile()) {
             showMsg(ui('scene.msg.warehouse_stand_nearby'), 'info');
             return;
         }
@@ -9536,8 +9279,8 @@
             refreshPharmacyPanel: function () {
                 if (pharmacyStationPanelOpen) renderPharmacyStationPanel();
             },
-            getCurrentCookingStationContext: getCurrentCookingStationContext,
-            getCurrentPharmacyStationContext: getCurrentPharmacyStationContext
+            'getCurrentCookingStationContext': StationContext.getCurrentCookingStationContext,
+            'getCurrentPharmacyStationContext': StationContext.getCurrentPharmacyStationContext
         };
         if (window.CookingStation && typeof window.CookingStation.setUiDeps === 'function') {
             window.CookingStation.setUiDeps(stationUiDeps);
@@ -10497,8 +10240,8 @@
     window.SceneApp.payBuildCost = payAgricultureBuildCost;
     window.SceneApp.isAgricultureUnlocked = isAgricultureUnlocked;
     window.SceneApp.unlockAgriculture = unlockAgriculture;
-    window.SceneApp.isCookingStationPanelBlockedByRepair = isCookingUiBlockedByRepair;
-    window.SceneApp.isPharmacyStationPanelBlockedByRepair = isPharmacyUiBlockedByRepair;
+    window.SceneApp.isCookingStationPanelBlockedByRepair = StationContext.isCookingUiBlockedByRepair;
+    window.SceneApp.isPharmacyStationPanelBlockedByRepair = StationContext.isPharmacyUiBlockedByRepair;
     window.SceneApp.resetCookingStateForNewCharacter = resetCookingStateForNewCharacter;
     window.SceneApp.getKnownCookingRecipeIds = function () {
         var o = window.SceneCtx && window.SceneCtx.known_cooking_recipes;
