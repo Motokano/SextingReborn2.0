@@ -3,6 +3,7 @@
 > **性质**：重构执行计划（非玩法设计正本）。目标：把 `js/scene-app.js` 从「12480 行的上帝对象」收敛为「只引用子模块的组合根」。
 > **快照日期**：2026 拆解盘点基线。行号与函数/变量清单以 [refactor-scene-app-inventory.md](refactor-scene-app-inventory.md) 为准；随迁移推进更新本文件与清单。
 > **原则**：只搬移接线不改行为；每阶段可运行可回归；存档键不变；index.html 加载序规则不变。
+> **验收口径（用户拍板 2026-10）**：**结构指标，不以行数为准**——见 §0。
 
 ---
 
@@ -15,12 +16,14 @@
 3. **SceneCtx 定义与转发桥**：`SceneCtx.actions.*` 只做「动作 → 子系统调用」的转发，不再内联实现。
 4. **刷新调度**：所有「状态变了去刷 HUD/面板」的直调收敛为 `SceneHud.refresh(kind, payload)` 一个通道（见 P0）。
 
-验收标准：
+**验收标准（结构指标，用户拍板）**：
 
-- `scene-app.js` 规模目标 **< 2500 行**（现 12480 行 / 634KB，需搬出约 1 万行）。
-- 每个子系统的**状态归一个 state 模块**（`createDefaultState / getState / setState / advanceTick`），**DOM 归一个 panel 模块**；scene-app 不再持有子系统运行状态（如 `agricultureMapState` 镜像）。
-- 运行行为零变更：新档、旧档读入、制作、战斗、农业/畜牧 tick 表现一致；`save-system.js` 的 schemaVersion 键与结构不变（它是天然回归锚点）。
-- 迁移期提供 `window` 兼容桥（deprecated 标注），全部完成后删除。
+- **① 主 JS 无系统规则/状态逻辑**：站点（config/图鉴/匹配/状态/技能/craft/temp/配件/解锁/原料判定）、敌人世界模拟、物品使用规则、tooltip 渲染均已在模块内；以「scene-app 顶层函数对模块 API 的调用占比 + 闭包无残留系统状态」为核验依据。
+- **② 三站点面板 DOM 模块化**：`cooking-station-panel` / `pharmacy-station-panel` / `compost-panel`（DOM 归 panel 模块，消除「面板与场景胶水纠缠主 JS」这一最大结构病灶）。
+- **③ 兼容桥与未接线产物清理**：`SceneCtx.updateStatusPanel`、`window.SceneApp.*` 导出袋、`game-state-core.js` / `svelte/` / `trade_*` 归档或删除。
+- **④ 农业状态归属**：`AgricultureMap` 自持状态（getState/setState），删 scene-app 镜像。
+- **⑤ 卫生**：工作区干净；每阶段启动冒烟通过；执行日志与 00-index 同步；交付用户**完整走一遍无回归**。
+- 行数不设硬指标；scene-app 随结构迁移自然收敛（预期 ~5k 上下）。
 
 ## 1. 现状基线（2026 盘点快照）
 
