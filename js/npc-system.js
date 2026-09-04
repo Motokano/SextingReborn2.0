@@ -549,8 +549,8 @@
 
     function refreshAfterNpcInventoryMutation() {
         try {
-            if (global.SceneCtx && typeof global.SceneCtx.updateStatusPanel === 'function') {
-                global.SceneCtx.updateStatusPanel();
+            if (global.SceneHud && typeof global.SceneHud.refresh === 'function') {
+                global.SceneHud.refresh('status');
             }
         } catch (e0) { /* ignore */ }
         try {

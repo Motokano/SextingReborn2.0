@@ -44,9 +44,9 @@
     }
 
     function notifyBuffHudRefresh() {
-        if (global.SceneCtx && typeof global.SceneCtx.updateStatusPanel === 'function') {
+        if (global.SceneHud && typeof global.SceneHud.refresh === 'function') {
             try {
-                global.SceneCtx.updateStatusPanel();
+                global.SceneHud.refresh('status');
             } catch (eHud) { /* SceneApp 未就绪时忽略 */ }
         }
     }
@@ -862,9 +862,9 @@
                 applySurvivalDeltaParams(e.params || {}, null);
             }
         }
-        if (global.SceneCtx && typeof global.SceneCtx.updateStatusPanel === 'function') {
+        if (global.SceneHud && typeof global.SceneHud.refresh === 'function') {
             try {
-                global.SceneCtx.updateStatusPanel();
+                global.SceneHud.refresh('status');
             } catch (ePan) { /* ignore */ }
         }
         debugLog('expire_effects buff=' + (tpl.buff_id || '') + ' tick=' + String(tick));

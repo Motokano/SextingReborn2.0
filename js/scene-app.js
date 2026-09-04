@@ -2114,7 +2114,6 @@
         }
         refreshPlayerActionsMenuUi();
     }
-    window.SceneCtx.updateStatusPanel = updateStatusPanel;
 
     function setIdleActionType(t) {
         if (window.SceneCtx) window.SceneCtx.idleActionType = t || '';
@@ -5995,8 +5994,8 @@
                 try { window.HideoutWarehousePanel.render(); } catch (eHwUi) { /* ignore */ }
             }
         }
-        if (window.SceneCtx && typeof window.SceneCtx.updateStatusPanel === 'function') {
-            try { window.SceneCtx.SceneHud.refresh('status'); } catch (eSt) { /* ignore */ }
+        if (window.SceneHud && typeof window.SceneHud.refresh === 'function') {
+            try { window.SceneHud.refresh('status'); } catch (eSt) { /* ignore */ }
         }
     }
 
@@ -9254,8 +9253,8 @@
 
     function init() {
         // SceneHud 刷新通道：注册本闭包内面板刷新实现（P0 组合根化拆解）。
-        // 内部调用已改走 SceneHud.refresh('status')；外部模块经 SceneCtx.updateStatusPanel
-        // 的兼容桥保持可用，随各自切片迁出时再切换。
+        // 内部调用与外部模块（buff-system/npc-system/scene-renderer/scene-systems）
+        // 均已改走 SceneHud.refresh('status')；旧 SceneCtx.updateStatusPanel 兼容桥已删除（③-1）。
         if (window.SceneHud && typeof window.SceneHud.register === 'function') {
             window.SceneHud.register('status', updateStatusPanel);
             window.SceneHud.register('backpack', updateBackpackPanel);

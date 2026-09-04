@@ -1716,7 +1716,7 @@
         }
 
         updateTopTimeHud();
-        if (ctx && typeof ctx.updateStatusPanel === 'function') ctx.updateStatusPanel(G.getCharacterState());
+        if (window.SceneHud && typeof window.SceneHud.refresh === 'function') window.SceneHud.refresh('status', G.getCharacterState());
         updateQuickBelt();
         prevFootworkNieBuMode = curFootworkNieBuMode;
     }

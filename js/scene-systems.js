@@ -40,8 +40,8 @@
                 if (window.SceneRenderer && typeof window.SceneRenderer.render === 'function') {
                     window.SceneRenderer.render();
                 }
-                if (ctx && typeof ctx.updateStatusPanel === 'function') {
-                    ctx.updateStatusPanel();
+                if (window.SceneHud && typeof window.SceneHud.refresh === 'function') {
+                    window.SceneHud.refresh('status');
                 }
                 return;
             }
