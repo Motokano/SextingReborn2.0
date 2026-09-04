@@ -10,16 +10,6 @@
     var idleTickMs = 3000;
     var COOKING_FUEL_MAX_POINTS = 1000;
     var COOKING_WATER_MAX_POINTS = 1000;
-    var cookingMethods = {};
-    var cookingRecipes = [];
-    /** 由 data/cooking-system-config.csv 注入，可改 id 后 item-editor 维护物品模板 */
-    var cookingFailureItemId = 'food_cooking_fail_generic';
-
-    var pharmacyMethods = {};
-    var pharmacyRecipes = [];
-    /** 由 data/pharmacy-system-config.csv 注入，可改 id 后 item-editor 维护物品模板 */
-    var pharmacyFailureItemId = 'food_pharmacy_fail_generic';
-    var cookingTempStationLifetimeTicks = 50;
     var COOKING_TEMP_STATION_ENTITY_ID = 'cooking_station_temp';
     /** 与 `npc_station_cooking_base_triggers` / `NPCSystem` demo flags 对齐：主灶台绑定设施 NPC 时，修好前禁止烹饪 UI 与结算 */
     var COOKING_BASE_STATION_UNLOCK_FLAG = 'cooking_base_station_unlocked';
@@ -765,13 +755,22 @@
             if (window.EnemyDrops && typeof window.EnemyDrops.setConfig === 'function') {
                 window.EnemyDrops.setConfig(arr[37] || null);
             }
-            cookingMethods = (arr[15] && arr[15].methods && typeof arr[15].methods === 'object') ? arr[15].methods : {};
-            cookingRecipes = (arr[16] && Array.isArray(arr[16].recipes)) ? arr[16].recipes : [];
-            pharmacyMethods = (arr[19] && arr[19].methods && typeof arr[19].methods === 'object') ? arr[19].methods : {};
-            pharmacyRecipes = (arr[18] && arr[18].recipes && typeof arr[18].recipes === 'object') ? Object.keys(arr[18].recipes).map(function(k){return arr[18].recipes[k];}) : [];
             var cookCfgParsed = parseCookingSystemConfigCsv(arr[17] != null ? String(arr[17]) : '');
-            cookingFailureItemId = cookCfgParsed.cooking_global_failure_item_id || 'food_cooking_fail_generic';
-            cookingTempStationLifetimeTicks = Math.max(1, Math.floor(Number(cookCfgParsed.cooking_temp_station_lifetime_ticks) || 50));
+            // 站点配置所有权 → CookingStation / PharmacyStation（P1b-1）；读取侧改走模块 getter
+            if (window.CookingStation && typeof window.CookingStation.setConfig === 'function') {
+                window.CookingStation.setConfig({
+                    methods: (arr[15] && arr[15].methods && typeof arr[15].methods === 'object') ? arr[15].methods : {},
+                    recipes: (arr[16] && Array.isArray(arr[16].recipes)) ? arr[16].recipes : [],
+                    failureItemId: cookCfgParsed.cooking_global_failure_item_id || 'food_cooking_fail_generic',
+                    tempStationLifetimeTicks: Math.max(1, Math.floor(Number(cookCfgParsed.cooking_temp_station_lifetime_ticks) || 50))
+                });
+            }
+            if (window.PharmacyStation && typeof window.PharmacyStation.setConfig === 'function') {
+                window.PharmacyStation.setConfig({
+                    methods: (arr[19] && arr[19].methods && typeof arr[19].methods === 'object') ? arr[19].methods : {},
+                    recipes: (arr[18] && arr[18].recipes && typeof arr[18].recipes === 'object') ? Object.keys(arr[18].recipes).map(function (k) { return arr[18].recipes[k]; }) : []
+                });
+            }
             if (window.RecipeSchema && typeof window.RecipeSchema.validateRecipeTables === 'function') {
                 try {
                     var schemaReport = window.RecipeSchema.validateRecipeTables(arr[18], arr[19], arr[20], {});
@@ -2495,7 +2494,7 @@
         var gt = window.GameTime && typeof window.GameTime.getState === 'function' ? window.GameTime.getState() : null;
         var placedTick = gt && typeof gt.totalTicks === 'number' ? Math.max(0, Math.floor(gt.totalTicks)) : 0;
         var opts = options && typeof options === 'object' ? options : {};
-        var life = Math.max(1, Math.floor(Number(opts.lifetime_ticks) || cookingTempStationLifetimeTicks || 50));
+        var life = Math.max(1, Math.floor(Number(opts.lifetime_ticks) || CookingStation.getTempStationLifetimeTicks() || 50));
         var next = upsertCookingTempStation({
             map_id: String(mapId || ''),
             x: Math.floor(Number(x)),
@@ -3099,8 +3098,8 @@
         var out = [];
         var i;
         var mf = methodFilter != null && String(methodFilter) !== '' ? String(methodFilter) : null;
-        for (i = 0; i < cookingRecipes.length; i++) {
-            var r = cookingRecipes[i] || {};
+        for (i = 0; i < CookingStation.getRecipes().length; i++) {
+            var r = CookingStation.getRecipes()[i] || {};
             var reqMethod = r.required_method != null ? String(r.required_method) : '';
             var recipeMethod = r.method_id != null ? String(r.method_id) : '';
             if (mf != null && reqMethod !== mf && recipeMethod !== mf && toUnifiedCookingMethodId(reqMethod) !== mf && toUnifiedCookingMethodId(recipeMethod) !== mf) continue;
@@ -3114,8 +3113,8 @@
         var out = [];
         var i;
         var mf = methodFilter != null && String(methodFilter) !== '' ? String(methodFilter) : null;
-        for (i = 0; i < pharmacyRecipes.length; i++) {
-            var r = pharmacyRecipes[i] || {};
+        for (i = 0; i < PharmacyStation.getRecipes().length; i++) {
+            var r = PharmacyStation.getRecipes()[i] || {};
             var reqMethod = r.required_method != null ? String(r.required_method) : '';
             var recipeMethod = r.method_id != null ? String(r.method_id) : '';
             if (mf != null && reqMethod !== mf && recipeMethod !== mf && toUnifiedPharmacyMethodId(reqMethod) !== mf && toUnifiedPharmacyMethodId(recipeMethod) !== mf) continue;
@@ -3450,8 +3449,8 @@
 
         if (!craft || !craft.method_id) return;
         var mid = String(craft.method_id).trim();
-        var m = cookingMethods && cookingMethods[mid] ? cookingMethods[mid] : null;
-        var failId = cookingFailureItemId;
+        var m = CookingStation.getMethods() && CookingStation.getMethods()[mid] ? CookingStation.getMethods()[mid] : null;
+        var failId = CookingStation.getFailureItemId();
         var forceFailure = !!opts.force_failure;
         var selected = normalizeCookingInputs(craft.inputs || []);
         var matched = matchCookingRecipesByInputs(selected, mid);
@@ -3625,8 +3624,8 @@
 
         if (!craft || !craft.method_id) return;
         var mid = String(craft.method_id).trim();
-        var m = pharmacyMethods && pharmacyMethods[mid] ? pharmacyMethods[mid] : null;
-        var failId = pharmacyFailureItemId;
+        var m = PharmacyStation.getMethods() && PharmacyStation.getMethods()[mid] ? PharmacyStation.getMethods()[mid] : null;
+        var failId = PharmacyStation.getFailureItemId();
         var forceFailure = !!opts.force_failure;
         var selected = normalizePharmacyInputs(craft.inputs || []);
         var matched = matchPharmacyRecipesByInputs(selected, mid);
@@ -3780,7 +3779,7 @@
         if (getActivePharmacyCraft()) return { ok: false, reason: 'craft_in_progress' };
         var mid = String(methodId).trim();
         if (!mid) return { ok: false, reason: 'method_required' };
-        var m = pharmacyMethods && pharmacyMethods[mid] ? pharmacyMethods[mid] : null;
+        var m = PharmacyStation.getMethods() && PharmacyStation.getMethods()[mid] ? PharmacyStation.getMethods()[mid] : null;
         if (!m) return { ok: false, reason: 'method_not_found', method_id: mid };
         if (!isPharmacyMethodUnlockedAtStation(mid, stationCtx)) {
             return {
@@ -4587,11 +4586,11 @@
     function getCookingAccessoryItemIdsFromMethods() {
         var out = [];
         var seen = {};
-        if (!cookingMethods || typeof cookingMethods !== 'object') return out;
-        var ids = Object.keys(cookingMethods);
+        if (!CookingStation.getMethods() || typeof CookingStation.getMethods() !== 'object') return out;
+        var ids = Object.keys(CookingStation.getMethods());
         var i;
         for (i = 0; i < ids.length; i++) {
-            var m = cookingMethods[ids[i]] || {};
+            var m = CookingStation.getMethods()[ids[i]] || {};
             var aid = (m.requires_accessory_item_id != null) ? String(m.requires_accessory_item_id).trim() : '';
             if (!aid || seen[aid]) continue;
             seen[aid] = true;
@@ -4745,7 +4744,7 @@
     }
 
     function isCookingMethodUnlockedAtStation(methodId, stationContext) {
-        var m = cookingMethods && methodId ? cookingMethods[String(methodId)] : null;
+        var m = CookingStation.getMethods() && methodId ? CookingStation.getMethods()[String(methodId)] : null;
         if (!m) return false;
         var ctx = stationContext || getCurrentCookingStationContext();
         if (ctx && ctx.station_type === 'temp') {
@@ -4781,7 +4780,7 @@
 
     // === Auto-generated Pharmacy Helper ===
     function isPharmacyMethodUnlockedAtStation(methodId, stationContext) {
-        var m = pharmacyMethods && methodId ? pharmacyMethods[String(methodId)] : null;
+        var m = PharmacyStation.getMethods() && methodId ? PharmacyStation.getMethods()[String(methodId)] : null;
         if (!m) return false;
         var ctx = stationContext || getCurrentPharmacyStationContext();
         if (ctx && ctx.station_type === 'temp') {
@@ -5071,7 +5070,7 @@
         if (getActiveCookingCraft()) return { ok: false, reason: 'craft_in_progress' };
         var mid = String(methodId).trim();
         if (!mid) return { ok: false, reason: 'method_required' };
-        var m = cookingMethods && cookingMethods[mid] ? cookingMethods[mid] : null;
+        var m = CookingStation.getMethods() && CookingStation.getMethods()[mid] ? CookingStation.getMethods()[mid] : null;
         if (!m) return { ok: false, reason: 'method_not_found', method_id: mid };
         if (!isCookingMethodUnlockedAtStation(mid, stationCtx)) {
             return {
@@ -6060,7 +6059,7 @@
         var mid = cookingStationUiState.method_id ? String(cookingStationUiState.method_id) : '';
         // 默认选一个可用工艺
         if (!mid) {
-            var ids = cookingMethods ? Object.keys(cookingMethods) : [];
+            var ids = CookingStation.getMethods() ? Object.keys(CookingStation.getMethods()) : [];
             for (var mi = 0; mi < ids.length; mi++) {
                 if (isCookingMethodUnlockedAtStation(ids[mi])) { mid = ids[mi]; break; }
             }
@@ -6070,16 +6069,16 @@
         // 工艺按钮（仅显示已解锁）
         if (methodWrap) {
             methodWrap.innerHTML = '';
-            var mids = cookingMethods ? Object.keys(cookingMethods) : [];
+            var mids = CookingStation.getMethods() ? Object.keys(CookingStation.getMethods()) : [];
             mids.sort(function (a, b) {
-                var na = (cookingMethods[a] && cookingMethods[a].name) ? String(cookingMethods[a].name) : a;
-                var nb = (cookingMethods[b] && cookingMethods[b].name) ? String(cookingMethods[b].name) : b;
+                var na = (CookingStation.getMethods()[a] && CookingStation.getMethods()[a].name) ? String(CookingStation.getMethods()[a].name) : a;
+                var nb = (CookingStation.getMethods()[b] && CookingStation.getMethods()[b].name) ? String(CookingStation.getMethods()[b].name) : b;
                 return na.localeCompare(nb, 'zh-Hans-CN');
             });
             for (var mx = 0; mx < mids.length; mx++) {
                 var idm = mids[mx];
                 if (!isCookingMethodUnlockedAtStation(idm)) continue;
-                var mObj = cookingMethods[idm] || {};
+                var mObj = CookingStation.getMethods()[idm] || {};
                 var btn = document.createElement('button');
                 btn.type = 'button';
                 btn.className = 'btn-method' + (String(idm) === String(mid) ? ' active' : '');
@@ -6200,12 +6199,12 @@
                     }
                     var rec = null;
                     var rr;
-                    for (rr = 0; rr < cookingRecipes.length; rr++) {
-                        if (String(cookingRecipes[rr].recipe_id) === legacyRecipeKey) { rec = cookingRecipes[rr]; break; }
+                    for (rr = 0; rr < CookingStation.getRecipes().length; rr++) {
+                        if (String(CookingStation.getRecipes()[rr].recipe_id) === legacyRecipeKey) { rec = CookingStation.getRecipes()[rr]; break; }
                     }
                     if (!rec) {
-                        for (rr = 0; rr < cookingRecipes.length; rr++) {
-                            if (String(cookingRecipes[rr].recipe_id) === String(rid)) { rec = cookingRecipes[rr]; break; }
+                        for (rr = 0; rr < CookingStation.getRecipes().length; rr++) {
+                            if (String(CookingStation.getRecipes()[rr].recipe_id) === String(rid)) { rec = CookingStation.getRecipes()[rr]; break; }
                         }
                     }
                     if (!rec) continue;
@@ -6232,7 +6231,7 @@
         }
 
         // 状态区
-        var mSel = (cookingMethods && mid && cookingMethods[String(mid)]) ? cookingMethods[String(mid)] : null;
+        var mSel = (CookingStation.getMethods() && mid && CookingStation.getMethods()[String(mid)]) ? CookingStation.getMethods()[String(mid)] : null;
         var cs = getCookingStationState();
         var curFuel = parseInt(cs.fuel_points, 10) || 0;
         var curWater = parseInt(cs.water_points, 10) || 0;
@@ -6718,7 +6717,7 @@
         var mid = pharmacyStationUiState.method_id ? String(pharmacyStationUiState.method_id) : '';
         // 默认选一个可用工艺
         if (!mid) {
-            var ids = pharmacyMethods ? Object.keys(pharmacyMethods) : [];
+            var ids = PharmacyStation.getMethods() ? Object.keys(PharmacyStation.getMethods()) : [];
             for (var mi = 0; mi < ids.length; mi++) {
                 if (isPharmacyMethodUnlockedAtStation(ids[mi])) { mid = ids[mi]; break; }
             }
@@ -6728,16 +6727,16 @@
         // 工艺按钮（仅显示已解锁）
         if (methodWrap) {
             methodWrap.innerHTML = '';
-            var mids = pharmacyMethods ? Object.keys(pharmacyMethods) : [];
+            var mids = PharmacyStation.getMethods() ? Object.keys(PharmacyStation.getMethods()) : [];
             mids.sort(function (a, b) {
-                var na = getPharmacyMethodDisplayName(a, pharmacyMethods[a]);
-                var nb = getPharmacyMethodDisplayName(b, pharmacyMethods[b]);
+                var na = getPharmacyMethodDisplayName(a, PharmacyStation.getMethods()[a]);
+                var nb = getPharmacyMethodDisplayName(b, PharmacyStation.getMethods()[b]);
                 return na.localeCompare(nb, 'zh-Hans-CN');
             });
             for (var mx = 0; mx < mids.length; mx++) {
                 var idm = mids[mx];
                 if (!isPharmacyMethodUnlockedAtStation(idm)) continue;
-                var mObj = pharmacyMethods[idm] || {};
+                var mObj = PharmacyStation.getMethods()[idm] || {};
                 var btn = document.createElement('button');
                 btn.type = 'button';
                 btn.className = 'btn-method' + (String(idm) === String(mid) ? ' active' : '');
@@ -6858,12 +6857,12 @@
                     }
                     var rec = null;
                     var rr;
-                    for (rr = 0; rr < pharmacyRecipes.length; rr++) {
-                        if (String(pharmacyRecipes[rr].recipe_id) === legacyRecipeKey) { rec = pharmacyRecipes[rr]; break; }
+                    for (rr = 0; rr < PharmacyStation.getRecipes().length; rr++) {
+                        if (String(PharmacyStation.getRecipes()[rr].recipe_id) === legacyRecipeKey) { rec = PharmacyStation.getRecipes()[rr]; break; }
                     }
                     if (!rec) {
-                        for (rr = 0; rr < pharmacyRecipes.length; rr++) {
-                            if (String(pharmacyRecipes[rr].recipe_id) === String(rid)) { rec = pharmacyRecipes[rr]; break; }
+                        for (rr = 0; rr < PharmacyStation.getRecipes().length; rr++) {
+                            if (String(PharmacyStation.getRecipes()[rr].recipe_id) === String(rid)) { rec = PharmacyStation.getRecipes()[rr]; break; }
                         }
                     }
                     if (!rec) continue;
@@ -6890,7 +6889,7 @@
         }
 
         // 状态区
-        var mSel = (pharmacyMethods && mid && pharmacyMethods[String(mid)]) ? pharmacyMethods[String(mid)] : null;
+        var mSel = (PharmacyStation.getMethods() && mid && PharmacyStation.getMethods()[String(mid)]) ? PharmacyStation.getMethods()[String(mid)] : null;
         var cs = getPharmacyStationState();
         var curFuel = parseInt(cs.fuel_points, 10) || 0;
         var needFuel = mSel ? readMethodCostValue(mSel, 'fuel', 'fuel_cost') : 0;

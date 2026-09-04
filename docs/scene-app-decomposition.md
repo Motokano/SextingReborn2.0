@@ -186,6 +186,11 @@ js/item-use.js  window.ItemUse      // applyItemUseEffectFromTemplate / tryUseIt
   - **持久化契约已外置**：save-system（`buildSnapshot` §sceneUi，行 ~352-424）**直接读 `SceneCtx` 字段**（含 `active_craft.station_ref`、temp station 数组、`deriveKnownCookingRecipeIds(SceneCtx)`、`agriculture_unlocked`），不依赖 scene-app 函数 → **状态位置不变 = 存档零风险**，切片只搬"触碰这些字段的代码"。
   - 唯一仍在闭包的状态：config 持有（`cookingMethods/Recipes`、`pharmacyMethods/Recipes`、failure item，`loadConfig` 768-773 装载）与 craft idle 计时器（`setInterval`，属场景胶水，留 scene-app 或由模块暴露 start/stop）。
   - **P1b 具体方案**：新增 `cooking-station.js`/`pharmacy-station.js`，提供 `setConfig(cfg)`（loadConfig 改一行委托）、`getState()` = 透传 `SceneCtx.*_station_runtime`、`advanceWorldTicks(n)` 等纯函数接口；先搬 config 装载 + craft 推进/finalize 逻辑族（`finalizeCookingCraftNow` 等，依赖 analyzer 清单），UI 面板与 infra 桥（ui/showMsg/render/tooltip 系列）留 P1c 一并处理。
+  - **P1b-1（已提交）**：config 所有权外移（本切片唯一仍在闭包的站点状态已清）。
+    - 新增 `js/cooking-station.js` / `js/pharmacy-station.js`：`setConfig` + `getMethods/getRecipes/getFailureItemId`（cooking 另有 `getTempStationLifetimeTicks`）；内部默认值与旧闭包一致。
+    - scene-app：删除 6 个 config 闭包变量声明（cookingMethods/Recipes、pharmacyMethods/Recipes、两个 failure id、tempStationLifetimeTicks）；`loadConfig` 改调 `CookingStation.setConfig(...)` / `PharmacyStation.setConfig(...)`（对齐 `EnemyDrops.setConfig` 惯例）；63 处读取点改走模块 getter（机械替换，零残留）。
+    - `index.html` 挂载两模块（scene-app 之前）。
+    - 冒烟：实机启动正常（loadConfig 委托在启动期执行成功，无 BOOT FAILED）。
 - **P1c（待办）**：站点规则与面板迁出（配 infra 桥，见 P1 实测 deps：ui/showMsg/render/tooltip 系列/`isPreCreationGameplayRestricted` 等）；compost 面板 → `compost-panel.js`。
 
 ## 5. 风险与对策
