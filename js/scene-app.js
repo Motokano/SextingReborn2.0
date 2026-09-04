@@ -349,7 +349,7 @@
             if (done) document.body.classList.remove('intro-shell-active');
             else document.body.classList.add('intro-shell-active');
         }
-        if (typeof updateStatusPanel === 'function') updateStatusPanel();
+        if (typeof updateStatusPanel === 'function') SceneHud.refresh('status');
         if (window.GameLog && typeof window.GameLog.clampLogPanelForLeftHud === 'function') {
             window.GameLog.clampLogPanelForLeftHud();
         }
@@ -1375,7 +1375,7 @@
             if (parsedAction.actionId === 'rest_toggle') {
                 setRestingActionActive(!(window.Survival && window.Survival.getState && window.Survival.getState().isResting), { showMsg: true });
                 if (window.SceneRenderer) window.SceneRenderer.render();
-                updateStatusPanel();
+                SceneHud.refresh('status');
                 return;
             }
             showMsg(ui('action.bar.pin.unknown'), 'info');
@@ -1395,7 +1395,7 @@
             if (tiaoXiIdleTimer) stopTiaoXiIdle(false);
             else startTiaoXiIdle();
             if (window.SceneRenderer) window.SceneRenderer.render();
-            updateStatusPanel();
+            SceneHud.refresh('status');
             return;
         }
         if (sk === breathId) {
@@ -1425,7 +1425,7 @@
                 showMsg(ui(rx.reason_key || 'combat.hub.ok', hubOkVars2), 'success');
             }
             if (window.SceneRenderer) window.SceneRenderer.render();
-            updateStatusPanel();
+            SceneHud.refresh('status');
             return;
         }
         showMsg(ui('action.bar.pin.unknown'), 'info');
@@ -1532,7 +1532,7 @@
                 setRestingActionActive(!isResting, { showMsg: true });
                 closePlayerActionsSubmenu();
                 if (window.SceneRenderer) window.SceneRenderer.render();
-                updateStatusPanel();
+                SceneHud.refresh('status');
             });
             var restRow = document.createElement('div');
             restRow.className = 'player-action-item-row';
@@ -1600,13 +1600,13 @@
                                     stopTiaoXiIdle(false);
                                     closePlayerActionsSubmenu();
                                     if (window.SceneRenderer) window.SceneRenderer.render();
-                                    updateStatusPanel();
+                                    SceneHud.refresh('status');
                                     return;
                                 }
                                 startTiaoXiIdle();
                                 closePlayerActionsSubmenu();
                                 if (window.SceneRenderer) window.SceneRenderer.render();
-                                updateStatusPanel();
+                                SceneHud.refresh('status');
                                 return;
                             }
                             if (!CHA || typeof CHA.tryExecuteHubAction !== 'function') return;
@@ -1642,7 +1642,7 @@
                             }
                             closePlayerActionsSubmenu();
                             if (window.SceneRenderer) window.SceneRenderer.render();
-                            updateStatusPanel();
+                            SceneHud.refresh('status');
                         });
                     })(ha.id);
                     rowWrap.appendChild(btnRow);
@@ -1695,7 +1695,7 @@
                 toggleFootworkNieBuModeFromMenu();
                 closePlayerActionsSubmenu();
                 if (window.SceneRenderer) window.SceneRenderer.render();
-                updateStatusPanel();
+                SceneHud.refresh('status');
             });
             var nieRow = document.createElement('div');
             nieRow.className = 'player-action-item-row';
@@ -2274,7 +2274,7 @@
             }
             Surv.advanceTick();
             if (window.SceneRenderer) window.SceneRenderer.render();
-            updateStatusPanel();
+            SceneHud.refresh('status');
         }, getRestAutoTickMs());
     }
 
@@ -2304,7 +2304,7 @@
             stopTiaoXiIdle(false);
             showMsg(ui(r.reason_key || 'combat.hub.fail.tiao_xi.diqi_max'), 'warn');
             if (window.SceneRenderer) window.SceneRenderer.render();
-            updateStatusPanel();
+            SceneHud.refresh('status');
             return;
         }
         var Surv = window.Survival;
@@ -2320,7 +2320,7 @@
             showMsg(ui('combat.hub.info.tiao_xi.overflow_stop'), 'info');
         }
         if (window.SceneRenderer) window.SceneRenderer.render();
-        updateStatusPanel();
+        SceneHud.refresh('status');
     }
 
     function startTiaoXiIdle() {
@@ -2355,14 +2355,14 @@
         if (s0 && atCap0 && s0.diqi_current >= (2 * s0.diqi_max - 1)) {
             showMsg(ui('combat.hub.info.tiao_xi.overflow_stop'), 'info');
             if (window.SceneRenderer) window.SceneRenderer.render();
-            updateStatusPanel();
+            SceneHud.refresh('status');
             return;
         }
         tiaoXiIdleTimer = setInterval(onTiaoXiIdleTick, getIdleTickMs());
         setIdleActionType('tiao_xi');
         showMsg(ui('scene.msg.meditation_started'), 'info');
         if (window.SceneRenderer) window.SceneRenderer.render();
-        updateStatusPanel();
+        SceneHud.refresh('status');
     }
 
     function markCellDirty(mapId, x, y) {
@@ -2815,7 +2815,7 @@
             }
         }
         showMsg(ui('bed.sleep.done'), 'success');
-        if (typeof updateStatusPanel === 'function') updateStatusPanel();
+        if (typeof updateStatusPanel === 'function') SceneHud.refresh('status');
         if (typeof updateBackpackPanel === 'function') updateBackpackPanel();
         if (window.SceneRenderer) window.SceneRenderer.render();
         return true;
@@ -3527,7 +3527,7 @@
             grantItemOrDrop(failId);
             showMsg(ui('cooking.msg.done_fail', { item: failId }), 'warn');
             if (typeof updateBackpackPanel === 'function') updateBackpackPanel();
-            if (typeof updateStatusPanel === 'function') updateStatusPanel();
+            if (typeof updateStatusPanel === 'function') SceneHud.refresh('status');
             if (window.SceneRenderer) window.SceneRenderer.render();
             return;
         }
@@ -3562,7 +3562,7 @@
                 grantItemOrDrop(failId);
                 showMsg(ui('cooking.msg.no_recipe_fail', { item: failId }), 'warn');
                 if (typeof updateBackpackPanel === 'function') updateBackpackPanel();
-                if (typeof updateStatusPanel === 'function') updateStatusPanel();
+                if (typeof updateStatusPanel === 'function') SceneHud.refresh('status');
                 if (window.SceneRenderer) window.SceneRenderer.render();
                 return;
             }
@@ -3571,7 +3571,7 @@
                 grantItemOrDrop(failId);
                 showMsg(ui('cooking.msg.done_fail', { item: failId }), 'warn');
                 if (typeof updateBackpackPanel === 'function') updateBackpackPanel();
-                if (typeof updateStatusPanel === 'function') updateStatusPanel();
+                if (typeof updateStatusPanel === 'function') SceneHud.refresh('status');
                 if (window.SceneRenderer) window.SceneRenderer.render();
                 return;
             }
@@ -3633,7 +3633,7 @@
             evalRes.success ? 'success' : 'warn'
         );
         if (typeof updateBackpackPanel === 'function') updateBackpackPanel();
-        if (typeof updateStatusPanel === 'function') updateStatusPanel();
+        if (typeof updateStatusPanel === 'function') SceneHud.refresh('status');
         if (window.SceneRenderer) window.SceneRenderer.render();
     }
 
@@ -3702,7 +3702,7 @@
             grantItemOrDrop(failId);
             showMsg(ui('pharmacy.msg.done_fail', { item: failId }), 'warn');
             if (typeof updateBackpackPanel === 'function') updateBackpackPanel();
-            if (typeof updateStatusPanel === 'function') updateStatusPanel();
+            if (typeof updateStatusPanel === 'function') SceneHud.refresh('status');
             if (window.SceneRenderer) window.SceneRenderer.render();
             return;
         }
@@ -3737,7 +3737,7 @@
                 grantItemOrDrop(failId);
                 showMsg(ui('pharmacy.msg.no_recipe_fail', { item: failId }), 'warn');
                 if (typeof updateBackpackPanel === 'function') updateBackpackPanel();
-                if (typeof updateStatusPanel === 'function') updateStatusPanel();
+                if (typeof updateStatusPanel === 'function') SceneHud.refresh('status');
                 if (window.SceneRenderer) window.SceneRenderer.render();
                 return;
             }
@@ -3746,7 +3746,7 @@
                 grantItemOrDrop(failId);
                 showMsg(ui('pharmacy.msg.done_fail', { item: failId }), 'warn');
                 if (typeof updateBackpackPanel === 'function') updateBackpackPanel();
-                if (typeof updateStatusPanel === 'function') updateStatusPanel();
+                if (typeof updateStatusPanel === 'function') SceneHud.refresh('status');
                 if (window.SceneRenderer) window.SceneRenderer.render();
                 return;
             }
@@ -3800,7 +3800,7 @@
             evalRes.success ? 'success' : 'warn'
         );
         if (typeof updateBackpackPanel === 'function') updateBackpackPanel();
-        if (typeof updateStatusPanel === 'function') updateStatusPanel();
+        if (typeof updateStatusPanel === 'function') SceneHud.refresh('status');
         if (window.SceneRenderer) window.SceneRenderer.render();
     }
 
@@ -3906,7 +3906,7 @@
         startPharmacyCraftIdleIfNeeded();
         showMsg(ui('pharmacy.msg.started', { n: Math.max(1, needTicks) }), 'info');
         if (typeof updateBackpackPanel === 'function') updateBackpackPanel();
-        if (typeof updateStatusPanel === 'function') updateStatusPanel();
+        if (typeof updateStatusPanel === 'function') SceneHud.refresh('status');
         if (window.SceneRenderer) window.SceneRenderer.render();
         return {
             ok: true,
@@ -5008,7 +5008,7 @@
         markCellDirty(st.mapId, st.x, st.y);
         showMsg(ui('cooking.take_water.ok'), 'success');
         if (typeof updateBackpackPanel === 'function') updateBackpackPanel();
-        if (typeof updateStatusPanel === 'function') updateStatusPanel();
+        if (typeof updateStatusPanel === 'function') SceneHud.refresh('status');
         if (window.SceneRenderer) window.SceneRenderer.render();
     }
 
@@ -5061,7 +5061,7 @@
             'success'
         );
         if (typeof updateBackpackPanel === 'function') updateBackpackPanel();
-        if (typeof updateStatusPanel === 'function') updateStatusPanel();
+        if (typeof updateStatusPanel === 'function') SceneHud.refresh('status');
         if (window.SceneRenderer) window.SceneRenderer.render();
     }
     function onAddFuelClick(forcedSlot) {
@@ -5108,7 +5108,7 @@
             'success'
         );
         if (typeof updateBackpackPanel === 'function') updateBackpackPanel();
-        if (typeof updateStatusPanel === 'function') updateStatusPanel();
+        if (typeof updateStatusPanel === 'function') SceneHud.refresh('status');
         if (window.SceneRenderer) window.SceneRenderer.render();
     }
 
@@ -5205,7 +5205,7 @@
         startCookingCraftIdleIfNeeded();
         showMsg(ui('cooking.msg.started', { n: Math.max(1, needTicks) }), 'info');
         if (typeof updateBackpackPanel === 'function') updateBackpackPanel();
-        if (typeof updateStatusPanel === 'function') updateStatusPanel();
+        if (typeof updateStatusPanel === 'function') SceneHud.refresh('status');
         if (window.SceneRenderer) window.SceneRenderer.render();
         return {
             ok: true,
@@ -6219,7 +6219,7 @@
                             }
                             renderCookingStationPanel();
                             if (typeof updateBackpackPanel === 'function') updateBackpackPanel();
-                            if (typeof updateStatusPanel === 'function') updateStatusPanel();
+                            if (typeof updateStatusPanel === 'function') SceneHud.refresh('status');
                             if (window.SceneRenderer) window.SceneRenderer.render();
                         };
                     })(aid);
@@ -6446,7 +6446,7 @@
                 onPourWaterClick({ containerType: pw.containerType, index: pw.index });
                 renderCookingStationPanel();
                 if (typeof updateBackpackPanel === 'function') updateBackpackPanel();
-                if (typeof updateStatusPanel === 'function') updateStatusPanel();
+                if (typeof updateStatusPanel === 'function') SceneHud.refresh('status');
                 if (window.SceneRenderer) window.SceneRenderer.render();
             });
         }
@@ -6468,7 +6468,7 @@
                 onAddFuelClick({ containerType: pf.containerType, index: pf.index });
                 renderCookingStationPanel();
                 if (typeof updateBackpackPanel === 'function') updateBackpackPanel();
-                if (typeof updateStatusPanel === 'function') updateStatusPanel();
+                if (typeof updateStatusPanel === 'function') SceneHud.refresh('status');
                 if (window.SceneRenderer) window.SceneRenderer.render();
             });
         }
@@ -6488,7 +6488,7 @@
                 showMsg(ui('cooking.accessory.install_ok', { item: getItemDisplayNameSafe(aid) }), 'success');
                 renderCookingStationPanel();
                 if (typeof updateBackpackPanel === 'function') updateBackpackPanel();
-                if (typeof updateStatusPanel === 'function') updateStatusPanel();
+                if (typeof updateStatusPanel === 'function') SceneHud.refresh('status');
                 if (window.SceneRenderer) window.SceneRenderer.render();
             });
         }
@@ -6877,7 +6877,7 @@
                             }
                             renderPharmacyStationPanel();
                             if (typeof updateBackpackPanel === 'function') updateBackpackPanel();
-                            if (typeof updateStatusPanel === 'function') updateStatusPanel();
+                            if (typeof updateStatusPanel === 'function') SceneHud.refresh('status');
                             if (window.SceneRenderer) window.SceneRenderer.render();
                         };
                     })(aid);
@@ -7101,7 +7101,7 @@
                 onAddFuelClick({ containerType: pf.containerType, index: pf.index });
                 renderPharmacyStationPanel();
                 if (typeof updateBackpackPanel === 'function') updateBackpackPanel();
-                if (typeof updateStatusPanel === 'function') updateStatusPanel();
+                if (typeof updateStatusPanel === 'function') SceneHud.refresh('status');
                 if (window.SceneRenderer) window.SceneRenderer.render();
             });
         }
@@ -7121,7 +7121,7 @@
                 showMsg(ui('pharmacy.accessory.install_ok', { item: getItemDisplayNameSafe(aid) }), 'success');
                 renderPharmacyStationPanel();
                 if (typeof updateBackpackPanel === 'function') updateBackpackPanel();
-                if (typeof updateStatusPanel === 'function') updateStatusPanel();
+                if (typeof updateStatusPanel === 'function') SceneHud.refresh('status');
                 if (window.SceneRenderer) window.SceneRenderer.render();
             });
         }
@@ -8023,7 +8023,7 @@
             }
         }
         if (window.SceneCtx && typeof window.SceneCtx.updateStatusPanel === 'function') {
-            try { window.SceneCtx.updateStatusPanel(); } catch (eSt) { /* ignore */ }
+            try { window.SceneCtx.SceneHud.refresh('status'); } catch (eSt) { /* ignore */ }
         }
     }
 
@@ -8490,7 +8490,7 @@
     }
 
     function afterAgricultureWorldTicksAdvanced(tickResult) {
-        if (typeof updateStatusPanel === 'function') updateStatusPanel();
+        if (typeof updateStatusPanel === 'function') SceneHud.refresh('status');
         var Surv = window.Survival;
         var dead = !!(Surv && typeof Surv.isDead === 'function' && Surv.isDead());
         var coma = !!(tickResult && tickResult.coma) || isPlayerComaActive();
@@ -10150,7 +10150,7 @@
                         getStrengthLevel: function () { return window.InventoryEquipment.getSkillLevel('survival_strength'); }
                     });
                 }
-                if (changed && typeof updateStatusPanel === 'function') updateStatusPanel();
+                if (changed && typeof updateStatusPanel === 'function') SceneHud.refresh('status');
                 renderCombatModal();
             }
 
@@ -10515,7 +10515,7 @@
                     getStrengthLevel: function () { return window.InventoryEquipment.getSkillLevel('survival_strength'); }
                 });
             }
-            if (changed && typeof updateStatusPanel === 'function') updateStatusPanel();
+            if (changed && typeof updateStatusPanel === 'function') SceneHud.refresh('status');
             renderCombatModal();
             return;
         }
@@ -10608,7 +10608,7 @@
                     getStrengthLevel: function () { return IE.getSkillLevel('survival_strength'); }
                 });
             }
-            if (typeof updateStatusPanel === 'function') updateStatusPanel();
+            if (typeof updateStatusPanel === 'function') SceneHud.refresh('status');
             if (combatPanelOpen) refreshRenderProfile();
             renderCombatModal();
         });
@@ -10642,7 +10642,7 @@
             if (window.GameLog && res && Array.isArray(res.applied) && res.applied.length > 0) {
                 window.GameLog.log('[debug] attr_exp ' + String(res.applied[0].exp_applied) + ' -> ' + String(attrId), 'system');
             }
-            if (typeof updateStatusPanel === 'function') updateStatusPanel();
+            if (typeof updateStatusPanel === 'function') SceneHud.refresh('status');
         });
     });
     var diqiDbgBtn = document.getElementById('status-diqi-debug-plus50');
@@ -10654,7 +10654,7 @@
             if (window.GameLog && typeof window.GameLog.log === 'function') {
                 window.GameLog.log('[debug] diqi_max -> ' + String(res.diqi_max) + ' (cur ' + String(res.diqi_current) + ')', 'system');
             }
-            if (typeof updateStatusPanel === 'function') updateStatusPanel();
+            if (typeof updateStatusPanel === 'function') SceneHud.refresh('status');
             if (window.SceneRenderer && typeof window.SceneRenderer.render === 'function') window.SceneRenderer.render();
         });
     }
@@ -10671,7 +10671,7 @@
                 window.GameLog.log('[debug] 模拟打头眩晕 +50 → 抗眩晕 ' + String(Math.round(resistDbg * 100)) + '% 减免后 +' + String(netDbg)
                     + '，当前 ' + String(r.value) + (r.triggered ? '（触发眩晕，本回合无法行动）' : ''), 'system');
             }
-            if (typeof updateStatusPanel === 'function') updateStatusPanel();
+            if (typeof updateStatusPanel === 'function') SceneHud.refresh('status');
             if (window.SceneRenderer && typeof window.SceneRenderer.render === 'function') window.SceneRenderer.render();
         });
     }
@@ -10719,7 +10719,7 @@
                 getStrengthLevel: function () { return IE.getSkillLevel('survival_strength'); }
             });
         }
-        if (typeof updateStatusPanel === 'function') updateStatusPanel();
+        if (typeof updateStatusPanel === 'function') SceneHud.refresh('status');
         if (opts && opts.refreshCombat && combatPanelOpen) renderCombatModal();
         renderSurvivalModal();
     }
@@ -10789,7 +10789,7 @@
                     }
                 }
                 renderSurvivalModal();
-                if (typeof updateStatusPanel === 'function') updateStatusPanel();
+                if (typeof updateStatusPanel === 'function') SceneHud.refresh('status');
             };
         })(opts.skillId, opts.name || '');
 
@@ -10947,7 +10947,7 @@
                     getStrengthLevel: function () { return window.InventoryEquipment.getSkillLevel('survival_strength'); }
                 });
             }
-            if (typeof updateStatusPanel === 'function') updateStatusPanel();
+            if (typeof updateStatusPanel === 'function') SceneHud.refresh('status');
             if (combatPanelOpen) renderCombatModal();
         });
     }
@@ -11280,6 +11280,12 @@
     }
 
     function init() {
+        // SceneHud 刷新通道：注册本闭包内面板刷新实现（P0 组合根化拆解）。
+        // 内部调用已改走 SceneHud.refresh('status')；外部模块经 SceneCtx.updateStatusPanel
+        // 的兼容桥保持可用，随各自切片迁出时再切换。
+        if (window.SceneHud && typeof window.SceneHud.register === 'function') {
+            window.SceneHud.register('status', updateStatusPanel);
+        }
         registerUiWindows();
         loadConfig().then(function () {
             // i18n 已就绪（UIText.setDict 已完成）后再进行地图合并渲染
@@ -11725,7 +11731,7 @@
                     window.GameLog.log(ui('log.system.attack.intent.keyboard'), 'info');
                 }
                 render();
-                if (typeof updateStatusPanel === 'function') updateStatusPanel();
+                if (typeof updateStatusPanel === 'function') SceneHud.refresh('status');
             };
             window.SceneCtx.actions.interactNpc = function (npcId) {
                 if (guardPlayerComaBlocked()) return;
@@ -11988,7 +11994,7 @@
                     }
                     showMsg(ui(r2.reason_key, { shield: r2.shield_value != null ? r2.shield_value : 0 }), 'success');
                     if (window.SceneRenderer) window.SceneRenderer.render();
-                    if (typeof updateStatusPanel === 'function') updateStatusPanel();
+                    if (typeof updateStatusPanel === 'function') SceneHud.refresh('status');
                 });
             }
             var abGroundEl = document.getElementById('action-bar-ground');
@@ -12262,7 +12268,7 @@
         if (expText) useOkMsg += ' ' + expText;
         if (!options.silent) showMsg(useOkMsg, 'success');
         if (window.Survival && typeof window.Survival.advanceTick === 'function') window.Survival.advanceTick();
-        if (typeof updateStatusPanel === 'function') updateStatusPanel();
+        if (typeof updateStatusPanel === 'function') SceneHud.refresh('status');
         if (typeof backpackPanelOpen !== 'undefined' && backpackPanelOpen && typeof updateBackpackPanel === 'function') updateBackpackPanel();
         if (window.SceneRenderer && typeof window.SceneRenderer.render === 'function') window.SceneRenderer.render();
         return true;
@@ -12314,7 +12320,7 @@
         }
 
         if (!options.silent) showMsg(ui('log.success.equipped'), 'success');
-        if (typeof updateStatusPanel === 'function') updateStatusPanel();
+        if (typeof updateStatusPanel === 'function') SceneHud.refresh('status');
         if (typeof backpackPanelOpen !== 'undefined' && backpackPanelOpen && typeof updateBackpackPanel === 'function') updateBackpackPanel();
         if (window.SceneRenderer && typeof window.SceneRenderer.render === 'function') window.SceneRenderer.render();
         return true;

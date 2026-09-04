@@ -167,6 +167,16 @@ js/item-use.js  window.ItemUse      // applyItemUseEffectFromTemplate / tryUseIt
 
 **回归手段**：① `save-system.js` schemaVersion 键结构不变（读旧档即回归测试）；② 现有 `tools/smoke-*.mjs` 模式为每阶段补一条冒烟（如「新档→制作→存读档→战斗→农业自动 tick」链）；③ 手动冒烟清单逐阶段勾选；④ 拆解提交用 git diff 可审查为「纯搬移」优先。
 
+### 执行日志
+
+- **P0-批次1（已提交）**：`SceneHud` 刷新通道上线。
+  - 新增 `js/scene-hud.js`（register/unregister/refresh 透传参数；未注册 kind 静默 no-op）；`index.html` 挂载于 scene-app 之前。
+  - `init()` 顶部注册 `SceneHud.register('status', updateStatusPanel)`。
+  - `scene-app.js` 内 **50 处裸调 `updateStatusPanel()` → `SceneHud.refresh('status')`**（±1:1 纯替换，定义与 `SceneCtx.updateStatusPanel` 兼容桥未动）。
+  - 外部调用方（buff-system/npc-system/scene-renderer/scene-systems 共 9 处，经 `SceneCtx.updateStatusPanel`，其中 scene-renderer 传 `gatherState`）**暂走兼容桥**，随各自切片迁出时再切 `SceneHud.refresh('status', ...)`。
+  - 冒烟：本地实机启动正常（无 BOOT FAILED，场景进入）；无头浏览器无法点击持续动画页（actionability 超时），交互路径待人工在已开的游戏页确认。
+- **P0-批次2（待办）**：同法迁移 `updateBackpackPanel`（40 裸调）→ `SceneHud.refresh('backpack')`；再视需要覆盖 `renderCombatModal` 等高频刷新点，或把其余直调留待各自切片迁出时顺手切（推荐后者，减少无谓 churn）。
+
 ## 5. 风险与对策
 
 | 风险 | 对策 |
