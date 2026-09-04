@@ -600,6 +600,138 @@
         }
     }
 
+    /** 当前站点上下文（依赖注入；对应 scene-app getCurrentCookingStationContext）。 */
+    function getCurrentStationContext() {
+        return (typeof uiDeps.getCurrentCookingStationContext === 'function') ? uiDeps.getCurrentCookingStationContext() : null;
+    }
+
+    /** 从工艺表中收集需要的配件 id（去重排序）。 */
+    function getCookingAccessoryItemIdsFromMethods() {
+        var out = [];
+        var seen = {};
+        if (!getMethods() || typeof getMethods() !== 'object') return out;
+        var ids = Object.keys(getMethods());
+        var i;
+        for (i = 0; i < ids.length; i++) {
+            var m = getMethods()[ids[i]] || {};
+            var aid = (m.requires_accessory_item_id != null) ? String(m.requires_accessory_item_id).trim() : '';
+            if (!aid || seen[aid]) continue;
+            seen[aid] = true;
+            out.push(aid);
+        }
+        out.sort();
+        return out;
+    }
+
+    /** 背包中可安装的配件候选（未安装且数量>0）。 */
+    function getCookingAccessoryOptionsFromInventory(installedIds) {
+        var allow = getCookingAccessoryItemIdsFromMethods();
+        if (!allow.length) return [];
+        var installedSet = {};
+        var i;
+        for (i = 0; i < (installedIds || []).length; i++) installedSet[String(installedIds[i])] = true;
+        var out = [];
+        for (i = 0; i < allow.length; i++) {
+            var id = allow[i];
+            var have = global.InventoryHelpers.getInventoryCountByItemId(id);
+            if (have <= 0) continue;
+            if (installedSet[id]) continue;
+            out.push({ item_id: id, count: have });
+        }
+        return out;
+    }
+
+    /** 从背包安装配件（校验合法性 → 取出 → 写入 state.installed_accessory_item_ids）。 */
+    function installCookingAccessoryFromInventory(itemId) {
+        var id = itemId != null ? String(itemId).trim() : '';
+        if (!id) return { ok: false, reason: 'bad_item' };
+        var allow = getCookingAccessoryItemIdsFromMethods();
+        if (allow.indexOf(id) < 0) return { ok: false, reason: 'not_cooking_accessory', item_id: id };
+        var cs = getState();
+        var arr = Array.isArray(cs.installed_accessory_item_ids) ? cs.installed_accessory_item_ids : [];
+        var i;
+        for (i = 0; i < arr.length; i++) {
+            if (String(arr[i]) === id) return { ok: false, reason: 'already_installed', item_id: id };
+        }
+        var slot = global.InventoryHelpers.findFirstContainerSlotByItemId(id);
+        if (!slot) return { ok: false, reason: 'missing_item', item_id: id };
+        if (!IE || typeof IE.takeItemFromContainer !== 'function') return { ok: false, reason: 'inventory_api_missing' };
+        var taken = IE.takeItemFromContainer(slot.containerType, slot.index);
+        if (!taken || !taken.success || !taken.item) return { ok: false, reason: 'take_failed', item_id: id };
+        arr.push(id);
+        cs.installed_accessory_item_ids = arr;
+        return { ok: true, item_id: id };
+    }
+
+    /** 卸载配件回背包（默认容器满则掉到脚下地面）。 */
+    function uninstallCookingAccessoryToInventory(itemId) {
+        var id = itemId != null ? String(itemId).trim() : '';
+        if (!id) return { ok: false, reason: 'bad_item' };
+        var cs = getState();
+        var src = Array.isArray(cs.installed_accessory_item_ids) ? cs.installed_accessory_item_ids : [];
+        var out = [];
+        var removed = false;
+        var i;
+        for (i = 0; i < src.length; i++) {
+            var cur = String(src[i]).trim();
+            if (!removed && cur === id) {
+                removed = true;
+                continue;
+            }
+            if (cur) out.push(cur);
+        }
+        if (!removed) return { ok: false, reason: 'not_installed', item_id: id };
+        if (!IE || typeof IE.putItemIntoDefaultContainer !== 'function') return { ok: false, reason: 'inventory_api_missing' };
+        var inst = { item_id: id, count: 1 };
+        var placed = IE.putItemIntoDefaultContainer(inst);
+        if (!placed || !placed.placed) {
+            var st = E && typeof E.getState === 'function' ? E.getState() : null;
+            if (st && typeof IE.addItemToGround === 'function') {
+                IE.addItemToGround(st.mapId, st.x, st.y, inst);
+            } else {
+                return { ok: false, reason: 'put_back_failed', item_id: id };
+            }
+        }
+        cs.installed_accessory_item_ids = out;
+        return { ok: true, item_id: id };
+    }
+
+    /** 方法是否在该站点解锁（临时灶台按 allowed_methods/配件校验；常驻站按 state 配件）。 */
+    function isCookingMethodUnlockedAtStation(methodId, stationContext) {
+        var m = getMethods() && methodId ? getMethods()[String(methodId)] : null;
+        if (!m) return false;
+        var ctx = stationContext || getCurrentStationContext();
+        if (ctx && ctx.station_type === 'temp') {
+            var allowed = ctx.temp_station && Array.isArray(ctx.temp_station.allowed_methods) ? ctx.temp_station.allowed_methods : null;
+            if (allowed && allowed.length) {
+                var mid0 = String(methodId);
+                var allowHit = false;
+                var ai;
+                for (ai = 0; ai < allowed.length; ai++) {
+                    if (String(allowed[ai]) === mid0) { allowHit = true; break; }
+                }
+                if (!allowHit) return false;
+            }
+        }
+        var req = m.requires_accessory_item_id;
+        if (req == null || String(req).trim() === '') return true;
+        var arr;
+        if (ctx && ctx.station_type === 'temp') {
+            arr = ctx.temp_station && Array.isArray(ctx.temp_station.installed_accessory_item_ids)
+                ? ctx.temp_station.installed_accessory_item_ids
+                : [];
+        } else {
+            var st = getState();
+            arr = st.installed_accessory_item_ids || [];
+        }
+        var need = String(req).trim();
+        var i;
+        for (i = 0; i < arr.length; i++) {
+            if (String(arr[i]).trim() === need) return true;
+        }
+        return false;
+    }
+
     global.CookingStation = {
         setConfig: setConfig,
         getMethods: getMethods,
@@ -633,6 +765,11 @@
         syncCookingTempStationsIntoMaps: syncCookingTempStationsIntoMaps,
         placeTempCookingStation: placeTempCookingStation,
         isActiveCraftOnTempStation: isActiveCraftOnTempStation,
-        tickCookingTempStationsAfterWorldTick: tickCookingTempStationsAfterWorldTick
+        tickCookingTempStationsAfterWorldTick: tickCookingTempStationsAfterWorldTick,
+        getCookingAccessoryItemIdsFromMethods: getCookingAccessoryItemIdsFromMethods,
+        getCookingAccessoryOptionsFromInventory: getCookingAccessoryOptionsFromInventory,
+        installCookingAccessoryFromInventory: installCookingAccessoryFromInventory,
+        uninstallCookingAccessoryToInventory: uninstallCookingAccessoryToInventory,
+        isCookingMethodUnlockedAtStation: isCookingMethodUnlockedAtStation
     };
 })(typeof window !== 'undefined' ? window : globalThis);

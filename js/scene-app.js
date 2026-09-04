@@ -2753,38 +2753,6 @@
         return null;
     }
 
-    function getItemTemplateSafe(itemId) {
-        if (!IE || typeof IE.getItemTemplate !== 'function' || !itemId) return null;
-        return IE.getItemTemplate(itemId);
-    }
-
-    function hasItemById(itemId) {
-        return InventoryHelpers.getInventoryCountByItemId(itemId) > 0;
-    }
-
-    function getItemWaterPoints(itemId) {
-        var tpl = getItemTemplateSafe(itemId);
-        var n = tpl && tpl.water_points != null ? parseInt(tpl.water_points, 10) : 0;
-        return (isFinite(n) && n > 0) ? n : 0;
-    }
-    function getItemFuelPoints(itemId) {
-        var tpl = getItemTemplateSafe(itemId);
-        var n = tpl && tpl.fuel_points != null ? parseInt(tpl.fuel_points, 10) : 0;
-        return (isFinite(n) && n > 0) ? n : 0;
-    }
-
-    /** 仅当物品模板显式 cooking_ingredient===true 时可作烹饪投料；缺省或 false 均不可。 */
-    function isItemAllowedCookingIngredient(itemId) {
-        var tpl = getItemTemplateSafe(itemId);
-        return !!(tpl && tpl.cooking_ingredient === true);
-    }
-
-    // === Auto-generated Pharmacy Helper ===
-    function isItemAllowedPharmacyIngredient(itemId) {
-        var tpl = getItemTemplateSafe(itemId);
-        return !!(tpl && tpl.pharmacy_ingredient === true);
-    }
-
     function advanceWorldTicks(n) {
         var times = parseInt(n, 10);
         if (!isFinite(times) || times <= 0) return;
@@ -2908,7 +2876,7 @@
         if (!mid) return { ok: false, reason: 'method_required' };
         var m = PharmacyStation.getMethods() && PharmacyStation.getMethods()[mid] ? PharmacyStation.getMethods()[mid] : null;
         if (!m) return { ok: false, reason: 'method_not_found', method_id: mid };
-        if (!isPharmacyMethodUnlockedAtStation(mid, stationCtx)) {
+        if (!PharmacyStation.isPharmacyMethodUnlockedAtStation(mid, stationCtx)) {
             return {
                 ok: false,
                 reason: 'pharmacy_method_locked',
@@ -2922,7 +2890,7 @@
         var i;
         for (i = 0; i < selected.length; i++) {
             var sid = selected[i].item_id;
-            if (!isItemAllowedPharmacyIngredient(sid)) {
+            if (!StationCraftCore.isItemAllowedPharmacyIngredient(sid)) {
                 return { ok: false, reason: 'not_pharmacy_ingredient', item_id: sid };
             }
             if (InventoryHelpers.getInventoryCountByItemId(sid) < selected[i].count) {
@@ -3159,237 +3127,6 @@
 
     var DEFAULT_COOKING_INSTALLED_ACCESSORIES = [];
 
-    function getCookingAccessoryItemIdsFromMethods() {
-        var out = [];
-        var seen = {};
-        if (!CookingStation.getMethods() || typeof CookingStation.getMethods() !== 'object') return out;
-        var ids = Object.keys(CookingStation.getMethods());
-        var i;
-        for (i = 0; i < ids.length; i++) {
-            var m = CookingStation.getMethods()[ids[i]] || {};
-            var aid = (m.requires_accessory_item_id != null) ? String(m.requires_accessory_item_id).trim() : '';
-            if (!aid || seen[aid]) continue;
-            seen[aid] = true;
-            out.push(aid);
-        }
-        out.sort();
-        return out;
-    }
-
-    function getCookingAccessoryOptionsFromInventory(installedIds) {
-        var allow = getCookingAccessoryItemIdsFromMethods();
-        if (!allow.length) return [];
-        var installedSet = {};
-        var i;
-        for (i = 0; i < (installedIds || []).length; i++) installedSet[String(installedIds[i])] = true;
-        var out = [];
-        for (i = 0; i < allow.length; i++) {
-            var id = allow[i];
-            var have = InventoryHelpers.getInventoryCountByItemId(id);
-            if (have <= 0) continue;
-            if (installedSet[id]) continue;
-            out.push({ item_id: id, count: have });
-        }
-        return out;
-    }
-
-    // === Auto-generated Pharmacy Helper ===
-    function getPharmacyAccessoryOptionsFromInventory(installedIds) {
-        var allow = getPharmacyAccessoryItemIdsFromMethods();
-        if (!allow.length) return [];
-        var installedSet = {};
-        var i;
-        for (i = 0; i < (installedIds || []).length; i++) installedSet[String(installedIds[i])] = true;
-        var out = [];
-        for (i = 0; i < allow.length; i++) {
-            var id = allow[i];
-            var have = InventoryHelpers.getInventoryCountByItemId(id);
-            if (have <= 0) continue;
-            if (installedSet[id]) continue;
-            out.push({ item_id: id, count: have });
-        }
-        return out;
-    }
-
-    function installCookingAccessoryFromInventory(itemId) {
-        var id = itemId != null ? String(itemId).trim() : '';
-        if (!id) return { ok: false, reason: 'bad_item' };
-        var allow = getCookingAccessoryItemIdsFromMethods();
-        if (allow.indexOf(id) < 0) return { ok: false, reason: 'not_cooking_accessory', item_id: id };
-        var cs = CookingStation.getState();
-        var arr = Array.isArray(cs.installed_accessory_item_ids) ? cs.installed_accessory_item_ids : [];
-        var i;
-        for (i = 0; i < arr.length; i++) {
-            if (String(arr[i]) === id) return { ok: false, reason: 'already_installed', item_id: id };
-        }
-        var slot = InventoryHelpers.findFirstContainerSlotByItemId(id);
-        if (!slot) return { ok: false, reason: 'missing_item', item_id: id };
-        if (!IE || typeof IE.takeItemFromContainer !== 'function') return { ok: false, reason: 'inventory_api_missing' };
-        var taken = IE.takeItemFromContainer(slot.containerType, slot.index);
-        if (!taken || !taken.success || !taken.item) return { ok: false, reason: 'take_failed', item_id: id };
-        arr.push(id);
-        cs.installed_accessory_item_ids = arr;
-        return { ok: true, item_id: id };
-    }
-
-    // === Auto-generated Pharmacy Helper ===
-    function installPharmacyAccessoryFromInventory(itemId) {
-        var id = itemId != null ? String(itemId).trim() : '';
-        if (!id) return { ok: false, reason: 'bad_item' };
-        var allow = getPharmacyAccessoryItemIdsFromMethods();
-        if (allow.indexOf(id) < 0) return { ok: false, reason: 'not_pharmacy_accessory', item_id: id };
-        var cs = PharmacyStation.getState();
-        var arr = Array.isArray(cs.installed_accessory_item_ids) ? cs.installed_accessory_item_ids : [];
-        var i;
-        for (i = 0; i < arr.length; i++) {
-            if (String(arr[i]) === id) return { ok: false, reason: 'already_installed', item_id: id };
-        }
-        var slot = InventoryHelpers.findFirstContainerSlotByItemId(id);
-        if (!slot) return { ok: false, reason: 'missing_item', item_id: id };
-        if (!IE || typeof IE.takeItemFromContainer !== 'function') return { ok: false, reason: 'inventory_api_missing' };
-        var taken = IE.takeItemFromContainer(slot.containerType, slot.index);
-        if (!taken || !taken.success || !taken.item) return { ok: false, reason: 'take_failed', item_id: id };
-        arr.push(id);
-        cs.installed_accessory_item_ids = arr;
-        return { ok: true, item_id: id };
-    }
-
-    function uninstallCookingAccessoryToInventory(itemId) {
-        var id = itemId != null ? String(itemId).trim() : '';
-        if (!id) return { ok: false, reason: 'bad_item' };
-        var cs = CookingStation.getState();
-        var src = Array.isArray(cs.installed_accessory_item_ids) ? cs.installed_accessory_item_ids : [];
-        var out = [];
-        var removed = false;
-        var i;
-        for (i = 0; i < src.length; i++) {
-            var cur = String(src[i]).trim();
-            if (!removed && cur === id) {
-                removed = true;
-                continue;
-            }
-            if (cur) out.push(cur);
-        }
-        if (!removed) return { ok: false, reason: 'not_installed', item_id: id };
-        if (!IE || typeof IE.putItemIntoDefaultContainer !== 'function') return { ok: false, reason: 'inventory_api_missing' };
-        var inst = { item_id: id, count: 1 };
-        var placed = IE.putItemIntoDefaultContainer(inst);
-        if (!placed || !placed.placed) {
-            var st = E && typeof E.getState === 'function' ? E.getState() : null;
-            if (st && typeof IE.addItemToGround === 'function') {
-                IE.addItemToGround(st.mapId, st.x, st.y, inst);
-            } else {
-                return { ok: false, reason: 'put_back_failed', item_id: id };
-            }
-        }
-        cs.installed_accessory_item_ids = out;
-        return { ok: true, item_id: id };
-    }
-
-    // === Auto-generated Pharmacy Helper ===
-    function uninstallPharmacyAccessoryToInventory(itemId) {
-        var id = itemId != null ? String(itemId).trim() : '';
-        if (!id) return { ok: false, reason: 'bad_item' };
-        var cs = PharmacyStation.getState();
-        var src = Array.isArray(cs.installed_accessory_item_ids) ? cs.installed_accessory_item_ids : [];
-        var out = [];
-        var removed = false;
-        var i;
-        for (i = 0; i < src.length; i++) {
-            var cur = String(src[i]).trim();
-            if (!removed && cur === id) {
-                removed = true;
-                continue;
-            }
-            if (cur) out.push(cur);
-        }
-        if (!removed) return { ok: false, reason: 'not_installed', item_id: id };
-        if (!IE || typeof IE.putItemIntoDefaultContainer !== 'function') return { ok: false, reason: 'inventory_api_missing' };
-        var inst = { item_id: id, count: 1 };
-        var placed = IE.putItemIntoDefaultContainer(inst);
-        if (!placed || !placed.placed) {
-            var st = E && typeof E.getState === 'function' ? E.getState() : null;
-            if (st && typeof IE.addItemToGround === 'function') {
-                IE.addItemToGround(st.mapId, st.x, st.y, inst);
-            } else {
-                return { ok: false, reason: 'put_back_failed', item_id: id };
-            }
-        }
-        cs.installed_accessory_item_ids = out;
-        return { ok: true, item_id: id };
-    }
-
-    function isCookingMethodUnlockedAtStation(methodId, stationContext) {
-        var m = CookingStation.getMethods() && methodId ? CookingStation.getMethods()[String(methodId)] : null;
-        if (!m) return false;
-        var ctx = stationContext || getCurrentCookingStationContext();
-        if (ctx && ctx.station_type === 'temp') {
-            var allowed = ctx.temp_station && Array.isArray(ctx.temp_station.allowed_methods) ? ctx.temp_station.allowed_methods : null;
-            if (allowed && allowed.length) {
-                var mid0 = String(methodId);
-                var allowHit = false;
-                var ai;
-                for (ai = 0; ai < allowed.length; ai++) {
-                    if (String(allowed[ai]) === mid0) { allowHit = true; break; }
-                }
-                if (!allowHit) return false;
-            }
-        }
-        var req = m.requires_accessory_item_id;
-        if (req == null || String(req).trim() === '') return true;
-        var arr;
-        if (ctx && ctx.station_type === 'temp') {
-            arr = ctx.temp_station && Array.isArray(ctx.temp_station.installed_accessory_item_ids)
-                ? ctx.temp_station.installed_accessory_item_ids
-                : [];
-        } else {
-            var st = CookingStation.getState();
-            arr = st.installed_accessory_item_ids || [];
-        }
-        var need = String(req).trim();
-        var i;
-        for (i = 0; i < arr.length; i++) {
-            if (String(arr[i]).trim() === need) return true;
-        }
-        return false;
-    }
-
-    // === Auto-generated Pharmacy Helper ===
-    function isPharmacyMethodUnlockedAtStation(methodId, stationContext) {
-        var m = PharmacyStation.getMethods() && methodId ? PharmacyStation.getMethods()[String(methodId)] : null;
-        if (!m) return false;
-        var ctx = stationContext || getCurrentPharmacyStationContext();
-        if (ctx && ctx.station_type === 'temp') {
-            var allowed = ctx.temp_station && Array.isArray(ctx.temp_station.allowed_methods) ? ctx.temp_station.allowed_methods : null;
-            if (allowed && allowed.length) {
-                var mid0 = String(methodId);
-                var allowHit = false;
-                var ai;
-                for (ai = 0; ai < allowed.length; ai++) {
-                    if (String(allowed[ai]) === mid0) { allowHit = true; break; }
-                }
-                if (!allowHit) return false;
-            }
-        }
-        var req = m.requires_accessory_item_id;
-        if (req == null || String(req).trim() === '') return true;
-        var arr;
-        if (ctx && ctx.station_type === 'temp') {
-            arr = ctx.temp_station && Array.isArray(ctx.temp_station.installed_accessory_item_ids)
-                ? ctx.temp_station.installed_accessory_item_ids
-                : [];
-        } else {
-            var st = PharmacyStation.getState();
-            arr = st.installed_accessory_item_ids || [];
-        }
-        var need = String(req).trim();
-        var i;
-        for (i = 0; i < arr.length; i++) {
-            if (String(arr[i]).trim() === need) return true;
-        }
-        return false;
-    }
-
     function resetCookingStateForNewCharacter() {
         if (!window.SceneCtx) return;
         window.SceneCtx.cooking_station_runtime = window.CookingStation.createDefaultState();
@@ -3432,7 +3169,7 @@
         var pourCtx = getCurrentCookingStationContext();
         if (pourCtx && pourCtx.station_type === 'main' && CookingStation.getState().water_unlimited) return false;
         var slot = findFirstContainerSlotByPredicate(function (cell) {
-            return getItemWaterPoints(cell.item_id) > 0;
+            return StationCraftCore.getItemWaterPoints(cell.item_id) > 0;
         });
         return !!slot;
     }
@@ -3441,7 +3178,7 @@
         if (!isOnCookingStationTile()) return false;
         if (isCookingUiBlockedByRepair()) return false;
         var slot = findFirstContainerSlotByPredicate(function (cell) {
-            return getItemFuelPoints(cell.item_id) > 0;
+            return StationCraftCore.getItemFuelPoints(cell.item_id) > 0;
         });
         return !!slot;
     }
@@ -3462,7 +3199,7 @@
     function canTakeWaterAtCurrentTile() {
         if (isPreCreationGameplayRestricted()) return false;
         if (!isFishingPointAtPlayerTile()) return false;
-        return hasItemById('tool_bucket_water_empty');
+        return StationCraftCore.hasItemById('tool_bucket_water_empty');
     }
 
     function onTakeWaterClick() {
@@ -3524,13 +3261,13 @@
             return;
         }
         var slot = resolveCookingSlotOrFirst(forcedSlot, function (cell) {
-            return getItemWaterPoints(cell.item_id) > 0;
+            return StationCraftCore.getItemWaterPoints(cell.item_id) > 0;
         });
         if (!slot) {
             showMsg(ui(forcedSlot ? 'cooking.pour_water.slot_invalid' : 'cooking.pour_water.no_item'), 'info');
             return;
         }
-        var waterGain = getItemWaterPoints(slot.item.item_id);
+        var waterGain = StationCraftCore.getItemWaterPoints(slot.item.item_id);
         if (!(waterGain > 0)) {
             showMsg(ui('cooking.pour_water.no_water_value'), 'info');
             return;
@@ -3571,13 +3308,13 @@
             return;
         }
         var slot = resolveCookingSlotOrFirst(forcedSlot, function (cell) {
-            return getItemFuelPoints(cell.item_id) > 0;
+            return StationCraftCore.getItemFuelPoints(cell.item_id) > 0;
         });
         if (!slot) {
             showMsg(ui(forcedSlot ? 'cooking.add_fuel.slot_invalid' : 'cooking.add_fuel.no_item'), 'info');
             return;
         }
-        var fuelGain = getItemFuelPoints(slot.item.item_id);
+        var fuelGain = StationCraftCore.getItemFuelPoints(slot.item.item_id);
         if (!(fuelGain > 0)) {
             showMsg(ui('cooking.add_fuel.not_fuel'), 'info');
             return;
@@ -3624,7 +3361,7 @@
         if (!mid) return { ok: false, reason: 'method_required' };
         var m = CookingStation.getMethods() && CookingStation.getMethods()[mid] ? CookingStation.getMethods()[mid] : null;
         if (!m) return { ok: false, reason: 'method_not_found', method_id: mid };
-        if (!isCookingMethodUnlockedAtStation(mid, stationCtx)) {
+        if (!CookingStation.isCookingMethodUnlockedAtStation(mid, stationCtx)) {
             return {
                 ok: false,
                 reason: 'cooking_method_locked',
@@ -3638,7 +3375,7 @@
         var i;
         for (i = 0; i < selected.length; i++) {
             var sid = selected[i].item_id;
-            if (!isItemAllowedCookingIngredient(sid)) {
+            if (!StationCraftCore.isItemAllowedCookingIngredient(sid)) {
                 return { ok: false, reason: 'not_cooking_ingredient', item_id: sid };
             }
             if (InventoryHelpers.getInventoryCountByItemId(sid) < selected[i].count) {
@@ -4364,7 +4101,7 @@
                 if (!cell || !cell.item_id) continue;
                 var id = String(cell.item_id);
                 if (seen[id]) continue;
-                if (!isItemAllowedCookingIngredient(id)) continue;
+                if (!StationCraftCore.isItemAllowedCookingIngredient(id)) continue;
                 if (InventoryHelpers.getInventoryCountByItemId(id) <= 0) continue;
                 seen[id] = true;
                 out.push(id);
@@ -4406,7 +4143,7 @@
         if (!cookingStationPanelOpen) return;
         iid = iid != null ? String(iid) : '';
         if (!iid) return;
-        if (!isItemAllowedCookingIngredient(iid)) {
+        if (!StationCraftCore.isItemAllowedCookingIngredient(iid)) {
             showMsg(ui('cooking.try.fail.not_ingredient', { item: iid }), 'info');
             return;
         }
@@ -4513,10 +4250,10 @@
         if (!waterWrap || !fuelWrap) return;
         var char0 = IE && IE.getCharacterForDisplay ? IE.getCharacterForDisplay() : null;
         var waterSlots = findAllContainerSlotsByPredicate(function (cell) {
-            return getItemWaterPoints(cell.item_id) > 0;
+            return StationCraftCore.getItemWaterPoints(cell.item_id) > 0;
         });
         var fuelSlots = findAllContainerSlotsByPredicate(function (cell) {
-            return getItemFuelPoints(cell.item_id) > 0;
+            return StationCraftCore.getItemFuelPoints(cell.item_id) > 0;
         });
         if (!slotKeyInCookingSlotList(waterSlots, cookingStationUiState.selected_water_slot_key)) {
             cookingStationUiState.selected_water_slot_key = '';
@@ -4538,7 +4275,7 @@
                     var iid = sl.item.item_id;
                     var disp = getItemDisplayNameSafe(iid);
                     var cnt = (sl.item.count != null && parseInt(sl.item.count, 10) > 0) ? parseInt(sl.item.count, 10) : 1;
-                    var gain = kind === 'water' ? getItemWaterPoints(iid) : getItemFuelPoints(iid);
+                    var gain = kind === 'water' ? StationCraftCore.getItemWaterPoints(iid) : StationCraftCore.getItemFuelPoints(iid);
                     var gainTxt = kind === 'water'
                         ? ui('cooking.station_resource.water_gain_fmt', { n: gain })
                         : ui('cooking.station_resource.fuel_gain_fmt', { n: gain });
@@ -4613,7 +4350,7 @@
         if (!mid) {
             var ids = CookingStation.getMethods() ? Object.keys(CookingStation.getMethods()) : [];
             for (var mi = 0; mi < ids.length; mi++) {
-                if (isCookingMethodUnlockedAtStation(ids[mi])) { mid = ids[mi]; break; }
+                if (CookingStation.isCookingMethodUnlockedAtStation(ids[mi])) { mid = ids[mi]; break; }
             }
             if (mid) setCookingMethodId(mid);
         }
@@ -4629,7 +4366,7 @@
             });
             for (var mx = 0; mx < mids.length; mx++) {
                 var idm = mids[mx];
-                if (!isCookingMethodUnlockedAtStation(idm)) continue;
+                if (!CookingStation.isCookingMethodUnlockedAtStation(idm)) continue;
                 var mObj = CookingStation.getMethods()[idm] || {};
                 var btn = document.createElement('button');
                 btn.type = 'button';
@@ -4704,7 +4441,7 @@
                     abtn.textContent = ui('cooking.btn.remove');
                     abtn.onclick = (function (rid) {
                         return function () {
-                            var ret = uninstallCookingAccessoryToInventory(rid);
+                            var ret = CookingStation.uninstallCookingAccessoryToInventory(rid);
                             if (!ret || !ret.ok) {
                                 showMsg(ui('cooking.accessory.uninstall_fail', { item: getItemDisplayNameSafe(rid) }), 'warn');
                             } else {
@@ -4724,7 +4461,7 @@
         }
         if (accessorySel) {
             var prevAcc = accessorySel.value ? String(accessorySel.value) : '';
-            var accOpts = getCookingAccessoryOptionsFromInventory(installed);
+            var accOpts = CookingStation.getCookingAccessoryOptionsFromInventory(installed);
             accessorySel.innerHTML = '';
             for (var ax = 0; ax < accOpts.length; ax++) {
                 var ao = accOpts[ax];
@@ -4972,7 +4709,7 @@
                 var sel = document.getElementById('cooking-add-accessory');
                 var aid = sel && sel.value ? String(sel.value) : '';
                 if (!aid) return;
-                var ret = installCookingAccessoryFromInventory(aid);
+                var ret = CookingStation.installCookingAccessoryFromInventory(aid);
                 if (!ret || !ret.ok) {
                     showMsg(ui('cooking.accessory.install_fail', { item: getItemDisplayNameSafe(aid) }), 'warn');
                     renderCookingStationPanel();
@@ -5036,7 +4773,7 @@
                 if (!cell || !cell.item_id) continue;
                 var id = String(cell.item_id);
                 if (seen[id]) continue;
-                if (!isItemAllowedPharmacyIngredient(id)) continue;
+                if (!StationCraftCore.isItemAllowedPharmacyIngredient(id)) continue;
                 if (InventoryHelpers.getInventoryCountByItemId(id) <= 0) continue;
                 seen[id] = true;
                 out.push(id);
@@ -5078,7 +4815,7 @@
         if (!pharmacyStationPanelOpen) return;
         iid = iid != null ? String(iid) : '';
         if (!iid) return;
-        if (!isItemAllowedPharmacyIngredient(iid)) {
+        if (!StationCraftCore.isItemAllowedPharmacyIngredient(iid)) {
             showMsg(ui('pharmacy.try.fail.not_ingredient', { item: iid }), 'info');
             return;
         }
@@ -5184,7 +4921,7 @@
         if (!fuelWrap) return;
         var char0 = IE && IE.getCharacterForDisplay ? IE.getCharacterForDisplay() : null;
         var fuelSlots = findAllContainerSlotsByPredicate(function (cell) {
-            return getItemFuelPoints(cell.item_id) > 0;
+            return StationCraftCore.getItemFuelPoints(cell.item_id) > 0;
         });
         if (!slotKeyInPharmacySlotList(fuelSlots, pharmacyStationUiState.selected_fuel_slot_key)) {
             pharmacyStationUiState.selected_fuel_slot_key = '';
@@ -5203,7 +4940,7 @@
                     var iid = sl.item.item_id;
                     var disp = getItemDisplayNameSafe(iid);
                     var cnt = (sl.item.count != null && parseInt(sl.item.count, 10) > 0) ? parseInt(sl.item.count, 10) : 1;
-                    var gain = getItemFuelPoints(iid);
+                    var gain = StationCraftCore.getItemFuelPoints(iid);
                     var gainTxt = ui('pharmacy.station_resource.fuel_gain_fmt', { n: gain });
                     var rowKey = pharmacyResourceSlotKey(sl.containerType, sl.index);
                     var row = document.createElement('div');
@@ -5271,7 +5008,7 @@
         if (!mid) {
             var ids = PharmacyStation.getMethods() ? Object.keys(PharmacyStation.getMethods()) : [];
             for (var mi = 0; mi < ids.length; mi++) {
-                if (isPharmacyMethodUnlockedAtStation(ids[mi])) { mid = ids[mi]; break; }
+                if (PharmacyStation.isPharmacyMethodUnlockedAtStation(ids[mi])) { mid = ids[mi]; break; }
             }
             if (mid) setPharmacyMethodId(mid);
         }
@@ -5287,7 +5024,7 @@
             });
             for (var mx = 0; mx < mids.length; mx++) {
                 var idm = mids[mx];
-                if (!isPharmacyMethodUnlockedAtStation(idm)) continue;
+                if (!PharmacyStation.isPharmacyMethodUnlockedAtStation(idm)) continue;
                 var mObj = PharmacyStation.getMethods()[idm] || {};
                 var btn = document.createElement('button');
                 btn.type = 'button';
@@ -5362,7 +5099,7 @@
                     abtn.textContent = ui('pharmacy.btn.remove');
                     abtn.onclick = (function (rid) {
                         return function () {
-                            var ret = uninstallPharmacyAccessoryToInventory(rid);
+                            var ret = PharmacyStation.uninstallPharmacyAccessoryToInventory(rid);
                             if (!ret || !ret.ok) {
                                 showMsg(ui('pharmacy.accessory.uninstall_fail', { item: getItemDisplayNameSafe(rid) }), 'warn');
                             } else {
@@ -5382,7 +5119,7 @@
         }
         if (accessorySel) {
             var prevAcc = accessorySel.value ? String(accessorySel.value) : '';
-            var accOpts = getPharmacyAccessoryOptionsFromInventory(installed);
+            var accOpts = PharmacyStation.getPharmacyAccessoryOptionsFromInventory(installed);
             accessorySel.innerHTML = '';
             for (var ax = 0; ax < accOpts.length; ax++) {
                 var ao = accOpts[ax];
@@ -5605,7 +5342,7 @@
                 var sel = document.getElementById('pharmacy-add-accessory');
                 var aid = sel && sel.value ? String(sel.value) : '';
                 if (!aid) return;
-                var ret = installPharmacyAccessoryFromInventory(aid);
+                var ret = PharmacyStation.installPharmacyAccessoryFromInventory(aid);
                 if (!ret || !ret.ok) {
                     showMsg(ui('pharmacy.accessory.install_fail', { item: getItemDisplayNameSafe(aid) }), 'warn');
                     renderPharmacyStationPanel();
@@ -9798,7 +9535,9 @@
             },
             refreshPharmacyPanel: function () {
                 if (pharmacyStationPanelOpen) renderPharmacyStationPanel();
-            }
+            },
+            getCurrentCookingStationContext: getCurrentCookingStationContext,
+            getCurrentPharmacyStationContext: getCurrentPharmacyStationContext
         };
         if (window.CookingStation && typeof window.CookingStation.setUiDeps === 'function') {
             window.CookingStation.setUiDeps(stationUiDeps);

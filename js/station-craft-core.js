@@ -246,6 +246,41 @@
         return Math.max(0, Math.min(1, successRateRaw));
     }
 
+    /** 模板安全读取（IE.getItemTemplate 带守卫；原 scene-app getItemTemplateSafe）。 */
+    function getItemTemplateSafe(itemId) {
+        var IE = getIE();
+        if (!IE || typeof IE.getItemTemplate !== 'function' || !itemId) return null;
+        return IE.getItemTemplate(itemId);
+    }
+
+    /** 物品是否存在于任一容器（原 scene-app hasItemById）。 */
+    function hasItemById(itemId) {
+        return global.InventoryHelpers.getInventoryCountByItemId(itemId) > 0;
+    }
+
+    function getItemWaterPoints(itemId) {
+        var tpl = getItemTemplateSafe(itemId);
+        var n = tpl && tpl.water_points != null ? parseInt(tpl.water_points, 10) : 0;
+        return (isFinite(n) && n > 0) ? n : 0;
+    }
+    function getItemFuelPoints(itemId) {
+        var tpl = getItemTemplateSafe(itemId);
+        var n = tpl && tpl.fuel_points != null ? parseInt(tpl.fuel_points, 10) : 0;
+        return (isFinite(n) && n > 0) ? n : 0;
+    }
+
+    /** 仅当物品模板显式 cooking_ingredient===true 时可作烹饪投料；缺省或 false 均不可。 */
+    function isItemAllowedCookingIngredient(itemId) {
+        var tpl = getItemTemplateSafe(itemId);
+        return !!(tpl && tpl.cooking_ingredient === true);
+    }
+
+    /** 仅当物品模板显式 pharmacy_ingredient===true 时可作制药投料。 */
+    function isItemAllowedPharmacyIngredient(itemId) {
+        var tpl = getItemTemplateSafe(itemId);
+        return !!(tpl && tpl.pharmacy_ingredient === true);
+    }
+
     global.StationCraftCore = {
         normalizeCookingInputs: normalizeCookingInputs,
         normalizePharmacyInputs: normalizePharmacyInputs,
@@ -260,6 +295,12 @@
         toUnifiedCookingMethodId: toUnifiedCookingMethodId,
         toUnifiedPharmacyMethodId: toUnifiedPharmacyMethodId,
         readMethodCostValue: readMethodCostValue,
-        getProductionSuccessRateWithMoodDelta: getProductionSuccessRateWithMoodDelta
+        getProductionSuccessRateWithMoodDelta: getProductionSuccessRateWithMoodDelta,
+        getItemTemplateSafe: getItemTemplateSafe,
+        hasItemById: hasItemById,
+        getItemWaterPoints: getItemWaterPoints,
+        getItemFuelPoints: getItemFuelPoints,
+        isItemAllowedCookingIngredient: isItemAllowedCookingIngredient,
+        isItemAllowedPharmacyIngredient: isItemAllowedPharmacyIngredient
     };
 })(typeof window !== 'undefined' ? window : globalThis);

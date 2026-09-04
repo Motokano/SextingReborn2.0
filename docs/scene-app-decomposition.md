@@ -230,6 +230,11 @@ js/item-use.js  window.ItemUse      // applyItemUseEffectFromTemplate / tryUseIt
     - 迁出 10 函数（normalize/getCookingTempStationsRuntime/isEntity/find/upsert/remove/sync/place/isActiveCraftOnTempStation/tick 到期清理）+ `COOKING_TEMP_STATION_ENTITY_ID` 常量（原 4 处引用全在簇内）。
     - markCellDirty/getMapsRef 为通用小包装留主 JS；模块内直调 SceneCtx.pushDirtyCell/GameEngine.getMaps。
     - scene-app 删 175 行；8 名称重接零残留；实机冒烟通过。scene-app 当前 10905 行。
+  - **P1c-2f（已提交）**：站点规则簇迁出（配件装卸/解锁/原料判定，263 行移出）。
+    - `StationCraftCore` 收 6 通用项（getItemTemplateSafe/hasItemById/getItemWaterPoints/getItemFuelPoints/isItemAllowedCookingIngredient/isItemAllowedPharmacyIngredient）。
+    - `CookingStation`/`PharmacyStation` 各收 5 配件/解锁函数（ids 收集/候选/安装/卸载/isXMethodUnlockedAtStation——临时灶台 allowed_methods 与配件双路校验）。
+    - DI 增 getCurrentCookingStationContext/getCurrentPharmacyStationContext 键；修复原 pharmacy options 引用未定义 ids 收集器的潜伏死路径（模块内补齐）。
+    - 删除前先扫残留定义（流程固化）；scene-app 删 263 行、26 处重接零残留。scene-app 当前 10597 行。
 - **P1c（待办）**：站点规则与面板迁出（配 infra 桥，见 P1 实测 deps：ui/showMsg/render/tooltip 系列/`isPreCreationGameplayRestricted` 等）；compost 面板 → `compost-panel.js`。
 
 ## 5. 风险与对策
