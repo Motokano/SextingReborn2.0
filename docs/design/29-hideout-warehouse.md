@@ -1,7 +1,7 @@
 # 29 · 藏身处账号仓库（hideout_warehouse）
 
 > **状态**：设计定案（实现待接）。升级材料表见 **`warehouse-upgrade-roadmap.html`**、**`data/warehouse-upgrades.json`**。  
-> **与调试仓**：过渡期 **`modal-base-warehouse` 无限取物**仍保留；真仓 **`hideout_warehouse`** 独立存档与 API，见 **§9**。
+> **与调试仓**：过渡期 **`modal-base-warehouse` 无限取物**仍保留；真仓 **`hideout_warehouse`** 独立存档与 API，见 **§10**。
 
 ---
 
@@ -68,7 +68,7 @@
 ## 5. 访问入口
 
 - **正式入口**：**设施 NPC** 管线（与灶台/制肥桶/床位同构）：地图绑定 `warehouse_station_interact_npc_by_cell`（或回退 id）→ **`interactNpc`** → 主菜单打开仓库面板。
-- **过渡期**：地图 `annotations: "仓库"` + **`modal-base-warehouse` 调试无限取物** 可 **暂时并存**；真仓上线后逐步收口，见 §9。
+- **过渡期**：地图 `annotations: "仓库"` + **`modal-base-warehouse` 调试无限取物** 可 **暂时并存**；真仓上线后逐步收口，见 §11。
 - **默认访问范围**：**仅藏身处**（基地内）。
 - **U-G2 远驿**：地牢内设施 **临时** 开放 **同一存档** 的 `hideout_warehouse`（见 §8）。
 
@@ -81,7 +81,7 @@
 - **施工中移动**：扩建子层计时进行中时，玩家 **不可移动**（与灶台制作中类似）；**关闭按钮禁用**（含仓库 ✕ 与扩建层 ×），直至本 tick 计时结束或体力不足暂停。
 - **数据**：**`data/warehouse-upgrades.json`**；可视化 **`warehouse-upgrade-roadmap.html`**。
 - **阶梯**：100 → 200 (U-A1) → 350 (U-A2) → 500 (U-A3) → 700 (U-A4)。
-- **14 个付费 QoL 节点**：路线图 v6；材料均为现有 `items.json` id。
+- **12 个付费 QoL 节点**（另有 U-A1～A4 扩仓 4 个，速查表为全量）：路线图 v6；材料均为现有 `items.json` id。
 
 ### 6.0 路线发现与三选一开局
 

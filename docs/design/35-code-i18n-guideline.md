@@ -2,7 +2,7 @@
 
 > **目的**：根治「JS 里硬编码中文」导致的两类问题——① 误用工具造成的 mojibake 乱码；② 文案散落无法本地化。本文档是**强制代码规范**，含工具边界、key 命名规则、抽离流程与分批计划。
 >
-> **背景**：项目已有 `data/ui_text_zhCN.json` + `ui()`/`UIText.t()` 强校验机制，但历史代码遗留 **526+ 处硬编码中文字符串**（`tools/check-i18n.js` 实测），散在 27 个 JS 文件。此前一次 PowerShell 误操作把多个含中文文件写成 mojibake。
+> **背景**：项目已有 `data/ui_text_zhCN.json` + `ui()`/`UIText.t()` 强校验机制，但历史代码遗留 **516 处硬编码中文字符串**（`tools/check-i18n.js` 实测基线，口径见 §6），散在 27 个 JS 文件。此前一次 PowerShell 误操作把多个含中文文件写成 mojibake。
 
 ---
 
@@ -64,6 +64,8 @@
 
 ## 5. 分批计划（按优先级）
 
+> **进度快照（2026-09）**：本节批次规模与状态为当次盘点结果；后续以 `node tools/check-i18n.js` 复跑与 [implementation-progress](../implementation-progress.md) 为准。
+
 | 批次 | 内容 | 规模（约） | 状态 |
 |------|------|-----------|------|
 | ① 玩家即时文案 | showMsg/logMsg/textContent/tips/innerHTML | ~350 处 / 27 文件 | ✅ **已完成**：scene-app、scene-renderer、livestock-state、livestock-panel（170 处全清）、gathering、inventory-equipment、game-time、item-info-modules、npc-system、save-system |
@@ -78,6 +80,8 @@
 ---
 
 ## 6. 已完成
+
+> **进度快照（2026-09）**：本节为当次完成记录；后续以 `node tools/check-i18n.js` 复跑与 [implementation-progress](../implementation-progress.md) 为准。
 
 - `tools/check-i18n.js` 检测脚本（mojibake + 硬编码中文统计）；
 - **玩家可见文案全部抽离完成**（516 → 236 处）：10 个核心文件 + livestock-panel（170 处，含辅助函数 reasonText/tierLabel/grassStage 等）共 **280 处** → `ui_text_zhCN.json` + `ui('key')`/`t('key')`/`tQuick('key')`；
