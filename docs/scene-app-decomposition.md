@@ -219,6 +219,9 @@ js/item-use.js  window.ItemUse      // applyItemUseEffectFromTemplate / tryUseIt
   - **P5a（已提交）**：物品 tooltip 簇迁 `js/scene-ui.js`（SceneUi）。
     - 迁出 6 函数（showItemTooltip/hideItemTooltip + tooltipEl/tooltipHideTimer DOM 态、buildItemTooltipHtml/ForTemplate、formatItemAttributes、buildItemFieldRulesHtmlAppend）。
     - DI setUiDeps({ ui })；scene-app 删 107 行；35 处调用重接；零残留；实机冒烟通过。scene-app 当前 11478 行。本模块是 P5 scene-ui 种子，后续面板/HUD 的 tooltip 依赖已可外部解析。
+  - **P1c-2c（已提交）**：烹饪技能熟练度簇迁 `cooking-station.js`。
+    - 迁出 3 常量（COOKING_SKILL_MAX_LEVEL/COOKING_MAX_PROFICIENCY_USES/COOKING_SUCCESS_BONUS_PER_LEVEL）+ 4 函数（getCookingSkillLevel/getCookingLevelBySuccessUses/ensureLifeCookingSkillEntry/addCookingSuccessProficiency）；`recalcCharacterStatsFromIE` 经 DI（stationUiDeps 增 recalcCharacterStats 键）。
+    - scene-app 删 68 行（保 recalc 与畜牧簇不动）；5 处引用重接；零残留；实机冒烟通过。scene-app 当前 11411 行——craft 生命周期（finalize/tick）的主要闭包依赖已入模块。
 - **P1c（待办）**：站点规则与面板迁出（配 infra 桥，见 P1 实测 deps：ui/showMsg/render/tooltip 系列/`isPreCreationGameplayRestricted` 等）；compost 面板 → `compost-panel.js`。
 
 ## 5. 风险与对策

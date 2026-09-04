@@ -143,6 +143,90 @@
         return { ok: true, data: data };
     }
 
+    /** 烹饪生活技能成长曲线常量（自 scene-app 闭包迁出；对齐生活技能：500 万次使用满级 100）。 */
+    var COOKING_SKILL_MAX_LEVEL = 100;
+    var COOKING_MAX_PROFICIENCY_USES = 5000000;
+    var COOKING_SUCCESS_BONUS_PER_LEVEL = 0.005;
+
+    function getIE() {
+        return global.InventoryEquipment || null;
+    }
+
+    /** 读当前烹饪技能等级（life_cooking；skill_id 与 recipe-system 对齐）。 */
+    function getCookingSkillLevel() {
+        var IE = getIE();
+        if (IE && typeof IE.getSkillLevel === 'function') {
+            var lv = parseInt(IE.getSkillLevel('life_cooking'), 10);
+            if (isFinite(lv) && lv > 0) return lv;
+        }
+        return 0;
+    }
+
+    /** 按累计成功次数映射技能等级（5000000 次达到满级 100）。 */
+    function getCookingLevelBySuccessUses(successUses) {
+        var uses = Math.max(0, parseInt(successUses, 10) || 0);
+        // 对齐生活技能：以累计使用次数驱动成长，5000000 次达到满级 100。
+        var ratio = Math.max(0, Math.min(1, uses / COOKING_MAX_PROFICIENCY_USES));
+        return Math.max(1, Math.min(COOKING_SKILL_MAX_LEVEL, 1 + Math.floor(ratio * (COOKING_SKILL_MAX_LEVEL - 1))));
+    }
+
+    /** 重算角色属性（依赖注入；对应 scene-app recalcCharacterStatsFromIE）。 */
+    function recalcCharacterStats() {
+        if (typeof uiDeps.recalcCharacterStats === 'function') uiDeps.recalcCharacterStats();
+    }
+
+    /** 确保 life_cooking 技能条目存在且等级/熟练度一致（clamp + 曲线映射 + 重算）。 */
+    function ensureLifeCookingSkillEntry() {
+        var IE = getIE();
+        if (!IE || typeof IE.getState !== 'function') return false;
+        var st = IE.getState();
+        if (!st || typeof st !== 'object') return false;
+        if (!st.skills || typeof st.skills !== 'object') st.skills = {};
+        if (!st.skills.life_cooking || typeof st.skills.life_cooking !== 'object') {
+            st.skills.life_cooking = { level: 1, move_usage: {} };
+            recalcCharacterStats();
+            return true;
+        }
+        var changed = false;
+        var lv = Math.max(0, parseInt(st.skills.life_cooking.level, 10) || 0);
+        if (lv < 1) {
+            st.skills.life_cooking.level = 1;
+            changed = true;
+        } else if (lv > COOKING_SKILL_MAX_LEVEL) {
+            st.skills.life_cooking.level = COOKING_SKILL_MAX_LEVEL;
+            changed = true;
+        }
+        if (!st.skills.life_cooking.move_usage || typeof st.skills.life_cooking.move_usage !== 'object') {
+            st.skills.life_cooking.move_usage = {};
+            changed = true;
+        }
+        var uses = Math.max(0, parseInt(st.skills.life_cooking.move_usage.cooking_success, 10) || 0);
+        var mappedLv = getCookingLevelBySuccessUses(uses);
+        if ((parseInt(st.skills.life_cooking.level, 10) || 0) !== mappedLv) {
+            st.skills.life_cooking.level = mappedLv;
+            changed = true;
+        }
+        if (changed) recalcCharacterStats();
+        return true;
+    }
+
+    /** 烹饪成功 +1 熟练度（move_usage.cooking_success）并按曲线升等级。 */
+    function addCookingSuccessProficiency() {
+        var IE = getIE();
+        if (!IE || typeof IE.incrementSkillMoveUsage !== 'function' || typeof IE.getState !== 'function') return;
+        if (!ensureLifeCookingSkillEntry()) return;
+        var newUses = IE.incrementSkillMoveUsage('life_cooking', 'cooking_success', 1);
+        var st = IE.getState();
+        if (!st || !st.skills || !st.skills.life_cooking) return;
+        var ent = st.skills.life_cooking;
+        var nextLv = getCookingLevelBySuccessUses(newUses);
+        var curLv = Math.max(1, parseInt(ent.level, 10) || 1);
+        if (nextLv !== curLv) {
+            ent.level = nextLv;
+            recalcCharacterStats();
+        }
+    }
+
     global.CookingStation = {
         setConfig: setConfig,
         getMethods: getMethods,
@@ -156,6 +240,13 @@
         setUiDeps: setUiDeps,
         ui: ui,
         showMsg: showMsg,
-        tryResolveCookingByUnifiedRoute: tryResolveCookingByUnifiedRoute
+        tryResolveCookingByUnifiedRoute: tryResolveCookingByUnifiedRoute,
+        COOKING_SKILL_MAX_LEVEL: COOKING_SKILL_MAX_LEVEL,
+        COOKING_MAX_PROFICIENCY_USES: COOKING_MAX_PROFICIENCY_USES,
+        COOKING_SUCCESS_BONUS_PER_LEVEL: COOKING_SUCCESS_BONUS_PER_LEVEL,
+        getCookingSkillLevel: getCookingSkillLevel,
+        getCookingLevelBySuccessUses: getCookingLevelBySuccessUses,
+        ensureLifeCookingSkillEntry: ensureLifeCookingSkillEntry,
+        addCookingSuccessProficiency: addCookingSuccessProficiency
     };
 })(typeof window !== 'undefined' ? window : globalThis);

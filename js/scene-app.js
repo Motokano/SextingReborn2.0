@@ -3137,7 +3137,7 @@
         }
 
         var pq = window.ProductionQuality;
-        var cookingLv = Math.max(0, Math.min(COOKING_SKILL_MAX_LEVEL, getCookingSkillLevel()));
+        var cookingLv = Math.max(0, Math.min(CookingStation.COOKING_SKILL_MAX_LEVEL, CookingStation.getCookingSkillLevel()));
         var evalRes = (pq && typeof pq.evaluateProduction === 'function')
             ? pq.evaluateProduction({
                 base_success_rate: pickBaseSuccessRate != null ? pickBaseSuccessRate : (m ? m.base_success_rate : 1),
@@ -3147,11 +3147,11 @@
             })
             : { success: true, success_rate: 1 };
         var baseSuccessRate = Math.max(0, Number(evalRes.success_rate) || 0);
-        var bonusFromCookingLv = cookingLv * COOKING_SUCCESS_BONUS_PER_LEVEL;
+        var bonusFromCookingLv = cookingLv * CookingStation.COOKING_SUCCESS_BONUS_PER_LEVEL;
         var successRateRaw = baseSuccessRate + bonusFromCookingLv;
         var successRateFinal = getProductionSuccessRateWithMoodDelta(successRateRaw);
         var overflowRate = Math.max(0, successRateRaw - 1);
-        var isMaxCookingLv = cookingLv >= COOKING_SKILL_MAX_LEVEL;
+        var isMaxCookingLv = cookingLv >= CookingStation.COOKING_SKILL_MAX_LEVEL;
         evalRes.success = isMaxCookingLv ? true : (Math.random() < successRateFinal);
         evalRes.success_rate = successRateFinal;
 
@@ -3165,7 +3165,7 @@
             outputItemId = String(pick.failure_output.item_id);
         }
         if (evalRes.success && pickRecipeId) CookingStation.markRecipeKnown(pickRecipeId);
-        if (evalRes.success) addCookingSuccessProficiency();
+        if (evalRes.success) CookingStation.addCookingSuccessProficiency();
 
         grantItemOrDrop(outputItemId);
         if (evalRes.success && Array.isArray(pickBonusOutputs) && pickBonusOutputs.length) {
@@ -3660,25 +3660,6 @@
         patchSurvivalTickForWorldSystemsOnce();
     }
 
-    var COOKING_SKILL_MAX_LEVEL = 100;
-    var COOKING_MAX_PROFICIENCY_USES = 5000000;
-    var COOKING_SUCCESS_BONUS_PER_LEVEL = 0.005;
-
-    function getCookingSkillLevel() {
-        if (IE && typeof IE.getSkillLevel === 'function') {
-            var lv = parseInt(IE.getSkillLevel('life_cooking'), 10);
-            if (isFinite(lv) && lv > 0) return lv;
-        }
-        return 0;
-    }
-
-    function getCookingLevelBySuccessUses(successUses) {
-        var uses = Math.max(0, parseInt(successUses, 10) || 0);
-        // 对齐生活技能：以累计使用次数驱动成长，5000000 次达到满级 100。
-        var ratio = Math.max(0, Math.min(1, uses / COOKING_MAX_PROFICIENCY_USES));
-        return Math.max(1, Math.min(COOKING_SKILL_MAX_LEVEL, 1 + Math.floor(ratio * (COOKING_SKILL_MAX_LEVEL - 1))));
-    }
-
     function recalcCharacterStatsFromIE() {
         if (!window.CharacterAttributes || typeof window.CharacterAttributes.recalcCharacterStats !== 'function') return;
         if (!IE || typeof IE.getState !== 'function') return;
@@ -3691,55 +3672,6 @@
         });
     }
 
-    function ensureLifeCookingSkillEntry() {
-        if (!IE || typeof IE.getState !== 'function') return false;
-        var st = IE.getState();
-        if (!st || typeof st !== 'object') return false;
-        if (!st.skills || typeof st.skills !== 'object') st.skills = {};
-        if (!st.skills.life_cooking || typeof st.skills.life_cooking !== 'object') {
-            st.skills.life_cooking = { level: 1, move_usage: {} };
-            recalcCharacterStatsFromIE();
-            return true;
-        }
-        var changed = false;
-        var lv = Math.max(0, parseInt(st.skills.life_cooking.level, 10) || 0);
-        if (lv < 1) {
-            st.skills.life_cooking.level = 1;
-            changed = true;
-        } else if (lv > COOKING_SKILL_MAX_LEVEL) {
-            st.skills.life_cooking.level = COOKING_SKILL_MAX_LEVEL;
-            changed = true;
-        }
-        if (!st.skills.life_cooking.move_usage || typeof st.skills.life_cooking.move_usage !== 'object') {
-            st.skills.life_cooking.move_usage = {};
-            changed = true;
-        }
-        var uses = Math.max(0, parseInt(st.skills.life_cooking.move_usage.cooking_success, 10) || 0);
-        var mappedLv = getCookingLevelBySuccessUses(uses);
-        if ((parseInt(st.skills.life_cooking.level, 10) || 0) !== mappedLv) {
-            st.skills.life_cooking.level = mappedLv;
-            changed = true;
-        }
-        if (changed) recalcCharacterStatsFromIE();
-        return true;
-    }
-
-    function addCookingSuccessProficiency() {
-        if (!IE || typeof IE.incrementSkillMoveUsage !== 'function' || typeof IE.getState !== 'function') return;
-        if (!ensureLifeCookingSkillEntry()) return;
-        var newUses = IE.incrementSkillMoveUsage('life_cooking', 'cooking_success', 1);
-        var st = IE.getState();
-        if (!st || !st.skills || !st.skills.life_cooking) return;
-        var ent = st.skills.life_cooking;
-        var nextLv = getCookingLevelBySuccessUses(newUses);
-        var curLv = Math.max(1, parseInt(ent.level, 10) || 1);
-        if (nextLv !== curLv) {
-            ent.level = nextLv;
-            recalcCharacterStatsFromIE();
-        }
-    }
-
-    // ===== 畜牧（生活技能 life_animal_husbandry）：习得 + move_usage 曲线升级 =====
     var LIVESTOCK_MAX_PROFICIENCY_USES = 5000000;
     var LIVESTOCK_SKILL_MAX_LEVEL = 100;
 
@@ -10422,7 +10354,8 @@
             getItemDisplayNameSafe: getItemDisplayNameSafe,
             markCellDirty: markCellDirty,
             registerCookingProcessor: registerCookingRecipeProcessorIfNeeded,
-            registerPharmacyProcessor: registerPharmacyRecipeProcessorIfNeeded
+            registerPharmacyProcessor: registerPharmacyRecipeProcessorIfNeeded,
+            recalcCharacterStats: recalcCharacterStatsFromIE
         };
         if (window.CookingStation && typeof window.CookingStation.setUiDeps === 'function') {
             window.CookingStation.setUiDeps(stationUiDeps);
