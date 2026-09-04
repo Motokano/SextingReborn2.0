@@ -213,6 +213,15 @@
 | C12 杂项(6 份 agent prompt/清单) | 迁 `docs/agents/`:agriculture-port / hideout-warehouse-port / hideout-warehouse-ui / livestock-ui / wild-gathering / agriculture-a6;wild-gathering 注明与 .cursor/rules 同步职责 |
 | life-cooking-final-goals.md | 留 design,补状态头(属终局料理设计底稿) |
 
+拆分(批次 3 执行,用户已拍板):
+
+| 文件 | 结论 |
+|---|---|
+| 10-enemies.md | 正文保留设计层;「实现状态(2026-05)」大段收敛为文末单节/注记 |
+| 14-implementation.md | 「已定/尚待实现」动态状态段迁 implementation-progress/.cursor,14 只留约定与已拍板结论 |
+| 41-quality-removal.md | 保留 §一/§二;§三~五(一次性执行清单)压缩成一行「完成时间+范围」或移归档 |
+| 47-pharmacy-system.md | §1 现状盘点 + §1.1 缺口清单迁出设计正本(并入 §8 或转实现跟踪);§1 压缩为带日期的前提事实 |
+
 ### 6.2 甲类裁决 D1~D39
 
 | # | 结论 |
