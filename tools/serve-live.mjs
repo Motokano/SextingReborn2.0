@@ -50,7 +50,7 @@ const RELOAD_SCRIPT = `<script>
 // 只监听游戏运行时真正加载的目录/文件，避免 tools/docs/.dsh-kanban.json 等
 // 高频变更目录造成无效刷新与 watcher 抖动（Windows 递归监听在大量文件
 // 重命名/删除时易触发 EPERM，缩小范围 + error 自愈可显著降低崩溃概率）。
-const WATCH_ROOTS = ['js', 'data', 'assets', 'image', 'svelte', ''] // '' = 根目录直子文件（index.html 等）
+const WATCH_ROOTS = ['js', 'data', 'assets', 'image', ''] // '' = 根目录直子文件（index.html 等）
 // 对这些扩展名的变更触发刷新
 const RELOAD_EXTS = new Set(['.html', '.js', '.mjs', '.cjs', '.css', '.json', '.csv', '.yaml', '.yml'])
 // 即使命中也忽略的文件（根目录下的元数据文件）

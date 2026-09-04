@@ -10287,11 +10287,6 @@
     window.SceneApp.placeTempCookingStation = function (mapId, x, y, options) {
         return CookingStation.placeTempCookingStation(mapId, x, y, options || {});
     };
-    window.SceneApp.placeTempCookingStationAtPlayer = function (options) {
-        var st = E && typeof E.getState === 'function' ? E.getState() : null;
-        if (!st) return null;
-        return CookingStation.placeTempCookingStation(st.mapId, st.x, st.y, options || {});
-    };
     window.SceneApp.removeTempCookingStation = function (mapId, x, y) {
         CookingStation.removeCookingTempStationAt(String(mapId || ''), Math.floor(Number(x)), Math.floor(Number(y)));
         CookingStation.syncCookingTempStationsIntoMaps();
