@@ -2496,52 +2496,7 @@
             if (typeof predicateFn === 'function' && !predicateFn(cellF)) return null;
             return { containerType: String(forcedSlot.containerType), index: ix, item: cellF };
         }
-        return findFirstContainerSlotByPredicate(predicateFn);
-    }
-
-    function findAllContainerSlotsByPredicate(predicateFn) {
-        if (!IE || typeof predicateFn !== 'function') return [];
-        var targets = [
-            { type: 'pocket', arr: IE.getPocketArray ? IE.getPocketArray() : [] },
-            { type: 'vest', arr: IE.getVestArray ? IE.getVestArray() : [] },
-            { type: 'backpack', arr: IE.getBackpackArray ? IE.getBackpackArray() : [] }
-        ];
-        var out = [];
-        var t, i;
-        for (t = 0; t < targets.length; t++) {
-            var arr = targets[t].arr;
-            if (!Array.isArray(arr)) continue;
-            for (i = 0; i < arr.length; i++) {
-                var cell = arr[i];
-                if (!cell || !cell.item_id) continue;
-                if (predicateFn(cell, targets[t].type, i)) {
-                    out.push({ containerType: targets[t].type, index: i, item: cell });
-                }
-            }
-        }
-        return out;
-    }
-
-    function findFirstContainerSlotByPredicate(predicateFn) {
-        if (!IE || typeof predicateFn !== 'function') return null;
-        var targets = [
-            { type: 'pocket', arr: IE.getPocketArray ? IE.getPocketArray() : [] },
-            { type: 'vest', arr: IE.getVestArray ? IE.getVestArray() : [] },
-            { type: 'backpack', arr: IE.getBackpackArray ? IE.getBackpackArray() : [] }
-        ];
-        var t, i;
-        for (t = 0; t < targets.length; t++) {
-            var arr = targets[t].arr;
-            if (!Array.isArray(arr)) continue;
-            for (i = 0; i < arr.length; i++) {
-                var cell = arr[i];
-                if (!cell || !cell.item_id) continue;
-                if (predicateFn(cell, targets[t].type, i)) {
-                    return { containerType: targets[t].type, index: i, item: cell };
-                }
-            }
-        }
-        return null;
+        return InventoryHelpers.findFirstContainerSlotByPredicate(predicateFn);
     }
 
     function advanceWorldTicks(n) {
@@ -2905,7 +2860,7 @@
         if (StationContext.isCookingUiBlockedByRepair()) return false;
         var pourCtx = StationContext.getCurrentCookingStationContext();
         if (pourCtx && pourCtx.station_type === 'main' && CookingStation.getState().water_unlimited) return false;
-        var slot = findFirstContainerSlotByPredicate(function (cell) {
+        var slot = InventoryHelpers.findFirstContainerSlotByPredicate(function (cell) {
             return StationCraftCore.getItemWaterPoints(cell.item_id) > 0;
         });
         return !!slot;
@@ -2914,7 +2869,7 @@
         if (isPreCreationGameplayRestricted()) return false;
         if (!StationContext.isOnCookingStationTile()) return false;
         if (StationContext.isCookingUiBlockedByRepair()) return false;
-        var slot = findFirstContainerSlotByPredicate(function (cell) {
+        var slot = InventoryHelpers.findFirstContainerSlotByPredicate(function (cell) {
             return StationCraftCore.getItemFuelPoints(cell.item_id) > 0;
         });
         return !!slot;
@@ -3986,10 +3941,10 @@
         var fuelWrap = document.getElementById('cooking-fuel-source-list');
         if (!waterWrap || !fuelWrap) return;
         var char0 = IE && IE.getCharacterForDisplay ? IE.getCharacterForDisplay() : null;
-        var waterSlots = findAllContainerSlotsByPredicate(function (cell) {
+        var waterSlots = InventoryHelpers.findAllContainerSlotsByPredicate(function (cell) {
             return StationCraftCore.getItemWaterPoints(cell.item_id) > 0;
         });
-        var fuelSlots = findAllContainerSlotsByPredicate(function (cell) {
+        var fuelSlots = InventoryHelpers.findAllContainerSlotsByPredicate(function (cell) {
             return StationCraftCore.getItemFuelPoints(cell.item_id) > 0;
         });
         if (!slotKeyInCookingSlotList(waterSlots, cookingStationUiState.selected_water_slot_key)) {
@@ -4657,7 +4612,7 @@
         var fuelWrap = document.getElementById('pharmacy-fuel-source-list');
         if (!fuelWrap) return;
         var char0 = IE && IE.getCharacterForDisplay ? IE.getCharacterForDisplay() : null;
-        var fuelSlots = findAllContainerSlotsByPredicate(function (cell) {
+        var fuelSlots = InventoryHelpers.findAllContainerSlotsByPredicate(function (cell) {
             return StationCraftCore.getItemFuelPoints(cell.item_id) > 0;
         });
         if (!slotKeyInPharmacySlotList(fuelSlots, pharmacyStationUiState.selected_fuel_slot_key)) {

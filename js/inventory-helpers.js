@@ -87,9 +87,60 @@
         return total;
     }
 
+    /** 按谓词找首个命中槽位（谓词签名 (cell, containerType, index)；原 scene-app findFirstContainerSlotByPredicate）。 */
+    function findFirstContainerSlotByPredicate(predicateFn) {
+        var IE = getIE();
+        if (!IE || typeof predicateFn !== 'function') return null;
+        var targets = [
+            { type: 'pocket', arr: IE.getPocketArray ? IE.getPocketArray() : [] },
+            { type: 'vest', arr: IE.getVestArray ? IE.getVestArray() : [] },
+            { type: 'backpack', arr: IE.getBackpackArray ? IE.getBackpackArray() : [] }
+        ];
+        var t, i;
+        for (t = 0; t < targets.length; t++) {
+            var arr = targets[t].arr;
+            if (!Array.isArray(arr)) continue;
+            for (i = 0; i < arr.length; i++) {
+                var cell = arr[i];
+                if (!cell || !cell.item_id) continue;
+                if (predicateFn(cell, targets[t].type, i)) {
+                    return { containerType: targets[t].type, index: i, item: cell };
+                }
+            }
+        }
+        return null;
+    }
+
+    /** 按谓词找全部命中槽位（原 scene-app findAllContainerSlotsByPredicate）。 */
+    function findAllContainerSlotsByPredicate(predicateFn) {
+        var IE = getIE();
+        if (!IE || typeof predicateFn !== 'function') return [];
+        var targets = [
+            { type: 'pocket', arr: IE.getPocketArray ? IE.getPocketArray() : [] },
+            { type: 'vest', arr: IE.getVestArray ? IE.getVestArray() : [] },
+            { type: 'backpack', arr: IE.getBackpackArray ? IE.getBackpackArray() : [] }
+        ];
+        var out = [];
+        var t, i;
+        for (t = 0; t < targets.length; t++) {
+            var arr = targets[t].arr;
+            if (!Array.isArray(arr)) continue;
+            for (i = 0; i < arr.length; i++) {
+                var cell = arr[i];
+                if (!cell || !cell.item_id) continue;
+                if (predicateFn(cell, targets[t].type, i)) {
+                    out.push({ containerType: targets[t].type, index: i, item: cell });
+                }
+            }
+        }
+        return out;
+    }
+
     global.InventoryHelpers = {
         findFirstContainerSlotByItemId: findFirstContainerSlotByItemId,
         getInventoryContainerArray: getInventoryContainerArray,
-        getInventoryCountByItemId: getInventoryCountByItemId
+        getInventoryCountByItemId: getInventoryCountByItemId,
+        findFirstContainerSlotByPredicate: findFirstContainerSlotByPredicate,
+        findAllContainerSlotsByPredicate: findAllContainerSlotsByPredicate
     };
 })(typeof window !== 'undefined' ? window : globalThis);
