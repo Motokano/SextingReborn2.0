@@ -61,6 +61,8 @@
 
 ### 四·1 实现记录（k89，电池物品 + 敌人掉落）
 
+> （实现记录：主题归属 45-battery-economy / 31-livestock / k85，本文件仅登记）
+
 - **电池物品**（`data/items.json` + `materials_all.csv`，双写防 build:items 丢失）：
   - `battery_aa` 五号电池（一次性干电池）：容量 100、电量 100、地区 0（全局）、`base_value` 80；
   - `battery_rechargeable` 充电电池：容量 400、地区 8（D6）、`base_value` 400；
@@ -91,6 +93,8 @@
 
 ### 七·1 实现记录（k85，已落地）
 
+> （实现记录：主题归属 45-battery-economy / 31-livestock / k85，本文件仅登记）
+
 - **地区编码注册表**：`data/regions.json`（新文件）。`region_restrict`：`0` = 全局；`1` 地表；`2` 新手地牢；`3`~`9` = D1~D7。**跨区物品填 `0`**（如 `ore_iron_raw` 地表+D4、`electronic_wire` D6+D7、`ore_spirit_crystal` D2+D4），由各地 loot_table 精确门控。
 - **标签**：`dungeon_only`（76 个）/ `surface_only`（48 个）已打在 `data/items.json` 与 `data/items/*.csv`（materials_all / consumables_base 两表，防 `npm run build:items` 丢改动）；跨区物品不带粗标签（纯地牢跨区如 `electronic_wire`/`ore_spirit_crystal` 仍带 `dungeon_only`）。
 - **掉落表**：`data/loot_tables.json` 新增 9 张地区表——`loot_surface`（平铺数组）+ `loot_beginner`、`loot_d1`~`loot_d7`（`{ tiers: [4 档 × {item_id, weight}] }`）。行仅 `item_id + weight`，无品质档。
@@ -98,3 +102,13 @@
 - **新手地牢**：`region_gated=false`（regions.json）——它是地表池的高品质来源（§二.3），`loot_beginner` 显式枚举地表材料并调权重，生成器不做 region_restrict 过滤；七座主题地牢与地表 `region_gated=true`。
 - **电池**（`battery_rechargeable`/`battery_storage`）：按 §一.5 **不进采集池**——不入任何 loot_table，仅打 `dungeon_only` + 地区码（D6/D7）供敌人掉落（k89）使用。
 - **校验**：`npm run test:dungeon-loot`（`tools/test-dungeon-loot.mjs`）——层数→档位、表结构、行 id 存在性、地区一致性、电池不泄漏、标签分布。补数据可重跑 `tools/apply-k85-material-regions.mjs`（`--dry-run` 先看计划）。
+
+## 八、实现记录（汇总）
+
+> 本文档为材料分配设计正本；§四·1 / §七·1 的越界实现日志统一收敛于本节（本文件仅登记「已完成项 + 归属」，实现细节见各自归属文档 / 任务）。
+
+- **电池物品 + 敌人掉落（已实现，k89）**：`battery_aa` / `battery_rechargeable` / `battery_storage` 与 `battery_capacity` / `battery_charge` 新字段已入 `data/items.json` + `materials_all.csv`；敌人掉落按 `enemy_drops.json` 四档接线（`js/enemy-drops.js` + 运行时 `settleEnemyBatteryDrops`，k89 收尾已落地）。主题归属：[45-battery-economy.md](45-battery-economy.md)。
+- **牧场供电闭环（已接线，k89 消费端）**：畜牧需电模块 `power_drain_per_tick` + `livestock-state.js` 储能 `power_charge`，每 tick 末按需电模块扣电、耗尽停摆（k93 生产力墙复用），面板「🔋 塞电池」整格塞入储能。主题归属：[31-livestock-husbandry.md](31-livestock-husbandry.md)。
+- **材料地区编码 / 掉落表落地（已落地，k85）**：`data/regions.json` 地区编码注册、`dungeon_only` / `surface_only` 标签、9 张地区 loot_table、`js/dungeon-loot.js` 档位选表、「电池不进采集池」均已落地。主题即本文档 §七 实现挂钩，k85 为落地任务。
+
+> 校验命令见 §四·1 / §七·1 原文。

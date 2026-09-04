@@ -1,5 +1,7 @@
 # 生存 Buff 管线回归清单（入口 + 属性 + 死亡链路）
 
+> 本文档为生存 Buff 管线回归验收清单（06/18 附属），非编号设计正本；勾选状态以当前代码为准，清单供回归复跑。
+
 本清单用于验收“生存效果由 Buff 管线驱动”的统一口径，覆盖 `satiety/thirst/nutrition/mood/body_temperature` 与门禁边界。  
 本文件是执行清单，不替代 `06-survival.md` 与 `18-buff-system.md` 的设计正本。
 
