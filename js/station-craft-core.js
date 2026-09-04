@@ -281,6 +281,19 @@
         return !!(tpl && tpl.pharmacy_ingredient === true);
     }
 
+    /** 物品显示名（模板 display_name 三档 by tier；原 scene-app getItemDisplayNameSafe 双定义消重迁入）。 */
+    function getItemDisplayNameSafe(itemId) {
+        var IE = getIE();
+        try {
+            if (!IE || !itemId) return String(itemId || '');
+            var tpl = IE.getItemTemplate ? IE.getItemTemplate(itemId) : null;
+            var char0 = IE.getCharacterForDisplay ? IE.getCharacterForDisplay() : null;
+            var tier0 = IE.getItemDisplayTier ? IE.getItemDisplayTier(itemId, char0) : 0;
+            if (tpl && IE.getDisplayName) return IE.getDisplayName(tpl, tier0, char0) || itemId;
+        } catch (e) { /* ignore */ }
+        return String(itemId || '');
+    }
+
     global.StationCraftCore = {
         normalizeCookingInputs: normalizeCookingInputs,
         normalizePharmacyInputs: normalizePharmacyInputs,
@@ -301,6 +314,7 @@
         getItemWaterPoints: getItemWaterPoints,
         getItemFuelPoints: getItemFuelPoints,
         isItemAllowedCookingIngredient: isItemAllowedCookingIngredient,
-        isItemAllowedPharmacyIngredient: isItemAllowedPharmacyIngredient
+        isItemAllowedPharmacyIngredient: isItemAllowedPharmacyIngredient,
+        getItemDisplayNameSafe: getItemDisplayNameSafe
     };
 })(typeof window !== 'undefined' ? window : globalThis);

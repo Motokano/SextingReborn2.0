@@ -3803,17 +3803,6 @@
         return out;
     }
 
-    function getItemDisplayNameSafe(itemId) {
-        try {
-            if (!IE || !itemId) return String(itemId || '');
-            var tpl = IE.getItemTemplate ? IE.getItemTemplate(itemId) : null;
-            var char0 = IE.getCharacterForDisplay ? IE.getCharacterForDisplay() : null;
-            var tier0 = IE.getItemDisplayTier ? IE.getItemDisplayTier(itemId, char0) : 0;
-            if (tpl && IE.getDisplayName) return IE.getDisplayName(tpl, tier0, char0) || itemId;
-        } catch (e) { /* ignore */ }
-        return String(itemId || '');
-    }
-
     function setCookingMethodId(mid) {
         cookingStationUiState.method_id = (mid != null) ? String(mid) : '';
     }
@@ -3842,7 +3831,7 @@
         var have = InventoryHelpers.getInventoryCountByItemId(iid);
         var staged = getStagedCookingCountForItem(iid);
         if (have <= 0 || staged >= have) {
-            showMsg(ui('cooking.try.fail.missing_inputs', { item: getItemDisplayNameSafe(iid) }), 'info');
+            showMsg(ui('cooking.try.fail.missing_inputs', { item: StationCraftCore.getItemDisplayNameSafe(iid) }), 'info');
             return;
         }
         var arr = StationCraftCore.normalizeCookingInputs(cookingStationUiState.inputs || []);
@@ -3863,7 +3852,7 @@
         var oi;
         for (oi = 0; oi < opts.length; oi++) {
             var iid = opts[oi];
-            var disp = getItemDisplayNameSafe(iid);
+            var disp = StationCraftCore.getItemDisplayNameSafe(iid);
             if (f && String(iid).toLowerCase().indexOf(f) < 0 && String(disp).toLowerCase().indexOf(f) < 0) continue;
             nShown++;
             var have = InventoryHelpers.getInventoryCountByItemId(iid);
@@ -3965,7 +3954,7 @@
             for (ri = 0; ri < slots.length; ri++) {
                 (function (sl) {
                     var iid = sl.item.item_id;
-                    var disp = getItemDisplayNameSafe(iid);
+                    var disp = StationCraftCore.getItemDisplayNameSafe(iid);
                     var cnt = (sl.item.count != null && parseInt(sl.item.count, 10) > 0) ? parseInt(sl.item.count, 10) : 1;
                     var gain = kind === 'water' ? StationCraftCore.getItemWaterPoints(iid) : StationCraftCore.getItemFuelPoints(iid);
                     var gainTxt = kind === 'water'
@@ -4085,7 +4074,7 @@
                     var c0 = parseInt(selected[ii].count, 10) || 1;
                     var nameEl = document.createElement('div');
                     nameEl.className = 'iname';
-                    nameEl.textContent = getItemDisplayNameSafe(id0) + ' (' + String(id0) + ')';
+                    nameEl.textContent = StationCraftCore.getItemDisplayNameSafe(id0) + ' (' + String(id0) + ')';
                     var cntEl = document.createElement('div');
                     cntEl.className = 'icnt';
                     cntEl.textContent = 'x' + c0;
@@ -4126,7 +4115,7 @@
                     arow.className = 'cs-input-row';
                     var aname = document.createElement('div');
                     aname.className = 'iname';
-                    aname.textContent = getItemDisplayNameSafe(aid) + ' (' + aid + ')';
+                    aname.textContent = StationCraftCore.getItemDisplayNameSafe(aid) + ' (' + aid + ')';
                     var abtn = document.createElement('button');
                     abtn.type = 'button';
                     abtn.className = 'btn-mini';
@@ -4135,9 +4124,9 @@
                         return function () {
                             var ret = CookingStation.uninstallCookingAccessoryToInventory(rid);
                             if (!ret || !ret.ok) {
-                                showMsg(ui('cooking.accessory.uninstall_fail', { item: getItemDisplayNameSafe(rid) }), 'warn');
+                                showMsg(ui('cooking.accessory.uninstall_fail', { item: StationCraftCore.getItemDisplayNameSafe(rid) }), 'warn');
                             } else {
-                                showMsg(ui('cooking.accessory.uninstall_ok', { item: getItemDisplayNameSafe(rid) }), 'success');
+                                showMsg(ui('cooking.accessory.uninstall_ok', { item: StationCraftCore.getItemDisplayNameSafe(rid) }), 'success');
                             }
                             renderCookingStationPanel();
                             if (typeof updateBackpackPanel === 'function') updateBackpackPanel();
@@ -4159,7 +4148,7 @@
                 var ao = accOpts[ax];
                 var o = document.createElement('option');
                 o.value = ao.item_id;
-                o.textContent = getItemDisplayNameSafe(ao.item_id) + ' (' + ao.item_id + ') · ' + ui('cooking.inputs.available_fmt', { n: ao.count });
+                o.textContent = StationCraftCore.getItemDisplayNameSafe(ao.item_id) + ' (' + ao.item_id + ') · ' + ui('cooking.inputs.available_fmt', { n: ao.count });
                 accessorySel.appendChild(o);
             }
             if (prevAcc && accOpts.some(function (z) { return String(z.item_id) === prevAcc; })) accessorySel.value = prevAcc;
@@ -4403,11 +4392,11 @@
                 if (!aid) return;
                 var ret = CookingStation.installCookingAccessoryFromInventory(aid);
                 if (!ret || !ret.ok) {
-                    showMsg(ui('cooking.accessory.install_fail', { item: getItemDisplayNameSafe(aid) }), 'warn');
+                    showMsg(ui('cooking.accessory.install_fail', { item: StationCraftCore.getItemDisplayNameSafe(aid) }), 'warn');
                     renderCookingStationPanel();
                     return;
                 }
-                showMsg(ui('cooking.accessory.install_ok', { item: getItemDisplayNameSafe(aid) }), 'success');
+                showMsg(ui('cooking.accessory.install_ok', { item: StationCraftCore.getItemDisplayNameSafe(aid) }), 'success');
                 renderCookingStationPanel();
                 if (typeof updateBackpackPanel === 'function') updateBackpackPanel();
                 if (typeof updateStatusPanel === 'function') SceneHud.refresh('status');
@@ -4424,9 +4413,9 @@
                 if (!res || res.ok !== true) {
                     var key = cookingStartReasonToMsgKey(res ? res.reason : 'unknown');
                     var vars = {};
-                    if (res && res.item_id) vars.item = getItemDisplayNameSafe(res.item_id);
+                    if (res && res.item_id) vars.item = StationCraftCore.getItemDisplayNameSafe(res.item_id);
                     if (res && res.method_id) vars.method = String(res.method_id);
-                    if (res && res.required_accessory_item_id) vars.accessory = getItemDisplayNameSafe(res.required_accessory_item_id);
+                    if (res && res.required_accessory_item_id) vars.accessory = StationCraftCore.getItemDisplayNameSafe(res.required_accessory_item_id);
                     if (res && res.need != null && res.current != null) { vars.need = res.need; vars.cur = res.current; }
                     showMsg(ui(key, vars), 'warn');
                     renderCookingStationPanel();
@@ -4475,17 +4464,6 @@
         return out;
     }
 
-    function getItemDisplayNameSafe(itemId) {
-        try {
-            if (!IE || !itemId) return String(itemId || '');
-            var tpl = IE.getItemTemplate ? IE.getItemTemplate(itemId) : null;
-            var char0 = IE.getCharacterForDisplay ? IE.getCharacterForDisplay() : null;
-            var tier0 = IE.getItemDisplayTier ? IE.getItemDisplayTier(itemId, char0) : 0;
-            if (tpl && IE.getDisplayName) return IE.getDisplayName(tpl, tier0, char0) || itemId;
-        } catch (e) { /* ignore */ }
-        return String(itemId || '');
-    }
-
     function setPharmacyMethodId(mid) {
         pharmacyStationUiState.method_id = (mid != null) ? String(mid) : '';
     }
@@ -4514,7 +4492,7 @@
         var have = InventoryHelpers.getInventoryCountByItemId(iid);
         var staged = getStagedPharmacyCountForItem(iid);
         if (have <= 0 || staged >= have) {
-            showMsg(ui('pharmacy.try.fail.missing_inputs', { item: getItemDisplayNameSafe(iid) }), 'info');
+            showMsg(ui('pharmacy.try.fail.missing_inputs', { item: StationCraftCore.getItemDisplayNameSafe(iid) }), 'info');
             return;
         }
         var arr = StationCraftCore.normalizePharmacyInputs(pharmacyStationUiState.inputs || []);
@@ -4535,7 +4513,7 @@
         var oi;
         for (oi = 0; oi < opts.length; oi++) {
             var iid = opts[oi];
-            var disp = getItemDisplayNameSafe(iid);
+            var disp = StationCraftCore.getItemDisplayNameSafe(iid);
             if (f && String(iid).toLowerCase().indexOf(f) < 0 && String(disp).toLowerCase().indexOf(f) < 0) continue;
             nShown++;
             var have = InventoryHelpers.getInventoryCountByItemId(iid);
@@ -4630,7 +4608,7 @@
             for (ri = 0; ri < slots.length; ri++) {
                 (function (sl) {
                     var iid = sl.item.item_id;
-                    var disp = getItemDisplayNameSafe(iid);
+                    var disp = StationCraftCore.getItemDisplayNameSafe(iid);
                     var cnt = (sl.item.count != null && parseInt(sl.item.count, 10) > 0) ? parseInt(sl.item.count, 10) : 1;
                     var gain = StationCraftCore.getItemFuelPoints(iid);
                     var gainTxt = ui('pharmacy.station_resource.fuel_gain_fmt', { n: gain });
@@ -4743,7 +4721,7 @@
                     var c0 = parseInt(selected[ii].count, 10) || 1;
                     var nameEl = document.createElement('div');
                     nameEl.className = 'iname';
-                    nameEl.textContent = getItemDisplayNameSafe(id0) + ' (' + String(id0) + ')';
+                    nameEl.textContent = StationCraftCore.getItemDisplayNameSafe(id0) + ' (' + String(id0) + ')';
                     var cntEl = document.createElement('div');
                     cntEl.className = 'icnt';
                     cntEl.textContent = 'x' + c0;
@@ -4784,7 +4762,7 @@
                     arow.className = 'cs-input-row';
                     var aname = document.createElement('div');
                     aname.className = 'iname';
-                    aname.textContent = getItemDisplayNameSafe(aid) + ' (' + aid + ')';
+                    aname.textContent = StationCraftCore.getItemDisplayNameSafe(aid) + ' (' + aid + ')';
                     var abtn = document.createElement('button');
                     abtn.type = 'button';
                     abtn.className = 'btn-mini';
@@ -4793,9 +4771,9 @@
                         return function () {
                             var ret = PharmacyStation.uninstallPharmacyAccessoryToInventory(rid);
                             if (!ret || !ret.ok) {
-                                showMsg(ui('pharmacy.accessory.uninstall_fail', { item: getItemDisplayNameSafe(rid) }), 'warn');
+                                showMsg(ui('pharmacy.accessory.uninstall_fail', { item: StationCraftCore.getItemDisplayNameSafe(rid) }), 'warn');
                             } else {
-                                showMsg(ui('pharmacy.accessory.uninstall_ok', { item: getItemDisplayNameSafe(rid) }), 'success');
+                                showMsg(ui('pharmacy.accessory.uninstall_ok', { item: StationCraftCore.getItemDisplayNameSafe(rid) }), 'success');
                             }
                             renderPharmacyStationPanel();
                             if (typeof updateBackpackPanel === 'function') updateBackpackPanel();
@@ -4817,7 +4795,7 @@
                 var ao = accOpts[ax];
                 var o = document.createElement('option');
                 o.value = ao.item_id;
-                o.textContent = getItemDisplayNameSafe(ao.item_id) + ' (' + ao.item_id + ') · ' + ui('pharmacy.inputs.available_fmt', { n: ao.count });
+                o.textContent = StationCraftCore.getItemDisplayNameSafe(ao.item_id) + ' (' + ao.item_id + ') · ' + ui('pharmacy.inputs.available_fmt', { n: ao.count });
                 accessorySel.appendChild(o);
             }
             if (prevAcc && accOpts.some(function (z) { return String(z.item_id) === prevAcc; })) accessorySel.value = prevAcc;
@@ -5036,11 +5014,11 @@
                 if (!aid) return;
                 var ret = PharmacyStation.installPharmacyAccessoryFromInventory(aid);
                 if (!ret || !ret.ok) {
-                    showMsg(ui('pharmacy.accessory.install_fail', { item: getItemDisplayNameSafe(aid) }), 'warn');
+                    showMsg(ui('pharmacy.accessory.install_fail', { item: StationCraftCore.getItemDisplayNameSafe(aid) }), 'warn');
                     renderPharmacyStationPanel();
                     return;
                 }
-                showMsg(ui('pharmacy.accessory.install_ok', { item: getItemDisplayNameSafe(aid) }), 'success');
+                showMsg(ui('pharmacy.accessory.install_ok', { item: StationCraftCore.getItemDisplayNameSafe(aid) }), 'success');
                 renderPharmacyStationPanel();
                 if (typeof updateBackpackPanel === 'function') updateBackpackPanel();
                 if (typeof updateStatusPanel === 'function') SceneHud.refresh('status');
@@ -5057,9 +5035,9 @@
                 if (!res || res.ok !== true) {
                     var key = pharmacyStartReasonToMsgKey(res ? res.reason : 'unknown');
                     var vars = {};
-                    if (res && res.item_id) vars.item = getItemDisplayNameSafe(res.item_id);
+                    if (res && res.item_id) vars.item = StationCraftCore.getItemDisplayNameSafe(res.item_id);
                     if (res && res.method_id) vars.method = String(res.method_id);
-                    if (res && res.required_accessory_item_id) vars.accessory = getItemDisplayNameSafe(res.required_accessory_item_id);
+                    if (res && res.required_accessory_item_id) vars.accessory = StationCraftCore.getItemDisplayNameSafe(res.required_accessory_item_id);
                     if (res && res.need != null && res.current != null) { vars.need = res.need; vars.cur = res.current; }
                     showMsg(ui(key, vars), 'warn');
                     renderPharmacyStationPanel();
@@ -5413,7 +5391,7 @@
         var oi;
         for (oi = 0; oi < opts.length; oi++) {
             var iid = opts[oi];
-            var disp = getItemDisplayNameSafe(iid);
+            var disp = StationCraftCore.getItemDisplayNameSafe(iid);
             var have = InventoryHelpers.getInventoryCountByItemId(iid);
             var reserved = getReservedCompostCountForItem(iid, compostStationUiState.mode);
             var canAdd = have > reserved;
@@ -5470,7 +5448,7 @@
             left.className = 'cs-ing-left';
             var nameEl = document.createElement('div');
             nameEl.className = 'cs-ing-name';
-            nameEl.textContent = getItemDisplayNameSafe(iid);
+            nameEl.textContent = StationCraftCore.getItemDisplayNameSafe(iid);
             var idEl = document.createElement('div');
             idEl.className = 'cs-ing-id';
             idEl.textContent = iid;
@@ -5529,13 +5507,13 @@
                     var mat = batch.materials[mi] || {};
                     var r0 = document.createElement('div');
                     r0.className = 'cs-input-row';
-                    r0.innerHTML = '<div class="iname">' + getItemDisplayNameSafe(mat.item_id) + ' (' + String(mat.item_id || '') + ')</div><div class="icnt">x' + String(mat.count || 1) + '</div><div></div>';
+                    r0.innerHTML = '<div class="iname">' + StationCraftCore.getItemDisplayNameSafe(mat.item_id) + ' (' + String(mat.item_id || '') + ')</div><div class="icnt">x' + String(mat.count || 1) + '</div><div></div>';
                     inputWrap.appendChild(r0);
                 }
                 if (batch.inoculant_item_id) {
                     var inocBatchRow = document.createElement('div');
                     inocBatchRow.className = 'cs-input-row';
-                    inocBatchRow.innerHTML = '<div class="iname">' + ui('compost.inoculant.label') + ': ' + getItemDisplayNameSafe(batch.inoculant_item_id) + ' (' + String(batch.inoculant_item_id || '') + ')</div><div class="icnt">x1</div><div></div>';
+                    inocBatchRow.innerHTML = '<div class="iname">' + ui('compost.inoculant.label') + ': ' + StationCraftCore.getItemDisplayNameSafe(batch.inoculant_item_id) + ' (' + String(batch.inoculant_item_id || '') + ')</div><div class="icnt">x1</div><div></div>';
                     inputWrap.appendChild(inocBatchRow);
                 }
             } else if (Array.isArray(compostStationUiState.staged_inputs) && compostStationUiState.staged_inputs.length) {
@@ -5552,7 +5530,7 @@
                     row.className = 'cs-input-row';
                     var name = document.createElement('div');
                     name.className = 'iname';
-                    name.textContent = getItemDisplayNameSafe(id0) + ' (' + id0 + ')';
+                    name.textContent = StationCraftCore.getItemDisplayNameSafe(id0) + ' (' + id0 + ')';
                     var cnt = document.createElement('div');
                     cnt.className = 'icnt';
                     cnt.textContent = 'x' + String(stagedMap[id0]);
@@ -5581,7 +5559,7 @@
                     inocRow.className = 'cs-input-row';
                     var inocName = document.createElement('div');
                     inocName.className = 'iname';
-                    inocName.textContent = ui('compost.inoculant.label') + ': ' + getItemDisplayNameSafe(compostStationUiState.staged_inoculant_item_id) + ' (' + compostStationUiState.staged_inoculant_item_id + ')';
+                    inocName.textContent = ui('compost.inoculant.label') + ': ' + StationCraftCore.getItemDisplayNameSafe(compostStationUiState.staged_inoculant_item_id) + ' (' + compostStationUiState.staged_inoculant_item_id + ')';
                     var inocCnt = document.createElement('div');
                     inocCnt.className = 'icnt';
                     inocCnt.textContent = 'x1';
@@ -5602,7 +5580,7 @@
                 if (compostStationUiState.staged_inoculant_item_id) {
                     var inocOnly = document.createElement('div');
                     inocOnly.className = 'cs-input-row';
-                    inocOnly.innerHTML = '<div class="iname">' + ui('compost.inoculant.label') + ': ' + getItemDisplayNameSafe(compostStationUiState.staged_inoculant_item_id) + ' (' + compostStationUiState.staged_inoculant_item_id + ')</div><div class="icnt">x1</div><div></div>';
+                    inocOnly.innerHTML = '<div class="iname">' + ui('compost.inoculant.label') + ': ' + StationCraftCore.getItemDisplayNameSafe(compostStationUiState.staged_inoculant_item_id) + ' (' + compostStationUiState.staged_inoculant_item_id + ')</div><div class="icnt">x1</div><div></div>';
                     inputWrap.appendChild(inocOnly);
                 } else {
                     inputWrap.innerHTML = '<div class="cs-empty-hint">' + ui('compost.inputs.empty') + '</div>';
@@ -5716,7 +5694,7 @@
                     var r = results[ri] || {};
                     var rowR = document.createElement('div');
                     rowR.className = 'cs-input-row';
-                    rowR.innerHTML = '<div class="iname">' + getItemDisplayNameSafe(r.item_id) + ' (' + String(r.item_id || '') + ')</div><div class="icnt">x' + String(r.count || 0) + '</div><div></div>';
+                    rowR.innerHTML = '<div class="iname">' + StationCraftCore.getItemDisplayNameSafe(r.item_id) + ' (' + String(r.item_id || '') + ')</div><div class="icnt">x' + String(r.count || 0) + '</div><div></div>';
                     resultWrap.appendChild(rowR);
                 }
             }
@@ -6875,7 +6853,7 @@
                 }
                 return;
             }
-            pushCompostLog(ui('compost.log.collected', { item: getItemDisplayNameSafe(ret.item_id), count: ret.collected }));
+            pushCompostLog(ui('compost.log.collected', { item: StationCraftCore.getItemDisplayNameSafe(ret.item_id), count: ret.collected }));
             if (ret.partial) showMsg(ui('compost.collect.partial_left', { left: ret.remaining_in_batch }), 'info');
             renderCompostStationPanel();
             if (typeof updateBackpackPanel === 'function') updateBackpackPanel();
@@ -9178,7 +9156,6 @@
             ui: ui,
             showMsg: showMsg,
             render: render,
-            getItemDisplayNameSafe: getItemDisplayNameSafe,
             markCellDirty: markCellDirty,
             registerCookingProcessor: registerCookingRecipeProcessorIfNeeded,
             registerPharmacyProcessor: registerPharmacyRecipeProcessorIfNeeded,
