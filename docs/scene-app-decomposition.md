@@ -195,6 +195,11 @@ js/item-use.js  window.ItemUse      // applyItemUseEffectFromTemplate / tryUseIt
     - 两模块新增 `recipeSystemId`（唯一事实源，替代 scene-app 闭包 `COOKING_RECIPE_SYSTEM`/`PHARMACY_RECIPE_SYSTEM`）与 `markRecipeKnown(recipeId)`（原样迁移 markCookingRecipeKnown/markPharmacyRecipeKnown：双写 `SceneCtx.known_*_recipes` 与 `known_recipe_ids_by_system[recipeSystemId]`）。
     - scene-app：删两个 mark 函数与两个常量声明；2 处调用改走 `CookingStation/PharmacyStation.markRecipeKnown`；2 处 `RecipeSystem.craft({ recipe_system })` 注册参数改读模块 `recipeSystemId`。
     - 冒烟：实机启动正常。
+  - **P1b-3（已提交）**：配方匹配簇整体迁 `js/station-craft-core.js`。
+    - 词边界依赖普查证明簇近乎自包含（仅 IE/InventoryHelpers + 模块 config getter），且函数体已是模块感知（读 `CookingStation/PharmacyStation.getRecipes()`）。
+    - 新模块容纳 12 函数（normalize×2/toCountMap/recipeInputsSatisfiedBySelected/match×2/pick×2/consumeInventoryItemsByList/putItemsBack/toUnified×2）逐字搬移，模块内互引自洽零改写；`putItemsBack`/`consumeInventoryItemsByList` 为烹饪/制药/沤肥三方共享（沤肥调用见原 8810-8850）。
+    - scene-app 删 207 行定义；34 处调用改走 `StationCraftCore.*`；语法 + 实机冒烟通过。
+  - **P1b-4 / P1c（待办）**：站点规则余部（`getCookingStationState`/`getPharmacyStationState` 访问器、craft 生命周期 finalize/tick、temp station 运行时、`tryCookAtStation` 等）与面板 DOM 迁出；前置 = infra 桥（ui/showMsg/render/updateBackpackPanel 等，见 P1 依赖实测）。
 - **P1c（待办）**：站点规则与面板迁出（配 infra 桥，见 P1 实测 deps：ui/showMsg/render/tooltip 系列/`isPreCreationGameplayRestricted` 等）；compost 面板 → `compost-panel.js`。
 
 ## 5. 风险与对策
