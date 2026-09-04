@@ -295,7 +295,7 @@
     - 实现时，后遗症的逻辑统一从该字段判断作用范围，便于后续扩展“影响全局”的特殊后遗症，而不修改底层结构。
   - **单招式熟练度解锁（与总熟练度并列）**：
     - 某招式配置中可增加 **`post_effect_unlocks`**：数组项为 `{ min_proficiency_ratio, post_effect_id }`，当该招式的 **\(R_{\text{move}} \ge \texttt{min\_proficiency\_ratio}\)**（与上文「50000 次满」同一套 \(R_{\text{move}}\)）时，解锁对应 **`post_effect_id`**（定义在 **`/data/post-effects.json`**）。
-    - 解锁仅表示「获得装配资格」；当前实现为**肢体级装配**：后遗症挂在 `lhand` / `rhand` / `lfoot` / `rfoot` 之一，对该肢体已装备并出手的招式生效。
+    - 解锁仅表示「获得装配资格」；当前实现为**肢体级装配**：后遗症挂在 `lhand` / `rhand` / `lfoot` / `rfoot` 之一，对该肢体已装备并出手的招式生效（后遗症装配已迁移：首批已改为肌群槽大型被动，见 34 §7；本段为原肢体级设计）。
     - 后遗症条目中用 **`valid_skill_ids` / `valid_move_ids`** 做运行时生效校验：即使后遗症已装在肢体上，仍仅在命中 `valid_*` 的技能/招式上生效。
     - **同肢同后遗症唯一**：同一 `post_effect_id` 在同一角色上、**同一条出招肢**（`lhand` / `rhand` / `lfoot` / `rfoot`）范围内**无论有多少招式槽，至多装配 1 份**。可在**四条肢各装配 1 份**同一 id（例如「不假思索」在左右手、左右脚各一，共 4 份同时生效），但**禁止**在同一肢体上对同一 id 重复装配（含多槽均装刺拳且各挂一次等情形）。
   - **解锁方式（实现约定）**：
@@ -507,7 +507,7 @@
   - **多段**：若段数 &gt; 1，须声明每段是否单独命中/招架/扣资源，并满足 Buff 等系统对「每段唯一事件 id」的约定（见 `18-buff-system.md` 与实现）。
   - **参与招架**：本技能为**主攻技能**；若个别招式要提供「以招代架」等，须在表中另列并在技能配置中写招架成功率/卸力（见 `08`）。默认可填「本招不单独作为招架源，招架用招架槽技能」。
 
-- **后遗症与肢体装配（已定：刺拳 / 摆拳）**
+- **后遗症与肢体装配（已定：刺拳 / 摆拳）**（后遗症装配已迁移：首批已改为肌群槽大型被动，见 34 §7；本节为原肢体级设计）
   - **全局表**：后遗症定义在 **`/data/post-effects.json`**（id、`name_key`/`desc_key`、作用域、`valid_skill_ids` / `valid_move_ids`、`effect_type` 等）。
   - **刺拳**（`jab`）：
     - **解锁**：单招式熟练度 \(R_{\text{move}} \ge 20\%\)（`min_proficiency_ratio`: **0.2**）时，解锁后遗症 **`post_no_second_thought`**（显示名 **「不假思索」**）。**曾否获得**由后台 **`CharacterAttributes.post_effects_obtained`**（及 **`getPostEffectsObtainedCount` / `getPostEffectsObtainedIds`**）供条件判定，**不对玩家默认 UI 展示**（见 `14-implementation`）。
@@ -695,8 +695,6 @@
 |------|-----------|------|
 | `poke_eye` 戳眼 | 后遗症 **「伤上加伤」**（`post_wound_on_wound`：`effect_type` **`extend_target_debuff_duration`**，命中时目标**全部非增益 Buff 剩余持续各 +3 tick**；`valid_skill_ids: ["combat_rogue_sanda"]`，**不**配 `valid_move_ids`） | 🔧 **新效果类型**（引擎扩展 #5） |
 | `slap_combo` 连环掌掴 | 后遗症 **「痛打落水狗」**（`post_dog_beat_down`：`effect_type` **`damage_scale_by_target_debuff_stacks`**，目标**每层非增益 Buff** 使本击**最终伤害 +5%**（12 层封顶 +60%）；`valid_skill_ids: ["combat_rogue_sanda"]`，**不**配 `valid_move_ids`） | 🔧 **新效果类型**（引擎扩展 #6） |
-| `kick_knee` 踹膝 | `proficiency_attr_unlocks`：柔韧 `flexibility` **+15** | ✅ 已有属性轨 |
-| `shove` 推搡 | `proficiency_attr_unlocks`：筋骨 `jingu` **+15** | ✅ 已有属性轨 |
 
 - **装配口径（阶段三，`34-muscle-system-rework.md`）**：后遗症为**大型被动**，装配在**肌群槽**——`data/muscles.json` `passives` 段声明 `allowed_groups` / `slots_cost` / `post_effect_id`（肌群全通后可装，`Muscles.canEquipPassive` 校验，生效来源 `Muscles.getEquippedPostEffectIdsForAttack()`）；与「基本拳脚」不假思索/破相**同一通道**。**不是变式**（变式属招式形态层 `move-variants.json`，装招式槽/招架槽，与本技能无关）。解锁资格仍由招式熟练度 ≥20%（`post_effect_unlocks` + `CharacterAttributes.syncPostEffectsObtainedFromSkillsState`）提供，再经肌群 UI 装配。
 - **作用域（技能级，不绑单招）**：两条被动均以 `valid_skill_ids: ["combat_rogue_sanda"]` 限定，**不配 `valid_move_ids`**——装备后对**整条流氓散手的任意招式命中**生效（含腿招踹膝）；装配 `allowed_groups` 建议覆盖**手臂组 + 腿部组**（`hand_*`/`forearm_*`/`upperarm_*`/`shoulder_*` + `foot_*`/`calf_*`/`thigh_*`/`hip_*`），因该技能拳脚并用；具体装配位置以肌肉表实现为准。
