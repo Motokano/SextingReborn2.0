@@ -3029,198 +3029,6 @@
         return !!(tpl && tpl.pharmacy_ingredient === true);
     }
 
-    function normalizeCookingInputs(rawInputs) {
-        if (!Array.isArray(rawInputs) || !rawInputs.length) return [];
-        var byId = {};
-        var i;
-        for (i = 0; i < rawInputs.length; i++) {
-            var r = rawInputs[i] || {};
-            var id = r.item_id != null ? String(r.item_id).trim() : '';
-            if (!id) continue;
-            var c = parseInt(r.count, 10);
-            if (!isFinite(c) || c <= 0) c = 1;
-            byId[id] = (byId[id] || 0) + c;
-        }
-        var out = [];
-        var keys = Object.keys(byId);
-        for (i = 0; i < keys.length; i++) out.push({ item_id: keys[i], count: byId[keys[i]] });
-        return out;
-    }
-
-    // === Auto-generated Pharmacy Helper ===
-    function normalizePharmacyInputs(rawInputs) {
-        if (!Array.isArray(rawInputs) || !rawInputs.length) return [];
-        var byId = {};
-        var i;
-        for (i = 0; i < rawInputs.length; i++) {
-            var r = rawInputs[i] || {};
-            var id = r.item_id != null ? String(r.item_id).trim() : '';
-            if (!id) continue;
-            var c = parseInt(r.count, 10);
-            if (!isFinite(c) || c <= 0) c = 1;
-            byId[id] = (byId[id] || 0) + c;
-        }
-        var out = [];
-        var keys = Object.keys(byId);
-        for (i = 0; i < keys.length; i++) out.push({ item_id: keys[i], count: byId[keys[i]] });
-        return out;
-    }
-
-    function toCountMap(list) {
-        var m = {};
-        var i;
-        for (i = 0; i < list.length; i++) {
-            var it = list[i] || {};
-            var id = it.item_id != null ? String(it.item_id) : '';
-            var c = parseInt(it.count, 10);
-            if (!id || !isFinite(c) || c <= 0) continue;
-            m[id] = (m[id] || 0) + c;
-        }
-        return m;
-    }
-
-    function recipeInputsSatisfiedBySelected(recipe, selectedInputs) {
-        var selectedMap = toCountMap(selectedInputs || []);
-        var reqs = Array.isArray(recipe && recipe.inputs) ? recipe.inputs : [];
-        var j;
-        for (j = 0; j < reqs.length; j++) {
-            var need = reqs[j] || {};
-            var id = need.item_id != null ? String(need.item_id) : '';
-            var cnt = parseInt(need.count, 10);
-            if (!isFinite(cnt) || cnt <= 0) cnt = 1;
-            if (!id || (selectedMap[id] || 0) < cnt) return false;
-        }
-        return reqs.length > 0;
-    }
-
-    /** 盲配：仅按投料 multiset 是否包含配方需求命中；可选 methodFilter 限制 required_method。 */
-    function matchCookingRecipesByInputs(selectedInputs, methodFilter) {
-        var out = [];
-        var i;
-        var mf = methodFilter != null && String(methodFilter) !== '' ? String(methodFilter) : null;
-        for (i = 0; i < CookingStation.getRecipes().length; i++) {
-            var r = CookingStation.getRecipes()[i] || {};
-            var reqMethod = r.required_method != null ? String(r.required_method) : '';
-            var recipeMethod = r.method_id != null ? String(r.method_id) : '';
-            if (mf != null && reqMethod !== mf && recipeMethod !== mf && toUnifiedCookingMethodId(reqMethod) !== mf && toUnifiedCookingMethodId(recipeMethod) !== mf) continue;
-            if (recipeInputsSatisfiedBySelected(r, selectedInputs)) out.push(r);
-        }
-        return out;
-    }
-
-    // === Auto-generated Pharmacy Helper ===
-    function matchPharmacyRecipesByInputs(selectedInputs, methodFilter) {
-        var out = [];
-        var i;
-        var mf = methodFilter != null && String(methodFilter) !== '' ? String(methodFilter) : null;
-        for (i = 0; i < PharmacyStation.getRecipes().length; i++) {
-            var r = PharmacyStation.getRecipes()[i] || {};
-            var reqMethod = r.required_method != null ? String(r.required_method) : '';
-            var recipeMethod = r.method_id != null ? String(r.method_id) : '';
-            if (mf != null && reqMethod !== mf && recipeMethod !== mf && toUnifiedPharmacyMethodId(reqMethod) !== mf && toUnifiedPharmacyMethodId(recipeMethod) !== mf) continue;
-            if (recipeInputsSatisfiedBySelected(r, selectedInputs)) out.push(r);
-        }
-        return out;
-    }
-
-    /** 按 match_weight（缺省 1）加权随机选一条配方。 */
-    function pickCookingRecipeWeighted(recipes) {
-        if (!Array.isArray(recipes) || !recipes.length) return null;
-        var total = 0;
-        var i, w;
-        var weights = [];
-        for (i = 0; i < recipes.length; i++) {
-            w = recipes[i].match_weight != null ? parseFloat(recipes[i].match_weight, 10) : 1;
-            if (!isFinite(w) || w <= 0) w = 1;
-            weights.push(w);
-            total += w;
-        }
-        var roll = Math.random() * total;
-        var acc = 0;
-        for (i = 0; i < recipes.length; i++) {
-            acc += weights[i];
-            if (roll < acc) return recipes[i];
-        }
-        return recipes[recipes.length - 1];
-    }
-
-    // === Auto-generated Pharmacy Helper ===
-    function pickPharmacyRecipeWeighted(recipes) {
-        if (!Array.isArray(recipes) || !recipes.length) return null;
-        var total = 0;
-        var i, w;
-        var weights = [];
-        for (i = 0; i < recipes.length; i++) {
-            w = recipes[i].match_weight != null ? parseFloat(recipes[i].match_weight, 10) : 1;
-            if (!isFinite(w) || w <= 0) w = 1;
-            weights.push(w);
-            total += w;
-        }
-        var roll = Math.random() * total;
-        var acc = 0;
-        for (i = 0; i < recipes.length; i++) {
-            acc += weights[i];
-            if (roll < acc) return recipes[i];
-        }
-        return recipes[recipes.length - 1];
-    }
-
-    function consumeInventoryItemsByList(inputList) {
-        var normalized = normalizeCookingInputs(inputList);
-        if (!normalized.length) return { ok: true, consumed: [] };
-
-        var HW = window.HideoutWarehouse;
-        if (HW && typeof HW.consumeItems === 'function') {
-            var pay = HW.consumeItems(normalized);
-            if (!pay || !pay.ok) return { ok: false, consumed: [] };
-            var out = [];
-            var rows = pay.consumed || [];
-            var ri;
-            for (ri = 0; ri < rows.length; ri++) {
-                var row = rows[ri];
-                if (!row || !row.item_id) continue;
-                var cnt = row.count != null ? parseInt(row.count, 10) : 1;
-                if (!isFinite(cnt) || cnt < 1) cnt = 1;
-                var j;
-                for (j = 0; j < cnt; j++) {
-                    out.push({
-                        item_id: String(row.item_id),
-                        count: 1
-                    });
-                }
-            }
-            return { ok: true, consumed: out, rawConsumed: rows };
-        }
-
-        var consumed = [];
-        var i;
-        for (i = 0; i < normalized.length; i++) {
-            var entry = normalized[i] || {};
-            var id = entry.item_id != null ? String(entry.item_id) : '';
-            var need = parseInt(entry.count, 10);
-            if (!id || !isFinite(need) || need <= 0) continue;
-            var k;
-            for (k = 0; k < need; k++) {
-                var slot = InventoryHelpers.findFirstContainerSlotByItemId(id);
-                if (!slot) return { ok: false, consumed: consumed };
-                var taken = IE.takeItemFromContainer(slot.containerType, slot.index);
-                if (!taken || !taken.success || !taken.item) return { ok: false, consumed: consumed };
-                consumed.push(taken.item);
-            }
-        }
-        return { ok: true, consumed: consumed };
-    }
-
-    function putItemsBack(items) {
-        if (!Array.isArray(items) || !IE || typeof IE.putItemIntoDefaultContainer !== 'function') return;
-        var i;
-        for (i = 0; i < items.length; i++) {
-            var it = items[i];
-            if (!it || !it.item_id) continue;
-            IE.putItemIntoDefaultContainer(it);
-        }
-    }
-
     function advanceWorldTicks(n) {
         var times = parseInt(n, 10);
         if (!isFinite(times) || times <= 0) return;
@@ -3294,21 +3102,6 @@
         pharmacyRecipeProcessorRegistered = true;
     }
 
-    /** 灶台工艺 id 与 cooking-methods.json 键一致（如 boil_stew）；统一表 method_id 为 life_cooking.boil_stew。 */
-    function toUnifiedCookingMethodId(legacyMethodId) {
-        var s = String(legacyMethodId || '').trim();
-        if (!s) return '';
-        if (s.indexOf('life_cooking.') === 0) return s;
-        return 'life_cooking.' + s;
-    }
-
-    function toUnifiedPharmacyMethodId(legacyMethodId) {
-        var s = String(legacyMethodId || '').trim();
-        if (!s) return '';
-        if (s.indexOf('life_pharmacy.') === 0) return s;
-        return 'life_pharmacy.' + s;
-    }
-
     function readMethodCostValue(methodObj, key, legacyKey) {
         var m = methodObj && typeof methodObj === 'object' ? methodObj : {};
         var cost = m.cost && typeof m.cost === 'object' ? m.cost : null;
@@ -3339,7 +3132,7 @@
         registerCookingRecipeProcessorIfNeeded();
         var ret = window.RecipeSystem.craft({
             recipe_system: CookingStation.recipeSystemId,
-            method_id: toUnifiedCookingMethodId(methodId),
+            method_id: StationCraftCore.toUnifiedCookingMethodId(methodId),
             inputs: Array.isArray(selectedInputs) ? selectedInputs : []
         });
         if (!ret || ret.ok !== true) {
@@ -3363,7 +3156,7 @@
         }
         var ret = window.RecipeSystem.craft({
             recipe_system: PharmacyStation.recipeSystemId,
-            method_id: toUnifiedPharmacyMethodId(methodId),
+            method_id: StationCraftCore.toUnifiedPharmacyMethodId(methodId),
             inputs: Array.isArray(selectedInputs) ? selectedInputs : []
         });
         if (!ret || ret.ok !== true) {
@@ -3450,8 +3243,8 @@
         var m = CookingStation.getMethods() && CookingStation.getMethods()[mid] ? CookingStation.getMethods()[mid] : null;
         var failId = CookingStation.getFailureItemId();
         var forceFailure = !!opts.force_failure;
-        var selected = normalizeCookingInputs(craft.inputs || []);
-        var matched = matchCookingRecipesByInputs(selected, mid);
+        var selected = StationCraftCore.normalizeCookingInputs(craft.inputs || []);
+        var matched = StationCraftCore.matchCookingRecipesByInputs(selected, mid);
 
         function grantItemOrDrop(itemId) {
             var outInst = { item_id: itemId, count: 1 };
@@ -3505,7 +3298,7 @@
                 if (window.SceneRenderer) window.SceneRenderer.render();
                 return;
             }
-            pick = pickCookingRecipeWeighted(matched);
+            pick = StationCraftCore.pickCookingRecipeWeighted(matched);
             if (!pick) {
                 grantItemOrDrop(failId);
                 showMsg(ui('cooking.msg.done_fail', { item: failId }), 'warn');
@@ -3613,8 +3406,8 @@
         var m = PharmacyStation.getMethods() && PharmacyStation.getMethods()[mid] ? PharmacyStation.getMethods()[mid] : null;
         var failId = PharmacyStation.getFailureItemId();
         var forceFailure = !!opts.force_failure;
-        var selected = normalizePharmacyInputs(craft.inputs || []);
-        var matched = matchPharmacyRecipesByInputs(selected, mid);
+        var selected = StationCraftCore.normalizePharmacyInputs(craft.inputs || []);
+        var matched = StationCraftCore.matchPharmacyRecipesByInputs(selected, mid);
 
         function grantItemOrDrop(itemId) {
             var outInst = { item_id: itemId, count: 1 };
@@ -3668,7 +3461,7 @@
                 if (window.SceneRenderer) window.SceneRenderer.render();
                 return;
             }
-            pick = pickPharmacyRecipeWeighted(matched);
+            pick = StationCraftCore.pickPharmacyRecipeWeighted(matched);
             if (!pick) {
                 grantItemOrDrop(failId);
                 showMsg(ui('pharmacy.msg.done_fail', { item: failId }), 'warn');
@@ -3776,7 +3569,7 @@
             };
         }
 
-        var selected = normalizePharmacyInputs(inputItems);
+        var selected = StationCraftCore.normalizePharmacyInputs(inputItems);
         if (!selected.length) return { ok: false, reason: 'empty_inputs' };
         var i;
         for (i = 0; i < selected.length; i++) {
@@ -3802,9 +3595,9 @@
             return { ok: false, reason: 'inventory_full' };
         }
 
-        var consumedRes = consumeInventoryItemsByList(selected);
+        var consumedRes = StationCraftCore.consumeInventoryItemsByList(selected);
         if (!consumedRes.ok) {
-            putItemsBack(consumedRes.consumed || []);
+            StationCraftCore.putItemsBack(consumedRes.consumed || []);
             return { ok: false, reason: 'consume_inputs_failed' };
         }
 
@@ -5055,7 +4848,7 @@
             };
         }
 
-        var selected = normalizeCookingInputs(inputItems);
+        var selected = StationCraftCore.normalizeCookingInputs(inputItems);
         if (!selected.length) return { ok: false, reason: 'empty_inputs' };
         var i;
         for (i = 0; i < selected.length; i++) {
@@ -5068,7 +4861,7 @@
             }
         }
 
-        var matched = matchCookingRecipesByInputs(selected, mid);
+        var matched = StationCraftCore.matchCookingRecipesByInputs(selected, mid);
 
         var needFuel = Math.max(0, parseInt(m.fuel_cost, 10) || 0);
         var needWater = Math.max(0, parseInt(m.water_cost, 10) || 0);
@@ -5087,9 +4880,9 @@
             return { ok: false, reason: 'inventory_full' };
         }
 
-        var consumedRes = consumeInventoryItemsByList(selected);
+        var consumedRes = StationCraftCore.consumeInventoryItemsByList(selected);
         if (!consumedRes.ok) {
-            putItemsBack(consumedRes.consumed || []);
+            StationCraftCore.putItemsBack(consumedRes.consumed || []);
             return { ok: false, reason: 'consume_inputs_failed' };
         }
 
@@ -5812,11 +5605,11 @@
     }
 
     function setCookingInputs(list) {
-        cookingStationUiState.inputs = normalizeCookingInputs(list || []);
+        cookingStationUiState.inputs = StationCraftCore.normalizeCookingInputs(list || []);
     }
 
     function getStagedCookingCountForItem(itemId) {
-        var arr = normalizeCookingInputs(cookingStationUiState.inputs || []);
+        var arr = StationCraftCore.normalizeCookingInputs(cookingStationUiState.inputs || []);
         var i;
         for (i = 0; i < arr.length; i++) {
             if (String(arr[i].item_id) === String(itemId)) return parseInt(arr[i].count, 10) || 0;
@@ -5838,7 +5631,7 @@
             showMsg(ui('cooking.try.fail.missing_inputs', { item: getItemDisplayNameSafe(iid) }), 'info');
             return;
         }
-        var arr = normalizeCookingInputs(cookingStationUiState.inputs || []);
+        var arr = StationCraftCore.normalizeCookingInputs(cookingStationUiState.inputs || []);
         arr.push({ item_id: iid, count: 1 });
         setCookingInputs(arr);
         renderCookingStationPanel();
@@ -6066,7 +5859,7 @@
         // 投料列表
         if (listEl) {
             listEl.innerHTML = '';
-            var selected = normalizeCookingInputs(cookingStationUiState.inputs || []);
+            var selected = StationCraftCore.normalizeCookingInputs(cookingStationUiState.inputs || []);
             cookingStationUiState.inputs = selected;
             if (!selected.length) {
                 listEl.innerHTML = '';
@@ -6088,7 +5881,7 @@
                     btnDel.textContent = ui('cooking.btn.remove');
                     btnDel.onclick = (function (rid) {
                         return function () {
-                            var arr = normalizeCookingInputs(cookingStationUiState.inputs || []);
+                            var arr = StationCraftCore.normalizeCookingInputs(cookingStationUiState.inputs || []);
                             var out = [];
                             for (var k = 0; k < arr.length; k++) if (String(arr[k].item_id) !== String(rid)) out.push(arr[k]);
                             setCookingInputs(out);
@@ -6242,7 +6035,7 @@
 
         if (helpEl) helpEl.innerHTML = '';
 
-        var okStart = !!(mid && normalizeCookingInputs(cookingStationUiState.inputs || []).length) && !activeCraft;
+        var okStart = !!(mid && StationCraftCore.normalizeCookingInputs(cookingStationUiState.inputs || []).length) && !activeCraft;
         if (startBtn) {
             startBtn.disabled = !okStart;
         }
@@ -6412,7 +6205,7 @@
             startBtn.addEventListener('click', function () {
                 if (!cookingStationPanelOpen) return;
                 var mid = cookingStationUiState.method_id ? String(cookingStationUiState.method_id) : '';
-                var inputs = normalizeCookingInputs(cookingStationUiState.inputs || []);
+                var inputs = StationCraftCore.normalizeCookingInputs(cookingStationUiState.inputs || []);
                 var res = tryCookAtStation(mid, inputs);
                 if (!res || res.ok !== true) {
                     var key = cookingStartReasonToMsgKey(res ? res.reason : 'unknown');
@@ -6484,11 +6277,11 @@
     }
 
     function setPharmacyInputs(list) {
-        pharmacyStationUiState.inputs = normalizePharmacyInputs(list || []);
+        pharmacyStationUiState.inputs = StationCraftCore.normalizePharmacyInputs(list || []);
     }
 
     function getStagedPharmacyCountForItem(itemId) {
-        var arr = normalizePharmacyInputs(pharmacyStationUiState.inputs || []);
+        var arr = StationCraftCore.normalizePharmacyInputs(pharmacyStationUiState.inputs || []);
         var i;
         for (i = 0; i < arr.length; i++) {
             if (String(arr[i].item_id) === String(itemId)) return parseInt(arr[i].count, 10) || 0;
@@ -6510,7 +6303,7 @@
             showMsg(ui('pharmacy.try.fail.missing_inputs', { item: getItemDisplayNameSafe(iid) }), 'info');
             return;
         }
-        var arr = normalizePharmacyInputs(pharmacyStationUiState.inputs || []);
+        var arr = StationCraftCore.normalizePharmacyInputs(pharmacyStationUiState.inputs || []);
         arr.push({ item_id: iid, count: 1 });
         setPharmacyInputs(arr);
         renderPharmacyStationPanel();
@@ -6724,7 +6517,7 @@
         // 投料列表
         if (listEl) {
             listEl.innerHTML = '';
-            var selected = normalizePharmacyInputs(pharmacyStationUiState.inputs || []);
+            var selected = StationCraftCore.normalizePharmacyInputs(pharmacyStationUiState.inputs || []);
             pharmacyStationUiState.inputs = selected;
             if (!selected.length) {
                 listEl.innerHTML = '<div style="color:#a8a29e;font-size:13px;">' + ui('pharmacy.inputs.empty') + '</div>';
@@ -6746,7 +6539,7 @@
                     btnDel.textContent = ui('pharmacy.btn.remove');
                     btnDel.onclick = (function (rid) {
                         return function () {
-                            var arr = normalizePharmacyInputs(pharmacyStationUiState.inputs || []);
+                            var arr = StationCraftCore.normalizePharmacyInputs(pharmacyStationUiState.inputs || []);
                             var out = [];
                             for (var k = 0; k < arr.length; k++) if (String(arr[k].item_id) !== String(rid)) out.push(arr[k]);
                             setPharmacyInputs(out);
@@ -6902,7 +6695,7 @@
             }).join('<br>') + '</div>';
         }
 
-        var okStart = !!(mid && normalizePharmacyInputs(pharmacyStationUiState.inputs || []).length) && !activeCraft;
+        var okStart = !!(mid && StationCraftCore.normalizePharmacyInputs(pharmacyStationUiState.inputs || []).length) && !activeCraft;
         if (startBtn) {
             startBtn.disabled = !okStart;
         }
@@ -7045,7 +6838,7 @@
             startBtn.addEventListener('click', function () {
                 if (!pharmacyStationPanelOpen) return;
                 var mid = pharmacyStationUiState.method_id ? String(pharmacyStationUiState.method_id) : '';
-                var inputs = normalizePharmacyInputs(pharmacyStationUiState.inputs || []);
+                var inputs = StationCraftCore.normalizePharmacyInputs(pharmacyStationUiState.inputs || []);
                 var res = tryPharmacyAtStation(mid, inputs);
                 if (!res || res.ok !== true) {
                     var key = pharmacyStartReasonToMsgKey(res ? res.reason : 'unknown');
@@ -8806,7 +8599,7 @@
                     }
                 })
                 : { c_total: 0, n_total: 0 };
-            var payInputs = consumeInventoryItemsByList(list);
+            var payInputs = StationCraftCore.consumeInventoryItemsByList(list);
             if (!payInputs.ok) {
                 showCompostStartBlockedHint('insufficient_inputs');
                 return;
@@ -8814,13 +8607,13 @@
             var inoculantId = String(compostStationUiState.staged_inoculant_item_id || '');
             var inocPay = null;
             if (inoculantId) {
-                inocPay = consumeInventoryItemsByList([{ item_id: inoculantId, count: 1 }]);
+                inocPay = StationCraftCore.consumeInventoryItemsByList([{ item_id: inoculantId, count: 1 }]);
                 if (!inocPay.ok) {
                     var HWundo = window.HideoutWarehouse;
                     if (HWundo && typeof HWundo.refundConsumed === 'function' && payInputs.rawConsumed) {
                         HWundo.refundConsumed(payInputs.rawConsumed);
                     } else if (payInputs.consumed && payInputs.consumed.length) {
-                        putItemsBack(payInputs.consumed);
+                        StationCraftCore.putItemsBack(payInputs.consumed);
                     }
                     showCompostStartBlockedHint('inoculant_missing_inventory');
                     return;
@@ -8837,13 +8630,13 @@
                 if (HWref && typeof HWref.refundConsumed === 'function' && payInputs.rawConsumed) {
                     HWref.refundConsumed(payInputs.rawConsumed);
                 } else if (payInputs.consumed && payInputs.consumed.length) {
-                    putItemsBack(payInputs.consumed);
+                    StationCraftCore.putItemsBack(payInputs.consumed);
                 }
                 if (inocPay) {
                     if (HWref && typeof HWref.refundConsumed === 'function' && inocPay.rawConsumed) {
                         HWref.refundConsumed(inocPay.rawConsumed);
                     } else if (inocPay.consumed && inocPay.consumed.length) {
-                        putItemsBack(inocPay.consumed);
+                        StationCraftCore.putItemsBack(inocPay.consumed);
                     }
                 }
                 showCompostStartBlockedHint(ret && ret.reason ? ret.reason : 'slot_not_ready');
