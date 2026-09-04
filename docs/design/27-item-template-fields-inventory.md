@@ -1,5 +1,7 @@
 # 物品模板字段：分层计数与口径
 
+> **快照说明**：正文快照截至 2026-09 前的某次运行，可能滞后于当前数据；最新计数以 `npm run audit:item-keys` / `npm run audit:item-field-rules` 复跑输出为准（历史输出见 [`_archive/27-item-field-rules-audit-last-run.md`](_archive/27-item-field-rules-audit-last-run.md)）。
+
 本文档固化「一个物品在数据与运行时里有哪些字段」的分层口径，便于重构物品结构时对账；**权威构建逻辑**仍以 [`tools/build-items-json.mjs`](../../tools/build-items-json.mjs) 与 [`.cursor/rules/items-json-build-agent.mdc`](../../.cursor/rules/items-json-build-agent.mdc) 为准。
 
 **复跑统计**：

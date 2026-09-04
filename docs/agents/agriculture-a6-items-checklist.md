@@ -1,6 +1,6 @@
 # 农业 A6 · 物品链任务清单
 
-> 供 **A6 数据/策划 agent** 执行；建造材料已定案见 `data/agriculture-build-costs.json`（schema_version 2）与 `28-agriculture-irrigation.md` §16。  
+> 供 **A6 数据/策划 agent** 执行；建造材料已定案见 `data/agriculture-build-costs.json`（schema_version 3）与 `28-agriculture-irrigation.md` §16。  
 > **禁止**：在农业面板内实现商店/金钱；种子/肥/客土仅通过背包四容器（首版）使用。
 
 ---
