@@ -209,6 +209,10 @@ js/item-use.js  window.ItemUse      // applyItemUseEffectFromTemplate / tryUseIt
     - `CookingStation.tryResolveCookingByUnifiedRoute` / `PharmacyStation.tryResolvePharmacyByUnifiedRoute`（走 RecipeSystem.craft + 经 DI 触发处理器注册）；`PharmacyStation.getPharmacyMethodDisplayName`（UIText 兜底）；`StationCraftCore.readMethodCostValue`（工艺成本读取，通用）。
     - DI 增键 registerCookingProcessor/registerPharmacyProcessor（scene-app init 注入闭包注册函数）；setUiDeps 改为合并语义。
     - scene-app 删 68 行；11 处调用重接；语法 + 实机冒烟通过。scene-app 当前 12076 行。
+  - **P2a（已提交）**：敌人世界模拟整体迁 `js/combat-world.js`（CombatWorld）。
+    - 迁出 8 函数（buildEnemyCounterAtkCtx/findEnemyInstanceIndex/settleEnemyKills/settleEnemyBatteryDrops/enemyCounterAttackFlagKey/tickEnemiesAfterWorldTick/runEnemyAttackOnPlayer/tickPlayerStunDecay）+ 反击去重标记状态 `enemyCounterAttackFlags`（模块自持，tick 内快照消费后清空；scene-app 战斗动作侧写入改走 `CombatWorld.markCounterAttackFlag(key)`）。
+    - 依赖注入：setUiDeps({ ui, getWorldTotalTicks })（scene-app init 注册）；E/IE = window 别名语义不变。
+    - scene-app 删 339 行（含注释）；外部调用 13 处重接 + 3 处 flag 写入改造；语法 + 实机冒烟通过。scene-app 当前 11744 行。
 - **P1c（待办）**：站点规则与面板迁出（配 infra 桥，见 P1 实测 deps：ui/showMsg/render/tooltip 系列/`isPreCreationGameplayRestricted` 等）；compost 面板 → `compost-panel.js`。
 
 ## 5. 风险与对策
