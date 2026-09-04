@@ -10,7 +10,6 @@
     var idleTickMs = 3000;
     var COOKING_FUEL_MAX_POINTS = 1000;
     var COOKING_WATER_MAX_POINTS = 1000;
-    var COOKING_TEMP_STATION_ENTITY_ID = 'cooking_station_temp';
     /** 与 `npc_station_cooking_base_triggers` / `NPCSystem` demo flags 对齐：主灶台绑定设施 NPC 时，修好前禁止烹饪 UI 与结算 */
     var COOKING_BASE_STATION_UNLOCK_FLAG = 'cooking_base_station_unlocked';
 
@@ -2268,142 +2267,6 @@
         return E.getMaps();
     }
 
-    function normalizeTempStationEntry(entry) {
-        if (!entry || typeof entry !== 'object') return null;
-        var mapId = entry.map_id != null ? String(entry.map_id) : '';
-        var x = Math.floor(Number(entry.x));
-        var y = Math.floor(Number(entry.y));
-        var placedTick = Math.max(0, Math.floor(Number(entry.placed_tick) || 0));
-        var despawnTick = Math.max(0, Math.floor(Number(entry.despawn_tick) || 0));
-        if (!mapId || !isFinite(x) || !isFinite(y) || despawnTick <= 0) return null;
-        return {
-            entity_id: COOKING_TEMP_STATION_ENTITY_ID,
-            map_id: mapId,
-            x: x,
-            y: y,
-            placed_tick: placedTick,
-            despawn_tick: despawnTick,
-            allowed_methods: Array.isArray(entry.allowed_methods)
-                ? entry.allowed_methods.map(function (m0) { return String(m0).trim(); }).filter(function (m1) { return !!m1; })
-                : [],
-            installed_accessory_item_ids: Array.isArray(entry.installed_accessory_item_ids)
-                ? entry.installed_accessory_item_ids.map(function (z) { return String(z).trim(); }).filter(function (z0) { return !!z0; })
-                : []
-        };
-    }
-
-    function getCookingTempStationsRuntime() {
-        if (!window.SceneCtx) return [];
-        if (!Array.isArray(window.SceneCtx.cooking_temp_stations_runtime)) {
-            window.SceneCtx.cooking_temp_stations_runtime = [];
-        }
-        var arr = window.SceneCtx.cooking_temp_stations_runtime;
-        var out = [];
-        var i;
-        for (i = 0; i < arr.length; i++) {
-            var norm = normalizeTempStationEntry(arr[i]);
-            if (norm) out.push(norm);
-        }
-        window.SceneCtx.cooking_temp_stations_runtime = out;
-        return out;
-    }
-
-    function isCookingTempStationEntity(rec) {
-        if (!rec || typeof rec !== 'object') return false;
-        return String(rec.entity_id || '') === COOKING_TEMP_STATION_ENTITY_ID;
-    }
-
-    function findCookingTempStationAt(mapId, x, y) {
-        var arr = getCookingTempStationsRuntime();
-        var i;
-        for (i = 0; i < arr.length; i++) {
-            var e = arr[i];
-            if (e.map_id === mapId && e.x === x && e.y === y) return e;
-        }
-        return null;
-    }
-
-    function upsertCookingTempStation(entry) {
-        var norm = normalizeTempStationEntry(entry);
-        if (!norm) return null;
-        var arr = getCookingTempStationsRuntime();
-        var i;
-        for (i = 0; i < arr.length; i++) {
-            var e = arr[i];
-            if (e.map_id === norm.map_id && e.x === norm.x && e.y === norm.y) {
-                arr[i] = norm;
-                return norm;
-            }
-        }
-        arr.push(norm);
-        return norm;
-    }
-
-    function removeCookingTempStationAt(mapId, x, y) {
-        var arr = getCookingTempStationsRuntime();
-        var i;
-        for (i = arr.length - 1; i >= 0; i--) {
-            var e = arr[i];
-            if (e.map_id === mapId && e.x === x && e.y === y) arr.splice(i, 1);
-        }
-    }
-
-    function syncCookingTempStationsIntoMaps() {
-        var maps = getMapsRef();
-        if (!maps || typeof maps !== 'object') return;
-        var mapIds = Object.keys(maps);
-        var i;
-        for (i = 0; i < mapIds.length; i++) {
-            var map = maps[mapIds[i]];
-            if (!map || !Array.isArray(map.entities)) continue;
-            var kept = [];
-            var j;
-            for (j = 0; j < map.entities.length; j++) {
-                var rec = map.entities[j];
-                if (isCookingTempStationEntity(rec)) continue;
-                kept.push(rec);
-            }
-            map.entities = kept;
-        }
-        var arr = getCookingTempStationsRuntime();
-        for (i = 0; i < arr.length; i++) {
-            var e = arr[i];
-            var m = maps[e.map_id];
-            if (!m) continue;
-            if (!Array.isArray(m.entities)) m.entities = [];
-            m.entities.push({
-                x: e.x,
-                y: e.y,
-                entity_id: COOKING_TEMP_STATION_ENTITY_ID,
-                placed_tick: e.placed_tick,
-                despawn_tick: e.despawn_tick,
-                allowed_methods: Array.isArray(e.allowed_methods) ? e.allowed_methods.slice() : [],
-                installed_accessory_item_ids: Array.isArray(e.installed_accessory_item_ids) ? e.installed_accessory_item_ids.slice() : []
-            });
-        }
-    }
-
-    function placeTempCookingStation(mapId, x, y, options) {
-        var gt = window.GameTime && typeof window.GameTime.getState === 'function' ? window.GameTime.getState() : null;
-        var placedTick = gt && typeof gt.totalTicks === 'number' ? Math.max(0, Math.floor(gt.totalTicks)) : 0;
-        var opts = options && typeof options === 'object' ? options : {};
-        var life = Math.max(1, Math.floor(Number(opts.lifetime_ticks) || CookingStation.getTempStationLifetimeTicks() || 50));
-        var next = upsertCookingTempStation({
-            map_id: String(mapId || ''),
-            x: Math.floor(Number(x)),
-            y: Math.floor(Number(y)),
-            placed_tick: placedTick,
-            despawn_tick: placedTick + life,
-            allowed_methods: Array.isArray(opts.allowed_methods) ? opts.allowed_methods.slice() : [],
-            installed_accessory_item_ids: Array.isArray(opts.installed_accessory_item_ids) ? opts.installed_accessory_item_ids.slice() : []
-        });
-        if (!next) return null;
-        syncCookingTempStationsIntoMaps();
-        markCellDirty(next.map_id, next.x, next.y);
-        if (window.SceneRenderer) window.SceneRenderer.render();
-        return Object.assign({}, next);
-    }
-
     function forEachAdjacentCell(x, y, fn) {
         var dy;
         for (dy = -1; dy <= 1; dy++) {
@@ -2438,8 +2301,8 @@
         var hit = null;
         forEachAdjacentCell(st.x, st.y, function (x, y) {
             var rec = (E.getEntityRecordAt && typeof E.getEntityRecordAt === 'function') ? E.getEntityRecordAt(x, y) : null;
-            if (isCookingTempStationEntity(rec)) {
-                var temp = findCookingTempStationAt(st.mapId, x, y) || normalizeTempStationEntry(Object.assign({ map_id: st.mapId }, rec));
+            if (CookingStation.isCookingTempStationEntity(rec)) {
+                var temp = CookingStation.findCookingTempStationAt(st.mapId, x, y) || CookingStation.normalizeTempStationEntry(Object.assign({ map_id: st.mapId }, rec));
                 hit = {
                     station_type: 'temp',
                     map_id: st.mapId,
@@ -2474,7 +2337,7 @@
         forEachAdjacentCell(st.x, st.y, function (x, y) {
             var rec = (E.getEntityRecordAt && typeof E.getEntityRecordAt === 'function') ? E.getEntityRecordAt(x, y) : null;
             if (isPharmacyTempStationEntity(rec)) {
-                var temp = findPharmacyTempStationAt(st.mapId, x, y) || normalizeTempStationEntry(Object.assign({ map_id: st.mapId }, rec));
+                var temp = findPharmacyTempStationAt(st.mapId, x, y) || CookingStation.normalizeTempStationEntry(Object.assign({ map_id: st.mapId }, rec));
                 hit = {
                     station_type: 'temp',
                     map_id: st.mapId,
@@ -3122,44 +2985,6 @@
         };
     }
 
-    function isActiveCraftOnTempStation(mapId, x, y) {
-        var cs = CookingStation.getState();
-        var ac = cs && cs.active_craft && typeof cs.active_craft === 'object' ? cs.active_craft : null;
-        if (!ac || !ac.station_ref || typeof ac.station_ref !== 'object') return false;
-        var ref = ac.station_ref;
-        return String(ref.station_type || '') === 'temp'
-            && String(ref.map_id || '') === String(mapId || '')
-            && Math.floor(Number(ref.x)) === Math.floor(Number(x))
-            && Math.floor(Number(ref.y)) === Math.floor(Number(y));
-    }
-
-    function tickCookingTempStationsAfterWorldTick() {
-        var gt = window.GameTime && typeof window.GameTime.getState === 'function' ? window.GameTime.getState() : null;
-        var nowTick = gt && typeof gt.totalTicks === 'number' ? Math.max(0, Math.floor(gt.totalTicks)) : 0;
-        var arr = getCookingTempStationsRuntime();
-        if (!arr.length) return;
-        var changed = false;
-        var i;
-        for (i = arr.length - 1; i >= 0; i--) {
-            var e = arr[i];
-            if (nowTick < e.despawn_tick) continue;
-            var hasActiveCraft = isActiveCraftOnTempStation(e.map_id, e.x, e.y);
-            if (hasActiveCraft) {
-                var cs = CookingStation.getState();
-                var ac = cs && cs.active_craft && typeof cs.active_craft === 'object' ? cs.active_craft : null;
-                if (ac) CookingStation.finalizeCraftNow(ac, { force_failure: true, reason: 'temp_station_despawn' });
-            }
-            arr.splice(i, 1);
-            changed = true;
-            markCellDirty(e.map_id, e.x, e.y);
-        }
-        if (changed) {
-            syncCookingTempStationsIntoMaps();
-            if (cookingStationPanelOpen) renderCookingStationPanel();
-            if (window.SceneRenderer) window.SceneRenderer.render();
-        }
-    }
-
     function findAdjacentStandableCellAround(x, y) {
         if (!E || typeof E.canStandAt !== 'function') return null;
         var dirsR1 = [
@@ -3256,7 +3081,7 @@
         window.Survival.advanceTick = function () {
             var ret = oldAdvance.apply(this, arguments);
             try { resolveNpcHardOccupancyAfterWorldTick(); } catch (e2) { /* ignore */ }
-            try { tickCookingTempStationsAfterWorldTick(); } catch (e1) { /* ignore */ }
+            try { CookingStation.tickCookingTempStationsAfterWorldTick(); } catch (e1) { /* ignore */ }
             try { CookingStation.tickCraftAfterWorldTick(); } catch (e0) { /* ignore */ }
             try { tickPharmacyTempStationsAfterWorldTick(); } catch (eP1) { /* ignore */ }
             try { PharmacyStation.tickCraftAfterWorldTick(); } catch (eP0) { /* ignore */ }
@@ -3620,7 +3445,7 @@
         if (!window.SceneCtx) return;
         window.SceneCtx.cooking_station_runtime = window.CookingStation.createDefaultState();
         window.SceneCtx.cooking_temp_stations_runtime = [];
-        syncCookingTempStationsIntoMaps();
+        CookingStation.syncCookingTempStationsIntoMaps();
         window.SceneCtx.known_cooking_recipes = {};
         window.SceneCtx.known_recipe_ids_by_system = {};
         stopCookingCraftIdle();
@@ -10077,7 +9902,7 @@
                         window.Survival.initBattleResourcesFull();
                     }
                 }
-                syncCookingTempStationsIntoMaps();
+                CookingStation.syncCookingTempStationsIntoMaps();
                 // 读档后：若存在进行中制作，恢复自动 tick 推进
                 startCookingCraftIdleIfNeeded();
                 // 读档后再渲染一次，避免出现“短暂默认状态闪屏”。
@@ -11026,16 +10851,16 @@
         s.installed_accessory_item_ids = out;
     };
     window.SceneApp.placeTempCookingStation = function (mapId, x, y, options) {
-        return placeTempCookingStation(mapId, x, y, options || {});
+        return CookingStation.placeTempCookingStation(mapId, x, y, options || {});
     };
     window.SceneApp.placeTempCookingStationAtPlayer = function (options) {
         var st = E && typeof E.getState === 'function' ? E.getState() : null;
         if (!st) return null;
-        return placeTempCookingStation(st.mapId, st.x, st.y, options || {});
+        return CookingStation.placeTempCookingStation(st.mapId, st.x, st.y, options || {});
     };
     window.SceneApp.removeTempCookingStation = function (mapId, x, y) {
-        removeCookingTempStationAt(String(mapId || ''), Math.floor(Number(x)), Math.floor(Number(y)));
-        syncCookingTempStationsIntoMaps();
+        CookingStation.removeCookingTempStationAt(String(mapId || ''), Math.floor(Number(x)), Math.floor(Number(y)));
+        CookingStation.syncCookingTempStationsIntoMaps();
         markCellDirty(String(mapId || ''), Math.floor(Number(x)), Math.floor(Number(y)));
         if (window.SceneRenderer) window.SceneRenderer.render();
     };

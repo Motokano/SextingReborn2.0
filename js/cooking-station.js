@@ -411,6 +411,195 @@
         refreshCookingPanel();
     }
 
+    /** 临时灶台实体 id（世界实体标记；原 scene-app 闭包常量）。 */
+    var COOKING_TEMP_STATION_ENTITY_ID = 'cooking_station_temp';
+
+    function getMapsRefLocal() {
+        return (global.GameEngine && typeof global.GameEngine.getMaps === 'function') ? global.GameEngine.getMaps() : null;
+    }
+    function markDirtyCell(x, y) {
+        if (global.SceneCtx && typeof global.SceneCtx.pushDirtyCell === 'function') global.SceneCtx.pushDirtyCell(x, y);
+    }
+
+    function normalizeTempStationEntry(entry) {
+        if (!entry || typeof entry !== 'object') return null;
+        var mapId = entry.map_id != null ? String(entry.map_id) : '';
+        var x = Math.floor(Number(entry.x));
+        var y = Math.floor(Number(entry.y));
+        var placedTick = Math.max(0, Math.floor(Number(entry.placed_tick) || 0));
+        var despawnTick = Math.max(0, Math.floor(Number(entry.despawn_tick) || 0));
+        if (!mapId || !isFinite(x) || !isFinite(y) || despawnTick <= 0) return null;
+        return {
+            entity_id: COOKING_TEMP_STATION_ENTITY_ID,
+            map_id: mapId,
+            x: x,
+            y: y,
+            placed_tick: placedTick,
+            despawn_tick: despawnTick,
+            allowed_methods: Array.isArray(entry.allowed_methods)
+                ? entry.allowed_methods.map(function (m0) { return String(m0).trim(); }).filter(function (m1) { return !!m1; })
+                : [],
+            installed_accessory_item_ids: Array.isArray(entry.installed_accessory_item_ids)
+                ? entry.installed_accessory_item_ids.map(function (z) { return String(z).trim(); }).filter(function (z0) { return !!z0; })
+                : []
+        };
+    }
+
+    /** 归一化后的临时灶台运行时列表（SceneCtx.cooking_temp_stations_runtime）。 */
+    function getCookingTempStationsRuntime() {
+        if (!global.SceneCtx) return [];
+        if (!Array.isArray(global.SceneCtx.cooking_temp_stations_runtime)) {
+            global.SceneCtx.cooking_temp_stations_runtime = [];
+        }
+        var arr = global.SceneCtx.cooking_temp_stations_runtime;
+        var out = [];
+        var i;
+        for (i = 0; i < arr.length; i++) {
+            var norm = normalizeTempStationEntry(arr[i]);
+            if (norm) out.push(norm);
+        }
+        global.SceneCtx.cooking_temp_stations_runtime = out;
+        return out;
+    }
+
+    function isCookingTempStationEntity(rec) {
+        if (!rec || typeof rec !== 'object') return false;
+        return String(rec.entity_id || '') === COOKING_TEMP_STATION_ENTITY_ID;
+    }
+
+    function findCookingTempStationAt(mapId, x, y) {
+        var arr = getCookingTempStationsRuntime();
+        var i;
+        for (i = 0; i < arr.length; i++) {
+            var e = arr[i];
+            if (e.map_id === mapId && e.x === x && e.y === y) return e;
+        }
+        return null;
+    }
+
+    function upsertCookingTempStation(entry) {
+        var norm = normalizeTempStationEntry(entry);
+        if (!norm) return null;
+        var arr = getCookingTempStationsRuntime();
+        var i;
+        for (i = 0; i < arr.length; i++) {
+            var e = arr[i];
+            if (e.map_id === norm.map_id && e.x === norm.x && e.y === norm.y) {
+                arr[i] = norm;
+                return norm;
+            }
+        }
+        arr.push(norm);
+        return norm;
+    }
+
+    function removeCookingTempStationAt(mapId, x, y) {
+        var arr = getCookingTempStationsRuntime();
+        var i;
+        for (i = arr.length - 1; i >= 0; i--) {
+            var e = arr[i];
+            if (e.map_id === mapId && e.x === x && e.y === y) arr.splice(i, 1);
+        }
+    }
+
+    /** 把运行时临时灶台全量同步进各地图 entities（先清旧实体再按列表重建）。 */
+    function syncCookingTempStationsIntoMaps() {
+        var maps = getMapsRefLocal();
+        if (!maps || typeof maps !== 'object') return;
+        var mapIds = Object.keys(maps);
+        var i;
+        for (i = 0; i < mapIds.length; i++) {
+            var map = maps[mapIds[i]];
+            if (!map || !Array.isArray(map.entities)) continue;
+            var kept = [];
+            var j;
+            for (j = 0; j < map.entities.length; j++) {
+                var rec = map.entities[j];
+                if (isCookingTempStationEntity(rec)) continue;
+                kept.push(rec);
+            }
+            map.entities = kept;
+        }
+        var arr = getCookingTempStationsRuntime();
+        for (i = 0; i < arr.length; i++) {
+            var e = arr[i];
+            var m = maps[e.map_id];
+            if (!m) continue;
+            if (!Array.isArray(m.entities)) m.entities = [];
+            m.entities.push({
+                x: e.x,
+                y: e.y,
+                entity_id: COOKING_TEMP_STATION_ENTITY_ID,
+                placed_tick: e.placed_tick,
+                despawn_tick: e.despawn_tick,
+                allowed_methods: Array.isArray(e.allowed_methods) ? e.allowed_methods.slice() : [],
+                installed_accessory_item_ids: Array.isArray(e.installed_accessory_item_ids) ? e.installed_accessory_item_ids.slice() : []
+            });
+        }
+    }
+
+    /** 在指定格放置临时灶台（lifetime 缺省取配置寿命）。 */
+    function placeTempCookingStation(mapId, x, y, options) {
+        var gt = global.GameTime && typeof global.GameTime.getState === 'function' ? global.GameTime.getState() : null;
+        var placedTick = gt && typeof gt.totalTicks === 'number' ? Math.max(0, Math.floor(gt.totalTicks)) : 0;
+        var opts = options && typeof options === 'object' ? options : {};
+        var life = Math.max(1, Math.floor(Number(opts.lifetime_ticks) || getTempStationLifetimeTicks() || 50));
+        var next = upsertCookingTempStation({
+            map_id: String(mapId || ''),
+            x: Math.floor(Number(x)),
+            y: Math.floor(Number(y)),
+            placed_tick: placedTick,
+            despawn_tick: placedTick + life,
+            allowed_methods: Array.isArray(opts.allowed_methods) ? opts.allowed_methods.slice() : [],
+            installed_accessory_item_ids: Array.isArray(opts.installed_accessory_item_ids) ? opts.installed_accessory_item_ids.slice() : []
+        });
+        if (!next) return null;
+        syncCookingTempStationsIntoMaps();
+        markDirtyCell(next.x, next.y);
+        if (global.SceneRenderer) global.SceneRenderer.render();
+        return Object.assign({}, next);
+    }
+
+    /** 当前进行中制作是否落在该临时灶台（station_type='temp' 且坐标匹配）。 */
+    function isActiveCraftOnTempStation(mapId, x, y) {
+        var cs = getState();
+        var ac = cs && cs.active_craft && typeof cs.active_craft === 'object' ? cs.active_craft : null;
+        if (!ac || !ac.station_ref || typeof ac.station_ref !== 'object') return false;
+        var ref = ac.station_ref;
+        return String(ref.station_type || '') === 'temp'
+            && String(ref.map_id || '') === String(mapId || '')
+            && Math.floor(Number(ref.x)) === Math.floor(Number(x))
+            && Math.floor(Number(ref.y)) === Math.floor(Number(y));
+    }
+
+    /** 世界 tick：到期临时灶台移除（其上 active craft 强制失败结算）；原 scene-app tickCookingTempStationsAfterWorldTick。 */
+    function tickCookingTempStationsAfterWorldTick() {
+        var gt = global.GameTime && typeof global.GameTime.getState === 'function' ? global.GameTime.getState() : null;
+        var nowTick = gt && typeof gt.totalTicks === 'number' ? Math.max(0, Math.floor(gt.totalTicks)) : 0;
+        var arr = getCookingTempStationsRuntime();
+        if (!arr.length) return;
+        var changed = false;
+        var i;
+        for (i = arr.length - 1; i >= 0; i--) {
+            var e = arr[i];
+            if (nowTick < e.despawn_tick) continue;
+            var hasActiveCraft = isActiveCraftOnTempStation(e.map_id, e.x, e.y);
+            if (hasActiveCraft) {
+                var cs = getState();
+                var ac = cs && cs.active_craft && typeof cs.active_craft === 'object' ? cs.active_craft : null;
+                if (ac) finalizeCraftNow(ac, { force_failure: true, reason: 'temp_station_despawn' });
+            }
+            arr.splice(i, 1);
+            changed = true;
+            markDirtyCell(e.x, e.y);
+        }
+        if (changed) {
+            syncCookingTempStationsIntoMaps();
+            refreshCookingPanel();
+            if (global.SceneRenderer) global.SceneRenderer.render();
+        }
+    }
+
     global.CookingStation = {
         setConfig: setConfig,
         getMethods: getMethods,
@@ -435,6 +624,15 @@
         getActiveCraft: getActiveCraft,
         clearActiveCraft: clearActiveCraft,
         finalizeCraftNow: finalizeCraftNow,
-        tickCraftAfterWorldTick: tickCraftAfterWorldTick
+        tickCraftAfterWorldTick: tickCraftAfterWorldTick,
+        normalizeTempStationEntry: normalizeTempStationEntry,
+        getCookingTempStationsRuntime: getCookingTempStationsRuntime,
+        isCookingTempStationEntity: isCookingTempStationEntity,
+        findCookingTempStationAt: findCookingTempStationAt,
+        removeCookingTempStationAt: removeCookingTempStationAt,
+        syncCookingTempStationsIntoMaps: syncCookingTempStationsIntoMaps,
+        placeTempCookingStation: placeTempCookingStation,
+        isActiveCraftOnTempStation: isActiveCraftOnTempStation,
+        tickCookingTempStationsAfterWorldTick: tickCookingTempStationsAfterWorldTick
     };
 })(typeof window !== 'undefined' ? window : globalThis);
