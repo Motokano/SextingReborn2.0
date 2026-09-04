@@ -2,7 +2,7 @@
 
 > 目标：把「吃」从**即时数值**改成**一段由胃里内容决定的曲线**——体现消化过程、餐的组成，以及「突然大暴食胃反应不过来、后期顶得难受」的现实感。
 > 与 `24-attribute-experience`（进食/睡眠 = 成长主通道）、`06-survival`（饱食/营养/体重）、`21-cooking`（烹饪/配方）联动。
-> 载体：现有 **34 个「消化中」buff**（`data/buffs.json`，durationTicks 8-12 + 每回合 survival_delta）——升级 `durationTicks → 消化时长`、`delta → 总量÷时长` 即得新模型，不需新机制。
+> 载体：现有 **35 个「消化中」buff**（`data/buffs.json`，durationTicks 8-12 + 每回合 survival_delta）——升级 `durationTicks → 消化时长`、`delta → 总量÷时长` 即得新模型，不需新机制。
 
 ## 一、餐位档（菜等级）——复杂度/等级的职责 = 定饱食
 
@@ -45,7 +45,7 @@
 |---|---|
 | 空胃 | -1.0 /tick |
 | 单吃家常菜肴（c≈0.7） | -0.3 /tick（饿得慢，维持） |
-| 单吃苦力菜（c≈1.1） | +0.1 /tick（勉强爬升，保底） |
+| 单吃苦力菜（c≈1.3） | +0.3 /tick（勉强爬升，保底） |
 | 三道家常同时消化（Σc≈2.1） | +1.1 /tick（一餐，爬升） |
 | 单吃饕餮盛宴（c≈1.1，120-180t） | +0.1 /tick（慢续航，一盅顶一路，能拉起饥饿线） |
 
@@ -55,7 +55,7 @@
 - 一餐覆盖类别越多 → 均衡度越高 → **营养值档位**越高（充沛 ×1.3 潜能、极境 底气上限 +15%）→ 属性经验倍率越高——**让玩家有意识地保持荤素平衡**。
 - 与餐位档**正交**：档位定强度（饱食），构成定均衡（经验）。**苦力菜构成简单（基本无均衡贡献）、经验 ≈ 0**，进一步坐实「吃好 = 配齐 = 成长」。
 - **已实装（k79，详见 `48-meal-balance-attribute-exp.md`）**：活性消化 buff 扫描构成（`staple/meat/veg` 覆盖，`other` 不计）→ 均衡档（单一/搭配/均衡）→ `buff_meal_balance_mixed/balanced` 每 tick 补营养（+1/+2）→ 营养值档位 → 进食经验倍率（充沛 ×1.5、极境 ×2、营养不良 ×0.5）。
-- **配套（k79）**：34 道菜消化 buff 的营养 per-tick 微量调（档位梯度 snack 0.05~0.15 … banquet 0.6~0.8），均衡 buff 才是营养值主驱动——否则任何一道菜都把营养灌爆 100，均衡链失效。
+- **配套（k79）**：35 道菜消化 buff 的营养 per-tick 微量调（档位梯度 snack 0.05~0.15 … banquet 0.6~0.8），均衡 buff 才是营养值主驱动——否则任何一道菜都把营养灌爆 100，均衡链失效。
 
 ## 四、饮水（即时恢复，不走消化曲线）
 
@@ -103,13 +103,13 @@
 
 **生存 / Buff**：
 - 饱食变化率 = `-1 + Σ活性贡献`（`-1` 保留配置键）；新增「消化中」活性状态（或直接复用 buff）
-- 34 个现有料理 buff：`durationTicks → 消化时长`、`survival_delta → 总量÷时长`
+- 35 个现有料理 buff：`durationTicks → 消化时长`、`survival_delta → 总量÷时长`
 - 消化不良触发：进入过量区间（100.1~150，沿用现有 `satiety_overcap` 判定）
 - `satiety_overcap_max`（150）、`satiety_overcap_threshold`（90）、`satiety_weight_gain_ticks_stuffed`（144）沿用
 
 ## 九、与现有系统接线
 
-- **「消化中」buff 已存在（34 个）**：升级数值即可，不需新机制。
+- **「消化中」buff 已存在（35 个）**：升级数值即可，不需新机制。
 - **同 buff_id 禁止重复食用（21 已定）**：同菜不叠、异菜叠加——天然支撑组合模型（食用逻辑 `scene-app.applyItemUseEffectFromTemplate` 已保证：已有同 buff 时食用返回 false）。**【46 修订，废止】：同种菜重复 = 刷新持续时间、不叠层（全局生效，含普通吃同款菜；满盒食用逐菜多次结算）。见 `46-lunchbox-design.md`。**
 - **被动衰减已恢复（2025「无被动衰减」储备模型废止，用户定）**：饱食每 tick `-1`（`satiety_tick_decay`）；饮水恢复被动衰减（每 2 tick -1，`thirst_tick_decay_interval/amount`，因调息不再消耗饮水，否则饮水系统失效）；**调息（行气）不再消耗饱食/饮水**，只恢复体力+底气（时间为代价）。
 - **消化曲线运行时构成**：`Survival.advanceTick` 先扣基础衰减，buff 管线（buff-system 补丁包装 advanceTick → `tick_advanced`）再叠加「消化中」buff 的 `survival_delta` → 每 tick 净变化 = -1 + Σ活性贡献（43 §二）。
@@ -139,9 +139,9 @@
 
 ---
 
-## 十二、菜品档位归属表（34 道实装 · k65 基础表）
+## 十二、菜品档位归属表（35 道实装 · k65 基础表）
 
-> 数据依据：`data/buffs.json` 34 个 `buff_food_*` 的 `judgment_tags.food_item` 映射。
+> 数据依据：`data/buffs.json` 35 个 `buff_food_*` 的 `judgment_tags.food_item` 映射。
 > `satiety_total`（饱食总量）与 `digestion_ticks`（消化时长）为草案值，`c = satiety_total ÷ digestion_ticks` 自动推导。
 > 构成 `meal_composition`：`staple / meat / veg / other`（营养均衡第二轴判定用）。
 > 消化 buff 的 `nutrition` per-tick 已于 k79 微量调（见 `44` §三），此处不再列。
@@ -204,8 +204,8 @@
 
 ### 饕餮盛宴（预留 · 总量 120-180 · 时长 120-180t · c≈1.1）
 
-- **当前 34 道实装菜无盛宴档**——15 道终局菜（`life-cooking-final-goals`）实装后归入此档，c≈1.1（慢续航，一盅顶一路）。
-- 苦力菜正体（压缩饼干式，c≈1.3、口渴代价、便携）见 `k73`；`food_flatbread_plain` 为早期替代。
+- **当前 35 道实装菜无盛宴档**——15 道终局菜（`life-cooking-final-goals`）实装后归入此档，c≈1.1（慢续航，一盅顶一路）。
+- 苦力菜正体（压缩饼干式，c≈1.3、口渴代价、便携）已实装（`buff_food_compressed_biscuit`，见 `data/buffs.json`）；`food_flatbread_plain` 为早期替代。
 
 ### 构成统计（均衡判定用）
 

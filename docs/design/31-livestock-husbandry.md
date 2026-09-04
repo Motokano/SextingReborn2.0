@@ -24,7 +24,7 @@
 牧场由十字型机械结构将牧场范围分隔为四个本质相同的区域（区域1-4）。四个区域没有固定功能类型，区别不在区域本身，而在于当前有哪些动物位于该区域。
 
 十字型装置包含：
-- 四根机械臂（一号、二号、三号、四号，初始按上下右左排列）
+- 四根机械臂（一号、二号、三号、四号，初始按上右下左排列）
 - 一个轴心柱（两个可改装位）
 - 控制入口
 - 每个机械臂拥有五个外部面 + 一个内部空间，用于模块化改装
@@ -441,106 +441,104 @@
 
 ### 6.4 产出契约（item_id 对齐）
 
-所有产出映射到 `items.json` 的 item_id；「已有」表示 `hus_*` 已存在，「新增」需在实现时补入。价值走 `price_class + volatility`（贸易定价），肥料值走 `fert_c / fert_n`。
+所有产出映射到 `data/items.json` 的 item_id（`hus_*` 条目均已落地）。本契约仅覆盖核心产出，完整物品以 `data/items.json` 为准（其中还有更多 `hus_*` 条目）。价值走 `price_class + volatility`（贸易定价），肥料值走 `fert_c / fert_n`。
 
 #### 活体产出
 
-| 产出 | item_id | 状态 | 下游用途 |
-|---|---|---|---|
-| 水牛奶 | hus_milk_buffalo | 已有 | 烹饪 / 乳制品 |
-| 羊毛 | hus_wool | 新增 | 纺织 |
-| 牛血 | hus_beef_blood | 新增 | 烹饪 / 入药 |
-| 羊血 | hus_mutton_blood | 新增 | 烹饪 / 入药 |
-| 猪血 | hus_pork_blood | 新增 | 烹饪 / 入药 |
-| 鸡蛋 | hus_egg | 已有 | 烹饪 |
+| 产出 | item_id | 下游用途 |
+|---|---|---|
+| 水牛奶 | hus_milk_buffalo | 烹饪 / 乳制品 |
+| 羊毛 | hus_wool | 纺织 |
+| 牛血 | hus_beef_blood | 烹饪 / 入药 |
+| 羊血 | hus_mutton_blood | 烹饪 / 入药 |
+| 猪血 | hus_pork_blood | 烹饪 / 入药 |
+| 鸡蛋 | hus_egg | 烹饪 |
 
 #### 牛屠宰产出
 
-| 产出 | item_id | 状态 | 下游用途 |
-|---|---|---|---|
-| 牛排（主肉） | hus_beef_steak | 新增 | 烹饪 |
-| 牛心 | hus_beef_heart | 新增 | 烹饪 |
-| 牛肝 | hus_beef_liver | 新增 | 烹饪 |
-| 牛肾 | hus_beef_kidney | 新增 | 烹饪 |
-| 牛肚 | hus_beef_tripe | 新增 | 烹饪 |
-| 牛百叶 | hus_beef_omasum | 新增 | 烹饪 |
-| 牛肠 | hus_beef_intestine | 新增 | 烹饪 |
-| 牛舌 | hus_beef_tongue | 已有 | 烹饪 |
-| 牛肺 | hus_beef_lung | 新增 | 烹饪 |
-| 牛脑 | hus_beef_brain | 新增 | 烹饪 |
-| 牛骨髓 | hus_beef_marrow | 新增 | 烹饪 |
-| 牛血 | hus_beef_blood | 新增 | 烹饪 / 入药 |
-| 牛皮 | hus_beef_hide | 新增 | 皮革 / 装备 |
-| 牛骨 | hus_beef_bone | 已有 | 骨粉 / 熬汤 |
-| 牛角 | hus_beef_horn | 新增 | 工具 / 入药 |
-| 牛脂/牛油 | hus_beef_tallow | 新增 | 烹饪油脂 |
+| 产出 | item_id | 下游用途 |
+|---|---|---|
+| 牛排（主肉） | hus_beef_steak | 烹饪 |
+| 牛心 | hus_beef_heart | 烹饪 |
+| 牛肝 | hus_beef_liver | 烹饪 |
+| 牛肾 | hus_beef_kidney | 烹饪 |
+| 牛肚 | hus_beef_tripe | 烹饪 |
+| 牛百叶 | hus_beef_omasum | 烹饪 |
+| 牛肠 | hus_beef_intestine | 烹饪 |
+| 牛舌 | hus_beef_tongue | 烹饪 |
+| 牛肺 | hus_beef_lung | 烹饪 |
+| 牛脑 | hus_beef_brain | 烹饪 |
+| 牛骨髓 | hus_beef_marrow | 烹饪 |
+| 牛血 | hus_beef_blood | 烹饪 / 入药 |
+| 牛皮 | hus_beef_hide | 皮革 / 装备 |
+| 牛骨 | hus_beef_bone | 骨粉 / 熬汤 |
+| 牛角 | hus_beef_horn | 工具 / 入药 |
+| 牛脂/牛油 | hus_beef_tallow | 烹饪油脂 |
 
 #### 羊屠宰产出
 
-| 产出 | item_id | 状态 | 下游用途 |
-|---|---|---|---|
-| 羊排 | hus_mutton_chop | 新增 | 烹饪 |
-| 羊肉 | hus_mutton | 已有 | 烹饪 |
-| 羊腿 | hus_mutton_leg | 新增 | 烹饪 |
-| 羊心 | hus_mutton_heart | 新增 | 烹饪 |
-| 羊肝 | hus_mutton_liver | 新增 | 烹饪 |
-| 羊肾 | hus_mutton_kidney | 新增 | 烹饪 |
-| 羊肚 | hus_mutton_tripe | 新增 | 烹饪 |
-| 羊肠 | hus_mutton_intestine | 新增 | 烹饪 |
-| 羊舌 | hus_mutton_tongue | 新增 | 烹饪 |
-| 羊肺 | hus_mutton_lung | 新增 | 烹饪 |
-| 羊脑 | hus_mutton_brain | 新增 | 烹饪 |
-| 羊血 | hus_mutton_blood | 新增 | 烹饪 / 入药 |
-| 羊皮 | hus_mutton_hide | 新增 | 皮革 / 装备 |
-| 羊骨 | hus_mutton_bone | 新增 | 骨粉 / 熬汤 |
-| 羊脂/羊油 | hus_mutton_tallow | 新增 | 烹饪油脂 |
+| 产出 | item_id | 下游用途 |
+|---|---|---|
+| 羊排 | hus_mutton_chop | 烹饪 |
+| 羊肉 | hus_mutton | 烹饪 |
+| 羊腿 | hus_mutton_leg | 烹饪 |
+| 羊心 | hus_mutton_heart | 烹饪 |
+| 羊肝 | hus_mutton_liver | 烹饪 |
+| 羊肾 | hus_mutton_kidney | 烹饪 |
+| 羊肚 | hus_mutton_tripe | 烹饪 |
+| 羊肠 | hus_mutton_intestine | 烹饪 |
+| 羊舌 | hus_mutton_tongue | 烹饪 |
+| 羊肺 | hus_mutton_lung | 烹饪 |
+| 羊脑 | hus_mutton_brain | 烹饪 |
+| 羊血 | hus_mutton_blood | 烹饪 / 入药 |
+| 羊皮 | hus_mutton_hide | 皮革 / 装备 |
+| 羊骨 | hus_mutton_bone | 骨粉 / 熬汤 |
+| 羊脂/羊油 | hus_mutton_tallow | 烹饪油脂 |
 
 #### 猪屠宰产出
 
-| 产出 | item_id | 状态 | 下游用途 |
-|---|---|---|---|
-| 猪排 | hus_pork_chop | 新增 | 烹饪 |
-| 猪肉 | hus_pork_meat_ground | 已有 | 烹饪 |
-| 猪心 | hus_pork_heart | 新增 | 烹饪 |
-| 猪肝 | hus_pork_liver | 新增 | 烹饪 |
-| 猪腰 | hus_pork_kidney | 新增 | 烹饪 |
-| 猪肚 | hus_pork_stomach | 已有 | 烹饪 |
-| 猪大肠 | hus_pork_large_intestine | 新增 | 烹饪 |
-| 猪小肠 | hus_pork_small_intestine | 新增 | 烹饪 |
-| 猪舌 | hus_pig_tongue | 已有 | 烹饪 |
-| 猪肺 | hus_pork_lung | 新增 | 烹饪 |
-| 猪脑 | hus_pork_brain | 新增 | 烹饪 |
-| 猪耳 | hus_pork_ear | 新增 | 烹饪 |
-| 猪血 | hus_pork_blood | 新增 | 烹饪 / 入药 |
-| 猪皮 | hus_pork_rind | 已有 | 皮革 / 装备 |
-| 猪骨 | hus_pork_bone | 已有 | 骨粉 / 熬汤 |
-| 猪板油 | hus_pig_lard | 已有 | 烹饪油脂 |
-| 猪油 | hus_pork_lard | 已有 | 烹饪油脂 |
+| 产出 | item_id | 下游用途 |
+|---|---|---|
+| 猪排 | hus_pork_chop | 烹饪 |
+| 猪肉 | hus_pork_meat_ground | 烹饪 |
+| 猪心 | hus_pork_heart | 烹饪 |
+| 猪肝 | hus_pork_liver | 烹饪 |
+| 猪腰 | hus_pork_kidney | 烹饪 |
+| 猪肚 | hus_pork_stomach | 烹饪 |
+| 猪大肠 | hus_pork_large_intestine | 烹饪 |
+| 猪小肠 | hus_pork_small_intestine | 烹饪 |
+| 猪舌 | hus_pig_tongue | 烹饪 |
+| 猪肺 | hus_pork_lung | 烹饪 |
+| 猪脑 | hus_pork_brain | 烹饪 |
+| 猪耳 | hus_pork_ear | 烹饪 |
+| 猪血 | hus_pork_blood | 烹饪 / 入药 |
+| 猪皮 | hus_pork_rind | 皮革 / 装备 |
+| 猪骨 | hus_pork_bone | 骨粉 / 熬汤 |
+| 猪板油 | hus_pig_lard | 烹饪油脂 |
+| 猪油 | hus_pork_lard | 烹饪油脂 |
 
 #### 鸡屠宰产出
 
-| 产出 | item_id | 状态 | 下游用途 |
-|---|---|---|---|
-| 鸡腿肉 | hus_chicken_thigh | 新增 | 烹饪 |
-| 鸡胸肉 | hus_chicken_breast | 新增 | 烹饪 |
-| 鸡血 | hus_chicken_blood | 新增 | 烹饪 / 入药 |
-| 鸡胗 | hus_chicken_gizzard | 新增 | 烹饪 |
-| 鸡肝 | hus_chicken_liver | 新增 | 烹饪 |
-| 鸡心 | hus_chicken_heart | 新增 | 烹饪 |
-| 鸡肠 | hus_chicken_intestine | 新增 | 烹饪 |
-| 鸡皮 | hus_chicken_skin | 新增 | 烹饪 / 皮革 |
-| 鸡骨 | hus_chicken_bone | 已有 | 骨粉 / 熬汤 |
-| 鸡肉 | hus_chicken_meat | 已有 | 烹饪 |
+| 产出 | item_id | 下游用途 |
+|---|---|---|
+| 鸡腿肉 | hus_chicken_thigh | 烹饪 |
+| 鸡胸肉 | hus_chicken_breast | 烹饪 |
+| 鸡血 | hus_chicken_blood | 烹饪 / 入药 |
+| 鸡胗 | hus_chicken_gizzard | 烹饪 |
+| 鸡肝 | hus_chicken_liver | 烹饪 |
+| 鸡心 | hus_chicken_heart | 烹饪 |
+| 鸡肠 | hus_chicken_intestine | 烹饪 |
+| 鸡皮 | hus_chicken_skin | 烹饪 / 皮革 |
+| 鸡骨 | hus_chicken_bone | 骨粉 / 熬汤 |
+| 鸡肉 | hus_chicken_meat | 烹饪 |
 
 #### 副产物（废热回收臂 §11.5.2）
 
-| 产出 | item_id | 状态 | 下游用途 |
-|---|---|---|---|
-| 有机肥料 | compost_matrix_*（复用农业） | 已有 | 农业施肥 |
-| 沼气 | hus_biogas | 新增 | 燃料 |
-| 虫粉 | hus_insect_powder | 新增 | 鸡饲料 |
-
-> 新增物品合计约 50 个；具体 `weight_kg` / `price_class` / `volatility` / `spoilage_ticks` / `fert_c` / `fert_n` 等字段在实现阶段补入 `items.json`（对齐 `hus_*` 现有条目结构）。
+| 产出 | item_id | 下游用途 |
+|---|---|---|
+| 有机肥料 | compost_matrix_*（复用农业） | 农业施肥 |
+| 沼气 | hus_biogas | 燃料 |
+| 虫粉 | hus_insect_powder | 鸡饲料 |
 
 ---
 
@@ -1339,7 +1337,7 @@ level = 1 + floor(99 × usage / 5,000,000)
 | 轴心 | 中央仓储枢纽 | -- | -- | -- | -- | -- | 位2 |
 | 轴心 | 气候调控塔 | -- | -- | -- | -- | -- | 位2 |
 
-总计：14 个第一层模块 + 2 个第二层模块 + 3 个轴心模块 = **19 个模块**
+总计：12 个第一层模块 + 2 个第二层模块 + 3 个轴心模块 = **17 个模块**
 
 ---
 

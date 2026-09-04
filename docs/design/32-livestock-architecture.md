@@ -309,7 +309,7 @@ LivestockEcosystem.modify(zoneId, varId, delta, { source }) // 夹紧到 [min,ma
 ## 8. 建议落地顺序
 
 1. `LivestockRegistry`（effect handler 注册）+ `LivestockEcosystem`（生态变量接口）。
-2. 三张配置表 schema + 首版数据（把 `31` 的牛/羊/猪/鸡 + 19 模块 + 全 Perk 填进去）。
+2. 三张配置表 schema + 首版数据（把 `31` 的牛/羊/猪/鸡 + 17 模块 + 全 Perk 填进去）。
 3. 动物实例模型 + 生态/饥饿/成长 tick 结算器（读表 + 应用 modifier key）。
 4. 繁殖/Perk 遗传 + 捕获事件 + 屠宰产出。
 5. 控制面板 UI + 模块装配/升级（读模块表 + 升级材料模板）。
