@@ -53,41 +53,7 @@
 - **三类型伤害后处理（新增）**：`resolvePlayerVsEnemyAttack` 在主公式产出 `rawDamage` + `damageType` 后进入三类型池 `typedDamage={blunt,slash,pierce}`。结算顺序固定：**前置注入（`add_flat`/`add_from_pct`）→ 首轮类型增伤（`increase_pct`）→ 单向转换（仅 `blunt_to_slash`、`slash_to_pierce`，同向多条先求和一次转换）→ 转换后二次增伤（仅新增目标类型分量）**。全程保留小数，仅 `finalDamage` 落地时 `floor`。禁止反向转换，避免递归套娃。实现接线：`js/combat-melee-resolve.js`（生成 `typedDamage`）、`js/scene-app.js`（透传上下文）、`js/combat-pipeline.js`（敌方按三类型分量减伤后汇总）。
 - **词条数据字段（统一）**：推荐字段 `damage_type_effects`，子键：`add_flat`、`add_from_pct[]`、`increase_pct`、`convert_pct`。`pct` 支持 `0.2` 或 `20`（运行时归一化）。`convert_pct` 只允许 `blunt_to_slash`、`slash_to_pierce`。
 
-### 战斗技能·呼吸法·熟练度：**已定**与**尚待实现**
-
-#### 已定（策划已拍板；以 `11` / `19` / JSON / API 为准）
-
-| 主题 | 依据 | 摘要 |
-|------|------|------|
-| 肢上招式熟练度 | `11` 8.3.1、`05` 5.4 | `move_usage`；**不再提供后天五维**（`proficiency_attr_unlocks` 机制已删除，见 05 5.4） |
-| 基本拳脚分轨 | `11` 8.3.2、agent 规则 | 后遗症 vs 招式熟练度解锁（后遗症已迁肌群大型被动，见 `34`） |
-| **基本呼吸法** 显示名 | `data/combat-skills.json`、`19` §6、`11` 8.3.3 | 全文统一 **「基本呼吸法」**；技能 ID 仍为 **`combat_basic_breath`** |
-| **呼吸条（气力）** | `07`「气力值＝呼吸条」、`11` 8.3.3 | **形态完全由呼吸法 `breath_bar` 定义**：上限（`max_base`/`max_growth`，可成长/不成长/倒扣）、恢复（`regen`，按完整轮次）、动作档位变动值（`action_delta`，按动作标签，**可为正/负**，按成数 \(k\) 缩放）、状态（`states` 预留）；**未挂载呼吸法 → 无呼吸条**；**切换呼吸法 = 1 tick + 清零重攒** |
-| **吐纳** 入口 | `19` §6.4（已取消）、`11` 8.3.3 | **已取消**：呼吸条恢复无主动回气动作，仅由 `breath_bar.regen` 被动模型负责 |
-| **冷却** | `19` §6 总述 | **`skills[combat_basic_breath].hub_action_cooldown_ticks[hub_action_id]`**，战斗 tick 递减 |
-| **熟练度累计** | `19` §6 总述 | **血气化劲 / 吐气纳精 / 调息** 成功结算均 **`move_usage.tu_na` +1**；调息 **每成功 1 tick** +1 |
-| **底气护体** `diqi_huti` | `19` §6.6、`11` 8.3.3、`06` 底气护体示例；⚠️ **机制已迁移，见 [37](37-equipment-modular-armor.md)**（激活模块化防具：消耗 = 基础盾量×(1+Σ模块消耗%)；盾减伤 = 板位模块减伤；盾量 = 基础盾量；必须装备防具） | **≥50** 级；**战斗**；**\(B=\lfloor diqi_{\max}\times r\rfloor\)**，`r`=`diqi_consume_ratio_of_max`（0.5）；**\(C=\max(d_{\min},B)\)**，`d_{\min}`=`diqi_consume_min`（**1**，底气消耗下限夹紧）；**`diqi_max=0`** 整次失败 → **`shield_value=C`**；**三系 25%**（`shield_tri_type_damage_reduce_pct`）；**无 duration tick**；**护体未破不可重复开**；**不累加 `tu_na`** |
-| **`getSkillTotalProficiency` hub 排除** | `11` 8.3.3、`js/combat-skills.js` | **`hub_actions[].exclude_from_skill_total_proficiency: true`** 的条目 **不参与** 算术平均（**底气护体** 已用，避免稀释呼吸法熟练度 `tu_na` 对 **`breath_power_multiplier`** 的影响） |
-| 呼吸法威力 | `11` 8.3.3、`getBreathPowerMultiplier` | `base` 1.0；总熟练 ≥50% → +0.3 |
-| 新呼吸法 | `11` 8.3.3 | **沿用** `breath_bar`（呼吸条定义）+ `hub_actions` + `breath_power_multiplier` |
-| 新步法 | `11` 8.3.4 | **`category: footwork`**、`hubs.footwork`、**`combat_speed_base`**、**无熟练度**、`hub_actions` 仅动作/Buff |
-| **基本招架** | `11` 8.3.5、`08` 招架结算阶段、`getParryValues`、`js/combat-parry.js` | 仅招架槽；**1→满级**线性 **15%→45%** / **20%→50%**；**成功** **`move_usage.parry_success` +1**（仅招架数值与剧情/后遗症条件，**不提供后天五维**）；**肢位选取 / 跳过 / 日志 / 事件** 见 `08` 与 **`CombatParry`**；registry **`parry_*`** 事件 |
-| Buff/试探 | `18`、`11` | 既有规则 |
-
-**技能存档字段补充（实现须持久化）**：在 `skills[skill_id]` 上除 **`level`**、**`move_usage`** 外，呼吸法相关可增加 **`hub_action_cooldown_ticks?: { [string]: number }`**（剩余冷却 tick）；缺省键视为 0。
-
-#### 尚待实现（非策划缺口）
-
-- **战斗结算接线**：\(F_{\text{呼吸法威力}}\) 乘入 \(W_{\text{skill}}\) 的代码路径；**多 hub 切换**时以 **出手前一刻** `hubs.breath` 为准（实现登记）。
-- **速度先手与同时结算（`07`）**：已接线 **`js/combat-initiative.js`** + **`SceneCtx.actions.attackEnemy`**：**速度不等**时先手方先跑满管线再跑后手还击（敌人还击用 **`CombatMeleeResolve.resolveEnemyVsPlayerAttack`** + **`melee_hit_player_defender`**）；**同速**且敌人 **`can_attack !== false`** 时走 **`simultaneousDryRun`**（招式命中 Buff 入队 + 伤害入队）再 **`flushPendingBuffApplies` / `finalizeSimultaneousStrike`**；**`initiative_always_first`** 由 **`resolvePlayerInitiatedExchange`** 在**取整速度**得到先后/同速结构之后，再与强制先手互抵合成（见 `combat-initiative.js`）。**地图普攻、敌取整速度更高且非显式三件套**时，先后手解析**推迟**到还击后二次选肢完毕，再调用一次（终稿肢上的槽位后遗症）。局限：后手「失能短路」（玩家作为后手被击失能）待玩家 HP/死亡链接入；敌人侧 HP/死亡已接入（玩家先手打死敌人 → 跳过该敌人本交换还击，见 `10`）；同 tick 内其它系统对「同时提交」的观测顺序以当前 commit 为准。Agent 维护约定见 **`.cursor/rules/combat-initiative-exchange-agent.mdc`**。
-- **非战斗扩展**：呼吸条（气力）为战斗内资源；若将来大地图回气/呼吸法联动，单独立项（呼吸法 `breath_bar.regen` 的判定点当前为完整轮次收束，见 `07`）。
-
-### 战斗管线与后遗症分派（可扩展落地）
-
-- **配置**：`data/combat-pipeline.json` 定义 **`pipelines.*.phases[]`**（`handler` 键、`buff_event_name` 等）。**勿在单技能 JSON 写死封顶**，招架/命中硬顶以 **`survival-config.json`** 的 `parry_chance_cap`、`parry_damage_reduce_cap`、`hit_*` 为准（`CombatPipeline.getParryCaps` 读取）。
-- **实现**：`js/combat-pipeline.js` — `CombatPipeline.setConfig`、`runPipeline`、`registerPhaseHandler(handlerKey, fn)` 覆盖内置 **`builtin.*`**。`js/combat-post-effects.js` — `CombatPostEffects.setTable(post-effects.json)`、`registerPostEffectResolver(effectType, fn)`；管线阶段 **`builtin.post_effects_hook`** 对 `hit_roll_success` 分派。
-- **入口**：`SceneApp` 加载配置后注入管线；**`attackEnemy`** 默认跑 **`melee_hit_enemy_defender`**，可通过 **`ctxMeta.pipeline`** 换 **`melee_hit_player_defender`**（演示/受击）；**`ctxMeta.post_effect_ids`** 传入装配的后遗症 id 列表。
-- **策划填表字段**：`combat-skills.json` 的 **`constants.design_meta_template`**；技能根、`moves[]`、`hub_actions[]` 可选 **`design_meta`**。`post-effects.json` 条目可选 **`design_meta`**、**`mechanic_shared_with_enemy`**（与 `10-enemies`「共用机制」一致）。
+> (实现状态追踪已迁移至 docs/implementation-progress.md 与 .cursor/rules,不在本设计正本维护)
 
 ---
 
@@ -102,7 +68,7 @@
 - **开放技能判断接口**：实现须提供接口（如 `getItemDisplayTier(itemId, character)` 或等价），根据**当前玩家**在物品配置中 `display_skill_id` 所指技能上的**等级**，返回档位 0 / 1 / 2，进而决定使用 name_0/1/2 与 desc_0/1/2 的哪一档。档位阈值从**配置表**读取（如全局常数表字段 `item_display_tier_threshold_1`、`item_display_tier_threshold_2`）；**当前实现可留空**，只要后续配置其他物品时能通过该字段调参即可，未配置时由实现约定默认值。UI 与任何需要展示物品名称、描述的地方均**必须**通过该接口取得档位后再取对应文案，不得写死单档。
 - **技能等级存储**：角色技能等级建议存于 `character.skills`，结构为 `{ [skill_id]: { level: number } }`（或等价 `character.skill_levels: { [skill_id]: number }`）；未习得技能时等级视为 0。展示档位接口通过 `character.skills[display_skill_id].level`（或等价）读取等级。语言技能 ID 为 `survival_language`（见 11 技能系统）。
 - **技能等级 → 后天属性（已下线）**：`skill_attr_gain` 整条成长线已下线（`05` 5.4）：表为空且 `combat_*` 显式跳过，`sumFromSkills` 仅保留函数体防旧档/工具误用，**不产生任何后天属性**。
-- **技能成长主干（已接线：自修）**：`05` 5.8 + `11` §8.3.1——**自修**（`Survival.startStudy/stopStudy`，挂机）：每 tick 扣 `study_tick_energy_cost` 精力 → 转化至多 `Pot_perEnergy`（专注决定，`computeStudyPotentialCap`）潜能（`IE.consumePotential`）→ 该技能 `study_exp` 累加（`IE.addStudyExp`）→ 按 `getPotentialCostForLevel` 成本曲线推进等级（`IE.tryAdvanceSkillLevel`）；精力/潜能不足或到可练上限自动停止。存档字段：`skills[skillId].study_exp`（升级进度，不持久化为潜能）+ `Survival` 的 `is_study_active/study_skill_id`。**师傅传授（一次 10 精力同曲线）暂缓**：后续由部分 NPC 附带该功能（NPC 配置可传授技能 + 可传授上限），当前游戏无师傅角色、不实现。
+- **技能成长主干（自修链路）**：`05` 5.8 + `11` §8.3.1——**自修**（`Survival.startStudy/stopStudy`，挂机）：每 tick 扣 `study_tick_energy_cost` 精力 → 转化至多 `Pot_perEnergy`（专注决定，`computeStudyPotentialCap`）潜能（`IE.consumePotential`）→ 该技能 `study_exp` 累加（`IE.addStudyExp`）→ 按 `getPotentialCostForLevel` 成本曲线推进等级（`IE.tryAdvanceSkillLevel`）；精力/潜能不足或到可练上限自动停止。存档字段：`skills[skillId].study_exp`（升级进度，不持久化为潜能）+ `Survival` 的 `is_study_active/study_skill_id`。**师傅传授（一次 10 精力同曲线）暂缓**：后续由部分 NPC 附带该功能（NPC 配置可传授技能 + 可传授上限），当前游戏无师傅角色、不实现。
 - **战斗后遗症（构式）**：`/data/post-effects.json` 定义 `post_effect_id`、文案 key、`effect_type`（如 **`initiative_always_first`**、**`dispel_one_beneficial_buff_on_target`**）、`valid_skill_ids` / `valid_move_ids`、`effect_params`（如驱散是否在招架 0 伤后仍触发）。招式在 `combat-skills.json` 的 `moves[]` 内可含 **`post_effect_unlocks`**（`min_proficiency_ratio` + `post_effect_id`）与（历史字段）`post_effect_slot_max`。当前实现存档采用**肢体级装配**：`combat.post_effect_sequences[limbId] = post_effect_id | null`；旧档 `post_effect_sequences[limbId][skillId][slot]` 读取时做兼容迁移。**装配校验**：同一 `post_effect_id` 在同一肢体内**至多出现一次**（四肢可各一次）。**`initiative_always_first` 参与交换顺序**时，以 **`resolvePlayerInitiatedExchange`** 为准：先按小数速度得到先后/同速结构，再读**本击已确定的出招肢体**装配（地图普攻敌先还击时须在二次选肢后调用）。**驱散类**须在 **命中 roll 成功** 且（若配置）**招架后**仍执行的节点调用 BuffSystem，候选池见 `18`。
 - **已获得后遗症（后台-only）**：`CharacterAttributes` 状态含 **`post_effects_obtained: string[]`**（去重 id）。**不向玩家默认状态栏/角色面板展示**；仅供 **`getPostEffectsObtainedCount()`**、**`getPostEffectsObtainedIds()`**、**`hasPostEffectObtained(post_effect_id)`** 及 **`syncPostEffectsObtainedFromSkillsState()`**（可手动调用）供剧情、NPC 条件、成就等判断。前三个查询接口在读取前会内部 **`syncPostEffectsObtainedFromSkillsState()`**（按 `skills[*].move_usage` 与 `post_effect_unlocks` 合并熟练度解锁）。剧情直发奖用 **`registerPostEffectObtained(id)`**。随角色存档读写。
 - **变式（招式槽被动）**：建议单表 **`/data/move-variants.json`** 定义（与后续 UI/数据导出对齐）。装配位置与招式槽同层，但语义是**被动**：作用于其所在肢体的主动招式结算上下文。**变式为全局面板资源**：先决条件只由表 `unlock` 等决定，**不**与「某条招式专属配对接口」；`target_filters` 仅影响结算时是否对当击招式生效（见 `11-skills` 变式节）。

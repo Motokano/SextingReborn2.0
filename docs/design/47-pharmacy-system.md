@@ -14,27 +14,15 @@
 
 ---
 
-## 1. 现状盘点（R0 · 以磁盘为准）
+## 1. 现状盘点（前提事实 · 现状盘点日期：2026-09；以当时磁盘为准）
 
-- `recipe-methods.json` 已有 7 个 `life_pharmacy` 方法占位：捣碎 `crushing`/浸取 `maceration`/蒸馏 `distillation`/过滤 `filtration`/离心 `centrifugation`/结晶 `crystallization`/压片 `tableting`；带 `station_pharmacy` 门禁、配件 `tool_*_pharmacy`、默认失败 `item.scrap.herb_dregs`。**占位值不作数值依据。**
-- `life-skill-recipe-interfaces.json` 有 `life_pharmacy` 接口行（默认方法 crushing）。
-- `recipes.json`：制药配方为零。
-- 制药台 NPC 站初始**破损**，修复链要求手持 `ore_clay_raw`+`wood_firewood`+`tool_rolling_pin_pharmacy` 各扣 1（触发器文件）。
-- 4 件 `potion_*` 死占位**确认删除**，药水物品从零设计。
-- 经脉/穴位**废弃**（`34` 肌肉系统取代）→ 刺入给药不挂武学针法。
-- 异常状态（中毒/流血/灼烧）未实装 → 首版**只治已存在的病**。
-- 药草 `herb_*` 带语义标签（alchemy/medical/stimulant/`surface_only` 等）；`herb_sour_plum` 生食先例（中间品粗用的数据佐证）。
+- 制药骨架已占位：`recipe-methods.json` 有 7 个 `life_pharmacy` 方法（`crushing`/`maceration`/`distillation`/`filtration`/`centrifugation`/`crystallization`/`tableting`，带 `station_pharmacy` 门禁、配件 `tool_*_pharmacy`、默认失败 `item.scrap.herb_dregs`）；`life-skill-recipe-interfaces.json` 有接口行（默认 crushing）；`recipes.json` 配方为零。**占位值不作数值依据。**
+- 制药台 NPC 站初始**破损**，修复链 = `ore_clay_raw` + `wood_firewood` + `tool_rolling_pin_pharmacy` 各扣 1。
+- 无现成药水：4 件 `potion_*` 死占位**确认删除**，药水物品从零设计；异常状态（中毒/流血/灼烧）未实装 → 首版**只治已存在的病**；经脉/穴位废弃（`34` 肌肉系统取代）→ 刺入给药不挂武学针法；`herb_*` 带语义标签（alchemy/medical/stimulant/`surface_only` 等）。
 
-### 1.1 实施缺口清单（实现时处理）
+### 1.1 实施缺口清单（并入 §8 与看板跟踪）
 
-- 制药侧无熟练度接线（§7 定案：同烹饪补接）。
-- 无 `data/pharmacy-system-config.csv`（代码注释期望注入全局失败物，文件与解析均缺）。
-- 失败物 id 悬空：方法级 `item.scrap.herb_dregs` 与全局默认 `food_pharmacy_fail_generic` 物品表均不存在。
-- `pharmacy_ingredient` 标记全库 0 个（门禁会拒绝一切投料）。
-- 体温无 buff 效果字段（`survival_delta` 无 body_temperature）→ 驱寒/退烧类需新通道。
-- 体力无 `addStamina` 公开接口（现成：buff 逐 tick / `applyFoodConversion`）；心情无 API（裸调 `Survival.setState`）。
-- `stack_limit` 被 `build-items-json.mjs` 强制 1（CSV 列非真值源）。
-- 消费判定三选一（`edible+edible_buff_id`/`usable+use_buff_id`/`use_effect`）需为药水开口（§5.1）。
+> (实施缺口并入 §8 待定项与看板跟踪,不在设计正本重复维护)
 
 ---
 

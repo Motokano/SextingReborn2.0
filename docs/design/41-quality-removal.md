@@ -21,27 +21,6 @@
 | 装备 | `quality_tier` 实例字段 | `numeric_rolls` / `resolved_rolls`（**保留**）+ 词条 |
 | UI | 品质色条（灰→红六档） | 移除；物品行不再带品质色条 |
 
-## 三、数据迁移清单（已完成）
+## 三、迁移执行记录（已完成）
 
-- `data/items.json`：移除全部 `quality` 字段（399 处）。
-- `data/loot_tables.json`：移除 `quality_tier`，按 `item_id` 合并权重（`loot_bush` / `loot_grass`）。
-- `data/gathering_point_instances.json`：移除 `quality_tier` / `quality_tier_max`，合并重复行；示例实例更名措辞。
-- `data/equipment.json`：移除 `quality_tier`，更新文件头注释。
-- `data/cooking-recipes.json`：移除 `base_output_quality_tier`。
-- `data/recipes.json`：移除 24 处 `base_output_quality_tier`。
-- `data/survival-config.json`：移除生产品质配置键（保留 `production_success_bonus_at_skill_1000`）。
-- `data/ui_text_zhCN.json`：`gathering.msg.dropped/got` 去掉 `{quality}` 占位符；移除品质 tooltip 文案。
-
-## 四、文档迁移清单（已完成）
-
-`02` §2.1、`11` §8.2.1/8.2.2/8.2.2a、`14`、`21`、`24` §24.5a、`26`、`27`（两份字段清单）、`29`、`05`、`37`、`00-index`、`capitalism/items_template_and_style.md`、`wild-gathering-points-agent-rule.md`、仓库 UI prompt、畜牧 UI prompt、`implementation-progress.md`、`life-cooking-final-goals.md`。
-
-## 五、工具 / 代码迁移（已完成）
-
-- **工具**：`tools/build-items-json.mjs`、`tools/migrate-cooking-to-unified-recipes.mjs`、`tools/add-livestock-items.js`、`tools/test-hideout-warehouse.mjs` 与全部 HTML 编辑器（`gathering-point-editor` / `item-editor` / `recipe-editor` / `npc-editor` / `character-attributes-design-overview`）已移除品质列 / 字段。
-- **运行时代码**：
-  - `js/item-value.js`：有效基价 = `round(base_value)`，品质 API 保留为无害占位（`normalizeQualityTier→0`、`getQualityTierValueMultiplier→1`）。
-  - `js/production-quality.js`：只判成功率（`base × (1 + skill/1000 × bonus)`），`output_quality_tier` 恒 0。
-  - `js/gathering.js`：品质上修移除，改为**熟练度提高稀有物品行权重**（loot 行可选 `rare_weight`，权重 ×（1 + 熟练度% / 100 × rare_weight））。
-  - `js/inventory-equipment.js` / `js/scene-app.js` / `js/scene-renderer.js` / `js/hideout-warehouse.js` / `js/agriculture-player-items.js` / `js/livestock-panel.js` / `js/npc-system.js`：移除实例 `quality_tier` 读写、堆叠/排序中的品质比较、tooltip 与快捷栏 key 中的品质字段；烹饪/制药改为仅成功率结算。
-- **残留（无害）**：`js/production-quality.js` / `js/item-value.js` 保留兼容字段与占位 API（不参与数值）；旧存档中的 `quality_tier` 字段被 `copyItemInstance` 丢弃（不复制），读档不受影响。
+> (迁移执行记录:已完成;明细见 git 历史与 tools/ 审计脚本,2026-09 压缩)
