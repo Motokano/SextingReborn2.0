@@ -59,6 +59,45 @@
         global.SceneCtx.known_recipe_ids_by_system[RECIPE_SYSTEM_ID][rid] = true;
     }
 
+    /** 新档默认装配配件（当前为空表）。面板侧旧闭包 DEFAULT_COOKING_INSTALLED_ACCESSORIES 随 P1c-2 面板迁出后同源。 */
+    var DEFAULT_ACCESSORY_IDS = [];
+
+    /** 创建默认站点运行时状态（新档/重置用；语义同原 resetCookingStateForNewCharacter）。 */
+    function createDefaultState() {
+        return {
+            fuel_points: 0,
+            water_points: 0,
+            water_unlimited: false,
+            installed_accessory_item_ids: DEFAULT_ACCESSORY_IDS.slice(),
+            active_craft: null
+        };
+    }
+
+    /**
+     * 获取站点运行时状态：SceneCtx.cooking_station_runtime 懒初始化 + 字段归一化。
+     * 原 scene-app getCookingStationState 逐字迁移（含无 SceneCtx 时的静态兜底对象）。
+     */
+    function getState() {
+        if (!global.SceneCtx) {
+            return {
+                fuel_points: 0,
+                water_points: 0,
+                water_unlimited: false,
+                installed_accessory_item_ids: DEFAULT_ACCESSORY_IDS.slice()
+            };
+        }
+        if (!global.SceneCtx.cooking_station_runtime || typeof global.SceneCtx.cooking_station_runtime !== 'object') {
+            global.SceneCtx.cooking_station_runtime = createDefaultState();
+        }
+        var s = global.SceneCtx.cooking_station_runtime;
+        if (!isFinite(parseInt(s.fuel_points, 10))) s.fuel_points = 0;
+        if (!isFinite(parseInt(s.water_points, 10))) s.water_points = 0;
+        s.water_unlimited = s.water_unlimited === true || s.water_unlimited === 'true' || s.water_unlimited === 1 || String(s.water_unlimited).toLowerCase() === '1';
+        if (!Array.isArray(s.installed_accessory_item_ids)) s.installed_accessory_item_ids = DEFAULT_ACCESSORY_IDS.slice();
+        if (s.active_craft != null && typeof s.active_craft !== 'object') s.active_craft = null;
+        return s;
+    }
+
     global.CookingStation = {
         setConfig: setConfig,
         getMethods: getMethods,
@@ -66,6 +105,8 @@
         getFailureItemId: getFailureItemId,
         getTempStationLifetimeTicks: getTempStationLifetimeTicks,
         recipeSystemId: RECIPE_SYSTEM_ID,
-        markRecipeKnown: markRecipeKnown
+        markRecipeKnown: markRecipeKnown,
+        createDefaultState: createDefaultState,
+        getState: getState
     };
 })(typeof window !== 'undefined' ? window : globalThis);

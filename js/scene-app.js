@@ -3171,7 +3171,7 @@
     }
 
     function getActiveCookingCraft() {
-        var cs = getCookingStationState();
+        var cs = CookingStation.getState();
         var ac = cs && cs.active_craft && typeof cs.active_craft === 'object' ? cs.active_craft : null;
         if (!ac) return null;
         var rt = Math.max(0, Math.floor(Number(ac.remaining_ticks) || 0));
@@ -3181,7 +3181,7 @@
 
     // === Auto-generated Pharmacy Helper ===
     function getActivePharmacyCraft() {
-        var cs = getPharmacyStationState();
+        var cs = PharmacyStation.getState();
         var ac = cs && cs.active_craft && typeof cs.active_craft === 'object' ? cs.active_craft : null;
         if (!ac) return null;
         var rt = Math.max(0, Math.floor(Number(ac.remaining_ticks) || 0));
@@ -3190,13 +3190,13 @@
     }
 
     function clearActiveCookingCraft() {
-        var cs = getCookingStationState();
+        var cs = CookingStation.getState();
         if (cs) cs.active_craft = null;
     }
 
     // === Auto-generated Pharmacy Helper ===
     function clearActivePharmacyCraft() {
-        var cs = getPharmacyStationState();
+        var cs = PharmacyStation.getState();
         if (cs) cs.active_craft = null;
     }
 
@@ -3370,7 +3370,7 @@
     }
 
     function tickCookingCraftAfterWorldTick() {
-        var cs = getCookingStationState();
+        var cs = CookingStation.getState();
         if (!cs || !cs.active_craft || typeof cs.active_craft !== 'object') return;
         var rt = Math.max(0, Math.floor(Number(cs.active_craft.remaining_ticks) || 0));
         if (!(rt > 0)) {
@@ -3525,7 +3525,7 @@
     }
 
     function tickPharmacyCraftAfterWorldTick() {
-        var cs = getPharmacyStationState();
+        var cs = PharmacyStation.getState();
         if (!cs || !cs.active_craft || typeof cs.active_craft !== 'object') return;
         var rt = Math.max(0, Math.floor(Number(cs.active_craft.remaining_ticks) || 0));
         if (!(rt > 0)) {
@@ -3585,7 +3585,7 @@
         var needFuel = readMethodCostValue(m, 'fuel', 'fuel_cost');
         var needTicks = readMethodCostValue(m, 'ticks', 'craft_ticks');
         var needStamina = readMethodCostValue(m, 'stamina', 'stamina_cost');
-        var cs = getPharmacyStationState();
+        var cs = PharmacyStation.getState();
         var curFuel = parseInt(cs.fuel_points, 10) || 0;
         if (curFuel < needFuel) return { ok: false, reason: 'insufficient_fuel', need: needFuel, current: curFuel };
         var survState = window.Survival && typeof window.Survival.getState === 'function' ? window.Survival.getState() : null;
@@ -3606,7 +3606,7 @@
             window.Survival.consumeStamina(needStamina);
         }
 
-        var cs2 = getPharmacyStationState();
+        var cs2 = PharmacyStation.getState();
         var gt = window.GameTime && typeof window.GameTime.getState === 'function' ? window.GameTime.getState() : null;
         cs2.active_craft = {
             remaining_ticks: Math.max(1, needTicks),
@@ -3638,7 +3638,7 @@
     }
 
     function isActiveCraftOnTempStation(mapId, x, y) {
-        var cs = getCookingStationState();
+        var cs = CookingStation.getState();
         var ac = cs && cs.active_craft && typeof cs.active_craft === 'object' ? cs.active_craft : null;
         if (!ac || !ac.station_ref || typeof ac.station_ref !== 'object') return false;
         var ref = ac.station_ref;
@@ -3660,7 +3660,7 @@
             if (nowTick < e.despawn_tick) continue;
             var hasActiveCraft = isActiveCraftOnTempStation(e.map_id, e.x, e.y);
             if (hasActiveCraft) {
-                var cs = getCookingStationState();
+                var cs = CookingStation.getState();
                 var ac = cs && cs.active_craft && typeof cs.active_craft === 'object' ? cs.active_craft : null;
                 if (ac) finalizeCookingCraftNow(ac, { force_failure: true, reason: 'temp_station_despawn' });
             }
@@ -4307,61 +4307,6 @@
 
     var DEFAULT_COOKING_INSTALLED_ACCESSORIES = [];
 
-    function getCookingStationState() {
-        if (!window.SceneCtx) {
-            return {
-                fuel_points: 0,
-                water_points: 0,
-                water_unlimited: false,
-                installed_accessory_item_ids: DEFAULT_COOKING_INSTALLED_ACCESSORIES.slice()
-            };
-        }
-        if (!window.SceneCtx.cooking_station_runtime || typeof window.SceneCtx.cooking_station_runtime !== 'object') {
-            window.SceneCtx.cooking_station_runtime = {
-                fuel_points: 0,
-                water_points: 0,
-                water_unlimited: false,
-                installed_accessory_item_ids: DEFAULT_COOKING_INSTALLED_ACCESSORIES.slice(),
-                active_craft: null
-            };
-        }
-        var s = window.SceneCtx.cooking_station_runtime;
-        if (!isFinite(parseInt(s.fuel_points, 10))) s.fuel_points = 0;
-        if (!isFinite(parseInt(s.water_points, 10))) s.water_points = 0;
-        s.water_unlimited = s.water_unlimited === true || s.water_unlimited === 'true' || s.water_unlimited === 1 || String(s.water_unlimited).toLowerCase() === '1';
-        if (!Array.isArray(s.installed_accessory_item_ids)) s.installed_accessory_item_ids = DEFAULT_COOKING_INSTALLED_ACCESSORIES.slice();
-        if (s.active_craft != null && typeof s.active_craft !== 'object') s.active_craft = null;
-        return s;
-    }
-
-    // === Auto-generated Pharmacy Helper ===
-    function getPharmacyStationState() {
-        if (!window.SceneCtx) {
-            return {
-                fuel_points: 0,
-                water_points: 0,
-                water_unlimited: false,
-                installed_accessory_item_ids: DEFAULT_PHARMACY_INSTALLED_ACCESSORIES.slice()
-            };
-        }
-        if (!window.SceneCtx.pharmacy_station_runtime || typeof window.SceneCtx.pharmacy_station_runtime !== 'object') {
-            window.SceneCtx.pharmacy_station_runtime = {
-                fuel_points: 0,
-                water_points: 0,
-                water_unlimited: false,
-                installed_accessory_item_ids: DEFAULT_PHARMACY_INSTALLED_ACCESSORIES.slice(),
-                active_craft: null
-            };
-        }
-        var s = window.SceneCtx.pharmacy_station_runtime;
-        if (!isFinite(parseInt(s.fuel_points, 10))) s.fuel_points = 0;
-        if (!isFinite(parseInt(s.water_points, 10))) s.water_points = 0;
-        s.water_unlimited = s.water_unlimited === true || s.water_unlimited === 'true' || s.water_unlimited === 1 || String(s.water_unlimited).toLowerCase() === '1';
-        if (!Array.isArray(s.installed_accessory_item_ids)) s.installed_accessory_item_ids = DEFAULT_PHARMACY_INSTALLED_ACCESSORIES.slice();
-        if (s.active_craft != null && typeof s.active_craft !== 'object') s.active_craft = null;
-        return s;
-    }
-
     function getCookingAccessoryItemIdsFromMethods() {
         var out = [];
         var seen = {};
@@ -4419,7 +4364,7 @@
         if (!id) return { ok: false, reason: 'bad_item' };
         var allow = getCookingAccessoryItemIdsFromMethods();
         if (allow.indexOf(id) < 0) return { ok: false, reason: 'not_cooking_accessory', item_id: id };
-        var cs = getCookingStationState();
+        var cs = CookingStation.getState();
         var arr = Array.isArray(cs.installed_accessory_item_ids) ? cs.installed_accessory_item_ids : [];
         var i;
         for (i = 0; i < arr.length; i++) {
@@ -4441,7 +4386,7 @@
         if (!id) return { ok: false, reason: 'bad_item' };
         var allow = getPharmacyAccessoryItemIdsFromMethods();
         if (allow.indexOf(id) < 0) return { ok: false, reason: 'not_pharmacy_accessory', item_id: id };
-        var cs = getPharmacyStationState();
+        var cs = PharmacyStation.getState();
         var arr = Array.isArray(cs.installed_accessory_item_ids) ? cs.installed_accessory_item_ids : [];
         var i;
         for (i = 0; i < arr.length; i++) {
@@ -4460,7 +4405,7 @@
     function uninstallCookingAccessoryToInventory(itemId) {
         var id = itemId != null ? String(itemId).trim() : '';
         if (!id) return { ok: false, reason: 'bad_item' };
-        var cs = getCookingStationState();
+        var cs = CookingStation.getState();
         var src = Array.isArray(cs.installed_accessory_item_ids) ? cs.installed_accessory_item_ids : [];
         var out = [];
         var removed = false;
@@ -4493,7 +4438,7 @@
     function uninstallPharmacyAccessoryToInventory(itemId) {
         var id = itemId != null ? String(itemId).trim() : '';
         if (!id) return { ok: false, reason: 'bad_item' };
-        var cs = getPharmacyStationState();
+        var cs = PharmacyStation.getState();
         var src = Array.isArray(cs.installed_accessory_item_ids) ? cs.installed_accessory_item_ids : [];
         var out = [];
         var removed = false;
@@ -4546,7 +4491,7 @@
                 ? ctx.temp_station.installed_accessory_item_ids
                 : [];
         } else {
-            var st = getCookingStationState();
+            var st = CookingStation.getState();
             arr = st.installed_accessory_item_ids || [];
         }
         var need = String(req).trim();
@@ -4582,7 +4527,7 @@
                 ? ctx.temp_station.installed_accessory_item_ids
                 : [];
         } else {
-            var st = getPharmacyStationState();
+            var st = PharmacyStation.getState();
             arr = st.installed_accessory_item_ids || [];
         }
         var need = String(req).trim();
@@ -4595,13 +4540,7 @@
 
     function resetCookingStateForNewCharacter() {
         if (!window.SceneCtx) return;
-        window.SceneCtx.cooking_station_runtime = {
-            fuel_points: 0,
-            water_points: 0,
-            water_unlimited: false,
-            installed_accessory_item_ids: DEFAULT_COOKING_INSTALLED_ACCESSORIES.slice(),
-            active_craft: null
-        };
+        window.SceneCtx.cooking_station_runtime = window.CookingStation.createDefaultState();
         window.SceneCtx.cooking_temp_stations_runtime = [];
         syncCookingTempStationsIntoMaps();
         window.SceneCtx.known_cooking_recipes = {};
@@ -4611,13 +4550,7 @@
             try { window.NPCSystem.resetCookingStationRepairQuestFlags(); } catch (eNq) { /* ignore */ }
         }
         stopPharmacyCraftIdle();
-        window.SceneCtx.pharmacy_station_runtime = {
-            fuel_points: 0,
-            water_points: 0,
-            water_unlimited: false,
-            installed_accessory_item_ids: DEFAULT_PHARMACY_INSTALLED_ACCESSORIES.slice(),
-            active_craft: null
-        };
+        window.SceneCtx.pharmacy_station_runtime = window.PharmacyStation.createDefaultState();
         window.SceneCtx.known_pharmacy_recipes = {};
         if (window.NPCSystem && typeof window.NPCSystem.resetPharmacyStationRepairQuestFlags === 'function') {
             try { window.NPCSystem.resetPharmacyStationRepairQuestFlags(); } catch (ePq) { /* ignore */ }
@@ -4645,7 +4578,7 @@
         if (!isOnCookingStationTile()) return false;
         if (isCookingUiBlockedByRepair()) return false;
         var pourCtx = getCurrentCookingStationContext();
-        if (pourCtx && pourCtx.station_type === 'main' && getCookingStationState().water_unlimited) return false;
+        if (pourCtx && pourCtx.station_type === 'main' && CookingStation.getState().water_unlimited) return false;
         var slot = findFirstContainerSlotByPredicate(function (cell) {
             return getItemWaterPoints(cell.item_id) > 0;
         });
@@ -4734,7 +4667,7 @@
             return;
         }
         var pourCtx0 = getCurrentCookingStationContext();
-        if (pourCtx0 && pourCtx0.station_type === 'main' && getCookingStationState().water_unlimited) {
+        if (pourCtx0 && pourCtx0.station_type === 'main' && CookingStation.getState().water_unlimited) {
             showMsg(ui('cooking.pour_water.main_already_unlimited'), 'info');
             return;
         }
@@ -4755,7 +4688,7 @@
             showMsg(ui('cooking.pour_water.fail_take'), 'warn');
             return;
         }
-        var cs = getCookingStationState();
+        var cs = CookingStation.getState();
         var before = parseInt(cs.water_points, 10) || 0;
         var afterRaw = before + waterGain;
         var after = Math.min(COOKING_WATER_MAX_POINTS, afterRaw);
@@ -4802,7 +4735,7 @@
             showMsg(ui('cooking.add_fuel.fail_take'), 'warn');
             return;
         }
-        var cs = getCookingStationState();
+        var cs = CookingStation.getState();
         var before = parseInt(cs.fuel_points, 10) || 0;
         var afterRaw = before + fuelGain;
         var after = Math.min(COOKING_FUEL_MAX_POINTS, afterRaw);
@@ -4867,7 +4800,7 @@
         var needWater = Math.max(0, parseInt(m.water_cost, 10) || 0);
         var needTicks = Math.max(0, parseInt(m.craft_ticks, 10) || 0);
         var needStamina = Math.max(0, parseInt(m.stamina_cost, 10) || 0);
-        var cs = getCookingStationState();
+        var cs = CookingStation.getState();
         var curFuel = parseInt(cs.fuel_points, 10) || 0;
         var curWater = parseInt(cs.water_points, 10) || 0;
         var mainWaterFree = !!(stationCtx && stationCtx.station_type === 'main' && cs.water_unlimited);
@@ -4893,7 +4826,7 @@
         }
 
         // 固定 tick 耗时：开做即扣资源，但时间按 world tick 递减；制作中不可移动
-        var cs2 = getCookingStationState();
+        var cs2 = CookingStation.getState();
         var gt = window.GameTime && typeof window.GameTime.getState === 'function' ? window.GameTime.getState() : null;
         cs2.active_craft = {
             remaining_ticks: Math.max(1, needTicks),
@@ -5899,7 +5832,7 @@
         renderCookingIngredientPickerList();
 
         // 配件安装/卸下
-        var csAcc = getCookingStationState();
+        var csAcc = CookingStation.getState();
         var installed = Array.isArray(csAcc.installed_accessory_item_ids) ? csAcc.installed_accessory_item_ids.slice() : [];
         if (accessoryList) {
             accessoryList.innerHTML = '';
@@ -5999,7 +5932,7 @@
 
         // 状态区
         var mSel = (CookingStation.getMethods() && mid && CookingStation.getMethods()[String(mid)]) ? CookingStation.getMethods()[String(mid)] : null;
-        var cs = getCookingStationState();
+        var cs = CookingStation.getState();
         var curFuel = parseInt(cs.fuel_points, 10) || 0;
         var curWater = parseInt(cs.water_points, 10) || 0;
         var needFuel = mSel ? Math.max(0, parseInt(mSel.fuel_cost, 10) || 0) : 0;
@@ -6557,7 +6490,7 @@
         renderPharmacyIngredientPickerList();
 
         // 配件安装/卸下
-        var csAcc = getPharmacyStationState();
+        var csAcc = PharmacyStation.getState();
         var installed = Array.isArray(csAcc.installed_accessory_item_ids) ? csAcc.installed_accessory_item_ids.slice() : [];
         if (accessoryList) {
             accessoryList.innerHTML = '';
@@ -6657,7 +6590,7 @@
 
         // 状态区
         var mSel = (PharmacyStation.getMethods() && mid && PharmacyStation.getMethods()[String(mid)]) ? PharmacyStation.getMethods()[String(mid)] : null;
-        var cs = getPharmacyStationState();
+        var cs = PharmacyStation.getState();
         var curFuel = parseInt(cs.fuel_points, 10) || 0;
         var needFuel = mSel ? readMethodCostValue(mSel, 'fuel', 'fuel_cost') : 0;
         var needTicks = mSel ? readMethodCostValue(mSel, 'ticks', 'craft_ticks') : 0;
@@ -12109,7 +12042,7 @@
         return a;
     };
     window.SceneApp.getCookingStationAccessories = function () {
-        return getCookingStationState().installed_accessory_item_ids.slice();
+        return CookingStation.getState().installed_accessory_item_ids.slice();
     };
     window.SceneApp.getKnownPharmacyRecipeIds = function () {
         var o = window.SceneCtx && window.SceneCtx.known_pharmacy_recipes;
@@ -12123,7 +12056,7 @@
         return a;
     };
     window.SceneApp.setCookingStationAccessories = function (ids) {
-        var s = getCookingStationState();
+        var s = CookingStation.getState();
         if (!Array.isArray(ids)) {
             s.installed_accessory_item_ids = [];
             return;
