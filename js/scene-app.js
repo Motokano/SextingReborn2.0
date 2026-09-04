@@ -3235,10 +3235,8 @@
     // ---------------------------
     var cookingCraftIdleTimer = null;
     var pharmacyCraftIdleTimer = null;
-    var COOKING_RECIPE_SYSTEM = 'life_cooking';
     var COOKING_DEFAULT_PROCESSOR_ID = 'processor.life_cooking.default';
     var cookingRecipeProcessorRegistered = false;
-    var PHARMACY_RECIPE_SYSTEM = 'life_pharmacy';
     var PHARMACY_DEFAULT_PROCESSOR_ID = 'processor.life_pharmacy.default';
     var PHARMACY_BASE_STATION_UNLOCK_FLAG = 'npc_station_pharmacy_base_repaired';
     var PHARMACY_FUEL_MAX_POINTS = 100;
@@ -3340,7 +3338,7 @@
         }
         registerCookingRecipeProcessorIfNeeded();
         var ret = window.RecipeSystem.craft({
-            recipe_system: COOKING_RECIPE_SYSTEM,
+            recipe_system: CookingStation.recipeSystemId,
             method_id: toUnifiedCookingMethodId(methodId),
             inputs: Array.isArray(selectedInputs) ? selectedInputs : []
         });
@@ -3364,7 +3362,7 @@
             registerPharmacyRecipeProcessorIfNeeded();
         }
         var ret = window.RecipeSystem.craft({
-            recipe_system: PHARMACY_RECIPE_SYSTEM,
+            recipe_system: PharmacyStation.recipeSystemId,
             method_id: toUnifiedPharmacyMethodId(methodId),
             inputs: Array.isArray(selectedInputs) ? selectedInputs : []
         });
@@ -3548,7 +3546,7 @@
         } else if (pick && pick.failure_output && pick.failure_output.item_id) {
             outputItemId = String(pick.failure_output.item_id);
         }
-        if (evalRes.success && pickRecipeId) markCookingRecipeKnown(pickRecipeId);
+        if (evalRes.success && pickRecipeId) CookingStation.markRecipeKnown(pickRecipeId);
         if (evalRes.success) addCookingSuccessProficiency();
 
         grantItemOrDrop(outputItemId);
@@ -3602,18 +3600,6 @@
             successRateRaw += (moodDeltaPct / 100);
         }
         return Math.max(0, Math.min(1, successRateRaw));
-    }
-
-    function markPharmacyRecipeKnown(recipeId) {
-        if (!recipeId || !window.SceneCtx) return;
-        window.SceneCtx.known_pharmacy_recipes = window.SceneCtx.known_pharmacy_recipes || {};
-        var rid = String(recipeId);
-        window.SceneCtx.known_pharmacy_recipes[rid] = true;
-        window.SceneCtx.known_recipe_ids_by_system = window.SceneCtx.known_recipe_ids_by_system || {};
-        if (!window.SceneCtx.known_recipe_ids_by_system[PHARMACY_RECIPE_SYSTEM]) {
-            window.SceneCtx.known_recipe_ids_by_system[PHARMACY_RECIPE_SYSTEM] = {};
-        }
-        window.SceneCtx.known_recipe_ids_by_system[PHARMACY_RECIPE_SYSTEM][rid] = true;
     }
 
     function finalizePharmacyCraftNow(craftSnap, options) {
@@ -3716,7 +3702,7 @@
         } else if (pick && pick.failure_output && pick.failure_output.item_id) {
             outputItemId = String(pick.failure_output.item_id);
         }
-        if (evalRes.success && pickRecipeId) markPharmacyRecipeKnown(pickRecipeId);
+        if (evalRes.success && pickRecipeId) PharmacyStation.markRecipeKnown(pickRecipeId);
 
         grantItemOrDrop(outputItemId);
         if (evalRes.success && Array.isArray(pickBonusOutputs) && pickBonusOutputs.length) {
@@ -4812,18 +4798,6 @@
             if (String(arr[i]).trim() === need) return true;
         }
         return false;
-    }
-
-    function markCookingRecipeKnown(recipeId) {
-        if (!recipeId || !window.SceneCtx) return;
-        window.SceneCtx.known_cooking_recipes = window.SceneCtx.known_cooking_recipes || {};
-        var rid = String(recipeId);
-        window.SceneCtx.known_cooking_recipes[rid] = true;
-        window.SceneCtx.known_recipe_ids_by_system = window.SceneCtx.known_recipe_ids_by_system || {};
-        if (!window.SceneCtx.known_recipe_ids_by_system[COOKING_RECIPE_SYSTEM]) {
-            window.SceneCtx.known_recipe_ids_by_system[COOKING_RECIPE_SYSTEM] = {};
-        }
-        window.SceneCtx.known_recipe_ids_by_system[COOKING_RECIPE_SYSTEM][rid] = true;
     }
 
     function resetCookingStateForNewCharacter() {

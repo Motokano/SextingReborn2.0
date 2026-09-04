@@ -35,10 +35,31 @@
     function getRecipes() { return cfg.recipes; }
     function getFailureItemId() { return cfg.failure_item_id; }
 
+    /** 统一配方系统 id（RecipeSystem/recipe-schema 对齐；原 scene-app 闭包 PHARMACY_RECIPE_SYSTEM）。 */
+    var RECIPE_SYSTEM_ID = 'life_pharmacy';
+
+    /**
+     * 标记制药配方已学：写 SceneCtx 图鉴（迁移期双写 known_pharmacy_recipes 与
+     * known_recipe_ids_by_system[RECIPE_SYSTEM_ID]）。
+     */
+    function markRecipeKnown(recipeId) {
+        if (!recipeId || !global.SceneCtx) return;
+        global.SceneCtx.known_pharmacy_recipes = global.SceneCtx.known_pharmacy_recipes || {};
+        var rid = String(recipeId);
+        global.SceneCtx.known_pharmacy_recipes[rid] = true;
+        global.SceneCtx.known_recipe_ids_by_system = global.SceneCtx.known_recipe_ids_by_system || {};
+        if (!global.SceneCtx.known_recipe_ids_by_system[RECIPE_SYSTEM_ID]) {
+            global.SceneCtx.known_recipe_ids_by_system[RECIPE_SYSTEM_ID] = {};
+        }
+        global.SceneCtx.known_recipe_ids_by_system[RECIPE_SYSTEM_ID][rid] = true;
+    }
+
     global.PharmacyStation = {
         setConfig: setConfig,
         getMethods: getMethods,
         getRecipes: getRecipes,
-        getFailureItemId: getFailureItemId
+        getFailureItemId: getFailureItemId,
+        recipeSystemId: RECIPE_SYSTEM_ID,
+        markRecipeKnown: markRecipeKnown
     };
 })(typeof window !== 'undefined' ? window : globalThis);

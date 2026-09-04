@@ -40,11 +40,32 @@
     function getFailureItemId() { return cfg.failure_item_id; }
     function getTempStationLifetimeTicks() { return cfg.temp_station_lifetime_ticks; }
 
+    /** 统一配方系统 id（RecipeSystem/recipe-schema 对齐；原 scene-app 闭包 COOKING_RECIPE_SYSTEM）。 */
+    var RECIPE_SYSTEM_ID = 'life_cooking';
+
+    /**
+     * 标记烹饪配方已学：写 SceneCtx 图鉴（迁移期双写 known_cooking_recipes 与
+     * known_recipe_ids_by_system[RECIPE_SYSTEM_ID]；save-system deriveKnownCookingRecipeIds 读取）。
+     */
+    function markRecipeKnown(recipeId) {
+        if (!recipeId || !global.SceneCtx) return;
+        global.SceneCtx.known_cooking_recipes = global.SceneCtx.known_cooking_recipes || {};
+        var rid = String(recipeId);
+        global.SceneCtx.known_cooking_recipes[rid] = true;
+        global.SceneCtx.known_recipe_ids_by_system = global.SceneCtx.known_recipe_ids_by_system || {};
+        if (!global.SceneCtx.known_recipe_ids_by_system[RECIPE_SYSTEM_ID]) {
+            global.SceneCtx.known_recipe_ids_by_system[RECIPE_SYSTEM_ID] = {};
+        }
+        global.SceneCtx.known_recipe_ids_by_system[RECIPE_SYSTEM_ID][rid] = true;
+    }
+
     global.CookingStation = {
         setConfig: setConfig,
         getMethods: getMethods,
         getRecipes: getRecipes,
         getFailureItemId: getFailureItemId,
-        getTempStationLifetimeTicks: getTempStationLifetimeTicks
+        getTempStationLifetimeTicks: getTempStationLifetimeTicks,
+        recipeSystemId: RECIPE_SYSTEM_ID,
+        markRecipeKnown: markRecipeKnown
     };
 })(typeof window !== 'undefined' ? window : globalThis);

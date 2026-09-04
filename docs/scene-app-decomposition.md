@@ -191,6 +191,10 @@ js/item-use.js  window.ItemUse      // applyItemUseEffectFromTemplate / tryUseIt
     - scene-app：删除 6 个 config 闭包变量声明（cookingMethods/Recipes、pharmacyMethods/Recipes、两个 failure id、tempStationLifetimeTicks）；`loadConfig` 改调 `CookingStation.setConfig(...)` / `PharmacyStation.setConfig(...)`（对齐 `EnemyDrops.setConfig` 惯例）；63 处读取点改走模块 getter（机械替换，零残留）。
     - `index.html` 挂载两模块（scene-app 之前）。
     - 冒烟：实机启动正常（loadConfig 委托在启动期执行成功，无 BOOT FAILED）。
+  - **P1b-2（已提交）**：图鉴/known-recipes 小簇外移。
+    - 两模块新增 `recipeSystemId`（唯一事实源，替代 scene-app 闭包 `COOKING_RECIPE_SYSTEM`/`PHARMACY_RECIPE_SYSTEM`）与 `markRecipeKnown(recipeId)`（原样迁移 markCookingRecipeKnown/markPharmacyRecipeKnown：双写 `SceneCtx.known_*_recipes` 与 `known_recipe_ids_by_system[recipeSystemId]`）。
+    - scene-app：删两个 mark 函数与两个常量声明；2 处调用改走 `CookingStation/PharmacyStation.markRecipeKnown`；2 处 `RecipeSystem.craft({ recipe_system })` 注册参数改读模块 `recipeSystemId`。
+    - 冒烟：实机启动正常。
 - **P1c（待办）**：站点规则与面板迁出（配 infra 桥，见 P1 实测 deps：ui/showMsg/render/tooltip 系列/`isPreCreationGameplayRestricted` 等）；compost 面板 → `compost-panel.js`。
 
 ## 5. 风险与对策
