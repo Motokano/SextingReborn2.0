@@ -242,6 +242,13 @@ js/item-use.js  window.ItemUse      // applyItemUseEffectFromTemplate / tryUseIt
     - 迁出 21 函数（forEachAdjacentCell/注解判定×4/上下文探测×4/修复门控族/格位谓词）+ 2 解锁 flag 常量（COOKING/PHARMACY_BASE_STATION_UNLOCK_FLAG）。
     - 面板与交互所需的站点探测全部外部可解析 → 为三站点面板模块化铺路。
     - 逐函数精确删除 + 先扫残留定义；token 重接 30 处；DI 对象键名二次修复（改字符串键）；实机冒烟通过。scene-app 当前 10340 行。
+  - **③（已提交）**：兼容桥与探索产物清理。
+    - ③-1 `3a338f8`：删 `SceneCtx.updateStatusPanel` 桥——buff-system×2/npc-system/scene-systems/scene-renderer 全改走 `SceneHud.refresh('status')`（scene-renderer 带 gatherState 透传）；顺带修复 5999 行静默坏点（`SceneCtx.SceneHud.refresh` 笔误）。
+    - ③-2 `e7e7762`：未接线探索产物归档 `_archive-js/`（game-state-core.js、svelte/dialogue、trade_*，git rename 保历史 + README）；删 `SceneApp.placeTempCookingStationAtPlayer` 死包装；serve-live 监听表去 svelte。导出袋审计：多数 SceneApp/SceneCtx 导出为真实公共 API（save-system/渲染/战斗在用），非债务。
+  - **④（已提交）**：农业状态归属 — `AgricultureMap` 自持状态。
+    - agriculture-map.js 收 ownedState + ensureState/getState/setState/cloneState/mirrorStateTick（state.tick 仅世界时间镜像语义保留；同步写 SceneCtx.agriculture_map_state 存档通道）。
+    - scene-app 删 closure `agricultureMapState`、5 访问器辅助与 syncAgricultureMapTickMirror；6 处调用改走模块；SceneApp.getAgricultureMapState* 导出改模块包装。
+    - 零残留、实机冒烟通过。scene-app 当前 10301 行。
 - **P1c（待办）**：站点规则与面板迁出（配 infra 桥，见 P1 实测 deps：ui/showMsg/render/tooltip 系列/`isPreCreationGameplayRestricted` 等）；compost 面板 → `compost-panel.js`。
 
 ## 5. 风险与对策

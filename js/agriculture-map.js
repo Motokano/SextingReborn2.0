@@ -2699,6 +2699,44 @@
         return state.tick;
       }
 
+      // ===== 自持状态（scene-app 组合根化拆解 ④：原 closure agricultureMapState 迁入）=====
+      var ownedState = null;
+
+      function worldTicksNow() {
+        try {
+          var gt = (typeof window !== 'undefined' && window.GameTime && typeof window.GameTime.getState === 'function') ? window.GameTime.getState() : null;
+          return (gt && typeof gt.totalTicks === 'number') ? Math.max(0, Math.floor(gt.totalTicks)) : 0;
+        } catch (e) { return 0; }
+      }
+      /** agriculture_map.state.tick 仅为世界时间的镜像，禁止独立递增。 */
+      function mirrorStateTick(st) {
+        if (st && typeof st === 'object') st.tick = worldTicksNow();
+      }
+      function ensureState() {
+        if (!ownedState || typeof ownedState !== 'object') {
+          try { ownedState = createDefaultState(); } catch (e) { /* ignore */ }
+        }
+        if (ownedState && typeof ownedState === 'object') {
+          mirrorStateTick(ownedState);
+          if (typeof window !== 'undefined' && window.SceneCtx) window.SceneCtx.agriculture_map_state = ownedState;
+        }
+        return ownedState;
+      }
+      function getState() { return ensureState(); }
+      function setState(state) {
+        ownedState = (state && typeof state === 'object') ? state : (function () { try { return createDefaultState(); } catch (e) { return null; } }());
+        if (ownedState && typeof ownedState === 'object') {
+          mirrorStateTick(ownedState);
+          if (typeof window !== 'undefined' && window.SceneCtx) window.SceneCtx.agriculture_map_state = ownedState;
+        }
+        return ownedState;
+      }
+      function cloneState(state) {
+        var src = (state && typeof state === 'object') ? state : ownedState;
+        if (!src || typeof src !== 'object') return null;
+        try { return JSON.parse(JSON.stringify(src)); } catch (e) { return null; }
+      }
+
       global.AgricultureMap = {
         createDefaultState: createDefaultState,
         bindEnv: bindEnv,
@@ -2748,6 +2786,11 @@
         cropDefRequestsSeaweedExtract: cropDefRequestsSeaweedExtract,
         processSeaweedExtractMaintain: processSeaweedExtractMaintain,
         syncCropSeaweedExtractRequests: syncCropSeaweedExtractRequests,
-        applyBranchTheft: applyBranchTheft
+        applyBranchTheft: applyBranchTheft,
+        ensureState: ensureState,
+        getState: getState,
+        setState: setState,
+        cloneState: cloneState,
+        mirrorStateTick: mirrorStateTick
       };
 })(typeof window !== 'undefined' ? window : globalThis);

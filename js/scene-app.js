@@ -2795,11 +2795,6 @@
     }
 
     /** agriculture_map.state.tick 仅为世界时间的镜像，禁止独立递增。 */
-    function syncAgricultureMapTickMirror(st) {
-        if (!st || typeof st !== 'object') return;
-        st.tick = getWorldTotalTicks();
-    }
-
     function patchSurvivalTickForWorldSystemsOnce() {
         if (!window.Survival || typeof window.Survival.advanceTick !== 'function') return;
         if (window.Survival.__worldSystemsTickPatched) return;
@@ -5843,7 +5838,6 @@
     // ---------------------------
     var agriculturePanelOpen = false;
     var agricultureAutoTickTimer = null;
-    var agricultureMapState = null;
     var agricultureCropDefsDoc = null;
     var agricultureSoilsDoc = null;
     /** @type {{ buildId: string, spec: object, consumed: Array }|null} */
@@ -5901,43 +5895,7 @@
     function unlockAgriculture() {
         if (!window.SceneCtx) return;
         window.SceneCtx.agriculture_unlocked = true;
-        ensureAgricultureMapState();
-    }
-
-    function ensureAgricultureMapState() {
-        if (agricultureMapState && typeof agricultureMapState === 'object') {
-            syncAgricultureMapTickMirror(agricultureMapState);
-            if (window.SceneCtx) window.SceneCtx.agriculture_map_state = agricultureMapState;
-            return agricultureMapState;
-        }
-        if (window.AgricultureMap && typeof window.AgricultureMap.createDefaultState === 'function') {
-            try {
-                agricultureMapState = window.AgricultureMap.createDefaultState();
-                syncAgricultureMapTickMirror(agricultureMapState);
-                if (window.SceneCtx) window.SceneCtx.agriculture_map_state = agricultureMapState;
-            } catch (eDefAg) { /* ignore */ }
-        }
-        return agricultureMapState;
-    }
-
-    function cloneAgricultureMapState(state) {
-        if (!state || typeof state !== 'object') return null;
-        try { return JSON.parse(JSON.stringify(state)); } catch (eClone) { return null; }
-    }
-
-    function getAgricultureMapStateMutable() {
-        return ensureAgricultureMapState();
-    }
-
-    function getAgricultureMapStateReadonly() {
-        return cloneAgricultureMapState(getAgricultureMapStateMutable());
-    }
-
-    function setAgricultureMapState(state) {
-        if (!state || typeof state !== 'object') return;
-        syncAgricultureMapTickMirror(state);
-        agricultureMapState = state;
-        if (window.SceneCtx) window.SceneCtx.agriculture_map_state = state;
+        AgricultureMap.ensureState();
     }
 
     function getAgricultureTaskSpecFromMeta(meta) {
@@ -6009,11 +5967,11 @@
         if (!isAgricultureUnlocked()) return;
         var AM = window.AgricultureMap;
         if (!AM || typeof AM.runAgricultureMapTick !== 'function') return;
-        var st = ensureAgricultureMapState();
+        var st = AgricultureMap.ensureState();
         if (!st) return;
         var env = buildAgricultureEnv();
         try { AM.runAgricultureMapTick(st, env); } catch (eRun) { /* ignore */ }
-        syncAgricultureMapTickMirror(st);
+        AgricultureMap.mirrorStateTick(st);
         if (agriculturePanelOpen && st.task && typeof AM.advanceConstructionTask === 'function') {
             var prevHadTask = !!st.task;
             try {
@@ -6160,7 +6118,7 @@
         var AM = window.AgricultureMap;
         var API = window.AgriculturePlayerItems;
         if (!AM) return { ok: false, reason: 'agriculture_map_missing' };
-        var st = ensureAgricultureMapState();
+        var st = AgricultureMap.ensureState();
         if (!st) return { ok: false, reason: 'no_map_state' };
         var action = String(actionId || '').trim();
         var x = Math.floor(Number(params.x));
@@ -6528,7 +6486,7 @@
             modal.classList.add('show');
             modal.setAttribute('aria-hidden', 'false');
         }
-        var st = getAgricultureMapStateMutable();
+        var st = AgricultureMap.getState();
         if (window.AgriculturePanel && typeof window.AgriculturePanel.render === 'function') {
             try { window.AgriculturePanel.render(st); } catch (eRender) { /* ignore */ }
         }
@@ -6555,7 +6513,7 @@
 
     function updateAgriculturePanel() {
         if (!agriculturePanelOpen) return;
-        var st = ensureAgricultureMapState();
+        var st = AgricultureMap.ensureState();
         if (window.AgriculturePanel && typeof window.AgriculturePanel.update === 'function') {
             try { window.AgriculturePanel.update(st); } catch (eUpAg) { /* ignore */ }
         }
@@ -10229,9 +10187,18 @@
     window.SceneApp.isAgricultureAutoTickEnabled = isAgricultureAutoTickEnabled;
     window.SceneApp.setAgricultureAutoTickEnabled = setAgricultureAutoTickEnabled;
     window.SceneApp.getWorldTotalTicks = getWorldTotalTicks;
-    window.SceneApp.getAgricultureMapState = getAgricultureMapStateReadonly;
-    window.SceneApp.getAgricultureMapStateMutable = getAgricultureMapStateMutable;
-    window.SceneApp.setAgricultureMapState = setAgricultureMapState;
+    window.SceneApp.getAgricultureMapState = function () {
+        var A = window.AgricultureMap;
+        return (A && typeof A.cloneState === 'function') ? A.cloneState(A.getState()) : null;
+    };
+    window.SceneApp.getAgricultureMapStateMutable = function () {
+        var A = window.AgricultureMap;
+        return (A && typeof A.getState === 'function') ? A.getState() : null;
+    };
+    window.SceneApp.setAgricultureMapState = function (s) {
+        var A = window.AgricultureMap;
+        if (A && typeof A.setState === 'function') A.setState(s);
+    };
     window.SceneApp.tryAgricultureAction = tryAgricultureAction;
     window.SceneApp.getAgriculturePlantOptions = getAgriculturePlantOptions;
     window.SceneApp.getAgricultureSoilAmendmentOptions = getAgricultureSoilAmendmentOptions;
