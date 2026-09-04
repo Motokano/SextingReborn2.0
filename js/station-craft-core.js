@@ -236,6 +236,16 @@
         return Math.max(0, Math.floor(v));
     }
 
+    /** 心情 Buff 修正后的最终成功率（clamp [0,1]；原 scene-app getProductionSuccessRateWithMoodDelta）。 */
+    function getProductionSuccessRateWithMoodDelta(baseRateRaw) {
+        var successRateRaw = Math.max(0, Number(baseRateRaw) || 0);
+        if (global.BuffSystem && typeof global.BuffSystem.getProductionSuccessRateDeltaPercent === 'function') {
+            var moodDeltaPct = Number(global.BuffSystem.getProductionSuccessRateDeltaPercent('player')) || 0;
+            successRateRaw += (moodDeltaPct / 100);
+        }
+        return Math.max(0, Math.min(1, successRateRaw));
+    }
+
     global.StationCraftCore = {
         normalizeCookingInputs: normalizeCookingInputs,
         normalizePharmacyInputs: normalizePharmacyInputs,
@@ -249,6 +259,7 @@
         putItemsBack: putItemsBack,
         toUnifiedCookingMethodId: toUnifiedCookingMethodId,
         toUnifiedPharmacyMethodId: toUnifiedPharmacyMethodId,
-        readMethodCostValue: readMethodCostValue
+        readMethodCostValue: readMethodCostValue,
+        getProductionSuccessRateWithMoodDelta: getProductionSuccessRateWithMoodDelta
     };
 })(typeof window !== 'undefined' ? window : globalThis);

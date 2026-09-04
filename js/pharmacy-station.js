@@ -149,6 +149,181 @@
         return mid;
     }
 
+    var E = global.GameEngine;
+    var IE = global.InventoryEquipment;
+
+    /** 停 idle 计时器（依赖注入；对应 scene-app stopPharmacyCraftIdle）。 */
+    function stopCraftIdle() {
+        if (typeof uiDeps.stopPharmacyIdle === 'function') uiDeps.stopPharmacyIdle();
+    }
+    /** 面板刷新钩子（依赖注入；对应 scene-app「open 时 renderPharmacyStationPanel」）。 */
+    function refreshPharmacyPanel() {
+        if (typeof uiDeps.refreshPharmacyPanel === 'function') uiDeps.refreshPharmacyPanel();
+    }
+
+    /** 当前进行中的制作（remaining_ticks>0 才有效；浅拷贝返回）。 */
+    function getActiveCraft() {
+        var cs = getState();
+        var ac = cs && cs.active_craft && typeof cs.active_craft === 'object' ? cs.active_craft : null;
+        if (!ac) return null;
+        var rt = Math.max(0, Math.floor(Number(ac.remaining_ticks) || 0));
+        if (!(rt > 0)) return null;
+        return Object.assign({}, ac, { remaining_ticks: rt });
+    }
+
+    function clearActiveCraft() {
+        var cs = getState();
+        if (cs) cs.active_craft = null;
+    }
+
+    /** 制药制作结算（原 scene-app finalizePharmacyCraftNow 迁出；行为零变）。 */
+    function finalizeCraftNow(craftSnap, options) {
+        var opts = options && typeof options === 'object' ? options : {};
+        var craft = craftSnap && typeof craftSnap === 'object' ? craftSnap : getActiveCraft();
+        clearActiveCraft();
+        stopCraftIdle();
+
+        if (!craft || !craft.method_id) return;
+        var mid = String(craft.method_id).trim();
+        var m = PharmacyStation.getMethods() && PharmacyStation.getMethods()[mid] ? PharmacyStation.getMethods()[mid] : null;
+        var failId = PharmacyStation.getFailureItemId();
+        var forceFailure = !!opts.force_failure;
+        var selected = StationCraftCore.normalizePharmacyInputs(craft.inputs || []);
+        var matched = StationCraftCore.matchPharmacyRecipesByInputs(selected, mid);
+
+        function grantItemOrDrop(itemId) {
+            var outInst = { item_id: itemId, count: 1 };
+            var placed = IE.putItemIntoDefaultContainer(outInst);
+            if (!placed || !placed.placed) {
+                var st0 = E.getState();
+                if (typeof IE.addItemToGround === 'function') IE.addItemToGround(st0.mapId, st0.x, st0.y, outInst);
+            }
+        }
+
+        if (forceFailure) {
+            grantItemOrDrop(failId);
+            showMsg(ui('pharmacy.msg.done_fail', { item: failId }), 'warn');
+            SceneHud.refresh('backpack');
+            SceneHud.refresh('status');
+            if (global.SceneRenderer) global.SceneRenderer.render();
+            return;
+        }
+
+        var pick = null;
+        var pickRecipeId = '';
+        var pickBaseSuccessRate = null;
+        var pickMainOutput = null;
+        var pickBonusOutputs = [];
+        var pickFailureOutput = null;
+        var unifiedRet = tryResolvePharmacyByUnifiedRoute(mid, selected);
+        if (unifiedRet.ok && unifiedRet.data) {
+            var routeData = unifiedRet.data;
+            pickRecipeId = routeData.selected_recipe_id || '';
+            pickMainOutput = routeData.main_output && typeof routeData.main_output === 'object' ? routeData.main_output : null;
+            pickBonusOutputs = Array.isArray(routeData.bonus_outputs) ? routeData.bonus_outputs : [];
+            pickFailureOutput = routeData.failure_output && typeof routeData.failure_output === 'object' ? routeData.failure_output : null;
+            pickBaseSuccessRate = routeData.base_success_rate;
+            if (pickMainOutput && pickMainOutput.item_id) {
+                pick = {
+                    output_item_id: String(pickMainOutput.item_id),
+                    recipe_id: pickRecipeId,
+                    bonus_outputs: pickBonusOutputs,
+                    failure_output: pickFailureOutput
+                };
+            }
+        } else if (unifiedRet.error && unifiedRet.error.code !== 'RECIPE_NO_MATCHED_RECIPE') {
+            try { console.warn('[Pharmacy][UnifiedRoute] craft failed:', unifiedRet.error); } catch (eLog0) { /* ignore */ }
+        }
+        if (!pick) {
+            if (!matched.length) {
+                grantItemOrDrop(failId);
+                showMsg(ui('pharmacy.msg.no_recipe_fail', { item: failId }), 'warn');
+                SceneHud.refresh('backpack');
+                SceneHud.refresh('status');
+                if (global.SceneRenderer) global.SceneRenderer.render();
+                return;
+            }
+            pick = StationCraftCore.pickPharmacyRecipeWeighted(matched);
+            if (!pick) {
+                grantItemOrDrop(failId);
+                showMsg(ui('pharmacy.msg.done_fail', { item: failId }), 'warn');
+                SceneHud.refresh('backpack');
+                SceneHud.refresh('status');
+                if (global.SceneRenderer) global.SceneRenderer.render();
+                return;
+            }
+            pickRecipeId = pick.recipe_id ? String(pick.recipe_id) : '';
+            pickBaseSuccessRate = pick.base_success_rate != null ? pick.base_success_rate : (m ? m.base_success_rate : 1);
+        }
+
+        var pq = global.ProductionQuality;
+        var evalRes = (pq && typeof pq.evaluateProduction === 'function')
+            ? pq.evaluateProduction({
+                base_success_rate: pickBaseSuccessRate != null ? pickBaseSuccessRate : (m ? m.base_success_rate : 1),
+                skill_level: 0,
+                input_items: Array.isArray(craft.consumed_items) ? craft.consumed_items.slice() : []
+            })
+            : { success: true, success_rate: 1 };
+        var pharmacySuccessRaw = Math.max(0, Number(evalRes.success_rate) || 0);
+        var pharmacySuccessFinal = StationCraftCore.getProductionSuccessRateWithMoodDelta(pharmacySuccessRaw);
+        evalRes.success_rate = pharmacySuccessFinal;
+        evalRes.success = Math.random() < pharmacySuccessFinal;
+        var outputItemId = failId;
+        if (evalRes.success) {
+            if (pickMainOutput && pickMainOutput.item_id) outputItemId = String(pickMainOutput.item_id);
+            else outputItemId = pick.output_item_id;
+        } else if (pickFailureOutput && pickFailureOutput.item_id) {
+            outputItemId = String(pickFailureOutput.item_id);
+        } else if (pick && pick.failure_output && pick.failure_output.item_id) {
+            outputItemId = String(pick.failure_output.item_id);
+        }
+        if (evalRes.success && pickRecipeId) markRecipeKnown(pickRecipeId);
+
+        grantItemOrDrop(outputItemId);
+        if (evalRes.success && Array.isArray(pickBonusOutputs) && pickBonusOutputs.length) {
+            var bi;
+            for (bi = 0; bi < pickBonusOutputs.length; bi++) {
+                var brow = pickBonusOutputs[bi] || {};
+                var bid = brow.item_id != null ? String(brow.item_id) : '';
+                var bcnt = Math.max(1, parseInt(brow.count, 10) || 1);
+                var bchance = Number(brow.chance);
+                if (!bid) continue;
+                if (!(bchance >= 0)) bchance = 1;
+                bchance = Math.max(0, Math.min(1, bchance));
+                if (Math.random() >= bchance) continue;
+                var bk;
+                for (bk = 0; bk < bcnt; bk++) grantItemOrDrop(bid);
+            }
+        }
+        showMsg(
+            evalRes.success
+                ? ui('pharmacy.msg.done_ok', { item: outputItemId, method: mid })
+                : ui('pharmacy.msg.done_fail', { item: failId }),
+            evalRes.success ? 'success' : 'warn'
+        );
+        SceneHud.refresh('backpack');
+        SceneHud.refresh('status');
+        if (global.SceneRenderer) global.SceneRenderer.render();
+    }
+
+    /** 世界 tick 推进制作（remaining_ticks -1，到点 finalize；原 scene-app tickPharmacyCraftAfterWorldTick）。 */
+    function tickCraftAfterWorldTick() {
+        var cs = getState();
+        if (!cs || !cs.active_craft || typeof cs.active_craft !== 'object') return;
+        var rt = Math.max(0, Math.floor(Number(cs.active_craft.remaining_ticks) || 0));
+        if (!(rt > 0)) {
+            cs.active_craft = null;
+            stopCraftIdle();
+            return;
+        }
+        rt -= 1;
+        cs.active_craft.remaining_ticks = rt;
+        if (rt <= 0) {
+            finalizeCraftNow(cs.active_craft);
+        }
+        refreshPharmacyPanel();
+    }
+
     global.PharmacyStation = {
         setConfig: setConfig,
         getMethods: getMethods,
@@ -162,6 +337,10 @@
         ui: ui,
         showMsg: showMsg,
         tryResolvePharmacyByUnifiedRoute: tryResolvePharmacyByUnifiedRoute,
-        getPharmacyMethodDisplayName: getPharmacyMethodDisplayName
+        getPharmacyMethodDisplayName: getPharmacyMethodDisplayName,
+        getActiveCraft: getActiveCraft,
+        clearActiveCraft: clearActiveCraft,
+        finalizeCraftNow: finalizeCraftNow,
+        tickCraftAfterWorldTick: tickCraftAfterWorldTick
     };
 })(typeof window !== 'undefined' ? window : globalThis);

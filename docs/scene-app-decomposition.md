@@ -222,6 +222,10 @@ js/item-use.js  window.ItemUse      // applyItemUseEffectFromTemplate / tryUseIt
   - **P1c-2c（已提交）**：烹饪技能熟练度簇迁 `cooking-station.js`。
     - 迁出 3 常量（COOKING_SKILL_MAX_LEVEL/COOKING_MAX_PROFICIENCY_USES/COOKING_SUCCESS_BONUS_PER_LEVEL）+ 4 函数（getCookingSkillLevel/getCookingLevelBySuccessUses/ensureLifeCookingSkillEntry/addCookingSuccessProficiency）；`recalcCharacterStatsFromIE` 经 DI（stationUiDeps 增 recalcCharacterStats 键）。
     - scene-app 删 68 行（保 recalc 与畜牧簇不动）；5 处引用重接；零残留；实机冒烟通过。scene-app 当前 11411 行——craft 生命周期（finalize/tick）的主要闭包依赖已入模块。
+  - **P1c-2d（已提交）**：craft 生命周期迁站模块（finalize/tick/active 访问器，340 行移出）。
+    - `CookingStation`/`PharmacyStation` 各收 getActiveCraft/clearActiveCraft/finalizeCraftNow/tickCraftAfterWorldTick（原 finalize*CraftNow/tick*AfterWorldTick 逐字迁移，updateBackpackPanel 直调改走 `SceneHud.refresh('backpack')`）；`StationCraftCore` 收 getProductionSuccessRateWithMoodDelta（两站共享）。
+    - DI 增键：stopCookingIdle/stopPharmacyIdle/refreshCookingPanel/refreshPharmacyPanel；init 注册 SceneHud kind 'backpack'。
+    - scene-app 删 340 行；外部调用重接；零残留；实机冒烟通过。scene-app 当前 11080 行——烹饪/制药制作结算与推进已完全模块化。
 - **P1c（待办）**：站点规则与面板迁出（配 infra 桥，见 P1 实测 deps：ui/showMsg/render/tooltip 系列/`isPreCreationGameplayRestricted` 等）；compost 面板 → `compost-panel.js`。
 
 ## 5. 风险与对策
