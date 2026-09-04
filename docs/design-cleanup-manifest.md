@@ -15,8 +15,9 @@
 |---|---|
 | 审读文件 | 57(design/ 下全部 .md) |
 | 问题总数 | 100 |
-| 需你设计拍板(甲类) | ~33(见 §3) |
-| 客观错误/机械项(乙类) | ~67(见 §2) |
+| 需你设计拍板(甲类) | **39 条**(D1~D39,见 §3) |
+| 客观错误/机械项(乙类) | **35 组**(E1~E35,见 §2) |
+| 正文旧层清理/结构性条目(批次 2/4) | ~26 处(与 D/E 表部分重叠,按文件执行) |
 | 零问题文件 | 8 份:04-combat-exp、17-loading-and-decoupling、20-map-vision-ui、22-recipe-system-unified、26-item-numeric-rolls、36-ui-windows、39-glove-and-outfitting、45-battery-economy |
 
 问题类型分布(约):OLD_LAYER_IN_BODY(正文旧层残留)~20 · CONTRADICTION(矛盾)~24 · MIXED_PURPOSE(设计与实现/清单混放)~16 · STALE_MARKER(过时未决标注)~10 · DUP_NUMBERING(编号撞车)~7 · FORMAT_CONSISTENCY~8 · OTHER/REF 类~15。
@@ -116,7 +117,7 @@
 | E34 | 42-dungeon-material-allocation.md | §五 | 「蝎子鱼」仅核对句出现,清单/十项均无 | 与 D 表裁决联动(确认删除或补入) |
 | E35 | 24-attribute-experience.md | 24.5a A vs D | 见 E18 同类(A 表注残留) | 以 D/44 口径改写 |
 
-> 乙类共约 35 组(67 条问题的机械部分按文件归并)。执行时按文件逐个修正,不涉及数值取舍的径改;凡修正值「以磁盘/配置为准」的,在 commit message 注明证据。
+> 乙类共 **35 组**(E1~E35,盘点原始 100 条中的机械问题已按文件归并)。执行时按文件逐个修正,不涉及数值取舍的径改;凡修正值「以磁盘/配置为准」的,在 commit message 注明证据。
 
 ---
 
