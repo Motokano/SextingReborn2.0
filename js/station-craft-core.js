@@ -294,6 +294,21 @@
         return String(itemId || '');
     }
 
+    /** 容器格键（原 scene-app cookingResourceSlotKey，通用；cooking 面板/制作暂存共用）。 */
+    function cookingResourceSlotKey(containerType, index) {
+        return String(containerType || '') + '|' + String(Math.floor(Number(index)));
+    }
+    /** 容器格键解析（原 scene-app parseCookingResourceSlotKey）。 */
+    function parseCookingResourceSlotKey(key) {
+        if (key == null || typeof key !== 'string') return null;
+        var p = key.indexOf('|');
+        if (p <= 0) return null;
+        var ct = key.slice(0, p);
+        var idx = parseInt(key.slice(p + 1), 10);
+        if (!isFinite(idx) || idx < 0) return null;
+        return { containerType: ct, index: idx };
+    }
+
     global.StationCraftCore = {
         normalizeCookingInputs: normalizeCookingInputs,
         normalizePharmacyInputs: normalizePharmacyInputs,
@@ -315,6 +330,8 @@
         getItemFuelPoints: getItemFuelPoints,
         isItemAllowedCookingIngredient: isItemAllowedCookingIngredient,
         isItemAllowedPharmacyIngredient: isItemAllowedPharmacyIngredient,
-        getItemDisplayNameSafe: getItemDisplayNameSafe
+        getItemDisplayNameSafe: getItemDisplayNameSafe,
+        cookingResourceSlotKey: cookingResourceSlotKey,
+        parseCookingResourceSlotKey: parseCookingResourceSlotKey
     };
 })(typeof window !== 'undefined' ? window : globalThis);

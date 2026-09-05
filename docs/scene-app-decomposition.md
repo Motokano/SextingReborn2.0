@@ -255,6 +255,11 @@ js/item-use.js  window.ItemUse      // applyItemUseEffectFromTemplate / tryUseIt
     - 补全 2 处 latent 缺失孪生（pharmacyResourceSlotKey/parsePharmacyResourceSlotKey，镜像 cooking 版）。
     - DI setUiDeps({ ui/showMsg/render/tryPharmacyAtStation/canAddFuelAtCurrentTile/onAddFuelClick/isPreCreationGameplayRestricted/showIntroBlockedMsg/guardPlayerComaBlocked })；SceneHud.refresh('backpack'/'status') 替代旧直调；stationUiDeps.refreshPharmacyPanel → PharmacyStationPanel.refreshIfOpen。
     - scene-app 删 622 行、外部 open×4/close×1 重接；零残留、实机冒烟通过。scene-app 当前 9628 行。
+  - **②-面板（已提交）**：`cooking-station-panel.js` 落成（cooking 面板家族整迁，663 行移出）。
+    - 迁出渲染/开合/事件绑定 + UI 态变量 + 水燃料 picker；`cookingResourceSlotKey/parseCookingResourceSlotKey` 随迁 StationCraftCore（制作暂存与面板共用）。
+    - COOKING_FUEL/ WATER_MAX_POINTS 常量面板侧自持、craft 门控侧保留 scene-app 副本（值恒等 1000）。
+    - DI setUiDeps（ui/showMsg/render/tryCookAtStation/canPourWaterAtCurrentTile/canAddFuelAtCurrentTile/onPourWaterClick/onAddFuelClick/门控×3）；refreshCookingPanel → CookingStationPanel.refreshIfOpen。
+    - scene-app 删 679 行、外部 open×4/close×1 重接；零残留、实机冒烟通过。scene-app 当前 8968 行。
 - **P1c（待办）**：站点规则与面板迁出（配 infra 桥，见 P1 实测 deps：ui/showMsg/render/tooltip 系列/`isPreCreationGameplayRestricted` 等）；compost 面板 → `compost-panel.js`。
 
 ## 5. 风险与对策
