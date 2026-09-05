@@ -266,6 +266,37 @@ js/item-use.js  window.ItemUse      // applyItemUseEffectFromTemplate / tryUseIt
     - scene-app 删 719 行、30+ 处重接（含成员访问活对象导出）；零残留、实机冒烟通过。scene-app 当前 8264 行。
 - **P1c（待办）**：站点规则与面板迁出（配 infra 桥，见 P1 实测 deps：ui/showMsg/render/tooltip 系列/`isPreCreationGameplayRestricted` 等）；compost 面板 → `compost-panel.js`。
 
+## 4.5 终态（结构指标达成快照，2026-10）
+
+**验收结论**：①–④ 全部达成，⑤ 待用户完整走一遍。
+
+| 指标 | 拆解前 | 终态 |
+|------|--------|------|
+| scene-app.js | 12480 行 / 370 函数 / 111 闭包变量 | **8264 行 / 203 函数**（-4216） |
+| 系统规则/状态逻辑残留 | 站点/战斗/物品全在闭包 | **仅 2 处编排边界**：craft 启动入口 `tryCookAtStation`/`tryPharmacyAtStation`（门控→校验→消费→写态→通知的编排，规则结算本身在模块）+ 新档重置胶水 |
+| 三站点面板 | 全在主 JS | 全部模块化（cooking/pharmacy/compost-station-panel） |
+
+**新模块清单（本次拆解新增 17 个，均在 `js/`）**：
+
+| 模块 | 职责 |
+|------|------|
+| `scene-hud.js` | 刷新通道（SceneHud.refresh 事件分发） |
+| `inventory-helpers.js` | 物品栏纯读/谓词查询 |
+| `station-craft-core.js` | 配方匹配/消耗/成本/显示名/工艺 id/槽位键（共享） |
+| `station-context.js` | 站点上下文探测/注解/修复门控/格位谓词 |
+| `cooking-station.js` | 烹饪 config/图鉴/状态/技能/craft 生命周期/temp 灶台/配件/解锁 |
+| `pharmacy-station.js` | 制药同构（含路由解析/方法显示名） |
+| `combat-world.js` | 敌人世界 tick/击杀/电池掉落/反击去重/眩晕衰减 |
+| `item-use.js` | 物品使用规则（判定/消化 buff/生存量/进食经验） |
+| `scene-ui.js` | 物品 tooltip 渲染 |
+| `cooking-station-panel.js` / `pharmacy-station-panel.js` / `compost-panel.js` | 三站点面板 DOM |
+| `_archive-js/`（非运行时） | 未接线探索产物归档 |
+
+**已知边界/负债（不阻断验收，记录在案）**：
+- `SceneApp.*` 导出袋为 save-system/渲染/战斗的真实公共 API（非债务，保留）。
+- `COOKING_FUEL/WATER_MAX_POINTS`、`PLANTING_SKILL_ID` 因 craft 门控/农业收获仍需，保留 scene-app 副本（值与模块侧恒等）。
+- craft 启动入口（tryCook/tryPharmacy）保留在主 JS 作编排层——规则结算全在模块，属可接受的组合根编排，不强行外移（避免在手交付前堆高行为风险）。
+
 ## 5. 风险与对策
 
 | 风险 | 对策 |
