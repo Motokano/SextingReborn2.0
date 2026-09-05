@@ -249,6 +249,12 @@ js/item-use.js  window.ItemUse      // applyItemUseEffectFromTemplate / tryUseIt
     - agriculture-map.js 收 ownedState + ensureState/getState/setState/cloneState/mirrorStateTick（state.tick 仅世界时间镜像语义保留；同步写 SceneCtx.agriculture_map_state 存档通道）。
     - scene-app 删 closure `agricultureMapState`、5 访问器辅助与 syncAgricultureMapTickMirror；6 处调用改走模块；SceneApp.getAgricultureMapState* 导出改模块包装。
     - 零残留、实机冒烟通过。scene-app 当前 10301 行。
+  - **②-前置刀（已提交）**：槽位谓词（45eb127）+ getItemDisplayNameSafe 消重（7e1a25b）外置——面板迁移共享依赖清零。
+  - **②-面板（已提交）**：`pharmacy-station-panel.js` 落成（首个面板家族整迁，621 行移出）。
+    - 迁出渲染/开合/事件绑定（bind IIFE→module init）+ UI 态变量（pharmacyStationPanelOpen/pharmacyStationUiState）+ PHARMACY_FUEL_MAX_POINTS 常量。
+    - 补全 2 处 latent 缺失孪生（pharmacyResourceSlotKey/parsePharmacyResourceSlotKey，镜像 cooking 版）。
+    - DI setUiDeps({ ui/showMsg/render/tryPharmacyAtStation/canAddFuelAtCurrentTile/onAddFuelClick/isPreCreationGameplayRestricted/showIntroBlockedMsg/guardPlayerComaBlocked })；SceneHud.refresh('backpack'/'status') 替代旧直调；stationUiDeps.refreshPharmacyPanel → PharmacyStationPanel.refreshIfOpen。
+    - scene-app 删 622 行、外部 open×4/close×1 重接；零残留、实机冒烟通过。scene-app 当前 9628 行。
 - **P1c（待办）**：站点规则与面板迁出（配 infra 桥，见 P1 实测 deps：ui/showMsg/render/tooltip 系列/`isPreCreationGameplayRestricted` 等）；compost 面板 → `compost-panel.js`。
 
 ## 5. 风险与对策
