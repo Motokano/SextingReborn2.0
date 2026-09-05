@@ -260,6 +260,10 @@ js/item-use.js  window.ItemUse      // applyItemUseEffectFromTemplate / tryUseIt
     - COOKING_FUEL/ WATER_MAX_POINTS 常量面板侧自持、craft 门控侧保留 scene-app 副本（值恒等 1000）。
     - DI setUiDeps（ui/showMsg/render/tryCookAtStation/canPourWaterAtCurrentTile/canAddFuelAtCurrentTile/onPourWaterClick/onAddFuelClick/门控×3）；refreshCookingPanel → CookingStationPanel.refreshIfOpen。
     - scene-app 删 679 行、外部 open×4/close×1 重接；零残留、实机冒烟通过。scene-app 当前 8968 行。
+  - **②-面板（已提交）**：`compost-panel.js` 落成（沤肥面板家族整迁，719 行移出）。
+    - 迁出状态计算/交互/渲染/开合 + UI 态（staged/模式/日志/窗口动作槽/事件动作显示映射）+ PLANTING/LEGACY 技能常量（PLANTING_SKILL_ID 农业收获也在用 → scene-app 保留副本）。
+    - DI setUiDeps（ui/showMsg/render/recalcCharacterStats/门控×3）；外部绑定（tab/start/stop/collect/discard/interact）改走 CompostPanel.uiState/windowActionSlots/setEventActionDisplayById。
+    - scene-app 删 719 行、30+ 处重接（含成员访问活对象导出）；零残留、实机冒烟通过。scene-app 当前 8264 行。
 - **P1c（待办）**：站点规则与面板迁出（配 infra 桥，见 P1 实测 deps：ui/showMsg/render/tooltip 系列/`isPreCreationGameplayRestricted` 等）；compost 面板 → `compost-panel.js`。
 
 ## 5. 风险与对策
