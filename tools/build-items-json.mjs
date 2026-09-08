@@ -26,7 +26,8 @@ const MERGE_FILES = [
   'compost_matrix_base.csv',
   'fertilizer_anaerobic_base.csv',
   'agriculture_injectables_base.csv',
-  'soil_amendments_base.csv'
+  'soil_amendments_base.csv',
+  'pharmacy_base.csv'
 ];
 
 function parseCsv(text) {
@@ -217,6 +218,15 @@ function rowToItem(o, filename) {
     if (USE_ACTION_IDS.includes(ua)) item.use_action = ua;
     else console.warn('[build-items-json] invalid use_action "' + ua + '" on item ' + id + ' (allowed: ' + USE_ACTION_IDS.join('/') + ')');
   }
+  // 制药配药字段（47 §9.1/§9.2/§10.1）：化学成分 / 药效族 / 药效 / 毒性 / 浓度占用
+  if (o.chem_class) item.chem_class = String(o.chem_class).trim().toLowerCase();
+  if (o.pharm_family) item.pharm_family = String(o.pharm_family).trim().toLowerCase();
+  const pEffect = numOrNull(o.pharm_effect);
+  if (pEffect != null) item.pharm_effect = pEffect;
+  const pTox = numOrNull(o.pharm_toxicity);
+  if (pTox != null) item.pharm_toxicity = pTox;
+  const pConc = numOrNull(o.concentration_cost);
+  if (pConc != null && pConc >= 0) item.concentration_cost = pConc;
   const foodBuffDur = intOrNull(o.food_buff_duration_ticks);
   if (foodBuffDur != null && foodBuffDur > 0) item.food_buff_duration_ticks = foodBuffDur;
   const fp = intOrNull(o.fuel_points);
@@ -245,7 +255,8 @@ function rowToItem(o, filename) {
     price_class: 1, volatility: 1, region_restrict: 1, base_value: 1,
     satiety_restore: 1, thirst_restore: 1, nutrition_restore: 1,
     edible: 1, edible_buff_id: 1, food_buff_duration_ticks: 1,
-    usable: 1, use_buff_id: 1,
+    usable: 1, use_buff_id: 1, use_action: 1,
+    chem_class: 1, pharm_family: 1, pharm_effect: 1, pharm_toxicity: 1, concentration_cost: 1,
     cooking_ingredient: 1, pharmacy_ingredient: 1,
     compost_inoculant_aerobic: 1, compost_inoculant_anaerobic: 1,
     fuel_points: 1, water_points: 1,
