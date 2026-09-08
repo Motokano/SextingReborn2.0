@@ -10,15 +10,30 @@
  *   这些字段的逻辑函数时再提供 getState/setState/advanceWorldTicks。
  *
  * 装载来源表：methods=data/recipe-methods.json、recipes=data/recipes.json（统一配方表），
- * failureItemId 默认 'food_pharmacy_fail_generic'。
+ * failureItemId 与熟练度曲线由 data/pharmacy-system-config.csv 注入（经 scene-app
+ * parsePharmacySystemConfigCsv 解析后传入；默认失败物 = item.scrap.herb_dregs 药渣）。
  */
 (function (global) {
     'use strict';
 
+    /** 调用期解析 InventoryEquipment（模块可能早于 IE 装载）。 */
+    function getIE() {
+        return global.InventoryEquipment || null;
+    }
+
     var cfg = {
         methods: {},
         recipes: [],
-        failure_item_id: 'food_pharmacy_fail_generic'
+        failure_item_id: 'item.scrap.herb_dregs',
+        system: {}
+    };
+
+    /** 制药熟练度曲线（默认与烹饪同口径；可被 pharmacy-system-config.csv 覆盖）。 */
+    var skillCurve = {
+        max_level: 100,
+        max_proficiency_uses: 5000000,
+        success_bonus_per_level: 0.005,
+        proficiency_usage_key: 'pharmacy_success'
     };
 
     /** 装载站点配置（幂等；loadConfig 调用）。对象/数组按引用保存，与旧闭包语义一致。 */
@@ -26,14 +41,33 @@
         if (!c || typeof c !== 'object') return;
         if (c.methods && typeof c.methods === 'object') cfg.methods = c.methods;
         if (Array.isArray(c.recipes)) cfg.recipes = c.recipes;
+        if (c.systemConfig && typeof c.systemConfig === 'object') {
+            cfg.system = Object.assign({}, cfg.system, c.systemConfig);
+        }
         if (c.failureItemId && typeof c.failureItemId === 'string') {
             cfg.failure_item_id = c.failureItemId;
+        } else if (cfg.system.pharmacy_global_failure_item_id) {
+            cfg.failure_item_id = String(cfg.system.pharmacy_global_failure_item_id);
+        }
+        var curve = cfg.system.pharmacy_skill_curve;
+        if (curve && typeof curve === 'object') {
+            if (curve.max_level != null) skillCurve.max_level = Math.max(1, Math.floor(Number(curve.max_level) || skillCurve.max_level));
+            if (curve.max_proficiency_uses != null) skillCurve.max_proficiency_uses = Math.max(1, Math.floor(Number(curve.max_proficiency_uses) || skillCurve.max_proficiency_uses));
+            if (curve.success_bonus_per_level != null) skillCurve.success_bonus_per_level = Math.max(0, Number(curve.success_bonus_per_level) || 0);
+            if (curve.proficiency_usage_key) skillCurve.proficiency_usage_key = String(curve.proficiency_usage_key);
         }
     }
 
     function getMethods() { return cfg.methods; }
     function getRecipes() { return cfg.recipes; }
     function getFailureItemId() { return cfg.failure_item_id; }
+    /** 制药系统配置（data/pharmacy-system-config.csv 解析结果；未装载时为 {}）。 */
+    function getSystemConfig() { return cfg.system; }
+    /** 读单个系统配置键（可给默认值）。 */
+    function getSystemConfigValue(key, fallback) {
+        if (!key) return fallback;
+        return (cfg.system && cfg.system[key] != null) ? cfg.system[key] : fallback;
+    }
 
     /** 统一配方系统 id（RecipeSystem/recipe-schema 对齐；原 scene-app 闭包 PHARMACY_RECIPE_SYSTEM）。 */
     var RECIPE_SYSTEM_ID = 'life_pharmacy';
@@ -149,6 +183,90 @@
         return mid;
     }
 
+    /** 制药熟练度曲线（只读快照，供 UI/测试读取）。 */
+    function getSkillCurve() {
+        return {
+            max_level: skillCurve.max_level,
+            max_proficiency_uses: skillCurve.max_proficiency_uses,
+            success_bonus_per_level: skillCurve.success_bonus_per_level,
+            proficiency_usage_key: skillCurve.proficiency_usage_key
+        };
+    }
+
+    /** 读当前制药技能等级（life_pharmacy；skill_id 与 recipe-system 对齐）。 */
+    function getPharmacySkillLevel() {
+        var IE = getIE();
+        if (IE && typeof IE.getSkillLevel === 'function') {
+            var lv = parseInt(IE.getSkillLevel('life_pharmacy'), 10);
+            if (isFinite(lv) && lv > 0) return lv;
+        }
+        return 0;
+    }
+
+    /** 按累计成功次数映射技能等级（默认 5000000 次达到满级 100）。 */
+    function getPharmacyLevelBySuccessUses(successUses) {
+        var uses = Math.max(0, parseInt(successUses, 10) || 0);
+        var ratio = Math.max(0, Math.min(1, uses / skillCurve.max_proficiency_uses));
+        return Math.max(1, Math.min(skillCurve.max_level, 1 + Math.floor(ratio * (skillCurve.max_level - 1))));
+    }
+
+    /** 重算角色属性（依赖注入；对应 scene-app recalcCharacterStatsFromIE）。 */
+    function recalcCharacterStats() {
+        if (typeof uiDeps.recalcCharacterStats === 'function') uiDeps.recalcCharacterStats();
+    }
+
+    /** 确保 life_pharmacy 技能条目存在且等级/熟练度一致（clamp + 曲线映射 + 重算）。 */
+    function ensureLifePharmacySkillEntry() {
+        var IE = getIE();
+        if (!IE || typeof IE.getState !== 'function') return false;
+        var st = IE.getState();
+        if (!st || typeof st !== 'object') return false;
+        if (!st.skills || typeof st.skills !== 'object') st.skills = {};
+        if (!st.skills.life_pharmacy || typeof st.skills.life_pharmacy !== 'object') {
+            st.skills.life_pharmacy = { level: 1, move_usage: {} };
+            recalcCharacterStats();
+            return true;
+        }
+        var changed = false;
+        var lv = Math.max(0, parseInt(st.skills.life_pharmacy.level, 10) || 0);
+        if (lv < 1) {
+            st.skills.life_pharmacy.level = 1;
+            changed = true;
+        } else if (lv > skillCurve.max_level) {
+            st.skills.life_pharmacy.level = skillCurve.max_level;
+            changed = true;
+        }
+        if (!st.skills.life_pharmacy.move_usage || typeof st.skills.life_pharmacy.move_usage !== 'object') {
+            st.skills.life_pharmacy.move_usage = {};
+            changed = true;
+        }
+        var uses = Math.max(0, parseInt(st.skills.life_pharmacy.move_usage[skillCurve.proficiency_usage_key], 10) || 0);
+        var mappedLv = getPharmacyLevelBySuccessUses(uses);
+        if ((parseInt(st.skills.life_pharmacy.level, 10) || 0) !== mappedLv) {
+            st.skills.life_pharmacy.level = mappedLv;
+            changed = true;
+        }
+        if (changed) recalcCharacterStats();
+        return true;
+    }
+
+    /** 制药成功 +1 熟练度（move_usage.pharmacy_success）并按曲线升等级。 */
+    function addPharmacySuccessProficiency() {
+        var IE = getIE();
+        if (!IE || typeof IE.incrementSkillMoveUsage !== 'function' || typeof IE.getState !== 'function') return;
+        if (!ensureLifePharmacySkillEntry()) return;
+        var newUses = IE.incrementSkillMoveUsage('life_pharmacy', skillCurve.proficiency_usage_key, 1);
+        var st = IE.getState();
+        if (!st || !st.skills || !st.skills.life_pharmacy) return;
+        var ent = st.skills.life_pharmacy;
+        var nextLv = getPharmacyLevelBySuccessUses(newUses);
+        var curLv = Math.max(1, parseInt(ent.level, 10) || 1);
+        if (nextLv !== curLv) {
+            ent.level = nextLv;
+            recalcCharacterStats();
+        }
+    }
+
     var E = global.GameEngine;
     var IE = global.InventoryEquipment;
 
@@ -257,17 +375,22 @@
         }
 
         var pq = global.ProductionQuality;
+        var pharmacyLv = Math.max(0, Math.min(skillCurve.max_level, getPharmacySkillLevel()));
         var evalRes = (pq && typeof pq.evaluateProduction === 'function')
             ? pq.evaluateProduction({
                 base_success_rate: pickBaseSuccessRate != null ? pickBaseSuccessRate : (m ? m.base_success_rate : 1),
+                // 制药与烹饪同口径：技能成功率与溢出品质单独处理，不复用通用 skill_level 乘区。
                 skill_level: 0,
                 input_items: Array.isArray(craft.consumed_items) ? craft.consumed_items.slice() : []
             })
             : { success: true, success_rate: 1 };
-        var pharmacySuccessRaw = Math.max(0, Number(evalRes.success_rate) || 0);
+        var baseSuccessRate = Math.max(0, Number(evalRes.success_rate) || 0);
+        var bonusFromPharmacyLv = pharmacyLv * skillCurve.success_bonus_per_level;
+        var pharmacySuccessRaw = baseSuccessRate + bonusFromPharmacyLv;
         var pharmacySuccessFinal = StationCraftCore.getProductionSuccessRateWithMoodDelta(pharmacySuccessRaw);
+        var isMaxPharmacyLv = pharmacyLv >= skillCurve.max_level;
         evalRes.success_rate = pharmacySuccessFinal;
-        evalRes.success = Math.random() < pharmacySuccessFinal;
+        evalRes.success = isMaxPharmacyLv ? true : (Math.random() < pharmacySuccessFinal);
         var outputItemId = failId;
         if (evalRes.success) {
             if (pickMainOutput && pickMainOutput.item_id) outputItemId = String(pickMainOutput.item_id);
@@ -278,6 +401,7 @@
             outputItemId = String(pick.failure_output.item_id);
         }
         if (evalRes.success && pickRecipeId) markRecipeKnown(pickRecipeId);
+        if (evalRes.success) addPharmacySuccessProficiency();
 
         grantItemOrDrop(outputItemId);
         if (evalRes.success && Array.isArray(pickBonusOutputs) && pickBonusOutputs.length) {
@@ -461,6 +585,13 @@
         getMethods: getMethods,
         getRecipes: getRecipes,
         getFailureItemId: getFailureItemId,
+        getSystemConfig: getSystemConfig,
+        getSystemConfigValue: getSystemConfigValue,
+        getSkillCurve: getSkillCurve,
+        getPharmacySkillLevel: getPharmacySkillLevel,
+        getPharmacyLevelBySuccessUses: getPharmacyLevelBySuccessUses,
+        ensureLifePharmacySkillEntry: ensureLifePharmacySkillEntry,
+        addPharmacySuccessProficiency: addPharmacySuccessProficiency,
         recipeSystemId: RECIPE_SYSTEM_ID,
         markRecipeKnown: markRecipeKnown,
         createDefaultState: createDefaultState,

@@ -32,10 +32,179 @@
         if (!tpl) return false;
         var edible = toBoolFlag(tpl.edible);
         if (edible && tpl.edible_buff_id && String(tpl.edible_buff_id).trim()) return true;
+        // 47 §5.1：药水走 use_action 四途径（drink/topical/inhale/inject），需带药效核心 use_buff_id。
+        var route = getUseActionRoute(tpl);
+        if (route) return !!(tpl.use_buff_id && String(tpl.use_buff_id).trim()) || !!(tpl.use_effect && typeof tpl.use_effect === 'object');
         var usable = toBoolFlag(tpl.usable);
         if (usable && tpl.use_buff_id && String(tpl.use_buff_id).trim()) return true;
         var ue = tpl.use_effect;
         return !!(ue && typeof ue === 'object');
+    }
+
+    // ---------------------------
+    // 给药途径（47 §3.2/§5）：use_action 四途径分流
+    // ---------------------------
+    var USE_ACTION_IDS = ['drink', 'topical', 'inhale', 'inject'];
+    /** 七部位（09；与 scene-app BODY_PART_IDS 同源）。 */
+    var BODY_PART_IDS = ['head', 'chest', 'belly', 'lhand', 'rhand', 'lfoot', 'rfoot'];
+
+    /** 最近一次使用失败的结构化原因（供 UI 取文案后清空）。 */
+    var lastUseFailure = null;
+    /** 外敷目标部位登记表：buffId → partId（供部位恢复类效果读取；同一 buff 重复使用取最近一次）。 */
+    var topicalPartByBuffId = {};
+
+    /** 读物品模板的给药途径（无/非法返回 ''）。 */
+    function getUseActionRoute(tpl) {
+        var raw = tpl && tpl.use_action != null ? String(tpl.use_action).trim().toLowerCase() : '';
+        if (!raw) return '';
+        return USE_ACTION_IDS.indexOf(raw) >= 0 ? raw : '';
+    }
+
+    /** 途径白名单校验（有 PharmacyConfig 时以 pharmacy-system-config.csv 为准）。 */
+    function isUseRouteAllowed(routeId) {
+        var rid = routeId != null ? String(routeId).trim().toLowerCase() : '';
+        if (!rid) return false;
+        var PC = global.PharmacyConfig;
+        if (PC && typeof PC.isUseRouteAllowed === 'function' && global.PharmacyStation && typeof global.PharmacyStation.getSystemConfig === 'function') {
+            return PC.isUseRouteAllowed(rid, global.PharmacyStation.getSystemConfig());
+        }
+        return USE_ACTION_IDS.indexOf(rid) >= 0;
+    }
+
+    /** 从配置读取「某途径所需的物品 id 列表」（空表 = 暂不校验）。 */
+    function getRequiredItemIdsForRoute(routeId) {
+        var PS = global.PharmacyStation;
+        var cfg = (PS && typeof PS.getSystemConfig === 'function') ? PS.getSystemConfig() : null;
+        if (!cfg) return [];
+        var key = routeId === 'inhale' ? 'pharmacy_inhale_igniter_item_ids'
+            : (routeId === 'inject' ? 'pharmacy_inject_kit_item_ids' : '');
+        if (!key) return [];
+        var list = cfg[key];
+        return Array.isArray(list) ? list : [];
+    }
+
+    function hasAnyItemInInventory(itemIds) {
+        if (!Array.isArray(itemIds) || !itemIds.length) return true;
+        var IH = global.InventoryHelpers;
+        var i;
+        for (i = 0; i < itemIds.length; i++) {
+            var id = itemIds[i] != null ? String(itemIds[i]).trim() : '';
+            if (!id) continue;
+            if (IH && typeof IH.getInventoryCountByItemId === 'function' && IH.getInventoryCountByItemId(id) > 0) return true;
+        }
+        return false;
+    }
+
+    function failUse(reason, detail) {
+        lastUseFailure = { reason: reason, detail: detail || null };
+        return false;
+    }
+
+    /** 读取并清空最近一次使用失败原因。 */
+    function takeLastUseFailure() {
+        var f = lastUseFailure;
+        lastUseFailure = null;
+        return f;
+    }
+
+    /** 外敷目标部位（无登记返回 ''）。 */
+    function getTopicalPartForBuff(buffId) {
+        var bid = buffId != null ? String(buffId) : '';
+        return bid && topicalPartByBuffId[bid] ? String(topicalPartByBuffId[bid]) : '';
+    }
+
+    /** 清空外敷部位登记（新档/重置用）。 */
+    function clearTopicalParts() {
+        topicalPartByBuffId = {};
+    }
+
+    /**
+     * 按 use_action 途径结算一次使用（47 §5.1/§5.2）。
+     * opts.part_id：外敷必填（七部位之一）；opts.silent：不产生失败原因记录以外的副作用。
+     * 成功：挂 use_buff_id 对应 buff（±use_effect 生存量），外敷登记目标部位，返回 true。
+     */
+    function applyUseActionRoute(itemId, tpl, route, opts) {
+        var options = opts && typeof opts === 'object' ? opts : {};
+        var rid = route != null ? String(route).trim().toLowerCase() : '';
+        if (!rid) return failUse('no_route');
+        if (!isUseRouteAllowed(rid)) return failUse('route_not_allowed', rid);
+
+        var partId = '';
+        if (rid === 'topical') {
+            partId = options.part_id != null ? String(options.part_id).trim() : '';
+            if (!partId) return failUse('needs_part');
+            if (BODY_PART_IDS.indexOf(partId) < 0) return failUse('bad_part', partId);
+        }
+        if (rid === 'inhale') {
+            if (!hasAnyItemInInventory(getRequiredItemIdsForRoute('inhale'))) return failUse('needs_igniter');
+        }
+        if (rid === 'inject') {
+            if (!hasAnyItemInInventory(getRequiredItemIdsForRoute('inject'))) return failUse('needs_inject_kit');
+        }
+
+        var Buff = global.BuffSystem;
+        var buffId = tpl && tpl.use_buff_id ? String(tpl.use_buff_id).trim() : '';
+        var buffIds = [];
+        if (tpl && Array.isArray(tpl.use_buff_ids)) {
+            var bi;
+            for (bi = 0; bi < tpl.use_buff_ids.length; bi++) {
+                var bid = tpl.use_buff_ids[bi] != null ? String(tpl.use_buff_ids[bi]).trim() : '';
+                if (bid) buffIds.push(bid);
+            }
+        } else if (buffId) {
+            buffIds.push(buffId);
+        }
+        var applied = false;
+        if (buffIds.length && Buff && typeof Buff.applyBuff === 'function') {
+            var ai;
+            var appliedIds = [];
+            for (ai = 0; ai < buffIds.length; ai++) {
+                var oneId = buffIds[ai];
+                if (typeof Buff.hasBuffByBuffId === 'function' && Buff.hasBuffByBuffId('player', oneId)) continue;
+                var okOne = Buff.applyBuff('player', oneId, 'item:' + itemId, {
+                    route: rid,
+                    part_id: partId || null,
+                    item_id: itemId
+                }) === true;
+                if (okOne) appliedIds.push(oneId);
+            }
+            if (appliedIds.length) {
+                applied = true;
+                if (rid === 'topical') {
+                    for (ai = 0; ai < appliedIds.length; ai++) topicalPartByBuffId[appliedIds[ai]] = partId;
+                }
+            } else if (buffIds.length) {
+                // 全部已在生效中：与旧 edible/usable 口径一致，视为本次使用失败（不叠 buff）。
+                return failUse('already_active', buffIds.join('|'));
+            }
+        }
+
+        var ue = tpl && tpl.use_effect && typeof tpl.use_effect === 'object' ? tpl.use_effect : null;
+        if (ue) {
+            if ((tpl && tpl.category) === 'food') {
+                if (applyFoodDigestBuffFromTemplate(itemId, tpl)) applied = true;
+            } else {
+                var Surv = global.Survival;
+                var n;
+                if (Surv) {
+                    if (ue.satiety != null && typeof Surv.addSatiety === 'function') {
+                        n = Number(ue.satiety); if (isFinite(n) && n !== 0) { Surv.addSatiety(n); applied = true; }
+                    }
+                    if (ue.thirst != null && typeof Surv.addThirst === 'function') {
+                        n = Number(ue.thirst); if (isFinite(n) && n !== 0) { Surv.addThirst(n); applied = true; }
+                    }
+                    if (ue.nutrition != null && typeof Surv.addNutrition === 'function') {
+                        n = Number(ue.nutrition); if (isFinite(n) && n !== 0) { Surv.addNutrition(n); applied = true; }
+                    }
+                    if (ue.energy != null && typeof Surv.addEnergy === 'function') {
+                        n = Number(ue.energy); if (isFinite(n) && n !== 0) { Surv.addEnergy(n); applied = true; }
+                    }
+                }
+            }
+        }
+        if (!applied) return failUse(buffId ? 'buff_apply_failed' : 'no_effect', buffId);
+        lastUseFailure = null;
+        return true;
     }
 
     /** 食物消化 buff（tick 分餐）：注册运行时 buff 模板 + applyBuff；已在消化中返回 false。 */
@@ -99,7 +268,10 @@
      * 应用物品模板的使用效果（edible/usable buff → 食物消化 → 生存量直加）。
      * 成功应用可食用/消化类后顺带 grantFoodAttributeExp（k79）。
      */
-    function applyItemUseEffectFromTemplate(itemId, tpl) {
+    function applyItemUseEffectFromTemplate(itemId, tpl, opts) {
+        // 47 §5.1：声明了 use_action 的物品走途径分流（药水/药膏/药烟/注射液）。
+        var route = getUseActionRoute(tpl);
+        if (route) return applyUseActionRoute(itemId, tpl, route, opts);
         var ue = tpl && tpl.use_effect;
         var Buff = global.BuffSystem;
         var edible = toBoolFlag(tpl ? tpl.edible : null);
@@ -208,6 +380,14 @@
         setUiDeps: setUiDeps,
         toBoolFlag: toBoolFlag,
         itemTemplateIsConsumable: itemTemplateIsConsumable,
+        USE_ACTION_IDS: USE_ACTION_IDS,
+        BODY_PART_IDS: BODY_PART_IDS,
+        getUseActionRoute: getUseActionRoute,
+        isUseRouteAllowed: isUseRouteAllowed,
+        applyUseActionRoute: applyUseActionRoute,
+        takeLastUseFailure: takeLastUseFailure,
+        getTopicalPartForBuff: getTopicalPartForBuff,
+        clearTopicalParts: clearTopicalParts,
         applyFoodDigestBuffFromTemplate: applyFoodDigestBuffFromTemplate,
         applyItemUseEffectFromTemplate: applyItemUseEffectFromTemplate,
         grantFoodAttributeExp: grantFoodAttributeExp,

@@ -1272,7 +1272,10 @@
         if (!tpl) return 1;
         if (tpl.enchant_slots != null && tpl.enchant_slots > 0) return 1;
         if (moduleTable[itemId]) return 1; // 模块为唯一实例（可带附魔），不可堆叠（契约 38 §2）
-        return (tpl.stack_max != null) ? Math.max(1, parseInt(tpl.stack_max, 10)) : 99;
+        // 堆叠口径（k128⑥）：以模板 stack_limit 为准（build-items-json 由 CSV 落值）；stack_max 作旧字段别名。
+        var raw = (tpl.stack_limit != null) ? tpl.stack_limit : tpl.stack_max;
+        var n = parseInt(raw, 10);
+        return (isFinite(n) && n > 0) ? n : 1;
     }
 
     function copyItemInstance(inst) {

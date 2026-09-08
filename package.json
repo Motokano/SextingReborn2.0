@@ -25,6 +25,9 @@
     "audit:item-keys": "node tools/audit-item-template-keys.mjs",
     "audit:item-field-rules": "node tools/audit-item-field-display-rules.mjs",
     "audit:convert": "node tools/audit-convert-direction.mjs",
+    "test:pain": "node tools/smoke-pain.mjs",
+    "test:pharmacy": "node tools/smoke-pharmacy.mjs",
+    "mark:pharmacy-ingredients": "node tools/mark-pharmacy-ingredients.mjs",
     "test:ui-windows": "node tools/test-ui-windows.mjs"
   }
 }

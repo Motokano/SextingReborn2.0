@@ -607,7 +607,8 @@
             fetch(base + 'livestock-build-costs.json').then(function (r) { return r.ok ? r.json() : { costs: {} }; }).catch(function () { return { costs: {} }; }),
             fetch(base + 'livestock-feed-crops.json').then(function (r) { return r.ok ? r.json() : { crops: {} }; }).catch(function () { return { crops: {} }; }),
             fetch(base + 'modules.json').then(function (r) { return r.ok ? r.json() : {}; }).catch(function () { return {}; }),
-            fetch(base + 'enemy_drops.json').then(function (r) { return r.ok ? r.json() : null; }).catch(function () { return null; })
+            fetch(base + 'enemy_drops.json').then(function (r) { return r.ok ? r.json() : null; }).catch(function () { return null; }),
+            fetch(base + 'pharmacy-system-config.csv').then(function (r) { return r.ok ? r.text() : ''; }).catch(function () { return ''; })
         ]).then(function (arr) {
             if (!arr[0]) throw new Error('[SceneApp] ui_text_zhCN.json missing');
             if (!window.UIText || typeof window.UIText.setDict !== 'function') throw new Error('[SceneApp] UIText module missing');
@@ -659,9 +660,17 @@
                 });
             }
             if (window.PharmacyStation && typeof window.PharmacyStation.setConfig === 'function') {
+                // 制药全局配置（data/pharmacy-system-config.csv，47 §1.1②）：失败物 id + 熟练度曲线 + ❓数值占位。
+                var pharmacyCfgParsed = (window.PharmacyConfig && typeof window.PharmacyConfig.parseCsv === 'function')
+                    ? window.PharmacyConfig.parseCsv(arr[38] != null ? String(arr[38]) : '')
+                    : null;
                 window.PharmacyStation.setConfig({
                     methods: (arr[19] && arr[19].methods && typeof arr[19].methods === 'object') ? arr[19].methods : {},
-                    recipes: (arr[18] && arr[18].recipes && typeof arr[18].recipes === 'object') ? Object.keys(arr[18].recipes).map(function (k) { return arr[18].recipes[k]; }) : []
+                    recipes: (arr[18] && arr[18].recipes && typeof arr[18].recipes === 'object') ? Object.keys(arr[18].recipes).map(function (k) { return arr[18].recipes[k]; }) : [],
+                    systemConfig: pharmacyCfgParsed,
+                    failureItemId: pharmacyCfgParsed && pharmacyCfgParsed.pharmacy_global_failure_item_id
+                        ? String(pharmacyCfgParsed.pharmacy_global_failure_item_id)
+                        : undefined
                 });
             }
             if (window.RecipeSchema && typeof window.RecipeSchema.validateRecipeTables === 'function') {
@@ -3374,7 +3383,25 @@
                 });
             } else if (picked.source !== 'ground') {
                 if (ItemUse.itemTemplateIsConsumable(disp.tpl)) {
-                    addActionBtn(ui('inv.use'), function () { tryUseItemFromContainer(picked.source, picked.index); });
+                    // 47 §5.2：外敷需手动选部位（七部位），其余途径直接使用。
+                    var useRoute = (typeof ItemUse.getUseActionRoute === 'function') ? ItemUse.getUseActionRoute(disp.tpl) : '';
+                    if (useRoute === 'topical') {
+                        var partHint = document.createElement('div');
+                        partHint.className = 'bp-detail-desc';
+                        partHint.textContent = ui('item.use.pick_part');
+                        actions.appendChild(partHint);
+                        var partIds = (Array.isArray(ItemUse.BODY_PART_IDS) && ItemUse.BODY_PART_IDS.length) ? ItemUse.BODY_PART_IDS : BODY_PART_IDS;
+                        var pi;
+                        for (pi = 0; pi < partIds.length; pi++) {
+                            (function (partId) {
+                                addActionBtn(ui('item.use.topical') + ' ' + ui(BODY_PART_LABELS[partId] || partId), function () {
+                                    tryUseItemFromContainer(picked.source, picked.index, { part_id: partId });
+                                });
+                            })(partIds[pi]);
+                        }
+                    } else {
+                        addActionBtn(ui('inv.use'), function () { tryUseItemFromContainer(picked.source, picked.index); });
+                    }
                 }
                 if (disp.tpl && disp.tpl.equip_slot) {
                     addActionBtn(ui('inv.equip'), function () { doEquipFromContainer(picked.source, picked.index, disp.tpl); });
@@ -8007,6 +8034,21 @@
         }).catch(function () { render(); });
     }
 
+    /** 物品使用失败原因 → 提示文案键（47 §5.2 途径前置条件）。 */
+    function useFailureMessageKey(reason) {
+        switch (String(reason || '')) {
+            case 'needs_part': return 'item.use.fail.needs_part';
+            case 'bad_part': return 'item.use.fail.bad_part';
+            case 'needs_igniter': return 'item.use.fail.needs_igniter';
+            case 'needs_inject_kit': return 'item.use.fail.needs_inject_kit';
+            case 'already_active': return 'item.use.fail.already_active';
+            case 'route_not_allowed': return 'item.use.fail.route_not_allowed';
+            case 'no_effect': return 'item.use.fail.no_effect';
+            case 'buff_apply_failed': return 'item.use.fail.buff_apply_failed';
+            default: return 'item.use.cannot';
+        }
+    }
+
     function tryUseItemFromContainer(containerType, index, opts) {
         var inv = window.InventoryEquipment;
         if (!inv || typeof inv.takeItemFromContainer !== 'function') return false;
@@ -8029,9 +8071,12 @@
             if (!options.silent) showMsg(ui('item.use.fail'), 'warn');
             return false;
         }
-        if (!ItemUse.applyItemUseEffectFromTemplate(itemId, tpl)) {
+        if (!ItemUse.applyItemUseEffectFromTemplate(itemId, tpl, options)) {
             if (inv.putItemIntoDefaultContainer) inv.putItemIntoDefaultContainer(taken.item);
-            if (!options.silent) showMsg(ui('item.use.cannot'), 'info');
+            if (!options.silent) {
+                var failInfo = (typeof ItemUse.takeLastUseFailure === 'function') ? ItemUse.takeLastUseFailure() : null;
+                showMsg(ui(useFailureMessageKey(failInfo && failInfo.reason)), 'info');
+            }
             return false;
         }
         var char0 = inv.getCharacterForDisplay ? inv.getCharacterForDisplay() : null;

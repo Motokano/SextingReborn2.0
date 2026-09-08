@@ -1,0 +1,25 @@
+key,value,notes
+pharmacy_global_failure_item_id,item.scrap.herb_dregs,制药失败全局产物（药渣）；指向 data/items/*.csv 中的物品 id（47 §2.2）
+pharmacy_skill_max_level,100,制药熟练度满级；同烹饪口径（11 §8.2.1）
+pharmacy_max_proficiency_uses,5000000,满级所需累计成功次数；同烹饪/采集（11 §8.2.1）
+pharmacy_success_bonus_per_level,0.005,每级成功率加成（直加在基础成功率上）；同烹饪口径
+pharmacy_proficiency_usage_key,pharmacy_success,熟练度计数键（skills.life_pharmacy.move_usage）
+pharmacy_use_routes,drink|topical|inhale|inject,use_action 四途径白名单（47 §3.2）；竖线分隔
+pharmacy_inhale_igniter_item_ids,,吸入需火源：可点火物品 id（竖线分隔；空=暂不校验，待 k244 落物品）
+pharmacy_inject_kit_item_ids,,刺入需器具：注射器/输液器物品 id（竖线分隔；空=暂不校验，待 k244 落物品）
+pharmacy_addiction_gain_topical,0,❓待调：外敷上瘾增量（47 §4.1；外敷不涨瘾）
+pharmacy_addiction_gain_drink,4,❓待调：口服上瘾增量（设计区间 3~5）
+pharmacy_addiction_gain_inhale,10,❓待调：吸入上瘾增量（设计区间 8~12）
+pharmacy_addiction_gain_inject,15,❓待调：刺入上瘾增量（设计区间 12~18）
+pharmacy_addiction_decay_per_tick,0.05,❓待调：成瘾自然衰减/tick（47 §4.1）
+pharmacy_addiction_immunity_gain_reduction,0.01,❓待调：免疫每级减免累积增量比例（47 §4.5）
+pharmacy_addiction_immunity_decay_bonus,0.02,❓待调：免疫每级衰减加速比例（47 §4.5）
+pharmacy_addiction_immunity_penalty_reduction,0.01,❓待调：免疫每级惩罚缩小比例（47 §4.5）
+pharmacy_addiction_stage_thresholds,25|50|75,成瘾四阶段阈值（<25 / 25-50 / 50-75 / ≥75；47 §4.2）
+pharmacy_addiction_stage_penalties,0.10|0.20|0.35,阶段二~四后天五维实际值惩罚乘区（−10%/−20%/−35%；47 §4.2）
+pharmacy_potency_thresholds,33|66,净药效→potency 档（≤33 weak / 34-66 regular / ≥67 potent；47 §9.2）
+pharmacy_toxicity_band_thresholds,0|25|55,净毒性副作用档（≤0 无 / 1-25 轻 / 26-55 中 / ≥56 重；47 §9.2）
+pharmacy_toxicity_decay_per_tick,1,❓待调：体内毒性自然衰减/tick（解毒加速约 3；47 §9.2）
+pharmacy_toxicity_lethal_ticks,40,❓待调：体内毒性处于重档期间的致死倒计时上限 tick（47 §9.2）
+pharmacy_concentration_capacity,100,注射液总浓度容量（Σ 各成分 concentration_cost ≤ 上限；47 §9.3）
+pharmacy_offset_rate_cap,0.9,辅成分抵消率上限（残毒恒 ≥ 总毒性 10%；47 §9.2）

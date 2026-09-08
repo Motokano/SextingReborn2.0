@@ -1,4 +1,4 @@
-id,sn,placeholder_name,fn,category,sub_category,weight,stack_limit,quality,tags,source,production_lines,spoilage_ticks,price_class,volatility,region_restrict,base_value,satiety_restore,thirst_restore,nutrition_restore,edible,edible_buff_id,food_buff_duration_ticks,cooking_ingredient,pharmacy_ingredient,info_module_set_id
+id,sn,placeholder_name,fn,category,sub_category,weight,stack_limit,quality,tags,source,production_lines,spoilage_ticks,price_class,volatility,region_restrict,base_value,satiety_restore,thirst_restore,nutrition_restore,edible,edible_buff_id,food_buff_duration_ticks,cooking_ingredient,pharmacy_ingredient,info_module_set_id,usable,use_buff_id,use_action
 food_stew_meat_simple,肉末杂煮,稠肉糊,用兽肉和野果一起煮成的糊状食物，能填饱肚子并恢复少许体力。,food,stew,0.4,10,white,food;consumable;cook,cook,cook,600,life_good,mid,0,200,,,,1,buff_food_stew_meat_simple,10,,,module.food_basic
 food_flatbread_plain,粗面饼,硬面饼,用粗粮烙成的薄饼，耐放但口感偏硬，适合赶路时充饥。,food,bread,0.2,20,white,food;consumable;cook,cook,cook,3600,life_good,low,0,110,,,,1,buff_food_flatbread_plain,10,,
 food_herb_tea_bitter,苦根茶,苦茶,用苦根草煮出的茶汤，喝下去能略微退热提神，味道很苦。,food,tea,0.15,15,white,food;consumable;cook;alchemy,cook,cook,600,material,mid,0,260,,,,1,buff_food_herb_tea_bitter,10,,
@@ -24,10 +24,6 @@ food_dish_beet_kvass,甜菜发酵饮,甜菜饮,甜菜糖盐轻发酵的爽口饮
 food_dish_buffalo_yogurt,水牛酸奶,浓酸奶,水牛奶加糖发酵的稠酸奶，奶香重。,food,dairy,0.35,10,white,food;consumable;cook;cooked,cook,cook,600,life_good,mid,0,,,,,1,buff_food_dish_buffalo_yogurt,10,,
 food_dish_sesame_garlic_salad,芝麻蒜香拌菜,凉拌菜,芝麻蒜泥椒油拌黄瓜，清爽辛辣。,food,salad,0.25,12,white,food;consumable;cook;cooked,cook,cook,3600,life_good,low,0,,,,,1,buff_food_dish_sesame_garlic_salad,9,,
 food_dish_mustard_beef_tongue,黄芥末蘸牛舌,冷切牛舌,牛舌配黄芥末与柠檬的冷盘风味。,food,cold,0.35,8,white,food;consumable;cook;cooked,cook,cook,600,material,mid,0,,,,,1,buff_food_dish_mustard_beef_tongue,10,,
-potion_hemostatic_cloth,止血布包,止血布,浸过药汁的布条，包扎伤口可较快止住流血。,potion,hemostatic,0.1,20,white,consumable;medical;alchemy,alchemy;buy,alchemy,0,life_good,mid,0,420,0,0,0,,,,,
-potion_painkiller_herb,镇痛药丸,镇痛丸,用赤花藤等炼成的小丸，服下后一段时间内痛感减轻，有人会犯困。,potion,painkiller,0.05,25,white,consumable;medical;alchemy,alchemy,alchemy,0,material,mid,0,380,0,0,0,,,,,
-potion_energy_brew,提神药汤,提神汤,苦味药汤，短时内精神与体力恢复略快，不宜连续多服。,potion,stimulant,0.2,10,white,consumable;medical;alchemy,alchemy,alchemy,0,material,high,0,520,0,0,0,,,,,
-potion_antidote_basic,简易解毒散,解毒散,针对常见虫蛇毒的粉末，冲水服下或外敷，能缓解轻症。,potion,antidote,0.08,15,white,consumable;medical;alchemy,alchemy,alchemy,0,material,mid,0,460,0,0,0,,,,,
 supply_bandage_cloth,布制绷带,布绷带,干净布条缠成的绷带，可做简单包扎，减少伤口继续恶化。,supply,bandage,0.08,25,white,consumable;medical;craft,craft;buy,craft,0,life_good,low,0,140,0,0,0,,,,,
 supply_torch_bamboo,竹火把,竹火把,竹杆缠布浸油制成的火把，点燃后可照明一段时间，遇风易灭。,supply,torch,0.5,5,white,consumable;tool;craft,craft,craft,0,life_good,low,0,95,0,0,0,,,,,
 supply_rope_hemp_short,短麻绳,短麻绳,一截结实的麻绳，可捆绑、攀援或与机关配合使用。,supply,rope,0.3,10,white,tool;craft;consumable,craft,craft,0,material,low,0,110,0,0,0,,,,,
@@ -36,6 +32,6 @@ wild_fruit_red,红火莓,红野果,灌木丛里摘的小红果，酸里带涩，
 wild_fruit_purple,紫苏果,紫野果,熟透的紫黑色小果，甜味重些，放不久，适合当场吃或很快用掉。,food,berry,0.05,10,white,food;consumable;cook;surface_only,gathering,cook,600,life_good,mid,1,75,,,,1,buff_food_wild_fruit_purple,10,,
 wild_fruit_yellow,黄肚柑,黄野果,偏黄的小野果，口感略绵，能充饥，晒干或煮过更好保存。,food,berry,0.06,10,white,food;consumable;cook;surface_only,gathering,cook,3600,life_good,low,1,55,,,,1,buff_food_wild_fruit_yellow,10,,
 herb_green,青草尖,青嫩叶,随手掐的嫩草叶，嚼着有点草腥，能稍微解渴，常被当零嘴或塞进干粮里。,food,herb_raw,0.02,10,white,food;consumable;surface_only,gathering,,600,life_good,low,1,45,,,,1,buff_food_herb_green,10,,
-herb_bitter,涩堇草,苦尖叶,叶子带苦味，有人嚼了提神，也有人煮水当凉茶，用量多了会拉肚子。,food,herb_raw,0.02,10,white,food;consumable;surface_only,gathering,cook,600,material,mid,1,130,,,,1,buff_food_herb_bitter,10,,
+herb_bitter,涩堇草,苦尖叶,叶子带苦味，有人嚼了提神，也有人煮水当凉茶，用量多了会拉肚子。,food,herb_raw,0.02,10,white,food;consumable;surface_only,gathering,cook,600,material,mid,1,130,,,,1,buff_food_herb_bitter,10,,1
 herb_sweet,甘花茎,甜根叶,叶柄和茎带一点甜味，嚼一嚼能压饿，乡下常当小孩的零食。,food,herb_raw,0.03,10,white,food;consumable;surface_only,gathering,,600,life_good,low,1,70,,,,1,buff_food_herb_sweet,10,,
 food_cooking_fail_generic,糊灶残渣（占位）,焦黑结块,TODO：策划补全展示名、描述、是否叠加其它 Buff；烹饪失败时全局产出。,food,cooking_fail,0.12,30,white,food;consumable;cook;cooking_fail,cook,cook,600,material,low,0,,,,,1,buff_food_cooking_fail_generic,10,,

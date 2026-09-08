@@ -14,6 +14,9 @@ const ROOT = path.resolve(__dirname, '..');
 const ITEMS_DIR = path.join(ROOT, 'data', 'items');
 const OUT = path.join(ROOT, 'data', 'items.json');
 
+/** use_action 给药途径白名单（47 §3.2：口服/外敷/吸入/刺入）。 */
+const USE_ACTION_IDS = ['drink', 'topical', 'inhale', 'inject'];
+
 const MERGE_FILES = [
   'consumables_base.csv',
   'materials_all.csv',
@@ -157,8 +160,9 @@ function rowToItem(o, filename) {
   }
   if (o.category) item.category = o.category;
   if (o.sub_category) item.sub_category = o.sub_category;
-  // 全局口径：所有物品可堆叠数固定为 1
-  item.stack_limit = 1;
+  // 堆叠口径（k128⑥）：以 CSV stack_limit 为准（缺省/非法回退 1），运行时 getMaxStack 读同名字段。
+  const stackLimit = intOrNull(o.stack_limit);
+  item.stack_limit = (stackLimit != null && stackLimit > 0) ? stackLimit : 1;
   if (o.tags) item.tags = o.tags;
   if (o.source) item.source = o.source;
   if (o.production_lines) item.production_lines = o.production_lines;
@@ -202,6 +206,17 @@ function rowToItem(o, filename) {
     if (ivN === '1' || ivN === 'true' || ivN === 'yes') item.compost_inoculant_anaerobic = true;
   }
   if (o.edible_buff_id) item.edible_buff_id = String(o.edible_buff_id).trim();
+  // 可用物品（usable + use_buff_id）：47 §5.1 药水走同一条链，use_action 声明给药途径。
+  if (Object.prototype.hasOwnProperty.call(o, 'usable')) {
+    const uv = String(o.usable == null ? '' : o.usable).trim().toLowerCase();
+    item.usable = (uv === '1' || uv === 'true' || uv === 'yes');
+  }
+  if (o.use_buff_id) item.use_buff_id = String(o.use_buff_id).trim();
+  if (o.use_action) {
+    const ua = String(o.use_action).trim().toLowerCase();
+    if (USE_ACTION_IDS.includes(ua)) item.use_action = ua;
+    else console.warn('[build-items-json] invalid use_action "' + ua + '" on item ' + id + ' (allowed: ' + USE_ACTION_IDS.join('/') + ')');
+  }
   const foodBuffDur = intOrNull(o.food_buff_duration_ticks);
   if (foodBuffDur != null && foodBuffDur > 0) item.food_buff_duration_ticks = foodBuffDur;
   const fp = intOrNull(o.fuel_points);
