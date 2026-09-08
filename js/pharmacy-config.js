@@ -36,7 +36,10 @@
         pharmacy_concentration_capacity: 100,
         pharmacy_offset_rate_cap: 0.9,
         pharmacy_synergy_bonus_per_unit: 0.2,
-        pharmacy_injectable_template_id: 'potion_compound_injection'
+        pharmacy_injectable_template_id: 'potion_compound_injection',
+        pharmacy_disposable_kit_item_ids: 'tool_iv_set_pharmacy',
+        pharmacy_sterilizer_item_ids: 'food_wine',
+        pharmacy_dirty_injection_toxicity: 8
     };
 
     var USE_ROUTE_IDS = ['drink', 'topical', 'inhale', 'inject'];
@@ -161,6 +164,9 @@
         out.pharmacy_offset_rate_cap = Math.max(0, Math.min(1, toNumber(kv.pharmacy_offset_rate_cap, DEFAULTS.pharmacy_offset_rate_cap)));
         out.pharmacy_synergy_bonus_per_unit = Math.max(0, toNumber(kv.pharmacy_synergy_bonus_per_unit, DEFAULTS.pharmacy_synergy_bonus_per_unit));
         out.pharmacy_injectable_template_id = asText(kv.pharmacy_injectable_template_id) || DEFAULTS.pharmacy_injectable_template_id;
+        out.pharmacy_disposable_kit_item_ids = toList(kv.pharmacy_disposable_kit_item_ids, DEFAULTS.pharmacy_disposable_kit_item_ids);
+        out.pharmacy_sterilizer_item_ids = toList(kv.pharmacy_sterilizer_item_ids, DEFAULTS.pharmacy_sterilizer_item_ids);
+        out.pharmacy_dirty_injection_toxicity = Math.max(0, toNumber(kv.pharmacy_dirty_injection_toxicity, DEFAULTS.pharmacy_dirty_injection_toxicity));
         return out;
     }
 

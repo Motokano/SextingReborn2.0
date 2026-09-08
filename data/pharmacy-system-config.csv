@@ -25,3 +25,6 @@ pharmacy_concentration_capacity,100,注射液总浓度容量（Σ 各成分 conc
 pharmacy_offset_rate_cap,0.9,辅成分抵消率上限（残毒恒 ≥ 总毒性 10%；47 §9.2）
 pharmacy_synergy_bonus_per_unit,0.2,❓待调：每 1 份增效成分对同针其它族药效的加成比例（47 §9.6 增效）
 pharmacy_injectable_template_id,potion_compound_injection,配药产出的动态注射液模板 id（47 §9.4）
+pharmacy_disposable_kit_item_ids,tool_iv_set_pharmacy,一次性注射器具（用后消耗；47 §5.2/§8 针具卫生，k244）
+pharmacy_sterilizer_item_ids,food_wine,可消毒物品（每次注射前消耗 1 份，替代一次性器具；k244）
+pharmacy_dirty_injection_toxicity,8,❓待调：针具不洁时本次注射额外注入的感染毒性（k244）

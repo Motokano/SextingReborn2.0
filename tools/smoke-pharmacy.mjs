@@ -679,4 +679,45 @@ const uiText = loadJson('data/ui_text_zhCN.json');
 });
 ok('配药面板/入口/文案接线齐备');
 
+console.log('\n⑬ k244 针具卫生门槛');
+let slotFor = null;
+let takenItems = [];
+sandbox.InventoryHelpers.getInventoryCountByItemId = () => 1;
+sandbox.InventoryHelpers.findFirstContainerSlotByItemId = (id) => (slotFor && slotFor === id ? { containerType: 'backpack', index: 0 } : null);
+sandbox.InventoryEquipment.takeItemFromContainer = (ct, idx) => ({ success: true, item: { item_id: slotFor, count: 1 } });
+
+// 两样都没有 → 不洁针具：仍可注射，但额外注入感染毒性
+slotFor = null;
+PS.setConfig({ systemConfig: cfg });
+let h = IU.resolveInjectionHygiene();
+assert.strictEqual(h.mode, 'dirty', '无一次性器具/消毒剂 → 不洁');
+assert.strictEqual(h.penalty_toxicity, 8, '感染毒性取配置值 8');
+ok('针具不洁 → 本次注射带感染毒性（配置 pharmacy_dirty_injection_toxicity）');
+
+// 有一次性输液器 → 消耗它，无惩罚
+slotFor = 'tool_iv_set_pharmacy';
+h = IU.resolveInjectionHygiene();
+assert.strictEqual(h.mode, 'disposable', '有输液器 → 一次性消耗');
+assert.strictEqual(h.penalty_toxicity, 0);
+ok('一次性器具优先消耗（输液器）');
+
+// 只有消毒剂 → 消耗 1 份，无惩罚
+slotFor = 'food_wine';
+h = IU.resolveInjectionHygiene();
+assert.strictEqual(h.mode, 'sterilized', '只有酒 → 消毒后注射');
+assert.strictEqual(h.consumed, 'food_wine');
+ok('消毒剂替代一次性器具（酒）');
+
+// 走完整注射：不洁 → 毒性注入；洁净 → 不注入
+toxAddedTotal = 0;
+slotFor = null;
+assert.strictEqual(IU.applyUseActionRoute('potion_compound_injection', items.potion_compound_injection, 'inject', { instance: built.instance }), true);
+assert(Math.abs(toxAddedTotal - (95 + 8)) < 0.6, '不洁针具：净毒性 95 + 感染 8（实际 ' + toxAddedTotal + '）');
+assert.strictEqual(IU.takeLastInjectionHygiene().mode, 'dirty');
+toxAddedTotal = 0;
+slotFor = 'tool_iv_set_pharmacy';
+assert.strictEqual(IU.applyUseActionRoute('potion_compound_injection', items.potion_compound_injection, 'inject', { instance: built.instance }), true);
+assert(Math.abs(toxAddedTotal - 95) < 0.6, '洁净针具：只算净毒性 95（实际 ' + toxAddedTotal + '）');
+ok('注射全链路：卫生状态参与毒性结算');
+
 console.log('\n[smoke-pharmacy] ' + pass + ' 组断言全部通过');

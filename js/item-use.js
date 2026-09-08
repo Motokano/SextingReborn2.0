@@ -122,6 +122,63 @@
         topicalPartByBuffId = {};
     }
 
+    /** 从任一容器消耗 1 件指定物品（针具/消毒剂）。 */
+    function consumeOneItem(itemId) {
+        var id = itemId != null ? String(itemId).trim() : '';
+        if (!id) return false;
+        var IH = global.InventoryHelpers;
+        var IE = global.InventoryEquipment;
+        if (!IH || typeof IH.findFirstContainerSlotByItemId !== 'function') return false;
+        if (!IE || typeof IE.takeItemFromContainer !== 'function') return false;
+        var slot = IH.findFirstContainerSlotByItemId(id);
+        if (!slot) return false;
+        var taken = IE.takeItemFromContainer(slot.containerType, slot.index);
+        return !!(taken && taken.success && taken.item);
+    }
+
+    /**
+     * 针具卫生门槛（47 §5.2/§8，k244）：
+     *   优先消耗一次性器具（输液器）→ 卫生达标；
+     *   否则消耗一份消毒剂（酒）→ 卫生达标；
+     *   两样都没有 → 仍可注射，但本次额外注入「针具不洁」感染毒性。
+     */
+    function resolveInjectionHygiene() {
+        var PS = global.PharmacyStation;
+        var cfg = (PS && typeof PS.getSystemConfig === 'function') ? PS.getSystemConfig() : null;
+        var disposables = (cfg && Array.isArray(cfg.pharmacy_disposable_kit_item_ids)) ? cfg.pharmacy_disposable_kit_item_ids : [];
+        var sterilizers = (cfg && Array.isArray(cfg.pharmacy_sterilizer_item_ids)) ? cfg.pharmacy_sterilizer_item_ids : [];
+        var penalty = (cfg && cfg.pharmacy_dirty_injection_toxicity != null) ? Number(cfg.pharmacy_dirty_injection_toxicity) : 8;
+        if (!isFinite(penalty) || penalty < 0) penalty = 0;
+        var i;
+        for (i = 0; i < disposables.length; i++) {
+            if (consumeOneItem(disposables[i])) return { ok: true, mode: 'disposable', consumed: String(disposables[i]), penalty_toxicity: 0 };
+        }
+        for (i = 0; i < sterilizers.length; i++) {
+            if (consumeOneItem(sterilizers[i])) return { ok: true, mode: 'sterilized', consumed: String(sterilizers[i]), penalty_toxicity: 0 };
+        }
+        return { ok: true, mode: 'dirty', consumed: '', penalty_toxicity: penalty };
+    }
+
+    /** 最近一次注射的卫生状态（供 UI/日志读取）。 */
+    var lastInjectionHygiene = null;
+    function takeLastInjectionHygiene() {
+        var h = lastInjectionHygiene;
+        lastInjectionHygiene = null;
+        return h;
+    }
+
+    /** 注射后卫生结算：不洁针具额外注入感染毒性。 */
+    function applyInjectionHygiene(hygiene) {
+        lastInjectionHygiene = hygiene || null;
+        if (!hygiene || !(hygiene.penalty_toxicity > 0)) return 0;
+        var PE = global.PharmacyEffects;
+        if (PE && typeof PE.addToxicity === 'function') {
+            PE.addToxicity(hygiene.penalty_toxicity);
+            return hygiene.penalty_toxicity;
+        }
+        return 0;
+    }
+
     /**
      * 按 use_action 途径结算一次使用（47 §5.1/§5.2）。
      * opts.part_id：外敷必填（七部位之一）；opts.silent：不产生失败原因记录以外的副作用。
@@ -134,6 +191,7 @@
         if (!isUseRouteAllowed(rid)) return failUse('route_not_allowed', rid);
 
         var partId = '';
+        var hygiene = null;
         if (rid === 'topical') {
             partId = options.part_id != null ? String(options.part_id).trim() : '';
             if (!partId) return failUse('needs_part');
@@ -144,6 +202,8 @@
         }
         if (rid === 'inject') {
             if (!hasAnyItemInInventory(getRequiredItemIdsForRoute('inject'))) return failUse('needs_inject_kit');
+            // 针具卫生（k244）：一次性器具/消毒剂优先，否则本次带感染毒性
+            hygiene = resolveInjectionHygiene();
         }
 
         var Buff = global.BuffSystem;
@@ -155,6 +215,7 @@
             if (!inst || !Array.isArray(inst.components) || !inst.components.length) return failUse('no_components');
             var inj = PC.applyInjection(inst, {});
             if (!inj || inj.ok !== true) return failUse(inj && inj.reason ? inj.reason : 'compound_failed');
+            applyInjectionHygiene(hygiene);
             lastUseFailure = null;
             return true;
         }
@@ -218,6 +279,7 @@
             }
         }
         if (!applied) return failUse(buffId ? 'buff_apply_failed' : 'no_effect', buffId);
+        if (rid === 'inject') applyInjectionHygiene(hygiene);
         lastUseFailure = null;
         return true;
     }
@@ -400,6 +462,8 @@
         getUseActionRoute: getUseActionRoute,
         isUseRouteAllowed: isUseRouteAllowed,
         applyUseActionRoute: applyUseActionRoute,
+        resolveInjectionHygiene: resolveInjectionHygiene,
+        takeLastInjectionHygiene: takeLastInjectionHygiene,
         takeLastUseFailure: takeLastUseFailure,
         getTopicalPartForBuff: getTopicalPartForBuff,
         clearTopicalParts: clearTopicalParts,
