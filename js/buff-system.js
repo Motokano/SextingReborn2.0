@@ -109,6 +109,12 @@
         return String(prefix || 'evt') + '_' + String(Date.now()) + '_' + String(eventSeq);
     }
 
+    /** 制药（47 §4.4）：buff 在场状态变化回调（由 PharmacyEffects 注册，用于即时刷新 potency 压制）。 */
+    var buffStateListener = null;
+    function setBuffStateListener(fn) {
+        buffStateListener = (typeof fn === 'function') ? fn : null;
+    }
+
     function emitBuffStateChanged(ownerId, reason, payload) {
         if (isEmittingBuffState) return;
         isEmittingBuffState = true;
@@ -124,6 +130,9 @@
                     detail: payload || null
                 }
             });
+            if (buffStateListener) {
+                try { buffStateListener(ownerId || PLAYER_OWNER_ID, reason || 'changed', payload || null); } catch (eL) { /* ignore */ }
+            }
         } finally {
             isEmittingBuffState = false;
         }
@@ -144,6 +153,8 @@
             name: t.name || '',
             desc: t.desc || '',
             durationTicks: Math.max(0, parseInt(t.durationTicks, 10) || 0),
+            /** 47 §3.4：剂型生效时间——使用后到 buff 开始生效的 tick 数（0 = 立即生效）。 */
+            onsetTicks: Math.max(0, parseInt(t.onsetTicks, 10) || 0),
             maxStacks: Math.max(1, parseInt(t.maxStacks, 10) || 1),
             stacksAddOnApply: Math.max(0, parseInt(t.stacksAddOnApply, 10) || 0),
             priority: parseInt(t.priority, 10) || 100,
@@ -160,6 +171,21 @@
             food_digest: !!t.food_digest,
             /** k81：零食「快速供能」标记（小食档高数值 buff：体力/精力/心情 + 战斗移速） */
             quick_energy: !!t.quick_energy,
+            /** k229：疼痛档位 debuff 标记（mild/moderate/severe/agony）——在场期间若 owner 带镇痛（pain_suppression 效果）则效果整体被压制（盖住不消除，药效过反扑）。 */
+            pain_tier: String(t.pain_tier || '').trim(),
+            /** 47 §3.4/§9：制药剂型标记（生成自 data/pharmacy-buff-matrix.json，供 §4.4 potency 压制与配药结算读取）。 */
+            pharmacy_generated: t.pharmacy_generated === true,
+            pharmacy_family: String(t.pharmacy_family || '').trim().toLowerCase(),
+            pharmacy_route: String(t.pharmacy_route || '').trim().toLowerCase(),
+            pharmacy_potency: String(t.pharmacy_potency || '').trim().toLowerCase(),
+            pharmacy_scope: String(t.pharmacy_scope || '').trim().toLowerCase(),
+            pharmacy_peak: (function () {
+                var pk = Number(t.pharmacy_peak);
+                return isFinite(pk) ? pk : 1;
+            })(),
+            pharmacy_side_effect_band: String(t.pharmacy_side_effect_band || '').trim().toLowerCase(),
+            pharmacy_conflict_outcome: String(t.pharmacy_conflict_outcome || '').trim().toLowerCase(),
+            pharmacy_addiction_stage: Math.max(0, parseInt(t.pharmacy_addiction_stage, 10) || 0),
             judgment_tags: normalizeJudgmentTags(t.judgment_tags),
             /** 见 design/18：beneficial 可被「破相」等驱散；缺省不可选 */
             dispel_pool: t.dispel_pool === 'beneficial' ? 'beneficial' : '',
@@ -311,6 +337,43 @@
         return false;
     }
 
+    /** k229：owner 是否有镇痛压制（任一在场 buff 携带 pain_suppression 效果）。镇痛在场 → 疼痛档位 debuff 的效果全部被盖住（debuff 仍在、只盖住；药效过反扑）。 */
+    function hasPainSuppression(ownerId) {
+        var oid = ownerId || PLAYER_OWNER_ID;
+        var arr = instancesByOwner[oid];
+        if (!arr || !arr.length) return false;
+        for (var i = 0; i < arr.length; i++) {
+            var inst = arr[i];
+            if (!inst || !inst.template || (inst.stacks || 0) <= 0) continue;
+            if (!isBuffPastOnset(inst)) continue;
+            var effects = arrayOrEmpty(inst.template.effects);
+            for (var j = 0; j < effects.length; j++) {
+                var e = effects[j] || {};
+                if (e.type === 'pain_suppression') return true;
+            }
+        }
+        return false;
+    }
+
+    /** k229：疼痛档位 debuff 实例的效果是否被镇痛压制（被动查询与每 tick 应用共用同口径）。 */
+    function isPainEffectSuppressed(inst) {
+        return !!(inst && inst.template && inst.template.pain_tier
+            && hasPainSuppression(inst.owner_id || PLAYER_OWNER_ID));
+    }
+
+    /**
+     * 47 §3.4：剂型生效时间（onsetTicks）= 使用后到 buff 开始生效的 tick 数。
+     * onset 期间 buff 在场（HUD 可见）但效果不结算；nowTick 省略时取当前世界 tick。
+     */
+    function isBuffPastOnset(inst, nowTick) {
+        if (!inst || !inst.template) return false;
+        var onset = Math.max(0, parseInt(inst.template.onsetTicks, 10) || 0);
+        if (!onset) return true;
+        var now = (nowTick != null && isFinite(Number(nowTick))) ? Math.floor(Number(nowTick)) : getTickNow();
+        var started = Math.max(0, parseInt(inst.started_tick, 10) || 0);
+        return (now - started) >= onset;
+    }
+
     function hasActiveSatietyDigestBuff(ownerId) {
         var oid = ownerId || PLAYER_OWNER_ID;
         var arr = instancesByOwner[oid] || [];
@@ -377,6 +440,9 @@
         for (var i = 0; i < arr.length; i++) {
             var inst = arr[i];
             if (!inst || !inst.template || (inst.stacks || 0) <= 0) continue;
+            if (!isBuffPastOnset(inst)) continue;
+            // k229：镇痛在场时疼痛档位 debuff 的禁用效果被盖住（不消除、只压制）
+            if (isPainEffectSuppressed(inst)) continue;
             var effects = arrayOrEmpty(inst.template.effects);
             for (var j = 0; j < effects.length; j++) {
                 var m = extractDisabledActionsFromEffect(effects[j]);
@@ -429,6 +495,7 @@
         for (i = 0; i < arr.length; i++) {
             inst = arr[i];
             if (!inst || !inst.template || (inst.stacks || 0) <= 0) continue;
+            if (!isBuffPastOnset(inst)) continue;
             effects = arrayOrEmpty(inst.template.effects);
             for (j = 0; j < effects.length; j++) {
                 e = effects[j] || {};
@@ -450,6 +517,7 @@
         for (i = 0; i < arr.length; i++) {
             inst = arr[i];
             if (!inst || !inst.template || (inst.stacks || 0) <= 0) continue;
+            if (!isBuffPastOnset(inst)) continue;
             effects = arrayOrEmpty(inst.template.effects);
             for (j = 0; j < effects.length; j++) {
                 e = effects[j] || {};
@@ -471,6 +539,9 @@
         for (i = 0; i < arr.length; i++) {
             inst = arr[i];
             if (!inst || !inst.template || (inst.stacks || 0) <= 0) continue;
+            if (!isBuffPastOnset(inst)) continue;
+            // k229：镇痛在场时疼痛档位 debuff 的出手速度乘区被盖住（不消除、只压制）
+            if (isPainEffectSuppressed(inst)) continue;
             effects = arrayOrEmpty(inst.template.effects);
             for (j = 0; j < effects.length; j++) {
                 e = effects[j] || {};
@@ -492,6 +563,7 @@
         for (i = 0; i < arr.length; i++) {
             inst = arr[i];
             if (!inst || !inst.template || (inst.stacks || 0) <= 0) continue;
+            if (!isBuffPastOnset(inst)) continue;
             effects = arrayOrEmpty(inst.template.effects);
             stacks = Math.max(1, parseInt(inst.stacks, 10) || 1);
             for (j = 0; j < effects.length; j++) {
@@ -941,6 +1013,7 @@
             for (var j = 0; j < arr.length; j++) {
                 var inst = arr[j];
                 if (!inst || !inst.template) continue;
+                if (!isBuffPastOnset(inst)) continue;
                 var effects = arrayOrEmpty(inst.template.effects);
                 for (var k = 0; k < effects.length; k++) {
                     var e = effects[k] || {};
@@ -1103,6 +1176,8 @@
                 changed = changed || consumed > 0;
             }
             var applyNow = (m.template.applyMode === 'always_apply') ? true : consumeOk;
+            // 47 §3.4：生效时间（onsetTicks）内不结算效果（buff 已在场，只是还没起效）。
+            if (applyNow && !isBuffPastOnset(m, ev.tick)) applyNow = false;
             if (applyNow) {
                 applyEffects(m, ev, {
                     depth: chainState.depth + 1,
@@ -1382,6 +1457,7 @@
         getBattleMoveSpeedDeltaPercent: getBattleMoveSpeedDeltaPercent,
         getBattleFinalDamageTakenMultiplier: getBattleFinalDamageTakenMultiplier,
         registerRuntimeBuffTemplate: registerRuntimeBuffTemplate,
+        setBuffStateListener: setBuffStateListener,
         removeBuffByBuffId: removeBuffByBuffId,
         triggerBuffPipeline: triggerBuffPipeline,
         triggerRegisteredEvent: triggerRegisteredEvent,

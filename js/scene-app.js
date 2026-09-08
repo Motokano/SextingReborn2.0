@@ -672,6 +672,16 @@
                         ? String(pharmacyCfgParsed.pharmacy_global_failure_item_id)
                         : undefined
                 });
+                // 药物负担/毒性运行时（47 §4/§9.2，k242/k240）：配置同源，状态落 SceneCtx.pharmacy_effects。
+                if (window.PharmacyEffects && typeof window.PharmacyEffects.setConfig === 'function') {
+                    window.PharmacyEffects.setConfig(pharmacyCfgParsed || (window.PharmacyStation.getSystemConfig ? window.PharmacyStation.getSystemConfig() : null));
+                    // 入体药 buff 进出 → 即时刷新 §4.4 压制判定（断药/只剩低档立刻显形）
+                    if (window.BuffSystem && typeof window.BuffSystem.setBuffStateListener === 'function') {
+                        window.BuffSystem.setBuffStateListener(function (ownerId) {
+                            window.PharmacyEffects.onBuffStateChanged(ownerId);
+                        });
+                    }
+                }
             }
             if (window.RecipeSchema && typeof window.RecipeSchema.validateRecipeTables === 'function') {
                 try {
@@ -2123,6 +2133,37 @@
             if (combatExpEl) combatExpEl.textContent = '—';
         }
         refreshPlayerActionsMenuUi();
+        refreshPharmacyStatusRows();
+    }
+
+    /** 制药状态行（47 §4.1 成瘾可见条 + §9.2 体内毒性；k242/k240）。 */
+    function refreshPharmacyStatusRows() {
+        var PE = window.PharmacyEffects;
+        var addEl = document.getElementById('status-addiction-text');
+        if (addEl) {
+            var txt = '—';
+            try {
+                if (PE && typeof PE.getInfo === 'function') {
+                    var info = PE.getInfo() || {};
+                    var label = ui('pharmacy.addiction.stage' + String(info.stage || 1));
+                    txt = String(Math.round(info.addiction)) + '（' + label + (info.suppressed ? ui('pharmacy.addiction.suppressed') : '') + '）';
+                }
+            } catch (eAddUi) { /* ignore */ }
+            addEl.textContent = txt;
+        }
+        var toxEl = document.getElementById('status-toxicity-text');
+        if (toxEl) {
+            var tTxt = '—';
+            try {
+                if (PE && typeof PE.getInfo === 'function') {
+                    var info2 = PE.getInfo() || {};
+                    tTxt = String(Math.round(info2.toxicity));
+                    if (info2.toxicity > 0) tTxt += '（' + ui('pharmacy.toxicity.' + String(info2.toxicity_band || 'none')) + '）';
+                    if (info2.lethal_active) tTxt += ui('pharmacy.toxicity.lethal', { n: String(info2.lethal_remaining) });
+                }
+            } catch (eToxUi) { /* ignore */ }
+            toxEl.textContent = tTxt;
+        }
     }
 
     function setIdleActionType(t) {
@@ -2769,6 +2810,12 @@
             try { tickLivestockAfterWorldTick(); } catch (eLs) { /* ignore */ }
             try { CombatWorld.tickEnemiesAfterWorldTick(); } catch (eEn) { /* ignore */ }
             try { CombatWorld.tickPlayerStunDecay(); } catch (eStunD) { /* ignore */ }
+            // 制药：成瘾衰减/阶段压制刷新 + 毒性代谢 + 致死倒计时（47 §4/§9.2，k242/k240）
+            try {
+                if (window.PharmacyEffects && typeof window.PharmacyEffects.onWorldTick === 'function') {
+                    window.PharmacyEffects.onWorldTick();
+                }
+            } catch (ePharmTick) { /* ignore */ }
             return ret;
         };
         window.Survival.__worldSystemsTickPatched = true;
@@ -7186,6 +7233,20 @@
         }
         if (window.PharmacyStation && typeof window.PharmacyStation.setUiDeps === 'function') {
             window.PharmacyStation.setUiDeps(stationUiDeps);
+        }
+        // 制药调试：药瘾 +10（k242 状态行联调）
+        var addictionDbgBtn = document.getElementById('status-addiction-debug-plus10');
+        if (addictionDbgBtn) {
+            addictionDbgBtn.addEventListener('click', function () {
+                var PE = window.PharmacyEffects;
+                if (!PE || typeof PE.addAddiction !== 'function') return;
+                var cur = PE.addAddiction(10);
+                if (window.GameLog && typeof window.GameLog.log === 'function') {
+                    window.GameLog.log(ui('log.debug.pharmacy.addiction', { cur: String(Math.round(cur)), delta: '10' }), 'system');
+                }
+                if (typeof updateStatusPanel === 'function') SceneHud.refresh('status');
+                if (window.SceneRenderer && typeof window.SceneRenderer.render === 'function') window.SceneRenderer.render();
+            });
         }
         // 烹饪站面板（②）：依赖注入 + 事件绑定
         if (window.CookingStationPanel && typeof window.CookingStationPanel.setUiDeps === 'function') {

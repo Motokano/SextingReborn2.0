@@ -273,6 +273,8 @@
     }
     // 供 Buff 等系统注入的后天五维修正（最终会并入 acquired 参与重算）
     var externalAcquiredBonus = { jingu: 0, flexibility: 0, breath: 0, dexterity: 0, focus: 0 };
+    /** 47 §4.2：外部实际值乘区（成瘾阶段惩罚）；缺省 1 = 无影响。 */
+    var externalAcquiredMultiplier = { jingu: 1, flexibility: 1, breath: 1, dexterity: 1, focus: 1 };
 
     // 肌肉/来源带来的“先天五维”奖励缓存（每次重算时覆盖写入；先天成就待定，见 34 §6）
     var innateBonusFromMuscles = { jingu: 0, flexibility: 0, breath: 0, dexterity: 0, focus: 0 };
@@ -535,6 +537,17 @@
             state.acquired.focus       += acq.focus       || 0;
             // innate（先天成就）保持 0：原任督/全通先天奖励的去留见 34 §6 未决项
             extraMaxQi = bonus.maxQi || 0;
+        }
+
+        // 47 §4.2：成瘾阶段惩罚——按「实际值乘区」作用在后天五维（不动上限条，读取五维的公式自然连带）。
+        if (externalAcquiredMultiplier.jingu !== 1 || externalAcquiredMultiplier.flexibility !== 1
+            || externalAcquiredMultiplier.breath !== 1 || externalAcquiredMultiplier.dexterity !== 1
+            || externalAcquiredMultiplier.focus !== 1) {
+            state.acquired.jingu = Math.max(0, Math.floor(state.acquired.jingu * externalAcquiredMultiplier.jingu));
+            state.acquired.flexibility = Math.max(0, Math.floor(state.acquired.flexibility * externalAcquiredMultiplier.flexibility));
+            state.acquired.breath = Math.max(0, Math.floor(state.acquired.breath * externalAcquiredMultiplier.breath));
+            state.acquired.dexterity = Math.max(0, Math.floor(state.acquired.dexterity * externalAcquiredMultiplier.dexterity));
+            state.acquired.focus = Math.max(0, Math.floor(state.acquired.focus * externalAcquiredMultiplier.focus));
         }
 
         var jingu = getEffectiveAttr('jingu');
@@ -1047,6 +1060,24 @@
         });
     }
 
+    /**
+     * 外部来源的「实际值乘区」（47 §4.2 成瘾阶段惩罚：−10%/−20%/−35%）。
+     * 在重算时对后天五维（含装备/技能/属性经验/外部加成/肌肉）整体相乘，缺省 1（不影响）。
+     */
+    function setExternalAcquiredMultiplier(mul) {
+        mul = mul || {};
+        ATTR_IDS.forEach(function (id) {
+            var v = mul[id];
+            externalAcquiredMultiplier[id] = (typeof v === 'number' && isFinite(v) && v >= 0) ? v : 1;
+        });
+    }
+
+    function getExternalAcquiredMultiplier() {
+        var out = {};
+        ATTR_IDS.forEach(function (id) { out[id] = externalAcquiredMultiplier[id]; });
+        return out;
+    }
+
     function getExternalAcquiredBonus() {
         return {
             jingu: externalAcquiredBonus.jingu,
@@ -1310,6 +1341,8 @@
         getState: getState,
         getDefaultState: getDefaultState,
         setExternalAcquiredBonus: setExternalAcquiredBonus,
+        setExternalAcquiredMultiplier: setExternalAcquiredMultiplier,
+        getExternalAcquiredMultiplier: getExternalAcquiredMultiplier,
         getExternalAcquiredBonus: getExternalAcquiredBonus,
 
         recalcCharacterStats: recalcCharacterStats,

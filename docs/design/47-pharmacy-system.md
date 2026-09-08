@@ -24,6 +24,26 @@
 
 > (实施缺口并入 §8 待定项与看板跟踪,不在设计正本重复维护)
 
+**当前实现状态（2026-09 补记，与看板同步）**
+
+| 缺口 | 状态 | 落点 |
+|---|---|---|
+| ① 制药无熟练度接线 | 已实现 | `js/pharmacy-station.js`（镜像烹饪：500 万次满级 100 / 每级 +0.5% 成功率 / 满级必成，计数键 `pharmacy_success`） |
+| ② 无 `pharmacy-system-config.csv` | 已实现 | `data/pharmacy-system-config.csv` + `js/pharmacy-config.js`（CSV → 归一化配置，scene-app 注入 `PharmacyStation.setConfig` / `PharmacyEffects.setConfig`） |
+| ③ 失败物 id 悬空 | 已实现 | 统一 `item.scrap.herb_dregs`（药渣，`data/items/materials_all.csv`）；`food_pharmacy_fail_generic` 已废弃 |
+| ④ `pharmacy_ingredient` 全库 0 | 已实现 | `tools/mark-pharmacy-ingredients.mjs`（alchemy 标签 + 显式清单）+ `data/items/pharmacy_base.csv`（成分/溶媒/器具/成品） |
+| ⑤ 消费判定三选一需为药水开口 | 已实现 | `tools/build-items-json.mjs` 补 `usable`/`use_buff_id`/`use_action` 落值（原先被丢弃）；`js/item-use.js` 四途径分流 + 背包面板外敷选部位 |
+| ⑥ 堆叠口径 | 已实现 | build 按 CSV 落 `stack_limit`（不再强制 1）；运行时 `getMaxStack` 读 `stack_limit`（`stack_max` 兼容） |
+
+**实现期补充口径（与设计正本的差异，均已落地）**
+
+- **生效时间**：`onsetTicks` 进 `js/buff-system.js`（`normalizeTemplate` + 结算/被动查询统一门闸），口服 5 / 外敷 3 / 吸入 2 / 注射 0。
+- **剂型矩阵生成**：`data/pharmacy-buff-matrix.json`（family × route × potency 源表）→ `tools/build-pharmacy-buffs.mjs` 生成 `buff_pharm_<family>_<route>_<potency>` 及副作用/相冲/成瘾阶段模板写入 `data/buffs.json`（幂等，带 `pharmacy_generated` 标记）。
+- **相冲结算位置修订**：§10.2 原设想用「每条药效 buff + `apply_buff_if_has_buffs` 判 `judgment_tags.chem_class`」，但剂型 buff 是**族级**（同族多成分共用一条），拿不到逐成分化学成分。改为**注射时按 `data/pharmacy-conflict-rules.json` 做类别级两两比对**，命中即授予 `buff_pharm_conflict_*`——仍是「一针下去才结算」，且数据表可改。
+- **成瘾/毒性运行时**：`js/pharmacy-effects.js`（状态落 `SceneCtx.pharmacy_effects`，save-system 显式快照）；阶段惩罚用 `CharacterAttributes.setExternalAcquiredMultiplier` 乘在后天五维实际值上；压制判定读 buff 的 `pharmacy_route`/`pharmacy_potency`，`BuffSystem.setBuffStateListener` 保证断药即时显形。
+- **❓数值张力（k246 待调）**：自然衰减 1/tick + 重档门槛 56 + 致死倒计时 40 tick ⇒ 需初始体内毒性 ≥96 才可能致死（56~95 区间永不致死）。首版按当前配置接线，平衡待调。
+- **未接线（有模板无消费者）**：`pharmacy_bleeding_slow`（等 k142 异常状态）、`pharmacy_part_recovery`（等 09 部位恢复结算）、`pharmacy_revive`（等昏迷/濒死拉回链）、`pharmacy_synergy_multiplier`（k231 配药结算读取）。
+
 ---
 
 ## 2. 制程模型（R1）

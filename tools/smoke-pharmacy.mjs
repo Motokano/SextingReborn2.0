@@ -190,7 +190,9 @@ assert(phIds.length >= 20, '制药投料应 ≥20 个，实际 ' + phIds.length)
   assert(phIds.includes(id), id + ' 应为制药投料');
 });
 ok('items.json 出现 ' + phIds.length + ' 个 pharmacy_ingredient 投料');
-assert(!Object.keys(items).some((id) => id.indexOf('potion_') === 0), 'k215：potion_* 死占位应已删除');
+['potion_hemostatic_cloth', 'potion_painkiller_herb', 'potion_energy_brew', 'potion_antidote_basic'].forEach((id) => {
+  assert(!items[id], 'k215：死占位 ' + id + ' 应已删除');
+});
 ok('k215：4 件 potion_* 死占位已删除并重建');
 
 console.log('\n⑤ use_action 四途径分流');
@@ -211,14 +213,19 @@ assert.strictEqual(IU.applyItemUseEffectFromTemplate('potion_topical', { use_act
 assert.strictEqual(IU.getTopicalPartForBuff('buff_relief'), 'lhand');
 ok('外敷选部位 → 挂 buff + 登记目标部位');
 
-// 刺入：需器具（配置为空时放行）
+// 刺入：器具清单为空 → 放行；清单非空 + 背包无器具 → 门禁；有器具 → 放行
+PS.setConfig({ systemConfig: Object.assign({}, cfg, { pharmacy_inject_kit_item_ids: [] }) });
+sandbox.InventoryHelpers.getInventoryCountByItemId = () => 0;
 assert.strictEqual(IU.applyItemUseEffectFromTemplate('inj1', { use_action: 'inject', use_buff_id: 'buff_a' }), true);
 PS.setConfig({ systemConfig: Object.assign({}, cfg, { pharmacy_inject_kit_item_ids: ['tool_syringe_pharmacy'] }) });
 assert.strictEqual(IU.applyItemUseEffectFromTemplate('inj2', { use_action: 'inject', use_buff_id: 'buff_b' }), false);
 assert.strictEqual(IU.takeLastUseFailure().reason, 'needs_inject_kit');
 sandbox.InventoryHelpers.getInventoryCountByItemId = (id) => (id === 'tool_syringe_pharmacy' ? 1 : 0);
 assert.strictEqual(IU.applyItemUseEffectFromTemplate('inj3', { use_action: 'inject', use_buff_id: 'buff_b' }), true);
-ok('刺入：器具清单为空放行 / 有清单且缺器具 → needs_inject_kit / 有器具放行');
+assert(cfg.pharmacy_inject_kit_item_ids.length >= 1, '配置表应落注射器具 id（k244）');
+assert(cfg.pharmacy_inhale_igniter_item_ids.length >= 1, '配置表应落吸入火源 id');
+PS.setConfig({ systemConfig: cfg });
+ok('刺入：清单为空放行 / 缺器具 → needs_inject_kit / 有器具放行（k244 器具 id 已落配置）');
 
 // 吸入：需火源
 PS.setConfig({ systemConfig: Object.assign({}, cfg, { pharmacy_inhale_igniter_item_ids: ['supply_flint_fire'] }) });
@@ -238,6 +245,7 @@ ok('途径白名单：pharmacy_use_routes 收窄后拒绝该途径');
 
 // 联合注射液：一次挂多成分 buff
 buffs.clear();
+sandbox.InventoryHelpers.getInventoryCountByItemId = (id) => (id === 'tool_syringe_pharmacy' ? 1 : 0);
 assert.strictEqual(IU.applyItemUseEffectFromTemplate('inj_multi', { use_action: 'inject', use_buff_ids: ['buff_m1', 'buff_m2'] }), true);
 assert(buffs.has('player|buff_m1') && buffs.has('player|buff_m2'), '多成分 buff 应全部挂上');
 ok('联合注射液：use_buff_ids 多成分一次滴注');
@@ -282,5 +290,265 @@ ok('stack_limit=1 的物品不合并（口径与数据一致）');
 assert(!readText('tools/build-items-json.mjs').includes('所有物品可堆叠数固定为 1'), 'build 不应再强制 stack_limit=1');
 assert(readText('js/inventory-equipment.js').includes('tpl.stack_limit'), '运行时 getMaxStack 应读取 stack_limit');
 ok('build 落 stack_limit + 运行时读 stack_limit（字段名一致）');
+
+console.log('\n⑦ k233 剂型 buff 矩阵（源表 → buffs.json）');
+const matrix = loadJson('data/pharmacy-buff-matrix.json');
+const buffsDoc = loadJson('data/buffs.json');
+const buffById = {};
+buffsDoc.buffs.forEach((b) => { if (b && b.buff_id) buffById[b.buff_id] = b; });
+
+let cellCount = 0;
+const missingCells = [];
+const routeMismatch = [];
+Object.keys(matrix.families).forEach((family) => {
+  const fam = matrix.families[family];
+  fam.routes.forEach((route) => {
+    Object.keys(matrix.potency_profiles).forEach((potency) => {
+      cellCount++;
+      const id = 'buff_pharm_' + family + '_' + route + '_' + potency;
+      const tpl = buffById[id];
+      if (!tpl) { missingCells.push(id); return; }
+      const rp = matrix.route_profiles[route];
+      if (tpl.onsetTicks !== rp.onset_ticks || tpl.durationTicks !== rp.duration_ticks) routeMismatch.push(id);
+    });
+  });
+});
+assert.strictEqual(missingCells.join(','), '', '矩阵有效格子应全部落成 buff：' + missingCells.slice(0, 5).join(','));
+assert.strictEqual(routeMismatch.join(','), '', '生效时间/持续时间应取自途径档：' + routeMismatch.slice(0, 5).join(','));
+ok('剂型矩阵 ' + cellCount + ' 个有效格子（family × route × potency）全部生成');
+
+// 峰值缩放：inject 峰值 1.0 × potent 1.5 = 1.5；drink 0.8 × weak 0.5 = 0.4
+const stimInjectPotent = buffById['buff_pharm_stimulant_inject_potent'];
+const stimDrinkWeak = buffById['buff_pharm_stimulant_drink_weak'];
+const energyOf = (tpl) => (tpl.effects.find((e) => e.type === 'survival_delta') || { params: {} }).params.energy;
+assert.strictEqual(energyOf(stimInjectPotent), 1.8, '注射·强效 兴奋 energy = 1.2×1.0×1.5');
+assert.strictEqual(energyOf(stimDrinkWeak), 0.48, '口服·弱效 兴奋 energy = 1.2×0.8×0.5');
+assert.strictEqual(stimInjectPotent.onsetTicks, 0, '注射立即生效');
+assert.strictEqual(stimDrinkWeak.onsetTicks, 5, '口服 5 tick 起效');
+ok('峰值强度 = 途径峰值 × potency 档（注射强效 1.8 / 口服弱效 0.48）');
+
+// 部位性只有外敷：mobility 无全身格子；全身族无外敷格子
+assert.strictEqual(matrix.families.mobility.routes.join(','), 'topical', '活络仅外敷');
+Object.keys(matrix.families).forEach((f) => {
+  if (f === 'mobility' || f === 'coagulant') return;
+  assert(!matrix.families[f].routes.includes('topical'), f + ' 不应有外敷格子（全身性效果）');
+});
+ok('作用域约束：部位性仅外敷、全身性不含外敷');
+
+['buff_pharm_sideeffect_mild', 'buff_pharm_sideeffect_moderate', 'buff_pharm_sideeffect_severe',
+  'buff_pharm_conflict_settle_mild', 'buff_pharm_conflict_toxic_severe',
+  'buff_pharm_addiction_stage2', 'buff_pharm_addiction_stage3', 'buff_pharm_addiction_stage4'
+].forEach((id) => assert(buffById[id], id + ' 应存在'));
+ok('副作用 3 档 / 相冲 2 结局 / 成瘾 3 阶段惩罚模板齐备');
+
+console.log('\n⑧ 生效时间（onsetTicks）运行时行为');
+const buffSandbox = {
+  console: { log() {}, warn() {}, error() {} },
+  fetch: async (p) => ({ ok: true, json: async () => loadJson(String(p)) }),
+  GameTime: {
+    tick: 0,
+    getState() { return { totalTicks: this.tick, year: 1, dayOfYear: 1, hour: 8, minute: 0, timePeriod: 'morning' }; },
+    advanceTicks(n) { this.tick += Math.max(0, Math.floor(Number(n) || 0)); }
+  }
+};
+vm.createContext(buffSandbox);
+vm.runInContext(readText('js/survival.js'), buffSandbox, { filename: 'survival.js' });
+vm.runInContext(readText('js/character-attributes.js'), buffSandbox, { filename: 'character-attributes.js' });
+vm.runInContext(readText('js/buff-system.js'), buffSandbox, { filename: 'buff-system.js' });
+const S3 = buffSandbox.Survival;
+const BS3 = buffSandbox.BuffSystem;
+const CA3 = buffSandbox.CharacterAttributes;
+const survCfg = loadJson('data/survival-config.json');
+S3.setConfig(survCfg);
+CA3.setConfig(survCfg);
+BS3.init();
+for (let i = 0; i < 200 && !BS3.getState().loaded; i++) await new Promise((r) => setTimeout(r, 10));
+assert(BS3.getState().loaded, 'BuffSystem 载入真实 buffs.json');
+assert(BS3.getState().templateCount >= 160, 'buffs.json 模板数含制药矩阵（' + BS3.getState().templateCount + '）');
+
+S3.setState({ mood: 500, dirtyness: 50, stamina: 100, energy: 100 });
+BS3.applyBuff('player', 'buff_pharm_sedative_drink_regular', 'test:smoke');
+assert(BS3.hasBuffByBuffId('player', 'buff_pharm_sedative_drink_regular'), '口服镇静 buff 在场');
+S3.advanceTick();
+S3.advanceTick();
+S3.advanceTick();
+S3.advanceTick();
+assert.strictEqual(S3.getState().mood, 500, 'onset 未到（4/5 tick）→ 心情不涨（效果未结算）');
+S3.advanceTick();
+assert(S3.getState().mood > 500, 'onset 到达（5 tick）→ 心情开始上涨（实际 ' + S3.getState().mood + '）');
+ok('口服 5 tick 起效：前 4 tick 无效、第 5 tick 起生效');
+
+BS3.removeBuffByBuffId('player', 'buff_pharm_sedative_drink_regular');
+BS3.applyBuff('player', 'buff_pharm_stimulant_inject_potent', 'test:smoke');
+const speed = BS3.getBattleMoveSpeedMultiplier('player');
+assert(Math.abs(speed - 1.12) < 1e-6, '注射强效兴奋出手速度乘区 = 1 + 0.08×1.5 = 1.12（实际 ' + speed + '）');
+ok('注射立即生效：出手速度乘区 1.12');
+
+console.log('\n⑨ k242 成瘾四阶段 / k240 毒性代谢与致死倒计时');
+buffSandbox.SceneCtx = {};
+let immunityLevel = 0;
+let deathReason = '';
+buffSandbox.InventoryEquipment = {
+  getSkillLevel(id) { return id === 'survival_immunity' ? immunityLevel : 0; },
+  getState() { return { equipment: {}, skills: {} }; },
+  getItemTemplate() { return null; },
+  getEnchantEntry() { return null; }
+};
+buffSandbox.Survival.setDead = function (reason) { deathReason = String(reason || ''); };
+vm.runInContext(readText('js/pharmacy-config.js'), buffSandbox, { filename: 'pharmacy-config.js' });
+vm.runInContext(readText('js/pharmacy-effects.js'), buffSandbox, { filename: 'pharmacy-effects.js' });
+const PE = buffSandbox.PharmacyEffects;
+assert(PE, 'PharmacyEffects 模块装载失败');
+PE.setConfig(PC.parseCsv(pharmacyCsv));
+CA3.setState(CA3.getDefaultState());
+// 清掉 ⑧ 留下的强效注射 buff（否则阶段二起就一直被 potency 压制）
+BS3.removeBuffByBuffId('player', 'buff_pharm_stimulant_inject_potent');
+BS3.setBuffStateListener(function (ownerId) { PE.onBuffStateChanged(ownerId); });
+PE.resetState();
+
+// 途径增量：外敷 0 / 口服 +4 / 刺入 +15（联合按成分数累加）
+assert.strictEqual(PE.getRouteGain('topical'), 0, '外敷不涨瘾');
+assert.strictEqual(PE.getRouteGain('drink'), 4, '口服增量 4');
+assert.strictEqual(PE.getRouteGain('inject'), 15, '刺入增量 15');
+assert.strictEqual(PE.addAddictionFromRoute('topical'), 0, '外敷用药后成瘾仍为 0');
+assert.strictEqual(PE.addAddictionFromRoute('drink'), 4, '口服一次 → 4');
+assert.strictEqual(PE.addAddictionFromRoute('inject', 3), 49, '联合注射液 3 成分 → 4 + 15×3 = 49');
+ok('途径增量与联合累加（外敷恒 0）');
+
+// 四阶段阈值 + 阶段惩罚 buff + 乘区
+assert.strictEqual(PE.getAddictionStage(24), 1);
+assert.strictEqual(PE.getAddictionStage(49), 2);
+assert.strictEqual(PE.getAddictionStage(60), 3);
+assert.strictEqual(PE.getAddictionStage(80), 4);
+assert.strictEqual(PE.getState().stage, 2, '成瘾 49 → 阶段二');
+assert(BS3.hasBuffByBuffId('player', 'buff_pharm_addiction_stage2'), '阶段二惩罚 buff 在场');
+assert(Math.abs(CA3.getExternalAcquiredMultiplier().jingu - 0.9) < 1e-9, '阶段二五维 ×0.90');
+ok('四阶段阈值 + 阶段惩罚（−10%/−20%/−35%）');
+
+// 压制：入体途径 potency 够档 → 惩罚暂时取消（§4.4）
+BS3.applyBuff('player', 'buff_pharm_stimulant_inject_weak', 'test');
+assert(PE.isPenaltySuppressed(), '阶段二 + 弱效注射药 → 压制成立');
+assert(Math.abs(CA3.getExternalAcquiredMultiplier().jingu - 1) < 1e-9, '压制期间五维乘区恢复 1.0');
+BS3.removeBuffByBuffId('player', 'buff_pharm_stimulant_inject_weak');
+PE.addAddiction(15); // 49+15=64 → 阶段三（需 ≥regular）
+assert.strictEqual(PE.getState().stage, 3, '成瘾 64 → 阶段三');
+BS3.applyBuff('player', 'buff_pharm_stimulant_inject_weak', 'test');
+assert(!PE.isPenaltySuppressed(), '阶段三：弱效压不住');
+BS3.removeBuffByBuffId('player', 'buff_pharm_stimulant_inject_weak');
+BS3.applyBuff('player', 'buff_pharm_stimulant_inject_regular', 'test');
+assert(PE.isPenaltySuppressed(), '阶段三：常效可压');
+BS3.removeBuffByBuffId('player', 'buff_pharm_stimulant_inject_regular');
+ok('potency 压制门槛（阶段二 ≥weak / 阶段三 ≥regular）');
+
+// 免疫三向接线（§4.5）
+immunityLevel = 100;
+assert(PE.getRouteGain('inject') < 15 * 0.06 && PE.getRouteGain('inject') > 0, '免疫 100 级 → 累积增量大幅减免');
+const beforeDecay = PE.getAddiction();
+PE.onWorldTick();
+const decayWithImmunity = beforeDecay - PE.getAddiction();
+immunityLevel = 0;
+assert(decayWithImmunity > 0.05, '免疫加速自然衰减（' + decayWithImmunity.toFixed(3) + ' > 0.05）');
+ok('免疫接线：累积减免 + 衰减加速');
+
+// 毒性：档位映射 + 代谢衰减 + 致死倒计时
+PE.setState({ addiction: 0, toxicity: 0, toxicity_lethal_ticks: 0, last_band: 'none', lethal_active: false });
+PE.clearAllBuffs();
+PE.addToxicity(10);
+assert.strictEqual(PE.getToxicityBand(), 'mild', '毒性 10 → 轻');
+assert(BS3.hasBuffByBuffId('player', 'buff_pharm_sideeffect_mild'), '轻度副作用 buff 在场');
+PE.addToxicity(20); // 30 → 中
+assert.strictEqual(PE.getToxicityBand(), 'moderate', '毒性 30 → 中');
+assert(BS3.hasBuffByBuffId('player', 'buff_pharm_sideeffect_moderate'), '中度副作用 buff 换档');
+assert(!BS3.hasBuffByBuffId('player', 'buff_pharm_sideeffect_mild'), '轻度副作用 buff 已移除');
+PE.addToxicity(30); // 60 → 重
+assert.strictEqual(PE.getToxicityBand(), 'severe', '毒性 60 → 重');
+PE.onWorldTick();
+assert(PE.isLethalCountdownActive(), '重档 → 致死倒计时启动');
+assert(PE.getLethalTicksRemaining() === 39, '倒计时上限 40（已走 1 tick）');
+PE.accelerateToxicityDecay(100);
+assert.strictEqual(PE.getToxicityBand(), 'none', '解毒加速 → 毒性清空');
+PE.onWorldTick();
+assert(!PE.isLethalCountdownActive(), '降到重档之下 → 倒计时清零');
+ok('毒性档位映射 + 解毒清空 + 倒计时脱离');
+
+// 走完倒计时 → setDead('drug_toxicity')
+// 注：自然衰减 1/tick + 重档门槛 56 + 倒计时 40 → 需初始毒性 ≥96 才可能在致命区待满 40 tick
+// （47 §9.2 数值标 ❓，k246 收口时需调平衡；此处按当前配置验证链路本身）。
+deathReason = '';
+PE.addToxicity(100);
+let guard = 0;
+while (!deathReason && guard < 200) { PE.onWorldTick(); guard++; }
+assert.strictEqual(deathReason, 'drug_toxicity', '倒计时走完 → 死亡原因 drug_toxicity');
+ok('致死链：体内毒性 ≥56 累计 ' + guard + ' tick → setDead(drug_toxicity)');
+
+console.log('\n⑩ 首版配方链（47 §6：前处理 → 中间品 → 剂型成品）');
+const recipesDoc = loadJson('data/recipes.json');
+const pharmacyRecipes = Object.keys(recipesDoc.recipes)
+  .map((k) => recipesDoc.recipes[k])
+  .filter((r) => r && r.recipe_system === 'life_pharmacy');
+assert(pharmacyRecipes.length >= 20, '制药配方应 ≥20 条（实际 ' + pharmacyRecipes.length + '）');
+
+const badItemRefs = [];
+const badMethods = [];
+pharmacyRecipes.forEach((r) => {
+  if (!recipeMethods.methods[r.method_id]) badMethods.push(r.recipe_id + ':' + r.method_id);
+  (r.inputs || []).forEach((row) => { if (!items[row.item_id]) badItemRefs.push(r.recipe_id + ':' + row.item_id); });
+  if (r.main_output && !items[r.main_output.item_id]) badItemRefs.push(r.recipe_id + ':' + r.main_output.item_id);
+});
+assert.strictEqual(badItemRefs.join(','), '', '配方引用的物品应全部存在：' + badItemRefs.slice(0, 4).join(','));
+assert.strictEqual(badMethods.join(','), '', '配方引用的方法应全部存在：' + badMethods.join(','));
+ok('首版 ' + pharmacyRecipes.length + ' 条配方：物品/方法引用全部可解析');
+
+// 多级链：赤花藤 →(crushing) 药粉 →(maceration) 提神汤液
+run('recipe-system.js');
+sandbox.RecipeSystem.setTables(recipesDoc, recipeMethods, loadJson('data/life-skill-recipe-interfaces.json'));
+// 注册与 scene-app 同口径的制药处理器（processor.life_pharmacy.default）
+sandbox.RecipeSystem.registerProcessor('processor.life_pharmacy.default', function (payload) {
+  var recipe = (payload && payload.recipe) || {};
+  var route = (payload && payload.route) || {};
+  var method = (payload && payload.method) || {};
+  return {
+    selected_recipe_id: payload && payload.recipe_id ? String(payload.recipe_id) : '',
+    method_id: method && method.method_id != null ? String(method.method_id) : '',
+    route: route,
+    main_output: recipe.main_output || null,
+    bonus_outputs: Array.isArray(recipe.bonus_outputs) ? recipe.bonus_outputs : [],
+    failure_output: route.failure_output || null,
+    base_success_rate: route.base_success_rate != null ? route.base_success_rate : (method.base_success_rate != null ? method.base_success_rate : null)
+  };
+});
+sandbox.SceneCtx.pharmacy_station_runtime = sandbox.PharmacyStation.createDefaultState();
+sandbox.PharmacyStation.setConfig({ methods: recipeMethods.methods, recipes: pharmacyRecipes, systemConfig: cfg });
+
+const stage1 = PS.tryResolvePharmacyByUnifiedRoute('life_pharmacy.crushing', [{ item_id: 'herb_vine_red', count: 1 }]);
+assert(stage1.ok, '前处理配方应命中：' + JSON.stringify(stage1.error || {}));
+assert.strictEqual(stage1.data.main_output.item_id, 'med_vine_red_powder', '赤花藤 →(粉碎) 赤花藤药粉');
+
+const stage2 = PS.tryResolvePharmacyByUnifiedRoute('life_pharmacy.maceration', [
+  { item_id: 'med_vine_red_powder', count: 1 },
+  { item_id: 'solvent_water_pure', count: 1 }
+]);
+assert(stage2.ok, '终制配方应命中：' + JSON.stringify(stage2.error || {}));
+assert.strictEqual(stage2.data.main_output.item_id, 'potion_tonic_broth', '赤花藤粉 + 纯净水 →(浸渍) 提神汤液');
+const broth = items.potion_tonic_broth;
+assert.strictEqual(broth.use_action, 'drink');
+assert.strictEqual(broth.use_buff_id, 'buff_pharm_stimulant_drink_weak');
+ok('多级链贯通：生药材 → 中间品药粉 → 剂型成品（含 use_action/use_buff_id 契约）');
+
+// 端到端结算：满级必成 → 产出提神汤液（而非药渣）
+grantedItems.length = 0;
+skillState.life_pharmacy.level = 100;
+skillState.life_pharmacy.move_usage = {};
+sandbox.SceneCtx.pharmacy_station_runtime.active_craft = {
+  remaining_ticks: 1,
+  method_id: 'life_pharmacy.maceration',
+  inputs: [{ item_id: 'med_vine_red_powder', count: 1 }, { item_id: 'solvent_water_pure', count: 1 }],
+  consumed_items: [{ item_id: 'med_vine_red_powder', count: 1 }, { item_id: 'solvent_water_pure', count: 1 }]
+};
+PS.finalizeCraftNow(null);
+assert(grantedItems.includes('potion_tonic_broth'), '端到端结算应产出提神汤液（实际 ' + grantedItems.join(',') + '）');
+assert(skillState.life_pharmacy.move_usage.pharmacy_success === 1, '成功制作 +1 熟练度');
+assert(sandbox.SceneCtx.known_recipe_ids_by_system.life_pharmacy['life_pharmacy.brew_tonic_broth'] === true, '盲配成功写图鉴（双写）');
+ok('端到端：投料 → 成功 → 产出剂型 + 熟练度 +1 + 图鉴解锁');
 
 console.log('\n[smoke-pharmacy] ' + pass + ' 组断言全部通过');

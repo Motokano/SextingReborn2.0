@@ -111,6 +111,17 @@
         return migrateLegacyCookingRecipeIdList(normalizeRecipeIdArray(sceneCtx.known_cooking_recipes));
     }
 
+    /** 制药图鉴（47 §7）：known_recipe_ids_by_system.life_pharmacy / known_pharmacy_recipes 双读。 */
+    function deriveKnownPharmacyRecipeIds(sceneCtx) {
+        if (!sceneCtx || typeof sceneCtx !== 'object') return [];
+        var bySystem = sceneCtx.known_recipe_ids_by_system;
+        if (bySystem && typeof bySystem === 'object') {
+            var idsFromNew = normalizeRecipeIdArray(bySystem.life_pharmacy);
+            if (idsFromNew.length > 0) return idsFromNew;
+        }
+        return normalizeRecipeIdArray(sceneCtx.known_pharmacy_recipes);
+    }
+
     function normalizeSceneUiKnownRecipes(sceneUi) {
         if (!sceneUi || typeof sceneUi !== 'object') return sceneUi;
         var ids = [];
@@ -413,6 +424,49 @@
                 var kra = deriveKnownCookingRecipeIds(global.SceneCtx);
                 su.known_cooking_recipe_ids = kra.slice();
                 su.known_recipe_ids_by_system = { cooking: kra.slice() };
+                // 制药站点运行时（k128 补齐：原先未持久化，读档丢燃料/配件/进行中制作）
+                var pstSnap = global.SceneCtx.pharmacy_station_runtime;
+                if (pstSnap && typeof pstSnap === 'object') {
+                    su.pharmacy_station = {
+                        fuel_points: coerceNumber(pstSnap.fuel_points, 0),
+                        water_points: coerceNumber(pstSnap.water_points, 0),
+                        water_unlimited: !!(pstSnap.water_unlimited === true || pstSnap.water_unlimited === 'true' || pstSnap.water_unlimited === 1),
+                        installed_accessory_item_ids: Array.isArray(pstSnap.installed_accessory_item_ids) ? pstSnap.installed_accessory_item_ids.slice() : []
+                    };
+                    if (pstSnap.active_craft && typeof pstSnap.active_craft === 'object') {
+                        var pac = pstSnap.active_craft;
+                        su.pharmacy_station.active_craft = {
+                            remaining_ticks: coerceNumber(pac.remaining_ticks, 0),
+                            started_total_ticks: coerceNumber(pac.started_total_ticks, 0),
+                            method_id: pac.method_id != null ? String(pac.method_id) : '',
+                            inputs: Array.isArray(pac.inputs) ? pac.inputs.slice() : [],
+                            consumed_items: Array.isArray(pac.consumed_items) ? pac.consumed_items.slice() : []
+                        };
+                        if (pac.station_ref && typeof pac.station_ref === 'object') {
+                            su.pharmacy_station.active_craft.station_ref = {
+                                station_type: pac.station_ref.station_type != null ? String(pac.station_ref.station_type) : '',
+                                map_id: pac.station_ref.map_id != null ? String(pac.station_ref.map_id) : '',
+                                x: coerceNumber(pac.station_ref.x, 0),
+                                y: coerceNumber(pac.station_ref.y, 0)
+                            };
+                        }
+                    }
+                }
+                // 制药图鉴（47 §7 盲配解锁：life_pharmacy 配方已学集合）
+                var kpr = deriveKnownPharmacyRecipeIds(global.SceneCtx);
+                if (kpr.length) su.known_recipe_ids_by_system.life_pharmacy = kpr.slice();
+                // 药物负担/毒性（47 §4/§9.2，k242/k240）
+                var pfe = global.SceneCtx.pharmacy_effects;
+                if (pfe && typeof pfe === 'object') {
+                    su.pharmacy_effects = {
+                        addiction: coerceNumber(pfe.addiction, 0),
+                        toxicity: coerceNumber(pfe.toxicity, 0),
+                        toxicity_lethal_ticks: coerceNumber(pfe.toxicity_lethal_ticks, 0),
+                        stage: coerceNumber(pfe.stage, 1),
+                        last_band: pfe.last_band != null ? String(pfe.last_band) : 'none',
+                        lethal_active: pfe.lethal_active === true
+                    };
+                }
                 if (global.SceneCtx.agriculture_unlocked === true) {
                     su.agriculture_unlocked = true;
                 }
@@ -655,6 +709,56 @@
                     ? global.SceneCtx.known_recipe_ids_by_system
                     : {};
                 global.SceneCtx.known_recipe_ids_by_system.cooking = Array.isArray(su.known_cooking_recipe_ids) ? su.known_cooking_recipe_ids.slice() : [];
+                // 制药站点运行时（k128 补齐）
+                if (su && su.pharmacy_station && typeof su.pharmacy_station === 'object') {
+                    var pst = su.pharmacy_station;
+                    global.SceneCtx.pharmacy_station_runtime = {
+                        fuel_points: coerceNumber(pst.fuel_points, 0),
+                        water_points: coerceNumber(pst.water_points, 0),
+                        water_unlimited: !!(pst.water_unlimited === true || pst.water_unlimited === 'true' || pst.water_unlimited === 1),
+                        installed_accessory_item_ids: Array.isArray(pst.installed_accessory_item_ids) ? pst.installed_accessory_item_ids.slice() : []
+                    };
+                    if (pst.active_craft && typeof pst.active_craft === 'object') {
+                        var pac2 = pst.active_craft;
+                        global.SceneCtx.pharmacy_station_runtime.active_craft = {
+                            remaining_ticks: Math.max(0, Math.floor(coerceNumber(pac2.remaining_ticks, 0))),
+                            started_total_ticks: Math.max(0, Math.floor(coerceNumber(pac2.started_total_ticks, 0))),
+                            method_id: pac2.method_id != null ? String(pac2.method_id) : '',
+                            inputs: Array.isArray(pac2.inputs) ? pac2.inputs.slice() : [],
+                            consumed_items: Array.isArray(pac2.consumed_items) ? pac2.consumed_items.slice() : []
+                        };
+                        if (pac2.station_ref && typeof pac2.station_ref === 'object') {
+                            global.SceneCtx.pharmacy_station_runtime.active_craft.station_ref = {
+                                station_type: pac2.station_ref.station_type != null ? String(pac2.station_ref.station_type) : '',
+                                map_id: pac2.station_ref.map_id != null ? String(pac2.station_ref.map_id) : '',
+                                x: Math.floor(coerceNumber(pac2.station_ref.x, 0)),
+                                y: Math.floor(coerceNumber(pac2.station_ref.y, 0))
+                            };
+                        }
+                    }
+                }
+                // 制药图鉴
+                var kprRestore = [];
+                if (su && su.known_recipe_ids_by_system && Array.isArray(su.known_recipe_ids_by_system.life_pharmacy)) {
+                    kprRestore = normalizeRecipeIdArray(su.known_recipe_ids_by_system.life_pharmacy);
+                }
+                global.SceneCtx.known_pharmacy_recipes = {};
+                var kpri;
+                for (kpri = 0; kpri < kprRestore.length; kpri++) {
+                    if (kprRestore[kpri]) global.SceneCtx.known_pharmacy_recipes[String(kprRestore[kpri])] = true;
+                }
+                global.SceneCtx.known_recipe_ids_by_system.life_pharmacy = kprRestore.slice();
+                // 药物负担/毒性（k242/k240）
+                if (su && su.pharmacy_effects && typeof su.pharmacy_effects === 'object') {
+                    global.SceneCtx.pharmacy_effects = {
+                        addiction: Math.max(0, Math.min(100, coerceNumber(su.pharmacy_effects.addiction, 0))),
+                        toxicity: Math.max(0, coerceNumber(su.pharmacy_effects.toxicity, 0)),
+                        toxicity_lethal_ticks: Math.max(0, Math.floor(coerceNumber(su.pharmacy_effects.toxicity_lethal_ticks, 0))),
+                        stage: Math.max(1, Math.min(4, Math.floor(coerceNumber(su.pharmacy_effects.stage, 1)))),
+                        last_band: su.pharmacy_effects.last_band != null ? String(su.pharmacy_effects.last_band) : 'none',
+                        lethal_active: su.pharmacy_effects.lethal_active === true
+                    };
+                }
             } catch (eAb) { /* ignore */ }
         }
 

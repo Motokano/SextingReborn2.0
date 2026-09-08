@@ -1,0 +1,34 @@
+{
+  "_comment": "制药首版配方全表（47 §6：前处理 → 中间品；终制 → 剂型成品）。tools/build-pharmacy-recipes.mjs 合并进 data/recipes.json（按 recipe_id 幂等覆盖，带 pharmacy_generated 标记）。数值为 ❓ 首版草稿。",
+  "schema_version": "1.0.0",
+  "recipes": [
+    { "recipe_id": "life_pharmacy.crush_coca_powder", "method_id": "life_pharmacy.crushing", "inputs": [["herb_coca", 1]], "main_output": ["med_cocaine_powder", 2] },
+    { "recipe_id": "life_pharmacy.crush_poppy_powder", "method_id": "life_pharmacy.crushing", "inputs": [["herb_poppy", 1]], "main_output": ["med_morphine_powder", 2] },
+    { "recipe_id": "life_pharmacy.crush_ergot_powder", "method_id": "life_pharmacy.crushing", "inputs": [["herb_ergot", 1]], "main_output": ["med_lsd_powder", 2] },
+    { "recipe_id": "life_pharmacy.crush_datura_powder", "method_id": "life_pharmacy.crushing", "inputs": [["herb_datura", 1]], "main_output": ["med_scopolamine_powder", 2] },
+    { "recipe_id": "life_pharmacy.crush_ephedra_powder", "method_id": "life_pharmacy.crushing", "inputs": [["herb_ephedra", 1]], "main_output": ["med_ephedrine_powder", 2] },
+    { "recipe_id": "life_pharmacy.crush_psilocybe_powder", "method_id": "life_pharmacy.crushing", "inputs": [["herb_psilocybe", 1]], "main_output": ["med_psilocybin_powder", 2] },
+    { "recipe_id": "life_pharmacy.crush_cannabis_powder", "method_id": "life_pharmacy.crushing", "inputs": [["herb_cannabis", 1]], "main_output": ["med_thc_powder", 2] },
+    { "recipe_id": "life_pharmacy.crush_vine_red_powder", "method_id": "life_pharmacy.crushing", "inputs": [["herb_vine_red", 1]], "main_output": ["med_vine_red_powder", 2] },
+    { "recipe_id": "life_pharmacy.crush_root_bitter_powder", "method_id": "life_pharmacy.crushing", "inputs": [["herb_root_bitter", 1]], "main_output": ["med_root_bitter_powder", 2] },
+    { "recipe_id": "life_pharmacy.crush_areca_powder", "method_id": "life_pharmacy.crushing", "inputs": [["herb_areca", 1]], "main_output": ["med_arecoline_powder", 2] },
+    { "recipe_id": "life_pharmacy.crush_tobacco_powder", "method_id": "life_pharmacy.crushing", "inputs": [["herb_tobacco", 1]], "main_output": ["med_nicotine_powder", 2] },
+    { "recipe_id": "life_pharmacy.crush_liver_herb_powder", "method_id": "life_pharmacy.crushing", "inputs": [["herb_liver_herb", 1]], "main_output": ["med_liver_herb_powder", 2] },
+    { "recipe_id": "life_pharmacy.crush_peganum_powder", "method_id": "life_pharmacy.crushing", "inputs": [["herb_peganum", 1]], "main_output": ["med_harmaline_powder", 2] },
+    { "recipe_id": "life_pharmacy.crush_senna_powder", "method_id": "life_pharmacy.crushing", "inputs": [["herb_senna", 1]], "main_output": ["med_senna_powder", 2] },
+    { "recipe_id": "life_pharmacy.crush_baiji_powder", "method_id": "life_pharmacy.crushing", "inputs": [["herb_baiji", 1]], "main_output": ["med_baiji_powder", 2] },
+    { "recipe_id": "life_pharmacy.crush_acorus_powder", "method_id": "life_pharmacy.crushing", "inputs": [["herb_acorus", 1]], "main_output": ["med_acorus_powder", 2] },
+    { "recipe_id": "life_pharmacy.crush_antler_powder", "method_id": "life_pharmacy.crushing", "inputs": [["herb_deer_antler", 1]], "main_output": ["med_antler_powder", 2] },
+
+    { "recipe_id": "life_pharmacy.macerate_rehydration_powder", "method_id": "life_pharmacy.maceration", "inputs": [["ore_salt_sea", 1], ["ore_water_pure_soft", 1]], "main_output": ["med_rehydration_powder", 2] },
+    { "recipe_id": "life_pharmacy.macerate_glucose_powder", "method_id": "life_pharmacy.maceration", "inputs": [["herb_sugarcane", 1], ["ore_water_pure_soft", 1]], "main_output": ["med_glucose_powder", 2] },
+    { "recipe_id": "life_pharmacy.macerate_cardiac_powder", "method_id": "life_pharmacy.maceration", "inputs": [["hus_pork_heart", 1], ["ore_water_pure_soft", 1]], "main_output": ["med_cardiac_powder", 2] },
+
+    { "recipe_id": "life_pharmacy.brew_tonic_broth", "method_id": "life_pharmacy.maceration", "inputs": [["med_vine_red_powder", 1], ["solvent_water_pure", 1]], "main_output": ["potion_tonic_broth", 1] },
+    { "recipe_id": "life_pharmacy.roll_tonic_cigarette", "method_id": "life_pharmacy.tableting", "inputs": [["med_nicotine_powder", 1], ["herb_tobacco", 1]], "main_output": ["potion_tonic_cigarette", 1] },
+    { "recipe_id": "life_pharmacy.press_analgesic_pill", "method_id": "life_pharmacy.tableting", "inputs": [["med_root_bitter_powder", 1], ["solvent_water_pure", 1]], "main_output": ["potion_analgesic_pill", 1] },
+    { "recipe_id": "life_pharmacy.blend_mobility_salve", "method_id": "life_pharmacy.maceration", "inputs": [["med_root_bitter_powder", 1], ["hus_pork_lard", 1]], "main_output": ["potion_mobility_salve", 1] },
+    { "recipe_id": "life_pharmacy.mix_rehydration_injection", "method_id": "life_pharmacy.maceration", "inputs": [["med_rehydration_powder", 1], ["solvent_saline", 1]], "main_output": ["potion_rehydration_injection", 1] },
+    { "recipe_id": "life_pharmacy.mix_cardiac_injection", "method_id": "life_pharmacy.maceration", "inputs": [["med_cardiac_powder", 1], ["solvent_saline", 1]], "main_output": ["potion_cardiac_injection", 1] }
+  ]
+}

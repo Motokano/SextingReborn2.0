@@ -1,0 +1,46 @@
+{
+  "_comment": "制药配伍相冲表（47 §10.2/§10.3，k225 数据部分）。类别级匹配：注射液各成分的 chem_class 两两比对，命中即按 outcome 授予结局 buff。相冲在注射后结算（配药时不提示），见 §10.4。",
+  "schema_version": "1.0.0",
+  "outcome_buffs": {
+    "settle_mild": "buff_pharm_conflict_settle_mild",
+    "toxic_severe": "buff_pharm_conflict_toxic_severe"
+  },
+  "_skip_comment": "相冲判定豁免（§9.1 助剂是成盐助溶物、溶媒是底液、功能成分无副作用）：这些成分不参与两两相冲。药成分（toxicity>0）与辅成分（toxicity<0）参与——§9.7 明说骆驼蓬碱带相冲风险。",
+  "skip": {
+    "missing_chem_class": true,
+    "toxicity_zero": true,
+    "sub_categories": ["solvent", "pharm_adjuvant"]
+  },
+  "rules": [
+    {
+      "rule_id": "alkaloid_tannin",
+      "chem_classes": ["alkaloid", "tannin"],
+      "outcome": "settle_mild",
+      "desc": "生物碱遇鞣质 → 沉淀，药白打还带闷"
+    },
+    {
+      "rule_id": "acid_alkaloid",
+      "chem_classes": ["organic_acid", "alkaloid"],
+      "outcome": "settle_mild",
+      "desc": "酸性与碱性（生物碱）中和 → 析出沉淀"
+    },
+    {
+      "rule_id": "glycoside_mineral",
+      "chem_classes": ["glycoside", "mineral"],
+      "outcome": "toxic_severe",
+      "desc": "强心苷遇钙盐 → 心律毒性（重症）"
+    },
+    {
+      "rule_id": "volatile_oil_tannin",
+      "chem_classes": ["volatile_oil", "tannin"],
+      "outcome": "settle_mild",
+      "desc": "挥发油遇鞣质 → 络合失效沉淀"
+    },
+    {
+      "rule_id": "acid_glycoside",
+      "chem_classes": ["organic_acid", "glycoside"],
+      "outcome": "settle_mild",
+      "desc": "酸性水解苷类 → 析出、药效减半"
+    }
+  ]
+}
