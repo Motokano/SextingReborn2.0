@@ -720,4 +720,26 @@ assert.strictEqual(IU.applyUseActionRoute('potion_compound_injection', items.pot
 assert(Math.abs(toxAddedTotal - 95) < 0.6, '洁净针具：只算净毒性 95（实际 ' + toxAddedTotal + '）');
 ok('注射全链路：卫生状态参与毒性结算');
 
+console.log('\n⑭ k246 §8 收口（多次用量 / 调和·卷制 method）');
+// 一盒多次用量：药膏 use_charges=3
+assert.strictEqual(items.potion_mobility_salve.use_charges, 3, '活络药膏模板声明 3 次用量');
+assert(readText('js/inventory-equipment.js').includes('inst.charges'), '实例复制保留 charges（剩余次数不丢）');
+assert(readText('js/scene-app.js').includes('item.use.charges_left'), '使用流程处理次数递减与提示');
+ok('外敷按次用量（模板 use_charges → 实例 charges 递减）');
+
+// 新 method：调和 / 卷制 + 配件物品
+['life_pharmacy.blending', 'life_pharmacy.rolling'].forEach((mid) => {
+  assert(recipeMethods.methods[mid], mid + ' 方法已登记');
+});
+assert.strictEqual(recipeMethods.methods['life_pharmacy.blending'].requires_accessory_item_id, 'tool_mortar_pharmacy');
+assert.strictEqual(recipeMethods.methods['life_pharmacy.rolling'].requires_accessory_item_id, 'tool_roller_pharmacy');
+assert(items.tool_mortar_pharmacy && items.tool_roller_pharmacy, '药钵 / 卷药器物品已落库');
+const salveRecipe = recipesDoc.recipes['life_pharmacy.blend_mobility_salve'];
+const cigRecipe = recipesDoc.recipes['life_pharmacy.roll_tonic_cigarette'];
+assert.strictEqual(salveRecipe.method_id, 'life_pharmacy.blending', '活络药膏走调和');
+assert.strictEqual(cigRecipe.method_id, 'life_pharmacy.rolling', '提神药烟走卷制');
+const uiT = loadJson('data/ui_text_zhCN.json');
+assert(uiT['pharmacy.method.blending'] && uiT['pharmacy.method.rolling'], '调和 / 卷制显示名已配');
+ok('新 method（调和 / 卷制）+ 配件物品 + 配方切换');
+
 console.log('\n[smoke-pharmacy] ' + pass + ' 组断言全部通过');

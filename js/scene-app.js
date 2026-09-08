@@ -8200,7 +8200,14 @@
             if (!options.silent) showMsg(ui('item.use.fail'), 'warn');
             return false;
         }
-        if (!ItemUse.applyItemUseEffectFromTemplate(itemId, tpl, options)) {
+        // 47 §8：一盒多次用量（药膏/散按次）——模板 use_charges>0 时按次数消耗，用尽才消失
+        var chargesMax = parseInt(tpl && tpl.use_charges, 10) || 0;
+        var curCharges = 0;
+        if (chargesMax > 0) {
+            curCharges = (taken.item && taken.item.charges != null) ? Math.max(0, parseInt(taken.item.charges, 10) || 0) : chargesMax;
+            if (curCharges <= 0) curCharges = chargesMax;
+        }
+        if (!ItemUse.applyItemUseEffectFromTemplate(itemId, tpl, { part_id: options.part_id, instance: taken.item, silent: options.silent })) {
             if (inv.putItemIntoDefaultContainer) inv.putItemIntoDefaultContainer(taken.item);
             if (!options.silent) {
                 var failInfo = (typeof ItemUse.takeLastUseFailure === 'function') ? ItemUse.takeLastUseFailure() : null;
@@ -8208,10 +8215,18 @@
             }
             return false;
         }
+        var chargesLeft = 0;
+        if (chargesMax > 0) {
+            chargesLeft = curCharges - 1;
+            if (chargesLeft > 0 && inv.putItemIntoDefaultContainer) {
+                inv.putItemIntoDefaultContainer({ item_id: itemId, count: 1, charges: chargesLeft });
+            }
+        }
         var char0 = inv.getCharacterForDisplay ? inv.getCharacterForDisplay() : null;
         var tier0 = inv.getItemDisplayTier ? inv.getItemDisplayTier(itemId, char0) : 0;
         var dispName = inv.getDisplayName ? inv.getDisplayName(tpl, tier0, char0) : itemId;
         var useOkMsg = ui('item.use.ok', { name: dispName });
+        if (chargesMax > 0 && chargesLeft > 0) useOkMsg += ' ' + ui('item.use.charges_left', { n: String(chargesLeft) });
         var expText = window.ItemUse.takeLastFoodExpGrantText();
         if (expText) useOkMsg += ' ' + expText;
         if (!options.silent) showMsg(useOkMsg, 'success');

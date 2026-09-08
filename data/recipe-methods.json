@@ -220,6 +220,52 @@
       },
       "requires_accessory_item_id": "tool_garlic_press_pharmacy"
     },
+    "life_pharmacy.blending": {
+      "method_id": "life_pharmacy.blending",
+      "recipe_system": "life_pharmacy",
+      "cost": {
+        "fuel": 8,
+        "water": 0,
+        "ticks": 2,
+        "stamina": 2
+      },
+      "base_success_rate": 0.85,
+      "required_skill_id": "life_pharmacy",
+      "recipe_processor_id": "processor.life_pharmacy.default",
+      "proficiency_usage_key": "life_pharmacy.blending",
+      "allowed_station_tags": [
+        "station_pharmacy"
+      ],
+      "unlock": [],
+      "failure_output": {
+        "item_id": "item.scrap.herb_dregs",
+        "count": 1
+      },
+      "requires_accessory_item_id": "tool_mortar_pharmacy"
+    },
+    "life_pharmacy.rolling": {
+      "method_id": "life_pharmacy.rolling",
+      "recipe_system": "life_pharmacy",
+      "cost": {
+        "fuel": 6,
+        "water": 0,
+        "ticks": 1,
+        "stamina": 2
+      },
+      "base_success_rate": 0.86,
+      "required_skill_id": "life_pharmacy",
+      "recipe_processor_id": "processor.life_pharmacy.default",
+      "proficiency_usage_key": "life_pharmacy.rolling",
+      "allowed_station_tags": [
+        "station_pharmacy"
+      ],
+      "unlock": [],
+      "failure_output": {
+        "item_id": "item.scrap.herb_dregs",
+        "count": 1
+      },
+      "requires_accessory_item_id": "tool_roller_pharmacy"
+    },
     "life_weaving.placeholder_basic": {
       "method_id": "life_weaving.placeholder_basic",
       "recipe_system": "life_weaving",

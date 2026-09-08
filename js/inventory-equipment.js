@@ -1295,6 +1295,8 @@
                 return { item_id: String(row && row.item_id != null ? row.item_id : ''), count: Math.max(1, Math.floor(Number(row && row.count) || 1)) };
             }).filter(function (row) { return !!row.item_id; });
         }
+        // 47 §8：一盒多次用量（药膏/散按次）——剩余次数随实例复制
+        if (inst.charges != null) c.charges = Math.max(0, Math.floor(Number(inst.charges) || 0));
         return c;
     }
 

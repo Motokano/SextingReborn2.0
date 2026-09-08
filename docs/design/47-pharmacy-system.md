@@ -217,18 +217,26 @@
 
 ## 8. 待定项（数值与实现排期）
 
-- 溶媒物品族（生理盐水/葡萄糖/纯水等）与获取渠道
-- 注射器/输液器：做成消耗品还是制药台配件；灭菌/针具卫生门槛如何表达
-- 联合注射液「动态合成」已定为运行时动态物品实例（`components` 列表，见 §9）；剩余待定 = 成功后图鉴如何写
-- 联合注射液多 buff 叠加/时长/成瘾累加的结算细节
-- 上瘾值途径增量 / 自然衰减速率 / 免疫减免系数（§4.1）❓
-- 药渣/失败物 id 与去向；`pharmacy-system-config.csv` 建档（§1.1）
-- 中间品与剂型 ID 族 + 首版配方全表（§6.4）
-- 外敷"多次用量"（药膏/散按次）表达
-- 新 method/配件（药膏调和、药烟卷制）确认
-- 制药台配件获取渠道（制造/贸易/藏身处升级）
-- 体温/体力/心情恢复通道（§1.1，随首批药效范围定）
-- 压制门槛与 potency 的 UI 呈现（状态栏提示"药力不足，戒断反应浮现"？）❓
+**已收口（2026-09 实现落地，k246）**
+
+- 溶媒物品族与获取渠道：`solvent_saline` / `solvent_glucose_solution` / `solvent_water_pure`（k227）。
+- 注射器/输液器：`tool_syringe_pharmacy`（可重复用）/ `tool_iv_set_pharmacy`（一次性）；卫生门槛 = 一次性器具优先消耗 → 否则消耗 1 份消毒剂（`food_wine`）→ 两样都没有则本次额外注入感染毒性（`pharmacy_dirty_injection_toxicity`，k244）。
+- 联合注射液「动态合成」：运行时实例 `{item_id: potion_compound_injection, components[]}`（`inventory copyItemInstance` 保留 components）；图鉴/统计落 `SceneCtx.pharmacy_compound_history`（成分组合键 → 族/potency/净毒性/相冲数）。
+- 多 buff 叠加/时长结算：**各成分按各自药效族的剂型 buff 独立计时**（同族合成单档、跨族并集）；时长由剂型定（注射 10 / 吸入 18 / 口服 60 / 外敷 90 tick），生效时间 `onsetTicks` 由 buff-system 统一门闸。
+- 药渣/失败物 id 与 `pharmacy-system-config.csv`：统一 `item.scrap.herb_dregs` + 建档（§1.1）。
+- 中间品与剂型 ID 族 + 首版配方全表：`data/items/pharmacy_base.csv`（52 件）+ `data/pharmacy-recipes.json`（26 条）→ `tools/build-pharmacy-recipes.mjs`。
+- 外敷「多次用量」：模板 `use_charges` → 实例 `charges` 递减（活络药膏 3 次），用尽才消失。
+- 新 method/配件：`life_pharmacy.blending`（调和，配件药钵 `tool_mortar_pharmacy`）与 `life_pharmacy.rolling`（卷制，配件卷药器 `tool_roller_pharmacy`）。
+- 压制门槛与 potency 的 UI 呈现：剂型 buff 名自带「族·途径·档位」；状态栏药瘾行显示阶段与「已压制」，毒性行显示档位与致死倒计时。
+
+**仍待定**
+
+- 上瘾值途径增量 / 自然衰减速率 / 免疫减免系数（§4.1）❓ —— 接线已完成，数值待调（`data/pharmacy-system-config.csv`）。
+- 致死窗口数值：自然衰减 1/tick + 重档门槛 56 + 倒计时 40 ⇒ 需初始毒性 ≥96 才致死（56~95 区间永不致死），平衡待调（§9.2）。
+- 制药台配件获取渠道（制造/贸易/藏身处升级）。
+- 体温恢复通道（体力/精力/心情已由兴奋/镇静族覆盖；体温无落点）。
+- 助剂与碱型主药的「必需成盐」判定表（§9.5）：当前维生素C粉既是辅成分（toxicity −15）又是助剂原型，且 chem_class=`organic_acid` 与生物碱相冲，语义冲突待裁决。
+- 各药效族的副作用风味文案（§9.5）——数值与档位已落地，文案逐族待补。
 
 ---
 

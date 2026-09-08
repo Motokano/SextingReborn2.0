@@ -1498,7 +1498,7 @@
     "life_pharmacy.roll_tonic_cigarette": {
       "recipe_id": "life_pharmacy.roll_tonic_cigarette",
       "recipe_system": "life_pharmacy",
-      "method_id": "life_pharmacy.tableting",
+      "method_id": "life_pharmacy.rolling",
       "enabled": true,
       "inputs": [
         {
@@ -1558,7 +1558,7 @@
     "life_pharmacy.blend_mobility_salve": {
       "recipe_id": "life_pharmacy.blend_mobility_salve",
       "recipe_system": "life_pharmacy",
-      "method_id": "life_pharmacy.maceration",
+      "method_id": "life_pharmacy.blending",
       "enabled": true,
       "inputs": [
         {
