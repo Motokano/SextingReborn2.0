@@ -34,7 +34,9 @@
         pharmacy_toxicity_decay_per_tick: 1,
         pharmacy_toxicity_lethal_ticks: 40,
         pharmacy_concentration_capacity: 100,
-        pharmacy_offset_rate_cap: 0.9
+        pharmacy_offset_rate_cap: 0.9,
+        pharmacy_synergy_bonus_per_unit: 0.2,
+        pharmacy_injectable_template_id: 'potion_compound_injection'
     };
 
     var USE_ROUTE_IDS = ['drink', 'topical', 'inhale', 'inject'];
@@ -157,6 +159,8 @@
         out.pharmacy_toxicity_lethal_ticks = Math.max(1, toInt(kv.pharmacy_toxicity_lethal_ticks, DEFAULTS.pharmacy_toxicity_lethal_ticks));
         out.pharmacy_concentration_capacity = Math.max(1, toNumber(kv.pharmacy_concentration_capacity, DEFAULTS.pharmacy_concentration_capacity));
         out.pharmacy_offset_rate_cap = Math.max(0, Math.min(1, toNumber(kv.pharmacy_offset_rate_cap, DEFAULTS.pharmacy_offset_rate_cap)));
+        out.pharmacy_synergy_bonus_per_unit = Math.max(0, toNumber(kv.pharmacy_synergy_bonus_per_unit, DEFAULTS.pharmacy_synergy_bonus_per_unit));
+        out.pharmacy_injectable_template_id = asText(kv.pharmacy_injectable_template_id) || DEFAULTS.pharmacy_injectable_template_id;
         return out;
     }
 

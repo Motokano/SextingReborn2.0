@@ -551,4 +551,132 @@ assert(skillState.life_pharmacy.move_usage.pharmacy_success === 1, '成功制作
 assert(sandbox.SceneCtx.known_recipe_ids_by_system.life_pharmacy['life_pharmacy.brew_tonic_broth'] === true, '盲配成功写图鉴（双写）');
 ok('端到端：投料 → 成功 → 产出剂型 + 熟练度 +1 + 图鉴解锁');
 
+console.log('\n⑪ k231 配药模式（浓度预算 / 净药效 / 净毒性 / 相冲 / 动态实例）');
+const conflictRules = loadJson('data/pharmacy-conflict-rules.json');
+let toxAddedTotal = 0;
+const addictionCalls = [];
+sandbox.PharmacyEffects = {
+  addToxicity(n) { toxAddedTotal += Number(n) || 0; return Number(n) || 0; },
+  addAddictionFromRoute(route, n) { addictionCalls.push([route, n]); return 0; }
+};
+run('pharmacy-compounding.js');
+const PCC = sandbox.PharmacyCompounding;
+assert(PCC, 'PharmacyCompounding 模块装载失败');
+PCC.setConfig(cfg, conflictRules);
+assert.strictEqual(PCC.getConfig().capacity, 100, '浓度容量取自配置');
+
+const SOLVENT = { item_id: 'solvent_saline', count: 1 };
+assert.strictEqual(PCC.classifyItem('med_cocaine_powder'), 'drug', '可卡因粉 = 药成分');
+assert.strictEqual(PCC.classifyItem('med_liver_herb_powder'), 'offset', '护肝草粉 = 辅成分');
+assert.strictEqual(PCC.classifyItem('med_rehydration_powder'), 'functional', '补液粉 = 功能成分');
+assert.strictEqual(PCC.classifyItem('solvent_saline'), 'solvent', '生理盐水 = 溶媒');
+assert.strictEqual(PCC.classifyItem('adj_citric_acid'), 'adjuvant', '柠檬酸 = 助剂');
+ok('成分三型 + 溶媒/助剂分类');
+
+assert.strictEqual(PCC.validate([]).reason, 'empty_inputs');
+assert.strictEqual(PCC.validate([{ item_id: 'med_cocaine_powder', count: 1 }]).reason, 'solvent_required');
+assert.strictEqual(PCC.validate([SOLVENT, SOLVENT, { item_id: 'med_cocaine_powder', count: 1 }]).reason, 'too_many_solvent');
+assert.strictEqual(PCC.validate([SOLVENT, { item_id: 'herb_coca', count: 1 }]).reason, 'not_compound_component');
+const over = PCC.validate([SOLVENT, { item_id: 'med_cocaine_powder', count: 1 }, { item_id: 'med_morphine_powder', count: 1 }, { item_id: 'med_liver_herb_powder', count: 1 }, { item_id: 'med_thc_powder', count: 1 }]);
+assert.strictEqual(over.reason, 'over_capacity', '超浓度上限拒绝：' + JSON.stringify(over));
+ok('配药前置校验：溶媒必需且仅 1、投料类型、浓度上限');
+
+// speedball：可卡因 35 + 吗啡 35 + 护肝草 30 = 100（刚好卡死上限）
+const speedball = [
+  SOLVENT,
+  { item_id: 'med_cocaine_powder', count: 1 },
+  { item_id: 'med_morphine_powder', count: 1 },
+  { item_id: 'med_liver_herb_powder', count: 1 }
+];
+const sb = PCC.resolve(speedball);
+assert(sb.ok, 'speedball 可配：' + JSON.stringify(sb.reason || {}));
+assert.strictEqual(sb.concentration_used, 100, '浓度占用 = 35+35+30 = 100');
+assert.strictEqual(sb.families.length, 2, '两个药效族（兴奋 + 镇痛）');
+const sbFam = {};
+sb.families.forEach((f) => { sbFam[f.family] = f.potency; });
+assert.strictEqual(sbFam.stimulant, 'potent', '可卡因 effect 90 → 兴奋 potent');
+assert.strictEqual(sbFam.analgesic, 'potent', '吗啡 effect 85 → 镇痛 potent');
+assert.strictEqual(sb.base_toxicity, 135, '基础毒性 = 70 + 65');
+assert(Math.abs(sb.offset_rate - 0.296) < 0.002, '抵消率 = 40/135 ≈ 0.296（未封顶）');
+assert(Math.abs(sb.net_toxicity - 95) < 0.6, '净毒性 ≈ 95（重档）：' + sb.net_toxicity);
+assert.strictEqual(sb.addiction_components, 2, '两种致瘾主药 → 成瘾按 2 份累加');
+ok('净药效族/potency 与净毒性（抵消率未封顶）');
+
+// 抵消封顶 90%：护肝草粉 ×2（30×2=60 浓度）→ 抵消池 80 > 主药 70，封顶 0.9，残毒 = 70×10% = 7
+const capped = PCC.resolve([SOLVENT, { item_id: 'med_cocaine_powder', count: 1 }, { item_id: 'med_liver_herb_powder', count: 2 }]);
+assert(capped.ok, '封顶用例可配：' + JSON.stringify(capped.reason || {}));
+assert.strictEqual(capped.offset_rate, 0.9, '抵消率封顶 90%');
+assert(Math.abs(capped.net_toxicity - 7) < 0.01, '残毒 = 70×10% = 7（永不落无副作用档）');
+ok('抵消封顶 90% + 残毒保底');
+
+// 增效：加 1 份骆驼蓬碱（synergist）→ 其它族药效 ×1.2
+const withSynergy = PCC.resolve([SOLVENT, { item_id: 'med_root_bitter_powder', count: 1 }, { item_id: 'med_harmaline_powder', count: 1 }]);
+const rb = withSynergy.families.find((f) => f.family === 'analgesic');
+assert(Math.abs(withSynergy.synergy_multiplier - 1.2) < 1e-9, '增效倍率 = 1 + 0.2×1');
+assert(Math.abs(rb.effect - 36) < 0.01, '苦根草粉 30 ×1.2 = 36');
+assert.strictEqual(rb.potency, 'regular', '36 → regular 档');
+ok('增效成分放大同针其它族药效');
+
+// 相冲：维生素C粉（organic_acid 辅成分） + 可卡因（alkaloid）→ 轻症沉淀
+const conflictHit = PCC.resolve([SOLVENT, { item_id: 'med_cocaine_powder', count: 1 }, { item_id: 'med_vitamin_c_powder', count: 1 }]);
+assert.strictEqual(conflictHit.conflicts.length, 1, '酸 + 生物碱 → 命中 1 条相冲');
+assert.strictEqual(conflictHit.conflicts[0].outcome, 'settle_mild');
+assert.strictEqual(conflictHit.conflicts[0].buff_id, 'buff_pharm_conflict_settle_mild');
+// 功能成分（toxicity=0）与助剂不参与相冲
+const noConflict1 = PCC.resolve([SOLVENT, { item_id: 'med_cocaine_powder', count: 1 }, { item_id: 'med_rehydration_powder', count: 1 }]);
+assert.strictEqual(noConflict1.conflicts.length, 0, '功能成分不参与相冲');
+const noConflict2 = PCC.resolve([SOLVENT, { item_id: 'med_cocaine_powder', count: 1 }, { item_id: 'adj_citric_acid', count: 1 }]);
+assert.strictEqual(noConflict2.conflicts.length, 0, '助剂（成盐助溶）不参与相冲');
+ok('相冲类别级判定 + 助剂/溶媒/功能成分豁免');
+
+// 动态实例 + 注射后结算
+const built = PCC.buildInstance(speedball);
+assert(built.ok, '配药产出实例');
+assert.strictEqual(built.instance.item_id, 'potion_compound_injection');
+assert.strictEqual(built.instance.components.length, 4, '实例携带全部投料（含溶媒，便于复算）');
+const compIds = built.instance.components.map((c) => c.item_id);
+assert(compIds.indexOf('med_cocaine_powder') >= 0 && compIds.indexOf('med_morphine_powder') >= 0 && compIds.indexOf('med_liver_herb_powder') >= 0, '三味药粉都在实例里');
+const injRes = PCC.applyInjection(built.instance, {});
+assert(injRes.ok, '注射后结算成功');
+assert(injRes.applied_buffs.indexOf('buff_pharm_stimulant_inject_potent') >= 0, '挂兴奋·注射·强效');
+assert(injRes.applied_buffs.indexOf('buff_pharm_analgesic_inject_potent') >= 0, '挂镇痛·注射·强效');
+assert(Math.abs(toxAddedTotal - 95) < 0.6, '净毒性注入体内（' + toxAddedTotal + '）');
+assert(addictionCalls.length === 1 && addictionCalls[0][0] === 'inject' && addictionCalls[0][1] === 2, '成瘾按刺入途径 2 份累加');
+ok('动态注射液实例 + 一次滴注多族 buff + 毒性/成瘾结算');
+
+// 实例经 use_action=inject 走通（item-use 分流）
+const compoundTpl = items.potion_compound_injection;
+assert.strictEqual(IU.itemTemplateIsConsumable(compoundTpl), true, '复方注射液模板可消费（药效来自实例）');
+buffs.clear();
+const useOk = IU.applyItemUseEffectFromTemplate('potion_compound_injection', compoundTpl, { instance: built.instance });
+assert.strictEqual(useOk, true, 'use_action=inject + 实例成分 → 走配药结算');
+assert(!IU.takeLastUseFailure(), '无失败原因');
+ok('use_action 分流接入动态注射液实例');
+
+// 醒神（§9.6）：抗眩晕 buff 提供眩晕抗性（k235 消费者）
+S3.setState({ mood: 500, dirtyness: 50, stamina: 100, energy: 100 });
+assert.strictEqual(BS3.getAntiStunPct('player'), 0, '未用药时药物抗眩晕 = 0');
+BS3.applyBuff('player', 'buff_pharm_antistun_inject_regular', 'test:smoke');
+const antiStun = BS3.getAntiStunPct('player');
+assert(antiStun > 0 && antiStun <= 1, '醒神 buff 提供抗眩晕（' + antiStun + '）');
+BS3.removeBuffByBuffId('player', 'buff_pharm_antistun_inject_regular');
+assert.strictEqual(BS3.getAntiStunPct('player'), 0, 'buff 移除后抗眩晕归零');
+ok('醒神 buff → BuffSystem.getAntiStunPct（供战斗管线叠加）');
+
+console.log('\n⑫ k231 配药面板接线（静态口径）');
+const panelSrc = readText('js/pharmacy-station-panel.js');
+const sceneSrc = readText('js/scene-app.js');
+assert(panelSrc.includes('compound_mode'), '面板含配药模式状态');
+assert(panelSrc.includes('tryCompoundAtStation'), '面板调用配药入口');
+assert(panelSrc.includes('pharmacy-status-kv'), '面板状态区 id 与 index.html 对齐（历史 pharmacy-kv 死引用已修）');
+assert(panelSrc.includes('pharmacy-help-text'), '帮助区 id 与 index.html 对齐');
+assert(sceneSrc.includes('window.SceneApp.tryCompoundAtStation'), 'scene-app 导出配药入口');
+assert(sceneSrc.includes('PharmacyCompounding.setConfig'), 'scene-app 装载配药规则（含相冲表）');
+const uiText = loadJson('data/ui_text_zhCN.json');
+['pharmacy.mode.compound', 'pharmacy.compound.concentration', 'pharmacy.btn.compound_start',
+  'pharmacy.compound.fail.over_capacity', 'pharmacy.compound.fail.solvent_required'].forEach((k) => {
+  assert(!!uiText[k], '缺少文案键 ' + k);
+});
+ok('配药面板/入口/文案接线齐备');
+
 console.log('\n[smoke-pharmacy] ' + pass + ' 组断言全部通过');

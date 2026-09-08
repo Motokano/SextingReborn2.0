@@ -374,6 +374,29 @@
         return (now - started) >= onset;
     }
 
+    /** 47 §9.6 醒神：在场 buff 提供的眩晕抗性%（pharmacy_anti_stun 效果；onset 未到不计）。 */
+    function getAntiStunPct(ownerId) {
+        var oid = ownerId || PLAYER_OWNER_ID;
+        var arr = instancesByOwner[oid] || [];
+        var sum = 0;
+        var i, j, inst, effects, e, p, v;
+        for (i = 0; i < arr.length; i++) {
+            inst = arr[i];
+            if (!inst || !inst.template || (inst.stacks || 0) <= 0) continue;
+            if (!isBuffPastOnset(inst)) continue;
+            effects = arrayOrEmpty(inst.template.effects);
+            for (j = 0; j < effects.length; j++) {
+                e = effects[j] || {};
+                if (e.type !== 'pharmacy_anti_stun') continue;
+                p = e.params || {};
+                v = safeNum(p.anti_stun_pct, 0);
+                if (!isFinite(v) || v <= 0) continue;
+                sum += v * Math.max(1, parseInt(inst.stacks, 10) || 1);
+            }
+        }
+        return Math.max(0, Math.min(1, sum));
+    }
+
     function hasActiveSatietyDigestBuff(ownerId) {
         var oid = ownerId || PLAYER_OWNER_ID;
         var arr = instancesByOwner[oid] || [];
@@ -1446,6 +1469,8 @@
             return ownerHasBuffMatchingJudgmentTags(ownerId, requiredTags);
         },
         hasActiveSatietyDigestBuff: hasActiveSatietyDigestBuff,
+        getAntiStunPct: getAntiStunPct,
+        hasPainSuppression: hasPainSuppression,
         getActiveFoodDigestCompositions: getActiveFoodDigestCompositions,
         hasMovementDisabled: hasMovementDisabled,
         hasActionDisabled: hasActionDisabled,

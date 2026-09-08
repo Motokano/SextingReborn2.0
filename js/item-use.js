@@ -34,7 +34,11 @@
         if (edible && tpl.edible_buff_id && String(tpl.edible_buff_id).trim()) return true;
         // 47 §5.1：药水走 use_action 四途径（drink/topical/inhale/inject），需带药效核心 use_buff_id。
         var route = getUseActionRoute(tpl);
-        if (route) return !!(tpl.use_buff_id && String(tpl.use_buff_id).trim()) || !!(tpl.use_effect && typeof tpl.use_effect === 'object');
+        if (route) {
+            // 配药产出的动态注射液（47 §9.4）：药效来自实例 components，模板自身不带 use_buff_id。
+            if (tpl.pharmacy_compound === true) return true;
+            return !!(tpl.use_buff_id && String(tpl.use_buff_id).trim()) || !!(tpl.use_effect && typeof tpl.use_effect === 'object');
+        }
         var usable = toBoolFlag(tpl.usable);
         if (usable && tpl.use_buff_id && String(tpl.use_buff_id).trim()) return true;
         var ue = tpl.use_effect;
@@ -143,6 +147,17 @@
         }
 
         var Buff = global.BuffSystem;
+        // 配药注射液（47 §9.4）：一次滴注按实例成分结算（多族 buff + 净毒性 + 相冲 + 成瘾）
+        if (rid === 'inject' && tpl && tpl.pharmacy_compound === true) {
+            var PC = global.PharmacyCompounding;
+            var inst = options.instance && typeof options.instance === 'object' ? options.instance : null;
+            if (!PC || typeof PC.applyInjection !== 'function') return failUse('compounding_unavailable');
+            if (!inst || !Array.isArray(inst.components) || !inst.components.length) return failUse('no_components');
+            var inj = PC.applyInjection(inst, {});
+            if (!inj || inj.ok !== true) return failUse(inj && inj.reason ? inj.reason : 'compound_failed');
+            lastUseFailure = null;
+            return true;
+        }
         var buffId = tpl && tpl.use_buff_id ? String(tpl.use_buff_id).trim() : '';
         var buffIds = [];
         if (tpl && Array.isArray(tpl.use_buff_ids)) {

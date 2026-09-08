@@ -708,7 +708,11 @@
         var hitPart = ctx.hitPart || 'chest';
         var gain = (hitPart === 'head') ? getStunBaseForHit(ctx) : getDeclaredStunForPart(ctx, hitPart);
         if (gain <= 0) return ctx;
+        // 47 §9.6 醒神：药物抗眩晕窗口与头防具抗性相加（合计封顶 0.9，头永远是威胁）
         var resist = IE.getHeadAntiStunPct();
+        if (global.BuffSystem && typeof global.BuffSystem.getAntiStunPct === 'function') {
+            resist = Math.min(0.9, resist + global.BuffSystem.getAntiStunPct('player'));
+        }
         var net = Math.max(1, Math.round(gain * (1 - resist)));
         var r = IE.addPlayerStun(net);
         if (!isSimultaneousDryRun(ctx)) {

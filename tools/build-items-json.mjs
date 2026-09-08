@@ -227,6 +227,13 @@ function rowToItem(o, filename) {
   if (pTox != null) item.pharm_toxicity = pTox;
   const pConc = numOrNull(o.concentration_cost);
   if (pConc != null && pConc >= 0) item.concentration_cost = pConc;
+  // 配药模式模板（47 §9.4）：pharmacy_compound=1 + concentration_capacity 表示这是可承载动态成分的注射液底模板
+  if (Object.prototype.hasOwnProperty.call(o, 'pharmacy_compound')) {
+    const pcv = String(o.pharmacy_compound == null ? '' : o.pharmacy_compound).trim().toLowerCase();
+    if (pcv === '1' || pcv === 'true' || pcv === 'yes') item.pharmacy_compound = true;
+  }
+  const pCap = numOrNull(o.concentration_capacity);
+  if (pCap != null && pCap > 0) item.concentration_capacity = pCap;
   const foodBuffDur = intOrNull(o.food_buff_duration_ticks);
   if (foodBuffDur != null && foodBuffDur > 0) item.food_buff_duration_ticks = foodBuffDur;
   const fp = intOrNull(o.fuel_points);
@@ -257,6 +264,7 @@ function rowToItem(o, filename) {
     edible: 1, edible_buff_id: 1, food_buff_duration_ticks: 1,
     usable: 1, use_buff_id: 1, use_action: 1,
     chem_class: 1, pharm_family: 1, pharm_effect: 1, pharm_toxicity: 1, concentration_cost: 1,
+    pharmacy_compound: 1, concentration_capacity: 1,
     cooking_ingredient: 1, pharmacy_ingredient: 1,
     compost_inoculant_aerobic: 1, compost_inoculant_anaerobic: 1,
     fuel_points: 1, water_points: 1,

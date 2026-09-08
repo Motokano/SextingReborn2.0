@@ -19,7 +19,9 @@
         method_id: '',
         inputs: [],
         /** 制药台模态：燃料来源格子 */
-        selected_fuel_slot_key: ''
+        selected_fuel_slot_key: '',
+        /** 47 §9.4 配药模式（k231）：true = 投料走配药结算，不走固定配方行 */
+        compound_mode: false
     };
     var PHARMACY_FUEL_MAX_POINTS = 100;
 
@@ -38,6 +40,82 @@
     }
     function tryPharmacyAtStation(mid, inputs) {
         return (typeof uiDeps.tryPharmacyAtStation === 'function') ? uiDeps.tryPharmacyAtStation(mid, inputs) : { ok: false, reason: 'missing_di' };
+    }
+
+    /** 配药结算入口（47 §9.4；scene-app 注入）。 */
+    function tryCompoundAtStation(inputs) {
+        return (typeof uiDeps.tryCompoundAtStation === 'function') ? uiDeps.tryCompoundAtStation(inputs) : { ok: false, reason: 'missing_di' };
+    }
+
+    /** 配药模式规则（浓度条等；模块缺失时返回 null）。 */
+    function getCompounding() {
+        return global.PharmacyCompounding || null;
+    }
+
+    /**
+     * 配药模式 UI 容器（惰性创建，插在状态区之前）：模式切换 + 浓度条。
+     * 按 47 §10.4，配药时不显示相冲/毒性预判（只给浓度条）。
+     */
+    function ensureCompoundBar(modal) {
+        if (!modal) return null;
+        var bar = document.getElementById('pharmacy-compound-bar');
+        if (bar) return bar;
+        // 状态区 id 在 index.html 为 pharmacy-status-kv（历史面板代码曾写 pharmacy-kv，双查兜底）
+        var anchor = document.getElementById('pharmacy-status-kv') || document.getElementById('pharmacy-kv');
+        if (!anchor || !anchor.parentNode) return null;
+        bar = document.createElement('div');
+        bar.id = 'pharmacy-compound-bar';
+        bar.className = 'pharmacy-compound-bar';
+        anchor.parentNode.insertBefore(bar, anchor);
+        return bar;
+    }
+
+    function renderCompoundBar() {
+        var modal = document.getElementById('modal-pharmacy-station');
+        var bar = ensureCompoundBar(modal);
+        if (!bar) return;
+        bar.innerHTML = '';
+        var PC = getCompounding();
+
+        var toggleWrap = document.createElement('div');
+        toggleWrap.style.cssText = 'display:flex;gap:6px;margin:6px 0;';
+        var mkBtn = function (label, isCompound) {
+            var b = document.createElement('button');
+            b.type = 'button';
+            b.className = 'btn-method' + (!!pharmacyStationUiState.compound_mode === isCompound ? ' active' : '');
+            b.textContent = label;
+            b.onclick = function () {
+                pharmacyStationUiState.compound_mode = isCompound;
+                renderPharmacyStationPanel();
+            };
+            return b;
+        };
+        toggleWrap.appendChild(mkBtn(ui('pharmacy.mode.craft'), false));
+        toggleWrap.appendChild(mkBtn(ui('pharmacy.mode.compound'), true));
+        bar.appendChild(toggleWrap);
+
+        if (!pharmacyStationUiState.compound_mode) return;
+        var info = (PC && typeof PC.getConcentrationInfo === 'function')
+            ? PC.getConcentrationInfo(pharmacyStationUiState.inputs || [])
+            : { used: 0, capacity: 0, ratio: 0, solvent_count: 0 };
+        var line = document.createElement('div');
+        line.className = 'kv' + (info.used > info.capacity ? ' bad' : '');
+        line.textContent = ui('pharmacy.compound.concentration', {
+            used: String(info.used),
+            capacity: String(info.capacity),
+            solvent: String(info.solvent_count)
+        });
+        bar.appendChild(line);
+        var track = document.createElement('div');
+        track.style.cssText = 'height:8px;background:#292524;border-radius:4px;overflow:hidden;margin:4px 0 8px;';
+        var fill = document.createElement('div');
+        fill.style.cssText = 'height:100%;width:' + Math.round((info.ratio || 0) * 100) + '%;background:' + (info.used > info.capacity ? '#dc2626' : '#22c55e') + ';';
+        track.appendChild(fill);
+        bar.appendChild(track);
+        var hint = document.createElement('div');
+        hint.style.cssText = 'color:#a8a29e;font-size:12px;margin-bottom:6px;';
+        hint.textContent = ui('pharmacy.compound.hint');
+        bar.appendChild(hint);
     }
     function canAddFuelAtCurrentTile() {
         return (typeof uiDeps.canAddFuelAtCurrentTile === 'function') ? !!uiDeps.canAddFuelAtCurrentTile() : false;
@@ -87,6 +165,11 @@
                 var id = String(cell.item_id);
                 if (seen[id]) continue;
                 if (!StationCraftCore.isItemAllowedPharmacyIngredient(id)) continue;
+                // 配药模式（k231）：只列药粉/溶媒/助剂（生药材需先粉碎成药粉）
+                if (pharmacyStationUiState.compound_mode) {
+                    var PC = getCompounding();
+                    if (PC && typeof PC.isComponentTemplate === 'function' && !PC.isComponentTemplate(IE && IE.getItemTemplate ? IE.getItemTemplate(id) : null)) continue;
+                }
                 if (global.InventoryHelpers.getInventoryCountByItemId(id) <= 0) continue;
                 seen[id] = true;
                 out.push(id);
@@ -287,10 +370,11 @@
         var accessoryList = document.getElementById('pharmacy-accessory-list');
         var accessorySel = document.getElementById('pharmacy-add-accessory');
         var knownWrap = document.getElementById('pharmacy-known-list');
-        var kvWrap = document.getElementById('pharmacy-kv');
-        var helpEl = document.getElementById('pharmacy-help');
+        var kvWrap = document.getElementById('pharmacy-status-kv') || document.getElementById('pharmacy-kv');
+        var helpEl = document.getElementById('pharmacy-help-text') || document.getElementById('pharmacy-help');
         var startBtn = document.getElementById('pharmacy-start-btn');
         var mid = pharmacyStationUiState.method_id ? String(pharmacyStationUiState.method_id) : '';
+        var compoundMode = !!pharmacyStationUiState.compound_mode;
 
         if (methodWrap) {
             methodWrap.innerHTML = '';
@@ -305,6 +389,7 @@
                 btn.className = 'btn-method' + (String(idm) === String(mid) ? ' active' : '');
                 btn.textContent = PharmacyStation.getPharmacyMethodDisplayName(idm, mObj);
                 btn.setAttribute('data-method-id', idm);
+                if (compoundMode) { btn.disabled = true; btn.style.opacity = '0.45'; }
                 btn.onclick = (function (xid) { return function () { setPharmacyMethodId(xid); renderPharmacyStationPanel(); }; })(idm);
                 methodWrap.appendChild(btn);
             }
@@ -452,6 +537,7 @@
         }
 
         // 状态区
+        renderCompoundBar();
         var mSel = (PharmacyStation.getMethods() && mid && PharmacyStation.getMethods()[String(mid)]) ? PharmacyStation.getMethods()[String(mid)] : null;
         var cs = PharmacyStation.getState();
         var curFuel = parseInt(cs.fuel_points, 10) || 0;
@@ -470,9 +556,13 @@
                 d.textContent = text;
                 kvWrap.appendChild(d);
             }
-            addKv(ui('pharmacy.kv.fuel', { cur: curFuel, max: PHARMACY_FUEL_MAX_POINTS, need: needFuel }), curFuel < needFuel);
-            addKv(ui('pharmacy.kv.ticks', { n: needTicks }), false);
-            addKv(ui('pharmacy.kv.stamina', { cur: curStamina, need: needStamina }), curStamina < needStamina);
+            if (compoundMode) {
+                addKv(ui('pharmacy.compound.kv_hint'), false);
+            } else {
+                addKv(ui('pharmacy.kv.fuel', { cur: curFuel, max: PHARMACY_FUEL_MAX_POINTS, need: needFuel }), curFuel < needFuel);
+                addKv(ui('pharmacy.kv.ticks', { n: needTicks }), false);
+                addKv(ui('pharmacy.kv.stamina', { cur: curStamina, need: needStamina }), curStamina < needStamina);
+            }
             if (activeCraft) addKv(ui('pharmacy.kv.remaining', { n: activeCraft.remaining_ticks }), false);
         }
 
@@ -491,9 +581,12 @@
             }).join('<br>') + '</div>';
         }
 
-        var okStart = !!(mid && StationCraftCore.normalizePharmacyInputs(pharmacyStationUiState.inputs || []).length) && !activeCraft;
+        var okStart = compoundMode
+            ? (StationCraftCore.normalizePharmacyInputs(pharmacyStationUiState.inputs || []).length > 0 && !activeCraft)
+            : (!!mid && StationCraftCore.normalizePharmacyInputs(pharmacyStationUiState.inputs || []).length > 0 && !activeCraft);
         if (startBtn) {
             startBtn.disabled = !okStart;
+            startBtn.textContent = compoundMode ? ui('pharmacy.btn.compound_start') : ui('pharmacy.btn.start');
         }
 
         var fuelModalBtn = document.getElementById('pharmacy-modal-add-fuel-btn');
@@ -521,6 +614,13 @@
         if (r === 'bad_args') return 'pharmacy.try.fail.bad_args';
         if (r === 'craft_in_progress') return 'pharmacy.try.fail.craft_in_progress';
         if (r === 'pharmacy_station_repair_locked') return 'pharmacy.try.fail.repair_locked';
+        if (r === 'solvent_required') return 'pharmacy.compound.fail.solvent_required';
+        if (r === 'too_many_solvent') return 'pharmacy.compound.fail.too_many_solvent';
+        if (r === 'over_capacity') return 'pharmacy.compound.fail.over_capacity';
+        if (r === 'not_compound_component') return 'pharmacy.compound.fail.not_component';
+        if (r === 'compounding_unavailable') return 'pharmacy.compound.fail.unavailable';
+        if (r === 'no_components') return 'pharmacy.compound.fail.no_components';
+        if (r === 'compound_failed') return 'pharmacy.compound.fail.failed';
         return 'pharmacy.try.fail.unknown';
     }
 
@@ -643,7 +743,7 @@
                 if (!pharmacyStationPanelOpen) return;
                 var mid = pharmacyStationUiState.method_id ? String(pharmacyStationUiState.method_id) : '';
                 var inputs = StationCraftCore.normalizePharmacyInputs(pharmacyStationUiState.inputs || []);
-                var res = tryPharmacyAtStation(mid, inputs);
+                var res = pharmacyStationUiState.compound_mode ? tryCompoundAtStation(inputs) : tryPharmacyAtStation(mid, inputs);
                 if (!res || res.ok !== true) {
                     var key = pharmacyStartReasonToMsgKey(res ? res.reason : 'unknown');
                     var vars = {};

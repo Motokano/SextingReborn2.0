@@ -608,7 +608,8 @@
             fetch(base + 'livestock-feed-crops.json').then(function (r) { return r.ok ? r.json() : { crops: {} }; }).catch(function () { return { crops: {} }; }),
             fetch(base + 'modules.json').then(function (r) { return r.ok ? r.json() : {}; }).catch(function () { return {}; }),
             fetch(base + 'enemy_drops.json').then(function (r) { return r.ok ? r.json() : null; }).catch(function () { return null; }),
-            fetch(base + 'pharmacy-system-config.csv').then(function (r) { return r.ok ? r.text() : ''; }).catch(function () { return ''; })
+            fetch(base + 'pharmacy-system-config.csv').then(function (r) { return r.ok ? r.text() : ''; }).catch(function () { return ''; }),
+            fetch(base + 'pharmacy-conflict-rules.json').then(function (r) { return r.ok ? r.json() : null; }).catch(function () { return null; })
         ]).then(function (arr) {
             if (!arr[0]) throw new Error('[SceneApp] ui_text_zhCN.json missing');
             if (!window.UIText || typeof window.UIText.setDict !== 'function') throw new Error('[SceneApp] UIText module missing');
@@ -675,6 +676,10 @@
                 // 药物负担/毒性运行时（47 §4/§9.2，k242/k240）：配置同源，状态落 SceneCtx.pharmacy_effects。
                 if (window.PharmacyEffects && typeof window.PharmacyEffects.setConfig === 'function') {
                     window.PharmacyEffects.setConfig(pharmacyCfgParsed || (window.PharmacyStation.getSystemConfig ? window.PharmacyStation.getSystemConfig() : null));
+                    // 配药模式规则（47 §9，k231）：浓度预算 / 净药效 / 净毒性 / 相冲表
+                    if (window.PharmacyCompounding && typeof window.PharmacyCompounding.setConfig === 'function') {
+                        window.PharmacyCompounding.setConfig(pharmacyCfgParsed, arr[39] || null);
+                    }
                     // 入体药 buff 进出 → 即时刷新 §4.4 压制判定（断药/只剩低档立刻显形）
                     if (window.BuffSystem && typeof window.BuffSystem.setBuffStateListener === 'function') {
                         window.BuffSystem.setBuffStateListener(function (ownerId) {
@@ -2733,6 +2738,68 @@
             remaining_ticks: Math.max(1, needTicks),
             consumed: { fuel: needFuel, ticks: needTicks, stamina: needStamina }
         };
+    }
+
+    /**
+     * 制药台配药模式（47 §9.4，k231）：溶媒 1 + N 味药粉/药片 → 动态注射液实例。
+     * 独立结算，不走固定配方行；不校验相冲（留到注射后，§9.4/§10.4）。
+     */
+    function tryCompoundAtStation(inputItems) {
+        if (guardPlayerActionBlocked(ACTION_TYPES.CRAFT)) {
+            return { ok: false, reason: 'action_disabled', action_type: ACTION_TYPES.CRAFT };
+        }
+        var stationCtx = StationContext.getCurrentPharmacyStationContext();
+        if (!stationCtx) return { ok: false, reason: 'not_on_pharmacy_station' };
+        if (StationContext.isPharmacyUiBlockedByRepairForContext(stationCtx)) {
+            return { ok: false, reason: 'pharmacy_station_repair_locked' };
+        }
+        if (!Array.isArray(inputItems) || !inputItems.length) return { ok: false, reason: 'empty_inputs' };
+        if (PharmacyStation.getActiveCraft()) return { ok: false, reason: 'craft_in_progress' };
+        if (!window.PharmacyCompounding || typeof window.PharmacyCompounding.validate !== 'function') {
+            return { ok: false, reason: 'compounding_unavailable' };
+        }
+
+        var selected = StationCraftCore.normalizePharmacyInputs(inputItems);
+        var check = window.PharmacyCompounding.validate(selected);
+        if (!check.ok) return check;
+
+        var i;
+        for (i = 0; i < selected.length; i++) {
+            var sid = selected[i].item_id;
+            if (InventoryHelpers.getInventoryCountByItemId(sid) < selected[i].count) {
+                return { ok: false, reason: 'missing_input_items', item_id: sid };
+            }
+        }
+        if (IE && typeof IE.canAcceptItem === 'function' && !IE.canAcceptItem()) {
+            return { ok: false, reason: 'inventory_full' };
+        }
+
+        var consumedRes = StationCraftCore.consumeInventoryItemsByList(selected);
+        if (!consumedRes.ok) {
+            StationCraftCore.putItemsBack(consumedRes.consumed || []);
+            return { ok: false, reason: 'consume_inputs_failed' };
+        }
+
+        var built = window.PharmacyCompounding.buildInstance(selected);
+        if (!built.ok) {
+            StationCraftCore.putItemsBack(consumedRes.consumed || []);
+            return built;
+        }
+        var placed = IE.putItemIntoDefaultContainer(built.instance);
+        if (!placed || !placed.placed) {
+            var st0 = E.getState();
+            if (typeof IE.addItemToGround === 'function') IE.addItemToGround(st0.mapId, st0.x, st0.y, built.instance);
+        }
+        var res = built.resolved || {};
+        showMsg(ui('pharmacy.compound.ok', {
+            used: String(res.concentration_used != null ? res.concentration_used : 0),
+            capacity: String(res.capacity != null ? res.capacity : 0),
+            tox: String(res.net_toxicity != null ? res.net_toxicity : 0)
+        }), 'success');
+        if (typeof updateBackpackPanel === 'function') updateBackpackPanel();
+        if (typeof updateStatusPanel === 'function') SceneHud.refresh('status');
+        if (window.SceneRenderer) window.SceneRenderer.render();
+        return { ok: true, instance: built.instance, resolved: res };
     }
 
     function resolveNpcHardOccupancyAfterWorldTick() {
@@ -7286,6 +7353,7 @@
                 showMsg: showMsg,
                 render: render,
                 tryPharmacyAtStation: tryPharmacyAtStation,
+                tryCompoundAtStation: tryCompoundAtStation,
                 canAddFuelAtCurrentTile: canAddFuelAtCurrentTile,
                 onAddFuelClick: onAddFuelClick,
                 isPreCreationGameplayRestricted: isPreCreationGameplayRestricted,
@@ -8234,6 +8302,7 @@
     window.SceneApp.guardPlayerActionBlocked = guardPlayerActionBlocked;
     window.SceneApp.tryCookAtStation = tryCookAtStation;
     window.SceneApp.tryPharmacyAtStation = tryPharmacyAtStation;
+    window.SceneApp.tryCompoundAtStation = tryCompoundAtStation;
     window.SceneApp.openCookingStationPanel = CookingStationPanel.open;
     window.SceneApp.closeCookingStationPanel = CookingStationPanel.close;
     window.SceneApp.openPharmacyStationPanel = PharmacyStationPanel.open;

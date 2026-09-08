@@ -1289,6 +1289,12 @@
         }
         if (inst.ground_drop_tick != null) c.ground_drop_tick = Math.max(0, Math.floor(Number(inst.ground_drop_tick) || 0));
         if (inst.battery_charge != null) c.battery_charge = Math.max(0, Math.floor(Number(inst.battery_charge) || 0)); // 电池电量（k89）
+        // 47 §9.4：动态注射液实例携带成分列表（配药产出），必须随实例复制，否则叠加/移动即丢
+        if (Array.isArray(inst.components) && inst.components.length) {
+            c.components = inst.components.map(function (row) {
+                return { item_id: String(row && row.item_id != null ? row.item_id : ''), count: Math.max(1, Math.floor(Number(row && row.count) || 1)) };
+            }).filter(function (row) { return !!row.item_id; });
+        }
         return c;
     }
 
