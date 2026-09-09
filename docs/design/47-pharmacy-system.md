@@ -206,6 +206,23 @@
 
 ---
 
+### 6.5 首版药品全表（2026-09 落地，24 件成品 + 46 条配方）
+
+> 数据落点：`data/items/pharmacy_base.csv`（成品剂型）与 `data/pharmacy-recipes.json`（配方）→ `tools/build-pharmacy-recipes.mjs`。
+> potency 由输入药粉 `pharm_effect` 之和决定（≤33 weak / 34–66 regular / ≥67 potent），下表为配方实测档位。
+
+**口服（drink，走 43 消化）**：安神汤（THC 45→regular）、提神汤液（赤花藤 35→weak）、浓煎提神汤（赤花藤×2 70→potent）、续航糖浆（葡萄糖 60→regular）、补液汤（补液粉 70→potent）、续力药汤（鹿茸 75→potent）、醒神茶（石菖蒲 60→regular）、幻梦汤（裸盖菇素 55→regular）、镇痛药丸（苦根草 30→weak）。
+
+**外敷（topical，按次用量）**：红花药泥（红花 60→regular，2 次）、活络药膏（苦根草，3 次）、红花活络膏（红花×2 120→potent，4 次）、三七止血散（三七 65→regular，3 次）、白芨止血膏（白芨 70→potent，3 次）。
+
+**吸入（inhale）**：提神药烟（赤花藤）、安神药烟（THC 45→regular）、幻梦烟（裸盖菇素×2 110→potent）。
+
+**刺入（inject）**：提神注射液（麻黄碱 70→potent）、镇痛注射液（吗啡 85→potent）、醒神注射液（石菖蒲 60→regular）、续力注射液（鹿茸 75→potent）、止血注射液（三七 65→regular）、补液注射液（补液粉）、强心注射液（强心粉）、复方注射液（配药台动态实例）。
+
+**新增支撑材料**：红花 `herb_safflower` → 红花粉 `med_safflower_powder`（mobility 60/0/18）；三七 `herb_notoginseng` → 三七粉 `med_notoginseng_powder`（coagulant 65/0/20）。这两个族此前**没有药粉来源**，配药台配不出活络/常规档凝血。
+
+---
+
 ## 7. 知识与 0 教学（R5）
 
 - **配方获得 = 盲配试药**：盲配（材料+工艺）首次成功 → `markPharmacyRecipeKnown` 写图鉴（链路已接，双写 `known_recipe_ids_by_system[life_pharmacy]`）。配方 `unlock`（`skill_level_min` 等）作硬门槛。

@@ -1644,6 +1644,594 @@
       "allowed_station_tags": null,
       "match_weight": 1,
       "pharmacy_generated": true
+    },
+    "life_pharmacy.crush_safflower_powder": {
+      "recipe_id": "life_pharmacy.crush_safflower_powder",
+      "recipe_system": "life_pharmacy",
+      "method_id": "life_pharmacy.crushing",
+      "enabled": true,
+      "inputs": [
+        {
+          "item_id": "herb_safflower",
+          "count": 1
+        }
+      ],
+      "main_output": {
+        "item_id": "med_safflower_powder",
+        "count": 2
+      },
+      "bonus_outputs": [],
+      "required_skill_level_min": null,
+      "proficiency_usage_key": null,
+      "required_skill_id": null,
+      "recipe_processor_id": null,
+      "base_success_rate": null,
+      "failure_output": null,
+      "allowed_station_tags": null,
+      "match_weight": 1,
+      "pharmacy_generated": true
+    },
+    "life_pharmacy.crush_notoginseng_powder": {
+      "recipe_id": "life_pharmacy.crush_notoginseng_powder",
+      "recipe_system": "life_pharmacy",
+      "method_id": "life_pharmacy.crushing",
+      "enabled": true,
+      "inputs": [
+        {
+          "item_id": "herb_notoginseng",
+          "count": 1
+        }
+      ],
+      "main_output": {
+        "item_id": "med_notoginseng_powder",
+        "count": 2
+      },
+      "bonus_outputs": [],
+      "required_skill_level_min": null,
+      "proficiency_usage_key": null,
+      "required_skill_id": null,
+      "recipe_processor_id": null,
+      "base_success_rate": null,
+      "failure_output": null,
+      "allowed_station_tags": null,
+      "match_weight": 1,
+      "pharmacy_generated": true
+    },
+    "life_pharmacy.brew_calm_brew": {
+      "recipe_id": "life_pharmacy.brew_calm_brew",
+      "recipe_system": "life_pharmacy",
+      "method_id": "life_pharmacy.maceration",
+      "enabled": true,
+      "inputs": [
+        {
+          "item_id": "med_thc_powder",
+          "count": 1
+        },
+        {
+          "item_id": "solvent_water_pure",
+          "count": 1
+        }
+      ],
+      "main_output": {
+        "item_id": "potion_calm_brew",
+        "count": 1
+      },
+      "bonus_outputs": [],
+      "required_skill_level_min": null,
+      "proficiency_usage_key": null,
+      "required_skill_id": null,
+      "recipe_processor_id": null,
+      "base_success_rate": null,
+      "failure_output": null,
+      "allowed_station_tags": null,
+      "match_weight": 1,
+      "pharmacy_generated": true
+    },
+    "life_pharmacy.brew_tonic_broth_potent": {
+      "recipe_id": "life_pharmacy.brew_tonic_broth_potent",
+      "recipe_system": "life_pharmacy",
+      "method_id": "life_pharmacy.maceration",
+      "enabled": true,
+      "inputs": [
+        {
+          "item_id": "med_vine_red_powder",
+          "count": 2
+        },
+        {
+          "item_id": "solvent_water_pure",
+          "count": 1
+        }
+      ],
+      "main_output": {
+        "item_id": "potion_tonic_broth_potent",
+        "count": 1
+      },
+      "bonus_outputs": [],
+      "required_skill_level_min": null,
+      "proficiency_usage_key": null,
+      "required_skill_id": null,
+      "recipe_processor_id": null,
+      "base_success_rate": null,
+      "failure_output": null,
+      "allowed_station_tags": null,
+      "match_weight": 1,
+      "pharmacy_generated": true
+    },
+    "life_pharmacy.brew_energy_draught": {
+      "recipe_id": "life_pharmacy.brew_energy_draught",
+      "recipe_system": "life_pharmacy",
+      "method_id": "life_pharmacy.maceration",
+      "enabled": true,
+      "inputs": [
+        {
+          "item_id": "med_glucose_powder",
+          "count": 1
+        },
+        {
+          "item_id": "solvent_water_pure",
+          "count": 1
+        }
+      ],
+      "main_output": {
+        "item_id": "potion_energy_draught",
+        "count": 1
+      },
+      "bonus_outputs": [],
+      "required_skill_level_min": null,
+      "proficiency_usage_key": null,
+      "required_skill_id": null,
+      "recipe_processor_id": null,
+      "base_success_rate": null,
+      "failure_output": null,
+      "allowed_station_tags": null,
+      "match_weight": 1,
+      "pharmacy_generated": true
+    },
+    "life_pharmacy.brew_rehydration_broth": {
+      "recipe_id": "life_pharmacy.brew_rehydration_broth",
+      "recipe_system": "life_pharmacy",
+      "method_id": "life_pharmacy.maceration",
+      "enabled": true,
+      "inputs": [
+        {
+          "item_id": "med_rehydration_powder",
+          "count": 1
+        },
+        {
+          "item_id": "solvent_water_pure",
+          "count": 1
+        }
+      ],
+      "main_output": {
+        "item_id": "potion_rehydration_broth",
+        "count": 1
+      },
+      "bonus_outputs": [],
+      "required_skill_level_min": null,
+      "proficiency_usage_key": null,
+      "required_skill_id": null,
+      "recipe_processor_id": null,
+      "base_success_rate": null,
+      "failure_output": null,
+      "allowed_station_tags": null,
+      "match_weight": 1,
+      "pharmacy_generated": true
+    },
+    "life_pharmacy.brew_strength_decoction": {
+      "recipe_id": "life_pharmacy.brew_strength_decoction",
+      "recipe_system": "life_pharmacy",
+      "method_id": "life_pharmacy.maceration",
+      "enabled": true,
+      "inputs": [
+        {
+          "item_id": "med_antler_powder",
+          "count": 1
+        },
+        {
+          "item_id": "solvent_water_pure",
+          "count": 1
+        }
+      ],
+      "main_output": {
+        "item_id": "potion_strength_decoction",
+        "count": 1
+      },
+      "bonus_outputs": [],
+      "required_skill_level_min": null,
+      "proficiency_usage_key": null,
+      "required_skill_id": null,
+      "recipe_processor_id": null,
+      "base_success_rate": null,
+      "failure_output": null,
+      "allowed_station_tags": null,
+      "match_weight": 1,
+      "pharmacy_generated": true
+    },
+    "life_pharmacy.brew_antistun_tea": {
+      "recipe_id": "life_pharmacy.brew_antistun_tea",
+      "recipe_system": "life_pharmacy",
+      "method_id": "life_pharmacy.maceration",
+      "enabled": true,
+      "inputs": [
+        {
+          "item_id": "med_acorus_powder",
+          "count": 1
+        },
+        {
+          "item_id": "solvent_water_pure",
+          "count": 1
+        }
+      ],
+      "main_output": {
+        "item_id": "potion_antistun_tea",
+        "count": 1
+      },
+      "bonus_outputs": [],
+      "required_skill_level_min": null,
+      "proficiency_usage_key": null,
+      "required_skill_id": null,
+      "recipe_processor_id": null,
+      "base_success_rate": null,
+      "failure_output": null,
+      "allowed_station_tags": null,
+      "match_weight": 1,
+      "pharmacy_generated": true
+    },
+    "life_pharmacy.brew_vision_draught": {
+      "recipe_id": "life_pharmacy.brew_vision_draught",
+      "recipe_system": "life_pharmacy",
+      "method_id": "life_pharmacy.maceration",
+      "enabled": true,
+      "inputs": [
+        {
+          "item_id": "med_psilocybin_powder",
+          "count": 1
+        },
+        {
+          "item_id": "solvent_water_pure",
+          "count": 1
+        }
+      ],
+      "main_output": {
+        "item_id": "potion_vision_draught",
+        "count": 1
+      },
+      "bonus_outputs": [],
+      "required_skill_level_min": null,
+      "proficiency_usage_key": null,
+      "required_skill_id": null,
+      "recipe_processor_id": null,
+      "base_success_rate": null,
+      "failure_output": null,
+      "allowed_station_tags": null,
+      "match_weight": 1,
+      "pharmacy_generated": true
+    },
+    "life_pharmacy.blend_mobility_poultice": {
+      "recipe_id": "life_pharmacy.blend_mobility_poultice",
+      "recipe_system": "life_pharmacy",
+      "method_id": "life_pharmacy.blending",
+      "enabled": true,
+      "inputs": [
+        {
+          "item_id": "med_safflower_powder",
+          "count": 1
+        },
+        {
+          "item_id": "solvent_water_pure",
+          "count": 1
+        }
+      ],
+      "main_output": {
+        "item_id": "potion_mobility_poultice",
+        "count": 1
+      },
+      "bonus_outputs": [],
+      "required_skill_level_min": null,
+      "proficiency_usage_key": null,
+      "required_skill_id": null,
+      "recipe_processor_id": null,
+      "base_success_rate": null,
+      "failure_output": null,
+      "allowed_station_tags": null,
+      "match_weight": 1,
+      "pharmacy_generated": true
+    },
+    "life_pharmacy.blend_mobility_salve_potent": {
+      "recipe_id": "life_pharmacy.blend_mobility_salve_potent",
+      "recipe_system": "life_pharmacy",
+      "method_id": "life_pharmacy.blending",
+      "enabled": true,
+      "inputs": [
+        {
+          "item_id": "med_safflower_powder",
+          "count": 2
+        },
+        {
+          "item_id": "hus_pork_lard",
+          "count": 1
+        }
+      ],
+      "main_output": {
+        "item_id": "potion_mobility_salve_potent",
+        "count": 1
+      },
+      "bonus_outputs": [],
+      "required_skill_level_min": null,
+      "proficiency_usage_key": null,
+      "required_skill_id": null,
+      "recipe_processor_id": null,
+      "base_success_rate": null,
+      "failure_output": null,
+      "allowed_station_tags": null,
+      "match_weight": 1,
+      "pharmacy_generated": true
+    },
+    "life_pharmacy.blend_coagulant_powder": {
+      "recipe_id": "life_pharmacy.blend_coagulant_powder",
+      "recipe_system": "life_pharmacy",
+      "method_id": "life_pharmacy.blending",
+      "enabled": true,
+      "inputs": [
+        {
+          "item_id": "med_notoginseng_powder",
+          "count": 1
+        }
+      ],
+      "main_output": {
+        "item_id": "potion_coagulant_powder",
+        "count": 1
+      },
+      "bonus_outputs": [],
+      "required_skill_level_min": null,
+      "proficiency_usage_key": null,
+      "required_skill_id": null,
+      "recipe_processor_id": null,
+      "base_success_rate": null,
+      "failure_output": null,
+      "allowed_station_tags": null,
+      "match_weight": 1,
+      "pharmacy_generated": true
+    },
+    "life_pharmacy.blend_coagulant_salve": {
+      "recipe_id": "life_pharmacy.blend_coagulant_salve",
+      "recipe_system": "life_pharmacy",
+      "method_id": "life_pharmacy.blending",
+      "enabled": true,
+      "inputs": [
+        {
+          "item_id": "med_baiji_powder",
+          "count": 1
+        },
+        {
+          "item_id": "hus_pork_lard",
+          "count": 1
+        }
+      ],
+      "main_output": {
+        "item_id": "potion_coagulant_salve",
+        "count": 1
+      },
+      "bonus_outputs": [],
+      "required_skill_level_min": null,
+      "proficiency_usage_key": null,
+      "required_skill_id": null,
+      "recipe_processor_id": null,
+      "base_success_rate": null,
+      "failure_output": null,
+      "allowed_station_tags": null,
+      "match_weight": 1,
+      "pharmacy_generated": true
+    },
+    "life_pharmacy.roll_sedative_incense": {
+      "recipe_id": "life_pharmacy.roll_sedative_incense",
+      "recipe_system": "life_pharmacy",
+      "method_id": "life_pharmacy.rolling",
+      "enabled": true,
+      "inputs": [
+        {
+          "item_id": "med_thc_powder",
+          "count": 1
+        },
+        {
+          "item_id": "herb_tobacco",
+          "count": 1
+        }
+      ],
+      "main_output": {
+        "item_id": "potion_sedative_incense",
+        "count": 1
+      },
+      "bonus_outputs": [],
+      "required_skill_level_min": null,
+      "proficiency_usage_key": null,
+      "required_skill_id": null,
+      "recipe_processor_id": null,
+      "base_success_rate": null,
+      "failure_output": null,
+      "allowed_station_tags": null,
+      "match_weight": 1,
+      "pharmacy_generated": true
+    },
+    "life_pharmacy.roll_vision_incense": {
+      "recipe_id": "life_pharmacy.roll_vision_incense",
+      "recipe_system": "life_pharmacy",
+      "method_id": "life_pharmacy.rolling",
+      "enabled": true,
+      "inputs": [
+        {
+          "item_id": "med_psilocybin_powder",
+          "count": 2
+        },
+        {
+          "item_id": "herb_tobacco",
+          "count": 1
+        }
+      ],
+      "main_output": {
+        "item_id": "potion_vision_incense",
+        "count": 1
+      },
+      "bonus_outputs": [],
+      "required_skill_level_min": null,
+      "proficiency_usage_key": null,
+      "required_skill_id": null,
+      "recipe_processor_id": null,
+      "base_success_rate": null,
+      "failure_output": null,
+      "allowed_station_tags": null,
+      "match_weight": 1,
+      "pharmacy_generated": true
+    },
+    "life_pharmacy.mix_analgesic_injection": {
+      "recipe_id": "life_pharmacy.mix_analgesic_injection",
+      "recipe_system": "life_pharmacy",
+      "method_id": "life_pharmacy.maceration",
+      "enabled": true,
+      "inputs": [
+        {
+          "item_id": "med_morphine_powder",
+          "count": 1
+        },
+        {
+          "item_id": "solvent_saline",
+          "count": 1
+        }
+      ],
+      "main_output": {
+        "item_id": "potion_analgesic_injection",
+        "count": 1
+      },
+      "bonus_outputs": [],
+      "required_skill_level_min": null,
+      "proficiency_usage_key": null,
+      "required_skill_id": null,
+      "recipe_processor_id": null,
+      "base_success_rate": null,
+      "failure_output": null,
+      "allowed_station_tags": null,
+      "match_weight": 1,
+      "pharmacy_generated": true
+    },
+    "life_pharmacy.mix_stimulant_injection": {
+      "recipe_id": "life_pharmacy.mix_stimulant_injection",
+      "recipe_system": "life_pharmacy",
+      "method_id": "life_pharmacy.maceration",
+      "enabled": true,
+      "inputs": [
+        {
+          "item_id": "med_ephedrine_powder",
+          "count": 1
+        },
+        {
+          "item_id": "solvent_saline",
+          "count": 1
+        }
+      ],
+      "main_output": {
+        "item_id": "potion_stimulant_injection",
+        "count": 1
+      },
+      "bonus_outputs": [],
+      "required_skill_level_min": null,
+      "proficiency_usage_key": null,
+      "required_skill_id": null,
+      "recipe_processor_id": null,
+      "base_success_rate": null,
+      "failure_output": null,
+      "allowed_station_tags": null,
+      "match_weight": 1,
+      "pharmacy_generated": true
+    },
+    "life_pharmacy.mix_antistun_injection": {
+      "recipe_id": "life_pharmacy.mix_antistun_injection",
+      "recipe_system": "life_pharmacy",
+      "method_id": "life_pharmacy.maceration",
+      "enabled": true,
+      "inputs": [
+        {
+          "item_id": "med_acorus_powder",
+          "count": 1
+        },
+        {
+          "item_id": "solvent_saline",
+          "count": 1
+        }
+      ],
+      "main_output": {
+        "item_id": "potion_antistun_injection",
+        "count": 1
+      },
+      "bonus_outputs": [],
+      "required_skill_level_min": null,
+      "proficiency_usage_key": null,
+      "required_skill_id": null,
+      "recipe_processor_id": null,
+      "base_success_rate": null,
+      "failure_output": null,
+      "allowed_station_tags": null,
+      "match_weight": 1,
+      "pharmacy_generated": true
+    },
+    "life_pharmacy.mix_strength_injection": {
+      "recipe_id": "life_pharmacy.mix_strength_injection",
+      "recipe_system": "life_pharmacy",
+      "method_id": "life_pharmacy.maceration",
+      "enabled": true,
+      "inputs": [
+        {
+          "item_id": "med_antler_powder",
+          "count": 1
+        },
+        {
+          "item_id": "solvent_saline",
+          "count": 1
+        }
+      ],
+      "main_output": {
+        "item_id": "potion_strength_injection",
+        "count": 1
+      },
+      "bonus_outputs": [],
+      "required_skill_level_min": null,
+      "proficiency_usage_key": null,
+      "required_skill_id": null,
+      "recipe_processor_id": null,
+      "base_success_rate": null,
+      "failure_output": null,
+      "allowed_station_tags": null,
+      "match_weight": 1,
+      "pharmacy_generated": true
+    },
+    "life_pharmacy.mix_coagulant_injection": {
+      "recipe_id": "life_pharmacy.mix_coagulant_injection",
+      "recipe_system": "life_pharmacy",
+      "method_id": "life_pharmacy.maceration",
+      "enabled": true,
+      "inputs": [
+        {
+          "item_id": "med_notoginseng_powder",
+          "count": 1
+        },
+        {
+          "item_id": "solvent_saline",
+          "count": 1
+        }
+      ],
+      "main_output": {
+        "item_id": "potion_coagulant_injection",
+        "count": 1
+      },
+      "bonus_outputs": [],
+      "required_skill_level_min": null,
+      "proficiency_usage_key": null,
+      "required_skill_id": null,
+      "recipe_processor_id": null,
+      "base_success_rate": null,
+      "failure_output": null,
+      "allowed_station_tags": null,
+      "match_weight": 1,
+      "pharmacy_generated": true
     }
   }
 }

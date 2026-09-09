@@ -401,6 +401,354 @@
         "potion_cardiac_injection",
         1
       ]
+    },
+    {
+      "recipe_id": "life_pharmacy.crush_safflower_powder",
+      "method_id": "life_pharmacy.crushing",
+      "inputs": [
+        [
+          "herb_safflower",
+          1
+        ]
+      ],
+      "main_output": [
+        "med_safflower_powder",
+        2
+      ]
+    },
+    {
+      "recipe_id": "life_pharmacy.crush_notoginseng_powder",
+      "method_id": "life_pharmacy.crushing",
+      "inputs": [
+        [
+          "herb_notoginseng",
+          1
+        ]
+      ],
+      "main_output": [
+        "med_notoginseng_powder",
+        2
+      ]
+    },
+    {
+      "recipe_id": "life_pharmacy.brew_calm_brew",
+      "method_id": "life_pharmacy.maceration",
+      "inputs": [
+        [
+          "med_thc_powder",
+          1
+        ],
+        [
+          "solvent_water_pure",
+          1
+        ]
+      ],
+      "main_output": [
+        "potion_calm_brew",
+        1
+      ]
+    },
+    {
+      "recipe_id": "life_pharmacy.brew_tonic_broth_potent",
+      "method_id": "life_pharmacy.maceration",
+      "inputs": [
+        [
+          "med_vine_red_powder",
+          2
+        ],
+        [
+          "solvent_water_pure",
+          1
+        ]
+      ],
+      "main_output": [
+        "potion_tonic_broth_potent",
+        1
+      ]
+    },
+    {
+      "recipe_id": "life_pharmacy.brew_energy_draught",
+      "method_id": "life_pharmacy.maceration",
+      "inputs": [
+        [
+          "med_glucose_powder",
+          1
+        ],
+        [
+          "solvent_water_pure",
+          1
+        ]
+      ],
+      "main_output": [
+        "potion_energy_draught",
+        1
+      ]
+    },
+    {
+      "recipe_id": "life_pharmacy.brew_rehydration_broth",
+      "method_id": "life_pharmacy.maceration",
+      "inputs": [
+        [
+          "med_rehydration_powder",
+          1
+        ],
+        [
+          "solvent_water_pure",
+          1
+        ]
+      ],
+      "main_output": [
+        "potion_rehydration_broth",
+        1
+      ]
+    },
+    {
+      "recipe_id": "life_pharmacy.brew_strength_decoction",
+      "method_id": "life_pharmacy.maceration",
+      "inputs": [
+        [
+          "med_antler_powder",
+          1
+        ],
+        [
+          "solvent_water_pure",
+          1
+        ]
+      ],
+      "main_output": [
+        "potion_strength_decoction",
+        1
+      ]
+    },
+    {
+      "recipe_id": "life_pharmacy.brew_antistun_tea",
+      "method_id": "life_pharmacy.maceration",
+      "inputs": [
+        [
+          "med_acorus_powder",
+          1
+        ],
+        [
+          "solvent_water_pure",
+          1
+        ]
+      ],
+      "main_output": [
+        "potion_antistun_tea",
+        1
+      ]
+    },
+    {
+      "recipe_id": "life_pharmacy.brew_vision_draught",
+      "method_id": "life_pharmacy.maceration",
+      "inputs": [
+        [
+          "med_psilocybin_powder",
+          1
+        ],
+        [
+          "solvent_water_pure",
+          1
+        ]
+      ],
+      "main_output": [
+        "potion_vision_draught",
+        1
+      ]
+    },
+    {
+      "recipe_id": "life_pharmacy.blend_mobility_poultice",
+      "method_id": "life_pharmacy.blending",
+      "inputs": [
+        [
+          "med_safflower_powder",
+          1
+        ],
+        [
+          "solvent_water_pure",
+          1
+        ]
+      ],
+      "main_output": [
+        "potion_mobility_poultice",
+        1
+      ]
+    },
+    {
+      "recipe_id": "life_pharmacy.blend_mobility_salve_potent",
+      "method_id": "life_pharmacy.blending",
+      "inputs": [
+        [
+          "med_safflower_powder",
+          2
+        ],
+        [
+          "hus_pork_lard",
+          1
+        ]
+      ],
+      "main_output": [
+        "potion_mobility_salve_potent",
+        1
+      ]
+    },
+    {
+      "recipe_id": "life_pharmacy.blend_coagulant_powder",
+      "method_id": "life_pharmacy.blending",
+      "inputs": [
+        [
+          "med_notoginseng_powder",
+          1
+        ]
+      ],
+      "main_output": [
+        "potion_coagulant_powder",
+        1
+      ]
+    },
+    {
+      "recipe_id": "life_pharmacy.blend_coagulant_salve",
+      "method_id": "life_pharmacy.blending",
+      "inputs": [
+        [
+          "med_baiji_powder",
+          1
+        ],
+        [
+          "hus_pork_lard",
+          1
+        ]
+      ],
+      "main_output": [
+        "potion_coagulant_salve",
+        1
+      ]
+    },
+    {
+      "recipe_id": "life_pharmacy.roll_sedative_incense",
+      "method_id": "life_pharmacy.rolling",
+      "inputs": [
+        [
+          "med_thc_powder",
+          1
+        ],
+        [
+          "herb_tobacco",
+          1
+        ]
+      ],
+      "main_output": [
+        "potion_sedative_incense",
+        1
+      ]
+    },
+    {
+      "recipe_id": "life_pharmacy.roll_vision_incense",
+      "method_id": "life_pharmacy.rolling",
+      "inputs": [
+        [
+          "med_psilocybin_powder",
+          2
+        ],
+        [
+          "herb_tobacco",
+          1
+        ]
+      ],
+      "main_output": [
+        "potion_vision_incense",
+        1
+      ]
+    },
+    {
+      "recipe_id": "life_pharmacy.mix_analgesic_injection",
+      "method_id": "life_pharmacy.maceration",
+      "inputs": [
+        [
+          "med_morphine_powder",
+          1
+        ],
+        [
+          "solvent_saline",
+          1
+        ]
+      ],
+      "main_output": [
+        "potion_analgesic_injection",
+        1
+      ]
+    },
+    {
+      "recipe_id": "life_pharmacy.mix_stimulant_injection",
+      "method_id": "life_pharmacy.maceration",
+      "inputs": [
+        [
+          "med_ephedrine_powder",
+          1
+        ],
+        [
+          "solvent_saline",
+          1
+        ]
+      ],
+      "main_output": [
+        "potion_stimulant_injection",
+        1
+      ]
+    },
+    {
+      "recipe_id": "life_pharmacy.mix_antistun_injection",
+      "method_id": "life_pharmacy.maceration",
+      "inputs": [
+        [
+          "med_acorus_powder",
+          1
+        ],
+        [
+          "solvent_saline",
+          1
+        ]
+      ],
+      "main_output": [
+        "potion_antistun_injection",
+        1
+      ]
+    },
+    {
+      "recipe_id": "life_pharmacy.mix_strength_injection",
+      "method_id": "life_pharmacy.maceration",
+      "inputs": [
+        [
+          "med_antler_powder",
+          1
+        ],
+        [
+          "solvent_saline",
+          1
+        ]
+      ],
+      "main_output": [
+        "potion_strength_injection",
+        1
+      ]
+    },
+    {
+      "recipe_id": "life_pharmacy.mix_coagulant_injection",
+      "method_id": "life_pharmacy.maceration",
+      "inputs": [
+        [
+          "med_notoginseng_powder",
+          1
+        ],
+        [
+          "solvent_saline",
+          1
+        ]
+      ],
+      "main_output": [
+        "potion_coagulant_injection",
+        1
+      ]
     }
   ]
 }

@@ -290,6 +290,7 @@
         }
         var synergyMul = 1 + cfg.synergy_bonus_per_unit * synergyUnits;
         var out = [];
+        var skipped = [];
         var fams = Object.keys(effectByFamily);
         for (i = 0; i < fams.length; i++) {
             var raw = effectByFamily[fams[i]] * synergyMul * mulEffect;
@@ -301,7 +302,17 @@
                 buff_id: 'buff_pharm_' + fams[i] + '_inject_' + band
             });
         }
-        return { families: out, synergy_multiplier: synergyMul, synergy_units: synergyUnits };
+        // 注射液只认「注射格」：族若没有 inject 剂型（如活络只做外敷），配药台不产该族（避免挂空 buff）
+        var BS = global.BuffSystem;
+        if (BS && typeof BS.getTemplate === 'function') {
+            var kept = [];
+            for (i = 0; i < out.length; i++) {
+                if (BS.getTemplate(out[i].buff_id)) kept.push(out[i]);
+                else skipped.push(out[i].family);
+            }
+            out = kept;
+        }
+        return { families: out, synergy_multiplier: synergyMul, synergy_units: synergyUnits, skipped_families: skipped };
     }
 
     /**
@@ -349,6 +360,7 @@
             families: fam.families,
             synergy_multiplier: fam.synergy_multiplier,
             synergy_units: fam.synergy_units,
+            skipped_families: fam.skipped_families || [],
             buff_ids: fam.families.map(function (f) { return f.buff_id; }),
             base_toxicity: Math.round(baseTox * 100) / 100,
             offset_rate: Math.round(offsetRate * 1000) / 1000,

@@ -921,4 +921,55 @@ PE.setSideEffectFlavor('');
 assert.strictEqual(PE.getScaledSideEffectBuffId('mild'), 'buff_pharm_sideeffect_mild', '清空族风味 → 回通用模板');
 ok('副作用逐族文案（§9.5）');
 
+console.log('\n㉑ 药品 roster 契约（成品剂型 × 途径 × 药效族）');
+const buffIdSet = new Set(loadJson('data/buffs.json').buffs.map((b) => b.buff_id));
+const potions = Object.keys(items).filter((id) => items[id].category === 'potion' && items[id].pharmacy_compound !== true);
+assert(potions.length >= 20, '成品剂型 ≥20 件（实际 ' + potions.length + '）');
+const badPotions = potions.filter((id) => {
+  const t = items[id];
+  if (['drink', 'topical', 'inhale', 'inject'].indexOf(t.use_action) < 0) return true;
+  return !(t.use_buff_id && buffIdSet.has(t.use_buff_id));
+});
+assert.strictEqual(badPotions.join(','), '', '成品剂的 use_action/use_buff_id 必须可解析：' + badPotions.join(','));
+ok(potions.length + ' 件成品：use_action 合法 + use_buff_id 全部命中剂型矩阵');
+
+// 途径覆盖：四条途径都有成品
+const byRoute = {};
+potions.forEach((id) => { const r = items[id].use_action; byRoute[r] = (byRoute[r] || 0) + 1; });
+['drink', 'topical', 'inhale', 'inject'].forEach((r) => assert(byRoute[r] >= 2, r + ' 途径成品 ≥2（实际 ' + (byRoute[r] || 0) + '）'));
+// 药效族覆盖：矩阵里有格子的族都至少有一件成品（复苏/增效除外：复苏只有注射、增效是辅药）
+const matrixFams = new Set(Object.keys(loadJson('data/pharmacy-buff-matrix.json').families));
+const coveredFams = new Set();
+potions.forEach((id) => {
+  const m = String(items[id].use_buff_id || '').match(/^buff_pharm_([a-z_]+)_(drink|topical|inhale|inject)_/);
+  if (m) coveredFams.add(m[1]);
+});
+const uncovered = [...matrixFams].filter((f) => !coveredFams.has(f) && f !== 'synergist');
+assert.strictEqual(uncovered.join(','), '', '药效族应有成品覆盖（缺：' + uncovered.join(',') + '）');
+ok('途径覆盖 4/4；药效族覆盖 ' + coveredFams.size + '/' + matrixFams.size + '（增效为辅药不单独成品）');
+
+// 剂型契约：口服带消化、外敷按次用量
+const drinkBad = potions.filter((id) => items[id].use_action === 'drink' && !(items[id].use_effect && items[id].food_buff_duration_ticks > 0));
+assert.strictEqual(drinkBad.join(','), '', '口服剂型应带 use_effect + 消化时长：' + drinkBad.join(','));
+const topicalBad = potions.filter((id) => items[id].use_action === 'topical' && !(items[id].use_charges > 0));
+assert.strictEqual(topicalBad.join(','), '', '外敷剂型应按次用量：' + topicalBad.join(','));
+ok('口服走消化、外敷按次用量（剂型契约）');
+
+// 新药材/药粉补齐 mobility 与 regular 档 coagulant 的药粉来源
+assert.strictEqual(items.med_safflower_powder.pharm_family, 'mobility', '红花粉 = 活络族');
+assert.strictEqual(items.med_notoginseng_powder.pharm_family, 'coagulant', '三七粉 = 凝血族');
+assert(items.med_safflower_powder.pharm_toxicity === 0 && items.med_notoginseng_powder.pharm_toxicity === 0, '功能成分 toxicity=0');
+ok('新增红花/三七（药材 + 药粉）补齐活络与常规凝血来源');
+
+// 配药台不产「只有外敷格子」的族（活络粉进配药台不会挂空 buff）——需真实 BuffSystem 才能过滤
+buffSandbox.InventoryEquipment.getItemTemplate = (id) => items[id] || null;
+vm.runInContext(readText('js/pharmacy-compounding.js'), buffSandbox, { filename: 'pharmacy-compounding.js' });
+const PCC3 = buffSandbox.PharmacyCompounding;
+PCC3.setConfig(cfg, conflictRules);
+const mobilityMix = PCC3.resolve([{ item_id: 'solvent_saline', count: 1 }, { item_id: 'med_safflower_powder', count: 1 }, { item_id: 'adj_vitamin_c', count: 1 }]);
+assert(mobilityMix.ok, '红花粉可投配药台：' + JSON.stringify(mobilityMix.reason || {}));
+assert.strictEqual(mobilityMix.buff_ids.length, 0, '活络族无注射格 → 不产 buff');
+assert(mobilityMix.skipped_families.indexOf('mobility') >= 0, '记录被跳过的族（' + mobilityMix.skipped_families.join(',') + '）');
+ok('配药台过滤无注射格的药效族（不挂空 buff）');
+
 console.log('\n[smoke-pharmacy] ' + pass + ' 组断言全部通过');
