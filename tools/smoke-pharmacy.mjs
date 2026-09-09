@@ -893,4 +893,32 @@ const perTick = (digestTpl.effects.find((e) => e.type === 'survival_delta') || {
 assert(Math.abs(perTick.thirst - 14 / 30) < 0.01 && Math.abs(perTick.energy - 10 / 30) < 0.01, '按 tick 均摊（口渴 14/30、精力 10/30）');
 ok('口服剂型接 43 消化：按 tick 缓释而非一次性直加');
 
+console.log('\n⑳ A5/A6/A7（配药图鉴 / 药渣去向 / 副作用逐族文案）');
+// A5 配药图鉴
+const panelSrc3 = readText('js/pharmacy-station-panel.js');
+assert(panelSrc3.includes('getHistory'), '面板读取配药历史');
+assert(uiText['pharmacy.compound.history_title'] && uiText['pharmacy.compound.history_meta'], '图鉴文案键已配');
+assert(PCC.historyKey([{ item_id: 'b', count: 2 }, { item_id: 'a', count: 1 }]) === 'a x1+b x2' || PCC.historyKey([{ item_id: 'b', count: 2 }, { item_id: 'a', count: 1 }]).indexOf('a') === 0, '历史键按成分组合归一化');
+ok('配药图鉴（成分组合 → 族/净毒性/相冲数）');
+
+// A6 药渣去向：当柴（fuel_points）+ 沤肥（fert_c/fert_n）
+const dregs = items['item.scrap.herb_dregs'];
+assert.strictEqual(dregs.fuel_points, 10, '药渣可当燃料（10）');
+assert(Number(dregs.fert_c) > 0 && Number(dregs.fert_n) > 0, '药渣可进沤肥（fert_c/fert_n 已落）');
+assert(readText('js/compost-panel.js').includes("'fert_c'"), '堆肥系统按 fert_c 判定可投料');
+ok('药渣去向：燃料 + 沤肥');
+
+// A7 副作用逐族文案
+const sideTpl = loadJson('data/buffs.json').buffs.find((b) => b.buff_id === 'buff_pharm_sideeffect_mild');
+assert(sideTpl && sideTpl.pharmacy_family_flavor && Object.keys(sideTpl.pharmacy_family_flavor).length >= 10, '副作用模板带逐族风味表');
+assert.strictEqual(sideTpl.pharmacy_family_flavor.stimulant, '心悸', '兴奋族副作用风味 = 心悸');
+PE.setSideEffectFlavor('stimulant');
+const flavoredId = PE.getScaledSideEffectBuffId('mild');
+assert(/__stimulant$/.test(flavoredId), '按主药族派生副作用 buff：' + flavoredId);
+const flavoredTpl = BS3.getTemplate(flavoredId);
+assert(flavoredTpl && flavoredTpl.name.indexOf('心悸') === 0, '副作用名带族风味（' + (flavoredTpl && flavoredTpl.name) + '）');
+PE.setSideEffectFlavor('');
+assert.strictEqual(PE.getScaledSideEffectBuffId('mild'), 'buff_pharm_sideeffect_mild', '清空族风味 → 回通用模板');
+ok('副作用逐族文案（§9.5）');
+
 console.log('\n[smoke-pharmacy] ' + pass + ' 组断言全部通过');

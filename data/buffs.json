@@ -3025,6 +3025,172 @@
       }
     },
     {
+      "buff_id": "survival_pain_mild",
+      "name": "轻度疼痛",
+      "desc": "疼痛 25~49：出手变慢（速度 ×0.90），心情持续下滑（-2/tick）。可被镇痛压制（盖住不消除）。",
+      "durationTicks": 1,
+      "maxStacks": 1,
+      "stacksAddOnApply": 1,
+      "priority": 90,
+      "listenerSide": "self",
+      "consumeMode": "always",
+      "consumeLayersFixed": 0,
+      "applyMode": "always_apply",
+      "triggerEventKind": [
+        "world"
+      ],
+      "triggerEventName": [
+        "tick_advanced"
+      ],
+      "triggerTags": [
+        "time",
+        "tick"
+      ],
+      "pain_tier": "mild",
+      "effects": [
+        {
+          "type": "battle_move_speed_multiplier",
+          "params": {
+            "multiplier": 0.9
+          }
+        },
+        {
+          "type": "survival_delta",
+          "params": {
+            "mood": -2
+          }
+        }
+      ],
+      "expire_effects": []
+    },
+    {
+      "buff_id": "survival_pain_moderate",
+      "name": "中度疼痛",
+      "desc": "疼痛 50~74：出手 ×0.80，心情 -4/tick，体力/精力恢复减半。可被镇痛压制（盖住不消除）。",
+      "durationTicks": 1,
+      "maxStacks": 1,
+      "stacksAddOnApply": 1,
+      "priority": 90,
+      "listenerSide": "self",
+      "consumeMode": "always",
+      "consumeLayersFixed": 0,
+      "applyMode": "always_apply",
+      "triggerEventKind": [
+        "world"
+      ],
+      "triggerEventName": [
+        "tick_advanced"
+      ],
+      "triggerTags": [
+        "time",
+        "tick"
+      ],
+      "pain_tier": "moderate",
+      "effects": [
+        {
+          "type": "battle_move_speed_multiplier",
+          "params": {
+            "multiplier": 0.8
+          }
+        },
+        {
+          "type": "survival_delta",
+          "params": {
+            "mood": -4
+          }
+        }
+      ],
+      "expire_effects": []
+    },
+    {
+      "buff_id": "survival_pain_severe",
+      "name": "重度疼痛",
+      "desc": "疼痛 75~89：出手 ×0.65，心情 -6/tick，体力 -2/tick。可被镇痛压制（盖住不消除）。",
+      "durationTicks": 1,
+      "maxStacks": 1,
+      "stacksAddOnApply": 1,
+      "priority": 90,
+      "listenerSide": "self",
+      "consumeMode": "always",
+      "consumeLayersFixed": 0,
+      "applyMode": "always_apply",
+      "triggerEventKind": [
+        "world"
+      ],
+      "triggerEventName": [
+        "tick_advanced"
+      ],
+      "triggerTags": [
+        "time",
+        "tick"
+      ],
+      "pain_tier": "severe",
+      "effects": [
+        {
+          "type": "battle_move_speed_multiplier",
+          "params": {
+            "multiplier": 0.65
+          }
+        },
+        {
+          "type": "survival_delta",
+          "params": {
+            "mood": -6,
+            "stamina": -2
+          }
+        }
+      ],
+      "expire_effects": []
+    },
+    {
+      "buff_id": "survival_pain_agony",
+      "name": "剧痛",
+      "desc": "疼痛 90~100：痛到走不动——出手 ×0.60，心情 -8/tick，体力 -3/tick，禁止移动。可被镇痛压制（盖住不消除）。",
+      "durationTicks": 1,
+      "maxStacks": 1,
+      "stacksAddOnApply": 1,
+      "priority": 90,
+      "listenerSide": "self",
+      "consumeMode": "always",
+      "consumeLayersFixed": 0,
+      "applyMode": "always_apply",
+      "triggerEventKind": [
+        "world"
+      ],
+      "triggerEventName": [
+        "tick_advanced"
+      ],
+      "triggerTags": [
+        "time",
+        "tick"
+      ],
+      "pain_tier": "agony",
+      "effects": [
+        {
+          "type": "battle_move_speed_multiplier",
+          "params": {
+            "multiplier": 0.6
+          }
+        },
+        {
+          "type": "disable_actions",
+          "params": {
+            "action_types": [
+              "move"
+            ]
+          }
+        },
+        {
+          "type": "survival_delta",
+          "params": {
+            "mood": -8,
+            "stamina": -3
+          }
+        }
+      ],
+      "expire_effects": []
+    },
+    {
       "buff_id": "buff_pharm_stimulant_drink_weak",
       "name": "兴奋·口服·弱效",
       "desc": "精力与体力上冲，出手更快，注意力更集中（口服起效 5 tick，持续 60 tick，峰值 0.4）",
@@ -6625,7 +6791,21 @@
       ],
       "expire_effects": [],
       "pharmacy_generated": true,
-      "pharmacy_side_effect_band": "mild"
+      "pharmacy_side_effect_band": "mild",
+      "pharmacy_family_flavor": {
+        "stimulant": "心悸",
+        "hallucinogen": "谵妄",
+        "sedative": "昏沉",
+        "analgesic": "呼吸发浅",
+        "synergist": "血压乱跳",
+        "rehydrate": "水中毒",
+        "energy": "血糖崩",
+        "revive": "心跳过速",
+        "coagulant": "血栓",
+        "antistun": "口干舌燥",
+        "strength": "筋骨发紧",
+        "mobility": "皮疹发痒"
+      }
     },
     {
       "buff_id": "buff_pharm_sideeffect_moderate",
@@ -6668,7 +6848,21 @@
       ],
       "expire_effects": [],
       "pharmacy_generated": true,
-      "pharmacy_side_effect_band": "moderate"
+      "pharmacy_side_effect_band": "moderate",
+      "pharmacy_family_flavor": {
+        "stimulant": "心悸",
+        "hallucinogen": "谵妄",
+        "sedative": "昏沉",
+        "analgesic": "呼吸发浅",
+        "synergist": "血压乱跳",
+        "rehydrate": "水中毒",
+        "energy": "血糖崩",
+        "revive": "心跳过速",
+        "coagulant": "血栓",
+        "antistun": "口干舌燥",
+        "strength": "筋骨发紧",
+        "mobility": "皮疹发痒"
+      }
     },
     {
       "buff_id": "buff_pharm_sideeffect_severe",
@@ -6711,7 +6905,21 @@
       ],
       "expire_effects": [],
       "pharmacy_generated": true,
-      "pharmacy_side_effect_band": "severe"
+      "pharmacy_side_effect_band": "severe",
+      "pharmacy_family_flavor": {
+        "stimulant": "心悸",
+        "hallucinogen": "谵妄",
+        "sedative": "昏沉",
+        "analgesic": "呼吸发浅",
+        "synergist": "血压乱跳",
+        "rehydrate": "水中毒",
+        "energy": "血糖崩",
+        "revive": "心跳过速",
+        "coagulant": "血栓",
+        "antistun": "口干舌燥",
+        "strength": "筋骨发紧",
+        "mobility": "皮疹发痒"
+      }
     },
     {
       "buff_id": "buff_pharm_conflict_settle_mild",
@@ -6902,6 +7110,46 @@
       "expire_effects": [],
       "pharmacy_generated": true,
       "pharmacy_addiction_stage": 4
+    },
+    {
+      "buff_id": "buff_pharm_sideeffect_family_flavor",
+      "onsetTicks": 0,
+      "durationTicks": 20,
+      "maxStacks": 1,
+      "stacksAddOnApply": 1,
+      "priority": 85,
+      "listenerSide": "self",
+      "consumeMode": "always",
+      "consumeLayersFixed": 0,
+      "applyMode": "always_apply",
+      "triggerEventKind": [
+        "world"
+      ],
+      "triggerEventName": [
+        "tick_advanced"
+      ],
+      "triggerTags": [
+        "time",
+        "tick"
+      ],
+      "effects": [],
+      "expire_effects": [],
+      "pharmacy_generated": true,
+      "pharmacy_side_effect_band": "family_flavor",
+      "pharmacy_family_flavor": {
+        "stimulant": "心悸",
+        "hallucinogen": "谵妄",
+        "sedative": "昏沉",
+        "analgesic": "呼吸发浅",
+        "synergist": "血压乱跳",
+        "rehydrate": "水中毒",
+        "energy": "血糖崩",
+        "revive": "心跳过速",
+        "coagulant": "血栓",
+        "antistun": "口干舌燥",
+        "strength": "筋骨发紧",
+        "mobility": "皮疹发痒"
+      }
     }
   ]
 }

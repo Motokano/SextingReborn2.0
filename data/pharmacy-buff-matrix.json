@@ -115,7 +115,21 @@
     }
   },
   "side_effects": {
-    "_comment": "净毒性副作用档（47 §9.2）：只决定表现，不按族分结算；family 风味文案见 §9.5 待定项。",
+    "_comment": "净毒性副作用档（47 §9.2）：只决定表现，不按族分结算；family_flavor 是各药效族的副作用风味文案（§9.5 逐族填）。",
+    "family_flavor": {
+      "stimulant": "心悸",
+      "hallucinogen": "谵妄",
+      "sedative": "昏沉",
+      "analgesic": "呼吸发浅",
+      "synergist": "血压乱跳",
+      "rehydrate": "水中毒",
+      "energy": "血糖崩",
+      "revive": "心跳过速",
+      "coagulant": "血栓",
+      "antistun": "口干舌燥",
+      "strength": "筋骨发紧",
+      "mobility": "皮疹发痒"
+    },
     "mild": {
       "name": "药劲副作用·轻",
       "desc": "恶心、发闷、心跳发飘：心情下滑，恢复变慢",

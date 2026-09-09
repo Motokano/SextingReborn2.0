@@ -116,7 +116,9 @@
             toxicity_lethal_ticks: 0,
             stage: 1,
             last_band: 'none',
-            lethal_active: false
+            lethal_active: false,
+            /** 47 §9.5：本次注射主药族（副作用逐族文案用） */
+            side_effect_family: ''
         };
     }
 
@@ -131,6 +133,7 @@
         s.toxicity_lethal_ticks = Math.max(0, Math.floor(num(s.toxicity_lethal_ticks, 0)));
         s.stage = Math.max(1, Math.min(4, Math.floor(num(s.stage, 1))));
         if (typeof s.last_band !== 'string' || !s.last_band) s.last_band = 'none';
+        if (typeof s.side_effect_family !== 'string') s.side_effect_family = '';
         s.lethal_active = s.lethal_active === true;
         return s;
     }
@@ -143,6 +146,7 @@
         if (s.toxicity_lethal_ticks != null) st.toxicity_lethal_ticks = Math.max(0, Math.floor(num(s.toxicity_lethal_ticks, st.toxicity_lethal_ticks)));
         if (s.stage != null) st.stage = Math.max(1, Math.min(4, Math.floor(num(s.stage, st.stage))));
         if (s.last_band != null) st.last_band = String(s.last_band);
+        if (s.side_effect_family != null) st.side_effect_family = String(s.side_effect_family);
         if (s.lethal_active != null) st.lethal_active = s.lethal_active === true;
         return st;
     }
@@ -498,26 +502,57 @@
     }
 
     /**
-     * 副作用 buff id：免疫等级 >0 时注册一个按免疫缩放的运行时模板（副作用强度下降），否则用静态模板。
+     * 副作用 buff id：免疫等级 >0 时注册按免疫缩放的运行时模板；已知主药族时再套上逐族风味名（§9.5）。
      */
     function getScaledSideEffectBuffId(band) {
         var baseId = getToxicityBandBuffId(band);
         if (!baseId) return '';
         var scale = getSideEffectScale();
-        if (scale >= 0.999) return baseId;
+        var flavor = getSideEffectFlavor();
+        if (scale >= 0.999 && !flavor) return baseId;
         var BS = getBuffSystem();
         if (!BS || typeof BS.getTemplate !== 'function' || typeof BS.registerRuntimeBuffTemplate !== 'function') return baseId;
         var base = BS.getTemplate(baseId);
         if (!base) return baseId;
-        var id = baseId + '__imm' + Math.round(scale * 100);
+        var id = baseId + '__imm' + Math.round(scale * 100) + (flavor ? '__' + flavor.family : '');
         var tpl = JSON.parse(JSON.stringify(base));
         tpl.buff_id = id;
-        tpl.name = String(base.name || '') + '·减';
-        tpl.desc = String(base.desc || '') + '（免疫减轻 ' + Math.round((1 - scale) * 100) + '%）';
-        tpl.effects = (base.effects || []).map(function (e) { return scaleEffectForImmunity(e, scale); });
+        if (flavor) {
+            tpl.name = flavor.name + '·' + String(base.name || '').replace(/^药劲副作用·/, '');
+            tpl.desc = flavor.desc + '；' + String(base.desc || '');
+        }
+        if (scale < 0.999) {
+            tpl.name = String(tpl.name || '') + '·减';
+            tpl.desc = String(tpl.desc || '') + '（免疫减轻 ' + Math.round((1 - scale) * 100) + '%）';
+            tpl.effects = (base.effects || []).map(function (e) { return scaleEffectForImmunity(e, scale); });
+        }
         tpl.pharmacy_generated = true;
         BS.registerRuntimeBuffTemplate(tpl);
         return id;
+    }
+
+    /** 记下本次注射的主药族（副作用文案用；由 PharmacyCompounding.applyInjection 调用）。 */
+    function setSideEffectFlavor(family) {
+        var st = getState();
+        st.side_effect_family = family != null ? String(family).trim().toLowerCase() : '';
+        return st.side_effect_family;
+    }
+
+    /** 读逐族风味（来自副作用 buff 模板的 pharmacy_family_flavor）。 */
+    function getSideEffectFlavor() {
+        var st = getState();
+        var fam = String(st.side_effect_family || '').trim().toLowerCase();
+        if (!fam) return null;
+        var BS = getBuffSystem();
+        if (!BS || typeof BS.getTemplate !== 'function') return null;
+        var base = BS.getTemplate('buff_pharm_sideeffect_mild');
+        var map = base && base.pharmacy_family_flavor && typeof base.pharmacy_family_flavor === 'object' ? base.pharmacy_family_flavor : null;
+        if (!map || !map[fam]) return null;
+        return {
+            family: fam,
+            name: String(map[fam]),
+            desc: '主要来自「' + fam + '」这一路药：' + String(map[fam])
+        };
     }
 
     /** 读当前生效的副作用 buff id（含免疫缩放版）。 */
@@ -554,6 +589,8 @@
         getBuffDurationMultiplier: getBuffDurationMultiplier,
         getSideEffectScale: getSideEffectScale,
         getScaledSideEffectBuffId: getScaledSideEffectBuffId,
+        setSideEffectFlavor: setSideEffectFlavor,
+        getSideEffectFlavor: getSideEffectFlavor,
         getActiveSideEffectBuffId: getActiveSideEffectBuffId,
         getAddiction: getAddiction,
         getRouteGain: getRouteGain,

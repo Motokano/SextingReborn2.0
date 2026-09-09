@@ -129,6 +129,43 @@
                 : ui('pharmacy.compound.salt_ok', { need: String(salt.required), have: String(salt.provided) });
             bar.appendChild(saltLine);
         }
+
+        // 配药图鉴（§8 待定的「联合注射液图鉴写法」）：记成分组合 → 族/potency/净毒性/相冲数
+        var history = (PC && typeof PC.getHistory === 'function') ? PC.getHistory() : {};
+        var keys = Object.keys(history || {});
+        if (keys.length) {
+            var title = document.createElement('div');
+            title.className = 'cs-subtitle';
+            title.style.marginTop = '8px';
+            title.textContent = ui('pharmacy.compound.history_title');
+            bar.appendChild(title);
+            var listWrap = document.createElement('div');
+            listWrap.className = 'cs-known-list';
+            keys.slice(-12).reverse().forEach(function (k) {
+                var ent = history[k] || {};
+                var row = document.createElement('div');
+                row.className = 'cs-input-row';
+                var nameEl = document.createElement('div');
+                nameEl.className = 'iname';
+                nameEl.textContent = String(k).split('+').map(function (part) {
+                    var m = part.match(/^(.*)x(\d+)$/);
+                    var id = m ? m[1] : part;
+                    var n = m ? m[2] : '1';
+                    return StationCraftCore.getItemDisplayNameSafe(id) + '×' + n;
+                }).join(' + ');
+                var metaEl = document.createElement('div');
+                metaEl.className = 'icnt';
+                metaEl.textContent = ui('pharmacy.compound.history_meta', {
+                    fam: (ent.families || []).join('、') || '—',
+                    tox: String(ent.net_toxicity != null ? ent.net_toxicity : 0),
+                    conflicts: String(ent.conflicts != null ? ent.conflicts : 0)
+                });
+                row.appendChild(nameEl);
+                row.appendChild(metaEl);
+                listWrap.appendChild(row);
+            });
+            bar.appendChild(listWrap);
+        }
     }
     function canAddFuelAtCurrentTile() {
         return (typeof uiDeps.canAddFuelAtCurrentTile === 'function') ? !!uiDeps.canAddFuelAtCurrentTile() : false;

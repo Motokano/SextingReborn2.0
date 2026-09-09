@@ -142,6 +142,7 @@ Object.keys(families).forEach((family) => {
 });
 
 // ---- 2) 副作用档 ----
+const familyFlavor = (matrix.side_effects && typeof matrix.side_effects.family_flavor === 'object') ? matrix.side_effects.family_flavor : {};
 Object.keys(matrix.side_effects || {}).forEach((band) => {
   if (band.startsWith('_')) return;
   const s = matrix.side_effects[band];
@@ -151,7 +152,7 @@ Object.keys(matrix.side_effects || {}).forEach((band) => {
     s.desc,
     Math.max(1, parseInt(s.duration_ticks, 10) || 20),
     s.effects || [],
-    { pharmacy_side_effect_band: band }
+    { pharmacy_side_effect_band: band, pharmacy_family_flavor: familyFlavor }
   ));
 });
 

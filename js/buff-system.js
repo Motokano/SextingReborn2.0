@@ -184,6 +184,9 @@
                 return isFinite(pk) ? pk : 1;
             })(),
             pharmacy_side_effect_band: String(t.pharmacy_side_effect_band || '').trim().toLowerCase(),
+            pharmacy_family_flavor: (t.pharmacy_family_flavor && typeof t.pharmacy_family_flavor === 'object')
+                ? JSON.parse(JSON.stringify(t.pharmacy_family_flavor))
+                : null,
             pharmacy_conflict_outcome: String(t.pharmacy_conflict_outcome || '').trim().toLowerCase(),
             pharmacy_addiction_stage: Math.max(0, parseInt(t.pharmacy_addiction_stage, 10) || 0),
             judgment_tags: normalizeJudgmentTags(t.judgment_tags),

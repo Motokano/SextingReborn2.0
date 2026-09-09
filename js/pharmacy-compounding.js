@@ -416,6 +416,11 @@
         }
         var toxicityAdded = 0;
         if (res.net_toxicity > 0 && PE && typeof PE.addToxicity === 'function') {
+            // 副作用逐族文案（§9.5）：取净药效最大的族作为「这一路药」
+            if (typeof PE.setSideEffectFlavor === 'function' && res.families.length) {
+                var dominant = res.families.slice().sort(function (a, b) { return b.effect - a.effect; })[0];
+                PE.setSideEffectFlavor(dominant ? dominant.family : '');
+            }
             toxicityAdded = PE.addToxicity(res.net_toxicity);
         }
         if (res.addiction_components > 0 && PE && typeof PE.addAddictionFromRoute === 'function') {

@@ -8314,8 +8314,8 @@
     "sn": "药渣",
     "placeholder_name": "湿药渣",
     "fn_before": "煎煮浸取之后剩下的湿渣",
-    "fn": "泡过煮过的药草残渣，早没药性了，晒干能当柴火，喂牲口也凑合。",
-    "desc_0": "泡过煮过的药草残渣，早没药性了，晒干能当柴火，喂牲口也凑合。",
+    "fn": "泡过煮过的药草残渣，早没药性了；晒干能当柴火，扔进沤肥堆也能凑个数。",
+    "desc_0": "泡过煮过的药草残渣，早没药性了；晒干能当柴火，扔进沤肥堆也能凑个数。",
     "category": "material",
     "sub_category": "scrap",
     "stack_limit": 20,
@@ -8329,9 +8329,11 @@
     "base_value": 20,
     "edible": false,
     "usable": false,
-    "fuel_points": 0,
+    "fuel_points": 10,
     "water_points": 0,
-    "quality": "white"
+    "quality": "white",
+    "fert_c": "8",
+    "fert_n": "2"
   },
   "item_glass": {
     "item_id": "item_glass",
