@@ -179,6 +179,20 @@
     }
 
     /**
+     * 该物品使用一次消耗的 tick 数（47 §5.2 裁决：吸入不做额外动作，用耗时区分）。
+     * 配置来源 pharmacy-system-config.csv 的 pharmacy_use_ticks_<途径>；缺省 1。
+     */
+    function getUseTickCost(tpl) {
+        var route = getUseActionRoute(tpl);
+        if (!route) return 1;
+        var PS = global.PharmacyStation;
+        var cfg = (PS && typeof PS.getSystemConfig === 'function') ? PS.getSystemConfig() : null;
+        var map = cfg && cfg.pharmacy_use_ticks && typeof cfg.pharmacy_use_ticks === 'object' ? cfg.pharmacy_use_ticks : null;
+        var n = map && map[route] != null ? parseInt(map[route], 10) : 1;
+        return (isFinite(n) && n > 0) ? n : 1;
+    }
+
+    /**
      * 按 use_action 途径结算一次使用（47 §5.1/§5.2）。
      * opts.part_id：外敷必填（七部位之一）；opts.silent：不产生失败原因记录以外的副作用。
      * 成功：挂 use_buff_id 对应 buff（±use_effect 生存量），外敷登记目标部位，返回 true。
@@ -458,6 +472,7 @@
         USE_ACTION_IDS: USE_ACTION_IDS,
         BODY_PART_IDS: BODY_PART_IDS,
         getUseActionRoute: getUseActionRoute,
+        getUseTickCost: getUseTickCost,
         isUseRouteAllowed: isUseRouteAllowed,
         applyUseActionRoute: applyUseActionRoute,
         resolveInjectionHygiene: resolveInjectionHygiene,

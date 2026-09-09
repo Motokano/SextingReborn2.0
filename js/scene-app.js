@@ -8275,7 +8275,10 @@
         var expText = window.ItemUse.takeLastFoodExpGrantText();
         if (expText) useOkMsg += ' ' + expText;
         if (!options.silent) showMsg(useOkMsg, 'success');
-        if (window.Survival && typeof window.Survival.advanceTick === 'function') window.Survival.advanceTick();
+        // 47 §5.2：使用耗时按途径区分（口服/外敷 1 · 吸入 2 · 刺入 3；注射还需静止）
+        var useTicks = (typeof ItemUse.getUseTickCost === 'function') ? ItemUse.getUseTickCost(tpl) : 1;
+        if (useTicks > 1) advanceWorldTicks(useTicks);
+        else if (window.Survival && typeof window.Survival.advanceTick === 'function') window.Survival.advanceTick();
         if (typeof updateStatusPanel === 'function') SceneHud.refresh('status');
         if (typeof backpackPanelOpen !== 'undefined' && backpackPanelOpen && typeof updateBackpackPanel === 'function') updateBackpackPanel();
         if (window.SceneRenderer && typeof window.SceneRenderer.render === 'function') window.SceneRenderer.render();

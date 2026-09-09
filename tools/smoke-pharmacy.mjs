@@ -115,7 +115,7 @@ assert.strictEqual(cfg.pharmacy_skill_curve.max_proficiency_uses, 5000000);
 assert.strictEqual(cfg.pharmacy_skill_curve.success_bonus_per_level, 0.005);
 assert.strictEqual(cfg.pharmacy_skill_curve.proficiency_usage_key, 'pharmacy_success');
 assert.strictEqual(cfg.pharmacy_use_routes.join(','), 'drink,topical,inhale,inject');
-assert.strictEqual(cfg.pharmacy_addiction_gain.inject, 15);
+assert.strictEqual(cfg.pharmacy_addiction_gain.inject, 12);
 assert.strictEqual(cfg.pharmacy_addiction_stage_thresholds.join(','), '25,50,75');
 assert.strictEqual(cfg.pharmacy_toxicity_band_thresholds.join(','), '0,25,55');
 assert.strictEqual(cfg.pharmacy_concentration_capacity, 100);
@@ -402,13 +402,13 @@ BS3.removeBuffByBuffId('player', 'buff_pharm_stimulant_inject_potent');
 BS3.setBuffStateListener(function (ownerId) { PE.onBuffStateChanged(ownerId); });
 PE.resetState();
 
-// 途径增量：外敷 0 / 口服 +4 / 刺入 +15（联合按成分数累加）
+// 途径增量：外敷 0 / 口服 +3 / 刺入 +12（联合按成分数累加）
 assert.strictEqual(PE.getRouteGain('topical'), 0, '外敷不涨瘾');
-assert.strictEqual(PE.getRouteGain('drink'), 4, '口服增量 4');
-assert.strictEqual(PE.getRouteGain('inject'), 15, '刺入增量 15');
+assert.strictEqual(PE.getRouteGain('drink'), 3, '口服增量 3');
+assert.strictEqual(PE.getRouteGain('inject'), 12, '刺入增量 12');
 assert.strictEqual(PE.addAddictionFromRoute('topical'), 0, '外敷用药后成瘾仍为 0');
-assert.strictEqual(PE.addAddictionFromRoute('drink'), 4, '口服一次 → 4');
-assert.strictEqual(PE.addAddictionFromRoute('inject', 3), 49, '联合注射液 3 成分 → 4 + 15×3 = 49');
+assert.strictEqual(PE.addAddictionFromRoute('drink'), 3, '口服一次 → 3');
+assert.strictEqual(PE.addAddictionFromRoute('inject', 3), 39, '联合注射液 3 成分 → 3 + 12×3 = 39');
 ok('途径增量与联合累加（外敷恒 0）');
 
 // 四阶段阈值 + 阶段惩罚 buff + 乘区
@@ -416,7 +416,7 @@ assert.strictEqual(PE.getAddictionStage(24), 1);
 assert.strictEqual(PE.getAddictionStage(49), 2);
 assert.strictEqual(PE.getAddictionStage(60), 3);
 assert.strictEqual(PE.getAddictionStage(80), 4);
-assert.strictEqual(PE.getState().stage, 2, '成瘾 49 → 阶段二');
+assert.strictEqual(PE.getState().stage, 2, '成瘾 39 → 阶段二');
 assert(BS3.hasBuffByBuffId('player', 'buff_pharm_addiction_stage2'), '阶段二惩罚 buff 在场');
 assert(Math.abs(CA3.getExternalAcquiredMultiplier().jingu - 0.9) < 1e-9, '阶段二五维 ×0.90');
 ok('四阶段阈值 + 阶段惩罚（−10%/−20%/−35%）');
@@ -426,8 +426,8 @@ BS3.applyBuff('player', 'buff_pharm_stimulant_inject_weak', 'test');
 assert(PE.isPenaltySuppressed(), '阶段二 + 弱效注射药 → 压制成立');
 assert(Math.abs(CA3.getExternalAcquiredMultiplier().jingu - 1) < 1e-9, '压制期间五维乘区恢复 1.0');
 BS3.removeBuffByBuffId('player', 'buff_pharm_stimulant_inject_weak');
-PE.addAddiction(15); // 49+15=64 → 阶段三（需 ≥regular）
-assert.strictEqual(PE.getState().stage, 3, '成瘾 64 → 阶段三');
+PE.addAddiction(21); // 39+21=60 → 阶段三（需 ≥regular）
+assert.strictEqual(PE.getState().stage, 3, '成瘾 60 → 阶段三');
 BS3.applyBuff('player', 'buff_pharm_stimulant_inject_weak', 'test');
 assert(!PE.isPenaltySuppressed(), '阶段三：弱效压不住');
 BS3.removeBuffByBuffId('player', 'buff_pharm_stimulant_inject_weak');
@@ -438,12 +438,12 @@ ok('potency 压制门槛（阶段二 ≥weak / 阶段三 ≥regular）');
 
 // 免疫三向接线（§4.5）
 immunityLevel = 100;
-assert(PE.getRouteGain('inject') < 15 * 0.06 && PE.getRouteGain('inject') > 0, '免疫 100 级 → 累积增量大幅减免');
+assert(PE.getRouteGain('inject') < 12 * 0.6 && PE.getRouteGain('inject') > 0, '免疫 100 级 → 累积增量减免 50%');
 const beforeDecay = PE.getAddiction();
 PE.onWorldTick();
 const decayWithImmunity = beforeDecay - PE.getAddiction();
 immunityLevel = 0;
-assert(decayWithImmunity > 0.05, '免疫加速自然衰减（' + decayWithImmunity.toFixed(3) + ' > 0.05）');
+assert(decayWithImmunity > 0.02, '免疫加速自然衰减（' + decayWithImmunity.toFixed(3) + ' > 0.02）');
 ok('免疫接线：累积减免 + 衰减加速');
 
 // 毒性：档位映射 + 代谢衰减 + 致死倒计时
@@ -460,7 +460,7 @@ PE.addToxicity(30); // 60 → 重
 assert.strictEqual(PE.getToxicityBand(), 'severe', '毒性 60 → 重');
 PE.onWorldTick();
 assert(PE.isLethalCountdownActive(), '重档 → 致死倒计时启动');
-assert(PE.getLethalTicksRemaining() === 39, '倒计时上限 40（已走 1 tick）');
+assert(PE.getLethalTicksRemaining() === 15, '倒计时上限 16（已走 1 tick）');
 PE.accelerateToxicityDecay(100);
 assert.strictEqual(PE.getToxicityBand(), 'none', '解毒加速 → 毒性清空');
 PE.onWorldTick();
@@ -468,8 +468,7 @@ assert(!PE.isLethalCountdownActive(), '降到重档之下 → 倒计时清零');
 ok('毒性档位映射 + 解毒清空 + 倒计时脱离');
 
 // 走完倒计时 → setDead('drug_toxicity')
-// 注：自然衰减 1/tick + 重档门槛 56 + 倒计时 40 → 需初始毒性 ≥96 才可能在致命区待满 40 tick
-// （47 §9.2 数值标 ❓，k246 收口时需调平衡；此处按当前配置验证链路本身）。
+// 数值口径（2026-09 定稿）：衰减 1.5/tick + 重档门槛 56 + 倒计时 16 → 初始毒性 ≥80 才致死
 deathReason = '';
 PE.addToxicity(100);
 let guard = 0;
@@ -648,12 +647,14 @@ const conflictHit = PCC.resolve([{ item_id: 'solvent_water_pure', count: 1 }, { 
 assert.strictEqual(conflictHit.conflicts.length, 1, '酸 + 生物碱 → 命中 1 条相冲');
 assert.strictEqual(conflictHit.conflicts[0].outcome, 'settle_mild');
 assert.strictEqual(conflictHit.conflicts[0].buff_id, 'buff_pharm_conflict_settle_mild');
-// 功能成分（toxicity=0）与助剂不参与相冲
-const noConflict1 = PCC.resolve([SOLVENT, { item_id: 'med_cocaine_powder', count: 1 }, { item_id: 'med_rehydration_powder', count: 1 }]);
-assert.strictEqual(noConflict1.conflicts.length, 0, '功能成分不参与相冲');
+// 功能成分（toxicity=0）参与相冲；助剂不参与
+const funcConflict = PCC.resolve([SOLVENT, { item_id: 'med_cocaine_powder', count: 1 }, { item_id: 'med_rehydration_powder', count: 1 }]);
+assert.strictEqual(funcConflict.conflicts.length, 1, '功能成分参与相冲（生物碱 × 矿物盐）');
+const noConflict1 = PCC.resolve([SOLVENT, { item_id: 'med_cocaine_powder', count: 1 }, { item_id: 'med_liver_herb_powder', count: 1 }]);
+assert.strictEqual(noConflict1.conflicts.length, 0, '生物碱 × 苷类无规则 → 不相冲');
 const noConflict2 = PCC.resolve([SOLVENT, { item_id: 'med_cocaine_powder', count: 1 }, { item_id: 'adj_citric_acid', count: 1 }]);
 assert.strictEqual(noConflict2.conflicts.length, 0, '助剂（成盐助溶）不参与相冲');
-ok('相冲类别级判定 + 助剂/溶媒/功能成分豁免');
+ok('相冲类别级判定 + 助剂/溶媒豁免（功能成分参与）');
 
 // G2. 溶媒错配（§10.2）：糖水兑矿物盐 / 盐水盐析酸性成分 → 析出
 const dextroseMismatch = PCC.resolve([{ item_id: 'solvent_glucose_solution', count: 1 }, { item_id: 'med_rehydration_powder', count: 1 }]);
@@ -1046,5 +1047,96 @@ assert(lockedHtml.indexOf('给药方式') >= 0, '无技能仍显示给药方式'
 assert(lockedHtml.indexOf('制药经验不足') >= 0, '数值区显示锁定提示（信息分级）');
 assert(lockedHtml.indexOf('持续 10 tick') < 0, '无技能看不到药效数值');
 ok('信息分级：常驻（方式/风险）vs 技能解锁（族/档位/数值）');
+
+console.log('\n㉓ 相冲表扩展（剂量分档 / 溶媒助溶豁免）');
+const lowDose = PCC.resolve([{ item_id: 'solvent_water_pure', count: 1 }, { item_id: 'med_cardiac_powder', count: 1 }, { item_id: 'med_rehydration_powder', count: 1 }]);
+assert.strictEqual(lowDose.conflicts.length, 1, '强心苷 + 矿物盐 → 命中');
+assert.strictEqual(lowDose.conflicts[0].outcome, 'settle_mild', '低剂量（' + lowDose.conflicts[0].dose + ' < 40）→ 轻症沉淀');
+const highDose = PCC.resolve([{ item_id: 'solvent_water_pure', count: 1 }, { item_id: 'med_cardiac_powder', count: 2 }, { item_id: 'med_rehydration_powder', count: 1 }]);
+assert.strictEqual(highDose.conflicts.length, 1);
+assert.strictEqual(highDose.conflicts[0].outcome, 'toxic_severe', '高剂量（' + highDose.conflicts[0].dose + ' ≥ 40）→ 重症');
+const newPairs = [
+  ['med_liver_herb_powder', 'med_notoginseng_powder', 'glycoside_tannin'],
+  ['med_morphine_powder', 'med_rehydration_powder', 'alkaloid_mineral'],
+  ['med_thc_powder', 'med_baiji_powder', 'volatile_oil_tannin']
+];
+newPairs.forEach(([a, b, rid]) => {
+  const r = PCC.resolve([{ item_id: 'solvent_water_pure', count: 1 }, { item_id: a, count: 1 }, { item_id: b, count: 1 }]);
+  assert(!!r.conflicts.find((c) => c.rule_id === rid), '新增规则命中 ' + rid + '（实际：' + r.conflicts.map((c) => c.rule_id).join(',') + '）');
+});
+ok('相冲表 9 条类别对 + 剂量分档（低剂量轻症 / 高剂量重症）');
+
+const waterOil = PCC.resolve([{ item_id: 'solvent_water_pure', count: 1 }, { item_id: 'med_thc_powder', count: 1 }]);
+assert(waterOil.conflicts.some((c) => c.rule_id === 'water_volatile_oil'), '纯水兑挥发油 → 不分层');
+const waterOilAdj = PCC.resolve([{ item_id: 'solvent_water_pure', count: 1 }, { item_id: 'med_thc_powder', count: 1 }, { item_id: 'adj_vitamin_c', count: 1 }]);
+assert(!waterOilAdj.conflicts.some((c) => c.rule_id === 'water_volatile_oil'), '加助剂后该错配不触发（助溶兜底）');
+ok('溶媒错配新增「纯水 × 挥发油」+ 助剂助溶豁免');
+
+console.log('\n㉔ 吸入用耗时区分（§5.2 裁决）');
+PS.setConfig({ systemConfig: cfg });
+assert.strictEqual(IU.getUseTickCost({ use_action: 'drink' }), 1, '口服 1 tick');
+assert.strictEqual(IU.getUseTickCost({ use_action: 'topical' }), 1, '外敷 1 tick');
+assert.strictEqual(IU.getUseTickCost({ use_action: 'inhale' }), 2, '吸入 2 tick');
+assert.strictEqual(IU.getUseTickCost({ use_action: 'inject' }), 3, '刺入 3 tick');
+assert.strictEqual(IU.getUseTickCost({}), 1, '非药品默认 1 tick');
+assert(readText('js/scene-app.js').includes('advanceWorldTicks(useTicks)'), '使用流程按途径推进 tick');
+ok('四途径使用耗时：口服/外敷 1 · 吸入 2 · 刺入 3（配置化）');
+
+console.log('\n㉕ 成瘾/免疫/致死窗口数值（2026-09 定稿）');
+const c2 = PC.parseCsv(pharmacyCsv);
+assert.strictEqual(Number(c2.pharmacy_addiction_gain_drink), 3);
+assert.strictEqual(Number(c2.pharmacy_addiction_gain_inhale), 8);
+assert.strictEqual(Number(c2.pharmacy_addiction_gain_inject), 12);
+assert.strictEqual(Number(c2.pharmacy_addiction_decay_per_tick), 0.02, '衰减 ≈0.4/分钟');
+assert.strictEqual(Number(c2.pharmacy_addiction_immunity_gain_reduction), 0.005, '免疫满级 −50% 累积');
+assert.strictEqual(Number(c2.pharmacy_addiction_immunity_decay_bonus), 0.015, '免疫满级 ×2.5 衰减');
+assert.strictEqual(Number(c2.pharmacy_toxicity_decay_per_tick), 1.5);
+assert.strictEqual(Number(c2.pharmacy_toxicity_lethal_ticks), 16);
+function diesAt(startTox) {
+  let tox = startTox;
+  let ticks = 0;
+  let inDanger = 0;
+  while (ticks < 400) {
+    tox = Math.max(0, tox - 1.5);
+    ticks++;
+    if (tox >= 56) { inDanger++; if (inDanger >= 16) return ticks; } else { inDanger = 0; }
+  }
+  return null;
+}
+assert.strictEqual(diesAt(79), null, '初始毒性 79 → 危险区不足 16 tick，活下来');
+assert(diesAt(81) !== null, '初始毒性 81 → 致死');
+assert.strictEqual(diesAt(100), 16, '初始毒性 100 → 满 16 tick 即死');
+ok('致死窗口：门槛 ≈80（79 存活 / 81 致死 / 100 在 16 tick 内致死）');
+
+console.log('\n㉖ 精制链（四个高层工艺 + 粗制/精制两档）');
+const phRecipes2 = Object.keys(recipesDoc.recipes).map((k) => recipesDoc.recipes[k]).filter((r) => r.recipe_system === 'life_pharmacy');
+const usedMethods = new Set(phRecipes2.map((r) => r.method_id));
+const allPhMethods = Object.keys(recipeMethods.methods).filter((k) => k.indexOf('life_pharmacy.') === 0);
+assert.strictEqual(allPhMethods.filter((m) => !usedMethods.has(m)).join(','), '', '9 个制药方法全部有配方（缺：' + allPhMethods.filter((m) => !usedMethods.has(m)).join(',') + '）');
+['filtration', 'distillation', 'centrifugation', 'crystallization'].forEach((k) => {
+  const gate = recipeMethods.methods['life_pharmacy.' + k].unlock;
+  assert(Array.isArray(gate) && gate[0] && gate[0].type === 'skill_level_min' && gate[0].skill_id === 'life_pharmacy', k + ' 有技能解锁门槛');
+});
+[['med_morphine_powder', 'med_morphine_powder_refined'], ['med_thc_powder', 'med_thc_powder_refined'], ['med_psilocybin_powder', 'med_psilocybin_powder_refined']].forEach(([raw, ref]) => {
+  const a = items[raw];
+  const b = items[ref];
+  assert(b && Number(b.pharm_effect) > Number(a.pharm_effect), ref + ' 药效更高');
+  assert(Number(b.pharm_toxicity) < Number(a.pharm_toxicity), ref + ' 毒性更低');
+  assert(Number(b.concentration_cost) < Number(a.concentration_cost), ref + ' 浓度占用更低');
+});
+assert(items.potion_analgesic_injection_refined && items.potion_antistun_injection_refined, '两件精制成品已落库');
+assert.strictEqual(items.potion_antistun_injection_refined.use_buff_id, 'buff_pharm_antistun_inject_potent', '精制醒神针升到 potent 档');
+ok('精制链：9/9 方法有配方 + 高层技能门 + 精制粉更纯更省浓度 + 精制成品升档');
+
+console.log('\n㉗ 制药不接鉴定（2026-09 裁决）');
+const fieldRulesDoc = loadJson('data/item-field-display-rules.json');
+const pharmFields = Object.keys(fieldRulesDoc.fields).filter((k) => /^(use_action|use_charges|use_buff_id|pharmacy_compound|concentration_|adjuvant_strength|pharm_|chem_class|components)/.test(k));
+const wrongSkill = pharmFields.filter((k) => {
+  const sid = fieldRulesDoc.fields[k].skill_id;
+  return sid != null && sid !== '' && sid !== 'life_pharmacy';
+});
+assert.strictEqual(wrongSkill.join(','), '', '制药字段只用 life_pharmacy 门闸（不接鉴定）：' + wrongSkill.join(','));
+assert(pharmFields.length >= 11, '制药字段规则齐备（' + pharmFields.length + ' 条）');
+ok('制药产物信息门槛 = 药学等级（鉴定留给其他系统）');
 
 console.log('\n[smoke-pharmacy] ' + pass + ' 组断言全部通过');

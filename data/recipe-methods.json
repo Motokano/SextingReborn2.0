@@ -121,7 +121,13 @@
       "allowed_station_tags": [
         "station_pharmacy"
       ],
-      "unlock": [],
+      "unlock": [
+        {
+          "type": "skill_level_min",
+          "skill_id": "life_pharmacy",
+          "level": 6
+        }
+      ],
       "failure_output": {
         "item_id": "item.scrap.herb_dregs",
         "count": 1
@@ -144,7 +150,13 @@
       "allowed_station_tags": [
         "station_pharmacy"
       ],
-      "unlock": [],
+      "unlock": [
+        {
+          "type": "skill_level_min",
+          "skill_id": "life_pharmacy",
+          "level": 4
+        }
+      ],
       "failure_output": {
         "item_id": "item.scrap.herb_dregs",
         "count": 1
@@ -167,7 +179,13 @@
       "allowed_station_tags": [
         "station_pharmacy"
       ],
-      "unlock": [],
+      "unlock": [
+        {
+          "type": "skill_level_min",
+          "skill_id": "life_pharmacy",
+          "level": 8
+        }
+      ],
       "failure_output": {
         "item_id": "item.scrap.herb_dregs",
         "count": 1
@@ -190,7 +208,13 @@
       "allowed_station_tags": [
         "station_pharmacy"
       ],
-      "unlock": [],
+      "unlock": [
+        {
+          "type": "skill_level_min",
+          "skill_id": "life_pharmacy",
+          "level": 10
+        }
+      ],
       "failure_output": {
         "item_id": "item.scrap.herb_dregs",
         "count": 1

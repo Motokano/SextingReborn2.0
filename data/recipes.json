@@ -2232,6 +2232,274 @@
       "allowed_station_tags": null,
       "match_weight": 1,
       "pharmacy_generated": true
+    },
+    "life_pharmacy.refine_thc": {
+      "recipe_id": "life_pharmacy.refine_thc",
+      "recipe_system": "life_pharmacy",
+      "method_id": "life_pharmacy.distillation",
+      "enabled": true,
+      "inputs": [
+        {
+          "item_id": "med_thc_powder",
+          "count": 2
+        }
+      ],
+      "main_output": {
+        "item_id": "med_thc_powder_refined",
+        "count": 1
+      },
+      "bonus_outputs": [],
+      "required_skill_level_min": null,
+      "proficiency_usage_key": null,
+      "required_skill_id": null,
+      "recipe_processor_id": null,
+      "base_success_rate": null,
+      "failure_output": null,
+      "allowed_station_tags": null,
+      "match_weight": 1,
+      "pharmacy_generated": true
+    },
+    "life_pharmacy.refine_acorus": {
+      "recipe_id": "life_pharmacy.refine_acorus",
+      "recipe_system": "life_pharmacy",
+      "method_id": "life_pharmacy.distillation",
+      "enabled": true,
+      "inputs": [
+        {
+          "item_id": "med_acorus_powder",
+          "count": 2
+        }
+      ],
+      "main_output": {
+        "item_id": "med_acorus_powder_refined",
+        "count": 1
+      },
+      "bonus_outputs": [],
+      "required_skill_level_min": null,
+      "proficiency_usage_key": null,
+      "required_skill_id": null,
+      "recipe_processor_id": null,
+      "base_success_rate": null,
+      "failure_output": null,
+      "allowed_station_tags": null,
+      "match_weight": 1,
+      "pharmacy_generated": true
+    },
+    "life_pharmacy.refine_morphine": {
+      "recipe_id": "life_pharmacy.refine_morphine",
+      "recipe_system": "life_pharmacy",
+      "method_id": "life_pharmacy.crystallization",
+      "enabled": true,
+      "inputs": [
+        {
+          "item_id": "med_morphine_powder",
+          "count": 2
+        }
+      ],
+      "main_output": {
+        "item_id": "med_morphine_powder_refined",
+        "count": 1
+      },
+      "bonus_outputs": [],
+      "required_skill_level_min": null,
+      "proficiency_usage_key": null,
+      "required_skill_id": null,
+      "recipe_processor_id": null,
+      "base_success_rate": null,
+      "failure_output": null,
+      "allowed_station_tags": null,
+      "match_weight": 1,
+      "pharmacy_generated": true
+    },
+    "life_pharmacy.refine_cocaine": {
+      "recipe_id": "life_pharmacy.refine_cocaine",
+      "recipe_system": "life_pharmacy",
+      "method_id": "life_pharmacy.crystallization",
+      "enabled": true,
+      "inputs": [
+        {
+          "item_id": "med_cocaine_powder",
+          "count": 2
+        }
+      ],
+      "main_output": {
+        "item_id": "med_cocaine_powder_refined",
+        "count": 1
+      },
+      "bonus_outputs": [],
+      "required_skill_level_min": null,
+      "proficiency_usage_key": null,
+      "required_skill_id": null,
+      "recipe_processor_id": null,
+      "base_success_rate": null,
+      "failure_output": null,
+      "allowed_station_tags": null,
+      "match_weight": 1,
+      "pharmacy_generated": true
+    },
+    "life_pharmacy.refine_liver_herb": {
+      "recipe_id": "life_pharmacy.refine_liver_herb",
+      "recipe_system": "life_pharmacy",
+      "method_id": "life_pharmacy.filtration",
+      "enabled": true,
+      "inputs": [
+        {
+          "item_id": "med_liver_herb_powder",
+          "count": 2
+        }
+      ],
+      "main_output": {
+        "item_id": "med_liver_herb_powder_refined",
+        "count": 1
+      },
+      "bonus_outputs": [],
+      "required_skill_level_min": null,
+      "proficiency_usage_key": null,
+      "required_skill_id": null,
+      "recipe_processor_id": null,
+      "base_success_rate": null,
+      "failure_output": null,
+      "allowed_station_tags": null,
+      "match_weight": 1,
+      "pharmacy_generated": true
+    },
+    "life_pharmacy.refine_notoginseng": {
+      "recipe_id": "life_pharmacy.refine_notoginseng",
+      "recipe_system": "life_pharmacy",
+      "method_id": "life_pharmacy.filtration",
+      "enabled": true,
+      "inputs": [
+        {
+          "item_id": "med_notoginseng_powder",
+          "count": 2
+        }
+      ],
+      "main_output": {
+        "item_id": "med_notoginseng_powder_refined",
+        "count": 1
+      },
+      "bonus_outputs": [],
+      "required_skill_level_min": null,
+      "proficiency_usage_key": null,
+      "required_skill_id": null,
+      "recipe_processor_id": null,
+      "base_success_rate": null,
+      "failure_output": null,
+      "allowed_station_tags": null,
+      "match_weight": 1,
+      "pharmacy_generated": true
+    },
+    "life_pharmacy.refine_psilocybin": {
+      "recipe_id": "life_pharmacy.refine_psilocybin",
+      "recipe_system": "life_pharmacy",
+      "method_id": "life_pharmacy.centrifugation",
+      "enabled": true,
+      "inputs": [
+        {
+          "item_id": "med_psilocybin_powder",
+          "count": 2
+        }
+      ],
+      "main_output": {
+        "item_id": "med_psilocybin_powder_refined",
+        "count": 1
+      },
+      "bonus_outputs": [],
+      "required_skill_level_min": null,
+      "proficiency_usage_key": null,
+      "required_skill_id": null,
+      "recipe_processor_id": null,
+      "base_success_rate": null,
+      "failure_output": null,
+      "allowed_station_tags": null,
+      "match_weight": 1,
+      "pharmacy_generated": true
+    },
+    "life_pharmacy.refine_safflower": {
+      "recipe_id": "life_pharmacy.refine_safflower",
+      "recipe_system": "life_pharmacy",
+      "method_id": "life_pharmacy.centrifugation",
+      "enabled": true,
+      "inputs": [
+        {
+          "item_id": "med_safflower_powder",
+          "count": 2
+        }
+      ],
+      "main_output": {
+        "item_id": "med_safflower_powder_refined",
+        "count": 1
+      },
+      "bonus_outputs": [],
+      "required_skill_level_min": null,
+      "proficiency_usage_key": null,
+      "required_skill_id": null,
+      "recipe_processor_id": null,
+      "base_success_rate": null,
+      "failure_output": null,
+      "allowed_station_tags": null,
+      "match_weight": 1,
+      "pharmacy_generated": true
+    },
+    "life_pharmacy.mix_analgesic_injection_refined": {
+      "recipe_id": "life_pharmacy.mix_analgesic_injection_refined",
+      "recipe_system": "life_pharmacy",
+      "method_id": "life_pharmacy.maceration",
+      "enabled": true,
+      "inputs": [
+        {
+          "item_id": "med_morphine_powder_refined",
+          "count": 1
+        },
+        {
+          "item_id": "solvent_saline",
+          "count": 1
+        }
+      ],
+      "main_output": {
+        "item_id": "potion_analgesic_injection_refined",
+        "count": 1
+      },
+      "bonus_outputs": [],
+      "required_skill_level_min": null,
+      "proficiency_usage_key": null,
+      "required_skill_id": null,
+      "recipe_processor_id": null,
+      "base_success_rate": null,
+      "failure_output": null,
+      "allowed_station_tags": null,
+      "match_weight": 1,
+      "pharmacy_generated": true
+    },
+    "life_pharmacy.mix_antistun_injection_refined": {
+      "recipe_id": "life_pharmacy.mix_antistun_injection_refined",
+      "recipe_system": "life_pharmacy",
+      "method_id": "life_pharmacy.maceration",
+      "enabled": true,
+      "inputs": [
+        {
+          "item_id": "med_acorus_powder_refined",
+          "count": 1
+        },
+        {
+          "item_id": "solvent_saline",
+          "count": 1
+        }
+      ],
+      "main_output": {
+        "item_id": "potion_antistun_injection_refined",
+        "count": 1
+      },
+      "bonus_outputs": [],
+      "required_skill_level_min": null,
+      "proficiency_usage_key": null,
+      "required_skill_id": null,
+      "recipe_processor_id": null,
+      "base_success_rate": null,
+      "failure_output": null,
+      "allowed_station_tags": null,
+      "match_weight": 1,
+      "pharmacy_generated": true
     }
   }
 }

@@ -19,20 +19,24 @@
         pharmacy_success_bonus_per_level: 0.005,
         pharmacy_proficiency_usage_key: 'pharmacy_success',
         pharmacy_use_routes: 'drink|topical|inhale|inject',
+        pharmacy_use_ticks_drink: 1,
+        pharmacy_use_ticks_topical: 1,
+        pharmacy_use_ticks_inhale: 2,
+        pharmacy_use_ticks_inject: 3,
         pharmacy_addiction_gain_topical: 0,
-        pharmacy_addiction_gain_drink: 4,
-        pharmacy_addiction_gain_inhale: 10,
-        pharmacy_addiction_gain_inject: 15,
-        pharmacy_addiction_decay_per_tick: 0.05,
-        pharmacy_addiction_immunity_gain_reduction: 0.01,
-        pharmacy_addiction_immunity_decay_bonus: 0.02,
-        pharmacy_addiction_immunity_penalty_reduction: 0.01,
+        pharmacy_addiction_gain_drink: 3,
+        pharmacy_addiction_gain_inhale: 8,
+        pharmacy_addiction_gain_inject: 12,
+        pharmacy_addiction_decay_per_tick: 0.02,
+        pharmacy_addiction_immunity_gain_reduction: 0.005,
+        pharmacy_addiction_immunity_decay_bonus: 0.015,
+        pharmacy_addiction_immunity_penalty_reduction: 0.005,
         pharmacy_addiction_stage_thresholds: '25|50|75',
         pharmacy_addiction_stage_penalties: '0.10|0.20|0.35',
         pharmacy_potency_thresholds: '33|66',
         pharmacy_toxicity_band_thresholds: '0|25|55',
-        pharmacy_toxicity_decay_per_tick: 1,
-        pharmacy_toxicity_lethal_ticks: 40,
+        pharmacy_toxicity_decay_per_tick: 1.5,
+        pharmacy_toxicity_lethal_ticks: 16,
         pharmacy_concentration_capacity: 100,
         pharmacy_offset_rate_cap: 0.9,
         pharmacy_synergy_bonus_per_unit: 0.2,
@@ -150,6 +154,12 @@
             proficiency_usage_key: asText(kv.pharmacy_proficiency_usage_key) || DEFAULTS.pharmacy_proficiency_usage_key
         };
         out.pharmacy_use_routes = toList(kv.pharmacy_use_routes, DEFAULTS.pharmacy_use_routes);
+        out.pharmacy_use_ticks = {
+            drink: Math.max(1, toInt(kv.pharmacy_use_ticks_drink, DEFAULTS.pharmacy_use_ticks_drink)),
+            topical: Math.max(1, toInt(kv.pharmacy_use_ticks_topical, DEFAULTS.pharmacy_use_ticks_topical)),
+            inhale: Math.max(1, toInt(kv.pharmacy_use_ticks_inhale, DEFAULTS.pharmacy_use_ticks_inhale)),
+            inject: Math.max(1, toInt(kv.pharmacy_use_ticks_inject, DEFAULTS.pharmacy_use_ticks_inject))
+        };
         out.pharmacy_inject_kit_item_ids = toList(kv.pharmacy_inject_kit_item_ids, '');
         out.pharmacy_addiction_gain = {
             topical: toNumber(kv.pharmacy_addiction_gain_topical, DEFAULTS.pharmacy_addiction_gain_topical),

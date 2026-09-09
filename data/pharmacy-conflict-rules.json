@@ -1,17 +1,18 @@
 {
-  "_comment": "制药配伍相冲表（47 §10.2/§10.3，k225 数据部分）。类别级匹配：注射液各成分的 chem_class 两两比对，命中即按 outcome 授予结局 buff。相冲在注射后结算（配药时不提示），见 §10.4。",
+  "_comment": "制药配伍相冲表（47 §10.2/§10.3）。类别级匹配：注射液各成分的 chem_class 两两比对，命中即按 outcome 授予结局 buff。相冲在注射后结算（配药时不提示），见 §10.4。",
   "schema_version": "1.0.0",
   "outcome_buffs": {
     "settle_mild": "buff_pharm_conflict_settle_mild",
     "toxic_severe": "buff_pharm_conflict_toxic_severe"
   },
-  "_skip_comment": "相冲判定豁免（§9.1 助剂是成盐助溶物、溶媒是底液、功能成分无副作用）：这些成分不参与两两相冲。药成分（toxicity>0）与辅成分（toxicity<0）参与——§9.7 明说骆驼蓬碱带相冲风险。",
+  "_skip_comment": "相冲判定豁免：只豁免溶媒（底液）与助剂（成盐助溶物）以及无 chem_class 的项。**功能成分（toxicity=0）参与相冲**——§10.2 的「强心苷 + 钙」正是功能成分对功能成分；相冲是化学相容性，与有无副作用无关。药成分与辅成分同样参与。",
   "skip": {
     "missing_chem_class": true,
-    "toxicity_zero": true,
+    "toxicity_zero": false,
     "sub_categories": ["solvent", "pharm_adjuvant"]
   },
-  "_solvent_rules_comment": "溶媒错配（47 §10.2：溶媒错配→沉淀析出）：选错底液时，特定化学类别的成分析出。溶媒本身不参与两两相冲（上面 skip 已豁免）。",
+  "_dose_comment": "剂量分档（§10.5：相冲严重度 + 剂量定档）：参与该条相冲的两味成分浓度占用之和 ≥ severe_concentration 时升级为 outcome_severe，否则用 outcome。",
+  "_solvent_rules_comment": "溶媒错配（47 §10.2：溶媒错配→沉淀析出）：选错底液时，特定化学类别的成分析出。溶媒本身不参与两两相冲（上面 skip 已豁免）；bypass_by_sub_categories 命中时该错配不触发（助剂助溶兜底）。",
   "solvent_rules": [
     {
       "rule_id": "dextrose_mineral",
@@ -26,6 +27,14 @@
       "incompatible_chem_classes": ["organic_acid"],
       "outcome": "settle_mild",
       "desc": "盐水盐析酸性成分 → 析出"
+    },
+    {
+      "rule_id": "water_volatile_oil",
+      "solvent_item_id": "solvent_water_pure",
+      "incompatible_chem_classes": ["volatile_oil"],
+      "outcome": "settle_mild",
+      "bypass_by_sub_categories": ["pharm_adjuvant"],
+      "desc": "纯水兑挥发油 → 不分层，油漂在上面"
     }
   ],
   "rules": [
@@ -33,19 +42,25 @@
       "rule_id": "alkaloid_tannin",
       "chem_classes": ["alkaloid", "tannin"],
       "outcome": "settle_mild",
+      "outcome_severe": "toxic_severe",
+      "severe_concentration": 55,
       "desc": "生物碱遇鞣质 → 沉淀，药白打还带闷"
     },
     {
       "rule_id": "acid_alkaloid",
       "chem_classes": ["organic_acid", "alkaloid"],
       "outcome": "settle_mild",
+      "outcome_severe": "toxic_severe",
+      "severe_concentration": 55,
       "desc": "酸性与碱性（生物碱）中和 → 析出沉淀"
     },
     {
       "rule_id": "glycoside_mineral",
       "chem_classes": ["glycoside", "mineral"],
-      "outcome": "toxic_severe",
-      "desc": "强心苷遇钙盐 → 心律毒性（重症）"
+      "outcome": "settle_mild",
+      "outcome_severe": "toxic_severe",
+      "severe_concentration": 40,
+      "desc": "强心苷遇钙盐 → 心律毒性（剂量大时转重症）"
     },
     {
       "rule_id": "volatile_oil_tannin",
@@ -58,6 +73,30 @@
       "chem_classes": ["organic_acid", "glycoside"],
       "outcome": "settle_mild",
       "desc": "酸性水解苷类 → 析出、药效减半"
+    },
+    {
+      "rule_id": "glycoside_tannin",
+      "chem_classes": ["glycoside", "tannin"],
+      "outcome": "settle_mild",
+      "desc": "苷类遇鞣质 → 络合成絮，一起沉底"
+    },
+    {
+      "rule_id": "alkaloid_mineral",
+      "chem_classes": ["alkaloid", "mineral"],
+      "outcome": "settle_mild",
+      "desc": "生物碱遇钙镁盐 → 盐析出颗粒"
+    },
+    {
+      "rule_id": "volatile_oil_mineral",
+      "chem_classes": ["volatile_oil", "mineral"],
+      "outcome": "settle_mild",
+      "desc": "挥发油被矿物粉吸住 → 油味散了，药也没了"
+    },
+    {
+      "rule_id": "acid_mineral",
+      "chem_classes": ["organic_acid", "mineral"],
+      "outcome": "settle_mild",
+      "desc": "有机酸遇钙盐 → 结块沉淀"
     }
   ]
 }

@@ -749,6 +749,154 @@
         "potion_coagulant_injection",
         1
       ]
+    },
+    {
+      "recipe_id": "life_pharmacy.refine_thc",
+      "method_id": "life_pharmacy.distillation",
+      "inputs": [
+        [
+          "med_thc_powder",
+          2
+        ]
+      ],
+      "main_output": [
+        "med_thc_powder_refined",
+        1
+      ]
+    },
+    {
+      "recipe_id": "life_pharmacy.refine_acorus",
+      "method_id": "life_pharmacy.distillation",
+      "inputs": [
+        [
+          "med_acorus_powder",
+          2
+        ]
+      ],
+      "main_output": [
+        "med_acorus_powder_refined",
+        1
+      ]
+    },
+    {
+      "recipe_id": "life_pharmacy.refine_morphine",
+      "method_id": "life_pharmacy.crystallization",
+      "inputs": [
+        [
+          "med_morphine_powder",
+          2
+        ]
+      ],
+      "main_output": [
+        "med_morphine_powder_refined",
+        1
+      ]
+    },
+    {
+      "recipe_id": "life_pharmacy.refine_cocaine",
+      "method_id": "life_pharmacy.crystallization",
+      "inputs": [
+        [
+          "med_cocaine_powder",
+          2
+        ]
+      ],
+      "main_output": [
+        "med_cocaine_powder_refined",
+        1
+      ]
+    },
+    {
+      "recipe_id": "life_pharmacy.refine_liver_herb",
+      "method_id": "life_pharmacy.filtration",
+      "inputs": [
+        [
+          "med_liver_herb_powder",
+          2
+        ]
+      ],
+      "main_output": [
+        "med_liver_herb_powder_refined",
+        1
+      ]
+    },
+    {
+      "recipe_id": "life_pharmacy.refine_notoginseng",
+      "method_id": "life_pharmacy.filtration",
+      "inputs": [
+        [
+          "med_notoginseng_powder",
+          2
+        ]
+      ],
+      "main_output": [
+        "med_notoginseng_powder_refined",
+        1
+      ]
+    },
+    {
+      "recipe_id": "life_pharmacy.refine_psilocybin",
+      "method_id": "life_pharmacy.centrifugation",
+      "inputs": [
+        [
+          "med_psilocybin_powder",
+          2
+        ]
+      ],
+      "main_output": [
+        "med_psilocybin_powder_refined",
+        1
+      ]
+    },
+    {
+      "recipe_id": "life_pharmacy.refine_safflower",
+      "method_id": "life_pharmacy.centrifugation",
+      "inputs": [
+        [
+          "med_safflower_powder",
+          2
+        ]
+      ],
+      "main_output": [
+        "med_safflower_powder_refined",
+        1
+      ]
+    },
+    {
+      "recipe_id": "life_pharmacy.mix_analgesic_injection_refined",
+      "method_id": "life_pharmacy.maceration",
+      "inputs": [
+        [
+          "med_morphine_powder_refined",
+          1
+        ],
+        [
+          "solvent_saline",
+          1
+        ]
+      ],
+      "main_output": [
+        "potion_analgesic_injection_refined",
+        1
+      ]
+    },
+    {
+      "recipe_id": "life_pharmacy.mix_antistun_injection_refined",
+      "method_id": "life_pharmacy.maceration",
+      "inputs": [
+        [
+          "med_acorus_powder_refined",
+          1
+        ],
+        [
+          "solvent_saline",
+          1
+        ]
+      ],
+      "main_output": [
+        "potion_antistun_injection_refined",
+        1
+      ]
     }
   ]
 }

@@ -167,12 +167,15 @@
         return false;
     }
 
-    /** 相冲结算（类别级两两比对；返回命中规则列表）。 */
+    /** 相冲结算（类别级两两比对 + 剂量分档；返回命中规则列表）。 */
     function resolveConflicts(components) {
         var judged = [];
+        var doseById = {};
         (components || []).forEach(function (row) {
             var tpl = getTemplate(row.item_id);
-            if (!tpl || isConflictExempt(tpl)) return;
+            if (!tpl) return;
+            doseById[row.item_id] = Math.max(0, num(tpl.concentration_cost, 0)) * Math.max(1, Math.floor(num(row.count, 1)));
+            if (isConflictExempt(tpl)) return;
             var cls = String(tpl.chem_class || '').trim().toLowerCase();
             if (!cls) return;
             judged.push({ item_id: row.item_id, chem_class: cls });
@@ -198,6 +201,18 @@
             var badClasses = Array.isArray(srule.incompatible_chem_classes)
                 ? srule.incompatible_chem_classes.map(function (c) { return String(c).trim().toLowerCase(); })
                 : [];
+            // 助剂助溶兜底（§9.1）：bypass 命中时不触发该条溶媒错配
+            var bypass = Array.isArray(srule.bypass_by_sub_categories)
+                ? srule.bypass_by_sub_categories.map(function (c) { return String(c).trim().toLowerCase(); })
+                : [];
+            if (bypass.length) {
+                var hasBypass = false;
+                (components || []).forEach(function (row) {
+                    var t = getTemplate(row.item_id);
+                    if (t && bypass.indexOf(String(t.sub_category || '').trim().toLowerCase()) >= 0) hasBypass = true;
+                });
+                if (hasBypass) continue;
+            }
             for (i = 0; i < solventCandidates.length; i++) {
                 if (badClasses.indexOf(solventCandidates[i].chem_class) < 0) continue;
                 hits.push({
@@ -222,11 +237,17 @@
                     var b = judged[j].chem_class;
                     var matched = (classes[0] === a && classes[1] === b) || (classes[0] === b && classes[1] === a);
                     if (!matched) continue;
+                    // 剂量分档（§10.5）：两味参与成分浓度占用之和 ≥ severe_concentration → 升级重症
+                    var dose = (doseById[judged[i].item_id] || 0) + (doseById[judged[j].item_id] || 0);
+                    var outcome = String(rule.outcome || '');
+                    var severeAt = num(rule.severe_concentration, NaN);
+                    if (rule.outcome_severe && isFinite(severeAt) && dose >= severeAt) outcome = String(rule.outcome_severe);
                     hits.push({
                         rule_id: rule.rule_id || '',
                         chem_classes: classes.slice(),
-                        outcome: String(rule.outcome || ''),
-                        buff_id: (conflictRules.outcome_buffs || {})[String(rule.outcome || '')] || '',
+                        outcome: outcome,
+                        dose: Math.round(dose * 100) / 100,
+                        buff_id: (conflictRules.outcome_buffs || {})[outcome] || '',
                         items: [judged[i].item_id, judged[j].item_id],
                         desc: rule.desc || ''
                     });
