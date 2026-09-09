@@ -1171,8 +1171,9 @@ assert(t3Mix.net_toxicity < t1Mix.net_toxicity, 'T3 净毒性低于 T1（' + t3M
 ok('粗制可用（potent）/ 精炼升档（pure）且更干净');
 
 // 精炼成品走 pure buff；四途径各有一件精炼成品
-['potion_analgesic_injection_purified', 'potion_stimulant_injection_purified'].forEach((id) => {
-  assert(/_pure$/.test(items[id].use_buff_id), id + ' 引用 pure 档 buff');
+['potion_analgesic_injection_purified', 'potion_stimulant_injection_purified',
+  'potion_calm_brew_purified', 'potion_mobility_salve_purified'].forEach((id) => {
+  assert(/_pure$/.test(items[id].use_buff_id), id + ' 引用 pure 档 buff（实际 ' + items[id].use_buff_id + '）');
 });
 assert(items.potion_calm_brew_purified && items.potion_mobility_salve_purified, '口服/外敷也有精炼成品');
 assert(loadJson('data/buffs.json').buffs.some((b) => b.pharmacy_potency === 'pure'), 'pure 档 buff 模板已生成');
@@ -1239,6 +1240,12 @@ assert.strictEqual(PE.tickPartRecovery(), 0, '强效 0.32/tick：1 tick 未满 1
 for (let i = 0; i < 3; i++) PE.tickPartRecovery();
 assert.strictEqual(CA3.getPartDestroy('rfoot'), 19, '外敷强效 4 tick → 恢复 1 点（宽限期内照样治）');
 ok('外敷活络药：强效 0.32/tick（约 4 tick 1 点，90 tick ≈ 29 点）');
+
+// 成品链：精炼红花活络膏走 pure 档 → 0.4/tick（约 90 tick 36 点）
+const pureSalveTpl = buffById[items.potion_mobility_salve_purified.use_buff_id];
+assert(pureSalveTpl, '精炼红花活络膏引用 buff 存在');
+assert.strictEqual(PE.getPartRecoveryPerTick(pureSalveTpl.effects[0].params), 0.4, '精炼外敷膏 = 0.4/tick');
+ok('成品链：精炼红花活络膏（pure）0.4/tick');
 
 // 无登记部位 → 兜底落「伤最重部位」；onWorldTick 也跑恢复
 CA3.setState(CA3.getDefaultState());
