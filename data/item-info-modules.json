@@ -26,8 +26,14 @@
           "content": {
             "type": "kv",
             "entries": [
-              { "k": "可冶炼性", "v": "中等" },
-              { "k": "杂质比例", "v": "偏高" }
+              {
+                "k": "可冶炼性",
+                "v": "中等"
+              },
+              {
+                "k": "杂质比例",
+                "v": "偏高"
+              }
             ]
           }
         },
@@ -58,8 +64,14 @@
           "content": {
             "type": "tpl_kv",
             "entries": [
-              { "field": "battery_capacity", "label_key": "item.attr.battery_capacity" },
-              { "field": "battery_charge", "label_key": "item.attr.battery_charge" }
+              {
+                "field": "battery_capacity",
+                "label_key": "item.attr.battery_capacity"
+              },
+              {
+                "field": "battery_charge",
+                "label_key": "item.attr.battery_charge"
+              }
             ]
           }
         },
@@ -141,9 +153,18 @@
           "content": {
             "type": "tpl_kv",
             "entries": [
-              { "field": "pocket_slots", "label_key": "item.attr.pocket_slots" },
-              { "field": "vest_slots", "label_key": "item.attr.vest_slots" },
-              { "field": "backpack_slots", "label_key": "item.attr.backpack_slots" }
+              {
+                "field": "pocket_slots",
+                "label_key": "item.attr.pocket_slots"
+              },
+              {
+                "field": "vest_slots",
+                "label_key": "item.attr.vest_slots"
+              },
+              {
+                "field": "backpack_slots",
+                "label_key": "item.attr.backpack_slots"
+              }
             ]
           }
         },
@@ -159,18 +180,40 @@
           "content": {
             "type": "tpl_kv",
             "entries": [
-              { "field": "base_shield", "label_key": "item.attr.base_shield" },
+              {
+                "field": "base_shield",
+                "label_key": "item.attr.base_shield"
+              },
               {
                 "field": "module_slots",
                 "label_key": "item.attr.module_slots",
                 "array_map": {
-                  "chest": "胸", "abdomen": "腹", "arm_l": "左臂", "arm_r": "右臂",
-                  "leg_l": "左腿", "leg_r": "右腿", "shell": "盔体", "liner": "内衬", "face": "护面"
+                  "chest": "胸",
+                  "abdomen": "腹",
+                  "arm_l": "左臂",
+                  "arm_r": "右臂",
+                  "leg_l": "左腿",
+                  "leg_r": "右腿",
+                  "shell": "盔体",
+                  "liner": "内衬",
+                  "face": "护面"
                 }
               },
-              { "field": "damage_reduce_blunt_pct", "label_key": "item.attr.dr.blunt", "pct": true },
-              { "field": "damage_reduce_slash_pct", "label_key": "item.attr.dr.slash", "pct": true },
-              { "field": "damage_reduce_pierce_pct", "label_key": "item.attr.dr.pierce", "pct": true }
+              {
+                "field": "damage_reduce_blunt_pct",
+                "label_key": "item.attr.dr.blunt",
+                "pct": true
+              },
+              {
+                "field": "damage_reduce_slash_pct",
+                "label_key": "item.attr.dr.slash",
+                "pct": true
+              },
+              {
+                "field": "damage_reduce_pierce_pct",
+                "label_key": "item.attr.dr.pierce",
+                "pct": true
+              }
             ]
           }
         },
@@ -186,11 +229,27 @@
           "content": {
             "type": "tpl_kv",
             "entries": [
-              { "field": "form_coefs", "label_key": "item.attr.form_coefs" },
-              { "field": "move_cost_mod", "label_key": "item.attr.move_cost_mod", "pct": true },
-              { "field": "parry_coef", "label_key": "item.attr.parry_coef" },
-              { "field": "speed_coef", "label_key": "item.attr.speed_coef" },
-              { "field": "req_innate_jingu", "label_key": "item.attr.req_innate_jingu" }
+              {
+                "field": "form_coefs",
+                "label_key": "item.attr.form_coefs"
+              },
+              {
+                "field": "move_cost_mod",
+                "label_key": "item.attr.move_cost_mod",
+                "pct": true
+              },
+              {
+                "field": "parry_coef",
+                "label_key": "item.attr.parry_coef"
+              },
+              {
+                "field": "speed_coef",
+                "label_key": "item.attr.speed_coef"
+              },
+              {
+                "field": "req_innate_jingu",
+                "label_key": "item.attr.req_innate_jingu"
+              }
             ]
           }
         },
@@ -206,7 +265,57 @@
           "content": {
             "type": "tpl_kv",
             "entries": [
-              { "field": "enchant_slots", "label_key": "item.attr.enchant_slots" }
+              {
+                "field": "enchant_slots",
+                "label_key": "item.attr.enchant_slots"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "module.pharmacy_medicine": {
+      "set_id": "module.pharmacy_medicine",
+      "display_name": "药品信息",
+      "modules": [
+        {
+          "module_id": "route",
+          "title": "给药方式",
+          "icon": "info",
+          "content": {
+            "type": "tpl_kv",
+            "entries": [
+              {
+                "field": "use_action",
+                "label_key": "item.pharmacy.kv.route",
+                "value_map": {
+                  "drink": "口服",
+                  "topical": "外敷",
+                  "inhale": "吸入",
+                  "inject": "刺入"
+                }
+              },
+              {
+                "field": "use_charges",
+                "label_key": "item.pharmacy.kv.charges"
+              },
+              {
+                "field": "food_buff_duration_ticks",
+                "label_key": "item.pharmacy.kv.digest"
+              }
+            ]
+          }
+        },
+        {
+          "module_id": "risk",
+          "title": "风险提示",
+          "icon": "scroll",
+          "content": {
+            "type": "list",
+            "items": [
+              "久服或致依赖，药瘾上来五维一起掉。",
+              "配药不对会析出沉淀：药效打折、毒性上调。",
+              "针具不洁会带进感染；扎针前先找干净器具。"
             ]
           }
         }

@@ -106,6 +106,11 @@
                             name: bt.name || '',
                             buff_id: bt.buff_id || buffId,
                             durationTicks: bt.durationTicks != null ? (parseInt(bt.durationTicks, 10) || 0) : 0,
+                            onsetTicks: bt.onsetTicks != null ? (parseInt(bt.onsetTicks, 10) || 0) : 0,
+                            // 47 §3.4：制药剂型标记（族/途径/档位）供 tooltip 渲染「兴奋·注射·强效」
+                            pharmacyFamily: bt.pharmacy_family || '',
+                            pharmacyRoute: bt.pharmacy_route || '',
+                            pharmacyPotency: bt.pharmacy_potency || '',
                             survivalDelta: sd
                         };
                     } catch (eB) { return null; }

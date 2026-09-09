@@ -47,17 +47,17 @@
         if (content == null) return '';
         if (typeof content === 'string') return '<div class="tooltip-module-text">' + esc(content) + '</div>';
         if (typeof content !== 'object') return '';
-        var t = String(content.type || '').toLowerCase();
-        if (t === 'text') {
+        var ctype = String(content.type || '').toLowerCase();
+        if (ctype === 'text') {
             return '<div class="tooltip-module-text">' + esc(content.text || '') + '</div>';
         }
-        if (t === 'csv_field_text') {
+        if (ctype === 'csv_field_text') {
             var key = String(content.field || '').trim();
             var v = key && tpl ? tpl[key] : '';
             if (v == null || String(v).trim() === '') v = content.fallback || '';
             return '<div class="tooltip-module-text">' + esc(v || '') + '</div>';
         }
-        if (t === 'list') {
+        if (ctype === 'list') {
             var items = Array.isArray(content.items) ? content.items : [];
             if (!items.length) return '';
             var li = '';
@@ -66,7 +66,7 @@
             }
             return '<ul class="tooltip-module-list">' + li + '</ul>';
         }
-        if (t === 'kv') {
+        if (ctype === 'kv') {
             var kv = Array.isArray(content.entries) ? content.entries : [];
             if (!kv.length) return '';
             var rows = '';
@@ -76,7 +76,7 @@
             }
             return '<div class="tooltip-module-kv">' + rows + '</div>';
         }
-        if (t === 'tpl_kv') {
+        if (ctype === 'tpl_kv') {
             // 从物品模板动态读取字段渲染（防具数值走此类型，技能解锁后可见）
             var entriesT = Array.isArray(content.entries) ? content.entries : [];
             var outT = '';
@@ -106,6 +106,9 @@
                 } else {
                     vStrT = String(rawT);
                 }
+                // 枚举映射（47 §3.2/§9.1：use_action / pharm_family / chem_class → 显示名）
+                var vmap = (en.value_map && typeof en.value_map === 'object') ? en.value_map : null;
+                if (vmap && vmap[vStrT] != null) vStrT = String(vmap[vStrT]);
                 outT += '<div class="tooltip-module-text">' + esc(t(en.label_key || f, { v: vStrT })) + '</div>';
             }
             return outT;

@@ -185,7 +185,73 @@
         return (name ? esc(name) + '：' : '') + parts.join(' · ');
     }
 
-    function renderValueHtml(rule, rawVal, buffLookup) {
+    /** 枚举值 → 显示名（rule.value_map: 原始值 → ui 键或直接文案） */
+    function renderEnumLabel(rawVal, rule) {
+        var raw = String(rawVal == null ? '' : rawVal).trim();
+        if (!raw) return '';
+        var map = rule && rule.value_map && typeof rule.value_map === 'object' ? rule.value_map : null;
+        var mapped = map && map[raw] != null ? String(map[raw]) : '';
+        if (!mapped) return '<span class="tooltip-module-v">' + esc(raw) + '</span>';
+        var text = mapped.indexOf('.') >= 0 ? safeT(mapped, {}) : mapped;
+        return '<span class="tooltip-module-v">' + esc(text) + '</span>';
+    }
+
+    /** 47 §3.4/§9：剂型 buff → 族·途径·档位 + 起效/持续（需要 buffLookup 返回 pharmacy_* 字段） */
+    function renderPharmacyEffect(buffId, buffLookup) {
+        var id = String(buffId || '').trim();
+        if (!id) return '';
+        var info = null;
+        if (typeof buffLookup === 'function') {
+            try { info = buffLookup(id); } catch (e) { /* ignore */ }
+        }
+        if (!info) return safeT('item.field.buff_summary_fallback', { id: esc(id) });
+        var parts = [];
+        var fam = String(info.pharmacyFamily || '').trim();
+        var route = String(info.pharmacyRoute || '').trim();
+        var potency = String(info.pharmacyPotency || '').trim();
+        if (fam) parts.push(safeT('pharmacy.family.' + fam, {}));
+        if (route) parts.push(safeT('pharmacy.route.' + route, {}));
+        if (potency) parts.push(safeT('pharmacy.potency.' + potency, {}));
+        var head = parts.length ? parts.join('·') : String(info.name || id);
+        var tail = [];
+        if (info.onsetTicks > 0) tail.push(safeT('item.pharmacy.onset_fmt', { n: String(info.onsetTicks) }));
+        if (info.durationTicks > 0) tail.push(safeT('item.pharmacy.duration_fmt', { n: String(info.durationTicks) }));
+        return '<span class="tooltip-module-v">' + esc(head) + (tail.length ? '（' + esc(tail.join(' · ')) + '）' : '') + '</span>';
+    }
+
+    /** 一盒多次用量（47 §8）：N 次 */
+    function renderPharmacyCharges(rawVal) {
+        var n = Math.max(0, Math.floor(Number(rawVal) || 0));
+        if (!n) return '';
+        return '<span class="tooltip-module-v">' + esc(safeT('item.pharmacy.charges_fmt', { n: String(n) })) + '</span>';
+    }
+
+    /** 动态注射液实例（47 §9.4）：成分列表 + 沉淀标记 */
+    function renderPharmacyComponents(rawVal, inst) {
+        var list = Array.isArray(rawVal) ? rawVal : [];
+        var IE = global.InventoryEquipment;
+        var parts = [];
+        for (var i = 0; i < list.length; i++) {
+            var row = list[i] || {};
+            var id = String(row.item_id || '');
+            if (!id) continue;
+            var name = id;
+            try {
+                var tpl = IE && typeof IE.getItemTemplate === 'function' ? IE.getItemTemplate(id) : null;
+                if (tpl && tpl.sn) name = String(tpl.sn);
+            } catch (eN) { /* ignore */ }
+            parts.push(safeT('item.pharmacy.component_fmt', { name: name, n: String(Math.max(1, parseInt(row.count, 10) || 1)) }));
+        }
+        var html = parts.length
+            ? '<span class="tooltip-module-v">' + esc(parts.join(' · ')) + '</span>'
+            : '';
+        if (inst && inst.precipitated === true) {
+            html += ' <span class="tooltip-field-buff-id">' + esc(safeT('item.pharmacy.precipitated_tag', {})) + '</span>';
+        }
+        return html;
+    }
+
+    function renderValueHtml(rule, rawVal, buffLookup, inst) {
         var ren = String(rule.renderer || '').trim();
         if (ren === 'raw_text') return '<span class="tooltip-module-v">' + esc(rawVal) + '</span>';
         if (ren === 'bool_tag') return '<span class="tooltip-module-v">' + formatBoolTag(rawVal) + '</span>';
@@ -193,6 +259,10 @@
         if (ren === 'tick_duration') return '<span class="tooltip-module-v">' + formatTicks(rawVal) + '</span>';
         if (ren === 'buff_summary') return '<span class="tooltip-module-v">' + renderBuffSummary(rawVal, buffLookup) + '</span>';
         if (ren === 'food_restore') return '<span class="tooltip-module-v">' + renderFoodRestore(rawVal, buffLookup) + '</span>';
+        if (ren === 'enum_label') return renderEnumLabel(rawVal, rule);
+        if (ren === 'pharmacy_effect') return renderPharmacyEffect(rawVal, buffLookup);
+        if (ren === 'pharmacy_charges') return renderPharmacyCharges(rawVal);
+        if (ren === 'pharmacy_components') return renderPharmacyComponents(rawVal, inst);
         return '';
     }
 
@@ -216,6 +286,8 @@
             } else {
                 var hint = String(rule.locked_hint || '').trim();
                 if (!hint) continue;
+                // 该物品没有这个字段的实质值 → 不显示锁定提示（避免药水提示「灶台燃料」「堆肥碳」这类无关项）
+                if (isEmptyValue(rawVal) || rawVal === false || rawVal === 0) continue;
             }
             var bid = String(rule.primary_block || 'misc') || 'misc';
             if (!byBlock[bid]) byBlock[bid] = [];
@@ -266,7 +338,7 @@
                     html += '<div class="tooltip-module-kv-row' + (row.unlocked ? '' : ' is-field-locked') + '">';
                     html += '<span class="tooltip-module-k">' + lab + '</span>';
                     if (row.unlocked) {
-                        var inner = renderValueHtml(row.rule, row.rawVal, buffLookup);
+                        var inner = renderValueHtml(row.rule, row.rawVal, buffLookup, inst);
                         if (!inner) inner = '<span class="tooltip-module-v">' + esc(row.rawVal) + '</span>';
                         html += inner.indexOf('tooltip-module-v') >= 0 ? inner : '<span class="tooltip-module-v">' + inner + '</span>';
                     } else {

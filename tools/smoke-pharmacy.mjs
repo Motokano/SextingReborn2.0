@@ -972,4 +972,79 @@ assert.strictEqual(mobilityMix.buff_ids.length, 0, '活络族无注射格 → �
 assert(mobilityMix.skipped_families.indexOf('mobility') >= 0, '记录被跳过的族（' + mobilityMix.skipped_families.join(',') + '）');
 ok('配药台过滤无注射格的药效族（不挂空 buff）');
 
+console.log('\n㉒ UI 信息显示接线（字段规则 + 信息模块 + tooltip）');
+const uiDict = loadJson('data/ui_text_zhCN.json');
+const uiSandbox = {
+  console: { log() {}, warn() {}, error() {} },
+  UIText: {
+    t(key, vars) {
+      var s = uiDict[key] != null ? String(uiDict[key]) : String(key);
+      if (vars && typeof vars === 'object') {
+        s = s.replace(/\{(\w+)\}/g, function (m, k) { return vars[k] != null ? String(vars[k]) : m; });
+      }
+      return s;
+    }
+  },
+  InventoryEquipment: {
+    getItemTemplate(id) { return items[id] || null; },
+    getItemDisplayTier() { return 0; },
+    getDisplayName(tpl) { return (tpl && (tpl.name || tpl.sn)) || ''; },
+    getDisplayDesc(tpl) { return (tpl && (tpl.fn || tpl.desc_0)) || ''; },
+    getCharacterForDisplay() { return { skills: { life_pharmacy: { level: 5 } } }; }
+  },
+  BuffSystem: {
+    getBuffTemplate(id) { return loadJson('data/buffs.json').buffs.find((b) => b.buff_id === id) || null; }
+  }
+};
+vm.createContext(uiSandbox);
+uiSandbox.window = uiSandbox;
+vm.runInContext(readText('js/item-field-display-rules.js'), uiSandbox, { filename: 'item-field-display-rules.js' });
+vm.runInContext(readText('js/item-info-modules.js'), uiSandbox, { filename: 'item-info-modules.js' });
+vm.runInContext(readText('js/scene-ui.js'), uiSandbox, { filename: 'scene-ui.js' });
+uiSandbox.ItemFieldDisplayRules.setTable(loadJson('data/item-field-display-rules.json'));
+uiSandbox.ItemInfoModules.setTable(loadJson('data/item-info-modules.json'));
+
+const charPharm = { skills: { life_pharmacy: { level: 5 } } };
+const injTpl = items.potion_analgesic_injection;
+const injHtml = uiSandbox.SceneUi.buildItemTooltipHtmlForTemplate('potion_analgesic_injection', injTpl, { item_id: 'potion_analgesic_injection', count: 1 }, charPharm);
+assert(injHtml.indexOf('镇痛注射液') >= 0, 'tooltip 含药名');
+assert(injHtml.indexOf('给药方式') >= 0 && injHtml.indexOf('刺入') >= 0, '显示给药方式 = 刺入');
+assert(injHtml.indexOf('镇痛·刺入·强效') >= 0, '显示药效「族·途径·档位」：' + (injHtml.match(/镇痛·[^<]*/) || [''])[0]);
+assert(injHtml.indexOf('持续 10 tick') >= 0, '显示持续时间（注射 10 tick）');
+assert(injHtml.indexOf('风险提示') >= 0 && injHtml.indexOf('久服或致依赖') >= 0, '显示风险提示模块');
+// 口服：显示起效时间（口服 5 tick）
+const brothHtml = uiSandbox.SceneUi.buildItemTooltipHtmlForTemplate('potion_calm_brew', items.potion_calm_brew, null, charPharm);
+assert(brothHtml.indexOf('镇静·口服·常效') >= 0 && brothHtml.indexOf('起效 5 tick') >= 0, '口服显示起效 5 tick：' + (brothHtml.match(/镇静·[^<]*/) || [''])[0]);
+// 无关锁定块不再出现（药水不该提示灶台燃料/堆肥碳）
+assert(injHtml.indexOf('灶台燃料点数') < 0 && injHtml.indexOf('堆肥碳（C）') < 0, '药水 tooltip 不再出现无关锁定项');
+ok('成品药 tooltip：给药方式 / 族·途径·档位 / 起效持续 / 风险提示 / 无噪声块');
+
+// 外敷：按次用量
+const salveHtml = uiSandbox.SceneUi.buildItemTooltipHtmlForTemplate('potion_mobility_salve', items.potion_mobility_salve, { item_id: 'potion_mobility_salve', count: 1 }, charPharm);
+assert(salveHtml.indexOf('可用 3 次') >= 0, '外敷显示按次用量');
+assert(salveHtml.indexOf('外敷') >= 0 && salveHtml.indexOf('活络·外敷·常效') >= 0, '外敷显示活络族');
+ok('外敷药 tooltip：按次用量 + 活络族');
+
+// 动态注射液实例：成分列表 + 沉淀标记
+const compoundInst = { item_id: 'potion_compound_injection', count: 1, components: [{ item_id: 'med_cocaine_powder', count: 1 }, { item_id: 'adj_vitamin_c', count: 1 }], precipitated: true, salt_deficit: 1 };
+const compHtml = uiSandbox.SceneUi.buildItemTooltipHtmlForTemplate('potion_compound_injection', items.potion_compound_injection, compoundInst, charPharm);
+assert(compHtml.indexOf('成分') >= 0 && compHtml.indexOf('可卡因粉×1') >= 0 && compHtml.indexOf('维生素C×1') >= 0, '实例显示成分列表：' + (compHtml.match(/成分[^<]*/) || [''])[0]);
+assert(compHtml.indexOf('有沉淀') >= 0, '实例显示沉淀标记');
+ok('动态注射液 tooltip：成分列表 + 沉淀标记');
+
+// 药粉：投料信息（药效族/毒性/浓度占用/成分身份）
+const powderHtml = uiSandbox.SceneUi.buildItemTooltipHtmlForTemplate('med_morphine_powder', items.med_morphine_powder, null, charPharm);
+assert(powderHtml.indexOf('制药信息') >= 0, '药粉走「制药信息」块');
+assert(powderHtml.indexOf('镇痛') >= 0 && powderHtml.indexOf('生物碱') >= 0, '药粉显示药效族 + 成分身份');
+assert(powderHtml.indexOf('浓度占用') >= 0 && powderHtml.indexOf('35') >= 0, '药粉显示浓度占用');
+ok('药粉 tooltip：药效族 / 成分身份 / 毒性 / 浓度占用');
+
+// 信息分级：0 级制药只看得到给药方式与风险提示，看不到数值
+const charNoSkill = { skills: {} };
+const lockedHtml = uiSandbox.SceneUi.buildItemTooltipHtmlForTemplate('potion_analgesic_injection', injTpl, null, charNoSkill);
+assert(lockedHtml.indexOf('给药方式') >= 0, '无技能仍显示给药方式');
+assert(lockedHtml.indexOf('制药经验不足') >= 0, '数值区显示锁定提示（信息分级）');
+assert(lockedHtml.indexOf('持续 10 tick') < 0, '无技能看不到药效数值');
+ok('信息分级：常驻（方式/风险）vs 技能解锁（族/档位/数值）');
+
 console.log('\n[smoke-pharmacy] ' + pass + ' 组断言全部通过');

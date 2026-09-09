@@ -29,6 +29,10 @@
     "regular": {
       "display_name": "常规信息",
       "default_visible": true
+    },
+    "pharmacy_common": {
+      "display_name": "给药信息",
+      "default_visible": true
     }
   },
   "fields": {
@@ -324,6 +328,154 @@
       "renderer": "number",
       "value_type": "number",
       "visible_by_default": true
+    },
+    "use_action": {
+      "primary_block": "pharmacy_common",
+      "reference_blocks": [],
+      "skill_id": null,
+      "level_min": 0,
+      "locked_hint": "",
+      "renderer": "enum_label",
+      "value_type": "enum",
+      "visible_by_default": true,
+      "value_map": {
+        "drink": "pharmacy.route.drink",
+        "topical": "pharmacy.route.topical",
+        "inhale": "pharmacy.route.inhale",
+        "inject": "pharmacy.route.inject"
+      }
+    },
+    "use_charges": {
+      "primary_block": "pharmacy_common",
+      "reference_blocks": [],
+      "skill_id": null,
+      "level_min": 0,
+      "locked_hint": "",
+      "renderer": "pharmacy_charges",
+      "value_type": "integer",
+      "visible_by_default": true
+    },
+    "use_buff_id": {
+      "primary_block": "pharmacy",
+      "reference_blocks": [],
+      "skill_id": "life_pharmacy",
+      "level_min": 1,
+      "locked_hint": "制药经验不足，看不出这药劲怎么走",
+      "renderer": "pharmacy_effect",
+      "value_type": "buff_id_string",
+      "visible_by_default": false
+    },
+    "components": {
+      "primary_block": "pharmacy",
+      "reference_blocks": [],
+      "skill_id": "life_pharmacy",
+      "level_min": 1,
+      "locked_hint": "制药经验不足，读不出这针里兑了什么",
+      "renderer": "pharmacy_components",
+      "value_type": "array",
+      "visible_by_default": false
+    },
+    "pharmacy_compound": {
+      "primary_block": "pharmacy",
+      "reference_blocks": [],
+      "skill_id": "life_pharmacy",
+      "level_min": 1,
+      "locked_hint": "制药经验不足，无法判断是否为配药产物",
+      "renderer": "bool_tag",
+      "value_type": "boolean",
+      "visible_by_default": false
+    },
+    "concentration_cost": {
+      "primary_block": "pharmacy",
+      "reference_blocks": [],
+      "skill_id": "life_pharmacy",
+      "level_min": 1,
+      "locked_hint": "制药经验不足，算不出浓度占用",
+      "renderer": "number",
+      "value_type": "number",
+      "visible_by_default": false
+    },
+    "concentration_capacity": {
+      "primary_block": "pharmacy",
+      "reference_blocks": [],
+      "skill_id": "life_pharmacy",
+      "level_min": 1,
+      "locked_hint": "制药经验不足，算不出浓度上限",
+      "renderer": "number",
+      "value_type": "number",
+      "visible_by_default": false
+    },
+    "adjuvant_strength": {
+      "primary_block": "pharmacy",
+      "reference_blocks": [],
+      "skill_id": "life_pharmacy",
+      "level_min": 1,
+      "locked_hint": "制药经验不足，判断不了助溶能力",
+      "renderer": "number",
+      "value_type": "number",
+      "visible_by_default": false
+    },
+    "pharm_effect": {
+      "primary_block": "pharmacy",
+      "reference_blocks": [],
+      "skill_id": "life_pharmacy",
+      "level_min": 1,
+      "locked_hint": "制药经验不足，估不出药效",
+      "renderer": "number",
+      "value_type": "number",
+      "visible_by_default": false
+    },
+    "pharm_toxicity": {
+      "primary_block": "pharmacy",
+      "reference_blocks": [],
+      "skill_id": "life_pharmacy",
+      "level_min": 1,
+      "locked_hint": "制药经验不足，尝不出毒性",
+      "renderer": "number",
+      "value_type": "number",
+      "visible_by_default": false
+    },
+    "pharm_family": {
+      "primary_block": "pharmacy",
+      "reference_blocks": [],
+      "skill_id": "life_pharmacy",
+      "level_min": 1,
+      "locked_hint": "制药经验不足，分不清药效族",
+      "renderer": "enum_label",
+      "value_type": "enum",
+      "visible_by_default": false,
+      "value_map": {
+        "stimulant": "pharmacy.family.stimulant",
+        "hallucinogen": "pharmacy.family.hallucinogen",
+        "sedative": "pharmacy.family.sedative",
+        "analgesic": "pharmacy.family.analgesic",
+        "synergist": "pharmacy.family.synergist",
+        "rehydrate": "pharmacy.family.rehydrate",
+        "energy": "pharmacy.family.energy",
+        "revive": "pharmacy.family.revive",
+        "coagulant": "pharmacy.family.coagulant",
+        "antistun": "pharmacy.family.antistun",
+        "strength": "pharmacy.family.strength",
+        "mobility": "pharmacy.family.mobility"
+      }
+    },
+    "chem_class": {
+      "primary_block": "pharmacy",
+      "reference_blocks": [],
+      "skill_id": "life_pharmacy",
+      "level_min": 1,
+      "locked_hint": "制药经验不足，认不出成分身份",
+      "renderer": "enum_label",
+      "value_type": "enum",
+      "visible_by_default": false,
+      "value_map": {
+        "alkaloid": "pharmacy.chem.alkaloid",
+        "tannin": "pharmacy.chem.tannin",
+        "glycoside": "pharmacy.chem.glycoside",
+        "volatile_oil": "pharmacy.chem.volatile_oil",
+        "organic_acid": "pharmacy.chem.organic_acid",
+        "mineral": "pharmacy.chem.mineral"
+      }
     }
   },
   "renderers": {
@@ -358,6 +510,22 @@
     "tick_duration": {
       "display_name": "Tick 时长",
       "value_type_hint": "integer_ticks"
+    },
+    "enum_label": {
+      "display_name": "枚举标签（value_map 映射）",
+      "value_type_hint": "enum"
+    },
+    "pharmacy_effect": {
+      "display_name": "制药剂型摘要（族·途径·档位）",
+      "value_type_hint": "buff_id_string"
+    },
+    "pharmacy_charges": {
+      "display_name": "按次用量",
+      "value_type_hint": "integer"
+    },
+    "pharmacy_components": {
+      "display_name": "注射液成分列表",
+      "value_type_hint": "array"
     }
   }
 }
