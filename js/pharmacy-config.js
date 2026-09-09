@@ -44,7 +44,10 @@
         pharmacy_salt_required_only_toxic: 1,
         pharmacy_salt_dose_per_base_dose: 1,
         pharmacy_salt_effect_multiplier: 0.5,
-        pharmacy_salt_toxicity_multiplier: 1.5
+        pharmacy_salt_toxicity_multiplier: 1.5,
+        pharmacy_duration_immunity_bonus_per_level: 0.01,
+        pharmacy_immunity_sideeffect_reduction: 0.02,
+        pharmacy_immunity_sideeffect_cap: 0.8
     };
 
     var USE_ROUTE_IDS = ['drink', 'topical', 'inhale', 'inject'];
@@ -176,6 +179,9 @@
         out.pharmacy_salt_dose_per_base_dose = Math.max(0, toNumber(kv.pharmacy_salt_dose_per_base_dose, DEFAULTS.pharmacy_salt_dose_per_base_dose));
         out.pharmacy_salt_effect_multiplier = Math.max(0, toNumber(kv.pharmacy_salt_effect_multiplier, DEFAULTS.pharmacy_salt_effect_multiplier));
         out.pharmacy_salt_toxicity_multiplier = Math.max(0, toNumber(kv.pharmacy_salt_toxicity_multiplier, DEFAULTS.pharmacy_salt_toxicity_multiplier));
+        out.pharmacy_duration_immunity_bonus_per_level = Math.max(0, toNumber(kv.pharmacy_duration_immunity_bonus_per_level, DEFAULTS.pharmacy_duration_immunity_bonus_per_level));
+        out.pharmacy_immunity_sideeffect_reduction = Math.max(0, toNumber(kv.pharmacy_immunity_sideeffect_reduction, DEFAULTS.pharmacy_immunity_sideeffect_reduction));
+        out.pharmacy_immunity_sideeffect_cap = Math.max(0, Math.min(1, toNumber(kv.pharmacy_immunity_sideeffect_cap, DEFAULTS.pharmacy_immunity_sideeffect_cap)));
         return out;
     }
 

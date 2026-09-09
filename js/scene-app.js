@@ -8163,12 +8163,51 @@
         }).catch(function () { render(); });
     }
 
+    /** 47 §5.2：交战判定——当前地图存在存活且距离 ≤ 2 格的敌人（敌人 AI 会贴身，贴脸即视为交战）。 */
+    var COMBAT_THREAT_RANGE = 2;
+    function isPlayerInCombat() {
+        var st = E && typeof E.getState === 'function' ? E.getState() : null;
+        var map = E && typeof E.getMap === 'function' ? E.getMap() : null;
+        if (!st || !map || !Array.isArray(map.enemies) || !map.enemies.length) return false;
+        var CE = window.CombatEnemies;
+        var mapId = String(map.map_id || '');
+        var i;
+        for (i = 0; i < map.enemies.length; i++) {
+            var n = map.enemies[i] || {};
+            if (CE && typeof CE.isEnemyDead === 'function' && CE.isEnemyDead(mapId, i)) continue;
+            var d = Math.max(Math.abs((n.x | 0) - st.x), Math.abs((n.y | 0) - st.y));
+            if (d <= COMBAT_THREAT_RANGE) return true;
+        }
+        return false;
+    }
+
+    /** 47 §5.2：注射需静止——不在挂机（采集/调息）中、不在制作中。 */
+    function isPlayerStillEnoughForInjection() {
+        if (gatheringIdleTimer || tiaoXiIdleTimer || restIdleTimer) return false;
+        if (window.CookingStation && typeof window.CookingStation.getActiveCraft === 'function' && window.CookingStation.getActiveCraft()) return false;
+        if (window.PharmacyStation && typeof window.PharmacyStation.getActiveCraft === 'function' && window.PharmacyStation.getActiveCraft()) return false;
+        return true;
+    }
+
+    /**
+     * 给药途径门禁（47 §5.2）：外敷/注射战斗中不可；注射还需静止。返回 null = 放行。
+     */
+    function checkUseRouteGate(tpl) {
+        var route = (window.ItemUse && typeof window.ItemUse.getUseActionRoute === 'function') ? window.ItemUse.getUseActionRoute(tpl) : '';
+        if (route !== 'topical' && route !== 'inject') return null;
+        if (isPlayerInCombat()) return { reason: 'in_combat', route: route };
+        if (route === 'inject' && !isPlayerStillEnoughForInjection()) return { reason: 'must_be_still', route: route };
+        return null;
+    }
+
     /** 物品使用失败原因 → 提示文案键（47 §5.2 途径前置条件）。 */
     function useFailureMessageKey(reason) {
         switch (String(reason || '')) {
             case 'needs_part': return 'item.use.fail.needs_part';
             case 'bad_part': return 'item.use.fail.bad_part';
             case 'needs_inject_kit': return 'item.use.fail.needs_inject_kit';
+            case 'in_combat': return 'item.use.fail.in_combat';
+            case 'must_be_still': return 'item.use.fail.must_be_still';
             case 'already_active': return 'item.use.fail.already_active';
             case 'route_not_allowed': return 'item.use.fail.route_not_allowed';
             case 'no_effect': return 'item.use.fail.no_effect';
@@ -8197,6 +8236,13 @@
         var taken = inv.takeItemFromContainer(containerType, index);
         if (!taken.success || !taken.item) {
             if (!options.silent) showMsg(ui('item.use.fail'), 'warn');
+            return false;
+        }
+        // 47 §5.2 途径门禁：外敷/注射战斗中不可、注射需静止（取物前拦截，物品原样退回）
+        var gate = checkUseRouteGate(tpl);
+        if (gate) {
+            if (inv.putItemIntoDefaultContainer) inv.putItemIntoDefaultContainer(taken.item);
+            if (!options.silent) showMsg(ui(useFailureMessageKey(gate.reason)), 'info');
             return false;
         }
         // 47 §8：一盒多次用量（药膏/散按次）——模板 use_charges>0 时按次数消耗，用尽才消失

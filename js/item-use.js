@@ -253,7 +253,9 @@
 
         var ue = tpl && tpl.use_effect && typeof tpl.use_effect === 'object' ? tpl.use_effect : null;
         if (ue) {
-            if ((tpl && tpl.category) === 'food') {
+            // 47 §3.2：口服（drink）走 43 消化曲线（按 tick 缓释），其余剂型即时结算
+            var digestible = (tpl && tpl.category) === 'food' || (rid === 'drink' && Number(tpl.food_buff_duration_ticks) > 0);
+            if (digestible) {
                 if (applyFoodDigestBuffFromTemplate(itemId, tpl)) applied = true;
             } else {
                 var Surv = global.Survival;

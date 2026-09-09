@@ -11,6 +11,23 @@
     "toxicity_zero": true,
     "sub_categories": ["solvent", "pharm_adjuvant"]
   },
+  "_solvent_rules_comment": "溶媒错配（47 §10.2：溶媒错配→沉淀析出）：选错底液时，特定化学类别的成分析出。溶媒本身不参与两两相冲（上面 skip 已豁免）。",
+  "solvent_rules": [
+    {
+      "rule_id": "dextrose_mineral",
+      "solvent_item_id": "solvent_glucose_solution",
+      "incompatible_chem_classes": ["mineral"],
+      "outcome": "settle_mild",
+      "desc": "糖水兑矿物盐 → 析出"
+    },
+    {
+      "rule_id": "saline_acid",
+      "solvent_item_id": "solvent_saline",
+      "incompatible_chem_classes": ["organic_acid"],
+      "outcome": "settle_mild",
+      "desc": "盐水盐析酸性成分 → 析出"
+    }
+  ],
   "rules": [
     {
       "rule_id": "alkaloid_tannin",

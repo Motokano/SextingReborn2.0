@@ -42,7 +42,10 @@
         stage_penalties: [0.1, 0.2, 0.35],
         toxicity_decay_per_tick: 1,
         toxicity_lethal_ticks: 40,
-        toxicity_bands: [0, 25, 55]
+        toxicity_bands: [0, 25, 55],
+        duration_immunity_bonus_per_level: 0.01,
+        immunity_sideeffect_reduction: 0.02,
+        immunity_sideeffect_cap: 0.8
     };
 
     var cfg = JSON.parse(JSON.stringify(DEFAULTS));
@@ -79,6 +82,9 @@
         if (Array.isArray(p.pharmacy_toxicity_band_thresholds) && p.pharmacy_toxicity_band_thresholds.length >= 3) {
             cfg.toxicity_bands = p.pharmacy_toxicity_band_thresholds.slice(0, 3).map(function (v) { return num(v, 0); });
         }
+        cfg.duration_immunity_bonus_per_level = Math.max(0, num(p.pharmacy_duration_immunity_bonus_per_level, cfg.duration_immunity_bonus_per_level));
+        cfg.immunity_sideeffect_reduction = Math.max(0, num(p.pharmacy_immunity_sideeffect_reduction, cfg.immunity_sideeffect_reduction));
+        cfg.immunity_sideeffect_cap = Math.max(0, Math.min(1, num(p.pharmacy_immunity_sideeffect_cap, cfg.immunity_sideeffect_cap)));
         return getConfig();
     }
 
@@ -93,7 +99,10 @@
             stage_penalties: cfg.stage_penalties.slice(),
             toxicity_decay_per_tick: cfg.toxicity_decay_per_tick,
             toxicity_lethal_ticks: cfg.toxicity_lethal_ticks,
-            toxicity_bands: cfg.toxicity_bands.slice()
+            toxicity_bands: cfg.toxicity_bands.slice(),
+            duration_immunity_bonus_per_level: cfg.duration_immunity_bonus_per_level,
+            immunity_sideeffect_reduction: cfg.immunity_sideeffect_reduction,
+            immunity_sideeffect_cap: cfg.immunity_sideeffect_cap
         };
     }
 
@@ -356,10 +365,17 @@
         if (band === st.last_band) return band;
         var BS = getBuffSystem();
         if (BS) {
-            ['buff_pharm_sideeffect_mild', 'buff_pharm_sideeffect_moderate', 'buff_pharm_sideeffect_severe'].forEach(function (id) {
-                if (typeof BS.removeBuffByBuffId === 'function') BS.removeBuffByBuffId('player', id);
-            });
-            var nextId = getToxicityBandBuffId(band);
+            // 移除在场的一切副作用档（含免疫缩放版 __immNN）
+            var arr = getActiveInstances('player');
+            var i;
+            for (i = 0; i < arr.length; i++) {
+                var inst = arr[i];
+                var bid = inst && inst.buff_id ? String(inst.buff_id) : '';
+                if (bid.indexOf('buff_pharm_sideeffect_') === 0 && typeof BS.removeBuffByBuffId === 'function') {
+                    BS.removeBuffByBuffId('player', bid);
+                }
+            }
+            var nextId = getScaledSideEffectBuffId(band);
             if (nextId && typeof BS.applyBuff === 'function') BS.applyBuff('player', nextId, 'pharmacy:toxicity');
         }
         st.last_band = band;
@@ -443,6 +459,72 @@
         refreshAddictionStage();
     }
 
+    /** 47 §4.5/11-skills：免疫延长药效持续时间（BuffSystem.applyBuff 调用；仅制药剂型 buff）。 */
+    function getBuffDurationMultiplier(tpl) {
+        if (!tpl || tpl.pharmacy_generated !== true) return 1;
+        var lv = getImmunityLevel();
+        if (!(lv > 0)) return 1;
+        var mul = 1 + lv * cfg.duration_immunity_bonus_per_level;
+        return Math.max(1, Math.min(3, mul));
+    }
+
+    /** 47 §4.5：免疫降低药物副作用强度（1 = 不减免）。 */
+    function getSideEffectScale() {
+        var lv = getImmunityLevel();
+        if (!(lv > 0)) return 1;
+        var red = Math.min(cfg.immunity_sideeffect_cap, lv * cfg.immunity_sideeffect_reduction);
+        return Math.max(0, 1 - red);
+    }
+
+    /** 按 scale 缩放单条 effect（倍率类只缩超出 1 的部分）。 */
+    function scaleEffectForImmunity(effect, scale) {
+        var e = effect && typeof effect === 'object' ? effect : {};
+        var params = e.params && typeof e.params === 'object' ? e.params : {};
+        var out = {};
+        var keys = Object.keys(params);
+        var i;
+        for (i = 0; i < keys.length; i++) {
+            var k = keys[i];
+            var v = params[k];
+            if (typeof v !== 'number' || !isFinite(v)) { out[k] = v; continue; }
+            if (/multiplier$/.test(k)) {
+                // 增益（>1）按超出部分缩放；减益（<1）向 1 收敛
+                out[k] = Math.round((v >= 1 ? (1 + (v - 1) * scale) : (1 - (1 - v) * scale)) * 1000) / 1000;
+            } else {
+                out[k] = Math.round(v * scale * 100) / 100;
+            }
+        }
+        return { type: String(e.type || ''), params: out };
+    }
+
+    /**
+     * 副作用 buff id：免疫等级 >0 时注册一个按免疫缩放的运行时模板（副作用强度下降），否则用静态模板。
+     */
+    function getScaledSideEffectBuffId(band) {
+        var baseId = getToxicityBandBuffId(band);
+        if (!baseId) return '';
+        var scale = getSideEffectScale();
+        if (scale >= 0.999) return baseId;
+        var BS = getBuffSystem();
+        if (!BS || typeof BS.getTemplate !== 'function' || typeof BS.registerRuntimeBuffTemplate !== 'function') return baseId;
+        var base = BS.getTemplate(baseId);
+        if (!base) return baseId;
+        var id = baseId + '__imm' + Math.round(scale * 100);
+        var tpl = JSON.parse(JSON.stringify(base));
+        tpl.buff_id = id;
+        tpl.name = String(base.name || '') + '·减';
+        tpl.desc = String(base.desc || '') + '（免疫减轻 ' + Math.round((1 - scale) * 100) + '%）';
+        tpl.effects = (base.effects || []).map(function (e) { return scaleEffectForImmunity(e, scale); });
+        tpl.pharmacy_generated = true;
+        BS.registerRuntimeBuffTemplate(tpl);
+        return id;
+    }
+
+    /** 读当前生效的副作用 buff id（含免疫缩放版）。 */
+    function getActiveSideEffectBuffId() {
+        return getScaledSideEffectBuffId(getToxicityBand(getState().toxicity));
+    }
+
     /** 状态摘要（状态栏/调试用）。 */
     function getInfo() {
         var st = getState();
@@ -469,6 +551,10 @@
         setState: setState,
         resetState: resetState,
         getImmunityLevel: getImmunityLevel,
+        getBuffDurationMultiplier: getBuffDurationMultiplier,
+        getSideEffectScale: getSideEffectScale,
+        getScaledSideEffectBuffId: getScaledSideEffectBuffId,
+        getActiveSideEffectBuffId: getActiveSideEffectBuffId,
         getAddiction: getAddiction,
         getRouteGain: getRouteGain,
         addAddictionFromRoute: addAddictionFromRoute,

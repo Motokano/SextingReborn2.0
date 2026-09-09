@@ -665,6 +665,13 @@
         return sum;
     }
 
+    /** 读取模板（深拷贝，供运行时按免疫等外部因素派生缩放版）。 */
+    function getTemplate(buffId) {
+        var bid = String(buffId || '');
+        if (!bid || !templateById[bid]) return null;
+        try { return JSON.parse(JSON.stringify(templateById[bid])); } catch (e) { return null; }
+    }
+
     function registerRuntimeBuffTemplate(template) {
         var t = normalizeTemplate(template || {});
         if (!t.buff_id) return false;
@@ -702,12 +709,18 @@
             }
         }
         var nowTick = eventContext && typeof eventContext.tick === 'number' ? eventContext.tick : getTickNow();
+        // 47 §4.5：免疫延长药效持续时间（仅制药剂型 buff；由 PharmacyEffects 提供倍率）
+        var dur = Math.max(0, parseInt(tpl.durationTicks, 10) || 0);
+        if (tpl.pharmacy_generated && global && global.PharmacyEffects && typeof global.PharmacyEffects.getBuffDurationMultiplier === 'function') {
+            var durMul = Number(global.PharmacyEffects.getBuffDurationMultiplier(tpl));
+            if (isFinite(durMul) && durMul > 0 && durMul !== 1) dur = Math.max(1, Math.round(dur * durMul));
+        }
         if (existing) {
             var currentStacks = Math.max(0, parseInt(existing.stacks, 10) || 0);
             // 兼容旧存档/异常流程里的 0 层实例：重上时至少恢复到 1 层，避免 HUD 永久不显示。
             if (currentStacks <= 0) currentStacks = 1;
             existing.stacks = Math.min(tpl.maxStacks, Math.max(1, currentStacks + tpl.stacksAddOnApply));
-            existing.expires_at_tick = nowTick + tpl.durationTicks;
+            existing.expires_at_tick = nowTick + dur;
             existing.template = tpl;
             debugLog('reapply ' + buffId + ' stacks=' + existing.stacks);
         } else {
@@ -717,7 +730,7 @@
                 owner_id: oid,
                 source_id: sourceId || null,
                 started_tick: nowTick,
-                expires_at_tick: nowTick + tpl.durationTicks,
+                expires_at_tick: nowTick + dur,
                 stacks: Math.min(tpl.maxStacks, tpl.stacksAddOnApply || 1),
                 template: tpl
             });
@@ -1482,6 +1495,7 @@
         getBattleMoveSpeedDeltaPercent: getBattleMoveSpeedDeltaPercent,
         getBattleFinalDamageTakenMultiplier: getBattleFinalDamageTakenMultiplier,
         registerRuntimeBuffTemplate: registerRuntimeBuffTemplate,
+        getTemplate: getTemplate,
         setBuffStateListener: setBuffStateListener,
         removeBuffByBuffId: removeBuffByBuffId,
         triggerBuffPipeline: triggerBuffPipeline,

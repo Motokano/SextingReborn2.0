@@ -643,8 +643,8 @@ assert(Math.abs(rb.effect - 36) < 0.01, '苦根草粉 30 ×1.2 = 36');
 assert.strictEqual(rb.potency, 'regular', '36 → regular 档');
 ok('增效成分放大同针其它族药效');
 
-// G. 相冲：维生素C粉（organic_acid 辅成分） + 可卡因（alkaloid）→ 轻症沉淀
-const conflictHit = PCC.resolve([SOLVENT, { item_id: 'med_cocaine_powder', count: 1 }, { item_id: 'adj_vitamin_c', count: 1 }, { item_id: 'med_vitamin_c_powder', count: 1 }]);
+// G. 相冲：维生素C粉（organic_acid 辅成分） + 可卡因（alkaloid）→ 轻症沉淀（用纯水避开溶媒错配）
+const conflictHit = PCC.resolve([{ item_id: 'solvent_water_pure', count: 1 }, { item_id: 'med_cocaine_powder', count: 1 }, { item_id: 'adj_vitamin_c', count: 1 }, { item_id: 'med_vitamin_c_powder', count: 1 }]);
 assert.strictEqual(conflictHit.conflicts.length, 1, '酸 + 生物碱 → 命中 1 条相冲');
 assert.strictEqual(conflictHit.conflicts[0].outcome, 'settle_mild');
 assert.strictEqual(conflictHit.conflicts[0].buff_id, 'buff_pharm_conflict_settle_mild');
@@ -654,6 +654,17 @@ assert.strictEqual(noConflict1.conflicts.length, 0, '功能成分不参与相冲
 const noConflict2 = PCC.resolve([SOLVENT, { item_id: 'med_cocaine_powder', count: 1 }, { item_id: 'adj_citric_acid', count: 1 }]);
 assert.strictEqual(noConflict2.conflicts.length, 0, '助剂（成盐助溶）不参与相冲');
 ok('相冲类别级判定 + 助剂/溶媒/功能成分豁免');
+
+// G2. 溶媒错配（§10.2）：糖水兑矿物盐 / 盐水盐析酸性成分 → 析出
+const dextroseMismatch = PCC.resolve([{ item_id: 'solvent_glucose_solution', count: 1 }, { item_id: 'med_rehydration_powder', count: 1 }]);
+assert.strictEqual(dextroseMismatch.conflicts.length, 1, '糖水 + 矿物盐 → 析出');
+assert.strictEqual(dextroseMismatch.conflicts[0].kind, 'solvent_mismatch');
+assert.strictEqual(dextroseMismatch.conflicts[0].buff_id, 'buff_pharm_conflict_settle_mild');
+const salineMismatch = PCC.resolve([SOLVENT, { item_id: 'med_vitamin_c_powder', count: 1 }]);
+assert.strictEqual(salineMismatch.conflicts.length, 1, '盐水 + 酸性成分 → 盐析');
+const waterOk = PCC.resolve([{ item_id: 'solvent_water_pure', count: 1 }, { item_id: 'med_rehydration_powder', count: 1 }]);
+assert.strictEqual(waterOk.conflicts.length, 0, '纯水 + 矿物盐 → 无相冲');
+ok('溶媒错配相冲（糖水/盐水各一条规则）');
 
 // H. 动态实例 + 注射后结算（正常针）
 const built = PCC.buildInstance(saltedNeedle);
@@ -791,7 +802,7 @@ assert.strictEqual(vitC.chem_class, 'organic_acid', '辅成分形态带化学身
 assert.strictEqual(vitCAdj.sub_category, 'pharm_adjuvant');
 assert(vitCAdj.pharm_toxicity == null, '助剂形态不带毒性（不抵消）');
 assert(vitCAdj.chem_class == null, '助剂形态不参与相冲');
-const withVitC = PCC.resolve([SOLVENT, { item_id: 'med_cocaine_powder', count: 1 }, { item_id: 'adj_vitamin_c', count: 1 }, { item_id: 'med_vitamin_c_powder', count: 1 }]);
+const withVitC = PCC.resolve([{ item_id: 'solvent_water_pure', count: 1 }, { item_id: 'med_cocaine_powder', count: 1 }, { item_id: 'adj_vitamin_c', count: 1 }, { item_id: 'med_vitamin_c_powder', count: 1 }]);
 assert.strictEqual(withVitC.precipitated, false, '助剂补齐成盐 → 不沉淀');
 assert.strictEqual(withVitC.conflicts.length, 1, '辅成分形态 + 生物碱 → 相冲');
 assert(Math.abs(withVitC.base_toxicity - 70) < 0.01 && withVitC.net_toxicity < 70, '辅成分形态抵消主药毒性');
@@ -822,5 +833,64 @@ assert(cfgCsv.includes('pharmacy_salt_effect_multiplier,0.5') && cfgCsv.includes
 assert(items.adj_vitamin_c.adjuvant_strength === 1 && items.adj_citric_acid.adjuvant_strength === 1, '助剂成盐能力已落数据');
 assert(items.adj_citric_acid.concentration_cost === 12, '柠檬酸补上浓度占用（助剂也是成本）');
 ok('成盐：配置/数据/面板/文案齐备');
+
+console.log('\n⑰ A1 免疫补完（延长药效时长 / 减轻副作用）');
+// 时长：免疫 100 级 → ×2（1 + 100×0.01）
+immunityLevel = 0;
+BS3.removeBuffByBuffId('player', 'buff_pharm_stimulant_inject_regular');
+BS3.applyBuff('player', 'buff_pharm_stimulant_inject_regular', 'test:imm');
+const inst0 = (BS3.getState().instancesByOwner['player'] || []).find((i) => i.buff_id === 'buff_pharm_stimulant_inject_regular');
+const dur0 = inst0.expires_at_tick - inst0.started_tick;
+assert.strictEqual(dur0, 10, '注射剂型基准时长 10 tick');
+BS3.removeBuffByBuffId('player', 'buff_pharm_stimulant_inject_regular');
+immunityLevel = 100;
+BS3.applyBuff('player', 'buff_pharm_stimulant_inject_regular', 'test:imm');
+const inst1 = (BS3.getState().instancesByOwner['player'] || []).find((i) => i.buff_id === 'buff_pharm_stimulant_inject_regular');
+const dur1 = inst1.expires_at_tick - inst1.started_tick;
+assert(Math.abs(dur1 - dur0 * 2) <= 1, '免疫 100 级 → 时长 ×2（' + dur0 + '→' + dur1 + '）');
+BS3.removeBuffByBuffId('player', 'buff_pharm_stimulant_inject_regular');
+ok('免疫延长药效持续时间（§4.5 / 11-skills）');
+
+// 副作用强度：免疫 50 级 → 减免 80%（封顶）→ 缩放 0.2
+immunityLevel = 50;
+assert(Math.abs(PE.getSideEffectScale() - 0.2) < 1e-9, '免疫 50 级 → 副作用缩放 0.2（封顶 80%）');
+const scaledId = PE.getScaledSideEffectBuffId('moderate');
+assert(/__imm20$/.test(scaledId), '注册免疫缩放版副作用 buff：' + scaledId);
+const scaledTpl = BS3.getTemplate(scaledId);
+const scaledStamina = (scaledTpl.effects.find((e) => e.type === 'survival_delta') || { params: {} }).params.stamina;
+assert(Math.abs(scaledStamina + 0.2) < 1e-9, '中度副作用体力 −1 → −0.2（按免疫缩放）');
+const scaledSpeed = (scaledTpl.effects.find((e) => e.type === 'battle_move_speed_multiplier') || { params: {} }).params.multiplier;
+assert(scaledSpeed > 0.9 && scaledSpeed < 1, '速度乘区 0.9 → 向 1 收敛（' + scaledSpeed + '）');
+immunityLevel = 0;
+assert.strictEqual(PE.getScaledSideEffectBuffId('moderate'), 'buff_pharm_sideeffect_moderate', '免疫 0 → 用静态模板');
+ok('免疫减轻副作用强度（§4.5）');
+
+console.log('\n⑱ A2 战斗中/静止门禁（接线口径）');
+const sceneSrc2 = readText('js/scene-app.js');
+assert(sceneSrc2.includes('function isPlayerInCombat'), '交战判定已实现（地图存活敌人 ≤2 格）');
+assert(sceneSrc2.includes('function checkUseRouteGate'), '给药途径门禁已实现');
+assert(sceneSrc2.includes("route !== 'topical' && route !== 'inject'"), '只有外敷/注射受战斗门禁');
+assert(sceneSrc2.includes("reason: 'must_be_still'"), '注射需静止');
+assert(uiText['item.use.fail.in_combat'] && uiText['item.use.fail.must_be_still'], '门禁文案已配');
+assert(!sceneSrc2.includes("route === 'drink' && isPlayerInCombat"), '口服不受战斗门禁（§5.2 战斗中可用）');
+ok('外敷/注射战斗中不可 + 注射需静止（口服/吸入不受限）');
+
+console.log('\n⑲ A3 口服走 43 消化（drink 剂型按 tick 缓释）');
+const brothTpl = items.potion_tonic_broth;
+assert(brothTpl.use_effect && brothTpl.use_effect.thirst > 0, '提神汤液带 use_effect（口渴/营养/精力）');
+assert(brothTpl.food_buff_duration_ticks === 30, '口服剂型声明消化时长 30 tick');
+buffSandbox.PharmacyStation = PS;
+buffSandbox.SceneCtx = buffSandbox.SceneCtx || {};
+vm.runInContext(readText('js/item-use.js'), buffSandbox, { filename: 'item-use.js' });
+const IU3 = buffSandbox.ItemUse;
+assert(IU3, 'item-use 在 buff 沙箱装载成功');
+const drinkOk = IU3.applyUseActionRoute('potion_tonic_broth', brothTpl, 'drink', {});
+assert.strictEqual(drinkOk, true, '口服提神汤液成功');
+assert(BS3.hasBuffByBuffId('player', 'buff_food_digest__potion_tonic_broth'), '挂上消化中 buff（43 消化曲线）');
+const digestTpl = BS3.getTemplate('buff_food_digest__potion_tonic_broth');
+assert(digestTpl && digestTpl.durationTicks === 30, '消化 buff 时长 = 30 tick');
+const perTick = (digestTpl.effects.find((e) => e.type === 'survival_delta') || { params: {} }).params;
+assert(Math.abs(perTick.thirst - 14 / 30) < 0.01 && Math.abs(perTick.energy - 10 / 30) < 0.01, '按 tick 均摊（口渴 14/30、精力 10/30）');
+ok('口服剂型接 43 消化：按 tick 缓释而非一次性直加');
 
 console.log('\n[smoke-pharmacy] ' + pass + ' 组断言全部通过');

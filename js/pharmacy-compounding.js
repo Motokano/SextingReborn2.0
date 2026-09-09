@@ -34,7 +34,7 @@
         salt_effect_multiplier: 0.5,
         salt_toxicity_multiplier: 1.5
     };
-    var conflictRules = { outcome_buffs: {}, rules: [], skip: { missing_chem_class: true, toxicity_zero: true, sub_categories: ['solvent', 'pharm_adjuvant'] } };
+    var conflictRules = { outcome_buffs: {}, rules: [], solvent_rules: [], skip: { missing_chem_class: true, toxicity_zero: true, sub_categories: ['solvent', 'pharm_adjuvant'] } };
 
     function num(v, fallback) {
         var n = Number(v);
@@ -61,6 +61,7 @@
             conflictRules = {
                 outcome_buffs: rules.outcome_buffs && typeof rules.outcome_buffs === 'object' ? rules.outcome_buffs : {},
                 rules: Array.isArray(rules.rules) ? rules.rules : [],
+                solvent_rules: Array.isArray(rules.solvent_rules) ? rules.solvent_rules : [],
                 skip: rules.skip && typeof rules.skip === 'object' ? rules.skip : conflictRules.skip
             };
         }
@@ -178,6 +179,39 @@
         });
         var hits = [];
         var i, j, k;
+
+        // 溶媒错配（§10.2）：选错底液 → 特定类别成分析出（不看毒性豁免，功能成分也算）
+        var solventIds = {};
+        var solventCandidates = [];
+        (components || []).forEach(function (row) {
+            var tpl = getTemplate(row.item_id);
+            if (!tpl) return;
+            if (classifyTemplate(tpl) === 'solvent') { solventIds[row.item_id] = true; return; }
+            var cls = String(tpl.chem_class || '').trim().toLowerCase();
+            if (cls) solventCandidates.push({ item_id: row.item_id, chem_class: cls });
+        });
+        var sr;
+        for (sr = 0; sr < (conflictRules.solvent_rules || []).length; sr++) {
+            var srule = conflictRules.solvent_rules[sr] || {};
+            var sid = String(srule.solvent_item_id || '');
+            if (!sid || !solventIds[sid]) continue;
+            var badClasses = Array.isArray(srule.incompatible_chem_classes)
+                ? srule.incompatible_chem_classes.map(function (c) { return String(c).trim().toLowerCase(); })
+                : [];
+            for (i = 0; i < solventCandidates.length; i++) {
+                if (badClasses.indexOf(solventCandidates[i].chem_class) < 0) continue;
+                hits.push({
+                    rule_id: srule.rule_id || '',
+                    kind: 'solvent_mismatch',
+                    chem_classes: [solventCandidates[i].chem_class],
+                    outcome: String(srule.outcome || ''),
+                    buff_id: (conflictRules.outcome_buffs || {})[String(srule.outcome || '')] || '',
+                    items: [sid, solventCandidates[i].item_id],
+                    desc: srule.desc || ''
+                });
+            }
+        }
+
         for (i = 0; i < judged.length; i++) {
             for (j = i + 1; j < judged.length; j++) {
                 for (k = 0; k < conflictRules.rules.length; k++) {

@@ -9762,11 +9762,15 @@
     "volatility": "low",
     "region_restrict": 0,
     "base_value": 400,
+    "use_effect": {
+      "satiety": 8
+    },
     "edible": false,
     "usable": true,
     "use_buff_id": "buff_pharm_analgesic_drink_regular",
     "use_action": "drink",
     "pharm_family": "analgesic",
+    "food_buff_duration_ticks": 40,
     "fuel_points": 0,
     "water_points": 0,
     "quality": "white"
@@ -9908,11 +9912,17 @@
     "volatility": "mid",
     "region_restrict": 0,
     "base_value": 320,
+    "use_effect": {
+      "thirst": 14,
+      "nutrition": 8,
+      "energy": 10
+    },
     "edible": false,
     "usable": true,
     "use_buff_id": "buff_pharm_stimulant_drink_weak",
     "use_action": "drink",
     "pharm_family": "stimulant",
+    "food_buff_duration_ticks": 30,
     "fuel_points": 0,
     "water_points": 0,
     "quality": "white"

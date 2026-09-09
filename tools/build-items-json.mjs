@@ -131,10 +131,12 @@ function buildUseEffect(o) {
   const sat = numOrNull(o.satiety_restore);
   const thi = numOrNull(o.thirst_restore);
   const nut = numOrNull(o.nutrition_restore);
+  const ene = numOrNull(o.energy_restore);
   const ue = {};
   if (sat != null && sat !== 0) ue.satiety = sat;
   if (thi != null && thi !== 0) ue.thirst = thi;
   if (nut != null && nut !== 0) ue.nutrition = nut;
+  if (ene != null && ene !== 0) ue.energy = ene;
   return Object.keys(ue).length ? ue : null;
 }
 
@@ -266,7 +268,7 @@ function rowToItem(o, filename) {
     category: 1, sub_category: 1, weight: 1, stack_limit: 1,
     tags: 1, source: 1, production_lines: 1, spoilage_ticks: 1, spoilage: 1,
     price_class: 1, volatility: 1, region_restrict: 1, base_value: 1,
-    satiety_restore: 1, thirst_restore: 1, nutrition_restore: 1,
+    satiety_restore: 1, thirst_restore: 1, nutrition_restore: 1, energy_restore: 1,
     edible: 1, edible_buff_id: 1, food_buff_duration_ticks: 1,
     usable: 1, use_buff_id: 1, use_action: 1,
     chem_class: 1, pharm_family: 1, pharm_effect: 1, pharm_toxicity: 1, concentration_cost: 1,
