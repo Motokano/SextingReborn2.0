@@ -67,6 +67,7 @@
 
 - **当前实现状态**：
   - 已明确接线：`life_gathering`（采集）使用 `5000000` 次为满熟练度（见 `js/gathering.js` 的 `GATHERING_MAX_PROFICIENCY`）。
+  - 已接线：`life_cooking`（烹饪，`js/cooking-station.js`）与 `life_pharmacy`（制药，`js/pharmacy-station.js`）同口径 —— 累计成功 `5000000` 次满级 100，每级成功率 +0.5%，满级必成；计数键分别为 `move_usage.cooking_success` / `move_usage.pharmacy_success`，曲线与加成可在 `data/pharmacy-system-config.csv`（制药）中调。
   - 其余生活技能的“统一分母 + 统一倍率公式”仍在迁移中；本节其余条目作为设计目标保留，按 TODO 处理。
 - TODO（统一熟练度总线）：将钓鱼/挖矿/伐木/狩猎/畜牧/种植与采集收口到同一运行时接口与同一配置口径。
 - 熟练度带来的效果一律按**乘法系数**作用在各自的基础几率上：

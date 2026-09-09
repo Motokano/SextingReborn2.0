@@ -13,7 +13,9 @@
 - 已实现运行时路由模块：`js/recipe-system.js`
 - 已实现统一 schema 校验模块：`js/recipe-schema.js`
 - 已在 `scene-app.loadConfig()` 接线：加载 -> 校验 -> 注入 `RecipeSystem`
-- 当前实际制作流程只接入烹饪，其他 life 系为占位数据。
+- 制作流程已接入：**烹饪**（`js/cooking-station.js`）与**制药**（`js/pharmacy-station.js`）；其余 life 系仍为占位数据。
+- 制药侧现状（2026-09）：`data/recipes.json` 中 `recipe_system: life_pharmacy` **46 条**（源表 `data/pharmacy-recipes.json` → `tools/build-pharmacy-recipes.mjs` 幂等合并）；方法表新增 `life_pharmacy.blending`（调和）与 `life_pharmacy.rolling`（卷制）；失败产物统一 `item.scrap.herb_dregs`。
+- **配药模式不走固定配方行**（47 §9.4）：`js/pharmacy-compounding.js` 独立结算（浓度预算 → 净药效族/potency → 净毒性 → 相冲 → 动态注射液实例），`RecipeSystem` 只承担固定配方路由。
 
 ---
 

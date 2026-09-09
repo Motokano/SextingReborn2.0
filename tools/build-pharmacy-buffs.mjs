@@ -146,6 +146,8 @@ const familyFlavor = (matrix.side_effects && typeof matrix.side_effects.family_f
 Object.keys(matrix.side_effects || {}).forEach((band) => {
   if (band.startsWith('_')) return;
   const s = matrix.side_effects[band];
+  // family_flavor 等非档位键（无 effects 数组）跳过，避免生成空副作用 buff
+  if (!s || !Array.isArray(s.effects) || !s.effects.length) return;
   generated.push(buildFlatTemplate(
     'buff_pharm_sideeffect_' + band,
     s.name,

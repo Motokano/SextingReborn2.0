@@ -3,6 +3,8 @@
 > 目标：把「吃」从**即时数值**改成**一段由胃里内容决定的曲线**——体现消化过程、餐的组成，以及「突然大暴食胃反应不过来、后期顶得难受」的现实感。
 > 与 `24-attribute-experience`（进食/睡眠 = 成长主通道）、`06-survival`（饱食/营养/体重）、`21-cooking`（烹饪/配方）联动。
 > 载体：现有 **35 个「消化中」buff**（`data/buffs.json`，durationTicks 8-12 + 每回合 survival_delta）——升级 `durationTicks → 消化时长`、`delta → 总量÷时长` 即得新模型，不需新机制。
+>
+> **制药侧复用（2026-09，47 §3.2）**：口服药剂（`use_action: drink`）带 `use_effect` + `food_buff_duration_ticks` 时走同一消化曲线——运行时注册 `buff_food_digest__<item_id>`，恢复量按 tick 均摊，不再一次性直加（`js/item-use.js`）。`energy_restore` 已并入 `use_effect.energy`。
 
 ## 一、餐位档（菜等级）——复杂度/等级的职责 = 定饱食
 

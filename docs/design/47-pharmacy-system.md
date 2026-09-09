@@ -1,8 +1,9 @@
 # 四十七、制药系统（设计定稿）
 
 > **状态**：R1–R5 已收敛；**R2 途径剂型修订**：注射从「并行第四条途径」改为「下游再加工」——由已做好的药粉/药片 + 溶媒配成注射液，支持多种药物联合。**R6 配伍危险**（化学相冲）与 **R7 配药模型**（原料四类 + 药效/毒性配比 + 浓度上限）已定稿。数值占位标 `❓`，实现前需调定；实现缺口见 §1.1。
+> **落地状态（2026-09）**：设计已全量实现并接入运行时与 UI —— 框架六缺口、剂型矩阵、成分 roster、配药模式 + 动态注射液、成瘾/毒性、针具卫生、首版药品全表（24 件成品 / 46 条配方）、信息显示（字段规则 + `module.pharmacy_medicine`）。实现细节与偏差记于 §1.1，已收口/仍待定项见 §8，药品全表见 §6.5。
 > **关联**：`22` 统一配方系统（实现口径）、`11-skills.md`（`life_pharmacy`/免疫/代谢）、`06` 生存属性、`18` Buff、`09` 身体部位、`19` 动作系统、`27` 物品模板字段、`43` 食物消化、`41` 品质移除、`看板 k142` 异常状态、`34` 肌肉系统（经脉废弃）、`45` 电池经济、`16` NPC 任务模板。
-> **实现口径锚点**：`data/recipe-methods.json`、`data/recipes.json`、`data/life-skill-recipe-interfaces.json`、`js/recipe-system.js`、`js/recipe-schema.js`、`js/scene-app.js`（`tryPharmacyAtStation` 镜像链）、`data/survival-config.json`、`data/items/*.csv`。
+> **实现口径锚点**：`data/recipe-methods.json`、`data/recipes.json`、`data/life-skill-recipe-interfaces.json`、`js/recipe-system.js`、`js/recipe-schema.js`、`js/scene-app.js`（`tryPharmacyAtStation` / `tryCompoundAtStation`）、`js/pharmacy-station.js`、`js/pharmacy-config.js`、`js/pharmacy-compounding.js`、`js/pharmacy-effects.js`、`data/pharmacy-system-config.csv`、`data/pharmacy-buff-matrix.json`、`data/pharmacy-recipes.json`、`data/pharmacy-conflict-rules.json`、`data/items/*.csv`、`tools/smoke-pharmacy.mjs`。
 
 ---
 
@@ -11,10 +12,13 @@
 - 药效覆盖四域：**生存/状态恢复、战斗增益/临时能力、药物负担与副作用、探索与生产辅助**。
 - **无必备物品**（药品为可选增强）、**0 教学 0 引导**、**高风险高惩罚**。
 - 制药技能 `life_pharmacy`；生活系熟练度乘法系数口径（`11-skills`）。
+- **文案与数据口径（2026-09 裁决）**：本系统是虚构游戏机制，所有数值为平衡量纲；**不描述、不暗示任何现实物质的制备方法或配比**。
 
 ---
 
 ## 1. 现状盘点（前提事实 · 现状盘点日期：2026-09；以当时磁盘为准）
+
+> **注**：本节是**设计期**的磁盘快照（当时 `recipes.json` 制药配方为零、4 件 `potion_*` 为死占位）。落地后的现状以 §1.1 为准，本节保留作为设计起点记录。
 
 - 制药骨架已占位：`recipe-methods.json` 有 7 个 `life_pharmacy` 方法（`crushing`/`maceration`/`distillation`/`filtration`/`centrifugation`/`crystallization`/`tableting`，带 `station_pharmacy` 门禁、配件 `tool_*_pharmacy`、默认失败 `item.scrap.herb_dregs`）；`life-skill-recipe-interfaces.json` 有接口行（默认 crushing）；`recipes.json` 配方为零。**占位值不作数值依据。**
 - 制药台 NPC 站初始**破损**，修复链 = `ore_clay_raw` + `wood_firewood` + `tool_rolling_pin_pharmacy` 各扣 1。
@@ -39,10 +43,13 @@
 
 - **生效时间**：`onsetTicks` 进 `js/buff-system.js`（`normalizeTemplate` + 结算/被动查询统一门闸），口服 5 / 外敷 3 / 吸入 2 / 注射 0。
 - **剂型矩阵生成**：`data/pharmacy-buff-matrix.json`（family × route × potency 源表）→ `tools/build-pharmacy-buffs.mjs` 生成 `buff_pharm_<family>_<route>_<potency>` 及副作用/相冲/成瘾阶段模板写入 `data/buffs.json`（幂等，带 `pharmacy_generated` 标记）。
-- **相冲结算位置修订**：§10.2 原设想用「每条药效 buff + `apply_buff_if_has_buffs` 判 `judgment_tags.chem_class`」，但剂型 buff 是**族级**（同族多成分共用一条），拿不到逐成分化学成分。改为**注射时按 `data/pharmacy-conflict-rules.json` 做类别级两两比对**，命中即授予 `buff_pharm_conflict_*`——仍是「一针下去才结算」，且数据表可改。
+- **相冲结算位置修订**：§10.2 原设想用「每条药效 buff + `apply_buff_if_has_buffs` 判 `judgment_tags.chem_class`」，但剂型 buff 是**族级**（同族多成分共用一条），拿不到逐成分化学成分。改为**注射时按 `data/pharmacy-conflict-rules.json` 做类别级两两比对 + 溶媒错配规则**，命中即授予 `buff_pharm_conflict_*`——仍是「一针下去才结算」，且数据表可改。
 - **成瘾/毒性运行时**：`js/pharmacy-effects.js`（状态落 `SceneCtx.pharmacy_effects`，save-system 显式快照）；阶段惩罚用 `CharacterAttributes.setExternalAcquiredMultiplier` 乘在后天五维实际值上；压制判定读 buff 的 `pharmacy_route`/`pharmacy_potency`，`BuffSystem.setBuffStateListener` 保证断药即时显形。
+- **配药模式**：`js/pharmacy-compounding.js`（浓度预算 / 按族净药效→potency / 净毒性抵消封顶 / 成盐判定→沉淀注射液 / 相冲 / 动态实例 `components`）；制药台面板「制作 · 配药」双模式 + 浓度条 + 成盐行 + 配药图鉴。
+- **存档**：`js/save-system.js` 补制药站点运行时、`known_recipe_ids_by_system.life_pharmacy` 图鉴、`SceneCtx.pharmacy_effects`（原先只存烹饪）。
+- **UI 信息显示**：`data/item-field-display-rules.json`（常驻 `pharmacy_common` 块 + 制药块字段 + 4 个新渲染器）、`data/item-info-modules.json`（`module.pharmacy_medicine`）、`js/scene-ui.js` buffLookup 补剂型字段。
 - **❓数值张力（k246 待调）**：自然衰减 1/tick + 重档门槛 56 + 致死倒计时 40 tick ⇒ 需初始体内毒性 ≥96 才可能致死（56~95 区间永不致死）。首版按当前配置接线，平衡待调。
-- **未接线（有模板无消费者）**：`pharmacy_bleeding_slow`（等 k142 异常状态）、`pharmacy_part_recovery`（等 09 部位恢复结算）、`pharmacy_revive`（等昏迷/濒死拉回链）、`pharmacy_synergy_multiplier`（k231 配药结算读取）。
+- **未接线（有模板无消费者）**：`pharmacy_bleeding_slow`（等 k142 异常状态）、`pharmacy_part_recovery`（等 09 部位恢复结算）、`pharmacy_revive`（等昏迷/濒死拉回链）；`pharmacy_synergy_multiplier` 由配药结算自行计算，模板内效果无消费者。
 
 ---
 
@@ -151,6 +158,7 @@
 
 ### 5.1 use_action 分流
 - 物品模板新增 `use_action: drink|topical|inhale|inject` + `use_buff_id`（引用药效核心）；扩展 `itemTemplateIsConsumable`/`applyItemUseEffectFromTemplate` 分流结算（`consumables_base.csv` 补列）。成功仍 `advanceTick`。
+- **已实现（2026-09）**：`tools/build-items-json.mjs` 落 `usable`/`use_buff_id`/`use_action`（此前被静默丢弃）；`js/item-use.js` 按途径分流——外敷需 `part_id`（七部位）、吸入无门槛（免火源）、刺入需器具 + 卫生结算 + 动态注射液按实例成分结算；`drink` 带 `use_effect` + `food_buff_duration_ticks` 时走 43 消化曲线；失败原因经 `takeLastUseFailure()` 映射到文案。
 
 ### 5.2 各途径使用
 | use_action | 动作 | 战斗内/外 |
@@ -227,9 +235,9 @@
 
 - **配方获得 = 盲配试药**：盲配（材料+工艺）首次成功 → `markPharmacyRecipeKnown` 写图鉴（链路已接，双写 `known_recipe_ids_by_system[life_pharmacy]`）。配方 `unlock`（`skill_level_min` 等）作硬门槛。
 - NPC 传授/配方书为**后续内容通道**（v1 不做）。
-- **制药熟练度**：成功制作 +1 usage（同烹饪，等级曲线/反哺成功率；实现时补齐 §1.1 缺口）。
+- **制药熟练度**：成功制作 +1 usage（同烹饪口径，已实现：500 万次满级 / 每级 +0.5% 成功率 / 满级必成，见 §1.1 ①）。
 - **0 教学入口 = 制药台修复链**：初始破损 → 修复（黏土+木柴+擀药杖）→ 面板启用（npc_flag）。
-- **信息分级**：药名+功效文案自带；"久服或致依赖"类副作用文案常驻；buff 数值与 potency 细节需鉴定（`11-skills` 鉴定惯例）。
+- **信息分级（已实现，2026-09）**：药名 + 功效文案（`fn`）自带，常驻可见；**给药方式 / 按次用量**（`pharmacy_common` 块）与**风险提示**（`module.pharmacy_medicine`：久服致依赖 / 配药会析出沉淀 / 针具不洁带感染）不设技能门；**药效族·途径·档位、起效/持续、毒性、浓度占用、成分身份、注射液成分**等细节需 `life_pharmacy` 1 级才展开（字段规则 `pharmacy` 块），未达等级显示「制药经验不足」+ 差几级。渲染落点见 `27` §8.1.1。
 - 药草描述已做风险预告风味（如赤花藤"副作用不小"）。
 
 ---
@@ -452,3 +460,18 @@
 ## 11. 关联文档
 
 `22` 配方统一口径 · `11` 技能/免疫 · `06` 生存 · `18` Buff · `09` 部位 · `19` 动作 · `27` 物品字段 · `43` 消化（食物相冲先例） · `41` 品质移除 · `看板 k142` 异常状态 · `45` 电池 · `16` 任务模板 · `30` 剧情（断药梗）
+
+---
+
+## 12. 验证与回归（2026-09）
+
+| 命令 | 覆盖 |
+|---|---|
+| `npm run test:pharmacy`（`tools/smoke-pharmacy.mjs`） | 75 组断言：框架六缺口 / 熟练度曲线 / 四途径分流 / 配药（浓度·成盐·沉淀·相冲·增效）/ 成瘾四阶段与压制 / 毒性代谢与致死链 / 针具卫生 / 口服消化 / 药品 roster 契约 / UI tooltip 渲染与信息分级 |
+| `npm run build:items` | `data/items/*.csv` → `data/items.json`（含 `pharmacy_base.csv`；重建应与提交版本逐字节一致） |
+| `npm run build:pharmacy-buffs` / `--check` | `data/pharmacy-buff-matrix.json` → `data/buffs.json`（幂等，92 条 `buff_pharm_*`） |
+| `npm run build:pharmacy-recipes` / `--check` | `data/pharmacy-recipes.json` → `data/recipes.json`（幂等，46 条制药配方） |
+| `npm run mark:pharmacy-ingredients` | 按 `alchemy` 标签 + 显式清单标记制药投料（幂等） |
+| `npm run audit:item-keys` / `audit:item-field-rules` | 物品字段键与字段显示规则一致性 |
+
+回归基线（2026-09）：`test:pharmacy` 75 组全过，`test:pain` 51 组、`test:hideout-warehouse`、`test:ui-windows`（23）、`test:dungeon-loot`（14）、`test:enemy-drops`（13）、`test:agriculture-map` 全绿。

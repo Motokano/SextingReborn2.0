@@ -116,8 +116,14 @@ flowchart LR
 |--------|------|
 | `schema_version` | 字符串版本号，与实现演进对齐 |
 | `blocks` | `block_id` → `{ display_name, default_skill_id?, default_visible? }`；`default_visible` 为 false 时，该块在无显式字段开放前默认不参与分块展示编排 |
-| `fields` | 模板字段键（含 `use_effect.*` 点分路径）→ `{ primary_block, reference_blocks, skill_id, level_min, locked_hint, renderer, value_type, visible_by_default?, deprecated? }`；`skill_id` 可为 `null` 表示不按生活技能门闸（仍可由 renderer 实现语言等横切逻辑） |
+| `fields` | 模板字段键（含 `use_effect.*` 点分路径）→ `{ primary_block, reference_blocks, skill_id, level_min, locked_hint, renderer, value_type, visible_by_default?, deprecated?, value_map? }`；`skill_id` 可为 `null` 表示不按生活技能门闸（仍可由 renderer 实现语言等横切逻辑）；`value_map` 供 `enum_label` 渲染器把枚举值翻成文案键 |
 | `renderers` | `renderer_id` → `{ display_name, value_type_hint }`，供策划与后续运行时校验 |
+
+**渲染器清单（2026-09）**：`bool_tag`、`buff_summary`、`food_restore`、`hidden`、`language_gated_desc`、`language_gated_name`、`number`、`tick_duration`，制药接入后新增 `enum_label`（枚举→文案）、`pharmacy_effect`（buff → 族·途径·档位 + 起效/持续）、`pharmacy_charges`（按次用量）、`pharmacy_components`（实例成分列表 + 沉淀标记）。
+
+**制药接入（2026-09）**：新增常驻块 `pharmacy_common`（给药方式/按次用量，不设技能门）；`pharmacy` 块补齐 `use_buff_id`/`pharmacy_compound`/`concentration_*`/`adjuvant_strength`/`pharm_*`/`chem_class`/实例 `components`。药品信息模块集 `module.pharmacy_medicine`（`data/item-info-modules.json`）承担常驻「给药方式 + 风险提示」，数值细节仍由字段规则按 `life_pharmacy` 等级解锁。
+
+**实现修正（2026-09）**：①`js/item-info-modules.js` 的 `normalizeContentHtml` 里 `var t` 曾遮蔽模块级翻译函数 `t()`，导致所有 `tpl_kv` 模块（含防具数值行）整块渲染不出来，已改名 `ctype`；②字段规则对「锁定且该物品无该字段值」的项不再输出锁定提示（消除药水 tooltip 里的灶台燃料/堆肥碳等噪声行）。
 
 **初始字段规则来源**：与本节 **§8.2** 表一致，并已写入该 JSON：`regular`（`edible`、名称/描述系列、`weight_kg`）、`cooking_station`、`food_detail`、`pharmacy`、`planting_compost`；旧轨 `use_effect.satiety` / `thirst` / `nutrition` 以 `deprecated: true` 归入块 `legacy_use_effect`，`renderer: hidden`，不进入新展示分块。
 
@@ -155,6 +161,14 @@ flowchart LR
 | `edible_buff_id` | 食物细节 | `life_cooking` | 3 | 食用后的效果；需 renderer 转成 Buff 摘要 |
 | `food_buff_duration_ticks` | 食物细节 | `life_cooking` | 3 | 食物效果持续时间 |
 | `pharmacy_ingredient` | 制药信息 | `life_pharmacy` | 1 | 是否可作为制药投料 |
+| `use_action` | 给药信息（常驻） | 无 | - | 给药途径 `drink`/`topical`/`inhale`/`inject`（47 §3.2）；常驻可见，不设技能门 |
+| `use_charges` | 给药信息（常驻） | 无 | - | 一盒多次用量（47 §8）：用尽才消失，实例 `charges` 递减 |
+| `use_buff_id` | 制药信息 | `life_pharmacy` | 1 | 剂型 buff（`buff_pharm_<族>_<途径>_<档位>`）→ 渲染为「族·途径·档位（起效/持续）」 |
+| `pharmacy_compound` | 制药信息 | `life_pharmacy` | 1 | 配药底模板标记（药效来自实例 `components`） |
+| `components`（实例） | 制药信息 | `life_pharmacy` | 1 | 动态注射液成分列表（`[{item_id,count}]`），随实例复制 |
+| `concentration_cost` / `concentration_capacity` | 制药信息 | `life_pharmacy` | 1 | 配药浓度占用 / 注射液总容量（47 §9.3） |
+| `adjuvant_strength` | 制药信息 | `life_pharmacy` | 1 | 助剂成盐能力（47 §9.5） |
+| `pharm_effect` / `pharm_toxicity` / `pharm_family` / `chem_class` | 制药信息 | `life_pharmacy` | 1 | 药效强度 / 毒性 / 药效族 / 成分身份（枚举走 `value_map`） |
 | `fert_c` | 堆肥/种植信息 | `life_planting` | 1 | 碳贡献 |
 | `fert_n` | 堆肥/种植信息 | `life_planting` | 1 | 氮贡献 |
 | `compost_inoculant_aerobic` | 堆肥/种植信息 | `life_planting` | 2 | 好氧菌剂 |
@@ -162,7 +176,7 @@ flowchart LR
 | `category` / `sub_category` / `tags` / `source` / `production_lines` | 分类与来源 | 默认隐藏 | - | 可用于筛选/辅助路由，后续按字段规则开放 |
 | `stack_limit` / `stack_max` | 容器/堆叠信息 | 默认隐藏 | - | 通用背包/容器规则 |
 | `base_value` / `price_class` / `volatility` / `region_restrict` / `usable_regions` / `accept_code` / `convert_to_high` | 经济/区域信息 | 默认隐藏 | - | 贸易/鉴定口径未定 |
-| `usable` / `use_buff_id` | 通用使用信息 | 默认隐藏 | - | 非食用、非料理效果 |
+| `usable` / `use_buff_id` | 通用使用信息（制药物品走「制药信息」） | 默认隐藏 | - | 非食用、非料理效果；制药剂型由 `use_action` 分流后归制药块 |
 | `weapon_attack_power` / `attack_power` / `skill_coef` / `req_innate_jingu` / `damage_type_effects` | 战斗信息 | 默认隐藏 | - | 不归生活技能，后续可接战斗/鉴定 |
 | `equip_slot` / `damage_reduce_slash_pct` / `damage_reduce_pierce_pct` / `damage_reduce_blunt_pct` / `pocket_slots` / `vest_slots` / `backpack_slots` / `backpack_weight_factor` / `enchant_slots` | 装备信息 | 默认隐藏 | - | 装备属性块，后续可接鉴定 |
 | `display_skill_id` / `info_module_set_id` | 内部/元数据 | 默认不展示 | - | 展示规则和 UI 编排字段 |
@@ -176,6 +190,8 @@ flowchart LR
 | `count` | 实例状态 | 数量，默认不绑生活技能 |
 | `enchants` | 实例词条 | 暂不归生活技能，未来可接鉴定/改造 |
 | `ground_drop_tick` | 实例状态 | 默认不展示 |
+| `charges` | 制药信息（给药信息块） | 一盒多次用量剩余次数（47 §8），随实例复制 |
+| `precipitated` / `salt_deficit` | 制药信息 | 沉淀注射液标记与成盐缺口（47 §9.5），随实例复制 |
 
 ### 8.4 明确废弃
 

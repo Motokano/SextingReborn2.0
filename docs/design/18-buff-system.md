@@ -105,6 +105,18 @@ type BuffInstance = {
 
 除既有的 `add_stat_delta`、`trigger_event` 外，可增加 **规则型** 声明，供战斗/动作结算读取（通用流水线未必会执行其数值，以各子系统文档为准）。
 
+### 18.3.1b 制药剂型 buff 扩展字段（2026-09，47 §3.4/§4/§9）
+
+| 字段 | 作用 | 读取方 |
+|------|------|--------|
+| `onsetTicks` | 生效时间：使用后到效果开始结算的 tick 数（口服 5 / 外敷 3 / 吸入 2 / 注射 0） | `js/buff-system.js` 统一门闸（结算 + 被动查询） |
+| `pharmacy_generated` | 标记由 `tools/build-pharmacy-buffs.mjs` 生成（免疫时长钩子据此生效） | buff-system / pharmacy-effects |
+| `pharmacy_family` / `pharmacy_route` / `pharmacy_potency` / `pharmacy_scope` / `pharmacy_peak` | 剂型矩阵标记（族·途径·档位·作用域·峰值） | 47 §4.4 压制判定、配药结算、tooltip |
+| `pharmacy_side_effect_band` / `pharmacy_conflict_outcome` / `pharmacy_addiction_stage` / `pharmacy_family_flavor` | 副作用档 / 相冲结局 / 成瘾阶段 / 逐族风味表 | `js/pharmacy-effects.js`、UI 渲染 |
+
+- 新增 API：`getTemplate(buffId)`（深拷贝，供按免疫派生缩放版）、`setBuffStateListener(fn)`（buff 在场变化回调，制药用于即时刷新 §4.4 压制）。
+- 效果类型：`pharmacy_anti_stun` 已接线（`getAntiStunPct` → 战斗管线玩家抗眩晕）；`pharmacy_revive`/`pharmacy_bleeding_slow`/`pharmacy_part_recovery`/`pharmacy_synergy_multiplier` 为已生成但暂无消费者的标记（等对应系统落点）。
+
 ### 18.3.1a `survival_delta.params` 字段口径（统一）
 
 - `satiety`：饱食

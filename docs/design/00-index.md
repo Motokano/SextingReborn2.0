@@ -61,7 +61,7 @@
 | 地牢敌人完成度梯度 | [44-dungeon-enemy-gradient.md](44-dungeon-enemy-gradient.md) | 16 层 × 4 档敌人完成度框架（对齐 42）：成长标尺/威胁画像/经验阶梯/情报与六劫挂钩 |
 | 电池经济数值骨架 | [45-battery-economy.md](45-battery-economy.md) | 电力锚线、电池容量档位、16 层掉落曲线、牧场需电模块耗电、起步储能；电箱 k91 暂缓 |
 | 饭盒系统 | [46-lunchbox-design.md](46-lunchbox-design.md) | 打包一餐、容量升级线、批量（46 裁定：同款刷新时长不叠层）、腐败/保鲜 |
-| 制药系统 | [47-pharmacy-system.md](47-pharmacy-system.md) | 制程、途径剂型、成瘾度、使用语义、知识获取；数值占位 ❓ 待调定；现状盘点见 §1（2026-09） |
+| 制药系统 | [47-pharmacy-system.md](47-pharmacy-system.md) | 制程、途径剂型、成瘾度、使用语义、知识获取、配药模型；**已全量落地（2026-09）**：框架六缺口 / 剂型矩阵 / 24 件成品 + 46 条配方 / 配药模式 / 成瘾毒性 / UI 信息显示；数值 ❓ 待调；现状见 §1.1、药品全表见 §6.5 |
 | 用餐与进食经验 | [48-meal-balance-attribute-exp.md](48-meal-balance-attribute-exp.md) | 原 44-meal-balance-attribute-exp（改号）；营养均衡→进食经验倍率（k79 实装口径） |
 | 终局料理生产线 | [life-cooking-final-goals.md](life-cooking-final-goals.md) | Raw→Intermediate→Final 终局料理底稿；关联 21/43/48 |
 
