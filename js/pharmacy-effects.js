@@ -118,7 +118,9 @@
             last_band: 'none',
             lethal_active: false,
             /** 47 §9.5：本次注射主药族（副作用逐族文案用） */
-            side_effect_family: ''
+            side_effect_family: '',
+            /** 09「损毁恢复」：外敷药目标部位登记 buff_id → 部位键（存档随 pharmacy_effects 持久化） */
+            topical_parts: {}
         };
     }
 
@@ -134,6 +136,7 @@
         s.stage = Math.max(1, Math.min(4, Math.floor(num(s.stage, 1))));
         if (typeof s.last_band !== 'string' || !s.last_band) s.last_band = 'none';
         if (typeof s.side_effect_family !== 'string') s.side_effect_family = '';
+        if (!s.topical_parts || typeof s.topical_parts !== 'object') s.topical_parts = {};
         s.lethal_active = s.lethal_active === true;
         return s;
     }
@@ -147,6 +150,15 @@
         if (s.stage != null) st.stage = Math.max(1, Math.min(4, Math.floor(num(s.stage, st.stage))));
         if (s.last_band != null) st.last_band = String(s.last_band);
         if (s.side_effect_family != null) st.side_effect_family = String(s.side_effect_family);
+        if (s.topical_parts && typeof s.topical_parts === 'object') {
+            var tp = {};
+            var tpk = Object.keys(s.topical_parts);
+            for (var tpi = 0; tpi < tpk.length; tpi++) {
+                var pid = normalizePartKey(s.topical_parts[tpk[tpi]]);
+                if (pid) tp[tpk[tpi]] = pid;
+            }
+            st.topical_parts = tp;
+        }
         if (s.lethal_active != null) st.lethal_active = s.lethal_active === true;
         return st;
     }
@@ -398,6 +410,130 @@
     }
 
     // ---------------------------
+    // 09「损毁恢复」：外敷药逐 tick 恢复目标部位损毁值
+    // ---------------------------
+    var PART_RECOVERY_EFFECT = 'pharmacy_part_recovery';
+    var PART_KEYS = ['head', 'chest', 'abdomen', 'lhand', 'rhand', 'lfoot', 'rfoot'];
+    var PART_KEY_ALIAS = {
+        belly: 'abdomen',
+        left_arm: 'lhand',
+        right_arm: 'rhand',
+        left_leg: 'lfoot',
+        right_leg: 'rfoot'
+    };
+
+    /** 部位键归一（belly/left_arm 等 → 09 运行时键；非法返回 ''）。 */
+    function normalizePartKey(rawId) {
+        var k = rawId != null ? String(rawId).trim() : '';
+        if (PART_KEY_ALIAS[k]) return PART_KEY_ALIAS[k];
+        return PART_KEYS.indexOf(k) >= 0 ? k : '';
+    }
+
+    /** 登记外敷目标部位（item-use 使用外敷药时调用；随 pharmacy_effects 存档）。 */
+    function setTopicalTarget(buffId, partId) {
+        var bid = buffId != null ? String(buffId).trim() : '';
+        var pid = normalizePartKey(partId);
+        if (!bid || !pid) return '';
+        var st = getState();
+        st.topical_parts[bid] = pid;
+        return pid;
+    }
+
+    /** 读外敷目标部位（登记优先，其次 item-use 运行时表）。 */
+    function getTopicalTarget(buffId) {
+        var bid = buffId != null ? String(buffId).trim() : '';
+        if (!bid) return '';
+        var st = getState();
+        var pid = normalizePartKey(st.topical_parts[bid]);
+        if (pid) return pid;
+        var IU = global.ItemUse;
+        if (IU && typeof IU.getTopicalPartForBuff === 'function') return normalizePartKey(IU.getTopicalPartForBuff(bid));
+        return '';
+    }
+
+    function getNowTickSafe() {
+        try {
+            var GT = global.GameTime;
+            if (GT && typeof GT.getState === 'function') {
+                var t = (GT.getState() || {}).totalTicks;
+                if (t != null && isFinite(Number(t))) return Math.floor(Number(t));
+            }
+        } catch (eTick) { /* ignore */ }
+        return null;
+    }
+
+    /** 伤最重的部位（损毁/上限比最大；无登记部位时的兜底落点）。 */
+    function getMostDamagedPart() {
+        var CA = global.CharacterAttributes;
+        if (!CA || typeof CA.getPartDestroy !== 'function' || typeof CA.getBodyPartDestroyMax !== 'function') return '';
+        var best = '';
+        var bestRatio = 0;
+        for (var i = 0; i < PART_KEYS.length; i++) {
+            var k = PART_KEYS[i];
+            var cur = Number(CA.getPartDestroy(k)) || 0;
+            if (cur <= 0) continue;
+            var mx = Number(CA.getBodyPartDestroyMax(k)) || 0;
+            if (mx <= 0) continue;
+            var ratio = cur / mx;
+            if (ratio > bestRatio) { bestRatio = ratio; best = k; }
+        }
+        return best;
+    }
+
+    /** 该外敷 buff 的每 tick 恢复点数（recovery_per_tick 为准；旧字段 recovery_multiplier 按自然自愈倍率折算）。 */
+    function getPartRecoveryPerTick(params) {
+        var p = params && typeof params === 'object' ? params : {};
+        var perTick = Number(p.recovery_per_tick);
+        if (isFinite(perTick) && perTick > 0) return perTick;
+        var mult = Number(p.recovery_multiplier);
+        if (!isFinite(mult) || mult <= 0) return 0;
+        var CA = global.CharacterAttributes;
+        var cfgR = (CA && typeof CA.getPartRecoverCfg === 'function') ? CA.getPartRecoverCfg() : null;
+        var interval = (cfgR && cfgR.interval > 0) ? cfgR.interval : 6;
+        var extra = (mult - 1) / interval;
+        return extra > 0 ? extra : 0;
+    }
+
+    /**
+     * 每世界 tick：扫描在场制药 buff 的 pharmacy_part_recovery 效果，按每 tick 点数降低目标部位损毁值。
+     * 目标部位：外敷登记（ItemUse / 本模块 state）优先，缺失时回退「伤最重的部位」。
+     * @returns {number} 本次实际恢复的整点总量
+     */
+    function tickPartRecovery() {
+        var CA = global.CharacterAttributes;
+        if (!CA || typeof CA.recoverPartDestroy !== 'function') return 0;
+        var BS = getBuffSystem();
+        if (!BS || typeof BS.getState !== 'function') return 0;
+        var all = BS.getState();
+        var arr = (all && all.instancesByOwner && all.instancesByOwner.player) ? all.instancesByOwner.player : [];
+        if (!arr || !arr.length) return 0;
+        var now = getNowTickSafe();
+        var total = 0;
+        for (var i = 0; i < arr.length; i++) {
+            var inst = arr[i];
+            if (!inst || !inst.template || (inst.stacks || 0) <= 0) continue;
+            var onset = Math.max(0, parseInt(inst.template.onsetTicks, 10) || 0);
+            if (onset > 0) {
+                if (now == null) continue;
+                var started = Math.max(0, parseInt(inst.started_tick, 10) || 0);
+                if (now - started < onset) continue;
+            }
+            var effects = inst.template.effects || [];
+            for (var j = 0; j < effects.length; j++) {
+                var e = effects[j] || {};
+                if (String(e.type || '') !== PART_RECOVERY_EFFECT) continue;
+                var perTick = getPartRecoveryPerTick(e.params);
+                if (!(perTick > 0)) continue;
+                var part = getTopicalTarget(inst.buff_id) || getMostDamagedPart();
+                if (!part) continue;
+                var stacks = Math.max(1, parseInt(inst.stacks, 10) || 1);
+                total += CA.recoverPartDestroy(part, perTick * stacks);
+            }
+        }
+        return total;
+    }
+
+    // ---------------------------
     // 世界 tick
     // ---------------------------
     /** 每世界 tick：成瘾衰减 + 阶段/压制刷新 + 毒性衰减 + 副作用档 + 致死倒计时。 */
@@ -428,6 +564,9 @@
         // 阶段与压制（成瘾值变化或在场药 buff 变化都可能改判定）
         refreshAddictionStage();
         refreshToxicityBand();
+
+        // 部位损毁恢复（09「损毁恢复」/47 §9.6 活络：外敷药逐 tick 降损毁值）
+        if (tickPartRecovery() > 0) changed = true;
 
         // 致死倒计时：重档期间累计，降到档下即清零（§9.2）
         var band = getToxicityBand(st.toxicity);
@@ -591,6 +730,10 @@
         getScaledSideEffectBuffId: getScaledSideEffectBuffId,
         setSideEffectFlavor: setSideEffectFlavor,
         getSideEffectFlavor: getSideEffectFlavor,
+        setTopicalTarget: setTopicalTarget,
+        getTopicalTarget: getTopicalTarget,
+        tickPartRecovery: tickPartRecovery,
+        getPartRecoveryPerTick: getPartRecoveryPerTick,
         getActiveSideEffectBuffId: getActiveSideEffectBuffId,
         getAddiction: getAddiction,
         getRouteGain: getRouteGain,

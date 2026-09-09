@@ -1158,6 +1158,25 @@
                         var tagStr = arr.length ? arr.join(ui('punct.join.dot')) : ui('common.dash');
                         html += '<div class="tooltip-attrs">' + ui('tooltip.action.tags', { v: tagStr }).replace(/</g, '&lt;').replace(/>/g, '&gt;') + '</div>';
                     }
+                    // 09「损毁恢复」：损毁值正在回落 / 刚受击宽限中（悬停即时计算，不依赖面板刷新）
+                    try {
+                        var CAp = window.CharacterAttributes;
+                        var pKey = pid === 'belly' ? 'abdomen' : pid;
+                        if (CAp && typeof CAp.getPartDestroy === 'function' && CAp.getPartDestroy(pKey) > 0) {
+                            var blockLeft = (typeof CAp.getDestroyRecoverBlockTicks === 'function') ? CAp.getDestroyRecoverBlockTicks() : 0;
+                            var recLine = '';
+                            if (blockLeft > 0) {
+                                recLine = ui('body.part.destroy.recover.blocked', { v: String(blockLeft) });
+                            } else if (typeof CAp.getPartRecoverCfg === 'function') {
+                                var rcfg = CAp.getPartRecoverCfg();
+                                var pmul = Number(rcfg.part_multiplier[pKey]);
+                                if (!isFinite(pmul) || pmul <= 0) pmul = 1;
+                                var rateTicks = Math.max(1, Math.round(rcfg.interval / pmul));
+                                recLine = ui('body.part.destroy.recover.active', { rate: String(rateTicks) });
+                            }
+                            if (recLine) html += '<div class="tooltip-attrs">' + recLine.replace(/</g, '&lt;').replace(/>/g, '&gt;') + '</div>';
+                        }
+                    } catch (eRecTip) { /* 恢复提示异常不影响 tooltip */ }
                     SceneUi.showItemTooltip(html, row);
                 });
                 row.addEventListener('mouseleave', SceneUi.hideItemTooltip);
@@ -2883,6 +2902,12 @@
                     window.PharmacyEffects.onWorldTick();
                 }
             } catch (ePharmTick) { /* ignore */ }
+            // 09「损毁恢复」：部位损毁自然自愈（宽限后按部位速率回落，休息加速）
+            try {
+                if (window.CharacterAttributes && typeof window.CharacterAttributes.onWorldTickDestroyRecover === 'function') {
+                    window.CharacterAttributes.onWorldTickDestroyRecover();
+                }
+            } catch (ePartRecover) { /* ignore */ }
             return ret;
         };
         window.Survival.__worldSystemsTickPatched = true;

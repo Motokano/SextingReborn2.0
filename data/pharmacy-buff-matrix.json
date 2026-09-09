@@ -264,12 +264,12 @@
       "routes": [
         "topical"
       ],
-      "desc": "敷在伤处，手脚的失能恢复更快（部位唯一能治的途径）",
+      "desc": "敷在伤处，损毁值持续回落（09「损毁恢复」唯一外源通道）",
       "effects": [
         {
           "type": "pharmacy_part_recovery",
           "params": {
-            "recovery_multiplier": 1.5
+            "recovery_per_tick": 0.3
           }
         }
       ]

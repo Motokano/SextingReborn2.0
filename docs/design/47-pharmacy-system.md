@@ -49,7 +49,8 @@
 - **存档**：`js/save-system.js` 补制药站点运行时、`known_recipe_ids_by_system.life_pharmacy` 图鉴、`SceneCtx.pharmacy_effects`（原先只存烹饪）。
 - **UI 信息显示**：`data/item-field-display-rules.json`（常驻 `pharmacy_common` 块 + 制药块字段 + 4 个新渲染器）、`data/item-info-modules.json`（`module.pharmacy_medicine`）、`js/scene-ui.js` buffLookup 补剂型字段。
 - **❓数值张力（k246 待调）**：自然衰减 1/tick + 重档门槛 56 + 致死倒计时 40 tick ⇒ 需初始体内毒性 ≥96 才可能致死（56~95 区间永不致死）。首版按当前配置接线，平衡待调。
-- **未接线（有模板无消费者）**：`pharmacy_bleeding_slow`（等 k142 异常状态）、`pharmacy_part_recovery`（等 09 部位恢复结算）、`pharmacy_revive`（等昏迷/濒死拉回链）；`pharmacy_synergy_multiplier` 由配药结算自行计算，模板内效果无消费者。
+- **未接线（有模板无消费者）**：`pharmacy_bleeding_slow`（等 k142 异常状态）、`pharmacy_revive`（等昏迷/濒死拉回链）；`pharmacy_synergy_multiplier` 由配药结算自行计算，模板内效果无消费者。
+- **部位损毁恢复已接线**（2026-09）：`pharmacy_part_recovery` → `PharmacyEffects.tickPartRecovery`（世界 tick 内）→ `CharacterAttributes.recoverPartDestroy`；外敷目标部位由 `item-use` 登记进 `SceneCtx.pharmacy_effects.topical_parts`（随存档持久化）。自然自愈基础通道见 09「损毁恢复」。
 
 ---
 
@@ -111,7 +112,7 @@
 | 口服 drink | 3–8 | 长 30–120 | 平稳持久（走 43 消化） | 全身 | 0.8 | 消化负担 |
 | 外敷 topical | 2–5 | 长 30–180 | 缓释局部 | 部位（唯一治部位伤） | 0.7 | ≈0 |
 
-- **剂型 = 不同的 buff 模板** `buff_<药效族>_<剂型>`：每个模板自带 onset/duration/生效形态/作用域/峰值强度，不是「同一个 buff 打个折」。同一药效族不同剂型 = 形状完全不同的 buff（例：镇痛·注射 = 立即压全档；镇痛·口服 = 慢起效平稳长；活络·外敷 = 只治敷的部位、失能恢复）。
+- **剂型 = 不同的 buff 模板** `buff_<药效族>_<剂型>`：每个模板自带 onset/duration/生效形态/作用域/峰值强度，不是「同一个 buff 打个折」。同一药效族不同剂型 = 形状完全不同的 buff（例：镇痛·注射 = 立即压全档；镇痛·口服 = 慢起效平稳长；活络·外敷 = 只治敷的部位、损毁值逐 tick 回落）。
 - 生效时间 = 使用后到 buff 开始生效的 tick 数；持续时间 = buff 的 `durationTicks`。二者由**剂型**定。
 - potency 档（weak/regular/potent，§9.2）是每个剂型 buff 内的强度分档；剂型「生物利用度」已烙进各模板峰值强度（上表），不做运行时倍率。
 - 三个正交维度：**药**（药效族）定「什么效果」；**剂型**（buff 模板）定「多快起效、持续多久、全身还是局部、峰值多高」；**配药**（剂量 → 净药效/净毒性）定「下多重的手、落到哪个 potency 档」。
@@ -203,7 +204,7 @@
 
 ### 6.3 示例 B：外敷·活络（部位）❓
 ```
-核心：buff_mobility_restore（topical；手动选部位；效果=加速手脚失能恢复/缓淤，接 09 部位恢复接线）
+核心：buff_mobility_restore（topical；手动选部位；效果=按 recovery_per_tick 逐 tick 降低该部位损毁值，已接 09「损毁恢复」）
 链：药草(如 herb_root_bitter 系) → [crushing] → 药粉 → +油脂基质 → [调和 ❓成型方法] → 活络药膏
 外敷不涨瘾不压瘾；战斗中不可；自己手动选部位敷用
 ```
@@ -405,7 +406,7 @@
 - 制药台配件获取渠道（制造/贸易/藏身处升级）——11 个 `tool_*_pharmacy` 目前无产物/贸易渠道（**本项按 2026-09 裁决暂时搁置**）。
 - 体温恢复通道（体力/精力/心情已由兴奋/镇静族覆盖；体温无落点）。
 - 吸入烟气=位置暴露（火源门槛已按裁决取消，暴露表现未做）。
-- 部分自定义效果类型暂无消费者：`pharmacy_revive`（等昏迷/濒死链）、`pharmacy_bleeding_slow`（等 k142 流血）、`pharmacy_part_recovery`（等 09 部位恢复）；`pharmacy_synergy_multiplier` / `pharmacy_addiction_penalty` 由运行时自行计算，模板内效果不消费。
+- 部分自定义效果类型暂无消费者：`pharmacy_revive`（等昏迷/濒死链）、`pharmacy_bleeding_slow`（等 k142 流血）；`pharmacy_synergy_multiplier` / `pharmacy_addiction_penalty` 由运行时自行计算，模板内效果不消费。（`pharmacy_part_recovery` **已接线**，2026-09：外敷活络药逐 tick 降目标部位损毁值，见 09「损毁恢复」。）
 - 制药台配件获取渠道（制造/贸易/藏身处升级）——11 个 `tool_*_pharmacy` 目前无任何产物/贸易渠道。
 
 ---
@@ -482,6 +483,7 @@
 | 致幻 | `battle_potential_gain_multiplier` + `battle_combat_experience_gain_multiplier` | 潜能↑ 实战经验↑ |
 | 镇静（大麻） | `survival_delta`（mood/nutrition） | 心情↑ 食欲↑ |
 | 镇痛 | 压制「疼痛」debuff（见下） | 疼痛效果暂时不生效 |
+| 活络（外敷） | `pharmacy_part_recovery`（`recovery_per_tick`） | 目标部位损毁值逐 tick 回落（见下） |
 | 增效（骆驼蓬） | 放大其他药效倍率 | 辅药 |
 
 **功能药效族（功能成分 · toxicity = 0 · 无副作用 · 原料锚定）**
@@ -504,6 +506,13 @@
 - 累积与衰减：**已定稿，见看板 k229**——累积 = 每击 round(实际损毁增量 × 部位汇率 0.1~1.0)，整数累进；疼痛条上限 = 25 + 0.75×平均损毁（封顶制，够不着高档即不触发）；衰减 = 持续 10 tick 未吃有效损毁后每 4 tick −1；敌我通用；复活清零。（本节旧口径"受伤害涨/治疗包扎时间回落"已废弃。）
 - 阈值四档（疼痛要够狠，镇痛才有价值）：0–24 无痛；25–49 轻度疼痛（出手 ×0.90、心情 −2/tick）；50–74 中度疼痛（出手 ×0.80、心情 −4/tick、体力/精力恢复减半）；75–89 重度疼痛（出手 ×0.65、心情 −6/tick、体力 −2/tick）；90–100 剧痛（出手 ×0.60、心情 −8/tick、体力 −3/tick、`disable_actions(move)`：痛到走不动）。
 - **镇痛 = 压制疼痛**：镇痛 buff 在场时疼痛区间 buff 效果不生效（debuff 仍在、只盖住）；药效一过疼痛照旧，叠戒断更凶。
+
+**部位损毁恢复（活络族 · 2026-09 接线）**：
+
+- 效果类型 `pharmacy_part_recovery`，参数 `recovery_per_tick`（外敷 buff 逐 tick 降低**外敷目标部位**的损毁值，**不受 09 自然自愈宽限限制**）。
+- 数值（`data/pharmacy-buff-matrix.json` 的 `mobility` 族，基准 0.3/tick × 外敷峰值 0.7 × potency 档，持续 90 tick）：弱效 0.11/tick（≈10 点）/ 常效 0.21（≈19）/ 强效 0.32（≈29）/ 纯品 0.4（≈36）。
+- 落点链路：`item-use` 外敷登记目标部位 → `SceneCtx.pharmacy_effects.topical_parts`（随存档）→ `PharmacyEffects.tickPartRecovery`（世界 tick）→ `CharacterAttributes.recoverPartDestroy`（唯一写入通道，含小数进度累加）。登记缺失时兜底落在「损毁/上限比最高」的部位。
+- 与自然自愈**并行叠加**（09「损毁恢复」：宽限 40 tick 后每部位每 6 tick 1 点，休息 ×3）。
 
 ---
 

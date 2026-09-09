@@ -1178,4 +1178,92 @@ assert(items.potion_calm_brew_purified && items.potion_mobility_salve_purified, 
 assert(loadJson('data/buffs.json').buffs.some((b) => b.pharmacy_potency === 'pure'), 'pure 档 buff 模板已生成');
 ok('精炼成品引用 pure 档（注射/口服/外敷均有）');
 
+console.log('\n㉙ 损毁恢复（09「损毁恢复」：自然自愈 + 外敷活络药）');
+
+// 参数口径（survival-config）
+const rcCfg = CA3.getPartRecoverCfg();
+assert.strictEqual(rcCfg.grace, 40, '受击宽限 40 tick');
+assert.strictEqual(rcCfg.interval, 6, '四肢 6 tick / 点');
+assert.strictEqual(rcCfg.rest_multiplier, 3, '休息 ×3');
+assert.strictEqual(rcCfg.part_multiplier.head, 0.5, '头部系数 0.5（最慢）');
+assert.strictEqual(rcCfg.part_multiplier.lhand, 1, '四肢系数 1.0');
+ok('自然自愈参数：宽限 40 / 间隔 6 / 休息 ×3 / 逐部位系数');
+
+// 吃损毁 → 重置宽限；宽限内不回落
+S3.setResting(false);
+CA3.setState(CA3.getDefaultState());
+CA3.applyCombatDestroy('lhand', 30);
+assert.strictEqual(CA3.getPartDestroy('lhand'), 30, '受击写入 30 损毁');
+assert.strictEqual(CA3.getDestroyRecoverBlockTicks(), 40, '受击即重置宽限计时');
+for (let i = 0; i < 40; i++) CA3.onWorldTickDestroyRecover();
+assert.strictEqual(CA3.getPartDestroy('lhand'), 30, '宽限 40 tick 内损毁不回落');
+for (let i = 0; i < 6; i++) CA3.onWorldTickDestroyRecover();
+assert.strictEqual(CA3.getPartDestroy('lhand'), 29, '宽限结束 + 6 tick → 四肢恢复 1 点');
+ok('自然自愈：宽限 40 tick 后每 6 tick −1（四肢）');
+
+// 部位系数差异：头 0.5（60 tick 5 点）/ 腹 0.7（60 tick 7 点）
+CA3.setState(CA3.getDefaultState());
+CA3.applyCombatDestroy('head', 20);
+CA3.applyCombatDestroy('abdomen', 20);
+for (let i = 0; i < 40; i++) CA3.onWorldTickDestroyRecover();
+for (let i = 0; i < 60; i++) CA3.onWorldTickDestroyRecover();
+assert.strictEqual(CA3.getPartDestroy('head'), 15, '头 0.5 系数：60 tick 恢复 5 点');
+assert.strictEqual(CA3.getPartDestroy('abdomen'), 13, '腹 0.7 系数：60 tick 恢复 7 点');
+ok('部位系数：头 5 点 / 腹 7 点（同一 60 tick 窗口）');
+
+// 休息加速：×3
+CA3.setState(CA3.getDefaultState());
+S3.setResting(true);
+CA3.applyCombatDestroy('lhand', 30);
+for (let i = 0; i < 40; i++) CA3.onWorldTickDestroyRecover();
+for (let i = 0; i < 6; i++) CA3.onWorldTickDestroyRecover();
+assert.strictEqual(CA3.getPartDestroy('lhand'), 27, '休息 ×3 → 6 tick 恢复 3 点');
+S3.setResting(false);
+ok('休息加速：静止休息时自愈 ×3');
+
+// 外敷活络药：逐 tick 降损毁，不受宽限限制
+assert.strictEqual(PE.getPartRecoveryPerTick({ recovery_per_tick: 0.32 }), 0.32, 'recovery_per_tick 直读');
+['weak', 'regular', 'potent', 'pure'].forEach((p) => {
+  const t = buffById['buff_pharm_mobility_topical_' + p];
+  assert(t && t.effects[0].type === 'pharmacy_part_recovery' && t.effects[0].params.recovery_per_tick > 0, p + ' 外敷活络药带 recovery_per_tick');
+});
+CA3.setState(CA3.getDefaultState());
+CA3.applyCombatDestroy('rfoot', 20);
+buffSandbox.GameTime.tick = 0;
+BS3.removeBuffByBuffId('player', 'buff_pharm_mobility_topical_potent');
+BS3.applyBuff('player', 'buff_pharm_mobility_topical_potent', 'test:smoke');
+PE.setTopicalTarget('buff_pharm_mobility_topical_potent', 'rfoot');
+assert.strictEqual(PE.getTopicalTarget('buff_pharm_mobility_topical_potent'), 'rfoot', '外敷目标部位登记');
+buffSandbox.GameTime.advanceTicks(3);
+assert.strictEqual(PE.tickPartRecovery(), 0, '强效 0.32/tick：1 tick 未满 1 点');
+for (let i = 0; i < 3; i++) PE.tickPartRecovery();
+assert.strictEqual(CA3.getPartDestroy('rfoot'), 19, '外敷强效 4 tick → 恢复 1 点（宽限期内照样治）');
+ok('外敷活络药：强效 0.32/tick（约 4 tick 1 点，90 tick ≈ 29 点）');
+
+// 无登记部位 → 兜底落「伤最重部位」；onWorldTick 也跑恢复
+CA3.setState(CA3.getDefaultState());
+CA3.applyCombatDestroy('chest', 10);
+CA3.applyCombatDestroy('rhand', 40);
+PE.setState({ topical_parts: {} });
+BS3.removeBuffByBuffId('player', 'buff_pharm_mobility_topical_potent');
+BS3.applyBuff('player', 'buff_pharm_mobility_topical_potent', 'test:smoke');
+buffSandbox.GameTime.advanceTicks(3);
+let changedByRecovery = false;
+for (let i = 0; i < 4; i++) { if (PE.onWorldTick() === true) changedByRecovery = true; }
+assert.strictEqual(CA3.getPartDestroy('rhand'), 39, '无登记 → 落伤最重部位（rhand 40/100）');
+assert.strictEqual(CA3.getPartDestroy('chest'), 10, 'chest 不受影响');
+assert(changedByRecovery, 'PharmacyEffects.onWorldTick 恢复落地 → changed');
+BS3.removeBuffByBuffId('player', 'buff_pharm_mobility_topical_potent');
+ok('兜底落点（伤最重部位）+ 世界 tick 接线');
+
+// 存档字段（getState/setState 往返）
+const recoverSnap = CA3.getState();
+assert(recoverSnap.part_destroy_recover_acc && recoverSnap.part_destroy_recover_acc.rhand >= 0, '存档含每部位恢复进度');
+assert(recoverSnap.destroy_recover_block_ticks >= 0, '存档含宽限计时');
+CA3.setState({ part_destroy_recover_acc: { lfoot: 0.5 }, destroy_recover_block_ticks: 7 });
+assert(Math.abs(CA3.getPartDestroyRecoverAcc('lfoot') - 0.5) < 1e-9, '恢复进度可回读');
+assert.strictEqual(CA3.getDestroyRecoverBlockTicks(), 7, '宽限计时可回读');
+assert.strictEqual(PE.getState().topical_parts && typeof PE.getState().topical_parts === 'object', true, 'pharmacy_effects 含外敷部位表（随存档持久化）');
+ok('恢复进度 / 宽限计时 / 外敷部位表 全部进存档');
+
 console.log('\n[smoke-pharmacy] ' + pass + ' 组断言全部通过');

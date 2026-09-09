@@ -115,7 +115,7 @@ type BuffInstance = {
 | `pharmacy_side_effect_band` / `pharmacy_conflict_outcome` / `pharmacy_addiction_stage` / `pharmacy_family_flavor` | 副作用档 / 相冲结局 / 成瘾阶段 / 逐族风味表 | `js/pharmacy-effects.js`、UI 渲染 |
 
 - 新增 API：`getTemplate(buffId)`（深拷贝，供按免疫派生缩放版）、`setBuffStateListener(fn)`（buff 在场变化回调，制药用于即时刷新 §4.4 压制）。
-- 效果类型：`pharmacy_anti_stun` 已接线（`getAntiStunPct` → 战斗管线玩家抗眩晕）；`pharmacy_revive`/`pharmacy_bleeding_slow`/`pharmacy_part_recovery`/`pharmacy_synergy_multiplier` 为已生成但暂无消费者的标记（等对应系统落点）。
+- 效果类型：`pharmacy_anti_stun` 已接线（`getAntiStunPct` → 战斗管线玩家抗眩晕）；`pharmacy_part_recovery` 已接线（`PharmacyEffects.tickPartRecovery` → `CharacterAttributes.recoverPartDestroy`，09「损毁恢复」）；`pharmacy_revive`/`pharmacy_bleeding_slow`/`pharmacy_synergy_multiplier` 为已生成但暂无消费者的标记（等对应系统落点）。
 
 ### 18.3.1a `survival_delta.params` 字段口径（统一）
 

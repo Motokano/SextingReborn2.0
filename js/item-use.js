@@ -257,7 +257,12 @@
             if (appliedIds.length) {
                 applied = true;
                 if (rid === 'topical') {
-                    for (ai = 0; ai < appliedIds.length; ai++) topicalPartByBuffId[appliedIds[ai]] = partId;
+                    for (ai = 0; ai < appliedIds.length; ai++) {
+                        topicalPartByBuffId[appliedIds[ai]] = partId;
+                        // 09「损毁恢复」：目标部位同步登记到 PharmacyEffects（随存档持久化，逐 tick 恢复用）
+                        var PEt = global.PharmacyEffects;
+                        if (PEt && typeof PEt.setTopicalTarget === 'function') PEt.setTopicalTarget(appliedIds[ai], partId);
+                    }
                 }
             } else if (buffIds.length) {
                 // 全部已在生效中：与旧 edible/usable 口径一致，视为本次使用失败（不叠 buff）。

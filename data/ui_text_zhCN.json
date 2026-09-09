@@ -79,6 +79,8 @@
   "combat.hub.ok.xue_qi": "血气化劲运转，肢体承压，底气回升",
   "combat.hub.ok.xue_qi.detail": "血气化劲：{limb} 损毁 {cur}/{max}，底气回升",
   "body.part.destroy.fmt": "损毁 {cur}/{max}",
+  "body.part.destroy.recover.active": "损毁恢复中：约 {rate} tick 回落 1 点（休息更快，外敷活络药可加速）",
+  "body.part.destroy.recover.blocked": "刚受击：{v} tick 后开始自然自愈",
   "combat.hub.subtitle": "Combat Node Synchronization",
   "combat.hub.title": "战斗技能枢纽",
   "combat.level": "等级 {v}",

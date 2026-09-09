@@ -464,7 +464,8 @@
                         toxicity_lethal_ticks: coerceNumber(pfe.toxicity_lethal_ticks, 0),
                         stage: coerceNumber(pfe.stage, 1),
                         last_band: pfe.last_band != null ? String(pfe.last_band) : 'none',
-                        lethal_active: pfe.lethal_active === true
+                        lethal_active: pfe.lethal_active === true,
+                        topical_parts: (pfe.topical_parts && typeof pfe.topical_parts === 'object') ? JSON.parse(JSON.stringify(pfe.topical_parts)) : {}
                     };
                 }
                 if (global.SceneCtx.agriculture_unlocked === true) {
@@ -756,7 +757,9 @@
                         toxicity_lethal_ticks: Math.max(0, Math.floor(coerceNumber(su.pharmacy_effects.toxicity_lethal_ticks, 0))),
                         stage: Math.max(1, Math.min(4, Math.floor(coerceNumber(su.pharmacy_effects.stage, 1)))),
                         last_band: su.pharmacy_effects.last_band != null ? String(su.pharmacy_effects.last_band) : 'none',
-                        lethal_active: su.pharmacy_effects.lethal_active === true
+                        lethal_active: su.pharmacy_effects.lethal_active === true,
+                        topical_parts: (su.pharmacy_effects.topical_parts && typeof su.pharmacy_effects.topical_parts === 'object')
+                            ? JSON.parse(JSON.stringify(su.pharmacy_effects.topical_parts)) : {}
                     };
                 }
             } catch (eAb) { /* ignore */ }

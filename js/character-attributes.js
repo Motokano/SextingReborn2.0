@@ -56,7 +56,11 @@
             focus: { exp: 0, attribute_level: 0, total_gained: 0 }
         },
         /** 七部位损毁累积值；键为 head/chest/abdomen/lhand/rhand/lfoot/rfoot（与 09、GAME_DESIGN 速查一致） */
-        part_destroy: { head: 0, chest: 0, abdomen: 0, lhand: 0, rhand: 0, lfoot: 0, rfoot: 0 }
+        part_destroy: { head: 0, chest: 0, abdomen: 0, lhand: 0, rhand: 0, lfoot: 0, rfoot: 0 },
+        /** 部位损毁恢复进度（每部位小数累加器，满 1 落地为损毁值 −1；09「损毁恢复」） */
+        part_destroy_recover_acc: { head: 0, chest: 0, abdomen: 0, lhand: 0, rhand: 0, lfoot: 0, rfoot: 0 },
+        /** 距上次吃损毁的阻塞剩余 tick：>0 期间自然自愈停摆（09「恢复宽限」） */
+        destroy_recover_block_ticks: 0
     };
 
     var LIMB_DESTROY_IDS = ['lhand', 'rhand', 'lfoot', 'rfoot'];
@@ -85,6 +89,12 @@
     var attrExpDebugEnabled = false;
     /** 招架/受击语义：身体部位 id（与 combat-parry 一致）→ 战斗肢 id */
     var PARRY_BODY_PART_TO_LIMB = { left_arm: 'lhand', right_arm: 'rhand', left_leg: 'lfoot', right_leg: 'rfoot' };
+
+    /** 09「损毁恢复」缺省每部位速率系数：四肢 1.0，腹 0.7，胸 0.6，头 0.5（越要害越慢）。 */
+    var PART_RECOVER_MULT_FB = { head: 0.5, chest: 0.6, abdomen: 0.7, lhand: 1, rhand: 1, lfoot: 1, rfoot: 1 };
+    var PART_RECOVER_GRACE_FB = 40;
+    var PART_RECOVER_INTERVAL_FB = 6;
+    var PART_RECOVER_REST_MULT_FB = 3;
 
     function normalizePartDestroyKey(rawId) {
         var k = String(rawId || '').trim();
@@ -830,6 +840,18 @@
         if (s.part_destroy && typeof s.part_destroy === 'object') {
             mergePartDestroyFromObject(s.part_destroy);
         }
+        if (s.part_destroy_recover_acc && typeof s.part_destroy_recover_acc === 'object') {
+            ensurePartRecoverState();
+            for (var rsi = 0; rsi < PART_DESTROY_IDS.length; rsi++) {
+                var rsk = PART_DESTROY_IDS[rsi];
+                var rsv = Number(s.part_destroy_recover_acc[rsk]);
+                if (isFinite(rsv) && rsv > 0) state.part_destroy_recover_acc[rsk] = rsv;
+            }
+        }
+        if (s.destroy_recover_block_ticks != null) {
+            var btk = Number(s.destroy_recover_block_ticks);
+            state.destroy_recover_block_ticks = (isFinite(btk) && btk > 0) ? Math.floor(btk) : 0;
+        }
         if (s.limb_destroy && typeof s.limb_destroy === 'object') {
             for (var li = 0; li < LIMB_DESTROY_IDS.length; li++) {
                 var lid = LIMB_DESTROY_IDS[li];
@@ -908,6 +930,7 @@
         var mx = getBodyPartDestroyMax(k);
         if (cur < mx) {
             state.part_destroy[k] = Math.min(mx, cur + q);
+            noteDestroyDamage();
             return;
         }
         var open = [];
@@ -925,8 +948,126 @@
             var cj = getPartDestroy(ok);
             var mj = getBodyPartDestroyMax(ok);
             var av = Math.min(addj, mj - cj);
-            if (av > 0) state.part_destroy[ok] = cj + av;
+            if (av > 0) {
+                state.part_destroy[ok] = cj + av;
+                noteDestroyDamage();
+            }
         }
+    }
+
+    // ---------------------------
+    // 09「损毁恢复」：自然自愈（基础通道） + 外敷药加速（pharmacy_part_recovery 逐 tick 调用）
+    // ---------------------------
+    function ensurePartRecoverState() {
+        if (!state.part_destroy_recover_acc || typeof state.part_destroy_recover_acc !== 'object') {
+            state.part_destroy_recover_acc = {};
+        }
+        for (var i = 0; i < PART_DESTROY_IDS.length; i++) {
+            var k = PART_DESTROY_IDS[i];
+            var v = Number(state.part_destroy_recover_acc[k]);
+            state.part_destroy_recover_acc[k] = (isFinite(v) && v > 0) ? v : 0;
+        }
+        var b = Number(state.destroy_recover_block_ticks);
+        state.destroy_recover_block_ticks = (isFinite(b) && b > 0) ? Math.floor(b) : 0;
+        return state.part_destroy_recover_acc;
+    }
+
+    /** 自然自愈参数（survival-config）：宽限 tick / 每点间隔 tick / 休息倍率 / 每部位速率系数。 */
+    function getPartRecoverCfg() {
+        var grace = Math.floor(Number(getCfg('body_part_destroy_recover_grace_ticks', PART_RECOVER_GRACE_FB)));
+        if (!isFinite(grace) || grace < 0) grace = PART_RECOVER_GRACE_FB;
+        var interval = Number(getCfg('body_part_destroy_recover_interval_ticks', PART_RECOVER_INTERVAL_FB));
+        if (!isFinite(interval) || interval <= 0) interval = PART_RECOVER_INTERVAL_FB;
+        var restMul = Number(getCfg('body_part_destroy_recover_rest_multiplier', PART_RECOVER_REST_MULT_FB));
+        if (!isFinite(restMul) || restMul < 0) restMul = PART_RECOVER_REST_MULT_FB;
+        var tab = getCfg('body_part_destroy_recover_part_multiplier', null);
+        var mult = (tab && typeof tab === 'object') ? tab : PART_RECOVER_MULT_FB;
+        return { grace: grace, interval: interval, rest_multiplier: restMul, part_multiplier: mult };
+    }
+
+    /** 吃损毁即重置自然自愈计时（09：宽限期内不自愈）。返回剩余阻塞 tick。 */
+    function noteDestroyDamage() {
+        ensurePartRecoverState();
+        var cfgR = getPartRecoverCfg();
+        if (cfgR.grace > 0) state.destroy_recover_block_ticks = cfgR.grace;
+        return state.destroy_recover_block_ticks;
+    }
+
+    /** 自然自愈剩余阻塞 tick（UI/测试用）。 */
+    function getDestroyRecoverBlockTicks() {
+        ensurePartRecoverState();
+        return state.destroy_recover_block_ticks;
+    }
+
+    /**
+     * 损毁恢复（唯一写入通道：自然自愈与外敷药都走这里）。
+     * points 可为小数：先记入该部位累加器，满 1 才落地为损毁值 −n；损毁归零后清空残余进度（不预存恢复量）。
+     * @returns {number} 本次实际恢复的整点数
+     */
+    function recoverPartDestroy(rawId, points) {
+        var k = normalizePartDestroyKey(rawId);
+        if (PART_DESTROY_IDS.indexOf(k) < 0) return 0;
+        var p = Number(points);
+        if (!isFinite(p) || p <= 0) return 0;
+        ensurePartRecoverState();
+        var acc = state.part_destroy_recover_acc[k] + p;
+        var whole = Math.floor(acc + 1e-9);
+        var cur = getPartDestroy(k);
+        if (cur <= 0) {
+            state.part_destroy_recover_acc[k] = 0;
+            return 0;
+        }
+        var healed = 0;
+        if (whole > 0) {
+            healed = Math.min(whole, cur);
+            state.part_destroy[k] = cur - healed;
+        }
+        state.part_destroy_recover_acc[k] = state.part_destroy[k] > 0 ? (acc - Math.floor(acc + 1e-9)) : 0;
+        return healed;
+    }
+
+    /** 某部位当前恢复进度（小数，UI/测试用）。 */
+    function getPartDestroyRecoverAcc(rawId) {
+        var k = normalizePartDestroyKey(rawId);
+        if (PART_DESTROY_IDS.indexOf(k) < 0) return 0;
+        ensurePartRecoverState();
+        return state.part_destroy_recover_acc[k];
+    }
+
+    /**
+     * 每世界 tick：自然自愈（09「损毁恢复」）。
+     * 规则：宽限期内（刚吃过损毁）不自愈；宽限结束后每部位按
+     *   速率 = 1 / interval × 部位系数 ×（休息时 × 休息倍率）
+     * 累进恢复；部位损毁归零即停。
+     * @returns {number} 本次自然自愈的整点总量
+     */
+    function onWorldTickDestroyRecover() {
+        ensurePartRecoverState();
+        if (state.destroy_recover_block_ticks > 0) {
+            state.destroy_recover_block_ticks -= 1;
+            return 0;
+        }
+        var cfgR = getPartRecoverCfg();
+        var resting = false;
+        try {
+            if (global && global.Survival && typeof global.Survival.getState === 'function') {
+                resting = !!(global.Survival.getState() || {}).isResting;
+            }
+        } catch (eRest) { resting = false; }
+        var restMul = resting ? cfgR.rest_multiplier : 1;
+        if (!(restMul > 0)) return 0;
+        var total = 0;
+        for (var i = 0; i < PART_DESTROY_IDS.length; i++) {
+            var k = PART_DESTROY_IDS[i];
+            if (getPartDestroy(k) <= 0) {
+                state.part_destroy_recover_acc[k] = 0;
+                continue;
+            }
+            var partMul = Number(cfgR.part_multiplier[k]);
+            if (!isFinite(partMul) || partMul <= 0) partMul = 1;
+            total += recoverPartDestroy(k, (1 / cfgR.interval) * partMul * restMul);
+        }
+        return total;
     }
 
     /**
@@ -966,6 +1107,7 @@
             var cur = getLimbDestroy(limb);
             if (cur + dDel <= capAfter) {
                 state.part_destroy[limb] = cur + dDel;
+                noteDestroyDamage();
                 if (typeof global !== 'undefined' && global.Survival && dGain > 0) {
                     if (typeof global.Survival.changeDiqi === 'function') {
                         global.Survival.changeDiqi({ curDelta: dGain, sourceTag: 'hub_action:xue_qi_hua_jing' });
@@ -1257,6 +1399,19 @@
                 lfoot: state.part_destroy.lfoot,
                 rfoot: state.part_destroy.rfoot
             },
+            part_destroy_recover_acc: (function () {
+                ensurePartRecoverState();
+                var accOut = {};
+                for (var ra = 0; ra < PART_DESTROY_IDS.length; ra++) {
+                    var rk = PART_DESTROY_IDS[ra];
+                    accOut[rk] = state.part_destroy_recover_acc[rk];
+                }
+                return accOut;
+            })(),
+            destroy_recover_block_ticks: (function () {
+                ensurePartRecoverState();
+                return state.destroy_recover_block_ticks;
+            })(),
             hidden_epithets: state.hidden_epithets.slice()
         };
     }
@@ -1281,6 +1436,8 @@
             },
             part_destroy: { head: 0, chest: 0, abdomen: 0, lhand: 0, rhand: 0, lfoot: 0, rfoot: 0 },
             limb_destroy: { lhand: 0, rhand: 0, lfoot: 0, rfoot: 0 },
+            part_destroy_recover_acc: { head: 0, chest: 0, abdomen: 0, lhand: 0, rhand: 0, lfoot: 0, rfoot: 0 },
+            destroy_recover_block_ticks: 0,
             hidden_epithets: []
         };
     }
@@ -1369,6 +1526,12 @@
         getPartDestroy: getPartDestroy,
         getLimbDestroy: getLimbDestroy,
         applyCombatDestroy: applyCombatDestroy,
+        recoverPartDestroy: recoverPartDestroy,
+        getPartDestroyRecoverAcc: getPartDestroyRecoverAcc,
+        getPartRecoverCfg: getPartRecoverCfg,
+        noteDestroyDamage: noteDestroyDamage,
+        getDestroyRecoverBlockTicks: getDestroyRecoverBlockTicks,
+        onWorldTickDestroyRecover: onWorldTickDestroyRecover,
         isBodyPartDestroyedForParry: isBodyPartDestroyedForParry,
         tryApplyXueQiHuaJing: tryApplyXueQiHuaJing,
         getCharacterName: getCharacterName,

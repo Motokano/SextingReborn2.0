@@ -59,6 +59,8 @@
 
 **ID 约定（实现）**：存档与 `CharacterAttributes` 使用 **`head` / `chest` / `abdomen` / `lhand` / `rhand` / `lfoot` / `rfoot`**；战斗命中部位 `abdomen` 与侧栏 UI 标签 **`belly`（腹）** 同指，查询时做别名映射。
 
+**损毁恢复（速查）**：损毁值可回落——受击后宽限 40 tick 不自愈，之后每部位每 6 tick 恢复 1 点（休息 ×3；部位系数 四肢 1.0 / 腹 0.7 / 胸 0.6 / 头 0.5）；外敷活络药（47 §9.6）额外逐 tick 降低目标部位损毁值、不受宽限限制。数值源 `data/survival-config.json` 的 `body_part_destroy_recover_*`，完整规则见 `docs/design/09-body-parts.md`「损毁恢复」。
+
 ---
 
 *文档版本：按模块拆分后，主文档为总览与索引；正文见 docs/design/ 与 capitalism/。*

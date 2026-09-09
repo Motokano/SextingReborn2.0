@@ -81,6 +81,19 @@
     "rfoot": 100
   },
   "_body_part_destroy_max_note": "各部位损毁值满值（与 GAME_DESIGN → docs/design/09-body-parts.md 表一致）。实现读取：CharacterAttributes.getBodyPartDestroyMax；存档字段 part_destroy + 兼容 limb_destroy。",
+  "body_part_destroy_recover_grace_ticks": 40,
+  "body_part_destroy_recover_interval_ticks": 6,
+  "body_part_destroy_recover_rest_multiplier": 3,
+  "body_part_destroy_recover_part_multiplier": {
+    "head": 0.5,
+    "chest": 0.6,
+    "abdomen": 0.7,
+    "lhand": 1,
+    "rhand": 1,
+    "lfoot": 1,
+    "rfoot": 1
+  },
+  "_body_part_destroy_recover_note": "09「损毁恢复」自然自愈（基础通道）：吃损毁后宽限 grace tick 内不自愈；宽限结束后每部位每 interval/部位系数 tick 恢复 1 点损毁值（休息时再 ×rest_multiplier）；部位系数越大恢复越快（四肢 1.0 / 腹 0.7 / 胸 0.6 / 头 0.5）。外敷活络药（buff 效果 pharmacy_part_recovery，recovery_per_tick）在自愈之上额外逐 tick 降损毁值，不受宽限限制。实现：CharacterAttributes.onWorldTickDestroyRecover / recoverPartDestroy。",
 
   "mood_min": 0,
   "mood_max": 1000,

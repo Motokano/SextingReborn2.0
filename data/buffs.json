@@ -6640,7 +6640,7 @@
     {
       "buff_id": "buff_pharm_mobility_topical_weak",
       "name": "活络·外敷·弱效",
-      "desc": "敷在伤处，手脚的失能恢复更快（部位唯一能治的途径）（外敷起效 3 tick，持续 90 tick，峰值 0.35）",
+      "desc": "敷在伤处，损毁值持续回落（09「损毁恢复」唯一外源通道）（外敷起效 3 tick，持续 90 tick，峰值 0.35）",
       "onsetTicks": 3,
       "durationTicks": 90,
       "maxStacks": 1,
@@ -6664,7 +6664,7 @@
         {
           "type": "pharmacy_part_recovery",
           "params": {
-            "recovery_multiplier": 1.18
+            "recovery_per_tick": 0.11
           }
         }
       ],
@@ -6680,7 +6680,7 @@
     {
       "buff_id": "buff_pharm_mobility_topical_regular",
       "name": "活络·外敷·常效",
-      "desc": "敷在伤处，手脚的失能恢复更快（部位唯一能治的途径）（外敷起效 3 tick，持续 90 tick，峰值 0.7）",
+      "desc": "敷在伤处，损毁值持续回落（09「损毁恢复」唯一外源通道）（外敷起效 3 tick，持续 90 tick，峰值 0.7）",
       "onsetTicks": 3,
       "durationTicks": 90,
       "maxStacks": 1,
@@ -6704,7 +6704,7 @@
         {
           "type": "pharmacy_part_recovery",
           "params": {
-            "recovery_multiplier": 1.35
+            "recovery_per_tick": 0.21
           }
         }
       ],
@@ -6720,7 +6720,7 @@
     {
       "buff_id": "buff_pharm_mobility_topical_potent",
       "name": "活络·外敷·强效",
-      "desc": "敷在伤处，手脚的失能恢复更快（部位唯一能治的途径）（外敷起效 3 tick，持续 90 tick，峰值 1.05）",
+      "desc": "敷在伤处，损毁值持续回落（09「损毁恢复」唯一外源通道）（外敷起效 3 tick，持续 90 tick，峰值 1.05）",
       "onsetTicks": 3,
       "durationTicks": 90,
       "maxStacks": 1,
@@ -6744,7 +6744,7 @@
         {
           "type": "pharmacy_part_recovery",
           "params": {
-            "recovery_multiplier": 1.53
+            "recovery_per_tick": 0.32
           }
         }
       ],
@@ -8263,7 +8263,7 @@
     {
       "buff_id": "buff_pharm_mobility_topical_pure",
       "name": "活络·外敷·纯品",
-      "desc": "敷在伤处，手脚的失能恢复更快（部位唯一能治的途径）（外敷起效 3 tick，持续 90 tick，峰值 1.33）",
+      "desc": "敷在伤处，损毁值持续回落（09「损毁恢复」唯一外源通道）（外敷起效 3 tick，持续 90 tick，峰值 1.33）",
       "onsetTicks": 3,
       "durationTicks": 90,
       "maxStacks": 1,
@@ -8287,7 +8287,7 @@
         {
           "type": "pharmacy_part_recovery",
           "params": {
-            "recovery_multiplier": 1.67
+            "recovery_per_tick": 0.4
           }
         }
       ],
