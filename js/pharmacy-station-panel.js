@@ -116,6 +116,19 @@
         hint.style.cssText = 'color:#a8a29e;font-size:12px;margin-bottom:6px;';
         hint.textContent = ui('pharmacy.compound.hint');
         bar.appendChild(hint);
+
+        // 成盐（47 §9.5）：碱型药成分需要助剂助溶；不足不阻止配药，但会析出沉淀
+        var salt = (PC && typeof PC.getSaltRequirement === 'function')
+            ? PC.getSaltRequirement(pharmacyStationUiState.inputs || [])
+            : null;
+        if (salt && salt.required > 0) {
+            var saltLine = document.createElement('div');
+            saltLine.className = 'kv' + (salt.precipitated ? ' bad' : '');
+            saltLine.textContent = salt.precipitated
+                ? ui('pharmacy.compound.salt_precipitated', { need: String(salt.required), have: String(salt.provided), miss: String(salt.deficit) })
+                : ui('pharmacy.compound.salt_ok', { need: String(salt.required), have: String(salt.provided) });
+            bar.appendChild(saltLine);
+        }
     }
     function canAddFuelAtCurrentTile() {
         return (typeof uiDeps.canAddFuelAtCurrentTile === 'function') ? !!uiDeps.canAddFuelAtCurrentTile() : false;

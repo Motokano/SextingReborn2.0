@@ -27,7 +27,12 @@
         potency_thresholds: DEFAULT_POTENCY_THRESHOLDS.slice(),
         offset_rate_cap: DEFAULT_OFFSET_CAP,
         synergy_bonus_per_unit: DEFAULT_SYNERGY_BONUS,
-        injectable_template_id: 'potion_compound_injection'
+        injectable_template_id: 'potion_compound_injection',
+        salt_required_classes: ['alkaloid'],
+        salt_required_only_toxic: 1,
+        salt_dose_per_base_dose: 1,
+        salt_effect_multiplier: 0.5,
+        salt_toxicity_multiplier: 1.5
     };
     var conflictRules = { outcome_buffs: {}, rules: [], skip: { missing_chem_class: true, toxicity_zero: true, sub_categories: ['solvent', 'pharm_adjuvant'] } };
 
@@ -45,6 +50,13 @@
         cfg.offset_rate_cap = Math.max(0, Math.min(1, num(p.pharmacy_offset_rate_cap, cfg.offset_rate_cap)));
         cfg.synergy_bonus_per_unit = Math.max(0, num(p.pharmacy_synergy_bonus_per_unit, cfg.synergy_bonus_per_unit));
         if (p.pharmacy_injectable_template_id) cfg.injectable_template_id = String(p.pharmacy_injectable_template_id);
+        if (Array.isArray(p.pharmacy_salt_required_chem_classes)) {
+            cfg.salt_required_classes = p.pharmacy_salt_required_chem_classes.map(function (c) { return String(c).trim().toLowerCase(); }).filter(Boolean);
+        }
+        if (p.pharmacy_salt_required_only_toxic != null) cfg.salt_required_only_toxic = Number(p.pharmacy_salt_required_only_toxic) ? 1 : 0;
+        cfg.salt_dose_per_base_dose = Math.max(0, num(p.pharmacy_salt_dose_per_base_dose, cfg.salt_dose_per_base_dose));
+        cfg.salt_effect_multiplier = Math.max(0, num(p.pharmacy_salt_effect_multiplier, cfg.salt_effect_multiplier));
+        cfg.salt_toxicity_multiplier = Math.max(0, num(p.pharmacy_salt_toxicity_multiplier, cfg.salt_toxicity_multiplier));
         if (rules && typeof rules === 'object') {
             conflictRules = {
                 outcome_buffs: rules.outcome_buffs && typeof rules.outcome_buffs === 'object' ? rules.outcome_buffs : {},
@@ -61,7 +73,12 @@
             potency_thresholds: cfg.potency_thresholds.slice(),
             offset_rate_cap: cfg.offset_rate_cap,
             synergy_bonus_per_unit: cfg.synergy_bonus_per_unit,
-            injectable_template_id: cfg.injectable_template_id
+            injectable_template_id: cfg.injectable_template_id,
+            salt_required_classes: cfg.salt_required_classes.slice(),
+            salt_required_only_toxic: cfg.salt_required_only_toxic,
+            salt_dose_per_base_dose: cfg.salt_dose_per_base_dose,
+            salt_effect_multiplier: cfg.salt_effect_multiplier,
+            salt_toxicity_multiplier: cfg.salt_toxicity_multiplier
         };
     }
 
@@ -185,8 +202,44 @@
         return hits;
     }
 
-    /** 净药效 → 族 → potency 档 → 注射液 buff id。 */
-    function resolveFamilies(components) {
+    /**
+     * 成盐判定（47 §9.5）：碱型药成分需要助剂助溶。
+     * required = Σ(需成盐成分份数 × dose_per_base_dose)；provided = Σ(助剂份数 × adjuvant_strength)。
+     * deficit > 0 → 配出的针会析出沉淀（沉淀注射液：药效打折、净毒性上调），不是配不出来。
+     */
+    function getSaltRequirement(inputs) {
+        var list = normalizeInputs(inputs);
+        var required = 0;
+        var provided = 0;
+        var i;
+        for (i = 0; i < list.length; i++) {
+            var tpl = getTemplate(list[i].item_id);
+            if (!tpl) continue;
+            var sub = String(tpl.sub_category || '').trim().toLowerCase();
+            if (sub === 'pharm_adjuvant') {
+                provided += list[i].count * Math.max(0, num(tpl.adjuvant_strength, 1));
+                continue;
+            }
+            if (sub !== 'pharm_powder') continue;
+            var cls = String(tpl.chem_class || '').trim().toLowerCase();
+            if (cfg.salt_required_classes.indexOf(cls) < 0) continue;
+            if (cfg.salt_required_only_toxic && !(num(tpl.pharm_toxicity, 0) > 0)) continue;
+            if (tpl.pharm_salt_exempt === true) continue;
+            required += list[i].count * cfg.salt_dose_per_base_dose;
+        }
+        var deficit = Math.max(0, required - provided);
+        return {
+            required: Math.round(required * 100) / 100,
+            provided: Math.round(provided * 100) / 100,
+            deficit: Math.round(deficit * 100) / 100,
+            ok: deficit <= 0,
+            precipitated: deficit > 0
+        };
+    }
+
+    /** 净药效 → 族 → potency 档 → 注射液 buff id。effectMultiplier 用于沉淀针打折。 */
+    function resolveFamilies(components, effectMultiplier) {
+        var mulEffect = (effectMultiplier != null && isFinite(Number(effectMultiplier))) ? Math.max(0, Number(effectMultiplier)) : 1;
         var effectByFamily = {};
         var synergyUnits = 0;
         var i;
@@ -205,7 +258,7 @@
         var out = [];
         var fams = Object.keys(effectByFamily);
         for (i = 0; i < fams.length; i++) {
-            var raw = effectByFamily[fams[i]] * synergyMul;
+            var raw = effectByFamily[fams[i]] * synergyMul * mulEffect;
             var band = raw <= cfg.potency_thresholds[0] ? 'weak' : (raw <= cfg.potency_thresholds[1] ? 'regular' : 'potent');
             out.push({
                 family: fams[i],
@@ -248,7 +301,12 @@
         }
         var netTox = Math.max(0, baseTox * (1 - offsetRate));
 
-        var fam = resolveFamilies(components);
+        // 成盐判定（§9.5）：不足 → 沉淀注射液（药效打折、净毒性上调）
+        var salt = getSaltRequirement(components);
+        var toxMul = salt.precipitated ? cfg.salt_toxicity_multiplier : 1;
+        if (salt.precipitated) netTox = netTox * toxMul;
+
+        var fam = resolveFamilies(components, salt.precipitated ? cfg.salt_effect_multiplier : 1);
         return {
             ok: true,
             components: components,
@@ -262,7 +320,9 @@
             offset_rate: Math.round(offsetRate * 1000) / 1000,
             net_toxicity: Math.round(netTox * 100) / 100,
             conflicts: resolveConflicts(components),
-            addiction_components: addictionComponents
+            addiction_components: addictionComponents,
+            salt: salt,
+            precipitated: salt.precipitated
         };
     }
 
@@ -277,7 +337,10 @@
             instance: {
                 item_id: templateId,
                 count: 1,
-                components: res.components.map(function (c) { return { item_id: c.item_id, count: c.count }; })
+                components: res.components.map(function (c) { return { item_id: c.item_id, count: c.count }; }),
+                // 沉淀针自描述（§9.5）：成盐不足的产物在实例上留痕，注射/UI 都能读
+                precipitated: res.precipitated === true,
+                salt_deficit: res.salt ? res.salt.deficit : 0
             },
             resolved: res
         };
@@ -379,6 +442,7 @@
         isComponentTemplate: isComponentTemplate,
         getConcentrationCost: getConcentrationCost,
         getConcentrationInfo: getConcentrationInfo,
+        getSaltRequirement: getSaltRequirement,
         normalizeInputs: normalizeInputs,
         validate: validate,
         resolve: resolve,

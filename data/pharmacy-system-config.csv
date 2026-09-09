@@ -22,6 +22,11 @@ pharmacy_toxicity_decay_per_tick,1,❓待调：体内毒性自然衰减/tick（�
 pharmacy_toxicity_lethal_ticks,40,❓待调：体内毒性处于重档期间的致死倒计时上限 tick（47 §9.2）
 pharmacy_concentration_capacity,100,注射液总浓度容量（Σ 各成分 concentration_cost ≤ 上限；47 §9.3）
 pharmacy_offset_rate_cap,0.9,辅成分抵消率上限（残毒恒 ≥ 总毒性 10%；47 §9.2）
+pharmacy_salt_required_chem_classes,alkaloid,❓待调：需成盐助溶的化学类别（47 §9.5 成盐判定）
+pharmacy_salt_required_only_toxic,1,只对药成分（toxicity>0）强制成盐；辅成分/功能成分不强制
+pharmacy_salt_dose_per_base_dose,1,每 1 份需成盐的药成分需要的助剂能力（1 份助剂默认顶 1 份）
+pharmacy_salt_effect_multiplier,0.5,成盐不足 → 沉淀注射液：各族净药效乘区（47 §9.5）
+pharmacy_salt_toxicity_multiplier,1.5,成盐不足 → 沉淀注射液：净毒性乘区
 pharmacy_synergy_bonus_per_unit,0.2,❓待调：每 1 份增效成分对同针其它族药效的加成比例（47 §9.6 增效）
 pharmacy_injectable_template_id,potion_compound_injection,配药产出的动态注射液模板 id（47 §9.4）
 pharmacy_disposable_kit_item_ids,tool_iv_set_pharmacy,一次性注射器具（用后消耗；47 §5.2/§8 针具卫生，k244）

@@ -1,4 +1,4 @@
-id,sn,placeholder_name,fn,category,sub_category,weight,stack_limit,quality,tags,source,production_lines,spoilage_ticks,price_class,volatility,region_restrict,base_value,edible,usable,use_buff_id,use_action,pharmacy_ingredient,cooking_ingredient,fuel_points,water_points,chem_class,pharm_family,pharm_effect,pharm_toxicity,concentration_cost,info_module_set_id,pharmacy_compound,concentration_capacity,use_charges
+id,sn,placeholder_name,fn,category,sub_category,weight,stack_limit,quality,tags,source,production_lines,spoilage_ticks,price_class,volatility,region_restrict,base_value,edible,usable,use_buff_id,use_action,pharmacy_ingredient,cooking_ingredient,fuel_points,water_points,chem_class,pharm_family,pharm_effect,pharm_toxicity,concentration_cost,info_module_set_id,pharmacy_compound,concentration_capacity,use_charges,adjuvant_strength
 herb_coca,古柯,古柯叶,嚼两片就不困了，山里跑货的都这么干,herb,leaf,0.05,30,white,material;herb;alchemy;stimulant;trade_raw,alchemy,alchemy,3600,rare,high,0,900,,,,,1,,0,0,alkaloid,,,,,
 herb_poppy,罂粟,大烟花,花开得好看，果壳割开流白浆，收的人从不问用处,herb,flower,0.08,20,white,material;herb;alchemy;medical;surface_only,alchemy,alchemy,3600,rare,high,0,1000,,,,,1,,0,0,alkaloid,,,,,
 herb_ergot,麦角菌,黑麦角,长在黑麦穗上的黑硬角，吃下去手指发麻眼前发花,herb,fungus,0.05,20,white,material;herb;alchemy;dungeon_only,alchemy,alchemy,3600,rare,high,0,1100,,,,,1,,0,0,alkaloid,,,,,
@@ -38,8 +38,8 @@ med_antler_powder,鹿茸粉,血角粉,鹿茸焙干磨的粉，腥气重，喝了
 solvent_saline,生理盐水,盐水,海盐化进软水里煮过一遍，扎针前先拿它冲管子,material,solvent,0.5,20,white,material;alchemy;pharmacy;solvent,alchemy,alchemy,0,material,low,0,60,,,,,1,,0,0,,,,,,
 solvent_glucose_solution,葡萄糖液,糖水针,甘蔗熬的糖化在水里，颜色淡黄，尝一口发甜,material,solvent,0.5,20,white,material;alchemy;pharmacy;solvent,alchemy,alchemy,0,material,low,0,90,,,,,1,,0,0,,,,,,
 solvent_water_pure,纯净水,净水,滤过一遍又煮过的水，尝不出味，配药最省心,material,solvent,0.5,20,white,material;alchemy;pharmacy;solvent,alchemy,alchemy,0,material,low,0,40,,,,,1,,0,0,,,,,,
-adj_vitamin_c,维生素C,维C,精制过的维C，专管把碱性的药化开；兑不开的时候指望它。,material,pharm_adjuvant,0.02,30,white,material;alchemy;pharmacy;adjuvant,alchemy,alchemy,7200,life_good,low,0,500,,,,,1,,0,0,,,0,,15,
-adj_citric_acid,柠檬酸,酸粉,从柑橘里提出来的酸粉，加一点浑液就清了,material,pharm_adjuvant,0.02,30,white,material;alchemy;pharmacy;adjuvant,alchemy,alchemy,7200,life_good,low,0,200,,,,,1,,0,0,,,,,,
+adj_vitamin_c,维生素C,维C,精制过的维C，专管把碱性的药化开；兑不开的时候指望它。,material,pharm_adjuvant,0.02,30,white,material;alchemy;pharmacy;adjuvant,alchemy,alchemy,7200,life_good,low,0,500,,,,,1,,0,0,,,0,,15,,,,,1
+adj_citric_acid,柠檬酸,酸粉,从柑橘里提出来的酸粉，加一点浑液就清了,material,pharm_adjuvant,0.02,30,white,material;alchemy;pharmacy;adjuvant,alchemy,alchemy,7200,life_good,low,0,200,,,,,1,,0,0,,,,,12,,,,,1
 tool_syringe_pharmacy,注射器,针筒,玻璃筒配铁针头，用完煮一遍还能接着使,tool,pharm_kit,0.15,1,white,tool;pharmacy;medical;reusable,craft,craft,0,life_good,low,0,420,,,,,1,,0,0,,,,,,
 tool_iv_set_pharmacy,输液器,吊针,一包软管带针头，用过就扔，省得脏东西进血管,tool,pharm_kit,0.1,5,white,tool;pharmacy;medical;disposable,craft,craft,0,life_good,low,0,260,,,,,1,,0,0,,,,,,
 potion_tonic_broth,提神汤液,苦汤,药粉兑水煮开，喝下去发苦，困劲能压下去一阵,potion,drink,0.3,10,white,potion;consumable;pharmacy;drink,alchemy,alchemy,3600,life_good,mid,0,320,,1,buff_pharm_stimulant_drink_weak,drink,,,0,0,,stimulant,,,,

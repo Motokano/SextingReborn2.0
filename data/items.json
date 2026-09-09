@@ -22,6 +22,8 @@
     "edible": false,
     "pharmacy_ingredient": true,
     "usable": false,
+    "concentration_cost": 12,
+    "adjuvant_strength": 1,
     "fuel_points": 0,
     "water_points": 0,
     "quality": "white"
@@ -51,6 +53,7 @@
     "usable": false,
     "pharm_effect": 0,
     "concentration_cost": 15,
+    "adjuvant_strength": 1,
     "fuel_points": 0,
     "water_points": 0,
     "quality": "white"

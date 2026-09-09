@@ -2791,11 +2791,11 @@
             if (typeof IE.addItemToGround === 'function') IE.addItemToGround(st0.mapId, st0.x, st0.y, built.instance);
         }
         var res = built.resolved || {};
-        showMsg(ui('pharmacy.compound.ok', {
+        showMsg(ui(res.precipitated ? 'pharmacy.compound.ok_precipitated' : 'pharmacy.compound.ok', {
             used: String(res.concentration_used != null ? res.concentration_used : 0),
             capacity: String(res.capacity != null ? res.capacity : 0),
             tox: String(res.net_toxicity != null ? res.net_toxicity : 0)
-        }), 'success');
+        }), res.precipitated ? 'warn' : 'success');
         if (typeof updateBackpackPanel === 'function') updateBackpackPanel();
         if (typeof updateStatusPanel === 'function') SceneHud.refresh('status');
         if (window.SceneRenderer) window.SceneRenderer.render();

@@ -234,6 +234,9 @@ function rowToItem(o, filename) {
   }
   const pCap = numOrNull(o.concentration_capacity);
   if (pCap != null && pCap > 0) item.concentration_capacity = pCap;
+  // 47 §9.5：助剂成盐能力（1 份助剂能助溶多少份碱型成分；缺省 1）
+  const adjStrength = numOrNull(o.adjuvant_strength);
+  if (adjStrength != null && adjStrength > 0) item.adjuvant_strength = adjStrength;
   // 47 §8：一盒多次用量（药膏/散按次）——模板声明可用次数，实例 charges 递减
   const uCharges = intOrNull(o.use_charges);
   if (uCharges != null && uCharges > 0) item.use_charges = uCharges;
@@ -267,7 +270,7 @@ function rowToItem(o, filename) {
     edible: 1, edible_buff_id: 1, food_buff_duration_ticks: 1,
     usable: 1, use_buff_id: 1, use_action: 1,
     chem_class: 1, pharm_family: 1, pharm_effect: 1, pharm_toxicity: 1, concentration_cost: 1,
-    pharmacy_compound: 1, concentration_capacity: 1, use_charges: 1,
+    pharmacy_compound: 1, concentration_capacity: 1, use_charges: 1, adjuvant_strength: 1,
     cooking_ingredient: 1, pharmacy_ingredient: 1,
     compost_inoculant_aerobic: 1, compost_inoculant_anaerobic: 1,
     fuel_points: 1, water_points: 1,

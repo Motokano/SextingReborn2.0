@@ -577,7 +577,19 @@ const over = PCC.validate([SOLVENT, { item_id: 'med_cocaine_powder', count: 1 },
 assert.strictEqual(over.reason, 'over_capacity', '超浓度上限拒绝：' + JSON.stringify(over));
 ok('配药前置校验：溶媒必需且仅 1、投料类型、浓度上限');
 
-// speedball：可卡因 35 + 吗啡 35 + 护肝草 30 = 100（刚好卡死上限）
+// A. 成盐充足（正常针）：可卡因 35 + 助剂 15 = 50
+const saltedNeedle = [SOLVENT, { item_id: 'med_cocaine_powder', count: 1 }, { item_id: 'adj_vitamin_c', count: 1 }];
+const sn = PCC.resolve(saltedNeedle);
+assert(sn.ok, '成盐针可配：' + JSON.stringify(sn.reason || {}));
+assert.strictEqual(sn.precipitated, false, '助剂够 → 不沉淀');
+assert.strictEqual(sn.salt.required, 1, '1 份碱型药 → 需 1 份助剂能力');
+assert.strictEqual(sn.salt.provided, 1, '1 份维生素C（助剂形态）→ 供给 1');
+assert.strictEqual(sn.concentration_used, 50, '浓度 35 + 15 = 50');
+assert.strictEqual(sn.families[0].potency, 'potent', '正常针：可卡因 effect 90 → potent');
+assert(Math.abs(sn.net_toxicity - 70) < 0.01, '正常针净毒性 70（未打折）');
+ok('成盐充足：碱型主药 + 助剂 → 正常针（§9.5）');
+
+// B. 成盐不足 → 沉淀注射液：可卡因 35 + 吗啡 35 + 护肝草 30 = 100（无余量放助剂）
 const speedball = [
   SOLVENT,
   { item_id: 'med_cocaine_powder', count: 1 },
@@ -585,36 +597,54 @@ const speedball = [
   { item_id: 'med_liver_herb_powder', count: 1 }
 ];
 const sb = PCC.resolve(speedball);
-assert(sb.ok, 'speedball 可配：' + JSON.stringify(sb.reason || {}));
+assert(sb.ok, '成盐不足仍能配出（沉淀针，不硬卡）：' + JSON.stringify(sb.reason || {}));
+assert.strictEqual(sb.precipitated, true, '缺助剂 → 沉淀');
+assert.strictEqual(sb.salt.required, 2, '2 份碱型药 → 需 2 份助剂能力');
+assert.strictEqual(sb.salt.deficit, 2, '一份助剂都没有 → 缺 2');
 assert.strictEqual(sb.concentration_used, 100, '浓度占用 = 35+35+30 = 100');
-assert.strictEqual(sb.families.length, 2, '两个药效族（兴奋 + 镇痛）');
 const sbFam = {};
 sb.families.forEach((f) => { sbFam[f.family] = f.potency; });
-assert.strictEqual(sbFam.stimulant, 'potent', '可卡因 effect 90 → 兴奋 potent');
-assert.strictEqual(sbFam.analgesic, 'potent', '吗啡 effect 85 → 镇痛 potent');
+assert.strictEqual(sbFam.stimulant, 'regular', '沉淀针：90×0.5=45 → regular（药效打折）');
+assert.strictEqual(sbFam.analgesic, 'regular', '沉淀针：85×0.5=42.5 → regular');
 assert.strictEqual(sb.base_toxicity, 135, '基础毒性 = 70 + 65');
 assert(Math.abs(sb.offset_rate - 0.296) < 0.002, '抵消率 = 40/135 ≈ 0.296（未封顶）');
-assert(Math.abs(sb.net_toxicity - 95) < 0.6, '净毒性 ≈ 95（重档）：' + sb.net_toxicity);
+assert(Math.abs(sb.net_toxicity - 142.5) < 1, '沉淀针净毒性 = 95 × 1.5 ≈ 142.5：' + sb.net_toxicity);
 assert.strictEqual(sb.addiction_components, 2, '两种致瘾主药 → 成瘾按 2 份累加');
-ok('净药效族/potency 与净毒性（抵消率未封顶）');
+ok('成盐不足 → 沉淀注射液（药效 ×0.5 / 净毒性 ×1.5，配得出来但坑）');
 
-// 抵消封顶 90%：护肝草粉 ×2（30×2=60 浓度）→ 抵消池 80 > 主药 70，封顶 0.9，残毒 = 70×10% = 7
+// C. 缺口按份数计：可卡因 35 + 吗啡 35 + 1 份助剂 15 = 85
+const halfSalt = PCC.resolve([SOLVENT, { item_id: 'med_cocaine_powder', count: 1 }, { item_id: 'med_morphine_powder', count: 1 }, { item_id: 'adj_vitamin_c', count: 1 }]);
+assert.strictEqual(halfSalt.salt.required, 2);
+assert.strictEqual(halfSalt.salt.provided, 1);
+assert.strictEqual(halfSalt.salt.deficit, 1, '2 份碱型 + 1 份助剂 → 缺 1');
+assert.strictEqual(halfSalt.precipitated, true);
+ok('成盐缺口按份数计（助剂 strength 参与供给）');
+
+// D. 辅成分形态（维生素C粉）不计入助溶能力
+const vitCAsOffset = PCC.getSaltRequirement([{ item_id: 'med_cocaine_powder', count: 1 }, { item_id: 'med_vitamin_c_powder', count: 1 }]);
+assert.strictEqual(vitCAsOffset.required, 1);
+assert.strictEqual(vitCAsOffset.provided, 0, '辅成分形态不提供助溶能力');
+assert.strictEqual(vitCAsOffset.precipitated, true);
+ok('维生素C 两形态分工：辅成分形态只抵消、不当助剂');
+
+// E. 抵消封顶 90%：护肝草粉 ×2（60 浓度）→ 抵消池 80 > 主药 70，封顶 0.9
 const capped = PCC.resolve([SOLVENT, { item_id: 'med_cocaine_powder', count: 1 }, { item_id: 'med_liver_herb_powder', count: 2 }]);
 assert(capped.ok, '封顶用例可配：' + JSON.stringify(capped.reason || {}));
 assert.strictEqual(capped.offset_rate, 0.9, '抵消率封顶 90%');
-assert(Math.abs(capped.net_toxicity - 7) < 0.01, '残毒 = 70×10% = 7（永不落无副作用档）');
-ok('抵消封顶 90% + 残毒保底');
+assert(Math.abs(capped.net_toxicity - 10.5) < 0.05, '残毒 = 70×10%×1.5（沉淀）= 10.5（永不落无副作用档）');
+ok('抵消封顶 90% + 残毒保底（沉淀针按 ×1.5 计）');
 
-// 增效：加 1 份骆驼蓬碱（synergist）→ 其它族药效 ×1.2
-const withSynergy = PCC.resolve([SOLVENT, { item_id: 'med_root_bitter_powder', count: 1 }, { item_id: 'med_harmaline_powder', count: 1 }]);
+// F. 增效：加 1 份骆驼蓬碱（synergist）+ 助剂满足成盐 → 其它族药效 ×1.2
+const withSynergy = PCC.resolve([SOLVENT, { item_id: 'med_root_bitter_powder', count: 1 }, { item_id: 'med_harmaline_powder', count: 1 }, { item_id: 'adj_vitamin_c', count: 1 }]);
 const rb = withSynergy.families.find((f) => f.family === 'analgesic');
+assert.strictEqual(withSynergy.precipitated, false, '助剂够 → 不沉淀');
 assert(Math.abs(withSynergy.synergy_multiplier - 1.2) < 1e-9, '增效倍率 = 1 + 0.2×1');
 assert(Math.abs(rb.effect - 36) < 0.01, '苦根草粉 30 ×1.2 = 36');
 assert.strictEqual(rb.potency, 'regular', '36 → regular 档');
 ok('增效成分放大同针其它族药效');
 
-// 相冲：维生素C粉（organic_acid 辅成分） + 可卡因（alkaloid）→ 轻症沉淀
-const conflictHit = PCC.resolve([SOLVENT, { item_id: 'med_cocaine_powder', count: 1 }, { item_id: 'med_vitamin_c_powder', count: 1 }]);
+// G. 相冲：维生素C粉（organic_acid 辅成分） + 可卡因（alkaloid）→ 轻症沉淀
+const conflictHit = PCC.resolve([SOLVENT, { item_id: 'med_cocaine_powder', count: 1 }, { item_id: 'adj_vitamin_c', count: 1 }, { item_id: 'med_vitamin_c_powder', count: 1 }]);
 assert.strictEqual(conflictHit.conflicts.length, 1, '酸 + 生物碱 → 命中 1 条相冲');
 assert.strictEqual(conflictHit.conflicts[0].outcome, 'settle_mild');
 assert.strictEqual(conflictHit.conflicts[0].buff_id, 'buff_pharm_conflict_settle_mild');
@@ -625,19 +655,23 @@ const noConflict2 = PCC.resolve([SOLVENT, { item_id: 'med_cocaine_powder', count
 assert.strictEqual(noConflict2.conflicts.length, 0, '助剂（成盐助溶）不参与相冲');
 ok('相冲类别级判定 + 助剂/溶媒/功能成分豁免');
 
-// 动态实例 + 注射后结算
-const built = PCC.buildInstance(speedball);
+// H. 动态实例 + 注射后结算（正常针）
+const built = PCC.buildInstance(saltedNeedle);
 assert(built.ok, '配药产出实例');
 assert.strictEqual(built.instance.item_id, 'potion_compound_injection');
-assert.strictEqual(built.instance.components.length, 4, '实例携带全部投料（含溶媒，便于复算）');
+assert.strictEqual(built.instance.precipitated, false, '正常针实例不带沉淀标记');
+assert.strictEqual(built.instance.components.length, 3, '实例携带全部投料（含溶媒，便于复算）');
 const compIds = built.instance.components.map((c) => c.item_id);
-assert(compIds.indexOf('med_cocaine_powder') >= 0 && compIds.indexOf('med_morphine_powder') >= 0 && compIds.indexOf('med_liver_herb_powder') >= 0, '三味药粉都在实例里');
+assert(compIds.indexOf('med_cocaine_powder') >= 0 && compIds.indexOf('adj_vitamin_c') >= 0, '主药与助剂都在实例里');
 const injRes = PCC.applyInjection(built.instance, {});
 assert(injRes.ok, '注射后结算成功');
 assert(injRes.applied_buffs.indexOf('buff_pharm_stimulant_inject_potent') >= 0, '挂兴奋·注射·强效');
-assert(injRes.applied_buffs.indexOf('buff_pharm_analgesic_inject_potent') >= 0, '挂镇痛·注射·强效');
-assert(Math.abs(toxAddedTotal - 95) < 0.6, '净毒性注入体内（' + toxAddedTotal + '）');
-assert(addictionCalls.length === 1 && addictionCalls[0][0] === 'inject' && addictionCalls[0][1] === 2, '成瘾按刺入途径 2 份累加');
+assert(Math.abs(toxAddedTotal - 70) < 0.01, '净毒性注入体内（' + toxAddedTotal + '）');
+assert(addictionCalls.length === 1 && addictionCalls[0][0] === 'inject' && addictionCalls[0][1] === 1, '成瘾按刺入途径 1 份累加');
+// 沉淀针实例自带标记
+const builtPrecip = PCC.buildInstance(speedball);
+assert.strictEqual(builtPrecip.instance.precipitated, true, '沉淀针实例带 precipitated 标记');
+assert.strictEqual(builtPrecip.instance.salt_deficit, 2, '实例记录成盐缺口');
 ok('动态注射液实例 + 一次滴注多族 buff + 毒性/成瘾结算');
 
 // 实例经 use_action=inject 走通（item-use 分流）
@@ -708,12 +742,12 @@ ok('消毒剂替代一次性器具（酒）');
 toxAddedTotal = 0;
 slotFor = null;
 assert.strictEqual(IU.applyUseActionRoute('potion_compound_injection', items.potion_compound_injection, 'inject', { instance: built.instance }), true);
-assert(Math.abs(toxAddedTotal - (95 + 8)) < 0.6, '不洁针具：净毒性 95 + 感染 8（实际 ' + toxAddedTotal + '）');
+assert(Math.abs(toxAddedTotal - (70 + 8)) < 0.01, '不洁针具：净毒性 70 + 感染 8（实际 ' + toxAddedTotal + '）');
 assert.strictEqual(IU.takeLastInjectionHygiene().mode, 'dirty');
 toxAddedTotal = 0;
 slotFor = 'tool_iv_set_pharmacy';
 assert.strictEqual(IU.applyUseActionRoute('potion_compound_injection', items.potion_compound_injection, 'inject', { instance: built.instance }), true);
-assert(Math.abs(toxAddedTotal - 95) < 0.6, '洁净针具：只算净毒性 95（实际 ' + toxAddedTotal + '）');
+assert(Math.abs(toxAddedTotal - 70) < 0.01, '洁净针具：只算净毒性 70（实际 ' + toxAddedTotal + '）');
 ok('注射全链路：卫生状态参与毒性结算');
 
 console.log('\n⑭ k246 §8 收口（多次用量 / 调和·卷制 method）');
@@ -757,7 +791,8 @@ assert.strictEqual(vitC.chem_class, 'organic_acid', '辅成分形态带化学身
 assert.strictEqual(vitCAdj.sub_category, 'pharm_adjuvant');
 assert(vitCAdj.pharm_toxicity == null, '助剂形态不带毒性（不抵消）');
 assert(vitCAdj.chem_class == null, '助剂形态不参与相冲');
-const withVitC = PCC.resolve([SOLVENT, { item_id: 'med_cocaine_powder', count: 1 }, { item_id: 'med_vitamin_c_powder', count: 1 }]);
+const withVitC = PCC.resolve([SOLVENT, { item_id: 'med_cocaine_powder', count: 1 }, { item_id: 'adj_vitamin_c', count: 1 }, { item_id: 'med_vitamin_c_powder', count: 1 }]);
+assert.strictEqual(withVitC.precipitated, false, '助剂补齐成盐 → 不沉淀');
 assert.strictEqual(withVitC.conflicts.length, 1, '辅成分形态 + 生物碱 → 相冲');
 assert(Math.abs(withVitC.base_toxicity - 70) < 0.01 && withVitC.net_toxicity < 70, '辅成分形态抵消主药毒性');
 const withAdj = PCC.resolve([SOLVENT, { item_id: 'med_cocaine_powder', count: 1 }, { item_id: 'adj_vitamin_c', count: 1 }]);
@@ -773,5 +808,19 @@ assert.strictEqual(pureRecipes.length, 0, '制药配方不再使用烹饪水（�
 assert.strictEqual(PCC.classifyItem('solvent_water_pure'), 'solvent', '纯净水是配药溶媒');
 assert(PCC.getConcentrationInfo([{ item_id: 'solvent_water_pure', count: 1 }, { item_id: 'med_cocaine_powder', count: 1 }]).used === 35, '溶媒不占浓度');
 ok('制药水口径：纯净水=溶媒（不占浓度）/ 纯净软水=烹饪水');
+
+console.log('\n⑯ 成盐判定接线（§9.5）');
+const panelSrc2 = readText('js/pharmacy-station-panel.js');
+const cfgCsv = readText('data/pharmacy-system-config.csv');
+assert(panelSrc2.includes('getSaltRequirement'), '面板读取成盐需求');
+assert(panelSrc2.includes('pharmacy.compound.salt_precipitated'), '面板提示沉淀风险');
+assert(cfgCsv.includes('pharmacy_salt_required_chem_classes,alkaloid'), '配置落成盐类别');
+assert(cfgCsv.includes('pharmacy_salt_effect_multiplier,0.5') && cfgCsv.includes('pharmacy_salt_toxicity_multiplier,1.5'), '配置落沉淀针折算系数');
+['pharmacy.compound.salt_ok', 'pharmacy.compound.salt_precipitated', 'pharmacy.compound.ok_precipitated'].forEach((k) => {
+  assert(!!uiText[k], '缺少文案键 ' + k);
+});
+assert(items.adj_vitamin_c.adjuvant_strength === 1 && items.adj_citric_acid.adjuvant_strength === 1, '助剂成盐能力已落数据');
+assert(items.adj_citric_acid.concentration_cost === 12, '柠檬酸补上浓度占用（助剂也是成本）');
+ok('成盐：配置/数据/面板/文案齐备');
 
 console.log('\n[smoke-pharmacy] ' + pass + ' 组断言全部通过');

@@ -39,7 +39,12 @@
         pharmacy_injectable_template_id: 'potion_compound_injection',
         pharmacy_disposable_kit_item_ids: 'tool_iv_set_pharmacy',
         pharmacy_sterilizer_item_ids: 'food_wine',
-        pharmacy_dirty_injection_toxicity: 8
+        pharmacy_dirty_injection_toxicity: 8,
+        pharmacy_salt_required_chem_classes: 'alkaloid',
+        pharmacy_salt_required_only_toxic: 1,
+        pharmacy_salt_dose_per_base_dose: 1,
+        pharmacy_salt_effect_multiplier: 0.5,
+        pharmacy_salt_toxicity_multiplier: 1.5
     };
 
     var USE_ROUTE_IDS = ['drink', 'topical', 'inhale', 'inject'];
@@ -166,6 +171,11 @@
         out.pharmacy_disposable_kit_item_ids = toList(kv.pharmacy_disposable_kit_item_ids, DEFAULTS.pharmacy_disposable_kit_item_ids);
         out.pharmacy_sterilizer_item_ids = toList(kv.pharmacy_sterilizer_item_ids, DEFAULTS.pharmacy_sterilizer_item_ids);
         out.pharmacy_dirty_injection_toxicity = Math.max(0, toNumber(kv.pharmacy_dirty_injection_toxicity, DEFAULTS.pharmacy_dirty_injection_toxicity));
+        out.pharmacy_salt_required_chem_classes = toList(kv.pharmacy_salt_required_chem_classes, DEFAULTS.pharmacy_salt_required_chem_classes);
+        out.pharmacy_salt_required_only_toxic = (toNumber(kv.pharmacy_salt_required_only_toxic, DEFAULTS.pharmacy_salt_required_only_toxic) ? 1 : 0);
+        out.pharmacy_salt_dose_per_base_dose = Math.max(0, toNumber(kv.pharmacy_salt_dose_per_base_dose, DEFAULTS.pharmacy_salt_dose_per_base_dose));
+        out.pharmacy_salt_effect_multiplier = Math.max(0, toNumber(kv.pharmacy_salt_effect_multiplier, DEFAULTS.pharmacy_salt_effect_multiplier));
+        out.pharmacy_salt_toxicity_multiplier = Math.max(0, toNumber(kv.pharmacy_salt_toxicity_multiplier, DEFAULTS.pharmacy_salt_toxicity_multiplier));
         return out;
     }
 
