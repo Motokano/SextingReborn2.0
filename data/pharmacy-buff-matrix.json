@@ -2,115 +2,276 @@
   "_comment": "制药剂型 buff 矩阵源表（k233）。tools/build-pharmacy-buffs.mjs 展开为 buff_pharm_<family>_<route>_<potency> 并合并进 data/buffs.json。口径见 docs/design/47-pharmacy-system.md §3.4（生效时间/持续/形态/峰值）与 §9.2/§9.6（药效落点）。数值为 ❓ 首版草稿，调值只改本文件后重跑 build:pharmacy-buffs。",
   "schema_version": "1.0.0",
   "route_profiles": {
-    "inject": { "onset_ticks": 0, "duration_ticks": 10, "peak": 1.0, "scope": "systemic", "name": "注射" },
-    "inhale": { "onset_ticks": 2, "duration_ticks": 18, "peak": 0.9, "scope": "systemic", "name": "吸入" },
-    "drink": { "onset_ticks": 5, "duration_ticks": 60, "peak": 0.8, "scope": "systemic", "name": "口服" },
-    "topical": { "onset_ticks": 3, "duration_ticks": 90, "peak": 0.7, "scope": "part", "name": "外敷" }
+    "inject": {
+      "onset_ticks": 0,
+      "duration_ticks": 10,
+      "peak": 1,
+      "scope": "systemic",
+      "name": "注射"
+    },
+    "inhale": {
+      "onset_ticks": 2,
+      "duration_ticks": 18,
+      "peak": 0.9,
+      "scope": "systemic",
+      "name": "吸入"
+    },
+    "drink": {
+      "onset_ticks": 5,
+      "duration_ticks": 60,
+      "peak": 0.8,
+      "scope": "systemic",
+      "name": "口服"
+    },
+    "topical": {
+      "onset_ticks": 3,
+      "duration_ticks": 90,
+      "peak": 0.7,
+      "scope": "part",
+      "name": "外敷"
+    }
   },
   "potency_profiles": {
-    "weak": { "scale": 0.5, "name": "弱效" },
-    "regular": { "scale": 1.0, "name": "常效" },
-    "potent": { "scale": 1.5, "name": "强效" }
+    "weak": {
+      "scale": 0.5,
+      "name": "弱效"
+    },
+    "regular": {
+      "scale": 1,
+      "name": "常效"
+    },
+    "potent": {
+      "scale": 1.5,
+      "name": "强效"
+    },
+    "pure": {
+      "scale": 1.9,
+      "name": "纯品"
+    }
   },
   "families": {
     "stimulant": {
       "name": "兴奋",
-      "routes": ["drink", "inhale", "inject"],
+      "routes": [
+        "drink",
+        "inhale",
+        "inject"
+      ],
       "desc": "精力与体力上冲，出手更快，注意力更集中",
       "effects": [
-        { "type": "survival_delta", "params": { "energy": 1.2, "stamina": 0.8, "fatigue": -0.6 } },
-        { "type": "battle_move_speed_multiplier", "params": { "multiplier": 1.08 } },
-        { "type": "add_stat_delta", "params": { "focus": 2 } }
+        {
+          "type": "survival_delta",
+          "params": {
+            "energy": 1.2,
+            "stamina": 0.8,
+            "fatigue": -0.6
+          }
+        },
+        {
+          "type": "battle_move_speed_multiplier",
+          "params": {
+            "multiplier": 1.08
+          }
+        },
+        {
+          "type": "add_stat_delta",
+          "params": {
+            "focus": 2
+          }
+        }
       ]
     },
     "hallucinogen": {
       "name": "致幻",
-      "routes": ["drink", "inhale", "inject"],
+      "routes": [
+        "drink",
+        "inhale",
+        "inject"
+      ],
       "desc": "感知扭曲，潜能与实战经验涨得更快，也更容易做错事",
       "effects": [
-        { "type": "battle_potential_gain_multiplier", "params": { "multiplier": 1.15 } },
-        { "type": "battle_combat_experience_gain_multiplier", "params": { "multiplier": 1.15 } }
+        {
+          "type": "battle_potential_gain_multiplier",
+          "params": {
+            "multiplier": 1.15
+          }
+        },
+        {
+          "type": "battle_combat_experience_gain_multiplier",
+          "params": {
+            "multiplier": 1.15
+          }
+        }
       ]
     },
     "sedative": {
       "name": "镇静",
-      "routes": ["drink", "inhale", "inject"],
+      "routes": [
+        "drink",
+        "inhale",
+        "inject"
+      ],
       "desc": "心情放松，胃口跟着回来",
       "effects": [
-        { "type": "survival_delta", "params": { "mood": 1.5, "nutrition": 0.4 } }
+        {
+          "type": "survival_delta",
+          "params": {
+            "mood": 1.5,
+            "nutrition": 0.4
+          }
+        }
       ]
     },
     "analgesic": {
       "name": "镇痛",
-      "routes": ["drink", "inhale", "inject"],
+      "routes": [
+        "drink",
+        "inhale",
+        "inject"
+      ],
       "desc": "疼痛被盖住，痛感暂时不生效（药效过后照旧）",
       "effects": [
-        { "type": "pain_suppression", "params": {} }
+        {
+          "type": "pain_suppression",
+          "params": {}
+        }
       ]
     },
     "synergist": {
       "name": "增效",
-      "routes": ["drink", "inhale", "inject"],
+      "routes": [
+        "drink",
+        "inhale",
+        "inject"
+      ],
       "desc": "放大同一针里其它成分的药效（联合配药时的辅药）",
       "effects": [
-        { "type": "pharmacy_synergy_multiplier", "params": { "multiplier": 1.2 } }
+        {
+          "type": "pharmacy_synergy_multiplier",
+          "params": {
+            "multiplier": 1.2
+          }
+        }
       ]
     },
     "rehydrate": {
       "name": "补液",
-      "routes": ["drink", "inject"],
+      "routes": [
+        "drink",
+        "inject"
+      ],
       "desc": "把水与体力补回来，脱水时最值钱",
       "effects": [
-        { "type": "survival_delta", "params": { "thirst": 2.5, "stamina": 0.5 } }
+        {
+          "type": "survival_delta",
+          "params": {
+            "thirst": 2.5,
+            "stamina": 0.5
+          }
+        }
       ]
     },
     "energy": {
       "name": "续航",
-      "routes": ["drink", "inhale", "inject"],
+      "routes": [
+        "drink",
+        "inhale",
+        "inject"
+      ],
       "desc": "血糖与精力一起抬起来，饿得慢一点",
       "effects": [
-        { "type": "survival_delta", "params": { "energy": 1.5, "nutrition": 0.6 } }
+        {
+          "type": "survival_delta",
+          "params": {
+            "energy": 1.5,
+            "nutrition": 0.6
+          }
+        }
       ]
     },
     "revive": {
       "name": "复苏",
-      "routes": ["inject"],
+      "routes": [
+        "inject"
+      ],
       "desc": "强心吊命：把昏迷/濒死的人往回拉一点",
       "effects": [
-        { "type": "pharmacy_revive", "params": { "stamina_ratio": 0.15, "energy_ratio": 0.15 } },
-        { "type": "survival_delta", "params": { "stamina": 0.5 } }
+        {
+          "type": "pharmacy_revive",
+          "params": {
+            "stamina_ratio": 0.15,
+            "energy_ratio": 0.15
+          }
+        },
+        {
+          "type": "survival_delta",
+          "params": {
+            "stamina": 0.5
+          }
+        }
       ]
     },
     "coagulant": {
       "name": "凝血",
-      "routes": ["topical", "inject"],
+      "routes": [
+        "topical",
+        "inject"
+      ],
       "desc": "让血止得快一些（异常状态流血实装后生效）",
       "effects": [
-        { "type": "pharmacy_bleeding_slow", "params": { "bleed_slow_pct": 0.5 } }
+        {
+          "type": "pharmacy_bleeding_slow",
+          "params": {
+            "bleed_slow_pct": 0.5
+          }
+        }
       ]
     },
     "antistun": {
       "name": "醒神",
-      "routes": ["drink", "inject"],
+      "routes": [
+        "drink",
+        "inject"
+      ],
       "desc": "战前打一针，眩晕抗性窗口打开",
       "effects": [
-        { "type": "pharmacy_anti_stun", "params": { "anti_stun_pct": 0.3 } }
+        {
+          "type": "pharmacy_anti_stun",
+          "params": {
+            "anti_stun_pct": 0.3
+          }
+        }
       ]
     },
     "strength": {
       "name": "续力",
-      "routes": ["drink", "inject"],
+      "routes": [
+        "drink",
+        "inject"
+      ],
       "desc": "筋骨一紧，负重与发力都往上抬",
       "effects": [
-        { "type": "add_stat_delta", "params": { "jingu": 3 } }
+        {
+          "type": "add_stat_delta",
+          "params": {
+            "jingu": 3
+          }
+        }
       ]
     },
     "mobility": {
       "name": "活络",
-      "routes": ["topical"],
+      "routes": [
+        "topical"
+      ],
       "desc": "敷在伤处，手脚的失能恢复更快（部位唯一能治的途径）",
       "effects": [
-        { "type": "pharmacy_part_recovery", "params": { "recovery_multiplier": 1.5 } }
+        {
+          "type": "pharmacy_part_recovery",
+          "params": {
+            "recovery_multiplier": 1.5
+          }
+        }
       ]
     }
   },
@@ -135,7 +296,13 @@
       "desc": "恶心、发闷、心跳发飘：心情下滑，恢复变慢",
       "duration_ticks": 20,
       "effects": [
-        { "type": "survival_delta", "params": { "mood": -1, "stamina": -0.2 } }
+        {
+          "type": "survival_delta",
+          "params": {
+            "mood": -1,
+            "stamina": -0.2
+          }
+        }
       ]
     },
     "moderate": {
@@ -143,8 +310,20 @@
       "desc": "呼吸发紧、心律不齐：持续掉体力精力，行动变慢",
       "duration_ticks": 30,
       "effects": [
-        { "type": "survival_delta", "params": { "stamina": -1, "energy": -1, "mood": -2 } },
-        { "type": "battle_move_speed_multiplier", "params": { "multiplier": 0.9 } }
+        {
+          "type": "survival_delta",
+          "params": {
+            "stamina": -1,
+            "energy": -1,
+            "mood": -2
+          }
+        },
+        {
+          "type": "battle_move_speed_multiplier",
+          "params": {
+            "multiplier": 0.9
+          }
+        }
       ]
     },
     "severe": {
@@ -152,8 +331,20 @@
       "desc": "急性中毒：体力精力暴跌，撑不过去就是死",
       "duration_ticks": 40,
       "effects": [
-        { "type": "survival_delta", "params": { "stamina": -3, "energy": -3, "mood": -4 } },
-        { "type": "battle_move_speed_multiplier", "params": { "multiplier": 0.8 } }
+        {
+          "type": "survival_delta",
+          "params": {
+            "stamina": -3,
+            "energy": -3,
+            "mood": -4
+          }
+        },
+        {
+          "type": "battle_move_speed_multiplier",
+          "params": {
+            "multiplier": 0.8
+          }
+        }
       ]
     }
   },
@@ -164,8 +355,19 @@
       "desc": "血管里析出东西：药白打了，人还发闷",
       "duration_ticks": 25,
       "effects": [
-        { "type": "survival_delta", "params": { "mood": -2, "stamina": -0.5 } },
-        { "type": "battle_move_speed_multiplier", "params": { "multiplier": 0.92 } }
+        {
+          "type": "survival_delta",
+          "params": {
+            "mood": -2,
+            "stamina": -0.5
+          }
+        },
+        {
+          "type": "battle_move_speed_multiplier",
+          "params": {
+            "multiplier": 0.92
+          }
+        }
       ]
     },
     "toxic_severe": {
@@ -173,15 +375,42 @@
       "desc": "急性沉淀堵住血管：喘不上气，眼前发黑",
       "duration_ticks": 40,
       "effects": [
-        { "type": "survival_delta", "params": { "stamina": -3, "energy": -3, "mood": -5 } },
-        { "type": "battle_move_speed_multiplier", "params": { "multiplier": 0.75 } }
+        {
+          "type": "survival_delta",
+          "params": {
+            "stamina": -3,
+            "energy": -3,
+            "mood": -5
+          }
+        },
+        {
+          "type": "battle_move_speed_multiplier",
+          "params": {
+            "multiplier": 0.75
+          }
+        }
       ]
     }
   },
   "addiction_stages": {
     "_comment": "成瘾四阶段惩罚（47 §4.2）：阶段一无异常；二~四按 penalty_pct 乘在后天五维实际值上（k242 接线）。压制规则见 §4.4。",
-    "stage2": { "stage": 2, "name": "药瘾·二阶段", "desc": "身上发空，手脚都不如从前听使唤（五维 −10%）", "penalty_pct": 0.1 },
-    "stage3": { "stage": 3, "name": "药瘾·三阶段", "desc": "心里发痒，做事的力气掉了一截（五维 −20%）", "penalty_pct": 0.2 },
-    "stage4": { "stage": 4, "name": "药瘾·四阶段", "desc": "离了药就是废人（五维 −35%）", "penalty_pct": 0.35 }
+    "stage2": {
+      "stage": 2,
+      "name": "药瘾·二阶段",
+      "desc": "身上发空，手脚都不如从前听使唤（五维 −10%）",
+      "penalty_pct": 0.1
+    },
+    "stage3": {
+      "stage": 3,
+      "name": "药瘾·三阶段",
+      "desc": "心里发痒，做事的力气掉了一截（五维 −20%）",
+      "penalty_pct": 0.2
+    },
+    "stage4": {
+      "stage": 4,
+      "name": "药瘾·四阶段",
+      "desc": "离了药就是废人（五维 −35%）",
+      "penalty_pct": 0.35
+    }
   }
 }

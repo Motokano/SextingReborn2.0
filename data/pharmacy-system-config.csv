@@ -16,7 +16,7 @@ pharmacy_addiction_immunity_decay_bonus,0.015,免疫每级衰减加速（满级 
 pharmacy_addiction_immunity_penalty_reduction,0.005,免疫每级惩罚缩小（满级 −50%；47 §4.5）
 pharmacy_addiction_stage_thresholds,25|50|75,成瘾四阶段阈值（<25 / 25-50 / 50-75 / ≥75；47 §4.2）
 pharmacy_addiction_stage_penalties,0.10|0.20|0.35,阶段二~四后天五维实际值惩罚乘区（−10%/−20%/−35%；47 §4.2）
-pharmacy_potency_thresholds,33|66,净药效→potency 档（≤33 weak / 34-66 regular / ≥67 potent；47 §9.2）
+pharmacy_potency_thresholds,33|66|100,净药效→potency 档（≤33 weak / 34-66 regular / 67-100 potent / ≥100 pure；47 §9.2）
 pharmacy_toxicity_band_thresholds,0|25|55,净毒性副作用档（≤0 无 / 1-25 轻 / 26-55 中 / ≥56 重；47 §9.2）
 pharmacy_toxicity_decay_per_tick,1.5,体内毒性自然衰减/tick（解毒加速约 3；47 §9.2）
 pharmacy_toxicity_lethal_ticks,16,体内毒性处于重档期间的致死倒计时上限 tick（47 §9.2）

@@ -897,6 +897,190 @@
         "potion_antistun_injection_refined",
         1
       ]
+    },
+    {
+      "recipe_id": "life_pharmacy.purify_thc",
+      "method_id": "life_pharmacy.distillation",
+      "inputs": [
+        [
+          "med_thc_powder_refined",
+          2
+        ]
+      ],
+      "main_output": [
+        "med_thc_powder_purified",
+        1
+      ]
+    },
+    {
+      "recipe_id": "life_pharmacy.purify_acorus",
+      "method_id": "life_pharmacy.distillation",
+      "inputs": [
+        [
+          "med_acorus_powder_refined",
+          2
+        ]
+      ],
+      "main_output": [
+        "med_acorus_powder_purified",
+        1
+      ]
+    },
+    {
+      "recipe_id": "life_pharmacy.purify_morphine",
+      "method_id": "life_pharmacy.crystallization",
+      "inputs": [
+        [
+          "med_morphine_powder_refined",
+          2
+        ]
+      ],
+      "main_output": [
+        "med_morphine_powder_purified",
+        1
+      ]
+    },
+    {
+      "recipe_id": "life_pharmacy.purify_cocaine",
+      "method_id": "life_pharmacy.crystallization",
+      "inputs": [
+        [
+          "med_cocaine_powder_refined",
+          2
+        ]
+      ],
+      "main_output": [
+        "med_cocaine_powder_purified",
+        1
+      ]
+    },
+    {
+      "recipe_id": "life_pharmacy.purify_liver_herb",
+      "method_id": "life_pharmacy.filtration",
+      "inputs": [
+        [
+          "med_liver_herb_powder_refined",
+          2
+        ]
+      ],
+      "main_output": [
+        "med_liver_herb_powder_purified",
+        1
+      ]
+    },
+    {
+      "recipe_id": "life_pharmacy.purify_notoginseng",
+      "method_id": "life_pharmacy.filtration",
+      "inputs": [
+        [
+          "med_notoginseng_powder_refined",
+          2
+        ]
+      ],
+      "main_output": [
+        "med_notoginseng_powder_purified",
+        1
+      ]
+    },
+    {
+      "recipe_id": "life_pharmacy.purify_psilocybin",
+      "method_id": "life_pharmacy.centrifugation",
+      "inputs": [
+        [
+          "med_psilocybin_powder_refined",
+          2
+        ]
+      ],
+      "main_output": [
+        "med_psilocybin_powder_purified",
+        1
+      ]
+    },
+    {
+      "recipe_id": "life_pharmacy.purify_safflower",
+      "method_id": "life_pharmacy.centrifugation",
+      "inputs": [
+        [
+          "med_safflower_powder_refined",
+          2
+        ]
+      ],
+      "main_output": [
+        "med_safflower_powder_purified",
+        1
+      ]
+    },
+    {
+      "recipe_id": "life_pharmacy.mix_analgesic_injection_purified",
+      "method_id": "life_pharmacy.maceration",
+      "inputs": [
+        [
+          "med_morphine_powder_purified",
+          1
+        ],
+        [
+          "solvent_saline",
+          1
+        ]
+      ],
+      "main_output": [
+        "potion_analgesic_injection_purified",
+        1
+      ]
+    },
+    {
+      "recipe_id": "life_pharmacy.mix_stimulant_injection_purified",
+      "method_id": "life_pharmacy.maceration",
+      "inputs": [
+        [
+          "med_cocaine_powder_purified",
+          1
+        ],
+        [
+          "solvent_saline",
+          1
+        ]
+      ],
+      "main_output": [
+        "potion_stimulant_injection_purified",
+        1
+      ]
+    },
+    {
+      "recipe_id": "life_pharmacy.brew_calm_brew_purified",
+      "method_id": "life_pharmacy.maceration",
+      "inputs": [
+        [
+          "med_thc_powder_purified",
+          1
+        ],
+        [
+          "solvent_water_pure",
+          1
+        ]
+      ],
+      "main_output": [
+        "potion_calm_brew_purified",
+        1
+      ]
+    },
+    {
+      "recipe_id": "life_pharmacy.blend_mobility_salve_purified",
+      "method_id": "life_pharmacy.blending",
+      "inputs": [
+        [
+          "med_safflower_powder_purified",
+          1
+        ],
+        [
+          "hus_pork_lard",
+          1
+        ]
+      ],
+      "main_output": [
+        "potion_mobility_salve_purified",
+        1
+      ]
     }
   ]
 }

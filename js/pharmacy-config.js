@@ -33,7 +33,7 @@
         pharmacy_addiction_immunity_penalty_reduction: 0.005,
         pharmacy_addiction_stage_thresholds: '25|50|75',
         pharmacy_addiction_stage_penalties: '0.10|0.20|0.35',
-        pharmacy_potency_thresholds: '33|66',
+        pharmacy_potency_thresholds: '33|66|100',
         pharmacy_toxicity_band_thresholds: '0|25|55',
         pharmacy_toxicity_decay_per_tick: 1.5,
         pharmacy_toxicity_lethal_ticks: 16,
@@ -215,14 +215,15 @@
         return routes.indexOf(rid) >= 0;
     }
 
-    /** 净药效数值 → potency 档（weak/regular/potent）。 */
+    /** 净药效数值 → potency 档（weak/regular/potent/pure；47 §9.2 + 加工阶梯）。 */
     function getPotencyBand(effectSum, config) {
-        var t = (config && Array.isArray(config.pharmacy_potency_thresholds)) ? config.pharmacy_potency_thresholds : [33, 66];
+        var t = (config && Array.isArray(config.pharmacy_potency_thresholds)) ? config.pharmacy_potency_thresholds : [33, 66, 100];
         var v = Number(effectSum);
         if (!isFinite(v) || v <= 0) return 'none';
         if (v <= (t[0] != null ? t[0] : 33)) return 'weak';
         if (v <= (t[1] != null ? t[1] : 66)) return 'regular';
-        return 'potent';
+        if (v < (t[2] != null ? t[2] : 100)) return 'potent';
+        return 'pure';
     }
 
     /** 体内毒性数值 → 副作用档（none/mild/moderate/severe）。 */

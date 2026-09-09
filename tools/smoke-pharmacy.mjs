@@ -124,6 +124,7 @@ ok('CSV 解析：失败物 id / 熟练度曲线 / 四途径 / 成瘾与毒性占
 assert.strictEqual(PC.getPotencyBand(20, cfg), 'weak');
 assert.strictEqual(PC.getPotencyBand(50, cfg), 'regular');
 assert.strictEqual(PC.getPotencyBand(90, cfg), 'potent');
+assert.strictEqual(PC.getPotencyBand(110, cfg), 'pure', '≥100 → pure（纯品档，加工阶梯最高层）');
 assert.strictEqual(PC.getToxicityBand(10, cfg), 'mild');
 assert.strictEqual(PC.getToxicityBand(30, cfg), 'moderate');
 assert.strictEqual(PC.getToxicityBand(60, cfg), 'severe');
@@ -1138,5 +1139,43 @@ const wrongSkill = pharmFields.filter((k) => {
 assert.strictEqual(wrongSkill.join(','), '', '制药字段只用 life_pharmacy 门闸（不接鉴定）：' + wrongSkill.join(','));
 assert(pharmFields.length >= 11, '制药字段规则齐备（' + pharmFields.length + ' 条）');
 ok('制药产物信息门槛 = 药学等级（鉴定留给其他系统）');
+
+console.log('\n㉘ 加工阶梯（粗制 → 精制 → 精炼，越加工越好、粗制也能用）');
+const ladder = [
+  ['med_morphine_powder', 'med_morphine_powder_refined', 'med_morphine_powder_purified'],
+  ['med_thc_powder', 'med_thc_powder_refined', 'med_thc_powder_purified'],
+  ['med_safflower_powder', 'med_safflower_powder_refined', 'med_safflower_powder_purified']
+];
+ladder.forEach(([t1, t2, t3]) => {
+  const a = items[t1];
+  const b = items[t2];
+  const c = items[t3];
+  assert(a && b && c, t1 + ' 三层齐全');
+  assert(Number(b.pharm_effect) > Number(a.pharm_effect) && Number(c.pharm_effect) > Number(b.pharm_effect), t1 + ' 药效逐层递增');
+  if (Number(a.pharm_toxicity) > 0) {
+    assert(Number(b.pharm_toxicity) < Number(a.pharm_toxicity) && Number(c.pharm_toxicity) < Number(b.pharm_toxicity), t1 + ' 毒性逐层递减');
+  } else {
+    assert(Number(b.pharm_toxicity) === 0 && Number(c.pharm_toxicity) === 0, t1 + ' 功能成分毒性恒 0');
+  }
+  assert(Number(b.concentration_cost) < Number(a.concentration_cost) && Number(c.concentration_cost) < Number(b.concentration_cost), t1 + ' 浓度占用逐层递减');
+});
+ok('三层阶梯：药效↑ / 毒性↓ / 浓度占用↓（吗啡 85→106→128）');
+
+// 粗制品仍可用：T1 粉末照样能配药出针（档位较低但可用）
+const t1Mix = PCC.resolve([{ item_id: 'solvent_saline', count: 1 }, { item_id: 'med_morphine_powder', count: 1 }, { item_id: 'adj_vitamin_c', count: 1 }]);
+assert(t1Mix.ok && t1Mix.buff_ids.length === 1, 'T1 粗制吗啡粉可配药：' + (t1Mix.buff_ids[0] || ''));
+assert.strictEqual(t1Mix.buff_ids[0], 'buff_pharm_analgesic_inject_potent', 'T1 → potent 档');
+const t3Mix = PCC.resolve([{ item_id: 'solvent_saline', count: 1 }, { item_id: 'med_morphine_powder_purified', count: 1 }, { item_id: 'adj_vitamin_c', count: 1 }]);
+assert.strictEqual(t3Mix.buff_ids[0], 'buff_pharm_analgesic_inject_pure', 'T3 精炼吗啡粉 → pure 档（升档）');
+assert(t3Mix.net_toxicity < t1Mix.net_toxicity, 'T3 净毒性低于 T1（' + t3Mix.net_toxicity + ' < ' + t1Mix.net_toxicity + '）');
+ok('粗制可用（potent）/ 精炼升档（pure）且更干净');
+
+// 精炼成品走 pure buff；四途径各有一件精炼成品
+['potion_analgesic_injection_purified', 'potion_stimulant_injection_purified'].forEach((id) => {
+  assert(/_pure$/.test(items[id].use_buff_id), id + ' 引用 pure 档 buff');
+});
+assert(items.potion_calm_brew_purified && items.potion_mobility_salve_purified, '口服/外敷也有精炼成品');
+assert(loadJson('data/buffs.json').buffs.some((b) => b.pharmacy_potency === 'pure'), 'pure 档 buff 模板已生成');
+ok('精炼成品引用 pure 档（注射/口服/外敷均有）');
 
 console.log('\n[smoke-pharmacy] ' + pass + ' 组断言全部通过');

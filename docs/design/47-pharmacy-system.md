@@ -214,7 +214,7 @@
 
 ---
 
-### 6.5 首版药品全表（2026-09 落地，26 件成品 + 56 条配方）
+### 6.5 首版药品全表（2026-09 落地，30 件成品 + 68 条配方）
 
 > 数据落点：`data/items/pharmacy_base.csv`（成品剂型）与 `data/pharmacy-recipes.json`（配方）→ `tools/build-pharmacy-recipes.mjs`。
 > potency 由输入药粉 `pharm_effect` 之和决定（≤33 weak / 34–66 regular / ≥67 potent），下表为配方实测档位。
@@ -266,6 +266,10 @@
 | 镇痛药丸 | drink | analgesic·regular | 2 | 苦根草 →(粉碎) 苦根草粉 + 纯净水 →(压片) 镇痛药丸 |
 | 精制醒神注射液 | inject | antistun·potent | 3 | 石菖蒲 →(粉碎) 石菖蒲粉×2 →(蒸馏) 精制石菖蒲粉 + 生理盐水 →(浸渍) 精制醒神注射液 |
 | 精制镇痛注射液 | inject | analgesic·potent | 3 | 罂粟 →(粉碎) 吗啡粉×2 →(结晶) 精制吗啡粉 + 生理盐水 →(浸渍) 精制镇痛注射液 |
+| 精炼安神汤 | drink | sedative·potent | 4 | 大麻 →(粉碎) THC粉×2 →(蒸馏) 精制THC粉×2 →(蒸馏) 精炼THC粉 + 纯净水 →(浸渍) 精炼安神汤 |
+| 精炼提神注射液 | inject | stimulant·pure | 4 | 古柯 →(粉碎) 可卡因粉×2 →(结晶) 精制可卡因粉×2 →(结晶) 精炼可卡因粉 + 生理盐水 →(浸渍) 精炼提神注射液 |
+| 精炼红花活络膏 | topical | mobility·potent | 4 | 红花 →(粉碎) 红花粉×2 →(离心) 精制红花粉×2 →(离心) 精炼红花粉 + 猪油 →(调和) 精炼红花活络膏 |
+| 精炼镇痛注射液 | inject | analgesic·pure | 4 | 罂粟 →(粉碎) 吗啡粉×2 →(结晶) 精制吗啡粉×2 →(结晶) 精炼吗啡粉 + 生理盐水 →(浸渍) 精炼镇痛注射液 |
 
 **工艺成本表**
 
@@ -311,10 +315,45 @@
 | 浓煎提神汤 | 3 | 34 | 6 | 4 | 浸渍×1 + 粉碎×2 |
 | 精制镇痛注射液 | 4 | 50 | 8 | 7 | 浸渍×1 + 结晶×1 + 粉碎×2 |
 | 精制醒神注射液 | 4 | 52 | 9 | 7 | 浸渍×1 + 蒸馏×1 + 粉碎×2 |
+| 精炼红花活络膏 | 8 | 98 | 19 | 12 | 调和×1 + 离心×3 + 粉碎×4 |
+| 精炼提神注射液 | 8 | 106 | 16 | 15 | 浸渍×1 + 结晶×3 + 粉碎×4 |
+| 精炼镇痛注射液 | 8 | 106 | 16 | 15 | 浸渍×1 + 结晶×3 + 粉碎×4 |
+| 精炼安神汤 | 8 | 112 | 19 | 15 | 浸渍×1 + 蒸馏×3 + 粉碎×4 |
 
-**工序数分布**：2 道 → 24 件；3 道 → 2 件。
+**工序数分布**：2 道 → 24 件；3 道 → 2 件；4 道 → 4 件。
 
-**配药台（动态，不计入固定配方链）**：药粉/药片（0–3 道） + 溶媒 1 份 →(配药) 复方注射液；成分份数受浓度预算（≤100）与成盐需求约束。
+**配药台（动态，不计入固定配方链）**：药粉/药片（0–4 道） + 溶媒 1 份 →(配药) 复方注射液；成分份数受浓度预算（≤100）与成盐需求约束。
+
+### 6.7 加工阶梯（越加工越好，粗制也能用）
+
+> 同一味药每多一道加工，**药效更高、毒性更低、浓度占用更少**；粗制层始终可用，只是档位与干净度差一截。
+> 三层倍率：**T1 粗制 ×1.0 / ×1.0 / ×1.0** → **T2 精制 ×1.25 / ×0.6 / ×0.8** → **T3 精炼 ×1.5 / ×0.4 / ×0.7**（药效 / 毒性 / 浓度占用）。
+> 配方：药材 →(粉碎/浸渍) T1 粉 →(蒸馏·结晶·过滤·离心) **2 份 T1 → 1 份 T2** →(同工艺再走一遍) **2 份 T2 → 1 份 T3**。
+> 档位阈值：≤33 weak / 34–66 regular / 67–99 potent / **≥100 pure（纯品，2026-09 新增）**。
+
+| 药成分粉 | T1 粗制（药效/毒性/浓度） | T2 精制 | T3 精炼 | 档位 T1→T2→T3 |
+|---|---|---|---|---|
+| 可卡因粉 | 90/70/35 | 113/42/28 | 135/28/25 | potent→pure→pure |
+| 吗啡粉 | 85/65/35 | 106/39/28 | 128/26/25 | potent→pure→pure |
+| 强心粉 | 80/0/20 | 100/0/16 | 120/0/14 | potent→pure→pure |
+| 麦角酸粉 | 80/68/34 | 100/41/27 | 120/27/24 | potent→pure→pure |
+| 鹿茸粉 | 75/0/25 | 94/0/20 | 113/0/18 | potent→potent→pure |
+| 白芨粉 | 70/0/18 | 88/0/14 | 105/0/13 | potent→potent→pure |
+| 麻黄碱粉 | 70/55/29 | 88/33/23 | 105/22/20 | potent→potent→pure |
+| 补液粉 | 70/0/15 | 88/0/12 | 105/0/11 | potent→potent→pure |
+| 三七粉 | 65/0/20 | 81/0/16 | 98/0/14 | regular→potent→potent |
+| 东莨菪碱粉 | 65/75/30 | 81/45/24 | 98/30/21 | regular→potent→potent |
+| 石菖蒲粉 | 60/0/18 | 75/0/14 | 90/0/13 | regular→potent→potent |
+| 葡萄糖粉 | 60/0/15 | 75/0/12 | 90/0/11 | regular→potent→potent |
+| 红花粉 | 60/0/18 | 75/0/14 | 90/0/13 | regular→potent→potent |
+| 裸盖菇素粉 | 55/45/26 | 69/27/21 | 83/18/18 | regular→potent→potent |
+| THC粉 | 45/30/25 | 56/18/20 | 68/12/18 | regular→regular→potent |
+| 赤花藤粉 | 35/28/23 | 44/17/18 | 53/11/16 | regular→regular→regular |
+| 苦根草粉 | 30/12/21 | 38/7/17 | 45/5/15 | weak→regular→regular |
+| 槟榔碱粉 | 25/18/20 | 31/11/16 | 38/7/14 | weak→weak→regular |
+| 尼古丁粉 | 20/15/20 | 25/9/16 | 30/6/14 | weak→weak→weak |
+
+**精炼成品**（走 pure 档）：精炼镇痛注射液、精炼提神注射液（注射）；精炼安神汤（口服）；精炼红花活络膏（外敷）。精制成品另有精制镇痛注射液、精制醒神注射液（potent）。
 
 ---
 
@@ -557,10 +596,10 @@
 
 | 命令 | 覆盖 |
 |---|---|
-| `npm run test:pharmacy`（`tools/smoke-pharmacy.mjs`） | 81 组断言：框架六缺口 / 熟练度曲线 / 四途径分流 / 配药（浓度·成盐·沉淀·相冲·增效）/ 成瘾四阶段与压制 / 毒性代谢与致死链 / 针具卫生 / 口服消化 / 药品 roster 契约 / UI tooltip 渲染与信息分级 |
+| `npm run test:pharmacy`（`tools/smoke-pharmacy.mjs`） | 84 组断言：框架六缺口 / 熟练度曲线 / 四途径分流 / 配药（浓度·成盐·沉淀·相冲·增效）/ 成瘾四阶段与压制 / 毒性代谢与致死链 / 针具卫生 / 口服消化 / 药品 roster 契约 / UI tooltip 渲染与信息分级 |
 | `npm run build:items` | `data/items/*.csv` → `data/items.json`（含 `pharmacy_base.csv`；重建应与提交版本逐字节一致） |
-| `npm run build:pharmacy-buffs` / `--check` | `data/pharmacy-buff-matrix.json` → `data/buffs.json`（幂等，92 条 `buff_pharm_*`） |
-| `npm run build:pharmacy-recipes` / `--check` | `data/pharmacy-recipes.json` → `data/recipes.json`（幂等，56 条制药配方） |
+| `npm run build:pharmacy-buffs` / `--check` | `data/pharmacy-buff-matrix.json` → `data/buffs.json`（幂等，120 条 `buff_pharm_*`） |
+| `npm run build:pharmacy-recipes` / `--check` | `data/pharmacy-recipes.json` → `data/recipes.json`（幂等，68 条制药配方） |
 | `npm run mark:pharmacy-ingredients` | 按 `alchemy` 标签 + 显式清单标记制药投料（幂等） |
 | `npm run audit:item-keys` / `audit:item-field-rules` | 物品字段键与字段显示规则一致性 |
 

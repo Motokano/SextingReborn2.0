@@ -45,7 +45,7 @@
         var p = systemConfig && typeof systemConfig === 'object' ? systemConfig : {};
         cfg.capacity = Math.max(1, num(p.pharmacy_concentration_capacity, cfg.capacity));
         if (Array.isArray(p.pharmacy_potency_thresholds) && p.pharmacy_potency_thresholds.length >= 2) {
-            cfg.potency_thresholds = p.pharmacy_potency_thresholds.slice(0, 2).map(function (v) { return num(v, 0); });
+            cfg.potency_thresholds = p.pharmacy_potency_thresholds.slice(0, 3).map(function (v) { return num(v, 0); });
         }
         cfg.offset_rate_cap = Math.max(0, Math.min(1, num(p.pharmacy_offset_rate_cap, cfg.offset_rate_cap)));
         cfg.synergy_bonus_per_unit = Math.max(0, num(p.pharmacy_synergy_bonus_per_unit, cfg.synergy_bonus_per_unit));
@@ -315,7 +315,9 @@
         var fams = Object.keys(effectByFamily);
         for (i = 0; i < fams.length; i++) {
             var raw = effectByFamily[fams[i]] * synergyMul * mulEffect;
-            var band = raw <= cfg.potency_thresholds[0] ? 'weak' : (raw <= cfg.potency_thresholds[1] ? 'regular' : 'potent');
+            var band = raw <= cfg.potency_thresholds[0] ? 'weak'
+                : (raw <= cfg.potency_thresholds[1] ? 'regular'
+                    : (raw < (cfg.potency_thresholds[2] != null ? cfg.potency_thresholds[2] : Infinity) ? 'potent' : 'pure'));
             out.push({
                 family: fams[i],
                 effect: Math.round(raw * 100) / 100,

@@ -7110,6 +7110,1195 @@
       "expire_effects": [],
       "pharmacy_generated": true,
       "pharmacy_addiction_stage": 4
+    },
+    {
+      "buff_id": "buff_pharm_stimulant_drink_pure",
+      "name": "兴奋·口服·纯品",
+      "desc": "精力与体力上冲，出手更快，注意力更集中（口服起效 5 tick，持续 60 tick，峰值 1.52）",
+      "onsetTicks": 5,
+      "durationTicks": 60,
+      "maxStacks": 1,
+      "stacksAddOnApply": 1,
+      "priority": 80,
+      "listenerSide": "self",
+      "consumeMode": "always",
+      "consumeLayersFixed": 0,
+      "applyMode": "always_apply",
+      "triggerEventKind": [
+        "world"
+      ],
+      "triggerEventName": [
+        "tick_advanced"
+      ],
+      "triggerTags": [
+        "time",
+        "tick"
+      ],
+      "effects": [
+        {
+          "type": "survival_delta",
+          "params": {
+            "energy": 1.82,
+            "stamina": 1.22,
+            "fatigue": -0.91
+          }
+        },
+        {
+          "type": "battle_move_speed_multiplier",
+          "params": {
+            "multiplier": 1.12
+          }
+        },
+        {
+          "type": "add_stat_delta",
+          "params": {
+            "focus": 3.04
+          }
+        }
+      ],
+      "expire_effects": [],
+      "dispel_pool": "beneficial",
+      "pharmacy_generated": true,
+      "pharmacy_family": "stimulant",
+      "pharmacy_route": "drink",
+      "pharmacy_potency": "pure",
+      "pharmacy_scope": "systemic",
+      "pharmacy_peak": 1.52
+    },
+    {
+      "buff_id": "buff_pharm_stimulant_inhale_pure",
+      "name": "兴奋·吸入·纯品",
+      "desc": "精力与体力上冲，出手更快，注意力更集中（吸入起效 2 tick，持续 18 tick，峰值 1.71）",
+      "onsetTicks": 2,
+      "durationTicks": 18,
+      "maxStacks": 1,
+      "stacksAddOnApply": 1,
+      "priority": 80,
+      "listenerSide": "self",
+      "consumeMode": "always",
+      "consumeLayersFixed": 0,
+      "applyMode": "always_apply",
+      "triggerEventKind": [
+        "world"
+      ],
+      "triggerEventName": [
+        "tick_advanced"
+      ],
+      "triggerTags": [
+        "time",
+        "tick"
+      ],
+      "effects": [
+        {
+          "type": "survival_delta",
+          "params": {
+            "energy": 2.05,
+            "stamina": 1.37,
+            "fatigue": -1.03
+          }
+        },
+        {
+          "type": "battle_move_speed_multiplier",
+          "params": {
+            "multiplier": 1.14
+          }
+        },
+        {
+          "type": "add_stat_delta",
+          "params": {
+            "focus": 3.42
+          }
+        }
+      ],
+      "expire_effects": [],
+      "dispel_pool": "beneficial",
+      "pharmacy_generated": true,
+      "pharmacy_family": "stimulant",
+      "pharmacy_route": "inhale",
+      "pharmacy_potency": "pure",
+      "pharmacy_scope": "systemic",
+      "pharmacy_peak": 1.71
+    },
+    {
+      "buff_id": "buff_pharm_stimulant_inject_pure",
+      "name": "兴奋·注射·纯品",
+      "desc": "精力与体力上冲，出手更快，注意力更集中（注射起效 0 tick，持续 10 tick，峰值 1.9）",
+      "onsetTicks": 0,
+      "durationTicks": 10,
+      "maxStacks": 1,
+      "stacksAddOnApply": 1,
+      "priority": 80,
+      "listenerSide": "self",
+      "consumeMode": "always",
+      "consumeLayersFixed": 0,
+      "applyMode": "always_apply",
+      "triggerEventKind": [
+        "world"
+      ],
+      "triggerEventName": [
+        "tick_advanced"
+      ],
+      "triggerTags": [
+        "time",
+        "tick"
+      ],
+      "effects": [
+        {
+          "type": "survival_delta",
+          "params": {
+            "energy": 2.28,
+            "stamina": 1.52,
+            "fatigue": -1.14
+          }
+        },
+        {
+          "type": "battle_move_speed_multiplier",
+          "params": {
+            "multiplier": 1.15
+          }
+        },
+        {
+          "type": "add_stat_delta",
+          "params": {
+            "focus": 3.8
+          }
+        }
+      ],
+      "expire_effects": [],
+      "dispel_pool": "beneficial",
+      "pharmacy_generated": true,
+      "pharmacy_family": "stimulant",
+      "pharmacy_route": "inject",
+      "pharmacy_potency": "pure",
+      "pharmacy_scope": "systemic",
+      "pharmacy_peak": 1.9
+    },
+    {
+      "buff_id": "buff_pharm_hallucinogen_drink_pure",
+      "name": "致幻·口服·纯品",
+      "desc": "感知扭曲，潜能与实战经验涨得更快，也更容易做错事（口服起效 5 tick，持续 60 tick，峰值 1.52）",
+      "onsetTicks": 5,
+      "durationTicks": 60,
+      "maxStacks": 1,
+      "stacksAddOnApply": 1,
+      "priority": 80,
+      "listenerSide": "self",
+      "consumeMode": "always",
+      "consumeLayersFixed": 0,
+      "applyMode": "always_apply",
+      "triggerEventKind": [
+        "world"
+      ],
+      "triggerEventName": [
+        "tick_advanced"
+      ],
+      "triggerTags": [
+        "time",
+        "tick"
+      ],
+      "effects": [
+        {
+          "type": "battle_potential_gain_multiplier",
+          "params": {
+            "multiplier": 1.23
+          }
+        },
+        {
+          "type": "battle_combat_experience_gain_multiplier",
+          "params": {
+            "multiplier": 1.23
+          }
+        }
+      ],
+      "expire_effects": [],
+      "dispel_pool": "beneficial",
+      "pharmacy_generated": true,
+      "pharmacy_family": "hallucinogen",
+      "pharmacy_route": "drink",
+      "pharmacy_potency": "pure",
+      "pharmacy_scope": "systemic",
+      "pharmacy_peak": 1.52
+    },
+    {
+      "buff_id": "buff_pharm_hallucinogen_inhale_pure",
+      "name": "致幻·吸入·纯品",
+      "desc": "感知扭曲，潜能与实战经验涨得更快，也更容易做错事（吸入起效 2 tick，持续 18 tick，峰值 1.71）",
+      "onsetTicks": 2,
+      "durationTicks": 18,
+      "maxStacks": 1,
+      "stacksAddOnApply": 1,
+      "priority": 80,
+      "listenerSide": "self",
+      "consumeMode": "always",
+      "consumeLayersFixed": 0,
+      "applyMode": "always_apply",
+      "triggerEventKind": [
+        "world"
+      ],
+      "triggerEventName": [
+        "tick_advanced"
+      ],
+      "triggerTags": [
+        "time",
+        "tick"
+      ],
+      "effects": [
+        {
+          "type": "battle_potential_gain_multiplier",
+          "params": {
+            "multiplier": 1.26
+          }
+        },
+        {
+          "type": "battle_combat_experience_gain_multiplier",
+          "params": {
+            "multiplier": 1.26
+          }
+        }
+      ],
+      "expire_effects": [],
+      "dispel_pool": "beneficial",
+      "pharmacy_generated": true,
+      "pharmacy_family": "hallucinogen",
+      "pharmacy_route": "inhale",
+      "pharmacy_potency": "pure",
+      "pharmacy_scope": "systemic",
+      "pharmacy_peak": 1.71
+    },
+    {
+      "buff_id": "buff_pharm_hallucinogen_inject_pure",
+      "name": "致幻·注射·纯品",
+      "desc": "感知扭曲，潜能与实战经验涨得更快，也更容易做错事（注射起效 0 tick，持续 10 tick，峰值 1.9）",
+      "onsetTicks": 0,
+      "durationTicks": 10,
+      "maxStacks": 1,
+      "stacksAddOnApply": 1,
+      "priority": 80,
+      "listenerSide": "self",
+      "consumeMode": "always",
+      "consumeLayersFixed": 0,
+      "applyMode": "always_apply",
+      "triggerEventKind": [
+        "world"
+      ],
+      "triggerEventName": [
+        "tick_advanced"
+      ],
+      "triggerTags": [
+        "time",
+        "tick"
+      ],
+      "effects": [
+        {
+          "type": "battle_potential_gain_multiplier",
+          "params": {
+            "multiplier": 1.28
+          }
+        },
+        {
+          "type": "battle_combat_experience_gain_multiplier",
+          "params": {
+            "multiplier": 1.28
+          }
+        }
+      ],
+      "expire_effects": [],
+      "dispel_pool": "beneficial",
+      "pharmacy_generated": true,
+      "pharmacy_family": "hallucinogen",
+      "pharmacy_route": "inject",
+      "pharmacy_potency": "pure",
+      "pharmacy_scope": "systemic",
+      "pharmacy_peak": 1.9
+    },
+    {
+      "buff_id": "buff_pharm_sedative_drink_pure",
+      "name": "镇静·口服·纯品",
+      "desc": "心情放松，胃口跟着回来（口服起效 5 tick，持续 60 tick，峰值 1.52）",
+      "onsetTicks": 5,
+      "durationTicks": 60,
+      "maxStacks": 1,
+      "stacksAddOnApply": 1,
+      "priority": 80,
+      "listenerSide": "self",
+      "consumeMode": "always",
+      "consumeLayersFixed": 0,
+      "applyMode": "always_apply",
+      "triggerEventKind": [
+        "world"
+      ],
+      "triggerEventName": [
+        "tick_advanced"
+      ],
+      "triggerTags": [
+        "time",
+        "tick"
+      ],
+      "effects": [
+        {
+          "type": "survival_delta",
+          "params": {
+            "mood": 2.28,
+            "nutrition": 0.61
+          }
+        }
+      ],
+      "expire_effects": [],
+      "dispel_pool": "beneficial",
+      "pharmacy_generated": true,
+      "pharmacy_family": "sedative",
+      "pharmacy_route": "drink",
+      "pharmacy_potency": "pure",
+      "pharmacy_scope": "systemic",
+      "pharmacy_peak": 1.52
+    },
+    {
+      "buff_id": "buff_pharm_sedative_inhale_pure",
+      "name": "镇静·吸入·纯品",
+      "desc": "心情放松，胃口跟着回来（吸入起效 2 tick，持续 18 tick，峰值 1.71）",
+      "onsetTicks": 2,
+      "durationTicks": 18,
+      "maxStacks": 1,
+      "stacksAddOnApply": 1,
+      "priority": 80,
+      "listenerSide": "self",
+      "consumeMode": "always",
+      "consumeLayersFixed": 0,
+      "applyMode": "always_apply",
+      "triggerEventKind": [
+        "world"
+      ],
+      "triggerEventName": [
+        "tick_advanced"
+      ],
+      "triggerTags": [
+        "time",
+        "tick"
+      ],
+      "effects": [
+        {
+          "type": "survival_delta",
+          "params": {
+            "mood": 2.57,
+            "nutrition": 0.68
+          }
+        }
+      ],
+      "expire_effects": [],
+      "dispel_pool": "beneficial",
+      "pharmacy_generated": true,
+      "pharmacy_family": "sedative",
+      "pharmacy_route": "inhale",
+      "pharmacy_potency": "pure",
+      "pharmacy_scope": "systemic",
+      "pharmacy_peak": 1.71
+    },
+    {
+      "buff_id": "buff_pharm_sedative_inject_pure",
+      "name": "镇静·注射·纯品",
+      "desc": "心情放松，胃口跟着回来（注射起效 0 tick，持续 10 tick，峰值 1.9）",
+      "onsetTicks": 0,
+      "durationTicks": 10,
+      "maxStacks": 1,
+      "stacksAddOnApply": 1,
+      "priority": 80,
+      "listenerSide": "self",
+      "consumeMode": "always",
+      "consumeLayersFixed": 0,
+      "applyMode": "always_apply",
+      "triggerEventKind": [
+        "world"
+      ],
+      "triggerEventName": [
+        "tick_advanced"
+      ],
+      "triggerTags": [
+        "time",
+        "tick"
+      ],
+      "effects": [
+        {
+          "type": "survival_delta",
+          "params": {
+            "mood": 2.85,
+            "nutrition": 0.76
+          }
+        }
+      ],
+      "expire_effects": [],
+      "dispel_pool": "beneficial",
+      "pharmacy_generated": true,
+      "pharmacy_family": "sedative",
+      "pharmacy_route": "inject",
+      "pharmacy_potency": "pure",
+      "pharmacy_scope": "systemic",
+      "pharmacy_peak": 1.9
+    },
+    {
+      "buff_id": "buff_pharm_analgesic_drink_pure",
+      "name": "镇痛·口服·纯品",
+      "desc": "疼痛被盖住，痛感暂时不生效（药效过后照旧）（口服起效 5 tick，持续 60 tick，峰值 1.52）",
+      "onsetTicks": 5,
+      "durationTicks": 60,
+      "maxStacks": 1,
+      "stacksAddOnApply": 1,
+      "priority": 80,
+      "listenerSide": "self",
+      "consumeMode": "always",
+      "consumeLayersFixed": 0,
+      "applyMode": "always_apply",
+      "triggerEventKind": [
+        "world"
+      ],
+      "triggerEventName": [
+        "tick_advanced"
+      ],
+      "triggerTags": [
+        "time",
+        "tick"
+      ],
+      "effects": [
+        {
+          "type": "pain_suppression",
+          "params": {}
+        }
+      ],
+      "expire_effects": [],
+      "dispel_pool": "beneficial",
+      "pharmacy_generated": true,
+      "pharmacy_family": "analgesic",
+      "pharmacy_route": "drink",
+      "pharmacy_potency": "pure",
+      "pharmacy_scope": "systemic",
+      "pharmacy_peak": 1.52
+    },
+    {
+      "buff_id": "buff_pharm_analgesic_inhale_pure",
+      "name": "镇痛·吸入·纯品",
+      "desc": "疼痛被盖住，痛感暂时不生效（药效过后照旧）（吸入起效 2 tick，持续 18 tick，峰值 1.71）",
+      "onsetTicks": 2,
+      "durationTicks": 18,
+      "maxStacks": 1,
+      "stacksAddOnApply": 1,
+      "priority": 80,
+      "listenerSide": "self",
+      "consumeMode": "always",
+      "consumeLayersFixed": 0,
+      "applyMode": "always_apply",
+      "triggerEventKind": [
+        "world"
+      ],
+      "triggerEventName": [
+        "tick_advanced"
+      ],
+      "triggerTags": [
+        "time",
+        "tick"
+      ],
+      "effects": [
+        {
+          "type": "pain_suppression",
+          "params": {}
+        }
+      ],
+      "expire_effects": [],
+      "dispel_pool": "beneficial",
+      "pharmacy_generated": true,
+      "pharmacy_family": "analgesic",
+      "pharmacy_route": "inhale",
+      "pharmacy_potency": "pure",
+      "pharmacy_scope": "systemic",
+      "pharmacy_peak": 1.71
+    },
+    {
+      "buff_id": "buff_pharm_analgesic_inject_pure",
+      "name": "镇痛·注射·纯品",
+      "desc": "疼痛被盖住，痛感暂时不生效（药效过后照旧）（注射起效 0 tick，持续 10 tick，峰值 1.9）",
+      "onsetTicks": 0,
+      "durationTicks": 10,
+      "maxStacks": 1,
+      "stacksAddOnApply": 1,
+      "priority": 80,
+      "listenerSide": "self",
+      "consumeMode": "always",
+      "consumeLayersFixed": 0,
+      "applyMode": "always_apply",
+      "triggerEventKind": [
+        "world"
+      ],
+      "triggerEventName": [
+        "tick_advanced"
+      ],
+      "triggerTags": [
+        "time",
+        "tick"
+      ],
+      "effects": [
+        {
+          "type": "pain_suppression",
+          "params": {}
+        }
+      ],
+      "expire_effects": [],
+      "dispel_pool": "beneficial",
+      "pharmacy_generated": true,
+      "pharmacy_family": "analgesic",
+      "pharmacy_route": "inject",
+      "pharmacy_potency": "pure",
+      "pharmacy_scope": "systemic",
+      "pharmacy_peak": 1.9
+    },
+    {
+      "buff_id": "buff_pharm_synergist_drink_pure",
+      "name": "增效·口服·纯品",
+      "desc": "放大同一针里其它成分的药效（联合配药时的辅药）（口服起效 5 tick，持续 60 tick，峰值 1.52）",
+      "onsetTicks": 5,
+      "durationTicks": 60,
+      "maxStacks": 1,
+      "stacksAddOnApply": 1,
+      "priority": 80,
+      "listenerSide": "self",
+      "consumeMode": "always",
+      "consumeLayersFixed": 0,
+      "applyMode": "always_apply",
+      "triggerEventKind": [
+        "world"
+      ],
+      "triggerEventName": [
+        "tick_advanced"
+      ],
+      "triggerTags": [
+        "time",
+        "tick"
+      ],
+      "effects": [
+        {
+          "type": "pharmacy_synergy_multiplier",
+          "params": {
+            "multiplier": 1.3
+          }
+        }
+      ],
+      "expire_effects": [],
+      "dispel_pool": "beneficial",
+      "pharmacy_generated": true,
+      "pharmacy_family": "synergist",
+      "pharmacy_route": "drink",
+      "pharmacy_potency": "pure",
+      "pharmacy_scope": "systemic",
+      "pharmacy_peak": 1.52
+    },
+    {
+      "buff_id": "buff_pharm_synergist_inhale_pure",
+      "name": "增效·吸入·纯品",
+      "desc": "放大同一针里其它成分的药效（联合配药时的辅药）（吸入起效 2 tick，持续 18 tick，峰值 1.71）",
+      "onsetTicks": 2,
+      "durationTicks": 18,
+      "maxStacks": 1,
+      "stacksAddOnApply": 1,
+      "priority": 80,
+      "listenerSide": "self",
+      "consumeMode": "always",
+      "consumeLayersFixed": 0,
+      "applyMode": "always_apply",
+      "triggerEventKind": [
+        "world"
+      ],
+      "triggerEventName": [
+        "tick_advanced"
+      ],
+      "triggerTags": [
+        "time",
+        "tick"
+      ],
+      "effects": [
+        {
+          "type": "pharmacy_synergy_multiplier",
+          "params": {
+            "multiplier": 1.34
+          }
+        }
+      ],
+      "expire_effects": [],
+      "dispel_pool": "beneficial",
+      "pharmacy_generated": true,
+      "pharmacy_family": "synergist",
+      "pharmacy_route": "inhale",
+      "pharmacy_potency": "pure",
+      "pharmacy_scope": "systemic",
+      "pharmacy_peak": 1.71
+    },
+    {
+      "buff_id": "buff_pharm_synergist_inject_pure",
+      "name": "增效·注射·纯品",
+      "desc": "放大同一针里其它成分的药效（联合配药时的辅药）（注射起效 0 tick，持续 10 tick，峰值 1.9）",
+      "onsetTicks": 0,
+      "durationTicks": 10,
+      "maxStacks": 1,
+      "stacksAddOnApply": 1,
+      "priority": 80,
+      "listenerSide": "self",
+      "consumeMode": "always",
+      "consumeLayersFixed": 0,
+      "applyMode": "always_apply",
+      "triggerEventKind": [
+        "world"
+      ],
+      "triggerEventName": [
+        "tick_advanced"
+      ],
+      "triggerTags": [
+        "time",
+        "tick"
+      ],
+      "effects": [
+        {
+          "type": "pharmacy_synergy_multiplier",
+          "params": {
+            "multiplier": 1.38
+          }
+        }
+      ],
+      "expire_effects": [],
+      "dispel_pool": "beneficial",
+      "pharmacy_generated": true,
+      "pharmacy_family": "synergist",
+      "pharmacy_route": "inject",
+      "pharmacy_potency": "pure",
+      "pharmacy_scope": "systemic",
+      "pharmacy_peak": 1.9
+    },
+    {
+      "buff_id": "buff_pharm_rehydrate_drink_pure",
+      "name": "补液·口服·纯品",
+      "desc": "把水与体力补回来，脱水时最值钱（口服起效 5 tick，持续 60 tick，峰值 1.52）",
+      "onsetTicks": 5,
+      "durationTicks": 60,
+      "maxStacks": 1,
+      "stacksAddOnApply": 1,
+      "priority": 80,
+      "listenerSide": "self",
+      "consumeMode": "always",
+      "consumeLayersFixed": 0,
+      "applyMode": "always_apply",
+      "triggerEventKind": [
+        "world"
+      ],
+      "triggerEventName": [
+        "tick_advanced"
+      ],
+      "triggerTags": [
+        "time",
+        "tick"
+      ],
+      "effects": [
+        {
+          "type": "survival_delta",
+          "params": {
+            "thirst": 3.8,
+            "stamina": 0.76
+          }
+        }
+      ],
+      "expire_effects": [],
+      "dispel_pool": "beneficial",
+      "pharmacy_generated": true,
+      "pharmacy_family": "rehydrate",
+      "pharmacy_route": "drink",
+      "pharmacy_potency": "pure",
+      "pharmacy_scope": "systemic",
+      "pharmacy_peak": 1.52
+    },
+    {
+      "buff_id": "buff_pharm_rehydrate_inject_pure",
+      "name": "补液·注射·纯品",
+      "desc": "把水与体力补回来，脱水时最值钱（注射起效 0 tick，持续 10 tick，峰值 1.9）",
+      "onsetTicks": 0,
+      "durationTicks": 10,
+      "maxStacks": 1,
+      "stacksAddOnApply": 1,
+      "priority": 80,
+      "listenerSide": "self",
+      "consumeMode": "always",
+      "consumeLayersFixed": 0,
+      "applyMode": "always_apply",
+      "triggerEventKind": [
+        "world"
+      ],
+      "triggerEventName": [
+        "tick_advanced"
+      ],
+      "triggerTags": [
+        "time",
+        "tick"
+      ],
+      "effects": [
+        {
+          "type": "survival_delta",
+          "params": {
+            "thirst": 4.75,
+            "stamina": 0.95
+          }
+        }
+      ],
+      "expire_effects": [],
+      "dispel_pool": "beneficial",
+      "pharmacy_generated": true,
+      "pharmacy_family": "rehydrate",
+      "pharmacy_route": "inject",
+      "pharmacy_potency": "pure",
+      "pharmacy_scope": "systemic",
+      "pharmacy_peak": 1.9
+    },
+    {
+      "buff_id": "buff_pharm_energy_drink_pure",
+      "name": "续航·口服·纯品",
+      "desc": "血糖与精力一起抬起来，饿得慢一点（口服起效 5 tick，持续 60 tick，峰值 1.52）",
+      "onsetTicks": 5,
+      "durationTicks": 60,
+      "maxStacks": 1,
+      "stacksAddOnApply": 1,
+      "priority": 80,
+      "listenerSide": "self",
+      "consumeMode": "always",
+      "consumeLayersFixed": 0,
+      "applyMode": "always_apply",
+      "triggerEventKind": [
+        "world"
+      ],
+      "triggerEventName": [
+        "tick_advanced"
+      ],
+      "triggerTags": [
+        "time",
+        "tick"
+      ],
+      "effects": [
+        {
+          "type": "survival_delta",
+          "params": {
+            "energy": 2.28,
+            "nutrition": 0.91
+          }
+        }
+      ],
+      "expire_effects": [],
+      "dispel_pool": "beneficial",
+      "pharmacy_generated": true,
+      "pharmacy_family": "energy",
+      "pharmacy_route": "drink",
+      "pharmacy_potency": "pure",
+      "pharmacy_scope": "systemic",
+      "pharmacy_peak": 1.52
+    },
+    {
+      "buff_id": "buff_pharm_energy_inhale_pure",
+      "name": "续航·吸入·纯品",
+      "desc": "血糖与精力一起抬起来，饿得慢一点（吸入起效 2 tick，持续 18 tick，峰值 1.71）",
+      "onsetTicks": 2,
+      "durationTicks": 18,
+      "maxStacks": 1,
+      "stacksAddOnApply": 1,
+      "priority": 80,
+      "listenerSide": "self",
+      "consumeMode": "always",
+      "consumeLayersFixed": 0,
+      "applyMode": "always_apply",
+      "triggerEventKind": [
+        "world"
+      ],
+      "triggerEventName": [
+        "tick_advanced"
+      ],
+      "triggerTags": [
+        "time",
+        "tick"
+      ],
+      "effects": [
+        {
+          "type": "survival_delta",
+          "params": {
+            "energy": 2.57,
+            "nutrition": 1.03
+          }
+        }
+      ],
+      "expire_effects": [],
+      "dispel_pool": "beneficial",
+      "pharmacy_generated": true,
+      "pharmacy_family": "energy",
+      "pharmacy_route": "inhale",
+      "pharmacy_potency": "pure",
+      "pharmacy_scope": "systemic",
+      "pharmacy_peak": 1.71
+    },
+    {
+      "buff_id": "buff_pharm_energy_inject_pure",
+      "name": "续航·注射·纯品",
+      "desc": "血糖与精力一起抬起来，饿得慢一点（注射起效 0 tick，持续 10 tick，峰值 1.9）",
+      "onsetTicks": 0,
+      "durationTicks": 10,
+      "maxStacks": 1,
+      "stacksAddOnApply": 1,
+      "priority": 80,
+      "listenerSide": "self",
+      "consumeMode": "always",
+      "consumeLayersFixed": 0,
+      "applyMode": "always_apply",
+      "triggerEventKind": [
+        "world"
+      ],
+      "triggerEventName": [
+        "tick_advanced"
+      ],
+      "triggerTags": [
+        "time",
+        "tick"
+      ],
+      "effects": [
+        {
+          "type": "survival_delta",
+          "params": {
+            "energy": 2.85,
+            "nutrition": 1.14
+          }
+        }
+      ],
+      "expire_effects": [],
+      "dispel_pool": "beneficial",
+      "pharmacy_generated": true,
+      "pharmacy_family": "energy",
+      "pharmacy_route": "inject",
+      "pharmacy_potency": "pure",
+      "pharmacy_scope": "systemic",
+      "pharmacy_peak": 1.9
+    },
+    {
+      "buff_id": "buff_pharm_revive_inject_pure",
+      "name": "复苏·注射·纯品",
+      "desc": "强心吊命：把昏迷/濒死的人往回拉一点（注射起效 0 tick，持续 10 tick，峰值 1.9）",
+      "onsetTicks": 0,
+      "durationTicks": 10,
+      "maxStacks": 1,
+      "stacksAddOnApply": 1,
+      "priority": 80,
+      "listenerSide": "self",
+      "consumeMode": "always",
+      "consumeLayersFixed": 0,
+      "applyMode": "always_apply",
+      "triggerEventKind": [
+        "world"
+      ],
+      "triggerEventName": [
+        "tick_advanced"
+      ],
+      "triggerTags": [
+        "time",
+        "tick"
+      ],
+      "effects": [
+        {
+          "type": "pharmacy_revive",
+          "params": {
+            "stamina_ratio": 0.28,
+            "energy_ratio": 0.28
+          }
+        },
+        {
+          "type": "survival_delta",
+          "params": {
+            "stamina": 0.95
+          }
+        }
+      ],
+      "expire_effects": [],
+      "dispel_pool": "beneficial",
+      "pharmacy_generated": true,
+      "pharmacy_family": "revive",
+      "pharmacy_route": "inject",
+      "pharmacy_potency": "pure",
+      "pharmacy_scope": "systemic",
+      "pharmacy_peak": 1.9
+    },
+    {
+      "buff_id": "buff_pharm_coagulant_topical_pure",
+      "name": "凝血·外敷·纯品",
+      "desc": "让血止得快一些（异常状态流血实装后生效）（外敷起效 3 tick，持续 90 tick，峰值 1.33）",
+      "onsetTicks": 3,
+      "durationTicks": 90,
+      "maxStacks": 1,
+      "stacksAddOnApply": 1,
+      "priority": 80,
+      "listenerSide": "self",
+      "consumeMode": "always",
+      "consumeLayersFixed": 0,
+      "applyMode": "always_apply",
+      "triggerEventKind": [
+        "world"
+      ],
+      "triggerEventName": [
+        "tick_advanced"
+      ],
+      "triggerTags": [
+        "time",
+        "tick"
+      ],
+      "effects": [
+        {
+          "type": "pharmacy_bleeding_slow",
+          "params": {
+            "bleed_slow_pct": 0.67
+          }
+        }
+      ],
+      "expire_effects": [],
+      "dispel_pool": "beneficial",
+      "pharmacy_generated": true,
+      "pharmacy_family": "coagulant",
+      "pharmacy_route": "topical",
+      "pharmacy_potency": "pure",
+      "pharmacy_scope": "part",
+      "pharmacy_peak": 1.33
+    },
+    {
+      "buff_id": "buff_pharm_coagulant_inject_pure",
+      "name": "凝血·注射·纯品",
+      "desc": "让血止得快一些（异常状态流血实装后生效）（注射起效 0 tick，持续 10 tick，峰值 1.9）",
+      "onsetTicks": 0,
+      "durationTicks": 10,
+      "maxStacks": 1,
+      "stacksAddOnApply": 1,
+      "priority": 80,
+      "listenerSide": "self",
+      "consumeMode": "always",
+      "consumeLayersFixed": 0,
+      "applyMode": "always_apply",
+      "triggerEventKind": [
+        "world"
+      ],
+      "triggerEventName": [
+        "tick_advanced"
+      ],
+      "triggerTags": [
+        "time",
+        "tick"
+      ],
+      "effects": [
+        {
+          "type": "pharmacy_bleeding_slow",
+          "params": {
+            "bleed_slow_pct": 0.95
+          }
+        }
+      ],
+      "expire_effects": [],
+      "dispel_pool": "beneficial",
+      "pharmacy_generated": true,
+      "pharmacy_family": "coagulant",
+      "pharmacy_route": "inject",
+      "pharmacy_potency": "pure",
+      "pharmacy_scope": "systemic",
+      "pharmacy_peak": 1.9
+    },
+    {
+      "buff_id": "buff_pharm_antistun_drink_pure",
+      "name": "醒神·口服·纯品",
+      "desc": "战前打一针，眩晕抗性窗口打开（口服起效 5 tick，持续 60 tick，峰值 1.52）",
+      "onsetTicks": 5,
+      "durationTicks": 60,
+      "maxStacks": 1,
+      "stacksAddOnApply": 1,
+      "priority": 80,
+      "listenerSide": "self",
+      "consumeMode": "always",
+      "consumeLayersFixed": 0,
+      "applyMode": "always_apply",
+      "triggerEventKind": [
+        "world"
+      ],
+      "triggerEventName": [
+        "tick_advanced"
+      ],
+      "triggerTags": [
+        "time",
+        "tick"
+      ],
+      "effects": [
+        {
+          "type": "pharmacy_anti_stun",
+          "params": {
+            "anti_stun_pct": 0.46
+          }
+        }
+      ],
+      "expire_effects": [],
+      "dispel_pool": "beneficial",
+      "pharmacy_generated": true,
+      "pharmacy_family": "antistun",
+      "pharmacy_route": "drink",
+      "pharmacy_potency": "pure",
+      "pharmacy_scope": "systemic",
+      "pharmacy_peak": 1.52
+    },
+    {
+      "buff_id": "buff_pharm_antistun_inject_pure",
+      "name": "醒神·注射·纯品",
+      "desc": "战前打一针，眩晕抗性窗口打开（注射起效 0 tick，持续 10 tick，峰值 1.9）",
+      "onsetTicks": 0,
+      "durationTicks": 10,
+      "maxStacks": 1,
+      "stacksAddOnApply": 1,
+      "priority": 80,
+      "listenerSide": "self",
+      "consumeMode": "always",
+      "consumeLayersFixed": 0,
+      "applyMode": "always_apply",
+      "triggerEventKind": [
+        "world"
+      ],
+      "triggerEventName": [
+        "tick_advanced"
+      ],
+      "triggerTags": [
+        "time",
+        "tick"
+      ],
+      "effects": [
+        {
+          "type": "pharmacy_anti_stun",
+          "params": {
+            "anti_stun_pct": 0.57
+          }
+        }
+      ],
+      "expire_effects": [],
+      "dispel_pool": "beneficial",
+      "pharmacy_generated": true,
+      "pharmacy_family": "antistun",
+      "pharmacy_route": "inject",
+      "pharmacy_potency": "pure",
+      "pharmacy_scope": "systemic",
+      "pharmacy_peak": 1.9
+    },
+    {
+      "buff_id": "buff_pharm_strength_drink_pure",
+      "name": "续力·口服·纯品",
+      "desc": "筋骨一紧，负重与发力都往上抬（口服起效 5 tick，持续 60 tick，峰值 1.52）",
+      "onsetTicks": 5,
+      "durationTicks": 60,
+      "maxStacks": 1,
+      "stacksAddOnApply": 1,
+      "priority": 80,
+      "listenerSide": "self",
+      "consumeMode": "always",
+      "consumeLayersFixed": 0,
+      "applyMode": "always_apply",
+      "triggerEventKind": [
+        "world"
+      ],
+      "triggerEventName": [
+        "tick_advanced"
+      ],
+      "triggerTags": [
+        "time",
+        "tick"
+      ],
+      "effects": [
+        {
+          "type": "add_stat_delta",
+          "params": {
+            "jingu": 4.56
+          }
+        }
+      ],
+      "expire_effects": [],
+      "dispel_pool": "beneficial",
+      "pharmacy_generated": true,
+      "pharmacy_family": "strength",
+      "pharmacy_route": "drink",
+      "pharmacy_potency": "pure",
+      "pharmacy_scope": "systemic",
+      "pharmacy_peak": 1.52
+    },
+    {
+      "buff_id": "buff_pharm_strength_inject_pure",
+      "name": "续力·注射·纯品",
+      "desc": "筋骨一紧，负重与发力都往上抬（注射起效 0 tick，持续 10 tick，峰值 1.9）",
+      "onsetTicks": 0,
+      "durationTicks": 10,
+      "maxStacks": 1,
+      "stacksAddOnApply": 1,
+      "priority": 80,
+      "listenerSide": "self",
+      "consumeMode": "always",
+      "consumeLayersFixed": 0,
+      "applyMode": "always_apply",
+      "triggerEventKind": [
+        "world"
+      ],
+      "triggerEventName": [
+        "tick_advanced"
+      ],
+      "triggerTags": [
+        "time",
+        "tick"
+      ],
+      "effects": [
+        {
+          "type": "add_stat_delta",
+          "params": {
+            "jingu": 5.7
+          }
+        }
+      ],
+      "expire_effects": [],
+      "dispel_pool": "beneficial",
+      "pharmacy_generated": true,
+      "pharmacy_family": "strength",
+      "pharmacy_route": "inject",
+      "pharmacy_potency": "pure",
+      "pharmacy_scope": "systemic",
+      "pharmacy_peak": 1.9
+    },
+    {
+      "buff_id": "buff_pharm_mobility_topical_pure",
+      "name": "活络·外敷·纯品",
+      "desc": "敷在伤处，手脚的失能恢复更快（部位唯一能治的途径）（外敷起效 3 tick，持续 90 tick，峰值 1.33）",
+      "onsetTicks": 3,
+      "durationTicks": 90,
+      "maxStacks": 1,
+      "stacksAddOnApply": 1,
+      "priority": 80,
+      "listenerSide": "self",
+      "consumeMode": "always",
+      "consumeLayersFixed": 0,
+      "applyMode": "always_apply",
+      "triggerEventKind": [
+        "world"
+      ],
+      "triggerEventName": [
+        "tick_advanced"
+      ],
+      "triggerTags": [
+        "time",
+        "tick"
+      ],
+      "effects": [
+        {
+          "type": "pharmacy_part_recovery",
+          "params": {
+            "recovery_multiplier": 1.67
+          }
+        }
+      ],
+      "expire_effects": [],
+      "dispel_pool": "beneficial",
+      "pharmacy_generated": true,
+      "pharmacy_family": "mobility",
+      "pharmacy_route": "topical",
+      "pharmacy_potency": "pure",
+      "pharmacy_scope": "part",
+      "pharmacy_peak": 1.33
     }
   ]
 }
