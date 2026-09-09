@@ -223,18 +223,14 @@ assert.strictEqual(IU.takeLastUseFailure().reason, 'needs_inject_kit');
 sandbox.InventoryHelpers.getInventoryCountByItemId = (id) => (id === 'tool_syringe_pharmacy' ? 1 : 0);
 assert.strictEqual(IU.applyItemUseEffectFromTemplate('inj3', { use_action: 'inject', use_buff_id: 'buff_b' }), true);
 assert(cfg.pharmacy_inject_kit_item_ids.length >= 1, '配置表应落注射器具 id（k244）');
-assert(cfg.pharmacy_inhale_igniter_item_ids.length >= 1, '配置表应落吸入火源 id');
+assert(cfg.pharmacy_inhale_igniter_item_ids == null, '吸入不再需要火源（2026-09 裁决，配置键已移除）');
 PS.setConfig({ systemConfig: cfg });
 ok('刺入：清单为空放行 / 缺器具 → needs_inject_kit / 有器具放行（k244 器具 id 已落配置）');
 
-// 吸入：需火源
-PS.setConfig({ systemConfig: Object.assign({}, cfg, { pharmacy_inhale_igniter_item_ids: ['supply_flint_fire'] }) });
+// 吸入：不需火源（裁决）——背包里什么都没有也能吸
 sandbox.InventoryHelpers.getInventoryCountByItemId = () => 0;
-assert.strictEqual(IU.applyItemUseEffectFromTemplate('inh1', { use_action: 'inhale', use_buff_id: 'buff_c' }), false);
-assert.strictEqual(IU.takeLastUseFailure().reason, 'needs_igniter');
-sandbox.InventoryHelpers.getInventoryCountByItemId = (id) => (id === 'supply_flint_fire' ? 1 : 0);
-assert.strictEqual(IU.applyItemUseEffectFromTemplate('inh2', { use_action: 'inhale', use_buff_id: 'buff_c' }), true);
-ok('吸入：缺火源 → needs_igniter / 有火源放行');
+assert.strictEqual(IU.applyItemUseEffectFromTemplate('inh1', { use_action: 'inhale', use_buff_id: 'buff_c' }), true);
+ok('吸入不需火源：无任何点火物也可用');
 
 // 白名单：途径被配置裁掉后拒绝
 PS.setConfig({ systemConfig: Object.assign({}, cfg, { pharmacy_use_routes: ['drink'] }) });
@@ -741,5 +737,41 @@ assert.strictEqual(cigRecipe.method_id, 'life_pharmacy.rolling', '提神药烟�
 const uiT = loadJson('data/ui_text_zhCN.json');
 assert(uiT['pharmacy.method.blending'] && uiT['pharmacy.method.rolling'], '调和 / 卷制显示名已配');
 ok('新 method（调和 / 卷制）+ 配件物品 + 配方切换');
+
+console.log('\n⑮ 2026-09 裁决落地（仅自己 / 吸入免火源 / 维生素C 两形态 / 制药水口径）');
+// 给药对象永久仅自己：药效入口只认 player
+assert(readText('js/item-use.js').includes("applyBuff('player'"), '药效只作用于 player（无他人用药通道）');
+assert(!/applyBuff\(['"](?!player)/.test(readText('js/item-use.js')), 'item-use 无其它 owner 的用药调用');
+// 吸入免火源：配置与代码都不再有火源门槛
+assert(!readText('data/pharmacy-system-config.csv').includes('inhale_igniter'), '配置表已移除火源键');
+assert(!readText('js/item-use.js').includes('needs_igniter'), '代码已移除火源门槛');
+assert(!uiText['item.use.fail.needs_igniter'], '文案已移除火源提示');
+ok('吸入免火源 + 给药对象仅自己（无他人用药调用）');
+
+// 维生素C 两形态：辅成分（抵消毒性、参与相冲） vs 助剂（成盐助溶、不相冲不抵消）
+const vitC = items.med_vitamin_c_powder;
+const vitCAdj = items.adj_vitamin_c;
+assert.strictEqual(vitC.sub_category, 'pharm_powder');
+assert.strictEqual(vitC.pharm_toxicity, -15, '辅成分形态保留 −15 抵消');
+assert.strictEqual(vitC.chem_class, 'organic_acid', '辅成分形态带化学身份（参与相冲）');
+assert.strictEqual(vitCAdj.sub_category, 'pharm_adjuvant');
+assert(vitCAdj.pharm_toxicity == null, '助剂形态不带毒性（不抵消）');
+assert(vitCAdj.chem_class == null, '助剂形态不参与相冲');
+const withVitC = PCC.resolve([SOLVENT, { item_id: 'med_cocaine_powder', count: 1 }, { item_id: 'med_vitamin_c_powder', count: 1 }]);
+assert.strictEqual(withVitC.conflicts.length, 1, '辅成分形态 + 生物碱 → 相冲');
+assert(Math.abs(withVitC.base_toxicity - 70) < 0.01 && withVitC.net_toxicity < 70, '辅成分形态抵消主药毒性');
+const withAdj = PCC.resolve([SOLVENT, { item_id: 'med_cocaine_powder', count: 1 }, { item_id: 'adj_vitamin_c', count: 1 }]);
+assert.strictEqual(withAdj.conflicts.length, 0, '助剂形态不参与相冲');
+assert(Math.abs(withAdj.net_toxicity - 70) < 0.01, '助剂形态不抵消毒性（净毒性仍 70）');
+ok('维生素C 两形态分工：辅成分抵消/可相冲 vs 助剂助溶/不相冲不抵消');
+
+// 制药水口径：纯净水 = 制药溶媒（配药底液 + 配方用水）；纯净软水留给烹饪
+const pureRecipes = Object.keys(recipesDoc.recipes)
+  .filter((k) => recipesDoc.recipes[k].recipe_system === 'life_pharmacy')
+  .filter((k) => (recipesDoc.recipes[k].inputs || []).some((i) => i.item_id === 'ore_water_pure_soft'));
+assert.strictEqual(pureRecipes.length, 0, '制药配方不再使用烹饪水（纯净软水）：' + pureRecipes.join(','));
+assert.strictEqual(PCC.classifyItem('solvent_water_pure'), 'solvent', '纯净水是配药溶媒');
+assert(PCC.getConcentrationInfo([{ item_id: 'solvent_water_pure', count: 1 }, { item_id: 'med_cocaine_powder', count: 1 }]).used === 35, '溶媒不占浓度');
+ok('制药水口径：纯净水=溶媒（不占浓度）/ 纯净软水=烹饪水');
 
 console.log('\n[smoke-pharmacy] ' + pass + ' 组断言全部通过');

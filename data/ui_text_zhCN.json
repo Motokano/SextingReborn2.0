@@ -865,7 +865,6 @@
   "item.use.charges_left": "（还剩 {n} 次）",
   "item.use.fail.needs_part": "外敷需要先选择部位。",
   "item.use.fail.bad_part": "部位无效，无法外敷。",
-  "item.use.fail.needs_igniter": "吸入需要火源，你手上没有可点火的东西。",
   "item.use.fail.needs_inject_kit": "注射需要器具（注射器或输液器）。",
   "item.use.fail.already_active": "同样的药效还在生效，不能重复使用。",
   "item.use.fail.route_not_allowed": "这种给药方式暂时用不了。",

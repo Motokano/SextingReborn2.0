@@ -8168,7 +8168,6 @@
         switch (String(reason || '')) {
             case 'needs_part': return 'item.use.fail.needs_part';
             case 'bad_part': return 'item.use.fail.bad_part';
-            case 'needs_igniter': return 'item.use.fail.needs_igniter';
             case 'needs_inject_kit': return 'item.use.fail.needs_inject_kit';
             case 'already_active': return 'item.use.fail.already_active';
             case 'route_not_allowed': return 'item.use.fail.route_not_allowed';

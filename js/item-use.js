@@ -75,13 +75,12 @@
         return USE_ACTION_IDS.indexOf(rid) >= 0;
     }
 
-    /** 从配置读取「某途径所需的物品 id 列表」（空表 = 暂不校验）。 */
+    /** 从配置读取「某途径所需的物品 id 列表」（空表 = 不校验）。吸入不需火源（2026-09 裁决）。 */
     function getRequiredItemIdsForRoute(routeId) {
         var PS = global.PharmacyStation;
         var cfg = (PS && typeof PS.getSystemConfig === 'function') ? PS.getSystemConfig() : null;
         if (!cfg) return [];
-        var key = routeId === 'inhale' ? 'pharmacy_inhale_igniter_item_ids'
-            : (routeId === 'inject' ? 'pharmacy_inject_kit_item_ids' : '');
+        var key = (routeId === 'inject') ? 'pharmacy_inject_kit_item_ids' : '';
         if (!key) return [];
         var list = cfg[key];
         return Array.isArray(list) ? list : [];
@@ -196,9 +195,6 @@
             partId = options.part_id != null ? String(options.part_id).trim() : '';
             if (!partId) return failUse('needs_part');
             if (BODY_PART_IDS.indexOf(partId) < 0) return failUse('bad_part', partId);
-        }
-        if (rid === 'inhale') {
-            if (!hasAnyItemInInventory(getRequiredItemIdsForRoute('inhale'))) return failUse('needs_igniter');
         }
         if (rid === 'inject') {
             if (!hasAnyItemInInventory(getRequiredItemIdsForRoute('inject'))) return failUse('needs_inject_kit');

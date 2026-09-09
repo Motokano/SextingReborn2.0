@@ -1386,7 +1386,7 @@
           "count": 1
         },
         {
-          "item_id": "ore_water_pure_soft",
+          "item_id": "solvent_water_pure",
           "count": 1
         }
       ],
@@ -1416,7 +1416,7 @@
           "count": 1
         },
         {
-          "item_id": "ore_water_pure_soft",
+          "item_id": "solvent_water_pure",
           "count": 1
         }
       ],
@@ -1446,7 +1446,7 @@
           "count": 1
         },
         {
-          "item_id": "ore_water_pure_soft",
+          "item_id": "solvent_water_pure",
           "count": 1
         }
       ],

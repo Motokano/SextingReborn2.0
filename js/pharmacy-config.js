@@ -115,7 +115,7 @@
      * 派生字段：pharmacy_skill_curve / pharmacy_use_routes / pharmacy_addiction_gain /
      *           pharmacy_addiction_stage_thresholds / pharmacy_addiction_stage_penalties /
      *           pharmacy_potency_thresholds / pharmacy_toxicity_band_thresholds /
-     *           pharmacy_inhale_igniter_item_ids / pharmacy_inject_kit_item_ids /
+     *           pharmacy_inject_kit_item_ids /
      *           pharmacy_concentration_capacity / pharmacy_offset_rate_cap / ...
      */
     function normalize(raw) {
@@ -142,7 +142,6 @@
             proficiency_usage_key: asText(kv.pharmacy_proficiency_usage_key) || DEFAULTS.pharmacy_proficiency_usage_key
         };
         out.pharmacy_use_routes = toList(kv.pharmacy_use_routes, DEFAULTS.pharmacy_use_routes);
-        out.pharmacy_inhale_igniter_item_ids = toList(kv.pharmacy_inhale_igniter_item_ids, '');
         out.pharmacy_inject_kit_item_ids = toList(kv.pharmacy_inject_kit_item_ids, '');
         out.pharmacy_addiction_gain = {
             topical: toNumber(kv.pharmacy_addiction_gain_topical, DEFAULTS.pharmacy_addiction_gain_topical),
