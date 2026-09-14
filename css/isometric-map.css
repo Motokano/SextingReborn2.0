@@ -1,0 +1,113 @@
+.player-pawn-visual { display: none; }
+
+.map-view-isometric #map-container {
+    background:
+        radial-gradient(ellipse at 50% 58%, rgba(112, 82, 58, .12), transparent 54%),
+        #211c19;
+}
+
+.map-view-isometric #player-sprite {
+    width: 144px;
+    height: 102px;
+    align-items: initial;
+}
+
+.map-view-isometric #player-sprite .avatar { display: none; }
+
+.map-view-isometric .player-pawn-visual {
+    display: block;
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 48px;
+    height: 62px;
+    transform: translate(-50%, -52px);
+    z-index: 2;
+}
+
+.map-view-isometric .player-pawn-visual::before {
+    content: "";
+    position: absolute;
+    left: 50%;
+    bottom: -2px;
+    width: 46px;
+    height: 12px;
+    transform: translateX(-50%);
+    border-radius: 50%;
+    background: radial-gradient(ellipse, rgba(5, 4, 3, .72) 0 42%, rgba(5, 4, 3, .34) 64%, transparent 78%);
+    filter: blur(.6px);
+    z-index: -1;
+}
+
+.player-pawn-visual > span { position: absolute; display: block; left: 50%; }
+.player-pawn-visual .pawn-head {
+    top: 0;
+    width: 17px;
+    height: 17px;
+    transform: translateX(-50%);
+    border: 2px solid #3a2611;
+    border-radius: 50%;
+    background: #f1bd52;
+}
+.player-pawn-visual .pawn-body {
+    top: 14px;
+    width: 28px;
+    height: 36px;
+    transform: translateX(-50%);
+    border: 2px solid #3a2611;
+    border-radius: 45% 45% 26% 26%;
+    background: linear-gradient(90deg, #b86d20, #f1bd52 48%, #a75c1a);
+    clip-path: polygon(35% 0, 65% 0, 100% 100%, 0 100%);
+}
+.player-pawn-visual .pawn-base {
+    bottom: 0;
+    width: 42px;
+    height: 15px;
+    transform: translateX(-50%);
+    border: 2px solid #3a2611;
+    border-radius: 50%;
+    background: linear-gradient(#f5c961 8%, #d88726 52%, #87420f 100%);
+    box-shadow: inset 0 -2px 0 rgba(45, 20, 5, .72), 0 1px 0 rgba(0, 0, 0, .5);
+}
+
+.map-view-isometric #player-direction-indicator {
+    width: 104px;
+    height: 99px;
+    top: 50%;
+    z-index: 1;
+}
+
+.map-view-isometric #player-sprite .hunger-tile {
+    width: 140px;
+    height: 99px;
+    inset: auto;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    clip-path: polygon(50% 0, 100% 50%, 50% 100%, 0 50%);
+    border-radius: 0;
+    z-index: 0;
+}
+
+.map-view-isometric #player-action-bubble {
+    transform: translate(-50%, calc(-50% - 116px));
+}
+
+.map-view-control {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin: 8px 6px;
+    color: #e5d6bd;
+    font-size: 13px;
+}
+.map-view-control select {
+    min-width: 132px;
+    background: #35291c;
+    color: #ffe2ac;
+    border: 1px solid #947346;
+    border-radius: 4px;
+    padding: 5px;
+}
+

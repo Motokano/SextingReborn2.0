@@ -441,9 +441,13 @@
     function updatePlayerDirectionIndicator() {
         var el = document.getElementById('player-direction-indicator');
         if (!el) return;
-        var deg = normalizeFacingDir(currentFacingDir) * 45;
+        var deg = window.MapProjection && typeof window.MapProjection.directionAngleDeg === 'function'
+            ? window.MapProjection.directionAngleDeg(currentFacingDir)
+            : normalizeFacingDir(currentFacingDir) * 45;
         el.style.transform = 'translate(-50%, -50%) rotate(' + deg + 'deg)';
     }
+
+    window.addEventListener('mapviewchange', updatePlayerDirectionIndicator);
 
     function normalizeFacingDir(v) {
         var n = Number(v);
@@ -494,6 +498,8 @@
         currentFacing = facingDirToCardinal(currentFacingDir);
         updatePlayerAvatarImage();
         updatePlayerDirectionIndicator();
+        // 朝向变化会改变整片格的视野揭示/遮挡；原地转向也要触发一次重绘（SceneRenderer.render 内检测朝向变化会整层重画）。
+        try { render(); } catch (eFacingRender) { /* 场景尚未就绪时静默 */ }
         return currentFacingDir;
     }
 
@@ -7201,6 +7207,8 @@
         html += '<button type="button" class="uwm-btn" id="uwm-reset">' + ui('ui.windows.reset') + '</button>';
         menu.innerHTML = html;
 
+        if (window.MapProjection) window.MapProjection.mountControl(menu);
+
         var rows = menu.querySelectorAll('.uwm-row[data-win-id]');
         for (var j = 0; j < rows.length; j++) {
             (function (row) {
@@ -7455,6 +7463,20 @@
             });
             if (window.GameLog) window.GameLog.log(ui('log.system.enter.scene'), 'system');
             window.SceneCtx.actions = window.SceneCtx.actions || {};
+            window.SceneCtx.actions.turnToward = function (dx, dy) {
+                if (isStoryMovementLocked()) return false;
+                if (guardPlayerComaBlocked()) return false;
+                if (guardPlayerActionBlocked(ACTION_TYPES.MOVE)) return false;
+                var ddx = Math.sign(Number(dx) || 0);
+                var ddy = Math.sign(Number(dy) || 0);
+                if (!ddx && !ddy) return false;
+                setFacingFromMove(ddx, ddy);
+                stopGatheringIdle();
+                // The current formal rules do not charge time for an in-place facing change.
+                // Keep that behavior here instead of inventing a new world tick cost.
+                if (window.SceneRenderer && typeof window.SceneRenderer.render === 'function') window.SceneRenderer.render();
+                return true;
+            };
             window.SceneCtx.actions.tryMoveTo = function (tx, ty, dx, dy) {
                 if (isStoryMovementLocked()) return;
                 if (guardPlayerComaBlocked()) return;

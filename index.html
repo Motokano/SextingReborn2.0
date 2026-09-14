@@ -3321,7 +3321,6 @@
         #modal-livestock .product-row .lv-btn-dim { opacity: 0.45; }
 
     </style>
-    <link rel="stylesheet" href="css/agriculture-overview.css">
 <style>
         /* 牧场总览与日常收获：状态与空间分离 */
         #modal-livestock button.tab-btn { border: 0; border-left: 3px solid transparent; background: transparent; font-family: inherit; }
@@ -3479,6 +3478,9 @@
             <div id="map-grid"></div>
             <div id="player-sprite">
                 <div id="player-direction-indicator"></div>
+                <div class="player-pawn-visual" aria-hidden="true">
+                    <span class="pawn-head"></span><span class="pawn-body"></span><span class="pawn-base"></span>
+                </div>
                 <div class="avatar" id="player-avatar">
                     <img id="player-avatar-img" class="avatar-img" src="" alt="">
                     <span class="avatar-fallback">👤</span>
@@ -4277,11 +4279,9 @@
     <script src="js/game-log.js"></script>
     <script src="js/game-time.js"></script>
     <script src="js/npc-system.js"></script>
-    <script src="js/food-metabolism.js"></script>
     <script src="js/survival.js"></script>
     <script src="js/character-attributes.js"></script>
     <script src="js/inventory-equipment.js"></script>
-    <script src="js/combat-damage.js"></script>
     <script src="js/combat-skills.js"></script>
     <script src="js/combat-hub-actions.js"></script>
     <script src="js/combat-parry.js"></script>
@@ -4292,7 +4292,6 @@
     <script src="js/combat-pipeline.js"></script>
     <script src="js/convert-rules.js"></script>
     <script src="js/combat-enemies.js"></script>
-    <script src="js/combat-engagement.js"></script>
     <script src="js/combat-melee-resolve.js"></script>
     
     <script src="js/muscles.js"></script>
@@ -4305,7 +4304,6 @@
     <script src="js/agriculture-map.js"></script>
     <script src="js/agriculture-config.js"></script>
     <script src="js/agriculture-player-items.js"></script>
-    <script src="js/agriculture-overview.js"></script>
     <script src="js/agriculture-panel.js"></script>
     <script src="js/hideout-warehouse.js"></script>
     <script src="js/hideout-warehouse-panel.js"></script>
@@ -4336,6 +4334,7 @@
     <script src="js/item-use.js"></script>
     <script src="js/scene-ui.js"></script>
     <script src="js/scene-hud.js"></script>
+    <link rel="stylesheet" href="css/isometric-map.css">
     <script src="js/scene-app.js"></script>
     <script src="js/bootstrap.js"></script>
     <script src="js/debug-hash-router.js"></script>
