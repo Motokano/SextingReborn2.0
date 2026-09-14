@@ -562,6 +562,8 @@
         if (!mods.GameTime || !mods.GameEngine || !mods.CharacterAttributes || !mods.Survival || !mods.InventoryEquipment) return false;
 
         // Time first: buff expiration is tick-based.
+        // Validate livestock before mutating any other game subsystem.
+        if (global.LivestockState && typeof global.LivestockState.validateState === 'function' && !global.LivestockState.validateState(snapshot.livestock).ok) return false;
         if (typeof mods.GameTime.reset === 'function') {
             mods.GameTime.reset({ totalTicks: snapshot.time.totalTicks });
         }
@@ -632,9 +634,7 @@
         applyHideoutWarehouseFromSnapshot(snapshot);
 
         if (global.LivestockState && typeof global.LivestockState.setState === 'function') {
-            if (snapshot.livestock && typeof snapshot.livestock === 'object') {
-                try { global.LivestockState.setState(snapshot.livestock); } catch (eLs) { /* ignore */ }
-            }
+            global.LivestockState.setState(snapshot.livestock || null);
         }
 
         if (global.SceneCtx && snapshot.player && snapshot.player.sceneUi) {

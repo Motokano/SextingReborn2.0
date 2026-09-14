@@ -258,6 +258,32 @@
         { "item_id": "herb_lemon", "count": 1 }
       ],
       "output_item_id": "food_dish_mustard_beef_tongue"
+    },
+    {
+      "recipe_id": "cook_livestock_cured_pork_chop",
+      "required_method": "pickle_salt",
+      "inputs": [
+        { "item_id": "hus_pork_chop", "count": 1 },
+        { "item_id": "ore_salt_sea_coarse", "count": 1 },
+        { "item_id": "herb_rosemary", "count": 1 },
+        { "item_id": "herb_thyme", "count": 1 },
+        { "item_id": "herb_garlic", "count": 1 }
+      ],
+      "output_item_id": "food_dish_herb_cured_pork_slices",
+      "output_count": 3
+    },
+    {
+      "recipe_id": "cook_livestock_cured_pork_ground",
+      "required_method": "pickle_salt",
+      "inputs": [
+        { "item_id": "hus_pork_meat_ground", "count": 1 },
+        { "item_id": "ore_salt_sea_coarse", "count": 1 },
+        { "item_id": "herb_rosemary", "count": 1 },
+        { "item_id": "herb_thyme", "count": 1 },
+        { "item_id": "herb_garlic", "count": 1 }
+      ],
+      "output_item_id": "food_dish_herb_cured_pork_slices",
+      "output_count": 1
     }
   ]
 }

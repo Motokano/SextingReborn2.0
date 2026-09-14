@@ -1474,7 +1474,7 @@
     "tags": "food;consumable;cook;cooked",
     "source": "cook",
     "production_lines": "cook",
-    "spoilage_ticks": 3600,
+    "spoilage_ticks": 12960,
     "price_class": "material",
     "volatility": "mid",
     "region_restrict": 0,

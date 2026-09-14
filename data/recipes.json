@@ -2828,6 +2828,88 @@
       "allowed_station_tags": null,
       "match_weight": 1,
       "pharmacy_generated": true
+    },
+    "life_cooking.cook_livestock_cured_pork_chop": {
+      "recipe_id": "life_cooking.cook_livestock_cured_pork_chop",
+      "recipe_system": "life_cooking",
+      "method_id": "life_cooking.pickle_salt",
+      "enabled": true,
+      "inputs": [
+        {
+          "item_id": "hus_pork_chop",
+          "count": 1
+        },
+        {
+          "item_id": "ore_salt_sea_coarse",
+          "count": 1
+        },
+        {
+          "item_id": "herb_rosemary",
+          "count": 1
+        },
+        {
+          "item_id": "herb_thyme",
+          "count": 1
+        },
+        {
+          "item_id": "herb_garlic",
+          "count": 1
+        }
+      ],
+      "main_output": {
+        "item_id": "food_dish_herb_cured_pork_slices",
+        "count": 3
+      },
+      "bonus_outputs": [],
+      "required_skill_level_min": 1,
+      "proficiency_usage_key": "life_cooking.cook_livestock_cured_pork_chop",
+      "required_skill_id": null,
+      "recipe_processor_id": null,
+      "base_success_rate": null,
+      "failure_output": null,
+      "allowed_station_tags": null,
+      "match_weight": 1
+    },
+    "life_cooking.cook_livestock_cured_pork_ground": {
+      "recipe_id": "life_cooking.cook_livestock_cured_pork_ground",
+      "recipe_system": "life_cooking",
+      "method_id": "life_cooking.pickle_salt",
+      "enabled": true,
+      "inputs": [
+        {
+          "item_id": "hus_pork_meat_ground",
+          "count": 1
+        },
+        {
+          "item_id": "ore_salt_sea_coarse",
+          "count": 1
+        },
+        {
+          "item_id": "herb_rosemary",
+          "count": 1
+        },
+        {
+          "item_id": "herb_thyme",
+          "count": 1
+        },
+        {
+          "item_id": "herb_garlic",
+          "count": 1
+        }
+      ],
+      "main_output": {
+        "item_id": "food_dish_herb_cured_pork_slices",
+        "count": 1
+      },
+      "bonus_outputs": [],
+      "required_skill_level_min": 1,
+      "proficiency_usage_key": "life_cooking.cook_livestock_cured_pork_ground",
+      "required_skill_id": null,
+      "recipe_processor_id": null,
+      "base_success_rate": null,
+      "failure_output": null,
+      "allowed_station_tags": null,
+      "match_weight": 1
     }
   }
 }

@@ -1,0 +1,833 @@
+{
+  "date": "2026-09-12",
+  "scope": "actual runtime; no gameplay mutations on disk; injected boundaries explicitly identified",
+  "checks": [
+    {
+      "id": "slaughter_without_equipment",
+      "scope": "public operation, empty module layout",
+      "evidence": {
+        "preview": true,
+        "slaughter": true,
+        "remainingAnimals": 0
+      }
+    },
+    {
+      "id": "sprinkler_upgrade_regression",
+      "scope": "legally built modules, levels 1–5",
+      "evidence": [
+        {
+          "level": 1,
+          "decompaction": 0
+        },
+        {
+          "level": 2,
+          "decompaction": 0
+        },
+        {
+          "level": 3,
+          "decompaction": 0.0020000000000024443
+        },
+        {
+          "level": 4,
+          "decompaction": 0
+        },
+        {
+          "level": 5,
+          "decompaction": 0.003999999999997783
+        }
+      ]
+    },
+    {
+      "id": "collector_order",
+      "scope": "two real collectors overlap one zone",
+      "evidence": [
+        {
+          "reverse": false,
+          "milkCooldown": 431,
+          "products": 2
+        },
+        {
+          "reverse": true,
+          "milkCooldown": 345,
+          "products": 2
+        }
+      ]
+    },
+    {
+      "id": "single_side_seeder",
+      "scope": "legal opposite-side placement",
+      "evidence": [
+        {
+          "slot": "cw_side",
+          "grass": {
+            "z1": 0.20120000000000002,
+            "z2": 0.20120000000000002,
+            "z3": 0.2008,
+            "z4": 0.2008
+          }
+        },
+        {
+          "slot": "ccw_side",
+          "grass": {
+            "z1": 0.20120000000000002,
+            "z2": 0.20120000000000002,
+            "z3": 0.2008,
+            "z4": 0.2008
+          }
+        }
+      ]
+    },
+    {
+      "id": "chicken_auto_collection",
+      "scope": "coop and collector legally share one arm",
+      "evidence": {
+        "auto": [],
+        "manual": {
+          "ok": true,
+          "item_id": "hus_egg",
+          "count": 1
+        }
+      }
+    },
+    {
+      "id": "chicken_capacity",
+      "scope": "injected 6-bird stock; no animal-intake API exists",
+      "evidence": [
+        {
+          "level": 1,
+          "satieties": [
+            70.0704,
+            70.0704,
+            70.0704,
+            70.0704,
+            70.0704,
+            70.0704
+          ],
+          "pollutionRemoved": 0.04200000000000159
+        },
+        {
+          "level": 5,
+          "satieties": [
+            70.0704,
+            70.0704,
+            70.0704,
+            70.0704,
+            70.0704,
+            70.0704
+          ],
+          "pollutionRemoved": 0.04200000000000159
+        }
+      ]
+    },
+    {
+      "id": "clinic_tie_order",
+      "scope": "equal-health animal insertion order",
+      "evidence": [
+        {
+          "reverse": false,
+          "hp": [
+            50.01,
+            50.01,
+            50
+          ]
+        },
+        {
+          "reverse": true,
+          "hp": [
+            50,
+            50.01,
+            50.01
+          ]
+        }
+      ]
+    },
+    {
+      "id": "mixed_grazing_floor",
+      "scope": "cow and sheep near cow edible floor",
+      "evidence": [
+        {
+          "withSheep": false,
+          "cattleSatiety": 79.98905,
+          "remainingGrass": 0.4
+        },
+        {
+          "withSheep": true,
+          "cattleSatiety": 80.0278,
+          "remainingGrass": 0.39939
+        }
+      ]
+    },
+    {
+      "id": "graze_perk_nutrition",
+      "scope": "same animal, ample identical grass",
+      "evidence": [
+        {
+          "perks": [],
+          "satiety": 50.0278,
+          "grass": 1.4995
+        },
+        {
+          "perks": [
+            "fast_graze"
+          ],
+          "satiety": 50.0278,
+          "grass": 1.49935
+        },
+        {
+          "perks": [
+            "picky_eater"
+          ],
+          "satiety": 50.0278,
+          "grass": 1.49965
+        }
+      ]
+    },
+    {
+      "id": "fed_growth_after_no_grazing",
+      "scope": "satiety reserve but no edible grass",
+      "evidence": {
+        "suppliedFeed": 0,
+        "initialWeight": 10,
+        "finalWeight": 11.454999999999984,
+        "finalSatiety": 97.7800000000002
+      }
+    },
+    {
+      "id": "processing_residue_dismount",
+      "scope": "legal processor input with no receiver",
+      "evidence": {
+        "dismount": {
+          "ok": false,
+          "reason": "contains_resources"
+        },
+        "withdrawalFunctions": []
+      }
+    },
+    {
+      "id": "trough_upgrade_capacity",
+      "scope": "same configured capacity at all levels",
+      "evidence": [
+        {
+          "level": 1,
+          "insert": {
+            "ok": false,
+            "reason": "full"
+          },
+          "units": 100
+        },
+        {
+          "level": 5,
+          "insert": {
+            "ok": false,
+            "reason": "full"
+          },
+          "units": 100
+        }
+      ]
+    },
+    {
+      "id": "configured_crossbreed_zero",
+      "scope": "config mutation to verify whether params drive runtime",
+      "evidence": {
+        "configuredChance": 0,
+        "pregnant": {
+          "father_uid": "animal_1",
+          "remaining_ticks": 2679,
+          "crossbreed": true
+        }
+      }
+    },
+    {
+      "id": "sire_removed_before_birth",
+      "scope": "slaughtering a father during existing pregnancy",
+      "evidence": [
+        {
+          "removeFather": false,
+          "offspring": [
+            [
+              "meaty"
+            ],
+            [
+              "meaty"
+            ],
+            [
+              "meaty"
+            ]
+          ]
+        },
+        {
+          "removeFather": true,
+          "offspring": [
+            [],
+            [],
+            []
+          ]
+        }
+      ]
+    },
+    {
+      "id": "litter_inheritance",
+      "scope": "seeded individual random rolls, siblings",
+      "evidence": [
+        {
+          "gender": "male",
+          "perks": [
+            "meaty",
+            "fast_growth",
+            "light_eater"
+          ]
+        },
+        {
+          "gender": "male",
+          "perks": [
+            "meaty",
+            "fast_growth",
+            "light_eater"
+          ]
+        },
+        {
+          "gender": "male",
+          "perks": [
+            "meaty",
+            "fast_growth",
+            "light_eater"
+          ]
+        },
+        {
+          "gender": "female",
+          "perks": [
+            "meaty",
+            "fast_growth",
+            "light_eater"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "partial_save",
+      "scope": "legacy/damaged save boundary, not ordinary gameplay",
+      "evidence": {
+        "weightFinite": false,
+        "hpFinite": false,
+        "satiety": 0.05
+      }
+    },
+    {
+      "id": "missing_arms_save",
+      "scope": "legacy/damaged save boundary",
+      "evidence": {
+        "threw": true,
+        "message": "Cannot convert undefined or null to object"
+      }
+    },
+    {
+      "id": "coop_legacy_wrong_arm",
+      "scope": "legacy animal lacks location_type, coop primary in bottom slot",
+      "evidence": {
+        "actualCoopArm": "arm3",
+        "migratedArm": "arm3"
+      }
+    },
+    {
+      "id": "fertilizer_references",
+      "scope": "all production and feed template references",
+      "evidence": {
+        "checked": 64,
+        "missing": []
+      }
+    },
+    {
+      "id": "climate_cannot_switch_off_on_low_power",
+      "scope": "legal activation with insufficient next-cycle charge",
+      "evidence": {
+        "on": {
+          "ok": true,
+          "mode": "sunny",
+          "cooldown": 2000
+        },
+        "remainingCharge": 1,
+        "cooldown": 0,
+        "off": {
+          "ok": false,
+          "reason": "no_power"
+        }
+      }
+    },
+    {
+      "id": "link_source_removed",
+      "scope": "active sowing survives removal of its source partner",
+      "evidence": {
+        "remove": {
+          "ok": true
+        },
+        "remainingLinkTicks": 998,
+        "growthAfterSourceRemoved": 0.001799999999999996,
+        "growthWithoutLink": 0.0012000000000000066
+      }
+    },
+    {
+      "id": "milk_at_critical_health",
+      "scope": "mature well-fed female at near-death health",
+      "evidence": {
+        "ok": true,
+        "item_id": "hus_milk_buffalo",
+        "count": 1
+      }
+    },
+    {
+      "id": "old_save_keeps_previous_herd",
+      "scope": "real applySnapshot function; unrelated systems and shape validation stubbed",
+      "evidence": {
+        "loaded": true,
+        "animalsRetained": 1
+      }
+    }
+  ],
+  "moduleLevels": [
+    {
+      "id": "feed_trough",
+      "level": 1,
+      "ok": true
+    },
+    {
+      "id": "feed_trough",
+      "level": 2,
+      "ok": true
+    },
+    {
+      "id": "feed_trough",
+      "level": 3,
+      "ok": true
+    },
+    {
+      "id": "feed_trough",
+      "level": 4,
+      "ok": true
+    },
+    {
+      "id": "feed_trough",
+      "level": 5,
+      "ok": true
+    },
+    {
+      "id": "sprinkler",
+      "level": 1,
+      "ok": true
+    },
+    {
+      "id": "sprinkler",
+      "level": 2,
+      "ok": true
+    },
+    {
+      "id": "sprinkler",
+      "level": 3,
+      "ok": true
+    },
+    {
+      "id": "sprinkler",
+      "level": 4,
+      "ok": true
+    },
+    {
+      "id": "sprinkler",
+      "level": 5,
+      "ok": true
+    },
+    {
+      "id": "clean_brush",
+      "level": 1,
+      "ok": true
+    },
+    {
+      "id": "clean_brush",
+      "level": 2,
+      "ok": true
+    },
+    {
+      "id": "clean_brush",
+      "level": 3,
+      "ok": true
+    },
+    {
+      "id": "clean_brush",
+      "level": 4,
+      "ok": true
+    },
+    {
+      "id": "clean_brush",
+      "level": 5,
+      "ok": true
+    },
+    {
+      "id": "auto_collect",
+      "level": 1,
+      "ok": true
+    },
+    {
+      "id": "auto_collect",
+      "level": 2,
+      "ok": true
+    },
+    {
+      "id": "auto_collect",
+      "level": 3,
+      "ok": true
+    },
+    {
+      "id": "auto_collect",
+      "level": 4,
+      "ok": true
+    },
+    {
+      "id": "auto_collect",
+      "level": 5,
+      "ok": true
+    },
+    {
+      "id": "coop",
+      "level": 1,
+      "ok": true
+    },
+    {
+      "id": "coop",
+      "level": 2,
+      "ok": true
+    },
+    {
+      "id": "coop",
+      "level": 3,
+      "ok": true
+    },
+    {
+      "id": "coop",
+      "level": 4,
+      "ok": true
+    },
+    {
+      "id": "coop",
+      "level": 5,
+      "ok": true
+    },
+    {
+      "id": "feed_preprocess",
+      "level": 1,
+      "ok": true
+    },
+    {
+      "id": "feed_preprocess",
+      "level": 2,
+      "ok": true
+    },
+    {
+      "id": "feed_preprocess",
+      "level": 3,
+      "ok": true
+    },
+    {
+      "id": "feed_preprocess",
+      "level": 4,
+      "ok": true
+    },
+    {
+      "id": "feed_preprocess",
+      "level": 5,
+      "ok": true
+    },
+    {
+      "id": "tiller",
+      "level": 1,
+      "ok": true
+    },
+    {
+      "id": "tiller",
+      "level": 2,
+      "ok": true
+    },
+    {
+      "id": "tiller",
+      "level": 3,
+      "ok": true
+    },
+    {
+      "id": "tiller",
+      "level": 4,
+      "ok": true
+    },
+    {
+      "id": "tiller",
+      "level": 5,
+      "ok": true
+    },
+    {
+      "id": "seeder",
+      "level": 1,
+      "ok": true
+    },
+    {
+      "id": "seeder",
+      "level": 2,
+      "ok": true
+    },
+    {
+      "id": "seeder",
+      "level": 3,
+      "ok": true
+    },
+    {
+      "id": "seeder",
+      "level": 4,
+      "ok": true
+    },
+    {
+      "id": "seeder",
+      "level": 5,
+      "ok": true
+    },
+    {
+      "id": "manure_net",
+      "level": 1,
+      "ok": true
+    },
+    {
+      "id": "manure_net",
+      "level": 2,
+      "ok": true
+    },
+    {
+      "id": "manure_net",
+      "level": 3,
+      "ok": true
+    },
+    {
+      "id": "manure_net",
+      "level": 4,
+      "ok": true
+    },
+    {
+      "id": "manure_net",
+      "level": 5,
+      "ok": true
+    },
+    {
+      "id": "pasture_arm",
+      "level": 1,
+      "ok": true
+    },
+    {
+      "id": "pasture_arm",
+      "level": 2,
+      "ok": true
+    },
+    {
+      "id": "pasture_arm",
+      "level": 3,
+      "ok": true
+    },
+    {
+      "id": "pasture_arm",
+      "level": 4,
+      "ok": true
+    },
+    {
+      "id": "pasture_arm",
+      "level": 5,
+      "ok": true
+    },
+    {
+      "id": "clinic_arm",
+      "level": 1,
+      "ok": true
+    },
+    {
+      "id": "clinic_arm",
+      "level": 2,
+      "ok": true
+    },
+    {
+      "id": "clinic_arm",
+      "level": 3,
+      "ok": true
+    },
+    {
+      "id": "clinic_arm",
+      "level": 4,
+      "ok": true
+    },
+    {
+      "id": "clinic_arm",
+      "level": 5,
+      "ok": true
+    },
+    {
+      "id": "feed_refine",
+      "level": 1,
+      "ok": true
+    },
+    {
+      "id": "feed_refine",
+      "level": 2,
+      "ok": true
+    },
+    {
+      "id": "feed_refine",
+      "level": 3,
+      "ok": true
+    },
+    {
+      "id": "feed_refine",
+      "level": 4,
+      "ok": true
+    },
+    {
+      "id": "feed_refine",
+      "level": 5,
+      "ok": true
+    },
+    {
+      "id": "link_schedule",
+      "level": 1,
+      "ok": true
+    },
+    {
+      "id": "link_schedule",
+      "level": 2,
+      "ok": true
+    },
+    {
+      "id": "link_schedule",
+      "level": 3,
+      "ok": true
+    },
+    {
+      "id": "link_schedule",
+      "level": 4,
+      "ok": true
+    },
+    {
+      "id": "link_schedule",
+      "level": 5,
+      "ok": true
+    },
+    {
+      "id": "waste_heat_recycle",
+      "level": 1,
+      "ok": true
+    },
+    {
+      "id": "waste_heat_recycle",
+      "level": 2,
+      "ok": true
+    },
+    {
+      "id": "waste_heat_recycle",
+      "level": 3,
+      "ok": true
+    },
+    {
+      "id": "waste_heat_recycle",
+      "level": 4,
+      "ok": true
+    },
+    {
+      "id": "waste_heat_recycle",
+      "level": 5,
+      "ok": true
+    },
+    {
+      "id": "slaughter",
+      "level": 1,
+      "ok": true
+    },
+    {
+      "id": "slaughter",
+      "level": 2,
+      "ok": true
+    },
+    {
+      "id": "slaughter",
+      "level": 3,
+      "ok": true
+    },
+    {
+      "id": "slaughter",
+      "level": 4,
+      "ok": true
+    },
+    {
+      "id": "slaughter",
+      "level": 5,
+      "ok": true
+    },
+    {
+      "id": "warehouse_hub",
+      "level": 1,
+      "ok": true
+    },
+    {
+      "id": "warehouse_hub",
+      "level": 2,
+      "ok": true
+    },
+    {
+      "id": "warehouse_hub",
+      "level": 3,
+      "ok": true
+    },
+    {
+      "id": "warehouse_hub",
+      "level": 4,
+      "ok": true
+    },
+    {
+      "id": "warehouse_hub",
+      "level": 5,
+      "ok": true
+    },
+    {
+      "id": "climate_control",
+      "level": 1,
+      "ok": true
+    },
+    {
+      "id": "climate_control",
+      "level": 2,
+      "ok": true
+    },
+    {
+      "id": "climate_control",
+      "level": 3,
+      "ok": true
+    },
+    {
+      "id": "climate_control",
+      "level": 4,
+      "ok": true
+    },
+    {
+      "id": "climate_control",
+      "level": 5,
+      "ok": true
+    }
+  ],
+  "massSweep": {
+    "cases": 504,
+    "failures": []
+  },
+  "hashes": {
+    "js/livestock-state.js": "0de96cef2b6ad4b0c5d69b411ea2d3e0e70ea0f60eae4c0b113358b474034f45",
+    "js/livestock-panel.js": "02ae9b934a8e6163328f0854683237e1465485486e2b41139573455b8e044ed4",
+    "js/save-system.js": "5e2ab804b72074dd7e41a6559378b10a9289dd75d7d1639e0c06d7a938990ea5",
+    "data/livestock-species.json": "c9412de51e8fb2439e385ef737d794e362d93f41620eca429d3cf57751c88871",
+    "data/livestock-modules.json": "eeca64069d816e9b1e5bdf0391bedca364eeb7190667f44131b9f5c87e29932f",
+    "data/livestock-perks.json": "ee06348cbb0e921b9ebb4ec8333ea0a7ec3a40c5f64c207e5b85a3fe8399a4d9"
+  },
+  "summary": {
+    "probes": 23,
+    "probeErrors": 0,
+    "moduleLevels": 85,
+    "moduleFailures": 0,
+    "massCases": 504,
+    "massFailures": 0
+  }
+}

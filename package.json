@@ -29,6 +29,19 @@
     "test:pain": "node tools/smoke-pain.mjs",
     "test:pharmacy": "node tools/smoke-pharmacy.mjs",
     "mark:pharmacy-ingredients": "node tools/mark-pharmacy-ingredients.mjs",
-    "test:ui-windows": "node tools/test-ui-windows.mjs"
+    "test:ui-windows": "node tools/test-ui-windows.mjs",
+    "test:livestock-integrity": "node tools/test-livestock-integrity.mjs",
+    "test:livestock-retirement": "node tools/test-livestock-retirement.mjs",
+    "test:livestock-nutrition": "node tools/test-livestock-nutrition.mjs",
+    "test:livestock-rotation": "node tools/test-livestock-rotation.mjs",
+    "test:livestock-calibration": "node tools/test-livestock-calibration.mjs",
+    "test:livestock": "node tools/test-livestock-integrity.mjs && node tools/test-livestock-nutrition.mjs && node tools/test-livestock-rotation.mjs && node tools/test-livestock-retirement.mjs && node tools/test-livestock-calibration.mjs && node tools/smoke-k93-power.mjs && node tools/smoke-k89-power-feed.mjs && node tools/smoke-k89-power-feed-ui.mjs && node tools/test-livestock-egg-rhythm.mjs && node tools/test-livestock-capacity.mjs && node tools/test-livestock-food-chain.mjs",
+    "audit:livestock-final": "node tools/audit-livestock-final.mjs",
+    "test:livestock-egg-rhythm": "node tools/test-livestock-egg-rhythm.mjs",
+    "test:livestock-capacity": "node tools/test-livestock-capacity.mjs",
+    "test:livestock-food-chain": "node tools/test-livestock-food-chain.mjs",
+    "audit:livestock-lifecycle": "node tools/audit-livestock-lifecycle.mjs",
+    "test:livestock-panel-capacity": "node tools/test-livestock-panel-capacity.cjs",
+    "test:livestock-ui": "node tools/test-livestock-ui.cjs"
   }
 }

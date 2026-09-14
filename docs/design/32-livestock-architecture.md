@@ -1,5 +1,9 @@
 # 畜牧系统可扩展性架构（实现约定）
 
+2026-09-13：参见 [已确认规则](31-livestock-confirmed-decisions.md) 与 [旧高级模块下架](31-livestock-advanced-retirement.md)。旧联动、回收、气候接口仅作拒绝执行的兼容入口，不是现行能力。
+
+2026-09-12：当前已落地的资源结算规则见 [畜牧内核修订](31-livestock-integrity-rework.md)；本文的注册架构仍是目标约定，并非全部已经实现。
+
 本文档定义畜牧系统落地时的**数据驱动与接口架构**，目标是：**新增动物种类、模块种类、Perk 种类、产出，主要通过「加配置」完成；仅全新结算机制才需要「注册一个 handler」**。设计正本与数值见 [`31-livestock-husbandry.md`](31-livestock-husbandry.md)，本文只约定「怎么落地、怎么扩展」。
 
 ---
@@ -14,7 +18,7 @@
 | 注册表 + handler 覆盖 | `combat-pipeline.js` 的 `registerPhaseHandler` | `LivestockRegistry.registerEffectHandler` |
 | 文案解耦 | `UIText.t(key)` | 所有物种/模块/Perk 显示名走 key |
 | 事件驱动 | `hit_roll_success` 等 | 生态结算 / 繁殖 / 捕获 / 屠宰发事件 |
-| per-接口修正 | `31` §13.5 | 物种/Perk/模块/事件通过统一 modifier 修正数值 |
+| per-接口修正 | `31` §13 设计原则 5（所有数值开放 per-接口） | 物种/Perk/模块/事件通过统一 modifier 修正数值 |
 
 **硬约束**：
 - 核心结算代码（生态 tick、饥饿、成长、繁殖、屠宰、Perk 遗传）**不得**出现 `if (species_id === 'cattle')` 之类的物种硬编码；所有物种差异来自配置表。

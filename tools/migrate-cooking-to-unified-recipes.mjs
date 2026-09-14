@@ -70,7 +70,7 @@ for (const r of list) {
     method_id: methodId,
     enabled: true,
     inputs: Array.isArray(r.inputs) ? r.inputs.map((x) => ({ item_id: String(x.item_id), count: Math.max(1, Math.floor(Number(x.count) || 1)) })) : [],
-    main_output: { item_id: String(r.output_item_id), count: 1 },
+    main_output: { item_id: String(r.output_item_id), count: Math.max(1, Math.floor(Number(r.output_count) || 1)) },
     bonus_outputs: [],
     required_skill_level_min: 1,
     proficiency_usage_key: rid,

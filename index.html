@@ -3285,7 +3285,8 @@
         #modal-livestock .module-slot.empty-slot.mountable:hover { border-color: #ff8c00; color: #ff8c00; }
         #modal-livestock .module-slot.shadow-slot { color: #6b6560; }
         #modal-livestock .module-slot.shadow-slot .slot-val { color: #6b6560; }
-        #modal-livestock .module-slot .slot-actions { display: flex; gap: 4px; flex-shrink: 0; }
+        #modal-livestock .module-slot .slot-actions .lv-btn { padding: 7px 10px; font-size: 13px; }
+#modal-livestock .module-slot .slot-actions { display: flex; gap: 4px; flex-shrink: 0; }
         #modal-livestock .module-slot .slot-actions .lv-btn { padding: 2px 6px; font-size: 10px; }
         #modal-livestock .module-slot .slot-effect { flex-basis: 100%; order: 5; }
         #modal-livestock .module-list { display: grid; gap: 8px; }
@@ -3320,7 +3321,108 @@
         #modal-livestock .product-row .lv-btn-dim { opacity: 0.45; }
 
     </style>
-</head>
+    <link rel="stylesheet" href="css/agriculture-overview.css">
+<style>
+        /* 牧场总览与日常收获：状态与空间分离 */
+        #modal-livestock button.tab-btn { border: 0; border-left: 3px solid transparent; background: transparent; font-family: inherit; }
+        #modal-livestock button.tab-btn.active { background: #d3a060; }
+        #modal-livestock .lv-main { min-width: 0; }
+        #modal-livestock .lv-view { min-width: 0; box-sizing: border-box; }
+        #modal-livestock [data-view="overview"] { flex-direction: column; gap: 16px; }
+        #modal-livestock .lv-summary-cards { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+        #modal-livestock .lv-summary-cards > div { background: #211f1a; border: 1px solid #585044; border-radius: 8px; padding: 16px; display: flex; flex-direction: column; gap: 7px; color: #bfb5a4; font-size: 13px; }
+        #modal-livestock .lv-summary-cards strong { color: #eee1ca; font-size: 27px; font-weight: 600; }
+        #modal-livestock .lv-eyebrow { color: #c6a77b; font-size: 12px; letter-spacing: 1px; }
+        #modal-livestock progress { width: 100%; height: 6px; accent-color: #c6a77b; }
+        #modal-livestock .lv-map-caption { display: flex; gap: 16px; flex-wrap: wrap; margin-top: 20px; color: #c5bba9; font-size: 13px; }
+        #modal-livestock .overview-grid { margin: 0; width: 100%; grid-template-columns: minmax(0,1fr) minmax(130px,.6fr) minmax(0,1fr); grid-template-rows: auto auto auto; gap: 10px; flex-shrink: 0; }
+        #modal-livestock .zone-cell { min-height: 190px; padding: 14px; border-width: 1px; background: #272a21; }
+        #modal-livestock .zone-header { color: #c5bba9; font-size: 13px; }
+        #modal-livestock .zone-header > span { font-size: 16px; color: #eee1ca; }
+        #modal-livestock .zone-eco { flex-direction: row; flex-wrap: wrap; gap: 4px 10px; }
+        #modal-livestock .animal-list { min-height: 30px; }
+        #modal-livestock .animal-item { padding: 5px 8px; }
+        #modal-livestock .arm-cell { padding: 12px 4px; border-width: 1px; flex-direction: column; min-width: 0; }
+        #modal-livestock .arm-label { font-size: 12px; color: #bcb09c; }
+        #modal-livestock .ov-module-chip { white-space: normal; overflow-wrap: anywhere; }
+        #modal-livestock .axis-cell { border-radius: 12px; min-height: 110px; border-width: 1px; }
+        #modal-livestock .lv-primary { background: #c6a77b; color: #211b14; font-weight: bold; align-self: flex-start; }
+        #modal-livestock .lv-btn:disabled { opacity: .45; cursor: default; }
+        #modal-livestock .lv-btn:focus-visible, #modal-livestock .tab-btn:focus-visible { outline: 2px solid #f2d49d; outline-offset: 3px; }
+        #modal-livestock .lv-footer { color: #b4a692; font-size: 12px; letter-spacing: 0; height: auto; min-height: 32px; padding: 6px 20px; }
+        #modal-livestock #livestock-product-content { display: flex; flex-direction: column; gap: 20px; }
+        #modal-livestock .lv-product-head { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 22px; background: #211f1a; border: 1px solid #585044; border-radius: 8px; color: #c5bba9; }
+        #modal-livestock .lv-product-head h3 { font-size: 28px; color: #eee1ca; margin: 8px 0; }
+        #modal-livestock .lv-product-head p { margin: 0; }
+        #modal-livestock #livestock-product-content .product-btns .lv-btn { padding: 8px 14px; font-size: 13px; }
+        #modal-livestock #livestock-product-content .product-row > .meta { margin-left: 0; flex: 1; text-align: left; }
+        #modal-livestock .lv-product-nav { display: flex; flex-wrap: wrap; gap: 8px; }
+        #modal-livestock #livestock-product-content .product-col { overflow: visible; flex: none; }
+        #modal-livestock #livestock-product-content .product-row { padding: 16px; margin-bottom: 10px; font-size: 15px; display: flex; flex-wrap: wrap; align-items: center; gap: 12px; border: 1px solid #514b40; }
+        #modal-livestock #livestock-product-content .meta { font-size: 13px; color: #bdb5a7; line-height: 1.7; }
+        #modal-livestock .lv-note { color: #c5bba9; font-size: 13px; }
+        #modal-livestock .lv-slaughter-preview { flex-basis: 100%; color: #dbb991; line-height: 1.7; }
+        @media (max-width: 700px) {
+            #modal-livestock .lv-panel { width: 100vw; height: 100dvh; border-radius: 0; }
+            #modal-livestock .lv-header { height: auto; min-height: 52px; flex-wrap: wrap; gap: 6px; padding: 10px; }
+            #modal-livestock .lv-title { margin-right: 8px; }
+            #modal-livestock .lv-badge, #modal-livestock .lv-toggle { margin: 0; padding: 5px; }
+            #modal-livestock .lv-body { flex-direction: column; }
+            #modal-livestock .lv-rail { width: auto; flex-direction: row; padding: 0; border-right: 0; }
+            #modal-livestock .tab-btn { flex: 1; height: 42px; }
+            #modal-livestock .lv-view { padding: 12px; }
+            #modal-livestock .lv-summary-cards { grid-template-columns: 1fr; gap: 8px; }
+            #modal-livestock .lv-summary-cards > div { padding: 12px; gap: 4px; }
+            #modal-livestock .overview-grid { grid-template-columns: 1fr; }
+            #modal-livestock .zone-cell { min-height: 150px; }
+            #modal-livestock .axis-cell { min-height: 80px; }
+            #modal-livestock .lv-product-head { align-items: flex-start; flex-direction: column; }
+            #modal-livestock [data-view="animals"] { flex-direction: column; }
+            #modal-livestock .animal-list-col { width: auto; max-height: 40vh; flex-shrink: 0; border: 0; padding: 0; }
+            #modal-livestock .animal-detail-col { padding: 16px 0; overflow: visible; }
+            #modal-livestock .module-content { flex-direction: column; }
+        }
+
+</style>
+<style>
+#modal-livestock .lv-filter-bar { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px; }
+#modal-livestock .lv-filter-bar .lv-btn { padding: 7px 10px; }
+#modal-livestock .lv-group-title { color: #cbb18a; font-size: 14px; margin: 12px 0 4px; }
+#modal-livestock button.animal-row { text-align: left; width: 100%; font-family: inherit; flex-shrink: 0; border-width: 1px; }
+#modal-livestock .animal-meta, #modal-livestock .animal-perk { font-size: 13px; line-height: 1.6; color: #bdb5a7; }
+#modal-livestock .animal-list-col { width: 48%; padding-right: 18px; box-sizing: border-box; }
+#modal-livestock .animal-detail-col { min-width: 0; padding-left: 24px; }
+#modal-livestock .kv-row { font-size: 14px; padding: 8px 0; border-bottom: 1px solid #494337; align-items: baseline; }
+#modal-livestock .kv-row > span:last-child { text-align: right; max-width: 68%; }
+#modal-livestock .detail-actions { flex-wrap: wrap; padding: 10px 0; }
+#modal-livestock summary { cursor: pointer; color: #cbb18a; padding: 10px 0; font-size: 14px; }
+#modal-livestock .breeding-controls { color: #bdb5a7; font-size: 13px; line-height: 1.6; border-bottom: 1px solid #514b40; flex-shrink: 0; }
+#modal-livestock .breeding-controls > div { display: flex; align-items: center; gap: 8px; margin: 8px 0; }
+#modal-livestock .lv-attention { color: #e4b17c; font-size: 13px; }
+#modal-livestock #livestock-module-content { display: flex; flex-direction: column; min-width: 0; gap: 16px; }
+#modal-livestock .lv-arm-navigation { background: #211f1a; border: 1px solid #585044; border-radius: 8px; padding: 16px; }
+#modal-livestock .lv-coverage-map { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; max-width: 420px; }
+#modal-livestock .lv-coverage-map span { background: #2a2822; color: #aaa08f; border: 1px solid #4c473c; padding: 10px; font-size: 13px; }
+#modal-livestock .lv-coverage-map .covered { background: #3d4430; border-color: #a4ae7c; color: #ece3c8; }
+#modal-livestock .lv-module-columns { display: flex; gap: 20px; align-items: flex-start; }
+#modal-livestock .module-left { width: 52%; flex-shrink: 0; box-sizing: border-box; overflow: visible; border: 0; }
+#modal-livestock .module-right { min-width: 0; overflow: visible; }
+#modal-livestock .module-slot { padding: 12px; gap: 8px; border-width: 1px; }
+#modal-livestock .module-slot .slot-key { font-size: 13px; color: #c5b395; }
+#modal-livestock .module-slot .slot-val { font-size: 14px; line-height: 1.6; }
+#modal-livestock .module-slot .slot-actions { flex-wrap: wrap; gap: 8px; }
+#modal-livestock .module-effect, #modal-livestock .module-desc, #modal-livestock .module-cost { font-size: 13px; line-height: 1.6; }
+#modal-livestock .lv-coverage-label { width: 100%; font-size: 13px; color: #b9c497; }
+#modal-livestock .lv-upgrade-preview { width: 100%; padding: 12px; box-sizing: border-box; background: #211f1a; color: #d8c6a9; font-size: 13px; line-height: 1.6; }
+#modal-livestock [data-dismount] { border-color: #65554c; color: #baa897; }
+@media(max-width:700px) {
+ #modal-livestock .animal-list-col { width: 100%; padding: 0; max-height: 45vh; }
+ #modal-livestock .animal-detail-col { padding: 16px 0; overflow: visible; }
+ #modal-livestock .lv-module-columns { flex-direction: column; }
+ #modal-livestock .module-left, #modal-livestock .module-right { width: 100%; padding: 0; }
+ #modal-livestock .module-slot, #modal-livestock .module-card { min-width: 0; overflow-wrap: anywhere; }
+}
+</style></head>
 <body>
     <div id="item-tooltip"></div>
 
@@ -4076,10 +4178,10 @@
                 </div>
                 <div class="lv-body">
                     <div class="lv-rail">
-                        <div class="tab-btn active" data-tab="overview">总览</div>
-                        <div class="tab-btn" data-tab="animals">动物</div>
-                        <div class="tab-btn" data-tab="modules">模块</div>
-                        <div class="tab-btn" data-tab="products">产出</div>
+                        <button type="button" class="tab-btn active" data-tab="overview">总览</button>
+                        <button type="button" class="tab-btn" data-tab="animals">动物</button>
+                        <button type="button" class="tab-btn" data-tab="modules">模块</button>
+                        <button type="button" class="tab-btn" data-tab="products">产出</button>
                     </div>
                     <div class="lv-main">
                         <div class="lv-view" data-view="overview"><div id="livestock-overview-grid" class="overview-grid"></div></div>
@@ -4175,9 +4277,11 @@
     <script src="js/game-log.js"></script>
     <script src="js/game-time.js"></script>
     <script src="js/npc-system.js"></script>
+    <script src="js/food-metabolism.js"></script>
     <script src="js/survival.js"></script>
     <script src="js/character-attributes.js"></script>
     <script src="js/inventory-equipment.js"></script>
+    <script src="js/combat-damage.js"></script>
     <script src="js/combat-skills.js"></script>
     <script src="js/combat-hub-actions.js"></script>
     <script src="js/combat-parry.js"></script>
@@ -4188,6 +4292,7 @@
     <script src="js/combat-pipeline.js"></script>
     <script src="js/convert-rules.js"></script>
     <script src="js/combat-enemies.js"></script>
+    <script src="js/combat-engagement.js"></script>
     <script src="js/combat-melee-resolve.js"></script>
     
     <script src="js/muscles.js"></script>
@@ -4200,6 +4305,7 @@
     <script src="js/agriculture-map.js"></script>
     <script src="js/agriculture-config.js"></script>
     <script src="js/agriculture-player-items.js"></script>
+    <script src="js/agriculture-overview.js"></script>
     <script src="js/agriculture-panel.js"></script>
     <script src="js/hideout-warehouse.js"></script>
     <script src="js/hideout-warehouse-panel.js"></script>
@@ -4207,6 +4313,7 @@
     <script src="js/dungeon-loot.js"></script>
     <script src="js/enemy-drops.js"></script>
     <script src="js/scene-animation.js"></script>
+    <script src="js/core/map-projection.js"></script>
     <script src="js/core/tile-renderer-v2.js"></script>
     <script src="js/scene-renderer.js"></script>
     <script src="js/scene-systems.js"></script>

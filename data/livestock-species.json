@@ -1,6 +1,6 @@
 {
-  "schema_version": 1,
-  "_comment": "畜牧物种表。数值对应 docs/design/31-livestock-husbandry.md；新增动物=加一条，无需改代码。",
+  "schema_version": 6,
+  "_comment": "schema 6：软容量、长周期生长、独立生产年龄、蛋奶保底。当前验收见 31-livestock-lifecycle-implementation.md。",
   "species": {
     "cattle": {
       "species_id": "cattle",
@@ -10,12 +10,28 @@
       "growth": {
         "birth_weight_kg": 4.5,
         "graze_cap_kg": 150,
+        "fatten_ramp_end_kg": 300,
         "wean_weight_kg": null,
         "fatten_cap_kg": 600,
-        "maturity_ticks": 10000,
+        "maturity_ticks": 77760,
         "graze_growth_rate_kg_per_tick": 0.01455,
         "satiety_grow_threshold": 70,
-        "satiety_stall_threshold": 30
+        "satiety_stall_threshold": 30,
+        "target_fatten_ticks": 116640,
+        "growth_stages": [
+          {
+            "mass_fraction": 0.2,
+            "time_fraction": 0.25
+          },
+          {
+            "mass_fraction": 0.8,
+            "time_fraction": 0.75
+          },
+          {
+            "mass_fraction": 1,
+            "time_fraction": 1
+          }
+        ]
       },
       "satiety": {
         "drain_per_tick": 0.0222,
@@ -38,12 +54,17 @@
         "feed_units_per_satiety": null
       },
       "reproduction": {
-        "pregnancy_ticks": 5000,
-        "postpartum_cooldown_ticks": 5000,
-        "litter_size": [1, 1],
-        "base_pregnancy_rate_per_tick": 0.0002
+        "pregnancy_ticks": 40320,
+        "postpartum_cooldown_ticks": 8640,
+        "litter_size": [
+          1,
+          1
+        ],
+        "base_pregnancy_rate_per_tick": 0.0002777777777777778,
+        "gestation_nutrition_per_tick": 0.0008928571428571428,
+        "default_population_limit": 8
       },
-      "lifespan_ticks": null,
+      "lifespan_ticks": 630720,
       "ecosystem_impact": {
         "trample_per_tick": 0.045,
         "pollution_pct_per_tick": 0,
@@ -52,21 +73,120 @@
       },
       "products": {
         "living": [
-          { "product_id": "milk", "item_id": "hus_milk_buffalo", "cooldown_ticks": 432, "hp_cost": 0, "min_hp": 0 },
-          { "product_id": "blood", "item_id": "hus_beef_blood", "cooldown_ticks": 1008, "hp_cost": 10, "min_hp": 50 }
+          {
+            "product_id": "milk",
+            "item_id": "hus_milk_buffalo",
+            "cooldown_ticks": 288,
+            "hp_cost": 0,
+            "min_hp": 0,
+            "requires_gender": "female",
+            "nutrition_per_item": 8,
+            "storage_capacity": 1,
+            "min_age_ticks": 64800,
+            "min_weight_kg": 150
+          },
+          {
+            "product_id": "blood",
+            "item_id": "hus_beef_blood",
+            "cooldown_ticks": 4320,
+            "hp_cost": 10,
+            "min_hp": 50
+          }
         ],
         "slaughter": {
-          "meat_item_ids": ["hus_beef_steak"],
-          "offal_item_ids": ["hus_beef_heart", "hus_beef_liver", "hus_beef_kidney", "hus_beef_tripe", "hus_beef_omasum", "hus_beef_intestine", "hus_beef_tongue", "hus_beef_lung", "hus_beef_brain", "hus_beef_marrow", "hus_beef_blood"],
-          "byproduct_item_ids": ["hus_beef_hide", "hus_beef_bone", "hus_beef_horn", "hus_beef_tallow"]
+          "meat_item_ids": [
+            "hus_beef_steak"
+          ],
+          "offal_item_ids": [
+            "hus_beef_heart",
+            "hus_beef_liver",
+            "hus_beef_kidney",
+            "hus_beef_tripe",
+            "hus_beef_omasum",
+            "hus_beef_intestine",
+            "hus_beef_tongue",
+            "hus_beef_lung",
+            "hus_beef_brain",
+            "hus_beef_marrow",
+            "hus_beef_blood"
+          ],
+          "byproduct_item_ids": [
+            "hus_beef_hide",
+            "hus_beef_bone",
+            "hus_beef_horn",
+            "hus_beef_tallow"
+          ],
+          "item_weights_kg": {
+            "hus_beef_steak": 5,
+            "hus_beef_heart": 1.5,
+            "hus_beef_liver": 2,
+            "hus_beef_kidney": 0.6,
+            "hus_beef_tripe": 2,
+            "hus_beef_omasum": 1.5,
+            "hus_beef_intestine": 1.5,
+            "hus_beef_tongue": 0.4,
+            "hus_beef_lung": 1.5,
+            "hus_beef_brain": 0.5,
+            "hus_beef_marrow": 0.3,
+            "hus_beef_blood": 0.5,
+            "hus_beef_hide": 8,
+            "hus_beef_bone": 1.2,
+            "hus_beef_horn": 0.8,
+            "hus_beef_tallow": 1
+          },
+          "health_floor": 0.2,
+          "meat_fraction": 0.5,
+          "offal_fraction": 0.08,
+          "byproduct_fraction": 0.12,
+          "meat_shares": [
+            1
+          ]
         }
       },
       "perk_pool": [
-        "big_eater", "light_eater", "fast_growth", "slow_growth", "easy_fat", "hard_gainer",
-        "hardy", "frail", "fertile", "barren", "high_yield", "low_yield", "meaty", "lean",
-        "heavy_hoof", "light_hoof", "fast_graze", "picky_eater",
-        "earth_cry", "pheromone", "parthenogenesis", "chain_pregnancy", "hermaphrodite", "eternal_spring"
-      ]
+        "big_eater",
+        "light_eater",
+        "fast_growth",
+        "slow_growth",
+        "easy_fat",
+        "hard_gainer",
+        "hardy",
+        "frail",
+        "fertile",
+        "barren",
+        "high_yield",
+        "low_yield",
+        "meaty",
+        "lean",
+        "heavy_hoof",
+        "light_hoof",
+        "fast_graze",
+        "picky_eater",
+        "earth_cry",
+        "pheromone",
+        "parthenogenesis",
+        "chain_pregnancy",
+        "hermaphrodite",
+        "eternal_spring"
+      ],
+      "nutrition": {
+        "body_load": {
+          "reference_weight_kg": 150,
+          "minimum": 0.25,
+          "exponent": 0.5
+        },
+        "maintenance_per_tick": 0.1,
+        "grass_nutrition_per_m": 3000,
+        "full_supply_ratio": 2,
+        "full_entry_ratio": 1.9,
+        "supply_smoothing_ticks": 60,
+        "feed_max_units_per_tick": 1,
+        "reserve_refill_fraction": 0.5,
+        "hunger_damage_hp_per_tick": 0.06666666666666667,
+        "hunger_recovery_hp_per_tick": 0.05,
+        "recovery_nutrition_per_hp": 0.2
+      },
+      "capacity_cost": 6
     },
     "sheep": {
       "species_id": "sheep",
@@ -76,12 +196,28 @@
       "growth": {
         "birth_weight_kg": 0.6,
         "graze_cap_kg": 20,
+        "fatten_ramp_end_kg": 40,
         "wean_weight_kg": null,
         "fatten_cap_kg": 80,
-        "maturity_ticks": 6400,
+        "maturity_ticks": 43200,
         "graze_growth_rate_kg_per_tick": 0.00303,
         "satiety_grow_threshold": 70,
-        "satiety_stall_threshold": 30
+        "satiety_stall_threshold": 30,
+        "target_fatten_ticks": 64800,
+        "growth_stages": [
+          {
+            "mass_fraction": 0.2,
+            "time_fraction": 0.25
+          },
+          {
+            "mass_fraction": 0.8,
+            "time_fraction": 0.75
+          },
+          {
+            "mass_fraction": 1,
+            "time_fraction": 1
+          }
+        ]
       },
       "satiety": {
         "drain_per_tick": 0.0267,
@@ -104,35 +240,138 @@
         "feed_units_per_satiety": null
       },
       "reproduction": {
-        "pregnancy_ticks": 2680,
-        "postpartum_cooldown_ticks": 2680,
-        "litter_size": [1, 2],
-        "base_pregnancy_rate_per_tick": 0.000373
+        "pregnancy_ticks": 21600,
+        "postpartum_cooldown_ticks": 21600,
+        "litter_size": [
+          1,
+          2
+        ],
+        "base_pregnancy_rate_per_tick": 0.00010683760683760684,
+        "gestation_nutrition_per_tick": 0.0002777777777777778,
+        "default_population_limit": 12
       },
-      "lifespan_ticks": null,
+      "lifespan_ticks": 420480,
       "ecosystem_impact": {
         "trample_per_tick": 0.005,
-        "pollution_pct_per_tick": 0.02,
+        "pollution_pct_per_tick": 0.008,
         "root_clean_per_tick": 0,
         "pollution_clean_pct_per_tick": 0
       },
       "products": {
         "living": [
-          { "product_id": "wool", "item_id": "hus_wool", "cooldown_ticks": 4000, "hp_cost": 0, "min_hp": 0 },
-          { "product_id": "blood", "item_id": "hus_mutton_blood", "cooldown_ticks": 1008, "hp_cost": 10, "min_hp": 50 }
+          {
+            "product_id": "wool",
+            "item_id": "hus_wool",
+            "cooldown_ticks": 8640,
+            "hp_cost": 0,
+            "min_hp": 0,
+            "nutrition_per_item": 12,
+            "storage_capacity": 1,
+            "min_age_ticks": 25920,
+            "min_weight_kg": 20
+          },
+          {
+            "product_id": "blood",
+            "item_id": "hus_mutton_blood",
+            "cooldown_ticks": 4320,
+            "hp_cost": 10,
+            "min_hp": 50
+          }
         ],
         "slaughter": {
-          "meat_item_ids": ["hus_mutton_chop", "hus_mutton", "hus_mutton_leg"],
-          "offal_item_ids": ["hus_mutton_heart", "hus_mutton_liver", "hus_mutton_kidney", "hus_mutton_tripe", "hus_mutton_intestine", "hus_mutton_tongue", "hus_mutton_lung", "hus_mutton_brain", "hus_mutton_blood"],
-          "byproduct_item_ids": ["hus_mutton_hide", "hus_mutton_bone", "hus_mutton_tallow"]
+          "meat_item_ids": [
+            "hus_mutton_chop",
+            "hus_mutton",
+            "hus_mutton_leg"
+          ],
+          "offal_item_ids": [
+            "hus_mutton_heart",
+            "hus_mutton_liver",
+            "hus_mutton_kidney",
+            "hus_mutton_tripe",
+            "hus_mutton_intestine",
+            "hus_mutton_tongue",
+            "hus_mutton_lung",
+            "hus_mutton_brain",
+            "hus_mutton_blood"
+          ],
+          "byproduct_item_ids": [
+            "hus_mutton_hide",
+            "hus_mutton_bone",
+            "hus_mutton_tallow"
+          ],
+          "item_weights_kg": {
+            "hus_mutton_chop": 1.5,
+            "hus_mutton": 1.7,
+            "hus_mutton_leg": 3,
+            "hus_mutton_heart": 0.3,
+            "hus_mutton_liver": 0.6,
+            "hus_mutton_kidney": 0.2,
+            "hus_mutton_tripe": 0.6,
+            "hus_mutton_intestine": 0.5,
+            "hus_mutton_tongue": 0.2,
+            "hus_mutton_lung": 0.4,
+            "hus_mutton_brain": 0.1,
+            "hus_mutton_blood": 0.5,
+            "hus_mutton_hide": 2,
+            "hus_mutton_bone": 1,
+            "hus_mutton_tallow": 0.5
+          },
+          "health_floor": 0.2,
+          "meat_fraction": 0.5,
+          "offal_fraction": 0.08,
+          "byproduct_fraction": 0.12,
+          "meat_shares": [
+            0.4,
+            0.3,
+            0.3
+          ]
         }
       },
       "perk_pool": [
-        "big_eater", "light_eater", "fast_growth", "slow_growth", "easy_fat", "hard_gainer",
-        "hardy", "frail", "fertile", "barren", "high_yield", "low_yield", "meaty", "lean",
-        "dirty_sheep", "clean_sheep", "fast_graze", "picky_eater",
-        "earth_cry", "pheromone", "parthenogenesis", "chain_pregnancy", "hermaphrodite", "eternal_spring"
-      ]
+        "big_eater",
+        "light_eater",
+        "fast_growth",
+        "slow_growth",
+        "easy_fat",
+        "hard_gainer",
+        "hardy",
+        "frail",
+        "fertile",
+        "barren",
+        "high_yield",
+        "low_yield",
+        "meaty",
+        "lean",
+        "dirty_sheep",
+        "clean_sheep",
+        "fast_graze",
+        "picky_eater",
+        "earth_cry",
+        "pheromone",
+        "parthenogenesis",
+        "chain_pregnancy",
+        "hermaphrodite",
+        "eternal_spring"
+      ],
+      "nutrition": {
+        "body_load": {
+          "reference_weight_kg": 20,
+          "minimum": 0.25,
+          "exponent": 0.5
+        },
+        "maintenance_per_tick": 0.05,
+        "grass_nutrition_per_m": 3000,
+        "full_supply_ratio": 2,
+        "full_entry_ratio": 1.9,
+        "supply_smoothing_ticks": 60,
+        "feed_max_units_per_tick": 0.12,
+        "reserve_refill_fraction": 0.5,
+        "hunger_damage_hp_per_tick": 0.08,
+        "hunger_recovery_hp_per_tick": 0.05,
+        "recovery_nutrition_per_hp": 0.1
+      },
+      "capacity_cost": 2
     },
     "pig": {
       "species_id": "pig",
@@ -144,10 +383,25 @@
         "graze_cap_kg": null,
         "wean_weight_kg": 30,
         "fatten_cap_kg": 120,
-        "maturity_ticks": 1617,
+        "maturity_ticks": 34560,
         "graze_growth_rate_kg_per_tick": 0.018,
         "satiety_grow_threshold": 70,
-        "satiety_stall_threshold": 30
+        "satiety_stall_threshold": 30,
+        "target_fatten_ticks": 52560,
+        "growth_stages": [
+          {
+            "mass_fraction": 0.2,
+            "time_fraction": 0.25
+          },
+          {
+            "mass_fraction": 0.8,
+            "time_fraction": 0.75
+          },
+          {
+            "mass_fraction": 1,
+            "time_fraction": 1
+          }
+        ]
       },
       "satiety": {
         "drain_per_tick": 0.0333,
@@ -162,34 +416,128 @@
         "feed_units_per_satiety": 10
       },
       "reproduction": {
-        "pregnancy_ticks": 2040,
-        "postpartum_cooldown_ticks": 2040,
-        "litter_size": [3, 4],
-        "base_pregnancy_rate_per_tick": 0.00049
+        "pregnancy_ticks": 16560,
+        "postpartum_cooldown_ticks": 30240,
+        "litter_size": [
+          3,
+          4
+        ],
+        "base_pregnancy_rate_per_tick": 0.00017361111111111112,
+        "gestation_nutrition_per_tick": 0.0006521739130434783,
+        "default_population_limit": 16
       },
-      "lifespan_ticks": null,
+      "lifespan_ticks": 315360,
       "ecosystem_impact": {
         "trample_per_tick": 0,
-        "pollution_pct_per_tick": -0.01,
+        "pollution_pct_per_tick": 0,
         "root_clean_per_tick": -0.045,
-        "pollution_clean_pct_per_tick": 0
+        "pollution_clean_pct_per_tick": 0,
+        "uproots_grass": true,
+        "root_grass_m_per_tick": 0.001
       },
       "products": {
         "living": [
-          { "product_id": "blood", "item_id": "hus_pork_blood", "cooldown_ticks": 1008, "hp_cost": 10, "min_hp": 50 }
+          {
+            "product_id": "blood",
+            "item_id": "hus_pork_blood",
+            "cooldown_ticks": 4320,
+            "hp_cost": 10,
+            "min_hp": 50
+          }
         ],
         "slaughter": {
-          "meat_item_ids": ["hus_pork_chop", "hus_pork_meat_ground"],
-          "offal_item_ids": ["hus_pork_heart", "hus_pork_liver", "hus_pork_kidney", "hus_pork_stomach", "hus_pork_large_intestine", "hus_pork_small_intestine", "hus_pig_tongue", "hus_pork_lung", "hus_pork_brain", "hus_pork_ear", "hus_pork_blood"],
-          "byproduct_item_ids": ["hus_pork_rind", "hus_pork_bone", "hus_pig_lard", "hus_pork_lard"]
+          "meat_item_ids": [
+            "hus_pork_chop",
+            "hus_pork_meat_ground"
+          ],
+          "offal_item_ids": [
+            "hus_pork_heart",
+            "hus_pork_liver",
+            "hus_pork_kidney",
+            "hus_pork_stomach",
+            "hus_pork_large_intestine",
+            "hus_pork_small_intestine",
+            "hus_pig_tongue",
+            "hus_pork_lung",
+            "hus_pork_brain",
+            "hus_pork_ear",
+            "hus_pork_blood"
+          ],
+          "byproduct_item_ids": [
+            "hus_pork_rind",
+            "hus_pork_bone",
+            "hus_pig_lard",
+            "hus_pork_lard"
+          ],
+          "item_weights_kg": {
+            "hus_pork_chop": 1.5,
+            "hus_pork_meat_ground": 0.6,
+            "hus_pork_heart": 0.4,
+            "hus_pork_liver": 1.5,
+            "hus_pork_kidney": 0.3,
+            "hus_pork_stomach": 0.35,
+            "hus_pork_large_intestine": 1,
+            "hus_pork_small_intestine": 0.5,
+            "hus_pig_tongue": 0.3,
+            "hus_pork_lung": 0.8,
+            "hus_pork_brain": 0.2,
+            "hus_pork_ear": 0.3,
+            "hus_pork_blood": 0.5,
+            "hus_pork_rind": 0.8,
+            "hus_pork_bone": 1,
+            "hus_pig_lard": 0.3,
+            "hus_pork_lard": 0.5
+          },
+          "health_floor": 0.2,
+          "meat_fraction": 0.5,
+          "offal_fraction": 0.08,
+          "byproduct_fraction": 0.12,
+          "meat_shares": [
+            0.65,
+            0.35
+          ]
         }
       },
       "perk_pool": [
-        "big_eater", "light_eater", "fast_growth", "slow_growth", "easy_fat", "hard_gainer",
-        "hardy", "frail", "fertile", "barren", "meaty", "lean",
-        "crossbreed_swine", "species_mutant",
-        "earth_cry", "pheromone", "parthenogenesis", "chain_pregnancy", "hermaphrodite", "eternal_spring"
-      ]
+        "big_eater",
+        "light_eater",
+        "fast_growth",
+        "slow_growth",
+        "easy_fat",
+        "hard_gainer",
+        "hardy",
+        "frail",
+        "fertile",
+        "barren",
+        "meaty",
+        "lean",
+        "crossbreed_swine",
+        "species_mutant",
+        "earth_cry",
+        "pheromone",
+        "parthenogenesis",
+        "chain_pregnancy",
+        "hermaphrodite",
+        "eternal_spring"
+      ],
+      "nutrition": {
+        "body_load": {
+          "reference_weight_kg": 30,
+          "minimum": 0.25,
+          "exponent": 0.5
+        },
+        "maintenance_per_tick": 0.03,
+        "grass_nutrition_per_m": 3000,
+        "full_supply_ratio": 2,
+        "full_entry_ratio": 1.9,
+        "supply_smoothing_ticks": 60,
+        "feed_max_units_per_tick": 0.12,
+        "reserve_refill_fraction": 0.5,
+        "hunger_damage_hp_per_tick": 0.1,
+        "hunger_recovery_hp_per_tick": 0.05,
+        "recovery_nutrition_per_hp": 0.06
+      },
+      "capacity_cost": 3
     },
     "chicken": {
       "species_id": "chicken",
@@ -201,10 +549,26 @@
         "graze_cap_kg": null,
         "wean_weight_kg": null,
         "fatten_cap_kg": 2.5,
-        "maturity_ticks": null,
+        "maturity_ticks": 21600,
         "graze_growth_rate_kg_per_tick": null,
         "satiety_grow_threshold": 70,
-        "satiety_stall_threshold": 30
+        "satiety_stall_threshold": 30,
+        "production_min_weight_kg": 1,
+        "target_fatten_ticks": 12960,
+        "growth_stages": [
+          {
+            "mass_fraction": 0.2,
+            "time_fraction": 0.25
+          },
+          {
+            "mass_fraction": 0.8,
+            "time_fraction": 0.75
+          },
+          {
+            "mass_fraction": 1,
+            "time_fraction": 1
+          }
+        ]
       },
       "satiety": {
         "drain_per_tick": 0.0556,
@@ -219,7 +583,7 @@
         "feed_units_per_satiety": null
       },
       "reproduction": null,
-      "lifespan_ticks": 15000,
+      "lifespan_ticks": 105120,
       "ecosystem_impact": {
         "trample_per_tick": 0,
         "pollution_pct_per_tick": 0,
@@ -228,15 +592,103 @@
       },
       "products": {
         "living": [
-          { "product_id": "egg", "item_id": "hus_egg", "cooldown_ticks": 288, "hp_cost": 0, "min_hp": 0 }
+          {
+            "product_id": "egg",
+            "item_id": "hus_egg",
+            "cooldown_ticks": 360,
+            "hp_cost": 0,
+            "min_hp": 0,
+            "nutrition_per_item": 6,
+            "storage_capacity": 1,
+            "min_age_ticks": 21600,
+            "min_weight_kg": 1
+          }
         ],
         "slaughter": {
-          "meat_item_ids": ["hus_chicken_thigh", "hus_chicken_breast", "hus_chicken_meat"],
-          "offal_item_ids": ["hus_chicken_blood", "hus_chicken_gizzard", "hus_chicken_liver", "hus_chicken_heart", "hus_chicken_intestine"],
-          "byproduct_item_ids": ["hus_chicken_skin", "hus_chicken_bone"]
+          "meat_item_ids": [
+            "hus_chicken_thigh",
+            "hus_chicken_breast",
+            "hus_chicken_meat"
+          ],
+          "offal_item_ids": [
+            "hus_chicken_blood",
+            "hus_chicken_gizzard",
+            "hus_chicken_liver",
+            "hus_chicken_heart",
+            "hus_chicken_intestine"
+          ],
+          "byproduct_item_ids": [
+            "hus_chicken_skin",
+            "hus_chicken_bone"
+          ],
+          "item_weights_kg": {
+            "hus_chicken_thigh": 0.4,
+            "hus_chicken_breast": 0.4,
+            "hus_chicken_meat": 0.6,
+            "hus_chicken_blood": 0.1,
+            "hus_chicken_gizzard": 0.1,
+            "hus_chicken_liver": 0.05,
+            "hus_chicken_heart": 0.03,
+            "hus_chicken_intestine": 0.1,
+            "hus_chicken_skin": 0.2,
+            "hus_chicken_bone": 0.2
+          },
+          "health_floor": 0.2,
+          "meat_fraction": 0.6,
+          "offal_fraction": 0.16,
+          "byproduct_fraction": 0.16,
+          "meat_shares": [
+            0.3,
+            0.3,
+            0.4
+          ]
         }
       },
-      "perk_pool": ["quick_growth_chicken", "slow_growth_chicken", "more_eggs", "fewer_eggs"]
+      "perk_pool": [
+        "quick_growth_chicken",
+        "slow_growth_chicken",
+        "more_eggs",
+        "fewer_eggs"
+      ],
+      "coop_nutrition": {
+        "clean_per_tick": 0.007,
+        "nutrition_per_pollution": 1.8,
+        "growth_nutrition_per_tick": 0.0126
+      },
+      "nutrition": {
+        "body_load": {
+          "reference_weight_kg": 2.5,
+          "minimum": 0.25,
+          "exponent": 0.5
+        },
+        "maintenance_per_tick": 0.003,
+        "grass_nutrition_per_m": 3000,
+        "full_supply_ratio": 2,
+        "full_entry_ratio": 1.9,
+        "supply_smoothing_ticks": 60,
+        "feed_max_units_per_tick": 0.004,
+        "reserve_refill_fraction": 0.5,
+        "hunger_damage_hp_per_tick": 0.16666666666666666,
+        "hunger_recovery_hp_per_tick": 0.05,
+        "recovery_nutrition_per_hp": 0.006
+      },
+      "capacity_cost": 0
     }
+  },
+  "pasture_rules": {
+    "capacity": 30,
+    "output_linear": 1.5,
+    "output_quadratic": 2.5,
+    "maintenance_excess": 0.5,
+    "ecology_linear": 2,
+    "ecology_quadratic": 4,
+    "damage_threshold": 1.25,
+    "recovery_threshold": 1.1,
+    "grace_ticks": 1000,
+    "ramp_ticks": 1000,
+    "exposure_recovery_per_tick": 2,
+    "damage_factor": 128,
+    "max_damage_per_round": 40,
+    "recovery_hp_per_round": 4
   }
 }

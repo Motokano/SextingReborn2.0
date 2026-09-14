@@ -753,7 +753,8 @@
                     (arr[32] && arr[32].modules) || {},
                     (arr[33] && arr[33].perks) || {},
                     (arr[34] && arr[34].costs) || {},
-                    (arr[35] && arr[35].crops) || {}
+                    (arr[35] && arr[35].crops) || {},
+                    (arr[31] && arr[31].pasture_rules) || {}
                 );
             }
             if (window.AgricultureMap && typeof window.AgricultureMap.bindEnv === 'function') {

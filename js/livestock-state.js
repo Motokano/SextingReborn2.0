@@ -12,8 +12,10 @@
   var PERKS = {};
   var BUILD_COSTS = {};
   var FEED_CROPS = {};
+  var PASTURE_RULES = {};
   var state = null;
   var uidSeq = 1;
+  var RETIRED_MODULES = { link_schedule: true, waste_heat_recycle: true, climate_control: true };
 
   function clamp(v, lo, hi) {
     if (v == null || isNaN(v)) return lo;
@@ -26,12 +28,20 @@
     return 'livestock_' + (uidSeq++);
   }
 
-  function setConfig(species, modules, perks, buildCosts, feedCrops) {
+  function setConfig(species, modules, perks, buildCosts, feedCrops, pastureRules) {
     SPECIES = species || {};
-    MODULES = modules || {};
+    MODULES = {};
+    Object.keys(modules || {}).forEach(function (id) { if (!RETIRED_MODULES[id]) MODULES[id] = modules[id]; });
     PERKS = perks || {};
     BUILD_COSTS = buildCosts || {};
     FEED_CROPS = feedCrops || {};
+    PASTURE_RULES = pastureRules || {};
+    MODULE_EFFECTS = {};
+    Object.keys(MODULES).forEach(function (id) { if (MODULES[id].effects) MODULE_EFFECTS[id] = JSON.parse(JSON.stringify(MODULES[id].effects)); });
+    if (state) {
+      migrateRetiredModules(state);
+      (state.animals || []).forEach(function (a) { initializeNutrition(a, getSpecies(a.species_id)); });
+    }
   }
 
   function getSpecies(speciesId) { return SPECIES[speciesId] || null; }
@@ -53,7 +63,7 @@
   // 每 tick 扣电：需电模块合计 power_drain_per_tick；储能耗尽 → 供电中断 → 需电模块停摆（k93 生产力墙）
   function isPowerAvailable() {
     var st = ensureState();
-    return st.power_charge > 0;
+    return st.power_charge > 0 && st.power_charge >= currentPowerDrainPerTick();
   }
   // 兼容旧接口：true = 塞一块起步电（1 点）使供电恢复；false = 清空储能（断电）
   function setPowerAvailable(v) {
@@ -74,7 +84,7 @@
     if (m.tier === 'axis') return 2;
     return 0;
   }
-  /** 当前装配中的需电模块合计每 tick 耗电（含轴心位；shadow 不算；气候塔 off 不耗电） */
+  /** 当前装配中的需电模块合计每 tick 耗电（含轴心位，影子位不重复计算）。 */
   function currentPowerDrainPerTick() {
     var st = ensureState();
     var total = 0;
@@ -88,8 +98,6 @@
         var inst = cont[sk];
         if (!inst || typeof inst !== 'object' || inst.shadow) continue;
         if (!inst.module_id || !moduleRequiresPower(inst.module_id)) continue;
-        // 气候塔 off 模式不产生效果 → 不耗电（§11.6.2：mode 缺省 off）
-        if (inst.module_id === 'climate_control' && (!inst.mode || inst.mode === 'off')) continue;
         total += modulePowerDrainPerTick(inst.module_id);
       }
     }
@@ -99,7 +107,7 @@
   function drainPowerForTick() {
     var st = ensureState();
     var drain = currentPowerDrainPerTick();
-    if (drain <= 0 || (st.power_charge || 0) <= 0) return st.power_charge || 0;
+    if (drain <= 0 || !isPowerAvailable()) return st.power_charge || 0;
     st.power_charge = Math.max(0, (st.power_charge || 0) - drain);
     return st.power_charge;
   }
@@ -117,6 +125,7 @@
   }
   // 模块当前是否可产出（生产力墙：需电模块缺电 → 停摆；非分档锁，装配/升级不受 tier 限制）
   function isModulePowered(moduleId) {
+    if (RETIRED_MODULES[moduleId]) return false;
     return !moduleRequiresPower(moduleId) || isPowerAvailable();
   }
 
@@ -133,7 +142,7 @@
       // 跨种 Perk 不生效但保留（§8.5）
       if (pdef.species && pdef.species.indexOf(animal.species_id) < 0) continue;
       if (pdef.requires) {
-        if (pdef.requires.gender && animal.gender !== pdef.requires.gender) continue;
+        if (pdef.requires.gender && !hasGender(animal, pdef.requires.gender)) continue;
       }
       var val = pdef.modifiers[key];
       if (val != null) mult *= Number(val);
@@ -147,8 +156,16 @@
     var pdef = getPerk(perkId);
     if (!pdef) return false;
     if (pdef.species && pdef.species.indexOf(animal.species_id) < 0) return false;
-    if (pdef.requires && pdef.requires.gender && animal.gender !== pdef.requires.gender) return false;
+    if (pdef.requires && pdef.requires.gender && !hasGender(animal, pdef.requires.gender)) return false;
     return true;
+  }
+
+  function hasGender(animal, gender) {
+    if (!animal) return false;
+    if (animal.gender === gender || animal.gender === 'hermaphrodite') return true;
+    var p = getPerk('hermaphrodite');
+    return !!(p && (animal.perks || []).indexOf('hermaphrodite') >= 0 &&
+      (!p.species || p.species.indexOf(animal.species_id) >= 0));
   }
 
   // §8.4 相邻区：与某区共享机械臂的所有其他区（如 z1 ↔ arm1(z1,z2) ↔ z2、arm4(z4,z1) ↔ z4）
@@ -166,19 +183,78 @@
   }
 
   function isMature(a, sp) {
-    return !(sp.growth && sp.growth.maturity_ticks != null && (a.age_ticks || 0) < sp.growth.maturity_ticks);
+    var g = sp.growth || {};
+    var weight = g.wean_weight_kg || g.graze_cap_kg || g.production_min_weight_kg || 0;
+    return (a.age_ticks || 0) >= (g.maturity_ticks || 0) && (a.weight_kg || 0) + 1e-8 >= weight;
+  }
+
+  function productEligible(a, sp, p) {
+    return (p.min_age_ticks == null ? isMature(a, sp) :
+      a.age_ticks >= p.min_age_ticks && a.weight_kg >= (p.min_weight_kg ?? 0)) &&
+      (!p.requires_gender || hasGender(a, p.requires_gender));
+  }
+
+  function getCapacityStatus() {
+    var st = ensureState(), used = 0, pending = 0;
+    function cost(kind) { var sp = getSpecies(kind); return sp ? (sp.capacity_cost ?? ({ cattle: 6, pig: 3, sheep: 2 }[kind] || 0)) : 0; }
+    st.animals.forEach(function (a) {
+      if (a.dead) return;
+      used += cost(a.species_id);
+      if (a.pregnant && a.pregnant.children) a.pregnant.children.forEach(function (c) { pending += cost(c.species_id); });
+    });
+    var capacity = PASTURE_RULES.capacity ?? 30, ratio = used / Math.max(1, capacity), x = Math.max(0, ratio - 1);
+    var output = Math.exp(-(PASTURE_RULES.output_linear ?? 1.5) * x - (PASTURE_RULES.output_quadratic ?? 2.5) * x * x);
+    return { used: used, pending: pending, projected: used + pending, capacity: capacity, ratio: ratio,
+      output: output, fertility: output * output, maintenance: 1 + (PASTURE_RULES.maintenance_excess ?? 0.5) * x,
+      ecology: 1 + (PASTURE_RULES.ecology_linear ?? 2) * x + (PASTURE_RULES.ecology_quadratic ?? 4) * x * x,
+      exposure_ticks: st.crowding_exposure_ticks || 0 };
+  }
+
+  function crowdingOutput(a) { return a.species_id === 'chicken' ? 1 : getCapacityStatus().output; }
+  function tickCrowding(st) {
+    var c = getCapacityStatus(), grace = PASTURE_RULES.grace_ticks ?? 1000, ramp = PASTURE_RULES.ramp_ticks ?? 1000;
+    var exposure = st.crowding_exposure_ticks || 0;
+    if (c.ratio > (PASTURE_RULES.damage_threshold ?? 1.25)) exposure += 1;
+    else if (c.ratio <= (PASTURE_RULES.recovery_threshold ?? 1.1)) exposure -= PASTURE_RULES.exposure_recovery_per_tick ?? 2;
+    st.crowding_exposure_ticks = clamp(exposure, 0, grace + ramp);
+    var damage = Math.min(PASTURE_RULES.max_damage_per_round ?? 40, (PASTURE_RULES.damage_factor ?? 128) * Math.pow(Math.max(0, c.ratio - (PASTURE_RULES.damage_threshold ?? 1.25)), 2)) / 1000 * clamp((exposure - grace) / Math.max(1, ramp), 0, 1);
+    st.animals.forEach(function (a) {
+      if (a.dead || a.species_id === 'chicken' || !a.nutrition_state) return;
+      var loss = Math.min(a.hp, damage);
+      a.hp -= loss; a.nutrition_state.crowding_damage = (a.nutrition_state.crowding_damage || 0) + loss;
+      if (a.hp <= 0) { a.dead = true; a.death_cause = 'crowding'; }
+    });
+  }
+
+  // Piecewise mass progression: food shortage delays progress rather than creating age-based catch-up growth.
+  function lifecycleGrowth(a, sp) {
+    var g = sp.growth, span = g.fatten_cap_kg - g.birth_weight_kg;
+    var fraction = clamp((a.weight_kg - g.birth_weight_kg) / span, 0, 1), previousMass = 0, previousTime = 0;
+    var stages = g.growth_stages || [{ mass_fraction: 1, time_fraction: 1 }];
+    for (var i = 0; i < stages.length; i++) {
+      var s = stages[i];
+      if (fraction < s.mass_fraction - 1e-12) return span * (s.mass_fraction - previousMass) / ((s.time_fraction - previousTime) * g.target_fatten_ticks);
+      previousMass = s.mass_fraction; previousTime = s.time_fraction;
+    }
+    return 0;
   }
 
   // §8.4 标准怀孕条件（不含性别/公畜存在性）
   function canConceive(a, sp, zone) {
     if (!sp.reproduction) return false;
+    var breeding = getBreedingStatus(a.species_id);
+    if (breeding.live + breeding.pending >= breeding.limit) return false;
     if (a.pregnant) return false;
     if ((a.reproduction_cooldown || 0) > 0) return false;
     if (a.hp <= 90) return false;
+    if (a.dead || a.satiety <= 70) return false;
+    if (a.nutrition_state && a.nutrition_state.last && a.nutrition_state.last.intake + 1e-9 < a.nutrition_state.last.maintenance_required) return false;
     if (!isMature(a, sp)) return false;
     if (zone && zone.pollution >= 30) return false;
     return true;
   }
+
+  function fedForBreeding(a) { var n = a && a.nutrition_state && a.nutrition_state.last; return !!(n && n.intake + 1e-9 >= n.maintenance_required); }
 
   // 按稀有度权重从物种 Perk 池抽 1 个
   function pickPerkByRarity(pool) {
@@ -233,6 +309,48 @@
     });
     while (out.length > 4) out.pop();
     return out;
+  }
+
+  function perkParam(id, key, fallback) {
+    var p = getPerk(id), value = p && p.params && p.params[key];
+    return value == null ? fallback : value;
+  }
+
+  function createPregnancy(mother, father, sp, flags) {
+    var pregnancy = Object.assign({ father_uid: father ? father.uid : null, remaining_ticks: sp.reproduction.pregnancy_ticks }, flags || {});
+    function snapshot(a) { return a ? { uid: a.uid, species_id: a.species_id, gender: a.gender, perks: (a.perks || []).slice() } : null; }
+    pregnancy.mother = snapshot(mother); pregnancy.father = snapshot(father);
+    var partheno = !father && hasPerk(mother, 'parthenogenesis');
+    var baseSpecies = pregnancy.crossbreed ? 'pig' : mother.species_id;
+    var mutant = hasPerk(father, 'species_mutant') || hasPerk(mother, 'species_mutant');
+    var litter = randInt(sp.reproduction.litter_size[0], sp.reproduction.litter_size[1]);
+    pregnancy.children = [];
+    for (var i = 0; i < litter; i++) {
+      var kind = baseSpecies;
+      if (mutant && kind === 'pig' && Math.random() < perkParam('species_mutant', 'mutate_chance', 0.2)) kind = perkParam('species_mutant', 'mutate_to', 'sheep');
+      if (!getSpecies(kind)) kind = baseSpecies;
+      var inherited = inheritPerks(father ? father.perks : [], mother.perks || []);
+      if (partheno) { var extra = pickPerkByRarity(getSpecies(kind).perk_pool || []); if (extra && inherited.indexOf(extra) < 0 && inherited.length < 4) inherited.push(extra); }
+      pregnancy.children.push({ species_id: kind, gender: partheno ? 'female' : (Math.random() < 0.5 ? 'male' : 'female'), perks: inherited });
+    }
+    var needed = {};
+    pregnancy.children.forEach(function (c) { needed[c.species_id] = (needed[c.species_id] || 0) + 1; });
+    if (Object.keys(needed).some(function (kind) { var status = getBreedingStatus(kind); return status.live + status.pending + needed[kind] > status.limit; })) return null;
+    return pregnancy;
+  }
+
+  function getBreedingStatus(kind) {
+    var st = ensureState(), sp = getSpecies(kind), live = 0, pending = 0;
+    st.animals.forEach(function (a) {
+      if (a.dead) return;
+      if (a.species_id === kind) live++;
+      if (a.pregnant && a.pregnant.children) a.pregnant.children.forEach(function (c) { if (c.species_id === kind) pending++; });
+    });
+    return { live: live, pending: pending, limit: st.breeding_limits && st.breeding_limits[kind] != null ? st.breeding_limits[kind] : (sp && sp.reproduction ? sp.reproduction.default_population_limit ?? 16 : 0) };
+  }
+  function setBreedingLimit(kind, limit) {
+    if (['cattle','sheep','pig'].indexOf(kind) < 0 || !Number.isInteger(limit) || limit < 0 || limit > 100) return { ok: false, reason: 'invalid_amount' };
+    var st = ensureState(); st.breeding_limits = st.breeding_limits || {}; st.breeding_limits[kind] = limit; return { ok: true };
   }
 
   // 鸡笼动物默认归属：装鸡笼（inner 模块实例的 module_id === 'coop'）的臂
@@ -307,7 +425,7 @@
     };
 
     state = {
-      rotation_ticks_remaining: 862,
+      rotation_ticks_remaining: 1000,
       rotation_total_ticks: 1000,
       // 牧场储能（k89 电池经济最小闭环）：起步 500 点；需电模块每 tick 扣电，耗尽停摆 → 需塞电池（数值 k87 精调）
       power_charge: 500,
@@ -338,10 +456,117 @@
   }
 
   function getState() { return state; }
-  function ensureState() { if (!state) initDemoState(); return state; }
+  function ensureState() { if (!state) initDemoState(); migrateRetiredModules(state); return state; }
+
+  // One-way retirement migration. Frozen records are audit data, never executable machinery.
+  function migrateRetiredModules(st) {
+    var storage = st.retired_module_storage;
+    function getStorage() {
+      if (!storage) storage = st.retired_module_storage = { version: 1, records: [], items: {} };
+      return storage;
+    }
+    var holders = Object.keys(st.arms || {}).map(function (id) { return { id: id, slots: st.arms[id] }; });
+    if (st.axis) holders.push({ id: 'axis', slots: st.axis });
+    holders.forEach(function (holder) {
+      Object.keys(holder.slots || {}).forEach(function (slot) {
+        var inst = holder.slots[slot], id = getSlotModuleId(inst);
+        if (!RETIRED_MODULES[id]) return;
+        if (!(inst && inst.shadow)) {
+          var snapshot = typeof inst === 'string' ? { module_id: id, level: 1 } : JSON.parse(JSON.stringify(inst));
+          var box = getStorage();
+          box.records.push({ arm_id: holder.id, slot: slot, snapshot: snapshot, material_refund_pending: true });
+          (snapshot.output_queue || []).forEach(function (p) {
+            if (p && p.item_id && Number.isFinite(p.count) && p.count > 0) box.items[p.item_id] = (box.items[p.item_id] || 0) + Math.floor(p.count);
+          });
+        }
+        holder.slots[slot] = null;
+      });
+    });
+    Object.keys(st.zones || {}).forEach(function (id) {
+      var z = st.zones[id]; if (!z) return;
+      delete z.link_seed_ticks; delete z.link_feed_ticks; delete z.link_owner;
+      delete z._seed_once; delete z._feed_priority;
+    });
+    delete st.pollution_recovery;
+    if (!storage) return;
+    storage.records.forEach(function (record) {
+      if (!record.material_refund_pending) return;
+      var inst = record.snapshot, tier = inst.module_id === 'climate_control' ? 'axis' : 'large';
+      var table = BUILD_COSTS[tier];
+      if (!table || !Array.isArray(table.steps)) return; // Config may load after the save.
+      var level = clamp(inst.level || 1, 1, 5), fromLevels = [1]; // Initial construction uses the 1→2 material row.
+      for (var from = 1; from < level; from++) fromLevels.push(from);
+      if (inst.upgrading_remaining > 0 && level < 5) fromLevels.push(level);
+      var steps = fromLevels.map(function (from) { return table.steps.filter(function (s) { return s.from === from; })[0]; });
+      if (steps.some(function (s) { return !s; })) return;
+      steps.forEach(function (s) { (s.inputs || []).forEach(function (p) {
+        if (p.item_id && p.count > 0) storage.items[p.item_id] = (storage.items[p.item_id] || 0) + p.count;
+      }); });
+      record.material_refund_pending = false;
+    });
+  }
+
+  function getRetiredModuleStorage() {
+    var box = ensureState().retired_module_storage;
+    return box ? JSON.parse(JSON.stringify(box)) : { version: 1, records: [], items: {} };
+  }
+
+  // Deliver one physical item at a time. Full inventory leaves the remainder claimable.
+  function claimRetiredModuleItems() {
+    var st = ensureState(), box = st.retired_module_storage, IE = window.InventoryEquipment;
+    if (!box) return { ok: false, reason: 'no_retired_items', placed: 0 };
+    if (!IE || typeof IE.putItemIntoDefaultContainer !== 'function') return { ok: false, reason: 'no_inventory', placed: 0 };
+    var placed = 0;
+    Object.keys(box.items).sort().forEach(function (id) {
+      while (box.items[id] >= 1) {
+        var r = IE.putItemIntoDefaultContainer({ item_id: id, count: 1 });
+        if (!r || !r.placed) break;
+        box.items[id]--; placed++;
+      }
+      if (box.items[id] <= 0) delete box.items[id];
+    });
+    return { ok: placed > 0, placed: placed, remaining: Object.keys(box.items).reduce(function (n, id) { return n + box.items[id]; }, 0) };
+  }
+
+  function validateState(incoming) {
+    if (incoming == null) return { ok: true };
+    try {
+      if (typeof incoming !== 'object' || Array.isArray(incoming)) throw new Error('state');
+      function finite(value) {
+        if (typeof value === 'number' && !Number.isFinite(value)) throw new Error('number');
+        if (value && typeof value === 'object') Object.keys(value).forEach(function (key) { finite(value[key]); });
+      }
+      finite(incoming);
+      if (incoming.crowding_exposure_ticks != null && (typeof incoming.crowding_exposure_ticks !== 'number' || incoming.crowding_exposure_ticks < 0)) throw new Error('crowding_exposure');
+      var ids = Object.create(null);
+      if (incoming.breeding_limits != null) {
+        Object.keys(incoming.breeding_limits).forEach(function (kind) {
+          var n = incoming.breeding_limits[kind];
+          if (['cattle','sheep','pig'].indexOf(kind) < 0 || !Number.isInteger(n) || n < 0 || n > 100) throw new Error('breeding_limit');
+        });
+      }
+      if (incoming.animals != null && !Array.isArray(incoming.animals)) throw new Error('animals');
+      (incoming.animals || []).forEach(function (a) {
+        if (!a || typeof a.uid !== 'string' || ids[a.uid]) throw new Error('animal_uid'); ids[a.uid] = true;
+        if (Object.keys(SPECIES).length && !getSpecies(a.species_id)) throw new Error('species');
+        ['hp', 'satiety'].forEach(function (key) { if (a[key] != null && (typeof a[key] !== 'number' || a[key] < 0 || a[key] > 100)) throw new Error(key); });
+        if (typeof a.weight_kg !== 'number' || a.weight_kg < 0) throw new Error('weight');
+        if (a.age_ticks != null && (typeof a.age_ticks !== 'number' || a.age_ticks < 0)) throw new Error('age');
+        if (a.pregnant && a.pregnant.children != null) {
+          if (!Array.isArray(a.pregnant.children)) throw new Error('children');
+          a.pregnant.children.forEach(function (c) {
+            if (!c || (Object.keys(SPECIES).length && !getSpecies(c.species_id)) || !Array.isArray(c.perks) || ['male','female'].indexOf(c.gender) < 0) throw new Error('child');
+          });
+        }
+      });
+      return { ok: true };
+    } catch (e) { return { ok: false, reason: 'invalid_livestock_state' }; }
+  }
 
   function setState(incoming) {
-    if (!incoming || typeof incoming !== 'object') return;
+    var check = validateState(incoming); if (!check.ok) throw new Error(check.reason);
+    if (incoming == null) { initDemoState(); return { ok: true }; }
+    incoming = JSON.parse(JSON.stringify(incoming));
     // 储能迁移（k89 电池经济最小闭环）：旧档 power_available=true → 给起步 500；false → 0（断电）
     if (incoming.power_charge == null) {
       incoming.power_charge = (incoming.power_available === false) ? 0 : 500;
@@ -405,6 +630,8 @@
       });
     }
     state = incoming;
+    migrateRetiredModules(state);
+    (state.animals || []).forEach(function (a) { initializeNutrition(a, getSpecies(a.species_id)); });
     var maxSeq = 0;
     if (Array.isArray(state.animals)) {
       state.animals.forEach(function (a) {
@@ -413,6 +640,7 @@
       });
     }
     uidSeq = maxSeq + 1;
+    return { ok: true };
   }
 
   function moveAnimal(uid, zoneId) {
@@ -457,15 +685,26 @@
       if (p.product_id === productId) prod = p;
     });
     if (!prod) return { ok: false, reason: 'no_product' };
+    if (prod.nutrition_per_item > 0) {
+      var status = getProductStatus(uid, productId);
+      if (!status.ready) return { ok: false, reason: status.reason };
+      a.production_buffers[productId] = Math.max(0, a.production_buffers[productId] - 1);
+      return { ok: true, item_id: prod.item_id, count: 1 };
+    }
+    if (!isMature(a, sp)) return { ok: false, reason: 'immature' };
+    if (prod.requires_gender && !hasGender(a, prod.requires_gender)) return { ok: false, reason: 'wrong_gender' };
+    if (a.satiety <= 70) return { ok: false, reason: 'hungry' };
     if ((a.cooldowns && a.cooldowns[productId]) > 0) {
       return { ok: false, reason: 'cooldown', remaining: a.cooldowns[productId] };
     }
     if (prod.min_hp > 0 && a.hp < prod.min_hp) {
       return { ok: false, reason: 'low_hp' };
     }
-    var cm = (cooldownMult != null && cooldownMult > 0) ? cooldownMult : 1;
-    a.cooldowns[productId] = Math.round(prod.cooldown_ticks * getModifier(a, 'product_cooldown_mult_' + productId) * cm);
+    var cm = Math.min((cooldownMult != null && cooldownMult > 0) ? cooldownMult : 1, bestCollectorMultiplier(a));
+    a.cooldowns[productId] = Math.max(1, Math.ceil(prod.cooldown_ticks * getModifier(a, 'product_cooldown_mult_' + productId) * cm / Math.max(1e-12, crowdingOutput(a))));
     if (prod.hp_cost > 0) {
+      initializeNutrition(a, sp);
+      a.nutrition_state.blood_damage = (a.nutrition_state.blood_damage || 0) + Math.min(a.hp, prod.hp_cost);
       a.hp = clamp(a.hp - prod.hp_cost, 0, 100);
       if (a.hp <= 0) { a.dead = true; a.death_cause = 'blood_loss'; }
     }
@@ -473,25 +712,68 @@
   }
 
   // 屠宰动物，产出肉/器官/副产物。返回 { ok, items:[{item_id,count}], reason? }
-  function slaughterAnimal(uid) {
-    var st = ensureState();
+  function previewSlaughter(uid) {
     var a = findAnimal(uid);
     if (!a || a.dead) return { ok: false, reason: 'not_found' };
     // 屠宰为手动操作（k93）：猪牛羊走轴心屠宰位、鸡走鸡笼（§11.3.4）均不耗电，无电力墙
     var sp = getSpecies(a.species_id);
     if (!sp || !sp.products || !sp.products.slaughter) return { ok: false, reason: 'no_products' };
+    var st = ensureState();
+    if (a.species_id === 'chicken' ? !hasCoop(st, a.arm_id) : !(st.axis && st.axis.slot1 && !st.axis.slot1.shadow && st.axis.slot1.module_id === 'slaughter')) return { ok: false, reason: a.species_id === 'chicken' ? 'no_coop' : 'no_slaughter' };
     var sl = sp.products.slaughter;
     var items = [];
-    var meatBlocks = Math.max(1, Math.floor((a.weight_kg || 0) * 0.5 / 5 * getModifier(a, 'slaughter_yield_mult')));
-    if (sl.meat_item_ids && sl.meat_item_ids.length) {
-      items.push({ item_id: sl.meat_item_ids[0], count: meatBlocks });
+    var weight = Math.max(0, Number(a.weight_kg) || 0);
+    var floor = sl.health_floor == null ? 0.2 : sl.health_floor;
+    var healthMult = floor + (1 - floor) * clamp(a.hp / 100, 0, 1);
+    var itemWeights = sl.item_weights_kg || {};
+    function unitWeight(id) {
+      var IE = window.InventoryEquipment;
+      var tpl = IE && typeof IE.getItemTemplate === 'function' ? IE.getItemTemplate(id) : null;
+      return Number(tpl && tpl.weight_kg != null ? tpl.weight_kg : itemWeights[id]);
     }
-    (sl.offal_item_ids || []).forEach(function (id) { items.push({ item_id: id, count: 1 }); });
-    (sl.byproduct_item_ids || []).forEach(function (id) { items.push({ item_id: id, count: 1 }); });
-    // 屠宰即清（§3.3）：正常屠宰已即时产出肉皮骨，尸体不留场
+    var productIds = (sl.meat_item_ids || []).concat(sl.offal_item_ids || [], sl.byproduct_item_ids || []);
+    if (productIds.some(function (id) { return !(unitWeight(id) > 0); })) return { ok: false, reason: 'missing_product_weight' };
+    var meatFraction = (sl.meat_fraction == null ? 0.5 : sl.meat_fraction) * getModifier(a, 'slaughter_yield_mult');
+    if (a.species_id !== 'chicken') {
+      var slaughter = st.axis.slot1;
+      meatFraction *= MODULE_EFFECTS.slaughter.yield_recovery[clamp(slaughter.level || 1, 1, 5) - 1];
+    }
+    var offalFraction = sl.offal_fraction == null ? 0.08 : sl.offal_fraction;
+    var byFraction = sl.byproduct_fraction == null ? 0.12 : sl.byproduct_fraction;
+    var normalize = Math.max(1, meatFraction + offalFraction + byFraction);
+    var meatBudget = weight * healthMult * meatFraction / normalize;
+    var shares = sl.meat_shares || sl.meat_item_ids.map(function () { return 1 / sl.meat_item_ids.length; });
+    var shareTotal = shares.reduce(function (n, v) { return n + v; }, 0);
+    var minimumWeight = Infinity, meatCount = 0, mass = 0;
+    function add(id, budget) {
+      var count = Math.floor((budget + 1e-9) / unitWeight(id));
+      if (count > 0) { items.push({ item_id: id, count: count }); mass += count * unitWeight(id); }
+      return count;
+    }
+    sl.meat_item_ids.forEach(function (id, i) {
+      var share = shares[i] / shareTotal;
+      if (share > 0 && meatFraction > 0) minimumWeight = Math.min(minimumWeight, unitWeight(id) * normalize / (healthMult * meatFraction * share));
+      meatCount += add(id, meatBudget * share);
+    });
+    if (meatCount < 1) return { ok: false, reason: 'slaughter_underweight', minimum_weight_kg: Number.isFinite(minimumWeight) ? minimumWeight : null };
+    // Anatomical shares use fixed item mass proportions; fractional parts never move into another cut.
+    function addGroup(ids, fraction) {
+      var total = ids.reduce(function (n, id) { return n + unitWeight(id); }, 0);
+      ids.forEach(function (id) { add(id, weight * healthMult * fraction / normalize * unitWeight(id) / total); });
+    }
+    addGroup(sl.offal_item_ids || [], offalFraction); addGroup(sl.byproduct_item_ids || [], byFraction);
+    return { ok: true, items: items, minimum_weight_kg: minimumWeight, output_mass_kg: mass, usable_meat_kg: meatBudget, health_multiplier: healthMult };
+  }
+
+  function slaughterAnimal(uid) {
+    var result = previewSlaughter(uid);
+    if (!result.ok) return result;
+    var st = ensureState(), a = findAnimal(uid);
+    releaseStoredProducts(st, a);
+    // 预览与实际结算共用产出规则，失败时不删除动物。
     var idx = st.animals.indexOf(a);
     if (idx >= 0) st.animals.splice(idx, 1);
-    return { ok: true, items: items };
+    return result;
   }
 
   // 清理尸体（病死/饿死/失血/老死），返回 { ok, cause? }
@@ -501,6 +783,7 @@
       var a = st.animals[i];
       if (a.uid === uid && a.dead) {
         var cause = a.death_cause || 'unknown';
+        releaseStoredProducts(st, a);
         st.animals.splice(i, 1);
         return { ok: true, cause: cause };
       }
@@ -516,35 +799,16 @@
 
   // 找投喂某区域的饲料槽（装在 cw_side，面朝该区）
   function findTroughForZone(zoneId) {
-    var st = ensureState();
-    var zone = st.zones[zoneId];
-    for (var ak in st.arms) {
-      var arm = st.arms[ak];
-      var trough = arm && arm.cw_side;
-      if (!trough || isShadowSlot(trough) || getSlotModuleId(trough) !== 'feed_trough') continue;
-      var zones = (st.arm_zones && st.arm_zones[ak]) || [];
-      // 面朝区域 = arm_zones 第二个
-      if (zones[1] === zoneId) return trough;
-    }
-    // 联动（§11.5.1 grass_feed）：草高 >1.0 时切换投喂优先级——该区动物可吃任意面朝区槽
-    if (zone && zone._feed_priority) {
-      for (var ak2 in st.arms) {
-        var arm2 = st.arms[ak2];
-        var t2 = arm2 && arm2.cw_side;
-        if (!t2 || isShadowSlot(t2) || getSlotModuleId(t2) !== 'feed_trough') continue;
-        if (t2.feed_units > 0) return t2;
-      }
-    }
-    return null;
+    return troughsForAnimal({ location_type: 'zone', zone_id: zoneId })[0] || null;
   }
 
   // 投喂作物到饲料槽（直接投，营养值÷10 = 单位数）
-  function addFeedToTrough(armId, cropItemId, count) {
+  function addFeedToTrough(armId, cropItemId, count, slotKey) {
     var nut = getCropNutrition(cropItemId);
     if (nut == null) return { ok: false, reason: 'not_feed_crop' };
     var st = ensureState();
     var arm = st.arms[armId];
-    var trough = arm && arm.cw_side;
+    var trough = slotKey ? arm && arm[slotKey] : findTroughOnArm(arm);
     if (!trough || isShadowSlot(trough) || getSlotModuleId(trough) !== 'feed_trough') {
       return { ok: false, reason: 'no_trough' };
     }
@@ -552,7 +816,11 @@
     var c = Math.max(1, Math.floor(Number(count) || 1));
     var add = (nut / 10) * c;
     var before = trough.feed_units;
-    trough.feed_units = clamp(trough.feed_units + add, 0, 100);
+    if (!(nut > 0) || !(Number(count == null ? 1 : count) > 0)) return { ok: false, reason: 'invalid_amount' };
+    if (before + add > getTroughCapacity(trough) + 1e-9) return { ok: false, reason: 'full' };
+    var paid = consumeCrop(cropItemId, c);
+    if (!paid.ok) return paid;
+    trough.feed_units = clamp(trough.feed_units + add, 0, getTroughCapacity(trough));
     var added = trough.feed_units - before;
     return { ok: true, added: added, total: trough.feed_units };
   }
@@ -563,7 +831,7 @@
     var st = ensureState();
     var z = st.zones[zoneId];
     if (!z) return { ok: false, reason: 'no_zone' };
-    z.pollution = clamp((z.pollution || 0) - (amount || 10), 0, 100);
+    removePollution(st, zoneId, amount || 10, true);
     return { ok: true, pollution: z.pollution };
   }
 
@@ -578,12 +846,16 @@
   function feedChickens(armId) {
     var st = ensureState();
     var chicks = st.animals.filter(function (a) { return a.location_type === 'coop' && a.arm_id === armId && !a.dead; });
-    var fed = 0;
-    chicks.forEach(function (c) {
-      c.satiety = clamp((c.satiety || 0) + 20, 0, 100);
-      fed++;
+    if (!hasCoop(st, armId)) return { ok: false, reason: 'no_coop' };
+    var troughs = troughsForAnimal({ location_type: 'coop', arm_id: armId });
+    var requests = chicks.map(function (a) {
+      var sp = getSpecies(a.species_id); initializeNutrition(a, sp);
+      return { animal: a, sources: troughs, need: Math.max(0, nutritionConfig(sp).maintenance_per_tick * 20 - a.nutrition_state.feed_buffer) / 10, given: 0 };
     });
-    return { ok: true, fed: fed };
+    distributeFeed(requests);
+    var fed = 0;
+    requests.forEach(function (r) { if (r.given > 0) { r.animal.nutrition_state.feed_buffer += r.given * 10; fed++; } });
+    return { ok: fed > 0, fed: fed, reason: fed ? null : 'no_feed' };
   }
 
   /* ================= 模块装配 / 拆卸 / 升级 ================= */
@@ -591,12 +863,12 @@
   var ARM_SLOT_KEYS = ['inner', 'front', 'bottom', 'top', 'cw_side', 'ccw_side'];
 
   // 展开模块占用的面（modules.json 的 side 键 → cw_side/ccw_side）
-  function expandModuleSlots(m) {
+  function expandModuleSlots(m, side) {
     var out = [];
     var s = (m && m.slots) || {};
     for (var k in s) {
       if (k === 'side') {
-        out.push('cw_side');
+        out.push(Number(s[k]) >= 2 ? 'cw_side' : (side === 'ccw_side' ? side : 'cw_side'));
         if (Number(s[k]) >= 2) out.push('ccw_side');
       } else {
         out.push(k);
@@ -618,6 +890,7 @@
 
   // 检查模块能否装到某位（占面/互斥）
   function canBuildModule(armId, slotKey, moduleId) {
+    if (RETIRED_MODULES[moduleId]) return { ok: false, reason: 'module_retired' };
     var m = getModule(moduleId);
     if (!m) return { ok: false, reason: 'unknown_module' };
     var holder = getArmOrAxis(armId);
@@ -630,7 +903,7 @@
       return { ok: true };
     }
 
-    var slots = expandModuleSlots(m);
+    var slots = expandModuleSlots(m, slotKey);
     if (slots.indexOf(slotKey) < 0) return { ok: false, reason: 'slot_mismatch' };
     for (var i = 0; i < slots.length; i++) {
       if (holder.container[slots[i]]) return { ok: false, reason: 'slot_occupied' };
@@ -673,6 +946,7 @@
 
   // 装配（= 首次建造，消耗 Lv1→2 档材料；臂上跨面模块：主位存实例，其余面存影子）
   function buildModule(armId, slotKey, moduleId) {
+    if (RETIRED_MODULES[moduleId]) return { ok: false, reason: 'module_retired' };
     var m = getModule(moduleId);
     if (!m) return { ok: false, reason: 'unknown_module' };
     var chk = canBuildModule(armId, slotKey, moduleId);
@@ -686,7 +960,8 @@
       return { ok: true };
     }
     holder.container[slotKey] = makeModuleInstance(moduleId);
-    var slots = expandModuleSlots(m);
+    var slots = expandModuleSlots(m, slotKey);
+    holder.container[slotKey].occupied_slots = slots.slice();
     for (var i = 0; i < slots.length; i++) {
       if (slots[i] !== slotKey) {
         holder.container[slots[i]] = { shadow: true, module_id: moduleId };
@@ -695,15 +970,64 @@
     return { ok: true };
   }
 
-  // 拆卸（不退材料；清空主位 + 其影子面）
+  function getModuleStorage() { var st = ensureState(); return st.module_storage || { records: [], items: {}, capacity: 32 }; }
+  function claimModuleMaterials() {
+    var box = getModuleStorage(), IE = window.InventoryEquipment, placed = 0;
+    if (!IE || !IE.putItemIntoDefaultContainer) return { ok: false, reason: 'no_inventory' };
+    Object.keys(box.items).forEach(function (id) {
+      while (box.items[id] > 0) { var r = IE.putItemIntoDefaultContainer({ item_id: id }); if (!r || !r.placed) break; box.items[id]--; placed++; }
+      if (!box.items[id]) delete box.items[id];
+    });
+    return { ok: placed > 0, placed: placed };
+  }
+  function restoreModuleResources(recordId, armId, slot) {
+    var box = getModuleStorage(), record = box.records.filter(function (r) { return r.id === recordId; })[0];
+    var holder = getArmOrAxis(armId), target = holder && holder.container[slot];
+    if (!record || !target || target.shadow || target.module_id !== record.module_id) return { ok: false, reason: 'no_resource_receiver' };
+    var src = record.resources;
+    if ((src.feed_units || 0) + (target.feed_units || 0) > getTroughCapacity(target) + 1e-9) return { ok: false, reason: 'full' };
+    var cap = target.module_id === 'feed_refine' ? MODULE_EFFECTS.feed_refine.cache_capacity[clamp(target.level || 1, 1, 5) - 1] : 0;
+    if ((src.refine_cache || 0) + (target.refine_cache || 0) > cap + 1e-9) return { ok: false, reason: 'full' };
+    if (src.cache && src.cache.items) {
+      var count = Object.values(src.cache.items).reduce(function (n, c) { return n + c; }, 0);
+      if (count + getWarehouseUsage() > getWarehouseCapacity()) return { ok: false, reason: 'full' };
+    }
+    ['feed_units','refine_cache','processing_units'].forEach(function (key) { if (src[key]) target[key] = (target[key] || 0) + src[key]; });
+    ['input_queue','output_queue'].forEach(function (key) { if (src[key]) target[key] = (target[key] || []).concat(src[key]); });
+    if (src.cache && src.cache.items) {
+      target.cache = target.cache || { items: {} }; target.cache.items = target.cache.items || {};
+      Object.keys(src.cache.items).forEach(function (id) { target.cache.items[id] = (target.cache.items[id] || 0) + src.cache.items[id]; });
+    }
+    box.records.splice(box.records.indexOf(record), 1); return { ok: true };
+  }
+
+  // Disassembly returns paid materials and preserves intermediate resources without converting them again.
   function dismountModule(armId, slotKey) {
     var holder = getArmOrAxis(armId);
     if (!holder) return { ok: false, reason: 'unknown_arm' };
     var inst = holder.container[slotKey];
     if (!inst) return { ok: false, reason: 'slot_empty' };
     if (isShadowSlot(inst)) return { ok: false, reason: 'shadow_slot' };
-    if (inst.upgrading_remaining > 0) return { ok: false, reason: 'upgrading' };
     var moduleId = inst.module_id;
+    if (moduleId === 'coop' && ensureState().animals.some(function (a) { return a.location_type === 'coop' && a.arm_id === armId; })) return { ok: false, reason: 'coop_occupied' };
+    var hasResources = (inst.feed_units || 0) > 0 || (inst.refine_cache || 0) > 0 || (inst.processing_units || 0) > 0 ||
+      (inst.input_queue && inst.input_queue.length) || (inst.output_queue && inst.output_queue.length) ||
+      (inst.cache && inst.cache.items && Object.keys(inst.cache.items).some(function (id) { return inst.cache.items[id] > 0; }));
+    var box = getModuleStorage();
+    if (hasResources && box.records.length >= box.capacity) return { ok: false, reason: 'transfer_full' };
+    var refunds = {}, module = getModule(moduleId);
+    function refundStep(step) { (step && step.inputs || []).forEach(function (i) { refunds[i.item_id] = (refunds[i.item_id] || 0) + i.count; }); }
+    refundStep(getBuildStep(module.tier, 1));
+    for (var level = 1; level < (inst.level || 1); level++) refundStep(getBuildStep(module.tier, level));
+    if (inst.upgrading_remaining > 0) refundStep(getBuildStep(module.tier, inst.level || 1));
+    ensureState().module_storage = box;
+    Object.keys(refunds).forEach(function (id) { box.items[id] = (box.items[id] || 0) + refunds[id]; });
+    if (hasResources) {
+      var resources = {};
+      ['feed_units','refine_cache','processing_units','input_queue','output_queue','cache'].forEach(function (key) { if (inst[key] != null) resources[key] = JSON.parse(JSON.stringify(inst[key])); });
+      box.sequence = (box.sequence || 0) + 1;
+      box.records.push({ id: 'transfer_' + box.sequence, module_id: moduleId, resources: resources });
+    }
     holder.container[slotKey] = null;
     for (var sk in holder.container) {
       var v = holder.container[sk];
@@ -754,43 +1078,19 @@
 
   /* ================= 模块效果（§11.4 数值） ================= */
 
-  var MODULE_EFFECTS = {
-    sprinkler:    { growth: [0.15, 0.20, 0.25, 0.30, 0.40], decompact: [0, 0, 0.002, 0, 0.004] },
-    clean_brush:  { per_round: [3, 4, 5, 6, 8] },
-    tiller:       { per_tick: [0.04, 0.05, 0.06, 0.08, 0.10] },
-    seeder:       { threshold: [0.3, 0.4, 0.4, 0.5, 0.5], growth: [0.50, 0.50, 0.75, 0.75, 1.00] },
-    manure_net:   { sheep_reduce: [0.50, 0.55, 0.60, 0.65, 0.75], trample_reduce: [0, 0, 0, 0.10, 0.15] },
-    pasture_arm:  { per_tick: [0.04, 0.05, 0.06, 0.08, 0.10], growth: [0.20, 0.25, 0.30, 0.35, 0.40], seed_growth: [0.50, 0.50, 0.75, 0.75, 1.00], seed_threshold: 0.4 },
-    clinic_arm:   { heal: [0.01, 0.02, 0.03, 0.05, 0.08], count: [2, 3, 4, 5, 6] },
-    auto_collect: { cooldown_mult: [1.00, 0.95, 0.90, 0.85, 0.80], clean_corpse: [false, false, false, true, true] },
-    warehouse_hub: { capacity: [50, 80, 120, 160, 200] },
-    // 饲料预处理（§10.3/§11.3.2）：投入作物 → 标准饲料自动入同臂槽（营养值÷10 = 单位）
-    feed_preprocess: { transfer_units_per_tick: [0.5, 0.75, 1.0, 1.5, 2.0] },
-    // 饲料精加工臂（§11.4）：预处理 + 自动补槽 + 精加工倍率
-    feed_refine: { refine_mult: [1.2, 1.25, 1.3, 1.35, 1.4], cache_capacity: [0, 0, 0, 0, 50] },
-    // 气候调控塔（§11.6.2）：三模式全局（模式在实例 mode 字段）
-    climate_control: {
-      sunny:    { grass: 0.25, satiety: 0.20 },
-      shade:    { grass: -0.15, satiety: -0.20 },
-      humid:    { pollution_clean: 0.01, compaction_up: 0.003 }
-    },
-    // 联动作业臂（§11.5.1）：调度点数/轮
-    link_schedule: { dispatch_points: [2, 2, 3, 3, 4], rules_enabled: [1, 2, 2, 2, 2] },
-    // 废热回收臂（§11.5.2）：转化率（按模式）
-    waste_heat_recycle: { convert_rate: [0.20, 0.20, 0.25, 0.25, 0.35] }
-  };
+  var MODULE_EFFECTS = {}; // The module JSON owns all level effects.
 
-  function healAnimalsInZones(st, zoneList, heal, count) {
-    var candidates = [];
-    st.animals.forEach(function (a) {
-      if (a.dead || a.location_type !== 'zone') return;
-      var z = st.zones[a.zone_id];
-      if (z && zoneList.indexOf(z) >= 0 && a.hp < 100) candidates.push(a);
+  function healShared(st, clinics) {
+    var animals = st.animals.filter(function (a) { return !a.dead && a.location_type === 'zone' && a.hp < 100 - nutritionInjury(a) - 1e-9; });
+    animals.sort(function (a,b) { return a.hp - b.hp || (a.clinic_last_served || 0) - (b.clinic_last_served || 0) || String(a.uid).localeCompare(String(b.uid)); });
+    animals.forEach(function (a) {
+      var eligible = clinics.filter(function (c) { return c.remaining > 0 && c.zones.indexOf(a.zone_id) >= 0; });
+      eligible.sort(function (a,b) { return b.heal - a.heal; });
+      if (!eligible.length) return;
+      var clinic = eligible[0]; clinic.remaining--;
+      a.hp = Math.min(100 - nutritionInjury(a), a.hp + clinic.heal);
+      a.clinic_last_served = st.elapsed_ticks || 1;
     });
-    candidates.sort(function (a, b) { return a.hp - b.hp; });
-    for (var i = 0; i < Math.min(count, candidates.length); i++) {
-      candidates[i].hp = clamp(candidates[i].hp + heal, 0, 100);
-    }
   }
 
   function t(key, vars) {
@@ -809,19 +1109,22 @@
     var idx = lv - 1;
     var pct = function (v) { return Math.round(v * 100) + '%'; };
     var arr = function (a) { return a[idx]; };
+    if (moduleId === 'feed_trough') return t('livestock.effect.trough', { capacity: arr(eff.capacity), throughput: arr(eff.throughput) });
+    if (moduleId === 'coop') return t('livestock.effect.coop', { capacity: arr(eff.capacity) });
+    if (moduleId === 'slaughter') return t('livestock.effect.slaughter', { v: Math.round((arr(eff.yield_recovery) - 1) * 100) });
     if (moduleId === 'sprinkler') {
       var parts = [t('livestock.effect.grass_growth', { v: pct(arr(eff.growth)) })];
-      if (arr(eff.decompact) > 0) parts.push(t('livestock.effect.decompact', { v: (arr(eff.decompact) * 1000).toFixed(0) }));
+      if (arr(eff.decompact) > 0) parts.push(t('livestock.effect.decompact', { v: arr(eff.decompact).toFixed(3) }));
       return parts.join('；');
     }
     if (moduleId === 'clean_brush') {
-      return t('livestock.effect.clean_brush', { v: (arr(eff.per_round) / 10).toFixed(1) });
+      return t('livestock.effect.clean_brush', { v: arr(eff.per_round).toFixed(1) });
     }
     if (moduleId === 'tiller') {
-      return t('livestock.effect.tiller', { v: (arr(eff.per_tick) * 100).toFixed(0) });
+      return t('livestock.effect.tiller', { v: arr(eff.per_tick).toFixed(3) });
     }
     if (moduleId === 'seeder') {
-      return t('livestock.effect.seeder', { threshold: pct(arr(eff.threshold)), v: pct(arr(eff.growth)) });
+      return t('livestock.effect.seeder', { threshold: arr(eff.threshold).toFixed(1) + ' m', v: pct(arr(eff.growth)) });
     }
     if (moduleId === 'manure_net') {
       var mp = [t('livestock.effect.sheep_reduce', { v: pct(arr(eff.sheep_reduce)) })];
@@ -829,12 +1132,12 @@
       return mp.join('；');
     }
     if (moduleId === 'pasture_arm') {
-      var pp = [t('livestock.effect.tiller', { v: (arr(eff.per_tick) * 100).toFixed(0) }), t('livestock.effect.grass_growth', { v: pct(arr(eff.growth)) })];
-      pp.push(t('livestock.effect.seeder', { threshold: pct(eff.seed_threshold), v: pct(arr(eff.seed_growth)) }));
+      var pp = [t('livestock.effect.tiller', { v: arr(eff.per_tick).toFixed(3) }), t('livestock.effect.grass_growth', { v: pct(arr(eff.growth)) })];
+      pp.push(t('livestock.effect.seeder', { threshold: eff.seed_threshold.toFixed(1) + ' m', v: pct(arr(eff.seed_growth)) }));
       return pp.join('；');
     }
     if (moduleId === 'clinic_arm') {
-      return t('livestock.effect.clinic', { v: (arr(eff.heal) * 100).toFixed(0), n: arr(eff.count) });
+      return t('livestock.effect.clinic', { v: arr(eff.heal).toFixed(3), n: arr(eff.count) });
     }
     if (moduleId === 'auto_collect') {
       var ap = [t('livestock.effect.auto_collect')];
@@ -853,20 +1156,12 @@
       if (arr(eff.cache_capacity) > 0) fp.push(t('livestock.effect.cache_priority', { v: arr(eff.cache_capacity) }));
       return fp.join('；');
     }
-    if (moduleId === 'climate_control') {
-      return t('livestock.effect.climate_control');
-    }
-    if (moduleId === 'link_schedule') {
-      return t('livestock.effect.link_schedule', { v: arr(eff.dispatch_points), n: arr(eff.rules_enabled) });
-    }
-    if (moduleId === 'waste_heat_recycle') {
-      return t('livestock.effect.waste_heat', { v: Math.round(arr(eff.convert_rate) * 100) });
-    }
     return '';
   }
 
   // 每 tick 结算模块效果：作用于该臂夹持两区（通过 zone 临时字段传递）
   function tickModules(st) {
+    var clinics = [];
     for (var ak in st.arms) {
       var arm = st.arms[ak];
       if (!arm || typeof arm !== 'object') continue;
@@ -895,6 +1190,13 @@
         var idx = lv - 1;
         var eff = MODULE_EFFECTS[mid];
         if (!eff) continue;
+        if (mid === 'seeder' || mid === 'manure_net') {
+          var side = (inst.occupied_slots || []).indexOf('ccw_side') >= 0 ? 0 : 1;
+          var target = st.zones[zones[side]];
+          if (target && mid === 'seeder' && target.grass_height < eff.threshold[idx]) target._mg = (target._mg || 1) * (1 + eff.growth[idx]);
+          if (target && mid === 'manure_net') { target._sr = Math.max(target._sr || 0, eff.sheep_reduce[idx]); target._tr = Math.max(target._tr || 0, eff.trample_reduce[idx]); }
+          continue;
+        }
         if (mid === 'sprinkler') {
           growthBonus += eff.growth[idx];
           decompact += eff.decompact[idx] || 0;
@@ -919,34 +1221,22 @@
         } else if (mid === 'auto_collect') {
           // 多臂多采集臂取最优（冷却减免最小 / 清尸能力）
           autoCollectActive = true;
-          autoCdMult = Math.min(autoCdMult, eff.cooldown_mult[idx] || 1);
+          autoCdMult = Math.min(autoCdMult, eff.cooldown_mult[idx] ?? 1);
           if (eff.clean_corpse && eff.clean_corpse[idx]) autoCleanCorpse = true;
         } else if (mid === 'feed_preprocess') {
           // 饲料预处理（§10.3）：作物 → 标准饲料自动入同臂槽
           tickFeedProcessing(st, inst, 1);
         } else if (mid === 'feed_refine') {
           // 饲料精加工臂（§11.4）：倍率加工 + 自动补槽
-          var rmult = eff.refine_mult[idx] || 1.2;
+          var rmult = eff.refine_mult[idx] ?? 1.2;
           tickFeedProcessing(st, inst, rmult);
-          // Lv4 自动补相邻臂的饲料槽（向同臂之外的所有槽匀补精加工缓存）
-          if (lv >= 4 && inst.refine_cache > 0) {
-            for (var oak in st.arms) {
-              var oarm = st.arms[oak];
-              var otrough = findTroughOnArm(oarm);
-              if (otrough && otrough !== findTroughOnArm(arm)) {
-                var give = Math.min(inst.refine_cache, 1);
-                inst.refine_cache -= give;
-                addUnitsToTrough(otrough, give);
-                if (inst.refine_cache <= 0) break;
-              }
-            }
-          }
+
         }
       }
 
       zoneList.forEach(function (z) {
-        if (decompact > 0) z.compaction = clamp(z.compaction - decompact, 0, 100);
-        if (cleanPerTick > 0) z.pollution = clamp(z.pollution - cleanPerTick, 0, 100);
+        if (decompact > 0) z._decompact_request = (z._decompact_request || 0) + decompact;
+        if (cleanPerTick > 0) z._clean_request = (z._clean_request || 0) + cleanPerTick;
         z._mg = (z._mg || 1) * (1 + growthBonus);
         if (seedThreshold != null && z.grass_height != null && z.grass_height < seedThreshold) {
           z._mg = z._mg * (1 + seedGrowth);
@@ -954,7 +1244,7 @@
         if (sheepReduce > 0) z._sr = Math.max(z._sr || 0, sheepReduce);
         if (trampleReduce > 0) z._tr = Math.max(z._tr || 0, trampleReduce);
       });
-      if (clinicHeal > 0) healAnimalsInZones(st, zoneList, clinicHeal, clinicCount);
+      if (clinicHeal > 0) clinics.push({ zones: zones, heal: clinicHeal, remaining: clinicCount });
 
       // 手动采集臂（§11.4）：自动收割夹持两区冷却完毕的活体产物；Lv4+ 自动清尸
       if (autoCollectActive) {
@@ -964,16 +1254,14 @@
         st.pending_auto_items = st.pending_auto_items || [];
         // 自动采集（不给经验，§9.3 只给手动）
         st.animals.forEach(function (a) {
-          if (a.dead || a.location_type !== 'zone') return;
-          if (zones.indexOf(a.zone_id) < 0) return;
+          if (a.dead) return;
+          if (a.location_type === 'coop' ? a.arm_id !== ak : zones.indexOf(a.zone_id) < 0) return;
           var asp = getSpecies(a.species_id);
           if (!asp || !asp.products || !asp.products.living) return;
           asp.products.living.forEach(function (p) {
             var r = collectProduct(a.uid, p.product_id, autoCdMult);
             if (r.ok) {
-              if (hasHub) {
-                warehouseAdd(r.item_id);
-              } else {
+              if (!hasHub || !warehouseAdd(r.item_id)) {
                 st.pending_auto_items.push({ item_id: r.item_id, count: r.count, uid: a.uid });
               }
             }
@@ -983,13 +1271,15 @@
         if (autoCleanCorpse) {
           for (var ci = st.animals.length - 1; ci >= 0; ci--) {
             var c = st.animals[ci];
-            if (c.dead && c.location_type === 'zone' && zones.indexOf(c.zone_id) >= 0) {
+            if (c.dead && (c.location_type === 'coop' ? c.arm_id === ak : zones.indexOf(c.zone_id) >= 0)) {
+              releaseStoredProducts(st, c);
               st.animals.splice(ci, 1);
             }
           }
         }
       }
     }
+    healShared(st, clinics);
   }
 
   function clearModuleTempFields() {
@@ -1001,6 +1291,8 @@
       if (z._tr != null) delete z._tr;
       if (z._seed_once != null) delete z._seed_once;
       if (z._feed_priority != null) delete z._feed_priority;
+      delete z._clean_request;
+      delete z._decompact_request;
     }
   }
 
@@ -1028,14 +1320,14 @@
     if (!hub) return 0;
     var lv = Math.max(1, Math.min(5, hub.level || 1));
     var eff = MODULE_EFFECTS.warehouse_hub;
-    return (eff && eff.capacity[lv - 1]) || 50;
+    return (eff && eff.capacity[lv - 1]) ?? 50;
   }
 
   // 仓储当前占用（格数，每种产物 1 格）
   function getWarehouseUsage() {
     var hub = getWarehouseHub();
     if (!hub || !hub.cache || !hub.cache.items) return 0;
-    return Object.keys(hub.cache.items).length;
+    return Object.keys(hub.cache.items).reduce(function (n, id) { return n + Math.max(0, Number(hub.cache.items[id]) || 0); }, 0);
   }
 
   // 产物入缓存（有仓储枢纽时）；满则返回 false（产物仍走背包）
@@ -1065,7 +1357,7 @@
     if (!trough) return 0;
     if (trough.feed_units == null) trough.feed_units = 0;
     var before = trough.feed_units;
-    trough.feed_units = clamp(trough.feed_units + units, 0, 100);
+    trough.feed_units = clamp(trough.feed_units + units, 0, getTroughCapacity(trough));
     return trough.feed_units - before;
   }
 
@@ -1085,15 +1377,10 @@
     var nut = getCropNutrition(cropItemId);
     if (nut == null) return { ok: false, reason: 'not_feed_crop' };
     var c = Math.max(1, Math.floor(Number(count) || 1));
-    var IE = window.InventoryEquipment;
-    if (!IE || typeof IE.takeItemFromDefaultContainer !== 'function') return { ok: false, reason: 'no_inventory' };
-    var removed = 0;
-    for (var i = 0; i < c; i++) {
-      var r = IE.takeItemFromDefaultContainer(cropItemId, 1);
-      if (r && r.success) removed++;
-      else break;
-    }
-    if (removed <= 0) return { ok: false, reason: 'not_enough_crop' };
+    if (!(nut > 0) || !(Number(count == null ? 1 : count) > 0)) return { ok: false, reason: 'invalid_amount' };
+    var paid = consumeCrop(cropItemId, c);
+    if (!paid.ok) return paid;
+    var removed = c;
     if (!inst.input_queue) inst.input_queue = [];
     // 同类作物合并队列项
     var merged = null;
@@ -1107,31 +1394,51 @@
 
   // 每 tick 加工队列 → 标准饲料入槽（预处理/精加工共用；refine 有倍率）
   function tickFeedProcessing(st, inst, refineMult) {
-    if (!inst || !inst.input_queue || !inst.input_queue.length) return;
+    if (!inst) return;
     var arm = findArmForModuleInstance(st, inst);
-    var trough = arm ? findTroughOnArm(arm) : null;
-    // 精加工 Lv5：可缓存 50 单位（优先入缓存，缓存满再入槽）
-    var cacheCap = 0;
-    var eff = MODULE_EFFECTS.feed_refine;
-    if (inst.module_id === 'feed_refine' && eff) {
-      cacheCap = eff.cache_capacity[Math.max(0, Math.min(4, (inst.level || 1) - 1))] || 0;
+    var receivers = [];
+    function addReceivers(a) { ['cw_side', 'ccw_side'].forEach(function (s) {
+      var t = a && a[s]; if (t && !t.shadow && t.module_id === 'feed_trough') receivers.push(t);
+    }); }
+    addReceivers(arm);
+    var lv = clamp(inst.level || 1, 1, 5);
+    if (inst.module_id === 'feed_refine' && MODULE_EFFECTS.feed_refine.adjacent_delivery[lv - 1]) {
+      var keys = Object.keys(st.arms).sort(), index = keys.indexOf(Object.keys(st.arms).filter(function (k) { return st.arms[k] === arm; })[0]);
+      if (index >= 0) { addReceivers(st.arms[keys[(index + 1) % keys.length]]); addReceivers(st.arms[keys[(index + keys.length - 1) % keys.length]]); }
     }
-    if (!inst.refine_cache) inst.refine_cache = 0;
-    var mult = refineMult || 1;
-    var q = inst.input_queue[0];
-    // 单 tick 处理 1 个作物 → nutrition÷10 × mult 单位
-    var units = (q.nutrition / 10) * mult;
-    q.count--;
-    if (q.count <= 0) inst.input_queue.shift();
-    var left = units;
-    if (cacheCap > 0 && inst.refine_cache < cacheCap) {
-      var intoCache = Math.min(left, cacheCap - inst.refine_cache);
-      inst.refine_cache += intoCache;
-      left -= intoCache;
+    var cacheCap = inst.module_id === 'feed_refine' ? MODULE_EFFECTS.feed_refine.cache_capacity[lv - 1] : 0;
+    inst.refine_cache = Math.max(0, inst.refine_cache || 0);
+    var speed = MODULE_EFFECTS[inst.module_id].transfer_units_per_tick[lv - 1];
+    function deliver(amount) {
+      var space = receivers.reduce(function (n, t) { return n + Math.max(0, getTroughCapacity(t) - (t.feed_units || 0)); }, 0);
+      var out = Math.min(amount, space);
+      if (space > 0) receivers.forEach(function (t) { addUnitsToTrough(t, out * Math.max(0, getTroughCapacity(t) - (t.feed_units || 0)) / space); });
+      return out;
     }
-    if (left > 0 && trough) {
-      addUnitsToTrough(trough, left);
+    var flushed = deliver(Math.min(speed, inst.refine_cache));
+    inst.refine_cache -= flushed; speed -= flushed;
+    var space = receivers.reduce(function (n, t) { return n + Math.max(0, getTroughCapacity(t) - (t.feed_units || 0)); }, 0) + Math.max(0, cacheCap - inst.refine_cache);
+    if (space <= 1e-9 || speed <= 1e-9) return;
+    while (speed > 1e-9 && space > 1e-9) {
+      if (!(inst.processing_units > 1e-9)) {
+        var q = inst.input_queue && inst.input_queue[0];
+        if (!q || !(q.nutrition > 0) || !(q.count > 0)) break;
+        inst.processing_units = q.nutrition / 10 * (refineMult ?? 1);
+        q.count--; if (q.count <= 0) inst.input_queue.shift();
+      }
+      var transfer = Math.min(speed, space, inst.processing_units);
+      var delivered = deliver(transfer);
+      inst.refine_cache += transfer - delivered;
+      inst.processing_units = Math.max(0, inst.processing_units - transfer);
+      speed -= transfer; space -= transfer;
     }
+  }
+
+  function consumeCrop(itemId, count) {
+    var IE = window.InventoryEquipment;
+    if (!IE || typeof IE.removeCarriedItemsByTemplateId !== 'function') return { ok: false, reason: 'no_inventory' };
+    var r = IE.removeCarriedItemsByTemplateId(itemId, count);
+    return r && r.ok ? { ok: true } : { ok: false, reason: 'not_enough_crop' };
   }
 
   function findArmForModuleInstance(st, targetInst) {
@@ -1145,256 +1452,16 @@
     return null;
   }
 
-  // 轴心位2 的气候调控塔实例（§11.6.2）；未装返回 null
-  function getClimateControl() {
-    var st = ensureState();
-    var axis = st.axis || {};
-    var inst = axis.slot2;
-    if (!inst || isShadowSlot(inst) || inst.module_id !== 'climate_control') return null;
-    if (inst.mode == null) inst.mode = 'off';
-    if (inst.mode_switch_cooldown == null) inst.mode_switch_cooldown = 0;
-    return inst;
-  }
+  // Compatibility tombstones: retired modules cannot be reactivated.
+  function getClimateControl() { return null; }
+  function climateSetMode() { return { ok: false, reason: 'module_retired' }; }
+  function getClimateModifiers() { return { grassMult: 1, satietyMult: 1, pollutionClean: 0, compactionUp: 0 }; }
+  function getWasteHeatRecycle() { return null; }
+  function wasteHeatSetMode() { return { ok: false, reason: 'module_retired' }; }
+  function wasteHeatTakeAll() { return []; }
+  function getLinkSchedule() { return null; }
+  function linkScheduleToggleRule() { return { ok: false, reason: 'module_retired' }; }
 
-  // 切换气候模式（§11.6.2）：晴朗/阴凉/湿润/关闭；冷却 2000 tick（Lv3 1500 / Lv5 1000）
-  function climateSetMode(mode) {
-    var inst = getClimateControl();
-    if (!inst) return { ok: false, reason: 'no_climate_tower' };
-    // 气候调控塔为需电模块（k93）：缺电 → 拒绝切换（停摆）
-    if (!isModulePowered('climate_control')) return { ok: false, reason: 'no_power' };
-    if (mode === inst.mode) return { ok: true, mode: mode };
-    if ((inst.mode_switch_cooldown || 0) > 0) {
-      return { ok: false, reason: 'cooldown', remaining: inst.mode_switch_cooldown };
-    }
-    var lv = Math.max(1, Math.min(5, inst.level || 1));
-    // 模式解锁：Lv1 晴+阴；Lv2 湿润
-    if (mode === 'humid' && lv < 2) return { ok: false, reason: 'locked', need_level: 2 };
-    if (mode !== 'off' && mode !== 'sunny' && mode !== 'shade' && mode !== 'humid') {
-      return { ok: false, reason: 'unknown_mode' };
-    }
-    inst.mode = mode;
-    var cd = lv >= 5 ? 1000 : (lv >= 3 ? 1500 : 2000);
-    inst.mode_switch_cooldown = cd;
-    return { ok: true, mode: mode, cooldown: cd };
-  }
-
-  // 当前气候修正（供 tick 应用）：返回 { grassMult, satietyMult, pollutionClean, compactionUp }
-  function getClimateModifiers() {
-    // 气候调控塔为需电模块（k93）：缺电 → 全局修正归零（停摆）
-    if (!isModulePowered('climate_control')) {
-      return { grassMult: 1, satietyMult: 1, pollutionClean: 0, compactionUp: 0 };
-    }
-    var inst = getClimateControl();
-    if (!inst || !inst.mode || inst.mode === 'off') {
-      return { grassMult: 1, satietyMult: 1, pollutionClean: 0, compactionUp: 0 };
-    }
-    var eff = MODULE_EFFECTS.climate_control;
-    var cfg = eff && eff[inst.mode];
-    if (!cfg) return { grassMult: 1, satietyMult: 1, pollutionClean: 0, compactionUp: 0 };
-    var lv = Math.max(1, Math.min(5, inst.level || 1));
-    // Lv4 效果强度 +50%（增益和代价同步）
-    var k = lv >= 4 ? 1.5 : 1;
-    return {
-      grassMult: 1 + (cfg.grass || 0) * k,
-      satietyMult: 1 + (cfg.satiety || 0) * k,
-      pollutionClean: (cfg.pollution_clean || 0) * k,
-      compactionUp: (cfg.compaction_up || 0) * k
-    };
-  }
-
-  // 废热回收臂实例（§11.5.2）；未装返回 null
-  function getWasteHeatRecycle() {
-    var st = ensureState();
-    for (var ak in st.arms) {
-      var arm = st.arms[ak];
-      if (!arm || typeof arm !== 'object') continue;
-      for (var s = 0; s < ARM_SLOT_KEYS.length; s++) {
-        var sl = arm[ARM_SLOT_KEYS[s]];
-        if (sl && !isShadowSlot(sl) && sl.module_id === 'waste_heat_recycle') return sl;
-      }
-    }
-    return null;
-  }
-
-  // 切换废热回收模式（§11.5.2）：肥料/燃料/饲料；冷却 500 tick；Lv2 燃料 / Lv4 饲料
-  function wasteHeatSetMode(mode) {
-    var inst = getWasteHeatRecycle();
-    if (!inst) return { ok: false, reason: 'no_heat_arm' };
-    // 废热回收臂为需电模块（k93）：缺电 → 拒绝切换（停摆）
-    if (!isModulePowered('waste_heat_recycle')) return { ok: false, reason: 'no_power' };
-    if (mode === inst.mode) return { ok: true, mode: mode };
-    if ((inst.mode_switch_cooldown || 0) > 0) {
-      return { ok: false, reason: 'cooldown', remaining: inst.mode_switch_cooldown };
-    }
-    var lv = Math.max(1, Math.min(5, inst.level || 1));
-    if (mode === 'fuel' && lv < 2) return { ok: false, reason: 'locked', need_level: 2 };
-    if (mode === 'feed' && lv < 4) return { ok: false, reason: 'locked', need_level: 4 };
-    if (mode !== 'fertilizer' && mode !== 'fuel' && mode !== 'feed') {
-      return { ok: false, reason: 'unknown_mode' };
-    }
-    inst.mode = mode;
-    inst.mode_switch_cooldown = 500;
-    return { ok: true, mode: mode };
-  }
-
-  // 废热回收产出映射
-  function wasteHeatOutputItem(mode) {
-    return mode === 'fuel' ? 'hus_biogas' : (mode === 'feed' ? 'hus_insect_powder' : 'fertilizer_basic');
-  }
-
-  // 每 tick 结算废热回收：全 tick 污染净下降量 × 转化率 = 资源点；100 点 = 1 份产出
-  // 基线在 advanceTick 开头记录（st._waste_heat_baseline），覆盖鸡笼/猪/清污刷/手动/湿润等所有降污来源
-  function tickWasteHeat(st) {
-    var inst = getWasteHeatRecycle();
-    if (!inst) return;
-    // 废热回收臂为需电模块（k93）：缺电 → 不回收（停摆）
-    if (!isModulePowered('waste_heat_recycle')) return;
-    if ((inst.mode_switch_cooldown || 0) > 0) inst.mode_switch_cooldown--;
-    var lv = Math.max(1, Math.min(5, inst.level || 1));
-    var eff = MODULE_EFFECTS.waste_heat_recycle;
-    var rate = (eff && eff.convert_rate[lv - 1]) || 0.2;
-    if (!inst.points) inst.points = 0;
-    var drop = 0;
-    var base = st._waste_heat_baseline || {};
-    // 作用范围（§11.5.2）：Lv1-2 该臂夹持两区；Lv3+ 全四区（可回收相邻区域）
-    var grasp = null;
-    if (lv < 3) {
-      var heatArm = null;
-      for (var hak in st.arms) {
-        var hArm = st.arms[hak];
-        if (!hArm || typeof hArm !== 'object') continue;
-        for (var hs = 0; hs < ARM_SLOT_KEYS.length; hs++) {
-          var hsl = hArm[ARM_SLOT_KEYS[hs]];
-          if (hsl && !isShadowSlot(hsl) && hsl.module_id === 'waste_heat_recycle') { heatArm = hArm; break; }
-        }
-        if (heatArm) { grasp = (st.arm_zones && st.arm_zones[hak]) || []; break; }
-      }
-    }
-    for (var zid in st.zones) {
-      if (grasp && grasp.indexOf(zid) < 0) continue;
-      var b = base[zid] != null ? base[zid] : 0;
-      var now = st.zones[zid].pollution || 0;
-      if (now < b) drop += (b - now);
-    }
-    st._waste_heat_baseline = null;
-    if (drop > 0) {
-      inst.points += drop * 100 * rate; // 污染 1% = 100 点当量
-    }
-    if (!inst.output_queue) inst.output_queue = [];
-    while (inst.points >= 100) {
-      inst.points -= 100;
-      inst.output_queue.push({ item_id: wasteHeatOutputItem(inst.mode || 'fertilizer'), count: 1 });
-    }
-  }
-
-  // 提取废热回收产出
-  function wasteHeatTakeAll() {
-    var inst = getWasteHeatRecycle();
-    if (!inst || !inst.output_queue || !inst.output_queue.length) return [];
-    var out = inst.output_queue.slice();
-    inst.output_queue = [];
-    return out;
-  }
-
-  // 联动作业臂实例（§11.5.1）；未装返回 null
-  function getLinkSchedule() {
-    var st = ensureState();
-    for (var ak in st.arms) {
-      var arm = st.arms[ak];
-      if (!arm || typeof arm !== 'object') continue;
-      for (var s = 0; s < ARM_SLOT_KEYS.length; s++) {
-        var sl = arm[ARM_SLOT_KEYS[s]];
-        if (sl && !isShadowSlot(sl) && sl.module_id === 'link_schedule') {
-          return { inst: sl, arm: arm, armId: ak };
-        }
-      }
-    }
-    return null;
-  }
-
-  // 切换联动规则启用（§11.5.1 Lv2+ 手动切换）：rules = ['till_seed','grass_feed','clean_collect']
-  function linkScheduleToggleRule(ruleId) {
-    var ls = getLinkSchedule();
-    if (!ls) return { ok: false, reason: 'no_link_arm' };
-    var lv = Math.max(1, Math.min(5, ls.inst.level || 1));
-    var eff = MODULE_EFFECTS.link_schedule;
-    var maxRules = (eff && eff.rules_enabled[lv - 1]) || 1;
-    if (!ls.inst.enabled_rules) ls.inst.enabled_rules = [];
-    if (ls.inst.enabled_rules.indexOf(ruleId) >= 0) {
-      ls.inst.enabled_rules = ls.inst.enabled_rules.filter(function (r) { return r !== ruleId; });
-      return { ok: true, enabled: ls.inst.enabled_rules };
-    }
-    if (ls.inst.enabled_rules.length >= maxRules) {
-      return { ok: false, reason: 'rule_limit', limit: maxRules };
-    }
-    ls.inst.enabled_rules.push(ruleId);
-    return { ok: true, enabled: ls.inst.enabled_rules.slice() };
-  }
-
-  // 每轮旋转前结算联动（§11.5.1）：调度点数/轮，检测夹持两区条件触发接力
-  function tickLinkSchedule(st) {
-    var ls = getLinkSchedule();
-    if (!ls || !ls.inst || !ls.inst.enabled_rules || !ls.inst.enabled_rules.length) return;
-    // 联动作业臂为需电模块（k93）：缺电 → 调度停摆
-    if (!isModulePowered('link_schedule')) return;
-    var lv = Math.max(1, Math.min(5, ls.inst.level || 1));
-    var eff = MODULE_EFFECTS.link_schedule;
-    if (ls.inst.dispatch == null) ls.inst.dispatch = (eff && eff.dispatch_points[lv - 1]) || 2;
-    ls.inst.dispatch = (eff && eff.dispatch_points[lv - 1]) || 2; // 每轮重置
-    var points = ls.inst.dispatch;
-    var zones = (st.arm_zones && st.arm_zones[ls.armId]) || [];
-    ls.inst.enabled_rules.forEach(function (ruleId) {
-      if (points <= 0) return;
-      var z = zones.length ? st.zones[zones[0]] : null;
-      var z2 = zones.length > 1 ? st.zones[zones[1]] : null;
-      if (ruleId === 'till_seed') {
-        // 板结 < 20 → 播种（草低时加速生长）
-        [z, z2].forEach(function (zz) {
-          if (!zz || points <= 0) return;
-          if ((zz.compaction || 0) < 20 && (zz.grass_height || 0) < 0.8) {
-            zz._seed_once = 0.5; // 播种一次：草生长当轮 +50%
-            points--;
-          }
-        });
-      } else if (ruleId === 'grass_feed') {
-        // 草高 > 1.0 → 该臂夹持区投喂优先级（饲料槽优先补饱腹）
-        [z, z2].forEach(function (zz) {
-          if (!zz || points <= 0) return;
-          if ((zz.grass_height || 0) > 1.0) {
-            zz._feed_priority = true;
-            points--;
-          }
-        });
-      } else if (ruleId === 'clean_collect') {
-        // 污染 < 10% → 自动采集一轮（直接触发一次采集）
-        [z, z2].forEach(function (zz) {
-          if (!zz || points <= 0) return;
-          if ((zz.pollution || 0) < 10) {
-            st.animals.forEach(function (a) {
-              if (a.dead || a.location_type !== 'zone' || a.zone_id !== zones[zones.indexOf(zz)]) return;
-              var asp = getSpecies(a.species_id);
-              if (!asp || !asp.products || !asp.products.living) return;
-              asp.products.living.forEach(function (p) {
-                var r = collectProduct(a.uid, p.product_id, 1);
-                if (r.ok) {
-                  // 仓储枢纽为需电模块（k93）：缺电时产物回落背包队列
-                  if (isModulePowered('warehouse_hub') && getWarehouseHub()) warehouseAdd(r.item_id);
-                  else {
-                    st.pending_auto_items = st.pending_auto_items || [];
-                    st.pending_auto_items.push({ item_id: r.item_id, count: r.count, uid: a.uid });
-                  }
-                }
-              });
-            });
-            points--;
-          }
-        });
-      }
-    });
-    ls.inst.dispatch = points;
-  }
-
-  // 提取缓存全部产物；返回 [{item_id, count}]，并清空缓存
   function warehouseTakeAll() {
     var hub = getWarehouseHub();
     if (!hub || !hub.cache || !hub.cache.items) return [];
@@ -1410,6 +1477,342 @@
   /* ================= tick 生态结算 ================= */
 
   var ZONE_NEXT = { z1: 'z2', z2: 'z3', z3: 'z4', z4: 'z1' };
+
+  function hasCoop(st, armId) {
+    var arm = st.arms[armId];
+    return !!(arm && ARM_SLOT_KEYS.some(function (s) { var m = arm[s]; return m && !m.shadow && m.module_id === 'coop'; }));
+  }
+
+  function getTroughCapacity(inst) { var e = MODULE_EFFECTS.feed_trough; return e ? e.capacity[clamp(inst.level || 1, 1, 5) - 1] : 100; }
+  function getTroughThroughput(inst) { var e = MODULE_EFFECTS.feed_trough; return e ? e.throughput[clamp(inst.level || 1, 1, 5) - 1] : 0.25; }
+  function feedAvailable(inst) { return Math.min(Math.max(0, inst.feed_units || 0), inst._feed_remaining == null ? getTroughThroughput(inst) : inst._feed_remaining); }
+  function getCoopCapacity(armId) {
+    var arm = ensureState().arms[armId], capacity = 0;
+    ARM_SLOT_KEYS.forEach(function (slot) { var m = arm && arm[slot]; if (m && !m.shadow && m.module_id === 'coop') capacity = MODULE_EFFECTS.coop.capacity[clamp(m.level || 1, 1, 5) - 1]; });
+    return capacity;
+  }
+  function canAdmitAnimal(speciesId, locId) {
+    if (!getSpecies(speciesId)) return { ok: false, reason: 'unknown_species' };
+    var st = ensureState();
+    if (speciesId !== 'chicken') return st.zones[locId] ? { ok: true } : { ok: false, reason: 'no_zone' };
+    var cap = getCoopCapacity(locId);
+    if (!cap) return { ok: false, reason: 'no_coop' };
+    var used = st.animals.filter(function (a) { return a.location_type === 'coop' && a.arm_id === locId; }).length;
+    return used < cap ? { ok: true } : { ok: false, reason: 'coop_full' };
+  }
+  // External capture/merchant adapters transfer a paid juvenile through this capacity-checked boundary.
+  function admitAnimal(speciesId, locId, opts) {
+    var check = canAdmitAnimal(speciesId, locId); if (!check.ok) return check;
+    var sp = getSpecies(speciesId); opts = opts || {};
+    var a = makeAnimal(speciesId, speciesId === 'chicken' ? 'female' : (opts.gender || (Math.random() < 0.5 ? 'male' : 'female')), speciesId === 'chicken' ? 'coop' : 'zone', locId,
+      { weight_kg: sp.growth.birth_weight_kg, age_ticks: 0, satiety: 80, perks: opts.perks || rollPerks(speciesId) });
+    initializeNutrition(a, sp); ensureState().animals.push(a); return { ok: true, uid: a.uid };
+  }
+
+  function troughsForAnimal(a) {
+    var st = ensureState(), out = [];
+    Object.keys(st.arms || {}).sort().forEach(function (ak) {
+      var arm = st.arms[ak], zones = st.arm_zones[ak] || [];
+      ['ccw_side', 'cw_side'].forEach(function (s, i) {
+        var t = arm[s];
+        if (!t || t.shadow || t.module_id !== 'feed_trough') return;
+        if (a.location_type === 'coop' ? a.arm_id === ak && hasCoop(st, ak) : a.zone_id === zones[i]) out.push(t);
+      });
+    });
+    return out;
+  }
+
+  // Simultaneous proportional allocation. Each source is debited only once per pass.
+  // A request may draw from both adjacent troughs, but cannot borrow an unreachable source.
+  function distributeFeed(requests) {
+    requests.sort(function (a, b) { return String(a.animal.uid).localeCompare(String(b.animal.uid)); });
+    for (var pass = 0; pass < 8; pass++) {
+      var sources = [], totals = [], offers = [];
+      requests.forEach(function (r) {
+        var remaining = Math.max(0, r.need - r.given);
+        var available = r.sources.reduce(function (n, s) { return n + feedAvailable(s); }, 0);
+        if (remaining < 1e-12 || available < 1e-12) return;
+        r.sources.forEach(function (s) {
+          var amount = remaining * feedAvailable(s) / available;
+          var index = sources.indexOf(s);
+          if (index < 0) { index = sources.length; sources.push(s); totals.push(0); }
+          totals[index] += amount; offers.push({ request: r, source: index, amount: amount });
+        });
+      });
+      if (!offers.length) break;
+      var used = sources.map(function () { return 0; });
+      offers.forEach(function (o) {
+        var amount = o.amount * Math.min(1, feedAvailable(sources[o.source]) / totals[o.source]);
+        o.request.given += amount; used[o.source] += amount;
+      });
+      sources.forEach(function (s, i) { s.feed_units = Math.max(0, (s.feed_units || 0) - used[i]); s._feed_remaining = Math.max(0, (s._feed_remaining == null ? getTroughThroughput(s) : s._feed_remaining) - used[i]); });
+    }
+  }
+
+  function removePollution(st, zoneId, amount, recoverable) {
+    var z = st.zones[zoneId];
+    if (!z) return 0;
+    var actual = Math.min(Math.max(0, z.pollution || 0), Math.max(0, amount || 0));
+    z.pollution = Math.max(0, (z.pollution || 0) - actual);
+    return actual;
+  }
+
+  function nutritionConfig(sp) {
+    return sp.nutrition || { maintenance_per_tick: sp.satiety.drain_per_tick / 10, grass_nutrition_per_m: 3000,
+      full_supply_ratio: 4, full_entry_ratio: 3.8, supply_smoothing_ticks: 60, feed_max_units_per_tick: 0.1,
+      reserve_refill_fraction: 0.5, hunger_damage_hp_per_tick: 100 / (sp.satiety.starvation_dying_ticks || 1000),
+      hunger_recovery_hp_per_tick: 0.05, recovery_nutrition_per_hp: 0.1 };
+  }
+
+  function nutritionInjury(a) { var n = a.nutrition_state || {}; return (n.hunger_damage || 0) + (n.blood_damage || 0) + (n.crowding_damage || 0); }
+
+  function bodyLoad(a, sp) {
+    var cfg = sp && sp.nutrition && sp.nutrition.body_load;
+    if (!cfg) return 1;
+    var weight = clamp(Number(a.weight_kg) || 0, 0, sp.growth.fatten_cap_kg);
+    return Math.max(cfg.minimum, Math.pow(weight / cfg.reference_weight_kg, cfg.exponent));
+  }
+
+  function getAnimalLoad(uid) {
+    var a = findAnimal(uid), sp = a && getSpecies(a.species_id);
+    if (!sp) return null;
+    var current = bodyLoad(a, sp), full = bodyLoad({ weight_kg: sp.growth.fatten_cap_kg }, sp);
+    return { current: current, at_full_weight: full,
+      maintenance: nutritionConfig(sp).maintenance_per_tick * current * getModifier(a, 'satiety_drain_mult'),
+      maintenance_at_full_weight: nutritionConfig(sp).maintenance_per_tick * full * getModifier(a, 'satiety_drain_mult') };
+  }
+
+  function getGrazingStatus(uid) {
+    var a = findAnimal(uid), sp = a && getSpecies(a.species_id);
+    if (!sp || !sp.graze || a.dead || a.location_type !== 'zone') return null;
+    var zone = ensureState().zones[a.zone_id], g = sp.graze;
+    if (!zone) return null;
+    if (g.edible_max_m != null && zone.grass_height > g.edible_max_m) return 'too_high';
+    if (zone.grass_height <= g.edible_min_m) return 'too_low';
+    return 'available';
+  }
+
+  function initializeNutrition(a, sp) {
+    if (!a || !sp) return;
+    if (a.nutrition_state && a.nutrition_state.version === 1) { delete a.starvation_ticks; return; }
+    var cfg = nutritionConfig(sp), damage = Math.min(a.hp || 0, Math.max(0, a.starvation_ticks || 0) * cfg.hunger_damage_hp_per_tick);
+    a.hp = clamp((a.hp == null ? 100 : a.hp) - damage, 0, 100);
+    a.satiety = clamp(a.satiety, 0, 100);
+    a.nutrition_state = { version: 1, average_supply: 0, hunger_damage: damage, feed_buffer: 0, tier: 'insufficient' };
+    a.production_buffers = a.production_buffers || {};
+    delete a.starvation_ticks;
+    if (a.species_id === 'chicken') a.gender = 'female';
+    if (a.hp <= 0 && !a.dead) { a.dead = true; a.death_cause = 'starvation'; }
+  }
+
+  function getNutritionStatus(uid) {
+    var a = findAnimal(uid), n = a && a.nutrition_state;
+    return n ? JSON.parse(JSON.stringify(n)) : { tier: 'unsettled', average_supply: 0 };
+  }
+
+  function bestCollectorMultiplier(a) {
+    var st = ensureState(), best = 1;
+    Object.keys(st.arms || {}).forEach(function (ak) {
+      var covered = a.location_type === 'coop' ? a.arm_id === ak && hasCoop(st, ak) : (st.arm_zones[ak] || []).indexOf(a.zone_id) >= 0;
+      if (!covered) return;
+      ARM_SLOT_KEYS.forEach(function (slot) {
+        var m = st.arms[ak][slot];
+        if (m && !m.shadow && m.module_id === 'auto_collect') best = Math.min(best, MODULE_EFFECTS.auto_collect.cooldown_mult[clamp(m.level || 1, 1, 5) - 1]);
+      });
+    });
+    return best;
+  }
+
+  function productPlans(a, sp) {
+    if (a.dead || a.hp <= 0) return [];
+    if (a.location_type === 'coop' && !hasCoop(ensureState(), a.arm_id)) return [];
+    var best = bestCollectorMultiplier(a);
+    return (sp.products && sp.products.living || []).filter(function (p) {
+      return p.nutrition_per_item > 0 && productEligible(a, sp, p);
+    }).map(function (p) {
+      var stored = Math.max(0, (a.production_buffers || {})[p.product_id] || 0);
+      var period = Math.max(1, p.cooldown_ticks * getModifier(a, 'product_cooldown_mult_' + p.product_id) * best);
+      var step = Math.min(Math.max(0, (p.storage_capacity ?? 1) - stored), a.hp / 100 * crowdingOutput(a) / period);
+      return { product: p, step: step, need: step * p.nutrition_per_item };
+    }).filter(function (p) { return p.need > 1e-12; });
+  }
+
+  function getProductStatus(uid, productId) {
+    var a = findAnimal(uid), sp = a && getSpecies(a.species_id);
+    var p = (sp && sp.products && sp.products.living || []).filter(function (p) { return p.product_id === productId; })[0];
+    if (!a || a.dead || !p) return { ready: false, reason: 'not_found' };
+    if (p.nutrition_per_item > 0) {
+      var progress = (a.production_buffers || {})[productId] || 0;
+      if (progress < 1 - 1e-9 && p.requires_gender && !hasGender(a, p.requires_gender)) return { ready: false, progress: progress, reason: 'wrong_gender' };
+      if (progress < 1 - 1e-9 && !productEligible(a, sp, p)) return { ready: false, progress: progress, reason: 'immature', min_age_ticks: p.min_age_ticks ?? sp.growth.maturity_ticks };
+      return { ready: progress >= 1 - 1e-9, progress: progress, reason: progress >= 1 - 1e-9 ? null : 'not_ready' };
+    }
+    return { ready: isMature(a, sp) && a.satiety > 70 && a.hp >= (p.min_hp || 0) && !((a.cooldowns || {})[productId] > 0), remaining: (a.cooldowns || {})[productId] || 0 };
+  }
+
+  // Preserve already completed products when the animal dies or is slaughtered.
+  function releaseStoredProducts(st, a) {
+    var sp = getSpecies(a.species_id);
+    (sp && sp.products && sp.products.living || []).forEach(function (p) {
+      if (!(p.nutrition_per_item > 0)) return;
+      var count = Math.floor(((a.production_buffers || {})[p.product_id] || 0) + 1e-9);
+      if (count < 1) return;
+      st.pending_auto_items = st.pending_auto_items || [];
+      st.pending_auto_items.push({ item_id: p.item_id, count: count, uid: a.uid });
+      a.production_buffers[p.product_id] = Math.max(0, a.production_buffers[p.product_id] - count);
+    });
+  }
+
+  function settleHerdResources(st) {
+    var crowd = getCapacityStatus();
+    st.animals.forEach(function (a) { initializeNutrition(a, getSpecies(a.species_id)); });
+    var live = st.animals.filter(function (a) { return !a.dead && getSpecies(a.species_id); })
+      .sort(function (a, b) { return String(a.uid).localeCompare(String(b.uid)); });
+    var rows = live.map(function (a) {
+      var sp = getSpecies(a.species_id), cfg = nutritionConfig(sp), ns = a.nutrition_state;
+      var load = bodyLoad(a, sp);
+      var maintenance = cfg.maintenance_per_tick * load * getModifier(a, 'satiety_drain_mult') * (a.species_id === 'chicken' ? 1 : crowd.maintenance);
+      var buffer = Math.min(Math.max(0, ns.feed_buffer || 0), cfg.feed_max_units_per_tick * 10 * load);
+      ns.feed_buffer = Math.max(0, (ns.feed_buffer || 0) - buffer);
+      return { a: a, sp: sp, cfg: cfg, load: load, maintenance: maintenance, intake: buffer, feed: buffer,
+        grass: 0, pollution: 0, grassTaken: 0, maxFeed: Math.max(0, cfg.feed_max_units_per_tick * 10 * load - buffer) };
+    });
+    Object.keys(st.zones).sort().forEach(function (zid) {
+      var z = st.zones[zid], residents = rows.filter(function (r) { return r.a.location_type === 'zone' && r.a.zone_id === zid; });
+      var pollution = 0, clean = z._clean_request || 0, compact = -(z._decompact_request || 0), uproot = 0;
+      residents.forEach(function (r) {
+        var imp = r.sp.ecosystem_impact || {}, a = r.a;
+        compact += r.load * ((imp.trample_per_tick || 0) * getModifier(a, 'trample_mult') * (1 - (z._tr || 0)) * crowd.ecology + (imp.root_clean_per_tick || 0));
+        var p = (imp.pollution_pct_per_tick || 0) * r.load;
+        if (p > 0) pollution += p * crowd.ecology * getModifier(a, 'pollution_rate_mult') * (1 - (z._sr || 0)); else clean -= p;
+        if (imp.uproots_grass) uproot += r.load * (imp.root_grass_m_per_tick == null ? 1.5 : imp.root_grass_m_per_tick);
+      });
+      z.compaction = clamp(z.compaction + compact, 0, 100);
+      z.pollution = clamp(z.pollution + pollution, 0, 100);
+      removePollution(st, zid, clean, false);
+      if (uproot > 0) z.grass_height = Math.max(0, z.grass_height - uproot);
+      var initialHeight = z.grass_height, height = initialHeight;
+      var requests = residents.filter(function (r) {
+        var g = r.sp.graze;
+        return g && initialHeight > g.edible_min_m && (g.edible_max_m == null || initialHeight <= g.edible_max_m);
+      }).map(function (r) {
+        var g = r.sp.graze, comfort = initialHeight >= g.comfort_min_m && (g.comfort_max_m == null || initialHeight <= g.comfort_max_m);
+        return { row: r, floor: g.edible_min_m, remaining: g.comfort_rate_m_per_tick * r.load * (comfort ? 1 : g.non_comfort_mult) * getModifier(r.a, 'graze_rate_mult') };
+      });
+      // Work from the top down; a grazer never receives a layer below its own floor.
+      while (requests.length) {
+        var active = requests.filter(function (r) { return r.remaining > 1e-12 && height > r.floor + 1e-12; });
+        if (!active.length) break;
+        var nextFloor = Math.max.apply(null, active.map(function (r) { return r.floor; }));
+        var demand = active.reduce(function (n, r) { return n + r.remaining; }, 0);
+        var take = Math.min(height - nextFloor, demand);
+        active.forEach(function (r) {
+          var eaten = take * r.remaining / demand;
+          r.remaining = Math.max(0, r.remaining - eaten); r.row.grassTaken += eaten;
+          var nutrition = eaten * r.row.cfg.grass_nutrition_per_m;
+          r.row.grass += nutrition; r.row.intake += nutrition;
+        });
+        height = Math.max(nextFloor, height - take);
+        if (take >= demand - 1e-12) break;
+      }
+      z.grass_height = height;
+    });
+    var cleaning = {};
+    rows.filter(function (r) { return r.a.location_type === 'coop' && hasCoop(st, r.a.arm_id); }).forEach(function (r) {
+      var cfg = r.sp.coop_nutrition || {}, zones = (st.arm_zones[r.a.arm_id] || []).filter(function (id) { return st.zones[id]; });
+      var total = zones.reduce(function (n, id) { return n + st.zones[id].pollution; }, 0);
+      zones.forEach(function (id) {
+        var demand = total > 0 ? (cfg.clean_per_tick == null ? 0.007 : cfg.clean_per_tick) * r.load * st.zones[id].pollution / total : 0;
+        (cleaning[id] || (cleaning[id] = [])).push({ row: r, demand: demand, conversion: cfg.nutrition_per_pollution == null ? 1.8 : cfg.nutrition_per_pollution });
+      });
+    });
+    Object.keys(cleaning).sort().forEach(function (id) {
+      var req = cleaning[id], total = req.reduce(function (n, r) { return n + r.demand; }, 0);
+      var actual = removePollution(st, id, Math.min(total, st.zones[id].pollution * 0.5), false);
+      req.forEach(function (r) {
+        var n = total > 0 ? actual * r.demand / total * r.conversion : 0;
+        r.row.intake += n; r.row.pollution += n;
+      });
+    });
+    function requestFeed(target) {
+      var req = rows.map(function (r) { return { animal: r.a, row: r, sources: troughsForAnimal(r.a), need: Math.min(r.maxFeed, Math.max(0, target(r) - r.intake)) / 10, given: 0 }; });
+      distributeFeed(req);
+      req.forEach(function (q) { var n = q.given * 10; q.row.intake += n; q.row.feed += n; q.row.maxFeed = Math.max(0, q.row.maxFeed - n); });
+    }
+    // Shared supply pays everyone's maintenance before growth/production requests.
+    requestFeed(function (r) { return r.maintenance; });
+    rows.forEach(function (r) {
+      var a = r.a, g = r.sp.growth, cfg = r.cfg;
+      r.reservePerSatiety = cfg.maintenance_per_tick * (r.sp.satiety.starvation_to_zero_ticks || 2000) / 100;
+      r.refill = Math.min(Math.max(0, 100 - a.satiety) * r.reservePerSatiety, r.maintenance * cfg.reserve_refill_fraction);
+      r.crowdRecovery = crowd.ratio <= (PASTURE_RULES.recovery_threshold ?? 1.1) ? Math.min(a.nutrition_state.crowding_damage || 0, (PASTURE_RULES.recovery_hp_per_round ?? 4) / 1000) : 0;
+      r.recovery = (Math.min((a.nutrition_state.hunger_damage || 0) + (a.nutrition_state.blood_damage || 0), cfg.hunger_recovery_hp_per_tick) + r.crowdRecovery) * cfg.recovery_nutrition_per_hp;
+      var juvenile = r.sp.graze && a.weight_kg < g.graze_cap_kg;
+      var rate = juvenile ? g.graze_growth_rate_kg_per_tick : (r.sp.feed.feed_units_per_tick || 0) * 10 / r.sp.feed.nutrition_per_kg_meat;
+      if (!juvenile && r.sp.graze && g.fatten_ramp_end_kg > g.graze_cap_kg) {
+        var fattenBlend = clamp((a.weight_kg - g.graze_cap_kg) / (g.fatten_ramp_end_kg - g.graze_cap_kg), 0, 1);
+        rate = g.graze_growth_rate_kg_per_tick * (1 - fattenBlend) + rate * fattenBlend;
+      }
+      if (a.location_type === 'coop') rate = ((r.sp.coop_nutrition || {}).growth_nutrition_per_tick || 0.0126) / r.sp.feed.nutrition_per_kg_meat;
+      if (g.target_fatten_ticks > 0) rate = lifecycleGrowth(a, r.sp);
+      rate *= (a.species_id === "chicken" ? 1 : crowd.output) * a.hp / 100;
+      r.growthCap = g.fatten_cap_kg;
+      r.conversion = getModifier(a, 'feed_conversion_mult');
+      r.growthKg = Math.min(Math.max(0, r.growthCap - a.weight_kg), Math.max(0, rate) * getModifier(a, 'growth_rate_mult') * r.conversion);
+      r.growthNeed = r.growthKg * r.sp.feed.nutrition_per_kg_meat / r.conversion;
+      r.plans = productPlans(a, r.sp);
+      r.productNeed = r.plans.reduce(function (n, p) { return n + p.need; }, 0);
+      r.gestationNeed = a.pregnant && r.sp.reproduction ? (r.sp.reproduction.gestation_nutrition_per_tick ?? 0) : 0;
+    });
+    requestFeed(function (r) {
+      var demand = r.maintenance + r.refill + r.recovery + r.growthNeed + r.productNeed + r.gestationNeed;
+      return r.plans.length ? Math.max(demand, r.maintenance * r.cfg.full_supply_ratio) : demand;
+    });
+    rows.forEach(function (r) {
+      var a = r.a, ns = a.nutrition_state, cfg = r.cfg;
+      var usedMaintenance = Math.min(r.intake, r.maintenance), remaining = Math.max(0, r.intake - usedMaintenance);
+      var deficit = Math.max(0, r.maintenance - usedMaintenance), reserveUsed = Math.min(deficit, a.satiety * r.reservePerSatiety);
+      a.satiety = clamp(a.satiety - reserveUsed / r.reservePerSatiety, 0, 100); deficit -= reserveUsed;
+      var damage = Math.min(a.hp, cfg.hunger_damage_hp_per_tick * deficit / r.maintenance);
+      if (damage > 0) { a.hp = Math.max(0, a.hp - damage); ns.hunger_damage = Math.min(100 - a.hp, ns.hunger_damage + damage); }
+      var refilled = Math.min(remaining, r.refill); remaining -= refilled;
+      a.satiety = clamp(a.satiety + refilled / r.reservePerSatiety, 0, 100);
+      var recoverySpent = Math.min(remaining, r.recovery); remaining -= recoverySpent;
+      var recoveredHp = cfg.recovery_nutrition_per_hp > 0 ? recoverySpent / cfg.recovery_nutrition_per_hp : 0;
+      var hungerHealed = Math.min(ns.hunger_damage, recoveredHp);
+      ns.hunger_damage = Math.max(0, ns.hunger_damage - hungerHealed);
+      var bloodHealed = Math.min(ns.blood_damage || 0, Math.max(0, recoveredHp - hungerHealed));
+      ns.blood_damage = Math.max(0, (ns.blood_damage || 0) - bloodHealed);
+      ns.crowding_damage = Math.max(0, (ns.crowding_damage || 0) - Math.max(0, recoveredHp - hungerHealed - bloodHealed));
+      a.hp = clamp(a.hp + recoveredHp, 0, 100);
+      var coverage = r.intake / r.maintenance;
+      ns.average_supply += (Math.min(8, coverage) - ns.average_supply) / cfg.supply_smoothing_ticks;
+      ns.tier = coverage < 1 - 1e-9 ? 'insufficient' : (coverage >= cfg.full_entry_ratio && ns.average_supply >= cfg.full_entry_ratio ? 'full' : 'growth');
+      var productionNeed = ns.tier === 'full' ? r.productNeed : 0;
+      var demand = r.growthNeed + productionNeed + r.gestationNeed;
+      var scale = demand > 0 ? Math.min(1, remaining / demand) : 0;
+      var growthSpent = r.growthNeed * scale, productionSpent = productionNeed * scale;
+      var gestationSpent = r.gestationNeed * scale;
+      remaining -= growthSpent + productionSpent + gestationSpent;
+      var gain = growthSpent / r.sp.feed.nutrition_per_kg_meat * r.conversion;
+      a.weight_kg = Math.min(r.growthCap, a.weight_kg + gain);
+      if (productionSpent > 0) r.plans.forEach(function (p) {
+        var id = p.product.product_id;
+        a.production_buffers[id] = Math.min(p.product.storage_capacity ?? 1, (a.production_buffers[id] || 0) + p.step * scale);
+      });
+      var lostWeight = 0;
+      if (coverage < 1 && a.satiety < 30) {
+        lostWeight = Math.min(Math.max(0, a.weight_kg - r.sp.growth.birth_weight_kg), (r.sp.growth.graze_growth_rate_kg_per_tick || 0.0001) * (1 - coverage));
+        a.weight_kg -= lostWeight;
+      }
+      ns.last = { intake: r.intake, grass: r.grass, grass_taken_m: r.grassTaken, feed: r.feed, pollution_food: r.pollution,
+        maintenance_required: r.maintenance, maintenance_paid: usedMaintenance + reserveUsed, reserve_used: reserveUsed,
+        reserve_refilled: refilled, recovery_spent: recoverySpent, growth_spent: growthSpent, production_spent: productionSpent,
+        gestation_spent: gestationSpent, gestation_progress: r.gestationNeed > 0 ? scale : (a.pregnant && coverage >= 1 ? 1 : 0),
+        unused: Math.max(0, remaining), shortfall: deficit, weight_gain_kg: gain, weight_loss_kg: lostWeight };
+      if (a.hp <= 1e-9) { a.hp = 0; a.dead = true; a.death_cause = 'starvation'; }
+    });
+  }
 
   function rotateClockwise(st) {
     // 区域动物顺时针迁区
@@ -1437,12 +1840,12 @@
       if (!sp || !sp.reproduction) return;
 
       // 地鸣（§8.4）：公畜所在区域共享机械臂的相邻两区，所有同物种成年母畜独立过一遍怀孕判定；判定后公畜冷却 10000 tick
-      if (male.gender === 'male' && hasPerk(male, 'earth_cry') && (male.earth_cry_cooldown || 0) <= 0) {
+      if (hasGender(male, 'male') && isMature(male, sp) && male.satiety > 70 && male.hp > 90 && fedForBreeding(male) && hasPerk(male, 'earth_cry') && (male.earth_cry_cooldown || 0) <= 0) {
         var adj = adjacentZones(st, male.zone_id);
         var acted = false;
         // 每轮一次结算 → 概率用「一轮等效概率」= 1-(1-p)^1000（羊≈31%、猪≈39%、牛≈18%）
-        var baseP = sp.reproduction.base_pregnancy_rate_per_tick || 0.0002;
-        var roundP = 1 - Math.pow(1 - baseP, 1000);
+        var baseP = sp.reproduction.base_pregnancy_rate_per_tick ?? 0.0002;
+        var roundP = 1 - Math.pow(1 - baseP, st.rotation_total_ticks);
         adj.forEach(function (zid) {
           var zone = zones[zid];
           if (!zone || zone.pollution >= 30) return;
@@ -1450,20 +1853,20 @@
             if (female.dead || female.uid === male.uid) return;
             if (female.species_id !== male.species_id) return;
             if (female.location_type !== 'zone' || female.zone_id !== zid) return;
-            if (female.gender !== 'female' && female.gender !== 'hermaphrodite') return;
+            if (!hasGender(female, 'female')) return;
             if (!canConceive(female, sp, zone)) return;
             acted = true;
-            var pregRate = roundP * getModifier(female, 'fertility_mult');
+            var pregRate = roundP * getModifier(female, 'fertility_mult') * getCapacityStatus().fertility;
             if (Math.random() < pregRate) {
-              female.pregnant = { father_uid: male.uid, remaining_ticks: sp.reproduction.pregnancy_ticks };
+              female.pregnant = createPregnancy(female, male, sp);
             }
           });
         });
-        if (acted) male.earth_cry_cooldown = 10000;
+        if (acted) male.earth_cry_cooldown = perkParam('earth_cry', 'cooldown_ticks', 10000);
       }
 
       // 越界播种（§8.4）：猪公 → 相邻两区成年母羊 15% 产猪崽（Perk 池从父猪+母羊合并）；成功后冷却 10000 tick
-      if (male.species_id === 'pig' && male.gender === 'male' && hasPerk(male, 'crossbreed_swine') && (male.crossbreed_cooldown || 0) <= 0) {
+      if (male.species_id === 'pig' && hasGender(male, 'male') && isMature(male, sp) && male.satiety > 70 && male.hp > 90 && fedForBreeding(male) && hasPerk(male, 'crossbreed_swine') && (male.crossbreed_cooldown || 0) <= 0) {
         var adjZ = adjacentZones(st, male.zone_id);
         var sheepSp = getSpecies('sheep');
         adjZ.forEach(function (zid) {
@@ -1473,11 +1876,11 @@
             if (ewe.dead || ewe.uid === male.uid) return;
             if (ewe.species_id !== 'sheep') return;
             if (ewe.location_type !== 'zone' || ewe.zone_id !== zid) return;
-            if (ewe.gender !== 'female') return;
+            if (!hasGender(ewe, 'female')) return;
             if (!canConceive(ewe, sheepSp, zone)) return;
-            if (Math.random() < 0.15) {
-              ewe.pregnant = { father_uid: male.uid, remaining_ticks: sheepSp.reproduction.pregnancy_ticks, crossbreed: true };
-              male.crossbreed_cooldown = 10000;
+            if (Math.random() < perkParam('crossbreed_swine', 'trigger_chance', 0.15) * getCapacityStatus().fertility) {
+              ewe.pregnant = createPregnancy(ewe, male, sheepSp, { crossbreed: true });
+              male.crossbreed_cooldown = perkParam('crossbreed_swine', 'cooldown_ticks', 10000);
             }
           });
         });
@@ -1487,13 +1890,24 @@
 
   function advanceTick() {
     var st = ensureState();
+    st.elapsed_ticks = (st.elapsed_ticks || 0) + 1;
+    Object.keys(st.arms).forEach(function (ak) { ARM_SLOT_KEYS.forEach(function (slot) { var m = st.arms[ak][slot]; if (m && !m.shadow && m.module_id === 'feed_trough') m._feed_remaining = getTroughThroughput(m); }); });
+    st.animals.forEach(function (a) { initializeNutrition(a, getSpecies(a.species_id)); });
+
+    st.animals.forEach(function (a) {
+      var sp = getSpecies(a.species_id);
+      if (a.pregnant && !a.pregnant.children && sp && sp.reproduction) {
+        var old = a.pregnant;
+        a.pregnant = createPregnancy(a, findAnimal(old.father_uid), sp, { remaining_ticks: old.remaining_ticks, crossbreed: old.crossbreed === true });
+      }
+    });
+
+    tickCrowding(st);
 
     // 0. 清理上轮模块临时字段
     clearModuleTempFields();
-    st._waste_heat_drop = 0;
-    // 废热回收（§11.5.2）：记录本 tick 四区污染基线，全程追踪所有降污来源
-    st._waste_heat_baseline = {};
-    for (var pzid in st.zones) st._waste_heat_baseline[pzid] = st.zones[pzid].pollution || 0;
+    var tower = getClimateControl();
+    if (tower && tower.mode_switch_cooldown > 0) tower.mode_switch_cooldown--;
 
     // 1. 模块升级工程推进
     tickUpgrades();
@@ -1503,8 +1917,7 @@
     if (st.rotation_ticks_remaining <= 0) {
       // 旋转前结算机制 Perk（地鸣/越界播种，§8.4）
       tickRotationPerks(st);
-      // 旋转前结算联动臂（§11.5.1）
-      tickLinkSchedule(st);
+
       rotateClockwise(st);
       st.rotation_ticks_remaining = st.rotation_total_ticks;
     }
@@ -1512,38 +1925,33 @@
     // 3. 模块效果结算（作用于夹持区域，写入 _mg/_sr/_tr 临时字段）
     tickModules(st);
 
-    // 4. 区域生态：草自然生长（受模块加成 + 气候）
-    var climate = getClimateModifiers();
+    // 4. 区域生态：草自然生长（受现行模块加成）
     for (var zid in st.zones) {
       var z = st.zones[zid];
       var growthFactor = (100 - (z.compaction || 0)) * 0.009 + 0.1;
-      var seedMult = z._seed_once != null ? (1 + z._seed_once) : 1; // 联动播种（§11.5.1 till_seed）
-      z.grass_height = clamp((z.grass_height || 0) + (0.8 / 1000) * growthFactor * (z._mg || 1) * climate.grassMult * seedMult, 0, 1.5);
-      // 湿润模式：污染自然消散 / 板结恶化（§11.6.2）
-      if (climate.pollutionClean > 0) {
-        z.pollution = clamp((z.pollution || 0) - climate.pollutionClean, 0, 100);
-      }
-      if (climate.compactionUp > 0) {
-        z.compaction = clamp((z.compaction || 0) + climate.compactionUp, 0, 100);
-      }
+      z.grass_height = clamp((z.grass_height || 0) + (0.8 / 1000) * growthFactor * (z._mg || 1), 0, 1.5);
     }
 
     // 5. 每只动物结算
+    settleHerdResources(st);
     var births = [];
-    for (var i = 0; i < st.animals.length; i++) {
-      var a = st.animals[i];
+    var ordered = st.animals.slice().sort(function (a, b) { return String(a.uid).localeCompare(String(b.uid)); });
+    for (var i = 0; i < ordered.length; i++) {
+      var a = ordered[i];
       if (a.dead) continue;
       var sp = getSpecies(a.species_id);
       if (!sp) continue;
       tickAnimal(st, a, sp, births);
+      // Publish births before the next mother checks available breeding reservations.
+      while (births.length) st.animals.push(births.shift());
     }
     for (var b = 0; b < births.length; b++) st.animals.push(births[b]);
 
     // 6. 尸体持续污染（§3.3）
+    st.animals.forEach(function (a) { if (a.dead) releaseStoredProducts(st, a); });
     tickCorpses(st);
 
-    // 7. 废热回收结算（§11.5.2，消费本 tick 降污量）
-    tickWasteHeat(st);
+
 
     // 7.5 供电扣电（k89 电池经济最小闭环）：本 tick 结算用到的电在 tick 末扣除，
     //     储能耗尽 → 下一 tick 需电模块停摆（isPowerAvailable 由 power_charge>0 派生）
@@ -1562,102 +1970,14 @@
     var zone = st.zones[a.zone_id];
     if (!zone) return;
 
-    // 吃草（牛/羊）
-    if (sp.graze) {
-      var h = zone.grass_height;
-      var edible = h >= sp.graze.edible_min_m && (sp.graze.edible_max_m == null || h <= sp.graze.edible_max_m);
-      if (edible) {
-        var inComfort = h >= sp.graze.comfort_min_m && (sp.graze.comfort_max_m == null || h <= sp.graze.comfort_max_m);
-        var rate = sp.graze.comfort_rate_m_per_tick * (inComfort ? 1 : sp.graze.non_comfort_mult) * getModifier(a, 'graze_rate_mult');
-        zone.grass_height = Math.max(0, h - rate);
-        a.satiety = clamp(a.satiety + sp.graze.satiety_regen_per_tick, 0, 100);
-      }
-    }
-
-    // 牛/羊育肥（§10.5）：草饲到顶后需饲料槽才能继续增重至育肥上限；
-    // 饲料只长肉不补饱腹（饱腹靠吃草），饱腹 > 70 才吃
-    if ((a.species_id === 'cattle' || a.species_id === 'sheep') && sp.feed && sp.feed.feed_units_per_tick) {
-      var grazeTop = sp.growth.graze_cap_kg != null ? sp.growth.graze_cap_kg : sp.growth.fatten_cap_kg;
-      if (a.weight_kg >= grazeTop && a.weight_kg < sp.growth.fatten_cap_kg && a.satiety > 70) {
-        var fTrough = findTroughForZone(a.zone_id);
-        if (fTrough && fTrough.feed_units > 0) {
-          var fUnits = sp.feed.feed_units_per_tick;
-          if (fTrough.feed_units >= fUnits) {
-            fTrough.feed_units -= fUnits;
-            var fGrowth = fUnits * 10 / sp.feed.nutrition_per_kg_meat * getModifier(a, 'feed_conversion_mult');
-            a.weight_kg = Math.min(sp.growth.fatten_cap_kg, a.weight_kg + fGrowth);
-          }
-        }
-      }
-    }
-
-    // 猪：拱地保底 + 松土降污 + 吃饲料（补饱腹 + 长肉）
-    if (a.species_id === 'pig') {
-      if (a.satiety < 10) a.satiety = Math.min(10, a.satiety + 0.03);
-      if (sp.ecosystem_impact) {
-        zone.compaction = clamp(zone.compaction + sp.ecosystem_impact.root_clean_per_tick, 0, 100);
-        zone.pollution = clamp(zone.pollution + sp.ecosystem_impact.pollution_pct_per_tick, 0, 100);
-      }
-      var trough = findTroughForZone(a.zone_id);
-      if (trough && trough.feed_units > 0) {
-        // 补饱腹（1 单位 = 10 饱腹）
-        if (a.satiety < 100) {
-          var take = Math.min(trough.feed_units, 0.05);
-          trough.feed_units = Math.max(0, trough.feed_units - take);
-          a.satiety = clamp(a.satiety + take * 10, 0, 100);
-        }
-        // 长肉（饱腹 > 70 才长，料肉比 × feed_conversion_mult）
-        if (a.satiety > 70 && sp.feed && sp.feed.feed_units_per_tick) {
-          var growthUnits = sp.feed.feed_units_per_tick;
-          if (trough.feed_units >= growthUnits) {
-            trough.feed_units -= growthUnits;
-            var pigGrowth = growthUnits * 10 / sp.feed.nutrition_per_kg_meat * getModifier(a, 'feed_conversion_mult');
-            if (a.weight_kg < sp.growth.fatten_cap_kg) {
-              a.weight_kg = Math.min(sp.growth.fatten_cap_kg, a.weight_kg + pigGrowth);
-            }
-          }
-        }
-      }
-    }
-
-    // 饱腹下降（satiety_drain_mult × 气候）
-    var climateSat = getClimateModifiers().satietyMult;
-    a.satiety = clamp(a.satiety - sp.satiety.drain_per_tick * getModifier(a, 'satiety_drain_mult') * climateSat, 0, 100);
-
-    // 饿死链（§4.2/§5.4）：饱腹归零进入濒死倒计时，倒计时结束饿死；喂食可挽救
-    // 猪例外（§4.6）：拱地保底饱腹 10，不会饿死，只会瘦到皮包骨
-    if (a.species_id !== 'pig') {
-      if (a.satiety <= 0) {
-        a.starvation_ticks = (a.starvation_ticks || 0) + 1;
-        if (sp.satiety.starvation_dying_ticks && a.starvation_ticks >= sp.satiety.starvation_dying_ticks) {
-          a.dead = true;
-          a.death_cause = 'starvation';
-        }
-      } else {
-        a.starvation_ticks = 0;
-      }
-    }
-
-    // 体重成长（牛/羊草饲、鸡虫子；猪长肉已在上方饲料分支）
-    tickWeight(a, sp);
-
-    // 生态影响：踩踏 / 污染（羊）
-    if (sp.ecosystem_impact) {
-      var trampleMult = getModifier(a, 'trample_mult');
-      var trampleReduce = zone._tr || 0;
-      zone.compaction = clamp(zone.compaction + sp.ecosystem_impact.trample_per_tick * trampleMult * (1 - trampleReduce), 0, 100);
-      if (sp.ecosystem_impact.pollution_pct_per_tick > 0) {
-        var pollMult = getModifier(a, 'pollution_rate_mult');
-        var sheepReduce = (a.species_id === 'sheep') ? (zone._sr || 0) : 0;
-        zone.pollution = clamp(zone.pollution + sp.ecosystem_impact.pollution_pct_per_tick * pollMult * (1 - sheepReduce), 0, 100);
-      }
-    }
-
     // 疾病扣血
     tickDisease(a, zone.pollution);
+    if (a.dead) return;
 
     // 年龄
     a.age_ticks = (a.age_ticks || 0) + 1;
+
+    if (sp.lifespan_ticks && a.age_ticks >= sp.lifespan_ticks) { a.dead = true; a.death_cause = 'old'; return; }
 
     // 产出冷却递减
     for (var k in a.cooldowns) {
@@ -1673,13 +1993,12 @@
     if ((a.pheromone_cooldown || 0) > 0) a.pheromone_cooldown--;
 
     // 怀孕推进
-    if (a.pregnant) {
-      a.pregnant.remaining_ticks--;
-      if (a.pregnant.remaining_ticks <= 0) {
-        giveBirth(st, a, sp, births);
-        a.pregnant = null;
+    if (a.pregnant && a.satiety > 70 && isMature(a, sp)) {
+      a.pregnant.remaining_ticks = Math.max(0, a.pregnant.remaining_ticks - ((a.nutrition_state.last || {}).gestation_progress || 0));
+      if (a.pregnant.remaining_ticks <= 1e-9) {
+        if (giveBirth(st, a, sp, births)) a.pregnant = null;
       }
-    } else {
+    } else if (!a.pregnant) {
       // 受孕判定（成年母畜 + 同区公畜 + 条件满足）
       tryReproduce(st, a, sp);
     }
@@ -1687,22 +2006,23 @@
 
   function tryReproduce(st, a, sp) {
     if (!sp.reproduction) return;
-    if (a.gender !== 'female' && a.gender !== 'hermaphrodite') return;
+    if (!hasGender(a, 'female')) return;
     var zone = st.zones[a.zone_id];
     if (!canConceive(a, sp, zone)) return;
 
     // 雌雄同体（§8.4）：可与自己配对（父本=自己）
-    var selfMale = a.gender === 'hermaphrodite';
+    var selfMale = hasGender(a, 'male');
 
     // 同区公畜候选
     function maleCandidates(sameZone) {
       var list = [];
       st.animals.forEach(function (other) {
         if (other.dead || other.uid === a.uid) return;
+        if (!fedForBreeding(other)) return;
         if (other.species_id !== a.species_id) return;
         if (other.location_type !== 'zone') return;
         if (sameZone && other.zone_id !== a.zone_id) return;
-        if (other.gender !== 'male' && other.gender !== 'hermaphrodite') return;
+        if (!hasGender(other, 'male') || other.satiety <= 70) return;
         if (!isMature(other, sp)) return;
         if (other.hp <= 90) return;
         list.push(other);
@@ -1712,10 +2032,10 @@
 
     // 标准怀孕判定（按 fertility_mult）
     function rollPregnancy(father) {
-      var pregRate = (sp.reproduction.base_pregnancy_rate_per_tick || 0.0002) * getModifier(a, 'fertility_mult');
+      var pregRate = (sp.reproduction.base_pregnancy_rate_per_tick ?? 0.0002) * getModifier(a, 'fertility_mult') * getCapacityStatus().fertility;
       if (Math.random() < pregRate) {
-        a.pregnant = { father_uid: father ? father.uid : null, remaining_ticks: sp.reproduction.pregnancy_ticks };
-        return true;
+        a.pregnant = createPregnancy(a, father, sp);
+        return !!a.pregnant;
       }
       return false;
     }
@@ -1750,12 +2070,12 @@
           if (cands[ci].zone_id === adj[ai]) { adjFather = cands[ci]; break; }
         }
       }
-      if (adjFather && Math.random() < 0.5) {
-        if (rollPregnancy(adjFather)) {
-          triggerChainPregnancy(st, a, sp);
-        }
+      var roundChance = (1 - Math.pow(1 - (sp.reproduction.base_pregnancy_rate_per_tick ?? 0.0002), st.rotation_total_ticks)) * perkParam('pheromone', 'trigger_chance', 0.5) * getModifier(a, 'fertility_mult') * getCapacityStatus().fertility;
+      if (adjFather && Math.random() < roundChance) {
+        a.pregnant = createPregnancy(a, adjFather, sp);
+        if (a.pregnant) triggerChainPregnancy(st, a, sp);
       }
-      a.pheromone_cooldown = 1000; // 每轮一次
+      a.pheromone_cooldown = st.rotation_total_ticks; // 每轮一次
     }
   }
 
@@ -1766,80 +2086,47 @@
     for (var i = 0; i < st.animals.length; i++) {
       var c = st.animals[i];
       if (c.dead || c.uid === mother.uid || c.species_id !== mother.species_id) continue;
+      if (!fedForBreeding(c)) continue;
       if (c.location_type !== 'zone' || c.zone_id !== mother.zone_id) continue;
-      if (c.gender !== 'male' && c.gender !== 'hermaphrodite') continue;
+      if (!hasGender(c, 'male') || c.satiety <= 70) continue;
       if (!isMature(c, sp) || c.hp <= 90) continue;
       chainFather = c;
       break;
     }
+    if (!chainFather) return;
     st.animals.forEach(function (other) {
       if (other.dead || other.uid === mother.uid) return;
       if (other.species_id !== mother.species_id) return;
       if (other.location_type !== 'zone' || other.zone_id !== mother.zone_id) return;
-      if (other.gender !== 'female' && other.gender !== 'hermaphrodite') return;
+      if (!hasGender(other, 'female')) return;
       if (!canConceive(other, sp, st.zones[other.zone_id])) return;
-      if (Math.random() < 0.1) {
-        other.pregnant = { father_uid: chainFather ? chainFather.uid : null, remaining_ticks: sp.reproduction.pregnancy_ticks, chained: true };
+      if (Math.random() < perkParam('chain_pregnancy', 'trigger_chance', 0.1) * getCapacityStatus().fertility) {
+        other.pregnant = createPregnancy(other, chainFather, sp, { chained: true });
       }
     });
   }
 
-  // 尸体污染（§3.3）：尸体不清理则持续向所在区域加污染
+  // 尸体分解的污染总量有限；同一尸体不能永久供养清污/回收装置。
   function tickCorpses(st) {
-    var rates = { disease: 0.006, starvation: 0.003, blood_loss: 0.002, old: 0.002 };
+    var rates = { disease: 0.006, starvation: 0.003, blood_loss: 0.002, old: 0.002, crowding: 0.003 };
     for (var i = 0; i < st.animals.length; i++) {
       var a = st.animals[i];
       if (!a.dead) continue;
       var rate = rates[a.death_cause] != null ? rates[a.death_cause] : 0;
       if (rate <= 0) continue;
-      if (a.location_type === 'coop' && a.arm_id) {
-        // 鸡尸体在鸡笼内，作用于该臂夹持两区（同鸡笼清污口径）
-        var zones = (st.arm_zones && st.arm_zones[a.arm_id]) || [];
-        for (var zi = 0; zi < zones.length; zi++) {
-          var cz = st.zones[zones[zi]];
-          if (cz) cz.pollution = clamp(cz.pollution + rate, 0, 100);
-        }
-      } else if (a.zone_id) {
-        var z = st.zones[a.zone_id];
-        if (z) z.pollution = clamp(z.pollution + rate, 0, 100);
-      }
+      var sp = getSpecies(a.species_id);
+      var factor = sp && sp.corpse_pollution_per_kg != null ? sp.corpse_pollution_per_kg : 1;
+      if (a.corpse_pollution_remaining == null) a.corpse_pollution_remaining = Math.max(0, a.weight_kg || 0) * factor;
+      var zones = a.location_type === 'coop' ? ((st.arm_zones && st.arm_zones[a.arm_id]) || []) : [a.zone_id];
+      zones = zones.filter(function (zid) { return !!st.zones[zid]; });
+      if (!zones.length) continue;
+      var released = Math.min(rate, Math.max(0, a.corpse_pollution_remaining));
+      a.corpse_pollution_remaining = Math.max(0, a.corpse_pollution_remaining - released);
+      zones.forEach(function (zid) { st.zones[zid].pollution = clamp(st.zones[zid].pollution + released / zones.length, 0, 100); });
     }
   }
 
   function tickCoopAnimal(st, a, sp) {
-    // 鸡笼动物：鸡不吃草、不受区域疾病；吃虫子（鸡笼清污）+ 长肉 + 寿命
-    var zones = (st.arm_zones && st.arm_zones[a.arm_id]) || [];
-    // 鸡笼清污：每鸡每 tick 降污 7%/1000 = 0.007%，作用于该臂夹持两区
-    for (var i = 0; i < zones.length; i++) {
-      var z = st.zones[zones[i]];
-      if (!z) continue;
-      z.pollution = clamp(z.pollution - 0.007, 0, 100);
-      // 吃虫子恢复饱腹（污染充足时）
-      if (z.pollution > 0) {
-        a.satiety = clamp(a.satiety + 0.02, 0, 100);
-      }
-    }
-    // 鸡吃同臂饲料槽（§11.3.1）：无虫子可吃时吃饲料补饱腹（维持虫子长肉满速）
-    var coopArm = st.arms[a.arm_id];
-    var cTrough = findTroughOnArm(coopArm);
-    if (cTrough && cTrough.feed_units > 0 && a.satiety < 90) {
-      var cTake = Math.min(cTrough.feed_units, 0.01);
-      cTrough.feed_units = Math.max(0, cTrough.feed_units - cTake);
-      // 1 单位 = 10 营养 = 10 饱腹（§10.5 口径）
-      a.satiety = clamp(a.satiety + cTake * 10, 0, 100);
-    }
-    a.satiety = clamp(a.satiety - sp.satiety.drain_per_tick * getModifier(a, 'satiety_drain_mult') * getClimateModifiers().satietyMult, 0, 100);
-    // 鸡饿死链（§4.2）：饱腹归零进入濒死倒计时
-    if (a.satiety <= 0) {
-      a.starvation_ticks = (a.starvation_ticks || 0) + 1;
-      if (sp.satiety.starvation_dying_ticks && a.starvation_ticks >= sp.satiety.starvation_dying_ticks) {
-        a.dead = true;
-        a.death_cause = 'starvation';
-      }
-    } else {
-      a.starvation_ticks = 0;
-    }
-    tickWeight(a, sp);
     a.age_ticks = (a.age_ticks || 0) + 1;
     // 鸡寿命：15000 tick 自然死亡
     if (sp.lifespan_ticks && a.age_ticks >= sp.lifespan_ticks) {
@@ -1848,24 +2135,6 @@
     }
     for (var k in a.cooldowns) {
       if (a.cooldowns[k] > 0) a.cooldowns[k]--;
-    }
-  }
-
-  function tickWeight(a, sp) {
-    var g = sp.growth;
-    var growthMult = getModifier(a, 'growth_rate_mult');
-    // 猪不吃草（§4.6）：长肉全程靠饲料槽，已在 tickAnimal 饲料分支处理，此处跳过避免双倍长肉
-    if (a.species_id !== 'pig' && g.graze_growth_rate_kg_per_tick != null) {
-      var cap = g.graze_cap_kg != null ? g.graze_cap_kg : g.fatten_cap_kg;
-      if (a.satiety > g.satiety_grow_threshold) {
-        if (a.weight_kg < cap) a.weight_kg = Math.min(cap, a.weight_kg + g.graze_growth_rate_kg_per_tick * growthMult);
-      } else if (a.satiety < g.satiety_stall_threshold) {
-        a.weight_kg = Math.max(g.birth_weight_kg, a.weight_kg - g.graze_growth_rate_kg_per_tick);
-      }
-    }
-    // 猪长肉已在 tickAnimal 的饲料分支处理（真实消耗饲料槽饲料）
-    if (a.species_id === 'chicken' && a.satiety > 70) {
-      if (a.weight_kg < g.fatten_cap_kg) a.weight_kg = Math.min(g.fatten_cap_kg, a.weight_kg + 0.00063 * growthMult);
     }
   }
 
@@ -1886,51 +2155,30 @@
         return;
       }
     } else if (pollution < 30 && a.satiety > 70) {
-      a.hp = clamp(a.hp + 0.02, 0, 100);
+      a.hp = clamp(a.hp + 0.02, 0, 100 - nutritionInjury(a));
     }
   }
 
   function giveBirth(st, mother, sp, births) {
-    if (!sp.reproduction) return;
-    var father = null;
-    if (mother.pregnant && mother.pregnant.father_uid) {
-      for (var f = 0; f < st.animals.length; f++) {
-        if (st.animals[f].uid === mother.pregnant.father_uid) { father = st.animals[f]; break; }
-      }
-    }
-    // 越界播种（§8.4）：猪公×羊母产猪崽，Perk 池从父猪+母羊合并抽取
-    var crossbreed = mother.pregnant && mother.pregnant.crossbreed === true;
-    var calfSpecies = crossbreed ? 'pig' : mother.species_id;
-    var calfSp = getSpecies(calfSpecies) || sp;
-    // 孤雌（§8.4）：后代全雌，父本为空 → 多一次随机补位
-    var partheno = !father && hasPerk(mother, 'parthenogenesis');
-    var inherited;
-    if (partheno) {
-      inherited = inheritPerks([], mother.perks || []);
-      var extra = pickPerkByRarity((calfSp && calfSp.perk_pool) || []);
-      if (extra && inherited.indexOf(extra) < 0) inherited.push(extra);
-      while (inherited.length > 4) inherited.pop();
-    } else {
-      inherited = inheritPerks(father ? father.perks : [], mother.perks || []);
-    }
-    var litter = randInt(sp.reproduction.litter_size[0], sp.reproduction.litter_size[1]);
-    for (var i = 0; i < litter; i++) {
-      // 物种突变（§8.4）：持有者（猪）正常繁殖时猪崽 20% 变羊
-      var finalSpecies = calfSpecies;
-      var mutant = hasPerk(father, 'species_mutant') || hasPerk(mother, 'species_mutant');
-      if (mutant && calfSpecies === 'pig' && Math.random() < 0.2) finalSpecies = 'sheep';
-      var finalSp = getSpecies(finalSpecies) || calfSp;
-      var calf = makeAnimal(
-        finalSpecies,
-        partheno ? 'female' : (Math.random() < 0.5 ? 'male' : 'female'),
-        'zone',
-        mother.zone_id,
-        { weight_kg: finalSp.growth.birth_weight_kg, age_ticks: 0, satiety: 80, perks: inherited.slice() }
-      );
-      births.push(calf);
-    }
-    // 产后冷却（= 产后冷却 tick）；四季如春（§8.4）消除产后冷却
-    mother.reproduction_cooldown = hasPerk(mother, 'eternal_spring') ? 0 : (sp.reproduction.postpartum_cooldown_ticks || 0);
+    var pregnancy = mother.pregnant;
+    if (!pregnancy || !pregnancy.children) return false;
+    var birthMass = pregnancy.children.reduce(function (n, c) { return n + getSpecies(c.species_id).growth.birth_weight_kg; }, 0);
+    if (mother.weight_kg - birthMass < sp.growth.birth_weight_kg) return false;
+    // Newborn reserves are transferred from the mother, never created per child.
+    var reserveUnit = nutritionConfig(sp).maintenance_per_tick * sp.satiety.starvation_to_zero_ticks / 100;
+    var transferred = mother.satiety * reserveUnit * 0.25;
+    mother.satiety -= transferred / reserveUnit;
+    mother.weight_kg -= birthMass;
+    pregnancy.children.forEach(function (plan) {
+      var childSp = getSpecies(plan.species_id);
+      var childReserveUnit = nutritionConfig(childSp).maintenance_per_tick * childSp.satiety.starvation_to_zero_ticks / 100;
+      births.push(makeAnimal(plan.species_id, plan.gender, 'zone', mother.zone_id, {
+        age_ticks: 0, weight_kg: childSp.growth.birth_weight_kg,
+        satiety: Math.min(100, transferred / pregnancy.children.length / childReserveUnit), perks: plan.perks.slice()
+      }));
+    });
+    mother.reproduction_cooldown = hasPerk(pregnancy.mother, 'eternal_spring') ? 0 : (sp.reproduction.postpartum_cooldown_ticks ?? 0);
+    return true;
   }
 
   // ===== 畜牧生活技能（life_animal_husbandry）习得 + move_usage 曲线升级（scene-app 组合根化拆解迁入）=====
@@ -2001,7 +2249,14 @@
     initDemoState: initDemoState,
     ensureState: ensureState,
     getState: getState,
+    getRetiredModuleStorage: getRetiredModuleStorage,
+    claimRetiredModuleItems: claimRetiredModuleItems,
     setState: setState,
+    validateState: validateState,
+    getCapacityStatus: getCapacityStatus,
+    isMature: isMature,
+    productEligible: productEligible,
+    lifecycleGrowth: lifecycleGrowth,
     getSpecies: getSpecies,
     getModule: getModule,
     getPerk: getPerk,
@@ -2022,9 +2277,13 @@
     animalsInCoop: animalsInCoop,
     collectProduct: collectProduct,
     slaughterAnimal: slaughterAnimal,
+    previewSlaughter: previewSlaughter,
     cleanCorpse: cleanCorpse,
     buildModule: buildModule,
     dismountModule: dismountModule,
+    getModuleStorage: getModuleStorage,
+    claimModuleMaterials: claimModuleMaterials,
+    restoreModuleResources: restoreModuleResources,
     startUpgrade: startUpgrade,
     canBuildModule: canBuildModule,
     getBuildStep: getBuildStep,
@@ -2037,6 +2296,16 @@
     cleanZone: cleanZone,
     tillZone: tillZone,
     feedChickens: feedChickens,
+    getNutritionStatus: getNutritionStatus,
+    getAnimalLoad: getAnimalLoad,
+    getTroughCapacity: getTroughCapacity,
+    getCoopCapacity: getCoopCapacity,
+    canAdmitAnimal: canAdmitAnimal,
+    admitAnimal: admitAnimal,
+    getBreedingStatus: getBreedingStatus,
+    setBreedingLimit: setBreedingLimit,
+    getGrazingStatus: getGrazingStatus,
+    getProductStatus: getProductStatus,
     getModuleEffectText: getModuleEffectText,
     drainAutoCollectItems: drainAutoCollectItems,
     getWarehouseHub: getWarehouseHub,
