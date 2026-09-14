@@ -1,6 +1,6 @@
 {
-  "schema_version": 3,
-  "_comment": "畜牧模块表。数值对应 docs/design/31-livestock-husbandry.md §11。体量 tier: small/medium/large/axis。耗电口径（k93）：small/medium 无电可转（requires_power:false），large（臂）与 axis（仓储/气候）需电（requires_power:true）；axis 屠宰为手动操作，不耗电。requires_power 为生产力墙（非分档锁）——缺电时模块效果停摆，但装配/升级不受 tier 锁定。 耗电速率（k89 牧场供电最小闭环占位，k87 精调）：大型臂类 1 点/tick、轴心仓储/气候 2 点/tick；7 个需电模块已配 power_drain_per_tick。",
+  "schema_version": 5,
+  "_comment": "现行模块表：联动作业臂、废热回收臂、气候调控塔已退役，等待新设计。保留基础模块、牧草管理臂、诊疗臂、精加工臂和仓储枢纽。耗电字段以各模块配置为准。",
   "tier_meta": {
     "small": {
       "label": "小型",
@@ -40,7 +40,24 @@
       "axis_slot": null,
       "effect_type": "feed_trough",
       "requires_power": false,
-      "desc": "自动投喂对应区域内的动物，容量 100 单位标准饲料。"
+      "desc": "按安装朝向供料，升级增加存量及每刻供料吞吐。",
+      "effects": {
+        "capacity": [
+          100,
+          150,
+          225,
+          325,
+          450
+        ],
+        "throughput": [
+          0.25,
+          0.4,
+          0.6,
+          0.85,
+          1.2
+        ]
+      },
+      "coverage": "side"
     },
     "sprinkler": {
       "module_id": "sprinkler",
@@ -54,7 +71,23 @@
       "axis_slot": null,
       "effect_type": "sprinkler",
       "requires_power": false,
-      "desc": "草生长速率加成，覆盖夹持两区。"
+      "desc": "草生长速率加成，覆盖夹持两区。",
+      "effects": {
+        "growth": [
+          0.15,
+          0.2,
+          0.25,
+          0.3,
+          0.4
+        ],
+        "decompact": [
+          0,
+          0,
+          0.001,
+          0.0015,
+          0.002
+        ]
+      }
     },
     "clean_brush": {
       "module_id": "clean_brush",
@@ -68,7 +101,16 @@
       "axis_slot": null,
       "effect_type": "clean_brush",
       "requires_power": false,
-      "desc": "每轮旋转结束时降污，覆盖夹持两区。"
+      "desc": "缓慢辅助清污，不能独自替代正常规模鸡群。",
+      "effects": {
+        "per_round": [
+          1,
+          1.5,
+          2,
+          2.5,
+          3
+        ]
+      }
     },
     "auto_collect": {
       "module_id": "auto_collect",
@@ -82,7 +124,23 @@
       "axis_slot": null,
       "effect_type": "auto_collect",
       "requires_power": false,
-      "desc": "自动收割夹持两区内冷却完毕的活体产物。"
+      "desc": "收取已形成的奶蛋毛与合格血液；同臂鸡笼同样受益。",
+      "effects": {
+        "cooldown_mult": [
+          1,
+          0.95,
+          0.9,
+          0.85,
+          0.8
+        ],
+        "clean_corpse": [
+          false,
+          false,
+          false,
+          true,
+          true
+        ]
+      }
     },
     "coop": {
       "module_id": "coop",
@@ -97,7 +155,16 @@
       "axis_slot": null,
       "effect_type": "coop",
       "requires_power": false,
-      "desc": "容纳鸡，鸡啄虫降污 + 产蛋，可容纳 5 只。"
+      "desc": "容纳幼鸡和成鸡，升级扩容；尸体清理前仍占用笼位。",
+      "effects": {
+        "capacity": [
+          5,
+          7,
+          9,
+          12,
+          15
+        ]
+      }
     },
     "feed_preprocess": {
       "module_id": "feed_preprocess",
@@ -112,7 +179,16 @@
       "axis_slot": null,
       "effect_type": "feed_preprocess",
       "requires_power": false,
-      "desc": "投入作物原料生成标准饲料（1 单位 = 10 营养）。"
+      "desc": "投入作物原料生成标准饲料（1 单位 = 10 营养）。",
+      "effects": {
+        "transfer_units_per_tick": [
+          0.5,
+          0.75,
+          1,
+          1.5,
+          2
+        ]
+      }
     },
     "tiller": {
       "module_id": "tiller",
@@ -127,7 +203,16 @@
       "axis_slot": null,
       "effect_type": "tiller",
       "requires_power": false,
-      "desc": "持续松土，覆盖夹持两区。"
+      "desc": "持续辅助松土，不能独自替代正常规模猪群。",
+      "effects": {
+        "per_tick": [
+          0.002,
+          0.003,
+          0.004,
+          0.005,
+          0.006
+        ]
+      }
     },
     "seeder": {
       "module_id": "seeder",
@@ -142,7 +227,24 @@
       "axis_slot": null,
       "effect_type": "seeder",
       "requires_power": false,
-      "desc": "草高低于阈值时叠加生长加成。"
+      "desc": "草高低于阈值时叠加生长加成。",
+      "effects": {
+        "threshold": [
+          0.3,
+          0.4,
+          0.4,
+          0.5,
+          0.5
+        ],
+        "growth": [
+          0.5,
+          0.5,
+          0.75,
+          0.75,
+          1
+        ]
+      },
+      "coverage": "side"
     },
     "manure_net": {
       "module_id": "manure_net",
@@ -157,7 +259,24 @@
       "axis_slot": null,
       "effect_type": "manure_net",
       "requires_power": false,
-      "desc": "区内羊的污染产出衰减。"
+      "desc": "区内羊的污染产出衰减。",
+      "effects": {
+        "sheep_reduce": [
+          0.1,
+          0.15,
+          0.2,
+          0.25,
+          0.3
+        ],
+        "trample_reduce": [
+          0,
+          0,
+          0,
+          0.1,
+          0.15
+        ]
+      },
+      "coverage": "side"
     },
     "pasture_arm": {
       "module_id": "pasture_arm",
@@ -176,7 +295,31 @@
       "effect_type": "pasture_arm",
       "requires_power": true,
       "desc": "翻耕 + 播种 + 洒水三合一，覆盖夹持两区。",
-      "power_drain_per_tick": 1
+      "power_drain_per_tick": 1,
+      "effects": {
+        "per_tick": [
+          0.003,
+          0.0045,
+          0.006,
+          0.008,
+          0.01
+        ],
+        "growth": [
+          0.2,
+          0.25,
+          0.3,
+          0.35,
+          0.4
+        ],
+        "seed_growth": [
+          0.5,
+          0.5,
+          0.75,
+          0.75,
+          1
+        ],
+        "seed_threshold": 0.4
+      }
     },
     "clinic_arm": {
       "module_id": "clinic_arm",
@@ -193,7 +336,23 @@
       "effect_type": "heal",
       "requires_power": true,
       "desc": "自动检测并治疗夹持两区内的病畜。",
-      "power_drain_per_tick": 1
+      "power_drain_per_tick": 1,
+      "effects": {
+        "heal": [
+          0.01,
+          0.02,
+          0.03,
+          0.05,
+          0.08
+        ],
+        "count": [
+          2,
+          3,
+          4,
+          5,
+          6
+        ]
+      }
     },
     "feed_refine": {
       "module_id": "feed_refine",
@@ -211,43 +370,37 @@
       "effect_type": "feed_refine",
       "requires_power": true,
       "desc": "饲料预处理 + 自动补槽 + 精加工加成。",
-      "power_drain_per_tick": 1
-    },
-    "link_schedule": {
-      "module_id": "link_schedule",
-      "name_key": "livestock.module.link_schedule",
-      "name": "联动作业臂",
-      "tier": "large",
-      "layer": "第二层",
-      "slots": {
-        "inner": 1,
-        "front": 1,
-        "bottom": 1,
-        "side": 1
-      },
-      "axis_slot": null,
-      "effect_type": "link_schedule",
-      "requires_power": true,
-      "desc": "中继调度器，让另一根臂的第一层模块完成后自动接力下一步。",
-      "power_drain_per_tick": 1
-    },
-    "waste_heat_recycle": {
-      "module_id": "waste_heat_recycle",
-      "name_key": "livestock.module.waste_heat_recycle",
-      "name": "废热回收臂",
-      "tier": "large",
-      "layer": "第二层",
-      "slots": {
-        "inner": 1,
-        "bottom": 1,
-        "top": 1,
-        "side": 1
-      },
-      "axis_slot": null,
-      "effect_type": "waste_heat_recycle",
-      "requires_power": true,
-      "desc": "自身不清污，从已发生的污染下降中提取肥料/沼气/虫粉。",
-      "power_drain_per_tick": 1
+      "power_drain_per_tick": 1,
+      "effects": {
+        "refine_mult": [
+          1.2,
+          1.25,
+          1.3,
+          1.35,
+          1.4
+        ],
+        "cache_capacity": [
+          0,
+          0,
+          0,
+          0,
+          50
+        ],
+        "transfer_units_per_tick": [
+          0.5,
+          0.75,
+          2,
+          3,
+          4
+        ],
+        "adjacent_delivery": [
+          false,
+          false,
+          false,
+          true,
+          true
+        ]
+      }
     },
     "slaughter": {
       "module_id": "slaughter",
@@ -259,7 +412,16 @@
       "axis_slot": 1,
       "effect_type": "slaughter",
       "requires_power": false,
-      "desc": "猪牛羊屠宰（默认已装轴心位 1，手动操作，不耗电）。"
+      "desc": "服务全牧场牛羊猪，手动屠宰，不耗电。",
+      "effects": {
+        "yield_recovery": [
+          1,
+          1.025,
+          1.05,
+          1.075,
+          1.1
+        ]
+      }
     },
     "warehouse_hub": {
       "module_id": "warehouse_hub",
@@ -272,20 +434,21 @@
       "effect_type": "warehouse_hub",
       "requires_power": true,
       "desc": "自动收集四臂采集产物到轴心缓存。",
-      "power_drain_per_tick": 2
-    },
-    "climate_control": {
-      "module_id": "climate_control",
-      "name_key": "livestock.module.climate_control",
-      "name": "气候调控塔",
-      "tier": "axis",
-      "layer": "轴心",
-      "slots": {},
-      "axis_slot": 2,
-      "effect_type": "climate_control",
-      "requires_power": true,
-      "desc": "全局环境微调（晴朗/阴凉/湿润三模式）。",
-      "power_drain_per_tick": 2
+      "power_drain_per_tick": 2,
+      "effects": {
+        "capacity": [
+          50,
+          80,
+          120,
+          160,
+          200
+        ]
+      }
     }
-  }
+  },
+  "retired_module_ids": [
+    "link_schedule",
+    "waste_heat_recycle",
+    "climate_control"
+  ]
 }

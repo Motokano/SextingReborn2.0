@@ -1,0 +1,3 @@
+const limb=document.querySelector('#limb'),upper=document.querySelector('#upper'),query=document.querySelector('#query'),cards=[...document.querySelectorAll('article')];
+function filter(){let n=0;for(const c of cards){const ok=(limb.value===''||c.dataset.limb===limb.value)&&(upper.value===''||c.dataset.upper===upper.value)&&c.dataset.id.includes(query.value.trim().toUpperCase());c.hidden=!ok;if(ok)n++}document.querySelector('#count').textContent=n+' / 128 个状态'}
+limb.addEventListener('change',filter);upper.addEventListener('change',filter);query.addEventListener('input',filter);document.querySelector('#reset').addEventListener('click',()=>{limb.value='';upper.value='';query.value='';filter()});

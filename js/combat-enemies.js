@@ -85,6 +85,9 @@
             return defender;
         }
         if (t.parry_rate != null) defender.parry_rate = Number(t.parry_rate);
+        defender.flexibility = Math.max(0, Number(t.flexibility) || 0);
+        defender.armor = t.armor || {};
+        defender.head_armor = t.head_armor || {};
         if (t.parry_damage_reduce != null) defender.parry_damage_reduce = Number(t.parry_damage_reduce);
         if (t.speed != null && isFinite(Number(t.speed))) defender.speed = Number(t.speed);
         if (t.inner_damage_reduce != null && isFinite(Number(t.inner_damage_reduce))) defender.inner_damage_reduce = clamp01(Number(t.inner_damage_reduce));
@@ -157,7 +160,10 @@
                 dead: false,
                 // 眩晕累积（37 §9.2，k13）：0-100；stunned=true = 晕 1 回合（下次 AI 行动被跳过）
                 stun_value: 0,
-                stunned: false
+                stunned: false,
+                // 疼痛（47 §9.6 / k229，敌我通用）：全局 0-100 整数条；上限 = pain_cap_base + pain_cap_per_avg_destroy×平均损毁%（封顶制）
+                pain_value: 0,
+                pain_no_hit_ticks: 0
             };
             enemyInstanceStates[key] = st;
         }
@@ -280,6 +286,8 @@
     /**
      * 09-body-parts「损毁写入」（与主角共用规则）：命中部位未损毁 → Q 全加该部位（封顶）；
      * 已损毁 → Q 均分到未损毁部位（每部位先 floor(Q/n)，余数按 头→胸→腹→左手→右手→左脚→右脚 顺序 +1）。
+     * 损毁账与疼痛账并行（k229/47 §9.6）：实际落地损毁增量（顶满溢出作废）同写入该实例疼痛条，
+     * 疼痛增量 = round(实际损毁增量 × 汇率)，汇率按「被击中部位受伤前损毁进度」线性（完好 0.1 → 半废 0.55 → 失能 1.0）。
      * @returns {string[]} 本次被打满的部位（运行时键）列表
      */
     function applyEnemyDestroy(mapId, index, hitPartId, q, enemyId) {
@@ -289,15 +297,19 @@
         var k = normalizeDestroyKey(hitPartId);
         if (PART_ORDER.indexOf(k) < 0) k = 'chest';
         var filled = [];
+        var mx = st.maxes[k];
+        var pre = st.part_destroy[k] || 0;
+        var appliedTotal = 0;
         function addTo(partKey, amount) {
-            var mx = st.maxes[partKey];
-            var cur = st.part_destroy[partKey] || 0;
-            if (cur >= mx) return;
-            var addv = Math.min(amount, mx - cur);
-            st.part_destroy[partKey] = cur + addv;
-            if (st.part_destroy[partKey] >= mx) filled.push(partKey);
+            var mx2 = st.maxes[partKey];
+            var cur2 = st.part_destroy[partKey] || 0;
+            if (cur2 >= mx2) return;
+            var addv2 = Math.min(amount, mx2 - cur2);
+            st.part_destroy[partKey] = cur2 + addv2;
+            appliedTotal += addv2;
+            if (st.part_destroy[partKey] >= mx2) filled.push(partKey);
         }
-        if ((st.part_destroy[k] || 0) < st.maxes[k]) {
+        if (pre < mx) {
             addTo(k, q);
         } else {
             var open = [];
@@ -314,7 +326,153 @@
                 if (addj > 0) addTo(ok, addj);
             }
         }
+        if (appliedTotal > 0) {
+            try {
+                // 有实际损毁落地（顶满溢出不计）即重置疼痛衰减计时；疼痛增量按汇率取整后累加
+                st.pain_no_hit_ticks = 0;
+                var painInc = 0;
+                if (global.Survival && typeof global.Survival.calcPainIncrement === 'function') {
+                    painInc = global.Survival.calcPainIncrement(appliedTotal, pre, mx);
+                }
+                if (painInc > 0) {
+                    st.pain_value = Math.min(100, (Math.max(0, Math.floor(Number(st.pain_value) || 0)) + painInc));
+                    syncEnemyPainBuff(st);
+                }
+            } catch (ePain) { /* 疼痛账异常不阻断损毁账 */ }
+        }
         return filled;
+    }
+
+    // ---- 敌人疼痛（47 §9.6 / k229：敌我通用；纯逻辑字段 + 镜像到 BuffSystem 以便 出手速度乘区/禁用查询/HUD） ----
+    var ENEMY_PAIN_BUFF_IDS = ['survival_pain_mild', 'survival_pain_moderate', 'survival_pain_severe', 'survival_pain_agony'];
+
+    function cfgPainNum(key, def) {
+        try {
+            if (global.CharacterAttributes && typeof global.CharacterAttributes.getCfg === 'function') {
+                var v = Number(global.CharacterAttributes.getCfg(key, def));
+                if (isFinite(v)) return v;
+            }
+        } catch (eC) { /* ignore */ }
+        return def;
+    }
+
+    function getPainBuffTick() {
+        try {
+            var ts = global.GameTime && typeof global.GameTime.getState === 'function' ? global.GameTime.getState() : null;
+            if (ts && typeof ts.totalTicks === 'number' && isFinite(ts.totalTicks)) return Math.max(0, Math.floor(ts.totalTicks));
+        } catch (eT) { /* ignore */ }
+        return 0;
+    }
+
+    /** 平均损毁%（实例七部位 损毁值/上限 均值 ×100；0~100）。 */
+    function getEnemyAvgDestroyPct(st) {
+        if (!st || !st.maxes) return 0;
+        var sum = 0;
+        var n = 0;
+        var i;
+        for (i = 0; i < PART_ORDER.length; i++) {
+            var pk = PART_ORDER[i];
+            var mxv = st.maxes[pk];
+            if (mxv > 0) {
+                sum += clamp01((st.part_destroy[pk] || 0) / mxv);
+                n += 1;
+            }
+        }
+        return n > 0 ? (sum / n) * 100 : 0;
+    }
+
+    /** 疼痛条当前上限（封顶制，够不着高档即不触发）。 */
+    function getEnemyPainCap(st) {
+        var base = cfgPainNum('pain_cap_base', 25);
+        var per = cfgPainNum('pain_cap_per_avg_destroy', 0.75);
+        var mxP = cfgPainNum('pain_max', 100);
+        return Math.max(0, Math.min(mxP || 100, Math.floor(base + per * getEnemyAvgDestroyPct(st))));
+    }
+
+    /** 生效疼痛值 = min(累积 pain, 封顶值)（整数）。 */
+    function getEnemyPainEffective(st) {
+        return Math.min(Math.max(0, Math.floor(Number(st && st.pain_value) || 0)), getEnemyPainCap(st));
+    }
+
+    /** 档位：none/mild/moderate/severe/agony。 */
+    function getEnemyPainTierKey(st) {
+        var p = getEnemyPainEffective(st);
+        var thMild = cfgPainNum('pain_threshold_mild', 25);
+        var thMod = cfgPainNum('pain_threshold_moderate', 50);
+        var thSev = cfgPainNum('pain_threshold_severe', 75);
+        var thAg = cfgPainNum('pain_threshold_agony', 90);
+        if (p < thMild) return 'none';
+        if (p < thMod) return 'mild';
+        if (p < thSev) return 'moderate';
+        if (p < thAg) return 'severe';
+        return 'agony';
+    }
+
+    function enemyPainTierBuffId(tierKey) {
+        if (tierKey === 'mild') return 'survival_pain_mild';
+        if (tierKey === 'moderate') return 'survival_pain_moderate';
+        if (tierKey === 'severe') return 'survival_pain_severe';
+        if (tierKey === 'agony') return 'survival_pain_agony';
+        return '';
+    }
+
+    /** 镜像疼痛档位到 BuffSystem（owner = enemyId）：供战斗交换读 battle_move_speed_multiplier / 禁用查询 / HUD chips；档位离开后移除。 */
+    function syncEnemyPainBuff(st) {
+        if (!st || !st.enemyId) return '';
+        var Buff = global.BuffSystem;
+        if (!Buff || typeof Buff.applyBuff !== 'function' || typeof Buff.removeBuffByBuffId !== 'function') return '';
+        var tierKey = getEnemyPainTierKey(st);
+        var targetId = enemyPainTierBuffId(tierKey);
+        var i;
+        for (i = 0; i < ENEMY_PAIN_BUFF_IDS.length; i++) {
+            var bid = ENEMY_PAIN_BUFF_IDS[i];
+            if (bid === targetId) continue;
+            if (typeof Buff.hasBuffByBuffId !== 'function' || Buff.hasBuffByBuffId(st.enemyId, bid)) {
+                Buff.removeBuffByBuffId(st.enemyId, bid);
+            }
+        }
+        if (targetId) {
+            Buff.applyBuff(st.enemyId, targetId, 'pain_system', { tick: getPainBuffTick() });
+        }
+        return tierKey;
+    }
+
+    /** 疼痛衰减（每 AI tick）：未吃有效损毁 pain_decay_grace_ticks tick 后，每 pain_decay_interval_ticks −1（敌我通用，47 §9.6/k229）。 */
+    function decayEnemyPain(st) {
+        if (!st || (st.pain_value || 0) <= 0) return;
+        st.pain_no_hit_ticks = (st.pain_no_hit_ticks || 0) + 1;
+        var grace = Math.floor(cfgPainNum('pain_decay_grace_ticks', 10));
+        if (!isFinite(grace) || grace < 0) grace = 10;
+        var interval = Math.floor(cfgPainNum('pain_decay_interval_ticks', 4));
+        if (!isFinite(interval) || interval < 1) interval = 4;
+        var step = Math.floor(cfgPainNum('pain_decay_step', 1));
+        if (!isFinite(step) || step < 1) step = 1;
+        var doDecay = false;
+        if (grace <= 0) {
+            doDecay = (st.pain_no_hit_ticks % interval) === 0;
+        } else if (st.pain_no_hit_ticks > grace) {
+            doDecay = ((st.pain_no_hit_ticks - grace) % interval) === 0;
+        }
+        if (doDecay) {
+            st.pain_value = Math.max(0, Math.floor(st.pain_value) - step);
+        }
+        if ((st.pain_value || 0) <= 0) {
+            st.pain_value = 0;
+            st.pain_no_hit_ticks = 0;
+        }
+        syncEnemyPainBuff(st);
+    }
+
+    /** 敌人疼痛信息（测试/调试）。 */
+    function getEnemyPainInfo(mapId, index) {
+        var st = enemyInstanceStates[getEnemyInstanceKey(mapId, index)];
+        if (!st) return { stored: 0, cap: 0, effective: 0, tier: 'none' };
+        return {
+            stored: Math.max(0, Math.floor(Number(st.pain_value) || 0)),
+            cap: getEnemyPainCap(st),
+            effective: getEnemyPainEffective(st),
+            tier: getEnemyPainTierKey(st)
+        };
     }
 
     /** 取走并清空死亡队列（场景侧在攻击结算后调用：移除地图敌人实例、日志等）。 */
@@ -373,7 +531,16 @@
         if (st && !st.dead && isFatallyDestroyed(st)) {
             st.dead = true;
             enemyKillQueue[key] = String(d.enemyId);
+            // 敌人死亡：清掉镜像的疼痛档位 buff（避免残留 chip/查询）
+            try {
+                if (global.BuffSystem && typeof global.BuffSystem.removeBuffByBuffId === 'function') {
+                    for (var pbi = 0; pbi < ENEMY_PAIN_BUFF_IDS.length; pbi++) {
+                        global.BuffSystem.removeBuffByBuffId(String(d.enemyId), ENEMY_PAIN_BUFF_IDS[pbi]);
+                    }
+                }
+            } catch (ePb) { /* ignore */ }
         }
+        if (ctx.collisionDamage) return;
         // 眩晕累积（37 §9.2，k13）：命中头大幅累积（抗眩晕比例减免）；技能可显式声明其他部位眩晕
         try {
             var stunGain = 0;
@@ -520,6 +687,40 @@
         return String(mapId || '') + '|i' + (index | 0);
     }
 
+    /** 主动攻击等外部事件直接建立仇恨；protectThroughTick 防止同一行动因距离立刻清除。 */
+    function forceAggro(map, index, protectThroughTick) {
+        if (!map || !Array.isArray(map.enemies)) return false;
+        var rec = map.enemies[index | 0];
+        if (!rec || !rec.enemy_id) return false;
+        var key = enemyAiKey(map.map_id, index);
+        var st = enemyAiState[key] || (enemyAiState[key] = {
+            lastMoveTick: 0, aggro: false, homeX: rec.x | 0, homeY: rec.y | 0
+        });
+        st.aggro = true;
+        st.protectThroughTick = Math.max(parseInt(st.protectThroughTick, 10) || 0, parseInt(protectThroughTick, 10) || 0);
+        return true;
+    }
+
+    function isEnemyAggro(mapId, index) {
+        var st = enemyAiState[enemyAiKey(mapId, index)];
+        return !!(st && st.aggro);
+    }
+
+    /** enemies[] 删除一项后同步按下标存放的 AI 状态，避免后续实例继承错误仇恨。 */
+    function removeEnemyAiStateAt(mapId, removedIndex) {
+        var prefix = String(mapId || '') + '|i';
+        var moved = {};
+        Object.keys(enemyAiState).forEach(function (key) {
+            if (key.indexOf(prefix) !== 0) return;
+            var index = parseInt(key.slice(prefix.length), 10);
+            var value = enemyAiState[key];
+            delete enemyAiState[key];
+            if (!isFinite(index) || index === removedIndex) return;
+            moved[prefix + (index > removedIndex ? index - 1 : index)] = value;
+        });
+        Object.keys(moved).forEach(function (key) { enemyAiState[key] = moved[key]; });
+    }
+
     function aiMoveInterval(tpl) {
         var v = parseInt(tpl && tpl.move_interval_ticks, 10);
         return isFinite(v) && v >= 1 ? v : 1;
@@ -608,6 +809,10 @@
             if ((instSt.stun_value || 0) > 0) {
                 instSt.stun_value = Math.max(0, Math.floor(instSt.stun_value) - 1);
             }
+            // 疼痛衰减（47 §9.6 / k229，敌我通用）：未吃有效损毁 grace tick 后每 4 tick −1；镜像 buff 保活/移除
+            try { decayEnemyPain(instSt); } catch (ePainTick) { /* ignore */ }
+            var painTierKey = getEnemyPainTierKey(instSt);
+            var painAgonyNow = painTierKey === 'agony';
             var ex = n.x | 0, ey = n.y | 0;
             var key = enemyAiKey(o.map.map_id, i);
             var st = enemyAiState[key] || (enemyAiState[key] = { lastMoveTick: 0, aggro: false, homeX: ex, homeY: ey });
@@ -616,7 +821,7 @@
             var leashR = aiRadius(tpl, 'leash_radius', 8);
             var homeDist = Math.max(Math.abs(ex - st.homeX), Math.abs(ey - st.homeY));
             if (dist <= aggroR) st.aggro = true;
-            if (st.aggro && dist > leashR) st.aggro = false;
+            if (st.aggro && dist > leashR && tick > (parseInt(st.protectThroughTick, 10) || 0)) st.aggro = false;
             var returning = !st.aggro && homeDist > 1;
             if (!st.aggro && !returning && dist > aggroR) continue;
             // 攻击：贴脸即攻击（无冷却）；若本玩家动作内该敌人已反击（didActThisTick），跳过——敌人每 tick 恰好行动 1 次
@@ -626,11 +831,12 @@
             }
             // 移动：追击或回巢（BFS 最短路径）；贴脸时原地待机（等下次未反击的 tick 出手），不绕圈
             // 腿毁失能（损毁即血）：任一条腿损毁满 → 不再移动（原地待机，只保留攻击）
+            // 剧痛（k229/47 §9.6）：pain≥90 → disable_actions(move)，痛到走不动（保留贴脸攻击）
             var legsDisabled = false;
             try {
                 legsDisabled = isEnemyPartDestroyed(o.map.map_id, i, 'lfoot', eid) || isEnemyPartDestroyed(o.map.map_id, i, 'rfoot', eid);
             } catch (eLeg) { /* ignore */ }
-            if (!legsDisabled && dist > 1 && tick - st.lastMoveTick >= aiMoveInterval(tpl)) {
+            if (!legsDisabled && !painAgonyNow && dist > 1 && tick - st.lastMoveTick >= aiMoveInterval(tpl)) {
                 var tx = st.aggro ? px : st.homeX;
                 var ty = st.aggro ? py : st.homeY;
                 if (tx === ex && ty === ey) continue;
@@ -646,6 +852,14 @@
     }
 
     global.CombatEnemies = {
+        getShieldRemaining: function (mapId, index, enemyId) {
+            var st = getEnemyInstanceState(mapId, index, enemyId);
+            if (st.shield_remaining == null) st.shield_remaining = Math.max(0, Number((getById(enemyId) || {}).shield_remaining) || 0);
+            return st.shield_remaining;
+        },
+        setShieldRemaining: function (mapId, index, enemyId, amount) {
+            getEnemyInstanceState(mapId, index, enemyId).shield_remaining = Math.max(0, Number(amount) || 0);
+        },
         setTable: setTable,
         getById: getById,
         setFacingDir: setFacingDir,
@@ -663,9 +877,13 @@
         addEnemyStun: addEnemyStun,
         isEnemyStunned: isEnemyStunned,
         getEnemyStunValue: getEnemyStunValue,
+        getEnemyPainInfo: getEnemyPainInfo,
         applyEnemyDestroy: applyEnemyDestroy,
         drainEnemyKillQueue: drainEnemyKillQueue,
         drainEnemyLimbLossQueue: drainEnemyLimbLossQueue,
+        forceAggro: forceAggro,
+        isEnemyAggro: isEnemyAggro,
+        removeEnemyAiStateAt: removeEnemyAiStateAt,
         updateEnemyAI: updateEnemyAI,
         bfsFirstStep: bfsFirstStep,
         dirFromDelta: dirFromDelta

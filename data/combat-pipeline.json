@@ -1,6 +1,6 @@
 {
   "_comment": "近战结算管线：phases[].handler 为注册键，可在 js/combat-pipeline.js 用 registerPhaseHandler 覆盖；策划增删 phase 行即可扩展顺序。平衡硬顶唯一数据源见 survival-config.json（hit_*、parry_chance_cap、parry_damage_reduce_cap）。",
-  "version": 1,
+  "version": 2,
   "balance_config_keys": [
     "hit_base_at_equal_speed",
     "hit_base_max",
@@ -39,9 +39,9 @@
           "_doc": "按 post-effects.json effect_type 分派；trigger 见各条目 effect_params.trigger"
         },
         {
-          "id": "enemy_mitigation",
-          "handler": "builtin.enemy_damage_mitigation",
-          "_doc": "攻方为人类、防方为敌人：内功/身体减伤 × 伤害类型微调（柔韧基础防御对敌人表用 body 字段替代）"
+          "id": "unified_defense",
+          "handler": "builtin.unified_defense",
+          "_doc": "敌我共用：混合防具吸收 → 总量柔韧 → 部位类型修正"
         },
         {
           "id": "damage_resolve_stub",
@@ -77,19 +77,9 @@
           "handler": "builtin.post_effects_hook"
         },
         {
-          "id": "diqi_shield",
-          "handler": "builtin.diqi_shield_player",
-          "_doc": "玩家受击：激活盾层（37 §4.3）先于最终伤害占位"
-        },
-        {
-          "id": "flex_defense",
-          "handler": "builtin.flexibility_defense_player",
-          "_doc": "玩家受击：柔韧基础防御 DR=柔韧/(柔韧+3D)（37 §5，05 5.6.2）"
-        },
-        {
-          "id": "type_modifier",
-          "handler": "builtin.damage_type_modifier_player",
-          "_doc": "玩家受击：部位伤害类型微调系数 M[部位][类型]（37 §5，05 5.6.2）"
+          "id": "unified_defense",
+          "handler": "builtin.unified_defense",
+          "_doc": "敌我共用：混合防具吸收 → 总量柔韧 → 部位类型修正"
         },
         {
           "id": "damage_resolve_stub",
@@ -108,22 +98,30 @@
     "_doc": "与 post-effects.json 中 effect_type 对齐；resolver 在 js/combat-post-effects.js 内置或 registerPostEffectResolver 注册；数据表见 js/post-effects.js（PostEffects）",
     "initiative_always_first": {
       "resolver": "initiative_always_first",
-      "hooks": ["initiative_check"],
+      "hooks": [
+        "initiative_check"
+      ],
       "mechanic_shared_with_enemy": true
     },
     "dispel_one_beneficial_buff_on_target": {
       "resolver": "dispel_one_beneficial_buff_on_target",
-      "hooks": ["hit_roll_success"],
+      "hooks": [
+        "hit_roll_success"
+      ],
       "mechanic_shared_with_enemy": true
     },
     "extend_target_debuff_duration": {
       "resolver": "extend_target_debuff_duration",
-      "hooks": ["hit_roll_success"],
+      "hooks": [
+        "hit_roll_success"
+      ],
       "mechanic_shared_with_enemy": true
     },
     "damage_scale_by_target_debuff_stacks": {
       "resolver": "damage_scale_by_target_debuff_stacks",
-      "hooks": ["hit_roll_success"],
+      "hooks": [
+        "hit_roll_success"
+      ],
       "mechanic_shared_with_enemy": true
     }
   }

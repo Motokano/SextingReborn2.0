@@ -8,6 +8,89 @@
     var config = { pipelines: {}, effect_type_catalog: {} };
     var customHandlers = {};
 
+    function ownerOf(def) { return def && def.kind === 'enemy' ? String(def.enemyId) : 'player'; }
+    function moveFor(ctx) {
+        if (ctx.moveTemplate) return ctx.moveTemplate;
+        var sk = global.CombatSkills && global.CombatSkills.getSkill(ctx.skillId);
+        return sk && (sk.moves || []).filter(function (m) { return m.id === ctx.moveId; })[0] || {};
+    }
+    function prepareAction(ctx) {
+        if (ctx.actionPrepared) return;
+        ctx.actionPrepared = true;
+        var bonus = Number(ctx.actionConditionBonus) || 0;
+        var bs = global.BuffSystem;
+        var stacks = bs && bs.getNonBeneficialBuffStacks ? bs.getNonBeneficialBuffStacks(ownerOf(ctx.defender)) : 0;
+        var pe = global.CombatPostEffects;
+        var ids = ctx.attacker && ctx.attacker.postEffectIds || [];
+        ids.forEach(function (id) {
+            var p = pe && pe.getPostEffect(id);
+            if (!p || p.effect_type !== 'damage_scale_by_target_debuff_stacks') return;
+            if (p.valid_skill_ids && p.valid_skill_ids.length && p.valid_skill_ids.indexOf(ctx.skillId) < 0) return;
+            if (p.valid_move_ids && p.valid_move_ids.length && p.valid_move_ids.indexOf(ctx.moveId) < 0) return;
+            var params = p.effect_params || {};
+            bonus += Math.min(stacks, Number(params.max_stacks) || Infinity) * (Number(params.per_stack_multiplier) || 0);
+        });
+        ctx.outgoingMultiplier = Math.max(0, 1 + bonus);
+        ctx.actionDefense = {};
+    }
+    function prepareSegment(ctx) {
+        var bs = global.BuffSystem;
+        ctx.takenMultiplierSnapshot = bs && bs.getBattleFinalDamageTakenMultiplier
+            ? bs.getBattleFinalDamageTakenMultiplier(ownerOf(ctx.defender), ctx.priorPendingBuffApplies || []) : 1;
+        ctx.rawDamage = Math.max(0, Number(ctx.rawDamage) || 0) * ctx.outgoingMultiplier;
+        if (ctx.typedDamage) ctx.typedDamage = global.CombatDamage.scale(ctx.typedDamage, ctx.outgoingMultiplier);
+    }
+    function phaseUnifiedDefense(ctx) {
+        var cd = global.CombatDamage;
+        var def = ctx.defender || {};
+        var input = ctx.typedDamage;
+        if (!input) { input = { blunt: 0, slash: 0, pierce: 0 }; input[ctx.damageType || 'blunt'] = ctx.rawDamage; }
+        var sum = cd.total(input);
+        var scalar = ctx.damageAfterParry != null ? ctx.damageAfterParry : ctx.rawDamage;
+        input = cd.scale(input, sum > 0 ? scalar / sum : 0);
+        if (ctx.forceZeroDamageByResourceInsufficient || !ctx.hitRollSuccess) input = cd.scale(input, 0);
+        var armor = {}, part = {};
+        var ie = global.InventoryEquipment, ca = global.CharacterAttributes, surv = global.Survival;
+        var isPlayer = def.kind === 'player';
+        var head = ctx.hitPart === 'head';
+        var defenseState = ctx.actionDefense || (ctx.actionDefense = {});
+        if (defenseState.shield == null) {
+            defenseState.shield = isPlayer ? (surv && surv.getDiqiShieldRemaining ? surv.getDiqiShieldRemaining() : 0)
+                : (global.CombatEnemies && global.CombatEnemies.getShieldRemaining ? global.CombatEnemies.getShieldRemaining(def.mapId, def.index, def.enemyId) : Number(def.shield_remaining) || 0);
+        }
+        cd.types.forEach(function (type) {
+            armor[type] = isPlayer ? (head ? (ie && ie.getHeadDamageReduce ? ie.getHeadDamageReduce(type) : 0)
+                : (ie && ie.getPlateDamageReduce ? ie.getPlateDamageReduce(ctx.hitPart, type) : 0))
+                : Number(((head ? def.head_armor : (def.armor && def.armor[ctx.hitPart])) || {})[type]) || 0;
+            part[type] = ca && ca.getDamageTypeModifier ? ca.getDamageTypeModifier(ctx.hitPartModifierKey || ctx.hitPart, type) : 1;
+        });
+        var flex = isPlayer ? (ca && ca.getEffectiveAttr ? ca.getEffectiveAttr('flexibility') : 0) : Number(def.flexibility) || 0;
+        var result = cd.defend(input, { armor: armor, permanentArmor: head, shield: defenseState.shield, flexibility: flex, part: part });
+        defenseState.shield = result.shieldRemaining;
+        ctx.damageAfterUnifiedDefense = result.damage;
+        ctx.defenseBreakdown = result;
+        if (!ctx.simultaneousDryRun) commitShield(ctx);
+        return ctx;
+    }
+    function commitShield(ctx) {
+        if (!ctx.actionDefense || ctx.actionDefense.shield == null) return;
+        var d = ctx.defender || {};
+        if (d.kind === 'player' && global.Survival && global.Survival.setDiqiShieldRemaining) {
+            global.Survival.setDiqiShieldRemaining(ctx.actionDefense.shield);
+        } else if (d.kind === 'enemy' && global.CombatEnemies && global.CombatEnemies.setShieldRemaining) {
+            global.CombatEnemies.setShieldRemaining(d.mapId, d.index, d.enemyId, ctx.actionDefense.shield);
+        }
+    }
+    function queueDisplacement(ctx) {
+        if (!ctx.hitRollSuccess || ctx.parrySucceeded || ctx.blockTargetEffects) return;
+        var effect = moveFor(ctx).on_parry_failed_at_tick_end_displace_target;
+        if (effect && global.CombatWorld && global.CombatWorld.queueDisplacement) global.CombatWorld.queueDisplacement(ctx, effect);
+    }
+    function finishAction(ctx) {
+        var r = ctx.resourceResult;
+        if (!ctx.simultaneousDryRun && r && global.CombatMeleeResolve) global.CombatMeleeResolve.finishActionResources(r);
+    }
+
     function setConfig(obj) {
         if (!obj || typeof obj !== 'object') return;
         config.pipelines = obj.pipelines || {};
@@ -155,17 +238,8 @@
         if (!ctx || ctx.hitRollSuccess === false) return ctx;
         var CS = global.CombatSkills;
         var BS = global.BuffSystem;
-        if (!CS || typeof CS.getSkill !== 'function' || !BS || typeof BS.applyBuff !== 'function') return ctx;
-        var sk = CS.getSkill(ctx.skillId);
-        if (!sk || !Array.isArray(sk.moves)) return ctx;
-        var move = null;
-        var mi;
-        for (mi = 0; mi < sk.moves.length; mi++) {
-            if (sk.moves[mi] && sk.moves[mi].id === ctx.moveId) {
-                move = sk.moves[mi];
-                break;
-            }
-        }
+        if (!BS || typeof BS.applyBuff !== 'function') return ctx;
+        var move = moveFor(ctx);
         if (!move) return ctx;
         var tick = 0;
         if (global.GameTime && typeof global.GameTime.getState === 'function') {
@@ -186,7 +260,7 @@
             if (move.on_hit_roll_success_apply_buff_actor) {
                 ctx.pendingBuffApplies.push({ owner: actorOwner, buffId: move.on_hit_roll_success_apply_buff_actor, src: src, evCtx: evCtx });
             }
-            if (move.on_hit_roll_success_apply_buff_target) {
+            if (move.on_hit_roll_success_apply_buff_target && !ctx.blockTargetEffects) {
                 var defDry = ctx.defender || {};
                 var targetOwnerDry = 'player';
                 if (defDry.kind === 'enemy' && defDry.enemyId != null) targetOwnerDry = String(defDry.enemyId);
@@ -198,7 +272,7 @@
         if (move.on_hit_roll_success_apply_buff_actor) {
             BS.applyBuff(actorOwner, move.on_hit_roll_success_apply_buff_actor, src, evCtx);
         }
-        if (move.on_hit_roll_success_apply_buff_target) {
+        if (move.on_hit_roll_success_apply_buff_target && !ctx.blockTargetEffects) {
             var def = ctx.defender || {};
             var targetOwner = 'player';
             if (def.kind === 'enemy' && def.enemyId != null) targetOwner = String(def.enemyId);
@@ -402,10 +476,12 @@
                 if (uk) IE.incrementSkillMoveUsage(pctx.parrySkillId, uk, 1);
             }
             // 招架成功 → 柔韧属性经验（24 属性经验；低幅补充，睡眠结算；进食/睡眠为主通道）
-            // 数值与 data/attribute-exp-config.json 的 evt.combat.parry_success 保持一致
+            // 高频动作仅作低幅补充；配置来自 survival-config，登记示例同步到 attribute-exp-config。
             if (!isSimultaneousDryRun(ctx) && global.CharacterAttributes && typeof global.CharacterAttributes.grantAttributeExp === 'function') {
                 try {
-                    global.CharacterAttributes.grantAttributeExp('player', [{ attr_id: 'flexibility', exp: 15 }], {
+                    var parryExp = typeof global.CharacterAttributes.getCfg === 'function'
+                        ? Math.max(0, Math.floor(Number(global.CharacterAttributes.getCfg('attribute_exp_parry_success', 1)) || 0)) : 1;
+                    if (parryExp > 0) global.CharacterAttributes.grantAttributeExp('player', [{ attr_id: 'flexibility', exp: parryExp }], {
                         source_id: 'evt.combat.parry_success',
                         event_kind: 'combat',
                         event_name: 'parry_roll_succeeded'
@@ -429,6 +505,7 @@
     }
 
     function phasePostEffectsHook(ctx) {
+        if (ctx.blockTargetEffects) return ctx;
         if (isSimultaneousDryRun(ctx)) return ctx;
         if (global.CombatPostEffects && typeof global.CombatPostEffects.runPostEffectsForHook === 'function') {
             global.CombatPostEffects.runPostEffectsForHook(ctx, 'hit_roll_success');
@@ -702,7 +779,7 @@
     /** 玩家受击：眩晕累积（37 §9.2，k13）——命中头大幅累积（抗眩晕比例减免）；≥100 触发眩晕 1 回合 */
     function phaseStunAccumulatePlayer(ctx, phase) {
         var def = ctx.defender || {};
-        if (def.kind !== 'player' || ctx.hitRollSuccess === false) return ctx;
+        if (def.kind !== 'player' || ctx.hitRollSuccess === false || ctx.blockTargetEffects) return ctx;
         var IE = global.InventoryEquipment;
         if (!IE || typeof IE.addPlayerStun !== 'function' || typeof IE.getHeadAntiStunPct !== 'function') return ctx;
         var hitPart = ctx.hitPart || 'chest';
@@ -714,6 +791,7 @@
             resist = Math.min(0.9, resist + global.BuffSystem.getAntiStunPct('player'));
         }
         var net = Math.max(1, Math.round(gain * (1 - resist)));
+        if (isSimultaneousDryRun(ctx)) { ctx.pendingStunGain = net; return ctx; }
         var r = IE.addPlayerStun(net);
         if (!isSimultaneousDryRun(ctx)) {
             if (global.GameLog && typeof global.GameLog.log === 'function' && global.UIText && typeof global.UIText.t === 'function') {
@@ -768,7 +846,9 @@
         }
         var def = ctx.defender || {};
         var dmg;
-        if (def.kind === 'enemy' && ctx.damageAfterEnemyMitigation != null) {
+        if (ctx.damageAfterUnifiedDefense != null) {
+            dmg = ctx.damageAfterUnifiedDefense;
+        } else if (def.kind === 'enemy' && ctx.damageAfterEnemyMitigation != null) {
             dmg = ctx.damageAfterEnemyMitigation;
         } else if (def.kind === 'player' && ctx.damageAfterModifier != null) {
             dmg = ctx.damageAfterModifier;
@@ -783,14 +863,11 @@
             if (def.kind === 'player') defOwnerId = 'player';
             else if (def.kind === 'enemy' && def.enemyId != null) defOwnerId = String(def.enemyId);
             if (defOwnerId) {
-                var finalTakenMul = Number(global.BuffSystem.getBattleFinalDamageTakenMultiplier(defOwnerId)) || 1;
-                if (isFinite(finalTakenMul) && finalTakenMul > 0) dmg = dmg * finalTakenMul;
+                var finalTakenMul = ctx.takenMultiplierSnapshot;
+                if (isFinite(finalTakenMul) && finalTakenMul >= 0) dmg = dmg * finalTakenMul;
             }
         }
         // 痛打落水狗（damage_scale_by_target_debuff_stacks）：后遗症解析器写入的最终伤害乘区（11-skills 8.3.6 扩展#5 消费点）
-        if (ctx.targetDebuffDamageMultiplier != null && isFinite(ctx.targetDebuffDamageMultiplier) && ctx.targetDebuffDamageMultiplier > 0) {
-            dmg = dmg * ctx.targetDebuffDamageMultiplier;
-        }
         dmg = Math.max(0, Math.floor(Number(dmg) || 0));
         ctx.finalDamage = dmg;
         if (isSimultaneousDryRun(ctx)) {
@@ -815,6 +892,7 @@
             }, ctx.eventIdSuffix);
         }
         applyDestroyToDefender(ctx);
+        queueDisplacement(ctx);
         recordDirectionalCombatSnapshot(ctx, dmg);
         return ctx;
     }
@@ -823,14 +901,27 @@
      * 同速同时提交（单侧）：后遗症 → 落地伤害 → 补发战斗 Buff 事件（须先 flushPendingBuffApplies）。
      */
     function finalizeSimultaneousStrike(ctx) {
+        if (ctx && ctx.segmentsResults) {
+            ctx.segmentsResults.forEach(finalizeSimultaneousStrike);
+            finishAction(Object.assign({}, ctx, { simultaneousDryRun: false }));
+            return;
+        }
+        if (ctx && ctx.simultaneousCommitted) return;
         if (!ctx || !ctx.simultaneousPendingDamage) return;
         var p = ctx.simultaneousPendingDamage;
+        ctx.simultaneousCommitted = true;
         var sub = p.ctxRef || ctx;
         sub.finalDamage = p.finalDamage;
-        if (global.CombatPostEffects && typeof global.CombatPostEffects.runPostEffectsForHook === 'function') {
+        commitShield(sub);
+        if (!sub.blockTargetEffects && global.CombatPostEffects && typeof global.CombatPostEffects.runPostEffectsForHook === 'function') {
             global.CombatPostEffects.runPostEffectsForHook(sub, 'hit_roll_success');
         }
         applyDestroyToDefender(sub);
+        if (sub.pendingStunGain && global.InventoryEquipment && global.InventoryEquipment.addPlayerStun) {
+            global.InventoryEquipment.addPlayerStun(sub.pendingStunGain);
+        }
+        queueDisplacement(sub);
+        finishAction(Object.assign({}, sub, { simultaneousDryRun: false }));
         if (!global.BuffSystem || typeof global.BuffSystem.triggerBuffPipeline !== 'function') return;
         var tick = 0;
         if (global.GameTime && typeof global.GameTime.getState === 'function') {
@@ -894,6 +985,7 @@
     }
 
     var builtins = {
+        'builtin.unified_defense': phaseUnifiedDefense,
         'builtin.emit_hit_roll': phaseEmitHitRoll,
         'builtin.apply_move_hit_roll_buffs': phaseApplyMoveHitRollBuffs,
         'builtin.parry_enemy_simple': phaseParryEnemySimple,
@@ -911,9 +1003,11 @@
         var pipe = config.pipelines && config.pipelines[pipelineName];
         if (!pipe || !pipe.phases) return ctx;
         ctx.pipelineName = pipelineName;
+        prepareAction(ctx);
         // 多段（hit_segments>1）：每段独立跑完整管线（独立命中/招架/叠 Buff/唯一事件 id），整招聚合回写（11-skills 8.3.6 扩展#4）
         var segs = ctx.segments && ctx.segments.length > 1 ? ctx.segments : null;
         if (!segs) {
+            prepareSegment(ctx);
             var i;
             for (i = 0; i < pipe.phases.length; i++) {
                 var phase = pipe.phases[i];
@@ -921,6 +1015,7 @@
                 var fn = customHandlers[h] || builtins[h];
                 if (fn) ctx = fn(ctx, phase) || ctx;
             }
+            finishAction(ctx);
             return ctx;
         }
         var segResults = [];
@@ -938,8 +1033,12 @@
                 subhit_index: si,
                 is_last_subhit: si === segs.length - 1,
                 eventIdSuffix: String(ctx.eventIdSuffix || ctx.moveId || '') + '_s' + si,
+                priorPendingBuffApplies: mergedPending.slice(),
+                resourceResult: null,
+                pendingBuffApplies: [],
                 segments: null
             });
+            prepareSegment(sCtx);
             var i2;
             for (i2 = 0; i2 < pipe.phases.length; i2++) {
                 var phase2 = pipe.phases[i2];
@@ -970,6 +1069,7 @@
                 ctxRef: ctx
             };
         }
+        finishAction(ctx);
         return ctx;
     }
 

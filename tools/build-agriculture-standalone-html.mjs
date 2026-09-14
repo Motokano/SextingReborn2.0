@@ -14,7 +14,7 @@ const SEAWED_SRC = path.join(__dirname, 'seaweed-extract-design-overview.html');
 const SHOP_JSON = path.join(ROOT, 'data', 'agriculture-seed-shop.json');
 const CROP_JSON = path.join(ROOT, 'data', 'agriculture-crop-defs.json');
 const SOILS_JSON = path.join(ROOT, 'data', 'agriculture-soils.json');
-const OUT = path.join(ROOT, 'agriculture-standalone.html');
+const OUT = path.join(ROOT, 'reference', 'agriculture-standalone.html');
 
 if (!fs.existsSync(SRC)) {
   console.error('Missing source:', SRC);

@@ -1,0 +1,14 @@
+import fs from 'node:fs';
+import crypto from 'node:crypto';
+import {rig,solveState} from './pawn-rig-core.mjs';
+const source=new URL('../assets/map/isometric/concepts/shared-pose-map-v2.json',import.meta.url);
+const bytes=fs.readFileSync(source);
+const hash=crypto.createHash('sha256').update(bytes).digest('hex');
+const contract=JSON.parse(fs.readFileSync(new URL('../assets/map/isometric/concepts/shared-pose-data-contract.json',import.meta.url)));
+if(hash!==contract.baselineSha256)throw Error('Design baseline changed');
+const design=JSON.parse(bytes),states=design.combinations.map(solveState);
+const dir=new URL('../assets/map/isometric/rig-calibration-v1/',import.meta.url);
+fs.mkdirSync(dir,{recursive:true});
+fs.writeFileSync(new URL('skeleton.json',dir),JSON.stringify({...rig,sourceSha256:hash,bindPose:states[0].nodes,contactPads:{palm:[0,-2,0],sole:[0,-2,0],seatedRoot:[0,-5,0],sideRoot:[0,-7,0],sideChest:[0,6,7]},eulerConvention:'degrees XYZ; R=Rz*Ry*Rx; use stored matrices as exact authority'},null,2));
+fs.writeFileSync(new URL('poses.json',dir),JSON.stringify({rigId:rig.id,sourceSha256:hash,status:rig.status,states},null,2));
+console.log('Saved bind skeleton + 128 resolved states; source baseline retained.');

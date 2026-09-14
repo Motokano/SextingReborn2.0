@@ -1,0 +1,379 @@
+{
+  "id": "office-hero-modular-v1",
+  "status": "withdrawn: fits art to reference bone lengths; not the approved hero structure; do not deploy or use as NPC standard",
+  "rig": "../rig/skeleton.json",
+  "poses": "../rig/poses.json",
+  "policy": "Appearance dimensions and texture anchors only. Never override pose matrices or solve from images.",
+  "modules": [
+    {
+      "id": "head",
+      "name": "头发与脸",
+      "part": "head",
+      "image": "parts.png",
+      "crop": [
+        25,
+        60,
+        306,
+        279
+      ],
+      "wrapper": "parts/head.svg",
+      "mode": "head",
+      "width": 23,
+      "height": 22,
+      "pivot": [
+        0.5,
+        0.5
+      ]
+    },
+    {
+      "id": "chest",
+      "name": "胸部与衣领",
+      "part": "chest",
+      "image": "parts.png",
+      "crop": [
+        360,
+        109,
+        248,
+        228
+      ],
+      "wrapper": "parts/chest.svg",
+      "mode": "segment",
+      "width": 18,
+      "start": [
+        0.5,
+        0.88
+      ],
+      "end": [
+        0.5,
+        0.12
+      ]
+    },
+    {
+      "id": "abdomen",
+      "name": "腹部与衣摆",
+      "part": "abdomen",
+      "image": "parts.png",
+      "crop": [
+        645,
+        160,
+        231,
+        175
+      ],
+      "wrapper": "parts/abdomen.svg",
+      "mode": "segment",
+      "width": 16,
+      "start": [
+        0.5,
+        0.88
+      ],
+      "end": [
+        0.5,
+        0.12
+      ]
+    },
+    {
+      "id": "base",
+      "name": "底座",
+      "part": "base",
+      "image": "parts.png",
+      "crop": [
+        907,
+        193,
+        282,
+        136
+      ],
+      "wrapper": "parts/base.svg",
+      "mode": "base",
+      "width": 44,
+      "height": 9,
+      "pivot": [
+        0.5,
+        0.36
+      ]
+    },
+    {
+      "id": "rUpperArm",
+      "name": "右上臂",
+      "part": "rhand",
+      "image": "parts.png",
+      "crop": [
+        69,
+        388,
+        142,
+        242
+      ],
+      "wrapper": "parts/rUpperArm.svg",
+      "mode": "segment",
+      "width": 7,
+      "start": [
+        0.5,
+        0.12
+      ],
+      "end": [
+        0.5,
+        0.88
+      ]
+    },
+    {
+      "id": "rForearm",
+      "name": "右前臂与袖口",
+      "part": "rhand",
+      "image": "parts.png",
+      "crop": [
+        402,
+        405,
+        123,
+        226
+      ],
+      "wrapper": "parts/rForearm.svg",
+      "mode": "segment",
+      "width": 7,
+      "start": [
+        0.5,
+        0.12
+      ],
+      "end": [
+        0.5,
+        0.88
+      ]
+    },
+    {
+      "id": "rPalm",
+      "name": "右手",
+      "part": "rhand",
+      "image": "parts.png",
+      "crop": [
+        687,
+        461,
+        149,
+        165
+      ],
+      "wrapper": "parts/rPalm.svg",
+      "mode": "point",
+      "width": 5.5,
+      "height": 6,
+      "pivot": [
+        0.5,
+        0.65
+      ]
+    },
+    {
+      "id": "lUpperArm",
+      "name": "左上臂",
+      "part": "lhand",
+      "image": "parts.png",
+      "crop": [
+        1003,
+        390,
+        140,
+        240
+      ],
+      "wrapper": "parts/lUpperArm.svg",
+      "mode": "segment",
+      "width": 7,
+      "start": [
+        0.5,
+        0.12
+      ],
+      "end": [
+        0.5,
+        0.88
+      ]
+    },
+    {
+      "id": "lForearm",
+      "name": "左前臂与袖口",
+      "part": "lhand",
+      "image": "parts.png",
+      "crop": [
+        102,
+        706,
+        123,
+        228
+      ],
+      "wrapper": "parts/lForearm.svg",
+      "mode": "segment",
+      "width": 7,
+      "start": [
+        0.5,
+        0.12
+      ],
+      "end": [
+        0.5,
+        0.88
+      ]
+    },
+    {
+      "id": "lPalm",
+      "name": "左手",
+      "part": "lhand",
+      "image": "parts.png",
+      "crop": [
+        382,
+        760,
+        146,
+        160
+      ],
+      "wrapper": "parts/lPalm.svg",
+      "mode": "point",
+      "width": 5.5,
+      "height": 6,
+      "pivot": [
+        0.5,
+        0.65
+      ]
+    },
+    {
+      "id": "rThigh",
+      "name": "右大腿",
+      "part": "rfoot",
+      "image": "parts.png",
+      "crop": [
+        663,
+        694,
+        155,
+        248
+      ],
+      "wrapper": "parts/rThigh.svg",
+      "mode": "segment",
+      "width": 8.5,
+      "start": [
+        0.5,
+        0.12
+      ],
+      "end": [
+        0.5,
+        0.88
+      ]
+    },
+    {
+      "id": "rShin",
+      "name": "右小腿",
+      "part": "rfoot",
+      "image": "parts.png",
+      "crop": [
+        985,
+        697,
+        149,
+        247
+      ],
+      "wrapper": "parts/rShin.svg",
+      "mode": "segment",
+      "width": 8.5,
+      "start": [
+        0.5,
+        0.12
+      ],
+      "end": [
+        0.5,
+        0.88
+      ]
+    },
+    {
+      "id": "rSole",
+      "name": "右鞋",
+      "part": "rfoot",
+      "image": "parts.png",
+      "crop": [
+        53,
+        1071,
+        216,
+        165
+      ],
+      "wrapper": "parts/rSole.svg",
+      "mode": "point",
+      "width": 10,
+      "height": 6,
+      "pivot": [
+        0.5,
+        0.7
+      ]
+    },
+    {
+      "id": "lThigh",
+      "name": "左大腿",
+      "part": "lfoot",
+      "image": "parts.png",
+      "crop": [
+        396,
+        971,
+        149,
+        250
+      ],
+      "wrapper": "parts/lThigh.svg",
+      "mode": "segment",
+      "width": 8.5,
+      "start": [
+        0.5,
+        0.12
+      ],
+      "end": [
+        0.5,
+        0.88
+      ]
+    },
+    {
+      "id": "lShin",
+      "name": "左小腿",
+      "part": "lfoot",
+      "image": "parts.png",
+      "crop": [
+        682,
+        981,
+        150,
+        239
+      ],
+      "wrapper": "parts/lShin.svg",
+      "mode": "segment",
+      "width": 8.5,
+      "start": [
+        0.5,
+        0.12
+      ],
+      "end": [
+        0.5,
+        0.88
+      ]
+    },
+    {
+      "id": "lSole",
+      "name": "左鞋",
+      "part": "lfoot",
+      "image": "parts.png",
+      "crop": [
+        963,
+        1073,
+        204,
+        165
+      ],
+      "wrapper": "parts/lSole.svg",
+      "mode": "point",
+      "width": 10,
+      "height": 6,
+      "pivot": [
+        0.5,
+        0.7
+      ]
+    }
+  ],
+  "injuries": {
+    "head": {
+      "uv": [
+        0.33,
+        0.65
+      ]
+    },
+    "chest": {
+      "uv": [
+        0.65,
+        0.6
+      ]
+    },
+    "abdomen": {
+      "uv": [
+        0.6,
+        0.55
+      ]
+    }
+  }
+}

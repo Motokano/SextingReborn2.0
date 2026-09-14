@@ -16,34 +16,58 @@
         "level_step": 10,
         "segments": [
           {
-            "level_range": [20, 29],
+            "level_range": [
+              20,
+              29
+            ],
             "p_cap": 0.8,
             "e_scale": 5060.86
           },
           {
-            "level_range": [30, 39],
+            "level_range": [
+              30,
+              39
+            ],
             "p_cap": 0.72,
             "e_scale": 6447.65
           },
           {
-            "level_range": [40, 49],
+            "level_range": [
+              40,
+              49
+            ],
             "p_cap": 0.64,
             "e_scale": 7063.27
           },
           {
-            "level_range": [50, 59],
+            "level_range": [
+              50,
+              59
+            ],
             "p_cap": 0.56,
             "e_scale": 8330.74
           }
         ],
         "tier_extension": {
-          "base_tier_level_range": [50, 59],
-          "from_level_range_start": [60, 69],
-          "to_level_range_end": [1991, 2000],
+          "base_tier_level_range": [
+            50,
+            59
+          ],
+          "from_level_range_start": [
+            60,
+            69
+          ],
+          "to_level_range_end": [
+            1991,
+            2000
+          ],
           "difficulty_mult_per_tier": 1.03,
           "e_scale_formula": "e_scale(base_tier) * pow(difficulty_mult_per_tier, tier_offset_from_60_69)",
           "p_cap_strategy": "reuse_base_tier",
-          "clamp_level_range_at_and_above": [1991, 2000]
+          "clamp_level_range_at_and_above": [
+            1991,
+            2000
+          ]
         }
       }
     },
@@ -61,34 +85,58 @@
         "level_step": 10,
         "segments": [
           {
-            "level_range": [20, 29],
+            "level_range": [
+              20,
+              29
+            ],
             "p_cap": 0.8,
             "e_scale": 5060.86
           },
           {
-            "level_range": [30, 39],
+            "level_range": [
+              30,
+              39
+            ],
             "p_cap": 0.72,
             "e_scale": 6447.65
           },
           {
-            "level_range": [40, 49],
+            "level_range": [
+              40,
+              49
+            ],
             "p_cap": 0.64,
             "e_scale": 7063.27
           },
           {
-            "level_range": [50, 59],
+            "level_range": [
+              50,
+              59
+            ],
             "p_cap": 0.56,
             "e_scale": 8330.74
           }
         ],
         "tier_extension": {
-          "base_tier_level_range": [50, 59],
-          "from_level_range_start": [60, 69],
-          "to_level_range_end": [1991, 2000],
+          "base_tier_level_range": [
+            50,
+            59
+          ],
+          "from_level_range_start": [
+            60,
+            69
+          ],
+          "to_level_range_end": [
+            1991,
+            2000
+          ],
           "difficulty_mult_per_tier": 1.03,
           "e_scale_formula": "e_scale(base_tier) * pow(difficulty_mult_per_tier, tier_offset_from_60_69)",
           "p_cap_strategy": "reuse_base_tier",
-          "clamp_level_range_at_and_above": [1991, 2000]
+          "clamp_level_range_at_and_above": [
+            1991,
+            2000
+          ]
         }
       }
     },
@@ -106,34 +154,58 @@
         "level_step": 10,
         "segments": [
           {
-            "level_range": [20, 29],
+            "level_range": [
+              20,
+              29
+            ],
             "p_cap": 0.8,
             "e_scale": 5060.86
           },
           {
-            "level_range": [30, 39],
+            "level_range": [
+              30,
+              39
+            ],
             "p_cap": 0.72,
             "e_scale": 6447.65
           },
           {
-            "level_range": [40, 49],
+            "level_range": [
+              40,
+              49
+            ],
             "p_cap": 0.64,
             "e_scale": 7063.27
           },
           {
-            "level_range": [50, 59],
+            "level_range": [
+              50,
+              59
+            ],
             "p_cap": 0.56,
             "e_scale": 8330.74
           }
         ],
         "tier_extension": {
-          "base_tier_level_range": [50, 59],
-          "from_level_range_start": [60, 69],
-          "to_level_range_end": [1991, 2000],
+          "base_tier_level_range": [
+            50,
+            59
+          ],
+          "from_level_range_start": [
+            60,
+            69
+          ],
+          "to_level_range_end": [
+            1991,
+            2000
+          ],
           "difficulty_mult_per_tier": 1.03,
           "e_scale_formula": "e_scale(base_tier) * pow(difficulty_mult_per_tier, tier_offset_from_60_69)",
           "p_cap_strategy": "reuse_base_tier",
-          "clamp_level_range_at_and_above": [1991, 2000]
+          "clamp_level_range_at_and_above": [
+            1991,
+            2000
+          ]
         }
       }
     },
@@ -151,34 +223,58 @@
         "level_step": 10,
         "segments": [
           {
-            "level_range": [20, 29],
+            "level_range": [
+              20,
+              29
+            ],
             "p_cap": 0.8,
             "e_scale": 5060.86
           },
           {
-            "level_range": [30, 39],
+            "level_range": [
+              30,
+              39
+            ],
             "p_cap": 0.72,
             "e_scale": 6447.65
           },
           {
-            "level_range": [40, 49],
+            "level_range": [
+              40,
+              49
+            ],
             "p_cap": 0.64,
             "e_scale": 7063.27
           },
           {
-            "level_range": [50, 59],
+            "level_range": [
+              50,
+              59
+            ],
             "p_cap": 0.56,
             "e_scale": 8330.74
           }
         ],
         "tier_extension": {
-          "base_tier_level_range": [50, 59],
-          "from_level_range_start": [60, 69],
-          "to_level_range_end": [1991, 2000],
+          "base_tier_level_range": [
+            50,
+            59
+          ],
+          "from_level_range_start": [
+            60,
+            69
+          ],
+          "to_level_range_end": [
+            1991,
+            2000
+          ],
           "difficulty_mult_per_tier": 1.03,
           "e_scale_formula": "e_scale(base_tier) * pow(difficulty_mult_per_tier, tier_offset_from_60_69)",
           "p_cap_strategy": "reuse_base_tier",
-          "clamp_level_range_at_and_above": [1991, 2000]
+          "clamp_level_range_at_and_above": [
+            1991,
+            2000
+          ]
         }
       }
     },
@@ -196,34 +292,58 @@
         "level_step": 10,
         "segments": [
           {
-            "level_range": [20, 29],
+            "level_range": [
+              20,
+              29
+            ],
             "p_cap": 0.8,
             "e_scale": 5060.86
           },
           {
-            "level_range": [30, 39],
+            "level_range": [
+              30,
+              39
+            ],
             "p_cap": 0.72,
             "e_scale": 6447.65
           },
           {
-            "level_range": [40, 49],
+            "level_range": [
+              40,
+              49
+            ],
             "p_cap": 0.64,
             "e_scale": 7063.27
           },
           {
-            "level_range": [50, 59],
+            "level_range": [
+              50,
+              59
+            ],
             "p_cap": 0.56,
             "e_scale": 8330.74
           }
         ],
         "tier_extension": {
-          "base_tier_level_range": [50, 59],
-          "from_level_range_start": [60, 69],
-          "to_level_range_end": [1991, 2000],
+          "base_tier_level_range": [
+            50,
+            59
+          ],
+          "from_level_range_start": [
+            60,
+            69
+          ],
+          "to_level_range_end": [
+            1991,
+            2000
+          ],
           "difficulty_mult_per_tier": 1.03,
           "e_scale_formula": "e_scale(base_tier) * pow(difficulty_mult_per_tier, tier_offset_from_60_69)",
           "p_cap_strategy": "reuse_base_tier",
-          "clamp_level_range_at_and_above": [1991, 2000]
+          "clamp_level_range_at_and_above": [
+            1991,
+            2000
+          ]
         }
       }
     }
@@ -244,18 +364,28 @@
     }
   },
   "source_whitelist": {
-    "_comment": "登记示例（非强制）：玩家任何行为都可发放属性经验（细水长流，见 01 哲学）；本表仅用于盘点/防误配，不拦截未登记来源。",
+    "_comment": "登记示例（非强制）：频繁动作仅作低幅补充，木桩/采集条目尚非运行时接线；招架生效值读取 survival-config.attribute_exp_parry_success。食物为主成长通道。",
     "enabled": false,
     "reject_unregistered_source": false,
-    "match_fields": ["source_id", "event_kind", "event_name"],
+    "match_fields": [
+      "source_id",
+      "event_kind",
+      "event_name"
+    ],
     "allowed_sources": [
       {
         "source_id": "evt.training.wood_dummy_success",
         "event_kind": "event",
         "event_name": "training_wood_dummy_success",
         "allow_grants": [
-          { "attr_id": "jingu", "fixed_exp": 30 },
-          { "attr_id": "focus", "fixed_exp": 20 }
+          {
+            "attr_id": "jingu",
+            "fixed_exp": 2
+          },
+          {
+            "attr_id": "focus",
+            "fixed_exp": 1
+          }
         ]
       },
       {
@@ -263,8 +393,14 @@
         "event_kind": "life_skill",
         "event_name": "gathering_bush_success",
         "allow_grants": [
-          { "attr_id": "dexterity", "fixed_exp": 18 },
-          { "attr_id": "focus", "fixed_exp": 12 }
+          {
+            "attr_id": "dexterity",
+            "fixed_exp": 1
+          },
+          {
+            "attr_id": "focus",
+            "fixed_exp": 1
+          }
         ]
       },
       {
@@ -272,7 +408,10 @@
         "event_kind": "item_use",
         "event_name": "use_breath_tonic_success",
         "allow_grants": [
-          { "attr_id": "breath", "fixed_exp": 40 }
+          {
+            "attr_id": "breath",
+            "fixed_exp": 40
+          }
         ]
       },
       {
@@ -280,7 +419,10 @@
         "event_kind": "combat",
         "event_name": "parry_roll_succeeded",
         "allow_grants": [
-          { "attr_id": "flexibility", "fixed_exp": 15 }
+          {
+            "attr_id": "flexibility",
+            "fixed_exp": 1
+          }
         ]
       }
     ]
@@ -291,8 +433,14 @@
       "event_kind": "event",
       "event_name": "training_wood_dummy_success",
       "grants": [
-        { "attr_id": "jingu", "fixed_exp": 30 },
-        { "attr_id": "focus", "fixed_exp": 20 }
+        {
+          "attr_id": "jingu",
+          "fixed_exp": 2
+        },
+        {
+          "attr_id": "focus",
+          "fixed_exp": 1
+        }
       ],
       "grant_on_success_only": true
     },
@@ -301,8 +449,14 @@
       "event_kind": "life_skill",
       "event_name": "gathering_bush_success",
       "grants": [
-        { "attr_id": "dexterity", "fixed_exp": 18 },
-        { "attr_id": "focus", "fixed_exp": 12 }
+        {
+          "attr_id": "dexterity",
+          "fixed_exp": 1
+        },
+        {
+          "attr_id": "focus",
+          "fixed_exp": 1
+        }
       ],
       "grant_on_success_only": true
     },
@@ -311,7 +465,10 @@
       "event_kind": "item_use",
       "event_name": "use_breath_tonic_success",
       "grants": [
-        { "attr_id": "breath", "fixed_exp": 40 }
+        {
+          "attr_id": "breath",
+          "fixed_exp": 40
+        }
       ],
       "grant_on_success_only": true
     },
@@ -320,7 +477,10 @@
       "event_kind": "combat",
       "event_name": "parry_roll_succeeded",
       "grants": [
-        { "attr_id": "flexibility", "fixed_exp": 15 }
+        {
+          "attr_id": "flexibility",
+          "fixed_exp": 1
+        }
       ],
       "grant_on_success_only": true
     }

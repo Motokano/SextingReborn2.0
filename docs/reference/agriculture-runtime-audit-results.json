@@ -1,0 +1,105 @@
+{
+  "data": {
+    "crops": 50,
+    "legacyCrops": 50,
+    "requesters": 31,
+    "requiresStructure": 16
+  },
+  "requests": {
+    "first": {
+      "x": 6,
+      "y": 1,
+      "cropId": "sesame"
+    },
+    "matureStillSelected": {
+      "x": 6,
+      "y": 1,
+      "cropId": "sesame"
+    },
+    "afterRemoval": {
+      "x": 3,
+      "y": 1,
+      "cropId": "sesame"
+    },
+    "suppliedPastNear": 2
+  },
+  "multiflow": {
+    "branches": 3,
+    "maintainedFlows": 4,
+    "totalConcentrationOneDevice": 39.900000000000006,
+    "totalConcentrationTwoDevices": 79.9
+  },
+  "noRequester": {
+    "poweredA": 0,
+    "unpoweredB": 12.8
+  },
+  "effectWithoutRequest": {
+    "before": 5000,
+    "after": 4999,
+    "afterReinjection": 5000
+  },
+  "sensitivity": {
+    "id": "euryale",
+    "h0": 100,
+    "afterAbsorb": 99,
+    "afterDedicatedStep": 98
+  },
+  "jar": {
+    "first": {
+      "units": 1,
+      "fertilizer": 0.3,
+      "power": 499
+    },
+    "second": {
+      "liquid": null,
+      "fertilizer": 0.6,
+      "power": 498
+    }
+  },
+  "cloneContinuationEqual": true,
+  "power": {
+    "start": 85,
+    "after": {
+      "total": 80,
+      "remaining": 80,
+      "power": 0
+    },
+    "restoredTotal": 85,
+    "restoredPower": 10
+  },
+  "sceneZeroHarvest": {
+    "result": {
+      "ok": true,
+      "cropId": "maize",
+      "itemId": "herb_maize",
+      "harvestCount": 0,
+      "placedCount": 0,
+      "result": "withered"
+    },
+    "cropRemains": true
+  },
+  "scenePartialHarvest": {
+    "result": {
+      "ok": true,
+      "cropId": "maize",
+      "itemId": "herb_maize",
+      "harvestCount": 3,
+      "placedCount": 2,
+      "result": "withered"
+    },
+    "remaining": 1
+  },
+  "sceneFinalHarvestClears": true,
+  "historicalComparison": {
+    "pickFirstReachableRequestForFlow": true,
+    "processSeaweedExtractMaintain": true,
+    "getPostEntryWetCells": true,
+    "getIrrigationSourceForPlot": true
+  },
+  "structureMenu": {
+    "id": "rice",
+    "structure": "water_storage_ridge",
+    "plantButtonsWithoutStructure": 1,
+    "plantButtonsWithStructure": 0
+  }
+}

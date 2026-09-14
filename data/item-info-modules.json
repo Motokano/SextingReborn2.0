@@ -1,6 +1,35 @@
 {
   "schema_version": 1,
   "module_sets": {
+    "module.food_calibrated": {
+      "set_id": "module.food_calibrated",
+      "display_name": "食物与配餐",
+      "modules": [
+        { "module_id": "food", "title": "进食", "content": { "type": "tpl_kv", "entries": [
+          { "field": "satiety_total", "label_key": "food.info.satiety" },
+          { "field": "food_thirst_instant", "label_key": "food.info.water" },
+          { "field": "slots_taken", "label_key": "food.info.slots" }
+        ] } },
+        { "module_id": "digestion", "title": "消化判断", "unlock": {
+          "skill_id": "life_cooking", "level_min": 1
+        }, "content": { "type": "tpl_kv", "entries": [
+          { "field": "digestion_ticks", "label_key": "food.info.digestion" },
+          { "field": "food_composition_text", "label_key": "food.info.composition" }
+        ] } },
+        { "module_id": "preservation", "title": "保鲜", "unlock": {
+          "skill_id": "life_cooking", "level_min": 2
+        }, "content": { "type": "tpl_kv", "entries": [
+          { "field": "spoilage_ticks", "label_key": "food.info.spoilage" }
+        ] } },
+        { "module_id": "growth", "title": "消化收益", "unlock": {
+          "skill_id": "life_cooking", "level_min": 3
+        }, "content": { "type": "tpl_kv", "entries": [
+          { "field": "food_experience_text", "label_key": "food.info.experience" },
+          { "field": "food_special_text", "label_key": "food.info.special" },
+          { "field": "food_special_ticks", "label_key": "food.info.special_ticks" }
+        ] } }
+      ]
+    },
     "module.material_ore": {
       "set_id": "module.material_ore",
       "display_name": "矿材观察",

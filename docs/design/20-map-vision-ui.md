@@ -39,6 +39,7 @@
 ## 4. 不可视判定（与信息分层一致）
 
 - **有效距离**：`chebyshev(玩家, 格) <= visualRadius * facingMul`，其中 `visualRadius` 来自 `vision_reveal_ui` 与昼夜插值，`facingMul` 来自 `vision_facing_ui` 的前/侧/背夹角与倍率。
+- **视场识别保底**：朝向视野开启时，落在视场（前+侧扇区，夹角 ≤ `side_half_angle_deg`）的格子，识别半径提升到 `visualRadius`（看得见即识别类型，不再只显示 `?`）；只有背后（背扇区）才按 `identifyRatio` 分层、保留 `unknownPresence` 的 `?` 提示。
 - **不**将 `adjacent_detail_radius` 并入「是否遮挡地形」：否则全邻格永不遮挡，背后扇区无法表现「看不见远处」。
 - **遮挡例外**：玩家自身格不遮挡；身后三邻格在 `strip_dynamic_on_rear_adjacent` 为真时不做满幅地形遮挡（与 `hide_nonvisible_terrain` 联动：这两格若 `canVisualRaw` 为假，仍不画遮挡条，仅 strip 动态）。
 
@@ -56,5 +57,6 @@
 ## 7. 实现登记
 
 - `getVisionOcclusionUiConfig`、`isRearAdjacentTriple`、`renderVisionOcclusionOverlay`、`renderVisionDistanceShadeOverlay`、`getDynamicMetaAt` 内身后剥离：`js/scene-renderer.js`
+- `facingAngleDeg` / `isInFieldOfView`（视场识别保底）、`render()` 内朝向变化检测（`prevFacingDir` 变化 → 强制动态层整层重画，避免转向后符号层滞留旧状态）：`js/scene-renderer.js`
 - 配置：`data/survival-config.json` → `vision_occlusion_ui`；默认已关扇形装饰（`vision_facing_ui.show_cone_overlay: false`），由策划在表中再开。
 - **DOM 回退路径**（无 `TileRendererV2` 时）当前**无**格级遮挡叠色；以 Canvas 路径为准。

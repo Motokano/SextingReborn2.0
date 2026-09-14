@@ -135,6 +135,8 @@
             base_success_rate: resolveField(recipe, method, iface, 'base_success_rate', null),
             failure_output: resolveField(recipe, method, iface, 'failure_output', null),
             allowed_station_tags: resolveField(recipe, method, iface, 'allowed_station_tags', null),
+            recommended_skill_level: resolveField(recipe, method, iface, 'recommended_skill_level', 0),
+            cost_override: resolveField(recipe, method, iface, 'cost_override', null),
             recipe_system: recipe ? recipe.recipe_system : (method ? method.recipe_system : null)
         };
     }

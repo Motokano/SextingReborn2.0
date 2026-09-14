@@ -366,7 +366,8 @@
         if (evalRes.success && pickRecipeId) markRecipeKnown(pickRecipeId);
         if (evalRes.success) addCookingSuccessProficiency();
 
-        grantItemOrDrop(outputItemId);
+        var outputCount = evalRes.success ? Math.max(1, Math.floor(Number(pickMainOutput ? pickMainOutput.count : pick.output_count) || 1)) : 1;
+        for (var oi = 0; oi < outputCount; oi++) grantItemOrDrop(outputItemId);
         if (evalRes.success && Array.isArray(pickBonusOutputs) && pickBonusOutputs.length) {
             var bi;
             for (bi = 0; bi < pickBonusOutputs.length; bi++) {

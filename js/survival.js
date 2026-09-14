@@ -6,6 +6,16 @@
     'use strict';
 
     var cfg = {};
+    var foodState = global.FoodMetabolism ? global.FoodMetabolism.fresh() : null;
+    function foodConfig() {
+        if (!cfg.food_model || !global.FoodMetabolism) return null;
+        return Object.assign({}, cfg.food_model, { exp_mult: cfg.nutrition_tier_exp_mult });
+    }
+    function ingestFood(itemId, profile) {
+        if (!foodConfig() || !global.FoodMetabolism.eat(foodState, itemId, profile)) return false;
+        state.thirst = round1(clamp(state.thirst + (Number(profile.thirst_instant) || 0), 0, get('thirst_max', 100)));
+        return true;
+    }
     var state = {
         satiety: 100,
         thirst: 100,
@@ -21,6 +31,11 @@
         body_temperature_standard: 37,
         fatigue: 0,
         weight_kg: 60,
+        /** 疼痛（47 §9.6 / k229）：全局 0-100 整数条，敌我通用。累积 = round(实际损毁增量 × 部位汇率 0.1~1.0)；
+         *  上限 = pain_cap_base + pain_cap_per_avg_destroy×平均损毁%（封顶制，够不着高档即不触发）。 */
+        pain: 0,
+        /** 疼痛衰减计时：未吃有效损毁的连续 tick 数（≥ pain_decay_grace_ticks 后每 pain_decay_interval_ticks −1） */
+        pain_no_hit_ticks: 0,
 
         tickCount: 0,
         starvationTicks: 0,
@@ -62,6 +77,7 @@
     var lastSatietyRangeId = null;
     var lastThirstRangeId = null;
     var lastBmiTierId = null;
+    var lastPainRangeId = null;
     var runtimeHeightCm = 178;
     var MOOD_RANGE_BUFF_IDS = [
         'survival_mood_low',
@@ -93,6 +109,14 @@
         'survival_fatigue',
         'survival_fatigue_sleepy'
     ];
+    /** k229 疼痛四档（47 §9.6）：25 轻度 / 50 中度 / 75 重度 / 90 剧痛（含心情/体力/恢复惩罚 + 剧痛禁移动） */
+    var PAIN_RANGE_BUFF_IDS = [
+        'survival_pain_mild',
+        'survival_pain_moderate',
+        'survival_pain_severe',
+        'survival_pain_agony'
+    ];
+    var PAIN_PART_IDS = ['head', 'chest', 'abdomen', 'lhand', 'rhand', 'lfoot', 'rfoot'];
     var BMI_TIER_BUFF_IDS = [
         'survival_bmi_underweight',
         'survival_bmi_normal',
@@ -223,6 +247,7 @@
 
     function getState() {
         return {
+            food_metabolism: foodState ? JSON.parse(JSON.stringify(foodState)) : null,
             satiety: state.satiety,
             thirst: state.thirst,
             stamina: state.stamina,
@@ -239,6 +264,8 @@
             body_temperature_standard: state.body_temperature_standard,
             fatigue: state.fatigue,
             weight_kg: state.weight_kg,
+            pain: Math.max(0, Math.floor(Number(state.pain) || 0)),
+            pain_no_hit_ticks: Math.max(0, Math.floor(Number(state.pain_no_hit_ticks) || 0)),
             height_cm: getHeightCm(),
             tickCount: state.tickCount,
             starvationTicks: state.starvationTicks,
@@ -270,6 +297,7 @@
 
     function setState(s) {
         if (!s || typeof s !== 'object') return;
+        if (Object.prototype.hasOwnProperty.call(s, 'food_metabolism') && global.FoodMetabolism) foodState = global.FoodMetabolism.restore(s.food_metabolism);
         var beforeSnapshot = buildSurvivalStateSnapshot();
         // tick-based internal counters (for deterministic progression after reload)
         if (s.tickCount !== undefined) state.tickCount = Math.max(0, Math.floor(Number(s.tickCount) || 0));
@@ -280,7 +308,7 @@
         if (s.severeHungerTicks !== undefined) state.severeHungerTicks = Math.max(0, Math.floor(Number(s.severeHungerTicks) || 0));
         if (s.satietyWeightLossBuffId !== undefined) state.satietyWeightLossBuffId = String(s.satietyWeightLossBuffId || '');
 
-        if (s.satiety !== undefined) state.satiety = round1(clamp(s.satiety, 0, get('satiety_overcap_max', 120)));
+        if (s.satiety !== undefined) state.satiety = clamp(Number(s.satiety) || 0, 0, get('satiety_overcap_max', 120));
         if (s.thirst !== undefined) state.thirst = round1(clamp(s.thirst, 0, get('thirst_max', 100)));
         if (s.stamina !== undefined) state.stamina = round1(clamp(s.stamina, 0, get('stamina_max', 100)));
         if (s.energy !== undefined) state.energy = round1(clamp(s.energy, 0, get('energy_max', 100)));
@@ -288,11 +316,13 @@
         if (s.composure !== undefined) state.composure = clamp(Math.round(s.composure), get('composure_min', 0), get('composure_max', 20));
         if (s.sexual_ability !== undefined) state.sexual_ability = clamp(Math.round(s.sexual_ability), get('sexual_ability_min', 0), get('sexual_ability_max', 100));
         if (s.gender_value !== undefined) state.gender_value = clamp(Math.round(s.gender_value), get('gender_value_min', 0), get('gender_value_max', 100));
-        if (s.nutrition !== undefined) state.nutrition = clamp(Math.round(s.nutrition), get('nutrition_min', 0), get('nutrition_max', 100));
+        if (s.nutrition !== undefined) state.nutrition = clamp(Number(s.nutrition) || 0, get('nutrition_min', 0), get('nutrition_max', 100));
         if (s.dirtyness !== undefined) state.dirtyness = clamp(Math.round(s.dirtyness), get('dirtyness_min', 0), get('dirtyness_max', 100));
         if (s.body_temperature !== undefined) state.body_temperature = round1(clamp(Number(s.body_temperature) || 0, get('body_temperature_min', 30), get('body_temperature_max', 42)));
         if (s.body_temperature_standard !== undefined) state.body_temperature_standard = round1(clamp(Number(s.body_temperature_standard) || 0, get('body_temperature_min', 30), get('body_temperature_max', 42)));
         if (s.fatigue !== undefined) state.fatigue = round1(clamp(Number(s.fatigue) || 0, get('fatigue_min', 0), get('fatigue_max', 100)));
+        if (s.pain !== undefined) state.pain = Math.max(0, Math.min(Number(get('pain_max', 100)) || 100, Math.floor(Number(s.pain) || 0)));
+        if (s.pain_no_hit_ticks !== undefined) state.pain_no_hit_ticks = Math.max(0, Math.floor(Number(s.pain_no_hit_ticks) || 0));
         if (s.weight_kg !== undefined) state.weight_kg = Math.max(0, s.weight_kg);
         if (s.height_cm !== undefined) {
             var hcm = Number(s.height_cm);
@@ -304,7 +334,12 @@
         if (s.is_study_active !== undefined) state.is_study_active = !!s.is_study_active;
         if (s.study_skill_id !== undefined) state.study_skill_id = s.study_skill_id == null ? null : String(s.study_skill_id || '');
         if (s.study_stop_reason !== undefined) state.study_stop_reason = s.study_stop_reason == null ? null : String(s.study_stop_reason || '');
-        if (s.isDead !== undefined) state.isDead = !!s.isDead;
+        if (s.isDead !== undefined) {
+            state.isDead = !!s.isDead;
+            if (state.isDead && global.CombatEngagement && typeof global.CombatEngagement.clear === 'function') {
+                global.CombatEngagement.clear('load_dead', { silent: true });
+            }
+        }
         if (s.deathReason !== undefined) state.deathReason = s.deathReason == null ? null : String(s.deathReason || '');
         if (s.isComa !== undefined) state.isComa = !!s.isComa;
 
@@ -328,7 +363,7 @@
             state.diqi_current = round1(clamp(s.diqi_current, 0, capD));
         }
         if (s.qi_li_current !== undefined) state.qi_li_current = round1(clamp(s.qi_li_current, 0, getQiLiMax()));
-        if (s.diqi_shield_remaining !== undefined) state.diqi_shield_remaining = Math.max(0, Math.round(Number(s.diqi_shield_remaining) || 0));
+        if (s.diqi_shield_remaining !== undefined) state.diqi_shield_remaining = Math.max(0, Number(s.diqi_shield_remaining) || 0);
         syncStaminaExhaustedBuff();
         syncEnergyDepletedBuff();
         syncNutritionStateBuff();
@@ -338,6 +373,7 @@
         syncExtremeTemperatureBuff(getExtremeTemperatureState(resolveAmbientTemperatureForCurrentMap(), state.body_temperature_standard, computeTempThresholdShiftByWeatherResist()));
         syncDirtynessStateBuff();
         syncFatigueStateBuff();
+        syncPainStateBuff();
         syncBmiTierState();
         emitSurvivalStateChangedIfNeeded('set_state', beforeSnapshot, null);
     }
@@ -692,11 +728,11 @@
     }
 
     function getDiqiShieldRemaining() {
-        return Math.max(0, Math.floor(state.diqi_shield_remaining || 0));
+        return Math.max(0, state.diqi_shield_remaining || 0);
     }
 
     function setDiqiShieldRemaining(v) {
-        state.diqi_shield_remaining = Math.max(0, Math.floor(Number(v) || 0));
+        state.diqi_shield_remaining = Math.max(0, Number(v) || 0);
     }
 
     function breakDiqiShieldIfDepleted() {
@@ -783,6 +819,190 @@
         }
         lastThirstRangeId = targetRange;
         return targetRange;
+    }
+
+    // ---------- 疼痛（47 §9.6 / k229：全局 pain 0-100 四档；镇痛压制见 buff-system pain_tier/pain_suppression） ----------
+
+    /** 平均损毁%（玩家七部位 损毁值/上限 均值 ×100，0~100）；CharacterAttributes 未就绪时 0。 */
+    function getPainAvgDestroyPct() {
+        try {
+            var CA = global && global.CharacterAttributes;
+            if (!CA || typeof CA.getPartDestroy !== 'function' || typeof CA.getBodyPartDestroyMax !== 'function') return 0;
+            var sum = 0;
+            var n = 0;
+            for (var i = 0; i < PAIN_PART_IDS.length; i++) {
+                var mx = CA.getBodyPartDestroyMax(PAIN_PART_IDS[i]);
+                if (isFinite(mx) && mx > 0) {
+                    sum += clamp(Number(CA.getPartDestroy(PAIN_PART_IDS[i])) / mx, 0, 1);
+                    n += 1;
+                }
+            }
+            return n > 0 ? (sum / n) * 100 : 0;
+        } catch (e) {
+            return 0;
+        }
+    }
+
+    /** 疼痛条当前上限（封顶制）：pain_cap_base + pain_cap_per_avg_destroy × 平均损毁%，夹 0..100。 */
+    function getPainCap() {
+        var base = Number(get('pain_cap_base', 25));
+        if (!isFinite(base)) base = 25;
+        var per = Number(get('pain_cap_per_avg_destroy', 0.75));
+        if (!isFinite(per)) per = 0.75;
+        return clamp(Math.floor(base + per * getPainAvgDestroyPct()), 0, Number(get('pain_max', 100)) || 100);
+    }
+
+    /** 生效疼痛值 = min(累积 pain, 封顶值)（整数）。 */
+    function getPainEffective() {
+        var pain = Math.min(Math.max(0, Math.floor(Number(state.pain) || 0)), getPainCap());
+        var BS = global && global.BuffSystem;
+        var ignored = BS && typeof BS.getPainIgnoreRatio === 'function' ? BS.getPainIgnoreRatio('player') : 0;
+        return pain * (1 - ignored);
+    }
+
+    /** 档位：none/mild/moderate/severe/agony（0–24 无痛；25–49 轻；50–74 中；75–89 重；90–100 剧）。 */
+    function getPainRangeByValue(painVal) {
+        var p = Number(painVal);
+        if (!isFinite(p)) p = getPainEffective();
+        p = Math.max(0, Math.floor(p));
+        var thMild = Number(get('pain_threshold_mild', 25));
+        var thMod = Number(get('pain_threshold_moderate', 50));
+        var thSev = Number(get('pain_threshold_severe', 75));
+        var thAg = Number(get('pain_threshold_agony', 90));
+        if (!isFinite(thMild)) thMild = 25;
+        if (!isFinite(thMod)) thMod = 50;
+        if (!isFinite(thSev)) thSev = 75;
+        if (!isFinite(thAg)) thAg = 90;
+        if (p < thMild) return 'none';
+        if (p < thMod) return 'mild';
+        if (p < thSev) return 'moderate';
+        if (p < thAg) return 'severe';
+        return 'agony';
+    }
+
+    function getPainRangeBuffId(rangeId) {
+        if (rangeId === 'mild') return 'survival_pain_mild';
+        if (rangeId === 'moderate') return 'survival_pain_moderate';
+        if (rangeId === 'severe') return 'survival_pain_severe';
+        if (rangeId === 'agony') return 'survival_pain_agony';
+        return '';
+    }
+
+    /** 疼痛档位 debuff 同步：按「生效疼痛值」所在档位挂对应 buff（durationTicks 1，每 tick 重挂；镇痛在场时效果由 buff-system 盖住、不消除）。 */
+    function syncPainStateBuff() {
+        if (!global || !global.BuffSystem) return '';
+        var Buff = global.BuffSystem;
+        if (typeof Buff.applyBuff !== 'function' || typeof Buff.removeBuffByBuffId !== 'function') return '';
+        var targetRange = getPainRangeByValue(getPainEffective());
+        var targetBuffId = getPainRangeBuffId(targetRange);
+        var i;
+        for (i = 0; i < PAIN_RANGE_BUFF_IDS.length; i++) {
+            var bid = PAIN_RANGE_BUFF_IDS[i];
+            if (bid === targetBuffId) continue;
+            if (typeof Buff.hasBuffByBuffId !== 'function' || Buff.hasBuffByBuffId('player', bid)) {
+                Buff.removeBuffByBuffId('player', bid);
+            }
+        }
+        if (targetBuffId) {
+            Buff.applyBuff('player', targetBuffId, 'survival_pain_listener', { tick: getBuffApplyTick() });
+        }
+        lastPainRangeId = targetRange;
+        return targetRange;
+    }
+
+    /** 汇率（k229）：pain_rate_base + pain_rate_span × (受伤前损毁值 ÷ 损毁上限)，线性（完好 0.1 → 半废 0.55 → 失能 1.0）。 */
+    function painRateOf(partPreValue, partMax) {
+        var pre = Math.max(0, Math.floor(Number(partPreValue) || 0));
+        var mx = Math.max(1, Math.floor(Number(partMax) || 1));
+        var rateBase = Number(get('pain_rate_base', 0.1));
+        if (!isFinite(rateBase)) rateBase = 0.1;
+        var rateSpan = Number(get('pain_rate_span', 0.9));
+        if (!isFinite(rateSpan)) rateSpan = 0.9;
+        return rateBase + rateSpan * clamp(pre / mx, 0, 1);
+    }
+
+    /**
+     * k229 纯汇率换算（敌我通用）：每击疼痛增量 = round(实际损毁增量 × 汇率)。
+     * 汇率按「被击中部位受伤前损毁进度」线性（完好 0.1 → 半废 0.55 → 失能 1.0）。
+     */
+    function calcPainIncrement(actualIncrement, partPreValue, partMax) {
+        var inc = Math.max(0, Math.floor(Number(actualIncrement) || 0));
+        if (inc <= 0) return 0;
+        return Math.max(0, Math.round(inc * painRateOf(partPreValue, partMax)));
+    }
+
+    /** 疼痛累积（玩家侧，损毁账与疼痛账并行写入）：由 CharacterAttributes.applyCombatDestroy 落地实际损毁增量后调用。
+     *  只要本击有实际损毁落地（actualIncrement > 0，顶满溢出不计），衰减计时即重置；疼痛增量按汇率取整后累加。 */
+    function addPainFromDestroy(info) {
+        info = info || {};
+        var inc = Math.max(0, Math.floor(Number(info.actualIncrement) || 0));
+        var out = {
+            added: 0,
+            inc: inc,
+            rate: 0,
+            tier: getPainRangeByValue(getPainEffective())
+        };
+        if (inc <= 0) return out;
+        var pre = Math.max(0, Math.floor(Number(info.partPreValue) || 0));
+        var mx = Math.max(1, Math.floor(Number(info.partMax) || 1));
+        var painInc = calcPainIncrement(inc, pre, mx);
+        out.rate = Math.round(painRateOf(pre, mx) * 1000) / 1000;
+        state.pain_no_hit_ticks = 0;
+        if (painInc > 0) {
+            var before = Math.max(0, Math.floor(Number(state.pain) || 0));
+            state.pain = Math.min(Number(get('pain_max', 100)) || 100, before + painInc);
+            out.added = state.pain - before;
+        }
+        syncPainStateBuff();
+        out.tier = getPainRangeByValue(getPainEffective());
+        return out;
+    }
+
+    /** 调试/测试用：直接加疼痛值（夹 0-100，重置衰减计时），返回最新疼痛信息。 */
+    function debugAddPain(v) {
+        var a = Math.max(0, Math.floor(Number(v) || 0));
+        if (a > 0) {
+            state.pain_no_hit_ticks = 0;
+            state.pain = Math.min(Number(get('pain_max', 100)) || 100, Math.max(0, Math.floor(Number(state.pain) || 0)) + a);
+            syncPainStateBuff();
+        }
+        return getPainInfo();
+    }
+
+    /** 复活清零（k229/47 §9.6：敌我通用；玩家侧由复活/重开流程调用）。 */
+    function clearPain() {
+        state.pain = 0;
+        state.pain_no_hit_ticks = 0;
+        syncPainStateBuff();
+    }
+
+    function getPainInfo() {
+        return {
+            stored: Math.max(0, Math.floor(Number(state.pain) || 0)),
+            unmedicated: Math.min(Math.max(0, Math.floor(Number(state.pain) || 0)), getPainCap()),
+            ignored_ratio: global.BuffSystem && global.BuffSystem.getPainIgnoreRatio ? global.BuffSystem.getPainIgnoreRatio('player') : 0,
+            cap: getPainCap(),
+            effective: getPainEffective(),
+            tier: getPainRangeByValue(getPainEffective())
+        };
+    }
+
+    /** 中度及以上疼痛（未受镇痛压制）时体力/精力恢复减半系数；无疼痛/被压制/配置异常返回 1。 */
+    function getPainRecoveryFactor() {
+        try {
+            var eff = getPainEffective();
+            var thMod = Number(get('pain_threshold_moderate', 50));
+            if (!isFinite(thMod)) thMod = 50;
+            if (eff < thMod) return 1;
+            if (global && global.BuffSystem && typeof global.BuffSystem.hasPainSuppression === 'function'
+                && global.BuffSystem.hasPainSuppression('player')) {
+                return 1;
+            }
+            var m = Number(get('pain_moderate_recovery_mult', 0.5));
+            return (isFinite(m) && m > 0) ? m : 1;
+        } catch (e) {
+            return 1;
+        }
     }
 
     /** 兼容老入口：映射到 Buff 分段语义 */
@@ -1393,6 +1613,7 @@
 
     /** 均衡判定：活性「消化中」buff 的构成覆盖（主食/荤/素，other 不计）；返回 { level, count, categories } */
     function getMealBalanceInfo() {
+        if (foodConfig()) return global.FoodMetabolism.balance(foodState.diet, foodConfig());
         var comps = [];
         if (global && global.BuffSystem && typeof global.BuffSystem.getActiveFoodDigestCompositions === 'function') {
             comps = global.BuffSystem.getActiveFoodDigestCompositions('player') || [];
@@ -1501,6 +1722,7 @@
         state.stamina = round1(Math.max(0, before - a));
         var actualCost = round1(Math.max(0, before - state.stamina));
         if (actualCost > 0) {
+            if (foodConfig()) foodState.pendingStamina += actualCost;
             var gainPerStamina = Number(get('fatigue_gain_per_stamina_spent', 0.5));
             if (!isFinite(gainPerStamina) || gainPerStamina < 0) gainPerStamina = 0.5;
             state.fatigue = round1(clamp(
@@ -1600,6 +1822,9 @@
     function setDead(reason) {
         state.isDead = true;
         state.deathReason = reason ? String(reason) : 'unknown';
+        if (global.CombatEngagement && typeof global.CombatEngagement.clear === 'function') {
+            global.CombatEngagement.clear('player_dead');
+        }
     }
 
     function addNutrition(amount) {
@@ -1646,6 +1871,7 @@
         syncMoodStateBuff();
         syncDirtynessStateBuff();
         syncFatigueStateBuff();
+        syncPainStateBuff();
         var comaActive = hasComaBuffActive();
         state.isComa = comaActive;
         if (comaActive) {
@@ -1693,7 +1919,18 @@
         // 净变化 = -1（基础衰减）+ Σ活性消化菜贡献（43 §二）。调息不再消耗饱食（2025 储备模型已废止）。
         var satDecay = Number(get('satiety_tick_decay', 1));
         if (!isFinite(satDecay) || satDecay < 0) satDecay = 1;
-        if (state.satiety > 0) state.satiety = round1(Math.max(0, state.satiety - satDecay));
+        var metabolismCfg = foodConfig();
+        if (metabolismCfg) {
+            var mealResult = global.FoodMetabolism.tick(foodState, { satiety: state.satiety, nutrition: state.nutrition, weight_kg: state.weight_kg, height_cm: getHeightCm() }, metabolismCfg);
+            state.satiety = mealResult.satiety;
+            state.nutrition = mealResult.nutrition;
+            state.weight_kg = mealResult.weight_kg;
+            if (mealResult.grants.length && global.CharacterAttributes && typeof global.CharacterAttributes.grantAttributeExp === 'function') {
+                global.CharacterAttributes.grantAttributeExp('player', mealResult.grants, { source: 'food.digestion' });
+            }
+            syncMealBalanceBuff();
+            syncNutritionStateBuff();
+        } else if (state.satiety > 0) state.satiety = round1(Math.max(0, state.satiety - satDecay));
         var satietyRange = syncSatietyStateBuff();
         var severeHungerSatietyMax = getSevereHungerSatietyMax();
         if (state.satiety <= 0) state.starvationTicks += 1;
@@ -1707,11 +1944,11 @@
         } else {
             state.satietyWeightLossBuffId = '';
         }
-        if (state.overfedTicks >= getOverfedWeightGainTicksLimit()) {
+        if (!metabolismCfg && state.overfedTicks >= getOverfedWeightGainTicksLimit()) {
             state.weight_kg = Math.max(0, round1(state.weight_kg + 1));
             state.overfedTicks = 0;
         }
-        if (state.severeHungerTicks >= getSevereHungerWeightLossTicksLimit()) {
+        if (!metabolismCfg && state.severeHungerTicks >= getSevereHungerWeightLossTicksLimit()) {
             state.weight_kg = Math.max(0, round1(state.weight_kg - 1));
             state.severeHungerTicks = 0;
         }
@@ -1752,7 +1989,7 @@
         var breath = Math.max(0, (typeof getBreathActual === 'function' ? getBreathActual() : 10));
         var coef = get('breath_diqi_stamina_coef', 0.02);
         var ningqi = (typeof getNingqiBonus === 'function' ? getNingqiBonus() : 0) || 0;
-        var regen = (baseRegen + coef * breath) * (1 + ningqi) * getStaminaRegenMultiplier();
+        var regen = (baseRegen + coef * breath) * (1 + ningqi) * getStaminaRegenMultiplier() * getPainRecoveryFactor();
         state.stamina = round1(Math.min(staminaMax, state.stamina + regen));
         // 站立基础代谢：不休息/不调息时每 tick 扣基础体力（时间流逝本身有代价；
         // 休息/调息正在恢复，豁免）。饱食/饮水走各自被动衰减（见上）。
@@ -1791,9 +2028,34 @@
         }
         syncMoodStateBuff();
 
+        // ---------- 疼痛衰减（k229 / 47 §9.6：持续 pain_decay_grace_ticks tick 未吃有效损毁后，每 pain_decay_interval_ticks −1） ----------
+        if ((state.pain || 0) > 0) {
+            state.pain_no_hit_ticks = (state.pain_no_hit_ticks || 0) + 1;
+            var painGrace = Math.floor(Number(get('pain_decay_grace_ticks', 10)) || 0);
+            if (!isFinite(painGrace) || painGrace < 0) painGrace = 10;
+            var painInterval = Math.floor(Number(get('pain_decay_interval_ticks', 4)) || 1);
+            if (!isFinite(painInterval) || painInterval < 1) painInterval = 4;
+            var painStep = Math.floor(Number(get('pain_decay_step', 1)) || 1);
+            if (!isFinite(painStep) || painStep < 1) painStep = 1;
+            var decayTick = false;
+            if (painGrace <= 0) {
+                decayTick = (state.pain_no_hit_ticks % painInterval) === 0;
+            } else if (state.pain_no_hit_ticks > painGrace) {
+                decayTick = ((state.pain_no_hit_ticks - painGrace) % painInterval) === 0;
+            }
+            if (decayTick) {
+                state.pain = Math.max(0, Math.floor(state.pain) - painStep);
+            }
+            if (state.pain <= 0) {
+                state.pain = 0;
+                state.pain_no_hit_ticks = 0;
+            }
+            syncPainStateBuff();
+        }
+
         // ---------- 营养衰减（每 25 tick） ----------
         var nutInterval = get('nutrition_tick_decay_interval', 25);
-        if (tick % nutInterval === 0) {
+        if (!metabolismCfg && tick % nutInterval === 0) {
             var nutDecay = get('nutrition_tick_decay_amount', 1);
             state.nutrition = clamp(state.nutrition - nutDecay, get('nutrition_min', 0), get('nutrition_max', 100));
         }
@@ -1853,8 +2115,8 @@
                     state.sit_meditation_interrupt_this_tick = false;
                     state.last_sit_meditation_gain = 0;
                 } else {
-                    // 调息（43 消化模型）：不再消耗饱食/饮水（时间为代价），恢复体力 + 底气。
-                    var tiaoStaGain = Number(get('tiao_xi_stamina_gain_per_tick', 2));
+                    // 调息（43 消化模型）：不再消耗饱食/饮水（时间为代价），恢复体力 + 底气。中度及以上疼痛时体力恢复减半（47 §9.6 / k229）。
+                    var tiaoStaGain = Number(get('tiao_xi_stamina_gain_per_tick', 2)) * getPainRecoveryFactor();
                     if (isFinite(tiaoStaGain) && tiaoStaGain > 0) {
                         state.stamina = round1(Math.min(get('stamina_max', 100), state.stamina + tiaoStaGain));
                     }
@@ -2007,6 +2269,7 @@
     }
 
     global.Survival = {
+        ingestFood: ingestFood,
         setConfig: setConfig,
         getConfigValue: getConfigValue,
         setCharacterCallbacks: setCharacterCallbacks,
@@ -2025,6 +2288,16 @@
         getNutritionExpMultiplier: getNutritionExpMultiplier,
         getMoodRangeByValue: getMoodRangeByValue,
         syncMoodStateBuff: syncMoodStateBuff,
+        getPainInfo: getPainInfo,
+        getPainEffective: getPainEffective,
+        getPainCap: getPainCap,
+        getPainRangeByValue: getPainRangeByValue,
+        syncPainStateBuff: syncPainStateBuff,
+        calcPainIncrement: calcPainIncrement,
+        addPainFromDestroy: addPainFromDestroy,
+        debugAddPain: debugAddPain,
+        clearPain: clearPain,
+        getPainRecoveryFactor: getPainRecoveryFactor,
         getBodyTemperature: getBodyTemperature,
         getBodyTemperatureStandard: getBodyTemperatureStandard,
         resolveAmbientTemperatureForCurrentMap: resolveAmbientTemperatureForCurrentMap,

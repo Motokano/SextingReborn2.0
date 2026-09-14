@@ -153,48 +153,14 @@
 
 
     function getPoolUpgradeSpec(fromLevel) {
-
-        var block = buildTable && buildTable.upgrades ? buildTable.upgrades.pool_level : null;
-
-        var step = findUpgradeStep(block, fromLevel);
-
-        return step ? normalizeTaskSpec(step, getTaskDefaults()) : null;
+        return null;
 
     }
 
 
 
     function getPoolMaxLevel() {
-
-        var block = buildTable && buildTable.upgrades ? buildTable.upgrades.pool_level : null;
-
-        if (block && block.max_level != null) {
-
-            return Math.max(1, Math.floor(Number(block.max_level) || 4));
-
-        }
-
-        if (poolUpgradesTable && poolUpgradesTable.levels && typeof poolUpgradesTable.levels === 'object') {
-
-            var maxLv = 1;
-
-            var k;
-
-            for (k in poolUpgradesTable.levels) {
-
-                if (!Object.prototype.hasOwnProperty.call(poolUpgradesTable.levels, k)) continue;
-
-                var n = Math.floor(Number(k) || 0);
-
-                if (n > maxLv) maxLv = n;
-
-            }
-
-            return maxLv;
-
-        }
-
-        return 4;
+        return 1;
 
     }
 
@@ -236,6 +202,8 @@
 
             agriculture_fertilizer_per_tick: null,
 
+            agriculture_nutrient_per_bottle: null,
+
             agriculture_venturi_effect_duration_ticks: null,
 
             is_anaerobic_fertilizer: !!(tpl && tpl.is_anaerobic_fertilizer) || !!(fb && fb.is_anaerobic_fertilizer)
@@ -249,6 +217,16 @@
         } else if (fb && fb.agriculture_fertilizer_per_tick != null) {
 
             out.agriculture_fertilizer_per_tick = Number(fb.agriculture_fertilizer_per_tick);
+
+        }
+
+        if (tpl && tpl.agriculture_nutrient_per_bottle != null) {
+
+            out.agriculture_nutrient_per_bottle = Number(tpl.agriculture_nutrient_per_bottle);
+
+        } else if (fb && fb.agriculture_nutrient_per_bottle != null) {
+
+            out.agriculture_nutrient_per_bottle = Number(fb.agriculture_nutrient_per_bottle);
 
         }
 

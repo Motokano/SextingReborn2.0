@@ -1,0 +1,236 @@
+{
+  "overeat": [
+    {
+      "satiety": 82.16956004887031,
+      "nutrition": 44.12000000000013,
+      "weight_kg": 71.4,
+      "height_cm": 178
+    },
+    {
+      "satiety": 82.16956004887031,
+      "nutrition": 48.6200000000003,
+      "weight_kg": 73.2,
+      "height_cm": 178
+    },
+    {
+      "satiety": 82.16956004887031,
+      "nutrition": 53.12000000000047,
+      "weight_kg": 75.1,
+      "height_cm": 178
+    },
+    {
+      "satiety": 82.16956004887031,
+      "nutrition": 57.620000000000644,
+      "weight_kg": 76.9,
+      "height_cm": 178
+    },
+    {
+      "satiety": 82.16956004887031,
+      "nutrition": 62.120000000000815,
+      "weight_kg": 78.7,
+      "height_cm": 178
+    },
+    {
+      "satiety": 82.16956004887031,
+      "nutrition": 66.62000000000099,
+      "weight_kg": 80.6,
+      "height_cm": 178
+    }
+  ],
+  "recovery": [
+    {
+      "satiety": 60,
+      "nutrition": 71.12000000000116,
+      "weight_kg": 80.4,
+      "height_cm": 178
+    },
+    {
+      "satiety": 60,
+      "nutrition": 75.62000000000133,
+      "weight_kg": 79.3,
+      "height_cm": 178
+    },
+    {
+      "satiety": 60,
+      "nutrition": 80.1200000000015,
+      "weight_kg": 78.3,
+      "height_cm": 178
+    },
+    {
+      "satiety": 60,
+      "nutrition": 84.62000000000167,
+      "weight_kg": 77.3,
+      "height_cm": 178
+    },
+    {
+      "satiety": 60,
+      "nutrition": 89.12000000000184,
+      "weight_kg": 76.3,
+      "height_cm": 178
+    },
+    {
+      "satiety": 60,
+      "nutrition": 93.62000000000201,
+      "weight_kg": 75.2,
+      "height_cm": 178
+    },
+    {
+      "satiety": 60,
+      "nutrition": 98.12000000000218,
+      "weight_kg": 74.2,
+      "height_cm": 178
+    },
+    {
+      "satiety": 60,
+      "nutrition": 100,
+      "weight_kg": 73.2,
+      "height_cm": 178
+    },
+    {
+      "satiety": 60,
+      "nutrition": 100,
+      "weight_kg": 72.1,
+      "height_cm": 178
+    },
+    {
+      "satiety": 60,
+      "nutrition": 100,
+      "weight_kg": 71.1,
+      "height_cm": 178
+    },
+    {
+      "satiety": 60,
+      "nutrition": 100,
+      "weight_kg": 70.1,
+      "height_cm": 178
+    },
+    {
+      "satiety": 53.56726765116146,
+      "nutrition": 100,
+      "weight_kg": 69.7,
+      "height_cm": 178
+    }
+  ],
+  "normal": [
+    {
+      "satiety": 59.84095833333282,
+      "nutrition": 41.459999999999866,
+      "weight_kg": 69.7,
+      "height_cm": 178
+    },
+    {
+      "satiety": 59.70459998437407,
+      "nutrition": 45.960000000000036,
+      "weight_kg": 69.7,
+      "height_cm": 178
+    },
+    {
+      "satiety": 59.587689744935545,
+      "nutrition": 50.46000000000021,
+      "weight_kg": 69.7,
+      "height_cm": 178
+    },
+    {
+      "satiety": 59.48745382839695,
+      "nutrition": 54.96000000000038,
+      "weight_kg": 69.7,
+      "height_cm": 178
+    },
+    {
+      "satiety": 59.40151405945468,
+      "nutrition": 59.46000000000055,
+      "weight_kg": 69.7,
+      "height_cm": 178
+    },
+    {
+      "satiety": 59.324033105324034,
+      "nutrition": 63.96000000000072,
+      "weight_kg": 69.7,
+      "height_cm": 178
+    },
+    {
+      "satiety": 59.254106544221116,
+      "nutrition": 68.46000000000089,
+      "weight_kg": 69.7,
+      "height_cm": 178
+    },
+    {
+      "satiety": 59.190997822825736,
+      "nutrition": 72.96000000000106,
+      "weight_kg": 69.7,
+      "height_cm": 178
+    },
+    {
+      "satiety": 59.13415096833471,
+      "nutrition": 77.46000000000123,
+      "weight_kg": 69.7,
+      "height_cm": 178
+    },
+    {
+      "satiety": 59.085594196296384,
+      "nutrition": 81.9600000000014,
+      "weight_kg": 69.7,
+      "height_cm": 178
+    },
+    {
+      "satiety": 59.041508693683255,
+      "nutrition": 86.46000000000157,
+      "weight_kg": 69.7,
+      "height_cm": 178
+    },
+    {
+      "satiety": 59.0014827311023,
+      "nutrition": 90.96000000000174,
+      "weight_kg": 69.7,
+      "height_cm": 178
+    },
+    {
+      "satiety": 58.96514249257585,
+      "nutrition": 95.46000000000191,
+      "weight_kg": 69.7,
+      "height_cm": 178
+    },
+    {
+      "satiety": 58.93214858434695,
+      "nutrition": 99.96000000000208,
+      "weight_kg": 69.7,
+      "height_cm": 178
+    },
+    {
+      "satiety": 58.90219286516742,
+      "nutrition": 100,
+      "weight_kg": 69.7,
+      "height_cm": 178
+    },
+    {
+      "satiety": 58.87499556846238,
+      "nutrition": 100,
+      "weight_kg": 69.7,
+      "height_cm": 178
+    },
+    {
+      "satiety": 58.8494170740252,
+      "nutrition": 100,
+      "weight_kg": 69.7,
+      "height_cm": 178
+    },
+    {
+      "satiety": 58.82504645293645,
+      "nutrition": 100,
+      "weight_kg": 69.7,
+      "height_cm": 178
+    },
+    {
+      "satiety": 58.801826666732396,
+      "nutrition": 100,
+      "weight_kg": 69.7,
+      "height_cm": 178
+    },
+    {
+      "satiety": 58.77970337043256,
+      "nutrition": 100,
+      "weight_kg": 69.7,
+      "height_cm": 178
+    }
+  ]
+}

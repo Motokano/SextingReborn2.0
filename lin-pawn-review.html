@@ -1,0 +1,5 @@
+<!doctype html><html lang="zh-CN"><meta charset="utf-8"><title>林经理 · 游戏渲染核对</title><style>body{background:#211c19;color:#eee;font:15px system-ui;padding:24px}h1{font-size:22px}#map{position:relative;margin:20px auto}a{color:#dbc49a}</style><h1>林经理 · 游戏实际尺寸</h1><p>使用游戏地图绘制代码；仅独立预览，不读取或修改存档。</p><div id="map"></div><a href="/?lin-pawn=smoking-v1">返回游戏</a><script src="js/core/map-projection.js"></script><script src="js/core/tile-renderer-v2.js"></script><script>
+const createProjection=MapProjection.create;MapProjection.create=(map,size)=>createProjection(map,size,'isometric');
+const renderer=TileRendererV2.create(document.getElementById('map'),{cellPx:101});
+renderer.render({map:{width:3,height:3},st:{x:1,y:1},staticMetaAt:()=>({walkable:true}),dynamicMetaAt:(x,y)=>({walkable:true,npc:x===1&&y===1,npcId:x===1&&y===1?'npc.supervisor.manager':null,npcLabel:'林经理'}),viewport:{width:800,height:600}});
+</script></html>

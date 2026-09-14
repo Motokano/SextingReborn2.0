@@ -344,10 +344,10 @@
     },
     {
       "buff_id": "buff_food_pecan_walnut",
-      "name": "山核桃仁",
-      "desc": "快速供能：共 25 回合，每回合恢复饱食 0.6、体力 0.8、精力 0.32、心情 0.8，战斗出手速度 ×1.10；效果结束时 +1 营养。饱食总量低，适合随身携带当战斗粮。",
+      "name": "山核桃·余味",
+      "desc": "特殊效果持续 15 回合；同菜重复刷新，不叠强度。饱食和经验由每份食物独立消化结算。",
       "quick_energy": true,
-      "durationTicks": 25,
+      "durationTicks": 15,
       "maxStacks": 1,
       "stacksAddOnApply": 1,
       "priority": 70,
@@ -369,17 +369,9 @@
         {
           "type": "survival_delta",
           "params": {
-            "satiety": 0.6,
-            "nutrition": 0.1,
-            "stamina": 0.8,
-            "energy": 0.32,
-            "mood": 0.8
-          }
-        },
-        {
-          "type": "battle_move_speed_multiplier",
-          "params": {
-            "multiplier": 1.1
+            "stamina": 0.2,
+            "energy": 0.05,
+            "mood": 0.1
           }
         },
         {
@@ -394,26 +386,22 @@
           }
         }
       ],
-      "expire_effects": [
-        {
-          "type": "survival_delta",
-          "params": {
-            "nutrition": 1
-          }
-        }
-      ],
+      "expire_effects": [],
       "judgment_tags": {
         "food_category": "nut",
         "food_item": "herb_pecan",
-        "meal_composition": "other"
-      }
+        "meal_composition": "other",
+        "food_special": true,
+        "meal_tier": "snack"
+      },
+      "food_digest": false
     },
     {
       "buff_id": "buff_food_herb_sour_plum",
-      "name": "酸梅",
-      "desc": "快速供能：共 20 回合，每回合恢复饱食 0.5、饮水 2、体力 0.8、精力 0.4、心情 0.75，战斗出手速度 ×1.10；效果结束时 +1 营养。饱食总量低，适合随身携带当战斗粮。",
+      "name": "酸梅·余味",
+      "desc": "特殊效果持续 15 回合；同菜重复刷新，不叠强度。饱食和经验由每份食物独立消化结算。",
       "quick_energy": true,
-      "durationTicks": 20,
+      "durationTicks": 15,
       "maxStacks": 1,
       "stacksAddOnApply": 1,
       "priority": 70,
@@ -435,18 +423,9 @@
         {
           "type": "survival_delta",
           "params": {
-            "satiety": 0.5,
-            "thirst": 2,
-            "nutrition": 0.06,
-            "stamina": 0.8,
-            "energy": 0.4,
-            "mood": 0.75
-          }
-        },
-        {
-          "type": "battle_move_speed_multiplier",
-          "params": {
-            "multiplier": 1.1
+            "stamina": 0.2,
+            "energy": 0.05,
+            "mood": 0.1
           }
         },
         {
@@ -461,25 +440,21 @@
           }
         }
       ],
-      "expire_effects": [
-        {
-          "type": "survival_delta",
-          "params": {
-            "nutrition": 1
-          }
-        }
-      ],
+      "expire_effects": [],
       "judgment_tags": {
         "food_category": "fruit",
         "food_item": "herb_sour_plum",
-        "meal_composition": "other"
-      }
+        "meal_composition": "other",
+        "food_special": true,
+        "meal_tier": "snack"
+      },
+      "food_digest": false
     },
     {
       "buff_id": "buff_food_stew_meat_simple",
-      "name": "肉末杂煮·消化",
-      "desc": "消化中：每回合少量恢复饱食、饮水与营养（共 45 回合）。",
-      "durationTicks": 45,
+      "name": "肉末杂煮·余味",
+      "desc": "特殊效果持续 20 回合；同菜重复刷新，不叠强度。饱食和经验由每份食物独立消化结算。",
+      "durationTicks": 20,
       "maxStacks": 1,
       "stacksAddOnApply": 1,
       "priority": 65,
@@ -501,9 +476,9 @@
         {
           "type": "survival_delta",
           "params": {
-            "satiety": 0.71,
-            "thirst": 0.8,
-            "nutrition": 0.3
+            "stamina": 0.2,
+            "energy": 0.05,
+            "mood": 0.1
           }
         }
       ],
@@ -511,14 +486,17 @@
       "judgment_tags": {
         "food_category": "cooked",
         "food_item": "food_stew_meat_simple",
-        "meal_composition": "meat"
-      }
+        "meal_composition": "meat",
+        "food_special": true,
+        "meal_tier": "home"
+      },
+      "food_digest": false
     },
     {
       "buff_id": "buff_food_flatbread_plain",
-      "name": "粗面饼·消化",
-      "desc": "消化中：每回合少量恢复饱食与营养（共 30 回合）。",
-      "durationTicks": 30,
+      "name": "粗面饼·余味",
+      "desc": "特殊效果持续 1 回合；同菜重复刷新，不叠强度。饱食和经验由每份食物独立消化结算。",
+      "durationTicks": 1,
       "maxStacks": 1,
       "stacksAddOnApply": 1,
       "priority": 65,
@@ -536,162 +514,22 @@
         "time",
         "tick"
       ],
-      "effects": [
-        {
-          "type": "survival_delta",
-          "params": {
-            "satiety": 1.33,
-            "nutrition": 0.2
-          }
-        }
-      ],
+      "effects": [],
       "expire_effects": [],
       "judgment_tags": {
         "food_category": "cooked",
         "food_item": "food_flatbread_plain",
-        "meal_composition": "staple"
-      }
+        "meal_composition": "staple",
+        "food_special": true,
+        "meal_tier": "home"
+      },
+      "food_digest": false
     },
     {
       "buff_id": "buff_food_herb_tea_bitter",
-      "name": "苦根茶·快速供能",
-      "desc": "快速供能：共 25 回合，每回合恢复饱食 0.4、饮水 1.5、体力 0.48、精力 0.48、心情 0.3，战斗出手速度 ×1.10；饱食总量低，适合随身携带当战斗粮。",
+      "name": "苦根茶·余味",
+      "desc": "特殊效果持续 15 回合；同菜重复刷新，不叠强度。饱食和经验由每份食物独立消化结算。",
       "quick_energy": true,
-      "durationTicks": 25,
-      "maxStacks": 1,
-      "stacksAddOnApply": 1,
-      "priority": 65,
-      "listenerSide": "self",
-      "consumeMode": "always",
-      "consumeLayersFixed": 0,
-      "applyMode": "always_apply",
-      "triggerEventKind": [
-        "world"
-      ],
-      "triggerEventName": [
-        "tick_advanced"
-      ],
-      "triggerTags": [
-        "time",
-        "tick"
-      ],
-      "effects": [
-        {
-          "type": "survival_delta",
-          "params": {
-            "satiety": 0.4,
-            "thirst": 1.5,
-            "nutrition": 0.08,
-            "stamina": 0.48,
-            "energy": 0.48,
-            "mood": 0.3
-          }
-        },
-        {
-          "type": "battle_move_speed_multiplier",
-          "params": {
-            "multiplier": 1.1
-          }
-        }
-      ],
-      "expire_effects": [],
-      "judgment_tags": {
-        "food_category": "cooked",
-        "food_item": "food_herb_tea_bitter",
-        "meal_composition": "other"
-      }
-    },
-    {
-      "buff_id": "buff_food_fish_soup_clear",
-      "name": "清汤鱼羹·消化",
-      "desc": "消化中：每回合少量恢复饱食、饮水与营养（共 40 回合）。",
-      "durationTicks": 40,
-      "maxStacks": 1,
-      "stacksAddOnApply": 1,
-      "priority": 65,
-      "listenerSide": "self",
-      "consumeMode": "always",
-      "consumeLayersFixed": 0,
-      "applyMode": "always_apply",
-      "triggerEventKind": [
-        "world"
-      ],
-      "triggerEventName": [
-        "tick_advanced"
-      ],
-      "triggerTags": [
-        "time",
-        "tick"
-      ],
-      "effects": [
-        {
-          "type": "survival_delta",
-          "params": {
-            "satiety": 0.75,
-            "thirst": 2,
-            "nutrition": 0.3
-          }
-        }
-      ],
-      "expire_effects": [],
-      "judgment_tags": {
-        "food_category": "cooked",
-        "food_item": "food_fish_soup_clear",
-        "meal_composition": "meat"
-      }
-    },
-    {
-      "buff_id": "buff_food_dried_meat_strip",
-      "name": "风干肉条·快速供能",
-      "desc": "快速供能：共 30 回合，每回合恢复饱食 0.47、体力 0.87、精力 0.33、心情 0.5，战斗出手速度 ×1.10；饱食总量低，适合随身携带当战斗粮。",
-      "quick_energy": true,
-      "durationTicks": 30,
-      "maxStacks": 1,
-      "stacksAddOnApply": 1,
-      "priority": 65,
-      "listenerSide": "self",
-      "consumeMode": "always",
-      "consumeLayersFixed": 0,
-      "applyMode": "always_apply",
-      "triggerEventKind": [
-        "world"
-      ],
-      "triggerEventName": [
-        "tick_advanced"
-      ],
-      "triggerTags": [
-        "time",
-        "tick"
-      ],
-      "effects": [
-        {
-          "type": "survival_delta",
-          "params": {
-            "satiety": 0.47,
-            "nutrition": 0.15,
-            "stamina": 0.87,
-            "energy": 0.33,
-            "mood": 0.5
-          }
-        },
-        {
-          "type": "battle_move_speed_multiplier",
-          "params": {
-            "multiplier": 1.1
-          }
-        }
-      ],
-      "expire_effects": [],
-      "judgment_tags": {
-        "food_category": "cooked",
-        "food_item": "food_dried_meat_strip",
-        "meal_composition": "meat"
-      }
-    },
-    {
-      "buff_id": "buff_food_cooking_fail_generic",
-      "name": "糊灶残渣·消化",
-      "desc": "勉强下咽：每回合极少量饱食（共 15 回合）。",
       "durationTicks": 15,
       "maxStacks": 1,
       "stacksAddOnApply": 1,
@@ -714,23 +552,25 @@
         {
           "type": "survival_delta",
           "params": {
-            "satiety": 0.33,
-            "nutrition": 0
+            "energy": 0.3,
+            "mood": 0.2
           }
         }
       ],
       "expire_effects": [],
       "judgment_tags": {
-        "food_category": "cooking_fail",
-        "food_item": "food_cooking_fail_generic",
-        "meal_composition": "other"
-      }
+        "food_category": "cooked",
+        "food_item": "food_herb_tea_bitter",
+        "meal_composition": "other",
+        "food_special": true,
+        "meal_tier": "snack"
+      },
+      "food_digest": false
     },
     {
-      "buff_id": "buff_food_herb_bitter",
-      "name": "涩堇草·快速供能",
-      "desc": "快速供能：共 20 回合，每回合恢复饱食 0.4、饮水 1.3、体力 0.9、精力 0.5、心情 0.25，战斗出手速度 ×1.10；饱食总量低，适合随身携带当战斗粮。",
-      "quick_energy": true,
+      "buff_id": "buff_food_fish_soup_clear",
+      "name": "清汤鱼羹·余味",
+      "desc": "特殊效果持续 20 回合；同菜重复刷新，不叠强度。饱食和经验由每份食物独立消化结算。",
       "durationTicks": 20,
       "maxStacks": 1,
       "stacksAddOnApply": 1,
@@ -753,18 +593,134 @@
         {
           "type": "survival_delta",
           "params": {
-            "satiety": 0.4,
-            "thirst": 1.3,
-            "nutrition": 0.08,
-            "stamina": 0.9,
-            "energy": 0.5,
-            "mood": 0.25
+            "stamina": 0.2,
+            "energy": 0.05,
+            "mood": 0.1
+          }
+        }
+      ],
+      "expire_effects": [],
+      "judgment_tags": {
+        "food_category": "cooked",
+        "food_item": "food_fish_soup_clear",
+        "meal_composition": "meat",
+        "food_special": true,
+        "meal_tier": "home"
+      },
+      "food_digest": false
+    },
+    {
+      "buff_id": "buff_food_dried_meat_strip",
+      "name": "风干肉条·余味",
+      "desc": "特殊效果持续 15 回合；同菜重复刷新，不叠强度。饱食和经验由每份食物独立消化结算。",
+      "quick_energy": true,
+      "durationTicks": 15,
+      "maxStacks": 1,
+      "stacksAddOnApply": 1,
+      "priority": 65,
+      "listenerSide": "self",
+      "consumeMode": "always",
+      "consumeLayersFixed": 0,
+      "applyMode": "always_apply",
+      "triggerEventKind": [
+        "world"
+      ],
+      "triggerEventName": [
+        "tick_advanced"
+      ],
+      "triggerTags": [
+        "time",
+        "tick"
+      ],
+      "effects": [
+        {
+          "type": "survival_delta",
+          "params": {
+            "stamina": 0.5,
+            "energy": 0.15,
+            "mood": 0.2
           }
         },
         {
           "type": "battle_move_speed_multiplier",
           "params": {
-            "multiplier": 1.1
+            "multiplier": 1.05
+          }
+        }
+      ],
+      "expire_effects": [],
+      "judgment_tags": {
+        "food_category": "cooked",
+        "food_item": "food_dried_meat_strip",
+        "meal_composition": "meat",
+        "food_special": true,
+        "meal_tier": "snack"
+      },
+      "food_digest": false
+    },
+    {
+      "buff_id": "buff_food_cooking_fail_generic",
+      "name": "糊灶残渣（占位）·余味",
+      "desc": "特殊效果持续 1 回合；同菜重复刷新，不叠强度。饱食和经验由每份食物独立消化结算。",
+      "durationTicks": 1,
+      "maxStacks": 1,
+      "stacksAddOnApply": 1,
+      "priority": 65,
+      "listenerSide": "self",
+      "consumeMode": "always",
+      "consumeLayersFixed": 0,
+      "applyMode": "always_apply",
+      "triggerEventKind": [
+        "world"
+      ],
+      "triggerEventName": [
+        "tick_advanced"
+      ],
+      "triggerTags": [
+        "time",
+        "tick"
+      ],
+      "effects": [],
+      "expire_effects": [],
+      "judgment_tags": {
+        "food_category": "cooking_fail",
+        "food_item": "food_cooking_fail_generic",
+        "meal_composition": "other",
+        "food_special": true,
+        "meal_tier": "snack"
+      },
+      "food_digest": false
+    },
+    {
+      "buff_id": "buff_food_herb_bitter",
+      "name": "涩堇草·余味",
+      "desc": "特殊效果持续 15 回合；同菜重复刷新，不叠强度。饱食和经验由每份食物独立消化结算。",
+      "quick_energy": true,
+      "durationTicks": 15,
+      "maxStacks": 1,
+      "stacksAddOnApply": 1,
+      "priority": 65,
+      "listenerSide": "self",
+      "consumeMode": "always",
+      "consumeLayersFixed": 0,
+      "applyMode": "always_apply",
+      "triggerEventKind": [
+        "world"
+      ],
+      "triggerEventName": [
+        "tick_advanced"
+      ],
+      "triggerTags": [
+        "time",
+        "tick"
+      ],
+      "effects": [
+        {
+          "type": "survival_delta",
+          "params": {
+            "stamina": 0.2,
+            "energy": 0.05,
+            "mood": 0.1
           }
         }
       ],
@@ -772,15 +728,18 @@
       "judgment_tags": {
         "food_category": "herb_raw",
         "food_item": "herb_bitter",
-        "meal_composition": "veg"
-      }
+        "meal_composition": "veg",
+        "food_special": true,
+        "meal_tier": "snack"
+      },
+      "food_digest": false
     },
     {
       "buff_id": "buff_food_herb_green",
-      "name": "青草尖·快速供能",
-      "desc": "快速供能：共 20 回合，每回合恢复饱食 0.45、饮水 1.8、体力 0.9、精力 0.4、心情 0.25，战斗出手速度 ×1.10；饱食总量低，适合随身携带当战斗粮。",
+      "name": "青草尖·余味",
+      "desc": "特殊效果持续 15 回合；同菜重复刷新，不叠强度。饱食和经验由每份食物独立消化结算。",
       "quick_energy": true,
-      "durationTicks": 20,
+      "durationTicks": 15,
       "maxStacks": 1,
       "stacksAddOnApply": 1,
       "priority": 65,
@@ -802,18 +761,9 @@
         {
           "type": "survival_delta",
           "params": {
-            "thirst": 1.8,
-            "nutrition": 0.06,
-            "satiety": 0.45,
-            "stamina": 0.9,
-            "energy": 0.4,
-            "mood": 0.25
-          }
-        },
-        {
-          "type": "battle_move_speed_multiplier",
-          "params": {
-            "multiplier": 1.1
+            "stamina": 0.2,
+            "energy": 0.05,
+            "mood": 0.1
           }
         }
       ],
@@ -821,15 +771,18 @@
       "judgment_tags": {
         "food_category": "herb_raw",
         "food_item": "herb_green",
-        "meal_composition": "veg"
-      }
+        "meal_composition": "veg",
+        "food_special": true,
+        "meal_tier": "snack"
+      },
+      "food_digest": false
     },
     {
       "buff_id": "buff_food_herb_sweet",
-      "name": "甘花茎·快速供能",
-      "desc": "快速供能：共 20 回合，每回合恢复饱食 0.5、饮水 0.8、体力 0.9、精力 0.4、心情 0.5，战斗出手速度 ×1.10；饱食总量低，适合随身携带当战斗粮。",
+      "name": "甘花茎·余味",
+      "desc": "特殊效果持续 15 回合；同菜重复刷新，不叠强度。饱食和经验由每份食物独立消化结算。",
       "quick_energy": true,
-      "durationTicks": 20,
+      "durationTicks": 15,
       "maxStacks": 1,
       "stacksAddOnApply": 1,
       "priority": 65,
@@ -851,18 +804,9 @@
         {
           "type": "survival_delta",
           "params": {
-            "satiety": 0.5,
-            "thirst": 0.8,
-            "nutrition": 0.06,
-            "stamina": 0.9,
-            "energy": 0.4,
-            "mood": 0.5
-          }
-        },
-        {
-          "type": "battle_move_speed_multiplier",
-          "params": {
-            "multiplier": 1.1
+            "stamina": 0.2,
+            "energy": 0.05,
+            "mood": 0.1
           }
         }
       ],
@@ -870,15 +814,18 @@
       "judgment_tags": {
         "food_category": "herb_raw",
         "food_item": "herb_sweet",
-        "meal_composition": "veg"
-      }
+        "meal_composition": "veg",
+        "food_special": true,
+        "meal_tier": "snack"
+      },
+      "food_digest": false
     },
     {
       "buff_id": "buff_food_wild_fruit_red",
-      "name": "红火莓·快速供能",
-      "desc": "快速供能：共 20 回合，每回合恢复饱食 0.5、体力 0.9、精力 0.4、心情 0.75，战斗出手速度 ×1.10；饱食总量低，适合随身携带当战斗粮。",
+      "name": "红火莓·余味",
+      "desc": "特殊效果持续 15 回合；同菜重复刷新，不叠强度。饱食和经验由每份食物独立消化结算。",
       "quick_energy": true,
-      "durationTicks": 20,
+      "durationTicks": 15,
       "maxStacks": 1,
       "stacksAddOnApply": 1,
       "priority": 65,
@@ -900,17 +847,9 @@
         {
           "type": "survival_delta",
           "params": {
-            "satiety": 0.5,
-            "nutrition": 0.08,
-            "stamina": 0.9,
-            "energy": 0.4,
-            "mood": 0.75
-          }
-        },
-        {
-          "type": "battle_move_speed_multiplier",
-          "params": {
-            "multiplier": 1.1
+            "stamina": 0.2,
+            "energy": 0.05,
+            "mood": 0.1
           }
         }
       ],
@@ -918,15 +857,18 @@
       "judgment_tags": {
         "food_category": "berry",
         "food_item": "wild_fruit_red",
-        "meal_composition": "other"
-      }
+        "meal_composition": "other",
+        "food_special": true,
+        "meal_tier": "snack"
+      },
+      "food_digest": false
     },
     {
       "buff_id": "buff_food_wild_fruit_purple",
-      "name": "紫苏果·快速供能",
-      "desc": "快速供能：共 22 回合，每回合恢复饱食 0.55、体力 0.91、精力 0.36、心情 0.68，战斗出手速度 ×1.10；饱食总量低，适合随身携带当战斗粮。",
+      "name": "紫苏果·余味",
+      "desc": "特殊效果持续 15 回合；同菜重复刷新，不叠强度。饱食和经验由每份食物独立消化结算。",
       "quick_energy": true,
-      "durationTicks": 22,
+      "durationTicks": 15,
       "maxStacks": 1,
       "stacksAddOnApply": 1,
       "priority": 65,
@@ -948,17 +890,9 @@
         {
           "type": "survival_delta",
           "params": {
-            "satiety": 0.55,
-            "nutrition": 0.08,
-            "stamina": 0.91,
-            "energy": 0.36,
-            "mood": 0.68
-          }
-        },
-        {
-          "type": "battle_move_speed_multiplier",
-          "params": {
-            "multiplier": 1.1
+            "stamina": 0.2,
+            "energy": 0.05,
+            "mood": 0.1
           }
         }
       ],
@@ -966,15 +900,18 @@
       "judgment_tags": {
         "food_category": "berry",
         "food_item": "wild_fruit_purple",
-        "meal_composition": "other"
-      }
+        "meal_composition": "other",
+        "food_special": true,
+        "meal_tier": "snack"
+      },
+      "food_digest": false
     },
     {
       "buff_id": "buff_food_wild_fruit_yellow",
-      "name": "黄肚柑·快速供能",
-      "desc": "快速供能：共 25 回合，每回合恢复饱食 0.56、饮水 0.4、体力 0.8、精力 0.32、心情 0.6，战斗出手速度 ×1.10；饱食总量低，适合随身携带当战斗粮。",
+      "name": "黄肚柑·余味",
+      "desc": "特殊效果持续 15 回合；同菜重复刷新，不叠强度。饱食和经验由每份食物独立消化结算。",
       "quick_energy": true,
-      "durationTicks": 25,
+      "durationTicks": 15,
       "maxStacks": 1,
       "stacksAddOnApply": 1,
       "priority": 65,
@@ -996,18 +933,9 @@
         {
           "type": "survival_delta",
           "params": {
-            "satiety": 0.56,
-            "thirst": 0.4,
-            "nutrition": 0.08,
-            "stamina": 0.8,
-            "energy": 0.32,
-            "mood": 0.6
-          }
-        },
-        {
-          "type": "battle_move_speed_multiplier",
-          "params": {
-            "multiplier": 1.1
+            "stamina": 0.2,
+            "energy": 0.05,
+            "mood": 0.1
           }
         }
       ],
@@ -1015,530 +943,16 @@
       "judgment_tags": {
         "food_category": "berry",
         "food_item": "wild_fruit_yellow",
-        "meal_composition": "other"
-      }
+        "meal_composition": "other",
+        "food_special": true,
+        "meal_tier": "snack"
+      },
+      "food_digest": false
     },
     {
       "buff_id": "buff_food_dish_beef_brisket_stew",
-      "name": "清炖牛腩·消化",
-      "desc": "消化中：每回合恢复较多饱食、饮水与营养（约 70 回合）。若已具有相同效果，不可重复食用。",
-      "durationTicks": 70,
-      "maxStacks": 1,
-      "stacksAddOnApply": 1,
-      "priority": 65,
-      "listenerSide": "self",
-      "consumeMode": "always",
-      "consumeLayersFixed": 0,
-      "applyMode": "always_apply",
-      "triggerEventKind": [
-        "world"
-      ],
-      "triggerEventName": [
-        "tick_advanced"
-      ],
-      "triggerTags": [
-        "time",
-        "tick"
-      ],
-      "effects": [
-        {
-          "type": "survival_delta",
-          "params": {
-            "satiety": 1.07,
-            "thirst": 1,
-            "nutrition": 0.65
-          }
-        }
-      ],
-      "expire_effects": [],
-      "judgment_tags": {
-        "food_category": "cooked",
-        "food_item": "food_dish_beef_brisket_stew",
-        "meal_composition": "meat"
-      }
-    },
-    {
-      "buff_id": "buff_food_dish_pig_trotter_bean_soup",
-      "name": "猪蹄豆汤·消化",
-      "desc": "消化中：每回合恢复饱食、饮水与营养（约 70 回合）。若已具有相同效果，不可重复食用。",
-      "durationTicks": 70,
-      "maxStacks": 1,
-      "stacksAddOnApply": 1,
-      "priority": 65,
-      "listenerSide": "self",
-      "consumeMode": "always",
-      "consumeLayersFixed": 0,
-      "applyMode": "always_apply",
-      "triggerEventKind": [
-        "world"
-      ],
-      "triggerEventName": [
-        "tick_advanced"
-      ],
-      "triggerTags": [
-        "time",
-        "tick"
-      ],
-      "effects": [
-        {
-          "type": "survival_delta",
-          "params": {
-            "satiety": 1,
-            "thirst": 1.2,
-            "nutrition": 0.62
-          }
-        }
-      ],
-      "expire_effects": [],
-      "judgment_tags": {
-        "food_category": "cooked",
-        "food_item": "food_dish_pig_trotter_bean_soup",
-        "meal_composition": "meat"
-      }
-    },
-    {
-      "buff_id": "buff_food_dish_whitefish_soup_deluxe",
-      "name": "清汤鱼羹（强化）·消化",
-      "desc": "消化中：每回合恢复饱食、饮水与营养（约 65 回合）。若已具有相同效果，不可重复食用。",
-      "durationTicks": 65,
-      "maxStacks": 1,
-      "stacksAddOnApply": 1,
-      "priority": 65,
-      "listenerSide": "self",
-      "consumeMode": "always",
-      "consumeLayersFixed": 0,
-      "applyMode": "always_apply",
-      "triggerEventKind": [
-        "world"
-      ],
-      "triggerEventName": [
-        "tick_advanced"
-      ],
-      "triggerTags": [
-        "time",
-        "tick"
-      ],
-      "effects": [
-        {
-          "type": "survival_delta",
-          "params": {
-            "satiety": 1.05,
-            "thirst": 2.2,
-            "nutrition": 0.7
-          }
-        }
-      ],
-      "expire_effects": [],
-      "judgment_tags": {
-        "food_category": "cooked",
-        "food_item": "food_dish_whitefish_soup_deluxe",
-        "meal_composition": "meat"
-      }
-    },
-    {
-      "buff_id": "buff_food_dish_chicken_dice_stirfry",
-      "name": "小炒鸡丁·消化",
-      "desc": "消化中：每回合恢复饱食与营养（约 50 回合）。若已具有相同效果，不可重复食用。",
-      "durationTicks": 50,
-      "maxStacks": 1,
-      "stacksAddOnApply": 1,
-      "priority": 65,
-      "listenerSide": "self",
-      "consumeMode": "always",
-      "consumeLayersFixed": 0,
-      "applyMode": "always_apply",
-      "triggerEventKind": [
-        "world"
-      ],
-      "triggerEventName": [
-        "tick_advanced"
-      ],
-      "triggerTags": [
-        "time",
-        "tick"
-      ],
-      "effects": [
-        {
-          "type": "survival_delta",
-          "params": {
-            "satiety": 0.9,
-            "thirst": 0.5,
-            "nutrition": 0.42
-          }
-        }
-      ],
-      "expire_effects": [],
-      "judgment_tags": {
-        "food_category": "cooked",
-        "food_item": "food_dish_chicken_dice_stirfry",
-        "meal_composition": "meat"
-      }
-    },
-    {
-      "buff_id": "buff_food_dish_squid_stirfry",
-      "name": "爆炒鱿鱼·消化",
-      "desc": "消化中：每回合恢复饱食与营养（约 50 回合）。若已具有相同效果，不可重复食用。",
-      "durationTicks": 50,
-      "maxStacks": 1,
-      "stacksAddOnApply": 1,
-      "priority": 65,
-      "listenerSide": "self",
-      "consumeMode": "always",
-      "consumeLayersFixed": 0,
-      "applyMode": "always_apply",
-      "triggerEventKind": [
-        "world"
-      ],
-      "triggerEventName": [
-        "tick_advanced"
-      ],
-      "triggerTags": [
-        "time",
-        "tick"
-      ],
-      "effects": [
-        {
-          "type": "survival_delta",
-          "params": {
-            "satiety": 0.9,
-            "thirst": 0.4,
-            "nutrition": 0.42
-          }
-        }
-      ],
-      "expire_effects": [],
-      "judgment_tags": {
-        "food_category": "cooked",
-        "food_item": "food_dish_squid_stirfry",
-        "meal_composition": "meat"
-      }
-    },
-    {
-      "buff_id": "buff_food_dish_beef_onion_stirfry",
-      "name": "洋葱牛肉快炒·消化",
-      "desc": "消化中：每回合恢复饱食与营养（约 50 回合）。若已具有相同效果，不可重复食用。",
-      "durationTicks": 50,
-      "maxStacks": 1,
-      "stacksAddOnApply": 1,
-      "priority": 65,
-      "listenerSide": "self",
-      "consumeMode": "always",
-      "consumeLayersFixed": 0,
-      "applyMode": "always_apply",
-      "triggerEventKind": [
-        "world"
-      ],
-      "triggerEventName": [
-        "tick_advanced"
-      ],
-      "triggerTags": [
-        "time",
-        "tick"
-      ],
-      "effects": [
-        {
-          "type": "survival_delta",
-          "params": {
-            "satiety": 0.92,
-            "thirst": 0.5,
-            "nutrition": 0.42
-          }
-        }
-      ],
-      "expire_effects": [],
-      "judgment_tags": {
-        "food_category": "cooked",
-        "food_item": "food_dish_beef_onion_stirfry",
-        "meal_composition": "meat"
-      }
-    },
-    {
-      "buff_id": "buff_food_dish_salt_grilled_whitefish",
-      "name": "盐烤白身鱼·消化",
-      "desc": "消化中：每回合恢复饱食与营养（约 45 回合）。若已具有相同效果，不可重复食用。",
-      "durationTicks": 45,
-      "maxStacks": 1,
-      "stacksAddOnApply": 1,
-      "priority": 65,
-      "listenerSide": "self",
-      "consumeMode": "always",
-      "consumeLayersFixed": 0,
-      "applyMode": "always_apply",
-      "triggerEventKind": [
-        "world"
-      ],
-      "triggerEventName": [
-        "tick_advanced"
-      ],
-      "triggerTags": [
-        "time",
-        "tick"
-      ],
-      "effects": [
-        {
-          "type": "survival_delta",
-          "params": {
-            "satiety": 0.73,
-            "thirst": 0.6,
-            "nutrition": 0.3
-          }
-        }
-      ],
-      "expire_effects": [],
-      "judgment_tags": {
-        "food_category": "cooked",
-        "food_item": "food_dish_salt_grilled_whitefish",
-        "meal_composition": "meat"
-      }
-    },
-    {
-      "buff_id": "buff_food_dish_applewood_turkey_roast",
-      "name": "苹果木烤火鸡块·消化",
-      "desc": "消化中：每回合恢复饱食与营养（约 55 回合）。若已具有相同效果，不可重复食用。",
-      "durationTicks": 55,
-      "maxStacks": 1,
-      "stacksAddOnApply": 1,
-      "priority": 65,
-      "listenerSide": "self",
-      "consumeMode": "always",
-      "consumeLayersFixed": 0,
-      "applyMode": "always_apply",
-      "triggerEventKind": [
-        "world"
-      ],
-      "triggerEventName": [
-        "tick_advanced"
-      ],
-      "triggerTags": [
-        "time",
-        "tick"
-      ],
-      "effects": [
-        {
-          "type": "survival_delta",
-          "params": {
-            "satiety": 0.91,
-            "thirst": 0.4,
-            "nutrition": 0.45
-          }
-        }
-      ],
-      "expire_effects": [],
-      "judgment_tags": {
-        "food_category": "cooked",
-        "food_item": "food_dish_applewood_turkey_roast",
-        "meal_composition": "meat"
-      }
-    },
-    {
-      "buff_id": "buff_food_dish_roasted_potato_herbs",
-      "name": "烤土豆佐香草·消化",
-      "desc": "消化中：每回合恢复饱食与营养（约 45 回合）。若已具有相同效果，不可重复食用。",
-      "durationTicks": 45,
-      "maxStacks": 1,
-      "stacksAddOnApply": 1,
-      "priority": 65,
-      "listenerSide": "self",
-      "consumeMode": "always",
-      "consumeLayersFixed": 0,
-      "applyMode": "always_apply",
-      "triggerEventKind": [
-        "world"
-      ],
-      "triggerEventName": [
-        "tick_advanced"
-      ],
-      "triggerTags": [
-        "time",
-        "tick"
-      ],
-      "effects": [
-        {
-          "type": "survival_delta",
-          "params": {
-            "satiety": 0.73,
-            "thirst": 0.3,
-            "nutrition": 0.25
-          }
-        }
-      ],
-      "expire_effects": [],
-      "judgment_tags": {
-        "food_category": "cooked",
-        "food_item": "food_dish_roasted_potato_herbs",
-        "meal_composition": "veg"
-      }
-    },
-    {
-      "buff_id": "buff_food_dish_steamed_egg_custard",
-      "name": "蒸水蛋·快速供能",
-      "desc": "快速供能：共 25 回合，每回合恢复饱食 0.56、饮水 1、体力 0.8、精力 0.32、心情 0.8，战斗出手速度 ×1.10；饱食总量低，适合随身携带当战斗粮。",
-      "quick_energy": true,
-      "durationTicks": 25,
-      "maxStacks": 1,
-      "stacksAddOnApply": 1,
-      "priority": 65,
-      "listenerSide": "self",
-      "consumeMode": "always",
-      "consumeLayersFixed": 0,
-      "applyMode": "always_apply",
-      "triggerEventKind": [
-        "world"
-      ],
-      "triggerEventName": [
-        "tick_advanced"
-      ],
-      "triggerTags": [
-        "time",
-        "tick"
-      ],
-      "effects": [
-        {
-          "type": "survival_delta",
-          "params": {
-            "satiety": 0.56,
-            "thirst": 1,
-            "nutrition": 0.12,
-            "stamina": 0.8,
-            "energy": 0.32,
-            "mood": 0.8
-          }
-        },
-        {
-          "type": "battle_move_speed_multiplier",
-          "params": {
-            "multiplier": 1.1
-          }
-        }
-      ],
-      "expire_effects": [],
-      "judgment_tags": {
-        "food_category": "cooked",
-        "food_item": "food_dish_steamed_egg_custard",
-        "meal_composition": "other"
-      }
-    },
-    {
-      "buff_id": "buff_food_dish_lotus_glutinous_chicken",
-      "name": "荷叶糯米鸡·消化",
-      "desc": "消化中：每回合恢复饱食与营养（约 70 回合）。若已具有相同效果，不可重复食用。",
-      "durationTicks": 70,
-      "maxStacks": 1,
-      "stacksAddOnApply": 1,
-      "priority": 65,
-      "listenerSide": "self",
-      "consumeMode": "always",
-      "consumeLayersFixed": 0,
-      "applyMode": "always_apply",
-      "triggerEventKind": [
-        "world"
-      ],
-      "triggerEventName": [
-        "tick_advanced"
-      ],
-      "triggerTags": [
-        "time",
-        "tick"
-      ],
-      "effects": [
-        {
-          "type": "survival_delta",
-          "params": {
-            "satiety": 1.03,
-            "thirst": 0.5,
-            "nutrition": 0.62
-          }
-        }
-      ],
-      "expire_effects": [],
-      "judgment_tags": {
-        "food_category": "cooked",
-        "food_item": "food_dish_lotus_glutinous_chicken",
-        "meal_composition": "meat"
-      }
-    },
-    {
-      "buff_id": "buff_food_dish_steamed_bream",
-      "name": "清蒸鲂鱼·消化",
-      "desc": "消化中：每回合恢复饱食与营养（约 45 回合）。若已具有相同效果，不可重复食用。",
-      "durationTicks": 45,
-      "maxStacks": 1,
-      "stacksAddOnApply": 1,
-      "priority": 65,
-      "listenerSide": "self",
-      "consumeMode": "always",
-      "consumeLayersFixed": 0,
-      "applyMode": "always_apply",
-      "triggerEventKind": [
-        "world"
-      ],
-      "triggerEventName": [
-        "tick_advanced"
-      ],
-      "triggerTags": [
-        "time",
-        "tick"
-      ],
-      "effects": [
-        {
-          "type": "survival_delta",
-          "params": {
-            "satiety": 0.71,
-            "thirst": 0.8,
-            "nutrition": 0.3
-          }
-        }
-      ],
-      "expire_effects": [],
-      "judgment_tags": {
-        "food_category": "cooked",
-        "food_item": "food_dish_steamed_bream",
-        "meal_composition": "meat"
-      }
-    },
-    {
-      "buff_id": "buff_food_dish_fried_potato_chunks",
-      "name": "炸土豆块·消化",
-      "desc": "消化中：每回合恢复饱食与营养（约 40 回合）。若已具有相同效果，不可重复食用。",
-      "durationTicks": 40,
-      "maxStacks": 1,
-      "stacksAddOnApply": 1,
-      "priority": 65,
-      "listenerSide": "self",
-      "consumeMode": "always",
-      "consumeLayersFixed": 0,
-      "applyMode": "always_apply",
-      "triggerEventKind": [
-        "world"
-      ],
-      "triggerEventName": [
-        "tick_advanced"
-      ],
-      "triggerTags": [
-        "time",
-        "tick"
-      ],
-      "effects": [
-        {
-          "type": "survival_delta",
-          "params": {
-            "satiety": 0.75,
-            "thirst": 0.2,
-            "nutrition": 0.25
-          }
-        }
-      ],
-      "expire_effects": [],
-      "judgment_tags": {
-        "food_category": "cooked",
-        "food_item": "food_dish_fried_potato_chunks",
-        "meal_composition": "veg"
-      }
-    },
-    {
-      "buff_id": "buff_food_dish_river_shrimp_soft_fry",
-      "name": "软炸河虾仁·消化",
-      "desc": "消化中：每回合恢复饱食与营养（约 60 回合）。若已具有相同效果，不可重复食用。",
+      "name": "清炖牛腩·余味",
+      "desc": "特殊效果持续 60 回合；同菜重复刷新，不叠强度。饱食和经验由每份食物独立消化结算。",
       "durationTicks": 60,
       "maxStacks": 1,
       "stacksAddOnApply": 1,
@@ -1561,9 +975,568 @@
         {
           "type": "survival_delta",
           "params": {
-            "satiety": 1.08,
-            "thirst": 0.3,
-            "nutrition": 0.62
+            "stamina": 0.4,
+            "energy": 0.12,
+            "mood": 0.25
+          }
+        }
+      ],
+      "expire_effects": [],
+      "judgment_tags": {
+        "food_category": "cooked",
+        "food_item": "food_dish_beef_brisket_stew",
+        "meal_composition": "meat",
+        "food_special": true,
+        "meal_tier": "banquet"
+      },
+      "food_digest": false
+    },
+    {
+      "buff_id": "buff_food_dish_pig_trotter_bean_soup",
+      "name": "猪蹄豆汤·余味",
+      "desc": "特殊效果持续 60 回合；同菜重复刷新，不叠强度。饱食和经验由每份食物独立消化结算。",
+      "durationTicks": 60,
+      "maxStacks": 1,
+      "stacksAddOnApply": 1,
+      "priority": 65,
+      "listenerSide": "self",
+      "consumeMode": "always",
+      "consumeLayersFixed": 0,
+      "applyMode": "always_apply",
+      "triggerEventKind": [
+        "world"
+      ],
+      "triggerEventName": [
+        "tick_advanced"
+      ],
+      "triggerTags": [
+        "time",
+        "tick"
+      ],
+      "effects": [
+        {
+          "type": "survival_delta",
+          "params": {
+            "stamina": 0.4,
+            "energy": 0.12,
+            "mood": 0.25
+          }
+        }
+      ],
+      "expire_effects": [],
+      "judgment_tags": {
+        "food_category": "cooked",
+        "food_item": "food_dish_pig_trotter_bean_soup",
+        "meal_composition": "meat",
+        "food_special": true,
+        "meal_tier": "banquet"
+      },
+      "food_digest": false
+    },
+    {
+      "buff_id": "buff_food_dish_whitefish_soup_deluxe",
+      "name": "清汤鱼羹（强化）·余味",
+      "desc": "特殊效果持续 60 回合；同菜重复刷新，不叠强度。饱食和经验由每份食物独立消化结算。",
+      "durationTicks": 60,
+      "maxStacks": 1,
+      "stacksAddOnApply": 1,
+      "priority": 65,
+      "listenerSide": "self",
+      "consumeMode": "always",
+      "consumeLayersFixed": 0,
+      "applyMode": "always_apply",
+      "triggerEventKind": [
+        "world"
+      ],
+      "triggerEventName": [
+        "tick_advanced"
+      ],
+      "triggerTags": [
+        "time",
+        "tick"
+      ],
+      "effects": [
+        {
+          "type": "survival_delta",
+          "params": {
+            "stamina": 0.4,
+            "energy": 0.12,
+            "mood": 0.25
+          }
+        }
+      ],
+      "expire_effects": [],
+      "judgment_tags": {
+        "food_category": "cooked",
+        "food_item": "food_dish_whitefish_soup_deluxe",
+        "meal_composition": "meat",
+        "food_special": true,
+        "meal_tier": "banquet"
+      },
+      "food_digest": false
+    },
+    {
+      "buff_id": "buff_food_dish_chicken_dice_stirfry",
+      "name": "小炒鸡丁·余味",
+      "desc": "特殊效果持续 40 回合；同菜重复刷新，不叠强度。饱食和经验由每份食物独立消化结算。",
+      "durationTicks": 40,
+      "maxStacks": 1,
+      "stacksAddOnApply": 1,
+      "priority": 65,
+      "listenerSide": "self",
+      "consumeMode": "always",
+      "consumeLayersFixed": 0,
+      "applyMode": "always_apply",
+      "triggerEventKind": [
+        "world"
+      ],
+      "triggerEventName": [
+        "tick_advanced"
+      ],
+      "triggerTags": [
+        "time",
+        "tick"
+      ],
+      "effects": [
+        {
+          "type": "survival_delta",
+          "params": {
+            "stamina": 0.3,
+            "energy": 0.08,
+            "mood": 0.2
+          }
+        }
+      ],
+      "expire_effects": [],
+      "judgment_tags": {
+        "food_category": "cooked",
+        "food_item": "food_dish_chicken_dice_stirfry",
+        "meal_composition": "meat",
+        "food_special": true,
+        "meal_tier": "refined"
+      },
+      "food_digest": false
+    },
+    {
+      "buff_id": "buff_food_dish_squid_stirfry",
+      "name": "爆炒鱿鱼·余味",
+      "desc": "特殊效果持续 40 回合；同菜重复刷新，不叠强度。饱食和经验由每份食物独立消化结算。",
+      "durationTicks": 40,
+      "maxStacks": 1,
+      "stacksAddOnApply": 1,
+      "priority": 65,
+      "listenerSide": "self",
+      "consumeMode": "always",
+      "consumeLayersFixed": 0,
+      "applyMode": "always_apply",
+      "triggerEventKind": [
+        "world"
+      ],
+      "triggerEventName": [
+        "tick_advanced"
+      ],
+      "triggerTags": [
+        "time",
+        "tick"
+      ],
+      "effects": [
+        {
+          "type": "survival_delta",
+          "params": {
+            "stamina": 0.3,
+            "energy": 0.08,
+            "mood": 0.2
+          }
+        },
+        {
+          "type": "battle_move_speed_multiplier",
+          "params": {
+            "multiplier": 1.08
+          }
+        }
+      ],
+      "expire_effects": [],
+      "judgment_tags": {
+        "food_category": "cooked",
+        "food_item": "food_dish_squid_stirfry",
+        "meal_composition": "meat",
+        "food_special": true,
+        "meal_tier": "refined"
+      },
+      "food_digest": false
+    },
+    {
+      "buff_id": "buff_food_dish_beef_onion_stirfry",
+      "name": "洋葱牛肉快炒·余味",
+      "desc": "特殊效果持续 40 回合；同菜重复刷新，不叠强度。饱食和经验由每份食物独立消化结算。",
+      "durationTicks": 40,
+      "maxStacks": 1,
+      "stacksAddOnApply": 1,
+      "priority": 65,
+      "listenerSide": "self",
+      "consumeMode": "always",
+      "consumeLayersFixed": 0,
+      "applyMode": "always_apply",
+      "triggerEventKind": [
+        "world"
+      ],
+      "triggerEventName": [
+        "tick_advanced"
+      ],
+      "triggerTags": [
+        "time",
+        "tick"
+      ],
+      "effects": [
+        {
+          "type": "survival_delta",
+          "params": {
+            "stamina": 0.3,
+            "energy": 0.08,
+            "mood": 0.2
+          }
+        }
+      ],
+      "expire_effects": [],
+      "judgment_tags": {
+        "food_category": "cooked",
+        "food_item": "food_dish_beef_onion_stirfry",
+        "meal_composition": "meat",
+        "food_special": true,
+        "meal_tier": "refined"
+      },
+      "food_digest": false
+    },
+    {
+      "buff_id": "buff_food_dish_salt_grilled_whitefish",
+      "name": "盐烤白身鱼·余味",
+      "desc": "特殊效果持续 20 回合；同菜重复刷新，不叠强度。饱食和经验由每份食物独立消化结算。",
+      "durationTicks": 20,
+      "maxStacks": 1,
+      "stacksAddOnApply": 1,
+      "priority": 65,
+      "listenerSide": "self",
+      "consumeMode": "always",
+      "consumeLayersFixed": 0,
+      "applyMode": "always_apply",
+      "triggerEventKind": [
+        "world"
+      ],
+      "triggerEventName": [
+        "tick_advanced"
+      ],
+      "triggerTags": [
+        "time",
+        "tick"
+      ],
+      "effects": [
+        {
+          "type": "survival_delta",
+          "params": {
+            "stamina": 0.2,
+            "energy": 0.05,
+            "mood": 0.1
+          }
+        }
+      ],
+      "expire_effects": [],
+      "judgment_tags": {
+        "food_category": "cooked",
+        "food_item": "food_dish_salt_grilled_whitefish",
+        "meal_composition": "meat",
+        "food_special": true,
+        "meal_tier": "home"
+      },
+      "food_digest": false
+    },
+    {
+      "buff_id": "buff_food_dish_applewood_turkey_roast",
+      "name": "苹果木烤火鸡块·余味",
+      "desc": "特殊效果持续 40 回合；同菜重复刷新，不叠强度。饱食和经验由每份食物独立消化结算。",
+      "durationTicks": 40,
+      "maxStacks": 1,
+      "stacksAddOnApply": 1,
+      "priority": 65,
+      "listenerSide": "self",
+      "consumeMode": "always",
+      "consumeLayersFixed": 0,
+      "applyMode": "always_apply",
+      "triggerEventKind": [
+        "world"
+      ],
+      "triggerEventName": [
+        "tick_advanced"
+      ],
+      "triggerTags": [
+        "time",
+        "tick"
+      ],
+      "effects": [
+        {
+          "type": "survival_delta",
+          "params": {
+            "stamina": 0.3,
+            "energy": 0.08,
+            "mood": 0.2
+          }
+        }
+      ],
+      "expire_effects": [],
+      "judgment_tags": {
+        "food_category": "cooked",
+        "food_item": "food_dish_applewood_turkey_roast",
+        "meal_composition": "meat",
+        "food_special": true,
+        "meal_tier": "refined"
+      },
+      "food_digest": false
+    },
+    {
+      "buff_id": "buff_food_dish_roasted_potato_herbs",
+      "name": "烤土豆佐香草·余味",
+      "desc": "特殊效果持续 20 回合；同菜重复刷新，不叠强度。饱食和经验由每份食物独立消化结算。",
+      "durationTicks": 20,
+      "maxStacks": 1,
+      "stacksAddOnApply": 1,
+      "priority": 65,
+      "listenerSide": "self",
+      "consumeMode": "always",
+      "consumeLayersFixed": 0,
+      "applyMode": "always_apply",
+      "triggerEventKind": [
+        "world"
+      ],
+      "triggerEventName": [
+        "tick_advanced"
+      ],
+      "triggerTags": [
+        "time",
+        "tick"
+      ],
+      "effects": [
+        {
+          "type": "survival_delta",
+          "params": {
+            "stamina": 0.2,
+            "energy": 0.05,
+            "mood": 0.1
+          }
+        }
+      ],
+      "expire_effects": [],
+      "judgment_tags": {
+        "food_category": "cooked",
+        "food_item": "food_dish_roasted_potato_herbs",
+        "meal_composition": "veg",
+        "food_special": true,
+        "meal_tier": "home"
+      },
+      "food_digest": false
+    },
+    {
+      "buff_id": "buff_food_dish_steamed_egg_custard",
+      "name": "蒸水蛋·余味",
+      "desc": "特殊效果持续 15 回合；同菜重复刷新，不叠强度。饱食和经验由每份食物独立消化结算。",
+      "quick_energy": true,
+      "durationTicks": 15,
+      "maxStacks": 1,
+      "stacksAddOnApply": 1,
+      "priority": 65,
+      "listenerSide": "self",
+      "consumeMode": "always",
+      "consumeLayersFixed": 0,
+      "applyMode": "always_apply",
+      "triggerEventKind": [
+        "world"
+      ],
+      "triggerEventName": [
+        "tick_advanced"
+      ],
+      "triggerTags": [
+        "time",
+        "tick"
+      ],
+      "effects": [
+        {
+          "type": "survival_delta",
+          "params": {
+            "stamina": 0.5,
+            "energy": 0.15,
+            "mood": 0.2
+          }
+        }
+      ],
+      "expire_effects": [],
+      "judgment_tags": {
+        "food_category": "cooked",
+        "food_item": "food_dish_steamed_egg_custard",
+        "meal_composition": "other",
+        "food_special": true,
+        "meal_tier": "snack"
+      },
+      "food_digest": false
+    },
+    {
+      "buff_id": "buff_food_dish_lotus_glutinous_chicken",
+      "name": "荷叶糯米鸡·余味",
+      "desc": "特殊效果持续 60 回合；同菜重复刷新，不叠强度。饱食和经验由每份食物独立消化结算。",
+      "durationTicks": 60,
+      "maxStacks": 1,
+      "stacksAddOnApply": 1,
+      "priority": 65,
+      "listenerSide": "self",
+      "consumeMode": "always",
+      "consumeLayersFixed": 0,
+      "applyMode": "always_apply",
+      "triggerEventKind": [
+        "world"
+      ],
+      "triggerEventName": [
+        "tick_advanced"
+      ],
+      "triggerTags": [
+        "time",
+        "tick"
+      ],
+      "effects": [
+        {
+          "type": "survival_delta",
+          "params": {
+            "stamina": 0.4,
+            "energy": 0.12,
+            "mood": 0.25
+          }
+        }
+      ],
+      "expire_effects": [],
+      "judgment_tags": {
+        "food_category": "cooked",
+        "food_item": "food_dish_lotus_glutinous_chicken",
+        "meal_composition": "meat",
+        "food_special": true,
+        "meal_tier": "banquet"
+      },
+      "food_digest": false
+    },
+    {
+      "buff_id": "buff_food_dish_steamed_bream",
+      "name": "清蒸鲂鱼·余味",
+      "desc": "特殊效果持续 20 回合；同菜重复刷新，不叠强度。饱食和经验由每份食物独立消化结算。",
+      "durationTicks": 20,
+      "maxStacks": 1,
+      "stacksAddOnApply": 1,
+      "priority": 65,
+      "listenerSide": "self",
+      "consumeMode": "always",
+      "consumeLayersFixed": 0,
+      "applyMode": "always_apply",
+      "triggerEventKind": [
+        "world"
+      ],
+      "triggerEventName": [
+        "tick_advanced"
+      ],
+      "triggerTags": [
+        "time",
+        "tick"
+      ],
+      "effects": [
+        {
+          "type": "survival_delta",
+          "params": {
+            "stamina": 0.2,
+            "energy": 0.05,
+            "mood": 0.1
+          }
+        }
+      ],
+      "expire_effects": [],
+      "judgment_tags": {
+        "food_category": "cooked",
+        "food_item": "food_dish_steamed_bream",
+        "meal_composition": "meat",
+        "food_special": true,
+        "meal_tier": "home"
+      },
+      "food_digest": false
+    },
+    {
+      "buff_id": "buff_food_dish_fried_potato_chunks",
+      "name": "炸土豆块·余味",
+      "desc": "特殊效果持续 20 回合；同菜重复刷新，不叠强度。饱食和经验由每份食物独立消化结算。",
+      "durationTicks": 20,
+      "maxStacks": 1,
+      "stacksAddOnApply": 1,
+      "priority": 65,
+      "listenerSide": "self",
+      "consumeMode": "always",
+      "consumeLayersFixed": 0,
+      "applyMode": "always_apply",
+      "triggerEventKind": [
+        "world"
+      ],
+      "triggerEventName": [
+        "tick_advanced"
+      ],
+      "triggerTags": [
+        "time",
+        "tick"
+      ],
+      "effects": [
+        {
+          "type": "survival_delta",
+          "params": {
+            "stamina": 0.2,
+            "energy": 0.05,
+            "mood": 0.1
+          }
+        }
+      ],
+      "expire_effects": [],
+      "judgment_tags": {
+        "food_category": "cooked",
+        "food_item": "food_dish_fried_potato_chunks",
+        "meal_composition": "veg",
+        "food_special": true,
+        "meal_tier": "home"
+      },
+      "food_digest": false
+    },
+    {
+      "buff_id": "buff_food_dish_river_shrimp_soft_fry",
+      "name": "软炸河虾仁·余味",
+      "desc": "特殊效果持续 60 回合；同菜重复刷新，不叠强度。饱食和经验由每份食物独立消化结算。",
+      "durationTicks": 60,
+      "maxStacks": 1,
+      "stacksAddOnApply": 1,
+      "priority": 65,
+      "listenerSide": "self",
+      "consumeMode": "always",
+      "consumeLayersFixed": 0,
+      "applyMode": "always_apply",
+      "triggerEventKind": [
+        "world"
+      ],
+      "triggerEventName": [
+        "tick_advanced"
+      ],
+      "triggerTags": [
+        "time",
+        "tick"
+      ],
+      "effects": [
+        {
+          "type": "survival_delta",
+          "params": {
+            "stamina": 0.4,
+            "energy": 0.12,
+            "mood": 0.25
+          }
+        },
+        {
+          "type": "battle_move_speed_multiplier",
+          "params": {
+            "multiplier": 1.08
           }
         }
       ],
@@ -1571,15 +1544,18 @@
       "judgment_tags": {
         "food_category": "cooked",
         "food_item": "food_dish_river_shrimp_soft_fry",
-        "meal_composition": "meat"
-      }
+        "meal_composition": "meat",
+        "food_special": true,
+        "meal_tier": "banquet"
+      },
+      "food_digest": false
     },
     {
       "buff_id": "buff_food_dish_salted_cucumber",
-      "name": "盐渍黄瓜·快速供能",
-      "desc": "快速供能：共 25 回合，每回合恢复饱食 0.48、饮水 1、体力 0.64、精力 0.32、心情 0.4，战斗出手速度 ×1.10；饱食总量低，适合随身携带当战斗粮。",
+      "name": "盐渍黄瓜·余味",
+      "desc": "特殊效果持续 15 回合；同菜重复刷新，不叠强度。饱食和经验由每份食物独立消化结算。",
       "quick_energy": true,
-      "durationTicks": 25,
+      "durationTicks": 15,
       "maxStacks": 1,
       "stacksAddOnApply": 1,
       "priority": 65,
@@ -1601,18 +1577,9 @@
         {
           "type": "survival_delta",
           "params": {
-            "satiety": 0.48,
-            "thirst": 1,
-            "nutrition": 0.1,
-            "stamina": 0.64,
-            "energy": 0.32,
-            "mood": 0.4
-          }
-        },
-        {
-          "type": "battle_move_speed_multiplier",
-          "params": {
-            "multiplier": 1.1
+            "stamina": 0.5,
+            "energy": 0.15,
+            "mood": 0.2
           }
         }
       ],
@@ -1620,14 +1587,17 @@
       "judgment_tags": {
         "food_category": "cooked",
         "food_item": "food_dish_salted_cucumber",
-        "meal_composition": "veg"
-      }
+        "meal_composition": "veg",
+        "food_special": true,
+        "meal_tier": "snack"
+      },
+      "food_digest": false
     },
     {
       "buff_id": "buff_food_dish_herb_cured_pork_slices",
-      "name": "香草腌肉片·消化",
-      "desc": "消化中：每回合少量恢复饱食与营养（约 65 回合）。若已具有相同效果，不可重复食用。",
-      "durationTicks": 65,
+      "name": "香草腌肉片·余味",
+      "desc": "特殊效果持续 60 回合；同菜重复刷新，不叠强度。饱食和经验由每份食物独立消化结算。",
+      "durationTicks": 60,
       "maxStacks": 1,
       "stacksAddOnApply": 1,
       "priority": 65,
@@ -1649,9 +1619,9 @@
         {
           "type": "survival_delta",
           "params": {
-            "satiety": 1,
-            "thirst": 0.5,
-            "nutrition": 0.6
+            "stamina": 0.4,
+            "energy": 0.12,
+            "mood": 0.25
           }
         }
       ],
@@ -1659,15 +1629,18 @@
       "judgment_tags": {
         "food_category": "cooked",
         "food_item": "food_dish_herb_cured_pork_slices",
-        "meal_composition": "meat"
-      }
+        "meal_composition": "meat",
+        "food_special": true,
+        "meal_tier": "banquet"
+      },
+      "food_digest": false
     },
     {
       "buff_id": "buff_food_dish_beet_kvass",
-      "name": "甜菜发酵饮·快速供能",
-      "desc": "快速供能：共 25 回合，每回合恢复饱食 0.48、饮水 2.8、体力 0.48、精力 0.32、心情 0.4，战斗出手速度 ×1.10；饱食总量低，适合随身携带当战斗粮。",
+      "name": "甜菜发酵饮·余味",
+      "desc": "特殊效果持续 15 回合；同菜重复刷新，不叠强度。饱食和经验由每份食物独立消化结算。",
       "quick_energy": true,
-      "durationTicks": 25,
+      "durationTicks": 15,
       "maxStacks": 1,
       "stacksAddOnApply": 1,
       "priority": 65,
@@ -1689,18 +1662,9 @@
         {
           "type": "survival_delta",
           "params": {
-            "satiety": 0.48,
-            "thirst": 2.8,
-            "nutrition": 0.08,
-            "stamina": 0.48,
-            "energy": 0.32,
-            "mood": 0.4
-          }
-        },
-        {
-          "type": "battle_move_speed_multiplier",
-          "params": {
-            "multiplier": 1.1
+            "stamina": 0.5,
+            "energy": 0.15,
+            "mood": 0.2
           }
         }
       ],
@@ -1708,15 +1672,18 @@
       "judgment_tags": {
         "food_category": "cooked",
         "food_item": "food_dish_beet_kvass",
-        "meal_composition": "other"
-      }
+        "meal_composition": "other",
+        "food_special": true,
+        "meal_tier": "snack"
+      },
+      "food_digest": false
     },
     {
       "buff_id": "buff_food_dish_buffalo_yogurt",
-      "name": "水牛酸奶·快速供能",
-      "desc": "快速供能：共 25 回合，每回合恢复饱食 0.6、饮水 0.6、体力 0.8、精力 0.32、心情 1，战斗出手速度 ×1.10；饱食总量低，适合随身携带当战斗粮。",
+      "name": "水牛酸奶·余味",
+      "desc": "特殊效果持续 15 回合；同菜重复刷新，不叠强度。饱食和经验由每份食物独立消化结算。",
       "quick_energy": true,
-      "durationTicks": 25,
+      "durationTicks": 15,
       "maxStacks": 1,
       "stacksAddOnApply": 1,
       "priority": 65,
@@ -1738,18 +1705,9 @@
         {
           "type": "survival_delta",
           "params": {
-            "satiety": 0.6,
-            "thirst": 0.6,
-            "nutrition": 0.12,
-            "stamina": 0.8,
-            "energy": 0.32,
-            "mood": 1
-          }
-        },
-        {
-          "type": "battle_move_speed_multiplier",
-          "params": {
-            "multiplier": 1.1
+            "stamina": 0.5,
+            "energy": 0.15,
+            "mood": 0.5
           }
         }
       ],
@@ -1757,14 +1715,17 @@
       "judgment_tags": {
         "food_category": "cooked",
         "food_item": "food_dish_buffalo_yogurt",
-        "meal_composition": "other"
-      }
+        "meal_composition": "other",
+        "food_special": true,
+        "meal_tier": "snack"
+      },
+      "food_digest": false
     },
     {
       "buff_id": "buff_food_dish_sesame_garlic_salad",
-      "name": "芝麻蒜香拌菜·消化",
-      "desc": "消化中：每回合少量恢复饱食与营养（约 50 回合）。若已具有相同效果，不可重复食用。",
-      "durationTicks": 50,
+      "name": "芝麻蒜香拌菜·余味",
+      "desc": "特殊效果持续 40 回合；同菜重复刷新，不叠强度。饱食和经验由每份食物独立消化结算。",
+      "durationTicks": 40,
       "maxStacks": 1,
       "stacksAddOnApply": 1,
       "priority": 65,
@@ -1786,9 +1747,9 @@
         {
           "type": "survival_delta",
           "params": {
-            "satiety": 0.9,
-            "thirst": 0.6,
-            "nutrition": 0.4
+            "stamina": 0.3,
+            "energy": 0.08,
+            "mood": 0.2
           }
         }
       ],
@@ -1796,14 +1757,17 @@
       "judgment_tags": {
         "food_category": "cooked",
         "food_item": "food_dish_sesame_garlic_salad",
-        "meal_composition": "veg"
-      }
+        "meal_composition": "veg",
+        "food_special": true,
+        "meal_tier": "refined"
+      },
+      "food_digest": false
     },
     {
       "buff_id": "buff_food_dish_mustard_beef_tongue",
-      "name": "黄芥末蘸牛舌·消化",
-      "desc": "消化中：每回合恢复饱食与营养（约 55 回合）。若已具有相同效果，不可重复食用。",
-      "durationTicks": 55,
+      "name": "黄芥末蘸牛舌·余味",
+      "desc": "特殊效果持续 40 回合；同菜重复刷新，不叠强度。饱食和经验由每份食物独立消化结算。",
+      "durationTicks": 40,
       "maxStacks": 1,
       "stacksAddOnApply": 1,
       "priority": 65,
@@ -1825,9 +1789,9 @@
         {
           "type": "survival_delta",
           "params": {
-            "satiety": 0.87,
-            "thirst": 0.5,
-            "nutrition": 0.45
+            "stamina": 0.3,
+            "energy": 0.08,
+            "mood": 0.2
           }
         }
       ],
@@ -1835,8 +1799,11 @@
       "judgment_tags": {
         "food_category": "cooked",
         "food_item": "food_dish_mustard_beef_tongue",
-        "meal_composition": "meat"
-      }
+        "meal_composition": "meat",
+        "food_special": true,
+        "meal_tier": "refined"
+      },
+      "food_digest": false
     },
     {
       "buff_id": "buff_pecan_plum_diarrhoea",
@@ -2102,7 +2069,7 @@
     {
       "buff_id": "survival_satiety_stuffed",
       "name": "吃撑了",
-      "desc": "饱食 120.1~150：消化不良——行动明显变慢，心情下降，消化打折（饱食额外流失）。参与体重增长计时。",
+      "desc": "吃撑：出手速度降低、心情下降；过量摄入按实际份量累计体重，不额外抹除食物收益。",
       "durationTicks": 1,
       "maxStacks": 1,
       "stacksAddOnApply": 1,
@@ -2131,8 +2098,7 @@
         {
           "type": "survival_delta",
           "params": {
-            "mood": -2,
-            "satiety": -1
+            "mood": -2
           }
         }
       ],
@@ -2918,9 +2884,9 @@
     },
     {
       "buff_id": "buff_food_compressed_biscuit",
-      "name": "压缩饼干·消化",
-      "desc": "消化中：每回合恢复较多饱食（共 38 回合）。口干舌燥，记得喝水。",
-      "durationTicks": 38,
+      "name": "压缩饼干·余味",
+      "desc": "特殊效果持续 1 回合；同菜重复刷新，不叠强度。饱食和经验由每份食物独立消化结算。",
+      "durationTicks": 1,
       "maxStacks": 1,
       "stacksAddOnApply": 1,
       "priority": 65,
@@ -2938,26 +2904,21 @@
         "time",
         "tick"
       ],
-      "effects": [
-        {
-          "type": "survival_delta",
-          "params": {
-            "satiety": 1.32,
-            "nutrition": 0
-          }
-        }
-      ],
+      "effects": [],
       "expire_effects": [],
       "judgment_tags": {
         "food_category": "cooked",
         "food_item": "food_compressed_biscuit",
-        "meal_composition": "staple"
-      }
+        "meal_composition": "staple",
+        "food_special": true,
+        "meal_tier": "home"
+      },
+      "food_digest": false
     },
     {
       "buff_id": "buff_meal_balance_mixed",
       "name": "膳食搭配",
-      "desc": "消化中的菜覆盖 2 类构成（主食/荤/素），每回合额外恢复 1 点营养。",
+      "desc": "近期实际消化的食物搭配；长期营养由饮食比例缓慢变化，本状态不直接补营养。",
       "durationTicks": 1,
       "maxStacks": 1,
       "stacksAddOnApply": 1,
@@ -2976,14 +2937,7 @@
         "time",
         "tick"
       ],
-      "effects": [
-        {
-          "type": "survival_delta",
-          "params": {
-            "nutrition": 1
-          }
-        }
-      ],
+      "effects": [],
       "expire_effects": [],
       "meal_balance": {
         "level": "mixed"
@@ -2992,7 +2946,7 @@
     {
       "buff_id": "buff_meal_balance_balanced",
       "name": "膳食均衡",
-      "desc": "消化中的菜覆盖主食、荤、素三类构成，每回合额外恢复 2 点营养。",
+      "desc": "近期实际消化的食物搭配；长期营养由饮食比例缓慢变化，本状态不直接补营养。",
       "durationTicks": 1,
       "maxStacks": 1,
       "stacksAddOnApply": 1,
@@ -3011,14 +2965,7 @@
         "time",
         "tick"
       ],
-      "effects": [
-        {
-          "type": "survival_delta",
-          "params": {
-            "nutrition": 2
-          }
-        }
-      ],
+      "effects": [],
       "expire_effects": [],
       "meal_balance": {
         "level": "balanced"
@@ -3517,9 +3464,64 @@
     {
       "buff_id": "buff_pharm_stimulant_inject_weak",
       "name": "兴奋·注射·弱效",
-      "desc": "精力与体力上冲，出手更快，注意力更集中（注射起效 0 tick，持续 10 tick，峰值 0.5）",
+      "desc": "精力与体力上冲，出手更快，注意力更集中（注射起效 0 tick，持续 20 tick，峰值 0.5）",
       "onsetTicks": 0,
-      "durationTicks": 10,
+      "durationTicks": 20,
+      "maxStacks": 1,
+      "stacksAddOnApply": 1,
+      "priority": 80,
+      "listenerSide": "self",
+      "consumeMode": "always",
+      "consumeLayersFixed": 0,
+      "applyMode": "always_apply",
+      "triggerEventKind": [
+        "world"
+      ],
+      "triggerEventName": [
+        "tick_advanced"
+      ],
+      "triggerTags": [
+        "time",
+        "tick"
+      ],
+      "effects": [
+        {
+          "type": "survival_delta",
+          "params": {
+            "energy": 0.3,
+            "stamina": 0.2,
+            "fatigue": -0.15
+          }
+        },
+        {
+          "type": "battle_move_speed_multiplier",
+          "params": {
+            "multiplier": 1.04
+          }
+        },
+        {
+          "type": "add_stat_delta",
+          "params": {
+            "focus": 1
+          }
+        }
+      ],
+      "expire_effects": [],
+      "dispel_pool": "beneficial",
+      "pharmacy_generated": true,
+      "pharmacy_family": "stimulant",
+      "pharmacy_route": "inject",
+      "pharmacy_potency": "weak",
+      "pharmacy_scope": "systemic",
+      "pharmacy_peak": 0.5,
+      "pharmacy_survival_budget_quantized": true
+    },
+    {
+      "buff_id": "buff_pharm_stimulant_inject_regular",
+      "name": "兴奋·注射·常效",
+      "desc": "精力与体力上冲，出手更快，注意力更集中（注射起效 0 tick，持续 20 tick，峰值 1）",
+      "onsetTicks": 0,
+      "durationTicks": 20,
       "maxStacks": 1,
       "stacksAddOnApply": 1,
       "priority": 80,
@@ -3549,60 +3551,6 @@
         {
           "type": "battle_move_speed_multiplier",
           "params": {
-            "multiplier": 1.04
-          }
-        },
-        {
-          "type": "add_stat_delta",
-          "params": {
-            "focus": 1
-          }
-        }
-      ],
-      "expire_effects": [],
-      "dispel_pool": "beneficial",
-      "pharmacy_generated": true,
-      "pharmacy_family": "stimulant",
-      "pharmacy_route": "inject",
-      "pharmacy_potency": "weak",
-      "pharmacy_scope": "systemic",
-      "pharmacy_peak": 0.5
-    },
-    {
-      "buff_id": "buff_pharm_stimulant_inject_regular",
-      "name": "兴奋·注射·常效",
-      "desc": "精力与体力上冲，出手更快，注意力更集中（注射起效 0 tick，持续 10 tick，峰值 1）",
-      "onsetTicks": 0,
-      "durationTicks": 10,
-      "maxStacks": 1,
-      "stacksAddOnApply": 1,
-      "priority": 80,
-      "listenerSide": "self",
-      "consumeMode": "always",
-      "consumeLayersFixed": 0,
-      "applyMode": "always_apply",
-      "triggerEventKind": [
-        "world"
-      ],
-      "triggerEventName": [
-        "tick_advanced"
-      ],
-      "triggerTags": [
-        "time",
-        "tick"
-      ],
-      "effects": [
-        {
-          "type": "survival_delta",
-          "params": {
-            "energy": 1.2,
-            "stamina": 0.8,
-            "fatigue": -0.6
-          }
-        },
-        {
-          "type": "battle_move_speed_multiplier",
-          "params": {
             "multiplier": 1.08
           }
         },
@@ -3620,14 +3568,15 @@
       "pharmacy_route": "inject",
       "pharmacy_potency": "regular",
       "pharmacy_scope": "systemic",
-      "pharmacy_peak": 1
+      "pharmacy_peak": 1,
+      "pharmacy_survival_budget_quantized": true
     },
     {
       "buff_id": "buff_pharm_stimulant_inject_potent",
       "name": "兴奋·注射·强效",
-      "desc": "精力与体力上冲，出手更快，注意力更集中（注射起效 0 tick，持续 10 tick，峰值 1.5）",
+      "desc": "精力与体力上冲，出手更快，注意力更集中（注射起效 0 tick，持续 20 tick，峰值 1.5）",
       "onsetTicks": 0,
-      "durationTicks": 10,
+      "durationTicks": 20,
       "maxStacks": 1,
       "stacksAddOnApply": 1,
       "priority": 80,
@@ -3649,9 +3598,9 @@
         {
           "type": "survival_delta",
           "params": {
-            "energy": 1.8,
-            "stamina": 1.2,
-            "fatigue": -0.9
+            "energy": 0.9,
+            "stamina": 0.6,
+            "fatigue": -0.45
           }
         },
         {
@@ -3674,14 +3623,15 @@
       "pharmacy_route": "inject",
       "pharmacy_potency": "potent",
       "pharmacy_scope": "systemic",
-      "pharmacy_peak": 1.5
+      "pharmacy_peak": 1.5,
+      "pharmacy_survival_budget_quantized": true
     },
     {
       "buff_id": "buff_pharm_hallucinogen_drink_weak",
       "name": "致幻·口服·弱效",
-      "desc": "感知扭曲，潜能与实战经验涨得更快，也更容易做错事（口服起效 5 tick，持续 60 tick，峰值 0.4）",
+      "desc": "感知扭曲，潜能与实战经验涨得更快，也更容易做错事（口服起效 5 tick，持续 240 tick，峰值 0.4）",
       "onsetTicks": 5,
-      "durationTicks": 60,
+      "durationTicks": 240,
       "maxStacks": 1,
       "stacksAddOnApply": 1,
       "priority": 80,
@@ -3725,9 +3675,9 @@
     {
       "buff_id": "buff_pharm_hallucinogen_drink_regular",
       "name": "致幻·口服·常效",
-      "desc": "感知扭曲，潜能与实战经验涨得更快，也更容易做错事（口服起效 5 tick，持续 60 tick，峰值 0.8）",
+      "desc": "感知扭曲，潜能与实战经验涨得更快，也更容易做错事（口服起效 5 tick，持续 240 tick，峰值 0.8）",
       "onsetTicks": 5,
-      "durationTicks": 60,
+      "durationTicks": 240,
       "maxStacks": 1,
       "stacksAddOnApply": 1,
       "priority": 80,
@@ -3771,9 +3721,9 @@
     {
       "buff_id": "buff_pharm_hallucinogen_drink_potent",
       "name": "致幻·口服·强效",
-      "desc": "感知扭曲，潜能与实战经验涨得更快，也更容易做错事（口服起效 5 tick，持续 60 tick，峰值 1.2）",
+      "desc": "感知扭曲，潜能与实战经验涨得更快，也更容易做错事（口服起效 5 tick，持续 240 tick，峰值 1.2）",
       "onsetTicks": 5,
-      "durationTicks": 60,
+      "durationTicks": 240,
       "maxStacks": 1,
       "stacksAddOnApply": 1,
       "priority": 80,
@@ -3817,9 +3767,9 @@
     {
       "buff_id": "buff_pharm_hallucinogen_inhale_weak",
       "name": "致幻·吸入·弱效",
-      "desc": "感知扭曲，潜能与实战经验涨得更快，也更容易做错事（吸入起效 2 tick，持续 18 tick，峰值 0.45）",
+      "desc": "感知扭曲，潜能与实战经验涨得更快，也更容易做错事（吸入起效 2 tick，持续 60 tick，峰值 0.45）",
       "onsetTicks": 2,
-      "durationTicks": 18,
+      "durationTicks": 60,
       "maxStacks": 1,
       "stacksAddOnApply": 1,
       "priority": 80,
@@ -3863,9 +3813,9 @@
     {
       "buff_id": "buff_pharm_hallucinogen_inhale_regular",
       "name": "致幻·吸入·常效",
-      "desc": "感知扭曲，潜能与实战经验涨得更快，也更容易做错事（吸入起效 2 tick，持续 18 tick，峰值 0.9）",
+      "desc": "感知扭曲，潜能与实战经验涨得更快，也更容易做错事（吸入起效 2 tick，持续 60 tick，峰值 0.9）",
       "onsetTicks": 2,
-      "durationTicks": 18,
+      "durationTicks": 60,
       "maxStacks": 1,
       "stacksAddOnApply": 1,
       "priority": 80,
@@ -3909,9 +3859,9 @@
     {
       "buff_id": "buff_pharm_hallucinogen_inhale_potent",
       "name": "致幻·吸入·强效",
-      "desc": "感知扭曲，潜能与实战经验涨得更快，也更容易做错事（吸入起效 2 tick，持续 18 tick，峰值 1.35）",
+      "desc": "感知扭曲，潜能与实战经验涨得更快，也更容易做错事（吸入起效 2 tick，持续 60 tick，峰值 1.35）",
       "onsetTicks": 2,
-      "durationTicks": 18,
+      "durationTicks": 60,
       "maxStacks": 1,
       "stacksAddOnApply": 1,
       "priority": 80,
@@ -3955,9 +3905,9 @@
     {
       "buff_id": "buff_pharm_hallucinogen_inject_weak",
       "name": "致幻·注射·弱效",
-      "desc": "感知扭曲，潜能与实战经验涨得更快，也更容易做错事（注射起效 0 tick，持续 10 tick，峰值 0.5）",
+      "desc": "感知扭曲，潜能与实战经验涨得更快，也更容易做错事（注射起效 0 tick，持续 180 tick，峰值 0.5）",
       "onsetTicks": 0,
-      "durationTicks": 10,
+      "durationTicks": 180,
       "maxStacks": 1,
       "stacksAddOnApply": 1,
       "priority": 80,
@@ -3996,14 +3946,15 @@
       "pharmacy_route": "inject",
       "pharmacy_potency": "weak",
       "pharmacy_scope": "systemic",
-      "pharmacy_peak": 0.5
+      "pharmacy_peak": 0.5,
+      "pharmacy_survival_budget_quantized": true
     },
     {
       "buff_id": "buff_pharm_hallucinogen_inject_regular",
       "name": "致幻·注射·常效",
-      "desc": "感知扭曲，潜能与实战经验涨得更快，也更容易做错事（注射起效 0 tick，持续 10 tick，峰值 1）",
+      "desc": "感知扭曲，潜能与实战经验涨得更快，也更容易做错事（注射起效 0 tick，持续 180 tick，峰值 1）",
       "onsetTicks": 0,
-      "durationTicks": 10,
+      "durationTicks": 180,
       "maxStacks": 1,
       "stacksAddOnApply": 1,
       "priority": 80,
@@ -4042,14 +3993,15 @@
       "pharmacy_route": "inject",
       "pharmacy_potency": "regular",
       "pharmacy_scope": "systemic",
-      "pharmacy_peak": 1
+      "pharmacy_peak": 1,
+      "pharmacy_survival_budget_quantized": true
     },
     {
       "buff_id": "buff_pharm_hallucinogen_inject_potent",
       "name": "致幻·注射·强效",
-      "desc": "感知扭曲，潜能与实战经验涨得更快，也更容易做错事（注射起效 0 tick，持续 10 tick，峰值 1.5）",
+      "desc": "感知扭曲，潜能与实战经验涨得更快，也更容易做错事（注射起效 0 tick，持续 180 tick，峰值 1.5）",
       "onsetTicks": 0,
-      "durationTicks": 10,
+      "durationTicks": 180,
       "maxStacks": 1,
       "stacksAddOnApply": 1,
       "priority": 80,
@@ -4088,7 +4040,8 @@
       "pharmacy_route": "inject",
       "pharmacy_potency": "potent",
       "pharmacy_scope": "systemic",
-      "pharmacy_peak": 1.5
+      "pharmacy_peak": 1.5,
+      "pharmacy_survival_budget_quantized": true
     },
     {
       "buff_id": "buff_pharm_sedative_drink_weak",
@@ -4339,9 +4292,9 @@
     {
       "buff_id": "buff_pharm_sedative_inject_weak",
       "name": "镇静·注射·弱效",
-      "desc": "心情放松，胃口跟着回来（注射起效 0 tick，持续 10 tick，峰值 0.5）",
+      "desc": "心情放松，胃口跟着回来（注射起效 0 tick，持续 40 tick，峰值 0.5）",
       "onsetTicks": 0,
-      "durationTicks": 10,
+      "durationTicks": 40,
       "maxStacks": 1,
       "stacksAddOnApply": 1,
       "priority": 80,
@@ -4363,8 +4316,8 @@
         {
           "type": "survival_delta",
           "params": {
-            "mood": 0.75,
-            "nutrition": 0.2
+            "mood": 0.1875,
+            "nutrition": 0.05
           }
         }
       ],
@@ -4375,14 +4328,15 @@
       "pharmacy_route": "inject",
       "pharmacy_potency": "weak",
       "pharmacy_scope": "systemic",
-      "pharmacy_peak": 0.5
+      "pharmacy_peak": 0.5,
+      "pharmacy_survival_budget_quantized": true
     },
     {
       "buff_id": "buff_pharm_sedative_inject_regular",
       "name": "镇静·注射·常效",
-      "desc": "心情放松，胃口跟着回来（注射起效 0 tick，持续 10 tick，峰值 1）",
+      "desc": "心情放松，胃口跟着回来（注射起效 0 tick，持续 40 tick，峰值 1）",
       "onsetTicks": 0,
-      "durationTicks": 10,
+      "durationTicks": 40,
       "maxStacks": 1,
       "stacksAddOnApply": 1,
       "priority": 80,
@@ -4404,8 +4358,8 @@
         {
           "type": "survival_delta",
           "params": {
-            "mood": 1.5,
-            "nutrition": 0.4
+            "mood": 0.375,
+            "nutrition": 0.1
           }
         }
       ],
@@ -4416,14 +4370,15 @@
       "pharmacy_route": "inject",
       "pharmacy_potency": "regular",
       "pharmacy_scope": "systemic",
-      "pharmacy_peak": 1
+      "pharmacy_peak": 1,
+      "pharmacy_survival_budget_quantized": true
     },
     {
       "buff_id": "buff_pharm_sedative_inject_potent",
       "name": "镇静·注射·强效",
-      "desc": "心情放松，胃口跟着回来（注射起效 0 tick，持续 10 tick，峰值 1.5）",
+      "desc": "心情放松，胃口跟着回来（注射起效 0 tick，持续 40 tick，峰值 1.5）",
       "onsetTicks": 0,
-      "durationTicks": 10,
+      "durationTicks": 40,
       "maxStacks": 1,
       "stacksAddOnApply": 1,
       "priority": 80,
@@ -4445,8 +4400,8 @@
         {
           "type": "survival_delta",
           "params": {
-            "mood": 2.25,
-            "nutrition": 0.6
+            "mood": 0.5625,
+            "nutrition": 0.15
           }
         }
       ],
@@ -4457,14 +4412,15 @@
       "pharmacy_route": "inject",
       "pharmacy_potency": "potent",
       "pharmacy_scope": "systemic",
-      "pharmacy_peak": 1.5
+      "pharmacy_peak": 1.5,
+      "pharmacy_survival_budget_quantized": true
     },
     {
       "buff_id": "buff_pharm_analgesic_drink_weak",
       "name": "镇痛·口服·弱效",
-      "desc": "疼痛被盖住，痛感暂时不生效（药效过后照旧）（口服起效 5 tick，持续 60 tick，峰值 0.4）",
+      "desc": "药效期间按比例忽略疼痛，按剩余疼痛判定惩罚；不减少真实疼痛或损毁，同类取最高值；忽略疼痛 20%（口服起效 5 tick，持续 90 tick，峰值 0.4）",
       "onsetTicks": 5,
-      "durationTicks": 60,
+      "durationTicks": 90,
       "maxStacks": 1,
       "stacksAddOnApply": 1,
       "priority": 80,
@@ -4484,8 +4440,10 @@
       ],
       "effects": [
         {
-          "type": "pain_suppression",
-          "params": {}
+          "type": "pain_ignore_ratio",
+          "params": {
+            "ratio": 0.2
+          }
         }
       ],
       "expire_effects": [],
@@ -4500,9 +4458,9 @@
     {
       "buff_id": "buff_pharm_analgesic_drink_regular",
       "name": "镇痛·口服·常效",
-      "desc": "疼痛被盖住，痛感暂时不生效（药效过后照旧）（口服起效 5 tick，持续 60 tick，峰值 0.8）",
+      "desc": "药效期间按比例忽略疼痛，按剩余疼痛判定惩罚；不减少真实疼痛或损毁，同类取最高值；忽略疼痛 40%（口服起效 5 tick，持续 120 tick，峰值 0.8）",
       "onsetTicks": 5,
-      "durationTicks": 60,
+      "durationTicks": 120,
       "maxStacks": 1,
       "stacksAddOnApply": 1,
       "priority": 80,
@@ -4522,8 +4480,10 @@
       ],
       "effects": [
         {
-          "type": "pain_suppression",
-          "params": {}
+          "type": "pain_ignore_ratio",
+          "params": {
+            "ratio": 0.4
+          }
         }
       ],
       "expire_effects": [],
@@ -4538,9 +4498,9 @@
     {
       "buff_id": "buff_pharm_analgesic_drink_potent",
       "name": "镇痛·口服·强效",
-      "desc": "疼痛被盖住，痛感暂时不生效（药效过后照旧）（口服起效 5 tick，持续 60 tick，峰值 1.2）",
+      "desc": "药效期间按比例忽略疼痛，按剩余疼痛判定惩罚；不减少真实疼痛或损毁，同类取最高值；忽略疼痛 60%（口服起效 5 tick，持续 150 tick，峰值 1.2）",
       "onsetTicks": 5,
-      "durationTicks": 60,
+      "durationTicks": 150,
       "maxStacks": 1,
       "stacksAddOnApply": 1,
       "priority": 80,
@@ -4560,8 +4520,10 @@
       ],
       "effects": [
         {
-          "type": "pain_suppression",
-          "params": {}
+          "type": "pain_ignore_ratio",
+          "params": {
+            "ratio": 0.6
+          }
         }
       ],
       "expire_effects": [],
@@ -4576,9 +4538,9 @@
     {
       "buff_id": "buff_pharm_analgesic_inhale_weak",
       "name": "镇痛·吸入·弱效",
-      "desc": "疼痛被盖住，痛感暂时不生效（药效过后照旧）（吸入起效 2 tick，持续 18 tick，峰值 0.45）",
+      "desc": "药效期间按比例忽略疼痛，按剩余疼痛判定惩罚；不减少真实疼痛或损毁，同类取最高值；忽略疼痛 23%（吸入起效 2 tick，持续 12 tick，峰值 0.45）",
       "onsetTicks": 2,
-      "durationTicks": 18,
+      "durationTicks": 12,
       "maxStacks": 1,
       "stacksAddOnApply": 1,
       "priority": 80,
@@ -4598,8 +4560,10 @@
       ],
       "effects": [
         {
-          "type": "pain_suppression",
-          "params": {}
+          "type": "pain_ignore_ratio",
+          "params": {
+            "ratio": 0.23
+          }
         }
       ],
       "expire_effects": [],
@@ -4614,7 +4578,7 @@
     {
       "buff_id": "buff_pharm_analgesic_inhale_regular",
       "name": "镇痛·吸入·常效",
-      "desc": "疼痛被盖住，痛感暂时不生效（药效过后照旧）（吸入起效 2 tick，持续 18 tick，峰值 0.9）",
+      "desc": "药效期间按比例忽略疼痛，按剩余疼痛判定惩罚；不减少真实疼痛或损毁，同类取最高值；忽略疼痛 45%（吸入起效 2 tick，持续 18 tick，峰值 0.9）",
       "onsetTicks": 2,
       "durationTicks": 18,
       "maxStacks": 1,
@@ -4636,8 +4600,10 @@
       ],
       "effects": [
         {
-          "type": "pain_suppression",
-          "params": {}
+          "type": "pain_ignore_ratio",
+          "params": {
+            "ratio": 0.45
+          }
         }
       ],
       "expire_effects": [],
@@ -4652,9 +4618,9 @@
     {
       "buff_id": "buff_pharm_analgesic_inhale_potent",
       "name": "镇痛·吸入·强效",
-      "desc": "疼痛被盖住，痛感暂时不生效（药效过后照旧）（吸入起效 2 tick，持续 18 tick，峰值 1.35）",
+      "desc": "药效期间按比例忽略疼痛，按剩余疼痛判定惩罚；不减少真实疼痛或损毁，同类取最高值；忽略疼痛 68%（吸入起效 2 tick，持续 25 tick，峰值 1.35）",
       "onsetTicks": 2,
-      "durationTicks": 18,
+      "durationTicks": 25,
       "maxStacks": 1,
       "stacksAddOnApply": 1,
       "priority": 80,
@@ -4674,8 +4640,10 @@
       ],
       "effects": [
         {
-          "type": "pain_suppression",
-          "params": {}
+          "type": "pain_ignore_ratio",
+          "params": {
+            "ratio": 0.68
+          }
         }
       ],
       "expire_effects": [],
@@ -4690,9 +4658,9 @@
     {
       "buff_id": "buff_pharm_analgesic_inject_weak",
       "name": "镇痛·注射·弱效",
-      "desc": "疼痛被盖住，痛感暂时不生效（药效过后照旧）（注射起效 0 tick，持续 10 tick，峰值 0.5）",
+      "desc": "药效期间按比例忽略疼痛，按剩余疼痛判定惩罚；不减少真实疼痛或损毁，同类取最高值；忽略疼痛 25%（注射起效 0 tick，持续 20 tick，峰值 0.5）",
       "onsetTicks": 0,
-      "durationTicks": 10,
+      "durationTicks": 20,
       "maxStacks": 1,
       "stacksAddOnApply": 1,
       "priority": 80,
@@ -4712,8 +4680,10 @@
       ],
       "effects": [
         {
-          "type": "pain_suppression",
-          "params": {}
+          "type": "pain_ignore_ratio",
+          "params": {
+            "ratio": 0.25
+          }
         }
       ],
       "expire_effects": [],
@@ -4723,14 +4693,15 @@
       "pharmacy_route": "inject",
       "pharmacy_potency": "weak",
       "pharmacy_scope": "systemic",
-      "pharmacy_peak": 0.5
+      "pharmacy_peak": 0.5,
+      "pharmacy_survival_budget_quantized": true
     },
     {
       "buff_id": "buff_pharm_analgesic_inject_regular",
       "name": "镇痛·注射·常效",
-      "desc": "疼痛被盖住，痛感暂时不生效（药效过后照旧）（注射起效 0 tick，持续 10 tick，峰值 1）",
+      "desc": "药效期间按比例忽略疼痛，按剩余疼痛判定惩罚；不减少真实疼痛或损毁，同类取最高值；忽略疼痛 50%（注射起效 0 tick，持续 40 tick，峰值 1）",
       "onsetTicks": 0,
-      "durationTicks": 10,
+      "durationTicks": 40,
       "maxStacks": 1,
       "stacksAddOnApply": 1,
       "priority": 80,
@@ -4750,8 +4721,10 @@
       ],
       "effects": [
         {
-          "type": "pain_suppression",
-          "params": {}
+          "type": "pain_ignore_ratio",
+          "params": {
+            "ratio": 0.5
+          }
         }
       ],
       "expire_effects": [],
@@ -4761,14 +4734,15 @@
       "pharmacy_route": "inject",
       "pharmacy_potency": "regular",
       "pharmacy_scope": "systemic",
-      "pharmacy_peak": 1
+      "pharmacy_peak": 1,
+      "pharmacy_survival_budget_quantized": true
     },
     {
       "buff_id": "buff_pharm_analgesic_inject_potent",
       "name": "镇痛·注射·强效",
-      "desc": "疼痛被盖住，痛感暂时不生效（药效过后照旧）（注射起效 0 tick，持续 10 tick，峰值 1.5）",
+      "desc": "药效期间按比例忽略疼痛，按剩余疼痛判定惩罚；不减少真实疼痛或损毁，同类取最高值；忽略疼痛 75%（注射起效 0 tick，持续 50 tick，峰值 1.5）",
       "onsetTicks": 0,
-      "durationTicks": 10,
+      "durationTicks": 50,
       "maxStacks": 1,
       "stacksAddOnApply": 1,
       "priority": 80,
@@ -4788,8 +4762,10 @@
       ],
       "effects": [
         {
-          "type": "pain_suppression",
-          "params": {}
+          "type": "pain_ignore_ratio",
+          "params": {
+            "ratio": 0.75
+          }
         }
       ],
       "expire_effects": [],
@@ -4799,7 +4775,8 @@
       "pharmacy_route": "inject",
       "pharmacy_potency": "potent",
       "pharmacy_scope": "systemic",
-      "pharmacy_peak": 1.5
+      "pharmacy_peak": 1.5,
+      "pharmacy_survival_budget_quantized": true
     },
     {
       "buff_id": "buff_pharm_synergist_drink_weak",
@@ -5287,9 +5264,93 @@
     {
       "buff_id": "buff_pharm_rehydrate_inject_weak",
       "name": "补液·注射·弱效",
-      "desc": "把水与体力补回来，脱水时最值钱（注射起效 0 tick，持续 10 tick，峰值 0.5）",
+      "desc": "把水与体力补回来，脱水时最值钱（注射起效 0 tick，持续 30 tick，峰值 0.5）",
       "onsetTicks": 0,
-      "durationTicks": 10,
+      "durationTicks": 30,
+      "maxStacks": 1,
+      "stacksAddOnApply": 1,
+      "priority": 80,
+      "listenerSide": "self",
+      "consumeMode": "always",
+      "consumeLayersFixed": 0,
+      "applyMode": "always_apply",
+      "triggerEventKind": [
+        "world"
+      ],
+      "triggerEventName": [
+        "tick_advanced"
+      ],
+      "triggerTags": [
+        "time",
+        "tick"
+      ],
+      "effects": [
+        {
+          "type": "survival_delta",
+          "params": {
+            "thirst": 0.4166666666666667,
+            "stamina": 0.08333333333333333
+          }
+        }
+      ],
+      "expire_effects": [],
+      "dispel_pool": "beneficial",
+      "pharmacy_generated": true,
+      "pharmacy_family": "rehydrate",
+      "pharmacy_route": "inject",
+      "pharmacy_potency": "weak",
+      "pharmacy_scope": "systemic",
+      "pharmacy_peak": 0.5,
+      "pharmacy_survival_budget_quantized": true
+    },
+    {
+      "buff_id": "buff_pharm_rehydrate_inject_regular",
+      "name": "补液·注射·常效",
+      "desc": "把水与体力补回来，脱水时最值钱（注射起效 0 tick，持续 30 tick，峰值 1）",
+      "onsetTicks": 0,
+      "durationTicks": 30,
+      "maxStacks": 1,
+      "stacksAddOnApply": 1,
+      "priority": 80,
+      "listenerSide": "self",
+      "consumeMode": "always",
+      "consumeLayersFixed": 0,
+      "applyMode": "always_apply",
+      "triggerEventKind": [
+        "world"
+      ],
+      "triggerEventName": [
+        "tick_advanced"
+      ],
+      "triggerTags": [
+        "time",
+        "tick"
+      ],
+      "effects": [
+        {
+          "type": "survival_delta",
+          "params": {
+            "thirst": 0.8333333333333334,
+            "stamina": 0.16666666666666666
+          }
+        }
+      ],
+      "expire_effects": [],
+      "dispel_pool": "beneficial",
+      "pharmacy_generated": true,
+      "pharmacy_family": "rehydrate",
+      "pharmacy_route": "inject",
+      "pharmacy_potency": "regular",
+      "pharmacy_scope": "systemic",
+      "pharmacy_peak": 1,
+      "pharmacy_survival_budget_quantized": true
+    },
+    {
+      "buff_id": "buff_pharm_rehydrate_inject_potent",
+      "name": "补液·注射·强效",
+      "desc": "把水与体力补回来，脱水时最值钱（注射起效 0 tick，持续 30 tick，峰值 1.5）",
+      "onsetTicks": 0,
+      "durationTicks": 30,
       "maxStacks": 1,
       "stacksAddOnApply": 1,
       "priority": 80,
@@ -5321,91 +5382,10 @@
       "pharmacy_generated": true,
       "pharmacy_family": "rehydrate",
       "pharmacy_route": "inject",
-      "pharmacy_potency": "weak",
-      "pharmacy_scope": "systemic",
-      "pharmacy_peak": 0.5
-    },
-    {
-      "buff_id": "buff_pharm_rehydrate_inject_regular",
-      "name": "补液·注射·常效",
-      "desc": "把水与体力补回来，脱水时最值钱（注射起效 0 tick，持续 10 tick，峰值 1）",
-      "onsetTicks": 0,
-      "durationTicks": 10,
-      "maxStacks": 1,
-      "stacksAddOnApply": 1,
-      "priority": 80,
-      "listenerSide": "self",
-      "consumeMode": "always",
-      "consumeLayersFixed": 0,
-      "applyMode": "always_apply",
-      "triggerEventKind": [
-        "world"
-      ],
-      "triggerEventName": [
-        "tick_advanced"
-      ],
-      "triggerTags": [
-        "time",
-        "tick"
-      ],
-      "effects": [
-        {
-          "type": "survival_delta",
-          "params": {
-            "thirst": 2.5,
-            "stamina": 0.5
-          }
-        }
-      ],
-      "expire_effects": [],
-      "dispel_pool": "beneficial",
-      "pharmacy_generated": true,
-      "pharmacy_family": "rehydrate",
-      "pharmacy_route": "inject",
-      "pharmacy_potency": "regular",
-      "pharmacy_scope": "systemic",
-      "pharmacy_peak": 1
-    },
-    {
-      "buff_id": "buff_pharm_rehydrate_inject_potent",
-      "name": "补液·注射·强效",
-      "desc": "把水与体力补回来，脱水时最值钱（注射起效 0 tick，持续 10 tick，峰值 1.5）",
-      "onsetTicks": 0,
-      "durationTicks": 10,
-      "maxStacks": 1,
-      "stacksAddOnApply": 1,
-      "priority": 80,
-      "listenerSide": "self",
-      "consumeMode": "always",
-      "consumeLayersFixed": 0,
-      "applyMode": "always_apply",
-      "triggerEventKind": [
-        "world"
-      ],
-      "triggerEventName": [
-        "tick_advanced"
-      ],
-      "triggerTags": [
-        "time",
-        "tick"
-      ],
-      "effects": [
-        {
-          "type": "survival_delta",
-          "params": {
-            "thirst": 3.75,
-            "stamina": 0.75
-          }
-        }
-      ],
-      "expire_effects": [],
-      "dispel_pool": "beneficial",
-      "pharmacy_generated": true,
-      "pharmacy_family": "rehydrate",
-      "pharmacy_route": "inject",
       "pharmacy_potency": "potent",
       "pharmacy_scope": "systemic",
-      "pharmacy_peak": 1.5
+      "pharmacy_peak": 1.5,
+      "pharmacy_survival_budget_quantized": true
     },
     {
       "buff_id": "buff_pharm_energy_drink_weak",
@@ -5656,9 +5636,93 @@
     {
       "buff_id": "buff_pharm_energy_inject_weak",
       "name": "续航·注射·弱效",
-      "desc": "血糖与精力一起抬起来，饿得慢一点（注射起效 0 tick，持续 10 tick，峰值 0.5）",
+      "desc": "血糖与精力一起抬起来，饿得慢一点（注射起效 0 tick，持续 30 tick，峰值 0.5）",
       "onsetTicks": 0,
-      "durationTicks": 10,
+      "durationTicks": 30,
+      "maxStacks": 1,
+      "stacksAddOnApply": 1,
+      "priority": 80,
+      "listenerSide": "self",
+      "consumeMode": "always",
+      "consumeLayersFixed": 0,
+      "applyMode": "always_apply",
+      "triggerEventKind": [
+        "world"
+      ],
+      "triggerEventName": [
+        "tick_advanced"
+      ],
+      "triggerTags": [
+        "time",
+        "tick"
+      ],
+      "effects": [
+        {
+          "type": "survival_delta",
+          "params": {
+            "energy": 0.25,
+            "nutrition": 0.09999999999999999
+          }
+        }
+      ],
+      "expire_effects": [],
+      "dispel_pool": "beneficial",
+      "pharmacy_generated": true,
+      "pharmacy_family": "energy",
+      "pharmacy_route": "inject",
+      "pharmacy_potency": "weak",
+      "pharmacy_scope": "systemic",
+      "pharmacy_peak": 0.5,
+      "pharmacy_survival_budget_quantized": true
+    },
+    {
+      "buff_id": "buff_pharm_energy_inject_regular",
+      "name": "续航·注射·常效",
+      "desc": "血糖与精力一起抬起来，饿得慢一点（注射起效 0 tick，持续 30 tick，峰值 1）",
+      "onsetTicks": 0,
+      "durationTicks": 30,
+      "maxStacks": 1,
+      "stacksAddOnApply": 1,
+      "priority": 80,
+      "listenerSide": "self",
+      "consumeMode": "always",
+      "consumeLayersFixed": 0,
+      "applyMode": "always_apply",
+      "triggerEventKind": [
+        "world"
+      ],
+      "triggerEventName": [
+        "tick_advanced"
+      ],
+      "triggerTags": [
+        "time",
+        "tick"
+      ],
+      "effects": [
+        {
+          "type": "survival_delta",
+          "params": {
+            "energy": 0.5,
+            "nutrition": 0.19999999999999998
+          }
+        }
+      ],
+      "expire_effects": [],
+      "dispel_pool": "beneficial",
+      "pharmacy_generated": true,
+      "pharmacy_family": "energy",
+      "pharmacy_route": "inject",
+      "pharmacy_potency": "regular",
+      "pharmacy_scope": "systemic",
+      "pharmacy_peak": 1,
+      "pharmacy_survival_budget_quantized": true
+    },
+    {
+      "buff_id": "buff_pharm_energy_inject_potent",
+      "name": "续航·注射·强效",
+      "desc": "血糖与精力一起抬起来，饿得慢一点（注射起效 0 tick，持续 30 tick，峰值 1.5）",
+      "onsetTicks": 0,
+      "durationTicks": 30,
       "maxStacks": 1,
       "stacksAddOnApply": 1,
       "priority": 80,
@@ -5690,91 +5754,10 @@
       "pharmacy_generated": true,
       "pharmacy_family": "energy",
       "pharmacy_route": "inject",
-      "pharmacy_potency": "weak",
-      "pharmacy_scope": "systemic",
-      "pharmacy_peak": 0.5
-    },
-    {
-      "buff_id": "buff_pharm_energy_inject_regular",
-      "name": "续航·注射·常效",
-      "desc": "血糖与精力一起抬起来，饿得慢一点（注射起效 0 tick，持续 10 tick，峰值 1）",
-      "onsetTicks": 0,
-      "durationTicks": 10,
-      "maxStacks": 1,
-      "stacksAddOnApply": 1,
-      "priority": 80,
-      "listenerSide": "self",
-      "consumeMode": "always",
-      "consumeLayersFixed": 0,
-      "applyMode": "always_apply",
-      "triggerEventKind": [
-        "world"
-      ],
-      "triggerEventName": [
-        "tick_advanced"
-      ],
-      "triggerTags": [
-        "time",
-        "tick"
-      ],
-      "effects": [
-        {
-          "type": "survival_delta",
-          "params": {
-            "energy": 1.5,
-            "nutrition": 0.6
-          }
-        }
-      ],
-      "expire_effects": [],
-      "dispel_pool": "beneficial",
-      "pharmacy_generated": true,
-      "pharmacy_family": "energy",
-      "pharmacy_route": "inject",
-      "pharmacy_potency": "regular",
-      "pharmacy_scope": "systemic",
-      "pharmacy_peak": 1
-    },
-    {
-      "buff_id": "buff_pharm_energy_inject_potent",
-      "name": "续航·注射·强效",
-      "desc": "血糖与精力一起抬起来，饿得慢一点（注射起效 0 tick，持续 10 tick，峰值 1.5）",
-      "onsetTicks": 0,
-      "durationTicks": 10,
-      "maxStacks": 1,
-      "stacksAddOnApply": 1,
-      "priority": 80,
-      "listenerSide": "self",
-      "consumeMode": "always",
-      "consumeLayersFixed": 0,
-      "applyMode": "always_apply",
-      "triggerEventKind": [
-        "world"
-      ],
-      "triggerEventName": [
-        "tick_advanced"
-      ],
-      "triggerTags": [
-        "time",
-        "tick"
-      ],
-      "effects": [
-        {
-          "type": "survival_delta",
-          "params": {
-            "energy": 2.25,
-            "nutrition": 0.9
-          }
-        }
-      ],
-      "expire_effects": [],
-      "dispel_pool": "beneficial",
-      "pharmacy_generated": true,
-      "pharmacy_family": "energy",
-      "pharmacy_route": "inject",
       "pharmacy_potency": "potent",
       "pharmacy_scope": "systemic",
-      "pharmacy_peak": 1.5
+      "pharmacy_peak": 1.5,
+      "pharmacy_survival_budget_quantized": true
     },
     {
       "buff_id": "buff_pharm_revive_inject_weak",
@@ -6280,9 +6263,9 @@
     {
       "buff_id": "buff_pharm_antistun_inject_weak",
       "name": "醒神·注射·弱效",
-      "desc": "战前打一针，眩晕抗性窗口打开（注射起效 0 tick，持续 10 tick，峰值 0.5）",
+      "desc": "战前打一针，眩晕抗性窗口打开（注射起效 0 tick，持续 40 tick，峰值 0.5）",
       "onsetTicks": 0,
-      "durationTicks": 10,
+      "durationTicks": 40,
       "maxStacks": 1,
       "stacksAddOnApply": 1,
       "priority": 80,
@@ -6315,14 +6298,15 @@
       "pharmacy_route": "inject",
       "pharmacy_potency": "weak",
       "pharmacy_scope": "systemic",
-      "pharmacy_peak": 0.5
+      "pharmacy_peak": 0.5,
+      "pharmacy_survival_budget_quantized": true
     },
     {
       "buff_id": "buff_pharm_antistun_inject_regular",
       "name": "醒神·注射·常效",
-      "desc": "战前打一针，眩晕抗性窗口打开（注射起效 0 tick，持续 10 tick，峰值 1）",
+      "desc": "战前打一针，眩晕抗性窗口打开（注射起效 0 tick，持续 40 tick，峰值 1）",
       "onsetTicks": 0,
-      "durationTicks": 10,
+      "durationTicks": 40,
       "maxStacks": 1,
       "stacksAddOnApply": 1,
       "priority": 80,
@@ -6355,14 +6339,15 @@
       "pharmacy_route": "inject",
       "pharmacy_potency": "regular",
       "pharmacy_scope": "systemic",
-      "pharmacy_peak": 1
+      "pharmacy_peak": 1,
+      "pharmacy_survival_budget_quantized": true
     },
     {
       "buff_id": "buff_pharm_antistun_inject_potent",
       "name": "醒神·注射·强效",
-      "desc": "战前打一针，眩晕抗性窗口打开（注射起效 0 tick，持续 10 tick，峰值 1.5）",
+      "desc": "战前打一针，眩晕抗性窗口打开（注射起效 0 tick，持续 40 tick，峰值 1.5）",
       "onsetTicks": 0,
-      "durationTicks": 10,
+      "durationTicks": 40,
       "maxStacks": 1,
       "stacksAddOnApply": 1,
       "priority": 80,
@@ -6395,14 +6380,15 @@
       "pharmacy_route": "inject",
       "pharmacy_potency": "potent",
       "pharmacy_scope": "systemic",
-      "pharmacy_peak": 1.5
+      "pharmacy_peak": 1.5,
+      "pharmacy_survival_budget_quantized": true
     },
     {
       "buff_id": "buff_pharm_strength_drink_weak",
       "name": "续力·口服·弱效",
-      "desc": "筋骨一紧，负重与发力都往上抬（口服起效 5 tick，持续 60 tick，峰值 0.4）",
+      "desc": "提高负重上限，适合携行与搬运；同类药效取最高值；负重上限 +2 kg（口服起效 5 tick，持续 180 tick，峰值 0.4）",
       "onsetTicks": 5,
-      "durationTicks": 60,
+      "durationTicks": 180,
       "maxStacks": 1,
       "stacksAddOnApply": 1,
       "priority": 80,
@@ -6422,9 +6408,9 @@
       ],
       "effects": [
         {
-          "type": "add_stat_delta",
+          "type": "pharmacy_carry_capacity",
           "params": {
-            "jingu": 1.2
+            "kilograms": 2
           }
         }
       ],
@@ -6440,9 +6426,9 @@
     {
       "buff_id": "buff_pharm_strength_drink_regular",
       "name": "续力·口服·常效",
-      "desc": "筋骨一紧，负重与发力都往上抬（口服起效 5 tick，持续 60 tick，峰值 0.8）",
+      "desc": "提高负重上限，适合携行与搬运；同类药效取最高值；负重上限 +4 kg（口服起效 5 tick，持续 180 tick，峰值 0.8）",
       "onsetTicks": 5,
-      "durationTicks": 60,
+      "durationTicks": 180,
       "maxStacks": 1,
       "stacksAddOnApply": 1,
       "priority": 80,
@@ -6462,9 +6448,9 @@
       ],
       "effects": [
         {
-          "type": "add_stat_delta",
+          "type": "pharmacy_carry_capacity",
           "params": {
-            "jingu": 2.4
+            "kilograms": 4
           }
         }
       ],
@@ -6480,9 +6466,9 @@
     {
       "buff_id": "buff_pharm_strength_drink_potent",
       "name": "续力·口服·强效",
-      "desc": "筋骨一紧，负重与发力都往上抬（口服起效 5 tick，持续 60 tick，峰值 1.2）",
+      "desc": "提高负重上限，适合携行与搬运；同类药效取最高值；负重上限 +6 kg（口服起效 5 tick，持续 180 tick，峰值 1.2）",
       "onsetTicks": 5,
-      "durationTicks": 60,
+      "durationTicks": 180,
       "maxStacks": 1,
       "stacksAddOnApply": 1,
       "priority": 80,
@@ -6502,9 +6488,9 @@
       ],
       "effects": [
         {
-          "type": "add_stat_delta",
+          "type": "pharmacy_carry_capacity",
           "params": {
-            "jingu": 3.6
+            "kilograms": 6
           }
         }
       ],
@@ -6520,9 +6506,9 @@
     {
       "buff_id": "buff_pharm_strength_inject_weak",
       "name": "续力·注射·弱效",
-      "desc": "筋骨一紧，负重与发力都往上抬（注射起效 0 tick，持续 10 tick，峰值 0.5）",
+      "desc": "提高负重上限，适合携行与搬运；同类药效取最高值；负重上限 +2.5 kg（注射起效 0 tick，持续 120 tick，峰值 0.5）",
       "onsetTicks": 0,
-      "durationTicks": 10,
+      "durationTicks": 120,
       "maxStacks": 1,
       "stacksAddOnApply": 1,
       "priority": 80,
@@ -6542,9 +6528,9 @@
       ],
       "effects": [
         {
-          "type": "add_stat_delta",
+          "type": "pharmacy_carry_capacity",
           "params": {
-            "jingu": 1.5
+            "kilograms": 2.5
           }
         }
       ],
@@ -6555,14 +6541,15 @@
       "pharmacy_route": "inject",
       "pharmacy_potency": "weak",
       "pharmacy_scope": "systemic",
-      "pharmacy_peak": 0.5
+      "pharmacy_peak": 0.5,
+      "pharmacy_survival_budget_quantized": true
     },
     {
       "buff_id": "buff_pharm_strength_inject_regular",
       "name": "续力·注射·常效",
-      "desc": "筋骨一紧，负重与发力都往上抬（注射起效 0 tick，持续 10 tick，峰值 1）",
+      "desc": "提高负重上限，适合携行与搬运；同类药效取最高值；负重上限 +5 kg（注射起效 0 tick，持续 120 tick，峰值 1）",
       "onsetTicks": 0,
-      "durationTicks": 10,
+      "durationTicks": 120,
       "maxStacks": 1,
       "stacksAddOnApply": 1,
       "priority": 80,
@@ -6582,9 +6569,9 @@
       ],
       "effects": [
         {
-          "type": "add_stat_delta",
+          "type": "pharmacy_carry_capacity",
           "params": {
-            "jingu": 3
+            "kilograms": 5
           }
         }
       ],
@@ -6595,14 +6582,15 @@
       "pharmacy_route": "inject",
       "pharmacy_potency": "regular",
       "pharmacy_scope": "systemic",
-      "pharmacy_peak": 1
+      "pharmacy_peak": 1,
+      "pharmacy_survival_budget_quantized": true
     },
     {
       "buff_id": "buff_pharm_strength_inject_potent",
       "name": "续力·注射·强效",
-      "desc": "筋骨一紧，负重与发力都往上抬（注射起效 0 tick，持续 10 tick，峰值 1.5）",
+      "desc": "提高负重上限，适合携行与搬运；同类药效取最高值；负重上限 +7.5 kg（注射起效 0 tick，持续 120 tick，峰值 1.5）",
       "onsetTicks": 0,
-      "durationTicks": 10,
+      "durationTicks": 120,
       "maxStacks": 1,
       "stacksAddOnApply": 1,
       "priority": 80,
@@ -6622,9 +6610,9 @@
       ],
       "effects": [
         {
-          "type": "add_stat_delta",
+          "type": "pharmacy_carry_capacity",
           "params": {
-            "jingu": 4.5
+            "kilograms": 7.5
           }
         }
       ],
@@ -6635,7 +6623,8 @@
       "pharmacy_route": "inject",
       "pharmacy_potency": "potent",
       "pharmacy_scope": "systemic",
-      "pharmacy_peak": 1.5
+      "pharmacy_peak": 1.5,
+      "pharmacy_survival_budget_quantized": true
     },
     {
       "buff_id": "buff_pharm_mobility_topical_weak",
@@ -7222,9 +7211,9 @@
     {
       "buff_id": "buff_pharm_stimulant_inject_pure",
       "name": "兴奋·注射·纯品",
-      "desc": "精力与体力上冲，出手更快，注意力更集中（注射起效 0 tick，持续 10 tick，峰值 1.9）",
+      "desc": "精力与体力上冲，出手更快，注意力更集中（注射起效 0 tick，持续 20 tick，峰值 1.9）",
       "onsetTicks": 0,
-      "durationTicks": 10,
+      "durationTicks": 20,
       "maxStacks": 1,
       "stacksAddOnApply": 1,
       "priority": 80,
@@ -7246,9 +7235,9 @@
         {
           "type": "survival_delta",
           "params": {
-            "energy": 2.28,
-            "stamina": 1.52,
-            "fatigue": -1.14
+            "energy": 1.14,
+            "stamina": 0.76,
+            "fatigue": -0.57
           }
         },
         {
@@ -7271,14 +7260,15 @@
       "pharmacy_route": "inject",
       "pharmacy_potency": "pure",
       "pharmacy_scope": "systemic",
-      "pharmacy_peak": 1.9
+      "pharmacy_peak": 1.9,
+      "pharmacy_survival_budget_quantized": true
     },
     {
       "buff_id": "buff_pharm_hallucinogen_drink_pure",
       "name": "致幻·口服·纯品",
-      "desc": "感知扭曲，潜能与实战经验涨得更快，也更容易做错事（口服起效 5 tick，持续 60 tick，峰值 1.52）",
+      "desc": "感知扭曲，潜能与实战经验涨得更快，也更容易做错事（口服起效 5 tick，持续 240 tick，峰值 1.52）",
       "onsetTicks": 5,
-      "durationTicks": 60,
+      "durationTicks": 240,
       "maxStacks": 1,
       "stacksAddOnApply": 1,
       "priority": 80,
@@ -7322,9 +7312,9 @@
     {
       "buff_id": "buff_pharm_hallucinogen_inhale_pure",
       "name": "致幻·吸入·纯品",
-      "desc": "感知扭曲，潜能与实战经验涨得更快，也更容易做错事（吸入起效 2 tick，持续 18 tick，峰值 1.71）",
+      "desc": "感知扭曲，潜能与实战经验涨得更快，也更容易做错事（吸入起效 2 tick，持续 60 tick，峰值 1.71）",
       "onsetTicks": 2,
-      "durationTicks": 18,
+      "durationTicks": 60,
       "maxStacks": 1,
       "stacksAddOnApply": 1,
       "priority": 80,
@@ -7368,9 +7358,9 @@
     {
       "buff_id": "buff_pharm_hallucinogen_inject_pure",
       "name": "致幻·注射·纯品",
-      "desc": "感知扭曲，潜能与实战经验涨得更快，也更容易做错事（注射起效 0 tick，持续 10 tick，峰值 1.9）",
+      "desc": "感知扭曲，潜能与实战经验涨得更快，也更容易做错事（注射起效 0 tick，持续 180 tick，峰值 1.9）",
       "onsetTicks": 0,
-      "durationTicks": 10,
+      "durationTicks": 180,
       "maxStacks": 1,
       "stacksAddOnApply": 1,
       "priority": 80,
@@ -7409,7 +7399,8 @@
       "pharmacy_route": "inject",
       "pharmacy_potency": "pure",
       "pharmacy_scope": "systemic",
-      "pharmacy_peak": 1.9
+      "pharmacy_peak": 1.9,
+      "pharmacy_survival_budget_quantized": true
     },
     {
       "buff_id": "buff_pharm_sedative_drink_pure",
@@ -7496,9 +7487,9 @@
     {
       "buff_id": "buff_pharm_sedative_inject_pure",
       "name": "镇静·注射·纯品",
-      "desc": "心情放松，胃口跟着回来（注射起效 0 tick，持续 10 tick，峰值 1.9）",
+      "desc": "心情放松，胃口跟着回来（注射起效 0 tick，持续 40 tick，峰值 1.9）",
       "onsetTicks": 0,
-      "durationTicks": 10,
+      "durationTicks": 40,
       "maxStacks": 1,
       "stacksAddOnApply": 1,
       "priority": 80,
@@ -7520,8 +7511,8 @@
         {
           "type": "survival_delta",
           "params": {
-            "mood": 2.85,
-            "nutrition": 0.76
+            "mood": 0.7125,
+            "nutrition": 0.19
           }
         }
       ],
@@ -7532,14 +7523,15 @@
       "pharmacy_route": "inject",
       "pharmacy_potency": "pure",
       "pharmacy_scope": "systemic",
-      "pharmacy_peak": 1.9
+      "pharmacy_peak": 1.9,
+      "pharmacy_survival_budget_quantized": true
     },
     {
       "buff_id": "buff_pharm_analgesic_drink_pure",
       "name": "镇痛·口服·纯品",
-      "desc": "疼痛被盖住，痛感暂时不生效（药效过后照旧）（口服起效 5 tick，持续 60 tick，峰值 1.52）",
+      "desc": "药效期间按比例忽略疼痛，按剩余疼痛判定惩罚；不减少真实疼痛或损毁，同类取最高值；忽略疼痛 76%（口服起效 5 tick，持续 180 tick，峰值 1.52）",
       "onsetTicks": 5,
-      "durationTicks": 60,
+      "durationTicks": 180,
       "maxStacks": 1,
       "stacksAddOnApply": 1,
       "priority": 80,
@@ -7559,8 +7551,10 @@
       ],
       "effects": [
         {
-          "type": "pain_suppression",
-          "params": {}
+          "type": "pain_ignore_ratio",
+          "params": {
+            "ratio": 0.76
+          }
         }
       ],
       "expire_effects": [],
@@ -7575,9 +7569,9 @@
     {
       "buff_id": "buff_pharm_analgesic_inhale_pure",
       "name": "镇痛·吸入·纯品",
-      "desc": "疼痛被盖住，痛感暂时不生效（药效过后照旧）（吸入起效 2 tick，持续 18 tick，峰值 1.71）",
+      "desc": "药效期间按比例忽略疼痛，按剩余疼痛判定惩罚；不减少真实疼痛或损毁，同类取最高值；忽略疼痛 86%（吸入起效 2 tick，持续 35 tick，峰值 1.71）",
       "onsetTicks": 2,
-      "durationTicks": 18,
+      "durationTicks": 35,
       "maxStacks": 1,
       "stacksAddOnApply": 1,
       "priority": 80,
@@ -7597,8 +7591,10 @@
       ],
       "effects": [
         {
-          "type": "pain_suppression",
-          "params": {}
+          "type": "pain_ignore_ratio",
+          "params": {
+            "ratio": 0.86
+          }
         }
       ],
       "expire_effects": [],
@@ -7613,9 +7609,9 @@
     {
       "buff_id": "buff_pharm_analgesic_inject_pure",
       "name": "镇痛·注射·纯品",
-      "desc": "疼痛被盖住，痛感暂时不生效（药效过后照旧）（注射起效 0 tick，持续 10 tick，峰值 1.9）",
+      "desc": "药效期间按比例忽略疼痛，按剩余疼痛判定惩罚；不减少真实疼痛或损毁，同类取最高值；忽略疼痛 95%（注射起效 0 tick，持续 90 tick，峰值 1.9）",
       "onsetTicks": 0,
-      "durationTicks": 10,
+      "durationTicks": 90,
       "maxStacks": 1,
       "stacksAddOnApply": 1,
       "priority": 80,
@@ -7635,8 +7631,10 @@
       ],
       "effects": [
         {
-          "type": "pain_suppression",
-          "params": {}
+          "type": "pain_ignore_ratio",
+          "params": {
+            "ratio": 0.95
+          }
         }
       ],
       "expire_effects": [],
@@ -7646,7 +7644,8 @@
       "pharmacy_route": "inject",
       "pharmacy_potency": "pure",
       "pharmacy_scope": "systemic",
-      "pharmacy_peak": 1.9
+      "pharmacy_peak": 1.9,
+      "pharmacy_survival_budget_quantized": true
     },
     {
       "buff_id": "buff_pharm_synergist_drink_pure",
@@ -7812,9 +7811,9 @@
     {
       "buff_id": "buff_pharm_rehydrate_inject_pure",
       "name": "补液·注射·纯品",
-      "desc": "把水与体力补回来，脱水时最值钱（注射起效 0 tick，持续 10 tick，峰值 1.9）",
+      "desc": "把水与体力补回来，脱水时最值钱（注射起效 0 tick，持续 30 tick，峰值 1.9）",
       "onsetTicks": 0,
-      "durationTicks": 10,
+      "durationTicks": 30,
       "maxStacks": 1,
       "stacksAddOnApply": 1,
       "priority": 80,
@@ -7836,8 +7835,8 @@
         {
           "type": "survival_delta",
           "params": {
-            "thirst": 4.75,
-            "stamina": 0.95
+            "thirst": 1.5833333333333333,
+            "stamina": 0.31666666666666665
           }
         }
       ],
@@ -7848,7 +7847,8 @@
       "pharmacy_route": "inject",
       "pharmacy_potency": "pure",
       "pharmacy_scope": "systemic",
-      "pharmacy_peak": 1.9
+      "pharmacy_peak": 1.9,
+      "pharmacy_survival_budget_quantized": true
     },
     {
       "buff_id": "buff_pharm_energy_drink_pure",
@@ -7935,9 +7935,9 @@
     {
       "buff_id": "buff_pharm_energy_inject_pure",
       "name": "续航·注射·纯品",
-      "desc": "血糖与精力一起抬起来，饿得慢一点（注射起效 0 tick，持续 10 tick，峰值 1.9）",
+      "desc": "血糖与精力一起抬起来，饿得慢一点（注射起效 0 tick，持续 30 tick，峰值 1.9）",
       "onsetTicks": 0,
-      "durationTicks": 10,
+      "durationTicks": 30,
       "maxStacks": 1,
       "stacksAddOnApply": 1,
       "priority": 80,
@@ -7959,8 +7959,8 @@
         {
           "type": "survival_delta",
           "params": {
-            "energy": 2.85,
-            "nutrition": 1.14
+            "energy": 0.9500000000000001,
+            "nutrition": 0.37999999999999995
           }
         }
       ],
@@ -7971,7 +7971,8 @@
       "pharmacy_route": "inject",
       "pharmacy_potency": "pure",
       "pharmacy_scope": "systemic",
-      "pharmacy_peak": 1.9
+      "pharmacy_peak": 1.9,
+      "pharmacy_survival_budget_quantized": true
     },
     {
       "buff_id": "buff_pharm_revive_inject_pure",
@@ -8143,9 +8144,9 @@
     {
       "buff_id": "buff_pharm_antistun_inject_pure",
       "name": "醒神·注射·纯品",
-      "desc": "战前打一针，眩晕抗性窗口打开（注射起效 0 tick，持续 10 tick，峰值 1.9）",
+      "desc": "战前打一针，眩晕抗性窗口打开（注射起效 0 tick，持续 40 tick，峰值 1.9）",
       "onsetTicks": 0,
-      "durationTicks": 10,
+      "durationTicks": 40,
       "maxStacks": 1,
       "stacksAddOnApply": 1,
       "priority": 80,
@@ -8178,14 +8179,15 @@
       "pharmacy_route": "inject",
       "pharmacy_potency": "pure",
       "pharmacy_scope": "systemic",
-      "pharmacy_peak": 1.9
+      "pharmacy_peak": 1.9,
+      "pharmacy_survival_budget_quantized": true
     },
     {
       "buff_id": "buff_pharm_strength_drink_pure",
       "name": "续力·口服·纯品",
-      "desc": "筋骨一紧，负重与发力都往上抬（口服起效 5 tick，持续 60 tick，峰值 1.52）",
+      "desc": "提高负重上限，适合携行与搬运；同类药效取最高值；负重上限 +7.6 kg（口服起效 5 tick，持续 180 tick，峰值 1.52）",
       "onsetTicks": 5,
-      "durationTicks": 60,
+      "durationTicks": 180,
       "maxStacks": 1,
       "stacksAddOnApply": 1,
       "priority": 80,
@@ -8205,9 +8207,9 @@
       ],
       "effects": [
         {
-          "type": "add_stat_delta",
+          "type": "pharmacy_carry_capacity",
           "params": {
-            "jingu": 4.56
+            "kilograms": 7.6
           }
         }
       ],
@@ -8223,9 +8225,9 @@
     {
       "buff_id": "buff_pharm_strength_inject_pure",
       "name": "续力·注射·纯品",
-      "desc": "筋骨一紧，负重与发力都往上抬（注射起效 0 tick，持续 10 tick，峰值 1.9）",
+      "desc": "提高负重上限，适合携行与搬运；同类药效取最高值；负重上限 +9.5 kg（注射起效 0 tick，持续 120 tick，峰值 1.9）",
       "onsetTicks": 0,
-      "durationTicks": 10,
+      "durationTicks": 120,
       "maxStacks": 1,
       "stacksAddOnApply": 1,
       "priority": 80,
@@ -8245,9 +8247,9 @@
       ],
       "effects": [
         {
-          "type": "add_stat_delta",
+          "type": "pharmacy_carry_capacity",
           "params": {
-            "jingu": 5.7
+            "kilograms": 9.5
           }
         }
       ],
@@ -8258,7 +8260,8 @@
       "pharmacy_route": "inject",
       "pharmacy_potency": "pure",
       "pharmacy_scope": "systemic",
-      "pharmacy_peak": 1.9
+      "pharmacy_peak": 1.9,
+      "pharmacy_survival_budget_quantized": true
     },
     {
       "buff_id": "buff_pharm_mobility_topical_pure",
@@ -8299,6 +8302,254 @@
       "pharmacy_potency": "pure",
       "pharmacy_scope": "part",
       "pharmacy_peak": 1.33
+    },
+    {
+      "buff_id": "buff_pharm_strength_pill",
+      "name": "续力丸",
+      "desc": "负重上限 +4.5 kg（10 tick起效，总窗口240 tick）",
+      "onsetTicks": 10,
+      "durationTicks": 240,
+      "pharmacy_family": "strength",
+      "pharmacy_potency": "weak",
+      "effects": [
+        {
+          "type": "pharmacy_carry_capacity",
+          "params": {
+            "kilograms": 4.5
+          }
+        }
+      ],
+      "maxStacks": 1,
+      "stacksAddOnApply": 1,
+      "priority": 80,
+      "listenerSide": "self",
+      "consumeMode": "always",
+      "consumeLayersFixed": 0,
+      "applyMode": "always_apply",
+      "triggerEventKind": [
+        "world"
+      ],
+      "triggerEventName": [
+        "tick_advanced"
+      ],
+      "triggerTags": [
+        "time",
+        "tick"
+      ],
+      "expire_effects": [],
+      "dispel_pool": "beneficial",
+      "pharmacy_generated": true,
+      "pharmacy_finished_product": true,
+      "pharmacy_route": "drink",
+      "pharmacy_scope": "systemic"
+    },
+    {
+      "buff_id": "buff_pharm_antistun_pill",
+      "name": "醒神丸",
+      "desc": "眩晕抗性 +20%（10 tick起效，总窗口120 tick）",
+      "onsetTicks": 10,
+      "durationTicks": 120,
+      "pharmacy_family": "antistun",
+      "pharmacy_potency": "regular",
+      "effects": [
+        {
+          "type": "pharmacy_anti_stun",
+          "params": {
+            "anti_stun_pct": 0.2
+          }
+        }
+      ],
+      "maxStacks": 1,
+      "stacksAddOnApply": 1,
+      "priority": 80,
+      "listenerSide": "self",
+      "consumeMode": "always",
+      "consumeLayersFixed": 0,
+      "applyMode": "always_apply",
+      "triggerEventKind": [
+        "world"
+      ],
+      "triggerEventName": [
+        "tick_advanced"
+      ],
+      "triggerTags": [
+        "time",
+        "tick"
+      ],
+      "expire_effects": [],
+      "dispel_pool": "beneficial",
+      "pharmacy_generated": true,
+      "pharmacy_finished_product": true,
+      "pharmacy_route": "drink",
+      "pharmacy_scope": "systemic"
+    },
+    {
+      "buff_id": "buff_pharm_energy_pill",
+      "name": "续航丸",
+      "desc": "以长窗口缓慢恢复精力（10 tick起效，总窗口120 tick）",
+      "onsetTicks": 10,
+      "durationTicks": 120,
+      "pharmacy_family": "energy",
+      "pharmacy_potency": "weak",
+      "effects": [
+        {
+          "type": "survival_delta",
+          "params": {
+            "energy": 0.6,
+            "nutrition": 0.24
+          }
+        }
+      ],
+      "maxStacks": 1,
+      "stacksAddOnApply": 1,
+      "priority": 80,
+      "listenerSide": "self",
+      "consumeMode": "always",
+      "consumeLayersFixed": 0,
+      "applyMode": "always_apply",
+      "triggerEventKind": [
+        "world"
+      ],
+      "triggerEventName": [
+        "tick_advanced"
+      ],
+      "triggerTags": [
+        "time",
+        "tick"
+      ],
+      "expire_effects": [],
+      "dispel_pool": "beneficial",
+      "pharmacy_generated": true,
+      "pharmacy_finished_product": true,
+      "pharmacy_route": "drink",
+      "pharmacy_scope": "systemic"
+    },
+    {
+      "buff_id": "buff_pharm_sedative_pill",
+      "name": "安神丸",
+      "desc": "以长窗口缓慢恢复心情（10 tick起效，总窗口120 tick）",
+      "onsetTicks": 10,
+      "durationTicks": 120,
+      "pharmacy_family": "sedative",
+      "pharmacy_potency": "weak",
+      "effects": [
+        {
+          "type": "survival_delta",
+          "params": {
+            "mood": 0.6,
+            "nutrition": 0.16
+          }
+        }
+      ],
+      "maxStacks": 1,
+      "stacksAddOnApply": 1,
+      "priority": 80,
+      "listenerSide": "self",
+      "consumeMode": "always",
+      "consumeLayersFixed": 0,
+      "applyMode": "always_apply",
+      "triggerEventKind": [
+        "world"
+      ],
+      "triggerEventName": [
+        "tick_advanced"
+      ],
+      "triggerTags": [
+        "time",
+        "tick"
+      ],
+      "expire_effects": [],
+      "dispel_pool": "beneficial",
+      "pharmacy_generated": true,
+      "pharmacy_finished_product": true,
+      "pharmacy_route": "drink",
+      "pharmacy_scope": "systemic"
+    },
+    {
+      "buff_id": "buff_pharm_hallucinogen_pill",
+      "name": "幻梦丸",
+      "desc": "潜能与实战经验收益 ×1.10（10 tick起效，总窗口300 tick）",
+      "onsetTicks": 10,
+      "durationTicks": 300,
+      "pharmacy_family": "hallucinogen",
+      "pharmacy_potency": "weak",
+      "effects": [
+        {
+          "type": "battle_potential_gain_multiplier",
+          "params": {
+            "multiplier": 1.1
+          }
+        },
+        {
+          "type": "battle_combat_experience_gain_multiplier",
+          "params": {
+            "multiplier": 1.1
+          }
+        }
+      ],
+      "maxStacks": 1,
+      "stacksAddOnApply": 1,
+      "priority": 80,
+      "listenerSide": "self",
+      "consumeMode": "always",
+      "consumeLayersFixed": 0,
+      "applyMode": "always_apply",
+      "triggerEventKind": [
+        "world"
+      ],
+      "triggerEventName": [
+        "tick_advanced"
+      ],
+      "triggerTags": [
+        "time",
+        "tick"
+      ],
+      "expire_effects": [],
+      "dispel_pool": "beneficial",
+      "pharmacy_generated": true,
+      "pharmacy_finished_product": true,
+      "pharmacy_route": "drink",
+      "pharmacy_scope": "systemic"
+    },
+    {
+      "buff_id": "buff_pharm_detox_pill",
+      "name": "清毒丸",
+      "desc": "额外代谢体内毒性 0.75/tick（3 tick起效，总窗口40 tick）",
+      "onsetTicks": 3,
+      "durationTicks": 40,
+      "pharmacy_family": "detox",
+      "pharmacy_potency": "regular",
+      "effects": [
+        {
+          "type": "pharmacy_toxicity_decay_bonus",
+          "params": {
+            "per_tick": 0.75
+          }
+        }
+      ],
+      "maxStacks": 1,
+      "stacksAddOnApply": 1,
+      "priority": 80,
+      "listenerSide": "self",
+      "consumeMode": "always",
+      "consumeLayersFixed": 0,
+      "applyMode": "always_apply",
+      "triggerEventKind": [
+        "world"
+      ],
+      "triggerEventName": [
+        "tick_advanced"
+      ],
+      "triggerTags": [
+        "time",
+        "tick"
+      ],
+      "expire_effects": [],
+      "dispel_pool": "beneficial",
+      "pharmacy_generated": true,
+      "pharmacy_finished_product": true,
+      "pharmacy_route": "drink",
+      "pharmacy_scope": "systemic"
     }
   ]
 }

@@ -1,0 +1,11 @@
+{
+  "purpose": "Presentation-only source rectangles. Never use as skeletal measurements.",
+  "pages": {
+    "L15.png": {
+      "sourceWidth": 1536,
+      "sourceHeight": 1024,
+      "columns": [[7,477],[485,800],[809,1168],[1177,1529]],
+      "rows": [[5,489],[497,1017]]
+    }
+  }
+}

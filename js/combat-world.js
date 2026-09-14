@@ -64,12 +64,14 @@
             subhit_index: 0,
             is_last_subhit: true,
             rawDamage: isFinite(re.rawDamage) ? re.rawDamage : 0,
+            typedDamage: re.typedDamage,
+            moveTemplate: re.moveTemplate,
             forceZeroDamageByResourceInsufficient: false,
             simultaneousDryRun: !!simDry,
             attacker: {
                 kind: 'enemy',
                 enemyId: eid,
-                postEffectIds: [],
+                postEffectIds: global.CombatEnemies && global.CombatEnemies.getById ? (global.CombatEnemies.getById(eid) || {}).counter_post_effect_ids || [] : [],
                 facingDir: facing,
                 pos: { x: opts.ex, y: opts.ey }
             },
@@ -145,10 +147,16 @@
                 for (var rm = 0; rm < deadIdx.length; rm++) {
                     var ri = deadIdx[rm];
                     var recGone = mapK.enemies[ri] || {};
+                    if (window.CombatEngagement && typeof window.CombatEngagement.disengageEnemy === 'function') {
+                        window.CombatEngagement.disengageEnemy({ mapId: mapK.map_id, index: ri, enemyId: recGone.enemy_id, record: recGone, reason: 'enemy_killed' });
+                    }
                     if (window.SceneCtx && typeof window.SceneCtx.pushDirtyCell === 'function') {
                         window.SceneCtx.pushDirtyCell(recGone.x, recGone.y);
                     }
                     mapK.enemies.splice(ri, 1);
+                    if (window.CombatEnemies && typeof window.CombatEnemies.removeEnemyAiStateAt === 'function') {
+                        window.CombatEnemies.removeEnemyAiStateAt(mapK.map_id, ri);
+                    }
                 }
             }
             settleEnemyBatteryDrops(kills, mapK, deadPos);
@@ -264,7 +272,13 @@
         var st = (E && typeof E.getState === 'function') ? E.getState() : null;
         if (!st) return;
         var map = (E && typeof E.getMap === 'function') ? E.getMap() : null;
-        if (!map || !Array.isArray(map.enemies) || !map.enemies.length) return;
+        if (!map || !Array.isArray(map.enemies)) return;
+        if (!map.enemies.length) {
+            if (window.CombatEngagement && typeof window.CombatEngagement.syncFromAi === 'function') {
+                window.CombatEngagement.syncFromAi(map, function () { return false; }, { reason: 'no_enemies' });
+            }
+            return;
+        }
         var occ = {};
         var i, n;
         for (i = 0; i < map.enemies.length; i++) {
@@ -300,6 +314,11 @@
         } catch (eAi) {
             return;
         }
+        if (window.CombatEngagement && typeof window.CombatEngagement.syncFromAi === 'function') {
+            window.CombatEngagement.syncFromAi(map, function (index) {
+                return window.CombatEnemies.isEnemyAggro && window.CombatEnemies.isEnemyAggro(map.map_id, index);
+            }, { reason: 'ai_aggro_changed' });
+        }
         var m, mv, rec, atk;
         for (m = 0; m < plan.moves.length; m++) {
             mv = plan.moves[m];
@@ -331,9 +350,14 @@
         if (!CMR || typeof CMR.resolveEnemyVsPlayerAttack !== 'function' || !CP || typeof CP.runPipeline !== 'function') return;
         var stP = (E && typeof E.getState === 'function') ? E.getState() : null;
         if (!stP) return;
+        var enemyIndex = findEnemyInstanceIndex(enemyId, ex, ey);
+        var mapP = (E && typeof E.getMap === 'function') ? E.getMap() : null;
+        if (window.CombatEngagement && typeof window.CombatEngagement.engageEnemy === 'function') {
+            window.CombatEngagement.engageEnemy({ mapId: stP.mapId, index: enemyIndex, enemyId: enemyId, record: mapP && mapP.enemies ? mapP.enemies[enemyIndex] : null, reason: 'enemy_attack' });
+        }
         // 敌人眩晕（k13，37 §9.2）：眩晕中本 tick 无法行动 → 跳过本击
         if (window.CombatEnemies && typeof window.CombatEnemies.isEnemyStunned === 'function'
-            && window.CombatEnemies.isEnemyStunned(stP.mapId, findEnemyInstanceIndex(enemyId, ex, ey))) return;
+            && window.CombatEnemies.isEnemyStunned(stP.mapId, enemyIndex)) return;
         var tpl = window.CombatEnemies && window.CombatEnemies.getById ? window.CombatEnemies.getById(enemyId) : null;
         var atkSpeed = tpl && tpl.speed != null ? Number(tpl.speed) : 10;
         if (!isFinite(atkSpeed) || atkSpeed < 1) atkSpeed = 10;
@@ -345,7 +369,7 @@
             enemyId: enemyId,
             attackerSpeed: atkSpeed,
             enemyMapId: stP.mapId != null ? stP.mapId : null,
-            enemyIndex: findEnemyInstanceIndex(enemyId, ex, ey)
+            enemyIndex: enemyIndex
         });
         var atkCtx = buildEnemyCounterAtkCtx(rE, false, {
             enemyId: enemyId,
@@ -374,7 +398,91 @@
         if (cur > 0) IE2.setPlayerStunValue(cur - 1);
     }
 
+    var displacementQueue = [];
+    var displacementSequence = 0;
+    function queueDisplacement(ctx, effect) {
+        var map = E && E.getMap(), state = E && E.getState();
+        if (!map || !state || ctx.blockTargetEffects || !ctx.hitRollSuccess || ctx.parrySucceeded) return;
+        var d = ctx.defender || {}, a = ctx.attacker || {};
+        var target = d.kind === 'enemy' ? (map.enemies || [])[d.index] : 'player';
+        if (!target) return;
+        var tpl = a.kind === 'enemy' && global.CombatEnemies ? global.CombatEnemies.getById(a.enemyId) : null;
+        var ca = global.CharacterAttributes;
+        var strength = a.kind === 'player' && ca && ca.getEffectiveAttr ? ca.getEffectiveAttr('jingu') : tpl && tpl.jingu;
+        var speed = a.kind === 'player' && ca && ca.getCombatSpeed ? ca.getCombatSpeed() : tpl && tpl.speed;
+        displacementQueue.push({ map: map, mapId: state.mapId, target: target, ctx: ctx,
+            cells: Math.max(0, Math.floor(Number(effect.cells) || 0)),
+            multiplier: Math.max(1, Number(effect.wall_slam_final_damage_multiplier) || 1),
+            strength: strength, speed: speed, actorPos: Object.assign({}, a.pos),
+            eventId: String(ctx.eventIdSuffix || ctx.moveId || '') + '_' + (++displacementSequence) });
+    }
+    function flushDisplacements() {
+        var pending = displacementQueue;
+        displacementQueue = [];
+        var map = E && E.getMap(), state = E && E.getState();
+        if (!map || !state) return;
+        var groups = new Map();
+        pending.forEach(function (q) {
+            if (q.map !== map || q.mapId !== state.mapId || !q.cells) return;
+            var list = groups.get(q.target) || [];
+            list.push(q); groups.set(q.target, list);
+        });
+        groups.forEach(function (list, target) {
+            if (target === 'player' && global.Survival && global.Survival.getState && global.Survival.getState().isDead) return;
+            var index = target === 'player' ? -1 : (map.enemies || []).indexOf(target);
+            if (target !== 'player' && (index < 0 || (global.CombatEnemies.isEnemyDead && global.CombatEnemies.isEnemyDead(state.mapId, index)))) return;
+            var maxCells = Math.max.apply(null, list.map(function (q) { return q.cells; }));
+            list = list.filter(function (q) { return q.cells === maxCells; });
+            var complete = list.every(function (q) { return q.strength != null && q.speed != null; });
+            if (!complete && list.length > 1 && global.console) global.console.warn('[combat displacement] missing actor strength/speed; event order fallback');
+            list.sort(function (a, b) {
+                return (complete && (b.strength - a.strength || a.speed - b.speed)) || (a.eventId < b.eventId ? -1 : a.eventId > b.eventId ? 1 : 0);
+            });
+            var q = list[0], current = target === 'player' ? E.getState() : target;
+            var x = current.x, y = current.y, ox = x, oy = y;
+            var dx = x - q.actorPos.x, dy = y - q.actorPos.y;
+            if (!isFinite(dx) || !isFinite(dy) || (!dx && !dy)) return;
+            var dirs = [];
+            for (var vx = -1; vx <= 1; vx++) for (var vy = -1; vy <= 1; vy++) {
+                if (vx || vy) dirs.push({ x: vx, y: vy, dot: (vx * dx + vy * dy) / Math.sqrt(vx * vx + vy * vy) });
+            }
+            dirs.sort(function (a, b) { return b.dot - a.dot; });
+            var moved = 0;
+            for (; moved < q.cells; moved++) {
+                var next = dirs.filter(function (dir) {
+                    var nx = x + dir.x, ny = y + dir.y;
+                    if (!E.isWalkable(nx, ny)) return false;
+                    if ((map.enemies || []).some(function (e) { return e !== target && e.x === nx && e.y === ny; })) return false;
+                    var ps = E.getState();
+                    if (target !== 'player' && ps.x === nx && ps.y === ny) return false;
+                    return !(E.getNpcAt && E.getNpcAt(nx, ny));
+                })[0];
+                if (!next) break;
+                x += next.x; y += next.y;
+            }
+            if (target === 'player') { if (moved) E.setState(state.mapId, x, y); }
+            else { target.x = x; target.y = y; }
+            if (global.SceneCtx && global.SceneCtx.pushDirtyCell) {
+                global.SceneCtx.pushDirtyCell(ox, oy); global.SceneCtx.pushDirtyCell(x, y);
+            }
+            if (moved < q.cells) {
+                var damage = Math.floor(q.ctx.finalDamage * (q.multiplier - 1));
+                if (damage > 0) {
+                    if (target === 'player' && global.CharacterAttributes) global.CharacterAttributes.applyCombatDestroy(q.ctx.hitPart, damage);
+                    else global.CombatEnemies.onEnemyDamageResolved(Object.assign({}, q.ctx, {
+                        collisionDamage: true, finalDamage: damage,
+                        defender: Object.assign({}, q.ctx.defender, { index: index })
+                    }));
+                }
+                q.ctx.collisionDamageApplied = damage;
+            }
+        });
+        settleEnemyKills();
+    }
+
     global.CombatWorld = {
+        queueDisplacement: queueDisplacement,
+        flushDisplacements: flushDisplacements,
         setUiDeps: setUiDeps,
         markCounterAttackFlag: markCounterAttackFlag,
         buildEnemyCounterAtkCtx: buildEnemyCounterAtkCtx,

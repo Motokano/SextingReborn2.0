@@ -1,0 +1,19 @@
+{
+  "maxPerkAndCollectorCoverage": 0.5580357142857142,
+  "assumptions": "Successful cooking, all required salt/herbs/tools/fuel/water supplied. Food expenditure excludes physical work. Curing uses all 26 chops + 35 ground-meat items from a healthy 120 kg pig.",
+  "dailyBaseSatiety": 144,
+  "twoEggDishes": 40,
+  "halfYogurt": 10,
+  "baselineCoverage": 0.3472222222222222,
+  "yearPigCuredPortions": 113,
+  "curedMassKg": 39.55,
+  "curedSatiety": 7910,
+  "baseFoodDays": 54.93055555555556,
+  "shelfDays": 90,
+  "crafts": 61,
+  "craftTicks": 244,
+  "fuel": 915,
+  "water": 2440,
+  "stamina": 244,
+  "eachHerbAndSaltItems": 61
+}

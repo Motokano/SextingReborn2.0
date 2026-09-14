@@ -12,7 +12,7 @@ const ROOT = path.resolve(__dirname, '..');
 const SHOP_JSON = path.join(ROOT, 'data', 'agriculture-seed-shop.json');
 const CROP_JSON = path.join(ROOT, 'data', 'agriculture-crop-defs.json');
 const SOILS_JSON = path.join(ROOT, 'data', 'agriculture-soils.json');
-const OUT = path.join(ROOT, 'agriculture-design-full.html');
+const OUT = path.join(ROOT, 'reference', 'agriculture-design-full.html');
 
 const shop = JSON.parse(fs.readFileSync(SHOP_JSON, 'utf8'));
 const cropsDoc = JSON.parse(fs.readFileSync(CROP_JSON, 'utf8'));
@@ -513,7 +513,7 @@ ${Object.entries(structReq)
 
     <section id="growth">
       <h2>11. 生长、成熟与产量</h2>
-      <h3>11.1 可收获硬门槛</h3>
+      <h3>11.1 可收获硬门槛</h3><p>作物 v2：需求以每刻实际吸收量设计，再乘周期。三档起缺肥不能结实；四、五档部分作物还要求微量下限；配置的肥料与微量上限同样影响收成。完整区间见<a href="agriculture-crop-design-overview.html">新版作物表</a>，实验对照见<a href="../docs/reference/agriculture-balance-results.md">模拟报告</a>。</p>
       <ul class="compact">
         <li>生长 tick 用尽后结算：累计水分须在 <code>[minWater, maxWater]</code> 内，否则枯/淹无收。</li>
         <li><code>trace_sensitivity=severe</code> 且微量 ≥ <code>trace_fail_harvest_at</code> → 绝收。</li>
@@ -524,7 +524,7 @@ ${Object.entries(structReq)
         <thead><tr><th>维度</th><th>2 分</th><th>1 分</th><th>0 / 绝收</th></tr></thead>
         <tbody>
           <tr><td>水分</td><td>[perfectMin, perfectMax]</td><td>可收获但未进窗</td><td>枯/淹（不进评分）</td></tr>
-          <tr><td>微量</td><td>配置窗或排斥 ≤ safe</td><td>可收获未进窗</td><td>排斥超 safe</td></tr>
+          <tr><td>微量</td><td>配置窗或排斥 ≤ safe</td><td>非零投入、可收获未进窗；零投入0分</td><td>排斥超 safe</td></tr>
           <tr><td>施肥</td><td>配置窗</td><td>可收获未进窗</td><td>未配维不参与</td></tr>
           <tr><td>土壤</td><td colspan="3">偏好 +1 / 不适 −1 / 其余 0</td></tr>
           <tr><td>轮作</td><td colspan="3">换 group 或豆科后非豆科 +1；连作 0（黑土融合等另规）</td></tr>

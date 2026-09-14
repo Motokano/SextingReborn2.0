@@ -1,0 +1,346 @@
+{
+  "status": "design draft; not a runtime renderer",
+  "partOrder": [
+    "head",
+    "chest",
+    "abdomen",
+    "lhand",
+    "rhand",
+    "lfoot",
+    "rfoot"
+  ],
+  "limbBitOrder": [
+    "lhand",
+    "rhand",
+    "lfoot",
+    "rfoot"
+  ],
+  "sideConvention": "character anatomical left/right; frontal viewer left is character right",
+  "mapping": [
+    {
+      "limbMask": 0,
+      "missing": [],
+      "visible": [
+        "lhand",
+        "rhand",
+        "lfoot",
+        "rfoot"
+      ],
+      "pose": "P0",
+      "mirrorPoseGeometry": false,
+      "supportParts": [
+        "lfoot",
+        "rfoot"
+      ],
+      "freeHands": [
+        "lhand",
+        "rhand"
+      ]
+    },
+    {
+      "limbMask": 1,
+      "missing": [
+        "lhand"
+      ],
+      "visible": [
+        "rhand",
+        "lfoot",
+        "rfoot"
+      ],
+      "pose": "P0",
+      "mirrorPoseGeometry": false,
+      "supportParts": [
+        "lfoot",
+        "rfoot"
+      ],
+      "freeHands": [
+        "rhand"
+      ]
+    },
+    {
+      "limbMask": 2,
+      "missing": [
+        "rhand"
+      ],
+      "visible": [
+        "lhand",
+        "lfoot",
+        "rfoot"
+      ],
+      "pose": "P0",
+      "mirrorPoseGeometry": false,
+      "supportParts": [
+        "lfoot",
+        "rfoot"
+      ],
+      "freeHands": [
+        "lhand"
+      ]
+    },
+    {
+      "limbMask": 3,
+      "missing": [
+        "lhand",
+        "rhand"
+      ],
+      "visible": [
+        "lfoot",
+        "rfoot"
+      ],
+      "pose": "P0",
+      "mirrorPoseGeometry": false,
+      "supportParts": [
+        "lfoot",
+        "rfoot"
+      ],
+      "freeHands": []
+    },
+    {
+      "limbMask": 4,
+      "missing": [
+        "lfoot"
+      ],
+      "visible": [
+        "lhand",
+        "rhand",
+        "rfoot"
+      ],
+      "pose": "P1",
+      "mirrorPoseGeometry": false,
+      "supportParts": [
+        "rfoot",
+        "rhand"
+      ],
+      "freeHands": [
+        "lhand"
+      ]
+    },
+    {
+      "limbMask": 5,
+      "missing": [
+        "lhand",
+        "lfoot"
+      ],
+      "visible": [
+        "rhand",
+        "rfoot"
+      ],
+      "pose": "M1",
+      "mirrorPoseGeometry": false,
+      "supportParts": [
+        "abdomen",
+        "rhand",
+        "rfoot"
+      ],
+      "freeHands": []
+    },
+    {
+      "limbMask": 6,
+      "missing": [
+        "rhand",
+        "lfoot"
+      ],
+      "visible": [
+        "lhand",
+        "rfoot"
+      ],
+      "pose": "M3",
+      "mirrorPoseGeometry": false,
+      "supportParts": [
+        "abdomen",
+        "lhand",
+        "rfoot"
+      ],
+      "freeHands": []
+    },
+    {
+      "limbMask": 7,
+      "missing": [
+        "lhand",
+        "rhand",
+        "lfoot"
+      ],
+      "visible": [
+        "rfoot"
+      ],
+      "pose": "P2",
+      "mirrorPoseGeometry": false,
+      "supportParts": [
+        "abdomen",
+        "rfoot"
+      ],
+      "freeHands": []
+    },
+    {
+      "limbMask": 8,
+      "missing": [
+        "rfoot"
+      ],
+      "visible": [
+        "lhand",
+        "rhand",
+        "lfoot"
+      ],
+      "pose": "P1",
+      "mirrorPoseGeometry": true,
+      "supportParts": [
+        "lfoot",
+        "lhand"
+      ],
+      "freeHands": [
+        "rhand"
+      ]
+    },
+    {
+      "limbMask": 9,
+      "missing": [
+        "lhand",
+        "rfoot"
+      ],
+      "visible": [
+        "rhand",
+        "lfoot"
+      ],
+      "pose": "M2",
+      "mirrorPoseGeometry": false,
+      "supportParts": [
+        "abdomen",
+        "rhand",
+        "lfoot"
+      ],
+      "freeHands": []
+    },
+    {
+      "limbMask": 10,
+      "missing": [
+        "rhand",
+        "rfoot"
+      ],
+      "visible": [
+        "lhand",
+        "lfoot"
+      ],
+      "pose": "M4",
+      "mirrorPoseGeometry": false,
+      "supportParts": [
+        "abdomen",
+        "lhand",
+        "lfoot"
+      ],
+      "freeHands": []
+    },
+    {
+      "limbMask": 11,
+      "missing": [
+        "lhand",
+        "rhand",
+        "rfoot"
+      ],
+      "visible": [
+        "lfoot"
+      ],
+      "pose": "P2",
+      "mirrorPoseGeometry": true,
+      "supportParts": [
+        "abdomen",
+        "lfoot"
+      ],
+      "freeHands": []
+    },
+    {
+      "limbMask": 12,
+      "missing": [
+        "lfoot",
+        "rfoot"
+      ],
+      "visible": [
+        "lhand",
+        "rhand"
+      ],
+      "pose": "P3",
+      "mirrorPoseGeometry": false,
+      "supportParts": [
+        "abdomen",
+        "lhand",
+        "rhand"
+      ],
+      "freeHands": []
+    },
+    {
+      "limbMask": 13,
+      "missing": [
+        "lhand",
+        "lfoot",
+        "rfoot"
+      ],
+      "visible": [
+        "rhand"
+      ],
+      "pose": "P4",
+      "mirrorPoseGeometry": false,
+      "supportParts": [
+        "abdomen",
+        "rhand"
+      ],
+      "freeHands": []
+    },
+    {
+      "limbMask": 14,
+      "missing": [
+        "rhand",
+        "lfoot",
+        "rfoot"
+      ],
+      "visible": [
+        "lhand"
+      ],
+      "pose": "P4",
+      "mirrorPoseGeometry": true,
+      "supportParts": [
+        "abdomen",
+        "lhand"
+      ],
+      "freeHands": []
+    },
+    {
+      "limbMask": 15,
+      "missing": [
+        "lhand",
+        "rhand",
+        "lfoot",
+        "rfoot"
+      ],
+      "visible": [],
+      "pose": "P5",
+      "mirrorPoseGeometry": false,
+      "supportParts": [
+        "chest",
+        "abdomen"
+      ],
+      "freeHands": []
+    }
+  ],
+  "torsoLayers": {
+    "head": "T1",
+    "chest": "T2",
+    "abdomen": "T3",
+    "allThree": "T4 only when both feet and sufficient free hands remain; otherwise local layers on the selected support pose"
+  },
+  "compositionOrder": [
+    "hide destroyed limbs",
+    "choose support pose",
+    "reserve support hands",
+    "apply head/chest/abdomen injury without hiding these parts",
+    "assign only free hands to optional guarding gesture; abdomen then chest",
+    "compose remaining modules and project their current silhouette"
+  ],
+  "validation": {
+    "combinationsChecked": 128,
+    "checks": [
+      "all 16 limb masks mapped",
+      "support never uses a hidden part",
+      "head/chest/abdomen never hidden"
+    ],
+    "limitation": "design-state checks only; does not verify rendered contact points or animation"
+  }
+}

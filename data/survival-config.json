@@ -1,4 +1,24 @@
 {
+  "food_model": {
+    "version": 1,
+    "base_expenditure": 1,
+    "stamina_expenditure": 0.2,
+    "satiety_cap": 150,
+    "storage_threshold": 100,
+    "storage_rate": 0.05,
+    "surplus_per_kg": 180,
+    "deficit_per_kg": 10,
+    "starvation_deficit_per_kg": 144,
+    "fat_release_threshold": 60,
+    "maintenance_bmi": 22,
+    "diet_memory_ticks": 450,
+    "balance_min_share": 0.15,
+    "balance_max_share": 0.65,
+    "nutrition_targets": { "single": 15, "mixed": 55, "balanced": 100 },
+    "nutrition_rise_per_tick": 0.03,
+    "nutrition_fall_per_tick": 0.008,
+    "nutrition_min_portions_per_tick": 0.018
+  },
   "satiety_max": 100.0,
   "satiety_overcap_max": 150.0,
   "satiety_tick_decay_interval": 2,
@@ -44,7 +64,7 @@
   "rest_action_auto_tick_seconds": 5,
   "stamina_zero_ticks_to_coma": 50,
 
-  "_resource_model_note": "资源模型重构（用户定，2025）：饱食/饮水无被动衰减（satiety_tick_decay_*/thirst_tick_decay_* 已停用，rest_action_extra_* 同样失效）；一切非战斗行动消耗体力（移动每格 move_stamina_base × 鞋moveCostMod × 超重）；站立基础代谢 stamina_passive_drain_per_tick（休息/调息豁免）；饱食/饮水只在「进食/调息恢复体力」时消耗（储备燃料）。",
+  "_resource_model_note": "2026-09 食物校准：food_model 为饱食/营养/体重结算真源，每份独立消化；基础消耗 + 实际体力行动消耗，调息不额外扣饱食/饮水。饮水仍每2tick衰减。旧 eat_*、rest_action_extra_* 与连续增减重阈值仅供兼容，不用于 food_model。",
   "eat_satiety_cost": 10,
   "eat_thirst_cost": 5,
   "eat_stamina_gain": 20,
@@ -55,7 +75,7 @@
   "move_stamina_overload_k": 20,
   "fatigue_min": 0.0,
   "fatigue_max": 100.0,
-  "fatigue_gain_per_stamina_spent": 0.5,
+  "fatigue_gain_per_stamina_spent": 0.1,
   "fatigue_tired_min": 50.0,
   "fatigue_tired_max_exclusive": 80.0,
   "fatigue_sleepy_min": 80.0,
@@ -137,20 +157,21 @@
   "nutrition_peak_diqi_cap_pct": 0.15,
 
   "nutrition_tier_exp_mult": {
-    "_comment": "k79：营养档位 → 属性经验倍率（进食经验结算时快照当前档位；24 §24.5a D 对齐：充沛×1.5、极境×2，营养不良×0.5）",
+    "_comment": "每次消化入池时读取长期营养倍率；不在进食时发放整份经验。",
     "malnutrition": 0.5,
     "normal": 1.0,
     "abundant": 1.5,
     "peak": 2.0
   },
   "meal_exp_by_tier": {
-    "_comment": "k79：餐位档 → 每维每餐属性经验（24 §24.5a A 表对齐；苦力菜 workhorse≈0 不在此表，由食用逻辑直接跳过）",
-    "snack": 2,
-    "home": 6,
-    "refined": 20,
-    "banquet": 65,
-    "feast": 250
+    "_comment": "2026-09-11 用户定：食物基础经验为旧表6倍；每份每维，随消化入池。构建 food-balance.json 读取本表；保底粗粮和失败物仍为0，盛宴仅预留。",
+    "snack": 12,
+    "home": 36,
+    "refined": 120,
+    "banquet": 390,
+    "feast": 1500
   },
+  "attribute_exp_parry_success": 1,
   "meal_exp_dims_by_tier": {
     "_comment": "k79：餐位档默认发放维度（T3+ 多维；单菜可用 items.json 的 attr_exp_grants 覆盖）",
     "snack": ["jingu"],
@@ -165,9 +186,9 @@
     "balanced": 3
   },
   "meal_balance_nutrition_per_tick": {
-    "_comment": "k79：均衡 buff 营养恢复（每 tick，消化期持续）；搭配 +1、均衡 +2",
-    "mixed": 1,
-    "balanced": 2
+    "_comment": "旧直接恢复已停用；均衡 buff 仅展示，营养按 food_model 长期饮食目标缓慢变化。",
+    "mixed": 0,
+    "balanced": 0
   },
 
   "dirtyness_min": 0,
@@ -294,5 +315,18 @@
     "distance_shade_power": 1.28
   },
 
+  "pain_max": 100,
+  "pain_threshold_mild": 25,
+  "pain_threshold_moderate": 50,
+  "pain_threshold_severe": 75,
+  "pain_threshold_agony": 90,
+  "pain_cap_base": 25,
+  "pain_cap_per_avg_destroy": 0.75,
+  "pain_rate_base": 0.1,
+  "pain_rate_span": 0.9,
+  "pain_decay_grace_ticks": 10,
+  "pain_decay_interval_ticks": 4,
+  "pain_decay_step": 1,
+  "pain_moderate_recovery_mult": 0.5,
   "skill_attr_gain": {}
 }

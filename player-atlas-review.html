@@ -1,0 +1,8 @@
+<!doctype html><html lang="zh-CN"><meta charset="utf-8"><title>主角图册游戏尺寸核对</title>
+<link rel="stylesheet" href="css/isometric-map.css"><link rel="stylesheet" href="css/player-pawn-rig.css">
+<style>body{margin:24px;background:#292723;color:#eee;font:15px system-ui}h1{font-size:22px}main{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px}article{height:160px;position:relative;border:1px solid #555;background:#36392f}article:before{content:'';position:absolute;width:102px;height:102px;left:50%;top:72px;transform:translate(-50%,-50%) rotate(45deg) scaleY(.71);background:#555b48;border:1px solid #aaa}article>b{position:absolute;bottom:8px;left:12px;font-size:12px}.map-view-isometric .player-pawn-visual{top:85px}.note{max-width:850px;line-height:1.6}</style>
+<h1>主角图册 · 128 种状态</h1><p class="note">使用原图册的通勤装卡通外观。底座统一为 46px；站姿约 70px，坐姿与侧卧自然降低。这里独立预览，不读写游戏存档。骨骼参数保留在原校准数据中。</p><main class="map-view-isometric"></main>
+<script src="js/player-pawn-rig.js"></script><script>
+for(let mask=0;mask<128;mask++){const card=document.createElement('article'),pawn=document.createElement('div'),label=document.createElement('b');pawn.className='player-pawn-visual';label.textContent='D'+String(mask).padStart(3,'0');card.id=label.textContent;card.append(pawn,label);document.querySelector('main').append(card);PlayerPawnRig.renderMask(pawn,mask)}
+</script></html>
+

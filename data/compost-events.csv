@@ -21,3 +21,17 @@ result_grade_low,v1,result,warn,腐熟完成·散,结构偏松散，建议后续
 result_grade_void,v1,result,bad,发酵失败,碳氮结构失衡，本批仅得到无用途废产物。,,,,,本批进入废产物档。,true
 anaerobic_vent_window_1,v1,state,info,气压上浮·首次放气窗,桶内积气上升，建议及时拧开放气阀。,vent_gas,none,leave_as_is,放气顺畅，桶内压差恢复稳定。,未放气，桶内积气继续累积。,true
 anaerobic_vent_window_2,v1,state,info,二次放气窗,进入后段发酵，仍需确认并释放桶内积气。,vent_gas,none,leave_as_is,二次放气完成，发酵过程保持平稳。,未放气，后段积气风险上升。,true
+anaerobic_pressure_rising,v1,state,warn,桶盖鼓起,桶盖鼓起，持续冒泡，盖沿开始渗液。,vent_gas,,leave_as_is,积气缓缓排出，桶盖回落。后段可以安心等待腐熟。,积气没有释放，部分肥液溢出。下次检查仍需处理积压。,true
+anaerobic_pressure_rising,v2,state,warn,排气口嘶鸣,排气口嘶鸣，盖沿渗出液滴。,vent_gas,,leave_as_is,放气后渗漏停止，发酵转入平稳阶段。,盖沿继续渗漏，肥液有所损失，积压还未解除。,true
+anaerobic_slow_start,v1,state,info,气泡稀少,只有零星气泡，桶内尚未积气。,leave_as_is,,vent_gas,桶口保持密封，发酵逐渐活跃。后段可能需要放气。,过早开阀干扰了发酵，部分原料未能充分转化。后段需要静置恢复。,true
+anaerobic_pressure_high,v1,state,bad,积气未消,积气仍未消退，肥液继续从盖沿渗出。,vent_gas,,leave_as_is,积压终于解除，剩余肥液得以保住，已损失的部分不会恢复。,积压持续到后段，肥液再次流失，桶口喷溅得一片狼藉。,true
+anaerobic_recovering,v1,state,warn,发酵受阻,上次开阀后气泡减少，肥液仍有生涩气味。,leave_as_is,,vent_gas,停止干扰后发酵逐渐恢复。保住剩余产出，等待周期结束。,再次开阀打断恢复，更多原料未能转化为可用肥液。,true
+anaerobic_ready,v1,state,good,腐熟渐稳,气泡减少，生涩气味渐退。提前取肥减量25%并向下取整，降一档。数量保底1瓶，档位最低差档。,leave_as_is,harvest_early,vent_gas,保持密封，等待充分腐熟，正常产量与档位得以保留。,无积气时再次开阀造成不必要的干扰，可用肥液减少。,true
+anaerobic_early_harvest,v1,action,info,提前取肥,肥液尚未充分腐熟。,,,,已提前结束发酵。产量保留四分之三并向下取整，至少一瓶；档位下降一级，最低差档。成品待收取。,,true
+anaerobic_foam_rising,v1,state,warn,细泡顶盖,细泡顶住桶盖，阀缝吐出液沫，开大易溢。,vent_gently,vent_gas,leave_as_is,阀门只开了一道小缝。积气缓缓排出，泡沫逐渐回落，肥液保留在桶内。,泡沫带走了部分肥液，桶内还未恢复平稳。,true
+anaerobic_foam_rising,v2,state,warn,阀口吐沫,阀口挂着黏沫，嘶鸣中夹着液滴，泡层尚厚。,vent_gently,vent_gas,leave_as_is,你分次缓慢放气，等泡层落下再关阀。桶内逐渐平静，肥液没有外溢。,泡沫带走了部分肥液，桶内还未恢复平稳。,true
+anaerobic_foam_spill,v1,action,warn,放气过猛,泡沫随气流涌出。,,,,,阀门开得太快，泡沫裹着肥液冲了出来。可用肥液减少，发酵受到干扰，后段需要静置恢复。,true
+anaerobic_foam_ignored,v1,action,warn,泡层外溢,桶口持续顶出泡沫。,,,,,桶一直密封，泡层从盖沿挤出并带走肥液。积压仍未解除，后段还需放气。,true
+anaerobic_result_preserved,v1,result,good,平稳腐熟,腐熟完成，原定产量得以保留。,,,,,,true
+anaerobic_result_loss,v1,result,warn,带损耗腐熟,腐熟完成，过程损耗已扣除。,,,,,,true
+anaerobic_result_early,v1,result,info,提前出桶,提前出桶，已减量降档。,,,,,,true

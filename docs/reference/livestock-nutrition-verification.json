@@ -1,0 +1,1020 @@
+{
+  "phase": "nutrition-v1",
+  "ticks": 240000,
+  "scenarios": 20,
+  "ledger_checks": 765063,
+  "max_ledger_error": 8.881784197001252e-16,
+  "assumptions": [
+    "Fed scenarios receive externally replenished troughs each tick; consumption is counted, not free production.",
+    "No cleaning or clinic; ecological collapse remains possible.",
+    "Collect formed milk/wool/eggs each tick to measure continuous production; do not extract blood.",
+    "Synchronous rotation remains enabled."
+  ],
+  "reports": [
+    {
+      "kinds": [
+        "cattle"
+      ],
+      "supply": "pasture",
+      "ticks": 12000,
+      "feed_units": 0,
+      "growth_nutrition": 21791.918786588605,
+      "production_nutrition": 49.59359741099897,
+      "unused_nutrition": 8.426592756904938e-14,
+      "collected": {
+        "hus_milk_buffalo": 5
+      },
+      "animals": [
+        {
+          "kind": "cattle",
+          "weight": 286.17885978864024,
+          "hp": 100,
+          "satiety": 87.17777777776581,
+          "dead": false,
+          "cause": null
+        },
+        {
+          "kind": "cattle",
+          "weight": 286.2201250436804,
+          "hp": 100,
+          "satiety": 87.17777777776581,
+          "dead": false,
+          "cause": null
+        }
+      ]
+    },
+    {
+      "kinds": [
+        "cattle"
+      ],
+      "supply": "fed",
+      "ticks": 12000,
+      "feed_units": 6612.539872711901,
+      "growth_nutrition": 71999.9999999893,
+      "production_nutrition": 443.0370370370946,
+      "unused_nutrition": 15177.674074070077,
+      "collected": {
+        "hus_milk_buffalo": 54
+      },
+      "animals": [
+        {
+          "kind": "cattle",
+          "weight": 600,
+          "hp": 100,
+          "satiety": 100,
+          "dead": false,
+          "cause": null
+        },
+        {
+          "kind": "cattle",
+          "weight": 600,
+          "hp": 100,
+          "satiety": 100,
+          "dead": false,
+          "cause": null
+        }
+      ]
+    },
+    {
+      "kinds": [
+        "sheep"
+      ],
+      "supply": "pasture",
+      "ticks": 12000,
+      "feed_units": 0,
+      "growth_nutrition": 0,
+      "production_nutrition": 0,
+      "unused_nutrition": 0,
+      "collected": {},
+      "animals": [
+        {
+          "kind": "sheep",
+          "weight": 13.221890000000657,
+          "hp": 0,
+          "satiety": 0,
+          "dead": true,
+          "cause": "starvation"
+        },
+        {
+          "kind": "sheep",
+          "weight": 13.221890000000657,
+          "hp": 0,
+          "satiety": 0,
+          "dead": true,
+          "cause": "starvation"
+        }
+      ]
+    },
+    {
+      "kinds": [
+        "sheep"
+      ],
+      "supply": "fed",
+      "ticks": 12000,
+      "feed_units": 1341.7655091000865,
+      "growth_nutrition": 5999.999999999451,
+      "production_nutrition": 37.92164970000157,
+      "unused_nutrition": 4067.733441300003,
+      "collected": {
+        "hus_wool": 2
+      },
+      "animals": [
+        {
+          "kind": "sheep",
+          "weight": 80,
+          "hp": 0,
+          "satiety": 100,
+          "dead": true,
+          "cause": "disease"
+        },
+        {
+          "kind": "sheep",
+          "weight": 80,
+          "hp": 0,
+          "satiety": 100,
+          "dead": true,
+          "cause": "disease"
+        }
+      ]
+    },
+    {
+      "kinds": [
+        "pig"
+      ],
+      "supply": "pasture",
+      "ticks": 12000,
+      "feed_units": 0,
+      "growth_nutrition": 0,
+      "production_nutrition": 0,
+      "unused_nutrition": 0,
+      "collected": {},
+      "animals": [
+        {
+          "kind": "pig",
+          "weight": 0.9,
+          "hp": 0,
+          "satiety": 0,
+          "dead": true,
+          "cause": "starvation"
+        },
+        {
+          "kind": "pig",
+          "weight": 0.9,
+          "hp": 0,
+          "satiety": 0,
+          "dead": true,
+          "cause": "starvation"
+        }
+      ]
+    },
+    {
+      "kinds": [
+        "pig"
+      ],
+      "supply": "fed",
+      "ticks": 12000,
+      "feed_units": 917.9999999996362,
+      "growth_nutrition": 5399.9999999997335,
+      "production_nutrition": 0,
+      "unused_nutrition": 0,
+      "collected": {},
+      "animals": [
+        {
+          "kind": "pig",
+          "weight": 120,
+          "hp": 100,
+          "satiety": 100,
+          "dead": false,
+          "cause": null
+        },
+        {
+          "kind": "pig",
+          "weight": 120,
+          "hp": 100,
+          "satiety": 100,
+          "dead": false,
+          "cause": null
+        }
+      ]
+    },
+    {
+      "kinds": [
+        "chicken"
+      ],
+      "supply": "pasture",
+      "ticks": 12000,
+      "feed_units": 0,
+      "growth_nutrition": 0,
+      "production_nutrition": 0,
+      "unused_nutrition": 0,
+      "collected": {},
+      "animals": [
+        {
+          "kind": "chicken",
+          "weight": 0.8859000000000126,
+          "hp": 0,
+          "satiety": 0,
+          "dead": true,
+          "cause": "starvation"
+        },
+        {
+          "kind": "chicken",
+          "weight": 0.8859000000000126,
+          "hp": 0,
+          "satiety": 0,
+          "dead": true,
+          "cause": "starvation"
+        },
+        {
+          "kind": "chicken",
+          "weight": 0.8859000000000126,
+          "hp": 0,
+          "satiety": 0,
+          "dead": true,
+          "cause": "starvation"
+        }
+      ]
+    },
+    {
+      "kinds": [
+        "chicken"
+      ],
+      "supply": "fed",
+      "ticks": 12000,
+      "feed_units": 45.958596999927295,
+      "growth_nutrition": 90.00000000001212,
+      "production_nutrition": 14.949999999990464,
+      "unused_nutrition": 148.47117000006705,
+      "collected": {
+        "hus_egg": 123
+      },
+      "animals": [
+        {
+          "kind": "chicken",
+          "weight": 2.5,
+          "hp": 100,
+          "satiety": 100,
+          "dead": false,
+          "cause": null
+        },
+        {
+          "kind": "chicken",
+          "weight": 2.5,
+          "hp": 100,
+          "satiety": 100,
+          "dead": false,
+          "cause": null
+        },
+        {
+          "kind": "chicken",
+          "weight": 2.5,
+          "hp": 100,
+          "satiety": 100,
+          "dead": false,
+          "cause": null
+        }
+      ]
+    },
+    {
+      "kinds": [
+        "cattle",
+        "sheep"
+      ],
+      "supply": "pasture",
+      "ticks": 12000,
+      "feed_units": 0,
+      "growth_nutrition": 19076.192739849845,
+      "production_nutrition": 35.36726015235013,
+      "unused_nutrition": 3.418376692820857e-13,
+      "collected": {
+        "hus_milk_buffalo": 4
+      },
+      "animals": [
+        {
+          "kind": "cattle",
+          "weight": 269.21062384984054,
+          "hp": 1.1299999999789474,
+          "satiety": 74.53333333330812,
+          "dead": false,
+          "cause": null
+        },
+        {
+          "kind": "cattle",
+          "weight": 269.24178539827,
+          "hp": 1.1299999999789474,
+          "satiety": 74.53333333330812,
+          "dead": false,
+          "cause": null
+        },
+        {
+          "kind": "sheep",
+          "weight": 13.221890000000657,
+          "hp": 0,
+          "satiety": 0,
+          "dead": true,
+          "cause": "starvation"
+        },
+        {
+          "kind": "sheep",
+          "weight": 13.221890000000657,
+          "hp": 0,
+          "satiety": 0,
+          "dead": true,
+          "cause": "starvation"
+        }
+      ]
+    },
+    {
+      "kinds": [
+        "cattle",
+        "sheep"
+      ],
+      "supply": "fed",
+      "ticks": 12000,
+      "feed_units": 7471.250105929772,
+      "growth_nutrition": 77999.99999999473,
+      "production_nutrition": 273.4305459962641,
+      "unused_nutrition": 12635.651737789718,
+      "collected": {
+        "hus_milk_buffalo": 28,
+        "hus_wool": 2
+      },
+      "animals": [
+        {
+          "kind": "cattle",
+          "weight": 600,
+          "hp": 0,
+          "satiety": 100,
+          "dead": true,
+          "cause": "disease"
+        },
+        {
+          "kind": "cattle",
+          "weight": 600,
+          "hp": 0,
+          "satiety": 100,
+          "dead": true,
+          "cause": "disease"
+        },
+        {
+          "kind": "sheep",
+          "weight": 80,
+          "hp": 0,
+          "satiety": 100,
+          "dead": true,
+          "cause": "disease"
+        },
+        {
+          "kind": "sheep",
+          "weight": 80,
+          "hp": 0,
+          "satiety": 100,
+          "dead": true,
+          "cause": "disease"
+        }
+      ]
+    },
+    {
+      "kinds": [
+        "cattle",
+        "pig"
+      ],
+      "supply": "pasture",
+      "ticks": 12000,
+      "feed_units": 0,
+      "growth_nutrition": 15589.732273895877,
+      "production_nutrition": 27.204622105032694,
+      "unused_nutrition": 1.6799999974315187,
+      "collected": {
+        "hus_milk_buffalo": 2
+      },
+      "animals": [
+        {
+          "kind": "cattle",
+          "weight": 221.96129428664108,
+          "hp": 100,
+          "satiety": 79.34222222221892,
+          "dead": false,
+          "cause": null
+        },
+        {
+          "kind": "cattle",
+          "weight": 221.9853591370934,
+          "hp": 100,
+          "satiety": 79.34222222221892,
+          "dead": false,
+          "cause": null
+        },
+        {
+          "kind": "pig",
+          "weight": 0.9,
+          "hp": 0,
+          "satiety": 0,
+          "dead": true,
+          "cause": "starvation"
+        },
+        {
+          "kind": "pig",
+          "weight": 0.9,
+          "hp": 0,
+          "satiety": 0,
+          "dead": true,
+          "cause": "starvation"
+        }
+      ]
+    },
+    {
+      "kinds": [
+        "cattle",
+        "pig"
+      ],
+      "supply": "fed",
+      "ticks": 12000,
+      "feed_units": 10227.991111113846,
+      "growth_nutrition": 77399.99999998136,
+      "production_nutrition": 443.0370370370946,
+      "unused_nutrition": 12916.874074069936,
+      "collected": {
+        "hus_milk_buffalo": 54
+      },
+      "animals": [
+        {
+          "kind": "cattle",
+          "weight": 600,
+          "hp": 100,
+          "satiety": 100,
+          "dead": false,
+          "cause": null
+        },
+        {
+          "kind": "cattle",
+          "weight": 600,
+          "hp": 100,
+          "satiety": 100,
+          "dead": false,
+          "cause": null
+        },
+        {
+          "kind": "pig",
+          "weight": 120,
+          "hp": 100,
+          "satiety": 100,
+          "dead": false,
+          "cause": null
+        },
+        {
+          "kind": "pig",
+          "weight": 120,
+          "hp": 100,
+          "satiety": 100,
+          "dead": false,
+          "cause": null
+        }
+      ]
+    },
+    {
+      "kinds": [
+        "sheep",
+        "pig"
+      ],
+      "supply": "pasture",
+      "ticks": 12000,
+      "feed_units": 0,
+      "growth_nutrition": 154.19092500000127,
+      "production_nutrition": 0,
+      "unused_nutrition": 424.88407500000005,
+      "collected": {},
+      "animals": [
+        {
+          "kind": "sheep",
+          "weight": 13.03526000000061,
+          "hp": 0,
+          "satiety": 0,
+          "dead": true,
+          "cause": "starvation"
+        },
+        {
+          "kind": "sheep",
+          "weight": 13.25023850000067,
+          "hp": 0,
+          "satiety": 0,
+          "dead": true,
+          "cause": "starvation"
+        },
+        {
+          "kind": "pig",
+          "weight": 0.9,
+          "hp": 0,
+          "satiety": 0,
+          "dead": true,
+          "cause": "starvation"
+        },
+        {
+          "kind": "pig",
+          "weight": 0.9,
+          "hp": 0,
+          "satiety": 0,
+          "dead": true,
+          "cause": "starvation"
+        }
+      ]
+    },
+    {
+      "kinds": [
+        "sheep",
+        "pig"
+      ],
+      "supply": "fed",
+      "ticks": 12000,
+      "feed_units": 2771.008657499793,
+      "growth_nutrition": 11400.000000000698,
+      "production_nutrition": 62.99325330000087,
+      "unused_nutrition": 7877.093321699945,
+      "collected": {
+        "hus_wool": 4
+      },
+      "animals": [
+        {
+          "kind": "sheep",
+          "weight": 80,
+          "hp": 34.989999999994446,
+          "satiety": 100,
+          "dead": false,
+          "cause": null
+        },
+        {
+          "kind": "sheep",
+          "weight": 80,
+          "hp": 34.989999999994446,
+          "satiety": 100,
+          "dead": false,
+          "cause": null
+        },
+        {
+          "kind": "pig",
+          "weight": 120,
+          "hp": 34.989999999994446,
+          "satiety": 100,
+          "dead": false,
+          "cause": null
+        },
+        {
+          "kind": "pig",
+          "weight": 120,
+          "hp": 34.989999999994446,
+          "satiety": 100,
+          "dead": false,
+          "cause": null
+        }
+      ]
+    },
+    {
+      "kinds": [
+        "pig",
+        "chicken"
+      ],
+      "supply": "pasture",
+      "ticks": 12000,
+      "feed_units": 0,
+      "growth_nutrition": 0,
+      "production_nutrition": 0,
+      "unused_nutrition": 0,
+      "collected": {},
+      "animals": [
+        {
+          "kind": "pig",
+          "weight": 0.9,
+          "hp": 0,
+          "satiety": 0,
+          "dead": true,
+          "cause": "starvation"
+        },
+        {
+          "kind": "pig",
+          "weight": 0.9,
+          "hp": 0,
+          "satiety": 0,
+          "dead": true,
+          "cause": "starvation"
+        },
+        {
+          "kind": "chicken",
+          "weight": 0.8859000000000126,
+          "hp": 0,
+          "satiety": 0,
+          "dead": true,
+          "cause": "starvation"
+        },
+        {
+          "kind": "chicken",
+          "weight": 0.8859000000000126,
+          "hp": 0,
+          "satiety": 0,
+          "dead": true,
+          "cause": "starvation"
+        },
+        {
+          "kind": "chicken",
+          "weight": 0.8859000000000126,
+          "hp": 0,
+          "satiety": 0,
+          "dead": true,
+          "cause": "starvation"
+        }
+      ]
+    },
+    {
+      "kinds": [
+        "pig",
+        "chicken"
+      ],
+      "supply": "fed",
+      "ticks": 12000,
+      "feed_units": 963.9585969997848,
+      "growth_nutrition": 5489.999999999869,
+      "production_nutrition": 14.949999999990464,
+      "unused_nutrition": 148.47117000006705,
+      "collected": {
+        "hus_egg": 123
+      },
+      "animals": [
+        {
+          "kind": "pig",
+          "weight": 120,
+          "hp": 100,
+          "satiety": 100,
+          "dead": false,
+          "cause": null
+        },
+        {
+          "kind": "pig",
+          "weight": 120,
+          "hp": 100,
+          "satiety": 100,
+          "dead": false,
+          "cause": null
+        },
+        {
+          "kind": "chicken",
+          "weight": 2.5,
+          "hp": 100,
+          "satiety": 100,
+          "dead": false,
+          "cause": null
+        },
+        {
+          "kind": "chicken",
+          "weight": 2.5,
+          "hp": 100,
+          "satiety": 100,
+          "dead": false,
+          "cause": null
+        },
+        {
+          "kind": "chicken",
+          "weight": 2.5,
+          "hp": 100,
+          "satiety": 100,
+          "dead": false,
+          "cause": null
+        }
+      ]
+    },
+    {
+      "kinds": [
+        "cattle",
+        "sheep",
+        "chicken"
+      ],
+      "supply": "pasture",
+      "ticks": 12000,
+      "feed_units": 0,
+      "growth_nutrition": 19160.4753687184,
+      "production_nutrition": 49.56963128260826,
+      "unused_nutrition": 89.9411872162078,
+      "collected": {
+        "hus_egg": 69,
+        "hus_milk_buffalo": 4
+      },
+      "animals": [
+        {
+          "kind": "cattle",
+          "weight": 269.17216534136435,
+          "hp": 100,
+          "satiety": 74.53333333330812,
+          "dead": false,
+          "cause": null
+        },
+        {
+          "kind": "cattle",
+          "weight": 269.2087767675742,
+          "hp": 100,
+          "satiety": 74.53333333330812,
+          "dead": false,
+          "cause": null
+        },
+        {
+          "kind": "sheep",
+          "weight": 12.803750000000553,
+          "hp": 0,
+          "satiety": 0,
+          "dead": true,
+          "cause": "starvation"
+        },
+        {
+          "kind": "sheep",
+          "weight": 12.803750000000553,
+          "hp": 0,
+          "satiety": 0,
+          "dead": true,
+          "cause": "starvation"
+        },
+        {
+          "kind": "chicken",
+          "weight": 2.3859000123049796,
+          "hp": 0,
+          "satiety": 0,
+          "dead": true,
+          "cause": "starvation"
+        },
+        {
+          "kind": "chicken",
+          "weight": 2.3859000123049796,
+          "hp": 0,
+          "satiety": 0,
+          "dead": true,
+          "cause": "starvation"
+        },
+        {
+          "kind": "chicken",
+          "weight": 2.3859000123049796,
+          "hp": 0,
+          "satiety": 0,
+          "dead": true,
+          "cause": "starvation"
+        }
+      ]
+    },
+    {
+      "kinds": [
+        "cattle",
+        "sheep",
+        "chicken"
+      ],
+      "supply": "fed",
+      "ticks": 12000,
+      "feed_units": 8451.653596551154,
+      "growth_nutrition": 78089.99999999195,
+      "production_nutrition": 483.2065419707532,
+      "unused_nutrition": 23623.519223543324,
+      "collected": {
+        "hus_egg": 123,
+        "hus_milk_buffalo": 50,
+        "hus_wool": 4
+      },
+      "animals": [
+        {
+          "kind": "cattle",
+          "weight": 600,
+          "hp": 45.20999999998655,
+          "satiety": 100,
+          "dead": false,
+          "cause": null
+        },
+        {
+          "kind": "cattle",
+          "weight": 600,
+          "hp": 45.20999999998655,
+          "satiety": 100,
+          "dead": false,
+          "cause": null
+        },
+        {
+          "kind": "sheep",
+          "weight": 80,
+          "hp": 45.20999999998655,
+          "satiety": 100,
+          "dead": false,
+          "cause": null
+        },
+        {
+          "kind": "sheep",
+          "weight": 80,
+          "hp": 45.20999999998655,
+          "satiety": 100,
+          "dead": false,
+          "cause": null
+        },
+        {
+          "kind": "chicken",
+          "weight": 2.5,
+          "hp": 100,
+          "satiety": 100,
+          "dead": false,
+          "cause": null
+        },
+        {
+          "kind": "chicken",
+          "weight": 2.5,
+          "hp": 100,
+          "satiety": 100,
+          "dead": false,
+          "cause": null
+        },
+        {
+          "kind": "chicken",
+          "weight": 2.5,
+          "hp": 100,
+          "satiety": 100,
+          "dead": false,
+          "cause": null
+        }
+      ]
+    },
+    {
+      "kinds": [
+        "cattle",
+        "sheep",
+        "pig",
+        "chicken"
+      ],
+      "supply": "pasture",
+      "ticks": 12000,
+      "feed_units": 0,
+      "growth_nutrition": 13582.991381916234,
+      "production_nutrition": 26.192120084209602,
+      "unused_nutrition": 331.9749399989984,
+      "collected": {
+        "hus_egg": 48,
+        "hus_milk_buffalo": 2
+      },
+      "animals": [
+        {
+          "kind": "cattle",
+          "weight": 207.9215962330315,
+          "hp": 99.99999999999824,
+          "satiety": 58.999272000002584,
+          "dead": false,
+          "cause": null
+        },
+        {
+          "kind": "cattle",
+          "weight": 207.9395295909586,
+          "hp": 99.99999999999824,
+          "satiety": 58.999272000002584,
+          "dead": false,
+          "cause": null
+        },
+        {
+          "kind": "sheep",
+          "weight": 12.62765816000051,
+          "hp": 0,
+          "satiety": 0,
+          "dead": true,
+          "cause": "starvation"
+        },
+        {
+          "kind": "sheep",
+          "weight": 12.836728160000565,
+          "hp": 0,
+          "satiety": 0,
+          "dead": true,
+          "cause": "starvation"
+        },
+        {
+          "kind": "pig",
+          "weight": 0.9,
+          "hp": 0,
+          "satiety": 0,
+          "dead": true,
+          "cause": "starvation"
+        },
+        {
+          "kind": "pig",
+          "weight": 0.9,
+          "hp": 0,
+          "satiety": 0,
+          "dead": true,
+          "cause": "starvation"
+        },
+        {
+          "kind": "chicken",
+          "weight": 2.385899999999759,
+          "hp": 0,
+          "satiety": 0,
+          "dead": true,
+          "cause": "starvation"
+        },
+        {
+          "kind": "chicken",
+          "weight": 2.385899999999759,
+          "hp": 0,
+          "satiety": 0,
+          "dead": true,
+          "cause": "starvation"
+        },
+        {
+          "kind": "chicken",
+          "weight": 2.385899999999759,
+          "hp": 0,
+          "satiety": 0,
+          "dead": true,
+          "cause": "starvation"
+        }
+      ]
+    },
+    {
+      "kinds": [
+        "cattle",
+        "sheep",
+        "pig",
+        "chicken"
+      ],
+      "supply": "fed",
+      "ticks": 12000,
+      "feed_units": 12086.31232411539,
+      "growth_nutrition": 83489.99999998513,
+      "production_nutrition": 529.4950370373334,
+      "unused_nutrition": 20959.35540407042,
+      "collected": {
+        "hus_egg": 123,
+        "hus_milk_buffalo": 54,
+        "hus_wool": 4
+      },
+      "animals": [
+        {
+          "kind": "cattle",
+          "weight": 600,
+          "hp": 100,
+          "satiety": 100,
+          "dead": false,
+          "cause": null
+        },
+        {
+          "kind": "cattle",
+          "weight": 600,
+          "hp": 100,
+          "satiety": 100,
+          "dead": false,
+          "cause": null
+        },
+        {
+          "kind": "sheep",
+          "weight": 80,
+          "hp": 100,
+          "satiety": 100,
+          "dead": false,
+          "cause": null
+        },
+        {
+          "kind": "sheep",
+          "weight": 80,
+          "hp": 100,
+          "satiety": 100,
+          "dead": false,
+          "cause": null
+        },
+        {
+          "kind": "pig",
+          "weight": 120,
+          "hp": 100,
+          "satiety": 100,
+          "dead": false,
+          "cause": null
+        },
+        {
+          "kind": "pig",
+          "weight": 120,
+          "hp": 100,
+          "satiety": 100,
+          "dead": false,
+          "cause": null
+        },
+        {
+          "kind": "chicken",
+          "weight": 2.5,
+          "hp": 100,
+          "satiety": 100,
+          "dead": false,
+          "cause": null
+        },
+        {
+          "kind": "chicken",
+          "weight": 2.5,
+          "hp": 100,
+          "satiety": 100,
+          "dead": false,
+          "cause": null
+        },
+        {
+          "kind": "chicken",
+          "weight": 2.5,
+          "hp": 100,
+          "satiety": 100,
+          "dead": false,
+          "cause": null
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,9 @@
+{
+  "source": "standing.png",
+  "image": "standing-smoking.png",
+  "request": "林经理抽烟，加一根已点燃的香烟",
+  "placement": "角色右手（画面左侧），烟头带火光与烟雾",
+  "prompt": "Make a minimal edit to this approved adult female office manager game pawn. Add ONE lit cigarette held naturally in her RIGHT hand (the hand on the viewer's LEFT, away from the messenger bag). Keep the arm relaxed down; minimally adjust the simple mitten fingers to hold it. A short slender white cigarette with tan filter, tiny gray ash and subdued orange-red glowing ember at its outer tip, pointing diagonally outward left. Add a delicate, sparse, semi-transparent wisp of pale smoke curling upward beside her sleeve, not covering her face or silhouette. This is a small readable character accessory, not a large cigar. Preserve everything else exactly: black single ponytail, blank pale face, white button shirt, jeans, brown crossbody messenger bag, pose, proportions, outlines, hand-painted shading, elliptical gray base, size and framing. Keep true RGBA transparency outside the pawn including translucent smoke. No background, no checkerboard, no text, no other changes.",
+  "status": "deployed; checked with game map renderer in isolated preview",
+  "runtimeImage": "assets/npc/npc_supervisor_manager/standing-smoking-v1.png"
+}

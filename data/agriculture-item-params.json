@@ -5,24 +5,24 @@
     "liquid_seaweed_extract": {
       "inject_facility": "venturi_fertilizer",
       "agriculture_venturi_injectable": true,
-      "agriculture_venturi_effect_duration_ticks": 5000
+      "agriculture_nutrient_per_bottle": 2400
     },
     "fertilizer_basic_low": {
       "inject_facility": "buried_pot_jar",
       "agriculture_buried_jar_injectable": true,
-      "agriculture_fertilizer_per_tick": 0.35,
+      "agriculture_nutrient_per_bottle": 700,
       "is_anaerobic_fertilizer": true
     },
     "fertilizer_basic": {
       "inject_facility": "buried_pot_jar",
       "agriculture_buried_jar_injectable": true,
-      "agriculture_fertilizer_per_tick": 0.5,
+      "agriculture_nutrient_per_bottle": 1000,
       "is_anaerobic_fertilizer": true
     },
     "fertilizer_compost_plus": {
       "inject_facility": "buried_pot_jar",
       "agriculture_buried_jar_injectable": true,
-      "agriculture_fertilizer_per_tick": 0.75,
+      "agriculture_nutrient_per_bottle": 1500,
       "is_anaerobic_fertilizer": true
     }
   },

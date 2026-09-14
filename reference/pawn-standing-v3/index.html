@@ -1,0 +1,8 @@
+<!doctype html><html lang="zh-CN"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>主角拆装 · 站姿对照</title><link rel="stylesheet" href="style.css">
+<header><p class="eyebrow">第一步 / 正常站姿</p><h1>拆开，再装回同一个主角</h1><p>左侧是外观参考，右侧用7个独立部件装配。当前只检查站姿，不套旧骨架，也不替换游戏角色。</p></header>
+<section class="controls"><label><input type="checkbox" id="overlay"> 在装配图上叠加半透明原图</label><label>拆开查看 <input id="explode" type="range" min="0" max="100" value="0"></label><button id="restore">恢复默认视图</button></section>
+<main><article><h2>原主角</h2><canvas id="original" width="1215" height="1295"></canvas></article><article><h2>模块装回 · 待验收</h2><canvas id="assembled" width="1215" height="1295"></canvas></article></main>
+<p class="note">重点看：头身比例、身体轮廓、肩根、腰部与颈部的遮挡。部件是从主角参考整理出的草稿，采用完整上衣、完整手臂和完整腿脚，局部笔触仍可能有差异，尚未定为NPC模板。</p>
+<details><summary>查看7个独立部件</summary><div id="parts"></div></details>
+<footer><a href="original.png">原图</a><a href="parts.png">透明部件图</a><a href="standing-bind.json">站姿装配记录</a><a href="README.md">本轮范围与验收说明</a></footer><script type="module" src="viewer.mjs"></script></html>
+

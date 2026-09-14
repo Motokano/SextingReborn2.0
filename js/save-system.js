@@ -140,7 +140,7 @@
         return sceneUi;
     }
 
-    var AGRICULTURE_MAP_SCHEMA_VERSION = 1;
+    var AGRICULTURE_MAP_SCHEMA_VERSION = 2;
 
     function cloneJsonDeep(v) {
         try { return JSON.parse(JSON.stringify(v)); } catch (eClone) { return null; }
@@ -181,13 +181,17 @@
 
     function normalizeAgricultureMapPersist(raw) {
         if (!raw || typeof raw !== 'object') return null;
-        if (coerceNumber(raw.schema_version, 0) !== AGRICULTURE_MAP_SCHEMA_VERSION) return null;
+        var sourceVersion = coerceNumber(raw.schema_version, 0);
+        if (sourceVersion !== 1 && sourceVersion !== AGRICULTURE_MAP_SCHEMA_VERSION) return null;
         var st = raw.state;
         if (!st || typeof st !== 'object' || !Array.isArray(st.map)) return null;
         var cloned = cloneJsonDeep(st);
         if (!cloned) return null;
         /** 45 §四·农业电力：旧档无储能字段 → 补起步 500（与畜牧 power_charge 迁移口径一致） */
         if (cloned.power_charge == null) cloned.power_charge = 500;
+        if (global.AgricultureMap && typeof global.AgricultureMap.normalizeAgricultureSupplyState === 'function') {
+            global.AgricultureMap.normalizeAgricultureSupplyState(cloned);
+        }
         return {
             schema_version: AGRICULTURE_MAP_SCHEMA_VERSION,
             state: cloned
@@ -298,6 +302,7 @@
             Gathering: global.Gathering,
             EntityAppearance: global.EntityAppearance,
             BuffSystem: global.BuffSystem,
+            CombatEngagement: global.CombatEngagement,
             NPCSystem: global.NPCSystem,
             CompostSystem: global.CompostSystem,
             HideoutWarehouse: global.HideoutWarehouse,
@@ -532,6 +537,11 @@
             try { musclesPersist = mods.Muscles.getState(); } catch (eMus) { musclesPersist = null; }
         }
 
+        var combatEngagementPersist = null;
+        if (mods.CombatEngagement && typeof mods.CombatEngagement.getState === 'function') {
+            try { combatEngagementPersist = mods.CombatEngagement.getState(); } catch (eCe) { combatEngagementPersist = null; }
+        }
+
         return {
             schemaVersion: SCHEMA_VERSION,
             saveGeneration: saveGeneration,
@@ -552,7 +562,8 @@
             agriculture_map: agricultureMapPersist,
             hideout_warehouse: hideoutWarehousePersist,
             livestock: livestockPersist,
-            muscles: musclesPersist
+            muscles: musclesPersist,
+            combat_engagement: combatEngagementPersist
         };
     }
 
@@ -562,6 +573,8 @@
         if (!mods.GameTime || !mods.GameEngine || !mods.CharacterAttributes || !mods.Survival || !mods.InventoryEquipment) return false;
 
         // Time first: buff expiration is tick-based.
+        // Validate livestock before mutating any other game subsystem.
+        if (global.LivestockState && typeof global.LivestockState.validateState === 'function' && !global.LivestockState.validateState(snapshot.livestock).ok) return false;
         if (typeof mods.GameTime.reset === 'function') {
             mods.GameTime.reset({ totalTicks: snapshot.time.totalTicks });
         }
@@ -569,6 +582,9 @@
         // Engine position.
         if (typeof mods.GameEngine.setState === 'function') {
             mods.GameEngine.setState(snapshot.player.engine.mapId, snapshot.player.engine.x, snapshot.player.engine.y);
+        }
+        if (mods.CombatEngagement && typeof mods.CombatEngagement.setState === 'function') {
+            try { mods.CombatEngagement.setState(snapshot.combat_engagement || null); } catch (eCeLoad) { /* optional old-save field */ }
         }
 
         // Inventory/equipment + skills + ground items.
@@ -583,7 +599,13 @@
 
         // Survival stats.
         if (typeof mods.Survival.setState === 'function') {
-            mods.Survival.setState(snapshot.player.survival);
+            var savedSurvival = Object.assign({}, snapshot.player.survival);
+            if (!Object.prototype.hasOwnProperty.call(savedSurvival, 'food_metabolism') && global.FoodMetabolism) {
+                savedSurvival.food_metabolism = global.FoodMetabolism.migrateLegacy(snapshot.buffs, function (id) {
+                    return mods.InventoryEquipment.getItemTemplate ? mods.InventoryEquipment.getItemTemplate(id) : null;
+                }, Number(savedSurvival.tickCount) || 0);
+            }
+            mods.Survival.setState(savedSurvival);
         }
 
         // Gathering progression.
@@ -632,9 +654,7 @@
         applyHideoutWarehouseFromSnapshot(snapshot);
 
         if (global.LivestockState && typeof global.LivestockState.setState === 'function') {
-            if (snapshot.livestock && typeof snapshot.livestock === 'object') {
-                try { global.LivestockState.setState(snapshot.livestock); } catch (eLs) { /* ignore */ }
-            }
+            global.LivestockState.setState(snapshot.livestock || null);
         }
 
         if (global.SceneCtx && snapshot.player && snapshot.player.sceneUi) {

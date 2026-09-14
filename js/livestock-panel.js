@@ -11,6 +11,14 @@
   var selectedZoneId = null;
   var feedbackMsg = null;
   var selectedModuleId = null;
+  var productMode = 'daily';
+  var selectedSlaughterUid = null;
+  var animalFilter = 'all';
+  var attentionOnly = false;
+  var breedingOpen = false;
+  var moveOpen = false;
+  var selectedArmId = 'arm1';
+  var upgradePreview = null;
 
   function getLivestockLevel() {
     // 读生活技能 life_animal_husbandry 等级；未习得（0 级）时回退 90 展示完整信息（MVP 测试友好）
@@ -91,7 +99,7 @@
     var lv = getLivestockLevel();
     // 旋转倒计时
     var badge = el('livestock-rotate-badge');
-    if (badge) badge.textContent = t('livestock.badge.rotate', { v: st.rotation_ticks_remaining });
+    if (badge) { badge.textContent = '下次轮转 · ' + (st.rotation_ticks_remaining / 144).toFixed(1) + ' 天'; badge.title = st.rotation_ticks_remaining + ' tick'; }
     var lvBadge = el('livestock-level-badge');
     if (lvBadge) lvBadge.textContent = t('livestock.badge.level', { v: lv });
     var powerBadge = el('livestock-power-badge');
@@ -149,7 +157,7 @@
         : '';
       return '<div class="zone-cell' + sel + '" data-zone="' + zoneId + '">' +
         '<div class="eco-overlay ' + ecoOverlayClass(zoneId, z) + '"></div>' +
-        '<div class="zone-header"><span>' + zoneLabel[zoneId] + '</span><div class="zone-eco">' + ecoText + '</div></div>' +
+        '<div class="zone-header"><span>' + zoneLabel[zoneId] + ' · ' + animals.length + ' 只 → ' + ({z1:'Z2',z2:'Z3',z3:'Z4',z4:'Z1'}[zoneId]) + '</span><div class="zone-eco">' + ecoText + '</div></div>' +
         '<div class="animal-list">' + animalHtml + '</div>' +
         corpseHtml +
         '<div class="zone-actions">' +
@@ -181,10 +189,33 @@
         '<div class="rotate-indicator">⟳</div></div>';
     }
 
-    grid.innerHTML =
-      zoneHtml('z1') + armHtml('arm1', true) + zoneHtml('z2') +
-      armHtml('arm4', false) + axisHtml() + armHtml('arm2', false) +
-      zoneHtml('z4') + armHtml('arm3', true) + zoneHtml('z3');
+    var cap = window.LivestockState.getCapacityStatus();
+    var crowdText = cap.ratio > 1 ? t('livestock.capacity.over', { output: Math.round(cap.output * 100), feed: Math.round((cap.maintenance - 1) * 100) }) : t('livestock.capacity.normal');
+    var summary = el('livestock-overview-summary');
+    if (!summary) { summary = document.createElement('div'); summary.id = 'livestock-overview-summary'; grid.before(summary); }
+    var live = st.animals.filter(function (a) { return !a.dead; });
+    var ready = routineProducts(st);
+    var alerts = [];
+    if (cap.ratio > 1) alerts.push(crowdText + (cap.ratio > 1.25 ? ' ' + t('livestock.capacity.health') : ''));
+    var sick = live.filter(function (a) { return a.hp < 70; }).length;
+    var hungry = live.filter(function (a) { return a.satiety <= 70; }).length;
+    if (sick) alerts.push(sick + ' 只动物健康偏低');
+    if (hungry) alerts.push(hungry + ' 只动物饱食不足');
+    var underfed = live.filter(function (a) { return window.LivestockState.getNutritionStatus(a.uid).tier === 'insufficient'; }).length;
+    if (underfed) alerts.push(underfed + ' 只动物营养不足 · 检查饲料与牧草');
+    if (st.animals.length > live.length) alerts.push((st.animals.length - live.length) + ' 具尸体待清理');
+    if (!window.LivestockState.isPowerAvailable()) alerts.push('供电中断 · 电力装置停工');
+    summary.innerHTML = '<div class="lv-summary-cards"><div class="capacity-summary"><span class="lv-eyebrow">牧场承载</span><strong>' + cap.used + '/' + cap.capacity + '</strong><progress max="' + Math.max(cap.capacity, cap.used) + '" value="' + cap.used + '"></progress><span>含待出生：' + cap.projected + ' · 鸡舍独立计容</span><span>' + esc(crowdText) + '</span></div>' +
+      '<div><span class="lv-eyebrow">可领取产物</span><strong>' + ready.length + ' 份</strong><span>' + esc(readySummary(ready)) + '</span><button class="lv-btn lv-primary" data-go-products>前往收取</button></div>' +
+      '<div><span class="lv-eyebrow">需要照看</span><strong>' + (alerts.length ? alerts.length + ' 项' : '平稳') + '</strong><span>' + esc(alerts.join('；') || '暂无健康、饱食、容量或供电警报') + '</span></div></div>' +
+      '<div class="lv-map-caption"><b>同步轮牧</b><span>Z1 → Z2 → Z3 → Z4 → Z1 · 动物与作业臂同步顺时针移动</span></div>';
+    summary.querySelector('[data-go-products]').onclick = function () { productMode = 'daily'; setTab('products'); };
+    function armAt(z1, z2, fallback) {
+      return Object.keys(st.arms).filter(function (id) { var zs = (st.arm_zones || {})[id] || []; return zs.indexOf(z1) >= 0 && zs.indexOf(z2) >= 0; })[0] || fallback;
+    }
+    grid.innerHTML = zoneHtml('z1') + armHtml(armAt('z1', 'z2', 'arm1'), true) + zoneHtml('z2') +
+      armHtml(armAt('z4', 'z1', 'arm4'), false) + axisHtml() + armHtml(armAt('z2', 'z3', 'arm2'), false) +
+      zoneHtml('z4') + armHtml(armAt('z3', 'z4', 'arm3'), true) + zoneHtml('z3');
 
     bindZoneClicks();
     bindArmClicks();
@@ -199,7 +230,7 @@
     var zoneAttr = a.location_type === 'zone' ? ' data-zone="' + a.zone_id + '"' : '';
     return '<div class="animal-item' + (isCoop ? ' animal-coop' : '') + '"' + draggable + zoneAttr +
       ' data-uid="' + a.uid + '" title="' + title + '">' +
-      '<span class="icon-' + a.species_id + '">' + speciesIcon(a.species_id) + '</span>' + g + '</div>';
+      '<span class="icon-' + a.species_id + '">' + speciesIcon(a.species_id) + '</span>' + esc(speciesName(a.species_id)) + g + '</div>';
   }
   function moduleIcon(moduleId) {
     var m = window.LivestockState.getModule(moduleId);
@@ -268,6 +299,8 @@
     var arms = document.querySelectorAll('#livestock-overview-grid [data-arm]');
     for (var i = 0; i < arms.length; i++) {
       arms[i].addEventListener('click', function () {
+        selectedArmId = this.getAttribute('data-arm');
+        selectedModuleId = null;
         setTab('modules');
       });
     }
@@ -329,25 +362,53 @@
   function renderAnimals(st, lv) {
     var list = el('livestock-animal-list');
     if (!list) return;
-    var rows = st.animals.filter(function (a) { return !a.dead; }).map(function (a) {
+    var existingBreeding = document.querySelector('.breeding-controls');
+    if (existingBreeding) breedingOpen = existingBreeding.open;
+    var live = st.animals.filter(function (a) { return !a.dead; });
+    var visible = live.filter(function (a) { return (animalFilter === 'all' || animalFilter === a.species_id) && (!attentionOnly || needsAttention(a)); });
+    var troubledSpecies = {}; visible.forEach(function (a) { if (needsAttention(a)) troubledSpecies[a.species_id] = true; });
+    visible.sort(function (a, b) { return Number(!!troubledSpecies[b.species_id]) - Number(!!troubledSpecies[a.species_id]) || a.species_id.localeCompare(b.species_id) || Number(needsAttention(b)) - Number(needsAttention(a)) || String(a.uid).localeCompare(String(b.uid), undefined, { numeric: true }); });
+    if (!visible.some(function (a) { return a.uid === selectedAnimalUid; })) selectedAnimalUid = visible.length ? visible[0].uid : null;
+    var previousSpecies = null;
+    var rows = visible.map(function (a) {
+      var heading = previousSpecies === a.species_id ? '' : '<h3 class="lv-group-title">' + speciesName(a.species_id) + ' · ' + visible.filter(function (b) { return b.species_id === a.species_id; }).length + ' 只</h3>';
+      previousSpecies = a.species_id;
       var sel = a.uid === selectedAnimalUid ? ' selected' : '';
       var sat = (lv >= 10) ? a.satiety.toFixed(0) : satietyStage(a.satiety);
       var hp = (lv >= 70) ? a.hp.toFixed(0) : hpStage(a.hp);
       var preg = (a.pregnant && lv >= 30) ? '<span class="badge-preg">' + t('livestock.pregnant') + '</span>' : '';
       var perk = (lv >= 50) ? perkText(a.perks, lv) : '';
-      return '<div class="animal-row' + sel + '" data-uid="' + a.uid + '">' +
+      return heading + '<button type="button" class="animal-row' + sel + '" data-uid="' + a.uid + '">' +
         '<span class="animal-ico">' + speciesIcon(a.species_id) + '</span>' +
-        '<span class="animal-name">' + speciesName(a.species_id) + ' ' + genderGlyph(a.gender) + preg + '</span>' +
+        '<span class="animal-name">' + speciesName(a.species_id) + ' ' + genderGlyph(a.gender) + ' #' + esc(String(a.uid).split('_').pop()) + preg + '</span>' +
         '<span class="animal-meta">' + t('livestock.animal.meta', { w: a.weight_kg.toFixed(1), sat: sat, hp: hp, loc: locationName(a) }) + '</span>' +
-        '<span class="animal-perk">' + perk + '</span>' +
-        '</div>';
+        '<span class="animal-perk">' + animalProgress(a, window.LivestockState.getSpecies(a.species_id)) + '</span>' +
+        (needsAttention(a) ? '<span class="lv-attention">需要照看 · ' + attentionReason(a) + '</span>' : '') + '</button>';
     }).join('');
-    list.innerHTML = rows || '<div class="empty-hint">' + t('livestock.animal.none') + '</div>';
+    var limits = '<details class="breeding-controls"' + (breedingOpen ? ' open' : '') + '><summary>繁殖设置</summary><p>' + t('livestock.breeding.hint') + '</p>' + ['cattle','sheep','pig'].map(function (kind) {
+      var status = window.LivestockState.getBreedingStatus(kind);
+      return '<div>' + speciesName(kind) + ' ' + t('livestock.breeding.limit', { n: status.limit }) +
+        '<button class="lv-btn" data-breeding-limit="' + kind + '|-1">−</button><button class="lv-btn" data-breeding-limit="' + kind + '|1">+</button></div>';
+    }).join('') + '</details>';
+    var filters = '<div class="lv-filter-bar">' + ['all','cattle','sheep','pig','chicken'].map(function (id) { return '<button class="lv-btn' + (animalFilter === id ? ' active' : '') + '" data-animal-filter="' + id + '">' + (id === 'all' ? '全部' : speciesName(id)) + ' ' + live.filter(function (a) { return id === 'all' || a.species_id === id; }).length + '</button>'; }).join('') + '<button class="lv-btn' + (attentionOnly ? ' active' : '') + '" data-attention-only>只看需照看</button></div>';
+    list.innerHTML = filters + limits + (rows || '<div class="empty-hint">' + t('livestock.animal.none') + '</div>');
+    var limitButtons = document.querySelectorAll('#livestock-animal-list [data-breeding-limit]');
+    for (var bi = 0; bi < limitButtons.length; bi++) limitButtons[bi].addEventListener('click', function () {
+      var p = this.getAttribute('data-breeding-limit').split('|');
+      window.LivestockState.setBreedingLimit(p[0], Math.max(0, Math.min(100, window.LivestockState.getBreedingStatus(p[0]).limit + Number(p[1])))); render();
+    });
+    document.querySelectorAll('[data-animal-filter]').forEach(function (btn) { btn.onclick = function () { animalFilter = btn.dataset.animalFilter; render(); }; });
+    var attentionButton = document.querySelector('[data-attention-only]');
+    if (attentionButton) attentionButton.onclick = function () { attentionOnly = !attentionOnly; render(); };
+    var breedingDetails = document.querySelector('.breeding-controls');
+    if (breedingDetails) breedingDetails.ontoggle = function () { if (this.isConnected) breedingOpen = this.open; };
     bindAnimalRows();
 
     renderAnimalDetail(st, lv);
   }
 
+  function needsAttention(a) { return a.hp < 70 || a.satiety <= 70 || window.LivestockState.getNutritionStatus(a.uid).tier === 'insufficient'; }
+  function attentionReason(a) { return [a.hp < 70 ? '健康偏低' : '', a.satiety <= 70 ? '饱食不足' : '', window.LivestockState.getNutritionStatus(a.uid).tier === 'insufficient' ? '营养不足' : ''].filter(Boolean).join(' · '); }
   function satietyStage(s) { if (s == null) return '-'; if (s < 30) return t('livestock.satiety.hungry'); if (s < 70) return t('livestock.satiety.normal'); return t('livestock.satiety.full'); }
   function hpStage(h) { if (h == null) return '-'; if (h < 30) return t('livestock.hp.critical'); if (h < 60) return t('livestock.hp.sick'); if (h < 90) return t('livestock.hp.subhealthy'); return t('livestock.hp.healthy'); }
   function zoneName(z) { return { z1: 'Z1', z2: 'Z2', z3: 'Z3', z4: 'Z4' }[z] || z; }
@@ -374,35 +435,44 @@
   function renderAnimalDetail(st, lv) {
     var box = el('livestock-animal-detail');
     if (!box) return;
+    var existingMove = document.querySelector('.lv-move-settings');
+    if (existingMove) moveOpen = existingMove.open;
     var a = null;
     for (var i = 0; i < st.animals.length; i++) if (st.animals[i].uid === selectedAnimalUid) { a = st.animals[i]; break; }
     if (!a) { box.innerHTML = '<div class="empty-hint">' + t('livestock.animal.detail_empty') + '</div>'; return; }
     var sp = window.LivestockState.getSpecies(a.species_id);
     var prod = (sp && sp.products && sp.products.living) ? sp.products.living : [];
+    var load = window.LivestockState.getAnimalLoad(a.uid);
+    var grazing = window.LivestockState.getGrazingStatus(a.uid);
     var prodRows = prod.map(function (p) {
-      var cd = (a.cooldowns && a.cooldowns[p.product_id]) || 0;
-      return '<div class="kv-row"><span>' + productName(p.product_id) + '</span><span>' + (cd > 0 ? t('livestock.cooldown', { v: cd }) : t('livestock.collectable')) + '</span></div>';
+      return '<div class="kv-row"><span>' + productName(p.product_id) + '</span><span>' + productionStatusText(a, p) + '</span></div>';
     }).join('') || '<div class="kv-row"><span>' + t('livestock.product.living') + '</span><span>' + t('livestock.product.none') + '</span></div>';
     box.innerHTML =
-      '<div class="detail-title">' + speciesName(a.species_id) + ' ' + genderGlyph(a.gender) + '</div>' +
+      '<div class="detail-title">' + speciesName(a.species_id) + ' ' + genderGlyph(a.gender) + ' #' + esc(String(a.uid).split('_').pop()) + '</div>' +
+      '<p class="lv-note">' + animalProgress(a, sp) + '</p>' +
       '<div class="kv-list">' +
-      '<div class="kv-row"><span>' + t('livestock.detail.stage') + '</span><span>' + (a.age_ticks < (sp && sp.growth && sp.growth.maturity_ticks ? sp.growth.maturity_ticks : 0) ? t('livestock.age.young') : t('livestock.age.adult')) + '</span></div>' +
+      '<div class="kv-row"><span>' + t('livestock.detail.stage') + '</span><span>' + (!window.LivestockState.isMature(a, sp) ? t('livestock.age.young') : t('livestock.age.adult')) + '</span></div>' +
       '<div class="kv-row"><span>' + t('livestock.detail.weight') + '</span><span>' + a.weight_kg.toFixed(1) + ' kg</span></div>' +
       '<div class="kv-row"><span>' + t('livestock.detail.satiety') + '</span><span>' + ((lv >= 10) ? a.satiety.toFixed(0) : satietyStage(a.satiety)) + '</span></div>' +
+      '<div class="kv-row"><span>' + t('livestock.detail.nutrition') + '</span><span>' + t('livestock.nutrition.' + window.LivestockState.getNutritionStatus(a.uid).tier) + '</span></div>' +
+      (load && !a.dead ? '<div class="kv-row"><span>' + t('livestock.detail.future_load') + '</span><span>' + t(load.at_full_weight > load.current * 1.05 ? 'livestock.load.growing' : 'livestock.load.stable') + '</span></div>' : '') +
+      (grazing ? '<div class="kv-row"><span>' + t('livestock.detail.grazing') + '</span><span>' + t('livestock.grazing.' + grazing) + '</span></div>' : '') +
       '<div class="kv-row"><span>' + t('livestock.detail.hp') + '</span><span>' + ((lv >= 70) ? a.hp.toFixed(0) : hpStage(a.hp)) + '</span></div>' +
       '<div class="kv-row"><span>' + t('livestock.detail.pregnant') + '</span><span>' + ((lv >= 30 && a.pregnant) ? t('livestock.pregnant.remaining', { v: a.pregnant.remaining_ticks }) : ((lv >= 30) ? t('livestock.none') : t('livestock.invisible'))) + '</span></div>' +
       '<div class="kv-row"><span>' + t('livestock.detail.location') + '</span><span>' + locationName(a) + '</span></div>' +
       '</div>' +
       '<div class="detail-perk">' + ((lv >= 50) ? (perkText(a.perks, lv) || t('livestock.perk.none')) : t('livestock.perk.locked')) + '</div>' +
       '<div class="kv-list">' + prodRows + '</div>' +
-      '<div class="detail-actions">' +
+      '<details class="lv-move-settings"' + (moveOpen ? ' open' : '') + '><summary>调整分区</summary><p class="lv-note">日常轮牧会自动同步迁移。这里用于调整饲养分区。</p><div class="detail-actions">' +
       (a.location_type === 'zone'
         ? '<button type="button" class="lv-btn' + (a.zone_id === 'z1' ? ' active' : '') + '" data-move="z1">' + t('livestock.btn.move_to', { zone: 'Z1' }) + '</button>' +
           '<button type="button" class="lv-btn' + (a.zone_id === 'z2' ? ' active' : '') + '" data-move="z2">' + t('livestock.btn.move_to', { zone: 'Z2' }) + '</button>' +
           '<button type="button" class="lv-btn' + (a.zone_id === 'z3' ? ' active' : '') + '" data-move="z3">' + t('livestock.btn.move_to', { zone: 'Z3' }) + '</button>' +
           '<button type="button" class="lv-btn' + (a.zone_id === 'z4' ? ' active' : '') + '" data-move="z4">' + t('livestock.btn.move_to', { zone: 'Z4' }) + '</button>'
         : '<span class="empty-hint" style="padding:0;">' + t('livestock.coop_no_move') + '</span>') +
-      '</div>';
+      '</div></details>';
+    var moveDetails = document.querySelector('.lv-move-settings');
+    if (moveDetails) moveDetails.ontoggle = function () { if (this.isConnected) moveOpen = this.open; };
     bindMoveButtons();
   }
 
@@ -434,7 +504,7 @@
     if (!box) return;
     var armNames = { arm1: t('livestock.arm.1'), arm2: t('livestock.arm.2'), arm3: t('livestock.arm.3'), arm4: t('livestock.arm.4'), axis: t('livestock.axis') };
     var armSlotLabels = { inner: t('livestock.slot.inner'), front: t('livestock.slot.front'), bottom: t('livestock.slot.bottom'), top: t('livestock.slot.top'), cw_side: t('livestock.slot.cw'), ccw_side: t('livestock.slot.ccw') };
-    var armHtml = Object.keys(armNames).map(function (aid) {
+    var armHtml = Object.keys(armNames).filter(function (aid) { return aid === selectedArmId; }).map(function (aid) {
       var slots = (aid === 'axis') ? { slot1: st.axis.slot1, slot2: st.axis.slot2 } : st.arms[aid];
       var slotHtml = Object.keys(slots).map(function (sk) {
         var inst = slots[sk];
@@ -453,40 +523,15 @@
           var extra = '';
           var extraActions = '';
           if (mid === 'feed_trough') {
-            extra = t('livestock.feed_units', { v: (inst.feed_units != null ? inst.feed_units.toFixed(1) : '0') });
-            extraActions = '<button type="button" class="lv-btn" data-feed="' + aid + '">' + t('livestock.btn.feed') + '</button>';
+            extra = t('livestock.feed_units', { v: (inst.feed_units != null ? inst.feed_units.toFixed(1) : '0'), capacity: window.LivestockState.getTroughCapacity(inst) });
+            extraActions = '<button type="button" class="lv-btn" data-feed="' + aid + '|' + sk + '">' + t('livestock.btn.feed') + '</button>';
           } else if (mid === 'coop') {
             extraActions = '<button type="button" class="lv-btn" data-feed-chickens="' + aid + '">' + t('livestock.btn.feed_chickens') + '</button>';
           } else if (mid === 'feed_preprocess' || mid === 'feed_refine') {
             var queueN = inst.input_queue ? inst.input_queue.reduce(function (s, q) { return s + q.count; }, 0) : 0;
             extra = t('livestock.queue_crops', { n: queueN }) + (mid === 'feed_refine' && inst.refine_cache > 0 ? t('livestock.refine_cache', { v: inst.refine_cache.toFixed(1) }) : '');
+            if (inst.processing_units > 0) extra += t('livestock.processing_remainder', { v: inst.processing_units.toFixed(2) });
             extraActions = '<button type="button" class="lv-btn" data-process="' + aid + '">' + t('livestock.btn.process') + '</button>';
-          } else if (mid === 'climate_control') {
-            var modeNames = { off: t('livestock.mode.off'), sunny: t('livestock.mode.sunny'), shade: t('livestock.mode.shade'), humid: t('livestock.mode.humid') };
-            var cdC = inst.mode_switch_cooldown || 0;
-            extra = t('livestock.mode_label', { mode: (modeNames[inst.mode] || t('livestock.mode.off')) }) + (cdC > 0 ? t('livestock.switch_cooldown', { v: cdC }) : '');
-            extraActions =
-              '<button type="button" class="lv-btn" data-climate="sunny">' + t('livestock.mode.sunny') + '</button>' +
-              '<button type="button" class="lv-btn" data-climate="shade">' + t('livestock.mode.shade') + '</button>' +
-              (inst.level >= 2 ? '<button type="button" class="lv-btn" data-climate="humid">' + t('livestock.mode.humid') + '</button>' : '') +
-              '<button type="button" class="lv-btn" data-climate="off">' + t('livestock.mode.off') + '</button>';
-          } else if (mid === 'waste_heat_recycle') {
-            var hmNames = { fertilizer: t('livestock.mode.fertilizer'), fuel: t('livestock.mode.fuel'), feed: t('livestock.mode.feed') };
-            var outN = inst.output_queue ? inst.output_queue.reduce(function (s, q) { return s + q.count; }, 0) : 0;
-            extra = t('livestock.mode_label', { mode: (hmNames[inst.mode] || t('livestock.mode.fertilizer')) }) + t('livestock.output_count', { n: outN }) + (inst.points ? t('livestock.points_suffix', { v: inst.points.toFixed(0) }) : '');
-            extraActions =
-              '<button type="button" class="lv-btn" data-heat-mode="fertilizer">' + t('livestock.mode.fertilizer') + '</button>' +
-              (inst.level >= 2 ? '<button type="button" class="lv-btn" data-heat-mode="fuel">' + t('livestock.mode.fuel') + '</button>' : '') +
-              (inst.level >= 4 ? '<button type="button" class="lv-btn" data-heat-mode="feed">' + t('livestock.mode.feed') + '</button>' : '') +
-              (outN > 0 ? '<button type="button" class="lv-btn" data-heat-take="1">' + t('livestock.btn.extract') + '</button>' : '');
-          } else if (mid === 'link_schedule') {
-            var rulesOn = inst.enabled_rules || [];
-            var ruleNames = { till_seed: t('livestock.rule.till_seed'), grass_feed: t('livestock.rule.grass_feed'), clean_collect: t('livestock.rule.clean_collect') };
-            extra = t('livestock.link_label', { rules: (rulesOn.length ? rulesOn.map(function (r) { return ruleNames[r] || r; }).join(t('livestock.join.sep')) : t('livestock.link_none')) });
-            extraActions = Object.keys(ruleNames).map(function (rid) {
-              var on = rulesOn.indexOf(rid) >= 0;
-              return '<button type="button" class="lv-btn ' + (on ? 'lv-toggle on' : 'lv-toggle') + '" data-link-rule="' + rid + '">' + ruleNames[rid] + '</button>';
-            }).join('');
           } else if (mid === 'warehouse_hub') {
             var cap = window.LivestockState.getWarehouseCapacity();
             var usage = window.LivestockState.getWarehouseUsage();
@@ -498,15 +543,19 @@
             }
           }
           var effText = window.LivestockState.getModuleEffectText(mid, inst.level);
+          var nextStep = window.LivestockState.getBuildStep(m.tier, inst.level);
+          var upgradeHtml = upgradePreview === aid + '|' + sk && inst.level < 5 ? '<div class="lv-upgrade-preview"><b>Lv' + inst.level + ' → Lv' + (inst.level + 1) + '</b><p>当前：' + esc(effText) + '</p><p>升级后：' + esc(window.LivestockState.getModuleEffectText(mid, inst.level + 1)) + '</p><p>材料：' + (nextStep ? nextStep.inputs.map(function (it) { return esc(itemDisplayName(it.item_id)) + ' ×' + it.count; }).join('、') : '暂无材料配置') + '</p><button class="lv-btn lv-primary" data-upgrade="' + aid + '|' + sk + '"' + (upgrading || !nextStep ? ' disabled' : '') + '>确认升级</button></div>' : '';
+          var coverage = moduleCoverage(st, aid, sk, m, inst);
           // 生产力墙（k93）：需电模块缺电 → 停摆标记
           var stalled = (m.requires_power && !window.LivestockState.isPowerAvailable()) ? ' <span class="module-stalled">' + t('livestock.power.stalled') + '</span>' : '';
           return '<div class="module-slot filled' + (stalled ? ' stalled' : '') + '" data-arm="' + aid + '" data-slot="' + sk + '">' +
             '<span class="slot-key">' + label + '</span>' +
             '<span class="slot-val">' + m.name + ' ' + lvText + extra + stalled + '</span>' +
+            '<span class="lv-coverage-label">作用：' + esc(coverage) + '</span>' + upgradeHtml +
             (effText ? '<span class="module-effect slot-effect">' + effText + '</span>' : '') +
             '<span class="slot-actions">' +
             extraActions +
-            '<button type="button" class="lv-btn" data-upgrade="' + aid + '|' + sk + '">' + t('livestock.btn.upgrade') + '</button>' +
+            '<button type="button" class="lv-btn" data-upgrade-preview="' + aid + '|' + sk + '"' + (inst.level >= 5 || upgrading ? ' disabled' : '') + '>' + (inst.level >= 5 ? '已满级' : upgrading ? '升级中' : '比较升级') + '</button>' +
             '<button type="button" class="lv-btn" data-dismount="' + aid + '|' + sk + '">' + t('livestock.btn.dismount') + '</button>' +
             '</span></div>';
         }
@@ -524,6 +573,7 @@
     var mods = window.LivestockState.allModules();
     var tierOrder = { [t('livestock.tier.1')]: 1, [t('livestock.tier.2')]: 2, [t('livestock.axis')]: 3 };
     var modList = Object.keys(mods).map(function (k) { return mods[k]; })
+      .filter(function (m) { return selectedArmId === 'axis' ? m.axis_slot != null : m.axis_slot == null; })
       .sort(function (a, b) { return (tierOrder[a.layer] - tierOrder[b.layer]) || a.name.localeCompare(b.name, 'zh'); })
       .map(function (m) {
         var sel = selectedModuleId === m.module_id ? ' selected' : '';
@@ -544,23 +594,51 @@
           '<span class="module-cost">' + t('livestock.cost_label', { faces: faces, cost: (cost || '—') }) + '</span></div>';
       }).join('');
 
-    box.innerHTML =
-      '<div class="module-left"><h3 class="section-title">' + t('livestock.module_slots_title') + '</h3>' + armHtml + '</div>' +
-      '<div class="module-right"><h3 class="section-title">' + t('livestock.module_library_title') + '</h3><div class="module-list">' + modList + '</div></div>';
+    var retired = window.LivestockState.getRetiredModuleStorage();
+    var returnedIds = Object.keys(retired.items);
+    var retirementNotice = retired.records.length ? '<div class="module-card"><span>' + t('livestock.retired.notice') + '</span>' +
+      '<span>' + (returnedIds.length ? returnedIds.map(function (id) { return esc(itemDisplayName(id)) + ' ×' + retired.items[id]; }).join('、') : t('livestock.retired.empty')) + '</span>' +
+      (returnedIds.length ? '<button type="button" class="lv-btn" data-retired-claim>' + t('livestock.retired.claim') + '</button>' : '') + '</div>' : '';
+    var transfer = window.LivestockState.getModuleStorage();
+    var transferNotice = '';
+    if (Object.keys(transfer.items).length || transfer.records.length) {
+      transferNotice = '<div class="module-storage"><h3>' + t('livestock.transfer.title') + '</h3>';
+      if (Object.keys(transfer.items).length) transferNotice += '<p>' + Object.keys(transfer.items).map(function (id) { return esc(itemDisplayName(id)) + ' ×' + transfer.items[id]; }).join('、') + '</p><button class="lv-btn" data-material-claim>' + t('livestock.transfer.claim') + '</button>';
+      transfer.records.forEach(function (record) {
+        var buttons = [];
+        ['arm1','arm2','arm3','arm4','axis'].forEach(function (aid) {
+          var holder = aid === 'axis' ? st.axis : st.arms[aid];
+          Object.keys(holder || {}).forEach(function (slot) { var m = holder[slot];
+            if (m && !m.shadow && m.module_id === record.module_id) buttons.push('<button class="lv-btn" data-resource-restore="' + record.id + '|' + aid + '|' + slot + '">' + t('livestock.transfer.restore') + ' ' + esc(armNames[aid] + ' / ' + (armSlotLabels[slot] || slot.replace('slot', ''))) + '</button>');
+          });
+        });
+        var module = window.LivestockState.getModule(record.module_id);
+        transferNotice += '<p>' + esc(module ? module.name : record.module_id) + ' ' + (buttons.join(' ') || t('livestock.transfer.rebuild')) + '</p>';
+      });
+      transferNotice += '</div>';
+    }
+    var covered = selectedArmId === 'axis' ? [] : (st.arm_zones[selectedArmId] || []);
+    var navigation = '<div class="lv-arm-navigation"><div class="lv-filter-bar">' + Object.keys(armNames).map(function (id) { return '<button class="lv-btn' + (selectedArmId === id ? ' active' : '') + '" data-select-arm="' + id + '">' + armNames[id] + '</button>'; }).join('') + '</div><div class="lv-coverage-map">' + ['z1','z2','z4','z3'].map(function (z) { return '<span class="' + (covered.indexOf(z) >= 0 ? 'covered' : '') + '">' + z.toUpperCase() + (covered.indexOf(z) >= 0 ? ' · 相邻区域' : '') + '</span>'; }).join('') + '</div><p class="lv-note">' + (selectedArmId === 'axis' ? '轴心为牧场共用设施，作用对象见各装置说明。' : '高亮区域与本臂相邻。侧面装置只作用于朝向的一侧，鸡舍随本臂移动。') + '</p></div>';
+    box.innerHTML = navigation + '<div class="lv-module-columns">' +
+      '<div class="module-left">' + retirementNotice + transferNotice + '<h3 class="section-title">' + t('livestock.module_slots_title') + '</h3>' + armHtml + '</div>' +
+      '<div class="module-right"><h3 class="section-title">' + t('livestock.module_library_title') + '</h3><div class="module-list">' + modList + '</div></div></div>';
 
+    document.querySelectorAll('[data-select-arm]').forEach(function (btn) { btn.onclick = function () { selectedArmId = btn.dataset.selectArm; selectedModuleId = null; upgradePreview = null; render(); }; });
+    document.querySelectorAll('[data-upgrade-preview]').forEach(function (btn) { btn.onclick = function () { upgradePreview = btn.dataset.upgradePreview; render(); }; });
     bindModuleButtons();
   }
-  function tierLabel(t) { var m = { small: t('livestock.tier.small'), medium: t('livestock.tier.medium'), large: t('livestock.tier.large'), axis: t('livestock.tier.axis') }; return m[t] || t; }
+  function moduleCoverage(st, aid, slot, m, inst) {
+    if (aid === 'axis') return m.module_id === 'slaughter' ? '牧场动物（按屠宰条件）' : '牧场仓储';
+    var zones = st.arm_zones[aid] || [];
+    if (m.coverage === 'side') return (zones[(inst.occupied_slots || [slot]).indexOf('ccw_side') >= 0 ? 0 : 1] || '—').toUpperCase();
+    if (m.module_id === 'coop') return '本臂鸡舍';
+    if (m.module_id === 'feed_preprocess' || m.module_id === 'feed_refine') return '饲料加工与输送（见装置说明）';
+    return zones.map(function (z) { return z.toUpperCase(); }).join(' / ') + (m.module_id === 'auto_collect' ? '及本臂鸡舍' : '');
+  }
+  function tierLabel(tier) { var m = { small: t('livestock.tier.small'), medium: t('livestock.tier.medium'), large: t('livestock.tier.large'), axis: t('livestock.tier.axis') }; return m[tier] || tier; }
 
   function canMountHere(armId, slotKey, moduleId) {
-    var m = window.LivestockState.getModule(moduleId);
-    if (!m) return false;
-    if (armId === 'axis') {
-      var axisNum = parseInt(String(slotKey).replace('slot', ''), 10);
-      return m.axis_slot === axisNum;
-    }
-    var slots = window.LivestockState.expandModuleSlots(m);
-    return slots.indexOf(slotKey) >= 0;
+    return window.LivestockState.canBuildModule(armId, slotKey, moduleId).ok;
   }
 
   function itemDisplayName(itemId) {
@@ -576,13 +654,23 @@
   }
 
   function reasonText(r) {
+    if (typeof r === 'string') r = { reason: r };
+    r = r || { reason: 'unknown' };
+    if (['no_slaughter','coop_full','transfer_full','no_resource_receiver'].indexOf(r.reason) >= 0) return t('livestock.reason.' + r.reason);
+    if (r.reason === 'module_retired') return t('livestock.reason.module_retired');
+    if (r.reason === 'slaughter_underweight') return t('livestock.reason.slaughter_underweight', { v: r.minimum_weight_kg == null ? '—' : (Math.ceil(r.minimum_weight_kg * 100) / 100).toFixed(2) });
     var map = {
       unknown_module: t('livestock.reason.unknown_module'), unknown_arm: t('livestock.reason.unknown_arm'), axis_slot_mismatch: t('livestock.reason.axis_slot_mismatch'),
       slot_mismatch: t('livestock.reason.slot_mismatch'), inner_occupied: t('livestock.reason.inner_occupied'), slot_occupied: t('livestock.reason.slot_occupied'),
       lack_material: t('livestock.reason.lack_material'), slot_empty: t('livestock.reason.slot_empty'), upgrading: t('livestock.reason.upgrading'), max_level: t('livestock.reason.max_level'),
       shadow_slot: t('livestock.reason.shadow_slot'),
       no_power: t('livestock.reason.no_power'),
-      not_found: t('livestock.reason.not_found'), no_product: t('livestock.reason.no_product'), cooldown: t('livestock.reason.cooldown'), low_hp: t('livestock.reason.low_hp')
+      full: t('livestock.reason.full'), no_feed: t('livestock.reason.no_feed'), no_coop: t('livestock.reason.no_coop'),
+      immature: t('livestock.reason.immature'), wrong_gender: t('livestock.reason.wrong_gender'), hungry: t('livestock.reason.hungry'),
+      coop_occupied: t('livestock.reason.coop_occupied'), contains_resources: t('livestock.reason.contains_resources'),
+      not_enough_crop: t('livestock.reason.not_enough_crop'), no_inventory: t('livestock.reason.no_inventory'),
+      no_trough: t('livestock.reason.no_trough'), missing_product_weight: t('livestock.reason.missing_product_weight'),
+      not_ready: t('livestock.reason.not_ready'), not_found: t('livestock.reason.not_found'), no_product: t('livestock.reason.no_product'), cooldown: t('livestock.reason.cooldown'), low_hp: t('livestock.reason.low_hp')
     };
     var base = map[r.reason] || r.reason;
     if (r.reason === 'lack_material') {
@@ -609,6 +697,7 @@
   }
 
   var feedTargetArm = null;
+  var feedTargetSlot = null;
   var feedPickerMode = null;
   var initBound = false;
 
@@ -634,8 +723,9 @@
     return crops;
   }
 
-  function openFeedPicker(armId, mode) {
+  function openFeedPicker(armId, mode, slotKey) {
     feedTargetArm = armId;
+    feedTargetSlot = slotKey || null;
     feedPickerMode = mode || 'feed';
     var picker = el('livestock-feed-picker');
     if (!picker) return;
@@ -645,6 +735,7 @@
 
   function closeFeedPicker() {
     feedTargetArm = null;
+    feedTargetSlot = null;
     feedPickerMode = null;
     var picker = el('livestock-feed-picker');
     if (picker) picker.classList.add('hidden');
@@ -783,11 +874,6 @@
 
   function doFeedCrop(cropId) {
     if (!feedTargetArm) { closeFeedPicker(); render(); return; }
-    var IE = window.InventoryEquipment;
-    if (IE && typeof IE.removeCarriedItemsByTemplateId === 'function') {
-      var rem = IE.removeCarriedItemsByTemplateId(cropId, 1);
-      if (!rem.ok) { feedbackMsg = t('livestock.msg.deduct_crop_fail'); renderFeedPicker(); return; }
-    }
     if (feedPickerMode === 'process') {
       var rp = window.LivestockState.feedProcessInput(feedTargetArm, cropId, 1);
       if (rp.ok) {
@@ -797,7 +883,7 @@
         feedbackMsg = t('livestock.msg.process_fail', { reason: reasonText(rp) });
       }
     } else {
-      var r = window.LivestockState.addFeedToTrough(feedTargetArm, cropId, 1);
+      var r = window.LivestockState.addFeedToTrough(feedTargetArm, cropId, 1, feedTargetSlot);
       if (r.ok) {
         feedbackMsg = t('livestock.msg.feed', { name: itemDisplayName(cropId), added: r.added.toFixed(1), total: r.total.toFixed(1) });
         logMsg(t('livestock.log.feed', { name: itemDisplayName(cropId) }), 'success');
@@ -872,12 +958,26 @@
       feedbackMsg = t('livestock.msg.fed', { n: r.fed });
       logMsg(t('livestock.log.feed_chickens', { n: r.fed }), 'success');
     } else {
-      feedbackMsg = t('livestock.msg.no_chickens');
+      feedbackMsg = r.reason ? reasonText(r) : t('livestock.msg.no_chickens');
     }
     render();
   }
 
   function bindModuleButtons() {
+    var materialClaim = document.querySelector('#livestock-module-content [data-material-claim]');
+    if (materialClaim) materialClaim.addEventListener('click', function () { window.LivestockState.claimModuleMaterials(); render(); });
+    var restores = document.querySelectorAll('#livestock-module-content [data-resource-restore]');
+    for (var ri = 0; ri < restores.length; ri++) restores[ri].addEventListener('click', function () {
+      var parts = this.getAttribute('data-resource-restore').split('|');
+      var result = window.LivestockState.restoreModuleResources(parts[0], parts[1], parts[2]);
+      feedbackMsg = result.ok ? t('livestock.transfer.restored') : reasonText(result); render();
+    });
+    var retiredClaim = document.querySelector('#livestock-module-content [data-retired-claim]');
+    if (retiredClaim) retiredClaim.addEventListener('click', function () {
+      var r = window.LivestockState.claimRetiredModuleItems();
+      feedbackMsg = t('livestock.retired.claim_result', { n: r.placed || 0, remaining: r.remaining == null ? '?' : r.remaining });
+      render();
+    });
     var cards = document.querySelectorAll('#livestock-module-content .module-card');
     for (var i = 0; i < cards.length; i++) {
       cards[i].addEventListener('click', function () {
@@ -913,7 +1013,8 @@
     for (var f = 0; f < feeds.length; f++) {
       feeds[f].addEventListener('click', function (e) {
         e.stopPropagation();
-        openFeedPicker(this.getAttribute('data-feed'));
+        var target = this.getAttribute('data-feed').split('|');
+        openFeedPicker(target[0], 'feed', target[1]);
       });
     }
     var feedChickens = document.querySelectorAll('#livestock-module-content [data-feed-chickens]');
@@ -937,80 +1038,8 @@
         openFeedPicker(this.getAttribute('data-process'), 'process');
       });
     }
-    var climateBtns = document.querySelectorAll('#livestock-module-content [data-climate]');
-    for (var cb = 0; cb < climateBtns.length; cb++) {
-      climateBtns[cb].addEventListener('click', function (e) {
-        e.stopPropagation();
-        doClimateMode(this.getAttribute('data-climate'));
-      });
-    }
-    var heatModeBtns = document.querySelectorAll('#livestock-module-content [data-heat-mode]');
-    for (var hb = 0; hb < heatModeBtns.length; hb++) {
-      heatModeBtns[hb].addEventListener('click', function (e) {
-        e.stopPropagation();
-        doHeatMode(this.getAttribute('data-heat-mode'));
-      });
-    }
-    var heatTakes = document.querySelectorAll('#livestock-module-content [data-heat-take]');
-    for (var ht = 0; ht < heatTakes.length; ht++) {
-      heatTakes[ht].addEventListener('click', function (e) {
-        e.stopPropagation();
-        doHeatTake();
-      });
-    }
-    var linkBtns = document.querySelectorAll('#livestock-module-content [data-link-rule]');
-    for (var lb = 0; lb < linkBtns.length; lb++) {
-      linkBtns[lb].addEventListener('click', function (e) {
-        e.stopPropagation();
-        doLinkToggle(this.getAttribute('data-link-rule'));
-      });
-    }
   }
 
-  function doClimateMode(mode) {
-    var r = window.LivestockState.climateSetMode(mode);
-    if (r.ok) {
-      feedbackMsg = t('livestock.msg.climate_mode', { mode: ({ sunny: t('livestock.mode.sunny'), shade: t('livestock.mode.shade'), humid: t('livestock.mode.humid'), off: t('livestock.mode.off') }[mode] || mode), cooldown: r.cooldown ? t('livestock.msg.cooldown_suffix', { v: r.cooldown }) : '' });
-      logMsg(feedbackMsg, 'success');
-    } else {
-      feedbackMsg = t('livestock.msg.switch_fail', { reason: reasonText(r) });
-      logMsg(feedbackMsg, 'warn');
-    }
-    render();
-  }
-
-  function doHeatMode(mode) {
-    var r = window.LivestockState.wasteHeatSetMode(mode);
-    if (r.ok) {
-      feedbackMsg = t('livestock.msg.heat_mode', { mode: ({ fertilizer: t('livestock.mode.fertilizer'), fuel: t('livestock.mode.fuel'), feed: t('livestock.mode.feed') }[mode] || mode) });
-      logMsg(feedbackMsg, 'success');
-    } else {
-      feedbackMsg = t('livestock.msg.switch_fail', { reason: reasonText(r) });
-    }
-    render();
-  }
-
-  function doHeatTake() {
-    var items = window.LivestockState.wasteHeatTakeAll();
-    if (!items || !items.length) { feedbackMsg = t('livestock.msg.no_output'); render(); return; }
-    var gres = giveItems(items);
-    feedbackMsg = t('livestock.msg.heat_extract', { n: gres.placed, extra: gres.dropped > 0 ? t('livestock.msg.dropped_suffix', { n: gres.dropped }) : '' });
-    logMsg(feedbackMsg, 'success');
-    render();
-  }
-
-  function doLinkToggle(ruleId) {
-    var r = window.LivestockState.linkScheduleToggleRule(ruleId);
-    if (r.ok) {
-      feedbackMsg = t('livestock.msg.rule_toggled', { state: r.enabled.indexOf(ruleId) >= 0 ? t('livestock.state.enabled') : t('livestock.state.disabled') });
-      logMsg(feedbackMsg, 'success');
-    } else {
-      feedbackMsg = t('livestock.msg.switch_fail', { reason: reasonText(r) });
-    }
-    render();
-  }
-
-  // 提取中央仓储枢纽缓存全部产物（§11.6.1）
   function doWarehouseTake() {
     var items = window.LivestockState.warehouseTakeAll();
     if (!items || !items.length) {
@@ -1038,7 +1067,7 @@
         var cause = corpseCauseText(a);
         var loc = a.location_type === 'coop' ? t('livestock.loc.coop', { v: (a.arm_id || '') }) : (a.zone_id ? t('livestock.loc.zone', { v: a.zone_id.toUpperCase() }) : '');
         var pollHint = corpsePollutionText(a.death_cause);
-        corpseRows.push('<div class="product-row">💀 ' + speciesName(a.species_id) + ' ' + genderGlyph(a.gender) +
+        corpseRows.push('<div class="product-row">💀 ' + speciesName(a.species_id) + ' ' + genderGlyph(a.gender) + ' · ' + esc('#' + String(a.uid).split('_').pop()) +
           ' <span class="meta">' + cause + ' · ' + loc + ' · ' + pollHint + '</span>' +
           '<button type="button" class="lv-btn" data-clean-corpse="' + a.uid + '">' + t('livestock.btn.clean_corpse50') + '</button></div>');
         return;
@@ -1046,43 +1075,93 @@
       if (!sp.products) return;
       if (sp.products.living && sp.products.living.length) {
         // C2：每个产物独立按钮 + 「全部」批量
-        var prodBtns = sp.products.living.map(function (p) {
-          var cd = (a.cooldowns && a.cooldowns[p.product_id]) || 0;
-          var ready = cd <= 0;
+        var prodBtns = sp.products.living.filter(function (p) { return productMode === 'special' ? p.hp_cost > 0 : !(p.hp_cost > 0); }).map(function (p) {
+          var status = window.LivestockState.getProductStatus(a.uid, p.product_id);
+          var ready = status.ready;
           return '<button type="button" class="lv-btn' + (ready ? '' : ' lv-btn-dim') + '" data-collect-one="' + a.uid + '|' + p.product_id + '"' +
-            (ready ? '' : ' disabled') + '>' + productName(p.product_id) + (cd > 0 ? ' ' + cd : '') + '</button>';
+            (ready ? '' : ' disabled') + '>' + productName(p.product_id) + (p.hp_cost > 0 ? '（健康 −' + p.hp_cost + '）' : '') + '</button>';
         }).join('');
-        collectRows.push('<div class="product-row">' + speciesIcon(a.species_id) + ' ' + speciesName(a.species_id) + ' ' + genderGlyph(a.gender) +
-          ' <span class="meta">' + livingText(a, sp) + '</span>' +
+        if (prodBtns) collectRows.push('<div class="product-row">' + speciesIcon(a.species_id) + ' ' + speciesName(a.species_id) + ' ' + genderGlyph(a.gender) + ' #' + esc(String(a.uid).split('_').pop()) +
+          ' <span class="meta">' + animalProgress(a, sp) + '<br>' + livingText(a, sp) + '</span>' +
           '<span class="product-btns">' + prodBtns +
-          '<button type="button" class="lv-btn" data-collect="' + a.uid + '">' + t('livestock.btn.collect_all') + '</button></span></div>');
+          '</span></div>');
       }
+      var preview = window.LivestockState.previewSlaughter(a.uid);
+      var slaughterHint = preview.ok ? preview.items.map(function (p) { return itemDisplayName(p.item_id) + ' ×' + p.count; }).join('、') : reasonText(preview);
       slaughterRows.push('<div class="product-row">' + speciesIcon(a.species_id) + ' ' + speciesName(a.species_id) + ' ' + genderGlyph(a.gender) +
-        ' <span class="meta">' + a.weight_kg.toFixed(1) + ' kg</span>' +
-        '<button type="button" class="lv-btn" data-slaughter="' + a.uid + '">' + t('livestock.btn.slaughter') + '</button></div>');
+        ' <span class="meta">' + a.weight_kg.toFixed(1) + ' kg · ' + animalProgress(a, sp) + '</span>' +
+        '<button class="lv-btn" data-slaughter-select="' + a.uid + '">查看收益</button>' + (selectedSlaughterUid === a.uid ? '<span class="lv-slaughter-preview">' + esc(slaughterHint) + '</span>' +
+        '<button type="button" class="lv-btn" data-slaughter="' + a.uid + '"' + (preview.ok ? '' : ' disabled') + '>' + '确认屠宰' + '</button>' : '') + '</div>');
     });
-    box.innerHTML =
-      '<div class="product-col"><h3 class="section-title">' + t('livestock.tab.collect') + '</h3>' + (collectRows.join('') || '<div class="empty-hint">' + t('livestock.collect.none') + '</div>') + '</div>' +
-      '<div class="product-col"><h3 class="section-title">' + t('livestock.tab.slaughter') + '</h3>' + (slaughterRows.join('') || '<div class="empty-hint">' + t('livestock.slaughter.none') + '</div>') + '</div>' +
-      '<div class="product-col"><h3 class="section-title">' + t('livestock.tab.corpse') + '</h3>' + (corpseRows.join('') || '<div class="empty-hint">' + t('livestock.corpse.none') + '</div>') + '</div>';
+    var ready = routineProducts(st);
+    box.innerHTML = '<div class="lv-product-head"><div><span class="lv-eyebrow">日常收获</span><h3>可领取 ' + ready.length + ' 份</h3><p>' + esc(readySummary(ready)) + '</p></div><button class="lv-btn lv-primary" data-routine-collect' + (ready.length ? '' : ' disabled') + '>收取蛋、奶与毛</button></div>' +
+      '<div class="lv-product-nav">' + [['daily','日常采集'],['slaughter','计划屠宰'],['special','抽血'],['corpse','尸体处理 · ' + corpseRows.length]].map(function (entry) { return '<button class="lv-btn' + (productMode === entry[0] ? ' active' : '') + '" data-product-mode="' + entry[0] + '">' + entry[1] + '</button>'; }).join('') + '</div>' +
+      '<div class="product-col">' + ((productMode === 'daily' || productMode === 'special') ? (collectRows.join('') || '<p class="empty-hint">' + (productMode === 'special' ? '暂无可抽血的物种。' : '养成后可在这里收蛋、挤奶与剪毛。') + '</p>') : productMode === 'slaughter' ? '<p class="lv-note">选择动物查看收益。屠宰后无法继续产奶、产蛋或繁殖。</p>' + (slaughterRows.join('') || '<p class="empty-hint">暂无动物</p>') : (corpseRows.join('') || '<p class="empty-hint">牧场没有待清理的尸体。</p>')) + '</div>';
+    box.querySelectorAll('[data-product-mode]').forEach(function (btn) { btn.onclick = function () { productMode = btn.dataset.productMode; render(); }; });
+    box.querySelector('[data-routine-collect]').onclick = collectRoutineProducts;
+    box.querySelectorAll('[data-slaughter-select]').forEach(function (btn) { btn.onclick = function () { selectedSlaughterUid = btn.dataset.slaughterSelect; render(); }; });
     bindProductButtons();
   }
+  function animalProgress(a, sp) {
+    var age = Math.floor((a.age_ticks || 0) / 144);
+    var target = sp.growth.fatten_cap_kg;
+    var progress = target ? Math.min(100, Math.floor(a.weight_kg / target * 100)) : 0;
+    var next = (sp.products.living || []).filter(function (p) { return p.nutrition_per_item > 0 && (!p.requires_gender || a.gender === p.requires_gender || a.gender === 'hermaphrodite') && p.min_age_ticks > a.age_ticks; }).sort(function (a, b) { return a.min_age_ticks - b.min_age_ticks; })[0];
+    return age + ' 日龄 · 育肥 ' + progress + '%' + (next ? ' · 再过 ' + Math.ceil((next.min_age_ticks - a.age_ticks) / 144) + ' 天达到产' + productName(next.product_id) + '年龄（仍需体重与营养达标）' : '');
+  }
+  function routineProducts(st) {
+    var rows = [];
+    st.animals.forEach(function (a) {
+      if (a.dead) return;
+      var sp = window.LivestockState.getSpecies(a.species_id);
+      (sp && sp.products && sp.products.living || []).forEach(function (p) {
+        if (p.hp_cost > 0 || p.product_id === 'blood') return;
+        if (window.LivestockState.getProductStatus(a.uid, p.product_id).ready) rows.push({ uid: a.uid, product: p.product_id });
+      });
+    });
+    return rows;
+  }
+  function readySummary(rows) {
+    var counts = {};
+    rows.forEach(function (r) { counts[r.product] = (counts[r.product] || 0) + 1; });
+    return Object.keys(counts).map(function (id) { return productName(id) + ' ×' + counts[id]; }).join(' · ') || '尚无完成的蛋、奶或毛';
+  }
+  function collectRoutineProducts() {
+    var rows = routineProducts(window.LivestockState.ensureState());
+    var count = 0, dropped = 0;
+    rows.forEach(function (row) {
+      var result = window.LivestockState.collectProduct(row.uid, row.product);
+      if (!result.ok) return;
+      var given = giveItems([{ item_id: result.item_id, count: result.count }]);
+      count += result.count; dropped += given.dropped; addExp(100);
+    });
+    feedbackMsg = '已收取 ' + count + ' 份产物' + (dropped ? '，背包已满，' + dropped + ' 份放在地面' : '');
+    logMsg(feedbackMsg, 'success');
+    render();
+  }
   function corpseCauseText(a) {
-    var map = { disease: t('livestock.corpse_cause.disease'), starvation: t('livestock.corpse_cause.starvation'), blood_loss: t('livestock.corpse_cause.blood_loss'), old: t('livestock.corpse_cause.old') };
+    var map = { disease: t('livestock.corpse_cause.disease'), starvation: t('livestock.corpse_cause.starvation'), blood_loss: t('livestock.corpse_cause.blood_loss'), old: t('livestock.corpse_cause.old'), crowding: t('livestock.corpse_cause.crowding') };
     return map[a.death_cause] || t('livestock.corpse_cause.death');
   }
   function corpsePollutionText(cause) {
-    var rate = { disease: 0.006, starvation: 0.003, blood_loss: 0.002, old: 0.002 }[cause] || 0;
+    var rate = { disease: 0.006, starvation: 0.003, blood_loss: 0.002, old: 0.002, crowding: 0.003 }[cause] || 0;
     if (rate <= 0) return t('livestock.pollution.none');
     return t('livestock.pollution.rate', { v: (rate * 1000).toFixed(0) });
   }
   function livingText(a, sp) {
-    var parts = [];
-    sp.products.living.forEach(function (p) {
-      var cd = (a.cooldowns && a.cooldowns[p.product_id]) || 0;
-      parts.push(productName(p.product_id) + (cd > 0 ? t('livestock.product.cooldown', { v: cd }) : '✓'));
+    var parts = [t('livestock.nutrition.' + window.LivestockState.getNutritionStatus(a.uid).tier)];
+    sp.products.living.filter(function (p) { return productMode === 'special' ? p.hp_cost > 0 : !(p.hp_cost > 0); }).forEach(function (p) {
+      parts.push(productName(p.product_id) + ' ' + productionStatusText(a, p));
     });
     return parts.join(' ');
+  }
+  function productionStatusText(a, p) {
+    var status = window.LivestockState.getProductStatus(a.uid, p.product_id);
+    if (status.ready) return t('livestock.collectable');
+    if (status.reason === 'wrong_gender') return t('livestock.reason.wrong_gender');
+    if (status.reason === 'immature') return t('livestock.production.age', { days: Math.ceil((status.min_age_ticks || 0) / 144) });
+    if (status.progress != null) return '积累 ' + Math.min(100, Math.floor(status.progress * 100)) + '% · ' + t('livestock.nutrition.' + window.LivestockState.getNutritionStatus(a.uid).tier);
+    return status.remaining > 0 ? t('livestock.cooldown', { v: status.remaining }) : t('livestock.product.unavailable');
   }
 
   function giveItems(items) {
@@ -1195,7 +1274,7 @@
       logMsg(t('livestock.log.slaughter', { species: spName, weight: weight.toFixed(1), n: n, extra: gres.dropped > 0 ? t('livestock.msg.dropped_suffix', { n: gres.dropped }) : '', exp: exp }), 'success');
       feedbackMsg = t('livestock.msg.slaughter_done', { n: n });
     } else {
-      feedbackMsg = t('livestock.msg.slaughter_fail');
+      feedbackMsg = t('livestock.msg.slaughter_fail') + '：' + reasonText(r);
     }
     render();
   }

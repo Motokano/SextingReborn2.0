@@ -765,7 +765,7 @@
     {
       "x": 8,
       "y": 12,
-      "npc_id": "npc.supervisor.linShuyao"
+      "npc_id": "npc.supervisor.manager"
     }
   ],
   "cooking_station_interact_npc_by_cell": {

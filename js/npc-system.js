@@ -177,6 +177,12 @@
             var lsi;
             for (lsi = 0; lsi < lsk.length; lsi++) add(map.livestock_station_interact_npc_by_cell[lsk[lsi]]);
         }
+        if (map && map.bed_station_interact_npc_id != null) add(map.bed_station_interact_npc_id);
+        if (map && map.bed_station_interact_npc_by_cell && typeof map.bed_station_interact_npc_by_cell === 'object') {
+            var bk = Object.keys(map.bed_station_interact_npc_by_cell);
+            var bi;
+            for (bi = 0; bi < bk.length; bi++) add(map.bed_station_interact_npc_by_cell[bk[bi]]);
+        }
         if (map && map.warehouse_station_interact_npc_id != null) add(map.warehouse_station_interact_npc_id);
         if (map && map.warehouse_station_interact_npc_by_cell && typeof map.warehouse_station_interact_npc_by_cell === 'object') {
             var whk = Object.keys(map.warehouse_station_interact_npc_by_cell);
@@ -852,7 +858,7 @@
                 try {
                     var f = getFlags();
                     var lang = getSkillLevel('survival_language');
-                    log('闲聊无可触发条目：flag lsy_has_talked=' + (f.lsy_has_talked === undefined ? 'undefined' : String(f.lsy_has_talked))
+                    log('闲聊无可触发条目：flag supervisor_has_talked=' + (f.supervisor_has_talked === undefined ? 'undefined' : String(f.supervisor_has_talked))
                         + '，survival_language=' + String(lang), 'warn');
                     for (var di = 0; di < debug.length; di++) {
                         if (di >= 6) break;

@@ -441,9 +441,13 @@
     function updatePlayerDirectionIndicator() {
         var el = document.getElementById('player-direction-indicator');
         if (!el) return;
-        var deg = normalizeFacingDir(currentFacingDir) * 45;
+        var deg = window.MapProjection && typeof window.MapProjection.directionAngleDeg === 'function'
+            ? window.MapProjection.directionAngleDeg(currentFacingDir)
+            : normalizeFacingDir(currentFacingDir) * 45;
         el.style.transform = 'translate(-50%, -50%) rotate(' + deg + 'deg)';
     }
+
+    window.addEventListener('mapviewchange', updatePlayerDirectionIndicator);
 
     function normalizeFacingDir(v) {
         var n = Number(v);
@@ -494,6 +498,8 @@
         currentFacing = facingDirToCardinal(currentFacingDir);
         updatePlayerAvatarImage();
         updatePlayerDirectionIndicator();
+        // 朝向变化会改变整片格的视野揭示/遮挡；原地转向也要触发一次重绘（SceneRenderer.render 内检测朝向变化会整层重画）。
+        try { render(); } catch (eFacingRender) { /* 场景尚未就绪时静默 */ }
         return currentFacingDir;
     }
 
@@ -753,7 +759,8 @@
                     (arr[32] && arr[32].modules) || {},
                     (arr[33] && arr[33].perks) || {},
                     (arr[34] && arr[34].costs) || {},
-                    (arr[35] && arr[35].crops) || {}
+                    (arr[35] && arr[35].crops) || {},
+                    (arr[31] && arr[31].pasture_rules) || {}
                 );
             }
             if (window.AgricultureMap && typeof window.AgricultureMap.bindEnv === 'function') {
@@ -1029,6 +1036,7 @@
             if (window.Survival && window.Survival.setState) {
                 window.Survival.setState({
                     gender_value: gender === 'female' ? 100 : 0,
+                    food_metabolism: null,
                     height_cm: heightCm,
                     weight_kg: initWeightKg
                 });
@@ -1071,6 +1079,7 @@
     }
 
     function updateRoleNameFromCharacter() {
+        if (window.PlayerPawnRig) window.PlayerPawnRig.update(document.querySelector('.player-pawn-visual'));
         var el = document.getElementById('status-role-name');
         if (!el) return;
         var name = window.CharacterAttributes && window.CharacterAttributes.getCharacterName();
@@ -1146,6 +1155,29 @@
             var row = document.createElement('div');
             row.className = 'limb-row';
             row.innerHTML = '<div class="row"><span>' + (label.replace(/</g, '&lt;')) + '</span><span id="limb-' + partId + '">' + statusCell + '</span></div>';
+            // Per-part debug control uses the same destruction limits as combat.
+            (function (key, partLabel, host) {
+                var debugButton = document.createElement('button');
+                debugButton.type = 'button';
+                debugButton.className = 'limb-debug-destroy';
+                debugButton.textContent = '满损毁';
+                debugButton.title = '调试：' + partLabel + '满损毁';
+                debugButton.setAttribute('aria-label', debugButton.title);
+                debugButton.style.cssText = 'margin-left:6px;padding:1px 5px;font-size:11px;flex-shrink:0';
+                debugButton.addEventListener('click', function (event) {
+                    event.stopPropagation();
+                    var CA = window.CharacterAttributes;
+                    if (!CA || typeof CA.applyCombatDestroy !== 'function') return;
+                    var max = CA.getBodyPartDestroyMax(key);
+                    var remaining = Math.max(0, max - CA.getPartDestroy(key));
+                    if (remaining > 0) CA.applyCombatDestroy(key, remaining);
+                    SceneUi.hideItemTooltip();
+                    SceneHud.refresh('status');
+                    if (window.PlayerPawnRig) window.PlayerPawnRig.update(document.querySelector('.player-pawn-visual'));
+                    if (window.SceneRenderer && typeof window.SceneRenderer.render === 'function') window.SceneRenderer.render();
+                });
+                host.querySelector('.row').appendChild(debugButton);
+            })(destroyKey, label, row);
             (function (pid, partLabel) {
                 row.addEventListener('mouseenter', function () {
                     var statusEl = document.getElementById('limb-' + pid);
@@ -1227,7 +1259,7 @@
     var playerActionsOutsideClickBound = false;
 
     function hubAdjacentForBreathActions() {
-        return !!(window.SceneCtx && typeof window.SceneCtx.hasAdjacentEnemyForCombat === 'function' && window.SceneCtx.hasAdjacentEnemyForCombat());
+        return !!(window.CombatEngagement && typeof window.CombatEngagement.isPlayerInCombat === 'function' && window.CombatEngagement.isPlayerInCombat());
     }
 
     var ACTION_BAR_PIN_SLOTS = 4;
@@ -1701,6 +1733,13 @@
     };
 
     function updateStatusPanel(gatherState) {
+        if (window.HungerTile) window.HungerTile.refresh();
+        var combatBadge = document.getElementById('status-combat-state');
+        if (combatBadge) {
+            var inCombatNow = !!(window.CombatEngagement && typeof window.CombatEngagement.isPlayerInCombat === 'function' && window.CombatEngagement.isPlayerInCombat());
+            combatBadge.textContent = ui(inCombatNow ? 'status.combat.in' : 'status.combat.out');
+            combatBadge.classList.toggle('in-combat', inCombatNow);
+        }
         var SurvForRest = window.Survival;
         if (SurvForRest && typeof SurvForRest.getState === 'function') {
             var restState = SurvForRest.getState() || {};
@@ -2054,6 +2093,27 @@
                         } catch (eSt2) { /* ignore */ }
                         stunText.textContent = stunActive ? (String(stunVal) + '（眩晕中）') : String(stunVal);
                     }
+                    // 疼痛（k229/47 §9.6）：显示生效值（min(累积, 封顶 25+0.75×平均损毁%)）+ 档位名
+                    var painText = document.getElementById('status-pain-text');
+                    if (painText) {
+                        var painVal = '—';
+                        try {
+                            if (Surv && typeof Surv.getPainInfo === 'function') {
+                                var pi2 = Surv.getPainInfo() || {};
+                                var pTierLabel = '';
+                                if (pi2.tier && pi2.tier !== 'none') {
+                                    try { pTierLabel = ui('survival.pain.' + String(pi2.tier)); }
+                                    catch (ePt) { pTierLabel = String(pi2.tier); }
+                                }
+                                painVal = pTierLabel ? (String(pi2.effective) + '（' + pTierLabel + '）') : String(pi2.effective);
+                                if (pi2.ignored_ratio > 0) painVal = ui('survival.pain.medicated', {
+                                    raw: pi2.unmedicated, effective: Number(Number(pi2.effective).toFixed(2)),
+                                    percent: Math.round(pi2.ignored_ratio * 100)
+                                });
+                            }
+                        } catch (ePainUi) { /* ignore */ }
+                        painText.textContent = painVal;
+                    }
                 }
             }
 
@@ -2160,6 +2220,19 @@
         refreshPharmacyStatusRows();
     }
 
+    var combatEngagementFeedbackReady = false;
+    function setupCombatEngagementFeedback() {
+        if (combatEngagementFeedbackReady || !window.CombatEngagement || typeof window.CombatEngagement.onChange !== 'function') return;
+        combatEngagementFeedbackReady = true;
+        window.CombatEngagement.onChange(function (ev) {
+            if (window.GameLog && typeof window.GameLog.log === 'function') {
+                window.GameLog.log(ui(ev && ev.inCombat ? 'combat.log.engagement.enter' : 'combat.log.engagement.exit'), 'system');
+            }
+            if (window.SceneHud && typeof window.SceneHud.refresh === 'function') window.SceneHud.refresh('status');
+            if (window.SceneRenderer && typeof window.SceneRenderer.render === 'function') window.SceneRenderer.render();
+        });
+    }
+
     /** 制药状态行（47 §4.1 成瘾可见条 + §9.2 体内毒性；k242/k240）。 */
     function refreshPharmacyStatusRows() {
         var PE = window.PharmacyEffects;
@@ -2170,7 +2243,8 @@
                 if (PE && typeof PE.getInfo === 'function') {
                     var info = PE.getInfo() || {};
                     var label = ui('pharmacy.addiction.stage' + String(info.stage || 1));
-                    txt = String(Math.round(info.addiction)) + '（' + label + (info.suppressed ? ui('pharmacy.addiction.suppressed') : '') + '）';
+                    var effectiveLabel = ui('pharmacy.addiction.stage' + String(info.effective_stage || info.stage || 1));
+                    txt = String(Math.round(info.addiction)) + '（' + label + '；' + ui('pharmacy.addiction.effective_stage', { stage: effectiveLabel, n: info.relief_stages || 0 }) + '）';
                 }
             } catch (eAddUi) { /* ignore */ }
             addEl.textContent = txt;
@@ -2599,6 +2673,8 @@
                 main_output: mainOut,
                 bonus_outputs: bonusOut,
                 failure_output: failOut,
+                recommended_skill_level: route && route.recommended_skill_level != null ? route.recommended_skill_level : 0,
+                cost_override: route && route.cost_override && typeof route.cost_override === 'object' ? route.cost_override : null,
                 base_success_rate: (route && route.base_success_rate != null)
                     ? route.base_success_rate
                     : (method && method.base_success_rate != null ? method.base_success_rate : null)
@@ -2624,6 +2700,8 @@
                 main_output: mainOut,
                 bonus_outputs: bonusOut,
                 failure_output: failOut,
+                recommended_skill_level: route && route.recommended_skill_level != null ? route.recommended_skill_level : 0,
+                cost_override: route && route.cost_override && typeof route.cost_override === 'object' ? route.cost_override : null,
                 base_success_rate: (route && route.base_success_rate != null)
                     ? route.base_success_rate
                     : (method && method.base_success_rate != null ? method.base_success_rate : null)
@@ -2704,9 +2782,12 @@
             }
         }
 
-        var needFuel = StationCraftCore.readMethodCostValue(m, 'fuel', 'fuel_cost');
-        var needTicks = StationCraftCore.readMethodCostValue(m, 'ticks', 'craft_ticks');
-        var needStamina = StationCraftCore.readMethodCostValue(m, 'stamina', 'stamina_cost');
+        var routePreview = PharmacyStation.tryResolvePharmacyByUnifiedRoute(mid, selected);
+        var previewData = routePreview && routePreview.ok ? routePreview.data : null;
+        var costSource = previewData && previewData.cost_override ? { cost: previewData.cost_override } : m;
+        var needFuel = StationCraftCore.readMethodCostValue(costSource, 'fuel', 'fuel_cost');
+        var needTicks = StationCraftCore.readMethodCostValue(costSource, 'ticks', 'craft_ticks');
+        var needStamina = StationCraftCore.readMethodCostValue(costSource, 'stamina', 'stamina_cost');
         var cs = PharmacyStation.getState();
         var curFuel = parseInt(cs.fuel_points, 10) || 0;
         if (curFuel < needFuel) return { ok: false, reason: 'insufficient_fuel', need: needFuel, current: curFuel };
@@ -2736,6 +2817,7 @@
             method_id: mid,
             inputs: selected,
             consumed_items: consumedRes.consumed || [],
+            recommended_skill_level: previewData ? Math.max(0, parseInt(previewData.recommended_skill_level, 10) || 0) : 0,
             station_ref: {
                 station_type: stationCtx.station_type || 'main',
                 map_id: stationCtx.map_id,
@@ -2759,10 +2841,7 @@
         };
     }
 
-    /**
-     * 制药台配药模式（47 §9.4，k231）：溶媒 1 + N 味药粉/药片 → 动态注射液实例。
-     * 独立结算，不走固定配方行；不校验相冲（留到注射后，§9.4/§10.4）。
-     */
+    /** 制药台配药模式：无效输入不开工；配伍失败消耗后产药渣；合法组合产动态注射液。 */
     function tryCompoundAtStation(inputItems) {
         if (guardPlayerActionBlocked(ACTION_TYPES.CRAFT)) {
             return { ok: false, reason: 'action_disabled', action_type: ACTION_TYPES.CRAFT };
@@ -2781,6 +2860,11 @@
         var selected = StationCraftCore.normalizePharmacyInputs(inputItems);
         var check = window.PharmacyCompounding.validate(selected);
         if (!check.ok) return check;
+        var resolvedPreview = window.PharmacyCompounding.resolve(selected);
+        if (!resolvedPreview.ok) return resolvedPreview;
+        if (!Array.isArray(resolvedPreview.buff_ids) || !resolvedPreview.buff_ids.length) {
+            return { ok: false, reason: 'no_effective_component' };
+        }
 
         var i;
         for (i = 0; i < selected.length; i++) {
@@ -2799,22 +2883,40 @@
             return { ok: false, reason: 'consume_inputs_failed' };
         }
 
+        var compoundFailed = resolvedPreview.precipitated === true || (resolvedPreview.conflicts || []).length > 0;
+        if (compoundFailed) {
+            var residue = { item_id: PharmacyStation.getFailureItemId(), count: 1 };
+            var residuePlaced = IE.putItemIntoDefaultContainer(residue);
+            if (!residuePlaced || !residuePlaced.placed) {
+                var failState = E.getState();
+                if (typeof IE.addItemToGround === 'function') IE.addItemToGround(failState.mapId, failState.x, failState.y, residue);
+            }
+            showMsg(ui('pharmacy.msg.done_fail', { item: residue.item_id }), 'warn');
+            if (typeof updateBackpackPanel === 'function') updateBackpackPanel();
+            if (window.SceneRenderer) window.SceneRenderer.render();
+            return { ok: false, reason: 'incompatible_compound', consumed: true, failure_item_id: residue.item_id, resolved: resolvedPreview };
+        }
+
         var built = window.PharmacyCompounding.buildInstance(selected);
         if (!built.ok) {
             StationCraftCore.putItemsBack(consumedRes.consumed || []);
             return built;
+        }
+        if (typeof PharmacyStation.inheritSpoilageOnOutput === 'function') {
+            PharmacyStation.inheritSpoilageOnOutput(built.instance, consumedRes.consumed || []);
         }
         var placed = IE.putItemIntoDefaultContainer(built.instance);
         if (!placed || !placed.placed) {
             var st0 = E.getState();
             if (typeof IE.addItemToGround === 'function') IE.addItemToGround(st0.mapId, st0.x, st0.y, built.instance);
         }
+        if (typeof PharmacyStation.addPharmacySuccessProficiency === 'function') PharmacyStation.addPharmacySuccessProficiency(1);
         var res = built.resolved || {};
-        showMsg(ui(res.precipitated ? 'pharmacy.compound.ok_precipitated' : 'pharmacy.compound.ok', {
+        showMsg(ui('pharmacy.compound.ok', {
             used: String(res.concentration_used != null ? res.concentration_used : 0),
             capacity: String(res.capacity != null ? res.capacity : 0),
             tox: String(res.net_toxicity != null ? res.net_toxicity : 0)
-        }), res.precipitated ? 'warn' : 'success');
+        }), 'success');
         if (typeof updateBackpackPanel === 'function') updateBackpackPanel();
         if (typeof updateStatusPanel === 'function') SceneHud.refresh('status');
         if (window.SceneRenderer) window.SceneRenderer.render();
@@ -2895,6 +2997,7 @@
             try { tickAgricultureAfterWorldTick(); } catch (eAg) { /* ignore */ }
             try { tickLivestockAfterWorldTick(); } catch (eLs) { /* ignore */ }
             try { CombatWorld.tickEnemiesAfterWorldTick(); } catch (eEn) { /* ignore */ }
+            if (CombatWorld.flushDisplacements) CombatWorld.flushDisplacements();
             try { CombatWorld.tickPlayerStunDecay(); } catch (eStunD) { /* ignore */ }
             // 制药：成瘾衰减/阶段压制刷新 + 毒性代谢 + 致死倒计时（47 §4/§9.2，k242/k240）
             try {
@@ -3957,6 +4060,9 @@
                     if (p.agriculture_fertilizer_per_tick != null && isFinite(p.agriculture_fertilizer_per_tick)) {
                         out.fertilizerPerTick = Number(p.agriculture_fertilizer_per_tick);
                     }
+                    if (p.agriculture_nutrient_per_bottle != null && isFinite(p.agriculture_nutrient_per_bottle)) {
+                        out.nutrientPerBottle = Number(p.agriculture_nutrient_per_bottle);
+                    }
                     if (p.agriculture_venturi_effect_duration_ticks != null) {
                         out.effectDurationTicks = Math.max(1, Math.floor(Number(p.agriculture_venturi_effect_duration_ticks)));
                     }
@@ -3989,7 +4095,10 @@
     }
 
     function getAgricultureConstructionCtx(spec) {
-        var taskSpec = spec || getAgricultureTaskSpecFromMeta(agricultureTaskMeta);
+        var liveState = window.AgricultureMap && typeof window.AgricultureMap.getState === 'function'
+            ? window.AgricultureMap.getState() : null;
+        var persistedMeta = liveState && liveState.task && liveState.task.paymentMeta;
+        var taskSpec = spec || getAgricultureTaskSpecFromMeta(agricultureTaskMeta || persistedMeta);
         return {
             panelOpen: true,
             taskTicks: taskSpec.task_ticks != null ? taskSpec.task_ticks : 10,
@@ -4024,6 +4133,13 @@
                 var spoilResult = HW.tickSpoilage();
                 spoilChanged = !!(spoilResult && (spoilResult.warehouse_spoiled > 0
                     || spoilResult.inventory_spoiled > 0));
+                if (spoilResult && spoilResult.expired_items) {
+                    Object.keys(spoilResult.expired_items).forEach(function (itemId) {
+                        var tpl = IE && typeof IE.getItemTemplate === 'function' ? IE.getItemTemplate(itemId) : null;
+                        var itemName = tpl ? (tpl.sn || tpl.name || itemId) : itemId;
+                        showMsg(ui('pharmacy.spoilage.expired', { item: itemName, n: spoilResult.expired_items[itemId] }), 'warn');
+                    });
+                }
             } catch (eSpoil) { /* ignore */ }
         }
 
@@ -4171,9 +4287,9 @@
         if (facilityKind === 'buried_pot_jar' && !p.agriculture_buried_jar_injectable) {
             return { ok: false, reason: 'not_jar_injectable' };
         }
-        if (facilityKind === 'venturi_fertilizer' && typeof AM.tryInjectSeaweedEffectAt === 'function') {
-            var env = buildAgricultureEnv();
-            var inj = AM.tryInjectSeaweedEffectAt(st, env, x, y);
+        if (typeof AM.tryLoadFacilityBottleAt === 'function') {
+            if (typeof AM.bindEnv === 'function') AM.bindEnv(buildAgricultureEnv());
+            var inj = AM.tryLoadFacilityBottleAt(st, x, y, facilityKind, itemId);
             if (inj && inj.ok) return { ok: true, facility: facilityKind, item_id: itemId };
             return inj || { ok: false, reason: 'inject_failed' };
         }
@@ -4227,7 +4343,7 @@
 
         if (action === 'cancel_task') {
             if (!st.task) return { ok: false, reason: 'no_task' };
-            refundAgricultureTaskInputs(agricultureTaskMeta);
+            refundAgricultureTaskInputs(agricultureTaskMeta || st.task.paymentMeta);
             st.task = null;
             agricultureTaskMeta = null;
             return { ok: true, cancelled: true };
@@ -4258,6 +4374,7 @@
             if (params.soilId) st.task.soilId = String(params.soilId);
             if (params.soilType) st.task.soilType = String(params.soilType);
             agricultureTaskMeta = { buildId: buildId, spec: pay.spec, consumed: pay.consumed || [] };
+            st.task.paymentMeta = agricultureTaskMeta;
             return { ok: true, task: st.task, buildId: buildId };
         }
 
@@ -4286,6 +4403,7 @@
                 spec: window.AgricultureConfig.getTaskDefaults ? window.AgricultureConfig.getTaskDefaults() : { task_ticks: 10, stamina_per_tick: 5 },
                 consumed: amendPay.consumed || []
             };
+            st.task.paymentMeta = agricultureTaskMeta;
             return { ok: true, task: st.task, soilId: grantsSoil };
         }
 
@@ -4304,10 +4422,12 @@
             }
             st.task = { type: 'upgrade_venturi', x: x, y: y, progress: 0, paused: false };
             agricultureTaskMeta = { buildId: 'venturi_upgrade:' + fromLv, spec: upPay.spec, consumed: upPay.consumed || [] };
+            st.task.paymentMeta = agricultureTaskMeta;
             return { ok: true, task: st.task, from_level: fromLv };
         }
 
         if (action === 'start_pool_upgrade') {
+            return { ok: false, reason: 'fixed_pool' };
             if (st.task) return { ok: false, reason: 'task_busy' };
             if (!AM.cell) return { ok: false, reason: 'agriculture_map_missing' };
             var pc = AM.cell(st, x, y);
@@ -4335,6 +4455,7 @@
         }
 
         if (action === 'pool_theft_set') {
+            return { ok: false, reason: 'fixed_pool' };
             if (typeof AM.getPoolLevel !== 'function') return { ok: false, reason: 'agriculture_map_missing' };
             if (AM.getPoolLevel(st) < 2) return { ok: false, reason: 'pool_theft_locked' };
             if (!st.pool_theft) {
@@ -4364,6 +4485,18 @@
             var delta = Number(params.delta != null ? params.delta : params.step);
             if (!isFinite(delta) || delta === 0) return { ok: false, reason: 'missing_params' };
             return AM.trySetSeaweedConcentrationAt(st, x, y, curConc + delta);
+        }
+
+        if (action === 'step_jar_release') {
+            if (typeof AM.cell !== 'function' || typeof AM.trySetJarReleaseRateAt !== 'function') {
+                return { ok: false, reason: 'unavailable' };
+            }
+            var jarCell = AM.cell(st, x, y);
+            if (!jarCell || jarCell.kind !== 'buried_pot_jar') return { ok: false, reason: 'not_jar' };
+            var jarCurrent = Number(jarCell.jarReleaseRate) || 0;
+            var jarDelta = Number(params.delta != null ? params.delta : params.step);
+            if (!isFinite(jarDelta) || jarDelta === 0) return { ok: false, reason: 'missing_params' };
+            return AM.trySetJarReleaseRateAt(st, x, y, jarCurrent + jarDelta);
         }
 
         if (action === 'plant') {
@@ -4416,7 +4549,9 @@
                     result: harvestPreview.result
                 };
             }
-            if (placed > 0 && typeof AM.commitHarvestAt === 'function' && placed === wantCount) {
+            if (wantCount === 0 && typeof AM.commitHarvestAt === 'function') {
+                AM.commitHarvestAt(st, x, y);
+            } else if (placed > 0 && typeof AM.commitHarvestAt === 'function' && placed === wantCount) {
                 AM.commitHarvestAt(st, x, y);
             } else if (placed > 0 && placed < wantCount && typeof AM.cell === 'function') {
                 var plotAfterPartial = AM.cell(st, x, y);
@@ -4965,15 +5100,15 @@
         });
 
         function interactWithWindow(slotKey) {
-            if (!CompostPanel.isOpen() || !window.CompostSystem || typeof window.CompostSystem.interact !== 'function') return;
+            if (!CompostPanel.hasCompostInteractionContext() || !window.CompostSystem || typeof window.CompostSystem.interact !== 'function') return;
             var mode = CompostPanel.uiState.mode === 'anaerobic' ? 'anaerobic' : 'aerobic';
-            var batch = getCompostBatchOrIdle(mode);
+            var batch = window.CompostSystem.getBatch(mode);
             if (!batch || batch.status !== 'FERMENTING' || Number(batch.pending_window_index) < 0) return;
             var actionId = String(CompostPanel.windowActionSlots[slotKey] || '');
             if (!actionId) return;
             var ret = window.CompostSystem.interact(mode, actionId, { advance_world_tick: true });
             if (ret && ret.ok) {
-                CompostPanel.pushCompostLog(ui(ret.success ? 'compost.log.interact_ok' : 'compost.log.interact_fail'));
+                if (!ret.feedback_text) CompostPanel.pushCompostLog(ui(ret.success ? 'compost.log.interact_ok' : 'compost.log.interact_fail'));
                 if (window.Survival && typeof window.Survival.addDirtyness === 'function') {
                     window.Survival.addDirtyness(10);
                 }
@@ -5835,12 +5970,7 @@
                     var div = document.createElement('div');
                     div.className = 'combat-skill-item' + (combatUIState.curSkillId === s.id ? ' selected' : '');
                     var level = IE && IE.getSkillLevel ? IE.getSkillLevel(s.id) : 0;
-                    var skillsState = IE && IE.getState() && IE.getState().skills ? IE.getState().skills : {};
-                    var moveUsage = (skillsState[s.id] && skillsState[s.id].move_usage) ? skillsState[s.id].move_usage : {};
-                    var profPct = Math.floor(CS.getSkillTotalProficiency(s.id, moveUsage) * 100);
-                    var metaStr = (s.category === 'footwork')
-                        ? ui('combat.skill.meta.footwork', { level: level })
-                        : ui('combat.skill.meta', { level: level, profPct: profPct });
+                    var metaStr = ui('combat.level', { v: level });
                     div.innerHTML = '<div class="skill-icon">' + (s.icon || '') + '</div><div class="skill-info"><div class="skill-name">' + (s.name || s.id) + '</div><div class="skill-meta">' + metaStr + '</div></div>';
                     div.onclick = function () {
                         combatUIState.curSkillId = s.id;
@@ -5932,7 +6062,6 @@
         var selSkill = CS && combatUIState.curSkillId ? CS.getSkill(combatUIState.curSkillId) : null;
         var titleEl = document.getElementById('skill-title');
         var levelEl = document.getElementById('skill-level');
-        var profEl = document.getElementById('skill-prof');
         if (titleEl) {
             if (!isMuscleMode) {
                 titleEl.textContent = selSkill ? selSkill.name : '--';
@@ -5947,10 +6076,7 @@
         }
         var skillLevel = IE && combatUIState.curSkillId ? IE.getSkillLevel(combatUIState.curSkillId) : 0;
         var skillsState = IE && IE.getState() && IE.getState().skills ? IE.getState().skills : {};
-        var moveUsage = (combatUIState.curSkillId && skillsState[combatUIState.curSkillId] && skillsState[combatUIState.curSkillId].move_usage) ? skillsState[combatUIState.curSkillId].move_usage : {};
-        var profPct = selSkill && CS && selSkill.category !== 'footwork' ? Math.floor(CS.getSkillTotalProficiency(combatUIState.curSkillId, moveUsage) * 100) : 0;
         if (levelEl) levelEl.textContent = ui('combat.level', { v: skillLevel });
-        if (profEl) profEl.textContent = (selSkill && selSkill.category === 'footwork') ? ui('combat.prof.not_applicable') : ui('combat.prof.total', { v: profPct });
         renderRecipeSchemaValidationDebugList();
 
         // Deploy slot validation:
@@ -6671,6 +6797,21 @@
         });
     }
     var stunDbgBtn = document.getElementById('status-stun-debug-plus50');
+    // 疼痛调试（k229）：直接 +30（同档位判定口径：封顶 = min(100, 25+0.75×平均损毁%)）
+    var painDbgBtn = document.getElementById('status-pain-debug-plus30');
+    if (painDbgBtn) {
+        painDbgBtn.addEventListener('click', function () {
+            var Surv2 = window.Survival;
+            if (!Surv2 || typeof Surv2.debugAddPain !== 'function') return;
+            var piDbg = Surv2.debugAddPain(30) || {};
+            if (window.GameLog && typeof window.GameLog.log === 'function') {
+                window.GameLog.log('[debug] 疼痛 +30 → 当前 ' + String(piDbg.stored) + '（生效 ' + String(piDbg.effective)
+                    + '，封顶 ' + String(piDbg.cap) + '，档位 ' + String(piDbg.tier) + '）', 'system');
+            }
+            if (typeof updateStatusPanel === 'function') SceneHud.refresh('status');
+            if (window.SceneRenderer && typeof window.SceneRenderer.render === 'function') window.SceneRenderer.render();
+        });
+    }
     if (stunDbgBtn) {
         stunDbgBtn.addEventListener('click', function () {
             var IE2 = window.InventoryEquipment;
@@ -7200,6 +7341,9 @@
         html += '<button type="button" class="uwm-btn" id="uwm-reset">' + ui('ui.windows.reset') + '</button>';
         menu.innerHTML = html;
 
+        if (window.MapProjection) window.MapProjection.mountControl(menu);
+        if (window.HungerTile) window.HungerTile.mountMotionControl(menu);
+
         var rows = menu.querySelectorAll('.uwm-row[data-win-id]');
         for (var j = 0; j < rows.length; j++) {
             (function (row) {
@@ -7410,6 +7554,7 @@
         }
         registerUiWindows();
         loadConfig().then(function () {
+            setupCombatEngagementFeedback();
             // i18n 已就绪（UIText.setDict 已完成）后再进行地图合并渲染
             if (window.SaveSystem && typeof window.SaveSystem.init === 'function') {
                 window.SaveSystem.init({ saveIntervalTicks: 50 });
@@ -7454,6 +7599,20 @@
             });
             if (window.GameLog) window.GameLog.log(ui('log.system.enter.scene'), 'system');
             window.SceneCtx.actions = window.SceneCtx.actions || {};
+            window.SceneCtx.actions.turnToward = function (dx, dy) {
+                if (isStoryMovementLocked()) return false;
+                if (guardPlayerComaBlocked()) return false;
+                if (guardPlayerActionBlocked(ACTION_TYPES.MOVE)) return false;
+                var ddx = Math.sign(Number(dx) || 0);
+                var ddy = Math.sign(Number(dy) || 0);
+                if (!ddx && !ddy) return false;
+                setFacingFromMove(ddx, ddy);
+                stopGatheringIdle();
+                // The current formal rules do not charge time for an in-place facing change.
+                // Keep that behavior here instead of inventing a new world tick cost.
+                if (window.SceneRenderer && typeof window.SceneRenderer.render === 'function') window.SceneRenderer.render();
+                return true;
+            };
             window.SceneCtx.actions.tryMoveTo = function (tx, ty, dx, dy) {
                 if (isStoryMovementLocked()) return;
                 if (guardPlayerComaBlocked()) return;
@@ -7538,6 +7697,23 @@
                         parry_rate: ctxMeta.enemy_parry_rate != null ? Number(ctxMeta.enemy_parry_rate) : 0,
                         parry_damage_reduce: ctxMeta.enemy_parry_reduce != null ? Number(ctxMeta.enemy_parry_reduce) : 0
                     };
+                    // 有效攻击已通过目标/距离入口校验：命中结算前立即建立交战与 AI 仇恨。
+                    if (defenderBase.index >= 0) {
+                        var mapAttack = E && typeof E.getMap === 'function' ? E.getMap() : null;
+                        var protectTick = getWorldTotalTicks() + 1;
+                        if (window.CombatEnemies && typeof window.CombatEnemies.forceAggro === 'function') {
+                            window.CombatEnemies.forceAggro(mapAttack, defenderBase.index, protectTick);
+                        }
+                        if (window.CombatEngagement && typeof window.CombatEngagement.engageEnemy === 'function') {
+                            window.CombatEngagement.engageEnemy({
+                                mapId: defenderBase.mapId,
+                                index: defenderBase.index,
+                                enemyId: enemyId,
+                                record: mapAttack && mapAttack.enemies ? mapAttack.enemies[defenderBase.index] : null,
+                                reason: 'player_attack'
+                            });
+                        }
+                    }
                     if (window.CombatEnemies && typeof window.CombatEnemies.mergeIntoDefender === 'function') {
                         window.CombatEnemies.mergeIntoDefender(defenderBase);
                     }
@@ -7658,6 +7834,11 @@
                             is_last_subhit: true,
                             segments: r0 && r0.segments && r0.segments.length > 1 ? r0.segments : null,
                             rawDamage: rawDmg0,
+                            typedDamage: r0 && r0.typedDamage,
+                            damageComponents: r0 && r0.damageComponents,
+                            blockTargetEffects: !!(r0 && r0.blockTargetEffects),
+                            actionConditionBonus: r0 && r0.actionConditionBonus,
+                            resourceResult: r0,
                             forceZeroDamageByResourceInsufficient: !!(r0 && r0.forceZeroDamageByResourceInsufficient),
                             simultaneousDryRun: !!simDry,
                             attacker: {
@@ -8099,7 +8280,7 @@
             };
 
             function hubAdjacentBattleContext() {
-                return !!(window.SceneCtx && typeof window.SceneCtx.hasAdjacentEnemyForCombat === 'function' && window.SceneCtx.hasAdjacentEnemyForCombat());
+                return !!(window.CombatEngagement && typeof window.CombatEngagement.isPlayerInCombat === 'function' && window.CombatEngagement.isPlayerInCombat());
             }
             var breathHubSkillId = 'combat_basic_breath';
             var diqiHutiBtnEl = document.getElementById('player-action-diqi-huti');
@@ -8188,22 +8369,11 @@
         }).catch(function () { render(); });
     }
 
-    /** 47 §5.2：交战判定——当前地图存在存活且距离 ≤ 2 格的敌人（敌人 AI 会贴身，贴脸即视为交战）。 */
-    var COMBAT_THREAT_RANGE = 2;
+    /** 47 §5.2：所有玩法门禁统一读取 CombatEngagement。 */
     function isPlayerInCombat() {
-        var st = E && typeof E.getState === 'function' ? E.getState() : null;
-        var map = E && typeof E.getMap === 'function' ? E.getMap() : null;
-        if (!st || !map || !Array.isArray(map.enemies) || !map.enemies.length) return false;
-        var CE = window.CombatEnemies;
-        var mapId = String(map.map_id || '');
-        var i;
-        for (i = 0; i < map.enemies.length; i++) {
-            var n = map.enemies[i] || {};
-            if (CE && typeof CE.isEnemyDead === 'function' && CE.isEnemyDead(mapId, i)) continue;
-            var d = Math.max(Math.abs((n.x | 0) - st.x), Math.abs((n.y | 0) - st.y));
-            if (d <= COMBAT_THREAT_RANGE) return true;
-        }
-        return false;
+        return !!(window.CombatEngagement
+            && typeof window.CombatEngagement.isPlayerInCombat === 'function'
+            && window.CombatEngagement.isPlayerInCombat());
     }
 
     /** 47 §5.2：注射需静止——不在挂机（采集/调息）中、不在制作中。 */
@@ -8257,6 +8427,25 @@
         if (!ItemUse.itemTemplateIsConsumable(tpl)) {
             if (!options.silent) showMsg(ui('item.use.cannot'), 'info');
             return false;
+        }
+        if (!options.silent && window.BuffSystem && typeof window.BuffSystem.getPharmacyDoseUseWarning === 'function' && tpl.use_buff_id) {
+            var doseWarning = window.BuffSystem.getPharmacyDoseUseWarning(tpl.use_buff_id, 'item:' + itemId);
+            if (doseWarning.refresh) showMsg(ui('item.use.warn.refresh'), 'info');
+            else if (doseWarning.stronger_active) showMsg(ui('item.use.warn.stronger_active'), 'info');
+        }
+        if (!options.silent && tpl.pharmacy_compound === true && window.PharmacyCompounding && typeof window.PharmacyCompounding.resolveInstance === 'function') {
+            var doseResolved = window.PharmacyCompounding.resolveInstance(cell);
+            var formulaSource = 'pharmacy:compound:' + String(cell.pharmacy_formula_key || (typeof window.PharmacyCompounding.compoundIdentityKey === 'function' ? window.PharmacyCompounding.compoundIdentityKey(cell.components || []) : ''));
+            var dynamicRefresh = false, dynamicStronger = false;
+            if (doseResolved && doseResolved.ok && window.BuffSystem && typeof window.BuffSystem.getPharmacyDoseUseWarning === 'function') {
+                (doseResolved.buff_ids || []).forEach(function (bid) {
+                    var w = window.BuffSystem.getPharmacyDoseUseWarning(bid, formulaSource);
+                    dynamicRefresh = dynamicRefresh || w.refresh;
+                    dynamicStronger = dynamicStronger || w.stronger_active;
+                });
+            }
+            if (dynamicRefresh) showMsg(ui('item.use.warn.refresh'), 'info');
+            else if (dynamicStronger) showMsg(ui('item.use.warn.stronger_active'), 'info');
         }
         var taken = inv.takeItemFromContainer(containerType, index);
         if (!taken.success || !taken.item) {

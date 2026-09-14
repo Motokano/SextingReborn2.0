@@ -1,0 +1,4043 @@
+{
+  "phase": "calibrated-v5",
+  "assumptions": [
+    "External feed is counted as standard feed and maize-equivalent input; field crop yield and merchant currency are outside the livestock model.",
+    "Long runs use real collection arms, constrained trough throughput, explicit breeding limits and staggered purchased/captured chick replacements.",
+    "No lifespan disabling or free health resets. Replacements and manual slaughter actions are counted.",
+    "Current-version JSON reload occurs halfway through each long run."
+  ],
+  "comparisons": {
+    "split": {
+      "mixed": false,
+      "prepared": false,
+      "pigs": 2,
+      "birds": 5,
+      "cattle": 2,
+      "sheep": 2,
+      "ticks": 12000,
+      "damaged": false,
+      "recovery": false,
+      "manual": false,
+      "growing": false,
+      "feed": 3301.5871599993748,
+      "products": {
+        "hus_egg": 205,
+        "hus_milk_buffalo": 54,
+        "hus_wool": 4
+      },
+      "tills": 0,
+      "cleans": 0,
+      "maxLedgerError": 0,
+      "ledgerChecks": 132000,
+      "cycles": [
+        {
+          "tick": 1000,
+          "feed": 267.49655199995505,
+          "grass": 1.3826801599999798,
+          "minHp": 100,
+          "zones": {
+            "z1": {
+              "grass_height": 0.39888000000000007,
+              "compaction": 100,
+              "pollution": 0.016
+            },
+            "z2": {
+              "grass_height": 1.498,
+              "compaction": 0.18,
+              "pollution": 0
+            },
+            "z3": {
+              "grass_height": 0.0007999999999999999,
+              "compaction": 0,
+              "pollution": 0
+            },
+            "z4": {
+              "grass_height": 1.496,
+              "compaction": 19.799999999999663,
+              "pollution": 0.016
+            }
+          }
+        },
+        {
+          "tick": 2000,
+          "feed": 211.6919520000024,
+          "grass": 1.7595601600000152,
+          "minHp": 100,
+          "zones": {
+            "z1": {
+              "grass_height": 0.09608,
+              "compaction": 99.82,
+              "pollution": 0.016
+            },
+            "z2": {
+              "grass_height": 0.39888000000000007,
+              "compaction": 100,
+              "pollution": 0.016
+            },
+            "z3": {
+              "grass_height": 0.7988000000000147,
+              "compaction": 0.18,
+              "pollution": 0
+            },
+            "z4": {
+              "grass_height": 0.0007999999999999999,
+              "compaction": 0,
+              "pollution": 2.9864435792103005e-303
+            }
+          }
+        },
+        {
+          "tick": 3000,
+          "feed": 282.239865599983,
+          "grass": 1.0603601600001242,
+          "minHp": 100,
+          "zones": {
+            "z1": {
+              "grass_height": 0.0007999999999999999,
+              "compaction": 0,
+              "pollution": 2.9864435792103005e-303
+            },
+            "z2": {
+              "grass_height": 0.09608,
+              "compaction": 99.82,
+              "pollution": 0.016
+            },
+            "z3": {
+              "grass_height": 0.39888000000000007,
+              "compaction": 100,
+              "pollution": 0.016
+            },
+            "z4": {
+              "grass_height": 0.7988000000000147,
+              "compaction": 0.18,
+              "pollution": 2.9864435792103005e-303
+            }
+          }
+        },
+        {
+          "tick": 4000,
+          "feed": 282.239865599983,
+          "grass": 1.0603601600001242,
+          "minHp": 100,
+          "zones": {
+            "z1": {
+              "grass_height": 0.7988000000000147,
+              "compaction": 0.18,
+              "pollution": 2.9864435792103005e-303
+            },
+            "z2": {
+              "grass_height": 0.0007999999999999999,
+              "compaction": 0,
+              "pollution": 2.9864435792103005e-303
+            },
+            "z3": {
+              "grass_height": 0.09608,
+              "compaction": 99.82,
+              "pollution": 0.016
+            },
+            "z4": {
+              "grass_height": 0.39888000000000007,
+              "compaction": 100,
+              "pollution": 0.016
+            }
+          }
+        },
+        {
+          "tick": 5000,
+          "feed": 282.239865599983,
+          "grass": 1.0603601600001242,
+          "minHp": 100,
+          "zones": {
+            "z1": {
+              "grass_height": 0.39888000000000007,
+              "compaction": 100,
+              "pollution": 0.016
+            },
+            "z2": {
+              "grass_height": 0.7988000000000147,
+              "compaction": 0.18,
+              "pollution": 2.9864435792103005e-303
+            },
+            "z3": {
+              "grass_height": 0.0007999999999999999,
+              "compaction": 0,
+              "pollution": 2.9864435792103005e-303
+            },
+            "z4": {
+              "grass_height": 0.09608,
+              "compaction": 99.82,
+              "pollution": 0.016
+            }
+          }
+        },
+        {
+          "tick": 6000,
+          "feed": 282.239865599983,
+          "grass": 1.0603601600001242,
+          "minHp": 100,
+          "zones": {
+            "z1": {
+              "grass_height": 0.09608,
+              "compaction": 99.82,
+              "pollution": 0.016
+            },
+            "z2": {
+              "grass_height": 0.39888000000000007,
+              "compaction": 100,
+              "pollution": 0.016
+            },
+            "z3": {
+              "grass_height": 0.7988000000000147,
+              "compaction": 0.18,
+              "pollution": 2.9864435792103005e-303
+            },
+            "z4": {
+              "grass_height": 0.0007999999999999999,
+              "compaction": 0,
+              "pollution": 2.9864435792103005e-303
+            }
+          }
+        },
+        {
+          "tick": 7000,
+          "feed": 282.239865599983,
+          "grass": 1.0603601600001242,
+          "minHp": 100,
+          "zones": {
+            "z1": {
+              "grass_height": 0.0007999999999999999,
+              "compaction": 0,
+              "pollution": 2.9864435792103005e-303
+            },
+            "z2": {
+              "grass_height": 0.09608,
+              "compaction": 99.82,
+              "pollution": 0.016
+            },
+            "z3": {
+              "grass_height": 0.39888000000000007,
+              "compaction": 100,
+              "pollution": 0.016
+            },
+            "z4": {
+              "grass_height": 0.7988000000000147,
+              "compaction": 0.18,
+              "pollution": 2.9864435792103005e-303
+            }
+          }
+        },
+        {
+          "tick": 8000,
+          "feed": 282.239865599983,
+          "grass": 1.0603601600001242,
+          "minHp": 100,
+          "zones": {
+            "z1": {
+              "grass_height": 0.7988000000000147,
+              "compaction": 0.18,
+              "pollution": 2.9864435792103005e-303
+            },
+            "z2": {
+              "grass_height": 0.0007999999999999999,
+              "compaction": 0,
+              "pollution": 2.9864435792103005e-303
+            },
+            "z3": {
+              "grass_height": 0.09608,
+              "compaction": 99.82,
+              "pollution": 0.016
+            },
+            "z4": {
+              "grass_height": 0.39888000000000007,
+              "compaction": 100,
+              "pollution": 0.016
+            }
+          }
+        },
+        {
+          "tick": 9000,
+          "feed": 282.239865599983,
+          "grass": 1.0603601600001242,
+          "minHp": 100,
+          "zones": {
+            "z1": {
+              "grass_height": 0.39888000000000007,
+              "compaction": 100,
+              "pollution": 0.016
+            },
+            "z2": {
+              "grass_height": 0.7988000000000147,
+              "compaction": 0.18,
+              "pollution": 2.9864435792103005e-303
+            },
+            "z3": {
+              "grass_height": 0.0007999999999999999,
+              "compaction": 0,
+              "pollution": 2.9864435792103005e-303
+            },
+            "z4": {
+              "grass_height": 0.09608,
+              "compaction": 99.82,
+              "pollution": 0.016
+            }
+          }
+        },
+        {
+          "tick": 10000,
+          "feed": 282.239865599983,
+          "grass": 1.0603601600001242,
+          "minHp": 100,
+          "zones": {
+            "z1": {
+              "grass_height": 0.09608,
+              "compaction": 99.82,
+              "pollution": 0.016
+            },
+            "z2": {
+              "grass_height": 0.39888000000000007,
+              "compaction": 100,
+              "pollution": 0.016
+            },
+            "z3": {
+              "grass_height": 0.7988000000000147,
+              "compaction": 0.18,
+              "pollution": 2.9864435792103005e-303
+            },
+            "z4": {
+              "grass_height": 0.0007999999999999999,
+              "compaction": 0,
+              "pollution": 2.9864435792103005e-303
+            }
+          }
+        },
+        {
+          "tick": 11000,
+          "feed": 282.239865599983,
+          "grass": 1.0603601600001242,
+          "minHp": 100,
+          "zones": {
+            "z1": {
+              "grass_height": 0.0007999999999999999,
+              "compaction": 0,
+              "pollution": 2.9864435792103005e-303
+            },
+            "z2": {
+              "grass_height": 0.09608,
+              "compaction": 99.82,
+              "pollution": 0.016
+            },
+            "z3": {
+              "grass_height": 0.39888000000000007,
+              "compaction": 100,
+              "pollution": 0.016
+            },
+            "z4": {
+              "grass_height": 0.7988000000000147,
+              "compaction": 0.18,
+              "pollution": 2.9864435792103005e-303
+            }
+          }
+        },
+        {
+          "tick": 12000,
+          "feed": 282.239865599983,
+          "grass": 1.0603601600001242,
+          "minHp": 100,
+          "zones": {
+            "z1": {
+              "grass_height": 0.7988000000000147,
+              "compaction": 0.18,
+              "pollution": 2.9864435792103005e-303
+            },
+            "z2": {
+              "grass_height": 0.0007999999999999999,
+              "compaction": 0,
+              "pollution": 2.9864435792103005e-303
+            },
+            "z3": {
+              "grass_height": 0.09608,
+              "compaction": 99.82,
+              "pollution": 0.016
+            },
+            "z4": {
+              "grass_height": 0.39888000000000007,
+              "compaction": 100,
+              "pollution": 0.016
+            }
+          }
+        }
+      ],
+      "deaths": 0,
+      "sheepBlockedTicks": 1998,
+      "animals": [
+        {
+          "kind": "cattle",
+          "weight": 600,
+          "hp": 100,
+          "dead": false,
+          "cause": null
+        },
+        {
+          "kind": "cattle",
+          "weight": 600,
+          "hp": 100,
+          "dead": false,
+          "cause": null
+        },
+        {
+          "kind": "sheep",
+          "weight": 80,
+          "hp": 100,
+          "dead": false,
+          "cause": null
+        },
+        {
+          "kind": "sheep",
+          "weight": 80,
+          "hp": 100,
+          "dead": false,
+          "cause": null
+        },
+        {
+          "kind": "pig",
+          "weight": 120,
+          "hp": 100,
+          "dead": false,
+          "cause": null
+        },
+        {
+          "kind": "pig",
+          "weight": 120,
+          "hp": 100,
+          "dead": false,
+          "cause": null
+        },
+        {
+          "kind": "chicken",
+          "weight": 2.5,
+          "hp": 100,
+          "dead": false,
+          "cause": null
+        },
+        {
+          "kind": "chicken",
+          "weight": 2.5,
+          "hp": 100,
+          "dead": false,
+          "cause": null
+        },
+        {
+          "kind": "chicken",
+          "weight": 2.5,
+          "hp": 100,
+          "dead": false,
+          "cause": null
+        },
+        {
+          "kind": "chicken",
+          "weight": 2.5,
+          "hp": 100,
+          "dead": false,
+          "cause": null
+        },
+        {
+          "kind": "chicken",
+          "weight": 2.5,
+          "hp": 100,
+          "dead": false,
+          "cause": null
+        }
+      ],
+      "minHp": 100,
+      "maintenanceStamina": 0
+    },
+    "mixed": {
+      "mixed": true,
+      "prepared": false,
+      "pigs": 2,
+      "birds": 5,
+      "cattle": 2,
+      "sheep": 2,
+      "ticks": 12000,
+      "damaged": false,
+      "recovery": false,
+      "manual": false,
+      "growing": false,
+      "feed": 4543.059486398966,
+      "products": {
+        "hus_egg": 205,
+        "hus_milk_buffalo": 54,
+        "hus_wool": 4
+      },
+      "tills": 0,
+      "cleans": 0,
+      "maxLedgerError": 0,
+      "ledgerChecks": 132000,
+      "cycles": [
+        {
+          "tick": 1000,
+          "feed": 376.67184571424343,
+          "grass": 0.5394825142857159,
+          "minHp": 100,
+          "zones": {
+            "z1": {
+              "grass_height": 1.494,
+              "compaction": 0.020000000000000018,
+              "pollution": 0.016
+            },
+            "z2": {
+              "grass_height": 1.5,
+              "compaction": 0,
+              "pollution": 0
+            },
+            "z3": {
+              "grass_height": 1.5,
+              "compaction": 0,
+              "pollution": 0
+            },
+            "z4": {
+              "grass_height": 0.0006561440000000024,
+              "compaction": 19.979999999999663,
+              "pollution": 0.016
+            }
+          }
+        },
+        {
+          "tick": 2000,
+          "feed": 376.90724571424323,
+          "grass": 0.5374825142857157,
+          "minHp": 100,
+          "zones": {
+            "z1": {
+              "grass_height": 0.0006560000000000024,
+              "compaction": 19.999999999999662,
+              "pollution": 0.016
+            },
+            "z2": {
+              "grass_height": 1.494,
+              "compaction": 0.020000000000000018,
+              "pollution": 0.016
+            },
+            "z3": {
+              "grass_height": 1.5,
+              "compaction": 0,
+              "pollution": 0
+            },
+            "z4": {
+              "grass_height": 0.6568001440000151,
+              "compaction": 19.979999999999663,
+              "pollution": 2.9864435792103005e-303
+            }
+          }
+        },
+        {
+          "tick": 3000,
+          "feed": 376.90724571424323,
+          "grass": 0.5374825142857157,
+          "minHp": 100,
+          "zones": {
+            "z1": {
+              "grass_height": 0.6566559999999926,
+              "compaction": 19.999999999999662,
+              "pollution": 2.9864435792103005e-303
+            },
+            "z2": {
+              "grass_height": 0.0006560000000000024,
+              "compaction": 19.999999999999662,
+              "pollution": 0.016
+            },
+            "z3": {
+              "grass_height": 1.494,
+              "compaction": 0.020000000000000018,
+              "pollution": 0.016
+            },
+            "z4": {
+              "grass_height": 1.3129441439999874,
+              "compaction": 19.979999999999663,
+              "pollution": 2.9864435792103005e-303
+            }
+          }
+        },
+        {
+          "tick": 4000,
+          "feed": 376.90724571424323,
+          "grass": 0.5374825142857157,
+          "minHp": 100,
+          "zones": {
+            "z1": {
+              "grass_height": 1.3126559999999825,
+              "compaction": 19.999999999999662,
+              "pollution": 2.9864435792103005e-303
+            },
+            "z2": {
+              "grass_height": 0.6566559999999926,
+              "compaction": 19.999999999999662,
+              "pollution": 2.9864435792103005e-303
+            },
+            "z3": {
+              "grass_height": 0.0006560000000000024,
+              "compaction": 19.999999999999662,
+              "pollution": 0.016
+            },
+            "z4": {
+              "grass_height": 1.494,
+              "compaction": 19.999999999999662,
+              "pollution": 0.016
+            }
+          }
+        },
+        {
+          "tick": 5000,
+          "feed": 378.6568841142433,
+          "grass": 0.5232503862857146,
+          "minHp": 100,
+          "zones": {
+            "z1": {
+              "grass_height": 1.494,
+              "compaction": 20.019999999999662,
+              "pollution": 0.016
+            },
+            "z2": {
+              "grass_height": 1.3126559999999825,
+              "compaction": 19.999999999999662,
+              "pollution": 2.9864435792103005e-303
+            },
+            "z3": {
+              "grass_height": 0.6566559999999926,
+              "compaction": 19.999999999999662,
+              "pollution": 2.9864435792103005e-303
+            },
+            "z4": {
+              "grass_height": 0.0005121439999999953,
+              "compaction": 39.98000000000065,
+              "pollution": 0.016
+            }
+          }
+        },
+        {
+          "tick": 6000,
+          "feed": 378.66167314281483,
+          "grass": 0.5232344228571432,
+          "minHp": 100,
+          "zones": {
+            "z1": {
+              "grass_height": 0.0005119999999999952,
+              "compaction": 40.000000000000654,
+              "pollution": 0.016
+            },
+            "z2": {
+              "grass_height": 1.494,
+              "compaction": 20.019999999999662,
+              "pollution": 0.016
+            },
+            "z3": {
+              "grass_height": 1.3126559999999825,
+              "compaction": 19.999999999999662,
+              "pollution": 2.9864435792103005e-303
+            },
+            "z4": {
+              "grass_height": 0.5126561439999924,
+              "compaction": 39.98000000000065,
+              "pollution": 2.9864435792103005e-303
+            }
+          }
+        },
+        {
+          "tick": 7000,
+          "feed": 378.66167314281483,
+          "grass": 0.5232344228571432,
+          "minHp": 100,
+          "zones": {
+            "z1": {
+              "grass_height": 0.5125120000000007,
+              "compaction": 40.000000000000654,
+              "pollution": 2.9864435792103005e-303
+            },
+            "z2": {
+              "grass_height": 0.0005119999999999952,
+              "compaction": 40.000000000000654,
+              "pollution": 0.016
+            },
+            "z3": {
+              "grass_height": 1.494,
+              "compaction": 20.019999999999662,
+              "pollution": 0.016
+            },
+            "z4": {
+              "grass_height": 1.0248001439999845,
+              "compaction": 39.98000000000065,
+              "pollution": 2.9864435792103005e-303
+            }
+          }
+        },
+        {
+          "tick": 8000,
+          "feed": 378.66167314281483,
+          "grass": 0.5232344228571432,
+          "minHp": 100,
+          "zones": {
+            "z1": {
+              "grass_height": 1.024511999999963,
+              "compaction": 40.000000000000654,
+              "pollution": 2.9864435792103005e-303
+            },
+            "z2": {
+              "grass_height": 0.5125120000000007,
+              "compaction": 40.000000000000654,
+              "pollution": 2.9864435792103005e-303
+            },
+            "z3": {
+              "grass_height": 0.0005119999999999952,
+              "compaction": 40.000000000000654,
+              "pollution": 0.016
+            },
+            "z4": {
+              "grass_height": 1.494,
+              "compaction": 40.000000000000654,
+              "pollution": 0.016
+            }
+          }
+        },
+        {
+          "tick": 9000,
+          "feed": 380.25599999995757,
+          "grass": 0.5103026834285697,
+          "minHp": 100,
+          "zones": {
+            "z1": {
+              "grass_height": 1.494,
+              "compaction": 40.02000000000066,
+              "pollution": 0.016
+            },
+            "z2": {
+              "grass_height": 1.024511999999963,
+              "compaction": 40.000000000000654,
+              "pollution": 2.9864435792103005e-303
+            },
+            "z3": {
+              "grass_height": 0.5125120000000007,
+              "compaction": 40.000000000000654,
+              "pollution": 2.9864435792103005e-303
+            },
+            "z4": {
+              "grass_height": 0.0003681439999999728,
+              "compaction": 59.98000000000378,
+              "pollution": 0.016
+            }
+          }
+        },
+        {
+          "tick": 10000,
+          "feed": 380.25599999995757,
+          "grass": 0.5102871314285696,
+          "minHp": 100,
+          "zones": {
+            "z1": {
+              "grass_height": 0.0003679999999999728,
+              "compaction": 60.00000000000378,
+              "pollution": 0.016
+            },
+            "z2": {
+              "grass_height": 1.494,
+              "compaction": 40.02000000000066,
+              "pollution": 0.016
+            },
+            "z3": {
+              "grass_height": 1.024511999999963,
+              "compaction": 40.000000000000654,
+              "pollution": 2.9864435792103005e-303
+            },
+            "z4": {
+              "grass_height": 0.36851214399996385,
+              "compaction": 59.98000000000378,
+              "pollution": 2.9864435792103005e-303
+            }
+          }
+        },
+        {
+          "tick": 11000,
+          "feed": 380.25599999995757,
+          "grass": 0.5102871314285696,
+          "minHp": 100,
+          "zones": {
+            "z1": {
+              "grass_height": 0.36836799999997827,
+              "compaction": 60.00000000000378,
+              "pollution": 2.9864435792103005e-303
+            },
+            "z2": {
+              "grass_height": 0.0003679999999999728,
+              "compaction": 60.00000000000378,
+              "pollution": 0.016
+            },
+            "z3": {
+              "grass_height": 1.494,
+              "compaction": 40.02000000000066,
+              "pollution": 0.016
+            },
+            "z4": {
+              "grass_height": 0.7366561439999231,
+              "compaction": 59.98000000000378,
+              "pollution": 2.9864435792103005e-303
+            }
+          }
+        },
+        {
+          "tick": 12000,
+          "feed": 380.25599999995757,
+          "grass": 0.5102871314285696,
+          "minHp": 100,
+          "zones": {
+            "z1": {
+              "grass_height": 0.7363679999999221,
+              "compaction": 60.00000000000378,
+              "pollution": 2.9864435792103005e-303
+            },
+            "z2": {
+              "grass_height": 0.36836799999997827,
+              "compaction": 60.00000000000378,
+              "pollution": 2.9864435792103005e-303
+            },
+            "z3": {
+              "grass_height": 0.0003679999999999728,
+              "compaction": 60.00000000000378,
+              "pollution": 0.016
+            },
+            "z4": {
+              "grass_height": 1.0988001439999138,
+              "compaction": 60.00000000000378,
+              "pollution": 0.016
+            }
+          }
+        }
+      ],
+      "deaths": 0,
+      "sheepBlockedTicks": 3130,
+      "animals": [
+        {
+          "kind": "cattle",
+          "weight": 600,
+          "hp": 100,
+          "dead": false,
+          "cause": null
+        },
+        {
+          "kind": "cattle",
+          "weight": 600,
+          "hp": 100,
+          "dead": false,
+          "cause": null
+        },
+        {
+          "kind": "sheep",
+          "weight": 80,
+          "hp": 100,
+          "dead": false,
+          "cause": null
+        },
+        {
+          "kind": "sheep",
+          "weight": 80,
+          "hp": 100,
+          "dead": false,
+          "cause": null
+        },
+        {
+          "kind": "pig",
+          "weight": 120,
+          "hp": 100,
+          "dead": false,
+          "cause": null
+        },
+        {
+          "kind": "pig",
+          "weight": 120,
+          "hp": 100,
+          "dead": false,
+          "cause": null
+        },
+        {
+          "kind": "chicken",
+          "weight": 2.5,
+          "hp": 100,
+          "dead": false,
+          "cause": null
+        },
+        {
+          "kind": "chicken",
+          "weight": 2.5,
+          "hp": 100,
+          "dead": false,
+          "cause": null
+        },
+        {
+          "kind": "chicken",
+          "weight": 2.5,
+          "hp": 100,
+          "dead": false,
+          "cause": null
+        },
+        {
+          "kind": "chicken",
+          "weight": 2.5,
+          "hp": 100,
+          "dead": false,
+          "cause": null
+        },
+        {
+          "kind": "chicken",
+          "weight": 2.5,
+          "hp": 100,
+          "dead": false,
+          "cause": null
+        }
+      ],
+      "minHp": 100,
+      "maintenanceStamina": 0
+    },
+    "noPig": {
+      "mixed": false,
+      "prepared": false,
+      "pigs": 0,
+      "birds": 5,
+      "cattle": 2,
+      "sheep": 2,
+      "ticks": 12000,
+      "damaged": false,
+      "recovery": false,
+      "manual": false,
+      "growing": false,
+      "feed": 3338.2964560004957,
+      "products": {
+        "hus_egg": 205,
+        "hus_milk_buffalo": 54,
+        "hus_wool": 4
+      },
+      "tills": 0,
+      "cleans": 0,
+      "maxLedgerError": 0,
+      "ledgerChecks": 108000,
+      "cycles": [
+        {
+          "tick": 1000,
+          "feed": 207.49655200000927,
+          "grass": 1.3826801599999798,
+          "minHp": 100,
+          "zones": {
+            "z1": {
+              "grass_height": 0.39888000000000007,
+              "compaction": 100,
+              "pollution": 0.016
+            },
+            "z2": {
+              "grass_height": 1.498,
+              "compaction": 0.18,
+              "pollution": 0
+            },
+            "z3": {
+              "grass_height": 1.5,
+              "compaction": 0,
+              "pollution": 0
+            },
+            "z4": {
+              "grass_height": 1.5,
+              "compaction": 19.979999999999663,
+              "pollution": 0.016
+            }
+          }
+        },
+        {
+          "tick": 2000,
+          "feed": 151.6919519999576,
+          "grass": 1.7595601600000152,
+          "minHp": 100,
+          "zones": {
+            "z1": {
+              "grass_height": 0.10008,
+              "compaction": 100,
+              "pollution": 0.016
+            },
+            "z2": {
+              "grass_height": 0.39888000000000007,
+              "compaction": 100,
+              "pollution": 0.016
+            },
+            "z3": {
+              "grass_height": 1.498,
+              "compaction": 0.18,
+              "pollution": 0
+            },
+            "z4": {
+              "grass_height": 1.5,
+              "compaction": 19.979999999999663,
+              "pollution": 2.9864435792103005e-303
+            }
+          }
+        },
+        {
+          "tick": 3000,
+          "feed": 151.6919519999576,
+          "grass": 1.7595601600000152,
+          "minHp": 100,
+          "zones": {
+            "z1": {
+              "grass_height": 0.18007999999999674,
+              "compaction": 100,
+              "pollution": 2.9864435792103005e-303
+            },
+            "z2": {
+              "grass_height": 0.10008,
+              "compaction": 100,
+              "pollution": 0.016
+            },
+            "z3": {
+              "grass_height": 0.39888000000000007,
+              "compaction": 100,
+              "pollution": 0.016
+            },
+            "z4": {
+              "grass_height": 1.498,
+              "compaction": 20.159999999999663,
+              "pollution": 2.9864435792103005e-303
+            }
+          }
+        },
+        {
+          "tick": 4000,
+          "feed": 160.0079999999607,
+          "grass": 1.6856960960000258,
+          "minHp": 100,
+          "zones": {
+            "z1": {
+              "grass_height": 0.260079999999997,
+              "compaction": 100,
+              "pollution": 2.9864435792103005e-303
+            },
+            "z2": {
+              "grass_height": 0.18007999999999674,
+              "compaction": 100,
+              "pollution": 2.9864435792103005e-303
+            },
+            "z3": {
+              "grass_height": 0.10008,
+              "compaction": 100,
+              "pollution": 0.016
+            },
+            "z4": {
+              "grass_height": 0.39888000000000007,
+              "compaction": 100,
+              "pollution": 0.016
+            }
+          }
+        },
+        {
+          "tick": 5000,
+          "feed": 327.84000000009564,
+          "grass": 0.3799999999999792,
+          "minHp": 100,
+          "zones": {
+            "z1": {
+              "grass_height": 0.3388800000000215,
+              "compaction": 100,
+              "pollution": 0.016
+            },
+            "z2": {
+              "grass_height": 0.260079999999997,
+              "compaction": 100,
+              "pollution": 2.9864435792103005e-303
+            },
+            "z3": {
+              "grass_height": 0.18007999999999674,
+              "compaction": 100,
+              "pollution": 2.9864435792103005e-303
+            },
+            "z4": {
+              "grass_height": 0.10008,
+              "compaction": 100,
+              "pollution": 0.016
+            }
+          }
+        },
+        {
+          "tick": 6000,
+          "feed": 334.22400000009475,
+          "grass": 0.3199999999999977,
+          "minHp": 100,
+          "zones": {
+            "z1": {
+              "grass_height": 0.10008,
+              "compaction": 100,
+              "pollution": 0.016
+            },
+            "z2": {
+              "grass_height": 0.3388800000000215,
+              "compaction": 100,
+              "pollution": 0.016
+            },
+            "z3": {
+              "grass_height": 0.260079999999997,
+              "compaction": 100,
+              "pollution": 2.9864435792103005e-303
+            },
+            "z4": {
+              "grass_height": 0.18007999999999674,
+              "compaction": 100,
+              "pollution": 2.9864435792103005e-303
+            }
+          }
+        },
+        {
+          "tick": 7000,
+          "feed": 334.22400000009475,
+          "grass": 0.3199999999999977,
+          "minHp": 100,
+          "zones": {
+            "z1": {
+              "grass_height": 0.18007999999999674,
+              "compaction": 100,
+              "pollution": 2.9864435792103005e-303
+            },
+            "z2": {
+              "grass_height": 0.10008,
+              "compaction": 100,
+              "pollution": 0.016
+            },
+            "z3": {
+              "grass_height": 0.3388800000000215,
+              "compaction": 100,
+              "pollution": 0.016
+            },
+            "z4": {
+              "grass_height": 0.260079999999997,
+              "compaction": 100,
+              "pollution": 2.9864435792103005e-303
+            }
+          }
+        },
+        {
+          "tick": 8000,
+          "feed": 334.22400000009475,
+          "grass": 0.3199999999999977,
+          "minHp": 100,
+          "zones": {
+            "z1": {
+              "grass_height": 0.260079999999997,
+              "compaction": 100,
+              "pollution": 2.9864435792103005e-303
+            },
+            "z2": {
+              "grass_height": 0.18007999999999674,
+              "compaction": 100,
+              "pollution": 2.9864435792103005e-303
+            },
+            "z3": {
+              "grass_height": 0.10008,
+              "compaction": 100,
+              "pollution": 0.016
+            },
+            "z4": {
+              "grass_height": 0.3388800000000215,
+              "compaction": 100,
+              "pollution": 0.016
+            }
+          }
+        },
+        {
+          "tick": 9000,
+          "feed": 334.22400000009475,
+          "grass": 0.3199999999999977,
+          "minHp": 100,
+          "zones": {
+            "z1": {
+              "grass_height": 0.3388800000000215,
+              "compaction": 100,
+              "pollution": 0.016
+            },
+            "z2": {
+              "grass_height": 0.260079999999997,
+              "compaction": 100,
+              "pollution": 2.9864435792103005e-303
+            },
+            "z3": {
+              "grass_height": 0.18007999999999674,
+              "compaction": 100,
+              "pollution": 2.9864435792103005e-303
+            },
+            "z4": {
+              "grass_height": 0.10008,
+              "compaction": 100,
+              "pollution": 0.016
+            }
+          }
+        },
+        {
+          "tick": 10000,
+          "feed": 334.22400000009475,
+          "grass": 0.3199999999999977,
+          "minHp": 100,
+          "zones": {
+            "z1": {
+              "grass_height": 0.10008,
+              "compaction": 100,
+              "pollution": 0.016
+            },
+            "z2": {
+              "grass_height": 0.3388800000000215,
+              "compaction": 100,
+              "pollution": 0.016
+            },
+            "z3": {
+              "grass_height": 0.260079999999997,
+              "compaction": 100,
+              "pollution": 2.9864435792103005e-303
+            },
+            "z4": {
+              "grass_height": 0.18007999999999674,
+              "compaction": 100,
+              "pollution": 2.9864435792103005e-303
+            }
+          }
+        },
+        {
+          "tick": 11000,
+          "feed": 334.22400000009475,
+          "grass": 0.3199999999999977,
+          "minHp": 100,
+          "zones": {
+            "z1": {
+              "grass_height": 0.18007999999999674,
+              "compaction": 100,
+              "pollution": 2.9864435792103005e-303
+            },
+            "z2": {
+              "grass_height": 0.10008,
+              "compaction": 100,
+              "pollution": 0.016
+            },
+            "z3": {
+              "grass_height": 0.3388800000000215,
+              "compaction": 100,
+              "pollution": 0.016
+            },
+            "z4": {
+              "grass_height": 0.260079999999997,
+              "compaction": 100,
+              "pollution": 2.9864435792103005e-303
+            }
+          }
+        },
+        {
+          "tick": 12000,
+          "feed": 334.22400000009475,
+          "grass": 0.3199999999999977,
+          "minHp": 100,
+          "zones": {
+            "z1": {
+              "grass_height": 0.260079999999997,
+              "compaction": 100,
+              "pollution": 2.9864435792103005e-303
+            },
+            "z2": {
+              "grass_height": 0.18007999999999674,
+              "compaction": 100,
+              "pollution": 2.9864435792103005e-303
+            },
+            "z3": {
+              "grass_height": 0.10008,
+              "compaction": 100,
+              "pollution": 0.016
+            },
+            "z4": {
+              "grass_height": 0.3388800000000215,
+              "compaction": 100,
+              "pollution": 0.016
+            }
+          }
+        }
+      ],
+      "deaths": 0,
+      "sheepBlockedTicks": 1998,
+      "animals": [
+        {
+          "kind": "cattle",
+          "weight": 600,
+          "hp": 100,
+          "dead": false,
+          "cause": null
+        },
+        {
+          "kind": "cattle",
+          "weight": 600,
+          "hp": 100,
+          "dead": false,
+          "cause": null
+        },
+        {
+          "kind": "sheep",
+          "weight": 80,
+          "hp": 100,
+          "dead": false,
+          "cause": null
+        },
+        {
+          "kind": "sheep",
+          "weight": 80,
+          "hp": 100,
+          "dead": false,
+          "cause": null
+        },
+        {
+          "kind": "chicken",
+          "weight": 2.5,
+          "hp": 100,
+          "dead": false,
+          "cause": null
+        },
+        {
+          "kind": "chicken",
+          "weight": 2.5,
+          "hp": 100,
+          "dead": false,
+          "cause": null
+        },
+        {
+          "kind": "chicken",
+          "weight": 2.5,
+          "hp": 100,
+          "dead": false,
+          "cause": null
+        },
+        {
+          "kind": "chicken",
+          "weight": 2.5,
+          "hp": 100,
+          "dead": false,
+          "cause": null
+        },
+        {
+          "kind": "chicken",
+          "weight": 2.5,
+          "hp": 100,
+          "dead": false,
+          "cause": null
+        }
+      ],
+      "minHp": 100,
+      "maintenanceStamina": 0
+    },
+    "noPigManual": {
+      "mixed": false,
+      "prepared": false,
+      "pigs": 0,
+      "birds": 5,
+      "cattle": 2,
+      "sheep": 2,
+      "ticks": 12000,
+      "damaged": false,
+      "recovery": false,
+      "manual": true,
+      "growing": false,
+      "feed": 439.27959040014173,
+      "products": {
+        "hus_egg": 205,
+        "hus_milk_buffalo": 54,
+        "hus_wool": 4
+      },
+      "tills": 226,
+      "cleans": 0,
+      "maxLedgerError": 0,
+      "ledgerChecks": 108000,
+      "cycles": [
+        {
+          "tick": 1000,
+          "feed": 156.9927088000054,
+          "grass": 1.674006703999933,
+          "minHp": 100,
+          "zones": {
+            "z1": {
+              "grass_height": 0.39931329600000004,
+              "compaction": 39.83999999999973,
+              "pollution": 0.016
+            },
+            "z2": {
+              "grass_height": 1.498,
+              "compaction": 0.18,
+              "pollution": 0
+            },
+            "z3": {
+              "grass_height": 1.5,
+              "compaction": 0,
+              "pollution": 0
+            },
+            "z4": {
+              "grass_height": 1.5,
+              "compaction": 19.979999999999663,
+              "pollution": 0.016
+            }
+          }
+        },
+        {
+          "tick": 2000,
+          "feed": 13.218120000000113,
+          "grass": 2.5193199999998868,
+          "minHp": 100,
+          "zones": {
+            "z1": {
+              "grass_height": 0.10051329599999999,
+              "compaction": 39.820000000002146,
+              "pollution": 0.016
+            },
+            "z2": {
+              "grass_height": 0.39931200000000006,
+              "compaction": 40.01999999999973,
+              "pollution": 0.016
+            },
+            "z3": {
+              "grass_height": 1.498,
+              "compaction": 0.18,
+              "pollution": 0
+            },
+            "z4": {
+              "grass_height": 1.5,
+              "compaction": 19.979999999999663,
+              "pollution": 2.9864435792103005e-303
+            }
+          }
+        },
+        {
+          "tick": 3000,
+          "feed": 13.218120000000113,
+          "grass": 2.5193199999998876,
+          "minHp": 100,
+          "zones": {
+            "z1": {
+              "grass_height": 0.6138092959999835,
+              "compaction": 39.820000000002146,
+              "pollution": 2.9864435792103005e-303
+            },
+            "z2": {
+              "grass_height": 0.10058399999999999,
+              "compaction": 30.000000000002146,
+              "pollution": 0.016
+            },
+            "z3": {
+              "grass_height": 0.39931200000000006,
+              "compaction": 40.01999999999973,
+              "pollution": 0.016
+            },
+            "z4": {
+              "grass_height": 1.498,
+              "compaction": 20.159999999999663,
+              "pollution": 2.9864435792103005e-303
+            }
+          }
+        },
+        {
+          "tick": 4000,
+          "feed": 14.282395199999769,
+          "grass": 2.499375855999892,
+          "minHp": 100,
+          "zones": {
+            "z1": {
+              "grass_height": 1.125105295999952,
+              "compaction": 40.000000000002146,
+              "pollution": 2.9864435792103005e-303
+            },
+            "z2": {
+              "grass_height": 0.6845839999999915,
+              "compaction": 30.000000000002146,
+              "pollution": 2.9864435792103005e-303
+            },
+            "z3": {
+              "grass_height": 0.10058399999999999,
+              "compaction": 30.000000000002146,
+              "pollution": 0.016
+            },
+            "z4": {
+              "grass_height": 0.39931214400000004,
+              "compaction": 39.99999999999938,
+              "pollution": 0.016
+            }
+          }
+        },
+        {
+          "tick": 5000,
+          "feed": 33.818040000001474,
+          "grass": 2.122663999999884,
+          "minHp": 100,
+          "zones": {
+            "z1": {
+              "grass_height": 0.39931329600000004,
+              "compaction": 39.840000000001865,
+              "pollution": 0.016
+            },
+            "z2": {
+              "grass_height": 1.2665839999999695,
+              "compaction": 30.180000000002146,
+              "pollution": 2.9864435792103005e-303
+            },
+            "z3": {
+              "grass_height": 0.6845839999999915,
+              "compaction": 30.000000000002146,
+              "pollution": 2.9864435792103005e-303
+            },
+            "z4": {
+              "grass_height": 0.100512144,
+              "compaction": 39.980000000001795,
+              "pollution": 0.016
+            }
+          }
+        },
+        {
+          "tick": 6000,
+          "feed": 26.4984000000145,
+          "grass": 2.2641439999998596,
+          "minHp": 100,
+          "zones": {
+            "z1": {
+              "grass_height": 0.10051329599999997,
+              "compaction": 39.82000000000428,
+              "pollution": 0.016
+            },
+            "z2": {
+              "grass_height": 0.399384,
+              "compaction": 30.02000000000186,
+              "pollution": 0.016
+            },
+            "z3": {
+              "grass_height": 1.2665839999999695,
+              "compaction": 30.180000000002146,
+              "pollution": 2.9864435792103005e-303
+            },
+            "z4": {
+              "grass_height": 0.6126561439999921,
+              "compaction": 39.980000000001795,
+              "pollution": 2.9864435792103005e-303
+            }
+          }
+        },
+        {
+          "tick": 7000,
+          "feed": 26.4984000000145,
+          "grass": 2.2641439999998596,
+          "minHp": 100,
+          "zones": {
+            "z1": {
+              "grass_height": 0.613809295999976,
+              "compaction": 39.82000000000428,
+              "pollution": 2.9864435792103005e-303
+            },
+            "z2": {
+              "grass_height": 0.10058399999999998,
+              "compaction": 30.000000000004277,
+              "pollution": 0.016
+            },
+            "z3": {
+              "grass_height": 0.399384,
+              "compaction": 30.02000000000186,
+              "pollution": 0.016
+            },
+            "z4": {
+              "grass_height": 1.1228001439999842,
+              "compaction": 40.160000000001794,
+              "pollution": 2.9864435792103005e-303
+            }
+          }
+        },
+        {
+          "tick": 8000,
+          "feed": 33.96928320000154,
+          "grass": 2.120431999999899,
+          "minHp": 100,
+          "zones": {
+            "z1": {
+              "grass_height": 1.1251052959999444,
+              "compaction": 40.00000000000428,
+              "pollution": 2.9864435792103005e-303
+            },
+            "z2": {
+              "grass_height": 0.6845839999999558,
+              "compaction": 30.000000000004277,
+              "pollution": 2.9864435792103005e-303
+            },
+            "z3": {
+              "grass_height": 0.10058399999999998,
+              "compaction": 30.000000000004277,
+              "pollution": 0.016
+            },
+            "z4": {
+              "grass_height": 0.39931214400000004,
+              "compaction": 40.00000000000151,
+              "pollution": 0.016
+            }
+          }
+        },
+        {
+          "tick": 9000,
+          "feed": 33.81804000000409,
+          "grass": 2.122735999999845,
+          "minHp": 100,
+          "zones": {
+            "z1": {
+              "grass_height": 0.39931329600000004,
+              "compaction": 39.840000000004,
+              "pollution": 0.016
+            },
+            "z2": {
+              "grass_height": 1.2665839999998738,
+              "compaction": 30.180000000004277,
+              "pollution": 2.9864435792103005e-303
+            },
+            "z3": {
+              "grass_height": 0.6845839999999558,
+              "compaction": 30.000000000004277,
+              "pollution": 2.9864435792103005e-303
+            },
+            "z4": {
+              "grass_height": 0.10051214399999998,
+              "compaction": 39.980000000003926,
+              "pollution": 0.016
+            }
+          }
+        },
+        {
+          "tick": 10000,
+          "feed": 26.498400000048264,
+          "grass": 2.2641439999997353,
+          "minHp": 100,
+          "zones": {
+            "z1": {
+              "grass_height": 0.10051329599999996,
+              "compaction": 39.82000000000641,
+              "pollution": 0.016
+            },
+            "z2": {
+              "grass_height": 0.399384,
+              "compaction": 30.020000000003993,
+              "pollution": 0.016
+            },
+            "z3": {
+              "grass_height": 1.2665839999998738,
+              "compaction": 30.180000000004277,
+              "pollution": 2.9864435792103005e-303
+            },
+            "z4": {
+              "grass_height": 0.6126561439999847,
+              "compaction": 39.980000000003926,
+              "pollution": 2.9864435792103005e-303
+            }
+          }
+        },
+        {
+          "tick": 11000,
+          "feed": 26.498400000048264,
+          "grass": 2.2641439999997353,
+          "minHp": 100,
+          "zones": {
+            "z1": {
+              "grass_height": 0.6138092959999416,
+              "compaction": 39.82000000000641,
+              "pollution": 2.9864435792103005e-303
+            },
+            "z2": {
+              "grass_height": 0.10058399999999997,
+              "compaction": 30.00000000000641,
+              "pollution": 0.016
+            },
+            "z3": {
+              "grass_height": 0.399384,
+              "compaction": 30.020000000003993,
+              "pollution": 0.016
+            },
+            "z4": {
+              "grass_height": 1.1228001439999769,
+              "compaction": 40.160000000003926,
+              "pollution": 2.9864435792103005e-303
+            }
+          }
+        },
+        {
+          "tick": 12000,
+          "feed": 33.9692832000037,
+          "grass": 2.1204319999998598,
+          "minHp": 100,
+          "zones": {
+            "z1": {
+              "grass_height": 1.12510529599991,
+              "compaction": 40.00000000000641,
+              "pollution": 2.9864435792103005e-303
+            },
+            "z2": {
+              "grass_height": 0.6845839999999493,
+              "compaction": 30.00000000000641,
+              "pollution": 2.9864435792103005e-303
+            },
+            "z3": {
+              "grass_height": 0.10058399999999997,
+              "compaction": 30.00000000000641,
+              "pollution": 0.016
+            },
+            "z4": {
+              "grass_height": 0.39931214400000004,
+              "compaction": 40.000000000003645,
+              "pollution": 0.016
+            }
+          }
+        }
+      ],
+      "deaths": 0,
+      "sheepBlockedTicks": 1998,
+      "animals": [
+        {
+          "kind": "cattle",
+          "weight": 600,
+          "hp": 100,
+          "dead": false,
+          "cause": null
+        },
+        {
+          "kind": "cattle",
+          "weight": 600,
+          "hp": 100,
+          "dead": false,
+          "cause": null
+        },
+        {
+          "kind": "sheep",
+          "weight": 80,
+          "hp": 100,
+          "dead": false,
+          "cause": null
+        },
+        {
+          "kind": "sheep",
+          "weight": 80,
+          "hp": 100,
+          "dead": false,
+          "cause": null
+        },
+        {
+          "kind": "chicken",
+          "weight": 2.5,
+          "hp": 100,
+          "dead": false,
+          "cause": null
+        },
+        {
+          "kind": "chicken",
+          "weight": 2.5,
+          "hp": 100,
+          "dead": false,
+          "cause": null
+        },
+        {
+          "kind": "chicken",
+          "weight": 2.5,
+          "hp": 100,
+          "dead": false,
+          "cause": null
+        },
+        {
+          "kind": "chicken",
+          "weight": 2.5,
+          "hp": 100,
+          "dead": false,
+          "cause": null
+        },
+        {
+          "kind": "chicken",
+          "weight": 2.5,
+          "hp": 100,
+          "dead": false,
+          "cause": null
+        }
+      ],
+      "minHp": 100,
+      "maintenanceStamina": 2260
+    },
+    "noChicken": {
+      "mixed": false,
+      "prepared": false,
+      "pigs": 2,
+      "birds": 0,
+      "cattle": 2,
+      "sheep": 2,
+      "ticks": 12000,
+      "damaged": false,
+      "recovery": false,
+      "manual": false,
+      "growing": false,
+      "feed": 2472.634828799886,
+      "products": {
+        "hus_milk_buffalo": 32,
+        "hus_wool": 2
+      },
+      "tills": 0,
+      "cleans": 0,
+      "maxLedgerError": 0,
+      "ledgerChecks": 54120,
+      "cycles": [
+        {
+          "tick": 1000,
+          "feed": 267.49195199995484,
+          "grass": 1.3826801599999798,
+          "minHp": 99.39999999999968,
+          "zones": {
+            "z1": {
+              "grass_height": 0.39888000000000007,
+              "compaction": 100,
+              "pollution": 0.032
+            },
+            "z2": {
+              "grass_height": 1.498,
+              "compaction": 0.18,
+              "pollution": 0
+            },
+            "z3": {
+              "grass_height": 0.0007999999999999999,
+              "compaction": 0,
+              "pollution": 0
+            },
+            "z4": {
+              "grass_height": 1.496,
+              "compaction": 19.799999999999663,
+              "pollution": 31.968000000000025
+            }
+          }
+        },
+        {
+          "tick": 2000,
+          "feed": 211.6919520000024,
+          "grass": 1.7595601600000152,
+          "minHp": 89.98999999999488,
+          "zones": {
+            "z1": {
+              "grass_height": 0.09608,
+              "compaction": 99.82,
+              "pollution": 32.00000000000002
+            },
+            "z2": {
+              "grass_height": 0.39888000000000007,
+              "compaction": 100,
+              "pollution": 0.032
+            },
+            "z3": {
+              "grass_height": 0.7988000000000147,
+              "compaction": 0.18,
+              "pollution": 0
+            },
+            "z4": {
+              "grass_height": 0.0007999999999999999,
+              "compaction": 0,
+              "pollution": 31.968000000000025
+            }
+          }
+        },
+        {
+          "tick": 3000,
+          "feed": 282.239865599983,
+          "grass": 1.0603601600001242,
+          "minHp": 79.98999999998976,
+          "zones": {
+            "z1": {
+              "grass_height": 0.0007999999999999999,
+              "compaction": 0,
+              "pollution": 32.00000000000002
+            },
+            "z2": {
+              "grass_height": 0.09608,
+              "compaction": 99.82,
+              "pollution": 32.00000000000002
+            },
+            "z3": {
+              "grass_height": 0.39888000000000007,
+              "compaction": 100,
+              "pollution": 0.032
+            },
+            "z4": {
+              "grass_height": 0.7988000000000147,
+              "compaction": 0.18,
+              "pollution": 31.968000000000025
+            }
+          }
+        },
+        {
+          "tick": 4000,
+          "feed": 282.239865599983,
+          "grass": 1.0603601600001242,
+          "minHp": 69.98999999998465,
+          "zones": {
+            "z1": {
+              "grass_height": 0.7988000000000147,
+              "compaction": 0.18,
+              "pollution": 32.00000000000002
+            },
+            "z2": {
+              "grass_height": 0.0007999999999999999,
+              "compaction": 0,
+              "pollution": 32.00000000000002
+            },
+            "z3": {
+              "grass_height": 0.09608,
+              "compaction": 99.82,
+              "pollution": 32.00000000000002
+            },
+            "z4": {
+              "grass_height": 0.39888000000000007,
+              "compaction": 100,
+              "pollution": 32.00000000000002
+            }
+          }
+        },
+        {
+          "tick": 5000,
+          "feed": 282.239865599983,
+          "grass": 1.0603601600001242,
+          "minHp": 59.97999999998238,
+          "zones": {
+            "z1": {
+              "grass_height": 0.39888000000000007,
+              "compaction": 100,
+              "pollution": 32.03200000000002
+            },
+            "z2": {
+              "grass_height": 0.7988000000000147,
+              "compaction": 0.18,
+              "pollution": 32.00000000000002
+            },
+            "z3": {
+              "grass_height": 0.0007999999999999999,
+              "compaction": 0,
+              "pollution": 32.00000000000002
+            },
+            "z4": {
+              "grass_height": 0.09608,
+              "compaction": 99.82,
+              "pollution": 63.9679999999965
+            }
+          }
+        },
+        {
+          "tick": 6000,
+          "feed": 282.239865599983,
+          "grass": 1.0603601600001242,
+          "minHp": 39.979999999979256,
+          "zones": {
+            "z1": {
+              "grass_height": 0.09608,
+              "compaction": 99.82,
+              "pollution": 63.9999999999965
+            },
+            "z2": {
+              "grass_height": 0.39888000000000007,
+              "compaction": 100,
+              "pollution": 32.03200000000002
+            },
+            "z3": {
+              "grass_height": 0.7988000000000147,
+              "compaction": 0.18,
+              "pollution": 32.00000000000002
+            },
+            "z4": {
+              "grass_height": 0.0007999999999999999,
+              "compaction": 0,
+              "pollution": 63.9679999999965
+            }
+          }
+        },
+        {
+          "tick": 7000,
+          "feed": 282.239865599983,
+          "grass": 1.0603601600001242,
+          "minHp": 19.97999999997827,
+          "zones": {
+            "z1": {
+              "grass_height": 0.0007999999999999999,
+              "compaction": 0,
+              "pollution": 63.9999999999965
+            },
+            "z2": {
+              "grass_height": 0.09608,
+              "compaction": 99.82,
+              "pollution": 63.9999999999965
+            },
+            "z3": {
+              "grass_height": 0.39888000000000007,
+              "compaction": 100,
+              "pollution": 32.03200000000002
+            },
+            "z4": {
+              "grass_height": 0.7988000000000147,
+              "compaction": 0.18,
+              "pollution": 63.9679999999965
+            }
+          }
+        },
+        {
+          "tick": 8000,
+          "feed": 282.17986559998303,
+          "grass": 1.0603601600001242,
+          "minHp": 0,
+          "zones": {
+            "z1": {
+              "grass_height": 0.7988000000000147,
+              "compaction": 0.18,
+              "pollution": 63.9999999999965
+            },
+            "z2": {
+              "grass_height": 0.0007999999999999999,
+              "compaction": 0,
+              "pollution": 64.02399999999649
+            },
+            "z3": {
+              "grass_height": 0.10008,
+              "compaction": 100,
+              "pollution": 63.9999999999965
+            },
+            "z4": {
+              "grass_height": 0.39888000000000007,
+              "compaction": 100,
+              "pollution": 63.9999999999965
+            }
+          }
+        },
+        {
+          "tick": 9000,
+          "feed": 222.2398656000007,
+          "grass": 1.0603601600001242,
+          "minHp": 0,
+          "zones": {
+            "z1": {
+              "grass_height": 0.39888000000000007,
+              "compaction": 100,
+              "pollution": 64.0319999999965
+            },
+            "z2": {
+              "grass_height": 0.7988000000000147,
+              "compaction": 0.18,
+              "pollution": 76.02399999999695
+            },
+            "z3": {
+              "grass_height": 0.18007999999999674,
+              "compaction": 100,
+              "pollution": 63.9999999999965
+            },
+            "z4": {
+              "grass_height": 0.10008,
+              "compaction": 100,
+              "pollution": 95.96799999999298
+            }
+          }
+        },
+        {
+          "tick": 10000,
+          "feed": 77.8318655999824,
+          "grass": 0.9822001600000496,
+          "minHp": 0,
+          "zones": {
+            "z1": {
+              "grass_height": 0.14839999999999803,
+              "compaction": 100,
+              "pollution": 83.94399999999538
+            },
+            "z2": {
+              "grass_height": 0.4267200000000082,
+              "compaction": 100,
+              "pollution": 92.04399999999755
+            },
+            "z3": {
+              "grass_height": 0.260079999999997,
+              "compaction": 100,
+              "pollution": 63.9999999999965
+            },
+            "z4": {
+              "grass_height": 0.18007999999999674,
+              "compaction": 100,
+              "pollution": 95.96799999999298
+            }
+          }
+        },
+        {
+          "tick": 11000,
+          "feed": 0,
+          "grass": 0,
+          "minHp": 0,
+          "zones": {
+            "z1": {
+              "grass_height": 0.22839999999999477,
+              "compaction": 100,
+              "pollution": 95.94399999999584
+            },
+            "z2": {
+              "grass_height": 0.506720000000028,
+              "compaction": 100,
+              "pollution": 100
+            },
+            "z3": {
+              "grass_height": 0.3400800000000215,
+              "compaction": 100,
+              "pollution": 63.9999999999965
+            },
+            "z4": {
+              "grass_height": 0.260079999999997,
+              "compaction": 100,
+              "pollution": 95.96799999999298
+            }
+          }
+        },
+        {
+          "tick": 12000,
+          "feed": 0,
+          "grass": 0,
+          "minHp": 0,
+          "zones": {
+            "z1": {
+              "grass_height": 0.3084000000000118,
+              "compaction": 100,
+              "pollution": 100
+            },
+            "z2": {
+              "grass_height": 0.586719999999997,
+              "compaction": 100,
+              "pollution": 100
+            },
+            "z3": {
+              "grass_height": 0.42008000000004597,
+              "compaction": 100,
+              "pollution": 63.9999999999965
+            },
+            "z4": {
+              "grass_height": 0.3400800000000215,
+              "compaction": 100,
+              "pollution": 95.96799999999298
+            }
+          }
+        }
+      ],
+      "deaths": 6,
+      "sheepBlockedTicks": 1998,
+      "animals": [
+        {
+          "kind": "cattle",
+          "weight": 600,
+          "hp": 0,
+          "dead": true,
+          "cause": "disease"
+        },
+        {
+          "kind": "cattle",
+          "weight": 600,
+          "hp": 0,
+          "dead": true,
+          "cause": "disease"
+        },
+        {
+          "kind": "sheep",
+          "weight": 80,
+          "hp": 0,
+          "dead": true,
+          "cause": "disease"
+        },
+        {
+          "kind": "sheep",
+          "weight": 80,
+          "hp": 0,
+          "dead": true,
+          "cause": "disease"
+        },
+        {
+          "kind": "pig",
+          "weight": 120,
+          "hp": 0,
+          "dead": true,
+          "cause": "disease"
+        },
+        {
+          "kind": "pig",
+          "weight": 120,
+          "hp": 0,
+          "dead": true,
+          "cause": "disease"
+        }
+      ],
+      "minHp": 0,
+      "maintenanceStamina": 0
+    },
+    "noChickenManual": {
+      "mixed": false,
+      "prepared": false,
+      "pigs": 2,
+      "birds": 0,
+      "cattle": 2,
+      "sheep": 2,
+      "ticks": 12000,
+      "damaged": false,
+      "recovery": false,
+      "manual": true,
+      "growing": false,
+      "feed": 3301.5825599993746,
+      "products": {
+        "hus_milk_buffalo": 54,
+        "hus_wool": 4
+      },
+      "tills": 0,
+      "cleans": 32,
+      "maxLedgerError": 0,
+      "ledgerChecks": 72000,
+      "cycles": [
+        {
+          "tick": 1000,
+          "feed": 267.49195199995484,
+          "grass": 1.3826801599999798,
+          "minHp": 100,
+          "zones": {
+            "z1": {
+              "grass_height": 0.39888000000000007,
+              "compaction": 100,
+              "pollution": 0.032
+            },
+            "z2": {
+              "grass_height": 1.498,
+              "compaction": 0.18,
+              "pollution": 0
+            },
+            "z3": {
+              "grass_height": 0.0007999999999999999,
+              "compaction": 0,
+              "pollution": 0
+            },
+            "z4": {
+              "grass_height": 1.496,
+              "compaction": 19.799999999999663,
+              "pollution": 11.968000000000025
+            }
+          }
+        },
+        {
+          "tick": 2000,
+          "feed": 211.6919520000024,
+          "grass": 1.7595601600000152,
+          "minHp": 100,
+          "zones": {
+            "z1": {
+              "grass_height": 0.09608,
+              "compaction": 99.82,
+              "pollution": 12.000000000000025
+            },
+            "z2": {
+              "grass_height": 0.39888000000000007,
+              "compaction": 100,
+              "pollution": 0.032
+            },
+            "z3": {
+              "grass_height": 0.7988000000000147,
+              "compaction": 0.18,
+              "pollution": 0
+            },
+            "z4": {
+              "grass_height": 0.0007999999999999999,
+              "compaction": 0,
+              "pollution": 11.968000000000025
+            }
+          }
+        },
+        {
+          "tick": 3000,
+          "feed": 282.239865599983,
+          "grass": 1.0603601600001242,
+          "minHp": 100,
+          "zones": {
+            "z1": {
+              "grass_height": 0.0007999999999999999,
+              "compaction": 0,
+              "pollution": 12.000000000000025
+            },
+            "z2": {
+              "grass_height": 0.09608,
+              "compaction": 99.82,
+              "pollution": 12.000000000000025
+            },
+            "z3": {
+              "grass_height": 0.39888000000000007,
+              "compaction": 100,
+              "pollution": 0.032
+            },
+            "z4": {
+              "grass_height": 0.7988000000000147,
+              "compaction": 0.18,
+              "pollution": 11.968000000000025
+            }
+          }
+        },
+        {
+          "tick": 4000,
+          "feed": 282.239865599983,
+          "grass": 1.0603601600001242,
+          "minHp": 100,
+          "zones": {
+            "z1": {
+              "grass_height": 0.7988000000000147,
+              "compaction": 0.18,
+              "pollution": 12.000000000000025
+            },
+            "z2": {
+              "grass_height": 0.0007999999999999999,
+              "compaction": 0,
+              "pollution": 12.000000000000025
+            },
+            "z3": {
+              "grass_height": 0.09608,
+              "compaction": 99.82,
+              "pollution": 12.000000000000025
+            },
+            "z4": {
+              "grass_height": 0.39888000000000007,
+              "compaction": 100,
+              "pollution": 12.000000000000025
+            }
+          }
+        },
+        {
+          "tick": 5000,
+          "feed": 282.239865599983,
+          "grass": 1.0603601600001242,
+          "minHp": 100,
+          "zones": {
+            "z1": {
+              "grass_height": 0.39888000000000007,
+              "compaction": 100,
+              "pollution": 12.032000000000025
+            },
+            "z2": {
+              "grass_height": 0.7988000000000147,
+              "compaction": 0.18,
+              "pollution": 12.000000000000025
+            },
+            "z3": {
+              "grass_height": 0.0007999999999999999,
+              "compaction": 0,
+              "pollution": 12.000000000000025
+            },
+            "z4": {
+              "grass_height": 0.09608,
+              "compaction": 99.82,
+              "pollution": 13.968000000000053
+            }
+          }
+        },
+        {
+          "tick": 6000,
+          "feed": 282.239865599983,
+          "grass": 1.0603601600001242,
+          "minHp": 100,
+          "zones": {
+            "z1": {
+              "grass_height": 0.09608,
+              "compaction": 99.82,
+              "pollution": 14.000000000000053
+            },
+            "z2": {
+              "grass_height": 0.39888000000000007,
+              "compaction": 100,
+              "pollution": 12.032000000000025
+            },
+            "z3": {
+              "grass_height": 0.7988000000000147,
+              "compaction": 0.18,
+              "pollution": 12.000000000000025
+            },
+            "z4": {
+              "grass_height": 0.0007999999999999999,
+              "compaction": 0,
+              "pollution": 13.968000000000053
+            }
+          }
+        },
+        {
+          "tick": 7000,
+          "feed": 282.239865599983,
+          "grass": 1.0603601600001242,
+          "minHp": 100,
+          "zones": {
+            "z1": {
+              "grass_height": 0.0007999999999999999,
+              "compaction": 0,
+              "pollution": 14.000000000000053
+            },
+            "z2": {
+              "grass_height": 0.09608,
+              "compaction": 99.82,
+              "pollution": 14.000000000000053
+            },
+            "z3": {
+              "grass_height": 0.39888000000000007,
+              "compaction": 100,
+              "pollution": 12.032000000000025
+            },
+            "z4": {
+              "grass_height": 0.7988000000000147,
+              "compaction": 0.18,
+              "pollution": 13.968000000000053
+            }
+          }
+        },
+        {
+          "tick": 8000,
+          "feed": 282.239865599983,
+          "grass": 1.0603601600001242,
+          "minHp": 100,
+          "zones": {
+            "z1": {
+              "grass_height": 0.7988000000000147,
+              "compaction": 0.18,
+              "pollution": 14.000000000000053
+            },
+            "z2": {
+              "grass_height": 0.0007999999999999999,
+              "compaction": 0,
+              "pollution": 14.000000000000053
+            },
+            "z3": {
+              "grass_height": 0.09608,
+              "compaction": 99.82,
+              "pollution": 14.000000000000053
+            },
+            "z4": {
+              "grass_height": 0.39888000000000007,
+              "compaction": 100,
+              "pollution": 14.000000000000053
+            }
+          }
+        },
+        {
+          "tick": 9000,
+          "feed": 282.239865599983,
+          "grass": 1.0603601600001242,
+          "minHp": 100,
+          "zones": {
+            "z1": {
+              "grass_height": 0.39888000000000007,
+              "compaction": 100,
+              "pollution": 14.032000000000053
+            },
+            "z2": {
+              "grass_height": 0.7988000000000147,
+              "compaction": 0.18,
+              "pollution": 14.000000000000053
+            },
+            "z3": {
+              "grass_height": 0.0007999999999999999,
+              "compaction": 0,
+              "pollution": 14.000000000000053
+            },
+            "z4": {
+              "grass_height": 0.09608,
+              "compaction": 99.82,
+              "pollution": 15.968000000000082
+            }
+          }
+        },
+        {
+          "tick": 10000,
+          "feed": 282.239865599983,
+          "grass": 1.0603601600001242,
+          "minHp": 100,
+          "zones": {
+            "z1": {
+              "grass_height": 0.09608,
+              "compaction": 99.82,
+              "pollution": 16.00000000000008
+            },
+            "z2": {
+              "grass_height": 0.39888000000000007,
+              "compaction": 100,
+              "pollution": 14.032000000000053
+            },
+            "z3": {
+              "grass_height": 0.7988000000000147,
+              "compaction": 0.18,
+              "pollution": 14.000000000000053
+            },
+            "z4": {
+              "grass_height": 0.0007999999999999999,
+              "compaction": 0,
+              "pollution": 15.968000000000082
+            }
+          }
+        },
+        {
+          "tick": 11000,
+          "feed": 282.239865599983,
+          "grass": 1.0603601600001242,
+          "minHp": 100,
+          "zones": {
+            "z1": {
+              "grass_height": 0.0007999999999999999,
+              "compaction": 0,
+              "pollution": 16.00000000000008
+            },
+            "z2": {
+              "grass_height": 0.09608,
+              "compaction": 99.82,
+              "pollution": 16.00000000000008
+            },
+            "z3": {
+              "grass_height": 0.39888000000000007,
+              "compaction": 100,
+              "pollution": 14.032000000000053
+            },
+            "z4": {
+              "grass_height": 0.7988000000000147,
+              "compaction": 0.18,
+              "pollution": 15.968000000000082
+            }
+          }
+        },
+        {
+          "tick": 12000,
+          "feed": 282.239865599983,
+          "grass": 1.0603601600001242,
+          "minHp": 100,
+          "zones": {
+            "z1": {
+              "grass_height": 0.7988000000000147,
+              "compaction": 0.18,
+              "pollution": 16.00000000000008
+            },
+            "z2": {
+              "grass_height": 0.0007999999999999999,
+              "compaction": 0,
+              "pollution": 16.00000000000008
+            },
+            "z3": {
+              "grass_height": 0.09608,
+              "compaction": 99.82,
+              "pollution": 16.00000000000008
+            },
+            "z4": {
+              "grass_height": 0.39888000000000007,
+              "compaction": 100,
+              "pollution": 16.00000000000008
+            }
+          }
+        }
+      ],
+      "deaths": 0,
+      "sheepBlockedTicks": 1998,
+      "animals": [
+        {
+          "kind": "cattle",
+          "weight": 600,
+          "hp": 100,
+          "dead": false,
+          "cause": null
+        },
+        {
+          "kind": "cattle",
+          "weight": 600,
+          "hp": 100,
+          "dead": false,
+          "cause": null
+        },
+        {
+          "kind": "sheep",
+          "weight": 80,
+          "hp": 100,
+          "dead": false,
+          "cause": null
+        },
+        {
+          "kind": "sheep",
+          "weight": 80,
+          "hp": 100,
+          "dead": false,
+          "cause": null
+        },
+        {
+          "kind": "pig",
+          "weight": 120,
+          "hp": 100,
+          "dead": false,
+          "cause": null
+        },
+        {
+          "kind": "pig",
+          "weight": 120,
+          "hp": 100,
+          "dead": false,
+          "cause": null
+        }
+      ],
+      "minHp": 100,
+      "maintenanceStamina": 320
+    },
+    "repaired": {
+      "mixed": false,
+      "prepared": false,
+      "pigs": 2,
+      "birds": 5,
+      "cattle": 2,
+      "sheep": 2,
+      "ticks": 12000,
+      "damaged": true,
+      "recovery": true,
+      "manual": false,
+      "growing": false,
+      "feed": 3360.1913711993698,
+      "products": {
+        "hus_egg": 205,
+        "hus_milk_buffalo": 54,
+        "hus_wool": 4
+      },
+      "tills": 44,
+      "cleans": 26,
+      "maxLedgerError": 0,
+      "ledgerChecks": 132000,
+      "cycles": [
+        {
+          "tick": 1000,
+          "feed": 281.54811839996455,
+          "grass": 0.594822559999993,
+          "minHp": 100,
+          "zones": {
+            "z1": {
+              "grass_height": 0.39931329600000004,
+              "compaction": 39.83999999999974,
+              "pollution": 20.010074696481006
+            },
+            "z2": {
+              "grass_height": 0.5093200000000079,
+              "compaction": 40.18,
+              "pollution": 20
+            },
+            "z3": {
+              "grass_height": 0.0007999999999999999,
+              "compaction": 0,
+              "pollution": 5.05733549959249
+            },
+            "z4": {
+              "grass_height": 0.09651214399999998,
+              "compaction": 39.80000000000241,
+              "pollution": 11.932589803926588
+            }
+          }
+        },
+        {
+          "tick": 2000,
+          "feed": 256.24459680001723,
+          "grass": 1.004392144000064,
+          "minHp": 100,
+          "zones": {
+            "z1": {
+              "grass_height": 0.09636929599999998,
+              "compaction": 59.640000000002864,
+              "pollution": 25.143420786845763
+            },
+            "z2": {
+              "grass_height": 0.39888000000000007,
+              "compaction": 100,
+              "pollution": 20.016486747772124
+            },
+            "z3": {
+              "grass_height": 0.7988000000000147,
+              "compaction": 0.18,
+              "pollution": 5.05733549959249
+            },
+            "z4": {
+              "grass_height": 0.0007999999999999999,
+              "compaction": 0,
+              "pollution": 3.7827569657897024
+            }
+          }
+        },
+        {
+          "tick": 3000,
+          "feed": 282.239865599983,
+          "grass": 1.0603601600001242,
+          "minHp": 98.73999999999934,
+          "zones": {
+            "z1": {
+              "grass_height": 0.0007999999999999999,
+              "compaction": 0,
+              "pollution": 11.288151393113756
+            },
+            "z2": {
+              "grass_height": 0.09608,
+              "compaction": 99.82,
+              "pollution": 30.844709046870545
+            },
+            "z3": {
+              "grass_height": 0.39888000000000007,
+              "compaction": 100,
+              "pollution": 5.084382594226122
+            },
+            "z4": {
+              "grass_height": 0.7988000000000147,
+              "compaction": 0.18,
+              "pollution": 3.7827569657897024
+            }
+          }
+        },
+        {
+          "tick": 4000,
+          "feed": 282.239865599983,
+          "grass": 1.0603601600001242,
+          "minHp": 100,
+          "zones": {
+            "z1": {
+              "grass_height": 0.7988000000000147,
+              "compaction": 0.18,
+              "pollution": 11.288151393113756
+            },
+            "z2": {
+              "grass_height": 0.0007999999999999999,
+              "compaction": 0,
+              "pollution": 11.170478862469887
+            },
+            "z3": {
+              "grass_height": 0.09608,
+              "compaction": 99.82,
+              "pollution": 21.73183308530579
+            },
+            "z4": {
+              "grass_height": 0.39888000000000007,
+              "compaction": 100,
+              "pollution": 3.809536659110652
+            }
+          }
+        },
+        {
+          "tick": 5000,
+          "feed": 282.239865599983,
+          "grass": 1.0603601600001242,
+          "minHp": 100,
+          "zones": {
+            "z1": {
+              "grass_height": 0.39888000000000007,
+              "compaction": 100,
+              "pollution": 11.30639105773615
+            },
+            "z2": {
+              "grass_height": 0.7988000000000147,
+              "compaction": 0.18,
+              "pollution": 11.170478862469887
+            },
+            "z3": {
+              "grass_height": 0.0007999999999999999,
+              "compaction": 0,
+              "pollution": 5.071233191671078
+            },
+            "z4": {
+              "grass_height": 0.09608,
+              "compaction": 99.82,
+              "pollution": 17.451896888122956
+            }
+          }
+        },
+        {
+          "tick": 6000,
+          "feed": 282.239865599983,
+          "grass": 1.0603601600001242,
+          "minHp": 100,
+          "zones": {
+            "z1": {
+              "grass_height": 0.09608,
+              "compaction": 99.82,
+              "pollution": 20.90170851937194
+            },
+            "z2": {
+              "grass_height": 0.39888000000000007,
+              "compaction": 100,
+              "pollution": 11.190274580512648
+            },
+            "z3": {
+              "grass_height": 0.7988000000000147,
+              "compaction": 0.18,
+              "pollution": 5.071233191671078
+            },
+            "z4": {
+              "grass_height": 0.0007999999999999999,
+              "compaction": 0,
+              "pollution": 4.836783708444382
+            }
+          }
+        },
+        {
+          "tick": 7000,
+          "feed": 282.239865599983,
+          "grass": 1.0603601600001242,
+          "minHp": 100,
+          "zones": {
+            "z1": {
+              "grass_height": 0.0007999999999999999,
+              "compaction": 0,
+              "pollution": 6.663359959553056
+            },
+            "z2": {
+              "grass_height": 0.09608,
+              "compaction": 99.82,
+              "pollution": 22.403109942352764
+            },
+            "z3": {
+              "grass_height": 0.39888000000000007,
+              "compaction": 100,
+              "pollution": 5.096746389649857
+            },
+            "z4": {
+              "grass_height": 0.7988000000000147,
+              "compaction": 0.18,
+              "pollution": 4.836783708444382
+            }
+          }
+        },
+        {
+          "tick": 8000,
+          "feed": 282.239865599983,
+          "grass": 1.0603601600001242,
+          "minHp": 100,
+          "zones": {
+            "z1": {
+              "grass_height": 0.7988000000000147,
+              "compaction": 0.18,
+              "pollution": 6.663359959553056
+            },
+            "z2": {
+              "grass_height": 0.0007999999999999999,
+              "compaction": 0,
+              "pollution": 5.834566649925784
+            },
+            "z3": {
+              "grass_height": 0.09608,
+              "compaction": 99.82,
+              "pollution": 18.640529640374464
+            },
+            "z4": {
+              "grass_height": 0.39888000000000007,
+              "compaction": 100,
+              "pollution": 4.8615437501467555
+            }
+          }
+        },
+        {
+          "tick": 9000,
+          "feed": 282.239865599983,
+          "grass": 1.0603601600001242,
+          "minHp": 100,
+          "zones": {
+            "z1": {
+              "grass_height": 0.39888000000000007,
+              "compaction": 100,
+              "pollution": 6.685345761220605
+            },
+            "z2": {
+              "grass_height": 0.7988000000000147,
+              "compaction": 0.18,
+              "pollution": 5.834566649925784
+            },
+            "z3": {
+              "grass_height": 0.0007999999999999999,
+              "compaction": 0,
+              "pollution": 3.7998983491871665
+            },
+            "z4": {
+              "grass_height": 0.09608,
+              "compaction": 99.82,
+              "pollution": 16.680189239666568
+            }
+          }
+        },
+        {
+          "tick": 10000,
+          "feed": 282.239865599983,
+          "grass": 1.0603601600001242,
+          "minHp": 100,
+          "zones": {
+            "z1": {
+              "grass_height": 0.09608,
+              "compaction": 99.82,
+              "pollution": 16.97591226902271
+            },
+            "z2": {
+              "grass_height": 0.39888000000000007,
+              "compaction": 100,
+              "pollution": 5.857587931122612
+            },
+            "z3": {
+              "grass_height": 0.7988000000000147,
+              "compaction": 0.18,
+              "pollution": 3.7998983491871665
+            },
+            "z4": {
+              "grass_height": 0.0007999999999999999,
+              "compaction": 0,
+              "pollution": 3.3666014506676785
+            }
+          }
+        },
+        {
+          "tick": 11000,
+          "feed": 282.239865599983,
+          "grass": 1.0603601600001242,
+          "minHp": 100,
+          "zones": {
+            "z1": {
+              "grass_height": 0.0007999999999999999,
+              "compaction": 0,
+              "pollution": 3.2919167518926833
+            },
+            "z2": {
+              "grass_height": 0.09608,
+              "compaction": 99.82,
+              "pollution": 16.516165371646238
+            },
+            "z3": {
+              "grass_height": 0.39888000000000007,
+              "compaction": 100,
+              "pollution": 3.8253164257935803
+            },
+            "z4": {
+              "grass_height": 0.7988000000000147,
+              "compaction": 0.18,
+              "pollution": 3.3666014506676785
+            }
+          }
+        },
+        {
+          "tick": 12000,
+          "feed": 282.239865599983,
+          "grass": 1.0603601600001242,
+          "minHp": 100,
+          "zones": {
+            "z1": {
+              "grass_height": 0.7988000000000147,
+              "compaction": 0.18,
+              "pollution": 3.2919167518926833
+            },
+            "z2": {
+              "grass_height": 0.0007999999999999999,
+              "compaction": 0,
+              "pollution": 2.5764143405828257
+            },
+            "z3": {
+              "grass_height": 0.09608,
+              "compaction": 99.82,
+              "pollution": 14.739615220312126
+            },
+            "z4": {
+              "grass_height": 0.39888000000000007,
+              "compaction": 100,
+              "pollution": 3.3920536872125906
+            }
+          }
+        }
+      ],
+      "deaths": 0,
+      "sheepBlockedTicks": 0,
+      "animals": [
+        {
+          "kind": "cattle",
+          "weight": 600,
+          "hp": 100,
+          "dead": false,
+          "cause": null
+        },
+        {
+          "kind": "cattle",
+          "weight": 600,
+          "hp": 100,
+          "dead": false,
+          "cause": null
+        },
+        {
+          "kind": "sheep",
+          "weight": 80,
+          "hp": 100,
+          "dead": false,
+          "cause": null
+        },
+        {
+          "kind": "sheep",
+          "weight": 80,
+          "hp": 100,
+          "dead": false,
+          "cause": null
+        },
+        {
+          "kind": "pig",
+          "weight": 120,
+          "hp": 100,
+          "dead": false,
+          "cause": null
+        },
+        {
+          "kind": "pig",
+          "weight": 120,
+          "hp": 100,
+          "dead": false,
+          "cause": null
+        },
+        {
+          "kind": "chicken",
+          "weight": 2.5,
+          "hp": 100,
+          "dead": false,
+          "cause": null
+        },
+        {
+          "kind": "chicken",
+          "weight": 2.5,
+          "hp": 100,
+          "dead": false,
+          "cause": null
+        },
+        {
+          "kind": "chicken",
+          "weight": 2.5,
+          "hp": 100,
+          "dead": false,
+          "cause": null
+        },
+        {
+          "kind": "chicken",
+          "weight": 2.5,
+          "hp": 100,
+          "dead": false,
+          "cause": null
+        },
+        {
+          "kind": "chicken",
+          "weight": 2.5,
+          "hp": 100,
+          "dead": false,
+          "cause": null
+        }
+      ],
+      "minHp": 100,
+      "maintenanceStamina": 700
+    }
+  },
+  "longRuns": [
+    {
+      "seed": 7,
+      "ticks": 48000,
+      "feed": 33551.97257151967,
+      "products": {
+        "hus_beef_blood": 160,
+        "hus_pork_blood": 306,
+        "hus_mutton_blood": 192,
+        "hus_milk_buffalo": 199,
+        "hus_egg": 2623,
+        "hus_chicken_thigh": 51,
+        "hus_chicken_breast": 51,
+        "hus_chicken_meat": 51,
+        "hus_chicken_blood": 51,
+        "hus_chicken_gizzard": 51,
+        "hus_chicken_liver": 51,
+        "hus_chicken_heart": 51,
+        "hus_chicken_intestine": 51,
+        "hus_chicken_skin": 51,
+        "hus_chicken_bone": 51,
+        "hus_wool": 44
+      },
+      "chickReplacements": 51,
+      "manualSlaughters": 51,
+      "births": 8,
+      "deaths": 0,
+      "maxPopulation": 29,
+      "maxLedgerError": 4.440892098500626e-16,
+      "ledgerChecks": 1325332,
+      "periods": [
+        {
+          "tick": 4000,
+          "feed": 1079.4250489388155,
+          "live": 25,
+          "minHp": 100,
+          "maxPollution": 0.0128,
+          "births": 4,
+          "replacements": 3
+        },
+        {
+          "tick": 8000,
+          "feed": 2248.645541657048,
+          "live": 26,
+          "minHp": 100,
+          "maxPollution": 0.015242591043953185,
+          "births": 5,
+          "replacements": 8
+        },
+        {
+          "tick": 12000,
+          "feed": 1975.4132261931213,
+          "live": 28,
+          "minHp": 90.1,
+          "maxPollution": 0.01743308220013634,
+          "births": 7,
+          "replacements": 12
+        },
+        {
+          "tick": 16000,
+          "feed": 2237.388528618623,
+          "live": 28,
+          "minHp": 100,
+          "maxPollution": 0.021964323986800514,
+          "births": 7,
+          "replacements": 16
+        },
+        {
+          "tick": 20000,
+          "feed": 2249.1671137190933,
+          "live": 28,
+          "minHp": 100,
+          "maxPollution": 0.02362947606608311,
+          "births": 7,
+          "replacements": 21
+        },
+        {
+          "tick": 24000,
+          "feed": 2739.569266609322,
+          "live": 28,
+          "minHp": 90.2,
+          "maxPollution": 0.0256,
+          "births": 7,
+          "replacements": 25
+        },
+        {
+          "tick": 28000,
+          "feed": 4829.581099635493,
+          "live": 29,
+          "minHp": 100,
+          "maxPollution": 0.0256,
+          "births": 8,
+          "replacements": 29
+        },
+        {
+          "tick": 32000,
+          "feed": 2804.06819319939,
+          "live": 29,
+          "minHp": 100,
+          "maxPollution": 0.0256,
+          "births": 8,
+          "replacements": 33
+        },
+        {
+          "tick": 36000,
+          "feed": 2742.4823103284716,
+          "live": 29,
+          "minHp": 90.30000000000001,
+          "maxPollution": 0.0256,
+          "births": 8,
+          "replacements": 38
+        },
+        {
+          "tick": 40000,
+          "feed": 3497.8847878376137,
+          "live": 29,
+          "minHp": 97.80000000000001,
+          "maxPollution": 0.0256,
+          "births": 8,
+          "replacements": 42
+        },
+        {
+          "tick": 44000,
+          "feed": 4723.45542070515,
+          "live": 29,
+          "minHp": 90.1,
+          "maxPollution": 0.0256,
+          "births": 8,
+          "replacements": 46
+        },
+        {
+          "tick": 48000,
+          "feed": 2424.892034077633,
+          "live": 29,
+          "minHp": 90.4,
+          "maxPollution": 0.0256,
+          "births": 8,
+          "replacements": 51
+        }
+      ],
+      "finalAnimals": [
+        {
+          "kind": "cattle",
+          "weight": 600,
+          "hp": 90.4,
+          "age": 58000,
+          "dead": false
+        },
+        {
+          "kind": "cattle",
+          "weight": 600,
+          "hp": 90.4,
+          "age": 58000,
+          "dead": false
+        },
+        {
+          "kind": "sheep",
+          "weight": 80,
+          "hp": 90.4,
+          "age": 54400,
+          "dead": false
+        },
+        {
+          "kind": "sheep",
+          "weight": 80,
+          "hp": 90.4,
+          "age": 54400,
+          "dead": false
+        },
+        {
+          "kind": "pig",
+          "weight": 120,
+          "hp": 90.4,
+          "age": 49617,
+          "dead": false
+        },
+        {
+          "kind": "pig",
+          "weight": 120,
+          "hp": 90.4,
+          "age": 49617,
+          "dead": false
+        },
+        {
+          "kind": "pig",
+          "weight": 120,
+          "hp": 100,
+          "age": 44919,
+          "dead": false
+        },
+        {
+          "kind": "pig",
+          "weight": 120,
+          "hp": 96.15,
+          "age": 44919,
+          "dead": false
+        },
+        {
+          "kind": "pig",
+          "weight": 120,
+          "hp": 96.15,
+          "age": 44919,
+          "dead": false
+        },
+        {
+          "kind": "pig",
+          "weight": 120,
+          "hp": 96.15,
+          "age": 44919,
+          "dead": false
+        },
+        {
+          "kind": "sheep",
+          "weight": 80,
+          "hp": 100,
+          "age": 43173,
+          "dead": false
+        },
+        {
+          "kind": "cattle",
+          "weight": 600,
+          "hp": 100,
+          "age": 36787,
+          "dead": false
+        },
+        {
+          "kind": "sheep",
+          "weight": 80,
+          "hp": 100,
+          "age": 36112,
+          "dead": false
+        },
+        {
+          "kind": "cattle",
+          "weight": 600,
+          "hp": 100,
+          "age": 21584,
+          "dead": false
+        },
+        {
+          "kind": "chicken",
+          "weight": 2.5,
+          "hp": 100,
+          "age": 13200,
+          "dead": false
+        },
+        {
+          "kind": "chicken",
+          "weight": 2.5,
+          "hp": 100,
+          "age": 12300,
+          "dead": false
+        },
+        {
+          "kind": "chicken",
+          "weight": 2.5,
+          "hp": 100,
+          "age": 11400,
+          "dead": false
+        },
+        {
+          "kind": "chicken",
+          "weight": 2.5,
+          "hp": 100,
+          "age": 10500,
+          "dead": false
+        },
+        {
+          "kind": "chicken",
+          "weight": 2.5,
+          "hp": 100,
+          "age": 9600,
+          "dead": false
+        },
+        {
+          "kind": "chicken",
+          "weight": 2.5,
+          "hp": 100,
+          "age": 8700,
+          "dead": false
+        },
+        {
+          "kind": "chicken",
+          "weight": 2.5,
+          "hp": 100,
+          "age": 7800,
+          "dead": false
+        },
+        {
+          "kind": "chicken",
+          "weight": 2.5,
+          "hp": 100,
+          "age": 6900,
+          "dead": false
+        },
+        {
+          "kind": "chicken",
+          "weight": 2.5,
+          "hp": 100,
+          "age": 6000,
+          "dead": false
+        },
+        {
+          "kind": "chicken",
+          "weight": 2.499017152268538,
+          "hp": 100,
+          "age": 4600,
+          "dead": false
+        },
+        {
+          "kind": "chicken",
+          "weight": 2.2863555322775073,
+          "hp": 100,
+          "age": 3700,
+          "dead": false
+        },
+        {
+          "kind": "chicken",
+          "weight": 1.5355708315533636,
+          "hp": 100,
+          "age": 2800,
+          "dead": false
+        },
+        {
+          "kind": "chicken",
+          "weight": 1.3335682359984118,
+          "hp": 100,
+          "age": 1900,
+          "dead": false
+        },
+        {
+          "kind": "chicken",
+          "weight": 0.6816179937246759,
+          "hp": 100,
+          "age": 1000,
+          "dead": false
+        },
+        {
+          "kind": "chicken",
+          "weight": 0.09830291581503398,
+          "hp": 100,
+          "age": 100,
+          "dead": false
+        }
+      ]
+    },
+    {
+      "seed": 19,
+      "ticks": 48000,
+      "feed": 33935.370591604995,
+      "products": {
+        "hus_beef_blood": 179,
+        "hus_pork_blood": 259,
+        "hus_mutton_blood": 180,
+        "hus_milk_buffalo": 274,
+        "hus_egg": 2682,
+        "hus_chicken_thigh": 51,
+        "hus_chicken_breast": 51,
+        "hus_chicken_meat": 51,
+        "hus_chicken_blood": 51,
+        "hus_chicken_gizzard": 51,
+        "hus_chicken_liver": 51,
+        "hus_chicken_heart": 51,
+        "hus_chicken_intestine": 51,
+        "hus_chicken_skin": 51,
+        "hus_chicken_bone": 51,
+        "hus_wool": 41
+      },
+      "chickReplacements": 51,
+      "manualSlaughters": 51,
+      "births": 7,
+      "deaths": 0,
+      "maxPopulation": 28,
+      "maxLedgerError": 8.881784197001252e-16,
+      "ledgerChecks": 1286829,
+      "periods": [
+        {
+          "tick": 4000,
+          "feed": 1124.4259614163748,
+          "live": 24,
+          "minHp": 100,
+          "maxPollution": 0.0128,
+          "births": 3,
+          "replacements": 3
+        },
+        {
+          "tick": 8000,
+          "feed": 2415.036342019405,
+          "live": 25,
+          "minHp": 98.80000000000001,
+          "maxPollution": 0.0128,
+          "births": 4,
+          "replacements": 8
+        },
+        {
+          "tick": 12000,
+          "feed": 1983.1016694182135,
+          "live": 26,
+          "minHp": 90.1,
+          "maxPollution": 0.014847655095957302,
+          "births": 5,
+          "replacements": 12
+        },
+        {
+          "tick": 16000,
+          "feed": 2278.6716952408688,
+          "live": 26,
+          "minHp": 95.75000000000001,
+          "maxPollution": 0.016194074695996603,
+          "births": 5,
+          "replacements": 16
+        },
+        {
+          "tick": 20000,
+          "feed": 5206.766377416456,
+          "live": 28,
+          "minHp": 98.9,
+          "maxPollution": 0.02053208511972454,
+          "births": 7,
+          "replacements": 21
+        },
+        {
+          "tick": 24000,
+          "feed": 2625.4510234989402,
+          "live": 28,
+          "minHp": 90.2,
+          "maxPollution": 0.022473668484856574,
+          "births": 7,
+          "replacements": 25
+        },
+        {
+          "tick": 28000,
+          "feed": 3580.2772753577196,
+          "live": 28,
+          "minHp": 95.85000000000001,
+          "maxPollution": 0.024826086107710178,
+          "births": 7,
+          "replacements": 29
+        },
+        {
+          "tick": 32000,
+          "feed": 4656.897249682219,
+          "live": 28,
+          "minHp": 99.00000000000001,
+          "maxPollution": 0.0256,
+          "births": 7,
+          "replacements": 33
+        },
+        {
+          "tick": 36000,
+          "feed": 2515.8261507066904,
+          "live": 28,
+          "minHp": 90.30000000000001,
+          "maxPollution": 0.0256,
+          "births": 7,
+          "replacements": 38
+        },
+        {
+          "tick": 40000,
+          "feed": 2516.73411052877,
+          "live": 28,
+          "minHp": 95.95000000000002,
+          "maxPollution": 0.0256,
+          "births": 7,
+          "replacements": 42
+        },
+        {
+          "tick": 44000,
+          "feed": 2516.546662511044,
+          "live": 28,
+          "minHp": 99.10000000000001,
+          "maxPollution": 0.0256,
+          "births": 7,
+          "replacements": 46
+        },
+        {
+          "tick": 48000,
+          "feed": 2515.636073808476,
+          "live": 28,
+          "minHp": 90.4,
+          "maxPollution": 0.0256,
+          "births": 7,
+          "replacements": 51
+        }
+      ],
+      "finalAnimals": [
+        {
+          "kind": "cattle",
+          "weight": 600,
+          "hp": 90.4,
+          "age": 58000,
+          "dead": false
+        },
+        {
+          "kind": "cattle",
+          "weight": 600,
+          "hp": 90.4,
+          "age": 58000,
+          "dead": false
+        },
+        {
+          "kind": "sheep",
+          "weight": 80,
+          "hp": 90.4,
+          "age": 54400,
+          "dead": false
+        },
+        {
+          "kind": "sheep",
+          "weight": 80,
+          "hp": 90.4,
+          "age": 54400,
+          "dead": false
+        },
+        {
+          "kind": "pig",
+          "weight": 120,
+          "hp": 90.4,
+          "age": 49617,
+          "dead": false
+        },
+        {
+          "kind": "pig",
+          "weight": 120,
+          "hp": 90.4,
+          "age": 49617,
+          "dead": false
+        },
+        {
+          "kind": "pig",
+          "weight": 120,
+          "hp": 100,
+          "age": 45312,
+          "dead": false
+        },
+        {
+          "kind": "pig",
+          "weight": 120,
+          "hp": 100,
+          "age": 45312,
+          "dead": false
+        },
+        {
+          "kind": "pig",
+          "weight": 120,
+          "hp": 100,
+          "age": 45312,
+          "dead": false
+        },
+        {
+          "kind": "cattle",
+          "weight": 600,
+          "hp": 100,
+          "age": 42972,
+          "dead": false
+        },
+        {
+          "kind": "sheep",
+          "weight": 80,
+          "hp": 93.50000000000003,
+          "age": 38179,
+          "dead": false
+        },
+        {
+          "kind": "cattle",
+          "weight": 600,
+          "hp": 100,
+          "age": 31923,
+          "dead": false
+        },
+        {
+          "kind": "sheep",
+          "weight": 80,
+          "hp": 100,
+          "age": 29819,
+          "dead": false
+        },
+        {
+          "kind": "chicken",
+          "weight": 2.5,
+          "hp": 100,
+          "age": 13200,
+          "dead": false
+        },
+        {
+          "kind": "chicken",
+          "weight": 2.5,
+          "hp": 100,
+          "age": 12300,
+          "dead": false
+        },
+        {
+          "kind": "chicken",
+          "weight": 2.5,
+          "hp": 100,
+          "age": 11400,
+          "dead": false
+        },
+        {
+          "kind": "chicken",
+          "weight": 2.5,
+          "hp": 100,
+          "age": 10500,
+          "dead": false
+        },
+        {
+          "kind": "chicken",
+          "weight": 2.5,
+          "hp": 100,
+          "age": 9600,
+          "dead": false
+        },
+        {
+          "kind": "chicken",
+          "weight": 2.5,
+          "hp": 100,
+          "age": 8700,
+          "dead": false
+        },
+        {
+          "kind": "chicken",
+          "weight": 2.5,
+          "hp": 100,
+          "age": 7800,
+          "dead": false
+        },
+        {
+          "kind": "chicken",
+          "weight": 2.5,
+          "hp": 100,
+          "age": 6900,
+          "dead": false
+        },
+        {
+          "kind": "chicken",
+          "weight": 2.5,
+          "hp": 100,
+          "age": 6000,
+          "dead": false
+        },
+        {
+          "kind": "chicken",
+          "weight": 2.5,
+          "hp": 100,
+          "age": 4600,
+          "dead": false
+        },
+        {
+          "kind": "chicken",
+          "weight": 2.5,
+          "hp": 100,
+          "age": 3700,
+          "dead": false
+        },
+        {
+          "kind": "chicken",
+          "weight": 1.7325945315066713,
+          "hp": 100,
+          "age": 2800,
+          "dead": false
+        },
+        {
+          "kind": "chicken",
+          "weight": 1.199515177659862,
+          "hp": 100,
+          "age": 1900,
+          "dead": false
+        },
+        {
+          "kind": "chicken",
+          "weight": 0.6241218040653945,
+          "hp": 100,
+          "age": 1000,
+          "dead": false
+        },
+        {
+          "kind": "chicken",
+          "weight": 0.09827239253567112,
+          "hp": 100,
+          "age": 100,
+          "dead": false
+        }
+      ]
+    },
+    {
+      "seed": 41,
+      "ticks": 48000,
+      "feed": 33302.27782153395,
+      "products": {
+        "hus_beef_blood": 172,
+        "hus_pork_blood": 258,
+        "hus_mutton_blood": 204,
+        "hus_milk_buffalo": 213,
+        "hus_egg": 2619,
+        "hus_chicken_thigh": 51,
+        "hus_chicken_breast": 51,
+        "hus_chicken_meat": 51,
+        "hus_chicken_blood": 51,
+        "hus_chicken_gizzard": 51,
+        "hus_chicken_liver": 51,
+        "hus_chicken_heart": 51,
+        "hus_chicken_intestine": 51,
+        "hus_chicken_skin": 51,
+        "hus_chicken_bone": 51,
+        "hus_wool": 48
+      },
+      "chickReplacements": 51,
+      "manualSlaughters": 51,
+      "births": 7,
+      "deaths": 0,
+      "maxPopulation": 28,
+      "maxLedgerError": 8.881784197001252e-16,
+      "ledgerChecks": 1300489,
+      "periods": [
+        {
+          "tick": 4000,
+          "feed": 1000.8167089137719,
+          "live": 26,
+          "minHp": 100,
+          "maxPollution": 0.015682354237771583,
+          "births": 5,
+          "replacements": 3
+        },
+        {
+          "tick": 8000,
+          "feed": 2444.0486119188754,
+          "live": 27,
+          "minHp": 100,
+          "maxPollution": 0.018870666351563235,
+          "births": 6,
+          "replacements": 8
+        },
+        {
+          "tick": 12000,
+          "feed": 2542.302426470017,
+          "live": 27,
+          "minHp": 90.1,
+          "maxPollution": 0.022962019344868037,
+          "births": 6,
+          "replacements": 12
+        },
+        {
+          "tick": 16000,
+          "feed": 2428.2172935010412,
+          "live": 27,
+          "minHp": 100,
+          "maxPollution": 0.0256,
+          "births": 6,
+          "replacements": 16
+        },
+        {
+          "tick": 20000,
+          "feed": 4361.012717247073,
+          "live": 27,
+          "minHp": 100,
+          "maxPollution": 0.0256,
+          "births": 6,
+          "replacements": 21
+        },
+        {
+          "tick": 24000,
+          "feed": 3089.9302094584964,
+          "live": 28,
+          "minHp": 90.2,
+          "maxPollution": 0.0256,
+          "births": 7,
+          "replacements": 25
+        },
+        {
+          "tick": 28000,
+          "feed": 2623.777906186141,
+          "live": 28,
+          "minHp": 100,
+          "maxPollution": 0.0256,
+          "births": 7,
+          "replacements": 29
+        },
+        {
+          "tick": 32000,
+          "feed": 2928.6483159415952,
+          "live": 28,
+          "minHp": 100,
+          "maxPollution": 0.0256,
+          "births": 7,
+          "replacements": 33
+        },
+        {
+          "tick": 36000,
+          "feed": 5144.195635534906,
+          "live": 28,
+          "minHp": 90.30000000000001,
+          "maxPollution": 0.0256,
+          "births": 7,
+          "replacements": 38
+        },
+        {
+          "tick": 40000,
+          "feed": 2246.255009358219,
+          "live": 28,
+          "minHp": 100,
+          "maxPollution": 0.0256,
+          "births": 7,
+          "replacements": 42
+        },
+        {
+          "tick": 44000,
+          "feed": 2246.99671946306,
+          "live": 28,
+          "minHp": 100,
+          "maxPollution": 0.0256,
+          "births": 7,
+          "replacements": 46
+        },
+        {
+          "tick": 48000,
+          "feed": 2246.0762675406595,
+          "live": 28,
+          "minHp": 90.4,
+          "maxPollution": 0.0256,
+          "births": 7,
+          "replacements": 51
+        }
+      ],
+      "finalAnimals": [
+        {
+          "kind": "cattle",
+          "weight": 600,
+          "hp": 90.4,
+          "age": 58000,
+          "dead": false
+        },
+        {
+          "kind": "cattle",
+          "weight": 600,
+          "hp": 90.4,
+          "age": 58000,
+          "dead": false
+        },
+        {
+          "kind": "sheep",
+          "weight": 80,
+          "hp": 90.4,
+          "age": 54400,
+          "dead": false
+        },
+        {
+          "kind": "sheep",
+          "weight": 80,
+          "hp": 90.4,
+          "age": 54400,
+          "dead": false
+        },
+        {
+          "kind": "pig",
+          "weight": 120,
+          "hp": 90.4,
+          "age": 49617,
+          "dead": false
+        },
+        {
+          "kind": "pig",
+          "weight": 120,
+          "hp": 90.4,
+          "age": 49617,
+          "dead": false
+        },
+        {
+          "kind": "sheep",
+          "weight": 80,
+          "hp": 100,
+          "age": 44993,
+          "dead": false
+        },
+        {
+          "kind": "sheep",
+          "weight": 80,
+          "hp": 100,
+          "age": 44993,
+          "dead": false
+        },
+        {
+          "kind": "pig",
+          "weight": 120,
+          "hp": 91.70000000000002,
+          "age": 44592,
+          "dead": false
+        },
+        {
+          "kind": "pig",
+          "weight": 120,
+          "hp": 91.70000000000002,
+          "age": 44592,
+          "dead": false
+        },
+        {
+          "kind": "pig",
+          "weight": 120,
+          "hp": 91.70000000000002,
+          "age": 44592,
+          "dead": false
+        },
+        {
+          "kind": "cattle",
+          "weight": 600,
+          "hp": 99.45,
+          "age": 41898,
+          "dead": false
+        },
+        {
+          "kind": "cattle",
+          "weight": 600,
+          "hp": 100,
+          "age": 26829,
+          "dead": false
+        },
+        {
+          "kind": "chicken",
+          "weight": 2.5,
+          "hp": 100,
+          "age": 13200,
+          "dead": false
+        },
+        {
+          "kind": "chicken",
+          "weight": 2.5,
+          "hp": 100,
+          "age": 12300,
+          "dead": false
+        },
+        {
+          "kind": "chicken",
+          "weight": 2.5,
+          "hp": 100,
+          "age": 11400,
+          "dead": false
+        },
+        {
+          "kind": "chicken",
+          "weight": 2.5,
+          "hp": 100,
+          "age": 10500,
+          "dead": false
+        },
+        {
+          "kind": "chicken",
+          "weight": 2.5,
+          "hp": 100,
+          "age": 9600,
+          "dead": false
+        },
+        {
+          "kind": "chicken",
+          "weight": 2.5,
+          "hp": 100,
+          "age": 8700,
+          "dead": false
+        },
+        {
+          "kind": "chicken",
+          "weight": 2.5,
+          "hp": 100,
+          "age": 7800,
+          "dead": false
+        },
+        {
+          "kind": "chicken",
+          "weight": 2.5,
+          "hp": 100,
+          "age": 6900,
+          "dead": false
+        },
+        {
+          "kind": "chicken",
+          "weight": 2.5,
+          "hp": 100,
+          "age": 6000,
+          "dead": false
+        },
+        {
+          "kind": "chicken",
+          "weight": 2.5,
+          "hp": 100,
+          "age": 4600,
+          "dead": false
+        },
+        {
+          "kind": "chicken",
+          "weight": 2.5,
+          "hp": 100,
+          "age": 3700,
+          "dead": false
+        },
+        {
+          "kind": "chicken",
+          "weight": 1.9844112924094992,
+          "hp": 100,
+          "age": 2800,
+          "dead": false
+        },
+        {
+          "kind": "chicken",
+          "weight": 1.3324531682310508,
+          "hp": 100,
+          "age": 1900,
+          "dead": false
+        },
+        {
+          "kind": "chicken",
+          "weight": 0.6321295469796577,
+          "hp": 100,
+          "age": 1000,
+          "dead": false
+        },
+        {
+          "kind": "chicken",
+          "weight": 0.09820902805226486,
+          "hp": 100,
+          "age": 100,
+          "dead": false
+        }
+      ]
+    }
+  ],
+  "saving": 0.2732679002148921
+}

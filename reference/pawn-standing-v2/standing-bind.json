@@ -1,0 +1,477 @@
+{
+  "version": 2,
+  "status": "P0 appearance review only; not accepted; no pose retargeting",
+  "coordinateSpace": "approved original image pixels; separate from reference skeleton",
+  "canvas": [
+    1215,
+    1295
+  ],
+  "source": "original.png",
+  "texture": "parts.png",
+  "pieces": [
+    {
+      "id": "base",
+      "name": "底座",
+      "crop": [
+        907,
+        193,
+        282,
+        136
+      ],
+      "box": [
+        227,
+        1017,
+        750,
+        220
+      ],
+      "clip": [
+        0,
+        0,
+        1,
+        1
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "angleDeg": 0,
+      "layer": 0,
+      "status": "manual appearance-space fit; review required"
+    },
+    {
+      "id": "rThigh",
+      "name": "右大腿",
+      "crop": [
+        663,
+        694,
+        155,
+        248
+      ],
+      "box": [
+        401,
+        788,
+        197,
+        164
+      ],
+      "clip": [
+        0,
+        0.12,
+        1,
+        0.81
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "angleDeg": 0,
+      "layer": 1,
+      "status": "manual appearance-space fit; review required"
+    },
+    {
+      "id": "lThigh",
+      "name": "左大腿",
+      "crop": [
+        396,
+        971,
+        149,
+        250
+      ],
+      "box": [
+        588,
+        788,
+        195,
+        164
+      ],
+      "clip": [
+        0,
+        0.12,
+        1,
+        0.81
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "angleDeg": 0,
+      "layer": 2,
+      "status": "manual appearance-space fit; review required"
+    },
+    {
+      "id": "rShin",
+      "name": "右小腿",
+      "crop": [
+        985,
+        697,
+        149,
+        247
+      ],
+      "box": [
+        397,
+        880,
+        201,
+        119
+      ],
+      "clip": [
+        0,
+        0.18,
+        1,
+        0.87
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "angleDeg": 0,
+      "layer": 3,
+      "status": "manual appearance-space fit; review required"
+    },
+    {
+      "id": "lShin",
+      "name": "左小腿",
+      "crop": [
+        682,
+        981,
+        150,
+        239
+      ],
+      "box": [
+        588,
+        880,
+        201,
+        119
+      ],
+      "clip": [
+        0,
+        0.18,
+        1,
+        0.87
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "angleDeg": 0,
+      "layer": 4,
+      "status": "manual appearance-space fit; review required"
+    },
+    {
+      "id": "rSole",
+      "name": "右鞋",
+      "crop": [
+        53,
+        1071,
+        216,
+        165
+      ],
+      "box": [
+        338,
+        916,
+        266,
+        173
+      ],
+      "clip": [
+        0,
+        0.2,
+        1,
+        1
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "angleDeg": 0,
+      "layer": 5,
+      "status": "manual appearance-space fit; review required"
+    },
+    {
+      "id": "lSole",
+      "name": "左鞋",
+      "crop": [
+        963,
+        1073,
+        204,
+        165
+      ],
+      "box": [
+        580,
+        921,
+        260,
+        176
+      ],
+      "clip": [
+        0,
+        0.2,
+        1,
+        1
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "angleDeg": 0,
+      "layer": 6,
+      "status": "manual appearance-space fit; review required"
+    },
+    {
+      "id": "rPalm",
+      "name": "右手",
+      "crop": [
+        687,
+        461,
+        149,
+        165
+      ],
+      "box": [
+        300,
+        731,
+        136,
+        134
+      ],
+      "clip": [
+        0,
+        0.27,
+        1,
+        1
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "angleDeg": 0,
+      "layer": 7,
+      "status": "manual appearance-space fit; review required"
+    },
+    {
+      "id": "lPalm",
+      "name": "左手",
+      "crop": [
+        382,
+        760,
+        146,
+        160
+      ],
+      "box": [
+        741,
+        731,
+        136,
+        134
+      ],
+      "clip": [
+        0,
+        0.27,
+        1,
+        1
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "angleDeg": 0,
+      "layer": 8,
+      "status": "manual appearance-space fit; review required"
+    },
+    {
+      "id": "rUpperArm",
+      "name": "右上臂",
+      "crop": [
+        69,
+        388,
+        142,
+        242
+      ],
+      "box": [
+        343,
+        477,
+        146,
+        204
+      ],
+      "clip": [
+        0,
+        0,
+        1,
+        0.77
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "angleDeg": 0,
+      "layer": 9,
+      "status": "manual appearance-space fit; review required"
+    },
+    {
+      "id": "lUpperArm",
+      "name": "左上臂",
+      "crop": [
+        1003,
+        390,
+        140,
+        240
+      ],
+      "box": [
+        690,
+        477,
+        146,
+        204
+      ],
+      "clip": [
+        0,
+        0,
+        1,
+        0.77
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "angleDeg": 0,
+      "layer": 10,
+      "status": "manual appearance-space fit; review required"
+    },
+    {
+      "id": "rForearm",
+      "name": "右前臂与袖口",
+      "crop": [
+        402,
+        405,
+        123,
+        226
+      ],
+      "box": [
+        313,
+        583,
+        122,
+        185
+      ],
+      "clip": [
+        0,
+        0.17,
+        1,
+        1
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "angleDeg": 0,
+      "layer": 11,
+      "status": "manual appearance-space fit; review required"
+    },
+    {
+      "id": "lForearm",
+      "name": "左前臂与袖口",
+      "crop": [
+        102,
+        706,
+        123,
+        228
+      ],
+      "box": [
+        743,
+        583,
+        122,
+        185
+      ],
+      "clip": [
+        0,
+        0.17,
+        1,
+        1
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "angleDeg": 0,
+      "layer": 12,
+      "status": "manual appearance-space fit; review required"
+    },
+    {
+      "id": "abdomen",
+      "name": "腹部与衣摆",
+      "crop": [
+        645,
+        160,
+        231,
+        175
+      ],
+      "box": [
+        398,
+        634,
+        386,
+        189
+      ],
+      "clip": [
+        0,
+        0.17,
+        1,
+        1
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "angleDeg": 0,
+      "layer": 13,
+      "status": "manual appearance-space fit; review required"
+    },
+    {
+      "id": "chest",
+      "name": "胸部与衣领",
+      "crop": [
+        360,
+        109,
+        248,
+        228
+      ],
+      "box": [
+        403,
+        470,
+        368,
+        260
+      ],
+      "clip": [
+        0,
+        0,
+        1,
+        0.77
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "angleDeg": 0,
+      "layer": 14,
+      "status": "manual appearance-space fit; review required"
+    },
+    {
+      "id": "head",
+      "name": "头发与脸",
+      "crop": [
+        25,
+        60,
+        306,
+        279
+      ],
+      "box": [
+        349,
+        72,
+        465,
+        424
+      ],
+      "clip": [
+        0,
+        0,
+        1,
+        1
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "angleDeg": 0,
+      "layer": 15,
+      "status": "manual appearance-space fit; review required"
+    }
+  ]
+}

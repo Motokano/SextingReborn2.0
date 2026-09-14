@@ -103,6 +103,7 @@
         var mf = methodFilter != null && String(methodFilter) !== '' ? String(methodFilter) : null;
         for (i = 0; i < PharmacyStation.getRecipes().length; i++) {
             var r = PharmacyStation.getRecipes()[i] || {};
+            if (r.enabled === false) continue;
             var reqMethod = r.required_method != null ? String(r.required_method) : '';
             var recipeMethod = r.method_id != null ? String(r.method_id) : '';
             if (mf != null && reqMethod !== mf && recipeMethod !== mf && toUnifiedPharmacyMethodId(reqMethod) !== mf && toUnifiedPharmacyMethodId(recipeMethod) !== mf) continue;
@@ -167,6 +168,21 @@
             for (ri = 0; ri < rows.length; ri++) {
                 var row = rows[ri];
                 if (!row || !row.item_id) continue;
+                if (Array.isArray(row.instances) && row.instances.length) {
+                    var ii;
+                    for (ii = 0; ii < row.instances.length; ii++) {
+                        var carried = row.instances[ii];
+                        if (!carried || !carried.item_id) continue;
+                        var carriedCount = Math.max(1, parseInt(carried.count, 10) || 1);
+                        var ci;
+                        for (ci = 0; ci < carriedCount; ci++) {
+                            var one = JSON.parse(JSON.stringify(carried));
+                            one.count = 1;
+                            out.push(one);
+                        }
+                    }
+                    continue;
+                }
                 var cnt = row.count != null ? parseInt(row.count, 10) : 1;
                 if (!isFinite(cnt) || cnt < 1) cnt = 1;
                 var j;

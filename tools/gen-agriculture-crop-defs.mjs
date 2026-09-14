@@ -1,5 +1,5 @@
 /**
- * 由 agriculture-seed-shop.json 生成作物生长默认参数（五档生长分：越高维越多、窗口越窄）
+ * 由农业平衡主表生成作物参数；种子表仅提供身份、档位与产物映射
  * 用法：node tools/gen-agriculture-crop-defs.mjs
  */
 import fs from 'fs';
@@ -13,183 +13,10 @@ const OUT_JSON = path.join(ROOT, 'data', 'agriculture-crop-defs.json');
 const EMBED_TOOLS = path.join(__dirname, 'agriculture-crop-defs.embed.js');
 const EMBED_JS = path.join(ROOT, 'js', 'agriculture-crop-defs.embed.js');
 
-/**
- * 各档生长分参与维与基准（成熟带仍宽裕；高分窗随档位收窄；微量/肥逐档接入）
- * scoreDimensions.trace: false | 'partial' | true
- */
-const TIER_SCORING = {
-  1: {
-    growthTicks: 80,
-    minWater: 66,
-    maxWater: 378,
-    perfectHalfWidth: 102,
-    scoreDimensions: { trace: false, fertilizer: false },
-    requestsSeaweedExtract: false,
-    requestsLiquidFertilizer: false,
-    harvestMin: 3,
-    harvestMax: 5,
-    label: '仅水分+土+轮作；水分高分窗极宽'
-  },
-  2: {
-    growthTicks: 98,
-    minWater: 92,
-    maxWater: 318,
-    perfectHalfWidth: 56,
-    scoreDimensions: { trace: 'partial', fertilizer: 'partial' },
-    defaultPerfectMinTrace: 30,
-    requestsSeaweedExtract: false,
-    requestsLiquidFertilizer: false,
-    harvestMin: 2,
-    harvestMax: 4,
-    label: '水分+土+轮作；部分作物接入微量（田园精品）'
-  },
-  3: {
-    growthTicks: 108,
-    minWater: 86,
-    maxWater: 300,
-    perfectHalfWidth: 42,
-    scoreDimensions: { trace: true, fertilizer: true },
-    defaultPerfectMinTrace: 24,
-    defaultPerfectMaxTrace: null,
-    defaultPerfectMinFertilizer: 9,
-    defaultPerfectMaxFertilizer: 78,
-    requestsSeaweedExtract: false,
-    requestsLiquidFertilizer: true,
-    harvestMin: 2,
-    harvestMax: 3,
-    label: '水+微量+肥+土+轮作；窗口中等'
-  },
-  4: {
-    growthTicks: 124,
-    minWater: 96,
-    maxWater: 278,
-    perfectHalfWidth: 34,
-    scoreDimensions: { trace: true, fertilizer: true },
-    defaultPerfectMinTrace: 32,
-    defaultPerfectMaxTrace: 94,
-    defaultPerfectMinFertilizer: 15,
-    defaultPerfectMaxFertilizer: 84,
-    requestsSeaweedExtract: true,
-    requestsLiquidFertilizer: true,
-    harvestMin: 1,
-    harvestMax: 3,
-    label: '全维计分；可登记海藻精+液态肥；窗口偏窄'
-  },
-  5: {
-    growthTicks: 142,
-    minWater: 100,
-    maxWater: 265,
-    perfectHalfWidth: 27,
-    scoreDimensions: { trace: true, fertilizer: true },
-    defaultPerfectMinTrace: 38,
-    defaultPerfectMaxTrace: 70,
-    defaultPerfectMinFertilizer: 20,
-    defaultPerfectMaxFertilizer: 66,
-    requestsSeaweedExtract: true,
-    requestsLiquidFertilizer: true,
-    harvestMin: 1,
-    harvestMax: 2,
-    label: '全维计分且窗口最窄；高值作物'
-  }
-};
+const BALANCE = JSON.parse(fs.readFileSync(path.join(ROOT, 'data/agriculture-crop-balance.json'), 'utf8'));
+const TIER_LABELS = {1:'基础清水农业',2:'供水分化，微量可选增产',3:'肥料成为成熟条件',4:'高供水与肥料、微量投入',5:'高投入专用田；融合客土降低资源和空间成本'};
 
-/** 二档中额外参与微量生长分的作物（其余二档只看水分/土/轮作） */
-const TIER2_TRACE_CROP_IDS = new Set([
-  'tomato',
-  'tomato_green',
-  'onion',
-  'garlic',
-  'scallion',
-  'beet',
-  'sugarcane',
-  'peanut'
-]);
 
-/** 作物组对计分窗口的叠加（在档位基准上） */
-const GROUP_SCORING_MOD = {
-  grain: { minWaterDelta: 0, maxWaterDelta: 8, perfectHalfDelta: 6, perfectMinTraceDelta: -2, perfectMinFertDelta: -1 },
-  veg: { perfectHalfDelta: 2, perfectMinTraceDelta: 0, perfectMinFertDelta: 0 },
-  aromatics: { perfectHalfDelta: -2, perfectMinTraceDelta: -3, perfectMinFertDelta: -2 },
-  spice: { perfectHalfDelta: -5, perfectMinTraceDelta: 4, perfectMaxTraceDelta: -6, perfectMinFertDelta: 2 },
-  fruit: { minWaterDelta: 2, maxWaterDelta: -6, perfectHalfDelta: -4, perfectMinTraceDelta: 2, perfectMinFertDelta: 1 }
-};
-
-/** 形态修正（生长周期与水分形态） */
-const KIND_MOD = {
-  fast: { growthTicksMul: 0.48, minWaterDelta: -14, maxWaterDelta: 28, perfectHalfDelta: 18 },
-  aquatic: { minWaterDelta: 20, maxWaterDelta: 38, perfectHalfDelta: 10 },
-  tree: { growthTicksMul: 1.2, minWaterDelta: 4, maxWaterDelta: -12, perfectHalfDelta: -5 },
-  spice: { perfectMinTraceDelta: -3, perfectHalfDelta: 3 }
-};
-
-const KIND_BY_CROP = {
-  sprout: 'fast',
-  rice: 'aquatic',
-  rice_bomba: 'aquatic',
-  rice_basmati: 'aquatic',
-  rice_glutinous_round: 'aquatic',
-  euryale: 'aquatic',
-  lotus_seed: 'aquatic',
-  almond: 'tree',
-  apricot: 'tree',
-  pear: 'tree',
-  cherry: 'tree',
-  lemon: 'tree',
-  chestnut: 'tree',
-  star_anise: 'tree',
-  bamboo_shoot: 'tree',
-  cumin: 'spice',
-  chili_kashmir: 'spice',
-  turmeric: 'spice',
-  coriander_seed: 'spice',
-  fennel_seed: 'spice',
-  mustard_seed: 'spice'
-};
-
-/** 单作物计分微调（在同档内拉开差异） */
-const CROP_SCORING_OVERRIDE = {
-  maize: { minWaterDelta: -8, maxWaterDelta: 18, perfectHalfDelta: 14, growNoteSuffix: '耐旱，水分高分窗宽' },
-  rice: { minWaterDelta: 6, maxWaterDelta: 12, perfectHalfDelta: 8 },
-  wheat: { perfectHalfDelta: 10, minWaterDelta: -4 },
-  wheat_durum: { perfectMinTrace: 28, perfectMinFertilizer: 11, perfectHalfDelta: -3 },
-  potato: { growthTicksMul: 0.94, perfectHalfDelta: 12, maxWaterDelta: 12 },
-  cucumber: { minWaterDelta: 6, perfectHalfDelta: 4 },
-  carrot: { minWaterDelta: -10, perfectHalfDelta: 10 },
-  radish_white: { growthTicksMul: 0.88, perfectHalfDelta: 16 },
-  cabbage: { perfectHalfDelta: 8 },
-  beans_white_haricot: { perfectHalfDelta: 4 },
-  sprout: { growthTicksMul: 0.45 },
-  tomato: { perfectMinTrace: 34, perfectHalfDelta: -6 },
-  tomato_green: { perfectMinTrace: 32, perfectHalfDelta: -5 },
-  beet: { perfectMinTrace: 28 },
-  onion: { perfectMinTrace: 30, perfectHalfDelta: -2 },
-  garlic: { perfectMinTrace: 28 },
-  scallion: { perfectMinTrace: 26, perfectHalfDelta: 4 },
-  sugarcane: { growthTicksMul: 1.12, maxWaterDelta: 22, perfectMinTrace: 36, perfectHalfDelta: -4 },
-  peanut: { perfectMinTrace: 28, perfectHalfDelta: -2 },
-  rice_bomba: { perfectMinTrace: 26, perfectMinFertilizer: 10, perfectHalfDelta: -4 },
-  rice_glutinous_round: { perfectMinTrace: 22, perfectMinFertilizer: 11, perfectHalfDelta: -6 },
-  rice_basmati: { perfectMinTrace: 36, perfectMaxTrace: 88, perfectMinFertilizer: 17, perfectMaxFertilizer: 80 },
-  celery: { minWaterDelta: 10, perfectMinTrace: 26, perfectMinFertilizer: 8, perfectHalfDelta: -5 },
-  ginger: { perfectMinFertilizer: 10, perfectMinTrace: 24 },
-  shallot: { perfectMinTrace: 26, perfectMinFertilizer: 10 },
-  leek: { perfectMinTrace: 28, perfectMinFertilizer: 11, perfectHalfDelta: -3 },
-  cilantro: { perfectMinTrace: 24, perfectMinFertilizer: 9, perfectHalfDelta: -4 },
-  mustard_seed: { perfectMinTrace: 30, perfectMinFertilizer: 10 },
-  chili_red: { perfectMinTrace: 32, perfectMinFertilizer: 12, perfectHalfDelta: -3 },
-  konjac: { growthTicksMul: 1.06, perfectMinTrace: 20, perfectMinFertilizer: 13, perfectMinTraceDelta: -4 },
-  sesame: { perfectMinTrace: 34, perfectMinFertilizer: 16 },
-  pumpkin_seed: { perfectMinTrace: 30, perfectMinFertilizer: 14, maxWaterDelta: 15 },
-  turmeric: { perfectMinTrace: 36, perfectMinFertilizer: 17, perfectMaxFertilizer: 78 },
-  coriander_seed: { perfectMinTrace: 32, perfectMinFertilizer: 15 },
-  fennel_seed: { perfectMinTrace: 34, perfectMinFertilizer: 16 },
-  plantain: { growthTicksMul: 1.08, perfectMinFertilizer: 18, perfectHalfDelta: -4 },
-  chestnut: { perfectMinTrace: 38, perfectMaxTrace: 72, perfectMinFertilizer: 19 },
-  bamboo_shoot: { perfectMinTrace: 40, perfectMaxTrace: 68, perfectMinFertilizer: 22 },
-  star_anise: { perfectMinTrace: 42, perfectMaxTrace: 65, perfectMinFertilizer: 24 },
-  cumin: { minWaterDelta: -6, maxWaterDelta: -10, perfectMinTrace: 44, perfectMaxTrace: 62, perfectMinFertilizer: 26, perfectHalfDelta: -6 },
-  chili_kashmir: { perfectMinTrace: 40, perfectMaxTrace: 66, perfectMinFertilizer: 23 }
-};
 
 /**
  * 水分习性：影响完美窗、涝害判定；与土种偏好分轨（§2.2b / §4b.3）
@@ -617,27 +444,6 @@ const CROP_SOIL_AFFINITY = {
   }
 };
 
-function applyWaterProfileWindows(def, cropId) {
-  const profile = WATER_PROFILE[cropId] || 'mesic';
-  def.water_profile = profile;
-  if (profile === 'xeric') {
-    def.perfectMinWater = Math.max(def.minWater + 4, Math.round(def.perfectMinWater * 0.78));
-    def.perfectMaxWater = Math.min(def.maxWater - 8, Math.round(def.perfectMaxWater * 0.72));
-    def.waterlogged_above = Math.min(
-      def.maxWater - 4,
-      def.perfectMaxWater + Math.round((def.maxWater - def.perfectMaxWater) * 0.35)
-    );
-  } else if (profile === 'hydrophilic') {
-    def.perfectMinWater = Math.round(def.perfectMinWater * 1.08);
-    def.perfectMaxWater = Math.min(def.maxWater - 6, Math.round(def.perfectMaxWater * 1.12));
-  } else if (profile === 'aquatic') {
-    def.perfectMinWater = Math.round(def.perfectMinWater * 1.15);
-    def.perfectMaxWater = Math.min(def.maxWater - 4, Math.round(def.perfectMaxWater * 1.18));
-  } else {
-    def.water_profile = 'mesic';
-  }
-}
-
 function buildSoilScoring(cropId, tier, group) {
   const explicit = CROP_SOIL_AFFINITY[cropId];
   if (explicit) {
@@ -701,21 +507,6 @@ function applyTraceSensitivityToDef(def) {
   return def;
 }
 
-function resolveTraceParticipation(tierProfile, cropId, cropOverride) {
-  const mode = tierProfile.scoreDimensions.trace;
-  if (cropOverride.perfectMinTrace != null) return true;
-  if (mode === true) return true;
-  if (mode === 'partial') return TIER2_TRACE_CROP_IDS.has(cropId);
-  return false;
-}
-
-function resolveFertParticipation(tierProfile, cropId, cropOverride) {
-  const mode = tierProfile.scoreDimensions.fertilizer;
-  if (cropOverride.perfectMinFertilizer != null) return true;
-  if (mode === true) return true;
-  return false;
-}
-
 function cropIdFromSeed(seedId) {
   if (seedId === 'seed_peanut') return 'peanut';
   return seedId.replace(/^seed_/, '');
@@ -726,168 +517,40 @@ function cropNameFromSeedName(seedName) {
 }
 
 function buildCropDef(seed) {
-  const tier = Number(seed.tier) || 2;
-  const tierProfile = { ...TIER_SCORING[Math.min(5, Math.max(1, tier))] };
   const cropId = cropIdFromSeed(seed.item_id);
+  const b = BALANCE.crops[cropId];
+  if (!b || b.tier !== Number(seed.tier)) throw new Error('Missing or mismatched balance: ' + cropId);
+  for (const key of ['water', 'fertilizer', 'trace']) {
+    const band = b[key];
+    if (band && (band.length !== 4 || band.some((v, i) => !Number.isFinite(v) || v < 0 || (i && v < band[i - 1])))) throw new Error('Invalid band: ' + cropId + '/' + key);
+  }
+  const total = band => band ? band.map(v => Math.round(v * b.growth_ticks * 10) / 10) : [null,null,null,null];
+  const [minWater, perfectMinWater, perfectMaxWater, maxWater] = total(b.water);
+  const [minFertilizer, perfectMinFertilizer, perfectMaxFertilizer, maxFertilizer] = total(b.fertilizer);
+  const [minTrace, perfectMinTrace, perfectMaxTrace, maxTrace] = total(b.trace);
   const group = seed.group || 'veg';
-  const groupMod = GROUP_SCORING_MOD[group] || {};
-  const kind = KIND_BY_CROP[cropId];
-  const kindMod = kind ? KIND_MOD[kind] : null;
-  const cropOverride = CROP_SCORING_OVERRIDE[cropId] || {};
-
-  let growthTicks = Math.round(tierProfile.growthTicks * (cropOverride.growthTicksMul || 1));
-  if (kindMod?.growthTicksMul) growthTicks = Math.round(growthTicks * kindMod.growthTicksMul);
-  growthTicks = Math.max(40, Math.min(175, growthTicks));
-
-  let minWater =
-    tierProfile.minWater +
-    (groupMod.minWaterDelta || 0) +
-    (kindMod?.minWaterDelta || 0) +
-    (cropOverride.minWaterDelta || 0);
-  let maxWater =
-    tierProfile.maxWater +
-    (groupMod.maxWaterDelta || 0) +
-    (kindMod?.maxWaterDelta || 0) +
-    (cropOverride.maxWaterDelta || 0);
-  minWater = Math.max(55, Math.round(minWater));
-  maxWater = Math.max(minWater + 118, Math.round(maxWater));
-
-  const mid = (minWater + maxWater) / 2;
-  let half =
-    tierProfile.perfectHalfWidth +
-    (groupMod.perfectHalfDelta || 0) +
-    (kindMod?.perfectHalfDelta || 0) +
-    (cropOverride.perfectHalfDelta || 0);
-  half = Math.max(20, Math.min(112, Math.round(half)));
-
-  let perfectMinWater = Math.round(mid - half);
-  let perfectMaxWater = Math.round(mid + half);
-  perfectMinWater = Math.max(minWater + 6, perfectMinWater);
-  perfectMaxWater = Math.min(maxWater - 6, perfectMaxWater);
-  if (perfectMaxWater - perfectMinWater < 22) {
-    perfectMinWater = Math.max(minWater + 6, mid - 12);
-    perfectMaxWater = Math.min(maxWater - 6, mid + 12);
-  }
-
-  const traceParticipates = resolveTraceParticipation(tierProfile, cropId, cropOverride);
-  const fertParticipates = resolveFertParticipation(tierProfile, cropId, cropOverride);
-
-  let perfectMinTrace = null;
-  let perfectMaxTrace = null;
-  if (traceParticipates) {
-    perfectMinTrace =
-      cropOverride.perfectMinTrace != null
-        ? cropOverride.perfectMinTrace
-        : tierProfile.defaultPerfectMinTrace;
-    perfectMinTrace +=
-      (groupMod.perfectMinTraceDelta || 0) +
-      (kindMod?.perfectMinTraceDelta || 0) +
-      (cropOverride.perfectMinTraceDelta || 0);
-    perfectMinTrace = Math.max(14, Math.round(perfectMinTrace));
-    if (tierProfile.defaultPerfectMaxTrace != null || cropOverride.perfectMaxTrace != null) {
-      perfectMaxTrace = cropOverride.perfectMaxTrace ?? tierProfile.defaultPerfectMaxTrace;
-      if (perfectMaxTrace != null) {
-        perfectMaxTrace +=
-          (groupMod.perfectMaxTraceDelta || 0) + (cropOverride.perfectMaxTraceDelta || 0);
-        perfectMaxTrace = Math.max(perfectMinTrace + 8, Math.round(perfectMaxTrace));
-      }
-    }
-  }
-
-  let perfectMinFertilizer = null;
-  let perfectMaxFertilizer = null;
-  if (fertParticipates) {
-    perfectMinFertilizer =
-      cropOverride.perfectMinFertilizer != null
-        ? cropOverride.perfectMinFertilizer
-        : tierProfile.defaultPerfectMinFertilizer;
-    perfectMinFertilizer +=
-      (groupMod.perfectMinFertDelta || 0) + (cropOverride.perfectMinFertDelta || 0);
-    perfectMinFertilizer = Math.max(6, Math.round(perfectMinFertilizer));
-    const maxFert = cropOverride.perfectMaxFertilizer ?? tierProfile.defaultPerfectMaxFertilizer;
-    if (maxFert != null) {
-      perfectMaxFertilizer = Math.max(perfectMinFertilizer + 12, Math.round(maxFert));
-    }
-  }
-
-  let requestsSeaweedExtract = tierProfile.requestsSeaweedExtract;
-  let requestsLiquidFertilizer = tierProfile.requestsLiquidFertilizer;
-  if (tier <= 2) {
-    requestsSeaweedExtract = false;
-    requestsLiquidFertilizer = false;
-  }
-  if (tier === 3) requestsSeaweedExtract = false;
-
   const def = {
-    cropId,
-    tier,
-    group,
-    nitrogen_fixing: NITROGEN_FIXING_CROP_IDS.has(cropId),
-    name: cropNameFromSeedName(seed.name),
-    seedItemId: seed.item_id,
-    seedName: seed.name,
-    productItemId: seed.harvest_item_id,
-    productName: cropNameFromSeedName(seed.name),
-    growthTicks,
-    minWater,
-    maxWater,
-    perfectMinWater,
-    perfectMaxWater,
-    perfectMinTrace,
-    perfectMaxTrace,
-    score_dimensions: {
-      water: true,
-      trace: traceParticipates,
-      fertilizer: fertParticipates,
-      soil: true,
-      rotation: true
-    },
-    requests_seaweed_extract: requestsSeaweedExtract,
-    requests_liquid_fertilizer: requestsLiquidFertilizer,
-    perfectMinFertilizer,
-    perfectMaxFertilizer,
-    soil_scoring: buildSoilScoring(cropId, tier, group),
-    soil_tags: buildSoilTags(cropId, group),
-    harvestMin: tierProfile.harvestMin,
-    harvestMax: tierProfile.harvestMax
+    cropId, tier:b.tier, group, nitrogen_fixing:NITROGEN_FIXING_CROP_IDS.has(cropId),
+    name:cropNameFromSeedName(seed.name), seedItemId:seed.item_id, seedName:seed.name,
+    productItemId:seed.harvest_item_id, productName:cropNameFromSeedName(seed.name),
+    balance_revision:BALANCE.revision, growthTicks:b.growth_ticks,
+    minWater, perfectMinWater, perfectMaxWater, maxWater,
+    minFertilizer, perfectMinFertilizer, perfectMaxFertilizer, maxFertilizer,
+    minTrace, perfectMinTrace, perfectMaxTrace, maxTrace,
+    score_dimensions:{water:true,trace:!!b.trace,fertilizer:!!b.fertilizer,soil:true,rotation:true},
+    requests_seaweed_extract:!!b.trace, requests_liquid_fertilizer:!!b.fertilizer,
+    soil_scoring:buildSoilScoring(cropId,b.tier,group), soil_tags:buildSoilTags(cropId,group),
+    harvestMin:b.tier===1?3:b.tier<=3?2:1, harvestMax:b.tier===1?5:b.tier===2?4:b.tier<=4?3:2,
+    water_profile:WATER_PROFILE[cropId] || 'mesic'
   };
-
-  const reqStruct = CROP_ID_TO_REQUIRED_STRUCTURE[cropId];
-  if (reqStruct) {
-    def.required_crop_structure_id = reqStruct;
-  }
-
-  const starterMeta = STARTER_CROP_META[cropId];
-  if (starterMeta || seed.starter_recommended === true) {
-    def.starter_recommended = true;
-    const seq = seed.starter_sequence != null ? Number(seed.starter_sequence) : starterMeta?.starter_sequence;
-    if (seq != null && !Number.isNaN(seq)) def.starter_sequence = seq;
-  }
-
-  applyWaterProfileWindows(def, cropId);
-
+  if (def.water_profile === 'xeric') def.waterlogged_above = perfectMaxWater + (maxWater-perfectMaxWater)*.5;
+  if (CROP_ID_TO_REQUIRED_STRUCTURE[cropId]) def.required_crop_structure_id=CROP_ID_TO_REQUIRED_STRUCTURE[cropId];
+  const starter=STARTER_CROP_META[cropId];
+  if(starter) {def.starter_recommended=true;def.starter_sequence=starter.starter_sequence;}
   return applyTraceSensitivityToDef(def);
 }
-
 function buildTierScoringSummary() {
-  const out = {};
-  for (const [t, p] of Object.entries(TIER_SCORING)) {
-    out[t] = {
-      label: p.label,
-      typical_max_positive_score: estimateMaxScore(Number(t))
-    };
-  }
-  return out;
-}
-
-function estimateMaxScore(tier) {
-  let max = 2 + 1 + 1;
-  const p = TIER_SCORING[tier];
-  if (p.scoreDimensions.trace === true) max += 2;
-  else if (p.scoreDimensions.trace === 'partial') max += 2;
-  if (p.scoreDimensions.fertilizer === true) max += 2;
-  else if (tier === 2) max += 2;
-  return max;
+  return Object.fromEntries(Object.entries(TIER_LABELS).map(([tier,label])=>[tier,{label,typical_max_positive_score:Number(tier)>=3?9:Number(tier)===2?7:5}]));
 }
 
 function buildStarterCropCatalog(crops) {
@@ -913,9 +576,10 @@ for (const s of shop.seeds) {
 }
 
 const doc = {
-  schema_version: 3,
+  schema_version: 4,
+  result_labels: {"nutrient_deficient":"肥料不足·未能结实","fertilizer_excess":"施肥过量·无收成","trace_deficient":"微量元素不足·未能结实","trace_toxic":"微量元素过量·无收成"},
   design_note:
-    '成熟硬门槛后按生长分结算产量：每正分+25%产量，每负分-25%（负分惩罚封顶-50%）。各档 score_dimensions 控制参与维；perfect* 区间为各维 2 分闭区间。',
+    '作物需求源为 agriculture-crop-balance.json 的每刻吸收区间；按生长周期换算。水、肥、微量成熟门槛通过后计产量，零投入不再自动获肥/微量分。',
   crop_structure_requirements: REQUIRED_CROP_STRUCTURE,
   crop_structure_labels: CROP_STRUCTURE_LABELS,
   trace_sensitivity_catalog: {
@@ -930,7 +594,7 @@ const doc = {
   },
   tier_scoring_summary: buildTierScoringSummary(),
   tier_growth_summary: Object.fromEntries(
-    Object.entries(TIER_SCORING).map(([k, v]) => [k, v.label])
+    Object.entries(TIER_LABELS)
   ),
   growth_score_rules: {
     yield_per_positive_point: 0.25,
@@ -940,13 +604,14 @@ const doc = {
     dimension_scores: {
       water: 'xeric：完美窗偏低，超 waterlogged_above 生长分0；hydrophilic/aquatic 窗偏高；均受土壤锁值影响入账',
       trace: 'score_dimensions.trace=false不参与；排斥作物≤safe_max得2否则0',
-      fertilizer: 'score_dimensions.fertilizer=false不参与',
+      fertilizer: '缺肥/过肥可绝收；有效投入未进高产窗1分、进窗2分、零投入0分',
       soil: '偏好+1；不适-1；其余0（CROP_SOIL_AFFINITY 按八种土编排；融合透滤/酸性固磷等见 demo）',
-      rotation: '跨group或豆科后种非豆科+1；黑土连作同作物-1；黄绵土豆科后+1'
+      rotation: '跨group或豆科后种非豆科+2；黑土连作-1/-2；黄绵土豆科后+3'
     }
   },
   water_profile_labels: WATER_PROFILE_LABELS,
   starter_crop_catalog: buildStarterCropCatalog(crops),
+  legacy_crops: JSON.parse(fs.readFileSync(path.join(ROOT, 'data/agriculture-crops-legacy.json'), 'utf8')).crops,
   crops
 };
 

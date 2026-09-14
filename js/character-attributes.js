@@ -309,7 +309,6 @@
     function toPct(raw) {
         var v = Number(raw);
         if (!isFinite(v)) return 0;
-        if (Math.abs(v) > 1) return v / 100;
         return v;
     }
 
@@ -318,7 +317,7 @@
             add_flat: { blunt: 0, slash: 0, pierce: 0 },
             add_from_pct: [],
             increase_pct: { blunt: 0, slash: 0, pierce: 0 },
-            convert_pct: { blunt_to_slash: 0, slash_to_pierce: 0 }
+            convert_pct: { blunt_to_slash: 0, blunt_to_pierce: 0, slash_to_pierce: 0 }
         };
     }
 
@@ -339,6 +338,7 @@
         }
         if (src.convert_pct && typeof src.convert_pct === 'object') {
             dst.convert_pct.blunt_to_slash += toPct(src.convert_pct.blunt_to_slash);
+            dst.convert_pct.blunt_to_pierce += toPct(src.convert_pct.blunt_to_pierce);
             dst.convert_pct.slash_to_pierce += toPct(src.convert_pct.slash_to_pierce);
         }
         if (Array.isArray(src.add_from_pct)) {
@@ -352,6 +352,7 @@
             }
         }
         dst.convert_pct.blunt_to_slash = Math.max(0, Math.min(1, dst.convert_pct.blunt_to_slash));
+        dst.convert_pct.blunt_to_pierce = Math.max(0, Math.min(1, dst.convert_pct.blunt_to_pierce));
         dst.convert_pct.slash_to_pierce = Math.max(0, Math.min(1, dst.convert_pct.slash_to_pierce));
         return dst;
     }
@@ -377,6 +378,7 @@
             var to = normalizeDamageTypeId(p.to_damage_type || p.to);
             if (!from || !to) return null;
             if (from === 'blunt' && to === 'slash') bag.convert_pct.blunt_to_slash += toPct(p.pct != null ? p.pct : p.value);
+            if (from === 'blunt' && to === 'pierce') bag.convert_pct.blunt_to_pierce += toPct(p.pct != null ? p.pct : p.value);
             if (from === 'slash' && to === 'pierce') bag.convert_pct.slash_to_pierce += toPct(p.pct != null ? p.pct : p.value);
             return bag;
         }
@@ -578,6 +580,9 @@
         var strCoef = getCfg('strength_carry_weight_pct_per_level', 0.01);
         var strLevel = getStrengthLevel();
         cache.carry_capacity = Wbase * (1 + strCoef * strLevel + jinguCoef * jingu);
+        if (global.BuffSystem && typeof global.BuffSystem.getPharmacyCarryCapacityBonus === 'function') {
+            cache.carry_capacity += global.BuffSystem.getPharmacyCarryCapacityBonus('player');
+        }
 
         var vBase = getCfg('base_speed_no_footwork', getCfg('base_speed_no_qinggong', 1));
         var dexPct = getCfg('dexterity_speed_pct_per_point', 0.005);
@@ -656,8 +661,8 @@
     /** 徒手拳底 B_fist（05 5.5.2 分段曲线）：S ≤ fist_lin_segment_max 线性（每点 fist_lin_gain_per_point），
      *  高段接原饱和尾（cap/div 封顶、fist_curve_scale 衰减）——低段手感更稳，500+/800+ 锚点与旧表一致。
      *  配置字段 fist_base_cap/fist_curve_scale/fist_base_div/fist_lin_segment_max/fist_lin_gain_per_point */
-    function getFistBasePower() {
-        var S = getEffectiveAttr('jingu');
+    function getFistBasePower(primaryAttribute) {
+        var S = getEffectiveAttr(primaryAttribute || 'jingu');
         var cap = getCfg('fist_base_cap', 650);
         var scale = getCfg('fist_curve_scale', 450);
         var div = getCfg('fist_base_div', 2);
@@ -677,7 +682,7 @@
             if (tailCap <= 0) tailCap = 0;
             raw = linValue + tailCap * (1 - Math.exp(-(S - linMax) / scale));
         }
-        return Math.max(0, Math.floor(raw));
+        return Math.max(0, raw);
     }
 
     /**
@@ -918,6 +923,8 @@
      * 战斗受击损毁写入（09-body-parts「损毁写入」规则，玩家侧；敌人侧同规则在 combat-enemies）：
      * Q = 本次最终伤害（已取整）。命中部位未损毁 → Q 全加该部位（封顶溢出作废）；
      * 已损毁 → Q 均分到未损毁部位（每部位先 floor(Q/n)，余数按 头→胸→腹→左手→右手→左脚→右脚 顺序 +1）；全损毁 → Q 作废。
+     * 损毁账与疼痛账并行（k229/47 §9.6）：实际落地损毁增量（顶满溢出作废）同写入全局疼痛条——
+     * 疼痛增量 = round(实际损毁增量 × 汇率)，汇率按「被击中部位受伤前损毁进度」线性（0.1 → 0.55 → 1.0）。
      * @param {string} hitPartId 规范或运行时部位键（left_arm / lhand 等均可）
      * @param {number} q 损毁增加值（最终伤害）
      */
@@ -926,32 +933,43 @@
         if (q <= 0) return;
         var k = normalizeDestroyKeyForCombat(hitPartId);
         if (PART_DESTROY_IDS.indexOf(k) < 0) k = 'chest';
-        var cur = getPartDestroy(k);
         var mx = getBodyPartDestroyMax(k);
+        var pre = getPartDestroy(k);
+        var appliedTotal = 0;
+        var cur = pre;
         if (cur < mx) {
-            state.part_destroy[k] = Math.min(mx, cur + q);
-            noteDestroyDamage();
-            return;
-        }
-        var open = [];
-        for (var i = 0; i < PART_DESTROY_IDS.length; i++) {
-            var pk = PART_DESTROY_IDS[i];
-            if (getPartDestroy(pk) < getBodyPartDestroyMax(pk)) open.push(pk);
-        }
-        if (!open.length) return;
-        var base = Math.floor(q / open.length);
-        var rem = q % open.length;
-        for (var j = 0; j < open.length; j++) {
-            var ok = open[j];
-            var addj = base + (j < rem ? 1 : 0);
-            if (addj <= 0) continue;
-            var cj = getPartDestroy(ok);
-            var mj = getBodyPartDestroyMax(ok);
-            var av = Math.min(addj, mj - cj);
-            if (av > 0) {
-                state.part_destroy[ok] = cj + av;
-                noteDestroyDamage();
+            var addv = Math.min(q, mx - cur);
+            state.part_destroy[k] = cur + addv;
+            appliedTotal = addv;
+        } else {
+            var open = [];
+            for (var i = 0; i < PART_DESTROY_IDS.length; i++) {
+                var pk = PART_DESTROY_IDS[i];
+                if (getPartDestroy(pk) < getBodyPartDestroyMax(pk)) open.push(pk);
             }
+            if (!open.length) return;
+            var base = Math.floor(q / open.length);
+            var rem = q % open.length;
+            for (var j = 0; j < open.length; j++) {
+                var ok = open[j];
+                var addj = base + (j < rem ? 1 : 0);
+                if (addj <= 0) continue;
+                var cj = getPartDestroy(ok);
+                var mj = getBodyPartDestroyMax(ok);
+                var av = Math.min(addj, mj - cj);
+                if (av > 0) {
+                    state.part_destroy[ok] = cj + av;
+                    appliedTotal += av;
+                }
+            }
+        }
+        if (appliedTotal > 0) {
+            noteDestroyDamage();
+            try {
+                if (global && global.Survival && typeof global.Survival.addPainFromDestroy === 'function') {
+                    global.Survival.addPainFromDestroy({ actualIncrement: appliedTotal, partPreValue: pre, partMax: mx });
+                }
+            } catch (ePain) { /* 疼痛账异常不阻断损毁账 */ }
         }
     }
 

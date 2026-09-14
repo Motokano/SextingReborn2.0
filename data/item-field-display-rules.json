@@ -102,17 +102,17 @@
       "skill_id": null,
       "level_min": 0,
       "locked_hint": "",
-      "renderer": "bool_tag",
+      "renderer": "hidden",
       "value_type": "boolean",
-      "visible_by_default": true
+      "visible_by_default": false
     },
     "edible_buff_id": {
       "primary_block": "food_detail",
       "reference_blocks": [],
-      "skill_id": "life_cooking",
-      "level_min": 3,
-      "locked_hint": "烹饪经验不足，无法判断食用后增益详情",
-      "renderer": "food_restore",
+      "skill_id": null,
+      "level_min": 0,
+      "locked_hint": "",
+      "renderer": "hidden",
       "value_type": "string",
       "visible_by_default": false
     },
@@ -159,10 +159,10 @@
     "food_buff_duration_ticks": {
       "primary_block": "food_detail",
       "reference_blocks": [],
-      "skill_id": "life_cooking",
-      "level_min": 3,
-      "locked_hint": "烹饪经验不足，无法判断食物效果持续时间",
-      "renderer": "tick_duration",
+      "skill_id": null,
+      "level_min": 0,
+      "locked_hint": "",
+      "renderer": "hidden",
       "value_type": "integer",
       "visible_by_default": false
     },
@@ -269,10 +269,10 @@
     "spoilage_ticks": {
       "primary_block": "food_detail",
       "reference_blocks": [],
-      "skill_id": "life_cooking",
-      "level_min": 2,
-      "locked_hint": "烹饪经验不足，无法判断保鲜/腐败情况",
-      "renderer": "tick_duration",
+      "skill_id": null,
+      "level_min": 0,
+      "locked_hint": "",
+      "renderer": "hidden",
       "value_type": "integer",
       "visible_by_default": false
     },
@@ -325,9 +325,9 @@
       "skill_id": null,
       "level_min": 0,
       "locked_hint": "",
-      "renderer": "number",
+      "renderer": "hidden",
       "value_type": "number",
-      "visible_by_default": true
+      "visible_by_default": false
     },
     "use_action": {
       "primary_block": "pharmacy_common",

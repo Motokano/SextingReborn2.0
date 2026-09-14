@@ -1,0 +1,20 @@
+{
+  "schemaVersion": 1,
+  "recordedAt": "2026-09-14",
+  "canonicalFile": "shared-pose-map-v2.json",
+  "baselineFile": "shared-pose-map-v2-baseline-20260914.json",
+  "baselineSha256": "26f7d69fae8306c408aabde38f6ccda1b114af22a7ab9f503729d98bff93dc19",
+  "status": "128 state design targets preserved; complete calibrated skeleton pending",
+  "authority": "Explicit shared pose design data. Images, screenshots and atlas crop metadata are presentation references only.",
+  "rules": [
+    "Never infer or overwrite joint angles, lengths, anatomical IDs or contact anchors from generated images or screenshots.",
+    "Atlas crop repairs may change presentation metadata only; canonical pose data must retain the recorded hash.",
+    "Main character and ordinary NPCs reference the same versioned rig and resolved pose transforms; appearance cannot modify them.",
+    "Future calibrated rig versions must explicitly define coordinate axes, units, parent hierarchy, bind transforms, bone lengths, pivots, full base-pose joint rotations and contact anchors.",
+    "Store final solved transforms per state after contact calibration so different NPCs use exactly the same angles and positions.",
+    "Do not call uncalibrated relative injury targets a complete or validated skeleton.",
+    "Intentional pose revisions require a new documented baseline; never refresh this baseline merely to pass a gallery build."
+  ],
+  "recorded": ["128 state IDs", "anatomical part IDs", "visibility", "base pose selection", "relative head/chest/abdomen angle targets", "torso bend limits", "support constraints", "free hand actions", "restoration rules"],
+  "pendingCalibration": ["coordinate axes and units", "joint hierarchy and pivots", "bind transforms", "bone lengths", "complete base-pose joint rotations", "contact anchor coordinates", "128 final resolved pose transforms"]
+}

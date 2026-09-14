@@ -1,0 +1,16 @@
+{
+  "npcId": "npc_supervisor_manager",
+  "name": "林经理",
+  "status": "standing design; awaiting visual review; not deployed",
+  "appearance": {
+    "hair": "黑色单马尾",
+    "face": "沿用参考的简洁无五官脸",
+    "skin": "沿用参考的浅暖肤色",
+    "clothes": "白衬衫、蓝色牛仔裤、黑色圆头鞋",
+    "accessories": "棕色斜挎邮差包"
+  },
+  "scope": "普通NPC，仅正常站姿",
+  "reference": "../../assets/map/isometric/player-office-chibi-v1.png",
+  "image": "standing.png",
+  "prompt": "Create a new NPC pawn, Manager Lin, using the attached approved game protagonist ONLY as the exact art style, body proportions, camera angle and base reference. A single adult WOMAN with neat BLACK SINGLE PONYTAIL, clearly visible ponytail extending behind one side of her head, simple side-swept front hair. White collared button-up office SHIRT, medium blue JEANS, simple black rounded shoes. A warm brown canvas/leather MESSENGER BAG worn CROSSBODY: one strap diagonally across white shirt and a rectangular flap satchel resting at one hip. Natural standing pose, both arms relaxed and both legs present, complete healthy body. Retain exactly the reference's rounded chibi miniature proportions, warm pale simple blank face (no detailed eyes or makeup), broad small mitten hands, short legs, thick clean dark outlines, softly faceted hand-painted shading, restrained colors. Female identity conveyed subtly by ponytail and clothing, no exaggerated anatomy, no dress or skirt. Preserve same thin dark gray elliptical pawn base beneath feet. Same slightly elevated three-quarter board-game camera as reference, same scale and framing, generous transparent margin. ONE assembled character ONLY, no extra views, no skeleton or modular parts, no text, no label, no board, no ground shadow. Actual transparent-background RGBA PNG asset, empty alpha outside pawn. Keep painterly quality matching reference, not flat vector."
+}
