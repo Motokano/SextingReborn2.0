@@ -29,6 +29,58 @@
         var lastInput = null;
         var effectsRenderer = typeof opts.effectsRenderer === 'function' ? opts.effectsRenderer : null;
         var animationLoopId = null, animationLoopEnabled = false;
+        var spriteSources = {
+            npc: 'assets/map/isometric/npc-pawn-v2.png',
+            enemy: 'assets/map/isometric/enemy-pawn-v2.png',
+            livestock: 'assets/map/isometric/livestock-station-v1.png'
+        };
+        var spriteCache = {};
+
+        function getSprite(key) {
+            var cached = spriteCache[key];
+            if (cached) return cached.ready ? cached.image : null;
+            var image = new Image();
+            cached = spriteCache[key] = { image: image, ready: false, failed: false };
+            image.onload = function () {
+                cached.ready = true;
+                if (lastInput) render(lastInput);
+            };
+            image.onerror = function () { cached.failed = true; };
+            image.src = spriteSources[key];
+            return null;
+        }
+
+        function drawSprite(ctx, key, cx, footY, maxWidth, maxHeight) {
+            var image = getSprite(key);
+            if (!image || !image.naturalWidth || !image.naturalHeight) return false;
+            var scale = Math.min(maxWidth / image.naturalWidth, maxHeight / image.naturalHeight);
+            var width = image.naturalWidth * scale;
+            var height = image.naturalHeight * scale;
+            ctx.save();
+            ctx.fillStyle = 'rgba(0,0,0,.32)';
+            ctx.beginPath();
+            ctx.ellipse(cx, footY + 1, maxWidth * .28, maxWidth * .09, 0, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.drawImage(image, cx - width / 2, footY - height, width, height);
+            ctx.restore();
+            return true;
+        }
+
+        function drawSpriteLabel(ctx, label, cx, y) {
+            var text = String(label || '').trim();
+            if (!text) return;
+            if (text.length > 6) text = text.slice(0, 6);
+            ctx.save();
+            ctx.font = 'bold 12px "Microsoft YaHei","PingFang SC",sans-serif';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'bottom';
+            ctx.lineWidth = 3;
+            ctx.strokeStyle = 'rgba(18,14,12,.9)';
+            ctx.strokeText(text, cx, y);
+            ctx.fillStyle = '#f3e9d9';
+            ctx.fillText(text, cx, y);
+            ctx.restore();
+        }
 
         var linImage = null, linReady = false, linShadow = null;
         function drawLinPawn(ctx,cx,cy,label) {
@@ -140,9 +192,24 @@
             dynamicCtx.textAlign='center';dynamicCtx.textBaseline='middle';
             if(m.unknownPresence){dynamicCtx.fillStyle='rgba(245,222,179,.95)';dynamicCtx.font='bold 20px sans-serif';dynamicCtx.fillText('?',c.x,c.y-lift);}
             else if(m.npc && m.npcId==='npc.supervisor.manager' && projection.isIsometric && drawLinPawn(dynamicCtx,c.x,c.y,m.npcLabel)){}
-            else if(m.npc){if(projection.isIsometric)drawPawn(dynamicCtx,c.x,c.y,'#a992d7','#261e34',m.npcLabel||'');else{dynamicCtx.fillStyle='rgba(210,190,255,.95)';dynamicCtx.font='bold 13px sans-serif';dynamicCtx.fillText(m.npcLabel||'•',c.x,c.y);}}
-            else if(m.enemy){if(projection.isIsometric)drawPawn(dynamicCtx,c.x,c.y,m.enemyId==='enemy.training_dummy_wooden'?'#8b5a2b':'#c65353','#351b1b','');else{dynamicCtx.fillStyle=m.enemyId==='enemy.training_dummy_wooden'?'#8b5a2b':'#f87171';dynamicCtx.beginPath();dynamicCtx.arc(c.x,c.y,8,0,Math.PI*2);dynamicCtx.fill();}}
-            else if(m.cookingStation||m.pharmacyStation||m.compostStation||m.agricultureStation||m.livestockStation||m.warehouseStation){var lab=m.cookingStation?'灶':(m.pharmacyStation?'药':(m.compostStation?'肥':(m.agricultureStation?'农':(m.livestockStation?'牧':'仓'))));dynamicCtx.fillStyle=m.agricultureStation?'#4ade80':(m.livestockStation?'#fb923c':(m.warehouseStation?'#d3a060':'#f59e5b'));dynamicCtx.font='bold 20px "Microsoft YaHei",sans-serif';dynamicCtx.fillText(lab,c.x,c.y-(projection.isIsometric?9:0));}
+            else if(m.npc){
+                if(projection.isIsometric){
+                    if(!drawSprite(dynamicCtx,'npc',c.x,c.y,58,74)) drawPawn(dynamicCtx,c.x,c.y,'#a992d7','#261e34','');
+                    drawSpriteLabel(dynamicCtx,m.npcLabel||'',c.x,c.y-77);
+                }else{dynamicCtx.fillStyle='rgba(210,190,255,.95)';dynamicCtx.font='bold 13px sans-serif';dynamicCtx.fillText(m.npcLabel||'•',c.x,c.y);}
+            }
+            else if(m.enemy){
+                if(projection.isIsometric){
+                    if(m.enemyId==='enemy.training_dummy_wooden'||!drawSprite(dynamicCtx,'enemy',c.x,c.y,64,78)) drawPawn(dynamicCtx,c.x,c.y,m.enemyId==='enemy.training_dummy_wooden'?'#8b5a2b':'#c65353','#351b1b','');
+                }else{dynamicCtx.fillStyle=m.enemyId==='enemy.training_dummy_wooden'?'#8b5a2b':'#f87171';dynamicCtx.beginPath();dynamicCtx.arc(c.x,c.y,8,0,Math.PI*2);dynamicCtx.fill();}
+            }
+            else if(m.cookingStation||m.pharmacyStation||m.compostStation||m.agricultureStation||m.livestockStation||m.warehouseStation){
+                if(!(projection.isIsometric&&m.livestockStation&&drawSprite(dynamicCtx,'livestock',c.x,c.y+7,88,72))){
+                    var lab=m.cookingStation?'灶':(m.pharmacyStation?'药':(m.compostStation?'肥':(m.agricultureStation?'农':(m.livestockStation?'牧':'仓'))));
+                    dynamicCtx.fillStyle=m.agricultureStation?'#4ade80':(m.livestockStation?'#fb923c':(m.warehouseStation?'#d3a060':'#f59e5b'));
+                    dynamicCtx.font='bold 20px "Microsoft YaHei",sans-serif';dynamicCtx.fillText(lab,c.x,c.y-(projection.isIsometric?9:0));
+                }
+            }
             if(m.portal&&m.portal.label){var pl=String(m.portal.label).trim();if(pl.length>6)pl=pl.slice(0,6);dynamicCtx.fillStyle='#7dd3fc';dynamicCtx.font='bold 12px sans-serif';dynamicCtx.fillText(pl,c.x,c.y+(projection.isIsometric?12:0));}
             if(m.groundCount>0||m.groundUnknown){dynamicCtx.fillStyle='#d4a373';dynamicCtx.font='14px sans-serif';dynamicCtx.fillText(m.groundCount>0?'📦':'?',c.x+projection.tileWidth*.27,c.y+projection.tileHeight*.17);}
         }

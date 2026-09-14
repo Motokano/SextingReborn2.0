@@ -19,27 +19,59 @@
     position: absolute;
     left: 50%;
     top: 50%;
-    width: 48px;
-    height: 62px;
-    transform: translate(-50%, -52px);
+    width: 70px;
+    height: 84px;
+    transform: translate(-50%, -76px);
     z-index: 2;
+}
+
+.map-view-isometric .player-pawn-visual.has-pawn-texture {
+    /* V4 alpha bounds (292,108)-(856,1285) in 1144x1375.
+       Visible pawn: 39x72px on a 144px-wide tile; base bottom +8px.
+       Asset has a smaller head and a long tapered torso. */
+    --pawn-image: url("../assets/map/isometric/player-office-pawn-v4.png");
+    --pawn-image-size: 79.106px 84.112px;
+    --pawn-image-position: center -6.607px;
+    width: 48px;
+    height: 72px;
+    transform: translate(-50%, -64px);
+    background-image: var(--pawn-image);
+    background-position: var(--pawn-image-position);
+    background-size: var(--pawn-image-size);
+    background-repeat: no-repeat;
 }
 
 .map-view-isometric .player-pawn-visual::before {
     content: "";
     position: absolute;
     left: 50%;
-    bottom: -2px;
-    width: 46px;
-    height: 12px;
+    bottom: 3px;
+    width: 36px;
+    height: 4px;
     transform: translateX(-50%);
     border-radius: 50%;
-    background: radial-gradient(ellipse, rgba(5, 4, 3, .72) 0 42%, rgba(5, 4, 3, .34) 64%, transparent 78%);
+    background: rgba(9, 8, 7, .32);
     filter: blur(.6px);
     z-index: -1;
 }
 
+.map-view-isometric .player-pawn-visual.has-pawn-texture::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    /* Fixed upper-left light: flatten the actual silhouette onto the ground,
+       projecting its head down/right while its base stays at the contact point. */
+    background: linear-gradient(to bottom, rgba(9, 8, 7, .13), rgba(9, 8, 7, .37));
+    -webkit-mask: var(--pawn-image) var(--pawn-image-position) / var(--pawn-image-size) no-repeat;
+    mask: var(--pawn-image) var(--pawn-image-position) / var(--pawn-image-size) no-repeat;
+    transform-origin: 50% calc(100% - 3px);
+    transform: matrix(1, 0, -.48, -.24, 0, 0);
+    filter: blur(1px);
+    pointer-events: none;
+    z-index: -1;
+}
 .player-pawn-visual > span { position: absolute; display: block; left: 50%; }
+.map-view-isometric .player-pawn-visual.has-pawn-texture > span { display: none; }
 .player-pawn-visual .pawn-head {
     top: 0;
     width: 17px;

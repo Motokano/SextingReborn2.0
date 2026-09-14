@@ -1079,7 +1079,7 @@
     }
 
     function updateRoleNameFromCharacter() {
-        if (window.PlayerPawnRig) window.PlayerPawnRig.update(document.querySelector('.player-pawn-visual'));
+        // Pawn appearance is refreshed below, with the texture fallback.
         var el = document.getElementById('status-role-name');
         if (!el) return;
         var name = window.CharacterAttributes && window.CharacterAttributes.getCharacterName();
@@ -1087,6 +1087,53 @@
         var gEl = document.getElementById('status-gender-line');
         if (gEl && window.CharacterAttributes && window.CharacterAttributes.getCharacterGenderLabel) {
             gEl.textContent = ui('status.gender.prefix', { gender: window.CharacterAttributes.getCharacterGenderLabel() });
+        }
+        var pawnEl = document.querySelector('.player-pawn-visual');
+        if (pawnEl && !(window.PlayerPawnRig && window.PlayerPawnRig.update(pawnEl))) {
+            var pawnTexture = 'assets/map/isometric/player-office-pawn-v4.png';
+            if (pawnEl.getAttribute('data-texture-src') !== pawnTexture) {
+                pawnEl.setAttribute('data-texture-src', pawnTexture);
+                pawnEl.classList.remove('has-pawn-texture');
+                var pawnImage = new Image();
+                pawnImage.onload = function () {
+                    if (pawnEl.getAttribute('data-texture-src') !== pawnTexture) return;
+                    pawnEl.style.removeProperty('--pawn-image');
+                    pawnEl.style.removeProperty('--pawn-image-size');
+                    pawnEl.style.removeProperty('--pawn-image-position');
+                    // V4 visible alpha bounds; retain the original PNG as the art master.
+                    // Reduce in stages instead of sampling a 1k image directly at 39x72.
+                    try {
+                        var source = document.createElement('canvas');
+                        source.width = 564;
+                        source.height = 1177;
+                        source.getContext('2d').drawImage(pawnImage, 292, 108, 564, 1177, 0, 0, 564, 1177);
+                        var density = Math.max(2, Math.min(4, window.devicePixelRatio || 1));
+                        var targetWidth = Math.round(39 * density);
+                        var targetHeight = Math.round(72 * density);
+                        while (source.width > targetWidth || source.height > targetHeight) {
+                            var reduced = document.createElement('canvas');
+                            reduced.width = Math.max(targetWidth, Math.floor(source.width / 2));
+                            reduced.height = Math.max(targetHeight, Math.floor(source.height / 2));
+                            var ctx = reduced.getContext('2d');
+                            ctx.imageSmoothingEnabled = true;
+                            ctx.imageSmoothingQuality = 'high';
+                            ctx.drawImage(source, 0, 0, reduced.width, reduced.height);
+                            source = reduced;
+                        }
+                        // Body and projected shadow share the same antialiased alpha.
+                        pawnEl.style.setProperty('--pawn-image', 'url("' + source.toDataURL('image/png') + '")');
+                        pawnEl.style.setProperty('--pawn-image-size', '39px 72px');
+                        pawnEl.style.setProperty('--pawn-image-position', 'center top');
+                        pawnEl.setAttribute('data-texture-sampling', source.width + 'x' + source.height);
+                    } catch (samplingError) {
+                        // CSS still displays the source asset if canvas processing is unavailable.
+                        pawnEl.removeAttribute('data-texture-sampling');
+                    }
+                    pawnEl.classList.add('has-pawn-texture');
+                };
+                pawnImage.onerror = function () { pawnEl.classList.remove('has-pawn-texture'); };
+                pawnImage.src = pawnTexture;
+            }
         }
     }
 
