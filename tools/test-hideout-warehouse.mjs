@@ -482,9 +482,31 @@ function testSpoilageExpires(HW, ctx) {
   HW.depositFromInstance({ item_id: "test_short_rot", count: 1 });
   HW.tickSpoilage();
   assert(HW.getState().slots[0], "第 1 tick 仍在");
-  HW.tickSpoilage();
+  const expired = HW.tickSpoilage();
   assert(HW.getState().slots[0] == null, "达到 spoilage_ticks 后移除");
   assert(HW.getUsedCount() === 0, "腐败后格位清空");
+  assert(expired.expired_items.test_short_rot === 1, "过期结果按实际件数报告");
+}
+
+function testPharmacyInstanceStacking(HW, ctx) {
+  HW.setUpgradeTable(loadUpgradeTable());
+  HW.setState(HW.createDefaultState());
+  const warnings = [];
+  ctx.GameLog = { log: (msg, type) => warnings.push({ msg, type }) };
+  ctx.UIText = { t: (key, vars) => key + ":" + vars.item };
+  ctx.InventoryEquipment = {
+    getItemTemplate(id) {
+      if (id === "potion_compound_injection") return { name: "复方注射液", stack_limit: 2, spoilage_ticks: 7200 };
+      return null;
+    }
+  };
+  const first = HW.depositFromInstance({ item_id: "potion_compound_injection", count: 1, components: [{ item_id: "med_morphine_powder", count: 1 }], pharmacy_formula_key: "formula:a", pharmacy_rules_version: 2, spoilage_elapsed_ticks: 100 });
+  const merged = HW.depositFromInstance({ item_id: "potion_compound_injection", count: 1, components: [{ item_id: "med_morphine_powder", count: 1 }], pharmacy_formula_key: "formula:a", pharmacy_rules_version: 2, spoilage_elapsed_ticks: 500 });
+  assert(first.slotIndex === merged.slotIndex, "仓库相同动态公式应合并");
+  assert(HW.getState().slots[first.slotIndex].spoilage_elapsed_ticks === 500, "仓库合并取较旧腐败进度");
+  assert(merged.freshness_shortened && warnings.length === 1, "仓库合并应返回并显示保质期缩短提示");
+  const other = HW.depositFromInstance({ item_id: "potion_compound_injection", count: 1, components: [{ item_id: "med_ephedra_powder", count: 1 }], pharmacy_formula_key: "formula:b", pharmacy_rules_version: 2, spoilage_elapsed_ticks: 50 });
+  assert(other.slotIndex !== first.slotIndex, "仓库不同动态公式不得合并");
 }
 
 function testSpoilageSaveRoundTrip(HW, ctx) {
@@ -654,6 +676,7 @@ function main() {
   testSpoilageWarehouseTicks(HW, ctx);
   testSpoilageWithdrawContinues(HW, ctx);
   testSpoilageExpires(HW, ctx);
+  testPharmacyInstanceStacking(HW, ctx);
   testSpoilageSaveRoundTrip(HW, ctx);
   testOutpostWithdrawBlocked(HW, ctx);
   testTidySlots(HW, ctx);

@@ -131,6 +131,7 @@
             if (!byId[id]) { byId[id] = 0; order.push(id); }
             byId[id] += c;
         });
+        order.sort();
         return order.map(function (id) { return { item_id: id, count: byId[id] }; });
     }
 
@@ -369,7 +370,7 @@
         }
         var netTox = Math.max(0, baseTox * (1 - offsetRate));
 
-        // 成盐判定（§9.5）：不足 → 沉淀注射液（药效打折、净毒性上调）
+        // 成盐判定仍在 resolve 中提供给分级判断；制作入口会把不足判为配伍失败并转药渣。
         var salt = getSaltRequirement(components);
         var toxMul = salt.precipitated ? cfg.salt_toxicity_multiplier : 1;
         if (salt.precipitated) netTox = netTox * toxMul;
@@ -395,10 +396,12 @@
         };
     }
 
-    /** 产出动态注射液实例（§9.4：components 列表随实例走）。 */
+    /** 只有无相冲、助溶充分且有实际药效的组合才能产出动态注射液实例。 */
     function buildInstance(inputs, options) {
         var res = resolve(inputs);
         if (!res.ok) return res;
+        if (res.precipitated || res.conflicts.length) return { ok: false, reason: 'incompatible_compound', resolved: res };
+        if (!res.buff_ids.length) return { ok: false, reason: 'no_effective_component', resolved: res };
         var opts = options && typeof options === 'object' ? options : {};
         var templateId = opts.template_id ? String(opts.template_id) : cfg.injectable_template_id;
         return {
@@ -407,9 +410,10 @@
                 item_id: templateId,
                 count: 1,
                 components: res.components.map(function (c) { return { item_id: c.item_id, count: c.count }; }),
-                // 沉淀针自描述（§9.5）：成盐不足的产物在实例上留痕，注射/UI 都能读
-                precipitated: res.precipitated === true,
-                salt_deficit: res.salt ? res.salt.deficit : 0
+                pharmacy_formula_key: compoundIdentityKey(res.components),
+                pharmacy_rules_version: 2,
+                precipitated: false,
+                salt_deficit: 0
             },
             resolved: res
         };
@@ -423,32 +427,34 @@
     }
 
     /**
-     * 注射后结算（§9.2/§10/§4.1）：挂各家族 buff、注入净毒性、相冲结局 buff、按成分累加成瘾。
+     * 注射后结算：挂各家族 buff、注入净毒性、按成分与途径累加依赖。
      * 返回 { ok, buff_ids, applied_buffs, toxicity_added, conflict_buffs, addiction_components, resolved }
      */
     function applyInjection(instance, options) {
         var res = resolveInstance(instance);
         if (!res.ok) return res;
+        if (res.precipitated || res.conflicts.length) return { ok: false, reason: 'incompatible_compound', resolved: res };
+        if (!res.buff_ids.length) return { ok: false, reason: 'no_effective_component', resolved: res };
         var opts = options && typeof options === 'object' ? options : {};
         var BS = global.BuffSystem;
         var PE = global.PharmacyEffects;
         var applied = [];
+        var addictionBase = 0;
+        var reliefStages = 0;
+        for (i = 0; i < res.components.length; i++) {
+            var doseTpl = getTemplate(res.components[i].item_id);
+            if (!doseTpl || classifyTemplate(doseTpl) !== 'drug') continue;
+            addictionBase += Math.max(0, num(doseTpl.pharmacy_addiction_gain, 0)) * res.components[i].count * 3;
+            reliefStages = Math.max(reliefStages, Math.max(0, Math.floor(num(doseTpl.pharmacy_relief_stages, 0))));
+        }
         var i;
         if (BS && typeof BS.applyBuff === 'function') {
             for (i = 0; i < res.buff_ids.length; i++) {
                 var bid = res.buff_ids[i];
-                if (typeof BS.hasBuffByBuffId === 'function' && BS.hasBuffByBuffId('player', bid)) continue;
-                if (BS.applyBuff('player', bid, 'pharmacy:compound', { route: 'inject' })) applied.push(bid);
+                if (BS.applyBuff('player', bid, 'pharmacy:compound:' + compoundIdentityKey(res.components), { route: 'inject', pharmacy_relief_stages: reliefStages })) applied.push(bid);
             }
         }
         var conflictBuffs = [];
-        if (BS && typeof BS.applyBuff === 'function') {
-            for (i = 0; i < res.conflicts.length; i++) {
-                var cid = res.conflicts[i].buff_id;
-                if (!cid) continue;
-                if (BS.applyBuff('player', cid, 'pharmacy:conflict', { route: 'inject' })) conflictBuffs.push(cid);
-            }
-        }
         var toxicityAdded = 0;
         if (res.net_toxicity > 0 && PE && typeof PE.addToxicity === 'function') {
             // 副作用逐族文案（§9.5）：取净药效最大的族作为「这一路药」
@@ -458,10 +464,9 @@
             }
             toxicityAdded = PE.addToxicity(res.net_toxicity);
         }
-        if (res.addiction_components > 0 && PE && typeof PE.addAddictionFromRoute === 'function') {
-            PE.addAddictionFromRoute('inject', res.addiction_components);
+        if (addictionBase > 0 && PE && typeof PE.addAddictionDose === 'function') {
+            PE.addAddictionDose(addictionBase);
         }
-        if (!opts.skip_history) recordHistory(res);
         return {
             ok: true,
             resolved: res,
@@ -469,29 +474,43 @@
             applied_buffs: applied,
             conflict_buffs: conflictBuffs,
             toxicity_added: toxicityAdded,
-            addiction_components: res.addiction_components
+            addiction_components: res.addiction_components,
+            addiction_gain: addictionBase,
+            relief_stages: reliefStages
         };
     }
 
-    /** 配药历史（图鉴/统计：§8 待定的「联合注射液图鉴写法」先记成分组合）。 */
-    function historyKey(components) {
-        return components.map(function (c) { return String(c.item_id) + 'x' + String(c.count); }).sort().join('+');
+    /** 配方身份：只用于实例与续药，不保存玩家尝试历史。 */
+    function compoundIdentityKey(components) {
+        return normalizeInputs(components).map(function (c) { return String(c.item_id) + 'x' + String(c.count); }).join('+');
     }
 
-    function recordHistory(res) {
-        if (!global.SceneCtx || !res || !res.ok) return;
-        global.SceneCtx.pharmacy_compound_history = global.SceneCtx.pharmacy_compound_history || {};
-        var key = historyKey(res.components);
-        var ent = global.SceneCtx.pharmacy_compound_history[key] || { count: 0, families: [], net_toxicity: 0, conflicts: 0 };
-        ent.count += 1;
-        ent.families = res.families.map(function (f) { return f.family + ':' + f.potency; });
-        ent.net_toxicity = res.net_toxicity;
-        ent.conflicts = res.conflicts.length;
-        global.SceneCtx.pharmacy_compound_history[key] = ent;
-    }
-
-    function getHistory() {
-        return (global.SceneCtx && global.SceneCtx.pharmacy_compound_history) ? global.SceneCtx.pharmacy_compound_history : {};
+    /** Player-visible assessment only; hidden matches never leave this projection. */
+    function assess(inputs, level) {
+        var res = resolve(inputs);
+        if (!res.ok) return { ok: false, reason: res.reason };
+        var lv = Math.max(0, Number(level) || 0);
+        var visible = res.precipitated || res.conflicts.some(function (c) {
+            return c.kind === 'solvent_mismatch' || c.rule_id !== 'glycoside_mineral';
+        });
+        var out = { ok: true, visible_abnormality: !!visible, level: lv,
+            salt: lv >= 1 ? res.salt : null, conflicts: [], effects: [],
+            net_toxicity: lv >= 4 ? res.net_toxicity : null, comprehensive: lv >= 6 };
+        res.conflicts.forEach(function (c) {
+            var complex = ['acid_glycoside', 'glycoside_tannin', 'volatile_oil_mineral'].indexOf(c.rule_id) >= 0;
+            if (lv < (c.kind === 'solvent_mismatch' ? 1 : complex ? 6 : 2)) return;
+            out.conflicts.push({ items: c.items.slice(),
+                outcome: lv >= 4 ? c.outcome : null,
+                dose: lv >= 4 ? c.dose : null,
+                suggestion: lv >= 6 ? (c.kind === 'solvent_mismatch' ? 'solvent' : 'separate') : null });
+        });
+        if (lv >= 2) res.buff_ids.forEach(function (id) {
+            var BS = global.BuffSystem;
+            var tpl = BS && typeof BS.getBuffTemplate === 'function' ? BS.getBuffTemplate(id) : null;
+            if (tpl) out.effects.push({ name: tpl.name, onset: tpl.onsetTicks, duration: tpl.durationTicks,
+                detail: lv >= 4 ? tpl.desc : null });
+        });
+        return out;
     }
 
     /** 浓度条数据（面板 UI 用）。 */
@@ -524,8 +543,8 @@
         buildInstance: buildInstance,
         resolveConflicts: resolveConflicts,
         applyInjection: applyInjection,
-        historyKey: historyKey,
-        getHistory: getHistory
+        compoundIdentityKey: compoundIdentityKey,
+        assess: assess,
     };
 
     global.PharmacyCompounding = api;

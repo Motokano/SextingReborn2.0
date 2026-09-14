@@ -8,3 +8,5 @@ break_clumps,打散结块,打散团聚块体以恢复内部通气,state
 remove_contaminant,清理杂质,移除异常杂质以降低污染影响,state
 vent_gas,放气,拧开排气阀释放厌氧发酵积气,state
 leave_as_is,放置不理,不做放气处理并维持当前状态,state
+harvest_early,提前取肥 · 减量降档,结束当前批次，产量再减四分之一并降一档，成品需手动收取,state
+vent_gently,缓慢放气,将阀门开一道小缝，让泡沫回落后再关紧,state

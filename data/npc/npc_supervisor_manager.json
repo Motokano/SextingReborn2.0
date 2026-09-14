@@ -1,0 +1,53 @@
+{
+  "schemaVersion": 1,
+  "id": "npc.supervisor.manager",
+  "name": "林经理",
+  "displayTitle": "林经理",
+  "sprite": "assets/npc/npc_supervisor_manager/standing-smoking-v1.png",
+  "appearanceSchedule": {
+    "start": "09:00",
+    "end": "17:30"
+  },
+  "location": {
+    "sceneId": "base_main",
+    "x": 10,
+    "y": 3
+  },
+  "mainMenu": {
+    "showChat": true,
+    "showWorkWhen": "hasAvailableOrTurnIn",
+    "showLeave": true
+  },
+  "behavior": {
+    "type": "supervisor",
+    "origin": "mysterious_system",
+    "description": "公事公办的上班族管理者"
+  },
+  "fallbackDialoguePoolId": "npc.supervisor.manager.fallback",
+  "fallbackPoolRules": [
+    {
+      "id": "supervisor.fallback.after_meet",
+      "repeatable": true,
+      "match_weight": 2,
+      "poolIds": ["npc.supervisor.manager.fallback_veteran"],
+      "requires": [],
+      "blocks": [],
+      "condition": { "type": "flagEquals", "flag": "supervisor_has_talked", "value": true }
+    },
+    {
+      "id": "supervisor.fallback.stranger",
+      "repeatable": true,
+      "match_weight": 1,
+      "poolIds": ["npc.supervisor.manager.fallback"],
+      "requires": [],
+      "blocks": [],
+      "condition": { "type": "flagEquals", "flag": "supervisor_has_talked", "value": false }
+    }
+  ],
+  "tags": [
+    "supervisor",
+    "guide_hidden",
+    "base_npc",
+    "non_combat"
+  ]
+}

@@ -1,0 +1,1012 @@
+{
+  "revision": 2,
+  "units": "每生长刻实际吸收量；数组顺序：成熟下限、高产下限、高产上限、成熟上限。敏感作物另用排斥阈值。",
+  "intent": "普通农业维生；高级作物在默认土需要高供水和多个陶瓮，供电超融合与客土降低水网及设施占用。",
+  "crops": {
+    "maize": {
+      "name": "玉米",
+      "tier": 1,
+      "growth_ticks": 80,
+      "water": [
+        0.69,
+        1.01,
+        1.29,
+        2.18
+      ],
+      "fertilizer": null,
+      "trace": null,
+      "reference_soil": "soil_saline_alkali"
+    },
+    "rice": {
+      "name": "大米",
+      "tier": 1,
+      "growth_ticks": 80,
+      "water": [
+        0.93,
+        1.36,
+        1.74,
+        2.95
+      ],
+      "fertilizer": null,
+      "trace": null,
+      "reference_soil": "soil_paddy"
+    },
+    "wheat": {
+      "name": "小麦",
+      "tier": 1,
+      "growth_ticks": 80,
+      "water": [
+        0.66,
+        0.97,
+        1.23,
+        2.09
+      ],
+      "fertilizer": null,
+      "trace": null,
+      "reference_soil": "soil_cinnamon"
+    },
+    "cucumber": {
+      "name": "黄瓜",
+      "tier": 1,
+      "growth_ticks": 80,
+      "water": [
+        0.9,
+        1.32,
+        1.68,
+        2.85
+      ],
+      "fertilizer": null,
+      "trace": null,
+      "reference_soil": "soil_purple"
+    },
+    "sprout": {
+      "name": "豆芽",
+      "tier": 1,
+      "growth_ticks": 40,
+      "water": [
+        0.69,
+        1.01,
+        1.29,
+        2.18
+      ],
+      "fertilizer": null,
+      "trace": null,
+      "reference_soil": "soil_cinnamon"
+    },
+    "potato": {
+      "name": "土豆",
+      "tier": 1,
+      "growth_ticks": 75,
+      "water": [
+        0.78,
+        1.14,
+        1.46,
+        2.47
+      ],
+      "fertilizer": null,
+      "trace": null,
+      "reference_soil": "soil_black"
+    },
+    "beans_white_haricot": {
+      "name": "白扁豆",
+      "tier": 1,
+      "growth_ticks": 80,
+      "water": [
+        0.72,
+        1.06,
+        1.34,
+        2.28
+      ],
+      "fertilizer": null,
+      "trace": null,
+      "reference_soil": "soil_cinnamon"
+    },
+    "cabbage": {
+      "name": "白菜",
+      "tier": 1,
+      "growth_ticks": 80,
+      "water": [
+        0.9,
+        1.32,
+        1.68,
+        2.85
+      ],
+      "fertilizer": null,
+      "trace": null,
+      "reference_soil": "soil_black"
+    },
+    "carrot": {
+      "name": "胡萝卜",
+      "tier": 1,
+      "growth_ticks": 80,
+      "water": [
+        0.63,
+        0.92,
+        1.18,
+        2
+      ],
+      "fertilizer": null,
+      "trace": null,
+      "reference_soil": "soil_cinnamon"
+    },
+    "radish_white": {
+      "name": "白萝卜",
+      "tier": 1,
+      "growth_ticks": 70,
+      "water": [
+        0.66,
+        0.97,
+        1.23,
+        2.09
+      ],
+      "fertilizer": null,
+      "trace": null,
+      "reference_soil": "soil_cinnamon"
+    },
+    "tomato": {
+      "name": "番茄",
+      "tier": 2,
+      "growth_ticks": 98,
+      "water": [
+        1.17,
+        1.58,
+        2.02,
+        2.97
+      ],
+      "fertilizer": null,
+      "trace": [
+        0,
+        0.27,
+        0.68,
+        0.99
+      ],
+      "reference_soil": "soil_purple"
+    },
+    "tomato_green": {
+      "name": "绿番茄",
+      "tier": 2,
+      "growth_ticks": 98,
+      "water": [
+        1.11,
+        1.5,
+        1.9,
+        2.81
+      ],
+      "fertilizer": null,
+      "trace": [
+        0,
+        0.24,
+        0.6,
+        0.88
+      ],
+      "reference_soil": "soil_purple"
+    },
+    "green_beans": {
+      "name": "扁豆",
+      "tier": 2,
+      "growth_ticks": 98,
+      "water": [
+        0.88,
+        1.19,
+        1.51,
+        2.23
+      ],
+      "fertilizer": null,
+      "trace": null,
+      "reference_soil": "soil_cinnamon"
+    },
+    "garrofo": {
+      "name": "大白芸豆",
+      "tier": 2,
+      "growth_ticks": 98,
+      "water": [
+        0.94,
+        1.28,
+        1.62,
+        2.39
+      ],
+      "fertilizer": null,
+      "trace": null,
+      "reference_soil": "soil_cinnamon"
+    },
+    "beet": {
+      "name": "红甜菜",
+      "tier": 2,
+      "growth_ticks": 98,
+      "water": [
+        1.2,
+        1.63,
+        2.07,
+        3.05
+      ],
+      "fertilizer": null,
+      "trace": [
+        0,
+        0.21,
+        0.52,
+        0.77
+      ],
+      "reference_soil": "soil_black"
+    },
+    "onion": {
+      "name": "洋葱",
+      "tier": 2,
+      "growth_ticks": 98,
+      "water": [
+        0.91,
+        1.23,
+        1.57,
+        2.31
+      ],
+      "fertilizer": null,
+      "trace": [
+        0,
+        0.18,
+        0.46,
+        0.66
+      ],
+      "reference_soil": "soil_cinnamon"
+    },
+    "garlic": {
+      "name": "大蒜",
+      "tier": 2,
+      "growth_ticks": 98,
+      "water": [
+        0.88,
+        1.19,
+        1.51,
+        2.23
+      ],
+      "fertilizer": null,
+      "trace": [
+        0,
+        0.18,
+        0.46,
+        0.66
+      ],
+      "reference_soil": "soil_cinnamon"
+    },
+    "scallion": {
+      "name": "大葱",
+      "tier": 2,
+      "growth_ticks": 98,
+      "water": [
+        1.01,
+        1.36,
+        1.74,
+        2.56
+      ],
+      "fertilizer": null,
+      "trace": [
+        0,
+        0.21,
+        0.52,
+        0.77
+      ],
+      "reference_soil": "soil_cinnamon"
+    },
+    "peanut": {
+      "name": "花生",
+      "tier": 2,
+      "growth_ticks": 98,
+      "water": [
+        0.98,
+        1.32,
+        1.68,
+        2.47
+      ],
+      "fertilizer": null,
+      "trace": [
+        0,
+        0.21,
+        0.52,
+        0.77
+      ],
+      "reference_soil": "soil_red"
+    },
+    "sugarcane": {
+      "name": "甘蔗",
+      "tier": 2,
+      "growth_ticks": 110,
+      "water": [
+        1.4,
+        1.89,
+        2.41,
+        3.55
+      ],
+      "fertilizer": null,
+      "trace": [
+        0,
+        0.3,
+        0.76,
+        1.1
+      ],
+      "reference_soil": "soil_paddy"
+    },
+    "rice_bomba": {
+      "name": "粳米",
+      "tier": 3,
+      "growth_ticks": 108,
+      "water": [
+        2,
+        3.4,
+        4,
+        4.4
+      ],
+      "fertilizer": [
+        0.23,
+        0.38,
+        0.59,
+        0.86
+      ],
+      "trace": [
+        0,
+        0.33,
+        0.82,
+        1.21
+      ],
+      "reference_soil": "soil_paddy"
+    },
+    "rice_glutinous_round": {
+      "name": "圆糯米",
+      "tier": 3,
+      "growth_ticks": 108,
+      "water": [
+        2,
+        3.4,
+        4,
+        4.4
+      ],
+      "fertilizer": [
+        0.23,
+        0.38,
+        0.59,
+        0.86
+      ],
+      "trace": [
+        0,
+        0.3,
+        0.76,
+        1.1
+      ],
+      "reference_soil": "soil_paddy"
+    },
+    "wheat_durum": {
+      "name": "硬质小麦",
+      "tier": 3,
+      "growth_ticks": 108,
+      "water": [
+        1.43,
+        2.6,
+        3.2,
+        3.6
+      ],
+      "fertilizer": [
+        0.2,
+        0.34,
+        0.52,
+        0.76
+      ],
+      "trace": [
+        0,
+        0.3,
+        0.76,
+        1.1
+      ],
+      "reference_soil": "soil_cinnamon"
+    },
+    "celery": {
+      "name": "西芹",
+      "tier": 3,
+      "growth_ticks": 108,
+      "water": [
+        1.85,
+        3.3,
+        3.9,
+        4.3
+      ],
+      "fertilizer": [
+        0.25,
+        0.43,
+        0.65,
+        0.95
+      ],
+      "trace": [
+        0,
+        0.39,
+        0.98,
+        1.43
+      ],
+      "reference_soil": "soil_black"
+    },
+    "ginger": {
+      "name": "生姜",
+      "tier": 3,
+      "growth_ticks": 108,
+      "water": [
+        1.65,
+        2.6,
+        3.2,
+        3.6
+      ],
+      "fertilizer": [
+        0.23,
+        0.38,
+        0.59,
+        0.86
+      ],
+      "trace": [
+        0,
+        0.3,
+        0.76,
+        1.1
+      ],
+      "reference_soil": "soil_red"
+    },
+    "shallot": {
+      "name": "红葱头",
+      "tier": 3,
+      "growth_ticks": 108,
+      "water": [
+        1.51,
+        2.9,
+        3.5,
+        3.9
+      ],
+      "fertilizer": [
+        0.2,
+        0.34,
+        0.52,
+        0.76
+      ],
+      "trace": [
+        0,
+        0.27,
+        0.68,
+        0.99
+      ],
+      "reference_soil": "soil_purple"
+    },
+    "leek": {
+      "name": "韭葱",
+      "tier": 3,
+      "growth_ticks": 108,
+      "water": [
+        1.54,
+        3.3,
+        3.9,
+        4.3
+      ],
+      "fertilizer": [
+        0.23,
+        0.38,
+        0.59,
+        0.86
+      ],
+      "trace": [
+        0,
+        0.33,
+        0.82,
+        1.21
+      ],
+      "reference_soil": "soil_black"
+    },
+    "cilantro": {
+      "name": "芫荽",
+      "tier": 3,
+      "growth_ticks": 108,
+      "water": [
+        1.47,
+        2.6,
+        3.2,
+        3.6
+      ],
+      "fertilizer": [
+        0.18,
+        0.3,
+        0.45,
+        0.66
+      ],
+      "trace": [
+        0,
+        0.27,
+        0.68,
+        0.99
+      ],
+      "reference_soil": "soil_cinnamon"
+    },
+    "mustard_seed": {
+      "name": "芥末籽",
+      "tier": 3,
+      "growth_ticks": 108,
+      "water": [
+        1.47,
+        2.6,
+        3.2,
+        3.6
+      ],
+      "fertilizer": [
+        0.23,
+        0.38,
+        0.59,
+        0.86
+      ],
+      "trace": [
+        0,
+        0.36,
+        0.9,
+        1.32
+      ],
+      "reference_soil": "soil_cinnamon"
+    },
+    "chili_red": {
+      "name": "红辣椒",
+      "tier": 3,
+      "growth_ticks": 108,
+      "water": [
+        1.68,
+        2.9,
+        3.5,
+        3.9
+      ],
+      "fertilizer": [
+        0.25,
+        0.43,
+        0.65,
+        0.95
+      ],
+      "trace": [
+        0,
+        0.39,
+        0.98,
+        1.43
+      ],
+      "reference_soil": "soil_purple"
+    },
+    "rice_basmati": {
+      "name": "长粒香米",
+      "tier": 4,
+      "growth_ticks": 124,
+      "water": [
+        3.1,
+        3.15,
+        3.92,
+        4.9
+      ],
+      "fertilizer": [
+        0.5,
+        0.7,
+        0.91,
+        1.33
+      ],
+      "trace": [
+        0.43,
+        0.51,
+        1.28,
+        1.87
+      ],
+      "reference_soil": "soil_paddy"
+    },
+    "euryale": {
+      "name": "芡实",
+      "tier": 4,
+      "growth_ticks": 124,
+      "water": [
+        3.05,
+        3.17,
+        4.03,
+        5.04
+      ],
+      "fertilizer": [
+        0.5,
+        0.7,
+        0.85,
+        1.23
+      ],
+      "trace": null,
+      "reference_soil": "soil_paddy"
+    },
+    "konjac": {
+      "name": "魔芋",
+      "tier": 4,
+      "growth_ticks": 131,
+      "water": [
+        2.33,
+        2.77,
+        3.53,
+        4.41
+      ],
+      "fertilizer": [
+        0.55,
+        0.7,
+        0.85,
+        1.23
+      ],
+      "trace": [
+        0.35,
+        0.42,
+        1.06,
+        1.54
+      ],
+      "reference_soil": "soil_purple"
+    },
+    "sesame": {
+      "name": "芝麻",
+      "tier": 4,
+      "growth_ticks": 124,
+      "water": [
+        2,
+        2.38,
+        3.02,
+        3.78
+      ],
+      "fertilizer": [
+        0.65,
+        0.7,
+        0.85,
+        1.23
+      ],
+      "trace": [
+        0.43,
+        0.51,
+        1.28,
+        1.87
+      ],
+      "reference_soil": "soil_cinnamon"
+    },
+    "pumpkin_seed": {
+      "name": "南瓜籽",
+      "tier": 4,
+      "growth_ticks": 124,
+      "water": [
+        2.29,
+        2.73,
+        3.8,
+        4.34
+      ],
+      "fertilizer": [
+        0.55,
+        0.7,
+        0.98,
+        1.42
+      ],
+      "trace": [
+        0.4,
+        0.48,
+        1.2,
+        1.76
+      ],
+      "reference_soil": "soil_black"
+    },
+    "turmeric": {
+      "name": "姜黄",
+      "tier": 4,
+      "growth_ticks": 124,
+      "water": [
+        2.15,
+        2.55,
+        3.25,
+        4.06
+      ],
+      "fertilizer": [
+        0.65,
+        0.7,
+        0.91,
+        1.33
+      ],
+      "trace": [
+        0.38,
+        0.45,
+        1.12,
+        1.65
+      ],
+      "reference_soil": "soil_red"
+    },
+    "coriander_seed": {
+      "name": "芫荽子",
+      "tier": 4,
+      "growth_ticks": 124,
+      "water": [
+        2.11,
+        2.51,
+        3.3,
+        3.99
+      ],
+      "fertilizer": [
+        0.65,
+        0.7,
+        0.85,
+        1.23
+      ],
+      "trace": [
+        0.45,
+        0.54,
+        1.36,
+        1.98
+      ],
+      "reference_soil": "soil_purple"
+    },
+    "fennel_seed": {
+      "name": "小茴香子",
+      "tier": 4,
+      "growth_ticks": 124,
+      "water": [
+        2.07,
+        2.46,
+        3.14,
+        3.92
+      ],
+      "fertilizer": [
+        0.65,
+        0.7,
+        0.91,
+        1.33
+      ],
+      "trace": [
+        0.43,
+        0.51,
+        1.28,
+        1.87
+      ],
+      "reference_soil": "soil_cinnamon"
+    },
+    "plantain": {
+      "name": "大蕉",
+      "tier": 4,
+      "growth_ticks": 134,
+      "water": [
+        2.48,
+        2.95,
+        3.75,
+        4.69
+      ],
+      "fertilizer": [
+        0.65,
+        0.7,
+        0.98,
+        1.42
+      ],
+      "trace": [
+        0.45,
+        0.54,
+        1.36,
+        1.98
+      ],
+      "reference_soil": "soil_purple"
+    },
+    "chestnut": {
+      "name": "板栗",
+      "tier": 4,
+      "growth_ticks": 149,
+      "water": [
+        2.26,
+        2.68,
+        3.42,
+        4.27
+      ],
+      "fertilizer": [
+        0.65,
+        0.7,
+        0.91,
+        1.33
+      ],
+      "trace": [
+        0.38,
+        0.45,
+        1.12,
+        1.65
+      ],
+      "reference_soil": "soil_purple"
+    },
+    "bamboo_shoot": {
+      "name": "竹笋",
+      "tier": 5,
+      "growth_ticks": 170,
+      "water": [
+        3.15,
+        3.2,
+        3.98,
+        4.69
+      ],
+      "fertilizer": [
+        0.65,
+        0.7,
+        1.04,
+        1.52
+      ],
+      "trace": [
+        0.5,
+        0.6,
+        1.5,
+        2.2
+      ],
+      "reference_soil": "soil_paddy"
+    },
+    "star_anise": {
+      "name": "八角",
+      "tier": 5,
+      "growth_ticks": 170,
+      "water": [
+        2.38,
+        2.68,
+        3.42,
+        4.03
+      ],
+      "fertilizer": [
+        0.65,
+        0.7,
+        1.04,
+        1.52
+      ],
+      "trace": [
+        0.45,
+        0.54,
+        1.36,
+        1.98
+      ],
+      "reference_soil": "soil_red"
+    },
+    "cumin": {
+      "name": "孜然",
+      "tier": 5,
+      "growth_ticks": 142,
+      "water": [
+        2.11,
+        2.38,
+        3.02,
+        3.56
+      ],
+      "fertilizer": [
+        0.65,
+        0.7,
+        0.98,
+        1.42
+      ],
+      "trace": [
+        0.5,
+        0.6,
+        1.5,
+        2.2
+      ],
+      "reference_soil": "soil_cinnamon"
+    },
+    "chili_kashmir": {
+      "name": "克什米尔辣椒",
+      "tier": 5,
+      "growth_ticks": 142,
+      "water": [
+        2.5,
+        2.82,
+        3.58,
+        4.22
+      ],
+      "fertilizer": [
+        0.65,
+        0.72,
+        1.11,
+        1.62
+      ],
+      "trace": [
+        0.53,
+        0.63,
+        1.58,
+        2.31
+      ],
+      "reference_soil": "soil_purple"
+    },
+    "almond": {
+      "name": "杏仁",
+      "tier": 5,
+      "growth_ticks": 170,
+      "water": [
+        2.34,
+        2.64,
+        3.36,
+        3.96
+      ],
+      "fertilizer": [
+        0.65,
+        0.7,
+        1.04,
+        1.52
+      ],
+      "trace": null,
+      "reference_soil": "soil_cinnamon"
+    },
+    "lemon": {
+      "name": "柠檬",
+      "tier": 5,
+      "growth_ticks": 170,
+      "water": [
+        2.38,
+        2.68,
+        3.42,
+        4.03
+      ],
+      "fertilizer": [
+        0.65,
+        0.72,
+        1.11,
+        1.62
+      ],
+      "trace": null,
+      "reference_soil": "soil_red"
+    },
+    "apricot": {
+      "name": "杏子",
+      "tier": 5,
+      "growth_ticks": 170,
+      "water": [
+        2.46,
+        2.77,
+        3.53,
+        4.16
+      ],
+      "fertilizer": [
+        0.65,
+        0.7,
+        1.04,
+        1.52
+      ],
+      "trace": null,
+      "reference_soil": "soil_purple"
+    },
+    "pear": {
+      "name": "梨",
+      "tier": 5,
+      "growth_ticks": 170,
+      "water": [
+        3.05,
+        3.1,
+        3.81,
+        4.49
+      ],
+      "fertilizer": [
+        0.65,
+        0.72,
+        1.11,
+        1.62
+      ],
+      "trace": null,
+      "reference_soil": "soil_black"
+    },
+    "cherry": {
+      "name": "樱桃",
+      "tier": 5,
+      "growth_ticks": 170,
+      "water": [
+        3,
+        3.05,
+        3.7,
+        4.36
+      ],
+      "fertilizer": [
+        0.65,
+        0.77,
+        1.17,
+        1.71
+      ],
+      "trace": null,
+      "reference_soil": "soil_black"
+    },
+    "lotus_seed": {
+      "name": "莲子",
+      "tier": 5,
+      "growth_ticks": 142,
+      "water": [
+        3.2,
+        3.21,
+        4.09,
+        4.82
+      ],
+      "fertilizer": [
+        0.65,
+        0.7,
+        1.04,
+        1.52
+      ],
+      "trace": null,
+      "reference_soil": "soil_paddy"
+    }
+  }
+}

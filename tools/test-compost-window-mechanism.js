@@ -16,6 +16,7 @@ function loadCompostSystem() {
   const cs = sandbox.window.CompostSystem;
   cs.setEventsTable({
     events: {
+      ...JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'data', 'compost-events.json'), 'utf8')).events,
       test_state_event: {
         stage: 'state',
         enabled: true,

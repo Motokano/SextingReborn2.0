@@ -14,7 +14,8 @@
       "main_output": [
         "med_cocaine_powder",
         2
-      ]
+      ],
+      "enabled": true
     },
     {
       "recipe_id": "life_pharmacy.crush_poppy_powder",
@@ -28,7 +29,8 @@
       "main_output": [
         "med_morphine_powder",
         2
-      ]
+      ],
+      "enabled": true
     },
     {
       "recipe_id": "life_pharmacy.crush_ergot_powder",
@@ -42,7 +44,8 @@
       "main_output": [
         "med_lsd_powder",
         2
-      ]
+      ],
+      "enabled": true
     },
     {
       "recipe_id": "life_pharmacy.crush_datura_powder",
@@ -56,7 +59,8 @@
       "main_output": [
         "med_scopolamine_powder",
         2
-      ]
+      ],
+      "enabled": true
     },
     {
       "recipe_id": "life_pharmacy.crush_ephedra_powder",
@@ -70,7 +74,8 @@
       "main_output": [
         "med_ephedrine_powder",
         2
-      ]
+      ],
+      "enabled": true
     },
     {
       "recipe_id": "life_pharmacy.crush_psilocybe_powder",
@@ -84,7 +89,8 @@
       "main_output": [
         "med_psilocybin_powder",
         2
-      ]
+      ],
+      "enabled": true
     },
     {
       "recipe_id": "life_pharmacy.crush_cannabis_powder",
@@ -98,7 +104,8 @@
       "main_output": [
         "med_thc_powder",
         2
-      ]
+      ],
+      "enabled": true
     },
     {
       "recipe_id": "life_pharmacy.crush_vine_red_powder",
@@ -112,7 +119,8 @@
       "main_output": [
         "med_vine_red_powder",
         2
-      ]
+      ],
+      "enabled": true
     },
     {
       "recipe_id": "life_pharmacy.crush_root_bitter_powder",
@@ -126,7 +134,8 @@
       "main_output": [
         "med_root_bitter_powder",
         2
-      ]
+      ],
+      "enabled": true
     },
     {
       "recipe_id": "life_pharmacy.crush_areca_powder",
@@ -140,7 +149,8 @@
       "main_output": [
         "med_arecoline_powder",
         2
-      ]
+      ],
+      "enabled": true
     },
     {
       "recipe_id": "life_pharmacy.crush_tobacco_powder",
@@ -154,7 +164,8 @@
       "main_output": [
         "med_nicotine_powder",
         2
-      ]
+      ],
+      "enabled": true
     },
     {
       "recipe_id": "life_pharmacy.crush_liver_herb_powder",
@@ -168,7 +179,8 @@
       "main_output": [
         "med_liver_herb_powder",
         2
-      ]
+      ],
+      "enabled": true
     },
     {
       "recipe_id": "life_pharmacy.crush_peganum_powder",
@@ -182,7 +194,8 @@
       "main_output": [
         "med_harmaline_powder",
         2
-      ]
+      ],
+      "enabled": true
     },
     {
       "recipe_id": "life_pharmacy.crush_senna_powder",
@@ -196,7 +209,8 @@
       "main_output": [
         "med_senna_powder",
         2
-      ]
+      ],
+      "enabled": true
     },
     {
       "recipe_id": "life_pharmacy.crush_baiji_powder",
@@ -210,7 +224,8 @@
       "main_output": [
         "med_baiji_powder",
         2
-      ]
+      ],
+      "enabled": false
     },
     {
       "recipe_id": "life_pharmacy.crush_acorus_powder",
@@ -224,7 +239,8 @@
       "main_output": [
         "med_acorus_powder",
         2
-      ]
+      ],
+      "enabled": true
     },
     {
       "recipe_id": "life_pharmacy.crush_antler_powder",
@@ -238,7 +254,8 @@
       "main_output": [
         "med_antler_powder",
         2
-      ]
+      ],
+      "enabled": true
     },
     {
       "recipe_id": "life_pharmacy.macerate_rehydration_powder",
@@ -256,7 +273,8 @@
       "main_output": [
         "med_rehydration_powder",
         2
-      ]
+      ],
+      "enabled": true
     },
     {
       "recipe_id": "life_pharmacy.macerate_glucose_powder",
@@ -274,7 +292,8 @@
       "main_output": [
         "med_glucose_powder",
         2
-      ]
+      ],
+      "enabled": true
     },
     {
       "recipe_id": "life_pharmacy.macerate_cardiac_powder",
@@ -292,7 +311,8 @@
       "main_output": [
         "med_cardiac_powder",
         2
-      ]
+      ],
+      "enabled": false
     },
     {
       "recipe_id": "life_pharmacy.brew_tonic_broth",
@@ -310,7 +330,8 @@
       "main_output": [
         "potion_tonic_broth",
         1
-      ]
+      ],
+      "enabled": true
     },
     {
       "recipe_id": "life_pharmacy.roll_tonic_cigarette",
@@ -328,7 +349,8 @@
       "main_output": [
         "potion_tonic_cigarette",
         1
-      ]
+      ],
+      "enabled": true
     },
     {
       "recipe_id": "life_pharmacy.press_analgesic_pill",
@@ -339,6 +361,10 @@
           1
         ],
         [
+          "herb_sugar_white",
+          1
+        ],
+        [
           "solvent_water_pure",
           1
         ]
@@ -346,14 +372,22 @@
       "main_output": [
         "potion_analgesic_pill",
         1
-      ]
+      ],
+      "recommended_skill_level": 0,
+      "cost_override": {
+        "fuel": 15,
+        "water": 0,
+        "ticks": 2,
+        "stamina": 2
+      },
+      "enabled": true
     },
     {
       "recipe_id": "life_pharmacy.blend_mobility_salve",
       "method_id": "life_pharmacy.blending",
       "inputs": [
         [
-          "med_root_bitter_powder",
+          "med_safflower_powder",
           1
         ],
         [
@@ -364,43 +398,9 @@
       "main_output": [
         "potion_mobility_salve",
         1
-      ]
-    },
-    {
-      "recipe_id": "life_pharmacy.mix_rehydration_injection",
-      "method_id": "life_pharmacy.maceration",
-      "inputs": [
-        [
-          "med_rehydration_powder",
-          1
-        ],
-        [
-          "solvent_saline",
-          1
-        ]
       ],
-      "main_output": [
-        "potion_rehydration_injection",
-        1
-      ]
-    },
-    {
-      "recipe_id": "life_pharmacy.mix_cardiac_injection",
-      "method_id": "life_pharmacy.maceration",
-      "inputs": [
-        [
-          "med_cardiac_powder",
-          1
-        ],
-        [
-          "solvent_saline",
-          1
-        ]
-      ],
-      "main_output": [
-        "potion_cardiac_injection",
-        1
-      ]
+      "recommended_skill_level": 0,
+      "enabled": true
     },
     {
       "recipe_id": "life_pharmacy.crush_safflower_powder",
@@ -414,7 +414,8 @@
       "main_output": [
         "med_safflower_powder",
         2
-      ]
+      ],
+      "enabled": true
     },
     {
       "recipe_id": "life_pharmacy.crush_notoginseng_powder",
@@ -428,7 +429,8 @@
       "main_output": [
         "med_notoginseng_powder",
         2
-      ]
+      ],
+      "enabled": false
     },
     {
       "recipe_id": "life_pharmacy.brew_calm_brew",
@@ -446,7 +448,8 @@
       "main_output": [
         "potion_calm_brew",
         1
-      ]
+      ],
+      "enabled": true
     },
     {
       "recipe_id": "life_pharmacy.brew_tonic_broth_potent",
@@ -464,7 +467,8 @@
       "main_output": [
         "potion_tonic_broth_potent",
         1
-      ]
+      ],
+      "enabled": true
     },
     {
       "recipe_id": "life_pharmacy.brew_energy_draught",
@@ -482,7 +486,8 @@
       "main_output": [
         "potion_energy_draught",
         1
-      ]
+      ],
+      "enabled": true
     },
     {
       "recipe_id": "life_pharmacy.brew_rehydration_broth",
@@ -500,7 +505,8 @@
       "main_output": [
         "potion_rehydration_broth",
         1
-      ]
+      ],
+      "enabled": true
     },
     {
       "recipe_id": "life_pharmacy.brew_strength_decoction",
@@ -518,7 +524,8 @@
       "main_output": [
         "potion_strength_decoction",
         1
-      ]
+      ],
+      "enabled": true
     },
     {
       "recipe_id": "life_pharmacy.brew_antistun_tea",
@@ -536,7 +543,8 @@
       "main_output": [
         "potion_antistun_tea",
         1
-      ]
+      ],
+      "enabled": true
     },
     {
       "recipe_id": "life_pharmacy.brew_vision_draught",
@@ -554,7 +562,8 @@
       "main_output": [
         "potion_vision_draught",
         1
-      ]
+      ],
+      "enabled": true
     },
     {
       "recipe_id": "life_pharmacy.blend_mobility_poultice",
@@ -572,7 +581,8 @@
       "main_output": [
         "potion_mobility_poultice",
         1
-      ]
+      ],
+      "enabled": true
     },
     {
       "recipe_id": "life_pharmacy.blend_mobility_salve_potent",
@@ -590,7 +600,8 @@
       "main_output": [
         "potion_mobility_salve_potent",
         1
-      ]
+      ],
+      "enabled": true
     },
     {
       "recipe_id": "life_pharmacy.blend_coagulant_powder",
@@ -604,7 +615,8 @@
       "main_output": [
         "potion_coagulant_powder",
         1
-      ]
+      ],
+      "enabled": false
     },
     {
       "recipe_id": "life_pharmacy.blend_coagulant_salve",
@@ -622,7 +634,8 @@
       "main_output": [
         "potion_coagulant_salve",
         1
-      ]
+      ],
+      "enabled": false
     },
     {
       "recipe_id": "life_pharmacy.roll_sedative_incense",
@@ -640,7 +653,8 @@
       "main_output": [
         "potion_sedative_incense",
         1
-      ]
+      ],
+      "enabled": true
     },
     {
       "recipe_id": "life_pharmacy.roll_vision_incense",
@@ -658,97 +672,8 @@
       "main_output": [
         "potion_vision_incense",
         1
-      ]
-    },
-    {
-      "recipe_id": "life_pharmacy.mix_analgesic_injection",
-      "method_id": "life_pharmacy.maceration",
-      "inputs": [
-        [
-          "med_morphine_powder",
-          1
-        ],
-        [
-          "solvent_saline",
-          1
-        ]
       ],
-      "main_output": [
-        "potion_analgesic_injection",
-        1
-      ]
-    },
-    {
-      "recipe_id": "life_pharmacy.mix_stimulant_injection",
-      "method_id": "life_pharmacy.maceration",
-      "inputs": [
-        [
-          "med_ephedrine_powder",
-          1
-        ],
-        [
-          "solvent_saline",
-          1
-        ]
-      ],
-      "main_output": [
-        "potion_stimulant_injection",
-        1
-      ]
-    },
-    {
-      "recipe_id": "life_pharmacy.mix_antistun_injection",
-      "method_id": "life_pharmacy.maceration",
-      "inputs": [
-        [
-          "med_acorus_powder",
-          1
-        ],
-        [
-          "solvent_saline",
-          1
-        ]
-      ],
-      "main_output": [
-        "potion_antistun_injection",
-        1
-      ]
-    },
-    {
-      "recipe_id": "life_pharmacy.mix_strength_injection",
-      "method_id": "life_pharmacy.maceration",
-      "inputs": [
-        [
-          "med_antler_powder",
-          1
-        ],
-        [
-          "solvent_saline",
-          1
-        ]
-      ],
-      "main_output": [
-        "potion_strength_injection",
-        1
-      ]
-    },
-    {
-      "recipe_id": "life_pharmacy.mix_coagulant_injection",
-      "method_id": "life_pharmacy.maceration",
-      "inputs": [
-        [
-          "med_notoginseng_powder",
-          1
-        ],
-        [
-          "solvent_saline",
-          1
-        ]
-      ],
-      "main_output": [
-        "potion_coagulant_injection",
-        1
-      ]
+      "enabled": true
     },
     {
       "recipe_id": "life_pharmacy.refine_thc",
@@ -762,7 +687,8 @@
       "main_output": [
         "med_thc_powder_refined",
         1
-      ]
+      ],
+      "enabled": true
     },
     {
       "recipe_id": "life_pharmacy.refine_acorus",
@@ -776,7 +702,8 @@
       "main_output": [
         "med_acorus_powder_refined",
         1
-      ]
+      ],
+      "enabled": true
     },
     {
       "recipe_id": "life_pharmacy.refine_morphine",
@@ -790,7 +717,8 @@
       "main_output": [
         "med_morphine_powder_refined",
         1
-      ]
+      ],
+      "enabled": true
     },
     {
       "recipe_id": "life_pharmacy.refine_cocaine",
@@ -804,7 +732,8 @@
       "main_output": [
         "med_cocaine_powder_refined",
         1
-      ]
+      ],
+      "enabled": true
     },
     {
       "recipe_id": "life_pharmacy.refine_liver_herb",
@@ -818,7 +747,8 @@
       "main_output": [
         "med_liver_herb_powder_refined",
         1
-      ]
+      ],
+      "enabled": true
     },
     {
       "recipe_id": "life_pharmacy.refine_notoginseng",
@@ -832,7 +762,8 @@
       "main_output": [
         "med_notoginseng_powder_refined",
         1
-      ]
+      ],
+      "enabled": false
     },
     {
       "recipe_id": "life_pharmacy.refine_psilocybin",
@@ -846,7 +777,8 @@
       "main_output": [
         "med_psilocybin_powder_refined",
         1
-      ]
+      ],
+      "enabled": true
     },
     {
       "recipe_id": "life_pharmacy.refine_safflower",
@@ -860,43 +792,8 @@
       "main_output": [
         "med_safflower_powder_refined",
         1
-      ]
-    },
-    {
-      "recipe_id": "life_pharmacy.mix_analgesic_injection_refined",
-      "method_id": "life_pharmacy.maceration",
-      "inputs": [
-        [
-          "med_morphine_powder_refined",
-          1
-        ],
-        [
-          "solvent_saline",
-          1
-        ]
       ],
-      "main_output": [
-        "potion_analgesic_injection_refined",
-        1
-      ]
-    },
-    {
-      "recipe_id": "life_pharmacy.mix_antistun_injection_refined",
-      "method_id": "life_pharmacy.maceration",
-      "inputs": [
-        [
-          "med_acorus_powder_refined",
-          1
-        ],
-        [
-          "solvent_saline",
-          1
-        ]
-      ],
-      "main_output": [
-        "potion_antistun_injection_refined",
-        1
-      ]
+      "enabled": true
     },
     {
       "recipe_id": "life_pharmacy.purify_thc",
@@ -910,7 +807,8 @@
       "main_output": [
         "med_thc_powder_purified",
         1
-      ]
+      ],
+      "enabled": true
     },
     {
       "recipe_id": "life_pharmacy.purify_acorus",
@@ -924,7 +822,8 @@
       "main_output": [
         "med_acorus_powder_purified",
         1
-      ]
+      ],
+      "enabled": true
     },
     {
       "recipe_id": "life_pharmacy.purify_morphine",
@@ -938,7 +837,8 @@
       "main_output": [
         "med_morphine_powder_purified",
         1
-      ]
+      ],
+      "enabled": true
     },
     {
       "recipe_id": "life_pharmacy.purify_cocaine",
@@ -952,7 +852,8 @@
       "main_output": [
         "med_cocaine_powder_purified",
         1
-      ]
+      ],
+      "enabled": true
     },
     {
       "recipe_id": "life_pharmacy.purify_liver_herb",
@@ -966,7 +867,8 @@
       "main_output": [
         "med_liver_herb_powder_purified",
         1
-      ]
+      ],
+      "enabled": true
     },
     {
       "recipe_id": "life_pharmacy.purify_notoginseng",
@@ -980,7 +882,8 @@
       "main_output": [
         "med_notoginseng_powder_purified",
         1
-      ]
+      ],
+      "enabled": false
     },
     {
       "recipe_id": "life_pharmacy.purify_psilocybin",
@@ -994,7 +897,8 @@
       "main_output": [
         "med_psilocybin_powder_purified",
         1
-      ]
+      ],
+      "enabled": true
     },
     {
       "recipe_id": "life_pharmacy.purify_safflower",
@@ -1008,43 +912,8 @@
       "main_output": [
         "med_safflower_powder_purified",
         1
-      ]
-    },
-    {
-      "recipe_id": "life_pharmacy.mix_analgesic_injection_purified",
-      "method_id": "life_pharmacy.maceration",
-      "inputs": [
-        [
-          "med_morphine_powder_purified",
-          1
-        ],
-        [
-          "solvent_saline",
-          1
-        ]
       ],
-      "main_output": [
-        "potion_analgesic_injection_purified",
-        1
-      ]
-    },
-    {
-      "recipe_id": "life_pharmacy.mix_stimulant_injection_purified",
-      "method_id": "life_pharmacy.maceration",
-      "inputs": [
-        [
-          "med_cocaine_powder_purified",
-          1
-        ],
-        [
-          "solvent_saline",
-          1
-        ]
-      ],
-      "main_output": [
-        "potion_stimulant_injection_purified",
-        1
-      ]
+      "enabled": true
     },
     {
       "recipe_id": "life_pharmacy.brew_calm_brew_purified",
@@ -1062,7 +931,8 @@
       "main_output": [
         "potion_calm_brew_purified",
         1
-      ]
+      ],
+      "enabled": true
     },
     {
       "recipe_id": "life_pharmacy.blend_mobility_salve_purified",
@@ -1080,7 +950,492 @@
       "main_output": [
         "potion_mobility_salve_purified",
         1
-      ]
+      ],
+      "enabled": true
+    },
+    {
+      "recipe_id": "life_pharmacy.clean_soft_water",
+      "method_id": "life_pharmacy.filtration",
+      "inputs": [
+        [
+          "ore_water_pure_soft",
+          1
+        ]
+      ],
+      "main_output": [
+        "solvent_water_pure",
+        1
+      ],
+      "recommended_skill_level": 4,
+      "enabled": true
+    },
+    {
+      "recipe_id": "life_pharmacy.clean_ore_salt_rock",
+      "method_id": "life_pharmacy.filtration",
+      "inputs": [
+        [
+          "ore_salt_rock",
+          2
+        ],
+        [
+          "solvent_water_pure",
+          1
+        ]
+      ],
+      "main_output": [
+        "ore_salt_sea",
+        1
+      ],
+      "recommended_skill_level": 4,
+      "enabled": true
+    },
+    {
+      "recipe_id": "life_pharmacy.clean_ore_salt_sea_coarse",
+      "method_id": "life_pharmacy.filtration",
+      "inputs": [
+        [
+          "ore_salt_sea_coarse",
+          2
+        ],
+        [
+          "solvent_water_pure",
+          1
+        ]
+      ],
+      "main_output": [
+        "ore_salt_sea",
+        1
+      ],
+      "recommended_skill_level": 4,
+      "enabled": true
+    },
+    {
+      "recipe_id": "life_pharmacy.clean_ore_salt_black",
+      "method_id": "life_pharmacy.filtration",
+      "inputs": [
+        [
+          "ore_salt_black",
+          2
+        ],
+        [
+          "solvent_water_pure",
+          1
+        ]
+      ],
+      "main_output": [
+        "ore_salt_sea",
+        1
+      ],
+      "recommended_skill_level": 4,
+      "enabled": true
+    },
+    {
+      "recipe_id": "life_pharmacy.blend_saline",
+      "method_id": "life_pharmacy.blending",
+      "inputs": [
+        [
+          "ore_salt_sea",
+          1
+        ],
+        [
+          "solvent_water_pure",
+          2
+        ]
+      ],
+      "main_output": [
+        "solvent_saline",
+        2
+      ],
+      "recommended_skill_level": 1,
+      "enabled": true
+    },
+    {
+      "recipe_id": "life_pharmacy.blend_glucose_solvent",
+      "method_id": "life_pharmacy.blending",
+      "inputs": [
+        [
+          "med_glucose_powder",
+          1
+        ],
+        [
+          "solvent_water_pure",
+          2
+        ]
+      ],
+      "main_output": [
+        "solvent_glucose_solution",
+        2
+      ],
+      "recommended_skill_level": 1,
+      "enabled": true
+    },
+    {
+      "recipe_id": "life_pharmacy.glucose_from_sugar",
+      "method_id": "life_pharmacy.maceration",
+      "inputs": [
+        [
+          "herb_sugar_white",
+          2
+        ],
+        [
+          "solvent_water_pure",
+          1
+        ]
+      ],
+      "main_output": [
+        "med_glucose_powder",
+        2
+      ],
+      "recommended_skill_level": 0,
+      "enabled": true
+    },
+    {
+      "recipe_id": "life_pharmacy.lemon_adjuvant",
+      "method_id": "life_pharmacy.filtration",
+      "inputs": [
+        [
+          "herb_lemon",
+          2
+        ],
+        [
+          "solvent_water_pure",
+          1
+        ]
+      ],
+      "main_output": [
+        "adj_citric_acid",
+        1
+      ],
+      "recommended_skill_level": 4,
+      "enabled": true
+    },
+    {
+      "recipe_id": "life_pharmacy.refine_antler",
+      "method_id": "life_pharmacy.filtration",
+      "inputs": [
+        [
+          "med_antler_powder",
+          2
+        ]
+      ],
+      "main_output": [
+        "med_antler_powder_refined",
+        1
+      ],
+      "recommended_skill_level": 4,
+      "enabled": true
+    },
+    {
+      "recipe_id": "life_pharmacy.purify_antler",
+      "method_id": "life_pharmacy.centrifugation",
+      "inputs": [
+        [
+          "med_antler_powder_refined",
+          2
+        ]
+      ],
+      "main_output": [
+        "med_antler_powder_purified",
+        1
+      ],
+      "recommended_skill_level": 8,
+      "enabled": true
+    },
+    {
+      "recipe_id": "life_pharmacy.press_strength_pill",
+      "method_id": "life_pharmacy.tableting",
+      "inputs": [
+        [
+          "med_antler_powder",
+          1
+        ],
+        [
+          "herb_sugar_white",
+          1
+        ],
+        [
+          "solvent_water_pure",
+          1
+        ]
+      ],
+      "main_output": [
+        "potion_strength_pill",
+        1
+      ],
+      "recommended_skill_level": 2,
+      "cost_override": {
+        "fuel": 25,
+        "water": 0,
+        "ticks": 4,
+        "stamina": 2
+      },
+      "enabled": true
+    },
+    {
+      "recipe_id": "life_pharmacy.press_antistun_pill",
+      "method_id": "life_pharmacy.tableting",
+      "inputs": [
+        [
+          "med_acorus_powder",
+          1
+        ],
+        [
+          "herb_sugar_white",
+          1
+        ],
+        [
+          "solvent_water_pure",
+          1
+        ]
+      ],
+      "main_output": [
+        "potion_antistun_pill",
+        1
+      ],
+      "recommended_skill_level": 2,
+      "cost_override": {
+        "fuel": 20,
+        "water": 0,
+        "ticks": 3,
+        "stamina": 2
+      },
+      "enabled": true
+    },
+    {
+      "recipe_id": "life_pharmacy.press_energy_pill",
+      "method_id": "life_pharmacy.tableting",
+      "inputs": [
+        [
+          "med_glucose_powder",
+          1
+        ],
+        [
+          "herb_sugar_white",
+          1
+        ],
+        [
+          "solvent_water_pure",
+          1
+        ]
+      ],
+      "main_output": [
+        "potion_energy_pill",
+        1
+      ],
+      "recommended_skill_level": 2,
+      "cost_override": {
+        "fuel": 20,
+        "water": 0,
+        "ticks": 3,
+        "stamina": 2
+      },
+      "enabled": true
+    },
+    {
+      "recipe_id": "life_pharmacy.press_calm_pill",
+      "method_id": "life_pharmacy.tableting",
+      "inputs": [
+        [
+          "med_thc_powder",
+          1
+        ],
+        [
+          "herb_sugar_white",
+          1
+        ],
+        [
+          "solvent_water_pure",
+          1
+        ]
+      ],
+      "main_output": [
+        "potion_calm_pill",
+        1
+      ],
+      "recommended_skill_level": 2,
+      "cost_override": {
+        "fuel": 20,
+        "water": 0,
+        "ticks": 3,
+        "stamina": 2
+      },
+      "enabled": true
+    },
+    {
+      "recipe_id": "life_pharmacy.press_vision_pill",
+      "method_id": "life_pharmacy.tableting",
+      "inputs": [
+        [
+          "med_psilocybin_powder",
+          1
+        ],
+        [
+          "herb_sugar_white",
+          1
+        ],
+        [
+          "solvent_water_pure",
+          1
+        ]
+      ],
+      "main_output": [
+        "potion_vision_pill",
+        1
+      ],
+      "recommended_skill_level": 2,
+      "cost_override": {
+        "fuel": 25,
+        "water": 0,
+        "ticks": 4,
+        "stamina": 2
+      },
+      "enabled": true
+    },
+    {
+      "recipe_id": "life_pharmacy.press_analgesic_pill_regular",
+      "method_id": "life_pharmacy.tableting",
+      "inputs": [
+        [
+          "med_root_bitter_powder",
+          2
+        ],
+        [
+          "herb_sugar_white",
+          1
+        ],
+        [
+          "solvent_water_pure",
+          1
+        ]
+      ],
+      "main_output": [
+        "potion_analgesic_pill_regular",
+        1
+      ],
+      "recommended_skill_level": 2,
+      "cost_override": {
+        "fuel": 20,
+        "water": 0,
+        "ticks": 3,
+        "stamina": 2
+      },
+      "enabled": true
+    },
+    {
+      "recipe_id": "life_pharmacy.press_analgesic_pill_potent",
+      "method_id": "life_pharmacy.tableting",
+      "inputs": [
+        [
+          "med_morphine_powder",
+          1
+        ],
+        [
+          "herb_sugar_white",
+          2
+        ],
+        [
+          "solvent_water_pure",
+          2
+        ]
+      ],
+      "main_output": [
+        "potion_analgesic_pill_potent",
+        1
+      ],
+      "recommended_skill_level": 6,
+      "cost_override": {
+        "fuel": 30,
+        "water": 0,
+        "ticks": 4,
+        "stamina": 2
+      },
+      "enabled": true
+    },
+    {
+      "recipe_id": "life_pharmacy.press_analgesic_pill_purified",
+      "method_id": "life_pharmacy.tableting",
+      "inputs": [
+        [
+          "med_morphine_powder_purified",
+          1
+        ],
+        [
+          "herb_sugar_white",
+          2
+        ],
+        [
+          "solvent_water_pure",
+          2
+        ]
+      ],
+      "main_output": [
+        "potion_analgesic_pill_purified",
+        1
+      ],
+      "recommended_skill_level": 8,
+      "cost_override": {
+        "fuel": 40,
+        "water": 0,
+        "ticks": 5,
+        "stamina": 2
+      },
+      "enabled": true
+    },
+    {
+      "recipe_id": "life_pharmacy.press_detox_pill",
+      "method_id": "life_pharmacy.tableting",
+      "inputs": [
+        [
+          "med_liver_herb_powder",
+          2
+        ],
+        [
+          "herb_sugar_white",
+          1
+        ],
+        [
+          "solvent_water_pure",
+          1
+        ]
+      ],
+      "main_output": [
+        "potion_detox_pill",
+        1
+      ],
+      "recommended_skill_level": 2,
+      "cost_override": {
+        "fuel": 20,
+        "water": 0,
+        "ticks": 3,
+        "stamina": 2
+      },
+      "enabled": true
+    },
+    {
+      "recipe_id": "life_pharmacy.macerate_seaweed_extract",
+      "method_id": "life_pharmacy.maceration",
+      "inputs": [
+        [
+          "herb_kombu",
+          2
+        ],
+        [
+          "solvent_water_pure",
+          1
+        ]
+      ],
+      "main_output": [
+        "liquid_seaweed_extract",
+        1
+      ],
+      "recommended_skill_level": 2,
+      "cost_override": {
+        "fuel": 10,
+        "water": 0,
+        "ticks": 12,
+        "stamina": 4
+      },
+      "enabled": true
     }
   ]
 }

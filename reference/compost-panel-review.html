@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="zh-CN"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>堆肥桶界面验收</title>
+<body>
+<nav style="position:fixed;top:4px;left:20px;z-index:99999;background:#181512;color:#eee;padding:6px">
+独立样例 · <button onclick="demo('prepare')">准备投料</button>
+<button onclick="demo('observe')">泡沫检查</button>
+<button onclick="demo('feedback')">处理结果</button>
+<button onclick="demo('settled')">本批收成</button>
+</nav>
+<script>
+(async function () {
+    const markup = new DOMParser().parseFromString(await (await fetch('../index.html')).text(), 'text/html');
+    markup.querySelectorAll('style').forEach(style => document.head.appendChild(style.cloneNode(true)));
+    document.body.appendChild(markup.getElementById('modal-compost-station'));
+    const strings = await (await fetch('../data/ui_text_zhCN.json')).json();
+    const ui = (key, vars = {}) => String(strings[key] || key).replace(/\{(\w+)\}/g, (all, key) => vars[key] ?? all);
+    window.UIText = { applyDom(root) { root.querySelectorAll('[data-ui]').forEach(el => el.textContent = ui(el.dataset.ui)); } };
+    const inventory = [{ item_id: 'feed' }, { item_id: 'feed' }, { item_id: 'starter' }];
+    const names = { feed: '鲜嫩菜叶', starter: '沤肥菌种', fertilizer_basic_low: '沤肥液·差' };
+    const templates = { feed: { fert_c: 12, fert_n: 1 }, starter: { compost_inoculant_anaerobic: true } };
+    window.InventoryEquipment = { getState: () => ({skills:{}}), getItemTemplate: id => templates[id], getPocketArray: () => inventory };
+    window.InventoryHelpers = { getInventoryCountByItemId: id => inventory.filter(i => i.item_id === id).length };
+    window.StationContext = { isOnCompostStationTile: () => true };
+    window.StationCraftCore = { getItemDisplayNameSafe: id => names[id] || '腐熟基质' };
+    window.Survival = { advanceTick() { CompostSystem.onWorldTick(); } };
+    for (const path of ['../js/compost-system.js', '../js/compost-panel.js']) {
+        await new Promise((resolve, reject) => { const script = document.createElement('script'); script.src = path; script.onload = resolve; script.onerror = reject; document.body.appendChild(script); });
+    }
+    CompostSystem.setEventsTable(await (await fetch('../data/compost-events.json')).json());
+    CompostPanel.setUiDeps({ ui });
+    const actions = await (await fetch('../data/compost-event-actions.csv')).text();
+    CompostPanel.setEventActionDisplayById(Object.fromEntries(actions.trim().split(/\r?\n/).slice(1).map(row => row.split(',').slice(0,2))));
+    CompostPanel.uiState.mode = 'anaerobic';
+    CompostPanel.open();
+    window.demo = phase => {
+        CompostSystem.setState({});
+        CompostPanel.uiState.staged_inputs = ['feed', 'feed'];
+        CompostPanel.uiState.staged_inoculant_item_id = 'starter';
+        if (phase !== 'prepare') {
+            CompostSystem.startBatch('anaerobic', { materials: [{item_id:'feed',count:2}], inoculant_item_id:'starter', c_total:24, n_total:2 });
+            CompostSystem.advanceByTicks(336);
+            if (phase === 'feedback' || phase === 'settled') CompostSystem.interact('anaerobic','vent_gently');
+            if (phase === 'settled') CompostSystem.advanceByTicks(1008);
+        }
+        CompostPanel.render();
+    };
+    ['best','mid','alt'].forEach(slot => document.getElementById('compost-interact-'+slot+'-btn').onclick = () => {
+        CompostSystem.interact('anaerobic', CompostPanel.windowActionSlots[slot]); CompostPanel.render();
+    });
+    demo('prepare');
+})();
+</script></body></html>

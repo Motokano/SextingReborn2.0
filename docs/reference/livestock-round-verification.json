@@ -1,0 +1,399 @@
+{
+  "date": "2026-09-13",
+  "scope": "current runtime; confirmed future rules are separately identified",
+  "checks": {
+    "slaughter": {
+      "boundaryCases": 360,
+      "maxMassExcessKg": 0,
+      "normalMinimumKg": {
+        "cattle": 10,
+        "sheep": 3,
+        "pig": 3,
+        "chicken": 0.8
+      }
+    },
+    "processing": [
+      {
+        "module": "feed_preprocess",
+        "level": 1,
+        "ticks": 100,
+        "feedEquivalentInput": 2,
+        "maxError": 1.5631940186722204e-13
+      },
+      {
+        "module": "feed_preprocess",
+        "level": 2,
+        "ticks": 100,
+        "feedEquivalentInput": 2,
+        "maxError": 1.5631940186722204e-13
+      },
+      {
+        "module": "feed_preprocess",
+        "level": 3,
+        "ticks": 100,
+        "feedEquivalentInput": 2,
+        "maxError": 1.5631940186722204e-13
+      },
+      {
+        "module": "feed_preprocess",
+        "level": 4,
+        "ticks": 100,
+        "feedEquivalentInput": 2,
+        "maxError": 1.5631940186722204e-13
+      },
+      {
+        "module": "feed_preprocess",
+        "level": 5,
+        "ticks": 100,
+        "feedEquivalentInput": 2,
+        "maxError": 1.5631940186722204e-13
+      },
+      {
+        "module": "feed_refine",
+        "level": 1,
+        "ticks": 100,
+        "feedEquivalentInput": 2.4,
+        "maxError": 1.5631940186722204e-13
+      },
+      {
+        "module": "feed_refine",
+        "level": 2,
+        "ticks": 100,
+        "feedEquivalentInput": 2.5,
+        "maxError": 1.5631940186722204e-13
+      },
+      {
+        "module": "feed_refine",
+        "level": 3,
+        "ticks": 100,
+        "feedEquivalentInput": 2.6,
+        "maxError": 1.5631940186722204e-13
+      },
+      {
+        "module": "feed_refine",
+        "level": 4,
+        "ticks": 100,
+        "feedEquivalentInput": 2.7,
+        "maxError": 1.5631940186722204e-13
+      },
+      {
+        "module": "feed_refine",
+        "level": 5,
+        "ticks": 100,
+        "feedEquivalentInput": 2.8,
+        "maxError": 1.5631940186722204e-13
+      }
+    ],
+    "births": [
+      {
+        "seed": 1,
+        "count": 3,
+        "motherKg": 117.3,
+        "newbornKg": 2.700000000000003,
+        "totalKg": 120
+      },
+      {
+        "seed": 2,
+        "count": 3,
+        "motherKg": 117.3,
+        "newbornKg": 2.700000000000003,
+        "totalKg": 120
+      },
+      {
+        "seed": 3,
+        "count": 3,
+        "motherKg": 117.3,
+        "newbornKg": 2.700000000000003,
+        "totalKg": 120
+      },
+      {
+        "seed": 4,
+        "count": 3,
+        "motherKg": 117.3,
+        "newbornKg": 2.700000000000003,
+        "totalKg": 120
+      },
+      {
+        "seed": 5,
+        "count": 3,
+        "motherKg": 117.3,
+        "newbornKg": 2.700000000000003,
+        "totalKg": 120
+      },
+      {
+        "seed": 6,
+        "count": 3,
+        "motherKg": 117.3,
+        "newbornKg": 2.700000000000003,
+        "totalKg": 120
+      },
+      {
+        "seed": 7,
+        "count": 3,
+        "motherKg": 117.3,
+        "newbornKg": 2.700000000000003,
+        "totalKg": 120
+      },
+      {
+        "seed": 8,
+        "count": 3,
+        "motherKg": 117.3,
+        "newbornKg": 2.700000000000003,
+        "totalKg": 120
+      },
+      {
+        "seed": 9,
+        "count": 3,
+        "motherKg": 117.3,
+        "newbornKg": 2.700000000000003,
+        "totalKg": 120
+      },
+      {
+        "seed": 10,
+        "count": 3,
+        "motherKg": 117.3,
+        "newbornKg": 2.700000000000003,
+        "totalKg": 120
+      },
+      {
+        "seed": 11,
+        "count": 3,
+        "motherKg": 117.3,
+        "newbornKg": 2.700000000000003,
+        "totalKg": 120
+      },
+      {
+        "seed": 12,
+        "count": 3,
+        "motherKg": 117.3,
+        "newbornKg": 2.700000000000003,
+        "totalKg": 120
+      },
+      {
+        "seed": 13,
+        "count": 3,
+        "motherKg": 117.3,
+        "newbornKg": 2.700000000000003,
+        "totalKg": 120
+      },
+      {
+        "seed": 14,
+        "count": 3,
+        "motherKg": 117.3,
+        "newbornKg": 2.700000000000003,
+        "totalKg": 120
+      },
+      {
+        "seed": 15,
+        "count": 3,
+        "motherKg": 117.3,
+        "newbornKg": 2.700000000000003,
+        "totalKg": 120
+      },
+      {
+        "seed": 16,
+        "count": 3,
+        "motherKg": 117.3,
+        "newbornKg": 2.700000000000003,
+        "totalKg": 120
+      }
+    ],
+    "pigFeedConversion": [
+      {
+        "perks": [],
+        "feedUnits": 0.054000000000002046,
+        "gainKg": 0.018000000000000682
+      },
+      {
+        "perks": [
+          "fast_growth"
+        ],
+        "feedUnits": 0.06210000000000093,
+        "gainKg": 0.020700000000001495
+      },
+      {
+        "perks": [
+          "easy_fat"
+        ],
+        "feedUnits": 0.054000000000002046,
+        "gainKg": 0.021599999999999397
+      }
+    ]
+  },
+  "pending": {
+    "starvation": {
+      "satiety": 0.00009999999999999999,
+      "hp": 100,
+      "countdown": 0,
+      "dead": false
+    },
+    "healthCliff": [
+      {
+        "hp": 59.99,
+        "meatCount": 30
+      },
+      {
+        "hp": 60,
+        "meatCount": 60
+      }
+    ],
+    "milkNutrition": {
+      "before": {
+        "weight": 150,
+        "satiety": 80
+      },
+      "result": {
+        "ok": true,
+        "item_id": "hus_milk_buffalo",
+        "count": 1
+      },
+      "after": {
+        "weight": 150,
+        "satiety": 80
+      }
+    }
+  },
+  "longRun": {
+    "summary": {
+      "probes": 31,
+      "issuePredicatesObserved": 1,
+      "combinations": 18,
+      "totalCombinationTicks": 272000,
+      "durations": [
+        12000,
+        40000
+      ],
+      "allCombinationsFiniteAndBounded": true,
+      "retiredProbes": 5
+    },
+    "hashMatch": {
+      "js/livestock-state.js": true,
+      "js/livestock-panel.js": true,
+      "js/inventory-equipment.js": true,
+      "data/livestock-species.json": true,
+      "data/livestock-modules.json": true,
+      "data/livestock-perks.json": true,
+      "data/items.json": true
+    },
+    "selected": [
+      {
+        "id": "full_following_plus_feed",
+        "firstDeath": null,
+        "final": {
+          "cattle": {
+            "live": 2,
+            "total": 2,
+            "satiety": [
+              97.339284,
+              97.339284
+            ],
+            "weightKg": 1200,
+            "hpMin": 100,
+            "causes": []
+          },
+          "sheep": {
+            "live": 3,
+            "total": 3,
+            "satiety": [
+              0.05,
+              0.05
+            ],
+            "weightKg": 1.8,
+            "hpMin": 86.57,
+            "causes": []
+          },
+          "pig": {
+            "live": 2,
+            "total": 2,
+            "satiety": [
+              80,
+              80
+            ],
+            "weightKg": 240,
+            "hpMin": 99.99,
+            "causes": []
+          },
+          "chicken": {
+            "live": 5,
+            "total": 5,
+            "satiety": [
+              80,
+              80
+            ],
+            "weightKg": 12.5,
+            "hpMin": 100,
+            "causes": []
+          }
+        }
+      },
+      {
+        "id": "low_density_prepared_40k",
+        "firstDeath": {
+          "tick": 15000,
+          "species": [
+            "chicken",
+            "chicken",
+            "chicken",
+            "chicken",
+            "chicken"
+          ]
+        },
+        "final": {
+          "cattle": {
+            "live": 3,
+            "total": 3,
+            "satiety": [
+              0.05,
+              0.05
+            ],
+            "weightKg": 393.9462,
+            "hpMin": 100,
+            "causes": []
+          },
+          "sheep": {
+            "live": 1,
+            "total": 1,
+            "satiety": [
+              100,
+              100
+            ],
+            "weightKg": 80,
+            "hpMin": 100,
+            "causes": []
+          },
+          "pig": {
+            "live": 1,
+            "total": 1,
+            "satiety": [
+              80,
+              80
+            ],
+            "weightKg": 120,
+            "hpMin": 100,
+            "causes": []
+          },
+          "chicken": {
+            "live": 0,
+            "total": 5,
+            "satiety": null,
+            "weightKg": 0,
+            "hpMin": null,
+            "causes": [
+              "old",
+              "old",
+              "old",
+              "old",
+              "old"
+            ]
+          }
+        }
+      }
+    ]
+  },
+  "currentHashes": {
+    "js/livestock-state.js": "2b8f6172bee6f586adedd98bee4d3aedc83fcb819e658599e37caf8d7bf8bc18",
+    "js/livestock-panel.js": "c9df17e4bb03e7550c23a407838bba0c9629f145c09efac725043fe3230165d8",
+    "data/livestock-species.json": "c9412de51e8fb2439e385ef737d794e362d93f41620eca429d3cf57751c88871",
+    "data/livestock-modules.json": "e188cf6a68b5e2c774f3d9b2c10f04fb1248da76a26cd648b282d90edc10aaec"
+  }
+}

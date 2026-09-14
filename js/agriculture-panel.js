@@ -319,7 +319,11 @@
             setStatus(txt === rk ? 'agriculture.msg.fail.generic' : rk, { reason: reason });
             return res;
         }
-        setStatus('agriculture.msg.ok.' + actionId, null, t('agriculture.msg.ok.generic'));
+        var okKey = 'agriculture.msg.ok.' + actionId;
+        var okText = '';
+        try { okText = t(okKey); } catch (eOkText) { okText = ''; }
+        if (!okText || okText === okKey) okText = t('agriculture.msg.ok.generic');
+        setStatus(null, null, okText);
         if (typeof SA.updateAgriculturePanel === 'function') {
             SA.updateAgriculturePanel();
         } else {
@@ -590,7 +594,7 @@
                     }
                     if (c.crop) {
                         if (c.crop.settled) {
-                            var bad = c.crop.result === 'withered' || c.crop.result === 'flooded' || c.crop.result === 'trace_toxic';
+                            var bad = c.crop.settled && !(c.crop.harvestCount > 0);
                             cls.push(bad ? 'crop-fail' : 'crop-ready');
                         } else cls.push('crop-growing');
                     }
@@ -665,29 +669,18 @@
         if (c.kind === 'pool' && st) {
             rows.push({ k: t('agriculture.detail.pool'), v: String((Number(st.poolCurrent) || 0).toFixed(1)) });
             rows.push({
-                k: t('agriculture.detail.pool_level'),
-                v: t('agriculture.pool.level.' + getPoolLevel(st))
+                k: '水源',
+                v: '固定供水 200/tick'
             });
-            if (st.last_pool_weather_factor != null) {
-                rows.push({
-                    k: t('agriculture.detail.pool_weather'),
-                    v: String((Number(st.last_pool_weather_factor) * 100).toFixed(0)) + '%'
-                });
-            }
-            if (getPoolLevel(st) >= 3 && st.pool_reservoir) {
-                rows.push({
-                    k: t('agriculture.detail.pool_reservoir'),
-                    v: String((Number(st.pool_reservoir.stored) || 0).toFixed(1))
-                });
-            }
         }
         if (isVenturiCell(c)) {
             rows.push({ k: t('agriculture.detail.venturi_level'), v: String(c.venturiLevel || 1) });
             var concRange = getVenturiConcRange(c);
             rows.push({
                 k: t('agriculture.detail.venturi_conc'),
-                v: String(c.seaweedSetConcentration || '-') + ' (' + concRange.min + '–' + concRange.max + ')'
+                v: 'B面 ' + String(Number(c.seaweedManualConcentration) || 0) + ' (' + concRange.min + '–' + concRange.max + ')'
             });
+            rows.push({ k: '海藻精余量', v: c.venturiLiquid ? String(Number(c.venturiLiquid.nutrientRemaining || 0).toFixed(1)) : '0' });
         }
         if (isSuperFusionCell(c)) {
             rows.push({
@@ -700,8 +693,9 @@
         if (isBuriedJarCell(c) && c.jarLiquid && c.jarLiquid.itemId) {
             rows.push({
                 k: t('agriculture.detail.jar_liquid'),
-                v: (c.jarLiquid.name || c.jarLiquid.itemId) + ' ×' + (c.jarLiquid.units || 0)
+                v: (c.jarLiquid.name || c.jarLiquid.itemId) + ' · 余量 ' + Number(c.jarLiquid.nutrientRemaining || 0).toFixed(1)
             });
+            rows.push({ k: '瓮肥释放', v: Number(c.jarReleaseRate || 0).toFixed(2) + '/tick' });
         }
         if (hasCropStructure(c)) {
             rows.push({
@@ -711,10 +705,11 @@
         }
         if (c.crop) {
             rows.push({ k: t('agriculture.detail.crop'), v: c.crop.name || c.crop.cropId || '-' });
+            rows.push({ k: t('agriculture.detail.water_absorbed'), v: String(c.crop.waterAbsorbed || 0) });
             rows.push({
                 k: t('agriculture.detail.crop_progress'),
                 v: c.crop.settled
-                    ? (c.crop.resultLabel || c.crop.result || t('agriculture.detail.settled'))
+                    ? (c.crop.resultLabelKey ? t(c.crop.resultLabelKey) : (c.crop.resultLabel || c.crop.result || t('agriculture.detail.settled')))
                     : (Math.max(0, c.crop.remainingTicks || 0) + ' tick')
             });
             if (c.crop.settled && c.crop.harvestCount != null) {
@@ -750,6 +745,7 @@
             onClick();
         });
         bindActionCostTooltip(btn, label, tooltipMeta);
+        if (tooltipMeta) btn.agriculturePreviewMeta = tooltipMeta;
         container.appendChild(btn);
     }
 
@@ -795,7 +791,7 @@
                 addBuildTaskButton(el, t('agriculture.action.buried_pot_jar'), 'buried_pot_jar', x, y, busy);
                 addBuildTaskButton(el, t('agriculture.action.super_fusion'), 'super_fusion', x, y, busy);
             }
-            if (c.tilled && !c.crop && !hasCropStructure(c) && SA && typeof SA.getAgriculturePlantOptions === 'function') {
+            if (c.tilled && !c.crop && SA && typeof SA.getAgriculturePlantOptions === 'function') {
                 var plants = SA.getAgriculturePlantOptions();
                 if (plants.length) {
                     addActionGroup(el, t('agriculture.action.group.plant'));
@@ -812,7 +808,7 @@
                                     cropId: opt.cropId,
                                     seedItemId: opt.seedItemId
                                 });
-                            });
+                            }, { cropId: opt.cropId });
                         })(plants[pi]);
                     }
                 }
@@ -870,67 +866,6 @@
                 addBuildTaskButton(el, t('agriculture.action.channel_downgrade'), 'channel_downgrade', x, y, busy);
             }
             addBuildTaskButton(el, t('agriculture.action.channel_remove'), 'channel_remove', x, y, busy);
-        }
-
-        if (c.kind === 'pool') {
-            addActionGroup(el, t('agriculture.action.group.pool'));
-            if (getPoolLevel(st) < getPoolMaxLevel()) {
-                addActionButton(el, t('agriculture.action.pool_upgrade'), busy, function () {
-                    runAction('start_pool_upgrade', { x: x, y: y });
-                }, { upgradeKind: 'pool', fromLevel: getPoolLevel(st) });
-            }
-            if (getPoolLevel(st) >= 2) {
-                var theft = (st && st.pool_theft) || { enabled: false, victim_branch_index: 1, gain_branch_index: 2 };
-                var theftWrap = document.createElement('div');
-                theftWrap.className = 'agri-theft-panel';
-                var theftLabel = document.createElement('label');
-                theftLabel.className = 'agri-theft-toggle';
-                var theftCb = document.createElement('input');
-                theftCb.type = 'checkbox';
-                theftCb.checked = !!theft.enabled;
-                theftCb.addEventListener('change', function () {
-                    runAction('pool_theft_set', {
-                        enabled: theftCb.checked,
-                        victim_branch_index: Number(victimSel.value) || 1,
-                        gain_branch_index: Number(gainSel.value) || 2
-                    });
-                });
-                theftLabel.appendChild(theftCb);
-                theftLabel.appendChild(document.createTextNode(' ' + t('agriculture.action.pool_theft_enable')));
-                theftWrap.appendChild(theftLabel);
-                var theftRow = document.createElement('div');
-                theftRow.className = 'agri-theft-row';
-                var victimLbl = document.createElement('span');
-                victimLbl.textContent = t('agriculture.action.pool_theft_victim');
-                var victimSel = document.createElement('select');
-                victimSel.className = 'agri-theft-select';
-                var gainLbl = document.createElement('span');
-                gainLbl.textContent = t('agriculture.action.pool_theft_gain');
-                var gainSel = document.createElement('select');
-                gainSel.className = 'agri-theft-select';
-                var bi;
-                for (bi = 1; bi <= 3; bi++) {
-                    victimSel.appendChild(new Option('#' + bi, String(bi)));
-                    gainSel.appendChild(new Option('#' + bi, String(bi)));
-                }
-                victimSel.value = String(theft.victim_branch_index || 1);
-                gainSel.value = String(theft.gain_branch_index || 2);
-                function syncTheftSelects() {
-                    runAction('pool_theft_set', {
-                        enabled: theftCb.checked,
-                        victim_branch_index: Number(victimSel.value) || 1,
-                        gain_branch_index: Number(gainSel.value) || 2
-                    });
-                }
-                victimSel.addEventListener('change', syncTheftSelects);
-                gainSel.addEventListener('change', syncTheftSelects);
-                theftRow.appendChild(victimLbl);
-                theftRow.appendChild(victimSel);
-                theftRow.appendChild(gainLbl);
-                theftRow.appendChild(gainSel);
-                theftWrap.appendChild(theftRow);
-                el.appendChild(theftWrap);
-            }
         }
 
         if (isVenturiCell(c)) {
@@ -1024,6 +959,27 @@
                     })(jLiq[ji]);
                 }
             }
+            var jarRate = Number(c.jarReleaseRate) || 0;
+            var jarRateWrap = document.createElement('div');
+            jarRateWrap.className = 'agri-venturi-conc';
+            var jarRateTitle = document.createElement('div');
+            jarRateTitle.className = 'agri-act-group';
+            jarRateTitle.textContent = '瓮肥总释放量';
+            jarRateWrap.appendChild(jarRateTitle);
+            var jarRateRow = document.createElement('div');
+            jarRateRow.className = 'agri-venturi-conc-row';
+            var jarMinus = document.createElement('button');
+            jarMinus.type = 'button'; jarMinus.className = 'agri-act-btn agri-conc-step'; jarMinus.textContent = '−';
+            jarMinus.disabled = jarRate <= 0 || busy;
+            jarMinus.addEventListener('click', function (e) { e.preventDefault(); runAction('step_jar_release', { x:x, y:y, delta:-0.25 }); });
+            var jarDisplay = document.createElement('span');
+            jarDisplay.className = 'agri-conc-val'; jarDisplay.textContent = jarRate.toFixed(2);
+            var jarPlus = document.createElement('button');
+            jarPlus.type = 'button'; jarPlus.className = 'agri-act-btn agri-conc-step'; jarPlus.textContent = '＋';
+            jarPlus.disabled = jarRate >= 3.75 || busy;
+            jarPlus.addEventListener('click', function (e) { e.preventDefault(); runAction('step_jar_release', { x:x, y:y, delta:0.25 }); });
+            jarRateRow.appendChild(jarMinus); jarRateRow.appendChild(jarDisplay); jarRateRow.appendChild(jarPlus);
+            jarRateWrap.appendChild(jarRateRow); el.appendChild(jarRateWrap);
             addBuildTaskButton(el, t('agriculture.action.buried_pot_jar_remove'), 'buried_pot_jar_remove', x, y, busy);
         }
 
@@ -1057,6 +1013,9 @@
         syncAutoTickToggle(SA2 && typeof SA2.isAgricultureAutoTickEnabled === 'function' && SA2.isAgricultureAutoTickEnabled());
         renderWorldStrip();
         renderPowerBadge(st);
+        if (global.AgricultureOverview) global.AgricultureOverview.enhance(st, uiState.selected,
+            function (x, y) { uiState.selected = { x: x, y: y }; update(getMapStateMutable()); },
+            function () { update(getMapStateMutable()); });
     }
 
     function update(mapState) {

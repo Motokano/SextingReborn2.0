@@ -183,6 +183,7 @@
                 var pk = Number(t.pharmacy_peak);
                 return isFinite(pk) ? pk : 1;
             })(),
+            pharmacy_survival_budget_quantized: t.pharmacy_survival_budget_quantized === true,
             pharmacy_side_effect_band: String(t.pharmacy_side_effect_band || '').trim().toLowerCase(),
             pharmacy_family_flavor: (t.pharmacy_family_flavor && typeof t.pharmacy_family_flavor === 'object')
                 ? JSON.parse(JSON.stringify(t.pharmacy_family_flavor))
@@ -341,6 +342,26 @@
     }
 
     /** k229：owner 是否有镇痛压制（任一在场 buff 携带 pain_suppression 效果）。镇痛在场 → 疼痛档位 debuff 的效果全部被盖住（debuff 仍在、只盖住；药效过反扑）。 */
+    function getPainIgnoreRatio(ownerId) {
+        var arr = instancesByOwner[ownerId || PLAYER_OWNER_ID] || [];
+        var best = 0;
+        for (var i = 0; i < arr.length; i++) {
+            var inst = arr[i];
+            if (!inst || !inst.template || inst.stacks <= 0 || !isBuffPastOnset(inst)) continue;
+            arrayOrEmpty(inst.template.effects).forEach(function (e) {
+                if (e.type === 'pain_ignore_ratio') best = Math.max(best, safeNum((e.params || {}).ratio, 0));
+            });
+        }
+        return Math.max(0, Math.min(1, best));
+    }
+
+    var syncingPainTier = false;
+    function refreshPainTier() {
+        if (syncingPainTier || !global.Survival || typeof global.Survival.syncPainStateBuff !== 'function') return;
+        syncingPainTier = true;
+        try { global.Survival.syncPainStateBuff(); } finally { syncingPainTier = false; }
+    }
+
     function hasPainSuppression(ownerId) {
         var oid = ownerId || PLAYER_OWNER_ID;
         var arr = instancesByOwner[oid];
@@ -377,11 +398,73 @@
         return (now - started) >= onset;
     }
 
-    /** 47 §9.6 醒神：在场 buff 提供的眩晕抗性%（pharmacy_anti_stun 效果；onset 未到不计）。 */
+    function isPharmacyDoseInstance(inst) {
+        if (!inst || !inst.template || inst.template.pharmacy_generated !== true) return false;
+        var source = String(inst.source_id || '');
+        return source.indexOf('item:') === 0 || source.indexOf('pharmacy:compound:') === 0;
+    }
+
+    function pharmacyTemplateStrength(tpl) {
+        var scores = {};
+        arrayOrEmpty(tpl && tpl.effects).forEach(function (effect) {
+            var type = String(effect && effect.type || '');
+            var p = effect && effect.params && typeof effect.params === 'object' ? effect.params : {};
+            var score = 0;
+            Object.keys(p).forEach(function (key) {
+                var value = safeNum(p[key], 0);
+                if (key === 'fatigue') value = -value;
+                else if (/multiplier$/.test(key)) value = value - 1;
+                score += Math.max(0, value);
+            });
+            if (type) scores[type] = Math.max(scores[type] || 0, score);
+        });
+        return scores;
+    }
+
+    function getPharmacyDoseUseWarning(buffId, sourceId) {
+        var bid = String(buffId || ''), source = String(sourceId || '');
+        var tpl = templateById[bid];
+        if (!tpl || tpl.pharmacy_generated !== true) return { refresh: false, stronger_active: false };
+        var currentScores = pharmacyTemplateStrength(tpl);
+        var arr = instancesByOwner[PLAYER_OWNER_ID] || [];
+        var refresh = false, stronger = false;
+        for (var i = 0; i < arr.length; i++) {
+            var inst = arr[i];
+            if (!isPharmacyDoseInstance(inst) || (inst.stacks || 0) <= 0) continue;
+            if (inst.buff_id === bid && String(inst.source_id || '') === source) refresh = true;
+            if (!isBuffPastOnset(inst)) continue;
+            var otherScores = pharmacyTemplateStrength(inst.template);
+            Object.keys(currentScores).forEach(function (type) {
+                if ((otherScores[type] || 0) > (currentScores[type] || 0)) stronger = true;
+            });
+        }
+        return { refresh: refresh, stronger_active: stronger };
+    }
+
+    /** 续力：已起效药品提供的负重上限 kg；不同剂型/强度取最高值。 */
+    function getPharmacyCarryCapacityBonus(ownerId) {
+        var arr = instancesByOwner[ownerId || PLAYER_OWNER_ID] || [];
+        var best = 0;
+        for (var i = 0; i < arr.length; i++) {
+            var inst = arr[i];
+            if (!inst || !inst.template || (inst.stacks || 0) <= 0 || !isBuffPastOnset(inst)) continue;
+            var effects = arrayOrEmpty(inst.template.effects);
+            for (var j = 0; j < effects.length; j++) {
+                var effect = effects[j] || {};
+                if (effect.type === 'pharmacy_carry_capacity') {
+                    best = Math.max(best, safeNum((effect.params || {}).kilograms, 0));
+                }
+            }
+        }
+        return best;
+    }
+
+    /** 47 §9.6 醒神：在场 buff 提供的眩晕抗性%（onset 未到不计）。 */
     function getAntiStunPct(ownerId) {
         var oid = ownerId || PLAYER_OWNER_ID;
         var arr = instancesByOwner[oid] || [];
-        var sum = 0;
+        var best = 0;
+        var nonPharmacy = 0;
         var i, j, inst, effects, e, p, v;
         for (i = 0; i < arr.length; i++) {
             inst = arr[i];
@@ -394,10 +477,12 @@
                 p = e.params || {};
                 v = safeNum(p.anti_stun_pct, 0);
                 if (!isFinite(v) || v <= 0) continue;
-                sum += v * Math.max(1, parseInt(inst.stacks, 10) || 1);
+                v *= Math.max(1, parseInt(inst.stacks, 10) || 1);
+                if (isPharmacyDoseInstance(inst)) best = Math.max(best, v);
+                else nonPharmacy += v;
             }
         }
-        return Math.max(0, Math.min(1, sum));
+        return Math.max(0, Math.min(1, nonPharmacy + best));
     }
 
     function hasActiveSatietyDigestBuff(ownerId) {
@@ -517,6 +602,7 @@
         var oid = ownerId || PLAYER_OWNER_ID;
         var arr = instancesByOwner[oid] || [];
         var mul = 1;
+        var pharmacyBest = 1;
         var i, j, inst, effects, e, p, m;
         for (i = 0; i < arr.length; i++) {
             inst = arr[i];
@@ -529,16 +615,18 @@
                 p = e.params || {};
                 m = safeNum(p.multiplier, 1);
                 if (!isFinite(m) || m <= 0) continue;
-                mul *= m;
+                if (isPharmacyDoseInstance(inst)) pharmacyBest = Math.max(pharmacyBest, m);
+                else mul *= m;
             }
         }
-        return mul;
+        return mul * pharmacyBest;
     }
 
     function getBattleCombatExperienceGainMultiplier(ownerId) {
         var oid = ownerId || PLAYER_OWNER_ID;
         var arr = instancesByOwner[oid] || [];
         var mul = 1;
+        var pharmacyBest = 1;
         var i, j, inst, effects, e, p, m;
         for (i = 0; i < arr.length; i++) {
             inst = arr[i];
@@ -551,16 +639,18 @@
                 p = e.params || {};
                 m = safeNum(p.multiplier, 1);
                 if (!isFinite(m) || m <= 0) continue;
-                mul *= m;
+                if (isPharmacyDoseInstance(inst)) pharmacyBest = Math.max(pharmacyBest, m);
+                else mul *= m;
             }
         }
-        return mul;
+        return mul * pharmacyBest;
     }
 
     function getBattleMoveSpeedMultiplier(ownerId) {
         var oid = ownerId || PLAYER_OWNER_ID;
         var arr = instancesByOwner[oid] || [];
         var mul = 1;
+        var pharmacyBest = 1;
         var i, j, inst, effects, e, p, m;
         for (i = 0; i < arr.length; i++) {
             inst = arr[i];
@@ -575,16 +665,18 @@
                 p = e.params || {};
                 m = safeNum(p.multiplier, 1);
                 if (!isFinite(m) || m <= 0) continue;
-                mul *= m;
+                if (isPharmacyDoseInstance(inst)) pharmacyBest = Math.max(pharmacyBest, m);
+                else mul *= m;
             }
         }
-        return mul;
+        return mul * pharmacyBest;
     }
 
     function getBattleMoveSpeedDeltaPercent(ownerId) {
         var oid = ownerId || PLAYER_OWNER_ID;
         var arr = instancesByOwner[oid] || [];
         var sum = 0;
+        var pharmacyBest = 0;
         var i, j, inst, effects, e, p, d, stacks;
         for (i = 0; i < arr.length; i++) {
             inst = arr[i];
@@ -598,15 +690,28 @@
                 p = e.params || {};
                 d = safeNum(p.delta_percent, 0);
                 if (!isFinite(d) || d === 0) continue;
-                sum += d * stacks;
+                d *= stacks;
+                if (isPharmacyDoseInstance(inst)) pharmacyBest = Math.max(pharmacyBest, d);
+                else sum += d;
             }
         }
-        return sum;
+        return sum + pharmacyBest;
     }
 
-    function getBattleFinalDamageTakenMultiplier(ownerId) {
+    function getBattleFinalDamageTakenMultiplier(ownerId, pending) {
         var oid = ownerId || PLAYER_OWNER_ID;
-        var arr = instancesByOwner[oid] || [];
+        var arr = (instancesByOwner[oid] || []).map(function (inst) { return Object.assign({}, inst); });
+        (pending || []).forEach(function (b) {
+            if (b.owner !== oid) return;
+            var raw = getBuffTemplate(b.buffId);
+            if (!raw) return;
+            var tpl = normalizeTemplate(raw);
+            var existing = arr.filter(function (inst) {
+                return inst.buff_id === b.buffId && (!tpl.pharmacy_generated || String(inst.source_id || '') === String(b.src || ''));
+            })[0];
+            if (existing) existing.stacks = Math.min(tpl.maxStacks, Math.max(1, existing.stacks) + tpl.stacksAddOnApply);
+            else arr.push({ buff_id: b.buffId, source_id: b.src, template: tpl, stacks: Math.min(tpl.maxStacks, tpl.stacksAddOnApply || 1) });
+        });
         var mul = 1;
         var i, j, inst, effects, e, p, m;
         for (i = 0; i < arr.length; i++) {
@@ -618,12 +723,12 @@
                 if (e.type !== 'battle_final_damage_taken_multiplier') continue;
                 p = e.params || {};
                 m = safeNum(p.multiplier, 1);
-                if (!isFinite(m) || m <= 0) continue;
+                if (!isFinite(m) || m < 0) continue;
                 // 按层数线性缩放：每层 ×m（淤伤 3 层 ×1.10 → ×1.30），见 11-skills 8.3.6
-                mul *= (1 + (m - 1) * Math.max(1, parseInt(inst.stacks, 10) || 1));
+                mul += (m - 1) * Math.max(1, parseInt(inst.stacks, 10) || 1);
             }
         }
-        return mul;
+        return Math.max(0, mul);
     }
 
     /**
@@ -705,8 +810,9 @@
         if (!tpl) return false;
         var arr = ensureOwner(oid);
         var existing = null;
+        var sourceKey = sourceId != null ? String(sourceId) : null;
         for (var j = 0; j < arr.length; j++) {
-            if (arr[j].buff_id === buffId) {
+            if (arr[j].buff_id === buffId && (!tpl.pharmacy_generated || String(arr[j].source_id || '') === String(sourceKey || ''))) {
                 existing = arr[j];
                 break;
             }
@@ -725,6 +831,9 @@
             existing.stacks = Math.min(tpl.maxStacks, Math.max(1, currentStacks + tpl.stacksAddOnApply));
             existing.expires_at_tick = nowTick + dur;
             existing.template = tpl;
+            if (eventContext && eventContext.pharmacy_relief_stages != null) {
+                existing.pharmacy_relief_stages = Math.max(0, parseInt(eventContext.pharmacy_relief_stages, 10) || 0);
+            }
             debugLog('reapply ' + buffId + ' stacks=' + existing.stacks);
         } else {
             arr.push({
@@ -735,7 +844,10 @@
                 started_tick: nowTick,
                 expires_at_tick: nowTick + dur,
                 stacks: Math.min(tpl.maxStacks, tpl.stacksAddOnApply || 1),
-                template: tpl
+                template: tpl,
+                pharmacy_relief_stages: Math.max(0, parseInt(eventContext && eventContext.pharmacy_relief_stages, 10) || 0),
+                pharmacy_survival_delta_steps: {},
+                pharmacy_survival_delta_last_tick: {}
             });
             debugLog('apply ' + buffId + ' owner=' + oid);
         }
@@ -833,6 +945,9 @@
                         started_tick: inst.started_tick != null ? toInt(inst.started_tick, 0) : toInt(nowTick, 0),
                         expires_at_tick: inst.expires_at_tick != null ? toInt(inst.expires_at_tick, nowTick) : toInt(nowTick, 0),
                         stacks: inst.stacks != null ? toInt(inst.stacks, 1) : 1,
+                        pharmacy_relief_stages: Math.max(0, toInt(inst.pharmacy_relief_stages, 0)),
+                        pharmacy_survival_delta_steps: isPlainObject(inst.pharmacy_survival_delta_steps) ? JSON.parse(JSON.stringify(inst.pharmacy_survival_delta_steps)) : {},
+                        pharmacy_survival_delta_last_tick: isPlainObject(inst.pharmacy_survival_delta_last_tick) ? JSON.parse(JSON.stringify(inst.pharmacy_survival_delta_last_tick)) : {},
                         template: null
                     });
                 }
@@ -892,9 +1007,69 @@
         return false;
     }
 
-    function applySurvivalDeltaParams(p, eventContext) {
+    function roundToQuantum(value, quantum) {
+        var units = value / quantum;
+        var rounded = units >= 0 ? Math.floor(units + 0.5) : Math.ceil(units - 0.5);
+        return rounded * quantum;
+    }
+
+    function quantizePharmacySurvivalDelta(inst, p, eventContext, effectIndex) {
+        // Food specials use the same persisted fractional budget; otherwise small mood/energy deltas round away.
+        if (!inst || !inst.template || (!inst.template.pharmacy_survival_budget_quantized && !(inst.template.judgment_tags || {}).food_special)) return p;
+        var tick = Number(eventContext && eventContext.tick);
+        var effectKey = String(Math.max(0, toInt(effectIndex, 0)));
+        if (!isPlainObject(inst.pharmacy_survival_delta_last_tick)) inst.pharmacy_survival_delta_last_tick = {};
+        if (!isPlainObject(inst.pharmacy_survival_delta_steps)) inst.pharmacy_survival_delta_steps = {};
+        if (isFinite(tick) && inst.pharmacy_survival_delta_last_tick[effectKey] === tick) return {};
+        inst.pharmacy_survival_delta_last_tick[effectKey] = isFinite(tick) ? tick : null;
+        var step = Math.max(0, toInt(inst.pharmacy_survival_delta_steps[effectKey], 0)) + 1;
+        inst.pharmacy_survival_delta_steps[effectKey] = step;
+        var out = {};
+        Object.keys(p || {}).forEach(function (key) {
+            var perTick = safeNum(p[key], 0);
+            var quantum = (key === 'mood' || (key === 'nutrition' && perTick < 0)) ? 1 : 0.1;
+            out[key] = roundToQuantum(perTick * step, quantum) - roundToQuantum(perTick * (step - 1), quantum);
+        });
+        return out;
+    }
+
+    function isWinningPharmacySurvivalSource(inst, field, rawValue, nowTick) {
+        if (!isPharmacyDoseInstance(inst)) return true;
+        var arr = instancesByOwner[inst.owner_id || PLAYER_OWNER_ID] || [];
+        var winner = null;
+        var winnerScore = -Infinity;
+        for (var i = 0; i < arr.length; i++) {
+            var other = arr[i];
+            if (!isPharmacyDoseInstance(other) || (other.stacks || 0) <= 0 || !isBuffPastOnset(other, nowTick)) continue;
+            var effects = arrayOrEmpty(other.template.effects);
+            for (var j = 0; j < effects.length; j++) {
+                if (!effects[j] || effects[j].type !== 'survival_delta') continue;
+                var value = safeNum((effects[j].params || {})[field], 0);
+                if (!value) continue;
+                var score = field === 'fatigue' ? -value : value;
+                var uid = String(other.uid || '');
+                if (score > winnerScore || (score === winnerScore && (!winner || uid < String(winner.uid || '')))) {
+                    winner = other;
+                    winnerScore = score;
+                }
+            }
+        }
+        return !!winner && winner.uid === inst.uid;
+    }
+
+    function applySurvivalDeltaParams(p, eventContext, inst, effectIndex) {
         p = p && typeof p === 'object' ? p : {};
         eventContext = eventContext && typeof eventContext === 'object' ? eventContext : {};
+        var rawParams = p;
+        p = quantizePharmacySurvivalDelta(inst, p, eventContext, effectIndex);
+        if (isPharmacyDoseInstance(inst)) {
+            var filtered = {};
+            var nowTick = eventContext && eventContext.tick != null ? Number(eventContext.tick) : getTickNow();
+            Object.keys(p).forEach(function (field) {
+                if (isWinningPharmacySurvivalSource(inst, field, safeNum(rawParams[field], 0), nowTick)) filtered[field] = p[field];
+            });
+            p = filtered;
+        }
         var Surv = global && global.Survival;
         if (!Surv) return;
         var sat = safeNum(p.satiety, 0);
@@ -982,6 +1157,8 @@
     }
 
     function applyEffects(inst, eventContext, chainState) {
+        // k229：镇痛在场时疼痛档位 debuff 整体被压制（每 tick 的心情/体力惩罚等不生效；debuff 仍在、只盖住，药效过反扑）
+        if (isPainEffectSuppressed(inst)) return;
         var effects = arrayOrEmpty(inst.template.effects);
         for (var i = 0; i < effects.length; i++) {
             var e = effects[i] || {};
@@ -992,7 +1169,7 @@
                 continue;
             }
             if (type === 'survival_delta') {
-                applySurvivalDeltaParams(p, eventContext);
+                applySurvivalDeltaParams(p, eventContext, inst, i);
                 continue;
             }
             if (type === 'disable_movement' || type === 'disable_actions') {
@@ -1041,7 +1218,9 @@
     }
 
     function recalcDerived() {
+        refreshPainTier();
         var bonus = { jingu: 0, flexibility: 0, breath: 0, dexterity: 0, focus: 0 };
+        var pharmacyBonus = { jingu: 0, flexibility: 0, breath: 0, dexterity: 0, focus: 0 };
         var caState = (global && global.CharacterAttributes && typeof global.CharacterAttributes.getState === 'function')
             ? (global.CharacterAttributes.getState() || null)
             : null;
@@ -1059,11 +1238,12 @@
                     if (e.type === 'add_stat_delta') {
                         var p = e.params || {};
                         var mul = Math.max(1, inst.stacks || 1);
-                        bonus.jingu += safeNum(p.jingu, 0) * mul;
-                        bonus.flexibility += safeNum(p.flexibility, 0) * mul;
-                        bonus.breath += safeNum(p.breath, 0) * mul;
-                        bonus.dexterity += safeNum(p.dexterity, 0) * mul;
-                        bonus.focus += safeNum(p.focus, 0) * mul;
+                        var target = isPharmacyDoseInstance(inst) ? pharmacyBonus : bonus;
+                        ['jingu', 'flexibility', 'breath', 'dexterity', 'focus'].forEach(function (key) {
+                            var value = safeNum(p[key], 0) * mul;
+                            if (isPharmacyDoseInstance(inst)) target[key] = Math.max(target[key], value);
+                            else target[key] += value;
+                        });
                         continue;
                     }
                     if (e.type === 'add_acquired_from_congenital_percent') {
@@ -1083,6 +1263,7 @@
                 }
             }
         }
+        Object.keys(pharmacyBonus).forEach(function (key) { bonus[key] += pharmacyBonus[key]; });
         if (global && global.CharacterAttributes && typeof global.CharacterAttributes.setExternalAcquiredBonus === 'function') {
             global.CharacterAttributes.setExternalAcquiredBonus(bonus);
             if (typeof global.CharacterAttributes.recalcCharacterStats === 'function' && global.InventoryEquipment) {
@@ -1181,6 +1362,7 @@
         chainState.seenEventIds[ev.event_id] = true;
 
         var expiredChanged = removeExpiredByTick(ev.tick);
+        refreshPainTier();
         var candidates = getCandidateTemplates(ev);
         var candidateSet = makeCandidateSet(candidates);
         var owners = Object.keys(instancesByOwner);
@@ -1486,7 +1668,11 @@
         },
         hasActiveSatietyDigestBuff: hasActiveSatietyDigestBuff,
         getAntiStunPct: getAntiStunPct,
+        getPharmacyCarryCapacityBonus: getPharmacyCarryCapacityBonus,
+        isBuffPastOnset: isBuffPastOnset,
+        getPharmacyDoseUseWarning: getPharmacyDoseUseWarning,
         hasPainSuppression: hasPainSuppression,
+        getPainIgnoreRatio: getPainIgnoreRatio,
         getActiveFoodDigestCompositions: getActiveFoodDigestCompositions,
         hasMovementDisabled: hasMovementDisabled,
         hasActionDisabled: hasActionDisabled,

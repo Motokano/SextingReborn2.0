@@ -66,7 +66,7 @@
     }
 
     function hasCompostInteractionContext() {
-        return !!compostStationPanelOpen;
+        return !!compostStationPanelOpen && StationContext.isOnCompostStationTile();
     }
 
     function getMountedBreathSkillIdForCompostProficiency() {
@@ -151,7 +151,7 @@
         return { canStart: true, reason: 'ok' };
     }
 
-    function showCompostStartBlockedHint(reason) {
+    function getCompostStartBlockedText(reason) {
         var r = String(reason || '');
         var key = 'compost.start.fail';
         if (r === 'output_pending') key = 'compost.start.blocked_output_pending';
@@ -160,7 +160,12 @@
         else if (r === 'invalid_inputs') key = 'compost.start.blocked_invalid_inputs';
         else if (r === 'inoculant_required') key = 'compost.start.blocked_inoculant_required';
         else if (r === 'inoculant_missing_inventory') key = 'compost.start.blocked_inoculant_missing_inventory';
-        showMsg(ui(key), 'warn');
+        else if (r === 'events_unavailable') key = 'compost.start.events_unavailable';
+        return ui(key);
+    }
+
+    function showCompostStartBlockedHint(reason) {
+        showMsg(getCompostStartBlockedText(reason), 'warn');
     }
 
     function tryCollectCompostToInventory(mode) {
@@ -469,6 +474,18 @@
         var mode = compostStationUiState.mode === 'anaerobic' ? 'anaerobic' : 'aerobic';
         compostStationUiState.mode = mode;
         var batch = getCompostBatchOrIdle(mode);
+        var phase = batch && batch.status === 'FERMENTING' ? 'ferment' : batch && batch.status === 'SETTLED' ? 'settled' : 'prepare';
+        modal.setAttribute('data-phase', phase);
+        var preparation = document.getElementById('compost-preparation');
+        if (preparation) preparation.hidden = phase !== 'prepare';
+        var phaseKey = mode + ':' + phase;
+        if (modal._compostPhaseKey !== phaseKey) {
+            var materialDetails = document.getElementById('compost-material-details');
+            var historyDetails = document.getElementById('compost-history-details');
+            if (materialDetails) materialDetails.open = phase === 'prepare';
+            if (historyDetails) historyDetails.open = phase === 'settled';
+            modal._compostPhaseKey = phaseKey;
+        }
         var inputWrap = document.getElementById('compost-input-list');
         var perceptionEl = document.getElementById('compost-perception-text');
         var progressWrap = document.getElementById('compost-progress-kv');
@@ -494,13 +511,13 @@
                     var mat = batch.materials[mi] || {};
                     var r0 = document.createElement('div');
                     r0.className = 'cs-input-row';
-                    r0.innerHTML = '<div class="iname">' + StationCraftCore.getItemDisplayNameSafe(mat.item_id) + ' (' + String(mat.item_id || '') + ')</div><div class="icnt">x' + String(mat.count || 1) + '</div><div></div>';
+                    r0.innerHTML = '<div class="iname">' + StationCraftCore.getItemDisplayNameSafe(mat.item_id) + '</div><div class="icnt">x' + String(mat.count || 1) + '</div><div></div>';
                     inputWrap.appendChild(r0);
                 }
                 if (batch.inoculant_item_id) {
                     var inocBatchRow = document.createElement('div');
                     inocBatchRow.className = 'cs-input-row';
-                    inocBatchRow.innerHTML = '<div class="iname">' + ui('compost.inoculant.label') + ': ' + StationCraftCore.getItemDisplayNameSafe(batch.inoculant_item_id) + ' (' + String(batch.inoculant_item_id || '') + ')</div><div class="icnt">x1</div><div></div>';
+                    inocBatchRow.innerHTML = '<div class="iname">' + ui('compost.inoculant.label') + ': ' + StationCraftCore.getItemDisplayNameSafe(batch.inoculant_item_id) + '</div><div class="icnt">x1</div><div></div>';
                     inputWrap.appendChild(inocBatchRow);
                 }
             } else if (Array.isArray(compostStationUiState.staged_inputs) && compostStationUiState.staged_inputs.length) {
@@ -517,7 +534,7 @@
                     row.className = 'cs-input-row';
                     var name = document.createElement('div');
                     name.className = 'iname';
-                    name.textContent = StationCraftCore.getItemDisplayNameSafe(id0) + ' (' + id0 + ')';
+                    name.textContent = StationCraftCore.getItemDisplayNameSafe(id0);
                     var cnt = document.createElement('div');
                     cnt.className = 'icnt';
                     cnt.textContent = 'x' + String(stagedMap[id0]);
@@ -546,7 +563,7 @@
                     inocRow.className = 'cs-input-row';
                     var inocName = document.createElement('div');
                     inocName.className = 'iname';
-                    inocName.textContent = ui('compost.inoculant.label') + ': ' + StationCraftCore.getItemDisplayNameSafe(compostStationUiState.staged_inoculant_item_id) + ' (' + compostStationUiState.staged_inoculant_item_id + ')';
+                    inocName.textContent = ui('compost.inoculant.label') + ': ' + StationCraftCore.getItemDisplayNameSafe(compostStationUiState.staged_inoculant_item_id) + '';
                     var inocCnt = document.createElement('div');
                     inocCnt.className = 'icnt';
                     inocCnt.textContent = 'x1';
@@ -567,7 +584,7 @@
                 if (compostStationUiState.staged_inoculant_item_id) {
                     var inocOnly = document.createElement('div');
                     inocOnly.className = 'cs-input-row';
-                    inocOnly.innerHTML = '<div class="iname">' + ui('compost.inoculant.label') + ': ' + StationCraftCore.getItemDisplayNameSafe(compostStationUiState.staged_inoculant_item_id) + ' (' + compostStationUiState.staged_inoculant_item_id + ')</div><div class="icnt">x1</div><div></div>';
+                    inocOnly.innerHTML = '<div class="iname">' + ui('compost.inoculant.label') + ': ' + StationCraftCore.getItemDisplayNameSafe(compostStationUiState.staged_inoculant_item_id) + '</div><div class="icnt">x1</div><div></div>';
                     inputWrap.appendChild(inocOnly);
                 } else {
                     inputWrap.innerHTML = '<div class="cs-empty-hint">' + ui('compost.inputs.empty') + '</div>';
@@ -586,13 +603,20 @@
         }
 
         if (progressWrap) {
+            progressWrap.hidden = phase === 'prepare';
             progressWrap.innerHTML = '';
             var age = batch ? (Number(batch.age_ticks) || 0) : 0;
             var duration = batch ? (Number(batch.duration_ticks) || 0) : 0;
             var stat = getCompostStatusText(batch ? batch.status : 'IDLE');
             var kv1 = document.createElement('div'); kv1.className = 'kv'; kv1.textContent = ui('compost.kv.status', { status: stat });
-            var kv2 = document.createElement('div'); kv2.className = 'kv'; kv2.textContent = ui('compost.kv.tick', { cur: age, max: duration });
+            var kv2 = document.createElement('div'); kv2.className = 'kv'; kv2.textContent = ui('compost.kv.elapsed', { days: Math.floor(age / 144), hours: Math.floor(age % 144 / 6), minutes: age % 6 * 10 });
             progressWrap.appendChild(kv1); progressWrap.appendChild(kv2);
+            if (mode === 'anaerobic' && batch && batch.process_version >= 2 && batch.status === 'FERMENTING' && batch.legal_cn) {
+                var conditionEl = document.createElement('div');
+                conditionEl.className = 'kv';
+                conditionEl.textContent = ui('compost.condition.' + batch.anaerobic_condition);
+                progressWrap.appendChild(conditionEl);
+            }
         }
 
         var pendingWindow = null;
@@ -614,9 +638,40 @@
                 windowEl.textContent = ui('compost.window.pending', { title: evtTitle }) + (evtDesc ? ('\n' + evtDesc) : '');
             } else if (windowInteractState && windowInteractState.reason === 'illegal_cn_batch') {
                 windowEl.textContent = ui('compost.window.disabled_illegal');
+            } else if (mode === 'anaerobic' && batch && batch.process_version >= 2 && batch.status === 'FERMENTING') {
+                var nextCheck = batch.windows.find(function (w) { return !w.resolved && w.window_start > batch.age_ticks; });
+                var remaining = (nextCheck ? nextCheck.window_start : batch.duration_ticks) - batch.age_ticks;
+                windowEl.textContent = ui(nextCheck ? 'compost.window.next_check' : 'compost.window.wait_mature', { hours: Math.ceil(remaining / 6) });
             } else {
                 windowEl.textContent = ui('compost.window.none');
             }
+        }
+
+        var observationTitle = document.getElementById('compost-observation-title');
+        if (observationTitle) observationTitle.textContent = pendingWindow && pendingWindow.event && pendingWindow.event.variant
+            ? pendingWindow.event.variant.title : ui('compost.observation.' + phase);
+        if (windowEl && pendingWindow) windowEl.textContent = String(pendingWindow.event && pendingWindow.event.variant && pendingWindow.event.variant.desc || '');
+        if (windowEl && phase === 'prepare') windowEl.textContent = ui('compost.prepare.' + mode);
+        if (windowEl && phase === 'settled') windowEl.textContent = ui(batch.results && batch.results.length ? 'compost.observation.finished' : 'compost.observation.collected');
+        var lastResolved = batch && batch.windows ? batch.windows.filter(function (w) { return w.resolved && w.feedback_text; }).slice(-1)[0] : null;
+        var feedbackEl = document.getElementById('compost-immediate-feedback');
+        if (feedbackEl) feedbackEl.textContent = !pendingWindow && lastResolved ? lastResolved.feedback_text : '';
+        var timeline = document.getElementById('compost-timeline');
+        if (timeline) {
+            timeline.innerHTML = '';
+            timeline.hidden = phase === 'prepare';
+            var points = [{ label: ui('compost.timeline.started'), state: 'done' }];
+            (batch && batch.windows || []).forEach(function (w) {
+                points.push({ label: ui('compost.timeline.check', { index: w.index + 1 }), state: w.resolved ? 'done' : pendingWindow && pendingWindow.index === w.index ? 'current' : 'future' });
+            });
+            points.push({ label: ui('compost.timeline.finished'), state: phase === 'settled' ? 'current' : 'future' });
+            points.forEach(function (point) {
+                var step = document.createElement('li');
+                step.textContent = point.label;
+                step.setAttribute('data-state', point.state);
+                if (point.state === 'current') step.setAttribute('aria-current', 'step');
+                timeline.appendChild(step);
+            });
         }
 
         var bestBtn = document.getElementById('compost-interact-best-btn');
@@ -635,7 +690,7 @@
         compostWindowActionSlots.alt = '';
         var actionChoices = [];
         if (canInteract) {
-            if (isAerobicWindow) {
+            if (isAerobicWindow || (batch && batch.process_version >= 2)) {
                 if (String(pEvt.best_action || '').trim()) actionChoices.push({ id: String(pEvt.best_action || '').trim() });
                 if (String(pEvt.secondary_action || '').trim()) actionChoices.push({ id: String(pEvt.secondary_action || '').trim() });
                 if (String(pEvt.bad_action || '').trim()) actionChoices.push({ id: String(pEvt.bad_action || '').trim() });
@@ -681,14 +736,36 @@
                     var r = results[ri] || {};
                     var rowR = document.createElement('div');
                     rowR.className = 'cs-input-row';
-                    rowR.innerHTML = '<div class="iname">' + StationCraftCore.getItemDisplayNameSafe(r.item_id) + ' (' + String(r.item_id || '') + ')</div><div class="icnt">x' + String(r.count || 0) + '</div><div></div>';
+                    rowR.innerHTML = '<div class="iname">' + StationCraftCore.getItemDisplayNameSafe(r.item_id) + '</div><div class="icnt">x' + String(r.count || 0) + '</div><div></div>';
                     resultWrap.appendChild(rowR);
                 }
             }
         }
+        if (resultWrap && batch && batch.status === 'SETTLED' && batch.result_report) {
+            var reportEl = document.createElement('div');
+            reportEl.className = 'cs-empty-hint';
+            reportEl.textContent = batch.result_report.text;
+            resultWrap.appendChild(reportEl);
+            var reportDetails = document.createElement('details');
+            var reportSummary = document.createElement('summary');
+            reportSummary.textContent = ui('compost.result.details');
+            reportDetails.appendChild(reportSummary);
+            var numbers = document.createElement('p');
+            numbers.textContent = ui('compost.result.report', batch.result_report);
+            reportDetails.appendChild(numbers);
+            resultWrap.appendChild(reportDetails);
+        }
         if (logWrap) {
             logWrap.innerHTML = '';
             var logs = compostStationUiState.logs.slice(-20);
+            if (batch && Array.isArray(batch.windows)) {
+                batch.windows.forEach(function (w) {
+                    if (!w.resolved || !w.feedback_text) return;
+                    var title = w.event && w.event.variant && w.event.variant.title || '';
+                    var choice = w.miss ? ui('compost.log.unattended') : getCompostActionDisplay(w.action_id) + '。';
+                    logs.push(ui('compost.log.check', { index: w.index + 1 }) + title + '：' + choice + w.feedback_text);
+                });
+            }
             if (!logs.length) {
                 logWrap.innerHTML = '<div class="line">' + ui('compost.log.empty') + '</div>';
             } else {
@@ -709,13 +786,19 @@
         var startGuard = getCompostStartGuardState(mode, stagedTotals);
         var canStart = !!startGuard.canStart;
         if (startBtn) startBtn.disabled = !canStart;
-        if (stopBtn) stopBtn.disabled = !(batch && batch.status === 'FERMENTING');
+        var startHint = document.getElementById('compost-start-hint');
+        if (startHint) startHint.textContent = phase === 'prepare' && !canStart ? getCompostStartBlockedText(startGuard.reason) : '';
+        if (stopBtn) {
+            stopBtn.disabled = !(batch && batch.status === 'FERMENTING');
+            stopBtn.style.display = phase !== 'ferment' || mode === 'anaerobic' && batch && batch.process_version >= 2 ? 'none' : '';
+        }
         if (collectBtn) collectBtn.disabled = !(batch && batch.status === 'SETTLED' && Array.isArray(batch.results) && batch.results.length > 0);
         if (discardBtn) discardBtn.disabled = !(batch && batch.status === 'SETTLED');
 
         if (global.UIText && typeof global.UIText.applyDom === 'function') {
             try { global.UIText.applyDom(modal); } catch (eApplyCompost) { /* ignore */ }
         }
+        if (discardBtn) discardBtn.textContent = ui(batch && batch.results && batch.results.length ? 'compost.btn.discard' : 'compost.btn.next_batch');
     }
 
     function openCompostStationPanel() {

@@ -1,0 +1,6 @@
+{
+  "prompt": "Edit this sixteen-part transparent sprite sheet, preserve all part positions, size, artistic style and 4x4 layout. Remove ALL artificial black elliptical socket/cut rings from adjoining surfaces: chest bottom, abdomen top, upper sleeves ends, lower sleeves elbow tops, hands wrist tops, pants segment tops and bottoms, shoes ankle openings. Replace sockets with continuous matching cloth/skin/black shoe surfaces. No mechanical cylindrical holes. Round and fill all joint ends for overlap assembly; at these joint ends DO NOT draw a black transverse outline, just soft filled color. Keep external side contour outlines, the actual blue shirt cuffs, blue hem and collar, and the head and empty pawn base unchanged. On chest bottom and abdomen top use overlapping uninterrupted gray cloth with no horizontal line. Preserve sixteen detached parts. Real transparent alpha PNG, empty alpha outside parts, NO checkerboard background.",
+  "source": "../pawn-kit-v1/hero/parts.png",
+  "output": "C:\\Users\\haoxian.huang\\.codex\\generated_images\\01a09e15-092c-7913-adbc-d501f09a0900\\exec-3e153e2f-8886-4a60-8d4a-f4e166407021.png",
+  "status": "standing-only assembly review; not approved; no rig changes"
+}

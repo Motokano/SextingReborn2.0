@@ -28,6 +28,11 @@
     function getSkillDisplayName(skillId) {
         var sid = String(skillId || '').trim();
         if (!sid) return sid;
+        if (sid.indexOf('life_') === 0) {
+            var lifeKey = 'life.skill.' + sid.slice(5) + '.name';
+            var lifeName = t(lifeKey);
+            if (lifeName && lifeName !== lifeKey) return String(lifeName);
+        }
         try {
             if (global.SurvivalSkills && typeof global.SurvivalSkills.getById === 'function') {
                 var s1 = global.SurvivalSkills.getById(sid);
@@ -41,6 +46,29 @@
             }
         } catch (e2) { /* ignore */ }
         return sid;
+    }
+
+    function hasApplicableContent(content, tpl) {
+        if (content == null) return false;
+        if (typeof content === 'string') return String(content).trim() !== '';
+        if (typeof content !== 'object') return false;
+        var ctype = String(content.type || '').toLowerCase();
+        if (ctype === 'text') return String(content.text || '').trim() !== '';
+        if (ctype === 'list') return Array.isArray(content.items) && content.items.length > 0;
+        if (ctype === 'kv') return Array.isArray(content.entries) && content.entries.length > 0;
+        if (ctype === 'csv_field_text') {
+            var csvKey = String(content.field || '').trim();
+            var csvValue = csvKey && tpl ? tpl[csvKey] : null;
+            return (csvValue != null && String(csvValue).trim() !== '') || String(content.fallback || '').trim() !== '';
+        }
+        if (ctype === 'tpl_kv') {
+            var entries = Array.isArray(content.entries) ? content.entries : [];
+            for (var i = 0; i < entries.length; i++) {
+                var field = String((entries[i] || {}).field || '').trim();
+                if (field && tpl && tpl[field] != null && String(tpl[field]).trim() !== '') return true;
+            }
+        }
+        return false;
     }
 
     function normalizeContentHtml(content, tpl) {
@@ -155,6 +183,7 @@
         var html = '<div class="tooltip-modules">';
         for (var i = 0; i < set.modules.length; i++) {
             var m = set.modules[i] || {};
+            if (!hasApplicableContent(m.content, tpl || {})) continue;
             var title = esc(m.title || m.module_id || t('item_info.module_default'));
             var st = evalUnlock(m.unlock, chara);
             html += '<div class="tooltip-module' + (st.unlocked ? '' : ' is-locked') + '">';

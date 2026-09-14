@@ -1,0 +1,665 @@
+{
+  "rigId": "shared-humanoid-rig-v1",
+  "posesSha256": "9e76a7b40537fa62b9c3b1054343ee6eeac268d1197651e35ec749d7c2fff4d0",
+  "partOrder": [
+    "head",
+    "chest",
+    "abdomen",
+    "lhand",
+    "rhand",
+    "lfoot",
+    "rfoot"
+  ],
+  "viewBox": [
+    0,
+    0,
+    144,
+    128
+  ],
+  "baseAnchor": [
+    72,
+    78
+  ],
+  "files": [
+    {
+      "mask": 0,
+      "id": "D000",
+      "file": "D000.svg"
+    },
+    {
+      "mask": 1,
+      "id": "D001",
+      "file": "D001.svg"
+    },
+    {
+      "mask": 2,
+      "id": "D002",
+      "file": "D002.svg"
+    },
+    {
+      "mask": 3,
+      "id": "D003",
+      "file": "D003.svg"
+    },
+    {
+      "mask": 4,
+      "id": "D004",
+      "file": "D004.svg"
+    },
+    {
+      "mask": 5,
+      "id": "D005",
+      "file": "D005.svg"
+    },
+    {
+      "mask": 6,
+      "id": "D006",
+      "file": "D006.svg"
+    },
+    {
+      "mask": 7,
+      "id": "D007",
+      "file": "D007.svg"
+    },
+    {
+      "mask": 8,
+      "id": "D008",
+      "file": "D008.svg"
+    },
+    {
+      "mask": 9,
+      "id": "D009",
+      "file": "D009.svg"
+    },
+    {
+      "mask": 10,
+      "id": "D010",
+      "file": "D010.svg"
+    },
+    {
+      "mask": 11,
+      "id": "D011",
+      "file": "D011.svg"
+    },
+    {
+      "mask": 12,
+      "id": "D012",
+      "file": "D012.svg"
+    },
+    {
+      "mask": 13,
+      "id": "D013",
+      "file": "D013.svg"
+    },
+    {
+      "mask": 14,
+      "id": "D014",
+      "file": "D014.svg"
+    },
+    {
+      "mask": 15,
+      "id": "D015",
+      "file": "D015.svg"
+    },
+    {
+      "mask": 16,
+      "id": "D016",
+      "file": "D016.svg"
+    },
+    {
+      "mask": 17,
+      "id": "D017",
+      "file": "D017.svg"
+    },
+    {
+      "mask": 18,
+      "id": "D018",
+      "file": "D018.svg"
+    },
+    {
+      "mask": 19,
+      "id": "D019",
+      "file": "D019.svg"
+    },
+    {
+      "mask": 20,
+      "id": "D020",
+      "file": "D020.svg"
+    },
+    {
+      "mask": 21,
+      "id": "D021",
+      "file": "D021.svg"
+    },
+    {
+      "mask": 22,
+      "id": "D022",
+      "file": "D022.svg"
+    },
+    {
+      "mask": 23,
+      "id": "D023",
+      "file": "D023.svg"
+    },
+    {
+      "mask": 24,
+      "id": "D024",
+      "file": "D024.svg"
+    },
+    {
+      "mask": 25,
+      "id": "D025",
+      "file": "D025.svg"
+    },
+    {
+      "mask": 26,
+      "id": "D026",
+      "file": "D026.svg"
+    },
+    {
+      "mask": 27,
+      "id": "D027",
+      "file": "D027.svg"
+    },
+    {
+      "mask": 28,
+      "id": "D028",
+      "file": "D028.svg"
+    },
+    {
+      "mask": 29,
+      "id": "D029",
+      "file": "D029.svg"
+    },
+    {
+      "mask": 30,
+      "id": "D030",
+      "file": "D030.svg"
+    },
+    {
+      "mask": 31,
+      "id": "D031",
+      "file": "D031.svg"
+    },
+    {
+      "mask": 32,
+      "id": "D032",
+      "file": "D032.svg"
+    },
+    {
+      "mask": 33,
+      "id": "D033",
+      "file": "D033.svg"
+    },
+    {
+      "mask": 34,
+      "id": "D034",
+      "file": "D034.svg"
+    },
+    {
+      "mask": 35,
+      "id": "D035",
+      "file": "D035.svg"
+    },
+    {
+      "mask": 36,
+      "id": "D036",
+      "file": "D036.svg"
+    },
+    {
+      "mask": 37,
+      "id": "D037",
+      "file": "D037.svg"
+    },
+    {
+      "mask": 38,
+      "id": "D038",
+      "file": "D038.svg"
+    },
+    {
+      "mask": 39,
+      "id": "D039",
+      "file": "D039.svg"
+    },
+    {
+      "mask": 40,
+      "id": "D040",
+      "file": "D040.svg"
+    },
+    {
+      "mask": 41,
+      "id": "D041",
+      "file": "D041.svg"
+    },
+    {
+      "mask": 42,
+      "id": "D042",
+      "file": "D042.svg"
+    },
+    {
+      "mask": 43,
+      "id": "D043",
+      "file": "D043.svg"
+    },
+    {
+      "mask": 44,
+      "id": "D044",
+      "file": "D044.svg"
+    },
+    {
+      "mask": 45,
+      "id": "D045",
+      "file": "D045.svg"
+    },
+    {
+      "mask": 46,
+      "id": "D046",
+      "file": "D046.svg"
+    },
+    {
+      "mask": 47,
+      "id": "D047",
+      "file": "D047.svg"
+    },
+    {
+      "mask": 48,
+      "id": "D048",
+      "file": "D048.svg"
+    },
+    {
+      "mask": 49,
+      "id": "D049",
+      "file": "D049.svg"
+    },
+    {
+      "mask": 50,
+      "id": "D050",
+      "file": "D050.svg"
+    },
+    {
+      "mask": 51,
+      "id": "D051",
+      "file": "D051.svg"
+    },
+    {
+      "mask": 52,
+      "id": "D052",
+      "file": "D052.svg"
+    },
+    {
+      "mask": 53,
+      "id": "D053",
+      "file": "D053.svg"
+    },
+    {
+      "mask": 54,
+      "id": "D054",
+      "file": "D054.svg"
+    },
+    {
+      "mask": 55,
+      "id": "D055",
+      "file": "D055.svg"
+    },
+    {
+      "mask": 56,
+      "id": "D056",
+      "file": "D056.svg"
+    },
+    {
+      "mask": 57,
+      "id": "D057",
+      "file": "D057.svg"
+    },
+    {
+      "mask": 58,
+      "id": "D058",
+      "file": "D058.svg"
+    },
+    {
+      "mask": 59,
+      "id": "D059",
+      "file": "D059.svg"
+    },
+    {
+      "mask": 60,
+      "id": "D060",
+      "file": "D060.svg"
+    },
+    {
+      "mask": 61,
+      "id": "D061",
+      "file": "D061.svg"
+    },
+    {
+      "mask": 62,
+      "id": "D062",
+      "file": "D062.svg"
+    },
+    {
+      "mask": 63,
+      "id": "D063",
+      "file": "D063.svg"
+    },
+    {
+      "mask": 64,
+      "id": "D064",
+      "file": "D064.svg"
+    },
+    {
+      "mask": 65,
+      "id": "D065",
+      "file": "D065.svg"
+    },
+    {
+      "mask": 66,
+      "id": "D066",
+      "file": "D066.svg"
+    },
+    {
+      "mask": 67,
+      "id": "D067",
+      "file": "D067.svg"
+    },
+    {
+      "mask": 68,
+      "id": "D068",
+      "file": "D068.svg"
+    },
+    {
+      "mask": 69,
+      "id": "D069",
+      "file": "D069.svg"
+    },
+    {
+      "mask": 70,
+      "id": "D070",
+      "file": "D070.svg"
+    },
+    {
+      "mask": 71,
+      "id": "D071",
+      "file": "D071.svg"
+    },
+    {
+      "mask": 72,
+      "id": "D072",
+      "file": "D072.svg"
+    },
+    {
+      "mask": 73,
+      "id": "D073",
+      "file": "D073.svg"
+    },
+    {
+      "mask": 74,
+      "id": "D074",
+      "file": "D074.svg"
+    },
+    {
+      "mask": 75,
+      "id": "D075",
+      "file": "D075.svg"
+    },
+    {
+      "mask": 76,
+      "id": "D076",
+      "file": "D076.svg"
+    },
+    {
+      "mask": 77,
+      "id": "D077",
+      "file": "D077.svg"
+    },
+    {
+      "mask": 78,
+      "id": "D078",
+      "file": "D078.svg"
+    },
+    {
+      "mask": 79,
+      "id": "D079",
+      "file": "D079.svg"
+    },
+    {
+      "mask": 80,
+      "id": "D080",
+      "file": "D080.svg"
+    },
+    {
+      "mask": 81,
+      "id": "D081",
+      "file": "D081.svg"
+    },
+    {
+      "mask": 82,
+      "id": "D082",
+      "file": "D082.svg"
+    },
+    {
+      "mask": 83,
+      "id": "D083",
+      "file": "D083.svg"
+    },
+    {
+      "mask": 84,
+      "id": "D084",
+      "file": "D084.svg"
+    },
+    {
+      "mask": 85,
+      "id": "D085",
+      "file": "D085.svg"
+    },
+    {
+      "mask": 86,
+      "id": "D086",
+      "file": "D086.svg"
+    },
+    {
+      "mask": 87,
+      "id": "D087",
+      "file": "D087.svg"
+    },
+    {
+      "mask": 88,
+      "id": "D088",
+      "file": "D088.svg"
+    },
+    {
+      "mask": 89,
+      "id": "D089",
+      "file": "D089.svg"
+    },
+    {
+      "mask": 90,
+      "id": "D090",
+      "file": "D090.svg"
+    },
+    {
+      "mask": 91,
+      "id": "D091",
+      "file": "D091.svg"
+    },
+    {
+      "mask": 92,
+      "id": "D092",
+      "file": "D092.svg"
+    },
+    {
+      "mask": 93,
+      "id": "D093",
+      "file": "D093.svg"
+    },
+    {
+      "mask": 94,
+      "id": "D094",
+      "file": "D094.svg"
+    },
+    {
+      "mask": 95,
+      "id": "D095",
+      "file": "D095.svg"
+    },
+    {
+      "mask": 96,
+      "id": "D096",
+      "file": "D096.svg"
+    },
+    {
+      "mask": 97,
+      "id": "D097",
+      "file": "D097.svg"
+    },
+    {
+      "mask": 98,
+      "id": "D098",
+      "file": "D098.svg"
+    },
+    {
+      "mask": 99,
+      "id": "D099",
+      "file": "D099.svg"
+    },
+    {
+      "mask": 100,
+      "id": "D100",
+      "file": "D100.svg"
+    },
+    {
+      "mask": 101,
+      "id": "D101",
+      "file": "D101.svg"
+    },
+    {
+      "mask": 102,
+      "id": "D102",
+      "file": "D102.svg"
+    },
+    {
+      "mask": 103,
+      "id": "D103",
+      "file": "D103.svg"
+    },
+    {
+      "mask": 104,
+      "id": "D104",
+      "file": "D104.svg"
+    },
+    {
+      "mask": 105,
+      "id": "D105",
+      "file": "D105.svg"
+    },
+    {
+      "mask": 106,
+      "id": "D106",
+      "file": "D106.svg"
+    },
+    {
+      "mask": 107,
+      "id": "D107",
+      "file": "D107.svg"
+    },
+    {
+      "mask": 108,
+      "id": "D108",
+      "file": "D108.svg"
+    },
+    {
+      "mask": 109,
+      "id": "D109",
+      "file": "D109.svg"
+    },
+    {
+      "mask": 110,
+      "id": "D110",
+      "file": "D110.svg"
+    },
+    {
+      "mask": 111,
+      "id": "D111",
+      "file": "D111.svg"
+    },
+    {
+      "mask": 112,
+      "id": "D112",
+      "file": "D112.svg"
+    },
+    {
+      "mask": 113,
+      "id": "D113",
+      "file": "D113.svg"
+    },
+    {
+      "mask": 114,
+      "id": "D114",
+      "file": "D114.svg"
+    },
+    {
+      "mask": 115,
+      "id": "D115",
+      "file": "D115.svg"
+    },
+    {
+      "mask": 116,
+      "id": "D116",
+      "file": "D116.svg"
+    },
+    {
+      "mask": 117,
+      "id": "D117",
+      "file": "D117.svg"
+    },
+    {
+      "mask": 118,
+      "id": "D118",
+      "file": "D118.svg"
+    },
+    {
+      "mask": 119,
+      "id": "D119",
+      "file": "D119.svg"
+    },
+    {
+      "mask": 120,
+      "id": "D120",
+      "file": "D120.svg"
+    },
+    {
+      "mask": 121,
+      "id": "D121",
+      "file": "D121.svg"
+    },
+    {
+      "mask": 122,
+      "id": "D122",
+      "file": "D122.svg"
+    },
+    {
+      "mask": 123,
+      "id": "D123",
+      "file": "D123.svg"
+    },
+    {
+      "mask": 124,
+      "id": "D124",
+      "file": "D124.svg"
+    },
+    {
+      "mask": 125,
+      "id": "D125",
+      "file": "D125.svg"
+    },
+    {
+      "mask": 126,
+      "id": "D126",
+      "file": "D126.svg"
+    },
+    {
+      "mask": 127,
+      "id": "D127",
+      "file": "D127.svg"
+    }
+  ]
+}

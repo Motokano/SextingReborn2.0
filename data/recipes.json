@@ -950,6 +950,7 @@
       },
       "bonus_outputs": [],
       "required_skill_level_min": null,
+      "recommended_skill_level": 0,
       "proficiency_usage_key": null,
       "required_skill_id": null,
       "recipe_processor_id": null,
@@ -957,6 +958,7 @@
       "failure_output": null,
       "allowed_station_tags": null,
       "match_weight": 1,
+      "cost_override": null,
       "pharmacy_generated": true
     },
     "life_pharmacy.crush_poppy_powder": {
@@ -976,6 +978,7 @@
       },
       "bonus_outputs": [],
       "required_skill_level_min": null,
+      "recommended_skill_level": 0,
       "proficiency_usage_key": null,
       "required_skill_id": null,
       "recipe_processor_id": null,
@@ -983,6 +986,7 @@
       "failure_output": null,
       "allowed_station_tags": null,
       "match_weight": 1,
+      "cost_override": null,
       "pharmacy_generated": true
     },
     "life_pharmacy.crush_ergot_powder": {
@@ -1002,6 +1006,7 @@
       },
       "bonus_outputs": [],
       "required_skill_level_min": null,
+      "recommended_skill_level": 0,
       "proficiency_usage_key": null,
       "required_skill_id": null,
       "recipe_processor_id": null,
@@ -1009,6 +1014,7 @@
       "failure_output": null,
       "allowed_station_tags": null,
       "match_weight": 1,
+      "cost_override": null,
       "pharmacy_generated": true
     },
     "life_pharmacy.crush_datura_powder": {
@@ -1028,6 +1034,7 @@
       },
       "bonus_outputs": [],
       "required_skill_level_min": null,
+      "recommended_skill_level": 0,
       "proficiency_usage_key": null,
       "required_skill_id": null,
       "recipe_processor_id": null,
@@ -1035,6 +1042,7 @@
       "failure_output": null,
       "allowed_station_tags": null,
       "match_weight": 1,
+      "cost_override": null,
       "pharmacy_generated": true
     },
     "life_pharmacy.crush_ephedra_powder": {
@@ -1054,6 +1062,7 @@
       },
       "bonus_outputs": [],
       "required_skill_level_min": null,
+      "recommended_skill_level": 0,
       "proficiency_usage_key": null,
       "required_skill_id": null,
       "recipe_processor_id": null,
@@ -1061,6 +1070,7 @@
       "failure_output": null,
       "allowed_station_tags": null,
       "match_weight": 1,
+      "cost_override": null,
       "pharmacy_generated": true
     },
     "life_pharmacy.crush_psilocybe_powder": {
@@ -1080,6 +1090,7 @@
       },
       "bonus_outputs": [],
       "required_skill_level_min": null,
+      "recommended_skill_level": 0,
       "proficiency_usage_key": null,
       "required_skill_id": null,
       "recipe_processor_id": null,
@@ -1087,6 +1098,7 @@
       "failure_output": null,
       "allowed_station_tags": null,
       "match_weight": 1,
+      "cost_override": null,
       "pharmacy_generated": true
     },
     "life_pharmacy.crush_cannabis_powder": {
@@ -1106,6 +1118,7 @@
       },
       "bonus_outputs": [],
       "required_skill_level_min": null,
+      "recommended_skill_level": 0,
       "proficiency_usage_key": null,
       "required_skill_id": null,
       "recipe_processor_id": null,
@@ -1113,6 +1126,7 @@
       "failure_output": null,
       "allowed_station_tags": null,
       "match_weight": 1,
+      "cost_override": null,
       "pharmacy_generated": true
     },
     "life_pharmacy.crush_vine_red_powder": {
@@ -1132,6 +1146,7 @@
       },
       "bonus_outputs": [],
       "required_skill_level_min": null,
+      "recommended_skill_level": 0,
       "proficiency_usage_key": null,
       "required_skill_id": null,
       "recipe_processor_id": null,
@@ -1139,6 +1154,7 @@
       "failure_output": null,
       "allowed_station_tags": null,
       "match_weight": 1,
+      "cost_override": null,
       "pharmacy_generated": true
     },
     "life_pharmacy.crush_root_bitter_powder": {
@@ -1158,6 +1174,7 @@
       },
       "bonus_outputs": [],
       "required_skill_level_min": null,
+      "recommended_skill_level": 0,
       "proficiency_usage_key": null,
       "required_skill_id": null,
       "recipe_processor_id": null,
@@ -1165,6 +1182,7 @@
       "failure_output": null,
       "allowed_station_tags": null,
       "match_weight": 1,
+      "cost_override": null,
       "pharmacy_generated": true
     },
     "life_pharmacy.crush_areca_powder": {
@@ -1184,6 +1202,7 @@
       },
       "bonus_outputs": [],
       "required_skill_level_min": null,
+      "recommended_skill_level": 0,
       "proficiency_usage_key": null,
       "required_skill_id": null,
       "recipe_processor_id": null,
@@ -1191,6 +1210,7 @@
       "failure_output": null,
       "allowed_station_tags": null,
       "match_weight": 1,
+      "cost_override": null,
       "pharmacy_generated": true
     },
     "life_pharmacy.crush_tobacco_powder": {
@@ -1210,6 +1230,7 @@
       },
       "bonus_outputs": [],
       "required_skill_level_min": null,
+      "recommended_skill_level": 0,
       "proficiency_usage_key": null,
       "required_skill_id": null,
       "recipe_processor_id": null,
@@ -1217,6 +1238,7 @@
       "failure_output": null,
       "allowed_station_tags": null,
       "match_weight": 1,
+      "cost_override": null,
       "pharmacy_generated": true
     },
     "life_pharmacy.crush_liver_herb_powder": {
@@ -1236,6 +1258,7 @@
       },
       "bonus_outputs": [],
       "required_skill_level_min": null,
+      "recommended_skill_level": 0,
       "proficiency_usage_key": null,
       "required_skill_id": null,
       "recipe_processor_id": null,
@@ -1243,6 +1266,7 @@
       "failure_output": null,
       "allowed_station_tags": null,
       "match_weight": 1,
+      "cost_override": null,
       "pharmacy_generated": true
     },
     "life_pharmacy.crush_peganum_powder": {
@@ -1262,6 +1286,7 @@
       },
       "bonus_outputs": [],
       "required_skill_level_min": null,
+      "recommended_skill_level": 0,
       "proficiency_usage_key": null,
       "required_skill_id": null,
       "recipe_processor_id": null,
@@ -1269,6 +1294,7 @@
       "failure_output": null,
       "allowed_station_tags": null,
       "match_weight": 1,
+      "cost_override": null,
       "pharmacy_generated": true
     },
     "life_pharmacy.crush_senna_powder": {
@@ -1288,6 +1314,7 @@
       },
       "bonus_outputs": [],
       "required_skill_level_min": null,
+      "recommended_skill_level": 0,
       "proficiency_usage_key": null,
       "required_skill_id": null,
       "recipe_processor_id": null,
@@ -1295,13 +1322,14 @@
       "failure_output": null,
       "allowed_station_tags": null,
       "match_weight": 1,
+      "cost_override": null,
       "pharmacy_generated": true
     },
     "life_pharmacy.crush_baiji_powder": {
       "recipe_id": "life_pharmacy.crush_baiji_powder",
       "recipe_system": "life_pharmacy",
       "method_id": "life_pharmacy.crushing",
-      "enabled": true,
+      "enabled": false,
       "inputs": [
         {
           "item_id": "herb_baiji",
@@ -1314,6 +1342,7 @@
       },
       "bonus_outputs": [],
       "required_skill_level_min": null,
+      "recommended_skill_level": 0,
       "proficiency_usage_key": null,
       "required_skill_id": null,
       "recipe_processor_id": null,
@@ -1321,6 +1350,7 @@
       "failure_output": null,
       "allowed_station_tags": null,
       "match_weight": 1,
+      "cost_override": null,
       "pharmacy_generated": true
     },
     "life_pharmacy.crush_acorus_powder": {
@@ -1340,6 +1370,7 @@
       },
       "bonus_outputs": [],
       "required_skill_level_min": null,
+      "recommended_skill_level": 0,
       "proficiency_usage_key": null,
       "required_skill_id": null,
       "recipe_processor_id": null,
@@ -1347,6 +1378,7 @@
       "failure_output": null,
       "allowed_station_tags": null,
       "match_weight": 1,
+      "cost_override": null,
       "pharmacy_generated": true
     },
     "life_pharmacy.crush_antler_powder": {
@@ -1366,6 +1398,7 @@
       },
       "bonus_outputs": [],
       "required_skill_level_min": null,
+      "recommended_skill_level": 0,
       "proficiency_usage_key": null,
       "required_skill_id": null,
       "recipe_processor_id": null,
@@ -1373,6 +1406,7 @@
       "failure_output": null,
       "allowed_station_tags": null,
       "match_weight": 1,
+      "cost_override": null,
       "pharmacy_generated": true
     },
     "life_pharmacy.macerate_rehydration_powder": {
@@ -1396,6 +1430,7 @@
       },
       "bonus_outputs": [],
       "required_skill_level_min": null,
+      "recommended_skill_level": 0,
       "proficiency_usage_key": null,
       "required_skill_id": null,
       "recipe_processor_id": null,
@@ -1403,6 +1438,7 @@
       "failure_output": null,
       "allowed_station_tags": null,
       "match_weight": 1,
+      "cost_override": null,
       "pharmacy_generated": true
     },
     "life_pharmacy.macerate_glucose_powder": {
@@ -1426,6 +1462,7 @@
       },
       "bonus_outputs": [],
       "required_skill_level_min": null,
+      "recommended_skill_level": 0,
       "proficiency_usage_key": null,
       "required_skill_id": null,
       "recipe_processor_id": null,
@@ -1433,13 +1470,14 @@
       "failure_output": null,
       "allowed_station_tags": null,
       "match_weight": 1,
+      "cost_override": null,
       "pharmacy_generated": true
     },
     "life_pharmacy.macerate_cardiac_powder": {
       "recipe_id": "life_pharmacy.macerate_cardiac_powder",
       "recipe_system": "life_pharmacy",
       "method_id": "life_pharmacy.maceration",
-      "enabled": true,
+      "enabled": false,
       "inputs": [
         {
           "item_id": "hus_pork_heart",
@@ -1456,6 +1494,7 @@
       },
       "bonus_outputs": [],
       "required_skill_level_min": null,
+      "recommended_skill_level": 0,
       "proficiency_usage_key": null,
       "required_skill_id": null,
       "recipe_processor_id": null,
@@ -1463,6 +1502,7 @@
       "failure_output": null,
       "allowed_station_tags": null,
       "match_weight": 1,
+      "cost_override": null,
       "pharmacy_generated": true
     },
     "life_pharmacy.brew_tonic_broth": {
@@ -1486,6 +1526,7 @@
       },
       "bonus_outputs": [],
       "required_skill_level_min": null,
+      "recommended_skill_level": 0,
       "proficiency_usage_key": null,
       "required_skill_id": null,
       "recipe_processor_id": null,
@@ -1493,6 +1534,7 @@
       "failure_output": null,
       "allowed_station_tags": null,
       "match_weight": 1,
+      "cost_override": null,
       "pharmacy_generated": true
     },
     "life_pharmacy.roll_tonic_cigarette": {
@@ -1516,6 +1558,7 @@
       },
       "bonus_outputs": [],
       "required_skill_level_min": null,
+      "recommended_skill_level": 0,
       "proficiency_usage_key": null,
       "required_skill_id": null,
       "recipe_processor_id": null,
@@ -1523,6 +1566,7 @@
       "failure_output": null,
       "allowed_station_tags": null,
       "match_weight": 1,
+      "cost_override": null,
       "pharmacy_generated": true
     },
     "life_pharmacy.press_analgesic_pill": {
@@ -1536,6 +1580,10 @@
           "count": 1
         },
         {
+          "item_id": "herb_sugar_white",
+          "count": 1
+        },
+        {
           "item_id": "solvent_water_pure",
           "count": 1
         }
@@ -1546,6 +1594,7 @@
       },
       "bonus_outputs": [],
       "required_skill_level_min": null,
+      "recommended_skill_level": 0,
       "proficiency_usage_key": null,
       "required_skill_id": null,
       "recipe_processor_id": null,
@@ -1553,6 +1602,12 @@
       "failure_output": null,
       "allowed_station_tags": null,
       "match_weight": 1,
+      "cost_override": {
+        "fuel": 15,
+        "water": 0,
+        "ticks": 2,
+        "stamina": 2
+      },
       "pharmacy_generated": true
     },
     "life_pharmacy.blend_mobility_salve": {
@@ -1562,7 +1617,7 @@
       "enabled": true,
       "inputs": [
         {
-          "item_id": "med_root_bitter_powder",
+          "item_id": "med_safflower_powder",
           "count": 1
         },
         {
@@ -1576,6 +1631,7 @@
       },
       "bonus_outputs": [],
       "required_skill_level_min": null,
+      "recommended_skill_level": 0,
       "proficiency_usage_key": null,
       "required_skill_id": null,
       "recipe_processor_id": null,
@@ -1583,66 +1639,7 @@
       "failure_output": null,
       "allowed_station_tags": null,
       "match_weight": 1,
-      "pharmacy_generated": true
-    },
-    "life_pharmacy.mix_rehydration_injection": {
-      "recipe_id": "life_pharmacy.mix_rehydration_injection",
-      "recipe_system": "life_pharmacy",
-      "method_id": "life_pharmacy.maceration",
-      "enabled": true,
-      "inputs": [
-        {
-          "item_id": "med_rehydration_powder",
-          "count": 1
-        },
-        {
-          "item_id": "solvent_saline",
-          "count": 1
-        }
-      ],
-      "main_output": {
-        "item_id": "potion_rehydration_injection",
-        "count": 1
-      },
-      "bonus_outputs": [],
-      "required_skill_level_min": null,
-      "proficiency_usage_key": null,
-      "required_skill_id": null,
-      "recipe_processor_id": null,
-      "base_success_rate": null,
-      "failure_output": null,
-      "allowed_station_tags": null,
-      "match_weight": 1,
-      "pharmacy_generated": true
-    },
-    "life_pharmacy.mix_cardiac_injection": {
-      "recipe_id": "life_pharmacy.mix_cardiac_injection",
-      "recipe_system": "life_pharmacy",
-      "method_id": "life_pharmacy.maceration",
-      "enabled": true,
-      "inputs": [
-        {
-          "item_id": "med_cardiac_powder",
-          "count": 1
-        },
-        {
-          "item_id": "solvent_saline",
-          "count": 1
-        }
-      ],
-      "main_output": {
-        "item_id": "potion_cardiac_injection",
-        "count": 1
-      },
-      "bonus_outputs": [],
-      "required_skill_level_min": null,
-      "proficiency_usage_key": null,
-      "required_skill_id": null,
-      "recipe_processor_id": null,
-      "base_success_rate": null,
-      "failure_output": null,
-      "allowed_station_tags": null,
-      "match_weight": 1,
+      "cost_override": null,
       "pharmacy_generated": true
     },
     "life_pharmacy.crush_safflower_powder": {
@@ -1662,6 +1659,7 @@
       },
       "bonus_outputs": [],
       "required_skill_level_min": null,
+      "recommended_skill_level": 0,
       "proficiency_usage_key": null,
       "required_skill_id": null,
       "recipe_processor_id": null,
@@ -1669,13 +1667,14 @@
       "failure_output": null,
       "allowed_station_tags": null,
       "match_weight": 1,
+      "cost_override": null,
       "pharmacy_generated": true
     },
     "life_pharmacy.crush_notoginseng_powder": {
       "recipe_id": "life_pharmacy.crush_notoginseng_powder",
       "recipe_system": "life_pharmacy",
       "method_id": "life_pharmacy.crushing",
-      "enabled": true,
+      "enabled": false,
       "inputs": [
         {
           "item_id": "herb_notoginseng",
@@ -1688,6 +1687,7 @@
       },
       "bonus_outputs": [],
       "required_skill_level_min": null,
+      "recommended_skill_level": 0,
       "proficiency_usage_key": null,
       "required_skill_id": null,
       "recipe_processor_id": null,
@@ -1695,6 +1695,7 @@
       "failure_output": null,
       "allowed_station_tags": null,
       "match_weight": 1,
+      "cost_override": null,
       "pharmacy_generated": true
     },
     "life_pharmacy.brew_calm_brew": {
@@ -1718,6 +1719,7 @@
       },
       "bonus_outputs": [],
       "required_skill_level_min": null,
+      "recommended_skill_level": 0,
       "proficiency_usage_key": null,
       "required_skill_id": null,
       "recipe_processor_id": null,
@@ -1725,6 +1727,7 @@
       "failure_output": null,
       "allowed_station_tags": null,
       "match_weight": 1,
+      "cost_override": null,
       "pharmacy_generated": true
     },
     "life_pharmacy.brew_tonic_broth_potent": {
@@ -1748,6 +1751,7 @@
       },
       "bonus_outputs": [],
       "required_skill_level_min": null,
+      "recommended_skill_level": 0,
       "proficiency_usage_key": null,
       "required_skill_id": null,
       "recipe_processor_id": null,
@@ -1755,6 +1759,7 @@
       "failure_output": null,
       "allowed_station_tags": null,
       "match_weight": 1,
+      "cost_override": null,
       "pharmacy_generated": true
     },
     "life_pharmacy.brew_energy_draught": {
@@ -1778,6 +1783,7 @@
       },
       "bonus_outputs": [],
       "required_skill_level_min": null,
+      "recommended_skill_level": 0,
       "proficiency_usage_key": null,
       "required_skill_id": null,
       "recipe_processor_id": null,
@@ -1785,6 +1791,7 @@
       "failure_output": null,
       "allowed_station_tags": null,
       "match_weight": 1,
+      "cost_override": null,
       "pharmacy_generated": true
     },
     "life_pharmacy.brew_rehydration_broth": {
@@ -1808,6 +1815,7 @@
       },
       "bonus_outputs": [],
       "required_skill_level_min": null,
+      "recommended_skill_level": 0,
       "proficiency_usage_key": null,
       "required_skill_id": null,
       "recipe_processor_id": null,
@@ -1815,6 +1823,7 @@
       "failure_output": null,
       "allowed_station_tags": null,
       "match_weight": 1,
+      "cost_override": null,
       "pharmacy_generated": true
     },
     "life_pharmacy.brew_strength_decoction": {
@@ -1838,6 +1847,7 @@
       },
       "bonus_outputs": [],
       "required_skill_level_min": null,
+      "recommended_skill_level": 0,
       "proficiency_usage_key": null,
       "required_skill_id": null,
       "recipe_processor_id": null,
@@ -1845,6 +1855,7 @@
       "failure_output": null,
       "allowed_station_tags": null,
       "match_weight": 1,
+      "cost_override": null,
       "pharmacy_generated": true
     },
     "life_pharmacy.brew_antistun_tea": {
@@ -1868,6 +1879,7 @@
       },
       "bonus_outputs": [],
       "required_skill_level_min": null,
+      "recommended_skill_level": 0,
       "proficiency_usage_key": null,
       "required_skill_id": null,
       "recipe_processor_id": null,
@@ -1875,6 +1887,7 @@
       "failure_output": null,
       "allowed_station_tags": null,
       "match_weight": 1,
+      "cost_override": null,
       "pharmacy_generated": true
     },
     "life_pharmacy.brew_vision_draught": {
@@ -1898,6 +1911,7 @@
       },
       "bonus_outputs": [],
       "required_skill_level_min": null,
+      "recommended_skill_level": 0,
       "proficiency_usage_key": null,
       "required_skill_id": null,
       "recipe_processor_id": null,
@@ -1905,6 +1919,7 @@
       "failure_output": null,
       "allowed_station_tags": null,
       "match_weight": 1,
+      "cost_override": null,
       "pharmacy_generated": true
     },
     "life_pharmacy.blend_mobility_poultice": {
@@ -1928,6 +1943,7 @@
       },
       "bonus_outputs": [],
       "required_skill_level_min": null,
+      "recommended_skill_level": 0,
       "proficiency_usage_key": null,
       "required_skill_id": null,
       "recipe_processor_id": null,
@@ -1935,6 +1951,7 @@
       "failure_output": null,
       "allowed_station_tags": null,
       "match_weight": 1,
+      "cost_override": null,
       "pharmacy_generated": true
     },
     "life_pharmacy.blend_mobility_salve_potent": {
@@ -1958,6 +1975,7 @@
       },
       "bonus_outputs": [],
       "required_skill_level_min": null,
+      "recommended_skill_level": 0,
       "proficiency_usage_key": null,
       "required_skill_id": null,
       "recipe_processor_id": null,
@@ -1965,13 +1983,14 @@
       "failure_output": null,
       "allowed_station_tags": null,
       "match_weight": 1,
+      "cost_override": null,
       "pharmacy_generated": true
     },
     "life_pharmacy.blend_coagulant_powder": {
       "recipe_id": "life_pharmacy.blend_coagulant_powder",
       "recipe_system": "life_pharmacy",
       "method_id": "life_pharmacy.blending",
-      "enabled": true,
+      "enabled": false,
       "inputs": [
         {
           "item_id": "med_notoginseng_powder",
@@ -1984,6 +2003,7 @@
       },
       "bonus_outputs": [],
       "required_skill_level_min": null,
+      "recommended_skill_level": 0,
       "proficiency_usage_key": null,
       "required_skill_id": null,
       "recipe_processor_id": null,
@@ -1991,13 +2011,14 @@
       "failure_output": null,
       "allowed_station_tags": null,
       "match_weight": 1,
+      "cost_override": null,
       "pharmacy_generated": true
     },
     "life_pharmacy.blend_coagulant_salve": {
       "recipe_id": "life_pharmacy.blend_coagulant_salve",
       "recipe_system": "life_pharmacy",
       "method_id": "life_pharmacy.blending",
-      "enabled": true,
+      "enabled": false,
       "inputs": [
         {
           "item_id": "med_baiji_powder",
@@ -2014,6 +2035,7 @@
       },
       "bonus_outputs": [],
       "required_skill_level_min": null,
+      "recommended_skill_level": 0,
       "proficiency_usage_key": null,
       "required_skill_id": null,
       "recipe_processor_id": null,
@@ -2021,6 +2043,7 @@
       "failure_output": null,
       "allowed_station_tags": null,
       "match_weight": 1,
+      "cost_override": null,
       "pharmacy_generated": true
     },
     "life_pharmacy.roll_sedative_incense": {
@@ -2044,6 +2067,7 @@
       },
       "bonus_outputs": [],
       "required_skill_level_min": null,
+      "recommended_skill_level": 0,
       "proficiency_usage_key": null,
       "required_skill_id": null,
       "recipe_processor_id": null,
@@ -2051,6 +2075,7 @@
       "failure_output": null,
       "allowed_station_tags": null,
       "match_weight": 1,
+      "cost_override": null,
       "pharmacy_generated": true
     },
     "life_pharmacy.roll_vision_incense": {
@@ -2074,6 +2099,7 @@
       },
       "bonus_outputs": [],
       "required_skill_level_min": null,
+      "recommended_skill_level": 0,
       "proficiency_usage_key": null,
       "required_skill_id": null,
       "recipe_processor_id": null,
@@ -2081,156 +2107,7 @@
       "failure_output": null,
       "allowed_station_tags": null,
       "match_weight": 1,
-      "pharmacy_generated": true
-    },
-    "life_pharmacy.mix_analgesic_injection": {
-      "recipe_id": "life_pharmacy.mix_analgesic_injection",
-      "recipe_system": "life_pharmacy",
-      "method_id": "life_pharmacy.maceration",
-      "enabled": true,
-      "inputs": [
-        {
-          "item_id": "med_morphine_powder",
-          "count": 1
-        },
-        {
-          "item_id": "solvent_saline",
-          "count": 1
-        }
-      ],
-      "main_output": {
-        "item_id": "potion_analgesic_injection",
-        "count": 1
-      },
-      "bonus_outputs": [],
-      "required_skill_level_min": null,
-      "proficiency_usage_key": null,
-      "required_skill_id": null,
-      "recipe_processor_id": null,
-      "base_success_rate": null,
-      "failure_output": null,
-      "allowed_station_tags": null,
-      "match_weight": 1,
-      "pharmacy_generated": true
-    },
-    "life_pharmacy.mix_stimulant_injection": {
-      "recipe_id": "life_pharmacy.mix_stimulant_injection",
-      "recipe_system": "life_pharmacy",
-      "method_id": "life_pharmacy.maceration",
-      "enabled": true,
-      "inputs": [
-        {
-          "item_id": "med_ephedrine_powder",
-          "count": 1
-        },
-        {
-          "item_id": "solvent_saline",
-          "count": 1
-        }
-      ],
-      "main_output": {
-        "item_id": "potion_stimulant_injection",
-        "count": 1
-      },
-      "bonus_outputs": [],
-      "required_skill_level_min": null,
-      "proficiency_usage_key": null,
-      "required_skill_id": null,
-      "recipe_processor_id": null,
-      "base_success_rate": null,
-      "failure_output": null,
-      "allowed_station_tags": null,
-      "match_weight": 1,
-      "pharmacy_generated": true
-    },
-    "life_pharmacy.mix_antistun_injection": {
-      "recipe_id": "life_pharmacy.mix_antistun_injection",
-      "recipe_system": "life_pharmacy",
-      "method_id": "life_pharmacy.maceration",
-      "enabled": true,
-      "inputs": [
-        {
-          "item_id": "med_acorus_powder",
-          "count": 1
-        },
-        {
-          "item_id": "solvent_saline",
-          "count": 1
-        }
-      ],
-      "main_output": {
-        "item_id": "potion_antistun_injection",
-        "count": 1
-      },
-      "bonus_outputs": [],
-      "required_skill_level_min": null,
-      "proficiency_usage_key": null,
-      "required_skill_id": null,
-      "recipe_processor_id": null,
-      "base_success_rate": null,
-      "failure_output": null,
-      "allowed_station_tags": null,
-      "match_weight": 1,
-      "pharmacy_generated": true
-    },
-    "life_pharmacy.mix_strength_injection": {
-      "recipe_id": "life_pharmacy.mix_strength_injection",
-      "recipe_system": "life_pharmacy",
-      "method_id": "life_pharmacy.maceration",
-      "enabled": true,
-      "inputs": [
-        {
-          "item_id": "med_antler_powder",
-          "count": 1
-        },
-        {
-          "item_id": "solvent_saline",
-          "count": 1
-        }
-      ],
-      "main_output": {
-        "item_id": "potion_strength_injection",
-        "count": 1
-      },
-      "bonus_outputs": [],
-      "required_skill_level_min": null,
-      "proficiency_usage_key": null,
-      "required_skill_id": null,
-      "recipe_processor_id": null,
-      "base_success_rate": null,
-      "failure_output": null,
-      "allowed_station_tags": null,
-      "match_weight": 1,
-      "pharmacy_generated": true
-    },
-    "life_pharmacy.mix_coagulant_injection": {
-      "recipe_id": "life_pharmacy.mix_coagulant_injection",
-      "recipe_system": "life_pharmacy",
-      "method_id": "life_pharmacy.maceration",
-      "enabled": true,
-      "inputs": [
-        {
-          "item_id": "med_notoginseng_powder",
-          "count": 1
-        },
-        {
-          "item_id": "solvent_saline",
-          "count": 1
-        }
-      ],
-      "main_output": {
-        "item_id": "potion_coagulant_injection",
-        "count": 1
-      },
-      "bonus_outputs": [],
-      "required_skill_level_min": null,
-      "proficiency_usage_key": null,
-      "required_skill_id": null,
-      "recipe_processor_id": null,
-      "base_success_rate": null,
-      "failure_output": null,
-      "allowed_station_tags": null,
-      "match_weight": 1,
+      "cost_override": null,
       "pharmacy_generated": true
     },
     "life_pharmacy.refine_thc": {
@@ -2250,6 +2127,7 @@
       },
       "bonus_outputs": [],
       "required_skill_level_min": null,
+      "recommended_skill_level": 0,
       "proficiency_usage_key": null,
       "required_skill_id": null,
       "recipe_processor_id": null,
@@ -2257,6 +2135,7 @@
       "failure_output": null,
       "allowed_station_tags": null,
       "match_weight": 1,
+      "cost_override": null,
       "pharmacy_generated": true
     },
     "life_pharmacy.refine_acorus": {
@@ -2276,6 +2155,7 @@
       },
       "bonus_outputs": [],
       "required_skill_level_min": null,
+      "recommended_skill_level": 0,
       "proficiency_usage_key": null,
       "required_skill_id": null,
       "recipe_processor_id": null,
@@ -2283,6 +2163,7 @@
       "failure_output": null,
       "allowed_station_tags": null,
       "match_weight": 1,
+      "cost_override": null,
       "pharmacy_generated": true
     },
     "life_pharmacy.refine_morphine": {
@@ -2302,6 +2183,7 @@
       },
       "bonus_outputs": [],
       "required_skill_level_min": null,
+      "recommended_skill_level": 0,
       "proficiency_usage_key": null,
       "required_skill_id": null,
       "recipe_processor_id": null,
@@ -2309,6 +2191,7 @@
       "failure_output": null,
       "allowed_station_tags": null,
       "match_weight": 1,
+      "cost_override": null,
       "pharmacy_generated": true
     },
     "life_pharmacy.refine_cocaine": {
@@ -2328,6 +2211,7 @@
       },
       "bonus_outputs": [],
       "required_skill_level_min": null,
+      "recommended_skill_level": 0,
       "proficiency_usage_key": null,
       "required_skill_id": null,
       "recipe_processor_id": null,
@@ -2335,6 +2219,7 @@
       "failure_output": null,
       "allowed_station_tags": null,
       "match_weight": 1,
+      "cost_override": null,
       "pharmacy_generated": true
     },
     "life_pharmacy.refine_liver_herb": {
@@ -2354,6 +2239,7 @@
       },
       "bonus_outputs": [],
       "required_skill_level_min": null,
+      "recommended_skill_level": 0,
       "proficiency_usage_key": null,
       "required_skill_id": null,
       "recipe_processor_id": null,
@@ -2361,13 +2247,14 @@
       "failure_output": null,
       "allowed_station_tags": null,
       "match_weight": 1,
+      "cost_override": null,
       "pharmacy_generated": true
     },
     "life_pharmacy.refine_notoginseng": {
       "recipe_id": "life_pharmacy.refine_notoginseng",
       "recipe_system": "life_pharmacy",
       "method_id": "life_pharmacy.filtration",
-      "enabled": true,
+      "enabled": false,
       "inputs": [
         {
           "item_id": "med_notoginseng_powder",
@@ -2380,6 +2267,7 @@
       },
       "bonus_outputs": [],
       "required_skill_level_min": null,
+      "recommended_skill_level": 0,
       "proficiency_usage_key": null,
       "required_skill_id": null,
       "recipe_processor_id": null,
@@ -2387,6 +2275,7 @@
       "failure_output": null,
       "allowed_station_tags": null,
       "match_weight": 1,
+      "cost_override": null,
       "pharmacy_generated": true
     },
     "life_pharmacy.refine_psilocybin": {
@@ -2406,6 +2295,7 @@
       },
       "bonus_outputs": [],
       "required_skill_level_min": null,
+      "recommended_skill_level": 0,
       "proficiency_usage_key": null,
       "required_skill_id": null,
       "recipe_processor_id": null,
@@ -2413,6 +2303,7 @@
       "failure_output": null,
       "allowed_station_tags": null,
       "match_weight": 1,
+      "cost_override": null,
       "pharmacy_generated": true
     },
     "life_pharmacy.refine_safflower": {
@@ -2432,6 +2323,7 @@
       },
       "bonus_outputs": [],
       "required_skill_level_min": null,
+      "recommended_skill_level": 0,
       "proficiency_usage_key": null,
       "required_skill_id": null,
       "recipe_processor_id": null,
@@ -2439,66 +2331,7 @@
       "failure_output": null,
       "allowed_station_tags": null,
       "match_weight": 1,
-      "pharmacy_generated": true
-    },
-    "life_pharmacy.mix_analgesic_injection_refined": {
-      "recipe_id": "life_pharmacy.mix_analgesic_injection_refined",
-      "recipe_system": "life_pharmacy",
-      "method_id": "life_pharmacy.maceration",
-      "enabled": true,
-      "inputs": [
-        {
-          "item_id": "med_morphine_powder_refined",
-          "count": 1
-        },
-        {
-          "item_id": "solvent_saline",
-          "count": 1
-        }
-      ],
-      "main_output": {
-        "item_id": "potion_analgesic_injection_refined",
-        "count": 1
-      },
-      "bonus_outputs": [],
-      "required_skill_level_min": null,
-      "proficiency_usage_key": null,
-      "required_skill_id": null,
-      "recipe_processor_id": null,
-      "base_success_rate": null,
-      "failure_output": null,
-      "allowed_station_tags": null,
-      "match_weight": 1,
-      "pharmacy_generated": true
-    },
-    "life_pharmacy.mix_antistun_injection_refined": {
-      "recipe_id": "life_pharmacy.mix_antistun_injection_refined",
-      "recipe_system": "life_pharmacy",
-      "method_id": "life_pharmacy.maceration",
-      "enabled": true,
-      "inputs": [
-        {
-          "item_id": "med_acorus_powder_refined",
-          "count": 1
-        },
-        {
-          "item_id": "solvent_saline",
-          "count": 1
-        }
-      ],
-      "main_output": {
-        "item_id": "potion_antistun_injection_refined",
-        "count": 1
-      },
-      "bonus_outputs": [],
-      "required_skill_level_min": null,
-      "proficiency_usage_key": null,
-      "required_skill_id": null,
-      "recipe_processor_id": null,
-      "base_success_rate": null,
-      "failure_output": null,
-      "allowed_station_tags": null,
-      "match_weight": 1,
+      "cost_override": null,
       "pharmacy_generated": true
     },
     "life_pharmacy.purify_thc": {
@@ -2518,6 +2351,7 @@
       },
       "bonus_outputs": [],
       "required_skill_level_min": null,
+      "recommended_skill_level": 0,
       "proficiency_usage_key": null,
       "required_skill_id": null,
       "recipe_processor_id": null,
@@ -2525,6 +2359,7 @@
       "failure_output": null,
       "allowed_station_tags": null,
       "match_weight": 1,
+      "cost_override": null,
       "pharmacy_generated": true
     },
     "life_pharmacy.purify_acorus": {
@@ -2544,6 +2379,7 @@
       },
       "bonus_outputs": [],
       "required_skill_level_min": null,
+      "recommended_skill_level": 0,
       "proficiency_usage_key": null,
       "required_skill_id": null,
       "recipe_processor_id": null,
@@ -2551,6 +2387,7 @@
       "failure_output": null,
       "allowed_station_tags": null,
       "match_weight": 1,
+      "cost_override": null,
       "pharmacy_generated": true
     },
     "life_pharmacy.purify_morphine": {
@@ -2570,6 +2407,7 @@
       },
       "bonus_outputs": [],
       "required_skill_level_min": null,
+      "recommended_skill_level": 0,
       "proficiency_usage_key": null,
       "required_skill_id": null,
       "recipe_processor_id": null,
@@ -2577,6 +2415,7 @@
       "failure_output": null,
       "allowed_station_tags": null,
       "match_weight": 1,
+      "cost_override": null,
       "pharmacy_generated": true
     },
     "life_pharmacy.purify_cocaine": {
@@ -2596,6 +2435,7 @@
       },
       "bonus_outputs": [],
       "required_skill_level_min": null,
+      "recommended_skill_level": 0,
       "proficiency_usage_key": null,
       "required_skill_id": null,
       "recipe_processor_id": null,
@@ -2603,6 +2443,7 @@
       "failure_output": null,
       "allowed_station_tags": null,
       "match_weight": 1,
+      "cost_override": null,
       "pharmacy_generated": true
     },
     "life_pharmacy.purify_liver_herb": {
@@ -2622,6 +2463,7 @@
       },
       "bonus_outputs": [],
       "required_skill_level_min": null,
+      "recommended_skill_level": 0,
       "proficiency_usage_key": null,
       "required_skill_id": null,
       "recipe_processor_id": null,
@@ -2629,13 +2471,14 @@
       "failure_output": null,
       "allowed_station_tags": null,
       "match_weight": 1,
+      "cost_override": null,
       "pharmacy_generated": true
     },
     "life_pharmacy.purify_notoginseng": {
       "recipe_id": "life_pharmacy.purify_notoginseng",
       "recipe_system": "life_pharmacy",
       "method_id": "life_pharmacy.filtration",
-      "enabled": true,
+      "enabled": false,
       "inputs": [
         {
           "item_id": "med_notoginseng_powder_refined",
@@ -2648,6 +2491,7 @@
       },
       "bonus_outputs": [],
       "required_skill_level_min": null,
+      "recommended_skill_level": 0,
       "proficiency_usage_key": null,
       "required_skill_id": null,
       "recipe_processor_id": null,
@@ -2655,6 +2499,7 @@
       "failure_output": null,
       "allowed_station_tags": null,
       "match_weight": 1,
+      "cost_override": null,
       "pharmacy_generated": true
     },
     "life_pharmacy.purify_psilocybin": {
@@ -2674,6 +2519,7 @@
       },
       "bonus_outputs": [],
       "required_skill_level_min": null,
+      "recommended_skill_level": 0,
       "proficiency_usage_key": null,
       "required_skill_id": null,
       "recipe_processor_id": null,
@@ -2681,6 +2527,7 @@
       "failure_output": null,
       "allowed_station_tags": null,
       "match_weight": 1,
+      "cost_override": null,
       "pharmacy_generated": true
     },
     "life_pharmacy.purify_safflower": {
@@ -2700,6 +2547,7 @@
       },
       "bonus_outputs": [],
       "required_skill_level_min": null,
+      "recommended_skill_level": 0,
       "proficiency_usage_key": null,
       "required_skill_id": null,
       "recipe_processor_id": null,
@@ -2707,66 +2555,7 @@
       "failure_output": null,
       "allowed_station_tags": null,
       "match_weight": 1,
-      "pharmacy_generated": true
-    },
-    "life_pharmacy.mix_analgesic_injection_purified": {
-      "recipe_id": "life_pharmacy.mix_analgesic_injection_purified",
-      "recipe_system": "life_pharmacy",
-      "method_id": "life_pharmacy.maceration",
-      "enabled": true,
-      "inputs": [
-        {
-          "item_id": "med_morphine_powder_purified",
-          "count": 1
-        },
-        {
-          "item_id": "solvent_saline",
-          "count": 1
-        }
-      ],
-      "main_output": {
-        "item_id": "potion_analgesic_injection_purified",
-        "count": 1
-      },
-      "bonus_outputs": [],
-      "required_skill_level_min": null,
-      "proficiency_usage_key": null,
-      "required_skill_id": null,
-      "recipe_processor_id": null,
-      "base_success_rate": null,
-      "failure_output": null,
-      "allowed_station_tags": null,
-      "match_weight": 1,
-      "pharmacy_generated": true
-    },
-    "life_pharmacy.mix_stimulant_injection_purified": {
-      "recipe_id": "life_pharmacy.mix_stimulant_injection_purified",
-      "recipe_system": "life_pharmacy",
-      "method_id": "life_pharmacy.maceration",
-      "enabled": true,
-      "inputs": [
-        {
-          "item_id": "med_cocaine_powder_purified",
-          "count": 1
-        },
-        {
-          "item_id": "solvent_saline",
-          "count": 1
-        }
-      ],
-      "main_output": {
-        "item_id": "potion_stimulant_injection_purified",
-        "count": 1
-      },
-      "bonus_outputs": [],
-      "required_skill_level_min": null,
-      "proficiency_usage_key": null,
-      "required_skill_id": null,
-      "recipe_processor_id": null,
-      "base_success_rate": null,
-      "failure_output": null,
-      "allowed_station_tags": null,
-      "match_weight": 1,
+      "cost_override": null,
       "pharmacy_generated": true
     },
     "life_pharmacy.brew_calm_brew_purified": {
@@ -2790,6 +2579,7 @@
       },
       "bonus_outputs": [],
       "required_skill_level_min": null,
+      "recommended_skill_level": 0,
       "proficiency_usage_key": null,
       "required_skill_id": null,
       "recipe_processor_id": null,
@@ -2797,6 +2587,7 @@
       "failure_output": null,
       "allowed_station_tags": null,
       "match_weight": 1,
+      "cost_override": null,
       "pharmacy_generated": true
     },
     "life_pharmacy.blend_mobility_salve_purified": {
@@ -2820,6 +2611,7 @@
       },
       "bonus_outputs": [],
       "required_skill_level_min": null,
+      "recommended_skill_level": 0,
       "proficiency_usage_key": null,
       "required_skill_id": null,
       "recipe_processor_id": null,
@@ -2827,7 +2619,804 @@
       "failure_output": null,
       "allowed_station_tags": null,
       "match_weight": 1,
+      "cost_override": null,
       "pharmacy_generated": true
+    },
+    "life_pharmacy.clean_soft_water": {
+      "recipe_id": "life_pharmacy.clean_soft_water",
+      "recipe_system": "life_pharmacy",
+      "method_id": "life_pharmacy.filtration",
+      "enabled": true,
+      "inputs": [
+        {
+          "item_id": "ore_water_pure_soft",
+          "count": 1
+        }
+      ],
+      "main_output": {
+        "item_id": "solvent_water_pure",
+        "count": 1
+      },
+      "bonus_outputs": [],
+      "required_skill_level_min": null,
+      "recommended_skill_level": 4,
+      "proficiency_usage_key": null,
+      "required_skill_id": null,
+      "recipe_processor_id": null,
+      "base_success_rate": null,
+      "failure_output": null,
+      "allowed_station_tags": null,
+      "match_weight": 1,
+      "cost_override": null,
+      "pharmacy_generated": true
+    },
+    "life_pharmacy.clean_ore_salt_rock": {
+      "recipe_id": "life_pharmacy.clean_ore_salt_rock",
+      "recipe_system": "life_pharmacy",
+      "method_id": "life_pharmacy.filtration",
+      "enabled": true,
+      "inputs": [
+        {
+          "item_id": "ore_salt_rock",
+          "count": 2
+        },
+        {
+          "item_id": "solvent_water_pure",
+          "count": 1
+        }
+      ],
+      "main_output": {
+        "item_id": "ore_salt_sea",
+        "count": 1
+      },
+      "bonus_outputs": [],
+      "required_skill_level_min": null,
+      "recommended_skill_level": 4,
+      "proficiency_usage_key": null,
+      "required_skill_id": null,
+      "recipe_processor_id": null,
+      "base_success_rate": null,
+      "failure_output": null,
+      "allowed_station_tags": null,
+      "match_weight": 1,
+      "cost_override": null,
+      "pharmacy_generated": true
+    },
+    "life_pharmacy.clean_ore_salt_sea_coarse": {
+      "recipe_id": "life_pharmacy.clean_ore_salt_sea_coarse",
+      "recipe_system": "life_pharmacy",
+      "method_id": "life_pharmacy.filtration",
+      "enabled": true,
+      "inputs": [
+        {
+          "item_id": "ore_salt_sea_coarse",
+          "count": 2
+        },
+        {
+          "item_id": "solvent_water_pure",
+          "count": 1
+        }
+      ],
+      "main_output": {
+        "item_id": "ore_salt_sea",
+        "count": 1
+      },
+      "bonus_outputs": [],
+      "required_skill_level_min": null,
+      "recommended_skill_level": 4,
+      "proficiency_usage_key": null,
+      "required_skill_id": null,
+      "recipe_processor_id": null,
+      "base_success_rate": null,
+      "failure_output": null,
+      "allowed_station_tags": null,
+      "match_weight": 1,
+      "cost_override": null,
+      "pharmacy_generated": true
+    },
+    "life_pharmacy.clean_ore_salt_black": {
+      "recipe_id": "life_pharmacy.clean_ore_salt_black",
+      "recipe_system": "life_pharmacy",
+      "method_id": "life_pharmacy.filtration",
+      "enabled": true,
+      "inputs": [
+        {
+          "item_id": "ore_salt_black",
+          "count": 2
+        },
+        {
+          "item_id": "solvent_water_pure",
+          "count": 1
+        }
+      ],
+      "main_output": {
+        "item_id": "ore_salt_sea",
+        "count": 1
+      },
+      "bonus_outputs": [],
+      "required_skill_level_min": null,
+      "recommended_skill_level": 4,
+      "proficiency_usage_key": null,
+      "required_skill_id": null,
+      "recipe_processor_id": null,
+      "base_success_rate": null,
+      "failure_output": null,
+      "allowed_station_tags": null,
+      "match_weight": 1,
+      "cost_override": null,
+      "pharmacy_generated": true
+    },
+    "life_pharmacy.blend_saline": {
+      "recipe_id": "life_pharmacy.blend_saline",
+      "recipe_system": "life_pharmacy",
+      "method_id": "life_pharmacy.blending",
+      "enabled": true,
+      "inputs": [
+        {
+          "item_id": "ore_salt_sea",
+          "count": 1
+        },
+        {
+          "item_id": "solvent_water_pure",
+          "count": 2
+        }
+      ],
+      "main_output": {
+        "item_id": "solvent_saline",
+        "count": 2
+      },
+      "bonus_outputs": [],
+      "required_skill_level_min": null,
+      "recommended_skill_level": 1,
+      "proficiency_usage_key": null,
+      "required_skill_id": null,
+      "recipe_processor_id": null,
+      "base_success_rate": null,
+      "failure_output": null,
+      "allowed_station_tags": null,
+      "match_weight": 1,
+      "cost_override": null,
+      "pharmacy_generated": true
+    },
+    "life_pharmacy.blend_glucose_solvent": {
+      "recipe_id": "life_pharmacy.blend_glucose_solvent",
+      "recipe_system": "life_pharmacy",
+      "method_id": "life_pharmacy.blending",
+      "enabled": true,
+      "inputs": [
+        {
+          "item_id": "med_glucose_powder",
+          "count": 1
+        },
+        {
+          "item_id": "solvent_water_pure",
+          "count": 2
+        }
+      ],
+      "main_output": {
+        "item_id": "solvent_glucose_solution",
+        "count": 2
+      },
+      "bonus_outputs": [],
+      "required_skill_level_min": null,
+      "recommended_skill_level": 1,
+      "proficiency_usage_key": null,
+      "required_skill_id": null,
+      "recipe_processor_id": null,
+      "base_success_rate": null,
+      "failure_output": null,
+      "allowed_station_tags": null,
+      "match_weight": 1,
+      "cost_override": null,
+      "pharmacy_generated": true
+    },
+    "life_pharmacy.glucose_from_sugar": {
+      "recipe_id": "life_pharmacy.glucose_from_sugar",
+      "recipe_system": "life_pharmacy",
+      "method_id": "life_pharmacy.maceration",
+      "enabled": true,
+      "inputs": [
+        {
+          "item_id": "herb_sugar_white",
+          "count": 2
+        },
+        {
+          "item_id": "solvent_water_pure",
+          "count": 1
+        }
+      ],
+      "main_output": {
+        "item_id": "med_glucose_powder",
+        "count": 2
+      },
+      "bonus_outputs": [],
+      "required_skill_level_min": null,
+      "recommended_skill_level": 0,
+      "proficiency_usage_key": null,
+      "required_skill_id": null,
+      "recipe_processor_id": null,
+      "base_success_rate": null,
+      "failure_output": null,
+      "allowed_station_tags": null,
+      "match_weight": 1,
+      "cost_override": null,
+      "pharmacy_generated": true
+    },
+    "life_pharmacy.lemon_adjuvant": {
+      "recipe_id": "life_pharmacy.lemon_adjuvant",
+      "recipe_system": "life_pharmacy",
+      "method_id": "life_pharmacy.filtration",
+      "enabled": true,
+      "inputs": [
+        {
+          "item_id": "herb_lemon",
+          "count": 2
+        },
+        {
+          "item_id": "solvent_water_pure",
+          "count": 1
+        }
+      ],
+      "main_output": {
+        "item_id": "adj_citric_acid",
+        "count": 1
+      },
+      "bonus_outputs": [],
+      "required_skill_level_min": null,
+      "recommended_skill_level": 4,
+      "proficiency_usage_key": null,
+      "required_skill_id": null,
+      "recipe_processor_id": null,
+      "base_success_rate": null,
+      "failure_output": null,
+      "allowed_station_tags": null,
+      "match_weight": 1,
+      "cost_override": null,
+      "pharmacy_generated": true
+    },
+    "life_pharmacy.refine_antler": {
+      "recipe_id": "life_pharmacy.refine_antler",
+      "recipe_system": "life_pharmacy",
+      "method_id": "life_pharmacy.filtration",
+      "enabled": true,
+      "inputs": [
+        {
+          "item_id": "med_antler_powder",
+          "count": 2
+        }
+      ],
+      "main_output": {
+        "item_id": "med_antler_powder_refined",
+        "count": 1
+      },
+      "bonus_outputs": [],
+      "required_skill_level_min": null,
+      "recommended_skill_level": 4,
+      "proficiency_usage_key": null,
+      "required_skill_id": null,
+      "recipe_processor_id": null,
+      "base_success_rate": null,
+      "failure_output": null,
+      "allowed_station_tags": null,
+      "match_weight": 1,
+      "cost_override": null,
+      "pharmacy_generated": true
+    },
+    "life_pharmacy.purify_antler": {
+      "recipe_id": "life_pharmacy.purify_antler",
+      "recipe_system": "life_pharmacy",
+      "method_id": "life_pharmacy.centrifugation",
+      "enabled": true,
+      "inputs": [
+        {
+          "item_id": "med_antler_powder_refined",
+          "count": 2
+        }
+      ],
+      "main_output": {
+        "item_id": "med_antler_powder_purified",
+        "count": 1
+      },
+      "bonus_outputs": [],
+      "required_skill_level_min": null,
+      "recommended_skill_level": 8,
+      "proficiency_usage_key": null,
+      "required_skill_id": null,
+      "recipe_processor_id": null,
+      "base_success_rate": null,
+      "failure_output": null,
+      "allowed_station_tags": null,
+      "match_weight": 1,
+      "cost_override": null,
+      "pharmacy_generated": true
+    },
+    "life_pharmacy.press_strength_pill": {
+      "recipe_id": "life_pharmacy.press_strength_pill",
+      "recipe_system": "life_pharmacy",
+      "method_id": "life_pharmacy.tableting",
+      "enabled": true,
+      "inputs": [
+        {
+          "item_id": "med_antler_powder",
+          "count": 1
+        },
+        {
+          "item_id": "herb_sugar_white",
+          "count": 1
+        },
+        {
+          "item_id": "solvent_water_pure",
+          "count": 1
+        }
+      ],
+      "main_output": {
+        "item_id": "potion_strength_pill",
+        "count": 1
+      },
+      "bonus_outputs": [],
+      "required_skill_level_min": null,
+      "recommended_skill_level": 2,
+      "proficiency_usage_key": null,
+      "required_skill_id": null,
+      "recipe_processor_id": null,
+      "base_success_rate": null,
+      "failure_output": null,
+      "allowed_station_tags": null,
+      "match_weight": 1,
+      "cost_override": {
+        "fuel": 25,
+        "water": 0,
+        "ticks": 4,
+        "stamina": 2
+      },
+      "pharmacy_generated": true
+    },
+    "life_pharmacy.press_antistun_pill": {
+      "recipe_id": "life_pharmacy.press_antistun_pill",
+      "recipe_system": "life_pharmacy",
+      "method_id": "life_pharmacy.tableting",
+      "enabled": true,
+      "inputs": [
+        {
+          "item_id": "med_acorus_powder",
+          "count": 1
+        },
+        {
+          "item_id": "herb_sugar_white",
+          "count": 1
+        },
+        {
+          "item_id": "solvent_water_pure",
+          "count": 1
+        }
+      ],
+      "main_output": {
+        "item_id": "potion_antistun_pill",
+        "count": 1
+      },
+      "bonus_outputs": [],
+      "required_skill_level_min": null,
+      "recommended_skill_level": 2,
+      "proficiency_usage_key": null,
+      "required_skill_id": null,
+      "recipe_processor_id": null,
+      "base_success_rate": null,
+      "failure_output": null,
+      "allowed_station_tags": null,
+      "match_weight": 1,
+      "cost_override": {
+        "fuel": 20,
+        "water": 0,
+        "ticks": 3,
+        "stamina": 2
+      },
+      "pharmacy_generated": true
+    },
+    "life_pharmacy.press_energy_pill": {
+      "recipe_id": "life_pharmacy.press_energy_pill",
+      "recipe_system": "life_pharmacy",
+      "method_id": "life_pharmacy.tableting",
+      "enabled": true,
+      "inputs": [
+        {
+          "item_id": "med_glucose_powder",
+          "count": 1
+        },
+        {
+          "item_id": "herb_sugar_white",
+          "count": 1
+        },
+        {
+          "item_id": "solvent_water_pure",
+          "count": 1
+        }
+      ],
+      "main_output": {
+        "item_id": "potion_energy_pill",
+        "count": 1
+      },
+      "bonus_outputs": [],
+      "required_skill_level_min": null,
+      "recommended_skill_level": 2,
+      "proficiency_usage_key": null,
+      "required_skill_id": null,
+      "recipe_processor_id": null,
+      "base_success_rate": null,
+      "failure_output": null,
+      "allowed_station_tags": null,
+      "match_weight": 1,
+      "cost_override": {
+        "fuel": 20,
+        "water": 0,
+        "ticks": 3,
+        "stamina": 2
+      },
+      "pharmacy_generated": true
+    },
+    "life_pharmacy.press_calm_pill": {
+      "recipe_id": "life_pharmacy.press_calm_pill",
+      "recipe_system": "life_pharmacy",
+      "method_id": "life_pharmacy.tableting",
+      "enabled": true,
+      "inputs": [
+        {
+          "item_id": "med_thc_powder",
+          "count": 1
+        },
+        {
+          "item_id": "herb_sugar_white",
+          "count": 1
+        },
+        {
+          "item_id": "solvent_water_pure",
+          "count": 1
+        }
+      ],
+      "main_output": {
+        "item_id": "potion_calm_pill",
+        "count": 1
+      },
+      "bonus_outputs": [],
+      "required_skill_level_min": null,
+      "recommended_skill_level": 2,
+      "proficiency_usage_key": null,
+      "required_skill_id": null,
+      "recipe_processor_id": null,
+      "base_success_rate": null,
+      "failure_output": null,
+      "allowed_station_tags": null,
+      "match_weight": 1,
+      "cost_override": {
+        "fuel": 20,
+        "water": 0,
+        "ticks": 3,
+        "stamina": 2
+      },
+      "pharmacy_generated": true
+    },
+    "life_pharmacy.press_vision_pill": {
+      "recipe_id": "life_pharmacy.press_vision_pill",
+      "recipe_system": "life_pharmacy",
+      "method_id": "life_pharmacy.tableting",
+      "enabled": true,
+      "inputs": [
+        {
+          "item_id": "med_psilocybin_powder",
+          "count": 1
+        },
+        {
+          "item_id": "herb_sugar_white",
+          "count": 1
+        },
+        {
+          "item_id": "solvent_water_pure",
+          "count": 1
+        }
+      ],
+      "main_output": {
+        "item_id": "potion_vision_pill",
+        "count": 1
+      },
+      "bonus_outputs": [],
+      "required_skill_level_min": null,
+      "recommended_skill_level": 2,
+      "proficiency_usage_key": null,
+      "required_skill_id": null,
+      "recipe_processor_id": null,
+      "base_success_rate": null,
+      "failure_output": null,
+      "allowed_station_tags": null,
+      "match_weight": 1,
+      "cost_override": {
+        "fuel": 25,
+        "water": 0,
+        "ticks": 4,
+        "stamina": 2
+      },
+      "pharmacy_generated": true
+    },
+    "life_pharmacy.press_analgesic_pill_regular": {
+      "recipe_id": "life_pharmacy.press_analgesic_pill_regular",
+      "recipe_system": "life_pharmacy",
+      "method_id": "life_pharmacy.tableting",
+      "enabled": true,
+      "inputs": [
+        {
+          "item_id": "med_root_bitter_powder",
+          "count": 2
+        },
+        {
+          "item_id": "herb_sugar_white",
+          "count": 1
+        },
+        {
+          "item_id": "solvent_water_pure",
+          "count": 1
+        }
+      ],
+      "main_output": {
+        "item_id": "potion_analgesic_pill_regular",
+        "count": 1
+      },
+      "bonus_outputs": [],
+      "required_skill_level_min": null,
+      "recommended_skill_level": 2,
+      "proficiency_usage_key": null,
+      "required_skill_id": null,
+      "recipe_processor_id": null,
+      "base_success_rate": null,
+      "failure_output": null,
+      "allowed_station_tags": null,
+      "match_weight": 1,
+      "cost_override": {
+        "fuel": 20,
+        "water": 0,
+        "ticks": 3,
+        "stamina": 2
+      },
+      "pharmacy_generated": true
+    },
+    "life_pharmacy.press_analgesic_pill_potent": {
+      "recipe_id": "life_pharmacy.press_analgesic_pill_potent",
+      "recipe_system": "life_pharmacy",
+      "method_id": "life_pharmacy.tableting",
+      "enabled": true,
+      "inputs": [
+        {
+          "item_id": "med_morphine_powder",
+          "count": 1
+        },
+        {
+          "item_id": "herb_sugar_white",
+          "count": 2
+        },
+        {
+          "item_id": "solvent_water_pure",
+          "count": 2
+        }
+      ],
+      "main_output": {
+        "item_id": "potion_analgesic_pill_potent",
+        "count": 1
+      },
+      "bonus_outputs": [],
+      "required_skill_level_min": null,
+      "recommended_skill_level": 6,
+      "proficiency_usage_key": null,
+      "required_skill_id": null,
+      "recipe_processor_id": null,
+      "base_success_rate": null,
+      "failure_output": null,
+      "allowed_station_tags": null,
+      "match_weight": 1,
+      "cost_override": {
+        "fuel": 30,
+        "water": 0,
+        "ticks": 4,
+        "stamina": 2
+      },
+      "pharmacy_generated": true
+    },
+    "life_pharmacy.press_analgesic_pill_purified": {
+      "recipe_id": "life_pharmacy.press_analgesic_pill_purified",
+      "recipe_system": "life_pharmacy",
+      "method_id": "life_pharmacy.tableting",
+      "enabled": true,
+      "inputs": [
+        {
+          "item_id": "med_morphine_powder_purified",
+          "count": 1
+        },
+        {
+          "item_id": "herb_sugar_white",
+          "count": 2
+        },
+        {
+          "item_id": "solvent_water_pure",
+          "count": 2
+        }
+      ],
+      "main_output": {
+        "item_id": "potion_analgesic_pill_purified",
+        "count": 1
+      },
+      "bonus_outputs": [],
+      "required_skill_level_min": null,
+      "recommended_skill_level": 8,
+      "proficiency_usage_key": null,
+      "required_skill_id": null,
+      "recipe_processor_id": null,
+      "base_success_rate": null,
+      "failure_output": null,
+      "allowed_station_tags": null,
+      "match_weight": 1,
+      "cost_override": {
+        "fuel": 40,
+        "water": 0,
+        "ticks": 5,
+        "stamina": 2
+      },
+      "pharmacy_generated": true
+    },
+    "life_pharmacy.press_detox_pill": {
+      "recipe_id": "life_pharmacy.press_detox_pill",
+      "recipe_system": "life_pharmacy",
+      "method_id": "life_pharmacy.tableting",
+      "enabled": true,
+      "inputs": [
+        {
+          "item_id": "med_liver_herb_powder",
+          "count": 2
+        },
+        {
+          "item_id": "herb_sugar_white",
+          "count": 1
+        },
+        {
+          "item_id": "solvent_water_pure",
+          "count": 1
+        }
+      ],
+      "main_output": {
+        "item_id": "potion_detox_pill",
+        "count": 1
+      },
+      "bonus_outputs": [],
+      "required_skill_level_min": null,
+      "recommended_skill_level": 2,
+      "proficiency_usage_key": null,
+      "required_skill_id": null,
+      "recipe_processor_id": null,
+      "base_success_rate": null,
+      "failure_output": null,
+      "allowed_station_tags": null,
+      "match_weight": 1,
+      "cost_override": {
+        "fuel": 20,
+        "water": 0,
+        "ticks": 3,
+        "stamina": 2
+      },
+      "pharmacy_generated": true
+    },
+    "life_pharmacy.macerate_seaweed_extract": {
+      "recipe_id": "life_pharmacy.macerate_seaweed_extract",
+      "recipe_system": "life_pharmacy",
+      "method_id": "life_pharmacy.maceration",
+      "enabled": true,
+      "inputs": [
+        {
+          "item_id": "herb_kombu",
+          "count": 2
+        },
+        {
+          "item_id": "solvent_water_pure",
+          "count": 1
+        }
+      ],
+      "main_output": {
+        "item_id": "liquid_seaweed_extract",
+        "count": 1
+      },
+      "bonus_outputs": [],
+      "required_skill_level_min": null,
+      "recommended_skill_level": 2,
+      "proficiency_usage_key": null,
+      "required_skill_id": null,
+      "recipe_processor_id": null,
+      "base_success_rate": null,
+      "failure_output": null,
+      "allowed_station_tags": null,
+      "match_weight": 1,
+      "cost_override": {
+        "fuel": 10,
+        "water": 0,
+        "ticks": 12,
+        "stamina": 4
+      },
+      "pharmacy_generated": true
+    },
+    "life_cooking.cook_livestock_cured_pork_chop": {
+      "recipe_id": "life_cooking.cook_livestock_cured_pork_chop",
+      "recipe_system": "life_cooking",
+      "method_id": "life_cooking.pickle_salt",
+      "enabled": true,
+      "inputs": [
+        {
+          "item_id": "hus_pork_chop",
+          "count": 1
+        },
+        {
+          "item_id": "ore_salt_sea_coarse",
+          "count": 1
+        },
+        {
+          "item_id": "herb_rosemary",
+          "count": 1
+        },
+        {
+          "item_id": "herb_thyme",
+          "count": 1
+        },
+        {
+          "item_id": "herb_garlic",
+          "count": 1
+        }
+      ],
+      "main_output": {
+        "item_id": "food_dish_herb_cured_pork_slices",
+        "count": 3
+      },
+      "bonus_outputs": [],
+      "required_skill_level_min": 1,
+      "proficiency_usage_key": "life_cooking.cook_livestock_cured_pork_chop",
+      "required_skill_id": null,
+      "recipe_processor_id": null,
+      "base_success_rate": null,
+      "failure_output": null,
+      "allowed_station_tags": null,
+      "match_weight": 1
+    },
+    "life_cooking.cook_livestock_cured_pork_ground": {
+      "recipe_id": "life_cooking.cook_livestock_cured_pork_ground",
+      "recipe_system": "life_cooking",
+      "method_id": "life_cooking.pickle_salt",
+      "enabled": true,
+      "inputs": [
+        {
+          "item_id": "hus_pork_meat_ground",
+          "count": 1
+        },
+        {
+          "item_id": "ore_salt_sea_coarse",
+          "count": 1
+        },
+        {
+          "item_id": "herb_rosemary",
+          "count": 1
+        },
+        {
+          "item_id": "herb_thyme",
+          "count": 1
+        },
+        {
+          "item_id": "herb_garlic",
+          "count": 1
+        }
+      ],
+      "main_output": {
+        "item_id": "food_dish_herb_cured_pork_slices",
+        "count": 1
+      },
+      "bonus_outputs": [],
+      "required_skill_level_min": 1,
+      "proficiency_usage_key": "life_cooking.cook_livestock_cured_pork_ground",
+      "required_skill_id": null,
+      "recipe_processor_id": null,
+      "base_success_rate": null,
+      "failure_output": null,
+      "allowed_station_tags": null,
+      "match_weight": 1
     }
   }
 }

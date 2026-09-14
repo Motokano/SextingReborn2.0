@@ -1,0 +1,463 @@
+{
+  "schema_version": 1,
+  "status": "design_proposal_not_runtime",
+  "date": "2026-09-10",
+  "scope": "全量旧目录迁移与新增药品规格；不直接参与游戏结算",
+  "shared_materials": {
+    "water": "solvent_water_pure",
+    "salve_base": "hus_pork_lard",
+    "pill_base": "herb_wheat_flour"
+  },
+  "new_material_chains": [
+    {
+      "source_id": "herb_mianxi",
+      "source_name": "绵息草",
+      "powder_id": "med_rest_powder",
+      "powder_name": "休养药粉",
+      "family": "rest_care",
+      "method": "life_pharmacy.crushing",
+      "input_count": 1,
+      "output_count": 2
+    },
+    {
+      "source_id": "herb_nailao",
+      "source_name": "耐劳藤",
+      "powder_id": "med_labor_powder",
+      "powder_name": "耐劳药粉",
+      "family": "labor",
+      "method": "life_pharmacy.crushing",
+      "input_count": 1,
+      "output_count": 2
+    },
+    {
+      "source_id": "herb_qinglv",
+      "source_name": "轻履叶",
+      "powder_id": "med_travel_powder",
+      "powder_name": "行路药粉",
+      "family": "travel",
+      "method": "life_pharmacy.crushing",
+      "input_count": 1,
+      "output_count": 2
+    },
+    {
+      "source_id": "herb_nuantai",
+      "source_name": "暖苔",
+      "powder_id": "med_cold_guard_powder",
+      "powder_name": "御寒药粉",
+      "family": "cold_guard",
+      "method": "life_pharmacy.crushing",
+      "input_count": 1,
+      "output_count": 2
+    },
+    {
+      "source_id": "herb_liangtai",
+      "source_name": "凉苔",
+      "powder_id": "med_heat_guard_powder",
+      "powder_name": "清暑药粉",
+      "family": "heat_guard",
+      "method": "life_pharmacy.crushing",
+      "input_count": 1,
+      "output_count": 2
+    },
+    {
+      "source_id": "herb_huiqing",
+      "source_name": "回清草",
+      "powder_id": "med_aftercare_powder",
+      "powder_name": "调理药粉",
+      "family": "drug_aftercare",
+      "method": "life_pharmacy.crushing",
+      "input_count": 1,
+      "output_count": 2
+    }
+  ],
+  "families": {
+    "stimulant": {
+      "name": "提神",
+      "group": "应急与战备",
+      "decision": "短时补精力与行动支持；移除包揽所有恢复的定位",
+      "routes": [
+        "drink",
+        "inhale",
+        "inject"
+      ],
+      "status": "重整已有功能"
+    },
+    "hallucinogen": {
+      "name": "感悟",
+      "group": "风险换收益",
+      "decision": "有时限的实战经验/潜能收益；不能描述为视野药",
+      "routes": [
+        "drink",
+        "inhale",
+        "inject"
+      ],
+      "status": "保留已有功能，负面代价须与收益同时核验"
+    },
+    "sedative": {
+      "name": "安神",
+      "group": "日常恢复",
+      "decision": "稳定心情；移除凭空增加营养，休养增强单独归入休养族",
+      "routes": [
+        "drink",
+        "inhale"
+      ],
+      "status": "重整已有功能"
+    },
+    "analgesic": {
+      "name": "镇痛",
+      "group": "应急与战备",
+      "decision": "暂时抑制疼痛影响，不修复损毁；强度差异通过作用窗口/负担体现，不能虚构更彻底的布尔镇痛",
+      "routes": [
+        "drink",
+        "inject"
+      ],
+      "status": "重整已有功能"
+    },
+    "rehydrate": {
+      "name": "补液",
+      "group": "日常恢复",
+      "decision": "以补水为主；不抢续航和提神的全部作用",
+      "routes": [
+        "drink",
+        "inject"
+      ],
+      "status": "保留已有功能"
+    },
+    "energy": {
+      "name": "续航",
+      "group": "日常恢复",
+      "decision": "缓慢补精力，保留实际食物成分带来的营养；无行动速度提升",
+      "routes": [
+        "drink"
+      ],
+      "status": "重整已有功能"
+    },
+    "antistun": {
+      "name": "醒神",
+      "group": "应急与战备",
+      "decision": "眩晕抗性，不是解除已发生的眩晕",
+      "routes": [
+        "drink",
+        "inject"
+      ],
+      "status": "保留已有功能"
+    },
+    "strength": {
+      "name": "续力",
+      "group": "应急与战备",
+      "decision": "长效直接提高负重上限，不增加筋骨；同类取最高值",
+      "routes": [
+        "drink",
+        "inject"
+      ],
+      "status": "携行功能已实现"
+    },
+    "mobility": {
+      "name": "伤损恢复",
+      "group": "部位护理",
+      "decision": "指定部位损毁恢复；名字不再暗示加移动速度",
+      "routes": [
+        "topical"
+      ],
+      "status": "重整已有功能"
+    },
+    "coagulant": {
+      "name": "止血",
+      "group": "条件储备",
+      "decision": "只有流血状态及消费者落地后才进入新版可发现目录",
+      "routes": [
+        "topical",
+        "inject"
+      ],
+      "status": "暂缓新品投放，保留旧档物品"
+    },
+    "revive": {
+      "name": "急救强心",
+      "group": "条件储备",
+      "decision": "仅自用；定义为意识尚存的危急窗口干预，不复活、不让昏迷者自行操作",
+      "routes": [
+        "inject"
+      ],
+      "status": "暂缓新品投放，需先定义可操作危急状态"
+    },
+    "synergist": {
+      "name": "配药辅料（拆分）",
+      "group": "配方工艺",
+      "decision": "拆成抵消能力与增效能力；不再生成一个可服用的通用增效药效族",
+      "routes": [],
+      "status": "迁移，角色由显式字段决定"
+    }
+  },
+  "medicines": {
+    "potion_tonic_broth": {
+      "form": "粗药液",
+      "purpose": "廉价日常提神",
+      "action": "保留；效果由实际配方贡献派生"
+    },
+    "potion_tonic_cigarette": {
+      "form": "药烟",
+      "purpose": "短窗口提神",
+      "action": "保留；起效/时长/负担与口服区分"
+    },
+    "potion_analgesic_pill": {
+      "form": "药丸",
+      "purpose": "便携持续镇痛",
+      "action": "保留；布尔镇痛不按强度线性放大"
+    },
+    "potion_mobility_salve": {
+      "form": "药膏",
+      "purpose": "入门部位恢复",
+      "action": "保留；补苦根草外敷恢复的显式剂型适配，不能从镇痛族暗跳"
+    },
+    "potion_rehydration_injection": {
+      "form": "旧版注射成品（存档兼容）",
+      "purpose": "短窗口集中补液",
+      "action": "退役固定配方；改由药粉动态配置"
+    },
+    "potion_cardiac_injection": {
+      "form": "旧版注射成品（存档兼容）",
+      "purpose": "意识尚存时的危急干预",
+      "action": "退役固定配方；改由药粉动态配置"
+    },
+    "potion_calm_brew": {
+      "form": "粗药液",
+      "purpose": "日常安神",
+      "action": "保留；删除无食物依据的营养恢复"
+    },
+    "potion_tonic_broth_potent": {
+      "form": "浓缩药液",
+      "purpose": "较高集中度的口服提神",
+      "action": "改链；粗药液经独立浓缩工序产出，消除原料份数超集撞方"
+    },
+    "potion_energy_draught": {
+      "form": "糖浆",
+      "purpose": "持续补精力",
+      "action": "保留；营养只走单一消化来源，不与 buff 重复计算"
+    },
+    "potion_rehydration_broth": {
+      "form": "粗药液",
+      "purpose": "旅途补水",
+      "action": "保留；同一补水来源不在消化和药效中重复计入"
+    },
+    "potion_strength_decoction": {
+      "form": "药液",
+      "purpose": "长途携行：负重上限 +6 kg，基础 180 tick",
+      "action": "已实现；与行路减耗分开"
+    },
+    "potion_antistun_tea": {
+      "form": "药液",
+      "purpose": "出发前的眩晕抗性",
+      "action": "保留；不承诺解除已发生的眩晕"
+    },
+    "potion_vision_draught": {
+      "form": "药液",
+      "purpose": "较长窗口的风险换成长收益",
+      "action": "保留幻梦定位；不因内部 vision ID 添加视野功能"
+    },
+    "potion_mobility_poultice": {
+      "form": "粗药泥",
+      "purpose": "便宜的短程部位护理",
+      "action": "保留；粗制终点，与药膏拉开使用次数和有效窗口"
+    },
+    "potion_mobility_salve_potent": {
+      "form": "精制药膏",
+      "purpose": "更集中的部位恢复",
+      "action": "改链；由精制原料成膏，使精制名称与加工等级一致"
+    },
+    "potion_coagulant_powder": {
+      "form": "外敷药粉",
+      "purpose": "低成本局部止血",
+      "action": "储备；保留 ID 与旧档，等待流血闭环"
+    },
+    "potion_coagulant_salve": {
+      "form": "药膏",
+      "purpose": "持续局部止血",
+      "action": "储备；保留 ID 与旧档，等待流血闭环"
+    },
+    "potion_sedative_incense": {
+      "form": "药烟",
+      "purpose": "短窗口稳定心情",
+      "action": "保留；不得沿用药液完整持续时间"
+    },
+    "potion_vision_incense": {
+      "form": "药烟",
+      "purpose": "短窗口的风险换成长收益",
+      "action": "保留；不承诺视觉能力"
+    },
+    "potion_analgesic_injection": {
+      "form": "旧版注射成品（存档兼容）",
+      "purpose": "集中镇痛窗口",
+      "action": "退役固定配方；改由药粉动态配置"
+    },
+    "potion_stimulant_injection": {
+      "form": "旧版注射成品（存档兼容）",
+      "purpose": "短时提神与行动支持",
+      "action": "退役固定配方；改由药粉动态配置"
+    },
+    "potion_antistun_injection": {
+      "form": "旧版注射成品（存档兼容）",
+      "purpose": "较短的集中抗眩晕窗口",
+      "action": "退役固定配方；改由药粉动态配置"
+    },
+    "potion_strength_injection": {
+      "form": "旧版注射成品（存档兼容）",
+      "purpose": "立即携行：负重上限 +7.5 kg，基础 120 tick",
+      "action": "退役固定配方；改由药粉动态配置"
+    },
+    "potion_coagulant_injection": {
+      "form": "旧版注射成品（存档兼容）",
+      "purpose": "系统性止血储备",
+      "action": "退役固定配方；改由药粉动态配置"
+    },
+    "potion_analgesic_injection_refined": {
+      "form": "旧版注射成品（存档兼容）",
+      "purpose": "标准化镇痛针的唯一常规入口",
+      "action": "退役固定配方；改由药粉动态配置"
+    },
+    "potion_antistun_injection_refined": {
+      "form": "旧版注射成品（存档兼容）",
+      "purpose": "标准化醒神针的唯一常规入口",
+      "action": "退役固定配方；改由药粉动态配置"
+    },
+    "potion_analgesic_injection_purified": {
+      "form": "旧版注射成品（存档兼容）",
+      "purpose": "高加工镇痛终点",
+      "action": "退役固定配方；改由药粉动态配置"
+    },
+    "potion_stimulant_injection_purified": {
+      "form": "旧版注射成品（存档兼容）",
+      "purpose": "高加工提神终点",
+      "action": "退役固定配方；改由药粉动态配置"
+    },
+    "potion_calm_brew_purified": {
+      "form": "精炼药液",
+      "purpose": "口服安神的高加工终点",
+      "action": "保留；证明高级加工不必转注射，强度由数据派生"
+    },
+    "potion_mobility_salve_purified": {
+      "form": "精炼药膏",
+      "purpose": "外敷恢复的高加工终点",
+      "action": "保留；总使用次数、每次效果和总成本一起平衡"
+    }
+  },
+  "support_roles": {
+    "med_liver_herb_powder": "offset",
+    "med_harmaline_powder": "synergy_with_offset",
+    "med_senna_powder": "offset",
+    "med_vitamin_c_powder": "offset"
+  },
+  "new_medicines": [
+    {
+      "id": "potion_rest_poultice",
+      "name": "休养药泥",
+      "family": "rest_care",
+      "form": "粗药泥",
+      "route": "topical",
+      "effect": "仅休息时，指定部位自然损毁恢复量 ×1.25，不缩短自然恢复宽限",
+      "onset_ticks": 3,
+      "active_ticks": 90,
+      "charges": 2,
+      "recipe": "休养药粉 ×1 + 制药水 ×1 → 调和 → 休养药泥 ×1",
+      "dependency": "按部位、按休息条件的自然恢复修正接口",
+      "tradeoff": "活动时无额外恢复，不直接减损毁"
+    },
+    {
+      "id": "potion_rest_salve",
+      "name": "休养药膏",
+      "family": "rest_care",
+      "form": "精制药膏",
+      "route": "topical",
+      "effect": "仅休息时，指定部位自然损毁恢复量 ×1.50，不缩短自然恢复宽限",
+      "onset_ticks": 3,
+      "active_ticks": 120,
+      "charges": 3,
+      "recipe": "精制休养药粉 ×1 + 膏基 ×1 → 调和 → 休养药膏 ×1",
+      "dependency": "同休养药泥",
+      "tradeoff": "加工和原料投入更高；与同族不叠加"
+    },
+    {
+      "id": "potion_labor_brew",
+      "name": "耐劳药液",
+      "family": "labor",
+      "form": "粗药液",
+      "route": "drink",
+      "effect": "生活行为实际体力成本 ×0.90，仅采集及设施加工白名单",
+      "onset_ticks": 5,
+      "active_ticks": 60,
+      "charges": 1,
+      "recipe": "耐劳药粉 ×1 + 制药水 ×1 → 浸渍 → 耐劳药液 ×1",
+      "dependency": "统一行动体力成本修正及小数累计",
+      "tradeoff": "不增产、不增加经验、不影响战斗或移动"
+    },
+    {
+      "id": "potion_labor_pill",
+      "name": "耐劳丸",
+      "family": "labor",
+      "form": "药丸",
+      "route": "drink",
+      "effect": "生活行为实际体力成本 ×0.90，仅采集及设施加工白名单",
+      "onset_ticks": 8,
+      "active_ticks": 90,
+      "charges": 1,
+      "recipe": "耐劳药粉 ×1 + 虚构丸基 ×1 → 压片 → 耐劳丸 ×1",
+      "dependency": "同耐劳药液；丸剂独立时间配置",
+      "tradeoff": "更慢起效，多一道辅料成本，换更长窗口与便携性"
+    },
+    {
+      "id": "potion_travel_pill",
+      "name": "行路丸",
+      "family": "travel",
+      "form": "药丸",
+      "route": "drink",
+      "effect": "普通移动实际体力成本 ×0.85",
+      "onset_ticks": 8,
+      "active_ticks": 90,
+      "charges": 1,
+      "recipe": "行路药粉 ×1 + 虚构丸基 ×1 → 压片 → 行路丸 ×1",
+      "dependency": "移动成本专用修正；无基础体力成本的移动不凭空产生收益",
+      "tradeoff": "不加移速、不减物品重量、不改背包格数，不减战斗步法成本"
+    },
+    {
+      "id": "potion_cold_salve",
+      "name": "御寒药膏",
+      "family": "cold_guard",
+      "form": "药膏",
+      "route": "topical",
+      "effect": "环境造成的体温下降量 ×0.75，仅环境降温项",
+      "onset_ticks": 3,
+      "active_ticks": 90,
+      "charges": 3,
+      "recipe": "御寒药粉 ×1 + 膏基 ×1 → 调和 → 御寒药膏 ×1",
+      "dependency": "环境体温变化来源过滤；全身防护型外敷范围",
+      "tradeoff": "不直接升温、不豁免死亡阈值，与清暑同槽不能叠用"
+    },
+    {
+      "id": "potion_heat_salve",
+      "name": "清暑药膏",
+      "family": "heat_guard",
+      "form": "药膏",
+      "route": "topical",
+      "effect": "环境造成的体温上升量 ×0.75，仅环境升温项",
+      "onset_ticks": 3,
+      "active_ticks": 90,
+      "charges": 3,
+      "recipe": "清暑药粉 ×1 + 膏基 ×1 → 调和 → 清暑药膏 ×1",
+      "dependency": "同御寒药膏",
+      "tradeoff": "不直接降温、不补水、不替代衣物和避难，与御寒同槽"
+    },
+    {
+      "id": "potion_aftercare_brew",
+      "name": "药后调理液",
+      "family": "drug_aftercare",
+      "form": "药液",
+      "route": "drink",
+      "effect": "休息时既有药物毒性代谢速度 ×1.25；不影响药瘾或其他毒物",
+      "onset_ticks": 5,
+      "active_ticks": 60,
+      "charges": 1,
+      "recipe": "调理药粉 ×1 + 制药水 ×1 → 浸渍 → 药后调理液 ×1",
+      "dependency": "药物毒性代谢的有时限来源修正",
+      "tradeoff": "有效期内再次获得药物毒性时终止调理效果；不回溯取消已触发后果"
+    }
+  ]
+}

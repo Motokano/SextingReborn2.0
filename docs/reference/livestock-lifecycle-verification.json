@@ -1,0 +1,385 @@
+{
+  "version": 6,
+  "scope": "Real lifecycle ticks; replenished external feed counted; manual pollution care counted; no health resets or disabled lifespan.",
+  "growth": [
+    {
+      "kind": "cattle",
+      "ticks": 116640,
+      "days": 810,
+      "feedUnits": 1513.8291777231698,
+      "maizeKg": 1059.680424406219,
+      "meatKg": 300,
+      "manualCleans": 0
+    },
+    {
+      "kind": "sheep",
+      "ticks": 64800,
+      "days": 450,
+      "feedUnits": 828.8632749873203,
+      "maizeKg": 580.2042924911242,
+      "meatKg": 38.9,
+      "manualCleans": 63
+    },
+    {
+      "kind": "pig",
+      "ticks": 52560,
+      "days": 365,
+      "feedUnits": 566.888954905829,
+      "maizeKg": 396.8222684340803,
+      "meatKg": 60,
+      "manualCleans": 0
+    },
+    {
+      "kind": "chicken",
+      "ticks": 12960,
+      "days": 90,
+      "feedUnits": 7.523196712497338,
+      "maizeKg": 5.266237698748136,
+      "meatKg": 1.4,
+      "manualCleans": 0
+    }
+  ],
+  "years": [
+    {
+      "seed": 7,
+      "ticks": 52560,
+      "feedUnits": 1167.8178240692466,
+      "chickReplacements": 11,
+      "chickenMeatKg": 15.400000000000002,
+      "slaughters": [
+        {
+          "age": 12960,
+          "hp": 100,
+          "weight": 2.5,
+          "meat": 1.4,
+          "perks": []
+        },
+        {
+          "age": 12960,
+          "hp": 100,
+          "weight": 2.5,
+          "meat": 1.4,
+          "perks": []
+        },
+        {
+          "age": 12960,
+          "hp": 100,
+          "weight": 2.5,
+          "meat": 1.4,
+          "perks": []
+        },
+        {
+          "age": 12960,
+          "hp": 100,
+          "weight": 2.5,
+          "meat": 1.4,
+          "perks": [
+            "fewer_eggs"
+          ]
+        },
+        {
+          "age": 12960,
+          "hp": 100,
+          "weight": 2.5,
+          "meat": 1.4,
+          "perks": [
+            "fewer_eggs",
+            "quick_growth_chicken"
+          ]
+        },
+        {
+          "age": 12960,
+          "hp": 100,
+          "weight": 2.5,
+          "meat": 1.4,
+          "perks": [
+            "quick_growth_chicken"
+          ]
+        },
+        {
+          "age": 12960,
+          "hp": 100,
+          "weight": 2.5,
+          "meat": 1.4,
+          "perks": []
+        },
+        {
+          "age": 15247,
+          "hp": 100,
+          "weight": 2.5,
+          "meat": 1.4,
+          "perks": [
+            "fewer_eggs",
+            "more_eggs",
+            "slow_growth_chicken"
+          ]
+        },
+        {
+          "age": 15247,
+          "hp": 100,
+          "weight": 2.5,
+          "meat": 1.4,
+          "perks": [
+            "fewer_eggs",
+            "slow_growth_chicken"
+          ]
+        },
+        {
+          "age": 15247,
+          "hp": 100,
+          "weight": 2.5,
+          "meat": 1.4,
+          "perks": [
+            "fewer_eggs",
+            "slow_growth_chicken"
+          ]
+        },
+        {
+          "age": 12960,
+          "hp": 100,
+          "weight": 2.5,
+          "meat": 1.4,
+          "perks": [
+            "quick_growth_chicken",
+            "more_eggs"
+          ]
+        }
+      ],
+      "products": {
+        "hus_milk_buffalo": 182,
+        "hus_egg": 290,
+        "hus_wool": 6
+      },
+      "deaths": 0,
+      "pigMeatKg": 60
+    },
+    {
+      "seed": 19,
+      "ticks": 52560,
+      "feedUnits": 1168.4326861363559,
+      "chickReplacements": 11,
+      "chickenMeatKg": 15.400000000000002,
+      "slaughters": [
+        {
+          "age": 12960,
+          "hp": 100,
+          "weight": 2.5,
+          "meat": 1.4,
+          "perks": []
+        },
+        {
+          "age": 12960,
+          "hp": 100,
+          "weight": 2.5,
+          "meat": 1.4,
+          "perks": []
+        },
+        {
+          "age": 12960,
+          "hp": 100,
+          "weight": 2.5,
+          "meat": 1.4,
+          "perks": []
+        },
+        {
+          "age": 12960,
+          "hp": 100,
+          "weight": 2.5,
+          "meat": 1.4,
+          "perks": [
+            "quick_growth_chicken"
+          ]
+        },
+        {
+          "age": 13259,
+          "hp": 100,
+          "weight": 2.5,
+          "meat": 1.4,
+          "perks": [
+            "slow_growth_chicken",
+            "quick_growth_chicken",
+            "fewer_eggs",
+            "more_eggs"
+          ]
+        },
+        {
+          "age": 12960,
+          "hp": 100,
+          "weight": 2.5,
+          "meat": 1.4,
+          "perks": []
+        },
+        {
+          "age": 12960,
+          "hp": 100,
+          "weight": 2.5,
+          "meat": 1.4,
+          "perks": []
+        },
+        {
+          "age": 13259,
+          "hp": 100,
+          "weight": 2.5,
+          "meat": 1.4,
+          "perks": [
+            "slow_growth_chicken",
+            "more_eggs",
+            "quick_growth_chicken"
+          ]
+        },
+        {
+          "age": 15247,
+          "hp": 100,
+          "weight": 2.5,
+          "meat": 1.4,
+          "perks": [
+            "slow_growth_chicken",
+            "more_eggs"
+          ]
+        },
+        {
+          "age": 12960,
+          "hp": 100,
+          "weight": 2.5,
+          "meat": 1.4,
+          "perks": []
+        },
+        {
+          "age": 12960,
+          "hp": 100,
+          "weight": 2.5,
+          "meat": 1.4,
+          "perks": [
+            "more_eggs",
+            "quick_growth_chicken"
+          ]
+        }
+      ],
+      "products": {
+        "hus_milk_buffalo": 182,
+        "hus_egg": 290,
+        "hus_wool": 6
+      },
+      "deaths": 0,
+      "pigMeatKg": 60
+    },
+    {
+      "seed": 41,
+      "ticks": 52560,
+      "feedUnits": 1167.051720389646,
+      "chickReplacements": 11,
+      "chickenMeatKg": 15.400000000000002,
+      "slaughters": [
+        {
+          "age": 12960,
+          "hp": 100,
+          "weight": 2.5,
+          "meat": 1.4,
+          "perks": []
+        },
+        {
+          "age": 12960,
+          "hp": 100,
+          "weight": 2.5,
+          "meat": 1.4,
+          "perks": []
+        },
+        {
+          "age": 12960,
+          "hp": 100,
+          "weight": 2.5,
+          "meat": 1.4,
+          "perks": []
+        },
+        {
+          "age": 12960,
+          "hp": 100,
+          "weight": 2.5,
+          "meat": 1.4,
+          "perks": [
+            "fewer_eggs"
+          ]
+        },
+        {
+          "age": 13259,
+          "hp": 100,
+          "weight": 2.5,
+          "meat": 1.4,
+          "perks": [
+            "quick_growth_chicken",
+            "more_eggs",
+            "slow_growth_chicken"
+          ]
+        },
+        {
+          "age": 15247,
+          "hp": 100,
+          "weight": 2.5,
+          "meat": 1.4,
+          "perks": [
+            "slow_growth_chicken"
+          ]
+        },
+        {
+          "age": 15247,
+          "hp": 100,
+          "weight": 2.5,
+          "meat": 1.4,
+          "perks": [
+            "slow_growth_chicken",
+            "fewer_eggs",
+            "more_eggs"
+          ]
+        },
+        {
+          "age": 12960,
+          "hp": 100,
+          "weight": 2.5,
+          "meat": 1.4,
+          "perks": [
+            "more_eggs"
+          ]
+        },
+        {
+          "age": 12960,
+          "hp": 100,
+          "weight": 2.5,
+          "meat": 1.4,
+          "perks": [
+            "fewer_eggs",
+            "more_eggs",
+            "quick_growth_chicken"
+          ]
+        },
+        {
+          "age": 12960,
+          "hp": 100,
+          "weight": 2.5,
+          "meat": 1.4,
+          "perks": [
+            "fewer_eggs",
+            "quick_growth_chicken"
+          ]
+        },
+        {
+          "age": 12960,
+          "hp": 100,
+          "weight": 2.5,
+          "meat": 1.4,
+          "perks": [
+            "more_eggs"
+          ]
+        }
+      ],
+      "products": {
+        "hus_milk_buffalo": 182,
+        "hus_egg": 290,
+        "hus_wool": 6
+      },
+      "deaths": 0,
+      "pigMeatKg": 60
+    }
+  ],
+  "ledgerChecks": 1508400,
+  "maxLedgerError": 4.9873299934333204e-18
+}

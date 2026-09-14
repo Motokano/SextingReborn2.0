@@ -19,7 +19,7 @@ food_dish_steamed_bream,清蒸鲂鱼,清蒸鱼,鲂鱼配葱姜盐清蒸，湖鲜
 food_dish_fried_potato_chunks,炸土豆块,炸薯角,猪油里炸到外脆里沙的土豆块。,food,fry,0.28,12,white,food;consumable;cook;cooked,cook,cook,3600,life_good,low,0,,,,,1,buff_food_dish_fried_potato_chunks,10,,
 food_dish_river_shrimp_soft_fry,软炸河虾仁,软炸虾仁,虾仁挂薄糊软炸，外酥里弹。,food,fry,0.3,8,white,food;consumable;cook;cooked,cook;fishing,cook,600,life_good,mid,0,,,,,1,buff_food_dish_river_shrimp_soft_fry,10,,
 food_dish_salted_cucumber,盐渍黄瓜,脆黄瓜,盐蒜腌渍的黄瓜条，爽脆开胃。,food,pickle,0.22,20,white,food;consumable;cook;cooked,cook,cook,3600,life_good,low,0,,,,,1,buff_food_dish_salted_cucumber,8,,
-food_dish_herb_cured_pork_slices,香草腌肉片,腌五花肉,粗盐与香草蒜腌入味的猪腩片，宜再烹或薄煎。,food,pickle,0.35,12,white,food;consumable;cook;cooked,cook,cook,3600,material,mid,0,,,,,1,buff_food_dish_herb_cured_pork_slices,9,,
+food_dish_herb_cured_pork_slices,香草腌肉片,腌五花肉,粗盐与香草蒜腌入味的猪腩片，宜再烹或薄煎。,food,pickle,0.35,12,white,food;consumable;cook;cooked,cook,cook,12960,material,mid,0,,,,,1,buff_food_dish_herb_cured_pork_slices,9,,
 food_dish_beet_kvass,甜菜发酵饮,甜菜饮,甜菜糖盐轻发酵的爽口饮，偏解渴。,food,drink,0.35,8,white,food;consumable;cook;cooked,cook,cook,600,life_good,mid,0,,,,,1,buff_food_dish_beet_kvass,10,,
 food_dish_buffalo_yogurt,水牛酸奶,浓酸奶,水牛奶加糖发酵的稠酸奶，奶香重。,food,dairy,0.35,10,white,food;consumable;cook;cooked,cook,cook,600,life_good,mid,0,,,,,1,buff_food_dish_buffalo_yogurt,10,,
 food_dish_sesame_garlic_salad,芝麻蒜香拌菜,凉拌菜,芝麻蒜泥椒油拌黄瓜，清爽辛辣。,food,salad,0.25,12,white,food;consumable;cook;cooked,cook,cook,3600,life_good,low,0,,,,,1,buff_food_dish_sesame_garlic_salad,9,,

@@ -1,8 +1,220 @@
 {
   "schema_version": 1,
   "source_csv": "data/compost-events.csv",
-  "generated_at": "2026-04-21T08:45:56.377Z",
+  "generated_at": "2026-09-11T23:23:48.460Z",
   "events": {
+    "anaerobic_early_harvest": {
+      "event_id": "anaerobic_early_harvest",
+      "stage": "action",
+      "severity": "info",
+      "best_action": "",
+      "secondary_action": "",
+      "bad_action": "",
+      "enabled": true,
+      "variants": [
+        {
+          "text_variant_id": "v1",
+          "title": "提前取肥",
+          "desc": "肥液尚未充分腐熟。",
+          "success_text": "已提前结束发酵。产量保留四分之三并向下取整，至少一瓶；档位下降一级，最低差档。成品待收取。",
+          "fail_text": ""
+        }
+      ]
+    },
+    "anaerobic_foam_ignored": {
+      "event_id": "anaerobic_foam_ignored",
+      "stage": "action",
+      "severity": "warn",
+      "best_action": "",
+      "secondary_action": "",
+      "bad_action": "",
+      "enabled": true,
+      "variants": [
+        {
+          "text_variant_id": "v1",
+          "title": "泡层外溢",
+          "desc": "桶口持续顶出泡沫。",
+          "success_text": "",
+          "fail_text": "桶一直密封，泡层从盖沿挤出并带走肥液。积压仍未解除，后段还需放气。"
+        }
+      ]
+    },
+    "anaerobic_foam_rising": {
+      "event_id": "anaerobic_foam_rising",
+      "stage": "state",
+      "severity": "warn",
+      "best_action": "vent_gently",
+      "secondary_action": "vent_gas",
+      "bad_action": "leave_as_is",
+      "enabled": true,
+      "variants": [
+        {
+          "text_variant_id": "v1",
+          "title": "细泡顶盖",
+          "desc": "细泡顶住桶盖，阀缝吐出液沫，开大易溢。",
+          "success_text": "阀门只开了一道小缝。积气缓缓排出，泡沫逐渐回落，肥液保留在桶内。",
+          "fail_text": "泡沫带走了部分肥液，桶内还未恢复平稳。"
+        },
+        {
+          "text_variant_id": "v2",
+          "title": "阀口吐沫",
+          "desc": "阀口挂着黏沫，嘶鸣中夹着液滴，泡层尚厚。",
+          "success_text": "你分次缓慢放气，等泡层落下再关阀。桶内逐渐平静，肥液没有外溢。",
+          "fail_text": "泡沫带走了部分肥液，桶内还未恢复平稳。"
+        }
+      ]
+    },
+    "anaerobic_foam_spill": {
+      "event_id": "anaerobic_foam_spill",
+      "stage": "action",
+      "severity": "warn",
+      "best_action": "",
+      "secondary_action": "",
+      "bad_action": "",
+      "enabled": true,
+      "variants": [
+        {
+          "text_variant_id": "v1",
+          "title": "放气过猛",
+          "desc": "泡沫随气流涌出。",
+          "success_text": "",
+          "fail_text": "阀门开得太快，泡沫裹着肥液冲了出来。可用肥液减少，发酵受到干扰，后段需要静置恢复。"
+        }
+      ]
+    },
+    "anaerobic_pressure_high": {
+      "event_id": "anaerobic_pressure_high",
+      "stage": "state",
+      "severity": "bad",
+      "best_action": "vent_gas",
+      "secondary_action": "",
+      "bad_action": "leave_as_is",
+      "enabled": true,
+      "variants": [
+        {
+          "text_variant_id": "v1",
+          "title": "积气未消",
+          "desc": "积气仍未消退，肥液继续从盖沿渗出。",
+          "success_text": "积压终于解除，剩余肥液得以保住，已损失的部分不会恢复。",
+          "fail_text": "积压持续到后段，肥液再次流失，桶口喷溅得一片狼藉。"
+        }
+      ]
+    },
+    "anaerobic_pressure_rising": {
+      "event_id": "anaerobic_pressure_rising",
+      "stage": "state",
+      "severity": "warn",
+      "best_action": "vent_gas",
+      "secondary_action": "",
+      "bad_action": "leave_as_is",
+      "enabled": true,
+      "variants": [
+        {
+          "text_variant_id": "v1",
+          "title": "桶盖鼓起",
+          "desc": "桶盖鼓起，持续冒泡，盖沿开始渗液。",
+          "success_text": "积气缓缓排出，桶盖回落。后段可以安心等待腐熟。",
+          "fail_text": "积气没有释放，部分肥液溢出。下次检查仍需处理积压。"
+        },
+        {
+          "text_variant_id": "v2",
+          "title": "排气口嘶鸣",
+          "desc": "排气口嘶鸣，盖沿渗出液滴。",
+          "success_text": "放气后渗漏停止，发酵转入平稳阶段。",
+          "fail_text": "盖沿继续渗漏，肥液有所损失，积压还未解除。"
+        }
+      ]
+    },
+    "anaerobic_ready": {
+      "event_id": "anaerobic_ready",
+      "stage": "state",
+      "severity": "good",
+      "best_action": "leave_as_is",
+      "secondary_action": "harvest_early",
+      "bad_action": "vent_gas",
+      "enabled": true,
+      "variants": [
+        {
+          "text_variant_id": "v1",
+          "title": "腐熟渐稳",
+          "desc": "气泡减少，生涩气味渐退。提前取肥减量25%并向下取整，降一档。数量保底1瓶，档位最低差档。",
+          "success_text": "保持密封，等待充分腐熟，正常产量与档位得以保留。",
+          "fail_text": "无积气时再次开阀造成不必要的干扰，可用肥液减少。"
+        }
+      ]
+    },
+    "anaerobic_recovering": {
+      "event_id": "anaerobic_recovering",
+      "stage": "state",
+      "severity": "warn",
+      "best_action": "leave_as_is",
+      "secondary_action": "",
+      "bad_action": "vent_gas",
+      "enabled": true,
+      "variants": [
+        {
+          "text_variant_id": "v1",
+          "title": "发酵受阻",
+          "desc": "上次开阀后气泡减少，肥液仍有生涩气味。",
+          "success_text": "停止干扰后发酵逐渐恢复。保住剩余产出，等待周期结束。",
+          "fail_text": "再次开阀打断恢复，更多原料未能转化为可用肥液。"
+        }
+      ]
+    },
+    "anaerobic_result_early": {
+      "event_id": "anaerobic_result_early",
+      "stage": "result",
+      "severity": "info",
+      "best_action": "",
+      "secondary_action": "",
+      "bad_action": "",
+      "enabled": true,
+      "variants": [
+        {
+          "text_variant_id": "v1",
+          "title": "提前出桶",
+          "desc": "提前出桶，已减量降档。",
+          "success_text": "",
+          "fail_text": ""
+        }
+      ]
+    },
+    "anaerobic_result_loss": {
+      "event_id": "anaerobic_result_loss",
+      "stage": "result",
+      "severity": "warn",
+      "best_action": "",
+      "secondary_action": "",
+      "bad_action": "",
+      "enabled": true,
+      "variants": [
+        {
+          "text_variant_id": "v1",
+          "title": "带损耗腐熟",
+          "desc": "腐熟完成，过程损耗已扣除。",
+          "success_text": "",
+          "fail_text": ""
+        }
+      ]
+    },
+    "anaerobic_result_preserved": {
+      "event_id": "anaerobic_result_preserved",
+      "stage": "result",
+      "severity": "good",
+      "best_action": "",
+      "secondary_action": "",
+      "bad_action": "",
+      "enabled": true,
+      "variants": [
+        {
+          "text_variant_id": "v1",
+          "title": "平稳腐熟",
+          "desc": "腐熟完成，原定产量得以保留。",
+          "success_text": "",
+          "fail_text": ""
+        }
+      ]
+    },
     "anaerobic_risk": {
       "event_id": "anaerobic_risk",
       "stage": "state",
@@ -18,6 +230,24 @@
           "desc": "出现闷味，堆体有转厌氧风险。",
           "success_text": "异味减弱，通气恢复。",
           "fail_text": ""
+        }
+      ]
+    },
+    "anaerobic_slow_start": {
+      "event_id": "anaerobic_slow_start",
+      "stage": "state",
+      "severity": "info",
+      "best_action": "leave_as_is",
+      "secondary_action": "",
+      "bad_action": "vent_gas",
+      "enabled": true,
+      "variants": [
+        {
+          "text_variant_id": "v1",
+          "title": "气泡稀少",
+          "desc": "只有零星气泡，桶内尚未积气。",
+          "success_text": "桶口保持密封，发酵逐渐活跃。后段可能需要放气。",
+          "fail_text": "过早开阀干扰了发酵，部分原料未能充分转化。后段需要静置恢复。"
         }
       ]
     },

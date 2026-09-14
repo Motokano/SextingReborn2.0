@@ -51,6 +51,10 @@
             n_total: 0,
             ratio: null,
             legal_cn: false,
+            process_version: mode === MODE_ANAEROBIC ? 3 : 1,
+            anaerobic_condition: 'active',
+            anaerobic_loss: 0,
+            planned_amount: 1,
             base_tier: null,
             final_tier: null,
             compost_ops_score: 0,
@@ -256,6 +260,64 @@
         };
     }
 
+    function usesAnaerobicProcess(batch) {
+        return batch.mode === MODE_ANAEROBIC && batch.process_version >= 2;
+    }
+
+    function sampleEventById(id) {
+        var evt = eventsById[id];
+        if (!evt || evt.enabled !== true) return null;
+        var result = clone(evt);
+        result.variant = clone(sampleOne(evt.variants || []));
+        delete result.variants;
+        return result;
+    }
+
+    function ensureProcessEvent(batch, window) {
+        if (window.event) return;
+        var condition = batch.anaerobic_condition;
+        var id = condition === 'foaming' ? 'anaerobic_foam_rising'
+            : condition === 'slow' ? 'anaerobic_slow_start'
+            : condition === 'recovering' ? 'anaerobic_recovering'
+            : condition === 'pressurized' ? 'anaerobic_pressure_high'
+            : condition === 'stable' ? 'anaerobic_ready'
+            : 'anaerobic_pressure_rising';
+        window.event = sampleEventById(id);
+    }
+
+    // An unattended window means leaving the barrel sealed. This may be the
+    // right physical choice, but never awards interaction proficiency.
+    function resolveProcessChoice(batch, window, action) {
+        ensureProcessEvent(batch, window);
+        var evt = window.event;
+        if (!evt) return false;
+        var correct = action === evt.best_action;
+        var early = action === 'harvest_early';
+        var lossBefore = batch.anaerobic_loss;
+        if (!correct && !early) batch.anaerobic_loss = Math.min(0.5, batch.anaerobic_loss + 0.25);
+        window.loss_delta = batch.anaerobic_loss - lossBefore;
+        if (evt.event_id === 'anaerobic_foam_rising') {
+            batch.anaerobic_condition = correct ? 'stable' : (action === 'leave_as_is' ? 'pressurized' : 'recovering');
+        } else if (evt.event_id === 'anaerobic_slow_start') {
+            batch.anaerobic_condition = correct ? 'active' : 'recovering';
+        } else if (evt.event_id === 'anaerobic_recovering') {
+            batch.anaerobic_condition = correct ? 'stable' : 'recovering';
+        } else if (evt.event_id !== 'anaerobic_ready') {
+            batch.anaerobic_condition = correct ? 'stable' : 'pressurized';
+        }
+        var variant = evt.variant || {};
+        if (evt.event_id === 'anaerobic_foam_rising' && !correct) {
+            var foamFeedback = sampleEventById(action === 'leave_as_is' ? 'anaerobic_foam_ignored' : 'anaerobic_foam_spill');
+            variant = foamFeedback && foamFeedback.variant || variant;
+        }
+        if (early) {
+            var earlyFeedback = sampleEventById('anaerobic_early_harvest');
+            variant = earlyFeedback && earlyFeedback.variant || variant;
+        }
+        window.feedback_text = String((correct || early ? variant.success_text : variant.fail_text) || '');
+        return correct || early;
+    }
+
     function getStartBlockState(mode) {
         var b = state.batches[mode];
         if (!b) return { blocked: true, reason: 'invalid_mode', batch_status: null, has_pending_output: false };
@@ -320,6 +382,10 @@
             n_total: n,
             ratio: ratio,
             legal_cn: legal,
+            process_version: mode === MODE_ANAEROBIC ? 3 : 1,
+            anaerobic_condition: ratio > 35 ? 'slow' : (legal && ratio < 18 ? 'foaming' : 'active'),
+            anaerobic_loss: 0,
+            planned_amount: mode === MODE_ANAEROBIC && legal ? rollInclusiveInt(2, 4) : 1,
             base_tier: baseTier,
             final_tier: null,
             compost_ops_score: 0,
@@ -334,6 +400,12 @@
     function settleBatch(mode, reason) {
         var b = state.batches[mode];
         if (!b || b.status !== STATUS_FERMENTING) return { ok: false, reason: 'not_fermenting' };
+        if (usesAnaerobicProcess(b) && b.age_ticks < b.duration_ticks) {
+            var earlyWindow = b.windows[b.windows.length - 1];
+            if (reason !== 'early_harvest' || !earlyWindow || !earlyWindow.resolved || earlyWindow.action_id !== 'harvest_early') {
+                return { ok: false, reason: 'not_ready' };
+            }
+        }
 
         // 结算前先把已过期但未处理的窗口记为 miss；不会回拨时间，只影响分数。
         resolveExpiredWindows(b, true);
@@ -362,6 +434,23 @@
             return { ok: true, batch: clone(b) };
         }
 
+        if (usesAnaerobicProcess(b)) {
+            var early = reason === 'early_harvest';
+            b.final_tier = early ? clampTierByShift(b.base_tier, -1) : b.base_tier;
+            var retained = Math.max(0.5, 1 - b.anaerobic_loss) * (early ? 0.75 : 1);
+            b.results = [{ item_id: toAnaerobicItemId(b.final_tier), count: Math.max(1, Math.floor(b.planned_amount * retained)) }];
+            var report = sampleEventById(early ? 'anaerobic_result_early' : b.anaerobic_loss > 0 ? 'anaerobic_result_loss' : 'anaerobic_result_preserved');
+            b.result_report = {
+                text: String(report && report.variant && report.variant.desc || ''),
+                planned: b.planned_amount,
+                actual: b.results[0].count
+            };
+            if (b.anaerobic_condition === 'pressurized' && b.anaerobic_loss >= 0.5 && cfg.anaerobic_failure_buff_id) {
+                b.pending_effects.push({ type: 'apply_buff', buff_id: cfg.anaerobic_failure_buff_id });
+                applyPendingEffects(b);
+            }
+            return { ok: true, batch: clone(b) };
+        }
         var itemId = toAnaerobicItemId(b.base_tier);
         var amount = rollInclusiveInt(2, 4);
         var succ = countAnaerobicWindowSuccess(b);
@@ -403,8 +492,9 @@
             var w = batch.windows[i];
             if (!w || w.resolved) continue;
             if (nowAge < w.window_start) continue;
-            var expired = includeCurrentTick ? (nowAge > w.window_end) : (nowAge - 1 > w.window_end);
+            var expired = nowAge > w.window_end;
             if (!expired) continue;
+            if (usesAnaerobicProcess(batch)) resolveProcessChoice(batch, w, 'leave_as_is');
             w.resolved = true;
             w.miss = true;
             w.success = false;
@@ -428,8 +518,10 @@
             if (nowAge < w.window_start || nowAge > w.window_end) continue;
             if (!w.event) {
                 if (batch.mode === MODE_AEROBIC) w.event = sampleAerobicStateEvent();
+                else if (usesAnaerobicProcess(batch)) ensureProcessEvent(batch, w);
                 else w.event = sampleAnaerobicVentEvent(i);
             }
+            if (usesAnaerobicProcess(batch) && !w.event) continue;
             if (batch.mode === MODE_ANAEROBIC && !w.event) {
                 w.event = {
                     event_id: 'anaerobic_vent_window_' + String(i + 1),
@@ -478,6 +570,9 @@
         }
         var block = getStartBlockState(mode);
         if (block.blocked) return { ok: false, reason: block.reason || 'slot_not_ready' };
+        if (mode === MODE_ANAEROBIC && !['anaerobic_slow_start', 'anaerobic_recovering', 'anaerobic_pressure_high', 'anaerobic_ready', 'anaerobic_pressure_rising', 'anaerobic_early_harvest', 'anaerobic_foam_rising', 'anaerobic_foam_ignored', 'anaerobic_foam_spill', 'anaerobic_result_early', 'anaerobic_result_loss', 'anaerobic_result_preserved'].every(function (id) {
+            return eventsById[id] && eventsById[id].enabled === true;
+        })) return { ok: false, reason: 'events_unavailable' };
         var b = buildBatch(mode, payload);
         state.batches[mode] = b;
         runHook('on_batch_started', {
@@ -502,6 +597,8 @@
 
         var act = String(actionId || '').trim();
         if (!act) return { ok: false, reason: 'invalid_action' };
+        var event = w.event || {};
+        if ([event.best_action, event.secondary_action, event.bad_action].indexOf(act) < 0) return { ok: false, reason: 'invalid_action' };
 
         var delta = 0;
         var success = false;
@@ -515,6 +612,8 @@
                 delta = -1; success = false;
             }
             b.compost_ops_score += delta;
+        } else if (usesAnaerobicProcess(b)) {
+            success = resolveProcessChoice(b, w, act);
         } else {
             // 沤肥事件仅影响产量惩罚判定，不改分档。
             success = (act === 'vent_gas');
@@ -526,7 +625,13 @@
         w.action_id = act;
         w.success = success;
         w.score_delta = delta;
+        if (!usesAnaerobicProcess(b)) {
+            var variant = event.variant || {};
+            w.feedback_text = String((success ? variant.success_text : variant.fail_text) || '');
+        }
         b.pending_window_index = -1;
+        // Settle before the action's global tick, including on the final tick.
+        if (usesAnaerobicProcess(b) && act === 'harvest_early') settleBatch(mode, 'early_harvest');
 
         if (options.advance_world_tick !== false && global.Survival && typeof global.Survival.advanceTick === 'function') {
             if (mode === MODE_AEROBIC && typeof global.Survival.consumeStamina === 'function') {
@@ -544,7 +649,7 @@
             tick_cost: 1,
             batch: clone(b)
         });
-        return { ok: true, score_delta: delta, success: success, window_index: idx, batch: clone(b) };
+        return { ok: true, score_delta: delta, success: success, feedback_text: w.feedback_text, window_index: idx, batch: clone(b) };
     }
 
     function runHook(hookName, payload) {
@@ -692,7 +797,7 @@
             if (evt.enabled === true && String(evt.stage || '') === 'state') {
                 var sid = String(id);
                 if (/^anaerobic_vent_window_\d+$/.test(sid)) anaerobicVentEventIds.push(sid);
-                else aerobicStateEventIds.push(sid);
+                else if (!/^anaerobic_/.test(sid) || sid === 'anaerobic_risk') aerobicStateEventIds.push(sid);
             }
         }
         anaerobicVentEventIds.sort(function (a, b) { return a.localeCompare(b); });
@@ -727,10 +832,16 @@
         idle.n_total = Math.floor(Number(raw.n_total) || 0);
         idle.ratio = (raw.ratio == null || !isFinite(Number(raw.ratio))) ? null : Number(raw.ratio);
         idle.legal_cn = !!raw.legal_cn;
+        // Existing saves finish with their original two-vent rules.
+        idle.process_version = raw.process_version === 3 ? 3 : raw.process_version === 2 ? 2 : 1;
+        idle.anaerobic_condition = ['active', 'slow', 'stable', 'pressurized', 'recovering', 'foaming'].indexOf(raw.anaerobic_condition) >= 0 ? raw.anaerobic_condition : 'active';
+        if (raw.result_report && typeof raw.result_report === 'object') idle.result_report = clone(raw.result_report);
+        idle.anaerobic_loss = Math.max(0, Math.min(0.5, Number(raw.anaerobic_loss) || 0));
+        idle.planned_amount = Math.max(idle.legal_cn && mode === MODE_ANAEROBIC ? 2 : 1, Math.min(4, Math.floor(Number(raw.planned_amount) || 1)));
         idle.base_tier = raw.base_tier ? normalizeTier(raw.base_tier) : null;
         idle.final_tier = raw.final_tier ? String(raw.final_tier) : null;
         idle.compost_ops_score = Math.floor(Number(raw.compost_ops_score) || 0);
-        idle.windows = Array.isArray(raw.windows) ? raw.windows : ensureWindowsForMode(mode);
+        idle.windows = Array.isArray(raw.windows) ? clone(raw.windows) : ensureWindowsForMode(mode);
         idle.pending_window_index = Number(raw.pending_window_index);
         if (!isFinite(idle.pending_window_index)) idle.pending_window_index = -1;
         idle.results = Array.isArray(raw.results) ? raw.results.map(function (r) {

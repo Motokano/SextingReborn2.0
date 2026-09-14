@@ -1,0 +1,7 @@
+<!doctype html><html lang="zh-CN"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>主角模块与共用姿势参考</title>
+<link rel="stylesheet" href="style.css">
+<header><h1>历史装配实验 · 已撤回标准地位</h1><p>本实验按参考骨长装配，未保持已认可主角的外观结构，不作为NPC模板。正式标准是原主角形象；骨骼只提供姿势参考。下方仅保留实验记录。</p><nav><a href="hero/appearance-reference.png">已认可的主角外观标准</a><a href="hero/parts.png">部件草稿（未验收）</a><a href="hero/skin.json">历史装配参数</a><a href="rig/poses.json">姿势参考数据</a><a href="README.md">最新标准说明</a></nav></header>
+<section class="toolbar"><label>状态 <select id="state"></select></label><button id="previous">上一种</button><button id="next">下一种</button><label><input id="wire" type="checkbox">显示关节</label><label><input id="only-rig" type="checkbox">只看骨骼参数参考</label><label>拆开 <input id="explode" type="range" min="0" max="18" value="0"></label><button id="export">导出当前装配PNG</button></section>
+<section class="workspace"><div><canvas id="preview" width="840" height="720"></canvas><p id="info"></p><p class="hint">装配角度直接读取保存的姿势。部件纹理、粗细与覆盖范围属于外观层；它们仍需检查接缝与轮廓，不能据参数正确宣称美术已完全贴合。</p></div><aside><h2>16块外观积木</h2><p>选中部件可高亮。上传同尺寸透明部件试装，会同时作用于下方全部128种状态，仅保留在本页内存。</p><div id="parts"></div><button id="reset">恢复主角原部件</button><p id="upload-status"></p></aside></section>
+<details><summary>当前精确角度与变换</summary><pre id="angles"></pre></details><h2>同一套部件装配出的128种状态</h2><main id="all"></main>
+<script type="module" src="viewer.mjs"></script></html>

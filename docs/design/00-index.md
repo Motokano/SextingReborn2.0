@@ -1,5 +1,18 @@
 # 设计文档总览与模块索引
 
+> 棋子美术规范已确认：[棋子形象与落地表现](51-pawn-art-direction.md)。以通勤装v4为基准：小头、修长棋身、宽薄底座，72/144高度比例，右下轮廓短投影；后续新棋子统一遵循。
+
+> 棋子视角第一阶段试用版已接入：[C / 45° 迁移与实施记录](50-isometric-pawn-migration.md)。厚度30、地图方向WASD、Shift点击邻格原地转向；保留原俯视视角切换。
+
+> 加工等级规则已更新：[推荐等级与良品率](47-pharmacy-crafting-levels.md)。低等级可尝试，成功率受罚；替代旧硬门槛设计。具体曲线待定，未实装。
+
+> 配伍失败处理已更新：[统一药渣与避免失败变体物品](47-pharmacy-compounding-failure.md)。替代旧沉淀注射液产物方案，合法高毒配方仍可制作；待实装。
+
+> 药效混用规则已确认：[同类效果取最高与独立计时](47-pharmacy-effect-stacking.md)。不同效果并存，恢复按具体状态、外敷按部位分别判断；待统一实装。
+
+> 后续迭代约定已确认：[制药迭代流程与版本处理](47-pharmacy-iteration-workflow.md)。当前无正式存档，本轮不要求旧库存迁移；正式开放存档后再按改动类型处理。
+
+
 本文档为《潮碧物语》设计的总览；详细内容见各模块文件及 capitalism 目录。
 
 > **索引维护说明（2026-09 清理后重建）**：模块表按文件性质分区（设计正本 / 实现口径与约定 / 执行清单与归档）。编号缺口（12/15/23-compost-ui/24-temp/27-audit/33）为**已归档或改名**文件，一览见 §二·C；`44-meal-balance-attribute-exp` 已改号 **48**。清理决策记录见 [design-cleanup-manifest.md](../../docs/design-cleanup-manifest.md)。
@@ -26,11 +39,13 @@
 | 总览索引 | [00-index.md](00-index.md) | 本文件：设计哲学摘要、分区模块表、贸易子模块表 |
 | 设计哲学 | [01-philosophy.md](01-philosophy.md) | 世界观、0 教学、认知论、成长基调、对冲原则、高惩罚、非强制战斗、无必备物品 |
 | 区域结构 | [02-regions.md](02-regions.md) | 基地 / 野外 / 城镇 / 地牢；HUD/交互/NPC 摆放口径（引用 16） |
+| 地牢门票与改变 | [02-dungeon-entry-modifiers.md](02-dungeon-entry-modifiers.md) | 门票获得时固定条件、起始层数、条件改变与环境改变、生死疲劳示例及待定边界；未实装 |
 | 死亡与投保 | [03-death-and-insurance.md](03-death-and-insurance.md) | 死亡惩罚（战斗技能扣 10% 当前等级）、复活损毁恢复（部位上限 50%）、投保、代码、使用与共享规则 |
 | 实战经验 | [04-combat-exp.md](04-combat-exp.md) | 经验上限、伤害加成 |
 | 角色基础属性 | [05-character-attributes.md](05-character-attributes.md) | 五项属性、衍生、筋骨/柔韧/呼吸/身手/专注、物品栏、负重、减伤链（激活防具盾口径，见 37） |
 | 生存属性 | [06-survival.md](06-survival.md) | 饱食、饮水、体力、精力、心情、定力、性能力、性别、营养、体温、底气与行气 |
 | 战斗核心 | [07-combat-core.md](07-combat-core.md) | 回合刻、方向与范围、呼吸条（气力）与底气、出力、速度与先手/连击 |
+| 战斗伤害统一设计 | [49-combat-damage-rework.md](49-combat-damage-rework.md) | 五项主体公式、主属性与养成、呼吸条件倍率、附加与转换、敌我防御统一、资源失败与撞墙；规则已定，大部分待实现，含算例与迁移状态 |
 | 命中招架与伤害 | [08-hit-parry-damage.md](08-hit-parry-damage.md) | 命中率、招架、卸力、减伤链（激活盾层 → 柔韧 → 微调，见 37） |
 | 身体部位与状态 | [09-body-parts.md](09-body-parts.md) | 七部位、损毁模型（满值即失能；旧"骨折/自恢复"条目标已废）、手术 |
 | 敌人设计 | [10-enemies.md](10-enemies.md) | 敌人与主角差异、配置、掉落池（默认可击杀，D17）；接线状态见文末「实现记录」 |
@@ -61,7 +76,7 @@
 | 地牢敌人完成度梯度 | [44-dungeon-enemy-gradient.md](44-dungeon-enemy-gradient.md) | 16 层 × 4 档敌人完成度框架（对齐 42）：成长标尺/威胁画像/经验阶梯/情报与六劫挂钩 |
 | 电池经济数值骨架 | [45-battery-economy.md](45-battery-economy.md) | 电力锚线、电池容量档位、16 层掉落曲线、牧场需电模块耗电、起步储能；电箱 k91 暂缓 |
 | 饭盒系统 | [46-lunchbox-design.md](46-lunchbox-design.md) | 打包一餐、容量升级线、批量（46 裁定：同款刷新时长不叠层）、腐败/保鲜 |
-| 制药系统 | [47-pharmacy-system.md](47-pharmacy-system.md) | 制程、途径剂型、成瘾度、使用语义、知识获取、配药模型；**已全量落地（2026-09）**：框架六缺口 / 剂型矩阵 / 24 件成品 + 46 条配方 / 配药模式 / 成瘾毒性 / UI 信息显示；数值 ❓ 待调；现状见 §1.1、药品全表见 §6.5 |
+| 制药系统 | [47-pharmacy-system.md](47-pharmacy-system.md) | 当前整合规范；先读[Sol实施清单](47-pharmacy-implementation-checklist.md)。运行源57条固定配方，新增候选及暂缓分支以规划为准；设计与已实现状态分开 |
 | 用餐与进食经验 | [48-meal-balance-attribute-exp.md](48-meal-balance-attribute-exp.md) | 原 44-meal-balance-attribute-exp（改号）；营养均衡→进食经验倍率（k79 实装口径） |
 | 终局料理生产线 | [life-cooking-final-goals.md](life-cooking-final-goals.md) | Raw→Intermediate→Final 终局料理底稿；关联 21/43/48 |
 
@@ -120,3 +135,17 @@ GAME_DESIGN 中「贸易与旅行商人」不单独成章，以 capitalism 目�
 ---
 
 *设计文档与实现模块总览（含 capitalism 并入；2026-09 清理后重建）。*
+
+- [注射统一配置与药品目录迭代](47-injection-compounding-only.md)：已落地，57 条固定配方、19 件非注射成品；注射通过药粉配置。
+
+- [制药完整配方总表：现有原料扩展稿](../reference/pharmacy-full-recipe-plan.md)：现有57条、拟新增22条、拟调整2条（含暂缓候选，不等于最终发布数量）；新增内容未实装。
+
+- [制药依赖逐药数值草案](../reference/pharmacy-addiction-values.md)：39种药粉、19件现役成品、30个单粉配置示例；免疫0/100及连续使用核算，未实装。
+
+- [Sol新版制药实施清单](47-pharmacy-implementation-checklist.md)：数据与代码落点、部署顺序、验收与候选数值边界。
+
+> 后续棋子肢体规则已确认：[七部位与共用损毁姿势](52-pawn-body-modules-and-poses.md)。主角与普通NPC共用，特殊Boss可专用；头胸腹伤效、四肢缺失与剩余支撑组合。设计确认，尚未实装。
+
+> [共用棋子姿势设计v1](53-shared-pawn-pose-design.md)：基础支撑、四种一手一腿组合、头胸腹伤态与全组合映射。设计稿，未实装。
+
+> [完整损毁组合与数据v2](54-pawn-combined-injury-poses.md)：显式保存128个状态，包含P3/P4/P5共32个变体；后续使用v2，v1仅作历史。数据已校验，未实装。

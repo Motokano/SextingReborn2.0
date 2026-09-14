@@ -1,0 +1,71 @@
+{
+  "source": "../pose-atlas-v1",
+  "prompt": "Make a transparent-background PNG asset. Remove background and labels from this sheet, leaving only the eight existing pawn figures including their bases. Preserve their poses, missing limbs, injury marks, sizes and arrangement exactly. Actual transparent alpha channel. No background pattern. This must be an RGBA cutout image with empty alpha outside the eight pawns. Exactly four columns two rows.",
+  "corrections": "L10 and L12 bottom row column 2 abdomen injury restored through imagegen; L14/15 non-alpha attempts rejected.",
+  "outputs": [
+    {
+      "i": 0,
+      "path": "C:\\Users\\haoxian.huang\\.codex\\generated_images\\01a09e15-092c-7913-adbc-d501f09a0900\\exec-6d7cec16-7678-4689-bdc2-bf3360c59656.png"
+    },
+    {
+      "i": 1,
+      "path": "C:\\Users\\haoxian.huang\\.codex\\generated_images\\01a09e15-092c-7913-adbc-d501f09a0900\\exec-603554d3-fe1f-465b-8655-ebc167edadaf.png"
+    },
+    {
+      "i": 2,
+      "path": "C:\\Users\\haoxian.huang\\.codex\\generated_images\\01a09e15-092c-7913-adbc-d501f09a0900\\exec-4e974218-cba9-41c3-91fb-00dc21119a26.png"
+    },
+    {
+      "i": 3,
+      "path": "C:\\Users\\haoxian.huang\\.codex\\generated_images\\01a09e15-092c-7913-adbc-d501f09a0900\\exec-410853c0-d418-44e5-9bec-218ae48f6d82.png"
+    },
+    {
+      "i": 4,
+      "path": "C:\\Users\\haoxian.huang\\.codex\\generated_images\\01a09e15-092c-7913-adbc-d501f09a0900\\exec-00330ed9-668d-4307-a6b5-307ffa60cbae.png"
+    },
+    {
+      "i": 5,
+      "path": "C:\\Users\\haoxian.huang\\.codex\\generated_images\\01a09e15-092c-7913-adbc-d501f09a0900\\exec-972879cd-adfa-4243-b667-049024549d35.png"
+    },
+    {
+      "i": 6,
+      "path": "C:\\Users\\haoxian.huang\\.codex\\generated_images\\01a09e15-092c-7913-adbc-d501f09a0900\\exec-ffe7d980-b863-4c9d-9b0a-ffe7701c207e.png"
+    },
+    {
+      "i": 7,
+      "path": "C:\\Users\\haoxian.huang\\.codex\\generated_images\\01a09e15-092c-7913-adbc-d501f09a0900\\exec-cf128db1-043c-4dce-8959-36772c6636d6.png"
+    },
+    {
+      "i": 8,
+      "path": "C:\\Users\\haoxian.huang\\.codex\\generated_images\\01a09e15-092c-7913-adbc-d501f09a0900\\exec-d8694f60-c969-477e-a240-878a585ef19c.png"
+    },
+    {
+      "i": 9,
+      "path": "C:\\Users\\haoxian.huang\\.codex\\generated_images\\01a09e15-092c-7913-adbc-d501f09a0900\\exec-53568caf-351e-46e7-a22b-953ac13946cf.png"
+    },
+    {
+      "i": 10,
+      "path": "C:\\Users\\haoxian.huang\\.codex\\generated_images\\01a09e15-092c-7913-adbc-d501f09a0900\\exec-266de7d6-8a6a-43af-ab9f-34c79ecdde5b.png"
+    },
+    {
+      "i": 11,
+      "path": "C:\\Users\\haoxian.huang\\.codex\\generated_images\\01a09e15-092c-7913-adbc-d501f09a0900\\exec-45d513a1-c0f0-4c24-801e-a1a32900114e.png"
+    },
+    {
+      "i": 12,
+      "path": "C:\\Users\\haoxian.huang\\.codex\\generated_images\\01a09e15-092c-7913-adbc-d501f09a0900\\exec-82fc3dce-312f-4045-894f-709dc8b4ee79.png"
+    },
+    {
+      "i": 13,
+      "path": "C:\\Users\\haoxian.huang\\.codex\\generated_images\\01a09e15-092c-7913-adbc-d501f09a0900\\exec-7a2fc053-44a9-487f-acd4-5ecb7bf1b937.png"
+    },
+    {
+      "i": 14,
+      "path": "C:\\Users\\haoxian.huang\\.codex\\generated_images\\01a09e15-092c-7913-adbc-d501f09a0900\\exec-5b1d493f-6ba0-42f7-bd2f-d9ad8a053d42.png"
+    },
+    {
+      "i": 15,
+      "path": "C:\\Users\\haoxian.huang\\.codex\\generated_images\\01a09e15-092c-7913-adbc-d501f09a0900\\exec-473863df-c2f2-4e7d-8b50-1f20555b5c3b.png"
+    }
+  ]
+}

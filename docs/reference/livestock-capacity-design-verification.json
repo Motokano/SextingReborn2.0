@@ -1,0 +1,137 @@
+{
+  "status": "design-only, not runtime verification",
+  "capacity": 30,
+  "cost": {
+    "cattle": 6,
+    "sheep": 2,
+    "pig": 3,
+    "chicken": 0
+  },
+  "formula": "x=max(0,usage/capacity-1); P=exp(-1.5*x-2.5*x*x)",
+  "scope": "Monotonic output proof assumes equal composition, age, health and nutrition, with unconstrained production. Actual runtime integration and ecology simulations are pending.",
+  "checks": 20000,
+  "rows": [
+    {
+      "ratio": 1,
+      "output": 1,
+      "totalOutput": 1,
+      "fertility": 1,
+      "maintenance": 1,
+      "ecological": 1,
+      "lateDamagePerRound": 0
+    },
+    {
+      "ratio": 1.1,
+      "output": 0.8394570207692071,
+      "totalOutput": 0.9234027228461279,
+      "fertility": 0.7046880897187131,
+      "maintenance": 1.05,
+      "ecological": 1.2400000000000002,
+      "lateDamagePerRound": 0
+    },
+    {
+      "ratio": 1.25,
+      "output": 0.5878696731223465,
+      "totalOutput": 0.7348370914029332,
+      "fertility": 0.3455907525769745,
+      "maintenance": 1.125,
+      "ecological": 1.75,
+      "lateDamagePerRound": 0
+    },
+    {
+      "ratio": 1.5,
+      "output": 0.25283959580474646,
+      "totalOutput": 0.3792593937071197,
+      "fertility": 0.06392786120670757,
+      "maintenance": 1.25,
+      "ecological": 3,
+      "lateDamagePerRound": 8
+    },
+    {
+      "ratio": 1.75,
+      "output": 0.07955950871822769,
+      "totalOutput": 0.13922914025689845,
+      "fertility": 0.006329715427485747,
+      "maintenance": 1.375,
+      "ecological": 4.75,
+      "lateDamagePerRound": 32
+    },
+    {
+      "ratio": 2,
+      "output": 0.01831563888873418,
+      "totalOutput": 0.03663127777746836,
+      "fertility": 0.0003354626279025118,
+      "maintenance": 1.5,
+      "ecological": 7,
+      "lateDamagePerRound": 40
+    }
+  ],
+  "cases": [
+    {
+      "name": "两牛两羊两猪",
+      "used": 22,
+      "ratio": 0.7333333333333333,
+      "output": 1,
+      "totalOutput": 0.7333333333333333,
+      "fertility": 1,
+      "maintenance": 1,
+      "ecological": 1,
+      "lateDamagePerRound": 0
+    },
+    {
+      "name": "增加四只猪仔",
+      "used": 34,
+      "ratio": 1.1333333333333333,
+      "output": 0.7831394949065557,
+      "totalOutput": 0.8875580942274297,
+      "fertility": 0.6133074684824951,
+      "maintenance": 1.0666666666666667,
+      "ecological": 1.3377777777777777,
+      "lateDamagePerRound": 0
+    },
+    {
+      "name": "五牛",
+      "used": 30,
+      "ratio": 1,
+      "output": 1,
+      "totalOutput": 1,
+      "fertility": 1,
+      "maintenance": 1,
+      "ecological": 1,
+      "lateDamagePerRound": 0
+    },
+    {
+      "name": "十猪",
+      "used": 30,
+      "ratio": 1,
+      "output": 1,
+      "totalOutput": 1,
+      "fertility": 1,
+      "maintenance": 1,
+      "ecological": 1,
+      "lateDamagePerRound": 0
+    },
+    {
+      "name": "十五羊",
+      "used": 30,
+      "ratio": 1,
+      "output": 1,
+      "totalOutput": 1,
+      "fertility": 1,
+      "maintenance": 1,
+      "ecological": 1,
+      "lateDamagePerRound": 0
+    },
+    {
+      "name": "两牛两羊十猪",
+      "used": 46,
+      "ratio": 1.5333333333333334,
+      "output": 0.22066465874200483,
+      "totalOutput": 0.33835247673774077,
+      "fertility": 0.04869289161772545,
+      "maintenance": 1.2666666666666666,
+      "ecological": 3.2044444444444453,
+      "lateDamagePerRound": 10.275555555555563
+    }
+  ]
+}

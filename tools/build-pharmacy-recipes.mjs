@@ -17,6 +17,12 @@ const OUT_PATH = path.join(root, 'data', 'recipes.json');
 const CHECK_ONLY = process.argv.includes('--check');
 
 const src = JSON.parse(fs.readFileSync(SRC_PATH, 'utf8'));
+const items = JSON.parse(fs.readFileSync(path.join(root, 'data', 'items.json'), 'utf8'));
+for (const recipe of src.recipes || []) {
+  if (recipe.enabled !== false && items[recipe.main_output?.[0]]?.use_action === 'inject') {
+    throw new Error('注射液仅允许动态配置，不能生成固定配方：' + recipe.recipe_id);
+  }
+}
 const doc = JSON.parse(fs.readFileSync(OUT_PATH, 'utf8'));
 const recipes = doc.recipes && typeof doc.recipes === 'object' ? doc.recipes : {};
 
@@ -46,7 +52,8 @@ let replaced = 0;
     inputs: toInputs(r.inputs),
     main_output: toOutput(r.main_output),
     bonus_outputs: [],
-    required_skill_level_min: r.required_skill_level_min != null ? r.required_skill_level_min : null,
+    required_skill_level_min: null,
+    recommended_skill_level: r.recommended_skill_level != null ? r.recommended_skill_level : (r.required_skill_level_min != null ? r.required_skill_level_min : 0),
     proficiency_usage_key: r.proficiency_usage_key != null ? r.proficiency_usage_key : null,
     required_skill_id: null,
     recipe_processor_id: null,
@@ -54,6 +61,7 @@ let replaced = 0;
     failure_output: null,
     allowed_station_tags: null,
     match_weight: r.match_weight != null ? r.match_weight : 1,
+    cost_override: r.cost_override && typeof r.cost_override === 'object' ? { ...r.cost_override } : null,
     pharmacy_generated: true
   };
   if (recipes[rid]) replaced++;

@@ -36,10 +36,16 @@
         proficiency_usage_key: 'pharmacy_success'
     };
 
-    /** 装载站点配置（幂等；loadConfig 调用）。对象/数组按引用保存，与旧闭包语义一致。 */
+    /** 装载站点配置（幂等；loadConfig 调用）。从统一工艺表中只收录制药工艺。 */
     function setConfig(c) {
         if (!c || typeof c !== 'object') return;
-        if (c.methods && typeof c.methods === 'object') cfg.methods = c.methods;
+        if (c.methods && typeof c.methods === 'object') {
+            cfg.methods = {};
+            Object.keys(c.methods).forEach(function (id) {
+                var method = c.methods[id];
+                if (method && method.recipe_system === RECIPE_SYSTEM_ID) cfg.methods[id] = method;
+            });
+        }
         if (Array.isArray(c.recipes)) cfg.recipes = c.recipes;
         if (c.systemConfig && typeof c.systemConfig === 'object') {
             cfg.system = Object.assign({}, cfg.system, c.systemConfig);
@@ -203,9 +209,43 @@
         return 0;
     }
 
+    function getPharmacySuccessRate(baseSuccessRate, recommendedLevel) {
+        var level = Math.max(0, Math.min(skillCurve.max_level, getPharmacySkillLevel()));
+        if (level >= skillCurve.max_level) return 1;
+        var base = Math.max(0, Number(baseSuccessRate) || 0);
+        var recommended = Math.max(0, Math.floor(Number(recommendedLevel) || 0));
+        var raw = Math.max(0.15, base + level * skillCurve.success_bonus_per_level - Math.max(0, recommended - level) * 0.05);
+        return StationCraftCore.getProductionSuccessRateWithMoodDelta(raw);
+    }
+
+    function getCraftPreview(methodId, selectedInputs) {
+        var mid = String(methodId || '').trim();
+        var method = getMethods() && getMethods()[mid] ? getMethods()[mid] : null;
+        if (!method) return { ok: false, reason: 'method_not_found' };
+        var route = tryResolvePharmacyByUnifiedRoute(mid, selectedInputs || []);
+        if (!route.ok || !route.data || !route.data.main_output) return { ok: false, reason: 'no_recipe' };
+        var data = route.data;
+        var recommended = Math.max(0, Math.floor(Number(data.recommended_skill_level) || 0));
+        var costSource = data.cost_override ? { cost: data.cost_override } : method;
+        var base = data.base_success_rate != null ? Number(data.base_success_rate) : Number(method.base_success_rate);
+        return {
+            ok: true,
+            recipe_id: data.selected_recipe_id || '',
+            output: data.main_output,
+            recommended_skill_level: recommended,
+            current_skill_level: getPharmacySkillLevel(),
+            success_rate: getPharmacySuccessRate(base, recommended),
+            cost: {
+                fuel: StationCraftCore.readMethodCostValue(costSource, 'fuel', 'fuel_cost'),
+                ticks: StationCraftCore.readMethodCostValue(costSource, 'ticks', 'craft_ticks'),
+                stamina: StationCraftCore.readMethodCostValue(costSource, 'stamina', 'stamina_cost')
+            }
+        };
+    }
+
     /** 按累计成功次数映射技能等级（默认 5000000 次达到满级 100）。 */
     function getPharmacyLevelBySuccessUses(successUses) {
-        var uses = Math.max(0, parseInt(successUses, 10) || 0);
+        var uses = Math.max(0, Number(successUses) || 0);
         var ratio = Math.max(0, Math.min(1, uses / skillCurve.max_proficiency_uses));
         return Math.max(1, Math.min(skillCurve.max_level, 1 + Math.floor(ratio * (skillCurve.max_level - 1))));
     }
@@ -240,7 +280,7 @@
             st.skills.life_pharmacy.move_usage = {};
             changed = true;
         }
-        var uses = Math.max(0, parseInt(st.skills.life_pharmacy.move_usage[skillCurve.proficiency_usage_key], 10) || 0);
+        var uses = Math.max(0, Number(st.skills.life_pharmacy.move_usage[skillCurve.proficiency_usage_key]) || 0);
         var mappedLv = getPharmacyLevelBySuccessUses(uses);
         if ((parseInt(st.skills.life_pharmacy.level, 10) || 0) !== mappedLv) {
             st.skills.life_pharmacy.level = mappedLv;
@@ -251,14 +291,17 @@
     }
 
     /** 制药成功 +1 熟练度（move_usage.pharmacy_success）并按曲线升等级。 */
-    function addPharmacySuccessProficiency() {
+    function addPharmacySuccessProficiency(amount) {
         var IE = getIE();
-        if (!IE || typeof IE.incrementSkillMoveUsage !== 'function' || typeof IE.getState !== 'function') return;
+        if (!IE || typeof IE.getState !== 'function') return;
         if (!ensureLifePharmacySkillEntry()) return;
-        var newUses = IE.incrementSkillMoveUsage('life_pharmacy', skillCurve.proficiency_usage_key, 1);
         var st = IE.getState();
         if (!st || !st.skills || !st.skills.life_pharmacy) return;
         var ent = st.skills.life_pharmacy;
+        var gain = amount == null ? 1 : Math.max(0, Number(amount) || 0);
+        var oldUses = Number(ent.move_usage[skillCurve.proficiency_usage_key]) || 0;
+        var newUses = oldUses + gain;
+        ent.move_usage[skillCurve.proficiency_usage_key] = newUses;
         var nextLv = getPharmacyLevelBySuccessUses(newUses);
         var curLv = Math.max(1, parseInt(ent.level, 10) || 1);
         if (nextLv !== curLv) {
@@ -294,6 +337,33 @@
         if (cs) cs.active_craft = null;
     }
 
+    /** 成品继承本批易腐投入中最低剩余新鲜度比例；非易腐投入不参与。 */
+    function inheritSpoilageOnOutput(outputInstance, consumedItems) {
+        var out = outputInstance && typeof outputInstance === 'object' ? outputInstance : null;
+        var IE0 = getIE();
+        if (!out || !out.item_id || !IE0 || typeof IE0.getItemTemplate !== 'function') return out;
+        var outTpl = IE0.getItemTemplate(out.item_id);
+        var outLimit = Math.max(0, Math.floor(Number(outTpl && outTpl.spoilage_ticks) || 0));
+        if (!(outLimit > 0)) return out;
+        var minimumRemaining = 1;
+        var foundPerishable = false;
+        var rows = Array.isArray(consumedItems) ? consumedItems : [];
+        for (var i = 0; i < rows.length; i++) {
+            var row = rows[i];
+            if (!row || !row.item_id) continue;
+            var tpl = IE0.getItemTemplate(row.item_id);
+            var limit = Math.max(0, Math.floor(Number(tpl && tpl.spoilage_ticks) || 0));
+            if (!(limit > 0)) continue;
+            foundPerishable = true;
+            var elapsed = Math.max(0, Number(row.spoilage_elapsed_ticks) || 0);
+            minimumRemaining = Math.min(minimumRemaining, Math.max(0, Math.min(1, (limit - elapsed) / limit)));
+        }
+        out.spoilage_elapsed_ticks = foundPerishable
+            ? Math.max(0, Math.min(outLimit, Math.ceil(outLimit * (1 - minimumRemaining))))
+            : 0;
+        return out;
+    }
+
     /** 制药制作结算（原 scene-app finalizePharmacyCraftNow 迁出；行为零变）。 */
     function finalizeCraftNow(craftSnap, options) {
         var opts = options && typeof options === 'object' ? options : {};
@@ -310,7 +380,7 @@
         var matched = StationCraftCore.matchPharmacyRecipesByInputs(selected, mid);
 
         function grantItemOrDrop(itemId) {
-            var outInst = { item_id: itemId, count: 1 };
+            var outInst = inheritSpoilageOnOutput({ item_id: itemId, count: 1 }, evalRes && evalRes.success ? craft.consumed_items : []);
             var placed = IE.putItemIntoDefaultContainer(outInst);
             if (!placed || !placed.placed) {
                 var st0 = E.getState();
@@ -319,6 +389,7 @@
         }
 
         if (forceFailure) {
+            addPharmacySuccessProficiency(0.25);
             grantItemOrDrop(failId);
             showMsg(ui('pharmacy.msg.done_fail', { item: failId }), 'warn');
             SceneHud.refresh('backpack');
@@ -346,7 +417,8 @@
                     output_item_id: String(pickMainOutput.item_id),
                     recipe_id: pickRecipeId,
                     bonus_outputs: pickBonusOutputs,
-                    failure_output: pickFailureOutput
+                    failure_output: pickFailureOutput,
+                    recommended_skill_level: Math.max(0, parseInt(routeData.recommended_skill_level, 10) || 0)
                 };
             }
         } else if (unifiedRet.error && unifiedRet.error.code !== 'RECIPE_NO_MATCHED_RECIPE') {
@@ -354,6 +426,7 @@
         }
         if (!pick) {
             if (!matched.length) {
+                addPharmacySuccessProficiency(0.25);
                 grantItemOrDrop(failId);
                 showMsg(ui('pharmacy.msg.no_recipe_fail', { item: failId }), 'warn');
                 SceneHud.refresh('backpack');
@@ -363,6 +436,7 @@
             }
             pick = StationCraftCore.pickPharmacyRecipeWeighted(matched);
             if (!pick) {
+                addPharmacySuccessProficiency(0.25);
                 grantItemOrDrop(failId);
                 showMsg(ui('pharmacy.msg.done_fail', { item: failId }), 'warn');
                 SceneHud.refresh('backpack');
@@ -385,9 +459,8 @@
             })
             : { success: true, success_rate: 1 };
         var baseSuccessRate = Math.max(0, Number(evalRes.success_rate) || 0);
-        var bonusFromPharmacyLv = pharmacyLv * skillCurve.success_bonus_per_level;
-        var pharmacySuccessRaw = baseSuccessRate + bonusFromPharmacyLv;
-        var pharmacySuccessFinal = StationCraftCore.getProductionSuccessRateWithMoodDelta(pharmacySuccessRaw);
+        var recommendedLevel = Math.max(0, parseInt((pick && pick.recommended_skill_level) || craft.recommended_skill_level, 10) || 0);
+        var pharmacySuccessFinal = getPharmacySuccessRate(baseSuccessRate, recommendedLevel);
         var isMaxPharmacyLv = pharmacyLv >= skillCurve.max_level;
         evalRes.success_rate = pharmacySuccessFinal;
         evalRes.success = isMaxPharmacyLv ? true : (Math.random() < pharmacySuccessFinal);
@@ -401,7 +474,7 @@
             outputItemId = String(pick.failure_output.item_id);
         }
         if (evalRes.success && pickRecipeId) markRecipeKnown(pickRecipeId);
-        if (evalRes.success) addPharmacySuccessProficiency();
+        addPharmacySuccessProficiency(evalRes.success ? 1 : 0.25);
 
         grantItemOrDrop(outputItemId);
         if (evalRes.success && Array.isArray(pickBonusOutputs) && pickBonusOutputs.length) {
@@ -589,6 +662,8 @@
         getSystemConfigValue: getSystemConfigValue,
         getSkillCurve: getSkillCurve,
         getPharmacySkillLevel: getPharmacySkillLevel,
+        getPharmacySuccessRate: getPharmacySuccessRate,
+        getCraftPreview: getCraftPreview,
         getPharmacyLevelBySuccessUses: getPharmacyLevelBySuccessUses,
         ensureLifePharmacySkillEntry: ensureLifePharmacySkillEntry,
         addPharmacySuccessProficiency: addPharmacySuccessProficiency,
@@ -603,6 +678,7 @@
         getPharmacyMethodDisplayName: getPharmacyMethodDisplayName,
         getActiveCraft: getActiveCraft,
         clearActiveCraft: clearActiveCraft,
+        inheritSpoilageOnOutput: inheritSpoilageOnOutput,
         finalizeCraftNow: finalizeCraftNow,
         tickCraftAfterWorldTick: tickCraftAfterWorldTick,
         getPharmacyAccessoryItemIdsFromMethods: getPharmacyAccessoryItemIdsFromMethods,

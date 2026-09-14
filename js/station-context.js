@@ -12,8 +12,7 @@
  *
  * 依赖：window.GameEngine（E）；CookingStation（temp station 运行时/实体判定）；
  * window.NPCSystem（解锁 flag）；其余均为纯逻辑。
- * 注：pharmacy 上下文的 isPharmacyTempStationEntity/findPharmacyTempStationAt 原为
- * 引用未定义的潜伏死路径（制药无临时台），逐字保留以维持行为等价。
+ * 制药仅使用常驻站注解，不存在临时制药台。
  */
 (function (global) {
     'use strict';
@@ -90,18 +89,6 @@
         var st = E.getState();
         var hit = null;
         forEachAdjacentCell(st.x, st.y, function (x, y) {
-            var rec = (E.getEntityRecordAt && typeof E.getEntityRecordAt === 'function') ? E.getEntityRecordAt(x, y) : null;
-            if (isPharmacyTempStationEntity(rec)) {
-                var temp = findPharmacyTempStationAt(st.mapId, x, y) || CookingStation.normalizeTempStationEntry(Object.assign({ map_id: st.mapId }, rec));
-                hit = {
-                    station_type: 'temp',
-                    map_id: st.mapId,
-                    x: x,
-                    y: y,
-                    temp_station: temp
-                };
-                return true;
-            }
             var ann = (E.getAnnotationAt && typeof E.getAnnotationAt === 'function') ? E.getAnnotationAt(x, y) : null;
             var s = ann != null ? String(ann) : '';
             if (isPharmacyStationAnnotationText(s)) {

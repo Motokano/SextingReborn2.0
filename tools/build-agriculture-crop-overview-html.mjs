@@ -13,7 +13,7 @@ const SHOP_JSON = path.join(ROOT, 'data', 'agriculture-seed-shop.json');
 const CROP_JSON = path.join(ROOT, 'data', 'agriculture-crop-defs.json');
 const SOILS_JSON = path.join(ROOT, 'data', 'agriculture-soils.json');
 const POOL_UPGRADES_JSON = path.join(ROOT, 'data', 'agriculture-pool-upgrades.json');
-const OUT = path.join(ROOT, 'agriculture-crop-design-overview.html');
+const OUT = path.join(ROOT, 'reference', 'agriculture-crop-design-overview.html');
 
 const shop = JSON.parse(fs.readFileSync(SHOP_JSON, 'utf8'));
 let poolUpgradesDoc = { levels: {}, baseline_pool_water: 200 };
@@ -100,6 +100,8 @@ const rows = shop.seeds.map((s) => {
     water: d.minWater != null ? `${d.minWater}～${d.maxWater}` : '—',
     perfectWater:
       d.perfectMinWater != null ? `${d.perfectMinWater}～${d.perfectMaxWater}` : '—',
+    traceBand: d.minTrace != null ? `${d.minTrace}～${d.maxTrace}` : '—',
+    fertBand: d.minFertilizer != null ? `${d.minFertilizer}～${d.maxFertilizer}` : '—',
     traceSens: d.trace_sensitivity || '—',
     traceSafe: d.trace_safe_max != null ? String(d.trace_safe_max) : '—',
     traceScore:
@@ -461,7 +463,7 @@ ${Object.entries(structReq)
               <th>档</th><th>种子</th><th>作物 id</th><th>售价</th><th>周期</th>
               <th>习性</th><th>成熟水分</th><th>高分水分</th><th>涝害&gt;</th>
               <th>偏好土</th><th>不适土</th>
-              <th>生长分维</th><th>微量</th><th>施肥</th><th>建造物</th><th>备注</th>
+              <th>生长分维</th><th>微量（成熟 / 高产）</th><th>施肥（成熟 / 高产）</th><th>建造物</th><th>备注</th>
             </tr>
           </thead>
           <tbody id="crop-tbody"></tbody>
@@ -535,7 +537,7 @@ ${Object.entries(structReq)
             html += '<tr class="tier-head"><td colspan="' + colCount + '">' + esc(tl) + '</td></tr>';
           }
           var structCell = r.structId === "—" ? "—" : '<span class="tag tag-struct">' + esc(r.structName) + '</span> <code>' + esc(r.structId) + '</code>';
-          var traceCell = traceTag(r.traceSens);
+          var traceCell = esc(r.traceBand) + " / " + traceTag(r.traceSens);
           if (r.traceScore !== "—") traceCell += " " + esc(r.traceScore);
           else if (r.traceSafe !== "—") traceCell += " ≤" + r.traceSafe;
           var prefCell = r.soilPreferred === "—" ? "—" : '<span class="tag tag-soil-ok">' + esc(r.soilPreferred) + '</span>';
@@ -545,7 +547,7 @@ ${Object.entries(structReq)
             esc(r.cropId) + "</code></td><td>" + r.price + "</td><td>" + (r.growthTicks || "—") + " tick</td><td>" +
             wpTag(r.waterProfile, r.waterProfileLabel) + "</td><td>" + esc(r.water) + "</td><td>" + esc(r.perfectWater) +
             "</td><td>" + floodCell + "</td><td>" + prefCell + "</td><td>" + badCell + "</td><td>" + esc(r.scoreDims) +
-            "</td><td>" + traceCell + "</td><td>" + esc(r.fertScore) + "</td><td>" + structCell +
+            "</td><td>" + traceCell + "</td><td>" + esc(r.fertBand) + " / " + esc(r.fertScore) + "</td><td>" + structCell +
             "</td><td>" + esc(r.growNote) + "</td></tr>";
         });
         tbody.innerHTML = html || '<tr><td colspan="' + colCount + '">无匹配</td></tr>';

@@ -1,0 +1,3352 @@
+<!doctype html><html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>农业界面审阅</title><style>
+        * { box-sizing: border-box; }
+        body {
+            margin: 0;
+            font-family: "Source Han Serif SC", "Noto Serif CJK SC", "SimSun", serif;
+            background: #1c1815;
+            color: #e8e6e3;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+        #map-wrap {
+            flex: 1;
+            position: relative;
+            min-height: 0;
+        }
+        #map-container {
+            overflow: hidden;
+            position: relative;
+            width: 100%;
+            height: 100%;
+            background: #26211d;
+            border: none;
+            border-radius: 0;
+        }
+        #map-grid {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 1616px;
+            height: 1616px;
+            transition: transform 0.15s ease-out;
+        }
+        .tile {
+            position: absolute;
+            width: 98px;
+            height: 98px;
+            border-radius: 4px;
+            border: 1px solid rgba(255,255,255,0.08);
+            background: #312a24;
+        }
+        .tile.adjacent {
+            background: #3d332c;
+            cursor: pointer;
+            border-color: rgba(255,255,255,0.15);
+        }
+        .tile.adjacent:hover {
+            background: #4d3f35;
+        }
+        .tile.leap-target {
+            background: #2a3538;
+            cursor: pointer;
+            border-color: rgba(56,189,248,0.45);
+        }
+        .tile.leap-target:hover {
+            background: #354a52;
+        }
+        .tile.player {
+            background: #3d2a1a;
+            border-color: rgba(251,191,36,0.4);
+        }
+        .tile.portal {
+            border-color: rgba(100,200,255,0.35);
+            background: #2a2d35;
+        }
+        .tile.portal.adjacent {
+            background: #353a45;
+        }
+        .tile.portal.adjacent:hover {
+            background: #454a55;
+        }
+        .tile.blocked {
+            background: #3d2a2a;
+            border-color: rgba(180,80,80,0.4);
+            cursor: not-allowed;
+        }
+        .tile.blocked.adjacent {
+            cursor: not-allowed;
+        }
+        #player-sprite {
+            position: absolute;
+            z-index: 20;
+            width: 101px;
+            height: 101px;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            pointer-events: none;
+        }
+        #player-sprite .avatar {
+            width: 62px;
+            height: 62px;
+            background: transparent;
+            border: none;
+            border-radius: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            position: relative;
+            overflow: hidden;
+        }
+        #player-sprite .avatar .avatar-img {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 0;
+            display: none;
+        }
+        #player-sprite .avatar.avatar-has-image .avatar-img {
+            display: block;
+        }
+        #player-sprite .avatar.avatar-has-image .avatar-fallback {
+            display: none;
+        }
+        #player-sprite .avatar .avatar-fallback {
+            user-select: none;
+        }
+        #player-direction-indicator {
+            position: absolute;
+            width: 78px;
+            height: 78px;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%) rotate(180deg);
+            pointer-events: none;
+            transition: transform 0.15s cubic-bezier(0.2, 0.8, 0.2, 1);
+            z-index: -1;
+        }
+        #player-direction-indicator::before {
+            content: '';
+            position: absolute;
+            top: -6px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 0;
+            border-left: 7px solid transparent;
+            border-right: 7px solid transparent;
+            border-bottom: 12px solid rgba(250, 230, 140, 0.95);
+            filter: drop-shadow(0 0 4px rgba(250, 230, 140, 0.6));
+        }
+        .tile.gathering {
+            border-color: rgba(120,180,80,0.45);
+            background: #2a3324;
+        }
+        .tile.gathering.adjacent { background: #353d2a; }
+        .tile.gathering.player { background: #2d3a1f; border-color: rgba(120,180,80,0.5); }
+        /* 格子上有地面物品时的标记 */
+        .tile.ground-items {
+            border-color: rgba(212, 163, 115, 0.5);
+            background: #332a24;
+            box-shadow: inset 0 0 0 2px rgba(212, 163, 115, 0.25);
+        }
+        .tile.ground-items::after {
+            content: '📦';
+            position: absolute;
+            right: 4px;
+            bottom: 4px;
+            font-size: 14px;
+            line-height: 1;
+            opacity: 0.9;
+        }
+        .tile.ground-items.adjacent { background: #3d3228; }
+        .tile.ground-items.player { background: #2d241f; border-color: rgba(212, 163, 115, 0.6); }
+        /* NPC 站位标记（最小可视化）：后续可替换为精灵/头像渲染 */
+        .tile.npc {
+            border-color: rgba(180, 120, 220, 0.55);
+            box-shadow: inset 0 0 0 2px rgba(180, 120, 220, 0.18);
+        }
+        .tile.npc::after {
+            content: '人';
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 20px;
+            line-height: 1;
+            color: rgba(210, 190, 255, 0.95);
+            text-shadow: 0 1px 0 rgba(0,0,0,0.55);
+            pointer-events: none;
+        }
+        .tile.player.npc::after { content: '你'; color: rgba(255, 220, 150, 0.95); }
+        /* 玩家旁可交互动作浮层：进入可交互范围时显示在玩家上方 */
+        #player-action-bubble {
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, calc(-50% - 96px));
+            z-index: 25;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            pointer-events: auto;
+        }
+        #player-action-bubble.visible { display: flex; }
+        #player-action-bubble .action-bubble-inner {
+            padding: 8px 12px;
+            background: rgba(28, 22, 18, 0.95);
+            border: 2px solid rgba(120, 180, 80, 0.6);
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 8px;
+        }
+        #player-action-bubble .action-btn {
+            padding: 6px 14px;
+            font-size: 12px;
+            background: #3d332c;
+            border: 1px solid #57534e;
+            color: #e8e6e3;
+            border-radius: 6px;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+        #player-action-bubble .action-btn:hover { background: #4d3f35; border-color: #fbbf24; }
+        #player-action-bubble .action-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        #player-action-bubble .action-btn.primary { border-color: rgba(120, 180, 80, 0.6); color: #86efac; }
+        /* 左侧状态面板 - 与 02-regions 2.5 一致 */
+        #map-wrap { position: relative; }
+        #hud-layer { position: absolute; inset: 0; pointer-events: none; z-index: 30; }
+        /* 顶部时间条：显示“第X年 第Y天 HH:MM” */
+        #top-hud {
+            position: absolute;
+            left: 50%;
+            top: 14px;
+            transform: translateX(-50%);
+            z-index: 32;
+            pointer-events: none;
+            font-family: "Microsoft YaHei", "微软雅黑", "PingFang SC", sans-serif;
+        }
+        #top-hud .time-pill {
+            display: inline-flex;
+            align-items: baseline;
+            gap: 10px;
+            padding: 8px 14px;
+            border-radius: 9999px;
+            border: 1px solid rgba(212, 163, 115, 0.5);
+            background: rgba(28, 22, 18, 0.88);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.35);
+            backdrop-filter: blur(6px);
+        }
+        #top-hud .time-text {
+            font-size: 12px;
+            font-weight: 800;
+            letter-spacing: 0.18em;
+            color: #e8e6e3;
+            white-space: nowrap;
+        }
+        #top-hud .time-period {
+            font-size: 11px;
+            font-weight: 800;
+            letter-spacing: 0.12em;
+            color: rgba(251, 191, 36, 0.9);
+            white-space: nowrap;
+        }
+        #left-hud {
+            position: absolute; left: 20px; top: 20px; bottom: 88px; width: 380px;
+            display: flex; flex-direction: column; pointer-events: auto; transition: opacity 0.3s;
+            font-family: "Microsoft YaHei", "微软雅黑", "PingFang SC", sans-serif;
+        }
+        #status-scroll { flex: 1; overflow-y: auto; padding-right: 10px; font-size: 14px; }
+        #status-scroll::-webkit-scrollbar { width: 4px; }
+        #status-scroll::-webkit-scrollbar-thumb { background: rgba(212, 163, 115, 0.25); border-radius: 10px; }
+        .status-card { background: rgba(28, 22, 18, 0.9); border: 1px solid #4d3f35; padding: 14px 16px; font-size: 14px; font-weight: 600; margin-bottom: 14px; }
+        .status-card .row { display: flex; justify-content: space-between; align-items: center; min-height: 1.5em; }
+        .status-card .label { color: #a8a29e; font-size: 14px; }
+        .status-card .value { color: #e8e6e3; font-size: 14px; }
+        .status-card .value.ok { color: #22c55e; }
+        .status-card .value.warn { color: #f59e0b; }
+        .status-card .value.danger { color: #ef4444; }
+        .status-card .block-title { font-size: 12px; color: rgba(251, 191, 36, 0.85); letter-spacing: 0.12em; margin-bottom: 10px; font-weight: 800; }
+        .status-card .limb-row { margin-bottom: 6px; cursor: help; font-size: 14px; }
+        .status-card .limb-row:last-child { margin-bottom: 0; }
+        .progress-wrap { height: 4px; background: #1c1917; overflow: hidden; margin-top: 6px; border-radius: 2px; }
+        .progress-fill { height: 100%; transition: width 0.15s ease-out; }
+        .progress-fill.satiety { background: rgba(194, 65, 12, 0.6); }
+        .progress-fill.thirst { background: rgba(29, 78, 216, 0.6); }
+        .progress-fill.stamina { background: rgba(34, 197, 94, 0.6); }
+        .progress-fill.energy { background: rgba(139, 92, 246, 0.6); }
+        .progress-fill.mood { background: rgba(236, 72, 153, 0.68); }
+        .progress-fill.nutrition { background: rgba(16, 185, 129, 0.7); }
+        .progress-fill.dirtyness { background: rgba(217, 119, 6, 0.7); }
+        .role-card { background: rgba(45, 36, 30, 0.95); border: 2px solid rgba(212, 163, 115, 0.4); padding: 18px 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.3); margin-bottom: 14px; }
+        .role-card h1 { font-size: 1.65rem; font-weight: 800; color: #fff; letter-spacing: 0.12em; margin: 0; line-height: 1.3; }
+        .role-card .subtitle { font-size: 15px; color: #fbbf24; font-weight: 600; margin-top: 8px; letter-spacing: 0.06em; }
+        .combat-state-badge { display:inline-flex; align-items:center; margin-top:10px; padding:4px 9px; border:1px solid rgba(168,162,158,.45); border-radius:4px; color:#d6d3d1; background:rgba(28,25,23,.55); font-size:13px; font-weight:700; letter-spacing:.06em; }
+        .combat-state-badge.in-combat { color:#fecaca; border-color:rgba(239,68,68,.75); background:rgba(127,29,29,.34); box-shadow:0 0 0 1px rgba(239,68,68,.12) inset; }
+        /* 底部动作栏 + 快捷腰带：整体贴游戏日志上沿，位置由 game-log.js 同步 */
+        #bottom-hud-stack {
+            position: fixed;
+            left: 50%;
+            transform: translateX(-50%);
+            bottom: 108px;
+            z-index: 39;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+            max-width: min(96vw, 780px);
+            pointer-events: none;
+        }
+        #bottom-hud-stack .action-bar-dock,
+        #bottom-hud-stack #quick-belt-dock {
+            pointer-events: auto;
+        }
+        #quick-belt-dock {
+            max-width: 100%;
+        }
+        .action-bar-dock {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            padding: 5px 8px;
+            background: rgba(22, 18, 15, 0.92);
+            border: 1px solid rgba(77, 63, 53, 0.85);
+            border-radius: 8px;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+        }
+        .action-bar-dock .action-bar-btn {
+            min-height: 32px;
+            padding: 4px 10px;
+            font-size: 12px;
+            font-weight: 700;
+            font-family: "Microsoft YaHei", "微软雅黑", "PingFang SC", sans-serif;
+            color: #e8e6e3;
+            background: rgba(0, 0, 0, 0.35);
+            border: 1px solid #3d332c;
+            border-radius: 6px;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+        .action-bar-dock .action-bar-btn:hover:not(:disabled) {
+            border-color: #fbbf24;
+            background: rgba(45, 36, 30, 0.95);
+        }
+        .action-bar-dock .action-bar-btn:disabled {
+            opacity: 0.45;
+            cursor: not-allowed;
+        }
+        .action-bar-context {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+        .action-bar-sep {
+            display: none;
+            width: 1px;
+            height: 24px;
+            margin: 0 2px;
+            flex-shrink: 0;
+            align-self: center;
+            background: linear-gradient(180deg, transparent, rgba(212, 163, 115, 0.45), transparent);
+            pointer-events: none;
+        }
+        .action-bar-pinned {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+        }
+        .action-bar-dock .action-bar-pin-slot {
+            min-width: 2.4em;
+            padding: 4px 8px;
+            font-size: 11px;
+        }
+        .action-bar-dock .action-bar-pin-slot:not(.empty) {
+            max-width: 10.5em;
+            white-space: normal;
+            line-height: 1.2;
+            text-align: center;
+            word-break: keep-all;
+            overflow-wrap: break-word;
+            font-weight: 700;
+        }
+        .action-bar-dock .action-bar-pin-slot.empty {
+            opacity: 0.5;
+            font-weight: 600;
+        }
+        .player-action-item-row {
+            display: flex;
+            align-items: stretch;
+            gap: 4px;
+            width: 100%;
+        }
+        .player-action-item-row .player-action-item {
+            flex: 1;
+            min-width: 0;
+        }
+        .player-action-pin {
+            flex-shrink: 0;
+            min-width: 36px;
+            padding: 4px 6px;
+            font-size: 14px;
+            line-height: 1.2;
+            background: rgba(0, 0, 0, 0.35);
+            border: 1px solid #3d332c;
+            border-radius: 6px;
+            color: #d4a574;
+            cursor: pointer;
+        }
+        .player-action-pin:hover { border-color: #fbbf24; color: #fde68a; }
+        .player-action-pin:disabled { opacity: 0.35; cursor: not-allowed; }
+        .quick-belt {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: center;
+            gap: 5px 6px;
+            padding: 6px 10px;
+            background: rgba(28, 22, 18, 0.94);
+            border: 1px solid rgba(77, 63, 53, 0.95);
+            border-radius: 10px;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.45);
+            backdrop-filter: blur(8px);
+        }
+        .quick-belt .quick-belt-sep {
+            width: 1px;
+            height: 28px;
+            margin: 0 4px;
+            flex-shrink: 0;
+            align-self: center;
+            background: linear-gradient(180deg, transparent, rgba(212, 163, 115, 0.35), transparent);
+            pointer-events: none;
+        }
+        .quick-belt .slot {
+            position: relative;
+            width: 42px;
+            height: 42px;
+            flex-shrink: 0;
+            border: 1px solid #292524;
+            border-radius: 6px;
+            background: rgba(0, 0, 0, 0.42);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-family: "Microsoft YaHei", "微软雅黑", "PingFang SC", sans-serif;
+        }
+        .quick-belt .slot:hover { border-color: #fbbf24; }
+        .quick-belt-hover-menu {
+            position: fixed;
+            z-index: 5000;
+            display: none;
+            flex-direction: column;
+            gap: 6px;
+            min-width: 88px;
+            padding: 6px;
+            border: 1px solid #5c4a3d;
+            border-radius: 6px;
+            background: rgba(20, 16, 13, 0.96);
+            box-shadow: 0 6px 18px rgba(0, 0, 0, 0.45);
+        }
+        .quick-belt-hover-menu.show { display: flex; }
+        .quick-belt-hover-btn {
+            padding: 5px 8px;
+            font-size: 12px;
+            line-height: 1.2;
+            color: #e8e6e3;
+            background: #4d3f35;
+            border: 1px solid #78716c;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .quick-belt-hover-btn:hover { background: #5c4a3d; border-color: #fbbf24; }
+        .quick-belt .quick-belt-slot-key {
+            position: absolute;
+            top: 3px;
+            left: 4px;
+            font-size: 9px;
+            font-weight: 800;
+            line-height: 1;
+            color: rgba(251, 191, 36, 0.8);
+            pointer-events: none;
+            letter-spacing: 0;
+        }
+        .quick-belt .quick-belt-slot-body {
+            font-size: 13px;
+            font-weight: 700;
+            color: #e8e6e3;
+            line-height: 1.1;
+            text-align: center;
+            max-width: 100%;
+            overflow: hidden;
+            text-overflow: clip;
+            white-space: nowrap;
+        }
+        .details-block { border: 1px solid #4d3f35; background: rgba(28, 25, 23, 0.2); }
+        .details-block summary { padding: 10px 12px; font-size: 13px; font-weight: 800; color: #a8a29e; cursor: pointer; list-style: none; display: flex; justify-content: space-between; }
+        .details-block .details-body { padding: 14px 16px; background: #1c1612; border-top: 1px solid #3d2d24; }
+        .details-block .details-body .row { display: flex; justify-content: space-between; font-size: 14px; margin-bottom: 10px; }
+        .details-block .details-body .row:last-child { margin-bottom: 0; }
+        /* 右侧三按钮：背包 / 战斗技能 / 生活技能 - 02-regions 2.5 */
+        /* 右上角 Buff：与右侧竖排按钮区分，贴顶对齐 */
+        #buff-hud {
+            position: absolute;
+            right: 96px;
+            top: 20px;
+            max-width: min(320px, 42vw);
+            z-index: 31;
+            pointer-events: none;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 8px;
+            font-family: "Microsoft YaHei", "微软雅黑", "PingFang SC", sans-serif;
+        }
+        #buff-hud .buff-hud-section {
+            width: 100%;
+            text-align: right;
+        }
+        #buff-hud .buff-hud-title {
+            font-size: 11px;
+            font-weight: 800;
+            letter-spacing: 0.14em;
+            color: rgba(251, 191, 36, 0.88);
+            margin-bottom: 6px;
+        }
+        #buff-hud .buff-hud-chips {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: flex-end;
+            gap: 6px;
+            min-height: 1.5em;
+        }
+        #buff-hud .buff-chip {
+            pointer-events: auto;
+            padding: 4px 8px;
+            font-size: 11px;
+            font-weight: 700;
+            color: #e8e6e3;
+            background: rgba(28, 22, 18, 0.92);
+            border: 1px solid rgba(77, 63, 53, 0.95);
+            border-radius: 6px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+            max-width: 100%;
+            white-space: normal;
+            line-height: 1.25;
+            text-align: left;
+        }
+        #right-hud { position: absolute; right: 24px; top: 50%; transform: translateY(-50%); display: flex; flex-direction: column; gap: 24px; z-index: 31; pointer-events: auto; }
+        #right-hud .hud-btn { width: 56px; height: 56px; border-radius: 8px; border: 2px solid #4d3f35; background: rgba(28, 22, 18, 0.95); color: #e8e6e3; font-size: 24px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: border-color 0.2s, background 0.2s; }
+        #right-hud .hud-btn:hover { border-color: #fbbf24; background: rgba(45, 36, 30, 0.98); }
+        #right-hud .hud-dropdown-wrap { position: relative; display: flex; flex-direction: column; align-items: center; }
+        .player-actions-submenu {
+            display: none; position: absolute; right: calc(100% + 12px); top: 50%; transform: translateY(-50%);
+            min-width: 200px; max-width: min(280px, 85vw); max-height: min(420px, 70vh); overflow-y: auto;
+            background: rgba(28, 22, 18, 0.98); border: 2px solid #4d3f35; border-radius: 8px; padding: 8px 6px;
+            box-shadow: 0 8px 28px rgba(0,0,0,0.5); z-index: 120; pointer-events: auto;
+        }
+        .player-actions-submenu.open { display: block; }
+        .player-actions-submenu .player-action-item {
+            display: block; width: 100%; text-align: left; padding: 10px 12px; margin: 4px 0;
+            border-radius: 6px; border: 1px solid #3d2d24; background: rgba(0,0,0,0.35);
+            color: #e8e6e3; font-size: 14px; font-family: inherit; cursor: pointer;
+        }
+        .player-actions-submenu .player-action-item:hover:not(:disabled) { border-color: #fbbf24; background: rgba(45, 36, 30, 0.9); }
+        .player-actions-submenu .player-action-item:disabled { opacity: 0.45; cursor: not-allowed; }
+        .player-actions-submenu .player-action-item-row { width: 100%; margin: 4px 0; box-sizing: border-box; }
+        /* UI 自由窗口 · 窗口列表菜单（36-ui-windows.md M3） */
+        .ui-windows-menu {
+            display: none; position: absolute; right: calc(100% + 12px); top: 50%; transform: translateY(-50%);
+            min-width: 220px; max-width: min(300px, 85vw); max-height: min(480px, 75vh); overflow-y: auto;
+            background: rgba(28, 22, 18, 0.98); border: 2px solid #4d3f35; border-radius: 8px; padding: 8px 6px;
+            box-shadow: 0 8px 28px rgba(0,0,0,0.5); z-index: 120; pointer-events: auto;
+        }
+        .ui-windows-menu.open { display: block; }
+        .ui-windows-menu .uwm-title {
+            font-size: 11px; font-weight: 800; letter-spacing: 0.12em;
+            color: rgba(251, 191, 36, 0.85); padding: 4px 10px 8px;
+        }
+        .ui-windows-menu .uwm-row {
+            display: flex; align-items: center; gap: 8px; width: 100%; text-align: left;
+            padding: 7px 10px; margin: 2px 0; border-radius: 6px;
+            border: 1px solid #3d2d24; background: rgba(0,0,0,0.35);
+            color: #e8e6e3; font-size: 13px; font-family: inherit; cursor: pointer;
+        }
+        .ui-windows-menu .uwm-row:hover { border-color: #fbbf24; background: rgba(45, 36, 30, 0.9); }
+        .ui-windows-menu .uwm-row input[type="checkbox"] { accent-color: #fbbf24; margin: 0; flex: 0 0 auto; }
+        .ui-windows-menu .uwm-row .uwm-label { flex: 1; }
+        .ui-windows-menu .uwm-sep { border: 0; border-top: 1px solid #3d2d24; margin: 8px 6px; }
+        .ui-windows-menu .uwm-btn {
+            display: block; width: 100%; text-align: left; padding: 8px 10px; margin: 2px 0;
+            border-radius: 6px; border: 1px solid #3d2d24; background: rgba(0,0,0,0.35);
+            color: #a8a29e; font-size: 13px; font-family: inherit; cursor: pointer;
+        }
+        .ui-windows-menu .uwm-btn:hover:not(:disabled) { border-color: #fbbf24; color: #fde68a; background: rgba(45, 36, 30, 0.9); }
+        .ui-windows-menu .uwm-btn:disabled { opacity: 0.45; cursor: not-allowed; }
+        /* 背包+装备面板：放大 + 微软雅黑 */
+        #modal-backpack {
+            display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.78); z-index: 100;
+            align-items: center; justify-content: center; pointer-events: auto;
+            font-family: "Noto Serif SC", "Source Han Serif SC", "Microsoft YaHei", "微软雅黑", "PingFang SC", serif;
+        }
+        #modal-backpack.show { display: flex; }
+        #modal-backpack .panel {
+            width: min(1320px, 98vw); height: min(860px, 92vh); max-height: 92vh;
+            background: #1a1512; border: 2px solid #4d4d45; border-radius: 10px;
+            overflow: hidden; display: flex; flex-direction: column;
+            box-shadow: 0 24px 64px rgba(0,0,0,0.65);
+        }
+        #modal-backpack .bp-head {
+            height: 56px; flex-shrink: 0; display: flex; align-items: center; justify-content: space-between;
+            padding: 0 16px 0 20px; border-bottom: 2px solid #4d4d45; background: #252520;
+        }
+        #modal-backpack .bp-title { margin: 0; font-size: 18px; color: #d3a060; letter-spacing: 0.12em; font-weight: 900; }
+        #modal-backpack .bp-head-right { display: flex; align-items: center; gap: 12px; }
+        #modal-backpack .bp-carry { font-size: 12px; color: #8e8e8e; font-family: "Microsoft YaHei", "微软雅黑", "PingFang SC", sans-serif; }
+        #modal-backpack #backpack-search {
+            width: 240px; max-width: 35vw; padding: 8px 10px; border-radius: 8px;
+            border: 2px solid #4d4d45; background: #1a1512; color: #e0d7c6; font-size: 13px;
+            font-family: "Microsoft YaHei", "微软雅黑", "PingFang SC", sans-serif;
+        }
+        #modal-backpack #backpack-search:focus { outline: none; border-color: #d3a060; }
+        #modal-backpack .bp-close {
+            width: 36px; height: 36px; border-radius: 8px; border: 1px solid #4d4d45;
+            background: #1a1512; color: #8e8e8e; cursor: pointer; font-size: 17px;
+        }
+        #modal-backpack .bp-close:hover { color: #fff; border-color: #d3a060; }
+        #modal-backpack .panel-body { flex: 1; min-height: 0; display: flex; }
+        #modal-backpack .bp-tabs {
+            width: 160px; flex-shrink: 0; border-right: 2px solid #4d4d45; background: #252520;
+            padding: 10px; display: flex; flex-direction: column; gap: 8px;
+        }
+        #modal-backpack .bp-tab-btn {
+            border: 2px solid #4d4d45; border-radius: 8px; background: #1a1512; color: #8e8e8e;
+            font-size: 12px; font-weight: 800; letter-spacing: 0.06em; padding: 10px 8px; cursor: pointer;
+        }
+        #modal-backpack .bp-tab-btn:hover { border-color: #666; color: #d3a060; }
+        #modal-backpack .bp-tab-btn.active { border-color: #d3a060; color: #1a1512; background: #d3a060; }
+        #modal-backpack .bp-list {
+            width: 46%; min-width: 0; border-right: 2px solid #4d4d45; background: #1d1d18;
+            display: flex; flex-direction: column;
+        }
+        #modal-backpack .bp-list-head {
+            height: 42px; display: flex; align-items: center; padding: 0 14px; border-bottom: 1px solid #4d4d45;
+            color: #8e8e8e; font-size: 11px; font-weight: 900; letter-spacing: 0.1em; text-transform: uppercase;
+        }
+        #modal-backpack #backpack-item-list { flex: 1; overflow-y: auto; padding: 8px; }
+        #modal-backpack .bp-item-row {
+            border: 2px solid #4d4d45; border-radius: 8px; background: #252520; margin-bottom: 8px; padding: 10px 10px;
+            cursor: pointer; display: flex; align-items: flex-start; gap: 10px;
+        }
+        #modal-backpack .bp-item-row:hover { border-color: #666; background: #2f2c28; }
+        #modal-backpack .bp-item-row.selected { border-color: #ff8c00; box-shadow: 0 0 16px rgba(255,140,0,0.18); background: #2f2c26; }
+        #modal-backpack .bp-item-tier { width: 3px; border-radius: 6px; align-self: stretch; background: #6b6560; }
+        #modal-backpack .bp-item-main { flex: 1; min-width: 0; }
+        #modal-backpack .bp-item-name {
+            color: #e0d7c6; font-size: 14px; font-weight: 800; line-height: 1.35;
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+        }
+        #modal-backpack .bp-item-sub {
+            color: #8e8e8e; font-size: 12px; margin-top: 3px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+            overflow: hidden;
+            font-family: "Microsoft YaHei", "微软雅黑", "PingFang SC", sans-serif;
+        }
+        #modal-backpack .bp-item-meta { color: #6b6560; font-size: 11px; margin-top: 4px; }
+        #modal-backpack .bp-detail {
+            flex: 1; min-width: 0; display: flex; flex-direction: column; background: #1a1512;
+            min-height: 0;
+        }
+        #modal-backpack #backpack-detail {
+            flex: 1;
+            min-height: 0;
+            overflow-y: auto;
+            padding: 14px 16px;
+            border-bottom: 1px solid #4d4d45;
+        }
+        #modal-backpack .bp-equip-panel {
+            flex: 0 0 34%;
+            min-height: 180px;
+            max-height: 44%;
+            overflow-y: auto;
+            padding: 10px 16px 14px 16px;
+        }
+        #modal-backpack .bp-detail-empty { color: #6b6560; font-size: 14px; padding: 18px 6px; }
+        #modal-backpack .bp-detail-title { color: #e0d7c6; font-size: 20px; font-weight: 900; letter-spacing: 0.04em; margin-bottom: 6px; }
+        #modal-backpack .bp-detail-desc {
+            color: #a8a29e; font-size: 13px; line-height: 1.6; white-space: pre-wrap;
+            border-left: 2px solid #d3a060; padding-left: 10px; margin-bottom: 12px;
+            font-family: "Microsoft YaHei", "微软雅黑", "PingFang SC", sans-serif;
+        }
+        #modal-backpack .bp-detail-attrs {
+            color: #8e8e8e; font-size: 12px; white-space: pre-wrap; margin-bottom: 12px;
+            font-family: "Microsoft YaHei", "微软雅黑", "PingFang SC", sans-serif;
+        }
+        #modal-backpack .bp-detail-modules,
+        #modal-backpack .bp-detail-field-rules { margin-bottom: 12px; }
+        #modal-backpack #backpack-detail .tooltip-modules { margin-top: 2px; display: grid; gap: 6px; }
+        #modal-backpack #backpack-detail .tooltip-module { border: 1px solid #4d3f35; border-radius: 6px; padding: 7px 8px; background: rgba(0,0,0,0.12); }
+        #modal-backpack #backpack-detail .tooltip-module.is-locked { opacity: 0.78; }
+        #modal-backpack #backpack-detail .tooltip-module-title { font-size: 11px; font-weight: 700; color: #e8e6e3; margin-bottom: 4px; }
+        #modal-backpack #backpack-detail .tooltip-module-text { color: #bdb5ab; font-size: 11px; white-space: pre-wrap; }
+        #modal-backpack #backpack-detail .tooltip-module-list { margin: 0; padding-left: 16px; color: #bdb5ab; font-size: 11px; }
+        #modal-backpack #backpack-detail .tooltip-module-kv { display: grid; gap: 3px; }
+        #modal-backpack #backpack-detail .tooltip-module-kv-row { display: flex; justify-content: space-between; gap: 8px; color: #bdb5ab; font-size: 11px; }
+        #modal-backpack #backpack-detail .tooltip-module-k { color: #8e8a84; }
+        #modal-backpack #backpack-detail .tooltip-module-v { color: #d4cec3; text-align: right; }
+        #modal-backpack #backpack-detail .tooltip-module-locked-hint { color: #8e8a84; font-size: 11px; }
+        #modal-backpack #backpack-detail .tooltip-module-req { color: #d3a060; font-size: 11px; margin-top: 2px; }
+        #modal-backpack .bp-detail-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 14px; }
+        #modal-backpack .bp-action-btn {
+            border: 1px solid #4d4d45; border-radius: 6px; background: #252520; color: #e0d7c6;
+            font-size: 12px; font-weight: 700; padding: 7px 12px; cursor: pointer;
+        }
+        #modal-backpack .bp-action-btn:hover { border-color: #d3a060; color: #d3a060; }
+        #modal-backpack .equip-title {
+            font-size: 12px; font-weight: 900; color: #8e8e8e; margin: 0 0 8px 0; letter-spacing: 0.1em; text-transform: uppercase;
+        }
+        #modal-backpack .equip-list { display: flex; flex-direction: column; gap: 8px; }
+        #modal-backpack .equip-group-title {
+            font-size: 11px; font-weight: 900; color: #d3a060; letter-spacing: 0.08em;
+            margin: 6px 0 0 0; text-transform: uppercase;
+        }
+        #modal-backpack .equip-modules {
+            border: 1px solid #4d4d45; border-radius: 6px; background: #201a14;
+            padding: 8px; margin: 2px 0 8px 0;
+        }
+        #modal-backpack .equip-modules-title {
+            font-size: 10px; font-weight: 900; color: #8e8e8e; letter-spacing: 0.08em;
+            text-transform: uppercase; margin-bottom: 6px;
+        }
+        #modal-backpack .equip-modules-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; }
+        #modal-backpack .equip-module-slot {
+            display: flex; align-items: center; gap: 6px;
+            border: 1px dashed #4d4d45; border-radius: 5px; padding: 4px 6px; background: #1a1512;
+        }
+        #modal-backpack .equip-module-slot.filled { border-style: solid; border-color: #5a8f7a; }
+        #modal-backpack .equip-module-slot .m-label { color: #8e8e8e; font-size: 10px; min-width: 22px; }
+        #modal-backpack .equip-module-slot .m-name { color: #e0d7c6; font-size: 11px; flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        #modal-backpack .equip-module-slot .m-empty { color: #5d5d55; font-size: 11px; flex: 1; }
+        #modal-backpack .btn-module-add,
+        #modal-backpack .btn-module-remove {
+            border: 1px solid #4d4d45; border-radius: 4px; background: #1a1512; color: #d3a060;
+            font-size: 10px; padding: 2px 6px; cursor: pointer;
+        }
+        #modal-backpack .btn-module-add:hover, #modal-backpack .btn-module-remove:hover { border-color: #d3a060; }
+        .module-picker-overlay {
+            position: fixed; inset: 0; background: rgba(0,0,0,0.55); z-index: 1200;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .module-picker {
+            width: 320px; max-height: 70vh; overflow-y: auto;
+            background: #1a1512; border: 1px solid #4d4d45; border-radius: 10px; padding: 10px 12px;
+        }
+        .module-picker-head {
+            display: flex; justify-content: space-between; align-items: center;
+            font-size: 13px; color: #d3a060; font-weight: 700; margin-bottom: 8px;
+        }
+        .module-picker-empty { color: #8e8e8e; font-size: 12px; padding: 10px 4px; }
+        .module-picker-item {
+            border: 1px solid #4d4d45; border-radius: 6px; padding: 6px 8px; margin-bottom: 5px; cursor: pointer;
+        }
+        .module-picker-item:hover { border-color: #d3a060; }
+        .module-picker-item .pi-name { color: #e0d7c6; font-size: 12px; font-weight: 700; display: block; }
+        .module-picker-item .pi-desc { color: #8e8e8e; font-size: 10px; display: block; margin-top: 2px; }
+        #modal-backpack .equip-row {
+            display: flex; align-items: center; justify-content: space-between; gap: 8px;
+            background: #252520; border: 1px solid #4d4d45; border-radius: 6px; padding: 8px;
+        }
+        #modal-backpack .equip-row.has-item { cursor: pointer; }
+        #modal-backpack .equip-row.has-item:hover { border-color: #d3a060; }
+        #modal-backpack .equip-row.selected { border-color: #d3a060; box-shadow: 0 0 0 1px rgba(211,160,96,0.35); }
+        #modal-backpack .equip-row .slot-name { color: #8e8e8e; font-size: 12px; min-width: 82px; }
+        #modal-backpack .equip-row .item-name {
+            color: #e0d7c6; font-size: 13px; flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+        }
+        #modal-backpack .equip-row .btn-unequip,
+        #modal-backpack .btn-pickup {
+            border: 1px solid #4d4d45; border-radius: 6px; background: #1a1512; color: #e0d7c6; cursor: pointer;
+            font-size: 12px; padding: 5px 9px;
+        }
+        #modal-backpack .equip-row .btn-unequip:hover,
+        #modal-backpack .btn-pickup:hover { border-color: #d3a060; color: #d3a060; }
+        #modal-backpack .ground-item-row {
+            display: flex; align-items: center; justify-content: space-between; gap: 8px;
+            background: #252520; border: 1px solid #4d4d45; border-radius: 6px; padding: 8px; margin-bottom: 8px;
+        }
+        #modal-backpack .ground-item-row .ground-item-name { color: #e0d7c6; font-size: 13px; flex: 1; min-width: 0; }
+        #modal-backpack .ground-item-row .btn-equip-from-ground { margin-left: 6px; }
+        #modal-backpack #backpack-item-list,
+        #modal-backpack #backpack-detail,
+        #modal-backpack .bp-equip-panel {
+            scrollbar-width: thin;
+            scrollbar-color: rgba(211,160,96,0.65) rgba(26,21,18,0.35);
+        }
+        #modal-backpack #backpack-item-list::-webkit-scrollbar,
+        #modal-backpack #backpack-detail::-webkit-scrollbar,
+        #modal-backpack .bp-equip-panel::-webkit-scrollbar {
+            width: 8px;
+        }
+        #modal-backpack #backpack-item-list::-webkit-scrollbar-track,
+        #modal-backpack #backpack-detail::-webkit-scrollbar-track,
+        #modal-backpack .bp-equip-panel::-webkit-scrollbar-track {
+            background: rgba(26,21,18,0.4);
+            border-radius: 999px;
+        }
+        #modal-backpack #backpack-item-list::-webkit-scrollbar-thumb,
+        #modal-backpack #backpack-detail::-webkit-scrollbar-thumb,
+        #modal-backpack .bp-equip-panel::-webkit-scrollbar-thumb {
+            background: linear-gradient(180deg, #d3a060 0%, #8f6840 100%);
+            border-radius: 999px;
+            border: 1px solid rgba(26,21,18,0.4);
+        }
+        /* 基地仓库（调试：全物品无限取） */
+        #modal-base-warehouse {
+            display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.65); z-index: 100;
+            align-items: center; justify-content: center; pointer-events: auto;
+            font-family: "Microsoft YaHei", "微软雅黑", "PingFang SC", sans-serif;
+        }
+        #modal-base-warehouse.show { display: flex; }
+        #modal-base-warehouse .bw-panel {
+            width: 96%; max-width: 720px; max-height: 88vh;
+            background: #1c1612; border: 2px solid #d4a373; border-radius: 10px;
+            overflow: hidden; display: flex; flex-direction: column; font-size: 15px;
+        }
+        #modal-base-warehouse .bw-head {
+            padding: 16px 20px; border-bottom: 1px solid #4d3f35;
+            display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap;
+        }
+        #modal-base-warehouse .bw-head h2 {
+            margin: 0; font-size: 17px; font-weight: 700; color: rgba(251,191,36,0.95); letter-spacing: 0.06em;
+        }
+        #modal-base-warehouse .bw-head .bw-hint { font-size: 13px; color: #a8a29e; flex: 1; min-width: 200px; }
+        #modal-base-warehouse #base-warehouse-filter {
+            width: 200px; max-width: 100%; padding: 8px 10px; border-radius: 6px;
+            border: 1px solid #4d3f35; background: rgba(0,0,0,0.35); color: #e8e6e3; font-size: 14px;
+        }
+        #modal-base-warehouse .bw-body { flex: 1; overflow-y: auto; padding: 12px 16px 20px; min-height: 200px; }
+        #modal-base-warehouse .warehouse-item-row {
+            display: flex; align-items: center; justify-content: space-between; gap: 10px;
+            padding: 8px 12px; margin-bottom: 6px; background: rgba(45,36,30,0.85);
+            border: 1px solid #4d3f35; border-radius: 6px;
+        }
+        #modal-base-warehouse .warehouse-item-row .wname { color: #e8e6e3; font-size: 15px; flex: 1; min-width: 0; }
+        #modal-base-warehouse .warehouse-item-row .wid { font-size: 12px; color: #78716c; flex-shrink: 0; max-width: 42%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        #modal-base-warehouse .warehouse-item-row .btn-take-one {
+            padding: 6px 12px; font-size: 13px; background: #4d3f35; border: 1px solid #78716c;
+            color: #e8e6e3; border-radius: 6px; cursor: pointer; flex-shrink: 0;
+        }
+        #modal-base-warehouse .warehouse-item-row .btn-take-one:hover { background: #5c4a3d; border-color: #fbbf24; }
+        #modal-base-warehouse .bw-close {
+            padding: 14px; border-top: 1px solid #4d3f35; text-align: center; cursor: pointer;
+            color: #fbbf24; font-weight: 700; font-size: 16px;
+        }
+        #modal-base-warehouse .bw-close:hover { background: rgba(212,163,115,0.15); }
+        /* 藏身处账号仓库（视觉参考 reference/code_artifact.html，与 #modal-combat 同系列） */
+        #modal-hideout-warehouse {
+            display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.92); z-index: 100;
+            align-items: center; justify-content: center; padding: 16px 24px; pointer-events: auto;
+            font-family: "Noto Serif SC", "Source Han Serif SC", "Microsoft YaHei", "微软雅黑", "PingFang SC", serif;
+        }
+        #modal-hideout-warehouse.show { display: flex; }
+        #modal-hideout-warehouse .hw-panel {
+            width: min(1280px, 98vw); height: min(860px, 92vh); max-height: 92vh;
+            background: #2d2d28; border: 2px solid #4d4d45; border-radius: 10px;
+            box-shadow: inset 0 0 120px rgba(0,0,0,0.36), 0 24px 64px rgba(0,0,0,0.65);
+            display: flex; flex-direction: column; overflow: hidden; position: relative;
+        }
+        #modal-hideout-warehouse .hw-panel::after {
+            content: ''; position: absolute; inset: 0; pointer-events: none; border-radius: inherit;
+            background: radial-gradient(circle at 50% 0%, rgba(211,160,96,0.08) 0%, transparent 60%);
+        }
+        #modal-hideout-warehouse .hw-header {
+            height: 52px; flex-shrink: 0; display: flex; align-items: center; justify-content: space-between;
+            padding: 0 16px; background: #1a1512; border-bottom: 2px solid #4d4d45; position: relative; z-index: 1;
+        }
+        #modal-hideout-warehouse .hw-header-left { display: flex; align-items: center; gap: 16px; min-width: 0; }
+        #modal-hideout-warehouse .hw-title {
+            margin: 0; font-size: 18px; font-weight: 900; color: #e0d7c6; letter-spacing: 0.06em; white-space: nowrap;
+            position: relative; padding-left: 10px;
+        }
+        #modal-hideout-warehouse .hw-title::before {
+            content: ''; position: absolute; left: 0; top: 50%; transform: translateY(-50%);
+            width: 3px; height: 24px; background: linear-gradient(to bottom, #ff8c00, #d3a060); border-radius: 1px;
+        }
+        #modal-hideout-warehouse .hw-badge {
+            padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 800; white-space: nowrap;
+        }
+        #modal-hideout-warehouse .hw-badge-outpost {
+            border: 1px solid #ff8c00; color: #ff8c00; background: rgba(255,140,0,0.1);
+        }
+        #modal-hideout-warehouse .hw-badge-frost {
+            border: 1px solid #9ad0e8; color: #9ad0e8; background: rgba(154,208,232,0.1);
+            display: inline-flex; align-items: center; gap: 4px;
+        }
+        #modal-hideout-warehouse .hw-hidden { display: none !important; }
+        #modal-hideout-warehouse .hw-header-right { display: flex; align-items: center; gap: 16px; flex-shrink: 0; }
+        #modal-hideout-warehouse .hw-capacity { font-size: 13px; color: #8e8e8e; }
+        #modal-hideout-warehouse .hw-capacity #hw-capacity-num { color: #e0d7c6; font-weight: 800; }
+        #modal-hideout-warehouse .hw-header-actions {
+            display: flex; align-items: center; gap: 8px; padding-left: 16px; margin-left: 8px;
+            border-left: 2px solid #4d4d45;
+        }
+        #modal-hideout-warehouse .hw-close {
+            width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center;
+            background: transparent; border: none; color: #8e8e8e; cursor: pointer; font-size: 16px; line-height: 1;
+        }
+        #modal-hideout-warehouse .hw-close:hover { color: #fff; background: rgba(185,28,28,0.18); }
+        #modal-hideout-warehouse .hw-close.hw-close-disabled,
+        #modal-hideout-warehouse .hw-upgrade-close.hw-close-disabled {
+            opacity: 0.35; cursor: not-allowed; pointer-events: none;
+        }
+        #modal-hideout-warehouse .hw-close.hw-close-disabled:hover,
+        #modal-hideout-warehouse .hw-upgrade-close.hw-close-disabled:hover {
+            color: inherit; background: transparent;
+        }
+        #modal-hideout-warehouse .hw-body {
+            flex: 1; display: flex; overflow: hidden; min-height: 0; position: relative; z-index: 1;
+        }
+        #modal-hideout-warehouse #hw-tab-rail {
+            width: 80px; flex-shrink: 0; background: #252520; border-right: 2px solid #4d4d45;
+            display: flex; flex-direction: column;
+        }
+        #modal-hideout-warehouse .hw-cat-btn {
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            height: 70px; border: none; border-bottom: 2px solid #4d4d45; background: transparent;
+            color: #8e8e8e; font-weight: 700; font-size: 12px; cursor: pointer; transition: all 0.2s;
+            font-family: inherit;
+        }
+        #modal-hideout-warehouse .hw-cat-btn:hover { background: rgba(255,255,255,0.05); }
+        #modal-hideout-warehouse .hw-cat-btn.active {
+            background: #d3a060; color: #1a1512; border-bottom-color: #d3a060;
+        }
+        #modal-hideout-warehouse .hw-grid-column {
+            flex: 1; display: flex; flex-direction: column; padding: 16px; overflow: hidden; min-width: 0;
+        }
+        #modal-hideout-warehouse .hw-grid-head {
+            display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 8px; flex-shrink: 0;
+        }
+        #modal-hideout-warehouse .hw-hub-title {
+            font-size: 11px; font-weight: 900; color: #8e8e8e; border-left: 3px solid #d3a060; padding-left: 8px;
+            letter-spacing: 0.1em; margin: 0; text-transform: uppercase;
+        }
+        #modal-hideout-warehouse .hw-pager-info { font-size: 11px; color: #8e8e8e; letter-spacing: 0.06em; }
+        #modal-hideout-warehouse #hw-slot-grid {
+            flex: 1; display: grid; grid-template-columns: repeat(10, 1fr); gap: 8px;
+            overflow-y: auto; padding-right: 8px; padding-bottom: 8px; align-content: start; min-height: 0;
+            scrollbar-width: thin; scrollbar-color: rgba(211,160,96,0.6) rgba(26,21,18,0.3);
+        }
+        #modal-hideout-warehouse #hw-slot-grid::-webkit-scrollbar { width: 6px; }
+        #modal-hideout-warehouse #hw-slot-grid::-webkit-scrollbar-track { background: #1a1512; }
+        #modal-hideout-warehouse #hw-slot-grid::-webkit-scrollbar-thumb {
+            background: linear-gradient(180deg, #d3a060 0%, #8f6840 100%); border-radius: 3px;
+        }
+        #modal-hideout-warehouse .hw-slot-cell {
+            background: #252520; border: 2px solid #4d4d45; border-radius: 8px; aspect-ratio: 1;
+            position: relative; cursor: pointer; display: flex; justify-content: center; align-items: center;
+            transition: border-color 0.15s, box-shadow 0.15s; min-height: 0; padding: 4px; box-sizing: border-box;
+        }
+        #modal-hideout-warehouse .hw-slot-cell:hover:not(.selected) { border-color: #666; }
+        #modal-hideout-warehouse .hw-slot-cell.selected {
+            border-color: #ff8c00;
+            box-shadow: inset 0 0 10px rgba(255,140,0,0.18), 0 0 8px rgba(255,140,0,0.12);
+        }
+        #modal-hideout-warehouse .hw-slot-cell.locked { opacity: 0.6; }
+        #modal-hideout-warehouse .hw-slot-label {
+            font-size: 12px; text-align: center; line-height: 1.2; font-weight: 700; color: #e0d7c6;
+        }
+        #modal-hideout-warehouse .hw-slot-label.hw-slot-label-muted { color: #8e8e8e; font-weight: 400; }
+        #modal-hideout-warehouse .hw-slot-empty { font-size: 11px; color: #6b6560; font-style: italic; }
+        #modal-hideout-warehouse .hw-slot-count {
+            position: absolute; bottom: 4px; right: 4px; font-size: 11px; font-weight: 800; color: #e0d7c6;
+        }
+        #modal-hideout-warehouse .hw-slot-star {
+            position: absolute; top: 4px; right: 4px; color: #d3a060; font-size: 10px; line-height: 1;
+        }
+        #modal-hideout-warehouse .hw-slot-lock {
+            position: absolute; top: 4px; left: 4px; color: #8e8e8e; font-size: 10px;
+        }
+        #modal-hideout-warehouse .hw-slot-rot {
+            position: absolute; bottom: 4px; left: 4px; color: #ff8c00; font-size: 10px; font-weight: 800;
+        }
+        #modal-hideout-warehouse .hw-slot-frost {
+            position: absolute; bottom: 4px; left: 4px; color: #9ad0e8; font-size: 10px;
+        }
+        #modal-hideout-warehouse #hw-pager {
+            flex-shrink: 0; height: 32px; margin-top: 8px; display: flex; justify-content: center; align-items: center;
+            gap: 8px; border-top: 2px solid #4d4d45; padding-top: 8px;
+        }
+        #modal-hideout-warehouse .hw-pager-num { font-size: 12px; font-weight: 800; color: #e0d7c6; }
+        #modal-hideout-warehouse .hw-pager-sep { font-size: 12px; color: #6b6560; }
+        #modal-hideout-warehouse .hw-pager-total { font-size: 12px; color: #8e8e8e; }
+        #modal-hideout-warehouse #hw-detail {
+            width: 300px; flex-shrink: 0; border-left: 2px solid #4d4d45; background: #1a1512;
+            padding: 16px; display: flex; flex-direction: column; overflow-y: auto; min-height: 0;
+            scrollbar-width: thin; scrollbar-color: rgba(211,160,96,0.6) rgba(26,21,18,0.3);
+        }
+        #modal-hideout-warehouse #hw-detail::-webkit-scrollbar { width: 6px; }
+        #modal-hideout-warehouse #hw-detail::-webkit-scrollbar-track { background: #1a1512; }
+        #modal-hideout-warehouse #hw-detail::-webkit-scrollbar-thumb {
+            background: linear-gradient(180deg, #d3a060 0%, #8f6840 100%); border-radius: 3px;
+        }
+        #modal-hideout-warehouse .hw-detail-head { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px; }
+        #modal-hideout-warehouse .hw-detail-name { font-size: 20px; font-weight: 900; color: #e0d7c6; margin: 0 0 4px; line-height: 1.1; }
+        #modal-hideout-warehouse .hw-detail-meta { font-size: 11px; color: #8e8e8e; }
+        #modal-hideout-warehouse .hw-detail-accent { width: 4px; height: 24px; background: #d3a060; flex-shrink: 0; }
+        #modal-hideout-warehouse .hw-detail-module {
+            border: 2px solid #4d4d45; border-radius: 8px; padding: 12px; margin-bottom: 16px;
+            background: rgba(0,0,0,0.12);
+        }
+        #modal-hideout-warehouse .hw-detail-desc {
+            font-size: 13px; line-height: 1.6; color: #bdb5ab; margin: 0 0 24px; flex: 1;
+        }
+        #modal-hideout-warehouse .hw-detail-actions { display: flex; flex-direction: column; gap: 8px; margin-top: auto; }
+        #modal-hideout-warehouse .hw-detail-actions-row { display: flex; gap: 8px; }
+        #modal-hideout-warehouse .hw-withdraw-hint {
+            text-align: center; font-size: 11px; color: #ff8c00; margin-top: 4px;
+        }
+        #modal-hideout-warehouse .hw-btn-primary {
+            background: transparent; border: 2px solid #d3a060; color: #d3a060;
+            padding: 6px 16px; border-radius: 4px; font-weight: 800; font-size: 14px; cursor: pointer;
+            transition: background 0.2s; font-family: inherit;
+        }
+        #modal-hideout-warehouse .hw-btn-primary:hover { background: rgba(211,160,96,0.1); }
+        #modal-hideout-warehouse .hw-btn-primary.hw-btn-lg { padding: 8px 16px; font-size: 16px; width: 100%; }
+        #modal-hideout-warehouse .hw-btn-secondary {
+            background: #252520; border: 2px solid #4d4d45; color: #e0d7c6;
+            padding: 4px 12px; border-radius: 4px; font-size: 13px; cursor: pointer; font-family: inherit;
+            transition: border-color 0.2s;
+        }
+        #modal-hideout-warehouse .hw-btn-secondary:hover { border-color: #666; }
+        #modal-hideout-warehouse .hw-btn-secondary.hw-btn-flex { flex: 1; padding: 6px 8px; }
+        #modal-hideout-warehouse .hw-btn-secondary.hw-btn-lg { padding: 8px 16px; font-size: 14px; width: 100%; }
+        #modal-hideout-warehouse .hw-btn-secondary.hw-btn-sm { padding: 2px 6px; font-size: 10px; }
+        #modal-hideout-warehouse .hw-btn-secondary.hw-btn-active {
+            border-color: #ff8c00; color: #ff8c00; background: rgba(255,140,0,0.12);
+        }
+        #modal-hideout-warehouse .hw-detail-meta-row {
+            display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 8px;
+        }
+        #modal-hideout-warehouse .hw-btn-disabled {
+            border-color: #4d4d45 !important; color: #6b6560 !important;
+            cursor: not-allowed; background: transparent !important;
+        }
+        #modal-hideout-warehouse #hw-container-strip {
+            flex-shrink: 0; height: 120px; border-top: 2px solid #4d4d45; padding: 12px;
+            background: #1a1512; display: flex; gap: 16px; overflow-x: auto; position: relative; z-index: 1;
+            scrollbar-width: thin; scrollbar-color: rgba(211,160,96,0.6) rgba(26,21,18,0.3);
+        }
+        #modal-hideout-warehouse #hw-container-strip::-webkit-scrollbar { height: 6px; }
+        #modal-hideout-warehouse #hw-container-strip::-webkit-scrollbar-track { background: #1a1512; }
+        #modal-hideout-warehouse #hw-container-strip::-webkit-scrollbar-thumb {
+            background: linear-gradient(90deg, #d3a060 0%, #8f6840 100%); border-radius: 3px;
+        }
+        #modal-hideout-warehouse .hw-container-block { display: flex; flex-direction: column; min-width: 200px; flex-shrink: 0; }
+        #modal-hideout-warehouse .hw-container-block.hw-container-wide { min-width: 240px; }
+        #modal-hideout-warehouse .hw-container-block.hw-container-flex { flex: 1; min-width: 280px; }
+        #modal-hideout-warehouse .hw-container-head {
+            display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;
+        }
+        #modal-hideout-warehouse .hw-container-title { font-size: 12px; font-weight: 800; color: #8e8e8e; }
+        #modal-hideout-warehouse .hw-container-deposit {
+            font-size: 10px; padding: 2px 6px; border: 2px solid #4d4d45; border-radius: 4px;
+            background: transparent; color: #6b6560; cursor: pointer; font-family: inherit;
+            transition: border-color 0.2s, color 0.2s;
+        }
+        #modal-hideout-warehouse .hw-container-deposit:hover { border-color: #d3a060; color: #d3a060; }
+        #modal-hideout-warehouse .hw-container-slots { display: flex; gap: 4px; flex-wrap: wrap; max-height: 84px; overflow: hidden; }
+        #modal-hideout-warehouse .hw-mini-slot {
+            width: 40px; height: 40px; border: 2px solid #4d4d45; border-radius: 8px; background: #252520;
+            display: flex; align-items: center; justify-content: center; font-size: 10px; text-align: center;
+            color: #e0d7c6; flex-shrink: 0; box-sizing: border-box;
+        }
+        #modal-hideout-warehouse .hw-mini-slot.hw-mini-empty { color: #6b6560; }
+        #modal-hideout-warehouse .hw-container-divider {
+            width: 2px; background: #4d4d45; opacity: 0.5; flex-shrink: 0; align-self: stretch;
+        }
+        #modal-hideout-warehouse .hw-footer {
+            flex-shrink: 0; height: 32px; display: flex; align-items: center; justify-content: space-between;
+            padding: 0 16px; background: #1a1512; border-top: 2px solid #4d4d45;
+            font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; position: relative; z-index: 1;
+        }
+        #modal-hideout-warehouse #hw-footer-hint { color: #6b6560; margin: 0; }
+        #modal-hideout-warehouse .hw-footer-sub { color: #8e8e8e; text-transform: none; letter-spacing: 0.04em; }
+        #modal-hideout-warehouse #hw-upgrade-overlay {
+            position: absolute; inset: 0; z-index: 20; display: flex; background: #2d2d28;
+        }
+        #modal-hideout-warehouse #hw-upgrade-overlay.hw-hidden { display: none !important; }
+        #modal-hideout-warehouse .hw-upgrade-list {
+            width: 400px; flex-shrink: 0; border-right: 2px solid #4d4d45; background: #1a1512;
+            display: flex; flex-direction: column; min-height: 0;
+        }
+        #modal-hideout-warehouse .hw-upgrade-list-head {
+            height: 52px; display: flex; align-items: center; padding: 0 16px; border-bottom: 2px solid #4d4d45;
+        }
+        #modal-hideout-warehouse .hw-upgrade-list-head .hw-hub-title { margin: 0; }
+        #modal-hideout-warehouse .hw-upgrade-list-body {
+            flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 12px;
+            scrollbar-width: thin; scrollbar-color: rgba(211,160,96,0.6) rgba(26,21,18,0.3);
+        }
+        #modal-hideout-warehouse .hw-upgrade-list-body::-webkit-scrollbar { width: 6px; }
+        #modal-hideout-warehouse .hw-upgrade-list-body::-webkit-scrollbar-track { background: #1a1512; }
+        #modal-hideout-warehouse .hw-upgrade-list-body::-webkit-scrollbar-thumb {
+            background: linear-gradient(180deg, #d3a060 0%, #8f6840 100%); border-radius: 3px;
+        }
+        #modal-hideout-warehouse .hw-upgrade-card {
+            border: 2px solid #4d4d45; border-radius: 8px; padding: 12px; background: #252520;
+            cursor: pointer; position: relative; transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        #modal-hideout-warehouse .hw-upgrade-card.selected {
+            border-color: #ff8c00; box-shadow: inset 0 0 10px rgba(255,140,0,0.1);
+        }
+        #modal-hideout-warehouse .hw-upgrade-card.done { opacity: 0.6; }
+        #modal-hideout-warehouse .hw-upgrade-card-id { font-size: 10px; color: #8e8e8e; margin-bottom: 2px; }
+        #modal-hideout-warehouse .hw-upgrade-card-name { font-size: 15px; font-weight: 800; color: #e0d7c6; margin-bottom: 4px; }
+        #modal-hideout-warehouse .hw-upgrade-card.selected .hw-upgrade-card-name { color: #ff8c00; }
+        #modal-hideout-warehouse .hw-upgrade-card-desc { font-size: 12px; color: #bdb5ab; margin: 0; }
+        #modal-hideout-warehouse .hw-upgrade-tag {
+            position: absolute; top: 8px; right: 8px; font-size: 10px; padding: 0 4px; font-weight: 800;
+        }
+        #modal-hideout-warehouse .hw-upgrade-tag-done { border: 2px solid #4d4d45; color: #8e8e8e; }
+        #modal-hideout-warehouse .hw-upgrade-tag-tier { border: 1px solid #d3a060; color: #d3a060; }
+        #modal-hideout-warehouse .hw-upgrade-tag-lack { border: 1px solid rgba(185,28,28,0.5); color: rgba(185,28,28,0.8); }
+        #modal-hideout-warehouse .hw-upgrade-detail {
+            flex: 1; padding: 24px; display: flex; flex-direction: column; position: relative; overflow-y: auto;
+        }
+        #modal-hideout-warehouse .hw-upgrade-close {
+            position: absolute; top: 16px; right: 16px; background: transparent; border: none;
+            font-size: 24px; line-height: 1; color: #8e8e8e; cursor: pointer; padding: 0;
+        }
+        #modal-hideout-warehouse .hw-upgrade-close:hover { color: #e0d7c6; }
+        #modal-hideout-warehouse .hw-upgrade-detail-name { font-size: 28px; font-weight: 900; color: #e0d7c6; margin: 0 0 8px; }
+        #modal-hideout-warehouse .hw-upgrade-detail-desc { font-size: 14px; color: #bdb5ab; margin: 0 0 32px; line-height: 1.6; }
+        #modal-hideout-warehouse .hw-upgrade-req-grid {
+            display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 32px;
+        }
+        #modal-hideout-warehouse .hw-upgrade-req-item {
+            border: 2px solid #4d4d45; border-radius: 8px; padding: 12px; background: rgba(0,0,0,0.2);
+            display: flex; justify-content: space-between; align-items: center; font-size: 13px; color: #e0d7c6;
+        }
+        #modal-hideout-warehouse .hw-upgrade-req-val { font-weight: 800; color: #d3a060; }
+        #modal-hideout-warehouse .hw-upgrade-foot { margin-top: auto; }
+        #modal-hideout-warehouse .hw-upgrade-deduct { font-size: 11px; color: #8e8e8e; margin-bottom: 4px; }
+        #modal-hideout-warehouse .hw-progress-track {
+            background: #1a1512; border: 2px solid #4d4d45; height: 12px; border-radius: 6px; overflow: hidden;
+        }
+        #modal-hideout-warehouse .hw-progress-fill { background: #d3a060; height: 100%; width: 0%; transition: width 0.15s ease; }
+        #modal-hideout-warehouse .hw-upgrade-progress-label { font-size: 11px; color: #8e8e8e; margin: 4px 0 12px; }
+        #modal-hideout-warehouse .hw-upgrade-req-val.insufficient { color: rgba(185,28,28,0.85); }
+        #modal-hideout-warehouse .hw-upgrade-card.in-progress { border-color: #d3a060; }
+        #modal-hideout-warehouse .hw-upgrade-card.locked { opacity: 0.75; }
+        #modal-hideout-warehouse .hw-route-pick-card { cursor: pointer; border-color: #5a8f7a; }
+        #modal-hideout-warehouse .hw-route-pick-card:hover {
+            border-color: #d3a060; background: #251d17;
+        }
+        #modal-hideout-warehouse .hw-upgrade-tag-locked { border: 1px solid #4d4d45; color: #8e8e8e; }
+        #modal-hideout-warehouse .hw-upgrade-tag-progress { border: 1px solid #d3a060; color: #d3a060; }
+        /* 烹饪台（视觉与 reference/combat_skill.html 色板、字体对齐） */
+        #modal-cooking-station {
+            display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.88); z-index: 100;
+            align-items: center; justify-content: center; pointer-events: auto;
+            font-family: "Noto Serif SC", "Source Han Serif SC", "Noto Serif CJK SC", "SimSun", serif;
+        }
+        #modal-cooking-station.show { display: flex; }
+        #modal-cooking-station .cs-panel {
+            width: min(1100px, 96vw); height: min(720px, 88vh);
+            background: #2d2d28; border: 2px solid #4d4d45; border-radius: 10px;
+            overflow: hidden; display: flex; flex-direction: column; font-size: 14px;
+            box-shadow: 0 24px 64px rgba(0,0,0,0.65);
+            position: relative;
+            color: #e0d7c6;
+            background-image: radial-gradient(120% 90% at 50% 0%, rgba(211,160,96,0.08), rgba(45,45,40,0) 45%);
+        }
+        #modal-cooking-station .cs-panel::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            box-shadow: inset 0 0 120px rgba(0,0,0,0.36);
+        }
+        #modal-cooking-station .cs-head {
+            padding: 12px 18px; border-bottom: 2px solid #4d4d45; background: #1a1512;
+            display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap;
+        }
+        #modal-cooking-station .cs-head h2 {
+            margin: 0; font-size: 1.05rem; font-weight: 900; color: #e0d7c6; letter-spacing: 0.06em;
+            position: relative; padding-left: 10px;
+        }
+        #modal-cooking-station .cs-head h2::before {
+            content: '';
+            position: absolute; left: 0; top: 50%; width: 3px; height: 15px; border-radius: 2px;
+            transform: translateY(-50%);
+            background: linear-gradient(180deg, #ff8c00 0%, #d3a060 100%);
+        }
+        #modal-cooking-station .cs-head .cs-hint { font-size: 13px; color: #8e8e8e; flex: 1; min-width: 200px; line-height: 1.5; }
+        #modal-cooking-station .cs-head .cs-close {
+            padding: 8px 12px; font-size: 14px; background: transparent; border: none;
+            color: #8e8e8e; border-radius: 8px; cursor: pointer; flex-shrink: 0; font-weight: 800;
+        }
+        #modal-cooking-station .cs-head .cs-close:hover { color: #fff; background: rgba(185,28,28,0.18); }
+        #modal-cooking-station .cs-body {
+            flex: 1; overflow: hidden; min-height: 0;
+            display: grid; grid-template-columns: 1.15fr 1.05fr 0.95fr; gap: 12px;
+            padding: 12px 16px 18px; background: #1a1512;
+        }
+        #modal-cooking-station .cs-box {
+            border: 2px solid #4d4d45; border-radius: 10px; background: #252520;
+            overflow: hidden; display: flex; flex-direction: column; min-height: 0;
+        }
+        #modal-cooking-station .cs-box .title {
+            padding: 10px 12px; border-bottom: 2px solid #4d4d45;
+            color: #8e8e8e; font-weight: 900; font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase;
+        }
+        #modal-cooking-station .cs-subtitle {
+            margin: 0 0 8px 0; padding-top: 6px; border-top: 1px dashed rgba(77,77,69,0.65);
+            color: #d3a060; font-weight: 800; font-size: 12px; letter-spacing: 0.08em;
+        }
+        #modal-cooking-station .cs-box .content { padding: 10px 12px; overflow: auto; min-height: 0; color: #e0d7c6; }
+        #modal-cooking-station .cs-box .content,
+        #modal-cooking-station .cs-ingredient-list,
+        #modal-cooking-station select {
+            scrollbar-width: thin;
+            scrollbar-color: rgba(211,160,96,0.7) rgba(26,21,18,0.55);
+        }
+        #modal-cooking-station .cs-box .content::-webkit-scrollbar,
+        #modal-cooking-station .cs-ingredient-list::-webkit-scrollbar {
+            width: 10px;
+            height: 10px;
+        }
+        #modal-cooking-station .cs-box .content::-webkit-scrollbar-track,
+        #modal-cooking-station .cs-ingredient-list::-webkit-scrollbar-track {
+            background: rgba(26,21,18,0.55);
+            border-radius: 10px;
+        }
+        #modal-cooking-station .cs-box .content::-webkit-scrollbar-thumb,
+        #modal-cooking-station .cs-ingredient-list::-webkit-scrollbar-thumb {
+            background: linear-gradient(180deg, rgba(211,160,96,0.88) 0%, rgba(155,112,64,0.92) 100%);
+            border-radius: 10px;
+            border: 2px solid rgba(26,21,18,0.65);
+        }
+        #modal-cooking-station .cs-box .content::-webkit-scrollbar-thumb:hover,
+        #modal-cooking-station .cs-ingredient-list::-webkit-scrollbar-thumb:hover {
+            background: linear-gradient(180deg, rgba(255,140,0,0.9) 0%, rgba(211,160,96,0.95) 100%);
+        }
+        #modal-cooking-station .cs-method-list { display: flex; gap: 8px; flex-wrap: wrap; }
+        #modal-cooking-station .btn-method {
+            padding: 7px 10px; font-size: 12px; background: #1a1512; border: 2px solid #4d4d45;
+            color: #8e8e8e; border-radius: 9px; cursor: pointer; font-weight: 800;
+        }
+        #modal-cooking-station .btn-method:hover { border-color: #666; color: #d3a060; }
+        #modal-cooking-station .btn-method.active {
+            background: #d3a060; color: #1a1512; border-color: #d3a060;
+            box-shadow: 0 0 12px rgba(255,140,0,0.22);
+        }
+        #modal-cooking-station .cs-input-row {
+            display: grid; grid-template-columns: 1fr 70px 70px; gap: 8px; align-items: center;
+            padding: 8px 0; border-bottom: 1px dashed rgba(77,77,69,0.55);
+        }
+        #modal-cooking-station .cs-input-row:last-child { border-bottom: none; }
+        #modal-cooking-station .cs-input-row .iname { color: #e0d7c6; font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        #modal-cooking-station .cs-input-row .icnt { color: #8e8e8e; font-size: 12px; text-align: right; }
+        #modal-cooking-station .btn-mini {
+            padding: 6px 10px; font-size: 12px; background: rgba(211,160,96,0.12); border: 2px solid #4d4d45;
+            color: #e0d7c6; border-radius: 9px; cursor: pointer; font-weight: 800;
+        }
+        #modal-cooking-station .btn-mini:hover { border-color: #ff8c00; color: #ff8c00; background: rgba(211,160,96,0.18); }
+        #modal-cooking-station .cs-add-row { display: grid; grid-template-columns: 1fr 92px 92px; gap: 8px; align-items: center; }
+        #modal-cooking-station .cs-add-row.accessory { grid-template-columns: 1fr 92px; }
+        #modal-cooking-station #cooking-ingredient-filter {
+            width: 100%; max-width: 100%; padding: 8px 10px; border-radius: 8px; margin-bottom: 10px; box-sizing: border-box;
+            border: 2px solid #4d4d45; background: rgba(0,0,0,0.35); color: #e0d7c6; font-size: 13px;
+        }
+        #modal-cooking-station .cs-ingredient-list {
+            max-height: min(280px, 36vh); overflow-y: auto; padding-right: 4px;
+        }
+        #modal-cooking-station .cs-ingredient-row {
+            display: flex; align-items: center; justify-content: space-between; gap: 10px;
+            padding: 8px 12px; margin-bottom: 6px; background: #1a1512;
+            border: 2px solid #4d4d45; border-radius: 8px;
+        }
+        #modal-cooking-station .cs-ingredient-row .cs-ing-left {
+            flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px;
+        }
+        #modal-cooking-station .cs-ingredient-row .cs-ing-name { color: #e0d7c6; font-size: 14px; font-weight: 700; }
+        #modal-cooking-station .cs-ingredient-row .cs-ing-id { font-size: 12px; color: #8e8e8e; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        #modal-cooking-station .cs-ingredient-row .cs-ing-counts {
+            font-size: 12px; color: #8e8e8e; flex-shrink: 0; text-align: right; min-width: 7em;
+        }
+        #modal-cooking-station .cs-ingredient-row .btn-add-ingredient {
+            padding: 6px 12px; font-size: 13px; background: #252520; border: 2px solid #4d4d45;
+            color: #e0d7c6; border-radius: 8px; cursor: pointer; flex-shrink: 0; font-weight: 800;
+        }
+        #modal-cooking-station .cs-ingredient-row .btn-add-ingredient:hover:not(:disabled) { border-color: #d3a060; color: #d3a060; }
+        #modal-cooking-station .cs-ingredient-row .btn-add-ingredient:disabled { opacity: 0.45; cursor: not-allowed; }
+        #modal-cooking-station .cs-ingredient-row.cs-resource-pick { cursor: pointer; }
+        #modal-cooking-station .cs-ingredient-row.cs-resource-pick:hover { border-color: #666; }
+        #modal-cooking-station .cs-ingredient-row.cs-resource-pick.active {
+            border-color: #ff8c00;
+            box-shadow: 0 0 0 1px rgba(255,140,0,0.28);
+        }
+        #modal-cooking-station select, #modal-cooking-station input[type="number"] {
+            width: 100%; padding: 8px 10px; border-radius: 8px;
+            border: 2px solid #4d4d45; background: rgba(0,0,0,0.35); color: #e0d7c6; font-size: 13px;
+        }
+        #modal-cooking-station input[type="number"] { text-align: right; }
+        #modal-cooking-station .cs-kv { display: flex; gap: 10px; flex-wrap: wrap; }
+        #modal-cooking-station .cs-kv .kv {
+            padding: 8px 10px; border: 2px solid #4d4d45; border-radius: 9px;
+            background: rgba(0,0,0,0.22); color: #e0d7c6; font-size: 12px;
+        }
+        #modal-cooking-station .cs-kv .kv.bad { border-color: rgba(185,28,28,0.65); color: #fecaca; }
+        #modal-cooking-station .cs-actions { display: flex; gap: 10px; margin-top: 10px; flex-wrap: wrap; }
+        #modal-cooking-station .cs-station-service { margin-top: 8px; }
+        #modal-cooking-station .btn-start {
+            flex: 1; padding: 10px 12px; font-size: 14px; background: #d3a060; border: 2px solid #d3a060;
+            color: #1a1512; border-radius: 10px; cursor: pointer; font-weight: 900;
+            box-shadow: 0 0 14px rgba(255,140,0,0.2);
+        }
+        #modal-cooking-station .btn-start:hover:not(:disabled) { filter: brightness(1.06); }
+        #modal-cooking-station .btn-start:disabled { opacity: 0.55; cursor: not-allowed; box-shadow: none; }
+        #modal-cooking-station .btn-clear {
+            padding: 10px 12px; font-size: 14px; background: #1a1512; border: 2px solid #4d4d45;
+            color: #e0d7c6; border-radius: 10px; cursor: pointer; font-weight: 900;
+        }
+        #modal-cooking-station .btn-clear:hover { border-color: #d3a060; color: #d3a060; }
+        #modal-cooking-station .cs-known-list { display: flex; flex-direction: column; gap: 8px; }
+        #modal-cooking-station .btn-known {
+            text-align: left; width: 100%; padding: 9px 10px; border-radius: 10px;
+            border: 2px solid #4d4d45; background: #1a1512; color: #e0d7c6; cursor: pointer; font-weight: 800; font-size: 12px;
+        }
+        #modal-cooking-station .btn-known:hover { border-color: #ff8c00; color: #ff8c00; }
+        #modal-cooking-station .cs-active-craft {
+            border: 2px solid #4d4d45; border-radius: 10px; padding: 12px;
+            background: rgba(0,0,0,0.22);
+        }
+        #modal-cooking-station .cs-active-craft .label { color: #8e8e8e; font-size: 11px; font-weight: 900; letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 6px; }
+        #modal-cooking-station .cs-active-craft .main {
+            color: #e0d7c6; font-weight: 800; font-size: 14px; letter-spacing: 0.02em;
+            display: flex; justify-content: space-between; gap: 8px; align-items: baseline;
+        }
+        #modal-cooking-station .cs-active-craft .main span:last-child { color: #ff8c00; font-size: 12px; font-weight: 900; }
+        #modal-cooking-station .cs-active-craft .sub { color: #8e8e8e; font-size: 12px; margin-top: 6px; }
+        #modal-cooking-station .cs-active-craft .bar {
+            height: 6px; border-radius: 999px; background: rgba(77,77,69,0.55); margin-top: 10px; overflow: hidden;
+        }
+        #modal-cooking-station .cs-active-craft .bar > i {
+            display: block; height: 100%; width: 0;
+            background: linear-gradient(90deg, #ff8c00 0%, #d3a060 100%);
+        }
+        #modal-cooking-station #cooking-help-text { font-size: 13px; line-height: 1.65; color: #8e8e8e; }
+        #modal-cooking-station .cs-empty-hint { color: #8e8e8e; font-size: 13px; }
+        /* 制药台样式（复用烹饪台风格） */
+        #modal-pharmacy-station {
+            display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.88); z-index: 100;
+            align-items: center; justify-content: center; pointer-events: auto;
+            font-family: "Noto Serif SC", "Source Han Serif SC", "Noto Serif CJK SC", "SimSun", serif;
+        }
+        #modal-pharmacy-station.show { display: flex; }
+        #modal-pharmacy-station .cs-panel {
+            width: min(1100px, 96vw); height: min(720px, 88vh);
+            background: #2d2d28; border: 2px solid #4d4d45; border-radius: 10px;
+            overflow: hidden; display: flex; flex-direction: column; font-size: 14px;
+            box-shadow: 0 24px 64px rgba(0,0,0,0.65);
+            position: relative;
+            color: #e0d7c6;
+            background-image: radial-gradient(120% 90% at 50% 0%, rgba(211,160,96,0.08), rgba(45,45,40,0) 45%);
+        }
+        #modal-pharmacy-station .cs-panel::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            box-shadow: inset 0 0 120px rgba(0,0,0,0.36);
+        }
+        #modal-pharmacy-station .cs-head {
+            padding: 12px 18px; border-bottom: 2px solid #4d4d45; background: #1a1512;
+            display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap;
+        }
+        #modal-pharmacy-station .cs-head h2 {
+            margin: 0; font-size: 1.05rem; font-weight: 900; color: #e0d7c6; letter-spacing: 0.06em;
+            position: relative; padding-left: 10px;
+        }
+        #modal-pharmacy-station .cs-head h2::before {
+            content: '';
+            position: absolute; left: 0; top: 50%; width: 3px; height: 15px; border-radius: 2px;
+            transform: translateY(-50%);
+            background: linear-gradient(180deg, #ff8c00 0%, #d3a060 100%);
+        }
+        #modal-pharmacy-station .cs-head .cs-hint { font-size: 13px; color: #8e8e8e; flex: 1; min-width: 200px; line-height: 1.5; }
+        #modal-pharmacy-station .cs-head .cs-close {
+            padding: 8px 12px; font-size: 14px; background: transparent; border: none;
+            color: #8e8e8e; border-radius: 8px; cursor: pointer; flex-shrink: 0; font-weight: 800;
+        }
+        #modal-pharmacy-station .cs-head .cs-close:hover { color: #fff; background: rgba(185,28,28,0.18); }
+        #modal-pharmacy-station .cs-body {
+            flex: 1; overflow: hidden; min-height: 0;
+            display: grid; grid-template-columns: 1.2fr 1fr 0.9fr; gap: 12px;
+            padding: 12px 16px 18px; background: #1a1512;
+        }
+        #modal-pharmacy-station .cs-box {
+            border: 2px solid #4d4d45; border-radius: 10px; background: #252520;
+            overflow: hidden; display: flex; flex-direction: column; min-height: 0;
+        }
+        #modal-pharmacy-station .cs-box .title {
+            padding: 10px 12px; border-bottom: 2px solid #4d4d45;
+            color: #8e8e8e; font-weight: 900; font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase;
+        }
+        #modal-pharmacy-station .cs-subtitle {
+            margin: 0 0 8px 0; padding-top: 6px; border-top: 1px dashed rgba(77,77,69,0.65);
+            color: #d3a060; font-weight: 800; font-size: 12px; letter-spacing: 0.08em;
+        }
+        #modal-pharmacy-station .cs-box .content { padding: 10px 12px; overflow: auto; min-height: 0; color: #e0d7c6; }
+        #modal-pharmacy-station .cs-method-list { display: flex; gap: 8px; flex-wrap: wrap; }
+        #modal-pharmacy-station .btn-method {
+            padding: 7px 10px; font-size: 12px; background: #1a1512; border: 2px solid #4d4d45;
+            color: #8e8e8e; border-radius: 9px; cursor: pointer; font-weight: 800;
+        }
+        #modal-pharmacy-station .btn-method:hover { border-color: #666; color: #d3a060; }
+        #modal-pharmacy-station .btn-method.active {
+            background: #d3a060; color: #1a1512; border-color: #d3a060;
+            box-shadow: 0 0 12px rgba(255,140,0,0.22);
+        }
+        #modal-pharmacy-station .cs-input-row {
+            display: grid; grid-template-columns: 1fr 70px 70px; gap: 8px; align-items: center;
+            padding: 8px 0; border-bottom: 1px dashed rgba(77,77,69,0.55);
+        }
+        #modal-pharmacy-station .cs-input-row:last-child { border-bottom: none; }
+        #modal-pharmacy-station .cs-input-row .iname { color: #e0d7c6; font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        #modal-pharmacy-station .cs-input-row .icnt { color: #8e8e8e; font-size: 12px; text-align: right; }
+        #modal-pharmacy-station .btn-mini {
+            padding: 6px 10px; font-size: 12px; background: rgba(211,160,96,0.12); border: 2px solid #4d4d45;
+            color: #e0d7c6; border-radius: 9px; cursor: pointer; font-weight: 800;
+        }
+        #modal-pharmacy-station .btn-mini:hover { border-color: #ff8c00; color: #ff8c00; background: rgba(211,160,96,0.18); }
+        #modal-pharmacy-station .cs-add-row { display: grid; grid-template-columns: 1fr 92px 92px; gap: 8px; align-items: center; }
+        #modal-pharmacy-station .cs-add-row.accessory { grid-template-columns: 1fr 92px; }
+        #modal-pharmacy-station #pharmacy-ingredient-filter {
+            width: 100%; max-width: 100%; padding: 8px 10px; border-radius: 8px; margin-bottom: 10px; box-sizing: border-box;
+            border: 2px solid #4d4d45; background: rgba(0,0,0,0.35); color: #e0d7c6; font-size: 13px;
+        }
+        #modal-pharmacy-station .cs-ingredient-list {
+            max-height: min(280px, 36vh); overflow-y: auto; padding-right: 4px;
+        }
+        #modal-pharmacy-station .cs-ingredient-row {
+            display: flex; align-items: center; justify-content: space-between; gap: 10px;
+            padding: 8px 12px; margin-bottom: 6px; background: #1a1512;
+            border: 2px solid #4d4d45; border-radius: 8px;
+        }
+        #modal-pharmacy-station .cs-ingredient-row .cs-ing-left {
+            flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px;
+        }
+        #modal-pharmacy-station .cs-ingredient-row .cs-ing-name { color: #e0d7c6; font-size: 14px; font-weight: 700; }
+        #modal-pharmacy-station .cs-ingredient-row .cs-ing-id { font-size: 12px; color: #8e8e8e; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        #modal-pharmacy-station .cs-ingredient-row .cs-ing-counts {
+            font-size: 12px; color: #8e8e8e; flex-shrink: 0; text-align: right; min-width: 7em;
+        }
+        #modal-pharmacy-station .cs-ingredient-row .btn-add-ingredient {
+            padding: 6px 12px; font-size: 13px; background: #252520; border: 2px solid #4d4d45;
+            color: #e0d7c6; border-radius: 8px; cursor: pointer; flex-shrink: 0; font-weight: 800;
+        }
+        #modal-pharmacy-station .cs-ingredient-row .btn-add-ingredient:hover:not(:disabled) { border-color: #d3a060; color: #d3a060; }
+        #modal-pharmacy-station .cs-ingredient-row .btn-add-ingredient:disabled { opacity: 0.45; cursor: not-allowed; }
+        #modal-pharmacy-station .cs-ingredient-row.cs-resource-pick { cursor: pointer; }
+        #modal-pharmacy-station .cs-ingredient-row.cs-resource-pick:hover { border-color: #666; }
+        #modal-pharmacy-station .cs-ingredient-row.cs-resource-pick.active {
+            border-color: #ff8c00;
+            box-shadow: 0 0 0 1px rgba(255,140,0,0.28);
+        }
+        #modal-pharmacy-station select, #modal-pharmacy-station input[type="number"] {
+            width: 100%; padding: 8px 10px; border-radius: 8px;
+            border: 2px solid #4d4d45; background: rgba(0,0,0,0.35); color: #e0d7c6; font-size: 13px;
+        }
+        #modal-pharmacy-station input[type="number"] { text-align: right; }
+        #modal-pharmacy-station .cs-kv { display: flex; gap: 10px; flex-wrap: wrap; }
+        #modal-pharmacy-station .cs-kv .kv {
+            padding: 8px 10px; border: 2px solid #4d4d45; border-radius: 9px;
+            background: rgba(0,0,0,0.22); color: #e0d7c6; font-size: 12px;
+        }
+        #modal-pharmacy-station .cs-kv .kv.bad { border-color: rgba(185,28,28,0.65); color: #fecaca; }
+        #modal-pharmacy-station .cs-actions { display: flex; gap: 10px; margin-top: 10px; flex-wrap: wrap; }
+        #modal-pharmacy-station .cs-station-service { margin-top: 8px; }
+        #modal-pharmacy-station .btn-start {
+            flex: 1; padding: 10px 12px; font-size: 14px; background: #d3a060; border: 2px solid #d3a060;
+            color: #1a1512; border-radius: 10px; cursor: pointer; font-weight: 900;
+            box-shadow: 0 0 14px rgba(255,140,0,0.2);
+        }
+        #modal-pharmacy-station .btn-start:hover:not(:disabled) { filter: brightness(1.06); }
+        #modal-pharmacy-station .btn-start:disabled { opacity: 0.55; cursor: not-allowed; box-shadow: none; }
+        #modal-pharmacy-station .btn-clear {
+            padding: 10px 12px; font-size: 14px; background: #1a1512; border: 2px solid #4d4d45;
+            color: #e0d7c6; border-radius: 10px; cursor: pointer; font-weight: 900;
+        }
+        #modal-pharmacy-station .btn-clear:hover { border-color: #d3a060; color: #d3a060; }
+        #modal-pharmacy-station .cs-known-list { display: flex; flex-direction: column; gap: 8px; }
+        #modal-pharmacy-station .btn-known {
+            text-align: left; width: 100%; padding: 9px 10px; border-radius: 10px;
+            border: 2px solid #4d4d45; background: #1a1512; color: #e0d7c6; cursor: pointer; font-weight: 800; font-size: 12px;
+        }
+        #modal-pharmacy-station .btn-known:hover { border-color: #ff8c00; color: #ff8c00; }
+        #modal-pharmacy-station .cs-active-craft {
+            border: 2px solid #4d4d45; border-radius: 10px; padding: 12px;
+            background: rgba(0,0,0,0.22);
+        }
+        #modal-pharmacy-station .cs-active-craft .label { color: #8e8e8e; font-size: 11px; font-weight: 900; letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 6px; }
+        #modal-pharmacy-station .cs-active-craft .main {
+            color: #e0d7c6; font-weight: 800; font-size: 14px; letter-spacing: 0.02em;
+            display: flex; justify-content: space-between; gap: 8px; align-items: baseline;
+        }
+        #modal-pharmacy-station .cs-active-craft .main span:last-child { color: #ff8c00; font-size: 12px; font-weight: 900; }
+        #modal-pharmacy-station .cs-active-craft .sub { color: #8e8e8e; font-size: 12px; margin-top: 6px; }
+        #modal-pharmacy-station .cs-active-craft .bar {
+            height: 6px; border-radius: 999px; background: rgba(77,77,69,0.55); margin-top: 10px; overflow: hidden;
+        }
+        #modal-pharmacy-station .cs-active-craft .bar > i {
+            display: block; height: 100%; width: 0;
+            background: linear-gradient(90deg, #ff8c00 0%, #d3a060 100%);
+        }
+        #modal-pharmacy-station #pharmacy-help-text { font-size: 13px; line-height: 1.65; color: #8e8e8e; }
+        #modal-pharmacy-station .cs-empty-hint { color: #8e8e8e; font-size: 13px; }
+        /* 堆肥/沤肥统一设施面板 */
+        #modal-compost-station {
+            display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.88); z-index: 100;
+            align-items: center; justify-content: center; pointer-events: auto;
+            font-family: "Noto Serif SC", "Source Han Serif SC", "Noto Serif CJK SC", "SimSun", serif;
+        }
+        #modal-compost-station.show { display: flex; }
+        #modal-agriculture {
+            display: none; position: fixed; inset: 0; z-index: 9200;
+            align-items: center; justify-content: center;
+            background: rgba(0,0,0,0.88); pointer-events: auto;
+            font-family: "Noto Serif SC", "Source Han Serif SC", "Noto Serif CJK SC", "SimSun", serif;
+        }
+        #modal-agriculture.show { display: flex; }
+        #modal-agriculture .agri-panel {
+            width: min(1180px, 96vw); height: min(760px, 90vh);
+            background: #2d2d28; border: 2px solid #4d4d45; border-radius: 10px;
+            overflow: hidden; display: flex; flex-direction: column; font-size: 14px;
+            box-shadow: 0 24px 64px rgba(0,0,0,0.65); color: #e0d7c6;
+            position: relative;
+            background-image: radial-gradient(120% 90% at 50% 0%, rgba(211,160,96,0.08), rgba(45,45,40,0) 45%);
+        }
+        #modal-agriculture .agri-head {
+            padding: 12px 18px; border-bottom: 2px solid #4d4d45; background: #1a1512;
+            display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap;
+        }
+        #modal-agriculture .agri-head h2 {
+            margin: 0; font-size: 1.05rem; font-weight: 900; color: #e0d7c6; letter-spacing: 0.06em;
+            padding-left: 10px; position: relative;
+        }
+        #modal-agriculture .agri-head h2::before {
+            content: ''; position: absolute; left: 0; top: 50%; width: 3px; height: 15px;
+            border-radius: 2px; transform: translateY(-50%);
+            background: linear-gradient(180deg, #ff8c00 0%, #d3a060 100%);
+        }
+        #modal-agriculture .agri-hint { margin: 0; padding: 8px 18px 0; font-size: 12px; color: #8e8e8e; line-height: 1.5; }
+        #modal-agriculture .agri-close {
+            padding: 8px 12px; font-size: 14px; background: transparent; border: none;
+            color: #8e8e8e; border-radius: 8px; cursor: pointer; font-weight: 800;
+        }
+        #modal-agriculture .agri-close:hover { color: #fff; background: rgba(185,28,28,0.18); }
+        #modal-agriculture .agri-body {
+            flex: 1; min-height: 0; display: grid; grid-template-columns: minmax(0, 1fr) 300px;
+            gap: 12px; padding: 12px 16px; background: #1a1512;
+        }
+        #modal-agriculture .agri-grid-wrap {
+            border: 2px solid #4d4d45; border-radius: 10px; background: #252520;
+            padding: 10px; overflow: auto; display: flex; align-items: center; justify-content: center;
+        }
+        #modal-agriculture .agri-grid {
+            display: grid; grid-template-columns: repeat(11, 36px); grid-template-rows: repeat(11, 36px);
+            gap: 3px;
+        }
+        #modal-agriculture .agri-cell {
+            width: 36px; height: 36px; border: 1px solid #4d4d45; border-radius: 4px;
+            background: #1e1c18; color: #c8bfb0; font-size: 10px; line-height: 1.1;
+            cursor: pointer; padding: 2px; position: relative; text-align: center;
+            font-family: "Microsoft YaHei", "PingFang SC", sans-serif;
+        }
+        #modal-agriculture .agri-cell:hover { border-color: #d3a060; }
+        #modal-agriculture .agri-cell.selected { border-color: #ff8c00; box-shadow: 0 0 12px rgba(255,140,0,0.25); }
+        #modal-agriculture .agri-cell.pool { background: #1a3048; }
+        #modal-agriculture .agri-cell.channel { background: #243040; }
+        #modal-agriculture .agri-cell.channel.trunk { border-color: #5a8ab0; }
+        #modal-agriculture .agri-cell.channel.has-water { background: #2a4a62; }
+        #modal-agriculture .agri-cell.land.tilled { background: #3a3020; }
+        #modal-agriculture .agri-cell.venturi { background: #3a2838; }
+        #modal-agriculture .agri-cell.jar { background: #342a28; }
+        #modal-agriculture .agri-cell.fusion { background: #2e3430; }
+        #modal-agriculture .agri-cell.crop-growing { outline: 1px solid #6a9a50; }
+        #modal-agriculture .agri-cell.crop-ready { outline: 2px solid #d3a060; }
+        #modal-agriculture .agri-cell.crop-fail { outline: 2px solid #8b4040; }
+        #modal-agriculture .agri-cell .agri-cell-task {
+            position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+            background: rgba(0,0,0,0.55); font-size: 9px; font-weight: 800; color: #ff8c00;
+        }
+        #modal-agriculture .agri-side {
+            border: 2px solid #4d4d45; border-radius: 10px; background: #252520;
+            display: flex; flex-direction: column; min-height: 0; overflow: hidden;
+        }
+        #modal-agriculture .agri-task-bar {
+            padding: 10px 12px; border-bottom: 1px solid #3a3228; font-size: 12px; color: #d3a060;
+        }
+        #modal-agriculture .agri-detail {
+            flex: 1; overflow-y: auto; padding: 10px 12px; font-size: 12px; line-height: 1.55;
+        }
+        #modal-agriculture .agri-detail .agri-kv { margin-bottom: 6px; }
+        #modal-agriculture .agri-detail .agri-k { color: #8e8e8e; font-size: 11px; }
+        #modal-agriculture .agri-detail .agri-v { color: #e0d7c6; }
+        #modal-agriculture .agri-actions {
+            border-top: 1px solid #3a3228; padding: 8px 10px; max-height: 42%;
+            overflow-y: auto; display: flex; flex-direction: column; gap: 6px;
+        }
+        #modal-agriculture .agri-actions .agri-act-btn {
+            width: 100%; text-align: left; padding: 6px 10px; border-radius: 6px;
+            border: 1px solid #4d4d45; background: #2a241c; color: #e0d7c6;
+            font-size: 12px; cursor: pointer;
+        }
+        #modal-agriculture .agri-actions .agri-act-btn:hover:not(:disabled) { border-color: #d3a060; color: #d3a060; }
+        #modal-agriculture .agri-actions .agri-act-btn:disabled { opacity: 0.45; cursor: not-allowed; }
+        #modal-agriculture .agri-actions .agri-act-group {
+            font-size: 11px; color: #8e8e8e; margin-top: 4px; letter-spacing: 0.04em;
+        }
+        #modal-agriculture .agri-venturi-conc { margin-top: 4px; }
+        #modal-agriculture .agri-venturi-conc-row {
+            display: flex; align-items: center; gap: 8px; margin-top: 4px;
+        }
+        #modal-agriculture .agri-conc-val {
+            min-width: 28px; text-align: center; color: #d3a060; font-weight: 700;
+        }
+        #modal-agriculture .agri-act-btn.agri-conc-step { min-width: 36px; padding: 6px 8px; }
+        #modal-agriculture .agri-theft-panel {
+            margin-top: 6px; padding: 8px; border: 1px solid #4d4d45; border-radius: 8px; background: #221c18;
+        }
+        #modal-agriculture .agri-theft-toggle {
+            display: flex; align-items: center; gap: 6px; font-size: 12px; color: #e0d7c6; cursor: pointer;
+        }
+        #modal-agriculture .agri-theft-row {
+            display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-top: 8px; font-size: 12px; color: #8e8e8e;
+        }
+        #modal-agriculture .agri-theft-select {
+            background: #2a241c; color: #e0d7c6; border: 1px solid #4d4d45; border-radius: 6px; padding: 4px 6px;
+        }
+        #modal-agriculture .agri-foot {
+            padding: 10px 16px 14px; border-top: 2px solid #4d4d45; background: #1a1512;
+            display: flex; gap: 10px; flex-wrap: wrap; align-items: center;
+        }
+        #modal-agriculture .agri-foot button {
+            padding: 8px 14px; border-radius: 8px; border: 1px solid #4d4d45;
+            background: #2a241c; color: #e0d7c6; font-size: 13px; cursor: pointer; font-weight: 700;
+        }
+        #modal-agriculture .agri-foot button:hover:not(:disabled) { border-color: #d3a060; color: #d3a060; }
+        #modal-agriculture .agri-foot button.primary { border-color: #d3a060; color: #1a1512; background: #d3a060; }
+        #modal-agriculture .agri-foot button.primary:hover { background: #ff8c00; border-color: #ff8c00; }
+        #modal-agriculture .agri-foot button.toggle-on {
+            border-color: #6a9a50; color: #1a1512; background: #6a9a50;
+        }
+        #modal-agriculture .agri-foot button.toggle-on:hover { background: #7fb068; border-color: #7fb068; color: #1a1512; }
+        #modal-agriculture .agri-world-strip {
+            flex: 1 1 100%; width: 100%; font-size: 11px; color: #a89880; line-height: 1.4;
+        }
+        #modal-agriculture .agri-power-badge {
+            padding: 6px 12px; border-radius: 999px; border: 1px solid #4d4d45;
+            background: #221c18; color: #8e8e8e; font-size: 12px; font-weight: 700; white-space: nowrap;
+        }
+        #modal-agriculture .agri-power-badge.on { border-color: #6a9a50; color: #9fc08a; }
+        #modal-agriculture .agri-power-badge.off { border-color: #8b4040; color: #e08a8a; }
+        #modal-agriculture .agri-power-picker {
+            position: absolute; right: 16px; bottom: 64px; z-index: 40; width: min(360px, 92%);
+            background: #2d2d28; border: 2px solid #4d4d45; border-radius: 10px; box-shadow: 0 16px 48px rgba(0,0,0,0.6);
+        }
+        #modal-agriculture .agri-power-picker.hidden { display: none; }
+        #modal-agriculture .agri-power-picker-head {
+            padding: 8px 12px; border-bottom: 1px solid #4d4d45; display: flex; justify-content: space-between; align-items: center;
+            font-size: 12px; font-weight: 800; color: #e0d7c6;
+        }
+        #modal-agriculture .agri-power-picker-head span { cursor: pointer; color: #8e8e8e; padding: 2px 8px; }
+        #modal-agriculture .agri-power-picker-head span:hover { color: #fff; background: rgba(185,28,28,0.18); }
+        #modal-agriculture .agri-power-picker-list { padding: 8px; overflow-y: auto; display: grid; gap: 6px; max-height: 240px; }
+        #modal-agriculture .agri-power-row {
+            display: flex; align-items: center; gap: 8px; padding: 6px 8px;
+            border: 1px solid #4d4d45; border-radius: 8px; background: #221c18; font-size: 12px;
+        }
+        #modal-agriculture .agri-power-row .feed-name { flex: 1; }
+        #modal-agriculture .agri-power-row .feed-meta { color: #8e8e8e; font-size: 11px; }
+        #modal-agriculture .agri-power-row .agri-act-btn { padding: 3px 10px; font-size: 11px; flex-shrink: 0; }
+        #modal-agriculture .agri-power-empty { padding: 12px; font-size: 12px; color: #8e8e8e; }
+        #modal-agriculture .agri-status-msg { flex: 1; font-size: 12px; color: #8e8e8e; min-width: 120px; }
+        #modal-compost-station .cs-panel {
+            width: min(1180px, 96vw); height: min(760px, 90vh);
+            background: #2d2d28; border: 2px solid #4d4d45; border-radius: 10px;
+            overflow: hidden; display: flex; flex-direction: column; font-size: 14px;
+            box-shadow: 0 24px 64px rgba(0,0,0,0.65);
+            position: relative; color: #e0d7c6;
+            background-image: radial-gradient(120% 90% at 50% 0%, rgba(211,160,96,0.08), rgba(45,45,40,0) 45%);
+        }
+        #modal-compost-station .cs-panel::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            box-shadow: inset 0 0 120px rgba(0,0,0,0.36);
+        }
+        #modal-compost-station .cs-head {
+            padding: 12px 18px; border-bottom: 2px solid #4d4d45; background: #1a1512;
+            display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap;
+        }
+        #modal-compost-station .cs-head h2 {
+            margin: 0; font-size: 1.05rem; font-weight: 900; color: #e0d7c6; letter-spacing: 0.06em;
+            position: relative; padding-left: 10px;
+        }
+        #modal-compost-station .cs-head h2::before {
+            content: '';
+            position: absolute; left: 0; top: 50%; width: 3px; height: 15px; border-radius: 2px;
+            transform: translateY(-50%);
+            background: linear-gradient(180deg, #ff8c00 0%, #d3a060 100%);
+        }
+        #modal-compost-station .cs-tabs { display: flex; gap: 6px; align-items: flex-end; }
+        #modal-compost-station .cs-tab {
+            padding: 6px 12px 7px; border: none; border-bottom: 2px solid transparent;
+            background: transparent; color: #8e8e8e; font-size: 12px; font-weight: 800; letter-spacing: 0.05em; cursor: pointer;
+        }
+        #modal-compost-station .cs-tab:hover { color: #d3a060; }
+        #modal-compost-station .cs-tab.active { color: #ff8c00; border-bottom-color: #ff8c00; }
+        #modal-compost-station .cs-head .cs-hint { font-size: 12px; color: #8e8e8e; line-height: 1.5; }
+        #modal-compost-station .cs-head .cs-close {
+            padding: 8px 12px; font-size: 14px; background: transparent; border: none;
+            color: #8e8e8e; border-radius: 8px; cursor: pointer; flex-shrink: 0; font-weight: 800;
+        }
+        #modal-compost-station .cs-head .cs-close:hover { color: #fff; background: rgba(185,28,28,0.18); }
+        #modal-compost-station .cs-body {
+            flex: 1; overflow: hidden; min-height: 0;
+            display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px;
+            padding: 12px 16px 18px; background: #1a1512;
+        }
+        #modal-compost-station .cs-box {
+            border: 2px solid #4d4d45; border-radius: 10px; background: #252520;
+            overflow: hidden; display: flex; flex-direction: column; min-height: 0;
+        }
+        #modal-compost-station .cs-box .title {
+            padding: 10px 12px; border-bottom: 2px solid #4d4d45;
+            color: #8e8e8e; font-weight: 900; font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase;
+        }
+        #modal-compost-station .cs-box .content { padding: 10px 12px; overflow: auto; min-height: 0; color: #e0d7c6; }
+        #modal-compost-station .cs-subtitle {
+            margin: 0 0 8px 0; padding-top: 6px; border-top: 1px dashed rgba(77,77,69,0.65);
+            color: #d3a060; font-weight: 800; font-size: 12px; letter-spacing: 0.08em;
+        }
+        #modal-compost-station .cs-input-row {
+            display: grid; grid-template-columns: 1fr 64px 64px; gap: 8px; align-items: center;
+            padding: 8px 0; border-bottom: 1px dashed rgba(77,77,69,0.55);
+        }
+        #modal-compost-station .cs-input-row:last-child { border-bottom: none; }
+        #modal-compost-station .cs-input-row .iname { color: #e0d7c6; font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        #modal-compost-station .cs-input-row .icnt { color: #8e8e8e; font-size: 12px; text-align: right; }
+        #modal-compost-station .btn-mini {
+            padding: 6px 10px; font-size: 12px; background: rgba(211,160,96,0.12); border: 2px solid #4d4d45;
+            color: #e0d7c6; border-radius: 9px; cursor: pointer; font-weight: 800;
+        }
+        #modal-compost-station .btn-mini:hover { border-color: #ff8c00; color: #ff8c00; background: rgba(211,160,96,0.18); }
+        #modal-compost-station .cs-ingredient-list { max-height: min(280px, 36vh); overflow-y: auto; padding-right: 4px; }
+        #modal-compost-station .cs-ingredient-row {
+            display: flex; align-items: center; justify-content: space-between; gap: 10px;
+            padding: 8px 12px; margin-bottom: 6px; background: #1a1512;
+            border: 2px solid #4d4d45; border-radius: 8px;
+        }
+        #modal-compost-station .cs-ingredient-row .cs-ing-left { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+        #modal-compost-station .cs-ingredient-row .cs-ing-name { color: #e0d7c6; font-size: 14px; font-weight: 700; }
+        #modal-compost-station .cs-ingredient-row .cs-ing-id { font-size: 12px; color: #8e8e8e; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        #modal-compost-station .cs-ingredient-row .cs-ing-counts { font-size: 12px; color: #8e8e8e; flex-shrink: 0; text-align: right; min-width: 7em; }
+        #modal-compost-station .cs-ingredient-row .btn-add-ingredient {
+            padding: 6px 12px; font-size: 13px; background: #252520; border: 2px solid #4d4d45;
+            color: #e0d7c6; border-radius: 8px; cursor: pointer; flex-shrink: 0; font-weight: 800;
+        }
+        #modal-compost-station .cs-ingredient-row .btn-add-ingredient:hover:not(:disabled) { border-color: #d3a060; color: #d3a060; }
+        #modal-compost-station .cs-ingredient-row .btn-add-ingredient:disabled { opacity: 0.45; cursor: not-allowed; }
+        #modal-compost-station .cs-kv { display: flex; gap: 10px; flex-wrap: wrap; }
+        #modal-compost-station .cs-kv .kv {
+            padding: 8px 10px; border: 2px solid #4d4d45; border-radius: 9px;
+            background: rgba(0,0,0,0.22); color: #e0d7c6; font-size: 12px;
+        }
+        #modal-compost-station .cs-actions { display: flex; gap: 10px; margin-top: 10px; flex-wrap: wrap; }
+        #modal-compost-station .btn-start {
+            flex: 1; padding: 10px 12px; font-size: 14px; background: #d3a060; border: 2px solid #d3a060;
+            color: #1a1512; border-radius: 10px; cursor: pointer; font-weight: 900;
+        }
+        #modal-compost-station .btn-start:hover:not(:disabled) { filter: brightness(1.06); }
+        #modal-compost-station .btn-start:disabled { opacity: 0.55; cursor: not-allowed; }
+        #modal-compost-station .btn-clear {
+            padding: 10px 12px; font-size: 14px; background: #1a1512; border: 2px solid #4d4d45;
+            color: #e0d7c6; border-radius: 10px; cursor: pointer; font-weight: 900;
+        }
+        #modal-compost-station .btn-clear:hover { border-color: #d3a060; color: #d3a060; }
+        #modal-compost-station .cs-log {
+            font-size: 12px; line-height: 1.5; color: #a8a29e; border: 1px dashed rgba(77,77,69,0.8);
+            border-radius: 8px; padding: 8px; max-height: min(240px, 28vh); overflow-y: auto; background: rgba(0,0,0,0.2);
+        }
+        #modal-compost-station .cs-log .line { margin-bottom: 4px; }
+        #modal-compost-station .cs-log .line:last-child { margin-bottom: 0; }
+        /* 战斗技能枢纽弹窗（视觉参考 reference/combat_skill.html） */
+        #modal-combat {
+            display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.92); z-index: 100;
+            align-items: center; justify-content: center; padding: 16px 24px; pointer-events: auto;
+            font-family: "Noto Serif SC", "Source Han Serif SC", "Microsoft YaHei", "微软雅黑", "PingFang SC", serif;
+        }
+        #modal-combat.show { display: flex; }
+        #modal-combat .combat-panel {
+            width: min(1280px, 98vw); height: min(860px, 92vh); max-height: 92vh;
+            background: #2d2d28; border: 2px solid #4d4d45; border-radius: 10px;
+            box-shadow: 0 24px 64px rgba(0,0,0,0.65); display: flex; flex-direction: column; overflow: hidden;
+            position: relative;
+            background-image: radial-gradient(120% 90% at 50% 0%, rgba(211,160,96,0.08), rgba(45,45,40,0) 45%);
+        }
+        #modal-combat .combat-panel::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            box-shadow: inset 0 0 120px rgba(0,0,0,0.36);
+        }
+        #modal-combat .combat-header {
+            height: 52px; flex-shrink: 0; display: flex; align-items: center; justify-content: space-between;
+            padding: 0 20px 0 24px; background: #1a1512; border-bottom: 2px solid #4d4d45;
+        }
+        #modal-combat .combat-header-left { display: flex; align-items: center; gap: 28px; min-width: 0; }
+        #modal-combat .combat-panel-title {
+            margin: 0; font-size: 1.05rem; font-weight: 900; color: #e0d7c6; letter-spacing: 0.06em; white-space: nowrap;
+            position: relative; padding-left: 10px;
+        }
+        #modal-combat .combat-panel-title::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 50%;
+            width: 3px;
+            height: 15px;
+            border-radius: 2px;
+            transform: translateY(-50%);
+            background: linear-gradient(180deg, #ff8c00 0%, #d3a060 100%);
+        }
+        #modal-combat .combat-main-tabs { display: flex; gap: 4px; align-items: flex-end; }
+        #modal-combat .combat-main-tab {
+            padding: 6px 14px 8px; font-size: 13px; font-weight: 800; border: none; border-bottom: 2px solid transparent;
+            background: transparent; color: #8e8e8e; cursor: pointer; letter-spacing: 0.04em;
+            transition: color 0.2s, border-color 0.2s;
+        }
+        #modal-combat .combat-main-tab:hover { color: #d3a060; }
+        #modal-combat .combat-main-tab.active { color: #ff8c00; border-bottom-color: #ff8c00; }
+        #modal-combat .combat-close {
+            width: 40px; height: 40px; border-radius: 8px; display: flex; align-items: center; justify-content: center;
+            background: transparent; border: none; color: #8e8e8e; cursor: pointer; font-size: 18px;
+        }
+        #modal-combat .combat-close:hover { color: #fff; background: rgba(185,28,28,0.18); }
+        #modal-combat .combat-body { flex: 1; display: flex; overflow: hidden; min-height: 0; }
+        #modal-combat .combat-cat-rail {
+            width: 80px; flex-shrink: 0; background: #252520; border-right: 2px solid #4d4d45;
+            display: flex; flex-direction: column; padding: 12px 0;
+        }
+        #modal-combat .combat-cat-rail-inner {
+            display: flex; flex-direction: column; align-items: center; gap: 10px; overflow-y: auto; flex: 1; padding: 0 8px;
+        }
+        #modal-combat .combat-cat-rail-inner,
+        #modal-combat .combat-skill-list,
+        #modal-combat .combat-muscle-list,
+        #modal-combat .combat-config-column {
+            scrollbar-width: thin;
+            scrollbar-color: rgba(211,160,96,0.6) rgba(26,21,18,0.3);
+        }
+        #modal-combat .combat-cat-rail-inner::-webkit-scrollbar,
+        #modal-combat .combat-skill-list::-webkit-scrollbar,
+        #modal-combat .combat-muscle-list::-webkit-scrollbar,
+        #modal-combat .combat-config-column::-webkit-scrollbar {
+            width: 8px;
+        }
+        #modal-combat .combat-cat-rail-inner::-webkit-scrollbar-track,
+        #modal-combat .combat-skill-list::-webkit-scrollbar-track,
+        #modal-combat .combat-muscle-list::-webkit-scrollbar-track,
+        #modal-combat .combat-config-column::-webkit-scrollbar-track {
+            background: rgba(26,21,18,0.4);
+            border-radius: 999px;
+        }
+        #modal-combat .combat-cat-rail-inner::-webkit-scrollbar-thumb,
+        #modal-combat .combat-skill-list::-webkit-scrollbar-thumb,
+        #modal-combat .combat-muscle-list::-webkit-scrollbar-thumb,
+        #modal-combat .combat-config-column::-webkit-scrollbar-thumb {
+            background: linear-gradient(180deg, #d3a060 0%, #8f6840 100%);
+            border-radius: 999px;
+            border: 1px solid rgba(26,21,18,0.4);
+        }
+        #modal-combat .combat-cat-rail .combat-cat-btn {
+            width: 56px; min-height: 56px; padding: 8px 4px; border-radius: 10px; flex-direction: column; justify-content: center;
+            gap: 4px; font-size: 9px; font-weight: 900; letter-spacing: 0.02em; border: 2px solid #4d4d45; background: #1a1512; color: #8e8e8e;
+        }
+        #modal-combat .combat-cat-rail .combat-cat-btn:hover { border-color: #666; color: #d3a060; }
+        #modal-combat .combat-cat-rail .combat-cat-btn.active {
+            background: #d3a060; color: #1a1512; border-color: #d3a060; box-shadow: inset 0 1px 0 rgba(255,255,255,0.15);
+        }
+        #modal-combat .combat-cat-ico { font-size: 20px; line-height: 1; }
+        #modal-combat .combat-cat-lbl { font-size: 9px; font-weight: 900; text-align: center; line-height: 1.15; max-width: 52px; word-break: break-all; }
+        #modal-combat .combat-skill-column {
+            width: 280px; flex-shrink: 0; border-right: 2px solid #4d4d45; background: rgba(26,21,18,0.35);
+            display: flex; flex-direction: column; padding: 16px; gap: 10px; min-height: 0;
+        }
+        #modal-combat .combat-config-column {
+            flex: 1; min-width: 0; overflow-y: auto; padding: 20px 24px 20px; display: flex; flex-direction: column; gap: 18px;
+            scrollbar-width: thin; scrollbar-color: #4d4d45 transparent;
+        }
+        #modal-combat .combat-hub-section.combat-hub-compact { margin-bottom: 0; }
+        #modal-combat .combat-hub-title {
+            font-size: 10px; font-weight: 900; color: #8e8e8e; border-left: 2px solid #d3a060; padding-left: 10px;
+            text-transform: uppercase; letter-spacing: 0.12em; margin-bottom: 10px;
+        }
+        #modal-combat .combat-hub-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        #modal-combat .combat-hub-node {
+            min-height: 68px; border-radius: 8px; border: 2px solid #4d4d45; background: #252520;
+            display: flex; flex-direction: column; align-items: center; justify-content: center; transition: border-color 0.2s, background 0.2s;
+        }
+        #modal-combat .combat-hub-node.active { border-color: #ff8c00; background: #2a2620; box-shadow: 0 0 12px rgba(255,140,0,0.12); }
+        #modal-combat .combat-hub-node .hub-label { font-size: 8px; font-weight: 800; color: #8e8e8e; text-transform: uppercase; margin-bottom: 4px; }
+        #modal-combat .combat-hub-node.active .hub-label { color: #ff8c00; }
+        #modal-combat .combat-hub-node .hub-value { font-size: 11px; font-weight: 800; color: #e0d7c6; text-align: center; padding: 0 6px; }
+        #modal-combat .combat-hub-node .hub-value.empty { color: #6b6560; font-style: italic; }
+        #modal-combat .combat-limb-title {
+            font-size: 10px; font-weight: 900; color: #8e8e8e; border-left: 2px solid #4d4d45; padding-left: 10px;
+            text-transform: uppercase; letter-spacing: 0.12em; margin: 4px 0 0;
+        }
+        #modal-combat .combat-limb-grid {
+            display: grid; grid-template-columns: 1fr 1fr; gap: 12px;
+        }
+        #modal-combat .combat-limb-grid > .combat-strike-order-bar { grid-column: 1 / -1; }
+        #modal-combat .combat-strike-order-bar {
+            padding: 12px 14px; border: 2px solid #4d4d45; border-radius: 8px; background: #252520;
+        }
+        #modal-combat .strike-order-head { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+        #modal-combat .strike-order-label { font-size: 10px; font-weight: 900; color: #8e8e8e; letter-spacing: 0.1em; text-transform: uppercase; }
+        #modal-combat .strike-order-hint { cursor: help; font-size: 12px; color: #6b6560; user-select: none; }
+        #modal-combat .strike-order-chips { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+        #modal-combat .strike-chip {
+            display: inline-flex; align-items: center; gap: 6px; padding: 8px 14px; border-radius: 6px;
+            border: 2px solid #4d4d45; font-size: 12px; font-weight: 800; color: #8e8e8e; background: #1a1512;
+        }
+        #modal-combat .strike-chip .strike-chip-order {
+            font-size: 10px;
+            color: #6b6560;
+            min-width: 14px;
+            text-align: center;
+        }
+        #modal-combat .strike-chip .strike-chip-name { letter-spacing: 0.08em; }
+        #modal-combat .strike-chip .strike-chip-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 999px;
+            background: #ff8c00;
+            box-shadow: 0 0 10px rgba(255,140,0,0.6);
+        }
+        #modal-combat .strike-chip.strike-cursor {
+            border-color: #ff8c00; color: #ff8c00; box-shadow: 0 0 14px rgba(255,140,0,0.28); transform: scale(1.02);
+        }
+        #modal-combat .strike-chip.strike-cursor .strike-chip-order { color: #ff8c00; }
+        #modal-combat .btn-strike-swap {
+            min-width: 40px; padding: 6px 8px; border: 2px solid #4d4d45; border-radius: 6px; background: #1a1512;
+            color: #8e8e8e; font-size: 14px; cursor: pointer; line-height: 1;
+        }
+        #modal-combat .btn-strike-swap:hover { border-color: #ff8c00; color: #ff8c00; }
+        #modal-combat .combat-limb-item { display: flex; flex-direction: column; gap: 8px; }
+        #modal-combat .combat-limb-item .limb-header {
+            display: flex; justify-content: space-between; align-items: center; font-size: 10px; font-weight: 900;
+            color: #8e8e8e; text-transform: uppercase; letter-spacing: 0.08em;
+        }
+        #modal-combat .combat-limb-item .limb-header-right { display: flex; align-items: center; gap: 8px; }
+        #modal-combat .combat-limb-item .btn-limb-post-effect {
+            white-space: nowrap;
+            padding: 3px 8px;
+            font-size: 9px;
+            min-width: 84px;
+            height: 22px;
+            line-height: 1;
+        }
+        #modal-combat .combat-limb-item .limb-order-badge {
+            font-size: 9px;
+            color: #6b6560;
+            border: 1px solid #4d4d45;
+            border-radius: 999px;
+            padding: 2px 6px;
+            background: #1a1512;
+            letter-spacing: 0.12em;
+        }
+        #modal-combat .combat-limb-item .limb-slots { display: flex; gap: 8px; }
+        #modal-combat .combat-limb-slot {
+            flex: 1; min-height: 52px; border: 2px solid #4d4d45; border-radius: 8px; background: #252520;
+            display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer;
+            transition: border-color 0.2s, background 0.2s; font-size: 11px;
+        }
+        #modal-combat .combat-limb-slot:hover { border-color: #666; }
+        #modal-combat .combat-limb-slot.selected { border-color: #ff8c00; background: #2a2620; box-shadow: 0 0 10px rgba(255,140,0,0.12); }
+        #modal-combat .combat-limb-slot .slot-type { font-size: 7px; font-weight: 800; color: #6b6560; text-transform: uppercase; }
+        #modal-combat .combat-limb-slot .slot-skill { font-size: 11px; font-weight: 800; color: #e0d7c6; }
+        .combat-cat-btn {
+            display: flex; align-items: center; gap: 8px; padding: 10px 18px; border-radius: 9999px;
+            font-size: 12px; font-weight: 800; border: 2px solid #4d3f35; background: #120e0c; color: #78716c;
+            cursor: pointer; transition: all 0.2s;
+        }
+        .combat-cat-btn:hover { color: #fbbf24; border-color: #57534e; }
+        .combat-cat-btn.active { background: #fbbf24; color: #1c1612; border-color: #fbbf24; }
+        /* 肌肉总览等弹窗内横向分类条（非战斗面板左侧轨） */
+        .combat-category-tabs { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 12px; }
+        #modal-combat .combat-skill-list { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; min-height: 0; padding-right: 4px; }
+        #modal-combat .combat-skill-item {
+            padding: 14px 14px 12px; border-radius: 8px; border: 2px solid #4d4d45; background: #252520; cursor: pointer;
+            transition: border-color 0.2s, background 0.2s, box-shadow 0.2s;
+        }
+        #modal-combat .combat-skill-item:hover { border-color: #666; }
+        #modal-combat .combat-skill-item.selected { border-color: #ff8c00; background: #2f2c26; box-shadow: 0 0 16px rgba(255,140,0,0.18); }
+        #modal-combat .combat-skill-item .skill-card-head { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 8px; }
+        #modal-combat .combat-skill-item .skill-ico { font-size: 22px; line-height: 1; flex-shrink: 0; }
+        #modal-combat .combat-skill-item .skill-card-head-main { flex: 1; min-width: 0; display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+        #modal-combat .combat-skill-item .skill-name { font-size: 14px; font-weight: 800; color: #e0d7c6; letter-spacing: 0.04em; }
+        #modal-combat .combat-skill-item .skill-lv-badge { font-size: 10px; font-weight: 900; color: #ff8c00; flex-shrink: 0; }
+        #modal-combat .combat-skill-item .skill-prof-bar-wrap {
+            height: 4px; border-radius: 99px; background: #1a1512; overflow: hidden; margin-bottom: 6px;
+        }
+        #modal-combat .combat-skill-item .skill-prof-bar-fill { height: 100%; background: #d3a060; border-radius: 99px; transition: width 0.2s; }
+        #modal-combat .combat-skill-item .skill-meta { font-size: 10px; font-weight: 800; color: #8e8e8e; letter-spacing: 0.04em; }
+        #modal-combat .combat-muscle-list {
+            flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; min-height: 0; padding-right: 4px;
+        }
+        #modal-combat .combat-muscle-item {
+            display: flex; flex-direction: column; padding: 14px; border-radius: 8px;
+            border: 2px solid #4d4d45; background: #252520; cursor: pointer;
+            transition: border-color 0.2s, background 0.2s;
+            gap: 8px;
+        }
+        #modal-combat .combat-muscle-item:hover { border-color: #666; }
+        #modal-combat .combat-muscle-item.selected { border-color: #ff8c00; background: #2f2c26; box-shadow: 0 0 16px rgba(255,140,0,0.15); }
+        #modal-combat .combat-muscle-item .muscle-name {
+            font-size: 14px; font-weight: 800; letter-spacing: 0.08em; color: #e0d7c6;
+        }
+        #modal-combat .combat-muscle-item .muscle-meta {
+            margin-top: 4px; font-size: 11px; color: #ff8c00; font-weight: 700;
+        }
+        #modal-combat .combat-muscle-item .muscle-desc {
+            margin-top: 6px; font-size: 12px; color: #8e8e8e;
+        }
+        #modal-combat .combat-seq-head { margin-top: 4px; }
+        #modal-combat .combat-seq-title {
+            margin: 0; font-size: 10px; font-weight: 900; color: #8e8e8e; letter-spacing: 0.14em; text-transform: uppercase;
+        }
+        #modal-combat .combat-seq-limb-suffix { color: #ff8c00; font-weight: 900; letter-spacing: 0.06em; margin-left: 6px; text-transform: none; }
+        #modal-combat .combat-selected-meta { display: flex; flex-direction: column; gap: 8px; }
+        #modal-combat .combat-selected-meta .skill-title {
+            margin: 0; font-size: 1.15rem; font-weight: 900; color: #e0d7c6; letter-spacing: 0.08em;
+        }
+        #modal-combat .combat-selected-meta .skill-badges { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+        #modal-combat .badge-level {
+            padding: 4px 10px; font-size: 10px; font-weight: 800; text-transform: uppercase;
+            background: #1a1512; color: #8e8e8e; border-radius: 4px; border: 1px solid #4d4d45;
+        }
+        #modal-combat .badge-prof {
+            padding: 4px 10px; font-size: 10px; font-weight: 800; text-transform: uppercase;
+            background: rgba(255,140,0,0.12); border: 1px solid rgba(255,140,0,0.35); color: #ff8c00; border-radius: 4px;
+        }
+        #modal-combat .combat-config-actions {
+            display: flex; flex-wrap: wrap; align-items: stretch; gap: 14px; margin-top: 4px;
+        }
+        #modal-combat .combat-panel-footer {
+            flex-shrink: 0; height: 32px; display: flex; align-items: center; justify-content: space-between; gap: 16px;
+            padding: 0 20px; background: #1a1512; border-top: 2px solid #4d4d45;
+            font-size: 9px; font-weight: 900; letter-spacing: 0.1em; text-transform: uppercase;
+        }
+        #modal-combat .combat-panel-footer-hint { color: #8e8e8e; }
+        #modal-combat .combat-panel-footer-sub { color: #6b6560; font-style: italic; text-transform: none; letter-spacing: 0.06em; }
+        #modal-combat .combat-pager { margin-top: 8px; display: flex; justify-content: space-between; align-items: center; font-size: 11px; color: #8e8e8e; }
+        #modal-combat .combat-pager-btn {
+            padding: 5px 12px; border-radius: 999px; border: 1px solid #4d4d45; background: #1a1512; color: #e0d7c6; font-size: 11px; font-weight: 800; cursor: pointer;
+        }
+        #modal-combat .combat-pager-btn:hover:not(:disabled) { border-color: #ff8c00; color: #ff8c00; }
+        #modal-combat .combat-pager-btn:disabled { opacity: 0.35; cursor: default; }
+        #modal-combat.combat-muscle-mode .combat-cat-rail { width: 33.3333%; }
+        #modal-combat.combat-muscle-mode .combat-cat-rail-inner { align-items: stretch; padding: 0 12px; }
+        #modal-combat.combat-muscle-mode .combat-cat-rail .combat-cat-btn {
+            width: 100%;
+            min-height: 48px;
+            border-radius: 8px;
+            flex-direction: row;
+            justify-content: flex-start;
+            padding: 10px 12px;
+            font-size: 12px;
+            letter-spacing: 0.04em;
+            gap: 8px;
+        }
+        #modal-combat.combat-muscle-mode .combat-cat-rail .combat-cat-lbl { font-size: 12px; max-width: none; word-break: break-word; text-align: left; }
+        #modal-combat.combat-muscle-mode .combat-skill-column { width: 66.6667%; border-right: none; }
+        #modal-combat .combat-debug-btn {
+            padding: 5px 10px; border-radius: 999px;
+            background: rgba(255,140,0,0.1); border: 1px solid rgba(255,140,0,0.35);
+            color: #ff8c00; cursor: pointer; font-size: 10px; font-weight: 800;
+            letter-spacing: 0.06em;
+        }
+        #modal-combat .combat-debug-btn:hover {
+            background: #d3a060; color: #1a1512; border-color: #d3a060;
+        }
+        #modal-combat #btn-debug-recipe-schema-errors { display: none; }
+        #modal-combat .recipe-schema-debug-panel {
+            display: none;
+            margin-top: 4px;
+            border: 1px solid #4d4d45;
+            border-radius: 8px;
+            background: #1a1512;
+            max-height: 180px;
+            overflow: auto;
+            font-size: 11px;
+            color: #e0d7c6;
+        }
+        #modal-combat .recipe-schema-debug-panel.show { display: block; }
+        #modal-combat .recipe-schema-debug-head,
+        #modal-combat .recipe-schema-debug-row {
+            display: grid;
+            grid-template-columns: 90px 180px 220px 1fr;
+            gap: 8px;
+            padding: 6px 10px;
+            border-bottom: 1px solid rgba(120, 113, 108, 0.25);
+            align-items: start;
+        }
+        #modal-combat .recipe-schema-debug-head {
+            position: sticky;
+            top: 0;
+            z-index: 1;
+            background: #252520;
+            font-weight: 800;
+            text-transform: uppercase;
+            color: #d3a060;
+        }
+        #modal-combat .recipe-schema-debug-row:last-child { border-bottom: 0; }
+        #modal-combat .recipe-schema-debug-row .col {
+            word-break: break-word;
+            line-height: 1.35;
+        }
+        #modal-combat .recipe-schema-debug-empty {
+            padding: 10px;
+            color: #a8a29e;
+        }
+        #modal-combat .combat-move-node .debug-move-prof-btn {
+            position: absolute; right: 6px; bottom: 6px;
+            width: 44px; height: 20px; padding: 0;
+            border-radius: 6px;
+            background: rgba(255,140,0,0.1); border: 1px solid rgba(255,140,0,0.35);
+            color: #ff8c00; cursor: pointer;
+            font-size: 9px; font-weight: 800; text-transform: uppercase;
+        }
+        #modal-combat .combat-move-node .debug-move-prof-btn:hover {
+            background: #d3a060; color: #1a1512; border-color: #d3a060;
+        }
+        #modal-combat .combat-move-sequence { display: flex; flex-wrap: wrap; gap: 12px; padding: 4px 0 8px; align-items: stretch; }
+        #modal-combat .combat-move-node {
+            flex: 1 1 160px; min-width: 148px; max-width: 220px; min-height: 112px;
+            border: 2px solid #4d4d45; border-radius: 8px; background: #252520;
+            display: flex; flex-direction: column; align-items: stretch; justify-content: flex-start; cursor: pointer;
+            transition: border-color 0.2s, background 0.2s, box-shadow 0.2s; position: relative;
+            padding: 10px 10px 30px; box-sizing: border-box;
+        }
+        #modal-combat .combat-move-node.slot-active::after {
+            content: '';
+            position: absolute;
+            right: -3px;
+            bottom: -3px;
+            width: 14px;
+            height: 14px;
+            border-radius: 999px;
+            background: #1a1512;
+            border: 1px solid #4d4d45;
+            box-shadow: 0 0 10px rgba(255,140,0,0.28);
+        }
+        #modal-combat .combat-move-node:hover { border-color: #666; background: #2f2c28; }
+        #modal-combat .combat-move-node.editing {
+            border-color: #ff8c00; background: #2f2c26; box-shadow: 0 0 16px rgba(255,140,0,0.2);
+        }
+        #modal-combat .combat-move-node .node-head-row {
+            display: flex; justify-content: space-between; align-items: flex-start; gap: 6px; margin-bottom: 6px; width: 100%;
+        }
+        #modal-combat .combat-move-node .node-index {
+            font-size: 10px; font-weight: 900; color: #6b6560;
+        }
+        #modal-combat .combat-move-variant-tag {
+            font-size: 9px; font-weight: 900; padding: 2px 6px; border-radius: 4px;
+            background: rgba(88,28,135,0.35); color: #c4b5fd; border: 1px solid rgba(109,40,217,0.5); text-transform: uppercase; letter-spacing: 0.04em;
+        }
+        #modal-combat .combat-move-node.slot-empty .node-name { color: #6b6560; font-style: italic; }
+        #modal-combat .combat-move-node.editing .node-index { color: #ff8c00; }
+        #modal-combat #picker-move .picker-move-clear-slot {
+            width: 100%; margin-bottom: 10px; padding: 8px 10px; border-radius: 8px; border: 1px dashed #57534e;
+            background: #120e0c; color: #a8a29e; font-size: 11px; font-weight: 800; cursor: pointer; letter-spacing: 0.06em;
+        }
+        #modal-combat #picker-move .picker-move-clear-slot:hover:not(:disabled) { border-color: #ff8c00; color: #ff8c00; }
+        #modal-combat #picker-move .picker-move-clear-slot:disabled { opacity: 0.35; cursor: default; }
+        #modal-combat .combat-move-node .node-name { font-size: 13px; font-weight: 800; color: #e0d7c6; line-height: 1.35; width: 100%; word-break: break-word; }
+        #modal-combat .combat-move-node .node-prof { font-size: 9px; color: #ff8c00; font-weight: 800; text-transform: uppercase; margin-top: 4px; opacity: 0.95; }
+        #modal-combat .combat-move-node .node-post {
+            margin-top: 4px; font-size: 9px; color: #8e8e8e; font-weight: 700;
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis; width: 100%;
+        }
+        #modal-combat .combat-move-node .node-post.empty { color: #6b6560; }
+        #modal-combat .combat-post-effect-bar {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            min-height: 32px;
+            padding: 6px 10px;
+            border: 2px solid #4d4d45;
+            border-radius: 8px;
+            background: #252520;
+            margin-bottom: 6px;
+        }
+        #modal-combat .combat-post-effect-bar .post-label {
+            font-size: 9px;
+            font-weight: 900;
+            color: #8e8e8e;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            white-space: nowrap;
+        }
+        #modal-combat .combat-post-effect-bar .post-value {
+            flex: 1;
+            min-width: 0;
+            font-size: 11px;
+            font-weight: 800;
+            color: #e0d7c6;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        #modal-combat .combat-post-effect-bar .post-value.empty {
+            color: #6b6560;
+            font-style: italic;
+        }
+        #modal-combat .btn-post-inline {
+            flex-shrink: 0;
+            min-width: 54px;
+            height: 22px;
+            padding: 0 8px;
+            border-radius: 6px;
+            background: rgba(255,140,0,0.1);
+            border: 1px solid rgba(255,140,0,0.35);
+            color: #ff8c00;
+            cursor: pointer;
+            font-size: 9px;
+            font-weight: 800;
+        }
+        #modal-combat .btn-post-inline:hover {
+            background: #d3a060;
+            color: #1a1512;
+            border-color: #d3a060;
+        }
+        #modal-combat .combat-move-node .node-power-ctrl {
+            position: absolute; top: 2px; right: 4px;
+            display: flex; align-items: center; gap: 2px;
+        }
+        #modal-combat .combat-move-node .node-power-val {
+            font-size: 9px; font-weight: 800; color: #34d399;
+            min-width: 22px; text-align: center;
+        }
+        #modal-combat .combat-move-node .btn-power-step {
+            width: 16px; height: 16px; padding: 0;
+            border-radius: 3px;
+            background: rgba(52,211,153,0.1); border: 1px solid rgba(52,211,153,0.35);
+            color: #34d399; cursor: pointer; font-size: 11px; font-weight: 800; line-height: 1;
+        }
+        #modal-combat .combat-move-node .btn-power-step:hover:not(:disabled) {
+            background: #34d399; color: #1c1612; border-color: #34d399;
+        }
+        #modal-combat .combat-move-node .btn-power-step:disabled { opacity: 0.3; cursor: not-allowed; }
+        #modal-combat .combat-variant-wrap .combat-variant-title {
+            font-size: 10px;
+            font-weight: 900;
+            color: #8e8e8e;
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+            border-left: 2px solid #4d4d45;
+            padding-left: 10px;
+            margin: 2px 0 6px;
+        }
+        #modal-combat .combat-variant-wrap .picker-empty-hint {
+            font-size: 12px;
+            color: #8f8a84;
+        }
+        #modal-combat .combat-variant-wrap .combat-variant-sequence { margin-top: 6px; }
+        #modal-combat .btn-deploy {
+            flex: 1 1 200px; min-height: 48px; padding: 12px 20px; border-radius: 8px; background: #d3a060; color: #1a1512; font-weight: 900;
+            letter-spacing: 0.12em; border: none; cursor: pointer; font-size: 13px;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.35); transition: background 0.2s, transform 0.15s;
+        }
+        #modal-combat .btn-deploy:hover:not(:disabled) { background: #e8b87a; }
+        #modal-combat .btn-deploy:active:not(:disabled) { transform: scale(0.98); }
+        #modal-combat .btn-deploy:disabled { opacity: 0.4; cursor: not-allowed; }
+        #modal-combat .target-indicator {
+            flex: 1 1 180px; font-size: 10px; font-weight: 900; letter-spacing: 0.08em; color: #ff8c00;
+            text-align: center; background: #1a1512; padding: 10px 12px; border-radius: 8px; border: 2px dashed #4d4d45;
+            display: flex; align-items: center; justify-content: center;
+        }
+        /* 招式选择弹出层 */
+        #picker-move {
+            display: none; position: fixed; z-index: 300; width: 200px; background: #2d2d28; border: 2px solid #ff8c00;
+            border-radius: 8px; box-shadow: 0 16px 48px rgba(0,0,0,0.55); overflow: hidden;
+        }
+        #picker-move.show { display: block; }
+        #picker-move .picker-title {
+            padding: 8px; background: #1a1512; font-size: 9px; font-weight: 800; color: #ff8c00;
+            text-transform: uppercase; letter-spacing: 0.12em; text-align: center;
+        }
+        #picker-move .picker-tab-row {
+            display: flex; gap: 4px; margin-bottom: 6px; padding: 0 2px;
+        }
+        #picker-move .picker-tab-btn {
+            flex: 1; font-size: 11px; padding: 4px 8px; border-radius: 3px;
+            border: 1px solid #5c4d3a; background: #2a211b; color: #d4c4b0; cursor: pointer;
+        }
+        #picker-move .picker-tab-btn.active {
+            border-color: #d3a060; color: #1a1512; background: #d3a060; font-weight: 800;
+        }
+        #picker-move .picker-list { max-height: 256px; overflow-y: auto; }
+        #picker-move .picker-list button {
+            width: 100%; padding: 16px; text-align: left; border: none; border-bottom: 1px solid rgba(61,45,36,0.5);
+            background: transparent; color: #e8e6e3; font-size: 12px; font-weight: 800; letter-spacing: 0.08em;
+            cursor: pointer; display: flex; flex-direction: column; transition: background 0.2s, color 0.2s;
+        }
+        #picker-move .picker-list button:hover { background: #d3a060; color: #1a1512; }
+        #picker-move .picker-list button .move-prof { font-size: 9px; color: #ff8c00; font-weight: 800; }
+        #picker-move .picker-list button:hover .move-prof { color: #1a1512; }
+
+        /* 肌群大型被动装配面板（34 号草案 §3，阶段三） */
+        #modal-combat .combat-muscle-passive-panel {
+            flex: 0 0 auto; max-height: 42%; overflow-y: auto; margin-bottom: 10px;
+            border: 2px solid #4d4d45; border-radius: 8px; background: #201b17;
+            padding: 10px 12px; display: flex; flex-direction: column; gap: 8px;
+        }
+        #modal-combat .combat-muscle-passive-panel .mp-header {
+            font-size: 10px; font-weight: 900; color: #d3a060; letter-spacing: 0.14em; text-transform: uppercase;
+        }
+        #modal-combat .combat-muscle-passive-panel .mp-slots-summary {
+            font-size: 11px; color: #8e8e8e;
+        }
+        #modal-combat .combat-muscle-passive-panel .mp-passive {
+            display: flex; flex-direction: column; gap: 4px; padding: 8px 10px;
+            border: 1px solid rgba(61,45,36,0.6); border-radius: 6px; background: #252520;
+        }
+        #modal-combat .combat-muscle-passive-panel .mp-passive-row {
+            display: flex; align-items: center; justify-content: space-between; gap: 10px;
+        }
+        #modal-combat .combat-muscle-passive-panel .mp-passive-name {
+            font-size: 13px; font-weight: 800; color: #e0d7c6;
+        }
+        #modal-combat .combat-muscle-passive-panel .mp-passive-desc {
+            font-size: 11px; color: #a8a29e; white-space: pre-line; word-break: break-word;
+        }
+        #modal-combat .combat-muscle-passive-panel .mp-passive-meta {
+            font-size: 10px; color: #8e8e8e;
+        }
+        #modal-combat .combat-muscle-passive-panel .mp-btn {
+            padding: 4px 12px; border-radius: 9999px; border: 1px solid #d3a060; background: transparent;
+            color: #d3a060; font-size: 11px; font-weight: 800; cursor: pointer; flex-shrink: 0;
+        }
+        #modal-combat .combat-muscle-passive-panel .mp-btn:hover:not(:disabled) { background: #d3a060; color: #1a1512; }
+        #modal-combat .combat-muscle-passive-panel .mp-btn:disabled { opacity: 0.4; cursor: default; border-color: #4d4d45; color: #8e8e8e; }
+        #modal-combat .combat-muscle-passive-panel .mp-equipped {
+            border-color: #ff8c00; background: #2f2c26;
+        }
+
+        /* 技能总览弹窗（生存/生活/特殊三分页） - 风格参考 demo.html 右侧 UI */
+        #modal-survival {
+            display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 100;
+            align-items: center; justify-content: center; padding: 24px; pointer-events: auto;
+            font-family: "Microsoft YaHei", "微软雅黑", "PingFang SC", sans-serif;
+        }
+        #modal-survival.show { display: flex; }
+        #modal-survival .survival-panel {
+            width: 880px; max-width: 96%; max-height: 80vh;
+            background: #1c1612; border: 2px solid rgba(212,163,115,0.3); border-radius: 16px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.5); display: flex; flex-direction: column; overflow: hidden;
+        }
+        #modal-survival .survival-header {
+            height: 60px; border-bottom: 1px solid #3d2d24; display: flex; align-items: center; justify-content: space-between;
+            padding: 0 32px; background: #1c1612; flex-shrink: 0;
+        }
+        #modal-survival .survival-header h2 {
+            margin: 0; font-size: 1.1rem; font-weight: 800; color: #fff; letter-spacing: 0.4em; text-transform: uppercase;
+        }
+        #modal-survival .survival-header .subtitle {
+            font-size: 10px; color: #78716c; text-transform: uppercase; letter-spacing: 0.12em; margin-top: 4px; font-style: italic;
+        }
+        #modal-survival .btn-close {
+            width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
+            background: transparent; border: none; color: #78716c; cursor: pointer; font-size: 16px;
+        }
+        #modal-survival .btn-close:hover { background: rgba(185,28,28,0.25); color: #fff; }
+        #modal-survival .survival-body {
+            flex: 1; display: flex; flex-direction: column; padding: 0 0 0; min-height: 0; background: #1c1612;
+        }
+        #modal-survival .skill-overview-tabs {
+            display: flex; align-items: flex-end; gap: 4px;
+            padding: 14px 28px 0; border-bottom: 1px solid #3d2d24; background: #1c1612;
+            flex-shrink: 0;
+        }
+        #modal-survival .skill-overview-tab {
+            padding: 8px 18px 10px; font-size: 13px; font-weight: 800; border: none;
+            border-bottom: 2px solid transparent; background: transparent; color: #78716c;
+            cursor: pointer; letter-spacing: 0.08em;
+            transition: color 0.2s, border-color 0.2s;
+        }
+        #modal-survival .skill-overview-tab:hover { color: #d3a060; }
+        #modal-survival .skill-overview-tab.active {
+            color: #fbbf24; border-bottom-color: #fbbf24;
+        }
+        #modal-survival .survival-table {
+            flex: 1; overflow-y: auto; padding: 14px 28px 24px;
+            scrollbar-width: thin;
+            scrollbar-color: rgba(211,160,96,0.6) rgba(26,21,18,0.3);
+        }
+        #modal-survival .survival-table::-webkit-scrollbar { width: 8px; }
+        #modal-survival .survival-table::-webkit-scrollbar-track {
+            background: rgba(26,21,18,0.4); border-radius: 999px;
+        }
+        #modal-survival .survival-table::-webkit-scrollbar-thumb {
+            background: linear-gradient(180deg, #d3a060 0%, #8f6840 100%);
+            border-radius: 999px; border: 1px solid rgba(26,21,18,0.4);
+        }
+        #modal-survival .survival-row {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 10px 4px; border-bottom: 1px solid rgba(63,63,70,0.4);
+            gap: 12px;
+        }
+        #modal-survival .survival-row:last-child { border-bottom: none; }
+        #modal-survival .survival-row-info {
+            display: flex; flex-direction: column; gap: 4px; min-width: 0; flex: 1;
+        }
+        #modal-survival .survival-name {
+            font-size: 13px; font-weight: 700; color: #e8e6e3;
+        }
+        #modal-survival .survival-desc {
+            font-size: 11px; color: #a8a29e; font-weight: 500; line-height: 1.5;
+        }
+        #modal-survival .survival-level {
+            font-size: 12px; font-weight: 700; color: #fbbf24; white-space: nowrap;
+        }
+        #modal-survival .survival-plus-btn {
+            margin-left: 10px;
+            padding: 4px 10px;
+            border-radius: 999px;
+            border: 1px solid #4d3f35;
+            background: rgba(45,36,30,0.85);
+            color: #e8e6e3;
+            font-size: 11px;
+            cursor: pointer;
+        }
+        #modal-survival .survival-plus-btn:hover {
+            border-color: #fbbf24;
+            background: rgba(60,45,36,0.92);
+        }
+        #modal-survival .skill-overview-empty {
+            padding: 36px 6px; text-align: center; color: #78716c; font-size: 12px;
+        }
+
+        /* 旧 #modal-special 样式已并入 #modal-survival 「特殊技能」分页 */
+
+        /* 存档弹窗 - 复用生存技能总览风格，表单区略窄 */
+        #modal-save {
+            display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 100;
+            align-items: center; justify-content: center; padding: 24px; pointer-events: auto;
+            font-family: "Microsoft YaHei", "微软雅黑", "PingFang SC", sans-serif;
+        }
+        #modal-save.show { display: flex; }
+        #modal-save .survival-panel {
+            width: 520px; max-width: 96%; max-height: 85vh;
+            background: #1c1612; border: 2px solid rgba(212,163,115,0.3); border-radius: 16px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.5); display: flex; flex-direction: column; overflow: hidden;
+        }
+        #modal-save .survival-header {
+            height: 60px; border-bottom: 1px solid #3d2d24; display: flex; align-items: center; justify-content: space-between;
+            padding: 0 32px; background: #1c1612; flex-shrink: 0;
+        }
+        #modal-save .survival-header h2 {
+            margin: 0; font-size: 1.1rem; font-weight: 800; color: #fff; letter-spacing: 0.4em; text-transform: uppercase;
+        }
+        #modal-save .survival-header .subtitle {
+            font-size: 10px; color: #78716c; text-transform: uppercase; letter-spacing: 0.12em; margin-top: 4px; font-style: italic;
+        }
+        #modal-save .btn-close {
+            width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
+            background: transparent; border: none; color: #78716c; cursor: pointer; font-size: 16px;
+        }
+        #modal-save .btn-close:hover { background: rgba(185,28,28,0.25); color: #fff; }
+        #modal-save .survival-body {
+            flex: 1; display: flex; flex-direction: column; padding: 20px 28px 24px; min-height: 0; background: #1c1612;
+            gap: 14px; overflow-y: auto;
+        }
+        #modal-save .save-hint {
+            font-size: 12px; color: #a8a29e; line-height: 1.5;
+        }
+        #modal-save .save-row { display: flex; flex-direction: column; gap: 6px; }
+        #modal-save .save-row label {
+            font-size: 11px; font-weight: 700; color: #78716c; letter-spacing: 0.08em; text-transform: uppercase;
+        }
+        #modal-save .save-row input,
+        #modal-save .save-row textarea {
+            width: 100%; box-sizing: border-box; padding: 10px 12px; border-radius: 8px;
+            border: 2px solid #4d3f35; background: rgba(28, 22, 18, 0.95); color: #e8e6e3; font-size: 13px;
+            font-family: ui-monospace, "Cascadia Code", Consolas, monospace;
+        }
+        #modal-save .save-row textarea { min-height: 72px; resize: vertical; }
+        #modal-save .save-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 4px; }
+        #modal-save .save-actions button {
+            padding: 10px 16px; border-radius: 8px; border: 2px solid #4d3f35; background: rgba(45, 36, 30, 0.98);
+            color: #e8e6e3; font-size: 12px; font-weight: 800; letter-spacing: 0.06em; cursor: pointer;
+            transition: border-color 0.2s, background 0.2s;
+        }
+        #modal-save .save-actions button:hover { border-color: #fbbf24; background: rgba(55, 44, 36, 0.98); }
+        #modal-save .save-actions button.primary {
+            border-color: #fbbf24; background: #fbbf24; color: #1c1612;
+        }
+        #modal-save .save-actions button.primary:hover { background: #facc15; border-color: #facc15; }
+        #modal-save .save-divider { height: 1px; background: rgba(63,63,70,0.5); margin: 6px 0; }
+
+        /* 物品信息悬浮窗（替代浏览器 title） */
+        #item-tooltip { display: none; position: fixed; z-index: 10000; min-width: 200px; max-width: 320px; padding: 12px 14px; background: rgba(28, 22, 18, 0.98); border: 2px solid #d4a373; border-radius: 8px; box-shadow: 0 8px 24px rgba(0,0,0,0.5); pointer-events: none; font-size: 12px; line-height: 1.45; color: #e8e6e3; }
+        #item-tooltip.show { display: block; }
+        #item-tooltip .tooltip-name { font-size: 14px; font-weight: bold; color: #fbbf24; margin-bottom: 8px; padding-bottom: 6px; border-bottom: 1px solid #4d3f35; }
+        #item-tooltip .tooltip-desc { color: #a8a29e; margin-bottom: 8px; white-space: pre-wrap; word-break: break-word; }
+        #item-tooltip .tooltip-attrs { color: #78716c; font-size: 11px; white-space: pre-line; }
+        #item-tooltip .tooltip-modules { margin-top: 8px; display: grid; gap: 6px; }
+        #item-tooltip .tooltip-module { border: 1px solid #4d3f35; border-radius: 6px; padding: 7px 8px; background: rgba(0,0,0,0.12); }
+        #item-tooltip .tooltip-module.is-locked { opacity: 0.78; }
+        #item-tooltip .tooltip-module-title { font-size: 11px; font-weight: 700; color: #e8e6e3; margin-bottom: 4px; }
+        #item-tooltip .tooltip-module-text { color: #bdb5ab; font-size: 11px; white-space: pre-wrap; }
+        #item-tooltip .tooltip-module-list { margin: 0; padding-left: 16px; color: #bdb5ab; font-size: 11px; }
+        #item-tooltip .tooltip-module-kv { display: grid; gap: 3px; }
+        #item-tooltip .tooltip-module-kv-row { display: flex; justify-content: space-between; gap: 8px; color: #bdb5ab; font-size: 11px; }
+        #item-tooltip .tooltip-module-k { color: #8e8a84; }
+        #item-tooltip .tooltip-module-v { color: #d4cec3; text-align: right; }
+        #item-tooltip .tooltip-module-locked-hint { color: #8e8a84; font-size: 11px; }
+        #item-tooltip .tooltip-module-req { color: #d3a060; font-size: 11px; margin-top: 2px; }
+
+        /* 底部对话框：头像 + 台词（固定高度，位于地图正下方） */
+        #dialogue-panel {
+            /* 使用 fixed + z-index 以便在对话时覆盖日志栏（而不是挤压布局） */
+            position: fixed;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            z-index: 50; /* 覆盖日志栏与左侧状态栏 */
+            flex: 0 0 auto;
+            height: 240px;
+            min-height: 180px;
+            max-height: 45vh;
+            background: rgba(26, 22, 20, 0.98);
+            border-top: 1px solid #3d2d24;
+            border-bottom: 1px solid #2d221c;
+            display: none;
+            overflow: hidden;
+            font-family: "Microsoft YaHei", "微软雅黑", "PingFang SC", sans-serif;
+            backdrop-filter: blur(6px);
+        }
+        #dialogue-panel.show { display: flex; }
+        /* 对话中：禁止用关闭键跳过；仅能通过「下一句/结束」推进 */
+        #dialogue-panel.dialogue-advance-only #dialogue-btn-close {
+            display: none !important;
+        }
+        /* 盖住地图与 HUD（含日志区点击），z-index 低于对话框以便操作对话 UI */
+        #dialogue-input-blocker {
+            display: none;
+            position: fixed;
+            inset: 0;
+            z-index: 40;
+            background: transparent;
+            pointer-events: auto;
+        }
+        #dialogue-panel .dlg-inner {
+            flex: 1;
+            display: flex;
+            gap: 20px;
+            padding: 18px 20px;
+            min-width: 0;
+        }
+        #dialogue-panel .dlg-avatar {
+            width: 120px;
+            height: 120px;
+            border-radius: 16px;
+            border: 2px solid rgba(212, 163, 115, 0.35);
+            background: #26211d;
+            box-shadow: 0 10px 24px rgba(0,0,0,0.35);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+            flex: 0 0 auto;
+        }
+        #dialogue-panel .dlg-avatar img {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            /* 上传头像可按比例完整显示，不因长宽比被裁切 */
+            object-fit: contain;
+            display: none;
+        }
+        #dialogue-panel .dlg-avatar.avatar-has-image img { display: block; }
+        #dialogue-panel .dlg-avatar.avatar-has-image .fallback { display: none; }
+        #dialogue-panel .dlg-avatar .fallback {
+            font-size: 48px;
+            user-select: none;
+            opacity: 0.95;
+        }
+        #dialogue-panel .dlg-main {
+            flex: 1;
+            min-width: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        #dialogue-panel .dlg-top {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+        }
+        #dialogue-panel .dlg-name {
+            font-size: 16px;
+            font-weight: 800;
+            letter-spacing: 0.12em;
+            color: #fbbf24;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        #dialogue-panel .dlg-actions {
+            display: flex;
+            gap: 8px;
+            flex: 0 0 auto;
+        }
+        #dialogue-panel .dlg-btn {
+            padding: 6px 12px;
+            font-size: 12px;
+            background: #3d332c;
+            border: 1px solid #57534e;
+            color: #e8e6e3;
+            border-radius: 8px;
+            cursor: pointer;
+            letter-spacing: 0.06em;
+        }
+        #dialogue-panel .dlg-btn:hover:not(:disabled) { background: #4d3f35; border-color: #fbbf24; }
+        #dialogue-panel .dlg-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        #dialogue-panel .dlg-btn.primary { border-color: rgba(251,191,36,0.55); color: #fde68a; }
+        #dialogue-panel .dlg-text {
+            flex: 1;
+            min-height: 0;
+            padding: 12px 14px;
+            border-radius: 10px;
+            border: 1px solid rgba(212, 163, 115, 0.25);
+            background: rgba(28, 22, 18, 0.55);
+            color: #e8e6e3;
+            font-size: 15px;
+            line-height: 1.6;
+            overflow: auto;
+            word-break: break-word;
+        }
+        #dialogue-panel .dlg-typing-wrap { white-space: normal; }
+        #dialogue-panel .dlg-typing-cursor {
+            display: inline-block;
+            margin-left: 1px;
+            color: #fbbf24;
+            animation: dlg-caret-blink 0.9s steps(1, end) infinite;
+            vertical-align: baseline;
+        }
+        @keyframes dlg-caret-blink {
+            0%, 49% { opacity: 1; }
+            50%, 100% { opacity: 0; }
+        }
+        #dialogue-panel .dlg-options {
+            margin-top: 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        #dialogue-panel .dlg-option-btn {
+            padding: 10px 12px;
+            text-align: left;
+            background: rgba(64, 64, 64, 0.85);
+            border: 1px solid #555;
+            color: rgba(255, 255, 255, 0.95);
+            border-radius: 10px;
+            cursor: pointer;
+            letter-spacing: 0.02em;
+        }
+        #dialogue-panel .dlg-option-btn:hover {
+            background: rgba(77, 63, 53, 0.85);
+            border-color: rgba(251, 191, 36, 0.7);
+        }
+        #dialogue-panel .dlg-hint {
+            font-size: 11px;
+            color: #78716c;
+            letter-spacing: 0.08em;
+            user-select: none;
+        }
+        /* 游戏实时日志：贴底全宽（与早期版本一致）；位置与尺寸可拖拽调整，仅当前会话有效 */
+        #game-log-panel {
+            position: fixed;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            width: auto;
+            height: 100px;
+            min-height: 64px;
+            max-height: 72vh;
+            z-index: 40;
+            background: rgba(26, 22, 20, 0.96);
+            border-top: 1px solid #3d2d24;
+            box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.35);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        #game-log-panel .game-log-resize-handle-top {
+            flex: 0 0 6px;
+            min-height: 6px;
+            cursor: ns-resize;
+            background: linear-gradient(180deg, rgba(251, 191, 36, 0.22), rgba(26, 22, 20, 0.3));
+            z-index: 3;
+        }
+        #game-log-panel .game-log-resize-handle-top:hover,
+        #game-log-panel .game-log-resize-handle-top.log-resize-active {
+            background: linear-gradient(180deg, rgba(251, 191, 36, 0.38), rgba(45, 34, 28, 0.5));
+        }
+        #game-log-panel .game-log-resize-handle-left {
+            position: absolute;
+            left: 0;
+            top: 6px;
+            bottom: 0;
+            width: 8px;
+            cursor: ew-resize;
+            z-index: 4;
+            background: linear-gradient(90deg, rgba(251, 191, 36, 0.12), transparent);
+        }
+        #game-log-panel .game-log-resize-handle-left:hover,
+        #game-log-panel .game-log-resize-handle-left.log-resize-active {
+            background: linear-gradient(90deg, rgba(251, 191, 36, 0.28), transparent);
+        }
+        #game-log-panel .game-log-resize-handle-right {
+            position: absolute;
+            top: 6px;
+            right: 0;
+            bottom: 0;
+            width: 8px;
+            cursor: ew-resize;
+            z-index: 2;
+            background: linear-gradient(90deg, transparent, rgba(251, 191, 36, 0.12));
+        }
+        #game-log-panel .game-log-resize-handle-right:hover,
+        #game-log-panel .game-log-resize-handle-right.log-resize-active {
+            background: linear-gradient(90deg, transparent, rgba(251, 191, 36, 0.28));
+        }
+        #game-log-panel .game-log-header {
+            flex: 0 0 auto;
+            padding: 4px 12px 6px;
+            font-size: 11px;
+            color: #78716c;
+            border-bottom: 1px solid #2d221c;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            cursor: move;
+            user-select: none;
+        }
+        #game-log-panel .game-log-header.log-panel-dragging {
+            cursor: grabbing;
+            background: rgba(45, 34, 28, 0.95);
+        }
+        /* UI 自由窗口（docs/design/36-ui-windows.md）：拖拽/缩放公共状态类 */
+        .ui-window-dragging { cursor: grabbing !important; user-select: none; }
+        .ui-window-resize-active { background: rgba(251, 191, 36, 0.38) !important; }
+        .ui-window-title {
+            cursor: move;
+            user-select: none;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+        }
+        .ui-window-close {
+            cursor: pointer;
+            border: none;
+            background: transparent;
+            color: #78716c;
+            font-size: 12px;
+            line-height: 1;
+            padding: 2px 4px;
+        }
+        .ui-window-close:hover { color: #fbbf24; }
+        /* UI 自由窗口 · 悬浮把手（M2：左侧状态块 / buff-hud）：
+           绝对定位不占文档流，hover 宿主时浮现；拖动把手 = .ui-window-grip */
+        .ui-window-grip {
+            position: absolute;
+            top: 6px;
+            right: 54px; /* 与 min(30px) / close(8px) 横向排开，避免重叠 */
+            cursor: move;
+            font-size: 12px;
+            line-height: 1;
+            color: rgba(251, 191, 36, 0.5);
+            padding: 2px 4px;
+            border-radius: 4px;
+            user-select: none;
+            opacity: 0;
+            transition: opacity 0.15s;
+            z-index: 6;
+            pointer-events: none; /* 未浮现时不可点击，杜绝拦截相邻按钮 */
+        }
+        .ui-window-host:hover .ui-window-grip { pointer-events: auto; }
+        .ui-window-grip:hover { color: #fbbf24; opacity: 1; }
+        .ui-window-host { position: relative; }
+        .ui-window-host .ui-window-close,
+        .ui-window-host .ui-window-min {
+            position: absolute;
+            top: 6px;
+            z-index: 6;
+            opacity: 0;
+            transition: opacity 0.15s;
+            padding: 2px 4px;
+            cursor: pointer;
+            border: none;
+            background: transparent;
+            color: #78716c;
+            font-size: 12px;
+            line-height: 1;
+        }
+        .ui-window-host .ui-window-close { right: 8px; }
+        .ui-window-host .ui-window-min { right: 30px; }
+        .ui-window-close:hover, .ui-window-min:hover { color: #fbbf24; }
+        .ui-window-host:hover .ui-window-grip,
+        .ui-window-host:hover .ui-window-close,
+        .ui-window-host:hover .ui-window-min { opacity: 1; }
+        /* details 折叠块：把手放 summary 行内、箭头左侧，避免点击折叠冲突 */
+        .details-block summary .ui-window-grip {
+            position: static;
+            margin-right: 8px;
+            opacity: 0;
+        }
+        .details-block:hover summary .ui-window-grip { opacity: 1; }
+        /* UI 自由窗口 · 最小化任务条（RO 式：窗口收起后画面上的可拖拽小条） */
+        .ui-window-bar {
+            position: fixed;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 8px 4px 10px;
+            background: rgba(28, 22, 18, 0.96);
+            border: 1px solid #4d3f35;
+            border-radius: 6px;
+            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.45);
+            cursor: move;
+            user-select: none;
+            z-index: 38; /* 低于对话屏蔽层 z-40 */
+            font-family: "Microsoft YaHei", "微软雅黑", "PingFang SC", sans-serif;
+            max-width: 220px;
+        }
+        .ui-window-bar:hover { border-color: #fbbf24; }
+        .ui-window-bar.ui-window-bar-dragging { cursor: grabbing; background: rgba(45, 36, 30, 0.98); }
+        .ui-window-bar .ui-window-bar-label {
+            font-size: 12px;
+            font-weight: 700;
+            color: #e8e6e3;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .ui-window-bar .ui-window-bar-restore {
+            cursor: pointer;
+            border: 1px solid rgba(251, 191, 36, 0.45);
+            background: rgba(0, 0, 0, 0.35);
+            color: #fde68a;
+            font-size: 12px;
+            line-height: 1;
+            padding: 3px 6px;
+            border-radius: 4px;
+            flex: 0 0 auto;
+        }
+        .ui-window-bar .ui-window-bar-restore:hover { border-color: #fbbf24; color: #fff; background: rgba(45, 36, 30, 0.9); }
+        #game-log-panel .game-log-lines {
+            flex: 1;
+            overflow-y: auto;
+            padding: 6px 12px 8px;
+            font-size: 12px;
+            line-height: 1.5;
+            color: #a8a29e;
+        }
+        #game-log-panel .game-log-line {
+            margin-bottom: 2px;
+            word-break: break-word;
+        }
+        #game-log-panel .log-time {
+            color: #57534e;
+            margin-right: 6px;
+        }
+        #game-log-panel .log-info { color: #a8a29e; }
+        #game-log-panel .log-success { color: #86efac; }
+        #game-log-panel .log-warn { color: #fcd34d; }
+        #game-log-panel .log-combat { color: #fca5a5; }
+        #game-log-panel .log-damage { color: #f87171; }
+        #game-log-panel .log-system { color: #94a3b8; }
+        #game-log-panel .game-log-lines { cursor: ns-resize; user-select: none; }
+        #game-log-panel .game-log-lines.log-dragging { cursor: grabbing; }
+        /* 创建角色界面 */
+        #character-creation-overlay {
+            display: flex;
+            position: fixed;
+            inset: 0;
+            background: rgba(12, 10, 8, 0.92);
+            z-index: 200;
+            align-items: center;
+            justify-content: center;
+            pointer-events: auto;
+        }
+        #character-creation-overlay.hidden { display: none; }
+        /* 序章未创角：保留顶栏时间，隐藏左右信息与地图旁动作气泡 */
+        body.intro-shell-active #left-hud,
+        body.intro-shell-active #right-hud,
+        body.intro-shell-active #buff-hud {
+            display: none !important;
+        }
+        body.intro-shell-active #player-action-bubble,
+        body.intro-shell-active #player-action-bubble.visible {
+            display: none !important;
+            visibility: hidden !important;
+            pointer-events: none !important;
+        }
+        #character-creation-card {
+            width: 90%;
+            max-width: 420px;
+            background: #1c1612;
+            border: 2px solid #d4a373;
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 12px 40px rgba(0,0,0,0.5);
+        }
+        #character-creation-card h2 {
+            margin: 0 0 20px 0;
+            font-size: 1.25rem;
+            color: #fbbf24;
+            letter-spacing: 0.15em;
+            text-align: center;
+        }
+        #character-creation-card .creation-field {
+            margin-bottom: 16px;
+        }
+        #character-creation-card .creation-field label {
+            display: block;
+            font-size: 11px;
+            color: #78716c;
+            margin-bottom: 6px;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+        }
+        #character-creation-card .creation-name {
+            width: 100%;
+            padding: 10px 12px;
+            font-size: 14px;
+            color: #e8e6e3;
+            background: #26211d;
+            border: 1px solid #4d3f35;
+            border-radius: 6px;
+            box-sizing: border-box;
+        }
+        #character-creation-card .creation-name:focus {
+            outline: none;
+            border-color: #fbbf24;
+        }
+        #character-creation-card .creation-name::placeholder {
+            color: #57534e;
+        }
+        #character-creation-card .creation-height {
+            width: 100%;
+            padding: 10px 12px;
+            font-size: 14px;
+            color: #e8e6e3;
+            background: #26211d;
+            border: 1px solid #4d3f35;
+            border-radius: 6px;
+            box-sizing: border-box;
+        }
+        #character-creation-card .creation-height:focus {
+            outline: none;
+            border-color: #fbbf24;
+        }
+        #character-creation-card .creation-height::placeholder {
+            color: #57534e;
+        }
+        #character-creation-card .attr-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            gap: 12px;
+        }
+        #character-creation-card .attr-row .attr-label {
+            width: 56px;
+            font-size: 13px;
+            color: #e8e6e3;
+        }
+        #character-creation-card .attr-row .attr-controls {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        #character-creation-card .attr-row .attr-btn {
+            width: 32px;
+            height: 32px;
+            padding: 0;
+            font-size: 18px;
+            line-height: 1;
+            color: #e8e6e3;
+            background: #3d332c;
+            border: 1px solid #4d3f35;
+            border-radius: 6px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        #character-creation-card .attr-row .attr-btn:hover:not(:disabled) {
+            background: #4d3f35;
+            border-color: #fbbf24;
+            color: #fbbf24;
+        }
+        #character-creation-card .attr-row .attr-btn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+        #character-creation-card .attr-row .attr-value {
+            min-width: 28px;
+            text-align: center;
+            font-size: 14px;
+            font-weight: bold;
+            color: #fbbf24;
+        }
+        #character-creation-card .creation-points {
+            text-align: center;
+            font-size: 12px;
+            color: #a8a29e;
+            margin: 12px 0 16px 0;
+        }
+        #character-creation-card .creation-points.warn { color: #fcd34d; }
+        #character-creation-card .creation-points.ok { color: #86efac; }
+        #character-creation-card .creation-dominant {
+            display: flex;
+            gap: 24px;
+            margin-bottom: 20px;
+        }
+        #character-creation-card .creation-dominant .group {
+            flex: 1;
+        }
+        #character-creation-card .creation-dominant .group label.group-label {
+            display: block;
+            font-size: 11px;
+            color: #78716c;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+        }
+        #character-creation-card .creation-dominant .group .opt {
+            display: flex;
+            gap: 8px;
+        }
+        #character-creation-card .creation-dominant .opt label {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 13px;
+            color: #e8e6e3;
+            cursor: pointer;
+        }
+        #character-creation-card .creation-dominant .opt input {
+            accent-color: #fbbf24;
+        }
+        #character-creation-card .btn-confirm-creation {
+            width: 100%;
+            padding: 12px 20px;
+            font-size: 14px;
+            font-weight: bold;
+            color: #1c1612;
+            background: #fbbf24;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            letter-spacing: 0.1em;
+        }
+        #character-creation-card .btn-confirm-creation:hover:not(:disabled) {
+            background: #fcd34d;
+        }
+        #character-creation-card .btn-confirm-creation:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        /* ====== 牧场控制面板 #modal-livestock（样式基准 reference/live_ui.html） ====== */
+        #modal-livestock {
+            display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.92); z-index: 120;
+            justify-content: center; align-items: center;
+        }
+        #modal-livestock.show { display: flex; }
+        #modal-livestock .lv-panel {
+            width: min(1280px, 98vw); height: min(860px, 92vh);
+            background: radial-gradient(circle at top, rgba(211,160,96,0.08), transparent 60%), #2d2d28;
+            border: 2px solid #4d4d45; border-radius: 8px;
+            box-shadow: inset 0 0 120px rgba(0,0,0,0.36), 0 10px 30px rgba(0,0,0,0.8);
+            display: flex; flex-direction: column; position: relative; overflow: hidden;
+        }
+        #modal-livestock .lv-header {
+            height: 52px; background: #1a1512; border-bottom: 2px solid #4d4d45;
+            display: flex; align-items: center; padding: 0 20px; position: relative; flex-shrink: 0;
+        }
+        #modal-livestock .header-ribbon { position: absolute; left: 0; top: 0; bottom: 0; width: 3px; background: linear-gradient(to bottom, #ff8c00, #d3a060); }
+        #modal-livestock .lv-title { font-family: "Noto Serif SC", serif; font-size: 20px; font-weight: bold; color: #e0d7c6; margin-right: 24px; }
+        #modal-livestock .lv-badge {
+            background: #1a1512; border: 1px solid #d3a060; color: #d3a060; font-size: 12px;
+            padding: 4px 10px; border-radius: 4px; margin-right: 12px; display: flex; align-items: center; gap: 6px;
+        }
+        #modal-livestock .lv-close { margin-left: auto; cursor: pointer; font-size: 18px; color: #8e8e8e; padding: 4px 10px; border-radius: 4px; background: none; border: none; }
+        #modal-livestock .lv-close:hover { background: rgba(185,28,28,0.18); color: #fff; }
+        #modal-livestock .lv-body { flex: 1; display: flex; overflow: hidden; min-height: 0; }
+        #modal-livestock .lv-rail {
+            width: 80px; background: #252520; border-right: 2px solid #4d4d45;
+            display: flex; flex-direction: column; padding-top: 10px; flex-shrink: 0;
+        }
+        #modal-livestock .tab-btn {
+            height: 60px; display: flex; justify-content: center; align-items: center;
+            color: #e0d7c6; cursor: pointer; font-size: 14px; font-weight: bold;
+            border-left: 3px solid transparent; transition: all 0.2s; user-select: none;
+        }
+        #modal-livestock .tab-btn:hover { background: #2d2d28; color: #d3a060; }
+        #modal-livestock .tab-btn.active { background: #d3a060; color: #1a1512; border-left-color: #ff8c00; }
+        #modal-livestock .lv-main { flex: 1; overflow: hidden; display: flex; }
+        #modal-livestock .lv-view { flex: 1; display: flex; padding: 20px; overflow: auto; }
+        #modal-livestock .lv-view.hidden { display: none; }
+        #modal-livestock .lv-footer {
+            height: 32px; background: #1a1512; border-top: 2px solid #4d4d45;
+            display: flex; align-items: center; padding: 0 20px; color: #6b6560; font-size: 10px; letter-spacing: 1px; text-transform: uppercase; flex-shrink: 0;
+        }
+        #modal-livestock .lv-feed-picker {
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            width: min(420px, 90%); max-height: 60%; background: #2d2d28; border: 2px solid #d3a060; border-radius: 8px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.7); z-index: 200; display: flex; flex-direction: column; overflow: hidden;
+        }
+        #modal-livestock .lv-feed-picker.hidden { display: none; }
+        #modal-livestock .lv-feed-picker-head {
+            background: #1a1512; border-bottom: 2px solid #4d4d45; padding: 10px 14px;
+            color: #e0d7c6; font-size: 13px; font-weight: 800; display: flex; justify-content: space-between; align-items: center;
+        }
+        #modal-livestock .lv-feed-picker-head span { cursor: pointer; color: #8e8e8e; padding: 2px 8px; }
+        #modal-livestock .lv-feed-picker-head span:hover { color: #fff; background: rgba(185,28,28,0.18); border-radius: 4px; }
+        #modal-livestock .lv-feed-picker-list { padding: 8px; overflow-y: auto; display: grid; gap: 6px; }
+        #modal-livestock .lv-feed-row {
+            background: #252520; border: 2px solid #4d4d45; border-radius: 6px; padding: 8px 10px;
+            display: flex; align-items: center; gap: 10px; font-size: 12px; color: #e0d7c6;
+        }
+        #modal-livestock .lv-feed-row .feed-name { flex: 1; }
+        #modal-livestock .lv-feed-row .feed-meta { color: #8e8e8e; font-size: 11px; }
+        #modal-livestock .lv-feed-row .lv-btn { padding: 3px 10px; font-size: 11px; flex-shrink: 0; }
+
+        /* 总览俯视图 */
+        #modal-livestock .overview-grid {
+            display: grid; grid-template-columns: 280px 120px 280px; grid-template-rows: 240px 120px 240px;
+            gap: 12px; margin: auto;
+        }
+        #modal-livestock .zone-cell {
+            background: #252520; border: 2px solid #4d4d45; border-radius: 4px; padding: 14px;
+            position: relative; cursor: pointer; transition: all 0.2s; overflow: hidden;
+        }
+        #modal-livestock .zone-cell:hover { border-color: #666; }
+        #modal-livestock .zone-cell.selected { border-color: #ff8c00; box-shadow: 0 0 12px rgba(255,140,0,0.15); }
+        #modal-livestock .zone-cell.drop-target { border-color: #ff8c00; box-shadow: 0 0 18px rgba(255,140,0,0.4); background: #2f2c26; }
+        #modal-livestock .animal-item[draggable="true"] { cursor: grab; }
+        #modal-livestock .animal-item[draggable="true"]:active { cursor: grabbing; }
+        #modal-livestock .eco-overlay { position: absolute; inset: 0; pointer-events: none; border-radius: 2px; }
+        #modal-livestock .eco-grass-low { background-color: rgba(90,140,70,0.20); }
+        #modal-livestock .eco-pollution { background-image: radial-gradient(circle at center, rgba(60,40,30,0.45) 0%, transparent 80%); }
+        #modal-livestock .eco-compact { border: 1px dashed rgba(0,0,0,0.35); }
+        #modal-livestock .zone-header { display: flex; flex-direction: column; gap: 3px; font-size: 11px; color: #8e8e8e; margin-bottom: 12px; position: relative; z-index: 2; }
+        #modal-livestock .zone-eco { display: flex; flex-direction: column; gap: 1px; }
+        #modal-livestock .eco-line { line-height: 1.35; }
+        #modal-livestock .animal-list { position: relative; z-index: 2; display: flex; flex-wrap: wrap; gap: 4px; }
+        #modal-livestock .zone-actions { position: relative; z-index: 2; display: flex; gap: 4px; margin-top: 10px; }
+        #modal-livestock .zone-actions .lv-btn { padding: 3px 10px; font-size: 11px; }
+        #modal-livestock .animal-item {
+            display: inline-flex; align-items: center; gap: 2px; font-size: 13px; color: #e0d7c6;
+            border: 1px solid #4d4d45; border-radius: 4px; padding: 1px 5px; background: rgba(0,0,0,0.18);
+        }
+        #modal-livestock .animal-item.animal-coop { background: rgba(211,160,96,0.08); }
+        #modal-livestock .coop-animals { position: relative; z-index: 2; display: flex; flex-wrap: wrap; gap: 3px; justify-content: center; padding: 0 4px; }
+        #modal-livestock .corpse-line {
+            position: relative; z-index: 2; display: flex; align-items: center; gap: 6px; flex-wrap: wrap;
+            margin-top: 6px; padding: 2px 6px; font-size: 11px; color: #b0a090;
+            background: rgba(90,40,30,0.25); border: 1px dashed #7a4a35; border-radius: 4px;
+        }
+        #modal-livestock .corpse-line .lv-btn { padding: 1px 6px; font-size: 10px; }
+        #modal-livestock .icon-cattle { color: #8c6b4a; }
+        #modal-livestock .icon-sheep { color: #c4bcad; }
+        #modal-livestock .icon-pig { color: #9e7571; }
+        #modal-livestock .icon-chicken { color: #b38b42; }
+        #modal-livestock .arm-cell {
+            background: #1a1512; border: 2px solid #4d4d45; border-radius: 4px;
+            display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 8px; cursor: pointer;
+        }
+        #modal-livestock .arm-cell:hover { border-color: #666; }
+        #modal-livestock .arm-vertical { flex-direction: column; }
+        #modal-livestock .arm-horizontal { flex-direction: row; }
+        #modal-livestock .axis-cell {
+            background: #1a1512; border: 2px solid #d3a060; border-radius: 50%;
+            display: flex; justify-content: center; align-items: center; flex-direction: column;
+            position: relative; cursor: pointer; box-shadow: inset 0 0 15px rgba(211,160,96,0.2);
+        }
+        #modal-livestock .module-slots { display: flex; gap: 5px; flex-wrap: wrap; justify-content: center; padding: 0 8px; font-size: 14px; }
+        #modal-livestock .ov-module-chip {
+            display: inline-flex; align-items: center; gap: 3px; font-size: 11px; line-height: 1.4;
+            color: #d3a060; background: rgba(211,160,96,0.10); border: 1px solid #5a4a33; border-radius: 4px; padding: 1px 6px;
+            white-space: nowrap;
+        }
+        #modal-livestock .ov-module-chip.ov-module-empty { color: #6b6560; background: transparent; border-style: dashed; border-color: #3a3a35; }
+        #modal-livestock .ov-module-chip.upgrading { border-color: #ff8c00; color: #ff8c00; }
+        #modal-livestock .arm-label { font-size: 10px; color: #8e8e8e; }
+        #modal-livestock .rotate-indicator {
+            position: absolute; bottom: -6px; right: -6px; color: #d3a060; background: #1a1512; border-radius: 50%;
+            width: 22px; height: 22px; display: flex; align-items: center; justify-content: center; font-size: 13px; border: 1px solid #d3a060;
+        }
+
+        /* 动物 Tab */
+        #modal-livestock .animal-list-col { width: 55%; border-right: 2px solid #4d4d45; overflow-y: auto; padding-right: 12px; display: flex; flex-direction: column; gap: 8px; }
+        #modal-livestock .animal-row {
+            background: #252520; border: 2px solid #4d4d45; border-radius: 6px; padding: 10px 12px;
+            cursor: pointer; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; transition: all 0.2s;
+        }
+        #modal-livestock .animal-row:hover { border-color: #666; }
+        #modal-livestock .animal-row.selected { border-color: #ff8c00; box-shadow: 0 0 12px rgba(255,140,0,0.18); background: #2f2c26; }
+        #modal-livestock .animal-ico { font-size: 18px; }
+        #modal-livestock .animal-name { color: #e0d7c6; font-size: 14px; font-weight: 800; }
+        #modal-livestock .animal-meta { color: #8e8e8e; font-size: 11px; }
+        #modal-livestock .animal-perk { color: #bdb5ab; font-size: 11px; width: 100%; }
+        #modal-livestock .badge-preg { color: #ff8c00; font-size: 11px; font-weight: 900; margin-left: 4px; }
+        #modal-livestock .animal-detail-col { flex: 1; padding-left: 16px; overflow-y: auto; }
+        #modal-livestock .detail-title { color: #e0d7c6; font-size: 20px; font-weight: 900; margin-bottom: 10px; }
+        #modal-livestock .kv-list { display: grid; gap: 4px; margin-bottom: 10px; }
+        #modal-livestock .kv-row { display: flex; justify-content: space-between; gap: 8px; color: #bdb5ab; font-size: 12px; }
+        #modal-livestock .kv-row span:first-child { color: #8e8e8e; }
+        #modal-livestock .detail-perk { color: #bdb5ab; font-size: 12px; margin-bottom: 10px; }
+        #modal-livestock .detail-actions { display: flex; gap: 8px; }
+        #modal-livestock .lv-btn {
+            background: none; border: 1px solid #d3a060; color: #d3a060; border-radius: 4px;
+            padding: 6px 14px; cursor: pointer; font-size: 12px;
+        }
+        #modal-livestock .lv-btn:hover { background: rgba(211,160,96,0.15); }
+        #modal-livestock .lv-btn.active { background: #d3a060; color: #1a1512; }
+        #modal-livestock .lv-toggle {
+            background: #1a1512; border: 1px solid #4d4d45; color: #8e8e8e; border-radius: 4px;
+            padding: 5px 12px; cursor: pointer; font-size: 12px; margin-right: 12px; transition: all 0.2s;
+        }
+        #modal-livestock .lv-toggle:hover { border-color: #d3a060; color: #d3a060; }
+        #modal-livestock .lv-toggle.on { border-color: #ff8c00; color: #ff8c00; background: rgba(255,140,0,0.12); }
+        #modal-livestock .empty-hint { color: #6b6560; font-size: 13px; padding: 14px 4px; }
+
+        /* 模块 Tab */
+        #modal-livestock .module-content { display: flex; gap: 16px; width: 100%; overflow: auto; }
+        #modal-livestock .module-left { width: 45%; border-right: 2px solid #4d4d45; padding-right: 12px; overflow-y: auto; }
+        #modal-livestock .module-right { flex: 1; overflow-y: auto; }
+        #modal-livestock .section-title { color: #8e8e8e; font-size: 11px; font-weight: 900; letter-spacing: 0.08em; margin: 0 0 10px; padding-left: 8px; border-left: 2px solid #d3a060; text-transform: uppercase; }
+        #modal-livestock .arm-card { background: #252520; border: 2px solid #4d4d45; border-radius: 6px; padding: 10px; margin-bottom: 10px; }
+        #modal-livestock .arm-card-title { color: #e0d7c6; font-size: 13px; font-weight: 800; margin-bottom: 6px; }
+        #modal-livestock .arm-slots { display: grid; gap: 4px; }
+        #modal-livestock .module-slot { display: flex; justify-content: space-between; align-items: center; gap: 6px; font-size: 11px; color: #8e8e8e; flex-wrap: wrap; }
+        #modal-livestock .module-slot.filled .slot-val { color: #d3a060; }
+        #modal-livestock .module-slot.empty-slot { border: 1px dashed #3a3a35; border-radius: 4px; padding: 2px 4px; }
+        #modal-livestock .module-slot.empty-slot.mountable { cursor: pointer; border-color: #d3a060; color: #d3a060; }
+        #modal-livestock .module-slot.empty-slot.mountable:hover { border-color: #ff8c00; color: #ff8c00; }
+        #modal-livestock .module-slot.shadow-slot { color: #6b6560; }
+        #modal-livestock .module-slot.shadow-slot .slot-val { color: #6b6560; }
+        #modal-livestock .module-slot .slot-actions { display: flex; gap: 4px; flex-shrink: 0; }
+        #modal-livestock .module-slot .slot-actions .lv-btn { padding: 2px 6px; font-size: 10px; }
+        #modal-livestock .module-slot .slot-effect { flex-basis: 100%; order: 5; }
+        #modal-livestock .module-list { display: grid; gap: 8px; }
+        #modal-livestock .module-card {
+            background: #252520; border: 2px solid #4d4d45; border-radius: 6px; padding: 10px 12px;
+            display: grid; grid-template-columns: 28px auto auto; gap: 4px 10px; align-items: center; transition: all 0.2s; cursor: pointer;
+        }
+        #modal-livestock .module-card:hover { border-color: #666; }
+        #modal-livestock .module-card.selected { border-color: #ff8c00; box-shadow: 0 0 12px rgba(255,140,0,0.18); background: #2f2c26; }
+        #modal-livestock .module-ico { font-size: 18px; grid-row: span 2; }
+        #modal-livestock .module-name { color: #e0d7c6; font-size: 13px; font-weight: 800; }
+        #modal-livestock .module-tier { color: #ff8c00; font-size: 10px; font-weight: 800; text-align: right; }
+        #modal-livestock .module-power { color: #f59e0b; font-size: 10px; font-weight: 800; text-align: right; grid-column: 2 / -1; }
+        #modal-livestock .module-stalled { color: #f87171; font-size: 10px; font-weight: 800; margin-left: 6px; }
+        #modal-livestock .module-slot.filled.stalled .slot-val { color: #f87171; }
+        #modal-livestock .ov-module-chip.stalled { border-color: #b91c1c; color: #f87171; }
+        #modal-livestock .module-desc { color: #8e8e8e; font-size: 11px; grid-column: 2 / -1; }
+        #modal-livestock .module-effect { color: #7fb069; font-size: 11px; grid-column: 2 / -1; font-weight: 600; }
+        #modal-livestock .module-slot .slot-effect { grid-column: auto; font-size: 10px; }
+        #modal-livestock .module-cost { color: #bdb5ab; font-size: 10px; grid-column: 2 / -1; }
+
+        /* 产出 Tab */
+        #modal-livestock .product-content { display: flex; gap: 16px; width: 100%; }
+        #modal-livestock .product-col { flex: 1; overflow-y: auto; }
+        #modal-livestock .product-row {
+            background: #252520; border: 2px solid #4d4d45; border-radius: 6px; padding: 10px 12px;
+            margin-bottom: 8px; color: #e0d7c6; font-size: 13px; display: flex; gap: 8px; align-items: center; flex-wrap: wrap;
+        }
+        #modal-livestock .product-row .meta { color: #8e8e8e; font-size: 11px; margin-left: auto; }
+        #modal-livestock .product-row .product-btns { display: flex; gap: 4px; flex-wrap: wrap; }
+        #modal-livestock .product-row .product-btns .lv-btn { padding: 2px 8px; font-size: 11px; }
+        #modal-livestock .product-row .lv-btn-dim { opacity: 0.45; }
+
+    
+body{margin:0;background:#101710}#modal-agriculture{display:flex!important}.agri-close{display:none}</style><link rel="stylesheet" href="../css/agriculture-overview.css"></head><body><div id="modal-agriculture" aria-hidden="false">
+            <div class="agri-panel">
+                <header class="agri-head">
+                    <h2 data-ui="agriculture.modal.title"></h2>
+                    <button type="button" class="agri-close" id="agriculture-panel-close" data-ui="agriculture.modal.close"></button>
+                </header>
+                <p class="agri-hint" data-ui="agriculture.modal.hint"></p>
+                <div class="agri-body">
+                    <div class="agri-grid-wrap">
+                        <div id="agriculture-grid" class="agri-grid" role="grid" aria-label="agriculture map"></div>
+                    </div>
+                    <aside class="agri-side">
+                        <div id="agriculture-task-bar" class="agri-task-bar"></div>
+                        <div id="agriculture-cell-detail" class="agri-detail"></div>
+                        <div id="agriculture-actions" class="agri-actions"></div>
+                    </aside>
+                </div>
+                <footer class="agri-foot">
+                    <span id="agriculture-world-strip" class="agri-world-strip" aria-live="polite"></span>
+                    <span id="agriculture-power-badge" class="agri-power-badge" style="display:none;">⚡</span>
+                    <button type="button" id="agriculture-power-feed-btn" class="agri-act-btn" style="display:none;" title="把背包里的电池塞进农田储能">🔋 塞电池</button>
+                    <button type="button" id="agriculture-auto-tick-toggle" aria-pressed="false"></button>
+                    <button type="button" class="primary" id="agriculture-advance-tick" data-ui="agriculture.btn.advance_tick"></button>
+                    <button type="button" id="agriculture-cancel-task" data-ui="agriculture.btn.cancel_task"></button>
+                    <span id="agriculture-status-msg" class="agri-status-msg"></span>
+                    <div id="agriculture-power-picker" class="agri-power-picker hidden">
+                        <div class="agri-power-picker-head">塞电池给农田供电<span id="agriculture-power-picker-close">✕</span></div>
+                        <div id="agriculture-power-picker-list" class="agri-power-picker-list"></div>
+                    </div>
+                </footer>
+            </div>
+        </div>
+        <script src="../js/agriculture-map.js"></script><script src="../js/agriculture-config.js"></script><script src="../js/agriculture-overview.js"></script><script src="../js/agriculture-panel.js"></script><script>
+(async()=>{const [defs,soils,texts,build,params,items]=await Promise.all(['agriculture-crop-defs.json','agriculture-soils.json','ui_text_zhCN.json','agriculture-build-costs.json','agriculture-item-params.json','items.json'].map(p=>fetch('../data/'+p).then(r=>r.json())));window.UIText={t:(k,p)=>Object.entries(p||{}).reduce((s,[a,b])=>s.replaceAll('{'+a+'}',b),texts[k]||k),applyDom:el=>el.querySelectorAll('[data-ui]').forEach(e=>e.textContent=texts[e.dataset.ui]||e.dataset.ui)};window.InventoryEquipment={getItemTemplate:id=>items[id]};AgricultureConfig.setTables(build,params);const A=AgricultureMap,env={cropDefs:defs,soils};A.bindEnv(env);const st=A.createDefaultState();for(let y=0;y<=8;y++){A.tryPlaceChannelAt(st,1,y);A.cell(st,1,y).capacity=4;}for(let x=2;x<=8;x++){A.tryPlaceChannelAt(st,x,4);A.cell(st,x,4).capacity=4;}A.cell(st,9,9).kind='super_fusion';st.power_charge=400;A.tryPlaceVenturiAt(st,2,1);A.tryInjectSeaweedEffectAt(st,env,2,1);A.cell(st,2,3).kind='buried_pot_jar';A.cell(st,2,3).jarLiquid={itemId:'fertilizer_compost_plus',nutrientRemaining:2000,bottleCount:2,nutrientPerBottle:1000};A.cell(st,2,3).jarReleaseRate=2;const plants=[[2,2,'cherry','soil_black'],[0,3,'maize'],[3,3,'sesame'],[5,3,'rice','soil_paddy'],[7,3,'chili_red'],[0,6,'maize'],[2,6,'peanut']];for(const [x,y,id,soil]of plants){const c=A.cell(st,x,y);c.tilled=true;c.cropStructure=defs.crops[id].required_crop_structure_id;if(soil){c.soilId=soil;c.soilType=soils.soils[soil].display_name;}A.tryPlantCropAt(st,env,x,y,id);}A.recomputeIrrigationNetwork(st);for(let i=0;i<8;i++)A.runAgricultureMapTick(st,env);A.cell(st,0,6).crop.settled=true;A.cell(st,0,6).crop.harvestCount=3;A.cell(st,0,6).crop.resultLabel='成熟';A.cell(st,0,6).crop.remainingTicks=0;window.SceneCtx={agriculture_map_state:st};window.SceneApp={getAgricultureMapStateMutable:()=>st,getAgriculturePlantOptions:()=>Object.values(defs.crops).slice(0,8).map(d=>({cropId:d.cropId,seedItemId:d.seedItemId,name:d.name,count:2})),getAgricultureSoilAmendmentOptions:()=>[],getAgricultureInjectables:()=>[],isAgricultureAutoTickEnabled:()=>false,tryAgricultureAction:()=>({ok:false,reason:'review_only'}),updateAgriculturePanel:()=>AgriculturePanel.update(st)};document.querySelector('.agri-hint').removeAttribute('data-ui');document.querySelector('.agri-hint').textContent='界面审阅 · 使用实际农业模块与独立示例农田，不读取玩家存档。点击地块与上方视图查看供给关系。';AgriculturePanel.render(st);document.querySelector('[data-x="2"][data-y="2"]').click();})();
+</script></body></html>

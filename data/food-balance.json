@@ -1,0 +1,1131 @@
+{
+  "version": 1,
+  "note": "游戏数值；本表为食物代谢与特殊效果真源，构建进 items.json/buffs.json。composition 顺序为主食、蛋白类（兼容 meat）、蔬果、其他。",
+  "foods": {
+    "food_flatbread_plain": {
+      "name": "粗面饼",
+      "meal_tier": "home",
+      "satiety_total": 40,
+      "digestion_ticks": 25,
+      "composition": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "portion_units": 1,
+      "thirst_instant": -5,
+      "slots_taken": 1,
+      "workhorse": true,
+      "attribute_exp": {
+        "jingu": 0
+      },
+      "special": {
+        "duration_ticks": 1,
+        "stamina": 0,
+        "energy": 0,
+        "mood": 0,
+        "speed": 1
+      },
+      "edible_buff_id": "buff_food_flatbread_plain"
+    },
+    "food_compressed_biscuit": {
+      "name": "压缩饼干",
+      "meal_tier": "home",
+      "satiety_total": 65,
+      "digestion_ticks": 30,
+      "composition": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "portion_units": 1.3,
+      "thirst_instant": -15,
+      "slots_taken": 1,
+      "workhorse": true,
+      "attribute_exp": {
+        "jingu": 0
+      },
+      "special": {
+        "duration_ticks": 1,
+        "stamina": 0,
+        "energy": 0,
+        "mood": 0,
+        "speed": 1
+      },
+      "edible_buff_id": "buff_food_compressed_biscuit"
+    },
+    "food_stew_meat_simple": {
+      "name": "肉末杂煮",
+      "meal_tier": "home",
+      "satiety_total": 30,
+      "digestion_ticks": 45,
+      "composition": [
+        0,
+        0.8,
+        0.2,
+        0
+      ],
+      "portion_units": 1,
+      "thirst_instant": 12,
+      "slots_taken": 1,
+      "workhorse": false,
+      "attribute_exp": {
+        "jingu": 36
+      },
+      "special": {
+        "duration_ticks": 20,
+        "stamina": 0.2,
+        "energy": 0.05,
+        "mood": 0.1,
+        "speed": 1
+      },
+      "edible_buff_id": "buff_food_stew_meat_simple"
+    },
+    "food_fish_soup_clear": {
+      "name": "清汤鱼羹",
+      "meal_tier": "home",
+      "satiety_total": 28,
+      "digestion_ticks": 40,
+      "composition": [
+        0,
+        0.9,
+        0.1,
+        0
+      ],
+      "portion_units": 1,
+      "thirst_instant": 25,
+      "slots_taken": 1,
+      "workhorse": false,
+      "attribute_exp": {
+        "jingu": 36
+      },
+      "special": {
+        "duration_ticks": 20,
+        "stamina": 0.2,
+        "energy": 0.05,
+        "mood": 0.1,
+        "speed": 1
+      },
+      "edible_buff_id": "buff_food_fish_soup_clear"
+    },
+    "food_dish_steamed_bream": {
+      "name": "清蒸鲂鱼",
+      "meal_tier": "home",
+      "satiety_total": 32,
+      "digestion_ticks": 45,
+      "composition": [
+        0,
+        0.95,
+        0.05,
+        0
+      ],
+      "portion_units": 1,
+      "thirst_instant": 10,
+      "slots_taken": 1,
+      "workhorse": false,
+      "attribute_exp": {
+        "jingu": 36
+      },
+      "special": {
+        "duration_ticks": 20,
+        "stamina": 0.2,
+        "energy": 0.05,
+        "mood": 0.1,
+        "speed": 1
+      },
+      "edible_buff_id": "buff_food_dish_steamed_bream"
+    },
+    "food_dish_salt_grilled_whitefish": {
+      "name": "盐烤白身鱼",
+      "meal_tier": "home",
+      "satiety_total": 33,
+      "digestion_ticks": 45,
+      "composition": [
+        0,
+        0.95,
+        0.05,
+        0
+      ],
+      "portion_units": 1,
+      "thirst_instant": 0,
+      "slots_taken": 1,
+      "workhorse": false,
+      "attribute_exp": {
+        "jingu": 36
+      },
+      "special": {
+        "duration_ticks": 20,
+        "stamina": 0.2,
+        "energy": 0.05,
+        "mood": 0.1,
+        "speed": 1
+      },
+      "edible_buff_id": "buff_food_dish_salt_grilled_whitefish"
+    },
+    "food_dish_fried_potato_chunks": {
+      "name": "炸土豆块",
+      "meal_tier": "home",
+      "satiety_total": 40,
+      "digestion_ticks": 40,
+      "composition": [
+        0.9,
+        0,
+        0.1,
+        0
+      ],
+      "portion_units": 1,
+      "thirst_instant": -3,
+      "slots_taken": 1,
+      "workhorse": false,
+      "attribute_exp": {
+        "jingu": 36
+      },
+      "special": {
+        "duration_ticks": 20,
+        "stamina": 0.2,
+        "energy": 0.05,
+        "mood": 0.1,
+        "speed": 1
+      },
+      "edible_buff_id": "buff_food_dish_fried_potato_chunks"
+    },
+    "food_dish_roasted_potato_herbs": {
+      "name": "烤土豆佐香草",
+      "meal_tier": "home",
+      "satiety_total": 35,
+      "digestion_ticks": 40,
+      "composition": [
+        0.9,
+        0,
+        0.1,
+        0
+      ],
+      "portion_units": 1,
+      "thirst_instant": 0,
+      "slots_taken": 1,
+      "workhorse": false,
+      "attribute_exp": {
+        "jingu": 36
+      },
+      "special": {
+        "duration_ticks": 20,
+        "stamina": 0.2,
+        "energy": 0.05,
+        "mood": 0.1,
+        "speed": 1
+      },
+      "edible_buff_id": "buff_food_dish_roasted_potato_herbs"
+    },
+    "food_dish_salted_cucumber": {
+      "name": "盐渍黄瓜",
+      "meal_tier": "snack",
+      "satiety_total": 15,
+      "digestion_ticks": 25,
+      "composition": [
+        0,
+        0,
+        1,
+        0
+      ],
+      "portion_units": 1,
+      "thirst_instant": 5,
+      "slots_taken": 1,
+      "workhorse": false,
+      "attribute_exp": {
+        "jingu": 12
+      },
+      "special": {
+        "duration_ticks": 15,
+        "stamina": 0.5,
+        "energy": 0.15,
+        "mood": 0.2,
+        "speed": 1
+      },
+      "edible_buff_id": "buff_food_dish_salted_cucumber"
+    },
+    "food_dish_steamed_egg_custard": {
+      "name": "蒸水蛋",
+      "meal_tier": "snack",
+      "satiety_total": 20,
+      "digestion_ticks": 25,
+      "composition": [
+        0,
+        1,
+        0,
+        0
+      ],
+      "portion_units": 0.7,
+      "thirst_instant": 10,
+      "slots_taken": 1,
+      "workhorse": false,
+      "attribute_exp": {
+        "jingu": 12
+      },
+      "special": {
+        "duration_ticks": 15,
+        "stamina": 0.5,
+        "energy": 0.15,
+        "mood": 0.2,
+        "speed": 1
+      },
+      "edible_buff_id": "buff_food_dish_steamed_egg_custard"
+    },
+    "food_dish_buffalo_yogurt": {
+      "name": "水牛酸奶",
+      "meal_tier": "snack",
+      "satiety_total": 20,
+      "digestion_ticks": 25,
+      "composition": [
+        0,
+        0.8,
+        0,
+        0.2
+      ],
+      "portion_units": 0.7,
+      "thirst_instant": 8,
+      "slots_taken": 1,
+      "workhorse": false,
+      "attribute_exp": {
+        "jingu": 12
+      },
+      "special": {
+        "duration_ticks": 15,
+        "stamina": 0.5,
+        "energy": 0.15,
+        "mood": 0.5,
+        "speed": 1
+      },
+      "edible_buff_id": "buff_food_dish_buffalo_yogurt"
+    },
+    "food_dish_beet_kvass": {
+      "name": "甜菜发酵饮",
+      "meal_tier": "snack",
+      "satiety_total": 12,
+      "digestion_ticks": 20,
+      "composition": [
+        0,
+        0,
+        0.3,
+        0.7
+      ],
+      "portion_units": 0.3,
+      "thirst_instant": 30,
+      "slots_taken": 1,
+      "workhorse": false,
+      "attribute_exp": {
+        "jingu": 12
+      },
+      "special": {
+        "duration_ticks": 15,
+        "stamina": 0.5,
+        "energy": 0.15,
+        "mood": 0.2,
+        "speed": 1
+      },
+      "edible_buff_id": "buff_food_dish_beet_kvass"
+    },
+    "food_herb_tea_bitter": {
+      "name": "苦根茶",
+      "meal_tier": "snack",
+      "satiety_total": 2,
+      "digestion_ticks": 15,
+      "composition": [
+        0,
+        0,
+        0,
+        1
+      ],
+      "portion_units": 0.05,
+      "thirst_instant": 25,
+      "slots_taken": 1,
+      "workhorse": false,
+      "attribute_exp": {
+        "jingu": 12
+      },
+      "special": {
+        "duration_ticks": 15,
+        "stamina": 0,
+        "energy": 0.3,
+        "mood": 0.2,
+        "speed": 1
+      },
+      "edible_buff_id": "buff_food_herb_tea_bitter"
+    },
+    "food_dried_meat_strip": {
+      "name": "风干肉条",
+      "meal_tier": "snack",
+      "satiety_total": 22,
+      "digestion_ticks": 30,
+      "composition": [
+        0,
+        1,
+        0,
+        0
+      ],
+      "portion_units": 0.65,
+      "thirst_instant": -5,
+      "slots_taken": 1,
+      "workhorse": false,
+      "attribute_exp": {
+        "jingu": 12
+      },
+      "special": {
+        "duration_ticks": 15,
+        "stamina": 0.5,
+        "energy": 0.15,
+        "mood": 0.2,
+        "speed": 1.05
+      },
+      "edible_buff_id": "buff_food_dried_meat_strip"
+    },
+    "herb_bitter": {
+      "name": "涩堇草",
+      "meal_tier": "snack",
+      "satiety_total": 3,
+      "digestion_ticks": 15,
+      "composition": [
+        0,
+        0,
+        1,
+        0
+      ],
+      "portion_units": 0.1,
+      "thirst_instant": 2,
+      "slots_taken": 1,
+      "workhorse": false,
+      "attribute_exp": {
+        "jingu": 12
+      },
+      "special": {
+        "duration_ticks": 15,
+        "stamina": 0.2,
+        "energy": 0.05,
+        "mood": 0.1,
+        "speed": 1
+      },
+      "edible_buff_id": "buff_food_herb_bitter"
+    },
+    "herb_green": {
+      "name": "青草尖",
+      "meal_tier": "snack",
+      "satiety_total": 4,
+      "digestion_ticks": 15,
+      "composition": [
+        0,
+        0,
+        1,
+        0
+      ],
+      "portion_units": 0.1,
+      "thirst_instant": 3,
+      "slots_taken": 1,
+      "workhorse": false,
+      "attribute_exp": {
+        "jingu": 12
+      },
+      "special": {
+        "duration_ticks": 15,
+        "stamina": 0.2,
+        "energy": 0.05,
+        "mood": 0.1,
+        "speed": 1
+      },
+      "edible_buff_id": "buff_food_herb_green"
+    },
+    "herb_sweet": {
+      "name": "甘花茎",
+      "meal_tier": "snack",
+      "satiety_total": 5,
+      "digestion_ticks": 15,
+      "composition": [
+        0,
+        0,
+        1,
+        0
+      ],
+      "portion_units": 0.15,
+      "thirst_instant": 2,
+      "slots_taken": 1,
+      "workhorse": false,
+      "attribute_exp": {
+        "jingu": 12
+      },
+      "special": {
+        "duration_ticks": 15,
+        "stamina": 0.2,
+        "energy": 0.05,
+        "mood": 0.1,
+        "speed": 1
+      },
+      "edible_buff_id": "buff_food_herb_sweet"
+    },
+    "wild_fruit_red": {
+      "name": "红火莓",
+      "meal_tier": "snack",
+      "satiety_total": 8,
+      "digestion_ticks": 20,
+      "composition": [
+        0,
+        0,
+        1,
+        0
+      ],
+      "portion_units": 0.3,
+      "thirst_instant": 5,
+      "slots_taken": 1,
+      "workhorse": false,
+      "attribute_exp": {
+        "jingu": 12
+      },
+      "special": {
+        "duration_ticks": 15,
+        "stamina": 0.2,
+        "energy": 0.05,
+        "mood": 0.1,
+        "speed": 1
+      },
+      "edible_buff_id": "buff_food_wild_fruit_red"
+    },
+    "wild_fruit_purple": {
+      "name": "紫苏果",
+      "meal_tier": "snack",
+      "satiety_total": 10,
+      "digestion_ticks": 20,
+      "composition": [
+        0,
+        0,
+        1,
+        0
+      ],
+      "portion_units": 0.3,
+      "thirst_instant": 5,
+      "slots_taken": 1,
+      "workhorse": false,
+      "attribute_exp": {
+        "jingu": 12
+      },
+      "special": {
+        "duration_ticks": 15,
+        "stamina": 0.2,
+        "energy": 0.05,
+        "mood": 0.1,
+        "speed": 1
+      },
+      "edible_buff_id": "buff_food_wild_fruit_purple"
+    },
+    "wild_fruit_yellow": {
+      "name": "黄肚柑",
+      "meal_tier": "snack",
+      "satiety_total": 12,
+      "digestion_ticks": 20,
+      "composition": [
+        0,
+        0,
+        1,
+        0
+      ],
+      "portion_units": 0.35,
+      "thirst_instant": 8,
+      "slots_taken": 1,
+      "workhorse": false,
+      "attribute_exp": {
+        "jingu": 12
+      },
+      "special": {
+        "duration_ticks": 15,
+        "stamina": 0.2,
+        "energy": 0.05,
+        "mood": 0.1,
+        "speed": 1
+      },
+      "edible_buff_id": "buff_food_wild_fruit_yellow"
+    },
+    "herb_pecan": {
+      "name": "山核桃",
+      "meal_tier": "snack",
+      "satiety_total": 35,
+      "digestion_ticks": 35,
+      "composition": [
+        0.2,
+        0.4,
+        0,
+        0.4
+      ],
+      "portion_units": 0.7,
+      "thirst_instant": -3,
+      "slots_taken": 1,
+      "workhorse": false,
+      "attribute_exp": {
+        "jingu": 12
+      },
+      "special": {
+        "duration_ticks": 15,
+        "stamina": 0.2,
+        "energy": 0.05,
+        "mood": 0.1,
+        "speed": 1
+      },
+      "edible_buff_id": "buff_food_pecan_walnut"
+    },
+    "herb_sour_plum": {
+      "name": "酸梅",
+      "meal_tier": "snack",
+      "satiety_total": 12,
+      "digestion_ticks": 20,
+      "composition": [
+        0,
+        0,
+        0.8,
+        0.2
+      ],
+      "portion_units": 0.5,
+      "thirst_instant": 12,
+      "slots_taken": 1,
+      "workhorse": false,
+      "attribute_exp": {
+        "jingu": 12
+      },
+      "special": {
+        "duration_ticks": 15,
+        "stamina": 0.2,
+        "energy": 0.05,
+        "mood": 0.1,
+        "speed": 1
+      },
+      "edible_buff_id": "buff_food_herb_sour_plum"
+    },
+    "food_cooking_fail_generic": {
+      "name": "糊灶残渣（占位）",
+      "meal_tier": "snack",
+      "satiety_total": 5,
+      "digestion_ticks": 15,
+      "composition": [
+        0,
+        0,
+        0,
+        1
+      ],
+      "portion_units": 0.25,
+      "thirst_instant": -3,
+      "slots_taken": 1,
+      "workhorse": false,
+      "attribute_exp": {
+        "jingu": 0
+      },
+      "special": {
+        "duration_ticks": 1,
+        "stamina": 0,
+        "energy": 0,
+        "mood": 0,
+        "speed": 1
+      },
+      "edible_buff_id": "buff_food_cooking_fail_generic"
+    },
+    "food_dish_applewood_turkey_roast": {
+      "name": "苹果木烤火鸡块",
+      "meal_tier": "refined",
+      "satiety_total": 50,
+      "digestion_ticks": 55,
+      "composition": [
+        0,
+        0.9,
+        0.1,
+        0
+      ],
+      "portion_units": 1.3,
+      "thirst_instant": 0,
+      "slots_taken": 1,
+      "workhorse": false,
+      "attribute_exp": {
+        "jingu": 120,
+        "flexibility": 120
+      },
+      "special": {
+        "duration_ticks": 40,
+        "stamina": 0.3,
+        "energy": 0.08,
+        "mood": 0.2,
+        "speed": 1
+      },
+      "edible_buff_id": "buff_food_dish_applewood_turkey_roast"
+    },
+    "food_dish_mustard_beef_tongue": {
+      "name": "黄芥末蘸牛舌",
+      "meal_tier": "refined",
+      "satiety_total": 45,
+      "digestion_ticks": 50,
+      "composition": [
+        0,
+        0.9,
+        0.1,
+        0
+      ],
+      "portion_units": 1.1,
+      "thirst_instant": 0,
+      "slots_taken": 1,
+      "workhorse": false,
+      "attribute_exp": {
+        "jingu": 120,
+        "flexibility": 120
+      },
+      "special": {
+        "duration_ticks": 40,
+        "stamina": 0.3,
+        "energy": 0.08,
+        "mood": 0.2,
+        "speed": 1
+      },
+      "edible_buff_id": "buff_food_dish_mustard_beef_tongue"
+    },
+    "food_dish_beef_onion_stirfry": {
+      "name": "洋葱牛肉快炒",
+      "meal_tier": "refined",
+      "satiety_total": 45,
+      "digestion_ticks": 50,
+      "composition": [
+        0,
+        0.7,
+        0.3,
+        0
+      ],
+      "portion_units": 1.2,
+      "thirst_instant": 3,
+      "slots_taken": 1,
+      "workhorse": false,
+      "attribute_exp": {
+        "jingu": 120,
+        "flexibility": 120
+      },
+      "special": {
+        "duration_ticks": 40,
+        "stamina": 0.3,
+        "energy": 0.08,
+        "mood": 0.2,
+        "speed": 1
+      },
+      "edible_buff_id": "buff_food_dish_beef_onion_stirfry"
+    },
+    "food_dish_squid_stirfry": {
+      "name": "爆炒鱿鱼",
+      "meal_tier": "refined",
+      "satiety_total": 40,
+      "digestion_ticks": 45,
+      "composition": [
+        0,
+        0.8,
+        0.2,
+        0
+      ],
+      "portion_units": 1.1,
+      "thirst_instant": 3,
+      "slots_taken": 1,
+      "workhorse": false,
+      "attribute_exp": {
+        "jingu": 120,
+        "flexibility": 120
+      },
+      "special": {
+        "duration_ticks": 40,
+        "stamina": 0.3,
+        "energy": 0.08,
+        "mood": 0.2,
+        "speed": 1.08
+      },
+      "edible_buff_id": "buff_food_dish_squid_stirfry"
+    },
+    "food_dish_chicken_dice_stirfry": {
+      "name": "小炒鸡丁",
+      "meal_tier": "refined",
+      "satiety_total": 45,
+      "digestion_ticks": 50,
+      "composition": [
+        0,
+        0.85,
+        0.15,
+        0
+      ],
+      "portion_units": 1.1,
+      "thirst_instant": 2,
+      "slots_taken": 1,
+      "workhorse": false,
+      "attribute_exp": {
+        "jingu": 120,
+        "flexibility": 120
+      },
+      "special": {
+        "duration_ticks": 40,
+        "stamina": 0.3,
+        "energy": 0.08,
+        "mood": 0.2,
+        "speed": 1
+      },
+      "edible_buff_id": "buff_food_dish_chicken_dice_stirfry"
+    },
+    "food_dish_sesame_garlic_salad": {
+      "name": "芝麻蒜香拌菜",
+      "meal_tier": "refined",
+      "satiety_total": 30,
+      "digestion_ticks": 40,
+      "composition": [
+        0,
+        0.1,
+        0.9,
+        0
+      ],
+      "portion_units": 1.2,
+      "thirst_instant": 8,
+      "slots_taken": 1,
+      "workhorse": false,
+      "attribute_exp": {
+        "jingu": 120,
+        "flexibility": 120
+      },
+      "special": {
+        "duration_ticks": 40,
+        "stamina": 0.3,
+        "energy": 0.08,
+        "mood": 0.2,
+        "speed": 1
+      },
+      "edible_buff_id": "buff_food_dish_sesame_garlic_salad"
+    },
+    "food_dish_beef_brisket_stew": {
+      "name": "清炖牛腩",
+      "meal_tier": "banquet",
+      "satiety_total": 75,
+      "digestion_ticks": 75,
+      "composition": [
+        0.15,
+        0.6,
+        0.25,
+        0
+      ],
+      "portion_units": 2,
+      "thirst_instant": 20,
+      "slots_taken": 2,
+      "workhorse": false,
+      "attribute_exp": {
+        "jingu": 390,
+        "flexibility": 390,
+        "breath": 390
+      },
+      "special": {
+        "duration_ticks": 60,
+        "stamina": 0.4,
+        "energy": 0.12,
+        "mood": 0.25,
+        "speed": 1
+      },
+      "edible_buff_id": "buff_food_dish_beef_brisket_stew"
+    },
+    "food_dish_pig_trotter_bean_soup": {
+      "name": "猪蹄豆汤",
+      "meal_tier": "banquet",
+      "satiety_total": 75,
+      "digestion_ticks": 75,
+      "composition": [
+        0.3,
+        0.65,
+        0.05,
+        0
+      ],
+      "portion_units": 2,
+      "thirst_instant": 25,
+      "slots_taken": 2,
+      "workhorse": false,
+      "attribute_exp": {
+        "jingu": 390,
+        "flexibility": 390,
+        "breath": 390
+      },
+      "special": {
+        "duration_ticks": 60,
+        "stamina": 0.4,
+        "energy": 0.12,
+        "mood": 0.25,
+        "speed": 1
+      },
+      "edible_buff_id": "buff_food_dish_pig_trotter_bean_soup"
+    },
+    "food_dish_whitefish_soup_deluxe": {
+      "name": "清汤鱼羹（强化）",
+      "meal_tier": "banquet",
+      "satiety_total": 65,
+      "digestion_ticks": 65,
+      "composition": [
+        0.1,
+        0.65,
+        0.25,
+        0
+      ],
+      "portion_units": 1.8,
+      "thirst_instant": 30,
+      "slots_taken": 2,
+      "workhorse": false,
+      "attribute_exp": {
+        "jingu": 390,
+        "flexibility": 390,
+        "breath": 390
+      },
+      "special": {
+        "duration_ticks": 60,
+        "stamina": 0.4,
+        "energy": 0.12,
+        "mood": 0.25,
+        "speed": 1
+      },
+      "edible_buff_id": "buff_food_dish_whitefish_soup_deluxe"
+    },
+    "food_dish_river_shrimp_soft_fry": {
+      "name": "软炸河虾仁",
+      "meal_tier": "banquet",
+      "satiety_total": 65,
+      "digestion_ticks": 60,
+      "composition": [
+        0.25,
+        0.7,
+        0.05,
+        0
+      ],
+      "portion_units": 1.5,
+      "thirst_instant": -3,
+      "slots_taken": 2,
+      "workhorse": false,
+      "attribute_exp": {
+        "jingu": 390,
+        "flexibility": 390,
+        "breath": 390
+      },
+      "special": {
+        "duration_ticks": 60,
+        "stamina": 0.4,
+        "energy": 0.12,
+        "mood": 0.25,
+        "speed": 1.08
+      },
+      "edible_buff_id": "buff_food_dish_river_shrimp_soft_fry"
+    },
+    "food_dish_lotus_glutinous_chicken": {
+      "name": "荷叶糯米鸡",
+      "meal_tier": "banquet",
+      "satiety_total": 85,
+      "digestion_ticks": 75,
+      "composition": [
+        0.55,
+        0.3,
+        0.15,
+        0
+      ],
+      "portion_units": 2.3,
+      "thirst_instant": 5,
+      "slots_taken": 2,
+      "workhorse": false,
+      "attribute_exp": {
+        "jingu": 390,
+        "flexibility": 390,
+        "breath": 390
+      },
+      "special": {
+        "duration_ticks": 60,
+        "stamina": 0.4,
+        "energy": 0.12,
+        "mood": 0.25,
+        "speed": 1
+      },
+      "edible_buff_id": "buff_food_dish_lotus_glutinous_chicken"
+    },
+    "food_dish_herb_cured_pork_slices": {
+      "name": "香草腌肉片",
+      "meal_tier": "banquet",
+      "satiety_total": 70,
+      "digestion_ticks": 70,
+      "composition": [
+        0,
+        0.95,
+        0.05,
+        0
+      ],
+      "portion_units": 1.5,
+      "thirst_instant": -10,
+      "slots_taken": 2,
+      "workhorse": false,
+      "attribute_exp": {
+        "jingu": 390,
+        "flexibility": 390,
+        "breath": 390
+      },
+      "special": {
+        "duration_ticks": 60,
+        "stamina": 0.4,
+        "energy": 0.12,
+        "mood": 0.25,
+        "speed": 1
+      },
+      "edible_buff_id": "buff_food_dish_herb_cured_pork_slices"
+    }
+  },
+  "exclusions": {
+    "hus_beef_blood": {
+      "name": "牛血",
+      "reason": "畜牧生肉/内脏：旧表标记可食用但没有使用效果；明确为待烹饪原料。"
+    },
+    "hus_beef_brain": {
+      "name": "牛脑",
+      "reason": "畜牧生肉/内脏：旧表标记可食用但没有使用效果；明确为待烹饪原料。"
+    },
+    "hus_beef_heart": {
+      "name": "牛心",
+      "reason": "畜牧生肉/内脏：旧表标记可食用但没有使用效果；明确为待烹饪原料。"
+    },
+    "hus_beef_intestine": {
+      "name": "牛肠",
+      "reason": "畜牧生肉/内脏：旧表标记可食用但没有使用效果；明确为待烹饪原料。"
+    },
+    "hus_beef_kidney": {
+      "name": "牛肾",
+      "reason": "畜牧生肉/内脏：旧表标记可食用但没有使用效果；明确为待烹饪原料。"
+    },
+    "hus_beef_liver": {
+      "name": "牛肝",
+      "reason": "畜牧生肉/内脏：旧表标记可食用但没有使用效果；明确为待烹饪原料。"
+    },
+    "hus_beef_lung": {
+      "name": "牛肺",
+      "reason": "畜牧生肉/内脏：旧表标记可食用但没有使用效果；明确为待烹饪原料。"
+    },
+    "hus_beef_marrow": {
+      "name": "牛骨髓",
+      "reason": "畜牧生肉/内脏：旧表标记可食用但没有使用效果；明确为待烹饪原料。"
+    },
+    "hus_beef_omasum": {
+      "name": "牛百叶",
+      "reason": "畜牧生肉/内脏：旧表标记可食用但没有使用效果；明确为待烹饪原料。"
+    },
+    "hus_beef_steak": {
+      "name": "牛排",
+      "reason": "畜牧生肉/内脏：旧表标记可食用但没有使用效果；明确为待烹饪原料。"
+    },
+    "hus_beef_tripe": {
+      "name": "牛肚",
+      "reason": "畜牧生肉/内脏：旧表标记可食用但没有使用效果；明确为待烹饪原料。"
+    },
+    "hus_chicken_blood": {
+      "name": "鸡血",
+      "reason": "畜牧生肉/内脏：旧表标记可食用但没有使用效果；明确为待烹饪原料。"
+    },
+    "hus_chicken_breast": {
+      "name": "鸡胸肉",
+      "reason": "畜牧生肉/内脏：旧表标记可食用但没有使用效果；明确为待烹饪原料。"
+    },
+    "hus_chicken_gizzard": {
+      "name": "鸡胗",
+      "reason": "畜牧生肉/内脏：旧表标记可食用但没有使用效果；明确为待烹饪原料。"
+    },
+    "hus_chicken_heart": {
+      "name": "鸡心",
+      "reason": "畜牧生肉/内脏：旧表标记可食用但没有使用效果；明确为待烹饪原料。"
+    },
+    "hus_chicken_intestine": {
+      "name": "鸡肠",
+      "reason": "畜牧生肉/内脏：旧表标记可食用但没有使用效果；明确为待烹饪原料。"
+    },
+    "hus_chicken_liver": {
+      "name": "鸡肝",
+      "reason": "畜牧生肉/内脏：旧表标记可食用但没有使用效果；明确为待烹饪原料。"
+    },
+    "hus_chicken_thigh": {
+      "name": "鸡腿肉",
+      "reason": "畜牧生肉/内脏：旧表标记可食用但没有使用效果；明确为待烹饪原料。"
+    },
+    "hus_mutton_blood": {
+      "name": "羊血",
+      "reason": "畜牧生肉/内脏：旧表标记可食用但没有使用效果；明确为待烹饪原料。"
+    },
+    "hus_mutton_brain": {
+      "name": "羊脑",
+      "reason": "畜牧生肉/内脏：旧表标记可食用但没有使用效果；明确为待烹饪原料。"
+    },
+    "hus_mutton_chop": {
+      "name": "羊排",
+      "reason": "畜牧生肉/内脏：旧表标记可食用但没有使用效果；明确为待烹饪原料。"
+    },
+    "hus_mutton_heart": {
+      "name": "羊心",
+      "reason": "畜牧生肉/内脏：旧表标记可食用但没有使用效果；明确为待烹饪原料。"
+    },
+    "hus_mutton_intestine": {
+      "name": "羊肠",
+      "reason": "畜牧生肉/内脏：旧表标记可食用但没有使用效果；明确为待烹饪原料。"
+    },
+    "hus_mutton_kidney": {
+      "name": "羊肾",
+      "reason": "畜牧生肉/内脏：旧表标记可食用但没有使用效果；明确为待烹饪原料。"
+    },
+    "hus_mutton_leg": {
+      "name": "羊腿",
+      "reason": "畜牧生肉/内脏：旧表标记可食用但没有使用效果；明确为待烹饪原料。"
+    },
+    "hus_mutton_liver": {
+      "name": "羊肝",
+      "reason": "畜牧生肉/内脏：旧表标记可食用但没有使用效果；明确为待烹饪原料。"
+    },
+    "hus_mutton_lung": {
+      "name": "羊肺",
+      "reason": "畜牧生肉/内脏：旧表标记可食用但没有使用效果；明确为待烹饪原料。"
+    },
+    "hus_mutton_tongue": {
+      "name": "羊舌",
+      "reason": "畜牧生肉/内脏：旧表标记可食用但没有使用效果；明确为待烹饪原料。"
+    },
+    "hus_mutton_tripe": {
+      "name": "羊肚",
+      "reason": "畜牧生肉/内脏：旧表标记可食用但没有使用效果；明确为待烹饪原料。"
+    },
+    "hus_pork_blood": {
+      "name": "猪血",
+      "reason": "畜牧生肉/内脏：旧表标记可食用但没有使用效果；明确为待烹饪原料。"
+    },
+    "hus_pork_brain": {
+      "name": "猪脑",
+      "reason": "畜牧生肉/内脏：旧表标记可食用但没有使用效果；明确为待烹饪原料。"
+    },
+    "hus_pork_chop": {
+      "name": "猪排",
+      "reason": "畜牧生肉/内脏：旧表标记可食用但没有使用效果；明确为待烹饪原料。"
+    },
+    "hus_pork_ear": {
+      "name": "猪耳",
+      "reason": "畜牧生肉/内脏：旧表标记可食用但没有使用效果；明确为待烹饪原料。"
+    },
+    "hus_pork_heart": {
+      "name": "猪心",
+      "reason": "畜牧生肉/内脏：旧表标记可食用但没有使用效果；明确为待烹饪原料。"
+    },
+    "hus_pork_kidney": {
+      "name": "猪腰",
+      "reason": "畜牧生肉/内脏：旧表标记可食用但没有使用效果；明确为待烹饪原料。"
+    },
+    "hus_pork_large_intestine": {
+      "name": "猪大肠",
+      "reason": "畜牧生肉/内脏：旧表标记可食用但没有使用效果；明确为待烹饪原料。"
+    },
+    "hus_pork_liver": {
+      "name": "猪肝",
+      "reason": "畜牧生肉/内脏：旧表标记可食用但没有使用效果；明确为待烹饪原料。"
+    },
+    "hus_pork_lung": {
+      "name": "猪肺",
+      "reason": "畜牧生肉/内脏：旧表标记可食用但没有使用效果；明确为待烹饪原料。"
+    },
+    "hus_pork_small_intestine": {
+      "name": "猪小肠",
+      "reason": "畜牧生肉/内脏：旧表标记可食用但没有使用效果；明确为待烹饪原料。"
+    },
+    "food_wine": {
+      "name": "酒",
+      "reason": "烹饪用酒：原表禁止直接食用，保留原料用途。"
+    }
+  }
+}

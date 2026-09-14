@@ -74,7 +74,7 @@ herb_dill,莳萝,细碎羽叶,闻着有点像小茴香，也许能腌鱼,莳萝�
 herb_parsley,平叶欧芹,平展绿叶,叶子青翠汁水足，好像能点缀,欧芹碎撒汤面上，摆盘去腥都行。,herb,spice,0.15,10,white,material;surface_only,gathering,,600,material,mid,1,,,,,,,,,,13,4
 herb_caper,刺山柑,泡盐水小青粒,咸汁里泡着小绿粒，好像能佐鱼,刺山柑咸酸，配意面熏鱼也不赖。,herb,fruit_product,0.3,10,white,material,gathering,,3600,material,mid,0,,,,,,,,,,17,7
 herb_juniper_berry,杜松子,蓝黑小圆果,闻着像松林凉苦，说不好能腌肉,杜松子腌野味，泡酒也去膻。,herb,fruit_product,1.2,10,white,material;dungeon_only,gathering,,3600,material,mid,3,,,,,,,,,,62,26
-herb_kombu,真昆布,干硬海带片,厚片咸腥海气味，好像能吊汤,真昆布熬日式高汤，拉面锅底第一步。,herb,seafood_product,0.13,10,white,material;dungeon_only,gathering,,3600,rare,high,7,,,,,,,,,,4,22
+"herb_kombu","真昆布","干硬海带片","厚片咸腥海气味，好像能吊汤","真昆布熬日式高汤，拉面锅底第一步。","herb","seafood_product","0.13","10","white","material;dungeon_only","gathering","","3600","rare","high","7","","","","","","","","true","","4","22",,,,,,,,,,,,
 herb_shiitake,香菇,褐伞大肉菇,菇伞厚闻着土腥，似乎能煮汤,香菇晒干比鲜的更吊鲜。,herb,mushroom,0.5,1,white,material;surface_only,gathering,,600,material,mid,1,,,,,,,1,,,22,20,1,1
 herb_sour_plum,酸梅,皱皮酸梅子,酸得人倒牙，好像能煮汤,酸梅汤解渴消暑，老方子。,herb,fruit_product,0.7,10,white,material,gathering,,3600,material,mid,0,,1,buff_food_herb_sour_plum,,,,,,,39,17
 herb_maize,玉米粒,金黄玉米粒,颗粒圆鼓鼓，好像能煮饭,玉米煮饭熬粥烙饼都填得饱肚子。,herb,veg,0.7,1,white,material,farming,,600,life_good,mid,0,,,,,,,,,,56,11

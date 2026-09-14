@@ -52,6 +52,8 @@ function main() {
   st.tick = 42; /* 故意写旧值，读档后应由世界时间覆盖 */
   st.map[3][3].tilled = true;
   st.map[3][3].soilId = "soil_sandy";
+  st.task = { type:'remove_buried_pot_jar', x:4, y:4, progress:3, paused:false,
+    paymentMeta:{ spec:{ task_ticks:10, stamina_per_tick:5, refund_inputs_on_cancel:true }, consumed:[{item_id:'ore_clay_raw',count:1}] } };
 
   const ctx = {
     GameTime: {
@@ -84,7 +86,7 @@ function main() {
   const SaveSystem = loadSaveSystem(ctx);
   const snap = SaveSystem.buildSnapshotForDebug();
   assert(snap && snap.agriculture_map, "buildSnapshot 应含 agriculture_map");
-  assert(snap.agriculture_map.schema_version === 1, "schema_version 应为 1");
+  assert(snap.agriculture_map.schema_version === 2, "schema_version 应为 2");
   assert(snap.agriculture_map.state.tick === 100, "存档 tick 应镜像世界 totalTicks");
   assert(snap.agriculture_map.state.map[3][3].tilled === true, "格 tilled 应持久化");
   assert(snap.player.sceneUi.action_bar_slots.length === 4, "sceneUi 不应破坏");
@@ -96,6 +98,16 @@ function main() {
   assert(restored.tick === 100, "读档后 tick 应对齐世界 totalTicks（忽略档内旧 tick）");
   assert(restored.map[3][3].tilled === true, "读档后格 tilled 一致");
   assert(restored.map[3][3].soilId === "soil_sandy", "读档后 soilId 一致");
+  assert(restored.task && restored.task.progress === 3 && restored.task.paymentMeta.consumed.length === 1, "在建工程与取消返料信息应持久化");
+
+  const legacyAgriculture = AM.createDefaultState();
+  delete legacyAgriculture.agricultureSupplyVersion;
+  legacyAgriculture.map[1][1].kind = 'venturi_fertilizer';
+  legacyAgriculture.map[1][1].venturiLiquid = { itemId:'liquid_seaweed_extract', effectDurationTicks:5000, effectTicksRemaining:2500 };
+  const legacyV1 = makeMinimalSnapshot({ agriculture_map:{ schema_version:1, state:legacyAgriculture } });
+  assert(SaveSystem.applySnapshotForDebug(legacyV1), 'v1 农业档应可迁移');
+  assert(ctx.SceneCtx.agriculture_map_state.agricultureSupplyVersion === 2, '旧农业档应升级规则版本');
+  assert(ctx.SceneCtx.agriculture_map_state.map[1][1].venturiLiquid.nutrientRemaining === 1200, '旧海藻精时间应按比例折算储量');
 
   ctx.SceneCtx.agriculture_map_state = null;
   const legacy = makeMinimalSnapshot();

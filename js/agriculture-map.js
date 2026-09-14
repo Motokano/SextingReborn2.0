@@ -1,6 +1,6 @@
 /**
- * 农业地图纯仿真（无 DOM / 背包 / 金钱）。由 tools/build-agriculture-map-js.mjs 从 agriculture-standalone 生成。
- * 改规则：先改 standalone 内联脚本，再 node tools/build-agriculture-map-js.mjs
+ * 农业地图纯仿真（无 DOM / 背包 / 金钱），运行时规则的权威来源。
+ * 改规则：更新本模块并运行农业验收；离线 Demo 只作展示，不是运行时规则来源。
  */
 (function (global) {
   'use strict';
@@ -32,9 +32,6 @@
       var POOL_X = 0;
       var POOL_Y = 0;
       var BASE_POOL_WATER = 200;
-      /** 每 tick 天气：相对基准池水的随机倍率区间 [0.7, 1.3]（±30%） */
-      var POOL_WEATHER_FACTOR_MIN = 0.7;
-      var POOL_WEATHER_FACTOR_MAX = 1.3;
       var DEFAULT_CHANNEL_CAPACITY = 2;
       var CHANNEL_CAPACITY_STEP = 2;
       var CHANNEL_CAPACITY_CHANGE_COST = 5;
@@ -63,11 +60,17 @@
        */
       var SUPER_FUSION_POWER_DRAIN_PER_TICK = 1;
       var AGRICULTURE_POWER_START = 500;
-      /** §2.2d 文丘里等级与设定浓度 */
+      /** 文丘里等级现在控制整台设备的总输出和储槽容量。 */
       var VENTURI_MAX_LEVEL = 3;
       var VENTURI_UPGRADE_COST_MONEY = 5;
-      var VENTURI_CONC_RANGE_BY_LEVEL = { 1: { min: 5, max: 10 }, 2: { min: 3, max: 15 }, 3: { min: 1, max: 20 } };
-      var VENTURI_DEFAULT_SET_CONC = 7;
+      var VENTURI_OUTPUT_BY_LEVEL = { 1: 6, 2: 12, 3: 18 };
+      var VENTURI_BOTTLE_CAPACITY_BY_LEVEL = { 1: 2, 2: 3, 3: 4 };
+      var VENTURI_CONC_RANGE_BY_LEVEL = { 1: { min: 0, max: 6 }, 2: { min: 0, max: 12 }, 3: { min: 0, max: 18 } };
+      var VENTURI_DEFAULT_SET_CONC = 0;
+      var SEAWEED_NUTRIENT_PER_BOTTLE = 2400;
+      var JAR_BOTTLE_CAPACITY = 2;
+      var JAR_OUTPUT_MAX = 3.75;
+      var JAR_OUTPUT_STEP = 0.05;
       /** 文丘里海藻精输送：A面=检测作物请求；B面=有水+海藻精即维持（见 §15.6） */
       var VENTURI_SEAWEED_LOGIC_A = "a";
       var VENTURI_SEAWEED_LOGIC_B = "b";
@@ -80,16 +83,19 @@
        * @type {Record<string, { name: string, injectFacility: string, fertilizerPerTick?: number, effectDurationTicks?: number }>}
        */
       var AGRICULTURE_INJECTABLE_LIQUIDS = {
-        liquid_fertilizer_n: { name: "液态氮肥", injectFacility: "buried_pot_jar", fertilizerPerTick: 0.5 },
-        liquid_seaweed_extract: { name: "海藻精", injectFacility: "venturi_fertilizer", effectDurationTicks: 5000 }
+        fertilizer_basic_low: { name: "fertilizer_basic_low", injectFacility: "buried_pot_jar", nutrientPerBottle: 700 },
+        fertilizer_basic: { name: "fertilizer_basic", injectFacility: "buried_pot_jar", nutrientPerBottle: 1000 },
+        fertilizer_compost_plus: { name: "fertilizer_compost_plus", injectFacility: "buried_pot_jar", nutrientPerBottle: 1500 },
+        liquid_fertilizer_n: { name: "液态氮肥", injectFacility: "buried_pot_jar", nutrientPerBottle: 1000 },
+        liquid_seaweed_extract: { name: "海藻精", injectFacility: "venturi_fertilizer", nutrientPerBottle: SEAWEED_NUTRIENT_PER_BOTTLE }
       };
       var VENTURI_INJECTABLE_LIQUIDS = AGRICULTURE_INJECTABLE_LIQUIDS;
       var DEFAULT_SOIL_TYPE = "盐碱土";
       var DEFAULT_SOIL_ID = "soil_saline_alkali";
       
       var INITIAL_MONEY = 500;
-      /** 水池等级：L2 窃流；L3 蓄水池；L4 cap4+溢流回蓄（§8.4～8.6） */
-      var POOL_MAX_LEVEL = 4;
+      /** 水池为固定水源；旧升级字段只在迁移时清理。 */
+      var POOL_MAX_LEVEL = 1;
       var POOL_UPGRADE_COST_BY_LEVEL = { 2: 100, 3: 200, 4: 350 };
       var THEFT_TRANSFER_CAP_BY_POOL_LEVEL = { 1: 0, 2: 2, 3: 2, 4: 4 };
       var POOL_RESERVOIR_CAPACITY_MAX = 50000;
@@ -106,6 +112,8 @@
       var TICK_MS = 1000;
       var DEFAULT_CROP_HEALTH_MAX = 100;
       var CROP_DEFS = {};
+      var LEGACY_CROP_DEFS = {};
+      var CROP_RESULT_LABELS = {};
       var CROP_DEF_BY_SEED = {};
       var CROP_DEFS_LOADED = false;
       var SOIL_DEFS = {};
@@ -171,8 +179,26 @@
         return demoSellPriceFromShop(shopPrice, DEMO_SELL_PRICE_RULE.crop_ratio);
       }
 
+      // Legacy crops finish their existing season; new crops use duration-scaled requirements.
+      function getCropDefForInstance(crop) {
+        if (!crop) return null;
+        var def = (!crop.balanceRevision && LEGACY_CROP_DEFS[crop.cropId]) || CROP_DEFS[crop.cropId];
+        if (!def || !crop.balanceRevision) return def;
+        var ratio = (crop.totalTicks || def.growthTicks) / def.growthTicks;
+        if (ratio === 1) return def;
+        var out = Object.assign({}, def);
+        ['minWater','maxWater','perfectMinWater','perfectMaxWater','waterlogged_above',
+         'minTrace','maxTrace','perfectMinTrace','perfectMaxTrace','trace_safe_max','trace_lethal_at','trace_fail_harvest_at',
+         'minFertilizer','maxFertilizer','perfectMinFertilizer','perfectMaxFertilizer'].forEach(function (key) {
+          if (def[key] != null) out[key] = round1(def[key] * ratio);
+        });
+        return out;
+      }
+
       function applyCropDefs(doc) {
         CROP_DEFS = (doc && doc.crops) ? doc.crops : {};
+        LEGACY_CROP_DEFS = (doc && doc.legacy_crops) || {};
+        CROP_RESULT_LABELS = (doc && doc.result_labels) || {};
         CROP_DEF_BY_SEED = {};
         for (var cid in CROP_DEFS) {
           if (!Object.prototype.hasOwnProperty.call(CROP_DEFS, cid)) continue;
@@ -287,7 +313,7 @@
           for (var x = 0; x < SIZE; x++) {
             var c = cell(st, x, y);
             if (!c.crop || c.crop.settled) continue;
-            var def = CROP_DEFS[c.crop.cropId];
+            var def = getCropDefForInstance(c.crop);
             if (!def) continue;
             var newTotal = resolveCropGrowthTicks(c, def, st);
             var oldTotal = c.crop.totalTicks || def.growthTicks;
@@ -325,7 +351,7 @@
             var c = cell(state, x, y);
             if (!c.crop || c.crop.settled) continue;
             var crop = c.crop;
-            var def = CROP_DEFS[crop.cropId];
+            var def = getCropDefForInstance(crop);
             if (!def) continue;
             var effectId = getPlotSoilEffectId(c, state);
             if (effectId === "humus_bank" && cropDefRequestsLiquidFertilizer(def) && !crop.jarFertThisTick) {
@@ -398,6 +424,7 @@
 
       function keyOf(x, y) { return x + "," + y; }
       function round1(n) { return Math.round((n || 0) * 10) / 10; }
+      function roundNutrient(n) { return Math.round((Number(n) || 0) * 1000) / 1000; }
       function inBounds(x, y) { return x >= 0 && x < SIZE && y >= 0 && y < SIZE; }
 
       function venturiConcRangeForLevel(level) {
@@ -422,6 +449,12 @@
           c.seaweedSetConcentration = c.venturiSetConc;
         }
         c.seaweedSetConcentration = clampVenturiSetConc(c.venturiLevel, c.seaweedSetConcentration);
+        if (c.seaweedManualConcentration == null) {
+          c.seaweedManualConcentration = c.venturiSetConc != null
+            ? Number(c.venturiSetConc)
+            : Number(c.seaweedSetConcentration);
+        }
+        c.seaweedManualConcentration = clampVenturiSetConc(c.venturiLevel, c.seaweedManualConcentration);
         delete c.venturiSetConc;
       }
 
@@ -494,7 +527,7 @@
       function applyTraceSensitivityToPlot(state, x, y) {
         var c = cell(state, x, y);
         if (!c.crop || c.crop.settled) return;
-        var def = CROP_DEFS[c.crop.cropId];
+        var def = getCropDefForInstance(c.crop);
         var sens = cropTraceSensitivity(def);
         if (!sens) return;
         var trace = round1(c.crop.traceAbsorbed || 0);
@@ -587,7 +620,7 @@
           if (maxT !== Infinity) maxT = round1(maxT + spanT * 0.1);
         }
         if (trace >= minT && trace <= maxT) return 2;
-        return 1;
+        return !def.balance_revision || trace > 0 ? 1 : 0;
       }
 
       function fertScoreParticipates(def) {
@@ -605,7 +638,7 @@
           if (maxF !== Infinity) maxF = round1(maxF + spanF * 0.1);
         }
         if (fert >= minF && fert <= maxF) return 2;
-        return 1;
+        return !def.balance_revision || fert > 0 ? 1 : 0;
       }
 
       function soilScoreParticipates(def) {
@@ -730,7 +763,7 @@
         if (!entry || !inBounds(entry.x, entry.y)) return false;
         var c = cell(state, entry.x, entry.y);
         if (!c.crop) return false;
-        var def = CROP_DEFS[c.crop.cropId];
+        var def = getCropDefForInstance(c.crop);
         if (!cropDefRequestsLiquidFertilizer(def)) return false;
         if (!hasAdjacentBuriedPotJar(state, entry.x, entry.y)) return false;
         return true;
@@ -746,7 +779,7 @@
       function registerPlotFertilizerRequestsIfEligible(state, x, y) {
         var c = cell(state, x, y);
         if (!c.crop) return;
-        var def = CROP_DEFS[c.crop.cropId];
+        var def = getCropDefForInstance(c.crop);
         if (!cropDefRequestsLiquidFertilizer(def)) return;
         if (!hasAdjacentBuriedPotJar(state, x, y)) return;
         ensureFertilizerRequestsState(state);
@@ -816,7 +849,7 @@
         if (!entry || !inBounds(entry.x, entry.y)) return false;
         var c = cell(state, entry.x, entry.y);
         if (!c.crop) return false;
-        var def = CROP_DEFS[c.crop.cropId];
+        var def = getCropDefForInstance(c.crop);
         if (!cropDefRequestsSeaweedExtract(def)) return false;
         if (!hasAdjacentWetChannel(state, entry.x, entry.y)) return false;
         if (!getIrrigationSourceForPlot(state, entry.x, entry.y)) return false;
@@ -842,7 +875,7 @@
       function registerPlotSeaweedRequestsIfEligible(state, x, y) {
         var c = cell(state, x, y);
         if (!c.crop) return;
-        var def = CROP_DEFS[c.crop.cropId];
+        var def = getCropDefForInstance(c.crop);
         if (!cropDefRequestsSeaweedExtract(def)) return;
         if (!hasAdjacentWetChannel(state, x, y)) return;
         var source = getIrrigationSourceForPlot(state, x, y);
@@ -900,8 +933,7 @@
       function isSeaweedEffectVenturi(c) {
         if (!isVenturiCell(c) || !c.venturiLiquid) return false;
         if (c.venturiLiquid.itemId !== LIQUID_SEAWEED_EXTRACT_ITEM_ID) return false;
-        if (c.venturiLiquid.effectTicksRemaining == null || c.venturiLiquid.effectTicksRemaining <= 0) return false;
-        return true;
+        return (Number(c.venturiLiquid.nutrientRemaining) || 0) > 0;
       }
 
       function flowKindKey(flow) {
@@ -1063,23 +1095,82 @@
           var ey = vy + DIRS[i].dy;
           if (!inBounds(ex, ey)) continue;
           if (!channelBelongsToFlow(state, ex, ey, flow)) continue;
-          var reachCrop = request
-            ? canReachCropOnFlow(state, flow, ex, ey, request.x, request.y)
-            : false;
-          var reachEnd = canReachFlowEndpointOnFlow(state, flow, ex, ey);
-          if (reachCrop || reachEnd) return { entryX: ex, entryY: ey, dirIndex: i };
+          if (request) {
+            var source = getIrrigationSourceForPlot(state, request.x, request.y);
+            if (!source || source.kind !== "channel") continue;
+            var covered = getPostEntryWetCells(state, flow, ex, ey);
+            var sourceCovered = false;
+            for (var ci = 0; ci < covered.length; ci++) {
+              if (covered[ci].x === source.x && covered[ci].y === source.y) { sourceCovered = true; break; }
+            }
+            if (!sourceCovered || !canReachCropOnFlow(state, flow, ex, ey, request.x, request.y)) continue;
+            return { entryX: ex, entryY: ey, dirIndex: i, source: source, cells: covered };
+          }
+          if (canReachFlowEndpointOnFlow(state, flow, ex, ey)) {
+            return { entryX: ex, entryY: ey, dirIndex: i };
+          }
         }
         return null;
       }
 
       function pickFirstReachableRequestForFlow(state, vx, vy, flow) {
         var list = getSeaweedRequestListForFlow(state, flow);
+        var candidates = [];
         for (var i = 0; i < list.length; i++) {
           var e = list[i];
           if (!isSeaweedRequestEntryStillValid(state, e)) continue;
-          if (pickInjectionForFlow(state, vx, vy, flow, e)) return e;
+          var injection = pickInjectionForFlow(state, vx, vy, flow, e);
+          if (!injection || !injection.source) continue;
+          candidates.push({ request: e, injection: injection, distance: actualWetDistanceToPool(state, injection.source) });
         }
-        return null;
+        if (!candidates.length) return null;
+        var cacheKey = keyOf(vx, vy) + ":" + flowKindKey(flow);
+        var incumbent = state.seaweedRequestCache && state.seaweedRequestCache[cacheKey];
+        candidates.sort(function (a, b) {
+          if (a.distance !== b.distance) return a.distance - b.distance;
+          var ai = incumbent && a.request.x === incumbent.x && a.request.y === incumbent.y;
+          var bi = incumbent && b.request.x === incumbent.x && b.request.y === incumbent.y;
+          if (ai !== bi) return ai ? -1 : 1;
+          if (a.request.x !== b.request.x) return a.request.x - b.request.x;
+          return a.request.y - b.request.y;
+        });
+        if (!state.seaweedRequestCache) state.seaweedRequestCache = {};
+        state.seaweedRequestCache[cacheKey] = { x: candidates[0].request.x, y: candidates[0].request.y };
+        return candidates[0];
+      }
+
+      function actualWetDistanceToPool(state, source) {
+        if (!source) return 9999;
+        if (source.kind === "pool") return 0;
+        var cur = keyOf(source.x, source.y);
+        var poolKey = keyOf(POOL_X, POOL_Y);
+        var seen = {}, distance = 0;
+        while (cur !== poolKey && distance <= SIZE * SIZE) {
+          if (seen[cur]) return 9999;
+          seen[cur] = true;
+          var p = decodeKey(cur), cc = cell(state, p.x, p.y);
+          if (!cc || (Number(cc.water) || 0) <= 0 || !cc.sourceParent) return 9999;
+          cur = cc.sourceParent;
+          distance += 1;
+        }
+        return cur === poolKey ? distance : 9999;
+      }
+
+      function seaweedTargetForRequest(state, request) {
+        var plot = request && cell(state, request.x, request.y);
+        if (!plot || !plot.crop) return 0;
+        var def = getCropDefForInstance(plot.crop);
+        var idealMin = Number(def && def.perfectMinTrace);
+        if (!(idealMin > 0)) idealMin = Number(def && def.minTrace);
+        if (!(idealMin > 0)) return 0;
+        var ticks = Math.max(1, Number(plot.crop.totalTicks) || Number(def.growthTicks) || 1);
+        var desiredAbsorption = idealMin / ticks;
+        for (var supply = 0.05; supply <= 100; supply += 0.05) {
+          if (resolveAbsorptionAmount(plot, "trace", supply, def, state) + 1e-9 >= desiredAbsorption) {
+            return Math.round(supply * 100) / 100;
+          }
+        }
+        return 100;
       }
 
       function indexOnFlowPath(path, x, y) {
@@ -1172,7 +1263,7 @@
       /**
        * §15.1～§15.4（A面）/ §15.6（B面）：海藻精渠内维持与浓度均分（每 tick 全量刷新，多来源相加）
        */
-      function processSeaweedExtractMaintain(state) {
+      function processSeaweedExtractMaintain(state, inspection) {
         clearAllChannelSeaweedConcentration(state);
         var perCellBySource = {};
         var logicMode = getVenturiSeaweedLogicMode(state);
@@ -1188,31 +1279,62 @@
             if (!attribution) continue;
 
             var flowsToRun = getFlowsToMaintainForVenturi(state, attribution);
-            var setConc = getSeaweedSetConcentration(vc);
             var venturiSourcePrefix = keyOf(vx, vy);
+            var desiredByCell = {};
+            var flowPlans = [];
 
             for (var fi = 0; fi < flowsToRun.length; fi++) {
               var flow = flowsToRun[fi];
               var injection;
+              var request = null;
+              var target = 0;
               if (sideB) {
                 injection = pickInjectionForFlow(state, vx, vy, flow, null);
+                target = Number(vc.seaweedManualConcentration) || 0;
               } else {
-                var request = pickFirstReachableRequestForFlow(state, vx, vy, flow);
-                if (!request) continue;
-                injection = pickInjectionForFlow(state, vx, vy, flow, request);
+                var picked = pickFirstReachableRequestForFlow(state, vx, vy, flow);
+                if (!picked) continue;
+                request = picked.request;
+                injection = picked.injection;
+                target = seaweedTargetForRequest(state, request);
               }
-              if (!injection) continue;
+              if (!injection || !(target > 0)) continue;
 
-              var distCells = dedupeCoordCells(getPostEntryWetCells(state, flow, injection.entryX, injection.entryY));
+              var distCells = dedupeCoordCells(injection.cells || getPostEntryWetCells(state, flow, injection.entryX, injection.entryY));
               if (!distCells.length) continue;
-
-              var share = setConc / distCells.length;
-              var sourceId = venturiSourcePrefix + ":" + flowKindKey(flow);
-
               for (var di = 0; di < distCells.length; di++) {
                 var dk = keyOf(distCells[di].x, distCells[di].y);
-                if (!perCellBySource[dk]) perCellBySource[dk] = {};
-                perCellBySource[dk][sourceId] = round1(share);
+                desiredByCell[dk] = Math.max(Number(desiredByCell[dk]) || 0, target);
+              }
+              flowPlans.push({ device: { x: vx, y: vy }, flow: flow, request: request,
+                entry: { x: injection.entryX, y: injection.entryY }, cells: distCells, target: target });
+            }
+
+            var requestedTotal = 0;
+            for (var desiredKey in desiredByCell) {
+              if (Object.prototype.hasOwnProperty.call(desiredByCell, desiredKey)) requestedTotal += desiredByCell[desiredKey];
+            }
+            var outputCap = VENTURI_OUTPUT_BY_LEVEL[Number(vc.venturiLevel) || 1] || VENTURI_OUTPUT_BY_LEVEL[1];
+            var stock = Number(vc.venturiLiquid && vc.venturiLiquid.nutrientRemaining) || 0;
+            var actualTotal = Math.min(requestedTotal, outputCap, stock);
+            var scale = requestedTotal > 0 ? actualTotal / requestedTotal : 0;
+            if (actualTotal > 0) {
+              vc.venturiLiquid.nutrientRemaining = roundNutrient(Math.max(0, stock - actualTotal));
+              if (vc.venturiLiquid.nutrientRemaining <= 0) vc.venturiLiquid = null;
+            }
+            for (var actualKey in desiredByCell) {
+              if (!Object.prototype.hasOwnProperty.call(desiredByCell, actualKey)) continue;
+              if (!perCellBySource[actualKey]) perCellBySource[actualKey] = {};
+              perCellBySource[actualKey][venturiSourcePrefix] = desiredByCell[actualKey] * scale;
+            }
+            if (inspection) {
+              for (var fp = 0; fp < flowPlans.length; fp++) {
+                flowPlans[fp].share = roundNutrient(flowPlans[fp].target * scale);
+                flowPlans[fp].requestedTotal = roundNutrient(requestedTotal);
+                flowPlans[fp].actualTotal = roundNutrient(actualTotal);
+                flowPlans[fp].outputCap = outputCap;
+                flowPlans[fp].nutrientRemaining = roundNutrient(Math.max(0, stock - actualTotal));
+                inspection.push(flowPlans[fp]);
               }
             }
           }
@@ -1228,7 +1350,7 @@
           }
           var pt = decodeKey(ck);
           var ch = cell(state, pt.x, pt.y);
-          if (isChannelCell(ch)) ch.seaweedConcentration = round1(sum);
+          if (isChannelCell(ch)) ch.seaweedConcentration = roundNutrient(sum);
         }
       }
 
@@ -1271,7 +1393,9 @@
               sourceParent: null,
               venturiLiquid: null,
               venturiLevel: 1,
-              seaweedSetConcentration: VENTURI_DEFAULT_SET_CONC
+              seaweedSetConcentration: VENTURI_DEFAULT_SET_CONC,
+              seaweedManualConcentration: VENTURI_DEFAULT_SET_CONC,
+              jarReleaseRate: 0
             });
           }
           map.push(row);
@@ -1291,18 +1415,14 @@
           seaweedRequests: { mainstream: [], byBranch: {} },
           /** §4b.1f 液态肥请求登记（埋地陶瓮八邻） */
           fertilizerRequests: [],
-          pool_level: 1,
-          last_pool_weather_factor: 1,
-          pool_theft: { enabled: false, victim_branch_index: 1, gain_branch_index: 2 },
-          pool_reservoir: { stored: 0, capacity_max: POOL_RESERVOIR_CAPACITY_MAX },
-          last_branch_theft_moved: 0,
-          last_theft_overflow_to_reservoir: 0,
+          agricultureSupplyVersion: 2,
+          seaweedRequestCache: {},
           map: map
         };
       }
 
       function getPoolLevel(state) {
-        return Math.max(1, Math.min(POOL_MAX_LEVEL, Math.floor(Number(state.pool_level) || 1)));
+        return 1;
       }
 
       function getTheftTransferCap(poolLevel) {
@@ -1336,42 +1456,10 @@
         return POOL_WEATHER_FACTOR_MIN + Math.random() * span;
       }
 
-      /** §8.5 步骤 0：本 tick 天气浮动（±30%）+ 蓄水池（L3+） */
+      /** 固定水源：每 tick 都从同一 200 点预算开始。 */
       function applyPoolWeatherStep0(state) {
-        var B = BASE_POOL_WATER;
-        var factor = rollPoolWeatherFactor();
-        var E = round1(B * factor);
-        state.last_pool_weather_factor = round1(factor * 1000) / 1000;
-        state.poolCurrent = E;
-        if (getPoolLevel(state) < 3) {
-          state.basePoolWater = E;
-          return;
-        }
-        if (!state.pool_reservoir) {
-          state.pool_reservoir = { stored: 0, capacity_max: POOL_RESERVOIR_CAPACITY_MAX };
-        }
-        var res = state.pool_reservoir;
-        var Cap = poolReservoirCapacityMax(state);
-        var R = round1(res.stored || 0);
-        state.last_reservoir_day_surplus = 0;
-        state.last_reservoir_day_draw = 0;
-        if (E > B) {
-          var surplus = round1(E - B);
-          var room = round1(Math.max(0, Cap - R));
-          var add = round1(Math.min(surplus, room));
-          res.stored = round1(R + add);
-          state.last_reservoir_day_surplus = add;
-          state.basePoolWater = B;
-        } else if (E < B) {
-          var deficit = round1(B - E);
-          var draw = round1(Math.min(deficit, res.stored || 0));
-          res.stored = round1(Math.max(0, (res.stored || 0) - draw));
-          state.last_reservoir_day_draw = draw;
-          state.basePoolWater = round1(E + draw);
-        } else {
-          state.basePoolWater = B;
-        }
-        state.pool_reservoir = res;
+        state.basePoolWater = BASE_POOL_WATER;
+        state.poolCurrent = BASE_POOL_WATER;
       }
 
       function forEachBranchChannelCell(state, branchIndex, fn) {
@@ -1639,11 +1727,13 @@
         return c.kind === "land" && c.tilled && hasCropStructure(c) && !c.crop;
       }
       function isAgricultureInjectableItemId(itemId) {
-        return !!(itemId && AGRICULTURE_INJECTABLE_LIQUIDS[itemId]);
+        return !!injectableMeta(itemId);
       }
       function isVenturiInjectableItemId(itemId) { return isAgricultureInjectableItemId(itemId); }
       function injectableMeta(itemId) {
-        return itemId ? AGRICULTURE_INJECTABLE_LIQUIDS[itemId] : null;
+        if (!itemId) return null;
+        var resolved = envCtx.resolveInjectParams && envCtx.resolveInjectParams(itemId);
+        return resolved || AGRICULTURE_INJECTABLE_LIQUIDS[itemId] || null;
       }
       function isInjectableForFacility(itemId, facilityKind) {
         var meta = injectableMeta(itemId);
@@ -1651,21 +1741,23 @@
       }
       function venturiInjectMeta(itemId) { return injectableMeta(itemId); }
       function injectableIsTimedEffectItem(itemId) {
-        var meta = injectableMeta(itemId);
-        return !!(meta && meta.injectFacility === "venturi_fertilizer" && meta.effectDurationTicks > 0);
+        return false;
       }
       function venturiIsTimedEffectItem(itemId) { return injectableIsTimedEffectItem(itemId); }
       function facilityLiquidIsActive(vl) {
         if (!vl) return false;
-        if (vl.effectTicksRemaining != null) return vl.effectTicksRemaining > 0;
-        return !!(vl.units && vl.units > 0);
+        return (Number(vl.nutrientRemaining) || 0) > 0;
       }
       function venturiLiquidIsActive(vl) { return facilityLiquidIsActive(vl); }
       function getInjectableFertilizerPerTick(itemId) {
         if (!isInjectableForFacility(itemId, "buried_pot_jar")) return 0;
+        return JAR_OUTPUT_MAX;
+      }
+      function getInjectableNutrientPerBottle(itemId) {
         var meta = injectableMeta(itemId);
-        var v = meta && meta.fertilizerPerTick;
-        return v != null && v > 0 ? Number(v) : 0;
+        var v = meta && meta.nutrientPerBottle;
+        if (!(v > 0) && itemId === LIQUID_SEAWEED_EXTRACT_ITEM_ID) v = SEAWEED_NUTRIENT_PER_BOTTLE;
+        return v > 0 ? Number(v) : 0;
       }
       function listInjectableItemIdsForFacility(facilityKind) {
         var ids = [];
@@ -1679,12 +1771,8 @@
         if (!vl || !facilityLiquidIsActive(vl)) return "空罐";
         var meta = injectableMeta(vl.itemId);
         var nm = vl.name || (meta && meta.name) || vl.itemId;
-        if (vl.effectTicksRemaining != null) {
-          var max = vl.effectDurationTicks || (meta && meta.effectDurationTicks) || 0;
-          return nm + " 生效中 " + vl.effectTicksRemaining + " / " + max + " tick · 渠内浓度→微量元素";
-        }
-        var fert = getInjectableFertilizerPerTick(vl.itemId);
-        return nm + " ×" + vl.units + " 单位 · 八邻→施肥值+" + fert + "/tick";
+        return nm + " · 剩余养分 " + roundNutrient(vl.nutrientRemaining) +
+          (vl.outputRate != null ? " · 设定 " + Number(vl.outputRate).toFixed(2) + "/tick" : "");
       }
       function formatVenturiLiquidText(vl) { return formatFacilityLiquidText(vl); }
       function getFacilityLiquidOnCell(c) {
@@ -1697,15 +1785,7 @@
         else if (isBuriedPotJarCell(c)) c.jarLiquid = vl;
       }
       function processFacilityTimedEffects(state) {
-        for (var y = 0; y < SIZE; y++) {
-          for (var x = 0; x < SIZE; x++) {
-            var c = cell(state, x, y);
-            var liq = getFacilityLiquidOnCell(c);
-            if (!liq || liq.effectTicksRemaining == null) continue;
-            liq.effectTicksRemaining -= 1;
-            if (liq.effectTicksRemaining <= 0) setFacilityLiquidOnCell(c, null);
-          }
-        }
+        // v2 物料按实际输出消耗，不再按时间腐败或倒计时。
       }
       function processVenturiTimedEffects(state) { processFacilityTimedEffects(state); }
 
@@ -1996,16 +2076,17 @@
           if (isPoolCell(c)) water = state.poolCurrent;
           else if (isChannelCell(c)) water = c.water;
           if (water <= 0) return;
-          candidates.push({
+          var candidate = {
             x: nx,
             y: ny,
             water: water,
             height: c.height,
-            dist: (isPoolCell(c) ? 0 : shortestPathLenToPool(state, { x: nx, y: ny })),
             kind: c.kind,
             isTrunk: !!c.isTrunk,
             branchIndex: c.branchIndex
-          });
+          };
+          candidate.dist = actualWetDistanceToPool(state, candidate);
+          candidates.push(candidate);
         });
         if (!candidates.length) return null;
         candidates.sort(function (a, b) {
@@ -2062,7 +2143,6 @@
         applyPoolWeatherStep0(state);
         if (state.trunkPath && state.branches) {
           allocateWater(state, state.trunkPath, state.branches);
-          applyBranchTheft(state);
         }
       }
 
@@ -2119,7 +2199,7 @@
             if (!c.crop) continue;
             var source = getIrrigationSourceForPlot(state, x, y);
             if (source) {
-              var plotDef = CROP_DEFS[c.crop.cropId];
+              var plotDef = getCropDefForInstance(c.crop);
               var dw = resolveAbsorptionAmount(c, "water", source.water, plotDef, state);
               if (dw > 0) {
                 c.crop.waterAbsorbed = round1(c.crop.waterAbsorbed + dw);
@@ -2146,30 +2226,36 @@
             if (!isBuriedPotJarCell(jar)) continue;
             var liq = jar.jarLiquid;
             if (!facilityLiquidIsActive(liq)) continue;
-            var perTick = getInjectableFertilizerPerTick(liq.itemId);
-            if (!(perTick > 0)) continue;
-            var appliedAny = false;
+            var release = Math.min(JAR_OUTPUT_MAX, Math.max(0, Number(jar.jarReleaseRate) || Number(liq.outputRate) || 0));
+            var stock = Number(liq.nutrientRemaining) || 0;
+            if (!(release > 0) || !(stock > 0)) continue;
+            var targets = [];
             forEachNeighbor8(x, y, function (nx, ny) {
               var plot = cell(state, nx, ny);
               if (plot.kind !== "land" || !plot.crop || plot.crop.settled) return;
-              var plotDef = CROP_DEFS[plot.crop.cropId];
+              var plotDef = getCropDefForInstance(plot.crop);
               if (!cropDefRequestsLiquidFertilizer(plotDef)) return;
               if (applyGrowingCropHealthDeath(plot)) {
                 syncPlotSeaweedRequests(state, nx, ny);
                 syncPlotFertilizerRequests(state, nx, ny);
               }
               if (!plot.crop || plot.crop.settled) return;
-              var fertAmt = resolveAbsorptionAmount(plot, "fertilizer", perTick, plotDef, state);
-              if (!(fertAmt > 0)) return;
+              targets.push({ x: nx, y: ny, plot: plot, def: plotDef });
+            });
+            if (!targets.length) continue;
+            var actualOutput = Math.min(release, stock);
+            var rawShare = actualOutput / targets.length;
+            for (var ti = 0; ti < targets.length; ti++) {
+              var targetRow = targets[ti];
+              var fertAmt = resolveAbsorptionAmount(targetRow.plot, "fertilizer", rawShare, targetRow.def, state);
+              if (!(fertAmt > 0)) continue;
+              var plot = targetRow.plot;
               plot.crop.fertilizerAbsorbed = round1((plot.crop.fertilizerAbsorbed || 0) + fertAmt);
               plot.crop.jarFertThisTick = true;
-              appliedAny = true;
-            });
-            if (liq.effectTicksRemaining != null) continue;
-            if (liq.units && appliedAny) {
-              liq.units -= 1;
-              if (liq.units <= 0) jar.jarLiquid = null;
             }
+            liq.nutrientRemaining = roundNutrient(Math.max(0, stock - actualOutput));
+            liq.outputRate = release;
+            if (liq.nutrientRemaining <= 0) jar.jarLiquid = null;
           }
         }
       }
@@ -2186,11 +2272,10 @@
             if (!source) continue;
             var absorbed = getSeaweedConcentrationFromIrrigationSource(state, source);
             if (!(absorbed > 0)) continue;
-            var plotDef = CROP_DEFS[c.crop.cropId];
+            var plotDef = getCropDefForInstance(c.crop);
             var dTrace = resolveAbsorptionAmount(c, "trace", absorbed, plotDef, state);
             if (!(dTrace > 0)) continue;
             c.crop.traceAbsorbed = round1((c.crop.traceAbsorbed || 0) + dTrace);
-            applyTraceSensitivityToPlot(state, x, y);
           }
         }
       }
@@ -2222,7 +2307,7 @@
       function settleCrop(st, c) {
         var crop = c.crop;
         if (!crop || crop.settled) return;
-        var def = CROP_DEFS[crop.cropId];
+        var def = getCropDefForInstance(crop);
         var water = crop.waterAbsorbed;
         crop.remainingTicks = 0;
         crop.settled = true;
@@ -2241,6 +2326,26 @@
         ) {
           crop.result = "trace_toxic";
           crop.resultLabel = "微量过剩·盐害灼伤落果";
+          crop.harvestCount = 0;
+        } else if (def.minFertilizer != null && (crop.fertilizerAbsorbed || 0) < def.minFertilizer) {
+          crop.result = "nutrient_deficient";
+          crop.resultLabel = CROP_RESULT_LABELS[crop.result] || crop.result;
+          crop.resultLabelKey = "agriculture.result." + crop.result;
+          crop.harvestCount = 0;
+        } else if (def.maxFertilizer != null && (crop.fertilizerAbsorbed || 0) > def.maxFertilizer) {
+          crop.result = "fertilizer_excess";
+          crop.resultLabel = CROP_RESULT_LABELS[crop.result] || crop.result;
+          crop.resultLabelKey = "agriculture.result." + crop.result;
+          crop.harvestCount = 0;
+        } else if (def.minTrace != null && (crop.traceAbsorbed || 0) < def.minTrace) {
+          crop.result = "trace_deficient";
+          crop.resultLabel = CROP_RESULT_LABELS[crop.result] || crop.result;
+          crop.resultLabelKey = "agriculture.result." + crop.result;
+          crop.harvestCount = 0;
+        } else if (def.maxTrace != null && (crop.traceAbsorbed || 0) > def.maxTrace) {
+          crop.result = "trace_toxic";
+          crop.resultLabel = CROP_RESULT_LABELS[crop.result] || crop.result;
+          crop.resultLabelKey = "agriculture.result." + crop.result;
           crop.harvestCount = 0;
         } else {
           var yieldResult = computeGrowthYield(def, c, crop, st);
@@ -2308,6 +2413,7 @@
         var growTicks = resolveCropGrowthTicks(c, def, st);
         c.crop = {
           cropId: def.cropId,
+          balanceRevision: def.balance_revision || 2,
           name: def.name,
           remainingTicks: growTicks,
           totalTicks: growTicks,
@@ -2435,6 +2541,7 @@
           c.venturiLiquid = null;
           c.venturiLevel = 1;
           c.seaweedSetConcentration = VENTURI_DEFAULT_SET_CONC;
+          c.seaweedManualConcentration = VENTURI_DEFAULT_SET_CONC;
           ensureVenturiCellFields(c);
         } else if (task.type === 'remove_venturi') {
           c.venturiLiquid = null;
@@ -2452,6 +2559,7 @@
           c.seaweedConcentration = 0;
           c.algaeBloom = false;
           c.jarLiquid = null;
+          c.jarReleaseRate = 0;
           syncFertilizerRequestsNearBuriedJar(st, task.x, task.y);
         } else if (task.type === 'remove_buried_pot_jar') {
           c.jarLiquid = null;
@@ -2491,6 +2599,7 @@
 
       function runAgricultureMapTick(state, env) {
         bindEnv(env);
+        normalizeAgricultureSupplyState(state);
         var poweredBefore = isSuperFusionPowered(state);
         runAgricultureMapTickCore(state);
         // 45 §四·农业电力：每 tick 末扣电——有供电超融合在场 1/tick，扣到 0（耗尽 → 下一 tick 起 gate 关）
@@ -2575,25 +2684,46 @@
         c.venturiLiquid = null;
         c.venturiLevel = 1;
         c.seaweedSetConcentration = VENTURI_DEFAULT_SET_CONC;
+        c.seaweedManualConcentration = VENTURI_DEFAULT_SET_CONC;
         ensureVenturiCellFields(c);
         return { ok: true };
       }
 
       function tryInjectSeaweedEffectAt(state, env, x, y) {
         bindEnv(env);
+        return tryLoadFacilityBottleAt(state, x, y, "venturi_fertilizer", LIQUID_SEAWEED_EXTRACT_ITEM_ID);
+      }
+
+      function tryLoadFacilityBottleAt(state, x, y, facilityKind, itemId) {
         if (!inBounds(x, y)) return { ok: false, reason: 'out_of_bounds' };
         var c = cell(state, x, y);
-        if (!isVenturiCell(c)) return { ok: false, reason: 'not_venturi' };
-        var meta = injectableMeta(LIQUID_SEAWEED_EXTRACT_ITEM_ID);
-        if (!meta || !meta.effectDurationTicks) return { ok: false, reason: 'no_inject_meta' };
-        var dur = meta.effectDurationTicks;
-        c.venturiLiquid = {
-          itemId: LIQUID_SEAWEED_EXTRACT_ITEM_ID,
-          name: meta.name,
-          effectDurationTicks: dur,
-          effectTicksRemaining: dur
-        };
-        return { ok: true };
+        if (!c || c.kind !== facilityKind) return { ok: false, reason: 'wrong_facility' };
+        if (!isInjectableForFacility(itemId, facilityKind)) return { ok: false, reason: 'not_injectable' };
+        var perBottle = getInjectableNutrientPerBottle(itemId);
+        if (!(perBottle > 0)) return { ok: false, reason: 'no_nutrient_value' };
+        var current = getFacilityLiquidOnCell(c);
+        if (current && current.itemId !== itemId && (Number(current.nutrientRemaining) || 0) > 0) {
+          return { ok: false, reason: 'jar_mixed_liquid' };
+        }
+        var bottleCapacity = isVenturiCell(c)
+          ? (VENTURI_BOTTLE_CAPACITY_BY_LEVEL[Number(c.venturiLevel) || 1] || 2)
+          : JAR_BOTTLE_CAPACITY;
+        var capacity = bottleCapacity * perBottle;
+        var remaining = Number(current && current.nutrientRemaining) || 0;
+        if (remaining + perBottle > capacity + 1e-9) {
+          return { ok: false, reason: 'facility_capacity', nutrientRemaining: remaining, nutrientCapacity: capacity };
+        }
+        var meta = injectableMeta(itemId) || {};
+        var next = current || { itemId: itemId, name: meta.name || itemId };
+        next.itemId = itemId;
+        next.nutrientPerBottle = perBottle;
+        next.nutrientRemaining = roundNutrient(remaining + perBottle);
+        next.bottlesLoaded = Math.round(next.nutrientRemaining / perBottle * 1000) / 1000;
+        delete next.units;
+        delete next.effectTicksRemaining;
+        delete next.effectDurationTicks;
+        setFacilityLiquidOnCell(c, next);
+        return { ok: true, nutrientRemaining: next.nutrientRemaining, nutrientCapacity: capacity };
       }
 
       function trySetSeaweedConcentrationAt(state, x, y, value) {
@@ -2601,8 +2731,20 @@
         var c = cell(state, x, y);
         if (!isVenturiCell(c)) return { ok: false, reason: 'not_venturi' };
         ensureVenturiCellFields(c);
-        c.seaweedSetConcentration = clampVenturiSetConc(c.venturiLevel, value);
-        return { ok: true, concentration: c.seaweedSetConcentration };
+        c.seaweedManualConcentration = clampVenturiSetConc(c.venturiLevel, value);
+        c.seaweedSetConcentration = c.seaweedManualConcentration;
+        return { ok: true, concentration: c.seaweedManualConcentration };
+      }
+
+      function trySetJarReleaseRateAt(state, x, y, value) {
+        if (!inBounds(x, y)) return { ok: false, reason: 'out_of_bounds' };
+        var c = cell(state, x, y);
+        if (!isBuriedPotJarCell(c)) return { ok: false, reason: 'not_jar' };
+        var v = Math.max(0, Math.min(JAR_OUTPUT_MAX, Number(value) || 0));
+        c.jarReleaseRate = Math.round(v / JAR_OUTPUT_STEP) * JAR_OUTPUT_STEP;
+        c.jarReleaseRate = Math.round(c.jarReleaseRate * 100) / 100;
+        if (c.jarLiquid) c.jarLiquid.outputRate = c.jarReleaseRate;
+        return { ok: true, releaseRate: c.jarReleaseRate };
       }
 
       function tryPlantCropAt(state, env, x, y, cropId) {
@@ -2622,6 +2764,7 @@
         var growTicks = resolveCropGrowthTicks(c, def, state);
         c.crop = {
           cropId: def.cropId,
+          balanceRevision: def.balance_revision || 2,
           name: def.name,
           remainingTicks: growTicks,
           totalTicks: growTicks,
@@ -2691,6 +2834,7 @@
 
       function advanceMapTicks(state, env, n) {
         bindEnv(env);
+        normalizeAgricultureSupplyState(state);
         var count = Math.max(0, Math.floor(Number(n) || 0));
         for (var t = 0; t < count; t++) {
           state.tick = (state.tick || 0) + 1;
@@ -2701,6 +2845,62 @@
 
       // ===== 自持状态（scene-app 组合根化拆解 ④：原 closure agricultureMapState 迁入）=====
       var ownedState = null;
+
+      function normalizeAgricultureSupplyState(st) {
+        if (!st || typeof st !== 'object' || !Array.isArray(st.map)) return st;
+        var legacy = Number(st.agricultureSupplyVersion) < 2;
+        for (var y = 0; y < st.map.length; y++) {
+          var row = st.map[y];
+          if (!Array.isArray(row)) continue;
+          for (var x = 0; x < row.length; x++) {
+            var c = row[x];
+            if (!c) continue;
+            if (isVenturiCell(c)) {
+              var oldSet = c.venturiSetConc != null ? c.venturiSetConc : c.seaweedSetConcentration;
+              ensureVenturiCellFields(c);
+              if (legacy) c.seaweedManualConcentration = clampVenturiSetConc(c.venturiLevel, oldSet != null ? oldSet : 0);
+              var vl = c.venturiLiquid;
+              if (vl && vl.nutrientRemaining == null) {
+                var oldDuration = Math.max(1, Number(vl.effectDurationTicks) || 5000);
+                var oldRemaining = Math.max(0, Number(vl.effectTicksRemaining) || 0);
+                vl.nutrientPerBottle = SEAWEED_NUTRIENT_PER_BOTTLE;
+                vl.nutrientRemaining = roundNutrient(SEAWEED_NUTRIENT_PER_BOTTLE * oldRemaining / oldDuration);
+                delete vl.effectTicksRemaining;
+                delete vl.effectDurationTicks;
+              }
+              if (vl && !(Number(vl.nutrientRemaining) > 0)) c.venturiLiquid = null;
+            } else if (isBuriedPotJarCell(c)) {
+              var jl = c.jarLiquid;
+              if (jl && jl.nutrientRemaining == null) {
+                var jarPerBottle = getInjectableNutrientPerBottle(jl.itemId);
+                jl.nutrientPerBottle = jarPerBottle;
+                jl.nutrientRemaining = roundNutrient(Math.max(0, Number(jl.units) || 0) * jarPerBottle);
+                delete jl.units;
+              }
+              if (c.jarReleaseRate == null) {
+                var legacyMeta = jl && injectableMeta(jl.itemId);
+                c.jarReleaseRate = legacy && legacyMeta && legacyMeta.fertilizerPerTick
+                  ? Math.min(JAR_OUTPUT_MAX, Number(legacyMeta.fertilizerPerTick))
+                  : 0;
+              }
+              c.jarReleaseRate = Math.max(0, Math.min(JAR_OUTPUT_MAX, Number(c.jarReleaseRate) || 0));
+              if (jl) jl.outputRate = c.jarReleaseRate;
+              if (jl && !(Number(jl.nutrientRemaining) > 0)) c.jarLiquid = null;
+            }
+          }
+        }
+        if (st.task && st.task.type === 'upgrade_pool') st.task = null;
+        delete st.pool_level;
+        delete st.last_pool_weather_factor;
+        delete st.pool_theft;
+        delete st.pool_reservoir;
+        delete st.last_branch_theft_moved;
+        delete st.last_theft_overflow_to_reservoir;
+        st.agricultureSupplyVersion = 2;
+        if (!st.seaweedRequestCache || typeof st.seaweedRequestCache !== 'object') st.seaweedRequestCache = {};
+        st.basePoolWater = BASE_POOL_WATER;
+        return st;
+      }
 
       function worldTicksNow() {
         try {
@@ -2717,6 +2917,7 @@
           try { ownedState = createDefaultState(); } catch (e) { /* ignore */ }
         }
         if (ownedState && typeof ownedState === 'object') {
+          normalizeAgricultureSupplyState(ownedState);
           mirrorStateTick(ownedState);
           if (typeof window !== 'undefined' && window.SceneCtx) window.SceneCtx.agriculture_map_state = ownedState;
         }
@@ -2726,6 +2927,7 @@
       function setState(state) {
         ownedState = (state && typeof state === 'object') ? state : (function () { try { return createDefaultState(); } catch (e) { return null; } }());
         if (ownedState && typeof ownedState === 'object') {
+          normalizeAgricultureSupplyState(ownedState);
           mirrorStateTick(ownedState);
           if (typeof window !== 'undefined' && window.SceneCtx) window.SceneCtx.agriculture_map_state = ownedState;
         }
@@ -2738,6 +2940,61 @@
       }
 
       global.AgricultureMap = {
+        previewChange: function (state, x, y, change) {
+          var copy = cloneState(state);
+          if (!copy || !inBounds(x,y)) return { ok: false, reason: 'out_of_bounds' };
+          normalizeAgricultureSupplyState(copy);
+          var result = { ok: true };
+          if (change.cropId) result = tryPlantCropAt(copy, {}, x, y, change.cropId);
+          else if (change.task) {
+            applyConstructionTask(copy, Object.assign({ x:x, y:y }, change.task));
+            recomputeIrrigationNetwork(copy);
+          } else return { ok:false, reason:'unavailable' };
+          return result.ok ? { ok:true, state:copy } : result;
+        },
+        inspectSupply: function (state) {
+          var copy = cloneState(state), routes = [];
+          if (!copy) return { routes: [], plots: {} };
+          normalizeAgricultureSupplyState(copy);
+          syncCropSeaweedExtractRequests(copy);
+          processSeaweedExtractMaintain(copy, routes);
+          var plots = {};
+          for (var y = 0; y < SIZE; y++) for (var x = 0; x < SIZE; x++) {
+            var c = cell(copy, x, y);
+            if (!c.crop) continue;
+            var def = getCropDefForInstance(c.crop), source = getIrrigationSourceForPlot(copy, x, y);
+            var jars = [], fert = 0;
+            if (cropDefRequestsLiquidFertilizer(def) && !c.crop.settled) {
+              forEachNeighbor8(x, y, function (jx, jy) {
+                var j = cell(copy, jx, jy);
+                if (!isBuriedPotJarCell(j) || !facilityLiquidIsActive(j.jarLiquid)) return;
+                var eligible = 0;
+                forEachNeighbor8(jx, jy, function (tx, ty) {
+                  var tp = cell(copy, tx, ty);
+                  if (!tp.crop || tp.crop.settled) return;
+                  if (cropDefRequestsLiquidFertilizer(getCropDefForInstance(tp.crop))) eligible += 1;
+                });
+                var raw = eligible > 0 ? Math.min(Number(j.jarReleaseRate) || 0,
+                  Number(j.jarLiquid.nutrientRemaining) || 0) / eligible : 0;
+                var amount = resolveAbsorptionAmount(c, 'fertilizer', raw, def, copy);
+                if (amount > 0) { jars.push({ x: jx, y: jy, amount: amount }); fert += amount; }
+              });
+            }
+            var soilRelease = 0, effect = getPlotSoilEffectId(c, copy);
+            if (!c.crop.settled) {
+              if (effect === 'humus_bank' && cropDefRequestsLiquidFertilizer(def) && !jars.length) soilRelease += 0.2;
+              if (effect === 'ponding' && c.crop.paddyPrimingTicks > 0) soilRelease += 0.2;
+            }
+            plots[keyOf(x,y)] = { source: source, jars: jars, soilRelease: soilRelease,
+              water: !c.crop.settled && source ? resolveAbsorptionAmount(c, 'water', source.water, def, copy) : 0,
+              trace: !c.crop.settled && source ? resolveAbsorptionAmount(c, 'trace', getSeaweedConcentrationFromIrrigationSource(copy, source), def, copy) : 0,
+              fertilizer: round1(fert + soilRelease), soil: getSoilDef(getPlotSoilId(c)),
+              effectiveSoil: getSoilDef(getEffectiveSoilIdForAbsorption(c, copy)),
+              soilEffect: getPlotSoilEffectId(c, copy) };
+          }
+          return { routes: routes, plots: plots };
+        },
+        getCropDefForInstance: getCropDefForInstance,
         createDefaultState: createDefaultState,
         bindEnv: bindEnv,
         recomputeIrrigationNetwork: recomputeIrrigationNetwork,
@@ -2749,7 +3006,9 @@
         tryPlaceChannelAt: tryPlaceChannelAt,
         tryPlaceVenturiAt: tryPlaceVenturiAt,
         tryInjectSeaweedEffectAt: tryInjectSeaweedEffectAt,
+        tryLoadFacilityBottleAt: tryLoadFacilityBottleAt,
         trySetSeaweedConcentrationAt: trySetSeaweedConcentrationAt,
+        trySetJarReleaseRateAt: trySetJarReleaseRateAt,
         tryPlantCropAt: tryPlantCropAt,
         peekHarvestAt: peekHarvestAt,
         commitHarvestAt: commitHarvestAt,
@@ -2781,6 +3040,7 @@
           superFusionPowerDrainPerTick: SUPER_FUSION_POWER_DRAIN_PER_TICK,
           agriculturePowerStart: AGRICULTURE_POWER_START
         },
+        normalizeAgricultureSupplyState: normalizeAgricultureSupplyState,
         isAlgaeBloom: isAlgaeBloom,
         getIrrigationSourceForPlot: getIrrigationSourceForPlot,
         cropDefRequestsSeaweedExtract: cropDefRequestsSeaweedExtract,

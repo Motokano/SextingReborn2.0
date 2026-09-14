@@ -14,6 +14,7 @@
     var IE = global.InventoryEquipment;
 
     var cookingStationPanelOpen = false;
+    var libraryView = 'materials';
     var cookingStationUiState = {
         method_id: '',
         inputs: [],
@@ -152,14 +153,10 @@
             var nameEl = document.createElement('div');
             nameEl.className = 'cs-ing-name';
             nameEl.textContent = disp;
-            var idEl = document.createElement('div');
-            idEl.className = 'cs-ing-id';
-            idEl.textContent = iid;
             left.appendChild(nameEl);
-            left.appendChild(idEl);
             var countsEl = document.createElement('div');
             countsEl.className = 'cs-ing-counts';
-            countsEl.textContent = ui('cooking.ingredient.available_staged_fmt', { have: String(have), staged: String(staged) });
+            countsEl.textContent = staged ? ui('cooking.ingredient.available_staged_fmt', { have: String(have), staged: String(staged) }) : ui('cooking.inputs.available_fmt', { n: have });
             var btn = document.createElement('button');
             btn.type = 'button';
             btn.className = 'btn-add-ingredient';
@@ -258,7 +255,7 @@
                     nameEl.textContent = disp;
                     var idEl = document.createElement('div');
                     idEl.className = 'cs-ing-id';
-                    idEl.textContent = String(iid) + ' · ' + uiCookingInventoryContainerLabel(sl.containerType) + ' #' + (sl.index + 1);
+                    idEl.textContent = uiCookingInventoryContainerLabel(sl.containerType) + ' · ' + (sl.index + 1);
                     left.appendChild(nameEl);
                     left.appendChild(idEl);
                     var countsEl = document.createElement('div');
@@ -280,6 +277,10 @@
                             cookingStationUiState.selected_fuel_slot_key = rowKey === cookingStationUiState.selected_fuel_slot_key ? '' : rowKey;
                         }
                         renderCookingStationPanel();
+                    };
+                    row.tabIndex = 0;
+                    row.onkeydown = function (event) {
+                        if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); row.onclick(event); }
                     };
                     try {
                         if (IE && typeof IE.getItemTemplate === 'function') {
@@ -312,6 +313,15 @@
         var startBtn = document.getElementById('cooking-start-btn');
         var accessoryList = document.getElementById('cooking-accessory-list');
         var accessorySel = document.getElementById('cooking-add-accessory');
+        ['materials', 'recipes'].forEach(function (view) {
+            var pane = document.getElementById('cooking-' + view + '-view');
+            if (pane) pane.hidden = libraryView !== view;
+            var tab = document.getElementById('cooking-' + view + '-tab');
+            if (!tab) return;
+            tab.className = 'btn-method' + (libraryView === view ? ' active' : '');
+            tab.setAttribute('aria-pressed', String(libraryView === view));
+            tab.onclick = function () { libraryView = view; renderCookingStationPanel(); };
+        });
 
         var mid = cookingStationUiState.method_id ? String(cookingStationUiState.method_id) : '';
         // 默认选一个可用工艺
@@ -352,7 +362,7 @@
             var selected = StationCraftCore.normalizeCookingInputs(cookingStationUiState.inputs || []);
             cookingStationUiState.inputs = selected;
             if (!selected.length) {
-                listEl.innerHTML = '';
+                listEl.textContent = ui('cooking.inputs.empty');
             } else {
                 for (var ii = 0; ii < selected.length; ii++) {
                     var row = document.createElement('div');
@@ -361,10 +371,24 @@
                     var c0 = parseInt(selected[ii].count, 10) || 1;
                     var nameEl = document.createElement('div');
                     nameEl.className = 'iname';
-                    nameEl.textContent = StationCraftCore.getItemDisplayNameSafe(id0) + ' (' + String(id0) + ')';
-                    var cntEl = document.createElement('div');
+                    nameEl.textContent = StationCraftCore.getItemDisplayNameSafe(id0);
+                    var cntEl = document.createElement('input');
+                    cntEl.type = 'number';
+                    cntEl.min = '1';
+                    cntEl.step = '1';
                     cntEl.className = 'icnt';
-                    cntEl.textContent = 'x' + c0;
+                    cntEl.value = c0;
+                    cntEl.setAttribute('aria-label', ui('cooking.action.quantity', { item: nameEl.textContent }));
+                    cntEl.onchange = (function (rid, input) {
+                        return function () {
+                            var have = global.InventoryHelpers.getInventoryCountByItemId(rid);
+                            var count = Math.max(1, Math.min(Math.max(1, have), Math.floor(Number(input.value) || 1)));
+                            var arr = StationCraftCore.normalizeCookingInputs(cookingStationUiState.inputs || []);
+                            arr.forEach(function (entry) { if (entry.item_id === rid) entry.count = count; });
+                            setCookingInputs(arr);
+                            renderCookingStationPanel();
+                        };
+                    })(id0, cntEl);
                     var btnDel = document.createElement('button');
                     btnDel.type = 'button';
                     btnDel.className = 'btn-mini';
@@ -402,7 +426,7 @@
                     arow.className = 'cs-input-row';
                     var aname = document.createElement('div');
                     aname.className = 'iname';
-                    aname.textContent = StationCraftCore.getItemDisplayNameSafe(aid) + ' (' + aid + ')';
+                    aname.textContent = StationCraftCore.getItemDisplayNameSafe(aid);
                     var abtn = document.createElement('button');
                     abtn.type = 'button';
                     abtn.className = 'btn-mini';
@@ -435,10 +459,12 @@
                 var ao = accOpts[ax];
                 var o = document.createElement('option');
                 o.value = ao.item_id;
-                o.textContent = StationCraftCore.getItemDisplayNameSafe(ao.item_id) + ' (' + ao.item_id + ') · ' + ui('cooking.inputs.available_fmt', { n: ao.count });
+                o.textContent = StationCraftCore.getItemDisplayNameSafe(ao.item_id) + ' · ' + ui('cooking.inputs.available_fmt', { n: ao.count });
                 accessorySel.appendChild(o);
             }
             if (prevAcc && accOpts.some(function (z) { return String(z.item_id) === prevAcc; })) accessorySel.value = prevAcc;
+            var installButton = document.getElementById('cooking-add-accessory-btn');
+            if (installButton) installButton.disabled = !accOpts.length;
         }
 
         // 已知配方快捷填材（可选）
@@ -446,7 +472,7 @@
             knownWrap.innerHTML = '';
             var knownIds = (global.SceneApp && typeof global.SceneApp.getKnownCookingRecipeIds === 'function') ? global.SceneApp.getKnownCookingRecipeIds() : [];
             if (!Array.isArray(knownIds) || !knownIds.length) {
-                knownWrap.innerHTML = '';
+                knownWrap.textContent = ui('cooking.known.empty');
             } else {
                 for (var kr = 0; kr < knownIds.length; kr++) {
                     var rid = knownIds[kr];
@@ -499,6 +525,28 @@
         var survState = global.Survival && typeof global.Survival.getState === 'function' ? global.Survival.getState() : null;
         var curStamina = survState ? Number(survState.stamina || 0) : 0;
         var activeCraft = CookingStation.getActiveCraft();
+        var panelCtx = StationContext.getCurrentCookingStationContext();
+        var mainWaterUnl = !!(panelCtx && panelCtx.station_type === 'main' && cs.water_unlimited);
+        var waterService = document.getElementById('cooking-water-service');
+        if (waterService) waterService.hidden = mainWaterUnl;
+        var equipmentStatus = document.getElementById('cooking-equipment-status');
+        if (equipmentStatus) equipmentStatus.textContent = ui('cooking.equipment.fuel', { cur: curFuel, max: COOKING_FUEL_MAX_POINTS }) + ' · ' +
+            (mainWaterUnl ? ui('cooking.equipment.water_unlimited') : ui('cooking.equipment.water', { cur: curWater, max: COOKING_WATER_MAX_POINTS }));
+        var progressWrap = document.getElementById('cooking-active-craft');
+        if (progressWrap) {
+            progressWrap.innerHTML = '';
+            if (activeCraft) {
+                var progress = document.createElement('progress');
+                progress.setAttribute('aria-label', ui('cooking.section.progress'));
+                var time = global.GameTime && global.GameTime.getState ? global.GameTime.getState() : null;
+                if (time && typeof time.totalTicks === 'number' && typeof activeCraft.started_total_ticks === 'number') {
+                    var elapsed = Math.max(0, time.totalTicks - activeCraft.started_total_ticks);
+                    progress.max = Math.max(1, elapsed + activeCraft.remaining_ticks);
+                    progress.value = elapsed;
+                }
+                progressWrap.appendChild(progress);
+            }
+        }
 
         if (kvWrap) {
             kvWrap.innerHTML = '';
@@ -508,26 +556,74 @@
                 d.textContent = text;
                 kvWrap.appendChild(d);
             }
-            addKv(ui('cooking.kv.fuel', { cur: curFuel, max: COOKING_FUEL_MAX_POINTS, need: needFuel }), curFuel < needFuel);
-            var panelCtx = StationContext.getCurrentCookingStationContext();
-            var mainWaterUnl = !!(panelCtx && panelCtx.station_type === 'main' && cs.water_unlimited);
-            if (mainWaterUnl) {
-                addKv(ui('cooking.kv.water_unlimited', { need: needWater }), false);
-            } else {
-                addKv(ui('cooking.kv.water', { cur: curWater, max: COOKING_WATER_MAX_POINTS, need: needWater }), curWater < needWater);
+            if (mSel && !activeCraft) {
+                addKv(ui('cooking.kv.fuel', { cur: curFuel, max: COOKING_FUEL_MAX_POINTS, need: needFuel }), curFuel < needFuel);
+                if (mainWaterUnl) {
+                    addKv(ui('cooking.kv.water_unlimited', { need: needWater }), false);
+                } else {
+                    addKv(ui('cooking.kv.water', { cur: curWater, max: COOKING_WATER_MAX_POINTS, need: needWater }), curWater < needWater);
+                }
+                addKv(ui('cooking.kv.ticks', { n: needTicks }), false);
+                addKv(ui('cooking.kv.stamina', { cur: curStamina, need: needStamina }), curStamina < needStamina);
             }
-            addKv(ui('cooking.kv.ticks', { n: needTicks }), false);
-            addKv(ui('cooking.kv.stamina', { cur: curStamina, need: needStamina }), curStamina < needStamina);
-            if (activeCraft) addKv(ui('cooking.kv.remaining', { n: activeCraft.remaining_ticks }), false);
         }
 
         renderCookingWaterFuelPickLists();
 
-        if (helpEl) helpEl.innerHTML = '';
+        if (helpEl) {
+            helpEl.innerHTML = '';
+            ['cooking.help.line1', 'cooking.help.line2', 'cooking.help.line3', 'cooking.help.line4'].forEach(function (key, index) {
+                var paragraph = document.createElement('p');
+                paragraph.style.margin = index ? '10px 0 0' : '0';
+                paragraph.textContent = ui(key);
+                helpEl.appendChild(paragraph);
+            });
+        }
 
-        var okStart = !!(mid && StationCraftCore.normalizeCookingInputs(cookingStationUiState.inputs || []).length) && !activeCraft;
+        var inputs = StationCraftCore.normalizeCookingInputs(cookingStationUiState.inputs || []);
+        var blocked = '';
+        var equipmentAction = '';
+        if (activeCraft) blocked = ui('cooking.kv.remaining', { n: activeCraft.remaining_ticks });
+        else if (!mSel) blocked = ui('cooking.action.method');
+        else if (!CookingStation.isCookingMethodUnlockedAtStation(mid, panelCtx)) {
+            var temp = panelCtx && panelCtx.station_type === 'temp' ? panelCtx.temp_station : null;
+            var accessories = temp ? temp.installed_accessory_item_ids || [] : installed;
+            var restricted = temp && Array.isArray(temp.allowed_methods) && temp.allowed_methods.length && temp.allowed_methods.indexOf(mid) < 0;
+            if (!restricted && mSel.requires_accessory_item_id && accessories.indexOf(mSel.requires_accessory_item_id) < 0) {
+                blocked = ui('cooking.action.accessory', { item: StationCraftCore.getItemDisplayNameSafe(mSel.requires_accessory_item_id) });
+                equipmentAction = 'cooking.action.install';
+            } else blocked = ui('cooking.action.locked');
+        } else if (!inputs.length) blocked = ui('cooking.action.inputs');
+        if (!blocked) {
+            for (var ci = 0; ci < inputs.length; ci++) {
+                if (global.InventoryHelpers.getInventoryCountByItemId(inputs[ci].item_id) < inputs[ci].count) {
+                    blocked = ui('cooking.action.missing', { item: StationCraftCore.getItemDisplayNameSafe(inputs[ci].item_id) }); break;
+                }
+            }
+        }
+        if (!blocked) {
+            if (curFuel < needFuel) { blocked = ui('cooking.action.fuel'); equipmentAction = 'cooking.btn.fuel'; }
+            else if (!mainWaterUnl && curWater < needWater) { blocked = ui('cooking.action.water'); equipmentAction = 'cooking.btn.water'; }
+            else if (curStamina < needStamina) blocked = ui('cooking.action.stamina');
+            else if (IE && typeof IE.canAcceptItem === 'function' && !IE.canAcceptItem()) blocked = ui('cooking.try.fail.inventory_full');
+        }
+        var status = document.getElementById('cooking-action-status');
+        if (status) status.textContent = blocked;
+        var fixEquipment = document.getElementById('cooking-fix-equipment');
+        if (fixEquipment) {
+            fixEquipment.hidden = !equipmentAction;
+            fixEquipment.textContent = equipmentAction ? ui(equipmentAction) : '';
+            fixEquipment.onclick = function () {
+                var equipment = document.getElementById('cooking-equipment');
+                if (equipment) equipment.open = true;
+                var help = document.getElementById('cooking-help');
+                if (help) help.open = false;
+            };
+        }
+        var okStart = !blocked;
         if (startBtn) {
             startBtn.disabled = !okStart;
+            startBtn.textContent = ui('cooking.btn.start');
         }
 
         var pourModalBtn = document.getElementById('cooking-modal-pour-btn');
@@ -611,6 +707,13 @@
     }
 
     function initPanel() {
+        ['cooking-equipment', 'cooking-help'].forEach(function (id, index, ids) {
+            var disclosure = document.getElementById(id);
+            if (disclosure) disclosure.addEventListener('toggle', function () {
+                var other = document.getElementById(ids[1 - index]);
+                if (disclosure.open && other) other.open = false;
+            });
+        });
         var abCook = document.getElementById('action-bar-cook');
         if (abCook) {
             abCook.addEventListener('click', function () {

@@ -230,6 +230,17 @@
         return st.addiction;
     }
 
+    /** 已按成分与途径算好的单次依赖增量；这里只统一应用免疫减免。 */
+    function addAddictionDose(baseGain) {
+        var st = getState();
+        var base = Math.max(0, num(baseGain, 0));
+        if (!(base > 0)) return st.addiction;
+        var reduction = Math.max(0, Math.min(0.95, getImmunityLevel() * cfg.immunity_gain_reduction));
+        st.addiction = Math.max(0, Math.min(ADDICTION_MAX, st.addiction + base * (1 - reduction)));
+        refreshAddictionStage();
+        return st.addiction;
+    }
+
     /** 直接加成瘾值（调试/剧情脚本用）。 */
     function addAddiction(amount) {
         var st = getState();
@@ -266,32 +277,35 @@
         return base * (1 - shrink);
     }
 
-    /** 压制判定（§4.4）：在场入体药 buff（drink/inhale/inject）中最高 potency 是否够当前阶段的门槛。 */
-    function isPenaltySuppressed() {
-        var stage = getAddictionStage();
-        var need = STAGE_SUPPRESS_REQUIREMENT[stage] || '';
-        if (!need) return false;
-        var needRank = POTENCY_RANK[need] || 0;
+    /** 已起效药物来源提供的最高缓解阶段；缓解不直接改变依赖值。 */
+    function getActiveReliefStages() {
         var arr = getActiveInstances('player');
-        var i;
-        for (i = 0; i < arr.length; i++) {
+        var BS = getBuffSystem();
+        var best = 0;
+        for (var i = 0; i < arr.length; i++) {
             var inst = arr[i];
             if (!inst || !inst.template || (inst.stacks || 0) <= 0) continue;
-            var tpl = inst.template;
-            var route = String(tpl.pharmacy_route || '').toLowerCase();
-            if (SYSTEMIC_ROUTES.indexOf(route) < 0) continue;
-            var rank = POTENCY_RANK[String(tpl.pharmacy_potency || '').toLowerCase()] || 0;
-            if (rank >= needRank && rank > 0) return true;
+            if (BS && typeof BS.isBuffPastOnset === 'function' && !BS.isBuffPastOnset(inst)) continue;
+            best = Math.max(best, Math.max(0, Math.floor(num(inst.pharmacy_relief_stages, 0))));
         }
-        return false;
+        return best;
+    }
+
+    function getEffectiveAddictionStage() {
+        return Math.max(1, getAddictionStage() - getActiveReliefStages());
+    }
+
+    /** 兼容旧调用：只要缓解后惩罚阶段低于实际阶段，就视为惩罚被缓解。 */
+    function isPenaltySuppressed() {
+        return getEffectiveAddictionStage() < getAddictionStage();
     }
 
     /** 把阶段惩罚乘区写进 CharacterAttributes（压制期间视为无惩罚，§4.4）。 */
     function applyStagePenalty() {
         var CA = global.CharacterAttributes;
         if (!CA || typeof CA.setExternalAcquiredMultiplier !== 'function') return false;
-        var stage = getAddictionStage();
-        var pct = isPenaltySuppressed() ? 0 : getStagePenaltyPct(stage);
+        var stage = getEffectiveAddictionStage();
+        var pct = getStagePenaltyPct(stage);
         var mul = Math.max(0, 1 - pct);
         CA.setExternalAcquiredMultiplier({ jingu: mul, flexibility: mul, breath: mul, dexterity: mul, focus: mul });
         if (typeof CA.recalcCharacterStats === 'function') {
@@ -555,6 +569,19 @@
         // 毒性自然衰减
         if (st.toxicity > 0) {
             var tdecay = cfg.toxicity_decay_per_tick;
+            var activeForDetox = getActiveInstances('player');
+            var detoxBonus = 0;
+            var BSdetox = getBuffSystem();
+            activeForDetox.forEach(function (inst) {
+                if (BSdetox && typeof BSdetox.isBuffPastOnset === 'function' && !BSdetox.isBuffPastOnset(inst)) return;
+                var tpl0 = inst && inst.template ? inst.template : {};
+                (tpl0.effects || []).forEach(function (effect) {
+                    if (effect && effect.type === 'pharmacy_toxicity_decay_bonus') {
+                        detoxBonus = Math.max(detoxBonus, num(effect.params && effect.params.per_tick, 0));
+                    }
+                });
+            });
+            tdecay += detoxBonus;
             if (tdecay > 0) {
                 st.toxicity = Math.max(0, st.toxicity - tdecay);
                 changed = true;
@@ -702,10 +729,14 @@
     /** 状态摘要（状态栏/调试用）。 */
     function getInfo() {
         var st = getState();
+        var actualStage = getAddictionStage(st.addiction);
+        var effectiveStage = getEffectiveAddictionStage();
         return {
             addiction: st.addiction,
-            stage: getAddictionStage(st.addiction),
-            stage_penalty_pct: getStagePenaltyPct(st.stage),
+            stage: actualStage,
+            relief_stages: getActiveReliefStages(),
+            effective_stage: effectiveStage,
+            stage_penalty_pct: getStagePenaltyPct(effectiveStage),
             suppressed: isPenaltySuppressed(),
             toxicity: st.toxicity,
             toxicity_band: getToxicityBand(st.toxicity),
@@ -738,7 +769,10 @@
         getAddiction: getAddiction,
         getRouteGain: getRouteGain,
         addAddictionFromRoute: addAddictionFromRoute,
+        addAddictionDose: addAddictionDose,
         addAddiction: addAddiction,
+        getActiveReliefStages: getActiveReliefStages,
+        getEffectiveAddictionStage: getEffectiveAddictionStage,
         getAddictionStage: getAddictionStage,
         getStageBuffId: getStageBuffId,
         getStagePenaltyPct: getStagePenaltyPct,

@@ -685,6 +685,14 @@
      * @param {string} hitPart - 'chest'|'abdomen'|'left_arm'|... 
      * @param {string} damageType - 'blunt'|'slash'|'pierce'
      */
+    function getHeadDamageReduce(damageType) {
+        var head = state.equipment && state.equipment.head;
+        if (!head || !head.item_id) return 0;
+        var keep = 1;
+        Object.keys(head.modules || {}).forEach(function (key) { keep *= 1 - moduleReduceForDamageType(head.modules[key], damageType); });
+        return 1 - keep;
+    }
+
     function getPlateDamageReduce(hitPart, damageType) {
         var plateKey = HIT_PART_TO_PLATE[hitPart];
         if (!plateKey) return 0;
@@ -1185,13 +1193,22 @@
             for (var i = 0; i < backpackSlots; i++) {
                 var existing = arr[i] || null;
                 if (canStack && existing && existing.item_id === itemInstance.item_id
-                    && !(existing.enchants && existing.enchants.length)) {
+                    && !(existing.enchants && existing.enchants.length)
+                    && itemInstancesCanStack(existing, itemInstance)) {
                     var count = (existing.count || 1) + (itemInstance.count || 1);
                     var maxStack = getMaxStack(itemInstance.item_id);
                     if (count <= maxStack) {
-                        arr[i] = { item_id: existing.item_id, count: count };
+                        var merged = copyItemInstance(existing);
+                        merged.count = count;
+                        var existingElapsed = Number(existing.spoilage_elapsed_ticks) || 0;
+                        var incomingElapsed = Number(itemInstance.spoilage_elapsed_ticks) || 0;
+                        if (itemInstance.spoilage_elapsed_ticks != null || existing.spoilage_elapsed_ticks != null) {
+                            merged.spoilage_elapsed_ticks = Math.max(0, Math.max(existingElapsed, incomingElapsed));
+                        }
+                        arr[i] = merged;
                         state.inventory_backpack = arr;
-                        return { placed: true, container: 'backpack', index: i };
+                        warnFreshnessMerge(itemInstance.item_id, existingElapsed, incomingElapsed);
+                        return { placed: true, container: 'backpack', index: i, freshness_shortened: existingElapsed !== incomingElapsed };
                     }
                 }
                 if (!existing) {
@@ -1267,6 +1284,28 @@
         return true;
     }
 
+    function itemInstancesCanStack(a, b) {
+        if (!a || !b || String(a.item_id || '') !== String(b.item_id || '')) return false;
+        if (a.charges != null || b.charges != null) {
+            if (Number(a.charges || 0) !== Number(b.charges || 0)) return false;
+        }
+        var aKey = a.pharmacy_formula_key != null ? String(a.pharmacy_formula_key) : '';
+        var bKey = b.pharmacy_formula_key != null ? String(b.pharmacy_formula_key) : '';
+        if (aKey || bKey) return !!aKey && aKey === bKey && Number(a.pharmacy_rules_version || 0) === Number(b.pharmacy_rules_version || 0);
+        if (Array.isArray(a.components) || Array.isArray(b.components)) {
+            return JSON.stringify(a.components || []) === JSON.stringify(b.components || []);
+        }
+        return true;
+    }
+
+    function warnFreshnessMerge(itemId, aElapsed, bElapsed) {
+        if (Number(aElapsed || 0) === Number(bElapsed || 0)) return;
+        if (!global || !global.GameLog || typeof global.GameLog.log !== 'function') return;
+        var tpl = getItemTemplate(itemId) || {};
+        var itemName = tpl.name || tpl.name_0 || tpl.sn || itemId;
+        global.GameLog.log(t('pharmacy.spoilage.merge_shorter', { item: itemName }), 'warn');
+    }
+
     function getMaxStack(itemId) {
         var tpl = getItemTemplate(itemId);
         if (!tpl) return 1;
@@ -1297,6 +1336,9 @@
         }
         // 47 §8：一盒多次用量（药膏/散按次）——剩余次数随实例复制
         if (inst.charges != null) c.charges = Math.max(0, Math.floor(Number(inst.charges) || 0));
+        if (inst.pharmacy_formula_key != null) c.pharmacy_formula_key = String(inst.pharmacy_formula_key);
+        if (inst.pharmacy_rules_version != null) c.pharmacy_rules_version = Math.max(0, Math.floor(Number(inst.pharmacy_rules_version) || 0));
+        if (inst.spoilage_elapsed_ticks != null) c.spoilage_elapsed_ticks = Math.max(0, Math.floor(Number(inst.spoilage_elapsed_ticks) || 0));
         return c;
     }
 
@@ -2677,6 +2719,7 @@
         getInstalledModuleAt: getInstalledModuleAt,
         getArmorShieldInfo: getArmorShieldInfo,
         getPlateDamageReduce: getPlateDamageReduce,
+        getHeadDamageReduce: getHeadDamageReduce,
         getPlayerStunValue: getPlayerStunValue,
         setPlayerStunValue: setPlayerStunValue,
         isPlayerStunned: isPlayerStunned,

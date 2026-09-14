@@ -1,0 +1,299 @@
+{
+  "status": "逐药数值草案，未实装；真实世界药理不由本表表达",
+  "route_multipliers": {
+    "drink": 1,
+    "inhale": 2,
+    "inject": 3,
+    "topical": 0
+  },
+  "components": {
+    "med_acorus_powder": {
+      "base_component": "med_acorus_powder",
+      "oral_gain": 0,
+      "relief_stages": 0,
+      "dose_ratio": 1,
+      "role": "不致瘾，不缓解戒断；自身毒性或相冲按独立机制结算"
+    },
+    "med_acorus_powder_purified": {
+      "base_component": "med_acorus_powder",
+      "oral_gain": 0,
+      "relief_stages": 0,
+      "dose_ratio": 1,
+      "role": "不致瘾，不缓解戒断；自身毒性或相冲按独立机制结算"
+    },
+    "med_acorus_powder_refined": {
+      "base_component": "med_acorus_powder",
+      "oral_gain": 0,
+      "relief_stages": 0,
+      "dose_ratio": 1,
+      "role": "不致瘾，不缓解戒断；自身毒性或相冲按独立机制结算"
+    },
+    "med_antler_powder": {
+      "base_component": "med_antler_powder",
+      "oral_gain": 0,
+      "relief_stages": 0,
+      "dose_ratio": 1,
+      "role": "不致瘾，不缓解戒断；自身毒性或相冲按独立机制结算"
+    },
+    "med_arecoline_powder": {
+      "base_component": "med_arecoline_powder",
+      "oral_gain": 0.8,
+      "relief_stages": 1,
+      "dose_ratio": 1,
+      "role": "弱提神不等于无依赖"
+    },
+    "med_baiji_powder": {
+      "base_component": "med_baiji_powder",
+      "oral_gain": 0,
+      "relief_stages": 0,
+      "dose_ratio": 1,
+      "role": "不致瘾，不缓解戒断；自身毒性或相冲按独立机制结算"
+    },
+    "med_cardiac_powder": {
+      "base_component": "med_cardiac_powder",
+      "oral_gain": 0,
+      "relief_stages": 0,
+      "dose_ratio": 1,
+      "role": "不致瘾，不缓解戒断；自身毒性或相冲按独立机制结算"
+    },
+    "med_cocaine_powder": {
+      "base_component": "med_cocaine_powder",
+      "oral_gain": 4,
+      "relief_stages": 3,
+      "dose_ratio": 1,
+      "role": "高负担提神：短时强收益，连续使用加深依赖"
+    },
+    "med_cocaine_powder_purified": {
+      "base_component": "med_cocaine_powder",
+      "oral_gain": 6,
+      "relief_stages": 3,
+      "dose_ratio": 1.5,
+      "role": "高负担提神：短时强收益，连续使用加深依赖"
+    },
+    "med_cocaine_powder_refined": {
+      "base_component": "med_cocaine_powder",
+      "oral_gain": 5.0222,
+      "relief_stages": 3,
+      "dose_ratio": 1.255556,
+      "role": "高负担提神：短时强收益，连续使用加深依赖"
+    },
+    "med_ephedrine_powder": {
+      "base_component": "med_ephedrine_powder",
+      "oral_gain": 2.5,
+      "relief_stages": 2,
+      "dose_ratio": 1,
+      "role": "中高负担提神"
+    },
+    "med_glucose_powder": {
+      "base_component": "med_glucose_powder",
+      "oral_gain": 0,
+      "relief_stages": 0,
+      "dose_ratio": 1,
+      "role": "不致瘾，不缓解戒断；自身毒性或相冲按独立机制结算"
+    },
+    "med_harmaline_powder": {
+      "base_component": "med_harmaline_powder",
+      "oral_gain": 0,
+      "relief_stages": 0,
+      "dose_ratio": 1,
+      "role": "不致瘾，不缓解戒断；自身毒性或相冲按独立机制结算"
+    },
+    "med_liver_herb_powder": {
+      "base_component": "med_liver_herb_powder",
+      "oral_gain": 0,
+      "relief_stages": 0,
+      "dose_ratio": 1,
+      "role": "不致瘾，不缓解戒断；自身毒性或相冲按独立机制结算"
+    },
+    "med_liver_herb_powder_purified": {
+      "base_component": "med_liver_herb_powder",
+      "oral_gain": 0,
+      "relief_stages": 0,
+      "dose_ratio": 1,
+      "role": "不致瘾，不缓解戒断；自身毒性或相冲按独立机制结算"
+    },
+    "med_liver_herb_powder_refined": {
+      "base_component": "med_liver_herb_powder",
+      "oral_gain": 0,
+      "relief_stages": 0,
+      "dose_ratio": 1,
+      "role": "不致瘾，不缓解戒断；自身毒性或相冲按独立机制结算"
+    },
+    "med_lsd_powder": {
+      "base_component": "med_lsd_powder",
+      "oral_gain": 4,
+      "relief_stages": 2,
+      "dose_ratio": 1,
+      "role": "长效成长收益，但常规免疫下连续注射仍净累积"
+    },
+    "med_morphine_powder": {
+      "base_component": "med_morphine_powder",
+      "oral_gain": 4,
+      "relief_stages": 3,
+      "dose_ratio": 1,
+      "role": "强镇痛与完整缓解：承担较高依赖增量"
+    },
+    "med_morphine_powder_purified": {
+      "base_component": "med_morphine_powder",
+      "oral_gain": 6.0235,
+      "relief_stages": 3,
+      "dose_ratio": 1.505882,
+      "role": "强镇痛与完整缓解：承担较高依赖增量"
+    },
+    "med_morphine_powder_refined": {
+      "base_component": "med_morphine_powder",
+      "oral_gain": 4.9882,
+      "relief_stages": 3,
+      "dose_ratio": 1.247059,
+      "role": "强镇痛与完整缓解：承担较高依赖增量"
+    },
+    "med_nicotine_powder": {
+      "base_component": "med_nicotine_powder",
+      "oral_gain": 1,
+      "relief_stages": 1,
+      "dose_ratio": 1,
+      "role": "短效吸入易反复补用，不用低药效冒充低依赖"
+    },
+    "med_notoginseng_powder": {
+      "base_component": "med_notoginseng_powder",
+      "oral_gain": 0,
+      "relief_stages": 0,
+      "dose_ratio": 1,
+      "role": "不致瘾，不缓解戒断；自身毒性或相冲按独立机制结算"
+    },
+    "med_notoginseng_powder_purified": {
+      "base_component": "med_notoginseng_powder",
+      "oral_gain": 0,
+      "relief_stages": 0,
+      "dose_ratio": 1,
+      "role": "不致瘾，不缓解戒断；自身毒性或相冲按独立机制结算"
+    },
+    "med_notoginseng_powder_refined": {
+      "base_component": "med_notoginseng_powder",
+      "oral_gain": 0,
+      "relief_stages": 0,
+      "dose_ratio": 1,
+      "role": "不致瘾，不缓解戒断；自身毒性或相冲按独立机制结算"
+    },
+    "med_psilocybin_powder": {
+      "base_component": "med_psilocybin_powder",
+      "oral_gain": 1.5,
+      "relief_stages": 1,
+      "dose_ratio": 1,
+      "role": "口服长期探索；注射在免疫0级仍小幅净累积"
+    },
+    "med_psilocybin_powder_purified": {
+      "base_component": "med_psilocybin_powder",
+      "oral_gain": 2.2636,
+      "relief_stages": 1,
+      "dose_ratio": 1.509091,
+      "role": "口服长期探索；注射在免疫0级仍小幅净累积"
+    },
+    "med_psilocybin_powder_refined": {
+      "base_component": "med_psilocybin_powder",
+      "oral_gain": 1.8818,
+      "relief_stages": 1,
+      "dose_ratio": 1.254545,
+      "role": "口服长期探索；注射在免疫0级仍小幅净累积"
+    },
+    "med_rehydration_powder": {
+      "base_component": "med_rehydration_powder",
+      "oral_gain": 0,
+      "relief_stages": 0,
+      "dose_ratio": 1,
+      "role": "不致瘾，不缓解戒断；自身毒性或相冲按独立机制结算"
+    },
+    "med_root_bitter_powder": {
+      "base_component": "med_root_bitter_powder",
+      "oral_gain": 0.25,
+      "relief_stages": 2,
+      "dose_ratio": 1,
+      "role": "低增量、缓解两阶段；口服慢起效，镇痛无属性增益；需实测取得成本"
+    },
+    "med_safflower_powder": {
+      "base_component": "med_safflower_powder",
+      "oral_gain": 0,
+      "relief_stages": 0,
+      "dose_ratio": 1,
+      "role": "不致瘾，不缓解戒断；自身毒性或相冲按独立机制结算"
+    },
+    "med_safflower_powder_purified": {
+      "base_component": "med_safflower_powder",
+      "oral_gain": 0,
+      "relief_stages": 0,
+      "dose_ratio": 1,
+      "role": "不致瘾，不缓解戒断；自身毒性或相冲按独立机制结算"
+    },
+    "med_safflower_powder_refined": {
+      "base_component": "med_safflower_powder",
+      "oral_gain": 0,
+      "relief_stages": 0,
+      "dose_ratio": 1,
+      "role": "不致瘾，不缓解戒断；自身毒性或相冲按独立机制结算"
+    },
+    "med_scopolamine_powder": {
+      "base_component": "med_scopolamine_powder",
+      "oral_gain": 3,
+      "relief_stages": 1,
+      "dose_ratio": 1,
+      "role": "高毒性、高依赖而缓解一般；不作为戒除替代推荐"
+    },
+    "med_senna_powder": {
+      "base_component": "med_senna_powder",
+      "oral_gain": 0,
+      "relief_stages": 0,
+      "dose_ratio": 1,
+      "role": "不致瘾，不缓解戒断；自身毒性或相冲按独立机制结算"
+    },
+    "med_thc_powder": {
+      "base_component": "med_thc_powder",
+      "oral_gain": 0.6,
+      "relief_stages": 1,
+      "dose_ratio": 1,
+      "role": "低负担口服缓解；短效吸入不承担戒除职责"
+    },
+    "med_thc_powder_purified": {
+      "base_component": "med_thc_powder",
+      "oral_gain": 0.9067,
+      "relief_stages": 1,
+      "dose_ratio": 1.511111,
+      "role": "低负担口服缓解；短效吸入不承担戒除职责"
+    },
+    "med_thc_powder_refined": {
+      "base_component": "med_thc_powder",
+      "oral_gain": 0.7467,
+      "relief_stages": 1,
+      "dose_ratio": 1.244444,
+      "role": "低负担口服缓解；短效吸入不承担戒除职责"
+    },
+    "med_vine_red_powder": {
+      "base_component": "med_vine_red_powder",
+      "oral_gain": 0.3,
+      "relief_stages": 1,
+      "dose_ratio": 1,
+      "role": "低负担基础提神汤，浓煎多份增量照加，缓解不叠"
+    },
+    "med_vitamin_c_powder": {
+      "base_component": "med_vitamin_c_powder",
+      "oral_gain": 0,
+      "relief_stages": 0,
+      "dose_ratio": 1,
+      "role": "不致瘾，不缓解戒断；自身毒性或相冲按独立机制结算"
+    }
+  },
+  "raw_carrier_exposure": {
+    "herb_tobacco": {
+      "oral_gain": 0.5,
+      "relief_stages": 0,
+      "note": "烟草载体在吸入时单份依赖+1；只计依赖，不因载体增加额外药效或缓解。游戏暴露份额独立配置，不按粉碎产量折算。"
+    }
+  },
+  "rules": [
+    "精制品按相对基础粉的药效点比值作为首版有效剂量代理，不按毒性下降比例减免成瘾。以后独立剂量字段替代，不与药效强度档机械绑定。",
+    "缓解阶段按成分固定；增加份数或精炼不会自动提高缓解阶段。致瘾增量仍随份数相加。",
+    "复方每个来源分别计增量，再取已生效缓解最高值；同族药效必须记来源与失效时间，不能因共享buff而重复授予旧来源缓解。",
+    "助溶不足造成药效损失，不自动减少已摄入依赖负担；必须有实际主药效生效才有对应缓解。",
+    "依赖自然衰减、免疫增量减免与时长加成沿用现有配置；缓解不额外延时。",
+    "表内原料途径增量仅为模型，不代表所有粉都能直接吞服或吸入；现役可用成品与合法动态注射另表列出。"
+  ]
+}

@@ -38,6 +38,8 @@
       "id": "combat_basic_unarmed",
       "name": "基本拳脚",
       "category": "unarmed",
+      "primary_attribute": "jingu",
+      "innate_damage_baseline": 20,
       "description": "基础徒手功法，讲究大巧不工。",
       "difficulty": 1,
       "icon": "👊",
@@ -203,6 +205,8 @@
       "id": "combat_basic_weapon_melee",
       "name": "基本兵击（占位）",
       "category": "weapon",
+      "primary_attribute": "jingu",
+      "innate_damage_baseline": 20,
       "description": "占位兵器技能：底伤读 weapon_left/right 对应物品 weapon_attack_power；等级曲线 weapon_simple（与徒手线性满级+250%同源常数，可独立配）。需在装备槽持兵并在肢体链装配后方可测试。",
       "difficulty": 1,
       "icon": "🗡️",
@@ -376,6 +380,7 @@
           }
         },
         "states": [],
+        "damage_states": [],
         "usage_conditions": {
           "check": "pay_move_cost",
           "on_satisfied": "normal",
@@ -385,12 +390,6 @@
             "proceed_full_chain": true
           }
         }
-      },
-      "breath_power_multiplier": {
-        "base": 1.0,
-        "proficiency_bonus_unlocks": [
-          { "min_proficiency_ratio": 0.5, "multiplier_delta": 0.3 }
-        ]
       },
       "max_level": 1000,
       "level_cap_skill_id": null
@@ -426,6 +425,8 @@
       "id": "combat_rogue_sanda",
       "name": "流氓散手",
       "category": "unarmed",
+      "primary_attribute": "jingu",
+      "innate_damage_baseline": 20,
       "description": "街头斗殴的野路子，出手阴损，专挑软肋。不靠硬拼，靠一套脏招把对手拖进泥潭：先糊你一脸，再踹你膝窝，等你一瘸一拐的时候上来补刀。",
       "difficulty": 1,
       "icon": "🤛",

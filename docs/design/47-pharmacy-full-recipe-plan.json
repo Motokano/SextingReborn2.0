@@ -1,0 +1,1169 @@
+{
+  "status": "2026-09-10 已按主文档与实施清单落地；7条消费者缺口配方记录暂缓启用，3条兽心替代线保留规划；候选成瘾数值单独标注",
+  "scope": "只使用现有采集/交易原料；新增加工产物允许，注射统一动态配置",
+  "new_products": [
+    {
+      "id": "med_antler_powder_refined",
+      "name": "精制鹿茸粉"
+    },
+    {
+      "id": "med_antler_powder_purified",
+      "name": "精炼鹿茸粉"
+    },
+    {
+      "id": "potion_strength_pill",
+      "name": "续力丸",
+      "stack_limit": 2,
+      "spoilage_ticks": 7200
+    },
+    {
+      "id": "potion_antistun_pill",
+      "name": "醒神丸",
+      "stack_limit": 3,
+      "spoilage_ticks": 7200
+    },
+    {
+      "id": "potion_energy_pill",
+      "name": "续航丸",
+      "stack_limit": 3,
+      "spoilage_ticks": 7200
+    },
+    {
+      "id": "potion_calm_pill",
+      "name": "安神丸",
+      "stack_limit": 3,
+      "spoilage_ticks": 7200
+    },
+    {
+      "id": "potion_vision_pill",
+      "name": "幻梦丸",
+      "stack_limit": 2,
+      "spoilage_ticks": 7200
+    },
+    {
+      "id": "potion_analgesic_pill_regular",
+      "name": "舒行丸",
+      "use_action": "drink",
+      "pharm_family": "analgesic",
+      "buff_id": "buff_pharm_analgesic_drink_regular",
+      "pain_ignore_ratio": 0.4,
+      "onset_ticks": 5,
+      "duration_ticks": 120,
+      "weight_kg": 0.02,
+      "spoilage_ticks": 7200,
+      "addiction_draft": {
+        "oral_gain": 0.5,
+        "relief_stages": 2
+      },
+      "oral_toxicity_gain": 4.8,
+      "stack_limit": 3
+    },
+    {
+      "id": "potion_analgesic_pill_potent",
+      "name": "止痛丸",
+      "use_action": "drink",
+      "pharm_family": "analgesic",
+      "buff_id": "buff_pharm_analgesic_drink_potent",
+      "pain_ignore_ratio": 0.6,
+      "onset_ticks": 5,
+      "duration_ticks": 150,
+      "weight_kg": 0.02,
+      "spoilage_ticks": 7200,
+      "addiction_draft": {
+        "oral_gain": 4,
+        "relief_stages": 3
+      },
+      "oral_toxicity_gain": 13,
+      "stack_limit": 2
+    },
+    {
+      "id": "potion_analgesic_pill_purified",
+      "name": "定痛丸",
+      "use_action": "drink",
+      "pharm_family": "analgesic",
+      "buff_id": "buff_pharm_analgesic_drink_pure",
+      "pain_ignore_ratio": 0.76,
+      "onset_ticks": 5,
+      "duration_ticks": 180,
+      "weight_kg": 0.02,
+      "spoilage_ticks": 7200,
+      "addiction_draft": {
+        "oral_gain": 6.0235,
+        "relief_stages": 3
+      },
+      "oral_toxicity_gain": 5.2,
+      "stack_limit": 2
+    },
+    {
+      "id": "potion_detox_pill",
+      "name": "清毒丸",
+      "use_action": "drink",
+      "onset_ticks": 3,
+      "duration_ticks": 40,
+      "extra_toxicity_decay_per_tick": 0.75,
+      "oral_toxicity_gain": 0,
+      "addiction_draft": {
+        "oral_gain": 0,
+        "relief_stages": 0
+      },
+      "weight_kg": 0.02,
+      "stack_limit": 2,
+      "spoilage_ticks": 7200,
+      "preservation_status": "基础期限已确认；实际剩余期限按原料继承"
+    }
+  ],
+  "additions": [
+    {
+      "recipe_id": "proposal.pharmacy.clean_soft_water",
+      "method_id": "life_pharmacy.filtration",
+      "inputs": [
+        [
+          "ore_water_pure_soft",
+          1
+        ]
+      ],
+      "main_output": [
+        "solvent_water_pure",
+        1
+      ],
+      "required_level": 4,
+      "purpose": "打通现有水资源与制药溶媒；保留购买溶媒的早期入口",
+      "dependency": "现有工艺；需加入配方并核对经济数值",
+      "status": "拟新增"
+    },
+    {
+      "recipe_id": "proposal.pharmacy.clean_ore_salt_rock",
+      "method_id": "life_pharmacy.filtration",
+      "inputs": [
+        [
+          "ore_salt_rock",
+          2
+        ],
+        [
+          "solvent_water_pure",
+          1
+        ]
+      ],
+      "main_output": [
+        "ore_salt_sea",
+        1
+      ],
+      "required_level": 4,
+      "purpose": "劣质盐用更多投入换通用盐原料，避免各盐类无用途",
+      "dependency": "现有工艺；需加入配方并核对经济数值",
+      "status": "拟新增"
+    },
+    {
+      "recipe_id": "proposal.pharmacy.clean_ore_salt_sea_coarse",
+      "method_id": "life_pharmacy.filtration",
+      "inputs": [
+        [
+          "ore_salt_sea_coarse",
+          2
+        ],
+        [
+          "solvent_water_pure",
+          1
+        ]
+      ],
+      "main_output": [
+        "ore_salt_sea",
+        1
+      ],
+      "required_level": 4,
+      "purpose": "劣质盐用更多投入换通用盐原料，避免各盐类无用途",
+      "dependency": "现有工艺；需加入配方并核对经济数值",
+      "status": "拟新增"
+    },
+    {
+      "recipe_id": "proposal.pharmacy.clean_ore_salt_black",
+      "method_id": "life_pharmacy.filtration",
+      "inputs": [
+        [
+          "ore_salt_black",
+          2
+        ],
+        [
+          "solvent_water_pure",
+          1
+        ]
+      ],
+      "main_output": [
+        "ore_salt_sea",
+        1
+      ],
+      "required_level": 4,
+      "purpose": "劣质盐用更多投入换通用盐原料，避免各盐类无用途",
+      "dependency": "现有工艺；需加入配方并核对经济数值",
+      "status": "拟新增"
+    },
+    {
+      "recipe_id": "proposal.pharmacy.blend_saline",
+      "method_id": "life_pharmacy.blending",
+      "inputs": [
+        [
+          "ore_salt_sea",
+          1
+        ],
+        [
+          "solvent_water_pure",
+          2
+        ]
+      ],
+      "main_output": [
+        "solvent_saline",
+        2
+      ],
+      "required_level": 1,
+      "purpose": "自制通用溶媒，不产出固定注射药",
+      "dependency": "现有工艺；需加入配方并核对经济数值",
+      "status": "拟新增"
+    },
+    {
+      "recipe_id": "proposal.pharmacy.blend_glucose_solvent",
+      "method_id": "life_pharmacy.blending",
+      "inputs": [
+        [
+          "med_glucose_powder",
+          1
+        ],
+        [
+          "solvent_water_pure",
+          2
+        ]
+      ],
+      "main_output": [
+        "solvent_glucose_solution",
+        2
+      ],
+      "required_level": 1,
+      "purpose": "糖类药粉在口服与溶媒之间分流",
+      "dependency": "现有工艺；需加入配方并核对经济数值",
+      "status": "拟新增"
+    },
+    {
+      "recipe_id": "proposal.pharmacy.glucose_from_sugar",
+      "method_id": "life_pharmacy.maceration",
+      "inputs": [
+        [
+          "herb_sugar_white",
+          2
+        ],
+        [
+          "solvent_water_pure",
+          1
+        ]
+      ],
+      "main_output": [
+        "med_glucose_powder",
+        2
+      ],
+      "required_level": 0,
+      "purpose": "白砂糖作为已有甘蔗路线的替代来源，成本待价格校准",
+      "dependency": "现有工艺；需加入配方并核对经济数值",
+      "status": "拟新增"
+    },
+    {
+      "recipe_id": "proposal.pharmacy.cardiac_from_hus_beef_heart",
+      "method_id": "life_pharmacy.maceration",
+      "inputs": [
+        [
+          "hus_beef_heart",
+          1
+        ],
+        [
+          "solvent_water_pure",
+          1
+        ]
+      ],
+      "main_output": [
+        "med_cardiac_powder",
+        2
+      ],
+      "required_level": 0,
+      "purpose": "现有兽心的替代原料路线",
+      "dependency": "复苏消费者未完成，整条新增强心替代线储备，暂不投放",
+      "status": "拟新增"
+    },
+    {
+      "recipe_id": "proposal.pharmacy.cardiac_from_hus_mutton_heart",
+      "method_id": "life_pharmacy.maceration",
+      "inputs": [
+        [
+          "hus_mutton_heart",
+          1
+        ],
+        [
+          "solvent_water_pure",
+          1
+        ]
+      ],
+      "main_output": [
+        "med_cardiac_powder",
+        2
+      ],
+      "required_level": 0,
+      "purpose": "现有兽心的替代原料路线",
+      "dependency": "复苏消费者未完成，整条新增强心替代线储备，暂不投放",
+      "status": "拟新增"
+    },
+    {
+      "recipe_id": "proposal.pharmacy.cardiac_from_hus_chicken_heart",
+      "method_id": "life_pharmacy.maceration",
+      "inputs": [
+        [
+          "hus_chicken_heart",
+          1
+        ],
+        [
+          "solvent_water_pure",
+          1
+        ]
+      ],
+      "main_output": [
+        "med_cardiac_powder",
+        2
+      ],
+      "required_level": 0,
+      "purpose": "现有兽心的替代原料路线",
+      "dependency": "复苏消费者未完成，整条新增强心替代线储备，暂不投放",
+      "status": "拟新增"
+    },
+    {
+      "recipe_id": "proposal.pharmacy.lemon_adjuvant",
+      "method_id": "life_pharmacy.filtration",
+      "inputs": [
+        [
+          "herb_lemon",
+          2
+        ],
+        [
+          "solvent_water_pure",
+          1
+        ]
+      ],
+      "main_output": [
+        "adj_citric_acid",
+        1
+      ],
+      "required_level": 4,
+      "purpose": "现有柠檬取得助溶剂；仅为游戏抽象加工",
+      "dependency": "需将现有柠檬加入制药投料白名单；不新增采集原料",
+      "status": "拟新增"
+    },
+    {
+      "recipe_id": "proposal.pharmacy.refine_antler",
+      "method_id": "life_pharmacy.filtration",
+      "inputs": [
+        [
+          "med_antler_powder",
+          2
+        ]
+      ],
+      "main_output": [
+        "med_antler_powder_refined",
+        1
+      ],
+      "required_level": 4,
+      "purpose": "续力同档更省浓度，保留粗粉经济价值",
+      "dependency": "新增中间品模板；效果点90、毒性0、浓度20，保持 mineral 类别",
+      "status": "拟新增"
+    },
+    {
+      "recipe_id": "proposal.pharmacy.purify_antler",
+      "method_id": "life_pharmacy.centrifugation",
+      "inputs": [
+        [
+          "med_antler_powder_refined",
+          2
+        ]
+      ],
+      "main_output": [
+        "med_antler_powder_purified",
+        1
+      ],
+      "required_level": 8,
+      "purpose": "更高加工开启纯品续力，服务复方容量",
+      "dependency": "新增中间品模板；效果点113、毒性0、浓度15，保持 mineral 类别",
+      "status": "拟新增"
+    },
+    {
+      "recipe_id": "proposal.pharmacy.press_strength_pill",
+      "method_id": "life_pharmacy.tableting",
+      "inputs": [
+        [
+          "med_antler_powder",
+          1
+        ],
+        [
+          "herb_sugar_white",
+          1
+        ],
+        [
+          "solvent_water_pure",
+          1
+        ]
+      ],
+      "main_output": [
+        "potion_strength_pill",
+        1
+      ],
+      "required_level": 2,
+      "purpose": "便携长效口服：续力丸",
+      "dependency": "新增成品及独立丸剂时序；负重上限 +4.5 kg；10 tick 起效，基础总窗口240 tick；与其他续力取最高值；每件0.02 kg、堆叠2、基础保存7200 tick，按原料新鲜度继承，糖仅作游戏丸基，不额外赠恢复。配方级成本已接入：燃料25、4 tick、体力2；单批产出1。",
+      "status": "拟新增",
+      "proposed_cost": {
+        "fuel": 25,
+        "water": 0,
+        "ticks": 4,
+        "stamina": 2
+      }
+    },
+    {
+      "recipe_id": "proposal.pharmacy.press_antistun_pill",
+      "method_id": "life_pharmacy.tableting",
+      "inputs": [
+        [
+          "med_acorus_powder",
+          1
+        ],
+        [
+          "herb_sugar_white",
+          1
+        ],
+        [
+          "solvent_water_pure",
+          1
+        ]
+      ],
+      "main_output": [
+        "potion_antistun_pill",
+        1
+      ],
+      "required_level": 2,
+      "purpose": "便携长效口服：醒神丸",
+      "dependency": "新增成品及独立丸剂时序；眩晕抗性 +20%；10 tick 起效，基础总窗口120 tick；每件0.02 kg、堆叠3、基础保存7200 tick，按原料新鲜度继承，糖仅作游戏丸基，不额外赠恢复。配方级成本已接入：燃料20、3 tick、体力2；单批产出1。",
+      "status": "拟新增",
+      "proposed_cost": {
+        "fuel": 20,
+        "water": 0,
+        "ticks": 3,
+        "stamina": 2
+      }
+    },
+    {
+      "recipe_id": "proposal.pharmacy.press_energy_pill",
+      "method_id": "life_pharmacy.tableting",
+      "inputs": [
+        [
+          "med_glucose_powder",
+          1
+        ],
+        [
+          "herb_sugar_white",
+          1
+        ],
+        [
+          "solvent_water_pure",
+          1
+        ]
+      ],
+      "main_output": [
+        "potion_energy_pill",
+        1
+      ],
+      "required_level": 2,
+      "purpose": "便携长效口服：续航丸",
+      "dependency": "新增成品及独立丸剂时序；精力恢复总预算与同材料续航糖浆相等；10 tick 起效，基础总窗口120 tick；每件0.02 kg、堆叠3、基础保存7200 tick，按原料新鲜度继承，糖仅作游戏丸基，不额外赠恢复。配方级成本已接入：燃料20、3 tick、体力2；单批产出1。",
+      "status": "拟新增",
+      "proposed_cost": {
+        "fuel": 20,
+        "water": 0,
+        "ticks": 3,
+        "stamina": 2
+      }
+    },
+    {
+      "recipe_id": "proposal.pharmacy.press_calm_pill",
+      "method_id": "life_pharmacy.tableting",
+      "inputs": [
+        [
+          "med_thc_powder",
+          1
+        ],
+        [
+          "herb_sugar_white",
+          1
+        ],
+        [
+          "solvent_water_pure",
+          1
+        ]
+      ],
+      "main_output": [
+        "potion_calm_pill",
+        1
+      ],
+      "required_level": 2,
+      "purpose": "便携长效口服：安神丸",
+      "dependency": "新增成品及独立丸剂时序；心情恢复总预算与同材料安神汤相等；10 tick 起效，基础总窗口120 tick；每件0.02 kg、堆叠3、基础保存7200 tick，按原料新鲜度继承，糖仅作游戏丸基，不额外赠恢复。配方级成本已接入：燃料20、3 tick、体力2；单批产出1。",
+      "status": "拟新增",
+      "proposed_cost": {
+        "fuel": 20,
+        "water": 0,
+        "ticks": 3,
+        "stamina": 2
+      }
+    },
+    {
+      "recipe_id": "proposal.pharmacy.press_vision_pill",
+      "method_id": "life_pharmacy.tableting",
+      "inputs": [
+        [
+          "med_psilocybin_powder",
+          1
+        ],
+        [
+          "herb_sugar_white",
+          1
+        ],
+        [
+          "solvent_water_pure",
+          1
+        ]
+      ],
+      "main_output": [
+        "potion_vision_pill",
+        1
+      ],
+      "required_level": 2,
+      "purpose": "便携长效口服：幻梦丸",
+      "dependency": "新增成品及独立丸剂时序；潜能与实战经验收益各 ×1.10；10 tick 起效，基础总窗口300 tick；每件0.02 kg、堆叠2、基础保存7200 tick，按原料新鲜度继承，糖仅作游戏丸基，不额外赠恢复。配方级成本已接入：燃料25、4 tick、体力2；单批产出1。",
+      "status": "拟新增",
+      "proposed_cost": {
+        "fuel": 25,
+        "water": 0,
+        "ticks": 4,
+        "stamina": 2
+      }
+    },
+    {
+      "recipe_id": "proposal.pharmacy.press_analgesic_pill_regular",
+      "method_id": "life_pharmacy.tableting",
+      "inputs": [
+        [
+          "med_root_bitter_powder",
+          2
+        ],
+        [
+          "herb_sugar_white",
+          1
+        ],
+        [
+          "solvent_water_pure",
+          1
+        ]
+      ],
+      "main_output": [
+        "potion_analgesic_pill_regular",
+        1
+      ],
+      "required_level": 2,
+      "purpose": "低依赖的日常中度镇痛",
+      "dependency": "新增口服成品，复用镇痛模板；忽略疼痛40%，5 tick起效，总窗口120 tick；0.02 kg、堆叠3、基础保存7200 tick（按原料新鲜度继承）。成瘾候选：每次 +0.5，缓解2阶段，与主药效同步结束；口服毒性4.8。推荐等级2、燃料20、3 tick、体力2均已接入；价格仍待校准。",
+      "status": "拟新增",
+      "proposed_cost": {
+        "fuel": 20,
+        "water": 0,
+        "ticks": 3,
+        "stamina": 2
+      }
+    },
+    {
+      "recipe_id": "proposal.pharmacy.press_analgesic_pill_potent",
+      "method_id": "life_pharmacy.tableting",
+      "inputs": [
+        [
+          "med_morphine_powder",
+          1
+        ],
+        [
+          "herb_sugar_white",
+          2
+        ],
+        [
+          "solvent_water_pure",
+          2
+        ]
+      ],
+      "main_output": [
+        "potion_analgesic_pill_potent",
+        1
+      ],
+      "required_level": 6,
+      "purpose": "重伤探索与连续战斗的强效镇痛",
+      "dependency": "新增口服成品，复用镇痛模板；忽略疼痛60%，5 tick起效，总窗口150 tick；0.02 kg、堆叠2、基础保存7200 tick（按原料新鲜度继承）。成瘾候选：每次 +4，缓解3阶段，与主药效同步结束；口服毒性13。推荐等级6、燃料30、4 tick、体力2均已接入；价格仍待校准。",
+      "status": "拟新增",
+      "proposed_cost": {
+        "fuel": 30,
+        "water": 0,
+        "ticks": 4,
+        "stamina": 2
+      }
+    },
+    {
+      "recipe_id": "proposal.pharmacy.press_analgesic_pill_purified",
+      "method_id": "life_pharmacy.tableting",
+      "inputs": [
+        [
+          "med_morphine_powder_purified",
+          1
+        ],
+        [
+          "herb_sugar_white",
+          2
+        ],
+        [
+          "solvent_water_pure",
+          2
+        ]
+      ],
+      "main_output": [
+        "potion_analgesic_pill_purified",
+        1
+      ],
+      "required_level": 8,
+      "purpose": "高投入的深度镇痛，保留依赖代价",
+      "dependency": "新增口服成品，复用镇痛模板；忽略疼痛76%，5 tick起效，总窗口180 tick；0.02 kg、堆叠2、基础保存7200 tick（按原料新鲜度继承）。成瘾候选：每次 +6.0235，缓解3阶段，与主药效同步结束；口服毒性5.2。推荐等级8、燃料40、5 tick、体力2均已接入；价格仍待校准。",
+      "status": "拟新增",
+      "proposed_cost": {
+        "fuel": 40,
+        "water": 0,
+        "ticks": 5,
+        "stamina": 2
+      }
+    },
+    {
+      "recipe_id": "proposal.pharmacy.press_detox_pill",
+      "method_id": "life_pharmacy.tableting",
+      "inputs": [
+        [
+          "med_liver_herb_powder",
+          2
+        ],
+        [
+          "herb_sugar_white",
+          1
+        ],
+        [
+          "solvent_water_pure",
+          1
+        ]
+      ],
+      "main_output": [
+        "potion_detox_pill",
+        1
+      ],
+      "required_level": 2,
+      "proposed_cost": {
+        "fuel": 20,
+        "water": 0,
+        "ticks": 3,
+        "stamina": 2
+      },
+      "purpose": "短时加快积毒代谢，不承担单药解决严重过量的定位",
+      "dependency": "新增基础口服成品；3 tick起效、总窗口40 tick，额外代谢0.75/tick（自然代谢合计2.25）；不直接清毒、不降低成瘾、不缓解戒断，自身毒性与依赖增量0；重复服用刷新，不叠速，不储存未用排毒额度。0.02 kg、堆叠2；基础保存7200 tick并继承原料新鲜度。压片燃料20、3 tick、体力2已接入。",
+      "status": "已按确认设计实装"
+    }
+  ],
+  "changes": [
+    {
+      "recipe_id": "life_pharmacy.blend_mobility_salve",
+      "inputs": [
+        [
+          "med_safflower_powder",
+          1
+        ],
+        [
+          "hus_pork_lard",
+          1
+        ]
+      ],
+      "reason": "改用伤损恢复族红花粉，解除苦根草镇痛族跨族变成活络的矛盾；保留低成本药膏定位"
+    },
+    {
+      "recipe_id": "life_pharmacy.press_analgesic_pill",
+      "inputs": [
+        [
+          "med_root_bitter_powder",
+          1
+        ],
+        [
+          "herb_sugar_white",
+          1
+        ],
+        [
+          "solvent_water_pure",
+          1
+        ]
+      ],
+      "reason": "成品已更名为「苦根镇痛丸」，保留原物品ID；统一丸基；弱效镇痛忽略20%疼痛、5tick起效、90tick总窗口。口服毒性增量2.4、压片燃料15、2 tick、体力2和堆叠3均已接入。",
+      "proposed_name": "苦根镇痛丸",
+      "oral_toxicity_gain": 2.4,
+      "proposed_stack_limit": 3,
+      "proposed_cost": {
+        "fuel": 15,
+        "water": 0,
+        "ticks": 2,
+        "stamina": 2
+      }
+    }
+  ],
+  "held_materials": [
+    "herb_bitter",
+    "herb_poison_plant",
+    "ore_sulfur",
+    "hunt_bone_common",
+    "hus_beef_bone",
+    "hus_chicken_bone",
+    "hus_mutton_bone",
+    "hus_pork_bone",
+    "med_vitamin_c_powder",
+    "adj_vitamin_c"
+  ],
+  "notes": [
+    "0/1/2/4/6 为判断能力奖励阶段；加工0/4/6/8/10等改推荐等级，不再硬锁，两者不合并。",
+    "没有给所有粉末机械补齐三档。优先补续力，其他粉末保留不同成本、风险和用途。",
+    "护肝草精制后负毒性绝对值降低，抵消能力反而变弱；在独立抵消字段落地前不复制这套精制公式。",
+    "已有强心与止血路线保留事实记录，但消费者缺口必须标注；不把储备功能写成已可用。",
+    "多个配方产出同一物品时，展示所有替代路径，不能把它们相加当作一次制作投入。",
+    "没有现有可验证来源的辅助成分继续外部取得；骨类、毒草、硫磺不为了填满表格硬配成治疗药。",
+    "镇痛口服线已补齐四档：普通/浓制使用苦根草，强效/精炼使用吗啡药粉；镇痛比例与窗口已落地。详见 47-analgesic-finished-products.md。",
+    "镇痛丸命名：苦根镇痛丸（20%）、舒行丸（40%）、止痛丸（60%）、定痛丸（76%）。独立成品名、镇痛比例和时长已落地；注射仍由药粉动态配置。",
+    "口服毒性已接入：正毒性药粉投入总和×0.2，成功服用时一次加入现有毒性池；沿用1.5/tick自然代谢与现有惩罚。苦根镇痛丸/舒行丸/止痛丸/定痛丸分别+2.4/+4.8/+13/+5.2。",
+    "成本与堆叠修订已落地：四种镇痛丸依次堆叠3/3/2/2，压片使用配方级成本，不全局提高压片工艺成本。现有原料与药粉基础估值存在倒挂，尚不能宣称经济平衡完成。",
+    "全成品堆叠复核已覆盖28件现役固定药和1件动态注射模板；各项见medicine_stack_review及47-pharmacy-stack-review.md。原料不直接套新成品上限。",
+    "保存规则已落地：同类药液/药丸使用同一期限；精制精炼不自动延长；动态配置与合并不刷新保质期；制作继承最低新鲜度。见47-pharmacy-preservation.md。",
+    "迭代流程已确认，见47-pharmacy-iteration-workflow.md；本轮无需旧库存/旧存档迁移。草案到运行时须对齐权威来源并验证完整使用流程。",
+    "重复用药已落地：刷新持续时间、不叠加剩余窗口，每次成功服用照常结算成瘾与毒性，见47-pharmacy-redosing.md。",
+    "续药起效衔接已落地：已起效不中断、等待中不重置起效时刻、换强药正常等待、到期后重用正常等待；逐次成瘾毒性照常结算。",
+    "药效混用规则已落地：同类具体效果取最高、不同效果并存、外敷按部位、不同来源独立计时，见47-pharmacy-effect-stacking.md。",
+    "注射液身份已落地：完整配方成分及剂量相同即同药，忽略投料顺序和名称；与堆叠兼容性分开。见47-pharmacy-compound-identity.md。",
+    "配伍失败方案已落地：统一药渣，不再产沉淀/失效注射液等变体；合法高毒配方保留，见47-pharmacy-compounding-failure.md。",
+    "配伍边界已落地：缺料/缺必要溶媒/超浓度不能开工且不扣材料；相冲/溶媒不相容/助溶不足消耗后产药渣；合法高毒配方正常产药。等级只影响判断提示。",
+    "缺少实际已实现注射药效时不开工且不扣材料；无毒功能成分可满足条件。配药历史、回填、图鉴及历史信息豁免已移除，保留当次提示和分阶段判断。",
+    "清毒丸已落地：加快体内毒性代谢，不清空毒性、不降低成瘾；只保留一种口服成品，不新增解毒注射路线。见47-pharmacy-detox.md。",
+    "清毒丸配方与数值已接入：护肝草粉2+糖1+纯水1产1；额外代谢0.75/tick，3tick起效、总窗口40tick，堆叠2，自身依赖/毒性0。",
+    "发布门槛已执行：7条无实际消费者的止血/复苏专用配方记录已停用，原料其他用途保留；消费者接通后再启用。见47-pharmacy-functional-release.md。",
+    "保存数值已接入：所有成品基础7200tick；加工继承易腐原料最低剩余新鲜度比例；合并取较短剩余期限并提示。",
+    "过期结果已接入：提示药名和件数后直接腐败消失，不转药渣。",
+    "等级规则已接入：required_level及工艺等级作为推荐等级，低等级可尝试并受良品率惩罚；成功标准产物、失败药渣；自配注射无随机失败。",
+    "成功率已接入：每低推荐等级1级扣5个百分点；保留每级+0.5个百分点，中性心情下限15%。",
+    "制药经验已接入：普通成功100%、普通失败25%、配置成功正常经验、配伍失败/未开工/取消0；不加越级倍率，并保留四分之一精度。"
+  ],
+  "oral_toxicity_design": {
+    "status": "已实装",
+    "coefficient": 0.2,
+    "formula": "单次口服体内毒性增量 = max(0, 投入药粉的正毒性总和) × 0.2",
+    "settlement": "成功服用时一次加入现有体内毒性池；不随主药效持续重复增加；负毒性辅助成分的口服解毒用途另行定义，本规则不授予解毒能力",
+    "decay_per_tick": 1.5,
+    "notes": [
+      "沿用现有毒性档位与惩罚，不新增口服专属毒性条。",
+      "精炼降低原料毒性，不自动降低依赖。",
+      "0.2为本轮确认的首版口服系数；混用和密集使用累加到同一体内毒性池。"
+    ]
+  },
+  "medicine_stack_review": {
+    "status": "已按表实装；经济平衡仍待实测",
+    "rules": [
+      "口袋/弹挂每格仍只放一剂；不设计可反复使用的整瓶来绕过限制。",
+      "背包/载具堆叠按下列逐物品提案；仓库沿用模板上限时也会受影响，不额外授予仓库无限堆叠。",
+      "当前无正式存档，不要求本轮旧超限堆叠迁移；未来正式存档的兼容按迭代约定评估。",
+      "动态注射液仅完整成分与剂量等实例状态兼容时允许合并，不因item_id相同合并不同配方。",
+      "原料药粉不是可直接服用成品，不机械套用2～3上限；旧成品注射药单列迁移。"
+    ],
+    "items": [
+      {
+        "id": "potion_analgesic_pill",
+        "current_stack_limit": 20,
+        "proposed_stack_limit": 3,
+        "duration_ticks": 90,
+        "reason": "普通补给保留三次使用，避免一格储存十次以上",
+        "cost_review": "保留主药剂量；基础药液保留经济入口；长效优势先以堆叠限制约束，暂不全面涨价。"
+      },
+      {
+        "id": "potion_antistun_tea",
+        "current_stack_limit": 10,
+        "proposed_stack_limit": 3,
+        "duration_ticks": 60,
+        "reason": "普通补给保留三次使用，避免一格储存十次以上",
+        "cost_review": "保留主药剂量；基础药液保留经济入口；长效优势先以堆叠限制约束，暂不全面涨价。"
+      },
+      {
+        "id": "potion_calm_brew",
+        "current_stack_limit": 10,
+        "proposed_stack_limit": 3,
+        "duration_ticks": 60,
+        "reason": "普通补给保留三次使用，避免一格储存十次以上",
+        "cost_review": "保留主药剂量；基础药液保留经济入口；长效优势先以堆叠限制约束，暂不全面涨价。"
+      },
+      {
+        "id": "potion_calm_brew_purified",
+        "current_stack_limit": 10,
+        "proposed_stack_limit": 2,
+        "duration_ticks": 60,
+        "reason": "长窗口或高强度成品，每格保留两次使用",
+        "cost_review": "保留主药剂量；基础药液保留经济入口；长效优势先以堆叠限制约束，暂不全面涨价。"
+      },
+      {
+        "id": "potion_coagulant_powder",
+        "current_stack_limit": 15,
+        "proposed_stack_limit": 3,
+        "duration_ticks": 90,
+        "reason": "按部位使用，保留多部位处理需要；精炼高恢复量降至两份",
+        "cost_review": "保留主药剂量；先保留基础外敷经济入口；精炼成本已在上游。"
+      },
+      {
+        "id": "potion_coagulant_salve",
+        "current_stack_limit": 10,
+        "proposed_stack_limit": 3,
+        "duration_ticks": 90,
+        "reason": "按部位使用，保留多部位处理需要；精炼高恢复量降至两份",
+        "cost_review": "保留主药剂量；先保留基础外敷经济入口；精炼成本已在上游。"
+      },
+      {
+        "id": "potion_compound_injection",
+        "current_stack_limit": 5,
+        "proposed_stack_limit": 2,
+        "duration_ticks": null,
+        "reason": "一剂可承载多族效果；需检查实例兼容后才能合并",
+        "cost_review": "保留主药剂量；按实际配置原料计费，不设置固定注射配方。"
+      },
+      {
+        "id": "potion_energy_draught",
+        "current_stack_limit": 10,
+        "proposed_stack_limit": 3,
+        "duration_ticks": 60,
+        "reason": "普通补给保留三次使用，避免一格储存十次以上",
+        "cost_review": "保留主药剂量；基础药液保留经济入口；长效优势先以堆叠限制约束，暂不全面涨价。"
+      },
+      {
+        "id": "potion_mobility_poultice",
+        "current_stack_limit": 10,
+        "proposed_stack_limit": 3,
+        "duration_ticks": 90,
+        "reason": "按部位使用，保留多部位处理需要；精炼高恢复量降至两份",
+        "cost_review": "保留主药剂量；先保留基础外敷经济入口；精炼成本已在上游。"
+      },
+      {
+        "id": "potion_mobility_salve",
+        "current_stack_limit": 10,
+        "proposed_stack_limit": 3,
+        "duration_ticks": 90,
+        "reason": "按部位使用，保留多部位处理需要；精炼高恢复量降至两份",
+        "cost_review": "保留主药剂量；先保留基础外敷经济入口；精炼成本已在上游。"
+      },
+      {
+        "id": "potion_mobility_salve_potent",
+        "current_stack_limit": 10,
+        "proposed_stack_limit": 3,
+        "duration_ticks": 90,
+        "reason": "按部位使用，保留多部位处理需要；精炼高恢复量降至两份",
+        "cost_review": "保留主药剂量；先保留基础外敷经济入口；精炼成本已在上游。"
+      },
+      {
+        "id": "potion_mobility_salve_purified",
+        "current_stack_limit": 10,
+        "proposed_stack_limit": 2,
+        "duration_ticks": 90,
+        "reason": "按部位使用，保留多部位处理需要；精炼高恢复量降至两份",
+        "cost_review": "保留主药剂量；先保留基础外敷经济入口；精炼成本已在上游。"
+      },
+      {
+        "id": "potion_rehydration_broth",
+        "current_stack_limit": 10,
+        "proposed_stack_limit": 2,
+        "duration_ticks": 60,
+        "reason": "长窗口或高强度成品，每格保留两次使用",
+        "cost_review": "保留主药剂量；基础药液保留经济入口；长效优势先以堆叠限制约束，暂不全面涨价。"
+      },
+      {
+        "id": "potion_sedative_incense",
+        "current_stack_limit": 20,
+        "proposed_stack_limit": 3,
+        "duration_ticks": 18,
+        "reason": "普通补给保留三次使用，避免一格储存十次以上",
+        "cost_review": "保留主药剂量；已有烟草投入，不通过增加烟草提高成本，以免增加依赖。"
+      },
+      {
+        "id": "potion_strength_decoction",
+        "current_stack_limit": 10,
+        "proposed_stack_limit": 2,
+        "duration_ticks": 180,
+        "reason": "长窗口或高强度成品，每格保留两次使用",
+        "cost_review": "保留主药剂量；基础药液保留经济入口；长效优势先以堆叠限制约束，暂不全面涨价。"
+      },
+      {
+        "id": "potion_tonic_broth",
+        "current_stack_limit": 10,
+        "proposed_stack_limit": 3,
+        "duration_ticks": 60,
+        "reason": "普通补给保留三次使用，避免一格储存十次以上",
+        "cost_review": "保留主药剂量；基础药液保留经济入口；长效优势先以堆叠限制约束，暂不全面涨价。"
+      },
+      {
+        "id": "potion_tonic_broth_potent",
+        "current_stack_limit": 10,
+        "proposed_stack_limit": 2,
+        "duration_ticks": 60,
+        "reason": "长窗口或高强度成品，每格保留两次使用",
+        "cost_review": "保留主药剂量；基础药液保留经济入口；长效优势先以堆叠限制约束，暂不全面涨价。"
+      },
+      {
+        "id": "potion_tonic_cigarette",
+        "current_stack_limit": 20,
+        "proposed_stack_limit": 3,
+        "duration_ticks": 18,
+        "reason": "普通补给保留三次使用，避免一格储存十次以上",
+        "cost_review": "保留主药剂量；已有烟草投入，不通过增加烟草提高成本，以免增加依赖。"
+      },
+      {
+        "id": "potion_vision_draught",
+        "current_stack_limit": 10,
+        "proposed_stack_limit": 2,
+        "duration_ticks": 240,
+        "reason": "长窗口或高强度成品，每格保留两次使用",
+        "cost_review": "保留主药剂量；基础药液保留经济入口；长效优势先以堆叠限制约束，暂不全面涨价。"
+      },
+      {
+        "id": "potion_vision_incense",
+        "current_stack_limit": 20,
+        "proposed_stack_limit": 2,
+        "duration_ticks": 60,
+        "reason": "长窗口或高强度成品，每格保留两次使用",
+        "cost_review": "保留主药剂量；已有烟草投入，不通过增加烟草提高成本，以免增加依赖。"
+      },
+      {
+        "id": "potion_strength_pill",
+        "current_stack_limit": null,
+        "proposed_stack_limit": 2,
+        "reason": "药丸按已定强度与长窗口限制为2～3颗",
+        "cost_review": "保留药粉剂量，以配方级加工成本体现便携代价。"
+      },
+      {
+        "id": "potion_antistun_pill",
+        "current_stack_limit": null,
+        "proposed_stack_limit": 3,
+        "reason": "药丸按已定强度与长窗口限制为2～3颗",
+        "cost_review": "保留药粉剂量，以配方级加工成本体现便携代价。"
+      },
+      {
+        "id": "potion_energy_pill",
+        "current_stack_limit": null,
+        "proposed_stack_limit": 3,
+        "reason": "药丸按已定强度与长窗口限制为2～3颗",
+        "cost_review": "保留药粉剂量，以配方级加工成本体现便携代价。"
+      },
+      {
+        "id": "potion_calm_pill",
+        "current_stack_limit": null,
+        "proposed_stack_limit": 3,
+        "reason": "药丸按已定强度与长窗口限制为2～3颗",
+        "cost_review": "保留药粉剂量，以配方级加工成本体现便携代价。"
+      },
+      {
+        "id": "potion_vision_pill",
+        "current_stack_limit": null,
+        "proposed_stack_limit": 2,
+        "reason": "药丸按已定强度与长窗口限制为2～3颗",
+        "cost_review": "保留药粉剂量，以配方级加工成本体现便携代价。"
+      },
+      {
+        "id": "potion_analgesic_pill_regular",
+        "current_stack_limit": null,
+        "proposed_stack_limit": 3,
+        "reason": "药丸按已定强度与长窗口限制为2～3颗",
+        "cost_review": "保留药粉剂量，以配方级加工成本体现便携代价。"
+      },
+      {
+        "id": "potion_analgesic_pill_potent",
+        "current_stack_limit": null,
+        "proposed_stack_limit": 2,
+        "reason": "药丸按已定强度与长窗口限制为2～3颗",
+        "cost_review": "保留药粉剂量，以配方级加工成本体现便携代价。"
+      },
+      {
+        "id": "potion_analgesic_pill_purified",
+        "current_stack_limit": null,
+        "proposed_stack_limit": 2,
+        "reason": "药丸按已定强度与长窗口限制为2～3颗",
+        "cost_review": "保留药粉剂量，以配方级加工成本体现便携代价。"
+      },
+      {
+        "id": "potion_detox_pill",
+        "current_stack_limit": null,
+        "proposed_stack_limit": 2,
+        "duration_ticks": 40,
+        "reason": "短时排毒辅助，保留两次使用，不把解毒储备集中到一格",
+        "cost_review": "两份护肝草粉折合一份护肝草；另耗糖水与压片，单批一颗。"
+      }
+    ]
+  },
+  "preservation_design": {
+    "status": "已实装并通过实例继承、合并、冷藏和过期测试",
+    "base_finished_spoilage_ticks": 7200,
+    "scope": [
+      "药液",
+      "药丸",
+      "药烟",
+      "外敷药",
+      "自配注射液"
+    ],
+    "principles": [
+      "同类药液与药丸使用相同保存期。",
+      "精制、精炼不自动延长保存期。",
+      "加工与堆叠不得刷新保质期。"
+    ],
+    "craft_inheritance": "成品剩余期限=7200×参与制作的易腐原料中最低剩余新鲜度比例；不腐败原料不参与最低值计算。",
+    "merge_inheritance": "合并取较短剩余期限，预先提示按较旧批次保存。",
+    "implemented_checks": [
+      "接入制作时的腐败进度读取与成品实例赋值",
+      "核对冷藏修正和实际有效腐败进度",
+      "实现合并提示与期限继承",
+      "现有腐败返回null移除；补齐/核对玩家可见过期提示，控制台警告不等于界面通知"
+    ],
+    "runtime_change": true,
+    "expiry_result": "向玩家提示过期药名与数量后直接移除，沿用现有腐败，不产药渣或变体"
+  },
+  "iteration_workflow": {
+    "document": "47-pharmacy-iteration-workflow.md",
+    "status": "已确认流程，非已实现功能",
+    "current_migration_required": false
+  },
+  "redosing_design": {
+    "status": "已实装",
+    "duration": "重复成功服用同一种药，从本次使用刷新应得窗口，不叠加剩余时长",
+    "cost": "每次成功使用均消耗药品，并按已定规则结算依赖与毒性增量，不因buff已存在而免除",
+    "document": "47-pharmacy-redosing.md",
+    "onset_rules": [
+      "已起效且未结束：刷新窗口，效果不中断。",
+      "尚在等待：保留原起效时刻，结束时间按最后一次服用刷新。",
+      "换更强药：新药正常等待，旧药继续生效，起效后取最高效果。",
+      "原药已结束：重新等待起效。"
+    ]
+  },
+  "effect_stacking_design": {
+    "status": "已统一实装",
+    "document": "47-pharmacy-effect-stacking.md",
+    "rules": [
+      "同类具体效果跨途径取最高，不叠加。",
+      "不同效果并存；多状态恢复按具体状态分别取最高有效速率。",
+      "外敷按目标部位分组。",
+      "不同来源独立计时，强药结束后回退至仍有效弱药。",
+      "每次成功服用照常增加依赖和毒性。"
+    ]
+  },
+  "compound_identity_design": {
+    "status": "已接入",
+    "document": "47-pharmacy-compound-identity.md",
+    "identity": "全部成分ID与总份数，含溶媒及助剂；归并重复行并排序，忽略投料顺序和名称",
+    "redosing": "相同配方刷新，不同配方独立计时；同类效果仍取最高",
+    "stacking": "配方身份与实例可堆叠条件分开，合并不刷新保存期限"
+  },
+  "compounding_failure_design": {
+    "status": "已实装",
+    "document": "47-pharmacy-compounding-failure.md",
+    "failed_output_item_id": "item.scrap.herb_dregs",
+    "rules": [
+      "配伍不成立消耗本批投入，统一产现有药渣；失败原因按等级提示。",
+      "配伍成立生成正常注射液，无额外随机配置失败。",
+      "残余毒性高不等于配伍失败。",
+      "不新增沉淀注射液等失败变体物品。"
+    ],
+    "boundaries": {
+      "cannot_start": [
+        "原料不足",
+        "缺少必要溶媒",
+        "浓度超限",
+        "没有任何实际已实现的注射药效"
+      ],
+      "consumed_failure": [
+        "成分相冲",
+        "溶媒不相容",
+        "助溶不足"
+      ],
+      "valid_with_risk": [
+        "主药毒性高",
+        "抵消不足"
+      ],
+      "level_rule": "等级只影响判断与提示，不改变相同配方的成立结果",
+      "known_failure_preview": "制作前明确提示按当前配方配置将失败",
+      "unknown_failure_feedback": "实际失败后提示结果与该等级能理解的原因"
+    },
+    "effective_component_requirement": "至少一项实际已实现注射药效；无毒功能药可用，纯溶媒/助剂/抵消辅粉不可独立产药。"
+  },
+  "compound_history_design": {
+    "status": "已移除",
+    "policy": "当次提示，不建配药历史、失败图鉴或重复尝试提醒",
+    "remove": [
+      "历史记录与持久化",
+      "历史界面与回填",
+      "历史记录带来的信息解锁豁免"
+    ],
+    "retain": [
+      "分阶段配伍判断",
+      "成品实例的成分与剂量"
+    ]
+  },
+  "detox_design": {
+    "status": "清毒丸数值、配方和基础保存期已实装",
+    "document": "47-pharmacy-detox.md",
+    "scope": "一种基础口服解毒药，优先复用；不扩展多档或解毒注射路线",
+    "effect": "药效期间加快体内毒性代谢，不直接清空毒性，不降低成瘾",
+    "redosing": "刷新时间，不叠加代谢速度",
+    "new_toxicity": "用药新增毒性照常完整结算",
+    "implemented_checks": [
+      "接入口服额外毒性代谢消费者及配方级成本",
+      "按实际tick顺序验证起效、刷新和危险倒计时"
+    ],
+    "item_id": "potion_detox_pill"
+  },
+  "functional_release_gate": {
+    "status": "发布原则已执行；消费者缺口分支在运行时停用",
+    "document": "47-pharmacy-functional-release.md",
+    "held_effect_types": [
+      "pharmacy_bleeding_slow",
+      "pharmacy_revive"
+    ],
+    "policy": "未接通实际作用的专用成品与制作分支暂不开放；保留原料其他有效用途；可简单补接则补，否则暂缓",
+    "verification": "js目录未发现两种效果类型的显式消费者；矩阵有定义，不等于效果生效"
+  },
+  "crafting_level_design": {
+    "status": "推荐等级与每级5个百分点惩罚已实装",
+    "document": "47-pharmacy-crafting-levels.md",
+    "policy": "工艺与配方等级为推荐等级；低于推荐等级可尝试，降低良品率",
+    "standard_output": true,
+    "compound_random_failure": false,
+    "implemented_checks": [
+      "接入软等级判定及成功率展示",
+      "核对与既有心情等修正及满级行为衔接",
+      "按最终曲线复核多工序成本"
+    ],
+    "penalty_per_missing_level": 0.05,
+    "level_bonus": 0.005,
+    "neutral_min_success_rate": 0.15,
+    "recommended_level_rule": "工艺与配方取较高推荐等级，只罚一次"
+  },
+  "crafting_experience_design": {
+    "status": "已实装",
+    "document": "47-pharmacy-crafting-experience.md",
+    "ordinary_success_multiplier": 1,
+    "ordinary_failure_multiplier": 0.25,
+    "compound_success": "正常配置经验",
+    "compound_failure_multiplier": 0,
+    "not_started_or_cancelled_multiplier": 0,
+    "overlevel_bonus": false
+  },
+  "deployment_document": "47-pharmacy-implementation-checklist.md",
+  "canonical_design_document": "47-pharmacy-system.md"
+}

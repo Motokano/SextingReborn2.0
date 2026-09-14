@@ -16,13 +16,18 @@ import { fileURLToPath } from 'node:url';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const root = path.resolve(here, '..');
-const MATRIX_PATH = path.join(root, 'data', 'pharmacy-buff-matrix.json');
+const MATRIX_ARG = process.argv.find((arg) => arg.startsWith('--matrix='));
+const MATRIX_PATH = MATRIX_ARG
+  ? path.resolve(root, MATRIX_ARG.slice('--matrix='.length))
+  : path.join(root, 'data', 'pharmacy-buff-matrix.json');
 const BUFFS_PATH = path.join(root, 'data', 'buffs.json');
+const FINISHED_PATH = path.join(root, 'data', 'pharmacy-finished-buffs.json');
 const CHECK_ONLY = process.argv.includes('--check');
 
 const matrix = JSON.parse(fs.readFileSync(MATRIX_PATH, 'utf8'));
 const doc = JSON.parse(fs.readFileSync(BUFFS_PATH, 'utf8'));
 const buffs = Array.isArray(doc.buffs) ? doc.buffs : [];
+const finished = JSON.parse(fs.readFileSync(FINISHED_PATH, 'utf8')).buffs || [];
 
 const TRIGGER = {
   triggerEventKind: ['world'],
@@ -35,7 +40,7 @@ function round2(n) {
 }
 
 /** 按 scale 缩放单条 effect：*_multiplier 只缩放超出 1 的部分，其余按比例线性缩放。 */
-function scaleEffect(effect, scale) {
+function scaleEffect(effect, scale, survivalBudgetDivisor) {
   const type = String(effect.type || '');
   const params = effect.params || {};
   const out = {};
@@ -51,7 +56,12 @@ function scaleEffect(effect, scale) {
       // 倍率类：1 + (v-1)*scale（如 1.08 → 1.04/1.08/1.12）
       out[k] = round2(v === 0 ? 0 : (v > 1 ? 1 + (v - 1) * scale : v * scale));
     } else {
-      out[k] = round2(v * scale);
+      // Preserve the old generator's route/potency rounding before spreading an
+      // injection's 10-tick survival budget across its family-specific window.
+      const scaled = round2(v * scale);
+      out[k] = effect.type === 'survival_delta' && survivalBudgetDivisor > 1
+        ? scaled / survivalBudgetDivisor
+        : scaled;
     }
   }
   return { type: type, params: out };
@@ -59,15 +69,21 @@ function scaleEffect(effect, scale) {
 
 function buildTemplate(spec) {
   const route = matrix.route_profiles[spec.route];
+  const familyOverride = matrix.route_family_overrides?.[spec.route]?.[spec.family] || null;
+  const durationTicks = familyOverride?.duration_by_potency?.[spec.potency] ?? familyOverride?.duration_ticks ?? route.duration_ticks;
+  const survivalBudgetDivisor = spec.route === 'inject' ? durationTicks / route.duration_ticks : 1;
   const potency = matrix.potency_profiles[spec.potency];
   const scale = round2((route.peak != null ? route.peak : 1) * (potency.scale != null ? potency.scale : 1));
   const buffId = 'buff_pharm_' + spec.family + '_' + spec.route + '_' + spec.potency;
+  const effects = (spec.effects || []).map((e) => scaleEffect(e, scale, survivalBudgetDivisor));
+  const carry = effects.find((e) => e.type === 'pharmacy_carry_capacity');
+  const pain = effects.find((e) => e.type === 'pain_ignore_ratio');
   return {
     buff_id: buffId,
     name: spec.familyName + '·' + route.name + '·' + potency.name,
-    desc: spec.desc + '（' + route.name + '起效 ' + route.onset_ticks + ' tick，持续 ' + route.duration_ticks + ' tick，峰值 ' + scale + '）',
+    desc: spec.desc + (carry ? '；负重上限 +' + carry.params.kilograms + ' kg' : '') + (pain ? '；忽略疼痛 ' + Math.round(pain.params.ratio * 100) + '%' : '') + '（' + route.name + '起效 ' + route.onset_ticks + ' tick，持续 ' + durationTicks + ' tick，峰值 ' + scale + '）',
     onsetTicks: route.onset_ticks,
-    durationTicks: route.duration_ticks,
+    durationTicks: durationTicks,
     maxStacks: 1,
     stacksAddOnApply: 1,
     priority: 80,
@@ -78,7 +94,7 @@ function buildTemplate(spec) {
     triggerEventKind: TRIGGER.triggerEventKind.slice(),
     triggerEventName: TRIGGER.triggerEventName.slice(),
     triggerTags: TRIGGER.triggerTags.slice(),
-    effects: (spec.effects || []).map((e) => scaleEffect(e, scale)),
+    effects: effects,
     expire_effects: [],
     dispel_pool: 'beneficial',
     pharmacy_generated: true,
@@ -86,9 +102,48 @@ function buildTemplate(spec) {
     pharmacy_route: spec.route,
     pharmacy_potency: spec.potency,
     pharmacy_scope: route.scope,
-    pharmacy_peak: scale
+    pharmacy_peak: scale,
+    ...(spec.route === 'inject' && survivalBudgetDivisor > 1 ? { pharmacy_survival_budget_quantized: true } : {})
   };
 }
+
+function buildFinishedTemplate(spec) {
+  if (!spec.buff_id || !(spec.durationTicks > spec.onsetTicks) || !Array.isArray(spec.effects)) {
+    throw new Error('invalid finished medicine buff: ' + (spec.buff_id || '?'));
+  }
+  return {
+    ...spec,
+    maxStacks: 1, stacksAddOnApply: 1, priority: 80, listenerSide: 'self',
+    consumeMode: 'always', consumeLayersFixed: 0, applyMode: 'always_apply',
+    triggerEventKind: TRIGGER.triggerEventKind.slice(), triggerEventName: TRIGGER.triggerEventName.slice(),
+    triggerTags: TRIGGER.triggerTags.slice(), expire_effects: [], dispel_pool: 'beneficial',
+    pharmacy_generated: true, pharmacy_finished_product: true, pharmacy_route: 'drink', pharmacy_scope: 'systemic'
+  };
+}
+
+function validateMatrix() {
+  const overrides = matrix.route_family_overrides || {};
+  Object.keys(overrides).forEach((routeId) => {
+    const route = matrix.route_profiles?.[routeId];
+    if (!route) throw new Error('route_family_overrides references unknown route: ' + routeId);
+    Object.keys(overrides[routeId] || {}).forEach((familyId) => {
+      const family = matrix.families?.[familyId];
+      if (!family) throw new Error('route_family_overrides references unknown family: ' + familyId);
+      if (!Array.isArray(family.routes) || !family.routes.includes(routeId)) {
+        throw new Error('route_family_overrides references unavailable cell: ' + familyId + '/' + routeId);
+      }
+      const duration = Number(overrides[routeId][familyId]?.duration_ticks);
+      for (const [potency, value] of Object.entries(overrides[routeId][familyId]?.duration_by_potency || {})) {
+        if (!matrix.potency_profiles[potency] || !Number.isInteger(value) || value <= route.onset_ticks) throw new Error('invalid duration_by_potency: ' + familyId + '/' + potency);
+      }
+      if (!Number.isInteger(duration) || duration <= 0) {
+        throw new Error('invalid duration_ticks for ' + familyId + '/' + routeId + ': ' + String(duration));
+      }
+    });
+  });
+}
+
+validateMatrix();
 
 function buildFlatTemplate(id, name, desc, durationTicks, effects, extra) {
   const t = {
@@ -185,6 +240,9 @@ Object.keys(matrix.addiction_stages || {}).forEach((key) => {
     { pharmacy_addiction_stage: Math.max(1, parseInt(a.stage, 10) || 1) }
   ));
 });
+
+// ---- 5) 独立成品时序（药丸不是全局口服档位） ----
+finished.forEach((spec) => generated.push(buildFinishedTemplate(spec)));
 
 // ---- 合并：同 id 覆盖，其余保留 ----
 const byId = new Map();

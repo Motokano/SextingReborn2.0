@@ -1,0 +1,10 @@
+{
+  "buffs": [
+    {"buff_id":"buff_pharm_strength_pill","name":"续力丸","desc":"负重上限 +4.5 kg（10 tick起效，总窗口240 tick）","onsetTicks":10,"durationTicks":240,"pharmacy_family":"strength","pharmacy_potency":"weak","effects":[{"type":"pharmacy_carry_capacity","params":{"kilograms":4.5}}]},
+    {"buff_id":"buff_pharm_antistun_pill","name":"醒神丸","desc":"眩晕抗性 +20%（10 tick起效，总窗口120 tick）","onsetTicks":10,"durationTicks":120,"pharmacy_family":"antistun","pharmacy_potency":"regular","effects":[{"type":"pharmacy_anti_stun","params":{"anti_stun_pct":0.2}}]},
+    {"buff_id":"buff_pharm_energy_pill","name":"续航丸","desc":"以长窗口缓慢恢复精力（10 tick起效，总窗口120 tick）","onsetTicks":10,"durationTicks":120,"pharmacy_family":"energy","pharmacy_potency":"weak","effects":[{"type":"survival_delta","params":{"energy":0.6,"nutrition":0.24}}]},
+    {"buff_id":"buff_pharm_sedative_pill","name":"安神丸","desc":"以长窗口缓慢恢复心情（10 tick起效，总窗口120 tick）","onsetTicks":10,"durationTicks":120,"pharmacy_family":"sedative","pharmacy_potency":"weak","effects":[{"type":"survival_delta","params":{"mood":0.6,"nutrition":0.16}}]},
+    {"buff_id":"buff_pharm_hallucinogen_pill","name":"幻梦丸","desc":"潜能与实战经验收益 ×1.10（10 tick起效，总窗口300 tick）","onsetTicks":10,"durationTicks":300,"pharmacy_family":"hallucinogen","pharmacy_potency":"weak","effects":[{"type":"battle_potential_gain_multiplier","params":{"multiplier":1.1}},{"type":"battle_combat_experience_gain_multiplier","params":{"multiplier":1.1}}]},
+    {"buff_id":"buff_pharm_detox_pill","name":"清毒丸","desc":"额外代谢体内毒性 0.75/tick（3 tick起效，总窗口40 tick）","onsetTicks":3,"durationTicks":40,"pharmacy_family":"detox","pharmacy_potency":"regular","effects":[{"type":"pharmacy_toxicity_decay_bonus","params":{"per_tick":0.75}}]}
+  ]
+}

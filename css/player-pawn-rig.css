@@ -1,0 +1,30 @@
+.player-rig-image { display: none; }
+.map-view-isometric .player-pawn-visual.has-atlas-pawn {
+    width: var(--atlas-width);
+    height: var(--atlas-height);
+    transform: translate(var(--atlas-x), var(--atlas-y));
+    background: var(--atlas-image) 0 0 / 100% 100% no-repeat;
+    image-rendering: auto;
+    pointer-events: none;
+}
+.map-view-isometric .player-pawn-visual.has-atlas-pawn > span,
+.map-view-isometric .player-pawn-visual.has-atlas-pawn > img { display: none; }
+.map-view-isometric .player-pawn-visual.has-atlas-pawn::before {
+    width: 40px;
+    height: 3px;
+    bottom: 1px;
+    background: rgba(9,8,7,.26);
+}
+.map-view-isometric .player-pawn-visual.has-atlas-pawn::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to bottom, rgba(9,8,7,.13), rgba(9,8,7,.37));
+    -webkit-mask: var(--atlas-image) 0 0 / 100% 100% no-repeat;
+    mask: var(--atlas-image) 0 0 / 100% 100% no-repeat;
+    transform-origin: 50% calc(100% - 1px);
+    transform: matrix(1,0,-.48,-.24,0,0);
+    filter: blur(.8px);
+    pointer-events: none;
+    z-index: -1;
+}

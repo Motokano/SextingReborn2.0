@@ -39,12 +39,14 @@
      * @param {string} hook 如 hit_roll_success
      */
     function runPostEffectsForHook(ctx, hook) {
+        if (ctx.blockTargetEffects) return;
         var ids = (ctx.attacker && ctx.attacker.postEffectIds) ? ctx.attacker.postEffectIds : [];
         if (!ids.length) return;
         var ii;
         for (ii = 0; ii < ids.length; ii++) {
             var pe = getPostEffect(ids[ii]);
             if (!validateSocket(pe, ctx)) continue;
+            if (pe.effect_type === 'damage_scale_by_target_debuff_stacks') continue;
             var trig = (pe.effect_params && pe.effect_params.trigger) ? pe.effect_params.trigger : 'hit_roll_success';
             if (trig !== hook) continue;
             if (hook === 'hit_roll_success' && !ctx.hitRollSuccess) continue;

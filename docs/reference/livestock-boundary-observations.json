@@ -1,0 +1,319 @@
+{
+  "slaughterThresholds": [
+    {
+      "species": "cattle",
+      "minimumKg": 10
+    },
+    {
+      "species": "sheep",
+      "minimumKg": 3
+    },
+    {
+      "species": "pig",
+      "minimumKg": 3
+    },
+    {
+      "species": "chicken",
+      "minimumKg": 0.8
+    }
+  ],
+  "offalCliff": [
+    {
+      "weightKg": 599.99,
+      "products": [
+        {
+          "item_id": "hus_beef_steak",
+          "count": 59
+        }
+      ]
+    },
+    {
+      "weightKg": 600,
+      "products": [
+        {
+          "item_id": "hus_beef_steak",
+          "count": 60
+        },
+        {
+          "item_id": "hus_beef_heart",
+          "count": 1
+        },
+        {
+          "item_id": "hus_beef_liver",
+          "count": 1
+        },
+        {
+          "item_id": "hus_beef_kidney",
+          "count": 1
+        },
+        {
+          "item_id": "hus_beef_tripe",
+          "count": 1
+        },
+        {
+          "item_id": "hus_beef_omasum",
+          "count": 1
+        },
+        {
+          "item_id": "hus_beef_intestine",
+          "count": 1
+        },
+        {
+          "item_id": "hus_beef_tongue",
+          "count": 1
+        },
+        {
+          "item_id": "hus_beef_lung",
+          "count": 1
+        },
+        {
+          "item_id": "hus_beef_brain",
+          "count": 1
+        },
+        {
+          "item_id": "hus_beef_marrow",
+          "count": 1
+        },
+        {
+          "item_id": "hus_beef_blood",
+          "count": 1
+        },
+        {
+          "item_id": "hus_beef_hide",
+          "count": 1
+        },
+        {
+          "item_id": "hus_beef_bone",
+          "count": 1
+        },
+        {
+          "item_id": "hus_beef_horn",
+          "count": 1
+        },
+        {
+          "item_id": "hus_beef_tallow",
+          "count": 1
+        }
+      ]
+    }
+  ],
+  "healthCliff": [
+    {
+      "hp": 59.99,
+      "products": [
+        {
+          "item_id": "hus_beef_steak",
+          "count": 30
+        },
+        {
+          "item_id": "hus_beef_heart",
+          "count": 1
+        },
+        {
+          "item_id": "hus_beef_liver",
+          "count": 1
+        },
+        {
+          "item_id": "hus_beef_kidney",
+          "count": 1
+        },
+        {
+          "item_id": "hus_beef_tripe",
+          "count": 1
+        },
+        {
+          "item_id": "hus_beef_omasum",
+          "count": 1
+        },
+        {
+          "item_id": "hus_beef_intestine",
+          "count": 1
+        },
+        {
+          "item_id": "hus_beef_tongue",
+          "count": 1
+        },
+        {
+          "item_id": "hus_beef_lung",
+          "count": 1
+        },
+        {
+          "item_id": "hus_beef_brain",
+          "count": 1
+        },
+        {
+          "item_id": "hus_beef_marrow",
+          "count": 1
+        },
+        {
+          "item_id": "hus_beef_blood",
+          "count": 1
+        },
+        {
+          "item_id": "hus_beef_hide",
+          "count": 1
+        },
+        {
+          "item_id": "hus_beef_bone",
+          "count": 1
+        },
+        {
+          "item_id": "hus_beef_horn",
+          "count": 1
+        },
+        {
+          "item_id": "hus_beef_tallow",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "hp": 60,
+      "products": [
+        {
+          "item_id": "hus_beef_steak",
+          "count": 60
+        },
+        {
+          "item_id": "hus_beef_heart",
+          "count": 1
+        },
+        {
+          "item_id": "hus_beef_liver",
+          "count": 1
+        },
+        {
+          "item_id": "hus_beef_kidney",
+          "count": 1
+        },
+        {
+          "item_id": "hus_beef_tripe",
+          "count": 1
+        },
+        {
+          "item_id": "hus_beef_omasum",
+          "count": 1
+        },
+        {
+          "item_id": "hus_beef_intestine",
+          "count": 1
+        },
+        {
+          "item_id": "hus_beef_tongue",
+          "count": 1
+        },
+        {
+          "item_id": "hus_beef_lung",
+          "count": 1
+        },
+        {
+          "item_id": "hus_beef_brain",
+          "count": 1
+        },
+        {
+          "item_id": "hus_beef_marrow",
+          "count": 1
+        },
+        {
+          "item_id": "hus_beef_blood",
+          "count": 1
+        },
+        {
+          "item_id": "hus_beef_hide",
+          "count": 1
+        },
+        {
+          "item_id": "hus_beef_bone",
+          "count": 1
+        },
+        {
+          "item_id": "hus_beef_horn",
+          "count": 1
+        },
+        {
+          "item_id": "hus_beef_tallow",
+          "count": 1
+        }
+      ]
+    }
+  ],
+  "starvationReset": {
+    "suppliedFeed": 0.000001,
+    "satiety": 0.00009999999999999999,
+    "starvationTicks": 0,
+    "dead": false
+  },
+  "livingProductionBudget": [
+    {
+      "before": {
+        "weight": 150,
+        "satiety": 70.001
+      },
+      "after": {
+        "weight": 150,
+        "satiety": 70.001
+      },
+      "result": {
+        "ok": true,
+        "item_id": "hus_milk_buffalo",
+        "count": 1
+      }
+    },
+    {
+      "before": {
+        "weight": 150,
+        "satiety": 100
+      },
+      "after": {
+        "weight": 150,
+        "satiety": 100
+      },
+      "result": {
+        "ok": true,
+        "item_id": "hus_milk_buffalo",
+        "count": 1
+      }
+    }
+  ],
+  "chickenMeatTypes": {
+    "configured": [
+      "hus_chicken_thigh",
+      "hus_chicken_breast",
+      "hus_chicken_meat"
+    ],
+    "actual": [
+      {
+        "item_id": "hus_chicken_thigh",
+        "count": 3
+      },
+      {
+        "item_id": "hus_chicken_blood",
+        "count": 1
+      },
+      {
+        "item_id": "hus_chicken_gizzard",
+        "count": 1
+      },
+      {
+        "item_id": "hus_chicken_liver",
+        "count": 1
+      },
+      {
+        "item_id": "hus_chicken_heart",
+        "count": 1
+      },
+      {
+        "item_id": "hus_chicken_intestine",
+        "count": 1
+      },
+      {
+        "item_id": "hus_chicken_skin",
+        "count": 1
+      },
+      {
+        "item_id": "hus_chicken_bone",
+        "count": 1
+      }
+    ]
+  }
+}

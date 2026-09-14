@@ -299,6 +299,8 @@
         .role-card { background: rgba(45, 36, 30, 0.95); border: 2px solid rgba(212, 163, 115, 0.4); padding: 18px 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.3); margin-bottom: 14px; }
         .role-card h1 { font-size: 1.65rem; font-weight: 800; color: #fff; letter-spacing: 0.12em; margin: 0; line-height: 1.3; }
         .role-card .subtitle { font-size: 15px; color: #fbbf24; font-weight: 600; margin-top: 8px; letter-spacing: 0.06em; }
+        .combat-state-badge { display:inline-flex; align-items:center; margin-top:10px; padding:4px 9px; border:1px solid rgba(168,162,158,.45); border-radius:4px; color:#d6d3d1; background:rgba(28,25,23,.55); font-size:13px; font-weight:700; letter-spacing:.06em; }
+        .combat-state-badge.in-combat { color:#fecaca; border-color:rgba(239,68,68,.75); background:rgba(127,29,29,.34); box-shadow:0 0 0 1px rgba(239,68,68,.12) inset; }
         /* 底部动作栏 + 快捷腰带：整体贴游戏日志上沿，位置由 game-log.js 同步 */
         #bottom-hud-stack {
             position: fixed;
@@ -458,7 +460,7 @@
         .quick-belt .slot:hover { border-color: #fbbf24; }
         .quick-belt-hover-menu {
             position: fixed;
-            z-index: 5000;
+            z-index: 10001;
             display: none;
             flex-direction: column;
             gap: 6px;
@@ -1356,6 +1358,51 @@
             display: block; height: 100%; width: 0;
             background: linear-gradient(90deg, #ff8c00 0%, #d3a060 100%);
         }
+        /* Cooking: material library, working area, persistent action footer. */
+        #modal-cooking-station [hidden] { display: none !important; }
+        #modal-cooking-station .cs-panel { width: min(1100px, 96vw); height: min(780px, 92vh); }
+        #modal-cooking-station .cs-head { flex-wrap: nowrap; }
+        #modal-cooking-station .cs-head h2 { white-space: nowrap; }
+        #modal-cooking-station .cooking-tabs { display: flex; gap: 8px; flex-wrap: wrap; }
+        #modal-cooking-station .cs-body { grid-template-columns: minmax(0, 2fr) minmax(0, 3fr); padding-top: 0; gap: 14px; }
+        #modal-cooking-station .cs-box { min-width: 0; border-width: 1px; }
+        #modal-cooking-station .cooking-library-tabs { padding: 12px; border-bottom: 1px solid #4d4d45; }
+        #modal-cooking-station .cs-box > .content { flex: 1; padding: 14px; }
+        #modal-cooking-station .cs-ingredient-list { max-height: none; overflow: visible; }
+        #modal-cooking-station .cs-ingredient-row { grid-template-columns: minmax(0, 1fr) auto auto; gap: 8px; }
+        #modal-cooking-station .cs-resource-pick { grid-template-columns: minmax(0, 1fr) auto; }
+        #modal-cooking-station h3 { margin: 0 0 12px; font-size: 13px; color: #bcb3a4; font-weight: 500; }
+        #modal-cooking-station .cooking-input-heading { display: flex; align-items: center; justify-content: space-between; margin: 24px 0 8px; }
+        #modal-cooking-station .cooking-input-heading h3 { margin: 0; }
+        #modal-cooking-station .cs-input-row { grid-template-columns: minmax(0, 1fr) 72px auto; }
+        #modal-cooking-station .cs-input-row input { width: 100%; box-sizing: border-box; }
+        #modal-cooking-station #cooking-accessory-list .cs-input-row { grid-template-columns: minmax(0, 1fr) auto; }
+        #modal-cooking-station .cooking-footer { flex-shrink: 0; display: flex; align-items: center; gap: 20px; padding: 14px 18px; border-top: 1px solid #4d4d45; background: #211d18; }
+        #modal-cooking-station .cooking-footer-info { flex: 1; min-width: 0; }
+        #modal-cooking-station .cooking-footer > .btn-start { flex: 0 0 160px; }
+        #modal-cooking-station #cooking-active-craft progress { display: block; width: 100%; height: 6px; margin-top: 8px; accent-color: #d3a060; }
+        #modal-cooking-station #cooking-action-status { color: #c4b9a8; font-size: 13px; margin-top: 6px; }
+        #modal-cooking-station #cooking-action-status:empty { display: none; }
+        #modal-cooking-station .cs-kv { gap: 6px 18px; }
+        #modal-cooking-station .cs-kv .kv { background: none; border: none; padding: 0; }
+        #modal-cooking-station .cooking-tools { display: flex; justify-content: flex-end; gap: 20px; padding: 10px 18px; background: #1a1512; }
+        #modal-cooking-station summary { cursor: pointer; color: #bcb3a4; font-size: 13px; }
+        #modal-cooking-station .cooking-tool-content { position: absolute; z-index: 5; right: 18px; top: 104px; width: min(420px, calc(100% - 64px)); max-height: min(480px, 60vh); overflow: auto; padding: 16px; border: 1px solid #74634d; border-radius: 8px; background: #252520; box-shadow: 0 12px 35px #0009; line-height: 1.7; }
+        #modal-cooking-station .cooking-tool-content .cs-subtitle { margin-top: 16px; }
+        #modal-cooking-station #cooking-fix-equipment { margin-top: 6px; }
+        @media (max-width: 700px) {
+            #modal-cooking-station .cs-head { padding: 10px; gap: 10px; flex-wrap: wrap; }
+            #modal-cooking-station .cs-head .cs-close { margin-left: auto; }
+            #modal-cooking-station .cs-body { display: flex; flex-direction: column; overflow-y: auto; padding: 0 10px 10px; }
+            #modal-cooking-station .cs-box { overflow: hidden; flex: 0 0 auto; }
+            #modal-cooking-station .cooking-library .content { max-height: 240px; flex: none; }
+            #modal-cooking-station .cooking-workspace .content { overflow: visible; }
+            #modal-cooking-station .cooking-footer { gap: 10px; padding: 12px; }
+            #modal-cooking-station .cooking-footer > .btn-start { flex-basis: 110px; }
+            #modal-cooking-station .cooking-tool-content { top: 104px; }
+        }
+
+
         #modal-cooking-station #cooking-help-text { font-size: 13px; line-height: 1.65; color: #8e8e8e; }
         #modal-cooking-station .cs-empty-hint { color: #8e8e8e; font-size: 13px; }
         /* 制药台样式（复用烹饪台风格） */
@@ -1524,6 +1571,57 @@
             display: block; height: 100%; width: 0;
             background: linear-gradient(90deg, #ff8c00 0%, #d3a060 100%);
         }
+
+        /* Pharmacy: material library, working area, persistent action footer. */
+        #modal-pharmacy-station [hidden] { display: none !important; }
+        #modal-pharmacy-station .cs-panel { width: min(1100px, 96vw); height: min(780px, 92vh); }
+        #modal-pharmacy-station .cs-head { flex-wrap: nowrap; }
+        #modal-pharmacy-station .cs-head h2 { white-space: nowrap; }
+        #modal-pharmacy-station .pharmacy-tabs { display: flex; gap: 8px; flex-wrap: wrap; }
+        #modal-pharmacy-station #pharmacy-mode-tabs { flex: 1; }
+        #modal-pharmacy-station .cs-body { grid-template-columns: minmax(0, 2fr) minmax(0, 3fr); padding-top: 0; gap: 14px; }
+        #modal-pharmacy-station .cs-box { min-width: 0; border-width: 1px; }
+        #modal-pharmacy-station .pharmacy-library-tabs { padding: 12px; border-bottom: 1px solid #4d4d45; }
+        #modal-pharmacy-station .cs-box > .content { flex: 1; padding: 14px; }
+        #modal-pharmacy-station .cs-ingredient-list { max-height: none; overflow: visible; }
+        #modal-pharmacy-station .cs-ingredient-row { grid-template-columns: minmax(0, 1fr) auto auto; gap: 8px; }
+        #modal-pharmacy-station .cs-resource-pick { grid-template-columns: minmax(0, 1fr) auto; }
+        #modal-pharmacy-station h3 { margin: 0 0 12px; font-size: 13px; color: #bcb3a4; font-weight: 500; }
+        #modal-pharmacy-station .pharmacy-input-heading { display: flex; align-items: center; justify-content: space-between; margin: 24px 0 8px; }
+        #modal-pharmacy-station .pharmacy-input-heading h3 { margin: 0; }
+        #modal-pharmacy-station .cs-input-row { grid-template-columns: minmax(0, 1fr) 72px auto; }
+        #modal-pharmacy-station .cs-input-row input { width: 100%; box-sizing: border-box; }
+        #modal-pharmacy-station #pharmacy-accessory-list .cs-input-row { grid-template-columns: minmax(0, 1fr) auto; }
+        #modal-pharmacy-station .pharmacy-compound-bar { margin-top: 18px; }
+        #modal-pharmacy-station .pharmacy-compound-bar .kv { margin: 8px 0; font-size: 13px; line-height: 1.6; }
+        #modal-pharmacy-station .pharmacy-compound-bar .bad { color: #fca5a5; }
+        #modal-pharmacy-station #pharmacy-preview { margin-top: 18px; }
+        #modal-pharmacy-station .pharmacy-footer { flex-shrink: 0; display: flex; align-items: center; gap: 20px; padding: 14px 18px; border-top: 1px solid #4d4d45; background: #211d18; }
+        #modal-pharmacy-station .pharmacy-footer-info { flex: 1; min-width: 0; }
+        #modal-pharmacy-station .pharmacy-footer > .btn-start { flex: 0 0 160px; }
+        #modal-pharmacy-station #pharmacy-active-craft progress { display: block; width: 100%; height: 6px; margin-top: 8px; accent-color: #d3a060; }
+        #modal-pharmacy-station #pharmacy-action-status { color: #c4b9a8; font-size: 13px; margin-top: 6px; }
+        #modal-pharmacy-station #pharmacy-action-status:empty { display: none; }
+        #modal-pharmacy-station .cs-kv { gap: 6px 18px; }
+        #modal-pharmacy-station .cs-kv .kv { background: none; border: none; padding: 0; }
+        #modal-pharmacy-station .pharmacy-tools { display: flex; justify-content: flex-end; gap: 20px; padding: 10px 18px; background: #1a1512; }
+        #modal-pharmacy-station summary { cursor: pointer; color: #bcb3a4; font-size: 13px; }
+        #modal-pharmacy-station .pharmacy-tool-content { position: absolute; z-index: 5; right: 18px; top: 104px; width: min(420px, calc(100% - 64px)); max-height: min(480px, 60vh); overflow: auto; padding: 16px; border: 1px solid #74634d; border-radius: 8px; background: #252520; box-shadow: 0 12px 35px #0009; line-height: 1.7; }
+        #modal-pharmacy-station .pharmacy-tool-content .cs-subtitle { margin-top: 16px; }
+        #modal-pharmacy-station #pharmacy-fix-equipment { margin-top: 6px; }
+        @media (max-width: 700px) {
+            #modal-pharmacy-station .cs-head { padding: 10px; gap: 10px; flex-wrap: wrap; }
+            #modal-pharmacy-station #pharmacy-mode-tabs { order: 3; flex-basis: 100%; }
+            #modal-pharmacy-station .cs-head .cs-close { margin-left: auto; }
+            #modal-pharmacy-station .cs-body { display: flex; flex-direction: column; overflow-y: auto; padding: 0 10px 10px; }
+            #modal-pharmacy-station .cs-box { overflow: hidden; flex: 0 0 auto; }
+            #modal-pharmacy-station .pharmacy-library .content { max-height: 240px; flex: none; }
+            #modal-pharmacy-station .pharmacy-workspace .content { overflow: visible; }
+            #modal-pharmacy-station .pharmacy-footer { gap: 10px; padding: 12px; }
+            #modal-pharmacy-station .pharmacy-footer > .btn-start { flex-basis: 110px; }
+            #modal-pharmacy-station .pharmacy-tool-content { top: 145px; }
+        }
+
         #modal-pharmacy-station #pharmacy-help-text { font-size: 13px; line-height: 1.65; color: #8e8e8e; }
         #modal-pharmacy-station .cs-empty-hint { color: #8e8e8e; font-size: 13px; }
         /* 堆肥/沤肥统一设施面板 */
@@ -1805,6 +1903,42 @@
         }
         #modal-compost-station .cs-log .line { margin-bottom: 4px; }
         #modal-compost-station .cs-log .line:last-child { margin-bottom: 0; }
+        #modal-compost-station .cs-body { grid-template-columns: minmax(260px, 0.8fr) minmax(0, 1.6fr); overflow-y: auto; align-content: start; }
+        #modal-compost-station .cs-box { min-width: 0; }
+        #modal-compost-station .cs-box .content { overflow: visible; }
+        #modal-compost-station[data-phase="prepare"] .cs-body { grid-template-columns: minmax(0, 1.5fr) minmax(240px, 0.8fr); }
+        #modal-compost-station[data-phase="prepare"] .cs-results { display: none; }
+        #modal-compost-station[data-phase="ferment"] .cs-results { display: none; }
+        #modal-compost-station [hidden] { display: none !important; }
+        #modal-compost-station[data-phase="ferment"] .cs-body { display: flex; flex-direction: column; }
+        #modal-compost-station[data-phase="ferment"] .cs-box { flex-shrink: 0; }
+        #modal-compost-station[data-phase="ferment"] .cs-observation { order: -1; }
+        #modal-compost-station[data-phase="settled"] .cs-body { grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); }
+        #modal-compost-station[data-phase="settled"] .cs-results { grid-column: 1; grid-row: 1; }
+        #modal-compost-station[data-phase="settled"] .cs-observation { grid-column: 2; grid-row: 1 / span 2; }
+        #modal-compost-station[data-phase="settled"] .cs-materials { grid-column: 1; grid-row: 2; }
+        #modal-compost-station .cs-ing-id { display: none; }
+        #modal-compost-station summary { padding: 12px 0; cursor: pointer; color: #d3a060; font-weight: 700; }
+        #modal-compost-station .cs-observation-card { margin-top: 20px; padding: 24px; border: 1px solid #786348; border-radius: 10px; background: #1a1512; }
+        #modal-compost-station .cs-observation-card h3 { margin: 0 0 16px; font-size: 23px; color: #f1d4ad; }
+        #modal-compost-station .cs-observation-text { white-space: pre-line; line-height: 1.9; font-size: 16px; }
+        #modal-compost-station .cs-observation-card .btn-mini { padding: 12px 16px; font-size: 14px; }
+        #modal-compost-station .cs-feedback { margin: 18px 0 0; padding-left: 14px; border-left: 3px solid #d3a060; line-height: 1.8; color: #e6cda9; }
+        #modal-compost-station .cs-feedback:empty { display: none; }
+        #modal-compost-station .cs-history { margin-top: 20px; }
+        #modal-compost-station .cs-timeline { display: flex; flex-wrap: wrap; padding: 0; gap: 8px; margin: 20px 0 0; list-style: none; }
+        #modal-compost-station .cs-timeline li { border-top: 3px solid #4d4d45; padding: 8px 4px; flex: 1; min-width: 44px; font-size: 12px; color: #a8a29e; }
+        #modal-compost-station .cs-timeline li[data-state="done"] { border-color: #988365; }
+        #modal-compost-station .cs-timeline li[data-state="current"] { border-color: #ffb353; color: #ffcf8f; }
+        #modal-compost-station button:focus-visible, #modal-compost-station summary:focus-visible { outline: 2px solid #ffcf8f; outline-offset: 3px; }
+        @media (max-width: 760px) {
+            #modal-compost-station .cs-panel { height: 94vh; }
+            #modal-compost-station[data-phase] .cs-body { display: flex; flex-direction: column; }
+            #modal-compost-station .cs-box { flex-shrink: 0; }
+            #modal-compost-station[data-phase="ferment"] .cs-observation, #modal-compost-station[data-phase="settled"] .cs-results { order: -1; }
+            #modal-compost-station .cs-observation-card { padding: 16px; }
+            #modal-compost-station .cs-head .cs-hint { display: none; }
+        }
         /* 战斗技能枢纽弹窗（视觉参考 reference/combat_skill.html） */
         #modal-combat {
             display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.92); z-index: 100;
@@ -3285,7 +3419,8 @@
         #modal-livestock .module-slot.empty-slot.mountable:hover { border-color: #ff8c00; color: #ff8c00; }
         #modal-livestock .module-slot.shadow-slot { color: #6b6560; }
         #modal-livestock .module-slot.shadow-slot .slot-val { color: #6b6560; }
-        #modal-livestock .module-slot .slot-actions { display: flex; gap: 4px; flex-shrink: 0; }
+        #modal-livestock .module-slot .slot-actions .lv-btn { padding: 7px 10px; font-size: 13px; }
+#modal-livestock .module-slot .slot-actions { display: flex; gap: 4px; flex-shrink: 0; }
         #modal-livestock .module-slot .slot-actions .lv-btn { padding: 2px 6px; font-size: 10px; }
         #modal-livestock .module-slot .slot-effect { flex-basis: 100%; order: 5; }
         #modal-livestock .module-list { display: grid; gap: 8px; }
@@ -3320,7 +3455,108 @@
         #modal-livestock .product-row .lv-btn-dim { opacity: 0.45; }
 
     </style>
-</head>
+    <link rel="stylesheet" href="css/agriculture-overview.css">
+<style>
+        /* 牧场总览与日常收获：状态与空间分离 */
+        #modal-livestock button.tab-btn { border: 0; border-left: 3px solid transparent; background: transparent; font-family: inherit; }
+        #modal-livestock button.tab-btn.active { background: #d3a060; }
+        #modal-livestock .lv-main { min-width: 0; }
+        #modal-livestock .lv-view { min-width: 0; box-sizing: border-box; }
+        #modal-livestock [data-view="overview"] { flex-direction: column; gap: 16px; }
+        #modal-livestock .lv-summary-cards { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+        #modal-livestock .lv-summary-cards > div { background: #211f1a; border: 1px solid #585044; border-radius: 8px; padding: 16px; display: flex; flex-direction: column; gap: 7px; color: #bfb5a4; font-size: 13px; }
+        #modal-livestock .lv-summary-cards strong { color: #eee1ca; font-size: 27px; font-weight: 600; }
+        #modal-livestock .lv-eyebrow { color: #c6a77b; font-size: 12px; letter-spacing: 1px; }
+        #modal-livestock progress { width: 100%; height: 6px; accent-color: #c6a77b; }
+        #modal-livestock .lv-map-caption { display: flex; gap: 16px; flex-wrap: wrap; margin-top: 20px; color: #c5bba9; font-size: 13px; }
+        #modal-livestock .overview-grid { margin: 0; width: 100%; grid-template-columns: minmax(0,1fr) minmax(130px,.6fr) minmax(0,1fr); grid-template-rows: auto auto auto; gap: 10px; flex-shrink: 0; }
+        #modal-livestock .zone-cell { min-height: 190px; padding: 14px; border-width: 1px; background: #272a21; }
+        #modal-livestock .zone-header { color: #c5bba9; font-size: 13px; }
+        #modal-livestock .zone-header > span { font-size: 16px; color: #eee1ca; }
+        #modal-livestock .zone-eco { flex-direction: row; flex-wrap: wrap; gap: 4px 10px; }
+        #modal-livestock .animal-list { min-height: 30px; }
+        #modal-livestock .animal-item { padding: 5px 8px; }
+        #modal-livestock .arm-cell { padding: 12px 4px; border-width: 1px; flex-direction: column; min-width: 0; }
+        #modal-livestock .arm-label { font-size: 12px; color: #bcb09c; }
+        #modal-livestock .ov-module-chip { white-space: normal; overflow-wrap: anywhere; }
+        #modal-livestock .axis-cell { border-radius: 12px; min-height: 110px; border-width: 1px; }
+        #modal-livestock .lv-primary { background: #c6a77b; color: #211b14; font-weight: bold; align-self: flex-start; }
+        #modal-livestock .lv-btn:disabled { opacity: .45; cursor: default; }
+        #modal-livestock .lv-btn:focus-visible, #modal-livestock .tab-btn:focus-visible { outline: 2px solid #f2d49d; outline-offset: 3px; }
+        #modal-livestock .lv-footer { color: #b4a692; font-size: 12px; letter-spacing: 0; height: auto; min-height: 32px; padding: 6px 20px; }
+        #modal-livestock #livestock-product-content { display: flex; flex-direction: column; gap: 20px; }
+        #modal-livestock .lv-product-head { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 22px; background: #211f1a; border: 1px solid #585044; border-radius: 8px; color: #c5bba9; }
+        #modal-livestock .lv-product-head h3 { font-size: 28px; color: #eee1ca; margin: 8px 0; }
+        #modal-livestock .lv-product-head p { margin: 0; }
+        #modal-livestock #livestock-product-content .product-btns .lv-btn { padding: 8px 14px; font-size: 13px; }
+        #modal-livestock #livestock-product-content .product-row > .meta { margin-left: 0; flex: 1; text-align: left; }
+        #modal-livestock .lv-product-nav { display: flex; flex-wrap: wrap; gap: 8px; }
+        #modal-livestock #livestock-product-content .product-col { overflow: visible; flex: none; }
+        #modal-livestock #livestock-product-content .product-row { padding: 16px; margin-bottom: 10px; font-size: 15px; display: flex; flex-wrap: wrap; align-items: center; gap: 12px; border: 1px solid #514b40; }
+        #modal-livestock #livestock-product-content .meta { font-size: 13px; color: #bdb5a7; line-height: 1.7; }
+        #modal-livestock .lv-note { color: #c5bba9; font-size: 13px; }
+        #modal-livestock .lv-slaughter-preview { flex-basis: 100%; color: #dbb991; line-height: 1.7; }
+        @media (max-width: 700px) {
+            #modal-livestock .lv-panel { width: 100vw; height: 100dvh; border-radius: 0; }
+            #modal-livestock .lv-header { height: auto; min-height: 52px; flex-wrap: wrap; gap: 6px; padding: 10px; }
+            #modal-livestock .lv-title { margin-right: 8px; }
+            #modal-livestock .lv-badge, #modal-livestock .lv-toggle { margin: 0; padding: 5px; }
+            #modal-livestock .lv-body { flex-direction: column; }
+            #modal-livestock .lv-rail { width: auto; flex-direction: row; padding: 0; border-right: 0; }
+            #modal-livestock .tab-btn { flex: 1; height: 42px; }
+            #modal-livestock .lv-view { padding: 12px; }
+            #modal-livestock .lv-summary-cards { grid-template-columns: 1fr; gap: 8px; }
+            #modal-livestock .lv-summary-cards > div { padding: 12px; gap: 4px; }
+            #modal-livestock .overview-grid { grid-template-columns: 1fr; }
+            #modal-livestock .zone-cell { min-height: 150px; }
+            #modal-livestock .axis-cell { min-height: 80px; }
+            #modal-livestock .lv-product-head { align-items: flex-start; flex-direction: column; }
+            #modal-livestock [data-view="animals"] { flex-direction: column; }
+            #modal-livestock .animal-list-col { width: auto; max-height: 40vh; flex-shrink: 0; border: 0; padding: 0; }
+            #modal-livestock .animal-detail-col { padding: 16px 0; overflow: visible; }
+            #modal-livestock .module-content { flex-direction: column; }
+        }
+
+</style>
+<style>
+#modal-livestock .lv-filter-bar { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px; }
+#modal-livestock .lv-filter-bar .lv-btn { padding: 7px 10px; }
+#modal-livestock .lv-group-title { color: #cbb18a; font-size: 14px; margin: 12px 0 4px; }
+#modal-livestock button.animal-row { text-align: left; width: 100%; font-family: inherit; flex-shrink: 0; border-width: 1px; }
+#modal-livestock .animal-meta, #modal-livestock .animal-perk { font-size: 13px; line-height: 1.6; color: #bdb5a7; }
+#modal-livestock .animal-list-col { width: 48%; padding-right: 18px; box-sizing: border-box; }
+#modal-livestock .animal-detail-col { min-width: 0; padding-left: 24px; }
+#modal-livestock .kv-row { font-size: 14px; padding: 8px 0; border-bottom: 1px solid #494337; align-items: baseline; }
+#modal-livestock .kv-row > span:last-child { text-align: right; max-width: 68%; }
+#modal-livestock .detail-actions { flex-wrap: wrap; padding: 10px 0; }
+#modal-livestock summary { cursor: pointer; color: #cbb18a; padding: 10px 0; font-size: 14px; }
+#modal-livestock .breeding-controls { color: #bdb5a7; font-size: 13px; line-height: 1.6; border-bottom: 1px solid #514b40; flex-shrink: 0; }
+#modal-livestock .breeding-controls > div { display: flex; align-items: center; gap: 8px; margin: 8px 0; }
+#modal-livestock .lv-attention { color: #e4b17c; font-size: 13px; }
+#modal-livestock #livestock-module-content { display: flex; flex-direction: column; min-width: 0; gap: 16px; }
+#modal-livestock .lv-arm-navigation { background: #211f1a; border: 1px solid #585044; border-radius: 8px; padding: 16px; }
+#modal-livestock .lv-coverage-map { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; max-width: 420px; }
+#modal-livestock .lv-coverage-map span { background: #2a2822; color: #aaa08f; border: 1px solid #4c473c; padding: 10px; font-size: 13px; }
+#modal-livestock .lv-coverage-map .covered { background: #3d4430; border-color: #a4ae7c; color: #ece3c8; }
+#modal-livestock .lv-module-columns { display: flex; gap: 20px; align-items: flex-start; }
+#modal-livestock .module-left { width: 52%; flex-shrink: 0; box-sizing: border-box; overflow: visible; border: 0; }
+#modal-livestock .module-right { min-width: 0; overflow: visible; }
+#modal-livestock .module-slot { padding: 12px; gap: 8px; border-width: 1px; }
+#modal-livestock .module-slot .slot-key { font-size: 13px; color: #c5b395; }
+#modal-livestock .module-slot .slot-val { font-size: 14px; line-height: 1.6; }
+#modal-livestock .module-slot .slot-actions { flex-wrap: wrap; gap: 8px; }
+#modal-livestock .module-effect, #modal-livestock .module-desc, #modal-livestock .module-cost { font-size: 13px; line-height: 1.6; }
+#modal-livestock .lv-coverage-label { width: 100%; font-size: 13px; color: #b9c497; }
+#modal-livestock .lv-upgrade-preview { width: 100%; padding: 12px; box-sizing: border-box; background: #211f1a; color: #d8c6a9; font-size: 13px; line-height: 1.6; }
+#modal-livestock [data-dismount] { border-color: #65554c; color: #baa897; }
+@media(max-width:700px) {
+ #modal-livestock .animal-list-col { width: 100%; padding: 0; max-height: 45vh; }
+ #modal-livestock .animal-detail-col { padding: 16px 0; overflow: visible; }
+ #modal-livestock .lv-module-columns { flex-direction: column; }
+ #modal-livestock .module-left, #modal-livestock .module-right { width: 100%; padding: 0; }
+ #modal-livestock .module-slot, #modal-livestock .module-card { min-width: 0; overflow-wrap: anywhere; }
+}
+</style></head>
 <body>
     <div id="item-tooltip"></div>
 
@@ -3377,6 +3613,9 @@
             <div id="map-grid"></div>
             <div id="player-sprite">
                 <div id="player-direction-indicator"></div>
+                <div class="player-pawn-visual" aria-hidden="true">
+                    <span class="pawn-head"></span><span class="pawn-body"></span><span class="pawn-base"></span>
+                </div>
                 <div class="avatar" id="player-avatar">
                     <img id="player-avatar-img" class="avatar-img" src="" alt="">
                     <span class="avatar-fallback">👤</span>
@@ -3411,6 +3650,7 @@
                     <button type="button" class="ui-window-min" data-ui="ui.windows.minimize_hint" data-ui-attr="title" title="">—</button><button type="button" class="ui-window-close" data-ui="ui.windows.close" data-ui-attr="title" title="">✕</button>
                     <h1 id="status-role-name" data-ui="status.role.default"></h1>
                     <p class="subtitle" id="status-gender-line"></p>
+                    <div id="status-combat-state" class="combat-state-badge" role="status" aria-live="polite" data-ui="status.combat.out"></div>
                 </div>
                 <div id="status-scroll">
                     <div class="status-card ui-window-host" id="status-limbs">
@@ -3697,61 +3937,68 @@
                     <h2 data-ui="cooking.modal.title"></h2>
                     <button type="button" class="cs-close" id="cooking-station-close" data-ui="cooking.modal.close"></button>
                 </div>
-                <div class="cs-body">
-                    <div class="cs-box">
-                        <div class="title" data-ui="cooking.section.inputs"></div>
-                        <div class="content">
-                            <div id="cooking-input-list"></div>
-                            <div style="height:10px"></div>
-                            <div class="cs-subtitle" data-ui="cooking.section.from_inventory"></div>
-                            <input type="search" id="cooking-ingredient-filter" autocomplete="off" data-ui="cooking.ingredient.search.placeholder" data-ui-attr="placeholder" placeholder="" />
-                            <div id="cooking-ingredient-list" class="cs-ingredient-list"></div>
-                        </div>
-                        <div class="title" data-ui="cooking.section.known_recipes"></div>
-                        <div class="content">
-                            <div id="cooking-known-list" class="cs-known-list"></div>
-                        </div>
-                    </div>
-                    <div class="cs-box">
-                        <div class="title" data-ui="cooking.section.method"></div>
-                        <div class="content">
-                            <div id="cooking-method-list" class="cs-method-list"></div>
-                        </div>
-                        <div class="title" data-ui="cooking.section.accessory"></div>
-                        <div class="content">
+                <div class="cooking-tools">
+                    <details id="cooking-equipment">
+                        <summary data-ui="cooking.equipment"></summary>
+                        <div class="cooking-tool-content">
+                            <div id="cooking-equipment-status"></div>
+                            <div class="cs-subtitle" data-ui="cooking.section.accessory"></div>
                             <div id="cooking-accessory-list"></div>
-                            <div style="height:10px"></div>
                             <div class="cs-add-row accessory">
-                                <select id="cooking-add-accessory"></select>
+                                <select id="cooking-add-accessory" aria-label="可安装锅具"></select>
                                 <button type="button" class="btn-mini" id="cooking-add-accessory-btn" data-ui="cooking.btn.install_accessory"></button>
                             </div>
-                        </div>
-                    </div>
-                    <div class="cs-box">
-                        <div class="title" data-ui="cooking.section.status"></div>
-                        <div class="content">
-                            <div id="cooking-status-kv" class="cs-kv"></div>
-                            <div style="height:10px"></div>
-                            <div class="cs-subtitle" data-ui="cooking.section.water_sources"></div>
-                            <div id="cooking-water-source-list" class="cs-ingredient-list"></div>
-                            <div style="height:8px"></div>
+                            <section id="cooking-water-service">
+                                <div class="cs-subtitle" data-ui="cooking.section.water_sources"></div>
+                                <div id="cooking-water-source-list" class="cs-ingredient-list"></div>
+                                <button type="button" class="btn-mini" id="cooking-modal-pour-btn" data-ui="cooking.btn.water"></button>
+                            </section>
                             <div class="cs-subtitle" data-ui="cooking.section.fuel_sources"></div>
                             <div id="cooking-fuel-source-list" class="cs-ingredient-list"></div>
-                            <div style="height:10px"></div>
-                            <div class="cs-actions cs-station-service">
-                                <button type="button" class="btn-clear" id="cooking-modal-pour-btn" data-ui="player.action.pour_water"></button>
-                                <button type="button" class="btn-clear" id="cooking-modal-add-fuel-btn" data-ui="player.action.add_fuel"></button>
-                            </div>
-                            <div class="cs-actions">
-                                <button type="button" class="btn-start" id="cooking-start-btn" data-ui="cooking.btn.start"></button>
+                            <button type="button" class="btn-mini" id="cooking-modal-add-fuel-btn" data-ui="cooking.btn.fuel"></button>
+                        </div>
+                    </details>
+                    <details id="cooking-help">
+                        <summary data-ui="cooking.section.help"></summary>
+                        <div class="cooking-tool-content" id="cooking-help-text"></div>
+                    </details>
+                </div>
+                <div class="cs-body">
+                    <section class="cs-box cooking-library">
+                        <div class="cooking-tabs cooking-library-tabs">
+                            <button type="button" id="cooking-materials-tab" class="btn-method active" data-ui="cooking.section.from_inventory"></button>
+                            <button type="button" id="cooking-recipes-tab" class="btn-method" data-ui="cooking.section.known_recipes"></button>
+                        </div>
+                        <div id="cooking-materials-view" class="content">
+                            <input type="search" id="cooking-ingredient-filter" autocomplete="off" aria-label="搜索食材" data-ui="cooking.ingredient.search.placeholder" data-ui-attr="placeholder" />
+                            <div id="cooking-ingredient-list" class="cs-ingredient-list"></div>
+                        </div>
+                        <div id="cooking-recipes-view" class="content" hidden>
+                            <div id="cooking-known-list" class="cs-known-list"></div>
+                        </div>
+                    </section>
+                    <section class="cs-box cooking-workspace">
+                        <div class="content">
+                            <section id="cooking-method-section">
+                                <h3 data-ui="cooking.section.method"></h3>
+                                <div id="cooking-method-list" class="cs-method-list"></div>
+                            </section>
+                            <div class="cooking-input-heading">
+                                <h3 data-ui="cooking.section.inputs"></h3>
                                 <button type="button" class="btn-clear" id="cooking-clear-btn" data-ui="cooking.btn.clear"></button>
                             </div>
+                            <div id="cooking-input-list"></div>
                         </div>
-                        <div class="title" data-ui="cooking.section.progress"></div>
-                        <div class="content">
-                            <div id="cooking-active-craft"></div>
-                        </div>
+                    </section>
+                </div>
+                <div class="cooking-footer">
+                    <div class="cooking-footer-info">
+                        <div id="cooking-status-kv" class="cs-kv"></div>
+                        <div id="cooking-active-craft" aria-live="polite"></div>
+                        <div id="cooking-action-status" role="status"></div>
+                        <button type="button" id="cooking-fix-equipment" class="btn-mini" hidden></button>
                     </div>
+                    <button type="button" class="btn-start" id="cooking-start-btn"></button>
                 </div>
             </div>
         </div>
@@ -3760,66 +4007,72 @@
             <div class="cs-panel">
                 <div class="cs-head">
                     <h2 data-ui="pharmacy.modal.title"></h2>
-                    <span class="cs-hint" data-ui="pharmacy.modal.hint"></span>
+                    <div id="pharmacy-mode-tabs" class="pharmacy-tabs" aria-label="制药模式"></div>
                     <button type="button" class="cs-close" id="pharmacy-station-close" data-ui="pharmacy.modal.close"></button>
                 </div>
-                <div class="cs-body">
-                    <div class="cs-box">
-                        <div class="title" data-ui="pharmacy.section.inputs"></div>
-                        <div class="content">
-                            <div id="pharmacy-input-list"></div>
-                            <div style="height:10px"></div>
-                            <div class="cs-subtitle" data-ui="pharmacy.section.from_inventory"></div>
-                            <input type="search" id="pharmacy-ingredient-filter" autocomplete="off" data-ui="pharmacy.ingredient.search.placeholder" data-ui-attr="placeholder" placeholder="" />
-                            <div id="pharmacy-ingredient-list" class="cs-ingredient-list"></div>
-                        </div>
-                        <div class="title" data-ui="pharmacy.section.known_recipes"></div>
-                        <div class="content">
-                            <div id="pharmacy-known-list" class="cs-known-list"></div>
-                        </div>
-                    </div>
-                    <div class="cs-box">
-                        <div class="title" data-ui="pharmacy.section.method"></div>
-                        <div class="content">
-                            <div id="pharmacy-method-list" class="cs-method-list"></div>
-                        </div>
-                        <div class="title" data-ui="pharmacy.section.accessory"></div>
-                        <div class="content">
+                <div class="pharmacy-tools">
+                    <details id="pharmacy-equipment">
+                        <summary data-ui="pharmacy.equipment"></summary>
+                        <div class="pharmacy-tool-content">
+                            <div id="pharmacy-equipment-status"></div>
+                            <div class="cs-subtitle" data-ui="pharmacy.section.accessory"></div>
                             <div id="pharmacy-accessory-list"></div>
-                            <div style="height:10px"></div>
                             <div class="cs-add-row accessory">
-                                <select id="pharmacy-add-accessory"></select>
+                                <select id="pharmacy-add-accessory" aria-label="可安装配件"></select>
                                 <button type="button" class="btn-mini" id="pharmacy-add-accessory-btn" data-ui="pharmacy.btn.install_accessory"></button>
                             </div>
-                        </div>
-                        <div class="title" data-ui="pharmacy.section.status"></div>
-                        <div class="content">
-                            <div id="pharmacy-status-kv" class="cs-kv"></div>
-                            <div style="height:10px"></div>
                             <div class="cs-subtitle" data-ui="pharmacy.section.fuel_sources"></div>
                             <div id="pharmacy-fuel-source-list" class="cs-ingredient-list"></div>
-                            <div style="height:10px"></div>
-                            <div class="cs-actions cs-station-service">
-                                <button type="button" class="btn-clear" id="pharmacy-modal-add-fuel-btn" data-ui="player.action.add_fuel"></button>
-                            </div>
-                            <div class="cs-actions">
-                                <button type="button" class="btn-start" id="pharmacy-start-btn" data-ui="pharmacy.btn.start"></button>
+                            <button type="button" class="btn-mini" id="pharmacy-modal-add-fuel-btn" data-ui="pharmacy.btn.fuel"></button>
+                        </div>
+                    </details>
+                    <details id="pharmacy-help">
+                        <summary data-ui="pharmacy.section.help"></summary>
+                        <div class="pharmacy-tool-content" id="pharmacy-help-text"></div>
+                    </details>
+                </div>
+                <div class="cs-body">
+                    <section class="cs-box pharmacy-library">
+                        <div class="pharmacy-tabs pharmacy-library-tabs">
+                            <button type="button" id="pharmacy-materials-tab" class="btn-method active" data-ui="pharmacy.section.from_inventory"></button>
+                            <button type="button" id="pharmacy-recipes-tab" class="btn-method" data-ui="pharmacy.section.known_recipes"></button>
+                        </div>
+                        <div id="pharmacy-materials-view" class="content">
+                            <input type="search" id="pharmacy-ingredient-filter" autocomplete="off" aria-label="搜索材料" data-ui="pharmacy.ingredient.search.placeholder" data-ui-attr="placeholder" />
+                            <div id="pharmacy-ingredient-list" class="cs-ingredient-list"></div>
+                        </div>
+                        <div id="pharmacy-recipes-view" class="content" hidden>
+                            <div id="pharmacy-known-list" class="cs-known-list"></div>
+                        </div>
+                    </section>
+                    <section class="cs-box pharmacy-workspace">
+                        <div class="content">
+                            <section id="pharmacy-method-section">
+                                <h3 data-ui="pharmacy.section.method"></h3>
+                                <div id="pharmacy-method-list" class="cs-method-list"></div>
+                            </section>
+                            <div class="pharmacy-input-heading">
+                                <h3 data-ui="pharmacy.section.inputs"></h3>
                                 <button type="button" class="btn-clear" id="pharmacy-clear-btn" data-ui="pharmacy.btn.clear"></button>
                             </div>
+                            <div id="pharmacy-input-list"></div>
+                            <div id="pharmacy-compound-bar" class="pharmacy-compound-bar"></div>
+                            <div id="pharmacy-preview" class="cs-kv"></div>
                         </div>
+                    </section>
+                </div>
+                <div class="pharmacy-footer">
+                    <div class="pharmacy-footer-info">
+                        <div id="pharmacy-status-kv" class="cs-kv"></div>
+                        <div id="pharmacy-active-craft" aria-live="polite"></div>
+                        <div id="pharmacy-action-status" role="status"></div>
+                        <button type="button" id="pharmacy-fix-equipment" class="btn-mini" hidden></button>
                     </div>
-                    <div class="cs-box">
-                        <div class="title" data-ui="pharmacy.section.progress"></div>
-                        <div class="content">
-                            <div id="pharmacy-active-craft"></div>
-                        </div>
-                        <div class="title" data-ui="pharmacy.section.help"></div>
-                        <div class="content" id="pharmacy-help-text"></div>
-                    </div>
+                    <button type="button" class="btn-start" id="pharmacy-start-btn"></button>
                 </div>
             </div>
         </div>
-        <div id="modal-compost-station" aria-hidden="true">
+        <div id="modal-compost-station" aria-hidden="true" data-phase="prepare">
             <div class="cs-panel">
                 <div class="cs-head">
                     <h2 data-ui="compost.modal.title"></h2>
@@ -3831,52 +4084,57 @@
                     <button type="button" class="cs-close" id="compost-station-close" data-ui="compost.modal.close"></button>
                 </div>
                 <div class="cs-body">
-                    <div class="cs-box">
+                    <section class="cs-box cs-materials" id="compost-material-box">
                         <div class="title" data-ui="compost.section.left"></div>
                         <div class="content">
-                            <div id="compost-input-list"></div>
-                            <div style="height:10px"></div>
-                            <div class="cs-subtitle" data-ui="compost.section.from_inventory"></div>
-                            <div id="compost-ingredient-list" class="cs-ingredient-list"></div>
-                            <div style="height:10px"></div>
-                            <div class="cs-subtitle" data-ui="compost.section.inoculant"></div>
-                            <div id="compost-inoculant-list" class="cs-ingredient-list"></div>
-                            <div style="height:10px"></div>
-                            <div class="cs-subtitle" data-ui="compost.section.perception"></div>
-                            <div id="compost-perception-text" class="cs-empty-hint"></div>
+                            <details id="compost-material-details" open>
+                                <summary data-ui="compost.materials.summary"></summary>
+                                <div id="compost-input-list"></div>
+                            </details>
+                            <div id="compost-preparation">
+                                <div class="cs-subtitle" data-ui="compost.section.from_inventory"></div>
+                                <div id="compost-ingredient-list" class="cs-ingredient-list"></div>
+                                <div class="cs-subtitle" data-ui="compost.section.inoculant"></div>
+                                <div id="compost-inoculant-list" class="cs-ingredient-list"></div>
+                                <div class="cs-subtitle" data-ui="compost.section.perception"></div>
+                                <div id="compost-perception-text" class="cs-empty-hint"></div>
+                                <p id="compost-start-hint" class="cs-feedback" role="status" aria-live="polite"></p>
+                                <div class="cs-actions"><button type="button" class="btn-start" id="compost-start-btn" data-ui="compost.btn.start"></button></div>
+                            </div>
                         </div>
-                    </div>
-                    <div class="cs-box">
+                    </section>
+                    <section class="cs-box cs-observation" id="compost-observation-box">
                         <div class="title" data-ui="compost.section.middle"></div>
                         <div class="content">
                             <div id="compost-progress-kv" class="cs-kv"></div>
-                            <div style="height:10px"></div>
-                            <div class="cs-subtitle" data-ui="compost.section.window"></div>
-                            <div id="compost-window-text" class="cs-empty-hint"></div>
-                            <div class="cs-actions">
-                                <button type="button" class="btn-mini" id="compost-interact-best-btn"></button>
-                                <button type="button" class="btn-mini" id="compost-interact-mid-btn"></button>
-                                <button type="button" class="btn-mini" id="compost-interact-alt-btn"></button>
-                            </div>
-                            <div style="height:10px"></div>
-                            <div class="cs-subtitle" data-ui="compost.section.log"></div>
-                            <div id="compost-log-list" class="cs-log"></div>
+                            <ol id="compost-timeline" class="cs-timeline" aria-label="发酵进程"></ol>
+                            <article class="cs-observation-card" id="compost-observation-card">
+                                <h3 id="compost-observation-title"></h3>
+                                <div id="compost-window-text" class="cs-observation-text"></div>
+                                <div class="cs-actions">
+                                    <button type="button" class="btn-mini" id="compost-interact-best-btn"></button>
+                                    <button type="button" class="btn-mini" id="compost-interact-mid-btn"></button>
+                                    <button type="button" class="btn-mini" id="compost-interact-alt-btn"></button>
+                                </div>
+                                <p id="compost-immediate-feedback" class="cs-feedback" role="status" aria-live="polite"></p>
+                            </article>
+                            <details class="cs-history" id="compost-history-details">
+                                <summary data-ui="compost.section.log"></summary>
+                                <div id="compost-log-list" class="cs-log"></div>
+                            </details>
+                            <div class="cs-actions"><button type="button" class="btn-clear" id="compost-stop-btn" data-ui="compost.btn.stop"></button></div>
                         </div>
-                    </div>
-                    <div class="cs-box">
+                    </section>
+                    <section class="cs-box cs-results" id="compost-result-box">
                         <div class="title" data-ui="compost.section.right"></div>
                         <div class="content">
                             <div id="compost-result-list"></div>
-                            <div class="cs-actions">
-                                <button type="button" class="btn-start" id="compost-start-btn" data-ui="compost.btn.start"></button>
-                                <button type="button" class="btn-clear" id="compost-stop-btn" data-ui="compost.btn.stop"></button>
-                            </div>
                             <div class="cs-actions">
                                 <button type="button" class="btn-start" id="compost-collect-btn" data-ui="compost.btn.collect"></button>
                                 <button type="button" class="btn-clear" id="compost-discard-btn" data-ui="compost.btn.discard"></button>
                             </div>
                         </div>
-                    </div>
+                    </section>
                 </div>
             </div>
         </div>
@@ -3960,7 +4218,6 @@
                             <h3 id="skill-title" class="skill-title">--</h3>
                             <div class="skill-badges">
                                 <span id="skill-level" class="badge-level" data-ui="combat.level.zero"></span>
-                                <span id="skill-prof" class="badge-prof" data-ui="combat.prof.zero"></span>
                                 <button type="button" class="combat-debug-btn" id="btn-debug-combat-skill-plus50" title="调试：给当前战斗技能加 +50 级">+50级</button>
                                 <button type="button" class="combat-debug-btn" id="btn-debug-recipe-schema-errors" data-ui="debug.recipe_schema.btn"></button>
                             </div>
@@ -4076,10 +4333,10 @@
                 </div>
                 <div class="lv-body">
                     <div class="lv-rail">
-                        <div class="tab-btn active" data-tab="overview">总览</div>
-                        <div class="tab-btn" data-tab="animals">动物</div>
-                        <div class="tab-btn" data-tab="modules">模块</div>
-                        <div class="tab-btn" data-tab="products">产出</div>
+                        <button type="button" class="tab-btn active" data-tab="overview">总览</button>
+                        <button type="button" class="tab-btn" data-tab="animals">动物</button>
+                        <button type="button" class="tab-btn" data-tab="modules">模块</button>
+                        <button type="button" class="tab-btn" data-tab="products">产出</button>
                     </div>
                     <div class="lv-main">
                         <div class="lv-view" data-view="overview"><div id="livestock-overview-grid" class="overview-grid"></div></div>
@@ -4175,9 +4432,11 @@
     <script src="js/game-log.js"></script>
     <script src="js/game-time.js"></script>
     <script src="js/npc-system.js"></script>
+    <script src="js/food-metabolism.js"></script>
     <script src="js/survival.js"></script>
     <script src="js/character-attributes.js"></script>
     <script src="js/inventory-equipment.js"></script>
+    <script src="js/combat-damage.js"></script>
     <script src="js/combat-skills.js"></script>
     <script src="js/combat-hub-actions.js"></script>
     <script src="js/combat-parry.js"></script>
@@ -4188,6 +4447,7 @@
     <script src="js/combat-pipeline.js"></script>
     <script src="js/convert-rules.js"></script>
     <script src="js/combat-enemies.js"></script>
+    <script src="js/combat-engagement.js"></script>
     <script src="js/combat-melee-resolve.js"></script>
     
     <script src="js/muscles.js"></script>
@@ -4200,6 +4460,7 @@
     <script src="js/agriculture-map.js"></script>
     <script src="js/agriculture-config.js"></script>
     <script src="js/agriculture-player-items.js"></script>
+    <script src="js/agriculture-overview.js"></script>
     <script src="js/agriculture-panel.js"></script>
     <script src="js/hideout-warehouse.js"></script>
     <script src="js/hideout-warehouse-panel.js"></script>
@@ -4207,6 +4468,7 @@
     <script src="js/dungeon-loot.js"></script>
     <script src="js/enemy-drops.js"></script>
     <script src="js/scene-animation.js"></script>
+    <script src="js/core/map-projection.js"></script>
     <script src="js/core/tile-renderer-v2.js"></script>
     <script src="js/scene-renderer.js"></script>
     <script src="js/scene-systems.js"></script>
@@ -4229,6 +4491,11 @@
     <script src="js/item-use.js"></script>
     <script src="js/scene-ui.js"></script>
     <script src="js/scene-hud.js"></script>
+    <link rel="stylesheet" href="css/hunger-tile.css">
+    <link rel="stylesheet" href="css/isometric-map.css">
+    <link rel="stylesheet" href="css/player-pawn-rig.css">
+    <script src="js/player-pawn-rig.js"></script>
+    <script src="js/hunger-tile.js"></script>
     <script src="js/scene-app.js"></script>
     <script src="js/bootstrap.js"></script>
     <script src="js/debug-hash-router.js"></script>

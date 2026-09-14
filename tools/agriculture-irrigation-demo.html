@@ -874,6 +874,9 @@
        * @type {Record<string, { name: string, injectFacility: string, fertilizerPerTick?: number, effectDurationTicks?: number }>}
        */
       var AGRICULTURE_INJECTABLE_LIQUIDS = {
+        fertilizer_basic_low: { name: "fertilizer_basic_low", injectFacility: "buried_pot_jar", fertilizerPerTick: 0.35 },
+        fertilizer_basic: { name: "fertilizer_basic", injectFacility: "buried_pot_jar", fertilizerPerTick: 0.5 },
+        fertilizer_compost_plus: { name: "fertilizer_compost_plus", injectFacility: "buried_pot_jar", fertilizerPerTick: 0.75 },
         liquid_fertilizer_n: { name: "液态氮肥", injectFacility: "buried_pot_jar", fertilizerPerTick: 0.5 },
         liquid_seaweed_extract: { name: "海藻精", injectFacility: "venturi_fertilizer", effectDurationTicks: 5000 }
       };
@@ -900,6 +903,8 @@
       var TICK_MS = 1000;
       var DEFAULT_CROP_HEALTH_MAX = 100;
       var CROP_DEFS = {};
+      var LEGACY_CROP_DEFS = {};
+      var CROP_RESULT_LABELS = {};
       var CROP_DEF_BY_SEED = {};
       var CROP_DEFS_LOADED = false;
       var SOIL_DEFS = {};
@@ -989,8 +994,25 @@
           if (harvestId) ITEM_SELL_PRICES[harvestId] = cropSellPrice(s.price);
         }
       }
+      function getCropDefForInstance(crop) {
+        if (!crop) return null;
+        var def = (!crop.balanceRevision && LEGACY_CROP_DEFS[crop.cropId]) || CROP_DEFS[crop.cropId];
+        if (!def || !crop.balanceRevision) return def;
+        var ratio = (crop.totalTicks || def.growthTicks) / def.growthTicks;
+        if (ratio === 1) return def;
+        var out = Object.assign({}, def);
+        ['minWater','maxWater','perfectMinWater','perfectMaxWater','waterlogged_above',
+         'minTrace','maxTrace','perfectMinTrace','perfectMaxTrace','trace_safe_max','trace_lethal_at','trace_fail_harvest_at',
+         'minFertilizer','maxFertilizer','perfectMinFertilizer','perfectMaxFertilizer'].forEach(function (key) {
+          if (def[key] != null) out[key] = round1(def[key] * ratio);
+        });
+        return out;
+      }
+
       function applyCropDefs(doc) {
         CROP_DEFS = (doc && doc.crops) ? doc.crops : {};
+        LEGACY_CROP_DEFS = (doc && doc.legacy_crops) || {};
+        CROP_RESULT_LABELS = (doc && doc.result_labels) || {};
         CROP_DEF_BY_SEED = {};
         for (var cid in CROP_DEFS) {
           if (!Object.prototype.hasOwnProperty.call(CROP_DEFS, cid)) continue;
@@ -1139,7 +1161,7 @@
           for (var x = 0; x < SIZE; x++) {
             var c = cell(st, x, y);
             if (!c.crop || c.crop.settled) continue;
-            var def = CROP_DEFS[c.crop.cropId];
+            var def = getCropDefForInstance(c.crop);
             if (!def) continue;
             var newTotal = resolveCropGrowthTicks(c, def, st);
             var oldTotal = c.crop.totalTicks || def.growthTicks;
@@ -1177,7 +1199,7 @@
             var c = cell(state, x, y);
             if (!c.crop || c.crop.settled) continue;
             var crop = c.crop;
-            var def = CROP_DEFS[crop.cropId];
+            var def = getCropDefForInstance(crop);
             if (!def) continue;
             var effectId = getPlotSoilEffectId(c, state);
             if (effectId === "humus_bank" && cropDefRequestsLiquidFertilizer(def) && !crop.jarFertThisTick) {
@@ -1476,7 +1498,7 @@
       function applyTraceSensitivityToPlot(state, x, y) {
         var c = cell(state, x, y);
         if (!c.crop || c.crop.settled) return;
-        var def = CROP_DEFS[c.crop.cropId];
+        var def = getCropDefForInstance(c.crop);
         var sens = cropTraceSensitivity(def);
         if (!sens) return;
         var trace = round1(c.crop.traceAbsorbed || 0);
@@ -1569,7 +1591,7 @@
           if (maxT !== Infinity) maxT = round1(maxT + spanT * 0.1);
         }
         if (trace >= minT && trace <= maxT) return 2;
-        return 1;
+        return !def.balance_revision || trace > 0 ? 1 : 0;
       }
 
       function fertScoreParticipates(def) {
@@ -1587,7 +1609,7 @@
           if (maxF !== Infinity) maxF = round1(maxF + spanF * 0.1);
         }
         if (fert >= minF && fert <= maxF) return 2;
-        return 1;
+        return !def.balance_revision || fert > 0 ? 1 : 0;
       }
 
       function soilScoreParticipates(def) {
@@ -1712,7 +1734,7 @@
         if (!entry || !inBounds(entry.x, entry.y)) return false;
         var c = cell(state, entry.x, entry.y);
         if (!c.crop) return false;
-        var def = CROP_DEFS[c.crop.cropId];
+        var def = getCropDefForInstance(c.crop);
         if (!cropDefRequestsLiquidFertilizer(def)) return false;
         if (!hasAdjacentBuriedPotJar(state, entry.x, entry.y)) return false;
         return true;
@@ -1728,7 +1750,7 @@
       function registerPlotFertilizerRequestsIfEligible(state, x, y) {
         var c = cell(state, x, y);
         if (!c.crop) return;
-        var def = CROP_DEFS[c.crop.cropId];
+        var def = getCropDefForInstance(c.crop);
         if (!cropDefRequestsLiquidFertilizer(def)) return;
         if (!hasAdjacentBuriedPotJar(state, x, y)) return;
         ensureFertilizerRequestsState(state);
@@ -1798,7 +1820,7 @@
         if (!entry || !inBounds(entry.x, entry.y)) return false;
         var c = cell(state, entry.x, entry.y);
         if (!c.crop) return false;
-        var def = CROP_DEFS[c.crop.cropId];
+        var def = getCropDefForInstance(c.crop);
         if (!cropDefRequestsSeaweedExtract(def)) return false;
         if (!hasAdjacentWetChannel(state, entry.x, entry.y)) return false;
         if (!getIrrigationSourceForPlot(state, entry.x, entry.y)) return false;
@@ -1824,7 +1846,7 @@
       function registerPlotSeaweedRequestsIfEligible(state, x, y) {
         var c = cell(state, x, y);
         if (!c.crop) return;
-        var def = CROP_DEFS[c.crop.cropId];
+        var def = getCropDefForInstance(c.crop);
         if (!cropDefRequestsSeaweedExtract(def)) return;
         if (!hasAdjacentWetChannel(state, x, y)) return;
         var source = getIrrigationSourceForPlot(state, x, y);
@@ -3192,7 +3214,7 @@
             if (!c.crop) continue;
             var source = getIrrigationSourceForPlot(state, x, y);
             if (source) {
-              var plotDef = CROP_DEFS[c.crop.cropId];
+              var plotDef = getCropDefForInstance(c.crop);
               var dw = resolveAbsorptionAmount(c, "water", source.water, plotDef, state);
               if (dw > 0) {
                 c.crop.waterAbsorbed = round1(c.crop.waterAbsorbed + dw);
@@ -3225,7 +3247,7 @@
             forEachNeighbor8(x, y, function (nx, ny) {
               var plot = cell(state, nx, ny);
               if (plot.kind !== "land" || !plot.crop || plot.crop.settled) return;
-              var plotDef = CROP_DEFS[plot.crop.cropId];
+              var plotDef = getCropDefForInstance(plot.crop);
               if (!cropDefRequestsLiquidFertilizer(plotDef)) return;
               if (applyGrowingCropHealthDeath(plot)) {
                 syncPlotSeaweedRequests(state, nx, ny);
@@ -3259,7 +3281,7 @@
             if (!source) continue;
             var absorbed = getSeaweedConcentrationFromIrrigationSource(state, source);
             if (!(absorbed > 0)) continue;
-            var plotDef = CROP_DEFS[c.crop.cropId];
+            var plotDef = getCropDefForInstance(c.crop);
             var dTrace = resolveAbsorptionAmount(c, "trace", absorbed, plotDef, state);
             if (!(dTrace > 0)) continue;
             c.crop.traceAbsorbed = round1((c.crop.traceAbsorbed || 0) + dTrace);
@@ -3452,6 +3474,7 @@
         var growTicks = resolveCropGrowthTicks(c, def, st);
         c.crop = {
           cropId: def.cropId,
+          balanceRevision: def.balance_revision || 2,
           name: def.name,
           remainingTicks: growTicks,
           totalTicks: growTicks,
@@ -4701,7 +4724,7 @@
           }
           if (c.crop) {
             cls.push(c.crop.settled
-              ? (c.crop.result === "withered" || c.crop.result === "flooded" || c.crop.result === "trace_toxic"
+              ? (c.crop.settled && !(c.crop.harvestCount > 0)
                 ? "crop-failed"
                 : "crop-ready")
               : "crop-growing");
@@ -4765,6 +4788,7 @@
         var growTicks = resolveCropGrowthTicks(c, def, state);
         c.crop = {
           cropId: def.cropId,
+          balanceRevision: def.balance_revision || 2,
           name: def.name,
           remainingTicks: growTicks,
           totalTicks: growTicks,
@@ -4789,7 +4813,7 @@
       function settleCrop(c) {
         var crop = c.crop;
         if (!crop || crop.settled) return;
-        var def = CROP_DEFS[crop.cropId];
+        var def = getCropDefForInstance(crop);
         var water = crop.waterAbsorbed;
         crop.remainingTicks = 0;
         crop.settled = true;
@@ -4808,6 +4832,26 @@
         ) {
           crop.result = "trace_toxic";
           crop.resultLabel = "微量过剩·盐害灼伤落果";
+          crop.harvestCount = 0;
+        } else if (def.minFertilizer != null && (crop.fertilizerAbsorbed || 0) < def.minFertilizer) {
+          crop.result = "nutrient_deficient";
+          crop.resultLabel = CROP_RESULT_LABELS[crop.result] || crop.result;
+          crop.resultLabelKey = "agriculture.result." + crop.result;
+          crop.harvestCount = 0;
+        } else if (def.maxFertilizer != null && (crop.fertilizerAbsorbed || 0) > def.maxFertilizer) {
+          crop.result = "fertilizer_excess";
+          crop.resultLabel = CROP_RESULT_LABELS[crop.result] || crop.result;
+          crop.resultLabelKey = "agriculture.result." + crop.result;
+          crop.harvestCount = 0;
+        } else if (def.minTrace != null && (crop.traceAbsorbed || 0) < def.minTrace) {
+          crop.result = "trace_deficient";
+          crop.resultLabel = CROP_RESULT_LABELS[crop.result] || crop.result;
+          crop.resultLabelKey = "agriculture.result." + crop.result;
+          crop.harvestCount = 0;
+        } else if (def.maxTrace != null && (crop.traceAbsorbed || 0) > def.maxTrace) {
+          crop.result = "trace_toxic";
+          crop.resultLabel = CROP_RESULT_LABELS[crop.result] || crop.result;
+          crop.resultLabelKey = "agriculture.result." + crop.result;
           crop.harvestCount = 0;
         } else {
           var yieldResult = computeGrowthYield(def, c, crop);

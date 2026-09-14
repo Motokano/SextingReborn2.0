@@ -39,7 +39,9 @@ const ALLOWED_ACTION = new Set([
   'break_clumps',
   'remove_contaminant',
   'vent_gas',
-  'leave_as_is'
+  'leave_as_is',
+  'harvest_early',
+  'vent_gently'
 ]);
 const EVENT_ID_RE = /^[a-z0-9_]+$/;
 const VARIANT_ID_RE = /^[a-z0-9_]+$/;

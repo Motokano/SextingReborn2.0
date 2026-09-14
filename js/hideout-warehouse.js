@@ -91,6 +91,17 @@
         return ensureSpoilageElapsedOnInstance(c);
     }
 
+    function warnFreshnessMerge(itemId, aElapsed, bElapsed) {
+        if (Number(aElapsed || 0) === Number(bElapsed || 0)) return;
+        if (!global || !global.GameLog || typeof global.GameLog.log !== 'function') return;
+        var tpl = getItemTemplate(itemId) || {};
+        var itemName = tpl.name || tpl.name_0 || tpl.sn || itemId;
+        var msg = global.UIText && typeof global.UIText.t === 'function'
+            ? global.UIText.t('pharmacy.spoilage.merge_shorter', { item: itemName })
+            : String(itemName) + '合并后按较短保质期计算';
+        global.GameLog.log(msg, 'warn');
+    }
+
     function logSpoilageExpired(itemId, context) {
         if (typeof console !== 'undefined' && console.warn) {
             console.warn('[HideoutWarehouse] spoilage expired (no failure item configured):'
@@ -117,7 +128,13 @@
         return inst;
     }
 
-    function tickSpoilageInContainerArray(arr, label) {
+    function recordExpired(details, cell) {
+        if (!details || !cell || !cell.item_id) return;
+        var id = String(cell.item_id);
+        details[id] = (details[id] || 0) + Math.max(1, coerceInt(cell.count, 1));
+    }
+
+    function tickSpoilageInContainerArray(arr, label, details) {
         if (!Array.isArray(arr)) return 0;
         var spoiled = 0;
         var i;
@@ -126,6 +143,7 @@
             if (!cell || !cell.item_id) continue;
             var next = tickInstanceSpoilage(cell, label + ':' + i);
             if (next === null) {
+                recordExpired(details, cell);
                 arr[i] = null;
                 spoiled += 1;
             }
@@ -139,7 +157,8 @@
             ok: true,
             warehouse_spoiled: 0,
             inventory_spoiled: 0,
-            warehouse_frozen: hasColdStorage()
+            warehouse_frozen: hasColdStorage(),
+            expired_items: {}
         };
 
         if (!hasColdStorage()) {
@@ -149,6 +168,7 @@
                 if (!whCell || !whCell.item_id) continue;
                 var whNext = tickInstanceSpoilage(whCell, 'warehouse:' + wi);
                 if (whNext === null) {
+                    recordExpired(result.expired_items, whCell);
                     st.slots[wi] = null;
                     result.warehouse_spoiled += 1;
                 }
@@ -160,11 +180,11 @@
             var ieSt = IE.getState();
             if (ieSt) {
                 var invSpoiled = 0;
-                invSpoiled += tickSpoilageInContainerArray(ieSt.inventory_pocket, 'pocket');
-                invSpoiled += tickSpoilageInContainerArray(ieSt.inventory_vest, 'vest');
-                invSpoiled += tickSpoilageInContainerArray(ieSt.inventory_backpack, 'backpack');
+                invSpoiled += tickSpoilageInContainerArray(ieSt.inventory_pocket, 'pocket', result.expired_items);
+                invSpoiled += tickSpoilageInContainerArray(ieSt.inventory_vest, 'vest', result.expired_items);
+                invSpoiled += tickSpoilageInContainerArray(ieSt.inventory_backpack, 'backpack', result.expired_items);
                 if (ieSt.bound_vehicle_id) {
-                    invSpoiled += tickSpoilageInContainerArray(ieSt.inventory_vehicle, 'vehicle');
+                    invSpoiled += tickSpoilageInContainerArray(ieSt.inventory_vehicle, 'vehicle', result.expired_items);
                 }
                 if (invSpoiled > 0) {
                     result.inventory_spoiled = invSpoiled;
@@ -235,6 +255,15 @@
         var tpl = getItemTemplate(a.item_id);
         if (tpl && tpl.enchant_slots != null && coerceInt(tpl.enchant_slots, 0) > 0) return false;
         if (!isWarehouseStackable(tpl)) return false;
+        if (a.charges != null || b.charges != null) {
+            if (Number(a.charges || 0) !== Number(b.charges || 0)) return false;
+        }
+        var aKey = a.pharmacy_formula_key != null ? String(a.pharmacy_formula_key) : '';
+        var bKey = b.pharmacy_formula_key != null ? String(b.pharmacy_formula_key) : '';
+        if (aKey || bKey) return !!aKey && aKey === bKey && Number(a.pharmacy_rules_version || 0) === Number(b.pharmacy_rules_version || 0);
+        if (Array.isArray(a.components) || Array.isArray(b.components)) {
+            if (JSON.stringify(a.components || []) !== JSON.stringify(b.components || [])) return false;
+        }
         return true;
     }
 
@@ -697,10 +726,14 @@
                 continue;
             }
             if (row.source === 'container' && IE && typeof IE.putItemIntoDefaultContainer === 'function') {
-                IE.putItemIntoDefaultContainer({
-                    item_id: row.item_id,
-                    count: row.count != null ? coerceInt(row.count, 1) : 1
-                });
+                if (Array.isArray(row.instances) && row.instances.length) {
+                    for (var ri = 0; ri < row.instances.length; ri++) IE.putItemIntoDefaultContainer(row.instances[ri]);
+                } else {
+                    IE.putItemIntoDefaultContainer({
+                        item_id: row.item_id,
+                        count: row.count != null ? coerceInt(row.count, 1) : 1
+                    });
+                }
             }
         }
     }
@@ -723,7 +756,13 @@
                 slotIndex: i,
                 item_id: want,
                 count: take,
-                backup: copyItemInstance(cell)
+                backup: copyItemInstance(cell),
+                instances: (function () {
+                    var one = copyItemInstance(cell);
+                    if (!one) return [];
+                    one.count = take;
+                    return [one];
+                })()
             });
             if (take >= have) {
                 st.slots[i] = null;
@@ -777,19 +816,22 @@
             }
             var take = Math.min(remaining, pick.count);
             var n;
+            var takenInstances = [];
             for (n = 0; n < take; n++) {
                 var taken = IE.takeItemFromContainer(pick.container, pick.index);
                 if (!taken || !taken.success) {
                     refundConsumedRows(consumed);
                     return { ok: false, reason: 'take_failed', consumed: [] };
                 }
+                if (taken.item) takenInstances.push(taken.item);
             }
             consumed.push({
                 source: 'container',
                 container: pick.container,
                 index: pick.index,
                 item_id: want,
-                count: take
+                count: take,
+                instances: takenInstances
             });
             remaining -= take;
         }
@@ -1042,6 +1084,7 @@
         var useAutoStack = options.autoStack !== false && hasQoL('deposit_auto_stack');
         var deposited = 0;
         var lastSlot = -1;
+        var freshnessShortened = false;
 
         while (remaining && remaining.count > 0) {
             var targetIdx = useAutoStack ? findStackSlotForDeposit(remaining) : -1;
@@ -1065,6 +1108,15 @@
             if (space <= 0) break;
             var move = Math.min(space, add);
             existing.count = cur + move;
+            var existingElapsed = Number(existing.spoilage_elapsed_ticks) || 0;
+            var incomingElapsed = Number(remaining.spoilage_elapsed_ticks) || 0;
+            if (remaining.spoilage_elapsed_ticks != null || existing.spoilage_elapsed_ticks != null) {
+                existing.spoilage_elapsed_ticks = Math.max(0, Math.max(existingElapsed, incomingElapsed));
+            }
+            if (existingElapsed !== incomingElapsed) {
+                freshnessShortened = true;
+                warnFreshnessMerge(remaining.item_id, existingElapsed, incomingElapsed);
+            }
             deposited += move;
             lastSlot = targetIdx;
             remaining.count = add - move;
@@ -1074,9 +1126,9 @@
 
         if (deposited <= 0) return { ok: false, reason: 'warehouse_full' };
         if (remaining && remaining.count > 0) {
-            return { ok: true, partial: true, deposited: deposited, remainder: remaining, slotIndex: lastSlot };
+            return { ok: true, partial: true, deposited: deposited, remainder: remaining, slotIndex: lastSlot, freshness_shortened: freshnessShortened };
         }
-        return { ok: true, deposited: deposited, slotIndex: lastSlot };
+        return { ok: true, deposited: deposited, slotIndex: lastSlot, freshness_shortened: freshnessShortened };
     }
 
     function getContainerArray(IE, containerType) {
@@ -1256,6 +1308,9 @@
                 var addCount = cur.count != null ? coerceInt(cur.count, 1) : 1;
                 if (curCount + addCount <= limit) {
                     merged[m].count = curCount + addCount;
+                    if (cur.spoilage_elapsed_ticks != null || merged[m].spoilage_elapsed_ticks != null) {
+                        merged[m].spoilage_elapsed_ticks = Math.max(0, Math.max(Number(merged[m].spoilage_elapsed_ticks) || 0, Number(cur.spoilage_elapsed_ticks) || 0));
+                    }
                     placed = true;
                     break;
                 }

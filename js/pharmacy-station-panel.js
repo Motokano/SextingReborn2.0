@@ -23,6 +23,7 @@
         /** 47 §9.4 配药模式（k231）：true = 投料走配药结算，不走固定配方行 */
         compound_mode: false
     };
+    var libraryView = 'materials';
     var PHARMACY_FUEL_MAX_POINTS = 100;
 
     var uiDeps = {};
@@ -54,7 +55,7 @@
 
     /**
      * 配药模式 UI 容器（惰性创建，插在状态区之前）：模式切换 + 浓度条。
-     * 按 47 §10.4，配药时不显示相冲/毒性预判（只给浓度条）。
+     * 配伍判断按制药等级解锁；可见异常与已试同份数组合常驻。
      */
     function ensureCompoundBar(modal) {
         if (!modal) return null;
@@ -77,24 +78,26 @@
         bar.innerHTML = '';
         var PC = getCompounding();
 
-        var toggleWrap = document.createElement('div');
-        toggleWrap.style.cssText = 'display:flex;gap:6px;margin:6px 0;';
+        var toggleWrap = document.getElementById('pharmacy-mode-tabs') || document.createElement('div');
+        toggleWrap.innerHTML = '';
         var mkBtn = function (label, isCompound) {
             var b = document.createElement('button');
             b.type = 'button';
             b.className = 'btn-method' + (!!pharmacyStationUiState.compound_mode === isCompound ? ' active' : '');
             b.textContent = label;
+            b.setAttribute('aria-pressed', String(!!pharmacyStationUiState.compound_mode === isCompound));
             b.onclick = function () {
                 pharmacyStationUiState.compound_mode = isCompound;
+                libraryView = 'materials';
                 renderPharmacyStationPanel();
             };
             return b;
         };
         toggleWrap.appendChild(mkBtn(ui('pharmacy.mode.craft'), false));
         toggleWrap.appendChild(mkBtn(ui('pharmacy.mode.compound'), true));
-        bar.appendChild(toggleWrap);
+        if (!document.getElementById('pharmacy-mode-tabs')) bar.appendChild(toggleWrap);
 
-        if (!pharmacyStationUiState.compound_mode) return;
+        if (!pharmacyStationUiState.compound_mode || !pharmacyStationUiState.inputs.length) return;
         var info = (PC && typeof PC.getConcentrationInfo === 'function')
             ? PC.getConcentrationInfo(pharmacyStationUiState.inputs || [])
             : { used: 0, capacity: 0, ratio: 0, solvent_count: 0 };
@@ -112,60 +115,44 @@
         fill.style.cssText = 'height:100%;width:' + Math.round((info.ratio || 0) * 100) + '%;background:' + (info.used > info.capacity ? '#dc2626' : '#22c55e') + ';';
         track.appendChild(fill);
         bar.appendChild(track);
-        var hint = document.createElement('div');
-        hint.style.cssText = 'color:#a8a29e;font-size:12px;margin-bottom:6px;';
-        hint.textContent = ui('pharmacy.compound.hint');
-        bar.appendChild(hint);
 
-        // 成盐（47 §9.5）：碱型药成分需要助剂助溶；不足不阻止配药，但会析出沉淀
-        var salt = (PC && typeof PC.getSaltRequirement === 'function')
-            ? PC.getSaltRequirement(pharmacyStationUiState.inputs || [])
-            : null;
-        if (salt && salt.required > 0) {
-            var saltLine = document.createElement('div');
-            saltLine.className = 'kv' + (salt.precipitated ? ' bad' : '');
-            saltLine.textContent = salt.precipitated
-                ? ui('pharmacy.compound.salt_precipitated', { need: String(salt.required), have: String(salt.provided), miss: String(salt.deficit) })
-                : ui('pharmacy.compound.salt_ok', { need: String(salt.required), have: String(salt.provided) });
-            bar.appendChild(saltLine);
+        var level = IE && typeof IE.getSkillLevel === 'function' ? IE.getSkillLevel('life_pharmacy') : 0;
+        var assessment = PC && PC.assess ? PC.assess(pharmacyStationUiState.inputs || [], level) : null;
+        function infoLine(key, vars, bad) {
+            var el = document.createElement('div');
+            el.className = 'kv' + (bad ? ' bad' : '');
+            el.textContent = ui(key, vars);
+            bar.appendChild(el);
         }
-
-        // 配药图鉴（§8 待定的「联合注射液图鉴写法」）：记成分组合 → 族/potency/净毒性/相冲数
-        var history = (PC && typeof PC.getHistory === 'function') ? PC.getHistory() : {};
-        var keys = Object.keys(history || {});
-        if (keys.length) {
-            var title = document.createElement('div');
-            title.className = 'cs-subtitle';
-            title.style.marginTop = '8px';
-            title.textContent = ui('pharmacy.compound.history_title');
-            bar.appendChild(title);
-            var listWrap = document.createElement('div');
-            listWrap.className = 'cs-known-list';
-            keys.slice(-12).reverse().forEach(function (k) {
-                var ent = history[k] || {};
-                var row = document.createElement('div');
-                row.className = 'cs-input-row';
-                var nameEl = document.createElement('div');
-                nameEl.className = 'iname';
-                nameEl.textContent = String(k).split('+').map(function (part) {
-                    var m = part.match(/^(.*)x(\d+)$/);
-                    var id = m ? m[1] : part;
-                    var n = m ? m[2] : '1';
-                    return StationCraftCore.getItemDisplayNameSafe(id) + '×' + n;
-                }).join(' + ');
-                var metaEl = document.createElement('div');
-                metaEl.className = 'icnt';
-                metaEl.textContent = ui('pharmacy.compound.history_meta', {
-                    fam: (ent.families || []).join('、') || '—',
-                    tox: String(ent.net_toxicity != null ? ent.net_toxicity : 0),
-                    conflicts: String(ent.conflicts != null ? ent.conflicts : 0)
-                });
-                row.appendChild(nameEl);
-                row.appendChild(metaEl);
-                listWrap.appendChild(row);
+        if (assessment && assessment.ok) {
+            infoLine(assessment.visible_abnormality ? 'pharmacy.assess.visible' : 'pharmacy.assess.clear', {}, assessment.visible_abnormality);
+            var salt = assessment.salt;
+            if (salt && salt.required > 0) infoLine(salt.precipitated ? 'pharmacy.compound.salt_precipitated' : 'pharmacy.compound.salt_ok', { need: salt.required, have: salt.provided, miss: salt.deficit }, salt.precipitated);
+            assessment.conflicts.forEach(function (c) {
+                var pair = c.items.map(function (id) { return StationCraftCore.getItemDisplayNameSafe(id); }).join(' + ');
+                infoLine('pharmacy.assess.' + (c.outcome || 'conflict'), { pair: pair }, true);
+                if (c.suggestion) infoLine('pharmacy.assess.suggest_' + c.suggestion);
             });
-            bar.appendChild(listWrap);
+            if (assessment.net_toxicity != null) infoLine('pharmacy.assess.toxicity', { n: assessment.net_toxicity });
+            if (assessment.effects.length) {
+                var details = document.createElement('details');
+                var summary = document.createElement('summary');
+                summary.textContent = ui('pharmacy.action.details');
+                details.appendChild(summary);
+                assessment.effects.forEach(function (e) {
+                    var detail = document.createElement('div');
+                    detail.className = 'kv';
+                    detail.textContent = ui('pharmacy.assess.effect', { name: e.name, onset: e.onset, duration: e.duration });
+                    if (e.detail) detail.textContent += ' · ' + e.detail;
+                    details.appendChild(detail);
+                });
+                bar.appendChild(details);
+            }
+            if (!assessment.comprehensive) infoLine('pharmacy.assess.unknown');
+        } else if (assessment && pharmacyStationUiState.inputs.length) {
+            infoLine(pharmacyStartReasonToMsgKey(assessment.reason), {}, true);
         }
+
     }
     function canAddFuelAtCurrentTile() {
         return (typeof uiDeps.canAddFuelAtCurrentTile === 'function') ? !!uiDeps.canAddFuelAtCurrentTile() : false;
@@ -291,14 +278,10 @@
             var nameEl = document.createElement('div');
             nameEl.className = 'cs-ing-name';
             nameEl.textContent = disp;
-            var idEl = document.createElement('div');
-            idEl.className = 'cs-ing-id';
-            idEl.textContent = iid;
             left.appendChild(nameEl);
-            left.appendChild(idEl);
             var countsEl = document.createElement('div');
             countsEl.className = 'cs-ing-counts';
-            countsEl.textContent = ui('pharmacy.ingredient.available_staged_fmt', { have: String(have), staged: String(staged) });
+            countsEl.textContent = staged ? ui('pharmacy.ingredient.available_staged_fmt', { have: String(have), staged: String(staged) }) : ui('pharmacy.inputs.available_fmt', { n: have });
             var btn = document.createElement('button');
             btn.type = 'button';
             btn.className = 'btn-add-ingredient';
@@ -388,7 +371,7 @@
                     nameEl.textContent = disp;
                     var idEl = document.createElement('div');
                     idEl.className = 'cs-ing-id';
-                    idEl.textContent = String(iid) + ' · ' + uiPharmacyInventoryContainerLabel(sl.containerType) + ' #' + (sl.index + 1);
+                    idEl.textContent = uiPharmacyInventoryContainerLabel(sl.containerType) + ' · ' + (sl.index + 1);
                     left.appendChild(nameEl);
                     left.appendChild(idEl);
                     var countsEl = document.createElement('div');
@@ -425,8 +408,25 @@
         var startBtn = document.getElementById('pharmacy-start-btn');
         var mid = pharmacyStationUiState.method_id ? String(pharmacyStationUiState.method_id) : '';
         var compoundMode = !!pharmacyStationUiState.compound_mode;
+        function visible(id, show) {
+            var el = document.getElementById(id);
+            if (el) el.hidden = !show;
+        }
+        visible('pharmacy-method-section', !compoundMode);
+        visible('pharmacy-equipment', !compoundMode);
+        visible('pharmacy-recipes-tab', !compoundMode);
+        visible('pharmacy-materials-view', compoundMode || libraryView === 'materials');
+        visible('pharmacy-recipes-view', !compoundMode && libraryView === 'recipes');
+        ['materials', 'recipes'].forEach(function (view) {
+            var tab = document.getElementById('pharmacy-' + view + '-tab');
+            if (!tab) return;
+            tab.className = 'btn-method' + (libraryView === view ? ' active' : '');
+            tab.setAttribute('aria-pressed', String(libraryView === view));
+            tab.onclick = function () { libraryView = view; renderPharmacyStationPanel(); };
+        });
 
         if (methodWrap) {
+            methodWrap.style.display = compoundMode ? 'none' : '';
             methodWrap.innerHTML = '';
             var ids = Object.keys(PharmacyStation.getMethods());
             ids.sort();
@@ -460,10 +460,24 @@
                     var c0 = parseInt(selected[ii].count, 10) || 1;
                     var nameEl = document.createElement('div');
                     nameEl.className = 'iname';
-                    nameEl.textContent = StationCraftCore.getItemDisplayNameSafe(id0) + ' (' + String(id0) + ')';
-                    var cntEl = document.createElement('div');
+                    nameEl.textContent = StationCraftCore.getItemDisplayNameSafe(id0);
+                    var cntEl = document.createElement('input');
+                    cntEl.type = 'number';
+                    cntEl.min = '1';
+                    cntEl.step = '1';
                     cntEl.className = 'icnt';
-                    cntEl.textContent = 'x' + c0;
+                    cntEl.value = c0;
+                    cntEl.setAttribute('aria-label', ui('pharmacy.action.quantity', { item: nameEl.textContent }));
+                    cntEl.onchange = (function (rid, input) {
+                        return function () {
+                            var have = global.InventoryHelpers.getInventoryCountByItemId(rid);
+                            var n = Math.max(1, Math.min(Math.max(1, have), Math.floor(Number(input.value) || 1)));
+                            var arr = StationCraftCore.normalizePharmacyInputs(pharmacyStationUiState.inputs || []);
+                            arr.forEach(function (entry) { if (entry.item_id === rid) entry.count = n; });
+                            setPharmacyInputs(arr);
+                            renderPharmacyStationPanel();
+                        };
+                    })(id0, cntEl);
                     var btnDel = document.createElement('button');
                     btnDel.type = 'button';
                     btnDel.className = 'btn-mini';
@@ -501,7 +515,7 @@
                     arow.className = 'cs-input-row';
                     var aname = document.createElement('div');
                     aname.className = 'iname';
-                    aname.textContent = StationCraftCore.getItemDisplayNameSafe(aid) + ' (' + aid + ')';
+                    aname.textContent = StationCraftCore.getItemDisplayNameSafe(aid);
                     var abtn = document.createElement('button');
                     abtn.type = 'button';
                     abtn.className = 'btn-mini';
@@ -534,14 +548,17 @@
                 var ao = accOpts[ax];
                 var o = document.createElement('option');
                 o.value = ao.item_id;
-                o.textContent = StationCraftCore.getItemDisplayNameSafe(ao.item_id) + ' (' + ao.item_id + ') · ' + ui('pharmacy.inputs.available_fmt', { n: ao.count });
+                o.textContent = StationCraftCore.getItemDisplayNameSafe(ao.item_id) + ' · ' + ui('pharmacy.inputs.available_fmt', { n: ao.count });
                 accessorySel.appendChild(o);
             }
             if (prevAcc && accOpts.some(function (z) { return String(z.item_id) === prevAcc; })) accessorySel.value = prevAcc;
+            var installButton = document.getElementById('pharmacy-add-accessory-btn');
+            if (installButton) installButton.disabled = !accOpts.length;
         }
 
         // 已知配方快捷填材（可选）
         if (knownWrap) {
+            knownWrap.style.display = compoundMode ? 'none' : '';
             knownWrap.innerHTML = '';
             var knownIds = (global.SceneApp && typeof global.SceneApp.getKnownPharmacyRecipeIds === 'function') ? global.SceneApp.getKnownPharmacyRecipeIds() : [];
             if (!Array.isArray(knownIds) || !knownIds.length) {
@@ -594,9 +611,33 @@
         var needFuel = mSel ? StationCraftCore.readMethodCostValue(mSel, 'fuel', 'fuel_cost') : 0;
         var needTicks = mSel ? StationCraftCore.readMethodCostValue(mSel, 'ticks', 'craft_ticks') : 0;
         var needStamina = mSel ? StationCraftCore.readMethodCostValue(mSel, 'stamina', 'stamina_cost') : 0;
+        var craftPreview = (!compoundMode && mid && typeof PharmacyStation.getCraftPreview === 'function')
+            ? PharmacyStation.getCraftPreview(mid, pharmacyStationUiState.inputs || []) : null;
+        if (craftPreview && craftPreview.ok) {
+            needFuel = craftPreview.cost.fuel;
+            needTicks = craftPreview.cost.ticks;
+            needStamina = craftPreview.cost.stamina;
+        }
         var survState = global.Survival && typeof global.Survival.getState === 'function' ? global.Survival.getState() : null;
         var curStamina = survState ? Number(survState.stamina || 0) : 0;
         var activeCraft = PharmacyStation.getActiveCraft();
+        var progressWrap = document.getElementById('pharmacy-active-craft');
+        if (progressWrap) {
+            progressWrap.innerHTML = '';
+            if (activeCraft) {
+                var progress = document.createElement('progress');
+                progress.setAttribute('aria-label', ui('pharmacy.section.progress'));
+                var time = global.GameTime && global.GameTime.getState ? global.GameTime.getState() : null;
+                if (time && typeof time.totalTicks === 'number' && typeof activeCraft.started_total_ticks === 'number') {
+                    var elapsed = Math.max(0, time.totalTicks - activeCraft.started_total_ticks);
+                    progress.max = Math.max(1, elapsed + activeCraft.remaining_ticks);
+                    progress.value = elapsed;
+                }
+                progressWrap.appendChild(progress);
+            }
+        }
+        var equipmentStatus = document.getElementById('pharmacy-equipment-status');
+        if (equipmentStatus) equipmentStatus.textContent = ui('pharmacy.equipment.status', { cur: curFuel, max: PHARMACY_FUEL_MAX_POINTS, n: installed.length });
 
         if (kvWrap) {
             kvWrap.innerHTML = '';
@@ -606,34 +647,91 @@
                 d.textContent = text;
                 kvWrap.appendChild(d);
             }
-            if (compoundMode) {
-                addKv(ui('pharmacy.compound.kv_hint'), false);
-            } else {
+            if (!compoundMode && mSel) {
                 addKv(ui('pharmacy.kv.fuel', { cur: curFuel, max: PHARMACY_FUEL_MAX_POINTS, need: needFuel }), curFuel < needFuel);
                 addKv(ui('pharmacy.kv.ticks', { n: needTicks }), false);
                 addKv(ui('pharmacy.kv.stamina', { cur: curStamina, need: needStamina }), curStamina < needStamina);
             }
-            if (activeCraft) addKv(ui('pharmacy.kv.remaining', { n: activeCraft.remaining_ticks }), false);
+        }
+        var previewWrap = document.getElementById('pharmacy-preview');
+        if (previewWrap) {
+            previewWrap.innerHTML = '';
+            if (!compoundMode && craftPreview && craftPreview.ok) {
+                [ui('pharmacy.kv.standard_output', { item: StationCraftCore.getItemDisplayNameSafe(craftPreview.output.item_id), n: craftPreview.output.count || 1 }),
+                    ui('pharmacy.kv.success_rate', { n: Math.round(craftPreview.success_rate * 100) }),
+                    ui('pharmacy.kv.recommended_level', { recommended: craftPreview.recommended_skill_level, current: craftPreview.current_skill_level })].forEach(function (text) {
+                    var line = document.createElement('div'); line.className = 'kv'; line.textContent = text; previewWrap.appendChild(line);
+                });
+            }
         }
 
         renderPharmacyWaterFuelPickLists();
 
         if (helpEl) {
             helpEl.innerHTML = '';
-            var lines = [
+            var lines = compoundMode ? [
+                ui('pharmacy.help.compound'),
+                ui('pharmacy.help.line4'),
+                ui('pharmacy.help.duration'),
+                ui('pharmacy.help.toxicity')
+            ] : [
                 ui('pharmacy.help.line1'),
                 ui('pharmacy.help.line2'),
-                ui('pharmacy.help.line3'),
-                ui('pharmacy.help.line4')
+                ui('pharmacy.help.line3')
             ];
-            helpEl.innerHTML = '<div style="color:#a8a29e;line-height:1.65;">' + lines.map(function (s) {
-                return String(s || '').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-            }).join('<br>') + '</div>';
+            lines.forEach(function (text, index) {
+                var paragraph = document.createElement('p');
+                paragraph.style.margin = index ? '10px 0 0' : '0';
+                paragraph.textContent = text;
+                helpEl.appendChild(paragraph);
+            });
         }
 
-        var okStart = compoundMode
-            ? (StationCraftCore.normalizePharmacyInputs(pharmacyStationUiState.inputs || []).length > 0 && !activeCraft)
-            : (!!mid && StationCraftCore.normalizePharmacyInputs(pharmacyStationUiState.inputs || []).length > 0 && !activeCraft);
+        var inputs = StationCraftCore.normalizePharmacyInputs(pharmacyStationUiState.inputs || []);
+        var blocked = '';
+        var equipmentAction = '';
+        if (activeCraft) blocked = ui('pharmacy.kv.remaining', { n: activeCraft.remaining_ticks });
+        else if (!compoundMode && !mSel) blocked = ui('pharmacy.action.method');
+        else if (!inputs.length) blocked = ui('pharmacy.action.inputs');
+        else if (compoundMode) {
+            var PC = getCompounding();
+            var check = PC ? PC.validate(inputs) : { ok: false, reason: 'compounding_unavailable' };
+            if (!check.ok) {
+                var concentration = PC && PC.getConcentrationInfo ? PC.getConcentrationInfo(inputs) : {};
+                blocked = ui(pharmacyStartReasonToMsgKey(check.reason), {
+                    item: StationCraftCore.getItemDisplayNameSafe(check.item_id || ''),
+                    used: concentration.used, capacity: concentration.capacity
+                });
+            }
+        }
+        if (!blocked) {
+            for (var ci = 0; ci < inputs.length; ci++) {
+                if (global.InventoryHelpers.getInventoryCountByItemId(inputs[ci].item_id) < inputs[ci].count) {
+                    blocked = ui('pharmacy.action.missing', { item: StationCraftCore.getItemDisplayNameSafe(inputs[ci].item_id) }); break;
+                }
+            }
+        }
+        if (!blocked && !compoundMode) {
+            if (mSel.requires_accessory_item_id && installed.indexOf(mSel.requires_accessory_item_id) < 0) {
+                blocked = ui('pharmacy.action.accessory', { item: StationCraftCore.getItemDisplayNameSafe(mSel.requires_accessory_item_id) });
+                equipmentAction = 'pharmacy.action.install';
+            } else if (curFuel < needFuel) { blocked = ui('pharmacy.action.fuel'); equipmentAction = 'pharmacy.btn.fuel'; }
+            else if (curStamina < needStamina) blocked = ui('pharmacy.action.stamina');
+        }
+        var status = document.getElementById('pharmacy-action-status');
+        if (status) status.textContent = blocked;
+        var fixEquipment = document.getElementById('pharmacy-fix-equipment');
+        if (fixEquipment) {
+            fixEquipment.hidden = !equipmentAction;
+            fixEquipment.textContent = equipmentAction ? ui(equipmentAction) : '';
+            fixEquipment.onclick = function () {
+                var equipment = document.getElementById('pharmacy-equipment');
+                if (equipment) equipment.open = true;
+                var help = document.getElementById('pharmacy-help');
+                if (help) help.open = false;
+            };
+        }
+        var okStart = !blocked;
         if (startBtn) {
             startBtn.disabled = !okStart;
             startBtn.textContent = compoundMode ? ui('pharmacy.btn.compound_start') : ui('pharmacy.btn.start');
@@ -722,6 +820,13 @@
     }
 
     function initPanel() {
+        ['pharmacy-equipment', 'pharmacy-help'].forEach(function (id, index, ids) {
+            var disclosure = document.getElementById(id);
+            if (disclosure) disclosure.addEventListener('toggle', function () {
+                var other = document.getElementById(ids[1 - index]);
+                if (disclosure.open && other) other.open = false;
+            });
+        });
         var abPharmacy = document.getElementById('action-bar-pharmacy');
         if (abPharmacy) {
             abPharmacy.addEventListener('click', function () {

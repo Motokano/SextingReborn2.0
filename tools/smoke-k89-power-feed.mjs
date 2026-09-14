@@ -1,7 +1,7 @@
 // k89 电池→牧场供电最小闭环冒烟测试（headless Node）。
 // 运行：node tools/smoke-k89-power-feed.mjs
 // 覆盖：
-//   1. 模块表 power_drain_per_tick 数据完整性（7 个需电模块均配置）
+//   1. 模块表 power_drain_per_tick 数据完整性（4 个需电模块均配置）
 //   2. 起步储能 + addPowerCharge 注入
 //   3. 每 tick 扣电：装了需电模块时 advanceTick 扣 drain；无需电模块不扣
 //   4. 储能耗尽 → isPowerAvailable false → 需电模块停摆；塞电池恢复
@@ -27,8 +27,8 @@ const fail = (name, detail) => { console.error('FAIL: ' + name + (detail ? ' | '
 // 1) 数据完整性
 {
   const powered = Object.values(modules).filter((m) => m.requires_power === true);
-  if (powered.length !== 7) fail('需电模块应为 7 个', '实际 ' + powered.length);
-  else ok('需电模块 7 个全部存在');
+  if (powered.length !== 4) fail('需电模块应为 4 个', '实际 ' + powered.length);
+  else ok('需电模块 4 个全部存在');
   const missing = powered.filter((m) => m.power_drain_per_tick == null || Number(m.power_drain_per_tick) <= 0);
   if (missing.length) fail('需电模块缺 power_drain_per_tick', missing.map((m) => m.module_id).join(','));
   else ok('power_drain_per_tick 已配置（' + powered.map((m) => m.module_id + '=' + m.power_drain_per_tick).join(' ') + '）');
@@ -51,28 +51,17 @@ const fail = (name, detail) => { console.error('FAIL: ' + name + (detail ? ' | '
   else ok('负电量拒绝');
 }
 
-// 3) 每 tick 扣电：装 pasture_arm（drain=1）在 arm2 inner + climate_control(off 不耗电)
+// 3) 保留的牧草管理与仓储合计 3/tick；退役气候不再参与。
 {
-  // 清空重设：高储能
-  LS.setState({ power_charge: 10, arms: {
-    arm1: { inner: null, front: null, bottom: null, top: null, cw_side: null, ccw_side: null },
-    arm2: { inner: { module_id: 'pasture_arm', level: 1 }, front: null, bottom: null, top: null, cw_side: null, ccw_side: null },
-    arm3: { inner: null, front: null, bottom: null, top: null, cw_side: null, ccw_side: null },
-    arm4: { inner: null, front: null, bottom: null, top: null, cw_side: null, ccw_side: null }
-  }, axis: { slot1: null, slot2: { module_id: 'climate_control', level: 1, mode: 'off' } }, zones: { z1:{grass_height:0.5,compaction:50,pollution:20}, z2:{grass_height:0.5,compaction:50,pollution:20}, z3:{grass_height:0.5,compaction:50,pollution:20}, z4:{grass_height:0.5,compaction:50,pollution:20} }, animals: [] });
-  // pasture_arm(1) + climate_control(off 不耗电) = 1/tick
-  const drain = LS.currentPowerDrainPerTick();
-  if (drain !== 1) fail('气候塔 off 不耗电：应扣 1/tick', '实际 ' + drain);
-  else ok('currentPowerDrainPerTick = 1（pasture_arm 1 + climate off 0）');
-  LS.setState({ power_charge: 10, arms: LS.getState().arms, axis: LS.getState().axis, zones: LS.getState().zones, animals: [] });
-  LS.advanceTick();
-  if (LS.getPowerCharge() !== 9) fail('advanceTick 后储能应 10-1=9', '实际 ' + LS.getPowerCharge());
-  else ok('每 tick 扣 1（10 → 9）');
-  // 气候塔开模式后耗电 2
-  LS.setState({ power_charge: 10, arms: LS.getState().arms, axis: { slot1: null, slot2: { module_id: 'climate_control', level: 1, mode: 'sunny' } }, zones: LS.getState().zones, animals: [] });
-  const drain2 = LS.currentPowerDrainPerTick();
-  if (drain2 !== 3) fail('气候塔开启后应扣 3/tick（arm1 + axis2）', '实际 ' + drain2);
-  else ok('气候塔开启 → 3/tick');
+  LS.initDemoState(); const st=LS.getState(); st.power_charge=10;
+  st.arms.arm1.inner={module_id:'pasture_arm',level:1};
+  if(LS.currentPowerDrainPerTick()!==1)fail('牧草臂应耗电 1');
+  LS.advanceTick(); if(st.power_charge!==9)fail('单臂扣电');
+  st.axis.slot2={module_id:'warehouse_hub',level:1};
+  if(LS.currentPowerDrainPerTick()!==3)fail('牧草臂与仓储应耗电 3');
+  LS.advanceTick(); if(st.power_charge!==6)fail('多模块扣电');
+  st.power_charge=2; LS.advanceTick(); if(st.power_charge!==2)fail('不足整次供电不得结算');
+  else ok('保留模块扣电与不足整次供电检查');
 }
 
 // 4) 耗尽停摆 + 塞电池恢复

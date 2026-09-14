@@ -31,6 +31,80 @@
       "name": "外敷"
     }
   },
+  "route_family_overrides": {
+    "inject": {
+      "stimulant": {
+        "duration_ticks": 20
+      },
+      "strength": {
+        "duration_ticks": 120
+      },
+      "antistun": {
+        "duration_ticks": 40
+      },
+      "analgesic": {
+        "duration_ticks": 10,
+        "duration_by_potency": {
+          "weak": 20,
+          "regular": 40,
+          "potent": 50,
+          "pure": 90
+        }
+      },
+      "rehydrate": {
+        "duration_ticks": 30
+      },
+      "energy": {
+        "duration_ticks": 30
+      },
+      "sedative": {
+        "duration_ticks": 40
+      },
+      "hallucinogen": {
+        "duration_ticks": 180
+      },
+      "synergist": {
+        "duration_ticks": 10
+      },
+      "revive": {
+        "duration_ticks": 10
+      },
+      "coagulant": {
+        "duration_ticks": 10
+      }
+    },
+    "drink": {
+      "strength": {
+        "duration_ticks": 180
+      },
+      "hallucinogen": {
+        "duration_ticks": 240
+      },
+      "analgesic": {
+        "duration_ticks": 60,
+        "duration_by_potency": {
+          "weak": 90,
+          "regular": 120,
+          "potent": 150,
+          "pure": 180
+        }
+      }
+    },
+    "inhale": {
+      "hallucinogen": {
+        "duration_ticks": 60
+      },
+      "analgesic": {
+        "duration_ticks": 18,
+        "duration_by_potency": {
+          "weak": 12,
+          "regular": 18,
+          "potent": 25,
+          "pure": 35
+        }
+      }
+    }
+  },
   "potency_profiles": {
     "weak": {
       "scale": 0.5,
@@ -129,11 +203,13 @@
         "inhale",
         "inject"
       ],
-      "desc": "疼痛被盖住，痛感暂时不生效（药效过后照旧）",
+      "desc": "药效期间按比例忽略疼痛，按剩余疼痛判定惩罚；不减少真实疼痛或损毁，同类取最高值",
       "effects": [
         {
-          "type": "pain_suppression",
-          "params": {}
+          "type": "pain_ignore_ratio",
+          "params": {
+            "ratio": 0.5
+          }
         }
       ]
     },
@@ -249,12 +325,12 @@
         "drink",
         "inject"
       ],
-      "desc": "筋骨一紧，负重与发力都往上抬",
+      "desc": "提高负重上限，适合携行与搬运；同类药效取最高值",
       "effects": [
         {
-          "type": "add_stat_delta",
+          "type": "pharmacy_carry_capacity",
           "params": {
-            "jingu": 3
+            "kilograms": 5
           }
         }
       ]

@@ -53,6 +53,9 @@ function resolveInjectParams(itemId) {
   if (row.agriculture_fertilizer_per_tick != null && isFinite(row.agriculture_fertilizer_per_tick)) {
     out.fertilizerPerTick = Number(row.agriculture_fertilizer_per_tick);
   }
+  if (row.agriculture_nutrient_per_bottle != null && isFinite(row.agriculture_nutrient_per_bottle)) {
+    out.nutrientPerBottle = Number(row.agriculture_nutrient_per_bottle);
+  }
   if (row.agriculture_venturi_effect_duration_ticks != null) {
     out.effectDurationTicks = Math.max(
       1,
@@ -173,45 +176,19 @@ function main() {
   assert(commitRes.ok, "commit 应成功");
   assert(!cell(stMat, AM, sx, sy).crop, "commit 后 crop 应清除");
 
-  /** §8.4 窃流：牺牲支路总水量比例缩 */
+  /** 固定水源：旧水池字段不再改变分水结果。 */
   const stTh = AM.createDefaultState();
   AM.bindEnv(env);
   for (const xy of [[1, 0], [2, 0], [3, 0], [2, 1], [3, 1]]) {
     assert(AM.tryPlaceChannelAt(stTh, xy[0], xy[1]).ok, "窃流测渠 " + xy);
   }
   AM.recomputeIrrigationNetwork(stTh);
-  assert((stTh.branches || []).length >= 2, "应至少两条支流");
-  stTh.pool_level = 2;
+  stTh.pool_level = 4;
   stTh.pool_theft = { enabled: true, victim_branch_index: 1, gain_branch_index: 2 };
-  let w1Before = 0;
-  let w2Before = 0;
-  for (let y = 0; y < AM.constants.size; y++) {
-    for (let x = 0; x < AM.constants.size; x++) {
-      const c = cell(stTh, AM, x, y);
-      if (c.kind === "channel" && c.branchIndex === 1) w1Before += c.water || 0;
-      if (c.kind === "channel" && c.branchIndex === 2) w2Before += c.water || 0;
-    }
-  }
-  w1Before = round1(w1Before);
-  w2Before = round1(w2Before);
-  assert(w1Before > 0, "牺牲支路应有水");
-  const gainEnd = cell(stTh, AM, 3, 1);
-  if (gainEnd.kind === "channel" && gainEnd.branchIndex === 2) gainEnd.water = 0;
-  const theft = AM.applyBranchTheft(stTh);
-  assert(theft.moved > 0, "窃流应挪动水量");
-  let w1After = 0;
-  let w2After = 0;
-  for (let y = 0; y < AM.constants.size; y++) {
-    for (let x = 0; x < AM.constants.size; x++) {
-      const c = cell(stTh, AM, x, y);
-      if (c.kind === "channel" && c.branchIndex === 1) w1After += c.water || 0;
-      if (c.kind === "channel" && c.branchIndex === 2) w2After += c.water || 0;
-    }
-  }
-  w1After = round1(w1After);
-  w2After = round1(w2After);
-  assert(w1After < w1Before, "牺牲支路总水量应下降");
-  assert(w2After >= w2Before, "受益支路总水量应上升");
+  AM.runAgricultureMapTick(stTh, env);
+  assert(stTh.basePoolWater === 200, "固定水源每 tick 应为 200");
+  assert(stTh.agricultureSupplyVersion === 2, "旧水池字段应迁移至供给规则 v2");
+  assert(!('pool_theft' in stTh), "窃流配置应从运行状态移除");
 
   console.log("tools/test-agriculture-map.mjs: all assertions passed");
 }

@@ -1,0 +1,1862 @@
+[
+  {
+    "id": "maize",
+    "name": "玉米",
+    "tier": 1,
+    "baseline": "mature",
+    "unfused": {
+      "cap": 2,
+      "jars": 0,
+      "concentration": 0,
+      "soil": null,
+      "fertilizer": "fertilizer_basic_low",
+      "waterAbsorbed": 80,
+      "fertilizerAbsorbed": 0,
+      "traceAbsorbed": 0,
+      "multiplier": 1.25
+    },
+    "fused": {
+      "cap": 2,
+      "jars": 0,
+      "concentration": 0,
+      "soil": "soil_saline_alkali",
+      "fertilizer": "fertilizer_basic_low",
+      "waterAbsorbed": 80,
+      "fertilizerAbsorbed": 0,
+      "traceAbsorbed": 0,
+      "multiplier": 1.75
+    },
+    "prosperity": null
+  },
+  {
+    "id": "rice",
+    "name": "大米",
+    "tier": 1,
+    "baseline": "mature",
+    "unfused": {
+      "cap": 2,
+      "jars": 0,
+      "concentration": 0,
+      "soil": null,
+      "fertilizer": "fertilizer_basic_low",
+      "waterAbsorbed": 80,
+      "fertilizerAbsorbed": 0,
+      "traceAbsorbed": 0,
+      "multiplier": 1.25
+    },
+    "fused": {
+      "cap": 2,
+      "jars": 0,
+      "concentration": 0,
+      "soil": "soil_paddy",
+      "fertilizer": "fertilizer_basic_low",
+      "waterAbsorbed": 152,
+      "fertilizerAbsorbed": 0,
+      "traceAbsorbed": 0,
+      "multiplier": 1.5
+    },
+    "prosperity": null
+  },
+  {
+    "id": "rice_bomba",
+    "name": "粳米",
+    "tier": 3,
+    "baseline": "withered",
+    "unfused": {
+      "cap": 6,
+      "jars": 1,
+      "concentration": 0,
+      "soil": null,
+      "fertilizer": "fertilizer_compost_plus",
+      "waterAbsorbed": 313.2,
+      "fertilizerAbsorbed": 32.4,
+      "traceAbsorbed": 0,
+      "multiplier": 1.5
+    },
+    "fused": {
+      "cap": 4,
+      "jars": 1,
+      "concentration": 0,
+      "soil": "soil_paddy",
+      "fertilizer": "fertilizer_basic_low",
+      "waterAbsorbed": 399.6,
+      "fertilizerAbsorbed": 32.4,
+      "traceAbsorbed": 0,
+      "multiplier": 2
+    },
+    "prosperity": {
+      "cap": 4,
+      "jars": 1,
+      "concentration": 1,
+      "soil": "soil_paddy",
+      "fertilizer": "fertilizer_basic",
+      "waterAbsorbed": 399.6,
+      "fertilizerAbsorbed": 54,
+      "traceAbsorbed": 43.2,
+      "multiplier": 2.75
+    }
+  },
+  {
+    "id": "rice_basmati",
+    "name": "长粒香米",
+    "tier": 4,
+    "baseline": "withered",
+    "unfused": {
+      "cap": 8,
+      "jars": 2,
+      "concentration": 1,
+      "soil": null,
+      "fertilizer": "fertilizer_compost_plus",
+      "waterAbsorbed": 471.2,
+      "fertilizerAbsorbed": 74.4,
+      "traceAbsorbed": 62,
+      "multiplier": 2
+    },
+    "fused": {
+      "cap": 4,
+      "jars": 1,
+      "concentration": 2,
+      "soil": "soil_paddy",
+      "fertilizer": "fertilizer_basic",
+      "waterAbsorbed": 458.8,
+      "fertilizerAbsorbed": 62,
+      "traceAbsorbed": 99.2,
+      "multiplier": 2.5
+    },
+    "prosperity": {
+      "cap": 4,
+      "jars": 1,
+      "concentration": 2,
+      "soil": "soil_paddy",
+      "fertilizer": "fertilizer_compost_plus",
+      "waterAbsorbed": 458.8,
+      "fertilizerAbsorbed": 86.8,
+      "traceAbsorbed": 99.2,
+      "multiplier": 2.75
+    }
+  },
+  {
+    "id": "rice_glutinous_round",
+    "name": "圆糯米",
+    "tier": 3,
+    "baseline": "withered",
+    "unfused": {
+      "cap": 6,
+      "jars": 1,
+      "concentration": 0,
+      "soil": null,
+      "fertilizer": "fertilizer_compost_plus",
+      "waterAbsorbed": 313.2,
+      "fertilizerAbsorbed": 32.4,
+      "traceAbsorbed": 0,
+      "multiplier": 1.5
+    },
+    "fused": {
+      "cap": 4,
+      "jars": 1,
+      "concentration": 0,
+      "soil": "soil_paddy",
+      "fertilizer": "fertilizer_basic_low",
+      "waterAbsorbed": 399.6,
+      "fertilizerAbsorbed": 32.4,
+      "traceAbsorbed": 0,
+      "multiplier": 2
+    },
+    "prosperity": {
+      "cap": 4,
+      "jars": 1,
+      "concentration": 1,
+      "soil": "soil_paddy",
+      "fertilizer": "fertilizer_basic",
+      "waterAbsorbed": 399.6,
+      "fertilizerAbsorbed": 54,
+      "traceAbsorbed": 43.2,
+      "multiplier": 2.75
+    }
+  },
+  {
+    "id": "wheat",
+    "name": "小麦",
+    "tier": 1,
+    "baseline": "mature",
+    "unfused": {
+      "cap": 2,
+      "jars": 0,
+      "concentration": 0,
+      "soil": null,
+      "fertilizer": "fertilizer_basic_low",
+      "waterAbsorbed": 80,
+      "fertilizerAbsorbed": 0,
+      "traceAbsorbed": 0,
+      "multiplier": 1.5
+    },
+    "fused": {
+      "cap": 2,
+      "jars": 0,
+      "concentration": 0,
+      "soil": "soil_cinnamon",
+      "fertilizer": "fertilizer_basic_low",
+      "waterAbsorbed": 112,
+      "fertilizerAbsorbed": 0,
+      "traceAbsorbed": 0,
+      "multiplier": 1.5
+    },
+    "prosperity": null
+  },
+  {
+    "id": "wheat_durum",
+    "name": "硬质小麦",
+    "tier": 3,
+    "baseline": "withered",
+    "unfused": {
+      "cap": 4,
+      "jars": 1,
+      "concentration": 0,
+      "soil": null,
+      "fertilizer": "fertilizer_basic",
+      "waterAbsorbed": 205.2,
+      "fertilizerAbsorbed": 21.6,
+      "traceAbsorbed": 0,
+      "multiplier": 1.5
+    },
+    "fused": {
+      "cap": 4,
+      "jars": 1,
+      "concentration": 0,
+      "soil": "soil_cinnamon",
+      "fertilizer": "fertilizer_basic_low",
+      "waterAbsorbed": 313.2,
+      "fertilizerAbsorbed": 32.4,
+      "traceAbsorbed": 0,
+      "multiplier": 2
+    },
+    "prosperity": {
+      "cap": 4,
+      "jars": 1,
+      "concentration": 1,
+      "soil": "soil_cinnamon",
+      "fertilizer": "fertilizer_basic",
+      "waterAbsorbed": 313.2,
+      "fertilizerAbsorbed": 43.2,
+      "traceAbsorbed": 43.2,
+      "multiplier": 2.5
+    }
+  },
+  {
+    "id": "euryale",
+    "name": "芡实",
+    "tier": 4,
+    "baseline": "withered",
+    "unfused": {
+      "cap": 8,
+      "jars": 2,
+      "concentration": 0,
+      "soil": null,
+      "fertilizer": "fertilizer_compost_plus",
+      "waterAbsorbed": 471.2,
+      "fertilizerAbsorbed": 74.4,
+      "traceAbsorbed": 0,
+      "multiplier": 2.25
+    },
+    "fused": {
+      "cap": 4,
+      "jars": 1,
+      "concentration": 0,
+      "soil": "soil_paddy",
+      "fertilizer": "fertilizer_basic",
+      "waterAbsorbed": 458.8,
+      "fertilizerAbsorbed": 62,
+      "traceAbsorbed": 0,
+      "multiplier": 2.5
+    },
+    "prosperity": {
+      "cap": 4,
+      "jars": 1,
+      "concentration": 0,
+      "soil": "soil_paddy",
+      "fertilizer": "fertilizer_compost_plus",
+      "waterAbsorbed": 458.8,
+      "fertilizerAbsorbed": 86.8,
+      "traceAbsorbed": 0,
+      "multiplier": 2.75
+    }
+  },
+  {
+    "id": "tomato",
+    "name": "番茄",
+    "tier": 2,
+    "baseline": "withered",
+    "unfused": {
+      "cap": 4,
+      "jars": 0,
+      "concentration": 0,
+      "soil": null,
+      "fertilizer": "fertilizer_basic_low",
+      "waterAbsorbed": 186.2,
+      "fertilizerAbsorbed": 0,
+      "traceAbsorbed": 0,
+      "multiplier": 1.5
+    },
+    "fused": {
+      "cap": 2,
+      "jars": 0,
+      "concentration": 0,
+      "soil": "soil_purple",
+      "fertilizer": "fertilizer_basic_low",
+      "waterAbsorbed": 156.8,
+      "fertilizerAbsorbed": 0,
+      "traceAbsorbed": 0,
+      "multiplier": 1.75
+    },
+    "prosperity": {
+      "cap": 2,
+      "jars": 0,
+      "concentration": 1,
+      "soil": "soil_purple",
+      "fertilizer": "fertilizer_basic_low",
+      "waterAbsorbed": 156.8,
+      "fertilizerAbsorbed": 0,
+      "traceAbsorbed": 49,
+      "multiplier": 2.25
+    }
+  },
+  {
+    "id": "tomato_green",
+    "name": "绿番茄",
+    "tier": 2,
+    "baseline": "withered",
+    "unfused": {
+      "cap": 4,
+      "jars": 0,
+      "concentration": 0,
+      "soil": null,
+      "fertilizer": "fertilizer_basic_low",
+      "waterAbsorbed": 186.2,
+      "fertilizerAbsorbed": 0,
+      "traceAbsorbed": 0,
+      "multiplier": 1.5
+    },
+    "fused": {
+      "cap": 2,
+      "jars": 0,
+      "concentration": 0,
+      "soil": "soil_purple",
+      "fertilizer": "fertilizer_basic_low",
+      "waterAbsorbed": 156.8,
+      "fertilizerAbsorbed": 0,
+      "traceAbsorbed": 0,
+      "multiplier": 1.75
+    },
+    "prosperity": {
+      "cap": 2,
+      "jars": 0,
+      "concentration": 1,
+      "soil": "soil_purple",
+      "fertilizer": "fertilizer_basic_low",
+      "waterAbsorbed": 156.8,
+      "fertilizerAbsorbed": 0,
+      "traceAbsorbed": 49,
+      "multiplier": 2.25
+    }
+  },
+  {
+    "id": "cucumber",
+    "name": "黄瓜",
+    "tier": 1,
+    "baseline": "mature",
+    "unfused": {
+      "cap": 2,
+      "jars": 0,
+      "concentration": 0,
+      "soil": null,
+      "fertilizer": "fertilizer_basic_low",
+      "waterAbsorbed": 80,
+      "fertilizerAbsorbed": 0,
+      "traceAbsorbed": 0,
+      "multiplier": 1.25
+    },
+    "fused": {
+      "cap": 2,
+      "jars": 0,
+      "concentration": 0,
+      "soil": "soil_purple",
+      "fertilizer": "fertilizer_basic_low",
+      "waterAbsorbed": 128,
+      "fertilizerAbsorbed": 0,
+      "traceAbsorbed": 0,
+      "multiplier": 1.75
+    },
+    "prosperity": {
+      "cap": 2,
+      "jars": 0,
+      "concentration": 0,
+      "soil": "soil_purple",
+      "fertilizer": "fertilizer_basic_low",
+      "waterAbsorbed": 128,
+      "fertilizerAbsorbed": 0,
+      "traceAbsorbed": 0,
+      "multiplier": 1.75
+    }
+  },
+  {
+    "id": "sprout",
+    "name": "豆芽",
+    "tier": 1,
+    "baseline": "mature",
+    "unfused": {
+      "cap": 2,
+      "jars": 0,
+      "concentration": 0,
+      "soil": null,
+      "fertilizer": "fertilizer_basic_low",
+      "waterAbsorbed": 40,
+      "fertilizerAbsorbed": 0,
+      "traceAbsorbed": 0,
+      "multiplier": 1.75
+    },
+    "fused": {
+      "cap": 2,
+      "jars": 0,
+      "concentration": 0,
+      "soil": "soil_cinnamon",
+      "fertilizer": "fertilizer_basic_low",
+      "waterAbsorbed": 56,
+      "fertilizerAbsorbed": 0,
+      "traceAbsorbed": 0,
+      "multiplier": 1.75
+    },
+    "prosperity": null
+  },
+  {
+    "id": "potato",
+    "name": "土豆",
+    "tier": 1,
+    "baseline": "mature",
+    "unfused": {
+      "cap": 2,
+      "jars": 0,
+      "concentration": 0,
+      "soil": null,
+      "fertilizer": "fertilizer_basic_low",
+      "waterAbsorbed": 75,
+      "fertilizerAbsorbed": 0,
+      "traceAbsorbed": 0,
+      "multiplier": 1.25
+    },
+    "fused": {
+      "cap": 2,
+      "jars": 0,
+      "concentration": 0,
+      "soil": "soil_black",
+      "fertilizer": "fertilizer_basic_low",
+      "waterAbsorbed": 135,
+      "fertilizerAbsorbed": 0,
+      "traceAbsorbed": 0,
+      "multiplier": 1.5
+    },
+    "prosperity": null
+  },
+  {
+    "id": "green_beans",
+    "name": "扁豆",
+    "tier": 2,
+    "baseline": "mature",
+    "unfused": {
+      "cap": 2,
+      "jars": 0,
+      "concentration": 0,
+      "soil": null,
+      "fertilizer": "fertilizer_basic_low",
+      "waterAbsorbed": 98,
+      "fertilizerAbsorbed": 0,
+      "traceAbsorbed": 0,
+      "multiplier": 1.75
+    },
+    "fused": {
+      "cap": 2,
+      "jars": 0,
+      "concentration": 0,
+      "soil": "soil_cinnamon",
+      "fertilizer": "fertilizer_basic_low",
+      "waterAbsorbed": 137.2,
+      "fertilizerAbsorbed": 0,
+      "traceAbsorbed": 0,
+      "multiplier": 2
+    },
+    "prosperity": {
+      "cap": 2,
+      "jars": 0,
+      "concentration": 0,
+      "soil": "soil_cinnamon",
+      "fertilizer": "fertilizer_basic_low",
+      "waterAbsorbed": 137.2,
+      "fertilizerAbsorbed": 0,
+      "traceAbsorbed": 0,
+      "multiplier": 2
+    }
+  },
+  {
+    "id": "garrofo",
+    "name": "大白芸豆",
+    "tier": 2,
+    "baseline": "mature",
+    "unfused": {
+      "cap": 2,
+      "jars": 0,
+      "concentration": 0,
+      "soil": null,
+      "fertilizer": "fertilizer_basic_low",
+      "waterAbsorbed": 98,
+      "fertilizerAbsorbed": 0,
+      "traceAbsorbed": 0,
+      "multiplier": 1.75
+    },
+    "fused": {
+      "cap": 2,
+      "jars": 0,
+      "concentration": 0,
+      "soil": "soil_cinnamon",
+      "fertilizer": "fertilizer_basic_low",
+      "waterAbsorbed": 137.2,
+      "fertilizerAbsorbed": 0,
+      "traceAbsorbed": 0,
+      "multiplier": 2
+    },
+    "prosperity": {
+      "cap": 2,
+      "jars": 0,
+      "concentration": 0,
+      "soil": "soil_cinnamon",
+      "fertilizer": "fertilizer_basic_low",
+      "waterAbsorbed": 137.2,
+      "fertilizerAbsorbed": 0,
+      "traceAbsorbed": 0,
+      "multiplier": 2
+    }
+  },
+  {
+    "id": "beans_white_haricot",
+    "name": "白扁豆",
+    "tier": 1,
+    "baseline": "mature",
+    "unfused": {
+      "cap": 2,
+      "jars": 0,
+      "concentration": 0,
+      "soil": null,
+      "fertilizer": "fertilizer_basic_low",
+      "waterAbsorbed": 80,
+      "fertilizerAbsorbed": 0,
+      "traceAbsorbed": 0,
+      "multiplier": 1.75
+    },
+    "fused": {
+      "cap": 2,
+      "jars": 0,
+      "concentration": 0,
+      "soil": "soil_cinnamon",
+      "fertilizer": "fertilizer_basic_low",
+      "waterAbsorbed": 112,
+      "fertilizerAbsorbed": 0,
+      "traceAbsorbed": 0,
+      "multiplier": 1.75
+    },
+    "prosperity": null
+  },
+  {
+    "id": "beet",
+    "name": "红甜菜",
+    "tier": 2,
+    "baseline": "withered",
+    "unfused": {
+      "cap": 4,
+      "jars": 0,
+      "concentration": 0,
+      "soil": null,
+      "fertilizer": "fertilizer_basic_low",
+      "waterAbsorbed": 186.2,
+      "fertilizerAbsorbed": 0,
+      "traceAbsorbed": 0,
+      "multiplier": 1.5
+    },
+    "fused": {
+      "cap": 2,
+      "jars": 0,
+      "concentration": 0,
+      "soil": "soil_black",
+      "fertilizer": "fertilizer_basic_low",
+      "waterAbsorbed": 176.4,
+      "fertilizerAbsorbed": 0,
+      "traceAbsorbed": 0,
+      "multiplier": 1.75
+    },
+    "prosperity": {
+      "cap": 2,
+      "jars": 0,
+      "concentration": 1,
+      "soil": "soil_black",
+      "fertilizer": "fertilizer_basic_low",
+      "waterAbsorbed": 176.4,
+      "fertilizerAbsorbed": 0,
+      "traceAbsorbed": 39.2,
+      "multiplier": 2.25
+    }
+  },
+  {
+    "id": "cabbage",
+    "name": "白菜",
+    "tier": 1,
+    "baseline": "mature",
+    "unfused": {
+      "cap": 2,
+      "jars": 0,
+      "concentration": 0,
+      "soil": null,
+      "fertilizer": "fertilizer_basic_low",
+      "waterAbsorbed": 80,
+      "fertilizerAbsorbed": 0,
+      "traceAbsorbed": 0,
+      "multiplier": 1.25
+    },
+    "fused": {
+      "cap": 2,
+      "jars": 0,
+      "concentration": 0,
+      "soil": "soil_black",
+      "fertilizer": "fertilizer_basic_low",
+      "waterAbsorbed": 144,
+      "fertilizerAbsorbed": 0,
+      "traceAbsorbed": 0,
+      "multiplier": 1.5
+    },
+    "prosperity": null
+  },
+  {
+    "id": "carrot",
+    "name": "胡萝卜",
+    "tier": 1,
+    "baseline": "mature",
+    "unfused": {
+      "cap": 2,
+      "jars": 0,
+      "concentration": 0,
+      "soil": null,
+      "fertilizer": "fertilizer_basic_low",
+      "waterAbsorbed": 80,
+      "fertilizerAbsorbed": 0,
+      "traceAbsorbed": 0,
+      "multiplier": 1.5
+    },
+    "fused": {
+      "cap": 2,
+      "jars": 0,
+      "concentration": 0,
+      "soil": "soil_cinnamon",
+      "fertilizer": "fertilizer_basic_low",
+      "waterAbsorbed": 112,
+      "fertilizerAbsorbed": 0,
+      "traceAbsorbed": 0,
+      "multiplier": 1.5
+    },
+    "prosperity": null
+  },
+  {
+    "id": "konjac",
+    "name": "魔芋",
+    "tier": 4,
+    "baseline": "withered",
+    "unfused": {
+      "cap": 6,
+      "jars": 2,
+      "concentration": 1,
+      "soil": null,
+      "fertilizer": "fertilizer_compost_plus",
+      "waterAbsorbed": 379.9,
+      "fertilizerAbsorbed": 78.6,
+      "traceAbsorbed": 65.5,
+      "multiplier": 2.25
+    },
+    "fused": {
+      "cap": 4,
+      "jars": 1,
+      "concentration": 1,
+      "soil": "soil_purple",
+      "fertilizer": "fertilizer_compost_plus",
+      "waterAbsorbed": 419.2,
+      "fertilizerAbsorbed": 78.6,
+      "traceAbsorbed": 65.5,
+      "multiplier": 2.5
+    },
+    "prosperity": {
+      "cap": 4,
+      "jars": 2,
+      "concentration": 1,
+      "soil": "soil_purple",
+      "fertilizer": "fertilizer_basic",
+      "waterAbsorbed": 419.2,
+      "fertilizerAbsorbed": 104.8,
+      "traceAbsorbed": 65.5,
+      "multiplier": 2.75
+    }
+  },
+  {
+    "id": "radish_white",
+    "name": "白萝卜",
+    "tier": 1,
+    "baseline": "mature",
+    "unfused": {
+      "cap": 2,
+      "jars": 0,
+      "concentration": 0,
+      "soil": null,
+      "fertilizer": "fertilizer_basic_low",
+      "waterAbsorbed": 70,
+      "fertilizerAbsorbed": 0,
+      "traceAbsorbed": 0,
+      "multiplier": 1.5
+    },
+    "fused": {
+      "cap": 2,
+      "jars": 0,
+      "concentration": 0,
+      "soil": "soil_cinnamon",
+      "fertilizer": "fertilizer_basic_low",
+      "waterAbsorbed": 98,
+      "fertilizerAbsorbed": 0,
+      "traceAbsorbed": 0,
+      "multiplier": 1.5
+    },
+    "prosperity": null
+  },
+  {
+    "id": "celery",
+    "name": "西芹",
+    "tier": 3,
+    "baseline": "withered",
+    "unfused": {
+      "cap": 4,
+      "jars": 1,
+      "concentration": 0,
+      "soil": null,
+      "fertilizer": "fertilizer_compost_plus",
+      "waterAbsorbed": 205.2,
+      "fertilizerAbsorbed": 32.4,
+      "traceAbsorbed": 0,
+      "multiplier": 1.5
+    },
+    "fused": {
+      "cap": 4,
+      "jars": 1,
+      "concentration": 0,
+      "soil": "soil_black",
+      "fertilizer": "fertilizer_basic_low",
+      "waterAbsorbed": 388.8,
+      "fertilizerAbsorbed": 43.2,
+      "traceAbsorbed": 0,
+      "multiplier": 2
+    },
+    "prosperity": {
+      "cap": 4,
+      "jars": 1,
+      "concentration": 1,
+      "soil": "soil_black",
+      "fertilizer": "fertilizer_basic",
+      "waterAbsorbed": 388.8,
+      "fertilizerAbsorbed": 54,
+      "traceAbsorbed": 43.2,
+      "multiplier": 2.75
+    }
+  },
+  {
+    "id": "bamboo_shoot",
+    "name": "竹笋",
+    "tier": 5,
+    "baseline": "withered",
+    "unfused": {
+      "cap": 8,
+      "jars": 3,
+      "concentration": 1,
+      "soil": null,
+      "fertilizer": "fertilizer_compost_plus",
+      "waterAbsorbed": 646,
+      "fertilizerAbsorbed": 153,
+      "traceAbsorbed": 85,
+      "multiplier": 2.25
+    },
+    "fused": {
+      "cap": 4,
+      "jars": 1,
+      "concentration": 2,
+      "soil": "soil_paddy",
+      "fertilizer": "fertilizer_compost_plus",
+      "waterAbsorbed": 629,
+      "fertilizerAbsorbed": 119,
+      "traceAbsorbed": 136,
+      "multiplier": 2.75
+    },
+    "prosperity": {
+      "cap": 4,
+      "jars": 1,
+      "concentration": 2,
+      "soil": "soil_paddy",
+      "fertilizer": "fertilizer_compost_plus",
+      "waterAbsorbed": 629,
+      "fertilizerAbsorbed": 119,
+      "traceAbsorbed": 136,
+      "multiplier": 2.75
+    }
+  },
+  {
+    "id": "onion",
+    "name": "洋葱",
+    "tier": 2,
+    "baseline": "mature",
+    "unfused": {
+      "cap": 2,
+      "jars": 0,
+      "concentration": 0,
+      "soil": null,
+      "fertilizer": "fertilizer_basic_low",
+      "waterAbsorbed": 98,
+      "fertilizerAbsorbed": 0,
+      "traceAbsorbed": 0,
+      "multiplier": 1.25
+    },
+    "fused": {
+      "cap": 2,
+      "jars": 0,
+      "concentration": 0,
+      "soil": "soil_cinnamon",
+      "fertilizer": "fertilizer_basic_low",
+      "waterAbsorbed": 137.2,
+      "fertilizerAbsorbed": 0,
+      "traceAbsorbed": 0,
+      "multiplier": 1.75
+    },
+    "prosperity": {
+      "cap": 2,
+      "jars": 0,
+      "concentration": 1,
+      "soil": "soil_cinnamon",
+      "fertilizer": "fertilizer_basic_low",
+      "waterAbsorbed": 137.2,
+      "fertilizerAbsorbed": 0,
+      "traceAbsorbed": 39.2,
+      "multiplier": 2
+    }
+  },
+  {
+    "id": "garlic",
+    "name": "大蒜",
+    "tier": 2,
+    "baseline": "mature",
+    "unfused": {
+      "cap": 2,
+      "jars": 0,
+      "concentration": 0,
+      "soil": null,
+      "fertilizer": "fertilizer_basic_low",
+      "waterAbsorbed": 98,
+      "fertilizerAbsorbed": 0,
+      "traceAbsorbed": 0,
+      "multiplier": 1.25
+    },
+    "fused": {
+      "cap": 2,
+      "jars": 0,
+      "concentration": 0,
+      "soil": "soil_cinnamon",
+      "fertilizer": "fertilizer_basic_low",
+      "waterAbsorbed": 137.2,
+      "fertilizerAbsorbed": 0,
+      "traceAbsorbed": 0,
+      "multiplier": 1.75
+    },
+    "prosperity": {
+      "cap": 2,
+      "jars": 0,
+      "concentration": 1,
+      "soil": "soil_cinnamon",
+      "fertilizer": "fertilizer_basic_low",
+      "waterAbsorbed": 137.2,
+      "fertilizerAbsorbed": 0,
+      "traceAbsorbed": 39.2,
+      "multiplier": 2
+    }
+  },
+  {
+    "id": "ginger",
+    "name": "生姜",
+    "tier": 3,
+    "baseline": "withered",
+    "unfused": {
+      "cap": 4,
+      "jars": 1,
+      "concentration": 0,
+      "soil": null,
+      "fertilizer": "fertilizer_compost_plus",
+      "waterAbsorbed": 205.2,
+      "fertilizerAbsorbed": 32.4,
+      "traceAbsorbed": 0,
+      "multiplier": 1.5
+    },
+    "fused": {
+      "cap": 4,
+      "jars": 1,
+      "concentration": 0,
+      "soil": "soil_red",
+      "fertilizer": "fertilizer_basic",
+      "waterAbsorbed": 313.2,
+      "fertilizerAbsorbed": 32.4,
+      "traceAbsorbed": 0,
+      "multiplier": 2
+    },
+    "prosperity": {
+      "cap": 4,
+      "jars": 1,
+      "concentration": 1,
+      "soil": "soil_red",
+      "fertilizer": "fertilizer_compost_plus",
+      "waterAbsorbed": 313.2,
+      "fertilizerAbsorbed": 43.2,
+      "traceAbsorbed": 32.4,
+      "multiplier": 2.75
+    }
+  },
+  {
+    "id": "shallot",
+    "name": "红葱头",
+    "tier": 3,
+    "baseline": "withered",
+    "unfused": {
+      "cap": 4,
+      "jars": 1,
+      "concentration": 0,
+      "soil": null,
+      "fertilizer": "fertilizer_basic",
+      "waterAbsorbed": 205.2,
+      "fertilizerAbsorbed": 21.6,
+      "traceAbsorbed": 0,
+      "multiplier": 1.5
+    },
+    "fused": {
+      "cap": 2,
+      "jars": 1,
+      "concentration": 0,
+      "soil": "soil_purple",
+      "fertilizer": "fertilizer_basic_low",
+      "waterAbsorbed": 172.8,
+      "fertilizerAbsorbed": 32.4,
+      "traceAbsorbed": 0,
+      "multiplier": 1.75
+    },
+    "prosperity": {
+      "cap": 4,
+      "jars": 1,
+      "concentration": 1,
+      "soil": "soil_purple",
+      "fertilizer": "fertilizer_basic",
+      "waterAbsorbed": 345.6,
+      "fertilizerAbsorbed": 43.2,
+      "traceAbsorbed": 54,
+      "multiplier": 2.75
+    }
+  },
+  {
+    "id": "leek",
+    "name": "韭葱",
+    "tier": 3,
+    "baseline": "withered",
+    "unfused": {
+      "cap": 4,
+      "jars": 1,
+      "concentration": 0,
+      "soil": null,
+      "fertilizer": "fertilizer_compost_plus",
+      "waterAbsorbed": 205.2,
+      "fertilizerAbsorbed": 32.4,
+      "traceAbsorbed": 0,
+      "multiplier": 1.5
+    },
+    "fused": {
+      "cap": 2,
+      "jars": 1,
+      "concentration": 0,
+      "soil": "soil_black",
+      "fertilizer": "fertilizer_basic_low",
+      "waterAbsorbed": 194.4,
+      "fertilizerAbsorbed": 43.2,
+      "traceAbsorbed": 0,
+      "multiplier": 2
+    },
+    "prosperity": {
+      "cap": 4,
+      "jars": 1,
+      "concentration": 1,
+      "soil": "soil_black",
+      "fertilizer": "fertilizer_basic_low",
+      "waterAbsorbed": 388.8,
+      "fertilizerAbsorbed": 43.2,
+      "traceAbsorbed": 43.2,
+      "multiplier": 2.75
+    }
+  },
+  {
+    "id": "scallion",
+    "name": "大葱",
+    "tier": 2,
+    "baseline": "withered",
+    "unfused": {
+      "cap": 4,
+      "jars": 0,
+      "concentration": 0,
+      "soil": null,
+      "fertilizer": "fertilizer_basic_low",
+      "waterAbsorbed": 186.2,
+      "fertilizerAbsorbed": 0,
+      "traceAbsorbed": 0,
+      "multiplier": 1.25
+    },
+    "fused": {
+      "cap": 2,
+      "jars": 0,
+      "concentration": 0,
+      "soil": "soil_cinnamon",
+      "fertilizer": "fertilizer_basic_low",
+      "waterAbsorbed": 137.2,
+      "fertilizerAbsorbed": 0,
+      "traceAbsorbed": 0,
+      "multiplier": 1.75
+    },
+    "prosperity": {
+      "cap": 2,
+      "jars": 0,
+      "concentration": 1,
+      "soil": "soil_cinnamon",
+      "fertilizer": "fertilizer_basic_low",
+      "waterAbsorbed": 137.2,
+      "fertilizerAbsorbed": 0,
+      "traceAbsorbed": 39.2,
+      "multiplier": 2
+    }
+  },
+  {
+    "id": "cilantro",
+    "name": "芫荽",
+    "tier": 3,
+    "baseline": "withered",
+    "unfused": {
+      "cap": 4,
+      "jars": 1,
+      "concentration": 0,
+      "soil": null,
+      "fertilizer": "fertilizer_basic",
+      "waterAbsorbed": 205.2,
+      "fertilizerAbsorbed": 21.6,
+      "traceAbsorbed": 0,
+      "multiplier": 1.5
+    },
+    "fused": {
+      "cap": 4,
+      "jars": 1,
+      "concentration": 0,
+      "soil": "soil_cinnamon",
+      "fertilizer": "fertilizer_basic_low",
+      "waterAbsorbed": 313.2,
+      "fertilizerAbsorbed": 32.4,
+      "traceAbsorbed": 0,
+      "multiplier": 2.25
+    },
+    "prosperity": {
+      "cap": 4,
+      "jars": 1,
+      "concentration": 1,
+      "soil": "soil_cinnamon",
+      "fertilizer": "fertilizer_basic_low",
+      "waterAbsorbed": 313.2,
+      "fertilizerAbsorbed": 32.4,
+      "traceAbsorbed": 43.2,
+      "multiplier": 2.5
+    }
+  },
+  {
+    "id": "star_anise",
+    "name": "八角",
+    "tier": 5,
+    "baseline": "withered",
+    "unfused": {
+      "cap": 6,
+      "jars": 3,
+      "concentration": 1,
+      "soil": null,
+      "fertilizer": "fertilizer_compost_plus",
+      "waterAbsorbed": 493,
+      "fertilizerAbsorbed": 153,
+      "traceAbsorbed": 85,
+      "multiplier": 2.25
+    },
+    "fused": {
+      "cap": 4,
+      "jars": 2,
+      "concentration": 2,
+      "soil": "soil_red",
+      "fertilizer": "fertilizer_compost_plus",
+      "waterAbsorbed": 493,
+      "fertilizerAbsorbed": 136,
+      "traceAbsorbed": 102,
+      "multiplier": 2.75
+    },
+    "prosperity": {
+      "cap": 4,
+      "jars": 2,
+      "concentration": 2,
+      "soil": "soil_red",
+      "fertilizer": "fertilizer_compost_plus",
+      "waterAbsorbed": 493,
+      "fertilizerAbsorbed": 136,
+      "traceAbsorbed": 102,
+      "multiplier": 2.75
+    }
+  },
+  {
+    "id": "sesame",
+    "name": "芝麻",
+    "tier": 4,
+    "baseline": "withered",
+    "unfused": {
+      "cap": 6,
+      "jars": 3,
+      "concentration": 1,
+      "soil": null,
+      "fertilizer": "fertilizer_compost_plus",
+      "waterAbsorbed": 359.6,
+      "fertilizerAbsorbed": 111.6,
+      "traceAbsorbed": 62,
+      "multiplier": 2
+    },
+    "fused": {
+      "cap": 4,
+      "jars": 2,
+      "concentration": 2,
+      "soil": "soil_cinnamon",
+      "fertilizer": "fertilizer_basic",
+      "waterAbsorbed": 359.6,
+      "fertilizerAbsorbed": 99.2,
+      "traceAbsorbed": 86.8,
+      "multiplier": 2.5
+    },
+    "prosperity": {
+      "cap": 4,
+      "jars": 2,
+      "concentration": 2,
+      "soil": "soil_cinnamon",
+      "fertilizer": "fertilizer_basic",
+      "waterAbsorbed": 359.6,
+      "fertilizerAbsorbed": 99.2,
+      "traceAbsorbed": 86.8,
+      "multiplier": 2.5
+    }
+  },
+  {
+    "id": "pumpkin_seed",
+    "name": "南瓜籽",
+    "tier": 4,
+    "baseline": "withered",
+    "unfused": {
+      "cap": 6,
+      "jars": 2,
+      "concentration": 1,
+      "soil": null,
+      "fertilizer": "fertilizer_compost_plus",
+      "waterAbsorbed": 359.6,
+      "fertilizerAbsorbed": 74.4,
+      "traceAbsorbed": 62,
+      "multiplier": 2.25
+    },
+    "fused": {
+      "cap": 4,
+      "jars": 1,
+      "concentration": 1,
+      "soil": "soil_black",
+      "fertilizer": "fertilizer_compost_plus",
+      "waterAbsorbed": 446.4,
+      "fertilizerAbsorbed": 99.2,
+      "traceAbsorbed": 49.6,
+      "multiplier": 2.5
+    },
+    "prosperity": {
+      "cap": 4,
+      "jars": 1,
+      "concentration": 2,
+      "soil": "soil_black",
+      "fertilizer": "fertilizer_compost_plus",
+      "waterAbsorbed": 446.4,
+      "fertilizerAbsorbed": 99.2,
+      "traceAbsorbed": 111.6,
+      "multiplier": 2.75
+    }
+  },
+  {
+    "id": "turmeric",
+    "name": "姜黄",
+    "tier": 4,
+    "baseline": "withered",
+    "unfused": {
+      "cap": 6,
+      "jars": 3,
+      "concentration": 1,
+      "soil": null,
+      "fertilizer": "fertilizer_compost_plus",
+      "waterAbsorbed": 359.6,
+      "fertilizerAbsorbed": 111.6,
+      "traceAbsorbed": 62,
+      "multiplier": 2.5
+    },
+    "fused": {
+      "cap": 4,
+      "jars": 2,
+      "concentration": 2,
+      "soil": "soil_red",
+      "fertilizer": "fertilizer_compost_plus",
+      "waterAbsorbed": 359.6,
+      "fertilizerAbsorbed": 99.2,
+      "traceAbsorbed": 74.4,
+      "multiplier": 2.75
+    },
+    "prosperity": {
+      "cap": 4,
+      "jars": 2,
+      "concentration": 2,
+      "soil": "soil_red",
+      "fertilizer": "fertilizer_compost_plus",
+      "waterAbsorbed": 359.6,
+      "fertilizerAbsorbed": 99.2,
+      "traceAbsorbed": 74.4,
+      "multiplier": 2.75
+    }
+  },
+  {
+    "id": "cumin",
+    "name": "孜然",
+    "tier": 5,
+    "baseline": "withered",
+    "unfused": {
+      "cap": 6,
+      "jars": 3,
+      "concentration": 1,
+      "soil": null,
+      "fertilizer": "fertilizer_compost_plus",
+      "waterAbsorbed": 411.8,
+      "fertilizerAbsorbed": 127.8,
+      "traceAbsorbed": 71,
+      "multiplier": 2.25
+    },
+    "fused": {
+      "cap": 4,
+      "jars": 2,
+      "concentration": 2,
+      "soil": "soil_cinnamon",
+      "fertilizer": "fertilizer_basic",
+      "waterAbsorbed": 411.8,
+      "fertilizerAbsorbed": 113.6,
+      "traceAbsorbed": 99.4,
+      "multiplier": 2.5
+    },
+    "prosperity": {
+      "cap": 4,
+      "jars": 2,
+      "concentration": 2,
+      "soil": "soil_cinnamon",
+      "fertilizer": "fertilizer_basic",
+      "waterAbsorbed": 411.8,
+      "fertilizerAbsorbed": 113.6,
+      "traceAbsorbed": 99.4,
+      "multiplier": 2.5
+    }
+  },
+  {
+    "id": "coriander_seed",
+    "name": "芫荽子",
+    "tier": 4,
+    "baseline": "withered",
+    "unfused": {
+      "cap": 6,
+      "jars": 3,
+      "concentration": 1,
+      "soil": null,
+      "fertilizer": "fertilizer_compost_plus",
+      "waterAbsorbed": 359.6,
+      "fertilizerAbsorbed": 111.6,
+      "traceAbsorbed": 62,
+      "multiplier": 2
+    },
+    "fused": {
+      "cap": 4,
+      "jars": 2,
+      "concentration": 1,
+      "soil": "soil_purple",
+      "fertilizer": "fertilizer_basic",
+      "waterAbsorbed": 396.8,
+      "fertilizerAbsorbed": 99.2,
+      "traceAbsorbed": 62,
+      "multiplier": 2.75
+    },
+    "prosperity": {
+      "cap": 4,
+      "jars": 2,
+      "concentration": 2,
+      "soil": "soil_purple",
+      "fertilizer": "fertilizer_basic",
+      "waterAbsorbed": 396.8,
+      "fertilizerAbsorbed": 99.2,
+      "traceAbsorbed": 111.6,
+      "multiplier": 2.75
+    }
+  },
+  {
+    "id": "fennel_seed",
+    "name": "小茴香子",
+    "tier": 4,
+    "baseline": "withered",
+    "unfused": {
+      "cap": 6,
+      "jars": 3,
+      "concentration": 1,
+      "soil": null,
+      "fertilizer": "fertilizer_compost_plus",
+      "waterAbsorbed": 359.6,
+      "fertilizerAbsorbed": 111.6,
+      "traceAbsorbed": 62,
+      "multiplier": 2.25
+    },
+    "fused": {
+      "cap": 4,
+      "jars": 2,
+      "concentration": 2,
+      "soil": "soil_cinnamon",
+      "fertilizer": "fertilizer_basic",
+      "waterAbsorbed": 359.6,
+      "fertilizerAbsorbed": 99.2,
+      "traceAbsorbed": 86.8,
+      "multiplier": 2.5
+    },
+    "prosperity": {
+      "cap": 4,
+      "jars": 2,
+      "concentration": 2,
+      "soil": "soil_cinnamon",
+      "fertilizer": "fertilizer_basic",
+      "waterAbsorbed": 359.6,
+      "fertilizerAbsorbed": 99.2,
+      "traceAbsorbed": 86.8,
+      "multiplier": 2.5
+    }
+  },
+  {
+    "id": "mustard_seed",
+    "name": "芥末籽",
+    "tier": 3,
+    "baseline": "withered",
+    "unfused": {
+      "cap": 4,
+      "jars": 1,
+      "concentration": 0,
+      "soil": null,
+      "fertilizer": "fertilizer_compost_plus",
+      "waterAbsorbed": 205.2,
+      "fertilizerAbsorbed": 32.4,
+      "traceAbsorbed": 0,
+      "multiplier": 1.5
+    },
+    "fused": {
+      "cap": 4,
+      "jars": 1,
+      "concentration": 0,
+      "soil": "soil_cinnamon",
+      "fertilizer": "fertilizer_basic_low",
+      "waterAbsorbed": 313.2,
+      "fertilizerAbsorbed": 32.4,
+      "traceAbsorbed": 0,
+      "multiplier": 2
+    },
+    "prosperity": {
+      "cap": 4,
+      "jars": 1,
+      "concentration": 1,
+      "soil": "soil_cinnamon",
+      "fertilizer": "fertilizer_basic",
+      "waterAbsorbed": 313.2,
+      "fertilizerAbsorbed": 43.2,
+      "traceAbsorbed": 43.2,
+      "multiplier": 2.5
+    }
+  },
+  {
+    "id": "chili_kashmir",
+    "name": "克什米尔辣椒",
+    "tier": 5,
+    "baseline": "withered",
+    "unfused": {
+      "cap": 6,
+      "jars": 3,
+      "concentration": 2,
+      "soil": null,
+      "fertilizer": "fertilizer_compost_plus",
+      "waterAbsorbed": 411.8,
+      "fertilizerAbsorbed": 127.8,
+      "traceAbsorbed": 142,
+      "multiplier": 2.5
+    },
+    "fused": {
+      "cap": 4,
+      "jars": 2,
+      "concentration": 2,
+      "soil": "soil_purple",
+      "fertilizer": "fertilizer_basic",
+      "waterAbsorbed": 454.4,
+      "fertilizerAbsorbed": 113.6,
+      "traceAbsorbed": 127.8,
+      "multiplier": 2.75
+    },
+    "prosperity": {
+      "cap": 4,
+      "jars": 2,
+      "concentration": 2,
+      "soil": "soil_purple",
+      "fertilizer": "fertilizer_basic",
+      "waterAbsorbed": 454.4,
+      "fertilizerAbsorbed": 113.6,
+      "traceAbsorbed": 127.8,
+      "multiplier": 2.75
+    }
+  },
+  {
+    "id": "chili_red",
+    "name": "红辣椒",
+    "tier": 3,
+    "baseline": "withered",
+    "unfused": {
+      "cap": 4,
+      "jars": 1,
+      "concentration": 0,
+      "soil": null,
+      "fertilizer": "fertilizer_compost_plus",
+      "waterAbsorbed": 205.2,
+      "fertilizerAbsorbed": 32.4,
+      "traceAbsorbed": 0,
+      "multiplier": 1.5
+    },
+    "fused": {
+      "cap": 4,
+      "jars": 1,
+      "concentration": 0,
+      "soil": "soil_purple",
+      "fertilizer": "fertilizer_basic_low",
+      "waterAbsorbed": 345.6,
+      "fertilizerAbsorbed": 32.4,
+      "traceAbsorbed": 0,
+      "multiplier": 2
+    },
+    "prosperity": {
+      "cap": 4,
+      "jars": 1,
+      "concentration": 1,
+      "soil": "soil_purple",
+      "fertilizer": "fertilizer_compost_plus",
+      "waterAbsorbed": 345.6,
+      "fertilizerAbsorbed": 64.8,
+      "traceAbsorbed": 54,
+      "multiplier": 2.75
+    }
+  },
+  {
+    "id": "plantain",
+    "name": "大蕉",
+    "tier": 4,
+    "baseline": "withered",
+    "unfused": {
+      "cap": 6,
+      "jars": 3,
+      "concentration": 1,
+      "soil": null,
+      "fertilizer": "fertilizer_compost_plus",
+      "waterAbsorbed": 388.6,
+      "fertilizerAbsorbed": 120.6,
+      "traceAbsorbed": 67,
+      "multiplier": 2
+    },
+    "fused": {
+      "cap": 4,
+      "jars": 2,
+      "concentration": 1,
+      "soil": "soil_purple",
+      "fertilizer": "fertilizer_basic",
+      "waterAbsorbed": 428.8,
+      "fertilizerAbsorbed": 107.2,
+      "traceAbsorbed": 67,
+      "multiplier": 2.75
+    },
+    "prosperity": {
+      "cap": 4,
+      "jars": 2,
+      "concentration": 2,
+      "soil": "soil_purple",
+      "fertilizer": "fertilizer_basic",
+      "waterAbsorbed": 428.8,
+      "fertilizerAbsorbed": 107.2,
+      "traceAbsorbed": 120.6,
+      "multiplier": 2.75
+    }
+  },
+  {
+    "id": "almond",
+    "name": "杏仁",
+    "tier": 5,
+    "baseline": "withered",
+    "unfused": {
+      "cap": 6,
+      "jars": 3,
+      "concentration": 0,
+      "soil": null,
+      "fertilizer": "fertilizer_compost_plus",
+      "waterAbsorbed": 493,
+      "fertilizerAbsorbed": 153,
+      "traceAbsorbed": 0,
+      "multiplier": 2.5
+    },
+    "fused": {
+      "cap": 4,
+      "jars": 2,
+      "concentration": 0,
+      "soil": "soil_cinnamon",
+      "fertilizer": "fertilizer_basic",
+      "waterAbsorbed": 493,
+      "fertilizerAbsorbed": 136,
+      "traceAbsorbed": 0,
+      "multiplier": 2.5
+    },
+    "prosperity": {
+      "cap": 4,
+      "jars": 2,
+      "concentration": 0,
+      "soil": "soil_cinnamon",
+      "fertilizer": "fertilizer_basic",
+      "waterAbsorbed": 493,
+      "fertilizerAbsorbed": 136,
+      "traceAbsorbed": 0,
+      "multiplier": 2.5
+    }
+  },
+  {
+    "id": "peanut",
+    "name": "花生",
+    "tier": 2,
+    "baseline": "mature",
+    "unfused": {
+      "cap": 2,
+      "jars": 0,
+      "concentration": 0,
+      "soil": null,
+      "fertilizer": "fertilizer_basic_low",
+      "waterAbsorbed": 98,
+      "fertilizerAbsorbed": 0,
+      "traceAbsorbed": 0,
+      "multiplier": 1.25
+    },
+    "fused": {
+      "cap": 2,
+      "jars": 0,
+      "concentration": 0,
+      "soil": "soil_red",
+      "fertilizer": "fertilizer_basic_low",
+      "waterAbsorbed": 147,
+      "fertilizerAbsorbed": 0,
+      "traceAbsorbed": 0,
+      "multiplier": 1.75
+    },
+    "prosperity": {
+      "cap": 2,
+      "jars": 0,
+      "concentration": 1,
+      "soil": "soil_red",
+      "fertilizer": "fertilizer_basic_low",
+      "waterAbsorbed": 147,
+      "fertilizerAbsorbed": 0,
+      "traceAbsorbed": 29.4,
+      "multiplier": 2.25
+    }
+  },
+  {
+    "id": "sugarcane",
+    "name": "甘蔗",
+    "tier": 2,
+    "baseline": "withered",
+    "unfused": {
+      "cap": 4,
+      "jars": 0,
+      "concentration": 0,
+      "soil": null,
+      "fertilizer": "fertilizer_basic_low",
+      "waterAbsorbed": 209,
+      "fertilizerAbsorbed": 0,
+      "traceAbsorbed": 0,
+      "multiplier": 1.5
+    },
+    "fused": {
+      "cap": 2,
+      "jars": 0,
+      "concentration": 0,
+      "soil": "soil_paddy",
+      "fertilizer": "fertilizer_basic_low",
+      "waterAbsorbed": 209,
+      "fertilizerAbsorbed": 0,
+      "traceAbsorbed": 0,
+      "multiplier": 1.75
+    },
+    "prosperity": {
+      "cap": 2,
+      "jars": 0,
+      "concentration": 1,
+      "soil": "soil_paddy",
+      "fertilizer": "fertilizer_basic_low",
+      "waterAbsorbed": 209,
+      "fertilizerAbsorbed": 0,
+      "traceAbsorbed": 44,
+      "multiplier": 2.25
+    }
+  },
+  {
+    "id": "lemon",
+    "name": "柠檬",
+    "tier": 5,
+    "baseline": "withered",
+    "unfused": {
+      "cap": 6,
+      "jars": 3,
+      "concentration": 0,
+      "soil": null,
+      "fertilizer": "fertilizer_compost_plus",
+      "waterAbsorbed": 493,
+      "fertilizerAbsorbed": 153,
+      "traceAbsorbed": 0,
+      "multiplier": 2.5
+    },
+    "fused": {
+      "cap": 4,
+      "jars": 2,
+      "concentration": 0,
+      "soil": "soil_red",
+      "fertilizer": "fertilizer_compost_plus",
+      "waterAbsorbed": 493,
+      "fertilizerAbsorbed": 136,
+      "traceAbsorbed": 0,
+      "multiplier": 2.75
+    },
+    "prosperity": {
+      "cap": 4,
+      "jars": 2,
+      "concentration": 0,
+      "soil": "soil_red",
+      "fertilizer": "fertilizer_compost_plus",
+      "waterAbsorbed": 493,
+      "fertilizerAbsorbed": 136,
+      "traceAbsorbed": 0,
+      "multiplier": 2.75
+    }
+  },
+  {
+    "id": "apricot",
+    "name": "杏子",
+    "tier": 5,
+    "baseline": "withered",
+    "unfused": {
+      "cap": 6,
+      "jars": 3,
+      "concentration": 0,
+      "soil": null,
+      "fertilizer": "fertilizer_compost_plus",
+      "waterAbsorbed": 493,
+      "fertilizerAbsorbed": 153,
+      "traceAbsorbed": 0,
+      "multiplier": 2.5
+    },
+    "fused": {
+      "cap": 4,
+      "jars": 2,
+      "concentration": 0,
+      "soil": "soil_purple",
+      "fertilizer": "fertilizer_basic",
+      "waterAbsorbed": 544,
+      "fertilizerAbsorbed": 136,
+      "traceAbsorbed": 0,
+      "multiplier": 2.75
+    },
+    "prosperity": {
+      "cap": 4,
+      "jars": 2,
+      "concentration": 0,
+      "soil": "soil_purple",
+      "fertilizer": "fertilizer_basic",
+      "waterAbsorbed": 544,
+      "fertilizerAbsorbed": 136,
+      "traceAbsorbed": 0,
+      "multiplier": 2.75
+    }
+  },
+  {
+    "id": "pear",
+    "name": "梨",
+    "tier": 5,
+    "baseline": "withered",
+    "unfused": {
+      "cap": 8,
+      "jars": 3,
+      "concentration": 0,
+      "soil": null,
+      "fertilizer": "fertilizer_compost_plus",
+      "waterAbsorbed": 646,
+      "fertilizerAbsorbed": 153,
+      "traceAbsorbed": 0,
+      "multiplier": 2.5
+    },
+    "fused": {
+      "cap": 4,
+      "jars": 1,
+      "concentration": 0,
+      "soil": "soil_black",
+      "fertilizer": "fertilizer_compost_plus",
+      "waterAbsorbed": 612,
+      "fertilizerAbsorbed": 136,
+      "traceAbsorbed": 0,
+      "multiplier": 2.75
+    },
+    "prosperity": {
+      "cap": 4,
+      "jars": 1,
+      "concentration": 0,
+      "soil": "soil_black",
+      "fertilizer": "fertilizer_compost_plus",
+      "waterAbsorbed": 612,
+      "fertilizerAbsorbed": 136,
+      "traceAbsorbed": 0,
+      "multiplier": 2.75
+    }
+  },
+  {
+    "id": "cherry",
+    "name": "樱桃",
+    "tier": 5,
+    "baseline": "withered",
+    "unfused": {
+      "cap": 8,
+      "jars": 3,
+      "concentration": 0,
+      "soil": null,
+      "fertilizer": "fertilizer_compost_plus",
+      "waterAbsorbed": 646,
+      "fertilizerAbsorbed": 153,
+      "traceAbsorbed": 0,
+      "multiplier": 2.25
+    },
+    "fused": {
+      "cap": 4,
+      "jars": 1,
+      "concentration": 0,
+      "soil": "soil_black",
+      "fertilizer": "fertilizer_compost_plus",
+      "waterAbsorbed": 612,
+      "fertilizerAbsorbed": 136,
+      "traceAbsorbed": 0,
+      "multiplier": 2.75
+    },
+    "prosperity": {
+      "cap": 4,
+      "jars": 1,
+      "concentration": 0,
+      "soil": "soil_black",
+      "fertilizer": "fertilizer_compost_plus",
+      "waterAbsorbed": 612,
+      "fertilizerAbsorbed": 136,
+      "traceAbsorbed": 0,
+      "multiplier": 2.75
+    }
+  },
+  {
+    "id": "chestnut",
+    "name": "板栗",
+    "tier": 4,
+    "baseline": "withered",
+    "unfused": {
+      "cap": 6,
+      "jars": 3,
+      "concentration": 1,
+      "soil": null,
+      "fertilizer": "fertilizer_compost_plus",
+      "waterAbsorbed": 432.1,
+      "fertilizerAbsorbed": 134.1,
+      "traceAbsorbed": 74.5,
+      "multiplier": 2.5
+    },
+    "fused": {
+      "cap": 4,
+      "jars": 2,
+      "concentration": 1,
+      "soil": "soil_purple",
+      "fertilizer": "fertilizer_basic",
+      "waterAbsorbed": 476.8,
+      "fertilizerAbsorbed": 119.2,
+      "traceAbsorbed": 74.5,
+      "multiplier": 2.75
+    },
+    "prosperity": {
+      "cap": 4,
+      "jars": 2,
+      "concentration": 1,
+      "soil": "soil_purple",
+      "fertilizer": "fertilizer_basic",
+      "waterAbsorbed": 476.8,
+      "fertilizerAbsorbed": 119.2,
+      "traceAbsorbed": 74.5,
+      "multiplier": 2.75
+    }
+  },
+  {
+    "id": "lotus_seed",
+    "name": "莲子",
+    "tier": 5,
+    "baseline": "withered",
+    "unfused": {
+      "cap": 8,
+      "jars": 3,
+      "concentration": 0,
+      "soil": null,
+      "fertilizer": "fertilizer_compost_plus",
+      "waterAbsorbed": 539.6,
+      "fertilizerAbsorbed": 127.8,
+      "traceAbsorbed": 0,
+      "multiplier": 2.5
+    },
+    "fused": {
+      "cap": 4,
+      "jars": 1,
+      "concentration": 0,
+      "soil": "soil_paddy",
+      "fertilizer": "fertilizer_compost_plus",
+      "waterAbsorbed": 525.4,
+      "fertilizerAbsorbed": 99.4,
+      "traceAbsorbed": 0,
+      "multiplier": 2.75
+    },
+    "prosperity": {
+      "cap": 4,
+      "jars": 1,
+      "concentration": 0,
+      "soil": "soil_paddy",
+      "fertilizer": "fertilizer_compost_plus",
+      "waterAbsorbed": 525.4,
+      "fertilizerAbsorbed": 99.4,
+      "traceAbsorbed": 0,
+      "multiplier": 2.75
+    }
+  }
+]

@@ -346,28 +346,12 @@
 
     /**
      * \(F_{\text{呼吸法威力}}\)：见 docs/design/11-skills 8.3.3。
-     * `breath_power_multiplier.base` + 各档 `proficiency_bonus_unlocks`（总熟练度 ≥ min 则加 `multiplier_delta`）。
-     * 非 `category: breath` 或无配置对象时返回 1。
+     * 兼容旧调用：装备与熟练度不再无条件增伤，固定返回 1。
+     * 实际倍率由 CombatDamage.breath 按整招开始时的呼吸状态选取（设计 49）。
      */
-    function getBreathPowerMultiplier(skillId, moveUsage) {
-        var sk = getSkill(skillId);
-        if (!sk || sk.category !== 'breath') return 1;
-        var bpm = sk.breath_power_multiplier;
-        if (!bpm || typeof bpm !== 'object') return 1;
-        var base = (typeof bpm.base === 'number' && isFinite(bpm.base)) ? bpm.base : 1;
-        var total = base;
-        var r = getSkillTotalProficiency(skillId, moveUsage || {});
-        var unlocks = bpm.proficiency_bonus_unlocks;
-        if (unlocks && unlocks.length) {
-            for (var ui = 0; ui < unlocks.length; ui++) {
-                var u = unlocks[ui];
-                if (!u || u.min_proficiency_ratio == null) continue;
-                if (r < Number(u.min_proficiency_ratio)) continue;
-                var d = u.multiplier_delta;
-                if (typeof d === 'number' && isFinite(d)) total += d;
-            }
-        }
-        return Math.max(0, total);
+    function getBreathPowerMultiplier() {
+        // Legacy API: equipment/mastery alone no longer grants damage. See CombatDamage.breath.
+        return 1;
     }
 
     /** 肢体 ID 列表（与 scene-app COMBAT_LIMB_IDS 一致） */

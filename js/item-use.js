@@ -30,6 +30,7 @@
 
     function itemTemplateIsConsumable(tpl) {
         if (!tpl) return false;
+        if (tpl.food_profile && toBoolFlag(tpl.edible)) return true;
         var edible = toBoolFlag(tpl.edible);
         if (edible && tpl.edible_buff_id && String(tpl.edible_buff_id).trim()) return true;
         // 47 §5.1：药水走 use_action 四途径（drink/topical/inhale/inject），需带药效核心 use_buff_id。
@@ -246,11 +247,11 @@
             var appliedIds = [];
             for (ai = 0; ai < buffIds.length; ai++) {
                 var oneId = buffIds[ai];
-                if (typeof Buff.hasBuffByBuffId === 'function' && Buff.hasBuffByBuffId('player', oneId)) continue;
                 var okOne = Buff.applyBuff('player', oneId, 'item:' + itemId, {
                     route: rid,
                     part_id: partId || null,
-                    item_id: itemId
+                    item_id: itemId,
+                    pharmacy_relief_stages: Math.max(0, Number(tpl && tpl.pharmacy_relief_stages) || 0)
                 }) === true;
                 if (okOne) appliedIds.push(oneId);
             }
@@ -264,9 +265,6 @@
                         if (PEt && typeof PEt.setTopicalTarget === 'function') PEt.setTopicalTarget(appliedIds[ai], partId);
                     }
                 }
-            } else if (buffIds.length) {
-                // 全部已在生效中：与旧 edible/usable 口径一致，视为本次使用失败（不叠 buff）。
-                return failUse('already_active', buffIds.join('|'));
             }
         }
 
@@ -296,6 +294,14 @@
             }
         }
         if (!applied) return failUse(buffId ? 'buff_apply_failed' : 'no_effect', buffId);
+        // 固定成品每次成功使用都结算，重复刷新药效也不能免除依赖与口服毒性。
+        var PEfixed = global.PharmacyEffects;
+        if (PEfixed) {
+            var addGain = Number(tpl && tpl.pharmacy_addiction_gain) || 0;
+            var oralTox = Number(tpl && tpl.pharmacy_oral_toxicity) || 0;
+            if (addGain > 0 && typeof PEfixed.addAddictionDose === 'function') PEfixed.addAddictionDose(addGain);
+            if (rid === 'drink' && oralTox > 0 && typeof PEfixed.addToxicity === 'function') PEfixed.addToxicity(oralTox);
+        }
         if (rid === 'inject') applyInjectionHygiene(hygiene);
         lastUseFailure = null;
         return true;
@@ -363,6 +369,14 @@
      * 成功应用可食用/消化类后顺带 grantFoodAttributeExp（k79）。
      */
     function applyItemUseEffectFromTemplate(itemId, tpl, opts) {
+        if (tpl && tpl.food_profile && toBoolFlag(tpl.edible)) {
+            var survival = global.Survival, buffs = global.BuffSystem;
+            if (!survival || typeof survival.ingestFood !== 'function') return false;
+            if (!survival.ingestFood(itemId, tpl.food_profile)) return false;
+            if (buffs && typeof buffs.applyBuff === 'function' && tpl.edible_buff_id) buffs.applyBuff('player', tpl.edible_buff_id, 'item:' + itemId, null);
+            lastFoodExpGrantText = '';
+            return true;
+        }
         // 47 §5.1：声明了 use_action 的物品走途径分流（药水/药膏/药烟/注射液）。
         var route = getUseActionRoute(tpl);
         if (route) return applyUseActionRoute(itemId, tpl, route, opts);

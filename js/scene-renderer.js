@@ -22,10 +22,13 @@
     var dynamicDiffTick = 0;
     /** 上一帧是否处于蹑步选点；用于检测 true→false 并强制整层动态重画（见 render 内说明） */
     var prevFootworkNieBuMode = false;
+    /** 上一帧玩家朝向（0~7）；用于检测朝向变化并强制整层动态重画（朝向变化会改变整片视野的揭示/遮挡） */
+    var prevFacingDir = null;
     var quickBeltCacheKey = '';
     var hoverRafId = 0;
     var hoverPendingClientX = 0;
     var hoverPendingClientY = 0;
+    var hoverPendingTurnOnly = false;
     var quickBeltHoverMenuEl = null;
     var quickBeltHoverHideTimer = null;
     var quickBeltHoverDocBound = false;
@@ -425,12 +428,11 @@
         return style.display !== 'none' && style.visibility !== 'hidden' && style.opacity !== '0';
     }
 
-    function getFacingVisionMultiplier(st, gx, gy) {
-        var cfg = getVisionFacingUiConfig();
-        if (!cfg.enabled) return 1;
+    /** 玩家朝向与 (gx,gy) 目标格的夹角（度，0~180）；玩家自身格返回 0。 */
+    function facingAngleDeg(st, gx, gy) {
         var tx = (gx | 0) - (st.x | 0);
         var ty = (gy | 0) - (st.y | 0);
-        if (!tx && !ty) return 1;
+        if (!tx && !ty) return 0;
         var fv = facingDirToVector(resolvePlayerFacingDir());
         var lenA = Math.sqrt(fv.x * fv.x + fv.y * fv.y) || 1;
         var lenB = Math.sqrt(tx * tx + ty * ty) || 1;
@@ -438,10 +440,24 @@
         var c = dot / (lenA * lenB);
         if (c > 1) c = 1;
         if (c < -1) c = -1;
-        var ang = Math.acos(c) * 180 / Math.PI;
+        return Math.acos(c) * 180 / Math.PI;
+    }
+
+    function getFacingVisionMultiplier(st, gx, gy) {
+        var cfg = getVisionFacingUiConfig();
+        if (!cfg.enabled) return 1;
+        var ang = facingAngleDeg(st, gx, gy);
         if (ang <= cfg.frontHalfAngleDeg) return cfg.frontMul;
         if (ang <= cfg.sideHalfAngleDeg) return cfg.sideMul;
         return cfg.backMul;
+    }
+
+    /** 是否落在玩家视场（前+侧扇区，夹角 ≤ side_half_angle_deg）：视场内识别半径提升到视觉半径，
+     *  避免「看得见却只显示 ?」；只有背后（背扇区）才保留 unknownPresence 的 ? 提示。 */
+    function isInFieldOfView(st, gx, gy) {
+        var cfg = getVisionFacingUiConfig();
+        if (!cfg.enabled) return false;
+        return facingAngleDeg(st, gx, gy) <= cfg.sideHalfAngleDeg;
     }
 
     /**
@@ -523,13 +539,13 @@
         var darknessAlpha = sampleNightDarknessByMinute(timeState.minuteOfDay, cfg.darknessKeyframes);
         if (!(darknessAlpha > 0.01)) return;
 
-        var mapW = (map.width | 0) * cellPx;
-        var mapH = (map.height | 0) * cellPx;
+        var mapW = args.mapWidthPx || ((map.width | 0) * cellPx);
+        var mapH = args.mapHeightPx || ((map.height | 0) * cellPx);
         if (!(mapW > 0) || !(mapH > 0)) return;
 
-        var p = cellToPx(st.x | 0, st.y | 0);
-        var cx = p.x + cellPx / 2;
-        var cy = p.y + cellPx / 2;
+        var p = args.cellCenter ? args.cellCenter(st.x | 0, st.y | 0) : cellToPx(st.x | 0, st.y | 0);
+        var cx = args.cellCenter ? p.x : p.x + cellPx / 2;
+        var cy = args.cellCenter ? p.y : p.y + cellPx / 2;
 
         // 夜越深，清晰半径越小；只做视觉层，不改变规则判定。
         var maxDarknessAlphaRef = getMaxDarknessAlphaRef(cfg.darknessKeyframes);
@@ -564,13 +580,30 @@
         var cellPx = args.cellPx || 101;
         var cellToPx = args.cellToPx || function (x, y) { return { x: x * cellPx, y: y * cellPx }; };
         
-        var p = cellToPx(st.x | 0, st.y | 0);
-        var cx = p.x + cellPx / 2;
-        var cy = p.y + cellPx / 2;
+        var p = args.cellCenter ? args.cellCenter(st.x | 0, st.y | 0) : cellToPx(st.x | 0, st.y | 0);
+        var cx = args.cellCenter ? p.x : p.x + cellPx / 2;
+        var cy = args.cellCenter ? p.y : p.y + cellPx / 2;
         var currentDir = resolvePlayerFacingDir();
         if (!Number.isFinite(Number(currentDir))) currentDir = 4;
 
-        renderEntityDirectionIndicator(ctx2d, cx, cy, cellPx, currentDir, false);
+        if (args.projection && args.projection.isIsometric && typeof args.projection.directionVector === 'function') {
+            var worldDir = facingDirToVector(currentDir);
+            var screenDir = args.projection.directionVector(worldDir.x, worldDir.y);
+            var angle = Math.atan2(screenDir.y, screenDir.x);
+            ctx2d.save();
+            ctx2d.translate(cx, cy);
+            ctx2d.rotate(angle);
+            ctx2d.fillStyle = 'rgba(250,230,140,.92)';
+            ctx2d.beginPath();
+            ctx2d.moveTo(cellPx * .43, 0);
+            ctx2d.lineTo(cellPx * .29, -cellPx * .07);
+            ctx2d.lineTo(cellPx * .29, cellPx * .07);
+            ctx2d.closePath();
+            ctx2d.fill();
+            ctx2d.restore();
+        } else {
+            renderEntityDirectionIndicator(ctx2d, cx, cy, cellPx, currentDir, false);
+        }
     }
 
     /**
@@ -588,8 +621,8 @@
         var st = args.state;
         var cellPx = args.cellPx || 101;
         var cellToPx = args.cellToPx || function (x, y) { return { x: x * cellPx, y: y * cellPx }; };
-        var mapW = (map.width | 0) * cellPx;
-        var mapH = (map.height | 0) * cellPx;
+        var mapW = args.mapWidthPx || ((map.width | 0) * cellPx);
+        var mapH = args.mapHeightPx || ((map.height | 0) * cellPx);
         if (!(mapW > 0) || !(mapH > 0)) return;
         var profile = getVisionRevealProfile();
         var gap = 1;
@@ -606,12 +639,18 @@
                 var dist = chebyshevDistance(gx, gy, st.x, st.y);
                 var facingMul = getFacingVisionMultiplier(st, gx, gy);
                 if (dist <= profile.visualRadius * facingMul) continue;
-                var p = cellToPx(gx | 0, gy | 0);
-                var x = p.x + gap;
-                var y = p.y + gap;
-                var w = cellPx - gap * 2 - 1;
-                var h = cellPx - gap * 2 - 1;
-                ctx2d.fillRect(x, y, w, h);
+                if (args.cellPolygon) {
+                    var pts = args.cellPolygon(gx | 0, gy | 0);
+                    ctx2d.beginPath();
+                    for (var oi = 0; oi < pts.length; oi++) {
+                        if (!oi) ctx2d.moveTo(pts[oi].x, pts[oi].y); else ctx2d.lineTo(pts[oi].x, pts[oi].y);
+                    }
+                    ctx2d.closePath();
+                    ctx2d.fill();
+                } else {
+                    var p = cellToPx(gx | 0, gy | 0);
+                    ctx2d.fillRect(p.x + gap, p.y + gap, cellPx - gap * 2 - 1, cellPx - gap * 2 - 1);
+                }
             }
         }
         ctx2d.restore();
@@ -632,8 +671,8 @@
         var st = args.state;
         var cellPx = args.cellPx || 101;
         var cellToPx = args.cellToPx || function (x, y) { return { x: x * cellPx, y: y * cellPx }; };
-        var mapW = (map.width | 0) * cellPx;
-        var mapH = (map.height | 0) * cellPx;
+        var mapW = args.mapWidthPx || ((map.width | 0) * cellPx);
+        var mapH = args.mapHeightPx || ((map.height | 0) * cellPx);
         if (!(mapW > 0) || !(mapH > 0)) return;
         var profile = getVisionRevealProfile();
         var gap = 1;
@@ -657,9 +696,19 @@
                 if (u > 1) u = 1;
                 var cellAlpha = maxA * Math.pow(u, pow);
                 if (!(cellAlpha > 0.006)) continue;
-                var p = cellToPx(gx | 0, gy | 0);
                 ctx2d.fillStyle = 'rgba(' + rgb[0] + ', ' + rgb[1] + ', ' + rgb[2] + ', ' + cellAlpha.toFixed(4) + ')';
-                ctx2d.fillRect(p.x + gap, p.y + gap, cellPx - gap * 2 - 1, cellPx - gap * 2 - 1);
+                if (args.cellPolygon) {
+                    var pts = args.cellPolygon(gx | 0, gy | 0);
+                    ctx2d.beginPath();
+                    for (var si = 0; si < pts.length; si++) {
+                        if (!si) ctx2d.moveTo(pts[si].x, pts[si].y); else ctx2d.lineTo(pts[si].x, pts[si].y);
+                    }
+                    ctx2d.closePath();
+                    ctx2d.fill();
+                } else {
+                    var p = cellToPx(gx | 0, gy | 0);
+                    ctx2d.fillRect(p.x + gap, p.y + gap, cellPx - gap * 2 - 1, cellPx - gap * 2 - 1);
+                }
             }
         }
         ctx2d.restore();
@@ -674,9 +723,9 @@
         var profile = getVisionRevealProfile();
         var darkness = getDarknessAlphaNow();
         var facingCfg = getVisionFacingUiConfig();
-        var p = cellToPx(st.x | 0, st.y | 0);
-        var boxX = p.x - 150;
-        var boxY = p.y - cellPx * 2.25;
+        var p = args.cellCenter ? args.cellCenter(st.x | 0, st.y | 0) : cellToPx(st.x | 0, st.y | 0);
+        var boxX = (args.cellCenter ? p.x : p.x + cellPx / 2) - 150;
+        var boxY = (args.cellCenter ? p.y : p.y + cellPx / 2) - cellPx * 2.25;
         var boxW = 300;
         var boxH = 118;
         ctx2d.save();
@@ -895,7 +944,61 @@
         quickBeltHoverHideTimer = setTimeout(function () {
             quickBeltHoverHideTimer = null;
             hideQuickBeltHoverMenuNow();
-        }, 120);
+        }, 250);
+    }
+
+    function positionQuickBeltOverlays(slotEl, menu) {
+        requestAnimationFrame(function () {
+            if (!slotEl || !menu || !menu.classList.contains('show')) return;
+            var anchor = slotEl.getBoundingClientRect();
+            var menuRect = menu.getBoundingClientRect();
+            var tip = document.getElementById('item-tooltip');
+            var tipVisible = !!(tip && tip.classList.contains('show'));
+            var tipRect = tipVisible ? tip.getBoundingClientRect() : null;
+            var pad = 12;
+            var gap = 10;
+            var viewportW = window.innerWidth;
+            var viewportH = window.innerHeight;
+            var menuW = menuRect.width || 88;
+            var menuH = menuRect.height || 36;
+            var top = Math.max(pad, Math.min(anchor.top, viewportH - menuH - pad));
+            var menuLeft;
+
+            if (!tipRect) {
+                menuLeft = anchor.right + gap;
+                if (menuLeft + menuW > viewportW - pad) menuLeft = anchor.left - menuW - gap;
+                menu.style.left = Math.max(pad, menuLeft) + 'px';
+                menu.style.top = top + 'px';
+                return;
+            }
+
+            var tipW = tipRect.width || 220;
+            var tipOnRight = tipRect.left >= anchor.right;
+            var oppositeMenuLeft = tipOnRight
+                ? anchor.left - menuW - gap
+                : anchor.right + gap;
+            var oppositeFits = oppositeMenuLeft >= pad
+                && oppositeMenuLeft + menuW <= viewportW - pad;
+
+            if (oppositeFits) {
+                // 常规布局：操作窗和信息窗分居物品格两侧。
+                menuLeft = oppositeMenuLeft;
+            } else if (tipOnRight) {
+                // 靠近左边缘：两窗仍横向并列，操作窗在左、信息窗在右。
+                menuLeft = Math.max(pad, anchor.right + gap);
+                var shiftedTipLeft = menuLeft + menuW + gap;
+                if (shiftedTipLeft + tipW <= viewportW - pad) tip.style.left = shiftedTipLeft + 'px';
+            } else {
+                // 靠近右边缘：信息窗在左、操作窗在右。
+                menuLeft = Math.min(viewportW - menuW - pad, anchor.left - menuW - gap);
+                var shiftedTipRight = menuLeft - gap;
+                var shiftedTipLeft2 = shiftedTipRight - tipW;
+                if (shiftedTipLeft2 >= pad) tip.style.left = shiftedTipLeft2 + 'px';
+            }
+
+            menu.style.left = Math.max(pad, Math.min(menuLeft, viewportW - menuW - pad)) + 'px';
+            menu.style.top = top + 'px';
+        });
     }
 
     function openQuickBeltHoverMenu(slotEl, actions) {
@@ -925,6 +1028,7 @@
         menu.style.left = Math.round(r.right + 6) + 'px';
         menu.style.top = Math.round(r.top) + 'px';
         menu.classList.add('show');
+        positionQuickBeltOverlays(slotEl, menu);
     }
 
     function updateTopTimeHud() {
@@ -1186,8 +1290,10 @@
                 var groundAt = (IE && IE.getGroundItemsAt) ? IE.getGroundItemsAt(st.mapId, gx, gy) : [];
                 var rawGroundCount = Array.isArray(groundAt) ? groundAt.length : 0;
                 var facingMul = getFacingVisionMultiplier(st, gx, gy);
+                var inFieldOfView = isInFieldOfView(st, gx, gy);
                 var canVisual = dist <= (visionProfile.visualRadius * facingMul);
-                var canIdentify = dist <= (visionProfile.identifyRadius * facingMul);
+                var identifyRadius = inFieldOfView ? visionProfile.visualRadius : visionProfile.identifyRadius;
+                var canIdentify = dist <= (identifyRadius * facingMul);
                 var canDetail = dist <= (visionProfile.detailRadius * facingMul);
                 var adjacentForcedDetail = dist <= visionProfile.adjacentDetailRadius;
                 if (adjacentForcedDetail) {
@@ -1287,6 +1393,7 @@
                     livestockStation: showLivestockStation,
                     warehouseStation: showWarehouseStation,
                     npc: !!npcId,
+                    npcId: npcId,
                     npcLabel: npcLabel,
                     enemy: !!enemyId,
                     enemyId: shownEnemyId,
@@ -1296,7 +1403,22 @@
                     playerFacingDir: resolvePlayerFacingDir()
                 };
             },
-            onTileClick: function (gx, gy) {
+            onTileClick: function (gx, gy, clickOptions) {
+                var turnOnly = !!(clickOptions && clickOptions.turnOnly);
+                var turnDx = gx - st.x;
+                var turnDy = gy - st.y;
+                // Shift+click is resolved before leap, attack, dialogue, facility or movement dispatch.
+                if (turnOnly) {
+                    var isTurnTarget = window.MapProjection && typeof window.MapProjection.isAdjacentTurnTarget === 'function'
+                        ? window.MapProjection.isAdjacentTurnTarget(st.x, st.y, gx, gy)
+                        : (Math.max(Math.abs(turnDx), Math.abs(turnDy)) === 1);
+                    if (!isTurnTarget) return;
+                    var turnCtx = getCtx();
+                    if (turnCtx && turnCtx.actions && typeof turnCtx.actions.turnToward === 'function') {
+                        turnCtx.actions.turnToward(turnDx, turnDy, 'shift_click');
+                    }
+                    return;
+                }
                 var ctxTile = getCtx();
                 if (ctxTile && ctxTile.footworkNieBuMode && ctxTile.actions && typeof ctxTile.actions.tryFootworkNieBuJump === 'function') {
                     ctxTile.actions.tryFootworkNieBuJump(gx, gy);
@@ -1441,7 +1563,14 @@
                 prevDynamicCellMarks = curMarks;
             }
             var mergedDirty = mergeDirtyCells(mergeDirtyCells(moveDirty, actionDirty), diffDirty);
-            var dirtyForV2 = nieBuModeJustEnded ? null : (mergedDirty.length ? mergedDirty : null);
+            // 视野揭示依赖「玩家位置 + 朝向」的全局变化：移动或转向会改变整片格的可见性/识别层级，
+            // 仅靠 moveDirty(3×3) 与实体位移 diff 覆盖不到远处格子，故位置或朝向一变就整层重画（可视区格子数有限，代价可忽略）。
+            var curFacingDir = resolvePlayerFacingDir();
+            var facingChanged = (prevFacingDir !== null && prevFacingDir !== curFacingDir);
+            var playerMoved = !!prevRenderState && prevRenderState.mapId === curPos.mapId &&
+                (prevRenderState.x !== curPos.x || prevRenderState.y !== curPos.y);
+            var needsFullRedraw = playerMoved || facingChanged || nieBuModeJustEnded;
+            var dirtyForV2 = needsFullRedraw ? null : (mergedDirty.length ? mergedDirty : null);
             tileRenderer.render({
                 map: map,
                 st: st,
@@ -1455,6 +1584,7 @@
                 }
             });
             prevRenderState = curPos;
+            prevFacingDir = curFacingDir;
         } else {
             renderDomFallback(grid, map, st, E, ctx);
         }
@@ -1466,11 +1596,12 @@
                 if (!tileRenderer || !latestFrame) return;
                 var hit = tileRenderer.hitTest(ev.clientX, ev.clientY);
                 if (!hit) return;
-                latestFrame.onTileClick(hit.x, hit.y);
+                latestFrame.onTileClick(hit.x, hit.y, { turnOnly: !!ev.shiftKey });
             });
             grid.addEventListener('mousemove', function (ev) {
                 hoverPendingClientX = ev.clientX;
                 hoverPendingClientY = ev.clientY;
+                hoverPendingTurnOnly = !!ev.shiftKey;
                 if (hoverRafId) return;
                 hoverRafId = requestAnimationFrame(function () {
                     hoverRafId = 0;
@@ -1480,7 +1611,7 @@
                         grid.title = '';
                         return;
                     }
-                    tileRenderer.setHoverCursor(hoverPendingClientX, hoverPendingClientY);
+                    tileRenderer.setHoverCursor(hoverPendingClientX, hoverPendingClientY, hoverPendingTurnOnly);
                     if (!latestFrame) return;
                     var hit = tileRenderer.hitTest(hoverPendingClientX, hoverPendingClientY);
                     if (!hit) {
@@ -1540,8 +1671,11 @@
 
         var centerOffsetX = Number.isFinite(runtimeCenterOffsetX) ? runtimeCenterOffsetX : CENTER_OFFSET_X;
         var centerOffsetY = Number.isFinite(runtimeCenterOffsetY) ? runtimeCenterOffsetY : CENTER_OFFSET_Y;
-        var tx = centerOffsetX - st.x * CELL_PX;
-        var ty = centerOffsetY - st.y * CELL_PX;
+        var projectedPlayerCenter = tileRenderer && typeof tileRenderer.getCellCenter === 'function'
+            ? tileRenderer.getCellCenter(st.x, st.y)
+            : { x: st.x * CELL_PX + CELL_PX / 2, y: st.y * CELL_PX + CELL_PX / 2 };
+        var tx = centerOffsetX + CELL_PX / 2 - projectedPlayerCenter.x;
+        var ty = centerOffsetY + CELL_PX / 2 - projectedPlayerCenter.y;
         if (tileRenderer) tileRenderer.setCamera(tx, ty);
         else grid.style.transform = 'translate(' + tx + 'px, ' + ty + 'px)';
 

@@ -5,6 +5,10 @@ alwaysApply: false
 
 # 肥料桶 / 堆肥与沤肥（Agent 规则）
 
+新批次版本3：偏氮泡沫分支使用 `vent_gently`；事件结果说明仍从同一CSV构建，禁止脚本另设文案表；版本2存档保持原状态链。参数与分类以23.12展开文档为准。
+
+> **2026-09-11 更新**：新沤肥批次遵循设计 23.12 与 `docs/design/23-anaerobic-events-v2.md`：两次状态检查、前次选择影响后段事件、逐次损失与稳定后提前取肥。下文第9节固定双放气规则仅用于无版本的旧存档批次。堆肥原规则不变。
+
 编辑**堆肥与沤肥投料、`fert_c`/`fert_n`、分档与产物、批次时长、堆肥随机事件表**或相关运行时接线时，以 **`docs/design/23-fertilizer-bin-station.md`** 为设计正本；与本文冲突时以设计文档为准，并同步修正实现或数据。
 
 ## 1) 设计正本与职责边界
@@ -66,7 +70,7 @@ alwaysApply: false
 
 ### 5.3 固定动作枚举（须与脚本同源）
 
-允许值：**`none`**、**`turn_pile`**、**`add_water`**、**`ventilate`**、**`cover_keepwarm`**、**`break_clumps`**、**`remove_contaminant`**。  
+允许值：**`none`**、**`turn_pile`**、**`add_water`**、**`ventilate`**、**`cover_keepwarm`**、**`break_clumps`**、**`remove_contaminant`**、**`vent_gas`**、**`leave_as_is`**、**`harvest_early`**、**`vent_gently`**。
 若需增删动作：**同时**改 **`tools/build-compost-events-json.mjs`** 的枚举、**`data/compost-event-actions.csv`**、设计文档 **23.8.2**，避免运行时与表不一致。
 
 ### 5.4 随机与权重
