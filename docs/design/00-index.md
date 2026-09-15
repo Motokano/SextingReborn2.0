@@ -73,6 +73,8 @@
 | 战斗场景与可互动元素 | [40-combat-scene.md](40-combat-scene.md) | 可互动元素（一次性动作范式）+ 酒瓶实例（眩晕灌入累积系统）；场地伤害/掩体预留 |
 | 地牢材料分配 | [42-dungeon-material-allocation.md](42-dungeon-material-allocation.md) | 地表+七座主题地牢材料池、15 道终局菜稀料覆盖、电池/电箱（非采集）；实现记录见文末 §八 |
 | 地牢资源点种类（草案） | [gathering-point-types-draft.md](gathering-point-types-draft.md) | 三类资源点主产物、伴生候选、体力与次数提案、主题分布及来源迁移清单；未实装 |
+| 地牢资源点层段分配 | [gathering-point-floor-allocation.md](gathering-point-floor-allocation.md) | 采集/采矿/伐木四层段点位、伴生层段、基础单层池及缺席材料补充提案；钓鱼狩猎分开，未实装 |
+| 首版资源点逐层分配 | [gathering-point-first-release.md](gathering-point-first-release.md) | 首版建筑废墟 4 层、城寨 8 层；临时随机下放材料的逐层点位与伴生，未实装 |
 | 食物消化 | [43-food-digestion.md](43-food-digestion.md) | 餐位档、消化曲线（35 个 buff_food_*）、营养均衡（k79）、饮水即时、接线口径 |
 | 地牢敌人完成度梯度 | [44-dungeon-enemy-gradient.md](44-dungeon-enemy-gradient.md) | 16 层 × 4 档敌人完成度框架（对齐 42）：成长标尺/威胁画像/经验阶梯/情报与六劫挂钩 |
 | 电池经济数值骨架 | [45-battery-economy.md](45-battery-economy.md) | 电力锚线、电池容量档位、16 层掉落曲线、牧场需电模块耗电、起步储能；电箱 k91 暂缓 |

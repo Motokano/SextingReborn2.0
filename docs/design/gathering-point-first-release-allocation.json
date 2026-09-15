@@ -1,0 +1,289 @@
+{
+  "status": "design_only_not_runtime",
+  "date": "2026-09-15",
+  "assignment_seed": 20260915,
+  "scope": "首版建筑废墟4层、城寨8层；仅采集采矿伐木。首次编表固定随机分配，不表示每次进入重抽材料层数。",
+  "quantity_per_item": 1,
+  "stack_limit": 1,
+  "legacy_region_and_floor_override": "仅首版按本表允许范围迁移；完整七主题旧表保留；运行时未接入。",
+  "dungeons": [
+    {
+      "id": "first_release_ruins",
+      "name": "建筑废墟",
+      "floors": [
+        {
+          "floor": 1,
+          "main_items": [
+            "wild_fruit_red",
+            "herb_green",
+            "herb_leaf_fresh",
+            "herb_sweet",
+            "herb_bitter",
+            "wood_firewood",
+            "wood_shrub_dry",
+            "wood_bamboo_green",
+            "ore_clay_raw"
+          ],
+          "bonus_variants": [
+            {
+              "main": "herb_green",
+              "bonus": "herb_sweet"
+            }
+          ]
+        },
+        {
+          "floor": 2,
+          "main_items": [
+            "wild_fruit_red",
+            "wild_fruit_purple",
+            "herb_shiitake",
+            "ore_salt_rock",
+            "herb_chili_wild",
+            "herb_root_bitter",
+            "textile_cocoon_wild",
+            "wood_firewood",
+            "wood_bamboo_green",
+            "wood_birch",
+            "ore_clay_raw"
+          ],
+          "bonus_variants": [
+            {
+              "main": "herb_root_bitter",
+              "bonus": "herb_bitter"
+            },
+            {
+              "main": "wood_birch",
+              "bonus": "wood_bits"
+            }
+          ]
+        },
+        {
+          "floor": 3,
+          "main_items": [
+            "wild_fruit_purple",
+            "wild_fruit_yellow",
+            "herb_shiitake",
+            "herb_sour_plum",
+            "herb_parsley",
+            "herb_thyme",
+            "ore_salt_rock",
+            "herb_root_bitter",
+            "herb_vine_red",
+            "wood_firewood_dry",
+            "wood_oak",
+            "ore_limestone",
+            "ore_copper_raw"
+          ],
+          "bonus_variants": [
+            {
+              "main": "herb_root_bitter",
+              "bonus": "herb_bitter"
+            },
+            {
+              "main": "wood_oak",
+              "bonus": "wood_bits"
+            },
+            {
+              "main": "wood_firewood_dry",
+              "bonus": "wood_shrub_dry"
+            }
+          ]
+        },
+        {
+          "floor": 4,
+          "main_items": [
+            "wild_fruit_yellow",
+            "herb_pecan",
+            "herb_mushroom_floral",
+            "herb_oregano",
+            "herb_rosemary",
+            "herb_sage",
+            "herb_bay_leaf",
+            "herb_dill",
+            "ore_salt_rock",
+            "textile_cocoon_wild",
+            "wood_firewood_dry",
+            "wood_zelkova",
+            "wood_oak",
+            "ore_copper_raw",
+            "ore_iron_raw"
+          ],
+          "bonus_variants": [
+            {
+              "main": "wood_zelkova",
+              "bonus": "wood_bits"
+            },
+            {
+              "main": "wood_oak",
+              "bonus": "wood_bits"
+            },
+            {
+              "main": "wood_firewood_dry",
+              "bonus": "wood_shrub_dry"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "first_release_walled_city",
+      "name": "城寨",
+      "floors": [
+        {
+          "floor": 1,
+          "main_items": [
+            "wild_fruit_red",
+            "herb_caper",
+            "herb_clove",
+            "ore_salt_black",
+            "resin_pine",
+            "wood_apple",
+            "gem_ruby"
+          ],
+          "bonus_variants": [
+            {
+              "main": "wood_apple",
+              "bonus": "wood_bits"
+            }
+          ]
+        },
+        {
+          "floor": 2,
+          "main_items": [
+            "wild_fruit_purple",
+            "herb_cacao_pod",
+            "herb_vanilla_pod",
+            "herb_bunga_kantan",
+            "herb_notoginseng",
+            "wood_hickory",
+            "wood_olive"
+          ],
+          "bonus_variants": [
+            {
+              "main": "wood_hickory",
+              "bonus": "wood_bits"
+            },
+            {
+              "main": "wood_olive",
+              "bonus": "wood_bits"
+            }
+          ]
+        },
+        {
+          "floor": 3,
+          "main_items": [
+            "herb_shiitake",
+            "herb_lemongrass",
+            "wood_spice_cinnamon_bark",
+            "herb_kombu",
+            "herb_goji",
+            "ore_spirit_crystal",
+            "gem_sapphire",
+            "ore_iron_raw"
+          ],
+          "bonus_variants": [
+            {
+              "main": "ore_iron_raw",
+              "bonus": "ore_spirit_crystal"
+            }
+          ]
+        },
+        {
+          "floor": 4,
+          "main_items": [
+            "herb_leaf_fresh",
+            "herb_cardamom_black",
+            "herb_nutmeg",
+            "herb_saffron",
+            "herb_ginseng",
+            "ore_gold_raw"
+          ],
+          "bonus_variants": [
+            {
+              "main": "herb_nutmeg",
+              "bonus": "herb_mace"
+            }
+          ]
+        },
+        {
+          "floor": 5,
+          "main_items": [
+            "wild_fruit_yellow",
+            "herb_laksa_leaf",
+            "wood_cassia_bark",
+            "herb_lotus_leaf",
+            "herb_safflower",
+            "ore_granite",
+            "ore_silver_raw",
+            "ore_copper_raw"
+          ],
+          "bonus_variants": [
+            {
+              "main": "ore_copper_raw",
+              "bonus": "ore_silver_raw"
+            }
+          ]
+        },
+        {
+          "floor": 6,
+          "main_items": [
+            "herb_shiitake",
+            "herb_galangal",
+            "wood_coconut",
+            "herb_curry_leaf",
+            "herb_fennel",
+            "herb_poison_plant",
+            "ore_iron_sand_highcarbon"
+          ],
+          "bonus_variants": []
+        },
+        {
+          "floor": 7,
+          "main_items": [
+            "herb_sour_plum",
+            "herb_cardamom_green",
+            "herb_candlenut",
+            "herb_bamboo_shoot_winter",
+            "herb_alpine_herb",
+            "ore_sulfur"
+          ],
+          "bonus_variants": []
+        },
+        {
+          "floor": 8,
+          "main_items": [
+            "herb_pecan",
+            "herb_sichuan_pepper",
+            "herb_black_pepper_whole",
+            "herb_juniper_berry",
+            "wood_pine",
+            "wood_orange"
+          ],
+          "bonus_variants": [
+            {
+              "main": "wood_pine",
+              "bonus": "wood_bits"
+            },
+            {
+              "main": "wood_orange",
+              "bonus": "wood_bits"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "deferred_items": [
+    "textile_coir",
+    "ore_iron_ore",
+    "wood_charcoal",
+    "wood_charcoal_fruit",
+    "wood_plank_soft",
+    "wood_cork",
+    "wood_firewood_fruit",
+    "wood_firewood_rubber",
+    "herb_orange_peel_dried",
+    "ore_salt_sea",
+    "ore_salt_sea_coarse"
+  ]
+}
