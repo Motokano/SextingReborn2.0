@@ -48,7 +48,13 @@
         return sid;
     }
 
-    function hasApplicableContent(content, tpl) {
+    function readItemValue(tpl, inst, field) {
+        var IAM = global && global.ItemAttributeModules;
+        if (IAM && typeof IAM.getInstanceValue === 'function') return IAM.getInstanceValue(inst, tpl, field);
+        return tpl && Object.prototype.hasOwnProperty.call(tpl, field) ? tpl[field] : undefined;
+    }
+
+    function hasApplicableContent(content, tpl, inst) {
         if (content == null) return false;
         if (typeof content === 'string') return String(content).trim() !== '';
         if (typeof content !== 'object') return false;
@@ -58,20 +64,21 @@
         if (ctype === 'kv') return Array.isArray(content.entries) && content.entries.length > 0;
         if (ctype === 'csv_field_text') {
             var csvKey = String(content.field || '').trim();
-            var csvValue = csvKey && tpl ? tpl[csvKey] : null;
+            var csvValue = csvKey ? readItemValue(tpl, inst, csvKey) : null;
             return (csvValue != null && String(csvValue).trim() !== '') || String(content.fallback || '').trim() !== '';
         }
         if (ctype === 'tpl_kv') {
             var entries = Array.isArray(content.entries) ? content.entries : [];
             for (var i = 0; i < entries.length; i++) {
                 var field = String((entries[i] || {}).field || '').trim();
-                if (field && tpl && tpl[field] != null && String(tpl[field]).trim() !== '') return true;
+                var fieldValue = field ? readItemValue(tpl, inst, field) : undefined;
+                if (fieldValue != null && String(fieldValue).trim() !== '') return true;
             }
         }
         return false;
     }
 
-    function normalizeContentHtml(content, tpl) {
+    function normalizeContentHtml(content, tpl, inst) {
         if (content == null) return '';
         if (typeof content === 'string') return '<div class="tooltip-module-text">' + esc(content) + '</div>';
         if (typeof content !== 'object') return '';
@@ -81,7 +88,7 @@
         }
         if (ctype === 'csv_field_text') {
             var key = String(content.field || '').trim();
-            var v = key && tpl ? tpl[key] : '';
+            var v = key ? readItemValue(tpl, inst, key) : '';
             if (v == null || String(v).trim() === '') v = content.fallback || '';
             return '<div class="tooltip-module-text">' + esc(v || '') + '</div>';
         }
@@ -111,8 +118,8 @@
             for (var e2 = 0; e2 < entriesT.length; e2++) {
                 var en = entriesT[e2] || {};
                 var f = String(en.field || '').trim();
-                if (!f || !tpl || tpl[f] == null) continue;
-                var rawT = tpl[f];
+                var rawT = f ? readItemValue(tpl, inst, f) : undefined;
+                if (rawT == null) continue;
                 var vStrT = '';
                 if (en.pct === true && typeof rawT === 'number' && isFinite(rawT)) {
                     vStrT = String(Math.round(rawT * 100));
@@ -175,6 +182,7 @@
 
     function renderTooltipModulesHtml(args) {
         var tpl = args && args.tpl;
+        var inst = args && args.inst;
         var setId = tpl && tpl.info_module_set_id ? String(tpl.info_module_set_id).trim() : '';
         if (!setId) return '';
         var set = getModuleSet(setId);
@@ -183,13 +191,13 @@
         var html = '<div class="tooltip-modules">';
         for (var i = 0; i < set.modules.length; i++) {
             var m = set.modules[i] || {};
-            if (!hasApplicableContent(m.content, tpl || {})) continue;
+            if (!hasApplicableContent(m.content, tpl || {}, inst)) continue;
             var title = esc(m.title || m.module_id || t('item_info.module_default'));
             var st = evalUnlock(m.unlock, chara);
             html += '<div class="tooltip-module' + (st.unlocked ? '' : ' is-locked') + '">';
             html += '<div class="tooltip-module-title">' + title + '</div>';
             if (st.unlocked) {
-                var contentHtml = normalizeContentHtml(m.content, tpl || {});
+                var contentHtml = normalizeContentHtml(m.content, tpl || {}, inst);
                 if (contentHtml) html += contentHtml;
             } else {
                 // 统一锁定样式：风味提示 + 明确的「需要什么技能、差几级」要求行（item_info.locked_hint）

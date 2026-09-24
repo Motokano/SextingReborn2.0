@@ -7,7 +7,12 @@
     "potential_cost_401_1000_base": 20000,
     "potential_cost_401_1000_per_level": 25,
     "move_proficiency_max_uses": 50000,
-    "difficulty_multipliers": [1, 2, 3, 4],
+    "difficulty_multipliers": [
+      1,
+      2,
+      3,
+      4
+    ],
     "base_power_unarmed_mult_at_1": 1,
     "base_power_unarmed_mult_at_max": 3.5,
     "base_power_weapon_mult_at_1": 1,
@@ -23,15 +28,37 @@
       "doc_anchor": "",
       "tags": [],
       "wip_status": "draft",
-      "applies_to": ["player"]
+      "applies_to": [
+        "player"
+      ]
     }
   },
   "categories": [
-    { "id": "unarmed", "label": "徒手", "icon": "🖐️" },
-    { "id": "weapon", "label": "兵器", "icon": "⚔️" },
-    { "id": "breath", "label": "呼吸", "icon": "🫁" },
-    { "id": "footwork", "label": "步法", "icon": "👟" },
-    { "id": "parry", "label": "招架", "icon": "🛡️" }
+    {
+      "id": "unarmed",
+      "label": "徒手",
+      "icon": "🖐️"
+    },
+    {
+      "id": "weapon",
+      "label": "兵器",
+      "icon": "⚔️"
+    },
+    {
+      "id": "breath",
+      "label": "呼吸",
+      "icon": "🫁"
+    },
+    {
+      "id": "footwork",
+      "label": "步法",
+      "icon": "👟"
+    },
+    {
+      "id": "parry",
+      "label": "招架",
+      "icon": "🛡️"
+    }
   ],
   "skills": {
     "combat_basic_unarmed": {
@@ -47,9 +74,14 @@
       "design_meta": {
         "sheet_row_id": "SKILL_UNARMED_BASIC",
         "doc_anchor": "11-skills 8.3.2",
-        "tags": ["starter", "unarmed"],
+        "tags": [
+          "starter",
+          "unarmed"
+        ],
         "wip_status": "live",
-        "applies_to": ["player"]
+        "applies_to": [
+          "player"
+        ]
       },
       "moves": [
         {
@@ -60,12 +92,19 @@
           "design_meta": {
             "sheet_row_id": "MOVE_JAB",
             "doc_anchor": "11-skills 8.3.2 jab",
-            "tags": ["probe", "unarmed"],
+            "tags": [
+              "probe",
+              "unarmed"
+            ],
             "wip_status": "live",
-            "applies_to": ["player"]
+            "applies_to": [
+              "player"
+            ]
           },
           "unlock_level": 1,
-          "required_limb_tags": ["挥拳"],
+          "required_limb_tags": [
+            "挥拳"
+          ],
           "damage_type": "blunt",
           "hit_segments": 1,
           "move_power_multiplier": 0.8,
@@ -90,7 +129,10 @@
           },
           "post_effect_slot_max": 1,
           "post_effect_unlocks": [
-            { "min_proficiency_ratio": 0.2, "post_effect_id": "post_no_second_thought" }
+            {
+              "min_proficiency_ratio": 0.2,
+              "post_effect_id": "post_no_second_thought"
+            }
           ]
         },
         {
@@ -99,7 +141,9 @@
           "stun_head_hit": 35,
           "form": "踢",
           "unlock_level": 1,
-          "required_limb_tags": ["踢击"],
+          "required_limb_tags": [
+            "踢击"
+          ],
           "damage_type": "blunt",
           "hit_segments": 1,
           "move_power_multiplier": 1.2,
@@ -134,7 +178,9 @@
           "stun_head_hit": 35,
           "form": "拳",
           "unlock_level": 50,
-          "required_limb_tags": ["挥拳"],
+          "required_limb_tags": [
+            "挥拳"
+          ],
           "damage_type": "blunt",
           "hit_segments": 1,
           "move_power_multiplier": 1.4,
@@ -158,7 +204,10 @@
           },
           "post_effect_slot_max": 1,
           "post_effect_unlocks": [
-            { "min_proficiency_ratio": 0.2, "post_effect_id": "post_po_xiang" }
+            {
+              "min_proficiency_ratio": 0.2,
+              "post_effect_id": "post_po_xiang"
+            }
           ]
         },
         {
@@ -167,10 +216,12 @@
           "stun_head_hit": 35,
           "form": "踢",
           "unlock_level": 50,
-          "required_limb_tags": ["踢击"],
+          "required_limb_tags": [
+            "踢击"
+          ],
           "damage_type": "blunt",
           "hit_segments": 1,
-          "move_power_multiplier": 1.0,
+          "move_power_multiplier": 1,
           "default_power_level": 10,
           "power_level_min": 1,
           "power_level_max": 12,
@@ -194,8 +245,14 @@
         }
       ],
       "slots_unlock_by_level": [
-        { "level": 1, "slots": 2 },
-        { "level": 50, "slots": 4 }
+        {
+          "level": 1,
+          "slots": 2
+        },
+        {
+          "level": 50,
+          "slots": 4
+        }
       ],
       "base_power_curve": "unarmed_simple",
       "max_level": 1000,
@@ -217,7 +274,9 @@
           "name": "兵击直斩",
           "stun_head_hit": 35,
           "unlock_level": 1,
-          "required_limb_tags": ["挥拳"],
+          "required_limb_tags": [
+            "挥拳"
+          ],
           "damage_type": "slash",
           "hit_segments": 1,
           "move_power_multiplier": 1,
@@ -243,7 +302,10 @@
         }
       ],
       "slots_unlock_by_level": [
-        { "level": 1, "slots": 1 }
+        {
+          "level": 1,
+          "slots": 1
+        }
       ],
       "base_power_curve": "weapon_simple",
       "max_level": 1000,
@@ -284,9 +346,15 @@
           "design_meta": {
             "sheet_row_id": "HUB_XUE_QI",
             "doc_anchor": "19-action-system §6.1",
-            "tags": ["breath", "hub_action", "xue_qi_hua_jing"],
+            "tags": [
+              "breath",
+              "hub_action",
+              "xue_qi_hua_jing"
+            ],
             "wip_status": "live",
-            "applies_to": ["player"]
+            "applies_to": [
+              "player"
+            ]
           },
           "unlock_level": 1,
           "tick_cost": 1,
@@ -300,9 +368,15 @@
           "design_meta": {
             "sheet_row_id": "HUB_TU_QI",
             "doc_anchor": "19-action-system §6.2",
-            "tags": ["breath", "hub_action", "tu_qi_na_jing"],
+            "tags": [
+              "breath",
+              "hub_action",
+              "tu_qi_na_jing"
+            ],
             "wip_status": "live",
-            "applies_to": ["player"]
+            "applies_to": [
+              "player"
+            ]
           },
           "unlock_level": 1,
           "tick_cost": 1,
@@ -316,27 +390,20 @@
           "design_meta": {
             "sheet_row_id": "HUB_TIAO_XI",
             "doc_anchor": "19-action-system §6.3",
-            "tags": ["breath", "hub_action", "tiao_xi", "sit_meditation"],
+            "tags": [
+              "breath",
+              "hub_action",
+              "tiao_xi",
+              "sit_meditation"
+            ],
             "wip_status": "live",
-            "applies_to": ["player"]
+            "applies_to": [
+              "player"
+            ]
           },
           "unlock_level": 1,
           "tick_cost": 1,
           "proficiency_usage_key": "tu_na"
-        },
-        {
-          "id": "jin_shi",
-          "name": "进食",
-          "hub_effect": "eat_recovery",
-          "design_meta": {
-            "sheet_row_id": "HUB_JIN_SHI",
-            "doc_anchor": "资源模型重构：饱食/饮水作储备，进食转换体力",
-            "tags": ["survival", "hub_action", "eat_recovery"],
-            "wip_status": "live",
-            "applies_to": ["player"]
-          },
-          "unlock_level": 1,
-          "tick_cost": 1
         },
         {
           "id": "diqi_huti",
@@ -345,9 +412,15 @@
           "design_meta": {
             "sheet_row_id": "HUB_DIQI_HUTI",
             "doc_anchor": "19-action-system §6.6",
-            "tags": ["breath", "hub_action", "diqi_shield"],
+            "tags": [
+              "breath",
+              "hub_action",
+              "diqi_shield"
+            ],
             "wip_status": "live",
-            "applies_to": ["player"]
+            "applies_to": [
+              "player"
+            ]
           },
           "unlock_level": 50,
           "tick_cost": 1,
@@ -372,7 +445,9 @@
           "punch": {
             "type": "pct_of_max",
             "value": -0.25,
-            "move_overrides": { "jab": -0.2 }
+            "move_overrides": {
+              "jab": -0.2
+            }
           },
           "kick": {
             "type": "pct_of_max",
@@ -434,9 +509,14 @@
       "design_meta": {
         "sheet_row_id": "SKILL_ROGUE_SANDA",
         "doc_anchor": "11-skills 8.3.6",
-        "tags": ["unarmed", "status_suppression"],
+        "tags": [
+          "unarmed",
+          "status_suppression"
+        ],
         "wip_status": "live",
-        "applies_to": ["player"]
+        "applies_to": [
+          "player"
+        ]
       },
       "moves": [
         {
@@ -446,12 +526,20 @@
           "design_meta": {
             "sheet_row_id": "MOVE_POKE_EYE",
             "doc_anchor": "11-skills 8.3.6 poke_eye",
-            "tags": ["status", "unarmed", "dirty"],
+            "tags": [
+              "status",
+              "unarmed",
+              "dirty"
+            ],
             "wip_status": "live",
-            "applies_to": ["player"]
+            "applies_to": [
+              "player"
+            ]
           },
           "unlock_level": 1,
-          "required_limb_tags": ["挥拳"],
+          "required_limb_tags": [
+            "挥拳"
+          ],
           "damage_type": "blunt",
           "hit_segments": 1,
           "move_power_multiplier": 0.9,
@@ -476,7 +564,10 @@
           },
           "post_effect_slot_max": 1,
           "post_effect_unlocks": [
-            { "min_proficiency_ratio": 0.2, "post_effect_id": "post_wound_on_wound" }
+            {
+              "min_proficiency_ratio": 0.2,
+              "post_effect_id": "post_wound_on_wound"
+            }
           ]
         },
         {
@@ -484,7 +575,9 @@
           "name": "踹膝",
           "stun_head_hit": 35,
           "unlock_level": 1,
-          "required_limb_tags": ["踢击"],
+          "required_limb_tags": [
+            "踢击"
+          ],
           "damage_type": "blunt",
           "hit_segments": 1,
           "move_power_multiplier": 1.1,
@@ -509,7 +602,12 @@
           },
           "post_effect_slot_max": 1,
           "proficiency_attr_unlocks": [
-            { "min_proficiency_ratio": 0.2, "acquired": { "flexibility": 15 } }
+            {
+              "min_proficiency_ratio": 0.2,
+              "acquired": {
+                "flexibility": 15
+              }
+            }
           ]
         },
         {
@@ -517,7 +615,9 @@
           "name": "推搡",
           "stun_head_hit": 35,
           "unlock_level": 50,
-          "required_limb_tags": ["挥拳"],
+          "required_limb_tags": [
+            "挥拳"
+          ],
           "damage_type": "blunt",
           "hit_segments": 1,
           "move_power_multiplier": 0.6,
@@ -547,7 +647,12 @@
           },
           "post_effect_slot_max": 1,
           "proficiency_attr_unlocks": [
-            { "min_proficiency_ratio": 0.2, "acquired": { "jingu": 15 } }
+            {
+              "min_proficiency_ratio": 0.2,
+              "acquired": {
+                "jingu": 15
+              }
+            }
           ]
         },
         {
@@ -555,7 +660,9 @@
           "name": "连环掌掴",
           "stun_head_hit": 35,
           "unlock_level": 50,
-          "required_limb_tags": ["挥拳"],
+          "required_limb_tags": [
+            "挥拳"
+          ],
           "damage_type": "blunt",
           "hit_segments": 2,
           "move_power_multiplier": 0.5,
@@ -580,13 +687,22 @@
           },
           "post_effect_slot_max": 1,
           "post_effect_unlocks": [
-            { "min_proficiency_ratio": 0.2, "post_effect_id": "post_dog_beat_down" }
+            {
+              "min_proficiency_ratio": 0.2,
+              "post_effect_id": "post_dog_beat_down"
+            }
           ]
         }
       ],
       "slots_unlock_by_level": [
-        { "level": 1, "slots": 2 },
-        { "level": 50, "slots": 4 }
+        {
+          "level": 1,
+          "slots": 2
+        },
+        {
+          "level": 50,
+          "slots": 4
+        }
       ],
       "base_power_curve": "unarmed_simple",
       "max_level": 1000,

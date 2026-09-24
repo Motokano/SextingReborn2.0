@@ -1,0 +1,312 @@
+{
+  "schema_version": 2,
+  "categories": {
+    "base": {
+      "groups": {
+        "identity": {
+          "fields": [
+            "name",
+            "name_0",
+            "name_1",
+            "name_2",
+            "sn",
+            "placeholder_name",
+            "fn_before",
+            "fn",
+            "desc",
+            "desc_0",
+            "desc_1",
+            "desc_2",
+            "display_skill_id"
+          ]
+        },
+        "stacking": {
+          "fields": [
+            "stack_limit",
+            "stack_max"
+          ]
+        },
+        "trade": {
+          "fields": [
+            "base_value",
+            "price_class",
+            "volatility",
+            "region_restrict"
+          ]
+        },
+        "currency": {
+          "fields": [
+            "accept_code",
+            "convert_to_high",
+            "usable_regions"
+          ]
+        },
+        "spoilage": {
+          "fields": [
+            "spoilage_ticks"
+          ]
+        },
+        "presentation": {
+          "fields": [
+            "info_module_set_id"
+          ]
+        },
+        "provenance": {
+          "fields": [
+            "source",
+            "production_lines"
+          ]
+        }
+      }
+    },
+    "food": {
+      "groups": {
+        "edible": {
+          "fields": [
+            "edible",
+            "edible_buff_id",
+            "food_profile",
+            "meal_tier",
+            "satiety_total",
+            "digestion_ticks",
+            "food_buff_duration_ticks",
+            "meal_composition",
+            "workhorse",
+            "food_thirst_instant",
+            "food_special_ticks",
+            "food_composition_text",
+            "food_experience_text",
+            "food_special_text"
+          ]
+        },
+        "packing": {
+          "fields": [
+            "slots_taken"
+          ]
+        }
+      }
+    },
+    "production": {
+      "groups": {
+        "cooking": {
+          "fields": [
+            "cooking_ingredient"
+          ]
+        },
+        "fuel": {
+          "fields": [
+            "fuel_points"
+          ]
+        },
+        "water": {
+          "fields": [
+            "water_points"
+          ]
+        },
+        "pharmacy": {
+          "fields": [
+            "pharmacy_ingredient",
+            "chem_class",
+            "pharm_family",
+            "pharm_effect",
+            "pharm_toxicity",
+            "concentration_cost",
+            "adjuvant_strength",
+            "pharmacy_active_components"
+          ]
+        },
+        "compost": {
+          "fields": [
+            "fert_c",
+            "fert_n",
+            "compost_inoculant_aerobic",
+            "compost_inoculant_anaerobic"
+          ]
+        },
+        "fertilizer": {
+          "fields": [
+            "inject_facility",
+            "agriculture_venturi_injectable",
+            "agriculture_buried_jar_injectable",
+            "agriculture_nutrient_per_bottle",
+            "is_anaerobic_fertilizer"
+          ]
+        },
+        "soil": {
+          "fields": [
+            "grants_soil_id"
+          ]
+        },
+        "seed": {
+          "fields": [
+            "harvest_item_id",
+            "seed_tier"
+          ]
+        }
+      }
+    },
+    "medicine": {
+      "groups": {
+        "use": {
+          "fields": [
+            "usable",
+            "use_action",
+            "use_buff_id",
+            "use_charges",
+            "use_effect"
+          ]
+        },
+        "compound": {
+          "fields": [
+            "pharmacy_compound",
+            "concentration_capacity"
+          ]
+        },
+        "effects": {
+          "fields": [
+            "pharmacy_addiction_gain",
+            "pharmacy_relief_stages",
+            "pharmacy_oral_toxicity",
+            "pharmacy_extra_toxicity_decay",
+            "pharmacy_legacy"
+          ]
+        }
+      }
+    },
+    "equipment": {
+      "groups": {
+        "wearable": {
+          "fields": [
+            "equip_slot",
+            "req_innate_jingu"
+          ]
+        },
+        "combat": {
+          "fields": [
+            "weapon_attack_power",
+            "attack_power",
+            "skill_coef",
+            "form_coefs",
+            "limb_tags",
+            "parry_coef",
+            "speed_coef",
+            "move_cost_mod",
+            "damage_type_effects"
+          ]
+        },
+        "fishing_tackle": {
+          "fields": [
+            "fishing_load_rating",
+            "fishing_length_dm",
+            "fishing_cast_range_dm"
+          ]
+        },
+        "armor": {
+          "fields": [
+            "damage_reduce_blunt_pct",
+            "damage_reduce_pierce_pct",
+            "damage_reduce_slash_pct",
+            "base_shield"
+          ]
+        },
+        "effects": {
+          "fields": [
+            "activation_cost_pct",
+            "effects",
+            "segments",
+            "special",
+            "special_effect"
+          ]
+        },
+        "enchantment": {
+          "fields": [
+            "enchant_slot",
+            "enchant_slots"
+          ]
+        }
+      }
+    },
+    "structure": {
+      "groups": {
+        "storage": {
+          "fields": [
+            "pocket_slots",
+            "vest_slots",
+            "backpack_slots",
+            "backpack_weight_factor"
+          ]
+        },
+        "host": {
+          "fields": [
+            "module_slots"
+          ]
+        },
+        "attachment": {
+          "fields": [
+            "install_slots",
+            "occupies",
+            "max_per_armor"
+          ]
+        },
+        "assembly_host": {
+          "fields": [
+            "assembly_slots"
+          ]
+        },
+        "assembly_part": {
+          "fields": [
+            "assembly_types"
+          ]
+        }
+      }
+    },
+    "energy": {
+      "groups": {
+        "storage": {
+          "fields": [
+            "battery_capacity",
+            "battery_charge"
+          ]
+        }
+      }
+    },
+    "organism": {
+      "groups": {}
+    }
+  },
+  "instance_state": {
+    "energy": {
+      "storage": {
+        "charge": {
+          "type": "integer",
+          "min": 0,
+          "template_capacity_field": "battery_capacity",
+          "template_initial_field": "battery_charge"
+        }
+      }
+    },
+    "base": {
+      "spoilage": {
+        "elapsed_ticks": {
+          "type": "integer",
+          "min": 0,
+          "template_duration_field": "spoilage_ticks"
+        }
+      }
+    },
+    "equipment": {
+      "fishing_tackle": {
+        "wear_stage": {
+          "type": "integer",
+          "min": 0,
+          "max": 2,
+          "instance_field": "fishing_wear_stage"
+        },
+        "broken": {
+          "type": "boolean",
+          "instance_field": "fishing_broken"
+        }
+      }
+    }
+  }
+}

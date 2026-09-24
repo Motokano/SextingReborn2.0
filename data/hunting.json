@@ -1,0 +1,556 @@
+{
+  "version": 1,
+  "cooldown_ticks": 144,
+  "window_ticks": 8,
+  "bait_extension_ticks": 4,
+  "rest_ticks": 2,
+  "trap_wait_ticks": 4,
+  "shelter_positions": [
+    [
+      88,
+      80
+    ],
+    [
+      452,
+      80
+    ],
+    [
+      452,
+      279
+    ],
+    [
+      225,
+      65
+    ]
+  ],
+  "actions": {
+    "observe": {
+      "stamina": 8,
+      "ticks": 2,
+      "chance": 0.5
+    },
+    "block": {
+      "stamina": 12,
+      "ticks": 1
+    },
+    "bait": {
+      "stamina": 4,
+      "ticks": 1,
+      "item": "consumable_hunting_bait"
+    },
+    "hands": {
+      "stamina": 16,
+      "ticks": 1,
+      "chance": 0.2
+    },
+    "net": {
+      "stamina": 8,
+      "ticks": 1,
+      "chance": 0.45,
+      "item": "consumable_hunting_net"
+    },
+    "snare": {
+      "stamina": 6,
+      "ticks": 1,
+      "chance": 0.5,
+      "item": "consumable_hunting_snare"
+    },
+    "javelin": {
+      "stamina": 10,
+      "ticks": 1,
+      "chance": 0.4,
+      "item": "consumable_javelin_stone"
+    },
+    "retry_hands": {
+      "stamina": 20,
+      "ticks": 1,
+      "chance": 0.35
+    },
+    "retry_net": {
+      "stamina": 10,
+      "ticks": 1,
+      "chance": 0.55,
+      "item": "consumable_hunting_net"
+    },
+    "hide": {
+      "stamina": 8,
+      "ticks": 1
+    },
+    "counter": {
+      "stamina": 12,
+      "ticks": 1,
+      "chance": 0.35,
+      "item": "consumable_javelin_stone"
+    },
+    "retreat": {
+      "stamina": 6,
+      "ticks": 1
+    },
+    "air_javelin": {
+      "stamina": 12,
+      "ticks": 1,
+      "chance": 0.25,
+      "item": "consumable_javelin_stone"
+    },
+    "wait_land": {
+      "stamina": 4,
+      "ticks": 2,
+      "chance": 0.45
+    },
+    "set_intercept": {
+      "stamina": 6,
+      "ticks": 1,
+      "item": "consumable_hunting_snare"
+    },
+    "intercept": {
+      "stamina": 8,
+      "ticks": 1,
+      "chance": 0.45
+    },
+    "set_tether": {
+      "stamina": 10,
+      "ticks": 2,
+      "item": "consumable_hunting_snare"
+    },
+    "brace": {
+      "stamina": 14,
+      "ticks": 1,
+      "chance": 0.4
+    },
+    "look": {
+      "stamina": 5,
+      "ticks": 1,
+      "chance": 0.5
+    },
+    "inspect_gap": {
+      "stamina": 4,
+      "ticks": 1,
+      "chance": 0.65
+    },
+    "inspect_rope": {
+      "stamina": 3,
+      "ticks": 1
+    },
+    "probe_rope": {
+      "stamina": 3,
+      "ticks": 1
+    },
+    "practice_knot": {
+      "stamina": 6,
+      "ticks": 2,
+      "chance": 0.55,
+      "item": "textile_coir"
+    },
+    "inspect_trap": {
+      "stamina": 4,
+      "ticks": 1
+    },
+    "inspect_carcass": {
+      "stamina": 4,
+      "ticks": 1
+    }
+  },
+  "events": {
+    "rabbit": {
+      "title": "hunting.event.rabbit.title",
+      "intro": "hunting.event.rabbit.intro",
+      "reward": "hunt_meat_rabbit",
+      "rabbit": true,
+      "reward_count": 3,
+      "processing": {
+        "bone": {
+          "reward": "hunt_bone_common",
+          "count": 1,
+          "stamina": 6,
+          "ticks": 2
+        }
+      },
+      "variants": [
+        "foraging",
+        "watering",
+        "passage"
+      ]
+    },
+    "pig_calf": {
+      "title": "hunting.event.pig.title",
+      "intro": "hunting.event.pig.intro",
+      "reward": "hunt_meat_boar",
+      "species": "pig",
+      "juvenile_item": "live_pig_juvenile",
+      "reward_count": 5,
+      "processing": {
+        "blood": {
+          "reward": "hus_pork_blood",
+          "count": 1,
+          "stamina": 4,
+          "ticks": 1,
+          "item": "consumable_hunting_blood_kit"
+        },
+        "skin": {
+          "reward": "hus_pork_rind",
+          "count": 1,
+          "stamina": 8,
+          "ticks": 2,
+          "item": "consumable_hunting_skin_kit"
+        },
+        "bone": {
+          "reward": "hus_pork_bone",
+          "count": 2,
+          "stamina": 6,
+          "ticks": 2
+        },
+        "special": {
+          "reward": "hus_pig_lard",
+          "count": 1,
+          "stamina": 8,
+          "ticks": 2
+        }
+      },
+      "counterattack": {
+        "exhaustion": 18
+      },
+      "variants": [
+        "foraging",
+        "watering",
+        "passage"
+      ]
+    },
+    "cattle_calf": {
+      "title": "hunting.event.cattle.title",
+      "intro": "hunting.event.cattle.intro",
+      "reward": "hus_beef_steak",
+      "species": "cattle",
+      "juvenile_item": "live_cattle_juvenile",
+      "reward_count": 8,
+      "processing": {
+        "blood": {
+          "reward": "hus_beef_blood",
+          "count": 1,
+          "stamina": 4,
+          "ticks": 1,
+          "item": "consumable_hunting_blood_kit"
+        },
+        "skin": {
+          "reward": "hus_beef_hide",
+          "count": 1,
+          "stamina": 8,
+          "ticks": 2,
+          "item": "consumable_hunting_skin_kit"
+        },
+        "bone": {
+          "reward": "hus_beef_bone",
+          "count": 2,
+          "stamina": 6,
+          "ticks": 2
+        },
+        "special": {
+          "reward": "hus_beef_horn",
+          "count": 1,
+          "stamina": 8,
+          "ticks": 2
+        }
+      },
+      "strength": true,
+      "variants": [
+        "foraging",
+        "watering",
+        "passage"
+      ]
+    },
+    "sheep_calf": {
+      "title": "hunting.event.sheep.title",
+      "intro": "hunting.event.sheep.intro",
+      "reward": "hus_mutton",
+      "species": "sheep",
+      "juvenile_item": "live_sheep_juvenile",
+      "reward_count": 4,
+      "processing": {
+        "blood": {
+          "reward": "hus_mutton_blood",
+          "count": 1,
+          "stamina": 4,
+          "ticks": 1,
+          "item": "consumable_hunting_blood_kit"
+        },
+        "skin": {
+          "reward": "hus_mutton_hide",
+          "count": 1,
+          "stamina": 8,
+          "ticks": 2,
+          "item": "consumable_hunting_skin_kit"
+        },
+        "bone": {
+          "reward": "hus_mutton_bone",
+          "count": 2,
+          "stamina": 6,
+          "ticks": 2
+        }
+      },
+      "herd": true,
+      "variants": [
+        "foraging",
+        "watering",
+        "passage"
+      ]
+    },
+    "chicken_calf": {
+      "title": "hunting.event.chicken.title",
+      "intro": "hunting.event.chicken.intro",
+      "reward": "hus_chicken_meat",
+      "species": "chicken",
+      "juvenile_item": "live_chicken_juvenile",
+      "reward_count": 3,
+      "processing": {
+        "blood": {
+          "reward": "hus_chicken_blood",
+          "count": 1,
+          "stamina": 4,
+          "ticks": 1,
+          "item": "consumable_hunting_blood_kit"
+        },
+        "skin": {
+          "reward": "hus_chicken_skin",
+          "count": 1,
+          "stamina": 8,
+          "ticks": 2,
+          "item": "consumable_hunting_skin_kit"
+        },
+        "bone": {
+          "reward": "hus_chicken_bone",
+          "count": 1,
+          "stamina": 6,
+          "ticks": 2
+        }
+      },
+      "startles": true,
+      "variants": [
+        "foraging",
+        "watering",
+        "passage"
+      ]
+    }
+  },
+  "kits": [
+    {
+      "output": "consumable_hunting_net",
+      "inputs": [
+        {
+          "item": "textile_coir",
+          "count": 2
+        }
+      ],
+      "stamina": 4
+    },
+    {
+      "output": "consumable_hunting_snare",
+      "inputs": [
+        {
+          "item": "textile_coir",
+          "count": 1
+        }
+      ],
+      "stamina": 3
+    },
+    {
+      "output": "consumable_hunting_bait",
+      "inputs": [
+        {
+          "item": "herb_carrot",
+          "count": 1
+        }
+      ],
+      "stamina": 2
+    },
+    {
+      "output": "consumable_javelin_stone",
+      "inputs": [
+        {
+          "item": "wood_bamboo_green",
+          "count": 1
+        },
+        {
+          "item": "ore_limestone",
+          "count": 1
+        }
+      ],
+      "stamina": 4
+    },
+    {
+      "output": "consumable_hunting_blood_kit",
+      "inputs": [
+        {
+          "item": "item_glass",
+          "count": 1
+        },
+        {
+          "item": "textile_coir",
+          "count": 1
+        }
+      ],
+      "stamina": 3
+    },
+    {
+      "output": "consumable_hunting_skin_kit",
+      "inputs": [
+        {
+          "item": "ore_limestone",
+          "count": 1
+        },
+        {
+          "item": "textile_coir",
+          "count": 1
+        }
+      ],
+      "stamina": 3
+    }
+  ],
+  "variants": {
+    "foraging": {
+      "title": "hunting.variant.foraging",
+      "hint": "hunting.variant.foraging.hint",
+      "bait_bonus": 0.1
+    },
+    "watering": {
+      "title": "hunting.variant.watering",
+      "hint": "hunting.variant.watering.hint",
+      "actions": {
+        "observe": {
+          "chance": 0.1,
+          "ticks": -1
+        },
+        "hands": {
+          "stamina": 2
+        },
+        "net": {
+          "stamina": 2
+        },
+        "javelin": {
+          "stamina": 2
+        }
+      }
+    },
+    "passage": {
+      "title": "hunting.variant.passage",
+      "hint": "hunting.variant.passage.hint",
+      "window_ticks": 6,
+      "bait_needs_observe": true,
+      "actions": {
+        "snare": {
+          "chance": 0.1
+        },
+        "intercept": {
+          "chance": 0.1
+        },
+        "brace": {
+          "chance": 0.1
+        },
+        "net": {
+          "chance": -0.05
+        }
+      }
+    }
+  },
+  "learning": {
+    "xp": {
+      "success": 3,
+      "failure": 1,
+      "practice": 1
+    },
+    "rope_chance": 0.3,
+    "knowledge": {
+      "animal_regular_path": {
+        "evidence": {
+          "escape_gap": 2,
+          "repeated_tracks": 2
+        },
+        "hunts": 3,
+        "sites": 2
+      },
+      "snare_tightening": {
+        "evidence": {
+          "loop_tightened": 1
+        }
+      },
+      "snare_anchor": {
+        "evidence": {
+          "anchor_tested": 2
+        },
+        "hunts": 2
+      },
+      "snare_placement": {
+        "evidence": {
+          "trap_examined": 3
+        },
+        "hunts": 3
+      },
+      "cover_use": {
+        "evidence": {
+          "cover_noticed": 3
+        },
+        "hunts": 3
+      },
+      "bird_landing": {
+        "evidence": {
+          "bird_watched": 3
+        },
+        "hunts": 3
+      },
+      "cattle_restraint": {
+        "evidence": {
+          "cattle_escape": 3
+        },
+        "hunts": 3
+      },
+      "field_processing": {
+        "evidence": {
+          "carcass_examined": 3
+        },
+        "hunts": 3
+      }
+    },
+    "gates": {
+      "observe": [
+        "animal_regular_path"
+      ],
+      "block": [
+        "animal_regular_path"
+      ],
+      "snare": [
+        "snare_tightening",
+        "snare_anchor"
+      ],
+      "set_intercept": [
+        "animal_regular_path",
+        "snare_tightening",
+        "snare_anchor",
+        "snare_placement"
+      ],
+      "set_tether": [
+        "animal_regular_path",
+        "snare_tightening",
+        "snare_anchor",
+        "cattle_restraint"
+      ],
+      "hide": [
+        "cover_use"
+      ],
+      "wait_land": [
+        "bird_landing"
+      ],
+      "process_blood": [
+        "field_processing"
+      ],
+      "process_skin": [
+        "field_processing"
+      ],
+      "process_bone": [
+        "field_processing"
+      ],
+      "process_special": [
+        "field_processing"
+      ]
+    },
+    "uses_per_level": 100,
+    "max_level": 100
+  }
+}

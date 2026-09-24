@@ -1,0 +1,12 @@
+<!doctype html><html lang="zh-CN"><meta charset="utf-8"><title>狩猎动态预览</title>
+<link rel="stylesheet" href="../css/hunting.css">
+<style>body{background:#15221b;color:#ddd;font:14px sans-serif;margin:24px}main{display:grid;grid-template-columns:repeat(2,minmax(280px,500px));gap:32px}.hunting-scene{position:static}h1{font-size:18px}</style>
+<h1>狩猎动态预览</h1><main></main>
+<script src="../js/hunting-scene.js"></script><script>
+Promise.all(['ui_text_zhCN','hunting'].map(n=>fetch('../data/'+n+'.json').then(r=>r.json()))).then(([text,config])=>{
+ window.UIText={t:key=>text[key]||key};
+ for(const [index,[phase,flags]] of [['prepare',{}],['prepare',{bait:true,observe:true}],['waiting',{observe:true}],['retry',{observe:true,block:true}]].entries()){
+  HuntingScene.render(document.querySelector('main'),{phase,flags,shelter:config.shelter_positions[index],target:'meat',last:'hunting.started',trapChance:phase==='waiting'?.75:null},config.events.rabbit,config);
+ }
+});
+</script></html>

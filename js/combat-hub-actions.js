@@ -171,13 +171,7 @@
             result.reason_key = 'combat.hub.fail.tiao_xi.diqi_max';
             return;
         }
-        // 调息（新资源模型）：消耗饱食/饮水恢复体力+底气——储备不足无法开始
-        var tiaoSatCost = getCfgNum('tiao_xi_satiety_cost_per_tick', 1);
-        var tiaoThirstCost = getCfgNum('tiao_xi_thirst_cost_per_tick', 0.5);
-        if ((st0.satiety != null && st0.satiety < tiaoSatCost) || (st0.thirst != null && st0.thirst < tiaoThirstCost)) {
-            result.reason_key = 'combat.hub.fail.tiao_xi.no_food';
-            return;
-        }
+        // 体力部分在 Survival 中按统一储备转换结算；不足不阻止底气修炼。
         if (typeof Surv.setSitMeditationActive === 'function') Surv.setSitMeditationActive(true);
         try {
             advanceActionTicks(Surv, ha.tick_cost);
@@ -201,32 +195,6 @@
             }
         } catch (eCfg) { /* ignore */ }
         return def;
-    }
-
-    /** 进食/饮水（新资源模型）：消耗饱食/饮水 → 恢复体力（储备燃料转行动货币） */
-    function tryExecuteEatRecovery(skillId, actionId, ha, IE, Surv, result) {
-        var satCost = ha.eat_satiety_cost != null ? Number(ha.eat_satiety_cost) : getCfgNum('eat_satiety_cost', 10);
-        var thirstCost = ha.eat_thirst_cost != null ? Number(ha.eat_thirst_cost) : getCfgNum('eat_thirst_cost', 5);
-        var staminaGain = ha.eat_stamina_gain != null ? Number(ha.eat_stamina_gain) : getCfgNum('eat_stamina_gain', 20);
-        if (typeof Surv.applyFoodConversion !== 'function') {
-            result.reason_key = 'combat.hub.fail.modules';
-            return;
-        }
-        var r = Surv.applyFoodConversion(satCost, thirstCost, staminaGain);
-        if (!r.ok) {
-            if (r.reason === 'low_satiety') result.reason_key = 'combat.hub.fail.eat.low_satiety';
-            else if (r.reason === 'low_thirst') result.reason_key = 'combat.hub.fail.eat.low_thirst';
-            else result.reason_key = 'combat.hub.fail.eat.invalid';
-            return;
-        }
-        advanceActionTicks(Surv, ha.tick_cost);
-        incrementBreathTuNaLine(IE, skillId);
-        result.ok = true;
-        result.reason_key = 'combat.hub.ok.eat';
-        result.stamina_gain = r.stamina_gain;
-        result.satiety_cost = r.satiety_cost;
-        result.thirst_cost = r.thirst_cost;
-        emitHubResolved(Surv, skillId, actionId, ['eat_recovery', actionId]);
     }
 
     function tryExecuteHubAction(skillId, actionId, options) {
@@ -296,9 +264,6 @@
                 break;
             case 'tiao_xi_once':
                 tryExecuteTiaoXiOnce(skillId, actionId, ha, IE, Surv, result);
-                break;
-            case 'eat_recovery':
-                tryExecuteEatRecovery(skillId, actionId, ha, IE, Surv, result);
                 break;
             default:
                 result.reason_key = 'combat.hub.fail.unimplemented';

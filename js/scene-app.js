@@ -312,6 +312,8 @@
     }
 
     function isStoryMovementLocked() {
+        if (window.HuntingPanel && window.HuntingPanel.isOpen()) return true;
+        if (window.FishingPanel && window.FishingPanel.isOpen()) return true;
         if (window.DialogueUI && typeof window.DialogueUI.isDialogueOpen === 'function' && window.DialogueUI.isDialogueOpen()) return true;
         if (window.NPCSystem && typeof window.NPCSystem.isMenuOpen === 'function' && window.NPCSystem.isMenuOpen()) return true;
         var ov = document.getElementById('character-creation-overlay');
@@ -579,9 +581,15 @@
             fetch(base + 'ui_text_zhCN.json').then(function (r) { return r.ok ? r.json() : null; }),
             fetch(base + 'gathering_points.json').then(function (r) { return r.ok ? r.json() : defaultGatheringPoints; }).catch(function () { return defaultGatheringPoints; }),
             fetch(base + 'loot_tables.json').then(function (r) { return r.ok ? r.json() : defaultLootTables; }).catch(function () { return defaultLootTables; }),
-            fetch(base + 'items.json').then(function (r) { return r.ok ? r.json() : defaultItems; }).catch(function () { return defaultItems; }),
+            fetch(base + 'item-catalog-v2.json').then(function (r) {
+                if (r.ok) return r.json();
+                return fetch(base + 'items.json').then(function (legacy) { return legacy.ok ? legacy.json() : defaultItems; });
+            }).catch(function () { return defaultItems; }),
             fetch(base + 'survival-config.json').then(function (r) { return r.ok ? r.json() : {}; }).catch(function () { return {}; }),
-            fetch(base + 'equipment.json').then(function (r) { return r.ok ? r.json() : {}; }).catch(function () { return {}; }),
+            fetch(base + 'equipment-catalog-v2.json').then(function (r) {
+                if (r.ok) return r.json();
+                return fetch(base + 'equipment.json').then(function (legacy) { return legacy.ok ? legacy.json() : {}; });
+            }).catch(function () { return {}; }),
             fetch(base + 'enchant.json').then(function (r) { return r.ok ? r.json() : {}; }).catch(function () { return {}; }),
             fetch(base + 'default_equipment.json').then(function (r) { return r.ok ? r.json() : {}; }).catch(function () { return {}; }),
             fetch(base + 'combat-skills.json').then(function (r) { return r.ok ? r.json() : { constants: {}, categories: [], skills: {} }; }).catch(function () { return { constants: {}, categories: [], skills: {} }; }),
@@ -612,19 +620,31 @@
             fetch(base + 'livestock-perks.json').then(function (r) { return r.ok ? r.json() : { perks: {} }; }).catch(function () { return { perks: {} }; }),
             fetch(base + 'livestock-build-costs.json').then(function (r) { return r.ok ? r.json() : { costs: {} }; }).catch(function () { return { costs: {} }; }),
             fetch(base + 'livestock-feed-crops.json').then(function (r) { return r.ok ? r.json() : { crops: {} }; }).catch(function () { return { crops: {} }; }),
-            fetch(base + 'modules.json').then(function (r) { return r.ok ? r.json() : {}; }).catch(function () { return {}; }),
+            fetch(base + 'attachment-catalog-v2.json').then(function (r) {
+                if (r.ok) return r.json();
+                return fetch(base + 'modules.json').then(function (legacy) { return legacy.ok ? legacy.json() : {}; });
+            }).catch(function () { return {}; }),
             fetch(base + 'enemy_drops.json').then(function (r) { return r.ok ? r.json() : null; }).catch(function () { return null; }),
             fetch(base + 'pharmacy-system-config.csv').then(function (r) { return r.ok ? r.text() : ''; }).catch(function () { return ''; }),
-            fetch(base + 'pharmacy-conflict-rules.json').then(function (r) { return r.ok ? r.json() : null; }).catch(function () { return null; })
+            fetch(base + 'pharmacy-conflict-rules.json').then(function (r) { return r.ok ? r.json() : null; }).catch(function () { return null; }),
+            fetch(base + 'hunting.json').then(function (r) { if (!r.ok) throw new Error('hunting config unavailable'); return r.json(); }),
+            fetch(base + 'fishing-session-config.json').then(function (r) { if (!r.ok) throw new Error('fishing session config unavailable'); return r.json(); }),
+            Promise.all(['fishing-pond.json','fishing-facts.json','fishing-feedback.json'].map(function(file){return fetch(base+file).then(function(r){if(!r.ok)throw new Error(file+' unavailable');return r.json();});})).then(function(parts){parts[0].fact_rules=parts[1];parts[0].feedback_rules=parts[2];return parts[0];})
         ]).then(function (arr) {
             if (!arr[0]) throw new Error('[SceneApp] ui_text_zhCN.json missing');
             if (!window.UIText || typeof window.UIText.setDict !== 'function') throw new Error('[SceneApp] UIText module missing');
             window.UIText.setDict(arr[0]);
             window.UIText.applyDom(document);
+            if (window.HuntingPanel) window.HuntingPanel.configure(arr[arr.length - 3]);
+            if (window.FishingSession) window.FishingSession.configure(arr[arr.length - 2]);
+            if (window.FishingPanel) window.FishingPanel.configure(arr[arr.length - 1]);
+            var runtimeItems = (window.ItemAttributeModules && typeof window.ItemAttributeModules.hydrateCatalog === 'function')
+                ? window.ItemAttributeModules.hydrateCatalog(arr[3])
+                : ((arr[3] && arr[3].items && typeof arr[3].items === 'object') ? arr[3].items : arr[3]);
             G.setConfig({
                 gathering_points: arr[1],
                 loot_tables: arr[2],
-                items: arr[3],
+                items: runtimeItems,
                 gathering_point_instances: arr[13] || null
             });
             if (window.Survival) window.Survival.setConfig(arr[4]);
@@ -796,10 +816,10 @@
                 if (IE.EQUIP_SLOT_IDS.indexOf(sk) >= 0) defaultEquipMerged[sk] = defEqFetched[sk];
             }
             IE.setConfig({
-                equipment: arr[5],
-                items: arr[3],
+                equipment: (window.ItemAttributeModules && typeof window.ItemAttributeModules.hydrateCatalog === 'function') ? window.ItemAttributeModules.hydrateCatalog(arr[5]) : arr[5],
+                items: runtimeItems,
                 enchant: arr[6],
-                modules: arr[36] || {},
+                modules: (window.ItemAttributeModules && typeof window.ItemAttributeModules.hydrateCatalog === 'function') ? window.ItemAttributeModules.hydrateCatalog(arr[36] || {}) : (arr[36] || {}),
                 default_equipment: defaultEquipMerged,
                 item_display_tier_threshold_1: survCfg.item_display_tier_threshold_1,
                 item_display_tier_threshold_2: survCfg.item_display_tier_threshold_2
@@ -1142,6 +1162,8 @@
         if (window.SceneRenderer && typeof window.SceneRenderer.render === 'function') {
             window.SceneRenderer.render();
         }
+        if (window.HuntingPanel) window.HuntingPanel.render();
+        if (window.FishingPanel) window.FishingPanel.ensureStarterSupplies();
     }
     window.addEventListener('resize', function () {
         render();
@@ -1529,6 +1551,12 @@
         var CHA = window.CombatHubActions;
         sub.innerHTML = '';
         if (!IE) return;
+        if(window.HuntingPanel && /Base|^home$/.test(E.getState().mapId)){
+            var craftTitle=document.createElement('div');craftTitle.textContent='制作';craftTitle.className='player-action-craft-title';sub.appendChild(craftTitle);
+            var craftButton=document.createElement('button');craftButton.type='button';craftButton.className='player-action-item';craftButton.setAttribute('role','menuitem');craftButton.textContent='捕猎用品';
+            craftButton.disabled=!window.HuntingPanel.canOpenCrafting();craftButton.onclick=function(ev){ev.stopPropagation();closePlayerActionsSubmenu();window.HuntingPanel.openCrafting();};sub.appendChild(craftButton);
+            var actionTitle=document.createElement('div');actionTitle.textContent='常用动作';actionTitle.className='player-action-craft-title';sub.appendChild(actionTitle);
+        }
         var breathId = 'combat_basic_breath';
         var footworkId = 'combat_basic_footwork';
         var hubs = IE.getCombatState && IE.getCombatState().hubs ? IE.getCombatState().hubs : {};
@@ -2545,8 +2573,11 @@
         }
         var ask = ui('bed.sleep.confirm');
         if (typeof window.confirm === 'function' && !window.confirm(ask)) return false;
+        var sleepSurvival = window.Survival;
+        var wasResting = sleepSurvival && sleepSurvival.getState().isResting;
+        if (sleepSurvival) sleepSurvival.setResting(true);
         var i;
-        for (i = 0; i < 48; i++) {
+        try { for (i = 0; i < 48; i++) {
             if (window.Survival && typeof window.Survival.advanceTick === 'function') window.Survival.advanceTick();
             if (i === 47) {
                 if (window.Survival && typeof window.Survival.clearFatigue === 'function') window.Survival.clearFatigue();
@@ -2556,6 +2587,7 @@
                 }
             }
         }
+        } finally { if (sleepSurvival) sleepSurvival.setResting(!!wasResting); }
         showMsg(ui('bed.sleep.done'), 'success');
         if (typeof updateStatusPanel === 'function') SceneHud.refresh('status');
         if (typeof updateBackpackPanel === 'function') updateBackpackPanel();
@@ -2602,6 +2634,10 @@
     }
 
     function guardPlayerActionBlocked(actionType, opts) {
+        if (window.Hunting && window.Hunting.isActive()) {
+            showMsg(ui('hunting.reason.active'), 'info');
+            return true;
+        }
         // 眩晕中（k13，37 §9.2）：本回合无法行动——吞掉本次动作（移动/采集/制作/交互/用物等）
         if (IE && typeof IE.consumePlayerStunRoundIfBlocking === 'function' && IE.consumePlayerStunRoundIfBlocking()) {
             showMsg(ui('combat.log.stun_blocked_action'), 'warn');
@@ -2639,6 +2675,14 @@
     }
 
     function onGatherClick() {
+        if (window.FishingPanel && window.FishingPanel.currentPoint()) {
+            window.FishingPanel.open();
+            return;
+        }
+        if (window.HuntingPanel && window.HuntingPanel.currentPoint()) {
+            window.HuntingPanel.open();
+            return;
+        }
         if (isPreCreationGameplayRestricted()) {
             showIntroBlockedMsg();
             return;
@@ -3066,10 +3110,10 @@
     }
 
     function computeMoveStaminaCost() {
-        var base = 1;
+        var base = 0.25;
         try {
             if (window.CharacterAttributes && typeof window.CharacterAttributes.getCfg === 'function') {
-                var b = Number(window.CharacterAttributes.getCfg('move_stamina_base', 1));
+                var b = Number(window.CharacterAttributes.getCfg('move_stamina_base', 0.25));
                 if (isFinite(b) && b > 0) base = b;
             }
         } catch (eB) { /* ignore */ }
@@ -3094,7 +3138,7 @@
                 }
             }
         } catch (eO) { /* ignore */ }
-        return Math.max(0.1, Math.round(cost * 10) / 10);
+        return Math.max(0.01, Math.round(cost * 100) / 100);
     }
 
     function patchSurvivalTickForCookingCraftOnce() {
@@ -3120,6 +3164,9 @@
     var DEFAULT_COOKING_INSTALLED_ACCESSORIES = [];
 
     function resetCookingStateForNewCharacter() {
+        if (window.Hunting) window.Hunting.setState(null);
+        if (window.FishingSession) window.FishingSession.setState(null);
+        if (window.FishingPond) window.FishingPond.setState(null);
         if (!window.SceneCtx) return;
         window.SceneCtx.cooking_station_runtime = window.CookingStation.createDefaultState();
         window.SceneCtx.cooking_temp_stations_runtime = [];
@@ -3629,6 +3676,7 @@
                     modulesHtml = window.ItemInfoModules.renderTooltipModulesHtml({
                         itemId: picked.item.item_id,
                         tpl: disp.tpl,
+                        inst: picked.item,
                         character: char
                     }) || '';
                 }
@@ -3646,6 +3694,52 @@
                 fieldWrap.innerHTML = fieldAppend;
                 detailEl.appendChild(fieldWrap);
             }
+            try {
+                if (window.ItemAssemblyDisplay && typeof window.ItemAssemblyDisplay.renderAssemblyHtml === 'function') {
+                    var assemblyWrap = document.createElement('div');
+                    assemblyWrap.className = 'bp-detail-assembly';
+                    assemblyWrap.innerHTML = window.ItemAssemblyDisplay.renderAssemblyHtml({
+                        inst: picked.item,
+                        character: char,
+                        interactive: picked.source !== 'ground',
+                        showWeight: false
+                    }) || '';
+                    if (assemblyWrap.innerHTML) {
+                        detailEl.appendChild(assemblyWrap);
+                        assemblyWrap.querySelectorAll('[data-assembly-attach]').forEach(function (btn) {
+                            btn.onclick = function () {
+                                var slotEl = btn.closest('.item-assembly-slot');
+                                var select = slotEl ? slotEl.querySelector('[data-assembly-candidate]') : null;
+                                var selected = select ? String(select.value || '').split(':') : [];
+                                if (selected.length !== 2 || !window.ItemAssembly) return;
+                                var result = window.ItemAssembly.attachFromContainer(
+                                    btn.getAttribute('data-host-instance'),
+                                    btn.getAttribute('data-slot-id'),
+                                    selected[0],
+                                    parseInt(selected[1], 10)
+                                );
+                                if (result && result.ok) showMsg(ui('item.assembly.message.attached'), 'success');
+                                else showMsg(window.ItemAssemblyDisplay.messageForReason(result && result.reason), 'warn');
+                                updateBackpackPanel();
+                                render();
+                            };
+                        });
+                        assemblyWrap.querySelectorAll('[data-assembly-detach]').forEach(function (btn) {
+                            btn.onclick = function () {
+                                if (!window.ItemAssembly) return;
+                                var result = window.ItemAssembly.detachToInventory(
+                                    btn.getAttribute('data-host-instance'),
+                                    btn.getAttribute('data-slot-id')
+                                );
+                                if (result && result.ok) showMsg(ui('item.assembly.message.detached'), 'info');
+                                else showMsg(window.ItemAssemblyDisplay.messageForReason(result && result.reason), 'warn');
+                                updateBackpackPanel();
+                                render();
+                            };
+                        });
+                    }
+                }
+            } catch (eAssembly) { /* 装配区异常不影响其他物品操作 */ }
 
             var actions = document.createElement('div');
             actions.className = 'bp-detail-actions';
@@ -4823,6 +4917,7 @@
     }
 
     function openLivestockPanel() {
+        if (window.Hunting && window.Hunting.isActive()) return;
         if (isPreCreationGameplayRestricted()) {
             showIntroBlockedMsg();
             return;
@@ -4850,6 +4945,7 @@
             }
         }
         startLivestockAutoTickIfNeeded();
+        if (window.HuntingPanel) window.HuntingPanel.renderAdmission();
         render();
     }
 
@@ -4870,6 +4966,7 @@
         if (window.LivestockPanel && typeof window.LivestockPanel.render === 'function') {
             try { window.LivestockPanel.render(); } catch (eUpLs) { /* ignore */ }
         }
+        if (window.HuntingPanel) window.HuntingPanel.renderAdmission();
     }
 
     function tickLivestockAfterWorldTick() {
@@ -7673,7 +7770,7 @@
                     return;
                 }
                 if (guardPlayerActionBlocked(ACTION_TYPES.MOVE)) return;
-                // 移动耗体力（k17 补全，05 5.5.4）：每格 = 1 × (1+鞋moveCostMod) × 超重系数；体力不足无法移动
+                // 移动耗体力（k17 补全，05 5.5.4）：每格 = 配置基础消耗 × (1+鞋moveCostMod) × 超重系数；体力不足无法移动
                 var moveStaminaCost = computeMoveStaminaCost();
                 var survSt = (window.Survival && typeof window.Survival.getState === 'function') ? window.Survival.getState() : null;
                 if (moveStaminaCost > 0 && survSt && Number(survSt.stamina || 0) < moveStaminaCost) {
@@ -7687,7 +7784,7 @@
                 var fromY = st.y;
                 if (E.moveTo(tx, ty)) {
                     if (moveStaminaCost > 0 && window.Survival && typeof window.Survival.consumeStamina === 'function') {
-                        window.Survival.consumeStamina(moveStaminaCost);
+                        window.Survival.consumeStamina(moveStaminaCost, { source: 'movement' });
                     }
                     var restStoppedByMove = setRestingActionActive(false, { showMsg: false });
                     if (window.SceneCtx && typeof window.SceneCtx.exitFootworkNieBuMode === 'function') {
@@ -8281,7 +8378,7 @@
                     });
                 }
                 if (window.Survival && typeof window.Survival.advanceTick === 'function') {
-                    window.Survival.advanceTick();
+                    window.Survival.advanceTick({ source: 'movement' });
                 }
                 var tickSnap = window.Survival && typeof window.Survival.getState === 'function' ? window.Survival.getState().tickCount : 0;
                 if (window.BuffSystem && typeof window.BuffSystem.triggerBuffPipeline === 'function') {

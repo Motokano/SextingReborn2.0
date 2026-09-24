@@ -705,7 +705,8 @@
             font-family: "Microsoft YaHei", "微软雅黑", "PingFang SC", sans-serif;
         }
         #modal-backpack .bp-detail-modules,
-        #modal-backpack .bp-detail-field-rules { margin-bottom: 12px; }
+        #modal-backpack .bp-detail-field-rules,
+        #modal-backpack .bp-detail-assembly { margin-bottom: 12px; }
         #modal-backpack #backpack-detail .tooltip-modules { margin-top: 2px; display: grid; gap: 6px; }
         #modal-backpack #backpack-detail .tooltip-module { border: 1px solid #4d3f35; border-radius: 6px; padding: 7px 8px; background: rgba(0,0,0,0.12); }
         #modal-backpack #backpack-detail .tooltip-module.is-locked { opacity: 0.78; }
@@ -724,6 +725,27 @@
             font-size: 12px; font-weight: 700; padding: 7px 12px; cursor: pointer;
         }
         #modal-backpack .bp-action-btn:hover { border-color: #d3a060; color: #d3a060; }
+        .item-assembly-view {
+            border: 1px solid #4d3f35; border-radius: 7px; padding: 8px; margin-top: 8px;
+            background: rgba(0,0,0,0.14); color: #d4cec3; font-size: 11px;
+        }
+        .item-assembly-title { display: flex; align-items: center; justify-content: space-between; gap: 8px; font-weight: 800; color: #e8e6e3; margin-bottom: 4px; }
+        .item-assembly-state { border: 1px solid #6b6560; border-radius: 999px; padding: 1px 6px; font-size: 9px; color: #a8a29e; }
+        .item-assembly-state.complete { border-color: #4f7d68; color: #87b99f; }
+        .item-assembly-state.incomplete { border-color: #8a6538; color: #d3a060; }
+        .item-assembly-weight { color: #8e8a84; margin-bottom: 5px; }
+        .item-assembly-slot { border-left: 2px solid #4d4d45; margin: 4px 0; padding: 4px 0 4px 8px; }
+        .item-assembly-children { margin-left: 10px; }
+        .item-assembly-slot-head { display: flex; align-items: center; gap: 7px; min-width: 0; }
+        .item-assembly-slot-label { color: #8e8a84; flex: 0 0 auto; }
+        .item-assembly-part-name { color: #ddd5c9; font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .item-assembly-empty, .item-assembly-no-candidate { color: #716b64; }
+        .item-assembly-picker { display: flex; gap: 6px; margin-top: 5px; align-items: center; }
+        .item-assembly-picker select { min-width: 0; flex: 1; border: 1px solid #4d4d45; border-radius: 4px; background: #17130f; color: #d4cec3; padding: 4px 6px; font-size: 11px; }
+        .item-assembly-action { margin-left: auto; flex: 0 0 auto; border: 1px solid #65513b; border-radius: 4px; background: #211a14; color: #d3a060; padding: 3px 7px; font-size: 10px; cursor: pointer; }
+        .item-assembly-action:hover { border-color: #d3a060; color: #f0c58f; }
+        #item-tooltip .item-assembly-view { max-width: 310px; }
+        #item-tooltip .item-assembly-slot { padding-top: 2px; padding-bottom: 2px; }
         #modal-backpack .equip-title {
             font-size: 12px; font-weight: 900; color: #8e8e8e; margin: 0 0 8px 0; letter-spacing: 0.1em; text-transform: uppercase;
         }
@@ -4435,7 +4457,15 @@
     <script src="js/food-metabolism.js"></script>
     <script src="js/survival.js"></script>
     <script src="js/character-attributes.js"></script>
+    <script src="js/item-attribute-modules.js"></script>
     <script src="js/inventory-equipment.js"></script>
+    <script src="js/item-assembly.js"></script>
+    <script src="js/item-assembly-display.js"></script>
+    <script src="js/fishing-session.js"></script>
+    <script src="js/fishing-facts.js"></script><script src="js/fishing-feedback.js"></script>
+    <script src="js/fishing-pond.js"></script>
+    <script src="js/fishing-panel.js"></script>
+    <link rel="stylesheet" href="css/fishing.css">
     <script src="js/combat-damage.js"></script>
     <script src="js/combat-skills.js"></script>
     <script src="js/combat-hub-actions.js"></script>
@@ -4464,7 +4494,12 @@
     <script src="js/agriculture-panel.js"></script>
     <script src="js/hideout-warehouse.js"></script>
     <script src="js/hideout-warehouse-panel.js"></script>
+    <link rel="stylesheet" href="css/hunting.css">
     <script src="js/gathering.js"></script>
+    <script src="js/hunting-knowledge.js"></script>
+    <script src="js/hunting.js"></script>
+    <script src="js/hunting-scene.js"></script>
+    <script src="js/hunting-panel.js"></script>
     <script src="js/dungeon-loot.js"></script>
     <script src="js/enemy-drops.js"></script>
     <script src="js/scene-animation.js"></script>

@@ -1,0 +1,666 @@
+{
+  "schema_version": 2,
+  "items": {
+    "mod_bamboo_plate": {
+      "item_id": "mod_bamboo_plate",
+      "editor_name": "竹片板",
+      "weight_kg": 0.3,
+      "attribute_modules": {
+        "base": {
+          "identity": {
+            "name": "竹片板",
+            "desc": "青竹削片编缝，轻而硬，挡劈砍。"
+          },
+          "stacking": {}
+        },
+        "equipment": {
+          "effects": {
+            "activation_cost_pct": 0.06,
+            "effects": [
+              {
+                "effect_type": "armor_bonus",
+                "effect_params": {
+                  "slash_pct": 0.1,
+                  "pierce_pct": 0.04
+                }
+              }
+            ],
+            "special": false
+          },
+          "enchantment": {
+            "enchant_slot": 1
+          }
+        },
+        "structure": {
+          "attachment": {
+            "install_slots": [
+              "clothing.arm_l"
+            ]
+          }
+        }
+      },
+      "id": "mod_bamboo_plate"
+    },
+    "mod_bone_plate": {
+      "item_id": "mod_bone_plate",
+      "editor_name": "骨板",
+      "weight_kg": 0.4,
+      "attribute_modules": {
+        "base": {
+          "identity": {
+            "name": "骨板",
+            "desc": "磨削兽骨缀成硬板，骨架加固。"
+          },
+          "stacking": {}
+        },
+        "equipment": {
+          "effects": {
+            "activation_cost_pct": 0.06,
+            "effects": [
+              {
+                "effect_type": "armor_bonus",
+                "effect_params": {
+                  "blunt_pct": 0.08
+                }
+              }
+            ],
+            "special": false
+          },
+          "enchantment": {
+            "enchant_slot": 1
+          }
+        },
+        "structure": {
+          "attachment": {
+            "install_slots": [
+              "clothing.leg_l"
+            ]
+          }
+        }
+      },
+      "id": "mod_bone_plate"
+    },
+    "mod_face_goggles": {
+      "item_id": "mod_face_goggles",
+      "editor_name": "护目镜",
+      "weight_kg": 0.1,
+      "attribute_modules": {
+        "base": {
+          "identity": {
+            "name": "护目镜",
+            "desc": "护面功能件：防沙尘致盲。（效果实现待接）"
+          },
+          "stacking": {}
+        },
+        "equipment": {
+          "effects": {
+            "activation_cost_pct": 0,
+            "effects": [],
+            "special": false
+          },
+          "enchantment": {
+            "enchant_slot": 1
+          }
+        },
+        "structure": {
+          "attachment": {
+            "install_slots": [
+              "head.face"
+            ]
+          }
+        }
+      },
+      "id": "mod_face_goggles"
+    },
+    "mod_face_lamp": {
+      "item_id": "mod_face_lamp",
+      "editor_name": "头灯",
+      "weight_kg": 0.2,
+      "attribute_modules": {
+        "base": {
+          "identity": {
+            "name": "头灯",
+            "desc": "护面功能件：黑暗中照明，命中率提高。（条件：夜间生效，实现待接）"
+          },
+          "stacking": {}
+        },
+        "equipment": {
+          "effects": {
+            "activation_cost_pct": 0,
+            "effects": [
+              {
+                "effect_type": "hit_bonus",
+                "effect_params": {
+                  "hit_pct": 0.1
+                }
+              }
+            ],
+            "special": false
+          },
+          "enchantment": {
+            "enchant_slot": 1
+          }
+        },
+        "structure": {
+          "attachment": {
+            "install_slots": [
+              "head.face"
+            ]
+          }
+        }
+      },
+      "id": "mod_face_lamp"
+    },
+    "mod_face_plume": {
+      "item_id": "mod_face_plume",
+      "editor_name": "盔缨",
+      "weight_kg": 0.05,
+      "attribute_modules": {
+        "base": {
+          "identity": {
+            "name": "盔缨",
+            "desc": "护面装饰件：红缨缀盔，纯外观/社交用途。"
+          },
+          "stacking": {}
+        },
+        "equipment": {
+          "effects": {
+            "activation_cost_pct": 0,
+            "effects": [],
+            "special": false
+          },
+          "enchantment": {
+            "enchant_slot": 1
+          }
+        },
+        "structure": {
+          "attachment": {
+            "install_slots": [
+              "head.face"
+            ]
+          }
+        }
+      },
+      "id": "mod_face_plume"
+    },
+    "mod_helm_hard_liner": {
+      "item_id": "mod_helm_hard_liner",
+      "editor_name": "硬内衬",
+      "weight_kg": 0.3,
+      "attribute_modules": {
+        "base": {
+          "identity": {
+            "name": "硬内衬",
+            "desc": "硬质内衬，补强减伤，不抗震荡。"
+          },
+          "stacking": {}
+        },
+        "equipment": {
+          "effects": {
+            "activation_cost_pct": 0,
+            "effects": [
+              {
+                "effect_type": "armor_bonus",
+                "effect_params": {
+                  "slash_pct": 0.06,
+                  "pierce_pct": 0.06
+                }
+              }
+            ],
+            "special": false
+          },
+          "enchantment": {
+            "enchant_slot": 1
+          }
+        },
+        "structure": {
+          "attachment": {
+            "install_slots": [
+              "head.liner"
+            ]
+          }
+        }
+      },
+      "id": "mod_helm_hard_liner"
+    },
+    "mod_helm_iron_shell": {
+      "item_id": "mod_helm_iron_shell",
+      "editor_name": "铁盔体",
+      "weight_kg": 1.5,
+      "attribute_modules": {
+        "base": {
+          "identity": {
+            "name": "铁盔体",
+            "desc": "铸铁盔壳，硬挡利器，不缓冲震荡。"
+          },
+          "stacking": {}
+        },
+        "equipment": {
+          "effects": {
+            "activation_cost_pct": 0,
+            "effects": [
+              {
+                "effect_type": "armor_bonus",
+                "effect_params": {
+                  "slash_pct": 0.2,
+                  "pierce_pct": 0.15,
+                  "blunt_pct": 0.05
+                }
+              }
+            ],
+            "special": false
+          },
+          "enchantment": {
+            "enchant_slot": 1
+          }
+        },
+        "structure": {
+          "attachment": {
+            "install_slots": [
+              "head.shell"
+            ]
+          }
+        }
+      },
+      "id": "mod_helm_iron_shell"
+    },
+    "mod_helm_leather_shell": {
+      "item_id": "mod_helm_leather_shell",
+      "editor_name": "皮盔体",
+      "weight_kg": 0.4,
+      "attribute_modules": {
+        "base": {
+          "identity": {
+            "name": "皮盔体",
+            "desc": "鞣皮盔壳，缓冲震荡，挡不住利器。"
+          },
+          "stacking": {}
+        },
+        "equipment": {
+          "effects": {
+            "activation_cost_pct": 0,
+            "effects": [
+              {
+                "effect_type": "armor_bonus",
+                "effect_params": {
+                  "blunt_pct": 0.15,
+                  "slash_pct": 0.08,
+                  "pierce_pct": 0.05
+                }
+              }
+            ],
+            "special": false
+          },
+          "enchantment": {
+            "enchant_slot": 1
+          }
+        },
+        "structure": {
+          "attachment": {
+            "install_slots": [
+              "head.shell"
+            ]
+          }
+        }
+      },
+      "id": "mod_helm_leather_shell"
+    },
+    "mod_helm_silica_shell": {
+      "item_id": "mod_helm_silica_shell",
+      "editor_name": "硅叶盔体",
+      "weight_kg": 0.5,
+      "attribute_modules": {
+        "base": {
+          "identity": {
+            "name": "硅叶盔体",
+            "desc": "硅叶浸布的盔壳，轻而抗穿刺。"
+          },
+          "stacking": {}
+        },
+        "equipment": {
+          "effects": {
+            "activation_cost_pct": 0,
+            "effects": [
+              {
+                "effect_type": "armor_bonus",
+                "effect_params": {
+                  "pierce_pct": 0.2,
+                  "slash_pct": 0.1,
+                  "blunt_pct": 0.1
+                }
+              }
+            ],
+            "special": false
+          },
+          "enchantment": {
+            "enchant_slot": 1
+          }
+        },
+        "structure": {
+          "attachment": {
+            "install_slots": [
+              "head.shell"
+            ]
+          }
+        }
+      },
+      "id": "mod_helm_silica_shell"
+    },
+    "mod_helm_soft_liner": {
+      "item_id": "mod_helm_soft_liner",
+      "editor_name": "软内衬",
+      "weight_kg": 0.1,
+      "attribute_modules": {
+        "base": {
+          "identity": {
+            "name": "软内衬",
+            "desc": "缓冲内衬，抗眩晕的核心。"
+          },
+          "stacking": {}
+        },
+        "equipment": {
+          "effects": {
+            "activation_cost_pct": 0,
+            "effects": [
+              {
+                "effect_type": "anti_stun",
+                "effect_params": {
+                  "anti_stun_pct": 0.4
+                }
+              }
+            ],
+            "special": false
+          },
+          "enchantment": {
+            "enchant_slot": 1
+          }
+        },
+        "structure": {
+          "attachment": {
+            "install_slots": [
+              "head.liner"
+            ]
+          }
+        }
+      },
+      "id": "mod_helm_soft_liner"
+    },
+    "mod_hooded_coat": {
+      "item_id": "mod_hooded_coat",
+      "editor_name": "兜帽大衣",
+      "weight_kg": 2.1,
+      "attribute_modules": {
+        "base": {
+          "identity": {
+            "name": "兜帽大衣",
+            "desc": "复合模块（套装件）：占胸腹板位 + 盔体槽，一体式硅叶浸布。"
+          },
+          "stacking": {}
+        },
+        "equipment": {
+          "effects": {
+            "activation_cost_pct": 0.25,
+            "segments": {
+              "head": {
+                "effects": [
+                  {
+                    "effect_type": "armor_bonus",
+                    "effect_params": {
+                      "blunt_pct": 0.12,
+                      "slash_pct": 0.06
+                    }
+                  }
+                ]
+              },
+              "clothing": {
+                "effects": [
+                  {
+                    "effect_type": "armor_bonus",
+                    "effect_params": {
+                      "slash_pct": 0.15,
+                      "pierce_pct": 0.1
+                    }
+                  }
+                ]
+              }
+            },
+            "special": true,
+            "special_effect": {
+              "effect_type": "damage_type_convert",
+              "effect_params": {
+                "from": "slash",
+                "to": "pierce"
+              }
+            }
+          },
+          "enchantment": {
+            "enchant_slot": 1
+          }
+        },
+        "structure": {
+          "attachment": {
+            "install_slots": [
+              "clothing.chest"
+            ],
+            "occupies": [
+              "clothing.chest",
+              "clothing.abdomen",
+              "head.shell"
+            ]
+          }
+        }
+      },
+      "id": "mod_hooded_coat"
+    },
+    "mod_impact_redirect": {
+      "item_id": "mod_impact_redirect",
+      "editor_name": "卸力甲",
+      "weight_kg": 1.4,
+      "attribute_modules": {
+        "base": {
+          "identity": {
+            "name": "卸力甲",
+            "desc": "特殊模块（占胸腹两板）：受到钝击伤害一律按劈砍结算。"
+          },
+          "stacking": {}
+        },
+        "equipment": {
+          "effects": {
+            "activation_cost_pct": 0.3,
+            "effects": [
+              {
+                "effect_type": "armor_bonus",
+                "effect_params": {
+                  "blunt_pct": 0.08,
+                  "slash_pct": 0.06
+                }
+              }
+            ],
+            "special": true,
+            "special_effect": {
+              "effect_type": "damage_type_convert",
+              "effect_params": {
+                "from": "blunt",
+                "to": "slash"
+              }
+            }
+          },
+          "enchantment": {
+            "enchant_slot": 1
+          }
+        },
+        "structure": {
+          "attachment": {
+            "install_slots": [
+              "clothing.chest"
+            ],
+            "occupies": [
+              "clothing.chest",
+              "clothing.abdomen"
+            ]
+          }
+        }
+      },
+      "id": "mod_impact_redirect"
+    },
+    "mod_leather_pad": {
+      "item_id": "mod_leather_pad",
+      "editor_name": "皮垫",
+      "weight_kg": 0.5,
+      "attribute_modules": {
+        "base": {
+          "identity": {
+            "name": "皮垫",
+            "desc": "处理过的兽皮软垫，缓冲钝击震荡。"
+          },
+          "stacking": {}
+        },
+        "equipment": {
+          "effects": {
+            "activation_cost_pct": 0.08,
+            "effects": [
+              {
+                "effect_type": "armor_bonus",
+                "effect_params": {
+                  "blunt_pct": 0.1,
+                  "slash_pct": 0.04
+                }
+              }
+            ],
+            "special": false
+          },
+          "enchantment": {
+            "enchant_slot": 1
+          }
+        },
+        "structure": {
+          "attachment": {
+            "install_slots": [
+              "clothing.abdomen"
+            ]
+          }
+        }
+      },
+      "id": "mod_leather_pad"
+    },
+    "mod_silk_pad": {
+      "item_id": "mod_silk_pad",
+      "editor_name": "丝垫",
+      "weight_kg": 0.15,
+      "attribute_modules": {
+        "base": {
+          "identity": {
+            "name": "丝垫",
+            "desc": "家蚕丝缝的软垫，抗割且极轻。"
+          },
+          "stacking": {}
+        },
+        "equipment": {
+          "effects": {
+            "activation_cost_pct": 0.05,
+            "effects": [
+              {
+                "effect_type": "armor_bonus",
+                "effect_params": {
+                  "pierce_pct": 0.08
+                }
+              }
+            ],
+            "special": false
+          },
+          "enchantment": {
+            "enchant_slot": 1
+          }
+        },
+        "structure": {
+          "attachment": {
+            "install_slots": [
+              "clothing.arm_r"
+            ]
+          }
+        }
+      },
+      "id": "mod_silk_pad"
+    },
+    "mod_steel_plate": {
+      "item_id": "mod_steel_plate",
+      "editor_name": "钢板",
+      "weight_kg": 2,
+      "attribute_modules": {
+        "base": {
+          "identity": {
+            "name": "钢板",
+            "desc": "锻打钢片，硬挡利器，沉得压身。"
+          },
+          "stacking": {}
+        },
+        "equipment": {
+          "effects": {
+            "activation_cost_pct": 0.2,
+            "effects": [
+              {
+                "effect_type": "armor_bonus",
+                "effect_params": {
+                  "slash_pct": 0.22,
+                  "pierce_pct": 0.15,
+                  "blunt_pct": 0.05
+                }
+              }
+            ],
+            "special": false
+          },
+          "enchantment": {
+            "enchant_slot": 1
+          }
+        },
+        "structure": {
+          "attachment": {
+            "install_slots": [
+              "clothing.chest"
+            ]
+          }
+        }
+      },
+      "id": "mod_steel_plate"
+    },
+    "mod_wood_plate": {
+      "item_id": "mod_wood_plate",
+      "editor_name": "木片板",
+      "weight_kg": 0.6,
+      "attribute_modules": {
+        "base": {
+          "identity": {
+            "name": "木片板",
+            "desc": "硬木削片，聊胜于无的兜底。"
+          },
+          "stacking": {}
+        },
+        "equipment": {
+          "effects": {
+            "activation_cost_pct": 0.04,
+            "effects": [
+              {
+                "effect_type": "armor_bonus",
+                "effect_params": {
+                  "slash_pct": 0.06
+                }
+              }
+            ],
+            "special": false
+          },
+          "enchantment": {
+            "enchant_slot": 1
+          }
+        },
+        "structure": {
+          "attachment": {
+            "install_slots": [
+              "clothing.leg_r"
+            ]
+          }
+        }
+      },
+      "id": "mod_wood_plate"
+    }
+  }
+}

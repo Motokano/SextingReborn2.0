@@ -1,0 +1,134 @@
+#fishing-overlay{position:fixed;inset:0;z-index:12000;background:#080e0cdd;overflow:auto;padding:24px;box-sizing:border-box;color:#e7e3d5;font:14px/1.6 system-ui,"Microsoft YaHei",sans-serif}#fishing-overlay[hidden]{display:none!important}.fishing-window{max-width:1370px;margin:auto;background:#1d2820;border:1px solid #56614b;border-radius:10px;box-shadow:0 20px 65px #0006;overflow:hidden}.fishing-window *{box-sizing:border-box}.fishing-window h2,.fishing-window h3,.fishing-window p{margin:0 0 12px}.fishing-window h2{font-size:20px;font-weight:500}.fishing-window h3{font-size:15px;color:#ddc994;font-weight:500}.fishing-window button,.fishing-window select{font:inherit;border:1px solid #536250;background:#26372d;color:#eee8d6;border-radius:5px;padding:8px 10px;cursor:pointer}.fishing-window button:disabled{opacity:.4;cursor:not-allowed}.fishing-window button:hover:not(:disabled){border-color:#d3bc83}.fishing-window button[aria-pressed=true]{border-color:#ddc080;background:#495335;color:#ffebaf}.fishing-window :focus-visible{outline:2px solid #e3c681;outline-offset:3px}.fishing-header{display:flex;justify-content:space-between;align-items:center;gap:16px;padding:18px 24px;background:#253125;border-bottom:1px solid #49533e}.fishing-header small,.fishing-muted{color:#adbba7;font-size:12px}.fishing-layout{display:grid;grid-template-columns:minmax(220px,.9fr) minmax(350px,1.7fr) minmax(230px,.9fr)}.fishing-info,.fishing-map-panel,.fishing-events{padding:20px;min-width:0}.fishing-info{border-right:1px solid #3a4737}.fishing-events{border-left:1px solid #3a4737;background:#1a241e}.fishing-info>button,.fishing-events>button{display:block;width:100%;margin:7px 0}.fishing-info label{display:block;margin:12px 0;color:#b5c0ae}.fishing-info select{display:block;width:100%;margin:6px 0}.fishing-depth input{display:block;width:100%;accent-color:#ddc080;margin:12px 0}.fishing-depth output{font-size:12px}.fishing-actions{display:flex;gap:7px;flex-wrap:wrap;margin:12px 0}.fishing-actions button{flex:1;font-size:12px}.fishing-pond{height:380px;position:relative;overflow:hidden;border:1px solid #4b5a45;border-radius:8px;background:#364330}.fishing-pond svg{position:absolute;inset:0;width:100%;height:100%}.fishing-pond .fishing-spot{position:absolute;transform:translate(-50%,-50%);font-size:12px;white-space:nowrap;padding:5px 7px;background:#203c38e8}.fishing-pond .fishing-shore{position:absolute;transform:translate(-50%,-50%);padding:0;width:30px;height:30px;border-radius:50%;border:2px solid #bead83;background:#423e2e}.fishing-shore span{position:absolute;left:34px;top:0;white-space:nowrap;background:#20291fee;font-size:11px;padding:2px 4px;pointer-events:none}.fishing-shore:last-child span{left:auto;right:34px}.fishing-shore:nth-last-child(2) span{left:0;top:36px}.fishing-notice{border-left:2px solid #c7ad71;padding:12px;background:#c9ac710a;min-height:80px}.fishing-logs{list-style:none;padding:0;font-size:12px;color:#b5bdac}.fishing-logs li{padding:8px 0;border-bottom:1px solid #ffffff0b}.fishing-footer{padding:12px 20px;border-top:1px solid #3a4737;font-size:12px;color:#9caa96}@media(max-width:1050px){.fishing-layout{grid-template-columns:minmax(0,1.4fr) minmax(250px,1fr)}.fishing-map-panel{grid-column:1;grid-row:1}.fishing-info{grid-column:2;grid-row:1}.fishing-events{grid-column:1/-1;border-top:1px solid #3a4737}}@media(max-width:650px){#fishing-overlay{padding:8px}.fishing-layout{display:flex;flex-direction:column}.fishing-map-panel{order:0}.fishing-info{order:1}.fishing-events{order:2}.fishing-pond{height:330px}.fishing-header{padding:12px}.fishing-header h2{font-size:18px}.fishing-map-panel,.fishing-info,.fishing-events{padding:12px}}
+
+.fishing-pond button:disabled{opacity:.85}.fishing-header{position:sticky;top:0;z-index:2}.fishing-window .item-assembly-part-name{white-space:normal}.fishing-window .item-assembly-slot-head{flex-wrap:wrap}
+
+/* 部件面板：位置、实物、操作分层显示；窄栏中不累积树状缩进。 */
+#fishing-overlay .item-assembly-view{margin-top:14px;padding:0;background:none;border:0}
+#fishing-overlay .item-assembly-title{display:flex;flex-direction:column;align-items:flex-start;gap:7px;margin-bottom:14px;font-size:14px;color:#e7e3d5}
+#fishing-overlay .item-assembly-state{display:block;width:fit-content;padding:2px 8px;border:1px solid #536250;border-radius:4px;font-size:11px;font-weight:400;color:#b8cbb5}
+#fishing-overlay .item-assembly-state.incomplete{color:#ddc994;border-color:#89784e}
+#fishing-overlay .item-assembly-slot{margin:0 0 10px;padding:0;border:0;background:none}
+#fishing-overlay .item-assembly-children{margin:10px 0 0;padding:0}
+#fishing-overlay .item-assembly-slot-head{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:7px 12px;align-items:center;padding:11px;background:#26332a;border:1px solid #43513f;border-radius:6px}
+#fishing-overlay .item-assembly-slot-label{display:block;grid-column:1/-1;min-width:0;color:#a9b9a4;font-size:12px;line-height:1.5;font-weight:400}
+#fishing-overlay .item-assembly-part-name,#fishing-overlay .item-assembly-empty{display:block;grid-column:1;min-width:0;white-space:normal;overflow-wrap:anywhere;text-overflow:clip;color:#eee8d6;font-size:14px;line-height:1.6;font-weight:500}
+#fishing-overlay .item-assembly-empty{grid-column:1/-1;color:#afbaaa;font-weight:400}
+#fishing-overlay .item-assembly-action{display:block;margin:0;padding:6px 8px;font-size:12px;white-space:nowrap;align-self:center}
+#fishing-overlay .item-assembly-picker{display:grid;grid-template-columns:minmax(0,1fr);gap:8px;margin:8px 0 12px}
+#fishing-overlay .item-assembly-picker select{width:100%;min-width:0;margin:0}
+#fishing-overlay .item-assembly-picker .item-assembly-action{justify-self:end}
+#fishing-overlay .item-assembly-no-candidate{display:block;padding:6px 0;color:#a9b9a4;font-size:12px}
+#fishing-overlay [data-fishing-parts]>summary{cursor:pointer;margin-bottom:10px}
+/* Fixed-height fishing workspace. Tabs change content, never advance world time. */
+#fishing-overlay{padding:12px;overflow:hidden}
+#fishing-overlay .fishing-window{height:calc(100dvh - 24px);max-width:1480px;display:grid;grid-template-rows:auto minmax(0,1fr) auto;margin:0 auto}
+#fishing-overlay .fishing-header{position:static;padding:10px 18px;min-height:60px}
+#fishing-overlay .fishing-header h2{margin:0;font-size:20px}
+#fishing-overlay .fishing-header small{font-size:11px}
+#fishing-overlay .fishing-layout{display:grid;grid-template-columns:250px minmax(0,1fr) 260px;min-height:0}
+#fishing-overlay .fishing-info,#fishing-overlay .fishing-events,#fishing-overlay .fishing-map-panel{grid-column:auto;grid-row:auto;min-height:0;padding:16px;overflow:hidden}
+#fishing-overlay .fishing-info{display:flex;flex-direction:column;gap:16px;background:#202c23}
+#fishing-overlay .fishing-map-panel{background:radial-gradient(ellipse at 50% 35%,#34473444,transparent 80%)}
+#fishing-overlay .fishing-events{display:flex;flex-direction:column;gap:8px}
+#fishing-overlay .fishing-events>button{margin:0;width:100%}
+#fishing-overlay .fishing-events>h3{margin:0}
+#fishing-overlay button{margin:0;font-size:13px;line-height:1.5;padding:8px 10px}
+#fishing-overlay p{line-height:1.6}
+#fishing-overlay .fishing-prep-tabs{display:flex;gap:3px;background:#142018;padding:4px;border-radius:7px}
+#fishing-overlay .fishing-prep-tabs button{flex:1;border-color:transparent;background:transparent;padding:7px 0}
+#fishing-overlay .fishing-prep-tabs button[aria-pressed=true]{background:#45523a;color:#f5e1aa}
+#fishing-overlay .fishing-prep-pane{min-height:0}
+#fishing-overlay [hidden]{display:none!important}
+#fishing-overlay .fishing-prep-pane>button{display:block;width:100%;margin:8px 0}
+#fishing-overlay .fishing-prep-pane label{font-size:12px;margin:10px 0}
+#fishing-overlay .fishing-prep-pane select{font-size:13px;padding:8px;margin:5px 0}
+#fishing-overlay .fishing-current-rig{padding:10px;border:1px solid #52634b;background:#31402f;border-radius:6px;font-size:14px}
+#fishing-overlay .fishing-water-workspace{display:flex;flex-direction:column;height:100%;gap:10px;min-height:0}
+#fishing-overlay .fishing-water-workspace h3{margin:0}
+#fishing-overlay .fishing-pond{flex:1;min-height:180px;height:auto;border-radius:12px}
+#fishing-overlay .fishing-water-workspace .fishing-actions{margin:0}
+#fishing-overlay .fishing-water-workspace>p{margin:0;font-size:12px}
+#fishing-overlay .fishing-shore{padding:0}
+#fishing-overlay .fishing-spot{padding:5px 7px;font-size:12px}
+#fishing-overlay .fishing-notice{flex-shrink:0;min-height:80px;margin:0 0 4px;padding:12px;border-radius:0 6px 6px 0;font-size:14px}
+#fishing-overlay .fishing-history{margin-top:auto;padding-top:12px;border-top:1px solid #43513f}
+#fishing-overlay .fishing-history h3{margin:0 0 4px;font-size:12px;color:#a8b59e}
+#fishing-overlay .fishing-logs{margin:0;font-size:12px}
+#fishing-overlay .fishing-logs li{padding:6px 0;line-height:1.5}
+#fishing-overlay .fishing-history-pages{display:flex;justify-content:space-between;align-items:center;margin-top:8px;color:#9caa96;font-size:11px}
+#fishing-overlay .fishing-history-pages button{font-size:11px;padding:3px 9px}
+#fishing-overlay .fishing-footer{padding:6px 18px;font-size:11px}
+#fishing-overlay .fishing-parts-workspace{height:100%;min-height:0}
+#fishing-overlay .fishing-parts-workspace>button{float:right;padding:4px 10px}
+#fishing-overlay .fishing-parts-workspace>h3{padding-top:4px;margin-bottom:6px}
+#fishing-overlay .fishing-parts-workspace>p{margin:0 0 10px}
+#fishing-overlay .fishing-parts-workspace .item-assembly-view{margin:0}
+#fishing-overlay .fishing-parts-workspace .item-assembly-title{display:none}
+#fishing-overlay .fishing-parts-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+#fishing-overlay .fishing-part-cell{padding:10px;border:1px solid #53624b;border-radius:8px;background:#29382b;min-width:0}
+#fishing-overlay .fishing-part-cell .item-assembly-slot-head{border:0;padding:0;background:none;gap:6px;grid-template-columns:minmax(0,1fr)}
+#fishing-overlay .fishing-part-cell .item-assembly-action{justify-self:end;padding:4px 8px;font-size:12px}
+#fishing-overlay .fishing-part-cell .item-assembly-part-name{grid-column:1/-1;font-size:14px}
+#fishing-overlay .fishing-part-cell .item-assembly-picker{margin:8px 0 0;gap:5px}
+#fishing-overlay .fishing-part-cell select{margin:0;padding:5px;font-size:12px}
+@media(max-width:1100px){#fishing-overlay .fishing-layout{grid-template-columns:220px minmax(0,1fr) 225px}#fishing-overlay .fishing-info,#fishing-overlay .fishing-map-panel,#fishing-overlay .fishing-events{padding:12px}#fishing-overlay .fishing-parts-grid{gap:7px}#fishing-overlay .fishing-part-cell{padding:8px}}
+@media(max-height:680px){#fishing-overlay .fishing-header{min-height:48px;padding:6px 14px}#fishing-overlay .fishing-info,#fishing-overlay .fishing-map-panel,#fishing-overlay .fishing-events{padding:10px}#fishing-overlay button{padding:6px 8px}#fishing-overlay .fishing-info{gap:10px}#fishing-overlay p,#fishing-overlay h2,#fishing-overlay h3{margin-bottom:8px}#fishing-overlay .fishing-notice{min-height:60px;padding:8px;font-size:13px}#fishing-overlay .fishing-history{padding-top:6px}#fishing-overlay .fishing-logs li{padding:3px 0;font-size:11px}#fishing-overlay .fishing-part-cell{padding:7px}#fishing-overlay .fishing-parts-grid{gap:6px}#fishing-overlay .fishing-part-cell .item-assembly-part-name{font-size:13px}}
+
+#fishing-overlay .fishing-window{box-sizing:border-box}
+#fishing-overlay .fishing-prep-pane>h2{margin:0 0 8px;font-size:20px}
+#fishing-overlay .fishing-field-action{padding:8px 0;border-top:1px solid #43513f}
+#fishing-overlay .fishing-field-action>button{width:100%}
+#fishing-overlay .fishing-field-action>p{margin:5px 0 0;font-size:12px;line-height:1.5}
+#fishing-overlay .fishing-field-record{color:#d7d6bd}
+#fishing-overlay .fishing-depth-ends{display:flex;justify-content:space-between;margin:-5px 0 10px;color:#c5ceb9;font-size:12px}
+#fishing-overlay .fishing-depth output{display:block;color:#eee0b6;line-height:1.6}
+#fishing-overlay .fishing-depth-track{position:relative;padding-top:25px;margin:8px 0 12px}
+#fishing-overlay .fishing-depth-track input{appearance:none;display:block;height:6px;margin:0;width:100%;border:1px solid #888d7d;border-radius:4px;background:#485047}
+#fishing-overlay .fishing-depth-track input::-webkit-slider-thumb{appearance:none;width:18px;height:18px;border-radius:50%;background:#ddc080;border:1px solid #eed59d;cursor:pointer}
+#fishing-overlay .fishing-depth-track input::-moz-range-thumb{width:16px;height:16px;border-radius:50%;background:#ddc080;border:1px solid #eed59d;cursor:pointer}
+#fishing-overlay .fishing-depth-marker-lane{position:absolute;left:9px;right:9px;top:0;pointer-events:none}
+#fishing-overlay .fishing-depth-marker{position:absolute;width:0;height:23px;border-left:1px solid #e9e5ce}
+#fishing-overlay .fishing-depth-marker>span{position:absolute;top:0;white-space:nowrap;font-size:11px;line-height:16px;color:#e9e5ce;background:#202c23}
+#fishing-overlay .fishing-depth-marker::after{content:'';position:absolute;left:-4px;bottom:-1px;border-left:3px solid transparent;border-right:3px solid transparent;border-top:4px solid #e9e5ce}
+/* One rig workspace: select a component, then adjust or replace it in place. */
+#fishing-overlay .fishing-part-list{display:grid;gap:4px;margin:10px 0}
+#fishing-overlay .fishing-part-list button{text-align:left;display:flex;align-items:center;justify-content:space-between;gap:8px;padding:6px 8px}
+#fishing-overlay .fishing-part-list small{font-size:10px;color:#b6c4ad;max-width:55%;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+#fishing-overlay .fishing-rig-switch summary,#fishing-overlay .fishing-nest summary,#fishing-overlay .fishing-part-change summary{cursor:pointer;color:#ddc994;padding:7px 0;font-size:13px}
+#fishing-overlay .fishing-rig-switch{position:relative}
+#fishing-overlay .fishing-rig-switch[open]{position:absolute;z-index:3;background:#202c23;padding:12px;border:1px solid #53624b;border-radius:6px;width:225px;box-shadow:0 10px 30px #0008}
+#fishing-overlay .fishing-parts-grid{display:block}
+#fishing-overlay .fishing-part-cell{position:relative;max-width:600px;margin:16px auto;padding:22px}
+#fishing-overlay .fishing-part-cell .item-assembly-slot-head{margin-bottom:18px}
+#fishing-overlay .fishing-part-cell .item-assembly-part-name{font-size:20px}
+#fishing-overlay .fishing-part-cell>label{display:block;margin:14px 0;color:#bdc9b5}
+#fishing-overlay .fishing-part-cell select{display:block;width:100%;margin:8px 0;padding:9px}
+#fishing-overlay .fishing-part-cell>button{display:block;width:100%;margin-top:12px}
+#fishing-overlay .fishing-part-change{margin:12px 0;border-top:1px solid #53624b}
+#fishing-overlay .fishing-part-change[open]{padding-bottom:12px}
+#fishing-overlay .fishing-part-cell .fishing-depth-marker>span{background:#29382b}
+#fishing-overlay .fishing-current-rig{margin-bottom:4px}
+#fishing-overlay .fishing-nest[open]{position:absolute;z-index:3;max-width:225px;background:#202c23;border:1px solid #53624b;padding:10px;border-radius:6px;box-shadow:0 10px 30px #0008}
+@media(max-height:680px){#fishing-overlay .fishing-part-list{gap:2px;margin:6px 0}#fishing-overlay .fishing-part-list button{padding:4px 7px}#fishing-overlay .fishing-part-cell{padding:14px;margin:6px auto}}
+#fishing-overlay .fishing-rig-switch[open],#fishing-overlay .fishing-nest[open]{position:relative;z-index:3;padding:0;border:0;width:auto;max-width:none;box-shadow:none;background:none}
+#fishing-overlay .fishing-nest{position:relative}
+#fishing-overlay .fishing-popover-content{position:absolute;top:100%;left:0;width:225px;max-width:100%;padding:12px;background:#202c23;border:1px solid #53624b;border-radius:6px;box-shadow:0 10px 30px #0008;z-index:4}
+/* Direct actions open a selection workspace instead of sidebar popovers. */
+#fishing-overlay .fishing-rig-heading{display:flex;gap:8px;align-items:center;margin-bottom:12px}
+#fishing-overlay .fishing-rig-heading .fishing-current-rig{flex:1;min-width:0;margin:0;font-size:12px;padding:8px}
+#fishing-overlay .fishing-rig-heading>button{flex-shrink:0;padding:5px 8px}
+#fishing-overlay .fishing-choice-workspace{height:100%;display:flex;flex-direction:column;gap:16px;min-height:0}
+#fishing-overlay .fishing-choice-heading{display:flex;align-items:center;justify-content:space-between;gap:12px}
+#fishing-overlay .fishing-choice-heading h3{margin:0}
+#fishing-overlay .fishing-choice-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+#fishing-overlay .fishing-choice-card{background:#29382b;border:1px solid #53624b;border-radius:8px;padding:16px;min-width:0}
+#fishing-overlay .fishing-choice-card h3{color:#eee8d6;overflow-wrap:anywhere}
+#fishing-overlay .fishing-choice-card>button{width:100%}
+#fishing-overlay .fishing-choice-confirm{margin-top:auto;align-self:stretch}
+/* Inspection is an action on the whole rig, separate from component navigation. */
+#fishing-overlay .fishing-rig-inspection{margin-top:20px;padding-top:14px;border-top:1px solid #52614a}
+#fishing-overlay .fishing-inspection-heading{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:6px}
+#fishing-overlay .fishing-inspection-heading h3{margin:0;font-size:12px;color:#c3cbb8}
+#fishing-overlay .fishing-rig-inspection>p{font-size:11px;line-height:1.5;margin:0 0 10px}
+#fishing-overlay .fishing-rig-inspection>button{width:100%;border-color:#788263;background:#354330;color:#eee2bf}
+@media(max-height:680px){#fishing-overlay .fishing-rig-inspection{margin-top:12px;padding-top:10px}#fishing-overlay .fishing-rig-inspection>p{margin-bottom:6px}}

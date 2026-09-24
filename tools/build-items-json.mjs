@@ -2,18 +2,23 @@
  * 将 data/items/*.csv 合并为 data/items.json（单一运行时数据源）。
  * 用法：node tools/build-items-json.mjs
  * 合并顺序（先出现的 id 优先，后表重复 id 会跳过并打印警告）：
- *   consumables_base → materials_all → seeds_farming → product_base → currency_base
+ *   consumables_base → materials_all → seeds_farming → product_base → fishing_components_base → currency_base
  *   → compost_matrix_base → fertilizer_anaerobic_base → agriculture_injectables_base → soil_amendments_base
  */
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { applyFoodCatalog } from './food-catalog-fields.mjs';
+import { buildModularCatalog, buildModuleDefinitionsDocument } from './item-attribute-catalog.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, '..');
 const ITEMS_DIR = path.join(ROOT, 'data', 'items');
 const OUT = path.join(ROOT, 'data', 'items.json');
+const MODULAR_OUT = path.join(ROOT, 'data', 'item-catalog-v2.json');
+const MODULE_DEFINITIONS_OUT = path.join(ROOT, 'data', 'item-attribute-module-definitions.json');
+const EQUIPMENT_MODULAR_OUT = path.join(ROOT, 'data', 'equipment-catalog-v2.json');
+const ATTACHMENT_MODULAR_OUT = path.join(ROOT, 'data', 'attachment-catalog-v2.json');
 
 /** use_action 给药途径白名单（47 §3.2：口服/外敷/吸入/刺入）。 */
 const USE_ACTION_IDS = ['drink', 'topical', 'inhale', 'inject'];
@@ -23,6 +28,7 @@ const MERGE_FILES = [
   'materials_all.csv',
   'seeds_farming.csv',
   'product_base.csv',
+  'fishing_components_base.csv',
   'currency_base.csv',
   'compost_matrix_base.csv',
   'fertilizer_anaerobic_base.csv',
@@ -254,6 +260,12 @@ function rowToItem(o, filename) {
   if (wap != null && wap >= 0) item.weapon_attack_power = wap;
   const scf = numOrNull(o.skill_coef);
   if (scf != null && scf > 0) item.skill_coef = scf;
+  const fishingLoad = intOrNull(o.fishing_load_rating);
+  if (fishingLoad != null && fishingLoad > 0) item.fishing_load_rating = fishingLoad;
+  for (const key of ['fishing_length_dm', 'fishing_cast_range_dm']) {
+    const value = intOrNull(o[key]);
+    if (value != null && value > 0) item[key] = value;
+  }
 
   // 电池（k89）：容量/电量整数字段——容量 >0 才写；电量缺省视为满电（= 容量）
   const bcap = intOrNull(o.battery_capacity);
@@ -261,6 +273,26 @@ function rowToItem(o, filename) {
     item.battery_capacity = bcap;
     const bchr = intOrNull(o.battery_charge);
     item.battery_charge = (bchr != null && bchr >= 0) ? Math.min(bchr, bcap) : bcap;
+  }
+
+  // 通用组合物品：宿主槽位声明与可连接类型均以 JSON 存在 CSV 中，构建时解析为正式结构。
+  if (o.assembly_slots) {
+    try {
+      const slots = JSON.parse(String(o.assembly_slots));
+      if (!slots || typeof slots !== 'object' || Array.isArray(slots)) throw new Error('must be an object');
+      item.assembly_slots = slots;
+    } catch (e) {
+      throw new Error('[build-items-json] invalid assembly_slots on ' + id + ': ' + e.message);
+    }
+  }
+  if (o.assembly_types) {
+    try {
+      const types = JSON.parse(String(o.assembly_types));
+      if (!Array.isArray(types) || !types.length || types.some((v) => typeof v !== 'string' || !v.trim())) throw new Error('must be a non-empty string array');
+      item.assembly_types = types.map((v) => v.trim());
+    } catch (e) {
+      throw new Error('[build-items-json] invalid assembly_types on ' + id + ': ' + e.message);
+    }
   }
 
   // 保留 CSV 新增扩展列（用于策划自定义 tooltip 模块字段等）
@@ -277,10 +309,11 @@ function rowToItem(o, filename) {
     cooking_ingredient: 1, pharmacy_ingredient: 1,
     compost_inoculant_aerobic: 1, compost_inoculant_anaerobic: 1,
     fuel_points: 1, water_points: 1,
-    weapon_attack_power: 1, skill_coef: 1,
+    weapon_attack_power: 1, skill_coef: 1, fishing_load_rating: 1, fishing_length_dm: 1, fishing_cast_range_dm: 1,
     accept_code: 1, convert_to_high: 1, usable_regions: 1,
     info_module_set_id: 1,
-    battery_capacity: 1, battery_charge: 1
+    battery_capacity: 1, battery_charge: 1,
+    assembly_slots: 1, assembly_types: 1
   };
   Object.keys(o).forEach((k) => {
     if (handled[k]) return;
@@ -334,9 +367,19 @@ function main() {
     });
 
   fs.writeFileSync(OUT, JSON.stringify(ordered, null, 2) + '\n', 'utf8');
+  const modularCatalog = buildModularCatalog(ordered);
+  fs.writeFileSync(MODULAR_OUT, JSON.stringify(modularCatalog, null, 2) + '\n', 'utf8');
+  fs.writeFileSync(MODULE_DEFINITIONS_OUT, JSON.stringify(buildModuleDefinitionsDocument(), null, 2) + '\n', 'utf8');
+  const equipmentCatalog = buildModularCatalog(JSON.parse(fs.readFileSync(path.join(ROOT, 'data', 'equipment.json'), 'utf8')));
+  const attachmentCatalog = buildModularCatalog(JSON.parse(fs.readFileSync(path.join(ROOT, 'data', 'modules.json'), 'utf8')));
+  fs.writeFileSync(EQUIPMENT_MODULAR_OUT, JSON.stringify(equipmentCatalog, null, 2) + '\n', 'utf8');
+  fs.writeFileSync(ATTACHMENT_MODULAR_OUT, JSON.stringify(attachmentCatalog, null, 2) + '\n', 'utf8');
 
   const count = Object.keys(ordered).length;
   console.log('[build-items-json] wrote ' + OUT + ' (' + count + ' items)');
+  console.log('[build-items-json] wrote ' + MODULAR_OUT + ' (schema v' + modularCatalog.schema_version + ')');
+  console.log('[build-items-json] wrote ' + MODULE_DEFINITIONS_OUT);
+  console.log('[build-items-json] wrote equipment/attachment modular catalogues');
   if (warnings.length) {
     console.log('[build-items-json] warnings (' + warnings.length + '):');
     warnings.forEach((w) => console.log('  - ' + w));

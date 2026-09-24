@@ -1,0 +1,40 @@
+#hunting-overlay[hidden]{display:none!important}
+#hunting-overlay{position:fixed;inset:0;background:rgba(12,17,12,.8);z-index:20000;display:flex;align-items:center;justify-content:center;padding:20px}
+.hunting-card{width:min(640px,95vw);max-height:88vh;overflow:auto;box-sizing:border-box;background:#20271f;color:#eee8d6;border:1px solid #8a9970;border-radius:12px;padding:24px;box-shadow:0 18px 60px #0009}
+.hunting-card h2{margin:0 0 12px;color:#e1ca8f;font-size:22px}.hunting-card p{line-height:1.65}.hunting-stats{padding:10px;background:#1118;border-radius:5px;font-variant-numeric:tabular-nums}
+.hunting-choice{margin:10px 0}.hunting-choice button,#hunting-admission button{border:1px solid #70855e;background:#364830;color:#faf0d9;padding:10px 14px;border-radius:5px;cursor:pointer}.hunting-choice button{width:100%;text-align:left;font-size:14px}.hunting-choice button:hover:not(:disabled){background:#4b613f}.hunting-choice button:disabled{opacity:.45;cursor:not-allowed}.hunting-choice small{display:block;margin:5px 4px;color:#bcbba9;line-height:1.5}
+#hunting-admission{padding:12px;background:#20271f;color:#eee8d6}#hunting-admission button{margin:4px}
+#hunting-admission:empty{display:none}#hunting-admission{flex-shrink:0;margin-bottom:12px;border-radius:6px}#hunting-admission button:disabled{opacity:.45;cursor:not-allowed}
+.hunting-card-active{width:min(1080px,96vw);padding:24px 28px;background:linear-gradient(145deg,#273126,#18221c)}
+.hunting-card-active>p{margin:8px 0;color:#c1c7b6;font-size:14px}
+.hunting-layout{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(300px,1fr);gap:26px;margin-top:20px;align-items:start}
+.hunting-scene{position:sticky;top:0;min-width:0}
+.hunting-scene-eyebrow{font-size:11px;letter-spacing:2px;color:#a9b793}.hunting-scene-stage{font-size:20px;font-weight:500;color:#e3d4ab;margin:8px 0 18px}
+.hunting-scene svg{display:block;width:100%;height:auto}.hunt-map-label{fill:#e4dcc4;font:14px sans-serif;paint-order:stroke;stroke:#19271f;stroke-width:4px;stroke-linejoin:round}.hunt-map-muted{fill:#9aab92;font:13px sans-serif}
+.hunting-scene .hunting-scene-note{font-size:11px;line-height:1.6;color:#8c9c86;margin-top:18px}
+.hunting-actions{min-width:0;border-left:1px solid #43513c;padding-left:24px}.hunting-actions>[role=status]{margin:0 0 16px;padding:12px;border-left:2px solid #c7af77;background:#ffffff05;color:#ded5bd;font-size:14px}
+.hunting-actions .hunting-choice{margin:8px 0}.hunting-actions .hunting-choice button{padding:11px 13px}.hunting-actions .hunting-choice small{font-size:11px}
+@media(max-width:760px){.hunting-card-active{padding:18px}.hunting-layout{grid-template-columns:1fr;gap:20px}.hunting-scene{position:static}.hunting-actions{border-left:0;border-top:1px solid #43513c;padding:18px 0 0}.hunting-scene svg{max-height:280px}.hunting-scene-clock{margin-top:12px}}
+.hunt-prey-motion{animation: hunt-roam 12s ease-in-out infinite}
+.hunt-prey-feed{animation-name:hunt-feed;animation-duration:9s}
+.hunt-prey-watch{animation-name:hunt-watch}
+.hunt-prey-alert{animation-name:hunt-alert;animation-duration:4s}
+.hunt-prey-facing{animation:hunt-turn 12s steps(1,end) infinite;transform-origin:0 0}
+@keyframes hunt-roam{0%,100%{transform:translate(-30px,8px)}22%,30%{transform:translate(9px,-9px)}48%,57%{transform:translate(32px,4px)}78%,85%{transform:translate(-8px,19px)}}
+@keyframes hunt-feed{0%,100%{transform:translate(-15px,4px)}22%,30%{transform:translate(3px,8px)}48%,57%{transform:translate(10px,18px)}78%,85%{transform:translate(-10px,18px)}}
+@keyframes hunt-watch{0%,100%{transform:translate(-25px,5px)}22%,30%{transform:translate(0,-8px)}48%,57%{transform:translate(20px,0)}78%,85%{transform:translate(-12px,13px)}}
+@keyframes hunt-alert{0%,100%{transform:translate(-20px,4px)}22%,30%{transform:translate(-4px,-9px)}48%,57%{transform:translate(12px,-4px)}78%,85%{transform:translate(-13px,13px)}}
+@keyframes hunt-turn{0%,100%{transform:scaleX(1)}57%{transform:scaleX(-1)}}
+@media(prefers-reduced-motion:reduce){.hunt-prey-motion,.hunt-prey-facing{animation:none}}
+.hunt-group-title{display:flex;align-items:center;gap:12px;margin:18px 0 10px;font-size:12px;font-weight:500;letter-spacing:3px;color:#b4bda6}.hunt-group-title:after{content:'';flex:1;height:1px;background:#ffffff12}.hunt-group-title:first-child{margin-top:0}
+.hunt-action-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}.hunt-grid-prepare{grid-template-columns:repeat(3,minmax(0,1fr))}
+.hunt-action-card{display:flex;flex-direction:column;gap:7px;min-width:0;text-align:left;padding:12px;border:1px solid #596349;border-radius:9px;color:#eee4cc;background:linear-gradient(145deg,#394334,#263328);cursor:pointer;transition:border-color .15s,background .15s,box-shadow .15s}
+.hunt-action-card:hover:not(:disabled){border-color:#d3b77d;background:linear-gradient(145deg,#4b543c,#33432e);box-shadow:0 3px 15px #0003}.hunt-action-card:focus-visible{outline:2px solid #dec18a;outline-offset:3px}
+.hunt-action-top{display:flex;align-items:center;justify-content:space-between;gap:5px;width:100%;color:#c5b17f}.hunt-action-top svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.4;stroke-linecap:round;stroke-linejoin:round}.hunt-action-odds{font-size:21px;font-family:Georgia,serif;font-variant-numeric:tabular-nums;color:#f0d79b}
+.hunt-action-name{font-size:14px;font-weight:600;line-height:1.35}.hunt-action-cost,.hunt-action-item,.hunt-action-reason{font-size:11px;line-height:1.45;font-weight:400;color:#b2bba6}.hunt-action-item{color:#c0b18c}.hunt-action-reason{color:#c1a692}
+.hunt-action-card:disabled{cursor:not-allowed;background:#1b261f;border-color:#3d4838}.hunt-action-card:disabled .hunt-action-top,.hunt-action-card:disabled .hunt-action-name,.hunt-action-card:disabled .hunt-action-odds{color:#87927b}.hunt-action-card.is-done{border-color:#637551;background:#2b3827}.hunt-action-card.is-done .hunt-action-odds{color:#bad097}.hunt-action-card.is-done .hunt-action-name{color:#b9c5a8}
+.hunting-actions .hunting-choice .hunt-abandon{background:none;border-color:transparent;text-align:center;color:#a49e8e;font-size:12px}.hunting-actions .hunting-choice .hunt-abandon:hover{background:#ffffff05}
+.hunt-yield{display:inline-block;margin-top:16px;padding:7px 12px;border:1px solid #8b7d4b55;border-radius:20px;color:#cebd91;background:#bba2630a;font-size:12px}
+@media(max-width:420px){.hunt-grid-prepare{grid-template-columns:repeat(2,minmax(0,1fr))}.hunt-action-card{padding:10px}}
+
+.player-actions-submenu .player-action-craft-title{padding:8px 10px 4px;color:#b8b09c;font-size:11px;border-top:1px solid #ffffff18;margin-top:4px}

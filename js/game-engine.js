@@ -495,7 +495,7 @@
         }
 
         if (typeof global !== 'undefined' && global.Survival && typeof global.Survival.advanceTick === 'function') {
-            global.Survival.advanceTick();
+            global.Survival.advanceTick({ source: 'movement' });
         }
         onChange();
         return true;

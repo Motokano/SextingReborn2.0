@@ -1,0 +1,1095 @@
+{
+  "schema_version": 1,
+  "status": "runtime_connected",
+  "selection": {
+    "recent_per_group": 2,
+    "remembered_events": 48
+  },
+  "groups": {
+    "float_still": {
+      "channel": "visual",
+      "requires": [
+        "float_visible",
+        "float_stable",
+        "no_visible_change"
+      ],
+      "variants": [
+        {
+          "id": "float_still_1",
+          "text": "{float}稳定露在水面，等了一阵，没有明显变化。"
+        },
+        {
+          "id": "float_still_2",
+          "text": "看了一会儿，{float}仍停在那里，没有明显动静。"
+        },
+        {
+          "id": "float_still_3",
+          "text": "{float}露出的位置没什么变化。"
+        },
+        {
+          "id": "float_still_4",
+          "text": "这阵子没看见{float}有明显动作。"
+        }
+      ],
+      "priority": 33,
+      "suppresses": []
+    },
+    "float_sinks": {
+      "channel": "visual",
+      "requires": [
+        "float_visible_at_start",
+        "float_submerged",
+        "no_reappearance"
+      ],
+      "variants": [
+        {
+          "id": "float_sinks_1",
+          "text": "{float}没入水中后，没有再露出来。"
+        },
+        {
+          "id": "float_sinks_2",
+          "text": "看见{float}沉了下去，此后没再浮上来。"
+        },
+        {
+          "id": "float_sinks_3",
+          "text": "{float}已经沉到水面以下，没有重新出现。"
+        },
+        {
+          "id": "float_sinks_4",
+          "text": "刚才还看得见{float}，沉下去后就没再露头。"
+        }
+      ],
+      "priority": 33,
+      "suppresses": [
+        "still_submerged"
+      ]
+    },
+    "poor_visibility": {
+      "channel": "visual",
+      "requires": [
+        "float_visibility_insufficient"
+      ],
+      "variants": [
+        {
+          "id": "poor_visibility_1",
+          "text": "光线太暗，细小的漂动看不清。"
+        },
+        {
+          "id": "poor_visibility_2",
+          "text": "水面昏暗，难以分辨{float}的细小动作。"
+        },
+        {
+          "id": "poor_visibility_3",
+          "text": "看不清{float}有没有轻微变化。"
+        },
+        {
+          "id": "poor_visibility_4",
+          "text": "眼下的光线不足以看清细小漂动。"
+        }
+      ],
+      "priority": 31,
+      "suppresses": []
+    },
+    "single_tap": {
+      "channel": "visual",
+      "requires": [
+        "float_visible",
+        "single_light_dip",
+        "float_returned"
+      ],
+      "variants": [
+        {
+          "id": "single_tap_1",
+          "text": "{float}轻轻点了一下，又回到原处。"
+        },
+        {
+          "id": "single_tap_2",
+          "text": "{float}短促地下沉了一点，随后恢复原样。"
+        },
+        {
+          "id": "single_tap_3",
+          "text": "看见{float}轻点了一下，很快便恢复了。"
+        },
+        {
+          "id": "single_tap_4",
+          "text": "{float}微微一沉，随即又浮回原来的位置。"
+        }
+      ],
+      "priority": 33,
+      "suppresses": []
+    },
+    "repeated_taps": {
+      "channel": "visual",
+      "requires": [
+        "float_visible",
+        "repeated_light_dips"
+      ],
+      "variants": [
+        {
+          "id": "repeated_taps_1",
+          "text": "{float}接连点动了几次。"
+        },
+        {
+          "id": "repeated_taps_2",
+          "text": "{float}一连几次轻轻下沉。"
+        },
+        {
+          "id": "repeated_taps_3",
+          "text": "看见{float}反复轻点。"
+        },
+        {
+          "id": "repeated_taps_4",
+          "text": "{float}连续出现了几次小幅下顿。"
+        }
+      ],
+      "priority": 32,
+      "suppresses": []
+    },
+    "sideways": {
+      "channel": "visual",
+      "requires": [
+        "float_visible",
+        "sustained_lateral_motion"
+      ],
+      "variants": [
+        {
+          "id": "sideways_1",
+          "text": "{float}持续向一侧移动。"
+        },
+        {
+          "id": "sideways_2",
+          "text": "{float}正沿着水面往一边走。"
+        },
+        {
+          "id": "sideways_3",
+          "text": "{float}没有停在原处，仍在向旁边移动。"
+        },
+        {
+          "id": "sideways_4",
+          "text": "能看见{float}一直往同一侧挪动。"
+        }
+      ],
+      "priority": 32,
+      "suppresses": []
+    },
+    "strike_no_pull": {
+      "channel": "touch",
+      "requires": [
+        "holding_rod",
+        "strike_completed",
+        "no_sustained_pull"
+      ],
+      "variants": [
+        {
+          "id": "strike_no_pull_1",
+          "text": "提起时，没有感到持续拉扯。"
+        },
+        {
+          "id": "strike_no_pull_2",
+          "text": "抬竿以后，手上没有持续的拉力。"
+        },
+        {
+          "id": "strike_no_pull_3",
+          "text": "这次提竿没带来持续的拉扯。"
+        },
+        {
+          "id": "strike_no_pull_4",
+          "text": "竿抬起来了，但没有持续拉住什么的感觉。"
+        }
+      ],
+      "priority": 33,
+      "suppresses": []
+    },
+    "brief_pull": {
+      "channel": "touch",
+      "requires": [
+        "holding_rod",
+        "brief_tension",
+        "tension_released"
+      ],
+      "variants": [
+        {
+          "id": "brief_pull_1",
+          "text": "手上一紧，随即松了下来。"
+        },
+        {
+          "id": "brief_pull_2",
+          "text": "感到一点拉扯，很快就消失了。"
+        },
+        {
+          "id": "brief_pull_3",
+          "text": "刚感到一阵拉力，转眼又松开了。"
+        },
+        {
+          "id": "brief_pull_4",
+          "text": "手上传来的拉扯只持续了很短一会儿。"
+        }
+      ],
+      "priority": 33,
+      "suppresses": []
+    },
+    "tip_returns": {
+      "channel": "visual",
+      "requires": [
+        "rod_tip_visible",
+        "tip_bent_then_returned"
+      ],
+      "variants": [
+        {
+          "id": "tip_returns_1",
+          "text": "竿梢刚压下去，又弹了回来。"
+        },
+        {
+          "id": "tip_returns_2",
+          "text": "竿梢短暂弯了一下，随后恢复原样。"
+        },
+        {
+          "id": "tip_returns_3",
+          "text": "看见竿梢一弯，很快又回弹了。"
+        },
+        {
+          "id": "tip_returns_4",
+          "text": "竿梢向下压了一下，紧接着又抬了回来。"
+        }
+      ],
+      "priority": 32,
+      "suppresses": []
+    },
+    "sudden_slack": {
+      "channel": "touch",
+      "requires": [
+        "holding_rod",
+        "sustained_tension_before",
+        "sudden_tension_loss"
+      ],
+      "variants": [
+        {
+          "id": "sudden_slack_1",
+          "text": "原本持续的拉扯突然消失了。"
+        },
+        {
+          "id": "sudden_slack_2",
+          "text": "手上一松，刚才那股拉力断了。"
+        },
+        {
+          "id": "sudden_slack_3",
+          "text": "持续拉着的力道一下子没了。"
+        },
+        {
+          "id": "sudden_slack_4",
+          "text": "刚才还在拉扯，忽然就松了下来。"
+        }
+      ],
+      "priority": 100,
+      "suppresses": [
+        "pull_continues",
+        "progress",
+        "no_progress"
+      ]
+    },
+    "fixed_resistance": {
+      "channel": "touch",
+      "requires": [
+        "holding_rod",
+        "retrieval_attempt",
+        "fixed_direction_resistance"
+      ],
+      "variants": [
+        {
+          "id": "fixed_resistance_1",
+          "text": "收到这里便拉不动了，阻力来自同一方向。"
+        },
+        {
+          "id": "fixed_resistance_2",
+          "text": "再往回拉时，线在一个方向绷住了。"
+        },
+        {
+          "id": "fixed_resistance_3",
+          "text": "往回收的动作停了下来，同一方向仍有阻力。"
+        },
+        {
+          "id": "fixed_resistance_4",
+          "text": "拉到这里就停住了，再收仍受到固定方向的牵制。"
+        }
+      ],
+      "priority": 100,
+      "suppresses": []
+    },
+    "retry_fixed": {
+      "channel": "touch",
+      "requires": [
+        "holding_rod",
+        "relax_then_pull",
+        "same_obstruction_persists"
+      ],
+      "variants": [
+        {
+          "id": "retry_fixed_1",
+          "text": "放松后再提，仍在相近的位置绷住。"
+        },
+        {
+          "id": "retry_fixed_2",
+          "text": "松了一下再拉，还是在那里受阻。"
+        },
+        {
+          "id": "retry_fixed_3",
+          "text": "放松没有解除阻力，再收时又停在相近的位置。"
+        },
+        {
+          "id": "retry_fixed_4",
+          "text": "重新提动后，刚才那处阻力仍在。"
+        }
+      ],
+      "priority": 100,
+      "suppresses": [
+        "fixed_resistance"
+      ]
+    },
+    "variable_pull": {
+      "channel": "touch",
+      "requires": [
+        "holding_rod",
+        "tension_strength_varies"
+      ],
+      "variants": [
+        {
+          "id": "variable_pull_1",
+          "text": "手上的拉力和刚才不一样了。"
+        },
+        {
+          "id": "variable_pull_2",
+          "text": "能感觉到拉扯的力道变了。"
+        },
+        {
+          "id": "variable_pull_3",
+          "text": "这一下的拉力有了变化。"
+        },
+        {
+          "id": "variable_pull_4",
+          "text": "传到手上的力道发生了变化。"
+        }
+      ],
+      "priority": 32,
+      "suppresses": []
+    },
+    "fish_and_obstruction": {
+      "channel": "touch",
+      "requires": [
+        "holding_rod",
+        "fixed_direction_resistance",
+        "separate_pull_pulses"
+      ],
+      "variants": [
+        {
+          "id": "fish_and_obstruction_1",
+          "text": "线仍被牵住，其间又传来几下拉扯。"
+        },
+        {
+          "id": "fish_and_obstruction_2",
+          "text": "固定方向的阻力还在，同时能感到另外几阵拉力。"
+        },
+        {
+          "id": "fish_and_obstruction_3",
+          "text": "仍然拉不回来，手上却又多了几下拉扯。"
+        },
+        {
+          "id": "fish_and_obstruction_4",
+          "text": "受阻没有解除，其间断续传来几阵拉力。"
+        }
+      ],
+      "priority": 100,
+      "suppresses": [
+        "fixed_resistance",
+        "pull_continues"
+      ]
+    },
+    "obstruction_released": {
+      "channel": "touch",
+      "requires": [
+        "holding_rod",
+        "obstruction_released",
+        "retrieval_possible"
+      ],
+      "variants": [
+        {
+          "id": "obstruction_released_1",
+          "text": "阻力松开，线又能收回了。"
+        },
+        {
+          "id": "obstruction_released_2",
+          "text": "原先拉不动的位置松了，能继续往回收。"
+        },
+        {
+          "id": "obstruction_released_3",
+          "text": "固定的牵制消失了，回收又能继续。"
+        },
+        {
+          "id": "obstruction_released_4",
+          "text": "刚才那处阻力解除了，线开始收得回来。"
+        }
+      ],
+      "priority": 33,
+      "suppresses": []
+    },
+    "line_payout": {
+      "channel": "touch",
+      "requires": [
+        "holding_rod",
+        "payout_perceived",
+        "no_observed_progress"
+      ],
+      "variants": [
+        {
+          "id": "line_payout_1",
+          "text": "绕线处仍在放线，没有把它拉近。"
+        },
+        {
+          "id": "line_payout_2",
+          "text": "能感觉到线继续放出，这次没能拉近。"
+        },
+        {
+          "id": "line_payout_3",
+          "text": "这阵子线还在向外放，没见距离缩短。"
+        },
+        {
+          "id": "line_payout_4",
+          "text": "线在往外放，这次收线没有把它带近。"
+        }
+      ],
+      "priority": 33,
+      "suppresses": [
+        "no_progress",
+        "pull_continues"
+      ]
+    },
+    "progress": {
+      "channel": "touch",
+      "requires": [
+        "holding_rod",
+        "pull_persists",
+        "progress_perceived"
+      ],
+      "variants": [
+        {
+          "id": "progress_1",
+          "text": "拉扯还在，但已经比刚才拉近了一些。"
+        },
+        {
+          "id": "progress_2",
+          "text": "仍能感到拉力，这次往回带近了一点。"
+        },
+        {
+          "id": "progress_3",
+          "text": "拉扯没有消失，距离却比刚才近了。"
+        },
+        {
+          "id": "progress_4",
+          "text": "顶着这阵拉力，还是往回收近了一些。"
+        }
+      ],
+      "priority": 33,
+      "suppresses": [
+        "pull_continues",
+        "no_progress"
+      ]
+    },
+    "bait_present": {
+      "channel": "inspection",
+      "requires": [
+        "hook_inspected",
+        "bait_present"
+      ],
+      "variants": [
+        {
+          "id": "bait_present_1",
+          "text": "检查时，钩上挂着饵。"
+        },
+        {
+          "id": "bait_present_2",
+          "text": "看了看钩，上面有饵。"
+        },
+        {
+          "id": "bait_present_3",
+          "text": "钩上的饵能看得清楚。"
+        },
+        {
+          "id": "bait_present_4",
+          "text": "查看末端，饵挂在钩上。"
+        }
+      ],
+      "priority": 32,
+      "suppresses": [
+        "retrieved"
+      ]
+    },
+    "bait_absent": {
+      "channel": "inspection",
+      "requires": [
+        "hook_inspected",
+        "bait_absent"
+      ],
+      "variants": [
+        {
+          "id": "bait_absent_1",
+          "text": "检查时，钩上没有饵。"
+        },
+        {
+          "id": "bait_absent_2",
+          "text": "看了看钩，上面是空的。"
+        },
+        {
+          "id": "bait_absent_3",
+          "text": "查看末端，没有看见钩上挂着饵。"
+        },
+        {
+          "id": "bait_absent_4",
+          "text": "钩上已经看清楚了，没有饵。"
+        }
+      ],
+      "priority": 32,
+      "suppresses": [
+        "retrieved"
+      ]
+    },
+    "hook_line_present": {
+      "channel": "inspection",
+      "requires": [
+        "terminal_inspected",
+        "hook_present",
+        "leader_present"
+      ],
+      "variants": [
+        {
+          "id": "hook_line_present_1",
+          "text": "检查后，钩和末端短线都在。"
+        },
+        {
+          "id": "hook_line_present_2",
+          "text": "查看钓组，末端连着短线和钩。"
+        },
+        {
+          "id": "hook_line_present_3",
+          "text": "末端的短线和钩都能看见。"
+        },
+        {
+          "id": "hook_line_present_4",
+          "text": "看了看末端，短线与钩都连着。"
+        }
+      ],
+      "priority": 33,
+      "suppresses": [
+        "hook_seen",
+        "leader_seen",
+        "retrieved"
+      ]
+    },
+    "terminal_missing": {
+      "channel": "inspection",
+      "requires": [
+        "terminal_inspected",
+        "hook_absent",
+        "leader_absent"
+      ],
+      "variants": [
+        {
+          "id": "terminal_missing_1",
+          "text": "检查末端，没有看见短线和钩。"
+        },
+        {
+          "id": "terminal_missing_2",
+          "text": "查看钓组，末端没有连着短线和钩。"
+        },
+        {
+          "id": "terminal_missing_3",
+          "text": "末端那段短线和钩都不在。"
+        },
+        {
+          "id": "terminal_missing_4",
+          "text": "看清末端后，没有找到短线和钩。"
+        }
+      ],
+      "priority": 90,
+      "suppresses": [
+        "hook_missing",
+        "leader_missing",
+        "retrieved"
+      ]
+    },
+    "grass_attached": {
+      "channel": "inspection",
+      "requires": [
+        "hook_inspected",
+        "grass_attached"
+      ],
+      "variants": [
+        {
+          "id": "grass_attached_1",
+          "text": "钩上挂着水草。"
+        },
+        {
+          "id": "grass_attached_2",
+          "text": "检查钩时，看见上面带着草。"
+        },
+        {
+          "id": "grass_attached_3",
+          "text": "查看末端，水草附在钩上。"
+        },
+        {
+          "id": "grass_attached_4",
+          "text": "钩上能看见附着的草。"
+        }
+      ],
+      "priority": 32,
+      "suppresses": [
+        "retrieved"
+      ]
+    },
+    "no_attachment": {
+      "channel": "inspection",
+      "requires": [
+        "hook_inspected",
+        "no_visible_attachment"
+      ],
+      "variants": [
+        {
+          "id": "no_attachment_1",
+          "text": "钩上没有看见缠挂的杂物。"
+        },
+        {
+          "id": "no_attachment_2",
+          "text": "检查钩时，没发现缠着什么杂物。"
+        },
+        {
+          "id": "no_attachment_3",
+          "text": "看了看钩，没有明显附着的杂物。"
+        },
+        {
+          "id": "no_attachment_4",
+          "text": "查看末端，没在钩上发现缠挂的东西。"
+        }
+      ],
+      "priority": 32,
+      "suppresses": [
+        "retrieved"
+      ]
+    },
+    "line_frayed": {
+      "channel": "inspection",
+      "requires": [
+        "line_inspected",
+        "visible_local_fraying"
+      ],
+      "variants": [
+        {
+          "id": "line_frayed_1",
+          "text": "线上有起毛的地方。"
+        },
+        {
+          "id": "line_frayed_2",
+          "text": "检查时，发现线的局部有些毛糙。"
+        },
+        {
+          "id": "line_frayed_3",
+          "text": "线上能看见毛边。"
+        },
+        {
+          "id": "line_frayed_4",
+          "text": "细看这段线，有的地方已经起毛。"
+        }
+      ],
+      "priority": 90,
+      "suppresses": [
+        "retrieved"
+      ]
+    },
+    "surface_splash": {
+      "channel": "visual",
+      "requires": [
+        "surface_splash_visible"
+      ],
+      "variants": [
+        {
+          "id": "surface_splash_1",
+          "text": "水面翻起了水花。"
+        },
+        {
+          "id": "surface_splash_2",
+          "text": "看见水面溅起一片水花。"
+        },
+        {
+          "id": "surface_splash_3",
+          "text": "水面上出现了翻动的水花。"
+        },
+        {
+          "id": "surface_splash_4",
+          "text": "一片水花从水面溅起。"
+        }
+      ],
+      "priority": 31,
+      "suppresses": []
+    },
+    "surface_sound": {
+      "channel": "sound",
+      "requires": [
+        "surface_sound_heard"
+      ],
+      "variants": [
+        {
+          "id": "surface_sound_1",
+          "text": "听见一声水响。"
+        },
+        {
+          "id": "surface_sound_2",
+          "text": "水面方向传来响动。"
+        },
+        {
+          "id": "surface_sound_3",
+          "text": "耳边传来一阵水响。"
+        },
+        {
+          "id": "surface_sound_4",
+          "text": "有水声从那边传来。"
+        }
+      ],
+      "priority": 31,
+      "suppresses": []
+    },
+    "bottom_estimate": {
+      "channel": "touch",
+      "requires": [
+        "bottom_estimate_obtained"
+      ],
+      "variants": [
+        {
+          "id": "bottom_estimate_1",
+          "text": "这次探底有了结果，能大致估计这里的深浅。"
+        },
+        {
+          "id": "bottom_estimate_2",
+          "text": "根据这次探底，大致能判断这里有多深。"
+        },
+        {
+          "id": "bottom_estimate_3",
+          "text": "探过以后，对这里的水深有了大概估计。"
+        },
+        {
+          "id": "bottom_estimate_4",
+          "text": "这次已经探到了底，深浅大致有数了。"
+        }
+      ],
+      "priority": 31,
+      "suppresses": []
+    },
+    "bottom_uncertain": {
+      "channel": "touch",
+      "requires": [
+        "bottom_unconfirmed"
+      ],
+      "variants": [
+        {
+          "id": "bottom_uncertain_1",
+          "text": "这次还没能确认水底。"
+        },
+        {
+          "id": "bottom_uncertain_2",
+          "text": "探了一次，仍不能确定有没有到底。"
+        },
+        {
+          "id": "bottom_uncertain_3",
+          "text": "这次探底的结果还不明确。"
+        },
+        {
+          "id": "bottom_uncertain_4",
+          "text": "还不能凭这次探查判断水底在哪里。"
+        }
+      ],
+      "priority": 31,
+      "suppresses": []
+    },
+    "catch_seen": {
+      "channel": "inspection",
+      "requires": [
+        "catch_visible"
+      ],
+      "variants": [
+        {
+          "id": "catch_seen_1",
+          "text": "眼前的鱼已经能看清了。"
+        },
+        {
+          "id": "catch_seen_2",
+          "text": "现在可以仔细看看这条鱼。"
+        },
+        {
+          "id": "catch_seen_3",
+          "text": "这条鱼就在眼前，能看清它的样子。"
+        },
+        {
+          "id": "catch_seen_4",
+          "text": "鱼的模样已经看得清楚。"
+        }
+      ],
+      "priority": 100,
+      "suppresses": [
+        "progress",
+        "pull_continues",
+        "no_progress"
+      ]
+    },
+    "setup_changed": {
+      "channel": "inspection",
+      "requires": [
+        "component_changed"
+      ],
+      "variants": [
+        {
+          "id": "setup_changed_1",
+          "text": "钓组已按刚才的操作调整。"
+        },
+        {
+          "id": "setup_changed_2",
+          "text": "这次调整已经完成。"
+        },
+        {
+          "id": "setup_changed_3",
+          "text": "钓组的设置已经改好了。"
+        },
+        {
+          "id": "setup_changed_4",
+          "text": "刚才对钓组的改动已经完成。"
+        }
+      ],
+      "priority": 31,
+      "suppresses": []
+    },
+    "pull_continues": {
+      "channel": "touch",
+      "requires": [
+        "holding_rod",
+        "pull_persists"
+      ],
+      "variants": [
+        {
+          "id": "pull_continues_1",
+          "text": "手上仍能感到拉扯。"
+        },
+        {
+          "id": "pull_continues_2",
+          "text": "那股拉力还在。"
+        },
+        {
+          "id": "pull_continues_3",
+          "text": "拉扯还没有停。"
+        },
+        {
+          "id": "pull_continues_4",
+          "text": "仍有力道牵着竿。"
+        }
+      ],
+      "priority": 32,
+      "suppresses": []
+    },
+    "no_progress": {
+      "channel": "touch",
+      "requires": [
+        "holding_rod",
+        "no_observed_progress"
+      ],
+      "variants": [
+        {
+          "id": "no_progress_1",
+          "text": "这次没能往回收近。"
+        },
+        {
+          "id": "no_progress_2",
+          "text": "还没有拉近的感觉。"
+        },
+        {
+          "id": "no_progress_3",
+          "text": "这一轮没有收近。"
+        },
+        {
+          "id": "no_progress_4",
+          "text": "这次往回拉，没有明显进展。"
+        }
+      ],
+      "priority": 32,
+      "suppresses": []
+    },
+    "still_submerged": {
+      "channel": "visual",
+      "requires": [
+        "float_submerged",
+        "no_reappearance"
+      ],
+      "variants": [
+        {
+          "id": "still_submerged_1",
+          "text": "水面上仍没见{float}露出来。"
+        },
+        {
+          "id": "still_submerged_2",
+          "text": "{float}还在水面以下，没有重新露头。"
+        },
+        {
+          "id": "still_submerged_3",
+          "text": "依旧没有看见{float}浮上来。"
+        },
+        {
+          "id": "still_submerged_4",
+          "text": "{float}没在水面上重新出现。"
+        }
+      ],
+      "priority": 32,
+      "suppresses": []
+    },
+    "hook_missing": {
+      "channel": "inspection",
+      "requires": [
+        "terminal_inspected",
+        "hook_absent"
+      ],
+      "variants": [
+        {
+          "id": "hook_missing_1",
+          "text": "检查末端，没有看见钩。"
+        },
+        {
+          "id": "hook_missing_2",
+          "text": "查看钓组，末端没有钩。"
+        },
+        {
+          "id": "hook_missing_3",
+          "text": "看清末端后，没有找到钩。"
+        },
+        {
+          "id": "hook_missing_4",
+          "text": "末端没有连着钩。"
+        }
+      ],
+      "priority": 90,
+      "suppresses": []
+    },
+    "leader_missing": {
+      "channel": "inspection",
+      "requires": [
+        "terminal_inspected",
+        "leader_absent"
+      ],
+      "variants": [
+        {
+          "id": "leader_missing_1",
+          "text": "检查末端，没有看见那段短线。"
+        },
+        {
+          "id": "leader_missing_2",
+          "text": "末端没有连着短线。"
+        },
+        {
+          "id": "leader_missing_3",
+          "text": "查看钓组，找不到末端的短线。"
+        },
+        {
+          "id": "leader_missing_4",
+          "text": "看清末端后，没有发现短线。"
+        }
+      ],
+      "priority": 90,
+      "suppresses": []
+    },
+    "hook_seen": {
+      "channel": "inspection",
+      "requires": [
+        "terminal_inspected",
+        "hook_present"
+      ],
+      "variants": [
+        {
+          "id": "hook_seen_1",
+          "text": "末端能看见钩。"
+        },
+        {
+          "id": "hook_seen_2",
+          "text": "检查钓组，钩在末端。"
+        },
+        {
+          "id": "hook_seen_3",
+          "text": "查看末端，钩还连着。"
+        },
+        {
+          "id": "hook_seen_4",
+          "text": "末端的钩能看清楚。"
+        }
+      ],
+      "priority": 32,
+      "suppresses": []
+    },
+    "leader_seen": {
+      "channel": "inspection",
+      "requires": [
+        "terminal_inspected",
+        "leader_present"
+      ],
+      "variants": [
+        {
+          "id": "leader_seen_1",
+          "text": "末端连着一段短线。"
+        },
+        {
+          "id": "leader_seen_2",
+          "text": "检查时，能看见末端的短线。"
+        },
+        {
+          "id": "leader_seen_3",
+          "text": "查看钓组，末端的短线在。"
+        },
+        {
+          "id": "leader_seen_4",
+          "text": "末端那段短线能看清楚。"
+        }
+      ],
+      "priority": 32,
+      "suppresses": []
+    },
+    "retrieved": {
+      "channel": "touch",
+      "requires": [
+        "retrieve_completed"
+      ],
+      "variants": [
+        {
+          "id": "retrieved_1",
+          "text": "钓组已经收回。"
+        },
+        {
+          "id": "retrieved_2",
+          "text": "这次回收已经完成。"
+        },
+        {
+          "id": "retrieved_3",
+          "text": "已经把钓组收回来了。"
+        },
+        {
+          "id": "retrieved_4",
+          "text": "钓组已收回手边。"
+        }
+      ],
+      "priority": 31,
+      "suppresses": []
+    }
+  },
+  "dispatch": {
+    "max_sentences": 6,
+    "legacy_keys": [
+      "rig_settled",
+      "lure_moves",
+      "line_cut",
+      "catch_kept",
+      "catch_released"
+    ],
+    "repeat_sources": [
+      "wait"
+    ],
+    "repeat_prefix": "仍然如此："
+  }
+}

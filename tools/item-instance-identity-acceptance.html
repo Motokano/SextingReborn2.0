@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>物品实例身份与转移验收</title>
+<style>
+:root{font:15px/1.65 system-ui,'Microsoft YaHei',sans-serif;color:#21342f;background:#eef1ec}*{box-sizing:border-box}body{margin:0}header{padding:34px max(22px,calc((100vw - 1180px)/2));background:#173e34;color:#fff}header small{color:#9dcab5;letter-spacing:2px}h1{font-size:29px;margin:7px 0 4px}header p{margin:0;color:#c9ded4}main{max-width:1230px;margin:auto;padding:24px}.panel{background:#fff;border:1px solid #d8e0d9;border-radius:13px;padding:22px;margin-bottom:18px}.top{display:flex;justify-content:space-between;gap:18px;align-items:flex-start}.summary{font-size:19px;font-weight:700;color:#1f6a45}.muted{font-size:13px;color:#66776e}.checks{display:grid;grid-template-columns:repeat(auto-fit,minmax(245px,1fr));gap:10px;margin-top:18px}.check{padding:13px 15px;border-radius:9px;border:1px solid #dce4dd;background:#f4f6f2}.check.pass{background:#e8f5ec;border-color:#b6d9c0;color:#195e38}.check.fail{background:#faeaea;border-color:#e4baba;color:#902f2e}.check b{display:block;margin-bottom:2px}.flow{display:grid;grid-template-columns:repeat(5,1fr);gap:9px;margin-top:16px}.step{position:relative;padding:14px 12px;border:1px solid #dbe3dc;border-radius:9px;background:#fafbf8;min-height:116px}.step:not(:last-child):after{content:'›';position:absolute;right:-9px;top:38px;z-index:2;color:#5b8c70;font-size:23px;font-weight:700}.step strong{display:block;color:#285c45;margin-bottom:6px}.id{font:11px/1.45 ui-monospace,Consolas,monospace;overflow-wrap:anywhere;color:#50685c}.legend{display:flex;gap:16px;flex-wrap:wrap;margin-top:14px;font-size:13px}.dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:5px}.same{background:#28734f}.new{background:#c78124}.rules{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}.rule{border-left:3px solid #5a8f72;padding:5px 12px}.rule b{display:block}button,a.button{font:inherit;border:1px solid #276b4d;background:#276b4d;color:#fff;border-radius:8px;padding:8px 14px;text-decoration:none;cursor:pointer;display:inline-block}button:hover,a.button:hover{background:#1c593e}pre{font:12px/1.55 ui-monospace,Consolas,monospace;white-space:pre-wrap;overflow-wrap:anywhere;max-height:350px;overflow:auto;background:#f3f5f1;padding:14px;border-radius:8px}summary{cursor:pointer;font-weight:650}.error{color:#9d2c2b}@media(max-width:850px){.flow,.rules{grid-template-columns:1fr}.step:not(:last-child):after{content:'↓';right:50%;top:auto;bottom:-19px}.top{flex-direction:column}main{padding:14px}}
+</style>
+</head>
+<body>
+<header><small>ITEM INSTANCE / 第二阶段验收</small><h1>每一件物品都有来路，也只能在一个地方</h1><p>本页在独立沙盒中执行旧档迁移、拆堆、搬运、入库和失败回滚，不读取或修改正式存档。</p></header>
+<main>
+<section class="panel"><div class="top"><div><div id="summary" class="summary">正在执行验收……</div><div class="muted">每次运行都会从同一份旧档样例开始。</div></div><div><a class="button" href="./item-attributes-prototype.html?no_reload">返回属性模块验收</a> <a class="button" href="./item-assembly-acceptance.html">进入组合装配验收</a> <button id="rerun">重新验收</button></div></div><div id="checks" class="checks"></div></section>
+<section class="panel"><h2>同一件物品的流转</h2><div id="flow" class="flow"></div><div class="legend"><span><i class="dot same"></i>绿色：身份保持</span><span><i class="dot new"></i>拆堆另生的新身份：<code id="split-id">—</code></span></div></section>
+<section class="panel"><h2>当前规则</h2><div class="rules"><div class="rule"><b>一个栈，一个身份</b>拆堆后原栈保留身份，拆出的栈获得新身份；合堆保留目标栈身份。</div><div class="rule"><b>一个身份，一个归属</b>背包、装备、地面和仓库之间转移身份，不允许复制同一身份。</div><div class="rule"><b>失败不留半步</b>仓库只能接收部分数量时，仓库和背包一起恢复到操作前。</div></div></section>
+<section class="panel"><details><summary>查看本次身份与审计明细</summary><pre id="details"></pre></details></section>
+</main>
+<script src="../js/item-attribute-modules.js"></script>
+<script src="../js/inventory-equipment.js"></script>
+<script src="../js/hideout-warehouse.js"></script>
+<script>
+(function(){
+'use strict';
+var $=function(id){return document.getElementById(id);};
+var esc=function(v){return String(v).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});};
+function run(){
+ var IE=window.InventoryEquipment,HW=window.HideoutWarehouse,checks=[],trace={},details={};
+ function check(name,pass,detail){checks.push([name,!!pass,detail]);}
+ try{
+  IE.setConfig({equipment:{test_bag:{item_id:'test_bag',name:'测试背包',equip_slot:'backpack',backpack_slots:6,stack_limit:1,weight_kg:1},test_armor:{item_id:'test_armor',name:'测试防具',equip_slot:'clothing',module_slots:['chest'],stack_limit:1,weight_kg:2}},items:{stack_item:{item_id:'stack_item',name:'可堆叠样品',stack_limit:10,weight_kg:.1},unique_item:{item_id:'unique_item',name:'独立样品',stack_limit:1,weight_kg:.5}},modules:{test_plate:{item_id:'test_plate',name:'胸部护板',install_slots:['clothing.chest'],occupies:['clothing.chest'],max_per_armor:1,weight_kg:.3}},default_equipment:{}});
+  var legacy={equipment:{backpack:{item_id:'test_bag'},clothing:{item_id:'test_armor',modules:{chest:{item_id:'test_plate',wear:3}}}},inventory_backpack:[{item_id:'stack_item',count:2,future_state:{kept:true}},{item_id:'unique_item',count:1,wear:7}],inventory_pocket:[],inventory_vest:[],inventory_vehicle:[],ground_items:{}};
+  IE.setState(legacy);
+  var migrated=IE.getState(),sourceId=migrated.inventory_backpack[0].instance_id,uniqueId=migrated.inventory_backpack[1].instance_id,moduleId=migrated.equipment.clothing.modules.chest.instance_id;
+  trace.old='旧档：没有身份字段';trace.migrated=uniqueId;
+  check('旧档自动迁移',/^itm:legacy-/.test(uniqueId),'旧物品获得稳定身份');
+  check('内嵌部件有身份',!!moduleId,'防具中的护板也是独立实物');
+  check('未来状态保留',migrated.inventory_backpack[0].future_state&&migrated.inventory_backpack[0].future_state.kept===true,'未知状态没有在迁移时丢失');
+  var split=IE.takeItemFromContainer('backpack',0),splitId=split.item.instance_id;
+  trace.split=splitId;
+  check('拆堆生成新身份',split.success&&splitId!==sourceId&&IE.getState().inventory_backpack[0].instance_id===sourceId,'原栈不变，新栈独立');
+  IE.putItemIntoDefaultContainer(split.item);
+  trace.merge=IE.getState().inventory_backpack[0].instance_id;
+  check('合堆保留目标身份',trace.merge===sourceId&&IE.getState().inventory_backpack[0].count===2,'拆出的身份在合堆后退役');
+  IE.dropItemToGround('backpack',1,'acceptance_map',2,3);trace.ground=IE.getGroundItemsAt('acceptance_map',2,3)[0].instance_id;
+  IE.pickUpFromGround('acceptance_map',2,3,0);trace.picked=IE.getState().inventory_backpack[1].instance_id;
+  check('地面往返身份不变',trace.ground===uniqueId&&trace.picked===uniqueId,'丢下和拾起仍是同一件');
+  var duplicate=IE.putItemIntoDefaultContainer(IE.copyItemInstance(IE.getState().inventory_backpack[1]));
+  check('重复归属被拒绝',!duplicate.placed&&duplicate.reason==='duplicate_instance_id','同一身份不能再放入第二格');
+  var save=JSON.parse(JSON.stringify(IE.getState()));IE.setState(save);trace.reloaded=IE.getState().inventory_backpack[1].instance_id;
+  check('存读档身份不变',trace.reloaded===uniqueId,'读档没有重发身份');
+  HW.setUpgradeTable({base_capacity:2,base_free_qol_ids:['deposit_auto_stack','withdraw_to_character_default_order']});HW.setState(HW.createDefaultState());
+  HW.depositFromContainer('backpack',1);trace.warehouse=HW.getState().slots[0].instance_id;HW.withdrawSlot(0,1);trace.withdrawn=IE.getState().inventory_backpack[1].instance_id;
+  check('仓库存取身份不变',trace.warehouse===uniqueId&&trace.withdrawn===uniqueId,'仓库只是新位置');
+  IE.setState({equipment:{backpack:{item_id:'test_bag'},clothing:{item_id:'test_armor',modules:{chest:null}}},inventory_backpack:[{item_id:'stack_item',count:2}],inventory_pocket:[],inventory_vest:[],inventory_vehicle:[],ground_items:{}});
+  HW.setState({capacity:2,slots:[{item_id:'stack_item',count:9},{item_id:'unique_item',count:1}],unlocked_qol_ids:['deposit_auto_stack'],unlocked_upgrade_ids:[],settings:{}});
+  var invBefore=JSON.stringify(IE.getState()),whBefore=JSON.stringify(HW.getState()),failed=HW.depositFromContainer('backpack',0);
+  check('部分存入整体回滚',!failed.ok&&failed.reason==='warehouse_full'&&JSON.stringify(IE.getState())===invBefore&&JSON.stringify(HW.getState())===whBefore,'仓库只剩一格容量时两边均保持原状');
+  var audit=IE.auditItemOwnership({warehouse:HW.getState().slots});
+  check('全局归属审计通过',audit.ok,audit.total+' 个实例，缺失 '+audit.missing.length+'，重复 '+audit.duplicates.length);
+  details={identity_policy:{instance_schema_version:IE.ITEM_INSTANCE_SCHEMA_VERSION,identity_schema_version:IE.ITEM_IDENTITY_SCHEMA_VERSION},trace:trace,final_ownership_audit:audit,rollback_result:failed};
+ }catch(e){checks.push(['验收脚本',false,e.message]);details={error:e.stack||e.message};}
+ $('checks').innerHTML=checks.map(function(x){return '<div class="check '+(x[1]?'pass':'fail')+'"><b>'+(x[1]?'✓':'✕')+' '+esc(x[0])+'</b><span>'+esc(x[2])+'</span></div>';}).join('');
+ var passed=checks.filter(function(x){return x[1];}).length;$('summary').textContent=passed===checks.length?'全部通过：实例身份与原子转移已接入':'有 '+(checks.length-passed)+' 项未通过';$('summary').className='summary'+(passed===checks.length?'':' error');
+ var stages=[['旧档','无身份'],['迁移',trace.migrated],['落地',trace.ground],['仓库',trace.warehouse],['取回',trace.withdrawn]];
+ $('flow').innerHTML=stages.map(function(s,i){return '<div class="step"><strong>'+esc((i+1)+' · '+s[0])+'</strong><div class="id">'+esc(s[1]||'未执行')+'</div></div>';}).join('');
+ $('split-id').textContent=trace.split||'未执行';$('details').textContent=JSON.stringify(details,null,2);
+}
+$('rerun').onclick=run;run();
+})();
+</script>
+</body>
+</html>

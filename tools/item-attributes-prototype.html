@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>物品属性 · 大类与正式接入验收</title>
+<style>
+:root{font:15px/1.6 system-ui,'Microsoft YaHei',sans-serif;color:#243631;background:#f2f3ed}*{box-sizing:border-box}body{margin:0}header{padding:30px max(24px,calc((100vw - 1320px)/2));background:#173e34;color:#fff}header small{color:#acd5c1;letter-spacing:2px}h1{font-size:28px;margin:8px 0}header p{margin:0;color:#c8ded2}main{max-width:1370px;margin:auto;padding:24px}h2{font-size:18px;margin:0 0 12px}h3{font-size:14px}button,select{font:inherit;border:1px solid #cad5cc;background:white;border-radius:7px;padding:8px 13px;cursor:pointer}button:hover{border-color:#267455}button.active,button.primary{background:#246548;color:white;border-color:#246548}button:disabled{opacity:.4;cursor:default}.tabs,.actions{display:flex;gap:8px;flex-wrap:wrap}.tabs{margin-bottom:16px}.note{padding:12px 16px;background:#e6ece2;border-left:3px solid #779668;margin-bottom:20px;font-size:13px}.columns{display:grid;grid-template-columns:1.2fr 1fr;gap:20px}.panel{background:#fff;border:1px solid #dce2d8;border-radius:12px;padding:22px;margin-bottom:18px}.muted{color:#68786d;font-size:13px}.pill{display:inline-block;background:#e5f0e8;color:#2b6649;border-radius:30px;padding:4px 12px;margin:0 6px 8px 0}.group{border:1px solid #dce4db;border-radius:8px;margin:10px 0;padding:12px}.row{display:flex;justify-content:space-between;gap:20px;padding:7px 0;border-bottom:1px solid #edf0e9}.row:last-child{border:0}.empty{color:#738076;padding:20px 0}.player{background:#fcfbf4;border-color:#d9dfcb}.player h2{font-size:26px}.player .label{font-size:11px;letter-spacing:2px;color:#74866b}.status{min-height:30px;color:#256646;padding:8px 0;font-size:13px}.error{color:#a42a29}pre,textarea{font:12px/1.6 ui-monospace,Consolas,monospace;white-space:pre-wrap;overflow-wrap:anywhere;background:#f4f6f1;padding:14px;border-radius:7px}textarea{width:100%;min-height:340px;border:1px solid #ccd7c8}summary{cursor:pointer;font-weight:600}table{border-collapse:collapse;width:100%;font-size:13px}td,th{text-align:left;padding:10px;border-bottom:1px solid #e3e8df}th{color:#68786d}#raw-state{max-height:230px;overflow:auto}.topline{display:flex;justify-content:space-between;gap:12px;align-items:center;margin-bottom:16px}.acceptance{border:2px solid #91b9a2}.acceptance-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:10px;margin:16px 0}.check{padding:12px 14px;border-radius:8px;background:#f1f5ef;border:1px solid #dce5dc}.check.pass{background:#e8f5ec;border-color:#b6d8c0;color:#195e38}.check.fail{background:#faeaea;border-color:#e3b7b7;color:#922e2e}.check b{display:block;margin-bottom:2px}.formal-summary{font-weight:700;font-size:17px}.formal-preview{max-height:320px;overflow:auto}footer{font-size:12px;color:#697b70;padding:0 24px 30px}@media(max-width:900px){.columns{grid-template-columns:1fr}main{padding:14px}.topline{align-items:flex-start;flex-direction:column}}
+</style></head><body>
+<header><small>DATA DESIGN LAB / 交互试作与正式验收</small><h1>大类管组织，属性按需存在</h1><p>上半部分体验规则；下半部分直接检查游戏当前使用的正式模块目录。</p></header>
+<main><div class="tabs" id="tabs"></div><div class="note" id="source"></div>
+<div class="columns"><div>
+<section class="panel"><h2>① 主表只选择大类</h2><div id="modules"></div><p class="muted">小用途在大类内部配置；缺失不会自动补零或生成状态。</p><div id="groups"></div></section>
+<section class="panel"><h2>② 试一试：缺失与零值</h2><div id="actions" class="actions"></div><div id="status" class="status" role="status"></div><details open><summary>当前实例状态 · 设计检查区</summary><pre id="raw-state"></pre></details><div class="actions"><button id="save">保存试作快照</button><button id="load" disabled>读回试作快照</button><button id="reset">恢复初始样例</button></div><p class="muted">快照只保存在此页面内存中。刷新即清除，不读取或写入游戏存档。</p></section>
+</div><div>
+<section class="panel"><div class="topline"><h2>③ 角色实际看到的内容</h2><select id="knowledge" aria-label="认知状态"><option value="appearance">只见外观</option><option value="name">已认识名称</option><option value="inspect" selected>已检查性能</option></select></div><p class="muted">这里的三档认识用于演示过滤，不是正式游戏的技能门槛。</p><div class="group player" id="player"></div></section>
+<section class="panel"><h2>三个样例的主表</h2><table><thead><tr><th>编辑名称</th><th>重量</th><th>大类</th></tr></thead><tbody id="main-table"></tbody></table><p class="muted">此表属于编辑检查区，不属于玩家界面。苹果所有数值均为示例。</p></section>
+<section class="panel"><details><summary>查看与修改三张逻辑表</summary><p class="muted">主表在 items；大类参数在 configs；字段定义在下方。修改后创建新实例，原状态将重置；校验失败保留原状。</p><textarea id="editor" aria-label="主表与模块配置"></textarea><button id="apply" class="primary">应用配置并创建新实例</button><details><summary>字段定义（已实现的试作子集）</summary><pre id="definitions"></pre></details></details></section>
+</div></div>
+<section class="panel acceptance"><div class="topline"><div><h2>④ 正式接入自动验收</h2><div id="formal-summary" class="formal-summary">正在读取正式目录……</div></div><button id="formal-rerun" class="primary">重新检查</button></div><p class="muted">这里直接读取游戏使用的三张 v2 目录和正式运行时适配器，不使用上面的三物品演示数据。</p><div id="formal-checks" class="acceptance-grid"></div><details><summary>查看正式样例与检查明细</summary><pre id="formal-preview" class="formal-preview"></pre></details><p><a href="./item-instance-identity-acceptance.html">进入第二阶段：实例身份与转移验收 →</a>　<a href="./item-assembly-acceptance.html">进入第三阶段：真实部件装配验收 →</a></p></section>
+</main><footer>上方三物品区域仍是可编辑的规则试作；正式验收读取当前游戏数据。稳定身份、原子转移、真实部件连接和组合重量均已接入；具体钓鱼作业仍按 62 号设计继续推进。</footer>
+<script src="../js/item-attribute-modules.js"></script>
+<script type="module">
+import {categories,definitions,clone,validate,resolve,createInstance,playerView,discharge,saveInstance,loadInstance} from './item-attributes-prototype.mjs';
+const $=id=>document.getElementById(id),fmt=x=>JSON.stringify(x,null,2),esc=x=>String(x).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+let original,catalog,id,instances={},saved=null;
+const say=(text,error=false)=>{$('status').textContent=text;$('status').className='status'+(error?' error':'');};
+const run=fn=>{try{fn();}catch(e){say(e.message,true);}};
+async function runFormalAcceptance(){
+ const box=$('formal-checks'),summary=$('formal-summary'),preview=$('formal-preview');box.innerHTML='<div class="check">正在检查正式数据……</div>';summary.textContent='正在读取正式目录……';
+ try{
+  const paths=['../data/item-catalog-v2.json','../data/equipment-catalog-v2.json','../data/attachment-catalog-v2.json','../data/item-attribute-module-definitions.json'];
+  const docs=await Promise.all(paths.map(async p=>{const r=await fetch(p+'?acceptance='+Date.now());if(!r.ok)throw Error(p+' 读取失败：HTTP '+r.status);return r.json();}));
+  const [items,equipment,attachments,moduleDefs]=docs,IAM=window.ItemAttributeModules;
+  if(!IAM)throw Error('正式运行时适配器未加载');
+  const runtime=IAM.hydrateCatalog(items),battery=runtime.battery_aa,wood=runtime.wood_firewood_dry;
+  const zero=IAM.normalizeInstance({item_id:'battery_aa',battery_charge:0,future_state:{kept:true}},battery);
+  const groups=Object.values(moduleDefs.categories||{}).reduce((n,c)=>n+Object.keys(c.groups||{}).length,0);
+  const checks=[
+   ['正式 schema',items.schema_version===2&&equipment.schema_version===2&&attachments.schema_version===2,'三张目录均为 v2'],
+   ['普通物品',Object.keys(items.items||{}).length===546,Object.keys(items.items||{}).length+' 项'],
+   ['装备',Object.keys(equipment.items||{}).length===27,Object.keys(equipment.items||{}).length+' 项'],
+   ['实物改造件',Object.keys(attachments.items||{}).length===16,Object.keys(attachments.items||{}).length+' 项'],
+   ['大类与字段组',Object.keys(moduleDefs.categories||{}).length===8&&groups===31,Object.keys(moduleDefs.categories||{}).length+' 个大类 / '+groups+' 个正式配置组'],
+   ['缺失小属性',!!wood&&!IAM.hasGroup(wood,'production','fuel'),'干木材未加载燃料组'],
+   ['零值仍存在',!!battery&&IAM.hasGroup(battery,'energy','storage')&&IAM.getInstanceValue(zero,battery,'battery_charge')===0,'五号电池剩余电量为 0，能源组仍存在'],
+   ['未来状态保留',zero.future_state?.kept===true,'未知实例字段通过规范化后仍保留']
+  ];
+  box.innerHTML=checks.map(([name,pass,detail])=>`<div class="check ${pass?'pass':'fail'}"><b>${pass?'✓':'✕'} ${esc(name)}</b><span>${esc(detail)}</span></div>`).join('');
+  const passed=checks.filter(x=>x[1]).length;summary.textContent=passed===checks.length?'全部通过：正式模块目录已接入':'有 '+(checks.length-passed)+' 项未通过，请查看红色项目';summary.className='formal-summary'+(passed===checks.length?'':' error');
+  preview.textContent=fmt({counts:{items:Object.keys(items.items||{}).length,equipment:Object.keys(equipment.items||{}).length,attachments:Object.keys(attachments.items||{}).length},wood_firewood_dry:items.items?.wood_firewood_dry,battery_aa:items.items?.battery_aa,zero_charge_instance:zero});
+ }catch(e){summary.textContent='正式验收失败：'+e.message;summary.className='formal-summary error';box.innerHTML=`<div class="check fail"><b>✕ 无法完成检查</b><span>${esc(e.message)}</span></div>`;preview.textContent=e.stack||e.message;}
+}
+function newInstances(){instances=Object.fromEntries(catalog.items.map(i=>[i.item_id,createInstance(catalog,i.item_id)]));}
+function render(){
+ const item=catalog.items.find(x=>x.item_id===id),loaded=resolve(catalog,id),inst=instances[id];
+ $('tabs').innerHTML=catalog.items.map(x=>`<button data-id="${esc(x.item_id)}" class="${x.item_id===id?'active':''}">${esc(x.editor_name)}</button>`).join('');
+ $('source').textContent=catalog.provenance?.[id]||'手工修改的试作配置';
+ $('modules').innerHTML=Object.keys(loaded).map(c=>`<span class="pill">${esc(categories[c])}</span>`).join('');
+ $('groups').innerHTML=Object.entries(loaded).map(([c,groups])=>`<div class="group"><b>${esc(categories[c])}</b>${Object.entries(groups).map(([g,f])=>`<div class="row"><span>${esc(definitions[c][g].label)}</span><span>${Object.keys(f).length} 项配置</span></div>`).join('')||'<p class="muted">已加载大类，但尚无属性组。</p>'}</div>`).join('');
+ let actions='';
+ if(loaded.production)actions+='<button data-action="fuel0">配置燃料属性，值为 0</button><button data-action="fuel20">燃料值设为 20</button><button data-action="removeFuel">移除燃料属性</button>';
+ if(loaded.energy?.storage)actions+='<button data-action="drain">消耗 25 电量</button><button data-action="empty">电量归零</button>';
+ if(loaded.base?.spoilage)actions+='<button data-action="tick">推进保鲜时间 10 tick</button>';
+ $('actions').innerHTML=actions||'<p class="muted">当前无可操作的试作属性。</p>';
+ $('raw-state').textContent=fmt(inst);$('load').disabled=!saved;
+ const level=$('knowledge').value,view=playerView(catalog,inst,level==='inspect'?['appearance','name','inspect']:level==='name'?['appearance','name']:['appearance']);
+ let rows='';for(const section of [...new Set(view.rows.map(r=>r.section))])rows+=`<h3>${esc(section)}</h3>`+view.rows.filter(r=>r.section===section).map(r=>`<div class="row"><span>${esc(r.label)}</span><strong>${esc(r.value)}</strong></div>`).join('');
+ $('player').innerHTML=`<div class="label">玩家信息卡</div><h2>${esc(view.name)}</h2><p>${esc(view.description)}</p>${rows||'<p class="empty">暂无已知性能信息</p>'}`;
+ $('main-table').innerHTML=catalog.items.map(x=>`<tr><td>${esc(x.editor_name)}</td><td>${x.weight_kg} kg</td><td>${Object.keys(x.attribute_modules).map(c=>esc(categories[c])).join('、')}</td></tr>`).join('');
+ $('editor').value=fmt(catalog);$('definitions').textContent=fmt(definitions);
+}
+$('tabs').onclick=e=>{const b=e.target.closest('[data-id]');if(b){id=b.dataset.id;render();say('已切换物品；各自实例状态保留。');}};
+$('knowledge').onchange=()=>{render();say('只改变展示认识，不改变物品状态。');};
+$('actions').onclick=e=>run(()=>{const a=e.target.dataset.action;if(!a)return;const loaded=resolve(catalog,id);
+ if(a.startsWith('fuel')||a==='removeFuel'){const next=clone(catalog),ref=next.items.find(x=>x.item_id===id).attribute_modules.production,config=next.configs.production[ref];if(a==='removeFuel')delete config.fuel;else config.fuel={value:a==='fuel0'?0:20};validate(next);catalog=next;say(a==='removeFuel'?'燃料属性已移除，信息卡不再显示。':'燃料属性存在；零值也会显示，未生成无关状态。');}
+ if(a==='drain'||a==='empty'){instances[id]=discharge(catalog,instances[id],a==='empty'?loaded.energy.storage.capacity:25);say('只改变当前电量；零电量仍保留储能属性。');}
+ if(a==='tick'){instances[id].state.base.spoilage.elapsed+=10;say('只推进本试作计时；未执行正式腐败转化。');}render();});
+$('save').onclick=()=>{saved=saveInstance(instances[id]);render();say('已保存当前单件的内存快照。');};
+$('load').onclick=()=>run(()=>{const restored=loadInstance(catalog,saved);instances[restored.item_id]=restored;id=restored.item_id;render();say('快照已读回，保留保存时的状态，没有补成满电。');});
+$('reset').onclick=()=>{catalog=clone(original);id=catalog.items[0].item_id;saved=null;newInstances();render();say('三份样例和实例均已恢复。');};
+$('apply').onclick=()=>run(()=>{const next=JSON.parse($('editor').value);validate(next);catalog=next;if(!catalog.items.some(x=>x.item_id===id))id=catalog.items[0].item_id;newInstances();saved=null;render();say('配置已通过校验；按按钮说明创建了全新实例。');});
+$('formal-rerun').onclick=runFormalAcceptance;
+try{const response=await fetch('./item-attributes-prototype.json');if(!response.ok)throw Error('无法读取样例配置');original=validate(await response.json());catalog=clone(original);id=catalog.items[0].item_id;newInstances();render();say('就绪：先试试配置零值燃料，再移除它。');}catch(e){say(e.message,true);}
+runFormalAcceptance();
+</script></body></html>

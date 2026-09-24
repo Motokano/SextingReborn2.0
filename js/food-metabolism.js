@@ -27,7 +27,8 @@
         return { level: level, count: count, categories: ['staple', 'meat', 'veg'].filter(function (_, i) { return shares[i] >= min; }), shares: shares };
     }
     function multiplier(n, cfg) { return n >= 71 ? cfg.exp_mult.peak : n >= 31 ? cfg.exp_mult.abundant : n >= 11 ? cfg.exp_mult.normal : cfg.exp_mult.malnutrition; }
-    function tick(s, body, cfg) {
+    function tick(s, body, cfg, options) {
+        var preserveReserves = !!(options && options.preserveReserves);
         var intake = 0, exp = {}, composition = [0, 0, 0, 0];
         var mult = multiplier(body.nutrition, cfg);
         s.portions.forEach(function (p) {
@@ -47,12 +48,12 @@
         target *= Math.min(1, foodRate / cfg.nutrition_min_portions_per_tick);
         var rate = target > body.nutrition ? cfg.nutrition_rise_per_tick : cfg.nutrition_fall_per_tick;
         var nutrition = body.nutrition + Math.max(-rate, Math.min(rate, target - body.nutrition));
-        var expenditure = cfg.base_expenditure + s.pendingStamina * cfg.stamina_expenditure;
-        s.pendingStamina = 0;
+        var expenditure = preserveReserves ? 0 : cfg.base_expenditure + s.pendingStamina * cfg.stamina_expenditure;
+        if (!preserveReserves) s.pendingStamina = 0;
         var reserve = body.satiety + intake - expenditure;
         var surplus = Math.max(0, reserve - cfg.satiety_cap);
         reserve = Math.min(cfg.satiety_cap, reserve);
-        var stored = Math.max(0, reserve - cfg.storage_threshold) * cfg.storage_rate;
+        var stored = preserveReserves ? 0 : Math.max(0, reserve - cfg.storage_threshold) * cfg.storage_rate;
         reserve -= stored;
         var deltaKg = (surplus + stored) / cfg.surplus_per_kg;
         var baseline = cfg.maintenance_bmi * Math.pow(body.height_cm / 100, 2);

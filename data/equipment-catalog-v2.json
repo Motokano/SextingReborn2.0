@@ -1,0 +1,1111 @@
+{
+  "schema_version": 2,
+  "items": {
+    "eq_clothing_combat_suit": {
+      "item_id": "eq_clothing_combat_suit",
+      "editor_name": "灰布战斗服",
+      "weight_kg": 1.2,
+      "attribute_modules": {
+        "base": {
+          "identity": {
+            "name_0": "灰布战斗服",
+            "name_1": "战斗服",
+            "name_2": "战斗服",
+            "desc_0": "一件耐穿的作战外套，能挂上不少东西。",
+            "desc_1": "模块化战斗服：可插入护片模块；需呼吸法激活以发挥防护。",
+            "desc_2": "模块化战斗服底材，提供六个板位模块槽；激活后防护生效。",
+            "display_skill_id": "survival_language"
+          },
+          "stacking": {},
+          "presentation": {
+            "info_module_set_id": "module.equipment_armor"
+          }
+        },
+        "equipment": {
+          "wearable": {
+            "equip_slot": "clothing"
+          },
+          "armor": {
+            "base_shield": 24
+          },
+          "enchantment": {
+            "enchant_slots": 0
+          }
+        },
+        "structure": {
+          "storage": {
+            "pocket_slots": 3
+          },
+          "host": {
+            "module_slots": [
+              "chest",
+              "abdomen",
+              "arm_l",
+              "arm_r",
+              "leg_l",
+              "leg_r"
+            ]
+          }
+        }
+      },
+      "id": "eq_clothing_combat_suit",
+      "material": "leather"
+    },
+    "eq_clothing_linen_shirt": {
+      "item_id": "eq_clothing_linen_shirt",
+      "editor_name": "粗布衫",
+      "weight_kg": 0.5,
+      "attribute_modules": {
+        "base": {
+          "identity": {
+            "name_0": "粗布衫",
+            "name_1": "布衣",
+            "name_2": "粗布衣",
+            "desc_0": "一件灰扑扑的布衣服，能穿，兜里能塞点小东西。",
+            "desc_1": "麻布上衣，有两个口袋，穿着行动方便，也能挡一点伤。",
+            "desc_2": "粗麻布上衣，提供两格口袋；对躯干与肢体有轻微减伤。",
+            "display_skill_id": "survival_language"
+          },
+          "stacking": {},
+          "presentation": {
+            "info_module_set_id": "module.equipment_armor"
+          }
+        },
+        "equipment": {
+          "wearable": {
+            "equip_slot": "clothing"
+          },
+          "armor": {
+            "damage_reduce_blunt_pct": 0.05,
+            "damage_reduce_pierce_pct": 0.05,
+            "damage_reduce_slash_pct": 0.05
+          },
+          "enchantment": {
+            "enchant_slots": 6
+          }
+        },
+        "structure": {
+          "storage": {
+            "pocket_slots": 2
+          }
+        }
+      },
+      "id": "eq_clothing_linen_shirt"
+    },
+    "eq_glove_left_boxing": {
+      "item_id": "eq_glove_left_boxing",
+      "editor_name": "左手旧拳套",
+      "weight_kg": 0.3,
+      "attribute_modules": {
+        "base": {
+          "identity": {
+            "name_0": "左手旧拳套",
+            "name_1": "拳击手套",
+            "name_2": "拳击手套",
+            "desc_0": "左手戴的旧拳套，绑带都磨毛了。",
+            "desc_1": "重拳流手套：拳劲凶，但指尖迟钝。",
+            "desc_2": "拳击手套：拳 1.3 / 掌 0.9 / 戳 0.8（重拳流）。",
+            "display_skill_id": "survival_language"
+          },
+          "stacking": {},
+          "presentation": {
+            "info_module_set_id": "module.equipment_armor"
+          }
+        },
+        "equipment": {
+          "wearable": {
+            "equip_slot": "glove_left"
+          },
+          "combat": {
+            "form_coefs": {
+              "拳": 1.3,
+              "掌": 0.9,
+              "戳": 0.8
+            },
+            "limb_tags": [
+              "挥拳"
+            ]
+          },
+          "enchantment": {
+            "enchant_slots": 6
+          }
+        }
+      },
+      "id": "eq_glove_left_boxing"
+    },
+    "eq_glove_left_cloth": {
+      "item_id": "eq_glove_left_cloth",
+      "editor_name": "左手布套",
+      "weight_kg": 0.05,
+      "attribute_modules": {
+        "base": {
+          "identity": {
+            "name_0": "左手布套",
+            "name_1": "布手套",
+            "name_2": "布手套",
+            "desc_0": "套在左手上的布套子，不碍事。",
+            "desc_1": "左手用的布手套，徒手时不会直接蹭破皮。",
+            "desc_2": "左手布手套，徒手或手部技能时词条系数为 1.0。",
+            "display_skill_id": "survival_language"
+          },
+          "stacking": {},
+          "presentation": {
+            "info_module_set_id": "module.equipment_armor"
+          }
+        },
+        "equipment": {
+          "wearable": {
+            "equip_slot": "glove_left"
+          },
+          "combat": {
+            "form_coefs": {
+              "拳": 1,
+              "掌": 1,
+              "戳": 1
+            },
+            "limb_tags": [
+              "挥拳"
+            ]
+          },
+          "enchantment": {
+            "enchant_slots": 6
+          }
+        }
+      },
+      "id": "eq_glove_left_cloth"
+    },
+    "eq_glove_left_motor": {
+      "item_id": "eq_glove_left_motor",
+      "editor_name": "左手机车皮套",
+      "weight_kg": 0.35,
+      "attribute_modules": {
+        "base": {
+          "identity": {
+            "name_0": "左手机车皮套",
+            "name_1": "机车皮手套",
+            "name_2": "机车皮手套",
+            "desc_0": "左手厚实的皮手套，护腕硬挺。",
+            "desc_1": "掌法流手套：掌心厚实，护腕护小臂。",
+            "desc_2": "机车皮手套：拳 1.1 / 掌 1.2 / 戳 1.0（掌法流）。",
+            "display_skill_id": "survival_language"
+          },
+          "stacking": {},
+          "presentation": {
+            "info_module_set_id": "module.equipment_armor"
+          }
+        },
+        "equipment": {
+          "wearable": {
+            "equip_slot": "glove_left"
+          },
+          "combat": {
+            "form_coefs": {
+              "拳": 1.1,
+              "掌": 1.2,
+              "戳": 1
+            },
+            "limb_tags": [
+              "挥拳"
+            ]
+          },
+          "enchantment": {
+            "enchant_slots": 6
+          }
+        }
+      },
+      "id": "eq_glove_left_motor"
+    },
+    "eq_glove_left_open": {
+      "item_id": "eq_glove_left_open",
+      "editor_name": "左手露指套",
+      "weight_kg": 0.08,
+      "attribute_modules": {
+        "base": {
+          "identity": {
+            "name_0": "左手露指套",
+            "name_1": "露指手套",
+            "name_2": "露指手套",
+            "desc_0": "左手露指布套，指尖自由。",
+            "desc_1": "指法/暗器流手套：戳击凌厉，重拳乏力。",
+            "desc_2": "露指手套：拳 0.9 / 掌 1.0 / 戳 1.2（指法流）。",
+            "display_skill_id": "survival_language"
+          },
+          "stacking": {},
+          "presentation": {
+            "info_module_set_id": "module.equipment_armor"
+          }
+        },
+        "equipment": {
+          "wearable": {
+            "equip_slot": "glove_left"
+          },
+          "combat": {
+            "form_coefs": {
+              "拳": 0.9,
+              "掌": 1,
+              "戳": 1.2
+            },
+            "limb_tags": [
+              "挥拳"
+            ]
+          },
+          "enchantment": {
+            "enchant_slots": 6
+          }
+        }
+      },
+      "id": "eq_glove_left_open"
+    },
+    "eq_glove_left_work": {
+      "item_id": "eq_glove_left_work",
+      "editor_name": "左手工装手套",
+      "weight_kg": 0.2,
+      "attribute_modules": {
+        "base": {
+          "identity": {
+            "name_0": "左手工装手套",
+            "name_1": "工装手套",
+            "name_2": "工装手套",
+            "desc_0": "左手结实的工装手套，掌面磨得发亮。",
+            "desc_1": "均衡耐用的工作手套，干活不伤手。",
+            "desc_2": "工装手套：拳 1.05 / 掌 1.05 / 戳 1.05（均衡，采集加成预留）。",
+            "display_skill_id": "survival_language"
+          },
+          "stacking": {},
+          "presentation": {
+            "info_module_set_id": "module.equipment_armor"
+          }
+        },
+        "equipment": {
+          "wearable": {
+            "equip_slot": "glove_left"
+          },
+          "combat": {
+            "form_coefs": {
+              "拳": 1.05,
+              "掌": 1.05,
+              "戳": 1.05
+            },
+            "limb_tags": [
+              "挥拳"
+            ]
+          },
+          "enchantment": {
+            "enchant_slots": 6
+          }
+        }
+      },
+      "id": "eq_glove_left_work"
+    },
+    "eq_glove_right_boxing": {
+      "item_id": "eq_glove_right_boxing",
+      "editor_name": "右手旧拳套",
+      "weight_kg": 0.3,
+      "attribute_modules": {
+        "base": {
+          "identity": {
+            "name_0": "右手旧拳套",
+            "name_1": "拳击手套",
+            "name_2": "拳击手套",
+            "desc_0": "右手戴的旧拳套，绑带都磨毛了。",
+            "desc_1": "重拳流手套：拳劲凶，但指尖迟钝。",
+            "desc_2": "拳击手套：拳 1.3 / 掌 0.9 / 戳 0.8（重拳流）。",
+            "display_skill_id": "survival_language"
+          },
+          "stacking": {},
+          "presentation": {
+            "info_module_set_id": "module.equipment_armor"
+          }
+        },
+        "equipment": {
+          "wearable": {
+            "equip_slot": "glove_right"
+          },
+          "combat": {
+            "form_coefs": {
+              "拳": 1.3,
+              "掌": 0.9,
+              "戳": 0.8
+            },
+            "limb_tags": [
+              "挥拳"
+            ]
+          },
+          "enchantment": {
+            "enchant_slots": 6
+          }
+        }
+      },
+      "id": "eq_glove_right_boxing"
+    },
+    "eq_glove_right_cloth": {
+      "item_id": "eq_glove_right_cloth",
+      "editor_name": "右手布套",
+      "weight_kg": 0.05,
+      "attribute_modules": {
+        "base": {
+          "identity": {
+            "name_0": "右手布套",
+            "name_1": "布手套",
+            "name_2": "布手套",
+            "desc_0": "套在右手的布套子，不碍事。",
+            "desc_1": "右手用的布手套，徒手时不会直接蹭破皮。",
+            "desc_2": "右手布手套，徒手或手部技能时词条系数为 1.0。",
+            "display_skill_id": "survival_language"
+          },
+          "stacking": {},
+          "presentation": {
+            "info_module_set_id": "module.equipment_armor"
+          }
+        },
+        "equipment": {
+          "wearable": {
+            "equip_slot": "glove_right"
+          },
+          "combat": {
+            "form_coefs": {
+              "拳": 1,
+              "掌": 1,
+              "戳": 1
+            },
+            "limb_tags": [
+              "挥拳"
+            ]
+          },
+          "enchantment": {
+            "enchant_slots": 6
+          }
+        }
+      },
+      "id": "eq_glove_right_cloth"
+    },
+    "eq_glove_right_motor": {
+      "item_id": "eq_glove_right_motor",
+      "editor_name": "右手机车皮套",
+      "weight_kg": 0.35,
+      "attribute_modules": {
+        "base": {
+          "identity": {
+            "name_0": "右手机车皮套",
+            "name_1": "机车皮手套",
+            "name_2": "机车皮手套",
+            "desc_0": "右手厚实的皮手套，护腕硬挺。",
+            "desc_1": "掌法流手套：掌心厚实，护腕护小臂。",
+            "desc_2": "机车皮手套：拳 1.1 / 掌 1.2 / 戳 1.0（掌法流）。",
+            "display_skill_id": "survival_language"
+          },
+          "stacking": {},
+          "presentation": {
+            "info_module_set_id": "module.equipment_armor"
+          }
+        },
+        "equipment": {
+          "wearable": {
+            "equip_slot": "glove_right"
+          },
+          "combat": {
+            "form_coefs": {
+              "拳": 1.1,
+              "掌": 1.2,
+              "戳": 1
+            },
+            "limb_tags": [
+              "挥拳"
+            ]
+          },
+          "enchantment": {
+            "enchant_slots": 6
+          }
+        }
+      },
+      "id": "eq_glove_right_motor"
+    },
+    "eq_glove_right_open": {
+      "item_id": "eq_glove_right_open",
+      "editor_name": "右手露指套",
+      "weight_kg": 0.08,
+      "attribute_modules": {
+        "base": {
+          "identity": {
+            "name_0": "右手露指套",
+            "name_1": "露指手套",
+            "name_2": "露指手套",
+            "desc_0": "右手露指布套，指尖自由。",
+            "desc_1": "指法/暗器流手套：戳击凌厉，重拳乏力。",
+            "desc_2": "露指手套：拳 0.9 / 掌 1.0 / 戳 1.2（指法流）。",
+            "display_skill_id": "survival_language"
+          },
+          "stacking": {},
+          "presentation": {
+            "info_module_set_id": "module.equipment_armor"
+          }
+        },
+        "equipment": {
+          "wearable": {
+            "equip_slot": "glove_right"
+          },
+          "combat": {
+            "form_coefs": {
+              "拳": 0.9,
+              "掌": 1,
+              "戳": 1.2
+            },
+            "limb_tags": [
+              "挥拳"
+            ]
+          },
+          "enchantment": {
+            "enchant_slots": 6
+          }
+        }
+      },
+      "id": "eq_glove_right_open"
+    },
+    "eq_glove_right_work": {
+      "item_id": "eq_glove_right_work",
+      "editor_name": "右手工装手套",
+      "weight_kg": 0.2,
+      "attribute_modules": {
+        "base": {
+          "identity": {
+            "name_0": "右手工装手套",
+            "name_1": "工装手套",
+            "name_2": "工装手套",
+            "desc_0": "右手结实的工装手套，掌面磨得发亮。",
+            "desc_1": "均衡耐用的工作手套，干活不伤手。",
+            "desc_2": "工装手套：拳 1.05 / 掌 1.05 / 戳 1.05（均衡，采集加成预留）。",
+            "display_skill_id": "survival_language"
+          },
+          "stacking": {},
+          "presentation": {
+            "info_module_set_id": "module.equipment_armor"
+          }
+        },
+        "equipment": {
+          "wearable": {
+            "equip_slot": "glove_right"
+          },
+          "combat": {
+            "form_coefs": {
+              "拳": 1.05,
+              "掌": 1.05,
+              "戳": 1.05
+            },
+            "limb_tags": [
+              "挥拳"
+            ]
+          },
+          "enchantment": {
+            "enchant_slots": 6
+          }
+        }
+      },
+      "id": "eq_glove_right_work"
+    },
+    "eq_head_cloth_cap": {
+      "item_id": "eq_head_cloth_cap",
+      "editor_name": "旧软帽",
+      "weight_kg": 0.2,
+      "attribute_modules": {
+        "base": {
+          "identity": {
+            "name_0": "旧软帽",
+            "name_1": "布制帽",
+            "name_2": "布帽",
+            "desc_0": "一顶软塌塌的旧帽子，大概能戴在头上。",
+            "desc_1": "粗布缝的帽子，能遮阳挡风，对头顶有点保护。",
+            "desc_2": "粗布缝制的软帽，对头部有轻微减伤。",
+            "display_skill_id": "survival_language"
+          },
+          "stacking": {},
+          "presentation": {
+            "info_module_set_id": "module.equipment_armor"
+          }
+        },
+        "equipment": {
+          "wearable": {
+            "equip_slot": "head"
+          },
+          "armor": {
+            "damage_reduce_blunt_pct": 0.05,
+            "damage_reduce_pierce_pct": 0.05,
+            "damage_reduce_slash_pct": 0.05
+          },
+          "enchantment": {
+            "enchant_slots": 6
+          }
+        }
+      },
+      "id": "eq_head_cloth_cap"
+    },
+    "eq_head_leather_helm": {
+      "item_id": "eq_head_leather_helm",
+      "editor_name": "旧皮盔",
+      "weight_kg": 0.4,
+      "attribute_modules": {
+        "base": {
+          "identity": {
+            "name_0": "旧皮盔",
+            "name_1": "皮盔",
+            "name_2": "皮盔",
+            "desc_0": "鞣过的兽皮缝成的帽子，能护一点头。",
+            "desc_1": "模块化头盔底材：盔体/内衬/护面三个模块槽，常驻生效。",
+            "desc_2": "模块化头盔底材，三个模块槽（盔体/内衬/护面）；不接激活体系。",
+            "display_skill_id": "survival_language"
+          },
+          "stacking": {},
+          "presentation": {
+            "info_module_set_id": "module.equipment_armor"
+          }
+        },
+        "equipment": {
+          "wearable": {
+            "equip_slot": "head"
+          },
+          "enchantment": {
+            "enchant_slots": 0
+          }
+        },
+        "structure": {
+          "host": {
+            "module_slots": [
+              "shell",
+              "liner",
+              "face"
+            ]
+          }
+        }
+      },
+      "id": "eq_head_leather_helm",
+      "material": "leather"
+    },
+    "eq_shoe_left_cloth": {
+      "item_id": "eq_shoe_left_cloth",
+      "editor_name": "左脚布履",
+      "weight_kg": 0.2,
+      "attribute_modules": {
+        "base": {
+          "identity": {
+            "name_0": "左脚布履",
+            "name_1": "布鞋",
+            "name_2": "布鞋",
+            "desc_0": "左脚穿的布鞋，能走路。",
+            "desc_1": "左脚的布鞋，脚上招式时不会光脚踢到硬物。",
+            "desc_2": "左脚布鞋，脚部战斗技能系数为 1.0。",
+            "display_skill_id": "survival_language"
+          },
+          "stacking": {},
+          "presentation": {
+            "info_module_set_id": "module.equipment_armor"
+          }
+        },
+        "equipment": {
+          "wearable": {
+            "equip_slot": "shoe_left"
+          },
+          "combat": {
+            "form_coefs": {
+              "踹": 1,
+              "扫": 1,
+              "踏": 1
+            },
+            "parry_coef": 1,
+            "speed_coef": 1,
+            "move_cost_mod": -0.15
+          },
+          "enchantment": {
+            "enchant_slots": 6
+          }
+        }
+      },
+      "id": "eq_shoe_left_cloth"
+    },
+    "eq_shoe_left_heavy": {
+      "item_id": "eq_shoe_left_heavy",
+      "editor_name": "左脚重靴",
+      "weight_kg": 1,
+      "attribute_modules": {
+        "base": {
+          "identity": {
+            "name_0": "左脚重靴",
+            "name_1": "重靴",
+            "name_2": "重靴",
+            "desc_0": "铁包头厚底的重靴，沉但稳。",
+            "desc_1": "重稳防护靴，脚上招式凶猛，但跑起来费体力。",
+            "desc_2": "重靴：移动体力 +25%；踹/踏系数 1.2/1.2；招架加成 ×1.25、速度 ×0.9（重装格挡流）。",
+            "display_skill_id": "survival_language"
+          },
+          "stacking": {},
+          "presentation": {
+            "info_module_set_id": "module.equipment_armor"
+          }
+        },
+        "equipment": {
+          "wearable": {
+            "equip_slot": "shoe_left"
+          },
+          "combat": {
+            "form_coefs": {
+              "踹": 1.2,
+              "扫": 1,
+              "踏": 1.2
+            },
+            "parry_coef": 1.25,
+            "speed_coef": 0.9,
+            "move_cost_mod": 0.25
+          },
+          "enchantment": {
+            "enchant_slots": 6
+          }
+        }
+      },
+      "id": "eq_shoe_left_heavy"
+    },
+    "eq_shoe_left_rain": {
+      "item_id": "eq_shoe_left_rain",
+      "editor_name": "左脚雨靴",
+      "weight_kg": 0.5,
+      "attribute_modules": {
+        "base": {
+          "identity": {
+            "name_0": "左脚雨靴",
+            "name_1": "雨靴",
+            "name_2": "雨靴",
+            "desc_0": "橡胶做的左脚靴子，不怕水。",
+            "desc_1": "防水雨靴，泥泞雨天照样走。",
+            "desc_2": "雨靴：防水；招架加成 ×1.15（湿滑稳站）、速度 ×1.0；泥泞/雨天移动不减速（环境机制预留）。",
+            "display_skill_id": "survival_language"
+          },
+          "stacking": {},
+          "presentation": {
+            "info_module_set_id": "module.equipment_armor"
+          }
+        },
+        "equipment": {
+          "wearable": {
+            "equip_slot": "shoe_left"
+          },
+          "combat": {
+            "form_coefs": {
+              "踹": 1,
+              "扫": 1,
+              "踏": 1
+            },
+            "parry_coef": 1.15,
+            "speed_coef": 1,
+            "move_cost_mod": 0
+          },
+          "enchantment": {
+            "enchant_slots": 6
+          }
+        }
+      },
+      "id": "eq_shoe_left_rain"
+    },
+    "eq_shoe_left_spike": {
+      "item_id": "eq_shoe_left_spike",
+      "editor_name": "左脚钉鞋",
+      "weight_kg": 0.4,
+      "attribute_modules": {
+        "base": {
+          "identity": {
+            "name_0": "左脚钉鞋",
+            "name_1": "钉鞋",
+            "name_2": "钉鞋",
+            "desc_0": "鞋底带铁钉的左脚鞋，抓地很稳。",
+            "desc_1": "抓地转向利器，蹬踏有力；踢中要害会带出血。",
+            "desc_2": "钉鞋：抓地转向；蹬踏系数 1.3、速度 ×1.05；踢击命中触发流血（机制预留）。",
+            "display_skill_id": "survival_language"
+          },
+          "stacking": {},
+          "presentation": {
+            "info_module_set_id": "module.equipment_armor"
+          }
+        },
+        "equipment": {
+          "wearable": {
+            "equip_slot": "shoe_left"
+          },
+          "combat": {
+            "form_coefs": {
+              "踹": 1,
+              "扫": 1,
+              "踏": 1.3
+            },
+            "parry_coef": 1,
+            "speed_coef": 1.05,
+            "move_cost_mod": 0
+          },
+          "enchantment": {
+            "enchant_slots": 6
+          }
+        }
+      },
+      "id": "eq_shoe_left_spike"
+    },
+    "eq_shoe_left_sport": {
+      "item_id": "eq_shoe_left_sport",
+      "editor_name": "左脚运动鞋",
+      "weight_kg": 0.25,
+      "attribute_modules": {
+        "base": {
+          "identity": {
+            "name_0": "左脚运动鞋",
+            "name_1": "运动鞋",
+            "name_2": "运动鞋",
+            "desc_0": "左脚穿的运动鞋，走路跑步都行。",
+            "desc_1": "左脚的运动鞋，脚上出招时系数 1.0。",
+            "desc_2": "运动鞋：移动体力 −10%；速度加成 ×1.15；横扫系数 1.2（跑打流）。",
+            "display_skill_id": "survival_language"
+          },
+          "stacking": {},
+          "presentation": {
+            "info_module_set_id": "module.equipment_armor"
+          }
+        },
+        "equipment": {
+          "wearable": {
+            "equip_slot": "shoe_left"
+          },
+          "combat": {
+            "form_coefs": {
+              "踹": 1,
+              "扫": 1.2,
+              "踏": 1
+            },
+            "parry_coef": 0.95,
+            "speed_coef": 1.15,
+            "move_cost_mod": -0.1
+          },
+          "enchantment": {
+            "enchant_slots": 6
+          }
+        }
+      },
+      "id": "eq_shoe_left_sport"
+    },
+    "eq_shoe_left_straw": {
+      "item_id": "eq_shoe_left_straw",
+      "editor_name": "左脚草鞋",
+      "weight_kg": 0.1,
+      "attribute_modules": {
+        "base": {
+          "identity": {
+            "name_0": "左脚草鞋",
+            "name_1": "草鞋",
+            "name_2": "草鞋",
+            "desc_0": "稻草编的左脚鞋，轻得几乎感觉不到。",
+            "desc_1": "极致轻便的草鞋，跑图省力，但脚上招式没劲。",
+            "desc_2": "草鞋：移动体力 −35%；脚部形态系数 0.8/0.8/0.8（战斗最弱，纯跑图）。",
+            "display_skill_id": "survival_language"
+          },
+          "stacking": {},
+          "presentation": {
+            "info_module_set_id": "module.equipment_armor"
+          }
+        },
+        "equipment": {
+          "wearable": {
+            "equip_slot": "shoe_left"
+          },
+          "combat": {
+            "form_coefs": {
+              "踹": 0.8,
+              "扫": 0.8,
+              "踏": 0.8
+            },
+            "parry_coef": 0.85,
+            "speed_coef": 1,
+            "move_cost_mod": -0.35
+          },
+          "enchantment": {
+            "enchant_slots": 6
+          }
+        }
+      },
+      "id": "eq_shoe_left_straw"
+    },
+    "eq_shoe_right_cloth": {
+      "item_id": "eq_shoe_right_cloth",
+      "editor_name": "右脚布履",
+      "weight_kg": 0.2,
+      "attribute_modules": {
+        "base": {
+          "identity": {
+            "name_0": "右脚布履",
+            "name_1": "布鞋",
+            "name_2": "布鞋",
+            "desc_0": "右脚穿的布鞋，能走路。",
+            "desc_1": "右脚的布鞋，脚上招式时不会光脚踢到硬物。",
+            "desc_2": "右脚布鞋，脚部战斗技能系数为 1.0。",
+            "display_skill_id": "survival_language"
+          },
+          "stacking": {},
+          "presentation": {
+            "info_module_set_id": "module.equipment_armor"
+          }
+        },
+        "equipment": {
+          "wearable": {
+            "equip_slot": "shoe_right"
+          },
+          "combat": {
+            "form_coefs": {
+              "踹": 1,
+              "扫": 1,
+              "踏": 1
+            },
+            "parry_coef": 1,
+            "speed_coef": 1,
+            "move_cost_mod": -0.15
+          },
+          "enchantment": {
+            "enchant_slots": 6
+          }
+        }
+      },
+      "id": "eq_shoe_right_cloth"
+    },
+    "eq_shoe_right_heavy": {
+      "item_id": "eq_shoe_right_heavy",
+      "editor_name": "右脚重靴",
+      "weight_kg": 1,
+      "attribute_modules": {
+        "base": {
+          "identity": {
+            "name_0": "右脚重靴",
+            "name_1": "重靴",
+            "name_2": "重靴",
+            "desc_0": "铁包头厚底的重靴，沉但稳。",
+            "desc_1": "重稳防护靴，脚上招式凶猛，但跑起来费体力。",
+            "desc_2": "重靴：移动体力 +25%；踹/踏系数 1.2/1.2；招架加成 ×1.25、速度 ×0.9（重装格挡流）。",
+            "display_skill_id": "survival_language"
+          },
+          "stacking": {},
+          "presentation": {
+            "info_module_set_id": "module.equipment_armor"
+          }
+        },
+        "equipment": {
+          "wearable": {
+            "equip_slot": "shoe_right"
+          },
+          "combat": {
+            "form_coefs": {
+              "踹": 1.2,
+              "扫": 1,
+              "踏": 1.2
+            },
+            "parry_coef": 1.25,
+            "speed_coef": 0.9,
+            "move_cost_mod": 0.25
+          },
+          "enchantment": {
+            "enchant_slots": 6
+          }
+        }
+      },
+      "id": "eq_shoe_right_heavy"
+    },
+    "eq_shoe_right_rain": {
+      "item_id": "eq_shoe_right_rain",
+      "editor_name": "右脚雨靴",
+      "weight_kg": 0.5,
+      "attribute_modules": {
+        "base": {
+          "identity": {
+            "name_0": "右脚雨靴",
+            "name_1": "雨靴",
+            "name_2": "雨靴",
+            "desc_0": "橡胶做的右脚靴子，不怕水。",
+            "desc_1": "防水雨靴，泥泞雨天照样走。",
+            "desc_2": "雨靴：防水；招架加成 ×1.15（湿滑稳站）、速度 ×1.0；泥泞/雨天移动不减速（环境机制预留）。",
+            "display_skill_id": "survival_language"
+          },
+          "stacking": {},
+          "presentation": {
+            "info_module_set_id": "module.equipment_armor"
+          }
+        },
+        "equipment": {
+          "wearable": {
+            "equip_slot": "shoe_right"
+          },
+          "combat": {
+            "form_coefs": {
+              "踹": 1,
+              "扫": 1,
+              "踏": 1
+            },
+            "parry_coef": 1.15,
+            "speed_coef": 1,
+            "move_cost_mod": 0
+          },
+          "enchantment": {
+            "enchant_slots": 6
+          }
+        }
+      },
+      "id": "eq_shoe_right_rain"
+    },
+    "eq_shoe_right_spike": {
+      "item_id": "eq_shoe_right_spike",
+      "editor_name": "右脚钉鞋",
+      "weight_kg": 0.4,
+      "attribute_modules": {
+        "base": {
+          "identity": {
+            "name_0": "右脚钉鞋",
+            "name_1": "钉鞋",
+            "name_2": "钉鞋",
+            "desc_0": "鞋底带铁钉的右脚鞋，抓地很稳。",
+            "desc_1": "抓地转向利器，蹬踏有力；踢中要害会带出血。",
+            "desc_2": "钉鞋：抓地转向；蹬踏系数 1.3、速度 ×1.05；踢击命中触发流血（机制预留）。",
+            "display_skill_id": "survival_language"
+          },
+          "stacking": {},
+          "presentation": {
+            "info_module_set_id": "module.equipment_armor"
+          }
+        },
+        "equipment": {
+          "wearable": {
+            "equip_slot": "shoe_right"
+          },
+          "combat": {
+            "form_coefs": {
+              "踹": 1,
+              "扫": 1,
+              "踏": 1.3
+            },
+            "parry_coef": 1,
+            "speed_coef": 1.05,
+            "move_cost_mod": 0
+          },
+          "enchantment": {
+            "enchant_slots": 6
+          }
+        }
+      },
+      "id": "eq_shoe_right_spike"
+    },
+    "eq_shoe_right_sport": {
+      "item_id": "eq_shoe_right_sport",
+      "editor_name": "右脚运动鞋",
+      "weight_kg": 0.25,
+      "attribute_modules": {
+        "base": {
+          "identity": {
+            "name_0": "右脚运动鞋",
+            "name_1": "运动鞋",
+            "name_2": "运动鞋",
+            "desc_0": "右脚穿的运动鞋，走路跑步都行。",
+            "desc_1": "右脚的运动鞋，脚上出招时系数 1.0。",
+            "desc_2": "运动鞋：移动体力 −10%；速度加成 ×1.15；横扫系数 1.2（跑打流）。",
+            "display_skill_id": "survival_language"
+          },
+          "stacking": {},
+          "presentation": {
+            "info_module_set_id": "module.equipment_armor"
+          }
+        },
+        "equipment": {
+          "wearable": {
+            "equip_slot": "shoe_right"
+          },
+          "combat": {
+            "form_coefs": {
+              "踹": 1,
+              "扫": 1.2,
+              "踏": 1
+            },
+            "parry_coef": 0.95,
+            "speed_coef": 1.15,
+            "move_cost_mod": -0.1
+          },
+          "enchantment": {
+            "enchant_slots": 6
+          }
+        }
+      },
+      "id": "eq_shoe_right_sport"
+    },
+    "eq_shoe_right_straw": {
+      "item_id": "eq_shoe_right_straw",
+      "editor_name": "右脚草鞋",
+      "weight_kg": 0.1,
+      "attribute_modules": {
+        "base": {
+          "identity": {
+            "name_0": "右脚草鞋",
+            "name_1": "草鞋",
+            "name_2": "草鞋",
+            "desc_0": "稻草编的右脚鞋，轻得几乎感觉不到。",
+            "desc_1": "极致轻便的草鞋，跑图省力，但脚上招式没劲。",
+            "desc_2": "草鞋：移动体力 −35%；脚部形态系数 0.8/0.8/0.8（战斗最弱，纯跑图）。",
+            "display_skill_id": "survival_language"
+          },
+          "stacking": {},
+          "presentation": {
+            "info_module_set_id": "module.equipment_armor"
+          }
+        },
+        "equipment": {
+          "wearable": {
+            "equip_slot": "shoe_right"
+          },
+          "combat": {
+            "form_coefs": {
+              "踹": 0.8,
+              "扫": 0.8,
+              "踏": 0.8
+            },
+            "parry_coef": 0.85,
+            "speed_coef": 1,
+            "move_cost_mod": -0.35
+          },
+          "enchantment": {
+            "enchant_slots": 6
+          }
+        }
+      },
+      "id": "eq_shoe_right_straw"
+    },
+    "eq_vest_hoodie": {
+      "item_id": "eq_vest_hoodie",
+      "editor_name": "带帽的厚衫",
+      "weight_kg": 0.3,
+      "attribute_modules": {
+        "base": {
+          "identity": {
+            "name_0": "带帽的厚衫",
+            "name_1": "连帽衫",
+            "name_2": "连帽衫",
+            "desc_0": "一件带帽子的厚衣服，里头能装点小东西。",
+            "desc_1": "连帽衫，胸前有两格收纳，当背心用。",
+            "desc_2": "连帽衫，提供两格背心栏位。",
+            "display_skill_id": "survival_language"
+          },
+          "stacking": {},
+          "presentation": {
+            "info_module_set_id": "module.equipment_armor"
+          }
+        },
+        "equipment": {
+          "wearable": {
+            "equip_slot": "vest"
+          },
+          "enchantment": {
+            "enchant_slots": 6
+          }
+        },
+        "structure": {
+          "storage": {
+            "vest_slots": 2
+          }
+        }
+      },
+      "id": "eq_vest_hoodie"
+    }
+  }
+}

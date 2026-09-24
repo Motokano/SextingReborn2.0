@@ -76,16 +76,23 @@
             return inst;
         }
         if (inst.spoilage_elapsed_ticks == null) {
-            inst.spoilage_elapsed_ticks = 0;
+            if (global.InventoryEquipment && typeof global.InventoryEquipment.setItemInstanceValue === 'function') {
+                global.InventoryEquipment.setItemInstanceValue(inst, 'spoilage_elapsed_ticks', 0);
+            } else inst.spoilage_elapsed_ticks = 0;
         } else {
-            inst.spoilage_elapsed_ticks = Math.max(0, coerceInt(inst.spoilage_elapsed_ticks, 0));
+            var elapsed = Math.max(0, coerceInt(inst.spoilage_elapsed_ticks, 0));
+            if (global.InventoryEquipment && typeof global.InventoryEquipment.setItemInstanceValue === 'function') {
+                global.InventoryEquipment.setItemInstanceValue(inst, 'spoilage_elapsed_ticks', elapsed);
+            } else inst.spoilage_elapsed_ticks = elapsed;
         }
         return inst;
     }
 
     function copyItemInstance(inst) {
         if (!inst || typeof inst !== 'object') return null;
-        var c = cloneJsonDeep(inst);
+        var c = global.InventoryEquipment && typeof global.InventoryEquipment.copyItemInstance === 'function'
+            ? global.InventoryEquipment.copyItemInstance(inst)
+            : cloneJsonDeep(inst);
         if (!c || !c.item_id) return null;
         if (c.count == null || c.count < 1) c.count = 1;
         return ensureSpoilageElapsedOnInstance(c);
@@ -121,7 +128,10 @@
         var limit = getSpoilageTicksFromTemplate(inst.item_id);
         if (limit <= 0) return inst;
         ensureSpoilageElapsedOnInstance(inst);
-        inst.spoilage_elapsed_ticks = coerceInt(inst.spoilage_elapsed_ticks, 0) + 1;
+        var nextElapsed = coerceInt(inst.spoilage_elapsed_ticks, 0) + 1;
+        if (global.InventoryEquipment && typeof global.InventoryEquipment.setItemInstanceValue === 'function') {
+            global.InventoryEquipment.setItemInstanceValue(inst, 'spoilage_elapsed_ticks', nextElapsed);
+        } else inst.spoilage_elapsed_ticks = nextElapsed;
         if (inst.spoilage_elapsed_ticks >= limit) {
             return resolveSpoiledInstance(inst, context);
         }
@@ -141,14 +151,58 @@
         for (i = 0; i < arr.length; i++) {
             var cell = arr[i];
             if (!cell || !cell.item_id) continue;
-            var next = tickInstanceSpoilage(cell, label + ':' + i);
-            if (next === null) {
-                recordExpired(details, cell);
-                arr[i] = null;
-                spoiled += 1;
-            }
+            var result = tickSpoilageTree(cell, label + ':' + i, details);
+            arr[i] = result.instance;
+            spoiled += result.spoiled;
         }
         return spoiled;
+    }
+
+    /** 易腐状态沿真实归属树推进；连接中的鱼饵腐坏时只移除该连接。 */
+    function tickSpoilageTree(inst, context, details) {
+        if (!inst || !inst.item_id) return { instance: inst, spoiled: 0 };
+        var original = inst;
+        var next = tickInstanceSpoilage(inst, context);
+        if (next === null) {
+            recordExpired(details, original);
+            return { instance: null, spoiled: 1 };
+        }
+        var spoiled = 0;
+        if (next.modules && typeof next.modules === 'object') {
+            Object.keys(next.modules).forEach(function (key) {
+                var child = next.modules[key];
+                if (!child || !child.item_id) return;
+                var childResult = tickSpoilageTree(child, context + '.modules.' + key, details);
+                next.modules[key] = childResult.instance;
+                spoiled += childResult.spoiled;
+            });
+        }
+        if (next.connections && typeof next.connections === 'object') {
+            Object.keys(next.connections).forEach(function (key) {
+                var record = next.connections[key];
+                var child = record && record.part && record.part.item_id ? record.part : (record && record.item_id ? record : null);
+                if (!child) return;
+                var childResult = tickSpoilageTree(child, context + '.connections.' + key, details);
+                spoiled += childResult.spoiled;
+                if (!childResult.instance) delete next.connections[key];
+                else if (record.part) record.part = childResult.instance;
+                else next.connections[key] = childResult.instance;
+            });
+            if (!Object.keys(next.connections).length) delete next.connections;
+        }
+        return { instance: next, spoiled: spoiled };
+    }
+
+    function treeHasPerishable(inst) {
+        if (!inst || !inst.item_id) return false;
+        if (isPerishableItemId(inst.item_id)) return true;
+        var found = false;
+        if (global.InventoryEquipment && typeof global.InventoryEquipment.getItemInstanceChildren === 'function') {
+            global.InventoryEquipment.getItemInstanceChildren(inst).forEach(function (entry) {
+                if (!found && treeHasPerishable(entry.instance)) found = true;
+            });
+        }
+        return found;
     }
 
     function tickSpoilage() {
@@ -166,12 +220,9 @@
             for (wi = 0; wi < st.slots.length; wi++) {
                 var whCell = st.slots[wi];
                 if (!whCell || !whCell.item_id) continue;
-                var whNext = tickInstanceSpoilage(whCell, 'warehouse:' + wi);
-                if (whNext === null) {
-                    recordExpired(result.expired_items, whCell);
-                    st.slots[wi] = null;
-                    result.warehouse_spoiled += 1;
-                }
+                var whResult = tickSpoilageTree(whCell, 'warehouse:' + wi, result.expired_items);
+                st.slots[wi] = whResult.instance;
+                result.warehouse_spoiled += whResult.spoiled;
             }
         }
 
@@ -199,7 +250,7 @@
                         if (!Array.isArray(arr)) continue;
                         var ai;
                         for (ai = 0; ai < arr.length; ai++) {
-                            if (arr[ai] && isPerishableItemId(arr[ai].item_id)) {
+                            if (arr[ai] && treeHasPerishable(arr[ai])) {
                                 hadPerishable = true;
                                 break;
                             }
@@ -250,6 +301,8 @@
 
     function instancesCanStackInWarehouse(a, b) {
         if (!a || !b || !a.item_id || a.item_id !== b.item_id) return false;
+        var IEStack = global.InventoryEquipment;
+        if (IEStack && typeof IEStack.itemInstancesCanStack === 'function') return IEStack.itemInstancesCanStack(a, b);
         if (a.enchants && a.enchants.length) return false;
         if (b.enchants && b.enchants.length) return false;
         var tpl = getItemTemplate(a.item_id);
@@ -315,7 +368,9 @@
         if (!raw || typeof raw !== 'object') return def;
 
         var capacity = coercePositiveInt(raw.capacity, def.capacity);
-        var slots = Array.isArray(raw.slots) ? raw.slots.slice() : [];
+        var slots = Array.isArray(raw.slots) ? raw.slots.map(function (cell) {
+            return cell && cell.item_id ? copyItemInstance(cell) : cell;
+        }) : [];
         if (slots.length > capacity) slots.length = capacity;
         while (slots.length < capacity) slots.push(null);
 
@@ -368,6 +423,32 @@
 
     function setState(next) {
         state = normalizeState(next);
+        // 存档载入顺序为背包在前、仓库在后。若旧档或损坏档让同一身份同时
+        // 出现在两个归属域，保留背包中的身份，并为仓库后出现的实例补发新身份。
+        var IE = getIE();
+        if (IE && typeof IE.reissueItemInstanceId === 'function') {
+            var seen = {};
+            function repairTree(inst) {
+                if (!inst || !inst.item_id) return;
+                var id = typeof inst.instance_id === 'string' ? inst.instance_id : '';
+                var conflictsInventory = id && typeof IE.findItemInstanceLocation === 'function'
+                    ? !!IE.findItemInstanceLocation(id) : false;
+                if (!id || seen[id] || conflictsInventory) {
+                    IE.reissueItemInstanceId(inst);
+                    id = inst.instance_id;
+                }
+                seen[id] = true;
+                if (typeof IE.getItemInstanceChildren === 'function') {
+                    var children = IE.getItemInstanceChildren(inst);
+                    for (var ci = 0; ci < children.length; ci++) repairTree(children[ci].instance);
+                } else if (inst.modules && typeof inst.modules === 'object') {
+                    for (var key in inst.modules) {
+                        if (Object.prototype.hasOwnProperty.call(inst.modules, key)) repairTree(inst.modules[key]);
+                    }
+                }
+            }
+            for (var i = 0; i < state.slots.length; i++) repairTree(state.slots[i]);
+        }
         return getState();
     }
 
@@ -1169,14 +1250,28 @@
         if (!arr || index < 0 || index >= arr.length) return { ok: false, reason: 'invalid_container' };
         var cell = arr[index];
         if (!cell || !cell.item_id) return { ok: false, reason: 'empty_cell' };
+        if (global.FishingSession && typeof global.FishingSession.isInstanceLocked === 'function' && global.FishingSession.isInstanceLocked(cell.instance_id)) {
+            return { ok: false, reason: 'item_locked' };
+        }
 
         var inst = copyItemInstance(cell);
         if (!inst) return { ok: false, reason: 'invalid_instance' };
 
+        var warehouseBefore = getState();
+        var inventoryBefore = typeof IE.getState === 'function' ? cloneJsonDeep(IE.getState()) : null;
         var result = depositFromInstance(inst);
         if (!result.ok) return result;
 
+        // 整格转移必须全成或全败；仓库只能接收一部分时回滚，不吞掉来源剩余数量。
+        if (result.partial) {
+            state = normalizeState(warehouseBefore);
+            if (inventoryBefore && typeof IE.setState === 'function') IE.setState(inventoryBefore);
+            return { ok: false, reason: 'warehouse_full' };
+        }
+
         if (!clearContainerCell(IE, containerType, index)) {
+            state = normalizeState(warehouseBefore);
+            if (inventoryBefore && typeof IE.setState === 'function') IE.setState(inventoryBefore);
             return { ok: false, reason: 'clear_container_failed' };
         }
         return result;
@@ -1428,6 +1523,7 @@
             st.slots[idx] = null;
         } else {
             cell.count = total - take;
+            if (typeof IE.reissueItemInstanceId === 'function') IE.reissueItemInstanceId(withdrawn);
         }
 
         var placed = IE.putItemIntoDefaultContainer(withdrawn);

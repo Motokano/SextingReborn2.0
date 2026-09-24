@@ -14,76 +14,75 @@
     "diet_memory_ticks": 450,
     "balance_min_share": 0.15,
     "balance_max_share": 0.65,
-    "nutrition_targets": { "single": 15, "mixed": 55, "balanced": 100 },
+    "nutrition_targets": {
+      "single": 15,
+      "mixed": 55,
+      "balanced": 100
+    },
     "nutrition_rise_per_tick": 0.03,
     "nutrition_fall_per_tick": 0.008,
     "nutrition_min_portions_per_tick": 0.018
   },
-  "satiety_max": 100.0,
-  "satiety_overcap_max": 150.0,
+  "satiety_max": 100,
+  "satiety_overcap_max": 150,
   "satiety_tick_decay_interval": 2,
-  "satiety_tick_decay": 1.0,
+  "satiety_tick_decay": 1,
   "satiety_listener_tick_refresh_interval": 1,
-  "satiety_buff_tier_satiated_min": 60.0,
-  "satiety_buff_tier_light_hunger_min": 30.0,
-  "satiety_buff_tier_heavy_hunger_min": 10.0,
+  "satiety_buff_tier_satiated_min": 60,
+  "satiety_buff_tier_light_hunger_min": 30,
+  "satiety_buff_tier_heavy_hunger_min": 10,
   "satiety_buff_tier_extreme_hunger_min": 0.1,
   "satiety_buff_tier_overeat_min": 100.1,
   "satiety_buff_tier_stuffed_min": 120.1,
   "satiety_starving_death_ticks": 432,
   "satiety_weight_gain_ticks_stuffed": 144,
   "satiety_weight_loss_ticks_hunger": 144,
-  "satiety_normal_min": 60.0,
-  "satiety_mild_min": 40.0,
-  "satiety_moderate_min": 15.0,
-  "satiety_overcap_threshold": 90.0,
+  "satiety_normal_min": 60,
+  "satiety_mild_min": 40,
+  "satiety_moderate_min": 15,
+  "satiety_overcap_threshold": 90,
   "satiety_starvation_ticks_to_death": 100,
   "satiety_overfed_ticks_to_weight_gain": 500,
   "satiety_severe_hunger_ticks_to_weight_loss": 500,
-  "satiety_severe_hunger_max": 10.0,
+  "satiety_severe_hunger_max": 10,
   "_satiety_legacy_note": "satiety_normal_min/satiety_mild_min/satiety_moderate_min/satiety_starvation_ticks_to_death/satiety_overfed_ticks_to_weight_gain/satiety_severe_hunger_ticks_to_weight_loss/satiety_severe_hunger_max 为旧口径兼容字段；Buff 分段与计时以 satiety_buff_tier_* + satiety_starving_death_ticks + satiety_weight_* 为准。",
-
-  "thirst_max": 100.0,
+  "thirst_max": 100,
   "thirst_tick_decay_interval": 2,
-  "thirst_tick_decay_amount": 1.0,
+  "thirst_tick_decay_amount": 1,
   "thirst_listener_tick_refresh_interval": 1,
   "thirst_buff_tier_dry_min": 0.1,
   "thirst_buff_tier_hydrated_min": 40.1,
   "thirst_dehydration_death_ticks": 432,
-  "thirst_normal_min": 60.0,
+  "thirst_normal_min": 60,
   "thirst_death_ticks": 500,
   "_thirst_legacy_note": "thirst_normal_min/thirst_death_ticks 为旧口径兼容字段；Buff 分段与死亡计时以 thirst_buff_tier_* + thirst_dehydration_death_ticks 为准。",
-
-  "stamina_max": 100.0,
+  "stamina_max": 100,
   "stamina_tick_regen_base": 0.5,
-  "stamina_rest_tick_regen_base": 5.0,
+  "stamina_rest_tick_regen_base": 5,
   "stamina_passive_drain_per_tick": 0.4,
-  "rest_action_stamina_regen_per_tick": 2.0,
-  "rest_action_extra_satiety_decay_per_tick": 1.0,
-  "rest_action_extra_thirst_decay_per_tick": 1.0,
+  "rest_action_stamina_regen_per_tick": 2,
+  "rest_action_extra_satiety_decay_per_tick": 1,
+  "rest_action_extra_thirst_decay_per_tick": 1,
   "rest_action_auto_tick_seconds": 5,
   "stamina_zero_ticks_to_coma": 50,
-
-  "_resource_model_note": "2026-09 食物校准：food_model 为饱食/营养/体重结算真源，每份独立消化；基础消耗 + 实际体力行动消耗，调息不额外扣饱食/饮水。饮水仍每2tick衰减。旧 eat_*、rest_action_extra_* 与连续增减重阈值仅供兼容，不用于 food_model。",
+  "_resource_model_note": "2026-09-24：普通体力恢复统一使用 rest_action 三项配置，休息、睡眠、调息每刻最多结算一次。体力满不扣额外储备，不足暂停转换；基础代谢继续。food_model 仍负责食物消化、营养和体重。",
   "eat_satiety_cost": 10,
   "eat_thirst_cost": 5,
   "eat_stamina_gain": 20,
   "tiao_xi_satiety_cost_per_tick": 1,
   "tiao_xi_thirst_cost_per_tick": 0.5,
   "tiao_xi_stamina_gain_per_tick": 2,
-  "move_stamina_base": 1,
+  "move_stamina_base": 0.25,
   "move_stamina_overload_k": 20,
-  "fatigue_min": 0.0,
-  "fatigue_max": 100.0,
+  "fatigue_min": 0,
+  "fatigue_max": 100,
   "fatigue_gain_per_stamina_spent": 0.1,
-  "fatigue_tired_min": 50.0,
-  "fatigue_tired_max_exclusive": 80.0,
-  "fatigue_sleepy_min": 80.0,
+  "fatigue_tired_min": 50,
+  "fatigue_tired_max_exclusive": 80,
+  "fatigue_sleepy_min": 80,
   "breath_diqi_stamina_coef": 0.02,
-
-  "energy_max": 100.0,
+  "energy_max": 100,
   "energy_depleted_lethal_on_combat_drain": true,
-
   "qi_li_max": 100,
   "qi_li_regen_pct_per_turn": 0.5,
   "diqi_max_base": 40,
@@ -114,7 +113,6 @@
     "rfoot": 1
   },
   "_body_part_destroy_recover_note": "09「损毁恢复」自然自愈（基础通道）：吃损毁后宽限 grace tick 内不自愈；宽限结束后每部位每 interval/部位系数 tick 恢复 1 点损毁值（休息时再 ×rest_multiplier）；部位系数越大恢复越快（四肢 1.0 / 腹 0.7 / 胸 0.6 / 头 0.5）。外敷活络药（buff 效果 pharmacy_part_recovery，recovery_per_tick）在自愈之上额外逐 tick 降损毁值，不受宽限限制。实现：CharacterAttributes.onWorldTickDestroyRecover / recoverPartDestroy。",
-
   "mood_min": 0,
   "mood_max": 1000,
   "mood_center": 500,
@@ -125,21 +123,17 @@
   "mood_normal_min": 301,
   "mood_normal_max": 700,
   "mood_high_min": 701,
-
   "composure_min": 0,
   "composure_max": 20,
   "composure_center": 10,
   "composure_initial": 10,
   "composure_mood_change_pct_per_point": 0.05,
-
   "sexual_ability_min": 0,
   "sexual_ability_max": 100,
-
   "gender_value_min": 0,
   "gender_value_max": 100,
   "gender_value_initial_male": 0,
   "gender_value_initial_female": 100,
-
   "nutrition_min": 0,
   "nutrition_max": 100,
   "nutrition_initial": 40,
@@ -155,13 +149,12 @@
   "nutrition_malnutrition_diqi_regen_mult": 0.5,
   "nutrition_abundant_pot_per_energy_mult": 1.3,
   "nutrition_peak_diqi_cap_pct": 0.15,
-
   "nutrition_tier_exp_mult": {
     "_comment": "每次消化入池时读取长期营养倍率；不在进食时发放整份经验。",
     "malnutrition": 0.5,
-    "normal": 1.0,
+    "normal": 1,
     "abundant": 1.5,
-    "peak": 2.0
+    "peak": 2
   },
   "meal_exp_by_tier": {
     "_comment": "2026-09-11 用户定：食物基础经验为旧表6倍；每份每维，随消化入池。构建 food-balance.json 读取本表；保底粗粮和失败物仍为0，盛宴仅预留。",
@@ -174,11 +167,26 @@
   "attribute_exp_parry_success": 1,
   "meal_exp_dims_by_tier": {
     "_comment": "k79：餐位档默认发放维度（T3+ 多维；单菜可用 items.json 的 attr_exp_grants 覆盖）",
-    "snack": ["jingu"],
-    "home": ["jingu"],
-    "refined": ["jingu", "flexibility"],
-    "banquet": ["jingu", "flexibility", "breath"],
-    "feast": ["jingu", "flexibility", "breath"]
+    "snack": [
+      "jingu"
+    ],
+    "home": [
+      "jingu"
+    ],
+    "refined": [
+      "jingu",
+      "flexibility"
+    ],
+    "banquet": [
+      "jingu",
+      "flexibility",
+      "breath"
+    ],
+    "feast": [
+      "jingu",
+      "flexibility",
+      "breath"
+    ]
   },
   "meal_balance_min_categories": {
     "_comment": "k79：均衡判定（主食/荤/素 覆盖类别数下限）；other 不计入",
@@ -190,16 +198,14 @@
     "mixed": 0,
     "balanced": 0
   },
-
   "dirtyness_min": 0,
   "dirtyness_max": 100,
   "dirtyness_initial": 0,
-
-  "body_temperature_standard_default": 37.0,
-  "body_temperature_min": 30.0,
-  "body_temperature_max": 42.0,
-  "body_temperature_safe_min": 36.0,
-  "body_temperature_safe_max": 38.0,
+  "body_temperature_standard_default": 37,
+  "body_temperature_min": 30,
+  "body_temperature_max": 42,
+  "body_temperature_safe_min": 36,
+  "body_temperature_safe_max": 38,
   "body_temperature_death_below_standard": 13,
   "body_temperature_death_above_standard": 13,
   "body_temperature_extreme_cold_base_delta": 15,
@@ -211,9 +217,7 @@
   "body_temperature_heat_move_ticks": 10,
   "body_temperature_heat_move_delta": 0.1,
   "body_temperature_comfort_recover_per_tick": 0.03,
-
   "idle_seconds_per_tick": 3,
-
   "tick_cost_open_backpack": 1,
   "tick_cost_close_panel": 1,
   "tick_cost_transfer_to_vehicle": 1,
@@ -223,13 +227,11 @@
   "strength_carry_weight_pct_per_level": 0.01,
   "move_energy_cost_base": 1,
   "move_energy_overweight_k": 20,
-
   "weapon_req_innate_jingu_default": 20,
   "breath_diqi_cap_pct_per_point": 0.01,
   "dexterity_speed_pct_per_point": 0.005,
   "base_speed_no_footwork": 1,
   "base_speed_no_qinggong": 1,
-
   "fist_base_cap": 650,
   "fist_curve_scale": 450,
   "fist_base_div": 2,
@@ -239,53 +241,75 @@
   "base_defense_D_factor": 3,
   "dominant_limb_damage_mult": 1.1,
   "non_dominant_limb_damage_mult": 0.9,
-
   "hit_base_at_equal_speed": 0.825,
   "hit_base_max": 0.95,
   "hit_base_min": 0.05,
   "hit_final_cap": 0.99,
-  "hit_curve_L": 2.0,
-  "hit_epsilon": 1e-6,
-
+  "hit_curve_L": 2,
+  "hit_epsilon": 0.000001,
   "parry_flexibility_mult_per_point": 0.005,
   "parry_chance_cap": 0.75,
   "parry_damage_reduce_cap": 0.5,
-
   "stun_head_hit_base": 35,
   "stun_head_hit_blunt_mult": 1.5,
   "stun_resist_cap": 0.6,
   "_stun_balance_note": "眩晕累积（37 §9.2，k13）：命中头基础眩晕值 stun_head_hit_base（草案 35，技能模板可配 stun_head_hit 覆盖）；钝击打头 ×stun_head_hit_blunt_mult（震荡致晕，劈砍/戳刺 ×1.0）；抗眩晕豁免上限 stun_resist_cap=60%（头永远是威胁，37 §9.4 红线）。数值均草案，k23 定稿。",
   "_combat_balance_note": "全局战斗平衡单一数据源：命中率上下界见 hit_*；招架几率/卸力硬顶仅 parry_chance_cap、parry_damage_reduce_cap（管线 CombatPipeline.getParryCaps 与此一致）。调整平衡优先改本文件，勿在单技能 JSON 重复写死封顶。",
-
   "study_tick_energy_cost": 1,
   "focus_baseline": 10,
   "study_potential_per_energy_base": 200,
   "focus_potential_per_energy_pct_per_point": 0.05,
-
-  "production_success_bonus_at_skill_1000": 0.20,
-
+  "production_success_bonus_at_skill_1000": 0.2,
   "item_display_tier_threshold_1": null,
   "item_display_tier_threshold_2": null,
   "vision_day_night": {
     "enabled": true,
-    "overlay_rgb": [8, 12, 24],
+    "overlay_rgb": [
+      8,
+      12,
+      24
+    ],
     "darkness_keyframes": [
-      { "minute": 0, "alpha": 0.58 },
-      { "minute": 240, "alpha": 0.52 },
-      { "minute": 360, "alpha": 0.3 },
-      { "minute": 480, "alpha": 0.14 },
-      { "minute": 720, "alpha": 0.04 },
-      { "minute": 1080, "alpha": 0.22 },
-      { "minute": 1320, "alpha": 0.48 },
-      { "minute": 1440, "alpha": 0.58 }
+      {
+        "minute": 0,
+        "alpha": 0.58
+      },
+      {
+        "minute": 240,
+        "alpha": 0.52
+      },
+      {
+        "minute": 360,
+        "alpha": 0.3
+      },
+      {
+        "minute": 480,
+        "alpha": 0.14
+      },
+      {
+        "minute": 720,
+        "alpha": 0.04
+      },
+      {
+        "minute": 1080,
+        "alpha": 0.22
+      },
+      {
+        "minute": 1320,
+        "alpha": 0.48
+      },
+      {
+        "minute": 1440,
+        "alpha": 0.58
+      }
     ],
     "clear_radius_cells_day": 5.4,
     "clear_radius_cells_night": 2.8,
     "clear_falloff_cells": 3.4
   },
   "vision_reveal_ui": {
-    "visual_radius_day": 8.0,
-    "visual_radius_night": 4.0,
+    "visual_radius_day": 8,
+    "visual_radius_night": 4,
     "identify_ratio": 0.72,
     "detail_ratio": 0.45,
     "adjacent_detail_radius": 1,
@@ -295,7 +319,7 @@
     "enabled": true,
     "front_half_angle_deg": 45,
     "side_half_angle_deg": 75,
-    "front_mul": 1.0,
+    "front_mul": 1,
     "side_mul": 0.65,
     "back_mul": 0.35,
     "show_cone_overlay": false,
@@ -305,16 +329,23 @@
   "vision_occlusion_ui": {
     "enabled": true,
     "hide_nonvisible_terrain": true,
-    "occlusion_rgb": [6, 8, 14],
+    "occlusion_rgb": [
+      6,
+      8,
+      14
+    ],
     "occlusion_alpha": 0.96,
     "strip_dynamic_on_rear_adjacent": true,
     "distance_shade_enabled": true,
-    "distance_shade_rgb": [10, 12, 22],
+    "distance_shade_rgb": [
+      10,
+      12,
+      22
+    ],
     "distance_shade_max_alpha": 0.26,
     "distance_shade_start_ratio": 0.2,
     "distance_shade_power": 1.28
   },
-
   "pain_max": 100,
   "pain_threshold_mild": 25,
   "pain_threshold_moderate": 50,

@@ -393,6 +393,7 @@
                 var modulesHtml = global.ItemInfoModules.renderTooltipModulesHtml({
                     itemId: inst.item_id,
                     tpl: disp.tpl,
+                    inst: inst,
                     character: char
                 });
                 if (modulesHtml) {

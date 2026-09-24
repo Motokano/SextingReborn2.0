@@ -275,9 +275,14 @@
             if (!baseRule || typeof baseRule !== 'object') continue;
             var rule = Object.assign({}, baseRule, { _fieldKey: fk });
             if (!isFieldVisible(rule, character)) continue;
-            // 实例值优先（电池电量等实例字段会覆盖模板满电默认值），模板兜底（k89）
-            var rawVal = getNestedValue(inst, fk);
-            if (rawVal === undefined) rawVal = getNestedValue(tpl, fk);
+            // 模块化统一读数：小属性缺失即不存在；实例状态（含 0）优先于模板初始化配置。
+            var IAM = global && global.ItemAttributeModules;
+            var rawVal = IAM && typeof IAM.getInstanceValue === 'function'
+                ? IAM.getInstanceValue(inst, tpl, fk)
+                : getNestedValue(inst, fk);
+            if (rawVal === undefined) rawVal = IAM && typeof IAM.getTemplateValue === 'function'
+                ? IAM.getTemplateValue(tpl, fk)
+                : getNestedValue(tpl, fk);
             var unlocked = skillUnlocked(rule, character);
             if (unlocked) {
                 if (isEmptyValue(rawVal)) {

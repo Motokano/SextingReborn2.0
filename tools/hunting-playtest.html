@@ -1,0 +1,46 @@
+<!doctype html><html lang="zh-CN"><meta charset="utf-8"><title>狩猎开发验收</title>
+<style>body{margin:0;background:#151a16;color:#eee;font:14px sans-serif;height:100vh;display:flex;flex-direction:column}header{padding:10px;display:flex;gap:8px;align-items:center;flex-wrap:wrap}button,select{padding:8px}iframe{width:100%;flex:1;min-height:0;border:0}</style>
+<header><button id="rabbit">准备野兔测试</button><button id="juvenile">准备幼鸡测试</button><button id="farm">返回牧场验收</button><button id="coop">准备测试鸡笼</button><button id="save">保存并重载游戏</button><span id="status">开发测试页：会修改当前端口的存档，请使用测试端口</span></header>
+<iframe id="game" src="../index.html" title="游戏"></iframe>
+<script>
+const frame=document.getElementById('game'), status=document.getElementById('status');
+function w(){return frame.contentWindow;}
+function setup(event,oldRope){
+ const g=w();if(!g.Hunting?.ready())return;
+ const learned=g.Hunting.getState();
+ g.SceneApp.closeLivestockPanel();g.Hunting.setState(null);
+ g.CharacterAttributes.setState({character_creation_completed:true});
+ g.Survival.setState({stamina:100,satiety:90,thirst:90,isDead:false,isComa:false,isResting:false});
+ const point={key:'M0_Field_01:M0_Field_01_hunt_0',event};
+ const map=g.GameEngine.MAPS?.M0_Field_01;
+ const x=4,y=5;
+ g.GameEngine.setState('M0_Field_01',x,y);
+ for(const id of ['consumable_hunting_net','consumable_hunting_snare','consumable_hunting_bait','consumable_javelin_stone'])g.InventoryEquipment.putItemIntoDefaultContainer({item_id:id,count:3});
+ g.Hunting.setState({version:1,points:{[point.key]:{seed:1,event,readyAt:0,...(oldRope?{oldRope:true}:{})}},active:null,successes:learned.successes||0,knowledge:learned.knowledge||{},huntSerial:learned.huntSerial||0});
+ if(variantSelect.value){g.Hunting.start(point.key,[event]);const state=g.Hunting.getState();state.active.variant=variantSelect.value;g.Hunting.setState(state);}
+ g.SceneApp.render();status.textContent='测试已准备：'+event;
+}
+const boarButton=document.createElement('button');boarButton.textContent='准备野猪测试';
+document.querySelector('header').insertBefore(boarButton,document.getElementById('juvenile'));
+boarButton.onclick=()=>setup('pig_calf');
+const birdButton=document.createElement('button');birdButton.textContent='准备野鸡测试';
+document.querySelector('header').insertBefore(birdButton,document.getElementById('juvenile'));
+birdButton.onclick=()=>setup('chicken_calf');
+const sheepButton=document.createElement('button');sheepButton.textContent='准备羊群测试';
+document.querySelector('header').insertBefore(sheepButton,document.getElementById('juvenile'));
+sheepButton.onclick=()=>setup('sheep_calf');
+const cattleButton=document.createElement('button');cattleButton.textContent='准备牛群测试';
+document.querySelector('header').insertBefore(cattleButton,document.getElementById('juvenile'));
+cattleButton.onclick=()=>setup('cattle_calf');
+const ropeButton=document.createElement('button');ropeButton.textContent='旧绳圈测试';
+document.querySelector('header').insertBefore(ropeButton,document.getElementById('juvenile'));
+ropeButton.onclick=()=>setup('rabbit',true);
+const variantSelect=document.createElement('select');variantSelect.setAttribute('aria-label','测试遭遇');
+for(const [value,label] of [['','随机遭遇'],['foraging','觅食'],['watering','饮水'],['passage','穿越窄道']]){const opt=document.createElement('option');opt.value=value;opt.textContent=label;variantSelect.appendChild(opt);}
+document.querySelector('header').insertBefore(variantSelect,document.getElementById('rabbit'));
+document.getElementById('rabbit').onclick=()=>setup('rabbit');
+document.getElementById('juvenile').onclick=()=>setup('chicken_calf');
+document.getElementById('farm').onclick=()=>{const g=w();if(g.Hunting.isActive())return;g.GameEngine.setState('M0_Base_Inside_lv_1',10,12);g.SceneApp.openLivestockPanel();};
+document.getElementById('coop').onclick=()=>{const g=w();if(g.Hunting.isActive())return;const s=structuredClone(g.LivestockState.getState());s.arms.arm1.inner={module_id:'coop',level:1,occupied_slots:['inner','bottom']};s.arms.arm1.bottom={module_id:'coop',shadow:true};g.LivestockState.setState(s);g.SceneApp.updateLivestockPanel();};
+document.getElementById('save').onclick=()=>{w().SaveSystem.saveNow();frame.contentWindow.location.reload();};
+</script></html>

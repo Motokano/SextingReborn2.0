@@ -62,7 +62,7 @@
     { "item_id": "hunt_meat_deer", "weight": 28 },
     { "item_id": "hunt_squab", "weight": 25 },
     { "item_id": "hunt_turkey", "weight": 20 },
-    { "item_id": "hunt_salo", "weight": 15 },
+    { "item_id": "cook_salo", "weight": 15 },
     { "item_id": "textile_cocoon_wild", "weight": 25 }
   ],
   "loot_beginner": {
@@ -117,7 +117,7 @@
       [
         { "item_id": "hunt_meat_deer", "weight": 30 },
         { "item_id": "hunt_turkey", "weight": 25 },
-        { "item_id": "hunt_salo", "weight": 18 },
+        { "item_id": "cook_salo", "weight": 18 },
         { "item_id": "herb_chestnut", "weight": 25 },
         { "item_id": "herb_pecan", "weight": 18 },
         { "item_id": "herb_dill", "weight": 28 },
@@ -257,17 +257,17 @@
   "loot_d5": {
     "tiers": [
       [
-        { "item_id": "hunt_shrimp", "weight": 50 },
-        { "item_id": "hunt_mussel", "weight": 45 },
-        { "item_id": "hunt_cockle", "weight": 40 },
+        { "item_id": "fish_shrimp", "weight": 50 },
+        { "item_id": "fish_mussel", "weight": 45 },
+        { "item_id": "fish_cockle", "weight": 40 },
         { "item_id": "textile_coir", "weight": 40 },
         { "item_id": "wood_coconut", "weight": 35 },
         { "item_id": "herb_kombu", "weight": 30 }
       ],
       [
-        { "item_id": "hunt_fish_bonito", "weight": 35 },
-        { "item_id": "hunt_fish_eel", "weight": 30 },
-        { "item_id": "hunt_crab", "weight": 25 },
+        { "item_id": "fish_bonito", "weight": 35 },
+        { "item_id": "fish_eel", "weight": 30 },
+        { "item_id": "fish_crab", "weight": 25 },
         { "item_id": "herb_cacao_pod", "weight": 25 },
         { "item_id": "herb_galangal", "weight": 25 },
         { "item_id": "herb_laksa_leaf", "weight": 25 },
@@ -276,20 +276,20 @@
       ],
       [
         { "item_id": "ore_salt_sea", "weight": 30 },
-        { "item_id": "hunt_abalone", "weight": 15 },
-        { "item_id": "hunt_scallop_dried", "weight": 15 },
-        { "item_id": "hunt_crab", "weight": 15 },
-        { "item_id": "hunt_sea_cucumber", "weight": 12 },
-        { "item_id": "hunt_fish_maw", "weight": 12 },
+        { "item_id": "fish_abalone", "weight": 15 },
+        { "item_id": "fish_scallop_dried", "weight": 15 },
+        { "item_id": "fish_crab", "weight": 15 },
+        { "item_id": "fish_sea_cucumber", "weight": 12 },
+        { "item_id": "fish_maw", "weight": 12 },
         { "item_id": "herb_cacao_pod", "weight": 15 }
       ],
       [
-        { "item_id": "hunt_fish_eel", "weight": 15 },
-        { "item_id": "hunt_cockle", "weight": 20 },
-        { "item_id": "hunt_abalone", "weight": 10 },
-        { "item_id": "hunt_scallop_dried", "weight": 10 },
-        { "item_id": "hunt_sea_cucumber", "weight": 8 },
-        { "item_id": "hunt_fish_maw", "weight": 8 }
+        { "item_id": "fish_eel", "weight": 15 },
+        { "item_id": "fish_cockle", "weight": 20 },
+        { "item_id": "fish_abalone", "weight": 10 },
+        { "item_id": "fish_scallop_dried", "weight": 10 },
+        { "item_id": "fish_sea_cucumber", "weight": 8 },
+        { "item_id": "fish_maw", "weight": 8 }
       ]
     ]
   },

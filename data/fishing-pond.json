@@ -1,0 +1,628 @@
+{
+  "version": 1,
+  "entry": {
+    "map": "M0_Base_Outside_lv_1",
+    "x": 6,
+    "y": 10
+  },
+  "depth": {
+    "min": 2,
+    "max": 40,
+    "step": 1
+  },
+  "costs": {
+    "observe": [
+      1,
+      1
+    ],
+    "inspect": [
+      1,
+      1
+    ],
+    "probe": [
+      2,
+      3
+    ],
+    "station": [
+      1,
+      1
+    ],
+    "prepare": [
+      1,
+      1
+    ],
+    "nest": [
+      1,
+      1
+    ],
+    "snag": [
+      1,
+      3
+    ],
+    "gather": [
+      2,
+      3
+    ]
+  },
+  "points": [
+    {
+      "name": "近岸水面",
+      "depth": 8,
+      "grass": 0,
+      "xy": [
+        31,
+        77
+      ],
+      "visible": "近岸能看清一小段泥沙，往外渐渐看不清。",
+      "bottom": "估计不到一米深，触底有细碎摩擦感。",
+      "stocks": [
+        4,
+        6,
+        0,
+        0
+      ],
+      "probe_evidence": "estimate"
+    },
+    {
+      "name": "水草外侧",
+      "depth": 18,
+      "grass": 1,
+      "xy": [
+        31,
+        43
+      ],
+      "visible": "草茎伸入水中，水草外侧连着开阔水面。",
+      "bottom": "估计两米左右，回收时带着少量草叶。",
+      "stocks": [
+        5,
+        5,
+        1,
+        2
+      ],
+      "probe_evidence": "estimate"
+    },
+    {
+      "name": "草间水面",
+      "depth": 12,
+      "grass": 2,
+      "xy": [
+        23,
+        22
+      ],
+      "visible": "密草之间露着一小块水面，底部看不清。",
+      "bottom": "多次受到草茎阻挡，尚未确认水底。",
+      "stocks": [
+        1,
+        1,
+        0,
+        3
+      ],
+      "probe_evidence": "unconfirmed"
+    },
+    {
+      "name": "开阔水面",
+      "depth": 26,
+      "grass": 0,
+      "xy": [
+        59,
+        48
+      ],
+      "visible": "水面开阔，波纹清楚，底部看不清。",
+      "bottom": "估计两三米深，触底的感觉较轻。",
+      "stocks": [
+        3,
+        8,
+        2,
+        0
+      ],
+      "probe_evidence": "estimate"
+    },
+    {
+      "name": "远侧水面",
+      "depth": 36,
+      "grass": 1,
+      "xy": [
+        77,
+        28
+      ],
+      "visible": "陡岸下水色较暗，无法看清水底。",
+      "bottom": "估计三米多，触底后有发闷的拖滞感。",
+      "stocks": [
+        1,
+        0,
+        2,
+        1
+      ],
+      "probe_evidence": "estimate"
+    }
+  ],
+  "stations": [
+    {
+      "name": "平缓土岸",
+      "xy": [
+        17,
+        91
+      ],
+      "routes": [
+        {
+          "distance_dm": 20,
+          "hand_line_required_dm": 20,
+          "obstacle": 0
+        },
+        {
+          "distance_dm": 50,
+          "hand_line_required_dm": 35,
+          "obstacle": 1
+        },
+        null,
+        {
+          "distance_dm": 120,
+          "hand_line_required_dm": 120,
+          "obstacle": 0
+        },
+        null
+      ],
+      "landing": 3
+    },
+    {
+      "name": "芦苇岸边",
+      "xy": [
+        7,
+        37
+      ],
+      "routes": [
+        null,
+        {
+          "distance_dm": 20,
+          "hand_line_required_dm": 20,
+          "obstacle": 0
+        },
+        {
+          "distance_dm": 30,
+          "hand_line_required_dm": 25,
+          "obstacle": 2
+        },
+        {
+          "distance_dm": 80,
+          "hand_line_required_dm": 80,
+          "obstacle": 1
+        },
+        null
+      ],
+      "landing": 4
+    },
+    {
+      "name": "较陡岸边",
+      "xy": [
+        89,
+        9
+      ],
+      "routes": [
+        null,
+        {
+          "distance_dm": 120,
+          "hand_line_required_dm": 120,
+          "obstacle": 1
+        },
+        null,
+        {
+          "distance_dm": 60,
+          "hand_line_required_dm": 40,
+          "obstacle": 0
+        },
+        {
+          "distance_dm": 20,
+          "hand_line_required_dm": 20,
+          "obstacle": 0
+        }
+      ],
+      "landing": 4
+    }
+  ],
+  "fish": [
+    {
+      "id": "fishing_catch_crucian",
+      "name": "鲫鱼",
+      "appearance": "一条银灰色、侧身较高的鱼",
+      "layers": [
+        0,
+        1,
+        4
+      ],
+      "food": {
+        "worm": 3,
+        "grain": 2
+      },
+      "weights": [
+        [
+          50,
+          150
+        ],
+        [
+          150,
+          400
+        ],
+        [
+          400,
+          800
+        ]
+      ],
+      "lengths": [
+        [
+          8,
+          14
+        ],
+        [
+          14,
+          23
+        ],
+        [
+          23,
+          32
+        ]
+      ],
+      "sizes": [
+        50,
+        40,
+        10
+      ],
+      "loads": [
+        1,
+        2,
+        3
+      ],
+      "behaviors": [
+        45,
+        20,
+        15,
+        20
+      ],
+      "hook": "good"
+    },
+    {
+      "id": "fishing_catch_bleak",
+      "name": "白条",
+      "appearance": "一条银亮、身体细长的小鱼",
+      "layers": [
+        4,
+        2,
+        0
+      ],
+      "food": {
+        "worm": 3,
+        "grain": 1
+      },
+      "weights": [
+        [
+          20,
+          50
+        ],
+        [
+          50,
+          100
+        ],
+        [
+          100,
+          200
+        ]
+      ],
+      "lengths": [
+        [
+          6,
+          11
+        ],
+        [
+          11,
+          17
+        ],
+        [
+          17,
+          22
+        ]
+      ],
+      "sizes": [
+        60,
+        35,
+        5
+      ],
+      "loads": [
+        1,
+        1,
+        2
+      ],
+      "behaviors": [
+        65,
+        10,
+        5,
+        20
+      ],
+      "hook": "good"
+    },
+    {
+      "id": "fishing_catch_carp",
+      "name": "鲤鱼",
+      "appearance": "一条鳞片明显、嘴边带短须的鱼",
+      "layers": [
+        0,
+        1,
+        4
+      ],
+      "food": {
+        "worm": 2,
+        "grain": 3
+      },
+      "weights": [
+        [
+          300,
+          800
+        ],
+        [
+          800,
+          1500
+        ],
+        [
+          1500,
+          3000
+        ]
+      ],
+      "lengths": [
+        [
+          20,
+          32
+        ],
+        [
+          32,
+          43
+        ],
+        [
+          43,
+          58
+        ]
+      ],
+      "sizes": [
+        45,
+        40,
+        15
+      ],
+      "loads": [
+        2,
+        3,
+        4
+      ],
+      "behaviors": [
+        20,
+        45,
+        15,
+        20
+      ],
+      "hook": "fair"
+    },
+    {
+      "id": "fishing_catch_snakehead",
+      "name": "黑鱼",
+      "appearance": "一条身体修长、带暗色斑纹的大嘴鱼",
+      "layers": [
+        3,
+        2,
+        1
+      ],
+      "food": {
+        "worm": 1,
+        "grain": 0
+      },
+      "weights": [
+        [
+          300,
+          700
+        ],
+        [
+          700,
+          1500
+        ],
+        [
+          1500,
+          3000
+        ]
+      ],
+      "lengths": [
+        [
+          22,
+          32
+        ],
+        [
+          32,
+          45
+        ],
+        [
+          45,
+          60
+        ]
+      ],
+      "sizes": [
+        45,
+        40,
+        15
+      ],
+      "loads": [
+        2,
+        3,
+        4
+      ],
+      "behaviors": [
+        20,
+        35,
+        35,
+        10
+      ],
+      "hook": "fair"
+    }
+  ],
+  "behaviors": [
+    {
+      "id": "twitch",
+      "load_delta": 0,
+      "progress_delta": -1,
+      "hook_delta": 0,
+      "fatigue": 1,
+      "pull_pulses": true
+    },
+    {
+      "id": "surge",
+      "load_delta": 1,
+      "progress_delta": -3,
+      "hook_delta": 0,
+      "fatigue": 2,
+      "pull_pulses": true
+    },
+    {
+      "id": "grass",
+      "load_delta": 0,
+      "progress_delta": -2,
+      "hook_delta": 0,
+      "fatigue": 1,
+      "pull_pulses": false
+    },
+    {
+      "id": "ease",
+      "load_delta": -1,
+      "progress_delta": -1,
+      "hook_delta": 0,
+      "fatigue": 1,
+      "pull_pulses": false
+    }
+  ],
+  "bait": {
+    "fishing_bait_worm": {
+      "food": "worm",
+      "smell": 1
+    },
+    "fishing_bait_grain": {
+      "food": "grain",
+      "smell": 1
+    }
+  },
+  "presentation": {
+    "fishing_float_small": {
+      "fishing_sinker_fixed_1g": "normal",
+      "fishing_sinker_fixed_2g": "sunk",
+      "fishing_sinker_fixed_3g": "sunk"
+    },
+    "fishing_float_large": {
+      "fishing_sinker_fixed_1g": "slow",
+      "fishing_sinker_fixed_2g": "normal",
+      "fishing_sinker_fixed_3g": "low"
+    }
+  },
+  "rules": {
+    "approach": 30,
+    "smell_bonus": 5,
+    "nest_bonus": 10,
+    "disturbance_penalty": 10,
+    "bare_hook": 2,
+    "signals": [
+      25,
+      25,
+      40,
+      10
+    ],
+    "grass_contact": [
+      0,
+      15,
+      45
+    ],
+    "grass_results": [
+      50,
+      30,
+      20
+    ],
+    "nest_period": 3,
+    "recovery_period": 144,
+    "evidence_required": 2,
+    "max_logs": 12,
+    "gather_period": 12,
+    "snag_load": [
+      3,
+      4
+    ],
+    "snag_escape": {
+      "relax": [
+        60,
+        0
+      ],
+      "pull": [
+        80,
+        40
+      ]
+    },
+    "fatigue_limit": 4
+  },
+  "feedback": {
+    "rig_settled": "钩线落入水中。",
+    "no_obvious_movement": "水面没有明显的新动静。",
+    "clear_movement": "浮物接连轻点了几下。",
+    "float_submerged": "浮物持续向一侧移动。",
+    "sustained_pull": "竿梢下沉，水下传来连续拉扯。",
+    "no_sustained_pull": "抬起时没有持续的拉扯。",
+    "line_under_strong_pull": "鱼线绷紧，拉扯一阵比一阵强。",
+    "pull_changes": "水下的拉扯发生了变化。",
+    "catch_at_bank": "鱼已被带到岸边。",
+    "sudden_slack": "竿梢弹了回来，阻力突然消失。",
+    "line_cut": "你放弃了这次作业，切断了岸边的线。",
+    "bait_missing_on_retrieve": "收回检查，钩上的饵已经不见了。",
+    "rig_retrieved": "钩线已收回，可以查看与调整。",
+    "catch_kept": "鱼获已放入随身物品。",
+    "catch_released": "鱼被放回水中。",
+    "surface_splash": "水面突然翻起一团水花，随即又落了下去。",
+    "lure_moves": "你转动摇柄，细线逐渐收回。",
+    "line_pays_out": "绕线的部件转动放线，拉扯稍缓，距离却没有明显缩短。",
+    "surface_sound": "近处忽然传来一声水响，水面情况却看不清。",
+    "single_light": "浮物轻轻点了一下，又回到原处。"
+  },
+  "hook_fit": {
+    "fishing_hook_single_small": {
+      "fishing_catch_crucian": "good",
+      "fishing_catch_bleak": "good",
+      "fishing_catch_carp": "fair"
+    },
+    "fishing_hook_single_medium": {
+      "fishing_catch_crucian": "fair",
+      "fishing_catch_bleak": "difficult",
+      "fishing_catch_carp": "good"
+    },
+    "fishing_lure_frog": {
+      "fishing_catch_snakehead": "fair"
+    }
+  },
+  "lure": {
+    "rod_type": "fishing.lure_rod",
+    "frog_id": "fishing_lure_frog",
+    "approach": 45,
+    "fish_weights": [
+      0,
+      0,
+      0,
+      4
+    ],
+    "retrieve_ticks": {
+      "slow": 4,
+      "medium": 3,
+      "fast": 2
+    },
+    "style_weights": {
+      "steady": 0,
+      "pause": 10,
+      "twitch": 5
+    },
+    "speed_weights": {
+      "slow": 5,
+      "medium": 0,
+      "fast": -10
+    },
+    "signals": [
+      20,
+      35,
+      45,
+      0
+    ]
+  }
+}

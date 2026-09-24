@@ -27,6 +27,34 @@
     var displayTierThreshold1 = null;
     var displayTierThreshold2 = null;
 
+    function itemAttributes() {
+        return global && global.ItemAttributeModules ? global.ItemAttributeModules : null;
+    }
+
+    function getItemTemplateValue(templateOrId, field) {
+        var tpl = typeof templateOrId === 'string' ? getItemTemplate(templateOrId) : templateOrId;
+        var IAM = itemAttributes();
+        if (IAM && typeof IAM.getTemplateValue === 'function') return IAM.getTemplateValue(tpl, field);
+        return tpl && Object.prototype.hasOwnProperty.call(tpl, field) ? tpl[field] : undefined;
+    }
+
+    function getItemInstanceValue(instance, field) {
+        var tpl = instance && instance.item_id ? getItemTemplate(instance.item_id) : null;
+        var IAM = itemAttributes();
+        if (IAM && typeof IAM.getInstanceValue === 'function') return IAM.getInstanceValue(instance, tpl, field);
+        if (instance && Object.prototype.hasOwnProperty.call(instance, field)) return instance[field];
+        return getItemTemplateValue(tpl, field);
+    }
+
+    function setItemInstanceValue(instance, field, value) {
+        var tpl = instance && instance.item_id ? getItemTemplate(instance.item_id) : null;
+        var IAM = itemAttributes();
+        if (IAM && typeof IAM.setInstanceValue === 'function') return IAM.setInstanceValue(instance, tpl, field, value);
+        if (!instance) return false;
+        instance[field] = value;
+        return true;
+    }
+
     /** 特殊技能：解剖学（0 级未入门；≥1 解锁战斗配置中的肌肉分页） */
     var SPECIAL_ANATOMY_STUDIES_SKILL_ID = 'special_meridian_studies';
 
@@ -47,6 +75,8 @@
     var COMBAT_LIMB_IDS = ['lhand', 'rhand', 'lfoot', 'rfoot'];
 
     var GROUND_ITEM_DESPAWN_TICKS = 100;
+    var ITEM_INSTANCE_SCHEMA_VERSION = 1;
+    var ITEM_IDENTITY_SCHEMA_VERSION = 1;
 
     /** 潜能值：技能学习/升级资源；当前按非负整数持久化。 */
     var POTENTIAL_MIN = 0;
@@ -67,12 +97,126 @@
         skills: {},
         skill_max_level_bonus: {},
         ground_items: {},
+        item_identity: null,
         combat: null,
         /** hub 动作冷却：key = "skillId:actionId" → 剩余 tick */
         hub_action_cooldowns: {},
         potential: 0,
         combat_experience: 0
     };
+
+    function hashIdentitySeed(text) {
+        var h = 2166136261;
+        var s = String(text || '');
+        for (var i = 0; i < s.length; i++) {
+            h ^= s.charCodeAt(i);
+            h = Math.imul(h, 16777619);
+        }
+        return (h >>> 0).toString(36);
+    }
+
+    function newIdentityNamespace() {
+        var timePart = Math.max(0, Date.now ? Date.now() : new Date().getTime()).toString(36);
+        var randomPart = Math.floor(Math.random() * 0x100000000).toString(36);
+        return 'run-' + timePart + '-' + randomPart;
+    }
+
+    function normalizeIdentityState(raw, legacySeed) {
+        var namespace = raw && typeof raw.namespace === 'string' ? raw.namespace.trim() : '';
+        if (!namespace) namespace = legacySeed ? 'legacy-' + hashIdentitySeed(legacySeed) : newIdentityNamespace();
+        namespace = namespace.replace(/[^a-zA-Z0-9._-]/g, '_').slice(0, 80) || newIdentityNamespace();
+        var next = raw ? Math.floor(Number(raw.next_sequence) || 1) : 1;
+        return {
+            schema_version: ITEM_IDENTITY_SCHEMA_VERSION,
+            namespace: namespace,
+            next_sequence: Math.max(1, next)
+        };
+    }
+
+    function legacyIdentitySeed(rawState) {
+        var src = rawState && typeof rawState === 'object' ? rawState : {};
+        var compact = {
+            equipment: src.equipment || {},
+            pocket: src.inventory_pocket || [],
+            vest: src.inventory_vest || [],
+            backpack: src.inventory_backpack || [],
+            vehicle: src.inventory_vehicle || [],
+            ground: src.ground_items || {}
+        };
+        try { return JSON.stringify(compact); } catch (e) { return 'legacy-inventory'; }
+    }
+
+    function ensureIdentityState(legacySeed) {
+        if (!state.item_identity || typeof state.item_identity !== 'object') {
+            state.item_identity = normalizeIdentityState(null, legacySeed);
+        }
+        return state.item_identity;
+    }
+
+    function reserveItemInstanceId(instanceId) {
+        var identity = ensureIdentityState();
+        var prefix = 'itm:' + identity.namespace + ':';
+        var id = String(instanceId || '');
+        if (id.indexOf(prefix) !== 0) return;
+        var parsed = parseInt(id.slice(prefix.length), 36);
+        if (isFinite(parsed) && parsed >= identity.next_sequence) identity.next_sequence = parsed + 1;
+    }
+
+    function nextItemInstanceId() {
+        var identity = ensureIdentityState();
+        var sequence = identity.next_sequence++;
+        return 'itm:' + identity.namespace + ':' + sequence.toString(36);
+    }
+
+    /**
+     * 遍历一个实例直接拥有的真实子物品。防具 modules 与通用 connections
+     * 都是归属树的一部分；调用方不应把它们再当成顶层库存格。
+     */
+    function forEachItemInstanceChild(inst, callback) {
+        if (!inst || typeof inst !== 'object' || typeof callback !== 'function') return;
+        if (inst.modules && typeof inst.modules === 'object') {
+            for (var moduleKey in inst.modules) {
+                if (!Object.prototype.hasOwnProperty.call(inst.modules, moduleKey)) continue;
+                var moduleChild = inst.modules[moduleKey];
+                if (moduleChild && moduleChild.item_id) callback(moduleChild, '.modules.' + moduleKey, 'module', moduleKey);
+            }
+        }
+        if (inst.connections && typeof inst.connections === 'object') {
+            for (var slotKey in inst.connections) {
+                if (!Object.prototype.hasOwnProperty.call(inst.connections, slotKey)) continue;
+                var connection = inst.connections[slotKey];
+                var part = connection && connection.part && connection.part.item_id
+                    ? connection.part
+                    : (connection && connection.item_id ? connection : null);
+                if (part) callback(part, '.connections.' + slotKey + (connection.part ? '.part' : ''), 'connection', slotKey);
+            }
+        }
+    }
+
+    function getItemInstanceChildren(inst) {
+        var out = [];
+        forEachItemInstanceChild(inst, function (child, path, relation, key) {
+            out.push({ instance: child, path: path, relation: relation, key: key });
+        });
+        return out;
+    }
+
+    function ensureItemInstanceIdentity(inst, forceNew) {
+        if (!inst || typeof inst !== 'object' || !inst.item_id) return inst;
+        if (forceNew || typeof inst.instance_id !== 'string' || !inst.instance_id.trim()) {
+            inst.instance_id = nextItemInstanceId();
+        } else {
+            inst.instance_id = inst.instance_id.trim();
+            reserveItemInstanceId(inst.instance_id);
+        }
+        inst.instance_schema_version = ITEM_INSTANCE_SCHEMA_VERSION;
+        forEachItemInstanceChild(inst, function (child) { ensureItemInstanceIdentity(child, false); });
+        return inst;
+    }
+
+    function reissueItemInstanceId(inst) {
+        return ensureItemInstanceIdentity(inst, true);
+    }
 
     function clampPotentialStored(n) {
         var v = Math.floor(Number(n));
@@ -911,6 +1055,8 @@
      */
     function getDisplayName(tpl, tier, character) {
         if (!tpl) return '?';
+        if (global.FishingPond && global.FishingPond.recognition(tpl.item_id) === false) return tpl.placeholder_name || '尚未认识的物品';
+        if (global.FishingPond && global.FishingPond.recognition(tpl.item_id) === true) return tpl.sn || tpl.name;
         var langLv = getSurvivalLanguageLevel(character);
         if (langLv < 3) {
             if (tpl.placeholder_name != null && String(tpl.placeholder_name) !== '') return String(tpl.placeholder_name);
@@ -925,6 +1071,7 @@
      */
     function getDisplayDesc(tpl, tier, character) {
         if (!tpl) return '';
+        if (global.FishingPond && global.FishingPond.recognition(tpl.item_id) === false) return tpl.placeholder_name || '';
         var langLv = getSurvivalLanguageLevel(character);
         if (langLv < 2) return '';
         if (langLv < 4) {
@@ -1126,8 +1273,31 @@
     }
 
     /**
+     * 单个根实例的有效重量：自身数量重量 + 所有已连接真实部件。
+     * 已访问身份只计一次，损坏档即使含重复引用也不会重复加重或递归失控。
+     */
+    function getItemCombinedWeight(itemInstance, visitedIds) {
+        if (!itemInstance || !itemInstance.item_id) return 0;
+        var visited = visitedIds || {};
+        var instanceId = typeof itemInstance.instance_id === 'string' ? itemInstance.instance_id : '';
+        if (instanceId && visited[instanceId]) return 0;
+        if (instanceId) visited[instanceId] = true;
+        var tpl = getItemTemplate(itemInstance.item_id);
+        var ownWeight = tpl && tpl.weight_kg != null ? Number(tpl.weight_kg) : 0;
+        if (itemInstance.fishing_catch && /^fishing_catch_/.test(itemInstance.item_id) && Number.isFinite(itemInstance.fishing_catch.weight_kg) && itemInstance.fishing_catch.weight_kg > 0) ownWeight = itemInstance.fishing_catch.weight_kg;
+        if (!isFinite(ownWeight) || ownWeight < 0) ownWeight = 0;
+        var quantity = itemInstance.count != null ? Math.max(1, Math.floor(Number(itemInstance.count) || 1)) : 1;
+        var total = ownWeight * quantity;
+        forEachItemInstanceChild(itemInstance, function (child) {
+            total += getItemCombinedWeight(child, visited);
+        });
+        return total;
+    }
+
+    /**
      * 当前实际负重 W（设计 05 5.5.4）
-     * 装备 + 口袋 + 背心 + 背包内物品×背包折扣；力量满 100 时左右手武器不计入。
+     * 装备 + 口袋 + 背心 + 背包内组合根×背包折扣；组合内部部件不重复占格但计入重量。
+     * 力量满 100 时左右手武器及其连接部件不计入。
      * @returns {number} 公斤（kg），浮点
      */
     function getCurrentCarryWeight() {
@@ -1140,8 +1310,7 @@
             if (excludeWeaponWeight && (slotId === 'weapon_left' || slotId === 'weapon_right')) continue;
             var eq = state.equipment[slotId];
             if (!eq || !eq.item_id) continue;
-            var tpl = getItemTemplate(eq.item_id);
-            if (tpl && tpl.weight_kg != null) total += Number(tpl.weight_kg);
+            total += getItemCombinedWeight(eq);
         }
 
         function addContainerWeight(arr) {
@@ -1149,10 +1318,7 @@
             for (var j = 0; j < arr.length; j++) {
                 var cell = arr[j];
                 if (!cell || !cell.item_id) continue;
-                var tpl = getItemTemplate(cell.item_id);
-                if (!tpl || tpl.weight_kg == null) continue;
-                var qty = (cell.count != null && cell.count > 0) ? cell.count : 1;
-                total += qty * Number(tpl.weight_kg);
+                total += getItemCombinedWeight(cell);
             }
         }
 
@@ -1169,10 +1335,7 @@
             for (var k = 0; k < state.inventory_backpack.length; k++) {
                 var cell = state.inventory_backpack[k];
                 if (!cell || !cell.item_id) continue;
-                var tpl = getItemTemplate(cell.item_id);
-                if (!tpl || tpl.weight_kg == null) continue;
-                var qty = (cell.count != null && cell.count > 0) ? cell.count : 1;
-                total += qty * Number(tpl.weight_kg) * backpackFactor;
+                total += getItemCombinedWeight(cell) * backpackFactor;
             }
         }
 
@@ -1185,6 +1348,10 @@
      */
     function putItemIntoDefaultContainer(itemInstance) {
         if (!itemInstance || !itemInstance.item_id) return { placed: false, dropped: true };
+        if (itemInstance.instance_id) {
+            var ownedAt = findItemInstanceLocation(itemInstance.instance_id);
+            if (ownedAt) return { placed: false, dropped: false, reason: 'duplicate_instance_id', existing_location: ownedAt };
+        }
 
         var backpackSlots = getBackpackSlots();
         if (backpackSlots > 0) {
@@ -1203,7 +1370,7 @@
                         var existingElapsed = Number(existing.spoilage_elapsed_ticks) || 0;
                         var incomingElapsed = Number(itemInstance.spoilage_elapsed_ticks) || 0;
                         if (itemInstance.spoilage_elapsed_ticks != null || existing.spoilage_elapsed_ticks != null) {
-                            merged.spoilage_elapsed_ticks = Math.max(0, Math.max(existingElapsed, incomingElapsed));
+                            setItemInstanceValue(merged, 'spoilage_elapsed_ticks', Math.max(0, Math.max(existingElapsed, incomingElapsed)));
                         }
                         arr[i] = merged;
                         state.inventory_backpack = arr;
@@ -1286,16 +1453,24 @@
 
     function itemInstancesCanStack(a, b) {
         if (!a || !b || String(a.item_id || '') !== String(b.item_id || '')) return false;
-        if (a.charges != null || b.charges != null) {
-            if (Number(a.charges || 0) !== Number(b.charges || 0)) return false;
+        function signature(inst) {
+            var IAM = itemAttributes();
+            var c = IAM && typeof IAM.deepClone === 'function' ? IAM.deepClone(inst) : JSON.parse(JSON.stringify(inst));
+            var tpl = getItemTemplate(inst.item_id);
+            if (IAM && typeof IAM.normalizeInstance === 'function') c = IAM.normalizeInstance(c, tpl);
+            delete c.count;
+            delete c.ground_drop_tick;
+            delete c.instance_id;
+            delete c.instance_schema_version;
+            delete c.spoilage_elapsed_ticks;
+            if (c.attribute_state && c.attribute_state.base && c.attribute_state.base.spoilage) {
+                delete c.attribute_state.base.spoilage;
+                if (!Object.keys(c.attribute_state.base).length) delete c.attribute_state.base;
+                if (!Object.keys(c.attribute_state).length) delete c.attribute_state;
+            }
+            return JSON.stringify(c);
         }
-        var aKey = a.pharmacy_formula_key != null ? String(a.pharmacy_formula_key) : '';
-        var bKey = b.pharmacy_formula_key != null ? String(b.pharmacy_formula_key) : '';
-        if (aKey || bKey) return !!aKey && aKey === bKey && Number(a.pharmacy_rules_version || 0) === Number(b.pharmacy_rules_version || 0);
-        if (Array.isArray(a.components) || Array.isArray(b.components)) {
-            return JSON.stringify(a.components || []) === JSON.stringify(b.components || []);
-        }
-        return true;
+        return signature(a) === signature(b);
     }
 
     function warnFreshnessMerge(itemId, aElapsed, bElapsed) {
@@ -1318,28 +1493,13 @@
     }
 
     function copyItemInstance(inst) {
-        var c = { item_id: inst.item_id };
-        if (inst.count != null) c.count = inst.count;
-        if (inst.enchants && inst.enchants.length) c.enchants = inst.enchants.slice();
-        if (inst.enchant_id != null) c.enchant_id = inst.enchant_id;      // 模块附魔（契约 38 §4）
-        if (inst.modules && typeof inst.modules === 'object') {           // 模块化防具实例（契约 38 §4）
-            c.modules = {};
-            for (var mk in inst.modules) c.modules[mk] = inst.modules[mk];
-        }
-        if (inst.ground_drop_tick != null) c.ground_drop_tick = Math.max(0, Math.floor(Number(inst.ground_drop_tick) || 0));
-        if (inst.battery_charge != null) c.battery_charge = Math.max(0, Math.floor(Number(inst.battery_charge) || 0)); // 电池电量（k89）
-        // 47 §9.4：动态注射液实例携带成分列表（配药产出），必须随实例复制，否则叠加/移动即丢
-        if (Array.isArray(inst.components) && inst.components.length) {
-            c.components = inst.components.map(function (row) {
-                return { item_id: String(row && row.item_id != null ? row.item_id : ''), count: Math.max(1, Math.floor(Number(row && row.count) || 1)) };
-            }).filter(function (row) { return !!row.item_id; });
-        }
-        // 47 §8：一盒多次用量（药膏/散按次）——剩余次数随实例复制
+        if (!inst || typeof inst !== 'object' || !inst.item_id) return null;
+        var IAM = itemAttributes();
+        var c = IAM && typeof IAM.deepClone === 'function' ? IAM.deepClone(inst) : JSON.parse(JSON.stringify(inst));
         if (inst.charges != null) c.charges = Math.max(0, Math.floor(Number(inst.charges) || 0));
-        if (inst.pharmacy_formula_key != null) c.pharmacy_formula_key = String(inst.pharmacy_formula_key);
-        if (inst.pharmacy_rules_version != null) c.pharmacy_rules_version = Math.max(0, Math.floor(Number(inst.pharmacy_rules_version) || 0));
-        if (inst.spoilage_elapsed_ticks != null) c.spoilage_elapsed_ticks = Math.max(0, Math.floor(Number(inst.spoilage_elapsed_ticks) || 0));
-        return c;
+        var tpl = getItemTemplate(inst.item_id);
+        if (IAM && typeof IAM.normalizeInstance === 'function') c = IAM.normalizeInstance(c, tpl);
+        return ensureItemInstanceIdentity(c, false);
     }
 
     function getCurrentTickCountSafe() {
@@ -1392,6 +1552,15 @@
     function equip(slotId, instance) {
         if (EQUIP_SLOT_IDS.indexOf(slotId) < 0) return { success: false, message: t('inv.equip.invalid_slot') };
         if (!instance || !instance.item_id) return { success: false, message: t('inv.equip.invalid_item') };
+        if (instance.instance_id) {
+            var equippedOwnedAt = findItemInstanceLocation(instance.instance_id);
+            if (equippedOwnedAt) return {
+                success: false,
+                reason: 'duplicate_instance_id',
+                existing_location: equippedOwnedAt,
+                message: t('inv.item.duplicate_instance')
+            };
+        }
         var tpl = getItemTemplate(instance.item_id);
         if (!tpl) return { success: false, message: t('inv.equip.unknown_item') };
         if (tpl.equip_slot !== slotId) return { success: false, message: t('inv.equip.slot_mismatch') };
@@ -1442,6 +1611,15 @@
      */
     function installModule(slotId, plateKey, moduleInstance) {
         if (!moduleInstance || !moduleInstance.item_id) return { success: false, message: t('inv.module.invalid_module') };
+        if (moduleInstance.instance_id) {
+            var moduleOwnedAt = findItemInstanceLocation(moduleInstance.instance_id);
+            if (moduleOwnedAt) return {
+                success: false,
+                reason: 'duplicate_instance_id',
+                existing_location: moduleOwnedAt,
+                message: t('inv.item.duplicate_instance')
+            };
+        }
         var eq = state.equipment[slotId];
         if (!eq || !eq.item_id) return { success: false, message: t('inv.module.no_armor') };
         var tpl = getItemTemplate(eq.item_id);
@@ -1478,7 +1656,10 @@
         // 复合模块挂在主槽位（clothing）的模块列表，occupies 为唯一事实源（契约 38 §4）
         // 装备实例可能没有 modules 字段（新手装/新物品未初始化）→ 先确保存在
         if (!eq.modules || typeof eq.modules !== 'object') eq.modules = {};
-        eq.modules[plateKey] = { item_id: moduleInstance.item_id, enchant_id: moduleInstance.enchant_id || null };
+        var installed = copyItemInstance(moduleInstance);
+        if (!installed) return { success: false, message: t('inv.module.invalid_module') };
+        if (installed.enchant_id == null) installed.enchant_id = null;
+        eq.modules[plateKey] = installed;
         recalcCharacterStatsForEquipment();
         return { success: true };
     }
@@ -1537,10 +1718,15 @@
         if (!arr || index < 0 || index >= arr.length) return { item: null, success: false };
         var raw = arr[index];
         if (!raw || !raw.item_id) return { item: null, success: false };
+        if (global.FishingSession && typeof global.FishingSession.isInstanceLocked === 'function' && global.FishingSession.isInstanceLocked(raw.instance_id)) {
+            return { item: null, success: false, reason: 'item_locked' };
+        }
         var taken = copyItemInstance(raw);
         if (raw.count != null && raw.count > 1) {
             raw.count -= 1;
             taken.count = 1;
+            // 一个栈拆成两个同时存在的实体：原栈保留身份，拆出的新栈获得新身份。
+            reissueItemInstanceId(taken);
         } else {
             arr[index] = null;
         }
@@ -1598,13 +1784,15 @@
 
     /** 将物品放到指定格子地面 */
     function addItemToGround(mapId, x, y, itemInstance) {
-        if (!itemInstance || !itemInstance.item_id) return;
+        if (!itemInstance || !itemInstance.item_id) return false;
         var key = getGroundItemKey(mapId, x, y);
-        if (!key) return;
+        if (!key) return false;
+        if (itemInstance.instance_id && findItemInstanceLocation(itemInstance.instance_id)) return false;
         if (!state.ground_items[key]) state.ground_items[key] = [];
         var inst = copyItemInstance(itemInstance);
         if (inst.ground_drop_tick == null) inst.ground_drop_tick = getCurrentTickCountSafe();
         state.ground_items[key].push(inst);
+        return true;
     }
 
     /**
@@ -1746,8 +1934,10 @@
             if (!placed) {
                 for (var k = 0; k < backpackSlots; k++) {
                     var ex = toArr[k];
-                    if (ex && ex.item_id === item.item_id && !(ex.enchants && ex.enchants.length) && (ex.count || 1) < getMaxStack(item.item_id)) {
-                        ex.count = (ex.count || 1) + (item.count || 1);
+                    var mergedCount = ex ? (ex.count || 1) + (item.count || 1) : 0;
+                    if (ex && ex.item_id === item.item_id && !(ex.enchants && ex.enchants.length)
+                        && itemInstancesCanStack(ex, item) && mergedCount <= getMaxStack(item.item_id)) {
+                        ex.count = mergedCount;
                         placed = true;
                         break;
                     }
@@ -2234,6 +2424,7 @@
         state.inventory_vehicle = [];
         state.bound_vehicle_id = null;
         state.ground_items = {};
+        state.item_identity = normalizeIdentityState(null, null);
         initEquipmentSlots();
         var slot;
         for (var i = 0; i < EQUIP_SLOT_IDS.length; i++) {
@@ -2263,7 +2454,7 @@
                 inst.modules = modsS;
                 delete inst.enchants;
             }
-            state.equipment[key] = inst;
+            state.equipment[key] = ensureItemInstanceIdentity(inst, false);
         }
         state.combat = getDefaultCombatState();
         state.hub_action_cooldowns = {};
@@ -2313,7 +2504,10 @@
         equipmentTable = (cfg.equipment && typeof cfg.equipment === 'object')
             ? Object.assign({}, cfg.equipment, BUILTIN_EQUIPMENT_TEMPLATES)
             : Object.assign({}, BUILTIN_EQUIPMENT_TEMPLATES);
-        if (cfg.items) itemsTable = cfg.items;
+        if (cfg.items) {
+            var IAM = itemAttributes();
+            itemsTable = IAM && typeof IAM.hydrateCatalog === 'function' ? IAM.hydrateCatalog(cfg.items) : cfg.items;
+        }
         if (cfg.enchant) enchantTable = cfg.enchant;
         if (cfg.modules && typeof cfg.modules === 'object') moduleTable = cfg.modules;
         if (cfg.default_equipment && typeof cfg.default_equipment === 'object') {
@@ -2325,17 +2519,41 @@
 
     function setState(s) {
         if (!s) return;
+        var hasLoadedItems = !!(s.equipment || s.inventory_pocket || s.inventory_vest || s.inventory_backpack
+            || s.inventory_vehicle || s.ground_items);
+        if (s.item_identity && typeof s.item_identity === 'object') {
+            state.item_identity = normalizeIdentityState(s.item_identity, null);
+        } else if (hasLoadedItems) {
+            // 旧档没有身份元数据：按旧档内容生成稳定命名空间，重复读入同一旧档结果一致。
+            state.item_identity = normalizeIdentityState(null, legacyIdentitySeed(s));
+        } else {
+            ensureIdentityState();
+        }
+        var claimedInstanceIds = {};
+        function claimLoadedIdentity(inst) {
+            if (!inst || !inst.item_id) return inst;
+            if (claimedInstanceIds[inst.instance_id]) reissueItemInstanceId(inst);
+            claimedInstanceIds[inst.instance_id] = true;
+            forEachItemInstanceChild(inst, function (child) { claimLoadedIdentity(child); });
+            return inst;
+        }
+        function normalizeLoadedCell(cell) {
+            return cell && cell.item_id ? claimLoadedIdentity(copyItemInstance(cell)) : cell;
+        }
         if (s.equipment) {
             state.equipment = {};
             initEquipmentSlots();
             for (var k in s.equipment) {
-                if (EQUIP_SLOT_IDS.indexOf(k) >= 0) state.equipment[k] = s.equipment[k];
+                if (EQUIP_SLOT_IDS.indexOf(k) >= 0) state.equipment[k] = s.equipment[k] ? normalizeLoadedCell(s.equipment[k]) : null;
             }
         }
-        if (s.inventory_pocket) state.inventory_pocket = s.inventory_pocket.slice();
-        if (s.inventory_vest) state.inventory_vest = s.inventory_vest.slice();
-        if (s.inventory_backpack) state.inventory_backpack = s.inventory_backpack.slice();
-        if (s.inventory_vehicle) state.inventory_vehicle = s.inventory_vehicle.slice();
+        function normalizeLoadedArray(arr) {
+            return arr.map(normalizeLoadedCell);
+        }
+        if (s.inventory_pocket) state.inventory_pocket = normalizeLoadedArray(s.inventory_pocket);
+        if (s.inventory_vest) state.inventory_vest = normalizeLoadedArray(s.inventory_vest);
+        if (s.inventory_backpack) state.inventory_backpack = normalizeLoadedArray(s.inventory_backpack);
+        if (s.inventory_vehicle) state.inventory_vehicle = normalizeLoadedArray(s.inventory_vehicle);
         if (s.bound_vehicle_id !== undefined) state.bound_vehicle_id = s.bound_vehicle_id;
         if (s.skills) state.skills = s.skills;
         normalizeSkillsState();
@@ -2348,9 +2566,10 @@
         clampSkillLevelsToProgressionCaps();
         ensureAnatomyStudiesSkillPresent();
         if (s.ground_items && typeof s.ground_items === 'object') {
+            state.ground_items = {};
             for (var gk in s.ground_items) {
                 if (s.ground_items.hasOwnProperty(gk) && Array.isArray(s.ground_items[gk]))
-                    state.ground_items[gk] = s.ground_items[gk].slice();
+                    state.ground_items[gk] = normalizeLoadedArray(s.ground_items[gk]);
             }
         }
         if (s.combat && typeof s.combat === 'object') {
@@ -2467,6 +2686,7 @@
     }
 
     function getState() {
+        ensureIdentityState();
         var eq = {};
         for (var i = 0; i < EQUIP_SLOT_IDS.length; i++) {
             var id = EQUIP_SLOT_IDS[i];
@@ -2550,11 +2770,101 @@
             skills: state.skills,
             skill_max_level_bonus: bonusCopy,
             ground_items: groundCopy,
+            item_identity: {
+                schema_version: ITEM_IDENTITY_SCHEMA_VERSION,
+                namespace: state.item_identity.namespace,
+                next_sequence: state.item_identity.next_sequence
+            },
             combat: combatCopy,
             hub_action_cooldowns: hubCd,
             potential: state.potential,
             combat_experience: state.combat_experience
         };
+    }
+
+    function findItemInstanceRecord(instanceId) {
+        var wanted = String(instanceId || '');
+        if (!wanted) return null;
+        function inTree(inst, location, parent, relation, relationKey) {
+            if (!inst || typeof inst !== 'object' || !inst.item_id) return null;
+            if (inst.instance_id === wanted) return {
+                instance: inst,
+                location: location,
+                parent: parent || null,
+                relation: relation || null,
+                relation_key: relationKey || null
+            };
+            var found = null;
+            forEachItemInstanceChild(inst, function (child, suffix, childRelation, childKey) {
+                if (!found) found = inTree(child, location + suffix, inst, childRelation, childKey);
+            });
+            return found;
+        }
+        var found;
+        for (var ei = 0; ei < EQUIP_SLOT_IDS.length; ei++) {
+            found = inTree(state.equipment[EQUIP_SLOT_IDS[ei]], 'equipment.' + EQUIP_SLOT_IDS[ei], null, 'equipment', EQUIP_SLOT_IDS[ei]);
+            if (found) return found;
+        }
+        var containers = ['pocket', 'vest', 'backpack', 'vehicle'];
+        for (var ci = 0; ci < containers.length; ci++) {
+            var arr = state['inventory_' + containers[ci]] || [];
+            for (var ai = 0; ai < arr.length; ai++) {
+                found = inTree(arr[ai], 'inventory_' + containers[ci] + '[' + ai + ']', null, 'container', containers[ci]);
+                if (found) return found;
+            }
+        }
+        for (var gk in state.ground_items) {
+            if (!Object.prototype.hasOwnProperty.call(state.ground_items, gk)) continue;
+            var ground = state.ground_items[gk] || [];
+            for (var gi = 0; gi < ground.length; gi++) {
+                found = inTree(ground[gi], 'ground_items.' + gk + '[' + gi + ']', null, 'ground', gk);
+                if (found) return found;
+            }
+        }
+        return null;
+    }
+
+    function findItemInstanceLocation(instanceId) {
+        var record = findItemInstanceRecord(instanceId);
+        return record ? record.location : null;
+    }
+
+    function auditItemOwnership(extraRoots) {
+        var seen = {};
+        var missing = [];
+        var duplicates = [];
+        var total = 0;
+        function visit(inst, location) {
+            if (!inst || typeof inst !== 'object' || !inst.item_id) return;
+            total++;
+            var iid = typeof inst.instance_id === 'string' ? inst.instance_id : '';
+            if (!iid) missing.push(location);
+            else if (seen[iid]) duplicates.push({ instance_id: iid, first: seen[iid], second: location });
+            else seen[iid] = location;
+            forEachItemInstanceChild(inst, function (child, suffix) { visit(child, location + suffix); });
+        }
+        for (var ei = 0; ei < EQUIP_SLOT_IDS.length; ei++) visit(state.equipment[EQUIP_SLOT_IDS[ei]], 'equipment.' + EQUIP_SLOT_IDS[ei]);
+        var containers = ['pocket', 'vest', 'backpack', 'vehicle'];
+        for (var ci = 0; ci < containers.length; ci++) {
+            var arr = state['inventory_' + containers[ci]] || [];
+            for (var ai = 0; ai < arr.length; ai++) visit(arr[ai], 'inventory_' + containers[ci] + '[' + ai + ']');
+        }
+        for (var gk in state.ground_items) {
+            if (!Object.prototype.hasOwnProperty.call(state.ground_items, gk)) continue;
+            var ground = state.ground_items[gk] || [];
+            for (var gi = 0; gi < ground.length; gi++) visit(ground[gi], 'ground_items.' + gk + '[' + gi + ']');
+        }
+        function visitExtra(root, path) {
+            if (!root || typeof root !== 'object') return;
+            if (root.item_id) { visit(root, path); return; }
+            if (Array.isArray(root)) {
+                for (var i = 0; i < root.length; i++) visitExtra(root[i], path + '[' + i + ']');
+                return;
+            }
+            for (var key in root) if (Object.prototype.hasOwnProperty.call(root, key)) visitExtra(root[key], path + '.' + key);
+        }
+        if (extraRoots) visitExtra(extraRoots, 'external');
+        return { ok: missing.length === 0 && duplicates.length === 0, total: total, missing: missing, duplicates: duplicates };
     }
 
     function getCharacterForDisplay() {
@@ -2710,6 +3020,8 @@
     }
 
     global.InventoryEquipment = {
+        ITEM_INSTANCE_SCHEMA_VERSION: ITEM_INSTANCE_SCHEMA_VERSION,
+        ITEM_IDENTITY_SCHEMA_VERSION: ITEM_IDENTITY_SCHEMA_VERSION,
         SPECIAL_ANATOMY_STUDIES_SKILL_ID: SPECIAL_ANATOMY_STUDIES_SKILL_ID,
         EQUIP_SLOT_IDS: EQUIP_SLOT_IDS,
         getModuleTemplate: getModuleTemplate,
@@ -2734,6 +3046,17 @@
         setState: setState,
         getState: getState,
         getItemTemplate: getItemTemplate,
+        getItemTemplateValue: getItemTemplateValue,
+        getItemInstanceValue: getItemInstanceValue,
+        setItemInstanceValue: setItemInstanceValue,
+        copyItemInstance: copyItemInstance,
+        ensureItemInstanceIdentity: ensureItemInstanceIdentity,
+        reissueItemInstanceId: reissueItemInstanceId,
+        getItemInstanceChildren: getItemInstanceChildren,
+        findItemInstanceRecord: findItemInstanceRecord,
+        findItemInstanceLocation: findItemInstanceLocation,
+        auditItemOwnership: auditItemOwnership,
+        itemInstancesCanStack: itemInstancesCanStack,
         getEffectiveBaseValue: getEffectiveBaseValue,
         getAllItemIds: getAllItemIds,
         getItemDisplayTier: getItemDisplayTier,
@@ -2751,6 +3074,7 @@
         countCarriedItemsByTemplateId: countCarriedItemsByTemplateId,
         removeCarriedItemsByTemplateId: removeCarriedItemsByTemplateId,
         giveCarriedItemsByTemplateId: giveCarriedItemsByTemplateId,
+        getItemCombinedWeight: getItemCombinedWeight,
         getCurrentCarryWeight: getCurrentCarryWeight,
         putItemIntoDefaultContainer: putItemIntoDefaultContainer,
         canAcceptItem: canAcceptItem,

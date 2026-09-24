@@ -1,0 +1,107 @@
+{
+  "schema_version": 1,
+  "action_costs": {
+    "cast": {
+      "ticks": 1,
+      "stamina": 1
+    },
+    "wait": {
+      "ticks": 1,
+      "stamina": 0
+    },
+    "retrieve": {
+      "ticks": 1,
+      "stamina": 1
+    },
+    "fight_steady": {
+      "ticks": 1,
+      "stamina": 3,
+      "progress": 2,
+      "load_delta": 0
+    },
+    "fight_strong": {
+      "ticks": 1,
+      "stamina": 6,
+      "progress": 3,
+      "load_delta": 1
+    },
+    "lure_cast": {
+      "ticks": 1,
+      "stamina": 6
+    },
+    "lure_steady_slow": {
+      "ticks": 1,
+      "stamina": 6
+    },
+    "lure_steady_medium": {
+      "ticks": 1,
+      "stamina": 7
+    },
+    "lure_steady_fast": {
+      "ticks": 1,
+      "stamina": 9
+    },
+    "lure_pause_slow": {
+      "ticks": 1,
+      "stamina": 7
+    },
+    "lure_pause_medium": {
+      "ticks": 1,
+      "stamina": 8
+    },
+    "lure_pause_fast": {
+      "ticks": 1,
+      "stamina": 10
+    },
+    "lure_twitch_slow": {
+      "ticks": 1,
+      "stamina": 8
+    },
+    "lure_twitch_medium": {
+      "ticks": 1,
+      "stamina": 9
+    },
+    "lure_twitch_fast": {
+      "ticks": 1,
+      "stamina": 11
+    },
+    "fight_give": {
+      "ticks": 1,
+      "stamina": 3,
+      "progress": 0,
+      "load_delta": -1
+    },
+    "drag_adjust": {
+      "ticks": 1,
+      "stamina": 1
+    }
+  },
+  "hook_force": {
+    "light": 1,
+    "normal": 2,
+    "strong": 2
+  },
+  "hook_fit_penalty": {
+    "good": 0,
+    "fair": 1,
+    "difficult": 2
+  },
+  "strong_strike_load_bonus": 1,
+  "overload_break_count": 2,
+  "max_wear_stage": 2,
+  "drag": {
+    "loose": {
+      "load_cap": 1,
+      "slip_progress": -1
+    },
+    "medium": {
+      "load_cap": 3,
+      "slip_progress": -1
+    },
+    "tight": {
+      "load_cap": 5,
+      "slip_progress": 0
+    }
+  },
+  "missed_in_mouth_pull": true
+}

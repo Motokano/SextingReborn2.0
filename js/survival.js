@@ -310,7 +310,7 @@
 
         if (s.satiety !== undefined) state.satiety = clamp(Number(s.satiety) || 0, 0, get('satiety_overcap_max', 120));
         if (s.thirst !== undefined) state.thirst = round1(clamp(s.thirst, 0, get('thirst_max', 100)));
-        if (s.stamina !== undefined) state.stamina = round1(clamp(s.stamina, 0, get('stamina_max', 100)));
+        if (s.stamina !== undefined) state.stamina = roundStamina(clamp(s.stamina, 0, get('stamina_max', 100)));
         if (s.energy !== undefined) state.energy = round1(clamp(s.energy, 0, get('energy_max', 100)));
         if (s.mood !== undefined) state.mood = clamp(Math.round(s.mood), get('mood_min', 0), get('mood_max', 1000));
         if (s.composure !== undefined) state.composure = clamp(Math.round(s.composure), get('composure_min', 0), get('composure_max', 20));
@@ -1716,13 +1716,15 @@
         if (state.thirst > 0) state.thirstDeathTicks = 0;
     }
 
-    function consumeStamina(amount) {
+    function roundStamina(value) { return Math.round(value * 100) / 100; }
+    function consumeStamina(amount, options) {
         var a = Math.max(0, Number(amount) || 0);
-        var before = round1(Math.max(0, Number(state.stamina) || 0));
-        state.stamina = round1(Math.max(0, before - a));
-        var actualCost = round1(Math.max(0, before - state.stamina));
+        var before = roundStamina(Math.max(0, Number(state.stamina) || 0));
+        state.stamina = roundStamina(Math.max(0, before - a));
+        var actualCost = roundStamina(Math.max(0, before - state.stamina));
         if (actualCost > 0) {
-            if (foodConfig()) foodState.pendingStamina += actualCost;
+            // Walking pays stamina only; time-based metabolism remains in advanceTick.
+            if (foodConfig() && !(options && options.source === 'movement')) foodState.pendingStamina += actualCost;
             var gainPerStamina = Number(get('fatigue_gain_per_stamina_spent', 0.5));
             if (!isFinite(gainPerStamina) || gainPerStamina < 0) gainPerStamina = 0.5;
             state.fatigue = round1(clamp(
@@ -1748,19 +1750,22 @@
         var sc = Math.max(0, Number(satCost) || 0);
         var tc = Math.max(0, Number(thirstCost) || 0);
         var sg = Math.max(0, Number(staminaGain) || 0);
-        if (sc <= 0 && tc <= 0) return { ok: false, reason: 'no_cost' };
+        if (sc <= 0 || tc <= 0 || sg <= 0) return { ok: false, reason: 'no_cost' };
+        var gain = roundStamina(Math.min(sg, Math.max(0, get('stamina_max', 100) - state.stamina)));
+        if (gain <= 0) return { ok: true, stamina_gain: 0, satiety_cost: 0, thirst_cost: 0 };
+        // Round costs upward to the resource precision, never granting free fractional recovery.
+        sc = Math.ceil((sc * gain / sg - 1e-9) * 10) / 10;
+        tc = Math.ceil((tc * gain / sg - 1e-9) * 10) / 10;
         if (state.satiety < sc) return { ok: false, reason: 'low_satiety' };
         if (state.thirst < tc) return { ok: false, reason: 'low_thirst' };
-        state.satiety = round1(Math.max(0, state.satiety - sc));
-        state.thirst = round1(Math.max(0, state.thirst - tc));
-        if (sg > 0) {
-            state.stamina = round1(Math.min(get('stamina_max', 100), state.stamina + sg));
-        }
+        state.satiety = round1(state.satiety - sc);
+        state.thirst = round1(state.thirst - tc);
+        state.stamina = roundStamina(state.stamina + gain);
         if (state.stamina > 0) state.staminaZeroTicks = 0;
         syncStaminaExhaustedBuff();
         syncSatietyStateBuff();
         syncThirstStateBuff();
-        return { ok: true, stamina_gain: sg, satiety_cost: sc, thirst_cost: tc };
+        return { ok: true, stamina_gain: gain, satiety_cost: sc, thirst_cost: tc };
     }
 
     function clearFatigue() {
@@ -1858,7 +1863,8 @@
     }
 
     /** 单 tick 结算；返回 { death: string|null, coma: boolean } */
-    function advanceTick() {
+    function advanceTick(options) {
+        var movementTick = !!(options && options.source === 'movement');
         var result = { death: null, coma: false };
         if (state.isDead) return result;
         var beforeSnapshot = buildSurvivalStateSnapshot();
@@ -1916,12 +1922,12 @@
 
         // ---------- 饱食（43 消化模型：-1/tick 被动衰减 + 活性消化菜贡献叠加） ----------
         // 先扣基础衰减；「消化中」buff 的 survival_delta 在 advanceTick 之后由 buff 管线（tick_advanced）叠加，
-        // 净变化 = -1（基础衰减）+ Σ活性消化菜贡献（43 §二）。调息不再消耗饱食（2025 储备模型已废止）。
+        // 基础消化与代谢照常；主动恢复的额外储备消耗在体力段统一结算。
         var satDecay = Number(get('satiety_tick_decay', 1));
         if (!isFinite(satDecay) || satDecay < 0) satDecay = 1;
         var metabolismCfg = foodConfig();
         if (metabolismCfg) {
-            var mealResult = global.FoodMetabolism.tick(foodState, { satiety: state.satiety, nutrition: state.nutrition, weight_kg: state.weight_kg, height_cm: getHeightCm() }, metabolismCfg);
+            var mealResult = global.FoodMetabolism.tick(foodState, { satiety: state.satiety, nutrition: state.nutrition, weight_kg: state.weight_kg, height_cm: getHeightCm() }, metabolismCfg, { preserveReserves: movementTick });
             state.satiety = mealResult.satiety;
             state.nutrition = mealResult.nutrition;
             state.weight_kg = mealResult.weight_kg;
@@ -1930,7 +1936,7 @@
             }
             syncMealBalanceBuff();
             syncNutritionStateBuff();
-        } else if (state.satiety > 0) state.satiety = round1(Math.max(0, state.satiety - satDecay));
+        } else if (!movementTick && state.satiety > 0) state.satiety = round1(Math.max(0, state.satiety - satDecay));
         var satietyRange = syncSatietyStateBuff();
         var severeHungerSatietyMax = getSevereHungerSatietyMax();
         if (state.satiety <= 0) state.starvationTicks += 1;
@@ -1959,10 +1965,10 @@
             return result;
         }
 
-        // ---------- 饮水（43 配套：恢复被动衰减，调息不再消耗） ----------
+        // ---------- 饮水（基础衰减；主动恢复的额外消耗在体力段结算） ----------
         // 饮水即时恢复（thirst_restore）；衰减按 06 §6.1.2（每 thirst_tick_decay_interval tick -1）；死亡计时器仅在饮水为 0 时启动。
         var thirstInterval = get('thirst_tick_decay_interval', 2);
-        if (thirstInterval > 0 && tick % thirstInterval === 0) {
+        if (!movementTick && thirstInterval > 0 && tick % thirstInterval === 0) {
             var thirstDecay = Number(get('thirst_tick_decay_amount', 1));
             if (!isFinite(thirstDecay) || thirstDecay < 0) thirstDecay = 1;
             if (state.thirst > 0) state.thirst = round1(Math.max(0, state.thirst - thirstDecay));
@@ -1979,24 +1985,19 @@
 
         // ---------- 体力恢复 ----------
         var staminaMax = get('stamina_max', 100);
-        var baseRegen = 0;
-        if (state.isResting) {
-            baseRegen = get('rest_action_stamina_regen_per_tick', 2);
-        } else if (state.is_stamina_regen_action_active) {
-            // 常态恢复公式保留，仅在指定动作态开启时生效
-            baseRegen = get('stamina_tick_regen_base', 0.5);
+        // Ordinary recovery shares one paid conversion, including sleep and meditation.
+        if (!movementTick && (state.isResting || state.is_stamina_regen_action_active ||
+            (state.is_sit_meditation_active && !state.sit_meditation_interrupt_this_tick))) {
+            applyFoodConversion(get('rest_action_extra_satiety_decay_per_tick', 1),
+                get('rest_action_extra_thirst_decay_per_tick', 1),
+                get('rest_action_stamina_regen_per_tick', 2));
         }
-        var breath = Math.max(0, (typeof getBreathActual === 'function' ? getBreathActual() : 10));
-        var coef = get('breath_diqi_stamina_coef', 0.02);
-        var ningqi = (typeof getNingqiBonus === 'function' ? getNingqiBonus() : 0) || 0;
-        var regen = (baseRegen + coef * breath) * (1 + ningqi) * getStaminaRegenMultiplier() * getPainRecoveryFactor();
-        state.stamina = round1(Math.min(staminaMax, state.stamina + regen));
         // 站立基础代谢：不休息/不调息时每 tick 扣基础体力（时间流逝本身有代价；
         // 休息/调息正在恢复，豁免）。饱食/饮水走各自被动衰减（见上）。
         if (!state.isResting && !state.is_sit_meditation_active) {
             var passiveDrain = Number(get('stamina_passive_drain_per_tick', 0.2));
             if (isFinite(passiveDrain) && passiveDrain > 0) {
-                state.stamina = round1(Math.max(0, state.stamina - passiveDrain));
+                state.stamina = roundStamina(Math.max(0, state.stamina - passiveDrain));
             }
         }
         syncStaminaExhaustedBuff();
@@ -2115,11 +2116,7 @@
                     state.sit_meditation_interrupt_this_tick = false;
                     state.last_sit_meditation_gain = 0;
                 } else {
-                    // 调息（43 消化模型）：不再消耗饱食/饮水（时间为代价），恢复体力 + 底气。中度及以上疼痛时体力恢复减半（47 §9.6 / k229）。
-                    var tiaoStaGain = Number(get('tiao_xi_stamina_gain_per_tick', 2)) * getPainRecoveryFactor();
-                    if (isFinite(tiaoStaGain) && tiaoStaGain > 0) {
-                        state.stamina = round1(Math.min(get('stamina_max', 100), state.stamina + tiaoStaGain));
-                    }
+                    // 体力转换已在公共恢复段结算，此处只处理底气。
                     // 调息可在 current>=max 时继续累积，用于触发“烧蓝换上限”与封顶溢出区间。
                     applySitMeditationDiqiOnce();
                 }

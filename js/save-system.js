@@ -326,6 +326,8 @@
     }
 
     function buildSnapshot() {
+        if (global.Hunting && global.Hunting.isBusy()) return null;
+        if (global.FishingPond && global.FishingPond.isBusy()) return null;
         var mods = getAllModulesForSnapshot();
         if (!mods.GameTime || !mods.GameEngine || !mods.CharacterAttributes || !mods.Survival || !mods.InventoryEquipment) return null;
 
@@ -562,6 +564,9 @@
             agriculture_map: agricultureMapPersist,
             hideout_warehouse: hideoutWarehousePersist,
             livestock: livestockPersist,
+            hunting: global.Hunting ? global.Hunting.getState() : null,
+            fishing: global.FishingSession ? global.FishingSession.getState() : null,
+            fishing_pond: global.FishingPond ? global.FishingPond.getState() : null,
             muscles: musclesPersist,
             combat_engagement: combatEngagementPersist
         };
@@ -569,6 +574,9 @@
 
     function applySnapshot(snapshot) {
         if (!assertSnapshotShape(snapshot)) return false;
+        if (global.Hunting && !global.Hunting.validate(snapshot.hunting)) return false;
+        if (global.FishingSession && !global.FishingSession.validate(snapshot.fishing)) return false;
+        if (global.FishingPond && !global.FishingPond.validateEnvelope(snapshot.fishing_pond, snapshot.fishing)) return false;
         var mods = getAllModulesForSnapshot();
         if (!mods.GameTime || !mods.GameEngine || !mods.CharacterAttributes || !mods.Survival || !mods.InventoryEquipment) return false;
 
@@ -591,6 +599,8 @@
         if (typeof mods.InventoryEquipment.setState === 'function') {
             mods.InventoryEquipment.setState(snapshot.player.inventoryEquipment);
         }
+        if (global.FishingSession && !global.FishingSession.setState(snapshot.fishing || null)) return false;
+        if (global.FishingPond && !global.FishingPond.setState(snapshot.fishing_pond || null)) return false;
 
         // Character attributes.
         if (typeof mods.CharacterAttributes.setState === 'function') {
@@ -656,6 +666,7 @@
         if (global.LivestockState && typeof global.LivestockState.setState === 'function') {
             global.LivestockState.setState(snapshot.livestock || null);
         }
+        if (global.Hunting) global.Hunting.setState(snapshot.hunting || null);
 
         if (global.SceneCtx && snapshot.player && snapshot.player.sceneUi) {
             try {

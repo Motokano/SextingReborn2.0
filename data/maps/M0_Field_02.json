@@ -326,12 +326,21 @@
     {
       "x": 8,
       "y": 4,
-      "entity_id": "gathering_grass"
+      "entity_id": "hunting_point",
+      "hunting_point_id": "M0_Field_02_hunt_0",
+      "hunting_events": [
+        "rabbit"
+      ]
     },
     {
       "x": 13,
       "y": 4,
-      "entity_id": "gathering_grass"
+      "entity_id": "hunting_point",
+      "hunting_point_id": "M0_Field_02_hunt_1",
+      "hunting_events": [
+        "cattle_calf",
+        "sheep_calf"
+      ]
     },
     {
       "x": 14,

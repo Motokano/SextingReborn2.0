@@ -1,3 +1,11 @@
+> **2026-09-21 更新**：[62 地表钓鱼与捕捞系统](62-fishing-and-capture-system.md)：水域交互窗口、首塘、组合钓组、鱼口决策、主动捕捞、认知成长与存档方向。设计已确认，数值及实现待完成；替代旧钓鱼概率成长口径。
+
+> **2026-09-22 路亚切片**：[路亚与黑鱼实施记录](fishing-lure-implementation.md)：真实渔轮与雷蛙、高体力收饵、松紧负载查表、旧档迁移；已可独立试玩，正式购买入口和捕捞待接入。
+
+> **2026-09-22 配置初稿**：[首塘四组配置](fishing-first-pond-config-draft.md)：点位与路线、首批鱼种、基础装备、事件与反馈；配置驱动、整数 tick、认知过滤。数值仍待玩法平衡验收；首塘手竿切片现已接入，实际范围见 [68 首塘实施记录](68-first-pond-playable-slice.md)。
+
+> **2026-09-22 物品结构改造**：[63 物品属性模块与信息显示统一分类](63-item-attribute-modules.md)，附[逐字段盘点](item-module-field-inventory.md)：8个大类按需加载；[64 物品实例身份与原子转移](64-item-instance-identity-and-transfer.md)：稳定身份、唯一归属和仓库回滚；[65 真实部件连接与组合重量](65-item-assembly-and-combined-weight.md)：多层连接、循环/兼容校验、原子拆装与基础手竿切片；[66 组合信息与装配界面](66-item-assembly-information-and-ui.md)：正式悬浮说明、背包连接树与玩家装卸；[67 钓鱼作业状态、真实受力与连接损失](67-fishing-session-and-real-rig-loss.md)：作业锁定、挂饵消耗、永久磨损、按断点丢失及存档连续性。
+
 # 设计文档总览与模块索引
 
 > 棋子美术规范已确认：[棋子形象与落地表现](51-pawn-art-direction.md)。以通勤装v4为基准：小头、修长棋身、宽薄底座，72/144高度比例，右下轮廓短投影；后续新棋子统一遵循。
@@ -50,6 +58,8 @@
 | 身体部位与状态 | [09-body-parts.md](09-body-parts.md) | 七部位、损毁模型（满值即失能；旧"骨折/自恢复"条目标已废）、手术 |
 | 敌人设计 | [10-enemies.md](10-enemies.md) | 敌人与主角差异、配置、掉落池（默认可击杀，D17）；接线状态见文末「实现记录」 |
 | 技能系统 | [11-skills.md](11-skills.md) | 生存/生活/战斗/特殊、熟练度（每肢固定槽 1 出招，无招式循环）、战斗技能规则；后遗症装配见 34 |
+| 狩猎活动 | [hunting-system.md](hunting-system.md) | 独立活动入口、结束后冷却并到期可用、准备消耗体力、活动内禁食与正常休息；事件和数值待定，未实装 |
+| 狩猎与畜牧产出链 v1 | [hunting-output-chain-v1.md](hunting-output-chain-v1.md) | 14种狩猎材料覆盖、四种幼崽衔接、双方特色与共用材料、加工出口及61种现有畜牧产物核对；具体分配为草案 |
 | 玩家间交易 | [13-p2p-trading.md](13-p2p-trading.md) | 交易码、接头暗号、兑换与时效 |
 | NPC 与任务模板 | [16-npc-and-quest-template.md](16-npc-and-quest-template.md) | NPC 行为模板、触发条目模板、任务模板、林书瑶首例与 2 条触发条目 |
 | Buff / Debuff 系统 | [18-buff-system.md](18-buff-system.md) | 通用触发、分层消耗、命中/效果条件、调试开关 |
@@ -146,6 +156,8 @@ GAME_DESIGN 中「贸易与旅行商人」不单独成章，以 capitalism 目�
 - [制药依赖逐药数值草案](../reference/pharmacy-addiction-values.md)：39种药粉、19件现役成品、30个单粉配置示例；免疫0/100及连续使用核算，未实装。
 
 - [Sol新版制药实施清单](47-pharmacy-implementation-checklist.md)：数据与代码落点、部署顺序、验收与候选数值边界。
+
+- [首塘配置审阅稿 v2](fishing-config-review-v2.md)：钓鱼预设、首批完整试调表、配置归属、存档迁移及验收范围；设计提案，非实装记录。
 
 
 > 后续棋子肢体规则已确认：[七部位与共用损毁姿势](52-pawn-body-modules-and-poses.md)。主角与普通NPC共用，特殊Boss可专用；头胸腹伤效、四肢缺失与剩余支撑组合。设计确认，尚未实装。

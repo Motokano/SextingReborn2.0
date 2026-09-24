@@ -63,7 +63,14 @@
         var lines = [];
         // 仅保留通用属性（重量/背包减重/技能系数——武器与装备共用）；
         // 装备专属细节（口袋/背心栏/形态系数/词条槽/先天要求等）改由 info_module（module.equipment_armor）按技能解锁显示。
-        if (tpl.weight_kg != null) lines.push(ui('item.attr.weight', { v: tpl.weight_kg }));
+        if (tpl.weight_kg != null) {
+            var shownWeight = tpl.weight_kg;
+            var hasConnectedParts = !!(inst && inst.connections && Object.keys(inst.connections).length);
+            if (hasConnectedParts && IE && typeof IE.getItemCombinedWeight === 'function') shownWeight = IE.getItemCombinedWeight(inst);
+            var weightText = (global.ItemAssemblyDisplay && typeof global.ItemAssemblyDisplay.formatWeight === 'function')
+                ? global.ItemAssemblyDisplay.formatWeight(shownWeight) : shownWeight;
+            lines.push(ui(hasConnectedParts ? 'item.attr.combined_weight' : 'item.attr.weight', { v: weightText }));
+        }
         if (tpl.backpack_weight_factor != null) lines.push(ui('item.attr.backpack_weight_factor', { v: Math.round(tpl.backpack_weight_factor * 100) }));
         if (tpl.skill_coef != null) lines.push(ui('item.attr.skill_coef', { v: tpl.skill_coef }));
         return lines.length ? lines.join('\n') : '';
@@ -130,6 +137,7 @@
                 var modulesHtml = global.ItemInfoModules.renderTooltipModulesHtml({
                     itemId: itemId,
                     tpl: tpl,
+                    inst: inst,
                     character: character
                 });
                 if (modulesHtml) html += modulesHtml;
@@ -137,6 +145,12 @@
         } catch (e) { /* ignore */ }
         var fieldRulesHtml = buildItemFieldRulesHtmlAppend(itemId, tpl, inst, character);
         if (fieldRulesHtml) html += fieldRulesHtml;
+        try {
+            if (global.ItemAssemblyDisplay && typeof global.ItemAssemblyDisplay.renderAssemblyHtml === 'function') {
+                var assemblyHtml = global.ItemAssemblyDisplay.renderAssemblyHtml({ inst: inst, character: character, interactive: false, showWeight: false });
+                if (assemblyHtml) html += assemblyHtml;
+            }
+        } catch (eAssembly) { /* 连接显示异常不影响基础提示 */ }
         return html;
     }
 

@@ -1,0 +1,717 @@
+{
+  "schema_version": 1,
+  "history_limit": 32,
+  "visual_hours": [
+    6,
+    18
+  ],
+  "wear_visible_at": 1,
+  "signal_profiles": {
+    "clear_movement": [
+      "float_visible",
+      "repeated_light_dips"
+    ],
+    "float_submerged": [
+      "float_visible",
+      "sustained_lateral_motion"
+    ],
+    "surface_splash": [
+      "surface_splash_visible"
+    ],
+    "surface_sound": [
+      "surface_sound_heard"
+    ]
+  },
+  "facts": {
+    "float_visible": {
+      "channels": [
+        "visual"
+      ],
+      "groups": [
+        "float_still",
+        "single_tap",
+        "repeated_taps",
+        "sideways"
+      ],
+      "description": "本节点能看见水面浮物",
+      "lifetime": "event",
+      "public_rule": "只公开事件发生时通过感知筛选的事实，后来光线变化不补发"
+    },
+    "float_stable": {
+      "channels": [
+        "visual"
+      ],
+      "groups": [
+        "float_still"
+      ],
+      "description": "当前呈现处于稳定露出状态",
+      "lifetime": "event",
+      "public_rule": "只公开事件发生时通过感知筛选的事实，后来光线变化不补发"
+    },
+    "no_visible_change": {
+      "channels": [
+        "visual"
+      ],
+      "groups": [
+        "float_still"
+      ],
+      "description": "已观察时段内未出现可见新变化",
+      "lifetime": "event",
+      "public_rule": "只公开事件发生时通过感知筛选的事实，后来光线变化不补发"
+    },
+    "float_visible_at_start": {
+      "channels": [
+        "visual"
+      ],
+      "groups": [
+        "float_sinks"
+      ],
+      "description": "本次下沉开始时看见浮物",
+      "lifetime": "event",
+      "public_rule": "只公开事件发生时通过感知筛选的事实，后来光线变化不补发"
+    },
+    "float_submerged": {
+      "channels": [
+        "visual"
+      ],
+      "groups": [
+        "float_sinks",
+        "still_submerged"
+      ],
+      "description": "浮物进入水面以下",
+      "lifetime": "event",
+      "public_rule": "只公开事件发生时通过感知筛选的事实，后来光线变化不补发"
+    },
+    "no_reappearance": {
+      "channels": [
+        "visual"
+      ],
+      "groups": [
+        "float_sinks",
+        "still_submerged"
+      ],
+      "description": "本观察节点结束前未重新露出",
+      "lifetime": "event",
+      "public_rule": "只公开事件发生时通过感知筛选的事实，后来光线变化不补发"
+    },
+    "float_visibility_insufficient": {
+      "channels": [
+        "visual"
+      ],
+      "groups": [
+        "poor_visibility"
+      ],
+      "description": "当时条件不足以分辨细微漂相",
+      "lifetime": "event",
+      "public_rule": "只公开事件发生时通过感知筛选的事实，后来光线变化不补发"
+    },
+    "single_light_dip": {
+      "channels": [
+        "visual"
+      ],
+      "groups": [
+        "single_tap"
+      ],
+      "description": "发生一次轻微下顿",
+      "lifetime": "event",
+      "public_rule": "只公开事件发生时通过感知筛选的事实，后来光线变化不补发"
+    },
+    "float_returned": {
+      "channels": [
+        "visual"
+      ],
+      "groups": [
+        "single_tap"
+      ],
+      "description": "该次轻点后恢复原露出位置",
+      "lifetime": "event",
+      "public_rule": "只公开事件发生时通过感知筛选的事实，后来光线变化不补发"
+    },
+    "repeated_light_dips": {
+      "channels": [
+        "visual"
+      ],
+      "groups": [
+        "repeated_taps"
+      ],
+      "description": "本节点发生多次轻点",
+      "lifetime": "event",
+      "public_rule": "只公开事件发生时通过感知筛选的事实，后来光线变化不补发"
+    },
+    "sustained_lateral_motion": {
+      "channels": [
+        "visual"
+      ],
+      "groups": [
+        "sideways"
+      ],
+      "description": "本节点发生持续横移",
+      "lifetime": "event",
+      "public_rule": "只公开事件发生时通过感知筛选的事实，后来光线变化不补发"
+    },
+    "holding_rod": {
+      "channels": [
+        "touch"
+      ],
+      "groups": [
+        "strike_no_pull",
+        "brief_pull",
+        "sudden_slack",
+        "fixed_resistance",
+        "retry_fixed",
+        "variable_pull",
+        "fish_and_obstruction",
+        "obstruction_released",
+        "line_payout",
+        "progress",
+        "pull_continues",
+        "no_progress"
+      ],
+      "description": "角色正在持竿执行动作",
+      "lifetime": "event",
+      "public_rule": "只公开事件发生时通过感知筛选的事实，后来光线变化不补发"
+    },
+    "strike_completed": {
+      "channels": [
+        "touch"
+      ],
+      "groups": [
+        "strike_no_pull"
+      ],
+      "description": "本次提竿节点已执行",
+      "lifetime": "event",
+      "public_rule": "只公开事件发生时通过感知筛选的事实，后来光线变化不补发"
+    },
+    "no_sustained_pull": {
+      "channels": [
+        "touch"
+      ],
+      "groups": [
+        "strike_no_pull"
+      ],
+      "description": "提竿后没有持续负载",
+      "lifetime": "event",
+      "public_rule": "只公开事件发生时通过感知筛选的事实，后来光线变化不补发"
+    },
+    "brief_tension": {
+      "channels": [
+        "touch"
+      ],
+      "groups": [
+        "brief_pull"
+      ],
+      "description": "入口但未挂牢的节点产生短暂牵拉",
+      "lifetime": "event",
+      "public_rule": "只公开事件发生时通过感知筛选的事实，后来光线变化不补发"
+    },
+    "tension_released": {
+      "channels": [
+        "touch"
+      ],
+      "groups": [
+        "brief_pull"
+      ],
+      "description": "刚才的短暂负载已解除",
+      "lifetime": "event",
+      "public_rule": "只公开事件发生时通过感知筛选的事实，后来光线变化不补发"
+    },
+    "rod_tip_visible": {
+      "channels": [
+        "visual"
+      ],
+      "groups": [
+        "tip_returns"
+      ],
+      "description": "当时能看到竿梢",
+      "lifetime": "event",
+      "public_rule": "只公开事件发生时通过感知筛选的事实，后来光线变化不补发"
+    },
+    "tip_bent_then_returned": {
+      "channels": [
+        "visual"
+      ],
+      "groups": [
+        "tip_returns"
+      ],
+      "description": "短暂牵拉使竿梢弯下后恢复",
+      "lifetime": "event",
+      "public_rule": "只公开事件发生时通过感知筛选的事实，后来光线变化不补发"
+    },
+    "sustained_tension_before": {
+      "channels": [
+        "touch"
+      ],
+      "groups": [
+        "sudden_slack"
+      ],
+      "description": "此前存在持续负载",
+      "lifetime": "event",
+      "public_rule": "只公开事件发生时通过感知筛选的事实，后来光线变化不补发"
+    },
+    "sudden_tension_loss": {
+      "channels": [
+        "touch"
+      ],
+      "groups": [
+        "sudden_slack"
+      ],
+      "description": "本节点持续负载解除",
+      "lifetime": "event",
+      "public_rule": "只公开事件发生时通过感知筛选的事实，后来光线变化不补发"
+    },
+    "retrieval_attempt": {
+      "channels": [
+        "touch"
+      ],
+      "groups": [
+        "fixed_resistance"
+      ],
+      "description": "执行了实际回收或受阻处理",
+      "lifetime": "event",
+      "public_rule": "只公开事件发生时通过感知筛选的事实，后来光线变化不补发"
+    },
+    "fixed_direction_resistance": {
+      "channels": [
+        "touch"
+      ],
+      "groups": [
+        "fixed_resistance",
+        "fish_and_obstruction"
+      ],
+      "description": "当前固定障碍仍在牵制",
+      "lifetime": "event",
+      "public_rule": "只公开事件发生时通过感知筛选的事实，后来光线变化不补发"
+    },
+    "relax_then_pull": {
+      "channels": [
+        "touch"
+      ],
+      "groups": [
+        "retry_fixed"
+      ],
+      "description": "本次执行放松后再试",
+      "lifetime": "event",
+      "public_rule": "只公开事件发生时通过感知筛选的事实，后来光线变化不补发"
+    },
+    "same_obstruction_persists": {
+      "channels": [
+        "touch"
+      ],
+      "groups": [
+        "retry_fixed"
+      ],
+      "description": "同一受阻事件没有解除",
+      "lifetime": "event",
+      "public_rule": "只公开事件发生时通过感知筛选的事实，后来光线变化不补发"
+    },
+    "tension_strength_varies": {
+      "channels": [
+        "touch"
+      ],
+      "groups": [
+        "variable_pull"
+      ],
+      "description": "相邻实际对抗步骤的负载不同",
+      "lifetime": "event",
+      "public_rule": "只公开事件发生时通过感知筛选的事实，后来光线变化不补发"
+    },
+    "separate_pull_pulses": {
+      "channels": [
+        "touch"
+      ],
+      "groups": [
+        "fish_and_obstruction"
+      ],
+      "description": "固定受阻时当前鱼行为仍有配置的脉冲拉扯",
+      "lifetime": "event",
+      "public_rule": "只公开事件发生时通过感知筛选的事实，后来光线变化不补发"
+    },
+    "obstruction_released": {
+      "channels": [
+        "touch"
+      ],
+      "groups": [
+        "obstruction_released"
+      ],
+      "description": "本次受阻状态转为解除",
+      "lifetime": "event",
+      "public_rule": "只公开事件发生时通过感知筛选的事实，后来光线变化不补发"
+    },
+    "retrieval_possible": {
+      "channels": [
+        "touch"
+      ],
+      "groups": [
+        "obstruction_released"
+      ],
+      "description": "解除后能够继续回收",
+      "lifetime": "event",
+      "public_rule": "只公开事件发生时通过感知筛选的事实，后来光线变化不补发"
+    },
+    "payout_perceived": {
+      "channels": [
+        "touch"
+      ],
+      "groups": [
+        "line_payout"
+      ],
+      "description": "本节点渔轮实际放线且可感知",
+      "lifetime": "event",
+      "public_rule": "只公开事件发生时通过感知筛选的事实，后来光线变化不补发"
+    },
+    "no_observed_progress": {
+      "channels": [
+        "touch"
+      ],
+      "groups": [
+        "line_payout",
+        "no_progress"
+      ],
+      "description": "当前收鱼进度没有增加",
+      "lifetime": "event",
+      "public_rule": "只公开事件发生时通过感知筛选的事实，后来光线变化不补发"
+    },
+    "pull_persists": {
+      "channels": [
+        "touch"
+      ],
+      "groups": [
+        "progress",
+        "pull_continues"
+      ],
+      "description": "当前仍有持续负载",
+      "lifetime": "event",
+      "public_rule": "只公开事件发生时通过感知筛选的事实，后来光线变化不补发"
+    },
+    "progress_perceived": {
+      "channels": [
+        "touch"
+      ],
+      "groups": [
+        "progress"
+      ],
+      "description": "本步收鱼进度增加且持竿可感知",
+      "lifetime": "event",
+      "public_rule": "只公开事件发生时通过感知筛选的事实，后来光线变化不补发"
+    },
+    "retrieve_completed": {
+      "channels": [
+        "touch",
+        "inspection"
+      ],
+      "groups": [
+        "retrieved"
+      ],
+      "description": "实际回收动作完成",
+      "lifetime": "event",
+      "public_rule": "只公开事件发生时通过感知筛选的事实，后来光线变化不补发"
+    },
+    "hook_inspected": {
+      "channels": [
+        "inspection"
+      ],
+      "groups": [
+        "bait_present",
+        "bait_absent",
+        "grass_attached",
+        "no_attachment"
+      ],
+      "description": "钩已在岸上检查",
+      "lifetime": "event",
+      "public_rule": "只公开事件发生时通过感知筛选的事实，后来光线变化不补发"
+    },
+    "bait_present": {
+      "channels": [
+        "inspection"
+      ],
+      "groups": [
+        "bait_present"
+      ],
+      "description": "被检查的钩上仍有饵实例",
+      "lifetime": "event",
+      "public_rule": "只公开事件发生时通过感知筛选的事实，后来光线变化不补发"
+    },
+    "bait_absent": {
+      "channels": [
+        "inspection"
+      ],
+      "groups": [
+        "bait_absent"
+      ],
+      "description": "被检查的钩上没有饵实例",
+      "lifetime": "event",
+      "public_rule": "只公开事件发生时通过感知筛选的事实，后来光线变化不补发"
+    },
+    "terminal_inspected": {
+      "channels": [
+        "inspection"
+      ],
+      "groups": [
+        "hook_line_present",
+        "terminal_missing",
+        "hook_missing",
+        "leader_missing",
+        "hook_seen",
+        "leader_seen"
+      ],
+      "description": "岸上已检查末端组成",
+      "lifetime": "event",
+      "public_rule": "只公开事件发生时通过感知筛选的事实，后来光线变化不补发"
+    },
+    "hook_present": {
+      "channels": [
+        "inspection"
+      ],
+      "groups": [
+        "hook_line_present",
+        "hook_seen"
+      ],
+      "description": "实际末端钩存在",
+      "lifetime": "event",
+      "public_rule": "只公开事件发生时通过感知筛选的事实，后来光线变化不补发"
+    },
+    "leader_present": {
+      "channels": [
+        "inspection"
+      ],
+      "groups": [
+        "hook_line_present",
+        "leader_seen"
+      ],
+      "description": "实际末端短线存在",
+      "lifetime": "event",
+      "public_rule": "只公开事件发生时通过感知筛选的事实，后来光线变化不补发"
+    },
+    "hook_absent": {
+      "channels": [
+        "inspection"
+      ],
+      "groups": [
+        "terminal_missing",
+        "hook_missing"
+      ],
+      "description": "实际末端钩缺失",
+      "lifetime": "event",
+      "public_rule": "只公开事件发生时通过感知筛选的事实，后来光线变化不补发"
+    },
+    "leader_absent": {
+      "channels": [
+        "inspection"
+      ],
+      "groups": [
+        "terminal_missing",
+        "leader_missing"
+      ],
+      "description": "实际末端短线缺失",
+      "lifetime": "event",
+      "public_rule": "只公开事件发生时通过感知筛选的事实，后来光线变化不补发"
+    },
+    "grass_attached": {
+      "channels": [
+        "inspection"
+      ],
+      "groups": [
+        "grass_attached"
+      ],
+      "description": "本次带草事件留下的可检查草叶",
+      "lifetime": "event",
+      "public_rule": "只公开事件发生时通过感知筛选的事实，后来光线变化不补发"
+    },
+    "no_visible_attachment": {
+      "channels": [
+        "inspection"
+      ],
+      "groups": [
+        "no_attachment"
+      ],
+      "description": "检查时没有本次事件留下的附着物",
+      "lifetime": "event",
+      "public_rule": "只公开事件发生时通过感知筛选的事实，后来光线变化不补发"
+    },
+    "line_inspected": {
+      "channels": [
+        "inspection"
+      ],
+      "groups": [
+        "line_frayed"
+      ],
+      "description": "岸上已检查实际主线",
+      "lifetime": "event",
+      "public_rule": "只公开事件发生时通过感知筛选的事实，后来光线变化不补发"
+    },
+    "visible_local_fraying": {
+      "channels": [
+        "inspection"
+      ],
+      "groups": [
+        "line_frayed"
+      ],
+      "description": "检查时线磨损达到可见阈值",
+      "lifetime": "event",
+      "public_rule": "只公开事件发生时通过感知筛选的事实，后来光线变化不补发"
+    },
+    "surface_splash_visible": {
+      "channels": [
+        "visual"
+      ],
+      "groups": [
+        "surface_splash"
+      ],
+      "description": "路亚接触事件的可见水花",
+      "lifetime": "event",
+      "public_rule": "只公开事件发生时通过感知筛选的事实，后来光线变化不补发"
+    },
+    "surface_sound_heard": {
+      "channels": [
+        "sound"
+      ],
+      "groups": [
+        "surface_sound"
+      ],
+      "description": "路亚接触事件的可闻水响",
+      "lifetime": "event",
+      "public_rule": "只公开事件发生时通过感知筛选的事实，后来光线变化不补发"
+    },
+    "bottom_estimate_obtained": {
+      "channels": [
+        "touch"
+      ],
+      "groups": [
+        "bottom_estimate"
+      ],
+      "description": "探底结果包含深度估计证据",
+      "lifetime": "event",
+      "public_rule": "只公开事件发生时通过感知筛选的事实，后来光线变化不补发"
+    },
+    "bottom_unconfirmed": {
+      "channels": [
+        "touch"
+      ],
+      "groups": [
+        "bottom_uncertain"
+      ],
+      "description": "探底结果没有确认水底",
+      "lifetime": "event",
+      "public_rule": "只公开事件发生时通过感知筛选的事实，后来光线变化不补发"
+    },
+    "catch_visible": {
+      "channels": [
+        "inspection"
+      ],
+      "groups": [
+        "catch_seen"
+      ],
+      "description": "已处理上岸鱼获",
+      "lifetime": "event",
+      "public_rule": "只公开事件发生时通过感知筛选的事实，后来光线变化不补发"
+    },
+    "component_changed": {
+      "channels": [
+        "inspection"
+      ],
+      "groups": [
+        "setup_changed"
+      ],
+      "description": "实际部件或深度设置发生改变",
+      "lifetime": "event",
+      "public_rule": "只公开事件发生时通过感知筛选的事实，后来光线变化不补发"
+    }
+  },
+  "exclusive": [
+    [
+      "bait_present",
+      "bait_absent"
+    ],
+    [
+      "hook_present",
+      "hook_absent"
+    ],
+    [
+      "leader_present",
+      "leader_absent"
+    ],
+    [
+      "grass_attached",
+      "no_visible_attachment"
+    ],
+    [
+      "progress_perceived",
+      "no_observed_progress"
+    ],
+    [
+      "float_visible",
+      "float_visibility_insufficient"
+    ],
+    [
+      "float_stable",
+      "repeated_light_dips"
+    ],
+    [
+      "no_sustained_pull",
+      "pull_persists"
+    ]
+  ],
+  "source_types": [
+    "cast",
+    "wait",
+    "signal",
+    "strike",
+    "fight",
+    "snag",
+    "retrieve",
+    "inspect",
+    "cut",
+    "close",
+    "probe",
+    "observe",
+    "prepare",
+    "catch"
+  ],
+  "contact_signals": [
+    {
+      "id": "single_light",
+      "weight": 1,
+      "facts": [
+        "float_visible",
+        "single_light_dip",
+        "float_returned"
+      ]
+    },
+    {
+      "id": "clear_movement",
+      "weight": 1,
+      "facts": [
+        "float_visible",
+        "repeated_light_dips"
+      ]
+    },
+    {
+      "id": "float_submerged",
+      "weight": 1,
+      "facts": [
+        "float_visible",
+        "sustained_lateral_motion"
+      ]
+    }
+  ],
+  "strike_profiles": {
+    "miss": [
+      "holding_rod",
+      "strike_completed",
+      "no_sustained_pull"
+    ],
+    "brief": [
+      "holding_rod",
+      "strike_completed",
+      "brief_tension",
+      "tension_released",
+      "rod_tip_visible",
+      "tip_bent_then_returned"
+    ],
+    "hooked": [
+      "holding_rod",
+      "strike_completed",
+      "pull_persists"
+    ]
+  }
+}
