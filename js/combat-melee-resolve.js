@@ -267,6 +267,7 @@
             else if (BREATH_TAG_ALIAS[t] && breathBar.action_delta[BREATH_TAG_ALIAS[t]]) key = BREATH_TAG_ALIAS[t];
             if (key) { entry = breathBar.action_delta[key]; break; }
         }
+        if (!entry) entry = breathBar.action_delta["*"];
         if (!entry) return null;
         var val = Number(entry.value);
         if (!isFinite(val) || val === 0) return null;
@@ -474,6 +475,7 @@
         var segCount = Math.max(1, parseInt(move.hit_segments, 10) || 1);
         if (segCount > 4) segCount = 4;
         var segments = null;
+        var distanceMiss = outsideRange(opts, global.CombatBreath ? global.CombatBreath.range(move) : Math.max(1, Number(move.attack_range || move.range) || 1), true);
         var hitRollSuccess;
         var hitPart;
         var hitPartModifierKey;
@@ -491,7 +493,7 @@
             segments = [];
             var si;
             for (si = 0; si < segCount; si++) {
-                var sHit = Math.random() < P;
+                var sHit = !distanceMiss && Math.random() < P;
                 var sPart = sampleHitPart(move);
                 segLogHit(sHit, sPart);
                 segments.push({
@@ -504,7 +506,7 @@
             hitPart = segments[0].hitPart;
             hitPartModifierKey = segments[0].hitPartModifierKey;
         } else {
-            hitRollSuccess = Math.random() < P;
+            hitRollSuccess = !distanceMiss && Math.random() < P;
             hitPart = sampleHitPart(move);
             hitPartModifierKey = mapHitPartToModifierKey(hitPart);
             segLogHit(hitRollSuccess, hitPart);
@@ -535,7 +537,8 @@
         var breathPlan = global.CombatDamage.breath(breathBar, Number(qiState.qi_li_current) || 0, qiLimit,
             plannedBreathCost && plannedBreathCost.direction < 0 ? plannedBreathCost.amount : 0,
             plannedBreathCost && plannedBreathCost.direction > 0 ? plannedBreathCost.amount : 0);
-        breathMult = breathPlan.multiplier;
+        var breathBurst = global.CombatBreath && global.CombatBreath.active();
+        breathMult = breathPlan.multiplier * (breathBurst ? breathBurst.damage_multiplier : 1);
 
         var Mmove = move.move_power_multiplier != null ? Number(move.move_power_multiplier) : 1;
         if (!isFinite(Mmove) || Mmove <= 0) Mmove = 1;
@@ -738,6 +741,7 @@
             blockTargetEffects: insufficientDiqi || breathPlan.blockTargetEffects || !!(wt && !wt.canUse),
             actionConditionBonus: (Kprobe - 1) + (dom - 1) + (G - 1),
             breathMultiplier: breathMult,
+            breathBurst: breathBurst,
             resourceResult: null,
             hitRollSuccess: hitRollSuccess,
             hitPart: hitPart,
@@ -781,6 +785,13 @@
     /**
      * 敌人还击玩家：命中用敌速攻、玩家速防；伤害来自 combat-enemies 模板 attack_damage_min/max（缺省 6～14）。
      */
+    function outsideRange(opts, range, playerAttacks) {
+        if (!global.GameEngine) return false;
+        var map = global.GameEngine.getMap(), st = global.GameEngine.getState();
+        var enemy = map && (map.enemies || [])[opts.enemyIndex != null ? opts.enemyIndex : opts.targetIndex];
+        if (!enemy || !st) return false;
+        return Math.max(Math.abs(enemy.x-st.x),Math.abs(enemy.y-st.y)) > range;
+    }
     function resolveEnemyVsPlayerAttack(opts) {
         opts = opts || {};
         var enemyId = opts.enemyId;
@@ -799,7 +810,9 @@
                 P = Math.min(0.99, Math.max(0, P + hcDelta / 100));
             }
         }
-        var hitRollSuccess = Math.random() < P;
+        var action = CE && typeof CE.pickEnemyAction === 'function' ? CE.pickEnemyAction(enemyId, opts.enemyMapId, opts.enemyIndex) : null;
+        var distanceMiss = outsideRange(opts, Math.max(1, Number(action && (action.attack_range || action.range) || tpl && tpl.attack_range) || 1), false);
+        var hitRollSuccess = !distanceMiss && Math.random() < P;
         // 来源标识：区分「玩家攻击」与「敌人还击」（攻方=敌人）
         var enemyLabel = String(enemyId || '');
         try {
@@ -830,7 +843,7 @@
         // 实例键（enemyMapId/enemyIndex）用于肢体损毁联动：动作装备肢体已损毁则不可用（10-enemies）
         var eMapId = opts.enemyMapId != null ? opts.enemyMapId : null;
         var eIndex = opts.enemyIndex != null ? parseInt(opts.enemyIndex, 10) : null;
-        var action = CE && typeof CE.pickEnemyAction === 'function' ? CE.pickEnemyAction(enemyId, eMapId, eIndex) : null;
+        // Action was selected before range/hit evaluation; no second selection or regeneration.
         var hitPart = 'chest';
         var limbId = 'rhand';
         var qiSpent = 0;
@@ -909,6 +922,7 @@
     function finishActionResources(r) {
         if (!r || r.actionResourcesFinished) return;
         r.actionResourcesFinished = true;
+        if (global.CombatBreath) global.CombatBreath.finish(r.breathBurst);
         if (r.qiRestoreAmt > 0 && global.Survival && global.Survival.addQiLi) global.Survival.addQiLi(r.qiRestoreAmt);
     }
 

@@ -8,6 +8,8 @@
     function findHubAction(skillId, actionId) {
         var CS = global.CombatSkills;
         if (!CS || typeof CS.getSkill !== 'function') return null;
+        var common = CS.getCommonDiqiActions ? CS.getCommonDiqiActions() : [];
+        for (var n = 0; n < common.length; n++) if (common[n].id === actionId) return common[n];
         var sk = CS.getSkill(skillId);
         if (!sk || !sk.hub_actions || !sk.hub_actions.length) return null;
         for (var i = 0; i < sk.hub_actions.length; i++) {
@@ -226,7 +228,8 @@
             result.reason_key = 'combat.hub.fail.no_action';
             return result;
         }
-        if (!hubMatchesMount(skillId, skTpl)) {
+        var commonAction = CS.getCommonDiqiActions && CS.getCommonDiqiActions().some(function (a) { return a.id === actionId; });
+        if (!commonAction && !hubMatchesMount(skillId, skTpl)) {
             result.reason_key = 'combat.hub.fail.hub_mount';
             return result;
         }
@@ -242,13 +245,18 @@
             return result;
         }
         var needBattle = !!ha.battle_only;
-        var inBattleCtx = typeof options.isBattleContext === 'function' ? !!options.isBattleContext() : false;
+        var inBattleCtx = global.CombatEngagement ? global.CombatEngagement.isPlayerInCombat() : (typeof options.isBattleContext === 'function' ? !!options.isBattleContext() : false);
         if (needBattle && !inBattleCtx) {
             result.reason_key = 'combat.hub.fail.battle_only';
             return result;
         }
 
         var eff = resolveEffectType(ha);
+        if (eff === 'breath_burst') {
+            result.ok = !!(global.CombatBreath && global.CombatBreath.activate());
+            result.reason_key = result.ok ? 'combat.hub.ok.cui_qi' : 'combat.hub.fail.cui_qi';
+            return result;
+        }
         switch (eff) {
             case 'restore_qi_li':
                 tryExecuteRestoreQiLi(skillId, actionId, ha, IE, Surv, options, result);

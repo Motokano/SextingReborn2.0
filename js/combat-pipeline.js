@@ -82,11 +82,21 @@
         }
     }
     function queueDisplacement(ctx) {
-        if (!ctx.hitRollSuccess || ctx.parrySucceeded || ctx.blockTargetEffects) return;
-        var effect = moveFor(ctx).on_parry_failed_at_tick_end_displace_target;
-        if (effect && global.CombatWorld && global.CombatWorld.queueDisplacement) global.CombatWorld.queueDisplacement(ctx, effect);
+        if (ctx.displacementQueued || ctx.subhit_index > 0 || ctx._segmentOfAction) return;
+        ctx.displacementQueued = true;
+        var move = moveFor(ctx), effect = move.on_parry_failed_displace_target || move.on_parry_failed_at_tick_end_displace_target;
+        var burst = ctx.resourceResult && ctx.resourceResult.breathBurst;
+        var segments = ctx.segmentsResults || [ctx];
+        var ordinary = segments.some(function (s) { return s.hitRollSuccess && !s.parrySucceeded && !s.blockTargetEffects; });
+        var burstHit = burst && segments.some(function (s) { return s.hitRollSuccess && !s.blockTargetEffects; });
+        var cells = Math.max(ordinary && effect ? Number(effect.cells) || 0 : 0, burstHit ? burst.knockback_cells : 0);
+        if (cells && global.CombatWorld) global.CombatWorld.queueDisplacement(Object.assign({}, ctx, {hitRollSuccess:true, parrySucceeded:false}), {cells:cells});
     }
     function finishAction(ctx) {
+        if (!ctx.simultaneousDryRun && !ctx._segmentOfAction) {
+            queueDisplacement(ctx);
+            if (!ctx.deferDisplacement && global.CombatWorld) global.CombatWorld.flushDisplacements({deferKills:true});
+        }
         var r = ctx.resourceResult;
         if (!ctx.simultaneousDryRun && r && global.CombatMeleeResolve) global.CombatMeleeResolve.finishActionResources(r);
     }
@@ -892,7 +902,6 @@
             }, ctx.eventIdSuffix);
         }
         applyDestroyToDefender(ctx);
-        queueDisplacement(ctx);
         recordDirectionalCombatSnapshot(ctx, dmg);
         return ctx;
     }
@@ -902,6 +911,8 @@
      */
     function finalizeSimultaneousStrike(ctx) {
         if (ctx && ctx.segmentsResults) {
+            if (ctx.simultaneousCommitted) return;
+            ctx.simultaneousCommitted = true;
             ctx.segmentsResults.forEach(finalizeSimultaneousStrike);
             finishAction(Object.assign({}, ctx, { simultaneousDryRun: false }));
             return;
@@ -920,7 +931,6 @@
         if (sub.pendingStunGain && global.InventoryEquipment && global.InventoryEquipment.addPlayerStun) {
             global.InventoryEquipment.addPlayerStun(sub.pendingStunGain);
         }
-        queueDisplacement(sub);
         finishAction(Object.assign({}, sub, { simultaneousDryRun: false }));
         if (!global.BuffSystem || typeof global.BuffSystem.triggerBuffPipeline !== 'function') return;
         var tick = 0;
@@ -1003,6 +1013,8 @@
         var pipe = config.pipelines && config.pipelines[pipelineName];
         if (!pipe || !pipe.phases) return ctx;
         ctx.pipelineName = pipelineName;
+        if (ctx.simultaneousDryRun) ctx.deferDisplacement = true;
+        if (global.CombatWorld) global.CombatWorld.checkAttackDistance(ctx);
         prepareAction(ctx);
         // 多段（hit_segments>1）：每段独立跑完整管线（独立命中/招架/叠 Buff/唯一事件 id），整招聚合回写（11-skills 8.3.6 扩展#4）
         var segs = ctx.segments && ctx.segments.length > 1 ? ctx.segments : null;
@@ -1035,6 +1047,7 @@
                 eventIdSuffix: String(ctx.eventIdSuffix || ctx.moveId || '') + '_s' + si,
                 priorPendingBuffApplies: mergedPending.slice(),
                 resourceResult: null,
+                _segmentOfAction: true,
                 pendingBuffApplies: [],
                 segments: null
             });

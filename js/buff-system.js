@@ -150,6 +150,7 @@
         t = t && typeof t === 'object' ? t : {};
         return {
             buff_id: t.buff_id || '',
+            manualLifetime: !!t.manualLifetime,
             name: t.name || '',
             desc: t.desc || '',
             durationTicks: Math.max(0, parseInt(t.durationTicks, 10) || 0),
@@ -263,7 +264,7 @@
         var i;
         for (i = 0; i < arr.length; i++) {
             var inst = arr[i];
-            if (inst && inst.buff_id === buffId) sum += Math.max(0, parseInt(inst.stacks, 10) || 0);
+            if (inst && inst.buff_id === buffId) sum += Math.max(0, Number(inst.stacks) || 0);
         }
         return sum;
     }
@@ -745,7 +746,7 @@
         for (i = 0; i < arr.length; i++) {
             inst = arr[i];
             if (!inst || (inst.stacks || 0) <= 0 || !inst.template) continue;
-            if (inst.template.dispel_pool === 'beneficial') continue;
+            if (inst.template.dispel_pool === 'beneficial' || (inst.template.judgment_tags || {}).category === 'breath') continue;
             if (inst.expires_at_tick == null) continue;
             inst.expires_at_tick = inst.expires_at_tick + n;
             count++;
@@ -767,7 +768,7 @@
         for (i = 0; i < arr.length; i++) {
             inst = arr[i];
             if (!inst || !inst.template || (inst.stacks || 0) <= 0) continue;
-            if (inst.template.dispel_pool === 'beneficial') continue;
+            if (inst.template.dispel_pool === 'beneficial' || (inst.template.judgment_tags || {}).category === 'breath') continue;
             sum += Math.max(0, parseInt(inst.stacks, 10) || 0);
         }
         return sum;
@@ -857,6 +858,24 @@
         return true;
     }
 
+    function setBuffStacks(ownerId, buffId, count) {
+        var tpl = templateById[buffId];
+        if (!tpl) return false;
+        count = Math.min(tpl.maxStacks, Math.max(0, Number(count) || 0));
+        if (!count) { removeBuffByBuffId(ownerId, buffId); return true; }
+        var arr = ensureOwner(ownerId || PLAYER_OWNER_ID);
+        var inst = arr.filter(function (b) { return b.buff_id === buffId; })[0];
+        if (!inst) { applyBuff(ownerId, buffId); inst = arr.filter(function (b) { return b.buff_id === buffId; })[0]; }
+        if (!inst) return false;
+        inst.stacks = count;
+        recalcDerived(); notifyBuffHudRefresh(); emitBuffStateChanged(ownerId, 'stacks', {buff_id: buffId});
+        return true;
+    }
+    function removeBuffsByJudgmentTag(ownerId, tag) {
+        (ensureOwner(ownerId || PLAYER_OWNER_ID)).slice().forEach(function (b) {
+            if (b.template && Object.values(b.template.judgment_tags || {}).indexOf(tag) >= 0) removeBuffByBuffId(ownerId, b.buff_id);
+        });
+    }
     function removeExpiredByTick(tick) {
         var changed = false;
         var owners = Object.keys(instancesByOwner);
@@ -867,7 +886,7 @@
                 // 过期语义采用右开区间：[started_tick, expires_at_tick)
                 // 当 tick 恰好等于 expires_at_tick 时，仍允许该 tick 的事件链读取到实例；
                 // 仅当 tick 超过 expires_at_tick 才真正移除，避免 1tick 状态 Buff 被“同轮提前清空”。
-                if (inst.expires_at_tick < tick) {
+                if (!(inst.template && inst.template.manualLifetime) && inst.expires_at_tick < tick) {
                     applyExpireEffects(inst, tick);
                     arr.splice(j, 1);
                     changed = true;
@@ -896,7 +915,7 @@
                 if (tpl) {
                     anyTemplate = true;
                     // Buff 实例的有效层数下限为 1；0 层实例会让状态 Buff“存在但不可见/不生效”。
-                    inst.stacks = Math.min(tpl.maxStacks, Math.max(1, toInt(inst.stacks, 1)));
+                    inst.stacks = Math.min(tpl.maxStacks, Math.max(tpl.manualLifetime ? 0 : 1, tpl.manualLifetime ? Number(inst.stacks) || 0 : toInt(inst.stacks, 1)));
                 } else {
                     inst.stacks = Math.max(0, toInt(inst.stacks, 1));
                 }
@@ -944,7 +963,7 @@
                         source_id: inst.source_id != null ? String(inst.source_id) : null,
                         started_tick: inst.started_tick != null ? toInt(inst.started_tick, 0) : toInt(nowTick, 0),
                         expires_at_tick: inst.expires_at_tick != null ? toInt(inst.expires_at_tick, nowTick) : toInt(nowTick, 0),
-                        stacks: inst.stacks != null ? toInt(inst.stacks, 1) : 1,
+                        stacks: inst.stacks != null ? Math.max(0, Number(inst.stacks) || 0) : 1,
                         pharmacy_relief_stages: Math.max(0, toInt(inst.pharmacy_relief_stages, 0)),
                         pharmacy_survival_delta_steps: isPlainObject(inst.pharmacy_survival_delta_steps) ? JSON.parse(JSON.stringify(inst.pharmacy_survival_delta_steps)) : {},
                         pharmacy_survival_delta_last_tick: isPlainObject(inst.pharmacy_survival_delta_last_tick) ? JSON.parse(JSON.stringify(inst.pharmacy_survival_delta_last_tick)) : {},
@@ -1656,6 +1675,8 @@
         getState: getState,
         setState: setState,
         applyBuff: applyBuff,
+        setBuffStacks: setBuffStacks,
+        removeBuffsByJudgmentTag: removeBuffsByJudgmentTag,
         getBuffTemplate: getBuffTemplate,
         getBuffStacksSum: getBuffStacksSum,
         getParryChanceDeltaPercent: getParryChanceDeltaPercent,

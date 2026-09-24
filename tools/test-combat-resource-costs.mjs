@@ -62,7 +62,7 @@ for (const deferred of [false, true]) {
         resolve.applyDeferredResourceSpendFromResolveResult(r);
       }
       assert.equal(state.diqi_current, 0);
-      assert.equal(state.qi_li_current, 80);
+      assert.equal(state.qi_li_current, 75);
       if (available < needed) assert.equal(applied, 0);
     }
   }

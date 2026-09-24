@@ -562,6 +562,11 @@
             state.acquired.focus = Math.max(0, Math.floor(state.acquired.focus * externalAcquiredMultiplier.focus));
         }
 
+        var breathSkill = global.CombatBreath && global.CombatBreath.mounted();
+        var breathPct = Number(breathSkill && breathSkill.acquired_total_attribute_pct) || 0;
+        ['jingu', 'flexibility', 'breath', 'dexterity', 'focus'].forEach(function (key) {
+            state.acquired[key] += (getInnateAttr(key) + state.acquired[key]) * breathPct;
+        });
         var jingu = getEffectiveAttr('jingu');
         var flexibility = getEffectiveAttr('flexibility');
         var breath = getEffectiveAttr('breath');

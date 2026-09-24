@@ -1351,6 +1351,7 @@
         var CS = window.CombatSkills;
         if (!CS || typeof CS.getSkill !== 'function') return actionId || '—';
         var sk = CS.getSkill(skillId);
+        if (window.CombatHubActions) { var commonName = window.CombatHubActions.findHubActionTemplate(skillId, actionId); if (commonName) return commonName.name || actionId; }
         if (!sk || !sk.hub_actions) return actionId || '—';
         var hi;
         for (hi = 0; hi < sk.hub_actions.length; hi++) {
@@ -1596,7 +1597,10 @@
         if (CS && breathLv >= 1) {
             var sk = typeof CS.getSkill === 'function' ? CS.getSkill(breathId) : null;
             if (sk && sk.hub_actions) {
-                var mounted = hubs.breath === breathId;
+                var mountedSkill = CS.getSkill(hubs.breath);
+                var menuActions = (CS.getCommonDiqiActions ? CS.getCommonDiqiActions() : []).concat(mountedSkill ? mountedSkill.hub_actions || [] : []);
+                sk = Object.assign({}, sk, {hub_actions:menuActions});
+                var mounted = !!mountedSkill;
                 var adj = hubAdjacentForBreathActions();
                 var i;
                 for (i = 0; i < sk.hub_actions.length; i++) {
@@ -1616,7 +1620,10 @@
                         btnRow.textContent = (ha.name || ha.id) + ui('scene.gather.idle_suffix');
                         hint = ui('scene.meditation.stop_hint');
                     }
-                    if (!mounted) {
+                    var isCommon = CS.getCommonDiqiActions().some(function(a){return a.id===ha.id;});
+                    if (ha.hub_effect === 'breath_burst' && !window.CombatBreath.canActivate()) {
+                        dis = true; hint = ui('combat.hub.fail.cui_qi');
+                    } else if (!mounted && !isCommon) {
                         dis = true;
                         hint = ui('combat.hub.fail.hub_mount');
                     } else if (cd > 0 && isFinite(cdCfg) && cdCfg > 0) {
@@ -1652,7 +1659,8 @@
                                 return;
                             }
                             if (!CHA || typeof CHA.tryExecuteHubAction !== 'function') return;
-                            var r = CHA.tryExecuteHubAction(breathId, actionId, { isBattleContext: hubAdjacentForBreathActions });
+                            var actionSkillId = CS.getCommonDiqiActions().some(function(a){return a.id===actionId;}) ? breathId : hubs.breath;
+                            var r = CHA.tryExecuteHubAction(actionSkillId, actionId, { isBattleContext: hubAdjacentForBreathActions });
                             if (!r.ok) {
                                 var vars = {};
                                 if (r.cooldown_ticks != null) vars.ticks = r.cooldown_ticks;
@@ -1856,7 +1864,7 @@
                 var buffName = (inst.template && inst.template.name) ? String(inst.template.name) : String(inst.buff_id);
                 var stacks = Math.max(0, parseInt(inst.stacks, 10) || 0);
                 var expiresAt = parseInt(inst.expires_at_tick, 10);
-                var rem = isFinite(expiresAt) ? Math.max(0, expiresAt - nowTick) : null;
+                var rem = inst.template && inst.template.manualLifetime ? null : (isFinite(expiresAt) ? Math.max(0, expiresAt - nowTick) : null);
                 chip.textContent = buffName + '×' + stacks + (rem != null ? ' ' + rem + 't' : '');
                 chip.title = buffName + (inst.template && inst.template.desc ? (': ' + inst.template.desc) : '');
 
@@ -6809,11 +6817,9 @@
         var combat = IE.getCombatState();
         if (combatUIState.curCat === 'breath') {
             var prevBreath = combat.hubs.breath;
-            combat.hubs.breath = skillId;
             if (!safeSetCombatState({ hubs: { breath: skillId } }, ui('combat.deploy.breath_mount_fail'))) return;
             if (prevBreath !== skillId && window.Survival) {
                 // 07「切换」：切换呼吸法 = 消耗 1 tick + 读取新呼吸法的初始状态（initial_state，基本呼吸法 qi_li=0）
-                if (typeof window.Survival.applyBreathInitialState === 'function') window.Survival.applyBreathInitialState();
                 if (typeof window.Survival.advanceTick === 'function') window.Survival.advanceTick();
             }
         } else if (combatUIState.curCat === 'footwork') {
@@ -7832,6 +7838,10 @@
                 }
                 if (window.CombatPipeline && typeof window.CombatPipeline.runPipeline === 'function') {
                     var intent = pickWorldMeleeAttackIntent(ctxMeta);
+                    var approachSkill = window.CombatSkills && window.CombatSkills.getSkill(intent.skillId || intent.skill_id);
+                    var approachMove = approachSkill && (approachSkill.moves || []).filter(function(m){return m.id === (intent.moveId || intent.move_id);})[0];
+                    if (!CombatWorld.preparePlayerApproach({x:ctxMeta.x,y:ctxMeta.y}, approachMove)) return;
+                    st = E.getState(); ctxMeta.fromX = st.x; ctxMeta.fromY = st.y;
                     var defSpeed = 10;
                     var defenderBase = {
                         kind: 'enemy',
@@ -8016,7 +8026,7 @@
                         && defenderBase && window.CombatEnemies.isEnemyStunned(defenderBase.mapId, defenderBase.index));
 
                     if (useSimultaneous && CMR && typeof CMR.resolvePlayerVsEnemyAttack === 'function' && typeof CMR.resolveEnemyVsPlayerAttack === 'function') {
-                        r = CMR.resolvePlayerVsEnemyAttack({
+                        r = CMR.resolvePlayerVsEnemyAttack({targetIndex:defenderBase.index,
                             skillId: skUse,
                             moveId: mvUse,
                             limbId: limbUse,
@@ -8051,6 +8061,7 @@
                         if (typeof CP.finalizeSimultaneousStrike === 'function') {
                             CP.finalizeSimultaneousStrike(atkCtx);
                             if (atkCtxEnemy) CP.finalizeSimultaneousStrike(atkCtxEnemy);
+                            CombatWorld.flushDisplacements({deferKills:true});
                         }
                         {
                             var _ckSim = CombatWorld.enemyCounterAttackFlagKey(enemyId);
@@ -8077,13 +8088,12 @@
                                 }) + ui('combat.log.first_strike_reply'), 'damage');
                             }
                         }
-                        r = CMR.resolvePlayerVsEnemyAttack({
-                            skillId: skUse,
-                            moveId: mvUse,
-                            limbId: limbUse,
-                            powerLevel: _slotPwr,
-                            defenderSpeed: defSpeed
-                        });
+                        var playerBlocked = (window.Survival && window.Survival.getState().isDead) || (IE.consumePlayerStunRoundIfBlocking && IE.consumePlayerStunRoundIfBlocking());
+                        if (playerBlocked) {
+                            if (window.Survival) window.Survival.advanceTick();
+                            render(); return;
+                        }
+                        r = CMR.resolvePlayerVsEnemyAttack({targetIndex:defenderBase.index,skillId:skUse,moveId:mvUse,limbId:limbUse,powerLevel:_slotPwr,defenderSpeed:defSpeed});
                         atkCtx = buildPlayerAtkCtx(r, postIds, false);
                         if (intent.advanceCursor && window.InventoryEquipment && typeof window.InventoryEquipment.advanceMoveSequenceCursorForLimb === 'function') {
                             window.InventoryEquipment.advanceMoveSequenceCursorForLimb(atkCtx.limbId);
@@ -8093,7 +8103,7 @@
                         if (!CMR || typeof CMR.resolvePlayerVsEnemyAttack !== 'function') {
                             atkCtx = buildPlayerAtkCtx(null, postIds, false);
                         } else {
-                            r = CMR.resolvePlayerVsEnemyAttack({
+                            r = CMR.resolvePlayerVsEnemyAttack({targetIndex:defenderBase.index,
                                 skillId: skUse,
                                 moveId: mvUse,
                                 limbId: limbUse,
@@ -8114,6 +8124,7 @@
                                 enemyDeadNow = window.CombatEnemies.isEnemyDead(defenderBase.mapId, defenderBase.index);
                             }
                         } catch (eD) { /* ignore */ }
+                        enemyStunnedNow = !!(window.CombatEnemies && window.CombatEnemies.isEnemyStunned(defenderBase.mapId, defenderBase.index));
                         if (canEnemyCounter && !enemyDeadNow && !enemyStunnedNow && CMR && typeof CMR.resolveEnemyVsPlayerAttack === 'function') {
                             rEnemyCounter = CMR.resolveEnemyVsPlayerAttack({
                                 enemyId: enemyId,
@@ -8197,12 +8208,20 @@
                 var ddx = (dx != null) ? dx : (tx - st.x);
                 var ddy = (dy != null) ? dy : (ty - st.y);
                 if (!ddx && !ddy) return;
-                if (Math.abs(ddx) > 1 || Math.abs(ddy) > 1) return;
+                if (Math.abs(ddx) > 1 || Math.abs(ddy) > 1) {
+                    var distantEnemy = E.getEnemyAt(tx,ty);
+                    if (distantEnemy) window.SceneCtx.actions.attackEnemy(distantEnemy,{source:source,x:tx,y:ty,fromX:st.x,fromY:st.y});
+                    return;
+                }
                 var targetX = st.x + ddx;
                 var targetY = st.y + ddy;
 
                 // 固定优先级：敌人攻击 > NPC 对话 > 烹饪台互动 > 制药台互动 > 制肥桶互动 > 普通移动
                 var enemyId = (typeof E.getEnemyAt === 'function') ? E.getEnemyAt(targetX, targetY) : null;
+                if (!enemyId && window.CombatBreath && window.CombatBreath.active()) {
+                    var chargeEnemy = E.getEnemyAt(st.x + ddx * 2, st.y + ddy * 2);
+                    if (chargeEnemy) { targetX = st.x + ddx * 2; targetY = st.y + ddy * 2; enemyId = chargeEnemy; }
+                }
                 if (enemyId) {
                     if (isPreCreationGameplayRestricted()) {
                         showIntroBlockedMsg();
@@ -8857,4 +8876,3 @@
         return true;
     };
 })();
-

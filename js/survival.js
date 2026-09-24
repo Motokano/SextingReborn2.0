@@ -629,17 +629,21 @@
         var take = Math.min(a, state.qi_li_current);
         state.qi_li_current = round1(Math.max(0, state.qi_li_current - take));
         if (take > 0) state.qi_li_spent_this_tick = true;
+        if (global.CombatBreath) global.CombatBreath.spent(take);
         return take;
     }
 
     /** 核心条件不满足分支：呼吸条扣至 0 并标记本轮已消耗（07「核心条件不满足时的结算」） */
     function drainQiLi() {
+        var spent = state.qi_li_current;
         state.qi_li_current = 0;
+        if (global.CombatBreath) global.CombatBreath.spent(spent);
         state.qi_li_spent_this_tick = true;
     }
 
     /** 切换呼吸法时读取新呼吸法的初始状态（07「切换」）：qi_li_current = breath_bar.initial_state.qi_li（缺省 0）；并标记本轮已消耗（防切换当轮立刻回气） */
     function applyBreathInitialState() {
+        if (global.CombatBreath) global.CombatBreath.clear();
         var mb = getMountedBreath();
         var v = 0;
         if (mb && mb.breathBar && mb.breathBar.initial_state) {

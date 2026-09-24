@@ -159,18 +159,17 @@
             "left_leg": 0.05,
             "right_leg": 0.05
           },
-          "on_parry_failed_at_tick_end_displace_target": {
-            "cells": 1,
-            "direction": "away_from_actor",
-            "wall_slam_final_damage_multiplier": 1.3
-          },
           "diqi_cost": {
             "ratio_of_diqi_max_at_10_power": 0.1,
             "min": 1,
             "max": 50,
             "settlement": "floor_ratio_then_clamp_base_at_10_round_scale_min_1"
           },
-          "post_effect_slot_max": 1
+          "post_effect_slot_max": 1,
+          "on_parry_failed_displace_target": {
+            "cells": 1,
+            "direction": "away_from_actor"
+          }
         },
         {
           "id": "swing_punch",
@@ -333,101 +332,19 @@
       "id": "combat_basic_breath",
       "name": "基本呼吸法",
       "category": "breath",
-      "description": "调息炼气，为诸功之本。无肢上招式槽；血气化劲、吐气纳精、调息、激活防具等由「动作」菜单执行，数据见 hub_actions。呼吸条（气力）形态由 breath_bar 定义（旧气力规则回迁：上限 100、未消耗则轮末回 50%、挥拳/踢击 −25%、刺拳 −20%），未挂载呼吸法无呼吸条。",
+      "description": "全五维合计值的3%作为挂载期间后天加成。所有攻击每整招消耗25气力；未耗气的轮次恢复50%气力。战斗中累计消耗200气力可使用催气：立即满气，接下来三次攻击范围+1、冲锋、呼吸倍率1.8、未被闪开即击退1格。脱战或切换清空积蓄和爆发。",
       "difficulty": 1,
       "icon": "♾️",
       "only_parry": false,
       "moves": [],
       "hub_actions": [
         {
-          "id": "xue_qi_hua_jing",
-          "name": "血气化劲",
-          "hub_effect": "xue_qi_hua_jing",
-          "design_meta": {
-            "sheet_row_id": "HUB_XUE_QI",
-            "doc_anchor": "19-action-system §6.1",
-            "tags": [
-              "breath",
-              "hub_action",
-              "xue_qi_hua_jing"
-            ],
-            "wip_status": "live",
-            "applies_to": [
-              "player"
-            ]
-          },
+          "id": "cui_qi",
+          "name": "催气",
+          "hub_effect": "breath_burst",
           "unlock_level": 1,
-          "tick_cost": 1,
-          "xue_qi_destroy": 10,
-          "xue_qi_diqi_gain": 10
-        },
-        {
-          "id": "tu_qi_na_jing",
-          "name": "吐气纳精",
-          "hub_effect": "tu_qi_na_jing",
-          "design_meta": {
-            "sheet_row_id": "HUB_TU_QI",
-            "doc_anchor": "19-action-system §6.2",
-            "tags": [
-              "breath",
-              "hub_action",
-              "tu_qi_na_jing"
-            ],
-            "wip_status": "live",
-            "applies_to": [
-              "player"
-            ]
-          },
-          "unlock_level": 1,
-          "tick_cost": 1,
-          "tu_qi_diqi_cost": 10,
-          "tu_qi_energy_gain": 1
-        },
-        {
-          "id": "tiao_xi_once",
-          "name": "调息",
-          "hub_effect": "tiao_xi_once",
-          "design_meta": {
-            "sheet_row_id": "HUB_TIAO_XI",
-            "doc_anchor": "19-action-system §6.3",
-            "tags": [
-              "breath",
-              "hub_action",
-              "tiao_xi",
-              "sit_meditation"
-            ],
-            "wip_status": "live",
-            "applies_to": [
-              "player"
-            ]
-          },
-          "unlock_level": 1,
-          "tick_cost": 1,
-          "proficiency_usage_key": "tu_na"
-        },
-        {
-          "id": "diqi_huti",
-          "name": "激活防具",
-          "hub_effect": "diqi_shield",
-          "design_meta": {
-            "sheet_row_id": "HUB_DIQI_HUTI",
-            "doc_anchor": "19-action-system §6.6",
-            "tags": [
-              "breath",
-              "hub_action",
-              "diqi_shield"
-            ],
-            "wip_status": "live",
-            "applies_to": [
-              "player"
-            ]
-          },
-          "unlock_level": 50,
-          "tick_cost": 1,
-          "exclude_from_skill_total_proficiency": true,
-          "diqi_consume_ratio_of_max": 0.5,
-          "diqi_consume_min": 1,
-          "shield_tri_type_damage_reduce_pct": 0.25
+          "tick_cost": 0,
+          "battle_only": true
         }
       ],
       "breath_bar": {
@@ -442,16 +359,9 @@
           "condition": "no_negative_delta_this_round"
         },
         "action_delta": {
-          "punch": {
-            "type": "pct_of_max",
-            "value": -0.25,
-            "move_overrides": {
-              "jab": -0.2
-            }
-          },
-          "kick": {
-            "type": "pct_of_max",
-            "value": -0.25
+          "*": {
+            "type": "flat",
+            "value": -25
           }
         },
         "states": [],
@@ -467,7 +377,18 @@
         }
       },
       "max_level": 1000,
-      "level_cap_skill_id": null
+      "level_cap_skill_id": null,
+      "acquired_total_attribute_pct": 0.03,
+      "breath_special": {
+        "counter_buff": "buff_breath_charge",
+        "effect_buff": "buff_breath_burst",
+        "threshold": 200,
+        "attacks": 3,
+        "fill_qi": true,
+        "range_bonus": 1,
+        "damage_multiplier": 1.8,
+        "knockback_cells": 1
+      }
     },
     "combat_basic_footwork": {
       "id": "combat_basic_footwork",
@@ -634,11 +555,6 @@
             "right_leg": 0
           },
           "on_hit_roll_success_apply_buff_target": "buff_off_balance",
-          "on_parry_failed_at_tick_end_displace_target": {
-            "cells": 1,
-            "direction": "away_from_actor",
-            "wall_slam_final_damage_multiplier": 1.3
-          },
           "diqi_cost": {
             "ratio_of_diqi_max_at_10_power": 0.1,
             "min": 1,
@@ -653,7 +569,11 @@
                 "jingu": 15
               }
             }
-          ]
+          ],
+          "on_parry_failed_displace_target": {
+            "cells": 1,
+            "direction": "away_from_actor"
+          }
         },
         {
           "id": "slap_combo",
@@ -708,5 +628,97 @@
       "max_level": 1000,
       "level_cap_skill_id": null
     }
-  }
+  },
+  "common_diqi_actions": [
+    {
+      "id": "xue_qi_hua_jing",
+      "name": "血气化劲",
+      "hub_effect": "xue_qi_hua_jing",
+      "design_meta": {
+        "sheet_row_id": "HUB_XUE_QI",
+        "doc_anchor": "19-action-system §6.1",
+        "tags": [
+          "breath",
+          "hub_action",
+          "xue_qi_hua_jing"
+        ],
+        "wip_status": "live",
+        "applies_to": [
+          "player"
+        ]
+      },
+      "unlock_level": 1,
+      "tick_cost": 1,
+      "xue_qi_destroy": 10,
+      "xue_qi_diqi_gain": 10
+    },
+    {
+      "id": "tu_qi_na_jing",
+      "name": "吐气纳精",
+      "hub_effect": "tu_qi_na_jing",
+      "design_meta": {
+        "sheet_row_id": "HUB_TU_QI",
+        "doc_anchor": "19-action-system §6.2",
+        "tags": [
+          "breath",
+          "hub_action",
+          "tu_qi_na_jing"
+        ],
+        "wip_status": "live",
+        "applies_to": [
+          "player"
+        ]
+      },
+      "unlock_level": 1,
+      "tick_cost": 1,
+      "tu_qi_diqi_cost": 10,
+      "tu_qi_energy_gain": 1
+    },
+    {
+      "id": "tiao_xi_once",
+      "name": "调息",
+      "hub_effect": "tiao_xi_once",
+      "design_meta": {
+        "sheet_row_id": "HUB_TIAO_XI",
+        "doc_anchor": "19-action-system §6.3",
+        "tags": [
+          "breath",
+          "hub_action",
+          "tiao_xi",
+          "sit_meditation"
+        ],
+        "wip_status": "live",
+        "applies_to": [
+          "player"
+        ]
+      },
+      "unlock_level": 1,
+      "tick_cost": 1,
+      "proficiency_usage_key": "tu_na"
+    },
+    {
+      "id": "diqi_huti",
+      "name": "激活防具",
+      "hub_effect": "diqi_shield",
+      "design_meta": {
+        "sheet_row_id": "HUB_DIQI_HUTI",
+        "doc_anchor": "19-action-system §6.6",
+        "tags": [
+          "breath",
+          "hub_action",
+          "diqi_shield"
+        ],
+        "wip_status": "live",
+        "applies_to": [
+          "player"
+        ]
+      },
+      "unlock_level": 50,
+      "tick_cost": 1,
+      "exclude_from_skill_total_proficiency": true,
+      "diqi_consume_ratio_of_max": 0.5,
+      "diqi_consume_min": 1,
+      "shield_tri_type_damage_reduce_pct": 0.25
+    }
+  ]
 }

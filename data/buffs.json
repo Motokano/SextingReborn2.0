@@ -8550,6 +8550,43 @@
       "pharmacy_finished_product": true,
       "pharmacy_route": "drink",
       "pharmacy_scope": "systemic"
+    },
+    {
+      "buff_id": "buff_breath_charge",
+      "name": "蓄气",
+      "desc": "战斗中实际消耗气力累计，200层可催气；脱战或切换清空。",
+      "durationTicks": 0,
+      "manualLifetime": true,
+      "maxStacks": 200,
+      "stacksAddOnApply": 1,
+      "judgment_tags": {
+        "category": "breath"
+      },
+      "dispel_pool": "",
+      "effects": []
+    },
+    {
+      "buff_id": "buff_breath_burst",
+      "name": "催气",
+      "desc": "每层强化一整招：范围+1、冲锋、呼吸倍率1.8、命中即击退1格。期间不蓄气。",
+      "durationTicks": 0,
+      "manualLifetime": true,
+      "maxStacks": 3,
+      "stacksAddOnApply": 1,
+      "judgment_tags": {
+        "category": "breath"
+      },
+      "dispel_pool": "",
+      "effects": [
+        {
+          "type": "breath_attack",
+          "params": {
+            "range_bonus": 1,
+            "damage_multiplier": 1.8,
+            "knockback_cells": 1
+          }
+        }
+      ]
     }
   ]
 }

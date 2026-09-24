@@ -1426,7 +1426,8 @@
                 }
                 var ddx = gx - st.x;
                 var ddy = gy - st.y;
-                if (Math.abs(ddx) > 1 || Math.abs(ddy) > 1 || (!ddx && !ddy)) return;
+                if ((!ddx && !ddy)) return;
+                if ((Math.abs(ddx) > 1 || Math.abs(ddy) > 1) && !(E.getEnemyAt && E.getEnemyAt(gx,gy))) return;
                 var npcId = (typeof E.getInteractNpcIdAt === 'function')
                     ? E.getInteractNpcIdAt(gx, gy)
                     : ((typeof E.getNpcAt === 'function') ? E.getNpcAt(gx, gy) : null);

@@ -398,6 +398,50 @@
         if (cur > 0) IE2.setPlayerStunValue(cur - 1);
     }
 
+    function isCellFree(x, y, target) {
+        var map = E.getMap(), st = E.getState();
+        if (x < 0 || y < 0 || x >= map.width || y >= map.height || !E.isWalkable(x, y)) return false;
+        if ((map.enemies || []).some(function (e) { return e !== target && e.x === x && e.y === y; })) return false;
+        if (target !== 'player' && st.x === x && st.y === y) return false;
+        return !(E.getNpcAt && E.getNpcAt(x,y)) && !(E.getPortalAt && E.getPortalAt(x,y));
+    }
+    function preparePlayerApproach(target, move) {
+        var st = E.getState(), x = st.x, y = st.y;
+        var distance = Math.max(Math.abs(target.x-x), Math.abs(target.y-y));
+        var base = Math.max(1, Number(move && (move.attack_range || move.range)) || 1);
+        var range = global.CombatBreath ? global.CombatBreath.range(move) : base;
+        if (distance > range || distance < 1) return false;
+        if (distance <= base) return true;
+        var path = [];
+        while (Math.max(Math.abs(target.x-x),Math.abs(target.y-y)) > 1) {
+            var dx = Math.sign(target.x-x), dy = Math.sign(target.y-y);
+            if (!isCellFree(x+dx,y+dy,'player') || (dx && dy && (!isCellFree(x+dx,y,'player') || !isCellFree(x,y+dy,'player')))) return false;
+            x += dx; y += dy; path.push({x:x,y:y});
+        }
+        E.setState(st.mapId,x,y);
+        if (global.SceneAnimation && global.SceneAnimation.emit) global.SceneAnimation.emit('combat:charge',{fromX:st.x,fromY:st.y,x:x,y:y,path:path});
+        return true;
+    }
+    function checkAttackDistance(ctx) {
+        var map = E && E.getMap(), st = E && E.getState();
+        if (!map || !st || ctx._segmentOfAction) return;
+        var a = ctx.attacker || {}, d = ctx.defender || {};
+        function pos(e) {
+            if (e.kind === 'player') return {x:st.x,y:st.y};
+            return (map.enemies || []).filter(function (n, i) {return e.index != null ? i === e.index : n.enemy_id === e.enemyId;})[0] || e.pos;
+        }
+        var ap = pos(a), dp = pos(d);
+        if (!ap || !dp) return;
+        a.pos = {x:ap.x,y:ap.y}; d.pos = {x:dp.x,y:dp.y};
+        var sk = global.CombatSkills && global.CombatSkills.getSkill(ctx.skillId);
+        var move = ctx.moveTemplate || sk && (sk.moves || []).filter(function(m){return m.id===ctx.moveId;})[0];
+        var range = Math.max(1,Number(move && (move.attack_range || move.range)) || 1);
+        if (a.kind === 'player' && ctx.resourceResult && ctx.resourceResult.breathBurst) range += ctx.resourceResult.breathBurst.range_bonus;
+        if (Math.max(Math.abs(ap.x-dp.x),Math.abs(ap.y-dp.y)) <= range) return;
+        ctx.distanceMiss = true; ctx.hitRollSuccess = false;
+        (ctx.segments || []).forEach(function(seg){seg.hitRollSuccess=false;});
+        if (global.GameLog && global.UIText) global.GameLog.log(global.UIText.t('combat.log.distance_miss'),'combat');
+    }
     var displacementQueue = [];
     var displacementSequence = 0;
     function queueDisplacement(ctx, effect) {
@@ -412,11 +456,11 @@
         var speed = a.kind === 'player' && ca && ca.getCombatSpeed ? ca.getCombatSpeed() : tpl && tpl.speed;
         displacementQueue.push({ map: map, mapId: state.mapId, target: target, ctx: ctx,
             cells: Math.max(0, Math.floor(Number(effect.cells) || 0)),
-            multiplier: Math.max(1, Number(effect.wall_slam_final_damage_multiplier) || 1),
+            multiplier: 1.3,
             strength: strength, speed: speed, actorPos: Object.assign({}, a.pos),
             eventId: String(ctx.eventIdSuffix || ctx.moveId || '') + '_' + (++displacementSequence) });
     }
-    function flushDisplacements() {
+    function flushDisplacements(options) {
         var pending = displacementQueue;
         displacementQueue = [];
         var map = E && E.getMap(), state = E && E.getState();
@@ -442,23 +486,12 @@
             var x = current.x, y = current.y, ox = x, oy = y;
             var dx = x - q.actorPos.x, dy = y - q.actorPos.y;
             if (!isFinite(dx) || !isFinite(dy) || (!dx && !dy)) return;
-            var dirs = [];
-            for (var vx = -1; vx <= 1; vx++) for (var vy = -1; vy <= 1; vy++) {
-                if (vx || vy) dirs.push({ x: vx, y: vy, dot: (vx * dx + vy * dy) / Math.sqrt(vx * vx + vy * vy) });
-            }
-            dirs.sort(function (a, b) { return b.dot - a.dot; });
+            var stepX = Math.sign(dx), stepY = Math.sign(dy);
             var moved = 0;
             for (; moved < q.cells; moved++) {
-                var next = dirs.filter(function (dir) {
-                    var nx = x + dir.x, ny = y + dir.y;
-                    if (!E.isWalkable(nx, ny)) return false;
-                    if ((map.enemies || []).some(function (e) { return e !== target && e.x === nx && e.y === ny; })) return false;
-                    var ps = E.getState();
-                    if (target !== 'player' && ps.x === nx && ps.y === ny) return false;
-                    return !(E.getNpcAt && E.getNpcAt(nx, ny));
-                })[0];
-                if (!next) break;
-                x += next.x; y += next.y;
+                var nx = x + stepX, ny = y + stepY;
+                if (!isCellFree(nx, ny, target) || (stepX && stepY && (!isCellFree(x + stepX, y, target) || !isCellFree(x, y + stepY, target)))) break;
+                x = nx; y = ny;
             }
             if (target === 'player') { if (moved) E.setState(state.mapId, x, y); }
             else { target.x = x; target.y = y; }
@@ -474,14 +507,18 @@
                         defender: Object.assign({}, q.ctx.defender, { index: index })
                     }));
                 }
+                if (target === 'player' && global.InventoryEquipment && global.InventoryEquipment.addPlayerStun) global.InventoryEquipment.addPlayerStun(50);
+                else if (global.CombatEnemies.addEnemyStun) global.CombatEnemies.addEnemyStun(state.mapId, index, target.enemy_id, 50);
                 q.ctx.collisionDamageApplied = damage;
             }
         });
-        settleEnemyKills();
+        if (!(options && options.deferKills)) settleEnemyKills();
     }
 
     global.CombatWorld = {
         queueDisplacement: queueDisplacement,
+        preparePlayerApproach: preparePlayerApproach,
+        checkAttackDistance: checkAttackDistance,
         flushDisplacements: flushDisplacements,
         setUiDeps: setUiDeps,
         markCounterAttackFlag: markCounterAttackFlag,

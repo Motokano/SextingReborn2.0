@@ -2932,7 +2932,11 @@
             }
         }
         if (partial.hubs) {
-            if (partial.hubs.breath !== undefined) state.combat.hubs.breath = partial.hubs.breath;
+            if (partial.hubs.breath !== undefined && state.combat.hubs.breath !== partial.hubs.breath) {
+                state.combat.hubs.breath = partial.hubs.breath;
+                if (global.CombatBreath) global.CombatBreath.clear();
+                if (global.Survival && global.Survival.applyBreathInitialState) global.Survival.applyBreathInitialState();
+            }
             if (partial.hubs.footwork !== undefined) state.combat.hubs.footwork = partial.hubs.footwork;
             if (partial.hubs.light !== undefined && partial.hubs.footwork === undefined) state.combat.hubs.footwork = partial.hubs.light;
         }

@@ -14,6 +14,7 @@
 
     function setConfig(cfg) {
         if (!cfg) return;
+        if (cfg.common_diqi_actions) config.common_diqi_actions = cfg.common_diqi_actions;
         if (cfg.constants) config.constants = cfg.constants;
         if (cfg.categories && Array.isArray(cfg.categories)) config.categories = cfg.categories;
         if (cfg.skills && typeof cfg.skills === 'object') config.skills = cfg.skills;
@@ -184,6 +185,7 @@
         return getProficiencyRatio(useCount, null);
     }
 
+    function getCommonDiqiActions() { return config.common_diqi_actions || []; }
     /** 技能总熟练度 = 所有 moves + hub_actions 熟练度比例的算术平均（无条目则 0） */
     function getSkillTotalProficiency(skillId, moveUsage) {
         var sk = getSkill(skillId);
@@ -436,6 +438,7 @@
         getConstants: getConstants,
         getCategories: getCategories,
         getSkill: getSkill,
+        getCommonDiqiActions: getCommonDiqiActions,
         getSkills: getSkills,
         getSkillsByCategory: getSkillsByCategory,
         getDifficultyMultiplier: getDifficultyMultiplier,

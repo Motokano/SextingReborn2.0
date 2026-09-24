@@ -32,6 +32,7 @@
     }
 
     function emitIfChanged(before, reason, silent) {
+        if (!isPlayerInCombat() && global.CombatBreath) global.CombatBreath.clear();
         if (silent || batchDepth > 0) return;
         var after = isPlayerInCombat();
         if (before === after) return;
