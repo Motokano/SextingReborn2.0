@@ -272,8 +272,8 @@
         var st = (E && typeof E.getState === 'function') ? E.getState() : null;
         if (!st) return;
         var map = (E && typeof E.getMap === 'function') ? E.getMap() : null;
-        if (!map || !Array.isArray(map.enemies)) return;
-        if (!map.enemies.length) {
+        if (!map) return;
+        if (!Array.isArray(map.enemies) || !map.enemies.length) {
             if (window.CombatEngagement && typeof window.CombatEngagement.syncFromAi === 'function') {
                 window.CombatEngagement.syncFromAi(map, function () { return false; }, { reason: 'no_enemies' });
             }

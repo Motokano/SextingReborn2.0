@@ -69,6 +69,12 @@
 
     var onChange = function () {};
 
+    function syncCombatMap() {
+        if (global.CombatEngagement && typeof global.CombatEngagement.setCurrentMap === 'function') {
+            global.CombatEngagement.setCurrentMap(state.mapId);
+        }
+    }
+
     function getMap() {
         return MAPS[state.mapId] || null;
     }
@@ -471,6 +477,7 @@
             state.y = portal.target_y;
         }
 
+        syncCombatMap();
         onChange();
         return true;
     }
@@ -494,6 +501,8 @@
             state.y = portal.target_y;
         }
 
+        // Clear the old map before destination simulation or UI observes this move.
+        syncCombatMap();
         if (typeof global !== 'undefined' && global.Survival && typeof global.Survival.advanceTick === 'function') {
             global.Survival.advanceTick({ source: 'movement' });
         }
@@ -518,6 +527,7 @@
             state.mapId = mapId;
             state.x = clamp(x, 0, MAPS[mapId].width - 1);
             state.y = clamp(y, 0, MAPS[mapId].height - 1);
+            syncCombatMap();
             onChange();
         }
     }
