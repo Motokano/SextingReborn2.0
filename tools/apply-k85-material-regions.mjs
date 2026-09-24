@@ -49,7 +49,7 @@ const MAP = {
   wild_fruit_red: REGION.surface, wild_fruit_purple: REGION.surface, wild_fruit_yellow: REGION.surface,
   hunt_meat_rabbit: REGION.surface, hunt_meat_boar: REGION.surface, hunt_meat_deer: REGION.surface,
   hunt_turkey: REGION.surface, hunt_squab: REGION.surface, hunt_bone_common: REGION.surface,
-  hunt_salo: REGION.surface, textile_cocoon_wild: REGION.surface,
+  cook_salo: REGION.surface, textile_cocoon_wild: REGION.surface,
 
   // ---- 跨区（地表+地牢）：region 0，无粗标签，靠 loot_table 门控 ----
   ore_iron_raw: 0, ore_copper_raw: 0, ore_limestone: 0, ore_salt_sea: 0,
@@ -82,10 +82,10 @@ const MAP = {
   herb_kombu: REGION.d5, wood_coconut: REGION.d5, herb_cacao_pod: REGION.d5,
   herb_candlenut: REGION.d5, herb_bunga_kantan: REGION.d5, herb_laksa_leaf: REGION.d5,
   herb_galangal: REGION.d5,
-  hunt_fish_bonito: REGION.d5, hunt_fish_eel: REGION.d5, hunt_shrimp: REGION.d5,
-  hunt_crab: REGION.d5, hunt_mussel: REGION.d5, hunt_cockle: REGION.d5,
-  hunt_abalone: REGION.d5, hunt_sea_cucumber: REGION.d5, hunt_fish_maw: REGION.d5,
-  hunt_scallop_dried: REGION.d5, textile_coir: REGION.d5,
+  fish_bonito: REGION.d5, fish_eel: REGION.d5, fish_shrimp: REGION.d5,
+  fish_crab: REGION.d5, fish_mussel: REGION.d5, fish_cockle: REGION.d5,
+  fish_abalone: REGION.d5, fish_sea_cucumber: REGION.d5, fish_maw: REGION.d5,
+  fish_scallop_dried: REGION.d5, textile_coir: REGION.d5,
 
   // ---- D6 城市废墟 ----
   textile_cocoon_domestic: REGION.d6, wood_apple: REGION.d6, wood_orange: REGION.d6,

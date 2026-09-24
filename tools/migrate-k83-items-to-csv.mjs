@@ -180,10 +180,10 @@ function main() {
 
   // 6) 删除 fish_* 重复行（先校验 hunt_* 对应项存在，且 fish_* 行确实在目标 CSV 中）
   const HUNT_COUNTERPART = {
-    fish_bonito: 'hunt_fish_bonito', fish_cockle: 'hunt_cockle', fish_abalone: 'hunt_abalone',
-    fish_eel: 'hunt_fish_eel', fish_mussel: 'hunt_mussel', fish_crab_spider: 'hunt_crab',
-    fish_sea_cucumber: 'hunt_sea_cucumber', fish_fish_maw_glue: 'hunt_fish_maw',
-    fish_scallop_dried: 'hunt_scallop_dried', fish_shrimp_sea: 'hunt_shrimp'
+    fish_bonito: 'fish_bonito', fish_cockle: 'fish_cockle', fish_abalone: 'fish_abalone',
+    fish_eel: 'fish_eel', fish_mussel: 'fish_mussel', fish_crab_spider: 'fish_crab',
+    fish_sea_cucumber: 'fish_sea_cucumber', fish_fish_maw_glue: 'fish_maw',
+    fish_scallop_dried: 'fish_scallop_dried', fish_shrimp_sea: 'fish_shrimp'
   };
   const missingCounterpart = FISH_DUPS.filter((id) => !items[HUNT_COUNTERPART[id]]);
   if (missingCounterpart.length) {

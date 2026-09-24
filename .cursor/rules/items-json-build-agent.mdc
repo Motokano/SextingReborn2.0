@@ -10,7 +10,7 @@ alwaysApply: false
 
 ## 1) 数据源与合并顺序（强制）
 
-当前构建脚本合并顺序为（先出现先保留，重复 `id` 会跳过并警告）：
+当前构建脚本同时生成兼容产物 `data/items.json` 与正式模块化主表 `data/item-catalog-v2.json`。前者供尚未迁移的工具读取；游戏运行时优先读取后者，并通过统一适配层向旧消费者提供兼容视图。合并顺序为（先出现先保留，重复 `id` 会跳过并警告）：
 1. `consumables_base.csv`
 2. `materials_all.csv`（原 `materials_base` + `materials_cooking_raw` 合并维护）
 3. `product_base.csv`
@@ -67,7 +67,7 @@ alwaysApply: false
 
 - 修改 CSV 之后必须运行：
   - `node tools/build-items-json.mjs` 或 `npm run build:items`
-- 不要手工直接编辑 `data/items.json` 当作唯一来源；否则会在下一次构建被覆盖。
+- 不要手工直接编辑 `data/items.json`、`data/item-catalog-v2.json` 或 `data/item-attribute-module-definitions.json`；三者都会在下一次构建被覆盖。
 
 ## 4) 烹饪系统常数（不参与 items 合并）
 

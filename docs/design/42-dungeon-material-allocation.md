@@ -23,7 +23,8 @@
 | 伐木 | `wood_oak` 橡木、`wood_zelkova` 榉木、**`wood_birch` 桦木（新增）**、`wood_bamboo_green` 绿竹、`wood_firewood` 柴、`wood_bits` 木屑、`wood_shrub_dry` 干灌木、`wood_charcoal` 木炭 |
 | 挖矿 | `ore_clay_raw` 陶土、`ore_limestone` 石灰石、`ore_salt_sea` 海盐、`ore_salt_sea_coarse` 粗海盐、`ore_salt_rock` 岩盐、`ore_copper_raw` 粗铜、`ore_iron_raw` 铁矿石 |
 | 采集 | `herb_green/sweet/bitter`、`herb_leaf_fresh`、`herb_root_bitter`、`herb_vine_red`、`herb_shiitake`、`herb_mushroom_floral`、葱姜蒜洋葱、`herb_parsley/cilantro/thyme/rosemary/sage/oregano/bay_leaf/dill/mustard_yellow`、`herb_cherry/pear/lemon/peanut/chestnut/pecan`、`wild_fruit_red/purple/yellow` |
-| 狩猎 | `hunt_meat_rabbit/boar/deer`、`hunt_turkey`、`hunt_squab`、`hunt_bone_common`、`hunt_salo` |
+| 狩猎 | `hunt_meat_rabbit/boar/deer`、`hunt_turkey`、`hunt_squab`、`hunt_bone_common` |
+| 烹饪加工品 | `cook_salo` 萨洛；旧地表掉落池保留该加工品，不视为直接狩猎产物 |
 | 纺织 | `textile_cocoon_wild` 野蚕茧 |
 | 种植（家/田地） | 全部 `seed_*` + 对应作物 |
 
@@ -49,7 +50,7 @@
 
 **D5 卷毛 · 沿岸堂口**（东南·南洋热带香料与海产）
 - 现有：`herb_kombu` 昆布、`wood_coconut` 椰子、`ore_salt_sea`（稀有档）、`herb_cacao_pod` 可可、`herb_candlenut` 石栗、`herb_bunga_kantan` 火炬姜花、`herb_laksa_leaf` 叻沙叶、`herb_galangal` 南姜（**南洋/热带组：凑齐娘惹叻沙**；森林香料已匀给 D1）
-- 新增：`hunt_fish_bonito` 鲣鱼、`hunt_fish_eel` 海鳗、`hunt_shrimp` 虾、`hunt_crab` 蜘蛛蟹、`hunt_mussel` 贻贝、`hunt_cockle` 血蚶、`hunt_abalone` 鲍鱼、`hunt_sea_cucumber` 海参、`hunt_fish_maw` 鱼胶、`hunt_scallop_dried` 瑶柱、`textile_coir` 椰纤维
+- 新增：`fish_bonito` 鲣鱼、`fish_eel` 海鳗、`fish_shrimp` 虾、`fish_crab` 蜘蛛蟹、`fish_mussel` 贻贝、`fish_cockle` 血蚶、`fish_abalone` 鲍鱼、`fish_sea_cucumber` 海参、`fish_maw` 鱼胶、`fish_scallop_dried` 瑶柱、`textile_coir` 椰纤维
 
 **D6 四眼 · 城市废墟**（广州佛山·消费电子/信息/奢侈品）
 - 现有：`textile_cocoon_domestic` 家蚕茧、`wood_apple/orange/olive`（城市果树）、`herb_orange_peel_dried`
