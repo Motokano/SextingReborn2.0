@@ -1,0 +1,42 @@
+{
+  "tool": "built-in imagegen",
+  "date": "2026-09-15",
+  "note": "Background extraction may have small repaint differences. Approved four-quadrant ranch retained. Barrel and pharmacy reused without editing.",
+  "assets": [
+    {
+      "id": "stove",
+      "source": "C:\\Users\\haoxian.huang\\.codex\\generated_images\\01a0a2af-7112-7352-8a1d-b984db84d8ac\\exec-25aa927b-0ab8-43a2-9b38-9d85ee34b8cd.png",
+      "prompt": "Remove background. Produce a cutout of this exact object on TRANSPARENT background. The gray-white checkerboard in the input is unwanted background: ERASE IT entirely, including all white and gray squares. Output must have a real alpha channel, fully transparent outside the object. Keep the entire object and dark oval base, preserve its existing design. No new checkerboard. No opaque background of any kind."
+    },
+    {
+      "id": "ranch",
+      "source": "C:\\Users\\haoxian.huang\\.codex\\generated_images\\01a0a2af-7112-7352-8a1d-b984db84d8ac\\exec-d36fdb6b-31b0-4036-bfa2-4a68b9fda975.png",
+      "prompt": "Background extraction edit ONLY. Preserve this approved game pawn exactly: same silhouette, colors, brushwork, proportions, object arrangement, base, outline, viewing angle and framing. Remove ALL the gray and white checkerboard background; replace it with real alpha=0 transparent pixels. No gray or white matte, no drawn checkerboard. This is a transparent RGBA PNG sprite for a game. Preserve the dark oval base and all object details. Also make any visible background holes between object pieces actually transparent. Do not redesign or add anything. CRITICAL keep exactly four visible paddock quadrants and the plus shaped partition fences."
+    },
+    {
+      "id": "farm",
+      "source": "C:\\Users\\haoxian.huang\\.codex\\generated_images\\01a0a2af-7112-7352-8a1d-b984db84d8ac\\exec-b6da8f0a-4e34-4cf4-b25f-b15b943da981.png",
+      "prompt": "Background extraction edit ONLY. Preserve this approved game pawn exactly: same silhouette, colors, brushwork, proportions, object arrangement, base, outline, viewing angle and framing. Remove ALL the gray and white checkerboard background; replace it with real alpha=0 transparent pixels. No gray or white matte, no drawn checkerboard. This is a transparent RGBA PNG sprite for a game. Preserve the dark oval base and all object details. Also make any visible background holes between object pieces actually transparent. Do not redesign or add anything. "
+    },
+    {
+      "id": "bed",
+      "source": "C:\\Users\\haoxian.huang\\.codex\\generated_images\\01a0a2af-7112-7352-8a1d-b984db84d8ac\\exec-b881b7f4-b70f-44f2-bbd2-8155dac357e4.png",
+      "prompt": "Remove background. Produce a cutout of this exact object on TRANSPARENT background. The gray-white checkerboard in the input is unwanted background: ERASE IT entirely, including all white and gray squares. Output must have a real alpha channel, fully transparent outside the object. Keep the entire object and dark oval base, preserve its existing design. No new checkerboard. No opaque background of any kind."
+    },
+    {
+      "id": "warehouse",
+      "source": "C:\\Users\\haoxian.huang\\.codex\\generated_images\\01a0a2af-7112-7352-8a1d-b984db84d8ac\\exec-77e71e72-713d-4581-aa4e-705d27e16381.png",
+      "prompt": "Background extraction edit ONLY. Preserve this approved game pawn exactly: same silhouette, colors, brushwork, proportions, object arrangement, base, outline, viewing angle and framing. Remove ALL the gray and white checkerboard background; replace it with real alpha=0 transparent pixels. No gray or white matte, no drawn checkerboard. This is a transparent RGBA PNG sprite for a game. Preserve the dark oval base and all object details. Also make any visible background holes between object pieces actually transparent. Do not redesign or add anything. "
+    },
+    {
+      "id": "barrel",
+      "source": "C:/Users/haoxian.huang/Desktop/work/Deepseek/SextingReborn2.0/reference/interactive-devices-v1/barrel.png",
+      "prompt": null
+    },
+    {
+      "id": "pharmacy",
+      "source": "C:/Users/haoxian.huang/Desktop/work/Deepseek/SextingReborn2.0/reference/interactive-devices-v1/pharmacy.png",
+      "prompt": null
+    }
+  ]
+}

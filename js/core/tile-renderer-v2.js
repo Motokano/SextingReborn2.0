@@ -14,6 +14,42 @@
         return c;
     }
 
+        function makeGroundShadow(image, spec, footprint) {
+            var crop = spec.crop, scale = spec.width / crop[2];
+            var x = (crop[0] - spec.anchor[0]) * scale;
+            var y = (crop[1] - spec.anchor[1]) * scale;
+            var rx = footprint[0], depth = footprint[1];
+            var shadow = document.createElement('canvas');
+            shadow.width = 640; shadow.height = 352;
+            var sc = shadow.getContext('2d');
+            sc.scale(4,4); sc.translate(64,40);
+            // Project the raised object from the CENTER of its ground footprint.
+            sc.save(); sc.transform(1,0,-.48,-.24,-.48*depth,-1.24*depth);
+            sc.drawImage(image,crop[0],crop[1],crop[2],crop[3],x,y,spec.width,crop[3]*scale);
+            sc.restore();
+            // Union an unflattened footprint swept 5px right / 2.5px down.
+            // Its origin remains beneath the entire base, so the cast shade
+            // meets the side rim continuously, as a real tabletop piece does.
+            sc.fillStyle='#fff'; sc.beginPath();
+            for(var i=0;i<=10;i++) {
+                var dx=i*.5, dy=i*.25;
+                sc.moveTo(dx+rx,-depth+dy);
+                sc.ellipse(dx,-depth+dy,rx,depth,0,0,Math.PI*2);
+                sc.closePath();
+            }
+            sc.fill();
+            // Color the UNION once: overlapping body/base masks cannot produce
+            // a second dark oval. Keep the near edge firm, the distant end softer.
+            sc.globalCompositeOperation='source-in';
+            var fade=sc.createLinearGradient(0,-depth,42,20);
+            fade.addColorStop(0,'rgba(9,8,7,.46)');
+            fade.addColorStop(.55,'rgba(9,8,7,.30)');
+            fade.addColorStop(1,'rgba(9,8,7,.10)');
+            sc.fillStyle=fade; sc.fillRect(-64,-40,160,88);
+            return shadow;
+        }
+
+
     function create(mapGridEl, options) {
         var opts = options || {};
         var cellPx = opts.cellPx || 101;
@@ -31,10 +67,39 @@
         var animationLoopId = null, animationLoopEnabled = false;
         var spriteSources = {
             npc: 'assets/map/isometric/npc-pawn-v2.png',
-            enemy: 'assets/map/isometric/enemy-pawn-v2.png',
-            livestock: 'assets/map/isometric/livestock-station-v1.png'
+            enemy: 'assets/map/isometric/enemy-pawn-v2.png'
         };
+        // Approved device pawns. Crop and anchor are source-image pixel coordinates;
+        // sizes below describe visible content on a 144px tile, not transparent padding.
+        var deviceSpecs = {
+            stove: { crop: [183,7,930,1187], anchor: [650,1193], width: 56, label: '灶台' },
+            ranch: { crop: [107,127,1093,953], anchor: [652.5,1079], width: 72, label: '牧场' },
+            farm: { crop: [217,125,941,900], anchor: [685,1024], width: 64, label: '农场' },
+            bed: { crop: [106,34,1180,1083], anchor: [724.5,1116], width: 66, label: '床' },
+            barrel: { crop: [198,80,1065,983], anchor: [661,1062], width: 64, label: '制肥桶' },
+            pharmacy: { crop: [223,80,863,1046], anchor: [659.5,1125], width: 58, label: '制药台' },
+            warehouse: { crop: [255,95,804,1019], anchor: [659.5,1113], width: 54, label: '仓库' }
+        };
+        Object.keys(deviceSpecs).forEach(function (key) {
+            spriteSources[key] = 'assets/map/isometric/interactive-devices-v1/' + key + '.png';
+        });
+        // Ground footprint of each oval base in display pixels at 144px tile width.
+        // A base is already on the ground plane; it must not be flattened again.
+        var deviceFootprints = {
+            stove: [28,9], ranch: [36,13], farm: [32,11.5], bed: [33,11.5],
+            barrel: [27.5,9], pharmacy: [29,10], warehouse: [27,9]
+        };
+        // Character art shares calibrated placement and the merged ground shadow.
+        var pawnSpecs = Object.assign({}, deviceSpecs, {
+            linManager: {crop:[276,44,666,1208],anchor:[607.5,1251],width:46,label:'林经理'},
+            streetThug: {crop:[230,38,757,1216],anchor:[609.5,1253],width:46,label:'地痞'}
+        });
+        spriteSources.streetThug = 'assets/map/isometric/street-thug-v1/standing.png';
+        deviceFootprints.streetThug = [23,7];
+        spriteSources.linManager = 'assets/npc/npc_supervisor_manager/standing-mailbag-v2.png';
+        deviceFootprints.linManager = [23,7];
         var spriteCache = {};
+
 
         function getSprite(key) {
             var cached = spriteCache[key];
@@ -42,12 +107,49 @@
             var image = new Image();
             cached = spriteCache[key] = { image: image, ready: false, failed: false };
             image.onload = function () {
+                var spec = pawnSpecs[key];
+                if (spec) {
+                    cached.shadow = makeGroundShadow(image, spec, deviceFootprints[key]);
+                }
                 cached.ready = true;
                 if (lastInput) render(lastInput);
             };
             image.onerror = function () { cached.failed = true; };
             image.src = spriteSources[key];
             return null;
+        }
+
+        function deviceKeyForMeta(m) {
+            if (m.cookingStation) return 'stove';
+            if (m.pharmacyStation) return 'pharmacy';
+            if (m.compostStation) return 'barrel';
+            if (m.agricultureStation) return 'farm';
+            if (m.livestockStation) return 'ranch';
+            if (m.bedStation) return 'bed';
+            if (m.warehouseStation) return 'warehouse';
+            return null;
+        }
+
+        function drawCalibratedPawn(ctx, key, cx, cy, label) {
+            var spec = pawnSpecs[key], image = getSprite(key);
+            var unit = projection.tileWidth / 144;
+            var crop = spec.crop, scale = spec.width * unit / crop[2];
+            var width = crop[2] * scale, height = crop[3] * scale;
+            var x = (crop[0] - spec.anchor[0]) * scale;
+            var y = (crop[1] - spec.anchor[1]) * scale;
+            if (image) {
+                ctx.save(); ctx.translate(cx, cy + 8 * unit);
+                ctx.imageSmoothingEnabled = true; ctx.imageSmoothingQuality = 'high';
+                ctx.save(); ctx.filter = 'blur(.35px)';
+                ctx.drawImage(spriteCache[key].shadow,-64*unit,-40*unit,160*unit,88*unit);
+                ctx.restore();
+                ctx.drawImage(image, crop[0], crop[1], crop[2], crop[3], x, y, width, height);
+                ctx.restore();
+                drawSpriteLabel(ctx, label || spec.label, cx, cy + 8 * unit + y - 4 * unit);
+            } else {
+                // Keep a recognizable device label during loading or failure, never a person.
+                drawSpriteLabel(ctx, label || spec.label, cx, cy - 9 * unit);
+            }
         }
 
         function drawSprite(ctx, key, cx, footY, maxWidth, maxHeight) {
@@ -57,10 +159,23 @@
             var width = image.naturalWidth * scale;
             var height = image.naturalHeight * scale;
             ctx.save();
+            if (key === 'npc') {
+                // Anchor to visible alpha, preserving the existing body placement.
+                var ax = cx - width / 2 + 574 * scale;
+                var ay = footY - height + 1121 * scale;
+                var cached = spriteCache[key];
+                if (!cached.shadow || cached.shadowScale !== scale) {
+                    cached.shadow = makeGroundShadow(image,{crop:[0,0,1145,1374],anchor:[574,1121],width:width},[222*scale,65*scale]);
+                    cached.shadowScale = scale;
+                }
+                ctx.save();ctx.filter='blur(.35px)';
+                ctx.drawImage(cached.shadow,ax-64,ay-40,160,88);ctx.restore();
+            } else {
             ctx.fillStyle = 'rgba(0,0,0,.32)';
             ctx.beginPath();
             ctx.ellipse(cx, footY + 1, maxWidth * .28, maxWidth * .09, 0, 0, Math.PI * 2);
             ctx.fill();
+            }
             ctx.drawImage(image, cx - width / 2, footY - height, width, height);
             ctx.restore();
             return true;
@@ -82,32 +197,6 @@
             ctx.restore();
         }
 
-        var linImage = null, linReady = false, linShadow = null;
-        function drawLinPawn(ctx,cx,cy,label) {
-            if (!linImage) {
-                linImage = new Image();
-                linImage.onload = function () {
-                    linReady = true;
-                    linShadow = document.createElement('canvas');
-                    linShadow.width = linImage.naturalWidth; linShadow.height = linImage.naturalHeight;
-                    var sc = linShadow.getContext('2d');
-                    sc.drawImage(linImage,0,0); sc.globalCompositeOperation='source-in';
-                    sc.fillStyle='rgba(9,8,7,.24)'; sc.fillRect(0,0,linShadow.width,linShadow.height);
-                    if(lastInput) render(lastInput);
-                };
-                linImage.src='assets/npc/npc_supervisor_manager/standing-smoking-v1.png';
-            }
-            if(!linReady)return false;
-            // Source base center/bottom align with the player's +8px ground anchor.
-            var scale=46/735, x=-608*scale, y=-1230*scale;
-            ctx.save();ctx.translate(cx,cy+8);ctx.imageSmoothingEnabled=true;ctx.imageSmoothingQuality='high';
-            ctx.save();ctx.transform(1,0,-.48,-.24,0,0);ctx.filter='blur(.7px)';
-            ctx.drawImage(linShadow,x,y,1215*scale,1295*scale);ctx.restore();
-            ctx.drawImage(linImage,x,y,1215*scale,1295*scale);ctx.restore();
-            ctx.save();ctx.font='bold 12px "Microsoft YaHei",sans-serif';ctx.textAlign='center';ctx.textBaseline='bottom';
-            ctx.lineWidth=3;ctx.strokeStyle='#211c19';ctx.strokeText(label||'林经理',cx,cy-67);
-            ctx.fillStyle='#f3e9d9';ctx.fillText(label||'林经理',cx,cy-67);ctx.restore();return true;
-        }
         function fallbackProjection(map) {
             return {
                 mode: 'legacy', isIsometric: false, cellPx: cellPx, tileWidth: cellPx, tileHeight: cellPx,
@@ -189,9 +278,13 @@
         }
         function drawEntity(gx,gy,m){
             var c=projection.cellCenter(gx,gy), lift=projection.isIsometric?18:0;
+            var deviceKey = deviceKeyForMeta(m);
             dynamicCtx.textAlign='center';dynamicCtx.textBaseline='middle';
             if(m.unknownPresence){dynamicCtx.fillStyle='rgba(245,222,179,.95)';dynamicCtx.font='bold 20px sans-serif';dynamicCtx.fillText('?',c.x,c.y-lift);}
-            else if(m.npc && m.npcId==='npc.supervisor.manager' && projection.isIsometric && drawLinPawn(dynamicCtx,c.x,c.y,m.npcLabel)){}
+            else if(projection.isIsometric && deviceKey && !m.enemy && (!m.npc || String(m.npcId || '').indexOf('npc.station.') === 0)) {
+                drawCalibratedPawn(dynamicCtx, deviceKey, c.x, c.y, m.npcLabel);
+            }
+            else if(m.npc && m.npcId==='npc.supervisor.manager' && projection.isIsometric){drawCalibratedPawn(dynamicCtx,'linManager',c.x,c.y,m.npcLabel);}
             else if(m.npc){
                 if(projection.isIsometric){
                     if(!drawSprite(dynamicCtx,'npc',c.x,c.y,58,74)) drawPawn(dynamicCtx,c.x,c.y,'#a992d7','#261e34','');
@@ -200,15 +293,14 @@
             }
             else if(m.enemy){
                 if(projection.isIsometric){
-                    if(m.enemyId==='enemy.training_dummy_wooden'||!drawSprite(dynamicCtx,'enemy',c.x,c.y,64,78)) drawPawn(dynamicCtx,c.x,c.y,m.enemyId==='enemy.training_dummy_wooden'?'#8b5a2b':'#c65353','#351b1b','');
+                    if(m.enemyId==='enemy.street_thug') drawCalibratedPawn(dynamicCtx,'streetThug',c.x,c.y,'地痞');
+                    else if(m.enemyId==='enemy.training_dummy_wooden'||!drawSprite(dynamicCtx,'enemy',c.x,c.y,64,78)) drawPawn(dynamicCtx,c.x,c.y,m.enemyId==='enemy.training_dummy_wooden'?'#8b5a2b':'#c65353','#351b1b','');
                 }else{dynamicCtx.fillStyle=m.enemyId==='enemy.training_dummy_wooden'?'#8b5a2b':'#f87171';dynamicCtx.beginPath();dynamicCtx.arc(c.x,c.y,8,0,Math.PI*2);dynamicCtx.fill();}
             }
-            else if(m.cookingStation||m.pharmacyStation||m.compostStation||m.agricultureStation||m.livestockStation||m.warehouseStation){
-                if(!(projection.isIsometric&&m.livestockStation&&drawSprite(dynamicCtx,'livestock',c.x,c.y+7,88,72))){
-                    var lab=m.cookingStation?'灶':(m.pharmacyStation?'药':(m.compostStation?'肥':(m.agricultureStation?'农':(m.livestockStation?'牧':'仓'))));
-                    dynamicCtx.fillStyle=m.agricultureStation?'#4ade80':(m.livestockStation?'#fb923c':(m.warehouseStation?'#d3a060':'#f59e5b'));
-                    dynamicCtx.font='bold 20px "Microsoft YaHei",sans-serif';dynamicCtx.fillText(lab,c.x,c.y-(projection.isIsometric?9:0));
-                }
+            else if(deviceKey){
+                var lab={stove:'灶',pharmacy:'药',barrel:'肥',farm:'农',ranch:'牧',bed:'床',warehouse:'仓'}[deviceKey];
+                dynamicCtx.fillStyle=m.agricultureStation?'#4ade80':(m.livestockStation?'#fb923c':(m.warehouseStation?'#d3a060':'#f59e5b'));
+                dynamicCtx.font='bold 20px "Microsoft YaHei",sans-serif';dynamicCtx.fillText(lab,c.x,c.y-(projection.isIsometric?9:0));
             }
             if(m.portal&&m.portal.label){var pl=String(m.portal.label).trim();if(pl.length>6)pl=pl.slice(0,6);dynamicCtx.fillStyle='#7dd3fc';dynamicCtx.font='bold 12px sans-serif';dynamicCtx.fillText(pl,c.x,c.y+(projection.isIsometric?12:0));}
             if(m.groundCount>0||m.groundUnknown){dynamicCtx.fillStyle='#d4a373';dynamicCtx.font='14px sans-serif';dynamicCtx.fillText(m.groundCount>0?'📦':'?',c.x+projection.tileWidth*.27,c.y+projection.tileHeight*.17);}
@@ -248,5 +340,5 @@
         function invalidate(){staticMapKey='';staticDataKey='';staticSizeKey='';staticCtx.clearRect(0,0,staticCanvas.width,staticCanvas.height);dynamicCtx.clearRect(0,0,dynamicCanvas.width,dynamicCanvas.height);fxCtx.clearRect(0,0,fxCanvas.width,fxCanvas.height);}
         return {render:render,hitTest:hitTest,setCamera:function(x,y){mapGridEl.style.transform='translate('+x+'px, '+y+'px)';},getCellCenter:function(x,y){return projection?projection.cellCenter(x,y):{x:(x+.5)*cellPx,y:(y+.5)*cellPx};},getProjection:function(){return projection;},setHoverCursor:setHoverCursor,setEffectsRenderer:function(fn){effectsRenderer=typeof fn==='function'?fn:null;},startAnimationLoop:start,stopAnimationLoop:stop,renderFxLayer:function(ts){renderFxLayer(ts!=null?ts:nowMs());},invalidateStatic:invalidate};
     }
-    global.TileRendererV2={create:create,clamp:clamp};
+    global.TileRendererV2={create:create,clamp:clamp,makeGroundShadow:makeGroundShadow};
 })(typeof window !== 'undefined' ? window : this);

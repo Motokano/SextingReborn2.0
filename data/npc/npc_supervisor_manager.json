@@ -3,7 +3,7 @@
   "id": "npc.supervisor.manager",
   "name": "林经理",
   "displayTitle": "林经理",
-  "sprite": "assets/npc/npc_supervisor_manager/standing-smoking-v1.png",
+  "sprite": "assets/npc/npc_supervisor_manager/standing-mailbag-v2.png",
   "appearanceSchedule": {
     "start": "09:00",
     "end": "17:30"

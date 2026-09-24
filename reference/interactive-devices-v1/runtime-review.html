@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><base href="../../">
+<meta name="viewport" content="width=device-width,initial-scale=1"><title>装置棋子 · 游戏尺寸验收</title>
+<link rel="stylesheet" href="css/isometric-map.css"><link rel="stylesheet" href="css/player-pawn-rig.css?v=pawns-20260915-lin2">
+<style>body{margin:24px;background:#211c19;color:#eee3ce;font:15px system-ui}h1{font-size:22px}p{line-height:1.7;color:#bfb3a0}.cards{display:flex;flex-wrap:wrap;gap:12px}.card{background:#29231f;border:1px solid #51453a;border-radius:10px;padding:12px;width:178px}.card h2{font-size:16px;margin:0}.tile{position:relative;margin:0 auto}.card p{font-size:12px;margin:0}a{color:#d8b984}</style></head>
+<body><h1>装置棋子 · 游戏尺寸验收</h1><p>使用游戏同一绘制代码，格宽 144px；主角作为比例参照。点击棋子所在格可核对对应设施入口。<br>此页独立于玩家存档，仅展示设施识别结果。</p><div class="cards" id="cards"></div><p id="result" role="status">选择一枚装置查看入口。</p>
+<script src="js/core/map-projection.js"></script><script src="js/core/tile-renderer-v2.js?v=pawns-20260915-lin2"></script><script src="js/game-engine.js"></script><script src="js/player-pawn-rig.js?v=pawns-20260915-lin2"></script>
+<script>
+(async function(){
+ const entries=[['地痞 · 一档','thug',0,0],['灶台','cooking',12,15],['牧场','livestock',9,15],['农场','agriculture',10,15],['床','bed',11,15],['制肥桶','compost',13,15],['制药台','pharmacy',14,15],['仓库','warehouse',14,12],['主角',null,0,0],['林经理','manager',0,0],['普通 NPC','npc',0,0]];
+ const baseMap=await (await fetch('data/maps/M0_Base_Inside_lv_1.json')).json();
+ GameEngine.setMaps({[baseMap.map_id]:baseMap}); GameEngine.setState(baseMap.map_id,10,12);
+ for(const [name,kind,gx,gy] of entries){
+  const card=document.createElement('section');card.className='card';
+  const title=document.createElement('h2');title.textContent=name;card.append(title);
+  const host=document.createElement('div');host.className='tile';card.append(host);document.getElementById('cards').append(card);
+  const renderer=TileRendererV2.create(host,{cellPx:144/Math.SQRT2});
+  const person=kind==='manager'||kind==='npc'||kind==='thug';
+  const npcId=person?(kind==='manager'?'npc.supervisor.manager':'npc.preview'):kind?GameEngine.getInteractNpcIdAt(gx,gy):null;
+  const meta={walkable:!kind,npc:!!npcId,npcId:npcId,npcLabel:name};
+  if(kind==='thug'){meta.npc=false;meta.enemy=true;meta.enemyId='enemy.street_thug';}
+  if(kind&&!person)meta[kind+'Station']=GameEngine['is'+kind[0].toUpperCase()+kind.slice(1)+'StationCell'](gx,gy);
+  renderer.render({map:{map_id:'review-'+kind,width:1,height:1},st:{x:0,y:0},dynamicMetaAt:()=>meta});
+  const caption=document.createElement('p');caption.textContent=person?'人物底座与阴影对照':kind?'点击地格核对入口':'沿用现有主角图册';card.append(caption);
+  if(!kind){
+   const c=renderer.getCellCenter(0,0),player=document.createElement('div');player.className='player-pawn-visual';player.style.left=c.x+'px';player.style.top=c.y+'px';host.append(player);PlayerPawnRig.renderMask(player,0);
+  }else if(!person){
+   host.addEventListener('click',event=>{
+    if(!renderer.hitTest(event.clientX,event.clientY))return;
+    const valid=meta[kind+'Station']&&npcId==='npc.station.'+kind+'_base';
+    document.getElementById('result').textContent=(valid?'✓ ':'✕ ')+name+' → '+npcId+' · '+(valid?'入口对应正确':'入口需要检查');
+   });
+  }
+ }
+})().catch(error=>{document.getElementById('result').textContent=error.message;});
+</script></body></html>

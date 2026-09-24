@@ -43,7 +43,8 @@
                 ctx.imageSmoothingEnabled = true;
                 ctx.imageSmoothingQuality = 'high';
                 ctx.drawImage(img, crop[0], crop[1], crop[2], crop[3], 0, 0, canvas.width, canvas.height);
-                return frames[mask] = {url:canvas.toDataURL('image/png'),width:width,height:height,x:state.anchor[0]*scale,y:state.anchor[1]*scale,id:state.id};
+                var shadow = global.TileRendererV2.makeGroundShadow(img, {crop:crop,anchor:[crop[0]+state.anchor[0],crop[1]+state.anchor[1]],width:width}, [data.displayBaseWidth/2,7]);
+                return frames[mask] = {shadow:shadow.toDataURL('image/png'),url:canvas.toDataURL('image/png'),width:width,height:height,x:state.anchor[0]*scale,y:state.anchor[1]*scale,id:state.id};
             });
         });
     }
@@ -58,6 +59,9 @@
         frame(mask).then(function (f) {
             if (el.getAttribute('data-rig-request') !== id) return;
             el.style.setProperty('--atlas-image', 'url("' + f.url + '")');
+            el.style.setProperty('--atlas-shadow', 'url("' + f.shadow + '")');
+            el.style.setProperty('--atlas-shadow-x', (f.x-64) + 'px');
+            el.style.setProperty('--atlas-shadow-y', (f.y-40) + 'px');
             el.style.setProperty('--atlas-width', f.width + 'px');
             el.style.setProperty('--atlas-height', f.height + 'px');
             el.style.setProperty('--atlas-x', -f.x + 'px');

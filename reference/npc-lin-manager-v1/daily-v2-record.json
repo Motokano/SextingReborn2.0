@@ -1,0 +1,19 @@
+{
+  "tool": "built-in imagegen",
+  "approved": "daily-approved-v2.png",
+  "runtime": "assets/npc/npc_supervisor_manager/standing-mailbag-v2.png",
+  "crop": [
+    276,
+    44,
+    666,
+    1208
+  ],
+  "anchor": [
+    607.5,
+    1251
+  ],
+  "displayBaseWidth": 46,
+  "displayHeight": 83.43543543543544,
+  "note": "Generated extraction may have minor repaint differences. Original and previous runtime retained. Battle forms archived separately, not bound.",
+  "prompt": "Background extraction ONLY of this approved cartoon female pawn. Remove the entire off-white backdrop and replace with TRUE RGBA alpha-zero transparency, also all gaps between arms/body/legs. Preserve exact face and tired eyes, fair lightly yellow warm ivory skin (not pink white, not tan), single black ponytail, UNTUCKED white shirt outside blue jeans, brown crossbody postal bag and strap, cigarette with small translucent smoke wisp, green betel-nut packet, shoes, full dark gray physical oval base. Keep detailed painterly style and proportions unchanged. No redesign, no employee badge, no combat effects. No matte, no painted checkerboard, no new background or ground shadow. Whole character and base visible."
+}

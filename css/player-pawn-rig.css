@@ -9,22 +9,18 @@
 }
 .map-view-isometric .player-pawn-visual.has-atlas-pawn > span,
 .map-view-isometric .player-pawn-visual.has-atlas-pawn > img { display: none; }
-.map-view-isometric .player-pawn-visual.has-atlas-pawn::before {
-    width: 40px;
-    height: 3px;
-    bottom: 1px;
-    background: rgba(9,8,7,.26);
-}
+/* One merged ground shadow positioned from each state's base anchor. */
+.map-view-isometric .player-pawn-visual.has-atlas-pawn::before { display: none; }
 .map-view-isometric .player-pawn-visual.has-atlas-pawn::after {
     content: '';
     position: absolute;
-    inset: 0;
-    background: linear-gradient(to bottom, rgba(9,8,7,.13), rgba(9,8,7,.37));
-    -webkit-mask: var(--atlas-image) 0 0 / 100% 100% no-repeat;
-    mask: var(--atlas-image) 0 0 / 100% 100% no-repeat;
-    transform-origin: 50% calc(100% - 1px);
-    transform: matrix(1,0,-.48,-.24,0,0);
-    filter: blur(.8px);
+    left: var(--atlas-shadow-x);
+    top: var(--atlas-shadow-y);
+    width: 160px;
+    height: 88px;
+    background: var(--atlas-shadow) 0 0 / 100% 100% no-repeat;
+    transform: none;
+    filter: blur(.35px);
     pointer-events: none;
     z-index: -1;
 }

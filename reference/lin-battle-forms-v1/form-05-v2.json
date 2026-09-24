@@ -1,0 +1,7 @@
+{
+  "tool": "built-in imagegen",
+  "source": "form-05.png",
+  "output": "form-05-v2.png",
+  "change": "Correct extended hand to five digits; selected series uses original form-07, not form-07-v2.",
+  "prompt": "Precise anatomical correction ONLY to this exact image. Fix the extended open hand on the LEFT side of the image: it currently has incorrect digit count. Redraw ONLY that hand as a naturally half-open reaching human hand with EXACTLY FIVE fingers TOTAL: ONE distinct thumb and FOUR distinct fingers (index, middle, ring, little), all five countable with clear clean silhouettes, anatomically connected to a single palm, appropriate foreshortening, no extra stubs or merged/missing fingers. Keep the wrist and arm in the SAME location and direction; preserve the measuring/reaching gesture. Also keep the other clenched hand anatomically correct with four curled fingers and one thumb, no extra digits. Preserve EVERYTHING ELSE as closely as possible, especially exact woman's face, skin tone, hair, pose, shirt, jeans, employee badge, all THREE blue-white calibration rings and translucent panels, lighting, detailed painted style, dark background, full oval base, framing and colors. No redesign of character or special effects. The ONLY required edit is hand anatomy. High quality clean cartoon fingers, five total on extended hand."
+}

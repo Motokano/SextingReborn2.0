@@ -1256,6 +1256,7 @@
                 var agricultureStation = typeof E.isAgricultureStationCell === 'function' && E.isAgricultureStationCell(gx, gy);
                 var livestockStation = typeof E.isLivestockStationCell === 'function' && E.isLivestockStationCell(gx, gy);
                 var warehouseStation = typeof E.isWarehouseStationCell === 'function' && E.isWarehouseStationCell(gx, gy);
+                var bedStation = typeof E.isBedStationCell === 'function' && E.isBedStationCell(gx, gy);
                 return {
                     walkable: walkable,
                     portal: portal,
@@ -1266,6 +1267,7 @@
                     agricultureStation: agricultureStation,
                     livestockStation: livestockStation,
                     warehouseStation: warehouseStation,
+                    bedStation: bedStation,
                                         adjacent: false,
                     groundCount: 0,
                     npc: false,
@@ -1321,6 +1323,8 @@
                 var showLivestockStation = !!(livestockStationCell && canVisual && canIdentify);
                 var warehouseStationCell = typeof E.isWarehouseStationCell === 'function' && E.isWarehouseStationCell(gx, gy);
                 var showWarehouseStation = !!(warehouseStationCell && canVisual && canIdentify);
+                var bedStationCell = typeof E.isBedStationCell === 'function' && E.isBedStationCell(gx, gy);
+                var showBedStation = !!(bedStationCell && canVisual && canIdentify);
                 var unknownPresence = false;
                 if (!canVisual) {
                     npcId = null;
@@ -1333,6 +1337,7 @@
                     showAgricultureStation = false;
                     showLivestockStation = false;
                     showWarehouseStation = false;
+                    showBedStation = false;
                 } else if (!canIdentify) {
                     unknownPresence = !!(npcId || enemyId);
                     npcId = null;
@@ -1343,6 +1348,7 @@
                     showAgricultureStation = false;
                     showLivestockStation = false;
                     showWarehouseStation = false;
+                    showBedStation = false;
                 }
                 var unknownGround = false;
                 if (rawGroundCount > 0 && !canIdentify) {
@@ -1371,6 +1377,7 @@
                     showAgricultureStation = false;
                     showLivestockStation = false;
                     showWarehouseStation = false;
+                    showBedStation = false;
                 }
                 var npcLabel = '';
                 if (npcId && window.NPCSystem && typeof window.NPCSystem.getNpcMapLabel === 'function') {
@@ -1392,6 +1399,7 @@
                     agricultureStation: showAgricultureStation,
                     livestockStation: showLivestockStation,
                     warehouseStation: showWarehouseStation,
+                    bedStation: showBedStation,
                     npc: !!npcId,
                     npcId: npcId,
                     npcLabel: npcLabel,
@@ -1890,4 +1898,3 @@
         visionDebugEnabled = false;
     }
 })();
-

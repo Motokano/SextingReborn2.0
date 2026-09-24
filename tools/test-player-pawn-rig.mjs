@@ -8,10 +8,11 @@ const parts=['head','chest','abdomen','lhand','rhand','lfoot','rfoot'];
 const manifest=JSON.parse(read('assets/map/isometric/player-atlas-v1/manifest.json'));
 const requests=[],draws=[];
 let fail=false;
-const makeElement=()=>{const attrs=new Map(),classes=new Set();return {style:{setProperty(){}},classList:{add:k=>classes.add(k),remove:k=>classes.delete(k),contains:k=>classes.has(k)},getAttribute:k=>attrs.get(k)||null,setAttribute:(k,v)=>attrs.set(k,String(v)),removeAttribute:k=>attrs.delete(k)}};
-const sandbox={console,fetch:async()=>({ok:true,json:async()=>manifest}),Image:class {set src(v){requests.push(v);queueMicrotask(()=>fail?this.onerror():this.onload())}},document:{createElement:()=>({getContext:()=>({drawImage:(...a)=>draws.push(a.slice(1))}),toDataURL:()=> 'data:image/png;base64,AA=='})}};
+const makeElement=()=>{const attrs=new Map(),classes=new Set();return {style:{setProperty(k,v){this[k]=v;}},classList:{add:k=>classes.add(k),remove:k=>classes.delete(k),contains:k=>classes.has(k)},getAttribute:k=>attrs.get(k)||null,setAttribute:(k,v)=>attrs.set(k,String(v)),removeAttribute:k=>attrs.delete(k)}};
+const sandbox={console,fetch:async()=>({ok:true,json:async()=>manifest}),Image:class {set src(v){requests.push(v);queueMicrotask(()=>fail?this.onerror():this.onload())}},document:{createElement:()=>({getContext:()=>({drawImage:(...a)=>draws.push(a.slice(1)),scale(){},translate(){},save(){},restore(){},transform(){},beginPath(){},moveTo(){},ellipse(){},closePath(){},fill(){},fillRect(){},createLinearGradient(){return {addColorStop(){}}}}),toDataURL:()=> 'data:image/png;base64,AA=='})}};
 sandbox.window=sandbox;vm.createContext(sandbox);
 vm.runInContext(read('js/character-attributes.js'),sandbox);
+vm.runInContext(read('js/core/tile-renderer-v2.js'),sandbox);
 vm.runInContext(read('js/player-pawn-rig.js'),sandbox);
 const flush=()=>new Promise(resolve=>setImmediate(resolve));
 const ca=sandbox.CharacterAttributes,render=sandbox.PlayerPawnRig;
@@ -25,10 +26,15 @@ for(let mask=0;mask<128;mask++){
  ca.setState({part_destroy:Object.fromEntries(parts.map((p,i)=>[p,mask&(1<<i)?ca.getBodyPartDestroyMax(p):ca.getBodyPartDestroyMax(p)-1]))});
  assert.equal(render.readMask(ca),mask);
  const el=makeElement();render.update(el);await flush();assert.equal(el.getAttribute('data-rig-state'),state.id);assert.ok(el.classList.contains('has-atlas-pawn'));
+ const scale=manifest.displayBaseWidth/state.baseWidth;
+ assert.equal(el.style['--atlas-shadow-x'],(state.anchor[0]*scale-64)+'px','shadow shares body anchor x');
+ assert.equal(el.style['--atlas-shadow-y'],(state.anchor[1]*scale-40)+'px','shadow shares body anchor y');
+ assert.ok(el.style['--atlas-shadow'].startsWith('url("data:image/png'),'merged shadow is supplied for every state');
+
  for(const p of parts)ca.recoverPartDestroy(p,1000);
  assert.equal(render.readMask(ca),0);render.update(el);await flush();assert.equal(el.getAttribute('data-rig-state'),'D000');
 }
-assert.equal(requests.length,16,'page cache');assert.equal(draws.length,128,'frame cache');
+assert.equal(requests.length,16,'page cache');assert.equal(draws.length,256,'body and shadow frame caches');
 const el=makeElement();render.renderMask(el,127);render.renderMask(el,0);await flush();assert.equal(el.getAttribute('data-rig-state'),'D000','stale result ignored');
 assert.throws(()=>render.renderMask(el,128));
 // Fresh renderer: failed image load must enable the existing fallback.
