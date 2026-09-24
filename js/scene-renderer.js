@@ -1242,6 +1242,10 @@
         var entityAtPlayer = E.getEntityAt(st.x, st.y);
         var canGather = entityAtPlayer && G.getGatheringPointConfig(entityAtPlayer) && G.canGather(entityAtPlayer);
         var pointName = entityAtPlayer && G.getGatheringPointConfig(entityAtPlayer) ? G.getGatheringPointConfig(entityAtPlayer).display_name : '';
+        var huntingPoint = window.HuntingPanel && window.HuntingPanel.currentPoint();
+        var huntingInfo = huntingPoint && window.Hunting && window.Hunting.inspect(huntingPoint.key, huntingPoint.pool);
+        if (huntingInfo) { canGather = true; pointName = ''; }
+        if (window.FishingPanel && window.FishingPanel.currentPoint()) { canGather = true; pointName = '岸边池塘'; }
 
         latestFrame = {
             map: map,
@@ -1260,7 +1264,7 @@
                 return {
                     walkable: walkable,
                     portal: portal,
-                    gathering: (entityId === 'gathering_bush' || entityId === 'gathering_grass'),
+                    gathering: (entityId === 'gathering_bush' || entityId === 'gathering_grass' || entityId === 'hunting_point' || entityId === 'fishing_pond'),
                     cookingStation: cookingStation,
                     pharmacyStation: pharmacyStation,
                     compostStation: compostStation,
@@ -1309,7 +1313,7 @@
                     var chDyn = Math.max(Math.abs(gx - st.x), Math.abs(gy - st.y));
                     if (chDyn >= 1 && chDyn <= rDyn && E.canStandAt(gx, gy)) leapTarget = true;
                 }
-                var hasGatheringPoint = (entityId === 'gathering_bush' || entityId === 'gathering_grass');
+                var hasGatheringPoint = (entityId === 'gathering_bush' || entityId === 'gathering_grass' || entityId === 'hunting_point' || entityId === 'fishing_pond');
                 var showGathering = hasGatheringPoint && canIdentify;
                 var cookingStationCell = typeof E.isCookingStationCell === 'function' && E.isCookingStationCell(gx, gy);
                 var showCookingStation = !!(cookingStationCell && canVisual && canIdentify);
@@ -1723,6 +1727,11 @@
                 bubbleGather.style.display = (!isIdling && canGather) ? 'inline-block' : 'none';
                 bubbleGather.disabled = !canGather;
                 bubbleGather.textContent = pointName ? tQuick('map.btn.gather_idle', null, { name: pointName }) : tQuick('map.btn.gather_idle_no_name');
+                if (window.FishingPanel && window.FishingPanel.currentPoint()) bubbleGather.textContent = '查看岸边池塘';
+                if (huntingInfo) {
+                    bubbleGather.textContent = huntingInfo.remaining > 0 ? tQuick('hunting.cooldown',null,{n:huntingInfo.remaining}) : tQuick('hunting.enter');
+                    bubbleGather.disabled = huntingInfo.remaining > 0;
+                }
                 bubbleStop.style.display = isIdling ? 'inline-block' : 'none';
             } else {
                 bubbleGather.style.display = 'none';
