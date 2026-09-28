@@ -22,3 +22,5 @@
 "fishing_leader_lure_wire","金属前导线","一段坚韧的短金属丝","半米固定长度的金属前导线，末端连接拟饵。","tool","fishing_leader","0.025","1","white","tool;fishing;assembly_part","trade","","0","life_good","low","0","120","","","","","","","{""lure"":{""accepts"":[""fishing.lure""],""required"":true}}","[""fishing.leader"",""fishing.lure_leader""]","4","5",""
 "fishing_lure_frog","浮水雷蛙","一件蛙形的软质小物","浮在水面的蛙形拟饵，自带配套钩，不能再挂一份食物。","tool","fishing_lure","0.018","1","white","tool;fishing;assembly_part","trade","","0","material","low","0","40","","","","","","","{}","[""fishing.lure"",""fishing.hook""]","3","",""
 "fishing_catch_snakehead","黑鱼","一条带暗色斑纹的大嘴鱼","体形修长、嘴部较大的淡水鱼。","material","fish","1","1","white","fishing","","","144","material","","","20","","1","","","","","","","","",""
+"fishing_catch_yellow_catfish","黄颡鱼","一条黄褐色、嘴边长须的小鱼","一条黄褐色、嘴边长须的小鱼。","material","fish","1","1","white","fishing","","","144","material","","","16","","1","","","","","","","","",""
+"fishing_catch_catfish","鲶鱼","一条灰褐色、头扁嘴宽的长须鱼","一条灰褐色、头扁嘴宽的长须鱼。","material","fish","1","1","white","fishing","","","144","material","","","24","","1","","","","","","","","",""

@@ -18,7 +18,7 @@
     },
     "npc.station.pharmacy_faulty": {
       "lines": [
-        "有黏土、干柴，再配一把制药用的小擀杖，或许能把台面裂缝糊住。"
+        "打开修复界面，查看修补说明，再准备合适的材料。"
       ],
       "composeMode": "pick_pool"
     }

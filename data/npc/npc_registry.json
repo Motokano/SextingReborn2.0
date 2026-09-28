@@ -40,6 +40,11 @@
       "def": "data/npc/npc_station_warehouse_base.json",
       "triggers": "data/npc/npc_station_warehouse_base_triggers.json",
       "dialogue_pools": "data/npc/npc_station_warehouse_base_dialogue_pools.json"
+    },
+    "npc.station.observation_base": {
+      "def": "data/npc/npc_station_observation_base.json",
+      "triggers": "data/npc/npc_station_observation_base_triggers.json",
+      "dialogue_pools": "data/npc/npc_station_observation_base_dialogue_pools.json"
     }
   }
 }

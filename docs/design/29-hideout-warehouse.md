@@ -1,5 +1,7 @@
 # 29 · 藏身处账号仓库（hideout_warehouse）
 
+> 2026-09-26：仓库双页界面与材料备料、暂停施工规则已按 [仓库界面整合](warehouse-workspace.md) 改造。下文历史的自动继续、施工时禁止关闭及旧配方描述以该记录为准。
+
 > **状态**：设计定案（实现待接）。升级材料表见 **`warehouse-upgrade-roadmap.html`**、**`data/warehouse-upgrades.json`**。  
 > **与调试仓**：过渡期 **`modal-base-warehouse` 无限取物**仍保留；真仓 **`hideout_warehouse`** 独立存档与 API，见 **§10**。
 

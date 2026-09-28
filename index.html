@@ -3578,7 +3578,9 @@
  #modal-livestock .module-left, #modal-livestock .module-right { width: 100%; padding: 0; }
  #modal-livestock .module-slot, #modal-livestock .module-card { min-width: 0; overflow-wrap: anywhere; }
 }
-</style></head>
+</style><link rel="stylesheet" href="css/warehouse-workspace.css?v=20260926c">
+<link rel="stylesheet" href="css/toolbench-panel.css">
+</head>
 <body>
     <div id="item-tooltip"></div>
 
@@ -3664,6 +3666,7 @@
                 <div class="time-pill">
                     <span class="time-text" id="hud-time-text" data-ui="hud.time.default"></span>
                     <span class="time-period" id="hud-time-period" data-ui="hud.period.default"></span>
+                    <span class="time-period" id="hud-weather" aria-label="当前可见天气"></span>
                 </div>
             </div>
             <div id="left-hud">
@@ -3862,11 +3865,12 @@
                         <div class="hw-header-actions">
                             <button type="button" class="hw-btn-secondary" id="hw-btn-settings" title="" data-ui="hideout_warehouse.btn.settings" data-ui-attr="title">⚙</button>
                             <button type="button" class="hw-btn-secondary" id="hw-btn-tidy" data-ui="hideout_warehouse.btn.tidy"></button>
-                            <button type="button" class="hw-btn-primary" id="hw-btn-upgrade" data-ui="hideout_warehouse.btn.upgrade"></button>
+
                             <button type="button" class="hw-close" id="hw-close" aria-label="关闭">✕</button>
                         </div>
                     </div>
                 </header>
+                <nav class="hw-workspace-nav" aria-label="仓库页面"><button type="button" id="hw-btn-storage" class="active" aria-pressed="true">物品存取</button><button type="button" id="hw-btn-upgrade" aria-pressed="false">整备扩建</button><span>藏身处 · 仓库</span></nav>
                 <div class="hw-body">
                     <nav id="hw-tab-rail" class="hw-tab-rail" aria-label="筛选">
                         <button type="button" class="hw-cat-btn active" data-tab="all" data-ui="hideout_warehouse.tab.all"></button>
@@ -3894,19 +3898,19 @@
                     <div id="hw-upgrade-overlay" class="hw-hidden" aria-hidden="true">
                         <div class="hw-upgrade-list">
                             <div class="hw-upgrade-list-head">
-                                <h3 class="hw-hub-title" data-ui="hideout_warehouse.upgrade.title"></h3>
+                                <h3 class="hw-hub-title">整备项目</h3><p class="hw-project-intro">从已经发现的方案中，安排下一步整备。</p>
                             </div>
                             <div class="hw-upgrade-list-body" id="hw-upgrade-list-body"></div>
                         </div>
                         <div class="hw-upgrade-detail">
-                            <button type="button" class="hw-upgrade-close" id="hw-upgrade-close" aria-label="关闭">×</button>
-                            <div class="hw-hub-title" data-ui="hideout_warehouse.upgrade.blueprint"></div>
+                            <button type="button" class="hw-upgrade-close" id="hw-upgrade-close">返回存取</button>
+                            <div class="hw-hub-title">整备计划</div><div id="hw-project-stages" aria-label="工程阶段"></div>
                             <h3 class="hw-upgrade-detail-name" id="hw-upgrade-detail-name"></h3>
                             <p class="hw-upgrade-detail-desc" id="hw-upgrade-detail-desc"></p>
-                            <div class="hw-hub-title" data-ui="hideout_warehouse.upgrade.requirements"></div>
-                            <div class="hw-upgrade-req-grid" id="hw-upgrade-req-grid"></div>
+
+                            <div class="hw-upgrade-req-grid" id="hw-upgrade-req-grid"></div><div id="hw-material-host" hidden></div>
                             <div class="hw-progress-track hw-hidden" id="hw-upgrade-progress-track" aria-hidden="true"><div class="hw-progress-fill" id="hw-upgrade-progress-fill"></div></div>
-                            <p class="hw-upgrade-progress-label hw-hidden" id="hw-upgrade-progress-label"></p>
+                            <p role="status" class="hw-upgrade-progress-label hw-hidden" id="hw-upgrade-progress-label"></p>
                             <div class="hw-upgrade-foot">
                                 <div class="hw-upgrade-deduct" id="hw-upgrade-deduct"></div>
                                 <button type="button" class="hw-btn-primary hw-btn-lg" id="hw-btn-upgrade-start" data-ui="hideout_warehouse.upgrade.start"></button>
@@ -4454,7 +4458,9 @@
     <script src="js/buff-system.js"></script>
     <script src="js/game-log.js"></script>
     <script src="js/game-time.js"></script>
+    <script src="js/weather.js?v=fishing-temperature-20260926"></script>
     <script src="js/npc-system.js"></script>
+    <script src="js/reset-progress-dialog.js"></script>
     <script src="js/food-metabolism.js"></script>
     <script src="js/survival.js"></script>
     <script src="js/character-attributes.js"></script>
@@ -4464,7 +4470,7 @@
     <script src="js/item-assembly-display.js"></script>
     <script src="js/fishing-session.js"></script>
     <script src="js/fishing-facts.js"></script><script src="js/fishing-feedback.js"></script>
-    <script src="js/fishing-pond.js"></script>
+    <script src="js/fishing-pond.js?v=weather-fish-20260926"></script>
     <script src="js/fishing-panel.js"></script>
     <link rel="stylesheet" href="css/fishing.css">
     <script src="js/combat-damage.js"></script>
@@ -4481,7 +4487,7 @@
     <script src="js/combat-enemies.js"></script>
     <script src="js/combat-engagement.js"></script>
     <script src="js/combat-melee-resolve.js"></script>
-    
+
     <script src="js/muscles.js"></script>
     <script src="js/survival-skills.js"></script>
     <script src="js/production-quality.js"></script>
@@ -4495,7 +4501,7 @@
     <script src="js/agriculture-overview.js"></script>
     <script src="js/agriculture-panel.js"></script>
     <script src="js/hideout-warehouse.js"></script>
-    <script src="js/hideout-warehouse-panel.js"></script>
+    <script src="js/hideout-warehouse-panel.js?v=workspace-20260926c"></script>
     <link rel="stylesheet" href="css/hunting.css">
     <script src="js/gathering.js"></script>
     <script src="js/hunting-knowledge.js"></script>
@@ -4506,7 +4512,7 @@
     <script src="js/enemy-drops.js"></script>
     <script src="js/scene-animation.js"></script>
     <script src="js/core/map-projection.js"></script>
-    <script src="js/core/tile-renderer-v2.js?v=pawns-20260915-lin2"></script>
+    <script src="js/core/tile-renderer-v2.js?v=toolbench-20260926"></script>
     <script src="js/scene-renderer.js?v=devices-20260915"></script>
     <script src="js/scene-systems.js"></script>
     <script src="js/save-system.js"></script>
@@ -4522,6 +4528,14 @@
     <script src="js/pharmacy-station.js"></script>
     <script src="js/station-context.js"></script>
     <script src="js/cooking-station-panel.js"></script>
+    <link rel="stylesheet" href="css/cooking-repair.css">
+    <script src="js/facility-unlock-config.js"></script>
+    <script src="js/facility-unlock.js"></script>
+    <script src="js/cooking-repair.js"></script>
+    <script src="js/cooking-repair-panel.js?v=workspace-20260926d"></script>
+    <script src="js/facility-labor.js"></script>
+    <script src="js/facility-labor-panel.js"></script>
+    <script src="js/toolbench-panel.js"></script>
     <script src="js/pharmacy-station-panel.js"></script>
     <script src="js/compost-panel.js"></script>
     <script src="js/combat-world.js"></script>
@@ -4537,6 +4551,6 @@
     <script src="js/background-music.js"></script>
     <script src="js/bootstrap.js"></script>
     <script src="js/debug-hash-router.js"></script>
-    
+
 </body>
 </html>

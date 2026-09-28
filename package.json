@@ -58,6 +58,11 @@
     "test:livestock-food-chain": "node tools/test-livestock-food-chain.mjs",
     "audit:livestock-lifecycle": "node tools/audit-livestock-lifecycle.mjs",
     "test:livestock-panel-capacity": "node tools/test-livestock-panel-capacity.cjs",
-    "test:livestock-ui": "node tools/test-livestock-ui.cjs"
+    "test:livestock-ui": "node tools/test-livestock-ui.cjs",
+    "test:weather": "node tools/test-weather.mjs",
+    "test:fishing-temperature": "node tools/test-fishing-temperature.mjs",
+    "test:fishing-weather-species": "node tools/test-fishing-weather-species.mjs",
+    "test:facility-labor": "node tools/test-facility-labor.mjs",
+    "test:facility-unlock": "node tools/test-cooking-repair.mjs && node tools/test-facility-unlock.mjs && node tools/test-hideout-warehouse.mjs"
   }
 }

@@ -994,7 +994,7 @@
                 return tagsB.indexOf('bed_station') >= 0;
             }
 
-            btnWrap.appendChild(mkBtn(tUi('npc.menu.chat'), function () {
+            btnWrap.appendChild(mkBtn(def.id.indexOf('npc.station.') === 0 ? '查看'+(def.displayTitle||def.name) : tUi('npc.menu.chat'), function () {
                 closeMenu();
                 log('[NPCSystem] NPC chat clicked: npc=' + String(npcId), 'system');
                 scanChatEntry(npcId).then(function (res) {
@@ -1081,7 +1081,33 @@
                 });
             }));
 
+            var facilityActions = {
+                'npc.station.pharmacy_base': ['pharmacy'],
+                'npc.station.compost_base': ['compost'],
+                'npc.station.cooking_base': ['water']
+            };
+            (facilityActions[def.id] || []).forEach(function (id) {
+                var project = global.FacilityUnlock && global.FacilityUnlock.get(id);
+                if (!project) return;
+                var complete = project.isComplete();
+                var button = mkBtn(project.spec.title + (complete ? '（已完成）' : ''), function () {
+                    closeMenu();
+                    global.FacilityUnlockPanel.open(id);
+                });
+                button.disabled = complete || !project.accessible();
+                if (id === 'water' && !global.NPCSystem.isDemoFlagTrue('cooking_base_station_unlocked')) button.title = '先修好灶台';
+                btnWrap.appendChild(button);
+            });
+            if (def.id === 'npc.station.observation_base') {
+                btnWrap.appendChild(mkBtn('使用工具台', function () {closeMenu();if(global.ToolbenchPanel)global.ToolbenchPanel.open();}));
+            }
             if (shouldShowOpenCookingPanelButton(def)) {
+                if (def.id === 'npc.station.cooking_base' && !global.NPCSystem.isDemoFlagTrue('cooking_base_station_unlocked')) {
+                    btnWrap.appendChild(mkBtn('修复灶台', function () {
+                        closeMenu();
+                        if (global.CookingRepairPanel) global.CookingRepairPanel.open();
+                    }));
+                }
                 var cookBtn = mkBtn(tUi('npc.menu.open_cooking_panel', '使用灶台'), function () {
                     if (global.SceneApp && typeof global.SceneApp.isCookingStationPanelBlockedByRepair === 'function'
                         && global.SceneApp.isCookingStationPanelBlockedByRepair()) {
@@ -1144,7 +1170,7 @@
             }
 
             if (shouldShowOpenAgriculturePanelButton(def)) {
-                var agBtn = mkBtn(tUi('npc.menu.open_agriculture_panel', '管理农田'), function () {
+                var agBtn = mkBtn(global.FacilityLabor && !global.FacilityLabor.isUnlocked('agriculture') ? '恢复农场' : tUi('npc.menu.open_agriculture_panel', '管理农田'), function () {
                     closeMenu();
                     if (global.SceneApp && typeof global.SceneApp.openAgriculturePanel === 'function') {
                         global.SceneApp.openAgriculturePanel();
@@ -1164,7 +1190,7 @@
             }
 
             if (shouldShowOpenLivestockPanelButton(def)) {
-                var lsBtn = mkBtn(tUi('npc.menu.open_livestock_panel', '管理牧场'), function () {
+                var lsBtn = mkBtn(global.FacilityLabor && !global.FacilityLabor.isUnlocked('livestock') ? '恢复牧场' : tUi('npc.menu.open_livestock_panel', '管理牧场'), function () {
                     closeMenu();
                     if (global.SceneApp && typeof global.SceneApp.openLivestockPanel === 'function') {
                         global.SceneApp.openLivestockPanel();
@@ -1244,9 +1270,23 @@
         },
         /** 新档/重置烹饪台任务：清锁、清已听说明，并移除灶台相关一次性闲聊触发记录（避免与 reset flag 冲突）。 */
         resetCookingStationRepairQuestFlags: function () {
+            if (global.FacilityUnlockConfig) {
+                Object.keys(global.FacilityUnlockConfig.projects).forEach(function (id) {
+                    var spec = global.FacilityUnlockConfig.projects[id];
+                    setFlag(spec.key || ('facility_progress:' + id), {});
+                    setFlag(spec.unlock, false);
+                });
+                global.FacilityUnlockConfig.materials.forEach(function (m) { setFlag('repair_use_known:' + m[0], false); });
+            }
+            if (global.ToolbenchPanel) global.ToolbenchPanel.close();
+            if (global.FacilityLaborPanel) global.FacilityLaborPanel.dismiss();
+            if (global.FacilityLabor) global.FacilityLabor.reset();
+            if (global.CookingRepair) global.CookingRepair.reset();
             setFlag('cooking_base_station_unlocked', false);
             setFlag('cooking_base_station_repair_briefed', false);
             removeTriggered('station.cooking.repair_intro');
+            removeTriggered('station.cooking.repair_material_lesson');
+            setFlag('cooking_base_repair_lesson_learned', false);
             removeTriggered('station.cooking.repair_unlock');
         },
         resetPharmacyStationRepairQuestFlags: function () {

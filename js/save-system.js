@@ -549,6 +549,7 @@
             saveGeneration: saveGeneration,
             savedAt: Date.now(),
             time: { totalTicks: timeSt.totalTicks },
+            weather: global.Weather && global.Weather.getState(),
             player: {
                 engine: { mapId: engineSt.mapId, x: engineSt.x, y: engineSt.y },
                 characterAttributes: charSt,
@@ -580,12 +581,19 @@
         var mods = getAllModulesForSnapshot();
         if (!mods.GameTime || !mods.GameEngine || !mods.CharacterAttributes || !mods.Survival || !mods.InventoryEquipment) return false;
 
+        if (global.Weather && global.Weather.isReady() && !global.Weather.validate(snapshot.weather, snapshot.time.totalTicks)) return false;
         // Time first: buff expiration is tick-based.
         // Validate livestock before mutating any other game subsystem.
         if (global.LivestockState && typeof global.LivestockState.validateState === 'function' && !global.LivestockState.validateState(snapshot.livestock).ok) return false;
+        if (global.HideoutWarehousePanel && global.HideoutWarehousePanel.suspendForLoad) global.HideoutWarehousePanel.suspendForLoad();
+        if (global.ToolbenchPanel) global.ToolbenchPanel.close();
+        if (global.CookingRepairPanel) global.CookingRepairPanel.close();
+        if (global.FacilityLaborPanel) global.FacilityLaborPanel.dismiss();
         if (typeof mods.GameTime.reset === 'function') {
             mods.GameTime.reset({ totalTicks: snapshot.time.totalTicks });
         }
+
+        if (global.Weather && global.Weather.isReady()) global.Weather.restore(snapshot.weather || null, snapshot.time.totalTicks);
 
         // Engine position.
         if (typeof mods.GameEngine.setState === 'function') {
@@ -615,6 +623,7 @@
                     return mods.InventoryEquipment.getItemTemplate ? mods.InventoryEquipment.getItemTemplate(id) : null;
                 }, Number(savedSurvival.tickCount) || 0);
             }
+            if (!savedSurvival.temperature_sources) savedSurvival.temperature_sources = {};
             mods.Survival.setState(savedSurvival);
         }
 
@@ -660,6 +669,7 @@
             try { mods.CompostSystem.setState(snapshot.compost); } catch (eCompost) { /* ignore */ }
         }
 
+        if (global.FacilityLabor) global.FacilityLabor.migrate(snapshot);
         applyAgricultureMapFromSnapshot(snapshot);
         applyHideoutWarehouseFromSnapshot(snapshot);
 

@@ -5,7 +5,7 @@
     function node(tag,text,parent,cls){var n=document.createElement(tag);if(text!=null)n.textContent=text;if(cls)n.className=cls;if(parent)parent.appendChild(n);return n;}
     function atPoint(){if(!C||!g.GameEngine)return false;var p=g.GameEngine.getState();return p.mapId===C.entry.map&&p.x===C.entry.x&&p.y===C.entry.y;}
     function allowed(){var S=g.Survival,st=S&&S.getState(),app=g.SceneApp;return atPoint()&&st&&!st.isDead&&!st.isComa&&!st.isResting&&!(g.CombatEngagement&&g.CombatEngagement.isPlayerInCombat())&&!(app&&app.isPreCreationGameplayRestricted())&&!(app&&app.isPlayerActionDisabledByBuff('gather'))&&!(g.SceneCtx&&g.SceneCtx.idleActionType);}
-    function configure(c){if(!g.FishingPond.configure(c))throw new Error("钓鱼配置加载失败");C=c;g.FishingPond.setHost({now:function(){return g.GameTime.getState().totalTicks;},allowed:allowed,stamina:function(){return g.Survival.getStamina();},spend:function(n){g.Survival.consumeStamina(n);},tick:function(){g.Survival.advanceTick();}});}
+    function configure(c){if(!g.FishingPond.configure(c))throw new Error("钓鱼配置加载失败");C=c;g.FishingPond.setHost({now:function(){return g.GameTime.getState().totalTicks;},allowed:allowed,stamina:function(){return g.Survival.getActionStaminaBudget ? g.Survival.getActionStaminaBudget() : g.Survival.getStamina();},spend:function(n){g.Survival.consumeStamina(n);},tick:function(){g.Survival.advanceTick();}});}
     function init(){if(overlay)return;
         overlay=node('div',null,document.body);overlay.id='fishing-overlay';overlay.hidden=true;
         card=node('section',null,overlay,'fishing-window');card.tabIndex=-1;card.setAttribute('role','dialog');card.setAttribute('aria-modal','true');card.setAttribute('aria-label','岸边池塘');

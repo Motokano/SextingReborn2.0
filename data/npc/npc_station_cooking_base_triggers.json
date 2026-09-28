@@ -2,7 +2,7 @@
   "npcId": "npc.station.cooking_base",
   "entries": [
     {
-      "id": "station.cooking.repair_intro",
+      "id": "station.cooking.repair_material_lesson",
       "entryType": "dialogue",
       "entrySource": "chat",
       "condition": {
@@ -14,8 +14,8 @@
             "value": false
           },
           {
+            "flag": "cooking_base_repair_lesson_learned",
             "type": "flagEquals",
-            "flag": "cooking_base_station_repair_briefed",
             "value": false
           }
         ]
@@ -26,12 +26,12 @@
         "linesRich": [
           {
             "speaker": "narration",
-            "text": "灶台塌了一角，想用的话需要一些粘土、柴火和一口锅才行。",
+            "text": "灶体裂了，支架也松了。你查看了修补位置：一坨黄泥可以填缝，灰白色石头可以补台基，浅色木板和青竹一截可以撑稳支架。这些修补用途你记下了；在菜单里选择「修复灶台」准备材料。",
             "avatar": ""
           }
         ],
         "lines": [
-          "灶台塌了一角，想用的话需要一些粘土、柴火和一口锅才行。"
+          "灶体裂了，支架也松了。你查看了修补位置：一坨黄泥可以填缝，灰白色石头可以补台基，浅色木板和青竹一截可以撑稳支架。这些修补用途你记下了；在菜单里选择「修复灶台」准备材料。"
         ],
         "hasOptions": false,
         "options": []
@@ -43,95 +43,41 @@
             "flag": "cooking_base_station_repair_briefed",
             "value": true
           }
-        }
-      ],
-      "repeatable": false,
-      "scope": "global",
-      "causesNpcDisappear": false
-    },
-    {
-      "id": "station.cooking.repair_unlock",
-      "entryType": "dialogue",
-      "entrySource": "chat",
-      "condition": {
-        "type": "and",
-        "conds": [
-          {
-            "type": "flagEquals",
-            "flag": "cooking_base_station_unlocked",
-            "value": false
-          },
-          {
-            "type": "flagEquals",
-            "flag": "cooking_base_station_repair_briefed",
-            "value": true
-          },
-          {
-            "type": "hasItem",
-            "itemId": "ore_clay_raw",
-            "count": 1
-          },
-          {
-            "type": "hasItem",
-            "itemId": "wood_firewood",
-            "count": 1
-          },
-          {
-            "type": "hasItem",
-            "itemId": "tool_pot_clay_cooking",
-            "count": 1
-          }
-        ]
-      },
-      "requires": [
-        "station.cooking.repair_intro"
-      ],
-      "blocks": [],
-      "dialogue": {
-        "linesRich": [
-          {
-            "speaker": "narration",
-            "text": "把黏土糊进裂缝，垫上干柴，把陶锅稳稳卡进灶膛。灶眼深处像是轻轻吸了一口气，砖面终于不再晃了。",
-            "avatar": ""
-          }
-        ],
-        "lines": [
-          "把黏土糊进裂缝，垫上干柴，把陶锅稳稳卡进灶膛。灶眼深处像是轻轻吸了一口气，砖面终于不再晃了。"
-        ],
-        "hasOptions": false,
-        "options": []
-      },
-      "effects": [
-        {
-          "type": "removeItem",
-          "params": {
-            "itemId": "ore_clay_raw",
-            "count": 1,
-            "strict": true
-          }
         },
         {
-          "type": "removeItem",
           "params": {
-            "itemId": "wood_firewood",
-            "count": 1,
-            "strict": true
-          }
+            "value": true,
+            "flag": "repair_use_known:ore_clay_raw"
+          },
+          "type": "setFlag"
         },
         {
-          "type": "setFlag",
           "params": {
-            "flag": "cooking_base_station_unlocked",
-            "value": true
-          }
+            "value": true,
+            "flag": "repair_use_known:ore_limestone"
+          },
+          "type": "setFlag"
         },
         {
-          "type": "removeItem",
           "params": {
-            "itemId": "tool_pot_clay_cooking",
-            "count": 1,
-            "strict": true
-          }
+            "value": true,
+            "flag": "repair_use_known:wood_plank_soft"
+          },
+          "type": "setFlag"
+        },
+        {
+          "params": {
+            "value": true,
+            "flag": "repair_use_known:wood_bamboo_green"
+          },
+          "type": "setFlag"
+        },
+        {
+          "params": {
+            "value": true,
+            "flag": "cooking_base_repair_lesson_learned"
+          },
+          "type": "setFlag"
         }
       ],
       "repeatable": false,
@@ -164,68 +110,6 @@
         "options": []
       },
       "effects": [],
-      "repeatable": false,
-      "scope": "global",
-      "causesNpcDisappear": false
-    },
-    {
-      "id": "station.cooking.main_water_unlimited",
-      "entryType": "dialogue",
-      "entrySource": "chat",
-      "condition": {
-        "type": "and",
-        "conds": [
-          {
-            "type": "flagEquals",
-            "flag": "cooking_base_station_unlocked",
-            "value": true
-          },
-          {
-            "type": "hasItem",
-            "itemId": "wood_firewood",
-            "count": 1
-          }
-        ]
-      },
-      "requires": [],
-      "blocks": [],
-      "dialogue": {
-        "linesRich": [
-          {
-            "speaker": "narration",
-            "text": "你把祭品塞进灶膛缝里，砖缝里渗出潮气，像有人在深处点头应允。此后主灶台料理水不再枯竭。",
-            "avatar": ""
-          }
-        ],
-        "lines": [
-          "你把祭品塞进灶膛缝里，砖缝里渗出潮气，像有人在深处点头应允。此后主灶台料理水不再枯竭。"
-        ],
-        "hasOptions": false,
-        "options": []
-      },
-      "effects": [
-        {
-          "type": "removeItem",
-          "params": {
-            "itemId": "wood_firewood",
-            "count": 1,
-            "strict": true
-          }
-        },
-        {
-          "type": "setFlag",
-          "params": {
-            "flag": "cooking_base_station_water_unlimited",
-            "value": true
-          }
-        },
-        {
-          "type": "setCookingStationWater",
-          "params": {
-            "unlimited": true
-          }
-        }
-      ],
       "repeatable": false,
       "scope": "global",
       "causesNpcDisappear": false

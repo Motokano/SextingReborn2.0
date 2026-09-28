@@ -24,7 +24,7 @@
     },
     "npc.station.cooking_faulty": {
       "lines": [
-        "如果有粘土、柴火还有锅的话可以尝试修一下。"
+        "灶体和支架还需要修补。在菜单里选择「修复灶台」，准备你已知能用的材料。"
       ],
       "composeMode": "pick_pool"
     }

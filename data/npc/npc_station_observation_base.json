@@ -1,0 +1,32 @@
+{
+  "schemaVersion": 1,
+  "id": "npc.station.observation_base",
+  "name": "工具台",
+  "displayTitle": "工具台",
+  "npcLabel": "工具台",
+  "sprite": "",
+  "appearanceSchedule": {
+    "start": "00:00",
+    "end": "23:59"
+  },
+  "location": {
+    "sceneId": "M0_Base_Inside_lv_1",
+    "x": 7,
+    "y": 11
+  },
+  "mainMenu": {
+    "showChat": true,
+    "showWorkWhen": "never",
+    "showLeave": true
+  },
+  "behavior": {
+    "type": "workbench",
+    "origin": "base_hideout"
+  },
+  "fallbackDialoguePoolId": "npc.station.observation_base.fallback",
+  "tags": [
+    "workbench",
+    "non_combat",
+    "base_facility"
+  ]
+}

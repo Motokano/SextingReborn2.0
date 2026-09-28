@@ -1,0 +1,75 @@
+/* Warehouse workspace: inventory and projects share one frame. */
+#modal-hideout-warehouse .hw-panel{width:min(1180px,96vw);height:min(850px,94vh);max-height:94vh;border:1px solid #796448;border-radius:12px;background:#24211c;box-shadow:0 24px 90px #0009;font:14px/1.5 'Microsoft YaHei','PingFang SC',sans-serif}
+#modal-hideout-warehouse .hw-panel::after{display:none}
+#modal-hideout-warehouse .hw-header{height:auto;min-height:64px;background:#24211c;border-bottom:1px solid #514332;gap:14px;flex-wrap:wrap;padding:14px 22px}
+#modal-hideout-warehouse .hw-title{font-size:22px;font-weight:700;letter-spacing:0}
+#modal-hideout-warehouse .hw-title::before{background:#d8b784}
+#modal-hideout-warehouse .hw-header-actions{border:0;padding-left:0}
+#modal-hideout-warehouse .hw-workspace-nav{display:flex;align-items:center;gap:8px;padding:10px 22px;border-bottom:1px solid #514332;flex-shrink:0}
+#modal-hideout-warehouse .hw-workspace-nav button{background:transparent;color:#b8aa95;border:1px solid transparent;border-radius:6px;padding:10px 18px;cursor:pointer;font:inherit}
+#modal-hideout-warehouse .hw-workspace-nav button.active{background:#3a3024;border-color:#987649;color:#edcf9a}
+#modal-hideout-warehouse .hw-workspace-nav>span{margin-left:auto;color:#9b8e7b;font-size:12px}
+#modal-hideout-warehouse .hw-body{min-height:0;flex:1;overflow:hidden}
+#modal-hideout-warehouse .hw-grid-column{min-width:0;padding:18px;background:#24211c}
+#modal-hideout-warehouse #hw-slot-grid{gap:5px;grid-template-columns:repeat(10,minmax(0,1fr));grid-auto-rows:64px}
+#modal-hideout-warehouse .hw-slot-cell{border:1px solid #4f4435;border-radius:5px;background:#2c271f;min-width:0;aspect-ratio:auto;height:64px}
+#modal-hideout-warehouse .hw-slot-cell.selected{border-color:#deb87b;background:#403325}
+#modal-hideout-warehouse #hw-detail{background:#211e19;border-left:1px solid #514332;padding:20px;width:290px;min-width:230px}
+#modal-hideout-warehouse .hw-detail-name{font-size:21px}
+#modal-hideout-warehouse #hw-container-strip{background:#211e19;border-top:1px solid #514332;padding:14px 20px;max-height:175px;overflow:auto}
+#modal-hideout-warehouse .hw-container-slots{max-height:108px;overflow:auto}
+#modal-hideout-warehouse .hw-mini-slot:not(.hw-mini-empty){width:auto;min-width:65px;max-width:180px;height:auto;min-height:32px;padding:6px 9px;border:1px solid #574936;border-radius:5px;background:#30291f;color:#ded0b9;font:12px/1.4 inherit;cursor:pointer;white-space:normal}
+#modal-hideout-warehouse .hw-footer{background:#24211c;border-top:1px solid #514332;text-transform:none;letter-spacing:0}
+#modal-hideout-warehouse button:focus-visible,#modal-hideout-warehouse input:focus-visible{outline:2px solid #e2b877;outline-offset:2px}
+#modal-hideout-warehouse.hw-project-view .hw-body>nav,#modal-hideout-warehouse.hw-project-view .hw-grid-column,#modal-hideout-warehouse.hw-project-view #hw-detail,#modal-hideout-warehouse.hw-project-view #hw-container-strip{display:none!important}
+#modal-hideout-warehouse #hw-upgrade-overlay{position:static;inset:auto;width:100%;height:100%;display:grid;grid-template-columns:280px minmax(0,1fr);background:#24211c;min-height:0}
+#modal-hideout-warehouse .hw-upgrade-list{width:auto;min-width:0;background:#211e19;border-right:1px solid #514332;display:flex;flex-direction:column;min-height:0}
+#modal-hideout-warehouse .hw-upgrade-list-head{height:auto;display:block;padding:22px 18px;border-bottom:1px solid #514332}
+#modal-hideout-warehouse .hw-project-intro{font-size:12px;color:#ae9f88;line-height:1.6;margin-bottom:0}
+#modal-hideout-warehouse .hw-upgrade-list-body{padding:12px;overflow:auto;min-height:0}
+#modal-hideout-warehouse .hw-upgrade-card{display:block;width:100%;text-align:left;white-space:normal;padding:16px;margin-bottom:10px;background:#2c271f;border:1px solid #514332;border-radius:8px;color:#eee4d5;cursor:pointer;font:inherit}
+#modal-hideout-warehouse .hw-upgrade-card.selected{background:#3b3023;border-color:#c49d64}
+#modal-hideout-warehouse .hw-upgrade-card.selected .hw-upgrade-card-name{color:#edcf9a}
+#modal-hideout-warehouse .hw-upgrade-tag{position:static;float:none;display:inline-block;margin:0 0 10px;padding:2px 7px;border-radius:4px;font-size:11px}
+#modal-hideout-warehouse .hw-upgrade-tag-lack{color:#dbc6a2;border:1px solid #81694a}
+#modal-hideout-warehouse .hw-upgrade-card.done{opacity:.8}
+#modal-hideout-warehouse .hw-upgrade-detail{padding:20px 26px;overflow:auto;min-height:0;position:relative;display:flex;flex-direction:column}
+#modal-hideout-warehouse .hw-upgrade-detail>.hw-hub-title{display:none}
+#modal-hideout-warehouse .hw-upgrade-close{position:absolute;top:20px;right:26px;font-size:13px;padding:5px 0;margin:0;background:none;border:0;color:#c5b496;cursor:pointer}
+#modal-hideout-warehouse .hw-upgrade-detail-name{font-size:26px;margin-top:14px}
+#modal-hideout-warehouse .hw-upgrade-detail-desc{margin:0 0 12px}
+#modal-hideout-warehouse #hw-project-stages{display:flex;flex-wrap:wrap;gap:16px;color:#847866;font-size:13px;margin:0 90px 0 0}
+#modal-hideout-warehouse #hw-project-stages span{padding-bottom:7px;border-bottom:2px solid transparent}
+#modal-hideout-warehouse #hw-project-stages .current{color:#e2b877;border-color:#c49d64}
+#modal-hideout-warehouse #hw-project-stages .done{color:#a9b897}
+#modal-hideout-warehouse .hw-upgrade-req-grid{display:block;border:1px solid #514332;border-radius:7px;padding:12px;background:#2c271f;line-height:1.7;margin:0 0 12px}
+#modal-hideout-warehouse .hw-work-cost{font-size:12px;color:#c9b99f;margin:8px 0 0}
+#modal-hideout-warehouse .hw-upgrade-progress-label{font-size:14px;line-height:1.7;color:#d3c2a6}
+#modal-hideout-warehouse .hw-upgrade-foot{padding-top:16px}
+#modal-hideout-warehouse .hw-upgrade-foot button{border-radius:6px;padding:12px;font-size:15px;background:#3a3024;color:#e2c18e;border:1px solid #987649}
+#modal-hideout-warehouse .cr-embedded{width:100%;max-height:none;overflow:visible;background:none;border:0;box-shadow:none;color:#eee4d5;font:14px/1.7 'Microsoft YaHei',sans-serif}
+#modal-hideout-warehouse .cr-embedded .cr-body{padding:0}
+#modal-hideout-warehouse .cr-embedded h2{margin:14px 0 8px}
+#modal-hideout-warehouse .cr-embedded .cr-body nav button{min-width:90px}
+#modal-hideout-warehouse .cr-embedded *{box-sizing:border-box}
+#modal-hideout-warehouse .wh-next{padding:22px;background:#30291f;border:1px solid #806644;border-radius:8px}
+#modal-hideout-warehouse .wh-next h2{margin-top:0}
+#modal-hideout-warehouse .wh-primary{background:#ddbb82;color:#241e16;border-color:#ddbb82;font-weight:700;padding:11px 18px}
+#modal-hideout-warehouse .wh-primary:disabled{background:#3a3227;color:#9f917c;border-color:#5c4d37;opacity:1}
+#modal-hideout-warehouse .wh-material-heading h2{margin-top:0}
+#modal-hideout-warehouse #hw-project-stages:empty,#modal-hideout-warehouse #hw-upgrade-detail-desc:empty{display:none}
+#modal-hideout-warehouse .wh-material-heading{padding-top:28px}
+#modal-hideout-warehouse .wh-material-heading details{font-size:12px;color:#b8a78d;margin:0 0 16px}
+#modal-hideout-warehouse .wh-material-heading summary{cursor:pointer;width:max-content;padding:4px 0}
+#modal-hideout-warehouse .wh-material-group{border:1px solid #514332;border-radius:8px;padding:0 16px;margin-bottom:12px;background:#29241e}
+#modal-hideout-warehouse .wh-material-group header{padding:12px 0;display:flex;flex-wrap:wrap;gap:6px 14px;align-items:baseline;justify-content:space-between;border-bottom:1px solid #514332}
+#modal-hideout-warehouse .wh-material-group h3{margin:0;font-size:15px}
+#modal-hideout-warehouse .wh-material-group header span{font-size:12px;color:#b5a68e}
+#modal-hideout-warehouse .wh-material-group .cr-material:last-child{border-bottom:0}
+#modal-hideout-warehouse .wh-delivery{position:sticky;bottom:-20px;z-index:2;background:#342b20;border:1px solid #96774f;border-radius:8px;padding:14px 16px;display:flex;align-items:center;gap:18px;box-shadow:0 -8px 24px #0003}
+#modal-hideout-warehouse .wh-delivery>div{flex:1;min-width:0}
+#modal-hideout-warehouse .wh-delivery p{margin:4px 0;font-size:13px;max-height:72px;overflow:auto}
+#modal-hideout-warehouse .wh-delivery small{font-size:11px;color:#b5a68e}
+#modal-hideout-warehouse .wh-delivery button{flex-shrink:0}
+#modal-hideout-warehouse [hidden]{display:none!important}
+@media(max-width:760px){#modal-hideout-warehouse .hw-panel{height:96vh}#modal-hideout-warehouse #hw-upgrade-overlay{grid-template-columns:1fr;grid-template-rows:145px minmax(0,1fr)}#modal-hideout-warehouse .hw-upgrade-list-head{display:none}#modal-hideout-warehouse .hw-upgrade-list-body{display:flex;gap:8px;overflow:auto}#modal-hideout-warehouse .hw-upgrade-card{min-width:210px;margin:0;padding:10px}#modal-hideout-warehouse .hw-upgrade-detail{padding:16px}#modal-hideout-warehouse .hw-workspace-nav>span{display:none}#modal-hideout-warehouse #hw-detail{width:210px;min-width:180px}#modal-hideout-warehouse #hw-slot-grid{grid-template-columns:repeat(5,minmax(0,1fr))}}

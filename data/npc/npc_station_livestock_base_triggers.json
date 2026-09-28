@@ -2,22 +2,36 @@
   "npcId": "npc.station.livestock_base",
   "entries": [
     {
-      "id": "station.livestock.base_guide",
+      "id": "station.livestock.needs_clearing",
       "entryType": "dialogue",
       "entrySource": "chat",
-      "condition": null,
+      "condition": {
+        "type": "and",
+        "conds": [
+          {
+            "type": "flagEquals",
+            "flag": "facility_restored:livestock",
+            "value": false
+          },
+          {
+            "type": "flagEquals",
+            "flag": "facility_cleaned:livestock",
+            "value": false
+          }
+        ]
+      },
       "requires": [],
       "blocks": [],
       "dialogue": {
         "linesRich": [
           {
             "speaker": "narration",
-            "text": "牧场装置静静停着，四根机械臂还没挂上任何模块，区域里的草倒是长满了。得先捉来种畜、装上模块，它才会转起来。",
+            "text": "这片牧场荒废已久，旧装置周围堆着杂物，得花些时间清理。",
             "avatar": ""
           }
         ],
         "lines": [
-          "牧场装置静静停着，四根机械臂还没挂上任何模块，区域里的草倒是长满了。得先捉来种畜、装上模块，它才会转起来。"
+          "这片牧场荒废已久，旧装置周围堆着杂物，得花些时间清理。"
         ],
         "hasOptions": false,
         "options": []
@@ -28,22 +42,66 @@
       "causesNpcDisappear": false
     },
     {
-      "id": "station.livestock.base_panel_hint",
+      "id": "station.livestock.needs_repair",
       "entryType": "dialogue",
       "entrySource": "chat",
-      "condition": null,
+      "condition": {
+        "type": "and",
+        "conds": [
+          {
+            "type": "flagEquals",
+            "flag": "facility_restored:livestock",
+            "value": false
+          },
+          {
+            "type": "flagEquals",
+            "flag": "facility_cleaned:livestock",
+            "value": true
+          }
+        ]
+      },
       "requires": [],
       "blocks": [],
       "dialogue": {
         "linesRich": [
           {
             "speaker": "narration",
-            "text": "在菜单里点「管理牧场」可以打开控制面板：模块装配、动物迁移、采集屠宰都从那里操作。",
+            "text": "杂物已经清走了，露出的旧装置还有些破损。",
             "avatar": ""
           }
         ],
         "lines": [
-          "在菜单里点「管理牧场」可以打开控制面板：模块装配、动物迁移、采集屠宰都从那里操作。"
+          "杂物已经清走了，露出的旧装置还有些破损。"
+        ],
+        "hasOptions": false,
+        "options": []
+      },
+      "effects": [],
+      "repeatable": true,
+      "scope": "global",
+      "causesNpcDisappear": false
+    },
+    {
+      "id": "station.livestock.restored",
+      "entryType": "dialogue",
+      "entrySource": "chat",
+      "condition": {
+        "type": "flagEquals",
+        "flag": "facility_restored:livestock",
+        "value": true
+      },
+      "requires": [],
+      "blocks": [],
+      "dialogue": {
+        "linesRich": [
+          {
+            "speaker": "narration",
+            "text": "牧场已经收拾妥当，旧装置周围不再堆着杂物。",
+            "avatar": ""
+          }
+        ],
+        "lines": [
+          "牧场已经收拾妥当，旧装置周围不再堆着杂物。"
         ],
         "hasOptions": false,
         "options": []

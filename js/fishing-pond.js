@@ -10,7 +10,7 @@
     function FS() { return g.FishingSession; }
     function active() { return FS().getState().active; }
     function now() { return g.GameTime ? g.GameTime.getState().totalTicks : 0; }
-    function h() { return hostOverride || {now:now,allowed:function(){return true;},stamina:function(){return g.Survival.getStamina();},spend:function(n){g.Survival.consumeStamina(n);},tick:function(){g.Survival.advanceTick();}}; }
+    function h() { return hostOverride || {now:now,allowed:function(){return true;},stamina:function(){return g.Survival.getActionStaminaBudget ? g.Survival.getActionStaminaBudget() : g.Survival.getStamina();},spend:function(n){g.Survival.consumeStamina(n);},tick:function(){g.Survival.advanceTick();}}; }
     function clock() { return h().now(); }
     function log(text) { s.logs.unshift({tick:clock(),text:text}); s.logs=s.logs.slice(0,C.rules.max_logs); }
     function roll() { s.seed=(Math.imul(s.seed,1664525)+1013904223)>>>0;return s.seed/4294967296; }
@@ -18,7 +18,10 @@
     function range(a) { return a[0]+Math.floor(roll()*(a[1]-a[0]+1)); }
     function configure(c) {
         if(!c||c.version!==1||!Array.isArray(c.points)||c.points.length!==5||!Array.isArray(c.stations)||c.stations.length!==3)return false;
+        if(!c.points.every(function(p){var m=p.temperature_approach;if(m==null)return true;return typeof m==='object'&&!Array.isArray(m)&&Object.keys(m).every(function(k){return ['cold','cool','mild','warm','hot'].indexOf(k)>=0&&typeof m[k]==='number'&&isFinite(m[k])&&m[k]>=0;});}))return false;
         if(!c.stations.every(function(st){return Array.isArray(st.routes)&&st.routes.length===c.points.length&&st.routes.every(function(r){return r===null||r&&Number.isInteger(r.distance_dm)&&r.distance_dm>0&&Number.isInteger(r.hand_line_required_dm)&&r.hand_line_required_dm>0&&Number.isInteger(r.obstacle)&&r.obstacle>=0&&r.obstacle<=2;});}))return false;
+        if(!Array.isArray(c.fish)||!c.points.every(function(p){return Array.isArray(p.stocks)&&p.stocks.length===c.fish.length;}))return false;
+        if(!c.fish.every(function(f){var m=f.weather_activity;return m==null||typeof m==='object'&&!Array.isArray(m)&&Object.keys(m).every(function(k){return typeof m[k]==='number'&&isFinite(m[k])&&m[k]>=0;});}))return false;
         if(!g.FishingFacts||!c.fact_rules||!g.FishingFeedback||!c.feedback_rules)return false;
         try{g.FishingFacts.validateConfig(c.fact_rules);g.FishingFeedback.validate(c.feedback_rules);}catch(e){return false;}
         C=clone(c);return true;
@@ -115,14 +118,31 @@
         var f=C.fish[c.fish];return {event_id:'pond:'+c.serial,catch_profile_id:f.id,load_rating:f.loads[c.size],endurance:C.stations[s.station].landing,hook_fit:(C.hook_fit[(part('fishing.hook')||{}).item_id]||{})[f.id]||f.hook,in_mouth:inMouth,takes_bait_on_strike:inMouth&&!isLure(),visible_signal:isLure()?(light()?'surface_splash':'surface_sound'):(c.signal||'clear_movement'),behavior_sequence:c.sequence};
     }
     function removeBait() { var b=part('fishing.bait');if(!b)return;var r=IE().findItemInstanceRecord(b.instance_id);g.ItemAssembly.discardConnectionSubtree(r.parent.instance_id,r.relation_key); }
+    function currentEnvironment() {
+        if(!g.Weather)return null;
+        var map=g.GameEngine&&g.GameEngine.getMap&&g.GameEngine.getMap();
+        if(!map||(map.map_id||map.id)!==C.entry.map)map={map_id:C.entry.map};
+        return g.Weather.getEnvironment(map);
+    }
+    function temperatureApproach(env) {
+        var modifiers=C.points[s.point].temperature_approach;
+        var value=env&&modifiers&&modifiers[env.temperature_band];
+        return typeof value==='number'?value:1;
+    }
     function encounter(sinking) {
         updateWater();var a=active();if(!a||a.phase!=='waiting'||s.snag)return;
         var b=part('fishing.bait'),bait=b&&C.bait[b.item_id],water=s.water[s.point],l=layer(Math.min(s.depth,C.points[s.point].depth));
         var lure=isLure(),hasNest=Object.keys(water.nest).length>0;if(lure)l=0;
         var chance=bait?C.rules.approach+bait.smell*C.rules.smell_bonus+(hasNest?C.rules.nest_bonus:0)-water.disturbance*C.rules.disturbance_penalty:C.rules.bare_hook;
         if(lure)chance=C.lure.approach+C.lure.style_weights[s.lureStyle]+C.lure.speed_weights[s.lureSpeed]-water.disturbance*C.rules.disturbance_penalty;
-        if(roll()*100>=Math.max(0,chance))return;
         var weights=C.fish.map(function(f,i){if(lure)return water.stock[i]*(C.lure.fish_weights[i]||0);var layers=f.layers[l];if(sinking&&present()!=='sunk')layers=Math.max(layers,f.layers[0]);return water.stock[i]*layers*(bait?(f.food[bait.food]||0):1);});
+        var env=currentEnvironment(),baseTotal=weights.reduce(function(a,b){return a+b;},0);
+        weights=weights.map(function(w,i){var m=C.fish[i].weather_activity,v=env&&m&&m[env.weather];return w*(typeof v==='number'?v:1);});
+        var weatherTotal=weights.reduce(function(a,b){return a+b;},0);
+        // Weighted activity changes total contact chance and species selection once,
+        // including when only one species can take the selected bait or lure.
+        chance=Math.max(0,Math.min(100,chance*temperatureApproach(env)*(baseTotal?weatherTotal/baseTotal:1)));
+        if(roll()*100>=chance)return;
         var fi=pick(weights);if(fi<0)return;
         var f=C.fish[fi],outcome=pick(lure?C.lure.signals:C.rules.signals);
         if(outcome===0)return;
@@ -288,7 +308,7 @@
         if(x.attachedGrassHook!=null&&typeof x.attachedGrassHook!=='string')return false;
         if(x.attachedGrass!=null&&typeof x.attachedGrass!=='boolean'||x.previousLoad!=null&&(!Number.isInteger(x.previousLoad)||x.previousLoad<1))return false;
         if(!Array.isArray(x.water)||(x.initialized&&x.water.length!==5)||!x.notes||!x.knowledge||!Array.isArray(x.logs)||x.logs.length>12||!Number.isInteger(x.serial)||x.serial<0||[0,1,2].indexOf(x.snag)<0)return false;
-        if(!x.water.every(function(w){return w&&Array.isArray(w.stock)&&(w.stock.length===3||C&&w.stock.length===C.fish.length)&&w.stock.every(function(n){return Number.isInteger(n)&&n>=0&&n<=100;})&&Number.isInteger(w.updated)&&w.updated>=0&&Number.isInteger(w.recovered)&&w.recovered>=0&&w.nest&&Object.keys(w.nest).every(function(k){var n=w.nest[k];return ['worm','grain'].indexOf(k)>=0&&Number.isInteger(n.count)&&n.count>=0&&n.count<=20&&Number.isInteger(n.at)&&n.at>=0;});}))return false;
+        if(!x.water.every(function(w){return w&&Array.isArray(w.stock)&&(w.stock.length===3||w.stock.length===4||C&&w.stock.length===C.fish.length)&&w.stock.every(function(n){return Number.isInteger(n)&&n>=0&&n<=100;})&&Number.isInteger(w.updated)&&w.updated>=0&&Number.isInteger(w.recovered)&&w.recovered>=0&&w.nest&&Object.keys(w.nest).every(function(k){var n=w.nest[k];return ['worm','grain'].indexOf(k)>=0&&Number.isInteger(n.count)&&n.count>=0&&n.count<=20&&Number.isInteger(n.at)&&n.at>=0;});}))return false;
         function integer(n){return Number.isInteger(n)&&n>=0;}
         if(x.lureStyle!=null&&['steady','pause','twitch'].indexOf(x.lureStyle)<0||x.lureSpeed!=null&&['slow','medium','fast'].indexOf(x.lureSpeed)<0||x.drag!=null&&['loose','medium','tight'].indexOf(x.drag)<0||x.retrieveLeft!=null&&(!integer(x.retrieveLeft)||x.retrieveLeft>4))return false;
         if(x.selectedRig!=null&&typeof x.selectedRig!=='string')return false;

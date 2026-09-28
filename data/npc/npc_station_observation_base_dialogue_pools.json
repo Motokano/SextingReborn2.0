@@ -1,0 +1,10 @@
+{
+  "schemaVersion": 1,
+  "pools": {
+    "npc.station.observation_base.fallback": {
+      "lines": [
+        "台上留着日历架和测温装置的装配说明。分别装好后，日期和当前环境的温度读数会随行显示，不用回来逐次测量。湿度计暂时还不能装配。"
+      ]
+    }
+  }
+}

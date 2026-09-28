@@ -1,0 +1,15 @@
+<!doctype html><meta charset="utf-8"><base href="/"><title>灶台接入验收</title><link rel="stylesheet" href="css/cooking-repair.css">
+<body style="background:#211c19;color:#eee4d5;font:16px sans-serif;padding:24px"><h1>灶台接入验收</h1><p>独立测试库存 · 实际 NPC 菜单、修复模块与物品栏</p><button id="open">点击灶台</button><p id="message"></p><div id="dialogue"></div>
+<script type="module">
+if(location.port!=='8018')throw Error('Use isolated acceptance port 8018');
+for(const src of ['js/item-attribute-modules.js','js/inventory-equipment.js','js/npc-system.js','js/facility-unlock-config.js','js/facility-unlock.js','js/cooking-repair.js','js/cooking-repair-panel.js'])await new Promise((resolve,reject)=>{const s=document.createElement('script');s.src=src;s.onload=resolve;s.onerror=reject;document.head.append(s);});
+const catalog=await (await fetch('data/item-catalog-v2.json')).json(),dict=await (await fetch('data/ui_text_zhCN.json')).json();window.UIText={t:k=>dict[k]||k};
+InventoryEquipment.setConfig({equipment:{test_bag:{item_id:'test_bag',equip_slot:'backpack',backpack_slots:20}},items:ItemAttributeModules.hydrateCatalog(catalog),modules:{},default_equipment:{}});
+InventoryEquipment.setState({equipment:{backpack:{item_id:'test_bag'}},inventory_backpack:[{item_id:'ore_clay_raw',count:6},{item_id:'ore_limestone',count:3},{item_id:'wood_plank_soft',count:3},{item_id:'wood_bamboo_green',count:5}],inventory_pocket:[],inventory_vest:[],ground_items:{}});
+NPCSystem.setDemoState({flags:{},triggered:[]});NPCSystem.configure({log:t=>document.getElementById('message').textContent=t});
+window.StationContext={getCurrentCookingStationContext:()=>({station_type:'main'}),isCookingUiBlockedByRepairForContext:()=>!NPCSystem.isDemoFlagTrue('cooking_base_station_unlocked')};
+window.SceneApp={isCookingStationPanelBlockedByRepair:()=>!NPCSystem.isDemoFlagTrue('cooking_base_station_unlocked'),openCookingStationPanel:()=>document.getElementById('message').textContent='烹饪功能已开放'};
+window.SaveSystem={saveNow:()=>true};
+window.DialogueUI={playLinesRich:(lines,opts)=>{const box=document.getElementById('dialogue');box.replaceChildren();const p=document.createElement('p');p.textContent=lines.map(l=>l.text).join('\n');box.append(p);const b=document.createElement('button');b.textContent='读完修补说明';b.onclick=()=>{box.replaceChildren();opts.onQueueExhausted?.();};box.append(b);}};
+document.getElementById('open').onclick=()=>NPCSystem.openMenu('npc.station.cooking_base');
+</script>

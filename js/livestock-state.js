@@ -1492,6 +1492,7 @@
     return capacity;
   }
   function canAdmitAnimal(speciesId, locId) {
+    if (window.FacilityLabor && !window.FacilityLabor.isUnlocked('livestock')) return {ok:false,reason:'facility_unrepaired'};
     if (!getSpecies(speciesId)) return { ok: false, reason: 'unknown_species' };
     var st = ensureState();
     if (speciesId !== 'chicken') return st.zones[locId] ? { ok: true } : { ok: false, reason: 'no_zone' };

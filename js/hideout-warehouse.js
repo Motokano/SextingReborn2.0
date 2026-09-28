@@ -363,6 +363,27 @@
         };
     }
 
+    function normalizeMaterialProgress(raw) {
+        var result = {};
+        Object.keys(raw || {}).forEach(function (id) {
+            var entry = getUpgradeEntry(id), costs = entry && entry.material_points;
+            if (!costs) return;
+            result[id] = {};
+            Object.keys(costs).forEach(function (group) { result[id][group] = Math.max(0, Math.min(costs[group], coerceInt(raw[id] && raw[id][group], 0))); });
+        });
+        return result;
+    }
+    function setMaterialProgress(id, progress) {
+        var st = ensureState(), raw = st.material_progress || {};
+        raw[id] = progress;
+        st.material_progress = normalizeMaterialProgress(raw);
+    }
+    function isUpgradeMaterialReady(id) {
+        var entry = getUpgradeEntry(id), cost = entry && entry.material_points;
+        if (!cost) return true;
+        var current = (ensureState().material_progress || {})[id] || {};
+        return Object.keys(cost).every(function (key) {return (current[key] || 0) >= cost[key];});
+    }
     function normalizeState(raw) {
         var def = createDefaultState();
         if (!raw || typeof raw !== 'object') return def;
@@ -390,6 +411,7 @@
             initial_route_id: raw.initial_route_id != null && String(raw.initial_route_id) !== ''
                 ? String(raw.initial_route_id) : null,
             active_upgrade_task: normalizeActiveUpgradeTask(raw.active_upgrade_task),
+            material_progress: normalizeMaterialProgress(raw.material_progress),
             settings: {
                 prefer_deduct_warehouse: !!(settings.prefer_deduct_warehouse === true
                     || settings.prefer_deduct_warehouse === 'true'
@@ -413,6 +435,7 @@
             initial_route_picked: false,
             initial_route_id: null,
             active_upgrade_task: null,
+            material_progress: {},
             settings: { prefer_deduct_warehouse: false }
         };
     }
@@ -976,10 +999,11 @@
         var taskSpec = spec || getTaskDefaultsFromTable();
         var ticks = taskSpec.task_ticks != null ? Math.max(1, coerceInt(taskSpec.task_ticks, 10)) : 10;
         var per = taskSpec.stamina_per_tick != null ? Math.max(0, Number(taskSpec.stamina_per_tick) || 0) : 5;
+        if (global.Survival && global.Survival.getActionStaminaCost) per = global.Survival.getActionStaminaCost(per);
         return getStaminaNow() >= ticks * per;
     }
 
-    function getUpgradeStatus(upgradeId) {
+    function getUpgradeStatus(upgradeId, preparationOnly) {
         if (!upgradeId) return 'locked';
         var entry = getUpgradeEntry(upgradeId);
         if (!entry) return 'locked';
@@ -1002,6 +1026,7 @@
             if (!isUpgradeRequirementMet(requires[i])) return 'locked';
         }
 
+        if (entry.material_points && !preparationOnly && !isUpgradeMaterialReady(upgradeId)) return 'materials';
         var inputs = Array.isArray(entry.inputs) ? entry.inputs : [];
         if (inputs.length && !canAffordUpgradeInputs(inputs)) return 'insufficient';
 
@@ -1024,6 +1049,7 @@
         if (status === 'completed') return { ok: false, reason: 'already_completed' };
         if (status === 'in_progress') return { ok: false, reason: 'already_in_progress' };
         if (status === 'locked') return { ok: false, reason: 'locked' };
+        if (status === 'materials') return { ok: false, reason: 'materials_not_ready' };
         if (status === 'insufficient') return { ok: false, reason: 'insufficient_items' };
 
         var inputs = Array.isArray(entry.inputs) ? entry.inputs : [];
@@ -1054,6 +1080,7 @@
             ? Math.max(0, Number(task.stamina_per_tick) || 0)
             : getTaskDefaultsFromTable().stamina_per_tick;
 
+        if (global.Survival && global.Survival.getActionStaminaCost) staminaPerTick = global.Survival.getActionStaminaCost(staminaPerTick);
         var getStamina = ctx && typeof ctx.getStamina === 'function' ? ctx.getStamina : getStaminaNow;
         var setStamina = ctx && typeof ctx.setStamina === 'function' ? ctx.setStamina : null;
 
@@ -1570,6 +1597,8 @@
         discoverUpgrade: discoverUpgrade,
         getUpgradeEntry: getUpgradeEntry,
         getUpgradeStatus: getUpgradeStatus,
+        setMaterialProgress: setMaterialProgress,
+        isUpgradeMaterialReady: isUpgradeMaterialReady,
         getActiveUpgradeTask: getActiveUpgradeTask,
         getConstructionPanelTickMs: getConstructionPanelTickMs,
         startUpgrade: startUpgrade,

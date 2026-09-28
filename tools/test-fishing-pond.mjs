@@ -111,12 +111,20 @@ console.log('[fishing-pond] PASS: starter, costs, boundaries, unknown names, see
 // Production host: real Survival and GameTime, without sandbox stamina/time overrides.
 I.setConfig({equipment:{bag:{item_id:'bag',equip_slot:'backpack',backpack_slots:30}},items:c.ItemAttributeModules.hydrateCatalog(JSON.parse(read('data/item-catalog-v2.json'))),modules:{},default_equipment:{}});
 setup();
-vm.runInContext(read('js/game-time.js'),c);vm.runInContext(read('js/survival.js'),c);vm.runInContext(read('js/fishing-panel.js'),c);
+vm.runInContext(read('js/game-time.js'),c);vm.runInContext(read('js/weather.js'),c);c.Weather.configure(JSON.parse(read('data/weather-config.json')));vm.runInContext(read('js/survival.js'),c);vm.runInContext(read('js/fishing-panel.js'),c);
 c.Survival.setState({stamina:100,isDead:false,isComa:false,isResting:false});
 F.setHost(null);c.FishingPanel.configure(config);
 const realBefore=c.GameTime.getState().totalTicks,staminaBefore=c.Survival.getStamina();
 assert.equal(P.act('cast').ok,true);assert.equal(c.GameTime.getState().totalTicks,realBefore+1);assert.ok(c.Survival.getStamina()<staminaBefore);
 assert.equal(P.act('retrieve').ok,true);assert.equal(c.GameTime.getState().totalTicks,realBefore+2);
 const realSave=c.SaveSystem.buildSnapshotForDebug();assert.ok(realSave);assert.equal(c.SaveSystem.applySnapshotForDebug(realSave),true);
+assert.ok(realSave.weather,'formal save includes weather');
+assert.equal(JSON.stringify(c.Weather.getState()),JSON.stringify(realSave.weather),'formal restore keeps weather process');
+const badWeather=JSON.parse(JSON.stringify(realSave));badWeather.weather.regions.jinmu.weather='invalid';
+const beforeBad=c.GameTime.getState().totalTicks;assert.equal(c.SaveSystem.applySnapshotForDebug(badWeather),false);assert.equal(c.GameTime.getState().totalTicks,beforeBad,'reject before mutation');
+const legacyWeather=JSON.parse(JSON.stringify(realSave));delete legacyWeather.weather;
+assert.equal(c.SaveSystem.applySnapshotForDebug(legacyWeather),true);const migratedWeather=JSON.stringify(c.Weather.getState());
+assert.equal(c.SaveSystem.applySnapshotForDebug(legacyWeather),true);assert.equal(JSON.stringify(c.Weather.getState()),migratedWeather,'legacy migration does not reroll');
+assert.equal(c.SaveSystem.applySnapshotForDebug(realSave),true);
 assert.equal(P.act('close').ok,true);assert.equal(F.getState().active,null);
 console.log('[fishing-production-host] PASS: actual panel host, Survival costs, GameTime ticks, formal save/load, close');

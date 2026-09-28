@@ -201,6 +201,7 @@
         }
         var staminaNow = Surv ? Surv.getStamina() : character.stamina;
         var cost = point.stamina_cost != null ? point.stamina_cost : STAMINA_COST;
+        if (Surv && Surv.getActionStaminaCost) cost = Surv.getActionStaminaCost(cost);
         if (staminaNow < cost) return { success: false, message: t('gathering.msg.no_stamina') };
         if (isInventoryFull()) return { success: false, message: t('gathering.msg.inventory_full') };
 
@@ -209,7 +210,7 @@
         var successRate = base + base * (proficiencyPct * 0.003);
         successRate = Math.min(1, successRate);
 
-        if (Surv) Surv.consumeStamina(cost); else { character.stamina -= cost; if (character.stamina < 0) character.stamina = 0; }
+        if (Surv) Surv.consumeStamina(cost, { raw: true }); else { character.stamina -= cost; if (character.stamina < 0) character.stamina = 0; }
 
         var roll = Math.random();
         if (roll >= successRate) {
@@ -281,6 +282,7 @@
         if (Surv && !Surv.canPerformStaminaOrEnergyAction()) return false;
         var stamina = Surv ? Surv.getStamina() : character.stamina;
         var cost = point.stamina_cost != null ? point.stamina_cost : STAMINA_COST;
+        if (Surv && Surv.getActionStaminaCost) cost = Surv.getActionStaminaCost(cost);
         if (stamina < cost) return false;
         if (isInventoryFull()) return false;
         return true;

@@ -1116,7 +1116,7 @@
         if (thi > 0 && typeof Surv.addThirst === 'function') Surv.addThirst(thi);
         if (nut > 0 && typeof Surv.addNutrition === 'function') Surv.addNutrition(nut);
         if (fat !== 0 && typeof Surv.changeFatigue === 'function') Surv.changeFatigue(fat);
-        if (sta < 0 && typeof Surv.consumeStamina === 'function') Surv.consumeStamina(-sta);
+        if (sta < 0 && typeof Surv.consumeStamina === 'function') Surv.consumeStamina(-sta, { raw: true });
         if (ene > 0 && typeof Surv.addEnergy === 'function') Surv.addEnergy(ene);
         if (ene < 0 && typeof Surv.consumeEnergy === 'function') Surv.consumeEnergy(-ene);
         if (mood !== 0 && typeof Surv.setState === 'function') {

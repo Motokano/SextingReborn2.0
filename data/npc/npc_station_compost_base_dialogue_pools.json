@@ -18,7 +18,7 @@
     },
     "npc.station.compost_faulty": {
       "lines": [
-        "先找点黏土和干柴，把桶箍和缝隙处理好，再谈堆肥。"
+        "打开修复界面，查看修补说明，再准备合适的材料。"
       ],
       "composeMode": "pick_pool"
     }

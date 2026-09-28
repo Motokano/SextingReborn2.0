@@ -103,6 +103,7 @@
 
     function getDisplayString() {
         var y = getYear(), d = getDayOfYear(), hh = pad2(getHour()), mm = pad2(getMinute());
+        if (global.NPCSystem && !global.NPCSystem.isDemoFlagTrue('observation_calendar_unlocked')) return hh + ':' + mm;
         if (global && global.UIText && typeof global.UIText.t === 'function') {
             try {
                 return global.UIText.t('game.time.format', { y: y, d: d, hh: hh, mm: mm });
@@ -117,6 +118,7 @@
         var t = Math.floor(Number(ticks) || 0);
         if (!t) return;
         state.totalTicks += t;
+        if (global.Weather && global.Weather.isReady()) { global.Weather.sync(state.totalTicks); global.Weather.publishObservation(); }
         if (state.totalTicks < 0) state.totalTicks = 0;
     }
 
@@ -125,6 +127,7 @@
         // 支持：从指定年/天/时/分初始化
         if (options.totalTicks !== undefined) {
             state.totalTicks = Math.max(0, Math.floor(Number(options.totalTicks) || 0));
+            if (global.Weather && global.Weather.isReady()) global.Weather.reset();
             return;
         }
         var year = (options.year !== undefined) ? Math.max(1, Math.floor(Number(options.year) || 1)) : 1;
@@ -134,6 +137,7 @@
         var totalDays = (year - 1) * DAYS_PER_YEAR + (day - 1);
         var totalMinutes = totalDays * MINUTES_PER_DAY + hour * 60 + minute;
         state.totalTicks = Math.floor(totalMinutes / MINUTES_PER_TICK);
+        if (global.Weather && global.Weather.isReady()) global.Weather.reset();
         if (state.totalTicks < 0) state.totalTicks = 0;
     }
 
@@ -142,6 +146,8 @@
             totalTicks: state.totalTicks,
             minutesPerTick: MINUTES_PER_TICK,
             daysPerYear: DAYS_PER_YEAR,
+            season: ['spring','summer','autumn','winter'][Math.floor((getDayOfYear() - 1) / 90)],
+            dayOfSeason: (getDayOfYear() - 1) % 90 + 1,
             year: getYear(),
             dayOfYear: getDayOfYear(),
             hour: getHour(),

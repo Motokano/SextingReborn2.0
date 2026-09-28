@@ -1,3 +1,5 @@
+> **2026-09-24 天气首版接入**：[实施记录](weather-implementation.md)：统一天气、玩家体温、防护来源接口、存档、身体惩罚与可感知提示已接入；采用用户授权的试玩初值，具体装备/功法和各生产玩法响应另定。
+
 > **2026-09-20 更新**：呼吸法模块、催气、通用底气动作、先手即时击退与撞阻规则以 [61号设计](61-breath-burst-and-immediate-knockback.md) 为准。下文冲突的历史规则不再适用。
 
 > **2026-09-21 更新**：[62 地表钓鱼与捕捞系统](62-fishing-and-capture-system.md)：水域交互窗口、首塘、组合钓组、鱼口决策、主动捕捞、认知成长与存档方向。设计已确认，数值及实现待完成；替代旧钓鱼概率成长口径。
@@ -7,6 +9,8 @@
 > **2026-09-22 配置初稿**：[首塘四组配置](fishing-first-pond-config-draft.md)：点位与路线、首批鱼种、基础装备、事件与反馈；配置驱动、整数 tick、认知过滤。数值仍待玩法平衡验收；首塘手竿切片现已接入，实际范围见 [68 首塘实施记录](68-first-pond-playable-slice.md)。
 
 > **2026-09-22 物品结构改造**：[63 物品属性模块与信息显示统一分类](63-item-attribute-modules.md)，附[逐字段盘点](item-module-field-inventory.md)：8个大类按需加载；[64 物品实例身份与原子转移](64-item-instance-identity-and-transfer.md)：稳定身份、唯一归属和仓库回滚；[65 真实部件连接与组合重量](65-item-assembly-and-combined-weight.md)：多层连接、循环/兼容校验、原子拆装与基础手竿切片；[66 组合信息与装配界面](66-item-assembly-information-and-ui.md)：正式悬浮说明、背包连接树与玩家装卸；[67 钓鱼作业状态、真实受力与连接损失](67-fishing-session-and-real-rig-loss.md)：作业锁定、挂饵消耗、永久磨损、按断点丢失及存档连续性。
+
+> **2026-09-24 天气设计归档**：[季节、天气与温度系统](weather-seasons-and-temperature.md)：四季历法、地区天气与地图覆盖、tick过程、温度过渡、冷热防护与身体分档、耐候成长、敌人仅读取、认知与提示。机制已确认，数值及运行接入待完成；替代旧体温冲突规则，未修改代码。
 
 # 设计文档总览与模块索引
 
@@ -54,6 +58,7 @@
 | 实战经验 | [04-combat-exp.md](04-combat-exp.md) | 经验上限、伤害加成 |
 | 角色基础属性 | [05-character-attributes.md](05-character-attributes.md) | 五项属性、衍生、筋骨/柔韧/呼吸/身手/专注、物品栏、负重、减伤链（激活防具盾口径，见 37） |
 | 生存属性 | [06-survival.md](06-survival.md) | 饱食、饮水、体力、精力、心情、定力、性能力、性别、营养、体温、底气与行气 |
+| 季节、天气与温度 | [weather-seasons-and-temperature.md](weather-seasons-and-temperature.md) | 地区与地图环境、tick天气、冷热暴露与体温分档、耐候和认知；机制已定，数值与接入待完成 |
 | 战斗核心 | [07-combat-core.md](07-combat-core.md) | 回合刻、方向与范围、呼吸条（气力）与底气、出力、速度与先手/连击 |
 | 战斗伤害统一设计 | [49-combat-damage-rework.md](49-combat-damage-rework.md) | 五项主体公式、主属性与养成、呼吸条件倍率、附加与转换、敌我防御统一、资源失败与撞墙；规则已定，大部分待实现，含算例与迁移状态 |
 | 命中招架与伤害 | [08-hit-parry-damage.md](08-hit-parry-damage.md) | 命中率、招架、卸力、减伤链（激活盾层 → 柔韧 → 微调，见 37） |
@@ -170,3 +175,5 @@ GAME_DESIGN 中「贸易与旅行商人」不单独成章，以 capitalism 目�
 
 > [棋子完整损毁组合与数据v2](54-pawn-combined-injury-poses.md)：128个显式状态，P3/P4/P5共32个上身变体，主动支撑与被动接触分离；数据校验通过，未实装。
 
+
+- [装置材料解锁接入记录](facility-unlock-implementation.md)

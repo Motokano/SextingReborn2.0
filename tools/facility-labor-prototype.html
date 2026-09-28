@@ -1,0 +1,8 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>荒废设施恢复 · 体力解锁试用</title><link rel="stylesheet" href="../css/cooking-repair.css"><link rel="stylesheet" href="facility-labor-prototype.css"></head>
+<body>
+<aside class="prototype-note">交互试作 · 模拟体力与库存，不读取或写入游戏存档 · 清理各需 1000 tick · 每 tick 消耗 3 体力 · 普通演示每秒一个 tick · 刷新重置试用</aside>
+<main id="app"><p>正在准备试用……</p></main>
+<aside class="testing" aria-label="试用控制"><span>试用控制</span><button id="low">模拟体力不足</button><button id="rest">模拟休息：恢复体力</button><button id="fast" title="推进至多 250 个劳动 tick，体力不足时模拟补满；休息时间不计入演示时钟">加速演示（模拟补充体力）</button><button id="reset">重新试用</button></aside>
+<script src="../js/item-attribute-modules.js"></script><script src="../js/inventory-equipment.js"></script><script src="../js/facility-unlock-config.js"></script><script src="../js/facility-unlock.js"></script><script src="../js/cooking-repair-panel.js"></script><script type="module" src="facility-labor-prototype.js"></script>
+</body></html>

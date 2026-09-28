@@ -23,7 +23,7 @@
         return {
             stamina: function () {
                 var S = global.Survival;
-                return S && S.getState ? finite((S.getState() || {}).stamina, 0) : Infinity;
+                return S && S.getActionStaminaBudget ? S.getActionStaminaBudget() : S && S.getState ? finite((S.getState() || {}).stamina, 0) : Infinity;
             },
             spendStamina: function (amount) {
                 var S = global.Survival;

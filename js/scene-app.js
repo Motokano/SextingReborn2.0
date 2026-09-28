@@ -312,6 +312,10 @@
     }
 
     function isStoryMovementLocked() {
+        if (window.ResetProgressDialog && window.ResetProgressDialog.isOpen()) return true;
+        if (window.CookingRepairPanel && window.CookingRepairPanel.isOpen()) return true;
+        if (window.ToolbenchPanel && window.ToolbenchPanel.isOpen()) return true;
+        if (window.FacilityLaborPanel && window.FacilityLaborPanel.isOpen()) return true;
         if (window.HuntingPanel && window.HuntingPanel.isOpen()) return true;
         if (window.FishingPanel && window.FishingPanel.isOpen()) return true;
         if (window.DialogueUI && typeof window.DialogueUI.isDialogueOpen === 'function' && window.DialogueUI.isDialogueOpen()) return true;
@@ -629,8 +633,11 @@
             fetch(base + 'pharmacy-conflict-rules.json').then(function (r) { return r.ok ? r.json() : null; }).catch(function () { return null; }),
             fetch(base + 'hunting.json').then(function (r) { if (!r.ok) throw new Error('hunting config unavailable'); return r.json(); }),
             fetch(base + 'fishing-session-config.json').then(function (r) { if (!r.ok) throw new Error('fishing session config unavailable'); return r.json(); }),
-            Promise.all(['fishing-pond.json','fishing-facts.json','fishing-feedback.json'].map(function(file){return fetch(base+file).then(function(r){if(!r.ok)throw new Error(file+' unavailable');return r.json();});})).then(function(parts){parts[0].fact_rules=parts[1];parts[0].feedback_rules=parts[2];return parts[0];})
+            Promise.all(['fishing-pond.json','fishing-facts.json','fishing-feedback.json'].map(function(file){return fetch(base+file).then(function(r){if(!r.ok)throw new Error(file+' unavailable');return r.json();});})).then(function(parts){parts[0].fact_rules=parts[1];parts[0].feedback_rules=parts[2];return parts[0];}),
+            fetch(base + 'weather-config.json').then(function(r){if(!r.ok)throw new Error('weather config unavailable');return r.json();})
         ]).then(function (arr) {
+            window.Weather.configure(arr.pop());
+            window.Weather.subscribe(function(text){ showMsg(text, 'info'); });
             if (!arr[0]) throw new Error('[SceneApp] ui_text_zhCN.json missing');
             if (!window.UIText || typeof window.UIText.setDict !== 'function') throw new Error('[SceneApp] UIText module missing');
             window.UIText.setDict(arr[0]);
@@ -1816,6 +1823,7 @@
     };
 
     function updateStatusPanel(gatherState) {
+        if (window.Weather && window.Weather.isReady()) window.Weather.publishObservation();
         if (window.HungerTile) window.HungerTile.refresh();
         var combatBadge = document.getElementById('status-combat-state');
         if (combatBadge) {
@@ -2892,7 +2900,7 @@
         if (curFuel < needFuel) return { ok: false, reason: 'insufficient_fuel', need: needFuel, current: curFuel };
         var survState = window.Survival && typeof window.Survival.getState === 'function' ? window.Survival.getState() : null;
         var curStamina = survState ? Number(survState.stamina || 0) : 0;
-        if (curStamina < needStamina) return { ok: false, reason: 'insufficient_stamina', need: needStamina, current: curStamina };
+        if (curStamina < (window.Survival.getActionStaminaCost ? window.Survival.getActionStaminaCost(needStamina) : needStamina)) return { ok: false, reason: 'insufficient_stamina', need: needStamina, current: curStamina };
         if (IE && typeof IE.canAcceptItem === 'function' && !IE.canAcceptItem()) {
             return { ok: false, reason: 'inventory_full' };
         }
@@ -3428,7 +3436,7 @@
         if (!mainWaterFree && curWater < needWater) return { ok: false, reason: 'insufficient_water', need: needWater, current: curWater };
         var survState = window.Survival && typeof window.Survival.getState === 'function' ? window.Survival.getState() : null;
         var curStamina = survState ? Number(survState.stamina || 0) : 0;
-        if (curStamina < needStamina) return { ok: false, reason: 'insufficient_stamina', need: needStamina, current: curStamina };
+        if (curStamina < (window.Survival.getActionStaminaCost ? window.Survival.getActionStaminaCost(needStamina) : needStamina)) return { ok: false, reason: 'insufficient_stamina', need: needStamina, current: curStamina };
         if (IE && typeof IE.canAcceptItem === 'function' && !IE.canAcceptItem()) {
             return { ok: false, reason: 'inventory_full' };
         }
@@ -4251,7 +4259,7 @@
         return {
             panelOpen: true,
             taskTicks: taskSpec.task_ticks != null ? taskSpec.task_ticks : 10,
-            staminaPerTick: taskSpec.stamina_per_tick != null ? taskSpec.stamina_per_tick : 5,
+            staminaPerTick: window.Survival && window.Survival.getActionStaminaCost ? window.Survival.getActionStaminaCost(taskSpec.stamina_per_tick != null ? taskSpec.stamina_per_tick : 5) : (taskSpec.stamina_per_tick != null ? taskSpec.stamina_per_tick : 5),
             getStamina: function () {
                 var Surv = window.Survival;
                 if (!Surv || typeof Surv.getState !== 'function') return 0;
@@ -4264,7 +4272,7 @@
                 var cur = Number((Surv.getState ? Surv.getState() : {}).stamina) || 0;
                 // 走 consumeStamina（累积疲劳 + 同步耗尽 Buff），与其他行动口径一致；增值才直写
                 if (target < cur && typeof Surv.consumeStamina === 'function') {
-                    Surv.consumeStamina(cur - target);
+                    Surv.consumeStamina(cur - target, { raw: true });
                 } else if (typeof Surv.setState === 'function') {
                     Surv.setState({ stamina: target });
                 }
@@ -4311,6 +4319,7 @@
     }
 
     function tickAgricultureAfterWorldTick() {
+        if (window.FacilityLabor && !window.FacilityLabor.isUnlocked('agriculture')) return;
         if (!isAgricultureUnlocked()) return;
         var AM = window.AgricultureMap;
         if (!AM || typeof AM.runAgricultureMapTick !== 'function') return;
@@ -4461,7 +4470,7 @@
 
     function tryAgricultureAction(actionId, params) {
         params = params || {};
-        if (!isAgricultureUnlocked()) return { ok: false, reason: 'agriculture_locked' };
+        if (!isAgricultureUnlocked() || (window.FacilityLabor && !window.FacilityLabor.isUnlocked('agriculture'))) return { ok: false, reason: 'agriculture_locked' };
         var AM = window.AgricultureMap;
         var API = window.AgriculturePlayerItems;
         if (!AM) return { ok: false, reason: 'agriculture_map_missing' };
@@ -4843,6 +4852,10 @@
         }
         if (guardPlayerComaBlocked()) return;
         if (agriculturePanelOpen) return;
+        if (window.FacilityLabor && !window.FacilityLabor.isUnlocked('agriculture')) {
+            if (window.SceneApp.prepareFacilityLabor()) window.FacilityLaborPanel.open('agriculture');
+            return;
+        }
         unlockAgriculture();
         CompostPanel.ensureLifePlantingSkillEntry();
         if (window.Survival && typeof window.Survival.advanceTick === 'function') window.Survival.advanceTick();
@@ -4932,6 +4945,10 @@
         }
         if (guardPlayerComaBlocked()) return;
         if (livestockPanelOpen) return;
+        if (window.FacilityLabor && !window.FacilityLabor.isUnlocked('livestock')) {
+            if (window.SceneApp.prepareFacilityLabor()) window.FacilityLaborPanel.open('livestock');
+            return;
+        }
         LivestockState.ensureLifeAnimalHusbandrySkillEntry();
         livestockPanelOpen = true;
         var modal = document.getElementById('modal-livestock');
@@ -4978,6 +4995,7 @@
     }
 
     function tickLivestockAfterWorldTick() {
+        if (window.FacilityLabor && !window.FacilityLabor.isUnlocked('livestock')) return;
         if (window.LivestockState && typeof window.LivestockState.advanceTick === 'function') {
             try { window.LivestockState.advanceTick(); } catch (eLsTick) { /* ignore */ }
         }
@@ -5313,18 +5331,21 @@
         var btn = document.getElementById('btn-reset-demo-save');
         if (!btn) return;
         btn.addEventListener('click', function () {
-            var ok = window.confirm(ui('confirm.reset.demo'));
-            if (!ok) return;
-            try {
+            window.ResetProgressDialog.open({
+                button: btn,
+                message: ui('confirm.reset.demo'),
+                clear: function () {
                 if (window.SaveSystem && typeof window.SaveSystem.clearAllLocalProgress === 'function') {
-                    window.SaveSystem.clearAllLocalProgress();
+                    return window.SaveSystem.clearAllLocalProgress();
                 } else {
                     localStorage.removeItem('cabi_realtime_save_v1');
                     localStorage.removeItem('cabi_demo_flags_v1');
                     localStorage.removeItem('cabi_demo_triggered_entries_v1');
+                    return true;
                 }
-            } catch (e) { /* ignore */ }
-            try { window.location.reload(); } catch (e2) { /* ignore */ }
+                },
+                reload: function () { window.location.reload(); }
+            });
         });
     })();
     if (document.getElementById('backpack-panel-close')) {
@@ -7778,6 +7799,7 @@
                 if (guardPlayerActionBlocked(ACTION_TYPES.MOVE)) return;
                 // 移动耗体力（k17 补全，05 5.5.4）：每格 = 配置基础消耗 × (1+鞋moveCostMod) × 超重系数；体力不足无法移动
                 var moveStaminaCost = computeMoveStaminaCost();
+                if (window.Survival && window.Survival.getActionStaminaCost) moveStaminaCost = window.Survival.getActionStaminaCost(moveStaminaCost);
                 var survSt = (window.Survival && typeof window.Survival.getState === 'function') ? window.Survival.getState() : null;
                 if (moveStaminaCost > 0 && survSt && Number(survSt.stamina || 0) < moveStaminaCost) {
                     showMsg(ui('log.info.move_no_stamina'), 'warn');
@@ -7790,7 +7812,7 @@
                 var fromY = st.y;
                 if (E.moveTo(tx, ty)) {
                     if (moveStaminaCost > 0 && window.Survival && typeof window.Survival.consumeStamina === 'function') {
-                        window.Survival.consumeStamina(moveStaminaCost, { source: 'movement' });
+                        window.Survival.consumeStamina(moveStaminaCost, { source: 'movement', raw: true });
                     }
                     var restStoppedByMove = setRestingActionActive(false, { showMsg: false });
                     if (window.SceneCtx && typeof window.SceneCtx.exitFootworkNieBuMode === 'function') {
@@ -8750,6 +8772,19 @@
     window.SceneApp.openCompostStationPanel = CompostPanel.open;
     window.SceneApp.closeCompostStationPanel = CompostPanel.close;
     window.SceneApp.trySleepAtBed = trySleepAtBed;
+    window.SceneApp.getFacilityLaborTickMs = getIdleTickMs;
+    window.SceneApp.canWorkFacilityLabor = function () {
+        return !isPreCreationGameplayRestricted() && !(window.Survival && window.Survival.isDead())
+            && !isPlayerComaActive() && !(window.CombatEngagement && window.CombatEngagement.isPlayerInCombat())
+            && !guardPlayerActionBlocked(ACTION_TYPES.GATHER);
+    };
+    window.SceneApp.prepareFacilityLabor = function () {
+        if (!window.SceneApp.canWorkFacilityLabor()) return false;
+        stopGatheringIdle(); stopTiaoXiIdle(false); setRestingActionActive(false, {showMsg:false});
+        stopCookingCraftIdle(); stopPharmacyCraftIdle(); stopAgricultureAutoTick(); stopLivestockAutoTick();
+        if (window.Survival) {window.Survival.setStaminaRegenActionActive(false);window.Survival.setSitMeditationActive(false);}
+        return true;
+    };
     window.SceneApp.openAgriculturePanel = openAgriculturePanel;
     window.SceneApp.closeAgriculturePanel = closeAgriculturePanel;
     window.SceneApp.openLivestockPanel = openLivestockPanel;

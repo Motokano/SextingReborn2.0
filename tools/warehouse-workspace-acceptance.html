@@ -1,0 +1,70 @@
+<!doctype html><meta charset="utf-8"><base href="/"><title>仓库界面验收</title>
+<link rel="stylesheet" href="css/cooking-repair.css"><link rel="stylesheet" href="css/warehouse-workspace.css">
+<body style="background:#181613;color:#eee4d5"><button id="open-test">打开测试仓库</button><button id="run-tests">验证备料与施工</button><pre id="test-result" role="status">正在加载隔离验收环境</pre>
+<script type="module">
+if(location.port!=='8018')throw Error('Use isolated acceptance port 8018');
+const page=new DOMParser().parseFromString(await(await fetch('index.html')).text(),'text/html');
+for(const style of page.querySelectorAll('style'))document.head.prepend(style.cloneNode(true));
+document.body.append(page.getElementById('modal-hideout-warehouse').cloneNode(true));
+for(const src of ['js/item-attribute-modules.js','js/inventory-equipment.js','js/npc-system.js','js/hideout-warehouse.js','js/game-time.js','js/survival.js','js/facility-unlock-config.js','js/facility-unlock.js','js/cooking-repair-panel.js','js/hideout-warehouse-panel.js'])await new Promise((resolve,reject)=>{const s=document.createElement('script');s.src=src;s.onload=resolve;s.onerror=reject;document.head.append(s);});
+const dict=await(await fetch('data/ui_text_zhCN.json')).json();
+window.UIText={t:(k,p={})=>String(dict[k]||k).replace(/\{(\w+)\}/g,(_,n)=>p[n]??'{'+n+'}')};
+for(const el of document.querySelectorAll('[data-ui]')){const attr=el.getAttribute('data-ui-attr');if(attr)el.setAttribute(attr,UIText.t(el.dataset.ui));else el.textContent=UIText.t(el.dataset.ui);}
+const items=ItemAttributeModules.hydrateCatalog(await(await fetch('data/item-catalog-v2.json')).json());
+InventoryEquipment.setConfig({equipment:{test_bag:{item_id:'test_bag',equip_slot:'backpack',backpack_slots:20}},items,modules:{},default_equipment:{}});
+InventoryEquipment.setState({equipment:{backpack:{item_id:'test_bag'}},inventory_backpack:FacilityUnlockConfig.materials.map(m=>({item_id:m[0],count:20})),inventory_pocket:[],inventory_vest:[],ground_items:{}});
+NPCSystem.setDemoState({flags:{},triggered:[]});
+window.StationContext={isAdjacentToWarehouseTile:()=>true};
+window.GameEngine={getState:()=>({mapId:'M0_Base_Inside_lv_1',x:13,y:12}),getMap:()=>({map_id:'M0_Base_Inside_lv_1'})};
+window.SceneCtx={showMsg:text=>document.getElementById('test-result').textContent=text};
+window.SceneRenderer={render:()=>{}};
+let saved,failSave=false;
+window.SaveSystem={saveNow:()=>{if(failSave)return false;saved=JSON.parse(JSON.stringify({warehouse:HideoutWarehouse.getState(),inventory:InventoryEquipment.getState(),survival:Survival.getState()}));return true;}};
+HideoutWarehouse.setUpgradeTable(await(await fetch('data/warehouse-upgrades.json')).json());HideoutWarehouse.setState(HideoutWarehouse.createDefaultState());
+Survival.setConfig(await(await fetch('data/survival-config.json')).json());Survival.setState({stamina:100,isDead:false});
+document.getElementById('open-test').onclick=()=>HideoutWarehousePanel.open();
+document.getElementById('test-result').textContent='独立测试库存与内存保存，不操作正式存档。';
+HideoutWarehousePanel.open();
+document.getElementById('run-tests').onclick=async()=>{
+ const out=document.getElementById('test-result');
+ const assert=(v,m)=>{if(!v)throw Error(m);};
+ const click=s=>{const e=document.querySelector(s);assert(e&&!e.disabled,'button usable: '+s);e.click();};
+ const delay=ms=>new Promise(r=>setTimeout(r,ms));
+ try{
+  HideoutWarehousePanel.close();HideoutWarehouse.setState(HideoutWarehouse.createDefaultState());Survival.setState({stamina:100});HideoutWarehousePanel.open();
+  assert(document.querySelectorAll('.hw-mini-slot[data-container-index]').length===FacilityUnlockConfig.materials.length,'all carried materials visible');
+  click('.hw-mini-slot[data-container-index="0"]');assert(HideoutWarehouse.getUsedCount()===1,'single-click deposit');
+  click('.hw-slot-cell[data-slot-index="0"]');click('#hw-btn-withdraw-all');assert(HideoutWarehouse.getUsedCount()===0,'withdraw through detail');
+  click('#hw-btn-upgrade');assert(document.querySelectorAll('[data-route-pick-id]').length===3,'initial routes');click('[data-route-pick-id="U-A1"]');
+  assert(document.querySelector('.facility-material-embedded'),'embedded materials');assert(!document.querySelector('.cooking-repair-overlay'),'no stacked modal');
+  const beforeKnowledge=JSON.stringify(NPCSystem.getDemoState());
+  assert(!document.querySelector('[data-action="inspect"]'),'no explanation gate');
+  assert(document.querySelector('input[type="range"]'),'automatically finds materials');
+  const unknown=InventoryEquipment.getDisplayName(InventoryEquipment.getItemTemplate('wood_plank_soft'),0,InventoryEquipment.getCharacterForDisplay());assert(document.querySelector('#hw-material-host').textContent.includes(unknown),'cognized name');
+  assert(!document.querySelector('[data-step]'),'no category wizard');
+  for(const r of document.querySelectorAll('#hw-material-host input[type="range"]')){r.value=r.max;r.dispatchEvent(new Event('input',{bubbles:true}));}
+  assert(document.querySelector('[data-selection-summary]').textContent.includes('×'),'live selection summary');
+  click('[data-action="repair"]');
+  assert(HideoutWarehouse.isUpgradeMaterialReady('U-A1'),'materials ready');assert(document.querySelector('.cr-receipts'),'receipt stays inline');assert(JSON.stringify(NPCSystem.getDemoState())===beforeKnowledge,'auto matching does not identify or grant global knowledge');
+  assert(document.querySelector('.cr-receipts'),'receipt stays while start becomes available');assert(!document.getElementById('hw-btn-upgrade-start').disabled,'construction enabled');
+  HideoutWarehouse.getConstructionPanelTickMs=()=>60;
+  click('#hw-btn-upgrade-start');await delay(150);click('#hw-btn-upgrade-start');
+  const paused=HideoutWarehouse.getActiveUpgradeTask().ticks_remaining;
+  assert(paused<10&&paused>0,'construction advances before pause');await delay(150);assert(HideoutWarehouse.getActiveUpgradeTask().ticks_remaining===paused,'pause holds');
+  assert(!document.getElementById('hw-close').disabled,'close stays available');
+  HideoutWarehousePanel.close();HideoutWarehouse.setState(saved.warehouse);HideoutWarehousePanel.open();click('#hw-btn-upgrade');await delay(150);assert(HideoutWarehouse.getActiveUpgradeTask().ticks_remaining===paused,'reopen/load does not resume');
+  Survival.setState({stamina:0});click('#hw-btn-upgrade-start');await delay(100);assert(!HideoutWarehousePanel.isConstructionLive(),'low stamina stops');assert(HideoutWarehouse.getActiveUpgradeTask().ticks_remaining===paused,'low stamina does not advance');
+  Survival.setState({stamina:100});HideoutWarehousePanel.render();await delay(100);assert(!HideoutWarehousePanel.isConstructionLive(),'restoring stamina does not auto resume');
+  click('#hw-btn-upgrade-start');HideoutWarehousePanel.suspendForLoad();await delay(100);assert(HideoutWarehouse.getActiveUpgradeTask().ticks_remaining===paused,'load suspends pending timer');click('#hw-btn-upgrade');
+  click('#hw-btn-upgrade-start');await delay(750);assert(HideoutWarehouse.getUpgradeStatus('U-A1')==='completed'&&HideoutWarehouse.getCapacity()===200,'completion applies capacity');
+  click('[data-upgrade-id="U-A2"]');
+  const range=document.querySelector('input[type="range"]');range.value='1';range.dispatchEvent(new Event('input',{bubbles:true}));
+  click('[data-action="repair"]');
+  assert(!HideoutWarehouse.isUpgradeMaterialReady('U-A2'),'partial material investment');
+  const partial=JSON.stringify(HideoutWarehouse.getState().material_progress['U-A2']);HideoutWarehousePanel.close();HideoutWarehouse.setState(saved.warehouse);HideoutWarehousePanel.open();click('#hw-btn-upgrade');assert(JSON.stringify(HideoutWarehouse.getState().material_progress['U-A2'])===partial,'partial survives restored snapshot');
+  failSave=true;assert(HideoutWarehousePanel.close().ok===false,'save failure keeps UI open');failSave=false;
+  assert(!/\d+\s*%|剩余.*tick/i.test(document.getElementById('hw-upgrade-overlay').innerText),'no numeric progress');
+  out.textContent='PASS: all carried stock, deposit/withdraw, inline material knowledge/sliders/receipt, partial investment restore, stamina construction, pause, low stamina, load cancels timer, reopen without resume, completion, save failure, hidden progress.';
+ }catch(e){out.textContent='FAIL: '+e.message;throw e;}
+};
+</script>

@@ -618,6 +618,7 @@
             needTicks = craftPreview.cost.ticks;
             needStamina = craftPreview.cost.stamina;
         }
+        if (global.Survival && global.Survival.getActionStaminaCost) needStamina = global.Survival.getActionStaminaCost(needStamina);
         var survState = global.Survival && typeof global.Survival.getState === 'function' ? global.Survival.getState() : null;
         var curStamina = survState ? Number(survState.stamina || 0) : 0;
         var activeCraft = PharmacyStation.getActiveCraft();

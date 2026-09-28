@@ -260,6 +260,7 @@
             gender_value: state.gender_value,
             nutrition: state.nutrition,
             dirtyness: state.dirtyness,
+            temperature_sources: JSON.parse(JSON.stringify(temperatureSources)),
             body_temperature: state.body_temperature,
             body_temperature_standard: state.body_temperature_standard,
             fatigue: state.fatigue,
@@ -318,7 +319,8 @@
         if (s.gender_value !== undefined) state.gender_value = clamp(Math.round(s.gender_value), get('gender_value_min', 0), get('gender_value_max', 100));
         if (s.nutrition !== undefined) state.nutrition = clamp(Number(s.nutrition) || 0, get('nutrition_min', 0), get('nutrition_max', 100));
         if (s.dirtyness !== undefined) state.dirtyness = clamp(Math.round(s.dirtyness), get('dirtyness_min', 0), get('dirtyness_max', 100));
-        if (s.body_temperature !== undefined) state.body_temperature = round1(clamp(Number(s.body_temperature) || 0, get('body_temperature_min', 30), get('body_temperature_max', 42)));
+        if (s.temperature_sources !== undefined) temperatureSources = normalizeTemperatureSources(s.temperature_sources);
+        if (s.body_temperature !== undefined) state.body_temperature = clamp(Number(s.body_temperature) || 0, get('body_temperature_min', 20), get('body_temperature_max', 55));
         if (s.body_temperature_standard !== undefined) state.body_temperature_standard = round1(clamp(Number(s.body_temperature_standard) || 0, get('body_temperature_min', 30), get('body_temperature_max', 42)));
         if (s.fatigue !== undefined) state.fatigue = round1(clamp(Number(s.fatigue) || 0, get('fatigue_min', 0), get('fatigue_max', 100)));
         if (s.pain !== undefined) state.pain = Math.max(0, Math.min(Number(get('pain_max', 100)) || 100, Math.floor(Number(s.pain) || 0)));
@@ -370,7 +372,7 @@
         syncSatietyStateBuff();
         syncThirstStateBuff();
         syncMoodStateBuff();
-        syncExtremeTemperatureBuff(getExtremeTemperatureState(resolveAmbientTemperatureForCurrentMap(), state.body_temperature_standard, computeTempThresholdShiftByWeatherResist()));
+        syncExtremeTemperatureBuff();
         syncDirtynessStateBuff();
         syncFatigueStateBuff();
         syncPainStateBuff();
@@ -1270,154 +1272,119 @@
         return targetRange;
     }
 
-    function getBodyTemperatureStandard() {
-        return round1(clamp(Number(state.body_temperature_standard) || 0, get('body_temperature_min', 30), get('body_temperature_max', 42)));
+    var temperatureSources = {};
+    function thermalConfig() {
+        return global.Weather && global.Weather.getThermalConfig() || null;
     }
-
-    function getBodyTemperature() {
-        return round1(clamp(Number(state.body_temperature) || 0, get('body_temperature_min', 30), get('body_temperature_max', 42)));
-    }
-
-    function resolveAmbientTemperatureForCurrentMap() {
-        var E = global && global.GameEngine;
-        if (!E || typeof E.getMap !== 'function') return null;
-        var map = E.getMap();
-        if (!map || typeof map !== 'object') return null;
-        var season = 'spring';
-        function parseAmbientValue(raw) {
-            if (raw == null) return null;
-            if (typeof raw === 'string') {
-                var s = raw.trim();
-                if (!s) return null;
-                var ns = Number(s);
-                return isFinite(ns) ? ns : null;
-            }
-            var n = Number(raw);
-            return isFinite(n) ? n : null;
-        }
-        if (map.ambient_temperature_by_season && typeof map.ambient_temperature_by_season === 'object') {
-            var bySeason = map.ambient_temperature_by_season;
-            if (bySeason[season] != null) {
-                var n1 = parseAmbientValue(bySeason[season]);
-                if (n1 != null) return n1;
-            }
-        }
-        if (map.ambient_temperature != null) {
-            var n2 = parseAmbientValue(map.ambient_temperature);
-            if (n2 != null) return n2;
-        }
-        return null;
-    }
-
-    function getWeatherResistLevel() {
-        if (!global || !global.InventoryEquipment || typeof global.InventoryEquipment.getSkillLevel !== 'function') return 0;
-        return Math.max(0, Math.floor(Number(global.InventoryEquipment.getSkillLevel('survival_weather_resist')) || 0));
-    }
-
-    function computeTempThresholdShiftByWeatherResist() {
-        var L = Math.min(get('weather_resist_max_level', 100), getWeatherResistLevel());
-        return Number(get('weather_resist_threshold_delta_per_level', 0.1)) * L;
-    }
-
-    function getExtremeTemperatureState(ambientE, standardS, thresholdShiftR) {
-        if (ambientE == null) return 'comfort';
-        if (!isFinite(Number(ambientE))) return 'comfort';
-        var E = Number(ambientE);
-        var S = Number(standardS);
-        var R = Number(thresholdShiftR) || 0;
-        var coldBase = Number(get('body_temperature_extreme_cold_base_delta', 15));
-        var hotBase = Number(get('body_temperature_extreme_hot_base_delta', 12));
-        if (E < (S - (coldBase + R))) return 'cold';
-        if (E > (S + (hotBase + R))) return 'hot';
-        return 'comfort';
-    }
-
-    function emitBodyTemperatureStateChangedEvent(oldRangeId, newRangeId, ambientE, standardS, thresholdShiftR) {
-        if (!global || !global.BuffSystem || typeof global.BuffSystem.triggerBuffPipeline !== 'function') return;
-        var tag = 'temp_comfort';
-        if (newRangeId === 'cold') tag = 'temp_extreme_cold';
-        else if (newRangeId === 'hot') tag = 'temp_extreme_hot';
-        global.BuffSystem.triggerBuffPipeline({
-            event_kind: 'survival',
-            event_name: 'body_temperature_state_changed',
-            tags: ['survival', 'temperature', 'state', 'player', tag],
-            actor_id: 'player',
-            owner_id: 'player',
-            tick: state.tickCount,
-            payload: {
-                old_range: oldRangeId || null,
-                new_range: newRangeId || null,
-                body_temperature: state.body_temperature,
-                body_temperature_standard: standardS,
-                ambient_temperature: ambientE,
-                weather_resist_shift: thresholdShiftR
-            }
+    function normalizeTemperatureSources(sources) {
+        var out = {};
+        Object.keys(sources || {}).forEach(function (key) {
+            var s = sources[key];
+            if (!s || typeof s !== 'object') return;
+            var v = {};
+            ['cold_range','hot_range','cold_rate','hot_rate','recover','delta','until'].forEach(function (k) {
+                if (typeof s[k] === 'number' && isFinite(s[k])) v[k] = s[k];
+            });
+            out[key] = v;
         });
+        return out;
     }
-
-    function syncExtremeTemperatureBuff(tempState, ambientE, standardS, thresholdShiftR) {
-        var targetRange = tempState || 'comfort';
-        var targetBuffId = '';
-        if (targetRange === 'cold') targetBuffId = 'survival_temp_extreme_cold';
-        else if (targetRange === 'hot') targetBuffId = 'survival_temp_extreme_hot';
-        if (!global || !global.BuffSystem) return targetRange;
-        var Buff = global.BuffSystem;
-        if (typeof Buff.applyBuff !== 'function' || typeof Buff.removeBuffByBuffId !== 'function') return targetRange;
-        var i;
-        for (i = 0; i < TEMP_RANGE_BUFF_IDS.length; i++) {
-            var bid = TEMP_RANGE_BUFF_IDS[i];
-            if (bid === targetBuffId) continue;
-            if (typeof Buff.hasBuffByBuffId !== 'function' || Buff.hasBuffByBuffId('player', bid)) {
-                Buff.removeBuffByBuffId('player', bid);
-            }
+    function temperatureTick() { return global.GameTime ? global.GameTime.getState().totalTicks : state.tickCount; }
+    function setTemperatureSource(source, effect) {
+        if (!source) throw new Error('Temperature source required');
+        if (!effect) delete temperatureSources[source];
+        else {
+            var entry = normalizeTemperatureSources({effect: effect}).effect;
+            if (!entry) throw new Error('Invalid temperature effect');
+            if (effect.ticks != null) entry.until = temperatureTick() + Math.max(1, Math.floor(Number(effect.ticks) || 1));
+            temperatureSources[source] = entry;
         }
-        if (targetBuffId) {
-            Buff.applyBuff('player', targetBuffId, 'survival_temperature_listener', { tick: getBuffApplyTick(), temp_state: targetRange });
-        }
-        var prevRange = state.lastBodyTemperatureRange || null;
-        if (prevRange !== targetRange) {
-            debugTempLog('state_changed old=' + String(prevRange || 'none')
-                + ' new=' + String(targetRange)
-                + ' ambient=' + String(ambientE == null ? 'null' : ambientE)
-                + ' standard=' + String(standardS)
-                + ' shift=' + String(thresholdShiftR));
-            emitBodyTemperatureStateChangedEvent(prevRange, targetRange, ambientE, standardS, thresholdShiftR);
-        }
-        state.lastBodyTemperatureRange = targetRange;
-        return targetRange;
     }
-
-    function applyBodyTemperatureTick(tempState) {
-        var next = getBodyTemperature();
-        var minT = get('body_temperature_min', 30);
-        var maxT = get('body_temperature_max', 42);
-        if (tempState === 'cold') {
-            var cTicks = Math.max(1, Math.floor(Number(get('body_temperature_cold_move_ticks', 10)) || 10));
-            if (state.tickCount % cTicks === 0) next += Number(get('body_temperature_cold_move_delta', -0.1)) || -0.1;
-        } else if (tempState === 'hot') {
-            var hTicks = Math.max(1, Math.floor(Number(get('body_temperature_heat_move_ticks', 10)) || 10));
-            if (state.tickCount % hTicks === 0) next += Number(get('body_temperature_heat_move_delta', 0.1)) || 0.1;
-        } else {
-            var S = getBodyTemperatureStandard();
-            var recover = Number(get('body_temperature_comfort_recover_per_tick', 0.03)) || 0;
-            if (recover > 0) {
-                if (next < S) next = Math.min(S, next + recover);
-                else if (next > S) next = Math.max(S, next - recover);
-            }
+    function temperatureModifiers() {
+        var m = {cold_range: 0, hot_range: 0, cold_rate: 1, hot_rate: 1, recover: 0, delta: 0};
+        Object.keys(temperatureSources).forEach(function (key) {
+            var e = temperatureSources[key];
+            if (e.until != null && temperatureTick() > e.until) { delete temperatureSources[key]; return; }
+            ['cold_range','hot_range','recover','delta'].forEach(function (k) { m[k] += e[k] || 0; });
+            ['cold_rate','hot_rate'].forEach(function (k) { if (e[k] != null) m[k] *= Math.max(0, e[k]); });
+        });
+        return m;
+    }
+    function getBodyTemperatureStandard() { return Number(state.body_temperature_standard) || 37; }
+    function getBodyTemperature() { return Number(state.body_temperature); }
+    function currentTemperatureMap() { return global.GameEngine && global.GameEngine.getMap ? global.GameEngine.getMap() : null; }
+    function resolveAmbientTemperatureForCurrentMap() {
+        var map = currentTemperatureMap();
+        if (!map) return null;
+        if (global.Weather && global.Weather.isReady()) return global.Weather.getEnvironment(map).temperature;
+        var seasonId = global.GameTime && global.GameTime.getState().season || 'spring';
+        if (map.ambient_temperature_by_season && map.ambient_temperature_by_season[seasonId] != null) return Number(map.ambient_temperature_by_season[seasonId]);
+        return map.ambient_temperature == null ? null : Number(map.ambient_temperature);
+    }
+    function getWeatherResistLevel() {
+        return global.InventoryEquipment && global.InventoryEquipment.getSkillLevel ? Math.max(0, Number(global.InventoryEquipment.getSkillLevel('survival_weather_resist')) || 0) : 0;
+    }
+    function computeTempThresholdShiftByWeatherResist() { return Math.min(get('weather_resist_max_level', 100), getWeatherResistLevel()) * get('weather_resist_threshold_delta_per_level', 0.1); }
+    function getTemperatureExposure() {
+        var c = thermalConfig(), m = temperatureModifiers(), r = computeTempThresholdShiftByWeatherResist(), e = resolveAmbientTemperatureForCurrentMap();
+        var low = (c ? c.comfortable_min : getBodyTemperatureStandard() - get('body_temperature_extreme_cold_base_delta', 15)) - r - m.cold_range;
+        var high = (c ? c.comfortable_max : getBodyTemperatureStandard() + get('body_temperature_extreme_hot_base_delta', 12)) + r + m.hot_range;
+        var direction = e != null && isFinite(e) ? (e < low ? -1 : e > high ? 1 : 0) : 0;
+        var excess = direction < 0 ? low - e : direction > 0 ? e - high : 0, rate = 0, band = 0;
+        if (direction) {
+            var bands = c ? c.exposure_bands : [{above:0,rate:0.01}];
+            bands.forEach(function (b, i) { if (excess > b.above) { rate = b.rate; band = i + 1; } });
+            rate *= direction < 0 ? m.cold_rate : m.hot_rate;
         }
-        state.body_temperature = round1(clamp(next, minT, maxT));
+        return {ambient:e, low:low, high:high, direction:direction, excess:excess, band:band, rate:rate, modifiers:m};
     }
-
-    function tryGainWeatherResistProficiencyPerTick(tempState) {
-        if (tempState !== 'cold' && tempState !== 'hot') return;
-        if (!global || !global.InventoryEquipment) return;
-        var IE = global.InventoryEquipment;
-        if (typeof IE.getSkillLevel !== 'function' || typeof IE.incrementSkillMoveUsage !== 'function') return;
-        var curLv = Math.max(0, Math.floor(Number(IE.getSkillLevel('survival_weather_resist')) || 0));
-        var maxLv = Math.max(0, Math.floor(Number(get('weather_resist_max_level', 100)) || 100));
-        if (curLv >= maxLv) return;
-        IE.incrementSkillMoveUsage('survival_weather_resist', 'extreme_temp_tick', 1);
+    function getExtremeTemperatureState() { var e = getTemperatureExposure(); return e.direction < 0 ? 'cold' : e.direction > 0 ? 'hot' : 'comfort'; }
+    function getTemperatureState() {
+        var c = thermalConfig(), d = getBodyTemperature() - getBodyTemperatureStandard();
+        var result = {id:'comfort', direction:0, stage:0, speed:1, cost:1, text:c ? c.recovered_text : ''};
+        if (!c) return result;
+        (d < 0 ? c.cold_stages : c.hot_stages).forEach(function (row, i) {
+            if (Math.abs(d) >= row.delta) result = {id:(d < 0 ? 'cold_' : 'hot_') + (i + 1), direction:d < 0 ? -1 : 1, stage:i+1, speed:row.speed, cost:row.cost, text:row.text};
+        });
+        return result;
     }
+    function getActionStaminaCost(amount) { return Math.round(Math.max(0, Number(amount) || 0) * getTemperatureState().cost * 100) / 100; }
+    function syncExtremeTemperatureBuff() {
+        var t = getTemperatureState(), prev = state.lastBodyTemperatureRange;
+        var B = global.BuffSystem;
+        if (B && B.removeBuffByBuffId) TEMP_RANGE_BUFF_IDS.forEach(function (id) { if (!B.hasBuffByBuffId || B.hasBuffByBuffId('player', id)) B.removeBuffByBuffId('player', id); });
+        if (prev !== t.id && B && B.triggerBuffPipeline) B.triggerBuffPipeline({event_kind:'survival',event_name:'body_temperature_state_changed',tags:['survival','temperature','state','player',t.id === 'comfort' ? 'temp_comfort' : t.direction < 0 ? 'temp_extreme_cold' : 'temp_extreme_hot'],actor_id:'player',owner_id:'player',tick:state.tickCount,payload:{old_range:prev || null,new_range:t.id,body_temperature:getBodyTemperature(),body_temperature_standard:getBodyTemperatureStandard()}});
+        if (prev && prev !== t.id && global.Weather && t.text) global.Weather.notify(t.text);
+        state.lastBodyTemperatureRange = t.id;
+        return t.id;
+    }
+    function towardsStandard(value, amount) {
+        var s = getBodyTemperatureStandard();
+        return value < s ? Math.min(s,value + amount) : Math.max(s,value - amount);
+    }
+    function applyBodyTemperatureTick(e) {
+        var c = thermalConfig(), next = getBodyTemperature(), m = e.modifiers;
+        if (e.direction) next += e.direction * e.rate;
+        else next = towardsStandard(next, c ? c.recovery_per_tick : get('body_temperature_comfort_recover_per_tick', 0.03));
+        next += m.delta;
+        next = towardsStandard(next, Math.max(0,m.recover));
+        state.body_temperature = Math.round(clamp(next,get('body_temperature_min',20),get('body_temperature_max',55)) * 1000000) / 1000000;
+    }
+    function tryGainWeatherResistProficiencyPerTick(e) {
+        if (!e.direction || e.rate <= 0 || getWeatherResistLevel() >= get('weather_resist_max_level',100)) return;
+        var ie = global.InventoryEquipment;
+        if (ie && ie.incrementSkillMoveUsage) ie.incrementSkillMoveUsage('survival_weather_resist','extreme_temp_tick',1);
+    }
+    function changeBodyTemperature(delta) {
+        var before = buildSurvivalStateSnapshot();
+        state.body_temperature = clamp(getBodyTemperature() + (Number(delta) || 0), get('body_temperature_min',20), get('body_temperature_max',55));
+        if (state.body_temperature <= getBodyTemperatureStandard() - get('body_temperature_death_below_standard', 6)) setDead('temperature_extreme_cold');
+        else if (state.body_temperature >= getBodyTemperatureStandard() + get('body_temperature_death_above_standard', 5)) setDead('temperature_extreme_hot');
+        syncExtremeTemperatureBuff();
+        emitSurvivalStateChangedIfNeeded('temperature_effect', before, null);
+        return getBodyTemperature();
+    }
+    function recoverBodyTemperature(amount) { return changeBodyTemperature(towardsStandard(getBodyTemperature(), Math.max(0,Number(amount)||0)) - getBodyTemperature()); }
 
     function getDirtynessRangeByValue(dirtynessValue) {
         var d = Number(dirtynessValue);
@@ -1722,7 +1689,7 @@
 
     function roundStamina(value) { return Math.round(value * 100) / 100; }
     function consumeStamina(amount, options) {
-        var a = Math.max(0, Number(amount) || 0);
+        var a = options && options.raw ? Math.max(0, Number(amount) || 0) : getActionStaminaCost(amount);
         var before = roundStamina(Math.max(0, Number(state.stamina) || 0));
         state.stamina = roundStamina(Math.max(0, before - a));
         var actualCost = roundStamina(Math.max(0, before - state.stamina));
@@ -2068,26 +2035,12 @@
         syncDirtynessStateBuff();
         syncBmiTierState();
 
-        // ---------- 体温（环境判定 -> 体温变化 -> 状态 Buff -> 耐候熟练） ----------
+        // Only the player runs thermal physiology; enemies query Weather conditions.
         var standardT = getBodyTemperatureStandard();
-        var ambientT = resolveAmbientTemperatureForCurrentMap();
-        var tempShift = computeTempThresholdShiftByWeatherResist();
-        var tempState = getExtremeTemperatureState(ambientT, standardT, tempShift);
-        if (hasBuffDebugEnabled()) {
-            var coldBase = Number(get('body_temperature_extreme_cold_base_delta', 15));
-            var hotBase = Number(get('body_temperature_extreme_hot_base_delta', 12));
-            var coldThreshold = standardT - (coldBase + tempShift);
-            var hotThreshold = standardT + (hotBase + tempShift);
-            debugTempLog('tick=' + String(state.tickCount)
-                + ' ambient=' + String(ambientT == null ? 'null' : ambientT)
-                + ' standard=' + String(standardT)
-                + ' threshold_cold<' + String(coldThreshold)
-                + ' threshold_hot>' + String(hotThreshold)
-                + ' state=' + String(tempState));
-        }
-        applyBodyTemperatureTick(tempState);
-        syncExtremeTemperatureBuff(tempState, ambientT, standardT, tempShift);
-        tryGainWeatherResistProficiencyPerTick(tempState);
+        var exposure = getTemperatureExposure();
+        applyBodyTemperatureTick(exposure);
+        syncExtremeTemperatureBuff();
+        tryGainWeatherResistProficiencyPerTick(exposure);
 
         var bt = getBodyTemperature();
         var coldDeathDelta = Number(get('body_temperature_death_below_standard', 13));
@@ -2299,6 +2252,14 @@
         debugAddPain: debugAddPain,
         clearPain: clearPain,
         getPainRecoveryFactor: getPainRecoveryFactor,
+        getTemperatureState: getTemperatureState,
+        getTemperatureExposure: getTemperatureExposure,
+        getTemperatureSpeedMultiplier: function () { return getTemperatureState().speed; },
+        getActionStaminaCost: getActionStaminaCost,
+        getActionStaminaBudget: function () { return state.stamina / getTemperatureState().cost; },
+        setTemperatureSource: setTemperatureSource,
+        changeBodyTemperature: changeBodyTemperature,
+        recoverBodyTemperature: recoverBodyTemperature,
         getBodyTemperature: getBodyTemperature,
         getBodyTemperatureStandard: getBodyTemperatureStandard,
         resolveAmbientTemperatureForCurrentMap: resolveAmbientTemperatureForCurrentMap,

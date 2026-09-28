@@ -56,7 +56,7 @@
                     !(global.SceneCtx && global.SceneCtx.idleActionType) && !global.Survival.getState().isResting);
             },
             canContinue: function (key) { var p = currentPoint(); return !!(p && p.key === key && alive() && !inCombat()); },
-            stamina: function () { return global.Survival.getStamina(); },
+            stamina: function () { return (global.Survival.getActionStaminaBudget ? global.Survival.getActionStaminaBudget() : global.Survival.getStamina()); },
             canSpend: function () { return global.Survival.canPerformStaminaOrEnergyAction() && !global.SceneApp.isPlayerActionDisabledByBuff('gather'); },
             count: count, consume: consume, grant: grant, tick: tick,
             spend: function (n) { global.Survival.consumeStamina(n); },
@@ -228,10 +228,10 @@
             var missing = kit.inputs.some(function (r) { return count(r.item) < r.count; });
             button('制作一份',function () {
                 if (!canOpenCrafting()||!kitKnown(kit)) return;
-                if (kit.inputs.some(function (r) { return count(r.item)<r.count; }) || global.Survival.getStamina()<kit.stamina || !global.Survival.canPerformStaminaOrEnergyAction()) return;
+                if (kit.inputs.some(function (r) { return count(r.item)<r.count; }) || (global.Survival.getActionStaminaBudget ? global.Survival.getActionStaminaBudget() : global.Survival.getStamina())<kit.stamina || !global.Survival.canPerformStaminaOrEnergyAction()) return;
                 kit.inputs.forEach(function (r) { consume(r.item,r.count); });
                 global.Survival.consumeStamina(kit.stamina); tick(false); grant({item_id:kit.output,count:1}); refreshAll();
-            }, missing || global.Survival.getStamina()<kit.stamina, kit.inputs.map(function (r) { return craftName(r.item)+' ×'+r.count; }).join(' + ')+' · '+t('hunting.cost',{n:kit.stamina}));
+            }, missing || (global.Survival.getActionStaminaBudget ? global.Survival.getActionStaminaBudget() : global.Survival.getStamina())<kit.stamina, kit.inputs.map(function (r) { return craftName(r.item)+' ×'+r.count; }).join(' + ')+' · '+t('hunting.cost',{n:kit.stamina}));
         });
         if(!shown)node('p','还没有掌握可制作的捕猎用品。',card);
         button(t('hunting.close'),function () { kitsOpen = false; render(); });
@@ -249,7 +249,7 @@
             var choices = j.species === 'chicken' ? Object.keys(ls.arms) : Object.keys(ls.zones);
             choices.forEach(function (loc) {
                 var check = L.canAdmitAnimal(j.species,loc), b = node('button',t('hunting.admit',{place:t('hunting.place.'+loc)}),row);
-                b.disabled = !check.ok; if (!check.ok) b.title = t('hunting.admit_full');
+                b.disabled = !check.ok; if (!check.ok) b.title = check.reason === 'facility_unrepaired' ? '请先清理并修复牧场装置。' : t('hunting.admit_full');
                 b.onclick = function () {
                     var current = global.InventoryHelpers.getInventoryContainerArray(group.type)[index];
                     if (H.isActive() || !current || current !== cell || !L.canAdmitAnimal(j.species,loc).ok) return;

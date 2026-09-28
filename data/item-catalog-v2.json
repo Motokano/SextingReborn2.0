@@ -25206,6 +25206,76 @@
       "category": "wood",
       "sub_category": "wood",
       "tags": "material;surface_only"
+    },
+    "fishing_catch_yellow_catfish": {
+      "item_id": "fishing_catch_yellow_catfish",
+      "editor_name": "黄颡鱼",
+      "weight_kg": 1,
+      "attribute_modules": {
+        "base": {
+          "identity": {
+            "name": "黄颡鱼",
+            "name_0": "黄颡鱼",
+            "sn": "黄颡鱼",
+            "placeholder_name": "一条黄褐色、嘴边长须的小鱼",
+            "fn": "一条黄褐色、嘴边长须的小鱼。",
+            "desc_0": "一条黄褐色、嘴边长须的小鱼。"
+          },
+          "stacking": {
+            "stack_limit": 1
+          },
+          "trade": {
+            "base_value": 16,
+            "price_class": "material"
+          },
+          "spoilage": {
+            "spoilage_ticks": 144
+          }
+        },
+        "production": {
+          "cooking": {
+            "cooking_ingredient": true
+          }
+        }
+      },
+      "category": "material",
+      "sub_category": "fish",
+      "tags": "fishing"
+    },
+    "fishing_catch_catfish": {
+      "item_id": "fishing_catch_catfish",
+      "editor_name": "鲶鱼",
+      "weight_kg": 1,
+      "attribute_modules": {
+        "base": {
+          "identity": {
+            "name": "鲶鱼",
+            "name_0": "鲶鱼",
+            "sn": "鲶鱼",
+            "placeholder_name": "一条灰褐色、头扁嘴宽的长须鱼",
+            "fn": "一条灰褐色、头扁嘴宽的长须鱼。",
+            "desc_0": "一条灰褐色、头扁嘴宽的长须鱼。"
+          },
+          "stacking": {
+            "stack_limit": 1
+          },
+          "trade": {
+            "base_value": 24,
+            "price_class": "material"
+          },
+          "spoilage": {
+            "spoilage_ticks": 144
+          }
+        },
+        "production": {
+          "cooking": {
+            "cooking_ingredient": true
+          }
+        }
+      },
+      "category": "material",
+      "sub_category": "fish",
+      "tags": "fishing"
     }
   }
 }

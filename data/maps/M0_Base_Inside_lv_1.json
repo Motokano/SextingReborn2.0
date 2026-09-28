@@ -766,6 +766,11 @@
       "x": 8,
       "y": 12,
       "npc_id": "npc.supervisor.manager"
+    },
+    {
+      "x": 7,
+      "y": 11,
+      "npc_id": "npc.station.observation_base"
     }
   ],
   "cooking_station_interact_npc_by_cell": {
@@ -801,7 +806,7 @@
     "14,15": "制药台",
     "12,15": "烹饪台",
     "13,15": "制肥桶",
-    "7,11": "黄历",
+    "7,11": "工具台",
     "9,15": "畜牧",
     "10,15": "农业",
     "11,15": "床",

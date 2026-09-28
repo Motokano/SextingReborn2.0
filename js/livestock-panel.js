@@ -924,6 +924,7 @@
     if (typeof Surv.canPerformStaminaOrEnergyAction === 'function' && !Surv.canPerformStaminaOrEnergyAction()) {
       return { ok: false, reason: 'stamina_blocked' };
     }
+    if (Surv.getStamina && Surv.getStamina() < (Surv.getActionStaminaCost ? Surv.getActionStaminaCost(amount || 10) : (amount || 10))) return { ok: false, reason: 'insufficient_stamina' };
     if (typeof Surv.consumeStamina === 'function') {
       Surv.consumeStamina(amount || 10);
     }

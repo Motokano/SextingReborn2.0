@@ -1,0 +1,64 @@
+{
+  "version": 1,
+  "balance_status": "playtest-unbalanced",
+  "note": "2026-09-24 授权试玩初值，全部待校准；不是正式平衡或现实医学参数。",
+  "default_region": "jinmu",
+  "temperature_step": 0.15,
+  "temperature_bands": [
+    {"id": "cold", "below": 5},
+    {"id": "cool", "below": 15},
+    {"id": "mild", "below": 25},
+    {"id": "warm", "below": 35},
+    {"id": "hot", "below": null}
+  ],
+  "history_limit": 64,
+  "event_check_ticks": 144,
+  "event_duration": [288, 720],
+  "event_chance": {"spring": 0.02, "summer": 0.15, "autumn": 0.02, "winter": 0.15},
+  "event_offsets": {"none": 0, "heatwave": 6, "cold_snap": -8},
+  "weather": {
+    "clear": {"label": "晴朗", "text": "天空晴朗。", "tags": ["clear"], "offset": 1, "duration": [36, 108], "weights": [5, 5, 7, 5]},
+    "cloudy": {"label": "多云", "text": "云影掠过天空。", "tags": ["cloud"], "offset": 0, "duration": [24, 72], "weights": [5, 4, 5, 4]},
+    "overcast": {"label": "阴天", "text": "云层遮住了天空。", "tags": ["cloud"], "offset": -1, "duration": [24, 96], "weights": [5, 3, 3, 5]},
+    "light_rain": {"label": "小雨", "text": "细雨落了下来。", "tags": ["rain"], "offset": -2, "duration": [18, 72], "weights": [5, 4, 2, 3]},
+    "heavy_rain": {"label": "大雨", "text": "密集的雨点不断落下。", "tags": ["rain"], "offset": -3, "duration": [12, 48], "weights": [2, 3, 1, 1]},
+    "thunderstorm": {"label": "雷雨", "text": "雨幕间传来雷声。", "tags": ["rain", "lightning"], "offset": -3, "duration": [6, 24], "weights": [1, 3, 1, 0]},
+    "mist": {"label": "薄雾", "text": "周围浮起一层薄雾。", "tags": ["fog"], "offset": -1, "duration": [12, 36], "weights": [2, 1, 2, 2]},
+    "fog": {"label": "浓雾", "text": "雾气浓了起来。", "tags": ["fog"], "offset": -2, "duration": [12, 48], "weights": [1, 0, 1, 2]},
+    "sleet": {"label": "雨夹雪", "text": "雨中夹着湿雪。", "tags": ["rain", "snow"], "offset": -2, "max_temperature": 4, "duration": [12, 36], "weights": [1, 0, 0, 3]},
+    "light_snow": {"label": "小雪", "text": "零星雪花飘落。", "tags": ["snow"], "offset": -2, "max_temperature": 2, "duration": [18, 72], "weights": [1, 0, 0, 4]},
+    "heavy_snow": {"label": "大雪", "text": "雪花密密地落下。", "tags": ["snow"], "offset": -3, "max_temperature": 0, "duration": [12, 48], "weights": [0, 0, 0, 2]},
+    "downpour": {"label": "暴雨", "text": "暴雨倾泻，雨声盖过四周。", "tags": ["rain", "extreme"], "offset": -4, "duration": [6, 24], "weights": [0.2, 0.6, 0.2, 0]},
+    "storm": {"label": "暴风雨", "text": "狂风卷着雨水扑来。", "tags": ["rain", "storm", "extreme"], "offset": -4, "duration": [6, 24], "weights": [0, 0.4, 0.2, 0]}
+  },
+  "transitions": {
+    "clear": ["clear", "cloudy", "mist"],
+    "cloudy": ["clear", "cloudy", "overcast", "mist", "light_rain"],
+    "overcast": ["cloudy", "overcast", "light_rain", "fog", "sleet", "light_snow"],
+    "light_rain": ["light_rain", "overcast", "heavy_rain", "thunderstorm", "sleet"],
+    "heavy_rain": ["light_rain", "heavy_rain", "overcast", "thunderstorm", "downpour", "storm"],
+    "thunderstorm": ["heavy_rain", "light_rain", "overcast", "downpour"],
+    "mist": ["clear", "cloudy", "mist", "fog"],
+    "fog": ["mist", "fog", "overcast"],
+    "sleet": ["light_rain", "overcast", "light_snow", "sleet"],
+    "light_snow": ["overcast", "light_snow", "heavy_snow", "sleet"],
+    "heavy_snow": ["light_snow", "heavy_snow", "overcast"],
+    "downpour": ["heavy_rain", "thunderstorm", "overcast"],
+    "storm": ["heavy_rain", "downpour", "overcast"]
+  },
+  "regions": {
+    "jinmu": {"anchors": [19, 31, 24, 11], "daily_amplitude": 3, "snow": false},
+    "northern_mountains": {"anchors": [10, 23, 14, -3], "daily_amplitude": 4, "snow": true},
+    "coast": {"anchors": [21, 30, 26, 16], "daily_amplitude": 2, "snow": false}
+  },
+  "maps": {},
+  "thermal": {
+    "comfortable_min": 12,
+    "comfortable_max": 30,
+    "exposure_bands": [{"above": 0, "rate": 0.01}, {"above": 5, "rate": 0.03}, {"above": 12, "rate": 0.06}],
+    "recovery_per_tick": 0.03,
+    "cold_stages": [{"delta": 0.5, "speed": 1, "cost": 1, "text": "你开始发抖。"}, {"delta": 1.5, "speed": 0.9, "cost": 1, "text": "手脚发僵，出招不如平时利索。"}, {"delta": 3, "speed": 0.75, "cost": 1.25, "text": "身体僵冷，行动也变得吃力。"}],
+    "hot_stages": [{"delta": 0.5, "speed": 1, "cost": 1, "text": "身上燥热，汗水不断冒出。"}, {"delta": 1.5, "speed": 1, "cost": 1.25, "text": "身体发烫，干同样的活比平时更累。"}, {"delta": 3, "speed": 0.85, "cost": 1.5, "text": "热得浑身乏力，出招也迟缓起来。"}],
+    "recovered_text": "身体的冷热不适渐渐退去。"
+  }
+}

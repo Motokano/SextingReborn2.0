@@ -1,244 +1,115 @@
 {
-
   "npcId": "npc.station.agriculture_base",
-
   "entries": [
-
     {
-
-      "id": "station.agriculture.starter_kit",
-
+      "id": "station.agriculture.needs_clearing",
       "entryType": "dialogue",
-
       "entrySource": "chat",
-
       "condition": {
-
-        "type": "flagEquals",
-
-        "flag": "agriculture_starter_kit_received",
-
-        "value": false
-
-      },
-
-      "requires": [],
-
-      "blocks": [],
-
-      "dialogue": {
-
-        "linesRich": [
-
+        "type": "and",
+        "conds": [
           {
-
-            "speaker": "narration",
-
-            "text": "田埂边放着一小包种子、几瓶肥液和一袋客土，像是前人留下的试种物资。你一并收进背包，准备开田。",
-
-            "avatar": ""
-
-          }
-
-        ],
-
-        "lines": [
-
-          "田埂边放着一小包种子、几瓶肥液和一袋客土，像是前人留下的试种物资。你一并收进背包，准备开田。"
-
-        ],
-
-        "hasOptions": false,
-
-        "options": []
-
-      },
-
-      "effects": [
-
-        {
-
-          "type": "giveItem",
-
-          "params": {
-
-            "itemId": "seed_maize",
-
-            "count": 1
-
-          }
-
-        },
-
-        {
-
-          "type": "giveItem",
-
-          "params": {
-
-            "itemId": "seed_peanut",
-
-            "count": 1
-
-          }
-
-        },
-
-        {
-
-          "type": "giveItem",
-
-          "params": {
-
-            "itemId": "soil_amend_paddy",
-
-            "count": 1
-
-          }
-
-        },
-
-        {
-
-          "type": "giveItem",
-
-          "params": {
-
-            "itemId": "liquid_seaweed_extract",
-
-            "count": 1
-
-          }
-
-        },
-
-        {
-
-          "type": "giveItem",
-
-          "params": {
-
-            "itemId": "fertilizer_basic_low",
-
-            "count": 1
-
-          }
-
-        },
-
-        {
-
-          "type": "giveItem",
-
-          "params": {
-
-            "itemId": "fertilizer_basic",
-
-            "count": 1
-
-          }
-
-        },
-
-        {
-
-          "type": "giveItem",
-
-          "params": {
-
-            "itemId": "fertilizer_compost_plus",
-
-            "count": 1
-
-          }
-
-        },
-
-        {
-
-          "type": "setFlag",
-
-          "params": {
-
-            "flag": "agriculture_starter_kit_received",
-
-            "value": true
-
-          }
-
-        }
-
-      ],
-
-      "repeatable": false,
-
-      "scope": "global",
-
-      "causesNpcDisappear": false
-
-    },
-
-    {
-
-      "id": "station.agriculture.base_idle",
-
-      "entryType": "dialogue",
-
-      "entrySource": "chat",
-
-      "condition": {
-
-        "type": "flagEquals",
-
-        "flag": "agriculture_starter_kit_received",
-
-        "value": true
-
-      },
-
-      "requires": [],
-
-      "blocks": [],
-
-      "dialogue": {
-
-        "linesRich": [
-
+            "type": "flagEquals",
+            "flag": "facility_restored:agriculture",
+            "value": false
+          },
           {
-
-            "speaker": "narration",
-
-            "text": "这片小块耕地连着灌溉与肥力管线。邻格点这里对话，可在菜单里打开农田管理。",
-
-            "avatar": ""
-
+            "type": "flagEquals",
+            "flag": "facility_cleaned:agriculture",
+            "value": false
           }
-
-        ],
-
-        "lines": [
-
-          "这片小块耕地连着灌溉与肥力管线。邻格点这里对话，可在菜单里打开农田管理。"
-
-        ],
-
-        "hasOptions": false,
-
-        "options": []
-
+        ]
       },
-
+      "requires": [],
+      "blocks": [],
+      "dialogue": {
+        "linesRich": [
+          {
+            "speaker": "narration",
+            "text": "这片农场荒废已久，杂物和淤泥堆积着，得花些时间清理。",
+            "avatar": ""
+          }
+        ],
+        "lines": [
+          "这片农场荒废已久，杂物和淤泥堆积着，得花些时间清理。"
+        ],
+        "hasOptions": false,
+        "options": []
+      },
       "effects": [],
-
       "repeatable": true,
-
       "scope": "global",
-
       "causesNpcDisappear": false
-
+    },
+    {
+      "id": "station.agriculture.needs_repair",
+      "entryType": "dialogue",
+      "entrySource": "chat",
+      "condition": {
+        "type": "and",
+        "conds": [
+          {
+            "type": "flagEquals",
+            "flag": "facility_restored:agriculture",
+            "value": false
+          },
+          {
+            "type": "flagEquals",
+            "flag": "facility_cleaned:agriculture",
+            "value": true
+          }
+        ]
+      },
+      "requires": [],
+      "blocks": [],
+      "dialogue": {
+        "linesRich": [
+          {
+            "speaker": "narration",
+            "text": "杂物和淤泥已经清走了，留下的设施还有些破损。",
+            "avatar": ""
+          }
+        ],
+        "lines": [
+          "杂物和淤泥已经清走了，留下的设施还有些破损。"
+        ],
+        "hasOptions": false,
+        "options": []
+      },
+      "effects": [],
+      "repeatable": true,
+      "scope": "global",
+      "causesNpcDisappear": false
+    },
+    {
+      "id": "station.agriculture.restored",
+      "entryType": "dialogue",
+      "entrySource": "chat",
+      "condition": {
+        "type": "flagEquals",
+        "flag": "facility_restored:agriculture",
+        "value": true
+      },
+      "requires": [],
+      "blocks": [],
+      "dialogue": {
+        "linesRich": [
+          {
+            "speaker": "narration",
+            "text": "农场已经收拾妥当，田地静静地等着人来耕作。",
+            "avatar": ""
+          }
+        ],
+        "lines": [
+          "农场已经收拾妥当，田地静静地等着人来耕作。"
+        ],
+        "hasOptions": false,
+        "options": []
+      },
+      "effects": [],
+      "repeatable": true,
+      "scope": "global",
+      "causesNpcDisappear": false
     }
-
   ]
-
 }
-

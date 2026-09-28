@@ -11,6 +11,7 @@
     var panelOpen = false;
     var eventsBound = false;
     var constructionTimerId = null;
+    var constructionRequested = false, projectMessage = "";
 
     var uiState = {
         page: 1,
@@ -256,6 +257,10 @@
         }
 
         var disp = resolveItemDisplay(inst.item_id, inst);
+        cell.setAttribute('role','button');cell.tabIndex=0;
+        cell.setAttribute('aria-label',disp.name+' × '+disp.count);
+        cell.title=disp.name+' × '+disp.count;
+        cell.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();handleSlotClick(globalIndex);}});
         var label = document.createElement('span');
         label.className = 'hw-slot-label';
         label.textContent = abbreviateLabel(disp.name, 4);
@@ -484,18 +489,19 @@
             }
 
             var shown = 0;
-            var maxShow = containerType === 'backpack' ? 12 : (containerType === 'vest' ? 8 : 6);
+            var maxShow = arr.length;
             var i;
             for (i = 0; i < arr.length && shown < maxShow; i++) {
                 var cell = arr[i];
                 if (!cell || !cell.item_id) continue;
                 var disp = resolveItemDisplay(cell.item_id, cell);
-                var mini = document.createElement('div');
+                var mini = document.createElement('button');
+                mini.type='button';
                 mini.className = 'hw-mini-slot';
                 mini.setAttribute('data-container', containerType);
                 mini.setAttribute('data-container-index', String(i));
-                mini.textContent = abbreviateLabel(disp.name, 3) + (disp.count > 1 ? '×' + disp.count : '');
-                mini.title = disp.name + (disp.count > 1 ? ' ×' + disp.count : '');
+                mini.textContent = disp.name + (disp.count > 1 ? ' ×' + disp.count : '');
+                mini.title = '存入：'+disp.name + (disp.count > 1 ? ' ×' + disp.count : '');
                 slotsWrap.appendChild(mini);
                 shown += 1;
             }
@@ -522,7 +528,21 @@
                 after: entry.capacity_after
             });
         }
-        return '';
+        var descriptions={
+            'U-C1':'改善格口与取用位置，支持双击仓内物品快速取出。',
+            'U-B1':'整理货架与隔断，可以一键理仓。',
+            'U-C2':'整理随身容器的卸货位置，便于批量存入物品。',
+            'U-D1':'补齐仓内账册，方便记录储存物资。',
+            'U-F1':'准备常备物品的收纳位置。',
+            'U-F2':'整理工料存放区，让设施制作可以从仓库取料。',
+            'U-E1':'准备封签与标记，可以锁定或标星仓内物品。',
+            'U-G3':'完成冷藏设施，冷藏时停止仓内物品的腐败。',
+            'U-C3':'整理取货通道，可以按随身容器的余量取出物品。',
+            'U-F3':'增加常备物品的收纳方案。',
+            'U-G1':'给仓内物品分栏，按类别查看。',
+            'U-G2':'建立远途存放的接应条件。'
+        };
+        return descriptions[upgradeId]||'';
     }
 
     function coerceCapacityBefore(capacityAfter, upgradeId) {
@@ -542,22 +562,19 @@
 
     function getUpgradeStatusTag(status, entry) {
         if (status === 'completed') {
-            return { cls: 'hw-upgrade-tag-done', text: t('hideout_warehouse.upgrade.status.done') };
+            return { cls: 'hw-upgrade-tag-done', text: '已完成' };
         }
         if (status === 'in_progress') {
-            return { cls: 'hw-upgrade-tag-progress', text: t('hideout_warehouse.upgrade.status.in_progress') };
+            return { cls: 'hw-upgrade-tag-progress', text: isConstructionLive() ? '施工中' : '已暂停' };
         }
+        if (status === 'materials') return {cls:'hw-upgrade-tag-lack',text:'待备料'};
         if (status === 'insufficient') {
-            return { cls: 'hw-upgrade-tag-lack', text: t('hideout_warehouse.upgrade.status.insufficient') };
+            return { cls: 'hw-upgrade-tag-lack', text: '暂不能开工' };
         }
         if (status === 'locked') {
             return { cls: 'hw-upgrade-tag-locked', text: t('hideout_warehouse.upgrade.status.locked') };
         }
-        var drive = entry && entry.drive ? String(entry.drive) : 'S';
-        var driveKey = 'hideout_warehouse.upgrade.drive.' + drive;
-        var driveText = t(driveKey);
-        if (driveText === driveKey) driveText = t('hideout_warehouse.upgrade.status.available');
-        return { cls: 'hw-upgrade-tag-tier', text: driveText };
+        return { cls: 'hw-upgrade-tag-tier', text: '可以开工' };
     }
 
     function getConstructionTickMs() {
@@ -578,13 +595,15 @@
             },
             setStamina: function (v) {
                 if (!Surv || typeof Surv.setState !== 'function') return;
-                Surv.setState({ stamina: Number(v) || 0 });
+                var current = Surv.getStamina();
+                if (v < current && Surv.consumeStamina) Surv.consumeStamina(current - v, {raw:true});
+                else Surv.setState({ stamina: Number(v) || 0 });
             }
         };
     }
 
     function shouldRunConstructionTimer() {
-        if (!panelOpen || !uiState.upgradeOverlayOpen) return false;
+        if (!constructionRequested || !panelOpen || !uiState.upgradeOverlayOpen || document.hidden) return false;
         var HW = getHW();
         if (!HW || typeof HW.getActiveUpgradeTask !== 'function') return false;
         return !!HW.getActiveUpgradeTask();
@@ -595,6 +614,7 @@
     }
 
     function stopConstructionTimer() {
+        constructionRequested = false;
         if (constructionTimerId == null) return;
         global.clearInterval(constructionTimerId);
         constructionTimerId = null;
@@ -611,17 +631,21 @@
             stopConstructionTimer();
             return;
         }
+        if (global.Survival && global.Survival.isDead && global.Survival.isDead()) {stopConstructionTimer();projectMessage='当前无法继续施工。';render();return;}
         var result = HW.tickConstructionTask(buildConstructionTickContext());
+        if (result && result.advanced && !saveConstruction()) {stopConstructionTimer();render();return;}
         if (result && result.advanced === false && result.reason === 'insufficient_stamina') {
             stopConstructionTimer();
-            showMsg(t('hideout_warehouse.log.upgrade_stamina_pause'), 'warn');
+            projectMessage='体力不足，你停下了手头的活。已完成的工程会保留。';
+            showMsg(projectMessage, 'warn');
             refreshSceneAfterInventoryChange();
             render();
             return;
         }
         if (result && result.completed) {
             stopConstructionTimer();
-            showMsg(t('hideout_warehouse.log.upgrade_completed'), 'success');
+            projectMessage='这项整备已经完成，可以使用了。';
+            showMsg(projectMessage, 'success');
             refreshSceneAfterInventoryChange();
             render();
             return;
@@ -643,7 +667,7 @@
     }
 
     function isConstructionCloseBlocked() {
-        return isConstructionLive();
+        return false;
     }
 
     function renderConstructionCloseChrome() {
@@ -668,6 +692,9 @@
     }
 
     function renderRoutePickOverlay(HW, listBody) {
+        unmountMaterials();
+        document.getElementById('hw-material-host').hidden=true;
+        document.getElementById('hw-project-stages').textContent='';
         var starts = HW.getRouteStarts ? HW.getRouteStarts() : [];
         if (listBody) {
             listBody.innerHTML = '';
@@ -675,7 +702,8 @@
             for (si = 0; si < starts.length; si++) {
                 var rid = starts[si];
                 var entry = HW.getUpgradeEntry ? HW.getUpgradeEntry(rid) : null;
-                var card = document.createElement('div');
+                var card = document.createElement('button');
+                card.type = 'button';
                 card.className = 'hw-upgrade-card hw-route-pick-card';
                 card.setAttribute('data-route-pick-id', rid);
 
@@ -708,13 +736,14 @@
         var deductEl = document.getElementById('hw-upgrade-deduct');
         var startBtn = document.getElementById('hw-btn-upgrade-start');
 
-        if (nameEl) nameEl.textContent = t('hideout_warehouse.upgrade.route_pick.title');
+        if (nameEl) {nameEl.hidden=false;nameEl.textContent = t('hideout_warehouse.upgrade.route_pick.title');}
         if (descEl) descEl.textContent = t('hideout_warehouse.upgrade.route_pick.hint');
         if (reqGrid) reqGrid.innerHTML = '';
         if (progressTrack) progressTrack.classList.add('hw-hidden');
         if (progressLabel) progressLabel.classList.add('hw-hidden');
         if (deductEl) deductEl.textContent = '';
         if (startBtn) {
+            startBtn.hidden=false;
             startBtn.disabled = true;
             startBtn.textContent = t('hideout_warehouse.upgrade.route_pick.choose_hint');
         }
@@ -726,6 +755,7 @@
         var result = HW.pickInitialRoute(upgradeId);
         if (result && result.ok) {
             uiState.selectedUpgradeId = upgradeId;
+            saveConstruction();
             showMsg(t('hideout_warehouse.log.route_picked'), 'success');
             renderUpgradeOverlay();
             render();
@@ -750,7 +780,7 @@
         var ids = HW.listVisibleUpgradeIds
             ? HW.listVisibleUpgradeIds()
             : HW.listUpgradeIds();
-        if (!uiState.selectedUpgradeId && ids.length) {
+        if ((!uiState.selectedUpgradeId || ids.indexOf(uiState.selectedUpgradeId)<0) && ids.length) {
             var active = HW.getActiveUpgradeTask && HW.getActiveUpgradeTask();
             uiState.selectedUpgradeId = active && active.upgrade_id ? active.upgrade_id : ids[0];
         }
@@ -763,7 +793,8 @@
                 var entry = HW.getUpgradeEntry ? HW.getUpgradeEntry(uid) : null;
                 var status = HW.getUpgradeStatus(uid);
                 var tag = getUpgradeStatusTag(status, entry);
-                var card = document.createElement('div');
+                var card = document.createElement('button');
+                card.type = 'button';
                 card.className = 'hw-upgrade-card'
                     + (uiState.selectedUpgradeId === uid ? ' selected' : '')
                     + (status === 'completed' ? ' done' : '')
@@ -793,124 +824,58 @@
         renderUpgradeDetail();
     }
 
+    function saveConstruction() {
+        try {if (!global.SaveSystem || global.SaveSystem.saveNow()) return true;} catch(e) {}
+        projectMessage='保存失败，施工已暂停。当前进度仍在本次游戏中，请重试保存。';
+        return false;
+    }
+    function unmountMaterials() {if(global.FacilityUnlockPanel)global.FacilityUnlockPanel.unmount();}
+    function renderWorkspace() {
+        var modal=document.getElementById('modal-hideout-warehouse');
+        if(modal)modal.classList.toggle('hw-project-view',uiState.upgradeOverlayOpen);
+        ['hw-btn-storage','hw-btn-upgrade'].forEach(function(id,i){var b=document.getElementById(id);if(b){b.classList.toggle('active',uiState.upgradeOverlayOpen===!!i);b.setAttribute('aria-pressed',String(uiState.upgradeOverlayOpen===!!i));}});
+        var upgrade=document.getElementById('hw-btn-upgrade');if(upgrade)upgrade.hidden=isOutpostView();
+        var hint=document.getElementById('hw-footer-hint');
+        if(hint)hint.textContent=uiState.upgradeOverlayOpen?'已投入的材料与已完成的工程都会保留。':'点击下方随身物品存入；选择仓格后取出。';
+    }
     function renderUpgradeDetail() {
-        var HW = getHW();
-        var nameEl = document.getElementById('hw-upgrade-detail-name');
-        var descEl = document.getElementById('hw-upgrade-detail-desc');
-        var reqGrid = document.getElementById('hw-upgrade-req-grid');
-        var progressTrack = document.getElementById('hw-upgrade-progress-track');
-        var progressFill = document.getElementById('hw-upgrade-progress-fill');
-        var progressLabel = document.getElementById('hw-upgrade-progress-label');
-        var deductEl = document.getElementById('hw-upgrade-deduct');
-        var startBtn = document.getElementById('hw-btn-upgrade-start');
-
-        if (!HW || !uiState.selectedUpgradeId) {
-            if (nameEl) nameEl.textContent = '';
-            if (descEl) descEl.textContent = t('hideout_warehouse.upgrade.select_hint');
-            if (reqGrid) reqGrid.innerHTML = '';
-            if (progressTrack) progressTrack.classList.add('hw-hidden');
-            if (progressLabel) progressLabel.classList.add('hw-hidden');
-            if (startBtn) startBtn.disabled = true;
-            return;
+        var HW=getHW(), uid=uiState.selectedUpgradeId, entry=uid&&HW.getUpgradeEntry(uid);
+        var host=document.getElementById('hw-material-host'), start=document.getElementById('hw-btn-upgrade-start');
+        if(!entry)return;
+        var status=HW.getUpgradeStatus(uid), task=HW.getActiveUpgradeTask(), own=task&&task.upgrade_id===uid;
+        document.getElementById('hw-upgrade-detail-name').textContent=status==='materials'?'':status==='completed'?'整备完成':own?(isConstructionLive()?'正在施工':'施工已暂停'):status==='locked'?'暂时无法施工':'材料已备齐';
+        document.getElementById('hw-upgrade-detail-name').hidden=status==='materials';
+        document.getElementById('hw-upgrade-detail-desc').textContent='';
+        document.getElementById('hw-project-stages').textContent='';
+        var stateText=status==='materials'?'先备好适合这项工程的材料，可以分次投入。':status==='completed'?'这项整备已经完成。':own?'工程已开始，做过的部分会保留。':status==='locked'?(task?'先完成手头的工程，再安排这一项。':entry.requires_story?'目前还缺少继续整备的条件。':'前面的整备尚未完成。'):'材料已经备好。点击「开始施工」后会持续消耗体力完成这项整备，随时可以暂停。';
+        if(own){var ratio=1-task.ticks_remaining/Math.max(1,task.task_ticks_total);stateText=ratio===0?'材料已经摆好，工程刚刚起头。':ratio<.4?'基础部分正在整理，还有不少活要做。':ratio<.8?'主体已经有了样子，连接与细部还需要处理。':'主要工作已经完成，正在做最后的加固与检查。';}
+        var req=document.getElementById('hw-upgrade-req-grid');req.hidden=status==='materials';req.textContent=stateText;
+        if(status!=='completed'&&status!=='locked'&&status!=='materials'){
+            var note=document.createElement('p');note.className='hw-work-cost';
+            var per=own?task.stamina_per_tick:(entry.stamina_per_tick==null?5:entry.stamina_per_tick);
+            var cost=global.Survival&&global.Survival.getActionStaminaCost?global.Survival.getActionStaminaCost(per):per;
+            note.textContent='当前体力 '+Math.floor(Number(global.Survival&&global.Survival.getState().stamina)||0)+' · 每次施工消耗 '+cost+' 体力';req.appendChild(note);
         }
-
-        var upgradeId = uiState.selectedUpgradeId;
-        var entry = HW.getUpgradeEntry(upgradeId);
-        var status = HW.getUpgradeStatus(upgradeId);
-        var active = HW.getActiveUpgradeTask ? HW.getActiveUpgradeTask() : null;
-        var inProgress = status === 'in_progress' && active && active.upgrade_id === upgradeId;
-
-        if (nameEl) nameEl.textContent = resolveUpgradeDisplayName(entry);
-        if (descEl) descEl.textContent = buildUpgradeDescription(entry, upgradeId);
-
-        if (reqGrid) {
-            reqGrid.innerHTML = '';
-            var inputs = entry && Array.isArray(entry.inputs) ? entry.inputs : [];
-            var ri;
-            for (ri = 0; ri < inputs.length; ri++) {
-                var inp = inputs[ri];
-                if (!inp || !inp.item_id) continue;
-                var need = Math.max(1, Math.floor(Number(inp.count) || 1));
-                var have = HW.countItemEverywhere ? HW.countItemEverywhere(inp.item_id) : HW.countItem(inp.item_id);
-                var tpl = getItemTemplate(inp.item_id);
-                var label = resolveItemLabel(inp.item_id, tpl);
-
-                var row = document.createElement('div');
-                row.className = 'hw-upgrade-req-item';
-                var spanName = document.createElement('span');
-                spanName.textContent = label;
-                var spanVal = document.createElement('span');
-                spanVal.className = 'hw-upgrade-req-val' + (have < need ? ' insufficient' : '');
-                spanVal.textContent = String(have) + ' / ' + String(need);
-                row.appendChild(spanName);
-                row.appendChild(spanVal);
-                reqGrid.appendChild(row);
-            }
-
-            var taskSpec = entry && HW.getUpgradeEntry
-                ? (function () {
-                    var defaults = { task_ticks: 10, stamina_per_tick: 5 };
-                    return {
-                        task_ticks: entry.task_ticks != null ? entry.task_ticks : defaults.task_ticks,
-                        stamina_per_tick: entry.stamina_per_tick != null ? entry.stamina_per_tick : defaults.stamina_per_tick
-                    };
-                })()
-                : { task_ticks: 10, stamina_per_tick: 5 };
-
-            var tickRow = document.createElement('div');
-            tickRow.className = 'hw-upgrade-req-item';
-            var tickLabel = document.createElement('span');
-            tickLabel.textContent = t('hideout_warehouse.upgrade.task_ticks');
-            var tickVal = document.createElement('span');
-            tickVal.className = 'hw-upgrade-req-val';
-            tickVal.textContent = t('hideout_warehouse.upgrade.task_ticks_val', {
-                ticks: taskSpec.task_ticks,
-                stamina: taskSpec.stamina_per_tick,
-                seconds: Math.round(getConstructionTickMs() / 1000)
-            });
-            tickRow.appendChild(tickLabel);
-            tickRow.appendChild(tickVal);
-            reqGrid.appendChild(tickRow);
+        var progress=document.getElementById('hw-upgrade-progress-label');progress.classList.remove('hw-hidden');progress.textContent=projectMessage||(own?(isConstructionLive()?'你正在整理材料、加固结构。':'施工已暂停，准备好后可以继续。'):'');
+        document.getElementById('hw-upgrade-progress-track').classList.add('hw-hidden');
+        document.getElementById('hw-upgrade-deduct').textContent=status==='materials'?'可使用随身和仓库中的材料；封签物品不会投入。':own?'暂停或离开都会保留工程，回来后手动继续。':'';
+        var F=global.FacilityUnlockPanel, project='warehouse:'+uid;
+        if(host){
+            var mounted=F&&F.getEmbeddedProject();
+            if(mounted&&mounted!==project){unmountMaterials();mounted=null;}
+            if(status==='materials'&&F){host.hidden=false;if(!mounted)F.mount(host,project,function(){refreshSceneAfterInventoryChange();render();});}
+            else if(mounted===project&&!own&&status!=='completed'&&host.querySelector('.cr-receipts')){host.hidden=false;}
+            else {unmountMaterials();host.hidden=true;}
         }
-
-        var showProgress = inProgress && active;
-        if (progressTrack) progressTrack.classList.toggle('hw-hidden', !showProgress);
-        if (progressLabel) progressLabel.classList.toggle('hw-hidden', !showProgress);
-        if (showProgress && progressFill && progressLabel) {
-            var total = Math.max(1, Math.floor(Number(active.task_ticks_total) || 1));
-            var remaining = Math.max(0, Math.floor(Number(active.ticks_remaining) || 0));
-            var done = total - remaining;
-            progressFill.style.width = String(Math.round((done / total) * 100)) + '%';
-            progressLabel.textContent = t('hideout_warehouse.upgrade.progress_remaining', {
-                remaining: remaining,
-                total: total
-            });
-        }
-
-        var st = HW.getState();
-        var prefer = st && st.settings && st.settings.prefer_deduct_warehouse;
-        if (deductEl) {
-            deductEl.textContent = prefer
-                ? t('hideout_warehouse.upgrade.deduct_prefer_warehouse')
-                : t('hideout_warehouse.upgrade.deduct_default');
-        }
-
-        if (startBtn) {
-            var canStart = status === 'available';
-            startBtn.disabled = !canStart;
-            startBtn.classList.toggle('hw-btn-disabled', !canStart);
-            if (inProgress) {
-                startBtn.textContent = t('hideout_warehouse.upgrade.status.in_progress');
-            } else if (status === 'completed') {
-                startBtn.textContent = t('hideout_warehouse.upgrade.status.done');
-            } else {
-                startBtn.textContent = t('hideout_warehouse.upgrade.start');
-            }
-        }
+        start.hidden=status==='materials';start.disabled=status==='completed'||status==='locked'||status==='insufficient';
+        start.classList.toggle('hw-btn-disabled',start.disabled);
+        start.textContent=own?(isConstructionLive()?'暂停施工':'继续施工'):status==='completed'?'已完成':status==='insufficient'?'体力尚不足，先休息一下':status==='locked'?'暂不能开工':'开始施工';
     }
 
     function openUpgradeOverlay() {
+        if(isOutpostView())return;
         uiState.upgradeOverlayOpen = true;
+        renderWorkspace();
         var overlay = document.getElementById('hw-upgrade-overlay');
         if (overlay) {
             overlay.classList.remove('hw-hidden');
@@ -922,13 +887,12 @@
 
     function closeUpgradeOverlay(opts) {
         var options = opts || {};
-        if (isConstructionLive() && options.force !== true) {
-            showMsg(t('hideout_warehouse.log.upgrade_close_blocked'), 'warn');
-            return { ok: false, reason: 'construction_live' };
-        }
         var wasLive = isConstructionLive();
         stopConstructionTimer();
+        if(wasLive&&!saveConstruction()){render();return {ok:false,reason:'save_failed'};}
+        unmountMaterials();
         uiState.upgradeOverlayOpen = false;
+        renderWorkspace();
         var overlay = document.getElementById('hw-upgrade-overlay');
         if (overlay) {
             overlay.classList.add('hw-hidden');
@@ -945,28 +909,24 @@
     }
 
     function handleUpgradeStart() {
-        var HW = getHW();
-        if (!HW || !uiState.selectedUpgradeId || typeof HW.startUpgrade !== 'function') return;
-
-        var result = HW.startUpgrade(uiState.selectedUpgradeId);
-        if (result && result.ok) {
-            showMsg(t('hideout_warehouse.log.upgrade_started'), 'success');
-            refreshSceneAfterInventoryChange();
-            render();
-            syncConstructionTimer();
-            return;
+        var HW=getHW(),uid=uiState.selectedUpgradeId;if(!HW||!uid)return;
+        var task=HW.getActiveUpgradeTask();
+        if(task&&task.upgrade_id===uid){
+            if(isConstructionLive()){stopConstructionTimer();projectMessage='你放下手头的活，已完成的工程会保留。';saveConstruction();}
+            else if(saveConstruction()){projectMessage='';constructionRequested=true;startConstructionTimer();}
+        } else {
+            var result=HW.startUpgrade(uid);
+            if(result&&result.ok&&saveConstruction()){projectMessage='';constructionRequested=true;startConstructionTimer();}
+            else if(!result||!result.ok)projectMessage='现在还不能开工，请检查材料、体力和前面的工程。';
         }
-        if (result && result.reason === 'task_busy') {
-            showMsg(t('hideout_warehouse.log.upgrade_busy'), 'warn');
-        } else if (result && (result.reason === 'insufficient_items' || result.reason === 'insufficient_stamina')) {
-            showMsg(t('hideout_warehouse.log.upgrade_insufficient'), 'warn');
-        }
-        renderUpgradeOverlay();
+        refreshSceneAfterInventoryChange();render();
     }
 
     function handleUpgradeCardClick(upgradeId) {
+        if(uiState.selectedUpgradeId!==upgradeId){stopConstructionTimer();unmountMaterials();projectMessage="";saveConstruction();}
         uiState.selectedUpgradeId = upgradeId;
         renderUpgradeOverlay();
+        var detail=document.querySelector('#modal-hideout-warehouse .hw-upgrade-detail');if(detail)detail.scrollTop=0;
     }
 
     function renderTabRail() {
@@ -1007,6 +967,7 @@
             uiState.selectedSlot = null;
         }
 
+        renderWorkspace();
         renderTabRail();
         renderHeaderBadges();
         renderQoLChrome();
@@ -1189,6 +1150,20 @@
     function bindOnce() {
         if (eventsBound) return;
         eventsBound = true;
+        var warehouseModal=document.getElementById('modal-hideout-warehouse');
+        if(warehouseModal)warehouseModal.addEventListener('keydown',function(e){
+            if(!panelOpen)return;
+            if(e.key==='Escape'){e.preventDefault();e.stopPropagation();document.getElementById('hw-close').click();}
+            if(e.key==='Tab'){
+                var controls=Array.from(warehouseModal.querySelectorAll('button:not(:disabled),input:not(:disabled),[tabindex="0"]')).filter(function(el){return el.getClientRects().length>0;});
+                var first=controls[0],last=controls[controls.length-1];
+                if(e.shiftKey&&document.activeElement===first){e.preventDefault();last.focus();}
+                else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first.focus();}
+            }
+        });
+        var storageBtn=document.getElementById('hw-btn-storage');if(storageBtn)storageBtn.addEventListener('click',function(){closeUpgradeOverlay();render();});
+        document.addEventListener('visibilitychange',function(){if(document.hidden&&isConstructionLive()){stopConstructionTimer();projectMessage='你暂时停下了施工。';saveConstruction();render();}});
+
 
         var closeBtn = document.getElementById('hw-close');
         if (closeBtn) {
@@ -1336,16 +1311,7 @@
                     if (ct2) handleDepositAllFromContainer(ct2);
                 }
             });
-            stripEl.addEventListener('dblclick', function (ev) {
-                var mini = ev.target && ev.target.closest
-                    ? ev.target.closest('.hw-mini-slot[data-container][data-container-index]')
-                    : null;
-                if (!mini) return;
-                ev.preventDefault();
-                var ct = mini.getAttribute('data-container');
-                var ci = Math.floor(Number(mini.getAttribute('data-container-index')));
-                if (ct && isFinite(ci)) handleQuickTransferContainer(ct, ci);
-            });
+
         }
     }
 
@@ -1362,11 +1328,8 @@
 
     function close() {
         if (!panelOpen) return { ok: false, reason: 'not_open' };
-        if (isConstructionLive()) {
-            showMsg(t('hideout_warehouse.log.upgrade_close_blocked'), 'warn');
-            return { ok: false, reason: 'construction_live' };
-        }
         var HW = getHW();
+        if(!saveConstruction()){stopConstructionTimer();render();return {ok:false,reason:"save_failed"};}
         var hadTask = HW && typeof HW.getActiveUpgradeTask === 'function' && HW.getActiveUpgradeTask();
         stopConstructionTimer();
         panelOpen = false;
@@ -1388,6 +1351,7 @@
     }
 
     global.HideoutWarehousePanel = {
+        suspendForLoad: function(){stopConstructionTimer();unmountMaterials();uiState.selectedUpgradeId=null;uiState.upgradeOverlayOpen=false;projectMessage='';var el=document.getElementById('hw-upgrade-overlay');if(el){el.classList.add('hw-hidden');el.setAttribute('aria-hidden','true');}renderWorkspace();},
         open: open,
         close: close,
         isOpen: isOpen,

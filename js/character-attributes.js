@@ -660,7 +660,8 @@
 
     /** 战斗速度（内部保留小数，用于先手/连击/命中；仅展示取整，见 05 5.7） */
     function getCombatSpeed() {
-        return cache.combat_speed;
+        var thermal = global.Survival && global.Survival.getTemperatureSpeedMultiplier ? global.Survival.getTemperatureSpeedMultiplier() : 1;
+        return Math.max(1, cache.combat_speed * thermal);
     }
 
     /** 徒手拳底 B_fist（05 5.5.2 分段曲线）：S ≤ fist_lin_segment_max 线性（每点 fist_lin_gain_per_point），

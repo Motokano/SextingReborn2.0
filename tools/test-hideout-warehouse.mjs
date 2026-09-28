@@ -315,7 +315,7 @@ function testRoutePickAndDiscovery(HW) {
   assert(!HW.needsInitialRoutePick(), "选路线后不再三选一");
   assert(HW.listVisibleUpgradeIds().includes("U-A1"), "仅发现所选路线");
   assert(!HW.listVisibleUpgradeIds().includes("U-C1"), "未选路线仍隐藏");
-  assert(HW.getUpgradeStatus("U-A1") === "insufficient", "发现后无材料为不足");
+  assert(HW.getUpgradeStatus("U-A1") === "materials", "发现后先备料");
 
   const badPick = HW.pickInitialRoute("U-C1");
   assert(!badPick.ok, "不可二次选路线");
@@ -328,7 +328,7 @@ function testUpgradeStatusAndStart(HW, ctx) {
 
   const uA1 = HW.getUpgradeEntry("U-A1");
   assert(uA1, "U-A1 配置存在");
-  assert(HW.getUpgradeStatus("U-A1") === "insufficient", "无材料时应材料不足");
+  assert(HW.getUpgradeStatus("U-A1") === "materials", "无材料时先备料");
 
   const templates = { wood_bits: { stack_limit: 99 } };
   ctx.InventoryEquipment = makeMockIEWithItems({
@@ -345,13 +345,14 @@ function testUpgradeStatusAndStart(HW, ctx) {
     setState(p) { if (p && p.stamina != null) this._stamina = p.stamina; }
   };
 
+  HW.setMaterialProgress("U-A1", uA1.material_points);
   assert(HW.getUpgradeStatus("U-A1") === "available", "材料+体力足够时可扩建");
 
   const start = HW.startUpgrade("U-A1");
   assert(start.ok, "启动 U-A1 应成功");
   assert(HW.getActiveUpgradeTask(), "应有 active_upgrade_task");
   assert(HW.getUpgradeStatus("U-A1") === "in_progress", "状态应为施工中");
-  assert(HW.countItemEverywhere("wood_bits") === 40, "应扣走 10 木屑");
+  assert(HW.countItemEverywhere("wood_bits") === 50, "开工不重复扣除已结算材料");
 
   const failAgain = HW.startUpgrade("U-C1");
   assert(!failAgain.ok && failAgain.reason === "task_busy", "进行中不可再开");
@@ -393,6 +394,7 @@ function testUpgradeSaveRoundTrip(HW, ctx) {
     getState() { return { stamina: this._stamina }; },
     setState(p) { if (p && p.stamina != null) this._stamina = p.stamina; }
   };
+  HW.setMaterialProgress("U-A1", HW.getUpgradeEntry("U-A1").material_points);
   assert(HW.startUpgrade("U-A1").ok, "启动工程");
   const snapTask = HW.getState().active_upgrade_task;
   assert(snapTask && snapTask.upgrade_id === "U-A1", "存档含 active_upgrade_task");

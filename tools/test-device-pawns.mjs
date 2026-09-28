@@ -7,7 +7,7 @@ import { fileURLToPath } from 'node:url';
 
 const root = path.resolve(process.argv[2] || fileURLToPath(new URL('../', import.meta.url)));
 const read = file => fs.readFileSync(path.join(root, file), 'utf8');
-const kinds = {stove:'cooking', ranch:'livestock', farm:'agriculture', bed:'bed', barrel:'compost', pharmacy:'pharmacy', warehouse:'warehouse'};
+const kinds = {stove:'cooking', ranch:'livestock', farm:'agriculture', bed:'bed', barrel:'compost', pharmacy:'pharmacy', warehouse:'warehouse', toolbench:'observation'};
 const sizes = {};
 for (const key of Object.keys(kinds)) {
     const info = inspectPng(path.join(root, 'assets/map/isometric/interactive-devices-v1', key + '.png'));
@@ -18,6 +18,7 @@ for (const key of Object.keys(kinds)) {
 }
 
 function harness({fail = false, mode = 'isometric'} = {}) {
+    let clock = 0;
     const draws = [], texts = [], transforms = [], translations = [], ellipses = [], requests = [], pending = [];
     const footprintEllipses = [], shadowTransforms = [];
     function context(layer) {
@@ -30,7 +31,7 @@ function harness({fail = false, mode = 'isometric'} = {}) {
             createLinearGradient: () => ({addColorStop(){}})
         }, {get: (obj, key) => key in obj ? obj[key] : () => {}});
     }
-    const sandbox = {console, URLSearchParams, location:{search:'?view=' + mode}, document:{
+    const sandbox = {console, performance:{now:()=>clock}, URLSearchParams, location:{search:'?view=' + mode}, document:{
         documentElement:{classList:{toggle(){}}},
         createElement: () => {const c = {style:{}}; c.getContext = () => context(c); return c;}
     }, Image:class {
@@ -51,7 +52,8 @@ function harness({fail = false, mode = 'isometric'} = {}) {
         renderer.render({map:{map_id:'test',width:1,height:1},st:{x:0,y:0},dynamicMetaAt:()=>meta});
     };
     const flush = () => {while(pending.length) pending.shift()();};
-    return {render,flush,draws,texts,transforms,translations,ellipses,footprintEllipses,shadowTransforms,requests,renderer};
+    return {render,flush,draws,texts,transforms,translations,ellipses,footprintEllipses,shadowTransforms,requests,renderer,
+        advance:ms=>{clock+=ms;}, recover:()=>{fail=false;}};
 }
 for (const [key, flag] of Object.entries(kinds)) {
     const h = harness(), meta = {[flag+'Station']:true,npc:true,npcId:'npc.station.'+flag+'_base',npcLabel:key};
@@ -100,9 +102,12 @@ for(const flag of Object.values(kinds))env.E['is'+flag[0].toUpperCase()+flag.sli
 vm.createContext(env); const metaAt=vm.runInContext('('+sceneCode.slice(start,end)+')',env);
 for(const state of [[1,1,false,true],[0,0,false,false],[1,0,false,false],[1,1,true,false]]){
     [visual,identified,rear]=state; const m=metaAt(10,10);
-    for(const flag of Object.values(kinds))assert.equal(m[flag+'Station'],state[3],flag+': visibility '+state);
+    for(const flag of Object.values(kinds).filter(f=>f!=='observation'))assert.equal(m[flag+'Station'],state[3],flag+': visibility '+state);
+    env.E.getInteractNpcIdAt=()=> 'npc.station.observation_base';
+    const toolMeta=metaAt(10,10);
+    assert.equal(toolMeta.npcId,state[3]?'npc.station.observation_base':null,'toolbench: NPC visibility '+state);
 }
-console.log('PASS: 7 RGBA sprites, crops/anchors/scale, facility NPC mapping, body/shadow visibility, load/failure cache, legacy fallback, all scene vision gates.');
+console.log('PASS: 8 RGBA sprites, crops/anchors/scale, facility NPC mapping, body/shadow visibility, load/failure cache, legacy fallback, all scene vision gates.');
 
 // Only the existing street thug receives tier-one character art.
 {
@@ -121,6 +126,21 @@ console.log('PASS: 7 RGBA sprites, crops/anchors/scale, facility NPC mapping, bo
  assert.ok(!other.requests.some(u=>u.includes('street-thug-v1')),'other enemies unchanged');
 }
 console.log('PASS: tier-one street thug selection, scale, transparency, shadow, visibility and other enemy isolation.');
+
+// A temporary server outage must not permanently cache an invisible enemy.
+{
+ const h=harness({fail:true}), meta={enemy:true,enemyId:'enemy.street_thug'};
+ h.render(meta);h.flush();
+ for(let i=0;i<20;i++)h.render(meta);
+ assert.equal(h.requests.length,1,'failed asset does not retry on every render');
+ h.advance(5000);h.render(meta);h.flush();
+ assert.equal(h.requests.length,2,'failed asset retries after cooldown');
+ h.recover();h.advance(5000);h.render(meta);h.flush();
+ assert.ok(h.draws.some(d=>d.layer.id==='map-grid-canvas-dynamic'&&d.args[0].url?.includes('street-thug-v1')),'recovered asset redraws the thug');
+ h.advance(5000);h.render(meta);
+ assert.equal(h.requests.length,3,'successful image remains cached');
+ h.render({});assert.equal(h.draws.filter(d=>d.layer.id==='map-grid-canvas-dynamic').length,0,'recovered art still respects visibility');
+}
 
 {
  const info=inspectPng(path.join(root,'assets/npc/npc_supervisor_manager/standing-mailbag-v2.png'));

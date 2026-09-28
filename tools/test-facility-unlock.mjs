@@ -1,0 +1,38 @@
+import fs from 'node:fs';
+import vm from 'node:vm';
+import assert from 'node:assert/strict';
+const read=p=>fs.readFileSync(new URL('../'+p,import.meta.url),'utf8');
+const copy=x=>JSON.parse(JSON.stringify(x));
+let flags={},pos={mapId:'M0_Base_Inside_lv_1',x:13,y:14},saveOk=true,saved,stamina=100;
+const c=vm.createContext({console,Math,Date});c.window=c;
+c.NPCSystem={getFlagValue:k=>flags[k],isDemoFlagTrue:k=>flags[k]===true,setDemoFlag:(k,v)=>flags[k]=v,getDemoState:()=>copy({flags}),setDemoState:s=>flags=copy(s.flags)};
+c.GameEngine={getState:()=>pos,getMap:()=>({map_id:pos.mapId})};
+c.StationContext={isAdjacentToWarehouseTile:()=>pos.x===13&&pos.y===12,getCurrentCookingStationContext:()=>({station_type:'main'}),isCookingUiBlockedByRepairForContext:()=>!flags.cooking_base_station_unlocked};
+c.Survival={getState:()=>({stamina})};c.SceneCtx={};
+for(const p of ['js/item-attribute-modules.js','js/inventory-equipment.js','js/hideout-warehouse.js','js/cooking-station.js','js/game-time.js','js/weather.js','js/facility-unlock-config.js','js/facility-unlock.js'])vm.runInContext(read(p),c,{filename:p});
+const IE=c.InventoryEquipment,HW=c.HideoutWarehouse,F=c.FacilityUnlock;
+IE.setConfig({equipment:{bag:{item_id:'bag',equip_slot:'backpack',backpack_slots:30}},items:c.ItemAttributeModules.hydrateCatalog(JSON.parse(read('data/item-catalog-v2.json'))),modules:{},default_equipment:{}});
+HW.setUpgradeTable(JSON.parse(read('data/warehouse-upgrades.json')));
+c.SaveSystem={saveNow:()=>{if(saveOk)saved=copy({npc:c.NPCSystem.getDemoState(),inventory:IE.getState(),warehouse:HW.getState(),water:c.CookingStation.getState()});return saveOk;}};
+function reset(){flags={};saveOk=true;stamina=100;pos={mapId:'M0_Base_Inside_lv_1',x:13,y:14};IE.setState({equipment:{backpack:{item_id:'bag'}},inventory_backpack:c.FacilityUnlockConfig.materials.map(m=>({item_id:m[0],count:25})),inventory_pocket:[],inventory_vest:[],ground_items:{}});HW.setState(HW.createDefaultState());c.SceneCtx.cooking_station_runtime=c.CookingStation.createDefaultState();}
+function finish(id){const r=F.get(id);assert.equal(r.inspect().ok,true,id+' inspect');const result=r.repair(Object.fromEntries(r.rows().map(i=>[i.id,i.stock])));assert.equal(result.ok,true,id+' commit');assert.equal(r.isComplete(),true,id+' complete');return result;}
+reset();assert.equal(F.get('pharmacy').rows().length,0);assert.equal(F.get('pharmacy').inspect().ok,true);assert.equal(flags.npc_station_pharmacy_base_repaired,undefined);assert.equal(F.get('pharmacy').repair({ore_clay_raw:1}).ok,true);assert.equal(F.get('pharmacy').state().stone,2);assert.equal(F.get('cooking').state().stone,0,'separate project progress');
+const persisted=copy(saved);flags={};IE.setState({});c.NPCSystem.setDemoState(persisted.npc);IE.setState(persisted.inventory);assert.equal(F.get('pharmacy').state().stone,2);finish('pharmacy');assert.equal(F.get('pharmacy').repair({ore_clay_raw:1}).ok,false);
+reset();finish('compost');assert.equal(IE.countCarriedItemsByTemplateId('hus_wool'),25,'loose wool cannot replace bindings');
+reset();assert.equal(F.get('water').accessible(),false);flags.cooking_base_station_unlocked=true;F.get('water').inspect();saveOk=false;let before=JSON.stringify(IE.getState());assert.equal(F.get('water').repair({ore_clay_raw:3,ore_scrap_metal:4,mechanical_parts:1}).ok,false);assert.equal(c.CookingStation.getState().water_unlimited,false);assert.equal(JSON.stringify(IE.getState()),before);saveOk=true;finish('water');assert.equal(c.CookingStation.getState().water_unlimited,true);
+reset();pos={mapId:'M0_Base_Inside_lv_1',x:7,y:12};assert.equal(c.GameTime.getDisplayString(),'09:00');finish('temperature');assert.equal(flags.observation_calendar_unlocked,undefined,'temperature has no calendar prerequisite');finish('calendar');assert.match(c.GameTime.getDisplayString(),/1-1/);assert.equal(F.get('humidity'),null);
+reset();pos={mapId:'M0_Base_Inside_lv_1',x:13,y:12};assert.equal(F.get('warehouse:U-A1').accessible(),false,'undiscovered route');assert.equal(HW.pickInitialRoute('U-A1').ok,true);assert.equal(HW.getUpgradeStatus('U-A1'),'materials');assert.equal(HW.startUpgrade('U-A1').reason,'materials_not_ready');
+const wr=F.get('warehouse:U-A1');wr.inspect();let wh=HW.getState();wh.slots[0]={item_id:'wood_plank_soft',count:20,warehouse_locked:true};wh.slots[1]={item_id:'wood_plank_soft',count:3};HW.setState(wh);HW.setPreferDeductWarehouse(true);
+assert.equal(wr.rows().find(i=>i.id==='wood_plank_soft').stock,28,'sealed stock excluded');before=JSON.stringify({ie:IE.getState(),wh:HW.getState(),flags});saveOk=false;assert.equal(wr.repair({wood_plank_soft:6,supply_rope_hemp_short:3}).ok,false);assert.equal(JSON.stringify({ie:IE.getState(),wh:HW.getState(),flags}),before,'transaction restores both sources and flags');saveOk=true;
+assert.equal(wr.repair({wood_plank_soft:6,supply_rope_hemp_short:4}).ok,true);assert.equal(HW.getState().slots[0].count,20);assert.equal(HW.getState().slots[1],null);assert.equal(IE.countCarriedItemsByTemplateId('wood_plank_soft'),22,'mixed warehouse and carried cost');assert.equal(IE.countCarriedItemsByTemplateId('supply_rope_hemp_short'),22,'whole unused rope kept');assert.equal(HW.getCapacity(),100,'materials alone do not complete construction');
+const warehouseSave=copy(HW.getState());HW.setState(HW.createDefaultState());HW.setState(warehouseSave);flags={};assert.equal(HW.isUpgradeMaterialReady('U-A1'),true,'warehouse preparation survives restore and player flags reset');
+stamina=0;assert.equal(HW.startUpgrade('U-A1').ok,false);stamina=100;assert.equal(HW.startUpgrade('U-A1').ok,true);before=JSON.stringify(IE.getState());let ticks=0;while(HW.getActiveUpgradeTask()){HW.tickConstructionTask({getStamina:()=>stamina,setStamina:x=>stamina=x});ticks++;}assert.equal(ticks,10);assert.equal(stamina,50);assert.equal(HW.getCapacity(),200);assert.equal(JSON.stringify(IE.getState()),before,'construction does not charge materials twice');
+flags={};assert.equal(wr.isComplete(),true,'old completed upgrade remains free');assert.equal(F.get('warehouse:U-G2').accessible(),false,'story and route gates');
+reset();flags.npc_station_pharmacy_base_repaired=true;assert.equal(F.get('pharmacy').state().stone,10,'old facility flag respected');pos.mapId='other';assert.equal(F.get('compost').inspect().ok,false,'wrong map');
+for(const id of ['pharmacy','compost','cooking']){const d=JSON.parse(read('data/npc/npc_station_'+id+'_base_triggers.json'));assert.ok(!d.entries.some(e=>e.effects.some(x=>x.type==='removeItem')),'legacy dialogue does not consume materials: '+id);}
+for(const m of c.FacilityUnlockConfig.materials)assert.ok(IE.getItemTemplate(m[0]),m[0]+' catalog entry');
+console.log('PASS: facility progress/save, knowledge, whole returns, water rollback, independent tools, warehouse split stock/locks/rollback/construction, old saves and dialogue migration.');
+
+// Public HUD reads only become numeric after the tool is unlocked, including special environments.
+reset();let hud={textContent:''};c.document={getElementById:()=>hud};c.Weather.configure(JSON.parse(read('data/weather-config.json')));c.Weather.publishObservation();assert.ok(!hud.textContent.includes('℃'));flags.observation_temperature_unlocked=true;c.Weather.publishObservation();assert.ok(hud.textContent.includes('℃'));let oldHud=hud.textContent;c.Weather.setMapEffect('test',c.GameEngine.getMap(),{offset:30,immediate:true});c.Weather.publishObservation();assert.notEqual(hud.textContent,oldHud);flags={};c.Weather.publishObservation();assert.ok(!hud.textContent.includes('℃'),'reset hides readings');
+console.log('PASS: warehouse preparation scope and knowledge-gated environment readings.');

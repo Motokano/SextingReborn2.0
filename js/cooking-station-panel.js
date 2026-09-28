@@ -522,6 +522,7 @@
         var needWater = mSel ? Math.max(0, parseInt(mSel.water_cost, 10) || 0) : 0;
         var needTicks = mSel ? Math.max(0, parseInt(mSel.craft_ticks, 10) || 0) : 0;
         var needStamina = mSel ? Math.max(0, parseInt(mSel.stamina_cost, 10) || 0) : 0;
+        if (global.Survival && global.Survival.getActionStaminaCost) needStamina = global.Survival.getActionStaminaCost(needStamina);
         var survState = global.Survival && typeof global.Survival.getState === 'function' ? global.Survival.getState() : null;
         var curStamina = survState ? Number(survState.stamina || 0) : 0;
         var activeCraft = CookingStation.getActiveCraft();

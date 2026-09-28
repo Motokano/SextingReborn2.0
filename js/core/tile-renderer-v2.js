@@ -72,6 +72,7 @@
         // Approved device pawns. Crop and anchor are source-image pixel coordinates;
         // sizes below describe visible content on a 144px tile, not transparent padding.
         var deviceSpecs = {
+            toolbench: { crop: [218,77,869,1055], anchor: [662,1131], width: 58, label: '工具台' },
             stove: { crop: [183,7,930,1187], anchor: [650,1193], width: 56, label: '灶台' },
             ranch: { crop: [107,127,1093,953], anchor: [652.5,1079], width: 72, label: '牧场' },
             farm: { crop: [217,125,941,900], anchor: [685,1024], width: 64, label: '农场' },
@@ -86,6 +87,7 @@
         // Ground footprint of each oval base in display pixels at 144px tile width.
         // A base is already on the ground plane; it must not be flattened again.
         var deviceFootprints = {
+            toolbench: [29,10],
             stove: [28,9], ranch: [36,13], farm: [32,11.5], bed: [33,11.5],
             barrel: [27.5,9], pharmacy: [29,10], warehouse: [27,9]
         };
@@ -103,7 +105,9 @@
 
         function getSprite(key) {
             var cached = spriteCache[key];
-            if (cached) return cached.ready ? cached.image : null;
+            if (cached && (!cached.failed || nowMs() < cached.retryAt)) {
+                return cached.ready ? cached.image : null;
+            }
             var image = new Image();
             cached = spriteCache[key] = { image: image, ready: false, failed: false };
             image.onload = function () {
@@ -114,12 +118,18 @@
                 cached.ready = true;
                 if (lastInput) render(lastInput);
             };
-            image.onerror = function () { cached.failed = true; };
+            image.onerror = function () {
+                cached.failed = true;
+                // A temporary server outage must not hide this pawn forever.
+                // Retry on a subsequent render, with a cooldown to avoid request floods.
+                cached.retryAt = nowMs() + 5000;
+            };
             image.src = spriteSources[key];
             return null;
         }
 
         function deviceKeyForMeta(m) {
+            if (m.npcId === 'npc.station.observation_base') return 'toolbench';
             if (m.cookingStation) return 'stove';
             if (m.pharmacyStation) return 'pharmacy';
             if (m.compostStation) return 'barrel';
@@ -298,7 +308,7 @@
                 }else{dynamicCtx.fillStyle=m.enemyId==='enemy.training_dummy_wooden'?'#8b5a2b':'#f87171';dynamicCtx.beginPath();dynamicCtx.arc(c.x,c.y,8,0,Math.PI*2);dynamicCtx.fill();}
             }
             else if(deviceKey){
-                var lab={stove:'灶',pharmacy:'药',barrel:'肥',farm:'农',ranch:'牧',bed:'床',warehouse:'仓'}[deviceKey];
+                var lab={stove:'灶',pharmacy:'药',barrel:'肥',farm:'农',ranch:'牧',bed:'床',warehouse:'仓',toolbench:'工具台'}[deviceKey];
                 dynamicCtx.fillStyle=m.agricultureStation?'#4ade80':(m.livestockStation?'#fb923c':(m.warehouseStation?'#d3a060':'#f59e5b'));
                 dynamicCtx.font='bold 20px "Microsoft YaHei",sans-serif';dynamicCtx.fillText(lab,c.x,c.y-(projection.isIsometric?9:0));
             }

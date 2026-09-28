@@ -1,0 +1,35 @@
+<!doctype html><meta charset="utf-8"><base href="/"><title>劳动接入验收</title><link rel="stylesheet" href="css/cooking-repair.css">
+<body style="background:#211c19;color:#eee4d5;font:16px sans-serif;padding:24px"><h1>劳动接入验收</h1><p>独立测试库存 · 实际 NPC 菜单、修复模块与物品栏</p><button id="open">点击测试装置</button><p id="message"></p><div id="dialogue"></div>
+<script type="module">
+if(location.port!=='8018')throw Error('Use isolated acceptance port 8018');
+for(const src of ['js/item-attribute-modules.js','js/inventory-equipment.js','js/npc-system.js','js/hideout-warehouse.js','js/cooking-station.js','js/game-time.js','js/survival.js','js/weather.js','js/core/map-projection.js','js/core/tile-renderer-v2.js','js/facility-unlock-config.js','js/facility-unlock.js','js/cooking-repair.js','js/cooking-repair-panel.js','js/facility-labor.js','js/facility-labor-panel.js'])await new Promise((resolve,reject)=>{const s=document.createElement('script');s.src=src;s.onload=resolve;s.onerror=reject;document.head.append(s);});
+const project=new URLSearchParams(location.search).get('project')||'agriculture';
+const catalog=await (await fetch('data/item-catalog-v2.json')).json(),dict=await (await fetch('data/ui_text_zhCN.json')).json();window.UIText={t:k=>dict[k]||k};
+InventoryEquipment.setConfig({equipment:{test_bag:{item_id:'test_bag',equip_slot:'backpack',backpack_slots:20}},items:ItemAttributeModules.hydrateCatalog(catalog),modules:{},default_equipment:{}});
+InventoryEquipment.setState({equipment:{backpack:{item_id:'test_bag'}},inventory_backpack:FacilityUnlockConfig.materials.map(m=>({item_id:m[0],count:20})),inventory_pocket:[],inventory_vest:[],ground_items:{}});
+NPCSystem.setDemoState({flags:{},triggered:[]});NPCSystem.configure({log:t=>document.getElementById('message').textContent=t});
+window.StationContext={getCurrentCookingStationContext:()=>({station_type:'main'}),isCookingUiBlockedByRepairForContext:()=>!NPCSystem.isDemoFlagTrue('cooking_base_station_unlocked')};
+window.SceneApp={isCookingStationPanelBlockedByRepair:()=>!NPCSystem.isDemoFlagTrue('cooking_base_station_unlocked'),openCookingStationPanel:()=>document.getElementById('message').textContent='烹饪功能已开放'};
+window.SceneCtx={};
+let pos={mapId:'M0_Base_Inside_lv_1',x:13,y:14};
+if(project==='calendar'||project==='temperature')pos={mapId:'M0_Base_Inside_lv_1',x:7,y:12};
+if(project==='warehouse')pos={mapId:'M0_Base_Inside_lv_1',x:13,y:12};
+window.GameEngine={getState:()=>pos,getMap:()=>({map_id:pos.mapId})};
+Survival.setConfig({...await(await fetch('data/survival-config.json')).json(),food_model:null});Survival.setState({stamina:12,satiety:100,thirst:100,body_temperature:37,isDead:false});
+if(project==='agriculture')pos={mapId:'M0_Base_Inside_lv_1',x:10,y:14};if(project==='livestock')pos={mapId:'M0_Base_Inside_lv_1',x:9,y:14};
+SceneApp.prepareFacilityLabor=()=>true;SceneApp.canWorkFacilityLabor=()=>!Survival.isDead();SceneApp.getFacilityLaborTickMs=()=>500;SceneApp.openAgriculturePanel=()=>FacilityLaborPanel.open('agriculture');SceneApp.openLivestockPanel=()=>FacilityLaborPanel.open('livestock');
+StationContext.isAdjacentToWarehouseTile=()=>project==='warehouse';
+if(project==='water')NPCSystem.setDemoFlag('cooking_base_station_unlocked',true);
+HideoutWarehouse.setUpgradeTable(await(await fetch('data/warehouse-upgrades.json')).json());HideoutWarehouse.setState(HideoutWarehouse.createDefaultState());HideoutWarehouse.pickInitialRoute('U-A1');
+Weather.configure(await(await fetch('data/weather-config.json')).json());
+const hud=document.createElement('p');hud.innerHTML='<span id="test-date"></span> <span id="hud-weather"></span>';document.body.append(hud);
+function refresh(){document.getElementById('test-date').textContent=GameTime.getDisplayString();Weather.publishObservation();}
+window.SceneRenderer={render:refresh};window.SaveSystem={saveNow:()=>{refresh();return true;}};refresh();
+window.DialogueUI={playLinesRich:(lines,opts)=>{const box=document.getElementById('dialogue');box.replaceChildren();const p=document.createElement('p');p.textContent=lines.map(l=>l.text).join('\n');box.append(p);const b=document.createElement('button');b.textContent='读完修补说明';b.onclick=()=>{box.replaceChildren();opts.onQueueExhausted?.();};box.append(b);}};
+document.getElementById('open').onclick=()=>project==='warehouse'?FacilityUnlockPanel.open('warehouse:U-A1'):NPCSystem.openMenu('npc.station.'+(['calendar','temperature'].includes(project)?'observation':project==='water'?'cooking':project)+'_base');
+</script>
+
+<script type="module">
+// Render the device using the runtime renderer at the actual 144px tile width.
+document.getElementById('open').addEventListener('click',()=>{if(!window.TileRendererV2||document.getElementById('device-preview'))return;const host=document.createElement('div');host.id='device-preview';host.style.cssText='position:relative;width:230px;height:200px;margin-top:20px';document.body.append(host);const renderer=TileRendererV2.create(host,{cellPx:144/Math.SQRT2});renderer.render({map:{map_id:'preview',width:1,height:1},st:{x:0,y:0},dynamicMetaAt:()=>({npc:true,npcId:'npc.station.observation_base',npcLabel:'观测台'})});});
+</script>
