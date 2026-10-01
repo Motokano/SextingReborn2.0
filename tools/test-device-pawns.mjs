@@ -7,7 +7,7 @@ import { fileURLToPath } from 'node:url';
 
 const root = path.resolve(process.argv[2] || fileURLToPath(new URL('../', import.meta.url)));
 const read = file => fs.readFileSync(path.join(root, file), 'utf8');
-const kinds = {stove:'cooking', ranch:'livestock', farm:'agriculture', bed:'bed', barrel:'compost', pharmacy:'pharmacy', warehouse:'warehouse', toolbench:'observation'};
+const kinds = {sewing:'sewing', stove:'cooking', ranch:'livestock', farm:'agriculture', bed:'bed', barrel:'compost', pharmacy:'pharmacy', warehouse:'warehouse', toolbench:'observation'};
 const sizes = {};
 for (const key of Object.keys(kinds)) {
     const info = inspectPng(path.join(root, 'assets/map/isometric/interactive-devices-v1', key + '.png'));
@@ -36,10 +36,10 @@ function harness({fail = false, mode = 'isometric'} = {}) {
         createElement: () => {const c = {style:{}}; c.getContext = () => context(c); return c;}
     }, Image:class {
         set src(value) {
-            this.url = value; requests.push(value);
+            this.url = value; if (!value.startsWith('assets/map/terrain/')) requests.push(value);
             const info = sizes[path.basename(value, '.png')] || {width:100,height:100};
             this.naturalWidth = info.width; this.naturalHeight = info.height;
-            pending.push(() => fail ? this.onerror() : this.onload());
+            pending.push(() => { const callback = fail ? this.onerror : this.onload; if (callback) callback(); });
         }
     }};
     sandbox.window = sandbox; vm.createContext(sandbox);
@@ -102,12 +102,14 @@ for(const flag of Object.values(kinds))env.E['is'+flag[0].toUpperCase()+flag.sli
 vm.createContext(env); const metaAt=vm.runInContext('('+sceneCode.slice(start,end)+')',env);
 for(const state of [[1,1,false,true],[0,0,false,false],[1,0,false,false],[1,1,true,false]]){
     [visual,identified,rear]=state; const m=metaAt(10,10);
-    for(const flag of Object.values(kinds).filter(f=>f!=='observation'))assert.equal(m[flag+'Station'],state[3],flag+': visibility '+state);
+    for(const flag of Object.values(kinds).filter(f=>f!=='observation'&&f!=='sewing'))assert.equal(m[flag+'Station'],state[3],flag+': visibility '+state);
     env.E.getInteractNpcIdAt=()=> 'npc.station.observation_base';
     const toolMeta=metaAt(10,10);
     assert.equal(toolMeta.npcId,state[3]?'npc.station.observation_base':null,'toolbench: NPC visibility '+state);
+    env.E.getInteractNpcIdAt=()=> 'npc.station.sewing_base';
+    assert.equal(metaAt(10,10).npcId,state[3]?'npc.station.sewing_base':null,'sewing: NPC visibility '+state);
 }
-console.log('PASS: 8 RGBA sprites, crops/anchors/scale, facility NPC mapping, body/shadow visibility, load/failure cache, legacy fallback, all scene vision gates.');
+console.log('PASS: 9 RGBA sprites, crops/anchors/scale, facility NPC mapping, body/shadow visibility, load/failure cache, legacy fallback, all scene vision gates.');
 
 // Only the existing street thug receives tier-one character art.
 {

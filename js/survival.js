@@ -1242,7 +1242,7 @@
     }
 
     function syncMoodStateBuff() {
-        var targetRange = getMoodRangeByValue(state.mood);
+        var targetRange = getMoodRangeByValue(getMood());
         var targetBuffId = getMoodRangeBuffId(targetRange);
         var prevRange = lastMoodRangeId;
         if (!global || !global.BuffSystem) {
@@ -1329,6 +1329,10 @@
         var c = thermalConfig(), m = temperatureModifiers(), r = computeTempThresholdShiftByWeatherResist(), e = resolveAmbientTemperatureForCurrentMap();
         var low = (c ? c.comfortable_min : getBodyTemperatureStandard() - get('body_temperature_extreme_cold_base_delta', 15)) - r - m.cold_range;
         var high = (c ? c.comfortable_max : getBodyTemperatureStandard() + get('body_temperature_extreme_hot_base_delta', 12)) + r + m.hot_range;
+        if (global.SewingSystem && global.InventoryEquipment) {
+            var sewing = global.SewingSystem.worn();
+            low -= sewing.cold; high += sewing.heat;
+        }
         var direction = e != null && isFinite(e) ? (e < low ? -1 : e > high ? 1 : 0) : 0;
         var excess = direction < 0 ? low - e : direction > 0 ? e - high : 0, rate = 0, band = 0;
         if (direction) {
@@ -2112,7 +2116,7 @@
     function getThirst() { return state.thirst; }
     function getEnergy() { return state.energy; }
     function getEnergyMax() { return get('energy_max', 100); }
-    function getMood() { return state.mood; }
+    function getMood() { return clamp(state.mood + (global.SewingSystem && global.InventoryEquipment ? global.SewingSystem.worn().mood : 0), get('mood_min', 0), get('mood_max', 1000)); }
     function getComposure() { return state.composure; }
     function getNutrition() { return state.nutrition; }
     function getDirtyness() { return state.dirtyness; }
@@ -2287,6 +2291,7 @@
         getEnergy: getEnergy,
         getEnergyMax: getEnergyMax,
         getMood: getMood,
+        syncMoodStateBuff: syncMoodStateBuff,
         getComposure: getComposure,
         getNutrition: getNutrition,
         getDirtyness: getDirtyness,

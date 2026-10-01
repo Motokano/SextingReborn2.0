@@ -1,0 +1,32 @@
+{
+  "schemaVersion": 1,
+  "id": "npc.station.sewing_base",
+  "name": "缝纫台",
+  "displayTitle": "缝纫台",
+  "npcLabel": "缝纫台",
+  "sprite": "",
+  "appearanceSchedule": {
+    "start": "00:00",
+    "end": "23:59"
+  },
+  "location": {
+    "sceneId": "M0_Base_Inside_lv_1",
+    "x": 6,
+    "y": 11
+  },
+  "mainMenu": {
+    "showChat": true,
+    "showWorkWhen": "never",
+    "showLeave": true
+  },
+  "behavior": {
+    "type": "workbench",
+    "origin": "base_hideout"
+  },
+  "fallbackDialoguePoolId": "npc.station.sewing_base.fallback",
+  "tags": [
+    "workbench",
+    "non_combat",
+    "base_facility"
+  ]
+}

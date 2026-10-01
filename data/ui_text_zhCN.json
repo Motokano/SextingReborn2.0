@@ -94,7 +94,7 @@
   "combat.hub.fail.no_action": "未找到该枢纽动作",
   "combat.hub.fail.no_armor": "未装备躯干防具，无法激活防具",
   "combat.hub.fail.params": "参数无效",
-  "combat.hub.fail.shield_active": "护体未破，无法再次激活",
+  "combat.hub.fail.shield_active": "护盾已满，无需再次激活",
   "combat.hub.fail.stunned": "眩晕中，无法施展动作",
   "combat.hub.ok.eat": "进食恢复体力 +{gain}（消耗饱食 {sat}、饮水 {thirst}）",
   "combat.hub.fail.eat.low_satiety": "饱食不足，无法进食恢复体力",

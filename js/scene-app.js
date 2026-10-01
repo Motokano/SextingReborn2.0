@@ -315,6 +315,7 @@
         if (window.ResetProgressDialog && window.ResetProgressDialog.isOpen()) return true;
         if (window.CookingRepairPanel && window.CookingRepairPanel.isOpen()) return true;
         if (window.ToolbenchPanel && window.ToolbenchPanel.isOpen()) return true;
+        if (window.SewingStationPanel && window.SewingStationPanel.isOpen()) return true;
         if (window.FacilityLaborPanel && window.FacilityLaborPanel.isOpen()) return true;
         if (window.HuntingPanel && window.HuntingPanel.isOpen()) return true;
         if (window.FishingPanel && window.FishingPanel.isOpen()) return true;
@@ -2126,7 +2127,7 @@
             energyBar.style.width = enMax > 0 ? (s.energy / enMax * 100) + '%' : '0%';
 
             if (moodEl) {
-                var moodValue = Math.round(Number(s.mood) || 0);
+                var moodValue = Math.round(window.Survival && window.Survival.getMood ? window.Survival.getMood() : Number(s.mood) || 0);
                 var moodRange = (Surv.getMoodRangeByValue && typeof Surv.getMoodRangeByValue === 'function')
                     ? Surv.getMoodRangeByValue(moodValue)
                     : 'normal';
@@ -3562,6 +3563,7 @@
             var tpl = it && it.item_id ? IE.getItemTemplate(it.item_id) : null;
             var tier = it && it.item_id && IE.getItemDisplayTier ? IE.getItemDisplayTier(it.item_id, char) : 0;
             var name = tpl ? IE.getDisplayName(tpl, tier, char) : (it ? it.item_id : ui('common.dash'));
+            if (it && (it.sewing || it.sewing_parts) && window.SewingSystem) name = window.SewingSystem.itemName(it);
             var desc = tpl ? IE.getDisplayDesc(tpl, tier, char) : '';
             var qty = (it && it.count != null && it.count > 1) ? (' x' + it.count) : '';
             return { tpl: tpl, name: name, desc: desc, qty: qty };

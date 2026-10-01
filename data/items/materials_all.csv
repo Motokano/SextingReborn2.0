@@ -295,3 +295,4 @@ textile_coir,椰纤维,褐色粗纤维,一团褐色的粗丝，很扎手,椰壳�
 wood_birch,桦木,浅色直木杆,浅色树皮剥下来挺整，看着能砍板子,桦木轻软好劈，做柴火和日常木器都顺手。,wood,softwood,1.8,1,white,material;wood;surface_only,logging,,0,material,low,1,60,,,,,20,,,,,,,,0,,,,,,,
 wood_pine,松木,带松香味的木段,有股清香的木段，树皮直渗油,松木含脂耐潮，烧起来火旺还带香。,wood,softwood,1.5,1,white,material;wood;dungeon_only,logging,,0,material,mid,3,80,,,,,25,,,,,,,,0,,,,,,,
 item.scrap.herb_dregs,药渣,湿药渣,煎煮浸取之后剩下的湿渣,泡过煮过的药草残渣，早没药性了；晒干能当柴火，扔进沤肥堆也能凑个数。,material,scrap,0.15,20,white,material;scrap;pharmacy;pharmacy_fail,alchemy,alchemy,3600,material,low,0,20,,,,,10,,,,8,2,,,,,,,,,,,,
+silica_leaf,硅叶,灰绿叶片,一撮灰绿色的叶片，叶脉清晰，边缘略有卷曲。,硅叶的叶片，灰绿色，叶面带着清晰的脉纹。,material,plant,0.1,20,white,material;gathering,gathering,,0,material,low,0,0,0,,0,,,,,,,,,,,,,,,,,,,

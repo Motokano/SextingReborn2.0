@@ -45,6 +45,11 @@
       "def": "data/npc/npc_station_observation_base.json",
       "triggers": "data/npc/npc_station_observation_base_triggers.json",
       "dialogue_pools": "data/npc/npc_station_observation_base_dialogue_pools.json"
+    },
+    "npc.station.sewing_base": {
+      "def": "data/npc/npc_station_sewing_base.json",
+      "triggers": "data/npc/npc_station_sewing_base_triggers.json",
+      "dialogue_pools": "data/npc/npc_station_sewing_base_dialogue_pools.json"
     }
   }
 }

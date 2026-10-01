@@ -36,6 +36,10 @@
    }else {var picked=list.filter(function(i){return selected[i.id]>0;});body+='<h2>准备投入</h2>'+picked.map(function(i){return '<p>'+esc(i.name)+' × '+selected[i.id]+'</p>';}).join('')+'<p class="cr-muted">'+(R().spec.warehouse?'提交后收下本次所需材料，已备材料会保留。':'点击后直接修补，已完成的修补会保留。')+'用不上的整件材料仍留在原处。</p><footer><button data-step="'+(groups.length-1)+'">返回选材</button><button data-action="repair" '+(!picked.length?'disabled':'')+'>'+(R().spec.warehouse?'核对并交付材料':'核对并修复')+'</button></footer>';}
   }
   root.innerHTML=embedded?'<section class="cr-window cr-embedded"><div class="cr-body">'+body+'</div></section>':'<section class="cr-window" role="dialog" aria-modal="true" aria-label="'+esc(R().spec.title)+'"><header><h1>'+esc(R().spec.title)+'</h1><button data-action="close" aria-label="关闭修复">×</button></header><div class="cr-body">'+body+'</div></section>';
+  if(R().spec.workTicks&&done()){
+   var area=root.querySelector('.cr-body');area.innerHTML='<h2>'+(R().isComplete()?'装配完成':'材料已备齐')+'</h2><p>'+(R().isComplete()?'现在可以使用。':'需要亲自施工，剩余 '+((R().spec.workTicks-R().workProgress())*10)+' 分钟。中断后可继续。')+'</p>'+(result&&result.message?'<p role="status">'+esc(result.message)+'</p>':'')+(R().isComplete()?'':'<button data-sewing-work>施工10分钟 · 消耗体力</button>')+' <button data-action="close">关闭</button>';
+   var workButton=area.querySelector('[data-sewing-work]');if(workButton)workButton.onclick=function(e){e.stopPropagation();result=Object.assign({used:[],returned:[]},R().work());draw();};
+  }
   var focusTarget=focusAction?root.querySelector('[data-action="'+focusAction+'"]'):focusStep!=null?root.querySelector('[data-step="'+focusStep+'"]'):null;
   (focusTarget||root.querySelector('button')).focus({preventScroll:embedded});
  }

@@ -114,9 +114,10 @@
   /** 塞入储能（电池充电入口；amount 为电量点数，负值忽略）。 */
   function addPowerCharge(amount) {
     var st = ensureState();
-    var a = Math.floor(Number(amount) || 0);
-    if (a <= 0) return { ok: false, charge: st.power_charge || 0, reason: 'invalid_amount' };
-    st.power_charge = (st.power_charge || 0) + a;
+    var a = (typeof amount === 'number' || typeof amount === 'string') ? Math.floor(Number(amount)) : NaN;
+    var charge = st.power_charge || 0;
+    if (!Number.isFinite(a) || a <= 0 || !Number.isFinite(charge) || a > Number.MAX_VALUE - charge || !Number.isFinite(charge + a)) return { ok: false, charge: st.power_charge || 0, reason: 'invalid_amount' };
+    st.power_charge = charge + a;
     return { ok: true, charge: st.power_charge, added: a };
   }
   function getPowerCharge() {
@@ -537,6 +538,32 @@
         if (value && typeof value === 'object') Object.keys(value).forEach(function (key) { finite(value[key]); });
       }
       finite(incoming);
+      function object(value) { return value != null && typeof value === 'object' && !Array.isArray(value); }
+      function number(value, min, max) {
+        if (typeof value !== 'number' || !Number.isFinite(value) || value < min || value > max) throw new Error('number');
+      }
+      // Arms are required even in pre-nutrition saves; other legacy defaults are migrated below.
+      if (!object(incoming.arms)) throw new Error('arms');
+      Object.keys(incoming.arms).forEach(function (id) {
+        if (!object(incoming.arms[id])) throw new Error('arm');
+      });
+      if (incoming.axis != null && !object(incoming.axis)) throw new Error('axis');
+      [incoming.axis].concat(Object.values(incoming.arms)).forEach(function (slots) {
+        Object.values(slots || {}).forEach(function (slot) {
+          if (slot == null || typeof slot === 'string') return; // Legacy module IDs.
+          if (!object(slot) || typeof slot.module_id !== 'string') throw new Error('module');
+          if (slot.level != null) { number(slot.level, 1, 5); if (!Number.isInteger(slot.level)) throw new Error('level'); }
+          ['upgrading_remaining','feed_units','refine_cache','processing_units'].forEach(function (key) {
+            if (slot[key] != null) number(slot[key], 0, Number.MAX_SAFE_INTEGER);
+          });
+        });
+      });
+      if (incoming.power_charge != null) number(incoming.power_charge, 0, Number.MAX_VALUE);
+      if (incoming.power_available != null && typeof incoming.power_available !== 'boolean') throw new Error('power');
+      ['elapsed_ticks','rotation_ticks_remaining','rotation_total_ticks'].forEach(function (key) {
+        if (incoming[key] != null) number(incoming[key], 0, Number.MAX_SAFE_INTEGER);
+      });
+
       if (incoming.crowding_exposure_ticks != null && (typeof incoming.crowding_exposure_ticks !== 'number' || incoming.crowding_exposure_ticks < 0)) throw new Error('crowding_exposure');
       var ids = Object.create(null);
       if (incoming.breeding_limits != null) {
@@ -552,6 +579,16 @@
         ['hp', 'satiety'].forEach(function (key) { if (a[key] != null && (typeof a[key] !== 'number' || a[key] < 0 || a[key] > 100)) throw new Error(key); });
         if (typeof a.weight_kg !== 'number' || a.weight_kg < 0) throw new Error('weight');
         if (a.age_ticks != null && (typeof a.age_ticks !== 'number' || a.age_ticks < 0)) throw new Error('age');
+        if (a.nutrition_state != null) {
+          var n = a.nutrition_state;
+          if (!object(n) || n.version !== 1) throw new Error('nutrition_version');
+          // These fields existed in v1 from its introduction. Later damage fields are optional.
+          number(n.average_supply, 0, 8);
+          number(n.hunger_damage, 0, 100);
+          number(n.feed_buffer, 0, Number.MAX_SAFE_INTEGER);
+          if (['insufficient','growth','full'].indexOf(n.tier) < 0) throw new Error('nutrition_tier');
+          ['blood_damage','crowding_damage'].forEach(function (key) { if (n[key] != null) number(n[key], 0, 100); });
+        }
         if (a.pregnant && a.pregnant.children != null) {
           if (!Array.isArray(a.pregnant.children)) throw new Error('children');
           a.pregnant.children.forEach(function (c) {
@@ -567,6 +604,8 @@
     var check = validateState(incoming); if (!check.ok) throw new Error(check.reason);
     if (incoming == null) { initDemoState(); return { ok: true }; }
     incoming = JSON.parse(JSON.stringify(incoming));
+    if (incoming.rotation_total_ticks == null) incoming.rotation_total_ticks = 1000;
+    if (incoming.rotation_ticks_remaining == null) incoming.rotation_ticks_remaining = incoming.rotation_total_ticks;
     // 储能迁移（k89 电池经济最小闭环）：旧档 power_available=true → 给起步 500；false → 0（断电）
     if (incoming.power_charge == null) {
       incoming.power_charge = (incoming.power_available === false) ? 0 : 500;
@@ -629,9 +668,12 @@
         }
       });
     }
+    // Finish migrations on the detached candidate before publishing any state.
+    migrateRetiredModules(incoming);
+    (incoming.animals || []).forEach(function (a) { initializeNutrition(a, getSpecies(a.species_id)); });
+    var migratedCheck = validateState(incoming);
+    if (!migratedCheck.ok) throw new Error(migratedCheck.reason);
     state = incoming;
-    migrateRetiredModules(state);
-    (state.animals || []).forEach(function (a) { initializeNutrition(a, getSpecies(a.species_id)); });
     var maxSeq = 0;
     if (Array.isArray(state.animals)) {
       state.animals.forEach(function (a) {
@@ -1535,6 +1577,8 @@
         if (remaining < 1e-12 || available < 1e-12) return;
         r.sources.forEach(function (s) {
           var amount = remaining * feedAvailable(s) / available;
+          // Empty sources have zero total demand; never enqueue a 0/0 allocation.
+          if (!(amount > 0) || !Number.isFinite(amount)) return;
           var index = sources.indexOf(s);
           if (index < 0) { index = sources.length; sources.push(s); totals.push(0); }
           totals[index] += amount; offers.push({ request: r, source: index, amount: amount });

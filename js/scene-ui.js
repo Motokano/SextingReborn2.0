@@ -129,8 +129,10 @@
     function buildItemTooltipHtmlForTemplate(itemId, tpl, inst, character) {
         var tier = IE && IE.getItemDisplayTier ? IE.getItemDisplayTier(itemId, character) : 0;
         var name = tpl && IE && IE.getDisplayName ? IE.getDisplayName(tpl, tier, character) : String(itemId || '');
+        if (inst && (inst.sewing || inst.sewing_parts) && global.SewingSystem) name = global.SewingSystem.itemName(inst);
         var desc = tpl && IE && IE.getDisplayDesc ? IE.getDisplayDesc(tpl, tier, character) : '';
         var attrsText = (typeof formatItemAttributes === 'function') ? formatItemAttributes(tpl, inst) : '';
+        if (inst && (inst.sewing || inst.sewing_parts)) attrsText = '';
         var html = buildItemTooltipHtml(name, desc, attrsText);
         try {
             if (global.ItemInfoModules && typeof global.ItemInfoModules.renderTooltipModulesHtml === 'function') {

@@ -189,6 +189,7 @@
         if (isGatherActionDisabled()) return { success: false, message: t('gathering.msg.action_disabled') };
         var point = resolveGatheringPoint(mapEntityId, gatheringInstanceId);
         if (!point) return { success: false, message: t('gathering.msg.unknown_point') };
+        if (limitedUses(point) >= point.max_successes) return { success:false, message:'这里的纤维已经采完了。' };
 
         var cat = point.wild_interaction_category || 'gathering';
         if (cat !== 'gathering') {
@@ -227,6 +228,12 @@
         if (!row) {
             if (cat === 'gathering') addGatheringProficiencyDelta(1);
             return { success: true, message: t('gathering.msg.no_output'), consumedStamina: true };
+        }
+
+        if (point.max_successes) {
+            var usage = Object.assign({}, global.NPCSystem.getFlagValue('sewing_gathering_uses') || {});
+            usage[limitedKey(point)] = limitedUses(point) + 1;
+            global.NPCSystem.setDemoFlag('sewing_gathering_uses', usage);
         }
 
         var itemDef = config.items[row.item_id];
@@ -277,6 +284,7 @@
         if (isGatherActionDisabled()) return false;
         var point = resolveGatheringPoint(mapEntityId, gatheringInstanceId);
         if (!point) return false;
+        if (limitedUses(point) >= point.max_successes) return false;
         if ((point.wild_interaction_category || 'gathering') !== 'gathering') return false;
         var Surv = useSurvival() ? (typeof window !== 'undefined' ? window : global).Survival : null;
         if (Surv && !Surv.canPerformStaminaOrEnergyAction()) return false;
@@ -286,6 +294,15 @@
         if (stamina < cost) return false;
         if (isInventoryFull()) return false;
         return true;
+    }
+
+    function limitedKey(point) {
+        var p=global.GameEngine.getState();
+        return p.mapId+':'+p.x+':'+p.y+':'+point.instance_id;
+    }
+    function limitedUses(point) {
+        if(!point.max_successes)return 0;
+        return Number((global.NPCSystem.getFlagValue('sewing_gathering_uses')||{})[limitedKey(point)])||0;
     }
 
     global.Gathering = {

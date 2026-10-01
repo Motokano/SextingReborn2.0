@@ -29,6 +29,7 @@
     "test:combat-engagement": "node tools/test-combat-engagement.mjs",
     "test:livestock-power": "node tools/smoke-k93-power.mjs",
     "test:livestock-integrity": "node tools/test-livestock-integrity.mjs",
+    "test:livestock-feed-sharing": "node tools/test-livestock-feed-sharing.mjs",
     "test:livestock-retirement": "node tools/test-livestock-retirement.mjs",
     "test:livestock-power-feed": "node tools/smoke-k89-power-feed.mjs",
     "test:livestock-power-feed-ui": "node tools/smoke-k89-power-feed-ui.mjs",
@@ -51,7 +52,7 @@
     "test:livestock-nutrition": "node tools/test-livestock-nutrition.mjs",
     "test:livestock-rotation": "node tools/test-livestock-rotation.mjs",
     "test:livestock-calibration": "node tools/test-livestock-calibration.mjs",
-    "test:livestock": "node tools/test-livestock-integrity.mjs && node tools/test-livestock-nutrition.mjs && node tools/test-livestock-rotation.mjs && node tools/test-livestock-retirement.mjs && node tools/test-livestock-calibration.mjs && node tools/smoke-k93-power.mjs && node tools/smoke-k89-power-feed.mjs && node tools/smoke-k89-power-feed-ui.mjs && node tools/test-livestock-egg-rhythm.mjs && node tools/test-livestock-capacity.mjs && node tools/test-livestock-food-chain.mjs",
+    "test:livestock": "node tools/test-livestock-state-validation.mjs && node tools/test-livestock-feed-sharing.mjs && node tools/test-livestock-integrity.mjs && node tools/test-livestock-nutrition.mjs && node tools/test-livestock-rotation.mjs && node tools/test-livestock-retirement.mjs && node tools/test-livestock-calibration.mjs && node tools/smoke-k93-power.mjs && node tools/smoke-k89-power-feed.mjs && node tools/smoke-k89-power-feed-ui.mjs && node tools/test-livestock-egg-rhythm.mjs && node tools/test-livestock-capacity.mjs && node tools/test-livestock-food-chain.mjs",
     "audit:livestock-final": "node tools/audit-livestock-final.mjs",
     "test:livestock-egg-rhythm": "node tools/test-livestock-egg-rhythm.mjs",
     "test:livestock-capacity": "node tools/test-livestock-capacity.mjs",
@@ -63,6 +64,7 @@
     "test:fishing-temperature": "node tools/test-fishing-temperature.mjs",
     "test:fishing-weather-species": "node tools/test-fishing-weather-species.mjs",
     "test:facility-labor": "node tools/test-facility-labor.mjs",
-    "test:facility-unlock": "node tools/test-cooking-repair.mjs && node tools/test-facility-unlock.mjs && node tools/test-hideout-warehouse.mjs"
+    "test:facility-unlock": "node tools/test-cooking-repair.mjs && node tools/test-facility-unlock.mjs && node tools/test-hideout-warehouse.mjs",
+    "test:livestock-state-validation": "node tools/test-livestock-state-validation.mjs"
   }
 }

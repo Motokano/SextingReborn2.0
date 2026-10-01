@@ -7,7 +7,8 @@
   "loot_grass": [
     { "item_id": "herb_green", "weight": 72 },
     { "item_id": "herb_bitter", "weight": 35 },
-    { "item_id": "herb_sweet", "weight": 20 }
+    { "item_id": "herb_sweet", "weight": 20 },
+    { "item_id": "silica_leaf", "weight": 20 }
   ],
   "loot_surface": [
     { "item_id": "wood_shrub_dry", "weight": 85 },

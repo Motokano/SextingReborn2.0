@@ -49,12 +49,24 @@
   try {
    used.forEach(function(r){if(!remove(r.item,r.count))throw Error('inventory');var c=groups.find(function(c){return c.id===r.item.group;});before[c.id]=Math.min(c.need,before[c.id]+r.count*r.item.points);});
    if(spec.warehouse)g.HideoutWarehouse.setMaterialProgress(spec.warehouse,before);else g.NPCSystem.setDemoFlag(key,before);
-   if(groups.every(function(c){return before[c.id]>=c.need;})){if(!spec.warehouse)g.NPCSystem.setDemoFlag(unlock,true);if(spec.id==='water'&&g.CookingStation)g.CookingStation.getState().water_unlimited=true;}
+   if(groups.every(function(c){return before[c.id]>=c.need;})){if(!spec.warehouse&&!spec.workTicks)g.NPCSystem.setDemoFlag(unlock,true);if(spec.id==='water'&&g.CookingStation)g.CookingStation.getState().water_unlimited=true;}
    if(g.SaveSystem&&!g.SaveSystem.saveNow())throw Error('save');
   }catch(e){IE.setState(snapshot);g.NPCSystem.setDemoState(npc);if(wh)g.HideoutWarehouse.setState(wh);if(water!==null)g.CookingStation.getState().water_unlimited=water;return {ok:false,message:'本次修复未能保存，材料没有扣除，请稍后再试。'};}
   return {ok:true,used:used,returned:returned};
  }
- return {inspect:inspect,spec:spec,groups:groups,rows:rows,state:state,repair:repair,accessible:accessible,isComplete:isComplete,reset:function(){if(spec.warehouse)g.HideoutWarehouse.setMaterialProgress(spec.warehouse,{});else g.NPCSystem.setDemoFlag(key,{});}};
+ function work(){
+  if(!spec.workTicks||!accessible()||!groups.every(function(c){return state()[c.id]>=c.need;}))return {ok:false,message:'请先备齐材料并在装置旁施工。'};
+  var S=g.Survival,measurement=g.NPCSystem.getFlagValue('sewing_measurement');
+  if(spec.id==='sewing_mannequin'&&(!measurement||!(measurement.weight_kg>0)))return {ok:false,message:'请先使用皮尺和体重秤记录身材。'};
+  if((S.isDead&&S.isDead())||(g.CombatEngagement&&g.CombatEngagement.isPlayerInCombat())||S.getStamina()<(S.getActionStaminaCost?S.getActionStaminaCost(1):1))return {ok:false,message:'当前不能施工，请先恢复体力或结束战斗。'};
+  S.consumeStamina(1);S.advanceTick({source:'sewing_construction'});
+  var n=Math.min(spec.workTicks,workProgress()+1);g.NPCSystem.setDemoFlag(key+':work',n);
+  if(n===spec.workTicks){g.NPCSystem.setDemoFlag(unlock,true);if(spec.id==='sewing_mannequin')g.NPCSystem.setDemoFlag('sewing_mannequin_dimensions',JSON.parse(JSON.stringify(measurement)));}
+  if(g.SaveSystem&&!g.SaveSystem.saveNow())return {ok:false,message:'进度已保留在本次游戏，但保存失败，请重试保存。'};
+  return {ok:true,message:n===spec.workTicks?'装配完成。':'完成一段施工，剩余'+((spec.workTicks-n)*10)+'分钟。'};
+ }
+ function workProgress(){return Math.max(0,Math.min(spec.workTicks||0,Number(g.NPCSystem.getFlagValue(key+':work'))||0));}
+ return {inspect:inspect,spec:spec,groups:groups,rows:rows,state:state,repair:repair,work:work,workProgress:workProgress,accessible:accessible,isComplete:isComplete,reset:function(){if(spec.warehouse)g.HideoutWarehouse.setMaterialProgress(spec.warehouse,{});else {g.NPCSystem.setDemoFlag(key,{});g.NPCSystem.setDemoFlag(key+':work',0);}}};
  }
  function get(id){var spec=g.FacilityUnlockConfig.projects[id];if(!spec&&id.indexOf('warehouse:')===0){var uid=id.slice(10),e=g.HideoutWarehouse&&g.HideoutWarehouse.getUpgradeEntry(uid);if(e&&e.material_points)spec={id:id,title:e.name+' · 备料',warehouse:uid,groups:g.FacilityUnlockConfig.makeGroups(e.material_points)};}return spec?create(spec):null;}
  function canAccess(spec){

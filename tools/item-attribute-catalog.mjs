@@ -4,7 +4,7 @@ export const ITEM_ATTRIBUTE_SCHEMA_VERSION = 2;
 export const CATEGORY_GROUP_FIELDS = {
   base: {
     identity: ['name', 'name_0', 'name_1', 'name_2', 'sn', 'placeholder_name', 'fn_before', 'fn', 'desc', 'desc_0', 'desc_1', 'desc_2', 'display_skill_id'],
-    stacking: ['stack_limit', 'stack_max'],
+    stacking: ['stack_limit', 'stack_max', 'pocketable'],
     trade: ['base_value', 'price_class', 'volatility', 'region_restrict'],
     currency: ['accept_code', 'convert_to_high', 'usable_regions'],
     spoilage: ['spoilage_ticks'],

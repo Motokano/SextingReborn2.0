@@ -183,6 +183,9 @@
     function renderTooltipModulesHtml(args) {
         var tpl = args && args.tpl;
         var inst = args && args.inst;
+        if (inst && (inst.sewing || inst.sewing_parts) && global.SewingSystem) {
+            return '<div class="tooltip-modules"><div class="tooltip-module"><div class="tooltip-module-title">缝纫</div><div class="tooltip-module-text">' + esc(global.SewingSystem.describe(inst)).replace(/\n/g, '<br>') + '</div></div></div>';
+        }
         var setId = tpl && tpl.info_module_set_id ? String(tpl.info_module_set_id).trim() : '';
         if (!setId) return '';
         var set = getModuleSet(setId);

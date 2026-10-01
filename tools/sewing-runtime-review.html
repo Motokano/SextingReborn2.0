@@ -1,0 +1,17 @@
+<!doctype html><meta charset="utf-8"><title>缝纫运行界面验收（独立内存，不读写游戏存档）</title>
+<style>html,body{margin:0;height:100%;overflow:hidden;background:#19211c}iframe{display:block;width:100%;height:100%;border:0}</style>
+<script src="../js/item-attribute-modules.js"></script><script src="../js/sewing-system.js"></script><script src="../js/inventory-equipment.js"></script><script src="../js/facility-unlock-config.js"></script>
+<script>
+(async function(){
+let flags={sewing_scale_unlocked:true,sewing_station_unlocked:true,sewing_bucket_unlocked:true,sewing_bucket_stock:32,sewing_knowledge:{patterns:{},materials:{}}},stamina=1000,energy=1000,ticks=0;
+window.NPCSystem={getFlagValue:k=>flags[k],setDemoFlag:(k,v)=>flags[k]=v,isDemoFlagTrue:k=>!!flags[k],getDemoState:()=>JSON.parse(JSON.stringify(flags)),setDemoState:s=>flags=s};
+window.Survival={getState:()=>({gender_value:0}),getHeightCm:()=>178,getWeightKg:()=>65,getStamina:()=>stamina,getEnergy:()=>energy,consumeStamina:n=>stamina-=n,consumeEnergy:n=>energy-=n,advanceTick:()=>ticks++,setDiqiShieldRemaining:()=>{}};
+window.SaveSystem={saveNow:()=>true};window.GameEngine={getState:()=>({mapId:'M0_Base_Inside_lv_1',x:6,y:12})};
+const S=SewingSystem,IE=InventoryEquipment,items=ItemAttributeModules.hydrateCatalog(await (await fetch('../data/item-catalog-v2.json')).json());IE.setConfig({items,equipment:{bag:{item_id:'bag',equip_slot:'backpack',backpack_slots:120}},modules:{},default_equipment:{}});
+IE.setState({skills:{survival_language:{level:4}},equipment:{backpack:{item_id:'bag'}},inventory_backpack:[...Object.keys(S.materials).map(item_id=>({item_id,count:100})),...['silica_leaf','wood_plank_soft','textile_coir','textile_cotton_fiber','hus_wool'].map(item_id=>({item_id,count:20}))],inventory_pocket:[],inventory_vest:[],ground_items:{}});
+Object.keys(S.styles).forEach(s=>S.parts.forEach(p=>flags.sewing_knowledge.patterns[s+':'+p.replace(/_[lr]$/,'')]=3));Object.keys(S.materials).forEach(id=>flags.sewing_knowledge.materials[id]=S.materials[id][7]);flags.sewing_measurement=S.body();flags.sewing_mannequin_dimensions=S.body();
+IE.putItemIntoDefaultContainer(S.birthOutfit());IE.putItemIntoDefaultContainer(S.makePart('winter','chest',S.defaultPlan('winter','chest'),S.body(),'female',true));
+window.SewingStationPanel={isOpen:()=>true,canAccess:()=>true,close:()=>{S.cancel();document.body.textContent='验收界面已关闭，可刷新重新开始。';},snapshot:()=>({bucketUnlocked:true,bucket:flags.sewing_bucket_stock,leaves:IE.countCarriedItemsByTemplateId('silica_leaf'),measurement:flags.sewing_measurement,mannequin:flags.sewing_mannequin_dimensions}),refill:n=>{if(!Number.isInteger(n)||n<1||n>50-flags.sewing_bucket_stock||n>IE.countCarriedItemsByTemplateId('silica_leaf'))return {ok:false,message:'数量不合法'};IE.removeCarriedItemsByTemplateId('silica_leaf',n,{strict:true});flags.sewing_bucket_stock+=n;return {ok:true,message:'已添加硅叶。'};}};
+const f=document.createElement('iframe');f.title='正式缝纫界面验收';f.src='../sewing-station.html?no_reload=';document.body.append(f);
+})();
+</script>

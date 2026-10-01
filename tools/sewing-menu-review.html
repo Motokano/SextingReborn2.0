@@ -1,0 +1,16 @@
+<!doctype html><html lang="zh-CN"><meta charset="utf-8"><base href="../"><title>缝纫入口验收 · 独立内存</title>
+<link rel="stylesheet" href="css/game-theme.css"><link rel="stylesheet" href="css/game-theme-systems.css">
+<body class="ui-refined"><p>入口验收：独立内存，不读写游戏存档。</p><button onclick="reviewStage(0)">初始</button><button onclick="reviewStage(2)">首次测量</button><button onclick="reviewStage(4)">建成</button>
+<script>
+const memory=new Map();Object.defineProperty(window,'localStorage',{value:{getItem:k=>memory.get(k),setItem:(k,v)=>memory.set(k,v)}});
+</script><script src="js/npc-system.js"></script><script src="js/facility-unlock-config.js"></script>
+<script>
+const chain=['sewing_tape','sewing_scale','sewing_mannequin','sewing'];
+window.FacilityUnlock={get:id=>({spec:FacilityUnlockConfig.projects[id],isComplete:()=>NPCSystem.isDemoFlagTrue(FacilityUnlockConfig.projects[id].unlock),accessible:()=>true})};
+let panel=null;
+window.FacilityUnlockPanel={isOpen:()=>!!panel,open:(id,cb)=>{panel=document.createElement('div');panel.style='position:fixed;inset:20%;z-index:10000;padding:30px;background:#29352c;color:#ddd';panel.textContent='已进入：'+FacilityUnlockConfig.projects[id].title;const b=document.createElement('button');b.textContent='返回';b.onclick=()=>{panel.remove();panel=null;cb();};panel.append(b);document.body.append(panel);}};
+window.SewingSystem={measureAtTools:()=>{NPCSystem.setDemoFlag('sewing_measurement',{height_cm:170,weight_kg:60});return {ok:true,message:'测量完成'};}};
+window.SewingStationPanel={open:()=>false};
+function reviewStage(n){memory.clear();chain.slice(0,n).forEach(id=>NPCSystem.setDemoFlag(FacilityUnlockConfig.projects[id].unlock,true));NPCSystem.openMenu('npc.station.sewing_base');}
+reviewStage(0);
+</script></body></html>

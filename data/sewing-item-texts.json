@@ -1,0 +1,646 @@
+{
+  "schema_version": 1,
+  "status": "runtime_integrated",
+  "scope": "缝纫运行物品文案；配方与实例信息仍受知识和语言规则约束，不是自动公开图鉴。",
+  "display_contract": {
+    "references": [
+      "docs/design/01-philosophy.md",
+      "docs/design/63-item-attribute-modules.md",
+      "docs/design/66-item-assembly-information-and-ui.md"
+    ],
+    "language": {
+      "name_below_3": "placeholder_name",
+      "name_at_least_3": "sn",
+      "description_below_2": "",
+      "description_2_to_3": "fn_before",
+      "description_at_least_4": "fn"
+    },
+    "discovery": "未通过世界内途径发现的条目不列出，不显示剪影、隐藏条目数或未发现配方。语言等级只控制已发现物品的称呼与说明，不授予材料加工或版型制作权限。",
+    "observation": "外观文案仅写当前能观察的事实。随机颜色、材质、厚度、内层种类、硅叶状态不由固定描述猜测。部件归属、口袋和左右等须经过相应检查；未确认左右时使用不带左右的外观称呼。",
+    "cognition": "组合内部实际用料、配比、处理状态、适配尺寸和性能均单独过滤；学会版型不等于看穿拾取实例的填充，知道工艺不等于知道实例随机系数。",
+    "craft_record": "亲自完成制作、改造、浸泡或测量的事实可作为对应实例认识来源；发现、正式名称、工艺掌握、测量、性能认识分别保存。",
+    "integration": "复用getDisplayName/getDisplayDesc及逐字段认知过滤；当前语言显示函数本身不提供本配置需要的所有实例知识门控，不得把conditional_texts直接拼入fn。",
+    "existing_raw_materials": "羊毛、蚕茧、牛皮、羊皮沿用既有物品ID与认知文案；不重复注册、不自动鉴定。新增条目ID须在实施时与正式材料、部件模板对齐。"
+  },
+  "name_composition": {
+    "base": "先选择当前可见的基础称呼；未认识款式时使用外观名称，不填入隐藏的style_key。衣服及部件名称不附加性别剪裁或材料前缀，这两类属性统一归入信息显示的缝纫模块；面料物品本身仍使用其材料名称。",
+    "missing_format": "不完整的{base_name}",
+    "forbidden": [
+      "不从隐藏系数生成优质/劣质名称",
+      "不因未浸泡或低属性自动加废品前缀",
+      "不在标题暴露未知材料、填充配比、减伤、盾量或研究剩余次数",
+      "不把硅叶处理自动写成耐久系统或永久无条件防御"
+    ],
+    "runtime_examples": [
+      {
+        "facts": "轻便款已认识、女装剪裁已确认、外层麻布已认识",
+        "name": "轻便左短袖"
+      },
+      {
+        "facts": "上述认知尚未具备且语言不足",
+        "name": "一只短袖"
+      },
+      {
+        "facts": "整体不同款式组合已确认，四男装两女装均已检查",
+        "name": "混装衣服"
+      }
+    ]
+  },
+  "conditional_texts": {
+    "outer_material": {
+      "requires": "outer_material_recognized",
+      "text": "外层采用{material_name}。",
+      "module": "sewing"
+    },
+    "lining_material": {
+      "requires": "lining_material_recognized",
+      "text": "内衬采用{material_name}。",
+      "module": "sewing"
+    },
+    "filling_single": {
+      "requires": "filling_material_recognized",
+      "text": "里面填入了{material_name}。",
+      "module": "sewing"
+    },
+    "filling_mixed": {
+      "requires": "both_filling_materials_and_ratio_known",
+      "text": "填充为{material_a}与{material_b}，配比{ratio_a}%与{ratio_b}%。",
+      "module": "sewing"
+    },
+    "filling_present": {
+      "requires": "filling_presence_observed",
+      "text": "能摸出内外层之间夹有填充物。",
+      "module": "sewing"
+    },
+    "fit_good": {
+      "requires": "worn_or_fit_checked",
+      "text": "穿上后，衣身长度与围度都合适。"
+    },
+    "fit_fair": {
+      "requires": "worn_or_fit_checked",
+      "text": "穿上后，有些部位松紧或长短不太合适。"
+    },
+    "fit_poor": {
+      "requires": "worn_or_fit_checked",
+      "text": "穿上后，松紧或长短明显不合适。"
+    },
+    "size": {
+      "requires": "instance_size_measured_or_made",
+      "text": "按记录中的身高{height_cm}厘米、体重{weight_kg}公斤制作或改过尺寸。"
+    },
+    "pattern_researched": {
+      "requires": "own_pattern_research_record",
+      "text": "你已经研究过这件部件的版型。"
+    },
+    "pattern_can_modify": {
+      "requires": "pattern_modification_known",
+      "text": "你已掌握这个版型的改造方法。"
+    },
+    "pattern_can_reproduce": {
+      "requires": "pattern_reproduction_known",
+      "text": "你已掌握这个版型的制作方法。"
+    },
+    "material_can_process": {
+      "requires": "material_process_mastered",
+      "text": "你已掌握{material_name}的加工方法。"
+    },
+    "silica_leaf_use": {
+      "requires": "silica_treatment_use_known",
+      "text": "硅叶可装入浸泡桶，在处理衣服部件时消耗。"
+    },
+    "bucket_capacity": {
+      "requires": "bucket_unlocked_or_capacity_checked",
+      "text": "最多容纳50份硅叶。"
+    },
+    "bucket_stock": {
+      "requires": "bucket_stock_checked",
+      "text": "桶内现有硅叶{count}份。"
+    },
+    "silica_treated": {
+      "requires": "instance_treatment_record_known",
+      "text": "这个部件已完成硅叶浸泡处理。"
+    },
+    "silica_untreated": {
+      "requires": "instance_untreated_state_known",
+      "text": "这个部件尚未进行硅叶浸泡处理。"
+    },
+    "shield": {
+      "requires": "shield_contribution_known",
+      "text": "激活后，向整套护盾提供{shield}点盾量。"
+    },
+    "reduction": {
+      "requires": "activated_reduction_known",
+      "text": "激活后的本部位防护：劈砍{slash}%，穿刺{pierce}%，钝击{blunt}%。"
+    },
+    "warmth": {
+      "requires": "thermal_effect_known",
+      "text": "耐寒范围修正{cold_text}；耐热范围修正{heat_text}。"
+    },
+    "silica_activation_use": {
+      "requires": "silica_activation_known",
+      "text": "硅叶处理的防护需要激活，护盾耗尽后失效。"
+    },
+    "cut_male": {
+      "requires": "cut_recognized",
+      "text": "采用男装剪裁。",
+      "module": "sewing"
+    },
+    "cut_female": {
+      "requires": "cut_recognized",
+      "text": "采用女装剪裁。",
+      "module": "sewing"
+    },
+    "outfit_complete": {
+      "requires": "complete_style_recognized",
+      "text": "六个部件采用同一款式。"
+    },
+    "outfit_mixed": {
+      "requires": "mixed_styles_recognized",
+      "text": "这套衣服组合了不同款式的部件。"
+    }
+  },
+  "entries": {
+    "textile_cotton_fiber": {
+      "kind": "raw",
+      "runtime_status": "registered",
+      "identity": {
+        "sn": "棉纤维",
+        "placeholder_name": "松软的纤维团",
+        "fn_before": "一团轻软的纤维，捏拢后会慢慢松开。",
+        "fn": "整理过的棉纤维，团在一起，能用手拉开。"
+      }
+    },
+    "textile_hemp_fiber": {
+      "kind": "raw",
+      "runtime_status": "registered",
+      "identity": {
+        "sn": "麻纤维",
+        "placeholder_name": "成束的长纤维",
+        "fn_before": "一束较长的纤维，表面粗糙，末端散成细丝。",
+        "fn": "整理成束的麻纤维，纤维较长，摸起来有些粗涩。"
+      }
+    },
+    "silica_leaf": {
+      "kind": "raw",
+      "runtime_status": "registered",
+      "identity": {
+        "sn": "硅叶",
+        "placeholder_name": "灰绿叶片",
+        "fn_before": "一撮灰绿色的叶片，叶脉清晰，边缘略有卷曲。",
+        "fn": "硅叶的叶片，灰绿色，叶面带着清晰的脉纹。"
+      }
+    },
+    "textile_cotton_cloth": {
+      "kind": "fabric",
+      "runtime_status": "registered",
+      "identity": {
+        "sn": "棉布",
+        "placeholder_name": "柔软的织布",
+        "fn_before": "一块柔软的织物，表面能看到细密的经纬纹。",
+        "fn": "棉纤维织成的布，布面平实，折叠处容易留下折痕。"
+      }
+    },
+    "textile_hemp_cloth": {
+      "kind": "fabric",
+      "runtime_status": "registered",
+      "identity": {
+        "sn": "麻布",
+        "placeholder_name": "粗纹织布",
+        "fn_before": "一块织纹清楚的布，表面有细小的不平处，摸起来较粗。",
+        "fn": "麻纤维织成的布，经纬纹路清楚，布面略显粗涩。"
+      }
+    },
+    "textile_wool_cloth": {
+      "kind": "fabric",
+      "runtime_status": "registered",
+      "identity": {
+        "sn": "毛呢",
+        "placeholder_name": "带绒面的织物",
+        "fn_before": "一块表面带短绒的织物，用手拂过，绒毛会顺着方向倒伏。",
+        "fn": "羊毛制成的毛呢，表面覆有短绒，折起时能看到布边的厚实断面。"
+      }
+    },
+    "textile_silk_cloth": {
+      "kind": "fabric",
+      "runtime_status": "registered",
+      "identity": {
+        "sn": "丝织料",
+        "placeholder_name": "细滑的织物",
+        "fn_before": "一块细滑的织物，转动角度时，布面反光会随之变化。",
+        "fn": "丝织面料，织纹细，布面有柔和的光泽。"
+      }
+    },
+    "leather_cow_soft": {
+      "kind": "fabric",
+      "runtime_status": "registered",
+      "identity": {
+        "sn": "服装软牛皮",
+        "placeholder_name": "柔软的皮料",
+        "fn_before": "一片处理过的皮料，可以弯折，边缘露出紧密的纤维断面。",
+        "fn": "经过软化处理的牛皮，表面与背面的纹理不同，可弯折成形。"
+      }
+    },
+    "leather_sheep_soft": {
+      "kind": "fabric",
+      "runtime_status": "registered",
+      "identity": {
+        "sn": "服装软羊皮",
+        "placeholder_name": "细软的皮料",
+        "fn_before": "一片柔软的皮料，表面纹理细，捏起时容易形成褶皱。",
+        "fn": "经过软化处理的羊皮，触感细软，弯折处形成细密的褶纹。"
+      }
+    },
+    "filling_cotton": {
+      "kind": "filling",
+      "runtime_status": "registered",
+      "identity": {
+        "sn": "棉填充",
+        "placeholder_name": "松软的絮团",
+        "fn_before": "一团蓬松的絮料，能轻轻扯开，纤维缠连在一起。",
+        "fn": "整理成絮状的棉填充，按压后会缓慢松开。"
+      }
+    },
+    "filling_wool": {
+      "kind": "filling",
+      "runtime_status": "registered",
+      "identity": {
+        "sn": "羊毛填充",
+        "placeholder_name": "卷曲的絮料",
+        "fn_before": "一团略带卷曲的纤维，拨开后能看见互相勾连的细毛。",
+        "fn": "整理后的羊毛填充，卷曲的纤维交错在一起。"
+      }
+    },
+    "filling_silk": {
+      "kind": "filling",
+      "runtime_status": "registered",
+      "identity": {
+        "sn": "丝绵填充",
+        "placeholder_name": "细丝连成的絮料",
+        "fn_before": "细丝缠连成松软的一团，轻拉边缘会带出薄薄的一层。",
+        "fn": "整理成絮片的丝绵填充，细丝彼此牵连，边缘能拉开成薄层。"
+      }
+    },
+    "sewing_tape_measure": {
+      "kind": "facility_component",
+      "runtime_status": "registered",
+      "identity": {
+        "sn": "皮尺",
+        "placeholder_name": "带刻线的软带",
+        "fn_before": "一条可以卷起的软带，上面排着间隔均匀的刻线。",
+        "fn": "量尺寸用的皮尺，可以贴着身体弯曲。"
+      }
+    },
+    "sewing_body_scale": {
+      "kind": "facility_component",
+      "runtime_status": "registered",
+      "identity": {
+        "sn": "体重秤",
+        "placeholder_name": "带刻度的踏板",
+        "fn_before": "一块平整的踏板，旁边有指示读数的刻度。",
+        "fn": "称量体重的秤，读数需要在实际称量后取得。"
+      }
+    },
+    "sewing_mannequin": {
+      "kind": "facility_component",
+      "runtime_status": "registered",
+      "identity": {
+        "sn": "人台",
+        "placeholder_name": "人形支架",
+        "fn_before": "一个没有头和手脚的人形支架，躯干和四肢的轮廓可以看清。",
+        "fn": "缝制服装用的人台，轮廓按照上次调整的尺寸固定。"
+      }
+    },
+    "sewing_workbench": {
+      "kind": "facility_component",
+      "runtime_status": "registered",
+      "identity": {
+        "sn": "缝纫台",
+        "placeholder_name": "带针线装置的工作台",
+        "fn_before": "台面上装着针线机构，旁边留有铺开布料的位置。",
+        "fn": "处理衣物的缝纫台，台面可用于查看衣片、裁制和缝合。"
+      }
+    },
+    "sewing_soaking_bucket": {
+      "kind": "facility_component",
+      "runtime_status": "registered",
+      "identity": {
+        "sn": "浸泡桶",
+        "placeholder_name": "宽口桶",
+        "fn_before": "一只宽口的桶，可以看见桶口和内壁。",
+        "fn": "缝纫台配套的浸泡桶，可以放入待处理的衣服部件。"
+      }
+    },
+    "sewing_part_light_chest": {
+      "kind": "garment_part",
+      "runtime_status": "registered",
+      "identity": {
+        "sn": "轻便上衣胸片",
+        "placeholder_name": "带领口的上衣上部",
+        "fn_before": "领口和两侧肩部连在一起，下缘留着与衣身接合的边。",
+        "fn": "轻便款上衣的胸片，包含领口、肩部与对应背片。"
+      },
+      "style_key": "light",
+      "body_part": "chest"
+    },
+    "sewing_part_light_abdomen": {
+      "kind": "garment_part",
+      "runtime_status": "registered",
+      "identity": {
+        "sn": "轻便上衣腹片",
+        "placeholder_name": "上衣下摆部分",
+        "fn_before": "前后衣片连着下摆，上缘留有与上衣接合的边。",
+        "fn": "轻便款上衣的腹片，包含下半衣身与下摆。"
+      },
+      "style_key": "light",
+      "body_part": "abdomen"
+    },
+    "sewing_part_light_arm_l": {
+      "kind": "garment_part",
+      "runtime_status": "registered",
+      "identity": {
+        "sn": "轻便左短袖",
+        "placeholder_name": "一只短袖",
+        "fn_before": "袖口较宽，袖身较短，另一端留有接合边。",
+        "fn": "轻便款左侧短袖，袖身只延伸到上臂一段。"
+      },
+      "style_key": "light",
+      "body_part": "arm_l"
+    },
+    "sewing_part_light_arm_r": {
+      "kind": "garment_part",
+      "runtime_status": "registered",
+      "identity": {
+        "sn": "轻便右短袖",
+        "placeholder_name": "一只短袖",
+        "fn_before": "袖口较宽，袖身较短，另一端留有接合边。",
+        "fn": "轻便款右侧短袖，袖身只延伸到上臂一段。"
+      },
+      "style_key": "light",
+      "body_part": "arm_r"
+    },
+    "sewing_part_light_leg_l": {
+      "kind": "garment_part",
+      "runtime_status": "registered",
+      "identity": {
+        "sn": "轻便左裤腿",
+        "placeholder_name": "一条长裤腿",
+        "fn_before": "裤腿向上连着一段腰头与裤裆衣片，能看到两个袋口。",
+        "fn": "轻便款左裤腿，带侧袋和后袋各一个。"
+      },
+      "style_key": "light",
+      "body_part": "leg_l"
+    },
+    "sewing_part_light_leg_r": {
+      "kind": "garment_part",
+      "runtime_status": "registered",
+      "identity": {
+        "sn": "轻便右裤腿",
+        "placeholder_name": "一条长裤腿",
+        "fn_before": "裤腿向上连着一段腰头与裤裆衣片，能看到两个袋口。",
+        "fn": "轻便款右裤腿，带侧袋和后袋各一个。"
+      },
+      "style_key": "light",
+      "body_part": "leg_r"
+    },
+    "sewing_part_work_chest": {
+      "kind": "garment_part",
+      "runtime_status": "registered",
+      "identity": {
+        "sn": "工装上衣胸片",
+        "placeholder_name": "带口袋的上衣上部",
+        "fn_before": "领口和肩部相连，前面有两个袋口，下缘留着接合边。",
+        "fn": "工装款上衣的胸片，带两个胸袋。"
+      },
+      "style_key": "work",
+      "body_part": "chest"
+    },
+    "sewing_part_work_abdomen": {
+      "kind": "garment_part",
+      "runtime_status": "registered",
+      "identity": {
+        "sn": "工装上衣腹片",
+        "placeholder_name": "带口袋的衣身下部",
+        "fn_before": "衣身下部连着下摆，两侧能看见袋口。",
+        "fn": "工装款上衣的腹片，带两个下摆口袋。"
+      },
+      "style_key": "work",
+      "body_part": "abdomen"
+    },
+    "sewing_part_work_arm_l": {
+      "kind": "garment_part",
+      "runtime_status": "registered",
+      "identity": {
+        "sn": "工装左长袖",
+        "placeholder_name": "一只长袖",
+        "fn_before": "袖身较长，一端是袖口，另一端留着接合边。",
+        "fn": "工装款左侧长袖，从肩部延伸至袖口。"
+      },
+      "style_key": "work",
+      "body_part": "arm_l"
+    },
+    "sewing_part_work_arm_r": {
+      "kind": "garment_part",
+      "runtime_status": "registered",
+      "identity": {
+        "sn": "工装右长袖",
+        "placeholder_name": "一只长袖",
+        "fn_before": "袖身较长，一端是袖口，另一端留着接合边。",
+        "fn": "工装款右侧长袖，从肩部延伸至袖口。"
+      },
+      "style_key": "work",
+      "body_part": "arm_r"
+    },
+    "sewing_part_work_leg_l": {
+      "kind": "garment_part",
+      "runtime_status": "registered",
+      "identity": {
+        "sn": "工装左裤腿",
+        "placeholder_name": "带口袋的长裤腿",
+        "fn_before": "一条长裤腿，上端连着腰头与裤裆衣片，侧面有一个袋口。",
+        "fn": "工装款左裤腿，带一个口袋。"
+      },
+      "style_key": "work",
+      "body_part": "leg_l"
+    },
+    "sewing_part_work_leg_r": {
+      "kind": "garment_part",
+      "runtime_status": "registered",
+      "identity": {
+        "sn": "工装右裤腿",
+        "placeholder_name": "带口袋的长裤腿",
+        "fn_before": "一条长裤腿，上端连着腰头与裤裆衣片，侧面有一个袋口。",
+        "fn": "工装款右裤腿，带一个口袋。"
+      },
+      "style_key": "work",
+      "body_part": "leg_r"
+    },
+    "sewing_part_winter_chest": {
+      "kind": "garment_part",
+      "runtime_status": "registered",
+      "identity": {
+        "sn": "御寒上衣胸片",
+        "placeholder_name": "带高领的上衣上部",
+        "fn_before": "领口立得较高，两侧连着肩部，下缘留有接合边。",
+        "fn": "御寒款上衣的胸片，包含高领、肩部与对应背片。"
+      },
+      "style_key": "winter",
+      "body_part": "chest"
+    },
+    "sewing_part_winter_abdomen": {
+      "kind": "garment_part",
+      "runtime_status": "registered",
+      "identity": {
+        "sn": "御寒上衣腹片",
+        "placeholder_name": "收口的衣身下部",
+        "fn_before": "衣身下端收拢，两侧各有一个袋口。",
+        "fn": "御寒款上衣的腹片，带收紧下摆和两个口袋。"
+      },
+      "style_key": "winter",
+      "body_part": "abdomen"
+    },
+    "sewing_part_winter_arm_l": {
+      "kind": "garment_part",
+      "runtime_status": "registered",
+      "identity": {
+        "sn": "御寒左长袖",
+        "placeholder_name": "收口长袖",
+        "fn_before": "袖身较长，袖口收拢，另一端留有接合边。",
+        "fn": "御寒款左侧长袖，袖口采用收紧结构。"
+      },
+      "style_key": "winter",
+      "body_part": "arm_l"
+    },
+    "sewing_part_winter_arm_r": {
+      "kind": "garment_part",
+      "runtime_status": "registered",
+      "identity": {
+        "sn": "御寒右长袖",
+        "placeholder_name": "收口长袖",
+        "fn_before": "袖身较长，袖口收拢，另一端留有接合边。",
+        "fn": "御寒款右侧长袖，袖口采用收紧结构。"
+      },
+      "style_key": "winter",
+      "body_part": "arm_r"
+    },
+    "sewing_part_winter_leg_l": {
+      "kind": "garment_part",
+      "runtime_status": "registered",
+      "identity": {
+        "sn": "御寒左裤腿",
+        "placeholder_name": "收口长裤腿",
+        "fn_before": "一条裤脚收拢的长裤腿，上端有腰头衣片和一个袋口。",
+        "fn": "御寒款左裤腿，裤脚收拢，带一个口袋。"
+      },
+      "style_key": "winter",
+      "body_part": "leg_l"
+    },
+    "sewing_part_winter_leg_r": {
+      "kind": "garment_part",
+      "runtime_status": "registered",
+      "identity": {
+        "sn": "御寒右裤腿",
+        "placeholder_name": "收口长裤腿",
+        "fn_before": "一条裤脚收拢的长裤腿，上端有腰头衣片和一个袋口。",
+        "fn": "御寒款右裤腿，裤脚收拢，带一个口袋。"
+      },
+      "style_key": "winter",
+      "body_part": "leg_r"
+    },
+    "sewing_outfit_light": {
+      "kind": "outfit",
+      "runtime_status": "registered",
+      "identity": {
+        "sn": "轻便套装",
+        "placeholder_name": "短袖衣裤",
+        "fn_before": "一件短袖上衣配着长裤，领口、袖口和裤脚都能看清。",
+        "fn": "轻便款短袖上衣与长裤组成的一套衣服。"
+      },
+      "style_key": "light"
+    },
+    "sewing_outfit_work": {
+      "kind": "outfit",
+      "runtime_status": "registered",
+      "identity": {
+        "sn": "工装套装",
+        "placeholder_name": "多口袋长袖衣裤",
+        "fn_before": "长袖上衣配着长裤，衣身和裤子上分布着几个袋口。",
+        "fn": "工装款长袖外套与长裤组成的一套衣服。"
+      },
+      "style_key": "work"
+    },
+    "sewing_outfit_winter": {
+      "kind": "outfit",
+      "runtime_status": "registered",
+      "identity": {
+        "sn": "御寒套装",
+        "placeholder_name": "高领收口衣裤",
+        "fn_before": "高领上衣配着长裤，袖口、下摆和裤脚都有收紧的结构。",
+        "fn": "御寒款高领外套与收口长裤组成的一套衣服。"
+      },
+      "style_key": "winter"
+    },
+    "sewing_outfit_mixed": {
+      "kind": "outfit",
+      "runtime_status": "registered",
+      "identity": {
+        "sn": "混装衣服",
+        "placeholder_name": "拼接衣裤",
+        "fn_before": "衣身、袖子和裤腿接在一起，各处的剪裁不尽相同。",
+        "fn": "由不同款式的衣服部件组合而成的衣裤。"
+      }
+    }
+  },
+  "information_modules": {
+    "sewing": {
+      "label": "缝纫",
+      "status": "runtime_integrated",
+      "visibility": "先逐字段进行认知过滤，再生成信息显示；没有可见字段时不显示模块标题，不用未知占位暴露内部材料或层数。",
+      "scope": "衣服及衣服部件的性别剪裁与各层材料属性；不改变人物性别数据，也不把人台尺寸记录变成性别设定。",
+      "fields": {
+        "cut": {
+          "label": "版型性别",
+          "requires": "cut_recognized",
+          "male": "男装",
+          "female": "女装",
+          "mixed": "混合版型",
+          "rule": "整套按实际部件严格过半，平票为混合版型；未认识足够部件剪裁时不显示整体标签。人台不带该标签。"
+        },
+        "outer_material": {
+          "label": "外层",
+          "requires": "outer_material_recognized",
+          "text_key": "outer_material"
+        },
+        "lining_material": {
+          "label": "内衬",
+          "requires": "lining_material_recognized",
+          "text_key": "lining_material"
+        },
+        "filling_material": {
+          "label": "填充",
+          "requires": "filling_material_recognized",
+          "text_key": "filling_single"
+        },
+        "filling_mix": {
+          "label": "填充配比",
+          "requires": "both_filling_materials_and_ratio_known",
+          "text_key": "filling_mixed"
+        },
+        "filling_presence": {
+          "label": "填充观察",
+          "requires": "filling_presence_observed",
+          "text_key": "filling_present"
+        }
+      },
+      "outfit_materials": "整套按已认识的部件分别展示各层实际用料，不将不同部件用料合并成一种整套材质；材料名称与配比独立按认知显示。",
+      "examples": [
+        {
+          "name": "轻便左短袖",
+          "sewing": {
+            "版型性别": "女装",
+            "外层": "麻布"
+          }
+        }
+      ]
+    }
+  }
+}

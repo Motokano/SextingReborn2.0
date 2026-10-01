@@ -1075,6 +1075,9 @@
             var tier = IE.getItemDisplayTier(it.item_id, char);
             body.textContent = tpl ? IE.getDisplayName(tpl, tier, char).slice(0, 2) : it.item_id.slice(0, 2);
             var name = tpl ? IE.getDisplayName(tpl, tier, char) : it.item_id;
+            if ((it.sewing || it.sewing_parts) && window.SewingSystem) {
+                name = window.SewingSystem.itemName(it); body.textContent = name.slice(0, 2);
+            }
             var desc = tpl ? IE.getDisplayDesc(tpl, tier, char) : '';
             var tipHtml = '';
             if (window.SceneApp && typeof window.SceneApp.buildItemTooltipHtmlForTemplate === 'function') {

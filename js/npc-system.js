@@ -890,7 +890,7 @@
             '<div style="position:absolute; left:50%; top:50%; transform:translate(-50%,-50%); width:320px; background:#252525; border:1px solid #444; border-radius:8px; padding:14px;">' +
             '  <div id="npc-menu-title" style="color:#ddd; font-weight:bold; margin-bottom:10px;">NPC</div>' +
             '  <div id="npc-menu-buttons" style="display:flex; gap:8px; flex-wrap:wrap;"></div>' +
-            '  <div style="margin-top:10px; color:#666; font-size:12px;">' + tUi('npc.menu.close_hint') + '</div>' +
+            '  <div id="npc-menu-hint" role="status" style="margin-top:10px; color:#aaa; font-size:12px; line-height:1.6;">' + tUi('npc.menu.close_hint') + '</div>' +
             '</div>';
         document.body.appendChild(menuEl);
         menuEl.addEventListener('click', function (e) { if (e.target === menuEl) closeMenu(); });
@@ -930,6 +930,8 @@
             if (title) title.textContent = def.displayTitle || def.name || 'NPC';
             if (!btnWrap) return;
             btnWrap.innerHTML = '';
+            var menuHint = document.getElementById('npc-menu-hint');
+            if (menuHint) menuHint.textContent = tUi('npc.menu.close_hint', '需要靠近才能操作。');
 
             function mkBtn(text, onClick) {
                 var b = document.createElement('button');
@@ -943,6 +945,59 @@
                 b.style.cursor = 'pointer';
                 b.onclick = onClick;
                 return b;
+            }
+
+            // Sewing follows its construction stage instead of listing every locked tool.
+            if (def.id === 'npc.station.sewing_base') {
+                function hint(text) { if (menuHint) menuHint.textContent = text; }
+                function reopen() { openMenu(npcId); }
+                btnWrap.appendChild(mkBtn('查看缝纫台', function () {
+                    var progress = menuHint ? menuHint.textContent : '';
+                    loadDialoguePoolsForNpc(npcId).then(function (doc) {
+                        var line = pickFallbackLineFromDoc(def.fallbackDialoguePoolId, doc);
+                        var text = typeof line === 'string' ? line : line && line.text;
+                        if (!text) { hint('装配说明暂时无法读取，请重试。'); return; }
+                        text += '\n\n' + progress;
+                        if (!global.DialogueUI) { hint(text); return; }
+                        closeMenu();
+                        global.DialogueUI.playLinesRich([{speaker:'npc',text:text,avatar:''}], {
+                            npcId:def.id,npcName:def.displayTitle || def.name,
+                            playerName:getPlayerName(),onQueueExhausted:reopen
+                        });
+                    });
+                }));
+                if (global.NPCSystem.isDemoFlagTrue('sewing_station_unlocked')) {
+                    hint('测量、人台与浸泡桶均在缝纫界面内管理。');
+                    btnWrap.appendChild(mkBtn('使用缝纫台', function () {
+                        if (global.SewingStationPanel && global.SewingStationPanel.open()) closeMenu();
+                        else hint('未能打开，请靠近缝纫台并关闭其他工作台界面后重试。');
+                    }));
+                } else {
+                    var next = ['sewing_tape','sewing_scale','sewing_mannequin','sewing'].map(function (id) {
+                        return global.FacilityUnlock && global.FacilityUnlock.get(id);
+                    }).find(function (p) { return p && !p.isComplete(); });
+                    var measured = global.NPCSystem.getFlagValue('sewing_measurement');
+                    if (next && next.spec.id === 'sewing_mannequin' && !(measured && measured.weight_kg > 0)) {
+                        hint('皮尺和体重秤已备齐。先记录身材，再按尺寸装配人台。');
+                        btnWrap.appendChild(mkBtn('测量身材 · 10分钟', function () {
+                            var r = global.SewingSystem.measureAtTools();
+                            if (r.ok) reopen(); else hint(r.message);
+                        }));
+                    } else if (next) {
+                        hint('下一步：' + next.spec.title + '。进入后查看材料需求与装配进度。');
+                        btnWrap.appendChild(mkBtn(next.spec.title, function () {
+                            if (!next.accessible()) { hint('请靠近缝纫台后操作。'); return; }
+                            if (!global.FacilityUnlockPanel || global.FacilityUnlockPanel.isOpen()) {
+                                hint('请先关闭其他装配界面后重试。'); return;
+                            }
+                            global.FacilityUnlockPanel.open(next.spec.id, reopen);
+                            if (global.FacilityUnlockPanel.isOpen()) closeMenu();
+                            else hint('装配界面未能打开，请关闭其他工作台界面后重试。');
+                        }));
+                    } else hint('缝纫台数据尚未就绪，请重新进入。');
+                }
+                btnWrap.appendChild(mkBtn('离开', closeMenu));
+                return;
             }
 
             function shouldShowOpenCookingPanelButton(def0) {
@@ -1274,14 +1329,21 @@
                 Object.keys(global.FacilityUnlockConfig.projects).forEach(function (id) {
                     var spec = global.FacilityUnlockConfig.projects[id];
                     setFlag(spec.key || ('facility_progress:' + id), {});
+                    if (spec.workTicks) setFlag((spec.key || ('facility_progress:' + id)) + ':work', 0);
                     setFlag(spec.unlock, false);
                 });
                 global.FacilityUnlockConfig.materials.forEach(function (m) { setFlag('repair_use_known:' + m[0], false); });
             }
             if (global.ToolbenchPanel) global.ToolbenchPanel.close();
+            if (global.SewingStationPanel) global.SewingStationPanel.close();
             if (global.FacilityLaborPanel) global.FacilityLaborPanel.dismiss();
             if (global.FacilityLabor) global.FacilityLabor.reset();
             if (global.CookingRepair) global.CookingRepair.reset();
+            setFlag('sewing_bucket_stock', 0);
+            setFlag('sewing_knowledge', {patterns:{},materials:{}});
+            setFlag('sewing_gathering_uses', {});
+            setFlag('sewing_measurement', null);
+            setFlag('sewing_mannequin_dimensions', null);
             setFlag('cooking_base_station_unlocked', false);
             setFlag('cooking_base_station_repair_briefed', false);
             removeTriggered('station.cooking.repair_intro');

@@ -15,5 +15,11 @@ add('temperature','装配温度计',{wood:4,metal:4,parts:2},'observation_temper
 projects.calendar.toolbench=true;projects.temperature.toolbench=true;
 add('agriculture','恢复农业设施',{stone:6,wood:4},'facility_restored:agriculture',[10,15],'facility_cleaned:agriculture');
 add('livestock','恢复牧场装置',{metal:8,wood:8,parts:4},'facility_restored:livestock',[9,15],'facility_cleaned:livestock');
+add('sewing_tape','装配皮尺',{metal:2,fiber:2},'sewing_tape_unlocked',[6,11]);
+add('sewing_scale','装配体重秤',{wood:8,metal:8},'sewing_scale_unlocked',[6,11],'sewing_tape_unlocked');
+add('sewing_mannequin','装配人台',{wood:8,fiber:4},'sewing_mannequin_unlocked',[6,11],'sewing_scale_unlocked');
+add('sewing','装配缝纫台',{wood:20,metal:16},'sewing_station_unlocked',[6,11],'sewing_mannequin_unlocked');
+add('sewing_bucket','装配浸泡桶',{wood:8,metal:4,fiber:2},'sewing_bucket_unlocked',[6,11],'sewing_station_unlocked');
+['sewing_tape','sewing_scale','sewing_mannequin','sewing','sewing_bucket'].forEach(function(id,i){projects[id].workTicks=[2,4,6,12,4][i];});
 g.FacilityUnlockConfig={projects:projects,materials:materials,makeGroups:makeGroups};
 })(window);

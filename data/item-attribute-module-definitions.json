@@ -23,7 +23,8 @@
         "stacking": {
           "fields": [
             "stack_limit",
-            "stack_max"
+            "stack_max",
+            "pocketable"
           ]
         },
         "trade": {

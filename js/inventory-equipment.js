@@ -174,6 +174,10 @@
      */
     function forEachItemInstanceChild(inst, callback) {
         if (!inst || typeof inst !== 'object' || typeof callback !== 'function') return;
+        Object.keys(inst.sewing_parts || {}).forEach(function (key) {
+            var child = inst.sewing_parts[key];
+            if (child && child.item_id) callback(child, '.sewing_parts.' + key, 'sewing', key);
+        });
         if (inst.modules && typeof inst.modules === 'object') {
             for (var moduleKey in inst.modules) {
                 if (!Object.prototype.hasOwnProperty.call(inst.modules, moduleKey)) continue;
@@ -785,7 +789,8 @@
         if (!eq || !eq.item_id) return { baseShield: 0, moduleCostSum: 0, equipped: false };
         var tpl = getItemTemplate(eq.item_id);
         if (!tpl || tpl.base_shield == null) return { baseShield: 0, moduleCostSum: 0, equipped: false };
-        var baseShield = Number(tpl.base_shield) || 0;
+        var sewing = eq.sewing_parts && global.SewingSystem ? global.SewingSystem.outfitStats(eq) : null;
+        var baseShield = sewing ? sewing.shield : Number(tpl.base_shield) || 0;
         var costSum = 0;
         if (eq.modules && typeof eq.modules === 'object') {
             for (var pk in eq.modules) {
@@ -795,7 +800,7 @@
                 if (mTpl && mTpl.activation_cost_pct != null) costSum += Number(mTpl.activation_cost_pct) || 0;
             }
         }
-        return { baseShield: baseShield, moduleCostSum: costSum, equipped: true };
+        return { baseShield: baseShield, moduleCostSum: costSum, discount: sewing ? sewing.discount : 0, equipped: true };
     }
 
     /** 单模块对某伤害类型的减伤比例（基础 effects + 附魔，乘算，08 防具×词条口径） */
@@ -841,8 +846,26 @@
         var plateKey = HIT_PART_TO_PLATE[hitPart];
         if (!plateKey) return 0;
         var inst = getInstalledModuleAt('clothing', plateKey.slice('clothing.'.length));
+        var clothing = state.equipment.clothing;
+        if (clothing && clothing.sewing_parts && global.SewingSystem) {
+            var keep = 1;
+            modulesCovering('clothing', plateKey.slice(9)).forEach(function (m) { keep *= 1 - moduleReduceForDamageType(m, damageType); });
+            return global.SewingSystem.reduce(clothing, plateKey.slice(9), damageType, 1-keep);
+        }
         if (!inst) return 0;
         return moduleReduceForDamageType(inst, damageType);
+    }
+
+    function modulesCovering(slotId, plate) {
+        var result = [], target = slotId + '.' + plate;
+        ['head','clothing'].forEach(function (host) {
+            var eq = state.equipment[host];
+            Object.keys(eq && eq.modules || {}).forEach(function (key) {
+                var m = eq.modules[key], tpl = m && getModuleTemplate(m.item_id);
+                if (m && (host + '.' + key === target || tpl && Array.isArray(tpl.occupies) && tpl.occupies.indexOf(target) >= 0)) result.push(m);
+            });
+        });
+        return result;
     }
 
     // ---- 眩晕累积（37 §9.2，k13）----
@@ -1084,15 +1107,40 @@
     }
 
     /** 当前装备提供的口袋格数（来自衣服） */
+    function migrateSewingEquipment() {
+        if (state.sewing_version >= 1 || !global.SewingSystem || !global.Survival) return false;
+        var SS = global.SewingSystem, size = SS.body(), outfit = state.equipment.clothing;
+        if (outfit && !outfit.sewing_parts) {
+            var oldTemplate = getItemTemplate(outfit.item_id), style = oldTemplate && oldTemplate.pocket_slots > 4 ? 'work' : 'light';
+            outfit.legacy_sewing_item_id = outfit.item_id;
+            outfit.item_id = 'sewing_outfit_' + style;
+            outfit.sewing_parts = {};
+            SS.parts.forEach(function (p) { outfit.sewing_parts[p] = SS.makePart(style, p, SS.defaultPlan(style, p), size, size.gender_value === 100 ? 'female' : 'male', true); });
+        }
+        var displaced = state.inventory_vest.filter(Boolean), vest = state.equipment.vest;
+        state.inventory_vest = []; state.equipment.vest = null;
+        if (vest) displaced.push(vest);
+        var limit = getPocketSlots();
+        displaced = displaced.concat(state.inventory_pocket.slice(limit).filter(Boolean));
+        state.inventory_pocket = state.inventory_pocket.slice(0, limit);
+        var pos = global.GameEngine.getState();
+        displaced.forEach(function (item) { if (!putItemIntoDefaultContainer(item).placed) addItemToGround(pos.mapId, pos.x, pos.y, item); });
+        state.sewing_version = 1;
+        global.Survival.setDiqiShieldRemaining(0);
+        return true;
+    }
+
     function getPocketSlots() {
         var clothing = state.equipment.clothing;
         if (!clothing || !clothing.item_id) return 0;
+        if (clothing.sewing_parts && global.SewingSystem) return global.SewingSystem.outfitStats(clothing).pockets;
         var tpl = getItemTemplate(clothing.item_id);
         return (tpl && tpl.pocket_slots != null) ? Math.max(0, parseInt(tpl.pocket_slots, 10)) : 0;
     }
 
     /** 当前装备提供的背心格数 */
     function getVestSlots() {
+        if (state.equipment.clothing && state.equipment.clothing.sewing_parts) return 0;
         var vest = state.equipment.vest;
         if (!vest || !vest.item_id) return 0;
         var tpl = getItemTemplate(vest.item_id);
@@ -1284,6 +1332,7 @@
         if (instanceId) visited[instanceId] = true;
         var tpl = getItemTemplate(itemInstance.item_id);
         var ownWeight = tpl && tpl.weight_kg != null ? Number(tpl.weight_kg) : 0;
+        if (itemInstance.sewing && global.SewingSystem) ownWeight = global.SewingSystem.stats(itemInstance).weight;
         if (itemInstance.fishing_catch && /^fishing_catch_/.test(itemInstance.item_id) && Number.isFinite(itemInstance.fishing_catch.weight_kg) && itemInstance.fishing_catch.weight_kg > 0) ownWeight = itemInstance.fishing_catch.weight_kg;
         if (!isFinite(ownWeight) || ownWeight < 0) ownWeight = 0;
         var quantity = itemInstance.count != null ? Math.max(1, Math.floor(Number(itemInstance.count) || 1)) : 1;
@@ -1414,7 +1463,7 @@
         }
 
         var pocketSlots = getPocketSlots();
-        if (pocketSlots > 0) {
+        if (pocketSlots > 0 && canFitPocket(itemInstance)) {
             var p = state.inventory_pocket.slice();
             for (var m = 0; m < pocketSlots; m++) {
                 if (!p[m]) {
@@ -1449,6 +1498,12 @@
         if (instance.enchants && instance.enchants.length) return false;
         if (existing && (existing.enchants && existing.enchants.length)) return false;
         return true;
+    }
+
+    function canFitPocket(instance) {
+        var tpl = instance && getItemTemplate(instance.item_id);
+        // Unmarked legacy items retain their existing eligibility when loading old saves.
+        return !!tpl && (tpl.pocketable != null ? tpl.pocketable === true : !tpl.equip_slot);
     }
 
     function itemInstancesCanStack(a, b) {
@@ -1564,6 +1619,7 @@
         var tpl = getItemTemplate(instance.item_id);
         if (!tpl) return { success: false, message: t('inv.equip.unknown_item') };
         if (tpl.equip_slot !== slotId) return { success: false, message: t('inv.equip.slot_mismatch') };
+        if (slotId === 'vest' && global.SewingSystem) return { success: false, message: '弹挂收纳已整合进衣服口袋。' };
         var maxEnchants = (tpl.enchant_slots != null) ? parseInt(tpl.enchant_slots, 10) : 6;
         var enc = instance.enchants;
         if (enc && enc.length > maxEnchants) return { success: false, message: t('inv.equip.enchant_over') };
@@ -1589,6 +1645,8 @@
             delete inst.enchants;
         }
         state.equipment[slotId] = inst;
+        if ((slotId === 'clothing' || slotId === 'head') && global.Survival && global.Survival.setDiqiShieldRemaining) global.Survival.setDiqiShieldRemaining(0);
+        if (global.Survival && global.Survival.syncMoodStateBuff) global.Survival.syncMoodStateBuff();
         if (typeof global !== 'undefined' && global.CharacterAttributes && typeof global.CharacterAttributes.recalcCharacterStats === 'function') {
             global.CharacterAttributes.recalcCharacterStats({
                 getEquipmentState: function () { return state.equipment; },
@@ -1637,6 +1695,8 @@
         var occupied = (Array.isArray(modTpl.occupies) && modTpl.occupies.length)
             ? modTpl.occupies
             : [slotId + '.' + plateKey];
+        var clothing = state.equipment.clothing;
+        if (clothing && clothing.sewing_parts && occupied.some(function (key) { return key.indexOf('clothing.') === 0 && !clothing.sewing_parts[key.slice(9)]; })) return {success:false,message:'缺少承载该改件的衣服部件。'};
         // 数量上限：同种模块在同一防具上的已装数（契约 38 §2 max_per_armor）
         if (modTpl.max_per_armor != null && countModulesOnArmor(slotId, moduleInstance.item_id) >= modTpl.max_per_armor)
             return { success: false, message: t('inv.module.max_count') };
@@ -1649,8 +1709,8 @@
             var dot = oc.indexOf('.');
             if (dot < 0) continue;
             var s = oc.slice(0, dot), p = oc.slice(dot + 1);
-            var existing = getInstalledModuleAt(s, p);
-            if (existing && existing.item_id !== moduleInstance.item_id)
+            var existing = modulesCovering(s, p);
+            if (existing.length)
                 return { success: false, message: t('inv.module.occupied') };
         }
         // 复合模块挂在主槽位（clothing）的模块列表，occupies 为唯一事实源（契约 38 §4）
@@ -1660,6 +1720,7 @@
         if (!installed) return { success: false, message: t('inv.module.invalid_module') };
         if (installed.enchant_id == null) installed.enchant_id = null;
         eq.modules[plateKey] = installed;
+        if (global.Survival && global.Survival.setDiqiShieldRemaining) global.Survival.setDiqiShieldRemaining(0);
         recalcCharacterStatsForEquipment();
         return { success: true };
     }
@@ -1688,6 +1749,7 @@
         if (!eq || !eq.modules || !eq.modules[plateKey]) return { success: false };
         var item = eq.modules[plateKey];
         eq.modules[plateKey] = null;
+        if (global.Survival && global.Survival.setDiqiShieldRemaining) global.Survival.setDiqiShieldRemaining(0);
         recalcCharacterStatsForEquipment();
         return { success: true, item: item };
     }
@@ -1742,6 +1804,8 @@
         if (EQUIP_SLOT_IDS.indexOf(slotId) < 0) return null;
         var current = state.equipment[slotId];
         state.equipment[slotId] = null;
+        if ((slotId === 'clothing' || slotId === 'head') && global.Survival && global.Survival.setDiqiShieldRemaining) global.Survival.setDiqiShieldRemaining(0);
+        if (global.Survival && global.Survival.syncMoodStateBuff) global.Survival.syncMoodStateBuff();
 
         if (slotId === 'vest') {
             migrateContainerToBackpack(state.inventory_vest, optGroundPos);
@@ -2416,6 +2480,7 @@
 
     /** 新游戏初始化：四类物品栏为空，仅根据 default_equipment 穿戴；地面物品清空 */
     function initNewGame() {
+        state.sewing_version = 1;
         state.skills = {};
         state.skill_max_level_bonus = {};
         state.inventory_pocket = [];
@@ -2455,6 +2520,10 @@
                 delete inst.enchants;
             }
             state.equipment[key] = ensureItemInstanceIdentity(inst, false);
+        }
+        if (global.SewingSystem && global.Survival) {
+            state.equipment.clothing = global.SewingSystem.birthOutfit();
+            state.equipment.vest = null;
         }
         state.combat = getDefaultCombatState();
         state.hub_action_cooldowns = {};
@@ -2519,6 +2588,7 @@
 
     function setState(s) {
         if (!s) return;
+        state.sewing_version = s.sewing_version || 0;
         var hasLoadedItems = !!(s.equipment || s.inventory_pocket || s.inventory_vest || s.inventory_backpack
             || s.inventory_vehicle || s.ground_items);
         if (s.item_identity && typeof s.item_identity === 'object') {
@@ -2762,6 +2832,7 @@
         normalizeCombatExperienceState();
         return {
             equipment: eq,
+            sewing_version: state.sewing_version || 0,
             inventory_pocket: state.inventory_pocket.slice(),
             inventory_vest: state.inventory_vest.slice(),
             inventory_backpack: state.inventory_backpack.slice(),
@@ -3081,6 +3152,8 @@
         getItemCombinedWeight: getItemCombinedWeight,
         getCurrentCarryWeight: getCurrentCarryWeight,
         putItemIntoDefaultContainer: putItemIntoDefaultContainer,
+        canFitPocket: canFitPocket,
+        migrateSewingEquipment: migrateSewingEquipment,
         canAcceptItem: canAcceptItem,
         equip: equip,
         unequip: unequip,

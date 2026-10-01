@@ -85,10 +85,6 @@
     }
 
     function tryExecuteDiqiShield(skillId, actionId, ha, IE, Surv, result) {
-        if (typeof Surv.getDiqiShieldRemaining === 'function' && Surv.getDiqiShieldRemaining() > 0) {
-            result.reason_key = 'combat.hub.fail.shield_active';
-            return;
-        }
         var st = typeof Surv.getState === 'function' ? Surv.getState() : {};
         var dMax = st.diqi_max != null ? st.diqi_max : 0;
         if (dMax <= 0) {
@@ -101,8 +97,12 @@
             result.reason_key = 'combat.hub.fail.no_armor';
             return;
         }
-        var shieldCap = Math.max(1, Math.floor(armorInfo.baseShield));
-        var C = Math.max(1, Math.floor(armorInfo.baseShield * (1 + armorInfo.moduleCostSum)));
+        var shieldCap = Math.max(1, Math.floor(armorInfo.baseShield + 1e-8));
+        if (Surv.getDiqiShieldRemaining && Surv.getDiqiShieldRemaining() >= shieldCap) {
+            result.reason_key = 'combat.hub.fail.shield_active';
+            return;
+        }
+        var C = Math.max(1, Math.floor(armorInfo.baseShield * (1 - (armorInfo.discount || 0)) * (1 + armorInfo.moduleCostSum) + 1e-8));
         var dCur = st.diqi_current != null ? st.diqi_current : 0;
         if (dCur < C) {
             result.reason_key = 'combat.hub.fail.diqi_low';
@@ -114,7 +114,7 @@
             Surv.consumeDiqi(C);
         }
         if (typeof Surv.setDiqiShieldRemaining === 'function') Surv.setDiqiShieldRemaining(shieldCap);
-        advanceActionTicks(Surv, ha.tick_cost);
+        advanceActionTicks(Surv, 1);
         if (IE.incrementSkillMoveUsage) IE.incrementSkillMoveUsage(skillId, 'diqi_huti', 1);
         result.ok = true;
         result.reason_key = 'combat.hub.ok.diqi_huti';
@@ -252,6 +252,10 @@
         }
 
         var eff = resolveEffectType(ha);
+        if (eff === 'diqi_shield' && !inBattleCtx) {
+            result.reason_key = 'combat.hub.fail.battle_only';
+            return result;
+        }
         if (eff === 'breath_burst') {
             result.ok = !!(global.CombatBreath && global.CombatBreath.activate());
             result.reason_key = result.ok ? 'combat.hub.ok.cui_qi' : 'combat.hub.fail.cui_qi';

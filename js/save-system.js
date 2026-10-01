@@ -587,6 +587,7 @@
         if (global.LivestockState && typeof global.LivestockState.validateState === 'function' && !global.LivestockState.validateState(snapshot.livestock).ok) return false;
         if (global.HideoutWarehousePanel && global.HideoutWarehousePanel.suspendForLoad) global.HideoutWarehousePanel.suspendForLoad();
         if (global.ToolbenchPanel) global.ToolbenchPanel.close();
+            if (global.SewingStationPanel) global.SewingStationPanel.close();
         if (global.CookingRepairPanel) global.CookingRepairPanel.close();
         if (global.FacilityLaborPanel) global.FacilityLaborPanel.dismiss();
         if (typeof mods.GameTime.reset === 'function') {
@@ -651,6 +652,7 @@
             try { mods.Muscles.setState(snapshot.muscles); } catch (eMus) { /* ignore */ }
         }
 
+        if (mods.InventoryEquipment.migrateSewingEquipment) mods.InventoryEquipment.migrateSewingEquipment();
         // Recalc derived stats once before buff restore.
         if (mods.CharacterAttributes && typeof mods.CharacterAttributes.recalcCharacterStats === 'function') {
             mods.CharacterAttributes.recalcCharacterStats({

@@ -771,6 +771,11 @@
       "x": 7,
       "y": 11,
       "npc_id": "npc.station.observation_base"
+    },
+    {
+      "x": 6,
+      "y": 11,
+      "npc_id": "npc.station.sewing_base"
     }
   ],
   "cooking_station_interact_npc_by_cell": {
@@ -815,6 +820,7 @@
     "14,13": "水缸",
     "11,8": "风干架",
     "10,8": "风干架",
-    "12,9": "训练木桩"
+    "12,9": "训练木桩",
+    "6,11": "缝纫台"
   }
 }

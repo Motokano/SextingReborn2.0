@@ -1,0 +1,36 @@
+import fs from 'node:fs';
+import vm from 'node:vm';
+import assert from 'node:assert/strict';
+const nodes={}, storage=new Map();
+function element(){return {style:{},children:[],textContent:'',appendChild(n){this.children.push(n);return n;},setAttribute(){},addEventListener(){},set innerHTML(v){this.children=[];},get innerHTML(){return '';}};}
+for(const id of ['npc-menu-title','npc-menu-buttons','npc-menu-hint'])nodes[id]=element();
+const c={console,localStorage:{getItem:k=>storage.get(k),setItem:(k,v)=>storage.set(k,v)},document:{createElement:element,getElementById:id=>nodes[id],body:element()},fetch:async p=>({ok:true,json:async()=>JSON.parse(fs.readFileSync(p,'utf8'))})};
+c.window=c;vm.createContext(c);
+for(const f of ['js/npc-system.js','js/facility-unlock-config.js'])vm.runInContext(fs.readFileSync(f,'utf8'),c);
+let opened=null,callback=null,stationOpen=false,near=true,measurements=0;
+c.FacilityUnlock={get:id=>({spec:c.FacilityUnlockConfig.projects[id],isComplete:()=>c.NPCSystem.isDemoFlagTrue(c.FacilityUnlockConfig.projects[id].unlock),accessible:()=>near})};
+c.FacilityUnlockPanel={open:(id,cb)=>{opened=id;callback=cb;},isOpen:()=>!!opened};
+c.SewingStationPanel={open:()=>stationOpen=near};
+c.SewingSystem={measureAtTools:()=>{measurements++;c.NPCSystem.setDemoFlag('sewing_measurement',{height_cm:170,weight_kg:60});return {ok:true,message:'测量完成'};}};
+let description=null,descriptionOptions=null;
+c.DialogueUI={playLinesRich:(lines,opts)=>{description=lines;descriptionOptions=opts;}};
+async function menu(){c.NPCSystem.openMenu('npc.station.sewing_base');await new Promise(setImmediate);const buttons=nodes['npc-menu-buttons'].children.filter(x=>x.onclick);assert.equal(buttons[0].textContent,'查看缝纫台');return buttons.slice(1);}
+const names=bs=>bs.map(x=>x.textContent);
+let bs=await menu();
+const unchanged=JSON.stringify([...storage]);
+nodes['npc-menu-buttons'].children[0].onclick();await new Promise(setImmediate);
+assert(description[0].text.includes('先装配皮尺，再装配体重秤'));
+assert(description[0].text.includes('按尺寸装配人台，最后装配缝纫台'));
+assert(description[0].text.includes('下一步：装配皮尺'));
+assert.equal(JSON.stringify([...storage]),unchanged,'viewing instructions must not unlock or consume anything');
+descriptionOptions.onQueueExhausted();await new Promise(setImmediate);
+assert.deepEqual(names(bs),['装配皮尺','离开'],'fresh station must show only the next actionable step');
+bs[0].onclick();assert.equal(opened,'sewing_tape');assert.equal(typeof callback,'function');
+for(const id of ['sewing_tape','sewing_scale'])c.NPCSystem.setDemoFlag(c.FacilityUnlockConfig.projects[id].unlock,true);
+bs=await menu();assert.deepEqual(names(bs),['测量身材 · 10分钟','离开'],'measurement must precede first mannequin');
+bs[0].onclick();await new Promise(setImmediate);assert.equal(measurements,1);
+bs=await menu();assert.deepEqual(names(bs),['装配人台','离开']);
+c.NPCSystem.setDemoFlag('sewing_mannequin_unlocked',true);bs=await menu();assert.deepEqual(names(bs),['装配缝纫台','离开']);
+c.NPCSystem.setDemoFlag('sewing_station_unlocked',true);bs=await menu();assert.deepEqual(names(bs),['使用缝纫台','离开']);bs[0].onclick();assert(stationOpen);
+near=false;bs=await menu();bs[0].onclick();assert(nodes['npc-menu-hint'].textContent.includes('靠近'),'failed opening must explain why');
+console.log('PASS: real NPC menu progression, measurement, click routing and failed-entry feedback.');
