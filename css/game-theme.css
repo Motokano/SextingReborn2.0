@@ -1,0 +1,192 @@
+/* Shared in-game theme: approved woven surfaces, copper trim and readable controls. */
+body.ui-refined{--ui-surface:#232825;--ui-raised:#2e3530;--ui-deep:#1b201e;--ui-border:#8f998044;--ui-accent:#c5b083;--ui-text:#e5e4d9;--ui-muted:#a3aaa0;--ui-shadow:0 8px 24px #080e0a40,inset 0 1px #e5e8c90a}
+/* HUD shells. No display/position rules: original cognition and window code control those. */
+.ui-refined :is(.status-card,.role-card,.details-block,#buff-hud,.ui-window-bar,#game-log-panel,.action-bar-dock,#quick-belt-dock,.ui-windows-menu,.player-actions-submenu){background:linear-gradient(145deg,#29312bf5,#202722f7);border:1px solid var(--ui-border);border-radius:6px;box-shadow:var(--ui-shadow);color:var(--ui-text)}
+.ui-refined :is(#left-hud,#buff-hud,#right-hud,#bottom-hud-stack,#game-log-panel,.ui-windows-menu){font-family:'Microsoft YaHei','PingFang SC',sans-serif}
+.ui-refined .status-card{padding:17px 16px 14px;font-weight:400}
+.ui-refined .role-card{padding:20px 18px 17px}
+.ui-refined .role-card h1{font-family:'Noto Serif SC','SimSun',serif;font-size:24px;font-weight:700;letter-spacing:.08em;color:#eeeadb;line-height:1.45;padding-right:48px}
+.ui-refined .role-card .subtitle{font-size:12px;font-weight:400;color:var(--ui-muted);letter-spacing:.03em;margin-top:6px}
+.ui-refined .combat-state-badge{font-size:11px;font-weight:400;border-color:#94aa8840;background:#8baf7c0d;color:#b6c5ab}
+.ui-refined .combat-state-badge.in-combat{color:#edbca7;border-color:#c88d7155;background:#9a4e3525}
+.ui-refined .status-card .block-title{color:var(--ui-accent);font-size:11px;font-weight:600;letter-spacing:.14em;border-bottom:1px solid var(--ui-border);padding:0 58px 10px 0;margin-bottom:12px}
+.ui-refined .status-card :is(.label,.value,.limb-row){font-size:12px}
+.ui-refined .status-card .label{color:var(--ui-muted)}
+.ui-refined .status-card .value{font-weight:400;color:var(--ui-text);font-variant-numeric:tabular-nums}
+.ui-refined .status-card .value.ok{color:#a6c2a1}.ui-refined .status-card .value.warn{color:#d6b37d}.ui-refined .status-card .value.danger{color:#df9a87}
+.ui-refined .status-card button:not(.ui-window-min):not(.ui-window-close){background:#94a07f12;border:1px solid var(--ui-border);border-radius:3px;color:#b8c0ae;font-size:11px}
+.ui-refined #buff-hud .buff-hud-title{color:var(--ui-accent);font-size:11px;font-weight:500}
+.ui-refined #buff-hud .buff-chip{background:#a2b38a12;border-color:var(--ui-border);color:#d0dac4;font-size:11px;font-weight:400;border-radius:4px}
+.ui-refined .progress-wrap{height:5px;background:#12191370;border-radius:3px;box-shadow:inset 0 1px 2px #0003}
+.ui-refined .progress-fill{border-radius:3px}
+.ui-refined .progress-fill.stamina{background:#92b186}.ui-refined .progress-fill.thirst{background:#82a8b6}.ui-refined .progress-fill.satiety{background:#bfa073}.ui-refined .progress-fill.energy{background:#a396b1}
+.ui-refined .details-block summary{color:var(--ui-accent);font-size:12px;font-weight:500;background:#a7af8e08;padding-right:63px;border-radius:5px}
+.ui-refined .details-block .details-body{background:transparent;border-color:var(--ui-border);font-size:12px}
+.ui-refined .details-block .details-body .row{font-size:12px;color:#c4cabb}
+.ui-refined :is(.ui-window-grip,.ui-window-host .ui-window-close,.ui-window-host .ui-window-min){opacity:.6;color:#b6bea9;border-radius:3px}
+.ui-refined .ui-window-grip{pointer-events:auto}
+.ui-refined :is(.ui-window-grip,.ui-window-close,.ui-window-min):hover{opacity:1;background:#d1c49d20;color:#e4cf9f}
+.ui-refined .ui-window-bar .ui-window-bar-label{font-size:11px;font-weight:500;color:var(--ui-text)}
+.ui-refined #top-hud .time-pill{background:#252c26ed;border:1px solid var(--ui-border);border-radius:5px;box-shadow:0 3px 10px #0003;padding:8px 15px}
+.ui-refined #top-hud .time-text{font-size:12px;font-weight:500;letter-spacing:.08em;color:#e8e7da;font-variant-numeric:tabular-nums}
+.ui-refined #top-hud .time-period{font-size:11px;color:var(--ui-accent);font-weight:400;letter-spacing:.04em}
+.ui-refined #right-hud{gap:13px}
+.ui-refined #right-hud .hud-btn{background:linear-gradient(#333b30f7,#242d25f7);border:1px solid #a2aa8655;border-radius:7px;box-shadow:var(--ui-shadow);font-size:22px}
+.ui-refined #right-hud .hud-btn:hover{border-color:var(--ui-accent);background:#3c4835}
+.ui-refined :is(.ui-windows-menu .uwm-title,.buff-hud-title){color:var(--ui-accent);font-weight:500;letter-spacing:.1em}
+.ui-refined .ui-windows-menu .uwm-row{border-color:transparent;border-radius:4px;color:var(--ui-text);font-size:12px}
+.ui-refined .ui-windows-menu .uwm-row:hover{border-color:var(--ui-border);background:#9aaa7f12}
+.ui-refined .ui-windows-menu input[type=checkbox]{accent-color:var(--ui-accent)}
+.ui-refined .ui-windows-menu .uwm-sep{border-color:var(--ui-border)}
+.ui-refined :is(.ui-windows-menu .uwm-btn,.action-bar-btn){border:1px solid var(--ui-border);border-radius:4px;background:#9cac8410;color:#d9decf;font-weight:400}
+.ui-refined :is(.ui-windows-menu .uwm-btn,.action-bar-btn):hover{background:#aeb89221;border-color:#c5b08388;color:#eee5ce}
+.ui-refined #game-log-panel{border-radius:6px 6px 0 0;border-color:#8e967750}
+.ui-refined #game-log-panel .game-log-header{background:#8492770c;border-bottom:1px solid var(--ui-border);color:#c8b995;font-size:11px;letter-spacing:.08em}
+.ui-refined #game-log-panel .game-log-lines{font-family:'Microsoft YaHei',sans-serif;font-size:12px;line-height:1.8;color:#c0c7b9}
+.ui-refined #game-log-panel .log-time{color:#899680;font-size:10px}
+.ui-refined #game-log-panel .log-info{color:#b2bba9}.ui-refined #game-log-panel .log-success{color:#abc79d}.ui-refined #game-log-panel .log-warn{color:#dac291}.ui-refined #game-log-panel .log-combat{color:#e0ac96}
+.ui-refined .quick-belt{background:transparent;border-color:transparent;box-shadow:none}
+.ui-refined .quick-belt .slot{border:1px solid var(--ui-border);background:#1820188c;border-radius:5px}
+.ui-refined .quick-belt .slot:hover{border-color:var(--ui-accent)}
+.ui-refined .quick-belt .quick-belt-slot-key{color:var(--ui-accent);font-weight:500}
+/* Same surface language applied to the real system containers. Sizes and columns unchanged. */
+.ui-refined :is(#modal-backpack .panel,.combat-panel,.survival-panel,.cs-panel,.bw-panel,.hw-panel,.agri-panel,.lv-panel){background:var(--ui-surface);border:1px solid #969d825c;border-radius:8px;box-shadow:0 24px 70px #0009,inset 0 1px #e6e6c813;color:var(--ui-text);font-family:'Microsoft YaHei','PingFang SC',sans-serif}
+.ui-refined :is(#modal-backpack .bp-head,.combat-header,.survival-header,.cs-header,.bw-header,.hw-header,.agri-head,.lv-header){background:linear-gradient(#3a4231,#2b3328);border-bottom:1px solid #9ba78345;color:var(--ui-accent)}
+.ui-refined :is(#modal-backpack .bp-title,.combat-panel-title,.survival-header h2,.cs-header h2,.agri-head h2){font-family:'Noto Serif SC','SimSun',serif;font-weight:600;color:#dfcfaa;font-size:19px;letter-spacing:.1em}
+.ui-refined :is(#modal-backpack .bp-tabs,.combat-cat-rail,.agri-side){background:#1c241f;border-color:var(--ui-border)}
+.ui-refined #modal-backpack :is(.bp-list,.bp-detail){background:transparent;border-color:var(--ui-border)}
+.ui-refined #modal-backpack :is(.bp-list-head,#backpack-detail){border-color:var(--ui-border)}
+.ui-refined #modal-backpack :is(.bp-tab-btn,.bp-action-btn,.bp-close){border:1px solid var(--ui-border);background:#929e7410;color:var(--ui-muted);font-weight:400;border-radius:4px}
+.ui-refined #modal-backpack .bp-tab-btn.active{background:#bba777;color:#20281e;border-color:#cebc91}
+.ui-refined #modal-backpack #backpack-search{background:#19211c;border:1px solid var(--ui-border);border-radius:4px;color:var(--ui-text);font-size:12px}
+.ui-refined #modal-backpack #backpack-search:focus{border-color:var(--ui-accent);box-shadow:0 0 0 2px #c5b08315}
+.ui-refined #modal-backpack .bp-item-row{background:#929f7610;border:1px solid var(--ui-border);border-radius:5px;padding:12px}
+.ui-refined #modal-backpack .bp-item-row:hover{background:#9aa78120;border-color:#b7bc9470}
+.ui-refined #modal-backpack .bp-item-row.selected{background:#b5a77618;border-color:#c5b083a0;box-shadow:inset 3px 0 #c5b083}
+.ui-refined #modal-backpack .bp-item-name{font-weight:500;color:#e1e3d4;font-size:13px}
+.ui-refined #modal-backpack :is(.bp-item-sub,.bp-carry,.bp-detail-attrs){color:var(--ui-muted)}
+.ui-refined #modal-backpack .bp-detail-title{font-size:22px;font-weight:500;color:#e7dfc6}
+.ui-refined #modal-backpack .bp-detail-desc{border-color:var(--ui-accent);color:#bcc5b4;line-height:1.85}
+.ui-refined #modal-backpack #backpack-detail .tooltip-module{background:#17201a55;border-color:var(--ui-border)}
+.ui-refined :is(.btn-mini,.cs-panel button,.survival-panel button,.combat-panel button,.agri-panel button){border-color:var(--ui-border);border-radius:4px;font-family:'Microsoft YaHei',sans-serif}
+.ui-refined :is(.cs-panel input,.cs-panel select,.survival-panel input,.survival-panel select,.combat-panel input,.combat-panel select){background:#19211c;color:var(--ui-text);border-color:var(--ui-border);border-radius:4px}
+.ui-refined :is(.combat-panel-footer,.cs-panel .cs-log){background:#1b241d;border-color:var(--ui-border);color:var(--ui-muted)}
+.ui-refined #dialogue-panel{background:#222a23f7;border-color:#929b7655;color:var(--ui-text);box-shadow:0 -12px 40px #0004}
+.ui-refined #dialogue-panel .dlg-name{color:#d5c399}.ui-refined #dialogue-panel .dlg-text{color:#e3e2d4;line-height:1.85}
+
+
+/* Reading-focused pass: compact existing Buffs, stronger existing log. */
+.game-buff-name,.game-buff-count,.game-buff-time,.game-log-tools,.game-log-new{display:none}
+.ui-refined #buff-hud{padding:12px 13px;gap:12px;background:#202820ed;border:1px solid #93a07b40;box-shadow:0 5px 20px #0003;border-radius:7px;align-items:stretch}
+.ui-refined #buff-hud .buff-hud-section{text-align:left}
+.ui-refined #buff-hud .game-empty-buffs{display:none}
+.ui-refined #buff-hud .buff-hud-title{font-size:10px;letter-spacing:.1em;color:#a4b097;margin:0 0 9px;padding-right:57px;text-align:left;font-weight:400}
+.ui-refined #buff-hud .buff-hud-chips{justify-content:flex-start;gap:6px;min-height:0}
+.ui-refined #buff-hud .buff-chip{display:inline-flex;align-items:center;gap:6px;min-height:27px;padding:5px 7px;background:#899a6e10;border:1px solid #9fac8033;box-shadow:none;border-radius:4px;color:#dce2ce;font-weight:400;font-size:11px;line-height:1.3;white-space:nowrap}
+.ui-refined #buff-hud .buff-chip::before{content:'';width:4px;height:4px;background:#9fae89;border-radius:50%;flex-shrink:0}
+.ui-refined #buff-hud .buff-chip:hover{background:#aabc8626;border-color:#bdc59488}
+.ui-refined .game-buff-original{display:none}
+.ui-refined .game-buff-name,.ui-refined .game-buff-count,.ui-refined .game-buff-time{display:inline}
+.ui-refined .game-buff-count:empty,.ui-refined .game-buff-time:empty{display:none}
+.ui-refined #buff-hud .game-buff-count{color:#d9c293;font-size:10px}
+.ui-refined #buff-hud .game-buff-time{font:10px Consolas,monospace;color:#a2b18e;border-left:1px solid #a2b18e38;padding-left:6px}
+.ui-refined #buff-hud .buff-hud-section+.buff-hud-section:not(.game-empty-buffs){padding-top:10px;border-top:1px solid #9fac8033}
+.ui-refined #game-log-panel{background:linear-gradient(110deg,#202720fa,#19211efa);border-top:1px solid #b4a77e80;box-shadow:0 -8px 30px #0005;border-radius:7px 7px 0 0}
+.ui-refined #game-log-panel .game-log-resize-handle-top{background:linear-gradient(180deg,#c2b38540,transparent);flex-basis:5px;min-height:5px}
+.ui-refined #game-log-panel .game-log-header{padding:9px 18px;min-height:39px;gap:16px;background:#a1ae7910;border-bottom:1px solid #a1ae792d;flex-shrink:0}
+.ui-refined #game-log-panel .game-log-header>span:first-child{font-size:13px;letter-spacing:.15em;font-weight:500;color:#dfd2b0}
+.ui-refined #game-log-panel .game-log-header>span:nth-child(2){margin-right:auto;color:#8b997f;letter-spacing:0}
+.ui-refined .game-log-tools{display:flex;gap:3px;padding:2px;background:#111a1455;border:1px solid #8fa07630;border-radius:4px;cursor:default}
+.ui-refined .game-log-tools button{background:none;border:0;border-radius:3px;padding:4px 10px;font:11px 'Microsoft YaHei',sans-serif;color:#9eac92;cursor:pointer;white-space:nowrap}
+.ui-refined .game-log-tools button[aria-pressed=true]{background:#8f9b7530;color:#ded7bf}
+.ui-refined #game-log-panel .game-log-lines{padding:10px 22px 22px;font:13px/1.95 'Microsoft YaHei','PingFang SC',sans-serif;scrollbar-color:#617152 #1b241b;cursor:ns-resize}
+.ui-refined #game-log-panel .game-log-line{padding:5px 10px;margin:0;border-bottom:1px solid #a3b0900a;letter-spacing:.015em;color:#ccd4c2}
+.ui-refined #game-log-panel .log-time{display:inline-block;width:72px;margin-right:12px;vertical-align:baseline;color:#7d8d77;font:10px/1.95 Consolas,monospace;letter-spacing:0}
+.ui-refined #game-log-panel .log-success{color:#b7d1a7;border-left:2px solid #9ab27b;background:#9ab27b08}
+.ui-refined #game-log-panel .log-warn{color:#e1c292;border-left:2px solid #c0a174;background:#c0a17408}
+.ui-refined #game-log-panel .log-combat,.ui-refined #game-log-panel .log-damage{color:#e1b6a2;border-left:2px solid #be8871;background:#be887108}
+.ui-refined #game-log-panel .log-system{color:#99ac99}
+.ui-refined #game-log-panel.game-log-reading .game-log-debug{display:none}
+.ui-refined #game-log-panel .game-log-debug{font-size:11px;color:#849582}
+.ui-refined .game-log-new:not([hidden]){display:block;position:absolute;bottom:10px;right:20px;background:#d0c096;border:1px solid #e0d2ac;color:#253020;border-radius:4px;padding:6px 12px;font:11px 'Microsoft YaHei',sans-serif;cursor:pointer;box-shadow:0 3px 12px #0005}
+@media(max-width:760px){.ui-refined #game-log-panel .game-log-header>span:nth-child(2){display:none}.ui-refined .game-log-tools{margin-left:auto}.ui-refined #game-log-panel .game-log-lines{padding:7px 10px 20px}.ui-refined #buff-hud{max-width:min(310px,55vw)}.ui-refined #game-log-panel .log-time{width:56px;margin-right:8px;font-size:9px}}
+.ui-refined #buff-hud{top:60px}
+.ui-refined #left-hud{bottom:calc(var(--game-log-height,26vh) + 14px)}
+.ui-refined #right-hud{top:96px;transform:none;gap:8px}
+.ui-refined #right-hud .hud-btn{flex-shrink:0;height:clamp(30px,calc((100vh - var(--game-log-height,26vh) - 184px)/9),56px)}
+
+/* Proportion + material pass. Shared surface recipe for actual game panels. */
+body.ui-refined{
+ --ui-border:#a59c7759;
+ --ui-grain:repeating-linear-gradient(0deg,#e5dbb806 0px,#e5dbb806 1px,transparent 1px,transparent 4px);
+ --ui-weave:repeating-linear-gradient(90deg,#b9c6a003 0px,#b9c6a003 1px,transparent 1px,transparent 5px);
+ --ui-metal:linear-gradient(110deg,#786a423d,#c9b78012 38%,#61776322 76%,#1b2922);
+ --ui-paper:radial-gradient(ellipse at 0% 0%,#b7a57116,transparent 64%),linear-gradient(125deg,#30382df7,#202b26fa 60%,#1e2824fa);
+}
+.ui-refined #left-hud{left:18px;top:18px;width:clamp(280px,23vw,320px)}
+.ui-refined #status-scroll{padding-right:7px;scrollbar-width:thin;scrollbar-color:#778465 #1e2921}
+.ui-refined :is(.status-card,.role-card,.details-block,#buff-hud,.ui-window-bar){
+ background-image:var(--ui-grain),var(--ui-weave),var(--ui-paper);
+ border-color:var(--ui-border);border-radius:5px;
+ box-shadow:0 7px 20px #07120b50,inset 0 0 0 3px #090e0a24,inset 0 1px #eee1b329;
+}
+.ui-refined :is(.status-card,.role-card){margin-bottom:10px}
+.ui-refined .status-card{padding:12px 13px}
+.ui-refined .role-card{padding:15px 16px 12px;border-left:3px solid #b9a16c}
+.ui-refined .role-card h1{font-size:23px;line-height:1.25;margin:0;text-shadow:0 2px 2px #0004}
+.ui-refined .role-card .subtitle{margin-top:5px;margin-bottom:7px;font-size:11px}
+.ui-refined .combat-state-badge{margin-top:4px;padding:3px 7px;font-size:10px;letter-spacing:.06em}
+.ui-refined .status-card .block-title{padding:0 58px 8px 0;margin-bottom:10px;font-size:11px;letter-spacing:.12em;border-bottom-color:#b9aa7638;color:#d0c49f}
+.ui-refined .status-card .row{min-height:1.65em;gap:6px}
+.ui-refined .status-card :is(.label,.value,.limb-row){font-size:12px;line-height:1.6}
+.ui-refined .status-card .limb-row{margin-bottom:4px}
+.ui-refined .status-card .value{text-align:right;overflow-wrap:anywhere}
+.ui-refined #status-limbs{border-top-color:#bca47899}
+.ui-refined #status-combat-resources-card{border-top-color:#a278638f}
+.ui-refined #status-survival{border-top-color:#8faa7e99}
+.ui-refined #status-resources{border-top-color:#a99b6c99}
+.ui-refined .details-block summary{padding:10px 62px 10px 13px;background-image:var(--ui-metal);font-size:11px}
+.ui-refined .details-block .details-body{padding:11px 13px}
+.ui-refined .details-block .details-body .row{gap:10px;font-size:12px;margin-bottom:7px}
+.ui-refined .progress-wrap{height:5px;margin-top:5px;border:1px solid #c2c4a016;box-shadow:inset 0 1px 3px #0006}
+.ui-refined .progress-fill{box-shadow:inset 0 1px #fff4}
+.ui-refined .ui-window-host .ui-window-grip,.ui-refined .ui-window-host .ui-window-min,.ui-refined .ui-window-host .ui-window-close{top:7px}
+.ui-refined #buff-hud{right:84px;top:58px;max-width:min(330px,40vw);padding:10px 12px;gap:9px;border-top-color:#b3bd8999}
+.ui-refined #buff-hud .buff-hud-title{font-size:10px;letter-spacing:.12em;margin-bottom:8px;color:#c5ceb2}
+.ui-refined #buff-hud .buff-chip{min-height:25px;padding:4px 6px;font-size:11px;gap:5px;background:linear-gradient(#8b9f6e23,#26322666);border-color:#a8b48645;box-shadow:inset 0 1px #cad7b00d,0 1px 2px #0002}
+.ui-refined #top-hud .time-pill{padding:7px 12px;border-color:#bba57359;background-image:var(--ui-grain),var(--ui-metal);background-color:#263027;box-shadow:0 3px 12px #0004,inset 0 1px #ddc99b23;border-radius:4px}
+.ui-refined #right-hud{right:18px;gap:7px}
+.ui-refined #right-hud .hud-btn{width:46px;font-size:20px;border-radius:5px;border-color:#a99e756b;background-image:var(--ui-grain),linear-gradient(145deg,#54604480,#273529 65%,#17231e);box-shadow:0 3px 8px #0004,inset 0 0 0 3px #0b160b26,inset 0 1px #dddfb12b}
+.ui-refined #right-hud .hud-btn:hover{border-color:#dbbe80;background-color:#4f6041;box-shadow:0 3px 12px #0004,inset 0 0 0 3px #c6ac7114}
+.ui-refined :is(.action-bar-dock,#quick-belt-dock){background-image:var(--ui-grain),linear-gradient(160deg,#435039ef,#202d23f7);border-color:#ad9d6970;border-radius:5px;box-shadow:0 4px 15px #0005,inset 0 0 0 3px #10190e30,inset 0 1px #e2d7ac22}
+.ui-refined .action-bar-dock{padding:4px 6px;gap:5px}
+.ui-refined .action-bar-dock .action-bar-btn{min-height:29px;padding:4px 9px;font-size:11px}
+.ui-refined .quick-belt{gap:6px;padding:6px 8px}
+.ui-refined .quick-belt .slot{width:44px;height:40px;background:radial-gradient(ellipse at 50% 0,#92a07519,transparent 70%),#17241e;border-color:#9caa7450;box-shadow:inset 0 2px 5px #0005,0 1px #d4cd9a14}
+.ui-refined #game-log-panel{background-image:var(--ui-grain),var(--ui-weave),radial-gradient(ellipse at 12% 0,#ba9d5020,transparent 60%),linear-gradient(110deg,#273027fc,#192722fc);border-top:1px solid #d2bd83b0;box-shadow:0 -8px 32px #0006,inset 0 0 0 3px #0a170e38,inset 0 2px #cbb77b22}
+.ui-refined #game-log-panel .game-log-header{min-height:37px;padding:7px 18px;background-image:var(--ui-grain),var(--ui-metal);border-bottom-color:#b5a3734f}
+.ui-refined #game-log-panel .game-log-header>span:first-child{font-family:'Noto Serif SC','SimSun',serif;font-size:15px;color:#e9d8aa;letter-spacing:.13em;text-shadow:0 1px 2px #0007}
+.ui-refined #game-log-panel .game-log-lines{font-size:13px;line-height:1.9;padding:8px 20px 20px}
+.ui-refined #game-log-panel .game-log-line{padding:5px 10px;border-bottom-color:#c2bf8e0c}
+.ui-refined :is(#modal-backpack .panel,.combat-panel,.survival-panel,.cs-panel,.bw-panel,.hw-panel,.agri-panel,.lv-panel){background-image:var(--ui-grain),var(--ui-weave),var(--ui-paper);border-color:#b1a27280;box-shadow:0 24px 70px #0009,inset 0 0 0 4px #080e0a28,inset 0 1px #ede1ba33;border-radius:6px}
+.ui-refined :is(#modal-backpack .bp-head,.combat-header,.survival-header,.cs-header,.bw-header,.hw-header,.agri-head,.lv-header){background-image:var(--ui-grain),var(--ui-metal);border-bottom-color:#b2a17266;box-shadow:inset 0 1px #dac79b20}
+.ui-refined #modal-backpack .panel{width:min(1180px,94vw);height:min(780px,86vh)}
+.ui-refined #modal-backpack .bp-head{height:52px;padding:0 16px 0 20px}
+.ui-refined #modal-backpack .bp-tabs{width:128px;padding:10px 8px;gap:7px;background-image:var(--ui-grain),linear-gradient(90deg,#131e19,#202a21);border-right-width:1px}
+.ui-refined #modal-backpack .bp-tab-btn{padding:9px 7px;letter-spacing:.05em}
+.ui-refined #modal-backpack .bp-tab-btn.active{background:linear-gradient(110deg,#cfbd8e,#a99566);box-shadow:inset 0 1px #f2e3b670,0 2px 5px #0003}
+.ui-refined #modal-backpack .bp-list{width:40%;border-right-width:1px;background:#1b261c44}
+.ui-refined #modal-backpack .bp-item-row{padding:10px 11px;margin-bottom:6px;background-image:linear-gradient(120deg,#93a16d12,#101b1422);box-shadow:inset 0 1px #cad5a00b}
+.ui-refined #modal-backpack .bp-item-row.selected{background-image:linear-gradient(100deg,#b49b5229,#788f6010);border-color:#bba36d}
+.ui-refined #modal-backpack #backpack-detail{padding:18px 20px;background:radial-gradient(ellipse at 100% 0,#b0b2730b,transparent 60%)}
+.ui-refined #modal-backpack .bp-detail-title{font-family:'Noto Serif SC','SimSun',serif;font-size:22px;color:#e2d0a6}
+.ui-refined #modal-backpack .bp-equip-panel{padding:12px 18px;background:#15201933;border-top:1px solid #a5996830}
+@media(min-width:1600px){.ui-refined #left-hud{width:320px}.ui-refined .status-card :is(.label,.value,.limb-row){font-size:13px}.ui-refined #game-log-panel .game-log-lines{font-size:14px}}
+@media(max-width:900px){.ui-refined #left-hud{left:12px;top:14px;width:270px}.ui-refined #buff-hud{right:74px;max-width:min(300px,43vw)}.ui-refined #right-hud{right:12px}.ui-refined #modal-backpack .panel{width:96vw;height:88vh}.ui-refined #modal-backpack .bp-tabs{width:96px}}
+@media(max-width:600px){.ui-refined #left-hud{width:240px}.ui-refined #buff-hud{max-width:calc(100vw - 92px);top:94px}.ui-refined #top-hud{left:14px;transform:none}.ui-refined #modal-backpack .bp-tabs{width:74px}.ui-refined #modal-backpack .bp-list{width:37%}.ui-refined #modal-backpack #backpack-detail{padding:12px}.ui-refined #game-log-panel .game-log-lines{padding-left:8px;padding-right:8px}}
+/* Independent default anchor: uses viewport only, never the log's live bounds. */
+.ui-refined #bottom-hud-stack{bottom:calc(clamp(160px,26vh,320px) + 8px)}
+.ui-refined .quickbar-drag-handle{background-image:var(--ui-grain),var(--ui-metal);color:#c9bc93;border-color:var(--ui-border);box-shadow:0 2px 6px #0003}
+
+/* Ground surround shares the muted green/charcoal palette; fog remains authoritative. */
+body.ui-refined #map-container{background:radial-gradient(ellipse at 50% 58%,#7f8a5e12,transparent 62%),#151e1a}

@@ -69,6 +69,17 @@
             npc: 'assets/map/isometric/npc-pawn-v2.png',
             enemy: 'assets/map/isometric/enemy-pawn-v2.png'
         };
+        // Small vector ground materials are cached on the static layer, below fog and entities.
+        var groundMaterials = {};
+        ['stone', 'rock', 'moss'].forEach(function (kind) {
+            var image = new Image();
+            image.onload = function () {
+                groundMaterials[kind] = image;
+                staticMapKey = '';
+                if (lastInput) render(lastInput);
+            };
+            image.src = 'assets/map/terrain/' + kind + '.svg';
+        });
         // Approved device pawns. Crop and anchor are source-image pixel coordinates;
         // sizes below describe visible content on a 144px tile, not transparent padding.
         var deviceSpecs = {
@@ -100,6 +111,13 @@
         deviceFootprints.streetThug = [23,7];
         spriteSources.linManager = 'assets/npc/npc_supervisor_manager/standing-mailbag-v2.png';
         deviceFootprints.linManager = [23,7];
+        // Dialogue reads the same sources and crops as map pawns.
+        global.TileRendererV2.getSpeakerPawn = function (entityId) {
+            var key = entityId === 'npc.station.observation_base' ? 'toolbench' :
+                entityId === 'npc.supervisor.manager' ? 'linManager' :
+                entityId === 'enemy.street_thug' ? 'streetThug' : 'npc';
+            return {url:spriteSources[key],crop:pawnSpecs[key] ? pawnSpecs[key].crop.slice() : null};
+        };
         var spriteCache = {};
 
 
@@ -228,23 +246,18 @@
             mapGridEl.style.width = w + 'px'; mapGridEl.style.height = h + 'px';
         }
         function colorForCell(m) {
-            if (!m.walkable) {
-                if (m.cookingStation) return '#3d2b1f'; if (m.pharmacyStation) return '#1e2d2c';
-                if (m.compostStation) return '#2f2f18'; if (m.agricultureStation) return '#243820';
-                if (m.livestockStation) return '#3d3018'; if (m.warehouseStation) return '#2a2838'; return '#3d2a2a';
-            }
-            if (m.portal) return '#2a2d35'; if (m.gathering) return '#2a3324'; if (m.groundCount > 0) return '#332a24';
-            if (m.pharmacyStation) return '#243530'; if (m.compostStation) return '#363620'; if (m.livestockStation) return '#3a3118'; return '#312a24';
+            if (m.portal) return '#365e65';
+            if (m.gathering || m.agricultureStation) return '#526b38';
+            if (m.cookingStation || m.livestockStation || m.compostStation) return '#69543b';
+            if (m.pharmacyStation) return '#3b6055';
+            if (m.warehouseStation) return '#635b44';
+            return m.walkable ? '#53584a' : '#303d4d';
         }
         function strokeForCell(m) {
-            if (!m.walkable) {
-                if (m.cookingStation) return 'rgba(251,146,60,.5)'; if (m.pharmacyStation) return 'rgba(45,212,191,.45)';
-                if (m.compostStation) return 'rgba(202,138,4,.45)'; if (m.agricultureStation) return 'rgba(74,222,128,.45)';
-                if (m.livestockStation) return 'rgba(255,140,0,.55)'; if (m.warehouseStation) return 'rgba(211,160,96,.5)'; return 'rgba(180,80,80,.4)';
-            }
-            if (m.portal) return 'rgba(100,200,255,.35)'; if (m.gathering) return 'rgba(120,180,80,.45)';
-            if (m.groundCount > 0) return 'rgba(212,163,115,.5)'; if (m.pharmacyStation) return 'rgba(45,212,191,.22)';
-            if (m.compostStation) return 'rgba(202,138,4,.22)'; if (m.livestockStation) return 'rgba(255,140,0,.28)'; return 'rgba(255,255,255,.10)';
+            if (m.portal) return 'rgba(143,199,201,.65)';
+            if (m.gathering || m.agricultureStation) return 'rgba(171,193,113,.58)';
+            if (m.cookingStation || m.livestockStation || m.compostStation || m.warehouseStation) return 'rgba(201,170,115,.52)';
+            return m.walkable ? 'rgba(184,184,149,.18)' : 'rgba(135,156,181,.44)';
         }
         function trace(ctx, pts, inset) {
             var cx=0,cy=0,i; for(i=0;i<pts.length;i++){cx+=pts[i].x;cy+=pts[i].y;} cx/=pts.length;cy/=pts.length;
@@ -259,16 +272,38 @@
             trace(ctx,projection.cellPolygon(gx,gy),inset||0);
             if(fill){ctx.fillStyle=fill;ctx.fill();} if(stroke){ctx.strokeStyle=stroke;ctx.lineWidth=width||1;ctx.stroke();}
         }
-        function drawStaticCell(gx,gy,m){paintCell(staticCtx,gx,gy,colorForCell(m),strokeForCell(m),1,projection.isIsometric?.6:1);}
+        function drawStaticCell(gx, gy, m) {
+            var ctx = staticCtx, points = projection.cellPolygon(gx, gy);
+            var kind = m.gathering || m.agricultureStation ? 'moss' : (m.walkable ? 'stone' : 'rock');
+            var material = groundMaterials[kind];
+            paintCell(ctx, gx, gy, colorForCell(m), null, 1, 0);
+            if (material) {
+                ctx.save();
+                trace(ctx, points, 0); ctx.clip();
+                // Map a square onto the actual tile axes in both supported projections.
+                ctx.transform((points[1].x-points[0].x)/256, (points[1].y-points[0].y)/256,
+                    (points[3].x-points[0].x)/256, (points[3].y-points[0].y)/256, points[0].x, points[0].y);
+                ctx.translate(128,128);
+                ctx.rotate(((gx*13+gy*7)&3)*Math.PI/2);
+                // Preserve category tints beneath the common surface grain.
+                var tinted = m.portal || m.cookingStation || m.livestockStation || m.compostStation || m.pharmacyStation || m.warehouseStation;
+                ctx.globalAlpha = tinted ? .34 : .76;
+                ctx.drawImage(material,-128,-128,256,256);
+                ctx.restore();
+            }
+            // Stable, faint variation breaks repetition without frame-to-frame flicker.
+            var variation = ((gx*37+gy*17)%7-3)*.012;
+            paintCell(ctx,gx,gy,variation>0?'rgba(216,207,170,'+variation+')':'rgba(10,24,18,'+(-variation)+')',strokeForCell(m),1,.5);
+        }
         function drawExteriorWalls(map){
             if(!projection.isIsometric||!(projection.thickness>0))return;
             var d=projection.thickness,gx,gy,p;
             staticCtx.save();
             for(gy=0;gy<map.height;gy++){
-                p=projection.cellPolygon(map.width-1,gy); staticCtx.beginPath(); staticCtx.moveTo(p[1].x,p[1].y);staticCtx.lineTo(p[2].x,p[2].y);staticCtx.lineTo(p[2].x,p[2].y+d);staticCtx.lineTo(p[1].x,p[1].y+d);staticCtx.closePath();staticCtx.fillStyle='#191311';staticCtx.fill();staticCtx.strokeStyle='rgba(255,255,255,.08)';staticCtx.stroke();
+                p=projection.cellPolygon(map.width-1,gy); staticCtx.beginPath(); staticCtx.moveTo(p[1].x,p[1].y);staticCtx.lineTo(p[2].x,p[2].y);staticCtx.lineTo(p[2].x,p[2].y+d);staticCtx.lineTo(p[1].x,p[1].y+d);staticCtx.closePath();staticCtx.fillStyle='#18231e';staticCtx.fill();staticCtx.strokeStyle='rgba(255,255,255,.08)';staticCtx.stroke();
             }
             for(gx=0;gx<map.width;gx++){
-                p=projection.cellPolygon(gx,map.height-1); staticCtx.beginPath();staticCtx.moveTo(p[2].x,p[2].y);staticCtx.lineTo(p[3].x,p[3].y);staticCtx.lineTo(p[3].x,p[3].y+d);staticCtx.lineTo(p[2].x,p[2].y+d);staticCtx.closePath();staticCtx.fillStyle='#241b16';staticCtx.fill();staticCtx.strokeStyle='rgba(255,255,255,.07)';staticCtx.stroke();
+                p=projection.cellPolygon(gx,map.height-1); staticCtx.beginPath();staticCtx.moveTo(p[2].x,p[2].y);staticCtx.lineTo(p[3].x,p[3].y);staticCtx.lineTo(p[3].x,p[3].y+d);staticCtx.lineTo(p[2].x,p[2].y+d);staticCtx.closePath();staticCtx.fillStyle='#26332a';staticCtx.fill();staticCtx.strokeStyle='rgba(255,255,255,.07)';staticCtx.stroke();
             }
             staticCtx.restore();
         }
@@ -282,9 +317,9 @@
             if(label){var lab=String(label).trim();if(lab.length>6)lab=lab.slice(0,6);ctx.font='bold 12px "Microsoft YaHei","PingFang SC",sans-serif';ctx.textAlign='center';ctx.textBaseline='bottom';ctx.lineWidth=3;ctx.strokeStyle='rgba(18,14,12,.9)';ctx.strokeText(lab,cx,hy-12*s);ctx.fillStyle='#f3e9d9';ctx.fillText(lab,cx,hy-12*s);}ctx.restore();
         }
         function drawOverlay(gx,gy,m){
-            if(m.adjacent&&!m.leapTarget)paintCell(dynamicCtx,gx,gy,'rgba(255,255,255,.055)',null,0,2);
-            if(m.leapTarget)paintCell(dynamicCtx,gx,gy,'rgba(56,189,248,.14)','rgba(56,189,248,.72)',2,2);
-            if(m.player)paintCell(dynamicCtx,gx,gy,'rgba(251,191,36,.07)','rgba(251,191,36,.9)',2,2);
+            if(m.adjacent&&!m.leapTarget)paintCell(dynamicCtx,gx,gy,'rgba(217,212,173,.055)',null,0,2);
+            if(m.leapTarget)paintCell(dynamicCtx,gx,gy,'rgba(139,181,177,.14)','rgba(139,181,177,.82)',2,2);
+            if(m.player)paintCell(dynamicCtx,gx,gy,'rgba(197,176,131,.10)','rgba(215,193,145,.95)',2,2);
         }
         function drawEntity(gx,gy,m){
             var c=projection.cellCenter(gx,gy), lift=projection.isIsometric?18:0;

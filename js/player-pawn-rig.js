@@ -82,5 +82,6 @@
     }
     function update(el) { return renderMask(el, readMask(global.CharacterAttributes)); }
     // Compatibility name for the existing HUD hook. Art now comes only from the approved atlas.
-    global.PlayerPawnRig = {update:update,readMask:readMask,renderMask:renderMask};
+    global.PlayerPawnRig = {update:update,readMask:readMask,renderMask:renderMask,
+        getDialoguePortrait:function () { return frame(readMask(global.CharacterAttributes)).then(function (f) { return f.url; }); }};
 })(window);

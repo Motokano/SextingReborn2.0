@@ -447,10 +447,15 @@
     function updatePlayerDirectionIndicator() {
         var el = document.getElementById('player-direction-indicator');
         if (!el) return;
-        var deg = window.MapProjection && typeof window.MapProjection.directionAngleDeg === 'function'
-            ? window.MapProjection.directionAngleDeg(currentFacingDir)
-            : normalizeFacingDir(currentFacingDir) * 45;
-        el.style.transform = 'translate(-50%, -50%) rotate(' + deg + 'deg)';
+        if (window.MapProjection && window.MapProjection.directionIndicatorPosition) {
+            var marker = window.MapProjection.directionIndicatorPosition(currentFacingDir, CELL_PX);
+            el.style.transform = 'matrix(' + [marker.a, marker.b, marker.c, marker.d, marker.x, marker.y].join(',') + ')';
+        } else {
+            var angle = normalizeFacingDir(currentFacingDir) * Math.PI / 4;
+            var dx = Math.round(Math.sin(angle)), dy = -Math.round(Math.cos(angle));
+            el.style.transform = 'translate(' + (dx*CELL_PX/2+6*Math.sin(angle)) + 'px, ' +
+                (dy*CELL_PX/2-6*Math.cos(angle)) + 'px) rotate(' + (angle*180/Math.PI) + 'deg)';
+        }
     }
 
     window.addEventListener('mapviewchange', updatePlayerDirectionIndicator);
@@ -7464,15 +7469,12 @@
             closable: true
         });
         U.registerPanel('win-bottom', {
-            type: 'anchored', titleKey: 'ui.windows.bottom_bar',
+            type: 'free', titleKey: 'ui.windows.bottom_bar',
             el: function () { return document.getElementById('bottom-hud-stack'); },
+            defaultPos: 'dock', minW: 220, minH: 64,
+            dragHandle: '.quickbar-drag-handle',
+            dblclickReset: true,
             closable: true,
-            onVisibility: function (el, visible) {
-                // 底部栏（动作栏+快捷腰带）贴日志上沿：显示/隐藏后需重新同步
-                if (window.GameLog && typeof window.GameLog.syncQuickBeltDock === 'function') {
-                    window.GameLog.syncQuickBeltDock();
-                }
-            }
         });
         U.registerPanel('win-dialogue', {
             type: 'anchored', titleKey: 'ui.windows.dialogue',

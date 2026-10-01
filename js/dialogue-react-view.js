@@ -201,6 +201,7 @@
         var nextState = state || {};
         if (avatarRoot) {
             avatarRoot.render(global.React.createElement(DialogueAvatar, {
+                key: nextState.avatarUrl || 'empty',
                 avatarUrl: nextState.avatarUrl || '',
                 fallbackGlyph: nextState.fallbackGlyph || '❖'
             }));

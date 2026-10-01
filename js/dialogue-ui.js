@@ -1,7 +1,7 @@
 /**
  * 底部对话框 UI
- * - 固定高度面板，显示说话人头像 + 名称 + 台词
- * - 头像可为玩家与各 NPC 分别设置（setPortrait），也会尝试从 EntityAppearance 取值
+ * - 固定高度面板，显示说话人棋子 + 名称 + 台词
+ * - 棋子来自地图素材；setPortrait 仅保留旧接口兼容，不再决定显示形象
  *
  * 公开 API：
  * - DialogueUI.setPortrait(entityId, imageUrl)
@@ -120,8 +120,8 @@
     }
 
     function normalizeEntityId(role, speakerId) {
-        if (speakerId && speakerId !== '') return String(speakerId);
         if (role === 'player') return 'player';
+        if (speakerId && speakerId !== '') return String(speakerId);
         if (role === 'npc') return 'npc';
         return role || 'unknown';
     }
@@ -434,7 +434,7 @@
         for (var i = 0; i < linesRich.length; i++) {
             var l = linesRich[i];
             var role = deriveRole(l);
-            var entityId = normalizeEntityId(role, opts.npcId);
+            var entityId = normalizeEntityId(role, l.speakerId || l.entityId || opts.npcId);
             var avatarUrl = deriveAvatarUrl(l);
             var text = deriveText(l);
             // 避免“触发了但台词为空白”的空对话框
@@ -570,12 +570,25 @@
         currentSpeakerName = (currentLineSpeakerRole === 'narration') ? '' : (cur.speakerName || '');
         currentCloseLabel = ui('dialogue.close');
         var entityId = cur.speakerId || normalizeEntityId(cur.speakerRole, null);
-        var url = getPortraitUrl(entityId);
-        // 优先使用 linesRich 的逐句头像（npc-editor 会导出 avatar 字段）
-        if (cur && cur.avatarUrl) url = String(cur.avatarUrl);
-        var glyph = getFallbackGlyph(cur.speakerRole);
-        currentAvatarUrl = url || '';
-        currentFallbackGlyph = glyph || '❖';
+        var url = '';
+        currentAvatarUrl = '';
+        currentFallbackGlyph = cur.speakerRole === 'narration' ? '' : '?';
+        avatarWrap.style.display = cur.speakerRole === 'narration' ? 'none' : '';
+        avatarWrap.classList.add('dlg-pawn');
+        if (global.DialoguePawn && cur.speakerRole !== 'narration') {
+            global.DialoguePawn.resolve(cur.speakerRole, entityId).then(function (pawnUrl) {
+                // A slow asset load must not replace the next speaker or reopen a closed dialogue.
+                if (!isOpen || queue[0] !== cur) return;
+                currentAvatarUrl = pawnUrl || '';
+                if (!useReact && avatarImg) {
+                    avatarImg.onload = function () { if (queue[0] === cur) avatarWrap.classList.add('avatar-has-image'); };
+                    avatarImg.onerror = function () { if (queue[0] === cur) avatarWrap.classList.remove('avatar-has-image'); };
+                    if (pawnUrl) avatarImg.src = pawnUrl;
+                    else avatarImg.removeAttribute('src');
+                }
+                renderDialogueText();
+            }).catch(function () { /* Keep the neutral unknown marker; never resurrect old portraits. */ });
+        }
         currentNextDisabled = false;
         currentNextLabel = (queue.length > 1) ? ui('dialogue.next') : ui('dialogue.end');
         startTyping(cur.text || '');

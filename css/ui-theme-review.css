@@ -1,0 +1,10 @@
+/* Theme-only prototype. Existing DOM, visibility, anchors, sizes and event handlers remain authoritative. */
+#ui-theme-review{position:fixed;right:12px;top:8px;z-index:9998;display:flex;align-items:center;gap:4px;padding:5px;border:1px solid #d8d3bf;border-radius:6px;background:#f1eddf;color:#343c37;box-shadow:0 3px 14px #0003;font:11px 'Microsoft YaHei',sans-serif}
+#ui-theme-review .review-label{padding:0 7px;font-size:10px;color:#70766b}
+#ui-theme-review button{font:inherit;border:1px solid transparent;border-radius:3px;background:transparent;color:inherit;padding:5px 9px;cursor:pointer}
+#ui-theme-review button[aria-pressed=true]{background:#34413b;color:#efe8d5}
+#ui-theme-review button:focus-visible{outline:2px solid #96805d;outline-offset:2px}
+#ui-theme-review .review-collapse{padding:5px 7px}
+#ui-theme-review.is-collapsed>:not(.review-collapse){display:none}
+
+@media(max-width:760px){#ui-theme-review .review-label{display:none}#ui-theme-review{top:52px;right:8px}}

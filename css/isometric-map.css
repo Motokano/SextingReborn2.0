@@ -103,8 +103,8 @@
 }
 
 .map-view-isometric #player-direction-indicator {
-    width: 104px;
-    height: 99px;
+    width: 0;
+    height: 0;
     top: 50%;
     z-index: 1;
 }

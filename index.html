@@ -131,13 +131,13 @@
         }
         #player-direction-indicator {
             position: absolute;
-            width: 78px;
-            height: 78px;
+            width: 0;
+            height: 0;
             left: 50%;
             top: 50%;
-            transform: translate(-50%, -50%) rotate(180deg);
+            transform: translate(0px, 44.5px) rotate(180deg);
             pointer-events: none;
-            transition: transform 0.15s cubic-bezier(0.2, 0.8, 0.2, 1);
+            transition: none;
             z-index: -1;
         }
         #player-direction-indicator::before {
@@ -301,11 +301,11 @@
         .role-card .subtitle { font-size: 15px; color: #fbbf24; font-weight: 600; margin-top: 8px; letter-spacing: 0.06em; }
         .combat-state-badge { display:inline-flex; align-items:center; margin-top:10px; padding:4px 9px; border:1px solid rgba(168,162,158,.45); border-radius:4px; color:#d6d3d1; background:rgba(28,25,23,.55); font-size:13px; font-weight:700; letter-spacing:.06em; }
         .combat-state-badge.in-combat { color:#fecaca; border-color:rgba(239,68,68,.75); background:rgba(127,29,29,.34); box-shadow:0 0 0 1px rgba(239,68,68,.12) inset; }
-        /* 底部动作栏 + 快捷腰带：整体贴游戏日志上沿，位置由 game-log.js 同步 */
+        /* 独立快捷窗口：默认底部居中，拖动与位置记忆由 UIWindows 管理。 */
         #bottom-hud-stack {
             position: fixed;
-            left: 50%;
-            transform: translateX(-50%);
+            left: calc(50% - 160px);
+            width: 320px;
             bottom: 108px;
             z-index: 39;
             display: flex;
@@ -319,6 +319,7 @@
         #bottom-hud-stack #quick-belt-dock {
             pointer-events: auto;
         }
+        .quickbar-drag-handle { pointer-events:auto; cursor:move; touch-action:none; user-select:none; padding:3px 12px; border:1px solid #85704a60; border-radius:4px; background:#22291fe8; color:#bdb593; font:10px 'Microsoft YaHei',sans-serif; }
         #quick-belt-dock {
             max-width: 100%;
         }
@@ -3580,8 +3581,10 @@
 }
 </style><link rel="stylesheet" href="css/warehouse-workspace.css?v=20260926c">
 <link rel="stylesheet" href="css/toolbench-panel.css">
+    <link rel="stylesheet" href="css/game-theme.css">
+    <link rel="stylesheet" href="css/game-theme-systems.css">
 </head>
-<body>
+<body class="ui-refined">
     <div id="item-tooltip"></div>
 
     <!-- 创建角色界面：文案由 UI 文案表注入 -->
@@ -4411,6 +4414,7 @@
     </div>
 
     <div id="bottom-hud-stack" class="bottom-hud-stack" data-ui="bottom.hud.stack" data-ui-attr="aria-label" aria-label="">
+        <div class="quickbar-drag-handle" title="拖动快捷栏；双击恢复默认位置；可在窗口列表锁定布局">⠿ 快捷栏</div>
         <div id="action-bar-dock" class="action-bar-dock" role="toolbar" data-ui="action.bar.dock" data-ui-attr="aria-label" aria-label="">
             <div class="action-bar-context" id="action-bar-context">
                 <button type="button" id="action-bar-gather" class="action-bar-btn" style="display:none;" data-ui="action.bar.gather"></button>
@@ -4454,6 +4458,7 @@
     <script src="assets/vendor/react/react.production.min.js"></script>
     <script src="assets/vendor/react/react-dom.production.min.js"></script>
     <script src="js/dialogue-react-view.js"></script>
+    <script src="js/dialogue-pawn.js"></script>
     <script src="js/dialogue-ui.js"></script>
     <script src="js/buff-system.js"></script>
     <script src="js/game-log.js"></script>
@@ -4551,6 +4556,8 @@
     <script src="js/background-music.js"></script>
     <script src="js/bootstrap.js"></script>
     <script src="js/debug-hash-router.js"></script>
+    <script src="js/game-theme.js"></script>
+    <script src="js/ui-theme-review.js"></script>
 
 </body>
 </html>

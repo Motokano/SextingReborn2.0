@@ -169,6 +169,23 @@
         return Math.atan2(v.x, -v.y) * 180 / Math.PI;
     }
 
+    // Project the complete triangle, not a rigid screen-space rotation.
+    // Local CSS vertices: tip (0,-6), base (-7,6)..(7,6).
+    function directionIndicatorPosition(dir, cellPx) {
+        var vectors = [[0,-1],[1,-1],[1,0],[1,1],[0,1],[-1,1],[-1,0],[-1,-1]];
+        var index = ((Math.round(Number(dir) || 0) % 8) + 8) % 8;
+        var p = create({width:1,height:1}, cellPx);
+        var dx = vectors[index][0], dy = vectors[index][1], length = Math.hypot(dx,dy);
+        // Match the 2px radial inset used by the selected-cell outline.
+        var sx = p.isIsometric ? (p.tileWidth/2-2)/(p.tileWidth/2) : 1;
+        var sy = p.isIsometric ? (p.tileHeight/2-2)/(p.tileHeight/2) : 1;
+        var forward = p.directionVector(dx/length/p.cellPx,dy/length/p.cellPx);
+        var tangent = p.directionVector(-dy/length/p.cellPx,dx/length/p.cellPx);
+        var boundary = p.directionVector(dx/2,dy/2);
+        return {a:tangent.x*sx,b:tangent.y*sy,c:-forward.x*sx,d:-forward.y*sy,
+            x:(boundary.x+6*forward.x)*sx,y:(boundary.y+6*forward.y)*sy};
+    }
+
     function isAdjacentTurnTarget(playerX, playerY, targetX, targetY) {
         var dx = Math.abs((Number(targetX) || 0) - (Number(playerX) || 0));
         var dy = Math.abs((Number(targetY) || 0) - (Number(playerY) || 0));
@@ -204,6 +221,7 @@
         setMode: setMode,
         create: create,
         directionAngleDeg: directionAngleDeg,
+        directionIndicatorPosition: directionIndicatorPosition,
         isAdjacentTurnTarget: isAdjacentTurnTarget,
         mountControl: mountControl
     };
