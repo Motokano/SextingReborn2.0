@@ -94,12 +94,17 @@
      * 未加载 UIWindows（脚本顺序异常）时静默降级：仅保留内容日志，面板不可拖（可接受）。
      */
     var logPanelSpec = null;
+    function defaultLogPosition() {
+        // The shared layout uses CSS docking; saved player geometry still takes precedence.
+        return document.body && document.body.classList.contains('ui-layout') ? 'dock' : 'fullwidth-bottom';
+    }
     function defaultLogHeight() {
         return document.body && document.body.classList.contains('ui-refined')
             ? Math.max(160, Math.min(320, Math.round(window.innerHeight * 0.26))) : 100;
     }
     function refreshDefaultSize() {
         if (!logPanelSpec || !global.UIWindows) return;
+        logPanelSpec.defaultPos = defaultLogPosition();
         logPanelSpec.defaultSize.h = defaultLogHeight();
         global.UIWindows.applyLayout('win-log');
     }
@@ -110,7 +115,7 @@
             type: 'free',
             titleKey: 'ui.windows.log',
             el: function () { return document.getElementById('game-log-panel'); },
-            defaultPos: 'fullwidth-bottom',
+            defaultPos: defaultLogPosition(),
             defaultSize: { h: defaultLogHeight() },
             minW: MIN_PANEL_W,
             minH: MIN_PANEL_H,
@@ -127,7 +132,7 @@
         if (typeof global.UIWindows.init === 'function') global.UIWindows.init();
     }
 
-    /** 兼容旧调用：重置日志面板为默认贴底全宽（委托管线） */
+    /** 兼容旧调用：重置日志面板为当前主题默认布局（委托管线） */
     function resetLogPanelLayout() {
         if (global.UIWindows && typeof global.UIWindows.resetWindow === 'function') {
             global.UIWindows.resetWindow('win-log');

@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="400" height="240" viewBox="0 0 400 240" preserveAspectRatio="none">
+<defs><linearGradient id="paper" x2=".8" y2="1"><stop stop-color="#c4b08a"/><stop offset=".5" stop-color="#b6a17c"/><stop offset="1" stop-color="#938566"/></linearGradient><filter id="grain"><feTurbulence baseFrequency=".55" numOctaves="3" stitchTiles="stitch"/><feColorMatrix type="saturate" values="0"/><feComponentTransfer><feFuncA type="linear" slope=".11"/></feComponentTransfer></filter><radialGradient id="stain"><stop stop-color="#594629" stop-opacity=".2"/><stop offset="1" stop-color="#594629" stop-opacity="0"/></radialGradient></defs>
+<path d="m6 4 388 2 2 225-83 2-112-1-105 2-90-2Z" fill="#302719"/>
+<path d="m7 3 81 2 93-3 83 2 128-1 1 61-2 63 3 99-48 1-61-2-91 2-71-2-57 2-62-2 1-81-2-63Z" fill="url(#paper)" stroke="#5e5036" stroke-width="1" vector-effect="non-scaling-stroke"/>
+<path d="M8 6h381v217H8z" filter="url(#grain)"/>
+<ellipse cx="327" cy="33" rx="84" ry="50" fill="url(#stain)"/><ellipse cx="100" cy="217" rx="140" ry="39" fill="url(#stain)"/>
+<path d="M27 4v221" stroke="#8b5140" stroke-opacity=".45" stroke-width="1" vector-effect="non-scaling-stroke"/>
+<path d="M9 9h7v205H9z" fill="#63573b"/>
+<path d="M5 22h16M5 51h16M5 82h16M5 113h16M5 146h16M5 179h16M5 209h16" stroke="#332f21" stroke-width="3" vector-effect="non-scaling-stroke"/>
+<path d="m5 21 16 2M5 50l16 2M5 81l16 2M5 112l16 2M5 145l16 2M5 178l16 2M5 208l16 2" stroke="#cab88f" stroke-width="1" vector-effect="non-scaling-stroke"/>
+<path d="m364 7 20 1 2 22Z" fill="#dfcba150"/>
+</svg>

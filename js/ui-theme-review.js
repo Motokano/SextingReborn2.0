@@ -18,6 +18,8 @@
     function select(mode) {
         mode = mode === 'original' ? 'original' : 'refined';
         document.body.classList.toggle('ui-refined', mode === 'refined');
+        document.body.classList.toggle('ui-layout', mode === 'refined');
+        document.body.classList.toggle('ui-matte', mode === 'refined');
         if (window.GameLog && window.GameLog.refreshDefaultSize) window.GameLog.refreshDefaultSize();
         controls.querySelectorAll('[data-theme]').forEach(function (button) {
             button.setAttribute('aria-pressed', String(button.dataset.theme === mode));

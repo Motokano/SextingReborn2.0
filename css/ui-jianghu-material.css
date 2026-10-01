@@ -1,0 +1,123 @@
+/* Material study layered over the layout demo. Decorative surfaces never own visibility or geometry. */
+body.ui-jianghu.ui-material {
+    --mat-fiber: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.65' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3CfeComponentTransfer%3E%3CfeFuncA type='linear' slope='.12'/%3E%3C/feComponentTransfer%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.7'/%3E%3C/svg%3E");
+    --mat-weft: repeating-linear-gradient(0deg,#d2c3a608 0 1px,transparent 1px 3px);
+    --mat-warp: repeating-linear-gradient(90deg,#b7c3a707 0 1px,transparent 1px 3px);
+    --mat-cloth: linear-gradient(120deg,#414c3b,#2a372e 45%,#202e26);
+    --mat-wood: repeating-linear-gradient(3deg,#221d1730 0 1px,transparent 1px 5px),linear-gradient(110deg,#6a6248,#3c4030 38%,#292f24);
+    --mat-trim: #9d8c63;
+    --mat-rivet-tl: radial-gradient(circle at 7px 7px,#bea984 0 1px,#302b20 1.5px 2px,transparent 2.7px);
+    --mat-rivet-tr: radial-gradient(circle at calc(100% - 7px) 7px,#baa27a 0 1px,#302b20 1.5px 2px,transparent 2.7px);
+    --mat-rivet-bl: radial-gradient(circle at 7px calc(100% - 7px),#8c7a55 0 1px,#302b20 1.5px 2px,transparent 2.7px);
+    --mat-rivet-br: radial-gradient(circle at calc(100% - 7px) calc(100% - 7px),#8c7a55 0 1px,#302b20 1.5px 2px,transparent 2.7px);
+    --mat-frame: inset 0 1px #ddd0a560,inset 0 -2px #111b15,inset 2px 0 #b9a47935,inset -2px 0 #101a1377,inset 0 0 0 4px #3c3e2bd9,inset 0 0 0 5px #a89c6255,0 3px 0 #111913,0 10px 24px #050d0980;
+    --mat-recess: inset 0 3px 8px #050c0999,inset 1px 0 2px #02080566,0 1px #c8ba8b32;
+    --mat-button: inset 0 1px #edddb276,inset 1px 0 #d2bf8840,inset 0 -2px #1c241aaa,0 2px 0 #101b14,0 4px 6px #050e0844;
+}
+.ui-jianghu.ui-material.ui-refined :is(.status-card,.role-card,.details-block,#buff-hud,.ui-window-bar,.ui-windows-menu,.player-actions-submenu) {
+    background-image: var(--mat-rivet-tl),var(--mat-rivet-tr),var(--mat-rivet-bl),var(--mat-rivet-br),var(--mat-fiber),var(--mat-weft),var(--mat-warp),var(--mat-cloth);
+    background-color: #29372e; border: 1px solid #777955; border-radius: 5px;
+    box-shadow: var(--mat-frame); color: #e7dfc9;
+}
+.ui-jianghu.ui-material.ui-refined #status-role-card {
+    background-image: var(--mat-rivet-tl),var(--mat-rivet-tr),var(--mat-rivet-bl),var(--mat-rivet-br),var(--mat-fiber),radial-gradient(ellipse at 20% 0,#c5a46b25,transparent 75%),var(--mat-wood);
+    border-left: 1px solid #a5956d;
+}
+.ui-jianghu.ui-material.ui-refined .role-card h1 { font-weight: 600; color: #f0e6cb; text-shadow: 0 2px 2px #061209aa; }
+.ui-jianghu.ui-material.ui-refined .role-card .subtitle { color: #c0baa2; text-shadow: 0 1px #132316; }
+.ui-jianghu.ui-material.ui-refined .combat-state-badge { border: 1px solid #9ea67855; background: #18271b88; box-shadow: inset 0 2px 4px #101a1366,0 1px #c4bd8c22; }
+.ui-jianghu.ui-material.ui-refined .status-card .block-title {
+    color: #e0cda0; border-bottom-color: #bac48c42; text-shadow: 0 1px 2px #0b180d;
+    background: linear-gradient(90deg,#a18e4822,transparent); box-shadow: 0 1px #0b180d88;
+}
+.ui-jianghu.ui-material.ui-refined .status-card .label { color: #c1c2ac; }
+.ui-jianghu.ui-material.ui-refined .status-card .value { color: #e5e2cc; }
+.ui-jianghu.ui-material.ui-refined .status-card .value.ok { color: #b9cea5; }
+.ui-jianghu.ui-material.ui-refined .status-card .value.warn { color: #e0bf84; }
+.ui-jianghu.ui-material.ui-refined .status-card .value.danger { color: #f1a388; }
+.ui-jianghu.ui-material.ui-refined .progress-wrap {
+    height: 5px; background: #152019; border-radius: 2px;
+    box-shadow: inset 0 2px 3px #020805c0,0 1px #bbc79840; overflow: hidden;
+}
+.ui-jianghu.ui-material.ui-refined .progress-fill { background-image: linear-gradient(#e7efbd55,transparent 45%,#15231666); box-shadow: inset 0 1px #e6e9bf70; }
+.ui-jianghu.ui-material.ui-refined .details-block summary { background-image: var(--mat-fiber),var(--mat-wood); }
+.ui-jianghu.ui-material.ui-refined .details-block .details-body { background: #19271e88; box-shadow: inset 0 3px 5px #08110b55; }
+.ui-jianghu.ui-material.ui-refined :is(.ui-window-min,.ui-window-close) { color: #c9c6a8; text-shadow: 0 1px 2px #06120a; }
+
+/* Small navigation tiles sit proud of the scene, with recessed engraved marks. */
+.ui-jianghu.ui-material.ui-refined #right-hud .hud-btn {
+    background-image: var(--mat-fiber),linear-gradient(135deg,#8a805d,#5c6246 40%,#384832 85%);
+    border-color: #a19367 #454e34 #283726 #8d885e;
+    border-radius: 4px; color: #e0d3ad; box-shadow: var(--mat-button);
+}
+.ui-jianghu.ui-material.ui-refined #right-hud .hud-btn:hover { background-image: var(--mat-fiber),linear-gradient(135deg,#a8996d,#6f7853 45%,#435738); border-top-color: #d3bf85; }
+.ui-jianghu.ui-material.ui-refined .jianghu-nav-icon { stroke-width: 1.5; filter: drop-shadow(0 1px 0 #172615); }
+.ui-jianghu.ui-material.ui-refined #top-hud .time-pill {
+    background-image: var(--mat-fiber),var(--mat-wood); border: 1px solid #a6996a90;
+    border-radius: 3px; box-shadow: inset 0 1px #e5cc9755,inset 0 -2px #162115aa,0 3px 0 #122015,0 7px 12px #050c0a66;
+}
+.ui-jianghu.ui-material.ui-refined #top-hud .time-text { color: #e7dfc5; text-shadow: 0 1px 2px #132016; }
+.ui-jianghu.ui-material.ui-refined #top-hud .time-period { color: #d5bf8f; }
+.ui-jianghu.ui-material.ui-refined #buff-hud .buff-chip {
+    background-image: var(--mat-fiber),linear-gradient(115deg,#526243,#384c32);
+    border: 1px dashed #b1b18466; border-radius: 2px; box-shadow: 0 2px 3px #08140966,inset 0 1px #d6dd9a22;
+    color: #e1e3c5;
+}
+
+/* Leather carriers and sunken wells make actions and items feel distinct. */
+.ui-jianghu.ui-material.ui-refined :is(.action-bar-dock,#quick-belt-dock) {
+    background-image: var(--mat-rivet-tl),var(--mat-rivet-tr),var(--mat-rivet-bl),var(--mat-rivet-br),var(--mat-fiber),linear-gradient(110deg,#6a5b3e,#403e2d 55%,#333c2a);
+    border: 1px solid #9e875bc0; border-radius: 5px; box-shadow: var(--mat-frame);
+}
+.ui-jianghu.ui-material.ui-refined .quickbar-drag-handle { background-image: var(--mat-fiber),var(--mat-wood); border: 1px solid #95825c80; border-radius: 3px; box-shadow: var(--mat-button); color: #d3c7a2; }
+.ui-jianghu.ui-material.ui-refined .quick-belt .slot {
+    background-image: var(--mat-fiber),radial-gradient(ellipse at 50% 90%,#33472a,#14231a 80%);
+    border-color: #111d16 #343f28 #9e966255 #14211a; border-radius: 3px; box-shadow: var(--mat-recess);
+}
+.ui-jianghu.ui-material.ui-refined .quick-belt .quick-belt-slot-key { color: #c1b184; text-shadow: 0 1px #000; }
+.ui-jianghu.ui-material.ui-refined .action-bar-dock .action-bar-btn {
+    background-image: var(--mat-fiber),linear-gradient(#536046,#35442e);
+    border-color: #92936577; border-radius: 3px; box-shadow: var(--mat-button); color: #e0d9b9;
+}
+.ui-jianghu.ui-material.ui-refined .action-bar-dock .action-bar-btn.empty { background: #192b1bb0; box-shadow: var(--mat-recess); }
+
+/* Journal: a bound, dark fibrous sheet with a wooden heading. */
+.ui-jianghu.ui-material.ui-refined #game-log-panel {
+    background-image: var(--mat-fiber),repeating-linear-gradient(0deg,#a49b6910 0 1px,transparent 1px 27px),linear-gradient(110deg,#3c402e,#26342a);
+    border: 1px solid #9e8e61; border-radius: 4px; box-shadow: var(--mat-frame);
+}
+.ui-jianghu.ui-material.ui-refined #game-log-panel .game-log-header { background-image: var(--mat-fiber),var(--mat-wood); border-bottom: 1px solid #9f936b70; box-shadow: 0 2px 5px #111c1466; }
+.ui-jianghu.ui-material.ui-refined #game-log-panel .game-log-header > span:first-child { color: #e5d4ac; text-shadow: 0 1px #0a190d; }
+.ui-jianghu.ui-material.ui-refined #game-log-panel .game-log-lines { color: #d0d4b9; }
+.ui-jianghu.ui-material.ui-refined .game-log-tools button { background: #18291c88; border: 1px solid #a4a07155; box-shadow: inset 0 1px 3px #0b170d99; }
+
+/* Modal frames carry the same materials at a larger scale. Content stays quiet. */
+.ui-jianghu.ui-material.ui-refined :is(#modal-backpack .panel,.combat-panel,.survival-panel,.cs-panel,.bw-panel,.hw-panel,.agri-panel,.lv-panel) {
+    background-image: var(--mat-fiber),var(--mat-weft),var(--mat-warp),var(--mat-cloth);
+    border: 1px solid #a59162; border-radius: 6px;
+    box-shadow: var(--mat-frame),0 30px 85px #000a;
+}
+.ui-jianghu.ui-material.ui-refined :is(#modal-backpack .bp-head,.combat-header,.survival-header,.cs-header,.bw-header,.hw-header,.agri-head,.lv-header) {
+    background-image: var(--mat-rivet-tl),var(--mat-rivet-tr),var(--mat-fiber),var(--mat-wood);
+    border-bottom: 1px solid #b3a17280; box-shadow: inset 0 1px #ebd2a044,0 3px 7px #0d1a1155;
+}
+.ui-jianghu.ui-material.ui-refined :is(#modal-backpack .bp-title,.combat-panel-title,.survival-header h2) { color: #f0dfb9; text-shadow: 0 2px 2px #07180d; }
+.ui-jianghu.ui-material.ui-refined #modal-backpack :is(.bp-tabs,.bp-list) { background-image: var(--mat-fiber),linear-gradient(90deg,#26362b,#203125); box-shadow: inset -3px 0 7px #071c1055; }
+.ui-jianghu.ui-material.ui-refined #modal-backpack #backpack-detail { background-image: var(--mat-fiber),linear-gradient(110deg,#48513b,#313f30); box-shadow: inset 0 3px 8px #14271a99; }
+.ui-jianghu.ui-material.ui-refined #modal-backpack .bp-equip-panel { background-image: var(--mat-fiber),var(--mat-weft),var(--mat-warp),linear-gradient(#2d3d2c,#233524); box-shadow: inset 0 2px 6px #071c1199; }
+.ui-jianghu.ui-material.ui-refined #modal-backpack :is(.bp-item-row,.equip-row) { background-image: var(--mat-fiber),linear-gradient(110deg,#3c4b35,#2c402c); border-color: #78815888; border-radius: 3px; box-shadow: inset 0 1px #c8d8a222,0 2px 4px #0c201255; }
+.ui-jianghu.ui-material.ui-refined #modal-backpack :is(.bp-tab-btn,.bp-action-btn,.bp-close,.btn-unequip) { background-image: var(--mat-fiber),linear-gradient(#586347,#384c32); border-color: #93956480; color: #e2ddbc; box-shadow: var(--mat-button); border-radius: 3px; }
+.ui-jianghu.ui-material.ui-refined #modal-backpack .bp-tab-btn.active { background-image: var(--mat-fiber),linear-gradient(#c7b17c,#a38c5a); border-color: #dac78f; color: #252b1b; box-shadow: inset 0 1px #fff0b7a0,inset 0 -2px #6b633b,0 3px 4px #061e0b55; }
+.ui-jianghu.ui-material.ui-refined #modal-combat :is(.combat-cat-rail,.combat-skill-column,.combat-config-column) { background-image: var(--mat-fiber),var(--mat-weft),var(--mat-warp),linear-gradient(120deg,#2d3c2e,#233526); box-shadow: inset 2px 0 7px #0e241266; }
+.ui-jianghu.ui-material.ui-refined #modal-combat :is(.combat-hub-node,.combat-limb-slot,.combat-skill-item,.combat-move-node) { background-image: var(--mat-fiber),linear-gradient(135deg,#3b4c33,#263d2a); border-color: #82936377; border-radius: 3px; box-shadow: var(--mat-recess); }
+.ui-jianghu.ui-material.ui-refined #modal-combat :is(.combat-hub-node.active,.combat-limb-slot.selected,.combat-skill-item.selected) { background-image: var(--mat-fiber),linear-gradient(125deg,#626749,#405436); border-color: #bdad75; box-shadow: inset 0 0 0 2px #d0b96e22,inset 0 1px #e6d49c66,0 3px 6px #08251488; }
+.ui-jianghu.ui-material.ui-refined #modal-combat :is(.combat-cat-btn,.combat-main-tab) { background-image: var(--mat-fiber),linear-gradient(#64704d,#3d5235); border-color: #899360; box-shadow: var(--mat-button); }
+.ui-jianghu.ui-material.ui-refined #modal-combat :is(.combat-cat-btn.active,.combat-main-tab.active) { background-image: var(--mat-fiber),linear-gradient(#ceba87,#a48b55); border-color: #d6bd7f; color: #26341b; }
+
+/* The press is visual only: no transforms that would move hit targets or floating menus. */
+.ui-jianghu.ui-material.ui-refined :is(#right-hud .hud-btn,.action-bar-btn,#modal-backpack .bp-tab-btn,#modal-backpack .bp-action-btn,#modal-backpack .bp-close,#modal-backpack .btn-unequip,#modal-combat .combat-cat-btn,#modal-combat .combat-main-tab):active:not(:disabled) {
+    box-shadow: inset 0 3px 7px #0a180bb0,0 1px #cfc29233; filter: brightness(.88);
+}
+/* Empty-state guidance stays readable against the lighter woven surfaces. */
+.ui-jianghu.ui-material.ui-refined #modal-backpack :is(.bp-detail-empty,.equip-module-slot .m-empty) { color: #bac1a8; }
+.ui-jianghu.ui-material.ui-refined #modal-combat :is(.hub-label,.slot-type,.combat-hub-node .hub-value.empty) { color: #b4bba2; }

@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="254" height="122" viewBox="0 0 254 122" preserveAspectRatio="none">
+<defs><linearGradient id="wood" x2="1" y2=".8"><stop stop-color="#716047"/><stop offset=".25" stop-color="#4d4030"/><stop offset=".7" stop-color="#3b3328"/><stop offset="1" stop-color="#262920"/></linearGradient><pattern id="grain" width="180" height="16" patternUnits="userSpaceOnUse"><path d="M-8 2Q35 8 68 3T190 5M-5 10Q58 3 104 10T190 9M5 14Q78 8 130 14" fill="none" stroke="#c1a474" stroke-opacity=".09" stroke-width="1"/></pattern></defs>
+<path d="m13 4 224-1 13 10-1 100-15 6-224-3-6-12L5 15Z" fill="#0c110c"/>
+<path d="m12 1 226 1 10 9-1 100-15 5-222-3-7-10 2-90Z" fill="url(#wood)" stroke="#aa9161" stroke-width="1" vector-effect="non-scaling-stroke"/>
+<path d="m12 5 224 1 8 8-1 93-14 5-216-3-6-9 2-84Z" fill="url(#grain)" stroke="#b59b6860" stroke-width=".8" vector-effect="non-scaling-stroke"/>
+<path d="M18 9 17 104M24 8l-2 98" stroke="#d5bf8c" stroke-width="1" stroke-opacity=".15" vector-effect="non-scaling-stroke"/>
+<path d="m216 9-2 27 3 15-3 36 2 19M220 8l-2 29 4 21-4 47" fill="none" stroke="#151c15" stroke-opacity=".8" stroke-width="1" vector-effect="non-scaling-stroke"/>
+<path d="M1 20h12M1 24h12M1 29h11M240 88h14M240 93h14M240 98h14" stroke="#b29b70" stroke-width="2" vector-effect="non-scaling-stroke"/>
+<path d="m7 19 2 12M246 85l-1 15" stroke="#50482f" stroke-width="2" vector-effect="non-scaling-stroke"/>
+</svg>

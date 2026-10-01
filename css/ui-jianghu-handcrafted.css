@@ -1,0 +1,141 @@
+/* A stronger, illustrated study. Each unlocked module carries its own object silhouette. */
+body.ui-handcrafted.ui-material.ui-refined {
+    --ui-accent: #ccb18a; --ui-text: #e7ddc6; --ui-muted: #b9b49e;
+    --craft-cloth: url('../assets/ui/jianghu/cloth-panel.svg');
+    --craft-wood: url('../assets/ui/jianghu/wood-token.svg');
+    --craft-paper: url('../assets/ui/jianghu/ledger-paper.svg');
+}
+body.ui-handcrafted.ui-material.ui-refined :is(.status-card,.role-card,.details-block,#buff-hud,.ui-window-bar,.ui-windows-menu,.player-actions-submenu) {
+    background: var(--craft-cloth) 0 0 / 100% 100% no-repeat;
+    border-color: transparent; border-radius: 0; box-shadow: none;
+}
+body.ui-handcrafted.ui-material.ui-refined #status-role-card {
+    position: relative; background: var(--craft-wood) 0 0 / 100% 100% no-repeat;
+    border: 1px solid transparent; padding-left: 25px;
+}
+body.ui-handcrafted.ui-material.ui-refined #status-role-card::after {
+    content: ''; position: absolute; right: 23px; bottom: 13px; width: 33px; height: 40px;
+    background: url('../assets/ui/jianghu/red-seal.svg') center / contain no-repeat;
+    transform: rotate(-7deg); pointer-events: none;
+}
+body.ui-handcrafted.ui-material.ui-refined .role-card h1 {
+    font-size: 28px; font-weight: 700; color: #f0e3c1; letter-spacing: .2em;
+    text-shadow: 1px 2px 0 #29281c,0 -1px #dbbf6b33;
+}
+body.ui-handcrafted.ui-material.ui-refined .role-card .subtitle { color: #c3b89e; font-size: 11px; }
+body.ui-handcrafted.ui-material.ui-refined .combat-state-badge { background: #211f16a0; border-color: #917a5255; color: #c7bf9a; border-radius: 0; }
+body.ui-handcrafted.ui-material.ui-refined .combat-state-badge.in-combat { color: #efba96; border-color: #ba694d; background: #723f2b80; }
+body.ui-handcrafted.ui-material.ui-refined .status-card { padding-left: 18px; padding-right: 18px; }
+body.ui-handcrafted.ui-material.ui-refined .status-card .block-title {
+    color: #e0c496; font-family: 'Noto Serif CJK SC','Noto Serif SC',serif; font-size: 14px;
+    background: linear-gradient(90deg,#a5864938,transparent 80%); border-bottom: 1px solid #99815355;
+    box-shadow: 0 1px #0f1b15aa; letter-spacing: .18em;
+}
+body.ui-handcrafted.ui-material.ui-refined .status-card .label { color: #c6baa2; }
+body.ui-handcrafted.ui-material.ui-refined .status-card .value { color: #eadfc6; }
+body.ui-handcrafted.ui-material.ui-refined .status-card .value.ok { color: #c2c39a; }
+body.ui-handcrafted.ui-material.ui-refined .status-card .value.warn { color: #e2b779; }
+body.ui-handcrafted.ui-material.ui-refined .status-card .value.danger { color: #f29c7d; }
+body.ui-handcrafted.ui-material.ui-refined .progress-wrap { background: #191e17; border-radius: 0; box-shadow: inset 0 2px 3px #040c0788,0 1px #c6aa7255; }
+body.ui-handcrafted.ui-material.ui-refined .progress-fill { background-image: linear-gradient(95deg,#d9c59033,transparent 45%,#151f1544); border-radius: 0; }
+body.ui-handcrafted.ui-material.ui-refined .progress-fill.stamina { background-color: #919968; }
+body.ui-handcrafted.ui-material.ui-refined .progress-fill.thirst { background-color: #859991; }
+body.ui-handcrafted.ui-material.ui-refined .progress-fill.satiety { background-color: #bd9560; }
+body.ui-handcrafted.ui-material.ui-refined .progress-fill.energy { background-color: #9b8c87; }
+body.ui-handcrafted.ui-material.ui-refined .details-block summary { background: linear-gradient(90deg,#89744530,transparent); color: #d8bf8c; }
+body.ui-handcrafted.ui-material.ui-refined .details-block .details-body { background: transparent; }
+body.ui-handcrafted.ui-material.ui-refined :is(.ui-window-grip,.ui-window-min,.ui-window-close) { color: #c0b497; }
+
+/* Hanging wooden tabs, with a dark-red combat tab as the only strong colour accent. */
+body.ui-handcrafted.ui-material.ui-refined #right-hud .hud-btn {
+    background: var(--craft-wood) center / 100% 100%; color: #e0c898;
+    border: 1px solid transparent; border-radius: 0; box-shadow: 0 3px 4px #020c0866;
+}
+body.ui-handcrafted.ui-material.ui-refined #right-hud .hud-btn:hover { filter: brightness(1.22); }
+body.ui-handcrafted.ui-material.ui-refined #right-hud #btn-combat {
+    background-image: linear-gradient(#863e2966,#5e2d2577),var(--craft-wood); color: #f2d09e;
+}
+body.ui-handcrafted.ui-material.ui-refined .jianghu-nav-icon { stroke-width: 1.7; }
+body.ui-handcrafted.ui-material.ui-refined #top-hud .time-pill {
+    background: var(--craft-wood) center / 100% 100%; border-color: transparent;
+    border-radius: 0; box-shadow: none; padding-left: 18px; padding-right: 18px;
+}
+body.ui-handcrafted.ui-material.ui-refined #top-hud .time-period { color: #e0bd7c; }
+body.ui-handcrafted.ui-material.ui-refined #buff-hud { padding-left: 19px; padding-right: 17px; }
+body.ui-handcrafted.ui-material.ui-refined #buff-hud .buff-chip {
+    background: var(--mat-fiber),linear-gradient(110deg,#656348,#424d34);
+    border-color: #c0ad7877; color: #e3d7b2; border-radius: 0;
+    box-shadow: 1px 2px 0 #13201588;
+}
+
+/* A stitched leather carrier with deep individual pockets. */
+body.ui-handcrafted.ui-material.ui-refined :is(.action-bar-dock,#quick-belt-dock) {
+    background: var(--mat-fiber),repeating-linear-gradient(90deg,#b7a47655 0 3px,transparent 3px 8px) 8px 5px / calc(100% - 16px) 1px no-repeat,
+        repeating-linear-gradient(90deg,#b7a47655 0 3px,transparent 3px 8px) 8px calc(100% - 5px) / calc(100% - 16px) 1px no-repeat,
+        linear-gradient(100deg,#6e5133,#453b27 60%,#3d3926);
+    border: 1px solid #97724d; border-radius: 6px 3px 7px 4px;
+    box-shadow: inset 0 1px #d2a36655,inset 0 -3px #271e1499,0 4px 0 #101a14,0 10px 18px #06110977;
+}
+body.ui-handcrafted.ui-material.ui-refined .quick-belt .slot {
+    background: var(--mat-fiber),radial-gradient(ellipse at bottom,#49432b,#20251a 80%);
+    border-color: #1e2117 #776542 #9c805444 #151d13; border-radius: 2px 2px 6px 6px;
+    box-shadow: inset 0 4px 8px #030b0699,0 1px #d8b57a33;
+}
+body.ui-handcrafted.ui-material.ui-refined .action-bar-dock .action-bar-btn { background: linear-gradient(#686244,#44452d); border-color: #a18a5277; color: #e5d8ac; }
+body.ui-handcrafted.ui-material.ui-refined .action-bar-dock .action-bar-btn.empty { background: #22281bbb; box-shadow: var(--mat-recess); }
+body.ui-handcrafted.ui-material.ui-refined .quickbar-drag-handle { background: var(--craft-wood) center / 100% 100%; border: 0; box-shadow: none; color: #d2b98d; }
+
+/* A small bound ledger. Ink colours replace luminous status colours on paper. */
+body.ui-handcrafted.ui-material.ui-refined #game-log-panel {
+    background: var(--craft-paper) center / 100% 100%; border: 1px solid transparent;
+    box-shadow: 0 7px 22px #030e0977; border-radius: 0; padding: 5px 9px 7px 22px;
+}
+body.ui-handcrafted.ui-material.ui-refined #game-log-panel .game-log-header {
+    background: transparent; border-color: #614d3655; box-shadow: 0 1px #e2d1a455;
+    padding-left: 6px; padding-right: 3px;
+}
+body.ui-handcrafted.ui-material.ui-refined #game-log-panel .game-log-header > span:first-child { color: #3f3524; font-weight: 700; text-shadow: 0 1px #e9d8b466; }
+body.ui-handcrafted.ui-material.ui-refined #game-log-panel .game-log-header > span:nth-child(2) { color: #594b35; }
+body.ui-handcrafted.ui-material.ui-refined #game-log-panel .game-log-lines { color: #352e21; padding: 5px 6px 9px; }
+body.ui-handcrafted.ui-material.ui-refined #game-log-panel .game-log-line { color: #352e21; border-color: #514a3522; }
+body.ui-handcrafted.ui-material.ui-refined #game-log-panel .log-time { color: #65563e; }
+body.ui-handcrafted.ui-material.ui-refined #game-log-panel .log-system { color: #494733; }
+body.ui-handcrafted.ui-material.ui-refined #game-log-panel .log-success { color: #34462b; background: #384a2110; border-left-color: #5d703b; }
+body.ui-handcrafted.ui-material.ui-refined #game-log-panel .log-warn { color: #704322; background: #8f49180d; border-left-color: #90612f; }
+body.ui-handcrafted.ui-material.ui-refined #game-log-panel :is(.log-combat,.log-damage) { color: #7a3328; background: #87381e0d; border-left-color: #91402e; }
+body.ui-handcrafted.ui-material.ui-refined .game-log-tools button { color: #463c28; border-color: #6a593d88; background: #d7c59955; box-shadow: inset 0 1px #ebdcb744,0 1px #76604255; }
+body.ui-handcrafted.ui-material.ui-refined .game-log-tools button[aria-pressed=true] { background: #66583b; color: #f1dfb4; }
+
+/* Modal content is quiet dark cloth; the large wooden rail carries the ornament. */
+body.ui-handcrafted.ui-material.ui-refined :is(#modal-backpack .panel,.combat-panel,.survival-panel,.cs-panel,.bw-panel,.hw-panel,.agri-panel,.lv-panel) {
+    background-image: var(--mat-fiber),linear-gradient(115deg,#443d30,#292f25);
+    border-color: #a79065; border-radius: 2px;
+    box-shadow: inset 0 0 0 3px #282a1d,inset 0 0 0 4px #ad925552,0 25px 70px #000b;
+}
+body.ui-handcrafted.ui-material.ui-refined :is(#modal-backpack .bp-head,.combat-header,.survival-header,.cs-header,.bw-header,.hw-header,.agri-head,.lv-header) {
+    background: var(--craft-wood) center / 100% 100%; border-bottom-color: #ad945b88;
+    box-shadow: 0 3px 6px #0b160a88;
+}
+body.ui-handcrafted.ui-material.ui-refined :is(#modal-backpack .bp-title,.combat-panel-title,.survival-header h2) { font-size: 23px; font-weight: 600; letter-spacing: .16em; color: #efdbad; }
+body.ui-handcrafted.ui-material.ui-refined #modal-backpack :is(.bp-tabs,.bp-list),
+body.ui-handcrafted.ui-material.ui-refined #modal-combat :is(.combat-cat-rail,.combat-skill-column,.combat-config-column) {
+    background-image: var(--mat-fiber),var(--mat-weft),linear-gradient(110deg,#33382b,#232f25); border-color: #88754e77;
+}
+body.ui-handcrafted.ui-material.ui-refined #modal-backpack #backpack-detail {
+    background-image: var(--mat-fiber),linear-gradient(125deg,#b5a17d,#9c8d6d);
+    color: #352e23; box-shadow: inset 0 3px 9px #3b372466;
+}
+body.ui-handcrafted.ui-material.ui-refined #modal-backpack #backpack-detail :is(.bp-detail-title,.bp-detail-desc,.bp-detail-empty,.bp-detail-attrs,.tooltip-module-title,.tooltip-module-line,.tooltip-module-body,.tooltip-module-text,.tooltip-module-list,.tooltip-module-kv-row,.tooltip-module-k,.tooltip-module-v,.tooltip-module-locked-hint) { color: #3d3526; text-shadow: none; }
+body.ui-handcrafted.ui-material.ui-refined #modal-backpack #backpack-detail .tooltip-module { background: #ead8b021; border-color: #5e503c66; }
+body.ui-handcrafted.ui-material.ui-refined #modal-backpack #backpack-detail .tooltip-module-req { color: #713c23; }
+body.ui-handcrafted.ui-material.ui-refined #modal-backpack #backpack-detail :is(.bp-detail-field-rules,.bp-detail-assembly) { background: #30382b; color: #dfd4b8; padding: 8px; border: 1px solid #655a40; }
+body.ui-handcrafted.ui-material.ui-refined #modal-backpack .bp-equip-panel { background-image: var(--mat-fiber),var(--mat-weft),linear-gradient(130deg,#414532,#293825); }
+body.ui-handcrafted.ui-material.ui-refined #modal-backpack :is(.bp-tab-btn,.bp-action-btn,.bp-close,.btn-unequip),
+body.ui-handcrafted.ui-material.ui-refined #modal-combat :is(.combat-cat-btn,.combat-main-tab) {
+    background: var(--craft-wood) center / 100% 100%; color: #dfc79a; border-color: transparent; box-shadow: 0 3px 3px #101b0d66; border-radius: 0;
+}
+body.ui-handcrafted.ui-material.ui-refined #modal-backpack .bp-tab-btn.active,
+body.ui-handcrafted.ui-material.ui-refined #modal-combat :is(.combat-cat-btn.active,.combat-main-tab.active) { background-image: linear-gradient(#8e473580,#783a2870),var(--craft-wood); color: #f4dfb7; border-color: #9f765080; }
+body.ui-handcrafted.ui-material.ui-refined #modal-combat :is(.combat-hub-node,.combat-limb-slot,.combat-skill-item,.combat-move-node),
+body.ui-handcrafted.ui-material.ui-refined #modal-backpack :is(.bp-item-row,.equip-row) { background-image: var(--mat-fiber),linear-gradient(120deg,#4b4934,#303a2a); border-color: #96805288; }
+body.ui-handcrafted.ui-material.ui-refined #modal-combat :is(.combat-hub-node.active,.combat-limb-slot.selected,.combat-skill-item.selected) { background-image: var(--mat-fiber),linear-gradient(125deg,#726548,#414d33); border-color: #c2a873; }

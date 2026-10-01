@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="254" height="240" viewBox="0 0 254 240" preserveAspectRatio="none">
+<defs>
+ <linearGradient id="cloth" x2=".9" y2="1"><stop stop-color="#4a4436"/><stop offset=".3" stop-color="#302f29"/><stop offset="1" stop-color="#252923"/></linearGradient>
+ <pattern id="weave" width="5" height="5" patternUnits="userSpaceOnUse"><path d="M0 0h5M0 2h5M0 0v5M3 0v5" stroke="#c8b995" stroke-opacity=".045" stroke-width=".6"/></pattern>
+ <filter id="grain"><feTurbulence type="fractalNoise" baseFrequency=".75" numOctaves="3" stitchTiles="stitch"/><feColorMatrix type="saturate" values="0"/><feComponentTransfer><feFuncA type="linear" slope=".065"/></feComponentTransfer></filter>
+</defs>
+<path d="m6 7 71-2 101 1 69-1 2 71-1 80 1 78-53 1-83-1-105 1 1-63-2-75Z" fill="#080d0a" opacity=".65"/>
+<path d="m4 3 51 1 55-2 65 2 74-1-2 53 2 45-1 74 1 57-62-1-57 2-82-2-43 1 1-63-2-70Z" fill="url(#cloth)" stroke="#73634b" stroke-width="1" vector-effect="non-scaling-stroke"/>
+<path d="M8 7h236v220H8z" fill="url(#weave)"/>
+<path d="M8 7h236v220H8z" filter="url(#grain)"/>
+<path d="m11 11 75-1 70 1 83-1-1 70 1 75-1 68-63 1-66-1-98 1 1-74-1-66Z" fill="none" stroke="#b4a17a" stroke-opacity=".4" stroke-width=".8" stroke-dasharray="3 4" vector-effect="non-scaling-stroke"/>
+<path d="M5 18 7 3l20 1-1 5-15 1-1 9ZM225 226l20-1 1-17 4 1-1 23-24-1Z" fill="#9d875b" stroke="#302b20" stroke-width=".7" vector-effect="non-scaling-stroke"/>
+<path d="m9 5 16 1M227 229l19-1" stroke="#d5ba84" stroke-opacity=".6" stroke-width=".8" vector-effect="non-scaling-stroke"/>
+<path d="m2 42 3-3M3 45l2-3M247 79l5-3M248 82l4-2M3 178l3 2M4 182l3 1M247 196l4 2" stroke="#b8a278" stroke-opacity=".45" stroke-width=".7" vector-effect="non-scaling-stroke"/>
+</svg>
