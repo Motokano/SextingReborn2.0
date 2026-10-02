@@ -28,7 +28,7 @@
     "test:dungeon-loot": "node tools/test-dungeon-loot.mjs",
     "test:enemy-drops": "node tools/test-enemy-drops.mjs",
     "test:combat-engagement": "node tools/test-combat-engagement.mjs",
-    "test:combat-fx": "node tools/test-combat-fx.mjs",
+    "test:combat-fx": "node tools/test-combat-fx.mjs && node tools/test-scene-fx-composition.mjs",
     "test:livestock-power": "node tools/smoke-k93-power.mjs",
     "test:livestock-integrity": "node tools/test-livestock-integrity.mjs",
     "test:livestock-feed-sharing": "node tools/test-livestock-feed-sharing.mjs",

@@ -1189,6 +1189,21 @@
         }
     }
 
+    // Shared by the live map and the isolated rendering acceptance page.
+    function renderEffects(fxCtx) {
+        // Its destination-out clear radius must only erase the night veil, never
+        // attack strokes or damage text already drawn onto this shared canvas.
+        renderDayNightVisionOverlay(fxCtx);
+        if (window.SceneAnimation && typeof window.SceneAnimation.render === 'function') {
+            window.SceneAnimation.render(fxCtx);
+        }
+        // Keep visibility occlusion above effects; unseen cells stay concealed.
+        renderVisionOcclusionOverlay(fxCtx);
+        renderVisionDistanceShadeOverlay(fxCtx);
+        renderFacingVisionOverlay(fxCtx);
+        renderVisionDebugOverlay(fxCtx);
+    }
+
     function render() {
         var ctx = getCtx();
         if (!ctx || !ctx.E || !ctx.G || !ctx.IE) return;
@@ -1228,16 +1243,7 @@
 
         if (!tileRenderer && window.TileRendererV2 && typeof window.TileRendererV2.create === 'function') {
             tileRenderer = window.TileRendererV2.create(grid, { cellPx: CELL_PX });
-            tileRenderer.setEffectsRenderer(function (fxCtx) {
-                if (window.SceneAnimation && typeof window.SceneAnimation.render === 'function') {
-                    window.SceneAnimation.render(fxCtx);
-                }
-                renderDayNightVisionOverlay(fxCtx);
-                renderVisionOcclusionOverlay(fxCtx);
-                renderVisionDistanceShadeOverlay(fxCtx);
-                renderFacingVisionOverlay(fxCtx);
-                renderVisionDebugOverlay(fxCtx);
-            });
+            tileRenderer.setEffectsRenderer(renderEffects);
             if (typeof tileRenderer.startAnimationLoop === 'function') tileRenderer.startAnimationLoop();
         }
         var hasV2 = !!tileRenderer;
@@ -1878,6 +1884,7 @@
 
     window.SceneRenderer = {
         render: render,
+        renderEffects: renderEffects,
         setVisionDebugEnabled: function (enabled) {
             visionDebugEnabled = !!enabled;
             render();
