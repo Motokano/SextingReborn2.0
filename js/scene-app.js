@@ -7400,7 +7400,8 @@
             el: function () { return document.getElementById('status-role-card'); },
             defaultPos: 'dock', minW: 160, minH: 64,
             closable: true, resizable: false,
-            dragHandle: '.ui-window-grip',
+            dragHandle: '.block-title, h1, summary, .buff-hud-title',
+            dragThreshold: 4,
             gameVisible: function () { return blockVisible('role'); }
         });
         U.registerPanel('win-limbs', {
@@ -7408,7 +7409,8 @@
             el: function () { return document.getElementById('status-limbs'); },
             defaultPos: 'dock', minW: 160, minH: 64,
             closable: true, resizable: false,
-            dragHandle: '.ui-window-grip',
+            dragHandle: '.block-title, h1, summary, .buff-hud-title',
+            dragThreshold: 4,
             gameVisible: function () { return blockVisible('limbs'); }
         });
         U.registerPanel('win-battle-resources', {
@@ -7416,7 +7418,8 @@
             el: function () { return document.getElementById('status-combat-resources-card'); },
             defaultPos: 'dock', minW: 160, minH: 64,
             closable: true, resizable: false,
-            dragHandle: '.ui-window-grip',
+            dragHandle: '.block-title, h1, summary, .buff-hud-title',
+            dragThreshold: 4,
             gameVisible: function () { return blockVisible('combat_resources'); }
         });
         U.registerPanel('win-survival', {
@@ -7424,7 +7427,8 @@
             el: function () { return document.getElementById('status-survival'); },
             defaultPos: 'dock', minW: 180, minH: 80,
             closable: true, resizable: false,
-            dragHandle: '.ui-window-grip',
+            dragHandle: '.block-title, h1, summary, .buff-hud-title',
+            dragThreshold: 4,
             gameVisible: function () { return blockVisible('survival'); }
         });
         U.registerPanel('win-resources', {
@@ -7432,7 +7436,8 @@
             el: function () { return document.getElementById('status-resources'); },
             defaultPos: 'dock', minW: 160, minH: 64,
             closable: true, resizable: false,
-            dragHandle: '.ui-window-grip',
+            dragHandle: '.block-title, h1, summary, .buff-hud-title',
+            dragThreshold: 4,
             gameVisible: function () { return blockVisible('resources'); }
         });
         U.registerPanel('win-attrs', {
@@ -7440,7 +7445,8 @@
             el: function () { return document.getElementById('status-attrs-block'); },
             defaultPos: 'dock', minW: 160, minH: 64,
             closable: true, resizable: false,
-            dragHandle: '.ui-window-grip',
+            dragHandle: '.block-title, h1, summary, .buff-hud-title',
+            dragThreshold: 4,
             gameVisible: function () { return blockVisible('attrs'); }
         });
         U.registerPanel('win-attr-exp', {
@@ -7448,7 +7454,8 @@
             el: function () { return document.getElementById('status-attr-exp-block'); },
             defaultPos: 'dock', minW: 160, minH: 64,
             closable: true, resizable: false,
-            dragHandle: '.ui-window-grip',
+            dragHandle: '.block-title, h1, summary, .buff-hud-title',
+            dragThreshold: 4,
             gameVisible: function () { return blockVisible('attrs'); } // 属性经验跟随五维门控
         });
         U.registerPanel('win-buff', {
@@ -7456,7 +7463,8 @@
             el: function () { return document.getElementById('buff-hud'); },
             defaultPos: 'dock', minW: 160, minH: 64,
             closable: true, resizable: false,
-            dragHandle: '.ui-window-grip',
+            dragHandle: '.block-title, h1, summary, .buff-hud-title',
+            dragThreshold: 4,
             gameVisible: function () { return blockVisible('buff_hud'); }
         });
         // 锚定窗口：仅显隐（位置由 CSS 管，不持久化位置）
@@ -8072,6 +8080,10 @@
                         if (!enemyStunnedNow) {
                             atkCtxEnemy = CombatWorld.buildEnemyCounterAtkCtx(rEnemyCounter, true, { enemyId: enemyId, facingDir: defenderFacingDir, ex: ctxMeta.x, ey: ctxMeta.y, px: ctxMeta.fromX, py: ctxMeta.fromY });
                         }
+                        if (window.CombatFxEvents) {
+                            atkCtx.fxGroupId = window.CombatFxEvents.nextGroupId();
+                            if (atkCtxEnemy) atkCtxEnemy.fxGroupId = atkCtx.fxGroupId;
+                        }
                         if (intent.advanceCursor && window.InventoryEquipment && typeof window.InventoryEquipment.advanceMoveSequenceCursorForLimb === 'function') {
                             window.InventoryEquipment.advanceMoveSequenceCursorForLimb(atkCtx.limbId);
                         }
@@ -8194,6 +8206,7 @@
                 if (window.SceneAnimation && typeof window.SceneAnimation.emit === 'function') {
                     var stNow = E.getState ? E.getState() : null;
                     window.SceneAnimation.emit('combat:attack', {
+                        resolvedFx: !!(atkCtx && atkCtx._fxSnapshot && atkCtx._fxSnapshot.emitted),
                         enemyId: enemyId,
                         x: ctxMeta.x,
                         y: ctxMeta.y,

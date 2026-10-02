@@ -28,6 +28,8 @@ c.CombatEnemies={getById:()=>({jingu:20,speed:10,attack_damage_min:10,attack_dam
  updateEnemyAI:o=>{if(stunned){stunned=false;return {moves:[],attacks:[]};}assert.ok(o.didActThisTick(0),'counter must consume the enemy action');return {moves:[],attacks:[]};},isEnemyAggro:()=>true};
 c.fetch=async p=>({ok:true,json:async()=>JSON.parse(read(p))});
 for(const n of ['combat-skills','combat-damage','combat-melee-resolve','combat-pipeline','buff-system','combat-breath','combat-engagement','combat-world','combat-hub-actions','combat-initiative'])load(n);
+for(const n of ['scene-animation','combat-fx-paint','combat-fx-events','combat-fx-runtime'])load(n);
+const fxEvents=[];c.SceneAnimation.on('combat:resolved',event=>fxEvents.push(event));
 c.CombatSkills.setConfig(skills); c.CombatPipeline.setConfig(JSON.parse(read('data/combat-pipeline.json')));c.BuffSystem.init();await new Promise(r=>setTimeout(r,30));
 function engage(){c.CombatEngagement.engageEnemy({mapId:'arena',index:0,enemyId:'target',record:enemy});}
 engage();
@@ -72,9 +74,14 @@ vm.runInContext(scene.slice(begin,end),c);
 BS.removeBuffByBuffId('player','buff_breath_burst');state.qi_li_current=100;st.x=2;enemy.x=3;dealt=0;enemySpent=0;
 c.SceneCtx.actions.attackEnemy('target',{x:3,y:2,fromX:2,fromY:2});
 assert.equal(enemy.x,4);assert.equal(dealt,0);assert.equal(enemySpent,25);assert.equal(ticks,1);
+assert.equal(fxEvents.at(-2).segments[0].moveId,'front_kick');
+assert.equal(fxEvents.at(-2).defender.x,3,'FX preserves pre-knockback contact position');
+assert.equal(fxEvents.at(-1).segments[0].result,'distance','real scene reply emits whiff, not fake impact');
+assert.equal(fxEvents.at(-1).attacker.x,4,'reply snapshots the new position');
 // Wall threshold stops the counter before resource spend; AI consumes the one stun action.
-enemy.x=3;walls.add('4,2');state.qi_li_current=100;stun=50;enemySpent=0;
+enemy.x=3;walls.add('4,2');state.qi_li_current=100;stun=50;enemySpent=0;const beforeStunFx=fxEvents.length;
 c.SceneCtx.actions.attackEnemy('target',{x:3,y:2,fromX:2,fromY:2});assert.equal(enemySpent,0);assert.equal(stunned,false);
+assert.equal(fxEvents.length,beforeStunFx+1,'stun-cancelled reply emits no extra attack FX');
 // Disengage clears both counters and boosts.
 c.CombatEngagement.setCurrentMap('other');assert.equal(BS.getBuffStacksSum('player','buff_breath_charge'),0);assert.equal(BS.getBuffStacksSum('player','buff_breath_burst'),0);
 // Enemy-first displacement makes the player's already committed attack miss too.
@@ -92,4 +99,12 @@ B.clear();const basic=skills.skills.combat_basic_breath,oldBar=basic.breath_bar;
 basic.breath_bar={max_base:100,initial_state:{qi_li:0},action_delta:{'*':{type:'flat',value:25}}};
 state.qi_li_current=0;walls.clear();a=attack('jab');assert.ok(a.ctx.finalDamage>0);assert.equal(state.qi_li_current,25);assert.equal(BS.getBuffStacksSum('player','buff_breath_charge'),0);
 basic.breath_bar=oldBar;
+// Actual same-speed scene and autonomous enemy path both use the shared presentation seam.
+B.clear();state.qi_li_current=100;st.x=2;enemy.x=3;speed=10;stunned=false;stun=0;
+const beforeSimFx=fxEvents.length;c.SceneCtx.actions.attackEnemy('target',{x:3,y:2,fromX:2,fromY:2});
+assert.equal(fxEvents.length,beforeSimFx+2);
+assert.ok(fxEvents.at(-2).groupId);assert.equal(fxEvents.at(-2).groupId,fxEvents.at(-1).groupId);
+assert.equal(fxEvents.at(-1).simultaneous,true);
+st.x=2;enemy.x=3;const beforeAiFx=fxEvents.length;W.runEnemyAttackOnPlayer('target',3,2);
+assert.equal(fxEvents.length,beforeAiFx+1);assert.equal(fxEvents.at(-1).attacker.kind,'enemy');
 console.log('PASS: breath buffs, charge cap, three attacks, save restore, immediate whole-action knockback, collision, blocked charge, simultaneous commit and actual scene counter whiff/stun');

@@ -2,6 +2,7 @@
   "name": "sexting-reborn",
   "private": true,
   "scripts": {
+    "prototype:combat-fx": "node tools/serve-live.mjs 8014",
     "prototype:item-attributes": "node tools/serve-live.mjs 8013",
     "test:compost": "node tools/test-compost-window-mechanism.js && node tools/test-compost-process.js && node tools/test-compost-panel.js",
     "build:food": "node tools/build-food-catalog.mjs && node tools/build-food-effects.mjs && node tools/build-items-json.mjs",
@@ -27,6 +28,7 @@
     "test:dungeon-loot": "node tools/test-dungeon-loot.mjs",
     "test:enemy-drops": "node tools/test-enemy-drops.mjs",
     "test:combat-engagement": "node tools/test-combat-engagement.mjs",
+    "test:combat-fx": "node tools/test-combat-fx.mjs",
     "test:livestock-power": "node tools/smoke-k93-power.mjs",
     "test:livestock-integrity": "node tools/test-livestock-integrity.mjs",
     "test:livestock-feed-sharing": "node tools/test-livestock-feed-sharing.mjs",

@@ -429,19 +429,33 @@
 
         function isLocked() { return lock; }
 
+        var suppressDragClick = false;
+        header.addEventListener('click', function (e) {
+            if (!suppressDragClick) return;
+            suppressDragClick = false;
+            e.preventDefault();
+            e.stopPropagation();
+        }, true);
+
+        function beginMove() {
+            raiseWindow(spec, el);
+            mode = 'move';
+            ensureFixedPixelBox(spec, el);
+            startLeft = parsePx(el.style.left, 0);
+            startTop = parsePx(el.style.top, 0);
+            if (header.classList) header.classList.add('ui-window-dragging');
+        }
+
         header.addEventListener('mousedown', function (e) {
+            suppressDragClick = false;
             if (e.button !== 0) return;
             if (isLocked()) return;
             if (e.target && e.target.closest && e.target.closest('button')) return;
             e.preventDefault();
-            raiseWindow(spec, el);
-            mode = 'move';
-            ensureFixedPixelBox(spec, el);
             startX = e.clientX;
             startY = e.clientY;
-            startLeft = parsePx(el.style.left, 0);
-            startTop = parsePx(el.style.top, 0);
-            if (header.classList) header.classList.add('ui-window-dragging');
+            if (spec.dragThreshold > 0) mode = 'pendingMove';
+            else beginMove();
         });
 
         if (handles.top) {
@@ -496,6 +510,11 @@
         document.addEventListener('mousemove', function (e) {
             if (!mode) return;
             if (isLocked()) { mode = null; return; }
+            if (mode === 'pendingMove') {
+                if (Math.max(Math.abs(e.clientX - startX), Math.abs(e.clientY - startY)) < spec.dragThreshold) return;
+                beginMove();
+                suppressDragClick = true;
+            }
             var minW = spec.minW || DEFAULT_MIN_W;
             var minH = spec.minH || DEFAULT_MIN_H;
             var maxH = maxWindowHeight();
@@ -540,6 +559,7 @@
 
         function endDrag() {
             if (!mode) return;
+            if (mode === 'pendingMove') { mode = null; return; }
             if (header.classList) header.classList.remove('ui-window-dragging');
             if (handles.top && handles.top.classList) handles.top.classList.remove('ui-window-resize-active');
             if (handles.right && handles.right.classList) handles.right.classList.remove('ui-window-resize-active');

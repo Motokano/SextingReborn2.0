@@ -52,6 +52,7 @@
       "actions": [
         {
           "id": "thug_punch",
+          "fx_move_id": "jab",
           "name_key": "enemy.action.thug_punch",
           "limb": "rhand",
           "power_min": 2,
@@ -70,6 +71,7 @@
         },
         {
           "id": "thug_knee",
+          "fx_move_id": "kick_knee",
           "name_key": "enemy.action.thug_knee",
           "limb": "rfoot",
           "power_min": 3,
@@ -88,6 +90,7 @@
         },
         {
           "id": "thug_shove",
+          "fx_move_id": "shove",
           "name_key": "enemy.action.thug_shove",
           "limb": "lhand",
           "power_min": 2,

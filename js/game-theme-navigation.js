@@ -20,4 +20,63 @@
         mark.innerHTML = '<svg class="jianghu-nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="' + paths[id] + '"/></svg>';
         button.append(original, mark);
     });
+
+    // Keep interaction state owned by SceneApp; use its existing click handlers.
+    [
+        ['btn-ui-windows', 'ui-windows-menu'],
+        ['btn-player-actions', 'player-actions-submenu']
+    ].forEach(function (ids) {
+        var trigger = document.getElementById(ids[0]);
+        var menu = document.getElementById(ids[1]);
+        if (!trigger || !menu) return;
+        trigger.setAttribute('aria-controls', menu.id);
+        trigger.setAttribute('aria-haspopup', 'true');
+        function isOpen() { return menu.classList.contains('open'); }
+        function syncExpanded() { trigger.setAttribute('aria-expanded', String(isOpen())); }
+        new MutationObserver(syncExpanded).observe(menu, { attributes: true, attributeFilter: ['class'] });
+        syncExpanded();
+        function controls() {
+            return Array.from(menu.querySelectorAll('button, input, select, a[href], [tabindex]')).filter(function (el) {
+                return !el.disabled && el.tabIndex >= 0 && el.getClientRects().length > 0;
+            });
+        }
+        trigger.addEventListener('keydown', function (event) {
+            if (event.key !== 'ArrowDown' && event.key !== 'ArrowUp' && event.key !== 'Escape') return;
+            event.preventDefault();
+            event.stopPropagation();
+            if (event.key === 'Escape') {
+                if (isOpen()) trigger.click();
+                return;
+            }
+            if (!isOpen()) trigger.click();
+            var items = controls();
+            var target = event.key === 'ArrowUp' ? items[items.length - 1] : items[0];
+            if (target && isOpen()) target.focus();
+        });
+        menu.addEventListener('keydown', function (event) {
+            if (!isOpen()) return;
+            if (event.key === 'Escape') {
+                event.preventDefault();
+                event.stopPropagation();
+                trigger.click();
+                trigger.focus();
+                return;
+            }
+            if (!['ArrowDown', 'ArrowUp', 'Home', 'End'].includes(event.key)) return;
+            // Preserve native editing keys should a menu later include an editor.
+            if (event.target.matches('select, textarea, input:not([type="checkbox"]):not([type="radio"])') || event.target.isContentEditable) return;
+            var items = controls();
+            if (!items.length) return;
+            var index = items.indexOf(document.activeElement);
+            if (event.key === 'Home') index = 0;
+            else if (event.key === 'End') index = items.length - 1;
+            else index = (index + (event.key === 'ArrowDown' ? 1 : -1) + items.length) % items.length;
+            event.preventDefault();
+            event.stopPropagation();
+            items[index].focus();
+        });
+        menu.parentElement.addEventListener('focusout', function (event) {
+            if (event.relatedTarget && !menu.parentElement.contains(event.relatedTarget) && isOpen()) trigger.click();
+        });
+    });
 })();

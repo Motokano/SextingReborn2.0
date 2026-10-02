@@ -109,6 +109,7 @@
 
     function clear() {
         effects.length = 0;
+        if (global.CombatFxRuntime) global.CombatFxRuntime.clear();
     }
 
     function compactEffects(nowMs) {
@@ -265,11 +266,13 @@
             else if (e.type === 'projectile_trail') drawProjectileTrail(ctx, e, t, cellPx, cellToPx);
             else if (e.type === 'floating_text') drawFloatingText(ctx, e, t, cellPx, cellToPx);
         }
+        if (global.CombatFxRuntime) global.CombatFxRuntime.render(args);
         drawDebugHud(ctx, nowMs);
     }
 
     // Built-in event bindings for common gameplay actions.
     on('combat:attack', function (p) {
+        if (p && p.resolvedFx) return;
         if (!shouldPassRateLimit('combat:attack')) return;
         if (!p) return;
         if (p.x == null || p.y == null) return;

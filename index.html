@@ -2883,6 +2883,11 @@
             overflow: hidden;
         }
         #game-log-panel .game-log-resize-handle-top {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 6px;
             flex: 0 0 6px;
             min-height: 6px;
             cursor: ns-resize;
@@ -2980,6 +2985,11 @@
         .ui-window-host:hover .ui-window-grip { pointer-events: auto; }
         .ui-window-grip:hover { color: #fbbf24; opacity: 1; }
         .ui-window-host { position: relative; }
+        #left-hud .ui-window-host :is(.block-title, h1, summary),
+        #buff-hud .buff-hud-title {
+            cursor: move;
+            user-select: none;
+        }
         .ui-window-host .ui-window-close,
         .ui-window-host .ui-window-min {
             position: absolute;
@@ -3674,7 +3684,7 @@
             </div>
             <div id="left-hud">
                 <div class="role-card ui-window-host" id="status-role-card">
-                    <span class="ui-window-grip" data-ui="ui.windows.grip" data-ui-attr="title" title="" aria-hidden="true">⠿</span>
+
                     <button type="button" class="ui-window-min" data-ui="ui.windows.minimize_hint" data-ui-attr="title" title="">—</button><button type="button" class="ui-window-close" data-ui="ui.windows.close" data-ui-attr="title" title="">✕</button>
                     <h1 id="status-role-name" data-ui="status.role.default"></h1>
                     <p class="subtitle" id="status-gender-line"></p>
@@ -3682,13 +3692,13 @@
                 </div>
                 <div id="status-scroll">
                     <div class="status-card ui-window-host" id="status-limbs">
-                        <span class="ui-window-grip" data-ui="ui.windows.grip" data-ui-attr="title" title="" aria-hidden="true">⠿</span>
+
                         <button type="button" class="ui-window-min" data-ui="ui.windows.minimize_hint" data-ui-attr="title" title="">—</button><button type="button" class="ui-window-close" data-ui="ui.windows.close" data-ui-attr="title" title="">✕</button>
                         <div class="block-title" data-ui="status.block.limbs"></div>
                         <div id="limb-rows"></div>
                     </div>
                     <div class="status-card ui-window-host" id="status-combat-resources-card" style="display:none">
-                        <span class="ui-window-grip" data-ui="ui.windows.grip" data-ui-attr="title" title="" aria-hidden="true">⠿</span>
+
                         <button type="button" class="ui-window-min" data-ui="ui.windows.minimize_hint" data-ui-attr="title" title="">—</button><button type="button" class="ui-window-close" data-ui="ui.windows.close" data-ui-attr="title" title="">✕</button>
                         <div class="block-title" data-ui="status.block.battle_resources"></div>
                         <div id="status-battle-resources" class="survival-row">
@@ -3704,7 +3714,7 @@
                         </div>
                     </div>
                     <div class="status-card ui-window-host" id="status-survival">
-                        <span class="ui-window-grip" data-ui="ui.windows.grip" data-ui-attr="title" title="" aria-hidden="true">⠿</span>
+
                         <button type="button" class="ui-window-min" data-ui="ui.windows.minimize_hint" data-ui-attr="title" title="">—</button><button type="button" class="ui-window-close" data-ui="ui.windows.close" data-ui-attr="title" title="">✕</button>
                         <div class="block-title" data-ui="status.block.survival"></div>
                         <div class="survival-row" id="status-metric-satiety">
@@ -3743,7 +3753,7 @@
                         <div class="row" style="margin-top:4px"><span class="label" data-ui="status.label.carry"></span><span class="value" id="status-carry">—</span></div>
                     </div>
                     <div class="status-card ui-window-host" id="status-resources">
-                        <span class="ui-window-grip" data-ui="ui.windows.grip" data-ui-attr="title" title="" aria-hidden="true">⠿</span>
+
                         <button type="button" class="ui-window-min" data-ui="ui.windows.minimize_hint" data-ui-attr="title" title="">—</button><button type="button" class="ui-window-close" data-ui="ui.windows.close" data-ui-attr="title" title="">✕</button>
                         <div class="block-title" data-ui="status.block.resources"></div>
                         <div class="row"><span class="label" data-ui="status.label.potential"></span><span class="value" id="status-potential">—</span></div>
@@ -3751,7 +3761,7 @@
                         <div class="row" style="margin-top:4px"><span class="label" data-ui="status.label.study"></span><span class="value" id="status-study">—</span></div>
                     </div>
                     <details class="details-block ui-window-host" id="status-attrs-block" open>
-                        <summary><span class="ui-window-grip" data-ui="ui.windows.grip" data-ui-attr="title" title="" aria-hidden="true">⠿</span><span data-ui="status.block.attrs"></span> <span>▼</span></summary>
+                        <summary><span data-ui="status.block.attrs"></span> <span>▼</span></summary>
                         <button type="button" class="ui-window-min" data-ui="ui.windows.minimize_hint" data-ui-attr="title" title="">—</button><button type="button" class="ui-window-close" data-ui="ui.windows.close" data-ui-attr="title" title="">✕</button>
                         <div class="details-body">
                             <div class="row"><span class="label" data-ui="status.attr.jingu"></span><span class="value" id="status-attr-jingu">—</span></div>
@@ -3762,7 +3772,7 @@
                         </div>
                     </details>
                     <details class="details-block ui-window-host" id="status-attr-exp-block" open>
-                        <summary><span class="ui-window-grip" data-ui="ui.windows.grip" data-ui-attr="title" title="" aria-hidden="true">⠿</span><span data-ui="status.block.attr_exp"></span> <span>▼</span></summary>
+                        <summary><span data-ui="status.block.attr_exp"></span> <span>▼</span></summary>
                         <button type="button" class="ui-window-min" data-ui="ui.windows.minimize_hint" data-ui-attr="title" title="">—</button><button type="button" class="ui-window-close" data-ui="ui.windows.close" data-ui-attr="title" title="">✕</button>
                         <div class="details-body">
                             <div class="row"><span class="label">筋骨经验</span><span class="value" id="status-attr-exp-exp-jingu">0</span><button type="button" id="status-attr-exp-debug-plus-jingu" title="调试：筋骨经验 +50000">+5万</button></div>
@@ -3776,7 +3786,7 @@
             </div>
             <!-- 右侧按钮：背包、生存技能、战斗技能、肌肉、特殊技能 -->
             <div id="buff-hud" class="ui-window-host" aria-label="buff hud">
-                <span class="ui-window-grip" data-ui="ui.windows.grip" data-ui-attr="title" title="" aria-hidden="true">⠿</span>
+
                 <button type="button" class="ui-window-min" data-ui="ui.windows.minimize_hint" data-ui-attr="title" title="">—</button><button type="button" class="ui-window-close" data-ui="ui.windows.close" data-ui-attr="title" title="">✕</button>
                 <div class="buff-hud-section">
                     <div class="buff-hud-title" id="buff-hud-self-title"></div>
@@ -4413,7 +4423,7 @@
     </div>
 
     <div id="bottom-hud-stack" class="bottom-hud-stack" data-ui="bottom.hud.stack" data-ui-attr="aria-label" aria-label="">
-        <div class="quickbar-drag-handle" title="拖动快捷栏；双击恢复默认位置；可在窗口列表锁定布局">⠿ 快捷栏</div>
+        <div class="quickbar-drag-handle">快捷栏</div>
         <div id="action-bar-dock" class="action-bar-dock" role="toolbar" data-ui="action.bar.dock" data-ui-attr="aria-label" aria-label="">
             <div class="action-bar-context" id="action-bar-context">
                 <button type="button" id="action-bar-gather" class="action-bar-btn" style="display:none;" data-ui="action.bar.gather"></button>
@@ -4443,9 +4453,8 @@
         <div class="game-log-resize-handle-top" data-ui="log.panel.resize_top" data-ui-attr="title" title="" aria-hidden="true"></div>
         <div class="game-log-resize-handle-left" data-ui="log.panel.resize_left" data-ui-attr="title" title="" aria-hidden="true"></div>
         <div class="game-log-resize-handle-right" data-ui="log.panel.resize_right" data-ui-attr="title" title="" aria-hidden="true"></div>
-        <div class="game-log-header" data-ui="log.panel.header_hint" data-ui-attr="title" title="">
+        <div class="game-log-header">
             <span data-ui="log.title"></span>
-            <span style="font-size:10px;opacity:0.65;" data-ui="log.panel.drag_hint"></span>
         </div>
         <div id="game-log-lines" class="game-log-lines"></div>
     </div>
@@ -4487,6 +4496,7 @@
     <script src="js/post-effects.js"></script>
     <script src="js/combat-post-effects.js"></script>
     <script src="js/combat-initiative.js"></script>
+    <script src="js/combat-fx-events.js"></script>
     <script src="js/combat-pipeline.js"></script>
     <script src="js/convert-rules.js"></script>
     <script src="js/combat-enemies.js"></script>
@@ -4516,6 +4526,8 @@
     <script src="js/dungeon-loot.js"></script>
     <script src="js/enemy-drops.js"></script>
     <script src="js/scene-animation.js"></script>
+    <script src="js/combat-fx-paint.js"></script>
+    <script src="js/combat-fx-runtime.js"></script>
     <script src="js/core/map-projection.js"></script>
     <script src="js/core/tile-renderer-v2.js?v=toolbench-20260926"></script>
     <script src="js/scene-renderer.js?v=devices-20260915"></script>

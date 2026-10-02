@@ -93,6 +93,7 @@
         if (cells && global.CombatWorld) global.CombatWorld.queueDisplacement(Object.assign({}, ctx, {hitRollSuccess:true, parrySucceeded:false}), {cells:cells});
     }
     function finishAction(ctx) {
+        if (global.CombatFxEvents) global.CombatFxEvents.publish(ctx);
         if (!ctx.simultaneousDryRun && !ctx._segmentOfAction) {
             queueDisplacement(ctx);
             if (!ctx.deferDisplacement && global.CombatWorld) global.CombatWorld.flushDisplacements({deferKills:true});
@@ -1015,6 +1016,7 @@
         ctx.pipelineName = pipelineName;
         if (ctx.simultaneousDryRun) ctx.deferDisplacement = true;
         if (global.CombatWorld) global.CombatWorld.checkAttackDistance(ctx);
+        if (global.CombatFxEvents) global.CombatFxEvents.capture(ctx);
         prepareAction(ctx);
         // 多段（hit_segments>1）：每段独立跑完整管线（独立命中/招架/叠 Buff/唯一事件 id），整招聚合回写（11-skills 8.3.6 扩展#4）
         var segs = ctx.segments && ctx.segments.length > 1 ? ctx.segments : null;

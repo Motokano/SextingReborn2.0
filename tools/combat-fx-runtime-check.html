@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><base href="../"><meta name="viewport" content="width=device-width,initial-scale=1"><title>正式战斗特效 · 接入验收</title>
+<style>body{margin:0;padding:24px;background:#142019;color:#efe5ce;font:15px "Microsoft YaHei",sans-serif}h1{font-size:23px;margin:0 0 8px}p{color:#abb7a5;line-height:1.7}button,select{padding:9px 12px;background:#354336;border:1px solid #71816a;color:#fff0d1;border-radius:5px;margin:5px}label{display:inline-block;margin:5px}#viewport{height:480px;overflow:hidden;border:1px solid #516149;background:#253627;position:relative;margin-top:18px}#grid{position:absolute;left:0;top:0}#events{white-space:pre-wrap;line-height:1.7;color:#c7dbc0}input{width:min(540px,65vw)}.tag{color:#d7bd7b}</style></head>
+<body><h1>正式战斗特效 · 接入验收</h1><p>使用正式结算管线、逐段事件、地图投影与 FX 层。场景和数值为测试夹具，不读取或写入游戏存档。</p>
+<div><label>招式 <select id="move"></select></label><label>结果 <select id="result"><option value="hit">命中</option><option value="parry">招架</option><option value="miss">闪避</option><option value="mixed">三段：命中 / 招架 / 闪避</option><option value="dry">底气不足</option></select></label><button id="player">主角出招</button><button id="enemy">地痞出招</button><button id="both">同速交手</button><span class="tag">正式节奏 1.5× · 144px 格宽</span></div>
+<label>暂停查看 <input id="time" aria-label="暂停查看" type="range" min="0" max="2200" step="1" value="0"></label><output id="status">加载中…</output>
+<div id="viewport"><div id="grid"></div></div><pre id="events"></pre>
+<script src="js/combat-damage.js"></script><script src="js/scene-animation.js"></script><script src="js/combat-fx-paint.js"></script><script src="js/combat-fx-events.js"></script><script src="js/combat-fx-runtime.js"></script><script src="js/combat-pipeline.js"></script><script src="js/core/map-projection.js"></script><script src="js/core/tile-renderer-v2.js"></script>
+<script>
+(async function(){
+ const el=id=>document.getElementById(id),skills=await fetch('data/combat-skills.json').then(r=>r.json()),moves={};
+ for(const sk of Object.values(skills.skills))for(const m of sk.moves||[])if(CombatFxPaint.accents[m.id]){moves[m.id]=m;const o=document.createElement('option');o.value=m.id;o.textContent=m.name;el('move').append(o);}
+ const map={map_id:'fx_fixture',width:7,height:7,blocks:[],portals:[]},state={mapId:'fx_fixture',x:3,y:3};
+ window.GameEngine={getMap:()=>map,getState:()=>state};
+ const manifest=await fetch('assets/map/isometric/player-atlas-v1/manifest.json').then(r=>r.json()),pose=manifest.states.find(p=>p.id==='D000');
+ const image=new Image();image.src='assets/map/isometric/player-atlas-v1/L00.png';await image.decode();
+ const pawnScale=manifest.displayBaseWidth/pose.baseWidth;
+ const shadow=TileRendererV2.makeGroundShadow(image,{crop:pose.crop,anchor:[pose.crop[0]+pose.anchor[0],pose.crop[1]+pose.anchor[1]],width:pose.crop[2]*pawnScale},[23,7]);
+ const renderer=TileRendererV2.create(el('grid'),{cellPx:101});
+ let paused=null,base=0;
+ renderer.setEffectsRenderer(args=>{
+  const c=args.ctx,p=args.cellCenter(3,3),scale=args.projection.tileWidth/144;
+  c.save();c.translate(p.x,p.y+8*scale);c.scale(scale,scale);c.drawImage(shadow,-64,-40,160,88);c.drawImage(image,...pose.crop,-pose.anchor[0]*pawnScale,-pose.anchor[1]*pawnScale,pose.crop[2]*pawnScale,pose.crop[3]*pawnScale);c.restore();
+  SceneAnimation.render({...args,nowMs:paused==null?args.nowMs:base+paused});
+ });
+ renderer.render({map,st:state,viewport:{width:1000,height:480},dynamicMetaAt:(x,y)=>({walkable:true,player:x===3&&y===3,enemy:x===4&&y===3,enemyId:'enemy.street_thug'}),staticMetaAt:()=>({walkable:true})});
+ const center=renderer.getCellCenter(3.5,3);renderer.setCamera(el('viewport').clientWidth/2-center.x,285-center.y);renderer.startAnimationLoop();
+ CombatPipeline.setConfig({pipelines:{fixture:{phases:[{handler:'fixture.defense'},{handler:'builtin.damage_stub'}]}}});
+ CombatPipeline.registerPhaseHandler('fixture.defense',ctx=>{if(ctx.hitPart==='lhand'){ctx.parrySucceeded=true;ctx.damageAfterParry=0;}return ctx;});
+ const events=[];SceneAnimation.on('combat:resolved',p=>{events.push(p);el('events').textContent=events.map(a=>(a.attacker.kind==='player'?'主角':'地痞')+' · '+moves[a.segments[0].moveId].name+' · '+a.segments.map((s,i)=>(i+1)+'/'+a.segments.length+' '+s.result+' '+s.damage).join(' → ')).join('\n');});
+ function context(enemy,sim,group){
+  const id=el('move').value,result=el('result').value,n=result==='mixed'?3:moves[id].hit_segments||1;
+  const actor={kind:'player',pos:{x:3,y:3}},foe={kind:'enemy',enemyId:'enemy.street_thug',index:0,pos:{x:4,y:3}};
+  return {moveId:id,limbId:/kick/.test(id)?'rfoot':'rhand',rawDamage:12,hitRollSuccess:result!=='miss',hitPart:result==='parry'?'lhand':'abdomen',forceZeroDamageByResourceInsufficient:result==='dry',attacker:enemy?foe:actor,defender:enemy?actor:foe,simultaneousDryRun:sim,fxGroupId:group,
+   segments:n>1?Array.from({length:n},(_,i)=>({hitRollSuccess:result==='mixed'?i!==2:result!=='miss',hitPart:result==='parry'||result==='mixed'&&i===1?'lhand':'abdomen',rawDamage:result==='mixed'?6:12})):null};
+ }
+ function run(mode){SceneAnimation.clear();events.length=0;el('events').textContent='';paused=null;base=performance.now();el('time').value='0';
+  const group=CombatFxEvents.nextGroupId();
+  const contexts=mode==='both'?[context(false,true,group),context(true,true,group)]:[context(mode==='enemy',false,group)];
+  contexts.forEach(c=>CombatPipeline.runPipeline('fixture',c));if(mode==='both')contexts.forEach(c=>CombatPipeline.finalizeSimultaneousStrike(c));
+  el('status').textContent='已通过正式管线发出 '+events.length+' 个整招事件';
+ }
+ ['player','enemy','both'].forEach(id=>el(id).onclick=()=>run(id));el('time').oninput=()=>{paused=Number(el('time').value);el('status').textContent='暂停 '+paused+' ms';};el('status').textContent='加载完成';
+})().catch(e=>{document.getElementById('status').textContent=e.message;console.error(e);});
+</script></body></html>

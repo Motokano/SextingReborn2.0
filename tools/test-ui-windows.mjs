@@ -405,6 +405,35 @@ function testLockBlocksDrag() {
     console.log('PASS M2 lock blocks drag, unlock allows');
 }
 
+function testTitleClickVersusDrag() {
+    setupWindow();
+    store.clear();
+    const UI = freshModule();
+    const title = makeChildEl('summary');
+    const el = makeEl('details', { width: 220, height: 160 }, [title]);
+    UI.registerPanel('win-attrs', {
+        type: 'free', el: () => el, defaultPos: 'dock',
+        dragHandle: 'summary', dragThreshold: 4
+    });
+    UI.init();
+    function down() { title.listeners.mousedown[0]({ button: 0, clientX: 10, clientY: 10, target: title, preventDefault() {} }); }
+    function move(x) { document.listeners.mousemove.forEach(fn => fn({ clientX: x, clientY: 10 })); }
+    function up() { document.listeners.mouseup.forEach(fn => fn({})); }
+    function click() {
+        let prevented = false;
+        title.listeners.click.forEach(fn => fn({ preventDefault() { prevented = true; }, stopPropagation() {} }));
+        return prevented;
+    }
+    down(); move(12); up();
+    assert.strictEqual(el.style.position, '', 'small click movement keeps docked layout');
+    assert.strictEqual(click(), false, 'ordinary summary click can toggle details');
+    down(); move(30); up();
+    assert.strictEqual(el.style.position, 'fixed', 'title drag detaches panel');
+    assert.strictEqual(click(), true, 'release after dragging must not toggle details');
+    assert.strictEqual(click(), false, 'later clicks still toggle details');
+    console.log('PASS title click versus drag');
+}
+
 function testZRaiseOnDrag() {
     setupWindow();
     store.clear();
@@ -641,6 +670,7 @@ const cases = [
     testSetGameVisibleMerge,
     testLockBlocksDrag,
     testZRaiseOnDrag,
+    testTitleClickVersusDrag,
     testAnchoredNoDragBinding,
     testDisplayManagedFalse,
     testGetPanelListFiltersGated,

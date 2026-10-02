@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>招式特效试作 · 潮碧物语</title>
+  <link rel="stylesheet" href="css/combat-fx-prototype.css">
+</head>
+<body>
+  <header class="masthead"><div><span class="eyebrow">潮碧物语 / 战斗演出</span><h1>一招一式</h1></div><div class="version">特效试作 13 <span>预设交手演示 · 不读写存档</span></div></header>
+  <main>
+    <aside class="moves"><h2>招式池 <small>敌我共用</small></h2><div id="move-list"></div><p class="aside-note">沿用现有棋子与招式。<br>先看轨迹、接触点和交手节奏。</p></aside>
+    <section class="preview">
+      <div class="stage-heading"><div><span id="school" class="eyebrow"></span><h2 id="move-title">加载招式…</h2><p id="move-description"></p></div><span id="scale-label" class="scale-label">144px 格宽 · 实际尺寸</span></div>
+      <select id="mobile-move" aria-label="选择招式"></select>
+      <div class="stage"><canvas id="arena" aria-label="双方棋子的攻击特效预览"></canvas><div id="phase" class="phase" aria-live="polite">准备交手</div><div class="stage-foot"><span id="actors">主角 → 地痞</span><span>轨迹 / 接触 / 结果</span></div></div>
+      <div class="transport"><button id="play" class="primary" disabled>暂停</button><button id="replay" disabled>重播</button><input id="timeline" type="range" min="0" max="3000" value="0" step="1" aria-label="播放进度"><output id="time">0.00s</output><label class="loop"><input id="loop" type="checkbox" checked>循环</label></div>
+      <div id="beats" class="beats" aria-label="交手事件顺序"></div>
+    </section>
+    <aside class="settings"><h2>交手设置</h2>
+      <label>主角装备变式（预览）<select id="variant-player"><option value="none">原式 · 无变式</option><option value="triple">三连 · 3 段 / 每段威力 50%</option></select></label>
+      <label>地痞装备变式（预览）<select id="variant-enemy"><option value="none">原式 · 无变式</option><option value="triple">三连 · 3 段 / 每段威力 50%</option></select></label>
+      <label>特效风格<select id="effect-style"><option value="limb">动画挥击 · 夸张笔触 / 接触彩墨</option><option value="signature">识招版 · 对照</option><option value="snap">利落版 · 对照</option><option value="volume">体积版 · 对照</option><option value="line">线描版 · 对照</option></select></label>
+      <label>演示情境<select id="scenario"><option value="hit">单招命中</option><option value="parry">被招架</option><option value="miss">被闪开</option><option value="armor">防具吸收</option><option value="dry">底气不足</option><option value="varied">逐段结果 · 命中 / 招架 / 闪开</option><option value="mixed">连环掌掴 · 先挡后中</option><option value="exchange">先手命中 → 后手还击</option><option value="simultaneous">同速 · 双方互中</option><option value="knockback">正蹬击退 → 后手挥空</option><option value="wall">正蹬撞阻 → 眩晕停手</option><option value="burst">催气冲锋 → 招架后击退</option></select></label>
+      <label>命中部位<select id="part"><option value="head">头部</option><option value="chest" selected>胸部</option><option value="abdomen">腹部</option><option value="left_arm">左手</option><option value="right_arm">右手</option><option value="left_leg">左脚</option><option value="right_leg">右脚</option></select></label>
+      <label>出招侧<select id="side"><option value="right">右侧肢体</option><option value="left">左侧肢体</option></select></label>
+      <div class="setting-row"><span>攻击方向</span><button id="rotate">转向 ↻</button></div>
+      <button id="swap" class="wide">交换攻守 · 地痞出招</button>
+      <label>播放速度<select id="speed"><option value="0.35">0.35× · 看细节</option><option value="0.65">0.65× · 慢放</option><option value="1">1× · 原速</option><option value="1.3">1.3× · 对照</option><option value="1.5" selected>1.5× · 默认节奏</option></select></label>
+      <label>预览尺寸<select id="zoom"><option value="1" selected>实际尺寸 · 144px 格宽</option><option value="1.7">放大细看 · 1.7×</option></select></label>
+      <div class="rule-note"><span class="eyebrow">本次交手</span><p id="rule"></p><p id="state"></p><p id="variant-note"></p></div>
+    </aside>
+  </main>
+  <footer>本页交手情境为预设，不读写存档。当前卡通笔触与正式游戏共用绘制模块；棋子保持现有完整站姿。</footer>
+  <script src="js/core/tile-renderer-v2.js"></script>
+  <script type="module" src="js/combat-fx-prototype.mjs"></script>
+</body>
+</html>

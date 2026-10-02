@@ -111,3 +111,27 @@ body.ui-matte.ui-refined :where(:is(#left-hud,#right-hud,#top-hud,#buff-hud,#bot
 body.ui-matte.ui-refined :where(:is(#left-hud,#right-hud,#top-hud,#buff-hud,#bottom-hud-stack,#game-log-panel,.ui-window-bar,#jianghu-demo-controls),:is(#left-hud,#right-hud,#top-hud,#buff-hud,#bottom-hud-stack,#game-log-panel,.ui-window-bar,#jianghu-demo-controls) *)#jianghu-demo-controls button { border-color: #a59c7759; color: #e5e4d9; }
 body.ui-matte.ui-refined :where(:is(#left-hud,#right-hud,#top-hud,#buff-hud,#bottom-hud-stack,#game-log-panel,.ui-window-bar,#jianghu-demo-controls),:is(#left-hud,#right-hud,#top-hud,#buff-hud,#bottom-hud-stack,#game-log-panel,.ui-window-bar,#jianghu-demo-controls) *)#jianghu-demo-controls button[aria-pressed=true] { background-color: #bba777; color: #20281e; }
 body.ui-matte.ui-refined :where(:is(#left-hud,#right-hud,#top-hud,#buff-hud,#bottom-hud-stack,#game-log-panel,.ui-window-bar,#jianghu-demo-controls),:is(#left-hud,#right-hud,#top-hud,#buff-hud,#bottom-hud-stack,#game-log-panel,.ui-window-bar,#jianghu-demo-controls) *)#jianghu-demo-controls.is-collapsed { background: transparent; border-color: transparent; }
+/* Main HUD interaction feedback, scoped away from system windows. */
+/* One outer frame: the title fills its top edge, without a separate gold lip. */
+body.ui-matte.ui-refined #game-log-panel {
+    border-top: 1px solid #a59c7759;
+}
+body.ui-matte.ui-refined #game-log-panel .game-log-header {
+    border-radius: 0;
+}
+body.ui-matte.ui-refined #right-hud .hud-btn[aria-expanded="true"] {
+    background: #414a38;
+    border-color: #c5b083;
+    color: #f0e3c6;
+    box-shadow: inset 0 -2px #c5b083;
+}
+body.ui-matte.ui-refined #right-hud :is(button, input, a):focus-visible,
+body.ui-matte.ui-refined #game-log-panel button:focus-visible {
+    outline: 2px solid #e0c58a;
+    outline-offset: 3px;
+}
+body.ui-matte.ui-refined #right-hud :is(.ui-windows-menu, .player-actions-submenu) {
+    max-width: calc(100vw - 32px);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+}
