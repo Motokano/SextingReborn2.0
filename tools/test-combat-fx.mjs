@@ -7,7 +7,7 @@ const c=vm.createContext({console,performance:{now:()=>clock},setTimeout,clearTi
 c.GameEngine={getMap:()=>map,getState:()=>state};
 c.CombatWorld={checkAttackDistance(){},queueDisplacement(){},flushDisplacements(){if(flush)flush();}};
 c.CombatEnemies={onEnemyDamageResolved(){delivered++;}};
-for(const file of ['combat-damage','scene-animation','combat-fx-paint','combat-fx-events','combat-fx-runtime','combat-pipeline','core/map-projection'])vm.runInContext(read('js/'+file+'.js'),c,{filename:file});
+for(const file of ['combat-damage','scene-animation','combat-fx-paint','combat-fx-presentation','combat-fx-events','combat-fx-runtime','combat-pipeline','core/map-projection'])vm.runInContext(read('js/'+file+'.js'),c,{filename:file});
 const P=c.CombatPipeline,R=c.CombatFxRuntime,F=c.CombatFxEvents,A=c.SceneAnimation;
 P.setConfig({pipelines:{test:{phases:[{handler:'test.defense'},{handler:'builtin.damage_stub'}]}}});
 P.registerPhaseHandler('test.defense',ctx=>{
@@ -28,6 +28,7 @@ assert.equal(latest().segments.length,3);assert.equal(ctx.finalDamage,10);
 const multi=R.getActiveActions()[0];assert.equal(multi.segments.length,3);
 assert(multi.segments[0].hitMs<multi.segments[1].hitMs && multi.segments[1].hitMs<multi.segments[2].hitMs);
 assert.equal(R.speed,1.5);
+assert(Math.abs((multi.segments[1].startMs-multi.segments[0].startMs)*R.speed-420)<1e-8,'triple slap uses demo variant gap');
 ctx.defender.pos.x=99;ctx.segmentsResults[0].hitPart='head';
 assert.equal(latest().defender.x,2);assert.equal(latest().segments[0].hitPart,'chest');
 const count=events.length;F.publish(ctx);assert.equal(events.length,count,'one event per action');
@@ -53,7 +54,11 @@ P.finalizeSimultaneousStrike(player);assert.equal(events.length,before+2);
 R.clear();resolve(attack({segments:[{hitRollSuccess:true},{hitRollSuccess:true},{hitRollSuccess:true}]}));
 resolve(attack({moveId:'thug_punch',attacker:{kind:'enemy',enemyId:'target',index:0,pos:{x:2,y:1}},defender:{kind:'player',pos:{x:1,y:1}}}));
 scheduled=R.getActiveActions();assert(scheduled[1].startMs>scheduled[0].endMs);
+assert(Math.abs((scheduled[1].startMs-scheduled[0].endMs)*R.speed-260)<1e-8,'reply keeps the demo whole-move recovery gap');
 assert.equal(scheduled[1].segments[0].move,'jab');
+R.clear();resolve(attack({segments:[{hitRollSuccess:true},{hitRollSuccess:true}]}));
+const baseSlap=R.getActiveActions()[0];
+assert(Math.abs((baseSlap.segments[1].startMs-baseSlap.segments[0].startMs)*R.speed-400)<1e-8,'original two-hit slap keeps demo base gap');
 // Rendering the approved primitives across all moves/results/directions catches missing helpers,
 // invalid geometry, Canvas stack leaks and accidental legacy projectile duplication.
 let depth=0,paintCalls=0;

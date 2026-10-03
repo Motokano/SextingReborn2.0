@@ -6,7 +6,7 @@
 <label>场景光照 <select id="lighting"><option value="720">正式场景 · 正午</option><option value="0">正式场景 · 午夜</option><option value="off">仅特效 · 对照</option></select></label>
 <label>暂停查看 <input id="time" aria-label="暂停查看" type="range" min="0" max="2200" step="1" value="0"></label><output id="status">加载中…</output>
 <div id="viewport"><div id="grid"></div></div><pre id="events"></pre>
-<script src="js/combat-damage.js"></script><script src="js/scene-animation.js"></script><script src="js/combat-fx-paint.js"></script><script src="js/combat-fx-events.js"></script><script src="js/combat-fx-runtime.js"></script><script src="js/combat-pipeline.js"></script><script src="js/core/map-projection.js"></script><script src="js/core/tile-renderer-v2.js"></script>
+<script src="js/combat-damage.js"></script><script src="js/scene-animation.js"></script><script src="js/combat-fx-paint.js"></script><script src="js/combat-fx-presentation.js"></script><script src="js/combat-fx-events.js"></script><script src="js/combat-fx-runtime.js"></script><script src="js/combat-pipeline.js"></script><script src="js/core/map-projection.js"></script><script src="js/core/tile-renderer-v2.js"></script>
 <script src="js/scene-renderer.js"></script>
 <script>
 (async function(){
@@ -15,24 +15,28 @@
  const map={map_id:'fx_fixture',width:7,height:7,blocks:[],portals:[]},state={mapId:'fx_fixture',x:3,y:3};
  window.GameEngine={getMap:()=>map,getState:()=>state};
  window.GameTime={getState:()=>({minuteOfDay:Number(el('lighting').value)||0})};
+ const survivalConfig=await fetch('data/survival-config.json').then(r=>r.json());
+ window.Survival={getConfigValue:(key,fallback)=>survivalConfig[key]??fallback};
  const manifest=await fetch('assets/map/isometric/player-atlas-v1/manifest.json').then(r=>r.json()),pose=manifest.states.find(p=>p.id==='D000');
  const image=new Image();image.src='assets/map/isometric/player-atlas-v1/L00.png';await image.decode();
  const pawnScale=manifest.displayBaseWidth/pose.baseWidth;
  const shadow=TileRendererV2.makeGroundShadow(image,{crop:pose.crop,anchor:[pose.crop[0]+pose.anchor[0],pose.crop[1]+pose.anchor[1]],width:pose.crop[2]*pawnScale},[23,7]);
- const renderer=TileRendererV2.create(el('grid'),{cellPx:101});
+ let paused=null,base=0;
+ const renderer=TileRendererV2.create(el('grid'),{cellPx:101,combatHost:el('viewport'),getAnimationTime:ts=>paused==null?ts:base+paused});
  // The live player is on a separate layer below FX. Mirror that separation here.
  const effectsCanvas=document.createElement('canvas'),effectsCtx=effectsCanvas.getContext('2d');
- let paused=null,base=0;
  renderer.setEffectsRenderer(args=>{
   const c=args.ctx,p=args.cellCenter(3,3),scale=args.projection.tileWidth/144;
+  const offset=CombatFxRuntime.getPawnOffsetAt(3,3,'player',args);p.x+=offset.x;p.y+=offset.y;
   c.save();c.translate(p.x,p.y+8*scale);c.scale(scale,scale);c.drawImage(shadow,-64,-40,160,88);c.drawImage(image,...pose.crop,-pose.anchor[0]*pawnScale,-pose.anchor[1]*pawnScale,pose.crop[2]*pawnScale,pose.crop[3]*pawnScale);c.restore();
   if(effectsCanvas.width!==c.canvas.width)effectsCanvas.width=c.canvas.width;
   if(effectsCanvas.height!==c.canvas.height)effectsCanvas.height=c.canvas.height;
   effectsCtx.clearRect(0,0,effectsCanvas.width,effectsCanvas.height);
-  const frame={...args,ctx:effectsCtx,nowMs:paused==null?args.nowMs:base+paused};
+  const frame={...args,ctx:effectsCtx,skipCombatFx:true,nowMs:paused==null?args.nowMs:base+paused};
   if(el('lighting').value==='off')SceneAnimation.render(frame);else SceneRenderer.renderEffects(frame);
   c.drawImage(effectsCanvas,0,0);
  });
+ renderer.setCombatEffectsRenderer(args=>{if(el('lighting').value==='off')CombatFxRuntime.render(args);else SceneRenderer.renderCombatEffects(args);});
  renderer.render({map,st:state,viewport:{width:1000,height:480},dynamicMetaAt:(x,y)=>({walkable:true,player:x===3&&y===3,enemy:x===4&&y===3,enemyId:'enemy.street_thug'}),staticMetaAt:()=>({walkable:true})});
  const center=renderer.getCellCenter(3.5,3);renderer.setCamera(el('viewport').clientWidth/2-center.x,285-center.y);renderer.startAnimationLoop();
  CombatPipeline.setConfig({pipelines:{fixture:{phases:[{handler:'fixture.defense'},{handler:'builtin.damage_stub'}]}}});

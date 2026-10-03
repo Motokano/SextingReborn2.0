@@ -30,3 +30,15 @@ for(minute of [0,360,720,1080]){
     assert.equal(operation,'source-over');
 }
 console.log('PASS live scene FX composition: nearby effects survive day/night clear-radius erasure.');
+
+// The live foreground surface must preserve the same ink independently of the
+// environment layer; otherwise moving above the DOM pawn can reintroduce erasure.
+context.CombatFxRuntime={render:context.SceneAnimation.render};
+for(minute of [0,720]){
+    pixel=0;style='#000000';operation='source-over';stack=[];
+    context.SceneRenderer.renderCombatEffects(frame);
+    assert(pixel>.99,'foreground combat preserves the approved opacity');
+    assert.equal(stack.length,0);
+    assert.equal(operation,'source-over','visibility masking must restore compositing mode');
+}
+console.log('PASS foreground combat composition and Canvas state restoration.');

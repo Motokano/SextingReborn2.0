@@ -28,7 +28,7 @@ c.CombatEnemies={getById:()=>({jingu:20,speed:10,attack_damage_min:10,attack_dam
  updateEnemyAI:o=>{if(stunned){stunned=false;return {moves:[],attacks:[]};}assert.ok(o.didActThisTick(0),'counter must consume the enemy action');return {moves:[],attacks:[]};},isEnemyAggro:()=>true};
 c.fetch=async p=>({ok:true,json:async()=>JSON.parse(read(p))});
 for(const n of ['combat-skills','combat-damage','combat-melee-resolve','combat-pipeline','buff-system','combat-breath','combat-engagement','combat-world','combat-hub-actions','combat-initiative'])load(n);
-for(const n of ['scene-animation','combat-fx-paint','combat-fx-events','combat-fx-runtime'])load(n);
+for(const n of ['scene-animation','combat-fx-paint','combat-fx-presentation','combat-fx-events','combat-fx-runtime'])load(n);
 const fxEvents=[];c.SceneAnimation.on('combat:resolved',event=>fxEvents.push(event));
 c.CombatSkills.setConfig(skills); c.CombatPipeline.setConfig(JSON.parse(read('data/combat-pipeline.json')));c.BuffSystem.init();await new Promise(r=>setTimeout(r,30));
 function engage(){c.CombatEngagement.engageEnemy({mapId:'arena',index:0,enemyId:'target',record:enemy});}

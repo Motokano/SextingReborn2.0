@@ -130,7 +130,11 @@ function drawFloor(t){
     ctx.fillStyle='#354133';ctx.beginPath();ctx.moveTo(0,0);ctx.lineTo(50,-26);ctx.lineTo(50,1);ctx.lineTo(0,27);ctx.closePath();ctx.fill();ctx.restore();
   }
 }
-function pawnOffset(id,t){let dx=0,dy=0;
+function canonicalEvents(){return events.filter(e=>!e.type).map(e=>({...e,from:{x:trackPos(e.actor,e.at)[0],y:trackPos(e.actor,e.at)[1]},to:{x:trackPos(e.target,e.hitAt)[0],y:trackPos(e.target,e.hitAt)[1]}}));}
+function canonicalView(){return {scale:zoom,project:p=>point([p.x,p.y]),direction:(x,y)=>project([x,y])};}
+function pawnOffset(id,t){
+  if(fx()===limbFX)return limbFX.presentation.pawnOffset(id,canonicalEvents(),t,canonicalView().project,zoom);
+  let dx=0,dy=0;
   for(const e of events){if(e.type)continue;const d=point(trackPos(e.target,e.at)),a=point(trackPos(e.actor,e.at));const angle=Math.atan2(d.y-a.y,d.x-a.x);
     if(fx()===snapFX||fx().kinetic){
         const age=t-e.hitAt,recovery=fx().recovery||95,readable=fx()===signatureFX||fx().attached;
@@ -170,6 +174,18 @@ function impact(p,age,result,angle,move,side,powerFactor=1){const ms=fx().contac
   ctx.restore();
 }
 function drawStrike(e,t){const life=t-e.at;if(life<0||life>950)return;
+  if(fx()===limbFX){
+    const all=canonicalEvents(),event=all.find(s=>s.segmentId===e.segmentId);
+    const g=limbFX.presentation.drawStrike(ctx,event,t,canonicalView(),all),age=t-e.hitAt;
+    if(g&&age>=0&&age<660){
+      const labels={parry:'招架',miss:'闪开',distance:'挥空',dry:'乏力',armor:'吸收'};
+      const statuses={jab:'试探',whip_kick:'失衡',poke_eye:'眼花',kick_knee:'跛足',shove:'失衡',slap_combo:'淤伤'};
+      const label=(e.segmentCount>1?`${e.segment+1}/${e.segmentCount} `:'')+(labels[e.result]||statuses[e.move]||'命中');
+      const pos=e.move==='jab'&&e.result==='hit'?g.ap:g.bp;
+      ctx.save();ctx.globalAlpha=clamp(1-(age-260)/400);ctx.fillStyle=e.result==='hit'?'#edd3a5':'#b5c9b7';ctx.font='11px "Microsoft YaHei"';ctx.textAlign='center';ctx.fillText(label,pos.x,pos.y-100*zoom-e.segment*16-age*.018);ctx.restore();
+    }
+    return;
+  }
   const ap=point(trackPos(e.actor,e.at)), bp=point(trackPos(e.target,e.hitAt));
   const limbSide=e.side==='left'?-1:1;
   // Repeated sub-hits keep the equipped acting limb. Slaps reverse the stroke, not the limb.
@@ -229,7 +245,7 @@ function drawGround(t){
 }
 function draw(t){ctx.clearRect(0,0,width,height);drawFloor(t);drawGround(t);[0,1].sort((a,b)=>point(trackPos(a,t)).y-point(trackPos(b,t)).y).forEach(id=>drawPawn(id,t));events.forEach(e=>e.type?drawSpecial(e,t):drawStrike(e,t));}
 function resize(){const r=canvas.getBoundingClientRect(),dpr=window.devicePixelRatio||1;width=r.width;height=r.height;canvas.width=Math.round(width*dpr);canvas.height=Math.round(height*dpr);ctx.setTransform(dpr,0,0,dpr,0,0);}
-function frame(now){if(playing){time+=Math.min(now-last,60)*speed;if(time>duration){if($('loop').checked)time%=duration;else{time=duration;playing=false;}}}last=now;draw(time);updateUI();requestAnimationFrame(frame);}
+function frame(now){if(playing){time+=limbFX.presentation.frameDelta(now-last)*speed;if(time>duration){if($('loop').checked)time%=duration;else{time=duration;playing=false;}}}last=now;draw(time);updateUI();requestAnimationFrame(frame);}
 async function boot(){
   const [data,manifest,player,thug]=await Promise.all([fetch('data/combat-skills.json').then(r=>r.json()),fetch('assets/map/isometric/player-atlas-v1/manifest.json').then(r=>r.json()),image('assets/map/isometric/player-atlas-v1/L00.png'),image('assets/map/isometric/street-thug-v1/standing.png')]);
   for(const skill of Object.values(data.skills)){const list=skill.moves.filter(m=>shapes[m.id]);if(!list.length)continue;const title=document.createElement('div');title.className='group-label';title.textContent=skill.name;$('move-list').append(title);for(const move of list){moves[move.id]={...move,school:skill.name};const b=document.createElement('button');b.className='move';b.dataset.move=move.id;b.innerHTML=`<strong>${move.name}</strong><span>${shapes[move.id][1]}</span>`;b.onclick=()=>{selected=move.id;$('scenario').value='hit';$('part').value=['poke_eye','swing_punch','slap_combo'].includes(move.id)?'head':move.id==='kick_knee'?'right_leg':['front_kick','whip_kick'].includes(move.id)?'abdomen':'chest';build();};$('move-list').append(b);}}

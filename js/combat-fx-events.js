@@ -41,7 +41,8 @@
                 powerFactor:Number.isFinite(s.fxPowerFactor) ? s.fxPowerFactor : 1 };
         });
         bus.emit('combat:resolved', { actionId:snap.actionId, mapId:snap.mapId, groupId:snap.groupId,
-            simultaneous:snap.simultaneous, attacker:Object.assign({},snap.attacker), defender:Object.assign({},snap.defender),
+            simultaneous:snap.simultaneous, baseSegments:Number(ctx.moveTemplate&&ctx.moveTemplate.hit_segments)||(ctx.moveId==='slap_combo'?2:1),
+            attacker:Object.assign({},snap.attacker), defender:Object.assign({},snap.defender),
             segments:segments });
     }
     global.CombatFxEvents = { capture:capture, publish:publish, nextGroupId:nextGroupId };

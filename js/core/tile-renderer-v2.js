@@ -1,5 +1,5 @@
 /**
- * Tile Renderer V2 — three canvas layers driven by MapProjection.
+ * Tile Renderer V2 — map layers and foreground combat driven by MapProjection.
  */
 (function (global) {
     'use strict';
@@ -56,15 +56,26 @@
         var staticCanvas = createCanvas('map-grid-canvas-static', mapGridEl);
         var dynamicCanvas = createCanvas('map-grid-canvas-dynamic', mapGridEl);
         var fxCanvas = createCanvas('map-grid-canvas-fx', mapGridEl);
+        // The DOM player lives above map-grid's transformed stacking context.
+        // Combat needs its own synchronized foreground surface, above that pawn.
+        var combatCanvas = createCanvas('map-grid-canvas-combat', opts.combatHost || mapGridEl);
+        if(opts.combatHost)combatCanvas.style.zIndex='21';
         var staticCtx = staticCanvas.getContext('2d');
         var dynamicCtx = dynamicCanvas.getContext('2d');
         var fxCtx = fxCanvas.getContext('2d');
+        var combatCtx = combatCanvas.getContext('2d');
+        var combatEffectsRenderer = null;
         var scene = { map: null, st: null, dynamicMetaAt: null };
         var projection = null;
         var staticMapKey = '', staticDataKey = '', staticSizeKey = '';
         var lastInput = null;
         var effectsRenderer = typeof opts.effectsRenderer === 'function' ? opts.effectsRenderer : null;
         var animationLoopId = null, animationLoopEnabled = false;
+        var presentationNow = nowMs(), hadPawnMotion = false;
+        var presentationCombatNow=presentationNow;
+        var useCombatClock=!!(global.CombatFxRuntime&&!opts.getAnimationTime);
+        if(useCombatClock)global.CombatFxRuntime.startPlaybackClock(presentationNow);
+        var combatPixelRatio=1;
         var spriteSources = {
             npc: 'assets/map/isometric/npc-pawn-v2.png',
             enemy: 'assets/map/isometric/enemy-pawn-v2.png'
@@ -246,6 +257,14 @@
         function resize(w, h) {
             w = Math.max(1, Math.ceil(w)); h = Math.max(1, Math.ceil(h));
             [staticCanvas, dynamicCanvas, fxCanvas].forEach(function (c) { if (c.width !== w) c.width = w; if (c.height !== h) c.height = h; });
+            // Same backing resolution as the demo: subpixel dry-brush strands
+            // must not be blurred by stretching a 1x bitmap on a high-DPI screen.
+            combatPixelRatio=global.devicePixelRatio||1;
+            var cw=Math.round(w*combatPixelRatio),ch=Math.round(h*combatPixelRatio);
+            if(combatCanvas.width!==cw)combatCanvas.width=cw;
+            if(combatCanvas.height!==ch)combatCanvas.height=ch;
+            combatCtx.setTransform(combatPixelRatio,0,0,combatPixelRatio,0,0);
+            combatCanvas.style.width=w+'px';combatCanvas.style.height=h+'px';
             mapGridEl.style.width = w + 'px'; mapGridEl.style.height = h + 'px';
         }
         function colorForCell(m) {
@@ -326,6 +345,10 @@
         }
         function drawEntity(gx,gy,m){
             var c=projection.cellCenter(gx,gy), lift=projection.isIsometric?18:0;
+            if(m.enemy&&global.CombatFxRuntime){
+                var motion=global.CombatFxRuntime.getPawnOffsetAt(gx,gy,'enemy',{nowMs:presentationNow,combatNowMs:presentationCombatNow,cellPx:cellPx,projection:projection,cellCenter:projection.cellCenter});
+                c.x+=motion.x;c.y+=motion.y;
+            }
             var deviceKey = deviceKeyForMeta(m);
             dynamicCtx.textAlign='center';dynamicCtx.textBaseline='middle';
             if(m.unknownPresence){dynamicCtx.fillStyle='rgba(245,222,179,.95)';dynamicCtx.font='bold 20px sans-serif';dynamicCtx.fillText('?',c.x,c.y-lift);}
@@ -372,21 +395,38 @@
             cells.sort(function(a,b){var ca=projection.cellCenter(a.x,a.y),cb=projection.cellCenter(b.x,b.y);return ca.y-cb.y||ca.x-cb.x;});for(var i=0;i<cells.length;i++)drawEntity(cells[i].x,cells[i].y,cells[i].m);
         }
         function render(nextScene){
+            presentationNow=typeof opts.getAnimationTime==='function'?opts.getAnimationTime(nowMs()):nowMs();
+            presentationCombatNow=useCombatClock?global.CombatFxRuntime.getPlaybackTime():presentationNow;
             lastInput=nextScene;scene.map=nextScene.map;scene.st=nextScene.st;scene.dynamicMetaAt=nextScene.dynamicMetaAt||nextScene.metaAt;
             if(!scene.map||!scene.st||typeof scene.dynamicMetaAt!=='function')return;
             projection=makeProjection(scene.map);resize(projection.widthPx,projection.heightPx);ensureStatic(nextScene);
             var dirty=Array.isArray(nextScene.dirtyCells)?nextScene.dirtyCells:null;
             if(!projection.isIsometric&&dirty&&dirty.length){var seen={};for(var i=0;i<dirty.length;i++){var d=dirty[i];if(!d||d.x==null||d.y==null)continue;var gx=d.x|0,gy=d.y|0,k=gx+','+gy;if(seen[k]||gx<0||gy<0||gx>=scene.map.width||gy>=scene.map.height)continue;seen[k]=1;dynamicCtx.clearRect(gx*cellPx-2,gy*cellPx-2,cellPx+4,cellPx+4);var m=scene.dynamicMetaAt(gx,gy);drawOverlay(gx,gy,m);drawEntity(gx,gy,m);}}else drawFullDynamic(nextScene);
-            renderFxLayer(nowMs());
+            renderFxLayer(presentationNow);
         }
-        function renderFxLayer(ts){fxCtx.clearRect(0,0,fxCanvas.width,fxCanvas.height);if(!effectsRenderer||!scene.map||!scene.st||!projection)return;try{effectsRenderer({ctx:fxCtx,nowMs:ts,map:scene.map,state:scene.st,cellPx:cellPx,cellToPx:projection.cellToPx,cellCenter:projection.cellCenter,cellPolygon:projection.cellPolygon,projection:projection,mapWidthPx:projection.widthPx,mapHeightPx:projection.heightPx});}catch(e){}}
-        function tick(ts){if(!animationLoopEnabled)return;if(lastInput)renderFxLayer(ts);animationLoopId=requestAnimationFrame(tick);}
+        function renderFxLayer(ts){
+            fxCtx.clearRect(0,0,fxCanvas.width,fxCanvas.height);combatCtx.clearRect(0,0,combatCanvas.width,combatCanvas.height);
+            if(!scene.map||!scene.st||!projection)return;
+            var frame={ctx:fxCtx,nowMs:ts,combatNowMs:useCombatClock?global.CombatFxRuntime.getPlaybackTime():ts,map:scene.map,state:scene.st,cellPx:cellPx,cellToPx:projection.cellToPx,cellCenter:projection.cellCenter,cellPolygon:projection.cellPolygon,projection:projection,mapWidthPx:projection.widthPx,mapHeightPx:projection.heightPx};
+            try{if(effectsRenderer)effectsRenderer(frame);if(combatEffectsRenderer)combatEffectsRenderer(Object.assign({},frame,{ctx:combatCtx}));}catch(e){}
+        }
+        function tick(ts){
+            if(!animationLoopEnabled)return;
+            presentationNow=typeof opts.getAnimationTime==='function'?opts.getAnimationTime(ts):ts;
+            presentationCombatNow=useCombatClock?global.CombatFxRuntime.advancePlaybackClock(ts):presentationNow;
+            if(lastInput){
+                var moving=!!(global.CombatFxRuntime&&global.CombatFxRuntime.hasPawnMotion(presentationCombatNow));
+                if(moving||hadPawnMotion)drawFullDynamic(lastInput);
+                hadPawnMotion=moving;renderFxLayer(presentationNow);
+            }
+            animationLoopId=requestAnimationFrame(tick);
+        }
         function start(){if(animationLoopEnabled)return;animationLoopEnabled=true;animationLoopId=requestAnimationFrame(tick);}
         function stop(){animationLoopEnabled=false;if(animationLoopId){cancelAnimationFrame(animationLoopId);animationLoopId=null;}}
         function hitTest(clientX,clientY){if(!scene.map||!projection)return null;var rect=mapGridEl.getBoundingClientRect(),h=projection.pick(clientX-rect.left,clientY-rect.top);if(!h||h.x<0||h.y<0||h.x>=scene.map.width||h.y>=scene.map.height)return null;return h;}
         function setHoverCursor(x,y,turnOnly){var h=hitTest(x,y);if(!h||!scene.dynamicMetaAt){mapGridEl.style.cursor='default';return;}var m=scene.dynamicMetaAt(h.x,h.y);mapGridEl.style.cursor=((turnOnly&&m.adjacent)||m.leapTarget||(m.adjacent&&(m.walkable||m.npc||m.enemy)))?'pointer':'default';}
-        function invalidate(){staticMapKey='';staticDataKey='';staticSizeKey='';staticCtx.clearRect(0,0,staticCanvas.width,staticCanvas.height);dynamicCtx.clearRect(0,0,dynamicCanvas.width,dynamicCanvas.height);fxCtx.clearRect(0,0,fxCanvas.width,fxCanvas.height);}
-        return {render:render,hitTest:hitTest,setCamera:function(x,y){mapGridEl.style.transform='translate('+x+'px, '+y+'px)';},getCellCenter:function(x,y){return projection?projection.cellCenter(x,y):{x:(x+.5)*cellPx,y:(y+.5)*cellPx};},getProjection:function(){return projection;},setHoverCursor:setHoverCursor,setEffectsRenderer:function(fn){effectsRenderer=typeof fn==='function'?fn:null;},startAnimationLoop:start,stopAnimationLoop:stop,renderFxLayer:function(ts){renderFxLayer(ts!=null?ts:nowMs());},invalidateStatic:invalidate};
+        function invalidate(){staticMapKey='';staticDataKey='';staticSizeKey='';staticCtx.clearRect(0,0,staticCanvas.width,staticCanvas.height);dynamicCtx.clearRect(0,0,dynamicCanvas.width,dynamicCanvas.height);fxCtx.clearRect(0,0,fxCanvas.width,fxCanvas.height);combatCtx.clearRect(0,0,combatCanvas.width,combatCanvas.height);}
+        return {render:render,hitTest:hitTest,setCamera:function(x,y){mapGridEl.style.transform='translate('+x+'px, '+y+'px)';if(opts.combatHost)combatCanvas.style.transform=mapGridEl.style.transform;},getCellCenter:function(x,y){return projection?projection.cellCenter(x,y):{x:(x+.5)*cellPx,y:(y+.5)*cellPx};},getProjection:function(){return projection;},setHoverCursor:setHoverCursor,setCombatEffectsRenderer:function(fn){combatEffectsRenderer=typeof fn==='function'?fn:null;},setEffectsRenderer:function(fn){effectsRenderer=typeof fn==='function'?fn:null;},startAnimationLoop:start,stopAnimationLoop:stop,renderFxLayer:function(ts){renderFxLayer(ts!=null?ts:nowMs());},invalidateStatic:invalidate};
     }
     global.TileRendererV2={create:create,clamp:clamp,makeGroundShadow:makeGroundShadow};
 })(typeof window !== 'undefined' ? window : this);

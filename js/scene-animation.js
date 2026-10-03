@@ -266,7 +266,7 @@
             else if (e.type === 'projectile_trail') drawProjectileTrail(ctx, e, t, cellPx, cellToPx);
             else if (e.type === 'floating_text') drawFloatingText(ctx, e, t, cellPx, cellToPx);
         }
-        if (global.CombatFxRuntime) global.CombatFxRuntime.render(args);
+        if (global.CombatFxRuntime && !args.skipCombatFx) global.CombatFxRuntime.render(args);
         drawDebugHud(ctx, nowMs);
     }
 

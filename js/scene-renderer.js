@@ -1190,6 +1190,15 @@
     }
 
     // Shared by the live map and the isolated rendering acceptance page.
+    function renderCombatEffects(args) {
+        if(!window.CombatFxRuntime)return;
+        window.CombatFxRuntime.render(args);
+        // Foreground strokes sit above pawns, but still obey world visibility.
+        args.ctx.save();args.ctx.globalCompositeOperation='destination-out';
+        renderVisionOcclusionOverlay(args);
+        renderVisionDistanceShadeOverlay(args);
+        args.ctx.restore();
+    }
     function renderEffects(fxCtx) {
         // Its destination-out clear radius must only erase the night veil, never
         // attack strokes or damage text already drawn onto this shared canvas.
@@ -1242,8 +1251,9 @@
         }
 
         if (!tileRenderer && window.TileRendererV2 && typeof window.TileRendererV2.create === 'function') {
-            tileRenderer = window.TileRendererV2.create(grid, { cellPx: CELL_PX });
-            tileRenderer.setEffectsRenderer(renderEffects);
+            tileRenderer = window.TileRendererV2.create(grid, { cellPx: CELL_PX, combatHost:grid.parentElement });
+            tileRenderer.setEffectsRenderer(function(args){renderEffects(Object.assign({},args,{skipCombatFx:true}));});
+            tileRenderer.setCombatEffectsRenderer(renderCombatEffects);
             if (typeof tileRenderer.startAnimationLoop === 'function') tileRenderer.startAnimationLoop();
         }
         var hasV2 = !!tileRenderer;
@@ -1885,6 +1895,7 @@
     window.SceneRenderer = {
         render: render,
         renderEffects: renderEffects,
+        renderCombatEffects: renderCombatEffects,
         setVisionDebugEnabled: function (enabled) {
             visionDebugEnabled = !!enabled;
             render();
