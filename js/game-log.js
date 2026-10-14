@@ -121,7 +121,7 @@
             minH: MIN_PANEL_H,
             closable: false,        // M1：暂不加关闭按钮（M3 窗口列表菜单再开）
             resizable: true,
-            dragHandle: '.game-log-header',
+            dragHandle: document.body.classList.contains('moss-game') ? '.panel-head' : '.game-log-header',
             handles: {
                 top: '.game-log-resize-handle-top',
                 left: '.game-log-resize-handle-left',

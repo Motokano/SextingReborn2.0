@@ -15,7 +15,7 @@
         if (!button) return;
         var original = document.createElement('span');
         original.className = 'jianghu-nav-original';
-        while (button.firstChild) original.appendChild(button.firstChild);
+        Array.from(button.childNodes).forEach(function (node) { if (!node.classList || !node.classList.contains('moss-menu-label')) original.appendChild(node); });
         var mark = document.createElement('span'); mark.className = 'jianghu-nav-content';
         mark.innerHTML = '<svg class="jianghu-nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="' + paths[id] + '"/></svg>';
         button.append(original, mark);

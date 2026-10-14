@@ -41,11 +41,13 @@
     syncReadingSpace();
     var tools = document.createElement('div'); tools.className = 'game-log-tools';
     tools.innerHTML = '<button type="button" data-filter="reading" aria-pressed="true" title="隐藏技术调试记录，保留游戏消息">阅读</button><button type="button" data-filter="all" aria-pressed="false">全部记录</button>';
-    panel.querySelector('.game-log-header').appendChild(tools);
+    panel.querySelector(document.body.classList.contains('moss-game') ? '.panel-content' : '.game-log-header').appendChild(tools);
     ['pointerdown', 'mousedown', 'dblclick'].forEach(function (type) { tools.addEventListener(type, function (e) { e.stopPropagation(); }); });
     panel.classList.add('game-log-reading');
     function classify(line) {
-        var text = Array.from(line.childNodes).filter(function (n) { return !(n.nodeType === 1 && n.classList.contains('log-time')); }).map(function (n) { return n.textContent; }).join('').trim();
+        var copy = line.cloneNode(true);
+        copy.querySelectorAll('.log-time').forEach(function (node) { node.remove(); });
+        var text = copy.textContent.trim();
         // Only explicit engine diagnostics, never arbitrary bracketed dialogue or game system results.
         var debug = /^\[(?:NPCSystem|SaveSystem|BUFF-HUD|debug|bootstrap)\]/i.test(text);
         line.classList.toggle('game-log-debug', debug);

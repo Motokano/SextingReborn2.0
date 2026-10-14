@@ -1571,15 +1571,15 @@
   "ui.windows.close": "隐藏此窗口",
   "ui.windows.grip": "拖动移动 · 双击复位",
   "ui.windows.role": "角色卡",
-  "ui.windows.limbs": "肢体检视",
+  "ui.windows.limbs": "身体",
   "ui.windows.battle_resources": "战斗资源",
   "ui.windows.survival": "生存",
   "ui.windows.resources": "资源",
-  "ui.windows.attrs": "基础五维",
+  "ui.windows.attrs": "成长",
   "ui.windows.attr_exp": "属性经验",
   "ui.windows.buff": "状态效果",
-  "ui.windows.log": "战斗日志",
-  "ui.windows.time": "时间",
+  "ui.windows.log": "事件记录",
+  "ui.windows.time": "环境 · 顶部栏",
   "ui.windows.right_actions": "右侧入口",
   "ui.windows.bottom_bar": "底部动作栏",
   "ui.windows.dialogue": "对话",
@@ -2049,5 +2049,6 @@
   "combat.hub.ok.cui_qi": "催气！接下来三次攻击强化。",
   "combat.hub.fail.cui_qi": "仅战斗中蓄满200气力消耗且未在爆发时可催气。",
   "combat.log.distance_miss": "被击退出攻击范围，攻击挥空。",
-  "hideout_warehouse.upgrade.status.materials": "待备料"
+  "hideout_warehouse.upgrade.status.materials": "待备料",
+  "ui.windows.carry": "携行"
 }

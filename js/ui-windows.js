@@ -21,7 +21,7 @@
 (function (global) {
     'use strict';
 
-    var STORAGE_KEY = 'ui_windows_v1';
+    var STORAGE_KEY = document.body && document.body.classList && document.body.classList.contains('moss-game') ? 'ui_windows_moss_c_v1' : 'ui_windows_v1';
     var STORAGE_VERSION = 1;
     var SAVE_DEBOUNCE_MS = 200;
     var VIEW_MARGIN_RIGHT = 8;
@@ -81,6 +81,26 @@
         var discarded = false;
         try {
             var raw = global.localStorage.getItem(STORAGE_KEY);
+            if (!raw && STORAGE_KEY === 'ui_windows_moss_c_v1') {
+                // First switch to C: keep visibility/lock, give the approved layout fresh geometry.
+                var legacy = global.localStorage.getItem('ui_windows_v1');
+                if (legacy) {
+                    var previous = JSON.parse(legacy);
+                    if (previous && previous.version === STORAGE_VERSION) {
+                        var preferences = {};
+                        Object.keys(previous.windows || {}).forEach(function (id) {
+                            var old = previous.windows[id];
+                            if (old && old.visible === false) preferences[id] = { visible: false };
+                        });
+                        delete preferences['win-role'];
+                        delete preferences['win-resources'];
+                        delete preferences['win-attr-exp'];
+                        if (!(previous.windows && ['win-attrs','win-resources','win-attr-exp'].every(function(id){return previous.windows[id] && previous.windows[id].visible===false;}))) delete preferences['win-attrs'];
+                        raw = JSON.stringify({version: STORAGE_VERSION, lock: !!previous.lock, windows: preferences});
+                        global.localStorage.setItem(STORAGE_KEY, raw);
+                    }
+                }
+            }
             if (!raw) return false;
             var data = JSON.parse(raw);
             if (!isObj(data) || data.version !== STORAGE_VERSION) {
@@ -117,8 +137,9 @@
             isFinite(parsePx(e.w, NaN)) && isFinite(parsePx(e.h, NaN));
         var hasVisible = e.visible === false;
         var hasMin = e.minimized === true;
+        var hasFold = e.folded === true;
         var hasBar = isFinite(parsePx(e.barX, NaN)) && isFinite(parsePx(e.barY, NaN));
-        if (!hasPos && !hasVisible && !hasMin && !hasBar) return null; // 空操作/非法 → 丢弃
+        if (!hasPos && !hasVisible && !hasMin && !hasFold && !hasBar) return null; // 空操作/非法 → 丢弃
         var entry = { visible: e.visible !== false };
         if (hasPos) {
             entry.x = parsePx(e.x, 0);
@@ -127,6 +148,7 @@
             entry.h = parsePx(e.h, 0);
         }
         if (hasMin) entry.minimized = true;
+        if (hasFold) entry.folded = true;
         if (hasBar) {
             entry.barX = parsePx(e.barX, 0);
             entry.barY = parsePx(e.barY, 0);
@@ -149,6 +171,7 @@
             entry.h = Math.max(minH, raw.h);
         }
         if (raw.minimized === true) entry.minimized = true;
+        if (raw.folded === true) entry.folded = true;
         if (isFinite(raw.barX) && isFinite(raw.barY)) {
             entry.barX = raw.barX;
             entry.barY = raw.barY;
@@ -252,6 +275,11 @@
         var minimized = !!(stored[id] && stored[id].minimized === true);
         if (spec.displayManaged !== false) {
             el.style.display = (visible && !minimized) ? '' : 'none';
+        }
+        if (spec.foldInPlace && el.classList) {
+            el.classList.toggle('folded', !!(stored[id] && stored[id].folded));
+            var foldButton = el.querySelector('.ui-window-min');
+            if (foldButton) { foldButton.textContent = stored[id] && stored[id].folded ? '+' : '−'; foldButton.setAttribute('aria-expanded', String(!(stored[id] && stored[id].folded))); }
         }
         syncTaskBar(id); // 任务条显示条件：minimized && 游戏门控 && 玩家偏好
         if (spec.onVisibility && typeof spec.onVisibility === 'function') {
@@ -394,7 +422,8 @@
                     minEl.addEventListener('click', function (e) {
                         e.preventDefault();
                         e.stopPropagation();
-                        minimizeWindow(id);
+                        if (registry[id] && registry[id].foldInPlace) setFolded(id, !(stored[id] && stored[id].folded));
+                        else minimizeWindow(id);
                     });
                 }
             }
@@ -634,6 +663,7 @@
     /** 对所有已注册窗口应用布局 + 绑定拖拽（幂等，可重复调用） */
     function init() {
         var discarded = readStorage();
+        var registrationComplete = STORAGE_KEY !== 'ui_windows_moss_c_v1' || !!(global.MossGameHUD && global.MossGameHUD.registrationComplete);
         // 收编：rawStored 中已注册但尚未收编的条目（覆盖 registerPanel 之前的时序变化）
         for (var rid2 in rawStored) {
             if (!Object.prototype.hasOwnProperty.call(rawStored, rid2)) continue;
@@ -642,7 +672,7 @@
         // 未知 id：持久化中残留、但从未注册的窗口（版本残留）→ 丢弃并清理写回
         for (var rid in rawStored) {
             if (!Object.prototype.hasOwnProperty.call(rawStored, rid)) continue;
-            if (!registry[rid]) {
+            if (!registry[rid] && registrationComplete) {
                 delete rawStored[rid];
                 discarded = true;
             }
@@ -653,7 +683,7 @@
             bindPanel(id);
         }
         // 读取时发现被丢弃的条目（非法/未知 id/版本不符）→ 立即同步清理写回，避免残留
-        if (discarded) {
+        if (discarded && registrationComplete) {
             try { writeStorageNow(); } catch (e0) { /* ignore */ }
         }
     }
@@ -737,7 +767,7 @@
         for (var id in registry) {
             if (!Object.prototype.hasOwnProperty.call(registry, id)) continue;
             var spec = registry[id];
-            if (!spec) continue;
+            if (!spec || spec.menuHidden) continue;
             if (typeof spec.gameVisible === 'function' && !spec.gameVisible()) continue; // 认知论：未解锁不占位
             out.push({
                 id: id,
@@ -939,7 +969,17 @@
         return !!(stored[id] && stored[id].minimized === true);
     }
 
+    function setFolded(id, value) {
+        if (!registry[id] || !registry[id].foldInPlace) return;
+        var entry = stored[id] || {visible:true};
+        if (value) entry.folded = true; else delete entry.folded;
+        stored[id] = entry;
+        applyVisibility(id);
+        writeStorageNow();
+    }
+
     global.UIWindows = {
+        setFolded: setFolded,
         registerPanel: registerPanel,
         init: init,
         applyLayout: applyLayout,

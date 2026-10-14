@@ -1276,7 +1276,7 @@
                     try {
                         var CAp = window.CharacterAttributes;
                         var pKey = pid === 'belly' ? 'abdomen' : pid;
-                        if (CAp && typeof CAp.getPartDestroy === 'function' && CAp.getPartDestroy(pKey) > 0) {
+                        if ((!window.MossGameHUD || !window.SceneCtx || window.SceneCtx.shouldShowSurvivalMetric('body_detail', window.Survival && window.Survival.getState())) && CAp && typeof CAp.getPartDestroy === 'function' && CAp.getPartDestroy(pKey) > 0) {
                             var blockLeft = (typeof CAp.getDestroyRecoverBlockTicks === 'function') ? CAp.getDestroyRecoverBlockTicks() : 0;
                             var recLine = '';
                             if (blockLeft > 0) {
@@ -7400,7 +7400,7 @@
             el: function () { return document.getElementById('status-role-card'); },
             defaultPos: 'dock', minW: 160, minH: 64,
             closable: true, resizable: false,
-            dragHandle: '.block-title, h1, summary, .buff-hud-title',
+            dragHandle: '.panel-head, .block-title, h1, summary, .buff-hud-title',
             dragThreshold: 4,
             gameVisible: function () { return blockVisible('role'); }
         });
@@ -7409,7 +7409,7 @@
             el: function () { return document.getElementById('status-limbs'); },
             defaultPos: 'dock', minW: 160, minH: 64,
             closable: true, resizable: false,
-            dragHandle: '.block-title, h1, summary, .buff-hud-title',
+            dragHandle: '.panel-head, .block-title, h1, summary, .buff-hud-title',
             dragThreshold: 4,
             gameVisible: function () { return blockVisible('limbs'); }
         });
@@ -7418,7 +7418,7 @@
             el: function () { return document.getElementById('status-combat-resources-card'); },
             defaultPos: 'dock', minW: 160, minH: 64,
             closable: true, resizable: false,
-            dragHandle: '.block-title, h1, summary, .buff-hud-title',
+            dragHandle: '.panel-head, .block-title, h1, summary, .buff-hud-title',
             dragThreshold: 4,
             gameVisible: function () { return blockVisible('combat_resources'); }
         });
@@ -7427,7 +7427,7 @@
             el: function () { return document.getElementById('status-survival'); },
             defaultPos: 'dock', minW: 180, minH: 80,
             closable: true, resizable: false,
-            dragHandle: '.block-title, h1, summary, .buff-hud-title',
+            dragHandle: '.panel-head, .block-title, h1, summary, .buff-hud-title',
             dragThreshold: 4,
             gameVisible: function () { return blockVisible('survival'); }
         });
@@ -7436,7 +7436,7 @@
             el: function () { return document.getElementById('status-resources'); },
             defaultPos: 'dock', minW: 160, minH: 64,
             closable: true, resizable: false,
-            dragHandle: '.block-title, h1, summary, .buff-hud-title',
+            dragHandle: '.panel-head, .block-title, h1, summary, .buff-hud-title',
             dragThreshold: 4,
             gameVisible: function () { return blockVisible('resources'); }
         });
@@ -7445,7 +7445,7 @@
             el: function () { return document.getElementById('status-attrs-block'); },
             defaultPos: 'dock', minW: 160, minH: 64,
             closable: true, resizable: false,
-            dragHandle: '.block-title, h1, summary, .buff-hud-title',
+            dragHandle: '.panel-head, .block-title, h1, summary, .buff-hud-title',
             dragThreshold: 4,
             gameVisible: function () { return blockVisible('attrs'); }
         });
@@ -7454,7 +7454,7 @@
             el: function () { return document.getElementById('status-attr-exp-block'); },
             defaultPos: 'dock', minW: 160, minH: 64,
             closable: true, resizable: false,
-            dragHandle: '.block-title, h1, summary, .buff-hud-title',
+            dragHandle: '.panel-head, .block-title, h1, summary, .buff-hud-title',
             dragThreshold: 4,
             gameVisible: function () { return blockVisible('attrs'); } // 属性经验跟随五维门控
         });
@@ -7463,7 +7463,7 @@
             el: function () { return document.getElementById('buff-hud'); },
             defaultPos: 'dock', minW: 160, minH: 64,
             closable: true, resizable: false,
-            dragHandle: '.block-title, h1, summary, .buff-hud-title',
+            dragHandle: '.panel-head, .block-title, h1, summary, .buff-hud-title',
             dragThreshold: 4,
             gameVisible: function () { return blockVisible('buff_hud'); }
         });

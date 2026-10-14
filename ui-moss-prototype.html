@@ -1,0 +1,18 @@
+<!doctype html>
+<!-- PROTOTYPE: compare three HUD layouts with the existing moss/brass palette.
+     Run: npm run dev, then /ui-moss-prototype.html. Mock state only; no saves. -->
+<html lang="zh-CN">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>苔绿与旧黄铜 · UI 原型</title><link rel="stylesheet" href="css/ui-moss-prototype.css"></head>
+<body data-variant="A" class="ui-polished ui-material-study ui-reference-study">
+<header class="demo-top"><a href="./?no_reload" title="返回游戏">潮碧物语 <span>信息优先 · 试作</span></a><div id="top-environment" class="top-environment" aria-label="环境信息" hidden></div><div class="demo-tools"><button id="visual-style" aria-pressed="true" title="在相同布局下比较参考图版、立体材质、平面精修和原样">参考图版 · 对比上版</button><label>认知阶段 <select id="knowledge"><option value="2">熟悉自身</option><option value="0">初来乍到</option><option value="1">开始了解</option></select></label><button id="combat" aria-pressed="false">进入战斗</button><button id="manage" aria-expanded="false" aria-controls="manager">面板管理 <span>⊞</span></button></div></header>
+<main id="stage" aria-label="独立 UI 演示场景">
+<canvas id="scene" aria-label="采用项目装置素材搭建的示意场景"></canvas>
+<div class="scene-caption"><span class="eyebrow">栖身之所</span><h1>旧街后院</h1><span class="scene-rule"></span><small>场景与数值均为演示</small></div>
+<div class="map-note">北 ↑<span>灰绿 / 旧黄铜</span></div>
+<div id="panels"></div>
+<aside id="manager" hidden aria-label="面板管理"><div class="manager-title">整理你的界面 <button id="manager-close" aria-label="关闭面板管理">×</button></div><p>拖动标题排列面板，关闭后可在这里找回。</p><div id="panel-list"></div><button id="reset">恢复默认布局</button><label class="lock"><input id="lock" type="checkbox">锁定拖拽</label></aside>
+<div id="toast" role="status" aria-live="polite"></div>
+</main>
+<footer class="prototype-switcher"><div class="prototype-mark">UI DEMO <span>独立试作</span></div><button id="prev" aria-label="上一个方案">←</button><div class="variant-title"><strong id="variant-label"></strong><small id="variant-desc"></small></div><button id="next" aria-label="下一个方案">→</button><div class="switcher-state" id="state-label"></div></footer>
+<script src="js/ui-moss-prototype.js"></script>
+</body></html>

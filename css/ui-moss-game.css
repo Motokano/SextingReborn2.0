@@ -1,0 +1,136 @@
+/* Geometry only: all panel material/typography declarations come from the demo. */
+body#moss-hud-theme.moss-game #left-hud{position:fixed;inset:0;width:auto;height:auto;padding:0;overflow:visible;pointer-events:none;z-index:30}
+body#moss-hud-theme.moss-game #status-scroll{display:contents}
+body#moss-hud-theme.moss-game .moss-panel{position:fixed;margin:0;pointer-events:auto;min-width:0;max-height:none;z-index:30}
+body#moss-hud-theme.moss-game .moss-panel .block-title{padding:0;border:0;margin:0;display:block}
+body#moss-hud-theme.moss-game .moss-panel .panel-head{position:relative}
+body#moss-hud-theme.moss-game .moss-panel .panel-head button{position:static;inset:auto;flex-shrink:0;opacity:1}
+body#moss-hud-theme.moss-game .moss-panel .panel-content{min-height:0}
+body#moss-hud-theme.moss-game #status-role-card,body#moss-hud-theme.moss-game #status-resources>.block-title{display:none!important}
+body#moss-hud-theme.moss-game #status-resources{background:none;border:0;box-shadow:none;padding:0;margin:0}
+body#moss-hud-theme.moss-game #status-resources>.ui-window-min,body#moss-hud-theme.moss-game #status-resources>.ui-window-close{display:none}
+body#moss-hud-theme.moss-game #status-attrs-block .details-body{padding:0}
+body#moss-hud-theme.moss-game #status-attr-exp-block{border:0;background:none;box-shadow:none;padding:0;margin-top:10px}
+body#moss-hud-theme.moss-game #status-attr-exp-block summary{font-size:11px;color:#a8b0a6;background:none;padding:4px 0;border:0}
+body#moss-hud-theme.moss-game #status-attr-exp-block .row{display:flex;justify-content:space-between;font-size:11px;gap:4px;padding:3px 0}
+body#moss-hud-theme.moss-game #status-attr-exp-block .ui-window-min,body#moss-hud-theme.moss-game #status-attr-exp-block .ui-window-close{display:none}
+body#moss-hud-theme.moss-game .moss-supplement{border-top:1px solid #8f89632a;margin-top:10px;padding-top:7px;font-size:11px;color:#a8b0a6}
+body#moss-hud-theme.moss-game .moss-supplement>summary{cursor:pointer}
+body#moss-hud-theme.moss-game .moss-top-shell{position:fixed;inset:0 0 auto;z-index:35;pointer-events:none}
+body#moss-hud-theme.moss-game .moss-top-shell .demo-top{pointer-events:auto}
+body#moss-hud-theme.moss-game .demo-top{grid-template-columns:auto minmax(0,1fr) auto;height:64px}
+body#moss-hud-theme.moss-game .demo-top>a span{display:none}
+body#moss-hud-theme.moss-game #top-hud{position:static;transform:none;inset:auto;pointer-events:auto}
+body#moss-hud-theme.moss-game #top-hud .time-pill{display:contents}
+body#moss-hud-theme.moss-game #right-hud{position:static;inset:auto;transform:none;display:flex;gap:6px;flex-direction:row;pointer-events:auto}
+body#moss-hud-theme.moss-game #right-hud .hud-btn{width:33px;height:33px;border:1px solid #9f8b6555;border-top-color:#b3a17caa;border-radius:5px;background:linear-gradient(#364131,#20291f);box-shadow:inset 0 0 0 2px #141b14,0 2px 3px #0005;color:#d2c29b}
+body#moss-hud-theme.moss-game #right-hud #btn-ui-windows{width:auto;min-width:99px;padding:0 10px;display:flex;gap:10px;align-items:center}
+body#moss-hud-theme.moss-game #right-hud .jianghu-nav-content{display:inline-flex}
+body#moss-hud-theme.moss-game #right-hud .jianghu-nav-original{display:none}
+body#moss-hud-theme.moss-game #right-hud :is(.ui-windows-menu,.player-actions-submenu){position:absolute;top:calc(100% + 12px);right:0;transform:none;max-height:70vh;background:linear-gradient(135deg,#30392b,#1d2820);border:1px solid #b9a47c80;border-radius:3px;box-shadow:0 14px 50px #0009,inset 0 0 0 3px #0d17184a;color:#cbb88c}
+body#moss-hud-theme.moss-game #game-log-panel{height:240px;min-height:0;display:flex;flex-direction:column}
+body#moss-hud-theme.moss-game #game-log-panel .game-log-lines{height:auto;min-height:0;flex:1;cursor:ns-resize}
+body#moss-hud-theme.moss-game #game-log-panel .game-log-line{padding:0;background:none;border:0}
+body#moss-hud-theme.moss-game #game-log-panel .game-log-resize-handle-top{top:-3px}
+body#moss-hud-theme.moss-game #game-log-panel .log-time{color:#51442c;width:auto;margin:0;display:block}
+body#moss-hud-theme.moss-game #game-log-panel .journal p{display:block}
+body#moss-hud-theme.moss-game #buff-hud{display:flex;gap:0;padding:4px}
+body#moss-hud-theme.moss-game #buff-hud .buff-hud-section{padding:0}
+body#moss-hud-theme.moss-game #bottom-hud-stack{bottom:18px;left:50%;transform:translateX(-50%);width:320px;z-index:31}
+body#moss-hud-theme.moss-game .quickbar-drag-handle{background:linear-gradient(#354137,#222d26);border:1px solid #8170527a;border-radius:3px;color:#dac9a1}
+body#moss-hud-theme.moss-game :is(.action-bar-dock,#quick-belt-dock){background:var(--case-grain),#1b201b;border:1px solid #8170527a;box-shadow:inset 1px 2px 5px #0009,0 4px 9px #0008;border-radius:5px}
+body#moss-hud-theme.moss-game .moss-panel .limb-debug-destroy{display:none}
+@media(max-width:1150px){body#moss-hud-theme.moss-game .demo-top{height:101px;grid-template-columns:auto 1fr;grid-template-rows:53px 40px}body#moss-hud-theme.moss-game #top-hud{grid-row:2;grid-column:1/-1;justify-self:center}body#moss-hud-theme.moss-game #right-hud{grid-row:1;grid-column:2;justify-self:end}}
+@media(max-width:760px){body#moss-hud-theme.moss-game #left-hud{top:142px;bottom:110px;overflow:auto}body#moss-hud-theme.moss-game .moss-panel{position:absolute}body#moss-hud-theme.moss-game .demo-top{height:142px;grid-template-columns:1fr;grid-template-rows:auto auto auto;padding:12px 14px}body#moss-hud-theme.moss-game #top-hud{grid-row:2;grid-column:1;justify-self:start}body#moss-hud-theme.moss-game #right-hud{grid-row:3;grid-column:1;justify-self:start;flex-wrap:wrap}}
+body#moss-hud-theme.moss-game .moss-panel{left:var(--moss-default-x);top:var(--moss-default-y);width:var(--moss-default-w)}
+body#moss-hud-theme.moss-game .moss-panel:is([data-panel=body],[data-panel=survival],[data-panel=growth],[data-panel=carry]){height:358px}
+body#moss-hud-theme.moss-game .moss-panel .metric-caption :is(b,.value){font:17px 'Bahnschrift','Segoe UI',sans-serif;color:#e1e7cb;font-variant-numeric:tabular-nums;text-shadow:0 1px 2px #000}
+body#moss-hud-theme.moss-game .moss-panel .ruled-row .value{font:16px 'Bahnschrift','Segoe UI',sans-serif;color:#e1e3d2;font-variant-numeric:tabular-nums}
+body#moss-hud-theme.moss-game .moss-panel .metric-caption b small{font:10px 'Segoe UI',sans-serif;color:#a2aa95}
+body#moss-hud-theme.moss-game .body-reading .row{margin:0;line-height:normal}
+body#moss-hud-theme.moss-game .body-reading{margin-bottom:0}
+body#moss-hud-theme.moss-game .attributes>div{display:block}
+body#moss-hud-theme.moss-game #status-attrs-block .attributes .label{font-size:11px;color:#adb99e;line-height:normal}
+body#moss-hud-theme.moss-game #buff-hud .panel-content{display:flex;flex-direction:column;gap:12px}
+body#moss-hud-theme.moss-game #game-log-panel .game-log-lines{background:none;border:0;box-shadow:none;padding:0;font:12px 'Microsoft YaHei',sans-serif;color:#342d1e}
+body#moss-hud-theme.moss-game #game-log-panel .panel-content{display:flex;flex-direction:column}
+body#moss-hud-theme.moss-game .moss-panel.folded{height:auto!important}
+body#moss-hud-theme.moss-game #top-hud .panel-icon{display:block}
+@media(max-width:760px){body#moss-hud-theme.moss-game #status-scroll::after{content:'';display:block;height:var(--moss-scroll-height,1600px)}}
+body#moss-hud-theme.moss-game #game-log-panel :is(.log-info,.log-success,.log-warn,.log-combat,.log-system){color:#372f1e}
+body#moss-hud-theme.moss-game #game-log-panel .log-damage{color:#713f2e}
+body#moss-hud-theme.moss-game #game-log-panel .game-log-tools{display:flex;gap:8px;margin-top:8px;align-self:flex-end}
+body#moss-hud-theme.moss-game #game-log-panel .game-log-tools button{font-size:10px;color:#504122;border:1px solid #77654055;padding:3px 5px;text-shadow:none;background:#72583508}
+body#moss-hud-theme.moss-game #top-hud{gap:0}
+body#moss-hud-theme.moss-game #top-hud>.time-pill{display:contents}
+body#moss-hud-theme.moss-game #top-hud .time-pill>span{display:flex;align-items:center;gap:8px;padding:0 12px;line-height:22px}
+body#moss-hud-theme.moss-game #top-hud .time-pill>span+span{border-left:1px solid #a59c7730}
+body#moss-hud-theme.moss-game .jianghu-nav-icon{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.3;stroke-linecap:round;stroke-linejoin:round}
+body#moss-hud-theme.moss-game .attributes{grid-template-columns:repeat(5,minmax(0,1fr))}
+body#moss-hud-theme.moss-game .attributes strong{white-space:nowrap;font-size:24px}
+body#moss-hud-theme.moss-game #top-hud .time-pill>.env-weather{padding:0 12px;gap:8px}
+body#moss-hud-theme.moss-game #top-hud #hud-weather{padding:0;color:#ded9c4;font-weight:500}
+body#moss-hud-theme.moss-game #top-hud .env-time b{font:15px 'Bahnschrift','Segoe UI',sans-serif;font-variant-numeric:tabular-nums}
+body#moss-hud-theme.moss-game .moss-panel button[id*="debug"]{display:none}
+body#moss-hud-theme.moss-game .moss-panel .attributes>div{min-width:0}
+body#moss-hud-theme.moss-game .moss-panel .panel-content{position:relative}
+body#moss-hud-theme.moss-game .moss-supplement:not([open]){position:absolute;right:11px;bottom:8px;margin:0;padding:0;border:0;font-size:10px;background:#1b201b}
+body#moss-hud-theme.moss-game .moss-supplement[open]{position:relative}
+body#moss-hud-theme.moss-game .body-reading .row{min-height:0}
+body#moss-hud-theme.moss-game .moss-supplement:not([open]){display:none}
+body#moss-hud-theme.moss-game .moss-supplement[open]{position:static;margin-top:10px;padding-top:7px;border-top:1px solid #8f89632a}
+body#moss-hud-theme.moss-game .attributes strong{font-size:clamp(16px,calc((var(--moss-default-w) - 48px)/12),24px)}
+body#moss-hud-theme.moss-game #game-log-panel.moss-time-unknown .log-time{display:none}
+body#moss-hud-theme.moss-game #game-log-panel .game-log-debug{display:none}
+body#moss-hud-theme.moss-game #game-log-panel:not(.game-log-reading) .game-log-debug{display:block}
+body#moss-hud-theme.moss-game #bottom-hud-stack{top:var(--moss-quickbar-y,310px);bottom:auto;left:24px;transform:none;width:272px}
+@media(max-height:879px) and (min-width:761px){body#moss-hud-theme.moss-game #bottom-hud-stack{left:calc(50% - 136px)}}
+@media(max-width:760px){body#moss-hud-theme.moss-game #bottom-hud-stack{top:auto;bottom:18px;left:50%;transform:translateX(-50%);width:272px}}
+body#moss-hud-theme.moss-game .moss-panel[data-panel=growth] .attributes strong{font-size:clamp(16px,calc((var(--moss-default-w) - 48px) / 12),24px)}
+@media(max-width:760px){
+ body#moss-hud-theme.moss-game .demo-top{height:auto;min-height:142px;grid-template-rows:auto auto auto}
+ body#moss-hud-theme.moss-game #left-hud{top:var(--moss-header-height,142px);bottom:154px;overflow-x:hidden}
+ body#moss-hud-theme.moss-game #buff-hud{width:var(--moss-default-w);max-width:none}
+}
+
+/* Preserve the reference panel's inherited type and ink as well as its material. */
+body#moss-hud-theme.moss-game .moss-panel{font-family:'Microsoft YaHei','PingFang SC',sans-serif;font-size:13px;color:var(--text)}
+body#moss-hud-theme.moss-game .body-reading{font-size:13px;line-height:normal}
+
+/* Compact runtime sizing; the accepted demo and its material source stay unchanged. */
+body#moss-hud-theme.moss-game.ui-polished.ui-reference-study .moss-panel{width:var(--moss-default-w)!important}
+body#moss-hud-theme.moss-game.ui-polished.ui-reference-study .moss-panel:not(.folded):is([data-panel=body],[data-panel=survival],[data-panel=growth],[data-panel=carry]){height:280px!important}
+body#moss-hud-theme.moss-game.ui-polished.ui-reference-study .moss-panel .panel-head{height:32px;min-height:32px;padding:0 7px 0 10px;gap:7px}
+body#moss-hud-theme.moss-game.ui-polished.ui-reference-study .moss-panel .panel-head h2{font-size:14px;letter-spacing:1.5px}
+body#moss-hud-theme.moss-game.ui-polished.ui-reference-study .moss-panel .panel-head button{width:21px;height:23px}
+body#moss-hud-theme.moss-game.ui-polished.ui-reference-study .moss-panel .panel-content{margin-top:5px;padding:8px 9px}
+body#moss-hud-theme.moss-game.ui-polished.ui-reference-study .body-readings .field-caption{margin-bottom:4px;font-size:9px}
+body#moss-hud-theme.moss-game.ui-polished.ui-reference-study .body-reading{padding:2px 5px}
+body#moss-hud-theme.moss-game.ui-polished.ui-reference-study .body-reading-caption{font-size:11px}
+body#moss-hud-theme.moss-game.ui-polished.ui-reference-study .body-reading-caption b{font-size:13px}
+body#moss-hud-theme.moss-game.ui-polished.ui-reference-study .body-damage-track{margin-top:3px;height:2px}
+body#moss-hud-theme.moss-game.ui-polished.ui-reference-study .moss-panel .metric-caption{font-size:11px;margin-bottom:2px;min-height:0;line-height:1}
+body#moss-hud-theme.moss-game.ui-polished.ui-reference-study .moss-panel .metric-caption :is(b,.value){font-size:15px;line-height:1}
+body#moss-hud-theme.moss-game.ui-polished.ui-reference-study .moss-panel .track{height:8px}
+body#moss-hud-theme.moss-game.ui-polished.ui-reference-study .moss-panel .attributes{margin:0 -2px 10px;padding:7px 0}
+body#moss-hud-theme.moss-game.ui-polished.ui-reference-study .moss-panel[data-panel=growth] .attributes strong{font-size:clamp(16px,calc((var(--moss-default-w) - 40px) / 12),20px);margin-top:5px}
+body#moss-hud-theme.moss-game.ui-polished.ui-reference-study .moss-panel .attributes .label{font-size:10px}
+body#moss-hud-theme.moss-game.ui-polished.ui-reference-study .moss-panel .ruled-row{padding-top:7px;margin-top:8px;font-size:11px}
+body#moss-hud-theme.moss-game.ui-polished.ui-reference-study .moss-panel .ruled-row .value{font-size:14px}
+body#moss-hud-theme.moss-game.ui-polished.ui-reference-study .moss-panel .capacity-left{margin-top:10px;padding:12px 3px;font-size:11px}
+body#moss-hud-theme.moss-game.ui-polished.ui-reference-study .moss-panel .capacity-left strong{font-size:28px}
+body#moss-hud-theme.moss-game.ui-polished.ui-reference-study #game-log-panel:not(.folded){height:200px!important}
+body#moss-hud-theme.moss-game.ui-polished.ui-reference-study #game-log-panel .panel-content{padding:10px 10px}
+body#moss-hud-theme.moss-game.ui-polished.ui-reference-study #game-log-panel .panel-head h2{font-size:14px}
+body#moss-hud-theme.moss-game.ui-polished.ui-reference-study #game-log-panel .journal p{margin-bottom:6px;line-height:1.55}
+body#moss-hud-theme.moss-game.ui-polished.ui-reference-study #game-log-panel .game-log-tools{margin-top:5px}
+body#moss-hud-theme.moss-game.ui-polished.ui-reference-study #buff-hud .panel-content{gap:7px}
+body#moss-hud-theme.moss-game.ui-polished.ui-reference-study .demo-top{height:54px;padding:0 22px}
+body#moss-hud-theme.moss-game.ui-polished.ui-reference-study .demo-top>a{font-size:18px}
+body#moss-hud-theme.moss-game.ui-polished.ui-reference-study #right-hud{gap:5px}
+body#moss-hud-theme.moss-game.ui-polished.ui-reference-study #right-hud .hud-btn{height:29px;width:29px}
+body#moss-hud-theme.moss-game.ui-polished.ui-reference-study #right-hud #btn-ui-windows{min-width:94px;padding:0 8px}
+@media(max-width:1150px){body#moss-hud-theme.moss-game.ui-polished.ui-reference-study .demo-top{height:88px;grid-template-rows:45px 35px}}
+@media(max-width:760px){body#moss-hud-theme.moss-game.ui-polished.ui-reference-study .demo-top{height:auto;min-height:128px;padding:10px 14px;grid-template-rows:auto auto auto}}
+
+body#moss-hud-theme.moss-game.ui-polished.ui-reference-study .moss-panel .metric{margin-bottom:3px}
