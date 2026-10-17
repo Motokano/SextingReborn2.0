@@ -181,3 +181,5 @@ GAME_DESIGN 中「贸易与旅行商人」不单独成章，以 capitalism 目�
 
 
 - [装置材料解锁接入记录](facility-unlock-implementation.md)
+
+- [技能装配界面定稿与接入](skill-loadout-ui.md)：确认的 B 版、肌群总览与双列肌肉弹窗，默认游戏入口已接入。

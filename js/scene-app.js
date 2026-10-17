@@ -5633,6 +5633,8 @@
         if (combatPanelOpen) return;
         if (window.Survival && typeof window.Survival.advanceTick === 'function') window.Survival.advanceTick();
         combatPanelOpen = true;
+        if (window.SvelteCombat) window.SvelteCombat.refresh();
+        else if (window.SveltePanels) window.SveltePanels.refresh('combat');
         refreshRenderProfile();
         var firstCat = window.CombatSkills && window.CombatSkills.getCategories().length ? window.CombatSkills.getCategories()[0].id : 'unarmed';
         combatUIState.curCat = firstCat;
@@ -5642,7 +5644,7 @@
         combatUIState.curSlot = 'active';
         combatUIState.editingSlot = null;
         combatUIState.mode = 'skills';
-        document.getElementById('modal-combat').classList.add('show');
+        if (!window.SveltePanels && !window.SvelteCombat) document.getElementById('modal-combat').classList.add('show');
         document.getElementById('left-hud').style.opacity = '0.1';
         document.getElementById('left-hud').style.pointerEvents = 'none';
         renderCombatModal();
@@ -5652,11 +5654,13 @@
         if (!combatPanelOpen) return;
         if (window.Survival && typeof window.Survival.advanceTick === 'function') window.Survival.advanceTick();
         combatPanelOpen = false;
+        if (window.SvelteCombat) window.SvelteCombat.refresh();
+        else if (window.SveltePanels) window.SveltePanels.refresh('combat');
         refreshRenderProfile();
-        document.getElementById('modal-combat').classList.remove('show');
+        if (!window.SveltePanels && !window.SvelteCombat) document.getElementById('modal-combat').classList.remove('show');
         document.getElementById('left-hud').style.opacity = '';
         document.getElementById('left-hud').style.pointerEvents = '';
-        document.getElementById('picker-move').classList.remove('show');
+        if (!window.SveltePanels && !window.SvelteCombat) document.getElementById('picker-move').classList.remove('show');
         combatUIState.editingSlot = null;
         render();
     }
@@ -6056,6 +6060,7 @@
     }
 
     function renderCombatModal() {
+        if (window.SvelteCombat) { window.SvelteCombat.refresh(); return; }
         var CS = window.CombatSkills;
         var AP = window.Muscles;
         var combatState = IE && IE.getCombatState ? IE.getCombatState() : { limbs: {}, hubs: { breath: null, footwork: null }, move_sequences: {}, skill_move_sequences: {}, move_sequence_cursors: {} };
@@ -6890,8 +6895,7 @@
     if (document.getElementById('btn-deploy-combat')) {
         document.getElementById('btn-deploy-combat').addEventListener('click', handleDeployCombat);
     }
-    if (document.getElementById('btn-debug-combat-skill-plus50')) {
-        document.getElementById('btn-debug-combat-skill-plus50').addEventListener('click', function () {
+    function debugCombatPlus50() {
             var skillId = combatUIState.curSkillId;
             if (!skillId || !IE || typeof IE.getState !== 'function') return;
             var st = IE.getState();
@@ -6927,8 +6931,9 @@
             if (typeof updateStatusPanel === 'function') SceneHud.refresh('status');
             if (combatPanelOpen) refreshRenderProfile();
             renderCombatModal();
-        });
+
     }
+    if (document.getElementById('btn-debug-combat-skill-plus50')) document.getElementById('btn-debug-combat-skill-plus50').addEventListener('click', debugCombatPlus50);
     if (document.getElementById('btn-debug-recipe-schema-errors')) {
         document.getElementById('btn-debug-recipe-schema-errors').addEventListener('click', function () {
             combatUIState.recipeSchemaListOpen = !combatUIState.recipeSchemaListOpen;
@@ -7007,6 +7012,7 @@
         });
     }
     document.addEventListener('click', function () {
+        if (window.SvelteCombat) return;
         var hadOpenPicker = false;
         var movePickerAny = document.getElementById('picker-move');
         if (movePickerAny && movePickerAny.classList.contains('show')) hadOpenPicker = true;
@@ -7736,7 +7742,7 @@
             window.LivestockState.setUiDeps({ recalcCharacterStats: recalcCharacterStatsFromIE });
         }
         registerUiWindows();
-        loadConfig().then(function () {
+        return loadConfig().then(function () {
             setupCombatEngagementFeedback();
             // i18n 已就绪（UIText.setDict 已完成）后再进行地图合并渲染
             if (window.SaveSystem && typeof window.SaveSystem.init === 'function') {
@@ -7772,8 +7778,7 @@
                 // 读档后再渲染一次，避免出现“短暂默认状态闪屏”。
                 render();
             }
-            if (mapsPromise && typeof mapsPromise.then === 'function') mapsPromise.then(afterMaps);
-            else afterMaps();
+            var mapsReady = Promise.resolve(mapsPromise).then(afterMaps);
             setPlayerAvatarSprites({
                 down: 'image/player_down.png',
                 up: 'image/player_up.png',
@@ -8568,7 +8573,8 @@
             if (window.SceneSystems && typeof window.SceneSystems.init === 'function') window.SceneSystems.init();
             bindQuickBarPinSlotsOnce();
             if (window.SceneRenderer) window.SceneRenderer.render();
-        }).catch(function () { render(); });
+            return mapsReady;
+        }).catch(function (error) { render(); throw error; });
     }
 
     /** 47 §5.2：所有玩法门禁统一读取 CombatEngagement。 */
@@ -8897,6 +8903,15 @@
     window.SceneApp.hideItemTooltip = SceneUi.hideItemTooltip;
     window.SceneApp.executeQuickBarPinnedSlot = executeQuickBarPinnedSlot;
     window.SceneApp.clearQuickBarPinSlot = clearQuickBarPinSlot;
+
+    // Standalone loadout commands also work without the other panel migrations.
+    window.SceneApp.combatApi = {
+        combatState: combatUIState,
+        getOpen: function () { return combatPanelOpen; },
+        close: closeCombatPanel,
+        deploy: handleDeployCombat, debugCombat: debugCombatPlus50,
+        setCombat: safeSetCombatState, recipeReport: getRecipeSchemaValidationReport
+    };
 
     // ── 调试直达：URL ?panel=xxx（可加 &tab=）在游戏就绪后自动打开对应面板 ──
     // 供开发预览（better-sidebar 浏览器 / agent 验证）直接跳到指定 UI，无需手动导航。

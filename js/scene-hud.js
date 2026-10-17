@@ -7,7 +7,8 @@
  *
  * 规则：
  * - 谁拥有某类面板的 DOM，谁 register(kind, fn)；fn 由注册方闭包持有。
- * - refresh 对未注册的 kind 静默 no-op —— 迁移过渡期（注册滞后于调用）安全。
+ * - register 保留单一旧视图所有者；subscribe 只观察刷新完成，返回取消订阅函数。
+ * - refresh 对没有所有者/订阅者的 kind 静默 no-op。
  * - refresh 透传参数（如 SceneRenderer 传 gatherState），保持与直调完全一致。
  * - 不做 try/catch：与旧直调抛错语义一致，错误仍按原路径冒泡。
  *
@@ -17,6 +18,7 @@
     'use strict';
 
     var registry = {}; // kind -> fn
+    var subscribers = {}; // Presentation observers; never replace the legacy owner.
 
     var SceneHud = {
         /** 注册/覆盖某 kind 的刷新回调（幂等）。 */
@@ -24,19 +26,26 @@
             if (!kind || typeof fn !== 'function') return;
             registry[kind] = fn;
         },
-        /** 注销某 kind（模块迁走时调用，避免悬挂引用）。 */
+        /** 订阅完成通知，不替换现有渲染回调。 */
+        subscribe: function (kind, listener) {
+            if (typeof listener !== 'function') throw new TypeError('SceneHud listener must be a function');
+            var list = subscribers[kind] || (subscribers[kind] = new Set());
+            list.add(listener);
+            return function () { list.delete(listener); };
+        },
+        /** 注销旧视图所有者；订阅者独立取消。 */
         unregister: function (kind) {
             if (kind) delete registry[kind];
         },
         /**
          * 触发某 kind 的刷新。参数原样透传给注册的回调；
-         * 未注册的 kind 静默 no-op（过渡期安全）。
+         * 旧视图更新后通知订阅者；没有任何消费者时静默 no-op。
          */
         refresh: function (kind /*, ...args */) {
             var fn = registry[kind];
-            if (typeof fn !== 'function') return;
             var args = Array.prototype.slice.call(arguments, 1);
-            fn.apply(null, args);
+            if (typeof fn === 'function') fn.apply(null, args);
+            if (subscribers[kind]) Array.from(subscribers[kind]).forEach(function (listener) { listener.apply(null, args); });
         },
         isRegistered: function (kind) {
             return typeof registry[kind] === 'function';

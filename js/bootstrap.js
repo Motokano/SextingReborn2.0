@@ -43,6 +43,7 @@
     window.AppBoot = window.AppBoot || {};
     window.AppBoot.beforeStart = Array.isArray(window.AppBoot.beforeStart) ? window.AppBoot.beforeStart : [];
     window.AppBoot.afterStart = Array.isArray(window.AppBoot.afterStart) ? window.AppBoot.afterStart : [];
+    window.AppBoot.afterReady = Array.isArray(window.AppBoot.afterReady) ? window.AppBoot.afterReady : [];
     window.AppBoot.addBeforeStart = window.AppBoot.addBeforeStart || function (fn) {
         if (typeof fn === 'function') window.AppBoot.beforeStart.push(fn);
     };
@@ -68,8 +69,11 @@
 
         runHooks(window.AppBoot.beforeStart, 'beforeStart');
         if (BuffSystem && typeof BuffSystem.init === 'function') BuffSystem.init();
-        SceneApp.init(); // SceneApp.init loads ui_text_zhCN.json and applies DOM i18n.
+        window.AppBoot.ready = Promise.resolve(SceneApp.init());
         runHooks(window.AppBoot.afterStart, 'afterStart');
+        window.AppBoot.ready.then(function () {
+            runHooks(window.AppBoot.afterReady, 'afterReady');
+        }).catch(function (error) { fatal('[bootstrap] initialization failed', error); });
     }
 
     if (document.readyState === 'loading') {
