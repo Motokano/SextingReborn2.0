@@ -1,0 +1,5510 @@
+{
+  "version": 1,
+  "date": "2026-10-18",
+  "status": "single_hand_combat_registered",
+  "itemCatalog": "item-catalog-v2.json",
+  "scope": "正式物品模板及系统对应；铸造、认知、装配、维修和单手模块武器战斗已接入；其他原型与获取投放待设计。",
+  "activation": {
+    "automaticRegistration": true,
+    "retireOldWeaponsNow": false,
+    "acquisition": "pending",
+    "implemented": [
+      "knowledge_filtered_item_views",
+      "forged_instance_state_and_weight",
+      "multi_position_occupancy_validation",
+      "processing_research_craft_repair_actions",
+      "single_hand_modular_weapon_combat"
+    ],
+    "requires": [
+      "effect_observation_knowledge",
+      "other_weapon_prototypes",
+      "formal_weapon_skills_and_metaskill",
+      "acquisition"
+    ]
+  },
+  "counts": {
+    "rawOres": 12,
+    "processedFeeds": 12,
+    "components": 83,
+    "repairTools": 3,
+    "toolkitHosts": 1,
+    "weaponHosts": 1,
+    "total": 112
+  },
+  "knowledgeFile": "item-knowledge-v1.json",
+  "feedRoutes": {
+    "material_forging_iron": {
+      "rawItemId": "ore_iron_raw",
+      "feedItemId": "material_forging_iron",
+      "routeKey": "ore_iron_raw",
+      "inputCount": 1,
+      "outputCount": 1,
+      "byproducts": [],
+      "processingRef": "../../docs/design/examples/weapon-forging-balance-v1.json#/ores/0/processing",
+      "materialInformationRef": "../../docs/design/examples/weapon-forging-ore-information-v1.json#/entries/ore_iron_raw",
+      "unitWeightPolicy": "trial_density_score_divided_by_100_kg_carry_only",
+      "baseValuePolicy": "same_as_one_raw_item_no_added_trade_premium",
+      "knowledgeScope": "feed_route:ore_iron_raw",
+      "rawIdentityRequiredForFeedName": true
+    },
+    "material_forging_copper": {
+      "rawItemId": "ore_copper_raw",
+      "feedItemId": "material_forging_copper",
+      "routeKey": "ore_copper_raw",
+      "inputCount": 1,
+      "outputCount": 1,
+      "byproducts": [],
+      "processingRef": "../../docs/design/examples/weapon-forging-balance-v1.json#/ores/1/processing",
+      "materialInformationRef": "../../docs/design/examples/weapon-forging-ore-information-v1.json#/entries/ore_copper_raw",
+      "unitWeightPolicy": "trial_density_score_divided_by_100_kg_carry_only",
+      "baseValuePolicy": "same_as_one_raw_item_no_added_trade_premium",
+      "knowledgeScope": "feed_route:ore_copper_raw",
+      "rawIdentityRequiredForFeedName": true
+    },
+    "material_forging_tin": {
+      "rawItemId": "ore_tin_raw",
+      "feedItemId": "material_forging_tin",
+      "routeKey": "ore_tin_raw",
+      "inputCount": 1,
+      "outputCount": 1,
+      "byproducts": [],
+      "processingRef": "../../docs/design/examples/weapon-forging-balance-v1.json#/ores/2/processing",
+      "materialInformationRef": "../../docs/design/examples/weapon-forging-ore-information-v1.json#/entries/ore_tin_raw",
+      "unitWeightPolicy": "trial_density_score_divided_by_100_kg_carry_only",
+      "baseValuePolicy": "same_as_one_raw_item_no_added_trade_premium",
+      "knowledgeScope": "feed_route:ore_tin_raw",
+      "rawIdentityRequiredForFeedName": true
+    },
+    "material_forging_lead": {
+      "rawItemId": "ore_lead_raw",
+      "feedItemId": "material_forging_lead",
+      "routeKey": "ore_lead_raw",
+      "inputCount": 1,
+      "outputCount": 1,
+      "byproducts": [],
+      "processingRef": "../../docs/design/examples/weapon-forging-balance-v1.json#/ores/3/processing",
+      "materialInformationRef": "../../docs/design/examples/weapon-forging-ore-information-v1.json#/entries/ore_lead_raw",
+      "unitWeightPolicy": "trial_density_score_divided_by_100_kg_carry_only",
+      "baseValuePolicy": "same_as_one_raw_item_no_added_trade_premium",
+      "knowledgeScope": "feed_route:ore_lead_raw",
+      "rawIdentityRequiredForFeedName": true
+    },
+    "material_forging_zinc": {
+      "rawItemId": "ore_zinc_raw",
+      "feedItemId": "material_forging_zinc",
+      "routeKey": "ore_zinc_raw",
+      "inputCount": 1,
+      "outputCount": 1,
+      "byproducts": [],
+      "processingRef": "../../docs/design/examples/weapon-forging-balance-v1.json#/ores/4/processing",
+      "materialInformationRef": "../../docs/design/examples/weapon-forging-ore-information-v1.json#/entries/ore_zinc_raw",
+      "unitWeightPolicy": "trial_density_score_divided_by_100_kg_carry_only",
+      "baseValuePolicy": "same_as_one_raw_item_no_added_trade_premium",
+      "knowledgeScope": "feed_route:ore_zinc_raw",
+      "rawIdentityRequiredForFeedName": true
+    },
+    "material_forging_titanium": {
+      "rawItemId": "ore_titanium_raw",
+      "feedItemId": "material_forging_titanium",
+      "routeKey": "ore_titanium_raw",
+      "inputCount": 1,
+      "outputCount": 1,
+      "byproducts": [],
+      "processingRef": "../../docs/design/examples/weapon-forging-balance-v1.json#/ores/5/processing",
+      "materialInformationRef": "../../docs/design/examples/weapon-forging-ore-information-v1.json#/entries/ore_titanium_raw",
+      "unitWeightPolicy": "trial_density_score_divided_by_100_kg_carry_only",
+      "baseValuePolicy": "same_as_one_raw_item_no_added_trade_premium",
+      "knowledgeScope": "feed_route:ore_titanium_raw",
+      "rawIdentityRequiredForFeedName": true
+    },
+    "material_forging_tungsten": {
+      "rawItemId": "ore_tungsten_raw",
+      "feedItemId": "material_forging_tungsten",
+      "routeKey": "ore_tungsten_raw",
+      "inputCount": 1,
+      "outputCount": 1,
+      "byproducts": [],
+      "processingRef": "../../docs/design/examples/weapon-forging-balance-v1.json#/ores/6/processing",
+      "materialInformationRef": "../../docs/design/examples/weapon-forging-ore-information-v1.json#/entries/ore_tungsten_raw",
+      "unitWeightPolicy": "trial_density_score_divided_by_100_kg_carry_only",
+      "baseValuePolicy": "same_as_one_raw_item_no_added_trade_premium",
+      "knowledgeScope": "feed_route:ore_tungsten_raw",
+      "rawIdentityRequiredForFeedName": true
+    },
+    "material_forging_molybdenum": {
+      "rawItemId": "ore_molybdenum_raw",
+      "feedItemId": "material_forging_molybdenum",
+      "routeKey": "ore_molybdenum_raw",
+      "inputCount": 1,
+      "outputCount": 1,
+      "byproducts": [],
+      "processingRef": "../../docs/design/examples/weapon-forging-balance-v1.json#/ores/7/processing",
+      "materialInformationRef": "../../docs/design/examples/weapon-forging-ore-information-v1.json#/entries/ore_molybdenum_raw",
+      "unitWeightPolicy": "trial_density_score_divided_by_100_kg_carry_only",
+      "baseValuePolicy": "same_as_one_raw_item_no_added_trade_premium",
+      "knowledgeScope": "feed_route:ore_molybdenum_raw",
+      "rawIdentityRequiredForFeedName": true
+    },
+    "material_forging_manganese": {
+      "rawItemId": "ore_manganese_raw",
+      "feedItemId": "material_forging_manganese",
+      "routeKey": "ore_manganese_raw",
+      "inputCount": 1,
+      "outputCount": 1,
+      "byproducts": [],
+      "processingRef": "../../docs/design/examples/weapon-forging-balance-v1.json#/ores/8/processing",
+      "materialInformationRef": "../../docs/design/examples/weapon-forging-ore-information-v1.json#/entries/ore_manganese_raw",
+      "unitWeightPolicy": "trial_density_score_divided_by_100_kg_carry_only",
+      "baseValuePolicy": "same_as_one_raw_item_no_added_trade_premium",
+      "knowledgeScope": "feed_route:ore_manganese_raw",
+      "rawIdentityRequiredForFeedName": true
+    },
+    "material_forging_antimony": {
+      "rawItemId": "ore_antimony_raw",
+      "feedItemId": "material_forging_antimony",
+      "routeKey": "ore_antimony_raw",
+      "inputCount": 1,
+      "outputCount": 1,
+      "byproducts": [],
+      "processingRef": "../../docs/design/examples/weapon-forging-balance-v1.json#/ores/9/processing",
+      "materialInformationRef": "../../docs/design/examples/weapon-forging-ore-information-v1.json#/entries/ore_antimony_raw",
+      "unitWeightPolicy": "trial_density_score_divided_by_100_kg_carry_only",
+      "baseValuePolicy": "same_as_one_raw_item_no_added_trade_premium",
+      "knowledgeScope": "feed_route:ore_antimony_raw",
+      "rawIdentityRequiredForFeedName": true
+    },
+    "material_forging_silver": {
+      "rawItemId": "ore_silver_raw",
+      "feedItemId": "material_forging_silver",
+      "routeKey": "ore_silver_raw",
+      "inputCount": 1,
+      "outputCount": 1,
+      "byproducts": [],
+      "processingRef": "../../docs/design/examples/weapon-forging-balance-v1.json#/ores/10/processing",
+      "materialInformationRef": "../../docs/design/examples/weapon-forging-ore-information-v1.json#/entries/ore_silver_raw",
+      "unitWeightPolicy": "trial_density_score_divided_by_100_kg_carry_only",
+      "baseValuePolicy": "same_as_one_raw_item_no_added_trade_premium",
+      "knowledgeScope": "feed_route:ore_silver_raw",
+      "rawIdentityRequiredForFeedName": true
+    },
+    "material_forging_gold": {
+      "rawItemId": "ore_gold_raw",
+      "feedItemId": "material_forging_gold",
+      "routeKey": "ore_gold_raw",
+      "inputCount": 1,
+      "outputCount": 1,
+      "byproducts": [],
+      "processingRef": "../../docs/design/examples/weapon-forging-balance-v1.json#/ores/11/processing",
+      "materialInformationRef": "../../docs/design/examples/weapon-forging-ore-information-v1.json#/entries/ore_gold_raw",
+      "unitWeightPolicy": "trial_density_score_divided_by_100_kg_carry_only",
+      "baseValuePolicy": "same_as_one_raw_item_no_added_trade_premium",
+      "knowledgeScope": "feed_route:ore_gold_raw",
+      "rawIdentityRequiredForFeedName": true
+    }
+  },
+  "components": {
+    "weapon_component_b01": {
+      "designId": "B01",
+      "group": "B",
+      "tier": 1,
+      "prototypeId": "single_hand",
+      "placements": [
+        {
+          "anchor": "side1",
+          "occupies": [
+            "side1"
+          ]
+        },
+        {
+          "anchor": "side2",
+          "occupies": [
+            "side2"
+          ]
+        }
+      ],
+      "positions": [
+        {
+          "slot": "side",
+          "damageType": "slash",
+          "basePower": 21,
+          "blockEligible": true,
+          "blockCoefficient": 1,
+          "deflectionCoefficient": 1,
+          "fallbackMoveId": "weapon_basic_side_cleave"
+        }
+      ],
+      "baseline": {
+        "weightKg": 0.32,
+        "innateStrength": 12,
+        "durabilityMax": 100,
+        "speedPercent": 0,
+        "ordinaryContactLoss": 1,
+        "blockedContactLoss": 2
+      },
+      "repairToolItemId": "tool_repair_whetstone",
+      "materialRequirementsRef": "../../docs/design/examples/weapon-forging-material-requirements-v1.json#/components/0",
+      "operationCostsRef": "../../docs/design/examples/weapon-forging-balance-v1.json#/components/0",
+      "componentEffects": [],
+      "damageRules": {
+        "source": "../../docs/design/weapon-blade-components-draft.md",
+        "lookupKey": "B",
+        "selection": "one_of_three_equal_weight",
+        "scope": "real_instance",
+        "persistUntilRepair": true,
+        "disableBlockAtZero": false,
+        "disableComponentEffectsAtZero": false,
+        "speedAtZeroOverride": null,
+        "executionStatus": "modular_weapon_combat_v1"
+      },
+      "structureKnowledgeKey": "weapon_structure:B01",
+      "economy": {
+        "valuation": "pending",
+        "tradeEnabled": false
+      }
+    },
+    "weapon_component_b02": {
+      "designId": "B02",
+      "group": "B",
+      "tier": 1,
+      "prototypeId": "single_hand",
+      "placements": [
+        {
+          "anchor": "side1",
+          "occupies": [
+            "side1"
+          ]
+        },
+        {
+          "anchor": "side2",
+          "occupies": [
+            "side2"
+          ]
+        }
+      ],
+      "positions": [
+        {
+          "slot": "side",
+          "damageType": "slash",
+          "basePower": 25,
+          "blockEligible": true,
+          "blockCoefficient": 1.15,
+          "deflectionCoefficient": 1.1,
+          "fallbackMoveId": "weapon_basic_side_cleave"
+        }
+      ],
+      "baseline": {
+        "weightKg": 0.42,
+        "innateStrength": 20,
+        "durabilityMax": 125,
+        "speedPercent": -1,
+        "ordinaryContactLoss": 1,
+        "blockedContactLoss": 2
+      },
+      "repairToolItemId": "tool_repair_whetstone",
+      "materialRequirementsRef": "../../docs/design/examples/weapon-forging-material-requirements-v1.json#/components/1",
+      "operationCostsRef": "../../docs/design/examples/weapon-forging-balance-v1.json#/components/1",
+      "componentEffects": [],
+      "damageRules": {
+        "source": "../../docs/design/weapon-blade-components-draft.md",
+        "lookupKey": "B",
+        "selection": "one_of_three_equal_weight",
+        "scope": "real_instance",
+        "persistUntilRepair": true,
+        "disableBlockAtZero": false,
+        "disableComponentEffectsAtZero": false,
+        "speedAtZeroOverride": null,
+        "executionStatus": "modular_weapon_combat_v1"
+      },
+      "structureKnowledgeKey": "weapon_structure:B02",
+      "economy": {
+        "valuation": "pending",
+        "tradeEnabled": false
+      }
+    },
+    "weapon_component_b03": {
+      "designId": "B03",
+      "group": "B",
+      "tier": 2,
+      "prototypeId": "single_hand",
+      "placements": [
+        {
+          "anchor": "side1",
+          "occupies": [
+            "side1"
+          ]
+        },
+        {
+          "anchor": "side2",
+          "occupies": [
+            "side2"
+          ]
+        }
+      ],
+      "positions": [
+        {
+          "slot": "side",
+          "damageType": "slash",
+          "basePower": 70,
+          "blockEligible": true,
+          "blockCoefficient": 1,
+          "deflectionCoefficient": 1,
+          "fallbackMoveId": "weapon_basic_side_cleave"
+        }
+      ],
+      "baseline": {
+        "weightKg": 0.34,
+        "innateStrength": 12,
+        "durabilityMax": 100,
+        "speedPercent": 0,
+        "ordinaryContactLoss": 1,
+        "blockedContactLoss": 2
+      },
+      "repairToolItemId": "tool_repair_whetstone",
+      "materialRequirementsRef": "../../docs/design/examples/weapon-forging-material-requirements-v1.json#/components/2",
+      "operationCostsRef": "../../docs/design/examples/weapon-forging-balance-v1.json#/components/2",
+      "componentEffects": [],
+      "damageRules": {
+        "source": "../../docs/design/weapon-blade-components-draft.md",
+        "lookupKey": "B",
+        "selection": "one_of_three_equal_weight",
+        "scope": "real_instance",
+        "persistUntilRepair": true,
+        "disableBlockAtZero": false,
+        "disableComponentEffectsAtZero": false,
+        "speedAtZeroOverride": null,
+        "executionStatus": "modular_weapon_combat_v1"
+      },
+      "structureKnowledgeKey": "weapon_structure:B03",
+      "economy": {
+        "valuation": "pending",
+        "tradeEnabled": false
+      }
+    },
+    "weapon_component_b04": {
+      "designId": "B04",
+      "group": "B",
+      "tier": 2,
+      "prototypeId": "single_hand",
+      "placements": [
+        {
+          "anchor": "side1",
+          "occupies": [
+            "side1"
+          ]
+        },
+        {
+          "anchor": "side2",
+          "occupies": [
+            "side2"
+          ]
+        }
+      ],
+      "positions": [
+        {
+          "slot": "side",
+          "damageType": "slash",
+          "basePower": 49,
+          "blockEligible": true,
+          "blockCoefficient": 0.95,
+          "deflectionCoefficient": 0.95,
+          "fallbackMoveId": "weapon_basic_side_cleave"
+        }
+      ],
+      "baseline": {
+        "weightKg": 0.25,
+        "innateStrength": 10,
+        "durabilityMax": 90,
+        "speedPercent": 2,
+        "ordinaryContactLoss": 1,
+        "blockedContactLoss": 2
+      },
+      "repairToolItemId": "tool_repair_whetstone",
+      "materialRequirementsRef": "../../docs/design/examples/weapon-forging-material-requirements-v1.json#/components/3",
+      "operationCostsRef": "../../docs/design/examples/weapon-forging-balance-v1.json#/components/3",
+      "componentEffects": [],
+      "damageRules": {
+        "source": "../../docs/design/weapon-blade-components-draft.md",
+        "lookupKey": "B",
+        "selection": "one_of_three_equal_weight",
+        "scope": "real_instance",
+        "persistUntilRepair": true,
+        "disableBlockAtZero": false,
+        "disableComponentEffectsAtZero": false,
+        "speedAtZeroOverride": null,
+        "executionStatus": "modular_weapon_combat_v1"
+      },
+      "structureKnowledgeKey": "weapon_structure:B04",
+      "economy": {
+        "valuation": "pending",
+        "tradeEnabled": false
+      }
+    },
+    "weapon_component_b05": {
+      "designId": "B05",
+      "group": "B",
+      "tier": 2,
+      "prototypeId": "single_hand",
+      "placements": [
+        {
+          "anchor": "side1",
+          "occupies": [
+            "side1"
+          ]
+        },
+        {
+          "anchor": "side2",
+          "occupies": [
+            "side2"
+          ]
+        }
+      ],
+      "positions": [
+        {
+          "slot": "side",
+          "damageType": "slash",
+          "basePower": 98,
+          "blockEligible": true,
+          "blockCoefficient": 1,
+          "deflectionCoefficient": 1,
+          "fallbackMoveId": "weapon_basic_side_cleave"
+        }
+      ],
+      "baseline": {
+        "weightKg": 0.48,
+        "innateStrength": 26,
+        "durabilityMax": 110,
+        "speedPercent": -3,
+        "ordinaryContactLoss": 1,
+        "blockedContactLoss": 2
+      },
+      "repairToolItemId": "tool_repair_whetstone",
+      "materialRequirementsRef": "../../docs/design/examples/weapon-forging-material-requirements-v1.json#/components/4",
+      "operationCostsRef": "../../docs/design/examples/weapon-forging-balance-v1.json#/components/4",
+      "componentEffects": [],
+      "damageRules": {
+        "source": "../../docs/design/weapon-blade-components-draft.md",
+        "lookupKey": "B",
+        "selection": "one_of_three_equal_weight",
+        "scope": "real_instance",
+        "persistUntilRepair": true,
+        "disableBlockAtZero": false,
+        "disableComponentEffectsAtZero": false,
+        "speedAtZeroOverride": null,
+        "executionStatus": "modular_weapon_combat_v1"
+      },
+      "structureKnowledgeKey": "weapon_structure:B05",
+      "economy": {
+        "valuation": "pending",
+        "tradeEnabled": false
+      }
+    },
+    "weapon_component_b06": {
+      "designId": "B06",
+      "group": "B",
+      "tier": 3,
+      "prototypeId": "single_hand",
+      "placements": [
+        {
+          "anchor": "side1",
+          "occupies": [
+            "side1"
+          ]
+        },
+        {
+          "anchor": "side2",
+          "occupies": [
+            "side2"
+          ]
+        }
+      ],
+      "positions": [
+        {
+          "slot": "side",
+          "damageType": "slash",
+          "basePower": 103,
+          "blockEligible": true,
+          "blockCoefficient": 0.95,
+          "deflectionCoefficient": 0.95,
+          "fallbackMoveId": "weapon_basic_side_cleave"
+        }
+      ],
+      "baseline": {
+        "weightKg": 0.3,
+        "innateStrength": 10,
+        "durabilityMax": 90,
+        "speedPercent": 2,
+        "ordinaryContactLoss": 1,
+        "blockedContactLoss": 2
+      },
+      "repairToolItemId": "tool_repair_whetstone",
+      "materialRequirementsRef": "../../docs/design/examples/weapon-forging-material-requirements-v1.json#/components/5",
+      "operationCostsRef": "../../docs/design/examples/weapon-forging-balance-v1.json#/components/5",
+      "componentEffects": [],
+      "damageRules": {
+        "source": "../../docs/design/weapon-blade-components-draft.md",
+        "lookupKey": "B",
+        "selection": "one_of_three_equal_weight",
+        "scope": "real_instance",
+        "persistUntilRepair": true,
+        "disableBlockAtZero": false,
+        "disableComponentEffectsAtZero": false,
+        "speedAtZeroOverride": null,
+        "executionStatus": "modular_weapon_combat_v1"
+      },
+      "structureKnowledgeKey": "weapon_structure:B06",
+      "economy": {
+        "valuation": "pending",
+        "tradeEnabled": false
+      }
+    },
+    "weapon_component_b07": {
+      "designId": "B07",
+      "group": "B",
+      "tier": 3,
+      "prototypeId": "single_hand",
+      "placements": [
+        {
+          "anchor": "side1",
+          "occupies": [
+            "side1"
+          ]
+        },
+        {
+          "anchor": "side2",
+          "occupies": [
+            "side2"
+          ]
+        }
+      ],
+      "positions": [
+        {
+          "slot": "side",
+          "damageType": "slash",
+          "basePower": 160,
+          "blockEligible": true,
+          "blockCoefficient": 1.15,
+          "deflectionCoefficient": 1.1,
+          "fallbackMoveId": "weapon_basic_side_cleave"
+        }
+      ],
+      "baseline": {
+        "weightKg": 0.44,
+        "innateStrength": 22,
+        "durabilityMax": 125,
+        "speedPercent": -1,
+        "ordinaryContactLoss": 1,
+        "blockedContactLoss": 2
+      },
+      "repairToolItemId": "tool_repair_whetstone",
+      "materialRequirementsRef": "../../docs/design/examples/weapon-forging-material-requirements-v1.json#/components/6",
+      "operationCostsRef": "../../docs/design/examples/weapon-forging-balance-v1.json#/components/6",
+      "componentEffects": [],
+      "damageRules": {
+        "source": "../../docs/design/weapon-blade-components-draft.md",
+        "lookupKey": "B",
+        "selection": "one_of_three_equal_weight",
+        "scope": "real_instance",
+        "persistUntilRepair": true,
+        "disableBlockAtZero": false,
+        "disableComponentEffectsAtZero": false,
+        "speedAtZeroOverride": null,
+        "executionStatus": "modular_weapon_combat_v1"
+      },
+      "structureKnowledgeKey": "weapon_structure:B07",
+      "economy": {
+        "valuation": "pending",
+        "tradeEnabled": false
+      }
+    },
+    "weapon_component_b08": {
+      "designId": "B08",
+      "group": "B",
+      "tier": 3,
+      "prototypeId": "single_hand",
+      "placements": [
+        {
+          "anchor": "side1",
+          "occupies": [
+            "side1"
+          ]
+        },
+        {
+          "anchor": "side2",
+          "occupies": [
+            "side2"
+          ]
+        }
+      ],
+      "positions": [
+        {
+          "slot": "side",
+          "damageType": "slash",
+          "basePower": 128,
+          "blockEligible": true,
+          "blockCoefficient": 1,
+          "deflectionCoefficient": 1,
+          "fallbackMoveId": "weapon_basic_side_cleave"
+        }
+      ],
+      "baseline": {
+        "weightKg": 0.36,
+        "innateStrength": 12,
+        "durabilityMax": 100,
+        "speedPercent": 0,
+        "ordinaryContactLoss": 1,
+        "blockedContactLoss": 2
+      },
+      "repairToolItemId": "tool_repair_whetstone",
+      "materialRequirementsRef": "../../docs/design/examples/weapon-forging-material-requirements-v1.json#/components/7",
+      "operationCostsRef": "../../docs/design/examples/weapon-forging-balance-v1.json#/components/7",
+      "componentEffects": [],
+      "damageRules": {
+        "source": "../../docs/design/weapon-blade-components-draft.md",
+        "lookupKey": "B",
+        "selection": "one_of_three_equal_weight",
+        "scope": "real_instance",
+        "persistUntilRepair": true,
+        "disableBlockAtZero": false,
+        "disableComponentEffectsAtZero": false,
+        "speedAtZeroOverride": null,
+        "executionStatus": "modular_weapon_combat_v1"
+      },
+      "structureKnowledgeKey": "weapon_structure:B08",
+      "economy": {
+        "valuation": "pending",
+        "tradeEnabled": false
+      }
+    },
+    "weapon_component_b09": {
+      "designId": "B09",
+      "group": "B",
+      "tier": 4,
+      "prototypeId": "single_hand",
+      "placements": [
+        {
+          "anchor": "side1",
+          "occupies": [
+            "side1"
+          ]
+        },
+        {
+          "anchor": "side2",
+          "occupies": [
+            "side2"
+          ]
+        }
+      ],
+      "positions": [
+        {
+          "slot": "side",
+          "damageType": "slash",
+          "basePower": 224,
+          "blockEligible": true,
+          "blockCoefficient": 1,
+          "deflectionCoefficient": 1,
+          "fallbackMoveId": "weapon_basic_side_cleave"
+        }
+      ],
+      "baseline": {
+        "weightKg": 0.34,
+        "innateStrength": 12,
+        "durabilityMax": 100,
+        "speedPercent": 0,
+        "ordinaryContactLoss": 1,
+        "blockedContactLoss": 2
+      },
+      "repairToolItemId": "tool_repair_whetstone",
+      "materialRequirementsRef": "../../docs/design/examples/weapon-forging-material-requirements-v1.json#/components/8",
+      "operationCostsRef": "../../docs/design/examples/weapon-forging-balance-v1.json#/components/8",
+      "componentEffects": [],
+      "damageRules": {
+        "source": "../../docs/design/weapon-blade-components-draft.md",
+        "lookupKey": "B",
+        "selection": "one_of_three_equal_weight",
+        "scope": "real_instance",
+        "persistUntilRepair": true,
+        "disableBlockAtZero": false,
+        "disableComponentEffectsAtZero": false,
+        "speedAtZeroOverride": null,
+        "executionStatus": "modular_weapon_combat_v1"
+      },
+      "structureKnowledgeKey": "weapon_structure:B09",
+      "economy": {
+        "valuation": "pending",
+        "tradeEnabled": false
+      }
+    },
+    "weapon_component_b10": {
+      "designId": "B10",
+      "group": "B",
+      "tier": 4,
+      "prototypeId": "single_hand",
+      "placements": [
+        {
+          "anchor": "side1",
+          "occupies": [
+            "side1"
+          ]
+        },
+        {
+          "anchor": "side2",
+          "occupies": [
+            "side2"
+          ]
+        }
+      ],
+      "positions": [
+        {
+          "slot": "side",
+          "damageType": "slash",
+          "basePower": 246,
+          "blockEligible": true,
+          "blockCoefficient": 0.85,
+          "deflectionCoefficient": 0.9,
+          "fallbackMoveId": "weapon_basic_side_cleave"
+        }
+      ],
+      "baseline": {
+        "weightKg": 0.38,
+        "innateStrength": 16,
+        "durabilityMax": 80,
+        "speedPercent": 0,
+        "ordinaryContactLoss": 1,
+        "blockedContactLoss": 2
+      },
+      "repairToolItemId": "tool_repair_whetstone",
+      "materialRequirementsRef": "../../docs/design/examples/weapon-forging-material-requirements-v1.json#/components/9",
+      "operationCostsRef": "../../docs/design/examples/weapon-forging-balance-v1.json#/components/9",
+      "componentEffects": [],
+      "damageRules": {
+        "source": "../../docs/design/weapon-blade-components-draft.md",
+        "lookupKey": "B",
+        "selection": "one_of_three_equal_weight",
+        "scope": "real_instance",
+        "persistUntilRepair": true,
+        "disableBlockAtZero": false,
+        "disableComponentEffectsAtZero": false,
+        "speedAtZeroOverride": null,
+        "executionStatus": "modular_weapon_combat_v1"
+      },
+      "structureKnowledgeKey": "weapon_structure:B10",
+      "economy": {
+        "valuation": "pending",
+        "tradeEnabled": false
+      }
+    },
+    "weapon_component_b11": {
+      "designId": "B11",
+      "group": "B",
+      "tier": 4,
+      "prototypeId": "single_hand",
+      "placements": [
+        {
+          "anchor": "side1",
+          "occupies": [
+            "side1"
+          ]
+        },
+        {
+          "anchor": "side2",
+          "occupies": [
+            "side2"
+          ]
+        }
+      ],
+      "positions": [
+        {
+          "slot": "side",
+          "damageType": "slash",
+          "basePower": 358,
+          "blockEligible": true,
+          "blockCoefficient": 1,
+          "deflectionCoefficient": 1,
+          "fallbackMoveId": "weapon_basic_side_cleave"
+        }
+      ],
+      "baseline": {
+        "weightKg": 0.52,
+        "innateStrength": 30,
+        "durabilityMax": 110,
+        "speedPercent": -3,
+        "ordinaryContactLoss": 1,
+        "blockedContactLoss": 2
+      },
+      "repairToolItemId": "tool_repair_whetstone",
+      "materialRequirementsRef": "../../docs/design/examples/weapon-forging-material-requirements-v1.json#/components/10",
+      "operationCostsRef": "../../docs/design/examples/weapon-forging-balance-v1.json#/components/10",
+      "componentEffects": [],
+      "damageRules": {
+        "source": "../../docs/design/weapon-blade-components-draft.md",
+        "lookupKey": "B",
+        "selection": "one_of_three_equal_weight",
+        "scope": "real_instance",
+        "persistUntilRepair": true,
+        "disableBlockAtZero": false,
+        "disableComponentEffectsAtZero": false,
+        "speedAtZeroOverride": null,
+        "executionStatus": "modular_weapon_combat_v1"
+      },
+      "structureKnowledgeKey": "weapon_structure:B11",
+      "economy": {
+        "valuation": "pending",
+        "tradeEnabled": false
+      }
+    },
+    "weapon_component_b12": {
+      "designId": "B12",
+      "group": "B",
+      "tier": 5,
+      "prototypeId": "single_hand",
+      "placements": [
+        {
+          "anchor": "side1",
+          "occupies": [
+            "side1"
+          ]
+        },
+        {
+          "anchor": "side2",
+          "occupies": [
+            "side2"
+          ]
+        }
+      ],
+      "positions": [
+        {
+          "slot": "side",
+          "damageType": "slash",
+          "basePower": 341,
+          "blockEligible": true,
+          "blockCoefficient": 1.15,
+          "deflectionCoefficient": 1.1,
+          "fallbackMoveId": "weapon_basic_side_cleave"
+        }
+      ],
+      "baseline": {
+        "weightKg": 0.43,
+        "innateStrength": 22,
+        "durabilityMax": 125,
+        "speedPercent": -1,
+        "ordinaryContactLoss": 1,
+        "blockedContactLoss": 2
+      },
+      "repairToolItemId": "tool_repair_whetstone",
+      "materialRequirementsRef": "../../docs/design/examples/weapon-forging-material-requirements-v1.json#/components/11",
+      "operationCostsRef": "../../docs/design/examples/weapon-forging-balance-v1.json#/components/11",
+      "componentEffects": [],
+      "damageRules": {
+        "source": "../../docs/design/weapon-blade-components-draft.md",
+        "lookupKey": "B",
+        "selection": "one_of_three_equal_weight",
+        "scope": "real_instance",
+        "persistUntilRepair": true,
+        "disableBlockAtZero": false,
+        "disableComponentEffectsAtZero": false,
+        "speedAtZeroOverride": null,
+        "executionStatus": "modular_weapon_combat_v1"
+      },
+      "structureKnowledgeKey": "weapon_structure:B12",
+      "economy": {
+        "valuation": "pending",
+        "tradeEnabled": false
+      }
+    },
+    "weapon_component_b13": {
+      "designId": "B13",
+      "group": "B",
+      "tier": 5,
+      "prototypeId": "single_hand",
+      "placements": [
+        {
+          "anchor": "side1",
+          "occupies": [
+            "side1"
+          ]
+        },
+        {
+          "anchor": "side2",
+          "occupies": [
+            "side2"
+          ]
+        }
+      ],
+      "positions": [
+        {
+          "slot": "side",
+          "damageType": "slash",
+          "basePower": 191,
+          "blockEligible": true,
+          "blockCoefficient": 0.95,
+          "deflectionCoefficient": 0.95,
+          "fallbackMoveId": "weapon_basic_side_cleave"
+        }
+      ],
+      "baseline": {
+        "weightKg": 0.26,
+        "innateStrength": 10,
+        "durabilityMax": 90,
+        "speedPercent": 2,
+        "ordinaryContactLoss": 1,
+        "blockedContactLoss": 2
+      },
+      "repairToolItemId": "tool_repair_whetstone",
+      "materialRequirementsRef": "../../docs/design/examples/weapon-forging-material-requirements-v1.json#/components/12",
+      "operationCostsRef": "../../docs/design/examples/weapon-forging-balance-v1.json#/components/12",
+      "componentEffects": [],
+      "damageRules": {
+        "source": "../../docs/design/weapon-blade-components-draft.md",
+        "lookupKey": "B",
+        "selection": "one_of_three_equal_weight",
+        "scope": "real_instance",
+        "persistUntilRepair": true,
+        "disableBlockAtZero": false,
+        "disableComponentEffectsAtZero": false,
+        "speedAtZeroOverride": null,
+        "executionStatus": "modular_weapon_combat_v1"
+      },
+      "structureKnowledgeKey": "weapon_structure:B13",
+      "economy": {
+        "valuation": "pending",
+        "tradeEnabled": false
+      }
+    },
+    "weapon_component_b14": {
+      "designId": "B14",
+      "group": "B",
+      "tier": 5,
+      "prototypeId": "single_hand",
+      "placements": [
+        {
+          "anchor": "side1",
+          "occupies": [
+            "side1"
+          ]
+        },
+        {
+          "anchor": "side2",
+          "occupies": [
+            "side2"
+          ]
+        }
+      ],
+      "positions": [
+        {
+          "slot": "side",
+          "damageType": "slash",
+          "basePower": 314,
+          "blockEligible": true,
+          "blockCoefficient": 0.85,
+          "deflectionCoefficient": 0.9,
+          "fallbackMoveId": "weapon_basic_side_cleave"
+        }
+      ],
+      "baseline": {
+        "weightKg": 0.4,
+        "innateStrength": 18,
+        "durabilityMax": 80,
+        "speedPercent": 0,
+        "ordinaryContactLoss": 1,
+        "blockedContactLoss": 2
+      },
+      "repairToolItemId": "tool_repair_whetstone",
+      "materialRequirementsRef": "../../docs/design/examples/weapon-forging-material-requirements-v1.json#/components/13",
+      "operationCostsRef": "../../docs/design/examples/weapon-forging-balance-v1.json#/components/13",
+      "componentEffects": [],
+      "damageRules": {
+        "source": "../../docs/design/weapon-blade-components-draft.md",
+        "lookupKey": "B",
+        "selection": "one_of_three_equal_weight",
+        "scope": "real_instance",
+        "persistUntilRepair": true,
+        "disableBlockAtZero": false,
+        "disableComponentEffectsAtZero": false,
+        "speedAtZeroOverride": null,
+        "executionStatus": "modular_weapon_combat_v1"
+      },
+      "structureKnowledgeKey": "weapon_structure:B14",
+      "economy": {
+        "valuation": "pending",
+        "tradeEnabled": false
+      }
+    },
+    "weapon_component_b15": {
+      "designId": "B15",
+      "group": "B",
+      "tier": 6,
+      "prototypeId": "single_hand",
+      "placements": [
+        {
+          "anchor": "side1",
+          "occupies": [
+            "side1"
+          ]
+        },
+        {
+          "anchor": "side2",
+          "occupies": [
+            "side2"
+          ]
+        }
+      ],
+      "positions": [
+        {
+          "slot": "side",
+          "damageType": "slash",
+          "basePower": 319,
+          "blockEligible": true,
+          "blockCoefficient": 1,
+          "deflectionCoefficient": 1,
+          "fallbackMoveId": "weapon_basic_side_cleave"
+        }
+      ],
+      "baseline": {
+        "weightKg": 0.33,
+        "innateStrength": 12,
+        "durabilityMax": 100,
+        "speedPercent": 0,
+        "ordinaryContactLoss": 1,
+        "blockedContactLoss": 2
+      },
+      "repairToolItemId": "tool_repair_whetstone",
+      "materialRequirementsRef": "../../docs/design/examples/weapon-forging-material-requirements-v1.json#/components/14",
+      "operationCostsRef": "../../docs/design/examples/weapon-forging-balance-v1.json#/components/14",
+      "componentEffects": [],
+      "damageRules": {
+        "source": "../../docs/design/weapon-blade-components-draft.md",
+        "lookupKey": "B",
+        "selection": "one_of_three_equal_weight",
+        "scope": "real_instance",
+        "persistUntilRepair": true,
+        "disableBlockAtZero": false,
+        "disableComponentEffectsAtZero": false,
+        "speedAtZeroOverride": null,
+        "executionStatus": "modular_weapon_combat_v1"
+      },
+      "structureKnowledgeKey": "weapon_structure:B15",
+      "economy": {
+        "valuation": "pending",
+        "tradeEnabled": false
+      }
+    },
+    "weapon_component_b16": {
+      "designId": "B16",
+      "group": "B",
+      "tier": 6,
+      "prototypeId": "single_hand",
+      "placements": [
+        {
+          "anchor": "side1",
+          "occupies": [
+            "side1"
+          ]
+        },
+        {
+          "anchor": "side2",
+          "occupies": [
+            "side2"
+          ]
+        }
+      ],
+      "positions": [
+        {
+          "slot": "side",
+          "damageType": "slash",
+          "basePower": 511,
+          "blockEligible": true,
+          "blockCoefficient": 1,
+          "deflectionCoefficient": 1,
+          "fallbackMoveId": "weapon_basic_side_cleave"
+        }
+      ],
+      "baseline": {
+        "weightKg": 0.5,
+        "innateStrength": 30,
+        "durabilityMax": 110,
+        "speedPercent": -3,
+        "ordinaryContactLoss": 1,
+        "blockedContactLoss": 2
+      },
+      "repairToolItemId": "tool_repair_whetstone",
+      "materialRequirementsRef": "../../docs/design/examples/weapon-forging-material-requirements-v1.json#/components/15",
+      "operationCostsRef": "../../docs/design/examples/weapon-forging-balance-v1.json#/components/15",
+      "componentEffects": [],
+      "damageRules": {
+        "source": "../../docs/design/weapon-blade-components-draft.md",
+        "lookupKey": "B",
+        "selection": "one_of_three_equal_weight",
+        "scope": "real_instance",
+        "persistUntilRepair": true,
+        "disableBlockAtZero": false,
+        "disableComponentEffectsAtZero": false,
+        "speedAtZeroOverride": null,
+        "executionStatus": "modular_weapon_combat_v1"
+      },
+      "structureKnowledgeKey": "weapon_structure:B16",
+      "economy": {
+        "valuation": "pending",
+        "tradeEnabled": false
+      }
+    },
+    "weapon_component_b17": {
+      "designId": "B17",
+      "group": "B",
+      "tier": 6,
+      "prototypeId": "single_hand",
+      "placements": [
+        {
+          "anchor": "side1",
+          "occupies": [
+            "side1"
+          ]
+        },
+        {
+          "anchor": "side2",
+          "occupies": [
+            "side2"
+          ]
+        }
+      ],
+      "positions": [
+        {
+          "slot": "side",
+          "damageType": "slash",
+          "basePower": 399,
+          "blockEligible": true,
+          "blockCoefficient": 1.15,
+          "deflectionCoefficient": 1.1,
+          "fallbackMoveId": "weapon_basic_side_cleave"
+        }
+      ],
+      "baseline": {
+        "weightKg": 0.42,
+        "innateStrength": 22,
+        "durabilityMax": 125,
+        "speedPercent": -1,
+        "ordinaryContactLoss": 1,
+        "blockedContactLoss": 2
+      },
+      "repairToolItemId": "tool_repair_whetstone",
+      "materialRequirementsRef": "../../docs/design/examples/weapon-forging-material-requirements-v1.json#/components/16",
+      "operationCostsRef": "../../docs/design/examples/weapon-forging-balance-v1.json#/components/16",
+      "componentEffects": [],
+      "damageRules": {
+        "source": "../../docs/design/weapon-blade-components-draft.md",
+        "lookupKey": "B",
+        "selection": "one_of_three_equal_weight",
+        "scope": "real_instance",
+        "persistUntilRepair": true,
+        "disableBlockAtZero": false,
+        "disableComponentEffectsAtZero": false,
+        "speedAtZeroOverride": null,
+        "executionStatus": "modular_weapon_combat_v1"
+      },
+      "structureKnowledgeKey": "weapon_structure:B17",
+      "economy": {
+        "valuation": "pending",
+        "tradeEnabled": false
+      }
+    },
+    "weapon_component_t01": {
+      "designId": "T01",
+      "group": "T",
+      "tier": 1,
+      "prototypeId": "single_hand",
+      "placements": [
+        {
+          "anchor": "front",
+          "occupies": [
+            "front"
+          ]
+        }
+      ],
+      "positions": [
+        {
+          "slot": "front",
+          "damageType": "pierce",
+          "basePower": 13,
+          "blockEligible": false,
+          "blockCoefficient": null,
+          "deflectionCoefficient": null,
+          "fallbackMoveId": "weapon_basic_front_thrust"
+        }
+      ],
+      "baseline": {
+        "weightKg": 0.08,
+        "innateStrength": 10,
+        "durabilityMax": 100,
+        "speedPercent": 0,
+        "ordinaryContactLoss": 1,
+        "blockedContactLoss": 2
+      },
+      "repairToolItemId": "tool_repair_whetstone",
+      "materialRequirementsRef": "../../docs/design/examples/weapon-forging-material-requirements-v1.json#/components/17",
+      "operationCostsRef": "../../docs/design/examples/weapon-forging-balance-v1.json#/components/17",
+      "componentEffects": [],
+      "damageRules": {
+        "source": "../../docs/design/weapon-tip-pommel-components-draft.md",
+        "lookupKey": "pierce",
+        "selection": "one_of_three_equal_weight",
+        "scope": "real_instance",
+        "persistUntilRepair": true,
+        "disableBlockAtZero": false,
+        "disableComponentEffectsAtZero": false,
+        "speedAtZeroOverride": null,
+        "executionStatus": "modular_weapon_combat_v1"
+      },
+      "structureKnowledgeKey": "weapon_structure:T01",
+      "economy": {
+        "valuation": "pending",
+        "tradeEnabled": false
+      }
+    },
+    "weapon_component_t02": {
+      "designId": "T02",
+      "group": "T",
+      "tier": 1,
+      "prototypeId": "single_hand",
+      "placements": [
+        {
+          "anchor": "front",
+          "occupies": [
+            "front"
+          ]
+        }
+      ],
+      "positions": [
+        {
+          "slot": "front",
+          "damageType": "blunt",
+          "basePower": 15,
+          "blockEligible": false,
+          "blockCoefficient": null,
+          "deflectionCoefficient": null,
+          "fallbackMoveId": "weapon_basic_front_bump"
+        }
+      ],
+      "baseline": {
+        "weightKg": 0.1,
+        "innateStrength": 10,
+        "durabilityMax": 120,
+        "speedPercent": -1,
+        "ordinaryContactLoss": 1,
+        "blockedContactLoss": 2
+      },
+      "repairToolItemId": "tool_repair_hammer",
+      "materialRequirementsRef": "../../docs/design/examples/weapon-forging-material-requirements-v1.json#/components/18",
+      "operationCostsRef": "../../docs/design/examples/weapon-forging-balance-v1.json#/components/18",
+      "componentEffects": [],
+      "damageRules": {
+        "source": "../../docs/design/weapon-tip-pommel-components-draft.md",
+        "lookupKey": "blunt",
+        "selection": "one_of_three_equal_weight",
+        "scope": "real_instance",
+        "persistUntilRepair": true,
+        "disableBlockAtZero": false,
+        "disableComponentEffectsAtZero": false,
+        "speedAtZeroOverride": null,
+        "executionStatus": "modular_weapon_combat_v1"
+      },
+      "structureKnowledgeKey": "weapon_structure:T02",
+      "economy": {
+        "valuation": "pending",
+        "tradeEnabled": false
+      }
+    },
+    "weapon_component_t03": {
+      "designId": "T03",
+      "group": "T",
+      "tier": 2,
+      "prototypeId": "single_hand",
+      "placements": [
+        {
+          "anchor": "front",
+          "occupies": [
+            "front"
+          ]
+        }
+      ],
+      "positions": [
+        {
+          "slot": "front",
+          "damageType": "pierce",
+          "basePower": 49,
+          "blockEligible": false,
+          "blockCoefficient": null,
+          "deflectionCoefficient": null,
+          "fallbackMoveId": "weapon_basic_front_thrust"
+        }
+      ],
+      "baseline": {
+        "weightKg": 0.1,
+        "innateStrength": 10,
+        "durabilityMax": 100,
+        "speedPercent": 0,
+        "ordinaryContactLoss": 1,
+        "blockedContactLoss": 2
+      },
+      "repairToolItemId": "tool_repair_whetstone",
+      "materialRequirementsRef": "../../docs/design/examples/weapon-forging-material-requirements-v1.json#/components/19",
+      "operationCostsRef": "../../docs/design/examples/weapon-forging-balance-v1.json#/components/19",
+      "componentEffects": [],
+      "damageRules": {
+        "source": "../../docs/design/weapon-tip-pommel-components-draft.md",
+        "lookupKey": "pierce",
+        "selection": "one_of_three_equal_weight",
+        "scope": "real_instance",
+        "persistUntilRepair": true,
+        "disableBlockAtZero": false,
+        "disableComponentEffectsAtZero": false,
+        "speedAtZeroOverride": null,
+        "executionStatus": "modular_weapon_combat_v1"
+      },
+      "structureKnowledgeKey": "weapon_structure:T03",
+      "economy": {
+        "valuation": "pending",
+        "tradeEnabled": false
+      }
+    },
+    "weapon_component_t04": {
+      "designId": "T04",
+      "group": "T",
+      "tier": 2,
+      "prototypeId": "single_hand",
+      "placements": [
+        {
+          "anchor": "front",
+          "occupies": [
+            "front"
+          ]
+        }
+      ],
+      "positions": [
+        {
+          "slot": "front",
+          "damageType": "blunt",
+          "basePower": 84,
+          "blockEligible": false,
+          "blockCoefficient": null,
+          "deflectionCoefficient": null,
+          "fallbackMoveId": "weapon_basic_front_bump"
+        }
+      ],
+      "baseline": {
+        "weightKg": 0.16,
+        "innateStrength": 20,
+        "durabilityMax": 120,
+        "speedPercent": -2,
+        "ordinaryContactLoss": 1,
+        "blockedContactLoss": 2
+      },
+      "repairToolItemId": "tool_repair_hammer",
+      "materialRequirementsRef": "../../docs/design/examples/weapon-forging-material-requirements-v1.json#/components/20",
+      "operationCostsRef": "../../docs/design/examples/weapon-forging-balance-v1.json#/components/20",
+      "componentEffects": [],
+      "damageRules": {
+        "source": "../../docs/design/weapon-tip-pommel-components-draft.md",
+        "lookupKey": "blunt",
+        "selection": "one_of_three_equal_weight",
+        "scope": "real_instance",
+        "persistUntilRepair": true,
+        "disableBlockAtZero": false,
+        "disableComponentEffectsAtZero": false,
+        "speedAtZeroOverride": null,
+        "executionStatus": "modular_weapon_combat_v1"
+      },
+      "structureKnowledgeKey": "weapon_structure:T04",
+      "economy": {
+        "valuation": "pending",
+        "tradeEnabled": false
+      }
+    },
+    "weapon_component_t05": {
+      "designId": "T05",
+      "group": "T",
+      "tier": 3,
+      "prototypeId": "single_hand",
+      "placements": [
+        {
+          "anchor": "front",
+          "occupies": [
+            "front"
+          ]
+        }
+      ],
+      "positions": [
+        {
+          "slot": "front",
+          "damageType": "pierce",
+          "basePower": 103,
+          "blockEligible": false,
+          "blockCoefficient": null,
+          "deflectionCoefficient": null,
+          "fallbackMoveId": "weapon_basic_front_thrust"
+        }
+      ],
+      "baseline": {
+        "weightKg": 0.11,
+        "innateStrength": 10,
+        "durabilityMax": 110,
+        "speedPercent": -1,
+        "ordinaryContactLoss": 1,
+        "blockedContactLoss": 2
+      },
+      "repairToolItemId": "tool_repair_whetstone",
+      "materialRequirementsRef": "../../docs/design/examples/weapon-forging-material-requirements-v1.json#/components/21",
+      "operationCostsRef": "../../docs/design/examples/weapon-forging-balance-v1.json#/components/21",
+      "componentEffects": [],
+      "damageRules": {
+        "source": "../../docs/design/weapon-tip-pommel-components-draft.md",
+        "lookupKey": "pierce",
+        "selection": "one_of_three_equal_weight",
+        "scope": "real_instance",
+        "persistUntilRepair": true,
+        "disableBlockAtZero": false,
+        "disableComponentEffectsAtZero": false,
+        "speedAtZeroOverride": null,
+        "executionStatus": "modular_weapon_combat_v1"
+      },
+      "structureKnowledgeKey": "weapon_structure:T05",
+      "economy": {
+        "valuation": "pending",
+        "tradeEnabled": false
+      }
+    },
+    "weapon_component_t06": {
+      "designId": "T06",
+      "group": "T",
+      "tier": 3,
+      "prototypeId": "single_hand",
+      "placements": [
+        {
+          "anchor": "front",
+          "occupies": [
+            "front"
+          ]
+        }
+      ],
+      "positions": [
+        {
+          "slot": "front",
+          "damageType": "blunt",
+          "basePower": 115,
+          "blockEligible": false,
+          "blockCoefficient": null,
+          "deflectionCoefficient": null,
+          "fallbackMoveId": "weapon_basic_front_bump"
+        }
+      ],
+      "baseline": {
+        "weightKg": 0.12,
+        "innateStrength": 10,
+        "durabilityMax": 110,
+        "speedPercent": 0,
+        "ordinaryContactLoss": 1,
+        "blockedContactLoss": 2
+      },
+      "repairToolItemId": "tool_repair_hammer",
+      "materialRequirementsRef": "../../docs/design/examples/weapon-forging-material-requirements-v1.json#/components/22",
+      "operationCostsRef": "../../docs/design/examples/weapon-forging-balance-v1.json#/components/22",
+      "componentEffects": [],
+      "damageRules": {
+        "source": "../../docs/design/weapon-tip-pommel-components-draft.md",
+        "lookupKey": "blunt",
+        "selection": "one_of_three_equal_weight",
+        "scope": "real_instance",
+        "persistUntilRepair": true,
+        "disableBlockAtZero": false,
+        "disableComponentEffectsAtZero": false,
+        "speedAtZeroOverride": null,
+        "executionStatus": "modular_weapon_combat_v1"
+      },
+      "structureKnowledgeKey": "weapon_structure:T06",
+      "economy": {
+        "valuation": "pending",
+        "tradeEnabled": false
+      }
+    },
+    "weapon_component_t07": {
+      "designId": "T07",
+      "group": "T",
+      "tier": 4,
+      "prototypeId": "single_hand",
+      "placements": [
+        {
+          "anchor": "front",
+          "occupies": [
+            "front"
+          ]
+        }
+      ],
+      "positions": [
+        {
+          "slot": "front",
+          "damageType": "pierce",
+          "basePower": 157,
+          "blockEligible": false,
+          "blockCoefficient": null,
+          "deflectionCoefficient": null,
+          "fallbackMoveId": "weapon_basic_front_thrust"
+        }
+      ],
+      "baseline": {
+        "weightKg": 0.1,
+        "innateStrength": 10,
+        "durabilityMax": 90,
+        "speedPercent": -1,
+        "ordinaryContactLoss": 1,
+        "blockedContactLoss": 2
+      },
+      "repairToolItemId": "tool_repair_whetstone",
+      "materialRequirementsRef": "../../docs/design/examples/weapon-forging-material-requirements-v1.json#/components/23",
+      "operationCostsRef": "../../docs/design/examples/weapon-forging-balance-v1.json#/components/23",
+      "componentEffects": [],
+      "damageRules": {
+        "source": "../../docs/design/weapon-tip-pommel-components-draft.md",
+        "lookupKey": "pierce",
+        "selection": "one_of_three_equal_weight",
+        "scope": "real_instance",
+        "persistUntilRepair": true,
+        "disableBlockAtZero": false,
+        "disableComponentEffectsAtZero": false,
+        "speedAtZeroOverride": null,
+        "executionStatus": "modular_weapon_combat_v1"
+      },
+      "structureKnowledgeKey": "weapon_structure:T07",
+      "economy": {
+        "valuation": "pending",
+        "tradeEnabled": false
+      }
+    },
+    "weapon_component_t08": {
+      "designId": "T08",
+      "group": "T",
+      "tier": 4,
+      "prototypeId": "single_hand",
+      "placements": [
+        {
+          "anchor": "front",
+          "occupies": [
+            "front"
+          ]
+        }
+      ],
+      "positions": [
+        {
+          "slot": "front",
+          "damageType": "blunt",
+          "basePower": 336,
+          "blockEligible": false,
+          "blockCoefficient": null,
+          "deflectionCoefficient": null,
+          "fallbackMoveId": "weapon_basic_front_bump"
+        }
+      ],
+      "baseline": {
+        "weightKg": 0.2,
+        "innateStrength": 28,
+        "durabilityMax": 125,
+        "speedPercent": -3,
+        "ordinaryContactLoss": 1,
+        "blockedContactLoss": 2
+      },
+      "repairToolItemId": "tool_repair_hammer",
+      "materialRequirementsRef": "../../docs/design/examples/weapon-forging-material-requirements-v1.json#/components/24",
+      "operationCostsRef": "../../docs/design/examples/weapon-forging-balance-v1.json#/components/24",
+      "componentEffects": [],
+      "damageRules": {
+        "source": "../../docs/design/weapon-tip-pommel-components-draft.md",
+        "lookupKey": "blunt",
+        "selection": "one_of_three_equal_weight",
+        "scope": "real_instance",
+        "persistUntilRepair": true,
+        "disableBlockAtZero": false,
+        "disableComponentEffectsAtZero": false,
+        "speedAtZeroOverride": null,
+        "executionStatus": "modular_weapon_combat_v1"
+      },
+      "structureKnowledgeKey": "weapon_structure:T08",
+      "economy": {
+        "valuation": "pending",
+        "tradeEnabled": false
+      }
+    },
+    "weapon_component_t09": {
+      "designId": "T09",
+      "group": "T",
+      "tier": 5,
+      "prototypeId": "single_hand",
+      "placements": [
+        {
+          "anchor": "front",
+          "occupies": [
+            "front"
+          ]
+        }
+      ],
+      "positions": [
+        {
+          "slot": "front",
+          "damageType": "pierce",
+          "basePower": 246,
+          "blockEligible": false,
+          "blockCoefficient": null,
+          "deflectionCoefficient": null,
+          "fallbackMoveId": "weapon_basic_front_thrust"
+        }
+      ],
+      "baseline": {
+        "weightKg": 0.13,
+        "innateStrength": 10,
+        "durabilityMax": 85,
+        "speedPercent": -2,
+        "ordinaryContactLoss": 1,
+        "blockedContactLoss": 2
+      },
+      "repairToolItemId": "tool_repair_whetstone",
+      "materialRequirementsRef": "../../docs/design/examples/weapon-forging-material-requirements-v1.json#/components/25",
+      "operationCostsRef": "../../docs/design/examples/weapon-forging-balance-v1.json#/components/25",
+      "componentEffects": [],
+      "damageRules": {
+        "source": "../../docs/design/weapon-tip-pommel-components-draft.md",
+        "lookupKey": "pierce",
+        "selection": "one_of_three_equal_weight",
+        "scope": "real_instance",
+        "persistUntilRepair": true,
+        "disableBlockAtZero": false,
+        "disableComponentEffectsAtZero": false,
+        "speedAtZeroOverride": null,
+        "executionStatus": "modular_weapon_combat_v1"
+      },
+      "structureKnowledgeKey": "weapon_structure:T09",
+      "economy": {
+        "valuation": "pending",
+        "tradeEnabled": false
+      }
+    },
+    "weapon_component_t10": {
+      "designId": "T10",
+      "group": "T",
+      "tier": 5,
+      "prototypeId": "single_hand",
+      "placements": [
+        {
+          "anchor": "front",
+          "occupies": [
+            "front"
+          ]
+        }
+      ],
+      "positions": [
+        {
+          "slot": "front",
+          "damageType": "blunt",
+          "basePower": 341,
+          "blockEligible": false,
+          "blockCoefficient": null,
+          "deflectionCoefficient": null,
+          "fallbackMoveId": "weapon_basic_front_bump"
+        }
+      ],
+      "baseline": {
+        "weightKg": 0.18,
+        "innateStrength": 22,
+        "durabilityMax": 115,
+        "speedPercent": -1,
+        "ordinaryContactLoss": 1,
+        "blockedContactLoss": 2
+      },
+      "repairToolItemId": "tool_repair_hammer",
+      "materialRequirementsRef": "../../docs/design/examples/weapon-forging-material-requirements-v1.json#/components/26",
+      "operationCostsRef": "../../docs/design/examples/weapon-forging-balance-v1.json#/components/26",
+      "componentEffects": [],
+      "damageRules": {
+        "source": "../../docs/design/weapon-tip-pommel-components-draft.md",
+        "lookupKey": "blunt",
+        "selection": "one_of_three_equal_weight",
+        "scope": "real_instance",
+        "persistUntilRepair": true,
+        "disableBlockAtZero": false,
+        "disableComponentEffectsAtZero": false,
+        "speedAtZeroOverride": null,
+        "executionStatus": "modular_weapon_combat_v1"
+      },
+      "structureKnowledgeKey": "weapon_structure:T10",
+      "economy": {
+        "valuation": "pending",
+        "tradeEnabled": false
+      }
+    },
+    "weapon_component_t11": {
+      "designId": "T11",
+      "group": "T",
+      "tier": 6,
+      "prototypeId": "single_hand",
+      "placements": [
+        {
+          "anchor": "front",
+          "occupies": [
+            "front"
+          ]
+        }
+      ],
+      "positions": [
+        {
+          "slot": "front",
+          "damageType": "pierce",
+          "basePower": 256,
+          "blockEligible": false,
+          "blockCoefficient": null,
+          "deflectionCoefficient": null,
+          "fallbackMoveId": "weapon_basic_front_thrust"
+        }
+      ],
+      "baseline": {
+        "weightKg": 0.12,
+        "innateStrength": 10,
+        "durabilityMax": 110,
+        "speedPercent": 0,
+        "ordinaryContactLoss": 1,
+        "blockedContactLoss": 2
+      },
+      "repairToolItemId": "tool_repair_whetstone",
+      "materialRequirementsRef": "../../docs/design/examples/weapon-forging-material-requirements-v1.json#/components/27",
+      "operationCostsRef": "../../docs/design/examples/weapon-forging-balance-v1.json#/components/27",
+      "componentEffects": [],
+      "damageRules": {
+        "source": "../../docs/design/weapon-tip-pommel-components-draft.md",
+        "lookupKey": "pierce",
+        "selection": "one_of_three_equal_weight",
+        "scope": "real_instance",
+        "persistUntilRepair": true,
+        "disableBlockAtZero": false,
+        "disableComponentEffectsAtZero": false,
+        "speedAtZeroOverride": null,
+        "executionStatus": "modular_weapon_combat_v1"
+      },
+      "structureKnowledgeKey": "weapon_structure:T11",
+      "economy": {
+        "valuation": "pending",
+        "tradeEnabled": false
+      }
+    },
+    "weapon_component_t12": {
+      "designId": "T12",
+      "group": "T",
+      "tier": 6,
+      "prototypeId": "single_hand",
+      "placements": [
+        {
+          "anchor": "front",
+          "occupies": [
+            "front"
+          ]
+        }
+      ],
+      "positions": [
+        {
+          "slot": "front",
+          "damageType": "blunt",
+          "basePower": 543,
+          "blockEligible": false,
+          "blockCoefficient": null,
+          "deflectionCoefficient": null,
+          "fallbackMoveId": "weapon_basic_front_bump"
+        }
+      ],
+      "baseline": {
+        "weightKg": 0.22,
+        "innateStrength": 32,
+        "durabilityMax": 125,
+        "speedPercent": -3,
+        "ordinaryContactLoss": 1,
+        "blockedContactLoss": 2
+      },
+      "repairToolItemId": "tool_repair_hammer",
+      "materialRequirementsRef": "../../docs/design/examples/weapon-forging-material-requirements-v1.json#/components/28",
+      "operationCostsRef": "../../docs/design/examples/weapon-forging-balance-v1.json#/components/28",
+      "componentEffects": [],
+      "damageRules": {
+        "source": "../../docs/design/weapon-tip-pommel-components-draft.md",
+        "lookupKey": "blunt",
+        "selection": "one_of_three_equal_weight",
+        "scope": "real_instance",
+        "persistUntilRepair": true,
+        "disableBlockAtZero": false,
+        "disableComponentEffectsAtZero": false,
+        "speedAtZeroOverride": null,
+        "executionStatus": "modular_weapon_combat_v1"
+      },
+      "structureKnowledgeKey": "weapon_structure:T12",
+      "economy": {
+        "valuation": "pending",
+        "tradeEnabled": false
+      }
+    },
+    "weapon_component_d01": {
+      "designId": "D01",
+      "group": "D",
+      "tier": 1,
+      "prototypeId": "single_hand",
+      "placements": [
+        {
+          "anchor": "side1",
+          "occupies": [
+            "side1"
+          ]
+        },
+        {
+          "anchor": "side2",
+          "occupies": [
+            "side2"
+          ]
+        }
+      ],
+      "positions": [
+        {
+          "slot": "side",
+          "damageType": "blunt",
+          "basePower": 19,
+          "blockEligible": true,
+          "blockCoefficient": 1,
+          "deflectionCoefficient": 1,
+          "fallbackMoveId": "weapon_basic_side_swing"
+        }
+      ],
+      "baseline": {
+        "weightKg": 0.38,
+        "innateStrength": 12,
+        "durabilityMax": 100,
+        "speedPercent": 0,
+        "ordinaryContactLoss": 1,
+        "blockedContactLoss": 2
+      },
+      "repairToolItemId": "tool_repair_hammer",
+      "materialRequirementsRef": "../../docs/design/examples/weapon-forging-material-requirements-v1.json#/components/29",
+      "operationCostsRef": "../../docs/design/examples/weapon-forging-balance-v1.json#/components/29",
+      "componentEffects": [
+        {
+          "name": "接力",
+          "strengthPercent": 4,
+          "ruleSource": "../../docs/design/weapon-blunt-side-components-draft.md#六种特色buff提案"
+        }
+      ],
+      "damageRules": {
+        "source": "../../docs/design/weapon-blunt-side-components-draft.md",
+        "lookupKey": "D",
+        "selection": "one_of_three_equal_weight",
+        "scope": "real_instance",
+        "persistUntilRepair": true,
+        "disableBlockAtZero": false,
+        "disableComponentEffectsAtZero": false,
+        "speedAtZeroOverride": null,
+        "executionStatus": "modular_weapon_combat_v1"
+      },
+      "structureKnowledgeKey": "weapon_structure:D01",
+      "economy": {
+        "valuation": "pending",
+        "tradeEnabled": false
+      }
+    },
+    "weapon_component_d02": {
+      "designId": "D02",
+      "group": "D",
+      "tier": 1,
+      "prototypeId": "single_hand",
+      "placements": [
+        {
+          "anchor": "side1",
+          "occupies": [
+            "side1"
+          ]
+        },
+        {
+          "anchor": "side2",
+          "occupies": [
+            "side2"
+          ]
+        }
+      ],
+      "positions": [
+        {
+          "slot": "side",
+          "damageType": "blunt",
+          "basePower": 23,
+          "blockEligible": true,
+          "blockCoefficient": 1.1,
+          "deflectionCoefficient": 1.05,
+          "fallbackMoveId": "weapon_basic_side_swing"
+        }
+      ],
+      "baseline": {
+        "weightKg": 0.48,
+        "innateStrength": 20,
+        "durabilityMax": 120,
+        "speedPercent": -1,
+        "ordinaryContactLoss": 1,
+        "blockedContactLoss": 2
+      },
+      "repairToolItemId": "tool_repair_hammer",
+      "materialRequirementsRef": "../../docs/design/examples/weapon-forging-material-requirements-v1.json#/components/30",
+      "operationCostsRef": "../../docs/design/examples/weapon-forging-balance-v1.json#/components/30",
+      "componentEffects": [
+        {
+          "name": "回击",
+          "strengthPercent": 6,
+          "ruleSource": "../../docs/design/weapon-blunt-side-components-draft.md#六种特色buff提案"
+        }
+      ],
+      "damageRules": {
+        "source": "../../docs/design/weapon-blunt-side-components-draft.md",
+        "lookupKey": "D",
+        "selection": "one_of_three_equal_weight",
+        "scope": "real_instance",
+        "persistUntilRepair": true,
+        "disableBlockAtZero": false,
+        "disableComponentEffectsAtZero": false,
+        "speedAtZeroOverride": null,
+        "executionStatus": "modular_weapon_combat_v1"
+      },
+      "structureKnowledgeKey": "weapon_structure:D02",
+      "economy": {
+        "valuation": "pending",
+        "tradeEnabled": false
+      }
+    },
+    "weapon_component_d03": {
+      "designId": "D03",
+      "group": "D",
+      "tier": 1,
+      "prototypeId": "single_hand",
+      "placements": [
+        {
+          "anchor": "side1",
+          "occupies": [
+            "side1"
+          ]
+        },
+        {
+          "anchor": "side2",
+          "occupies": [
+            "side2"
+          ]
+        }
+      ],
+      "positions": [
+        {
+          "slot": "side",
+          "damageType": "blunt",
+          "basePower": 15,
+          "blockEligible": true,
+          "blockCoefficient": 0.95,
+          "deflectionCoefficient": 1,
+          "fallbackMoveId": "weapon_basic_side_swing"
+        }
+      ],
+      "baseline": {
+        "weightKg": 0.32,
+        "innateStrength": 10,
+        "durabilityMax": 100,
+        "speedPercent": 0,
+        "ordinaryContactLoss": 1,
+        "blockedContactLoss": 2
+      },
+      "repairToolItemId": "tool_repair_hammer",
+      "materialRequirementsRef": "../../docs/design/examples/weapon-forging-material-requirements-v1.json#/components/31",
+      "operationCostsRef": "../../docs/design/examples/weapon-forging-balance-v1.json#/components/31",
+      "componentEffects": [
+        {
+          "name": "震荡",
+          "strengthPercent": 2,
+          "ruleSource": "../../docs/design/weapon-blunt-side-components-draft.md#六种特色buff提案"
+        }
+      ],
+      "damageRules": {
+        "source": "../../docs/design/weapon-blunt-side-components-draft.md",
+        "lookupKey": "D",
+        "selection": "one_of_three_equal_weight",
+        "scope": "real_instance",
+        "persistUntilRepair": true,
+        "disableBlockAtZero": false,
+        "disableComponentEffectsAtZero": false,
+        "speedAtZeroOverride": null,
+        "executionStatus": "modular_weapon_combat_v1"
+      },
+      "structureKnowledgeKey": "weapon_structure:D03",
+      "economy": {
+        "valuation": "pending",
+        "tradeEnabled": false
+      }
+    },
+    "weapon_component_d04": {
+      "designId": "D04",
+      "group": "D",
+      "tier": 2,
+      "prototypeId": "single_hand",
+      "placements": [
+        {
+          "anchor": "side1",
+          "occupies": [
+            "side1"
+          ]
+        },
+        {
+          "anchor": "side2",
+          "occupies": [
+            "side2"
+          ]
+        }
+      ],
+      "positions": [
+        {
+          "slot": "side",
+          "damageType": "blunt",
+          "basePower": 66,
+          "blockEligible": true,
+          "blockCoefficient": 1,
+          "deflectionCoefficient": 1,
+          "fallbackMoveId": "weapon_basic_side_swing"
+        }
+      ],
+      "baseline": {
+        "weightKg": 0.42,
+        "innateStrength": 14,
+        "durabilityMax": 110,
+        "speedPercent": -1,
+        "ordinaryContactLoss": 1,
+        "blockedContactLoss": 2
+      },
+      "repairToolItemId": "tool_repair_hammer",
+      "materialRequirementsRef": "../../docs/design/examples/weapon-forging-material-requirements-v1.json#/components/32",
+      "operationCostsRef": "../../docs/design/examples/weapon-forging-balance-v1.json#/components/32",
+      "componentEffects": [
+        {
+          "name": "破架",
+          "strengthPercent": 8,
+          "ruleSource": "../../docs/design/weapon-blunt-side-components-draft.md#六种特色buff提案"
+        }
+      ],
+      "damageRules": {
+        "source": "../../docs/design/weapon-blunt-side-components-draft.md",
+        "lookupKey": "D",
+        "selection": "one_of_three_equal_weight",
+        "scope": "real_instance",
+        "persistUntilRepair": true,
+        "disableBlockAtZero": false,
+        "disableComponentEffectsAtZero": false,
+        "speedAtZeroOverride": null,
+        "executionStatus": "modular_weapon_combat_v1"
+      },
+      "structureKnowledgeKey": "weapon_structure:D04",
+      "economy": {
+        "valuation": "pending",
+        "tradeEnabled": false
+      }
+    },
+    "weapon_component_d05": {
+      "designId": "D05",
+      "group": "D",
+      "tier": 2,
+      "prototypeId": "single_hand",
+      "placements": [
+        {
+          "anchor": "side1",
+          "occupies": [
+            "side1"
+          ]
+        },
+        {
+          "anchor": "side2",
+          "occupies": [
+            "side2"
+          ]
+        }
+      ],
+      "positions": [
+        {
+          "slot": "side",
+          "damageType": "blunt",
+          "basePower": 63,
+          "blockEligible": true,
+          "blockCoefficient": 1,
+          "deflectionCoefficient": 1.08,
+          "fallbackMoveId": "weapon_basic_side_swing"
+        }
+      ],
+      "baseline": {
+        "weightKg": 0.38,
+        "innateStrength": 12,
+        "durabilityMax": 110,
+        "speedPercent": 0,
+        "ordinaryContactLoss": 1,
+        "blockedContactLoss": 2
+      },
+      "repairToolItemId": "tool_repair_hammer",
+      "materialRequirementsRef": "../../docs/design/examples/weapon-forging-material-requirements-v1.json#/components/33",
+      "operationCostsRef": "../../docs/design/examples/weapon-forging-balance-v1.json#/components/33",
+      "componentEffects": [
+        {
+          "name": "接力",
+          "strengthPercent": 6,
+          "ruleSource": "../../docs/design/weapon-blunt-side-components-draft.md#六种特色buff提案"
+        }
+      ],
+      "damageRules": {
+        "source": "../../docs/design/weapon-blunt-side-components-draft.md",
+        "lookupKey": "D",
+        "selection": "one_of_three_equal_weight",
+        "scope": "real_instance",
+        "persistUntilRepair": true,
+        "disableBlockAtZero": false,
+        "disableComponentEffectsAtZero": false,
+        "speedAtZeroOverride": null,
+        "executionStatus": "modular_weapon_combat_v1"
+      },
+      "structureKnowledgeKey": "weapon_structure:D05",
+      "economy": {
+        "valuation": "pending",
+        "tradeEnabled": false
+      }
+    },
+    "weapon_component_d06": {
+      "designId": "D06",
+      "group": "D",
+      "tier": 2,
+      "prototypeId": "single_hand",
+      "placements": [
+        {
+          "anchor": "side1",
+          "occupies": [
+            "side1"
+          ]
+        },
+        {
+          "anchor": "side2",
+          "occupies": [
+            "side2"
+          ]
+        }
+      ],
+      "positions": [
+        {
+          "slot": "side",
+          "damageType": "blunt",
+          "basePower": 79,
+          "blockEligible": true,
+          "blockCoefficient": 1.12,
+          "deflectionCoefficient": 1.08,
+          "fallbackMoveId": "weapon_basic_side_swing"
+        }
+      ],
+      "baseline": {
+        "weightKg": 0.5,
+        "innateStrength": 22,
+        "durabilityMax": 125,
+        "speedPercent": -1,
+        "ordinaryContactLoss": 1,
+        "blockedContactLoss": 2
+      },
+      "repairToolItemId": "tool_repair_hammer",
+      "materialRequirementsRef": "../../docs/design/examples/weapon-forging-material-requirements-v1.json#/components/34",
+      "operationCostsRef": "../../docs/design/examples/weapon-forging-balance-v1.json#/components/34",
+      "componentEffects": [
+        {
+          "name": "回击",
+          "strengthPercent": 10,
+          "ruleSource": "../../docs/design/weapon-blunt-side-components-draft.md#六种特色buff提案"
+        }
+      ],
+      "damageRules": {
+        "source": "../../docs/design/weapon-blunt-side-components-draft.md",
+        "lookupKey": "D",
+        "selection": "one_of_three_equal_weight",
+        "scope": "real_instance",
+        "persistUntilRepair": true,
+        "disableBlockAtZero": false,
+        "disableComponentEffectsAtZero": false,
+        "speedAtZeroOverride": null,
+        "executionStatus": "modular_weapon_combat_v1"
+      },
+      "structureKnowledgeKey": "weapon_structure:D06",
+      "economy": {
+        "valuation": "pending",
+        "tradeEnabled": false
+      }
+    },
+    "weapon_component_d07": {
+      "designId": "D07",
+      "group": "D",
+      "tier": 3,
+      "prototypeId": "single_hand",
+      "placements": [
+        {
+          "anchor": "side1",
+          "occupies": [
+            "side1"
+          ]
+        },
+        {
+          "anchor": "side2",
+          "occupies": [
+            "side2"
+          ]
+        }
+      ],
+      "positions": [
+        {
+          "slot": "side",
+          "damageType": "blunt",
+          "basePower": 81,
+          "blockEligible": true,
+          "blockCoefficient": 0.95,
+          "deflectionCoefficient": 0.95,
+          "fallbackMoveId": "weapon_basic_side_swing"
+        }
+      ],
+      "baseline": {
+        "weightKg": 0.28,
+        "innateStrength": 10,
+        "durabilityMax": 90,
+        "speedPercent": 2,
+        "ordinaryContactLoss": 1,
+        "blockedContactLoss": 2
+      },
+      "repairToolItemId": "tool_repair_hammer",
+      "materialRequirementsRef": "../../docs/design/examples/weapon-forging-material-requirements-v1.json#/components/35",
+      "operationCostsRef": "../../docs/design/examples/weapon-forging-balance-v1.json#/components/35",
+      "componentEffects": [
+        {
+          "name": "追打",
+          "strengthPercent": 8,
+          "ruleSource": "../../docs/design/weapon-blunt-side-components-draft.md#六种特色buff提案"
+        }
+      ],
+      "damageRules": {
+        "source": "../../docs/design/weapon-blunt-side-components-draft.md",
+        "lookupKey": "D",
+        "selection": "one_of_three_equal_weight",
+        "scope": "real_instance",
+        "persistUntilRepair": true,
+        "disableBlockAtZero": false,
+        "disableComponentEffectsAtZero": false,
+        "speedAtZeroOverride": null,
+        "executionStatus": "modular_weapon_combat_v1"
+      },
+      "structureKnowledgeKey": "weapon_structure:D07",
+      "economy": {
+        "valuation": "pending",
+        "tradeEnabled": false
+      }
+    },
+    "weapon_component_d08": {
+      "designId": "D08",
+      "group": "D",
+      "tier": 3,
+      "prototypeId": "single_hand",
+      "placements": [
+        {
+          "anchor": "side1",
+          "occupies": [
+            "side1"
+          ]
+        },
+        {
+          "anchor": "side2",
+          "occupies": [
+            "side2"
+          ]
+        }
+      ],
+      "positions": [
+        {
+          "slot": "side",
+          "damageType": "blunt",
+          "basePower": 161,
+          "blockEligible": true,
+          "blockCoefficient": 1,
+          "deflectionCoefficient": 1,
+          "fallbackMoveId": "weapon_basic_side_swing"
+        }
+      ],
+      "baseline": {
+        "weightKg": 0.52,
+        "innateStrength": 26,
+        "durabilityMax": 115,
+        "speedPercent": -2,
+        "ordinaryContactLoss": 1,
+        "blockedContactLoss": 2
+      },
+      "repairToolItemId": "tool_repair_hammer",
+      "materialRequirementsRef": "../../docs/design/examples/weapon-forging-material-requirements-v1.json#/components/36",
+      "operationCostsRef": "../../docs/design/examples/weapon-forging-balance-v1.json#/components/36",
+      "componentEffects": [
+        {
+          "name": "震荡",
+          "strengthPercent": 3,
+          "ruleSource": "../../docs/design/weapon-blunt-side-components-draft.md#六种特色buff提案"
+        }
+      ],
+      "damageRules": {
+        "source": "../../docs/design/weapon-blunt-side-components-draft.md",
+        "lookupKey": "D",
+        "selection": "one_of_three_equal_weight",
+        "scope": "real_instance",
+        "persistUntilRepair": true,
+        "disableBlockAtZero": false,
+        "disableComponentEffectsAtZero": false,
+        "speedAtZeroOverride": null,
+        "executionStatus": "modular_weapon_combat_v1"
+      },
+      "structureKnowledgeKey": "weapon_structure:D08",
+      "economy": {
+        "valuation": "pending",
+        "tradeEnabled": false
+      }
+    },
+    "weapon_component_d09": {
+      "designId": "D09",
+      "group": "D",
+      "tier": 3,
+      "prototypeId": "single_hand",
+      "placements": [
+        {
+          "anchor": "side1",
+          "occupies": [
+            "side1"
+          ]
+        },
+        {
+          "anchor": "side2",
+          "occupies": [
+            "side2"
+          ]
+        }
+      ],
+      "positions": [
+        {
+          "slot": "side",
+          "damageType": "blunt",
+          "basePower": 144,
+          "blockEligible": true,
+          "blockCoefficient": 1.12,
+          "deflectionCoefficient": 1.1,
+          "fallbackMoveId": "weapon_basic_side_swing"
+        }
+      ],
+      "baseline": {
+        "weightKg": 0.48,
+        "innateStrength": 22,
+        "durabilityMax": 125,
+        "speedPercent": -1,
+        "ordinaryContactLoss": 1,
+        "blockedContactLoss": 2
+      },
+      "repairToolItemId": "tool_repair_hammer",
+      "materialRequirementsRef": "../../docs/design/examples/weapon-forging-material-requirements-v1.json#/components/37",
+      "operationCostsRef": "../../docs/design/examples/weapon-forging-balance-v1.json#/components/37",
+      "componentEffects": [
+        {
+          "name": "破架",
+          "strengthPercent": 10,
+          "ruleSource": "../../docs/design/weapon-blunt-side-components-draft.md#六种特色buff提案"
+        }
+      ],
+      "damageRules": {
+        "source": "../../docs/design/weapon-blunt-side-components-draft.md",
+        "lookupKey": "D",
+        "selection": "one_of_three_equal_weight",
+        "scope": "real_instance",
+        "persistUntilRepair": true,
+        "disableBlockAtZero": false,
+        "disableComponentEffectsAtZero": false,
+        "speedAtZeroOverride": null,
+        "executionStatus": "modular_weapon_combat_v1"
+      },
+      "structureKnowledgeKey": "weapon_structure:D09",
+      "economy": {
+        "valuation": "pending",
+        "tradeEnabled": false
+      }
+    },
+    "weapon_component_d10": {
+      "designId": "D10",
+      "group": "D",
+      "tier": 4,
+      "prototypeId": "single_hand",
+      "placements": [
+        {
+          "anchor": "side1",
+          "occupies": [
+            "side1"
+          ]
+        },
+        {
+          "anchor": "side2",
+          "occupies": [
+            "side2"
+          ]
+        }
+      ],
+      "positions": [
+        {
+          "slot": "side",
+          "damageType": "blunt",
+          "basePower": 322,
+          "blockEligible": true,
+          "blockCoefficient": 1,
+          "deflectionCoefficient": 1,
+          "fallbackMoveId": "weapon_basic_side_swing"
+        }
+      ],
+      "baseline": {
+        "weightKg": 0.6,
+        "innateStrength": 30,
+        "durabilityMax": 120,
+        "speedPercent": -3,
+        "ordinaryContactLoss": 1,
+        "blockedContactLoss": 2
+      },
+      "repairToolItemId": "tool_repair_hammer",
+      "materialRequirementsRef": "../../docs/design/examples/weapon-forging-material-requirements-v1.json#/components/38",
+      "operationCostsRef": "../../docs/design/examples/weapon-forging-balance-v1.json#/components/38",
+      "componentEffects": [
+        {
+          "name": "重击",
+          "strengthPercent": 8,
+          "ruleSource": "../../docs/design/weapon-blunt-side-components-draft.md#六种特色buff提案"
+        }
+      ],
+      "damageRules": {
+        "source": "../../docs/design/weapon-blunt-side-components-draft.md",
+        "lookupKey": "D",
+        "selection": "one_of_three_equal_weight",
+        "scope": "real_instance",
+        "persistUntilRepair": true,
+        "disableBlockAtZero": false,
+        "disableComponentEffectsAtZero": false,
+        "speedAtZeroOverride": null,
+        "executionStatus": "modular_weapon_combat_v1"
+      },
+      "structureKnowledgeKey": "weapon_structure:D10",
+      "economy": {
+        "valuation": "pending",
+        "tradeEnabled": false
+      }
+    },
+    "weapon_component_d11": {
+      "designId": "D11",
+      "group": "D",
+      "tier": 4,
+      "prototypeId": "single_hand",
+      "placements": [
+        {
+          "anchor": "side1",
+          "occupies": [
+            "side1"
+          ]
+        },
+        {
+          "anchor": "side2",
+          "occupies": [
+            "side2"
+          ]
+        }
+      ],
+      "positions": [
+        {
+          "slot": "side",
+          "damageType": "blunt",
+          "basePower": 212,
+          "blockEligible": true,
+          "blockCoefficient": 1.05,
+          "deflectionCoefficient": 1.1,
+          "fallbackMoveId": "weapon_basic_side_swing"
+        }
+      ],
+      "baseline": {
+        "weightKg": 0.44,
+        "innateStrength": 14,
+        "durabilityMax": 115,
+        "speedPercent": -1,
+        "ordinaryContactLoss": 1,
+        "blockedContactLoss": 2
+      },
+      "repairToolItemId": "tool_repair_hammer",
+      "materialRequirementsRef": "../../docs/design/examples/weapon-forging-material-requirements-v1.json#/components/39",
+      "operationCostsRef": "../../docs/design/examples/weapon-forging-balance-v1.json#/components/39",
+      "componentEffects": [
+        {
+          "name": "震荡",
+          "strengthPercent": 4,
+          "ruleSource": "../../docs/design/weapon-blunt-side-components-draft.md#六种特色buff提案"
+        }
+      ],
+      "damageRules": {
+        "source": "../../docs/design/weapon-blunt-side-components-draft.md",
+        "lookupKey": "D",
+        "selection": "one_of_three_equal_weight",
+        "scope": "real_instance",
+        "persistUntilRepair": true,
+        "disableBlockAtZero": false,
+        "disableComponentEffectsAtZero": false,
+        "speedAtZeroOverride": null,
+        "executionStatus": "modular_weapon_combat_v1"
+      },
+      "structureKnowledgeKey": "weapon_structure:D11",
+      "economy": {
+        "valuation": "pending",
+        "tradeEnabled": false
+      }
+    },
+    "weapon_component_d12": {
+      "designId": "D12",
+      "group": "D",
+      "tier": 4,
+      "prototypeId": "single_hand",
+      "placements": [
+        {
+          "anchor": "side1",
+          "occupies": [
+            "side1"
+          ]
+        },
+        {
+          "anchor": "side2",
+          "occupies": [
+            "side2"
+          ]
+        }
+      ],
+      "positions": [
+        {
+          "slot": "side",
+          "damageType": "blunt",
+          "basePower": 222,
+          "blockEligible": true,
+          "blockCoefficient": 1.1,
+          "deflectionCoefficient": 1.12,
+          "fallbackMoveId": "weapon_basic_side_swing"
+        }
+      ],
+      "baseline": {
+        "weightKg": 0.45,
+        "innateStrength": 16,
+        "durabilityMax": 120,
+        "speedPercent": 0,
+        "ordinaryContactLoss": 1,
+        "blockedContactLoss": 2
+      },
+      "repairToolItemId": "tool_repair_hammer",
+      "materialRequirementsRef": "../../docs/design/examples/weapon-forging-material-requirements-v1.json#/components/40",
+      "operationCostsRef": "../../docs/design/examples/weapon-forging-balance-v1.json#/components/40",
+      "componentEffects": [
+        {
+          "name": "回击",
+          "strengthPercent": 12,
+          "ruleSource": "../../docs/design/weapon-blunt-side-components-draft.md#六种特色buff提案"
+        }
+      ],
+      "damageRules": {
+        "source": "../../docs/design/weapon-blunt-side-components-draft.md",
+        "lookupKey": "D",
+        "selection": "one_of_three_equal_weight",
+        "scope": "real_instance",
+        "persistUntilRepair": true,
+        "disableBlockAtZero": false,
+        "disableComponentEffectsAtZero": false,
+        "speedAtZeroOverride": null,
+        "executionStatus": "modular_weapon_combat_v1"
+      },
+      "structureKnowledgeKey": "weapon_structure:D12",
+      "economy": {
+        "valuation": "pending",
+        "tradeEnabled": false
+      }
+    },
+    "weapon_component_d13": {
+      "designId": "D13",
+      "group": "D",
+      "tier": 5,
+      "prototypeId": "single_hand",
+      "placements": [
+        {
+          "anchor": "side1",
+          "occupies": [
+            "side1"
+          ]
+        },
+        {
+          "anchor": "side2",
+          "occupies": [
+            "side2"
+          ]
+        }
+      ],
+      "positions": [
+        {
+          "slot": "side",
+          "damageType": "blunt",
+          "basePower": 172,
+          "blockEligible": true,
+          "blockCoefficient": 0.95,
+          "deflectionCoefficient": 0.95,
+          "fallbackMoveId": "weapon_basic_side_swing"
+        }
+      ],
+      "baseline": {
+        "weightKg": 0.29,
+        "innateStrength": 10,
+        "durabilityMax": 95,
+        "speedPercent": 2,
+        "ordinaryContactLoss": 1,
+        "blockedContactLoss": 2
+      },
+      "repairToolItemId": "tool_repair_hammer",
+      "materialRequirementsRef": "../../docs/design/examples/weapon-forging-material-requirements-v1.json#/components/41",
+      "operationCostsRef": "../../docs/design/examples/weapon-forging-balance-v1.json#/components/41",
+      "componentEffects": [
+        {
+          "name": "追打",
+          "strengthPercent": 12,
+          "ruleSource": "../../docs/design/weapon-blunt-side-components-draft.md#六种特色buff提案"
+        }
+      ],
+      "damageRules": {
+        "source": "../../docs/design/weapon-blunt-side-components-draft.md",
+        "lookupKey": "D",
+        "selection": "one_of_three_equal_weight",
+        "scope": "real_instance",
+        "persistUntilRepair": true,
+        "disableBlockAtZero": false,
+        "disableComponentEffectsAtZero": false,
+        "speedAtZeroOverride": null,
+        "executionStatus": "modular_weapon_combat_v1"
+      },
+      "structureKnowledgeKey": "weapon_structure:D13",
+      "economy": {
+        "valuation": "pending",
+        "tradeEnabled": false
+      }
+    },
+    "weapon_component_d14": {
+      "designId": "D14",
+      "group": "D",
+      "tier": 5,
+      "prototypeId": "single_hand",
+      "placements": [
+        {
+          "anchor": "side1",
+          "occupies": [
+            "side1"
+          ]
+        },
+        {
+          "anchor": "side2",
+          "occupies": [
+            "side2"
+          ]
+        }
+      ],
+      "positions": [
+        {
+          "slot": "side",
+          "damageType": "blunt",
+          "basePower": 344,
+          "blockEligible": true,
+          "blockCoefficient": 1,
+          "deflectionCoefficient": 1,
+          "fallbackMoveId": "weapon_basic_side_swing"
+        }
+      ],
+      "baseline": {
+        "weightKg": 0.53,
+        "innateStrength": 26,
+        "durabilityMax": 115,
+        "speedPercent": -2,
+        "ordinaryContactLoss": 1,
+        "blockedContactLoss": 2
+      },
+      "repairToolItemId": "tool_repair_hammer",
+      "materialRequirementsRef": "../../docs/design/examples/weapon-forging-material-requirements-v1.json#/components/42",
+      "operationCostsRef": "../../docs/design/examples/weapon-forging-balance-v1.json#/components/42",
+      "componentEffects": [
+        {
+          "name": "破架",
+          "strengthPercent": 14,
+          "ruleSource": "../../docs/design/weapon-blunt-side-components-draft.md#六种特色buff提案"
+        }
+      ],
+      "damageRules": {
+        "source": "../../docs/design/weapon-blunt-side-components-draft.md",
+        "lookupKey": "D",
+        "selection": "one_of_three_equal_weight",
+        "scope": "real_instance",
+        "persistUntilRepair": true,
+        "disableBlockAtZero": false,
+        "disableComponentEffectsAtZero": false,
+        "speedAtZeroOverride": null,
+        "executionStatus": "modular_weapon_combat_v1"
+      },
+      "structureKnowledgeKey": "weapon_structure:D14",
+      "economy": {
+        "valuation": "pending",
+        "tradeEnabled": false
+      }
+    },
+    "weapon_component_d15": {
+      "designId": "D15",
+      "group": "D",
+      "tier": 5,
+      "prototypeId": "single_hand",
+      "placements": [
+        {
+          "anchor": "side1",
+          "occupies": [
+            "side1"
+          ]
+        },
+        {
+          "anchor": "side2",
+          "occupies": [
+            "side2"
+          ]
+        }
+      ],
+      "positions": [
+        {
+          "slot": "side",
+          "damageType": "blunt",
+          "basePower": 307,
+          "blockEligible": true,
+          "blockCoefficient": 1.15,
+          "deflectionCoefficient": 1.1,
+          "fallbackMoveId": "weapon_basic_side_swing"
+        }
+      ],
+      "baseline": {
+        "weightKg": 0.5,
+        "innateStrength": 22,
+        "durabilityMax": 125,
+        "speedPercent": -1,
+        "ordinaryContactLoss": 1,
+        "blockedContactLoss": 2
+      },
+      "repairToolItemId": "tool_repair_hammer",
+      "materialRequirementsRef": "../../docs/design/examples/weapon-forging-material-requirements-v1.json#/components/43",
+      "operationCostsRef": "../../docs/design/examples/weapon-forging-balance-v1.json#/components/43",
+      "componentEffects": [
+        {
+          "name": "接力",
+          "strengthPercent": 10,
+          "ruleSource": "../../docs/design/weapon-blunt-side-components-draft.md#六种特色buff提案"
+        }
+      ],
+      "damageRules": {
+        "source": "../../docs/design/weapon-blunt-side-components-draft.md",
+        "lookupKey": "D",
+        "selection": "one_of_three_equal_weight",
+        "scope": "real_instance",
+        "persistUntilRepair": true,
+        "disableBlockAtZero": false,
+        "disableComponentEffectsAtZero": false,
+        "speedAtZeroOverride": null,
+        "executionStatus": "modular_weapon_combat_v1"
+      },
+      "structureKnowledgeKey": "weapon_structure:D15",
+      "economy": {
+        "valuation": "pending",
+        "tradeEnabled": false
+      }
+    },
+    "weapon_component_d16": {
+      "designId": "D16",
+      "group": "D",
+      "tier": 6,
+      "prototypeId": "single_hand",
+      "placements": [
+        {
+          "anchor": "side1",
+          "occupies": [
+            "side1"
+          ]
+        },
+        {
+          "anchor": "side2",
+          "occupies": [
+            "side2"
+          ]
+        }
+      ],
+      "positions": [
+        {
+          "slot": "side",
+          "damageType": "blunt",
+          "basePower": 517,
+          "blockEligible": true,
+          "blockCoefficient": 1,
+          "deflectionCoefficient": 1,
+          "fallbackMoveId": "weapon_basic_side_swing"
+        }
+      ],
+      "baseline": {
+        "weightKg": 0.6,
+        "innateStrength": 34,
+        "durabilityMax": 120,
+        "speedPercent": -3,
+        "ordinaryContactLoss": 1,
+        "blockedContactLoss": 2
+      },
+      "repairToolItemId": "tool_repair_hammer",
+      "materialRequirementsRef": "../../docs/design/examples/weapon-forging-material-requirements-v1.json#/components/44",
+      "operationCostsRef": "../../docs/design/examples/weapon-forging-balance-v1.json#/components/44",
+      "componentEffects": [
+        {
+          "name": "重击",
+          "strengthPercent": 12,
+          "ruleSource": "../../docs/design/weapon-blunt-side-components-draft.md#六种特色buff提案"
+        }
+      ],
+      "damageRules": {
+        "source": "../../docs/design/weapon-blunt-side-components-draft.md",
+        "lookupKey": "D",
+        "selection": "one_of_three_equal_weight",
+        "scope": "real_instance",
+        "persistUntilRepair": true,
+        "disableBlockAtZero": false,
+        "disableComponentEffectsAtZero": false,
+        "speedAtZeroOverride": null,
+        "executionStatus": "modular_weapon_combat_v1"
+      },
+      "structureKnowledgeKey": "weapon_structure:D16",
+      "economy": {
+        "valuation": "pending",
+        "tradeEnabled": false
+      }
+    },
+    "weapon_component_d17": {
+      "designId": "D17",
+      "group": "D",
+      "tier": 6,
+      "prototypeId": "single_hand",
+      "placements": [
+        {
+          "anchor": "side1",
+          "occupies": [
+            "side1"
+          ]
+        },
+        {
+          "anchor": "side2",
+          "occupies": [
+            "side2"
+          ]
+        }
+      ],
+      "positions": [
+        {
+          "slot": "side",
+          "damageType": "blunt",
+          "basePower": 316,
+          "blockEligible": true,
+          "blockCoefficient": 1.1,
+          "deflectionCoefficient": 1.15,
+          "fallbackMoveId": "weapon_basic_side_swing"
+        }
+      ],
+      "baseline": {
+        "weightKg": 0.46,
+        "innateStrength": 16,
+        "durabilityMax": 125,
+        "speedPercent": -1,
+        "ordinaryContactLoss": 1,
+        "blockedContactLoss": 2
+      },
+      "repairToolItemId": "tool_repair_hammer",
+      "materialRequirementsRef": "../../docs/design/examples/weapon-forging-material-requirements-v1.json#/components/45",
+      "operationCostsRef": "../../docs/design/examples/weapon-forging-balance-v1.json#/components/45",
+      "componentEffects": [
+        {
+          "name": "震荡",
+          "strengthPercent": 5,
+          "ruleSource": "../../docs/design/weapon-blunt-side-components-draft.md#六种特色buff提案"
+        }
+      ],
+      "damageRules": {
+        "source": "../../docs/design/weapon-blunt-side-components-draft.md",
+        "lookupKey": "D",
+        "selection": "one_of_three_equal_weight",
+        "scope": "real_instance",
+        "persistUntilRepair": true,
+        "disableBlockAtZero": false,
+        "disableComponentEffectsAtZero": false,
+        "speedAtZeroOverride": null,
+        "executionStatus": "modular_weapon_combat_v1"
+      },
+      "structureKnowledgeKey": "weapon_structure:D17",
+      "economy": {
+        "valuation": "pending",
+        "tradeEnabled": false
+      }
+    },
+    "weapon_component_d18": {
+      "designId": "D18",
+      "group": "D",
+      "tier": 6,
+      "prototypeId": "single_hand",
+      "placements": [
+        {
+          "anchor": "side1",
+          "occupies": [
+            "side1"
+          ]
+        },
+        {
+          "anchor": "side2",
+          "occupies": [
+            "side2"
+          ]
+        }
+      ],
+      "positions": [
+        {
+          "slot": "side",
+          "damageType": "blunt",
+          "basePower": 374,
+          "blockEligible": true,
+          "blockCoefficient": 1.15,
+          "deflectionCoefficient": 1.12,
+          "fallbackMoveId": "weapon_basic_side_swing"
+        }
+      ],
+      "baseline": {
+        "weightKg": 0.52,
+        "innateStrength": 24,
+        "durabilityMax": 130,
+        "speedPercent": -1,
+        "ordinaryContactLoss": 1,
+        "blockedContactLoss": 2
+      },
+      "repairToolItemId": "tool_repair_hammer",
+      "materialRequirementsRef": "../../docs/design/examples/weapon-forging-material-requirements-v1.json#/components/46",
+      "operationCostsRef": "../../docs/design/examples/weapon-forging-balance-v1.json#/components/46",
+      "componentEffects": [
+        {
+          "name": "回击",
+          "strengthPercent": 16,
+          "ruleSource": "../../docs/design/weapon-blunt-side-components-draft.md#六种特色buff提案"
+        }
+      ],
+      "damageRules": {
+        "source": "../../docs/design/weapon-blunt-side-components-draft.md",
+        "lookupKey": "D",
+        "selection": "one_of_three_equal_weight",
+        "scope": "real_instance",
+        "persistUntilRepair": true,
+        "disableBlockAtZero": false,
+        "disableComponentEffectsAtZero": false,
+        "speedAtZeroOverride": null,
+        "executionStatus": "modular_weapon_combat_v1"
+      },
+      "structureKnowledgeKey": "weapon_structure:D18",
+      "economy": {
+        "valuation": "pending",
+        "tradeEnabled": false
+      }
+    },
+    "weapon_component_h01": {
+      "designId": "H01",
+      "group": "H",
+      "tier": 1,
+      "prototypeId": "single_hand",
+      "placements": [
+        {
+          "anchor": "hilt",
+          "occupies": [
+            "hilt"
+          ]
+        }
+      ],
+      "positions": [
+        {
+          "slot": "hilt",
+          "damageType": "blunt",
+          "basePower": 11,
+          "blockEligible": false,
+          "blockCoefficient": null,
+          "deflectionCoefficient": null,
+          "fallbackMoveId": "weapon_basic_hilt_strike"
+        }
+      ],
+      "baseline": {
+        "weightKg": 0.2,
+        "innateStrength": 10,
+        "durabilityMax": 90,
+        "speedPercent": 2,
+        "ordinaryContactLoss": 1,
+        "blockedContactLoss": 2
+      },
+      "repairToolItemId": "tool_repair_pliers",
+      "materialRequirementsRef": "../../docs/design/examples/weapon-forging-material-requirements-v1.json#/components/47",
+      "operationCostsRef": "../../docs/design/examples/weapon-forging-balance-v1.json#/components/47",
+      "componentEffects": [
+        {
+          "name": "灵巧",
+          "description": "整把武器速度修正+2%，已经计入上表速度列，不重复相加",
+          "includedInSpeed": true,
+          "ruleSource": "../../docs/design/weapon-hilt-components-draft.md#无护手手柄的特色buff提案"
+        }
+      ],
+      "damageRules": {
+        "source": "../../docs/design/weapon-hilt-durability-draft.md",
+        "lookupKey": "H01",
+        "selection": "fixed",
+        "scope": "real_instance",
+        "persistUntilRepair": true,
+        "disableBlockAtZero": false,
+        "disableComponentEffectsAtZero": true,
+        "speedAtZeroOverride": 0,
+        "executionStatus": "modular_weapon_combat_v1"
+      },
+      "structureKnowledgeKey": "weapon_structure:H01",
+      "economy": {
+        "valuation": "pending",
+        "tradeEnabled": false
+      }
+    },
+    "weapon_component_h02": {
+      "designId": "H02",
+      "group": "H",
+      "tier": 1,
+      "prototypeId": "single_hand",
+      "placements": [
+        {
+          "anchor": "hilt",
+          "occupies": [
+            "hilt"
+          ]
+        }
+      ],
+      "positions": [
+        {
+          "slot": "hilt",
+          "damageType": "blunt",
+          "basePower": 12,
+          "blockEligible": true,
+          "blockCoefficient": 1.05,
+          "deflectionCoefficient": 1,
+          "fallbackMoveId": "weapon_basic_hilt_strike"
+        }
+      ],
+      "baseline": {
+        "weightKg": 0.28,
+        "innateStrength": 10,
+        "durabilityMax": 110,
+        "speedPercent": 0,
+        "ordinaryContactLoss": 1,
+        "blockedContactLoss": 2
+      },
+      "repairToolItemId": "tool_repair_pliers",
+      "materialRequirementsRef": "../../docs/design/examples/weapon-forging-material-requirements-v1.json#/components/48",
+      "operationCostsRef": "../../docs/design/examples/weapon-forging-balance-v1.json#/components/48",
+      "componentEffects": [],
+      "damageRules": {
+        "source": "../../docs/design/weapon-hilt-durability-draft.md",
+        "lookupKey": "H02",
+        "selection": "fixed",
+        "scope": "real_instance",
+        "persistUntilRepair": true,
+        "disableBlockAtZero": true,
+        "disableComponentEffectsAtZero": true,
+        "speedAtZeroOverride": null,
+        "executionStatus": "modular_weapon_combat_v1"
+      },
+      "structureKnowledgeKey": "weapon_structure:H02",
+      "economy": {
+        "valuation": "pending",
+        "tradeEnabled": false
+      }
+    },
+    "weapon_component_h03": {
+      "designId": "H03",
+      "group": "H",
+      "tier": 1,
+      "prototypeId": "single_hand",
+      "placements": [
+        {
+          "anchor": "hilt",
+          "occupies": [
+            "hilt"
+          ]
+        }
+      ],
+      "positions": [
+        {
+          "slot": "hilt",
+          "damageType": "blunt",
+          "basePower": 12,
+          "blockEligible": true,
+          "blockCoefficient": 1,
+          "deflectionCoefficient": 1.05,
+          "fallbackMoveId": "weapon_basic_hilt_strike"
+        }
+      ],
+      "baseline": {
+        "weightKg": 0.26,
+        "innateStrength": 10,
+        "durabilityMax": 105,
+        "speedPercent": 0,
+        "ordinaryContactLoss": 1,
+        "blockedContactLoss": 2
+      },
+      "repairToolItemId": "tool_repair_pliers",
+      "materialRequirementsRef": "../../docs/design/examples/weapon-forging-material-requirements-v1.json#/components/49",
+      "operationCostsRef": "../../docs/design/examples/weapon-forging-balance-v1.json#/components/49",
+      "componentEffects": [],
+      "damageRules": {
+        "source": "../../docs/design/weapon-hilt-durability-draft.md",
+        "lookupKey": "H03",
+        "selection": "fixed",
+        "scope": "real_instance",
+        "persistUntilRepair": true,
+        "disableBlockAtZero": true,
+        "disableComponentEffectsAtZero": true,
+        "speedAtZeroOverride": null,
+        "executionStatus": "modular_weapon_combat_v1"
+      },
+      "structureKnowledgeKey": "weapon_structure:H03",
+      "economy": {
+        "valuation": "pending",
+        "tradeEnabled": false
+      }
+    },
+    "weapon_component_h04": {
+      "designId": "H04",
+      "group": "H",
+      "tier": 2,
+      "prototypeId": "single_hand",
+      "placements": [
+        {
+          "anchor": "hilt",
+          "occupies": [
+            "hilt"
+          ]
+        }
+      ],
+      "positions": [
+        {
+          "slot": "hilt",
+          "damageType": "blunt",
+          "basePower": 65,
+          "blockEligible": false,
+          "blockCoefficient": null,
+          "deflectionCoefficient": null,
+          "fallbackMoveId": "weapon_basic_hilt_strike"
+        }
+      ],
+      "baseline": {
+        "weightKg": 0.32,
+        "innateStrength": 16,
+        "durabilityMax": 110,
+        "speedPercent": -1,
+        "ordinaryContactLoss": 1,
+        "blockedContactLoss": 2
+      },
+      "repairToolItemId": "tool_repair_pliers",
+      "materialRequirementsRef": "../../docs/design/examples/weapon-forging-material-requirements-v1.json#/components/50",
+      "operationCostsRef": "../../docs/design/examples/weapon-forging-balance-v1.json#/components/50",
+      "componentEffects": [
+        {
+          "name": "借势",
+          "description": "手柄位置的招式实际打出后，下一次来自其他攻击位置的武器攻击造成伤害+8%",
+          "includedInSpeed": false,
+          "ruleSource": "../../docs/design/weapon-hilt-components-draft.md#无护手手柄的特色buff提案"
+        }
+      ],
+      "damageRules": {
+        "source": "../../docs/design/weapon-hilt-durability-draft.md",
+        "lookupKey": "H04",
+        "selection": "fixed",
+        "scope": "real_instance",
+        "persistUntilRepair": true,
+        "disableBlockAtZero": false,
+        "disableComponentEffectsAtZero": true,
+        "speedAtZeroOverride": null,
+        "executionStatus": "modular_weapon_combat_v1"
+      },
+      "structureKnowledgeKey": "weapon_structure:H04",
+      "economy": {
+        "valuation": "pending",
+        "tradeEnabled": false
+      }
+    },
+    "weapon_component_h05": {
+      "designId": "H05",
+      "group": "H",
+      "tier": 2,
+      "prototypeId": "single_hand",
+      "placements": [
+        {
+          "anchor": "hilt",
+          "occupies": [
+            "hilt"
+          ]
+        }
+      ],
+      "positions": [
+        {
+          "slot": "hilt",
+          "damageType": "blunt",
+          "basePower": 48,
+          "blockEligible": true,
+          "blockCoefficient": 1.08,
+          "deflectionCoefficient": 1,
+          "fallbackMoveId": "weapon_basic_hilt_strike"
+        }
+      ],
+      "baseline": {
+        "weightKg": 0.3,
+        "innateStrength": 10,
+        "durabilityMax": 115,
+        "speedPercent": 0,
+        "ordinaryContactLoss": 1,
+        "blockedContactLoss": 2
+      },
+      "repairToolItemId": "tool_repair_pliers",
+      "materialRequirementsRef": "../../docs/design/examples/weapon-forging-material-requirements-v1.json#/components/51",
+      "operationCostsRef": "../../docs/design/examples/weapon-forging-balance-v1.json#/components/51",
+      "componentEffects": [],
+      "damageRules": {
+        "source": "../../docs/design/weapon-hilt-durability-draft.md",
+        "lookupKey": "H05",
+        "selection": "fixed",
+        "scope": "real_instance",
+        "persistUntilRepair": true,
+        "disableBlockAtZero": true,
+        "disableComponentEffectsAtZero": true,
+        "speedAtZeroOverride": null,
+        "executionStatus": "modular_weapon_combat_v1"
+      },
+      "structureKnowledgeKey": "weapon_structure:H05",
+      "economy": {
+        "valuation": "pending",
+        "tradeEnabled": false
+      }
+    },
+    "weapon_component_h06": {
+      "designId": "H06",
+      "group": "H",
+      "tier": 2,
+      "prototypeId": "single_hand",
+      "placements": [
+        {
+          "anchor": "hilt",
+          "occupies": [
+            "hilt"
+          ]
+        }
+      ],
+      "positions": [
+        {
+          "slot": "hilt",
+          "damageType": "blunt",
+          "basePower": 54,
+          "blockEligible": true,
+          "blockCoefficient": 1.04,
+          "deflectionCoefficient": 1.04,
+          "fallbackMoveId": "weapon_basic_hilt_strike"
+        }
+      ],
+      "baseline": {
+        "weightKg": 0.32,
+        "innateStrength": 10,
+        "durabilityMax": 110,
+        "speedPercent": 0,
+        "ordinaryContactLoss": 1,
+        "blockedContactLoss": 2
+      },
+      "repairToolItemId": "tool_repair_pliers",
+      "materialRequirementsRef": "../../docs/design/examples/weapon-forging-material-requirements-v1.json#/components/52",
+      "operationCostsRef": "../../docs/design/examples/weapon-forging-balance-v1.json#/components/52",
+      "componentEffects": [],
+      "damageRules": {
+        "source": "../../docs/design/weapon-hilt-durability-draft.md",
+        "lookupKey": "H06",
+        "selection": "fixed",
+        "scope": "real_instance",
+        "persistUntilRepair": true,
+        "disableBlockAtZero": true,
+        "disableComponentEffectsAtZero": true,
+        "speedAtZeroOverride": null,
+        "executionStatus": "modular_weapon_combat_v1"
+      },
+      "structureKnowledgeKey": "weapon_structure:H06",
+      "economy": {
+        "valuation": "pending",
+        "tradeEnabled": false
+      }
+    },
+    "weapon_component_h07": {
+      "designId": "H07",
+      "group": "H",
+      "tier": 3,
+      "prototypeId": "single_hand",
+      "placements": [
+        {
+          "anchor": "hilt",
+          "occupies": [
+            "hilt"
+          ]
+        }
+      ],
+      "positions": [
+        {
+          "slot": "hilt",
+          "damageType": "blunt",
+          "basePower": 65,
+          "blockEligible": false,
+          "blockCoefficient": null,
+          "deflectionCoefficient": null,
+          "fallbackMoveId": "weapon_basic_hilt_strike"
+        }
+      ],
+      "baseline": {
+        "weightKg": 0.22,
+        "innateStrength": 10,
+        "durabilityMax": 90,
+        "speedPercent": 2,
+        "ordinaryContactLoss": 1,
+        "blockedContactLoss": 2
+      },
+      "repairToolItemId": "tool_repair_pliers",
+      "materialRequirementsRef": "../../docs/design/examples/weapon-forging-material-requirements-v1.json#/components/53",
+      "operationCostsRef": "../../docs/design/examples/weapon-forging-balance-v1.json#/components/53",
+      "componentEffects": [
+        {
+          "name": "换势",
+          "description": "从徒手循环切入持械循环时，首次实际打出的武器攻击造成伤害+10%",
+          "includedInSpeed": false,
+          "ruleSource": "../../docs/design/weapon-hilt-components-draft.md#无护手手柄的特色buff提案"
+        }
+      ],
+      "damageRules": {
+        "source": "../../docs/design/weapon-hilt-durability-draft.md",
+        "lookupKey": "H07",
+        "selection": "fixed",
+        "scope": "real_instance",
+        "persistUntilRepair": true,
+        "disableBlockAtZero": false,
+        "disableComponentEffectsAtZero": true,
+        "speedAtZeroOverride": null,
+        "executionStatus": "modular_weapon_combat_v1"
+      },
+      "structureKnowledgeKey": "weapon_structure:H07",
+      "economy": {
+        "valuation": "pending",
+        "tradeEnabled": false
+      }
+    },
+    "weapon_component_h08": {
+      "designId": "H08",
+      "group": "H",
+      "tier": 3,
+      "prototypeId": "single_hand",
+      "placements": [
+        {
+          "anchor": "hilt",
+          "occupies": [
+            "hilt"
+          ]
+        }
+      ],
+      "positions": [
+        {
+          "slot": "hilt",
+          "damageType": "blunt",
+          "basePower": 109,
+          "blockEligible": true,
+          "blockCoefficient": 1.1,
+          "deflectionCoefficient": 1,
+          "fallbackMoveId": "weapon_basic_hilt_strike"
+        }
+      ],
+      "baseline": {
+        "weightKg": 0.34,
+        "innateStrength": 12,
+        "durabilityMax": 120,
+        "speedPercent": 0,
+        "ordinaryContactLoss": 1,
+        "blockedContactLoss": 2
+      },
+      "repairToolItemId": "tool_repair_pliers",
+      "materialRequirementsRef": "../../docs/design/examples/weapon-forging-material-requirements-v1.json#/components/54",
+      "operationCostsRef": "../../docs/design/examples/weapon-forging-balance-v1.json#/components/54",
+      "componentEffects": [],
+      "damageRules": {
+        "source": "../../docs/design/weapon-hilt-durability-draft.md",
+        "lookupKey": "H08",
+        "selection": "fixed",
+        "scope": "real_instance",
+        "persistUntilRepair": true,
+        "disableBlockAtZero": true,
+        "disableComponentEffectsAtZero": true,
+        "speedAtZeroOverride": null,
+        "executionStatus": "modular_weapon_combat_v1"
+      },
+      "structureKnowledgeKey": "weapon_structure:H08",
+      "economy": {
+        "valuation": "pending",
+        "tradeEnabled": false
+      }
+    },
+    "weapon_component_h09": {
+      "designId": "H09",
+      "group": "H",
+      "tier": 3,
+      "prototypeId": "single_hand",
+      "placements": [
+        {
+          "anchor": "hilt",
+          "occupies": [
+            "hilt"
+          ]
+        }
+      ],
+      "positions": [
+        {
+          "slot": "hilt",
+          "damageType": "blunt",
+          "basePower": 87,
+          "blockEligible": true,
+          "blockCoefficient": 1,
+          "deflectionCoefficient": 1.1,
+          "fallbackMoveId": "weapon_basic_hilt_strike"
+        }
+      ],
+      "baseline": {
+        "weightKg": 0.3,
+        "innateStrength": 10,
+        "durabilityMax": 115,
+        "speedPercent": 0,
+        "ordinaryContactLoss": 1,
+        "blockedContactLoss": 2
+      },
+      "repairToolItemId": "tool_repair_pliers",
+      "materialRequirementsRef": "../../docs/design/examples/weapon-forging-material-requirements-v1.json#/components/55",
+      "operationCostsRef": "../../docs/design/examples/weapon-forging-balance-v1.json#/components/55",
+      "componentEffects": [],
+      "damageRules": {
+        "source": "../../docs/design/weapon-hilt-durability-draft.md",
+        "lookupKey": "H09",
+        "selection": "fixed",
+        "scope": "real_instance",
+        "persistUntilRepair": true,
+        "disableBlockAtZero": true,
+        "disableComponentEffectsAtZero": true,
+        "speedAtZeroOverride": null,
+        "executionStatus": "modular_weapon_combat_v1"
+      },
+      "structureKnowledgeKey": "weapon_structure:H09",
+      "economy": {
+        "valuation": "pending",
+        "tradeEnabled": false
+      }
+    },
+    "weapon_component_h10": {
+      "designId": "H10",
+      "group": "H",
+      "tier": 4,
+      "prototypeId": "single_hand",
+      "placements": [
+        {
+          "anchor": "hilt",
+          "occupies": [
+            "hilt"
+          ]
+        }
+      ],
+      "positions": [
+        {
+          "slot": "hilt",
+          "damageType": "blunt",
+          "basePower": 247,
+          "blockEligible": false,
+          "blockCoefficient": null,
+          "deflectionCoefficient": null,
+          "fallbackMoveId": "weapon_basic_hilt_strike"
+        }
+      ],
+      "baseline": {
+        "weightKg": 0.42,
+        "innateStrength": 24,
+        "durabilityMax": 120,
+        "speedPercent": -2,
+        "ordinaryContactLoss": 1,
+        "blockedContactLoss": 2
+      },
+      "repairToolItemId": "tool_repair_pliers",
+      "materialRequirementsRef": "../../docs/design/examples/weapon-forging-material-requirements-v1.json#/components/56",
+      "operationCostsRef": "../../docs/design/examples/weapon-forging-balance-v1.json#/components/56",
+      "componentEffects": [
+        {
+          "name": "沉击",
+          "description": "武器攻击中的钝击伤害+8%",
+          "includedInSpeed": false,
+          "ruleSource": "../../docs/design/weapon-hilt-components-draft.md#无护手手柄的特色buff提案"
+        }
+      ],
+      "damageRules": {
+        "source": "../../docs/design/weapon-hilt-durability-draft.md",
+        "lookupKey": "H10",
+        "selection": "fixed",
+        "scope": "real_instance",
+        "persistUntilRepair": true,
+        "disableBlockAtZero": false,
+        "disableComponentEffectsAtZero": true,
+        "speedAtZeroOverride": null,
+        "executionStatus": "modular_weapon_combat_v1"
+      },
+      "structureKnowledgeKey": "weapon_structure:H10",
+      "economy": {
+        "valuation": "pending",
+        "tradeEnabled": false
+      }
+    },
+    "weapon_component_h11": {
+      "designId": "H11",
+      "group": "H",
+      "tier": 4,
+      "prototypeId": "single_hand",
+      "placements": [
+        {
+          "anchor": "hilt",
+          "occupies": [
+            "hilt"
+          ]
+        }
+      ],
+      "positions": [
+        {
+          "slot": "hilt",
+          "damageType": "blunt",
+          "basePower": 190,
+          "blockEligible": true,
+          "blockCoefficient": 1.12,
+          "deflectionCoefficient": 1,
+          "fallbackMoveId": "weapon_basic_hilt_strike"
+        }
+      ],
+      "baseline": {
+        "weightKg": 0.36,
+        "innateStrength": 12,
+        "durabilityMax": 125,
+        "speedPercent": 0,
+        "ordinaryContactLoss": 1,
+        "blockedContactLoss": 2
+      },
+      "repairToolItemId": "tool_repair_pliers",
+      "materialRequirementsRef": "../../docs/design/examples/weapon-forging-material-requirements-v1.json#/components/57",
+      "operationCostsRef": "../../docs/design/examples/weapon-forging-balance-v1.json#/components/57",
+      "componentEffects": [],
+      "damageRules": {
+        "source": "../../docs/design/weapon-hilt-durability-draft.md",
+        "lookupKey": "H11",
+        "selection": "fixed",
+        "scope": "real_instance",
+        "persistUntilRepair": true,
+        "disableBlockAtZero": true,
+        "disableComponentEffectsAtZero": true,
+        "speedAtZeroOverride": null,
+        "executionStatus": "modular_weapon_combat_v1"
+      },
+      "structureKnowledgeKey": "weapon_structure:H11",
+      "economy": {
+        "valuation": "pending",
+        "tradeEnabled": false
+      }
+    },
+    "weapon_component_h12": {
+      "designId": "H12",
+      "group": "H",
+      "tier": 4,
+      "prototypeId": "single_hand",
+      "placements": [
+        {
+          "anchor": "hilt",
+          "occupies": [
+            "hilt"
+          ]
+        }
+      ],
+      "positions": [
+        {
+          "slot": "hilt",
+          "damageType": "blunt",
+          "basePower": 152,
+          "blockEligible": true,
+          "blockCoefficient": 1,
+          "deflectionCoefficient": 1.12,
+          "fallbackMoveId": "weapon_basic_hilt_strike"
+        }
+      ],
+      "baseline": {
+        "weightKg": 0.31,
+        "innateStrength": 10,
+        "durabilityMax": 120,
+        "speedPercent": 0,
+        "ordinaryContactLoss": 1,
+        "blockedContactLoss": 2
+      },
+      "repairToolItemId": "tool_repair_pliers",
+      "materialRequirementsRef": "../../docs/design/examples/weapon-forging-material-requirements-v1.json#/components/58",
+      "operationCostsRef": "../../docs/design/examples/weapon-forging-balance-v1.json#/components/58",
+      "componentEffects": [],
+      "damageRules": {
+        "source": "../../docs/design/weapon-hilt-durability-draft.md",
+        "lookupKey": "H12",
+        "selection": "fixed",
+        "scope": "real_instance",
+        "persistUntilRepair": true,
+        "disableBlockAtZero": true,
+        "disableComponentEffectsAtZero": true,
+        "speedAtZeroOverride": null,
+        "executionStatus": "modular_weapon_combat_v1"
+      },
+      "structureKnowledgeKey": "weapon_structure:H12",
+      "economy": {
+        "valuation": "pending",
+        "tradeEnabled": false
+      }
+    },
+    "weapon_component_h13": {
+      "designId": "H13",
+      "group": "H",
+      "tier": 5,
+      "prototypeId": "single_hand",
+      "placements": [
+        {
+          "anchor": "hilt",
+          "occupies": [
+            "hilt"
+          ]
+        }
+      ],
+      "positions": [
+        {
+          "slot": "hilt",
+          "damageType": "pierce",
+          "basePower": 162,
+          "blockEligible": false,
+          "blockCoefficient": null,
+          "deflectionCoefficient": null,
+          "fallbackMoveId": "weapon_basic_hilt_thrust"
+        }
+      ],
+      "baseline": {
+        "weightKg": 0.26,
+        "innateStrength": 10,
+        "durabilityMax": 85,
+        "speedPercent": -1,
+        "ordinaryContactLoss": 1,
+        "blockedContactLoss": 2
+      },
+      "repairToolItemId": "tool_repair_pliers",
+      "materialRequirementsRef": "../../docs/design/examples/weapon-forging-material-requirements-v1.json#/components/59",
+      "operationCostsRef": "../../docs/design/examples/weapon-forging-balance-v1.json#/components/59",
+      "componentEffects": [
+        {
+          "name": "刺击增幅",
+          "description": "武器攻击中的刺伤害+8%",
+          "includedInSpeed": false,
+          "ruleSource": "../../docs/design/weapon-hilt-components-draft.md#无护手手柄的特色buff提案"
+        }
+      ],
+      "damageRules": {
+        "source": "../../docs/design/weapon-hilt-durability-draft.md",
+        "lookupKey": "H13",
+        "selection": "fixed",
+        "scope": "real_instance",
+        "persistUntilRepair": true,
+        "disableBlockAtZero": false,
+        "disableComponentEffectsAtZero": true,
+        "speedAtZeroOverride": null,
+        "executionStatus": "modular_weapon_combat_v1"
+      },
+      "structureKnowledgeKey": "weapon_structure:H13",
+      "economy": {
+        "valuation": "pending",
+        "tradeEnabled": false
+      }
+    },
+    "weapon_component_h14": {
+      "designId": "H14",
+      "group": "H",
+      "tier": 5,
+      "prototypeId": "single_hand",
+      "placements": [
+        {
+          "anchor": "hilt",
+          "occupies": [
+            "hilt"
+          ]
+        }
+      ],
+      "positions": [
+        {
+          "slot": "hilt",
+          "damageType": "blunt",
+          "basePower": 244,
+          "blockEligible": true,
+          "blockCoefficient": 1.14,
+          "deflectionCoefficient": 1.02,
+          "fallbackMoveId": "weapon_basic_hilt_strike"
+        }
+      ],
+      "baseline": {
+        "weightKg": 0.38,
+        "innateStrength": 14,
+        "durabilityMax": 130,
+        "speedPercent": -1,
+        "ordinaryContactLoss": 1,
+        "blockedContactLoss": 2
+      },
+      "repairToolItemId": "tool_repair_pliers",
+      "materialRequirementsRef": "../../docs/design/examples/weapon-forging-material-requirements-v1.json#/components/60",
+      "operationCostsRef": "../../docs/design/examples/weapon-forging-balance-v1.json#/components/60",
+      "componentEffects": [],
+      "damageRules": {
+        "source": "../../docs/design/weapon-hilt-durability-draft.md",
+        "lookupKey": "H14",
+        "selection": "fixed",
+        "scope": "real_instance",
+        "persistUntilRepair": true,
+        "disableBlockAtZero": true,
+        "disableComponentEffectsAtZero": true,
+        "speedAtZeroOverride": null,
+        "executionStatus": "modular_weapon_combat_v1"
+      },
+      "structureKnowledgeKey": "weapon_structure:H14",
+      "economy": {
+        "valuation": "pending",
+        "tradeEnabled": false
+      }
+    },
+    "weapon_component_h15": {
+      "designId": "H15",
+      "group": "H",
+      "tier": 5,
+      "prototypeId": "single_hand",
+      "placements": [
+        {
+          "anchor": "hilt",
+          "occupies": [
+            "hilt"
+          ]
+        }
+      ],
+      "positions": [
+        {
+          "slot": "hilt",
+          "damageType": "blunt",
+          "basePower": 232,
+          "blockEligible": true,
+          "blockCoefficient": 1.04,
+          "deflectionCoefficient": 1.12,
+          "fallbackMoveId": "weapon_basic_hilt_strike"
+        }
+      ],
+      "baseline": {
+        "weightKg": 0.34,
+        "innateStrength": 12,
+        "durabilityMax": 125,
+        "speedPercent": 0,
+        "ordinaryContactLoss": 1,
+        "blockedContactLoss": 2
+      },
+      "repairToolItemId": "tool_repair_pliers",
+      "materialRequirementsRef": "../../docs/design/examples/weapon-forging-material-requirements-v1.json#/components/61",
+      "operationCostsRef": "../../docs/design/examples/weapon-forging-balance-v1.json#/components/61",
+      "componentEffects": [],
+      "damageRules": {
+        "source": "../../docs/design/weapon-hilt-durability-draft.md",
+        "lookupKey": "H15",
+        "selection": "fixed",
+        "scope": "real_instance",
+        "persistUntilRepair": true,
+        "disableBlockAtZero": true,
+        "disableComponentEffectsAtZero": true,
+        "speedAtZeroOverride": null,
+        "executionStatus": "modular_weapon_combat_v1"
+      },
+      "structureKnowledgeKey": "weapon_structure:H15",
+      "economy": {
+        "valuation": "pending",
+        "tradeEnabled": false
+      }
+    },
+    "weapon_component_h16": {
+      "designId": "H16",
+      "group": "H",
+      "tier": 6,
+      "prototypeId": "single_hand",
+      "placements": [
+        {
+          "anchor": "hilt",
+          "occupies": [
+            "hilt"
+          ]
+        }
+      ],
+      "positions": [
+        {
+          "slot": "hilt",
+          "damageType": "blunt",
+          "basePower": 380,
+          "blockEligible": false,
+          "blockCoefficient": null,
+          "deflectionCoefficient": null,
+          "fallbackMoveId": "weapon_basic_hilt_strike"
+        }
+      ],
+      "baseline": {
+        "weightKg": 0.44,
+        "innateStrength": 26,
+        "durabilityMax": 120,
+        "speedPercent": -2,
+        "ordinaryContactLoss": 1,
+        "blockedContactLoss": 2
+      },
+      "repairToolItemId": "tool_repair_pliers",
+      "materialRequirementsRef": "../../docs/design/examples/weapon-forging-material-requirements-v1.json#/components/62",
+      "operationCostsRef": "../../docs/design/examples/weapon-forging-balance-v1.json#/components/62",
+      "componentEffects": [
+        {
+          "name": "连势",
+          "description": "同一次武器出招因速度连击产生的第二次及后续攻击，造成伤害+8%",
+          "includedInSpeed": false,
+          "ruleSource": "../../docs/design/weapon-hilt-components-draft.md#无护手手柄的特色buff提案"
+        }
+      ],
+      "damageRules": {
+        "source": "../../docs/design/weapon-hilt-durability-draft.md",
+        "lookupKey": "H16",
+        "selection": "fixed",
+        "scope": "real_instance",
+        "persistUntilRepair": true,
+        "disableBlockAtZero": false,
+        "disableComponentEffectsAtZero": true,
+        "speedAtZeroOverride": null,
+        "executionStatus": "modular_weapon_combat_v1"
+      },
+      "structureKnowledgeKey": "weapon_structure:H16",
+      "economy": {
+        "valuation": "pending",
+        "tradeEnabled": false
+      }
+    },
+    "weapon_component_h17": {
+      "designId": "H17",
+      "group": "H",
+      "tier": 6,
+      "prototypeId": "single_hand",
+      "placements": [
+        {
+          "anchor": "hilt",
+          "occupies": [
+            "hilt"
+          ]
+        }
+      ],
+      "positions": [
+        {
+          "slot": "hilt",
+          "damageType": "blunt",
+          "basePower": 285,
+          "blockEligible": true,
+          "blockCoefficient": 1.16,
+          "deflectionCoefficient": 1.04,
+          "fallbackMoveId": "weapon_basic_hilt_strike"
+        }
+      ],
+      "baseline": {
+        "weightKg": 0.42,
+        "innateStrength": 14,
+        "durabilityMax": 135,
+        "speedPercent": -1,
+        "ordinaryContactLoss": 1,
+        "blockedContactLoss": 2
+      },
+      "repairToolItemId": "tool_repair_pliers",
+      "materialRequirementsRef": "../../docs/design/examples/weapon-forging-material-requirements-v1.json#/components/63",
+      "operationCostsRef": "../../docs/design/examples/weapon-forging-balance-v1.json#/components/63",
+      "componentEffects": [],
+      "damageRules": {
+        "source": "../../docs/design/weapon-hilt-durability-draft.md",
+        "lookupKey": "H17",
+        "selection": "fixed",
+        "scope": "real_instance",
+        "persistUntilRepair": true,
+        "disableBlockAtZero": true,
+        "disableComponentEffectsAtZero": true,
+        "speedAtZeroOverride": null,
+        "executionStatus": "modular_weapon_combat_v1"
+      },
+      "structureKnowledgeKey": "weapon_structure:H17",
+      "economy": {
+        "valuation": "pending",
+        "tradeEnabled": false
+      }
+    },
+    "weapon_component_h18": {
+      "designId": "H18",
+      "group": "H",
+      "tier": 6,
+      "prototypeId": "single_hand",
+      "placements": [
+        {
+          "anchor": "hilt",
+          "occupies": [
+            "hilt"
+          ]
+        }
+      ],
+      "positions": [
+        {
+          "slot": "hilt",
+          "damageType": "blunt",
+          "basePower": 271,
+          "blockEligible": true,
+          "blockCoefficient": 1.04,
+          "deflectionCoefficient": 1.16,
+          "fallbackMoveId": "weapon_basic_hilt_strike"
+        }
+      ],
+      "baseline": {
+        "weightKg": 0.36,
+        "innateStrength": 12,
+        "durabilityMax": 130,
+        "speedPercent": 0,
+        "ordinaryContactLoss": 1,
+        "blockedContactLoss": 2
+      },
+      "repairToolItemId": "tool_repair_pliers",
+      "materialRequirementsRef": "../../docs/design/examples/weapon-forging-material-requirements-v1.json#/components/64",
+      "operationCostsRef": "../../docs/design/examples/weapon-forging-balance-v1.json#/components/64",
+      "componentEffects": [],
+      "damageRules": {
+        "source": "../../docs/design/weapon-hilt-durability-draft.md",
+        "lookupKey": "H18",
+        "selection": "fixed",
+        "scope": "real_instance",
+        "persistUntilRepair": true,
+        "disableBlockAtZero": true,
+        "disableComponentEffectsAtZero": true,
+        "speedAtZeroOverride": null,
+        "executionStatus": "modular_weapon_combat_v1"
+      },
+      "structureKnowledgeKey": "weapon_structure:H18",
+      "economy": {
+        "valuation": "pending",
+        "tradeEnabled": false
+      }
+    },
+    "weapon_component_m01_t1": {
+      "designId": "M01-T1",
+      "group": "M",
+      "tier": 1,
+      "prototypeId": "single_hand",
+      "placements": [
+        {
+          "anchor": "side1",
+          "occupies": [
+            "side1",
+            "side2"
+          ]
+        }
+      ],
+      "positions": [
+        {
+          "slot": "side1",
+          "damageType": "blunt",
+          "basePower": 30,
+          "blockEligible": true,
+          "blockCoefficient": 1.05,
+          "deflectionCoefficient": 1.05,
+          "fallbackMoveId": "weapon_basic_side_swing"
+        },
+        {
+          "slot": "side2",
+          "damageType": "blunt",
+          "basePower": 30,
+          "blockEligible": true,
+          "blockCoefficient": 1.05,
+          "deflectionCoefficient": 1.05,
+          "fallbackMoveId": "weapon_basic_side_swing"
+        }
+      ],
+      "baseline": {
+        "weightKg": 0.9,
+        "innateStrength": 28,
+        "durabilityMax": 220,
+        "speedPercent": -2,
+        "ordinaryContactLoss": 1,
+        "blockedContactLoss": 2
+      },
+      "repairToolItemId": "tool_repair_hammer",
+      "materialRequirementsRef": "../../docs/design/examples/weapon-forging-material-requirements-v1.json#/components/65",
+      "operationCostsRef": "../../docs/design/examples/weapon-forging-balance-v1.json#/components/65",
+      "componentEffects": [
+        {
+          "name": "交替",
+          "strengthPercent": 6,
+          "ruleKey": "M01",
+          "ruleSource": "../../docs/design/weapon-multi-slot-components-draft.md#三类联动buff提案"
+        }
+      ],
+      "damageRules": {
+        "source": "../../docs/design/weapon-multi-slot-durability-draft.md",
+        "lookupKey": "M01",
+        "selection": "one_of_three_equal_weight",
+        "scope": "real_instance",
+        "persistUntilRepair": true,
+        "disableBlockAtZero": false,
+        "disableComponentEffectsAtZero": false,
+        "speedAtZeroOverride": null,
+        "executionStatus": "modular_weapon_combat_v1"
+      },
+      "structureKnowledgeKey": "weapon_structure:M01-T1",
+      "economy": {
+        "valuation": "pending",
+        "tradeEnabled": false
+      }
+    },
+    "weapon_component_m02_t1": {
+      "designId": "M02-T1",
+      "group": "M",
+      "tier": 1,
+      "prototypeId": "single_hand",
+      "placements": [
+        {
+          "anchor": "side1",
+          "occupies": [
+            "side1",
+            "side2"
+          ]
+        }
+      ],
+      "positions": [
+        {
+          "slot": "side1",
+          "damageType": "slash",
+          "basePower": 34,
+          "blockEligible": true,
+          "blockCoefficient": 0.9,
+          "deflectionCoefficient": 0.95,
+          "fallbackMoveId": "weapon_basic_side_cleave"
+        },
+        {
+          "slot": "side2",
+          "damageType": "slash",
+          "basePower": 34,
+          "blockEligible": true,
+          "blockCoefficient": 0.9,
+          "deflectionCoefficient": 0.95,
+          "fallbackMoveId": "weapon_basic_side_cleave"
+        }
+      ],
+      "baseline": {
+        "weightKg": 1,
+        "innateStrength": 30,
+        "durabilityMax": 180,
+        "speedPercent": -4,
+        "ordinaryContactLoss": 1,
+        "blockedContactLoss": 2
+      },
+      "repairToolItemId": "tool_repair_whetstone",
+      "materialRequirementsRef": "../../docs/design/examples/weapon-forging-material-requirements-v1.json#/components/66",
+      "operationCostsRef": "../../docs/design/examples/weapon-forging-balance-v1.json#/components/66",
+      "componentEffects": [
+        {
+          "name": "交替",
+          "strengthPercent": 6,
+          "ruleKey": "M02",
+          "ruleSource": "../../docs/design/weapon-multi-slot-components-draft.md#三类联动buff提案"
+        }
+      ],
+      "damageRules": {
+        "source": "../../docs/design/weapon-multi-slot-durability-draft.md",
+        "lookupKey": "M02",
+        "selection": "one_of_three_equal_weight",
+        "scope": "real_instance",
+        "persistUntilRepair": true,
+        "disableBlockAtZero": false,
+        "disableComponentEffectsAtZero": false,
+        "speedAtZeroOverride": null,
+        "executionStatus": "modular_weapon_combat_v1"
+      },
+      "structureKnowledgeKey": "weapon_structure:M02-T1",
+      "economy": {
+        "valuation": "pending",
+        "tradeEnabled": false
+      }
+    },
+    "weapon_component_m07_t1": {
+      "designId": "M07-T1",
+      "group": "M",
+      "tier": 1,
+      "prototypeId": "single_hand",
+      "placements": [
+        {
+          "anchor": "front",
+          "occupies": [
+            "front",
+            "side1",
+            "side2"
+          ]
+        }
+      ],
+      "positions": [
+        {
+          "slot": "front",
+          "damageType": "blunt",
+          "basePower": 15,
+          "blockEligible": false,
+          "blockCoefficient": null,
+          "deflectionCoefficient": null,
+          "fallbackMoveId": "weapon_basic_front_bump"
+        },
+        {
+          "slot": "side1",
+          "damageType": "blunt",
+          "basePower": 15,
+          "blockEligible": true,
+          "blockCoefficient": 1.05,
+          "deflectionCoefficient": 1.1,
+          "fallbackMoveId": "weapon_basic_side_swing"
+        },
+        {
+          "slot": "side2",
+          "damageType": "blunt",
+          "basePower": 15,
+          "blockEligible": true,
+          "blockCoefficient": 1.05,
+          "deflectionCoefficient": 1.1,
+          "fallbackMoveId": "weapon_basic_side_swing"
+        }
+      ],
+      "baseline": {
+        "weightKg": 0.85,
+        "innateStrength": 10,
+        "durabilityMax": 320,
+        "speedPercent": 0,
+        "ordinaryContactLoss": 1,
+        "blockedContactLoss": 2
+      },
+      "repairToolItemId": "tool_repair_hammer",
+      "materialRequirementsRef": "../../docs/design/examples/weapon-forging-material-requirements-v1.json#/components/67",
+      "operationCostsRef": "../../docs/design/examples/weapon-forging-balance-v1.json#/components/67",
+      "componentEffects": [
+        {
+          "name": "贯通",
+          "strengthPercent": 10,
+          "ruleKey": "M07",
+          "ruleSource": "../../docs/design/weapon-multi-slot-components-draft.md#三类联动buff提案"
+        }
+      ],
+      "damageRules": {
+        "source": "../../docs/design/weapon-multi-slot-durability-draft.md",
+        "lookupKey": "M07",
+        "selection": "one_of_three_equal_weight",
+        "scope": "real_instance",
+        "persistUntilRepair": true,
+        "disableBlockAtZero": false,
+        "disableComponentEffectsAtZero": false,
+        "speedAtZeroOverride": null,
+        "executionStatus": "modular_weapon_combat_v1"
+      },
+      "structureKnowledgeKey": "weapon_structure:M07-T1",
+      "economy": {
+        "valuation": "pending",
+        "tradeEnabled": false
+      }
+    },
+    "weapon_component_m03_t2": {
+      "designId": "M03-T2",
+      "group": "M",
+      "tier": 2,
+      "prototypeId": "single_hand",
+      "placements": [
+        {
+          "anchor": "side1",
+          "occupies": [
+            "side1",
+            "side2"
+          ]
+        }
+      ],
+      "positions": [
+        {
+          "slot": "side1",
+          "damageType": "blunt",
+          "basePower": 101,
+          "blockEligible": true,
+          "blockCoefficient": 1.12,
+          "deflectionCoefficient": 1.08,
+          "fallbackMoveId": "weapon_basic_side_swing"
+        },
+        {
+          "slot": "side2",
+          "damageType": "slash",
+          "basePower": 125,
+          "blockEligible": true,
+          "blockCoefficient": 0.9,
+          "deflectionCoefficient": 0.95,
+          "fallbackMoveId": "weapon_basic_side_cleave"
+        }
+      ],
+      "baseline": {
+        "weightKg": 1,
+        "innateStrength": 32,
+        "durabilityMax": 210,
+        "speedPercent": -3,
+        "ordinaryContactLoss": 1,
+        "blockedContactLoss": 2
+      },
+      "repairToolItemId": "tool_repair_hammer",
+      "materialRequirementsRef": "../../docs/design/examples/weapon-forging-material-requirements-v1.json#/components/68",
+      "operationCostsRef": "../../docs/design/examples/weapon-forging-balance-v1.json#/components/68",
+      "componentEffects": [
+        {
+          "name": "接续",
+          "strengthPercent": 8,
+          "ruleKey": "M03",
+          "ruleSource": "../../docs/design/weapon-multi-slot-components-draft.md#三类联动buff提案"
+        }
+      ],
+      "damageRules": {
+        "source": "../../docs/design/weapon-multi-slot-durability-draft.md",
+        "lookupKey": "M03",
+        "selection": "one_of_three_equal_weight",
+        "scope": "real_instance",
+        "persistUntilRepair": true,
+        "disableBlockAtZero": false,
+        "disableComponentEffectsAtZero": false,
+        "speedAtZeroOverride": null,
+        "executionStatus": "modular_weapon_combat_v1"
+      },
+      "structureKnowledgeKey": "weapon_structure:M03-T2",
+      "economy": {
+        "valuation": "pending",
+        "tradeEnabled": false
+      }
+    },
+    "weapon_component_m05_t2": {
+      "designId": "M05-T2",
+      "group": "M",
+      "tier": 2,
+      "prototypeId": "single_hand",
+      "placements": [
+        {
+          "anchor": "front",
+          "occupies": [
+            "front",
+            "side1",
+            "side2"
+          ]
+        }
+      ],
+      "positions": [
+        {
+          "slot": "front",
+          "damageType": "pierce",
+          "basePower": 70,
+          "blockEligible": false,
+          "blockCoefficient": null,
+          "deflectionCoefficient": null,
+          "fallbackMoveId": "weapon_basic_front_thrust"
+        },
+        {
+          "slot": "side1",
+          "damageType": "slash",
+          "basePower": 67,
+          "blockEligible": true,
+          "blockCoefficient": 1,
+          "deflectionCoefficient": 1,
+          "fallbackMoveId": "weapon_basic_side_cleave"
+        },
+        {
+          "slot": "side2",
+          "damageType": "slash",
+          "basePower": 67,
+          "blockEligible": true,
+          "blockCoefficient": 1,
+          "deflectionCoefficient": 1,
+          "fallbackMoveId": "weapon_basic_side_cleave"
+        }
+      ],
+      "baseline": {
+        "weightKg": 0.8,
+        "innateStrength": 12,
+        "durabilityMax": 280,
+        "speedPercent": -1,
+        "ordinaryContactLoss": 1,
+        "blockedContactLoss": 2
+      },
+      "repairToolItemId": "tool_repair_whetstone",
+      "materialRequirementsRef": "../../docs/design/examples/weapon-forging-material-requirements-v1.json#/components/69",
+      "operationCostsRef": "../../docs/design/examples/weapon-forging-balance-v1.json#/components/69",
+      "componentEffects": [
+        {
+          "name": "贯通",
+          "strengthPercent": 10,
+          "ruleKey": "M05",
+          "ruleSource": "../../docs/design/weapon-multi-slot-components-draft.md#三类联动buff提案"
+        }
+      ],
+      "damageRules": {
+        "source": "../../docs/design/weapon-multi-slot-durability-draft.md",
+        "lookupKey": "M05",
+        "selection": "one_of_three_equal_weight",
+        "scope": "real_instance",
+        "persistUntilRepair": true,
+        "disableBlockAtZero": false,
+        "disableComponentEffectsAtZero": false,
+        "speedAtZeroOverride": null,
+        "executionStatus": "modular_weapon_combat_v1"
+      },
+      "structureKnowledgeKey": "weapon_structure:M05-T2",
+      "economy": {
+        "valuation": "pending",
+        "tradeEnabled": false
+      }
+    },
+    "weapon_component_m06_t2": {
+      "designId": "M06-T2",
+      "group": "M",
+      "tier": 2,
+      "prototypeId": "single_hand",
+      "placements": [
+        {
+          "anchor": "front",
+          "occupies": [
+            "front",
+            "side1",
+            "side2"
+          ]
+        }
+      ],
+      "positions": [
+        {
+          "slot": "front",
+          "damageType": "pierce",
+          "basePower": 70,
+          "blockEligible": false,
+          "blockCoefficient": null,
+          "deflectionCoefficient": null,
+          "fallbackMoveId": "weapon_basic_front_thrust"
+        },
+        {
+          "slot": "side1",
+          "damageType": "slash",
+          "basePower": 77,
+          "blockEligible": true,
+          "blockCoefficient": 0.95,
+          "deflectionCoefficient": 1,
+          "fallbackMoveId": "weapon_basic_side_cleave"
+        },
+        {
+          "slot": "side2",
+          "damageType": "blunt",
+          "basePower": 51,
+          "blockEligible": true,
+          "blockCoefficient": 1.15,
+          "deflectionCoefficient": 1.1,
+          "fallbackMoveId": "weapon_basic_side_swing"
+        }
+      ],
+      "baseline": {
+        "weightKg": 0.86,
+        "innateStrength": 14,
+        "durabilityMax": 320,
+        "speedPercent": 0,
+        "ordinaryContactLoss": 1,
+        "blockedContactLoss": 2
+      },
+      "repairToolItemId": "tool_repair_whetstone",
+      "materialRequirementsRef": "../../docs/design/examples/weapon-forging-material-requirements-v1.json#/components/70",
+      "operationCostsRef": "../../docs/design/examples/weapon-forging-balance-v1.json#/components/70",
+      "componentEffects": [
+        {
+          "name": "接续",
+          "strengthPercent": 8,
+          "ruleKey": "M06",
+          "ruleSource": "../../docs/design/weapon-multi-slot-components-draft.md#三类联动buff提案"
+        }
+      ],
+      "damageRules": {
+        "source": "../../docs/design/weapon-multi-slot-durability-draft.md",
+        "lookupKey": "M06",
+        "selection": "one_of_three_equal_weight",
+        "scope": "real_instance",
+        "persistUntilRepair": true,
+        "disableBlockAtZero": false,
+        "disableComponentEffectsAtZero": false,
+        "speedAtZeroOverride": null,
+        "executionStatus": "modular_weapon_combat_v1"
+      },
+      "structureKnowledgeKey": "weapon_structure:M06-T2",
+      "economy": {
+        "valuation": "pending",
+        "tradeEnabled": false
+      }
+    },
+    "weapon_component_m01_t3": {
+      "designId": "M01-T3",
+      "group": "M",
+      "tier": 3,
+      "prototypeId": "single_hand",
+      "placements": [
+        {
+          "anchor": "side1",
+          "occupies": [
+            "side1",
+            "side2"
+          ]
+        }
+      ],
+      "positions": [
+        {
+          "slot": "side1",
+          "damageType": "blunt",
+          "basePower": 183,
+          "blockEligible": true,
+          "blockCoefficient": 1.05,
+          "deflectionCoefficient": 1.05,
+          "fallbackMoveId": "weapon_basic_side_swing"
+        },
+        {
+          "slot": "side2",
+          "damageType": "blunt",
+          "basePower": 183,
+          "blockEligible": true,
+          "blockCoefficient": 1.05,
+          "deflectionCoefficient": 1.05,
+          "fallbackMoveId": "weapon_basic_side_swing"
+        }
+      ],
+      "baseline": {
+        "weightKg": 0.9,
+        "innateStrength": 28,
+        "durabilityMax": 220,
+        "speedPercent": -2,
+        "ordinaryContactLoss": 1,
+        "blockedContactLoss": 2
+      },
+      "repairToolItemId": "tool_repair_hammer",
+      "materialRequirementsRef": "../../docs/design/examples/weapon-forging-material-requirements-v1.json#/components/71",
+      "operationCostsRef": "../../docs/design/examples/weapon-forging-balance-v1.json#/components/71",
+      "componentEffects": [
+        {
+          "name": "交替",
+          "strengthPercent": 6,
+          "ruleKey": "M01",
+          "ruleSource": "../../docs/design/weapon-multi-slot-components-draft.md#三类联动buff提案"
+        }
+      ],
+      "damageRules": {
+        "source": "../../docs/design/weapon-multi-slot-durability-draft.md",
+        "lookupKey": "M01",
+        "selection": "one_of_three_equal_weight",
+        "scope": "real_instance",
+        "persistUntilRepair": true,
+        "disableBlockAtZero": false,
+        "disableComponentEffectsAtZero": false,
+        "speedAtZeroOverride": null,
+        "executionStatus": "modular_weapon_combat_v1"
+      },
+      "structureKnowledgeKey": "weapon_structure:M01-T3",
+      "economy": {
+        "valuation": "pending",
+        "tradeEnabled": false
+      }
+    },
+    "weapon_component_m04_t3": {
+      "designId": "M04-T3",
+      "group": "M",
+      "tier": 3,
+      "prototypeId": "single_hand",
+      "placements": [
+        {
+          "anchor": "side1",
+          "occupies": [
+            "side1",
+            "side2"
+          ]
+        }
+      ],
+      "positions": [
+        {
+          "slot": "side1",
+          "damageType": "blunt",
+          "basePower": 185,
+          "blockEligible": true,
+          "blockCoefficient": 1.1,
+          "deflectionCoefficient": 1.05,
+          "fallbackMoveId": "weapon_basic_side_swing"
+        },
+        {
+          "slot": "side2",
+          "damageType": "pierce",
+          "basePower": 215,
+          "blockEligible": true,
+          "blockCoefficient": 0.85,
+          "deflectionCoefficient": 0.9,
+          "fallbackMoveId": "weapon_basic_side_peck"
+        }
+      ],
+      "baseline": {
+        "weightKg": 0.92,
+        "innateStrength": 30,
+        "durabilityMax": 190,
+        "speedPercent": -3,
+        "ordinaryContactLoss": 1,
+        "blockedContactLoss": 2
+      },
+      "repairToolItemId": "tool_repair_hammer",
+      "materialRequirementsRef": "../../docs/design/examples/weapon-forging-material-requirements-v1.json#/components/72",
+      "operationCostsRef": "../../docs/design/examples/weapon-forging-balance-v1.json#/components/72",
+      "componentEffects": [
+        {
+          "name": "接续",
+          "strengthPercent": 8,
+          "ruleKey": "M04",
+          "ruleSource": "../../docs/design/weapon-multi-slot-components-draft.md#三类联动buff提案"
+        }
+      ],
+      "damageRules": {
+        "source": "../../docs/design/weapon-multi-slot-durability-draft.md",
+        "lookupKey": "M04",
+        "selection": "one_of_three_equal_weight",
+        "scope": "real_instance",
+        "persistUntilRepair": true,
+        "disableBlockAtZero": false,
+        "disableComponentEffectsAtZero": false,
+        "speedAtZeroOverride": null,
+        "executionStatus": "modular_weapon_combat_v1"
+      },
+      "structureKnowledgeKey": "weapon_structure:M04-T3",
+      "economy": {
+        "valuation": "pending",
+        "tradeEnabled": false
+      }
+    },
+    "weapon_component_m07_t3": {
+      "designId": "M07-T3",
+      "group": "M",
+      "tier": 3,
+      "prototypeId": "single_hand",
+      "placements": [
+        {
+          "anchor": "front",
+          "occupies": [
+            "front",
+            "side1",
+            "side2"
+          ]
+        }
+      ],
+      "positions": [
+        {
+          "slot": "front",
+          "damageType": "blunt",
+          "basePower": 92,
+          "blockEligible": false,
+          "blockCoefficient": null,
+          "deflectionCoefficient": null,
+          "fallbackMoveId": "weapon_basic_front_bump"
+        },
+        {
+          "slot": "side1",
+          "damageType": "blunt",
+          "basePower": 92,
+          "blockEligible": true,
+          "blockCoefficient": 1.05,
+          "deflectionCoefficient": 1.1,
+          "fallbackMoveId": "weapon_basic_side_swing"
+        },
+        {
+          "slot": "side2",
+          "damageType": "blunt",
+          "basePower": 92,
+          "blockEligible": true,
+          "blockCoefficient": 1.05,
+          "deflectionCoefficient": 1.1,
+          "fallbackMoveId": "weapon_basic_side_swing"
+        }
+      ],
+      "baseline": {
+        "weightKg": 0.85,
+        "innateStrength": 10,
+        "durabilityMax": 320,
+        "speedPercent": 0,
+        "ordinaryContactLoss": 1,
+        "blockedContactLoss": 2
+      },
+      "repairToolItemId": "tool_repair_hammer",
+      "materialRequirementsRef": "../../docs/design/examples/weapon-forging-material-requirements-v1.json#/components/73",
+      "operationCostsRef": "../../docs/design/examples/weapon-forging-balance-v1.json#/components/73",
+      "componentEffects": [
+        {
+          "name": "贯通",
+          "strengthPercent": 10,
+          "ruleKey": "M07",
+          "ruleSource": "../../docs/design/weapon-multi-slot-components-draft.md#三类联动buff提案"
+        }
+      ],
+      "damageRules": {
+        "source": "../../docs/design/weapon-multi-slot-durability-draft.md",
+        "lookupKey": "M07",
+        "selection": "one_of_three_equal_weight",
+        "scope": "real_instance",
+        "persistUntilRepair": true,
+        "disableBlockAtZero": false,
+        "disableComponentEffectsAtZero": false,
+        "speedAtZeroOverride": null,
+        "executionStatus": "modular_weapon_combat_v1"
+      },
+      "structureKnowledgeKey": "weapon_structure:M07-T3",
+      "economy": {
+        "valuation": "pending",
+        "tradeEnabled": false
+      }
+    },
+    "weapon_component_m02_t4": {
+      "designId": "M02-T4",
+      "group": "M",
+      "tier": 4,
+      "prototypeId": "single_hand",
+      "placements": [
+        {
+          "anchor": "side1",
+          "occupies": [
+            "side1",
+            "side2"
+          ]
+        }
+      ],
+      "positions": [
+        {
+          "slot": "side1",
+          "damageType": "slash",
+          "basePower": 358,
+          "blockEligible": true,
+          "blockCoefficient": 0.9,
+          "deflectionCoefficient": 0.95,
+          "fallbackMoveId": "weapon_basic_side_cleave"
+        },
+        {
+          "slot": "side2",
+          "damageType": "slash",
+          "basePower": 358,
+          "blockEligible": true,
+          "blockCoefficient": 0.9,
+          "deflectionCoefficient": 0.95,
+          "fallbackMoveId": "weapon_basic_side_cleave"
+        }
+      ],
+      "baseline": {
+        "weightKg": 1,
+        "innateStrength": 30,
+        "durabilityMax": 180,
+        "speedPercent": -4,
+        "ordinaryContactLoss": 1,
+        "blockedContactLoss": 2
+      },
+      "repairToolItemId": "tool_repair_whetstone",
+      "materialRequirementsRef": "../../docs/design/examples/weapon-forging-material-requirements-v1.json#/components/74",
+      "operationCostsRef": "../../docs/design/examples/weapon-forging-balance-v1.json#/components/74",
+      "componentEffects": [
+        {
+          "name": "交替",
+          "strengthPercent": 6,
+          "ruleKey": "M02",
+          "ruleSource": "../../docs/design/weapon-multi-slot-components-draft.md#三类联动buff提案"
+        }
+      ],
+      "damageRules": {
+        "source": "../../docs/design/weapon-multi-slot-durability-draft.md",
+        "lookupKey": "M02",
+        "selection": "one_of_three_equal_weight",
+        "scope": "real_instance",
+        "persistUntilRepair": true,
+        "disableBlockAtZero": false,
+        "disableComponentEffectsAtZero": false,
+        "speedAtZeroOverride": null,
+        "executionStatus": "modular_weapon_combat_v1"
+      },
+      "structureKnowledgeKey": "weapon_structure:M02-T4",
+      "economy": {
+        "valuation": "pending",
+        "tradeEnabled": false
+      }
+    },
+    "weapon_component_m05_t4": {
+      "designId": "M05-T4",
+      "group": "M",
+      "tier": 4,
+      "prototypeId": "single_hand",
+      "placements": [
+        {
+          "anchor": "front",
+          "occupies": [
+            "front",
+            "side1",
+            "side2"
+          ]
+        }
+      ],
+      "positions": [
+        {
+          "slot": "front",
+          "damageType": "pierce",
+          "basePower": 224,
+          "blockEligible": false,
+          "blockCoefficient": null,
+          "deflectionCoefficient": null,
+          "fallbackMoveId": "weapon_basic_front_thrust"
+        },
+        {
+          "slot": "side1",
+          "damageType": "slash",
+          "basePower": 213,
+          "blockEligible": true,
+          "blockCoefficient": 1,
+          "deflectionCoefficient": 1,
+          "fallbackMoveId": "weapon_basic_side_cleave"
+        },
+        {
+          "slot": "side2",
+          "damageType": "slash",
+          "basePower": 213,
+          "blockEligible": true,
+          "blockCoefficient": 1,
+          "deflectionCoefficient": 1,
+          "fallbackMoveId": "weapon_basic_side_cleave"
+        }
+      ],
+      "baseline": {
+        "weightKg": 0.8,
+        "innateStrength": 12,
+        "durabilityMax": 280,
+        "speedPercent": -1,
+        "ordinaryContactLoss": 1,
+        "blockedContactLoss": 2
+      },
+      "repairToolItemId": "tool_repair_whetstone",
+      "materialRequirementsRef": "../../docs/design/examples/weapon-forging-material-requirements-v1.json#/components/75",
+      "operationCostsRef": "../../docs/design/examples/weapon-forging-balance-v1.json#/components/75",
+      "componentEffects": [
+        {
+          "name": "贯通",
+          "strengthPercent": 10,
+          "ruleKey": "M05",
+          "ruleSource": "../../docs/design/weapon-multi-slot-components-draft.md#三类联动buff提案"
+        }
+      ],
+      "damageRules": {
+        "source": "../../docs/design/weapon-multi-slot-durability-draft.md",
+        "lookupKey": "M05",
+        "selection": "one_of_three_equal_weight",
+        "scope": "real_instance",
+        "persistUntilRepair": true,
+        "disableBlockAtZero": false,
+        "disableComponentEffectsAtZero": false,
+        "speedAtZeroOverride": null,
+        "executionStatus": "modular_weapon_combat_v1"
+      },
+      "structureKnowledgeKey": "weapon_structure:M05-T4",
+      "economy": {
+        "valuation": "pending",
+        "tradeEnabled": false
+      }
+    },
+    "weapon_component_m08_t4": {
+      "designId": "M08-T4",
+      "group": "M",
+      "tier": 4,
+      "prototypeId": "single_hand",
+      "placements": [
+        {
+          "anchor": "front",
+          "occupies": [
+            "front",
+            "side1",
+            "side2"
+          ]
+        }
+      ],
+      "positions": [
+        {
+          "slot": "front",
+          "damageType": "pierce",
+          "basePower": 493,
+          "blockEligible": false,
+          "blockCoefficient": null,
+          "deflectionCoefficient": null,
+          "fallbackMoveId": "weapon_basic_front_thrust"
+        },
+        {
+          "slot": "side1",
+          "damageType": "blunt",
+          "basePower": 403,
+          "blockEligible": true,
+          "blockCoefficient": 1.1,
+          "deflectionCoefficient": 1.05,
+          "fallbackMoveId": "weapon_basic_side_swing"
+        },
+        {
+          "slot": "side2",
+          "damageType": "blunt",
+          "basePower": 403,
+          "blockEligible": true,
+          "blockCoefficient": 1.1,
+          "deflectionCoefficient": 1.05,
+          "fallbackMoveId": "weapon_basic_side_swing"
+        }
+      ],
+      "baseline": {
+        "weightKg": 1.2,
+        "innateStrength": 36,
+        "durabilityMax": 330,
+        "speedPercent": -4,
+        "ordinaryContactLoss": 1,
+        "blockedContactLoss": 2
+      },
+      "repairToolItemId": "tool_repair_hammer",
+      "materialRequirementsRef": "../../docs/design/examples/weapon-forging-material-requirements-v1.json#/components/76",
+      "operationCostsRef": "../../docs/design/examples/weapon-forging-balance-v1.json#/components/76",
+      "componentEffects": [
+        {
+          "name": "贯通",
+          "strengthPercent": 10,
+          "ruleKey": "M08",
+          "ruleSource": "../../docs/design/weapon-multi-slot-components-draft.md#三类联动buff提案"
+        }
+      ],
+      "damageRules": {
+        "source": "../../docs/design/weapon-multi-slot-durability-draft.md",
+        "lookupKey": "M08",
+        "selection": "one_of_three_equal_weight",
+        "scope": "real_instance",
+        "persistUntilRepair": true,
+        "disableBlockAtZero": false,
+        "disableComponentEffectsAtZero": false,
+        "speedAtZeroOverride": null,
+        "executionStatus": "modular_weapon_combat_v1"
+      },
+      "structureKnowledgeKey": "weapon_structure:M08-T4",
+      "economy": {
+        "valuation": "pending",
+        "tradeEnabled": false
+      }
+    },
+    "weapon_component_m03_t5": {
+      "designId": "M03-T5",
+      "group": "M",
+      "tier": 5,
+      "prototypeId": "single_hand",
+      "placements": [
+        {
+          "anchor": "side1",
+          "occupies": [
+            "side1",
+            "side2"
+          ]
+        }
+      ],
+      "positions": [
+        {
+          "slot": "side1",
+          "damageType": "blunt",
+          "basePower": 395,
+          "blockEligible": true,
+          "blockCoefficient": 1.12,
+          "deflectionCoefficient": 1.08,
+          "fallbackMoveId": "weapon_basic_side_swing"
+        },
+        {
+          "slot": "side2",
+          "damageType": "slash",
+          "basePower": 487,
+          "blockEligible": true,
+          "blockCoefficient": 0.9,
+          "deflectionCoefficient": 0.95,
+          "fallbackMoveId": "weapon_basic_side_cleave"
+        }
+      ],
+      "baseline": {
+        "weightKg": 1,
+        "innateStrength": 32,
+        "durabilityMax": 210,
+        "speedPercent": -3,
+        "ordinaryContactLoss": 1,
+        "blockedContactLoss": 2
+      },
+      "repairToolItemId": "tool_repair_hammer",
+      "materialRequirementsRef": "../../docs/design/examples/weapon-forging-material-requirements-v1.json#/components/77",
+      "operationCostsRef": "../../docs/design/examples/weapon-forging-balance-v1.json#/components/77",
+      "componentEffects": [
+        {
+          "name": "接续",
+          "strengthPercent": 8,
+          "ruleKey": "M03",
+          "ruleSource": "../../docs/design/weapon-multi-slot-components-draft.md#三类联动buff提案"
+        }
+      ],
+      "damageRules": {
+        "source": "../../docs/design/weapon-multi-slot-durability-draft.md",
+        "lookupKey": "M03",
+        "selection": "one_of_three_equal_weight",
+        "scope": "real_instance",
+        "persistUntilRepair": true,
+        "disableBlockAtZero": false,
+        "disableComponentEffectsAtZero": false,
+        "speedAtZeroOverride": null,
+        "executionStatus": "modular_weapon_combat_v1"
+      },
+      "structureKnowledgeKey": "weapon_structure:M03-T5",
+      "economy": {
+        "valuation": "pending",
+        "tradeEnabled": false
+      }
+    },
+    "weapon_component_m06_t5": {
+      "designId": "M06-T5",
+      "group": "M",
+      "tier": 5,
+      "prototypeId": "single_hand",
+      "placements": [
+        {
+          "anchor": "front",
+          "occupies": [
+            "front",
+            "side1",
+            "side2"
+          ]
+        }
+      ],
+      "positions": [
+        {
+          "slot": "front",
+          "damageType": "pierce",
+          "basePower": 272,
+          "blockEligible": false,
+          "blockCoefficient": null,
+          "deflectionCoefficient": null,
+          "fallbackMoveId": "weapon_basic_front_thrust"
+        },
+        {
+          "slot": "side1",
+          "damageType": "slash",
+          "basePower": 301,
+          "blockEligible": true,
+          "blockCoefficient": 0.95,
+          "deflectionCoefficient": 1,
+          "fallbackMoveId": "weapon_basic_side_cleave"
+        },
+        {
+          "slot": "side2",
+          "damageType": "blunt",
+          "basePower": 201,
+          "blockEligible": true,
+          "blockCoefficient": 1.15,
+          "deflectionCoefficient": 1.1,
+          "fallbackMoveId": "weapon_basic_side_swing"
+        }
+      ],
+      "baseline": {
+        "weightKg": 0.86,
+        "innateStrength": 14,
+        "durabilityMax": 320,
+        "speedPercent": 0,
+        "ordinaryContactLoss": 1,
+        "blockedContactLoss": 2
+      },
+      "repairToolItemId": "tool_repair_whetstone",
+      "materialRequirementsRef": "../../docs/design/examples/weapon-forging-material-requirements-v1.json#/components/78",
+      "operationCostsRef": "../../docs/design/examples/weapon-forging-balance-v1.json#/components/78",
+      "componentEffects": [
+        {
+          "name": "接续",
+          "strengthPercent": 8,
+          "ruleKey": "M06",
+          "ruleSource": "../../docs/design/weapon-multi-slot-components-draft.md#三类联动buff提案"
+        }
+      ],
+      "damageRules": {
+        "source": "../../docs/design/weapon-multi-slot-durability-draft.md",
+        "lookupKey": "M06",
+        "selection": "one_of_three_equal_weight",
+        "scope": "real_instance",
+        "persistUntilRepair": true,
+        "disableBlockAtZero": false,
+        "disableComponentEffectsAtZero": false,
+        "speedAtZeroOverride": null,
+        "executionStatus": "modular_weapon_combat_v1"
+      },
+      "structureKnowledgeKey": "weapon_structure:M06-T5",
+      "economy": {
+        "valuation": "pending",
+        "tradeEnabled": false
+      }
+    },
+    "weapon_component_m07_t5": {
+      "designId": "M07-T5",
+      "group": "M",
+      "tier": 5,
+      "prototypeId": "single_hand",
+      "placements": [
+        {
+          "anchor": "front",
+          "occupies": [
+            "front",
+            "side1",
+            "side2"
+          ]
+        }
+      ],
+      "positions": [
+        {
+          "slot": "front",
+          "damageType": "blunt",
+          "basePower": 197,
+          "blockEligible": false,
+          "blockCoefficient": null,
+          "deflectionCoefficient": null,
+          "fallbackMoveId": "weapon_basic_front_bump"
+        },
+        {
+          "slot": "side1",
+          "damageType": "blunt",
+          "basePower": 197,
+          "blockEligible": true,
+          "blockCoefficient": 1.05,
+          "deflectionCoefficient": 1.1,
+          "fallbackMoveId": "weapon_basic_side_swing"
+        },
+        {
+          "slot": "side2",
+          "damageType": "blunt",
+          "basePower": 197,
+          "blockEligible": true,
+          "blockCoefficient": 1.05,
+          "deflectionCoefficient": 1.1,
+          "fallbackMoveId": "weapon_basic_side_swing"
+        }
+      ],
+      "baseline": {
+        "weightKg": 0.85,
+        "innateStrength": 10,
+        "durabilityMax": 320,
+        "speedPercent": 0,
+        "ordinaryContactLoss": 1,
+        "blockedContactLoss": 2
+      },
+      "repairToolItemId": "tool_repair_hammer",
+      "materialRequirementsRef": "../../docs/design/examples/weapon-forging-material-requirements-v1.json#/components/79",
+      "operationCostsRef": "../../docs/design/examples/weapon-forging-balance-v1.json#/components/79",
+      "componentEffects": [
+        {
+          "name": "贯通",
+          "strengthPercent": 10,
+          "ruleKey": "M07",
+          "ruleSource": "../../docs/design/weapon-multi-slot-components-draft.md#三类联动buff提案"
+        }
+      ],
+      "damageRules": {
+        "source": "../../docs/design/weapon-multi-slot-durability-draft.md",
+        "lookupKey": "M07",
+        "selection": "one_of_three_equal_weight",
+        "scope": "real_instance",
+        "persistUntilRepair": true,
+        "disableBlockAtZero": false,
+        "disableComponentEffectsAtZero": false,
+        "speedAtZeroOverride": null,
+        "executionStatus": "modular_weapon_combat_v1"
+      },
+      "structureKnowledgeKey": "weapon_structure:M07-T5",
+      "economy": {
+        "valuation": "pending",
+        "tradeEnabled": false
+      }
+    },
+    "weapon_component_m04_t6": {
+      "designId": "M04-T6",
+      "group": "M",
+      "tier": 6,
+      "prototypeId": "single_hand",
+      "placements": [
+        {
+          "anchor": "side1",
+          "occupies": [
+            "side1",
+            "side2"
+          ]
+        }
+      ],
+      "positions": [
+        {
+          "slot": "side1",
+          "damageType": "blunt",
+          "basePower": 460,
+          "blockEligible": true,
+          "blockCoefficient": 1.1,
+          "deflectionCoefficient": 1.05,
+          "fallbackMoveId": "weapon_basic_side_swing"
+        },
+        {
+          "slot": "side2",
+          "damageType": "pierce",
+          "basePower": 537,
+          "blockEligible": true,
+          "blockCoefficient": 0.85,
+          "deflectionCoefficient": 0.9,
+          "fallbackMoveId": "weapon_basic_side_peck"
+        }
+      ],
+      "baseline": {
+        "weightKg": 0.92,
+        "innateStrength": 30,
+        "durabilityMax": 190,
+        "speedPercent": -3,
+        "ordinaryContactLoss": 1,
+        "blockedContactLoss": 2
+      },
+      "repairToolItemId": "tool_repair_hammer",
+      "materialRequirementsRef": "../../docs/design/examples/weapon-forging-material-requirements-v1.json#/components/80",
+      "operationCostsRef": "../../docs/design/examples/weapon-forging-balance-v1.json#/components/80",
+      "componentEffects": [
+        {
+          "name": "接续",
+          "strengthPercent": 8,
+          "ruleKey": "M04",
+          "ruleSource": "../../docs/design/weapon-multi-slot-components-draft.md#三类联动buff提案"
+        }
+      ],
+      "damageRules": {
+        "source": "../../docs/design/weapon-multi-slot-durability-draft.md",
+        "lookupKey": "M04",
+        "selection": "one_of_three_equal_weight",
+        "scope": "real_instance",
+        "persistUntilRepair": true,
+        "disableBlockAtZero": false,
+        "disableComponentEffectsAtZero": false,
+        "speedAtZeroOverride": null,
+        "executionStatus": "modular_weapon_combat_v1"
+      },
+      "structureKnowledgeKey": "weapon_structure:M04-T6",
+      "economy": {
+        "valuation": "pending",
+        "tradeEnabled": false
+      }
+    },
+    "weapon_component_m05_t6": {
+      "designId": "M05-T6",
+      "group": "M",
+      "tier": 6,
+      "prototypeId": "single_hand",
+      "placements": [
+        {
+          "anchor": "front",
+          "occupies": [
+            "front",
+            "side1",
+            "side2"
+          ]
+        }
+      ],
+      "positions": [
+        {
+          "slot": "front",
+          "damageType": "pierce",
+          "basePower": 319,
+          "blockEligible": false,
+          "blockCoefficient": null,
+          "deflectionCoefficient": null,
+          "fallbackMoveId": "weapon_basic_front_thrust"
+        },
+        {
+          "slot": "side1",
+          "damageType": "slash",
+          "basePower": 303,
+          "blockEligible": true,
+          "blockCoefficient": 1,
+          "deflectionCoefficient": 1,
+          "fallbackMoveId": "weapon_basic_side_cleave"
+        },
+        {
+          "slot": "side2",
+          "damageType": "slash",
+          "basePower": 303,
+          "blockEligible": true,
+          "blockCoefficient": 1,
+          "deflectionCoefficient": 1,
+          "fallbackMoveId": "weapon_basic_side_cleave"
+        }
+      ],
+      "baseline": {
+        "weightKg": 0.8,
+        "innateStrength": 12,
+        "durabilityMax": 280,
+        "speedPercent": -1,
+        "ordinaryContactLoss": 1,
+        "blockedContactLoss": 2
+      },
+      "repairToolItemId": "tool_repair_whetstone",
+      "materialRequirementsRef": "../../docs/design/examples/weapon-forging-material-requirements-v1.json#/components/81",
+      "operationCostsRef": "../../docs/design/examples/weapon-forging-balance-v1.json#/components/81",
+      "componentEffects": [
+        {
+          "name": "贯通",
+          "strengthPercent": 10,
+          "ruleKey": "M05",
+          "ruleSource": "../../docs/design/weapon-multi-slot-components-draft.md#三类联动buff提案"
+        }
+      ],
+      "damageRules": {
+        "source": "../../docs/design/weapon-multi-slot-durability-draft.md",
+        "lookupKey": "M05",
+        "selection": "one_of_three_equal_weight",
+        "scope": "real_instance",
+        "persistUntilRepair": true,
+        "disableBlockAtZero": false,
+        "disableComponentEffectsAtZero": false,
+        "speedAtZeroOverride": null,
+        "executionStatus": "modular_weapon_combat_v1"
+      },
+      "structureKnowledgeKey": "weapon_structure:M05-T6",
+      "economy": {
+        "valuation": "pending",
+        "tradeEnabled": false
+      }
+    },
+    "weapon_component_m08_t6": {
+      "designId": "M08-T6",
+      "group": "M",
+      "tier": 6,
+      "prototypeId": "single_hand",
+      "placements": [
+        {
+          "anchor": "front",
+          "occupies": [
+            "front",
+            "side1",
+            "side2"
+          ]
+        }
+      ],
+      "positions": [
+        {
+          "slot": "front",
+          "damageType": "pierce",
+          "basePower": 703,
+          "blockEligible": false,
+          "blockCoefficient": null,
+          "deflectionCoefficient": null,
+          "fallbackMoveId": "weapon_basic_front_thrust"
+        },
+        {
+          "slot": "side1",
+          "damageType": "blunt",
+          "basePower": 575,
+          "blockEligible": true,
+          "blockCoefficient": 1.1,
+          "deflectionCoefficient": 1.05,
+          "fallbackMoveId": "weapon_basic_side_swing"
+        },
+        {
+          "slot": "side2",
+          "damageType": "blunt",
+          "basePower": 575,
+          "blockEligible": true,
+          "blockCoefficient": 1.1,
+          "deflectionCoefficient": 1.05,
+          "fallbackMoveId": "weapon_basic_side_swing"
+        }
+      ],
+      "baseline": {
+        "weightKg": 1.2,
+        "innateStrength": 36,
+        "durabilityMax": 330,
+        "speedPercent": -4,
+        "ordinaryContactLoss": 1,
+        "blockedContactLoss": 2
+      },
+      "repairToolItemId": "tool_repair_hammer",
+      "materialRequirementsRef": "../../docs/design/examples/weapon-forging-material-requirements-v1.json#/components/82",
+      "operationCostsRef": "../../docs/design/examples/weapon-forging-balance-v1.json#/components/82",
+      "componentEffects": [
+        {
+          "name": "贯通",
+          "strengthPercent": 10,
+          "ruleKey": "M08",
+          "ruleSource": "../../docs/design/weapon-multi-slot-components-draft.md#三类联动buff提案"
+        }
+      ],
+      "damageRules": {
+        "source": "../../docs/design/weapon-multi-slot-durability-draft.md",
+        "lookupKey": "M08",
+        "selection": "one_of_three_equal_weight",
+        "scope": "real_instance",
+        "persistUntilRepair": true,
+        "disableBlockAtZero": false,
+        "disableComponentEffectsAtZero": false,
+        "speedAtZeroOverride": null,
+        "executionStatus": "modular_weapon_combat_v1"
+      },
+      "structureKnowledgeKey": "weapon_structure:M08-T6",
+      "economy": {
+        "valuation": "pending",
+        "tradeEnabled": false
+      }
+    }
+  },
+  "prototypes": {
+    "single_hand": {
+      "itemId": "weapon_single_hand_assembly",
+      "baseRange": 1,
+      "requiredAttackPositions": [
+        "front",
+        "side1",
+        "side2",
+        "hilt"
+      ],
+      "rootWeightKg": 0,
+      "rootIsAssemblyRecord": true,
+      "emptyRootSpawnable": false,
+      "defaultBlockPositions": [
+        "side1",
+        "side2"
+      ],
+      "extraBlockFromComponent": true,
+      "rotationRef": "../../docs/design/70-modular-weapon-system.md",
+      "connectionStorage": "one_full_part_at_anchor_only",
+      "occupancy": "derive_from_placements_using_anchor_and_item_id",
+      "requiredFlagsInGenericHost": false,
+      "completeness": "all_four_attack_positions_covered_exactly_once",
+      "missingOrOverlappingPositions": "reject_use_and_reject_conflicting_attach",
+      "saveIncomplete": true,
+      "aggregation": {
+        "weight": "sum_unique_real_component_final_weight",
+        "speed": "sum_unique_real_component_speed",
+        "innateStrength": "max_unique_real_component_final_requirement",
+        "durability": "one_pool_per_real_component"
+      },
+      "combatStatsOnRoot": false,
+      "holdingHandSource": "equipment_slot",
+      "equipSlotBinding": "weapon_left_or_weapon_right"
+    }
+  },
+  "toolkit": {
+    "itemId": "tool_repair_roll",
+    "selfWeightKg": 0.3,
+    "fullWeightKg": 6.8,
+    "slots": {
+      "whetstone": {
+        "accepts": [
+          "repair.whetstone"
+        ],
+        "required": false
+      },
+      "hammer": {
+        "accepts": [
+          "repair.hammer"
+        ],
+        "required": false
+      },
+      "pliers": {
+        "accepts": [
+          "repair.pliers"
+        ],
+        "required": false
+      }
+    },
+    "allSlotsOptional": true,
+    "selectedRootRequired": true,
+    "requiresMatchingToolOnly": true,
+    "extraWeightDiscount": 0,
+    "consumesTools": false,
+    "toolDurability": false,
+    "compatibilityRef": "../../docs/design/examples/weapon-repair-tool-knowledge-v1.json#/repair_targets",
+    "economy": {
+      "valuation": "pending",
+      "tradeEnabled": false
+    }
+  },
+  "forgedInstanceContract": {
+    "status": "forging_inventory_repair_single_hand_combat_registered",
+    "identityFields": [
+      "item_id",
+      "instance_id"
+    ],
+    "stateNamespace": "forged_component",
+    "requiredFields": [
+      "design_id",
+      "recipe",
+      "completion",
+      "final_weight_kg",
+      "final_innate_strength",
+      "final_position_powers",
+      "durability_max",
+      "durability_current",
+      "contact_loss",
+      "ore_trait",
+      "zero_durability_result"
+    ],
+    "recipeUnit": "processed_feed_item_id_and_integer_count",
+    "maxOreTraits": 1,
+    "oreTraitMayBeNull": true,
+    "finalStatsPersistedOnce": true,
+    "startingDurability": "computed_durability_max",
+    "damageStateInitially": null,
+    "precision": {
+      "power": 0.01,
+      "durability": 0.01,
+      "weight": "retain_calculation_precision"
+    },
+    "templateWeightMeaning": "baseline_only_for_components",
+    "actualCarryWeightField": "forged_component.final_weight_kg",
+    "missingForgedState": "reject_incomplete_component_instance_do_not_assume_perfect",
+    "noPerSlotCopies": true,
+    "noQualityField": true,
+    "repairPreservesRecipeAndOreTrait": true,
+    "statFormulaSource": "../../docs/design/70-modular-weapon-system.md#材料潜力与锻造发挥",
+    "traitSelectionRef": "../../docs/design/examples/weapon-ore-combinations-v1.json#/rules"
+  },
+  "fallbackMoves": {
+    "ids": [
+      "weapon_basic_front_thrust",
+      "weapon_basic_front_bump",
+      "weapon_basic_side_cleave",
+      "weapon_basic_side_swing",
+      "weapon_basic_side_peck",
+      "weapon_basic_hilt_strike",
+      "weapon_basic_hilt_thrust"
+    ],
+    "source": "../../docs/design/weapon-basic-moves-draft.md",
+    "ownedBy": "component",
+    "learnable": false,
+    "upgradeable": false,
+    "variantsAllowed": false
+  },
+  "dataSources": [
+    "../../docs/design/weapon-component-final-stats-draft.md",
+    "../../docs/design/weapon-blade-components-draft.md",
+    "../../docs/design/weapon-tip-pommel-components-draft.md",
+    "../../docs/design/weapon-blunt-side-components-draft.md",
+    "../../docs/design/weapon-hilt-components-draft.md",
+    "../../docs/design/weapon-multi-slot-components-draft.md",
+    "../../docs/design/weapon-hilt-durability-draft.md",
+    "../../docs/design/weapon-multi-slot-durability-draft.md"
+  ]
+}

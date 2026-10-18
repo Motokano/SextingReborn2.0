@@ -1,0 +1,26 @@
+<!doctype html><html lang="zh-CN"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>铸造流程验收</title>
+<link rel="stylesheet" href="../css/forging-station.css"><link rel="stylesheet" href="../css/forging-symbols.css">
+<style>body{background:#101a15;color:#e5dfc9;font:15px sans-serif;margin:32px}button{padding:10px 18px}#review-note{position:fixed;bottom:4px;left:12px;z-index:250;font-size:10px;color:#a6b1a2}</style>
+<p>正式模块验收：测试物品仅存在于本页内存，不写入游戏存档。</p><button id="open">打开铸造台</button><button id="reload-fixture">恢复测试炉存档</button><div id="review-note">铸造流程验收 · 独立测试物品</div>
+<script src="../js/item-attribute-modules.js"></script><script src="../js/inventory-equipment.js"></script><script src="../js/item-assembly.js"></script><script src="../js/combat-engagement.js"></script><script src="../js/forging-config.js"></script><script src="../js/forging-board-core.js"></script><script src="../js/forging-rules.js"></script>
+<script>
+let flags={forging_station_unlocked:true},stamina=1000,ticks=0,saved;
+const cp=x=>JSON.parse(JSON.stringify(x));
+window.NPCSystem={getFlagValue:k=>cp(flags[k]??null),setDemoFlag:(k,v)=>flags[k]=cp(v),isDemoFlagTrue:k=>flags[k]===true,getDemoState:()=>cp(flags),setDemoState:s=>flags=cp(s)};
+window.UIText={t:k=>k};window.GameEngine={getState:()=>({mapId:'M0_Base_Inside_lv_1',x:5,y:12}),getInteractNpcIdAt:()=> 'npc.station.forging_base'};
+window.SaveSystem={saveNow:()=>{saved={flags:cp(flags),inventory:cp(InventoryEquipment.getState()),stamina,ticks};return true;}};
+window.Survival={getState:()=>({stamina}),isDead:()=>false,canPerformStaminaOrEnergyAction:()=>true,getActionStaminaCost:n=>n,consumeStamina:n=>stamina-=n,advanceTick:()=>ticks++};
+</script><script src="../js/forging-system.js"></script><script src="../js/forging-symbols.js"></script><script src="../js/forging-effects.js"></script><script src="../js/forging-station-panel.js"></script>
+<script>
+const I=InventoryEquipment,S=ForgingSystem,C=ForgingConfig;
+I.setConfig({equipment:{test_bag:{item_id:'test_bag',equip_slot:'backpack',backpack_slots:150}},items:ItemAttributeModules.hydrateCatalog(C.catalog),modules:{},default_equipment:{}});
+I.setState({equipment:{backpack:{item_id:'test_bag'}},inventory_backpack:[],inventory_pocket:[],inventory_vest:[],ground_items:{},skills:{survival_language:{level:4},life_forging:{level:25,move_usage:{}}}});
+const give=(id,state={})=>{const item=I.ensureItemInstanceIdentity({item_id:id,count:1,...state});I.putItemIntoDefaultContainer(item);return item;};
+for(let i=0;i<12;i++)give('material_forging_iron');give('ore_copper_raw');give('ore_iron_raw');
+for(const id of ['weapon_component_b01','weapon_component_t01','weapon_component_h01','weapon_component_d01','weapon_component_m05_t2']){const part=C.components[id],fc=ForgingRules.result(part,{material_forging_iron:part.capacity},80,.1);fc.durability_current=0;fc.durability_units=0;give(id,{forged_component:fc});}
+give('tool_repair_roll');give('tool_repair_whetstone');give('tool_repair_hammer');give('tool_repair_pliers');
+const k=S.state();k.knowledge.routes.ore_iron_raw=true;k.knowledge.identity.ore_iron_raw=true;k.knowledge.identity.material_forging_iron=true;k.knowledge.identity.weapon_component_b01=true;k.knowledge.structures.B01=true;NPCSystem.setDemoFlag('forging_runtime_v1',k);SaveSystem.saveNow();
+document.getElementById('open').onclick=()=>ForgingStationPanel.open();
+document.getElementById('reload-fixture').onclick=()=>{const restore=cp(saved);ForgingStationPanel.close();if(restore){I.setState(cp(restore.inventory));flags=cp(restore.flags);stamina=restore.stamina;ticks=restore.ticks;S.onLoad();}ForgingStationPanel.open();};
+ForgingStationPanel.open();
+</script></html>

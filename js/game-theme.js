@@ -1,6 +1,7 @@
 /* Shared Buff and log presentation. Original knowledge gates, text and tooltip handlers are retained. */
 (function () {
     'use strict';
+    if (window.SvelteHUD) return;
     var hud = document.getElementById('buff-hud');
     function decorateBuffs() {
         if (!hud) return;

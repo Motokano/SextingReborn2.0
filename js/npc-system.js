@@ -873,7 +873,26 @@
     }
 
     // --- 菜单 UI（最小实现） ---
-    var menuEl = null;
+    var menuEl = null, menuView = null, menuEpoch = 0;
+    var menuState = { open: false, title: '', hint: '', buttons: [] };
+    function publishMenu() {
+        var snapshot = { open: menuState.open, title: menuState.title, hint: menuState.hint, buttons: menuState.buttons.map(function (b, index) { return { id: index, text: b.text, disabled: !!b.disabled, title: b.title || '', muted: !!b.muted }; }) };
+        if (menuView) { menuView(snapshot); return; }
+        ensureMenuEl(); menuEl.style.display = snapshot.open ? 'block' : 'none';
+        document.getElementById('npc-menu-title').textContent = snapshot.title;
+        document.getElementById('npc-menu-hint').textContent = snapshot.hint;
+        var wrap = document.getElementById('npc-menu-buttons'); wrap.replaceChildren();
+        snapshot.buttons.forEach(function (b) {
+            var el = document.createElement('button'); el.type = 'button'; el.textContent = b.text; el.disabled = b.disabled; el.title = b.title;
+            el.style.cssText = 'padding:8px 12px;background:#404040;border:1px solid #555;color:#fff;border-radius:6px;cursor:pointer';
+            if (b.muted) { el.style.opacity = '0.55'; el.style.cursor = 'not-allowed'; }
+            el.onclick = function () { chooseMenu(b.id); }; wrap.appendChild(el);
+        });
+    }
+    function chooseMenu(index) {
+        var b = menuState.open && menuState.buttons[index];
+        if (b && !b.disabled) b.run();
+    }
     function ensureMenuEl() {
         if (menuEl) return menuEl;
         menuEl = document.createElement('div');
@@ -896,14 +915,18 @@
         menuEl.addEventListener('click', function (e) { if (e.target === menuEl) closeMenu(); });
         return menuEl;
     }
-    function closeMenu() { if (menuEl) menuEl.style.display = 'none'; }
+    function closeMenu() { menuEpoch++; menuState.open = false; publishMenu(); }
     function isMenuOpen() {
-        return !!(menuEl && menuEl.style && menuEl.style.display !== 'none');
+        return menuState.open;
     }
 
     function openMenu(npcId) {
-        ensureMenuEl();
-        Promise.all([loadNpcDef(npcId)]).then(function (rows) {
+        var epoch = ++menuEpoch;
+        var engine = global.SceneCtx && global.SceneCtx.E;
+        var position = engine && engine.getState ? Object.assign({}, engine.getState()) : null;
+        function sameLocation() { var now = engine && engine.getState && engine.getState(); return !position || !!(now && now.mapId === position.mapId && now.x === position.x && now.y === position.y); }
+        return Promise.all([loadNpcDef(npcId)]).then(function (rows) {
+            if (epoch !== menuEpoch || !sameLocation()) return;
             var def = rows[0];
             if (global.SceneApp && typeof global.SceneApp.guardPlayerActionBlocked === 'function') {
                 var act = global.SceneApp.ACTION_TYPES;
@@ -924,36 +947,18 @@
                 log('NPC 当前不在场（' + t + '）：' + npcId, 'warn');
                 return;
             }
-            menuEl.style.display = 'block';
-            var title = document.getElementById('npc-menu-title');
-            var btnWrap = document.getElementById('npc-menu-buttons');
-            if (title) title.textContent = def.displayTitle || def.name || 'NPC';
-            if (!btnWrap) return;
-            btnWrap.innerHTML = '';
-            var menuHint = document.getElementById('npc-menu-hint');
-            if (menuHint) menuHint.textContent = tUi('npc.menu.close_hint', '需要靠近才能操作。');
-
-            function mkBtn(text, onClick) {
-                var b = document.createElement('button');
-                b.type = 'button';
-                b.textContent = text;
-                b.style.padding = '8px 12px';
-                b.style.background = '#404040';
-                b.style.border = '1px solid #555';
-                b.style.color = '#fff';
-                b.style.borderRadius = '6px';
-                b.style.cursor = 'pointer';
-                b.onclick = onClick;
-                return b;
-            }
+            menuState = { open: true, title: def.displayTitle || def.name || 'NPC', hint: tUi('npc.menu.close_hint', '需要靠近才能操作。'), buttons: [] };
+            function addButton(button) { menuState.buttons.push(button); publishMenu(); }
+            function mkBtn(text, onClick) { return { text: text, run: onClick, disabled: false }; }
+            function hint(text) { if (epoch !== menuEpoch) return; menuState.hint = text; publishMenu(); }
 
             // Sewing follows its construction stage instead of listing every locked tool.
             if (def.id === 'npc.station.sewing_base') {
-                function hint(text) { if (menuHint) menuHint.textContent = text; }
-                function reopen() { openMenu(npcId); }
-                btnWrap.appendChild(mkBtn('查看缝纫台', function () {
-                    var progress = menuHint ? menuHint.textContent : '';
+                function reopen() { if (sameLocation()) openMenu(npcId); }
+                addButton(mkBtn('查看缝纫台', function () {
+                    var progress = menuState.hint;
                     loadDialoguePoolsForNpc(npcId).then(function (doc) {
+                        if (epoch !== menuEpoch || !sameLocation()) return;
                         var line = pickFallbackLineFromDoc(def.fallbackDialoguePoolId, doc);
                         var text = typeof line === 'string' ? line : line && line.text;
                         if (!text) { hint('装配说明暂时无法读取，请重试。'); return; }
@@ -968,7 +973,7 @@
                 }));
                 if (global.NPCSystem.isDemoFlagTrue('sewing_station_unlocked')) {
                     hint('测量、人台与浸泡桶均在缝纫界面内管理。');
-                    btnWrap.appendChild(mkBtn('使用缝纫台', function () {
+                    addButton(mkBtn('使用缝纫台', function () {
                         if (global.SewingStationPanel && global.SewingStationPanel.open()) closeMenu();
                         else hint('未能打开，请靠近缝纫台并关闭其他工作台界面后重试。');
                     }));
@@ -979,13 +984,13 @@
                     var measured = global.NPCSystem.getFlagValue('sewing_measurement');
                     if (next && next.spec.id === 'sewing_mannequin' && !(measured && measured.weight_kg > 0)) {
                         hint('皮尺和体重秤已备齐。先记录身材，再按尺寸装配人台。');
-                        btnWrap.appendChild(mkBtn('测量身材 · 10分钟', function () {
+                        addButton(mkBtn('测量身材 · 10分钟', function () {
                             var r = global.SewingSystem.measureAtTools();
                             if (r.ok) reopen(); else hint(r.message);
                         }));
                     } else if (next) {
                         hint('下一步：' + next.spec.title + '。进入后查看材料需求与装配进度。');
-                        btnWrap.appendChild(mkBtn(next.spec.title, function () {
+                        addButton(mkBtn(next.spec.title, function () {
                             if (!next.accessible()) { hint('请靠近缝纫台后操作。'); return; }
                             if (!global.FacilityUnlockPanel || global.FacilityUnlockPanel.isOpen()) {
                                 hint('请先关闭其他装配界面后重试。'); return;
@@ -996,7 +1001,7 @@
                         }));
                     } else hint('缝纫台数据尚未就绪，请重新进入。');
                 }
-                btnWrap.appendChild(mkBtn('离开', closeMenu));
+                addButton(mkBtn('离开', closeMenu));
                 return;
             }
 
@@ -1049,16 +1054,19 @@
                 return tagsB.indexOf('bed_station') >= 0;
             }
 
-            btnWrap.appendChild(mkBtn(def.id.indexOf('npc.station.') === 0 ? '查看'+(def.displayTitle||def.name) : tUi('npc.menu.chat'), function () {
+            addButton(mkBtn(def.id.indexOf('npc.station.') === 0 ? '查看'+(def.displayTitle||def.name) : tUi('npc.menu.chat'), function () {
                 closeMenu();
+                var chatEpoch = menuEpoch;
                 log('[NPCSystem] NPC chat clicked: npc=' + String(npcId), 'system');
                 scanChatEntry(npcId).then(function (res) {
+                    if (chatEpoch !== menuEpoch || !sameLocation() || !isNpcOnDuty(def)) return;
                     if (!res || !global.DialogueUI) return;
                     if (res.type === 'not_on_duty') return;
                     if (res.type === 'fallback') {
                         log('[NPCSystem] chat fallback: npc=' + String(npcId), 'system');
                         var fbPick = resolveFallbackPick(def);
                         loadDialoguePoolsForNpc(npcId).then(function (poolDoc) {
+                            if (chatEpoch !== menuEpoch) return;
                             var fbText = null;
                             if (fbPick.poolPickMode === 'merge_pools' && fbPick.poolIds && fbPick.poolIds.length) {
                                 fbText = pickFallbackLineFromMergedPoolIds(fbPick.poolIds, poolDoc);
@@ -1137,6 +1145,7 @@
             }));
 
             var facilityActions = {
+                'npc.station.forging_base': ['forging'],
                 'npc.station.pharmacy_base': ['pharmacy'],
                 'npc.station.compost_base': ['compost'],
                 'npc.station.cooking_base': ['water']
@@ -1151,14 +1160,21 @@
                 });
                 button.disabled = complete || !project.accessible();
                 if (id === 'water' && !global.NPCSystem.isDemoFlagTrue('cooking_base_station_unlocked')) button.title = '先修好灶台';
-                btnWrap.appendChild(button);
+                addButton(button);
             });
             if (def.id === 'npc.station.observation_base') {
-                btnWrap.appendChild(mkBtn('使用工具台', function () {closeMenu();if(global.ToolbenchPanel)global.ToolbenchPanel.open();}));
+                addButton(mkBtn('使用工具台', function () {closeMenu();if(global.ToolbenchPanel)global.ToolbenchPanel.open();}));
+            }
+            if (def.id === 'npc.station.forging_base') {
+                var forgeButton = mkBtn('使用铸造台', function () {
+                    if (global.ForgingStationPanel && global.ForgingStationPanel.open()) closeMenu();
+                });
+                forgeButton.disabled = !global.ForgingSystem || !global.ForgingSystem.canAccess();
+                addButton(forgeButton);
             }
             if (shouldShowOpenCookingPanelButton(def)) {
                 if (def.id === 'npc.station.cooking_base' && !global.NPCSystem.isDemoFlagTrue('cooking_base_station_unlocked')) {
-                    btnWrap.appendChild(mkBtn('修复灶台', function () {
+                    addButton(mkBtn('修复灶台', function () {
                         closeMenu();
                         if (global.CookingRepairPanel) global.CookingRepairPanel.open();
                     }));
@@ -1181,11 +1197,10 @@
                 if (global.SceneApp && typeof global.SceneApp.isCookingStationPanelBlockedByRepair === 'function'
                     && global.SceneApp.isCookingStationPanelBlockedByRepair()) {
                     cookBtn.disabled = true;
-                    cookBtn.style.opacity = '0.55';
-                    cookBtn.style.cursor = 'not-allowed';
+                    cookBtn.muted = true;
                     cookBtn.title = tUi('npc.menu.open_cooking_panel_locked', '请先与灶台对话修好灶台');
                 }
-                btnWrap.appendChild(cookBtn);
+                addButton(cookBtn);
             }
 
             if (shouldShowOpenPharmacyPanelButton(def)) {
@@ -1207,11 +1222,10 @@
                 if (global.SceneApp && typeof global.SceneApp.isPharmacyStationPanelBlockedByRepair === 'function'
                     && global.SceneApp.isPharmacyStationPanelBlockedByRepair()) {
                     pharmBtn.disabled = true;
-                    pharmBtn.style.opacity = '0.55';
-                    pharmBtn.style.cursor = 'not-allowed';
+                    pharmBtn.muted = true;
                     pharmBtn.title = tUi('npc.menu.open_pharmacy_panel_locked', '请先与制药台对话，修好后再使用。');
                 }
-                btnWrap.appendChild(pharmBtn);
+                addButton(pharmBtn);
             }
 
             if (shouldShowOpenCompostPanelButton(def)) {
@@ -1221,7 +1235,7 @@
                         global.SceneApp.openCompostStationPanel();
                     }
                 });
-                btnWrap.appendChild(compostBtn);
+                addButton(compostBtn);
             }
 
             if (shouldShowOpenAgriculturePanelButton(def)) {
@@ -1231,7 +1245,7 @@
                         global.SceneApp.openAgriculturePanel();
                     }
                 });
-                btnWrap.appendChild(agBtn);
+                addButton(agBtn);
             }
 
             if (shouldShowOpenHideoutWarehousePanelButton(def)) {
@@ -1241,7 +1255,7 @@
                         global.SceneApp.openHideoutWarehousePanel();
                     }
                 });
-                btnWrap.appendChild(whBtn);
+                addButton(whBtn);
             }
 
             if (shouldShowOpenLivestockPanelButton(def)) {
@@ -1251,7 +1265,7 @@
                         global.SceneApp.openLivestockPanel();
                     }
                 });
-                btnWrap.appendChild(lsBtn);
+                addButton(lsBtn);
             }
 
             if (shouldShowSleepAtBedButton(def)) {
@@ -1261,14 +1275,15 @@
                         global.SceneApp.trySleepAtBed();
                     }
                 });
-                btnWrap.appendChild(bedBtn);
+                addButton(bedBtn);
             }
 
-            btnWrap.appendChild(mkBtn(tUi('npc.menu.leave'), function () { closeMenu(); }));
+            addButton(mkBtn(tUi('npc.menu.leave'), function () { closeMenu(); }));
         });
     }
 
     global.NPCSystem = {
+        menu: { attachView: function (render) { menuView = render; if (menuEl) { menuEl.remove(); menuEl = null; } publishMenu(); return function () { menuEpoch++; menuState.open = false; menuView = null; }; }, choose: chooseMenu, close: closeMenu },
         configure: function (opts) {
             opts = opts || {};
             logFn = (typeof opts.log === 'function') ? opts.log : function () {};
@@ -1341,6 +1356,8 @@
             if (global.CookingRepair) global.CookingRepair.reset();
             setFlag('sewing_bucket_stock', 0);
             setFlag('sewing_knowledge', {patterns:{},materials:{}});
+            if (global.ForgingStationPanel) global.ForgingStationPanel.close();
+            if (global.ForgingSystem) global.ForgingSystem.reset();
             setFlag('sewing_gathering_uses', {});
             setFlag('sewing_measurement', null);
             setFlag('sewing_mannequin_dimensions', null);

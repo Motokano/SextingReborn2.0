@@ -303,10 +303,10 @@
     function getDefaultCombatState() {
         return {
             limbs: {
-                lhand: { active: null, parry: null },
-                rhand: { active: null, parry: null },
-                lfoot: { active: null, parry: null },
-                rfoot: { active: null, parry: null }
+                lhand: { active: null },
+                rhand: { active: null },
+                lfoot: { active: null },
+                rfoot: { active: null }
             },
             hubs: { breath: null, footwork: null },
             move_sequences: { lhand: [], rhand: [], lfoot: [], rfoot: [] },
@@ -318,8 +318,6 @@
             post_effect_sequences: {},
             /** 主动链变式装配：variant_sequences[limbId] = [variant_id, ...] */
             variant_sequences: { lhand: [], rhand: [], lfoot: [], rfoot: [] },
-            /** 招架变式装配：parry_variant_sequences[limbId] = [variant_id|null, ...]，最多 5 槽 */
-            parry_variant_sequences: { lhand: [], rhand: [], lfoot: [], rfoot: [] },
             /** 各肢各槽位成数（null = 使用招式模板默认值；数字 = 玩家设定 1-12 成数） */
             move_slot_power_levels: { lhand: [], rhand: [], lfoot: [], rfoot: [] },
             /** 地图普攻四肢出手顺序（须为 lhand/rhand/lfoot/rfoot 各出现一次的排列） */
@@ -564,7 +562,7 @@
         for (var i = 0; i < limbIds.length; i++) {
             var lid = limbIds[i];
             if (!state.combat.limbs[lid]) {
-                state.combat.limbs[lid] = { active: null, parry: null };
+                state.combat.limbs[lid] = { active: null };
             }
             if (!state.combat.move_sequences[lid]) state.combat.move_sequences[lid] = [];
         }
@@ -574,7 +572,7 @@
             var lrN = state.combat.limbs[lidNorm];
             if (lrN) {
                 lrN.active = normalizeLimbSkillValue(lrN.active);
-                lrN.parry = normalizeLimbSkillValue(lrN.parry);
+                delete lrN.parry;
             }
         }
         for (j = 0; j < limbIds.length; j++) {
@@ -593,12 +591,13 @@
         if (!state.combat.skill_move_sequences) state.combat.skill_move_sequences = {};
         if (!state.combat.post_effect_sequences || typeof state.combat.post_effect_sequences !== 'object') state.combat.post_effect_sequences = {};
         if (!state.combat.variant_sequences || typeof state.combat.variant_sequences !== 'object') state.combat.variant_sequences = {};
-        if (!state.combat.parry_variant_sequences || typeof state.combat.parry_variant_sequences !== 'object') state.combat.parry_variant_sequences = {};
+        // Retire legacy defensive variant slots; old saves must not reactivate them.
+        delete state.combat.parry_variant_sequences;
+        delete state.combat.parry_variant_slots;
         for (var li = 0; li < limbIds.length; li++) {
             var lid2 = limbIds[li];
             state.combat.post_effect_sequences[lid2] = normalizePostEffectForLimbValue(state.combat.post_effect_sequences[lid2]);
             if (!Array.isArray(state.combat.variant_sequences[lid2])) state.combat.variant_sequences[lid2] = [];
-            if (!Array.isArray(state.combat.parry_variant_sequences[lid2])) state.combat.parry_variant_sequences[lid2] = [];
         }
         if (!state.combat.move_slot_power_levels || typeof state.combat.move_slot_power_levels !== 'object') state.combat.move_slot_power_levels = {};
         for (var lmpl = 0; lmpl < limbIds.length; lmpl++) {
@@ -988,7 +987,7 @@
         if (!fwId) return { chance: 0, reduce: 0 };
         var CS = global.CombatSkills;
         var sk = (CS && typeof CS.getSkill === 'function') ? CS.getSkill(fwId) : null;
-        if (!sk) return { chance: 0, reduce: 0 };
+        if (!sk || sk.category !== 'footwork' || getSkillLevel(fwId) < 1) return { chance: 0, reduce: 0 };
         var c = sk.parry_chance_bonus != null ? Number(sk.parry_chance_bonus) : 0;
         var r = sk.parry_damage_reduce_bonus != null ? Number(sk.parry_damage_reduce_bonus) : 0;
         if (!isFinite(c) || c <= 0) c = 0;
@@ -1078,6 +1077,7 @@
      */
     function getDisplayName(tpl, tier, character) {
         if (!tpl) return '?';
+        if (global.ForgingSystem && global.ForgingSystem.managed(tpl.item_id)) return global.ForgingSystem.name(tpl.item_id);
         if (global.FishingPond && global.FishingPond.recognition(tpl.item_id) === false) return tpl.placeholder_name || '尚未认识的物品';
         if (global.FishingPond && global.FishingPond.recognition(tpl.item_id) === true) return tpl.sn || tpl.name;
         var langLv = getSurvivalLanguageLevel(character);
@@ -1094,6 +1094,7 @@
      */
     function getDisplayDesc(tpl, tier, character) {
         if (!tpl) return '';
+        if (global.ForgingSystem && global.ForgingSystem.managed(tpl.item_id)) return global.ForgingSystem.description(tpl.item_id);
         if (global.FishingPond && global.FishingPond.recognition(tpl.item_id) === false) return tpl.placeholder_name || '';
         var langLv = getSurvivalLanguageLevel(character);
         if (langLv < 2) return '';
@@ -1333,6 +1334,7 @@
         var tpl = getItemTemplate(itemInstance.item_id);
         var ownWeight = tpl && tpl.weight_kg != null ? Number(tpl.weight_kg) : 0;
         if (itemInstance.sewing && global.SewingSystem) ownWeight = global.SewingSystem.stats(itemInstance).weight;
+        if (itemInstance.forged_component) ownWeight = itemInstance.forged_component.final_weight_kg;
         if (itemInstance.fishing_catch && /^fishing_catch_/.test(itemInstance.item_id) && Number.isFinite(itemInstance.fishing_catch.weight_kg) && itemInstance.fishing_catch.weight_kg > 0) ownWeight = itemInstance.fishing_catch.weight_kg;
         if (!isFinite(ownWeight) || ownWeight < 0) ownWeight = 0;
         var quantity = itemInstance.count != null ? Math.max(1, Math.floor(Number(itemInstance.count) || 1)) : 1;
@@ -1618,14 +1620,18 @@
         }
         var tpl = getItemTemplate(instance.item_id);
         if (!tpl) return { success: false, message: t('inv.equip.unknown_item') };
-        if (tpl.equip_slot !== slotId) return { success: false, message: t('inv.equip.slot_mismatch') };
+        var modularWeapon = global.ModularWeaponCombat && global.ModularWeaponCombat.isWeapon(instance);
+        if (modularWeapon) {
+            var weaponValidation = global.ModularWeaponCombat.validateEquip(instance, slotId);
+            if (!weaponValidation.success) return weaponValidation;
+        } else if (tpl.equip_slot !== slotId) return { success: false, message: t('inv.equip.slot_mismatch') };
         if (slotId === 'vest' && global.SewingSystem) return { success: false, message: '弹挂收纳已整合进衣服口袋。' };
         var maxEnchants = (tpl.enchant_slots != null) ? parseInt(tpl.enchant_slots, 10) : 6;
         var enc = instance.enchants;
         if (enc && enc.length > maxEnchants) return { success: false, message: t('inv.equip.enchant_over') };
 
         // 兵器门槛（05 5.5.3）：先天筋骨 < 0.5×Req 不能装备/挥动
-        if ((slotId === 'weapon_left' || slotId === 'weapon_right')
+        if (!modularWeapon && (slotId === 'weapon_left' || slotId === 'weapon_right')
             && global.CharacterAttributes && typeof global.CharacterAttributes.canUseWeapon === 'function') {
             var wreqT = tpl.req_innate_jingu != null ? Number(tpl.req_innate_jingu) : undefined;
             if (!global.CharacterAttributes.canUseWeapon(wreqT)) {
@@ -1644,7 +1650,9 @@
             inst.modules = mods;
             delete inst.enchants;
         }
+        if (global.CombatMetaSkills && state.equipment[slotId]) global.CombatMetaSkills.weaponChanged(state.equipment[slotId].instance_id);
         state.equipment[slotId] = inst;
+        if (modularWeapon) global.ModularWeaponCombat.onEquip(inst);
         if ((slotId === 'clothing' || slotId === 'head') && global.Survival && global.Survival.setDiqiShieldRemaining) global.Survival.setDiqiShieldRemaining(0);
         if (global.Survival && global.Survival.syncMoodStateBuff) global.Survival.syncMoodStateBuff();
         if (typeof global !== 'undefined' && global.CharacterAttributes && typeof global.CharacterAttributes.recalcCharacterStats === 'function') {
@@ -1780,6 +1788,7 @@
         if (!arr || index < 0 || index >= arr.length) return { item: null, success: false };
         var raw = arr[index];
         if (!raw || !raw.item_id) return { item: null, success: false };
+        if (global.ForgingSystem && global.ForgingSystem.isInstanceLocked(raw.instance_id)) return {item:null,success:false,reason:'item_locked'};
         if (global.FishingSession && typeof global.FishingSession.isInstanceLocked === 'function' && global.FishingSession.isInstanceLocked(raw.instance_id)) {
             return { item: null, success: false, reason: 'item_locked' };
         }
@@ -1803,6 +1812,8 @@
     function unequip(slotId, optGroundPos) {
         if (EQUIP_SLOT_IDS.indexOf(slotId) < 0) return null;
         var current = state.equipment[slotId];
+        if (current && global.ForgingSystem && global.ForgingSystem.isInstanceLocked(current.instance_id)) return null;
+        if (global.ModularWeaponCombat) global.ModularWeaponCombat.clearTransient(current);
         state.equipment[slotId] = null;
         if ((slotId === 'clothing' || slotId === 'head') && global.Survival && global.Survival.setDiqiShieldRemaining) global.Survival.setDiqiShieldRemaining(0);
         if (global.Survival && global.Survival.syncMoodStateBuff) global.Survival.syncMoodStateBuff();
@@ -1941,10 +1952,15 @@
      * @param {number} index - 地面物品列表中的索引
      * @returns {{ success: boolean, message?: string }}
      */
-    function equipFromGround(mapId, x, y, index) {
+    function equipFromGround(mapId, x, y, index, preferredSlot) {
         var key = getGroundItemKey(mapId, x, y);
         var arr = state.ground_items[key];
         if (!arr || index < 0 || index >= arr.length) return { success: false, message: t('inv.pickup.no_item') };
+        var modularWeapon = global.ModularWeaponCombat && global.ModularWeaponCombat.isWeapon(arr[index]);
+        if (modularWeapon) {
+            var check = global.ModularWeaponCombat.validateEquip(arr[index], preferredSlot || getItemTemplate(arr[index].item_id).equip_slot);
+            if (!check.success) return check;
+        }
         var item = removeItemFromGround(mapId, x, y, index);
         if (!item || !item.item_id) {
             if (item) addItemToGround(mapId, x, y, item);
@@ -1955,7 +1971,7 @@
             addItemToGround(mapId, x, y, item);
             return { success: false, message: t('inv.pickup.not_equipment') };
         }
-        var slotId = tpl.equip_slot;
+        var slotId = modularWeapon && preferredSlot ? preferredSlot : tpl.equip_slot;
         if (EQUIP_SLOT_IDS.indexOf(slotId) < 0) {
             addItemToGround(mapId, x, y, item);
             return { success: false, message: t('inv.equip.invalid_slot') };
@@ -2189,11 +2205,6 @@
         }
     }
 
-    function getParryVariantMaxSlotsForSkillLevel(level) {
-        var lv = Math.max(0, parseInt(level, 10) || 0);
-        return Math.max(0, Math.min(5, Math.floor(lv / 200)));
-    }
-
     function getVariantMeta(variantId) {
         if (!variantId || typeof global === 'undefined' || !global.CombatVariants || typeof global.CombatVariants.getVariant !== 'function') return null;
         return global.CombatVariants.getVariant(String(variantId));
@@ -2212,11 +2223,6 @@
             out.push(k);
         }
         return out;
-    }
-
-    function variantScopeAllowsParry(meta) {
-        var s = String((meta && meta.assist_scope) || 'active_moves');
-        return s === 'parry' || s === 'both';
     }
 
     function getVariantUnlockDeps() {
@@ -2291,24 +2297,6 @@
             }
             state.combat.move_sequences[lid] = seq;
 
-            var parrySeqRaw = Array.isArray(state.combat.parry_variant_sequences[lid]) ? state.combat.parry_variant_sequences[lid] : [];
-            var cap = getParryVariantMaxSlotsForSkillLevel(getSkillLevel(state.combat.limbs[lid] && state.combat.limbs[lid].parry));
-            var parrySeq = parrySeqRaw.slice(0, cap);
-            while (parrySeq.length < cap) parrySeq.push(null);
-            var seen = {};
-            for (var pi = 0; pi < parrySeq.length; pi++) {
-                var pvid = parrySeq[pi];
-                if (!pvid) continue;
-                var pm = getVariantMeta(pvid);
-                if (!pm) { parrySeq[pi] = null; continue; }
-                if (CV && typeof CV.isVariantUnlocked === 'function' && !CV.isVariantUnlocked(pm, deps)) { parrySeq[pi] = null; continue; }
-                if (!variantScopeAllowsParry(pm) || seen[String(pvid)]) {
-                    parrySeq[pi] = null;
-                    continue;
-                }
-                seen[String(pvid)] = 1;
-            }
-            state.combat.parry_variant_sequences[lid] = parrySeq;
         }
     }
 
@@ -2340,18 +2328,6 @@
         for (var i = 0; i < seq.length; i++) {
             var s = String(seq[i] || '');
             if (s.indexOf('variant:') === 0) out.push(s.slice('variant:'.length));
-        }
-        return normalizeUniqueStringArray(out);
-    }
-
-    function getParryVariantIdsForLimb(limbId) {
-        ensureCombatState();
-        if (COMBAT_LIMB_IDS.indexOf(limbId) < 0) return [];
-        clearInvalidVariantSlotsBySourceLevel();
-        var out = [];
-        var arr = state.combat.parry_variant_sequences[limbId] || [];
-        for (var i = 0; i < arr.length; i++) {
-            if (arr[i]) out.push(String(arr[i]));
         }
         return normalizeUniqueStringArray(out);
     }
@@ -2586,6 +2562,29 @@
         if (cfg.item_display_tier_threshold_2 !== undefined) displayTierThreshold2 = cfg.item_display_tier_threshold_2;
     }
 
+    function migrateBasicParryIntoFootwork() {
+        var oldId = 'combat_basic_parry', newId = 'combat_basic_footwork';
+        var old = state.skills[oldId];
+        if (old) {
+            var current = state.skills[newId] || { level: 0, move_usage: {}, study_exp: 0 };
+            current.level = Math.max(Number(current.level) || 0, Number(old.level) || 0);
+            current.study_exp = (Number(current.study_exp) || 0) + (Number(old.study_exp) || 0);
+            current.move_usage = current.move_usage || {};
+            var oldUses = old.move_usage || {};
+            for (var key in oldUses) {
+                if (Object.prototype.hasOwnProperty.call(oldUses, key)) current.move_usage[key] = (Number(current.move_usage[key]) || 0) + (Number(oldUses[key]) || 0);
+            }
+            state.skills[newId] = current;
+            delete state.skills[oldId];
+        }
+        var bonuses = state.skill_max_level_bonus;
+        if (bonuses && Object.prototype.hasOwnProperty.call(bonuses, oldId)) {
+            bonuses[newId] = Object.prototype.hasOwnProperty.call(bonuses, newId)
+                ? Math.max(Number(bonuses[newId]) || 0, Number(bonuses[oldId]) || 0) : bonuses[oldId];
+            delete bonuses[oldId];
+        }
+    }
+
     function setState(s) {
         if (!s) return;
         state.sewing_version = s.sewing_version || 0;
@@ -2625,7 +2624,7 @@
         if (s.inventory_backpack) state.inventory_backpack = normalizeLoadedArray(s.inventory_backpack);
         if (s.inventory_vehicle) state.inventory_vehicle = normalizeLoadedArray(s.inventory_vehicle);
         if (s.bound_vehicle_id !== undefined) state.bound_vehicle_id = s.bound_vehicle_id;
-        if (s.skills) state.skills = s.skills;
+        if (s.skills) state.skills = JSON.parse(JSON.stringify(s.skills));
         normalizeSkillsState();
         if (s.skill_max_level_bonus && typeof s.skill_max_level_bonus === 'object') {
             state.skill_max_level_bonus = {};
@@ -2633,6 +2632,7 @@
                 if (s.skill_max_level_bonus.hasOwnProperty(bk)) state.skill_max_level_bonus[bk] = s.skill_max_level_bonus[bk];
             }
         }
+        migrateBasicParryIntoFootwork();
         clampSkillLevelsToProgressionCaps();
         ensureAnatomyStudiesSkillPresent();
         if (s.ground_items && typeof s.ground_items === 'object') {
@@ -2645,6 +2645,12 @@
         if (s.combat && typeof s.combat === 'object') {
             var loadHubs = s.combat.hubs && typeof s.combat.hubs === 'object' ? s.combat.hubs : {};
             var footworkId = loadHubs.footwork != null ? loadHubs.footwork : loadHubs.light;
+            if (!footworkId && getSkillLevel('combat_basic_footwork') >= 1 && s.combat.limbs) {
+                var hadBasicGuard = COMBAT_LIMB_IDS.some(function (lid) {
+                    return normalizeLimbSkillValue(s.combat.limbs[lid] && s.combat.limbs[lid].parry) === 'combat_basic_parry';
+                });
+                if (hadBasicGuard) footworkId = 'combat_basic_footwork';
+            }
             state.combat = {
                 limbs: {},
                 hubs: { breath: loadHubs.breath != null ? loadHubs.breath : null, footwork: footworkId != null ? footworkId : null },
@@ -2675,15 +2681,6 @@
                     }
                     return out;
                 })(),
-                parry_variant_sequences: (function () {
-                    var src = s.combat.parry_variant_sequences;
-                    var out = {};
-                    for (var i = 0; i < COMBAT_LIMB_IDS.length; i++) {
-                        var lid = COMBAT_LIMB_IDS[i];
-                        out[lid] = (src && Array.isArray(src[lid])) ? src[lid].slice() : [];
-                    }
-                    return out;
-                })(),
                 variant_effect_param_overrides: (function () {
                     var src = s.combat.variant_effect_param_overrides;
                     if (!src || typeof src !== 'object') return {};
@@ -2701,8 +2698,8 @@
             for (var li = 0; li < limbIds.length; li++) {
                 var lid = limbIds[li];
                 state.combat.limbs[lid] = s.combat.limbs && s.combat.limbs[lid]
-                    ? { active: s.combat.limbs[lid].active, parry: s.combat.limbs[lid].parry }
-                    : { active: null, parry: null };
+                    ? { active: s.combat.limbs[lid].active }
+                    : { active: null };
                 state.combat.move_sequences[lid] = (s.combat.move_sequences && Array.isArray(s.combat.move_sequences[lid])) ? s.combat.move_sequences[lid].slice() : [];
             }
             state.combat.move_sequence_cursors = { lhand: 0, rhand: 0, lfoot: 0, rfoot: 0 };
@@ -2776,13 +2773,12 @@
             move_sequence_cursors: {},
             post_effect_sequences: {},
             variant_sequences: {},
-            parry_variant_sequences: {},
             move_slot_power_levels: {}
         };
         ensureMoveSequenceCursors();
         for (var li = 0; li < COMBAT_LIMB_IDS.length; li++) {
             var lid = COMBAT_LIMB_IDS[li];
-            combatCopy.limbs[lid] = { active: state.combat.limbs[lid].active, parry: state.combat.limbs[lid].parry };
+            combatCopy.limbs[lid] = { active: state.combat.limbs[lid].active };
             combatCopy.move_sequences[lid] = (state.combat.move_sequences[lid] || []).slice();
             combatCopy.move_sequence_cursors[lid] = Math.floor(Number(state.combat.move_sequence_cursors[lid]) || 0);
             combatCopy.move_slot_power_levels[lid] = (state.combat.move_slot_power_levels && Array.isArray(state.combat.move_slot_power_levels[lid])) ? state.combat.move_slot_power_levels[lid].slice() : [];
@@ -2798,11 +2794,6 @@
         for (var lidV in state.combat.variant_sequences) {
             if (Object.prototype.hasOwnProperty.call(state.combat.variant_sequences, lidV)) {
                 combatCopy.variant_sequences[lidV] = (state.combat.variant_sequences[lidV] || []).slice();
-            }
-        }
-        for (var lidPV in state.combat.parry_variant_sequences) {
-            if (Object.prototype.hasOwnProperty.call(state.combat.parry_variant_sequences, lidPV)) {
-                combatCopy.parry_variant_sequences[lidPV] = (state.combat.parry_variant_sequences[lidPV] || []).slice();
             }
         }
         ensureLimbStrikeOrder();
@@ -2946,11 +2937,11 @@
         ensureCombatState();
         clearInvalidVariantSlotsBySourceLevel();
         var c = state.combat;
-        var out = { limbs: {}, hubs: { breath: c.hubs.breath, footwork: c.hubs.footwork }, move_sequences: {}, skill_move_sequences: {}, move_sequence_cursors: {}, post_effect_sequences: {}, variant_sequences: {}, parry_variant_sequences: {}, move_slot_power_levels: {} };
+        var out = { limbs: {}, hubs: { breath: c.hubs.breath, footwork: c.hubs.footwork }, move_sequences: {}, skill_move_sequences: {}, move_sequence_cursors: {}, post_effect_sequences: {}, variant_sequences: {}, move_slot_power_levels: {} };
         ensureMoveSequenceCursors();
         for (var i = 0; i < COMBAT_LIMB_IDS.length; i++) {
             var lid = COMBAT_LIMB_IDS[i];
-            out.limbs[lid] = { active: c.limbs[lid].active, parry: c.limbs[lid].parry };
+            out.limbs[lid] = { active: c.limbs[lid].active };
             out.move_sequences[lid] = (c.move_sequences[lid] || []).slice();
             out.move_sequence_cursors[lid] = Math.floor(Number(c.move_sequence_cursors[lid]) || 0);
             out.move_slot_power_levels[lid] = (c.move_slot_power_levels && Array.isArray(c.move_slot_power_levels[lid])) ? c.move_slot_power_levels[lid].slice() : [];
@@ -2966,11 +2957,6 @@
         for (var lidV in c.variant_sequences) {
             if (Object.prototype.hasOwnProperty.call(c.variant_sequences, lidV)) {
                 out.variant_sequences[lidV] = (c.variant_sequences[lidV] || []).slice();
-            }
-        }
-        for (var lidPV in c.parry_variant_sequences) {
-            if (Object.prototype.hasOwnProperty.call(c.parry_variant_sequences, lidPV)) {
-                out.parry_variant_sequences[lidPV] = (c.parry_variant_sequences[lidPV] || []).slice();
             }
         }
         ensureLimbStrikeOrder();
@@ -2998,7 +2984,6 @@
             for (var lid in partial.limbs) {
                 if (COMBAT_LIMB_IDS.indexOf(lid) >= 0 && partial.limbs[lid]) {
                     if (partial.limbs[lid].active !== undefined) state.combat.limbs[lid].active = partial.limbs[lid].active;
-                    if (partial.limbs[lid].parry !== undefined) state.combat.limbs[lid].parry = partial.limbs[lid].parry;
                 }
             }
         }
@@ -3051,12 +3036,6 @@
             for (var lidV in partial.variant_sequences) {
                 if (COMBAT_LIMB_IDS.indexOf(lidV) < 0 || !Array.isArray(partial.variant_sequences[lidV])) continue;
                 state.combat.variant_sequences[lidV] = partial.variant_sequences[lidV].slice();
-            }
-        }
-        if (partial.parry_variant_sequences && typeof partial.parry_variant_sequences === 'object') {
-            for (var lidPV in partial.parry_variant_sequences) {
-                if (COMBAT_LIMB_IDS.indexOf(lidPV) < 0 || !Array.isArray(partial.parry_variant_sequences[lidPV])) continue;
-                state.combat.parry_variant_sequences[lidPV] = partial.parry_variant_sequences[lidPV].slice();
             }
         }
         if (partial.move_slot_power_levels && typeof partial.move_slot_power_levels === 'object') {
@@ -3180,7 +3159,6 @@
         getCombatState: getCombatState,
         setCombatState: setCombatState,
         getActiveVariantIdsForLimb: getActiveVariantIdsForLimb,
-        getParryVariantIdsForLimb: getParryVariantIdsForLimb,
         getVariantEffectParamOverride: getVariantEffectParamOverride,
         setVariantEffectParamOverride: setVariantEffectParamOverride,
         clearVariantEffectParamOverride: clearVariantEffectParamOverride,

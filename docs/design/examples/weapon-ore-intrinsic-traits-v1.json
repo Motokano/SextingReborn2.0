@@ -1,0 +1,1678 @@
+{
+  "version": 1,
+  "date": "2026-10-14",
+  "status": "core_design_accepted_supporting_details_draft_not_runtime",
+  "description": "八矿基线加四矿扩展。用户认可十二矿名单、固有属性首轮效果及三星按容量份额继承；配套材性、矿点与状态细则仍草案。",
+  "baseline": {
+    "file": "weapon-forging-ores-v1.json",
+    "revision": 7,
+    "scorePolicy": "保留八矿原分值与83条达标见证；本文件以ID叠加属性，仅追加四种材料路线。",
+    "oreIds": [
+      "ore_iron_raw",
+      "ore_copper_raw",
+      "ore_tin_raw",
+      "ore_lead_raw",
+      "ore_zinc_raw",
+      "ore_titanium_raw",
+      "ore_tungsten_raw",
+      "ore_molybdenum_raw"
+    ]
+  },
+  "sourceDoc": "../weapon-ore-intrinsic-traits-draft.md",
+  "axes": [
+    "hardness",
+    "toughness",
+    "deformationResistance",
+    "density"
+  ],
+  "scoreBasis": "每件原矿对应1份该矿加工投料，单份四项分值不变；数量1∶1、不产生边角料，不表示原矿物理材性或原矿与成品等重。",
+  "sources": [
+    {
+      "id": "gd-plan",
+      "title": "广东省矿产资源总体规划（2021—2025年）",
+      "url": "https://nr.gd.gov.cn/attachment/0/505/505595/4091339.pdf",
+      "scope": "资源概况含锰、金、银，矿区表含云安高枨—南沙河钨锡锑；仅支持背景，不支持游戏数值或当前生产状态。"
+    }
+  ],
+  "oreAdditions": [
+    {
+      "id": "ore_manganese_raw",
+      "name": "黑纹矿",
+      "displayName": "黑纹矿",
+      "existingItem": false,
+      "rarity": "进阶",
+      "role": "抗变形和韧性兼顾，硬度普通",
+      "scores": {
+        "hardness": 22,
+        "toughness": 32,
+        "deformationResistance": 44,
+        "density": 24
+      },
+      "realMineralFamily": "锰矿",
+      "namingBasis": "游戏俗称，不宣称为当地实际俗称",
+      "visualCue": "黑褐石块上横着深色条纹",
+      "visualCueStatus": "游戏美术识别设计，不代表同矿种所有实物外观",
+      "guangdongBackground": "广东省级规划记载锰资源；不将资源概况的地区合并列表解释为某个具体矿山",
+      "sourceIds": [
+        "gd-plan"
+      ],
+      "rawItem": {
+        "category": "ore",
+        "subCategory": "alloy_metal",
+        "weightKg": 2.4,
+        "baseValue": 600,
+        "valuesAreProposed": true,
+        "identity": {
+          "sn": "黑纹矿",
+          "placeholder_name": "黑纹块石",
+          "fn_before": "黑褐石块上横着深色条纹，看着能炼东西",
+          "fn": "这种带深色条纹的含锰矿石被叫作黑纹矿。"
+        },
+        "stackLimit": 1,
+        "spoilageTicks": 0,
+        "source": [
+          "mining"
+        ],
+        "productionLines": [
+          "forge"
+        ],
+        "tags": [
+          "material",
+          "ore",
+          "craft",
+          "trade_raw"
+        ],
+        "priceClass": "material",
+        "volatility": "mid",
+        "regionRestrict": 0,
+        "infoModuleSetId": null,
+        "spawnPolicy": {
+          "mode": "explicit_mining_allowlist_only",
+          "allowlist": "oreAdditions[ore_manganese_raw].mining.proposedFloors",
+          "note": "regionRestrict=0不自动加入全局资源池；必须通过完整允许楼层。",
+          "status": "candidate_not_runtime_placement"
+        },
+        "unsupportedCapabilities": [
+          "edible",
+          "usable",
+          "fuel",
+          "water_supply"
+        ],
+        "runtimeStatus": "new_item_definition_proposed",
+        "productionLinesPolicy": "本稿只声明新增铸造用途候选；复用条目接入时合并保留既有用途，不覆盖其他生产或交易路线。"
+      },
+      "mining": {
+        "pointName": "黑纹矿脉",
+        "proposedFloors": {
+          "buildingRuins": [
+            4
+          ],
+          "walledCity": [
+            2,
+            4,
+            6
+          ]
+        },
+        "relativeSpawnWeight": 5,
+        "staminaCost": 12,
+        "usesRange": [
+          2,
+          3
+        ],
+        "mainYield": 1,
+        "status": "candidate",
+        "companionPolicy": "不新增伴生规则"
+      },
+      "information": {
+        "forgeUse": {
+          "text": "这种矿石可以加工成铸造用料。",
+          "requires": [
+            "forge_use_known"
+          ]
+        },
+        "fullKnownSummary": {
+          "text": "抗变形和韧性兼顾，硬度普通。",
+          "requires": [
+            "forge_use_known",
+            "hardness_direction_known",
+            "toughness_direction_known",
+            "deformationResistance_direction_known",
+            "density_direction_known"
+          ]
+        },
+        "properties": {
+          "hardness": {
+            "label": "硬度",
+            "directionText": "提供中等硬度。",
+            "directionRequires": [
+              "forge_use_known",
+              "hardness_direction_known"
+            ],
+            "scoreRef": "scores.hardness",
+            "scoreRequires": [
+              "material_seen",
+              "forge_use_known",
+              "feed_route_known",
+              "feed_unit_known",
+              "life_forging_level>=10"
+            ],
+            "unknownPolicy": "omit",
+            "scoreUnlockRef": "weapon-forging-balance-v1.json:knowledgeUnlocks.material_scores"
+          },
+          "toughness": {
+            "label": "韧性",
+            "directionText": "能补充韧性。",
+            "directionRequires": [
+              "forge_use_known",
+              "toughness_direction_known"
+            ],
+            "scoreRef": "scores.toughness",
+            "scoreRequires": [
+              "material_seen",
+              "forge_use_known",
+              "feed_route_known",
+              "feed_unit_known",
+              "life_forging_level>=10"
+            ],
+            "unknownPolicy": "omit",
+            "scoreUnlockRef": "weapon-forging-balance-v1.json:knowledgeUnlocks.material_scores"
+          },
+          "deformationResistance": {
+            "label": "抗变形",
+            "directionText": "擅长补抗变形。",
+            "directionRequires": [
+              "forge_use_known",
+              "deformationResistance_direction_known"
+            ],
+            "scoreRef": "scores.deformationResistance",
+            "scoreRequires": [
+              "material_seen",
+              "forge_use_known",
+              "feed_route_known",
+              "feed_unit_known",
+              "life_forging_level>=10"
+            ],
+            "unknownPolicy": "omit",
+            "scoreUnlockRef": "weapon-forging-balance-v1.json:knowledgeUnlocks.material_scores"
+          },
+          "density": {
+            "label": "密度",
+            "directionText": "分量适中，投多仍会增重。",
+            "directionRequires": [
+              "forge_use_known",
+              "density_direction_known"
+            ],
+            "scoreRef": "scores.density",
+            "scoreRequires": [
+              "material_seen",
+              "forge_use_known",
+              "feed_route_known",
+              "feed_unit_known",
+              "life_forging_level>=10"
+            ],
+            "unknownPolicy": "omit",
+            "scoreUnlockRef": "weapon-forging-balance-v1.json:knowledgeUnlocks.material_scores"
+          }
+        },
+        "location": {
+          "requires": [
+            "specific_location_evidence"
+          ],
+          "policy": "只显示角色实际采到的位置或有来源的地点线索，不从本表允许楼层公开全分布。"
+        },
+        "processing": {
+          "processingRef": "weapon-forging-balance-v1.json:ores[id=ore_manganese_raw].processing",
+          "requires": [
+            "material_seen",
+            "forge_use_known",
+            "feed_route_known"
+          ],
+          "inputOutput": "one_raw_item_to_one_feed_unit_no_byproducts",
+          "unknownPolicy": "omit"
+        }
+      },
+      "discoveryCandidate": {
+        "title": "条纹留样盒",
+        "site": "城寨2层的保留工料区",
+        "objectEvidence": "盒内放有带深色条纹的黑褐石样。",
+        "chain": "亲自观察、检查实物认识身份；在铸造台检查该原矿认识本矿加工用途、路线和单份规格。加工锻造与使用提供材性和效果证据，数值按铸造等级开放；不试料，不因接触或检查一次全部鉴定。",
+        "status": "scene_binding_pending",
+        "optional": true,
+        "repeatViewGrantsKnowledge": false,
+        "knowledgeSources": [
+          "personal_observation_and_inspection",
+          "own_processing_and_forging",
+          "own_component_use"
+        ]
+      }
+    },
+    {
+      "id": "ore_antimony_raw",
+      "name": "针晶矿",
+      "displayName": "针晶矿",
+      "existingItem": false,
+      "rarity": "进阶",
+      "role": "硬度较高且密度不高，韧性很低",
+      "scores": {
+        "hardness": 42,
+        "toughness": 10,
+        "deformationResistance": 30,
+        "density": 18
+      },
+      "realMineralFamily": "锑矿",
+      "namingBasis": "游戏俗称，不宣称为当地实际俗称",
+      "visualCue": "灰亮细晶在石面聚成针簇",
+      "visualCueStatus": "游戏美术识别设计，不代表同矿种所有实物外观",
+      "guangdongBackground": "云安高枨—南沙河钨锡锑多金属矿背景",
+      "sourceIds": [
+        "gd-plan"
+      ],
+      "rawItem": {
+        "category": "ore",
+        "subCategory": "alloy_metal",
+        "weightKg": 1.7,
+        "baseValue": 750,
+        "valuesAreProposed": true,
+        "identity": {
+          "sn": "针晶矿",
+          "placeholder_name": "针簇灰石",
+          "fn_before": "灰亮细晶在石面聚成针簇，看着能炼东西",
+          "fn": "这种带针状晶簇的含锑矿石被叫作针晶矿。"
+        },
+        "stackLimit": 1,
+        "spoilageTicks": 0,
+        "source": [
+          "mining"
+        ],
+        "productionLines": [
+          "forge"
+        ],
+        "tags": [
+          "material",
+          "ore",
+          "craft",
+          "trade_raw"
+        ],
+        "priceClass": "rare",
+        "volatility": "mid",
+        "regionRestrict": 0,
+        "infoModuleSetId": null,
+        "spawnPolicy": {
+          "mode": "explicit_mining_allowlist_only",
+          "allowlist": "oreAdditions[ore_antimony_raw].mining.proposedFloors",
+          "note": "regionRestrict=0不自动加入全局资源池；必须通过完整允许楼层。",
+          "status": "candidate_not_runtime_placement"
+        },
+        "unsupportedCapabilities": [
+          "edible",
+          "usable",
+          "fuel",
+          "water_supply"
+        ],
+        "runtimeStatus": "new_item_definition_proposed",
+        "productionLinesPolicy": "本稿只声明新增铸造用途候选；复用条目接入时合并保留既有用途，不覆盖其他生产或交易路线。"
+      },
+      "mining": {
+        "pointName": "针晶矿脉",
+        "proposedFloors": {
+          "buildingRuins": [],
+          "walledCity": [
+            5,
+            7,
+            8
+          ]
+        },
+        "relativeSpawnWeight": 3,
+        "staminaCost": 16,
+        "usesRange": [
+          1,
+          2
+        ],
+        "mainYield": 1,
+        "status": "candidate",
+        "companionPolicy": "不新增伴生规则"
+      },
+      "information": {
+        "forgeUse": {
+          "text": "这种矿石可以加工成铸造用料。",
+          "requires": [
+            "forge_use_known"
+          ]
+        },
+        "fullKnownSummary": {
+          "text": "硬度较高且密度不高，韧性很低。",
+          "requires": [
+            "forge_use_known",
+            "hardness_direction_known",
+            "toughness_direction_known",
+            "deformationResistance_direction_known",
+            "density_direction_known"
+          ]
+        },
+        "properties": {
+          "hardness": {
+            "label": "硬度",
+            "directionText": "能提供较多硬度。",
+            "directionRequires": [
+              "forge_use_known",
+              "hardness_direction_known"
+            ],
+            "scoreRef": "scores.hardness",
+            "scoreRequires": [
+              "material_seen",
+              "forge_use_known",
+              "feed_route_known",
+              "feed_unit_known",
+              "life_forging_level>=10"
+            ],
+            "unknownPolicy": "omit",
+            "scoreUnlockRef": "weapon-forging-balance-v1.json:knowledgeUnlocks.material_scores"
+          },
+          "toughness": {
+            "label": "韧性",
+            "directionText": "韧性很低，需其他用料补足。",
+            "directionRequires": [
+              "forge_use_known",
+              "toughness_direction_known"
+            ],
+            "scoreRef": "scores.toughness",
+            "scoreRequires": [
+              "material_seen",
+              "forge_use_known",
+              "feed_route_known",
+              "feed_unit_known",
+              "life_forging_level>=10"
+            ],
+            "unknownPolicy": "omit",
+            "scoreUnlockRef": "weapon-forging-balance-v1.json:knowledgeUnlocks.material_scores"
+          },
+          "deformationResistance": {
+            "label": "抗变形",
+            "directionText": "能补一些抗变形。",
+            "directionRequires": [
+              "forge_use_known",
+              "deformationResistance_direction_known"
+            ],
+            "scoreRef": "scores.deformationResistance",
+            "scoreRequires": [
+              "material_seen",
+              "forge_use_known",
+              "feed_route_known",
+              "feed_unit_known",
+              "life_forging_level>=10"
+            ],
+            "unknownPolicy": "omit",
+            "scoreUnlockRef": "weapon-forging-balance-v1.json:knowledgeUnlocks.material_scores"
+          },
+          "density": {
+            "label": "密度",
+            "directionText": "密度贡献不高。",
+            "directionRequires": [
+              "forge_use_known",
+              "density_direction_known"
+            ],
+            "scoreRef": "scores.density",
+            "scoreRequires": [
+              "material_seen",
+              "forge_use_known",
+              "feed_route_known",
+              "feed_unit_known",
+              "life_forging_level>=10"
+            ],
+            "unknownPolicy": "omit",
+            "scoreUnlockRef": "weapon-forging-balance-v1.json:knowledgeUnlocks.material_scores"
+          }
+        },
+        "location": {
+          "requires": [
+            "specific_location_evidence"
+          ],
+          "policy": "只显示角色实际采到的位置或有来源的地点线索，不从本表允许楼层公开全分布。"
+        },
+        "processing": {
+          "processingRef": "weapon-forging-balance-v1.json:ores[id=ore_antimony_raw].processing",
+          "requires": [
+            "material_seen",
+            "forge_use_known",
+            "feed_route_known"
+          ],
+          "inputOutput": "one_raw_item_to_one_feed_unit_no_byproducts",
+          "unknownPolicy": "omit"
+        }
+      },
+      "discoveryCandidate": {
+        "title": "针簇样匣",
+        "site": "城寨5层的保留工料区",
+        "objectEvidence": "匣内放有长着灰亮针状晶簇的石样。",
+        "chain": "亲自观察、检查实物认识身份；在铸造台检查该原矿认识本矿加工用途、路线和单份规格。加工锻造与使用提供材性和效果证据，数值按铸造等级开放；不试料，不因接触或检查一次全部鉴定。",
+        "status": "scene_binding_pending",
+        "optional": true,
+        "repeatViewGrantsKnowledge": false,
+        "knowledgeSources": [
+          "personal_observation_and_inspection",
+          "own_processing_and_forging",
+          "own_component_use"
+        ]
+      }
+    },
+    {
+      "id": "ore_silver_raw",
+      "name": "银矿",
+      "displayName": "银矿",
+      "existingItem": true,
+      "rarity": "稀有",
+      "role": "韧性较高，硬度及抗变形偏低",
+      "scores": {
+        "hardness": 10,
+        "toughness": 38,
+        "deformationResistance": 18,
+        "density": 36
+      },
+      "realMineralFamily": "银矿",
+      "namingBasis": "复用已有名称",
+      "visualCue": "暗色石块缝里泛着白光",
+      "visualCueStatus": "游戏美术识别设计，不代表同矿种所有实物外观",
+      "guangdongBackground": "广东省级规划记载银资源",
+      "sourceIds": [
+        "gd-plan"
+      ],
+      "rawItem": {
+        "category": "ore",
+        "subCategory": "precious",
+        "weightKg": 1.5,
+        "baseValue": 600,
+        "valuesAreProposed": false,
+        "identity": {
+          "sn": "银矿",
+          "placeholder_name": "泛白光的石块",
+          "fn_before": "暗色石块缝里泛着白光，看着能炼东西",
+          "fn": "含银的矿石，暗色石缝里透出些白亮纹路。"
+        },
+        "stackLimit": 1,
+        "spoilageTicks": 0,
+        "source": [
+          "mining"
+        ],
+        "productionLines": [
+          "forge"
+        ],
+        "tags": [
+          "material",
+          "ore",
+          "dungeon_only"
+        ],
+        "priceClass": "rare",
+        "volatility": "high",
+        "regionRestrict": 6,
+        "infoModuleSetId": null,
+        "spawnPolicy": {
+          "mode": "explicit_mining_allowlist_only",
+          "allowlist": "oreAdditions[ore_silver_raw].mining.proposedFloors",
+          "note": "保留旧region_restrict=6，不解释为楼层下限；首版矿点使用显式允许层。本稿不改运行字段。",
+          "status": "candidate_not_runtime_placement"
+        },
+        "unsupportedCapabilities": [
+          "edible",
+          "usable",
+          "fuel",
+          "water_supply"
+        ],
+        "runtimeStatus": "existing_item_unchanged_forge_route_and_text_proposed",
+        "productionLinesPolicy": "本稿只声明新增铸造用途候选；复用条目接入时合并保留既有用途，不覆盖其他生产或交易路线。"
+      },
+      "mining": {
+        "pointName": "银矿脉",
+        "proposedFloors": {
+          "buildingRuins": [],
+          "walledCity": [
+            5
+          ]
+        },
+        "relativeSpawnWeight": null,
+        "staminaCost": null,
+        "usesRange": null,
+        "mainYield": 1,
+        "status": "reuse_first_release_floors_no_new_point_parameters",
+        "companionPolicy": "保留城寨5层粗铜矿石伴生银矿规划；不新增其他伴生规则"
+      },
+      "information": {
+        "forgeUse": {
+          "text": "这种矿石可以加工成铸造用料。",
+          "requires": [
+            "forge_use_known"
+          ]
+        },
+        "fullKnownSummary": {
+          "text": "韧性较高，硬度及抗变形偏低。",
+          "requires": [
+            "forge_use_known",
+            "hardness_direction_known",
+            "toughness_direction_known",
+            "deformationResistance_direction_known",
+            "density_direction_known"
+          ]
+        },
+        "properties": {
+          "hardness": {
+            "label": "硬度",
+            "directionText": "硬度贡献较低。",
+            "directionRequires": [
+              "forge_use_known",
+              "hardness_direction_known"
+            ],
+            "scoreRef": "scores.hardness",
+            "scoreRequires": [
+              "material_seen",
+              "forge_use_known",
+              "feed_route_known",
+              "feed_unit_known",
+              "life_forging_level>=10"
+            ],
+            "unknownPolicy": "omit",
+            "scoreUnlockRef": "weapon-forging-balance-v1.json:knowledgeUnlocks.material_scores"
+          },
+          "toughness": {
+            "label": "韧性",
+            "directionText": "适合补充韧性。",
+            "directionRequires": [
+              "forge_use_known",
+              "toughness_direction_known"
+            ],
+            "scoreRef": "scores.toughness",
+            "scoreRequires": [
+              "material_seen",
+              "forge_use_known",
+              "feed_route_known",
+              "feed_unit_known",
+              "life_forging_level>=10"
+            ],
+            "unknownPolicy": "omit",
+            "scoreUnlockRef": "weapon-forging-balance-v1.json:knowledgeUnlocks.material_scores"
+          },
+          "deformationResistance": {
+            "label": "抗变形",
+            "directionText": "抗变形贡献不高。",
+            "directionRequires": [
+              "forge_use_known",
+              "deformationResistance_direction_known"
+            ],
+            "scoreRef": "scores.deformationResistance",
+            "scoreRequires": [
+              "material_seen",
+              "forge_use_known",
+              "feed_route_known",
+              "feed_unit_known",
+              "life_forging_level>=10"
+            ],
+            "unknownPolicy": "omit",
+            "scoreUnlockRef": "weapon-forging-balance-v1.json:knowledgeUnlocks.material_scores"
+          },
+          "density": {
+            "label": "密度",
+            "directionText": "会明显增加用料密度。",
+            "directionRequires": [
+              "forge_use_known",
+              "density_direction_known"
+            ],
+            "scoreRef": "scores.density",
+            "scoreRequires": [
+              "material_seen",
+              "forge_use_known",
+              "feed_route_known",
+              "feed_unit_known",
+              "life_forging_level>=10"
+            ],
+            "unknownPolicy": "omit",
+            "scoreUnlockRef": "weapon-forging-balance-v1.json:knowledgeUnlocks.material_scores"
+          }
+        },
+        "location": {
+          "requires": [
+            "specific_location_evidence"
+          ],
+          "policy": "只显示角色实际采到的位置或有来源的地点线索，不从本表允许楼层公开全分布。"
+        },
+        "processing": {
+          "processingRef": "weapon-forging-balance-v1.json:ores[id=ore_silver_raw].processing",
+          "requires": [
+            "material_seen",
+            "forge_use_known",
+            "feed_route_known"
+          ],
+          "inputOutput": "one_raw_item_to_one_feed_unit_no_byproducts",
+          "unknownPolicy": "omit"
+        }
+      },
+      "discoveryCandidate": {
+        "title": "白光矿样盒",
+        "site": "城寨5层的保留工料区",
+        "objectEvidence": "盒内放有石缝泛着白光的暗色石样。",
+        "chain": "亲自观察、检查实物认识身份；在铸造台检查该原矿认识本矿加工用途、路线和单份规格。加工锻造与使用提供材性和效果证据，数值按铸造等级开放；不试料，不因接触或检查一次全部鉴定。",
+        "status": "scene_binding_pending",
+        "optional": true,
+        "repeatViewGrantsKnowledge": false,
+        "knowledgeSources": [
+          "personal_observation_and_inspection",
+          "own_processing_and_forging",
+          "own_component_use"
+        ]
+      }
+    },
+    {
+      "id": "ore_gold_raw",
+      "name": "金矿",
+      "displayName": "金矿",
+      "existingItem": true,
+      "rarity": "稀有",
+      "role": "密度和韧性较高，硬度及抗变形很低",
+      "scores": {
+        "hardness": 6,
+        "toughness": 40,
+        "deformationResistance": 10,
+        "density": 60
+      },
+      "realMineralFamily": "金矿",
+      "namingBasis": "复用已有名称",
+      "visualCue": "浅色石块里散着金黄亮点",
+      "visualCueStatus": "游戏美术识别设计，不代表同矿种所有实物外观",
+      "guangdongBackground": "广东省级规划记载金资源",
+      "sourceIds": [
+        "gd-plan"
+      ],
+      "rawItem": {
+        "category": "ore",
+        "subCategory": "precious",
+        "weightKg": 1.5,
+        "baseValue": 800,
+        "valuesAreProposed": false,
+        "identity": {
+          "sn": "金矿",
+          "placeholder_name": "带金星的石块",
+          "fn_before": "浅色石块里散着金黄亮点，看着能炼东西",
+          "fn": "含金的矿石，浅色石底里散着金黄的细点。"
+        },
+        "stackLimit": 1,
+        "spoilageTicks": 0,
+        "source": [
+          "mining"
+        ],
+        "productionLines": [
+          "forge"
+        ],
+        "tags": [
+          "material",
+          "ore",
+          "dungeon_only"
+        ],
+        "priceClass": "rare",
+        "volatility": "high",
+        "regionRestrict": 6,
+        "infoModuleSetId": null,
+        "spawnPolicy": {
+          "mode": "explicit_mining_allowlist_only",
+          "allowlist": "oreAdditions[ore_gold_raw].mining.proposedFloors",
+          "note": "保留旧region_restrict=6，不解释为楼层下限；首版矿点使用显式允许层。本稿不改运行字段。",
+          "status": "candidate_not_runtime_placement"
+        },
+        "unsupportedCapabilities": [
+          "edible",
+          "usable",
+          "fuel",
+          "water_supply"
+        ],
+        "runtimeStatus": "existing_item_unchanged_forge_route_and_text_proposed",
+        "productionLinesPolicy": "本稿只声明新增铸造用途候选；复用条目接入时合并保留既有用途，不覆盖其他生产或交易路线。"
+      },
+      "mining": {
+        "pointName": "金矿脉",
+        "proposedFloors": {
+          "buildingRuins": [],
+          "walledCity": [
+            4
+          ]
+        },
+        "relativeSpawnWeight": null,
+        "staminaCost": null,
+        "usesRange": null,
+        "mainYield": 1,
+        "status": "reuse_first_release_floors_no_new_point_parameters",
+        "companionPolicy": "不新增伴生规则"
+      },
+      "information": {
+        "forgeUse": {
+          "text": "这种矿石可以加工成铸造用料。",
+          "requires": [
+            "forge_use_known"
+          ]
+        },
+        "fullKnownSummary": {
+          "text": "密度和韧性较高，硬度及抗变形很低。",
+          "requires": [
+            "forge_use_known",
+            "hardness_direction_known",
+            "toughness_direction_known",
+            "deformationResistance_direction_known",
+            "density_direction_known"
+          ]
+        },
+        "properties": {
+          "hardness": {
+            "label": "硬度",
+            "directionText": "硬度贡献很低。",
+            "directionRequires": [
+              "forge_use_known",
+              "hardness_direction_known"
+            ],
+            "scoreRef": "scores.hardness",
+            "scoreRequires": [
+              "material_seen",
+              "forge_use_known",
+              "feed_route_known",
+              "feed_unit_known",
+              "life_forging_level>=10"
+            ],
+            "unknownPolicy": "omit",
+            "scoreUnlockRef": "weapon-forging-balance-v1.json:knowledgeUnlocks.material_scores"
+          },
+          "toughness": {
+            "label": "韧性",
+            "directionText": "能提供较多韧性。",
+            "directionRequires": [
+              "forge_use_known",
+              "toughness_direction_known"
+            ],
+            "scoreRef": "scores.toughness",
+            "scoreRequires": [
+              "material_seen",
+              "forge_use_known",
+              "feed_route_known",
+              "feed_unit_known",
+              "life_forging_level>=10"
+            ],
+            "unknownPolicy": "omit",
+            "scoreUnlockRef": "weapon-forging-balance-v1.json:knowledgeUnlocks.material_scores"
+          },
+          "deformationResistance": {
+            "label": "抗变形",
+            "directionText": "抗变形贡献很低。",
+            "directionRequires": [
+              "forge_use_known",
+              "deformationResistance_direction_known"
+            ],
+            "scoreRef": "scores.deformationResistance",
+            "scoreRequires": [
+              "material_seen",
+              "forge_use_known",
+              "feed_route_known",
+              "feed_unit_known",
+              "life_forging_level>=10"
+            ],
+            "unknownPolicy": "omit",
+            "scoreUnlockRef": "weapon-forging-balance-v1.json:knowledgeUnlocks.material_scores"
+          },
+          "density": {
+            "label": "密度",
+            "directionText": "少量也能大幅增加用料密度。",
+            "directionRequires": [
+              "forge_use_known",
+              "density_direction_known"
+            ],
+            "scoreRef": "scores.density",
+            "scoreRequires": [
+              "material_seen",
+              "forge_use_known",
+              "feed_route_known",
+              "feed_unit_known",
+              "life_forging_level>=10"
+            ],
+            "unknownPolicy": "omit",
+            "scoreUnlockRef": "weapon-forging-balance-v1.json:knowledgeUnlocks.material_scores"
+          }
+        },
+        "location": {
+          "requires": [
+            "specific_location_evidence"
+          ],
+          "policy": "只显示角色实际采到的位置或有来源的地点线索，不从本表允许楼层公开全分布。"
+        },
+        "processing": {
+          "processingRef": "weapon-forging-balance-v1.json:ores[id=ore_gold_raw].processing",
+          "requires": [
+            "material_seen",
+            "forge_use_known",
+            "feed_route_known"
+          ],
+          "inputOutput": "one_raw_item_to_one_feed_unit_no_byproducts",
+          "unknownPolicy": "omit"
+        }
+      },
+      "discoveryCandidate": {
+        "title": "金星矿样盘",
+        "site": "城寨4层的保留工料区",
+        "objectEvidence": "盘中放有散着金黄细点的浅色石样。",
+        "chain": "亲自观察、检查实物认识身份；在铸造台检查该原矿认识本矿加工用途、路线和单份规格。加工锻造与使用提供材性和效果证据，数值按铸造等级开放；不试料，不因接触或检查一次全部鉴定。",
+        "status": "scene_binding_pending",
+        "optional": true,
+        "repeatViewGrantsKnowledge": false,
+        "knowledgeSources": [
+          "personal_observation_and_inspection",
+          "own_processing_and_forging",
+          "own_component_use"
+        ]
+      }
+    }
+  ],
+  "intrinsicTraits": [
+    {
+      "oreId": "ore_iron_raw",
+      "id": "ore_edge_preservation",
+      "name": "护锋",
+      "stat": "attack_contact_loss_reduction_fraction",
+      "fullStrength": 0.2,
+      "scope": "attacking_component",
+      "condition": "本件主动攻击的接触损耗，包括被格挡时的自身损耗。",
+      "status": "effect_and_magnitude_accepted_first_pass_resolution_details_draft",
+      "scaling": "fullStrength * oreFeedCount / fixedComponentCapacity",
+      "durabilityRatioThreshold": null,
+      "pendingBuff": null,
+      "targetBuff": null,
+      "information": {
+        "qualitativeRequires": [
+          "forge_use_known",
+          "intrinsic_effect_known"
+        ],
+        "conditionRequires": [
+          "intrinsic_trigger_known"
+        ],
+        "quantitativeRequires": [
+          "forge_use_known",
+          "feed_route_known",
+          "feed_unit_known",
+          "intrinsic_effect_known",
+          "intrinsic_trigger_known",
+          "life_forging_level>=50"
+        ],
+        "unknownPolicy": "omit_no_placeholder_or_hidden_count",
+        "knowledgeScope": "material_processing_route_and_trait; component_effect_evidence_separate_from_source_attribution",
+        "predictionRequires": [
+          "inheritance_rule_known",
+          "instance_recipe_known"
+        ],
+        "quantitativeUnlockRef": "weapon-forging-balance-v1.json:knowledgeUnlocks.trait_strength"
+      }
+    },
+    {
+      "oreId": "ore_copper_raw",
+      "id": "ore_shock_release",
+      "name": "卸震",
+      "stat": "unload_percentage_points",
+      "fullStrength": 6,
+      "scope": "selected_defending_component",
+      "condition": "本件被选中承担防御；格挡失败进入卸力阶段才有减伤收益。",
+      "status": "effect_and_magnitude_accepted_first_pass_resolution_details_draft",
+      "scaling": "fullStrength * oreFeedCount / fixedComponentCapacity",
+      "durabilityRatioThreshold": null,
+      "pendingBuff": null,
+      "targetBuff": null,
+      "information": {
+        "qualitativeRequires": [
+          "forge_use_known",
+          "intrinsic_effect_known"
+        ],
+        "conditionRequires": [
+          "intrinsic_trigger_known"
+        ],
+        "quantitativeRequires": [
+          "forge_use_known",
+          "feed_route_known",
+          "feed_unit_known",
+          "intrinsic_effect_known",
+          "intrinsic_trigger_known",
+          "life_forging_level>=50"
+        ],
+        "unknownPolicy": "omit_no_placeholder_or_hidden_count",
+        "knowledgeScope": "material_processing_route_and_trait; component_effect_evidence_separate_from_source_attribution",
+        "predictionRequires": [
+          "inheritance_rule_known",
+          "instance_recipe_known"
+        ],
+        "quantitativeUnlockRef": "weapon-forging-balance-v1.json:knowledgeUnlocks.trait_strength"
+      }
+    },
+    {
+      "oreId": "ore_tin_raw",
+      "id": "ore_guard_preservation",
+      "name": "护架",
+      "stat": "defending_parry_loss_reduction_fraction",
+      "fullStrength": 0.3,
+      "scope": "selected_defending_component",
+      "condition": "本件作为守方成功格挡时的自身损耗。",
+      "status": "effect_and_magnitude_accepted_first_pass_resolution_details_draft",
+      "scaling": "fullStrength * oreFeedCount / fixedComponentCapacity",
+      "durabilityRatioThreshold": null,
+      "pendingBuff": null,
+      "targetBuff": null,
+      "information": {
+        "qualitativeRequires": [
+          "forge_use_known",
+          "intrinsic_effect_known"
+        ],
+        "conditionRequires": [
+          "intrinsic_trigger_known"
+        ],
+        "quantitativeRequires": [
+          "forge_use_known",
+          "feed_route_known",
+          "feed_unit_known",
+          "intrinsic_effect_known",
+          "intrinsic_trigger_known",
+          "life_forging_level>=50"
+        ],
+        "unknownPolicy": "omit_no_placeholder_or_hidden_count",
+        "knowledgeScope": "material_processing_route_and_trait; component_effect_evidence_separate_from_source_attribution",
+        "predictionRequires": [
+          "inheritance_rule_known",
+          "instance_recipe_known"
+        ],
+        "quantitativeUnlockRef": "weapon-forging-balance-v1.json:knowledgeUnlocks.trait_strength"
+      }
+    },
+    {
+      "oreId": "ore_lead_raw",
+      "id": "ore_heavy_pressure",
+      "name": "压手",
+      "stat": "target_unload_percentage_points",
+      "fullStrength": -6,
+      "scope": "blunt_attack_from_component",
+      "condition": "本件钝击未被格挡、进入卸力时修正本段，不留持续减益。",
+      "status": "effect_and_magnitude_accepted_first_pass_resolution_details_draft",
+      "scaling": "fullStrength * oreFeedCount / fixedComponentCapacity",
+      "durabilityRatioThreshold": null,
+      "pendingBuff": null,
+      "targetBuff": null,
+      "information": {
+        "qualitativeRequires": [
+          "forge_use_known",
+          "intrinsic_effect_known"
+        ],
+        "conditionRequires": [
+          "intrinsic_trigger_known"
+        ],
+        "quantitativeRequires": [
+          "forge_use_known",
+          "feed_route_known",
+          "feed_unit_known",
+          "intrinsic_effect_known",
+          "intrinsic_trigger_known",
+          "life_forging_level>=50"
+        ],
+        "unknownPolicy": "omit_no_placeholder_or_hidden_count",
+        "knowledgeScope": "material_processing_route_and_trait; component_effect_evidence_separate_from_source_attribution",
+        "predictionRequires": [
+          "inheritance_rule_known",
+          "instance_recipe_known"
+        ],
+        "quantitativeUnlockRef": "weapon-forging-balance-v1.json:knowledgeUnlocks.trait_strength"
+      }
+    },
+    {
+      "oreId": "ore_zinc_raw",
+      "id": "ore_recenter",
+      "name": "复位",
+      "stat": "next_attack_hit_percentage_points",
+      "fullStrength": 8,
+      "scope": "component_instance_next_attack",
+      "condition": "本件整招各段全部未通过命中判定后获得；命中但被格挡不算打空。",
+      "status": "effect_and_magnitude_accepted_first_pass_resolution_details_draft",
+      "scaling": "fullStrength * oreFeedCount / fixedComponentCapacity",
+      "durabilityRatioThreshold": null,
+      "pendingBuff": {
+        "durationTicks": 8,
+        "maxCharges": 1,
+        "repeat": "refresh_duration_no_stack",
+        "consume": "next_actual_attack_from_same_instance_whole_move_not_following_speed_combo",
+        "clear": "detach_or_weapon_change_or_combat_end",
+        "unarmed": "not_consumed_timer_continues"
+      },
+      "targetBuff": null,
+      "information": {
+        "qualitativeRequires": [
+          "forge_use_known",
+          "intrinsic_effect_known"
+        ],
+        "conditionRequires": [
+          "intrinsic_trigger_known"
+        ],
+        "quantitativeRequires": [
+          "forge_use_known",
+          "feed_route_known",
+          "feed_unit_known",
+          "intrinsic_effect_known",
+          "intrinsic_trigger_known",
+          "life_forging_level>=50"
+        ],
+        "unknownPolicy": "omit_no_placeholder_or_hidden_count",
+        "knowledgeScope": "material_processing_route_and_trait; component_effect_evidence_separate_from_source_attribution",
+        "predictionRequires": [
+          "inheritance_rule_known",
+          "instance_recipe_known"
+        ],
+        "quantitativeUnlockRef": "weapon-forging-balance-v1.json:knowledgeUnlocks.trait_strength"
+      }
+    },
+    {
+      "oreId": "ore_titanium_raw",
+      "id": "ore_agility",
+      "name": "轻快",
+      "stat": "weapon_speed_percentage_points",
+      "fullStrength": 2,
+      "scope": "active_weapon_once_per_real_component",
+      "condition": "普通加算速度修正，跨位置件只计一次；收起武器时不用于徒手。",
+      "status": "effect_and_magnitude_accepted_first_pass_resolution_details_draft",
+      "scaling": "fullStrength * oreFeedCount / fixedComponentCapacity",
+      "durabilityRatioThreshold": null,
+      "pendingBuff": null,
+      "targetBuff": null,
+      "information": {
+        "qualitativeRequires": [
+          "forge_use_known",
+          "intrinsic_effect_known"
+        ],
+        "conditionRequires": [
+          "intrinsic_trigger_known"
+        ],
+        "quantitativeRequires": [
+          "forge_use_known",
+          "feed_route_known",
+          "feed_unit_known",
+          "intrinsic_effect_known",
+          "intrinsic_trigger_known",
+          "life_forging_level>=50"
+        ],
+        "unknownPolicy": "omit_no_placeholder_or_hidden_count",
+        "knowledgeScope": "material_processing_route_and_trait; component_effect_evidence_separate_from_source_attribution",
+        "predictionRequires": [
+          "inheritance_rule_known",
+          "instance_recipe_known"
+        ],
+        "quantitativeUnlockRef": "weapon-forging-balance-v1.json:knowledgeUnlocks.trait_strength"
+      }
+    },
+    {
+      "oreId": "ore_tungsten_raw",
+      "id": "ore_guard_break",
+      "name": "破挡",
+      "stat": "target_parry_percentage_points",
+      "fullStrength": -5,
+      "scope": "slash_or_pierce_attack_from_component",
+      "condition": "只修正本件劈或刺攻击的格挡判定，不赋予新的攻击属性。",
+      "status": "effect_and_magnitude_accepted_first_pass_resolution_details_draft",
+      "scaling": "fullStrength * oreFeedCount / fixedComponentCapacity",
+      "durabilityRatioThreshold": null,
+      "pendingBuff": null,
+      "targetBuff": null,
+      "information": {
+        "qualitativeRequires": [
+          "forge_use_known",
+          "intrinsic_effect_known"
+        ],
+        "conditionRequires": [
+          "intrinsic_trigger_known"
+        ],
+        "quantitativeRequires": [
+          "forge_use_known",
+          "feed_route_known",
+          "feed_unit_known",
+          "intrinsic_effect_known",
+          "intrinsic_trigger_known",
+          "life_forging_level>=50"
+        ],
+        "unknownPolicy": "omit_no_placeholder_or_hidden_count",
+        "knowledgeScope": "material_processing_route_and_trait; component_effect_evidence_separate_from_source_attribution",
+        "predictionRequires": [
+          "inheritance_rule_known",
+          "instance_recipe_known"
+        ],
+        "quantitativeUnlockRef": "weapon-forging-balance-v1.json:knowledgeUnlocks.trait_strength"
+      }
+    },
+    {
+      "oreId": "ore_molybdenum_raw",
+      "id": "ore_wear_resistance",
+      "name": "耐磨",
+      "stat": "all_contact_loss_reduction_fraction",
+      "fullStrength": 0.12,
+      "scope": "component_instance",
+      "condition": "本件攻击与防御的实际接触损耗。",
+      "status": "effect_and_magnitude_accepted_first_pass_resolution_details_draft",
+      "scaling": "fullStrength * oreFeedCount / fixedComponentCapacity",
+      "durabilityRatioThreshold": null,
+      "pendingBuff": null,
+      "targetBuff": null,
+      "information": {
+        "qualitativeRequires": [
+          "forge_use_known",
+          "intrinsic_effect_known"
+        ],
+        "conditionRequires": [
+          "intrinsic_trigger_known"
+        ],
+        "quantitativeRequires": [
+          "forge_use_known",
+          "feed_route_known",
+          "feed_unit_known",
+          "intrinsic_effect_known",
+          "intrinsic_trigger_known",
+          "life_forging_level>=50"
+        ],
+        "unknownPolicy": "omit_no_placeholder_or_hidden_count",
+        "knowledgeScope": "material_processing_route_and_trait; component_effect_evidence_separate_from_source_attribution",
+        "predictionRequires": [
+          "inheritance_rule_known",
+          "instance_recipe_known"
+        ],
+        "quantitativeUnlockRef": "weapon-forging-balance-v1.json:knowledgeUnlocks.trait_strength"
+      }
+    },
+    {
+      "oreId": "ore_manganese_raw",
+      "id": "ore_rebound",
+      "name": "回震",
+      "stat": "next_attack_damage_bonus_fraction",
+      "fullStrength": 0.12,
+      "scope": "component_instance_next_attack",
+      "condition": "本件实际成功格挡后获得；计入49号普通造成伤害修正。",
+      "status": "effect_and_magnitude_accepted_first_pass_resolution_details_draft",
+      "scaling": "fullStrength * oreFeedCount / fixedComponentCapacity",
+      "durabilityRatioThreshold": null,
+      "pendingBuff": {
+        "durationTicks": 4,
+        "maxCharges": 1,
+        "repeat": "refresh_duration_no_stack",
+        "consume": "next_actual_attack_from_same_instance_whole_move_not_following_speed_combo",
+        "clear": "detach_or_weapon_change_or_combat_end",
+        "unarmed": "not_consumed_timer_continues"
+      },
+      "targetBuff": null,
+      "information": {
+        "qualitativeRequires": [
+          "forge_use_known",
+          "intrinsic_effect_known"
+        ],
+        "conditionRequires": [
+          "intrinsic_trigger_known"
+        ],
+        "quantitativeRequires": [
+          "forge_use_known",
+          "feed_route_known",
+          "feed_unit_known",
+          "intrinsic_effect_known",
+          "intrinsic_trigger_known",
+          "life_forging_level>=50"
+        ],
+        "unknownPolicy": "omit_no_placeholder_or_hidden_count",
+        "knowledgeScope": "material_processing_route_and_trait; component_effect_evidence_separate_from_source_attribution",
+        "predictionRequires": [
+          "inheritance_rule_known",
+          "instance_recipe_known"
+        ],
+        "quantitativeUnlockRef": "weapon-forging-balance-v1.json:knowledgeUnlocks.trait_strength"
+      }
+    },
+    {
+      "oreId": "ore_antimony_raw",
+      "id": "ore_guard_pressure",
+      "name": "压架",
+      "stat": "target_parry_debuff_percentage_points",
+      "fullStrength": -3,
+      "scope": "target_after_positive_final_damage",
+      "condition": "本件造成正的最终伤害后施加，不追溯影响本段。",
+      "status": "effect_and_magnitude_accepted_first_pass_resolution_details_draft",
+      "scaling": "fullStrength * oreFeedCount / fixedComponentCapacity",
+      "durabilityRatioThreshold": null,
+      "pendingBuff": null,
+      "targetBuff": {
+        "id": "buff_ore_guard_pressure",
+        "durationTicks": 4,
+        "stack": "strongest_only",
+        "refresh": "equal_or_stronger_refreshes_weaker_does_not",
+        "snapshot": "after_segment_no_retroactive_effect_obey_same_speed_snapshot"
+      },
+      "information": {
+        "qualitativeRequires": [
+          "forge_use_known",
+          "intrinsic_effect_known"
+        ],
+        "conditionRequires": [
+          "intrinsic_trigger_known"
+        ],
+        "quantitativeRequires": [
+          "forge_use_known",
+          "feed_route_known",
+          "feed_unit_known",
+          "intrinsic_effect_known",
+          "intrinsic_trigger_known",
+          "life_forging_level>=50"
+        ],
+        "unknownPolicy": "omit_no_placeholder_or_hidden_count",
+        "knowledgeScope": "material_processing_route_and_trait; component_effect_evidence_separate_from_source_attribution",
+        "predictionRequires": [
+          "inheritance_rule_known",
+          "instance_recipe_known"
+        ],
+        "quantitativeUnlockRef": "weapon-forging-balance-v1.json:knowledgeUnlocks.trait_strength"
+      }
+    },
+    {
+      "oreId": "ore_silver_raw",
+      "id": "ore_steady_aim",
+      "name": "定手",
+      "stat": "attack_hit_percentage_points",
+      "fullStrength": 5,
+      "scope": "attacking_component",
+      "condition": "本件实际出招的命中修正，不传给其他部件或徒手。",
+      "status": "effect_and_magnitude_accepted_first_pass_resolution_details_draft",
+      "scaling": "fullStrength * oreFeedCount / fixedComponentCapacity",
+      "durabilityRatioThreshold": null,
+      "pendingBuff": null,
+      "targetBuff": null,
+      "information": {
+        "qualitativeRequires": [
+          "forge_use_known",
+          "intrinsic_effect_known"
+        ],
+        "conditionRequires": [
+          "intrinsic_trigger_known"
+        ],
+        "quantitativeRequires": [
+          "forge_use_known",
+          "feed_route_known",
+          "feed_unit_known",
+          "intrinsic_effect_known",
+          "intrinsic_trigger_known",
+          "life_forging_level>=50"
+        ],
+        "unknownPolicy": "omit_no_placeholder_or_hidden_count",
+        "knowledgeScope": "material_processing_route_and_trait; component_effect_evidence_separate_from_source_attribution",
+        "predictionRequires": [
+          "inheritance_rule_known",
+          "instance_recipe_known"
+        ],
+        "quantitativeUnlockRef": "weapon-forging-balance-v1.json:knowledgeUnlocks.trait_strength"
+      }
+    },
+    {
+      "oreId": "ore_gold_raw",
+      "id": "ore_ductility",
+      "name": "延展",
+      "stat": "low_durability_contact_loss_reduction_fraction",
+      "fullStrength": 0.3,
+      "scope": "component_instance",
+      "condition": "事件开始时0<本件耐久/上限<=0.25；不回耐久，不从零恢复。",
+      "status": "effect_and_magnitude_accepted_first_pass_resolution_details_draft",
+      "scaling": "fullStrength * oreFeedCount / fixedComponentCapacity",
+      "durabilityRatioThreshold": 0.25,
+      "pendingBuff": null,
+      "targetBuff": null,
+      "information": {
+        "qualitativeRequires": [
+          "forge_use_known",
+          "intrinsic_effect_known"
+        ],
+        "conditionRequires": [
+          "intrinsic_trigger_known"
+        ],
+        "quantitativeRequires": [
+          "forge_use_known",
+          "feed_route_known",
+          "feed_unit_known",
+          "intrinsic_effect_known",
+          "intrinsic_trigger_known",
+          "life_forging_level>=50"
+        ],
+        "unknownPolicy": "omit_no_placeholder_or_hidden_count",
+        "knowledgeScope": "material_processing_route_and_trait; component_effect_evidence_separate_from_source_attribution",
+        "predictionRequires": [
+          "inheritance_rule_known",
+          "instance_recipe_known"
+        ],
+        "quantitativeUnlockRef": "weapon-forging-balance-v1.json:knowledgeUnlocks.trait_strength"
+      }
+    }
+  ],
+  "inheritance": {
+    "status": "single_trait_rule_current_resolution_details_draft",
+    "rulesRef": "weapon-ore-combinations-v1.json#/rules",
+    "maxTraitsPerRealComponent": 1,
+    "gate": "single_ore_or_matched_positive_requires_three_stars",
+    "singleOre": "original_intrinsic_scaled_by_ore_count_over_fixed_capacity",
+    "mixedFeed": "match_all_positive_recipes_first; at_three_stars_roll_one_uniformly; below_three_stars_no_trait",
+    "unmatchedMixedFeed": "roll_one_eligible_negative_at_any_completion",
+    "formingGate": "each_axis_at_least_0.30",
+    "underfilled": "denominator_does_not_shrink",
+    "instance": "one_record_per_real_component_including_multi_position",
+    "selectionTiming": "once_at_finish_saved_to_instance_no_reroll",
+    "repair": "preserve_no_regrant",
+    "reforge": "not_supported_first_release",
+    "zeroDurability": "retain_record_obey_structure_zero_state_and_event_eligibility",
+    "metaSkill": "not_a_metaSkill_preserve_event_lineage_no_trigger_chain",
+    "performanceRef": "../weapon-forging-skill-growth.md#完成度与性能发挥"
+  },
+  "boundaries": {
+    "durabilityLoss": "round_half_up_2dec(max(event_base_loss * 0.5, material_and_craft_loss * (1 - sum_applicable_intrinsic_reductions)))",
+    "noContactLoss": 0,
+    "ordinaryContactBase": 1,
+    "parriedContactBase": 2,
+    "durabilityStorage": "integer_hundredths_after_final_rounding; actual_debit_capped_at_remaining",
+    "powerPotentialCap": 1.5,
+    "maxDurabilityPotentialCap": 1.5,
+    "speed": "ordinary_additive_weapon_modifier_once_per_real_part; final_min_1",
+    "hit": "existing_hit_bonus_before_cap_no_backstab_exception",
+    "defence": "selected_eligible_component_only; default_parry_cap_0.75_unload_cap_0.50; no_eligibility_grant",
+    "successfulParry": "zero_damage_per_design49; no_bonus_on_parried_damage_proposed",
+    "newDamageTypeOrExtraAttack": false
+  },
+  "epistemology": {
+    "inheritCommonPolicyFrom": "weapon-forging-ores-v1.json:itemInformation",
+    "intrinsicKnowledge": "effect_and_trigger_independently_evidenced; exact_strength_unlocked_at_forging_level_50_for_known_traits",
+    "craftedItemKnowledge": "component_effect_evidence_does_not_identify_source_mineral_or_full_strength_automatically",
+    "hidden": "omit_names_icons_slots_counts_and_unknown_source_labels_in_logs",
+    "preview": "no_unknown_attribute_inference_via_numbers_sorting_or_autofill",
+    "perfectCraft": "mechanical_inheritance_not_automatic_identification",
+    "backendOnly": "base_value_weights_full_spawn_allowlists_and_geological_references",
+    "noQualityTier": true,
+    "legacyMaterialModule": "do_not_use_unconditional_material_ore_module",
+    "learningSources": [
+      "personal_observation_and_inspection",
+      "own_processing_and_forging",
+      "own_component_use"
+    ],
+    "excludedLearningRoutes": [
+      "craft_record_reading",
+      "instruction_from_others",
+      "third_party_experiment_results",
+      "material_assay",
+      "own_material_experiment"
+    ],
+    "ownEvidenceRecords": "自己的观察、加工与使用记录可保存；重复阅读不授予新认识。",
+    "numericUnlockRef": "weapon-forging-balance-v1.json:knowledgeUnlocks"
+  },
+  "example": {
+    "componentId": "B01",
+    "capacity": 6,
+    "feed": [
+      {
+        "id": "ore_iron_raw",
+        "count": 3
+      },
+      {
+        "id": "ore_copper_raw",
+        "count": 2
+      },
+      {
+        "id": "ore_tin_raw",
+        "count": 1
+      }
+    ],
+    "totals": {
+      "hardness": 96,
+      "toughness": 178,
+      "deformationResistance": 124,
+      "density": 138
+    },
+    "requirements": {
+      "hardness": 120,
+      "toughness": 108,
+      "deformationResistance": 108,
+      "density": 108
+    },
+    "completion": 1,
+    "expectedBranch": "unmatched_mixed_feed",
+    "expectedTraitCount": 1,
+    "expectedSelection": "uniform_one_eligible_negative_from_weapon_ore_combinations"
+  },
+  "validation": {
+    "date": "2026-10-14",
+    "method": "numerical_design_checks_only",
+    "baselineWitnessesRechecked": 83,
+    "components": 83,
+    "uniqueOreIds": 12,
+    "uniqueTraits": 12,
+    "combinationScope": "满容量，最多三种不同矿材，每种正整数份；覆盖现有11种容量；未检查少投或四种以上混料，不代表最优经济",
+    "enumeratedCombinations": 116842,
+    "allAxes100Reachable": 83,
+    "newOreAppearsInAllAxes100RecipeForComponents": {
+      "ore_manganese_raw": 83,
+      "ore_antimony_raw": 83,
+      "ore_silver_raw": 83,
+      "ore_gold_raw": 83
+    },
+    "sampleExpandedRecipes": [
+      {
+        "componentId": "B01",
+        "feed": [
+          {
+            "id": "ore_manganese_raw",
+            "count": 6
+          }
+        ],
+        "totals": {
+          "hardness": 132,
+          "toughness": 192,
+          "deformationResistance": 264,
+          "density": 144
+        }
+      },
+      {
+        "componentId": "B04",
+        "feed": [
+          {
+            "id": "ore_iron_raw",
+            "count": 3
+          },
+          {
+            "id": "ore_antimony_raw",
+            "count": 2
+          }
+        ],
+        "totals": {
+          "hardness": 150,
+          "toughness": 92,
+          "deformationResistance": 120,
+          "density": 96
+        }
+      },
+      {
+        "componentId": "H17",
+        "feed": [
+          {
+            "id": "ore_manganese_raw",
+            "count": 8
+          }
+        ],
+        "totals": {
+          "hardness": 176,
+          "toughness": 256,
+          "deformationResistance": 352,
+          "density": 192
+        }
+      },
+      {
+        "componentId": "B16",
+        "feed": [
+          {
+            "id": "ore_tungsten_raw",
+            "count": 1
+          },
+          {
+            "id": "ore_manganese_raw",
+            "count": 7
+          }
+        ],
+        "totals": {
+          "hardness": 212,
+          "toughness": 230,
+          "deformationResistance": 338,
+          "density": 224
+        }
+      },
+      {
+        "componentId": "D16",
+        "feed": [
+          {
+            "id": "ore_lead_raw",
+            "count": 2
+          },
+          {
+            "id": "ore_manganese_raw",
+            "count": 8
+          }
+        ],
+        "totals": {
+          "hardness": 184,
+          "toughness": 280,
+          "deformationResistance": 368,
+          "density": 320
+        }
+      },
+      {
+        "componentId": "M05-T6",
+        "feed": [
+          {
+            "id": "ore_copper_raw",
+            "count": 5
+          },
+          {
+            "id": "ore_antimony_raw",
+            "count": 9
+          }
+        ],
+        "totals": {
+          "hardness": 418,
+          "toughness": 310,
+          "deformationResistance": 330,
+          "density": 312
+        }
+      }
+    ],
+    "checks": [
+      "新增四矿固定文案长度及标点",
+      "原83条材料见证仍达标",
+      "B01混料总分与继承比例",
+      "二星不授予固有属性",
+      "少投不缩小份额分母",
+      "无接触不扣耐久与减耗50%下限"
+    ],
+    "notChecked": [
+      "游戏运行或锻造试玩接入",
+      "战斗强弱与经济平衡",
+      "原矿加工产出",
+      "全配料全工艺可达性",
+      "认知UI实际呈现"
+    ],
+    "traitExamplesStatus": "Old multi-trait checks are historical; current selection follows weapon-ore-combinations-v1.json."
+  },
+  "acceptance": {
+    "date": "2026-10-14",
+    "userStatement": "蛮有意思的，就这样吧",
+    "accepted": [
+      "twelve_ore_lineup",
+      "twelve_intrinsic_effects_and_first_pass_magnitudes",
+      "final_three_star_inheritance",
+      "fixed_capacity_fraction_scaling",
+      "inheritance_not_automatic_identification"
+    ],
+    "stillDraft": [
+      "added_ore_scores",
+      "new_mining_parameters",
+      "unpresented_state_resolution_details",
+      "processing_economy",
+      "balance"
+    ],
+    "followUp": {
+      "date": "2026-10-14",
+      "userStatement": "阅读工艺记录、向别人学习这部分可以去掉",
+      "scope": "铸造材料认识途径",
+      "decision": "remove_craft_record_reading_and_learning_from_others"
+    }
+  },
+  "revision": 3,
+  "balanceRef": "weapon-forging-balance-v1.json",
+  "updatedAt": "2026-10-17",
+  "historicalInheritance": {
+    "status": "superseded_2026_10_15",
+    "rules": {
+      "status": "core_gate_and_scaling_accepted_lifecycle_details_draft",
+      "gate": "final_completion_exactly_1_at_finish",
+      "requiresAllAxesAt100Percent": false,
+      "formingGate": "each_material_axis_ratio_at_least_0.30",
+      "materialStrengthFormula": "ore_feed_count / fixed_component_capacity",
+      "scale": "effect_magnitude_only",
+      "doNotScale": [
+        "duration_ticks",
+        "trigger_conditions",
+        "low_durability_threshold",
+        "charge_count"
+      ],
+      "selection": "all_actually_fed_ores_no_affix_random_roll",
+      "underfilled": "denominator_does_not_shrink",
+      "qBelow100": "no_intrinsic_traits_granted; normal_craft_stat_mapping_still_pending",
+      "statPotentialMapping": "unspecified_do_not_infer_from_trait_gate",
+      "instance": "one_snapshot_per_real_component_including_multi_position",
+      "repair": "preserve_no_regrant",
+      "reforge": "replace_on_new_completion_no_append",
+      "zeroDurability": "retain_record_obey_structure_zero_state_and_event_eligibility",
+      "legacy": "no_automatic_template_grant_without_provenance",
+      "metaSkill": "not_a_metaSkill_preserve_event_lineage_no_trigger_chain",
+      "formingFailure": "any_axis_below_0.30_reject_before_start_no_material_cost; compare_unrounded_ratios_independently"
+    },
+    "example": {
+      "componentId": "B01",
+      "capacity": 6,
+      "feed": [
+        {
+          "id": "ore_iron_raw",
+          "count": 3
+        },
+        {
+          "id": "ore_copper_raw",
+          "count": 2
+        },
+        {
+          "id": "ore_tin_raw",
+          "count": 1
+        }
+      ],
+      "totals": {
+        "hardness": 96,
+        "toughness": 178,
+        "deformationResistance": 124,
+        "density": 138
+      },
+      "requirements": {
+        "hardness": 120,
+        "toughness": 108,
+        "deformationResistance": 108,
+        "density": 108
+      },
+      "completion": 1,
+      "inherited": [
+        {
+          "traitId": "ore_edge_preservation",
+          "share": 0.5,
+          "value": 0.10000000000000002
+        },
+        {
+          "traitId": "ore_shock_release",
+          "share": 0.3333333333333333,
+          "value": 2
+        },
+        {
+          "traitId": "ore_guard_preservation",
+          "share": 0.16666666666666666,
+          "value": 0.049999999999999996
+        }
+      ]
+    }
+  }
+}

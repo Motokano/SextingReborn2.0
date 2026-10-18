@@ -107,9 +107,10 @@
         if (s.stamina_max !== undefined) character.stamina_max = s.stamina_max;
         if (s.inventory !== undefined) character.inventory = s.inventory.slice();
         if (s.proficiency_count !== undefined) character.proficiency_count = Math.max(0, s.proficiency_count);
-        if (useSurvival()) {
+        // Partial updates (notably save-load proficiency) must not overwrite Survival.
+        if (useSurvival() && s.stamina !== undefined) {
             var Surv = (typeof window !== 'undefined' ? window : global).Survival;
-            Surv.setState({ stamina: character.stamina, stamina_max: character.stamina_max });
+            Surv.setState({ stamina: character.stamina });
         }
     }
 

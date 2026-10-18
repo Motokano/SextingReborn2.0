@@ -820,6 +820,7 @@
     }
 
     function showItemTooltip(html, anchorEl) {
+        if (window.SvelteInteractions) window.SvelteInteractions.hideTooltip();
         if (!tooltipEl) tooltipEl = document.getElementById('item-tooltip');
         if (!tooltipEl || !html) return;
         tooltipEl.innerHTML = html;
@@ -845,6 +846,7 @@
     }
 
     function hideItemTooltip() {
+        if (window.SvelteInteractions) window.SvelteInteractions.hideTooltip();
         if (!tooltipEl) tooltipEl = document.getElementById('item-tooltip');
         if (tooltipEl) tooltipEl.classList.remove('show');
     }
@@ -1032,6 +1034,7 @@
     }
 
     function updateTopTimeHud() {
+        if (window.SvelteHUD) { window.SvelteHUD.invalidate('environment'); return; }
         var ctx = getCtx();
         if (!ctx || !ctx.isTimeHudVisible || !ctx.isTimeHudVisible()) return;
         var tEl = document.getElementById('hud-time-text');
@@ -1133,6 +1136,7 @@
     }
 
     function updateQuickBelt() {
+        if (window.SvelteInteractions) { window.SvelteInteractions.refreshBelt(); return; }
         var ctx = getCtx();
         if (!ctx || !ctx.IE) return;
         var IE = ctx.IE;
@@ -1714,6 +1718,24 @@
         var isIdling = ctx && ctx.isGatheringIdling ? !!ctx.isGatheringIdling() : false;
         var groundAtPlayer = (IE && IE.getGroundItemsAt) ? IE.getGroundItemsAt(st.mapId, st.x, st.y) : [];
         var hasGroundItems = groundAtPlayer.length > 0;
+        if (window.SvelteInteractions) {
+            var canWater = !!(ctx && ctx.actions && ctx.actions.canTakeWaterAtCurrentTile && ctx.actions.canTakeWaterAtCurrentTile());
+            var gatherLabel = pointName ? tQuick('map.btn.gather_idle', null, {name:pointName}) : tQuick('map.btn.gather_idle_no_name');
+            if (window.FishingPanel && window.FishingPanel.currentPoint()) gatherLabel = '查看岸边池塘';
+            if (huntingInfo) gatherLabel = huntingInfo.remaining > 0 ? tQuick('hunting.cooldown',null,{n:huntingInfo.remaining}) : tQuick('hunting.enter');
+            window.SvelteInteractions.setWorldActions([
+                { id:'gather', visible:!!canGather && !isIdling, disabled:!!(huntingInfo && huntingInfo.remaining > 0), label:gatherLabel },
+                { id:'gather-stop', visible:isIdling, label:tQuick('player.action.gather.stop') },
+                { id:'take-water', visible:canWater, label:tQuick('player.action.take_water') },
+                { id:'add-fuel', visible:false, label:tQuick('player.action.add_fuel') },
+                { id:'pour-water', visible:false, label:tQuick('player.action.pour_water') },
+                { id:'cook', visible:false, label:tQuick('player.action.cook') },
+                { id:'pharmacy', visible:false, label:tQuick('player.action.pharmacy') },
+                { id:'ground', visible:hasGroundItems, label:hasGroundItems ? tQuick('map.btn.ground_items_count',null,{n:groundAtPlayer.length}) : tQuick('map.btn.ground_items') },
+                { id:'diqi-huti', visible:false, label:tQuick('player.action.diqi_huti') },
+                { id:'warehouse', visible:hasAdjacentAnnotation(E, st, function (s) { return s === '仓库'; }), label:tQuick('action.bar.warehouse') }
+            ]);
+        } else {
         var bubble = document.getElementById('player-action-bubble');
         var bubbleGather = document.getElementById('player-action-gather');
         var bubbleStop = document.getElementById('player-action-gather-stop');
@@ -1884,6 +1906,8 @@
             }
             pBtn.textContent = lblPin;
             pBtn.title = lblPin + ' · ' + tNie('action.bar.pin.right_clear');
+        }
+
         }
 
         updateTopTimeHud();

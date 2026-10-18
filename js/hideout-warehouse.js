@@ -965,14 +965,18 @@
             for (si = 0; si < sourceOrder.length && remaining > 0; si++) {
                 var src = sourceOrder[si];
                 if (src === 'warehouse') {
-                    var whPay = consumeFromWarehouseSlots(itemId, remaining);
+                    var warehouseCount = Math.min(remaining, countItem(itemId));
+                    if (!warehouseCount) continue;
+                    var whPay = consumeFromWarehouseSlots(itemId, warehouseCount);
                     if (!whPay.ok) continue;
                     allConsumed = allConsumed.concat(whPay.consumed || []);
                     remaining -= (whPay.consumed || []).reduce(function (sum, row) {
                         return sum + (row.count != null ? coerceInt(row.count, 1) : 1);
                     }, 0);
                 } else if (src === 'containers') {
-                    var ctPay = consumeFromContainerStacks(itemId, remaining);
+                    var carriedCount = Math.min(remaining, countItemInContainers(itemId));
+                    if (!carriedCount) continue;
+                    var ctPay = consumeFromContainerStacks(itemId, carriedCount);
                     if (!ctPay.ok) continue;
                     allConsumed = allConsumed.concat(ctPay.consumed || []);
                     remaining -= (ctPay.consumed || []).reduce(function (sum, row) {

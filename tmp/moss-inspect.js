@@ -1,0 +1,1 @@
+JSON.stringify({title:document.title,body:document.body.innerText.slice(0,1500),panels:Object.keys(window.MossGameHUD?.panels||{}),creation:document.querySelector('#creation-overlay')?.className,errors:document.querySelector('#bootstrap-fatal-overlay')?.innerText})

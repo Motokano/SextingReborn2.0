@@ -671,6 +671,7 @@
     }
 
     function renderConstructionCloseChrome() {
+        if(view)return;
         var blocked = isConstructionCloseBlocked();
         var closeBtn = document.getElementById('hw-close');
         var upgradeClose = document.getElementById('hw-upgrade-close');
@@ -765,6 +766,7 @@
     }
 
     function renderUpgradeOverlay() {
+        if(view){publishView();return;}
         var overlay = document.getElementById('hw-upgrade-overlay');
         if (!overlay || !uiState.upgradeOverlayOpen) return;
 
@@ -831,6 +833,7 @@
     }
     function unmountMaterials() {if(global.FacilityUnlockPanel)global.FacilityUnlockPanel.unmount();}
     function renderWorkspace() {
+        if(view){publishView();return;}
         var modal=document.getElementById('modal-hideout-warehouse');
         if(modal)modal.classList.toggle('hw-project-view',uiState.upgradeOverlayOpen);
         ['hw-btn-storage','hw-btn-upgrade'].forEach(function(id,i){var b=document.getElementById(id);if(b){b.classList.toggle('active',uiState.upgradeOverlayOpen===!!i);b.setAttribute('aria-pressed',String(uiState.upgradeOverlayOpen===!!i));}});
@@ -877,7 +880,7 @@
         uiState.upgradeOverlayOpen = true;
         renderWorkspace();
         var overlay = document.getElementById('hw-upgrade-overlay');
-        if (overlay) {
+        if (overlay && !view) {
             overlay.classList.remove('hw-hidden');
             overlay.setAttribute('aria-hidden', 'false');
         }
@@ -894,7 +897,7 @@
         uiState.upgradeOverlayOpen = false;
         renderWorkspace();
         var overlay = document.getElementById('hw-upgrade-overlay');
-        if (overlay) {
+        if (overlay && !view) {
             overlay.classList.add('hw-hidden');
             overlay.setAttribute('aria-hidden', 'true');
         }
@@ -926,6 +929,7 @@
         if(uiState.selectedUpgradeId!==upgradeId){stopConstructionTimer();unmountMaterials();projectMessage="";saveConstruction();}
         uiState.selectedUpgradeId = upgradeId;
         renderUpgradeOverlay();
+        if(view)return;
         var detail=document.querySelector('#modal-hideout-warehouse .hw-upgrade-detail');if(detail)detail.scrollTop=0;
     }
 
@@ -953,6 +957,7 @@
     }
 
     function render() {
+        if(view){syncConstructionTimer();publishView();return;}
         var HW = getHW();
         if (!HW) return;
 
@@ -1150,6 +1155,8 @@
     function bindOnce() {
         if (eventsBound) return;
         eventsBound = true;
+        document.addEventListener('visibilitychange',function(){if(document.hidden&&isConstructionLive()){stopConstructionTimer();projectMessage='你暂时停下了施工。';saveConstruction();render();}});
+        if(view)return;
         var warehouseModal=document.getElementById('modal-hideout-warehouse');
         if(warehouseModal)warehouseModal.addEventListener('keydown',function(e){
             if(!panelOpen)return;
@@ -1162,7 +1169,7 @@
             }
         });
         var storageBtn=document.getElementById('hw-btn-storage');if(storageBtn)storageBtn.addEventListener('click',function(){closeUpgradeOverlay();render();});
-        document.addEventListener('visibilitychange',function(){if(document.hidden&&isConstructionLive()){stopConstructionTimer();projectMessage='你暂时停下了施工。';saveConstruction();render();}});
+
 
 
         var closeBtn = document.getElementById('hw-close');
@@ -1319,7 +1326,7 @@
         bindOnce();
         panelOpen = true;
         var modal = document.getElementById('modal-hideout-warehouse');
-        if (modal) {
+        if (modal && !view) {
             modal.classList.add('show');
             modal.setAttribute('aria-hidden', 'false');
         }
@@ -1338,7 +1345,7 @@
             showMsg(t('hideout_warehouse.log.upgrade_paused'), 'info');
         }
         var modal = document.getElementById('modal-hideout-warehouse');
-        if (modal) {
+        if (modal && !view) {
             modal.classList.remove('show');
             modal.setAttribute('aria-hidden', 'true');
         }
@@ -1350,8 +1357,84 @@
         return panelOpen;
     }
 
+    // The component consumes display-only records; business actions and timers stay here.
+    var view = null;
+    function itemGuard(inst){return inst&&inst.item_id?String(inst.instance_id||inst.item_id)+':'+String(inst.count||1):null;}
+    function getView() {
+        var HW=getHW();if(!HW||!panelOpen)return {open:false};
+        var st=HW.getState(),capacity=HW.getCapacity(),used=HW.getUsedCount(),cold=HW.hasColdStorage(),pin=hasPinQoL();
+        uiState.page=clampPage(uiState.page,capacity);
+        if(uiState.selectedSlot!=null&&!(st.slots[uiState.selectedSlot]||{}).item_id)uiState.selectedSlot=null;
+        var cells=[],start=(uiState.page-1)*PAGE_SIZE,end=Math.min(start+PAGE_SIZE,capacity);
+        for(var i=start;i<end;i++){
+            var inst=st.slots[i],cell={index:i,selected:uiState.selectedSlot===i,guard:itemGuard(st.slots[i])};
+            if(inst&&inst.item_id&&slotPassesFilter(inst)){
+                var disp=resolveItemDisplay(inst.item_id,inst);
+                Object.assign(cell,{name:disp.name,count:disp.count,label:abbreviateLabel(disp.name,4),perishable:!!(disp.tpl&&Math.floor(Number(disp.tpl.spoilage_ticks))>0),starred:pin&&!!inst.warehouse_starred,locked:pin&&!!inst.warehouse_locked});
+            }
+            cells.push(cell);
+        }
+        var detail=null,selected=st.slots[uiState.selectedSlot];
+        if(uiState.selectedSlot!=null&&selected&&selected.item_id){
+            var d=resolveItemDisplay(selected.item_id,selected);
+            detail={index:uiState.selectedSlot,guard:itemGuard(selected),name:d.name+(d.count>1?' ×'+d.count:''),desc:d.desc,locked:!!selected.warehouse_locked,starred:!!selected.warehouse_starred,modules:[]};
+            try{detail.modules=global.ItemInfoModules.tooltipView({itemId:selected.item_id,tpl:d.tpl,inst:selected,character:getCharacter()});}catch(e){}
+        }
+        var containers=['pocket','vest','backpack','vehicle'].map(function(type){return {id:type,items:(getContainerArray(type)||[]).flatMap(function(inst,index){if(!inst||!inst.item_id)return [];var d=resolveItemDisplay(inst.item_id,inst);return [{index:index,guard:itemGuard(inst),label:d.name+(d.count>1?' ×'+d.count:'')}];})};});
+        var qos={};['qol_tab_view','qol_tidy_one_click','qol_craft_stash','qol_deposit_all','qol_withdraw_fill'].forEach(function(k){qos[k]=HW.hasQoL(k);});
+        return {open:true,page:uiState.page,totalPages:getTotalPages(capacity),pageSize:PAGE_SIZE,filter:uiState.filterTab,capacity:capacity,used:used,cold:cold,pin:pin,outpost:isOutpostView(),qos:qos,prefer:HW.getPreferDeductWarehouse(),cells:cells,padding:cells.length?(GRID_COLS-cells.length%GRID_COLS)%GRID_COLS:0,detail:detail,containers:containers,upgradeOpen:uiState.upgradeOverlayOpen,upgrade:uiState.upgradeOverlayOpen?getUpgradeView():null};
+    }
+    function getUpgradeView(){
+        var HW=getHW(),F=global.FacilityUnlockPanel;
+        if(HW.needsInitialRoutePick()){
+            unmountMaterials();
+            return {route:true,cards:HW.getRouteStarts().map(function(id){var e=HW.getUpgradeEntry(id);return {id:id,name:resolveRoutePickText(id,'title')||resolveUpgradeDisplayName(e),desc:resolveRoutePickText(id,'desc')||buildUpgradeDescription(e,id),tag:{cls:'hw-upgrade-tag-tier',text:t('hideout_warehouse.upgrade.route_pick.tag')}};}),title:t('hideout_warehouse.upgrade.route_pick.title'),desc:t('hideout_warehouse.upgrade.route_pick.hint'),stateText:'',message:'',deduct:'',start:t('hideout_warehouse.upgrade.route_pick.choose_hint'),disabled:true};
+        }
+        var ids=HW.listVisibleUpgradeIds?HW.listVisibleUpgradeIds():HW.listUpgradeIds(),task=HW.getActiveUpgradeTask();
+        if((!uiState.selectedUpgradeId||ids.indexOf(uiState.selectedUpgradeId)<0)&&ids.length)uiState.selectedUpgradeId=task&&task.upgrade_id?task.upgrade_id:ids[0];
+        var uid=uiState.selectedUpgradeId,entry=uid&&HW.getUpgradeEntry(uid),status=uid&&HW.getUpgradeStatus(uid),own=task&&task.upgrade_id===uid;
+        var cards=ids.map(function(id){var e=HW.getUpgradeEntry(id),s=HW.getUpgradeStatus(id);return {id:id,name:resolveUpgradeDisplayName(e),desc:buildUpgradeDescription(e,id),status:s,selected:id===uid,tag:getUpgradeStatusTag(s,e)};});
+        if(!entry)return {cards:cards,disabled:true};
+        var stateText=status==='materials'?'先备好适合这项工程的材料，可以分次投入。':status==='completed'?'这项整备已经完成。':own?'工程已开始，做过的部分会保留。':status==='locked'?(task?'先完成手头的工程，再安排这一项。':entry.requires_story?'目前还缺少继续整备的条件。':'前面的整备尚未完成。'):'材料已经备好。点击「开始施工」后会持续消耗体力完成这项整备，随时可以暂停。';
+        if(own){var ratio=1-task.ticks_remaining/Math.max(1,task.task_ticks_total);stateText=ratio===0?'材料已经摆好，工程刚刚起头。':ratio<.4?'基础部分正在整理，还有不少活要做。':ratio<.8?'主体已经有了样子，连接与细部还需要处理。':'主要工作已经完成，正在做最后的加固与检查。';}
+        var costText='';
+        if(status!=='completed'&&status!=='locked'&&status!=='materials'){
+            var per=own?task.stamina_per_tick:(entry.stamina_per_tick==null?5:entry.stamina_per_tick),cost=global.Survival&&global.Survival.getActionStaminaCost?global.Survival.getActionStaminaCost(per):per;
+            costText='当前体力 '+Math.floor(Number(global.Survival&&global.Survival.getState().stamina)||0)+' · 每次施工消耗 '+cost+' 体力';
+        }
+        var project='warehouse:'+uid,mounted=F.getEmbeddedProject();
+        if(mounted&&mounted!==project){unmountMaterials();mounted=null;}
+        if(status==='materials'){if(!mounted)F.mountView('warehouse',project,function(){refreshSceneAfterInventoryChange();render();});}
+        else if(!(mounted===project&&!own&&status!=='completed'&&F.hasReceipt()))unmountMaterials();
+        return {cards:cards,status:status,materials:F.getEmbeddedProject()===project,title:status==='materials'?'':status==='completed'?'整备完成':own?(isConstructionLive()?'正在施工':'施工已暂停'):status==='locked'?'暂时无法施工':'材料已备齐',desc:'',stateText:stateText,costText:costText,message:projectMessage||(own?(isConstructionLive()?'你正在整理材料、加固结构。':'施工已暂停，准备好后可以继续。'):''),deduct:status==='materials'?'可使用随身和仓库中的材料；封签物品不会投入。':own?'暂停或离开都会保留工程，回来后手动继续。':'',disabled:status==='completed'||status==='locked'||status==='insufficient',start:own?(isConstructionLive()?'暂停施工':'继续施工'):status==='completed'?'已完成':status==='insufficient'?'体力尚不足，先休息一下':status==='locked'?'暂不能开工':'开始施工'};
+    }
+    function publishView(){if(view)view(getView());}
+    function viewAction(action,value,extra,guard){
+        if(!panelOpen)return;
+        var HW=getHW();
+        if(guard!==undefined){var current=action==='deposit'?(getContainerArray(value)||[])[extra]:HW.getState().slots[value];if(itemGuard(current)!==guard){render();return;}}
+        if(action==='slot')handleSlotClick(value);
+        else if(action==='quick')handleQuickTransferWarehouse(value);
+        else if(action==='withdraw')handleWithdraw(value,extra);
+        else if(action==='fill')handleWithdrawSaturated(value);
+        else if(action==='star'||action==='lock'){if(hasPinQoL())HW[action==='star'?'toggleSlotStarred':'toggleSlotLocked'](value);render();}
+        else if(action==='deposit')handleDepositFromContainer(value,extra);
+        else if(action==='depositAll'){if(HW.hasQoL('qol_deposit_all'))handleDepositAllFromContainer(value);}
+        else if(action==='tidy')handleTidy();
+        else if(action==='settings')handleSettingsToggle();
+        else if(action==='filter'){if(value==='all'||HW.hasQoL('qol_tab_view')){uiState.filterTab=value;uiState.page=1;render();}}
+        else if(action==='page'){uiState.page=clampPage(uiState.page+value,HW.getCapacity());render();}
+        else if(action==='upgrade')openUpgradeOverlay();
+        else if(action==='storage'){closeUpgradeOverlay();render();}
+        else if(action==='route')handleRoutePickClick(value);
+        else if(action==='project')handleUpgradeCardClick(value);
+        else if(action==='start')handleUpgradeStart();
+    }
+
     global.HideoutWarehousePanel = {
-        suspendForLoad: function(){stopConstructionTimer();unmountMaterials();uiState.selectedUpgradeId=null;uiState.upgradeOverlayOpen=false;projectMessage='';var el=document.getElementById('hw-upgrade-overlay');if(el){el.classList.add('hw-hidden');el.setAttribute('aria-hidden','true');}renderWorkspace();},
+        attachView: function(fn){view=fn;publishView();return function(){stopConstructionTimer();unmountMaterials();panelOpen=false;view=null;};},
+        getView:getView, act:viewAction,
+        suspendForLoad: function(){stopConstructionTimer();unmountMaterials();uiState.selectedUpgradeId=null;uiState.upgradeOverlayOpen=false;projectMessage='';var el=document.getElementById('hw-upgrade-overlay');if(el&&!view){el.classList.add('hw-hidden');el.setAttribute('aria-hidden','true');}renderWorkspace();},
         open: open,
         close: close,
         isOpen: isOpen,

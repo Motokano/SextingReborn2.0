@@ -140,6 +140,7 @@
         var o = observe(g.GameEngine.getMap());
         if (o && lastObservation && (o.map !== lastObservation.map || o.weather !== lastObservation.weather) && listener) listener(o.text);
         lastObservation = o;
+        if (g.SvelteHUD) { g.SvelteHUD.invalidate('environment'); return; }
         if (g.document) { var el = g.document.getElementById('hud-weather'); if (el) {var measured=g.NPCSystem&&g.NPCSystem.isDemoFlagTrue('observation_temperature_unlocked'),env=measured?environment(g.GameEngine.getMap()):null;el.textContent=(o?o.label:'')+(env?' · '+Math.round(env.temperature)+'℃':'');} }
     }
     function setMapEffect(source, map, effect) {

@@ -1,0 +1,1 @@
+(async()=>{await new Promise(r=>setTimeout(r,5000));return {pawn:document.querySelector('.player-pawn-visual')?.outerHTML,images:[...document.images].filter(x=>/pawn|atlas/.test(x.src)).map(x=>({src:x.src,complete:x.complete,width:x.naturalWidth})),rig:!!window.PlayerPawnRig};})()

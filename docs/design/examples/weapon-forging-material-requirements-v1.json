@@ -1,0 +1,1593 @@
+{
+  "version": 1,
+  "status": "draft",
+  "date": "2026-10-13",
+  "description": "投料容量与四项需求首版试调。方向已确认，具体数值待矿石配表验证；仅设计数据，不是运行配置。",
+  "basis": "每项总要求 = 固定投料容量 × 该项单位需求；实际投料不足不缩小要求。",
+  "axes": [
+    "hardness",
+    "toughness",
+    "deformationResistance",
+    "density"
+  ],
+  "source": "../weapon-component-final-stats-draft.md",
+  "components": [
+    {
+      "id": "B01",
+      "name": "平磨直刃",
+      "tier": 1,
+      "capacity": 6,
+      "unitTargets": {
+        "hardness": 20,
+        "toughness": 18,
+        "deformationResistance": 18,
+        "density": 18
+      },
+      "requirements": {
+        "hardness": 120,
+        "toughness": 108,
+        "deformationResistance": 108,
+        "density": 108
+      },
+      "materialDemand": "四项均衡，保留自由补强空间"
+    },
+    {
+      "id": "B02",
+      "name": "厚身凸刃",
+      "tier": 1,
+      "capacity": 7,
+      "unitTargets": {
+        "hardness": 18,
+        "toughness": 24,
+        "deformationResistance": 24,
+        "density": 20
+      },
+      "requirements": {
+        "hardness": 126,
+        "toughness": 168,
+        "deformationResistance": 168,
+        "density": 140
+      },
+      "materialDemand": "厚身防守，韧性与抗变形并重"
+    },
+    {
+      "id": "B03",
+      "name": "透镜形刃",
+      "tier": 2,
+      "capacity": 6,
+      "unitTargets": {
+        "hardness": 22,
+        "toughness": 18,
+        "deformationResistance": 20,
+        "density": 18
+      },
+      "requirements": {
+        "hardness": 132,
+        "toughness": 108,
+        "deformationResistance": 120,
+        "density": 108
+      },
+      "materialDemand": "透镜刃面，略重硬度与抗变形"
+    },
+    {
+      "id": "B04",
+      "name": "窄身菱脊刃",
+      "tier": 2,
+      "capacity": 5,
+      "unitTargets": {
+        "hardness": 28,
+        "toughness": 18,
+        "deformationResistance": 22,
+        "density": 14
+      },
+      "requirements": {
+        "hardness": 140,
+        "toughness": 90,
+        "deformationResistance": 110,
+        "density": 70
+      },
+      "materialDemand": "窄薄刃，高硬度需求与低密度需求"
+    },
+    {
+      "id": "B05",
+      "name": "宽身平刃",
+      "tier": 2,
+      "capacity": 8,
+      "unitTargets": {
+        "hardness": 18,
+        "toughness": 18,
+        "deformationResistance": 20,
+        "density": 26
+      },
+      "requirements": {
+        "hardness": 144,
+        "toughness": 144,
+        "deformationResistance": 160,
+        "density": 208
+      },
+      "materialDemand": "宽身重劈，主要补足密度"
+    },
+    {
+      "id": "B06",
+      "name": "浅槽宽刃",
+      "tier": 3,
+      "capacity": 6,
+      "unitTargets": {
+        "hardness": 24,
+        "toughness": 18,
+        "deformationResistance": 22,
+        "density": 14
+      },
+      "requirements": {
+        "hardness": 144,
+        "toughness": 108,
+        "deformationResistance": 132,
+        "density": 84
+      },
+      "materialDemand": "开槽轻刃，补硬度与抗变形"
+    },
+    {
+      "id": "B07",
+      "name": "六棱厚身刃",
+      "tier": 3,
+      "capacity": 7,
+      "unitTargets": {
+        "hardness": 20,
+        "toughness": 24,
+        "deformationResistance": 26,
+        "density": 20
+      },
+      "requirements": {
+        "hardness": 140,
+        "toughness": 168,
+        "deformationResistance": 182,
+        "density": 140
+      },
+      "materialDemand": "厚棱防守，抗变形需求突出"
+    },
+    {
+      "id": "B08",
+      "name": "嵌钢复合刃",
+      "tier": 3,
+      "capacity": 6,
+      "unitTargets": {
+        "hardness": 24,
+        "toughness": 24,
+        "deformationResistance": 18,
+        "density": 18
+      },
+      "requirements": {
+        "hardness": 144,
+        "toughness": 144,
+        "deformationResistance": 108,
+        "density": 108
+      },
+      "materialDemand": "复合刃，硬度与韧性兼顾"
+    },
+    {
+      "id": "B09",
+      "name": "渐薄透镜刃",
+      "tier": 4,
+      "capacity": 6,
+      "unitTargets": {
+        "hardness": 24,
+        "toughness": 20,
+        "deformationResistance": 20,
+        "density": 16
+      },
+      "requirements": {
+        "hardness": 144,
+        "toughness": 120,
+        "deformationResistance": 120,
+        "density": 96
+      },
+      "materialDemand": "渐薄刃，硬度优先并控制密度"
+    },
+    {
+      "id": "B10",
+      "name": "浅凹磨脊刃",
+      "tier": 4,
+      "capacity": 6,
+      "unitTargets": {
+        "hardness": 30,
+        "toughness": 18,
+        "deformationResistance": 22,
+        "density": 16
+      },
+      "requirements": {
+        "hardness": 180,
+        "toughness": 108,
+        "deformationResistance": 132,
+        "density": 96
+      },
+      "materialDemand": "凹磨切入，高硬度需求"
+    },
+    {
+      "id": "B11",
+      "name": "前宽劈砍刃",
+      "tier": 4,
+      "capacity": 8,
+      "unitTargets": {
+        "hardness": 18,
+        "toughness": 20,
+        "deformationResistance": 22,
+        "density": 28
+      },
+      "requirements": {
+        "hardness": 144,
+        "toughness": 160,
+        "deformationResistance": 176,
+        "density": 224
+      },
+      "materialDemand": "前宽重劈，密度需求高"
+    },
+    {
+      "id": "B12",
+      "name": "精整六棱刃",
+      "tier": 5,
+      "capacity": 7,
+      "unitTargets": {
+        "hardness": 22,
+        "toughness": 24,
+        "deformationResistance": 28,
+        "density": 18
+      },
+      "requirements": {
+        "hardness": 154,
+        "toughness": 168,
+        "deformationResistance": 196,
+        "density": 126
+      },
+      "materialDemand": "精整棱刃，抗变形优先"
+    },
+    {
+      "id": "B13",
+      "name": "双槽渐薄刃",
+      "tier": 5,
+      "capacity": 5,
+      "unitTargets": {
+        "hardness": 30,
+        "toughness": 20,
+        "deformationResistance": 22,
+        "density": 12
+      },
+      "requirements": {
+        "hardness": 150,
+        "toughness": 100,
+        "deformationResistance": 110,
+        "density": 60
+      },
+      "materialDemand": "双槽轻刃，硬度高且密度目标低"
+    },
+    {
+      "id": "B14",
+      "name": "硬刃软芯复合刃",
+      "tier": 5,
+      "capacity": 6,
+      "unitTargets": {
+        "hardness": 30,
+        "toughness": 26,
+        "deformationResistance": 18,
+        "density": 16
+      },
+      "requirements": {
+        "hardness": 180,
+        "toughness": 156,
+        "deformationResistance": 108,
+        "density": 96
+      },
+      "materialDemand": "硬刃软芯，硬度与韧性双重需求"
+    },
+    {
+      "id": "B15",
+      "name": "精整渐薄刃",
+      "tier": 6,
+      "capacity": 6,
+      "unitTargets": {
+        "hardness": 24,
+        "toughness": 22,
+        "deformationResistance": 20,
+        "density": 16
+      },
+      "requirements": {
+        "hardness": 144,
+        "toughness": 132,
+        "deformationResistance": 120,
+        "density": 96
+      },
+      "materialDemand": "精整薄刃，硬度与韧性协调"
+    },
+    {
+      "id": "B16",
+      "name": "精磨宽刃",
+      "tier": 6,
+      "capacity": 8,
+      "unitTargets": {
+        "hardness": 20,
+        "toughness": 18,
+        "deformationResistance": 22,
+        "density": 28
+      },
+      "requirements": {
+        "hardness": 160,
+        "toughness": 144,
+        "deformationResistance": 176,
+        "density": 224
+      },
+      "materialDemand": "宽刃重劈，密度优先"
+    },
+    {
+      "id": "B17",
+      "name": "精焊夹钢刃",
+      "tier": 6,
+      "capacity": 7,
+      "unitTargets": {
+        "hardness": 26,
+        "toughness": 26,
+        "deformationResistance": 24,
+        "density": 18
+      },
+      "requirements": {
+        "hardness": 182,
+        "toughness": 182,
+        "deformationResistance": 168,
+        "density": 126
+      },
+      "materialDemand": "夹钢厚刃，多项协调而非单堆硬度"
+    },
+    {
+      "id": "T01",
+      "name": "短菱剑尖",
+      "tier": 1,
+      "capacity": 3,
+      "unitTargets": {
+        "hardness": 24,
+        "toughness": 16,
+        "deformationResistance": 22,
+        "density": 16
+      },
+      "requirements": {
+        "hardness": 72,
+        "toughness": 48,
+        "deformationResistance": 66,
+        "density": 48
+      },
+      "materialDemand": "紧凑尖端，硬度与抗变形优先"
+    },
+    {
+      "id": "T02",
+      "name": "平顶圆头",
+      "tier": 1,
+      "capacity": 3,
+      "unitTargets": {
+        "hardness": 12,
+        "toughness": 20,
+        "deformationResistance": 22,
+        "density": 22
+      },
+      "requirements": {
+        "hardness": 36,
+        "toughness": 60,
+        "deformationResistance": 66,
+        "density": 66
+      },
+      "materialDemand": "钝端，抗变形与密度并重"
+    },
+    {
+      "id": "T03",
+      "name": "扁叶剑尖",
+      "tier": 2,
+      "capacity": 3,
+      "unitTargets": {
+        "hardness": 26,
+        "toughness": 18,
+        "deformationResistance": 20,
+        "density": 16
+      },
+      "requirements": {
+        "hardness": 78,
+        "toughness": 54,
+        "deformationResistance": 60,
+        "density": 48
+      },
+      "materialDemand": "扁叶尖端，硬度优先"
+    },
+    {
+      "id": "T04",
+      "name": "半球击头",
+      "tier": 2,
+      "capacity": 4,
+      "unitTargets": {
+        "hardness": 12,
+        "toughness": 22,
+        "deformationResistance": 22,
+        "density": 26
+      },
+      "requirements": {
+        "hardness": 48,
+        "toughness": 88,
+        "deformationResistance": 88,
+        "density": 104
+      },
+      "materialDemand": "圆顶重头，密度优先"
+    },
+    {
+      "id": "T05",
+      "name": "四棱剑尖",
+      "tier": 3,
+      "capacity": 3,
+      "unitTargets": {
+        "hardness": 24,
+        "toughness": 18,
+        "deformationResistance": 28,
+        "density": 18
+      },
+      "requirements": {
+        "hardness": 72,
+        "toughness": 54,
+        "deformationResistance": 84,
+        "density": 54
+      },
+      "materialDemand": "棱脊尖端，抗变形优先"
+    },
+    {
+      "id": "T06",
+      "name": "扁圆击头",
+      "tier": 3,
+      "capacity": 3,
+      "unitTargets": {
+        "hardness": 12,
+        "toughness": 22,
+        "deformationResistance": 24,
+        "density": 18
+      },
+      "requirements": {
+        "hardness": 36,
+        "toughness": 66,
+        "deformationResistance": 72,
+        "density": 54
+      },
+      "materialDemand": "轻钝头，韧性与抗变形并重"
+    },
+    {
+      "id": "T07",
+      "name": "脊棱窄尖",
+      "tier": 4,
+      "capacity": 3,
+      "unitTargets": {
+        "hardness": 30,
+        "toughness": 18,
+        "deformationResistance": 26,
+        "density": 14
+      },
+      "requirements": {
+        "hardness": 90,
+        "toughness": 54,
+        "deformationResistance": 78,
+        "density": 42
+      },
+      "materialDemand": "窄尖，硬度和抗变形需求高"
+    },
+    {
+      "id": "T08",
+      "name": "多棱钝头",
+      "tier": 4,
+      "capacity": 5,
+      "unitTargets": {
+        "hardness": 16,
+        "toughness": 20,
+        "deformationResistance": 28,
+        "density": 28
+      },
+      "requirements": {
+        "hardness": 80,
+        "toughness": 100,
+        "deformationResistance": 140,
+        "density": 140
+      },
+      "materialDemand": "多棱重头，抗变形与密度并重"
+    },
+    {
+      "id": "T09",
+      "name": "渐收长尖",
+      "tier": 5,
+      "capacity": 4,
+      "unitTargets": {
+        "hardness": 28,
+        "toughness": 26,
+        "deformationResistance": 20,
+        "density": 14
+      },
+      "requirements": {
+        "hardness": 112,
+        "toughness": 104,
+        "deformationResistance": 80,
+        "density": 56
+      },
+      "materialDemand": "长尖，硬度与韧性双重需求"
+    },
+    {
+      "id": "T10",
+      "name": "鼓形击头",
+      "tier": 5,
+      "capacity": 4,
+      "unitTargets": {
+        "hardness": 14,
+        "toughness": 24,
+        "deformationResistance": 22,
+        "density": 26
+      },
+      "requirements": {
+        "hardness": 56,
+        "toughness": 96,
+        "deformationResistance": 88,
+        "density": 104
+      },
+      "materialDemand": "鼓形钝头，韧性与密度并重"
+    },
+    {
+      "id": "T11",
+      "name": "厚根菱尖",
+      "tier": 6,
+      "capacity": 3,
+      "unitTargets": {
+        "hardness": 24,
+        "toughness": 26,
+        "deformationResistance": 24,
+        "density": 16
+      },
+      "requirements": {
+        "hardness": 72,
+        "toughness": 78,
+        "deformationResistance": 72,
+        "density": 48
+      },
+      "materialDemand": "厚根尖，韧性优先兼顾尖端"
+    },
+    {
+      "id": "T12",
+      "name": "圆冠重击头",
+      "tier": 6,
+      "capacity": 5,
+      "unitTargets": {
+        "hardness": 14,
+        "toughness": 22,
+        "deformationResistance": 26,
+        "density": 30
+      },
+      "requirements": {
+        "hardness": 70,
+        "toughness": 110,
+        "deformationResistance": 130,
+        "density": 150
+      },
+      "materialDemand": "圆冠重头，密度需求高"
+    },
+    {
+      "id": "D01",
+      "name": "圆柱击条",
+      "tier": 1,
+      "capacity": 6,
+      "unitTargets": {
+        "hardness": 12,
+        "toughness": 20,
+        "deformationResistance": 20,
+        "density": 22
+      },
+      "requirements": {
+        "hardness": 72,
+        "toughness": 120,
+        "deformationResistance": 120,
+        "density": 132
+      },
+      "materialDemand": "圆柱击面，密度略高"
+    },
+    {
+      "id": "D02",
+      "name": "厚背击条",
+      "tier": 1,
+      "capacity": 8,
+      "unitTargets": {
+        "hardness": 12,
+        "toughness": 24,
+        "deformationResistance": 26,
+        "density": 22
+      },
+      "requirements": {
+        "hardness": 96,
+        "toughness": 192,
+        "deformationResistance": 208,
+        "density": 176
+      },
+      "materialDemand": "厚背承力，抗变形优先"
+    },
+    {
+      "id": "D03",
+      "name": "扁平拍板",
+      "tier": 1,
+      "capacity": 6,
+      "unitTargets": {
+        "hardness": 12,
+        "toughness": 24,
+        "deformationResistance": 20,
+        "density": 18
+      },
+      "requirements": {
+        "hardness": 72,
+        "toughness": 144,
+        "deformationResistance": 120,
+        "density": 108
+      },
+      "materialDemand": "薄拍板，韧性优先"
+    },
+    {
+      "id": "D04",
+      "name": "六棱击条",
+      "tier": 2,
+      "capacity": 7,
+      "unitTargets": {
+        "hardness": 18,
+        "toughness": 20,
+        "deformationResistance": 26,
+        "density": 22
+      },
+      "requirements": {
+        "hardness": 126,
+        "toughness": 140,
+        "deformationResistance": 182,
+        "density": 154
+      },
+      "materialDemand": "棱面击条，抗变形优先"
+    },
+    {
+      "id": "D05",
+      "name": "弧面击条",
+      "tier": 2,
+      "capacity": 6,
+      "unitTargets": {
+        "hardness": 12,
+        "toughness": 26,
+        "deformationResistance": 20,
+        "density": 20
+      },
+      "requirements": {
+        "hardness": 72,
+        "toughness": 156,
+        "deformationResistance": 120,
+        "density": 120
+      },
+      "materialDemand": "弧面击条，韧性优先"
+    },
+    {
+      "id": "D06",
+      "name": "加厚击板",
+      "tier": 2,
+      "capacity": 8,
+      "unitTargets": {
+        "hardness": 12,
+        "toughness": 26,
+        "deformationResistance": 26,
+        "density": 24
+      },
+      "requirements": {
+        "hardness": 96,
+        "toughness": 208,
+        "deformationResistance": 208,
+        "density": 192
+      },
+      "materialDemand": "厚击板，韧性与抗变形并重"
+    },
+    {
+      "id": "D07",
+      "name": "窄圆击条",
+      "tier": 3,
+      "capacity": 5,
+      "unitTargets": {
+        "hardness": 14,
+        "toughness": 24,
+        "deformationResistance": 22,
+        "density": 16
+      },
+      "requirements": {
+        "hardness": 70,
+        "toughness": 120,
+        "deformationResistance": 110,
+        "density": 80
+      },
+      "materialDemand": "窄圆轻条，韧性优先且密度低"
+    },
+    {
+      "id": "D08",
+      "name": "凸面击块",
+      "tier": 3,
+      "capacity": 8,
+      "unitTargets": {
+        "hardness": 14,
+        "toughness": 20,
+        "deformationResistance": 22,
+        "density": 28
+      },
+      "requirements": {
+        "hardness": 112,
+        "toughness": 160,
+        "deformationResistance": 176,
+        "density": 224
+      },
+      "materialDemand": "凸面重块，密度优先"
+    },
+    {
+      "id": "D09",
+      "name": "厚棱击条",
+      "tier": 3,
+      "capacity": 8,
+      "unitTargets": {
+        "hardness": 18,
+        "toughness": 22,
+        "deformationResistance": 28,
+        "density": 22
+      },
+      "requirements": {
+        "hardness": 144,
+        "toughness": 176,
+        "deformationResistance": 224,
+        "density": 176
+      },
+      "materialDemand": "厚棱击条，抗变形优先"
+    },
+    {
+      "id": "D10",
+      "name": "偏重击块",
+      "tier": 4,
+      "capacity": 10,
+      "unitTargets": {
+        "hardness": 12,
+        "toughness": 20,
+        "deformationResistance": 24,
+        "density": 30
+      },
+      "requirements": {
+        "hardness": 120,
+        "toughness": 200,
+        "deformationResistance": 240,
+        "density": 300
+      },
+      "materialDemand": "偏重击块，密度需求高"
+    },
+    {
+      "id": "D11",
+      "name": "宽面拍板",
+      "tier": 4,
+      "capacity": 7,
+      "unitTargets": {
+        "hardness": 12,
+        "toughness": 28,
+        "deformationResistance": 22,
+        "density": 20
+      },
+      "requirements": {
+        "hardness": 84,
+        "toughness": 196,
+        "deformationResistance": 154,
+        "density": 140
+      },
+      "materialDemand": "宽面拍板，韧性需求高"
+    },
+    {
+      "id": "D12",
+      "name": "弧背击条",
+      "tier": 4,
+      "capacity": 7,
+      "unitTargets": {
+        "hardness": 12,
+        "toughness": 28,
+        "deformationResistance": 24,
+        "density": 22
+      },
+      "requirements": {
+        "hardness": 84,
+        "toughness": 196,
+        "deformationResistance": 168,
+        "density": 154
+      },
+      "materialDemand": "弧背承力，韧性与抗变形并重"
+    },
+    {
+      "id": "D13",
+      "name": "渐细圆条",
+      "tier": 5,
+      "capacity": 5,
+      "unitTargets": {
+        "hardness": 16,
+        "toughness": 26,
+        "deformationResistance": 22,
+        "density": 14
+      },
+      "requirements": {
+        "hardness": 80,
+        "toughness": 130,
+        "deformationResistance": 110,
+        "density": 70
+      },
+      "materialDemand": "渐细轻条，韧性优先且密度低"
+    },
+    {
+      "id": "D14",
+      "name": "棱面击块",
+      "tier": 5,
+      "capacity": 8,
+      "unitTargets": {
+        "hardness": 20,
+        "toughness": 20,
+        "deformationResistance": 28,
+        "density": 26
+      },
+      "requirements": {
+        "hardness": 160,
+        "toughness": 160,
+        "deformationResistance": 224,
+        "density": 208
+      },
+      "materialDemand": "棱面重块，抗变形与密度并重"
+    },
+    {
+      "id": "D15",
+      "name": "厚背拍板",
+      "tier": 5,
+      "capacity": 8,
+      "unitTargets": {
+        "hardness": 12,
+        "toughness": 30,
+        "deformationResistance": 24,
+        "density": 22
+      },
+      "requirements": {
+        "hardness": 96,
+        "toughness": 240,
+        "deformationResistance": 192,
+        "density": 176
+      },
+      "materialDemand": "厚背宽板，韧性需求高"
+    },
+    {
+      "id": "D16",
+      "name": "端重击条",
+      "tier": 6,
+      "capacity": 10,
+      "unitTargets": {
+        "hardness": 12,
+        "toughness": 22,
+        "deformationResistance": 26,
+        "density": 32
+      },
+      "requirements": {
+        "hardness": 120,
+        "toughness": 220,
+        "deformationResistance": 260,
+        "density": 320
+      },
+      "materialDemand": "端重击条，密度要求最高"
+    },
+    {
+      "id": "D17",
+      "name": "宽冠击板",
+      "tier": 6,
+      "capacity": 7,
+      "unitTargets": {
+        "hardness": 12,
+        "toughness": 28,
+        "deformationResistance": 26,
+        "density": 20
+      },
+      "requirements": {
+        "hardness": 84,
+        "toughness": 196,
+        "deformationResistance": 182,
+        "density": 140
+      },
+      "materialDemand": "宽冠击板，韧性与抗变形并重"
+    },
+    {
+      "id": "D18",
+      "name": "厚脊击条",
+      "tier": 6,
+      "capacity": 8,
+      "unitTargets": {
+        "hardness": 14,
+        "toughness": 28,
+        "deformationResistance": 30,
+        "density": 22
+      },
+      "requirements": {
+        "hardness": 112,
+        "toughness": 224,
+        "deformationResistance": 240,
+        "density": 176
+      },
+      "materialDemand": "厚脊击条，抗变形需求高"
+    },
+    {
+      "id": "H01",
+      "name": "直柄圆首柄",
+      "tier": 1,
+      "capacity": 4,
+      "unitTargets": {
+        "hardness": 10,
+        "toughness": 20,
+        "deformationResistance": 18,
+        "density": 14
+      },
+      "requirements": {
+        "hardness": 40,
+        "toughness": 80,
+        "deformationResistance": 72,
+        "density": 56
+      },
+      "materialDemand": "轻直柄，韧性优先且密度低"
+    },
+    {
+      "id": "H02",
+      "name": "短格扁首柄",
+      "tier": 1,
+      "capacity": 5,
+      "unitTargets": {
+        "hardness": 12,
+        "toughness": 20,
+        "deformationResistance": 24,
+        "density": 18
+      },
+      "requirements": {
+        "hardness": 60,
+        "toughness": 100,
+        "deformationResistance": 120,
+        "density": 90
+      },
+      "materialDemand": "短横格，抗变形优先"
+    },
+    {
+      "id": "H03",
+      "name": "弧柄单弓柄",
+      "tier": 1,
+      "capacity": 5,
+      "unitTargets": {
+        "hardness": 10,
+        "toughness": 26,
+        "deformationResistance": 20,
+        "density": 16
+      },
+      "requirements": {
+        "hardness": 50,
+        "toughness": 130,
+        "deformationResistance": 100,
+        "density": 80
+      },
+      "materialDemand": "单弓柄，韧性优先"
+    },
+    {
+      "id": "H04",
+      "name": "厚首剑柄",
+      "tier": 2,
+      "capacity": 6,
+      "unitTargets": {
+        "hardness": 12,
+        "toughness": 20,
+        "deformationResistance": 20,
+        "density": 24
+      },
+      "requirements": {
+        "hardness": 72,
+        "toughness": 120,
+        "deformationResistance": 120,
+        "density": 144
+      },
+      "materialDemand": "厚钝首，密度优先"
+    },
+    {
+      "id": "H05",
+      "name": "宽格剑柄",
+      "tier": 2,
+      "capacity": 6,
+      "unitTargets": {
+        "hardness": 12,
+        "toughness": 22,
+        "deformationResistance": 28,
+        "density": 18
+      },
+      "requirements": {
+        "hardness": 72,
+        "toughness": 132,
+        "deformationResistance": 168,
+        "density": 108
+      },
+      "materialDemand": "宽横格，抗变形需求高"
+    },
+    {
+      "id": "H06",
+      "name": "椭圆盘护手柄",
+      "tier": 2,
+      "capacity": 6,
+      "unitTargets": {
+        "hardness": 12,
+        "toughness": 24,
+        "deformationResistance": 24,
+        "density": 18
+      },
+      "requirements": {
+        "hardness": 72,
+        "toughness": 144,
+        "deformationResistance": 144,
+        "density": 108
+      },
+      "materialDemand": "盘护手，韧性与抗变形并重"
+    },
+    {
+      "id": "H07",
+      "name": "梨首直柄",
+      "tier": 3,
+      "capacity": 4,
+      "unitTargets": {
+        "hardness": 10,
+        "toughness": 24,
+        "deformationResistance": 20,
+        "density": 14
+      },
+      "requirements": {
+        "hardness": 40,
+        "toughness": 96,
+        "deformationResistance": 80,
+        "density": 56
+      },
+      "materialDemand": "轻梨首，韧性优先且密度低"
+    },
+    {
+      "id": "H08",
+      "name": "双支护手柄",
+      "tier": 3,
+      "capacity": 6,
+      "unitTargets": {
+        "hardness": 12,
+        "toughness": 24,
+        "deformationResistance": 30,
+        "density": 18
+      },
+      "requirements": {
+        "hardness": 72,
+        "toughness": 144,
+        "deformationResistance": 180,
+        "density": 108
+      },
+      "materialDemand": "双支护手，抗变形需求高"
+    },
+    {
+      "id": "H09",
+      "name": "弧背军刀柄",
+      "tier": 3,
+      "capacity": 6,
+      "unitTargets": {
+        "hardness": 10,
+        "toughness": 30,
+        "deformationResistance": 22,
+        "density": 16
+      },
+      "requirements": {
+        "hardness": 60,
+        "toughness": 180,
+        "deformationResistance": 132,
+        "density": 96
+      },
+      "materialDemand": "弧背军刀柄，韧性需求高"
+    },
+    {
+      "id": "H10",
+      "name": "八棱重首柄",
+      "tier": 4,
+      "capacity": 7,
+      "unitTargets": {
+        "hardness": 14,
+        "toughness": 22,
+        "deformationResistance": 24,
+        "density": 28
+      },
+      "requirements": {
+        "hardness": 98,
+        "toughness": 154,
+        "deformationResistance": 168,
+        "density": 196
+      },
+      "materialDemand": "八棱重首，密度优先"
+    },
+    {
+      "id": "H11",
+      "name": "三支护手柄",
+      "tier": 4,
+      "capacity": 7,
+      "unitTargets": {
+        "hardness": 12,
+        "toughness": 26,
+        "deformationResistance": 30,
+        "density": 18
+      },
+      "requirements": {
+        "hardness": 84,
+        "toughness": 182,
+        "deformationResistance": 210,
+        "density": 126
+      },
+      "materialDemand": "三支护手，抗变形兼顾韧性"
+    },
+    {
+      "id": "H12",
+      "name": "下弯剑格柄",
+      "tier": 4,
+      "capacity": 6,
+      "unitTargets": {
+        "hardness": 12,
+        "toughness": 30,
+        "deformationResistance": 24,
+        "density": 16
+      },
+      "requirements": {
+        "hardness": 72,
+        "toughness": 180,
+        "deformationResistance": 144,
+        "density": 96
+      },
+      "materialDemand": "下弯剑格，韧性优先"
+    },
+    {
+      "id": "H13",
+      "name": "短尾刺剑柄",
+      "tier": 5,
+      "capacity": 5,
+      "unitTargets": {
+        "hardness": 28,
+        "toughness": 20,
+        "deformationResistance": 22,
+        "density": 14
+      },
+      "requirements": {
+        "hardness": 140,
+        "toughness": 100,
+        "deformationResistance": 110,
+        "density": 70
+      },
+      "materialDemand": "尾刺柄，硬度需求高"
+    },
+    {
+      "id": "H14",
+      "name": "半篮护手柄",
+      "tier": 5,
+      "capacity": 7,
+      "unitTargets": {
+        "hardness": 12,
+        "toughness": 28,
+        "deformationResistance": 32,
+        "density": 20
+      },
+      "requirements": {
+        "hardness": 84,
+        "toughness": 196,
+        "deformationResistance": 224,
+        "density": 140
+      },
+      "materialDemand": "半篮护手，抗变形与韧性需求高"
+    },
+    {
+      "id": "H15",
+      "name": "宽弧剑格柄",
+      "tier": 5,
+      "capacity": 6,
+      "unitTargets": {
+        "hardness": 12,
+        "toughness": 32,
+        "deformationResistance": 24,
+        "density": 16
+      },
+      "requirements": {
+        "hardness": 72,
+        "toughness": 192,
+        "deformationResistance": 144,
+        "density": 96
+      },
+      "materialDemand": "宽弧剑格，韧性需求高"
+    },
+    {
+      "id": "H16",
+      "name": "厚首配重柄",
+      "tier": 6,
+      "capacity": 7,
+      "unitTargets": {
+        "hardness": 14,
+        "toughness": 24,
+        "deformationResistance": 24,
+        "density": 30
+      },
+      "requirements": {
+        "hardness": 98,
+        "toughness": 168,
+        "deformationResistance": 168,
+        "density": 210
+      },
+      "materialDemand": "配重柄首，密度需求高"
+    },
+    {
+      "id": "H17",
+      "name": "碗形护手柄",
+      "tier": 6,
+      "capacity": 8,
+      "unitTargets": {
+        "hardness": 14,
+        "toughness": 28,
+        "deformationResistance": 32,
+        "density": 20
+      },
+      "requirements": {
+        "hardness": 112,
+        "toughness": 224,
+        "deformationResistance": 256,
+        "density": 160
+      },
+      "materialDemand": "碗形护手，抗变形与韧性需求高"
+    },
+    {
+      "id": "H18",
+      "name": "回曲宽格柄",
+      "tier": 6,
+      "capacity": 7,
+      "unitTargets": {
+        "hardness": 12,
+        "toughness": 32,
+        "deformationResistance": 26,
+        "density": 16
+      },
+      "requirements": {
+        "hardness": 84,
+        "toughness": 224,
+        "deformationResistance": 182,
+        "density": 112
+      },
+      "materialDemand": "回曲宽格，韧性需求高"
+    },
+    {
+      "id": "M01-T1",
+      "name": "双面锤头",
+      "tier": 1,
+      "capacity": 14,
+      "unitTargets": {
+        "hardness": 14,
+        "toughness": 22,
+        "deformationResistance": 26,
+        "density": 28
+      },
+      "requirements": {
+        "hardness": 196,
+        "toughness": 308,
+        "deformationResistance": 364,
+        "density": 392
+      },
+      "materialDemand": "双锤面，抗变形与密度并重"
+    },
+    {
+      "id": "M02-T1",
+      "name": "双刃斧头",
+      "tier": 1,
+      "capacity": 16,
+      "unitTargets": {
+        "hardness": 24,
+        "toughness": 20,
+        "deformationResistance": 24,
+        "density": 26
+      },
+      "requirements": {
+        "hardness": 384,
+        "toughness": 320,
+        "deformationResistance": 384,
+        "density": 416
+      },
+      "materialDemand": "双斧刃，硬度与密度兼顾"
+    },
+    {
+      "id": "M07-T1",
+      "name": "一体棍身",
+      "tier": 1,
+      "capacity": 14,
+      "unitTargets": {
+        "hardness": 10,
+        "toughness": 26,
+        "deformationResistance": 22,
+        "density": 18
+      },
+      "requirements": {
+        "hardness": 140,
+        "toughness": 364,
+        "deformationResistance": 308,
+        "density": 252
+      },
+      "materialDemand": "一体棍身，韧性优先"
+    },
+    {
+      "id": "M03-T2",
+      "name": "锤斧复合头",
+      "tier": 2,
+      "capacity": 16,
+      "unitTargets": {
+        "hardness": 22,
+        "toughness": 24,
+        "deformationResistance": 26,
+        "density": 26
+      },
+      "requirements": {
+        "hardness": 352,
+        "toughness": 384,
+        "deformationResistance": 416,
+        "density": 416
+      },
+      "materialDemand": "锤斧复合，多项需求协调"
+    },
+    {
+      "id": "M05-T2",
+      "name": "一体双刃剑身",
+      "tier": 2,
+      "capacity": 14,
+      "unitTargets": {
+        "hardness": 24,
+        "toughness": 22,
+        "deformationResistance": 22,
+        "density": 18
+      },
+      "requirements": {
+        "hardness": 336,
+        "toughness": 308,
+        "deformationResistance": 308,
+        "density": 252
+      },
+      "materialDemand": "一体双刃剑身，硬度优先"
+    },
+    {
+      "id": "M06-T2",
+      "name": "一体单刃刀身",
+      "tier": 2,
+      "capacity": 14,
+      "unitTargets": {
+        "hardness": 24,
+        "toughness": 26,
+        "deformationResistance": 22,
+        "density": 20
+      },
+      "requirements": {
+        "hardness": 336,
+        "toughness": 364,
+        "deformationResistance": 308,
+        "density": 280
+      },
+      "materialDemand": "刃背复合，韧性兼顾硬度"
+    },
+    {
+      "id": "M01-T3",
+      "name": "双面锤头",
+      "tier": 3,
+      "capacity": 14,
+      "unitTargets": {
+        "hardness": 14,
+        "toughness": 22,
+        "deformationResistance": 26,
+        "density": 28
+      },
+      "requirements": {
+        "hardness": 196,
+        "toughness": 308,
+        "deformationResistance": 364,
+        "density": 392
+      },
+      "materialDemand": "双锤面，抗变形与密度并重"
+    },
+    {
+      "id": "M04-T3",
+      "name": "锤镐复合头",
+      "tier": 3,
+      "capacity": 15,
+      "unitTargets": {
+        "hardness": 26,
+        "toughness": 22,
+        "deformationResistance": 28,
+        "density": 24
+      },
+      "requirements": {
+        "hardness": 390,
+        "toughness": 330,
+        "deformationResistance": 420,
+        "density": 360
+      },
+      "materialDemand": "锤镐复合，硬度与抗变形优先"
+    },
+    {
+      "id": "M07-T3",
+      "name": "一体棍身",
+      "tier": 3,
+      "capacity": 14,
+      "unitTargets": {
+        "hardness": 10,
+        "toughness": 26,
+        "deformationResistance": 22,
+        "density": 18
+      },
+      "requirements": {
+        "hardness": 140,
+        "toughness": 364,
+        "deformationResistance": 308,
+        "density": 252
+      },
+      "materialDemand": "一体棍身，韧性优先"
+    },
+    {
+      "id": "M02-T4",
+      "name": "双刃斧头",
+      "tier": 4,
+      "capacity": 16,
+      "unitTargets": {
+        "hardness": 24,
+        "toughness": 20,
+        "deformationResistance": 24,
+        "density": 26
+      },
+      "requirements": {
+        "hardness": 384,
+        "toughness": 320,
+        "deformationResistance": 384,
+        "density": 416
+      },
+      "materialDemand": "双斧刃，硬度与密度兼顾"
+    },
+    {
+      "id": "M05-T4",
+      "name": "一体双刃剑身",
+      "tier": 4,
+      "capacity": 14,
+      "unitTargets": {
+        "hardness": 24,
+        "toughness": 22,
+        "deformationResistance": 22,
+        "density": 18
+      },
+      "requirements": {
+        "hardness": 336,
+        "toughness": 308,
+        "deformationResistance": 308,
+        "density": 252
+      },
+      "materialDemand": "一体双刃剑身，硬度优先"
+    },
+    {
+      "id": "M08-T4",
+      "name": "冠刺锤头",
+      "tier": 4,
+      "capacity": 18,
+      "unitTargets": {
+        "hardness": 24,
+        "toughness": 26,
+        "deformationResistance": 28,
+        "density": 30
+      },
+      "requirements": {
+        "hardness": 432,
+        "toughness": 468,
+        "deformationResistance": 504,
+        "density": 540
+      },
+      "materialDemand": "冠刺重头，密度优先且兼顾冠刺"
+    },
+    {
+      "id": "M03-T5",
+      "name": "锤斧复合头",
+      "tier": 5,
+      "capacity": 16,
+      "unitTargets": {
+        "hardness": 22,
+        "toughness": 24,
+        "deformationResistance": 26,
+        "density": 26
+      },
+      "requirements": {
+        "hardness": 352,
+        "toughness": 384,
+        "deformationResistance": 416,
+        "density": 416
+      },
+      "materialDemand": "锤斧复合，多项需求协调"
+    },
+    {
+      "id": "M06-T5",
+      "name": "一体单刃刀身",
+      "tier": 5,
+      "capacity": 14,
+      "unitTargets": {
+        "hardness": 24,
+        "toughness": 26,
+        "deformationResistance": 22,
+        "density": 20
+      },
+      "requirements": {
+        "hardness": 336,
+        "toughness": 364,
+        "deformationResistance": 308,
+        "density": 280
+      },
+      "materialDemand": "刃背复合，韧性兼顾硬度"
+    },
+    {
+      "id": "M07-T5",
+      "name": "一体棍身",
+      "tier": 5,
+      "capacity": 14,
+      "unitTargets": {
+        "hardness": 10,
+        "toughness": 26,
+        "deformationResistance": 22,
+        "density": 18
+      },
+      "requirements": {
+        "hardness": 140,
+        "toughness": 364,
+        "deformationResistance": 308,
+        "density": 252
+      },
+      "materialDemand": "一体棍身，韧性优先"
+    },
+    {
+      "id": "M04-T6",
+      "name": "锤镐复合头",
+      "tier": 6,
+      "capacity": 15,
+      "unitTargets": {
+        "hardness": 26,
+        "toughness": 22,
+        "deformationResistance": 28,
+        "density": 24
+      },
+      "requirements": {
+        "hardness": 390,
+        "toughness": 330,
+        "deformationResistance": 420,
+        "density": 360
+      },
+      "materialDemand": "锤镐复合，硬度与抗变形优先"
+    },
+    {
+      "id": "M05-T6",
+      "name": "一体双刃剑身",
+      "tier": 6,
+      "capacity": 14,
+      "unitTargets": {
+        "hardness": 24,
+        "toughness": 22,
+        "deformationResistance": 22,
+        "density": 18
+      },
+      "requirements": {
+        "hardness": 336,
+        "toughness": 308,
+        "deformationResistance": 308,
+        "density": 252
+      },
+      "materialDemand": "一体双刃剑身，硬度优先"
+    },
+    {
+      "id": "M08-T6",
+      "name": "冠刺锤头",
+      "tier": 6,
+      "capacity": 18,
+      "unitTargets": {
+        "hardness": 24,
+        "toughness": 26,
+        "deformationResistance": 28,
+        "density": 30
+      },
+      "requirements": {
+        "hardness": 432,
+        "toughness": 468,
+        "deformationResistance": 504,
+        "density": 540
+      },
+      "materialDemand": "冠刺重头，密度优先且兼顾冠刺"
+    }
+  ]
+}

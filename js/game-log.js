@@ -29,6 +29,15 @@
     }
 
     var lines = [];
+    // The legacy rendered list retained the full session until clear(); preserve it
+    // independently of the existing 80-entry getLineCount buffer.
+    var displayLines = [];
+    var nextId = 1;
+    var listeners = new Set();
+    function ownsJournal() { return !!(global.SvelteHUD && global.SvelteHUD.owns('journal')); }
+    function notify() { listeners.forEach(function (fn) { fn(); }); }
+    function subscribe(fn) { listeners.add(fn); return function () { listeners.delete(fn); }; }
+    function getEntries() { return displayLines.map(function (entry) { return Object.assign({}, entry); }); }
 
     function ensureDOM() {
         var wrap = document.getElementById('game-log-panel');
@@ -66,11 +75,16 @@
             ('0' + ts.getMinutes()).slice(-2) + ':' +
             ('0' + ts.getSeconds()).slice(-2);
         lines.push({
+            id: nextId++,
+            message: String(message),
             text: escapeHtml(String(message)),
             type: cssClass,
             time: timeStr
         });
+        displayLines.push(lines[lines.length - 1]);
         if (lines.length > MAX_LINES) lines.shift();
+        notify();
+        if (ownsJournal()) return;
 
         var list = ensureDOM();
         if (!list) return;
@@ -109,8 +123,9 @@
         global.UIWindows.applyLayout('win-log');
     }
     function bindPanelChrome() {
-        if (!global.UIWindows || typeof global.UIWindows.registerPanel !== 'function') return;
         clearLegacyPanelLayoutStorage();
+        if (ownsJournal()) return;
+        if (!global.UIWindows || typeof global.UIWindows.registerPanel !== 'function') return;
         logPanelSpec = global.UIWindows.registerPanel('win-log', {
             type: 'free',
             titleKey: 'ui.windows.log',
@@ -161,6 +176,7 @@
     }
 
     function bindDragScroll() {
+        if (ownsJournal()) return;
         var list = document.getElementById(CONTAINER_ID);
         if (!list) return;
         var dragging = false;
@@ -188,6 +204,9 @@
 
     function clear() {
         lines.length = 0;
+        displayLines.length = 0;
+        notify();
+        if (ownsJournal()) return;
         var list = document.getElementById(CONTAINER_ID);
         if (list) list.innerHTML = '';
     }
@@ -197,6 +216,8 @@
     }
 
     global.GameLog = {
+        subscribe: subscribe,
+        getEntries: getEntries,
         log: log,
         clear: clear,
         getLineCount: getLineCount,

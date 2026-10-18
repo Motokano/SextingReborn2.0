@@ -1,0 +1,413 @@
+{
+  "schema_version": 2,
+  "items": {
+    "ore_antimony_raw": {
+      "item_id": "ore_antimony_raw",
+      "editor_name": "针晶矿",
+      "weight_kg": 1.7,
+      "attribute_modules": {
+        "base": {
+          "identity": {
+            "name": "针晶矿",
+            "name_0": "针晶矿",
+            "sn": "针晶矿",
+            "placeholder_name": "针簇灰石",
+            "fn_before": "灰亮细晶在石面聚成针簇，看着能炼东西",
+            "fn": "这种带针状晶簇的含锑矿石被叫作针晶矿。",
+            "desc_0": "这种带针状晶簇的含锑矿石被叫作针晶矿。"
+          },
+          "stacking": {
+            "stack_limit": 1
+          },
+          "trade": {
+            "base_value": 750,
+            "price_class": "rare",
+            "volatility": "mid",
+            "region_restrict": 0
+          },
+          "provenance": {
+            "source": "mining",
+            "production_lines": "forge"
+          }
+        }
+      },
+      "category": "ore",
+      "sub_category": "alloy_metal",
+      "tags": "material;ore;craft;trade_raw"
+    },
+    "ore_copper_raw": {
+      "item_id": "ore_copper_raw",
+      "editor_name": "粗铜矿石",
+      "weight_kg": 2.5,
+      "attribute_modules": {
+        "base": {
+          "identity": {
+            "name": "粗铜矿石",
+            "name_0": "粗铜矿石",
+            "sn": "粗铜矿石",
+            "placeholder_name": "绿斑粗石",
+            "fn_before": "暗色石块上散着绿斑，看着能炼东西",
+            "fn": "带绿斑的铜矿石，矿质与暗色石头夹在一起。",
+            "desc_0": "带绿斑的铜矿石，矿质与暗色石头夹在一起。"
+          },
+          "stacking": {
+            "stack_limit": 1
+          },
+          "trade": {
+            "base_value": 300,
+            "price_class": "material",
+            "volatility": "mid",
+            "region_restrict": 0
+          },
+          "provenance": {
+            "source": "mining",
+            "production_lines": "forge;craft"
+          }
+        }
+      },
+      "category": "ore",
+      "sub_category": "non_ferrous",
+      "tags": "material;ore;craft;trade_raw"
+    },
+    "ore_gold_raw": {
+      "item_id": "ore_gold_raw",
+      "editor_name": "金矿",
+      "weight_kg": 1.5,
+      "attribute_modules": {
+        "base": {
+          "identity": {
+            "name": "金矿",
+            "name_0": "金矿",
+            "sn": "金矿",
+            "placeholder_name": "带金星的石块",
+            "fn_before": "浅色石块里散着金黄亮点，看着能炼东西",
+            "fn": "含金的矿石，浅色石底里散着金黄的细点。",
+            "desc_0": "含金的矿石，浅色石底里散着金黄的细点。"
+          },
+          "stacking": {
+            "stack_limit": 1
+          },
+          "trade": {
+            "base_value": 800,
+            "price_class": "rare",
+            "volatility": "high",
+            "region_restrict": 6
+          },
+          "provenance": {
+            "source": "mining",
+            "production_lines": "forge"
+          }
+        }
+      },
+      "category": "ore",
+      "sub_category": "precious",
+      "tags": "material;ore;dungeon_only"
+    },
+    "ore_iron_raw": {
+      "item_id": "ore_iron_raw",
+      "editor_name": "铁质矿石",
+      "weight_kg": 3,
+      "attribute_modules": {
+        "base": {
+          "identity": {
+            "name": "铁质矿石",
+            "name_0": "铁质矿石",
+            "sn": "铁质矿石",
+            "placeholder_name": "红褐粗石",
+            "fn_before": "红褐外壳裹着灰黑石块，看着能炼东西",
+            "fn": "带红褐色外壳的铁矿石，断口里还夹着灰黑色石质。",
+            "desc_0": "带红褐色外壳的铁矿石，断口里还夹着灰黑色石质。"
+          },
+          "stacking": {
+            "stack_limit": 1
+          },
+          "trade": {
+            "base_value": 400,
+            "price_class": "material",
+            "volatility": "low",
+            "region_restrict": 0
+          },
+          "provenance": {
+            "source": "mining",
+            "production_lines": "forge;craft;build"
+          }
+        }
+      },
+      "category": "ore",
+      "sub_category": "black_metal",
+      "tags": "material;ore;craft;trade_raw;building"
+    },
+    "ore_lead_raw": {
+      "item_id": "ore_lead_raw",
+      "editor_name": "铅矿",
+      "weight_kg": 3.2,
+      "attribute_modules": {
+        "base": {
+          "identity": {
+            "name": "铅矿",
+            "name_0": "铅矿",
+            "sn": "铅矿",
+            "placeholder_name": "灰亮方石",
+            "fn_before": "灰亮石块的断面层层见方，看着能炼东西",
+            "fn": "含铅的矿石，灰亮晶块留着一层层方整的断口。",
+            "desc_0": "含铅的矿石，灰亮晶块留着一层层方整的断口。"
+          },
+          "stacking": {
+            "stack_limit": 1
+          },
+          "trade": {
+            "base_value": 160,
+            "price_class": "material",
+            "volatility": "low",
+            "region_restrict": 0
+          },
+          "provenance": {
+            "source": "mining",
+            "production_lines": "forge"
+          }
+        }
+      },
+      "category": "ore",
+      "sub_category": "non_ferrous",
+      "tags": "material;ore;craft;trade_raw"
+    },
+    "ore_manganese_raw": {
+      "item_id": "ore_manganese_raw",
+      "editor_name": "黑纹矿",
+      "weight_kg": 2.4,
+      "attribute_modules": {
+        "base": {
+          "identity": {
+            "name": "黑纹矿",
+            "name_0": "黑纹矿",
+            "sn": "黑纹矿",
+            "placeholder_name": "黑纹块石",
+            "fn_before": "黑褐石块上横着深色条纹，看着能炼东西",
+            "fn": "这种带深色条纹的含锰矿石被叫作黑纹矿。",
+            "desc_0": "这种带深色条纹的含锰矿石被叫作黑纹矿。"
+          },
+          "stacking": {
+            "stack_limit": 1
+          },
+          "trade": {
+            "base_value": 600,
+            "price_class": "material",
+            "volatility": "mid",
+            "region_restrict": 0
+          },
+          "provenance": {
+            "source": "mining",
+            "production_lines": "forge"
+          }
+        }
+      },
+      "category": "ore",
+      "sub_category": "alloy_metal",
+      "tags": "material;ore;craft;trade_raw"
+    },
+    "ore_molybdenum_raw": {
+      "item_id": "ore_molybdenum_raw",
+      "editor_name": "银片矿",
+      "weight_kg": 1.6,
+      "attribute_modules": {
+        "base": {
+          "identity": {
+            "name": "银片矿",
+            "name_0": "银片矿",
+            "sn": "银片矿",
+            "placeholder_name": "银灰片石",
+            "fn_before": "石面叠着一层层银灰薄片，说不好干啥",
+            "fn": "这种含钼的矿石俗称银片矿，石面层叠着银灰薄片。",
+            "desc_0": "这种含钼的矿石俗称银片矿，石面层叠着银灰薄片。"
+          },
+          "stacking": {
+            "stack_limit": 1
+          },
+          "trade": {
+            "base_value": 1800,
+            "price_class": "rare",
+            "volatility": "high",
+            "region_restrict": 0
+          },
+          "provenance": {
+            "source": "mining",
+            "production_lines": "forge"
+          }
+        }
+      },
+      "category": "ore",
+      "sub_category": "alloy_metal",
+      "tags": "material;ore;craft;trade_raw"
+    },
+    "ore_silver_raw": {
+      "item_id": "ore_silver_raw",
+      "editor_name": "银矿",
+      "weight_kg": 1.5,
+      "attribute_modules": {
+        "base": {
+          "identity": {
+            "name": "银矿",
+            "name_0": "银矿",
+            "sn": "银矿",
+            "placeholder_name": "泛白光的石块",
+            "fn_before": "暗色石块缝里泛着白光，看着能炼东西",
+            "fn": "含银的矿石，暗色石缝里透出些白亮纹路。",
+            "desc_0": "含银的矿石，暗色石缝里透出些白亮纹路。"
+          },
+          "stacking": {
+            "stack_limit": 1
+          },
+          "trade": {
+            "base_value": 600,
+            "price_class": "rare",
+            "volatility": "high",
+            "region_restrict": 6
+          },
+          "provenance": {
+            "source": "mining",
+            "production_lines": "forge"
+          }
+        }
+      },
+      "category": "ore",
+      "sub_category": "precious",
+      "tags": "material;ore;dungeon_only"
+    },
+    "ore_tin_raw": {
+      "item_id": "ore_tin_raw",
+      "editor_name": "锡矿",
+      "weight_kg": 1.8,
+      "attribute_modules": {
+        "base": {
+          "identity": {
+            "name": "锡矿",
+            "name_0": "锡矿",
+            "sn": "锡矿",
+            "placeholder_name": "黑粒褐石",
+            "fn_before": "褐色石头里嵌着黑色细粒，看着能炼东西",
+            "fn": "含锡的矿石，褐色石底里嵌着细小的黑色晶粒。",
+            "desc_0": "含锡的矿石，褐色石底里嵌着细小的黑色晶粒。"
+          },
+          "stacking": {
+            "stack_limit": 1
+          },
+          "trade": {
+            "base_value": 280,
+            "price_class": "material",
+            "volatility": "mid",
+            "region_restrict": 0
+          },
+          "provenance": {
+            "source": "mining",
+            "production_lines": "forge"
+          }
+        }
+      },
+      "category": "ore",
+      "sub_category": "non_ferrous",
+      "tags": "material;ore;craft;trade_raw"
+    },
+    "ore_titanium_raw": {
+      "item_id": "ore_titanium_raw",
+      "editor_name": "钛砂",
+      "weight_kg": 2,
+      "attribute_modules": {
+        "base": {
+          "identity": {
+            "name": "钛砂",
+            "name_0": "钛砂",
+            "sn": "钛砂",
+            "placeholder_name": "黑灰细砂",
+            "fn_before": "细碎的黑灰颗粒闪着暗光，说不好干啥",
+            "fn": "夹有钛质矿物的黑灰细砂，细粒间闪着暗光。",
+            "desc_0": "夹有钛质矿物的黑灰细砂，细粒间闪着暗光。"
+          },
+          "stacking": {
+            "stack_limit": 1
+          },
+          "trade": {
+            "base_value": 1100,
+            "price_class": "rare",
+            "volatility": "high",
+            "region_restrict": 0
+          },
+          "provenance": {
+            "source": "mining",
+            "production_lines": "forge"
+          }
+        }
+      },
+      "category": "ore",
+      "sub_category": "alloy_metal",
+      "tags": "material;ore;craft;trade_raw"
+    },
+    "ore_tungsten_raw": {
+      "item_id": "ore_tungsten_raw",
+      "editor_name": "黑重矿",
+      "weight_kg": 2.8,
+      "attribute_modules": {
+        "base": {
+          "identity": {
+            "name": "黑重矿",
+            "name_0": "黑重矿",
+            "sn": "黑重矿",
+            "placeholder_name": "黑亮条晶",
+            "fn_before": "黑亮石块上长着条状晶体，看着能炼东西",
+            "fn": "这类含钨的矿石被叫作黑重矿，黑亮晶体常呈长条状。",
+            "desc_0": "这类含钨的矿石被叫作黑重矿，黑亮晶体常呈长条状。"
+          },
+          "stacking": {
+            "stack_limit": 1
+          },
+          "trade": {
+            "base_value": 1600,
+            "price_class": "rare",
+            "volatility": "high",
+            "region_restrict": 0
+          },
+          "provenance": {
+            "source": "mining",
+            "production_lines": "forge"
+          }
+        }
+      },
+      "category": "ore",
+      "sub_category": "alloy_metal",
+      "tags": "material;ore;craft;trade_raw"
+    },
+    "ore_zinc_raw": {
+      "item_id": "ore_zinc_raw",
+      "editor_name": "锌矿",
+      "weight_kg": 2,
+      "attribute_modules": {
+        "base": {
+          "identity": {
+            "name": "锌矿",
+            "name_0": "锌矿",
+            "sn": "锌矿",
+            "placeholder_name": "黄褐晶块",
+            "fn_before": "黄褐色晶块泛着油光，看着能炼东西",
+            "fn": "含锌的矿石，黄褐色晶体在光下泛着油润的光。",
+            "desc_0": "含锌的矿石，黄褐色晶体在光下泛着油润的光。"
+          },
+          "stacking": {
+            "stack_limit": 1
+          },
+          "trade": {
+            "base_value": 240,
+            "price_class": "material",
+            "volatility": "mid",
+            "region_restrict": 0
+          },
+          "provenance": {
+            "source": "mining",
+            "production_lines": "forge"
+          }
+        }
+      },
+      "category": "ore",
+      "sub_category": "non_ferrous",
+      "tags": "material;ore;craft;trade_raw"
+    }
+  }
+}

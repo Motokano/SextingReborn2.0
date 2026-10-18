@@ -1,0 +1,2453 @@
+{
+  "rows": [
+    [
+      "ore_iron_raw",
+      "铁矿",
+      [
+        22,
+        24,
+        20,
+        20
+      ],
+      0
+    ],
+    [
+      "ore_copper_raw",
+      "铜矿",
+      [
+        8,
+        44,
+        12,
+        30
+      ],
+      0
+    ],
+    [
+      "ore_tin_raw",
+      "锡矿",
+      [
+        14,
+        18,
+        40,
+        18
+      ],
+      0
+    ],
+    [
+      "ore_lead_raw",
+      "铅矿",
+      [
+        4,
+        12,
+        8,
+        64
+      ],
+      0
+    ],
+    [
+      "ore_zinc_raw",
+      "锌矿",
+      [
+        12,
+        30,
+        32,
+        14
+      ],
+      0
+    ],
+    [
+      "ore_titanium_raw",
+      "钛砂",
+      [
+        32,
+        38,
+        28,
+        10
+      ],
+      1
+    ],
+    [
+      "ore_tungsten_raw",
+      "黑重矿",
+      [
+        58,
+        6,
+        30,
+        56
+      ],
+      2
+    ],
+    [
+      "ore_molybdenum_raw",
+      "银片矿",
+      [
+        36,
+        30,
+        58,
+        20
+      ],
+      2
+    ]
+  ],
+  "total": 30860,
+  "result": [
+    {
+      "id": "B01",
+      "name": "平磨直刃",
+      "best": {
+        "feed": [
+          {
+            "id": "ore_iron_raw",
+            "count": 6
+          }
+        ],
+        "sum": [
+          132,
+          144,
+          120,
+          120
+        ],
+        "rare": 0,
+        "advanced": 0,
+        "rank": 2.1111111111111116
+      },
+      "basicCanStart": true
+    },
+    {
+      "id": "B02",
+      "name": "厚身凸刃",
+      "best": {
+        "feed": [
+          {
+            "id": "ore_tin_raw",
+            "count": 3
+          },
+          {
+            "id": "ore_lead_raw",
+            "count": 1
+          },
+          {
+            "id": "ore_titanium_raw",
+            "count": 3
+          }
+        ],
+        "sum": [
+          142,
+          180,
+          212,
+          148
+        ],
+        "rare": 0,
+        "advanced": 3,
+        "rank": 153.57142857142858
+      },
+      "basicCanStart": true
+    },
+    {
+      "id": "B03",
+      "name": "透镜形刃",
+      "best": {
+        "feed": [
+          {
+            "id": "ore_iron_raw",
+            "count": 6
+          }
+        ],
+        "sum": [
+          132,
+          144,
+          120,
+          120
+        ],
+        "rare": 0,
+        "advanced": 0,
+        "rank": 2.1111111111111116
+      },
+      "basicCanStart": true
+    },
+    {
+      "id": "B04",
+      "name": "窄身菱脊刃",
+      "best": {
+        "feed": [
+          {
+            "id": "ore_iron_raw",
+            "count": 2
+          },
+          {
+            "id": "ore_titanium_raw",
+            "count": 3
+          }
+        ],
+        "sum": [
+          140,
+          162,
+          124,
+          70
+        ],
+        "rare": 0,
+        "advanced": 3,
+        "rank": 152
+      },
+      "basicCanStart": true
+    },
+    {
+      "id": "B05",
+      "name": "宽身平刃",
+      "best": {
+        "feed": [
+          {
+            "id": "ore_tin_raw",
+            "count": 3
+          },
+          {
+            "id": "ore_lead_raw",
+            "count": 2
+          },
+          {
+            "id": "ore_titanium_raw",
+            "count": 3
+          }
+        ],
+        "sum": [
+          146,
+          192,
+          220,
+          212
+        ],
+        "rare": 0,
+        "advanced": 3,
+        "rank": 155.04545454545453
+      },
+      "basicCanStart": true
+    },
+    {
+      "id": "B06",
+      "name": "浅槽宽刃",
+      "best": {
+        "feed": [
+          {
+            "id": "ore_iron_raw",
+            "count": 4
+          },
+          {
+            "id": "ore_titanium_raw",
+            "count": 2
+          }
+        ],
+        "sum": [
+          152,
+          172,
+          136,
+          100
+        ],
+        "rare": 0,
+        "advanced": 2,
+        "rank": 102.41666666666667
+      },
+      "basicCanStart": true
+    },
+    {
+      "id": "B07",
+      "name": "六棱厚身刃",
+      "best": {
+        "feed": [
+          {
+            "id": "ore_tin_raw",
+            "count": 3
+          },
+          {
+            "id": "ore_lead_raw",
+            "count": 1
+          },
+          {
+            "id": "ore_titanium_raw",
+            "count": 3
+          }
+        ],
+        "sum": [
+          142,
+          180,
+          212,
+          148
+        ],
+        "rare": 0,
+        "advanced": 3,
+        "rank": 153.57142857142858
+      },
+      "basicCanStart": true
+    },
+    {
+      "id": "B08",
+      "name": "嵌钢复合刃",
+      "best": {
+        "feed": [
+          {
+            "id": "ore_iron_raw",
+            "count": 2
+          },
+          {
+            "id": "ore_lead_raw",
+            "count": 1
+          },
+          {
+            "id": "ore_titanium_raw",
+            "count": 3
+          }
+        ],
+        "sum": [
+          144,
+          174,
+          132,
+          134
+        ],
+        "rare": 0,
+        "advanced": 3,
+        "rank": 154.16666666666666
+      },
+      "basicCanStart": true
+    },
+    {
+      "id": "B09",
+      "name": "渐薄透镜刃",
+      "best": {
+        "feed": [
+          {
+            "id": "ore_iron_raw",
+            "count": 4
+          },
+          {
+            "id": "ore_titanium_raw",
+            "count": 2
+          }
+        ],
+        "sum": [
+          152,
+          172,
+          136,
+          100
+        ],
+        "rare": 0,
+        "advanced": 2,
+        "rank": 102.41666666666667
+      },
+      "basicCanStart": true
+    },
+    {
+      "id": "B10",
+      "name": "浅凹磨脊刃",
+      "best": {
+        "feed": [
+          {
+            "id": "ore_iron_raw",
+            "count": 3
+          },
+          {
+            "id": "ore_titanium_raw",
+            "count": 2
+          },
+          {
+            "id": "ore_tungsten_raw",
+            "count": 1
+          }
+        ],
+        "sum": [
+          188,
+          154,
+          146,
+          136
+        ],
+        "rare": 1,
+        "advanced": 2,
+        "rank": 1105.5925925925926
+      },
+      "basicCanStart": true
+    },
+    {
+      "id": "B11",
+      "name": "前宽劈砍刃",
+      "best": {
+        "feed": [
+          {
+            "id": "ore_tin_raw",
+            "count": 1
+          },
+          {
+            "id": "ore_lead_raw",
+            "count": 3
+          },
+          {
+            "id": "ore_titanium_raw",
+            "count": 4
+          }
+        ],
+        "sum": [
+          154,
+          206,
+          176,
+          250
+        ],
+        "rare": 0,
+        "advanced": 4,
+        "rank": 204.16071428571428
+      },
+      "basicCanStart": true
+    },
+    {
+      "id": "B12",
+      "name": "精整六棱刃",
+      "best": {
+        "feed": [
+          {
+            "id": "ore_tin_raw",
+            "count": 2
+          },
+          {
+            "id": "ore_lead_raw",
+            "count": 1
+          },
+          {
+            "id": "ore_titanium_raw",
+            "count": 4
+          }
+        ],
+        "sum": [
+          160,
+          200,
+          200,
+          140
+        ],
+        "rare": 0,
+        "advanced": 4,
+        "rank": 203
+      },
+      "basicCanStart": true
+    },
+    {
+      "id": "B13",
+      "name": "双槽渐薄刃",
+      "best": {
+        "feed": [
+          {
+            "id": "ore_iron_raw",
+            "count": 1
+          },
+          {
+            "id": "ore_titanium_raw",
+            "count": 4
+          }
+        ],
+        "sum": [
+          150,
+          176,
+          132,
+          60
+        ],
+        "rare": 0,
+        "advanced": 4,
+        "rank": 202
+      },
+      "basicCanStart": true
+    },
+    {
+      "id": "B14",
+      "name": "硬刃软芯复合刃",
+      "best": {
+        "feed": [
+          {
+            "id": "ore_tin_raw",
+            "count": 2
+          },
+          {
+            "id": "ore_titanium_raw",
+            "count": 3
+          },
+          {
+            "id": "ore_tungsten_raw",
+            "count": 1
+          }
+        ],
+        "sum": [
+          182,
+          156,
+          194,
+          122
+        ],
+        "rare": 1,
+        "advanced": 3,
+        "rank": 1154.2962962962963
+      },
+      "basicCanStart": true
+    },
+    {
+      "id": "B15",
+      "name": "精整渐薄刃",
+      "best": {
+        "feed": [
+          {
+            "id": "ore_iron_raw",
+            "count": 4
+          },
+          {
+            "id": "ore_titanium_raw",
+            "count": 2
+          }
+        ],
+        "sum": [
+          152,
+          172,
+          136,
+          100
+        ],
+        "rare": 0,
+        "advanced": 2,
+        "rank": 102.41666666666667
+      },
+      "basicCanStart": true
+    },
+    {
+      "id": "B16",
+      "name": "精磨宽刃",
+      "best": {
+        "feed": [
+          {
+            "id": "ore_lead_raw",
+            "count": 3
+          },
+          {
+            "id": "ore_titanium_raw",
+            "count": 4
+          },
+          {
+            "id": "ore_molybdenum_raw",
+            "count": 1
+          }
+        ],
+        "sum": [
+          176,
+          218,
+          194,
+          252
+        ],
+        "rare": 1,
+        "advanced": 4,
+        "rank": 1204.25
+      },
+      "basicCanStart": true
+    },
+    {
+      "id": "B17",
+      "name": "精焊夹钢刃",
+      "best": {
+        "feed": [
+          {
+            "id": "ore_iron_raw",
+            "count": 1
+          },
+          {
+            "id": "ore_lead_raw",
+            "count": 1
+          },
+          {
+            "id": "ore_titanium_raw",
+            "count": 5
+          }
+        ],
+        "sum": [
+          186,
+          226,
+          168,
+          134
+        ],
+        "rare": 0,
+        "advanced": 5,
+        "rank": 253.63492063492063
+      },
+      "basicCanStart": true
+    },
+    {
+      "id": "T01",
+      "name": "短菱剑尖",
+      "best": {
+        "feed": [
+          {
+            "id": "ore_iron_raw",
+            "count": 2
+          },
+          {
+            "id": "ore_titanium_raw",
+            "count": 1
+          }
+        ],
+        "sum": [
+          76,
+          86,
+          68,
+          50
+        ],
+        "rare": 0,
+        "advanced": 1,
+        "rank": 52.416666666666664
+      },
+      "basicCanStart": true
+    },
+    {
+      "id": "T02",
+      "name": "平顶圆头",
+      "best": {
+        "feed": [
+          {
+            "id": "ore_copper_raw",
+            "count": 1
+          },
+          {
+            "id": "ore_tin_raw",
+            "count": 2
+          }
+        ],
+        "sum": [
+          36,
+          80,
+          92,
+          66
+        ],
+        "rare": 0,
+        "advanced": 0,
+        "rank": 4.222222222222223
+      },
+      "basicCanStart": true
+    },
+    {
+      "id": "T03",
+      "name": "扁叶剑尖",
+      "best": {
+        "feed": [
+          {
+            "id": "ore_iron_raw",
+            "count": 2
+          },
+          {
+            "id": "ore_molybdenum_raw",
+            "count": 1
+          }
+        ],
+        "sum": [
+          80,
+          78,
+          98,
+          60
+        ],
+        "rare": 1,
+        "advanced": 0,
+        "rank": 1004.5
+      },
+      "basicCanStart": true
+    },
+    {
+      "id": "T04",
+      "name": "半球击头",
+      "best": {
+        "feed": [
+          {
+            "id": "ore_iron_raw",
+            "count": 1
+          },
+          {
+            "id": "ore_lead_raw",
+            "count": 1
+          },
+          {
+            "id": "ore_zinc_raw",
+            "count": 2
+          }
+        ],
+        "sum": [
+          50,
+          96,
+          92,
+          112
+        ],
+        "rare": 0,
+        "advanced": 0,
+        "rank": 13
+      },
+      "basicCanStart": true
+    },
+    {
+      "id": "T05",
+      "name": "四棱剑尖",
+      "best": {
+        "feed": [
+          {
+            "id": "ore_iron_raw",
+            "count": 2
+          },
+          {
+            "id": "ore_molybdenum_raw",
+            "count": 1
+          }
+        ],
+        "sum": [
+          80,
+          78,
+          98,
+          60
+        ],
+        "rare": 1,
+        "advanced": 0,
+        "rank": 1004.5
+      },
+      "basicCanStart": true
+    },
+    {
+      "id": "T06",
+      "name": "扁圆击头",
+      "best": {
+        "feed": [
+          {
+            "id": "ore_iron_raw",
+            "count": 2
+          },
+          {
+            "id": "ore_zinc_raw",
+            "count": 1
+          }
+        ],
+        "sum": [
+          56,
+          78,
+          72,
+          54
+        ],
+        "rare": 0,
+        "advanced": 0,
+        "rank": 2
+      },
+      "basicCanStart": true
+    },
+    {
+      "id": "T07",
+      "name": "脊棱窄尖",
+      "best": {
+        "feed": [
+          {
+            "id": "ore_iron_raw",
+            "count": 1
+          },
+          {
+            "id": "ore_zinc_raw",
+            "count": 1
+          },
+          {
+            "id": "ore_tungsten_raw",
+            "count": 1
+          }
+        ],
+        "sum": [
+          92,
+          60,
+          82,
+          90
+        ],
+        "rare": 1,
+        "advanced": 0,
+        "rank": 1014.4285714285714
+      },
+      "basicCanStart": true
+    },
+    {
+      "id": "T08",
+      "name": "多棱钝头",
+      "best": {
+        "feed": [
+          {
+            "id": "ore_copper_raw",
+            "count": 1
+          },
+          {
+            "id": "ore_tin_raw",
+            "count": 3
+          },
+          {
+            "id": "ore_tungsten_raw",
+            "count": 1
+          }
+        ],
+        "sum": [
+          108,
+          104,
+          162,
+          140
+        ],
+        "rare": 1,
+        "advanced": 0,
+        "rank": 1008.5555555555555
+      },
+      "basicCanStart": true
+    },
+    {
+      "id": "T09",
+      "name": "渐收长尖",
+      "best": {
+        "feed": [
+          {
+            "id": "ore_iron_raw",
+            "count": 2
+          },
+          {
+            "id": "ore_titanium_raw",
+            "count": 1
+          },
+          {
+            "id": "ore_molybdenum_raw",
+            "count": 1
+          }
+        ],
+        "sum": [
+          112,
+          116,
+          126,
+          70
+        ],
+        "rare": 1,
+        "advanced": 1,
+        "rank": 1055.5
+      },
+      "basicCanStart": true
+    },
+    {
+      "id": "T10",
+      "name": "鼓形击头",
+      "best": {
+        "feed": [
+          {
+            "id": "ore_copper_raw",
+            "count": 3
+          },
+          {
+            "id": "ore_molybdenum_raw",
+            "count": 1
+          }
+        ],
+        "sum": [
+          60,
+          162,
+          94,
+          110
+        ],
+        "rare": 1,
+        "advanced": 0,
+        "rank": 1011.6428571428571
+      },
+      "basicCanStart": true
+    },
+    {
+      "id": "T11",
+      "name": "厚根菱尖",
+      "best": {
+        "feed": [
+          {
+            "id": "ore_iron_raw",
+            "count": 2
+          },
+          {
+            "id": "ore_molybdenum_raw",
+            "count": 1
+          }
+        ],
+        "sum": [
+          80,
+          78,
+          98,
+          60
+        ],
+        "rare": 1,
+        "advanced": 0,
+        "rank": 1004.5
+      },
+      "basicCanStart": true
+    },
+    {
+      "id": "T12",
+      "name": "圆冠重击头",
+      "best": {
+        "feed": [
+          {
+            "id": "ore_copper_raw",
+            "count": 2
+          },
+          {
+            "id": "ore_tin_raw",
+            "count": 2
+          },
+          {
+            "id": "ore_tungsten_raw",
+            "count": 1
+          }
+        ],
+        "sum": [
+          102,
+          130,
+          134,
+          152
+        ],
+        "rare": 1,
+        "advanced": 0,
+        "rank": 1012
+      },
+      "basicCanStart": true
+    },
+    {
+      "id": "D01",
+      "name": "圆柱击条",
+      "best": {
+        "feed": [
+          {
+            "id": "ore_copper_raw",
+            "count": 2
+          },
+          {
+            "id": "ore_tin_raw",
+            "count": 4
+          }
+        ],
+        "sum": [
+          72,
+          160,
+          184,
+          132
+        ],
+        "rare": 0,
+        "advanced": 0,
+        "rank": 4.222222222222223
+      },
+      "basicCanStart": true
+    },
+    {
+      "id": "D02",
+      "name": "厚背击条",
+      "best": {
+        "feed": [
+          {
+            "id": "ore_iron_raw",
+            "count": 1
+          },
+          {
+            "id": "ore_copper_raw",
+            "count": 3
+          },
+          {
+            "id": "ore_tin_raw",
+            "count": 4
+          }
+        ],
+        "sum": [
+          102,
+          228,
+          216,
+          182
+        ],
+        "rare": 0,
+        "advanced": 0,
+        "rank": 3.3409090909090917
+      },
+      "basicCanStart": true
+    },
+    {
+      "id": "D03",
+      "name": "扁平拍板",
+      "best": {
+        "feed": [
+          {
+            "id": "ore_iron_raw",
+            "count": 4
+          },
+          {
+            "id": "ore_zinc_raw",
+            "count": 2
+          }
+        ],
+        "sum": [
+          112,
+          156,
+          144,
+          108
+        ],
+        "rare": 0,
+        "advanced": 0,
+        "rank": 2
+      },
+      "basicCanStart": true
+    },
+    {
+      "id": "D04",
+      "name": "六棱击条",
+      "best": {
+        "feed": [
+          {
+            "id": "ore_copper_raw",
+            "count": 1
+          },
+          {
+            "id": "ore_zinc_raw",
+            "count": 5
+          },
+          {
+            "id": "ore_tungsten_raw",
+            "count": 1
+          }
+        ],
+        "sum": [
+          126,
+          200,
+          202,
+          156
+        ],
+        "rare": 1,
+        "advanced": 0,
+        "rank": 1004.1428571428571
+      },
+      "basicCanStart": true
+    },
+    {
+      "id": "D05",
+      "name": "弧面击条",
+      "best": {
+        "feed": [
+          {
+            "id": "ore_copper_raw",
+            "count": 2
+          },
+          {
+            "id": "ore_tin_raw",
+            "count": 4
+          }
+        ],
+        "sum": [
+          72,
+          160,
+          184,
+          132
+        ],
+        "rare": 0,
+        "advanced": 0,
+        "rank": 4.222222222222223
+      },
+      "basicCanStart": true
+    },
+    {
+      "id": "D06",
+      "name": "加厚击板",
+      "best": {
+        "feed": [
+          {
+            "id": "ore_tin_raw",
+            "count": 2
+          },
+          {
+            "id": "ore_lead_raw",
+            "count": 2
+          },
+          {
+            "id": "ore_titanium_raw",
+            "count": 4
+          }
+        ],
+        "sum": [
+          164,
+          212,
+          208,
+          204
+        ],
+        "rare": 0,
+        "advanced": 4,
+        "rank": 203.625
+      },
+      "basicCanStart": true
+    },
+    {
+      "id": "D07",
+      "name": "窄圆击条",
+      "best": {
+        "feed": [
+          {
+            "id": "ore_iron_raw",
+            "count": 2
+          },
+          {
+            "id": "ore_zinc_raw",
+            "count": 3
+          }
+        ],
+        "sum": [
+          80,
+          138,
+          136,
+          82
+        ],
+        "rare": 0,
+        "advanced": 0,
+        "rank": 2.249999999999999
+      },
+      "basicCanStart": true
+    },
+    {
+      "id": "D08",
+      "name": "凸面击块",
+      "best": {
+        "feed": [
+          {
+            "id": "ore_lead_raw",
+            "count": 3
+          },
+          {
+            "id": "ore_zinc_raw",
+            "count": 3
+          },
+          {
+            "id": "ore_titanium_raw",
+            "count": 2
+          }
+        ],
+        "sum": [
+          112,
+          202,
+          176,
+          254
+        ],
+        "rare": 0,
+        "advanced": 2,
+        "rank": 104.33928571428571
+      },
+      "basicCanStart": true
+    },
+    {
+      "id": "D09",
+      "name": "厚棱击条",
+      "best": {
+        "feed": [
+          {
+            "id": "ore_copper_raw",
+            "count": 2
+          },
+          {
+            "id": "ore_tin_raw",
+            "count": 5
+          },
+          {
+            "id": "ore_tungsten_raw",
+            "count": 1
+          }
+        ],
+        "sum": [
+          144,
+          184,
+          254,
+          206
+        ],
+        "rare": 1,
+        "advanced": 0,
+        "rank": 1004.7045454545455
+      },
+      "basicCanStart": true
+    },
+    {
+      "id": "D10",
+      "name": "偏重击块",
+      "best": {
+        "feed": [
+          {
+            "id": "ore_tin_raw",
+            "count": 5
+          },
+          {
+            "id": "ore_lead_raw",
+            "count": 3
+          },
+          {
+            "id": "ore_titanium_raw",
+            "count": 2
+          }
+        ],
+        "sum": [
+          146,
+          202,
+          280,
+          302
+        ],
+        "rare": 0,
+        "advanced": 2,
+        "rank": 103.06666666666666
+      },
+      "basicCanStart": true
+    },
+    {
+      "id": "D11",
+      "name": "宽面拍板",
+      "best": {
+        "feed": [
+          {
+            "id": "ore_iron_raw",
+            "count": 2
+          },
+          {
+            "id": "ore_copper_raw",
+            "count": 2
+          },
+          {
+            "id": "ore_zinc_raw",
+            "count": 3
+          }
+        ],
+        "sum": [
+          96,
+          226,
+          160,
+          142
+        ],
+        "rare": 0,
+        "advanced": 0,
+        "rank": 3.1428571428571423
+      },
+      "basicCanStart": true
+    },
+    {
+      "id": "D12",
+      "name": "弧背击条",
+      "best": {
+        "feed": [
+          {
+            "id": "ore_iron_raw",
+            "count": 1
+          },
+          {
+            "id": "ore_copper_raw",
+            "count": 3
+          },
+          {
+            "id": "ore_tin_raw",
+            "count": 3
+          }
+        ],
+        "sum": [
+          88,
+          210,
+          176,
+          164
+        ],
+        "rare": 0,
+        "advanced": 0,
+        "rank": 3.6493506493506485
+      },
+      "basicCanStart": true
+    },
+    {
+      "id": "D13",
+      "name": "渐细圆条",
+      "best": {
+        "feed": [
+          {
+            "id": "ore_iron_raw",
+            "count": 2
+          },
+          {
+            "id": "ore_zinc_raw",
+            "count": 3
+          }
+        ],
+        "sum": [
+          80,
+          138,
+          136,
+          82
+        ],
+        "rare": 0,
+        "advanced": 0,
+        "rank": 2.249999999999999
+      },
+      "basicCanStart": true
+    },
+    {
+      "id": "D14",
+      "name": "棱面击块",
+      "best": {
+        "feed": [
+          {
+            "id": "ore_iron_raw",
+            "count": 2
+          },
+          {
+            "id": "ore_zinc_raw",
+            "count": 4
+          },
+          {
+            "id": "ore_tungsten_raw",
+            "count": 2
+          }
+        ],
+        "sum": [
+          208,
+          180,
+          228,
+          208
+        ],
+        "rare": 2,
+        "advanced": 0,
+        "rank": 2003
+      },
+      "basicCanStart": true
+    },
+    {
+      "id": "D15",
+      "name": "厚背拍板",
+      "best": {
+        "feed": [
+          {
+            "id": "ore_copper_raw",
+            "count": 4
+          },
+          {
+            "id": "ore_tin_raw",
+            "count": 3
+          },
+          {
+            "id": "ore_titanium_raw",
+            "count": 1
+          }
+        ],
+        "sum": [
+          106,
+          268,
+          196,
+          184
+        ],
+        "rare": 0,
+        "advanced": 1,
+        "rank": 53.45454545454545
+      },
+      "basicCanStart": true
+    },
+    {
+      "id": "D16",
+      "name": "端重击条",
+      "best": {
+        "feed": [
+          {
+            "id": "ore_lead_raw",
+            "count": 4
+          },
+          {
+            "id": "ore_zinc_raw",
+            "count": 4
+          },
+          {
+            "id": "ore_molybdenum_raw",
+            "count": 2
+          }
+        ],
+        "sum": [
+          136,
+          228,
+          276,
+          352
+        ],
+        "rare": 2,
+        "advanced": 0,
+        "rank": 2004
+      },
+      "basicCanStart": true
+    },
+    {
+      "id": "D17",
+      "name": "宽冠击板",
+      "best": {
+        "feed": [
+          {
+            "id": "ore_copper_raw",
+            "count": 2
+          },
+          {
+            "id": "ore_tin_raw",
+            "count": 4
+          },
+          {
+            "id": "ore_titanium_raw",
+            "count": 1
+          }
+        ],
+        "sum": [
+          104,
+          198,
+          212,
+          142
+        ],
+        "rare": 0,
+        "advanced": 1,
+        "rank": 54.26984126984127
+      },
+      "basicCanStart": true
+    },
+    {
+      "id": "D18",
+      "name": "厚脊击条",
+      "best": {
+        "feed": [
+          {
+            "id": "ore_copper_raw",
+            "count": 3
+          },
+          {
+            "id": "ore_tin_raw",
+            "count": 4
+          },
+          {
+            "id": "ore_molybdenum_raw",
+            "count": 1
+          }
+        ],
+        "sum": [
+          116,
+          234,
+          254,
+          182
+        ],
+        "rare": 1,
+        "advanced": 0,
+        "rank": 1003.3409090909091
+      },
+      "basicCanStart": true
+    },
+    {
+      "id": "H01",
+      "name": "直柄圆首柄",
+      "best": {
+        "feed": [
+          {
+            "id": "ore_zinc_raw",
+            "count": 4
+          }
+        ],
+        "sum": [
+          48,
+          120,
+          128,
+          56
+        ],
+        "rare": 0,
+        "advanced": 0,
+        "rank": 1
+      },
+      "basicCanStart": true
+    },
+    {
+      "id": "H02",
+      "name": "短格扁首柄",
+      "best": {
+        "feed": [
+          {
+            "id": "ore_iron_raw",
+            "count": 2
+          },
+          {
+            "id": "ore_tin_raw",
+            "count": 3
+          }
+        ],
+        "sum": [
+          86,
+          102,
+          160,
+          94
+        ],
+        "rare": 0,
+        "advanced": 0,
+        "rank": 2.444444444444445
+      },
+      "basicCanStart": true
+    },
+    {
+      "id": "H03",
+      "name": "弧柄单弓柄",
+      "best": {
+        "feed": [
+          {
+            "id": "ore_iron_raw",
+            "count": 2
+          },
+          {
+            "id": "ore_zinc_raw",
+            "count": 3
+          }
+        ],
+        "sum": [
+          80,
+          138,
+          136,
+          82
+        ],
+        "rare": 0,
+        "advanced": 0,
+        "rank": 2.249999999999999
+      },
+      "basicCanStart": true
+    },
+    {
+      "id": "H04",
+      "name": "厚首剑柄",
+      "best": {
+        "feed": [
+          {
+            "id": "ore_iron_raw",
+            "count": 1
+          },
+          {
+            "id": "ore_copper_raw",
+            "count": 3
+          },
+          {
+            "id": "ore_tin_raw",
+            "count": 2
+          }
+        ],
+        "sum": [
+          74,
+          192,
+          136,
+          146
+        ],
+        "rare": 0,
+        "advanced": 0,
+        "rank": 8.208333333333332
+      },
+      "basicCanStart": true
+    },
+    {
+      "id": "H05",
+      "name": "宽格剑柄",
+      "best": {
+        "feed": [
+          {
+            "id": "ore_iron_raw",
+            "count": 2
+          },
+          {
+            "id": "ore_tin_raw",
+            "count": 3
+          },
+          {
+            "id": "ore_zinc_raw",
+            "count": 1
+          }
+        ],
+        "sum": [
+          98,
+          132,
+          192,
+          108
+        ],
+        "rare": 0,
+        "advanced": 0,
+        "rank": 3
+      },
+      "basicCanStart": true
+    },
+    {
+      "id": "H06",
+      "name": "椭圆盘护手柄",
+      "best": {
+        "feed": [
+          {
+            "id": "ore_iron_raw",
+            "count": 4
+          },
+          {
+            "id": "ore_zinc_raw",
+            "count": 2
+          }
+        ],
+        "sum": [
+          112,
+          156,
+          144,
+          108
+        ],
+        "rare": 0,
+        "advanced": 0,
+        "rank": 2
+      },
+      "basicCanStart": true
+    },
+    {
+      "id": "H07",
+      "name": "梨首直柄",
+      "best": {
+        "feed": [
+          {
+            "id": "ore_zinc_raw",
+            "count": 4
+          }
+        ],
+        "sum": [
+          48,
+          120,
+          128,
+          56
+        ],
+        "rare": 0,
+        "advanced": 0,
+        "rank": 1
+      },
+      "basicCanStart": true
+    },
+    {
+      "id": "H08",
+      "name": "双支护手柄",
+      "best": {
+        "feed": [
+          {
+            "id": "ore_copper_raw",
+            "count": 1
+          },
+          {
+            "id": "ore_tin_raw",
+            "count": 2
+          },
+          {
+            "id": "ore_zinc_raw",
+            "count": 3
+          }
+        ],
+        "sum": [
+          72,
+          170,
+          188,
+          108
+        ],
+        "rare": 0,
+        "advanced": 0,
+        "rank": 3
+      },
+      "basicCanStart": true
+    },
+    {
+      "id": "H09",
+      "name": "弧背军刀柄",
+      "best": {
+        "feed": [
+          {
+            "id": "ore_copper_raw",
+            "count": 1
+          },
+          {
+            "id": "ore_zinc_raw",
+            "count": 5
+          }
+        ],
+        "sum": [
+          68,
+          194,
+          172,
+          100
+        ],
+        "rare": 0,
+        "advanced": 0,
+        "rank": 2.4166666666666674
+      },
+      "basicCanStart": true
+    },
+    {
+      "id": "H10",
+      "name": "八棱重首柄",
+      "best": {
+        "feed": [
+          {
+            "id": "ore_tin_raw",
+            "count": 3
+          },
+          {
+            "id": "ore_lead_raw",
+            "count": 2
+          },
+          {
+            "id": "ore_titanium_raw",
+            "count": 2
+          }
+        ],
+        "sum": [
+          114,
+          154,
+          192,
+          202
+        ],
+        "rare": 0,
+        "advanced": 2,
+        "rank": 103.3061224489796
+      },
+      "basicCanStart": true
+    },
+    {
+      "id": "H11",
+      "name": "三支护手柄",
+      "best": {
+        "feed": [
+          {
+            "id": "ore_copper_raw",
+            "count": 1
+          },
+          {
+            "id": "ore_tin_raw",
+            "count": 3
+          },
+          {
+            "id": "ore_zinc_raw",
+            "count": 3
+          }
+        ],
+        "sum": [
+          86,
+          188,
+          228,
+          126
+        ],
+        "rare": 0,
+        "advanced": 0,
+        "rank": 3
+      },
+      "basicCanStart": true
+    },
+    {
+      "id": "H12",
+      "name": "下弯剑格柄",
+      "best": {
+        "feed": [
+          {
+            "id": "ore_iron_raw",
+            "count": 1
+          },
+          {
+            "id": "ore_copper_raw",
+            "count": 1
+          },
+          {
+            "id": "ore_zinc_raw",
+            "count": 4
+          }
+        ],
+        "sum": [
+          78,
+          188,
+          160,
+          106
+        ],
+        "rare": 0,
+        "advanced": 0,
+        "rank": 4.041666666666668
+      },
+      "basicCanStart": true
+    },
+    {
+      "id": "H13",
+      "name": "短尾刺剑柄",
+      "best": {
+        "feed": [
+          {
+            "id": "ore_iron_raw",
+            "count": 2
+          },
+          {
+            "id": "ore_titanium_raw",
+            "count": 3
+          }
+        ],
+        "sum": [
+          140,
+          162,
+          124,
+          70
+        ],
+        "rare": 0,
+        "advanced": 3,
+        "rank": 152
+      },
+      "basicCanStart": true
+    },
+    {
+      "id": "H14",
+      "name": "半篮护手柄",
+      "best": {
+        "feed": [
+          {
+            "id": "ore_copper_raw",
+            "count": 2
+          },
+          {
+            "id": "ore_zinc_raw",
+            "count": 3
+          },
+          {
+            "id": "ore_molybdenum_raw",
+            "count": 2
+          }
+        ],
+        "sum": [
+          124,
+          238,
+          236,
+          142
+        ],
+        "rare": 2,
+        "advanced": 0,
+        "rank": 2005.6785714285713
+      },
+      "basicCanStart": true
+    },
+    {
+      "id": "H15",
+      "name": "宽弧剑格柄",
+      "best": {
+        "feed": [
+          {
+            "id": "ore_copper_raw",
+            "count": 1
+          },
+          {
+            "id": "ore_zinc_raw",
+            "count": 4
+          },
+          {
+            "id": "ore_titanium_raw",
+            "count": 1
+          }
+        ],
+        "sum": [
+          88,
+          202,
+          168,
+          96
+        ],
+        "rare": 0,
+        "advanced": 1,
+        "rank": 53
+      },
+      "basicCanStart": true
+    },
+    {
+      "id": "H16",
+      "name": "厚首配重柄",
+      "best": {
+        "feed": [
+          {
+            "id": "ore_lead_raw",
+            "count": 2
+          },
+          {
+            "id": "ore_zinc_raw",
+            "count": 3
+          },
+          {
+            "id": "ore_molybdenum_raw",
+            "count": 2
+          }
+        ],
+        "sum": [
+          116,
+          174,
+          228,
+          210
+        ],
+        "rare": 2,
+        "advanced": 0,
+        "rank": 2003
+      },
+      "basicCanStart": true
+    },
+    {
+      "id": "H17",
+      "name": "碗形护手柄",
+      "best": {
+        "feed": [
+          {
+            "id": "ore_copper_raw",
+            "count": 3
+          },
+          {
+            "id": "ore_tin_raw",
+            "count": 3
+          },
+          {
+            "id": "ore_molybdenum_raw",
+            "count": 2
+          }
+        ],
+        "sum": [
+          138,
+          246,
+          272,
+          184
+        ],
+        "rare": 2,
+        "advanced": 0,
+        "rank": 2004.5
+      },
+      "basicCanStart": true
+    },
+    {
+      "id": "H18",
+      "name": "回曲宽格柄",
+      "best": {
+        "feed": [
+          {
+            "id": "ore_copper_raw",
+            "count": 3
+          },
+          {
+            "id": "ore_tin_raw",
+            "count": 3
+          },
+          {
+            "id": "ore_titanium_raw",
+            "count": 1
+          }
+        ],
+        "sum": [
+          98,
+          224,
+          184,
+          154
+        ],
+        "rare": 0,
+        "advanced": 1,
+        "rank": 56.75
+      },
+      "basicCanStart": true
+    },
+    {
+      "id": "M01-T1",
+      "name": "双面锤头",
+      "best": {
+        "feed": [
+          {
+            "id": "ore_tin_raw",
+            "count": 6
+          },
+          {
+            "id": "ore_lead_raw",
+            "count": 4
+          },
+          {
+            "id": "ore_titanium_raw",
+            "count": 4
+          }
+        ],
+        "sum": [
+          228,
+          308,
+          384,
+          404
+        ],
+        "rare": 0,
+        "advanced": 4,
+        "rank": 203.30612244897958
+      },
+      "basicCanStart": true
+    },
+    {
+      "id": "M02-T1",
+      "name": "双刃斧头",
+      "best": {
+        "feed": [
+          {
+            "id": "ore_lead_raw",
+            "count": 5
+          },
+          {
+            "id": "ore_titanium_raw",
+            "count": 8
+          },
+          {
+            "id": "ore_molybdenum_raw",
+            "count": 3
+          }
+        ],
+        "sum": [
+          384,
+          454,
+          438,
+          460
+        ],
+        "rare": 3,
+        "advanced": 8,
+        "rank": 3404.0576923076924
+      },
+      "basicCanStart": true
+    },
+    {
+      "id": "M07-T1",
+      "name": "一体棍身",
+      "best": {
+        "feed": [
+          {
+            "id": "ore_copper_raw",
+            "count": 4
+          },
+          {
+            "id": "ore_zinc_raw",
+            "count": 10
+          }
+        ],
+        "sum": [
+          152,
+          476,
+          368,
+          260
+        ],
+        "rare": 0,
+        "advanced": 0,
+        "rank": 2.3174603174603186
+      },
+      "basicCanStart": true
+    },
+    {
+      "id": "M03-T2",
+      "name": "锤斧复合头",
+      "best": {
+        "feed": [
+          {
+            "id": "ore_lead_raw",
+            "count": 6
+          },
+          {
+            "id": "ore_titanium_raw",
+            "count": 7
+          },
+          {
+            "id": "ore_molybdenum_raw",
+            "count": 3
+          }
+        ],
+        "sum": [
+          356,
+          428,
+          418,
+          514
+        ],
+        "rare": 3,
+        "advanced": 7,
+        "rank": 3355.355769230769
+      },
+      "basicCanStart": true
+    },
+    {
+      "id": "M05-T2",
+      "name": "一体双刃剑身",
+      "best": {
+        "feed": [
+          {
+            "id": "ore_iron_raw",
+            "count": 8
+          },
+          {
+            "id": "ore_lead_raw",
+            "count": 1
+          },
+          {
+            "id": "ore_titanium_raw",
+            "count": 5
+          }
+        ],
+        "sum": [
+          340,
+          394,
+          308,
+          274
+        ],
+        "rare": 0,
+        "advanced": 5,
+        "rank": 253.87301587301587
+      },
+      "basicCanStart": true
+    },
+    {
+      "id": "M06-T2",
+      "name": "一体单刃刀身",
+      "best": {
+        "feed": [
+          {
+            "id": "ore_iron_raw",
+            "count": 5
+          },
+          {
+            "id": "ore_lead_raw",
+            "count": 2
+          },
+          {
+            "id": "ore_titanium_raw",
+            "count": 7
+          }
+        ],
+        "sum": [
+          342,
+          410,
+          312,
+          298
+        ],
+        "rare": 0,
+        "advanced": 7,
+        "rank": 354.8253968253968
+      },
+      "basicCanStart": true
+    },
+    {
+      "id": "M01-T3",
+      "name": "双面锤头",
+      "best": {
+        "feed": [
+          {
+            "id": "ore_tin_raw",
+            "count": 6
+          },
+          {
+            "id": "ore_lead_raw",
+            "count": 4
+          },
+          {
+            "id": "ore_titanium_raw",
+            "count": 4
+          }
+        ],
+        "sum": [
+          228,
+          308,
+          384,
+          404
+        ],
+        "rare": 0,
+        "advanced": 4,
+        "rank": 203.30612244897958
+      },
+      "basicCanStart": true
+    },
+    {
+      "id": "M04-T3",
+      "name": "锤镐复合头",
+      "best": {
+        "feed": [
+          {
+            "id": "ore_iron_raw",
+            "count": 3
+          },
+          {
+            "id": "ore_zinc_raw",
+            "count": 8
+          },
+          {
+            "id": "ore_tungsten_raw",
+            "count": 4
+          }
+        ],
+        "sum": [
+          394,
+          336,
+          436,
+          396
+        ],
+        "rare": 4,
+        "advanced": 0,
+        "rank": 4004
+      },
+      "basicCanStart": true
+    },
+    {
+      "id": "M07-T3",
+      "name": "一体棍身",
+      "best": {
+        "feed": [
+          {
+            "id": "ore_copper_raw",
+            "count": 4
+          },
+          {
+            "id": "ore_zinc_raw",
+            "count": 10
+          }
+        ],
+        "sum": [
+          152,
+          476,
+          368,
+          260
+        ],
+        "rare": 0,
+        "advanced": 0,
+        "rank": 2.3174603174603186
+      },
+      "basicCanStart": true
+    },
+    {
+      "id": "M02-T4",
+      "name": "双刃斧头",
+      "best": {
+        "feed": [
+          {
+            "id": "ore_lead_raw",
+            "count": 5
+          },
+          {
+            "id": "ore_titanium_raw",
+            "count": 8
+          },
+          {
+            "id": "ore_molybdenum_raw",
+            "count": 3
+          }
+        ],
+        "sum": [
+          384,
+          454,
+          438,
+          460
+        ],
+        "rare": 3,
+        "advanced": 8,
+        "rank": 3404.0576923076924
+      },
+      "basicCanStart": true
+    },
+    {
+      "id": "M05-T4",
+      "name": "一体双刃剑身",
+      "best": {
+        "feed": [
+          {
+            "id": "ore_iron_raw",
+            "count": 8
+          },
+          {
+            "id": "ore_lead_raw",
+            "count": 1
+          },
+          {
+            "id": "ore_titanium_raw",
+            "count": 5
+          }
+        ],
+        "sum": [
+          340,
+          394,
+          308,
+          274
+        ],
+        "rare": 0,
+        "advanced": 5,
+        "rank": 253.87301587301587
+      },
+      "basicCanStart": true
+    },
+    {
+      "id": "M08-T4",
+      "name": "冠刺锤头",
+      "best": {
+        "feed": [
+          {
+            "id": "ore_lead_raw",
+            "count": 6
+          },
+          {
+            "id": "ore_titanium_raw",
+            "count": 6
+          },
+          {
+            "id": "ore_molybdenum_raw",
+            "count": 6
+          }
+        ],
+        "sum": [
+          432,
+          480,
+          564,
+          564
+        ],
+        "rare": 6,
+        "advanced": 6,
+        "rank": 6303.444444444444
+      },
+      "basicCanStart": true
+    },
+    {
+      "id": "M03-T5",
+      "name": "锤斧复合头",
+      "best": {
+        "feed": [
+          {
+            "id": "ore_lead_raw",
+            "count": 6
+          },
+          {
+            "id": "ore_titanium_raw",
+            "count": 7
+          },
+          {
+            "id": "ore_molybdenum_raw",
+            "count": 3
+          }
+        ],
+        "sum": [
+          356,
+          428,
+          418,
+          514
+        ],
+        "rare": 3,
+        "advanced": 7,
+        "rank": 3355.355769230769
+      },
+      "basicCanStart": true
+    },
+    {
+      "id": "M06-T5",
+      "name": "一体单刃刀身",
+      "best": {
+        "feed": [
+          {
+            "id": "ore_iron_raw",
+            "count": 5
+          },
+          {
+            "id": "ore_lead_raw",
+            "count": 2
+          },
+          {
+            "id": "ore_titanium_raw",
+            "count": 7
+          }
+        ],
+        "sum": [
+          342,
+          410,
+          312,
+          298
+        ],
+        "rare": 0,
+        "advanced": 7,
+        "rank": 354.8253968253968
+      },
+      "basicCanStart": true
+    },
+    {
+      "id": "M07-T5",
+      "name": "一体棍身",
+      "best": {
+        "feed": [
+          {
+            "id": "ore_copper_raw",
+            "count": 4
+          },
+          {
+            "id": "ore_zinc_raw",
+            "count": 10
+          }
+        ],
+        "sum": [
+          152,
+          476,
+          368,
+          260
+        ],
+        "rare": 0,
+        "advanced": 0,
+        "rank": 2.3174603174603186
+      },
+      "basicCanStart": true
+    },
+    {
+      "id": "M04-T6",
+      "name": "锤镐复合头",
+      "best": {
+        "feed": [
+          {
+            "id": "ore_iron_raw",
+            "count": 3
+          },
+          {
+            "id": "ore_zinc_raw",
+            "count": 8
+          },
+          {
+            "id": "ore_tungsten_raw",
+            "count": 4
+          }
+        ],
+        "sum": [
+          394,
+          336,
+          436,
+          396
+        ],
+        "rare": 4,
+        "advanced": 0,
+        "rank": 4004
+      },
+      "basicCanStart": true
+    },
+    {
+      "id": "M05-T6",
+      "name": "一体双刃剑身",
+      "best": {
+        "feed": [
+          {
+            "id": "ore_iron_raw",
+            "count": 8
+          },
+          {
+            "id": "ore_lead_raw",
+            "count": 1
+          },
+          {
+            "id": "ore_titanium_raw",
+            "count": 5
+          }
+        ],
+        "sum": [
+          340,
+          394,
+          308,
+          274
+        ],
+        "rare": 0,
+        "advanced": 5,
+        "rank": 253.87301587301587
+      },
+      "basicCanStart": true
+    },
+    {
+      "id": "M08-T6",
+      "name": "冠刺锤头",
+      "best": {
+        "feed": [
+          {
+            "id": "ore_lead_raw",
+            "count": 6
+          },
+          {
+            "id": "ore_titanium_raw",
+            "count": 6
+          },
+          {
+            "id": "ore_molybdenum_raw",
+            "count": 6
+          }
+        ],
+        "sum": [
+          432,
+          480,
+          564,
+          564
+        ],
+        "rare": 6,
+        "advanced": 6,
+        "rank": 6303.444444444444
+      },
+      "basicCanStart": true
+    }
+  ]
+}

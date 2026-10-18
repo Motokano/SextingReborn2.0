@@ -1,0 +1,101 @@
+{
+  "schema_version": 2,
+  "items": {
+    "tool_repair_hammer": {
+      "item_id": "tool_repair_hammer",
+      "editor_name": "修理锤",
+      "weight_kg": 3,
+      "category": "tool",
+      "sub_category": "repair",
+      "tags": "tool;repair;assembly_part",
+      "attribute_modules": {
+        "base": {
+          "identity": {
+            "name": "修理锤",
+            "name_0": "修理锤",
+            "sn": "修理锤",
+            "placeholder_name": "木柄方头物",
+            "fn_before": "方形铁块下接着木柄，看着能敲打",
+            "fn": "木柄修理锤，锤头方正，两端都有平整的锤面。",
+            "desc_0": "木柄修理锤，锤头方正，两端都有平整的锤面。"
+          },
+          "stacking": { "stack_limit": 1 },
+          "trade": {
+            "base_value": 600,
+            "price_class": "life_good",
+            "volatility": "low",
+            "region_restrict": 0
+          },
+          "provenance": { "source": "buy", "production_lines": "forge" }
+        },
+        "structure": {
+          "assembly_part": { "assembly_types": ["repair.hammer"] }
+        }
+      }
+    },
+    "tool_repair_pliers": {
+      "item_id": "tool_repair_pliers",
+      "editor_name": "维修钳",
+      "weight_kg": 1.5,
+      "category": "tool",
+      "sub_category": "repair",
+      "tags": "tool;repair;assembly_part",
+      "attribute_modules": {
+        "base": {
+          "identity": {
+            "name": "维修钳",
+            "name_0": "维修钳",
+            "sn": "维修钳",
+            "placeholder_name": "双柄铁夹",
+            "fn_before": "两根长柄连着带齿的夹口，看着能夹物",
+            "fn": "宽口维修钳，钳口带齿，两根长柄向外弯开。",
+            "desc_0": "宽口维修钳，钳口带齿，两根长柄向外弯开。"
+          },
+          "stacking": { "stack_limit": 1 },
+          "trade": {
+            "base_value": 480,
+            "price_class": "life_good",
+            "volatility": "low",
+            "region_restrict": 0
+          },
+          "provenance": { "source": "buy", "production_lines": "forge" }
+        },
+        "structure": {
+          "assembly_part": { "assembly_types": ["repair.pliers"] }
+        }
+      }
+    },
+    "tool_repair_whetstone": {
+      "item_id": "tool_repair_whetstone",
+      "editor_name": "磨刀石",
+      "weight_kg": 2,
+      "category": "tool",
+      "sub_category": "repair",
+      "tags": "tool;repair;assembly_part",
+      "attribute_modules": {
+        "base": {
+          "identity": {
+            "name": "磨刀石",
+            "name_0": "磨刀石",
+            "sn": "磨刀石",
+            "placeholder_name": "灰色长方石",
+            "fn_before": "灰色长方石块两面粗细不同，可以磨东西",
+            "fn": "一块两面粗细不同的长方形磨刀石。",
+            "desc_0": "一块两面粗细不同的长方形磨刀石。"
+          },
+          "stacking": { "stack_limit": 1 },
+          "trade": {
+            "base_value": 360,
+            "price_class": "life_good",
+            "volatility": "low",
+            "region_restrict": 0
+          },
+          "provenance": { "source": "buy", "production_lines": "forge" }
+        },
+        "structure": {
+          "assembly_part": { "assembly_types": ["repair.whetstone"] }
+        }
+      }
+    }
+  }
+}

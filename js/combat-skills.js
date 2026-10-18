@@ -29,6 +29,7 @@
     }
 
     function getSkill(skillId) {
+        if (global.ModularWeaponCombat && skillId === global.ModularWeaponCombat.SKILL) return global.ModularWeaponCombat.skill;
         return config.skills[skillId] || null;
     }
 
@@ -191,12 +192,6 @@
         var sk = getSkill(skillId);
         if (!sk) return 0;
         if (sk.category === 'footwork') return 0;
-        if (sk.category === 'parry') {
-            var pKey = sk.parry_proficiency_usage_key || 'parry_success';
-            var pMax = sk.parry_proficiency_max_uses != null ? sk.parry_proficiency_max_uses : getMoveProficiencyMax();
-            var pc = (moveUsage && moveUsage[pKey] != null) ? parseInt(moveUsage[pKey], 10) || 0 : 0;
-            return getProficiencyRatio(pc, pMax);
-        }
         if (sk.category === 'breath') {
             var tuNaUses = (moveUsage && moveUsage.tu_na != null) ? parseInt(moveUsage.tu_na, 10) || 0 : 0;
             return getProficiencyRatio(tuNaUses, null);
@@ -303,13 +298,13 @@
     }
 
     /**
-     * 招架技能：基础招架成功率、基础卸力比例。
+     * 步法：随等级成长的基础招架成功率、基础卸力比例。
      * - 若配置 `parry_success_at_level_1` + `parry_success_at_max`（及卸力一对）：在 L=1 与模板满级间线性插值；L&lt;1 为 0。
-     * - 否则沿用旧式：满模板级值 × (Lcurve/cap)，满级值取自技能或 constants 的 parry_*_at_1000。
+     * - 未声明成长曲线的步法不提供成长招架数值；固定加成另在柔韧乘算后结算。
      */
     function getParryValues(skillId, level, character) {
         var sk = getSkill(skillId);
-        if (!sk || !sk.only_parry) return { success: 0, reduce: 0 };
+        if (!sk || sk.category !== 'footwork') return { success: 0, reduce: 0 };
         var cap = getTemplateMaxLevel(skillId);
         var Lcurve = getSkillLevelForStatCurves(skillId, level);
         if (Lcurve < 1) return { success: 0, reduce: 0 };
@@ -330,19 +325,13 @@
             };
         }
 
-        var successAt1000 = sk.parry_success_at_1000 != null ? sk.parry_success_at_1000 : (config.constants.parry_success_at_1000 || 0.35);
-        var reduceAt1000 = sk.parry_reduce_at_1000 != null ? sk.parry_reduce_at_1000 : (config.constants.parry_reduce_at_1000 || 0.35);
-        var ratio = cap > 0 ? Lcurve / cap : 0;
-        return {
-            success: successAt1000 * ratio,
-            reduce: reduceAt1000 * ratio
-        };
+        return { success: 0, reduce: 0 };
     }
 
-    /** 招架类熟练度计数键（用于 `skills[id].move_usage`），无则 null */
+    /** 步法招架成功统计键（用于 `skills[id].move_usage`），无则 null */
     function getParryProficiencyUsageKey(skillId) {
         var sk = getSkill(skillId);
-        if (!sk || sk.category !== 'parry') return null;
+        if (!sk || sk.category !== 'footwork') return null;
         return sk.parry_proficiency_usage_key || 'parry_success';
     }
 

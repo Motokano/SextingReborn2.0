@@ -41,6 +41,7 @@
         if (ctx.typedDamage) ctx.typedDamage = global.CombatDamage.scale(ctx.typedDamage, ctx.outgoingMultiplier);
     }
     function phaseUnifiedDefense(ctx) {
+        if (global.ModularWeaponCombat) global.ModularWeaponCombat.blockedAttackBonus(ctx);
         var cd = global.CombatDamage;
         var def = ctx.defender || {};
         var input = ctx.typedDamage;
@@ -93,6 +94,7 @@
         if (cells && global.CombatWorld) global.CombatWorld.queueDisplacement(Object.assign({}, ctx, {hitRollSuccess:true, parrySucceeded:false}), {cells:cells});
     }
     function finishAction(ctx) {
+        if (global.ModularWeaponCombat) global.ModularWeaponCombat.finish(ctx);
         if (global.CombatFxEvents) global.CombatFxEvents.publish(ctx);
         if (!ctx.simultaneousDryRun && !ctx._segmentOfAction) {
             queueDisplacement(ctx);
@@ -325,9 +327,6 @@
     }
 
     function phaseParryEnemySimple(ctx, phase) {
-        if (global.CombatVariants && typeof global.CombatVariants.applyToParryContext === 'function') {
-            global.CombatVariants.applyToParryContext(ctx);
-        }
         var d = ctx.defender || {};
         var rate = typeof d.parry_rate === 'number' ? d.parry_rate : (parseFloat(d.parry_rate) || 0);
         var red = typeof d.parry_damage_reduce === 'number' ? d.parry_damage_reduce : (parseFloat(d.parry_damage_reduce) || 0);
@@ -341,6 +340,11 @@
             if (isFinite(pDelta) && pDelta !== 0) rate = clamp(rate + pDelta / 100, 0, caps.chance);
         }
         if (!ctx.hitRollSuccess) return ctx;
+        if (global.ModularWeaponCombat) {
+            var wm = global.ModularWeaponCombat.targetDefense(ctx.weaponAction || ctx.resourceResult && ctx.resourceResult.weaponAction);
+            rate = clamp(rate + wm.chance, 0, caps.chance);
+            red = clamp(red + wm.unload + global.ModularWeaponCombat.unloadBonus(String(d.enemyId)), 0, caps.shunt);
+        }
         if (rate <= 0) {
             ctx.parrySucceeded = false;
             ctx.damageAfterParry = ctx.rawDamage * (1 - red);
@@ -413,7 +417,8 @@
             combatState: combatState,
             skillsState: skillsState,
             isBodyPartDestroyed: isDes,
-            forbiddenGuardLimbs: forbidParry
+            forbiddenGuardLimbs: forbidParry,
+            selectWeaponGuard: global.ModularWeaponCombat ? function () { return global.ModularWeaponCombat.selectGuard(ctx); } : null
         });
         if (pctx.skip) {
             ctx.parryPhaseSkipped = true;
@@ -427,16 +432,10 @@
             return ctx;
         }
         ctx.guardLimb = pctx.guardLimb;
+        ctx.weaponGuard = pctx.weaponGuard || null;
         ctx.parrySkillId = pctx.parrySkillId;
-        if (!isSimultaneousDryRun(ctx) && window.SceneCtx && typeof window.SceneCtx.recordPlayerExchangeParryLimb === 'function' && pctx.guardLimb) {
+        if (!ctx.weaponGuard && !isSimultaneousDryRun(ctx) && window.SceneCtx && typeof window.SceneCtx.recordPlayerExchangeParryLimb === 'function' && pctx.guardLimb) {
             window.SceneCtx.recordPlayerExchangeParryLimb(pctx.guardLimb);
-        }
-        if (global.InventoryEquipment && typeof global.InventoryEquipment.getParryVariantIdsForLimb === 'function') {
-            ctx.defender = ctx.defender || {};
-            ctx.defender.parryVariantIds = global.InventoryEquipment.getParryVariantIdsForLimb(pctx.guardLimb);
-        }
-        if (global.CombatVariants && typeof global.CombatVariants.applyToParryContext === 'function') {
-            global.CombatVariants.applyToParryContext(ctx);
         }
         var isTorso = CP.isTorsoHit && CP.isTorsoHit(ctx.hitPart);
         if (typeof CP.logParryGuardLimb === 'function') CP.logParryGuardLimb(ctx.hitPart, pctx.guardLimb, !!isTorso);
@@ -464,6 +463,10 @@
             baseR = pv.reduce || 0;
         }
         var flexM = 1 + multPer * flex;
+        if (ctx.weaponGuard) {
+            baseS *= ctx.weaponGuard.position.blockCoefficient;
+            baseR *= ctx.weaponGuard.position.deflectionCoefficient;
+        }
         var caps = getParryCaps();
         var pChance = clamp(baseS * flexM, 0, caps.chance);
         var pReduce = clamp(baseR * flexM, 0, caps.shunt);
@@ -479,6 +482,13 @@
                 pReduce = clamp(pReduce + fwBonus.reduce, 0, caps.shunt);
             }
         }
+        if (global.ModularWeaponCombat) {
+            var gb = ctx.weaponGuard ? global.ModularWeaponCombat.guardBonus(ctx.weaponGuard) : {chance:0,unload:0};
+            pChance = clamp(pChance + gb.chance, 0, caps.chance);
+            pReduce = clamp(pReduce + gb.unload + global.ModularWeaponCombat.unloadBonus('player'), 0, caps.shunt);
+        }
+        ctx.parryChance = pChance;
+        ctx.unloadRatio = pReduce;
         if (rnd() < pChance) {
             ctx.parrySucceeded = true;
             ctx.damageAfterParry = 0;

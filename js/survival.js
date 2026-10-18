@@ -139,6 +139,11 @@
         return Math.round(v * 10) / 10;
     }
 
+    // Keep fractional labor across actions and saves; only the HUD rounds to one decimal.
+    function roundFatigue(v) {
+        return Math.round(v * 1000000) / 1000000;
+    }
+
     function getHeightCm() {
         var cfgHeight = Number(get('height_cm', get('height_cm_default', runtimeHeightCm)));
         var h = isFinite(cfgHeight) && cfgHeight > 0 ? cfgHeight : Number(runtimeHeightCm);
@@ -322,7 +327,7 @@
         if (s.temperature_sources !== undefined) temperatureSources = normalizeTemperatureSources(s.temperature_sources);
         if (s.body_temperature !== undefined) state.body_temperature = clamp(Number(s.body_temperature) || 0, get('body_temperature_min', 20), get('body_temperature_max', 55));
         if (s.body_temperature_standard !== undefined) state.body_temperature_standard = round1(clamp(Number(s.body_temperature_standard) || 0, get('body_temperature_min', 30), get('body_temperature_max', 42)));
-        if (s.fatigue !== undefined) state.fatigue = round1(clamp(Number(s.fatigue) || 0, get('fatigue_min', 0), get('fatigue_max', 100)));
+        if (s.fatigue !== undefined) state.fatigue = roundFatigue(clamp(Number(s.fatigue) || 0, get('fatigue_min', 0), get('fatigue_max', 100)));
         if (s.pain !== undefined) state.pain = Math.max(0, Math.min(Number(get('pain_max', 100)) || 100, Math.floor(Number(s.pain) || 0)));
         if (s.pain_no_hit_ticks !== undefined) state.pain_no_hit_ticks = Math.max(0, Math.floor(Number(s.pain_no_hit_ticks) || 0));
         if (s.weight_kg !== undefined) state.weight_kg = Math.max(0, s.weight_kg);
@@ -1428,7 +1433,7 @@
     function getFatigueRangeByValue(fatigueValue) {
         var f = Number(fatigueValue);
         if (!isFinite(f)) f = Number(state.fatigue) || 0;
-        f = round1(clamp(f, get('fatigue_min', 0), get('fatigue_max', 100)));
+        f = clamp(f, get('fatigue_min', 0), get('fatigue_max', 100));
         if (f >= get('fatigue_sleepy_min', 80)) return 'sleepy';
         if (f > get('fatigue_tired_min', 50) && f < get('fatigue_tired_max_exclusive', 80)) return 'tired';
         return 'normal';
@@ -1702,7 +1707,7 @@
             if (foodConfig() && !(options && options.source === 'movement')) foodState.pendingStamina += actualCost;
             var gainPerStamina = Number(get('fatigue_gain_per_stamina_spent', 0.5));
             if (!isFinite(gainPerStamina) || gainPerStamina < 0) gainPerStamina = 0.5;
-            state.fatigue = round1(clamp(
+            state.fatigue = roundFatigue(clamp(
                 state.fatigue + actualCost * gainPerStamina,
                 get('fatigue_min', 0),
                 get('fatigue_max', 100)
@@ -1744,14 +1749,14 @@
     }
 
     function clearFatigue() {
-        state.fatigue = round1(clamp(0, get('fatigue_min', 0), get('fatigue_max', 100)));
+        state.fatigue = roundFatigue(clamp(0, get('fatigue_min', 0), get('fatigue_max', 100)));
         syncFatigueStateBuff();
     }
 
     function changeFatigue(delta) {
         var d = Number(delta) || 0;
         if (!isFinite(d) || d === 0) return state.fatigue;
-        state.fatigue = round1(clamp(
+        state.fatigue = roundFatigue(clamp(
             state.fatigue + d,
             get('fatigue_min', 0),
             get('fatigue_max', 100)

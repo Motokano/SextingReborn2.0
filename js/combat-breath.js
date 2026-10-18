@@ -39,7 +39,11 @@
     function finish(snapshot) {
         if (snapshot && g.BuffSystem) g.BuffSystem.setBuffStacks('player', snapshot.effect_buff, stacks(snapshot.effect_buff) - 1);
     }
-    function range(move) { return Math.max(1, Number(move && (move.attack_range || move.range)) || 1) + (active() ? Number(active().range_bonus) || 0 : 0); }
+    function range(move, weaponIntent) {
+        var bonus = active() ? Number(active().range_bonus) || 0 : 0;
+        if (g.ModularWeaponCombat && (weaponIntent || move && String(move.id).indexOf('weapon_basic_') === 0)) return g.ModularWeaponCombat.range(bonus);
+        return Math.max(1, Number(move && (move.attack_range || move.range)) || 1) + bonus;
+    }
     g.CombatBreath = { mounted: mounted, active: active, clear: clear, spent: spent,
         canActivate: canActivate, activate: activate, finish: finish, range: range };
 })(typeof window !== 'undefined' ? window : this);

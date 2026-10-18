@@ -1,0 +1,212 @@
+{
+  "version": 1,
+  "date": "2026-10-15",
+  "status": "catalog_matching_and_values_accepted_first_pass_not_runtime",
+  "sourceDoc": "../weapon-ore-combinations-draft.md",
+  "rules": {
+    "maxTraitsPerRealComponent": 1,
+    "singleOre": "original_intrinsic_at_three_stars_scaled_by_fixed_capacity_share",
+    "mixedFeed": "positive_match_first_otherwise_one_negative",
+    "positiveGrant": "three_stars_only",
+    "negativeGrant": "any_completion",
+    "roll": "uniform_over_unique_eligible_entries_first_pass_once_at_finish",
+    "matchingBasis": "each_feed_count_divided_by_fixed_component_capacity",
+    "dual": {
+      "eachAtLeast": 0.25,
+      "sumAtLeast": 0.75
+    },
+    "triple": {
+      "eachAtLeast": 0.2,
+      "sumAtLeast": 0.9
+    },
+    "positiveScale": "sum_of_chosen_recipe_ore_counts_divided_by_fixed_capacity",
+    "negativeScale": "fixed_no_share_or_completion_scaling",
+    "genericMineralCountMultiplier": false,
+    "knowledgeAffectsMatching": false
+  },
+  "positive": [
+    {
+      "id": "C01",
+      "name": "耐用",
+      "ores": [
+        "ore_iron_raw",
+        "ore_tin_raw"
+      ],
+      "stat": "all_contact_durability_loss_reduction",
+      "value": 0.2,
+      "scope": "component"
+    },
+    {
+      "id": "C02",
+      "name": "蓄震",
+      "ores": [
+        "ore_copper_raw",
+        "ore_manganese_raw"
+      ],
+      "stat": "next_actual_move_damage_bonus_after_own_successful_block",
+      "value": 0.15,
+      "durationTicks": 4,
+      "scope": "component"
+    },
+    {
+      "id": "C03",
+      "name": "追手",
+      "ores": [
+        "ore_zinc_raw",
+        "ore_titanium_raw"
+      ],
+      "stat": "next_actual_move_hit_bonus_after_all_segments_miss",
+      "value": 0.12,
+      "durationTicks": 8,
+      "scope": "component"
+    },
+    {
+      "id": "C04",
+      "name": "重压",
+      "ores": [
+        "ore_lead_raw",
+        "ore_molybdenum_raw"
+      ],
+      "stat": "target_unloading_reduction_for_unblocked_blunt_segment",
+      "value": 0.08,
+      "scope": "component"
+    },
+    {
+      "id": "C05",
+      "name": "破架",
+      "ores": [
+        "ore_tungsten_raw",
+        "ore_antimony_raw"
+      ],
+      "stat": "target_block_chance_reduction_for_slash_or_pierce",
+      "value": 0.08,
+      "scope": "component"
+    },
+    {
+      "id": "C06",
+      "name": "定尖",
+      "ores": [
+        "ore_silver_raw",
+        "ore_tungsten_raw"
+      ],
+      "stat": "pierce_hit_chance_bonus",
+      "value": 0.08,
+      "scope": "component"
+    },
+    {
+      "id": "C07",
+      "name": "持锋",
+      "ores": [
+        "ore_iron_raw",
+        "ore_molybdenum_raw"
+      ],
+      "stat": "damage_bonus_above_75_percent_durability",
+      "value": 0.1,
+      "scope": "component"
+    },
+    {
+      "id": "C08",
+      "name": "残锋",
+      "ores": [
+        "ore_iron_raw",
+        "ore_gold_raw"
+      ],
+      "stat": "damage_bonus_at_positive_durability_at_most_25_percent",
+      "value": 0.15,
+      "scope": "component"
+    },
+    {
+      "id": "C09",
+      "name": "稳架",
+      "ores": [
+        "ore_iron_raw",
+        "ore_copper_raw",
+        "ore_tin_raw"
+      ],
+      "stat": "block_chance_bonus_when_selected_as_defender",
+      "value": 0.06,
+      "scope": "component"
+    },
+    {
+      "id": "C10",
+      "name": "沉击",
+      "ores": [
+        "ore_lead_raw",
+        "ore_zinc_raw",
+        "ore_molybdenum_raw"
+      ],
+      "stat": "blunt_damage_bonus",
+      "value": 0.12,
+      "scope": "component"
+    }
+  ],
+  "negative": [
+    {
+      "id": "N01",
+      "name": "夹杂",
+      "stat": "component_damage_reduction",
+      "value": 0.1,
+      "eligible": "all"
+    },
+    {
+      "id": "N02",
+      "name": "内裂",
+      "stat": "component_max_durability_reduction",
+      "value": 0.2,
+      "eligible": "all"
+    },
+    {
+      "id": "N03",
+      "name": "疏松",
+      "stat": "component_contact_durability_loss_increase",
+      "value": 0.25,
+      "eligible": "all"
+    },
+    {
+      "id": "N04",
+      "name": "失衡",
+      "stat": "weapon_additive_speed_penalty_once_per_component",
+      "value": 0.03,
+      "eligible": "all"
+    },
+    {
+      "id": "N05",
+      "name": "偏心",
+      "stat": "component_hit_chance_penalty",
+      "value": 0.05,
+      "eligible": "all"
+    },
+    {
+      "id": "N06",
+      "name": "歪架",
+      "stat": "block_chance_penalty_when_component_is_selected",
+      "value": 0.06,
+      "eligible": "structurally_block_capable"
+    }
+  ],
+  "validation": {
+    "date": "2026-10-15",
+    "oreTypesCovered": 12,
+    "displayedExamplesChecked": 6,
+    "recipeComponentPairsWithMatchingAndFormableWitness": 830,
+    "auxiliaryFeedNeededInWitnessSearch": {
+      "C05": [
+        "H09",
+        "H12",
+        "H15",
+        "H18"
+      ]
+    },
+    "scope": "Integer feed matching and four independent 30-percent formation thresholds only; no combat, economy or player win-rate validation."
+  },
+  "information": {
+    "policyRef": "weapon-forging-ore-information-v1.json#/knowledgePolicy",
+    "minimumLevelForExactStrength": 50,
+    "effectAndTriggerKnowledgeRequired": true,
+    "recipeKnowledgeRequiredForPrediction": true,
+    "unknownRows": "omit_no_placeholder_or_hidden_count",
+    "knowledgeAffectsMatching": false,
+    "unrolledWinnerVisible": false
+  },
+  "updatedAt": "2026-10-17"
+}

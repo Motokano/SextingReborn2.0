@@ -507,6 +507,7 @@
                                 buff_id: String(inst.buff_id || ''),
                                 owner_id: String(inst.owner_id || oid || 'player'),
                                 source_id: inst.source_id != null ? String(inst.source_id) : null,
+                                metaskill_source: typeof inst.metaskill_source === 'string' ? inst.metaskill_source : null,
                                 started_tick: coerceNumber(inst.started_tick, 0),
                                 expires_at_tick: coerceNumber(inst.expires_at_tick, timeSt.totalTicks),
                                 stacks: coerceNumber(inst.stacks, 1)
@@ -569,11 +570,22 @@
             fishing: global.FishingSession ? global.FishingSession.getState() : null,
             fishing_pond: global.FishingPond ? global.FishingPond.getState() : null,
             muscles: musclesPersist,
-            combat_engagement: combatEngagementPersist
+            combat_engagement: combatEngagementPersist,
+            metaskills: global.CombatMetaSkills ? global.CombatMetaSkills.getState() : null
         };
     }
 
     function applySnapshot(snapshot) {
+        var M = global.CombatMetaSkills;
+        if (M && !M.validate(snapshot && snapshot.metaskills)) return false;
+        if (M) M.beginRestore();
+        try {
+            var applied = applySnapshotContents(snapshot);
+            if (applied && M) M.setState(snapshot.metaskills || null);
+            return applied;
+        } finally { if (M) M.endRestore(); }
+    }
+    function applySnapshotContents(snapshot) {
         if (!assertSnapshotShape(snapshot)) return false;
         if (global.Hunting && !global.Hunting.validate(snapshot.hunting)) return false;
         if (global.FishingSession && !global.FishingSession.validate(snapshot.fishing)) return false;
@@ -588,6 +600,7 @@
         if (global.HideoutWarehousePanel && global.HideoutWarehousePanel.suspendForLoad) global.HideoutWarehousePanel.suspendForLoad();
         if (global.ToolbenchPanel) global.ToolbenchPanel.close();
             if (global.SewingStationPanel) global.SewingStationPanel.close();
+            if (global.ForgingStationPanel) global.ForgingStationPanel.close();
         if (global.CookingRepairPanel) global.CookingRepairPanel.close();
         if (global.FacilityLaborPanel) global.FacilityLaborPanel.dismiss();
         if (typeof mods.GameTime.reset === 'function') {
@@ -642,6 +655,7 @@
         if (mods.NPCSystem && typeof mods.NPCSystem.setDemoState === 'function' && snapshot.player.npcDemo) {
             try { mods.NPCSystem.setDemoState(snapshot.player.npcDemo); } catch (e5) { /* ignore */ }
         }
+        if (global.ForgingSystem) global.ForgingSystem.onLoad();
         // setDemoState 会整包覆盖 flags，需按角色 epithet 再对齐无用之人 flag
         if (mods.NPCSystem && typeof mods.NPCSystem.syncPlayerEpithetFlags === 'function') {
             try { mods.NPCSystem.syncPlayerEpithetFlags(); } catch (e5b) { /* ignore */ }

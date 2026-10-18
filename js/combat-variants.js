@@ -307,6 +307,7 @@
             if (!vid) continue;
             var v0 = getVariant(vid);
             if (!v0) continue;
+            if (v0.metaskill) continue; // Scheduling is exclusively owned by CombatMetaSkills.
             if (!scopeAllows(v0.assist_scope, targetKind)) continue;
             if (!checkMoveFilters(v0, ctx)) continue;
             var trig = v0.trigger || null;
@@ -335,18 +336,13 @@
         return runVariants(ctx, ids, 'active');
     }
 
-    function applyToParryContext(ctx) {
-        var ids = (ctx.defender && Array.isArray(ctx.defender.parryVariantIds)) ? ctx.defender.parryVariantIds : [];
-        return runVariants(ctx, ids, 'parry');
-    }
-
     global.CombatVariants = {
         setTable: setTable,
         getVariant: getVariant,
         getAllVariants: getAllVariants,
+        allowsMove: checkMoveFilters,
         registerVariantResolver: registerVariantResolver,
         applyToActiveContext: applyToActiveContext,
-        applyToParryContext: applyToParryContext,
         isVariantUnlocked: isVariantUnlocked,
         computeVariantEffectiveLevel: function (v) {
             var IE = global.InventoryEquipment;

@@ -81,6 +81,7 @@ export function combatPanel(g, publish, t) {
         if (picker && !validPicker()) picker = null;
         const c = equipped(), ids = IE.COMBAT_LIMB_IDS || Object.keys(limbKeys), order = IE.getLimbStrikeOrderSlice?.() || ids.slice();
         publish('combat', { open: true, muscle: s.mode === 'muscles', unlocked: learnedMuscles(), editingOrder,
+            weapon: g.ModularWeaponCombat?.view(),
             limbs: ids.map(id => row(id, order)), order: order.map(id => ({ id, label: label(id) })), selected: s.curPart,
             hubs: ['breath', 'footwork'].map(id => ({ id, label: id === 'breath' ? '呼吸' : '步法', name: g.CombatSkills?.getSkill(c.hubs[id])?.name || '未装配' })),
             muscles: s.mode === 'muscles' ? muscleOverview() : null, picker: picker ? readPicker() : null });
@@ -157,6 +158,8 @@ export function combatPanel(g, publish, t) {
         refresh();
     }
     return { refresh, select, openPicker, pick, closePicker, unlock, passive,
+        swapWeapon(i) { if(api.getOpen('combat') && Number.isInteger(i) && i>=0 && i<3) { const rows=g.ModularWeaponCombat?.view()?.rows;if(rows){const ids=rows.map(r=>r.slot);[ids[i],ids[i+1]]=[ids[i+1],ids[i]];api.setWeaponConfig('order',ids);refresh();} } },
+        weaponPower(slot,value) { if(api.getOpen('combat')) { api.setWeaponConfig('power',{slot,power:Number(value)});refresh(); } },
         page(delta) { if (picker?.kind === 'muscles' && api.getOpen('combat')) { picker.page += delta; refresh(); } },
         toggleOrder() { if (api.getOpen('combat')) { editingOrder = !editingOrder; refresh(); } },
         swap(i) { if (api.getOpen('combat') && editingOrder && Number.isInteger(i) && i >= 0 && i < 3) { IE.swapLimbStrikeOrderIndices(i, i + 1); refresh(); } },

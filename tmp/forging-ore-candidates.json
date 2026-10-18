@@ -1,0 +1,158 @@
+[
+  {
+    "id": "ore_iron_raw",
+    "name": "铁质矿石",
+    "scores": [
+      22,
+      24,
+      20,
+      20
+    ],
+    "rarity": "基础",
+    "role": "均衡底料",
+    "accessBand": 0
+  },
+  {
+    "id": "ore_copper_raw",
+    "name": "粗铜矿石",
+    "scores": [
+      8,
+      44,
+      12,
+      30
+    ],
+    "rarity": "基础",
+    "role": "高韧补料，硬度与抗变形低",
+    "accessBand": 0
+  },
+  {
+    "id": "ore_tin_raw",
+    "name": "锡石矿",
+    "scores": [
+      14,
+      18,
+      40,
+      18
+    ],
+    "rarity": "基础",
+    "role": "低成本抗变形补料",
+    "accessBand": 0
+  },
+  {
+    "id": "ore_bauxite_raw",
+    "name": "铝土矿",
+    "scores": [
+      10,
+      28,
+      18,
+      4
+    ],
+    "rarity": "基础",
+    "role": "极低密度，硬度低",
+    "accessBand": 0
+  },
+  {
+    "id": "ore_iron_sand_highcarbon",
+    "name": "高碳铁砂",
+    "scores": [
+      48,
+      8,
+      20,
+      22
+    ],
+    "rarity": "进阶",
+    "role": "硬度突出，韧性低",
+    "accessBand": 1
+  },
+  {
+    "id": "ore_manganese_raw",
+    "name": "锰矿",
+    "scores": [
+      22,
+      32,
+      44,
+      24
+    ],
+    "rarity": "进阶",
+    "role": "韧性与抗变形兼顾",
+    "accessBand": 1
+  },
+  {
+    "id": "ore_nickel_raw",
+    "name": "镍矿",
+    "scores": [
+      16,
+      54,
+      26,
+      24
+    ],
+    "rarity": "进阶",
+    "role": "高韧性，硬度偏低",
+    "accessBand": 1
+  },
+  {
+    "id": "ore_chromite_raw",
+    "name": "铬铁矿",
+    "scores": [
+      44,
+      14,
+      42,
+      26
+    ],
+    "rarity": "进阶",
+    "role": "硬度与抗变形双强，韧性低",
+    "accessBand": 1
+  },
+  {
+    "id": "ore_titanium_raw",
+    "name": "钛铁矿",
+    "scores": [
+      28,
+      38,
+      28,
+      10
+    ],
+    "rarity": "进阶",
+    "role": "轻量兼顾韧性，密度难补足",
+    "accessBand": 1
+  },
+  {
+    "id": "ore_tungsten_raw",
+    "name": "黑钨矿",
+    "scores": [
+      58,
+      6,
+      30,
+      56
+    ],
+    "rarity": "稀有",
+    "role": "高硬高密度，韧性极低",
+    "accessBand": 2
+  },
+  {
+    "id": "ore_molybdenum_raw",
+    "name": "辉钼矿",
+    "scores": [
+      36,
+      30,
+      58,
+      20
+    ],
+    "rarity": "稀有",
+    "role": "抗变形突出，密度中等",
+    "accessBand": 2
+  },
+  {
+    "id": "ore_cobalt_raw",
+    "name": "钴矿",
+    "scores": [
+      34,
+      58,
+      18,
+      40
+    ],
+    "rarity": "稀有",
+    "role": "高韧高密度，抗变形偏低",
+    "accessBand": 2
+  }
+]

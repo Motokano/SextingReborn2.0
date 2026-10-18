@@ -53,11 +53,6 @@
       "id": "footwork",
       "label": "步法",
       "icon": "👟"
-    },
-    {
-      "id": "parry",
-      "label": "招架",
-      "icon": "🛡️"
     }
   ],
   "skills": {
@@ -70,7 +65,6 @@
       "description": "基础徒手功法，讲究大巧不工。",
       "difficulty": 1,
       "icon": "👊",
-      "only_parry": false,
       "design_meta": {
         "sheet_row_id": "SKILL_UNARMED_BASIC",
         "doc_anchor": "11-skills 8.3.2",
@@ -266,7 +260,6 @@
       "description": "占位兵器技能：底伤读 weapon_left/right 对应物品 weapon_attack_power；等级曲线 weapon_simple（与徒手线性满级+250%同源常数，可独立配）。需在装备槽持兵并在肢体链装配后方可测试。",
       "difficulty": 1,
       "icon": "🗡️",
-      "only_parry": false,
       "moves": [
         {
           "id": "weapon_strike",
@@ -310,24 +303,6 @@
       "max_level": 1000,
       "level_cap_skill_id": null
     },
-    "combat_basic_parry": {
-      "id": "combat_basic_parry",
-      "name": "基本招架",
-      "category": "parry",
-      "description": "仅可装在肢体「招架槽」；不可装进攻槽；无资源消耗。对劈砍/戳刺/钝击共用同一基础招架成功率（命中后一次招架判定）。1 级：15% 招架率、20% 卸力；满模板级（默认 1000）45% / 50%，中间线性。每次招架成功 `move_usage.parry_success` +1（熟练度仅用于招架数值与剧情/后遗症条件，不提供后天五维）。初始未习得、无额外学习门槛（有则单条声明）。受击肢位与承担招架肢选取见 `08`/`CombatParry`。",
-      "difficulty": 1,
-      "icon": "🛡️",
-      "only_parry": true,
-      "moves": [],
-      "parry_success_at_level_1": 0.15,
-      "parry_success_at_max": 0.45,
-      "parry_reduce_at_level_1": 0.2,
-      "parry_reduce_at_max": 0.5,
-      "parry_proficiency_usage_key": "parry_success",
-      "parry_proficiency_max_uses": 50000,
-      "max_level": 1000,
-      "level_cap_skill_id": null
-    },
     "combat_basic_breath": {
       "id": "combat_basic_breath",
       "name": "基本呼吸法",
@@ -335,7 +310,6 @@
       "description": "全五维合计值的3%作为挂载期间后天加成。所有攻击每整招消耗25气力；未耗气的轮次恢复50%气力。战斗中累计消耗200气力可使用催气：立即满气，接下来三次攻击范围+1、冲锋、呼吸倍率1.8、未被闪开即击退1格。脱战或切换清空积蓄和爆发。",
       "difficulty": 1,
       "icon": "♾️",
-      "only_parry": false,
       "moves": [],
       "hub_actions": [
         {
@@ -362,6 +336,13 @@
           "*": {
             "type": "flat",
             "value": -25
+          }
+        },
+        "weapon_diqi_cost": {
+          "*": {
+            "ratio_of_diqi_max_at_10_power": 0.1,
+            "min": 1,
+            "max": 50
           }
         },
         "states": [],
@@ -394,10 +375,9 @@
       "id": "combat_basic_footwork",
       "name": "基本步法",
       "category": "footwork",
-      "description": "全局身法根基：挂载于武学枢纽「步法核心」`hubs.footwork`，不占肢体槽；同时仅可挂一条，可随时切换且立即影响战斗速度。`combat_speed_base` 为乘区底；另按等级每满 10 级战斗速度 +1（`combat_speed_per_10_levels`，见 `11` 8.3.4）。不设招式熟练度；对敌方命中仅通过战斗速度间接体现。可在 `hub_actions[]` 配置步法动作。学习/使用门槛仅看先天属性（见 `05`/`11`）。",
+      "description": "统一提供速度、招架与卸力，装备在全局步法槽，同一时间仅生效一套。基础速度1，每10级额外速度+1；成长招架率15%至45%、卸力20%至50%，受柔韧放大；另各加5个百分点，受双鞋较低招架系数修正。最终招架率上限75%、卸力上限50%。附带蹑步；不设熟练度数值乘区，招架成功次数仅作统计及条件记录。",
       "difficulty": 1,
       "icon": "👟",
-      "only_parry": false,
       "moves": [],
       "hub_actions": [
         {
@@ -413,9 +393,14 @@
       "combat_speed_per_10_levels": 1,
       "parry_chance_bonus": 0.05,
       "parry_damage_reduce_bonus": 0.05,
-      "_fixed_effect_note": "步法固定效果（11 §8.3.4 / 39 §6.4）：招架侧 = parry_chance_bonus/parry_damage_reduce_bonus（装备即生效，喂给肢体招架结算，×鞋 footwork_coef 左右取低）；闪避侧 = 战斗速度（combat_speed_base，已实现）；身法动作 = hub_actions（蹑步，已有）。数值草案 k23 定稿。",
+      "_fixed_effect_note": "成长招架率与卸力由步法等级驱动，先乘柔韧再封顶；固定加成在柔韧之后按鞋 parry_coef（左右取低）叠加并再次封顶，不重复乘柔韧。",
       "max_level": 1000,
-      "level_cap_skill_id": null
+      "level_cap_skill_id": null,
+      "parry_success_at_level_1": 0.15,
+      "parry_success_at_max": 0.45,
+      "parry_reduce_at_level_1": 0.2,
+      "parry_reduce_at_max": 0.5,
+      "parry_proficiency_usage_key": "parry_success"
     },
     "combat_rogue_sanda": {
       "id": "combat_rogue_sanda",
@@ -426,7 +411,6 @@
       "description": "街头斗殴的野路子，出手阴损，专挑软肋。不靠硬拼，靠一套脏招把对手拖进泥潭：先糊你一脸，再踹你膝窝，等你一瘸一拐的时候上来补刀。",
       "difficulty": 1,
       "icon": "🤛",
-      "only_parry": false,
       "design_meta": {
         "sheet_row_id": "SKILL_ROGUE_SANDA",
         "doc_anchor": "11-skills 8.3.6",

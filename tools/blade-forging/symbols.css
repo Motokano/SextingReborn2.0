@@ -1,0 +1,27 @@
+/* Large, distinct shapes: the score keeps its own space beside each symbol. */
+.effect-symbol{width:24px;height:24px;display:block;flex:none;pointer-events:none}
+.cell .sigil{display:none;pointer-events:none}
+.cell[data-sigil="keep"]{--sigil-color:#aaf3bd}
+.cell[data-sigil="burst"]{--sigil-color:#e5b5ff}
+.cell[data-sigil="gather"]{--sigil-color:#8ff1e7}
+.cell[data-sigil="warmth"]{--sigil-color:#ffc084}
+.cell[data-sigil="flake"]{--sigil-color:#adf3ff}
+.cell[data-sigil="spread"]{--sigil-color:#ffd17c}
+.cell[data-sigil="erase"]{--sigil-color:#ffa9ac}
+.cell[data-sigil="level"]{--sigil-color:#9ebfff}
+.cell[data-sigil="rebound"]{--sigil-color:#e6f795}
+.cell[data-sigil]{--score-stripe:transparent;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);align-items:center;gap:3px;padding:0 5px;border:2px solid var(--sigil-color);background-image:radial-gradient(ellipse at 24% 50%,color-mix(in srgb,var(--sigil-color) 23%,transparent),transparent 78%);box-shadow:inset 3px 0 var(--score-stripe),0 0 12px color-mix(in srgb,var(--sigil-color) 30%,transparent)}
+.cell[data-sigil].edge{--score-stripe:#f4cd7b}
+.cell[data-sigil] .sigil{display:flex;align-items:center;justify-content:center;min-width:0;color:var(--sigil-color);filter:drop-shadow(0 0 5px color-mix(in srgb,var(--sigil-color) 55%,transparent))}
+.cell[data-sigil] .sigil .effect-symbol{width:100%;max-width:30px;height:30px}
+.board .cell[data-sigil] .value{position:relative;z-index:1;font-size:21px;min-width:0;text-align:center;text-shadow:0 1px 3px #101c15,0 0 5px #101c15}
+.board .cell[data-sigil] .value.small{font-size:14px}
+.cell[data-sigil] .badge,.cell[data-sigil] .opportunity-badge{display:none}
+.cell[data-sigil-kind="collect"]::after{content:"";position:absolute;left:4px;top:4px;width:4px;height:4px;background:var(--sigil-color);transform:rotate(45deg);pointer-events:none}
+.cell[data-sigil-kind="temporary"]{border-style:dashed}
+.effect-chip>.effect-symbol{width:20px;height:20px;filter:drop-shadow(0 0 3px currentColor)}
+.special-row b>.effect-symbol,.card-heading b>.effect-symbol{display:inline-block;width:20px;height:20px;vertical-align:middle;margin-right:6px}
+.board[data-cols="7"] .cell[data-sigil],.board[data-columns="7"] .cell[data-sigil]{padding:0 3px;gap:1px}
+.board[data-cols="7"] .cell[data-sigil] .value,.board[data-columns="7"] .cell[data-sigil] .value{font-size:18px}
+.board[data-cols="7"] .cell[data-sigil] .value.small,.board[data-columns="7"] .cell[data-sigil] .value.small{font-size:12px}
+@media(max-width:650px){.board .cell[data-sigil] .value{font-size:18px}.cell[data-sigil] .sigil .effect-symbol{height:25px;max-width:25px}.board .cell[data-sigil] .value.small{font-size:12px}}

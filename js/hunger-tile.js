@@ -16,6 +16,7 @@
         motionMode = value;
         try { localStorage.setItem(motionKey, value); } catch (e) { /* Session setting still applies. */ }
         refresh();
+        if (window.SvelteHUD) window.SvelteHUD.invalidate('windows');
         document.querySelectorAll('[data-status-motion]').forEach(function (select) { select.value = value; });
     }
     function mountMotionControl(container) {
@@ -69,7 +70,7 @@
         effect.style.setProperty('--hunger-strength', levels[level][0]);
         effect.style.setProperty('--hunger-period', levels[level][1] + 's');
     }
-    window.HungerTile = { refresh: refresh, mountMotionControl: mountMotionControl };
+    window.HungerTile = { refresh: refresh, mountMotionControl: mountMotionControl, getMotionMode: function () { return motionMode; }, setMotionMode: setMotionMode };
     if (new URLSearchParams(window.location.search).has('hunger-preview')) {
         var panel = document.createElement('aside');
         panel.id = 'hunger-preview';

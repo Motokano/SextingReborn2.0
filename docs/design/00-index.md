@@ -16,6 +16,8 @@
 
 # 设计文档总览与模块索引
 
+> **2026-10-03 装配式武器框架**：[70 装配式武器与攻击位置设计](70-modular-weapon-system.md)：四种概念原型、单手四位置、自由装配与跨位声明、按位置装招及读取威力、持械替代四肢轮换、伤残切换、耐久与暗金方向。框架已确认，详细配置及运行实现待完成。
+
 > **2026-10-01 缝纫与硅叶处理规则汇总**：[首版统一设计](sewing-material-defense-draft.md)：六部件款式、研究与材料加工、人台和男女版型、温度与合身度、浸泡桶及一次性系数、全局盾池和分部位减伤。硅叶采集物品已接入，其余规则与数值仍待运行实现及平衡验收。
 
 > 棋子美术规范已确认：[棋子形象与落地表现](51-pawn-art-direction.md)。以通勤装v4为基准：小头、修长棋身、宽薄底座，72/144高度比例，右下轮廓短投影；后续新棋子统一遵循。
@@ -64,6 +66,31 @@
 | 生存属性 | [06-survival.md](06-survival.md) | 饱食、饮水、体力、精力、心情、定力、性能力、性别、营养、体温、底气与行气 |
 | 季节、天气与温度 | [weather-seasons-and-temperature.md](weather-seasons-and-temperature.md) | 地区与地图环境、tick天气、冷热暴露与体温分档、耐候和认知；机制已定，数值与接入待完成 |
 | 战斗核心 | [07-combat-core.md](07-combat-core.md) | 回合刻、方向与范围、呼吸条（气力）与底气、出力、速度与先手/连击 |
+| 装配式武器 | [70-modular-weapon-system.md](70-modular-weapon-system.md) | 概念原型、攻击位置与跨位部件、按位置装招/算基础威力、持械伤残与耐久；框架已定，待细化及实装 |
+| 单手剑刃 | [weapon-blade-components-draft.md](weapon-blade-components-draft.md) | 六阶段17种剑刃获用户认可，按徒手曲线对标；具体材料后续设计，数值为试调值，未实装 |
+| 单手钝击侧 | [weapon-blunt-side-components-draft.md](weapon-blunt-side-components-draft.md) | 六阶段18种单位置钝击侧及六类特色buff获用户认可；数值为试调值，材料后续设计、未实装 |
+| 单手跨部位部件 | [weapon-multi-slot-components-draft.md](weapon-multi-slot-components-draft.md) | 八种结构、六阶段18件设计稿获认可；逐位置攻击与防御、整件共享属性及联动数值仍为试调值，未实装 |
+| 单手前端与旧柄端候选 | [weapon-tip-pommel-components-draft.md](weapon-tip-pommel-components-draft.md) | 六阶段12种前端，刺击与钝击前端三类归零效果及逐件首版试值均已认可；旧P版柄端保留，当前手柄见第二版；未实装 |
+| 单手手柄耐久归零 | [weapon-hilt-durability-draft.md](weapon-hilt-durability-draft.md) | 护手归零关闭格挡、无护手归零关闭特色增益，以及18种手柄的攻击、速度与结算边界均已确认；未实装 |
+| 跨部位部件耐久归零 | [weapon-multi-slot-durability-draft.md](weapon-multi-slot-durability-draft.md) | 8类结构、18个分档条目的归零效果及逐位置首版试值已齐并获用户确认；未实装 |
+| 单手武器自带基础招式 | [weapon-basic-moves-draft.md](weapon-basic-moves-draft.md) | 七种兜底招式与四种新增状态已确认，复用淤伤、失衡和击退；含首版系数、权重与触发边界，未实装 |
+| 单手部件完整数值 | [weapon-component-final-stats-draft.md](weapon-component-final-stats-draft.md) | 83件威力、筋骨门槛、耐久与重量；26件轻型门槛已按筋骨最低10修正，保留较低威力；整批要求10—36，正常与归零读数一致；具体数值为提案，未实装 |
+| 剑刃锻造小游戏 | [weapon-blade-forging-minigame-draft.md](weapon-blade-forging-minigame-draft.md) | 首版未采用，用户反馈像文字事件游戏；保留讨论记录，核心玩法重新讨论；投料决定潜力、工艺分项发挥仍保留，未实装 |
+| 武器部件格子锻造 | [weapon-grid-forging-draft.md](weapon-grid-forging-draft.md) | 部件形状与目标固定，初始分布有限随机且保持总量；三种操作独立计次，基础热处理各一次，锤数按解法留约2锤余量，须校验可达性；具体盘面及评分待定，未实装 |
+| B01平磨直刃锻造盘面 | [weapon-b01-forging-example-draft.md](weapon-b01-forging-example-draft.md) | 首个三列七行试案：5锤、淬火与回火各1次；模板及两个扰动样本均验证最少3锤可达，具体盘面待评审，未接入游戏 |
+| 武器锻造解谜关卡试玩 | [weapon-forging-puzzle-campaign-draft.md](weapon-forging-puzzle-campaign-draft.md) | 独立HTML「百炼工坊」：六章83关覆盖全部已列部件，249个可解开局，逐关解锁及本地存档；盘面为试玩配置，未接入主游戏 |
+| 部件自由锻造试玩 | [weapon-free-forging-example-draft.md](weapon-free-forging-example-draft.md) | 新版六章83件：高亮区域堆分、压分、控分三类目标，一星逐件解锁；三种锤法、全盘热处理、每炉2个固定效果及每锤临时机会，六种独立特效；独立离线HTML，参数待试玩调校 |
+| 武器材料投料与材性 | [70号第19节](70-modular-weapon-system.md#19-四项材性投料与部件属性) | 投料决定性能潜力，锻造决定发挥程度，完成度0%至100%工艺结算已定；按整数份投料、最小1份，四项分数分别累加，各自达到部件要求30%才能成形；威力与耐久不足／超额系数已定，主项超额系数0.5、密度0.2；威力增幅、耐久上限增幅与减耗均各限50%，耐久保留两位小数；密度每不足／超额1%减／增重1%，每满15%减／加本件先天筋骨要求1点、最低10，整武器取修正后最高要求；按部件最大份数限制投料已定，83件容量和四项要求有首版试调表；8种广东背景矿石已有第二版分值及投放提案，未实装 |
+| 铸造矿石与采矿投放 | [铸造矿石与采矿投放草案](weapon-forging-ores-draft.md) | 8种广东背景矿材、2种复用及6种新增候选，简明名称、识别外观、四项分值与矿点参数，建筑废墟4层及城寨8层增补提案；83件均有材料四项达标配法；原矿1∶1出料、无边角料，成本已有首版试调，未实装 |
+| 铸造矿石物品信息与认知 | [十二种矿石物品信息](weapon-forging-ore-item-information-draft.md) | 十二矿schema v2设计目录、四段文案、材性与加工关联；10／25／50级数值开放，取消试料，身份用途与特性仍分别认识；成品单条矿材特性，未接入运行 |
+| 矿材扩展与固有属性继承 | [十二矿与固有属性继承草案](weapon-ore-intrinsic-traits-draft.md) | 八矿基线追加黑纹矿、针晶矿及既有金银铸造用途；十二项固有属性首轮值、三星按固定容量份额继承及不自动鉴定已获认可；物品及认知字段补齐，83件扩展配料可达性已算，配套参数与状态细则仍草案、未实装 |
+| 完整铸造独立试玩 | [完整铸造demo](weapon-forging-workshop-demo.md) | 12矿认识、加工试料、83件配料与格子锻造、成品继承和对比、单手四位置装配；内联离线HTML，加工与工艺映射为显式临时值；逻辑检查通过，浏览器视觉验收受工具访问限制未完成，未接主游戏 |
+| 铸造工序与成长配表 | [成本与技能成长首版配表](weapon-forging-costs-and-progression.md) | 83件制造研究装卸成本、12矿1∶1加工、统一每炉12 tick、100级经验与10／25／50级数值开放；JSON设计数据，未实装 |
+| 铸造正式物品配表 | [112条物品模板与系统对应](weapon-forging-formal-items.md) | 83部件、12原矿、12加工料、3维修工具、工具卷和单手装配宿主；生产、认知、单手部件战斗已接入 |
+| 铸造运行接入 | [基地铸造台、装配、维修与单手战斗](weapon-forging-runtime.md) | 基地（5,11）、正式背包仓库、83盘面、维修及存档；四位置攻击与格挡、部件矿材效果、共享耐久及归零；获取暂缓 |
+| 武器部件投料容量与材料要求 | [投料容量与材料要求草案](weapon-forging-material-requirements-draft.md) | 每件最大份数限制、额度内自由混料、四项各自30%开工；83件容量及四项总要求首版试调，结构威力基准保留，高阶同结构可复用要求；八矿基线及后续十二矿扩展均验证83件四项达标可达，原矿1∶1出料、成本已有首版试调表，未实装 |
+| 单手手柄候选（第二版） | [weapon-hilt-components-draft.md](weapon-hilt-components-draft.md) | 六阶段18种完整手柄；护手款解锁本位格挡，无护手款补充特色buff候选；具体条目与数值待评审、未实装 |
+| 元技能与徒手持械连招 | [70号第13节](70-modular-weapon-system.md#13-元技能与徒手持械连招)、[运行接入](combat-metaskill-runtime.md) | 替换／追加、触发排队、跨循环、速度连击、免耗、禁止连锁和存档框架已接入；正式变式条目待设计 |
 | 战斗伤害统一设计 | [49-combat-damage-rework.md](49-combat-damage-rework.md) | 五项主体公式、主属性与养成、呼吸条件倍率、附加与转换、敌我防御统一、资源失败与撞墙；规则已定，大部分待实现，含算例与迁移状态 |
 | 命中招架与伤害 | [08-hit-parry-damage.md](08-hit-parry-damage.md) | 命中率、招架、卸力、减伤链（激活盾层 → 柔韧 → 微调，见 37） |
 | 身体部位与状态 | [09-body-parts.md](09-body-parts.md) | 七部位、损毁模型（满值即失能；旧"骨折/自恢复"条目标已废）、手术 |

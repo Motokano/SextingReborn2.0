@@ -14,10 +14,11 @@
     audio.id = 'global-background-music';
     audio.hidden = true;
     document.body.appendChild(audio);
-    var pending = false;
+    var pending = false, view = null;
     var button = document.getElementById('btn-bgm');
 
     function updateButton() {
+        if (view) { view(enabled); return; }
         if (!button) return;
         button.textContent = enabled ? '♫' : '♪';
         var label = enabled ? '背景音乐已开启，点击关闭' : '背景音乐已关闭，点击开启';
@@ -48,7 +49,7 @@
     if (button) button.addEventListener('click', function () { setEnabled(!enabled); });
     function unlock(event) {
         // Let the toggle itself decide whether playback should start.
-        if (button && button.contains(event.target)) return;
+        if (event.target && event.target.closest && event.target.closest('#btn-bgm')) return;
         play();
     }
     document.addEventListener('click', unlock, true);
@@ -57,7 +58,7 @@
         if (document.hidden) audio.pause();
         else play();
     });
-    window.BackgroundMusic = { setEnabled: setEnabled };
+    window.BackgroundMusic = { setEnabled: setEnabled, getEnabled: function () { return enabled; }, attachView: function (render) { view = render; button = null; updateButton(); return function () { view = null; }; } };
     updateButton();
     play();
 })();

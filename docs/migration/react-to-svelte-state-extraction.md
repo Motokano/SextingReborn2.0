@@ -1,5 +1,7 @@
 # React -> Svelte 状态层抽离（第一阶段）
 
+> 历史探索，未接入正式游戏。2026-10-14 状态核对：下述 `game-state-core.js` 已移至 `_archive-js/`。当前[全量 UI 迁移方案](svelte-full-ui-migration.md)复用现有业务状态，不恢复这套平行核心，也不使用下文的通用 HP 模型替代当前七部位损毁。下文保留当时的方案记录。
+
 ## 现状分析（按模块）
 
 - `js/dialogue-react-view.js`

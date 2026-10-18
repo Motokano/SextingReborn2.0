@@ -826,6 +826,7 @@
             if (isFinite(durMul) && durMul > 0 && durMul !== 1) dur = Math.max(1, Math.round(dur * durMul));
         }
         if (existing) {
+            existing.metaskill_source = (global.CombatMetaSkills && global.CombatMetaSkills.currentSource()) || existing.metaskill_source || null;
             var currentStacks = Math.max(0, parseInt(existing.stacks, 10) || 0);
             // 兼容旧存档/异常流程里的 0 层实例：重上时至少恢复到 1 层，避免 HUD 永久不显示。
             if (currentStacks <= 0) currentStacks = 1;
@@ -842,6 +843,7 @@
                 buff_id: tpl.buff_id,
                 owner_id: oid,
                 source_id: sourceId || null,
+                metaskill_source: (global.CombatMetaSkills && global.CombatMetaSkills.currentSource()) || null,
                 started_tick: nowTick,
                 expires_at_tick: nowTick + dur,
                 stacks: Math.min(tpl.maxStacks, tpl.stacksAddOnApply || 1),
@@ -868,6 +870,7 @@
         if (!inst) { applyBuff(ownerId, buffId); inst = arr.filter(function (b) { return b.buff_id === buffId; })[0]; }
         if (!inst) return false;
         inst.stacks = count;
+        inst.metaskill_source = (global.CombatMetaSkills && global.CombatMetaSkills.currentSource()) || inst.metaskill_source || null;
         recalcDerived(); notifyBuffHudRefresh(); emitBuffStateChanged(ownerId, 'stacks', {buff_id: buffId});
         return true;
     }
@@ -878,6 +881,7 @@
     }
     function removeExpiredByTick(tick) {
         var changed = false;
+        var expiredMetaSource = null;
         var owners = Object.keys(instancesByOwner);
         for (var i = 0; i < owners.length; i++) {
             var arr = instancesByOwner[owners[i]];
@@ -889,10 +893,20 @@
                 if (!(inst.template && inst.template.manualLifetime) && inst.expires_at_tick < tick) {
                     applyExpireEffects(inst, tick);
                     arr.splice(j, 1);
+                    expiredMetaSource = expiredMetaSource || inst.metaskill_source;
+                    if (global.CombatMetaSkills) global.CombatMetaSkills.withSource(inst.metaskill_source, function () {
+                        global.CombatMetaSkills.notify('buff_changed', { owner_id: inst.owner_id, buff_id: inst.buff_id, reason: 'expired' });
+                    });
                     changed = true;
                 }
             }
         }
+        // Recalculate only after the expired instances are all removed: attribute
+        // events may re-enter the buff pipeline, and must not see a half-edited list.
+        if (expiredMetaSource && global.CombatMetaSkills) global.CombatMetaSkills.withSource(expiredMetaSource, function () {
+            recalcDerived();
+            global.CombatMetaSkills.notify('buff_changed', { owner_id: PLAYER_OWNER_ID, reason: 'expiry_derived' });
+        });
         return changed;
     }
 
@@ -902,6 +916,7 @@
     }
 
     function attachTemplatesAndClamp() {
+        if (global.ModularWeaponCombat) global.ModularWeaponCombat.registerBuffs();
         // Attach template objects by buff_id, then clamp stacks to max_stacks.
         var owners = Object.keys(instancesByOwner);
         var anyTemplate = false;
@@ -912,6 +927,10 @@
                 if (!inst || !inst.buff_id) continue;
                 var tpl = templateById[inst.buff_id] || null;
                 inst.template = tpl;
+                if (tpl && inst.weapon_effect_value != null && /^(buff_weapon_|buff_ore_guard_pressure)/.test(inst.buff_id)) {
+                    inst.template = JSON.parse(JSON.stringify(tpl));
+                    inst.template.effects[0].params = {delta_per_stack:inst.weapon_effect_value,delta_percent:inst.weapon_effect_value};
+                }
                 if (tpl) {
                     anyTemplate = true;
                     // Buff 实例的有效层数下限为 1；0 层实例会让状态 Buff“存在但不可见/不生效”。
@@ -961,9 +980,11 @@
                         buff_id: String(inst.buff_id),
                         owner_id: inst.owner_id != null ? String(inst.owner_id) : String(oid),
                         source_id: inst.source_id != null ? String(inst.source_id) : null,
+                        metaskill_source: typeof inst.metaskill_source === 'string' ? inst.metaskill_source : null,
                         started_tick: inst.started_tick != null ? toInt(inst.started_tick, 0) : toInt(nowTick, 0),
                         expires_at_tick: inst.expires_at_tick != null ? toInt(inst.expires_at_tick, nowTick) : toInt(nowTick, 0),
                         stacks: inst.stacks != null ? Math.max(0, Number(inst.stacks) || 0) : 1,
+                        weapon_effect_value: Number.isFinite(inst.weapon_effect_value) ? inst.weapon_effect_value : null,
                         pharmacy_relief_stages: Math.max(0, toInt(inst.pharmacy_relief_stages, 0)),
                         pharmacy_survival_delta_steps: isPlainObject(inst.pharmacy_survival_delta_steps) ? JSON.parse(JSON.stringify(inst.pharmacy_survival_delta_steps)) : {},
                         pharmacy_survival_delta_last_tick: isPlainObject(inst.pharmacy_survival_delta_last_tick) ? JSON.parse(JSON.stringify(inst.pharmacy_survival_delta_last_tick)) : {},
@@ -1156,6 +1177,10 @@
 
     /** 到期或层数耗尽移除前调用；不经 triggerBuffPipeline（避免与 removeExpired 顺序死循环） */
     function applyExpireEffects(inst, tick) {
+        var M = global.CombatMetaSkills;
+        return M ? M.withSource(inst.metaskill_source, function () { return applyExpireEffectsBody(inst, tick); }) : applyExpireEffectsBody(inst, tick);
+    }
+    function applyExpireEffectsBody(inst, tick) {
         var tpl = inst && inst.template;
         if (!tpl) return;
         var ef = arrayOrEmpty(tpl.expire_effects);
@@ -1176,6 +1201,10 @@
     }
 
     function applyEffects(inst, eventContext, chainState) {
+        var M = global.CombatMetaSkills;
+        return M ? M.withSource(inst.metaskill_source, function () { return applyEffectsBody(inst, eventContext, chainState); }) : applyEffectsBody(inst, eventContext, chainState);
+    }
+    function applyEffectsBody(inst, eventContext, chainState) {
         // k229：镇痛在场时疼痛档位 debuff 整体被压制（每 tick 的心情/体力惩罚等不生效；debuff 仍在、只盖住，药效过反扑）
         if (isPainEffectSuppressed(inst)) return;
         var effects = arrayOrEmpty(inst.template.effects);
@@ -1310,7 +1339,8 @@
             owner_id: e.owner_id || null,
             hit_roll_success: !!e.hit_roll_success,
             effect_applied: !!e.effect_applied,
-            payload: e.payload || null
+            payload: e.payload || null,
+            metaskill_source: e.metaskill_source || (global.CombatMetaSkills && global.CombatMetaSkills.currentSource()) || null
         };
     }
 
@@ -1359,6 +1389,10 @@
     }
 
     function triggerBuffPipeline(eventContext, chainState) {
+        var M = global.CombatMetaSkills;
+        return M ? M.withSource(eventContext && eventContext.metaskill_source, function () { return triggerBuffPipelineBody(eventContext, chainState); }) : triggerBuffPipelineBody(eventContext, chainState);
+    }
+    function triggerBuffPipelineBody(eventContext, chainState) {
         var ev = normalizeEventContext(eventContext);
         if (!ready) {
             pendingEvents.push(ev);
@@ -1379,6 +1413,11 @@
             return { processed: 0, skipped: true, reason: 'duplicate_event_id' };
         }
         chainState.seenEventIds[ev.event_id] = true;
+        if (global.CombatMetaSkills) {
+            global.CombatMetaSkills.notify(ev.event_kind + ':' + ev.event_name, ev);
+            if (ev.event_name === 'buff_state_changed' && ev.owner_id === 'player') global.CombatMetaSkills.notify('buff_changed', ev);
+            if (ev.event_name === 'survival_state_changed') global.CombatMetaSkills.notify('resource_changed', ev);
+        }
 
         var expiredChanged = removeExpiredByTick(ev.tick);
         refreshPainTier();
@@ -1408,6 +1447,7 @@
         var changed = !!expiredChanged;
         for (ii = 0; ii < matched.length; ii++) {
             var m = matched[ii];
+            if (global.CombatMetaSkills && global.CombatMetaSkills.currentSource()) m.metaskill_source = global.CombatMetaSkills.currentSource();
             var consumeOk = shouldConsume(m, ev);
             var stacksBefore = m.stacks;
             if (consumeOk) {
@@ -1432,6 +1472,10 @@
                 }
                 changed = true;
             }
+            if (m.metaskill_source && global.CombatMetaSkills) global.CombatMetaSkills.withSource(m.metaskill_source, function () {
+                if (stacksBefore !== m.stacks) recalcDerived();
+                global.CombatMetaSkills.notify('buff_changed', { owner_id: m.owner_id, buff_id: m.buff_id, reason: 'processed' });
+            });
             debugLog('event=' + ev.event_name + ' buff=' + m.buff_id + ' stacks ' + stacksBefore + ' -> ' + m.stacks);
         }
 

@@ -1,0 +1,1 @@
+JSON.stringify({store:localStorage.getItem('ui_windows_moss_c_v1'),old:localStorage.getItem('ui_windows_v1'),classes:document.querySelector('#status-survival').className,visible:UIWindows.getVisible('win-carry')})

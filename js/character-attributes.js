@@ -642,6 +642,8 @@
         }
         // 内部保留小数（每点身手都有真实增量，05 5.7）；仅展示层取整
         cache.combat_speed = Math.max(1, (speedFloat + footworkSpeedFlat) * shoeSpeedCoef);
+        cache.combat_speed_unclamped = (speedFloat + footworkSpeedFlat) * shoeSpeedCoef;
+        cache.combat_speed_percent_unit = vBase * shoeSpeedCoef / 100;
         cache.hit_bonus_from_equipment = fromEquip.hit_bonus || 0;
 
         // 肌肉「底气上限+N」→ Survival.diqi_cap_limit 的扁平加成（见 computeDiqiCapLimitFromBreath）
@@ -659,9 +661,11 @@
     }
 
     /** 战斗速度（内部保留小数，用于先手/连击/命中；仅展示取整，见 05 5.7） */
-    function getCombatSpeed() {
+    function getCombatSpeed(additivePercent) {
         var thermal = global.Survival && global.Survival.getTemperatureSpeedMultiplier ? global.Survival.getTemperatureSpeedMultiplier() : 1;
-        return Math.max(1, cache.combat_speed * thermal);
+        var weaponPct = global.ModularWeaponCombat ? global.ModularWeaponCombat.speedPercent() : 0;
+        return Math.max(1, ((cache.combat_speed_unclamped == null ? cache.combat_speed : cache.combat_speed_unclamped)
+            + (cache.combat_speed_percent_unit || 0) * (weaponPct + (Number(additivePercent) || 0))) * thermal);
     }
 
     /** 徒手拳底 B_fist（05 5.5.2 分段曲线）：S ≤ fist_lin_segment_max 线性（每点 fist_lin_gain_per_point），

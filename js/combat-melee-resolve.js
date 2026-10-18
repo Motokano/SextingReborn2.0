@@ -419,8 +419,10 @@
         var IE = global.InventoryEquipment;
         var CA = global.CharacterAttributes;
         var Surv = global.Survival;
-
-        var picked = pickResolvedMove(CS, IE, skillId, moveIdPref);
+        var weaponAction = opts.weaponIntent && global.ModularWeaponCombat
+            ? global.ModularWeaponCombat.prepareAttack(opts.weaponIntent, opts.repeatIndex) : null;
+        if (opts.weaponIntent && !weaponAction) return {notExecuted:true,rawDamage:0,hitRollSuccess:false,skillId:skillId,moveId:moveIdPref,limbId:limbId,blockTargetEffects:true,proficiencyDelta:0};
+        var picked = weaponAction ? {move:weaponAction.move,moveId:weaponAction.move.id} : pickResolvedMove(CS, IE, skillId, moveIdPref);
         var move = picked.move;
         var moveId = picked.moveId;
         var powerDefault = move && move.default_power_level != null ? move.default_power_level : 10;
@@ -466,16 +468,22 @@
 
         // 来源标识：区分「玩家攻击」与「敌人还击」，避免日志看不出伤害源
         logLine('log.combat.resolve.source_player', {}, 'combat');
-        var Vatk = CA && typeof CA.getCombatSpeed === 'function' ? CA.getCombatSpeed() : 1;
+        var Vatk = opts.attackerSpeed != null ? opts.attackerSpeed : CA && typeof CA.getCombatSpeed === 'function' ? CA.getCombatSpeed() : 1;
         var Vdef = opts.defenderSpeed != null ? Number(opts.defenderSpeed) : 10;
         if (!isFinite(Vdef) || Vdef < 0) Vdef = 10;
+        if (weaponAction && global.CombatInitiative && !opts.speedsResolved) {
+            Vatk = global.CombatInitiative.effectiveSpeed('player', Vatk);
+            Vdef = global.CombatInitiative.effectiveSpeed(String(opts.enemyId || ''), Vdef);
+        }
 
         var P = CA && typeof CA.getHitRate === 'function' ? CA.getHitRate(Vatk, Vdef) : 0.8;
+        if (global.BuffSystem && global.BuffSystem.getHitChanceDeltaPercent) P = clamp(P + global.BuffSystem.getHitChanceDeltaPercent('player') / 100, 0, 0.99);
+        if (weaponAction) P = clamp(P + weaponAction.hitBonus, 0, 0.99);
         // 多段（hit_segments>1）：每段独立命中 roll 与部位抽样（18.6 每段唯一事件 id）；主结果取第一段，段数组交管线逐段结算（11-skills 8.3.6）
         var segCount = Math.max(1, parseInt(move.hit_segments, 10) || 1);
         if (segCount > 4) segCount = 4;
         var segments = null;
-        var distanceMiss = outsideRange(opts, global.CombatBreath ? global.CombatBreath.range(move) : Math.max(1, Number(move.attack_range || move.range) || 1), true);
+        var distanceMiss = outsideRange(opts, global.CombatBreath ? global.CombatBreath.range(move, opts.weaponIntent) : Math.max(1, Number(move.attack_range || move.range) || 1), true);
         var hitRollSuccess;
         var hitPart;
         var hitPartModifierKey;
@@ -519,6 +527,7 @@
         var Rmove = CS.getMoveProficiencyRatio ? CS.getMoveProficiencyRatio(uses) : 0;
         var baseL = CS.getBasePower(skillId, skillLv, null);
         if (!isFinite(baseL) || baseL <= 0) baseL = 1;
+        if (weaponAction && sk.component_only) { baseL = 1; Rmove = 0; }
 
         var breathMult = 1;
         var breathBar = null;
@@ -533,16 +542,20 @@
         // Design 49: equipped proficiency grants no unconditional breath damage.
         var qiState = Surv && Surv.getState ? Surv.getState() : {};
         var qiLimit = Surv && Surv.getQiLiMax ? Surv.getQiLiMax() : 0;
-        var plannedBreathCost = computeBreathMoveCost(breathBar, moveId, move.required_limb_tags, powerK, qiLimit);
+        var plannedBreathCost = computeBreathMoveCost(breathBar, moveId, move.action_tags || move.required_limb_tags, powerK, qiLimit);
+        var metaWaivers = opts.metaSource && Array.isArray(opts.costWaivers) ? opts.costWaivers : [];
+        var waiveQi = metaWaivers.indexOf('qi') >= 0;
         var breathPlan = global.CombatDamage.breath(breathBar, Number(qiState.qi_li_current) || 0, qiLimit,
-            plannedBreathCost && plannedBreathCost.direction < 0 ? plannedBreathCost.amount : 0,
+            !waiveQi && plannedBreathCost && plannedBreathCost.direction < 0 ? plannedBreathCost.amount : 0,
             plannedBreathCost && plannedBreathCost.direction > 0 ? plannedBreathCost.amount : 0);
+        // Exemption removes payment, not breath-state requirements, recovery or charge rules.
+        if (waiveQi) { breathPlan.consume = 0; breathPlan.drain = false; }
         var breathBurst = global.CombatBreath && global.CombatBreath.active();
         breathMult = breathPlan.multiplier * (breathBurst ? breathBurst.damage_multiplier : 1);
 
         var Mmove = move.move_power_multiplier != null ? Number(move.move_power_multiplier) : 1;
         if (!isFinite(Mmove) || Mmove <= 0) Mmove = 1;
-        var G = category === 'weapon'
+        var G = weaponAction ? 1 : category === 'weapon'
             ? getWeaponSkillCoefForLimb(IE, limbId)
             : getSkillCoefForLimb(IE, limbId, move && move.form);
 
@@ -555,7 +568,9 @@
         if (!isFinite(dom)) dom = 1;
 
         var baseWeapon = 0;
-        if (category === 'unarmed') {
+        if (weaponAction) {
+            baseWeapon = weaponAction.power;
+        } else if (category === 'unarmed') {
             baseWeapon = CA && typeof CA.getFistBasePower === 'function' ? CA.getFistBasePower(sk.primary_attribute || 'jingu') : 0;
         } else if (category === 'weapon') {
             baseWeapon = getWeaponAttackPowerForLimb(IE, limbId);
@@ -586,6 +601,7 @@
         var innate = CA && CA.getInnateAttr ? CA.getInnateAttr(sk.primary_attribute || 'jingu') : 20;
         var baseline = sk.innate_damage_baseline != null ? Number(sk.innate_damage_baseline) : 20;
         var innateBonus = Math.max(0, innate - baseline) * 0.1;
+        if (weaponAction) innateBonus = 0;
         var experienceBonus = IE.getCombatExperienceDamageMultiplier ? IE.getCombatExperienceDamageMultiplier() - 1 : 0;
         var addTerms = [(baseL - 1), Rmove, innateBonus, experienceBonus];
         var increasedSum = sumPositive(addTerms);
@@ -621,7 +637,7 @@
             moveId: moveId,
             limbId: limbId,
             move: move,
-            weaponTpl: getWeaponItemTemplateForLimb(IE, limbId)
+            weaponTpl: category === 'weapon' && !weaponAction ? getWeaponItemTemplateForLimb(IE, limbId) : null
         });
         var typedEval = applyTypedDamageEffects(baseTypedDamage, triEffects);
         var typedDamage = typedEval.typedDamage;
@@ -679,10 +695,11 @@
         if (!isFinite(diqiMax) || diqiMax <= 0) diqiMax = 1;
 
         // 呼吸条（气力）：消耗由挂载呼吸法 action_delta 按动作标签档位给出（招式不再自带气力消耗，见 07/11 8.3.3）
-        var breathCost = computeBreathMoveCost(breathBar, moveId, move && move.required_limb_tags, powerK, qiMax);
+        var breathCost = computeBreathMoveCost(breathBar, moveId, move && (move.action_tags || move.required_limb_tags), powerK, qiMax);
         var qiIntended = breathPlan.consume;
         var qiRestoreAmt = breathPlan.restore;
-        var diqiIntended = computeIntendedResourceCost(diqiMax, move.diqi_cost, powerK) + breathPlan.extraDiqi;
+        var diqiIntended = computeIntendedResourceCost(diqiMax, weaponAction ? global.ModularWeaponCombat.diqiCost(breathBar, move) : move.diqi_cost, powerK) + breathPlan.extraDiqi;
+        if (metaWaivers.indexOf('diqi') >= 0) diqiIntended = 0;
         var qiCurrent = Infinity;
         var diqiCurrent = Infinity;
         if (Surv && typeof Surv.getState === 'function') {
@@ -739,7 +756,9 @@
             typedDamage: typedDamage,
             damageComponents: typedEval.components,
             blockTargetEffects: insufficientDiqi || breathPlan.blockTargetEffects || !!(wt && !wt.canUse),
-            actionConditionBonus: (Kprobe - 1) + (dom - 1) + (G - 1),
+            actionConditionBonus: (Kprobe - 1) + (dom - 1) + (G - 1) + (weaponAction ? weaponAction.damageBonus : 0),
+            weaponAction: weaponAction,
+            moveTemplate: weaponAction ? move : null,
             breathMultiplier: breathMult,
             breathBurst: breathBurst,
             resourceResult: null,
@@ -775,7 +794,7 @@
             forceZeroDamageByResourceInsufficient: forceZeroDamageByResourceInsufficient,
             insufficientQiForIntendedCost: insufficientQi,
             insufficientDiqiForIntendedCost: insufficientDiqi,
-            proficiencyDelta: 1,
+            proficiencyDelta: weaponAction && sk.component_only ? 0 : 1,
             deferredResourceSpend: deferSpend,
             qiIntendedForCommit: qiIntended,
             diqiIntendedForCommit: diqiIntended
@@ -800,8 +819,12 @@
         var tpl = CE && typeof CE.getById === 'function' ? CE.getById(enemyId) : null;
         var Vatk = opts.attackerSpeed != null ? Number(opts.attackerSpeed) : (tpl && tpl.speed != null ? Number(tpl.speed) : 10);
         if (!isFinite(Vatk) || Vatk < 1) Vatk = 10;
-        var Vdef = CA && typeof CA.getCombatSpeed === 'function' ? CA.getCombatSpeed() : 1;
+        var Vdef = opts.defenderSpeed != null ? opts.defenderSpeed : CA && typeof CA.getCombatSpeed === 'function' ? CA.getCombatSpeed() : 1;
         if (!isFinite(Vdef) || Vdef < 1) Vdef = 1;
+        if (global.ModularWeaponCombat && global.ModularWeaponCombat.equipped() && global.CombatInitiative && !opts.speedsResolved) {
+            Vatk = global.CombatInitiative.effectiveSpeed(String(enemyId), Vatk);
+            Vdef = global.CombatInitiative.effectiveSpeed('player', Vdef);
+        }
         var P = CA && typeof CA.getHitRate === 'function' ? CA.getHitRate(Vatk, Vdef) : 0.8;
         // 眼花类（hit_chance_delta_percent）：按敌方自身非增益 Buff 修正其命中率（11-skills 8.3.6 扩展#1）
         if (global.BuffSystem && typeof global.BuffSystem.getHitChanceDeltaPercent === 'function') {
@@ -934,7 +957,11 @@
         limbToWeaponSlot: limbToWeaponSlot,
         getWeaponAttackPowerForLimb: getWeaponAttackPowerForLimb,
         getWeaponSkillCoefForLimb: getWeaponSkillCoefForLimb,
-        resolvePlayerVsEnemyAttack: resolvePlayerVsEnemyAttack,
+        resolvePlayerVsEnemyAttack: function (opts) {
+            var M = global.CombatMetaSkills;
+            function resolve() { var r = resolvePlayerVsEnemyAttack(opts); r.metaSource = opts && opts.metaSource || null; return r; }
+            return M ? M.withSource(opts && opts.metaSource, resolve) : resolve();
+        },
         resolveEnemyVsPlayerAttack: resolveEnemyVsPlayerAttack,
         applyDeferredResourceSpendFromResolveResult: applyDeferredResourceSpendFromResolveResult
     };

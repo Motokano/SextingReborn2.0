@@ -1,0 +1,1 @@
+(async()=>{await new Promise(r=>setTimeout(r,400));const k='ui_windows_moss_c_v1',old=localStorage.getItem(k);sessionStorage.setItem('moss-compact-layout-backup',old||'');const data=old?JSON.parse(old):{version:1,windows:{}};data.windows['win-carry']={x:90,y:120,w:340,h:358,visible:true};localStorage.setItem(k,JSON.stringify(data));return 'isolated old layout staged';})()

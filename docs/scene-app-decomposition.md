@@ -101,7 +101,7 @@ js/combat-world.js  window.CombatWorld
 js/combat-ui.js  window.CombatUI
 ```
 
-契约：`CombatUI.renderModal(ctx)`、`CombatUI.openMovePicker(limbId, opts)`、`CombatUI.openParryVariantPicker(...)`、`CombatUI.deploy(...)`（自 9731–10902 迁入）。UI 事件回调通过 `ctx.actions` 回主 JS，避免反向依赖。
+契约：`CombatUI.renderModal(ctx)`、`CombatUI.openMovePicker(limbId, opts)`、`CombatUI.deploy(...)`（自 9731–10902 迁入）。UI 事件回调通过 `ctx.actions` 回主 JS，避免反向依赖。
 
 ### 2.4 农业 / 畜牧（块 ④⑤）
 

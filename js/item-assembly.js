@@ -120,6 +120,10 @@
             });
         }
         visit(root, 'root', {});
+        if (root.item_id === 'weapon_single_hand_assembly' && global.ForgingRules) {
+            var coverage = global.ForgingRules.coverage(root);
+            if (coverage.errors.length || (requireComplete && !coverage.complete)) errors.push({code:'weapon_coverage_invalid',path:'root'});
+        }
         return { ok: errors.length === 0, errors: errors, instance_count: Object.keys(seen).length };
     }
 
@@ -137,6 +141,7 @@
     }
 
     function isLocked(instanceId) {
+        if (global.ForgingSystem && global.ForgingSystem.isInstanceLocked(instanceId)) return true;
         return !!(global.FishingSession && typeof global.FishingSession.isInstanceLocked === 'function' && global.FishingSession.isInstanceLocked(instanceId));
     }
 
@@ -146,6 +151,7 @@
         if (!IE || typeof IE.findItemInstanceRecord !== 'function' || typeof IE.takeItemFromContainer !== 'function') return { ok: false, reason: 'inventory_unavailable' };
         var hostRecord = IE.findItemInstanceRecord(hostInstanceId);
         if (!hostRecord) return { ok: false, reason: 'host_not_found' };
+        if (hostRecord.instance.item_id === 'weapon_single_hand_assembly') return {ok:false,reason:'forging_station_required'};
         if (isLocked(hostInstanceId)) return { ok: false, reason: 'item_locked' };
         var arr = containerArray(IE, containerType);
         var idx = Math.floor(Number(index));
@@ -181,6 +187,7 @@
         if (!IE || typeof IE.findItemInstanceRecord !== 'function' || typeof IE.putItemIntoDefaultContainer !== 'function') return { ok: false, reason: 'inventory_unavailable' };
         var hostRecord = IE.findItemInstanceRecord(hostInstanceId);
         if (!hostRecord) return { ok: false, reason: 'host_not_found' };
+        if (hostRecord.instance.item_id === 'weapon_single_hand_assembly') return {ok:false,reason:'forging_station_required'};
         if (isLocked(hostInstanceId)) return { ok: false, reason: 'item_locked' };
         var part = getConnectionPart(hostRecord.instance, String(slotId));
         if (!part) return { ok: false, reason: 'slot_empty' };

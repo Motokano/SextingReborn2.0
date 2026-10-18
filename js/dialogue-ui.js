@@ -25,6 +25,15 @@
     var BTN_NEXT_ID = 'dialogue-btn-next';
     var BTN_CLOSE_ID = 'dialogue-btn-close';
 
+    var view = null;
+    function getView() {
+        return { open: isOpen, speakerName: currentSpeakerName, role: currentLineSpeakerRole,
+            avatarUrl: currentAvatarUrl, fallbackGlyph: currentFallbackGlyph, text: visibleText,
+            typing: isTyping, nextLabel: currentNextLabel, nextDisabled: currentNextDisabled,
+            hint: isOpen ? ui('dialogue.hint') : '',
+            options: (Array.isArray(options) && queue.length === 1) ? options.map(function (o) { return { text: o && o.text != null ? String(o.text) : '...' }; }) : [] };
+    }
+    function publish() { if (view) view(getView()); }
     var portraits = {}; // entityId -> url
     var queue = [];
     var isOpen = false;
@@ -50,6 +59,7 @@
     var dialogueOnQueueExhausted = null;
 
     function setDialogueInputBlockerVisible(visible) {
+        if (view) return;
         var b = document.getElementById('dialogue-input-blocker');
         if (!b) return;
         if (visible) {
@@ -141,6 +151,7 @@
     }
 
     function ensureBound() {
+        if (view) return;
         var nextBtn = $(BTN_NEXT_ID);
         var closeBtn = $(BTN_CLOSE_ID);
         // React 模式下，next/close 的点击由 React 处理，避免原生事件导致 next/close 被触发两次。
@@ -159,7 +170,7 @@
         if (!document.__dlgKeyBound) {
             document.__dlgKeyBound = true;
             document.addEventListener('keydown', function (e) {
-                if (!isOpen) return;
+                if (!isOpen || view) return;
                 if (e.key === 'Escape') {
                     e.preventDefault();
                     return;
@@ -168,6 +179,7 @@
                     // 避免在输入框里误触（当前对话框没有输入框，但保持通用）
                     var tag = (e.target && e.target.tagName) ? String(e.target.tagName).toLowerCase() : '';
                     if (tag === 'input' || tag === 'textarea' || tag === 'select') return;
+                    e.preventDefault();
                     next();
                 }
             });
@@ -186,6 +198,7 @@
     }
 
     function renderDialogueText() {
+        if (view) { publish(); return; }
         var nameEl = $(NAME_ID);
         var avatarWrap = $(AVATAR_WRAP_ID);
         var textEl = $(TEXT_ID);
@@ -226,6 +239,7 @@
     }
 
     function mountDialogueTextRenderer() {
+        if (view) return;
         var avatarEl = $(AVATAR_WRAP_ID);
         var panel = $(PANEL_ID);
         var actionsEl = panel ? panel.querySelector('.dlg-actions') : null;
@@ -282,6 +296,10 @@
     }
 
     function open() {
+        if (view) {
+            if (global.UIWindows) global.UIWindows.forceVisible('win-dialogue');
+            isOpen = true; renderCurrent(); return;
+        }
         ensureBound();
         var panel = $(PANEL_ID);
         if (!panel) return;
@@ -307,6 +325,12 @@
     }
 
     function close() {
+        if (view) {
+            isOpen = false; queue = []; options = null; optionsContext = null; lastLoggedKey = null;
+            clearTypingTimer(); isTyping = false; fullText = visibleText = '';
+            currentSpeakerName = currentLineSpeakerRole = currentAvatarUrl = currentNextLabel = '';
+            currentNextDisabled = false; dialogueOnQueueExhausted = null; publish(); return;
+        }
         var panel = $(PANEL_ID);
         if (!panel) {
             setDialogueInputBlockerVisible(false);
@@ -464,6 +488,7 @@
     }
 
     function clearOptionsUi() {
+        if (view) return;
         var wrap = $(OPTIONS_ID);
         if (!wrap) return;
         if (!(global.DialogueReactView && typeof global.DialogueReactView.render === 'function')) {
@@ -475,6 +500,7 @@
     }
 
     function onChooseOption(index) {
+        if (!isOpen || queue.length !== 1) return;
         if (!Array.isArray(options) || index < 0 || index >= options.length) return;
         var opt = options[index];
         var next = opt && opt.next;
@@ -530,6 +556,26 @@
     }
 
     function renderCurrent() {
+        if (view) {
+            var line = queue[0];
+            if (!line) { publish(); return; }
+            currentLineSpeakerRole = line.speakerRole || '';
+            currentSpeakerName = currentLineSpeakerRole === 'narration' ? '' : (line.speakerName || '');
+            currentAvatarUrl = '';
+            currentFallbackGlyph = currentLineSpeakerRole === 'narration' ? '' : '?';
+            currentNextDisabled = !!(options && options.length && queue.length === 1);
+            currentNextLabel = ui(queue.length > 1 ? 'dialogue.next' : 'dialogue.end');
+            if (global.DialoguePawn && currentLineSpeakerRole !== 'narration') {
+                global.DialoguePawn.resolve(line.speakerRole, line.speakerId || normalizeEntityId(line.speakerRole, null)).then(function (url) {
+                    if (!isOpen || queue[0] !== line) return;
+                    currentAvatarUrl = url || ''; publish();
+                }).catch(function () {});
+            }
+            startTyping(line.text || '');
+            var key = String(line.speakerName || '') + '|' + String(line.text || '');
+            if (key && key !== lastLoggedKey) { lastLoggedKey = key; logDialogueLine(line.speakerName || '', line.text || ''); }
+            return;
+        }
         var nameEl = $(NAME_ID);
         var textEl = $(TEXT_ID);
         var avatarWrap = $(AVATAR_WRAP_ID);
@@ -661,6 +707,10 @@
     }
 
     global.DialogueUI = {
+        attachView: function (render) { view = render; publish(); return function () { close(); view = null; }; },
+        getView: getView,
+        next: next,
+        choose: onChooseOption,
         open: open,
         close: close,
         say: say,

@@ -1,8 +1,17 @@
 /* Explicit in-game confirmation; no browser-native confirm dependency. */
 (function(g){
  'use strict';
- var current=null;
+ var current=null, view=null, request=null, busy=false, error='';
+ function publish(){if(view)view({open:!!request,message:request ? request.message : '',busy:busy,error:error});}
+ function closeManaged(){if(!request)return;var button=request.button;request=null;busy=false;error='';publish();if(button)button.focus();}
+ function confirmManaged(){
+  if(!request||busy)return;busy=true;error='';publish();
+  var ok=false;try{ok=request.clear()===true;}catch(e){ok=false;}
+  if(!ok){error='未能完整清除本机存档，请重试。页面尚未重新载入。';busy=false;publish();return;}
+  request.reload();
+ }
  function open(options){
+  if(view){if(request)return;request=options;busy=false;error='';publish();return;}
   if(current)return;
   var dialog=document.createElement('dialog');current=dialog;
   dialog.setAttribute('aria-labelledby','reset-progress-title');
@@ -25,5 +34,5 @@
   });
   document.body.appendChild(dialog);dialog.showModal();cancel.focus();
  }
- g.ResetProgressDialog={open:open,isOpen:function(){return !!current;}};
+ g.ResetProgressDialog={open:open,isOpen:function(){return !!current||!!request;},attachView:function(render){view=render;publish();return function(){request=null;view=null;};},close:closeManaged,confirm:confirmManaged};
 })(window);

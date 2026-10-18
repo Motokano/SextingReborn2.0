@@ -828,13 +828,13 @@
                 if (disclosure.open && other) other.open = false;
             });
         });
-        var abPharmacy = document.getElementById('action-bar-pharmacy');
+        var abPharmacy = !window.SvelteInteractions && document.getElementById('action-bar-pharmacy');
         if (abPharmacy) {
             abPharmacy.addEventListener('click', function () {
                 if (pharmacyStationPanelOpen) closePharmacyStationPanel(); else openPharmacyStationPanel();
             });
         }
-        var bubPharmacy = document.getElementById('player-action-pharmacy');
+        var bubPharmacy = !window.SvelteInteractions && document.getElementById('player-action-pharmacy');
         if (bubPharmacy) {
             bubPharmacy.addEventListener('click', function () {
                 if (!pharmacyStationPanelOpen) openPharmacyStationPanel();

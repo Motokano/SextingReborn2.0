@@ -198,11 +198,15 @@
             if (!blockId) return;
             this.leftHudBlockVisibilityRules = this.leftHudBlockVisibilityRules || {};
             this.leftHudBlockVisibilityRules[blockId] = rule;
+            if (window.SvelteCarryPilot) window.SvelteCarryPilot.invalidate();
+            if (window.SvelteHUD) window.SvelteHUD.invalidate();
         },
         setSurvivalMetricVisibilityRule: function (metricId, rule) {
             if (!metricId) return;
             this.survivalMetricVisibilityRules = this.survivalMetricVisibilityRules || {};
             this.survivalMetricVisibilityRules[String(metricId)] = rule;
+            if (window.SvelteCarryPilot) window.SvelteCarryPilot.invalidate();
+            if (window.SvelteHUD) window.SvelteHUD.invalidate();
         },
         shouldShowLeftHudBlock: function (blockId) {
             if (blockId === 'buff_hud') {
@@ -316,6 +320,7 @@
         if (window.CookingRepairPanel && window.CookingRepairPanel.isOpen()) return true;
         if (window.ToolbenchPanel && window.ToolbenchPanel.isOpen()) return true;
         if (window.SewingStationPanel && window.SewingStationPanel.isOpen()) return true;
+        if (window.ForgingStationPanel && window.ForgingStationPanel.isOpen()) return true;
         if (window.FacilityLaborPanel && window.FacilityLaborPanel.isOpen()) return true;
         if (window.HuntingPanel && window.HuntingPanel.isOpen()) return true;
         if (window.FishingPanel && window.FishingPanel.isOpen()) return true;
@@ -654,6 +659,7 @@
             var runtimeItems = (window.ItemAttributeModules && typeof window.ItemAttributeModules.hydrateCatalog === 'function')
                 ? window.ItemAttributeModules.hydrateCatalog(arr[3])
                 : ((arr[3] && arr[3].items && typeof arr[3].items === 'object') ? arr[3].items : arr[3]);
+            if (window.ForgingConfig) Object.assign(runtimeItems, window.ItemAttributeModules.hydrateCatalog(window.ForgingConfig.catalog));
             G.setConfig({
                 gathering_points: arr[1],
                 loot_tables: arr[2],
@@ -893,6 +899,12 @@
         return Math.max(0, 100 - sum);
     }
 
+    var creationView = null;
+    var creationVisible = false;
+    function publishCreation() {
+        if (creationView) creationView({ open: creationVisible, innate: Object.assign({}, creationInnate), free: getCreationFreePoints(), max: CREATION_ATTR_MAX,
+            height: clampCreationHeightCm(window.Survival && window.Survival.getConfigValue ? window.Survival.getConfigValue('height_cm_default', CREATION_HEIGHT_DEFAULT) : CREATION_HEIGHT_DEFAULT) });
+    }
     function updateCreationPointsDisplay() {
         var el = document.getElementById('creation-points');
         if (!el) return;
@@ -935,6 +947,7 @@
             dexterity: state.innate.dexterity != null ? Math.min(CREATION_ATTR_MAX, Math.max(0, state.innate.dexterity)) : 1,
             focus: state.innate.focus != null ? Math.min(CREATION_ATTR_MAX, Math.max(0, state.innate.focus)) : 1
         };
+        if (creationView) { publishCreation(); return; }
         var container = document.getElementById('creation-attr-rows');
         if (!container) return;
         container.innerHTML = '';
@@ -1029,11 +1042,22 @@
             btnConfirm.__sceneAppCreationConfirmBound = true;
             btnConfirm.onclick = function () {
             if (btnConfirm.disabled) return;
-            var name = (nameEl && nameEl.value) ? String(nameEl.value).trim() : '';
+            confirmCreation({ name: nameEl && nameEl.value, height: document.getElementById('creation-height').value,
+                hand: document.querySelector('input[name="creation-hand"]:checked').value,
+                leg: document.querySelector('input[name="creation-leg"]:checked').value,
+                gender: document.querySelector('input[name="creation-gender"]:checked').value });
+        };
+        }
+    }
+
+    function confirmCreation(draft) {
+        var CA = window.CharacterAttributes;
+            if (!creationVisible || (CA.isCharacterCreationCompleted && CA.isCharacterCreationCompleted())) return false;
+            var name = String(draft.name || '').trim().slice(0, 20);
             if (!name) return;
             if (getCreationFreePoints() > 0) {
                 randomDistributeCreationRemainingPoints();
-                refreshCreationAllRows();
+                publishCreation();
                 if (window.GameLog) window.GameLog.log(ui('log.system.creation.points.auto'), 'system');
             }
             if (typeof IE.initNewGame === 'function') {
@@ -1041,13 +1065,9 @@
                 if (window.GameLog) window.GameLog.log(ui('log.system.starter.equip'), 'system');
             }
             resetCookingStateForNewCharacter();
-            var handEl = document.querySelector('input[name="creation-hand"]:checked');
-            var legEl = document.querySelector('input[name="creation-leg"]:checked');
-            var genderEl = document.querySelector('input[name="creation-gender"]:checked');
-            var heightEl = document.getElementById('creation-height');
-            var heightCm = clampCreationHeightCm(heightEl && heightEl.value != null ? heightEl.value : CREATION_HEIGHT_DEFAULT);
+            var heightCm = clampCreationHeightCm(draft.height);
             var initWeightKg = computeCreationDefaultWeightKg(heightCm);
-            var gender = (genderEl && genderEl.value === 'female') ? 'female' : 'male';
+            var gender = (draft.gender === 'female') ? 'female' : 'male';
             var prevHidden = [];
             try {
                 var pst = CA.getState();
@@ -1062,8 +1082,8 @@
                 characterGender: gender,
                 character_creation_completed: true,
                 innate: { jingu: creationInnate.jingu, flexibility: creationInnate.flexibility, breath: creationInnate.breath, dexterity: creationInnate.dexterity, focus: creationInnate.focus },
-                dominant_hand: (handEl && handEl.value === 'left') ? 'left' : 'right',
-                dominant_leg: (legEl && legEl.value === 'left') ? 'left' : 'right',
+                dominant_hand: (draft.hand === 'left') ? 'left' : 'right',
+                dominant_leg: (draft.leg === 'left') ? 'left' : 'right',
                 hidden_epithets: prevHidden
             });
             if (window.Survival && window.Survival.setState) {
@@ -1092,16 +1112,19 @@
             }
             if (window.GameLog) window.GameLog.log(ui('log.system.creation.done', { name: name }), 'system');
             render();
-        };
-        }
+        return true;
     }
 
     function hideCreationOverlay() {
+        creationVisible = false;
+        if (creationView) { publishCreation(); return; }
         var el = document.getElementById('character-creation-overlay');
         if (el) el.classList.add('hidden');
     }
 
     function showCreationOverlay() {
+        creationVisible = true;
+        if (creationView) { publishCreation(); return; }
         var el = document.getElementById('character-creation-overlay');
         if (el) el.classList.remove('hidden');
     }
@@ -1187,6 +1210,7 @@
 
     function setTimeHudVisible(visible) {
         timeHudVisible = (visible !== false);
+        if (window.SvelteHUD) { window.SvelteHUD.invalidate('environment'); return; }
         var wrap = document.getElementById('top-hud');
         if (wrap) wrap.style.display = timeHudVisible ? '' : 'none';
     }
@@ -1216,6 +1240,7 @@
         return ui('survival.thirst.dehydrated');
     }
     function updateLimbBlock() {
+        if (window.SvelteHUD) { window.SvelteHUD.invalidate('body'); return; }
         var container = document.getElementById('limb-rows');
         if (!container || !BODY_PART_IDS || !BODY_PART_LABELS) return;
         var CA0 = window.CharacterAttributes;
@@ -1482,6 +1507,7 @@
     }
 
     function bindQuickBarPinSlotsOnce() {
+        if (window.SvelteInteractions) return;
         if (bindQuickBarPinSlotsOnce._done) return;
         bindQuickBarPinSlotsOnce._done = true;
         var si;
@@ -1551,6 +1577,7 @@
     }
 
     function closePlayerActionsSubmenu() {
+        if (actionsView) { playerActionsSubmenuOpen = false; publishActions(); return; }
         var sub = document.getElementById('player-actions-submenu');
         if (!sub) return;
         sub.classList.remove('open');
@@ -1558,18 +1585,23 @@
         playerActionsSubmenuOpen = false;
     }
 
-    function rebuildPlayerActionsSubmenu(sub) {
+    function buildPlayerActionsItems() {
         var IE = window.InventoryEquipment;
         var CS = window.CombatSkills;
         var Surv = window.Survival;
         var CHA = window.CombatHubActions;
-        sub.innerHTML = '';
-        if (!IE) return;
+        var sub = { children: [] };
+        if (!IE) return sub.children;
+        if (window.ForgingSystem && window.ForgingSystem.snapshot().items.some(function(x){return x.item_id === 'tool_repair_roll';})) {
+            var repairButton={kind:'button',children:[],attrs:{role:'menuitem'},type:'button',className:'player-action-item',textContent:'维修武器'};
+            repairButton.disabled=!!(window.CombatEngagement && window.CombatEngagement.isPlayerInCombat());
+            repairButton.onclick=function(ev){ev.stopPropagation();closePlayerActionsSubmenu();window.ForgingStationPanel.open({repair:true});};sub.children.push(repairButton);
+        }
         if(window.HuntingPanel && /Base|^home$/.test(E.getState().mapId)){
-            var craftTitle=document.createElement('div');craftTitle.textContent='制作';craftTitle.className='player-action-craft-title';sub.appendChild(craftTitle);
-            var craftButton=document.createElement('button');craftButton.type='button';craftButton.className='player-action-item';craftButton.setAttribute('role','menuitem');craftButton.textContent='捕猎用品';
-            craftButton.disabled=!window.HuntingPanel.canOpenCrafting();craftButton.onclick=function(ev){ev.stopPropagation();closePlayerActionsSubmenu();window.HuntingPanel.openCrafting();};sub.appendChild(craftButton);
-            var actionTitle=document.createElement('div');actionTitle.textContent='常用动作';actionTitle.className='player-action-craft-title';sub.appendChild(actionTitle);
+            var craftTitle={ kind: 'div', children: [], attrs: {} };craftTitle.textContent='制作';craftTitle.className='player-action-craft-title';sub.children.push(craftTitle);
+            var craftButton={ kind: 'button', children: [], attrs: {} };craftButton.type='button';craftButton.className='player-action-item';craftButton.attrs['role'] = 'menuitem';craftButton.textContent='捕猎用品';
+            craftButton.disabled=!window.HuntingPanel.canOpenCrafting();craftButton.onclick=function(ev){ev.stopPropagation();closePlayerActionsSubmenu();window.HuntingPanel.openCrafting();};sub.children.push(craftButton);
+            var actionTitle={ kind: 'div', children: [], attrs: {} };actionTitle.textContent='常用动作';actionTitle.className='player-action-craft-title';sub.children.push(actionTitle);
         }
         var breathId = 'combat_basic_breath';
         var footworkId = 'combat_basic_footwork';
@@ -1577,34 +1609,34 @@
         if (Surv && typeof Surv.getState === 'function' && typeof Surv.setResting === 'function') {
             var survState = Surv.getState() || {};
             var isResting = !!survState.isResting;
-            var btnRest = document.createElement('button');
+            var btnRest = { kind: 'button', children: [], attrs: {} };
             btnRest.type = 'button';
             btnRest.className = 'player-action-item';
-            btnRest.setAttribute('role', 'menuitem');
+            btnRest.attrs['role'] = 'menuitem';
             btnRest.textContent = isResting ? ui('player.action.rest.stop') : ui('player.action.rest.start');
             btnRest.title = isResting ? ui('player.action.rest.stop.hint') : ui('player.action.rest.start.hint');
-            btnRest.addEventListener('click', function (ev) {
+            btnRest.onclick = function (ev) {
                 ev.stopPropagation();
                 setRestingActionActive(!isResting, { showMsg: true });
                 closePlayerActionsSubmenu();
                 if (window.SceneRenderer) window.SceneRenderer.render();
                 SceneHud.refresh('status');
-            });
-            var restRow = document.createElement('div');
+            };
+            var restRow = { kind: 'div', children: [], attrs: {} };
             restRow.className = 'player-action-item-row';
-            restRow.appendChild(btnRest);
-            var pinRest = document.createElement('button');
+            restRow.children.push(btnRest);
+            var pinRest = { kind: 'button', children: [], attrs: {} };
             pinRest.type = 'button';
             pinRest.className = 'player-action-pin';
-            pinRest.setAttribute('aria-label', ui('action.bar.pin.hint'));
+            pinRest.attrs['aria-label'] = ui('action.bar.pin.hint');
             pinRest.title = ui('action.bar.pin.hint');
             pinRest.textContent = '📌';
-            pinRest.addEventListener('click', function (ev) {
+            pinRest.onclick = function (ev) {
                 ev.stopPropagation();
                 pinActionToQuickBar('rest_toggle');
-            });
-            restRow.appendChild(pinRest);
-            sub.appendChild(restRow);
+            };
+            restRow.children.push(pinRest);
+            sub.children.push(restRow);
         }
         var breathLv = typeof IE.getSkillLevel === 'function' ? IE.getSkillLevel(breathId) : 0;
         if (CS && breathLv >= 1) {
@@ -1620,10 +1652,10 @@
                     var ha = sk.hub_actions[i];
                     var ul = ha.unlock_level != null ? ha.unlock_level : 1;
                     if (breathLv < ul) continue;
-                    var btnRow = document.createElement('button');
+                    var btnRow = { kind: 'button', children: [], attrs: {} };
                     btnRow.type = 'button';
                     btnRow.className = 'player-action-item';
-                    btnRow.setAttribute('role', 'menuitem');
+                    btnRow.attrs['role'] = 'menuitem';
                     btnRow.textContent = ha.name || ha.id;
                     var cd = IE.getHubActionCooldownRemaining ? IE.getHubActionCooldownRemaining(breathId, ha.id) : 0;
                     var cdCfg = ha.cooldown_ticks != null ? parseInt(ha.cooldown_ticks, 10) : 0;
@@ -1652,10 +1684,10 @@
                     }
                     btnRow.disabled = !!dis;
                     if (hint) btnRow.title = hint;
-                    var rowWrap = document.createElement('div');
+                    var rowWrap = { kind: 'div', children: [], attrs: {} };
                     rowWrap.className = 'player-action-item-row';
                     (function (actionId) {
-                        btnRow.addEventListener('click', function (ev) {
+                        btnRow.onclick = function (ev) {
                             ev.stopPropagation();
                             if (actionId === 'tiao_xi_once') {
                                 if (tiaoXiIdleTimer) {
@@ -1706,26 +1738,26 @@
                             closePlayerActionsSubmenu();
                             if (window.SceneRenderer) window.SceneRenderer.render();
                             SceneHud.refresh('status');
-                        });
+                        };
                     })(ha.id);
-                    rowWrap.appendChild(btnRow);
-                    var pinBtn = document.createElement('button');
+                    rowWrap.children.push(btnRow);
+                    var pinBtn = { kind: 'button', children: [], attrs: {} };
                     pinBtn.type = 'button';
                     pinBtn.className = 'player-action-pin';
-                    pinBtn.setAttribute('aria-label', ui('action.bar.pin.hint'));
+                    pinBtn.attrs['aria-label'] = ui('action.bar.pin.hint');
                     pinBtn.title = ui('action.bar.pin.hint');
                     pinBtn.textContent = '📌';
                     // 收藏与执行状态解耦：只要已解锁且挂载即可收藏（冷却/盾未破等瞬时状态不影响收藏）
                     pinBtn.disabled = !mounted || breathLv < ul;
                     (function (pinEl, actionIdForPin) {
-                        pinEl.addEventListener('click', function (ev) {
+                        pinEl.onclick = function (ev) {
                             ev.stopPropagation();
                             if (pinEl.disabled) return;
                             pinHubToQuickBar(breathId, actionIdForPin);
-                        });
+                        };
                     })(pinBtn, ha.id);
-                    rowWrap.appendChild(pinBtn);
-                    sub.appendChild(rowWrap);
+                    rowWrap.children.push(pinBtn);
+                    sub.children.push(rowWrap);
                 }
             }
         }
@@ -1735,10 +1767,10 @@
             var nieCd = IE.getHubActionCooldownRemaining ? IE.getHubActionCooldownRemaining(footworkId, 'nie_bu') : 0;
             var hubFw = hubs.footwork === footworkId;
             var inNie = window.SceneCtx && window.SceneCtx.footworkNieBuMode;
-            var btnNie = document.createElement('button');
+            var btnNie = { kind: 'button', children: [], attrs: {} };
             btnNie.type = 'button';
             btnNie.className = 'player-action-item';
-            btnNie.setAttribute('role', 'menuitem');
+            btnNie.attrs['role'] = 'menuitem';
             if (nieCd > 0) {
                 btnNie.textContent = ui('player.action.niebu.cooldown', { ticks: nieCd });
                 btnNie.disabled = true;
@@ -1752,35 +1784,51 @@
                 btnNie.disabled = false;
                 btnNie.title = inNie ? ui('player.action.niebu.cancel') : ui('player.action.niebu.hint');
             }
-            btnNie.addEventListener('click', function (ev) {
+            btnNie.onclick = function (ev) {
                 ev.stopPropagation();
                 if (btnNie.disabled) return;
                 toggleFootworkNieBuModeFromMenu();
                 closePlayerActionsSubmenu();
                 if (window.SceneRenderer) window.SceneRenderer.render();
                 SceneHud.refresh('status');
-            });
-            var nieRow = document.createElement('div');
+            };
+            var nieRow = { kind: 'div', children: [], attrs: {} };
             nieRow.className = 'player-action-item-row';
-            nieRow.appendChild(btnNie);
-            var pinNie = document.createElement('button');
+            nieRow.children.push(btnNie);
+            var pinNie = { kind: 'button', children: [], attrs: {} };
             pinNie.type = 'button';
             pinNie.className = 'player-action-pin';
-            pinNie.setAttribute('aria-label', ui('action.bar.pin.hint'));
+            pinNie.attrs['aria-label'] = ui('action.bar.pin.hint');
             pinNie.title = ui('action.bar.pin.hint');
             pinNie.textContent = '📌';
             pinNie.disabled = !!btnNie.disabled;
-            pinNie.addEventListener('click', function (ev) {
+            pinNie.onclick = function (ev) {
                 ev.stopPropagation();
                 if (pinNie.disabled) return;
                 pinHubToQuickBar(footworkId, 'nie_bu');
-            });
-            nieRow.appendChild(pinNie);
-            sub.appendChild(nieRow);
+            };
+            nieRow.children.push(pinNie);
+            sub.children.push(nieRow);
         }
+        return sub.children;
+    }
+
+    var actionsView = null;
+    function publishActions() { if (actionsView) actionsView({ open: playerActionsSubmenuOpen, items: playerActionsSubmenuOpen ? buildPlayerActionsItems() : [], label: ui('btn.player.actions.title') }); }
+    function rebuildPlayerActionsSubmenu(sub) {
+        sub.replaceChildren();
+        function append(parent, item) {
+            var el = document.createElement(item.kind); el.className = item.className || ''; el.textContent = item.textContent || '';
+            el.disabled = !!item.disabled; el.title = item.title || ''; if (item.type) el.type = item.type;
+            Object.keys(item.attrs).forEach(function (key) { el.setAttribute(key, item.attrs[key]); });
+            if (item.onclick) el.onclick = item.onclick;
+            item.children.forEach(function (child) { append(el, child); }); parent.appendChild(el);
+        }
+        buildPlayerActionsItems().forEach(function (item) { append(sub, item); });
     }
 
     function openPlayerActionsSubmenu() {
+        if (actionsView) { playerActionsSubmenuOpen = true; publishActions(); return; }
         var sub = document.getElementById('player-actions-submenu');
         if (!sub) return;
         rebuildPlayerActionsSubmenu(sub);
@@ -1790,6 +1838,7 @@
     }
 
     function refreshPlayerActionsMenuUi() {
+        if (actionsView) { publishActions(); return; }
         var wrap = document.getElementById('player-actions-hud-wrap');
         var btn = document.getElementById('btn-player-actions');
         var sub = document.getElementById('player-actions-submenu');
@@ -1844,6 +1893,16 @@
             else stopRestIdleTimer();
         } else {
             stopRestIdleTimer();
+        }
+        // Preserve status-side gameplay work above; only the old HUD DOM writer exits.
+        if (window.SvelteHUD) {
+            var beltKnown = !window.SceneCtx || window.SceneCtx.shouldShowLeftHudBlock('quick_belt');
+            var belt = document.getElementById('quick-belt-dock');
+            if (belt) belt.style.display = beltKnown ? '' : 'none';
+            updateRoleNameFromCharacter();
+            refreshPlayerActionsMenuUi();
+            window.SvelteHUD.invalidate();
+            return;
         }
         function getEnemyDisplayName(enemyId) {
             var id = enemyId != null ? String(enemyId) : '';
@@ -2074,8 +2133,9 @@
         var nutritionBar = document.getElementById('status-nutrition-bar');
         var dirtynessEl = document.getElementById('status-dirtyness');
         var dirtynessBar = document.getElementById('status-dirtyness-bar');
-        var weightEl = document.getElementById('status-weight');
-        if (!satietyText || !weightEl) {
+        var carryOwned = window.SvelteCarryPilot && window.SvelteCarryPilot.owns('carry');
+        var weightEl = carryOwned ? null : document.getElementById('status-weight');
+        if (!satietyText || (!weightEl && !carryOwned)) {
             refreshPlayerActionsMenuUi();
             return;
         }
@@ -2090,7 +2150,7 @@
             setSurvivalMetricDisplay('status-metric-energy', shouldShowSurvivalMetric('energy', s));
             setSurvivalMetricDisplay('status-metric-stamina', shouldShowSurvivalMetric('stamina', s));
             setSurvivalMetricDisplay('status-metric-fatigue', shouldShowSurvivalMetric('fatigue', s));
-            setSurvivalMetricDisplay('status-metric-weight', shouldShowSurvivalMetric('weight', s));
+            if (!carryOwned) setSurvivalMetricDisplay('status-metric-weight', shouldShowSurvivalMetric('weight', s));
 
             var zone = Surv.getSatietyZone ? Surv.getSatietyZone() : 'normal';
             satietyText.textContent = getSatietyLabel(zone);
@@ -2214,8 +2274,8 @@
                 }
             }
 
-            weightEl.textContent = s.weight_kg + ' kg';
-            var carryEl = document.getElementById('status-carry');
+            if (weightEl) weightEl.textContent = s.weight_kg + ' kg';
+            var carryEl = carryOwned ? null : document.getElementById('status-carry');
             var potentialEl = document.getElementById('status-potential');
             var combatExpEl = document.getElementById('status-combat-experience');
             if (carryEl) {
@@ -2269,7 +2329,7 @@
             setSurvivalMetricDisplay('status-metric-energy', shouldShowSurvivalMetric('energy', null));
             setSurvivalMetricDisplay('status-metric-stamina', shouldShowSurvivalMetric('stamina', null));
             setSurvivalMetricDisplay('status-metric-fatigue', shouldShowSurvivalMetric('fatigue', null));
-            setSurvivalMetricDisplay('status-metric-weight', shouldShowSurvivalMetric('weight', null));
+            if (!carryOwned) setSurvivalMetricDisplay('status-metric-weight', shouldShowSurvivalMetric('weight', null));
             if (gatherState) {
                 staminaText.textContent = gatherState.stamina + ' / ' + gatherState.stamina_max;
                 staminaBar.style.width = (gatherState.stamina_max > 0 ? (gatherState.stamina / gatherState.stamina_max * 100) : 0) + '%';
@@ -2299,8 +2359,8 @@
                 dirtynessEl.className = 'value';
             }
             if (dirtynessBar) dirtynessBar.style.width = '0%';
-            weightEl.textContent = '—';
-            var carryEl = document.getElementById('status-carry');
+            if (weightEl) weightEl.textContent = '—';
+            var carryEl = carryOwned ? null : document.getElementById('status-carry');
             var potentialEl = document.getElementById('status-potential');
             var combatExpEl = document.getElementById('status-combat-experience');
             if (carryEl) {
@@ -2332,6 +2392,7 @@
 
     /** 制药状态行（47 §4.1 成瘾可见条 + §9.2 体内毒性；k242/k240）。 */
     function refreshPharmacyStatusRows() {
+        if (window.SvelteHUD) { window.SvelteHUD.invalidate('battle'); return; }
         var PE = window.PharmacyEffects;
         var addEl = document.getElementById('status-addiction-text');
         if (addEl) {
@@ -3186,6 +3247,7 @@
     var DEFAULT_COOKING_INSTALLED_ACCESSORIES = [];
 
     function resetCookingStateForNewCharacter() {
+        if (window.CombatMetaSkills) window.CombatMetaSkills.reset();
         if (window.Hunting) window.Hunting.setState(null);
         if (window.FishingSession) window.FishingSession.setState(null);
         if (window.FishingPond) window.FishingPond.setState(null);
@@ -3501,6 +3563,7 @@
     };
 
     function updateBackpackPanel() {
+        if (window.SveltePanels) { window.SveltePanels.refresh('backpack'); return; }
         if (!IE) return;
         var char = IE.getCharacterForDisplay ? IE.getCharacterForDisplay() : null;
         var st = E.getState();
@@ -3581,23 +3644,29 @@
             return rows[0];
         }
 
-        function doEquipFromContainer(containerType, idx, tpl) {
+        function doEquipFromContainer(containerType, idx, tpl, preferredSlot) {
             if (!tpl || !tpl.equip_slot || !IE || typeof IE.takeItemFromContainer !== 'function') return;
             var posNow = E.getState ? E.getState() : groundPos;
+            var slotId = preferredSlot || tpl.equip_slot;
+            var row = getContainerRows(containerType).find(function (r) { return r.index === idx; });
+            if (window.ModularWeaponCombat && window.ModularWeaponCombat.isWeapon(row && row.item)) {
+                var check = window.ModularWeaponCombat.validateEquip(row.item, slotId);
+                if (!check.success) { showMsg(check.message, 'warn'); return; }
+            }
             var taken = IE.takeItemFromContainer(containerType, idx);
             if (!taken.success || !taken.item) return;
             var itemToEquip = taken.item;
             if (itemToEquip && itemToEquip.count != null) itemToEquip.count = 1;
             var stNow = IE.getState ? IE.getState() : {};
-            var currentEq = (stNow && stNow.equipment) ? stNow.equipment[tpl.equip_slot] : null;
+            var currentEq = (stNow && stNow.equipment) ? stNow.equipment[slotId] : null;
             if (currentEq) {
-                var unequipped = IE.unequip(tpl.equip_slot, posNow);
+                var unequipped = IE.unequip(slotId, posNow);
                 if (unequipped) {
                     var placedOld = IE.putItemIntoDefaultContainer(unequipped);
                     if (!placedOld || !placedOld.placed) IE.addItemToGround(posNow.mapId, posNow.x, posNow.y, unequipped);
                 }
             }
-            var res = IE.equip(tpl.equip_slot, itemToEquip);
+            var res = IE.equip(slotId, itemToEquip);
             if (!res || !res.success) {
                 var placedNew = IE.putItemIntoDefaultContainer(itemToEquip);
                 if (!placedNew || !placedNew.placed) IE.addItemToGround(posNow.mapId, posNow.x, posNow.y, itemToEquip);
@@ -3810,7 +3879,10 @@
                     }
                 }
                 if (disp.tpl && disp.tpl.equip_slot) {
-                    addActionBtn(ui('inv.equip'), function () { doEquipFromContainer(picked.source, picked.index, disp.tpl); });
+                    if (window.ModularWeaponCombat && window.ModularWeaponCombat.isWeapon(picked.item)) {
+                        addActionBtn('右手持用', function () { doEquipFromContainer(picked.source, picked.index, disp.tpl, 'weapon_right'); });
+                        addActionBtn('左手持用', function () { doEquipFromContainer(picked.source, picked.index, disp.tpl, 'weapon_left'); });
+                    } else addActionBtn(ui('inv.equip'), function () { doEquipFromContainer(picked.source, picked.index, disp.tpl); });
                 }
                 addActionBtn(ui('inv.drop'), function () {
                     var pos = E.getState();
@@ -3831,13 +3903,17 @@
                     render();
                 });
                 if (disp.tpl && disp.tpl.equip_slot) {
-                    addActionBtn(ui('inv.equip'), function () {
-                        var r1 = IE.equipFromGround(st.mapId, st.x, st.y, picked.index);
-                        if (r1.success) showMsg(ui('log.success.equipped'), 'success');
-                        else if (r1.message) showMsg(r1.message, 'warn');
-                        markCellDirty(st.mapId, st.x, st.y);
-                        updateBackpackPanel();
-                        render();
+                    var handChoices = window.ModularWeaponCombat && window.ModularWeaponCombat.isWeapon(picked.item)
+                        ? [['右手持用', 'weapon_right'], ['左手持用', 'weapon_left']] : [[ui('inv.equip'), disp.tpl.equip_slot]];
+                    handChoices.forEach(function (choice) {
+                        addActionBtn(choice[0], function () {
+                            var r1 = IE.equipFromGround(st.mapId, st.x, st.y, picked.index, choice[1]);
+                            if (r1.success) showMsg(ui('log.success.equipped'), 'success');
+                            else if (r1.message) showMsg(r1.message, 'warn');
+                            markCellDirty(st.mapId, st.x, st.y);
+                            updateBackpackPanel();
+                            render();
+                        });
                     });
                 }
             }
@@ -4154,7 +4230,8 @@
         if (backpackPanelOpen) return;
         if (window.Survival && typeof window.Survival.advanceTick === 'function') window.Survival.advanceTick();
         backpackPanelOpen = true;
-        document.getElementById('modal-backpack').classList.add('show');
+        if (window.SveltePanels) window.SveltePanels.refresh('backpack');
+        if (!window.SveltePanels) document.getElementById('modal-backpack').classList.add('show');
         updateBackpackPanel();
         render();
     }
@@ -4162,7 +4239,8 @@
         if (!backpackPanelOpen) return;
         if (window.Survival && typeof window.Survival.advanceTick === 'function') window.Survival.advanceTick();
         backpackPanelOpen = false;
-        document.getElementById('modal-backpack').classList.remove('show');
+        if (window.SveltePanels) window.SveltePanels.refresh('backpack');
+        if (!window.SveltePanels) document.getElementById('modal-backpack').classList.remove('show');
         render();
     }
     if (document.getElementById('btn-backpack')) {
@@ -5334,10 +5412,7 @@
         });
     })();
 
-    (function () {
-        var btn = document.getElementById('btn-reset-demo-save');
-        if (!btn) return;
-        btn.addEventListener('click', function () {
+    function requestResetProgress(btn) {
             window.ResetProgressDialog.open({
                 button: btn,
                 message: ui('confirm.reset.demo'),
@@ -5353,7 +5428,10 @@
                 },
                 reload: function () { window.location.reload(); }
             });
-        });
+    }
+    (function () {
+        var btn = document.getElementById('btn-reset-demo-save');
+        if (btn) btn.addEventListener('click',function () { requestResetProgress(btn); });
     })();
     if (document.getElementById('backpack-panel-close')) {
         document.getElementById('backpack-panel-close').addEventListener('click', closeBackpackPanel);
@@ -5362,6 +5440,7 @@
     var baseWarehousePanelOpen = false;
 
     function buildBaseWarehouseList(filterStr) {
+        if (window.SveltePanels) { window.SveltePanels.refresh('warehouse', filterStr); return; }
         var el = document.getElementById('base-warehouse-list');
         if (!el) return;
         var IE = window.InventoryEquipment;
@@ -5442,15 +5521,16 @@
         if (baseWarehousePanelOpen) return;
         if (window.Survival && typeof window.Survival.advanceTick === 'function') window.Survival.advanceTick();
         baseWarehousePanelOpen = true;
+        if (window.SveltePanels) window.SveltePanels.refresh('warehouse');
         var modal = document.getElementById('modal-base-warehouse');
-        if (modal) {
+        if (modal && !window.SveltePanels) {
             modal.classList.add('show');
             modal.setAttribute('aria-hidden', 'false');
         }
         var filterEl = document.getElementById('base-warehouse-filter');
-        if (filterEl) filterEl.value = '';
+        if (filterEl && !window.SveltePanels) filterEl.value = '';
         buildBaseWarehouseList('');
-        if (window.UIText && typeof window.UIText.applyDom === 'function') {
+        if (!window.SveltePanels && window.UIText && typeof window.UIText.applyDom === 'function') {
             var mw = document.getElementById('modal-base-warehouse');
             if (mw) window.UIText.applyDom(mw);
         }
@@ -5461,8 +5541,9 @@
         if (!baseWarehousePanelOpen) return;
         if (window.Survival && typeof window.Survival.advanceTick === 'function') window.Survival.advanceTick();
         baseWarehousePanelOpen = false;
+        if (window.SveltePanels) window.SveltePanels.refresh('warehouse');
         var modal = document.getElementById('modal-base-warehouse');
-        if (modal) {
+        if (modal && !window.SveltePanels) {
             modal.classList.remove('show');
             modal.setAttribute('aria-hidden', 'true');
         }
@@ -5470,7 +5551,7 @@
     }
 
     (function bindBaseWarehouse() {
-        var abw = document.getElementById('action-bar-warehouse');
+        var abw = !window.SvelteInteractions && document.getElementById('action-bar-warehouse');
         if (abw) {
             abw.addEventListener('click', function () {
                 if (baseWarehousePanelOpen) closeBaseWarehousePanel(); else openBaseWarehousePanel();
@@ -5602,8 +5683,9 @@
         if (savePanelOpen) return;
         if (window.Survival && typeof window.Survival.advanceTick === 'function') window.Survival.advanceTick();
         savePanelOpen = true;
+        if (window.SveltePanels) window.SveltePanels.refresh('save');
         var modal = document.getElementById('modal-save');
-        if (modal) modal.classList.add('show');
+        if (modal && !window.SveltePanels) modal.classList.add('show');
         var left = document.getElementById('left-hud');
         if (left) {
             left.style.opacity = '0.1';
@@ -5615,8 +5697,9 @@
         if (!savePanelOpen) return;
         if (window.Survival && typeof window.Survival.advanceTick === 'function') window.Survival.advanceTick();
         savePanelOpen = false;
+        if (window.SveltePanels) window.SveltePanels.refresh('save');
         var modal = document.getElementById('modal-save');
-        if (modal) modal.classList.remove('show');
+        if (modal && !window.SveltePanels) modal.classList.remove('show');
         var left = document.getElementById('left-hud');
         if (left) {
             left.style.opacity = '';
@@ -5735,11 +5818,14 @@
     function safeSetCombatState(patch, failMsg) {
         if (!IE || typeof IE.setCombatState !== 'function') return false;
         try {
+            var metaBefore = window.CombatMetaSkills && window.CombatMetaSkills.configSignature();
             var ok = IE.setCombatState(patch);
             if (ok === false) {
                 showMsg(failMsg || ui('combat.cfg.invalid'), 'warn');
                 return false;
             }
+            if (window.CombatMetaSkills && metaBefore !== window.CombatMetaSkills.configSignature()
+                && window.CombatEngagement.isPlayerInCombat()) window.Survival.advanceTick();
             return true;
         } catch (e) {
             showMsg((failMsg || ui('combat.cfg.invalid')) + (e && e.message ? (' ' + e.message) : ''), 'warn');
@@ -5764,6 +5850,8 @@
             return out;
         }
         if (!IE || !CS || typeof IE.getCombatState !== 'function') return out;
+        var weaponIntent = window.ModularWeaponCombat && window.ModularWeaponCombat.intent();
+        if (weaponIntent) return weaponIntent;
         var cmb = IE.getCombatState();
         var LIMB_IDS = IE.COMBAT_LIMB_IDS || ['lhand', 'rhand', 'lfoot', 'rfoot'];
         var LIMB_LABEL_KEYS = { lhand: 'body.part.lhand', rhand: 'body.part.rhand', lfoot: 'body.part.lfoot', rfoot: 'body.part.rfoot' };
@@ -5789,6 +5877,8 @@
         }
 
         function firstValidMoveForLimb(lid, skillId) {
+            var bodyPart = {lhand:'left_arm',rhand:'right_arm',lfoot:'left_leg',rfoot:'right_leg'}[lid];
+            if (window.CharacterAttributes && window.CharacterAttributes.isBodyPartDestroyedForParry(bodyPart)) return null;
             var pk = typeof IE.peekMoveIdForLimb === 'function' ? IE.peekMoveIdForLimb(lid) : null;
             var lv = IE.getSkillLevel(skillId);
             var un = CS.getUnlockedMoves(skillId, lv);
@@ -5837,12 +5927,14 @@
             if (!limb || !limb.active) continue;
             var sk = CS.getSkill(limb.active);
             if (!sk || (sk.category !== 'unarmed' && sk.category !== 'weapon')) continue;
+            if (window.ModularWeaponCombat && window.ModularWeaponCombat.equipped() && sk.category !== 'unarmed') continue;
             var fm = firstValidMoveForLimb(lid, limb.active);
             if (!fm) continue;
             candidates.push({ lid: lid, skillId: limb.active });
         }
 
         if (!candidates.length) {
+            out.skip = true;
             out.limbId = 'lhand';
             out.skillId = (cmb.limbs && cmb.limbs.lhand && cmb.limbs.lhand.active) ? cmb.limbs.lhand.active : 'combat_basic_unarmed';
             var fm0 = firstValidMoveForLimb(out.limbId, out.skillId);
@@ -5859,9 +5951,7 @@
         out.skillId = picked.skillId;
         out.moveId = firstValidMoveForLimb(picked.lid, picked.skillId);
         out.advanceCursor = ctxMeta.move_id == null;
-        if (out.advanceCursor && typeof IE.advanceLimbStrikeOrderAfterAttack === 'function') {
-            IE.advanceLimbStrikeOrderAfterAttack(out.limbId);
-        }
+        // Selection is a peek. Only an executed main move advances either cursor.
 
         var stepIdx = scanOrder.indexOf(picked.lid);
         if (stepIdx < 0) stepIdx = 0;
@@ -6061,6 +6151,7 @@
 
     function renderCombatModal() {
         if (window.SvelteCombat) { window.SvelteCombat.refresh(); return; }
+        if (window.SveltePanels) { window.SveltePanels.refresh('combat'); return; }
         var CS = window.CombatSkills;
         var AP = window.Muscles;
         var combatState = IE && IE.getCombatState ? IE.getCombatState() : { limbs: {}, hubs: { breath: null, footwork: null }, move_sequences: {}, skill_move_sequences: {}, move_sequence_cursors: {} };
@@ -6124,7 +6215,11 @@
         if (hubSectionEl) hubSectionEl.style.display = isMuscleMode ? 'none' : '';
         if (limbTitleEl) limbTitleEl.style.display = isMuscleMode ? 'none' : '';
         if (limbContainerEl) limbContainerEl.style.display = isMuscleMode ? 'none' : '';
-        if (seqHeadEl) seqHeadEl.style.display = isMuscleMode ? 'none' : '';
+        if (seqHeadEl) {
+            seqHeadEl.style.display = isMuscleMode ? 'none' : '';
+            var seqTitle = seqHeadEl.querySelector('[data-ui="combat.move_sequence.section"]');
+            if (seqTitle) seqTitle.textContent = ui(combatUIState.curCat === 'footwork' ? 'combat.footwork.effects' : 'combat.move_sequence.section');
+        }
         if (selectedMetaEl) selectedMetaEl.style.display = isMuscleMode ? 'none' : '';
         if (seqWrapEl) seqWrapEl.style.display = isMuscleMode ? 'none' : '';
         if (configColEl) configColEl.style.display = isMuscleMode ? 'none' : '';
@@ -6223,15 +6318,13 @@
             strikeBar.appendChild(strikeChips);
             limbBox.appendChild(strikeBar);
             limbIds.forEach(function (lid) {
-                var limb = combatState.limbs[lid] || { active: null, parry: null };
+                var limb = combatState.limbs[lid] || { active: null };
                 var div = document.createElement('div');
                 div.className = 'combat-limb-item';
                 var activeName = getCombatSkillName(limb.active);
-                var parryName = getCombatSkillName(limb.parry);
                 var isActiveSel = combatUIState.curPart === lid && combatUIState.curSlot === 'active';
-                var isParrySel = combatUIState.curPart === lid && combatUIState.curSlot === 'parry';
                 var orderBadge = strikeOrderPos[lid] != null ? ('#' + String(Number(strikeOrderPos[lid]) + 1)) : '--';
-                div.innerHTML = '<div class="limb-header"><span>' + (LIMB_ICONS[lid] || '') + ' ' + ui(LIMB_LABELS[lid] || lid) + '</span><div class="limb-header-right"><span class="limb-order-badge">' + orderBadge + '</span></div></div><div class="limb-slots"><div class="combat-limb-slot' + (isActiveSel ? ' selected' : '') + '" data-part="' + lid + '" data-slot="active"><span class="slot-type">' + ui('combat.slot.active') + '</span><span class="slot-skill">' + activeName + '</span></div><div class="combat-limb-slot' + (isParrySel ? ' selected' : '') + '" data-part="' + lid + '" data-slot="parry"><span class="slot-type">' + ui('combat.slot.parry') + '</span><span class="slot-skill">' + parryName + '</span></div></div>';
+                div.innerHTML = '<div class="limb-header"><span>' + (LIMB_ICONS[lid] || '') + ' ' + ui(LIMB_LABELS[lid] || lid) + '</span><div class="limb-header-right"><span class="limb-order-badge">' + orderBadge + '</span></div></div><div class="limb-slots"><div class="combat-limb-slot' + (isActiveSel ? ' selected' : '') + '" data-part="' + lid + '" data-slot="active"><span class="slot-type">' + ui('combat.slot.active') + '</span><span class="slot-skill">' + activeName + '</span></div></div>';
 
                 div.querySelectorAll('.combat-limb-slot').forEach(function (slotEl) {
                     slotEl.onclick = function () {
@@ -6264,9 +6357,7 @@
         if (levelEl) levelEl.textContent = ui('combat.level', { v: skillLevel });
         renderRecipeSchemaValidationDebugList();
 
-        // Deploy slot validation:
-        // - 进攻槽（active）只能放非招架技能
-        // - 招架槽（parry）只能放招架技能（only_parry / category=parry）
+        // 肢体仅装配徒手或兵器；防御统一由全局步法提供。
         var btnDeploy = document.getElementById('btn-deploy-combat');
         if (btnDeploy) {
             var canDeploy = true;
@@ -6277,9 +6368,7 @@
                 if (!selSkill) {
                     canDeploy = false;
                 } else {
-                    var skillIsParry = !!(selSkill.only_parry || selSkill.category === 'parry');
-                    var slotIsParry = combatUIState.curSlot === 'parry';
-                    canDeploy = (skillIsParry === slotIsParry);
+                    canDeploy = selSkill.category === 'unarmed' || selSkill.category === 'weapon';
                 }
             }
             btnDeploy.disabled = !canDeploy;
@@ -6293,19 +6382,6 @@
             return v.id || v.variant_id || String(variantId);
         }
 
-        function variantScopeAllows(meta, target) {
-            var s = String((meta && meta.assist_scope) || 'active_moves');
-            if (s === 'both') return true;
-            if (target === 'active') return s === 'active_moves';
-            if (target === 'parry') return s === 'parry';
-            return false;
-        }
-
-        function getParryVariantSlotCap(parrySkillId) {
-            var lv = IE && parrySkillId ? (IE.getSkillLevel(parrySkillId) || 0) : 0;
-            return Math.max(0, Math.min(5, Math.floor(Number(lv) / 200)));
-        }
-
         var seqBox = document.getElementById('move-sequence');
         var limbPartForSeq = combatUIState.curPart || 'lhand';
         var limbRowForSeq = combatState.limbs && combatState.limbs[limbPartForSeq];
@@ -6316,7 +6392,7 @@
         var skillLevelForSeq = (seqSkillId && IE) ? IE.getSkillLevel(seqSkillId) : 0;
         if (!isMuscleMode && combatUIState.curCat !== 'breath' && combatUIState.curCat !== 'footwork'
             && seqBox && slotForMoveSeq === 'active' && seqSk && seqSk.moves && seqSk.moves.length
-            && seqSk.category !== 'breath' && seqSk.category !== 'footwork' && seqSk.category !== 'parry' && seqSkillId) {
+            && seqSk.category !== 'breath' && seqSk.category !== 'footwork' && seqSkillId) {
             seqBox.innerHTML = '';
             var maxSlots = CS.getMaxSlotsForLevel(seqSkillId, skillLevelForSeq);
             var unlockedSeq = CS.getUnlockedMoves(seqSkillId, skillLevelForSeq);
@@ -6370,45 +6446,10 @@
             // 主动链变式与招式共槽，直接在槽位中编辑，不单独渲染列表。
         } else if (seqBox) {
             seqBox.innerHTML = '';
-            if (!isMuscleMode && combatUIState.curSlot === 'parry' && limbRowForSeq && limbRowForSeq.parry) {
-                var parrySkillIdForLimb = limbRowForSeq.parry;
-                var capPv = getParryVariantSlotCap(parrySkillIdForLimb);
-                var pWrap = document.createElement('div');
-                pWrap.className = 'combat-variant-wrap';
-                var pTitle = document.createElement('div');
-                pTitle.className = 'combat-variant-title';
-                pTitle.textContent = ui('combat.variant.parry.title', { cur: capPv, max: 5 });
-                pWrap.appendChild(pTitle);
-                if (capPv <= 0) {
-                    var hint = document.createElement('div');
-                    hint.className = 'picker-empty-hint';
-                    hint.textContent = ui('combat.variant.parry.locked_hint');
-                    pWrap.appendChild(hint);
-                } else {
-                    var pSeqWrap = document.createElement('div');
-                    pSeqWrap.className = 'combat-move-sequence combat-variant-sequence';
-                    var pSeq = (combatState.parry_variant_sequences && Array.isArray(combatState.parry_variant_sequences[limbPartForSeq]))
-                        ? combatState.parry_variant_sequences[limbPartForSeq].slice()
-                        : [];
-                    while (pSeq.length < capPv) pSeq.push(null);
-                    pSeq = pSeq.slice(0, capPv);
-                    for (var ps = 0; ps < capPv; ps++) {
-                        var prow = document.createElement('div');
-                        var pvid = pSeq[ps];
-                        prow.className = 'combat-move-node' + (pvid ? '' : ' slot-empty');
-                        var pname = pvid ? getVariantName(pvid) : ui('combat.seq.slot_empty');
-                        prow.innerHTML = '<span class="node-index">' + String(ps + 1).padStart(2, '0') + '</span><span class="node-name">' + pname + '</span>';
-                        (function (slotIndex, anchorEl) {
-                            prow.onclick = function (e) {
-                                e.stopPropagation();
-                                openParryVariantPicker(limbPartForSeq, parrySkillIdForLimb, slotIndex, anchorEl);
-                            };
-                        })(ps, prow);
-                        pSeqWrap.appendChild(prow);
-                    }
-                    pWrap.appendChild(pSeqWrap);
-                }
-                seqBox.appendChild(pWrap);
+            if (!isMuscleMode && selSkill && selSkill.category === 'footwork') {
+                var footworkDescription = document.createElement('p');
+                footworkDescription.textContent = selSkill.description || '';
+                seqBox.appendChild(footworkDescription);
             }
         }
 
@@ -6417,7 +6458,7 @@
             if (!isMuscleMode) {
                 if (combatUIState.curCat === 'breath') targetEl.textContent = ui('combat.target.hub.breath');
                 else if (combatUIState.curCat === 'footwork') targetEl.textContent = ui('combat.target.hub.footwork');
-                else targetEl.textContent = ui('combat.target.limb', { limb: ui(LIMB_LABELS[combatUIState.curPart] || combatUIState.curPart), slot: ui(combatUIState.curSlot === 'active' ? 'combat.slot.active' : 'combat.slot.parry') });
+                else targetEl.textContent = ui('combat.target.limb', { limb: ui(LIMB_LABELS[combatUIState.curPart] || combatUIState.curPart), slot: ui('combat.slot.active') });
             } else {
                 targetEl.textContent = ui('combat.target.muscle');
             }
@@ -6723,97 +6764,6 @@
         picker.classList.add('show');
     }
 
-    function openParryVariantPicker(limbId, parrySkillId, slotIndex, anchorEl) {
-        var picker = document.getElementById('picker-move');
-        var listEl = document.getElementById('picker-list');
-        if (!picker || !listEl || !IE || !window.CombatVariants || typeof window.CombatVariants.getAllVariants !== 'function') return;
-        listEl.innerHTML = '';
-        var cap = Math.max(0, Math.min(5, Math.floor((IE.getSkillLevel(parrySkillId) || 0) / 200)));
-        if (slotIndex >= cap) return;
-        var combat = IE.getCombatState();
-        if (!combat.parry_variant_sequences || typeof combat.parry_variant_sequences !== 'object') combat.parry_variant_sequences = {};
-        var cur = Array.isArray(combat.parry_variant_sequences[limbId]) ? combat.parry_variant_sequences[limbId].slice() : [];
-        while (cur.length < cap) cur.push(null);
-        cur = cur.slice(0, cap);
-
-        var btnClear = document.createElement('button');
-        btnClear.type = 'button';
-        btnClear.textContent = ui('combat.slot.clear');
-        btnClear.disabled = !cur[slotIndex];
-        btnClear.onclick = function () {
-            var c2 = IE.getCombatState();
-            if (!c2.parry_variant_sequences || typeof c2.parry_variant_sequences !== 'object') c2.parry_variant_sequences = {};
-            var arr = Array.isArray(c2.parry_variant_sequences[limbId]) ? c2.parry_variant_sequences[limbId].slice() : [];
-            while (arr.length < cap) arr.push(null);
-            arr = arr.slice(0, cap);
-            arr[slotIndex] = null;
-            c2.parry_variant_sequences[limbId] = arr;
-            if (!safeSetCombatState({ parry_variant_sequences: c2.parry_variant_sequences }, ui('combat.deploy.parry_variant_save_fail'))) return;
-            picker.classList.remove('show');
-            renderCombatModal();
-        };
-        listEl.appendChild(btnClear);
-
-        var all = window.CombatVariants.getAllVariants() || [];
-        var CVp = window.CombatVariants;
-        var skillsSt = IE.getState() && IE.getState().skills ? IE.getState().skills : {};
-        var unlockDepsP = {
-            getSkillLevel: function (sid) { return IE.getSkillLevel(String(sid || '')) || 0; },
-            getMoveUsage: function (skid) {
-                var s = skillsSt[skid];
-                return (s && s.move_usage && typeof s.move_usage === 'object') ? s.move_usage : {};
-            },
-            CombatSkills: window.CombatSkills
-        };
-        var added = 0;
-        all.forEach(function (v) {
-            if (!v) return;
-            var id = String(v.variant_id || v.id || '');
-            if (!id) return;
-            var scope = String(v.assist_scope || 'active_moves');
-            if (scope !== 'parry' && scope !== 'both') return;
-            if (CVp && typeof CVp.isVariantUnlocked === 'function' && !CVp.isVariantUnlocked(v, unlockDepsP)) return;
-            var duplicate = false;
-            for (var i = 0; i < cur.length; i++) {
-                if (i === slotIndex) continue;
-                if (cur[i] === id) { duplicate = true; break; }
-            }
-            var btn = document.createElement('button');
-            btn.type = 'button';
-            var nm = (v.name_key && window.UIText && typeof window.UIText.t === 'function') ? window.UIText.t(v.name_key) : id;
-            btn.textContent = nm + (duplicate ? ui('combat.variant.parry.duplicate_limb') : '');
-            btn.disabled = duplicate;
-            btn.onclick = function () {
-                var c2 = IE.getCombatState();
-                if (!c2.parry_variant_sequences || typeof c2.parry_variant_sequences !== 'object') c2.parry_variant_sequences = {};
-                var arr = Array.isArray(c2.parry_variant_sequences[limbId]) ? c2.parry_variant_sequences[limbId].slice() : [];
-                while (arr.length < cap) arr.push(null);
-                arr = arr.slice(0, cap);
-                arr[slotIndex] = id;
-                c2.parry_variant_sequences[limbId] = arr;
-                if (!safeSetCombatState({ parry_variant_sequences: c2.parry_variant_sequences }, ui('combat.deploy.parry_variant_save_fail'))) return;
-                picker.classList.remove('show');
-                renderCombatModal();
-            };
-            listEl.appendChild(btn);
-            added++;
-        });
-        if (!added) {
-            var hint = document.createElement('div');
-            hint.className = 'picker-empty-hint';
-            hint.style.padding = '8px 12px';
-            hint.style.fontSize = '12px';
-            hint.style.color = '#a8a29e';
-            hint.textContent = ui('combat.variant.parry.none_available');
-            listEl.appendChild(hint);
-        }
-        var rect = anchorEl.getBoundingClientRect();
-        picker.style.left = (rect.left) + 'px';
-        picker.style.top = (rect.top - 200) + 'px';
-        picker.classList.add('show');
-    }
-
-
     function handleDeployCombat() {
         var CS = window.CombatSkills;
         var AP = window.Muscles;
@@ -6859,17 +6809,12 @@
             combat.hubs.footwork = skillId;
             if (!safeSetCombatState({ hubs: { footwork: skillId } }, ui('combat.deploy.footwork_mount_fail'))) return;
         } else {
-            var slotIsParry = combatUIState.curSlot === 'parry';
-            var skillIsParry = !!(sk.only_parry || sk.category === 'parry');
-            if (slotIsParry !== skillIsParry) {
-                showMsg(slotIsParry ? ui('combat.deploy.parry_slot_only') : ui('combat.deploy.parry_no_active_slot'), 'warn');
-                return;
-            }
+            if (sk.category !== 'unarmed' && sk.category !== 'weapon') return;
             var part = combatUIState.curPart;
             var prevActive = combat.limbs[part] && combat.limbs[part].active;
-            combat.limbs[part][combatUIState.curSlot] = skillId;
+            combat.limbs[part].active = skillId;
             var deployPatch = { limbs: combat.limbs };
-            if (!slotIsParry && prevActive !== skillId) {
+            if (prevActive !== skillId) {
                 var freshSeq = buildDefaultMoveSequenceArray(CS, IE, skillId, part);
                 var ms = {};
                 ms[part] = freshSeq;
@@ -6953,10 +6898,14 @@
     if (window.CharacterAttributes && typeof window.CharacterAttributes.setAttributeExpDebugEnabled === 'function') {
         window.CharacterAttributes.setAttributeExpDebugEnabled(getAttrExpDebugEnabledFromStorage());
     }
+    window.SceneCtx.hudDebugActions = {};
+    function bindHudDebug(id, action) {
+        window.SceneCtx.hudDebugActions[id] = action;
+        var button = document.getElementById(id);
+        if (button && !window.SvelteHUD) button.addEventListener('click', action);
+    }
     ['jingu', 'flexibility', 'breath', 'dexterity', 'focus'].forEach(function (attrId) {
-        var btn = document.getElementById('status-attr-exp-debug-plus-' + attrId);
-        if (!btn) return;
-        btn.addEventListener('click', function () {
+        bindHudDebug('status-attr-exp-debug-plus-' + attrId, function () {
             var CA = window.CharacterAttributes;
             if (!CA || typeof CA.grantAttributeExp !== 'function') return;
             var res = CA.grantAttributeExp('player', [{ attr_id: attrId, exp: 50000 }], { source: 'status_attr_exp_debug_button' });
@@ -6966,9 +6915,7 @@
             if (typeof updateStatusPanel === 'function') SceneHud.refresh('status');
         });
     });
-    var diqiDbgBtn = document.getElementById('status-diqi-debug-plus50');
-    if (diqiDbgBtn) {
-        diqiDbgBtn.addEventListener('click', function () {
+    bindHudDebug('status-diqi-debug-plus50', function () {
             var Surv = window.Survival;
             if (!Surv || typeof Surv.changeDiqi !== 'function') return;
             var res = Surv.changeDiqi({ maxDelta: 50, capLimitDelta: 50, sourceTag: 'debug_diqi_max_plus50' });
@@ -6978,12 +6925,8 @@
             if (typeof updateStatusPanel === 'function') SceneHud.refresh('status');
             if (window.SceneRenderer && typeof window.SceneRenderer.render === 'function') window.SceneRenderer.render();
         });
-    }
-    var stunDbgBtn = document.getElementById('status-stun-debug-plus50');
     // 疼痛调试（k229）：直接 +30（同档位判定口径：封顶 = min(100, 25+0.75×平均损毁%)）
-    var painDbgBtn = document.getElementById('status-pain-debug-plus30');
-    if (painDbgBtn) {
-        painDbgBtn.addEventListener('click', function () {
+    bindHudDebug('status-pain-debug-plus30', function () {
             var Surv2 = window.Survival;
             if (!Surv2 || typeof Surv2.debugAddPain !== 'function') return;
             var piDbg = Surv2.debugAddPain(30) || {};
@@ -6994,9 +6937,7 @@
             if (typeof updateStatusPanel === 'function') SceneHud.refresh('status');
             if (window.SceneRenderer && typeof window.SceneRenderer.render === 'function') window.SceneRenderer.render();
         });
-    }
-    if (stunDbgBtn) {
-        stunDbgBtn.addEventListener('click', function () {
+    bindHudDebug('status-stun-debug-plus50', function () {
             var IE2 = window.InventoryEquipment;
             if (!IE2 || typeof IE2.addPlayerStun !== 'function') return;
             // 与真实命中头结算同口径：先吃抗眩晕比例减免（37 §9.2）
@@ -7010,9 +6951,8 @@
             if (typeof updateStatusPanel === 'function') SceneHud.refresh('status');
             if (window.SceneRenderer && typeof window.SceneRenderer.render === 'function') window.SceneRenderer.render();
         });
-    }
     document.addEventListener('click', function () {
-        if (window.SvelteCombat) return;
+        if (window.SveltePanels || window.SvelteCombat) return;
         var hadOpenPicker = false;
         var movePickerAny = document.getElementById('picker-move');
         if (movePickerAny && movePickerAny.classList.contains('show')) hadOpenPicker = true;
@@ -7195,6 +7135,7 @@
     }
 
     function renderSurvivalModal() {
+        if (window.SveltePanels) { window.SveltePanels.refresh('survival'); return; }
         var wrap = document.getElementById('survival-skill-table');
         if (!wrap) return;
         wrap.innerHTML = '';
@@ -7225,8 +7166,9 @@
         }
         if (window.Survival && typeof window.Survival.advanceTick === 'function') window.Survival.advanceTick();
         survivalPanelOpen = true;
+        if (window.SveltePanels) window.SveltePanels.refresh('survival');
         var modal = document.getElementById('modal-survival');
-        if (modal) modal.classList.add('show');
+        if (modal && !window.SveltePanels) modal.classList.add('show');
         var left = document.getElementById('left-hud');
         if (left) {
             left.style.opacity = '0.1';
@@ -7240,8 +7182,9 @@
         if (!survivalPanelOpen) return;
         if (window.Survival && typeof window.Survival.advanceTick === 'function') window.Survival.advanceTick();
         survivalPanelOpen = false;
+        if (window.SveltePanels) window.SveltePanels.refresh('survival');
         var modal = document.getElementById('modal-survival');
-        if (modal) modal.classList.remove('show');
+        if (modal && !window.SveltePanels) modal.classList.remove('show');
         var left = document.getElementById('left-hud');
         if (left) {
             left.style.opacity = '';
@@ -7401,6 +7344,7 @@
             }
             return true;
         }
+        if (!window.SvelteHUD) {
         U.registerPanel('win-role', {
             type: 'free', titleKey: 'ui.windows.role',
             el: function () { return document.getElementById('status-role-card'); },
@@ -7479,9 +7423,11 @@
             el: function () { return document.getElementById('top-hud'); },
             closable: true
         });
+        }
         U.registerPanel('win-actions-right', {
             type: 'anchored', titleKey: 'ui.windows.right_actions',
-            el: function () { return document.getElementById('right-hud'); },
+            // 保留面板管理入口，避免隐藏功能按钮时一并失去恢复入口。
+            el: function () { return document.getElementById('right-hud-actions'); },
             closable: true
         });
         U.registerPanel('win-bottom', {
@@ -7508,6 +7454,7 @@
     var uiWindowsMenuOpen = false;
 
     function rebuildUiWindowsMenu() {
+        if (window.SvelteHUD) { window.SvelteHUD.invalidate('windows'); return; }
         var menu = document.getElementById('ui-windows-menu');
         if (!menu) return;
         if (!window.UIWindows || typeof window.UIWindows.getPanelList !== 'function') return;
@@ -7581,6 +7528,7 @@
     }
 
     function openUiWindowsMenu() {
+        if (window.SvelteHUD) { window.SvelteHUD.openMenu(); return; }
         var menu = document.getElementById('ui-windows-menu');
         if (!menu) return;
         rebuildUiWindowsMenu();
@@ -7590,6 +7538,7 @@
     }
 
     function closeUiWindowsMenu() {
+        if (window.SvelteHUD) { window.SvelteHUD.closeMenu(); return; }
         var menu = document.getElementById('ui-windows-menu');
         if (!menu) return;
         menu.classList.remove('open');
@@ -7598,6 +7547,7 @@
     }
 
     function initUiWindowsMenu() {
+        if (window.SvelteHUD) return;
         var btn = document.getElementById('btn-ui-windows');
         if (!btn) return;
         btn.addEventListener('click', function (e) {
@@ -7660,9 +7610,7 @@
             window.PharmacyStation.setUiDeps(stationUiDeps);
         }
         // 制药调试：药瘾 +10（k242 状态行联调）
-        var addictionDbgBtn = document.getElementById('status-addiction-debug-plus10');
-        if (addictionDbgBtn) {
-            addictionDbgBtn.addEventListener('click', function () {
+        bindHudDebug('status-addiction-debug-plus10', function () {
                 var PE = window.PharmacyEffects;
                 if (!PE || typeof PE.addAddiction !== 'function') return;
                 var cur = PE.addAddiction(10);
@@ -7672,7 +7620,6 @@
                 if (typeof updateStatusPanel === 'function') SceneHud.refresh('status');
                 if (window.SceneRenderer && typeof window.SceneRenderer.render === 'function') window.SceneRenderer.render();
             });
-        }
         // 烹饪站面板（②）：依赖注入 + 事件绑定
         if (window.CookingStationPanel && typeof window.CookingStationPanel.setUiDeps === 'function') {
             window.CookingStationPanel.setUiDeps({
@@ -7876,11 +7823,17 @@
                     window.SceneCtx.exitFootworkNieBuMode();
                 }
                 if (window.CombatPipeline && typeof window.CombatPipeline.runPipeline === 'function') {
-                    var intent = pickWorldMeleeAttackIntent(ctxMeta);
+                    var Meta = window.CombatMetaSkills;
+                    var normalIntent = pickWorldMeleeAttackIntent(ctxMeta);
+                    if (!normalIntent.skip && !Meta.hasAttackOpportunity(normalIntent,{x:ctxMeta.x,y:ctxMeta.y})) return;
+                    var metaPlan = Meta.select(normalIntent, {x:ctxMeta.x,y:ctxMeta.y});
+                    var intent = metaPlan.main;
+                    if (intent.skip) { if (window.Survival) window.Survival.advanceTick(); render(); return; }
                     var approachSkill = window.CombatSkills && window.CombatSkills.getSkill(intent.skillId || intent.skill_id);
                     var approachMove = approachSkill && (approachSkill.moves || []).filter(function(m){return m.id === (intent.moveId || intent.move_id);})[0];
-                    if (!CombatWorld.preparePlayerApproach({x:ctxMeta.x,y:ctxMeta.y}, approachMove)) return;
+                    if (!CombatWorld.preparePlayerApproach({x:ctxMeta.x,y:ctxMeta.y}, approachMove, intent.weaponId ? intent : null)) { Meta.suspend(metaPlan); return; }
                     st = E.getState(); ctxMeta.fromX = st.x; ctxMeta.fromY = st.y;
+                    Meta.prepareMain(intent);
                     var defSpeed = 10;
                     var defenderBase = {
                         kind: 'enemy',
@@ -7912,9 +7865,9 @@
                     }
                     if (defenderBase.speed != null && isFinite(Number(defenderBase.speed))) defSpeed = Number(defenderBase.speed);
 
-                    var limbUse = ctxMeta.limb_id != null ? ctxMeta.limb_id : intent.limbId;
-                    var skUse = ctxMeta.skill_id != null ? ctxMeta.skill_id : intent.skillId;
-                    var mvUse = ctxMeta.move_id != null ? ctxMeta.move_id : intent.moveId;
+                    var limbUse = intent.limbId;
+                    var skUse = intent.skillId;
+                    var mvUse = intent.moveId;
 
                     // 出招肢本 tick 禁止招架（肢体互斥）：攻击发起时就标记，不受先后手影响（combat-pipeline 311 读取）
                     if (window.SceneCtx) window.SceneCtx.playerExchangeAttackLimb = limbUse;
@@ -7948,6 +7901,8 @@
 
                     // 读取该肢当前槽位成数（ctxMeta 显式传入时优先）
                     var _slotPwr = ctxMeta.power_level != null ? Number(ctxMeta.power_level) : null;
+                    if (intent.metaSource) _slotPwr = intent.powerLevel;
+                    if (intent.weaponId && _slotPwr == null) _slotPwr = intent.powerLevel;
                     if (_slotPwr == null && IE && typeof IE.peekMoveSlotIndexForLimb === 'function') {
                         var _slotPwrIdx = IE.peekMoveSlotIndexForLimb(limbUse);
                         if (_slotPwrIdx >= 0 && typeof IE.getMoveSlotPowerLevel === 'function') {
@@ -7964,6 +7919,7 @@
                         });
                     }
                     if (!Array.isArray(postIds)) postIds = [];
+                    if (intent.weaponId) postIds = [];
                     var defPostIds = Array.isArray(defenderBase.counter_post_effect_ids) ? defenderBase.counter_post_effect_ids : [];
 
                     var plSpeed = 1;
@@ -8003,7 +7959,8 @@
                         );
                     }
 
-                    function buildPlayerAtkCtx(r0, postIdsArr, simDry) {
+                    function buildPlayerAtkCtx(r0, postIdsArr, simDry, actionIntent) {
+                        actionIntent = actionIntent || intent;
                         var rawDmg0 = r0 && isFinite(r0.rawDamage) ? r0.rawDamage : 10;
                         var hitOk0 = r0 ? !!r0.hitRollSuccess : (ctxMeta.hit_roll_success !== false);
                         var hitPt0 = r0 ? r0.hitPart : (ctxMeta.hit_part || 'chest');
@@ -8032,6 +7989,9 @@
                             blockTargetEffects: !!(r0 && r0.blockTargetEffects),
                             actionConditionBonus: r0 && r0.actionConditionBonus,
                             resourceResult: r0,
+                            proficiencyDelta: r0 ? r0.proficiencyDelta : 0,
+                            weaponAction: r0 && r0.weaponAction,
+                            moveTemplate: r0 && r0.moveTemplate,
                             forceZeroDamageByResourceInsufficient: !!(r0 && r0.forceZeroDamageByResourceInsufficient),
                             simultaneousDryRun: !!simDry,
                             attacker: {
@@ -8039,7 +7999,9 @@
                                 facingDir: (window.PlayerFacing && typeof window.PlayerFacing.getDir === 'function') ? window.PlayerFacing.getDir() : 4,
                                 pos: { x: ctxMeta.fromX, y: ctxMeta.fromY },
                                 postEffectIds: Array.isArray(postIdsArr) ? postIdsArr.slice() : [],
-                                activeVariantIds: (window.InventoryEquipment && typeof window.InventoryEquipment.getActiveVariantIdsForLimb === 'function')
+                                activeVariantIds: actionIntent.weaponId
+                                    ? (actionIntent.skillId === window.ModularWeaponCombat.SKILL ? [] : (window.ModularWeaponCombat.equipped().item.weapon_moves[actionIntent.weaponPosition].variants || []))
+                                    : (window.InventoryEquipment && typeof window.InventoryEquipment.getActiveVariantIdsForLimb === 'function')
                                     ? window.InventoryEquipment.getActiveVariantIdsForLimb(lmId0)
                                     : []
                             },
@@ -8047,9 +8009,6 @@
                                 var d0 = Object.assign({}, defenderBase);
                                 d0.facingDir = defenderFacingDir;
                                 d0.pos = { x: ctxMeta.x, y: ctxMeta.y };
-                                if (window.InventoryEquipment && typeof window.InventoryEquipment.getParryVariantIdsForLimb === 'function') {
-                                    d0.parryVariantIds = [];
-                                }
                                 return d0;
                             })()
                         };
@@ -8060,19 +8019,64 @@
                     var atkCtx = null;
                     var rEnemyCounter = null;
                     var atkCtxEnemy = null;
+                    var modularExchange = !!intent.weaponId || !!metaPlan.entry || Meta.bindings().length > 0;
+                    function commitMain() { Meta.prepareMain(intent); Meta.consume(metaPlan); if (intent.metaSource) Meta.beginTriggered(metaPlan); Meta.advance(intent); }
+                    function resolveMain(extra) {
+                        return CMR.resolvePlayerVsEnemyAttack(Object.assign({targetIndex:defenderBase.index,enemyId:enemyId,
+                            skillId:skUse,moveId:mvUse,limbId:limbUse,powerLevel:_slotPwr,attackerSpeed:initPlan.playerSpeed,
+                            defenderSpeed:initPlan.enemySpeed,speedsResolved:true,weaponIntent:intent.weaponId?intent:null,
+                            metaSource:intent.metaSource,costWaivers:intent.costWaivers}, extra || {}));
+                    }
+                    function runAppend() {
+                        if (!metaPlan.started) return;
+                        if (window.Survival.getState().isDead || IE.isPlayerStunned()
+                            || window.CombatEnemies.isEnemyDead(defenderBase.mapId,defenderBase.index)) { Meta.cancelSelected(metaPlan,'sequence_interrupted'); return; }
+                        var targetNow=E.getMap().enemies[defenderBase.index],extra=Meta.appendIntent(metaPlan,targetNow);
+                        if (!extra) return;
+                        Meta.beginTriggered(metaPlan);
+                        var extraPosts=extra.weaponId?[]:window.CombatInitiative.getPlayerPostEffectIds({limbId:extra.limbId,formTags:getFormTagsForMove(extra.skillId,extra.moveId)});
+                        var extraResolve=CMR.resolvePlayerVsEnemyAttack({targetIndex:defenderBase.index,enemyId:enemyId,skillId:extra.skillId,moveId:extra.moveId,
+                            limbId:extra.limbId,powerLevel:extra.powerLevel,weaponIntent:extra.weaponId?extra:null,attackerSpeed:initPlan.playerSpeed,
+                            defenderSpeed:initPlan.enemySpeed,speedsResolved:true,metaSource:extra.metaSource,costWaivers:extra.costWaivers});
+                        if (extraResolve.notExecuted) return;
+                        var extraCtx=buildPlayerAtkCtx(extraResolve,extraPosts,false,extra),currentPos=E.getState();
+                        extraCtx.attacker.pos={x:currentPos.x,y:currentPos.y};extraCtx.defender.pos={x:targetNow.x,y:targetNow.y};
+                        CP.runPipeline(pipeName,extraCtx);
+                        if (extra.skillId!==window.ModularWeaponCombat.SKILL&&extraCtx.proficiencyDelta) IE.adjustSkillMoveUsage(extra.skillId,extra.moveId,Math.round(extraCtx.proficiencyDelta));
+                    }
+                    // Repeat the selected position, then advance its cycle once. Each strike pays separately.
+                    function weaponRepeats() {
+                        if (!modularExchange) return;
+                        var count = Math.min(4, Math.max(1, Math.floor(initPlan.playerSpeed / initPlan.enemySpeed)));
+                        for (var repeat = 1; repeat < count; repeat++) {
+                            var usable = intent.weaponId ? window.ModularWeaponCombat.validIntent(intent)
+                                : !window.CharacterAttributes.isBodyPartDestroyedForParry({lhand:'left_arm',rhand:'right_arm',lfoot:'left_leg',rfoot:'right_leg'}[limbUse]);
+                            if (!usable || window.Survival.getState().isDead || IE.isPlayerStunned()
+                                || window.CombatEnemies.isEnemyDead(defenderBase.mapId, defenderBase.index)) break;
+                            var next = resolveMain({repeatIndex:repeat});
+                            var repeatedCtx = CP.runPipeline(pipeName, buildPlayerAtkCtx(next, postIds, false));
+                            if (skUse !== window.ModularWeaponCombat.SKILL && repeatedCtx.proficiencyDelta) IE.adjustSkillMoveUsage(skUse,mvUse,Math.round(repeatedCtx.proficiencyDelta));
+                        }
+                    }
+                    function enemyWeaponExchangeRepeats() {
+                        if (!modularExchange) return;
+                        var count = Math.min(4, Math.max(1, Math.floor(initPlan.enemySpeed / initPlan.playerSpeed)));
+                        for (var repeat = 1; repeat < count; repeat++) {
+                            if (window.Survival.getState().isDead || window.CombatEnemies.isEnemyStunned(defenderBase.mapId, defenderBase.index)
+                                || window.CombatEnemies.isEnemyDead(defenderBase.mapId, defenderBase.index)) break;
+                            var next = CMR.resolveEnemyVsPlayerAttack({enemyId:enemyId,attackerSpeed:initPlan.enemySpeed,defenderSpeed:initPlan.playerSpeed,speedsResolved:true,
+                                enemyMapId:defenderBase.mapId,enemyIndex:defenderBase.index});
+                            CP.runPipeline('melee_hit_player_defender', CombatWorld.buildEnemyCounterAtkCtx(next,false,{enemyId:enemyId,facingDir:defenderFacingDir,ex:ctxMeta.x,ey:ctxMeta.y,px:ctxMeta.fromX,py:ctxMeta.fromY}));
+                        }
+                    }
                     // 敌人眩晕（k13，37 §9.2）：眩晕中本回合无法行动 → 跳过其本击还击/先手
                     var enemyStunnedNow = !!(window.CombatEnemies && typeof window.CombatEnemies.isEnemyStunned === 'function'
                         && defenderBase && window.CombatEnemies.isEnemyStunned(defenderBase.mapId, defenderBase.index));
 
                     if (useSimultaneous && CMR && typeof CMR.resolvePlayerVsEnemyAttack === 'function' && typeof CMR.resolveEnemyVsPlayerAttack === 'function') {
-                        r = CMR.resolvePlayerVsEnemyAttack({targetIndex:defenderBase.index,
-                            skillId: skUse,
-                            moveId: mvUse,
-                            limbId: limbUse,
-                            powerLevel: _slotPwr,
-                            defenderSpeed: defSpeed,
-                            deferResourceSpend: true
-                        });
+                        if (window.ModularWeaponCombat) window.ModularWeaponCombat.beginSimultaneous();
+                        commitMain();
+                        r = resolveMain({deferResourceSpend:true});
                         if (!enemyStunnedNow) {
                             rEnemyCounter = CMR.resolveEnemyVsPlayerAttack({
                                 enemyId: enemyId,
@@ -8089,9 +8093,6 @@
                             atkCtx.fxGroupId = window.CombatFxEvents.nextGroupId();
                             if (atkCtxEnemy) atkCtxEnemy.fxGroupId = atkCtx.fxGroupId;
                         }
-                        if (intent.advanceCursor && window.InventoryEquipment && typeof window.InventoryEquipment.advanceMoveSequenceCursorForLimb === 'function') {
-                            window.InventoryEquipment.advanceMoveSequenceCursorForLimb(atkCtx.limbId);
-                        }
                         CP.runPipeline(pipeName, atkCtx);
                         if (atkCtxEnemy) CP.runPipeline('melee_hit_player_defender', atkCtxEnemy);
                         if (typeof CP.flushPendingBuffApplies === 'function') {
@@ -8104,8 +8105,10 @@
                         if (typeof CP.finalizeSimultaneousStrike === 'function') {
                             CP.finalizeSimultaneousStrike(atkCtx);
                             if (atkCtxEnemy) CP.finalizeSimultaneousStrike(atkCtxEnemy);
+                            if (window.ModularWeaponCombat) window.ModularWeaponCombat.endSimultaneous();
                             CombatWorld.flushDisplacements({deferKills:true});
                         }
+                        runAppend();
                         {
                             var _ckSim = CombatWorld.enemyCounterAttackFlagKey(enemyId);
                             if (_ckSim) window.CombatWorld.markCounterAttackFlag(_ckSim);
@@ -8120,6 +8123,7 @@
                             });
                             atkCtxEnemy = CombatWorld.buildEnemyCounterAtkCtx(rEnemyCounter, false, { enemyId: enemyId, facingDir: defenderFacingDir, ex: ctxMeta.x, ey: ctxMeta.y, px: ctxMeta.fromX, py: ctxMeta.fromY });
                             CP.runPipeline('melee_hit_player_defender', atkCtxEnemy);
+                            enemyWeaponExchangeRepeats();
                             {
                                 var _ckEf = CombatWorld.enemyCounterAttackFlagKey(enemyId);
                                 if (_ckEf) window.CombatWorld.markCounterAttackFlag(_ckEf);
@@ -8132,33 +8136,39 @@
                             }
                         }
                         var playerBlocked = (window.Survival && window.Survival.getState().isDead) || (IE.consumePlayerStunRoundIfBlocking && IE.consumePlayerStunRoundIfBlocking());
+                        if (!playerBlocked && !Meta.legal(intent,E.getMap().enemies[defenderBase.index],metaPlan.entry?.definition.mode==='replace')) {
+                            // Re-select from the preserved unarmed cycle after the holding hand is lost.
+                            // Initiative and repeat count remain those fixed before this exchange.
+                            metaPlan = Meta.reselect(metaPlan,E.getMap().enemies[defenderBase.index],function(){return pickWorldMeleeAttackIntent({});});
+                            intent = metaPlan.main;
+                            playerBlocked = !!intent.skip;
+                            skUse = intent.skillId; mvUse = intent.moveId; limbUse = intent.limbId;
+                            _slotPwr = intent.weaponId ? intent.powerLevel : IE.getMoveSlotPowerLevel(limbUse, IE.peekMoveSlotIndexForLimb(limbUse));
+                            postIds = intent.weaponId ? [] : window.CombatInitiative.getPlayerPostEffectIds({limbId:limbUse,formTags:getFormTagsForMove(skUse,mvUse)});
+                            if (window.SceneCtx) window.SceneCtx.playerExchangeAttackLimb = limbUse;
+                        }
                         if (playerBlocked) {
+                            Meta.suspend(metaPlan);
                             if (window.Survival) window.Survival.advanceTick();
                             render(); return;
                         }
-                        r = CMR.resolvePlayerVsEnemyAttack({targetIndex:defenderBase.index,skillId:skUse,moveId:mvUse,limbId:limbUse,powerLevel:_slotPwr,defenderSpeed:defSpeed});
+                        commitMain();
+                        r = resolveMain();
                         atkCtx = buildPlayerAtkCtx(r, postIds, false);
-                        if (intent.advanceCursor && window.InventoryEquipment && typeof window.InventoryEquipment.advanceMoveSequenceCursorForLimb === 'function') {
-                            window.InventoryEquipment.advanceMoveSequenceCursorForLimb(atkCtx.limbId);
-                        }
                         CP.runPipeline(pipeName, atkCtx);
+                        weaponRepeats();
+                        runAppend();
                     } else {
+                        commitMain();
                         if (!CMR || typeof CMR.resolvePlayerVsEnemyAttack !== 'function') {
                             atkCtx = buildPlayerAtkCtx(null, postIds, false);
                         } else {
-                            r = CMR.resolvePlayerVsEnemyAttack({targetIndex:defenderBase.index,
-                                skillId: skUse,
-                                moveId: mvUse,
-                                limbId: limbUse,
-                                powerLevel: _slotPwr,
-                                defenderSpeed: defSpeed
-                            });
+                            r = resolveMain();
                             atkCtx = buildPlayerAtkCtx(r, postIds, false);
                         }
-                        if (intent.advanceCursor && window.InventoryEquipment && typeof window.InventoryEquipment.advanceMoveSequenceCursorForLimb === 'function') {
-                            window.InventoryEquipment.advanceMoveSequenceCursorForLimb(atkCtx.limbId);
-                        }
                         CP.runPipeline(pipeName, atkCtx);
+                        weaponRepeats();
+                        runAppend();
                         // 出招肢已在攻击发起时标记（playerExchangeAttackLimb），此处不再重复设置
                         // 07「先击杀即避免再挨对方本击」：玩家段把敌人打死 → 跳过敌人还击段
                         var enemyDeadNow = false;
@@ -8177,6 +8187,7 @@
                             });
                             atkCtxEnemy = CombatWorld.buildEnemyCounterAtkCtx(rEnemyCounter, false, { enemyId: enemyId, facingDir: defenderFacingDir, ex: ctxMeta.x, ey: ctxMeta.y, px: ctxMeta.fromX, py: ctxMeta.fromY });
                             CP.runPipeline('melee_hit_player_defender', atkCtxEnemy);
+                            enemyWeaponExchangeRepeats();
                             {
                                 var _ckNm = CombatWorld.enemyCounterAttackFlagKey(enemyId);
                                 if (_ckNm) window.CombatWorld.markCounterAttackFlag(_ckNm);
@@ -8490,7 +8501,7 @@
                 return !!(window.CombatEngagement && typeof window.CombatEngagement.isPlayerInCombat === 'function' && window.CombatEngagement.isPlayerInCombat());
             }
             var breathHubSkillId = 'combat_basic_breath';
-            var diqiHutiBtnEl = document.getElementById('player-action-diqi-huti');
+            var diqiHutiBtnEl = !window.SvelteInteractions && document.getElementById('player-action-diqi-huti');
             if (diqiHutiBtnEl) {
                 diqiHutiBtnEl.addEventListener('click', function () {
                     var CHA2 = window.CombatHubActions;
@@ -8507,7 +8518,7 @@
                     if (typeof updateStatusPanel === 'function') SceneHud.refresh('status');
                 });
             }
-            var abGroundEl = document.getElementById('action-bar-ground');
+            var abGroundEl = !window.SvelteInteractions && document.getElementById('action-bar-ground');
             if (abGroundEl && !abGroundEl._actionBarProxy) {
                 abGroundEl._actionBarProxy = true;
                 abGroundEl.addEventListener('click', function () {
@@ -8515,7 +8526,7 @@
                     if (gBtn) gBtn.click();
                 });
             }
-            var abTakeWaterEl = document.getElementById('action-bar-take-water');
+            var abTakeWaterEl = !window.SvelteInteractions && document.getElementById('action-bar-take-water');
             if (abTakeWaterEl && !abTakeWaterEl._actionBarProxy) {
                 abTakeWaterEl._actionBarProxy = true;
                 abTakeWaterEl.addEventListener('click', function () {
@@ -8523,7 +8534,7 @@
                     if (tw) tw.click();
                 });
             }
-            var abPourWaterEl = document.getElementById('action-bar-pour-water');
+            var abPourWaterEl = !window.SvelteInteractions && document.getElementById('action-bar-pour-water');
             if (abPourWaterEl && !abPourWaterEl._actionBarProxy) {
                 abPourWaterEl._actionBarProxy = true;
                 abPourWaterEl.addEventListener('click', function () {
@@ -8531,7 +8542,7 @@
                     if (pw) pw.click();
                 });
             }
-            var abAddFuelEl = document.getElementById('action-bar-add-fuel');
+            var abAddFuelEl = !window.SvelteInteractions && document.getElementById('action-bar-add-fuel');
             if (abAddFuelEl && !abAddFuelEl._actionBarProxy) {
                 abAddFuelEl._actionBarProxy = true;
                 abAddFuelEl.addEventListener('click', function () {
@@ -8539,16 +8550,16 @@
                     if (af) af.click();
                 });
             }
-            var abDiqiEl = document.getElementById('action-bar-diqi-huti');
+            var abDiqiEl = !window.SvelteInteractions && document.getElementById('action-bar-diqi-huti');
             if (abDiqiEl && !abDiqiEl._actionBarProxy) {
                 abDiqiEl._actionBarProxy = true;
                 abDiqiEl.addEventListener('click', function () {
-                    var dh = document.getElementById('player-action-diqi-huti');
+                    var dh = !window.SvelteInteractions && document.getElementById('player-action-diqi-huti');
                     if (dh) dh.click();
                 });
             }
 
-            var btnPlayerActions = document.getElementById('btn-player-actions');
+            var btnPlayerActions = !actionsView && document.getElementById('btn-player-actions');
             if (btnPlayerActions && !btnPlayerActions._boundPlayerActions) {
                 btnPlayerActions._boundPlayerActions = true;
                 btnPlayerActions.addEventListener('click', function (ev) {
@@ -8719,6 +8730,12 @@
         if (!cell || !cell.item_id) return false;
         var tpl = inv.getItemTemplate(cell.item_id);
         if (!tpl || !tpl.equip_slot) return false;
+        var slotId = tpl.equip_slot;
+        if (window.ModularWeaponCombat && window.ModularWeaponCombat.isWeapon(cell)) {
+            slotId = options.slot || slotId;
+            var check = window.ModularWeaponCombat.validateEquip(cell, slotId);
+            if (!check.success) { if (!options.silent) showMsg(check.message, 'warn'); return false; }
+        }
         var posNow = E && E.getState ? E.getState() : null;
 
         var taken = inv.takeItemFromContainer(containerType, index);
@@ -8727,7 +8744,6 @@
         if (itemToEquip && itemToEquip.count != null) itemToEquip.count = 1;
 
         var stNow = inv.getState ? inv.getState() : {};
-        var slotId = tpl.equip_slot;
         var currentEq = (stNow && stNow.equipment) ? stNow.equipment[slotId] : null;
         if (currentEq && typeof inv.unequip === 'function') {
             var unequipped = inv.unequip(slotId, posNow);
@@ -8773,6 +8789,45 @@
 
     // Expose entrypoints for bootstrap.js
     window.SceneApp = window.SceneApp || {};
+    window.SceneApp.closePublicModal = function (id) {
+        var close = { 'modal-backpack':closeBackpackPanel, 'modal-combat':closeCombatPanel, 'modal-survival':closeSurvivalPanel, 'modal-save':closeSavePanel,
+            'modal-base-warehouse':closeBaseWarehousePanel, 'modal-hideout-warehouse':closeHideoutWarehousePanel, 'modal-agriculture':closeAgriculturePanel,
+            'modal-livestock':closeLivestockPanel, 'modal-cooking-station':CookingStationPanel.close, 'modal-pharmacy-station':PharmacyStationPanel.close, 'modal-compost-station':CompostPanel.close }[id];
+        if (close) close();
+    };
+    window.SceneApp.navigate = function (id, button) {
+        if (id === 'backpack') { if (backpackPanelOpen) closeBackpackPanel(); else openBackpackPanel(); }
+        else if (id === 'combat') { if (combatPanelOpen) closeCombatPanel(); else openCombatPanel(); }
+        else if (id === 'survival') { if (survivalPanelOpen) closeSurvivalPanel(); else openSurvivalPanel(); }
+        else if (id === 'save') { if (savePanelOpen) closeSavePanel(); else openSavePanel(); }
+        else if (id === 'reset-demo-save') requestResetProgress(button);
+    };
+    window.SceneApp.runContextAction = function (id) {
+        if (isStoryMovementLocked() || isPreCreationGameplayRestricted()) return;
+        if (id === 'gather') return onGatherClick();
+        if (id === 'gather-stop') return window.SceneCtx.actions.stopGatheringIdle(true);
+        if (id === 'take-water') return onTakeWaterClick();
+        if (id === 'pour-water') return onPourWaterClick();
+        if (id === 'add-fuel') return onAddFuelClick();
+        if (id === 'ground') { if (!backpackPanelOpen) openBackpackPanel(); return; }
+        if (id === 'warehouse') { if (baseWarehousePanelOpen) closeBaseWarehousePanel(); else openBaseWarehousePanel(); return; }
+        if (id === 'pharmacy') { if (!PharmacyStationPanel.isOpen()) PharmacyStationPanel.open(); return; }
+        if (id === 'cook') { if (CookingStationPanel.isOpen()) CookingStationPanel.close(); else CookingStationPanel.open(); }
+    };
+    window.SceneApp.actionMenu = { attachView: function (render) { actionsView = render; render({ open: false, items: [], label: '' }); return function () { actionsView = null; }; },
+        open: openPlayerActionsSubmenu, close: closePlayerActionsSubmenu,
+        toggle: function () { if (playerActionsSubmenuOpen) closePlayerActionsSubmenu(); else openPlayerActionsSubmenu(); }
+    };
+    window.SceneApp.creation = {
+        attachView: function (render) { creationView = render; publishCreation(); return function () { creationView = null; }; },
+        change: function (id, delta) {
+            if (!creationVisible || !Object.prototype.hasOwnProperty.call(creationInnate, id) || (delta !== 1 && delta !== -1)) return;
+            if (delta < 0 ? creationInnate[id] > 0 : creationInnate[id] < CREATION_ATTR_MAX && getCreationFreePoints() > 0) creationInnate[id] += delta;
+            publishCreation();
+        },
+        confirm: confirmCreation,
+        clampHeight: clampCreationHeightCm
+    };
     window.SceneApp.init = init;
     window.SceneApp.loadConfig = loadConfig;
     window.SceneApp.tryUseItemFromContainer = tryUseItemFromContainer;
@@ -8904,13 +8959,42 @@
     window.SceneApp.executeQuickBarPinnedSlot = executeQuickBarPinnedSlot;
     window.SceneApp.clearQuickBarPinSlot = clearQuickBarPinSlot;
 
+
     // Standalone loadout commands also work without the other panel migrations.
     window.SceneApp.combatApi = {
         combatState: combatUIState,
         getOpen: function () { return combatPanelOpen; },
         close: closeCombatPanel,
         deploy: handleDeployCombat, debugCombat: debugCombatPlus50,
-        setCombat: safeSetCombatState, recipeReport: getRecipeSchemaValidationReport
+        setCombat: safeSetCombatState, recipeReport: getRecipeSchemaValidationReport,
+        setWeaponConfig: function (kind, value) {
+            var w = window.ModularWeaponCombat;
+            if (!combatPanelOpen || !w || isPlayerComaActive() || (window.Survival && window.Survival.isDead())) return false;
+            var changed = kind === 'order' ? w.setAttackOrder(value) : kind === 'power' ? w.setPowerLevel(value.slot, value.power)
+                : kind === 'move' && w.setMoveConfig(value.slot, value.config);
+            if (changed && window.CombatEngagement && window.CombatEngagement.isPlayerInCombat()) {
+                window.Survival.advanceTick(); SceneHud.refresh('status'); render();
+            }
+            return changed;
+        }
+    };
+
+    // P3: commands keep the original game rules; Svelte owns all five panel subtrees.
+    window.SceneApp.panelApi = {
+        backpackState: backpackUIState, combatState: combatUIState,
+        equipGroups: EQUIP_SLOT_GROUPS, equipLabels: EQUIP_SLOT_LABELS,
+        bodyParts: BODY_PART_IDS, bodyLabels: BODY_PART_LABELS, lifeSkills: LIFE_SKILL_TABLE,
+        getOpen: function (key) { return {backpack:backpackPanelOpen,combat:combatPanelOpen,survival:survivalPanelOpen,save:savePanelOpen,warehouse:baseWarehousePanelOpen}[key]; },
+        getSkillTab: function () { return currentSkillOverviewTab; },
+        setSkillTab: function (tab) { if (['survival','life','special'].indexOf(tab)<0) return; currentSkillOverviewTab=tab; renderSurvivalModal(); },
+        close: function (key) { ({backpack:closeBackpackPanel,combat:closeCombatPanel,survival:closeSurvivalPanel,save:closeSavePanel,warehouse:closeBaseWarehousePanel})[key](); },
+        message: showMsg, position: function () { return E.getState(); },
+        changed: function () { var pos=E.getState(); markCellDirty(pos.mapId,pos.x,pos.y); updateBackpackPanel(); render(); },
+        use: tryUseItemFromContainer, takeWarehouse: takeFromBaseWarehouse,
+        deploy: handleDeployCombat, debugCombat: debugCombatPlus50, setCombat: safeSetCombatState,
+        skillName: getCombatSkillName, recipeReport: getRecipeSchemaValidationReport,
+        addSkill: addSkillLevelGeneric,
+        imported: function () { hideCreationOverlay(); updateRoleNameFromCharacter(); closeSavePanel(); render(); }
     };
 
     // ── 调试直达：URL ?panel=xxx（可加 &tab=）在游戏就绪后自动打开对应面板 ──

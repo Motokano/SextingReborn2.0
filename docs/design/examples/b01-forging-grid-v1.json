@@ -1,0 +1,22 @@
+{
+  "id": "b01-forging-grid-v1",
+  "status": "design-candidate",
+  "component": "B01 平磨直刃",
+  "rows": 7,
+  "columns": ["A", "B", "C"],
+  "budget": {"hammer": 5, "quench": 1, "temper": 1},
+  "referenceHammerLimit": 3,
+  "target": [[2,1,2],[2,2,2],[2,1,2],[2,3,2],[2,1,2],[2,3,2],[2,1,2]],
+  "template": [[2,1,2],[2,2,2],[2,1,2],[2,2,2],[2,1,2],[2,2,2],[2,1,2]],
+  "cases": [
+    {"id":"template","name":"原始模板","transfers":[],"solution":["B3","B5","B7","Q","T"]},
+    {"id":"left-low","name":"左缘低点","transfers":[{"from":"A1","to":"B4","amount":1}],"solution":["B1","B5","B7","Q","T"]},
+    {"id":"right-low","name":"右缘低点","transfers":[{"from":"C1","to":"B4","amount":1}],"solution":["B1","B5","B7","Q","T"]}
+  ],
+  "prototypeRules": {
+    "zeroHammer": "disabled",
+    "operationOrder": "free-within-budget",
+    "targetComparison": "exact",
+    "performanceScoring": "not-defined"
+  }
+}

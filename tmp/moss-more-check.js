@@ -1,0 +1,1 @@
+(()=>[...document.querySelectorAll('.moss-more')].map(e=>({panel:e.closest('.moss-panel').dataset.panel,hidden:e.hidden,display:getComputedStyle(e).display,visibility:getComputedStyle(e).visibility,rect:e.getBoundingClientRect().toJSON(),parent:e.parentNode.className,html:e.outerHTML,more:e.closest('.moss-panel').querySelector('.moss-supplement').hidden})))()

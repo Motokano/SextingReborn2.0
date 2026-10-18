@@ -29,6 +29,7 @@
     var tooltipHideTimer = null;
 
     function showItemTooltip(html, anchorEl) {
+        if (global.SvelteInteractions) global.SvelteInteractions.hideTooltip();
         if (!tooltipEl) tooltipEl = document.getElementById('item-tooltip');
         if (!tooltipEl || !html) return;
         tooltipEl.innerHTML = html;
@@ -54,6 +55,7 @@
     }
 
     function hideItemTooltip() {
+        if (global.SvelteInteractions) global.SvelteInteractions.hideTooltip();
         if (!tooltipEl) tooltipEl = document.getElementById('item-tooltip');
         if (tooltipEl) tooltipEl.classList.remove('show');
     }
@@ -83,15 +85,7 @@
         return html;
     }
 
-    function buildItemFieldRulesHtmlAppend(itemId, tpl, inst, character) {
-        try {
-            if (!global.ItemFieldDisplayRules || typeof global.ItemFieldDisplayRules.renderFieldBlocksHtml !== 'function') return '';
-            return global.ItemFieldDisplayRules.renderFieldBlocksHtml({
-                itemId: itemId,
-                tpl: tpl,
-                inst: inst,
-                character: character,
-                buffLookup: function (buffId) {
+    var lookupTooltipBuff = function (buffId) {
                     if (!global.BuffSystem || typeof global.BuffSystem.getBuffTemplate !== 'function') return null;
                     try {
                         var bt = global.BuffSystem.getBuffTemplate(buffId);
@@ -121,7 +115,17 @@
                             survivalDelta: sd
                         };
                     } catch (eB) { return null; }
-                }
+                };
+
+    function buildItemFieldRulesHtmlAppend(itemId, tpl, inst, character) {
+        try {
+            if (!global.ItemFieldDisplayRules || typeof global.ItemFieldDisplayRules.renderFieldBlocksHtml !== 'function') return '';
+            return global.ItemFieldDisplayRules.renderFieldBlocksHtml({
+                itemId: itemId,
+                tpl: tpl,
+                inst: inst,
+                character: character,
+                buffLookup: lookupTooltipBuff
             }) || '';
         } catch (e) { return ''; }
     }
@@ -156,7 +160,41 @@
         return html;
     }
 
+
+    function tooltipNode(cls, text, children, tag) { return { tag:tag || 'div', className:cls, text:text == null ? '' : String(text), children:children || [] }; }
+    function basicTooltipView(name, desc, attrs) {
+        var out = [tooltipNode('tooltip-name',name || '')];
+        if(desc){var d=tooltipNode('tooltip-desc',desc);d.breakLines=true;out.push(d);}
+        if(attrs){var a=tooltipNode('tooltip-attrs',attrs);a.breakLines=true;out.push(a);}
+        return out;
+    }
+    function buildItemTooltipView(itemId, tpl, inst, character) {
+        var tier = IE && IE.getItemDisplayTier ? IE.getItemDisplayTier(itemId,character) : 0;
+        var name = tpl && IE ? IE.getDisplayName(tpl,tier,character) : String(itemId || '');
+        if(inst && (inst.sewing || inst.sewing_parts) && global.SewingSystem)name=global.SewingSystem.itemName(inst);
+        var desc = tpl && IE ? IE.getDisplayDesc(tpl,tier,character) : '';
+        var attrs = inst && (inst.sewing || inst.sewing_parts) ? '' : formatItemAttributes(tpl,inst);
+        var out = basicTooltipView(name,desc,attrs), args={itemId:itemId,tpl:tpl,inst:inst,character:character,buffLookup:lookupTooltipBuff};
+        try { if(global.ItemInfoModules)out=out.concat(global.ItemInfoModules.tooltipView(args)); } catch(eModules) { /* Match the legacy missing-description fallback. */ }
+        try { if(global.ItemFieldDisplayRules)out=out.concat(global.ItemFieldDisplayRules.tooltipView(args)); } catch(eFields) { /* Match the legacy field fallback. */ }
+        var assembly=global.ItemAssemblyDisplay && global.ItemAssemblyDisplay.buildView(inst,character);
+        function span(cls,text){return tooltipNode(cls,text,[],'span');}
+        function slots(node,depth){return node.slots.map(function(slot){
+            var head=[span('item-assembly-slot-label',slot.label),span(slot.child?'item-assembly-part-name':'item-assembly-empty',slot.child?slot.child.name:ui('item.assembly.empty'))];
+            var children=[tooltipNode('item-assembly-slot-head','',head)];
+            if(slot.child && slot.child.slots.length)children.push(tooltipNode('item-assembly-children','',slots(slot.child,depth+1)));
+            return tooltipNode('item-assembly-slot depth-'+Math.min(depth,4),'',children);
+        });}
+        if(assembly)out.push(tooltipNode('item-assembly-view','',[tooltipNode('item-assembly-title','',[span('',ui('item.assembly.title')),span('item-assembly-state '+(assembly.complete?'complete':'incomplete'),ui(assembly.complete?'item.assembly.complete':'item.assembly.incomplete'))])].concat(slots(assembly.root,0))));
+        return out;
+    }
+    function showTooltipView(nodes, anchor) {
+        if(global.SvelteInteractions) { if(!tooltipEl)tooltipEl=document.getElementById('item-tooltip');if(tooltipEl)tooltipEl.classList.remove('show');global.SvelteInteractions.showTooltip(nodes,anchor); }
+    }
+    function showTemplateTooltip(itemId,tpl,inst,character,anchor) { showTooltipView(buildItemTooltipView(itemId,tpl,inst,character),anchor); }
+
     global.SceneUi = {
+        basicTooltipView: basicTooltipView, buildItemTooltipView: buildItemTooltipView, showTooltipView: showTooltipView, showTemplateTooltip: showTemplateTooltip,
         setUiDeps: setUiDeps,
         showItemTooltip: showItemTooltip,
         hideItemTooltip: hideItemTooltip,

@@ -66,6 +66,8 @@
         return tpl && IE.getDisplayName ? IE.getDisplayName(tpl, tier, character) : inst.item_id;
     }
     function slotLabel(slotId) {
+        var forgingLabels={front:'前端',side1:'侧一',side2:'侧二',hilt:'手柄',whetstone:'磨刀工具',hammer:'锤击工具',pliers:'钳夹工具'};
+        if (forgingLabels[slotId]) return forgingLabels[slotId];
         var key = SLOT_LABEL_KEYS[String(slotId || '')];
         if (key) return t(key);
         return t('item.assembly.slot.generic', { v: String(slotId || '') });
@@ -100,7 +102,12 @@
         var rootNode = node(root, null);
         if (!hasAnyAssembly && !(root.connections && Object.keys(root.connections).length)) return null;
         var validation = A.validateAssembly(root, { requireComplete: true });
-        return { root: rootNode, complete: !!validation.ok, validation: validation };
+        var stationOnly = root.item_id === 'weapon_single_hand_assembly';
+        if (stationOnly && global.ForgingRules) {
+            var coverage = global.ForgingRules.coverage(root);
+            rootNode.slots = rootNode.slots.filter(function (slot) { return slot.child || !coverage.positions[slot.slot_id]; });
+        }
+        return { root: rootNode, complete: !!validation.ok, validation: validation, readOnly: stationOnly };
     }
 
     function listCompatibleCandidates(host, slotId, character) {
@@ -177,6 +184,7 @@
         var showWeight = !(args && args.showWeight === false);
         var view = buildView(root, character);
         if (!view) return '';
+        if (view.readOnly) interactive = false;
         var stateText = view.complete ? assemblyText('item.assembly.complete', wording) : assemblyText('item.assembly.incomplete', wording);
         var html = '<div class="item-assembly-view' + (interactive ? ' is-interactive' : '') + '">';
         html += '<div class="item-assembly-title"><span>' + esc(assemblyText('item.assembly.title', wording)) + '</span><span class="item-assembly-state ' + (view.complete ? 'complete' : 'incomplete') + '">' + esc(stateText) + '</span></div>';

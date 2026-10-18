@@ -26,6 +26,10 @@
   </header>
   {#if !$store.muscle}
    <div class="ledger-body"><section class="global-strip" aria-label="全局技能">{#each $store.hubs as hub}<button class="hub" data-hub={hub.id} aria-label={'更换'+hub.label} onclick={()=>show('hub',hub.id)}><span class="hub-label">{hub.label}</span><strong>{hub.name}</strong><span class="chevron" aria-hidden="true">⌄</span></button>{/each}</section>
+   {#if $store.weapon}<section class="weapon-cycle" aria-label="武器循环"><header>{$store.weapon.hand}持械 · {$store.weapon.active?'武器循环':'徒手循环'}</header><div>{#each $store.weapon.rows as row,i}<article class:next={row.next}>
+    <small>{row.label}{#if row.next} · 下一招{/if}</small><strong>{row.name}</strong>
+    {#if row.powerLevel}<label class="weapon-power">出力<select aria-label={row.label+'出力'} value={row.powerLevel} onchange={e=>controller.weaponPower(row.slot,e.currentTarget.value)}>{#each Array.from({length:12},(_,n)=>n+1) as power}<option value={power}>{power}成</option>{/each}</select></label>{/if}
+    {#if row.durability}<small>{row.durability}</small>{/if}{#if row.broken}<small>损坏</small>{/if}</article>{#if i<3}<button aria-label={'交换'+row.label+'与下一位置'} onclick={()=>controller.swapWeapon(i)}>⇄</button>{/if}{/each}</div></section>{/if}
    <div class="table-wrap"><table class="ledger"><thead><tr><th scope="col">顺位</th><th scope="col">肢体</th><th scope="col">主动技能</th><th scope="col">主招式</th><th scope="col">变式</th><th scope="col"><span class="sr-only">操作</span></th></tr></thead><tbody>
     {#each $store.limbs as limb (limb.id)}<tr class:selected={limb.id===$store.selected} data-limb={limb.id}>
      <td class="row-order"><span>{limb.order}</span></td><th scope="row" class="limb-table-name">{limb.label}</th>

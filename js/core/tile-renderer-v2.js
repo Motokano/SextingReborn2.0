@@ -94,6 +94,7 @@
         // Approved device pawns. Crop and anchor are source-image pixel coordinates;
         // sizes below describe visible content on a 144px tile, not transparent padding.
         var deviceSpecs = {
+            forging: { crop: [166,81,970,1079], anchor: [650,1159], width: 68, label: '铸造台' },
             sewing: { crop: [212,95,877,1033], anchor: [661,1127], width: 64, label: '缝纫台' },
             toolbench: { crop: [218,77,869,1055], anchor: [662,1131], width: 58, label: '工具台' },
             stove: { crop: [183,7,930,1187], anchor: [650,1193], width: 56, label: '灶台' },
@@ -110,6 +111,7 @@
         // Ground footprint of each oval base in display pixels at 144px tile width.
         // A base is already on the ground plane; it must not be flattened again.
         var deviceFootprints = {
+            forging: [34,11],
             sewing: [32,10.5],
             toolbench: [29,10],
             stove: [28,9], ranch: [36,13], farm: [32,11.5], bed: [33,11.5],
@@ -126,7 +128,7 @@
         deviceFootprints.linManager = [23,7];
         // Dialogue reads the same sources and crops as map pawns.
         global.TileRendererV2.getSpeakerPawn = function (entityId) {
-            var key = entityId === 'npc.station.sewing_base' ? 'sewing' : entityId === 'npc.station.observation_base' ? 'toolbench' :
+            var key = entityId === 'npc.station.forging_base' ? 'forging' : entityId === 'npc.station.sewing_base' ? 'sewing' : entityId === 'npc.station.observation_base' ? 'toolbench' :
                 entityId === 'npc.supervisor.manager' ? 'linManager' :
                 entityId === 'enemy.street_thug' ? 'streetThug' : 'npc';
             return {url:spriteSources[key],crop:pawnSpecs[key] ? pawnSpecs[key].crop.slice() : null};
@@ -160,6 +162,7 @@
         }
 
         function deviceKeyForMeta(m) {
+            if (m.npcId === 'npc.station.forging_base') return 'forging';
             if (m.npcId === 'npc.station.sewing_base') return 'sewing';
             if (m.npcId === 'npc.station.observation_base') return 'toolbench';
             if (m.cookingStation) return 'stove';

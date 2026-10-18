@@ -1,0 +1,251 @@
+{
+  "version": 1,
+  "date": "2026-10-17",
+  "status": "forging_registered_effect_observation_pending",
+  "itemCatalog": "item-catalog-v2.json",
+  "owner": "character",
+  "defaultKnown": false,
+  "common": {
+    "unseen": "omit_entire_entry",
+    "identityNameRequires": [
+      "item_seen",
+      "identity_known",
+      "survival_language>=3"
+    ],
+    "nameOtherwise": "placeholder_name",
+    "descriptionWhenLanguageBelow2": "omit",
+    "identifiedDescriptionRequires": [
+      "identity_known",
+      "survival_language>=4"
+    ],
+    "descriptionOtherwise": "fn_before",
+    "neverReveal": [
+      "editor_name",
+      "item_id",
+      "tags",
+      "assembly_types",
+      "assembly_slots",
+      "source",
+      "production_lines",
+      "base_value",
+      "full_catalog_count",
+      "hidden_trait_count"
+    ],
+    "noIdentityFrom": [
+      "language_level_alone",
+      "forging_level_alone",
+      "pickup",
+      "trade",
+      "move",
+      "open_panel",
+      "load_save"
+    ],
+    "noUnseenEnumeration": true,
+    "noUnknownGroupHeadings": true,
+    "noRawIdFallback": true,
+    "noFormulaLeaksInLogsOrSorting": true
+  },
+  "stationInspection": {
+    "actionId": "inspect_ore_processing",
+    "stationRequired": true,
+    "requires": [
+      "raw_material_present",
+      "out_of_combat"
+    ],
+    "identityKnownRequired": false,
+    "consumeSample": 0,
+    "ticks": 0,
+    "stamina": 0,
+    "xp": 0,
+    "repeatKnownRoute": "no_op",
+    "scope": "only_inspected_raw_ore_route",
+    "grants": [
+      "material_seen",
+      "forge_use_known",
+      "feed_route_known",
+      "feed_unit_known"
+    ],
+    "doesNotGrant": [
+      "raw_identity",
+      "processed_feed_identity",
+      "four_axis_directions",
+      "four_axis_scores_without_level",
+      "component_structure",
+      "component_recipe",
+      "ore_trait",
+      "combination_recipe"
+    ],
+    "interfacePolicy": "show_operation_for_present_physical_sample_without_requiring_its_real_name",
+    "countsAreKnownOnInspection": true,
+    "unseenFeedItemListing": false,
+    "costPolicy": "no_extra_recognition_fee_no_assay"
+  },
+  "components": {
+    "identityEvidence": "personal_inspection_of_present_component",
+    "structureEvidence": "destructive_research_one_real_component",
+    "structureScope": "design_id_including_stage",
+    "identityDoesNotGrantBlueprint": true,
+    "researchDoesNotRevealRecipe": true,
+    "partAppearanceIndependentOfIngredientIdentity": true,
+    "compatibilityRequires": [
+      "component_seen",
+      "component_structure_known"
+    ],
+    "effectsRequire": [
+      "effect_known",
+      "trigger_known"
+    ],
+    "materialRequirements": {
+      "minForgingLevel": 10,
+      "requires": [
+        "component_structure_known"
+      ]
+    },
+    "exactInstancePerformance": {
+      "minForgingLevel": 25,
+      "requires": [
+        "component_structure_known",
+        "instance_recipe_known",
+        "all_contributing_material_routes_known"
+      ]
+    },
+    "oreTraitStrength": {
+      "minForgingLevel": 50,
+      "requires": [
+        "effect_known",
+        "trigger_known",
+        "relevant_route_known"
+      ]
+    },
+    "starsDoNotAutoIdentify": true,
+    "buffIsNotIdentityText": true,
+    "knowledgeKeyByItem": {
+      "weapon_component_b01": "weapon_structure:B01",
+      "weapon_component_b02": "weapon_structure:B02",
+      "weapon_component_b03": "weapon_structure:B03",
+      "weapon_component_b04": "weapon_structure:B04",
+      "weapon_component_b05": "weapon_structure:B05",
+      "weapon_component_b06": "weapon_structure:B06",
+      "weapon_component_b07": "weapon_structure:B07",
+      "weapon_component_b08": "weapon_structure:B08",
+      "weapon_component_b09": "weapon_structure:B09",
+      "weapon_component_b10": "weapon_structure:B10",
+      "weapon_component_b11": "weapon_structure:B11",
+      "weapon_component_b12": "weapon_structure:B12",
+      "weapon_component_b13": "weapon_structure:B13",
+      "weapon_component_b14": "weapon_structure:B14",
+      "weapon_component_b15": "weapon_structure:B15",
+      "weapon_component_b16": "weapon_structure:B16",
+      "weapon_component_b17": "weapon_structure:B17",
+      "weapon_component_t01": "weapon_structure:T01",
+      "weapon_component_t02": "weapon_structure:T02",
+      "weapon_component_t03": "weapon_structure:T03",
+      "weapon_component_t04": "weapon_structure:T04",
+      "weapon_component_t05": "weapon_structure:T05",
+      "weapon_component_t06": "weapon_structure:T06",
+      "weapon_component_t07": "weapon_structure:T07",
+      "weapon_component_t08": "weapon_structure:T08",
+      "weapon_component_t09": "weapon_structure:T09",
+      "weapon_component_t10": "weapon_structure:T10",
+      "weapon_component_t11": "weapon_structure:T11",
+      "weapon_component_t12": "weapon_structure:T12",
+      "weapon_component_d01": "weapon_structure:D01",
+      "weapon_component_d02": "weapon_structure:D02",
+      "weapon_component_d03": "weapon_structure:D03",
+      "weapon_component_d04": "weapon_structure:D04",
+      "weapon_component_d05": "weapon_structure:D05",
+      "weapon_component_d06": "weapon_structure:D06",
+      "weapon_component_d07": "weapon_structure:D07",
+      "weapon_component_d08": "weapon_structure:D08",
+      "weapon_component_d09": "weapon_structure:D09",
+      "weapon_component_d10": "weapon_structure:D10",
+      "weapon_component_d11": "weapon_structure:D11",
+      "weapon_component_d12": "weapon_structure:D12",
+      "weapon_component_d13": "weapon_structure:D13",
+      "weapon_component_d14": "weapon_structure:D14",
+      "weapon_component_d15": "weapon_structure:D15",
+      "weapon_component_d16": "weapon_structure:D16",
+      "weapon_component_d17": "weapon_structure:D17",
+      "weapon_component_d18": "weapon_structure:D18",
+      "weapon_component_h01": "weapon_structure:H01",
+      "weapon_component_h02": "weapon_structure:H02",
+      "weapon_component_h03": "weapon_structure:H03",
+      "weapon_component_h04": "weapon_structure:H04",
+      "weapon_component_h05": "weapon_structure:H05",
+      "weapon_component_h06": "weapon_structure:H06",
+      "weapon_component_h07": "weapon_structure:H07",
+      "weapon_component_h08": "weapon_structure:H08",
+      "weapon_component_h09": "weapon_structure:H09",
+      "weapon_component_h10": "weapon_structure:H10",
+      "weapon_component_h11": "weapon_structure:H11",
+      "weapon_component_h12": "weapon_structure:H12",
+      "weapon_component_h13": "weapon_structure:H13",
+      "weapon_component_h14": "weapon_structure:H14",
+      "weapon_component_h15": "weapon_structure:H15",
+      "weapon_component_h16": "weapon_structure:H16",
+      "weapon_component_h17": "weapon_structure:H17",
+      "weapon_component_h18": "weapon_structure:H18",
+      "weapon_component_m01_t1": "weapon_structure:M01-T1",
+      "weapon_component_m02_t1": "weapon_structure:M02-T1",
+      "weapon_component_m07_t1": "weapon_structure:M07-T1",
+      "weapon_component_m03_t2": "weapon_structure:M03-T2",
+      "weapon_component_m05_t2": "weapon_structure:M05-T2",
+      "weapon_component_m06_t2": "weapon_structure:M06-T2",
+      "weapon_component_m01_t3": "weapon_structure:M01-T3",
+      "weapon_component_m04_t3": "weapon_structure:M04-T3",
+      "weapon_component_m07_t3": "weapon_structure:M07-T3",
+      "weapon_component_m02_t4": "weapon_structure:M02-T4",
+      "weapon_component_m05_t4": "weapon_structure:M05-T4",
+      "weapon_component_m08_t4": "weapon_structure:M08-T4",
+      "weapon_component_m03_t5": "weapon_structure:M03-T5",
+      "weapon_component_m06_t5": "weapon_structure:M06-T5",
+      "weapon_component_m07_t5": "weapon_structure:M07-T5",
+      "weapon_component_m04_t6": "weapon_structure:M04-T6",
+      "weapon_component_m05_t6": "weapon_structure:M05-T6",
+      "weapon_component_m08_t6": "weapon_structure:M08-T6"
+    }
+  },
+  "feeds": {
+    "useAndScoresSource": "known_processing_route",
+    "namesRequire": [
+      "feed_seen",
+      "feed_identity_known",
+      "raw_identity_known",
+      "survival_language>=3"
+    ],
+    "identifiedDescriptionRequires": [
+      "feed_identity_known",
+      "raw_identity_known",
+      "survival_language>=4"
+    ],
+    "productionEvidence": [
+      "feed_seen",
+      "feed_route_known",
+      "feed_unit_known"
+    ],
+    "identityEvidence": "own_processing_of_identified_raw_ore_or_personal_feed_identification",
+    "rawIdentityCannotBeInferredFromHiddenRouteId": true,
+    "exactScoresMinForgingLevel": 10,
+    "unknownContribution": "suppress_incomplete_totals_and_predictions",
+    "reference": "../../docs/design/examples/weapon-forging-ore-information-v1.json#/knowledgePolicy"
+  },
+  "hosts": {
+    "tool_repair_roll": {
+      "identityEvidence": "personal_inspection",
+      "useRequires": [
+        "toolkit_use_known"
+      ],
+      "compatibilityKnowledge": "only_observed_tools_and_successful_fit_or_repair",
+      "emptySlotsDoNotListUnknownTools": true
+    },
+    "weapon_single_hand_assembly": {
+      "name": "known_assembly_name_or_generic_single_hand_weapon",
+      "noAutomaticSwordClassification": true,
+      "rootNameDoesNotRevealChildren": true,
+      "detailsUseEachChildKnowledge": true,
+      "missingPartsDoNotRecommendUnseenItems": true
+    }
+  },
+  "rawOreInformationRef": "../../docs/design/examples/weapon-forging-ore-information-v1.json#",
+  "repairToolInformationRef": "../../docs/design/examples/weapon-repair-tool-knowledge-v1.json#"
+}

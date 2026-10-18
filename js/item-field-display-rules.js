@@ -309,6 +309,7 @@
     }
 
     function renderFieldBlocksHtml(args) {
+        if (args && args.tpl && global.ForgingSystem && global.ForgingSystem.managed(args.tpl.item_id)) return '';
         try {
             var tpl = args && args.tpl;
             var inst = args && args.inst;
@@ -362,7 +363,64 @@
         }
     }
 
+
+    function tooltipView(args) {
+        if (args && args.tpl && global.ForgingSystem && global.ForgingSystem.managed(args.tpl.item_id)) return [];
+        if (!args.tpl || !Object.keys(fields).length) return [];
+        function n(cls,text,children,tag) { return {tag:tag || 'div',className:cls,text:text == null ? '' : String(text),children:children || []}; }
+        function span(cls,text,children) { return n(cls,text,children,'span'); }
+        function value(row) {
+            var raw = row.rawVal, rule = row.rule, ren = String(rule.renderer || '').trim(), result = String(raw == null ? '' : raw);
+            var info = null, id = String(raw || '').trim();
+            if (['buff_summary','food_restore','pharmacy_effect'].indexOf(ren) >= 0 && args.buffLookup) { try { info = args.buffLookup(id); } catch (e) {} }
+            if (ren === 'bool_tag') result = formatBoolTag(raw);
+            else if (ren === 'number') { var num = Number(raw); if (isFinite(num)) result = String(Math.abs(num-Math.round(num)) < 1e-9 ? Math.round(num) : num); }
+            else if (ren === 'tick_duration') result = formatTicks(raw);
+            else if (ren === 'enum_label') { var mapped = rule.value_map && rule.value_map[result.trim()]; result = mapped != null ? (String(mapped).indexOf('.') >= 0 ? safeT(String(mapped),{}) : String(mapped)) : result.trim(); }
+            else if (ren === 'buff_summary' || ren === 'food_restore') {
+                if (!id) return [span('tooltip-module-v',String(raw))];
+                var parts = [], name = info && info.name ? String(info.name).trim() : '', sd = info && info.survivalDelta, dur = info && info.durationTicks > 0 ? info.durationTicks : 1;
+                if (ren === 'food_restore' && sd) ['satiety','thirst','nutrition'].forEach(function (k) { if (sd[k]) parts.push(safeT('item.food.restore.'+k,{v:Math.round(sd[k]*dur*10)/10})); });
+                if (parts.length) result = (name ? name+'：' : '') + parts.join(' · ');
+                else if (name) return [span('tooltip-module-v',name+' ',[span('tooltip-field-buff-id','('+id+')')])];
+                else result = safeT('item.field.buff_summary_fallback',{id:id});
+            } else if (ren === 'pharmacy_effect') {
+                if (!info) result = safeT('item.field.buff_summary_fallback',{id:id});
+                else {
+                    var head = [], tail = [];
+                    [['pharmacyFamily','family'],['pharmacyRoute','route'],['pharmacyPotency','potency']].forEach(function (pair) { var v = String(info[pair[0]] || '').trim(); if (v) head.push(safeT('pharmacy.'+pair[1]+'.'+v,{})); });
+                    if (info.onsetTicks > 0) tail.push(safeT('item.pharmacy.onset_fmt',{n:String(info.onsetTicks)}));
+                    if (info.durationTicks > 0) tail.push(safeT('item.pharmacy.duration_fmt',{n:String(info.durationTicks)}));
+                    result = (head.length ? head.join('·') : String(info.name || id)) + (tail.length ? '（'+tail.join(' · ')+'）' : '');
+                }
+            } else if (ren === 'pharmacy_charges') { var count = Math.max(0,Math.floor(Number(raw)||0)); result = count ? safeT('item.pharmacy.charges_fmt',{n:String(count)}) : String(raw); }
+            else if (ren === 'pharmacy_components') {
+                var list = (Array.isArray(raw) ? raw : []).filter(function (v) { return v && v.item_id; }).map(function (v) { var tpl = global.InventoryEquipment && global.InventoryEquipment.getItemTemplate(v.item_id); return safeT('item.pharmacy.component_fmt',{name:tpl && tpl.sn ? String(tpl.sn) : String(v.item_id),n:String(Math.max(1,parseInt(v.count,10)||1))}); });
+                var nodes = list.length ? [span('tooltip-module-v',list.join(' · '))] : [];
+                if (args.inst && args.inst.precipitated === true) nodes.push(n('', ' ', [span('tooltip-field-buff-id',safeT('item.pharmacy.precipitated_tag',{}))], 'span'));
+                return nodes.length ? nodes : [span('tooltip-module-v',String(raw))];
+            }
+            return [span('tooltip-module-v',result)];
+        }
+        var byBlock = collectRows(args.tpl,args.inst,args.character,args.buffLookup);
+        var ids = Object.keys(byBlock).filter(function (id) { return byBlock[id].length; }).sort(function (a,b) { if(a==='regular')return -1;if(b==='regular')return 1;return a.localeCompare(b); });
+        if (!ids.length) return [];
+        return [n('tooltip-modules tooltip-field-rules','',ids.map(function (id) {
+            return n('tooltip-module','',[n('tooltip-module-title',(blocks[id] || {}).display_name || id),n('tooltip-module-kv','',byBlock[id].map(function (row) {
+                var children = [span('tooltip-module-k',fieldLabel(row.fieldKey))];
+                if(row.unlocked) children = children.concat(value(row));
+                else {
+                    var rule = row.rule, hint = String(rule.locked_hint || '').trim(), sid = String(rule.skill_id || '').trim();
+                    if(hint)children.push(span('tooltip-module-locked-hint',hint));
+                    if(sid){var need=Math.max(0,parseInt(rule.level_min,10)||0);children.push(span('tooltip-module-req',safeT('item_info.locked_hint',{skillId:getSkillDisplayName(sid),level:need,need:Math.max(0,need-getSkillLevel(args.character,sid))})));}
+                }
+                return n('tooltip-module-kv-row'+(row.unlocked?'':' is-field-locked'),'',children);
+            }))]);
+        }))];
+    }
+
     global.ItemFieldDisplayRules = {
+        tooltipView: tooltipView,
         setTable: setTable,
         getFieldRule: getFieldRule,
         getBlocks: getBlocks,

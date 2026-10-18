@@ -77,16 +77,16 @@
         });
 
         // 采集按钮
-        var bubbleGatherBtn = document.getElementById('player-action-gather');
-        var bubbleStopBtn = document.getElementById('player-action-gather-stop');
+        var bubbleGatherBtn = !window.SvelteInteractions && document.getElementById('player-action-gather');
+        var bubbleStopBtn = !window.SvelteInteractions && document.getElementById('player-action-gather-stop');
         if (bubbleGatherBtn && ctx.actions && typeof ctx.actions.startGatheringIdle === 'function') {
             bubbleGatherBtn.addEventListener('click', function () { ctx.actions.startGatheringIdle(); });
         }
         if (bubbleStopBtn && ctx.actions && typeof ctx.actions.stopGatheringIdle === 'function') {
             bubbleStopBtn.addEventListener('click', function () { ctx.actions.stopGatheringIdle(true); });
         }
-        var abGather = document.getElementById('action-bar-gather');
-        var abStop = document.getElementById('action-bar-gather-stop');
+        var abGather = !window.SvelteInteractions && document.getElementById('action-bar-gather');
+        var abStop = !window.SvelteInteractions && document.getElementById('action-bar-gather-stop');
         if (abGather && ctx.actions && typeof ctx.actions.startGatheringIdle === 'function') {
             abGather.addEventListener('click', function () { ctx.actions.startGatheringIdle(); });
         }

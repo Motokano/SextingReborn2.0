@@ -1,0 +1,10 @@
+{
+  "schemaVersion": 1,
+  "pools": {
+    "npc.station.forging_base.fallback": {
+      "lines": [
+        "铁砧架在厚木墩上，一旁是矮炉和水桶。"
+      ]
+    }
+  }
+}

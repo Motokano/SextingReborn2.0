@@ -1,0 +1,4404 @@
+{
+  "version": 1,
+  "date": "2026-10-17",
+  "status": "trial_balance_design_only",
+  "skillId": "life_forging",
+  "sourceDoc": "../weapon-forging-costs-and-progression.md",
+  "description": "83件部件、12种原矿与1至100级的首版成本成长表；未注册到游戏或试玩。",
+  "sources": [
+    "weapon-forging-material-requirements-v1.json",
+    "weapon-forging-ores-v1.json",
+    "weapon-ore-intrinsic-traits-v1.json",
+    "weapon-repair-tool-knowledge-v1.json"
+  ],
+  "confirmedRules": {
+    "oreToFeed": [
+      1,
+      1
+    ],
+    "noByproducts": true,
+    "craftFixedTicks": true,
+    "starsCompletionPercent": [
+      60,
+      80,
+      100
+    ],
+    "craftXpMultipliers": [
+      0.25,
+      1,
+      1.5,
+      2.5
+    ],
+    "noFuelManagement": true,
+    "noSalvage": true,
+    "acquisition": "pending"
+  },
+  "numericalChoices": {
+    "craftTicks": 12,
+    "craftBaseStamina": "2 * capacity + 2 * tier",
+    "craftBaseXp": "4 + capacity + 2 * tier",
+    "researchTicks": "ceil(capacity / 2) + tier",
+    "researchBaseStamina": "capacity + tier",
+    "researchXp": "2 * capacity + 4 * tier",
+    "handlingTicks": "ceil(capacity / 6)",
+    "handlingBaseStamina": "2 * handlingTicks",
+    "processingXpPerTick": 0.25
+  },
+  "accounting": {
+    "xpUnitsPerPoint": 1000,
+    "staminaBillingQuantum": 0.1,
+    "staminaRounding": "ceil_once_after_all_modifiers",
+    "durabilityQuantum": 0.01,
+    "productPowerQuantum": 0.01,
+    "productPowerRounding": "half_up_at_final_product",
+    "processingSettlementUnit": "one_raw_item",
+    "craftSettlementUnit": "one_real_component_instance",
+    "assemblySettlementUnit": "one_changed_real_instance_per_attach_or_detach",
+    "skillLevelSnapshot": "operation_start",
+    "normalTemperatureOnlyInExamples": true,
+    "environmentCostSnapshot": "operation_start",
+    "worldCostModifiers": "use_current_shared_action_cost_once; no_invented_endurance_rate",
+    "noXpOperations": [
+      "view",
+      "cancel",
+      "abandon",
+      "attach",
+      "detach",
+      "equip",
+      "swap_toolkit"
+    ]
+  },
+  "progression": {
+    "minLearnedLevel": 1,
+    "maxLevel": 100,
+    "entryXp": 0,
+    "learnOnFirstSuccessfulWork": true,
+    "cumulativeXpFormula": "25 * (level - 1) * (level + 2)",
+    "nextLevelXpFormula": "50 * level + 50",
+    "maxXp": 252450,
+    "xpIsCurrentProgressNotLifetimeTotal": true,
+    "deathPolicy": "follow_existing_level_loss_and_synchronize_progress",
+    "zeroLevelRepairUsesLevel": 1,
+    "zeroLevelDiscountBps": 0,
+    "zeroLevelGrantsKnowledge": false,
+    "levelGatesOnRecipes": false
+  },
+  "knowledgeUnlocks": [
+    {
+      "level": 0,
+      "group": "operation",
+      "fields": [
+        "quoted_ticks",
+        "quoted_stamina",
+        "owned_input_count",
+        "known_component_capacity",
+        "board_completion"
+      ],
+      "requires": [
+        "target_seen",
+        "operation_available"
+      ],
+      "allowsUnseenEnumeration": false
+    },
+    {
+      "level": 10,
+      "group": "material_scores",
+      "fields": [
+        "hardness",
+        "toughness",
+        "deformationResistance",
+        "density",
+        "known_component_material_requirements",
+        "known_plan_achievement_ratios"
+      ],
+      "requires": [
+        "material_seen",
+        "forge_use_known",
+        "feed_route_known",
+        "component_structure_known_for_targets"
+      ],
+      "allowsUnseenEnumeration": false
+    },
+    {
+      "level": 25,
+      "group": "product_potential",
+      "fields": [
+        "power_potential",
+        "durability_potential",
+        "contact_loss_potential",
+        "material_adjusted_requirement",
+        "own_product_exact_performance"
+      ],
+      "requires": [
+        "all_contributing_material_routes_known",
+        "component_structure_known",
+        "instance_recipe_known_for_reverse_calculation"
+      ],
+      "allowsUnseenEnumeration": false
+    },
+    {
+      "level": 50,
+      "group": "trait_strength",
+      "fields": [
+        "known_intrinsic_strength",
+        "known_combination_strength",
+        "known_penalty_strength"
+      ],
+      "requires": [
+        "trait_effect_known",
+        "trait_trigger_known",
+        "relevant_route_known",
+        "known_recipe_and_inheritance_rule_when_predicting"
+      ],
+      "allowsUnseenEnumeration": false,
+      "exposesUnrolledWinner": false
+    }
+  ],
+  "operationPolicies": {
+    "oreProcessingInspection": {
+      "actionId": "inspect_ore_processing",
+      "stationRequired": true,
+      "requires": [
+        "raw_material_present",
+        "out_of_combat"
+      ],
+      "identityKnownRequired": false,
+      "consumeSample": 0,
+      "ticks": 0,
+      "stamina": 0,
+      "xp": 0,
+      "repeatKnownRoute": "no_op",
+      "scope": "only_inspected_raw_ore_route",
+      "grants": [
+        "material_seen",
+        "forge_use_known",
+        "feed_route_known",
+        "feed_unit_known"
+      ],
+      "doesNotGrant": [
+        "raw_identity",
+        "processed_feed_identity",
+        "four_axis_directions",
+        "four_axis_scores_without_level",
+        "component_structure",
+        "component_recipe",
+        "ore_trait",
+        "combination_recipe"
+      ],
+      "interfacePolicy": "show_operation_for_present_physical_sample_without_requiring_its_real_name",
+      "countsAreKnownOnInspection": true,
+      "unseenFeedItemListing": false,
+      "costPolicy": "no_extra_recognition_fee_no_assay"
+    },
+    "craft": {
+      "chargeMaterialsAtStart": true,
+      "timePhase": "before_board_play",
+      "saveElapsedCostTicks": true,
+      "resumeDoesNotReroll": true,
+      "completionXpOnce": true,
+      "staminaBasis": "fixed_capacity_and_tier_not_actual_input_or_hammer_clicks"
+    },
+    "research": {
+      "stationRequired": true,
+      "consumeSampleAtStart": true,
+      "resumeSameJob": true,
+      "xpAndKnowledgeOnCompletionOnly": true,
+      "knownStructureIsNoOp": true,
+      "grantsAllMaterialRecipes": false
+    },
+    "processing": {
+      "stationRequired": true,
+      "requiresKnownRoute": true,
+      "batchExpandsIntoUnitJobs": true,
+      "inputConsumedAndOutputCommittedTogetherOnUnitCompletion": true,
+      "interruptedUnitGivesNoFeedOrXp": true,
+      "completedUnitsKept": true
+    },
+    "assembly": {
+      "stationRequired": true,
+      "noChangeNoCost": true,
+      "swapChargesDetachPlusAttach": true,
+      "multiSlotCountedByInstance": true,
+      "unchangedPositionsKeepLoadout": true,
+      "changedPositionsResetToFallback": true
+    }
+  },
+  "repair": {
+    "formulaLevelRange": [
+      1,
+      100
+    ],
+    "ratio": "(level + 98) / 198",
+    "ticksPerTenDurability": 1,
+    "baseStaminaPerDurability": 0.2,
+    "xpPerDurability": 0.1,
+    "staminaReductionPerLevel": 0.002,
+    "maxStaminaReduction": 0.2,
+    "enabledWhen": "out_of_combat && matching_tool_in_selected_toolkit && current < ability_cap",
+    "interruptedGivesDurabilityOrXp": false,
+    "refundsSpentCosts": false,
+    "preservesPartialProgress": false
+  },
+  "components": [
+    {
+      "id": "B01",
+      "name": "平磨直刃",
+      "tier": 1,
+      "capacity": 6,
+      "craft": {
+        "ticks": 12,
+        "baseStamina": 14,
+        "baseXp": 12,
+        "xpByStars": [
+          3,
+          12,
+          18,
+          30
+        ]
+      },
+      "research": {
+        "ticks": 4,
+        "baseStamina": 7,
+        "xp": 16,
+        "sampleCount": 1,
+        "destroysSample": true,
+        "repeatKnownStructureAllowed": false
+      },
+      "attach": {
+        "ticks": 1,
+        "baseStamina": 2,
+        "xp": 0
+      },
+      "detach": {
+        "ticks": 1,
+        "baseStamina": 2,
+        "xp": 0
+      },
+      "repairToolId": "tool_repair_whetstone"
+    },
+    {
+      "id": "B02",
+      "name": "厚身凸刃",
+      "tier": 1,
+      "capacity": 7,
+      "craft": {
+        "ticks": 12,
+        "baseStamina": 16,
+        "baseXp": 13,
+        "xpByStars": [
+          3.25,
+          13,
+          19.5,
+          32.5
+        ]
+      },
+      "research": {
+        "ticks": 5,
+        "baseStamina": 8,
+        "xp": 18,
+        "sampleCount": 1,
+        "destroysSample": true,
+        "repeatKnownStructureAllowed": false
+      },
+      "attach": {
+        "ticks": 2,
+        "baseStamina": 4,
+        "xp": 0
+      },
+      "detach": {
+        "ticks": 2,
+        "baseStamina": 4,
+        "xp": 0
+      },
+      "repairToolId": "tool_repair_whetstone"
+    },
+    {
+      "id": "B03",
+      "name": "透镜形刃",
+      "tier": 2,
+      "capacity": 6,
+      "craft": {
+        "ticks": 12,
+        "baseStamina": 16,
+        "baseXp": 14,
+        "xpByStars": [
+          3.5,
+          14,
+          21,
+          35
+        ]
+      },
+      "research": {
+        "ticks": 5,
+        "baseStamina": 8,
+        "xp": 20,
+        "sampleCount": 1,
+        "destroysSample": true,
+        "repeatKnownStructureAllowed": false
+      },
+      "attach": {
+        "ticks": 1,
+        "baseStamina": 2,
+        "xp": 0
+      },
+      "detach": {
+        "ticks": 1,
+        "baseStamina": 2,
+        "xp": 0
+      },
+      "repairToolId": "tool_repair_whetstone"
+    },
+    {
+      "id": "B04",
+      "name": "窄身菱脊刃",
+      "tier": 2,
+      "capacity": 5,
+      "craft": {
+        "ticks": 12,
+        "baseStamina": 14,
+        "baseXp": 13,
+        "xpByStars": [
+          3.25,
+          13,
+          19.5,
+          32.5
+        ]
+      },
+      "research": {
+        "ticks": 5,
+        "baseStamina": 7,
+        "xp": 18,
+        "sampleCount": 1,
+        "destroysSample": true,
+        "repeatKnownStructureAllowed": false
+      },
+      "attach": {
+        "ticks": 1,
+        "baseStamina": 2,
+        "xp": 0
+      },
+      "detach": {
+        "ticks": 1,
+        "baseStamina": 2,
+        "xp": 0
+      },
+      "repairToolId": "tool_repair_whetstone"
+    },
+    {
+      "id": "B05",
+      "name": "宽身平刃",
+      "tier": 2,
+      "capacity": 8,
+      "craft": {
+        "ticks": 12,
+        "baseStamina": 20,
+        "baseXp": 16,
+        "xpByStars": [
+          4,
+          16,
+          24,
+          40
+        ]
+      },
+      "research": {
+        "ticks": 6,
+        "baseStamina": 10,
+        "xp": 24,
+        "sampleCount": 1,
+        "destroysSample": true,
+        "repeatKnownStructureAllowed": false
+      },
+      "attach": {
+        "ticks": 2,
+        "baseStamina": 4,
+        "xp": 0
+      },
+      "detach": {
+        "ticks": 2,
+        "baseStamina": 4,
+        "xp": 0
+      },
+      "repairToolId": "tool_repair_whetstone"
+    },
+    {
+      "id": "B06",
+      "name": "浅槽宽刃",
+      "tier": 3,
+      "capacity": 6,
+      "craft": {
+        "ticks": 12,
+        "baseStamina": 18,
+        "baseXp": 16,
+        "xpByStars": [
+          4,
+          16,
+          24,
+          40
+        ]
+      },
+      "research": {
+        "ticks": 6,
+        "baseStamina": 9,
+        "xp": 24,
+        "sampleCount": 1,
+        "destroysSample": true,
+        "repeatKnownStructureAllowed": false
+      },
+      "attach": {
+        "ticks": 1,
+        "baseStamina": 2,
+        "xp": 0
+      },
+      "detach": {
+        "ticks": 1,
+        "baseStamina": 2,
+        "xp": 0
+      },
+      "repairToolId": "tool_repair_whetstone"
+    },
+    {
+      "id": "B07",
+      "name": "六棱厚身刃",
+      "tier": 3,
+      "capacity": 7,
+      "craft": {
+        "ticks": 12,
+        "baseStamina": 20,
+        "baseXp": 17,
+        "xpByStars": [
+          4.25,
+          17,
+          25.5,
+          42.5
+        ]
+      },
+      "research": {
+        "ticks": 7,
+        "baseStamina": 10,
+        "xp": 26,
+        "sampleCount": 1,
+        "destroysSample": true,
+        "repeatKnownStructureAllowed": false
+      },
+      "attach": {
+        "ticks": 2,
+        "baseStamina": 4,
+        "xp": 0
+      },
+      "detach": {
+        "ticks": 2,
+        "baseStamina": 4,
+        "xp": 0
+      },
+      "repairToolId": "tool_repair_whetstone"
+    },
+    {
+      "id": "B08",
+      "name": "嵌钢复合刃",
+      "tier": 3,
+      "capacity": 6,
+      "craft": {
+        "ticks": 12,
+        "baseStamina": 18,
+        "baseXp": 16,
+        "xpByStars": [
+          4,
+          16,
+          24,
+          40
+        ]
+      },
+      "research": {
+        "ticks": 6,
+        "baseStamina": 9,
+        "xp": 24,
+        "sampleCount": 1,
+        "destroysSample": true,
+        "repeatKnownStructureAllowed": false
+      },
+      "attach": {
+        "ticks": 1,
+        "baseStamina": 2,
+        "xp": 0
+      },
+      "detach": {
+        "ticks": 1,
+        "baseStamina": 2,
+        "xp": 0
+      },
+      "repairToolId": "tool_repair_whetstone"
+    },
+    {
+      "id": "B09",
+      "name": "渐薄透镜刃",
+      "tier": 4,
+      "capacity": 6,
+      "craft": {
+        "ticks": 12,
+        "baseStamina": 20,
+        "baseXp": 18,
+        "xpByStars": [
+          4.5,
+          18,
+          27,
+          45
+        ]
+      },
+      "research": {
+        "ticks": 7,
+        "baseStamina": 10,
+        "xp": 28,
+        "sampleCount": 1,
+        "destroysSample": true,
+        "repeatKnownStructureAllowed": false
+      },
+      "attach": {
+        "ticks": 1,
+        "baseStamina": 2,
+        "xp": 0
+      },
+      "detach": {
+        "ticks": 1,
+        "baseStamina": 2,
+        "xp": 0
+      },
+      "repairToolId": "tool_repair_whetstone"
+    },
+    {
+      "id": "B10",
+      "name": "浅凹磨脊刃",
+      "tier": 4,
+      "capacity": 6,
+      "craft": {
+        "ticks": 12,
+        "baseStamina": 20,
+        "baseXp": 18,
+        "xpByStars": [
+          4.5,
+          18,
+          27,
+          45
+        ]
+      },
+      "research": {
+        "ticks": 7,
+        "baseStamina": 10,
+        "xp": 28,
+        "sampleCount": 1,
+        "destroysSample": true,
+        "repeatKnownStructureAllowed": false
+      },
+      "attach": {
+        "ticks": 1,
+        "baseStamina": 2,
+        "xp": 0
+      },
+      "detach": {
+        "ticks": 1,
+        "baseStamina": 2,
+        "xp": 0
+      },
+      "repairToolId": "tool_repair_whetstone"
+    },
+    {
+      "id": "B11",
+      "name": "前宽劈砍刃",
+      "tier": 4,
+      "capacity": 8,
+      "craft": {
+        "ticks": 12,
+        "baseStamina": 24,
+        "baseXp": 20,
+        "xpByStars": [
+          5,
+          20,
+          30,
+          50
+        ]
+      },
+      "research": {
+        "ticks": 8,
+        "baseStamina": 12,
+        "xp": 32,
+        "sampleCount": 1,
+        "destroysSample": true,
+        "repeatKnownStructureAllowed": false
+      },
+      "attach": {
+        "ticks": 2,
+        "baseStamina": 4,
+        "xp": 0
+      },
+      "detach": {
+        "ticks": 2,
+        "baseStamina": 4,
+        "xp": 0
+      },
+      "repairToolId": "tool_repair_whetstone"
+    },
+    {
+      "id": "B12",
+      "name": "精整六棱刃",
+      "tier": 5,
+      "capacity": 7,
+      "craft": {
+        "ticks": 12,
+        "baseStamina": 24,
+        "baseXp": 21,
+        "xpByStars": [
+          5.25,
+          21,
+          31.5,
+          52.5
+        ]
+      },
+      "research": {
+        "ticks": 9,
+        "baseStamina": 12,
+        "xp": 34,
+        "sampleCount": 1,
+        "destroysSample": true,
+        "repeatKnownStructureAllowed": false
+      },
+      "attach": {
+        "ticks": 2,
+        "baseStamina": 4,
+        "xp": 0
+      },
+      "detach": {
+        "ticks": 2,
+        "baseStamina": 4,
+        "xp": 0
+      },
+      "repairToolId": "tool_repair_whetstone"
+    },
+    {
+      "id": "B13",
+      "name": "双槽渐薄刃",
+      "tier": 5,
+      "capacity": 5,
+      "craft": {
+        "ticks": 12,
+        "baseStamina": 20,
+        "baseXp": 19,
+        "xpByStars": [
+          4.75,
+          19,
+          28.5,
+          47.5
+        ]
+      },
+      "research": {
+        "ticks": 8,
+        "baseStamina": 10,
+        "xp": 30,
+        "sampleCount": 1,
+        "destroysSample": true,
+        "repeatKnownStructureAllowed": false
+      },
+      "attach": {
+        "ticks": 1,
+        "baseStamina": 2,
+        "xp": 0
+      },
+      "detach": {
+        "ticks": 1,
+        "baseStamina": 2,
+        "xp": 0
+      },
+      "repairToolId": "tool_repair_whetstone"
+    },
+    {
+      "id": "B14",
+      "name": "硬刃软芯复合刃",
+      "tier": 5,
+      "capacity": 6,
+      "craft": {
+        "ticks": 12,
+        "baseStamina": 22,
+        "baseXp": 20,
+        "xpByStars": [
+          5,
+          20,
+          30,
+          50
+        ]
+      },
+      "research": {
+        "ticks": 8,
+        "baseStamina": 11,
+        "xp": 32,
+        "sampleCount": 1,
+        "destroysSample": true,
+        "repeatKnownStructureAllowed": false
+      },
+      "attach": {
+        "ticks": 1,
+        "baseStamina": 2,
+        "xp": 0
+      },
+      "detach": {
+        "ticks": 1,
+        "baseStamina": 2,
+        "xp": 0
+      },
+      "repairToolId": "tool_repair_whetstone"
+    },
+    {
+      "id": "B15",
+      "name": "精整渐薄刃",
+      "tier": 6,
+      "capacity": 6,
+      "craft": {
+        "ticks": 12,
+        "baseStamina": 24,
+        "baseXp": 22,
+        "xpByStars": [
+          5.5,
+          22,
+          33,
+          55
+        ]
+      },
+      "research": {
+        "ticks": 9,
+        "baseStamina": 12,
+        "xp": 36,
+        "sampleCount": 1,
+        "destroysSample": true,
+        "repeatKnownStructureAllowed": false
+      },
+      "attach": {
+        "ticks": 1,
+        "baseStamina": 2,
+        "xp": 0
+      },
+      "detach": {
+        "ticks": 1,
+        "baseStamina": 2,
+        "xp": 0
+      },
+      "repairToolId": "tool_repair_whetstone"
+    },
+    {
+      "id": "B16",
+      "name": "精磨宽刃",
+      "tier": 6,
+      "capacity": 8,
+      "craft": {
+        "ticks": 12,
+        "baseStamina": 28,
+        "baseXp": 24,
+        "xpByStars": [
+          6,
+          24,
+          36,
+          60
+        ]
+      },
+      "research": {
+        "ticks": 10,
+        "baseStamina": 14,
+        "xp": 40,
+        "sampleCount": 1,
+        "destroysSample": true,
+        "repeatKnownStructureAllowed": false
+      },
+      "attach": {
+        "ticks": 2,
+        "baseStamina": 4,
+        "xp": 0
+      },
+      "detach": {
+        "ticks": 2,
+        "baseStamina": 4,
+        "xp": 0
+      },
+      "repairToolId": "tool_repair_whetstone"
+    },
+    {
+      "id": "B17",
+      "name": "精焊夹钢刃",
+      "tier": 6,
+      "capacity": 7,
+      "craft": {
+        "ticks": 12,
+        "baseStamina": 26,
+        "baseXp": 23,
+        "xpByStars": [
+          5.75,
+          23,
+          34.5,
+          57.5
+        ]
+      },
+      "research": {
+        "ticks": 10,
+        "baseStamina": 13,
+        "xp": 38,
+        "sampleCount": 1,
+        "destroysSample": true,
+        "repeatKnownStructureAllowed": false
+      },
+      "attach": {
+        "ticks": 2,
+        "baseStamina": 4,
+        "xp": 0
+      },
+      "detach": {
+        "ticks": 2,
+        "baseStamina": 4,
+        "xp": 0
+      },
+      "repairToolId": "tool_repair_whetstone"
+    },
+    {
+      "id": "T01",
+      "name": "短菱剑尖",
+      "tier": 1,
+      "capacity": 3,
+      "craft": {
+        "ticks": 12,
+        "baseStamina": 8,
+        "baseXp": 9,
+        "xpByStars": [
+          2.25,
+          9,
+          13.5,
+          22.5
+        ]
+      },
+      "research": {
+        "ticks": 3,
+        "baseStamina": 4,
+        "xp": 10,
+        "sampleCount": 1,
+        "destroysSample": true,
+        "repeatKnownStructureAllowed": false
+      },
+      "attach": {
+        "ticks": 1,
+        "baseStamina": 2,
+        "xp": 0
+      },
+      "detach": {
+        "ticks": 1,
+        "baseStamina": 2,
+        "xp": 0
+      },
+      "repairToolId": "tool_repair_whetstone"
+    },
+    {
+      "id": "T02",
+      "name": "平顶圆头",
+      "tier": 1,
+      "capacity": 3,
+      "craft": {
+        "ticks": 12,
+        "baseStamina": 8,
+        "baseXp": 9,
+        "xpByStars": [
+          2.25,
+          9,
+          13.5,
+          22.5
+        ]
+      },
+      "research": {
+        "ticks": 3,
+        "baseStamina": 4,
+        "xp": 10,
+        "sampleCount": 1,
+        "destroysSample": true,
+        "repeatKnownStructureAllowed": false
+      },
+      "attach": {
+        "ticks": 1,
+        "baseStamina": 2,
+        "xp": 0
+      },
+      "detach": {
+        "ticks": 1,
+        "baseStamina": 2,
+        "xp": 0
+      },
+      "repairToolId": "tool_repair_hammer"
+    },
+    {
+      "id": "T03",
+      "name": "扁叶剑尖",
+      "tier": 2,
+      "capacity": 3,
+      "craft": {
+        "ticks": 12,
+        "baseStamina": 10,
+        "baseXp": 11,
+        "xpByStars": [
+          2.75,
+          11,
+          16.5,
+          27.5
+        ]
+      },
+      "research": {
+        "ticks": 4,
+        "baseStamina": 5,
+        "xp": 14,
+        "sampleCount": 1,
+        "destroysSample": true,
+        "repeatKnownStructureAllowed": false
+      },
+      "attach": {
+        "ticks": 1,
+        "baseStamina": 2,
+        "xp": 0
+      },
+      "detach": {
+        "ticks": 1,
+        "baseStamina": 2,
+        "xp": 0
+      },
+      "repairToolId": "tool_repair_whetstone"
+    },
+    {
+      "id": "T04",
+      "name": "半球击头",
+      "tier": 2,
+      "capacity": 4,
+      "craft": {
+        "ticks": 12,
+        "baseStamina": 12,
+        "baseXp": 12,
+        "xpByStars": [
+          3,
+          12,
+          18,
+          30
+        ]
+      },
+      "research": {
+        "ticks": 4,
+        "baseStamina": 6,
+        "xp": 16,
+        "sampleCount": 1,
+        "destroysSample": true,
+        "repeatKnownStructureAllowed": false
+      },
+      "attach": {
+        "ticks": 1,
+        "baseStamina": 2,
+        "xp": 0
+      },
+      "detach": {
+        "ticks": 1,
+        "baseStamina": 2,
+        "xp": 0
+      },
+      "repairToolId": "tool_repair_hammer"
+    },
+    {
+      "id": "T05",
+      "name": "四棱剑尖",
+      "tier": 3,
+      "capacity": 3,
+      "craft": {
+        "ticks": 12,
+        "baseStamina": 12,
+        "baseXp": 13,
+        "xpByStars": [
+          3.25,
+          13,
+          19.5,
+          32.5
+        ]
+      },
+      "research": {
+        "ticks": 5,
+        "baseStamina": 6,
+        "xp": 18,
+        "sampleCount": 1,
+        "destroysSample": true,
+        "repeatKnownStructureAllowed": false
+      },
+      "attach": {
+        "ticks": 1,
+        "baseStamina": 2,
+        "xp": 0
+      },
+      "detach": {
+        "ticks": 1,
+        "baseStamina": 2,
+        "xp": 0
+      },
+      "repairToolId": "tool_repair_whetstone"
+    },
+    {
+      "id": "T06",
+      "name": "扁圆击头",
+      "tier": 3,
+      "capacity": 3,
+      "craft": {
+        "ticks": 12,
+        "baseStamina": 12,
+        "baseXp": 13,
+        "xpByStars": [
+          3.25,
+          13,
+          19.5,
+          32.5
+        ]
+      },
+      "research": {
+        "ticks": 5,
+        "baseStamina": 6,
+        "xp": 18,
+        "sampleCount": 1,
+        "destroysSample": true,
+        "repeatKnownStructureAllowed": false
+      },
+      "attach": {
+        "ticks": 1,
+        "baseStamina": 2,
+        "xp": 0
+      },
+      "detach": {
+        "ticks": 1,
+        "baseStamina": 2,
+        "xp": 0
+      },
+      "repairToolId": "tool_repair_hammer"
+    },
+    {
+      "id": "T07",
+      "name": "脊棱窄尖",
+      "tier": 4,
+      "capacity": 3,
+      "craft": {
+        "ticks": 12,
+        "baseStamina": 14,
+        "baseXp": 15,
+        "xpByStars": [
+          3.75,
+          15,
+          22.5,
+          37.5
+        ]
+      },
+      "research": {
+        "ticks": 6,
+        "baseStamina": 7,
+        "xp": 22,
+        "sampleCount": 1,
+        "destroysSample": true,
+        "repeatKnownStructureAllowed": false
+      },
+      "attach": {
+        "ticks": 1,
+        "baseStamina": 2,
+        "xp": 0
+      },
+      "detach": {
+        "ticks": 1,
+        "baseStamina": 2,
+        "xp": 0
+      },
+      "repairToolId": "tool_repair_whetstone"
+    },
+    {
+      "id": "T08",
+      "name": "多棱钝头",
+      "tier": 4,
+      "capacity": 5,
+      "craft": {
+        "ticks": 12,
+        "baseStamina": 18,
+        "baseXp": 17,
+        "xpByStars": [
+          4.25,
+          17,
+          25.5,
+          42.5
+        ]
+      },
+      "research": {
+        "ticks": 7,
+        "baseStamina": 9,
+        "xp": 26,
+        "sampleCount": 1,
+        "destroysSample": true,
+        "repeatKnownStructureAllowed": false
+      },
+      "attach": {
+        "ticks": 1,
+        "baseStamina": 2,
+        "xp": 0
+      },
+      "detach": {
+        "ticks": 1,
+        "baseStamina": 2,
+        "xp": 0
+      },
+      "repairToolId": "tool_repair_hammer"
+    },
+    {
+      "id": "T09",
+      "name": "渐收长尖",
+      "tier": 5,
+      "capacity": 4,
+      "craft": {
+        "ticks": 12,
+        "baseStamina": 18,
+        "baseXp": 18,
+        "xpByStars": [
+          4.5,
+          18,
+          27,
+          45
+        ]
+      },
+      "research": {
+        "ticks": 7,
+        "baseStamina": 9,
+        "xp": 28,
+        "sampleCount": 1,
+        "destroysSample": true,
+        "repeatKnownStructureAllowed": false
+      },
+      "attach": {
+        "ticks": 1,
+        "baseStamina": 2,
+        "xp": 0
+      },
+      "detach": {
+        "ticks": 1,
+        "baseStamina": 2,
+        "xp": 0
+      },
+      "repairToolId": "tool_repair_whetstone"
+    },
+    {
+      "id": "T10",
+      "name": "鼓形击头",
+      "tier": 5,
+      "capacity": 4,
+      "craft": {
+        "ticks": 12,
+        "baseStamina": 18,
+        "baseXp": 18,
+        "xpByStars": [
+          4.5,
+          18,
+          27,
+          45
+        ]
+      },
+      "research": {
+        "ticks": 7,
+        "baseStamina": 9,
+        "xp": 28,
+        "sampleCount": 1,
+        "destroysSample": true,
+        "repeatKnownStructureAllowed": false
+      },
+      "attach": {
+        "ticks": 1,
+        "baseStamina": 2,
+        "xp": 0
+      },
+      "detach": {
+        "ticks": 1,
+        "baseStamina": 2,
+        "xp": 0
+      },
+      "repairToolId": "tool_repair_hammer"
+    },
+    {
+      "id": "T11",
+      "name": "厚根菱尖",
+      "tier": 6,
+      "capacity": 3,
+      "craft": {
+        "ticks": 12,
+        "baseStamina": 18,
+        "baseXp": 19,
+        "xpByStars": [
+          4.75,
+          19,
+          28.5,
+          47.5
+        ]
+      },
+      "research": {
+        "ticks": 8,
+        "baseStamina": 9,
+        "xp": 30,
+        "sampleCount": 1,
+        "destroysSample": true,
+        "repeatKnownStructureAllowed": false
+      },
+      "attach": {
+        "ticks": 1,
+        "baseStamina": 2,
+        "xp": 0
+      },
+      "detach": {
+        "ticks": 1,
+        "baseStamina": 2,
+        "xp": 0
+      },
+      "repairToolId": "tool_repair_whetstone"
+    },
+    {
+      "id": "T12",
+      "name": "圆冠重击头",
+      "tier": 6,
+      "capacity": 5,
+      "craft": {
+        "ticks": 12,
+        "baseStamina": 22,
+        "baseXp": 21,
+        "xpByStars": [
+          5.25,
+          21,
+          31.5,
+          52.5
+        ]
+      },
+      "research": {
+        "ticks": 9,
+        "baseStamina": 11,
+        "xp": 34,
+        "sampleCount": 1,
+        "destroysSample": true,
+        "repeatKnownStructureAllowed": false
+      },
+      "attach": {
+        "ticks": 1,
+        "baseStamina": 2,
+        "xp": 0
+      },
+      "detach": {
+        "ticks": 1,
+        "baseStamina": 2,
+        "xp": 0
+      },
+      "repairToolId": "tool_repair_hammer"
+    },
+    {
+      "id": "D01",
+      "name": "圆柱击条",
+      "tier": 1,
+      "capacity": 6,
+      "craft": {
+        "ticks": 12,
+        "baseStamina": 14,
+        "baseXp": 12,
+        "xpByStars": [
+          3,
+          12,
+          18,
+          30
+        ]
+      },
+      "research": {
+        "ticks": 4,
+        "baseStamina": 7,
+        "xp": 16,
+        "sampleCount": 1,
+        "destroysSample": true,
+        "repeatKnownStructureAllowed": false
+      },
+      "attach": {
+        "ticks": 1,
+        "baseStamina": 2,
+        "xp": 0
+      },
+      "detach": {
+        "ticks": 1,
+        "baseStamina": 2,
+        "xp": 0
+      },
+      "repairToolId": "tool_repair_hammer"
+    },
+    {
+      "id": "D02",
+      "name": "厚背击条",
+      "tier": 1,
+      "capacity": 8,
+      "craft": {
+        "ticks": 12,
+        "baseStamina": 18,
+        "baseXp": 14,
+        "xpByStars": [
+          3.5,
+          14,
+          21,
+          35
+        ]
+      },
+      "research": {
+        "ticks": 5,
+        "baseStamina": 9,
+        "xp": 20,
+        "sampleCount": 1,
+        "destroysSample": true,
+        "repeatKnownStructureAllowed": false
+      },
+      "attach": {
+        "ticks": 2,
+        "baseStamina": 4,
+        "xp": 0
+      },
+      "detach": {
+        "ticks": 2,
+        "baseStamina": 4,
+        "xp": 0
+      },
+      "repairToolId": "tool_repair_hammer"
+    },
+    {
+      "id": "D03",
+      "name": "扁平拍板",
+      "tier": 1,
+      "capacity": 6,
+      "craft": {
+        "ticks": 12,
+        "baseStamina": 14,
+        "baseXp": 12,
+        "xpByStars": [
+          3,
+          12,
+          18,
+          30
+        ]
+      },
+      "research": {
+        "ticks": 4,
+        "baseStamina": 7,
+        "xp": 16,
+        "sampleCount": 1,
+        "destroysSample": true,
+        "repeatKnownStructureAllowed": false
+      },
+      "attach": {
+        "ticks": 1,
+        "baseStamina": 2,
+        "xp": 0
+      },
+      "detach": {
+        "ticks": 1,
+        "baseStamina": 2,
+        "xp": 0
+      },
+      "repairToolId": "tool_repair_hammer"
+    },
+    {
+      "id": "D04",
+      "name": "六棱击条",
+      "tier": 2,
+      "capacity": 7,
+      "craft": {
+        "ticks": 12,
+        "baseStamina": 18,
+        "baseXp": 15,
+        "xpByStars": [
+          3.75,
+          15,
+          22.5,
+          37.5
+        ]
+      },
+      "research": {
+        "ticks": 6,
+        "baseStamina": 9,
+        "xp": 22,
+        "sampleCount": 1,
+        "destroysSample": true,
+        "repeatKnownStructureAllowed": false
+      },
+      "attach": {
+        "ticks": 2,
+        "baseStamina": 4,
+        "xp": 0
+      },
+      "detach": {
+        "ticks": 2,
+        "baseStamina": 4,
+        "xp": 0
+      },
+      "repairToolId": "tool_repair_hammer"
+    },
+    {
+      "id": "D05",
+      "name": "弧面击条",
+      "tier": 2,
+      "capacity": 6,
+      "craft": {
+        "ticks": 12,
+        "baseStamina": 16,
+        "baseXp": 14,
+        "xpByStars": [
+          3.5,
+          14,
+          21,
+          35
+        ]
+      },
+      "research": {
+        "ticks": 5,
+        "baseStamina": 8,
+        "xp": 20,
+        "sampleCount": 1,
+        "destroysSample": true,
+        "repeatKnownStructureAllowed": false
+      },
+      "attach": {
+        "ticks": 1,
+        "baseStamina": 2,
+        "xp": 0
+      },
+      "detach": {
+        "ticks": 1,
+        "baseStamina": 2,
+        "xp": 0
+      },
+      "repairToolId": "tool_repair_hammer"
+    },
+    {
+      "id": "D06",
+      "name": "加厚击板",
+      "tier": 2,
+      "capacity": 8,
+      "craft": {
+        "ticks": 12,
+        "baseStamina": 20,
+        "baseXp": 16,
+        "xpByStars": [
+          4,
+          16,
+          24,
+          40
+        ]
+      },
+      "research": {
+        "ticks": 6,
+        "baseStamina": 10,
+        "xp": 24,
+        "sampleCount": 1,
+        "destroysSample": true,
+        "repeatKnownStructureAllowed": false
+      },
+      "attach": {
+        "ticks": 2,
+        "baseStamina": 4,
+        "xp": 0
+      },
+      "detach": {
+        "ticks": 2,
+        "baseStamina": 4,
+        "xp": 0
+      },
+      "repairToolId": "tool_repair_hammer"
+    },
+    {
+      "id": "D07",
+      "name": "窄圆击条",
+      "tier": 3,
+      "capacity": 5,
+      "craft": {
+        "ticks": 12,
+        "baseStamina": 16,
+        "baseXp": 15,
+        "xpByStars": [
+          3.75,
+          15,
+          22.5,
+          37.5
+        ]
+      },
+      "research": {
+        "ticks": 6,
+        "baseStamina": 8,
+        "xp": 22,
+        "sampleCount": 1,
+        "destroysSample": true,
+        "repeatKnownStructureAllowed": false
+      },
+      "attach": {
+        "ticks": 1,
+        "baseStamina": 2,
+        "xp": 0
+      },
+      "detach": {
+        "ticks": 1,
+        "baseStamina": 2,
+        "xp": 0
+      },
+      "repairToolId": "tool_repair_hammer"
+    },
+    {
+      "id": "D08",
+      "name": "凸面击块",
+      "tier": 3,
+      "capacity": 8,
+      "craft": {
+        "ticks": 12,
+        "baseStamina": 22,
+        "baseXp": 18,
+        "xpByStars": [
+          4.5,
+          18,
+          27,
+          45
+        ]
+      },
+      "research": {
+        "ticks": 7,
+        "baseStamina": 11,
+        "xp": 28,
+        "sampleCount": 1,
+        "destroysSample": true,
+        "repeatKnownStructureAllowed": false
+      },
+      "attach": {
+        "ticks": 2,
+        "baseStamina": 4,
+        "xp": 0
+      },
+      "detach": {
+        "ticks": 2,
+        "baseStamina": 4,
+        "xp": 0
+      },
+      "repairToolId": "tool_repair_hammer"
+    },
+    {
+      "id": "D09",
+      "name": "厚棱击条",
+      "tier": 3,
+      "capacity": 8,
+      "craft": {
+        "ticks": 12,
+        "baseStamina": 22,
+        "baseXp": 18,
+        "xpByStars": [
+          4.5,
+          18,
+          27,
+          45
+        ]
+      },
+      "research": {
+        "ticks": 7,
+        "baseStamina": 11,
+        "xp": 28,
+        "sampleCount": 1,
+        "destroysSample": true,
+        "repeatKnownStructureAllowed": false
+      },
+      "attach": {
+        "ticks": 2,
+        "baseStamina": 4,
+        "xp": 0
+      },
+      "detach": {
+        "ticks": 2,
+        "baseStamina": 4,
+        "xp": 0
+      },
+      "repairToolId": "tool_repair_hammer"
+    },
+    {
+      "id": "D10",
+      "name": "偏重击块",
+      "tier": 4,
+      "capacity": 10,
+      "craft": {
+        "ticks": 12,
+        "baseStamina": 28,
+        "baseXp": 22,
+        "xpByStars": [
+          5.5,
+          22,
+          33,
+          55
+        ]
+      },
+      "research": {
+        "ticks": 9,
+        "baseStamina": 14,
+        "xp": 36,
+        "sampleCount": 1,
+        "destroysSample": true,
+        "repeatKnownStructureAllowed": false
+      },
+      "attach": {
+        "ticks": 2,
+        "baseStamina": 4,
+        "xp": 0
+      },
+      "detach": {
+        "ticks": 2,
+        "baseStamina": 4,
+        "xp": 0
+      },
+      "repairToolId": "tool_repair_hammer"
+    },
+    {
+      "id": "D11",
+      "name": "宽面拍板",
+      "tier": 4,
+      "capacity": 7,
+      "craft": {
+        "ticks": 12,
+        "baseStamina": 22,
+        "baseXp": 19,
+        "xpByStars": [
+          4.75,
+          19,
+          28.5,
+          47.5
+        ]
+      },
+      "research": {
+        "ticks": 8,
+        "baseStamina": 11,
+        "xp": 30,
+        "sampleCount": 1,
+        "destroysSample": true,
+        "repeatKnownStructureAllowed": false
+      },
+      "attach": {
+        "ticks": 2,
+        "baseStamina": 4,
+        "xp": 0
+      },
+      "detach": {
+        "ticks": 2,
+        "baseStamina": 4,
+        "xp": 0
+      },
+      "repairToolId": "tool_repair_hammer"
+    },
+    {
+      "id": "D12",
+      "name": "弧背击条",
+      "tier": 4,
+      "capacity": 7,
+      "craft": {
+        "ticks": 12,
+        "baseStamina": 22,
+        "baseXp": 19,
+        "xpByStars": [
+          4.75,
+          19,
+          28.5,
+          47.5
+        ]
+      },
+      "research": {
+        "ticks": 8,
+        "baseStamina": 11,
+        "xp": 30,
+        "sampleCount": 1,
+        "destroysSample": true,
+        "repeatKnownStructureAllowed": false
+      },
+      "attach": {
+        "ticks": 2,
+        "baseStamina": 4,
+        "xp": 0
+      },
+      "detach": {
+        "ticks": 2,
+        "baseStamina": 4,
+        "xp": 0
+      },
+      "repairToolId": "tool_repair_hammer"
+    },
+    {
+      "id": "D13",
+      "name": "渐细圆条",
+      "tier": 5,
+      "capacity": 5,
+      "craft": {
+        "ticks": 12,
+        "baseStamina": 20,
+        "baseXp": 19,
+        "xpByStars": [
+          4.75,
+          19,
+          28.5,
+          47.5
+        ]
+      },
+      "research": {
+        "ticks": 8,
+        "baseStamina": 10,
+        "xp": 30,
+        "sampleCount": 1,
+        "destroysSample": true,
+        "repeatKnownStructureAllowed": false
+      },
+      "attach": {
+        "ticks": 1,
+        "baseStamina": 2,
+        "xp": 0
+      },
+      "detach": {
+        "ticks": 1,
+        "baseStamina": 2,
+        "xp": 0
+      },
+      "repairToolId": "tool_repair_hammer"
+    },
+    {
+      "id": "D14",
+      "name": "棱面击块",
+      "tier": 5,
+      "capacity": 8,
+      "craft": {
+        "ticks": 12,
+        "baseStamina": 26,
+        "baseXp": 22,
+        "xpByStars": [
+          5.5,
+          22,
+          33,
+          55
+        ]
+      },
+      "research": {
+        "ticks": 9,
+        "baseStamina": 13,
+        "xp": 36,
+        "sampleCount": 1,
+        "destroysSample": true,
+        "repeatKnownStructureAllowed": false
+      },
+      "attach": {
+        "ticks": 2,
+        "baseStamina": 4,
+        "xp": 0
+      },
+      "detach": {
+        "ticks": 2,
+        "baseStamina": 4,
+        "xp": 0
+      },
+      "repairToolId": "tool_repair_hammer"
+    },
+    {
+      "id": "D15",
+      "name": "厚背拍板",
+      "tier": 5,
+      "capacity": 8,
+      "craft": {
+        "ticks": 12,
+        "baseStamina": 26,
+        "baseXp": 22,
+        "xpByStars": [
+          5.5,
+          22,
+          33,
+          55
+        ]
+      },
+      "research": {
+        "ticks": 9,
+        "baseStamina": 13,
+        "xp": 36,
+        "sampleCount": 1,
+        "destroysSample": true,
+        "repeatKnownStructureAllowed": false
+      },
+      "attach": {
+        "ticks": 2,
+        "baseStamina": 4,
+        "xp": 0
+      },
+      "detach": {
+        "ticks": 2,
+        "baseStamina": 4,
+        "xp": 0
+      },
+      "repairToolId": "tool_repair_hammer"
+    },
+    {
+      "id": "D16",
+      "name": "端重击条",
+      "tier": 6,
+      "capacity": 10,
+      "craft": {
+        "ticks": 12,
+        "baseStamina": 32,
+        "baseXp": 26,
+        "xpByStars": [
+          6.5,
+          26,
+          39,
+          65
+        ]
+      },
+      "research": {
+        "ticks": 11,
+        "baseStamina": 16,
+        "xp": 44,
+        "sampleCount": 1,
+        "destroysSample": true,
+        "repeatKnownStructureAllowed": false
+      },
+      "attach": {
+        "ticks": 2,
+        "baseStamina": 4,
+        "xp": 0
+      },
+      "detach": {
+        "ticks": 2,
+        "baseStamina": 4,
+        "xp": 0
+      },
+      "repairToolId": "tool_repair_hammer"
+    },
+    {
+      "id": "D17",
+      "name": "宽冠击板",
+      "tier": 6,
+      "capacity": 7,
+      "craft": {
+        "ticks": 12,
+        "baseStamina": 26,
+        "baseXp": 23,
+        "xpByStars": [
+          5.75,
+          23,
+          34.5,
+          57.5
+        ]
+      },
+      "research": {
+        "ticks": 10,
+        "baseStamina": 13,
+        "xp": 38,
+        "sampleCount": 1,
+        "destroysSample": true,
+        "repeatKnownStructureAllowed": false
+      },
+      "attach": {
+        "ticks": 2,
+        "baseStamina": 4,
+        "xp": 0
+      },
+      "detach": {
+        "ticks": 2,
+        "baseStamina": 4,
+        "xp": 0
+      },
+      "repairToolId": "tool_repair_hammer"
+    },
+    {
+      "id": "D18",
+      "name": "厚脊击条",
+      "tier": 6,
+      "capacity": 8,
+      "craft": {
+        "ticks": 12,
+        "baseStamina": 28,
+        "baseXp": 24,
+        "xpByStars": [
+          6,
+          24,
+          36,
+          60
+        ]
+      },
+      "research": {
+        "ticks": 10,
+        "baseStamina": 14,
+        "xp": 40,
+        "sampleCount": 1,
+        "destroysSample": true,
+        "repeatKnownStructureAllowed": false
+      },
+      "attach": {
+        "ticks": 2,
+        "baseStamina": 4,
+        "xp": 0
+      },
+      "detach": {
+        "ticks": 2,
+        "baseStamina": 4,
+        "xp": 0
+      },
+      "repairToolId": "tool_repair_hammer"
+    },
+    {
+      "id": "H01",
+      "name": "直柄圆首柄",
+      "tier": 1,
+      "capacity": 4,
+      "craft": {
+        "ticks": 12,
+        "baseStamina": 10,
+        "baseXp": 10,
+        "xpByStars": [
+          2.5,
+          10,
+          15,
+          25
+        ]
+      },
+      "research": {
+        "ticks": 3,
+        "baseStamina": 5,
+        "xp": 12,
+        "sampleCount": 1,
+        "destroysSample": true,
+        "repeatKnownStructureAllowed": false
+      },
+      "attach": {
+        "ticks": 1,
+        "baseStamina": 2,
+        "xp": 0
+      },
+      "detach": {
+        "ticks": 1,
+        "baseStamina": 2,
+        "xp": 0
+      },
+      "repairToolId": "tool_repair_pliers"
+    },
+    {
+      "id": "H02",
+      "name": "短格扁首柄",
+      "tier": 1,
+      "capacity": 5,
+      "craft": {
+        "ticks": 12,
+        "baseStamina": 12,
+        "baseXp": 11,
+        "xpByStars": [
+          2.75,
+          11,
+          16.5,
+          27.5
+        ]
+      },
+      "research": {
+        "ticks": 4,
+        "baseStamina": 6,
+        "xp": 14,
+        "sampleCount": 1,
+        "destroysSample": true,
+        "repeatKnownStructureAllowed": false
+      },
+      "attach": {
+        "ticks": 1,
+        "baseStamina": 2,
+        "xp": 0
+      },
+      "detach": {
+        "ticks": 1,
+        "baseStamina": 2,
+        "xp": 0
+      },
+      "repairToolId": "tool_repair_pliers"
+    },
+    {
+      "id": "H03",
+      "name": "弧柄单弓柄",
+      "tier": 1,
+      "capacity": 5,
+      "craft": {
+        "ticks": 12,
+        "baseStamina": 12,
+        "baseXp": 11,
+        "xpByStars": [
+          2.75,
+          11,
+          16.5,
+          27.5
+        ]
+      },
+      "research": {
+        "ticks": 4,
+        "baseStamina": 6,
+        "xp": 14,
+        "sampleCount": 1,
+        "destroysSample": true,
+        "repeatKnownStructureAllowed": false
+      },
+      "attach": {
+        "ticks": 1,
+        "baseStamina": 2,
+        "xp": 0
+      },
+      "detach": {
+        "ticks": 1,
+        "baseStamina": 2,
+        "xp": 0
+      },
+      "repairToolId": "tool_repair_pliers"
+    },
+    {
+      "id": "H04",
+      "name": "厚首剑柄",
+      "tier": 2,
+      "capacity": 6,
+      "craft": {
+        "ticks": 12,
+        "baseStamina": 16,
+        "baseXp": 14,
+        "xpByStars": [
+          3.5,
+          14,
+          21,
+          35
+        ]
+      },
+      "research": {
+        "ticks": 5,
+        "baseStamina": 8,
+        "xp": 20,
+        "sampleCount": 1,
+        "destroysSample": true,
+        "repeatKnownStructureAllowed": false
+      },
+      "attach": {
+        "ticks": 1,
+        "baseStamina": 2,
+        "xp": 0
+      },
+      "detach": {
+        "ticks": 1,
+        "baseStamina": 2,
+        "xp": 0
+      },
+      "repairToolId": "tool_repair_pliers"
+    },
+    {
+      "id": "H05",
+      "name": "宽格剑柄",
+      "tier": 2,
+      "capacity": 6,
+      "craft": {
+        "ticks": 12,
+        "baseStamina": 16,
+        "baseXp": 14,
+        "xpByStars": [
+          3.5,
+          14,
+          21,
+          35
+        ]
+      },
+      "research": {
+        "ticks": 5,
+        "baseStamina": 8,
+        "xp": 20,
+        "sampleCount": 1,
+        "destroysSample": true,
+        "repeatKnownStructureAllowed": false
+      },
+      "attach": {
+        "ticks": 1,
+        "baseStamina": 2,
+        "xp": 0
+      },
+      "detach": {
+        "ticks": 1,
+        "baseStamina": 2,
+        "xp": 0
+      },
+      "repairToolId": "tool_repair_pliers"
+    },
+    {
+      "id": "H06",
+      "name": "椭圆盘护手柄",
+      "tier": 2,
+      "capacity": 6,
+      "craft": {
+        "ticks": 12,
+        "baseStamina": 16,
+        "baseXp": 14,
+        "xpByStars": [
+          3.5,
+          14,
+          21,
+          35
+        ]
+      },
+      "research": {
+        "ticks": 5,
+        "baseStamina": 8,
+        "xp": 20,
+        "sampleCount": 1,
+        "destroysSample": true,
+        "repeatKnownStructureAllowed": false
+      },
+      "attach": {
+        "ticks": 1,
+        "baseStamina": 2,
+        "xp": 0
+      },
+      "detach": {
+        "ticks": 1,
+        "baseStamina": 2,
+        "xp": 0
+      },
+      "repairToolId": "tool_repair_pliers"
+    },
+    {
+      "id": "H07",
+      "name": "梨首直柄",
+      "tier": 3,
+      "capacity": 4,
+      "craft": {
+        "ticks": 12,
+        "baseStamina": 14,
+        "baseXp": 14,
+        "xpByStars": [
+          3.5,
+          14,
+          21,
+          35
+        ]
+      },
+      "research": {
+        "ticks": 5,
+        "baseStamina": 7,
+        "xp": 20,
+        "sampleCount": 1,
+        "destroysSample": true,
+        "repeatKnownStructureAllowed": false
+      },
+      "attach": {
+        "ticks": 1,
+        "baseStamina": 2,
+        "xp": 0
+      },
+      "detach": {
+        "ticks": 1,
+        "baseStamina": 2,
+        "xp": 0
+      },
+      "repairToolId": "tool_repair_pliers"
+    },
+    {
+      "id": "H08",
+      "name": "双支护手柄",
+      "tier": 3,
+      "capacity": 6,
+      "craft": {
+        "ticks": 12,
+        "baseStamina": 18,
+        "baseXp": 16,
+        "xpByStars": [
+          4,
+          16,
+          24,
+          40
+        ]
+      },
+      "research": {
+        "ticks": 6,
+        "baseStamina": 9,
+        "xp": 24,
+        "sampleCount": 1,
+        "destroysSample": true,
+        "repeatKnownStructureAllowed": false
+      },
+      "attach": {
+        "ticks": 1,
+        "baseStamina": 2,
+        "xp": 0
+      },
+      "detach": {
+        "ticks": 1,
+        "baseStamina": 2,
+        "xp": 0
+      },
+      "repairToolId": "tool_repair_pliers"
+    },
+    {
+      "id": "H09",
+      "name": "弧背军刀柄",
+      "tier": 3,
+      "capacity": 6,
+      "craft": {
+        "ticks": 12,
+        "baseStamina": 18,
+        "baseXp": 16,
+        "xpByStars": [
+          4,
+          16,
+          24,
+          40
+        ]
+      },
+      "research": {
+        "ticks": 6,
+        "baseStamina": 9,
+        "xp": 24,
+        "sampleCount": 1,
+        "destroysSample": true,
+        "repeatKnownStructureAllowed": false
+      },
+      "attach": {
+        "ticks": 1,
+        "baseStamina": 2,
+        "xp": 0
+      },
+      "detach": {
+        "ticks": 1,
+        "baseStamina": 2,
+        "xp": 0
+      },
+      "repairToolId": "tool_repair_pliers"
+    },
+    {
+      "id": "H10",
+      "name": "八棱重首柄",
+      "tier": 4,
+      "capacity": 7,
+      "craft": {
+        "ticks": 12,
+        "baseStamina": 22,
+        "baseXp": 19,
+        "xpByStars": [
+          4.75,
+          19,
+          28.5,
+          47.5
+        ]
+      },
+      "research": {
+        "ticks": 8,
+        "baseStamina": 11,
+        "xp": 30,
+        "sampleCount": 1,
+        "destroysSample": true,
+        "repeatKnownStructureAllowed": false
+      },
+      "attach": {
+        "ticks": 2,
+        "baseStamina": 4,
+        "xp": 0
+      },
+      "detach": {
+        "ticks": 2,
+        "baseStamina": 4,
+        "xp": 0
+      },
+      "repairToolId": "tool_repair_pliers"
+    },
+    {
+      "id": "H11",
+      "name": "三支护手柄",
+      "tier": 4,
+      "capacity": 7,
+      "craft": {
+        "ticks": 12,
+        "baseStamina": 22,
+        "baseXp": 19,
+        "xpByStars": [
+          4.75,
+          19,
+          28.5,
+          47.5
+        ]
+      },
+      "research": {
+        "ticks": 8,
+        "baseStamina": 11,
+        "xp": 30,
+        "sampleCount": 1,
+        "destroysSample": true,
+        "repeatKnownStructureAllowed": false
+      },
+      "attach": {
+        "ticks": 2,
+        "baseStamina": 4,
+        "xp": 0
+      },
+      "detach": {
+        "ticks": 2,
+        "baseStamina": 4,
+        "xp": 0
+      },
+      "repairToolId": "tool_repair_pliers"
+    },
+    {
+      "id": "H12",
+      "name": "下弯剑格柄",
+      "tier": 4,
+      "capacity": 6,
+      "craft": {
+        "ticks": 12,
+        "baseStamina": 20,
+        "baseXp": 18,
+        "xpByStars": [
+          4.5,
+          18,
+          27,
+          45
+        ]
+      },
+      "research": {
+        "ticks": 7,
+        "baseStamina": 10,
+        "xp": 28,
+        "sampleCount": 1,
+        "destroysSample": true,
+        "repeatKnownStructureAllowed": false
+      },
+      "attach": {
+        "ticks": 1,
+        "baseStamina": 2,
+        "xp": 0
+      },
+      "detach": {
+        "ticks": 1,
+        "baseStamina": 2,
+        "xp": 0
+      },
+      "repairToolId": "tool_repair_pliers"
+    },
+    {
+      "id": "H13",
+      "name": "短尾刺剑柄",
+      "tier": 5,
+      "capacity": 5,
+      "craft": {
+        "ticks": 12,
+        "baseStamina": 20,
+        "baseXp": 19,
+        "xpByStars": [
+          4.75,
+          19,
+          28.5,
+          47.5
+        ]
+      },
+      "research": {
+        "ticks": 8,
+        "baseStamina": 10,
+        "xp": 30,
+        "sampleCount": 1,
+        "destroysSample": true,
+        "repeatKnownStructureAllowed": false
+      },
+      "attach": {
+        "ticks": 1,
+        "baseStamina": 2,
+        "xp": 0
+      },
+      "detach": {
+        "ticks": 1,
+        "baseStamina": 2,
+        "xp": 0
+      },
+      "repairToolId": "tool_repair_pliers"
+    },
+    {
+      "id": "H14",
+      "name": "半篮护手柄",
+      "tier": 5,
+      "capacity": 7,
+      "craft": {
+        "ticks": 12,
+        "baseStamina": 24,
+        "baseXp": 21,
+        "xpByStars": [
+          5.25,
+          21,
+          31.5,
+          52.5
+        ]
+      },
+      "research": {
+        "ticks": 9,
+        "baseStamina": 12,
+        "xp": 34,
+        "sampleCount": 1,
+        "destroysSample": true,
+        "repeatKnownStructureAllowed": false
+      },
+      "attach": {
+        "ticks": 2,
+        "baseStamina": 4,
+        "xp": 0
+      },
+      "detach": {
+        "ticks": 2,
+        "baseStamina": 4,
+        "xp": 0
+      },
+      "repairToolId": "tool_repair_pliers"
+    },
+    {
+      "id": "H15",
+      "name": "宽弧剑格柄",
+      "tier": 5,
+      "capacity": 6,
+      "craft": {
+        "ticks": 12,
+        "baseStamina": 22,
+        "baseXp": 20,
+        "xpByStars": [
+          5,
+          20,
+          30,
+          50
+        ]
+      },
+      "research": {
+        "ticks": 8,
+        "baseStamina": 11,
+        "xp": 32,
+        "sampleCount": 1,
+        "destroysSample": true,
+        "repeatKnownStructureAllowed": false
+      },
+      "attach": {
+        "ticks": 1,
+        "baseStamina": 2,
+        "xp": 0
+      },
+      "detach": {
+        "ticks": 1,
+        "baseStamina": 2,
+        "xp": 0
+      },
+      "repairToolId": "tool_repair_pliers"
+    },
+    {
+      "id": "H16",
+      "name": "厚首配重柄",
+      "tier": 6,
+      "capacity": 7,
+      "craft": {
+        "ticks": 12,
+        "baseStamina": 26,
+        "baseXp": 23,
+        "xpByStars": [
+          5.75,
+          23,
+          34.5,
+          57.5
+        ]
+      },
+      "research": {
+        "ticks": 10,
+        "baseStamina": 13,
+        "xp": 38,
+        "sampleCount": 1,
+        "destroysSample": true,
+        "repeatKnownStructureAllowed": false
+      },
+      "attach": {
+        "ticks": 2,
+        "baseStamina": 4,
+        "xp": 0
+      },
+      "detach": {
+        "ticks": 2,
+        "baseStamina": 4,
+        "xp": 0
+      },
+      "repairToolId": "tool_repair_pliers"
+    },
+    {
+      "id": "H17",
+      "name": "碗形护手柄",
+      "tier": 6,
+      "capacity": 8,
+      "craft": {
+        "ticks": 12,
+        "baseStamina": 28,
+        "baseXp": 24,
+        "xpByStars": [
+          6,
+          24,
+          36,
+          60
+        ]
+      },
+      "research": {
+        "ticks": 10,
+        "baseStamina": 14,
+        "xp": 40,
+        "sampleCount": 1,
+        "destroysSample": true,
+        "repeatKnownStructureAllowed": false
+      },
+      "attach": {
+        "ticks": 2,
+        "baseStamina": 4,
+        "xp": 0
+      },
+      "detach": {
+        "ticks": 2,
+        "baseStamina": 4,
+        "xp": 0
+      },
+      "repairToolId": "tool_repair_pliers"
+    },
+    {
+      "id": "H18",
+      "name": "回曲宽格柄",
+      "tier": 6,
+      "capacity": 7,
+      "craft": {
+        "ticks": 12,
+        "baseStamina": 26,
+        "baseXp": 23,
+        "xpByStars": [
+          5.75,
+          23,
+          34.5,
+          57.5
+        ]
+      },
+      "research": {
+        "ticks": 10,
+        "baseStamina": 13,
+        "xp": 38,
+        "sampleCount": 1,
+        "destroysSample": true,
+        "repeatKnownStructureAllowed": false
+      },
+      "attach": {
+        "ticks": 2,
+        "baseStamina": 4,
+        "xp": 0
+      },
+      "detach": {
+        "ticks": 2,
+        "baseStamina": 4,
+        "xp": 0
+      },
+      "repairToolId": "tool_repair_pliers"
+    },
+    {
+      "id": "M01-T1",
+      "name": "双面锤头",
+      "tier": 1,
+      "capacity": 14,
+      "craft": {
+        "ticks": 12,
+        "baseStamina": 30,
+        "baseXp": 20,
+        "xpByStars": [
+          5,
+          20,
+          30,
+          50
+        ]
+      },
+      "research": {
+        "ticks": 8,
+        "baseStamina": 15,
+        "xp": 32,
+        "sampleCount": 1,
+        "destroysSample": true,
+        "repeatKnownStructureAllowed": false
+      },
+      "attach": {
+        "ticks": 3,
+        "baseStamina": 6,
+        "xp": 0
+      },
+      "detach": {
+        "ticks": 3,
+        "baseStamina": 6,
+        "xp": 0
+      },
+      "repairToolId": "tool_repair_hammer"
+    },
+    {
+      "id": "M02-T1",
+      "name": "双刃斧头",
+      "tier": 1,
+      "capacity": 16,
+      "craft": {
+        "ticks": 12,
+        "baseStamina": 34,
+        "baseXp": 22,
+        "xpByStars": [
+          5.5,
+          22,
+          33,
+          55
+        ]
+      },
+      "research": {
+        "ticks": 9,
+        "baseStamina": 17,
+        "xp": 36,
+        "sampleCount": 1,
+        "destroysSample": true,
+        "repeatKnownStructureAllowed": false
+      },
+      "attach": {
+        "ticks": 3,
+        "baseStamina": 6,
+        "xp": 0
+      },
+      "detach": {
+        "ticks": 3,
+        "baseStamina": 6,
+        "xp": 0
+      },
+      "repairToolId": "tool_repair_whetstone"
+    },
+    {
+      "id": "M07-T1",
+      "name": "一体棍身",
+      "tier": 1,
+      "capacity": 14,
+      "craft": {
+        "ticks": 12,
+        "baseStamina": 30,
+        "baseXp": 20,
+        "xpByStars": [
+          5,
+          20,
+          30,
+          50
+        ]
+      },
+      "research": {
+        "ticks": 8,
+        "baseStamina": 15,
+        "xp": 32,
+        "sampleCount": 1,
+        "destroysSample": true,
+        "repeatKnownStructureAllowed": false
+      },
+      "attach": {
+        "ticks": 3,
+        "baseStamina": 6,
+        "xp": 0
+      },
+      "detach": {
+        "ticks": 3,
+        "baseStamina": 6,
+        "xp": 0
+      },
+      "repairToolId": "tool_repair_hammer"
+    },
+    {
+      "id": "M03-T2",
+      "name": "锤斧复合头",
+      "tier": 2,
+      "capacity": 16,
+      "craft": {
+        "ticks": 12,
+        "baseStamina": 36,
+        "baseXp": 24,
+        "xpByStars": [
+          6,
+          24,
+          36,
+          60
+        ]
+      },
+      "research": {
+        "ticks": 10,
+        "baseStamina": 18,
+        "xp": 40,
+        "sampleCount": 1,
+        "destroysSample": true,
+        "repeatKnownStructureAllowed": false
+      },
+      "attach": {
+        "ticks": 3,
+        "baseStamina": 6,
+        "xp": 0
+      },
+      "detach": {
+        "ticks": 3,
+        "baseStamina": 6,
+        "xp": 0
+      },
+      "repairToolId": "tool_repair_hammer"
+    },
+    {
+      "id": "M05-T2",
+      "name": "一体双刃剑身",
+      "tier": 2,
+      "capacity": 14,
+      "craft": {
+        "ticks": 12,
+        "baseStamina": 32,
+        "baseXp": 22,
+        "xpByStars": [
+          5.5,
+          22,
+          33,
+          55
+        ]
+      },
+      "research": {
+        "ticks": 9,
+        "baseStamina": 16,
+        "xp": 36,
+        "sampleCount": 1,
+        "destroysSample": true,
+        "repeatKnownStructureAllowed": false
+      },
+      "attach": {
+        "ticks": 3,
+        "baseStamina": 6,
+        "xp": 0
+      },
+      "detach": {
+        "ticks": 3,
+        "baseStamina": 6,
+        "xp": 0
+      },
+      "repairToolId": "tool_repair_whetstone"
+    },
+    {
+      "id": "M06-T2",
+      "name": "一体单刃刀身",
+      "tier": 2,
+      "capacity": 14,
+      "craft": {
+        "ticks": 12,
+        "baseStamina": 32,
+        "baseXp": 22,
+        "xpByStars": [
+          5.5,
+          22,
+          33,
+          55
+        ]
+      },
+      "research": {
+        "ticks": 9,
+        "baseStamina": 16,
+        "xp": 36,
+        "sampleCount": 1,
+        "destroysSample": true,
+        "repeatKnownStructureAllowed": false
+      },
+      "attach": {
+        "ticks": 3,
+        "baseStamina": 6,
+        "xp": 0
+      },
+      "detach": {
+        "ticks": 3,
+        "baseStamina": 6,
+        "xp": 0
+      },
+      "repairToolId": "tool_repair_whetstone"
+    },
+    {
+      "id": "M01-T3",
+      "name": "双面锤头",
+      "tier": 3,
+      "capacity": 14,
+      "craft": {
+        "ticks": 12,
+        "baseStamina": 34,
+        "baseXp": 24,
+        "xpByStars": [
+          6,
+          24,
+          36,
+          60
+        ]
+      },
+      "research": {
+        "ticks": 10,
+        "baseStamina": 17,
+        "xp": 40,
+        "sampleCount": 1,
+        "destroysSample": true,
+        "repeatKnownStructureAllowed": false
+      },
+      "attach": {
+        "ticks": 3,
+        "baseStamina": 6,
+        "xp": 0
+      },
+      "detach": {
+        "ticks": 3,
+        "baseStamina": 6,
+        "xp": 0
+      },
+      "repairToolId": "tool_repair_hammer"
+    },
+    {
+      "id": "M04-T3",
+      "name": "锤镐复合头",
+      "tier": 3,
+      "capacity": 15,
+      "craft": {
+        "ticks": 12,
+        "baseStamina": 36,
+        "baseXp": 25,
+        "xpByStars": [
+          6.25,
+          25,
+          37.5,
+          62.5
+        ]
+      },
+      "research": {
+        "ticks": 11,
+        "baseStamina": 18,
+        "xp": 42,
+        "sampleCount": 1,
+        "destroysSample": true,
+        "repeatKnownStructureAllowed": false
+      },
+      "attach": {
+        "ticks": 3,
+        "baseStamina": 6,
+        "xp": 0
+      },
+      "detach": {
+        "ticks": 3,
+        "baseStamina": 6,
+        "xp": 0
+      },
+      "repairToolId": "tool_repair_hammer"
+    },
+    {
+      "id": "M07-T3",
+      "name": "一体棍身",
+      "tier": 3,
+      "capacity": 14,
+      "craft": {
+        "ticks": 12,
+        "baseStamina": 34,
+        "baseXp": 24,
+        "xpByStars": [
+          6,
+          24,
+          36,
+          60
+        ]
+      },
+      "research": {
+        "ticks": 10,
+        "baseStamina": 17,
+        "xp": 40,
+        "sampleCount": 1,
+        "destroysSample": true,
+        "repeatKnownStructureAllowed": false
+      },
+      "attach": {
+        "ticks": 3,
+        "baseStamina": 6,
+        "xp": 0
+      },
+      "detach": {
+        "ticks": 3,
+        "baseStamina": 6,
+        "xp": 0
+      },
+      "repairToolId": "tool_repair_hammer"
+    },
+    {
+      "id": "M02-T4",
+      "name": "双刃斧头",
+      "tier": 4,
+      "capacity": 16,
+      "craft": {
+        "ticks": 12,
+        "baseStamina": 40,
+        "baseXp": 28,
+        "xpByStars": [
+          7,
+          28,
+          42,
+          70
+        ]
+      },
+      "research": {
+        "ticks": 12,
+        "baseStamina": 20,
+        "xp": 48,
+        "sampleCount": 1,
+        "destroysSample": true,
+        "repeatKnownStructureAllowed": false
+      },
+      "attach": {
+        "ticks": 3,
+        "baseStamina": 6,
+        "xp": 0
+      },
+      "detach": {
+        "ticks": 3,
+        "baseStamina": 6,
+        "xp": 0
+      },
+      "repairToolId": "tool_repair_whetstone"
+    },
+    {
+      "id": "M05-T4",
+      "name": "一体双刃剑身",
+      "tier": 4,
+      "capacity": 14,
+      "craft": {
+        "ticks": 12,
+        "baseStamina": 36,
+        "baseXp": 26,
+        "xpByStars": [
+          6.5,
+          26,
+          39,
+          65
+        ]
+      },
+      "research": {
+        "ticks": 11,
+        "baseStamina": 18,
+        "xp": 44,
+        "sampleCount": 1,
+        "destroysSample": true,
+        "repeatKnownStructureAllowed": false
+      },
+      "attach": {
+        "ticks": 3,
+        "baseStamina": 6,
+        "xp": 0
+      },
+      "detach": {
+        "ticks": 3,
+        "baseStamina": 6,
+        "xp": 0
+      },
+      "repairToolId": "tool_repair_whetstone"
+    },
+    {
+      "id": "M08-T4",
+      "name": "冠刺锤头",
+      "tier": 4,
+      "capacity": 18,
+      "craft": {
+        "ticks": 12,
+        "baseStamina": 44,
+        "baseXp": 30,
+        "xpByStars": [
+          7.5,
+          30,
+          45,
+          75
+        ]
+      },
+      "research": {
+        "ticks": 13,
+        "baseStamina": 22,
+        "xp": 52,
+        "sampleCount": 1,
+        "destroysSample": true,
+        "repeatKnownStructureAllowed": false
+      },
+      "attach": {
+        "ticks": 3,
+        "baseStamina": 6,
+        "xp": 0
+      },
+      "detach": {
+        "ticks": 3,
+        "baseStamina": 6,
+        "xp": 0
+      },
+      "repairToolId": "tool_repair_hammer"
+    },
+    {
+      "id": "M03-T5",
+      "name": "锤斧复合头",
+      "tier": 5,
+      "capacity": 16,
+      "craft": {
+        "ticks": 12,
+        "baseStamina": 42,
+        "baseXp": 30,
+        "xpByStars": [
+          7.5,
+          30,
+          45,
+          75
+        ]
+      },
+      "research": {
+        "ticks": 13,
+        "baseStamina": 21,
+        "xp": 52,
+        "sampleCount": 1,
+        "destroysSample": true,
+        "repeatKnownStructureAllowed": false
+      },
+      "attach": {
+        "ticks": 3,
+        "baseStamina": 6,
+        "xp": 0
+      },
+      "detach": {
+        "ticks": 3,
+        "baseStamina": 6,
+        "xp": 0
+      },
+      "repairToolId": "tool_repair_hammer"
+    },
+    {
+      "id": "M06-T5",
+      "name": "一体单刃刀身",
+      "tier": 5,
+      "capacity": 14,
+      "craft": {
+        "ticks": 12,
+        "baseStamina": 38,
+        "baseXp": 28,
+        "xpByStars": [
+          7,
+          28,
+          42,
+          70
+        ]
+      },
+      "research": {
+        "ticks": 12,
+        "baseStamina": 19,
+        "xp": 48,
+        "sampleCount": 1,
+        "destroysSample": true,
+        "repeatKnownStructureAllowed": false
+      },
+      "attach": {
+        "ticks": 3,
+        "baseStamina": 6,
+        "xp": 0
+      },
+      "detach": {
+        "ticks": 3,
+        "baseStamina": 6,
+        "xp": 0
+      },
+      "repairToolId": "tool_repair_whetstone"
+    },
+    {
+      "id": "M07-T5",
+      "name": "一体棍身",
+      "tier": 5,
+      "capacity": 14,
+      "craft": {
+        "ticks": 12,
+        "baseStamina": 38,
+        "baseXp": 28,
+        "xpByStars": [
+          7,
+          28,
+          42,
+          70
+        ]
+      },
+      "research": {
+        "ticks": 12,
+        "baseStamina": 19,
+        "xp": 48,
+        "sampleCount": 1,
+        "destroysSample": true,
+        "repeatKnownStructureAllowed": false
+      },
+      "attach": {
+        "ticks": 3,
+        "baseStamina": 6,
+        "xp": 0
+      },
+      "detach": {
+        "ticks": 3,
+        "baseStamina": 6,
+        "xp": 0
+      },
+      "repairToolId": "tool_repair_hammer"
+    },
+    {
+      "id": "M04-T6",
+      "name": "锤镐复合头",
+      "tier": 6,
+      "capacity": 15,
+      "craft": {
+        "ticks": 12,
+        "baseStamina": 42,
+        "baseXp": 31,
+        "xpByStars": [
+          7.75,
+          31,
+          46.5,
+          77.5
+        ]
+      },
+      "research": {
+        "ticks": 14,
+        "baseStamina": 21,
+        "xp": 54,
+        "sampleCount": 1,
+        "destroysSample": true,
+        "repeatKnownStructureAllowed": false
+      },
+      "attach": {
+        "ticks": 3,
+        "baseStamina": 6,
+        "xp": 0
+      },
+      "detach": {
+        "ticks": 3,
+        "baseStamina": 6,
+        "xp": 0
+      },
+      "repairToolId": "tool_repair_hammer"
+    },
+    {
+      "id": "M05-T6",
+      "name": "一体双刃剑身",
+      "tier": 6,
+      "capacity": 14,
+      "craft": {
+        "ticks": 12,
+        "baseStamina": 40,
+        "baseXp": 30,
+        "xpByStars": [
+          7.5,
+          30,
+          45,
+          75
+        ]
+      },
+      "research": {
+        "ticks": 13,
+        "baseStamina": 20,
+        "xp": 52,
+        "sampleCount": 1,
+        "destroysSample": true,
+        "repeatKnownStructureAllowed": false
+      },
+      "attach": {
+        "ticks": 3,
+        "baseStamina": 6,
+        "xp": 0
+      },
+      "detach": {
+        "ticks": 3,
+        "baseStamina": 6,
+        "xp": 0
+      },
+      "repairToolId": "tool_repair_whetstone"
+    },
+    {
+      "id": "M08-T6",
+      "name": "冠刺锤头",
+      "tier": 6,
+      "capacity": 18,
+      "craft": {
+        "ticks": 12,
+        "baseStamina": 48,
+        "baseXp": 34,
+        "xpByStars": [
+          8.5,
+          34,
+          51,
+          85
+        ]
+      },
+      "research": {
+        "ticks": 15,
+        "baseStamina": 24,
+        "xp": 60,
+        "sampleCount": 1,
+        "destroysSample": true,
+        "repeatKnownStructureAllowed": false
+      },
+      "attach": {
+        "ticks": 3,
+        "baseStamina": 6,
+        "xp": 0
+      },
+      "detach": {
+        "ticks": 3,
+        "baseStamina": 6,
+        "xp": 0
+      },
+      "repairToolId": "tool_repair_hammer"
+    }
+  ],
+  "ores": [
+    {
+      "id": "ore_iron_raw",
+      "name": "铁质矿石",
+      "processing": {
+        "inputCount": 1,
+        "outputFeedCount": 1,
+        "byproducts": [],
+        "ticks": 2,
+        "baseStamina": 2,
+        "xp": 0.5,
+        "outputRouteKey": "ore_iron_raw",
+        "outputItemId": "material_forging_iron"
+      }
+    },
+    {
+      "id": "ore_copper_raw",
+      "name": "粗铜矿石",
+      "processing": {
+        "inputCount": 1,
+        "outputFeedCount": 1,
+        "byproducts": [],
+        "ticks": 2,
+        "baseStamina": 2,
+        "xp": 0.5,
+        "outputRouteKey": "ore_copper_raw",
+        "outputItemId": "material_forging_copper"
+      }
+    },
+    {
+      "id": "ore_tin_raw",
+      "name": "锡矿",
+      "processing": {
+        "inputCount": 1,
+        "outputFeedCount": 1,
+        "byproducts": [],
+        "ticks": 2,
+        "baseStamina": 2,
+        "xp": 0.5,
+        "outputRouteKey": "ore_tin_raw",
+        "outputItemId": "material_forging_tin"
+      }
+    },
+    {
+      "id": "ore_lead_raw",
+      "name": "铅矿",
+      "processing": {
+        "inputCount": 1,
+        "outputFeedCount": 1,
+        "byproducts": [],
+        "ticks": 2,
+        "baseStamina": 2,
+        "xp": 0.5,
+        "outputRouteKey": "ore_lead_raw",
+        "outputItemId": "material_forging_lead"
+      }
+    },
+    {
+      "id": "ore_zinc_raw",
+      "name": "锌矿",
+      "processing": {
+        "inputCount": 1,
+        "outputFeedCount": 1,
+        "byproducts": [],
+        "ticks": 2,
+        "baseStamina": 2,
+        "xp": 0.5,
+        "outputRouteKey": "ore_zinc_raw",
+        "outputItemId": "material_forging_zinc"
+      }
+    },
+    {
+      "id": "ore_titanium_raw",
+      "name": "钛砂",
+      "processing": {
+        "inputCount": 1,
+        "outputFeedCount": 1,
+        "byproducts": [],
+        "ticks": 3,
+        "baseStamina": 3,
+        "xp": 0.75,
+        "outputRouteKey": "ore_titanium_raw",
+        "outputItemId": "material_forging_titanium"
+      }
+    },
+    {
+      "id": "ore_tungsten_raw",
+      "name": "黑重矿",
+      "processing": {
+        "inputCount": 1,
+        "outputFeedCount": 1,
+        "byproducts": [],
+        "ticks": 4,
+        "baseStamina": 4,
+        "xp": 1,
+        "outputRouteKey": "ore_tungsten_raw",
+        "outputItemId": "material_forging_tungsten"
+      }
+    },
+    {
+      "id": "ore_molybdenum_raw",
+      "name": "银片矿",
+      "processing": {
+        "inputCount": 1,
+        "outputFeedCount": 1,
+        "byproducts": [],
+        "ticks": 3,
+        "baseStamina": 3,
+        "xp": 0.75,
+        "outputRouteKey": "ore_molybdenum_raw",
+        "outputItemId": "material_forging_molybdenum"
+      }
+    },
+    {
+      "id": "ore_manganese_raw",
+      "name": "黑纹矿",
+      "processing": {
+        "inputCount": 1,
+        "outputFeedCount": 1,
+        "byproducts": [],
+        "ticks": 3,
+        "baseStamina": 3,
+        "xp": 0.75,
+        "outputRouteKey": "ore_manganese_raw",
+        "outputItemId": "material_forging_manganese"
+      }
+    },
+    {
+      "id": "ore_antimony_raw",
+      "name": "针晶矿",
+      "processing": {
+        "inputCount": 1,
+        "outputFeedCount": 1,
+        "byproducts": [],
+        "ticks": 2,
+        "baseStamina": 2,
+        "xp": 0.5,
+        "outputRouteKey": "ore_antimony_raw",
+        "outputItemId": "material_forging_antimony"
+      }
+    },
+    {
+      "id": "ore_silver_raw",
+      "name": "银矿",
+      "processing": {
+        "inputCount": 1,
+        "outputFeedCount": 1,
+        "byproducts": [],
+        "ticks": 2,
+        "baseStamina": 2,
+        "xp": 0.5,
+        "outputRouteKey": "ore_silver_raw",
+        "outputItemId": "material_forging_silver"
+      }
+    },
+    {
+      "id": "ore_gold_raw",
+      "name": "金矿",
+      "processing": {
+        "inputCount": 1,
+        "outputFeedCount": 1,
+        "byproducts": [],
+        "ticks": 2,
+        "baseStamina": 2,
+        "xp": 0.5,
+        "outputRouteKey": "ore_gold_raw",
+        "outputItemId": "material_forging_gold"
+      }
+    }
+  ],
+  "levels": [
+    {
+      "level": 1,
+      "cumulativeXp": 0,
+      "nextLevelXp": 100,
+      "hammerBudget": 8,
+      "collectibleCells": 2,
+      "staminaReductionBps": 20,
+      "repairRatioNumerator": 99,
+      "repairRatioDenominator": 198
+    },
+    {
+      "level": 2,
+      "cumulativeXp": 100,
+      "nextLevelXp": 150,
+      "hammerBudget": 8,
+      "collectibleCells": 2,
+      "staminaReductionBps": 40,
+      "repairRatioNumerator": 100,
+      "repairRatioDenominator": 198
+    },
+    {
+      "level": 3,
+      "cumulativeXp": 250,
+      "nextLevelXp": 200,
+      "hammerBudget": 8,
+      "collectibleCells": 2,
+      "staminaReductionBps": 60,
+      "repairRatioNumerator": 101,
+      "repairRatioDenominator": 198
+    },
+    {
+      "level": 4,
+      "cumulativeXp": 450,
+      "nextLevelXp": 250,
+      "hammerBudget": 8,
+      "collectibleCells": 2,
+      "staminaReductionBps": 80,
+      "repairRatioNumerator": 102,
+      "repairRatioDenominator": 198
+    },
+    {
+      "level": 5,
+      "cumulativeXp": 700,
+      "nextLevelXp": 300,
+      "hammerBudget": 8,
+      "collectibleCells": 2,
+      "staminaReductionBps": 100,
+      "repairRatioNumerator": 103,
+      "repairRatioDenominator": 198
+    },
+    {
+      "level": 6,
+      "cumulativeXp": 1000,
+      "nextLevelXp": 350,
+      "hammerBudget": 8,
+      "collectibleCells": 2,
+      "staminaReductionBps": 120,
+      "repairRatioNumerator": 104,
+      "repairRatioDenominator": 198
+    },
+    {
+      "level": 7,
+      "cumulativeXp": 1350,
+      "nextLevelXp": 400,
+      "hammerBudget": 8,
+      "collectibleCells": 2,
+      "staminaReductionBps": 140,
+      "repairRatioNumerator": 105,
+      "repairRatioDenominator": 198
+    },
+    {
+      "level": 8,
+      "cumulativeXp": 1750,
+      "nextLevelXp": 450,
+      "hammerBudget": 8,
+      "collectibleCells": 2,
+      "staminaReductionBps": 160,
+      "repairRatioNumerator": 106,
+      "repairRatioDenominator": 198
+    },
+    {
+      "level": 9,
+      "cumulativeXp": 2200,
+      "nextLevelXp": 500,
+      "hammerBudget": 8,
+      "collectibleCells": 2,
+      "staminaReductionBps": 180,
+      "repairRatioNumerator": 107,
+      "repairRatioDenominator": 198
+    },
+    {
+      "level": 10,
+      "cumulativeXp": 2700,
+      "nextLevelXp": 550,
+      "hammerBudget": 8,
+      "collectibleCells": 2,
+      "staminaReductionBps": 200,
+      "repairRatioNumerator": 108,
+      "repairRatioDenominator": 198
+    },
+    {
+      "level": 11,
+      "cumulativeXp": 3250,
+      "nextLevelXp": 600,
+      "hammerBudget": 8,
+      "collectibleCells": 2,
+      "staminaReductionBps": 220,
+      "repairRatioNumerator": 109,
+      "repairRatioDenominator": 198
+    },
+    {
+      "level": 12,
+      "cumulativeXp": 3850,
+      "nextLevelXp": 650,
+      "hammerBudget": 8,
+      "collectibleCells": 2,
+      "staminaReductionBps": 240,
+      "repairRatioNumerator": 110,
+      "repairRatioDenominator": 198
+    },
+    {
+      "level": 13,
+      "cumulativeXp": 4500,
+      "nextLevelXp": 700,
+      "hammerBudget": 8,
+      "collectibleCells": 2,
+      "staminaReductionBps": 260,
+      "repairRatioNumerator": 111,
+      "repairRatioDenominator": 198
+    },
+    {
+      "level": 14,
+      "cumulativeXp": 5200,
+      "nextLevelXp": 750,
+      "hammerBudget": 8,
+      "collectibleCells": 2,
+      "staminaReductionBps": 280,
+      "repairRatioNumerator": 112,
+      "repairRatioDenominator": 198
+    },
+    {
+      "level": 15,
+      "cumulativeXp": 5950,
+      "nextLevelXp": 800,
+      "hammerBudget": 8,
+      "collectibleCells": 2,
+      "staminaReductionBps": 300,
+      "repairRatioNumerator": 113,
+      "repairRatioDenominator": 198
+    },
+    {
+      "level": 16,
+      "cumulativeXp": 6750,
+      "nextLevelXp": 850,
+      "hammerBudget": 8,
+      "collectibleCells": 2,
+      "staminaReductionBps": 320,
+      "repairRatioNumerator": 114,
+      "repairRatioDenominator": 198
+    },
+    {
+      "level": 17,
+      "cumulativeXp": 7600,
+      "nextLevelXp": 900,
+      "hammerBudget": 8,
+      "collectibleCells": 2,
+      "staminaReductionBps": 340,
+      "repairRatioNumerator": 115,
+      "repairRatioDenominator": 198
+    },
+    {
+      "level": 18,
+      "cumulativeXp": 8500,
+      "nextLevelXp": 950,
+      "hammerBudget": 8,
+      "collectibleCells": 2,
+      "staminaReductionBps": 360,
+      "repairRatioNumerator": 116,
+      "repairRatioDenominator": 198
+    },
+    {
+      "level": 19,
+      "cumulativeXp": 9450,
+      "nextLevelXp": 1000,
+      "hammerBudget": 8,
+      "collectibleCells": 2,
+      "staminaReductionBps": 380,
+      "repairRatioNumerator": 117,
+      "repairRatioDenominator": 198
+    },
+    {
+      "level": 20,
+      "cumulativeXp": 10450,
+      "nextLevelXp": 1050,
+      "hammerBudget": 8,
+      "collectibleCells": 2,
+      "staminaReductionBps": 400,
+      "repairRatioNumerator": 118,
+      "repairRatioDenominator": 198
+    },
+    {
+      "level": 21,
+      "cumulativeXp": 11500,
+      "nextLevelXp": 1100,
+      "hammerBudget": 8,
+      "collectibleCells": 2,
+      "staminaReductionBps": 420,
+      "repairRatioNumerator": 119,
+      "repairRatioDenominator": 198
+    },
+    {
+      "level": 22,
+      "cumulativeXp": 12600,
+      "nextLevelXp": 1150,
+      "hammerBudget": 8,
+      "collectibleCells": 2,
+      "staminaReductionBps": 440,
+      "repairRatioNumerator": 120,
+      "repairRatioDenominator": 198
+    },
+    {
+      "level": 23,
+      "cumulativeXp": 13750,
+      "nextLevelXp": 1200,
+      "hammerBudget": 8,
+      "collectibleCells": 2,
+      "staminaReductionBps": 460,
+      "repairRatioNumerator": 121,
+      "repairRatioDenominator": 198
+    },
+    {
+      "level": 24,
+      "cumulativeXp": 14950,
+      "nextLevelXp": 1250,
+      "hammerBudget": 8,
+      "collectibleCells": 2,
+      "staminaReductionBps": 480,
+      "repairRatioNumerator": 122,
+      "repairRatioDenominator": 198
+    },
+    {
+      "level": 25,
+      "cumulativeXp": 16200,
+      "nextLevelXp": 1300,
+      "hammerBudget": 9,
+      "collectibleCells": 2,
+      "staminaReductionBps": 500,
+      "repairRatioNumerator": 123,
+      "repairRatioDenominator": 198
+    },
+    {
+      "level": 26,
+      "cumulativeXp": 17500,
+      "nextLevelXp": 1350,
+      "hammerBudget": 9,
+      "collectibleCells": 2,
+      "staminaReductionBps": 520,
+      "repairRatioNumerator": 124,
+      "repairRatioDenominator": 198
+    },
+    {
+      "level": 27,
+      "cumulativeXp": 18850,
+      "nextLevelXp": 1400,
+      "hammerBudget": 9,
+      "collectibleCells": 2,
+      "staminaReductionBps": 540,
+      "repairRatioNumerator": 125,
+      "repairRatioDenominator": 198
+    },
+    {
+      "level": 28,
+      "cumulativeXp": 20250,
+      "nextLevelXp": 1450,
+      "hammerBudget": 9,
+      "collectibleCells": 2,
+      "staminaReductionBps": 560,
+      "repairRatioNumerator": 126,
+      "repairRatioDenominator": 198
+    },
+    {
+      "level": 29,
+      "cumulativeXp": 21700,
+      "nextLevelXp": 1500,
+      "hammerBudget": 9,
+      "collectibleCells": 2,
+      "staminaReductionBps": 580,
+      "repairRatioNumerator": 127,
+      "repairRatioDenominator": 198
+    },
+    {
+      "level": 30,
+      "cumulativeXp": 23200,
+      "nextLevelXp": 1550,
+      "hammerBudget": 9,
+      "collectibleCells": 2,
+      "staminaReductionBps": 600,
+      "repairRatioNumerator": 128,
+      "repairRatioDenominator": 198
+    },
+    {
+      "level": 31,
+      "cumulativeXp": 24750,
+      "nextLevelXp": 1600,
+      "hammerBudget": 9,
+      "collectibleCells": 2,
+      "staminaReductionBps": 620,
+      "repairRatioNumerator": 129,
+      "repairRatioDenominator": 198
+    },
+    {
+      "level": 32,
+      "cumulativeXp": 26350,
+      "nextLevelXp": 1650,
+      "hammerBudget": 9,
+      "collectibleCells": 2,
+      "staminaReductionBps": 640,
+      "repairRatioNumerator": 130,
+      "repairRatioDenominator": 198
+    },
+    {
+      "level": 33,
+      "cumulativeXp": 28000,
+      "nextLevelXp": 1700,
+      "hammerBudget": 9,
+      "collectibleCells": 2,
+      "staminaReductionBps": 660,
+      "repairRatioNumerator": 131,
+      "repairRatioDenominator": 198
+    },
+    {
+      "level": 34,
+      "cumulativeXp": 29700,
+      "nextLevelXp": 1750,
+      "hammerBudget": 9,
+      "collectibleCells": 2,
+      "staminaReductionBps": 680,
+      "repairRatioNumerator": 132,
+      "repairRatioDenominator": 198
+    },
+    {
+      "level": 35,
+      "cumulativeXp": 31450,
+      "nextLevelXp": 1800,
+      "hammerBudget": 9,
+      "collectibleCells": 2,
+      "staminaReductionBps": 700,
+      "repairRatioNumerator": 133,
+      "repairRatioDenominator": 198
+    },
+    {
+      "level": 36,
+      "cumulativeXp": 33250,
+      "nextLevelXp": 1850,
+      "hammerBudget": 9,
+      "collectibleCells": 2,
+      "staminaReductionBps": 720,
+      "repairRatioNumerator": 134,
+      "repairRatioDenominator": 198
+    },
+    {
+      "level": 37,
+      "cumulativeXp": 35100,
+      "nextLevelXp": 1900,
+      "hammerBudget": 9,
+      "collectibleCells": 2,
+      "staminaReductionBps": 740,
+      "repairRatioNumerator": 135,
+      "repairRatioDenominator": 198
+    },
+    {
+      "level": 38,
+      "cumulativeXp": 37000,
+      "nextLevelXp": 1950,
+      "hammerBudget": 9,
+      "collectibleCells": 2,
+      "staminaReductionBps": 760,
+      "repairRatioNumerator": 136,
+      "repairRatioDenominator": 198
+    },
+    {
+      "level": 39,
+      "cumulativeXp": 38950,
+      "nextLevelXp": 2000,
+      "hammerBudget": 9,
+      "collectibleCells": 2,
+      "staminaReductionBps": 780,
+      "repairRatioNumerator": 137,
+      "repairRatioDenominator": 198
+    },
+    {
+      "level": 40,
+      "cumulativeXp": 40950,
+      "nextLevelXp": 2050,
+      "hammerBudget": 9,
+      "collectibleCells": 2,
+      "staminaReductionBps": 800,
+      "repairRatioNumerator": 138,
+      "repairRatioDenominator": 198
+    },
+    {
+      "level": 41,
+      "cumulativeXp": 43000,
+      "nextLevelXp": 2100,
+      "hammerBudget": 9,
+      "collectibleCells": 2,
+      "staminaReductionBps": 820,
+      "repairRatioNumerator": 139,
+      "repairRatioDenominator": 198
+    },
+    {
+      "level": 42,
+      "cumulativeXp": 45100,
+      "nextLevelXp": 2150,
+      "hammerBudget": 9,
+      "collectibleCells": 2,
+      "staminaReductionBps": 840,
+      "repairRatioNumerator": 140,
+      "repairRatioDenominator": 198
+    },
+    {
+      "level": 43,
+      "cumulativeXp": 47250,
+      "nextLevelXp": 2200,
+      "hammerBudget": 9,
+      "collectibleCells": 2,
+      "staminaReductionBps": 860,
+      "repairRatioNumerator": 141,
+      "repairRatioDenominator": 198
+    },
+    {
+      "level": 44,
+      "cumulativeXp": 49450,
+      "nextLevelXp": 2250,
+      "hammerBudget": 9,
+      "collectibleCells": 2,
+      "staminaReductionBps": 880,
+      "repairRatioNumerator": 142,
+      "repairRatioDenominator": 198
+    },
+    {
+      "level": 45,
+      "cumulativeXp": 51700,
+      "nextLevelXp": 2300,
+      "hammerBudget": 9,
+      "collectibleCells": 2,
+      "staminaReductionBps": 900,
+      "repairRatioNumerator": 143,
+      "repairRatioDenominator": 198
+    },
+    {
+      "level": 46,
+      "cumulativeXp": 54000,
+      "nextLevelXp": 2350,
+      "hammerBudget": 9,
+      "collectibleCells": 2,
+      "staminaReductionBps": 920,
+      "repairRatioNumerator": 144,
+      "repairRatioDenominator": 198
+    },
+    {
+      "level": 47,
+      "cumulativeXp": 56350,
+      "nextLevelXp": 2400,
+      "hammerBudget": 9,
+      "collectibleCells": 2,
+      "staminaReductionBps": 940,
+      "repairRatioNumerator": 145,
+      "repairRatioDenominator": 198
+    },
+    {
+      "level": 48,
+      "cumulativeXp": 58750,
+      "nextLevelXp": 2450,
+      "hammerBudget": 9,
+      "collectibleCells": 2,
+      "staminaReductionBps": 960,
+      "repairRatioNumerator": 146,
+      "repairRatioDenominator": 198
+    },
+    {
+      "level": 49,
+      "cumulativeXp": 61200,
+      "nextLevelXp": 2500,
+      "hammerBudget": 9,
+      "collectibleCells": 2,
+      "staminaReductionBps": 980,
+      "repairRatioNumerator": 147,
+      "repairRatioDenominator": 198
+    },
+    {
+      "level": 50,
+      "cumulativeXp": 63700,
+      "nextLevelXp": 2550,
+      "hammerBudget": 9,
+      "collectibleCells": 3,
+      "staminaReductionBps": 1000,
+      "repairRatioNumerator": 148,
+      "repairRatioDenominator": 198
+    },
+    {
+      "level": 51,
+      "cumulativeXp": 66250,
+      "nextLevelXp": 2600,
+      "hammerBudget": 9,
+      "collectibleCells": 3,
+      "staminaReductionBps": 1020,
+      "repairRatioNumerator": 149,
+      "repairRatioDenominator": 198
+    },
+    {
+      "level": 52,
+      "cumulativeXp": 68850,
+      "nextLevelXp": 2650,
+      "hammerBudget": 9,
+      "collectibleCells": 3,
+      "staminaReductionBps": 1040,
+      "repairRatioNumerator": 150,
+      "repairRatioDenominator": 198
+    },
+    {
+      "level": 53,
+      "cumulativeXp": 71500,
+      "nextLevelXp": 2700,
+      "hammerBudget": 9,
+      "collectibleCells": 3,
+      "staminaReductionBps": 1060,
+      "repairRatioNumerator": 151,
+      "repairRatioDenominator": 198
+    },
+    {
+      "level": 54,
+      "cumulativeXp": 74200,
+      "nextLevelXp": 2750,
+      "hammerBudget": 9,
+      "collectibleCells": 3,
+      "staminaReductionBps": 1080,
+      "repairRatioNumerator": 152,
+      "repairRatioDenominator": 198
+    },
+    {
+      "level": 55,
+      "cumulativeXp": 76950,
+      "nextLevelXp": 2800,
+      "hammerBudget": 9,
+      "collectibleCells": 3,
+      "staminaReductionBps": 1100,
+      "repairRatioNumerator": 153,
+      "repairRatioDenominator": 198
+    },
+    {
+      "level": 56,
+      "cumulativeXp": 79750,
+      "nextLevelXp": 2850,
+      "hammerBudget": 9,
+      "collectibleCells": 3,
+      "staminaReductionBps": 1120,
+      "repairRatioNumerator": 154,
+      "repairRatioDenominator": 198
+    },
+    {
+      "level": 57,
+      "cumulativeXp": 82600,
+      "nextLevelXp": 2900,
+      "hammerBudget": 9,
+      "collectibleCells": 3,
+      "staminaReductionBps": 1140,
+      "repairRatioNumerator": 155,
+      "repairRatioDenominator": 198
+    },
+    {
+      "level": 58,
+      "cumulativeXp": 85500,
+      "nextLevelXp": 2950,
+      "hammerBudget": 9,
+      "collectibleCells": 3,
+      "staminaReductionBps": 1160,
+      "repairRatioNumerator": 156,
+      "repairRatioDenominator": 198
+    },
+    {
+      "level": 59,
+      "cumulativeXp": 88450,
+      "nextLevelXp": 3000,
+      "hammerBudget": 9,
+      "collectibleCells": 3,
+      "staminaReductionBps": 1180,
+      "repairRatioNumerator": 157,
+      "repairRatioDenominator": 198
+    },
+    {
+      "level": 60,
+      "cumulativeXp": 91450,
+      "nextLevelXp": 3050,
+      "hammerBudget": 9,
+      "collectibleCells": 3,
+      "staminaReductionBps": 1200,
+      "repairRatioNumerator": 158,
+      "repairRatioDenominator": 198
+    },
+    {
+      "level": 61,
+      "cumulativeXp": 94500,
+      "nextLevelXp": 3100,
+      "hammerBudget": 9,
+      "collectibleCells": 3,
+      "staminaReductionBps": 1220,
+      "repairRatioNumerator": 159,
+      "repairRatioDenominator": 198
+    },
+    {
+      "level": 62,
+      "cumulativeXp": 97600,
+      "nextLevelXp": 3150,
+      "hammerBudget": 9,
+      "collectibleCells": 3,
+      "staminaReductionBps": 1240,
+      "repairRatioNumerator": 160,
+      "repairRatioDenominator": 198
+    },
+    {
+      "level": 63,
+      "cumulativeXp": 100750,
+      "nextLevelXp": 3200,
+      "hammerBudget": 9,
+      "collectibleCells": 3,
+      "staminaReductionBps": 1260,
+      "repairRatioNumerator": 161,
+      "repairRatioDenominator": 198
+    },
+    {
+      "level": 64,
+      "cumulativeXp": 103950,
+      "nextLevelXp": 3250,
+      "hammerBudget": 9,
+      "collectibleCells": 3,
+      "staminaReductionBps": 1280,
+      "repairRatioNumerator": 162,
+      "repairRatioDenominator": 198
+    },
+    {
+      "level": 65,
+      "cumulativeXp": 107200,
+      "nextLevelXp": 3300,
+      "hammerBudget": 9,
+      "collectibleCells": 3,
+      "staminaReductionBps": 1300,
+      "repairRatioNumerator": 163,
+      "repairRatioDenominator": 198
+    },
+    {
+      "level": 66,
+      "cumulativeXp": 110500,
+      "nextLevelXp": 3350,
+      "hammerBudget": 9,
+      "collectibleCells": 3,
+      "staminaReductionBps": 1320,
+      "repairRatioNumerator": 164,
+      "repairRatioDenominator": 198
+    },
+    {
+      "level": 67,
+      "cumulativeXp": 113850,
+      "nextLevelXp": 3400,
+      "hammerBudget": 9,
+      "collectibleCells": 3,
+      "staminaReductionBps": 1340,
+      "repairRatioNumerator": 165,
+      "repairRatioDenominator": 198
+    },
+    {
+      "level": 68,
+      "cumulativeXp": 117250,
+      "nextLevelXp": 3450,
+      "hammerBudget": 9,
+      "collectibleCells": 3,
+      "staminaReductionBps": 1360,
+      "repairRatioNumerator": 166,
+      "repairRatioDenominator": 198
+    },
+    {
+      "level": 69,
+      "cumulativeXp": 120700,
+      "nextLevelXp": 3500,
+      "hammerBudget": 9,
+      "collectibleCells": 3,
+      "staminaReductionBps": 1380,
+      "repairRatioNumerator": 167,
+      "repairRatioDenominator": 198
+    },
+    {
+      "level": 70,
+      "cumulativeXp": 124200,
+      "nextLevelXp": 3550,
+      "hammerBudget": 9,
+      "collectibleCells": 3,
+      "staminaReductionBps": 1400,
+      "repairRatioNumerator": 168,
+      "repairRatioDenominator": 198
+    },
+    {
+      "level": 71,
+      "cumulativeXp": 127750,
+      "nextLevelXp": 3600,
+      "hammerBudget": 9,
+      "collectibleCells": 3,
+      "staminaReductionBps": 1420,
+      "repairRatioNumerator": 169,
+      "repairRatioDenominator": 198
+    },
+    {
+      "level": 72,
+      "cumulativeXp": 131350,
+      "nextLevelXp": 3650,
+      "hammerBudget": 9,
+      "collectibleCells": 3,
+      "staminaReductionBps": 1440,
+      "repairRatioNumerator": 170,
+      "repairRatioDenominator": 198
+    },
+    {
+      "level": 73,
+      "cumulativeXp": 135000,
+      "nextLevelXp": 3700,
+      "hammerBudget": 9,
+      "collectibleCells": 3,
+      "staminaReductionBps": 1460,
+      "repairRatioNumerator": 171,
+      "repairRatioDenominator": 198
+    },
+    {
+      "level": 74,
+      "cumulativeXp": 138700,
+      "nextLevelXp": 3750,
+      "hammerBudget": 9,
+      "collectibleCells": 3,
+      "staminaReductionBps": 1480,
+      "repairRatioNumerator": 172,
+      "repairRatioDenominator": 198
+    },
+    {
+      "level": 75,
+      "cumulativeXp": 142450,
+      "nextLevelXp": 3800,
+      "hammerBudget": 10,
+      "collectibleCells": 3,
+      "staminaReductionBps": 1500,
+      "repairRatioNumerator": 173,
+      "repairRatioDenominator": 198
+    },
+    {
+      "level": 76,
+      "cumulativeXp": 146250,
+      "nextLevelXp": 3850,
+      "hammerBudget": 10,
+      "collectibleCells": 3,
+      "staminaReductionBps": 1520,
+      "repairRatioNumerator": 174,
+      "repairRatioDenominator": 198
+    },
+    {
+      "level": 77,
+      "cumulativeXp": 150100,
+      "nextLevelXp": 3900,
+      "hammerBudget": 10,
+      "collectibleCells": 3,
+      "staminaReductionBps": 1540,
+      "repairRatioNumerator": 175,
+      "repairRatioDenominator": 198
+    },
+    {
+      "level": 78,
+      "cumulativeXp": 154000,
+      "nextLevelXp": 3950,
+      "hammerBudget": 10,
+      "collectibleCells": 3,
+      "staminaReductionBps": 1560,
+      "repairRatioNumerator": 176,
+      "repairRatioDenominator": 198
+    },
+    {
+      "level": 79,
+      "cumulativeXp": 157950,
+      "nextLevelXp": 4000,
+      "hammerBudget": 10,
+      "collectibleCells": 3,
+      "staminaReductionBps": 1580,
+      "repairRatioNumerator": 177,
+      "repairRatioDenominator": 198
+    },
+    {
+      "level": 80,
+      "cumulativeXp": 161950,
+      "nextLevelXp": 4050,
+      "hammerBudget": 10,
+      "collectibleCells": 3,
+      "staminaReductionBps": 1600,
+      "repairRatioNumerator": 178,
+      "repairRatioDenominator": 198
+    },
+    {
+      "level": 81,
+      "cumulativeXp": 166000,
+      "nextLevelXp": 4100,
+      "hammerBudget": 10,
+      "collectibleCells": 3,
+      "staminaReductionBps": 1620,
+      "repairRatioNumerator": 179,
+      "repairRatioDenominator": 198
+    },
+    {
+      "level": 82,
+      "cumulativeXp": 170100,
+      "nextLevelXp": 4150,
+      "hammerBudget": 10,
+      "collectibleCells": 3,
+      "staminaReductionBps": 1640,
+      "repairRatioNumerator": 180,
+      "repairRatioDenominator": 198
+    },
+    {
+      "level": 83,
+      "cumulativeXp": 174250,
+      "nextLevelXp": 4200,
+      "hammerBudget": 10,
+      "collectibleCells": 3,
+      "staminaReductionBps": 1660,
+      "repairRatioNumerator": 181,
+      "repairRatioDenominator": 198
+    },
+    {
+      "level": 84,
+      "cumulativeXp": 178450,
+      "nextLevelXp": 4250,
+      "hammerBudget": 10,
+      "collectibleCells": 3,
+      "staminaReductionBps": 1680,
+      "repairRatioNumerator": 182,
+      "repairRatioDenominator": 198
+    },
+    {
+      "level": 85,
+      "cumulativeXp": 182700,
+      "nextLevelXp": 4300,
+      "hammerBudget": 10,
+      "collectibleCells": 3,
+      "staminaReductionBps": 1700,
+      "repairRatioNumerator": 183,
+      "repairRatioDenominator": 198
+    },
+    {
+      "level": 86,
+      "cumulativeXp": 187000,
+      "nextLevelXp": 4350,
+      "hammerBudget": 10,
+      "collectibleCells": 3,
+      "staminaReductionBps": 1720,
+      "repairRatioNumerator": 184,
+      "repairRatioDenominator": 198
+    },
+    {
+      "level": 87,
+      "cumulativeXp": 191350,
+      "nextLevelXp": 4400,
+      "hammerBudget": 10,
+      "collectibleCells": 3,
+      "staminaReductionBps": 1740,
+      "repairRatioNumerator": 185,
+      "repairRatioDenominator": 198
+    },
+    {
+      "level": 88,
+      "cumulativeXp": 195750,
+      "nextLevelXp": 4450,
+      "hammerBudget": 10,
+      "collectibleCells": 3,
+      "staminaReductionBps": 1760,
+      "repairRatioNumerator": 186,
+      "repairRatioDenominator": 198
+    },
+    {
+      "level": 89,
+      "cumulativeXp": 200200,
+      "nextLevelXp": 4500,
+      "hammerBudget": 10,
+      "collectibleCells": 3,
+      "staminaReductionBps": 1780,
+      "repairRatioNumerator": 187,
+      "repairRatioDenominator": 198
+    },
+    {
+      "level": 90,
+      "cumulativeXp": 204700,
+      "nextLevelXp": 4550,
+      "hammerBudget": 10,
+      "collectibleCells": 3,
+      "staminaReductionBps": 1800,
+      "repairRatioNumerator": 188,
+      "repairRatioDenominator": 198
+    },
+    {
+      "level": 91,
+      "cumulativeXp": 209250,
+      "nextLevelXp": 4600,
+      "hammerBudget": 10,
+      "collectibleCells": 3,
+      "staminaReductionBps": 1820,
+      "repairRatioNumerator": 189,
+      "repairRatioDenominator": 198
+    },
+    {
+      "level": 92,
+      "cumulativeXp": 213850,
+      "nextLevelXp": 4650,
+      "hammerBudget": 10,
+      "collectibleCells": 3,
+      "staminaReductionBps": 1840,
+      "repairRatioNumerator": 190,
+      "repairRatioDenominator": 198
+    },
+    {
+      "level": 93,
+      "cumulativeXp": 218500,
+      "nextLevelXp": 4700,
+      "hammerBudget": 10,
+      "collectibleCells": 3,
+      "staminaReductionBps": 1860,
+      "repairRatioNumerator": 191,
+      "repairRatioDenominator": 198
+    },
+    {
+      "level": 94,
+      "cumulativeXp": 223200,
+      "nextLevelXp": 4750,
+      "hammerBudget": 10,
+      "collectibleCells": 3,
+      "staminaReductionBps": 1880,
+      "repairRatioNumerator": 192,
+      "repairRatioDenominator": 198
+    },
+    {
+      "level": 95,
+      "cumulativeXp": 227950,
+      "nextLevelXp": 4800,
+      "hammerBudget": 10,
+      "collectibleCells": 3,
+      "staminaReductionBps": 1900,
+      "repairRatioNumerator": 193,
+      "repairRatioDenominator": 198
+    },
+    {
+      "level": 96,
+      "cumulativeXp": 232750,
+      "nextLevelXp": 4850,
+      "hammerBudget": 10,
+      "collectibleCells": 3,
+      "staminaReductionBps": 1920,
+      "repairRatioNumerator": 194,
+      "repairRatioDenominator": 198
+    },
+    {
+      "level": 97,
+      "cumulativeXp": 237600,
+      "nextLevelXp": 4900,
+      "hammerBudget": 10,
+      "collectibleCells": 3,
+      "staminaReductionBps": 1940,
+      "repairRatioNumerator": 195,
+      "repairRatioDenominator": 198
+    },
+    {
+      "level": 98,
+      "cumulativeXp": 242500,
+      "nextLevelXp": 4950,
+      "hammerBudget": 10,
+      "collectibleCells": 3,
+      "staminaReductionBps": 1960,
+      "repairRatioNumerator": 196,
+      "repairRatioDenominator": 198
+    },
+    {
+      "level": 99,
+      "cumulativeXp": 247450,
+      "nextLevelXp": 5000,
+      "hammerBudget": 10,
+      "collectibleCells": 3,
+      "staminaReductionBps": 1980,
+      "repairRatioNumerator": 197,
+      "repairRatioDenominator": 198
+    },
+    {
+      "level": 100,
+      "cumulativeXp": 252450,
+      "nextLevelXp": null,
+      "hammerBudget": 10,
+      "collectibleCells": 4,
+      "staminaReductionBps": 2000,
+      "repairRatioNumerator": 198,
+      "repairRatioDenominator": 198
+    }
+  ]
+}

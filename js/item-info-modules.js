@@ -183,6 +183,10 @@
     function renderTooltipModulesHtml(args) {
         var tpl = args && args.tpl;
         var inst = args && args.inst;
+        if (inst && global.ForgingSystem && global.ForgingSystem.managed(inst.item_id)) {
+            var text = global.ForgingSystem.describe(inst);
+            return text ? '<div class="tooltip-module-text">'+esc(text).replace(/\n/g,'<br>')+'</div>' : '';
+        }
         if (inst && (inst.sewing || inst.sewing_parts) && global.SewingSystem) {
             return '<div class="tooltip-modules"><div class="tooltip-module"><div class="tooltip-module-title">缝纫</div><div class="tooltip-module-text">' + esc(global.SewingSystem.describe(inst)).replace(/\n/g, '<br>') + '</div></div></div>';
         }
@@ -217,7 +221,56 @@
         return html;
     }
 
+
+    // Structured, knowledge-filtered counterpart for the Svelte tooltip owner.
+    function tooltipView(args) {
+        var tpl = args.tpl || {}, inst = args.inst, character = args.character;
+        function node(cls, text, children, tag) { return { tag:tag || 'div', className:cls, text:text == null ? '' : String(text), children:children || [] }; }
+        function contentView(content) {
+            if (typeof content === 'string') return [node('tooltip-module-text',content)];
+            if (!content || typeof content !== 'object') return [];
+            var type = String(content.type || '').toLowerCase();
+            if (type === 'text') return [node('tooltip-module-text',content.text || '')];
+            if (type === 'csv_field_text') { var v = readItemValue(tpl,inst,String(content.field || '').trim()); return [node('tooltip-module-text',v == null || String(v).trim() === '' ? content.fallback || '' : v || '')]; }
+            if (type === 'list') return (content.items || []).length ? [node('tooltip-module-list','',content.items.map(function (v) { return node('',v,[],'li'); }),'ul')] : [];
+            if (type === 'kv') return (content.entries || []).length ? [node('tooltip-module-kv','',content.entries.map(function (v) { return node('tooltip-module-kv-row','',[node('tooltip-module-k',v.k || '',[],'span'),node('tooltip-module-v',v.v || '',[],'span')]); }))] : [];
+            if (type === 'tpl_kv') return (content.entries || []).flatMap(function (en) {
+                var f = String(en.field || '').trim(), raw = f ? readItemValue(tpl,inst,f) : undefined;
+                if (raw == null) return [];
+                var value = '';
+                if (en.pct === true && typeof raw === 'number' && isFinite(raw)) value = String(Math.round(raw * 100));
+                else if (Array.isArray(raw)) value = raw.map(function (v) { var k = String(v); return en.array_map && en.array_map[k] != null ? en.array_map[k] : k; }).join('/');
+                else if (typeof raw === 'object') value = Object.keys(raw).map(function (k) { return k + ' ' + raw[k]; }).join(' / ');
+                else value = String(raw);
+                if (en.value_map && en.value_map[value] != null) value = String(en.value_map[value]);
+                return [node('tooltip-module-text', t(en.label_key || f,{v:value}))];
+            });
+            return [];
+        }
+        if (inst && (inst.sewing || inst.sewing_parts) && global.SewingSystem) {
+            var sewing = node('tooltip-module-text',global.SewingSystem.describe(inst)); sewing.breakLines = true;
+            return [node('tooltip-modules','',[node('tooltip-module','',[node('tooltip-module-title','缝纫'),sewing])])];
+        }
+        if (inst && global.ForgingSystem && global.ForgingSystem.managed(inst.item_id)) {
+            var info = global.ForgingSystem.describe(inst); if (!info) return [];
+            var line = node('tooltip-module-text',info); line.breakLines = true; return [line];
+        }
+        var set = getModuleSet(tpl.info_module_set_id);
+        if (!set || !Array.isArray(set.modules) || !set.modules.length) return [];
+        var modules = set.modules.filter(function (m) { return hasApplicableContent(m.content,tpl,inst); }).map(function (m) {
+            var status = evalUnlock(m.unlock,character), children = [node('tooltip-module-title',m.title || m.module_id || t('item_info.module_default'))];
+            if (status.unlocked) children = children.concat(contentView(m.content));
+            else {
+                if (status.lockedHint) children.push(node('tooltip-module-locked-hint',status.lockedHint));
+                children.push(node('tooltip-module-req',t('item_info.locked_hint',{skillId:getSkillDisplayName(status.skillId),level:status.level,need:Math.max(0,status.level-status.current)})));
+            }
+            return node('tooltip-module' + (status.unlocked ? '' : ' is-locked'),'',children);
+        });
+        return [node('tooltip-modules','',modules)];
+    }
+
     global.ItemInfoModules = {
+        tooltipView: tooltipView,
         setTable: setTable,
         getModuleSet: getModuleSet,
         renderTooltipModulesHtml: renderTooltipModulesHtml

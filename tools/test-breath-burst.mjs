@@ -65,8 +65,14 @@ walls.clear();assert.equal(W.preparePlayerApproach(enemy,{range:2}),true);assert
 // Same-speed dry runs must not move either side until both commits.
 st.x=2;enemy.x=3;a=attack('front_kick',true);assert.equal(enemy.x,3);R.applyDeferredResourceSpendFromResolveResult(a.r);P.finalizeSimultaneousStrike(a.ctx);assert.equal(enemy.x,3);W.flushDisplacements();assert.equal(enemy.x,4);
 // Full production scene exchange: fast kick, enemy spends resources but misses at distance.
+c.GameTime={getState:()=>({totalTicks:ticks}),advanceTicks:n=>{ticks+=n;}};
+Object.assign(c.InventoryEquipment,{getCombatState:()=>({hubs,limbs:{lhand:{active:'combat_basic_unarmed'},lfoot:{active:'combat_basic_unarmed'}},move_sequences:{}}),
+ peekMoveIdForLimb:()=>moveId,getMoveSlotPowerLevel:()=>10,getLimbStrikeOrderSlice:()=>['lhand','rhand','lfoot','rfoot'],getLimbStrikeOrderCursor:()=>0,
+ setCombatState:()=>{},setVariantEffectParamOverride:()=>{},clearVariantEffectParamOverride:()=>{}});
+c.CharacterAttributes.isBodyPartDestroyedForParry=()=>false;
+load('combat-variants');load('combat-metaskills');
 Object.assign(c,{E:c.GameEngine,IE:c.InventoryEquipment,CombatWorld:W,guardPlayerComaBlocked:()=>false,isPreCreationGameplayRestricted:()=>false,
- pickWorldMeleeAttackIntent:()=>({skillId:'combat_basic_unarmed',moveId,limbId:'lfoot',advanceCursor:false}),getWorldTotalTicks:()=>ticks,
+ pickWorldMeleeAttackIntent:()=>({skillId:'combat_basic_unarmed',moveId,limbId:moveId==='front_kick'?'lfoot':'lhand',advanceCursor:false}),getWorldTotalTicks:()=>ticks,
  ui:k=>k,showMsg:()=>{},getCombatSkillName:x=>x,getMoveDisplayName:(s,m)=>m,getFormTagsForMove:()=>[],bumpCombatRenderProfile:()=>{},render:()=>{},SceneHud:{refresh:()=>{}},
  SceneCtx:{actions:{},clearPlayerExchangeLimbLocks:()=>{}},PlayerFacing:{getDir:()=>2}});
 const scene=read('js/scene-app.js');let begin=scene.indexOf('window.SceneCtx.actions.attackEnemy = function'),end=scene.indexOf('window.SceneCtx.actions.interactNpc =',begin);

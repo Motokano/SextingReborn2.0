@@ -1,0 +1,3614 @@
+{
+  "version": 1,
+  "revision": 7,
+  "date": "2026-10-17",
+  "status": "draft",
+  "theme": "广东矿产背景，八种简明矿材",
+  "replaces": "八种广东矿材替换此前十二种通用候选；revision 3补齐物品信息，revision 4移除阅读工艺记录和向别人学习的材料认识途径。矿材分值与配料验证不变。 revision 5按后续决定移除试料认识，原矿1∶1，四项数值按铸造10级开放，成本与等级表另存。 revision 6汇总十二矿schema v2设计目录及认知引用，获取途径继续待定。 revision 7确认铸造台检查实物原矿可认识本矿加工方法，无试料消耗；补正式加工料与部件目录。",
+  "scoreBasis": "每件原矿对应1份该矿加工投料，单份四项分值不变；数量1∶1、不产生边角料，不表示原矿物理材性或原矿与成品等重。",
+  "allocationBasis": "当前首版建筑废墟4层、城寨8层的增补提案；全部分布、相对权重、体力与次数均为设计值，不写入运行表。",
+  "axes": [
+    "hardness",
+    "toughness",
+    "deformationResistance",
+    "density"
+  ],
+  "sources": [
+    {
+      "id": "gd-plan",
+      "title": "广东省矿产资源总体规划（2021—2025年）",
+      "url": "https://nr.gd.gov.cn/attachment/0/505/505595/4091339.pdf",
+      "scope": "矿种与地域背景，正文第1—2、12—13页；不作为游戏数值或2026年实时产量的依据"
+    },
+    {
+      "id": "dabaoshan",
+      "title": "大宝山多金属矿区铜硫原矿采矿扩建工程环境影响报告书",
+      "url": "https://gdee.gd.gov.cn/attachment/0/361/361093/2958213.pdf",
+      "scope": "矿产资源概况第99页，铁与铜钼等矿床背景"
+    },
+    {
+      "id": "coastal-sand",
+      "title": "汕头海门田心湾南侧海域海砂开采环境影响报告书",
+      "url": "https://gdee.gd.gov.cn/attachment/0/477/477766/3733142.pdf",
+      "scope": "第111页，滨海钛铁矿等矿产的区域背景"
+    }
+  ],
+  "ores": [
+    {
+      "id": "ore_iron_raw",
+      "name": "铁质矿石",
+      "displayName": "铁矿",
+      "existingItem": true,
+      "rarity": "基础",
+      "role": "均衡底料",
+      "scores": {
+        "hardness": 22,
+        "toughness": 24,
+        "deformationResistance": 20,
+        "density": 20
+      },
+      "realMineralFamily": "铁矿",
+      "namingBasis": "采用简明矿种名称",
+      "visualCue": "红褐锈壳、粗糙石块",
+      "visualCueStatus": "游戏美术识别设计，不代表同矿种所有实物外观",
+      "guangdongBackground": "韶关大宝山铁矿背景",
+      "sourceIds": [
+        "gd-plan",
+        "dabaoshan"
+      ],
+      "rawItem": {
+        "category": "ore",
+        "subCategory": "black_metal",
+        "weightKg": 3,
+        "baseValue": 400,
+        "valuesAreProposed": false,
+        "identity": {
+          "sn": "铁质矿石",
+          "placeholder_name": "红褐粗石",
+          "fn_before": "红褐外壳裹着灰黑石块，看着能炼东西",
+          "fn": "带红褐色外壳的铁矿石，断口里还夹着灰黑色石质。"
+        },
+        "stackLimit": 1,
+        "spoilageTicks": 0,
+        "source": [
+          "mining"
+        ],
+        "productionLines": [
+          "forge",
+          "craft",
+          "build"
+        ],
+        "tags": [
+          "material",
+          "ore",
+          "craft",
+          "trade_raw",
+          "building"
+        ],
+        "priceClass": "material",
+        "volatility": "low",
+        "regionRestrict": 0,
+        "infoModuleSetId": null,
+        "spawnPolicy": {
+          "mode": "explicit_mining_allowlist_only",
+          "allowlist": "ores[ore_iron_raw].mining.proposedFloors",
+          "note": "regionRestrict=0只表示不额外限制地区，不能自动加入全局掉落池；生成必须同时通过本矿完整允许楼层。",
+          "status": "candidate_not_runtime_placement"
+        },
+        "unsupportedCapabilities": [
+          "edible",
+          "usable",
+          "fuel",
+          "water_supply"
+        ],
+        "runtimeStatus": "existing_item_text_revision_proposed"
+      },
+      "mining": {
+        "pointName": "铁矿脉",
+        "proposedFloors": {
+          "buildingRuins": [
+            4
+          ],
+          "walledCity": [
+            3,
+            7,
+            8
+          ]
+        },
+        "relativeSpawnWeight": 10,
+        "staminaCost": 12,
+        "usesRange": [
+          2,
+          3
+        ],
+        "mainYield": 1
+      },
+      "information": {
+        "forgeUse": {
+          "text": "这种矿石可以加工成铸造用料。",
+          "requires": [
+            "forge_use_known"
+          ]
+        },
+        "fullKnownSummary": {
+          "text": "炼出的料各方面都比较平稳，适合拿来打底，再按要做的东西掺别的料。",
+          "requires": [
+            "forge_use_known",
+            "hardness_direction_known",
+            "toughness_direction_known",
+            "deformationResistance_direction_known",
+            "density_direction_known"
+          ]
+        },
+        "properties": {
+          "hardness": {
+            "label": "硬度",
+            "directionText": "硬度适中，适合作为一般底料。",
+            "directionRequires": [
+              "forge_use_known",
+              "hardness_direction_known"
+            ],
+            "scoreRef": "scores.hardness",
+            "scoreRequires": [
+              "material_seen",
+              "forge_use_known",
+              "feed_route_known",
+              "feed_unit_known",
+              "life_forging_level>=10"
+            ],
+            "unknownPolicy": "omit",
+            "scoreUnlockRef": "weapon-forging-balance-v1.json:knowledgeUnlocks.material_scores"
+          },
+          "toughness": {
+            "label": "韧性",
+            "directionText": "韧性适中，没有特别突出的长处。",
+            "directionRequires": [
+              "forge_use_known",
+              "toughness_direction_known"
+            ],
+            "scoreRef": "scores.toughness",
+            "scoreRequires": [
+              "material_seen",
+              "forge_use_known",
+              "feed_route_known",
+              "feed_unit_known",
+              "life_forging_level>=10"
+            ],
+            "unknownPolicy": "omit",
+            "scoreUnlockRef": "weapon-forging-balance-v1.json:knowledgeUnlocks.material_scores"
+          },
+          "deformationResistance": {
+            "label": "抗变形",
+            "directionText": "抵抗变形的表现较平稳。",
+            "directionRequires": [
+              "forge_use_known",
+              "deformationResistance_direction_known"
+            ],
+            "scoreRef": "scores.deformationResistance",
+            "scoreRequires": [
+              "material_seen",
+              "forge_use_known",
+              "feed_route_known",
+              "feed_unit_known",
+              "life_forging_level>=10"
+            ],
+            "unknownPolicy": "omit",
+            "scoreUnlockRef": "weapon-forging-balance-v1.json:knowledgeUnlocks.material_scores"
+          },
+          "density": {
+            "label": "密度",
+            "directionText": "用来打底时，成品的分量比较容易掌握。",
+            "directionRequires": [
+              "forge_use_known",
+              "density_direction_known"
+            ],
+            "scoreRef": "scores.density",
+            "scoreRequires": [
+              "material_seen",
+              "forge_use_known",
+              "feed_route_known",
+              "feed_unit_known",
+              "life_forging_level>=10"
+            ],
+            "unknownPolicy": "omit",
+            "scoreUnlockRef": "weapon-forging-balance-v1.json:knowledgeUnlocks.material_scores"
+          }
+        },
+        "location": {
+          "requires": [
+            "specific_location_evidence"
+          ],
+          "policy": "只显示角色实际采到的位置或有来源的地点线索，不从本表允许楼层公开全分布。"
+        },
+        "processing": {
+          "processingRef": "weapon-forging-balance-v1.json:ores[id=ore_iron_raw].processing",
+          "requires": [
+            "material_seen",
+            "forge_use_known",
+            "feed_route_known"
+          ],
+          "inputOutput": "one_raw_item_to_one_feed_unit_no_byproducts",
+          "unknownPolicy": "omit"
+        }
+      },
+      "discoveryCandidate": {
+        "title": "红褐石样盘",
+        "site": "建筑废墟4层的旧工料区",
+        "objectEvidence": "盘中留有红褐外壳、灰黑断口的石样。",
+        "chain": "亲自观察、检查实物认识身份；在铸造台检查该原矿认识本矿加工用途、路线和单份规格。加工锻造与使用提供材性和效果证据，数值按铸造等级开放；不试料，不因接触或检查一次全部鉴定。",
+        "status": "scene_binding_pending",
+        "optional": true,
+        "repeatViewGrantsKnowledge": false,
+        "knowledgeSources": [
+          "personal_observation_and_inspection",
+          "own_processing_and_forging",
+          "own_component_use"
+        ]
+      }
+    },
+    {
+      "id": "ore_copper_raw",
+      "name": "粗铜矿石",
+      "displayName": "铜矿",
+      "existingItem": true,
+      "rarity": "基础",
+      "role": "补韧性，兼具较高密度；硬度与抗变形低",
+      "scores": {
+        "hardness": 8,
+        "toughness": 44,
+        "deformationResistance": 12,
+        "density": 30
+      },
+      "realMineralFamily": "铜矿",
+      "namingBasis": "采用简明矿种名称",
+      "visualCue": "绿斑包着暗色矿心",
+      "visualCueStatus": "游戏美术识别设计，不代表同矿种所有实物外观",
+      "guangdongBackground": "韶关大宝山、阳春石菉铜矿背景",
+      "sourceIds": [
+        "gd-plan",
+        "dabaoshan"
+      ],
+      "rawItem": {
+        "category": "ore",
+        "subCategory": "non_ferrous",
+        "weightKg": 2.5,
+        "baseValue": 300,
+        "valuesAreProposed": false,
+        "identity": {
+          "sn": "粗铜矿石",
+          "placeholder_name": "绿斑粗石",
+          "fn_before": "暗色石块上散着绿斑，看着能炼东西",
+          "fn": "带绿斑的铜矿石，矿质与暗色石头夹在一起。"
+        },
+        "stackLimit": 1,
+        "spoilageTicks": 0,
+        "source": [
+          "mining"
+        ],
+        "productionLines": [
+          "forge",
+          "craft"
+        ],
+        "tags": [
+          "material",
+          "ore",
+          "craft",
+          "trade_raw"
+        ],
+        "priceClass": "material",
+        "volatility": "mid",
+        "regionRestrict": 0,
+        "infoModuleSetId": null,
+        "spawnPolicy": {
+          "mode": "explicit_mining_allowlist_only",
+          "allowlist": "ores[ore_copper_raw].mining.proposedFloors",
+          "note": "regionRestrict=0只表示不额外限制地区，不能自动加入全局掉落池；生成必须同时通过本矿完整允许楼层。",
+          "status": "candidate_not_runtime_placement"
+        },
+        "unsupportedCapabilities": [
+          "edible",
+          "usable",
+          "fuel",
+          "water_supply"
+        ],
+        "runtimeStatus": "existing_item_text_revision_proposed"
+      },
+      "mining": {
+        "pointName": "铜矿脉",
+        "proposedFloors": {
+          "buildingRuins": [
+            3,
+            4
+          ],
+          "walledCity": [
+            2,
+            5
+          ]
+        },
+        "relativeSpawnWeight": 8,
+        "staminaCost": 12,
+        "usesRange": [
+          2,
+          3
+        ],
+        "mainYield": 1
+      },
+      "information": {
+        "forgeUse": {
+          "text": "这种矿石可以加工成铸造用料。",
+          "requires": [
+            "forge_use_known"
+          ]
+        },
+        "fullKnownSummary": {
+          "text": "炼出的料能补韧性，掺多了也会增重；要打出硬挺的刃口，还得补别的料。",
+          "requires": [
+            "forge_use_known",
+            "hardness_direction_known",
+            "toughness_direction_known",
+            "deformationResistance_direction_known",
+            "density_direction_known"
+          ]
+        },
+        "properties": {
+          "hardness": {
+            "label": "硬度",
+            "directionText": "硬度偏低，不能只靠它撑起刃口。",
+            "directionRequires": [
+              "forge_use_known",
+              "hardness_direction_known"
+            ],
+            "scoreRef": "scores.hardness",
+            "scoreRequires": [
+              "material_seen",
+              "forge_use_known",
+              "feed_route_known",
+              "feed_unit_known",
+              "life_forging_level>=10"
+            ],
+            "unknownPolicy": "omit",
+            "scoreUnlockRef": "weapon-forging-balance-v1.json:knowledgeUnlocks.material_scores"
+          },
+          "toughness": {
+            "label": "韧性",
+            "directionText": "能明显补足用料的韧性。",
+            "directionRequires": [
+              "forge_use_known",
+              "toughness_direction_known"
+            ],
+            "scoreRef": "scores.toughness",
+            "scoreRequires": [
+              "material_seen",
+              "forge_use_known",
+              "feed_route_known",
+              "feed_unit_known",
+              "life_forging_level>=10"
+            ],
+            "unknownPolicy": "omit",
+            "scoreUnlockRef": "weapon-forging-balance-v1.json:knowledgeUnlocks.material_scores"
+          },
+          "deformationResistance": {
+            "label": "抗变形",
+            "directionText": "抵抗变形的表现偏弱。",
+            "directionRequires": [
+              "forge_use_known",
+              "deformationResistance_direction_known"
+            ],
+            "scoreRef": "scores.deformationResistance",
+            "scoreRequires": [
+              "material_seen",
+              "forge_use_known",
+              "feed_route_known",
+              "feed_unit_known",
+              "life_forging_level>=10"
+            ],
+            "unknownPolicy": "omit",
+            "scoreUnlockRef": "weapon-forging-balance-v1.json:knowledgeUnlocks.material_scores"
+          },
+          "density": {
+            "label": "密度",
+            "directionText": "分量偏沉，掺多了会让成品增重。",
+            "directionRequires": [
+              "forge_use_known",
+              "density_direction_known"
+            ],
+            "scoreRef": "scores.density",
+            "scoreRequires": [
+              "material_seen",
+              "forge_use_known",
+              "feed_route_known",
+              "feed_unit_known",
+              "life_forging_level>=10"
+            ],
+            "unknownPolicy": "omit",
+            "scoreUnlockRef": "weapon-forging-balance-v1.json:knowledgeUnlocks.material_scores"
+          }
+        },
+        "location": {
+          "requires": [
+            "specific_location_evidence"
+          ],
+          "policy": "只显示角色实际采到的位置或有来源的地点线索，不从本表允许楼层公开全分布。"
+        },
+        "processing": {
+          "processingRef": "weapon-forging-balance-v1.json:ores[id=ore_copper_raw].processing",
+          "requires": [
+            "material_seen",
+            "forge_use_known",
+            "feed_route_known"
+          ],
+          "inputOutput": "one_raw_item_to_one_feed_unit_no_byproducts",
+          "unknownPolicy": "omit"
+        }
+      },
+      "discoveryCandidate": {
+        "title": "绿斑留样盒",
+        "site": "建筑废墟3层的旧工料区",
+        "objectEvidence": "盒内放着带绿斑的暗色石样。",
+        "chain": "亲自观察、检查实物认识身份；在铸造台检查该原矿认识本矿加工用途、路线和单份规格。加工锻造与使用提供材性和效果证据，数值按铸造等级开放；不试料，不因接触或检查一次全部鉴定。",
+        "status": "scene_binding_pending",
+        "optional": true,
+        "repeatViewGrantsKnowledge": false,
+        "knowledgeSources": [
+          "personal_observation_and_inspection",
+          "own_processing_and_forging",
+          "own_component_use"
+        ]
+      }
+    },
+    {
+      "id": "ore_tin_raw",
+      "name": "锡矿",
+      "displayName": "锡矿",
+      "existingItem": false,
+      "rarity": "基础",
+      "role": "抗变形专长，适合减少耐久损耗",
+      "scores": {
+        "hardness": 14,
+        "toughness": 18,
+        "deformationResistance": 40,
+        "density": 18
+      },
+      "realMineralFamily": "锡矿",
+      "namingBasis": "采用简明矿种名称",
+      "visualCue": "褐色石底嵌黑色晶粒",
+      "visualCueStatus": "游戏美术识别设计，不代表同矿种所有实物外观",
+      "guangdongBackground": "信宜银岩、罗定旗山锡矿背景",
+      "sourceIds": [
+        "gd-plan"
+      ],
+      "rawItem": {
+        "category": "ore",
+        "subCategory": "non_ferrous",
+        "weightKg": 1.8,
+        "baseValue": 280,
+        "valuesAreProposed": true,
+        "identity": {
+          "sn": "锡矿",
+          "placeholder_name": "黑粒褐石",
+          "fn_before": "褐色石头里嵌着黑色细粒，看着能炼东西",
+          "fn": "含锡的矿石，褐色石底里嵌着细小的黑色晶粒。"
+        },
+        "stackLimit": 1,
+        "spoilageTicks": 0,
+        "source": [
+          "mining"
+        ],
+        "productionLines": [
+          "forge"
+        ],
+        "tags": [
+          "material",
+          "ore",
+          "craft",
+          "trade_raw"
+        ],
+        "priceClass": "material",
+        "volatility": "mid",
+        "regionRestrict": 0,
+        "infoModuleSetId": null,
+        "spawnPolicy": {
+          "mode": "explicit_mining_allowlist_only",
+          "allowlist": "ores[ore_tin_raw].mining.proposedFloors",
+          "note": "regionRestrict=0只表示不额外限制地区，不能自动加入全局掉落池；生成必须同时通过本矿完整允许楼层。",
+          "status": "candidate_not_runtime_placement"
+        },
+        "unsupportedCapabilities": [
+          "edible",
+          "usable",
+          "fuel",
+          "water_supply"
+        ],
+        "runtimeStatus": "new_item_definition_proposed"
+      },
+      "mining": {
+        "pointName": "锡矿脉",
+        "proposedFloors": {
+          "buildingRuins": [
+            4
+          ],
+          "walledCity": [
+            2,
+            5
+          ]
+        },
+        "relativeSpawnWeight": 6,
+        "staminaCost": 12,
+        "usesRange": [
+          2,
+          3
+        ],
+        "mainYield": 1
+      },
+      "information": {
+        "forgeUse": {
+          "text": "这种矿石可以加工成铸造用料。",
+          "requires": [
+            "forge_use_known"
+          ]
+        },
+        "fullKnownSummary": {
+          "text": "这种矿料擅长补抗变形，掺进用料里能少些使用损耗；韧性仍得另顾。",
+          "requires": [
+            "forge_use_known",
+            "hardness_direction_known",
+            "toughness_direction_known",
+            "deformationResistance_direction_known",
+            "density_direction_known"
+          ]
+        },
+        "properties": {
+          "hardness": {
+            "label": "硬度",
+            "directionText": "能提供一些硬度，但并不突出。",
+            "directionRequires": [
+              "forge_use_known",
+              "hardness_direction_known"
+            ],
+            "scoreRef": "scores.hardness",
+            "scoreRequires": [
+              "material_seen",
+              "forge_use_known",
+              "feed_route_known",
+              "feed_unit_known",
+              "life_forging_level>=10"
+            ],
+            "unknownPolicy": "omit",
+            "scoreUnlockRef": "weapon-forging-balance-v1.json:knowledgeUnlocks.material_scores"
+          },
+          "toughness": {
+            "label": "韧性",
+            "directionText": "韧性偏低，需要留意其他用料。",
+            "directionRequires": [
+              "forge_use_known",
+              "toughness_direction_known"
+            ],
+            "scoreRef": "scores.toughness",
+            "scoreRequires": [
+              "material_seen",
+              "forge_use_known",
+              "feed_route_known",
+              "feed_unit_known",
+              "life_forging_level>=10"
+            ],
+            "unknownPolicy": "omit",
+            "scoreUnlockRef": "weapon-forging-balance-v1.json:knowledgeUnlocks.material_scores"
+          },
+          "deformationResistance": {
+            "label": "抗变形",
+            "directionText": "很适合补抗变形这一项。",
+            "directionRequires": [
+              "forge_use_known",
+              "deformationResistance_direction_known"
+            ],
+            "scoreRef": "scores.deformationResistance",
+            "scoreRequires": [
+              "material_seen",
+              "forge_use_known",
+              "feed_route_known",
+              "feed_unit_known",
+              "life_forging_level>=10"
+            ],
+            "unknownPolicy": "omit",
+            "scoreUnlockRef": "weapon-forging-balance-v1.json:knowledgeUnlocks.material_scores"
+          },
+          "density": {
+            "label": "密度",
+            "directionText": "分量不算高，补料时较容易控制重量。",
+            "directionRequires": [
+              "forge_use_known",
+              "density_direction_known"
+            ],
+            "scoreRef": "scores.density",
+            "scoreRequires": [
+              "material_seen",
+              "forge_use_known",
+              "feed_route_known",
+              "feed_unit_known",
+              "life_forging_level>=10"
+            ],
+            "unknownPolicy": "omit",
+            "scoreUnlockRef": "weapon-forging-balance-v1.json:knowledgeUnlocks.material_scores"
+          }
+        },
+        "location": {
+          "requires": [
+            "specific_location_evidence"
+          ],
+          "policy": "只显示角色实际采到的位置或有来源的地点线索，不从本表允许楼层公开全分布。"
+        },
+        "processing": {
+          "processingRef": "weapon-forging-balance-v1.json:ores[id=ore_tin_raw].processing",
+          "requires": [
+            "material_seen",
+            "forge_use_known",
+            "feed_route_known"
+          ],
+          "inputOutput": "one_raw_item_to_one_feed_unit_no_byproducts",
+          "unknownPolicy": "omit"
+        }
+      },
+      "discoveryCandidate": {
+        "title": "黑粒矿样袋",
+        "site": "城寨2层的保留工料区",
+        "objectEvidence": "破袋里留有嵌着黑色细粒的褐色石样。",
+        "chain": "亲自观察、检查实物认识身份；在铸造台检查该原矿认识本矿加工用途、路线和单份规格。加工锻造与使用提供材性和效果证据，数值按铸造等级开放；不试料，不因接触或检查一次全部鉴定。",
+        "status": "scene_binding_pending",
+        "optional": true,
+        "repeatViewGrantsKnowledge": false,
+        "knowledgeSources": [
+          "personal_observation_and_inspection",
+          "own_processing_and_forging",
+          "own_component_use"
+        ]
+      }
+    },
+    {
+      "id": "ore_lead_raw",
+      "name": "铅矿",
+      "displayName": "铅矿",
+      "existingItem": false,
+      "rarity": "基础",
+      "role": "高密度配重，其他三项较弱",
+      "scores": {
+        "hardness": 4,
+        "toughness": 12,
+        "deformationResistance": 8,
+        "density": 64
+      },
+      "realMineralFamily": "铅矿",
+      "namingBasis": "采用简明矿种名称",
+      "visualCue": "铅灰方块、阶梯断口",
+      "visualCueStatus": "游戏美术识别设计，不代表同矿种所有实物外观",
+      "guangdongBackground": "韶关仁化凡口铅锌矿背景",
+      "sourceIds": [
+        "gd-plan"
+      ],
+      "rawItem": {
+        "category": "ore",
+        "subCategory": "non_ferrous",
+        "weightKg": 3.2,
+        "baseValue": 160,
+        "valuesAreProposed": true,
+        "identity": {
+          "sn": "铅矿",
+          "placeholder_name": "灰亮方石",
+          "fn_before": "灰亮石块的断面层层见方，看着能炼东西",
+          "fn": "含铅的矿石，灰亮晶块留着一层层方整的断口。"
+        },
+        "stackLimit": 1,
+        "spoilageTicks": 0,
+        "source": [
+          "mining"
+        ],
+        "productionLines": [
+          "forge"
+        ],
+        "tags": [
+          "material",
+          "ore",
+          "craft",
+          "trade_raw"
+        ],
+        "priceClass": "material",
+        "volatility": "low",
+        "regionRestrict": 0,
+        "infoModuleSetId": null,
+        "spawnPolicy": {
+          "mode": "explicit_mining_allowlist_only",
+          "allowlist": "ores[ore_lead_raw].mining.proposedFloors",
+          "note": "regionRestrict=0只表示不额外限制地区，不能自动加入全局掉落池；生成必须同时通过本矿完整允许楼层。",
+          "status": "candidate_not_runtime_placement"
+        },
+        "unsupportedCapabilities": [
+          "edible",
+          "usable",
+          "fuel",
+          "water_supply"
+        ],
+        "runtimeStatus": "new_item_definition_proposed"
+      },
+      "mining": {
+        "pointName": "铅矿脉",
+        "proposedFloors": {
+          "buildingRuins": [
+            4
+          ],
+          "walledCity": [
+            1,
+            5,
+            7
+          ]
+        },
+        "relativeSpawnWeight": 6,
+        "staminaCost": 12,
+        "usesRange": [
+          2,
+          3
+        ],
+        "mainYield": 1
+      },
+      "information": {
+        "forgeUse": {
+          "text": "这种矿石可以加工成铸造用料。",
+          "requires": [
+            "forge_use_known"
+          ]
+        },
+        "fullKnownSummary": {
+          "text": "少量就能把分量补上去，但硬度、韧性和抗变形都得靠其他用料撑住。",
+          "requires": [
+            "forge_use_known",
+            "hardness_direction_known",
+            "toughness_direction_known",
+            "deformationResistance_direction_known",
+            "density_direction_known"
+          ]
+        },
+        "properties": {
+          "hardness": {
+            "label": "硬度",
+            "directionText": "硬度很低，不适合独自承担这一项。",
+            "directionRequires": [
+              "forge_use_known",
+              "hardness_direction_known"
+            ],
+            "scoreRef": "scores.hardness",
+            "scoreRequires": [
+              "material_seen",
+              "forge_use_known",
+              "feed_route_known",
+              "feed_unit_known",
+              "life_forging_level>=10"
+            ],
+            "unknownPolicy": "omit",
+            "scoreUnlockRef": "weapon-forging-balance-v1.json:knowledgeUnlocks.material_scores"
+          },
+          "toughness": {
+            "label": "韧性",
+            "directionText": "韧性较低，配料时需要补足。",
+            "directionRequires": [
+              "forge_use_known",
+              "toughness_direction_known"
+            ],
+            "scoreRef": "scores.toughness",
+            "scoreRequires": [
+              "material_seen",
+              "forge_use_known",
+              "feed_route_known",
+              "feed_unit_known",
+              "life_forging_level>=10"
+            ],
+            "unknownPolicy": "omit",
+            "scoreUnlockRef": "weapon-forging-balance-v1.json:knowledgeUnlocks.material_scores"
+          },
+          "deformationResistance": {
+            "label": "抗变形",
+            "directionText": "抵抗变形的能力较弱。",
+            "directionRequires": [
+              "forge_use_known",
+              "deformationResistance_direction_known"
+            ],
+            "scoreRef": "scores.deformationResistance",
+            "scoreRequires": [
+              "material_seen",
+              "forge_use_known",
+              "feed_route_known",
+              "feed_unit_known",
+              "life_forging_level>=10"
+            ],
+            "unknownPolicy": "omit",
+            "scoreUnlockRef": "weapon-forging-balance-v1.json:knowledgeUnlocks.material_scores"
+          },
+          "density": {
+            "label": "密度",
+            "directionText": "密度很高，少量就能明显增加成品分量。",
+            "directionRequires": [
+              "forge_use_known",
+              "density_direction_known"
+            ],
+            "scoreRef": "scores.density",
+            "scoreRequires": [
+              "material_seen",
+              "forge_use_known",
+              "feed_route_known",
+              "feed_unit_known",
+              "life_forging_level>=10"
+            ],
+            "unknownPolicy": "omit",
+            "scoreUnlockRef": "weapon-forging-balance-v1.json:knowledgeUnlocks.material_scores"
+          }
+        },
+        "location": {
+          "requires": [
+            "specific_location_evidence"
+          ],
+          "policy": "只显示角色实际采到的位置或有来源的地点线索，不从本表允许楼层公开全分布。"
+        },
+        "processing": {
+          "processingRef": "weapon-forging-balance-v1.json:ores[id=ore_lead_raw].processing",
+          "requires": [
+            "material_seen",
+            "forge_use_known",
+            "feed_route_known"
+          ],
+          "inputOutput": "one_raw_item_to_one_feed_unit_no_byproducts",
+          "unknownPolicy": "omit"
+        }
+      },
+      "discoveryCandidate": {
+        "title": "灰方矿样匣",
+        "site": "城寨1层的保留工料区",
+        "objectEvidence": "匣中留有断口层层见方的灰亮石样。",
+        "chain": "亲自观察、检查实物认识身份；在铸造台检查该原矿认识本矿加工用途、路线和单份规格。加工锻造与使用提供材性和效果证据，数值按铸造等级开放；不试料，不因接触或检查一次全部鉴定。",
+        "status": "scene_binding_pending",
+        "optional": true,
+        "repeatViewGrantsKnowledge": false,
+        "knowledgeSources": [
+          "personal_observation_and_inspection",
+          "own_processing_and_forging",
+          "own_component_use"
+        ]
+      }
+    },
+    {
+      "id": "ore_zinc_raw",
+      "name": "锌矿",
+      "displayName": "锌矿",
+      "existingItem": false,
+      "rarity": "基础",
+      "role": "较低密度，兼补韧性和抗变形；硬度低",
+      "scores": {
+        "hardness": 12,
+        "toughness": 30,
+        "deformationResistance": 32,
+        "density": 14
+      },
+      "realMineralFamily": "锌矿",
+      "namingBasis": "采用简明矿种名称",
+      "visualCue": "黄褐晶簇、树脂质感",
+      "visualCueStatus": "游戏美术识别设计，不代表同矿种所有实物外观",
+      "guangdongBackground": "韶关仁化凡口铅锌矿背景",
+      "sourceIds": [
+        "gd-plan"
+      ],
+      "rawItem": {
+        "category": "ore",
+        "subCategory": "non_ferrous",
+        "weightKg": 2,
+        "baseValue": 240,
+        "valuesAreProposed": true,
+        "identity": {
+          "sn": "锌矿",
+          "placeholder_name": "黄褐晶块",
+          "fn_before": "黄褐色晶块泛着油光，看着能炼东西",
+          "fn": "含锌的矿石，黄褐色晶体在光下泛着油润的光。"
+        },
+        "stackLimit": 1,
+        "spoilageTicks": 0,
+        "source": [
+          "mining"
+        ],
+        "productionLines": [
+          "forge"
+        ],
+        "tags": [
+          "material",
+          "ore",
+          "craft",
+          "trade_raw"
+        ],
+        "priceClass": "material",
+        "volatility": "mid",
+        "regionRestrict": 0,
+        "infoModuleSetId": null,
+        "spawnPolicy": {
+          "mode": "explicit_mining_allowlist_only",
+          "allowlist": "ores[ore_zinc_raw].mining.proposedFloors",
+          "note": "regionRestrict=0只表示不额外限制地区，不能自动加入全局掉落池；生成必须同时通过本矿完整允许楼层。",
+          "status": "candidate_not_runtime_placement"
+        },
+        "unsupportedCapabilities": [
+          "edible",
+          "usable",
+          "fuel",
+          "water_supply"
+        ],
+        "runtimeStatus": "new_item_definition_proposed"
+      },
+      "mining": {
+        "pointName": "锌矿脉",
+        "proposedFloors": {
+          "buildingRuins": [
+            3
+          ],
+          "walledCity": [
+            1,
+            4,
+            6
+          ]
+        },
+        "relativeSpawnWeight": 6,
+        "staminaCost": 12,
+        "usesRange": [
+          2,
+          3
+        ],
+        "mainYield": 1
+      },
+      "information": {
+        "forgeUse": {
+          "text": "这种矿石可以加工成铸造用料。",
+          "requires": [
+            "forge_use_known"
+          ]
+        },
+        "fullKnownSummary": {
+          "text": "这种矿料能兼顾韧性和抗变形，分量较轻，硬度却需要别的用料补上。",
+          "requires": [
+            "forge_use_known",
+            "hardness_direction_known",
+            "toughness_direction_known",
+            "deformationResistance_direction_known",
+            "density_direction_known"
+          ]
+        },
+        "properties": {
+          "hardness": {
+            "label": "硬度",
+            "directionText": "硬度偏低，需要搭配其他用料。",
+            "directionRequires": [
+              "forge_use_known",
+              "hardness_direction_known"
+            ],
+            "scoreRef": "scores.hardness",
+            "scoreRequires": [
+              "material_seen",
+              "forge_use_known",
+              "feed_route_known",
+              "feed_unit_known",
+              "life_forging_level>=10"
+            ],
+            "unknownPolicy": "omit",
+            "scoreUnlockRef": "weapon-forging-balance-v1.json:knowledgeUnlocks.material_scores"
+          },
+          "toughness": {
+            "label": "韧性",
+            "directionText": "能补充一定韧性。",
+            "directionRequires": [
+              "forge_use_known",
+              "toughness_direction_known"
+            ],
+            "scoreRef": "scores.toughness",
+            "scoreRequires": [
+              "material_seen",
+              "forge_use_known",
+              "feed_route_known",
+              "feed_unit_known",
+              "life_forging_level>=10"
+            ],
+            "unknownPolicy": "omit",
+            "scoreUnlockRef": "weapon-forging-balance-v1.json:knowledgeUnlocks.material_scores"
+          },
+          "deformationResistance": {
+            "label": "抗变形",
+            "directionText": "抵抗变形的表现较好。",
+            "directionRequires": [
+              "forge_use_known",
+              "deformationResistance_direction_known"
+            ],
+            "scoreRef": "scores.deformationResistance",
+            "scoreRequires": [
+              "material_seen",
+              "forge_use_known",
+              "feed_route_known",
+              "feed_unit_known",
+              "life_forging_level>=10"
+            ],
+            "unknownPolicy": "omit",
+            "scoreUnlockRef": "weapon-forging-balance-v1.json:knowledgeUnlocks.material_scores"
+          },
+          "density": {
+            "label": "密度",
+            "directionText": "密度较低，比较适合控制成品分量。",
+            "directionRequires": [
+              "forge_use_known",
+              "density_direction_known"
+            ],
+            "scoreRef": "scores.density",
+            "scoreRequires": [
+              "material_seen",
+              "forge_use_known",
+              "feed_route_known",
+              "feed_unit_known",
+              "life_forging_level>=10"
+            ],
+            "unknownPolicy": "omit",
+            "scoreUnlockRef": "weapon-forging-balance-v1.json:knowledgeUnlocks.material_scores"
+          }
+        },
+        "location": {
+          "requires": [
+            "specific_location_evidence"
+          ],
+          "policy": "只显示角色实际采到的位置或有来源的地点线索，不从本表允许楼层公开全分布。"
+        },
+        "processing": {
+          "processingRef": "weapon-forging-balance-v1.json:ores[id=ore_zinc_raw].processing",
+          "requires": [
+            "material_seen",
+            "forge_use_known",
+            "feed_route_known"
+          ],
+          "inputOutput": "one_raw_item_to_one_feed_unit_no_byproducts",
+          "unknownPolicy": "omit"
+        }
+      },
+      "discoveryCandidate": {
+        "title": "黄晶留样盘",
+        "site": "建筑废墟3层的旧工料区",
+        "objectEvidence": "分格盘里留有泛着油光的黄褐晶样。",
+        "chain": "亲自观察、检查实物认识身份；在铸造台检查该原矿认识本矿加工用途、路线和单份规格。加工锻造与使用提供材性和效果证据，数值按铸造等级开放；不试料，不因接触或检查一次全部鉴定。",
+        "status": "scene_binding_pending",
+        "optional": true,
+        "repeatViewGrantsKnowledge": false,
+        "knowledgeSources": [
+          "personal_observation_and_inspection",
+          "own_processing_and_forging",
+          "own_component_use"
+        ]
+      }
+    },
+    {
+      "id": "ore_titanium_raw",
+      "name": "钛砂",
+      "displayName": "钛砂",
+      "existingItem": false,
+      "rarity": "进阶",
+      "role": "低密度下补硬度与韧性；重型部件需配重",
+      "scores": {
+        "hardness": 32,
+        "toughness": 38,
+        "deformationResistance": 28,
+        "density": 10
+      },
+      "realMineralFamily": "钛铁矿砂",
+      "namingBasis": "采用简明矿种名称",
+      "visualCue": "黑灰细砂、散粒轮廓",
+      "visualCueStatus": "游戏美术识别设计，不代表同矿种所有实物外观",
+      "guangdongBackground": "广东滨海钛铁矿砂背景，参考汕头滨海矿产记录",
+      "sourceIds": [
+        "coastal-sand"
+      ],
+      "rawItem": {
+        "category": "ore",
+        "subCategory": "alloy_metal",
+        "weightKg": 2,
+        "baseValue": 1100,
+        "valuesAreProposed": true,
+        "identity": {
+          "sn": "钛砂",
+          "placeholder_name": "黑灰细砂",
+          "fn_before": "细碎的黑灰颗粒闪着暗光，说不好干啥",
+          "fn": "夹有钛质矿物的黑灰细砂，细粒间闪着暗光。"
+        },
+        "stackLimit": 1,
+        "spoilageTicks": 0,
+        "source": [
+          "mining"
+        ],
+        "productionLines": [
+          "forge"
+        ],
+        "tags": [
+          "material",
+          "ore",
+          "craft",
+          "trade_raw"
+        ],
+        "priceClass": "rare",
+        "volatility": "high",
+        "regionRestrict": 0,
+        "infoModuleSetId": null,
+        "spawnPolicy": {
+          "mode": "explicit_mining_allowlist_only",
+          "allowlist": "ores[ore_titanium_raw].mining.proposedFloors",
+          "note": "regionRestrict=0只表示不额外限制地区，不能自动加入全局掉落池；生成必须同时通过本矿完整允许楼层。",
+          "status": "candidate_not_runtime_placement"
+        },
+        "unsupportedCapabilities": [
+          "edible",
+          "usable",
+          "fuel",
+          "water_supply"
+        ],
+        "runtimeStatus": "new_item_definition_proposed"
+      },
+      "mining": {
+        "pointName": "钛砂层",
+        "proposedFloors": {
+          "buildingRuins": [],
+          "walledCity": [
+            4,
+            6,
+            8
+          ]
+        },
+        "relativeSpawnWeight": 3,
+        "staminaCost": 16,
+        "usesRange": [
+          1,
+          2
+        ],
+        "mainYield": 1
+      },
+      "information": {
+        "forgeUse": {
+          "text": "这种矿石可以加工成铸造用料。",
+          "requires": [
+            "forge_use_known"
+          ]
+        },
+        "fullKnownSummary": {
+          "text": "这种矿料能在较轻的分量下提供硬度和韧性；要做沉重的部件，还得另外配重。",
+          "requires": [
+            "forge_use_known",
+            "hardness_direction_known",
+            "toughness_direction_known",
+            "deformationResistance_direction_known",
+            "density_direction_known"
+          ]
+        },
+        "properties": {
+          "hardness": {
+            "label": "硬度",
+            "directionText": "硬度较好，适合补足较硬的用料。",
+            "directionRequires": [
+              "forge_use_known",
+              "hardness_direction_known"
+            ],
+            "scoreRef": "scores.hardness",
+            "scoreRequires": [
+              "material_seen",
+              "forge_use_known",
+              "feed_route_known",
+              "feed_unit_known",
+              "life_forging_level>=10"
+            ],
+            "unknownPolicy": "omit",
+            "scoreUnlockRef": "weapon-forging-balance-v1.json:knowledgeUnlocks.material_scores"
+          },
+          "toughness": {
+            "label": "韧性",
+            "directionText": "韧性较好。",
+            "directionRequires": [
+              "forge_use_known",
+              "toughness_direction_known"
+            ],
+            "scoreRef": "scores.toughness",
+            "scoreRequires": [
+              "material_seen",
+              "forge_use_known",
+              "feed_route_known",
+              "feed_unit_known",
+              "life_forging_level>=10"
+            ],
+            "unknownPolicy": "omit",
+            "scoreUnlockRef": "weapon-forging-balance-v1.json:knowledgeUnlocks.material_scores"
+          },
+          "deformationResistance": {
+            "label": "抗变形",
+            "directionText": "抵抗变形的表现尚可。",
+            "directionRequires": [
+              "forge_use_known",
+              "deformationResistance_direction_known"
+            ],
+            "scoreRef": "scores.deformationResistance",
+            "scoreRequires": [
+              "material_seen",
+              "forge_use_known",
+              "feed_route_known",
+              "feed_unit_known",
+              "life_forging_level>=10"
+            ],
+            "unknownPolicy": "omit",
+            "scoreUnlockRef": "weapon-forging-balance-v1.json:knowledgeUnlocks.material_scores"
+          },
+          "density": {
+            "label": "密度",
+            "directionText": "密度低，适合轻型件；重型件可能需要另外配重。",
+            "directionRequires": [
+              "forge_use_known",
+              "density_direction_known"
+            ],
+            "scoreRef": "scores.density",
+            "scoreRequires": [
+              "material_seen",
+              "forge_use_known",
+              "feed_route_known",
+              "feed_unit_known",
+              "life_forging_level>=10"
+            ],
+            "unknownPolicy": "omit",
+            "scoreUnlockRef": "weapon-forging-balance-v1.json:knowledgeUnlocks.material_scores"
+          }
+        },
+        "location": {
+          "requires": [
+            "specific_location_evidence"
+          ],
+          "policy": "只显示角色实际采到的位置或有来源的地点线索，不从本表允许楼层公开全分布。"
+        },
+        "processing": {
+          "processingRef": "weapon-forging-balance-v1.json:ores[id=ore_titanium_raw].processing",
+          "requires": [
+            "material_seen",
+            "forge_use_known",
+            "feed_route_known"
+          ],
+          "inputOutput": "one_raw_item_to_one_feed_unit_no_byproducts",
+          "unknownPolicy": "omit"
+        }
+      },
+      "discoveryCandidate": {
+        "title": "细砂留样管",
+        "site": "城寨4层的旧工料区",
+        "objectEvidence": "管中存着闪暗光的黑灰细砂。",
+        "chain": "亲自观察、检查实物认识身份；在铸造台检查该原矿认识本矿加工用途、路线和单份规格。加工锻造与使用提供材性和效果证据，数值按铸造等级开放；不试料，不因接触或检查一次全部鉴定。",
+        "status": "scene_binding_pending",
+        "optional": true,
+        "repeatViewGrantsKnowledge": false,
+        "knowledgeSources": [
+          "personal_observation_and_inspection",
+          "own_processing_and_forging",
+          "own_component_use"
+        ]
+      }
+    },
+    {
+      "id": "ore_tungsten_raw",
+      "name": "黑重矿",
+      "displayName": "黑重矿",
+      "existingItem": false,
+      "rarity": "稀有",
+      "role": "高硬度、高密度，韧性极低",
+      "scores": {
+        "hardness": 58,
+        "toughness": 6,
+        "deformationResistance": 30,
+        "density": 56
+      },
+      "realMineralFamily": "钨矿",
+      "namingBasis": "为游戏拟定的俗称，不声称是广东民间通用名称",
+      "visualCue": "黑亮长条晶体、厚重矿块",
+      "visualCueStatus": "游戏美术识别设计，不代表同矿种所有实物外观",
+      "guangdongBackground": "曲江瑶岭、南雄棉土窝钨矿背景",
+      "sourceIds": [
+        "gd-plan"
+      ],
+      "rawItem": {
+        "category": "ore",
+        "subCategory": "alloy_metal",
+        "weightKg": 2.8,
+        "baseValue": 1600,
+        "valuesAreProposed": true,
+        "identity": {
+          "sn": "黑重矿",
+          "placeholder_name": "黑亮条晶",
+          "fn_before": "黑亮石块上长着条状晶体，看着能炼东西",
+          "fn": "这类含钨的矿石被叫作黑重矿，黑亮晶体常呈长条状。"
+        },
+        "stackLimit": 1,
+        "spoilageTicks": 0,
+        "source": [
+          "mining"
+        ],
+        "productionLines": [
+          "forge"
+        ],
+        "tags": [
+          "material",
+          "ore",
+          "craft",
+          "trade_raw"
+        ],
+        "priceClass": "rare",
+        "volatility": "high",
+        "regionRestrict": 0,
+        "infoModuleSetId": null,
+        "spawnPolicy": {
+          "mode": "explicit_mining_allowlist_only",
+          "allowlist": "ores[ore_tungsten_raw].mining.proposedFloors",
+          "note": "regionRestrict=0只表示不额外限制地区，不能自动加入全局掉落池；生成必须同时通过本矿完整允许楼层。",
+          "status": "candidate_not_runtime_placement"
+        },
+        "unsupportedCapabilities": [
+          "edible",
+          "usable",
+          "fuel",
+          "water_supply"
+        ],
+        "runtimeStatus": "new_item_definition_proposed"
+      },
+      "mining": {
+        "pointName": "黑重矿脉",
+        "proposedFloors": {
+          "buildingRuins": [],
+          "walledCity": [
+            7,
+            8
+          ]
+        },
+        "relativeSpawnWeight": 1,
+        "staminaCost": 16,
+        "usesRange": [
+          1,
+          2
+        ],
+        "mainYield": 1
+      },
+      "information": {
+        "forgeUse": {
+          "text": "这种矿石可以加工成铸造用料。",
+          "requires": [
+            "forge_use_known"
+          ]
+        },
+        "fullKnownSummary": {
+          "text": "炼出的料很硬，也很沉，韧性却差；要发挥它的硬度，还得照顾其他用料。",
+          "requires": [
+            "forge_use_known",
+            "hardness_direction_known",
+            "toughness_direction_known",
+            "deformationResistance_direction_known",
+            "density_direction_known"
+          ]
+        },
+        "properties": {
+          "hardness": {
+            "label": "硬度",
+            "directionText": "能显著提高用料硬度。",
+            "directionRequires": [
+              "forge_use_known",
+              "hardness_direction_known"
+            ],
+            "scoreRef": "scores.hardness",
+            "scoreRequires": [
+              "material_seen",
+              "forge_use_known",
+              "feed_route_known",
+              "feed_unit_known",
+              "life_forging_level>=10"
+            ],
+            "unknownPolicy": "omit",
+            "scoreUnlockRef": "weapon-forging-balance-v1.json:knowledgeUnlocks.material_scores"
+          },
+          "toughness": {
+            "label": "韧性",
+            "directionText": "韧性很低，需要其他用料补足。",
+            "directionRequires": [
+              "forge_use_known",
+              "toughness_direction_known"
+            ],
+            "scoreRef": "scores.toughness",
+            "scoreRequires": [
+              "material_seen",
+              "forge_use_known",
+              "feed_route_known",
+              "feed_unit_known",
+              "life_forging_level>=10"
+            ],
+            "unknownPolicy": "omit",
+            "scoreUnlockRef": "weapon-forging-balance-v1.json:knowledgeUnlocks.material_scores"
+          },
+          "deformationResistance": {
+            "label": "抗变形",
+            "directionText": "能提供一定抗变形能力。",
+            "directionRequires": [
+              "forge_use_known",
+              "deformationResistance_direction_known"
+            ],
+            "scoreRef": "scores.deformationResistance",
+            "scoreRequires": [
+              "material_seen",
+              "forge_use_known",
+              "feed_route_known",
+              "feed_unit_known",
+              "life_forging_level>=10"
+            ],
+            "unknownPolicy": "omit",
+            "scoreUnlockRef": "weapon-forging-balance-v1.json:knowledgeUnlocks.material_scores"
+          },
+          "density": {
+            "label": "密度",
+            "directionText": "密度高，掺多了成品会很沉。",
+            "directionRequires": [
+              "forge_use_known",
+              "density_direction_known"
+            ],
+            "scoreRef": "scores.density",
+            "scoreRequires": [
+              "material_seen",
+              "forge_use_known",
+              "feed_route_known",
+              "feed_unit_known",
+              "life_forging_level>=10"
+            ],
+            "unknownPolicy": "omit",
+            "scoreUnlockRef": "weapon-forging-balance-v1.json:knowledgeUnlocks.material_scores"
+          }
+        },
+        "location": {
+          "requires": [
+            "specific_location_evidence"
+          ],
+          "policy": "只显示角色实际采到的位置或有来源的地点线索，不从本表允许楼层公开全分布。"
+        },
+        "processing": {
+          "processingRef": "weapon-forging-balance-v1.json:ores[id=ore_tungsten_raw].processing",
+          "requires": [
+            "material_seen",
+            "forge_use_known",
+            "feed_route_known"
+          ],
+          "inputOutput": "one_raw_item_to_one_feed_unit_no_byproducts",
+          "unknownPolicy": "omit"
+        }
+      },
+      "discoveryCandidate": {
+        "title": "黑晶样架",
+        "site": "城寨7层的旧工料区",
+        "objectEvidence": "架上留有带黑亮条状晶体的矿样。",
+        "chain": "亲自观察、检查实物认识身份；在铸造台检查该原矿认识本矿加工用途、路线和单份规格。加工锻造与使用提供材性和效果证据，数值按铸造等级开放；不试料，不因接触或检查一次全部鉴定。",
+        "status": "scene_binding_pending",
+        "optional": true,
+        "repeatViewGrantsKnowledge": false,
+        "knowledgeSources": [
+          "personal_observation_and_inspection",
+          "own_processing_and_forging",
+          "own_component_use"
+        ]
+      }
+    },
+    {
+      "id": "ore_molybdenum_raw",
+      "name": "银片矿",
+      "displayName": "银片矿",
+      "existingItem": false,
+      "rarity": "稀有",
+      "role": "高抗变形，兼补硬度；密度中等",
+      "scores": {
+        "hardness": 36,
+        "toughness": 30,
+        "deformationResistance": 58,
+        "density": 20
+      },
+      "realMineralFamily": "钼矿",
+      "namingBasis": "为游戏拟定的俗称，不声称是广东民间通用名称",
+      "visualCue": "银灰薄片、层叠轮廓",
+      "visualCueStatus": "游戏美术识别设计，不代表同矿种所有实物外观",
+      "guangdongBackground": "封开圆珠顶铜钼矿、韶关大宝山钼矿背景",
+      "sourceIds": [
+        "gd-plan",
+        "dabaoshan"
+      ],
+      "rawItem": {
+        "category": "ore",
+        "subCategory": "alloy_metal",
+        "weightKg": 1.6,
+        "baseValue": 1800,
+        "valuesAreProposed": true,
+        "identity": {
+          "sn": "银片矿",
+          "placeholder_name": "银灰片石",
+          "fn_before": "石面叠着一层层银灰薄片，说不好干啥",
+          "fn": "这种含钼的矿石俗称银片矿，石面层叠着银灰薄片。"
+        },
+        "stackLimit": 1,
+        "spoilageTicks": 0,
+        "source": [
+          "mining"
+        ],
+        "productionLines": [
+          "forge"
+        ],
+        "tags": [
+          "material",
+          "ore",
+          "craft",
+          "trade_raw"
+        ],
+        "priceClass": "rare",
+        "volatility": "high",
+        "regionRestrict": 0,
+        "infoModuleSetId": null,
+        "spawnPolicy": {
+          "mode": "explicit_mining_allowlist_only",
+          "allowlist": "ores[ore_molybdenum_raw].mining.proposedFloors",
+          "note": "regionRestrict=0只表示不额外限制地区，不能自动加入全局掉落池；生成必须同时通过本矿完整允许楼层。",
+          "status": "candidate_not_runtime_placement"
+        },
+        "unsupportedCapabilities": [
+          "edible",
+          "usable",
+          "fuel",
+          "water_supply"
+        ],
+        "runtimeStatus": "new_item_definition_proposed"
+      },
+      "mining": {
+        "pointName": "银片矿脉",
+        "proposedFloors": {
+          "buildingRuins": [],
+          "walledCity": [
+            6,
+            8
+          ]
+        },
+        "relativeSpawnWeight": 1,
+        "staminaCost": 16,
+        "usesRange": [
+          1,
+          2
+        ],
+        "mainYield": 1
+      },
+      "information": {
+        "forgeUse": {
+          "text": "这种矿石可以加工成铸造用料。",
+          "requires": [
+            "forge_use_known"
+          ]
+        },
+        "fullKnownSummary": {
+          "text": "炼出的料擅长抵抗变形，也能补硬度，分量适中。",
+          "requires": [
+            "forge_use_known",
+            "hardness_direction_known",
+            "toughness_direction_known",
+            "deformationResistance_direction_known",
+            "density_direction_known"
+          ]
+        },
+        "properties": {
+          "hardness": {
+            "label": "硬度",
+            "directionText": "能补充较好的硬度。",
+            "directionRequires": [
+              "forge_use_known",
+              "hardness_direction_known"
+            ],
+            "scoreRef": "scores.hardness",
+            "scoreRequires": [
+              "material_seen",
+              "forge_use_known",
+              "feed_route_known",
+              "feed_unit_known",
+              "life_forging_level>=10"
+            ],
+            "unknownPolicy": "omit",
+            "scoreUnlockRef": "weapon-forging-balance-v1.json:knowledgeUnlocks.material_scores"
+          },
+          "toughness": {
+            "label": "韧性",
+            "directionText": "能提供一定韧性。",
+            "directionRequires": [
+              "forge_use_known",
+              "toughness_direction_known"
+            ],
+            "scoreRef": "scores.toughness",
+            "scoreRequires": [
+              "material_seen",
+              "forge_use_known",
+              "feed_route_known",
+              "feed_unit_known",
+              "life_forging_level>=10"
+            ],
+            "unknownPolicy": "omit",
+            "scoreUnlockRef": "weapon-forging-balance-v1.json:knowledgeUnlocks.material_scores"
+          },
+          "deformationResistance": {
+            "label": "抗变形",
+            "directionText": "抗变形能力很突出，适合减少使用损耗。",
+            "directionRequires": [
+              "forge_use_known",
+              "deformationResistance_direction_known"
+            ],
+            "scoreRef": "scores.deformationResistance",
+            "scoreRequires": [
+              "material_seen",
+              "forge_use_known",
+              "feed_route_known",
+              "feed_unit_known",
+              "life_forging_level>=10"
+            ],
+            "unknownPolicy": "omit",
+            "scoreUnlockRef": "weapon-forging-balance-v1.json:knowledgeUnlocks.material_scores"
+          },
+          "density": {
+            "label": "密度",
+            "directionText": "密度适中，不以加重为主要长处。",
+            "directionRequires": [
+              "forge_use_known",
+              "density_direction_known"
+            ],
+            "scoreRef": "scores.density",
+            "scoreRequires": [
+              "material_seen",
+              "forge_use_known",
+              "feed_route_known",
+              "feed_unit_known",
+              "life_forging_level>=10"
+            ],
+            "unknownPolicy": "omit",
+            "scoreUnlockRef": "weapon-forging-balance-v1.json:knowledgeUnlocks.material_scores"
+          }
+        },
+        "location": {
+          "requires": [
+            "specific_location_evidence"
+          ],
+          "policy": "只显示角色实际采到的位置或有来源的地点线索，不从本表允许楼层公开全分布。"
+        },
+        "processing": {
+          "processingRef": "weapon-forging-balance-v1.json:ores[id=ore_molybdenum_raw].processing",
+          "requires": [
+            "material_seen",
+            "forge_use_known",
+            "feed_route_known"
+          ],
+          "inputOutput": "one_raw_item_to_one_feed_unit_no_byproducts",
+          "unknownPolicy": "omit"
+        }
+      },
+      "discoveryCandidate": {
+        "title": "薄片矿样盒",
+        "site": "城寨6层的保留工料区",
+        "objectEvidence": "盒内留有层叠银灰薄片的石样。",
+        "chain": "亲自观察、检查实物认识身份；在铸造台检查该原矿认识本矿加工用途、路线和单份规格。加工锻造与使用提供材性和效果证据，数值按铸造等级开放；不试料，不因接触或检查一次全部鉴定。",
+        "status": "scene_binding_pending",
+        "optional": true,
+        "repeatViewGrantsKnowledge": false,
+        "knowledgeSources": [
+          "personal_observation_and_inspection",
+          "own_processing_and_forging",
+          "own_component_use"
+        ]
+      }
+    }
+  ],
+  "compatibility": {
+    "existingReusedIds": [
+      "ore_iron_raw",
+      "ore_copper_raw"
+    ],
+    "newCandidateIds": [
+      "ore_tin_raw",
+      "ore_lead_raw",
+      "ore_zinc_raw",
+      "ore_titanium_raw",
+      "ore_tungsten_raw",
+      "ore_molybdenum_raw"
+    ],
+    "withdrawnPreviousCandidateIds": [
+      "ore_bauxite_raw",
+      "ore_manganese_raw",
+      "ore_nickel_raw",
+      "ore_chromite_raw",
+      "ore_cobalt_raw"
+    ],
+    "legacyIronSand": {
+      "id": "ore_iron_sand_highcarbon",
+      "status": "不计本次八种地方矿材；保留既有物品与城寨6层投放。原四项候选值不再作为本批配料依据，加工用途另行衔接。"
+    },
+    "runtimeChanged": false
+  },
+  "validation": {
+    "combinationScope": "枚举满容量、最多3种矿材；选见证时先减少稀有份数，再减少进阶份数，再综合密度超额与种数。没有穷举少投料及4种以上混料，不代表经济最优。",
+    "enumeratedCombinations": 30860,
+    "fullRequirementReachable": 83,
+    "basicMaterialsCanStart": 83,
+    "basicWitness": "每件填满普通铁矿，可满足四项各自30%；不授予结构图纸或制作资格。",
+    "recipes": [
+      {
+        "componentId": "B01",
+        "feed": [
+          {
+            "id": "ore_iron_raw",
+            "count": 6
+          }
+        ],
+        "totals": {
+          "hardness": 132,
+          "toughness": 144,
+          "deformationResistance": 120,
+          "density": 120
+        }
+      },
+      {
+        "componentId": "B02",
+        "feed": [
+          {
+            "id": "ore_tin_raw",
+            "count": 3
+          },
+          {
+            "id": "ore_lead_raw",
+            "count": 1
+          },
+          {
+            "id": "ore_titanium_raw",
+            "count": 3
+          }
+        ],
+        "totals": {
+          "hardness": 142,
+          "toughness": 180,
+          "deformationResistance": 212,
+          "density": 148
+        }
+      },
+      {
+        "componentId": "B03",
+        "feed": [
+          {
+            "id": "ore_iron_raw",
+            "count": 6
+          }
+        ],
+        "totals": {
+          "hardness": 132,
+          "toughness": 144,
+          "deformationResistance": 120,
+          "density": 120
+        }
+      },
+      {
+        "componentId": "B04",
+        "feed": [
+          {
+            "id": "ore_iron_raw",
+            "count": 2
+          },
+          {
+            "id": "ore_titanium_raw",
+            "count": 3
+          }
+        ],
+        "totals": {
+          "hardness": 140,
+          "toughness": 162,
+          "deformationResistance": 124,
+          "density": 70
+        }
+      },
+      {
+        "componentId": "B05",
+        "feed": [
+          {
+            "id": "ore_tin_raw",
+            "count": 3
+          },
+          {
+            "id": "ore_lead_raw",
+            "count": 2
+          },
+          {
+            "id": "ore_titanium_raw",
+            "count": 3
+          }
+        ],
+        "totals": {
+          "hardness": 146,
+          "toughness": 192,
+          "deformationResistance": 220,
+          "density": 212
+        }
+      },
+      {
+        "componentId": "B06",
+        "feed": [
+          {
+            "id": "ore_iron_raw",
+            "count": 4
+          },
+          {
+            "id": "ore_titanium_raw",
+            "count": 2
+          }
+        ],
+        "totals": {
+          "hardness": 152,
+          "toughness": 172,
+          "deformationResistance": 136,
+          "density": 100
+        }
+      },
+      {
+        "componentId": "B07",
+        "feed": [
+          {
+            "id": "ore_tin_raw",
+            "count": 3
+          },
+          {
+            "id": "ore_lead_raw",
+            "count": 1
+          },
+          {
+            "id": "ore_titanium_raw",
+            "count": 3
+          }
+        ],
+        "totals": {
+          "hardness": 142,
+          "toughness": 180,
+          "deformationResistance": 212,
+          "density": 148
+        }
+      },
+      {
+        "componentId": "B08",
+        "feed": [
+          {
+            "id": "ore_iron_raw",
+            "count": 2
+          },
+          {
+            "id": "ore_lead_raw",
+            "count": 1
+          },
+          {
+            "id": "ore_titanium_raw",
+            "count": 3
+          }
+        ],
+        "totals": {
+          "hardness": 144,
+          "toughness": 174,
+          "deformationResistance": 132,
+          "density": 134
+        }
+      },
+      {
+        "componentId": "B09",
+        "feed": [
+          {
+            "id": "ore_iron_raw",
+            "count": 4
+          },
+          {
+            "id": "ore_titanium_raw",
+            "count": 2
+          }
+        ],
+        "totals": {
+          "hardness": 152,
+          "toughness": 172,
+          "deformationResistance": 136,
+          "density": 100
+        }
+      },
+      {
+        "componentId": "B10",
+        "feed": [
+          {
+            "id": "ore_iron_raw",
+            "count": 3
+          },
+          {
+            "id": "ore_titanium_raw",
+            "count": 2
+          },
+          {
+            "id": "ore_tungsten_raw",
+            "count": 1
+          }
+        ],
+        "totals": {
+          "hardness": 188,
+          "toughness": 154,
+          "deformationResistance": 146,
+          "density": 136
+        }
+      },
+      {
+        "componentId": "B11",
+        "feed": [
+          {
+            "id": "ore_tin_raw",
+            "count": 1
+          },
+          {
+            "id": "ore_lead_raw",
+            "count": 3
+          },
+          {
+            "id": "ore_titanium_raw",
+            "count": 4
+          }
+        ],
+        "totals": {
+          "hardness": 154,
+          "toughness": 206,
+          "deformationResistance": 176,
+          "density": 250
+        }
+      },
+      {
+        "componentId": "B12",
+        "feed": [
+          {
+            "id": "ore_tin_raw",
+            "count": 2
+          },
+          {
+            "id": "ore_lead_raw",
+            "count": 1
+          },
+          {
+            "id": "ore_titanium_raw",
+            "count": 4
+          }
+        ],
+        "totals": {
+          "hardness": 160,
+          "toughness": 200,
+          "deformationResistance": 200,
+          "density": 140
+        }
+      },
+      {
+        "componentId": "B13",
+        "feed": [
+          {
+            "id": "ore_iron_raw",
+            "count": 1
+          },
+          {
+            "id": "ore_titanium_raw",
+            "count": 4
+          }
+        ],
+        "totals": {
+          "hardness": 150,
+          "toughness": 176,
+          "deformationResistance": 132,
+          "density": 60
+        }
+      },
+      {
+        "componentId": "B14",
+        "feed": [
+          {
+            "id": "ore_tin_raw",
+            "count": 2
+          },
+          {
+            "id": "ore_titanium_raw",
+            "count": 3
+          },
+          {
+            "id": "ore_tungsten_raw",
+            "count": 1
+          }
+        ],
+        "totals": {
+          "hardness": 182,
+          "toughness": 156,
+          "deformationResistance": 194,
+          "density": 122
+        }
+      },
+      {
+        "componentId": "B15",
+        "feed": [
+          {
+            "id": "ore_iron_raw",
+            "count": 4
+          },
+          {
+            "id": "ore_titanium_raw",
+            "count": 2
+          }
+        ],
+        "totals": {
+          "hardness": 152,
+          "toughness": 172,
+          "deformationResistance": 136,
+          "density": 100
+        }
+      },
+      {
+        "componentId": "B16",
+        "feed": [
+          {
+            "id": "ore_lead_raw",
+            "count": 3
+          },
+          {
+            "id": "ore_titanium_raw",
+            "count": 4
+          },
+          {
+            "id": "ore_molybdenum_raw",
+            "count": 1
+          }
+        ],
+        "totals": {
+          "hardness": 176,
+          "toughness": 218,
+          "deformationResistance": 194,
+          "density": 252
+        }
+      },
+      {
+        "componentId": "B17",
+        "feed": [
+          {
+            "id": "ore_iron_raw",
+            "count": 1
+          },
+          {
+            "id": "ore_lead_raw",
+            "count": 1
+          },
+          {
+            "id": "ore_titanium_raw",
+            "count": 5
+          }
+        ],
+        "totals": {
+          "hardness": 186,
+          "toughness": 226,
+          "deformationResistance": 168,
+          "density": 134
+        }
+      },
+      {
+        "componentId": "T01",
+        "feed": [
+          {
+            "id": "ore_iron_raw",
+            "count": 2
+          },
+          {
+            "id": "ore_titanium_raw",
+            "count": 1
+          }
+        ],
+        "totals": {
+          "hardness": 76,
+          "toughness": 86,
+          "deformationResistance": 68,
+          "density": 50
+        }
+      },
+      {
+        "componentId": "T02",
+        "feed": [
+          {
+            "id": "ore_copper_raw",
+            "count": 1
+          },
+          {
+            "id": "ore_tin_raw",
+            "count": 2
+          }
+        ],
+        "totals": {
+          "hardness": 36,
+          "toughness": 80,
+          "deformationResistance": 92,
+          "density": 66
+        }
+      },
+      {
+        "componentId": "T03",
+        "feed": [
+          {
+            "id": "ore_iron_raw",
+            "count": 2
+          },
+          {
+            "id": "ore_molybdenum_raw",
+            "count": 1
+          }
+        ],
+        "totals": {
+          "hardness": 80,
+          "toughness": 78,
+          "deformationResistance": 98,
+          "density": 60
+        }
+      },
+      {
+        "componentId": "T04",
+        "feed": [
+          {
+            "id": "ore_iron_raw",
+            "count": 1
+          },
+          {
+            "id": "ore_lead_raw",
+            "count": 1
+          },
+          {
+            "id": "ore_zinc_raw",
+            "count": 2
+          }
+        ],
+        "totals": {
+          "hardness": 50,
+          "toughness": 96,
+          "deformationResistance": 92,
+          "density": 112
+        }
+      },
+      {
+        "componentId": "T05",
+        "feed": [
+          {
+            "id": "ore_iron_raw",
+            "count": 2
+          },
+          {
+            "id": "ore_molybdenum_raw",
+            "count": 1
+          }
+        ],
+        "totals": {
+          "hardness": 80,
+          "toughness": 78,
+          "deformationResistance": 98,
+          "density": 60
+        }
+      },
+      {
+        "componentId": "T06",
+        "feed": [
+          {
+            "id": "ore_iron_raw",
+            "count": 2
+          },
+          {
+            "id": "ore_zinc_raw",
+            "count": 1
+          }
+        ],
+        "totals": {
+          "hardness": 56,
+          "toughness": 78,
+          "deformationResistance": 72,
+          "density": 54
+        }
+      },
+      {
+        "componentId": "T07",
+        "feed": [
+          {
+            "id": "ore_iron_raw",
+            "count": 1
+          },
+          {
+            "id": "ore_zinc_raw",
+            "count": 1
+          },
+          {
+            "id": "ore_tungsten_raw",
+            "count": 1
+          }
+        ],
+        "totals": {
+          "hardness": 92,
+          "toughness": 60,
+          "deformationResistance": 82,
+          "density": 90
+        }
+      },
+      {
+        "componentId": "T08",
+        "feed": [
+          {
+            "id": "ore_copper_raw",
+            "count": 1
+          },
+          {
+            "id": "ore_tin_raw",
+            "count": 3
+          },
+          {
+            "id": "ore_tungsten_raw",
+            "count": 1
+          }
+        ],
+        "totals": {
+          "hardness": 108,
+          "toughness": 104,
+          "deformationResistance": 162,
+          "density": 140
+        }
+      },
+      {
+        "componentId": "T09",
+        "feed": [
+          {
+            "id": "ore_iron_raw",
+            "count": 2
+          },
+          {
+            "id": "ore_titanium_raw",
+            "count": 1
+          },
+          {
+            "id": "ore_molybdenum_raw",
+            "count": 1
+          }
+        ],
+        "totals": {
+          "hardness": 112,
+          "toughness": 116,
+          "deformationResistance": 126,
+          "density": 70
+        }
+      },
+      {
+        "componentId": "T10",
+        "feed": [
+          {
+            "id": "ore_copper_raw",
+            "count": 3
+          },
+          {
+            "id": "ore_molybdenum_raw",
+            "count": 1
+          }
+        ],
+        "totals": {
+          "hardness": 60,
+          "toughness": 162,
+          "deformationResistance": 94,
+          "density": 110
+        }
+      },
+      {
+        "componentId": "T11",
+        "feed": [
+          {
+            "id": "ore_iron_raw",
+            "count": 2
+          },
+          {
+            "id": "ore_molybdenum_raw",
+            "count": 1
+          }
+        ],
+        "totals": {
+          "hardness": 80,
+          "toughness": 78,
+          "deformationResistance": 98,
+          "density": 60
+        }
+      },
+      {
+        "componentId": "T12",
+        "feed": [
+          {
+            "id": "ore_copper_raw",
+            "count": 2
+          },
+          {
+            "id": "ore_tin_raw",
+            "count": 2
+          },
+          {
+            "id": "ore_tungsten_raw",
+            "count": 1
+          }
+        ],
+        "totals": {
+          "hardness": 102,
+          "toughness": 130,
+          "deformationResistance": 134,
+          "density": 152
+        }
+      },
+      {
+        "componentId": "D01",
+        "feed": [
+          {
+            "id": "ore_copper_raw",
+            "count": 2
+          },
+          {
+            "id": "ore_tin_raw",
+            "count": 4
+          }
+        ],
+        "totals": {
+          "hardness": 72,
+          "toughness": 160,
+          "deformationResistance": 184,
+          "density": 132
+        }
+      },
+      {
+        "componentId": "D02",
+        "feed": [
+          {
+            "id": "ore_iron_raw",
+            "count": 1
+          },
+          {
+            "id": "ore_copper_raw",
+            "count": 3
+          },
+          {
+            "id": "ore_tin_raw",
+            "count": 4
+          }
+        ],
+        "totals": {
+          "hardness": 102,
+          "toughness": 228,
+          "deformationResistance": 216,
+          "density": 182
+        }
+      },
+      {
+        "componentId": "D03",
+        "feed": [
+          {
+            "id": "ore_iron_raw",
+            "count": 4
+          },
+          {
+            "id": "ore_zinc_raw",
+            "count": 2
+          }
+        ],
+        "totals": {
+          "hardness": 112,
+          "toughness": 156,
+          "deformationResistance": 144,
+          "density": 108
+        }
+      },
+      {
+        "componentId": "D04",
+        "feed": [
+          {
+            "id": "ore_copper_raw",
+            "count": 1
+          },
+          {
+            "id": "ore_zinc_raw",
+            "count": 5
+          },
+          {
+            "id": "ore_tungsten_raw",
+            "count": 1
+          }
+        ],
+        "totals": {
+          "hardness": 126,
+          "toughness": 200,
+          "deformationResistance": 202,
+          "density": 156
+        }
+      },
+      {
+        "componentId": "D05",
+        "feed": [
+          {
+            "id": "ore_copper_raw",
+            "count": 2
+          },
+          {
+            "id": "ore_tin_raw",
+            "count": 4
+          }
+        ],
+        "totals": {
+          "hardness": 72,
+          "toughness": 160,
+          "deformationResistance": 184,
+          "density": 132
+        }
+      },
+      {
+        "componentId": "D06",
+        "feed": [
+          {
+            "id": "ore_tin_raw",
+            "count": 2
+          },
+          {
+            "id": "ore_lead_raw",
+            "count": 2
+          },
+          {
+            "id": "ore_titanium_raw",
+            "count": 4
+          }
+        ],
+        "totals": {
+          "hardness": 164,
+          "toughness": 212,
+          "deformationResistance": 208,
+          "density": 204
+        }
+      },
+      {
+        "componentId": "D07",
+        "feed": [
+          {
+            "id": "ore_iron_raw",
+            "count": 2
+          },
+          {
+            "id": "ore_zinc_raw",
+            "count": 3
+          }
+        ],
+        "totals": {
+          "hardness": 80,
+          "toughness": 138,
+          "deformationResistance": 136,
+          "density": 82
+        }
+      },
+      {
+        "componentId": "D08",
+        "feed": [
+          {
+            "id": "ore_lead_raw",
+            "count": 3
+          },
+          {
+            "id": "ore_zinc_raw",
+            "count": 3
+          },
+          {
+            "id": "ore_titanium_raw",
+            "count": 2
+          }
+        ],
+        "totals": {
+          "hardness": 112,
+          "toughness": 202,
+          "deformationResistance": 176,
+          "density": 254
+        }
+      },
+      {
+        "componentId": "D09",
+        "feed": [
+          {
+            "id": "ore_copper_raw",
+            "count": 2
+          },
+          {
+            "id": "ore_tin_raw",
+            "count": 5
+          },
+          {
+            "id": "ore_tungsten_raw",
+            "count": 1
+          }
+        ],
+        "totals": {
+          "hardness": 144,
+          "toughness": 184,
+          "deformationResistance": 254,
+          "density": 206
+        }
+      },
+      {
+        "componentId": "D10",
+        "feed": [
+          {
+            "id": "ore_tin_raw",
+            "count": 5
+          },
+          {
+            "id": "ore_lead_raw",
+            "count": 3
+          },
+          {
+            "id": "ore_titanium_raw",
+            "count": 2
+          }
+        ],
+        "totals": {
+          "hardness": 146,
+          "toughness": 202,
+          "deformationResistance": 280,
+          "density": 302
+        }
+      },
+      {
+        "componentId": "D11",
+        "feed": [
+          {
+            "id": "ore_iron_raw",
+            "count": 2
+          },
+          {
+            "id": "ore_copper_raw",
+            "count": 2
+          },
+          {
+            "id": "ore_zinc_raw",
+            "count": 3
+          }
+        ],
+        "totals": {
+          "hardness": 96,
+          "toughness": 226,
+          "deformationResistance": 160,
+          "density": 142
+        }
+      },
+      {
+        "componentId": "D12",
+        "feed": [
+          {
+            "id": "ore_iron_raw",
+            "count": 1
+          },
+          {
+            "id": "ore_copper_raw",
+            "count": 3
+          },
+          {
+            "id": "ore_tin_raw",
+            "count": 3
+          }
+        ],
+        "totals": {
+          "hardness": 88,
+          "toughness": 210,
+          "deformationResistance": 176,
+          "density": 164
+        }
+      },
+      {
+        "componentId": "D13",
+        "feed": [
+          {
+            "id": "ore_iron_raw",
+            "count": 2
+          },
+          {
+            "id": "ore_zinc_raw",
+            "count": 3
+          }
+        ],
+        "totals": {
+          "hardness": 80,
+          "toughness": 138,
+          "deformationResistance": 136,
+          "density": 82
+        }
+      },
+      {
+        "componentId": "D14",
+        "feed": [
+          {
+            "id": "ore_iron_raw",
+            "count": 2
+          },
+          {
+            "id": "ore_zinc_raw",
+            "count": 4
+          },
+          {
+            "id": "ore_tungsten_raw",
+            "count": 2
+          }
+        ],
+        "totals": {
+          "hardness": 208,
+          "toughness": 180,
+          "deformationResistance": 228,
+          "density": 208
+        }
+      },
+      {
+        "componentId": "D15",
+        "feed": [
+          {
+            "id": "ore_copper_raw",
+            "count": 4
+          },
+          {
+            "id": "ore_tin_raw",
+            "count": 3
+          },
+          {
+            "id": "ore_titanium_raw",
+            "count": 1
+          }
+        ],
+        "totals": {
+          "hardness": 106,
+          "toughness": 268,
+          "deformationResistance": 196,
+          "density": 184
+        }
+      },
+      {
+        "componentId": "D16",
+        "feed": [
+          {
+            "id": "ore_lead_raw",
+            "count": 4
+          },
+          {
+            "id": "ore_zinc_raw",
+            "count": 4
+          },
+          {
+            "id": "ore_molybdenum_raw",
+            "count": 2
+          }
+        ],
+        "totals": {
+          "hardness": 136,
+          "toughness": 228,
+          "deformationResistance": 276,
+          "density": 352
+        }
+      },
+      {
+        "componentId": "D17",
+        "feed": [
+          {
+            "id": "ore_copper_raw",
+            "count": 2
+          },
+          {
+            "id": "ore_tin_raw",
+            "count": 4
+          },
+          {
+            "id": "ore_titanium_raw",
+            "count": 1
+          }
+        ],
+        "totals": {
+          "hardness": 104,
+          "toughness": 198,
+          "deformationResistance": 212,
+          "density": 142
+        }
+      },
+      {
+        "componentId": "D18",
+        "feed": [
+          {
+            "id": "ore_copper_raw",
+            "count": 3
+          },
+          {
+            "id": "ore_tin_raw",
+            "count": 4
+          },
+          {
+            "id": "ore_molybdenum_raw",
+            "count": 1
+          }
+        ],
+        "totals": {
+          "hardness": 116,
+          "toughness": 234,
+          "deformationResistance": 254,
+          "density": 182
+        }
+      },
+      {
+        "componentId": "H01",
+        "feed": [
+          {
+            "id": "ore_zinc_raw",
+            "count": 4
+          }
+        ],
+        "totals": {
+          "hardness": 48,
+          "toughness": 120,
+          "deformationResistance": 128,
+          "density": 56
+        }
+      },
+      {
+        "componentId": "H02",
+        "feed": [
+          {
+            "id": "ore_iron_raw",
+            "count": 2
+          },
+          {
+            "id": "ore_tin_raw",
+            "count": 3
+          }
+        ],
+        "totals": {
+          "hardness": 86,
+          "toughness": 102,
+          "deformationResistance": 160,
+          "density": 94
+        }
+      },
+      {
+        "componentId": "H03",
+        "feed": [
+          {
+            "id": "ore_iron_raw",
+            "count": 2
+          },
+          {
+            "id": "ore_zinc_raw",
+            "count": 3
+          }
+        ],
+        "totals": {
+          "hardness": 80,
+          "toughness": 138,
+          "deformationResistance": 136,
+          "density": 82
+        }
+      },
+      {
+        "componentId": "H04",
+        "feed": [
+          {
+            "id": "ore_iron_raw",
+            "count": 1
+          },
+          {
+            "id": "ore_copper_raw",
+            "count": 3
+          },
+          {
+            "id": "ore_tin_raw",
+            "count": 2
+          }
+        ],
+        "totals": {
+          "hardness": 74,
+          "toughness": 192,
+          "deformationResistance": 136,
+          "density": 146
+        }
+      },
+      {
+        "componentId": "H05",
+        "feed": [
+          {
+            "id": "ore_iron_raw",
+            "count": 2
+          },
+          {
+            "id": "ore_tin_raw",
+            "count": 3
+          },
+          {
+            "id": "ore_zinc_raw",
+            "count": 1
+          }
+        ],
+        "totals": {
+          "hardness": 98,
+          "toughness": 132,
+          "deformationResistance": 192,
+          "density": 108
+        }
+      },
+      {
+        "componentId": "H06",
+        "feed": [
+          {
+            "id": "ore_iron_raw",
+            "count": 4
+          },
+          {
+            "id": "ore_zinc_raw",
+            "count": 2
+          }
+        ],
+        "totals": {
+          "hardness": 112,
+          "toughness": 156,
+          "deformationResistance": 144,
+          "density": 108
+        }
+      },
+      {
+        "componentId": "H07",
+        "feed": [
+          {
+            "id": "ore_zinc_raw",
+            "count": 4
+          }
+        ],
+        "totals": {
+          "hardness": 48,
+          "toughness": 120,
+          "deformationResistance": 128,
+          "density": 56
+        }
+      },
+      {
+        "componentId": "H08",
+        "feed": [
+          {
+            "id": "ore_copper_raw",
+            "count": 1
+          },
+          {
+            "id": "ore_tin_raw",
+            "count": 2
+          },
+          {
+            "id": "ore_zinc_raw",
+            "count": 3
+          }
+        ],
+        "totals": {
+          "hardness": 72,
+          "toughness": 170,
+          "deformationResistance": 188,
+          "density": 108
+        }
+      },
+      {
+        "componentId": "H09",
+        "feed": [
+          {
+            "id": "ore_copper_raw",
+            "count": 1
+          },
+          {
+            "id": "ore_zinc_raw",
+            "count": 5
+          }
+        ],
+        "totals": {
+          "hardness": 68,
+          "toughness": 194,
+          "deformationResistance": 172,
+          "density": 100
+        }
+      },
+      {
+        "componentId": "H10",
+        "feed": [
+          {
+            "id": "ore_tin_raw",
+            "count": 3
+          },
+          {
+            "id": "ore_lead_raw",
+            "count": 2
+          },
+          {
+            "id": "ore_titanium_raw",
+            "count": 2
+          }
+        ],
+        "totals": {
+          "hardness": 114,
+          "toughness": 154,
+          "deformationResistance": 192,
+          "density": 202
+        }
+      },
+      {
+        "componentId": "H11",
+        "feed": [
+          {
+            "id": "ore_copper_raw",
+            "count": 1
+          },
+          {
+            "id": "ore_tin_raw",
+            "count": 3
+          },
+          {
+            "id": "ore_zinc_raw",
+            "count": 3
+          }
+        ],
+        "totals": {
+          "hardness": 86,
+          "toughness": 188,
+          "deformationResistance": 228,
+          "density": 126
+        }
+      },
+      {
+        "componentId": "H12",
+        "feed": [
+          {
+            "id": "ore_iron_raw",
+            "count": 1
+          },
+          {
+            "id": "ore_copper_raw",
+            "count": 1
+          },
+          {
+            "id": "ore_zinc_raw",
+            "count": 4
+          }
+        ],
+        "totals": {
+          "hardness": 78,
+          "toughness": 188,
+          "deformationResistance": 160,
+          "density": 106
+        }
+      },
+      {
+        "componentId": "H13",
+        "feed": [
+          {
+            "id": "ore_iron_raw",
+            "count": 2
+          },
+          {
+            "id": "ore_titanium_raw",
+            "count": 3
+          }
+        ],
+        "totals": {
+          "hardness": 140,
+          "toughness": 162,
+          "deformationResistance": 124,
+          "density": 70
+        }
+      },
+      {
+        "componentId": "H14",
+        "feed": [
+          {
+            "id": "ore_copper_raw",
+            "count": 2
+          },
+          {
+            "id": "ore_zinc_raw",
+            "count": 3
+          },
+          {
+            "id": "ore_molybdenum_raw",
+            "count": 2
+          }
+        ],
+        "totals": {
+          "hardness": 124,
+          "toughness": 238,
+          "deformationResistance": 236,
+          "density": 142
+        }
+      },
+      {
+        "componentId": "H15",
+        "feed": [
+          {
+            "id": "ore_copper_raw",
+            "count": 1
+          },
+          {
+            "id": "ore_zinc_raw",
+            "count": 4
+          },
+          {
+            "id": "ore_titanium_raw",
+            "count": 1
+          }
+        ],
+        "totals": {
+          "hardness": 88,
+          "toughness": 202,
+          "deformationResistance": 168,
+          "density": 96
+        }
+      },
+      {
+        "componentId": "H16",
+        "feed": [
+          {
+            "id": "ore_lead_raw",
+            "count": 2
+          },
+          {
+            "id": "ore_zinc_raw",
+            "count": 3
+          },
+          {
+            "id": "ore_molybdenum_raw",
+            "count": 2
+          }
+        ],
+        "totals": {
+          "hardness": 116,
+          "toughness": 174,
+          "deformationResistance": 228,
+          "density": 210
+        }
+      },
+      {
+        "componentId": "H17",
+        "feed": [
+          {
+            "id": "ore_copper_raw",
+            "count": 3
+          },
+          {
+            "id": "ore_tin_raw",
+            "count": 3
+          },
+          {
+            "id": "ore_molybdenum_raw",
+            "count": 2
+          }
+        ],
+        "totals": {
+          "hardness": 138,
+          "toughness": 246,
+          "deformationResistance": 272,
+          "density": 184
+        }
+      },
+      {
+        "componentId": "H18",
+        "feed": [
+          {
+            "id": "ore_copper_raw",
+            "count": 3
+          },
+          {
+            "id": "ore_tin_raw",
+            "count": 3
+          },
+          {
+            "id": "ore_titanium_raw",
+            "count": 1
+          }
+        ],
+        "totals": {
+          "hardness": 98,
+          "toughness": 224,
+          "deformationResistance": 184,
+          "density": 154
+        }
+      },
+      {
+        "componentId": "M01-T1",
+        "feed": [
+          {
+            "id": "ore_tin_raw",
+            "count": 6
+          },
+          {
+            "id": "ore_lead_raw",
+            "count": 4
+          },
+          {
+            "id": "ore_titanium_raw",
+            "count": 4
+          }
+        ],
+        "totals": {
+          "hardness": 228,
+          "toughness": 308,
+          "deformationResistance": 384,
+          "density": 404
+        }
+      },
+      {
+        "componentId": "M02-T1",
+        "feed": [
+          {
+            "id": "ore_lead_raw",
+            "count": 5
+          },
+          {
+            "id": "ore_titanium_raw",
+            "count": 8
+          },
+          {
+            "id": "ore_molybdenum_raw",
+            "count": 3
+          }
+        ],
+        "totals": {
+          "hardness": 384,
+          "toughness": 454,
+          "deformationResistance": 438,
+          "density": 460
+        }
+      },
+      {
+        "componentId": "M07-T1",
+        "feed": [
+          {
+            "id": "ore_copper_raw",
+            "count": 4
+          },
+          {
+            "id": "ore_zinc_raw",
+            "count": 10
+          }
+        ],
+        "totals": {
+          "hardness": 152,
+          "toughness": 476,
+          "deformationResistance": 368,
+          "density": 260
+        }
+      },
+      {
+        "componentId": "M03-T2",
+        "feed": [
+          {
+            "id": "ore_lead_raw",
+            "count": 6
+          },
+          {
+            "id": "ore_titanium_raw",
+            "count": 7
+          },
+          {
+            "id": "ore_molybdenum_raw",
+            "count": 3
+          }
+        ],
+        "totals": {
+          "hardness": 356,
+          "toughness": 428,
+          "deformationResistance": 418,
+          "density": 514
+        }
+      },
+      {
+        "componentId": "M05-T2",
+        "feed": [
+          {
+            "id": "ore_iron_raw",
+            "count": 8
+          },
+          {
+            "id": "ore_lead_raw",
+            "count": 1
+          },
+          {
+            "id": "ore_titanium_raw",
+            "count": 5
+          }
+        ],
+        "totals": {
+          "hardness": 340,
+          "toughness": 394,
+          "deformationResistance": 308,
+          "density": 274
+        }
+      },
+      {
+        "componentId": "M06-T2",
+        "feed": [
+          {
+            "id": "ore_iron_raw",
+            "count": 5
+          },
+          {
+            "id": "ore_lead_raw",
+            "count": 2
+          },
+          {
+            "id": "ore_titanium_raw",
+            "count": 7
+          }
+        ],
+        "totals": {
+          "hardness": 342,
+          "toughness": 410,
+          "deformationResistance": 312,
+          "density": 298
+        }
+      },
+      {
+        "componentId": "M01-T3",
+        "feed": [
+          {
+            "id": "ore_tin_raw",
+            "count": 6
+          },
+          {
+            "id": "ore_lead_raw",
+            "count": 4
+          },
+          {
+            "id": "ore_titanium_raw",
+            "count": 4
+          }
+        ],
+        "totals": {
+          "hardness": 228,
+          "toughness": 308,
+          "deformationResistance": 384,
+          "density": 404
+        }
+      },
+      {
+        "componentId": "M04-T3",
+        "feed": [
+          {
+            "id": "ore_iron_raw",
+            "count": 3
+          },
+          {
+            "id": "ore_zinc_raw",
+            "count": 8
+          },
+          {
+            "id": "ore_tungsten_raw",
+            "count": 4
+          }
+        ],
+        "totals": {
+          "hardness": 394,
+          "toughness": 336,
+          "deformationResistance": 436,
+          "density": 396
+        }
+      },
+      {
+        "componentId": "M07-T3",
+        "feed": [
+          {
+            "id": "ore_copper_raw",
+            "count": 4
+          },
+          {
+            "id": "ore_zinc_raw",
+            "count": 10
+          }
+        ],
+        "totals": {
+          "hardness": 152,
+          "toughness": 476,
+          "deformationResistance": 368,
+          "density": 260
+        }
+      },
+      {
+        "componentId": "M02-T4",
+        "feed": [
+          {
+            "id": "ore_lead_raw",
+            "count": 5
+          },
+          {
+            "id": "ore_titanium_raw",
+            "count": 8
+          },
+          {
+            "id": "ore_molybdenum_raw",
+            "count": 3
+          }
+        ],
+        "totals": {
+          "hardness": 384,
+          "toughness": 454,
+          "deformationResistance": 438,
+          "density": 460
+        }
+      },
+      {
+        "componentId": "M05-T4",
+        "feed": [
+          {
+            "id": "ore_iron_raw",
+            "count": 8
+          },
+          {
+            "id": "ore_lead_raw",
+            "count": 1
+          },
+          {
+            "id": "ore_titanium_raw",
+            "count": 5
+          }
+        ],
+        "totals": {
+          "hardness": 340,
+          "toughness": 394,
+          "deformationResistance": 308,
+          "density": 274
+        }
+      },
+      {
+        "componentId": "M08-T4",
+        "feed": [
+          {
+            "id": "ore_lead_raw",
+            "count": 6
+          },
+          {
+            "id": "ore_titanium_raw",
+            "count": 6
+          },
+          {
+            "id": "ore_molybdenum_raw",
+            "count": 6
+          }
+        ],
+        "totals": {
+          "hardness": 432,
+          "toughness": 480,
+          "deformationResistance": 564,
+          "density": 564
+        }
+      },
+      {
+        "componentId": "M03-T5",
+        "feed": [
+          {
+            "id": "ore_lead_raw",
+            "count": 6
+          },
+          {
+            "id": "ore_titanium_raw",
+            "count": 7
+          },
+          {
+            "id": "ore_molybdenum_raw",
+            "count": 3
+          }
+        ],
+        "totals": {
+          "hardness": 356,
+          "toughness": 428,
+          "deformationResistance": 418,
+          "density": 514
+        }
+      },
+      {
+        "componentId": "M06-T5",
+        "feed": [
+          {
+            "id": "ore_iron_raw",
+            "count": 5
+          },
+          {
+            "id": "ore_lead_raw",
+            "count": 2
+          },
+          {
+            "id": "ore_titanium_raw",
+            "count": 7
+          }
+        ],
+        "totals": {
+          "hardness": 342,
+          "toughness": 410,
+          "deformationResistance": 312,
+          "density": 298
+        }
+      },
+      {
+        "componentId": "M07-T5",
+        "feed": [
+          {
+            "id": "ore_copper_raw",
+            "count": 4
+          },
+          {
+            "id": "ore_zinc_raw",
+            "count": 10
+          }
+        ],
+        "totals": {
+          "hardness": 152,
+          "toughness": 476,
+          "deformationResistance": 368,
+          "density": 260
+        }
+      },
+      {
+        "componentId": "M04-T6",
+        "feed": [
+          {
+            "id": "ore_iron_raw",
+            "count": 3
+          },
+          {
+            "id": "ore_zinc_raw",
+            "count": 8
+          },
+          {
+            "id": "ore_tungsten_raw",
+            "count": 4
+          }
+        ],
+        "totals": {
+          "hardness": 394,
+          "toughness": 336,
+          "deformationResistance": 436,
+          "density": 396
+        }
+      },
+      {
+        "componentId": "M05-T6",
+        "feed": [
+          {
+            "id": "ore_iron_raw",
+            "count": 8
+          },
+          {
+            "id": "ore_lead_raw",
+            "count": 1
+          },
+          {
+            "id": "ore_titanium_raw",
+            "count": 5
+          }
+        ],
+        "totals": {
+          "hardness": 340,
+          "toughness": 394,
+          "deformationResistance": 308,
+          "density": 274
+        }
+      },
+      {
+        "componentId": "M08-T6",
+        "feed": [
+          {
+            "id": "ore_lead_raw",
+            "count": 6
+          },
+          {
+            "id": "ore_titanium_raw",
+            "count": 6
+          },
+          {
+            "id": "ore_molybdenum_raw",
+            "count": 6
+          }
+        ],
+        "totals": {
+          "hardness": 432,
+          "toughness": 480,
+          "deformationResistance": 564,
+          "density": 564
+        }
+      }
+    ]
+  },
+  "itemInformation": {
+    "status": "design_only",
+    "date": "2026-10-17",
+    "references": [
+      "../01-philosophy.md",
+      "../../../capitalism/items_template_and_style.md",
+      "../63-item-attribute-modules.md",
+      "../41-quality-removal.md"
+    ],
+    "scope": "补齐八种矿石的物品资料与逐字段认识契约，不改变四项分值、投料容量、基准威力或运行目录。",
+    "languagePolicy": {
+      "nameMinLevel": 3,
+      "observationDescriptionMinLevel": 2,
+      "identifiedDescriptionMinLevel": 4
+    },
+    "knowledgePolicy": {
+      "default": "empty",
+      "discovery": "没有亲身接触或实际操作证据时不出现材料条目、占位、总数或隐藏用途标题。",
+      "identity": "物品已接触且身份经自己观察辨认或检查取得依据，另满足既有语言门槛才显示sn；仅语言达标不自动鉴别。",
+      "description": "语言不足2不显示说明；语言2至3显示fn_before；语言至少4但身份未知仍用fn_before；身份已认识且语言至少4才显示fn。",
+      "use": "铸造用途有独立认识来源，不从source、productionLines、role或物品名称自动解锁。",
+      "axes": "各项定性认识独立记录；精确分值在已接触且用途、加工路线已知时由铸造10级开放。未知项整体省略，不补问号或目录。",
+      "numbers": "单份分值按已认识加工路线计，10级开放；25级开放已知配料潜力，50级开放已认识特性强度。等级不认识新矿种或配方。",
+      "preview": "只合计已有认识依据的字段；若所投材料中有该项未知贡献，不显示完整总分、达成率、排序或由它推导的成品精确值。不得通过禁用按钮或精确拒绝原因旁路透露未知分数。",
+      "knowledgeScope": "基础身份按矿种记；用途和分值按加工路线及标准份规格记；新路线不能继承旧路线分值。实例批次未来若有差异，另需实例证据。",
+      "noFreeUnlock": "采到、买到、移动、打开面板或语言等级不自动授予身份、用途或配方；铸造等级只开放已接触且满足认识条件的数值类别。",
+      "backendOnly": [
+        "role",
+        "rarity",
+        "realMineralFamily",
+        "guangdongBackground",
+        "sourceIds",
+        "mining.proposedFloors",
+        "mining.relativeSpawnWeight",
+        "rawItem.baseValue",
+        "rawItem.priceClass",
+        "rawItem.volatility",
+        "rawItem.tags",
+        "rawItem.source",
+        "rawItem.productionLines"
+      ],
+      "sourceTreatment": "材料认识来自自己的观察检查、实际加工锻造与成品使用；取消试料、读工艺记录、他人试验结论、料签、传闻及传授路线。",
+      "safeFallback": "认识消费者尚未接入时只显示合适的基础文本，专业字段默认隐藏；不套用旧module.material_ore的无条件用途及固定性质说明。",
+      "excludedLearningRoutes": [
+        "craft_record_reading",
+        "instruction_from_others",
+        "third_party_experiment_results",
+        "material_assay",
+        "own_material_experiment"
+      ],
+      "scope": "仅铸造材料认识；不修改其他系统的学习途径。"
+    },
+    "recognitionMethod": {
+      "status": "confirmed_route_entry",
+      "entry": "已遇到的实物允许观察、检查和既有条件下的鉴别尝试，不要求先知道正确名称。",
+      "identityEvidence": "亲自观察辨认或对实物完成有条件的检查，不凭料签或他人告知解锁。",
+      "useEvidence": "在铸造台检查当前实物原矿可认识本矿铸造用途、加工路线及单份规格；身份认识本身不赠送路线。实际加工与使用继续提供自己的操作证据。",
+      "directionEvidence": "自己的实际观察检查、加工锻造和成品使用。",
+      "scoreEvidence": "已接触矿料且认识其用途、路线及标准份规格，铸造10级开放四项数值。",
+      "costsAndThresholds": "无额外试料材料、时间或经验成本。正常工序读取weapon-forging-balance-v1.json；数值信息按10／25／50级开放。",
+      "processingInspection": {
+        "actionId": "inspect_ore_processing",
+        "stationRequired": true,
+        "requires": [
+          "raw_material_present",
+          "out_of_combat"
+        ],
+        "identityKnownRequired": false,
+        "consumeSample": 0,
+        "ticks": 0,
+        "stamina": 0,
+        "xp": 0,
+        "repeatKnownRoute": "no_op",
+        "scope": "only_inspected_raw_ore_route",
+        "grants": [
+          "material_seen",
+          "forge_use_known",
+          "feed_route_known",
+          "feed_unit_known"
+        ],
+        "doesNotGrant": [
+          "raw_identity",
+          "processed_feed_identity",
+          "four_axis_directions",
+          "four_axis_scores_without_level",
+          "component_structure",
+          "component_recipe",
+          "ore_trait",
+          "combination_recipe"
+        ],
+        "interfacePolicy": "show_operation_for_present_physical_sample_without_requiring_its_real_name",
+        "countsAreKnownOnInspection": true,
+        "unseenFeedItemListing": false,
+        "costPolicy": "no_extra_recognition_fee_no_assay"
+      }
+    },
+    "discoveryChainStatus": "逐矿仅保留实物接触候选，均处于提议的允许层；已移除工艺记录、料签和他人传授解锁；场景未绑定。",
+    "alignedCatalogRef": "weapon-forging-ore-items-v1.json",
+    "alignedInformationRef": "weapon-forging-ore-information-v1.json",
+    "formalItemCatalogRef": "../../../data/forging/item-catalog-v2.json"
+  },
+  "balanceRef": "weapon-forging-balance-v1.json"
+}

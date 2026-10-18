@@ -1,0 +1,2102 @@
+{
+  "count": 996,
+  "longest": 66.34079999999997,
+  "issues": [],
+  "witnesses": [
+    {
+      "id": "B01",
+      "specials": [
+        {
+          "index": 15,
+          "type": "keep"
+        },
+        {
+          "index": 13,
+          "type": "gather"
+        }
+      ],
+      "actions": [
+        {
+          "kind": "quench"
+        },
+        {
+          "kind": "heavy",
+          "index": 10
+        },
+        {
+          "kind": "cross",
+          "index": 11
+        },
+        {
+          "kind": "heavy",
+          "index": 14
+        },
+        {
+          "kind": "heavy",
+          "index": 13
+        },
+        {
+          "kind": "heavy",
+          "index": 10
+        },
+        {
+          "kind": "heavy",
+          "index": 7
+        }
+      ]
+    },
+    {
+      "id": "T01",
+      "specials": [
+        {
+          "index": 1,
+          "type": "gather"
+        },
+        {
+          "index": 3,
+          "type": "burst"
+        }
+      ],
+      "actions": [
+        {
+          "kind": "heavy",
+          "index": 5
+        },
+        {
+          "kind": "cross",
+          "index": 1
+        },
+        {
+          "kind": "heavy",
+          "index": 3
+        },
+        {
+          "kind": "heavy",
+          "index": 2
+        }
+      ]
+    },
+    {
+      "id": "D01",
+      "specials": [
+        {
+          "index": 0,
+          "type": "burst"
+        },
+        {
+          "index": 7,
+          "type": "keep"
+        }
+      ],
+      "actions": [
+        {
+          "kind": "quench"
+        },
+        {
+          "kind": "heavy",
+          "index": 0
+        },
+        {
+          "kind": "cross",
+          "index": 1
+        },
+        {
+          "kind": "heavy",
+          "index": 4
+        }
+      ]
+    },
+    {
+      "id": "H01",
+      "specials": [
+        {
+          "index": 3,
+          "type": "burst"
+        },
+        {
+          "index": 10,
+          "type": "keep"
+        }
+      ],
+      "actions": [
+        {
+          "kind": "temper"
+        }
+      ]
+    },
+    {
+      "id": "M01-T1",
+      "specials": [
+        {
+          "index": 23,
+          "type": "keep"
+        },
+        {
+          "index": 7,
+          "type": "gather"
+        }
+      ],
+      "actions": [
+        {
+          "kind": "quench"
+        },
+        {
+          "kind": "heavy",
+          "index": 6
+        },
+        {
+          "kind": "cross",
+          "index": 13
+        },
+        {
+          "kind": "heavy",
+          "index": 17
+        }
+      ]
+    },
+    {
+      "id": "B02",
+      "specials": [
+        {
+          "index": 1,
+          "type": "keep"
+        },
+        {
+          "index": 24,
+          "type": "burst"
+        }
+      ],
+      "actions": [
+        {
+          "kind": "cross",
+          "index": 6
+        },
+        {
+          "kind": "heavy",
+          "index": 1
+        }
+      ]
+    },
+    {
+      "id": "T02",
+      "specials": [
+        {
+          "index": 14,
+          "type": "burst"
+        },
+        {
+          "index": 3,
+          "type": "gather"
+        }
+      ],
+      "actions": [
+        {
+          "kind": "cross",
+          "index": 6
+        }
+      ]
+    },
+    {
+      "id": "D02",
+      "specials": [
+        {
+          "index": 18,
+          "type": "keep"
+        },
+        {
+          "index": 1,
+          "type": "burst"
+        }
+      ],
+      "actions": [
+        {
+          "kind": "heavy",
+          "index": 11
+        },
+        {
+          "kind": "cross",
+          "index": 6
+        },
+        {
+          "kind": "heavy",
+          "index": 16
+        },
+        {
+          "kind": "heavy",
+          "index": 11
+        }
+      ]
+    },
+    {
+      "id": "H02",
+      "specials": [
+        {
+          "index": 15,
+          "type": "gather"
+        },
+        {
+          "index": 3,
+          "type": "burst"
+        }
+      ],
+      "actions": [
+        {
+          "kind": "cross",
+          "index": 2
+        }
+      ]
+    },
+    {
+      "id": "M02-T1",
+      "specials": [
+        {
+          "index": 31,
+          "type": "gather"
+        },
+        {
+          "index": 30,
+          "type": "keep"
+        }
+      ],
+      "actions": [
+        {
+          "kind": "heavy",
+          "index": 24
+        },
+        {
+          "kind": "cross",
+          "index": 30
+        }
+      ]
+    },
+    {
+      "id": "D03",
+      "specials": [
+        {
+          "index": 19,
+          "type": "burst"
+        },
+        {
+          "index": 8,
+          "type": "gather"
+        }
+      ],
+      "actions": [
+        {
+          "kind": "cross",
+          "index": 5
+        }
+      ]
+    },
+    {
+      "id": "H03",
+      "specials": [
+        {
+          "index": 12,
+          "type": "burst"
+        },
+        {
+          "index": 4,
+          "type": "gather"
+        }
+      ],
+      "actions": [
+        {
+          "kind": "cross",
+          "index": 3
+        }
+      ]
+    },
+    {
+      "id": "M07-T1",
+      "specials": [
+        {
+          "index": 1,
+          "type": "gather"
+        },
+        {
+          "index": 4,
+          "type": "keep"
+        }
+      ],
+      "actions": [
+        {
+          "kind": "heavy",
+          "index": 0
+        },
+        {
+          "kind": "cross",
+          "index": 3
+        },
+        {
+          "kind": "heavy",
+          "index": 4
+        },
+        {
+          "kind": "quench"
+        }
+      ]
+    },
+    {
+      "id": "B03",
+      "specials": [
+        {
+          "index": 15,
+          "type": "keep"
+        },
+        {
+          "index": 12,
+          "type": "gather"
+        }
+      ],
+      "actions": [
+        {
+          "kind": "heavy",
+          "index": 16
+        },
+        {
+          "kind": "cross",
+          "index": 13
+        },
+        {
+          "kind": "heavy",
+          "index": 5
+        },
+        {
+          "kind": "heavy",
+          "index": 2
+        }
+      ]
+    },
+    {
+      "id": "T03",
+      "specials": [
+        {
+          "index": 9,
+          "type": "keep"
+        },
+        {
+          "index": 7,
+          "type": "gather"
+        }
+      ],
+      "actions": [
+        {
+          "kind": "heavy",
+          "index": 6
+        },
+        {
+          "kind": "cross",
+          "index": 11
+        },
+        {
+          "kind": "heavy",
+          "index": 2
+        },
+        {
+          "kind": "heavy",
+          "index": 1
+        }
+      ]
+    },
+    {
+      "id": "D04",
+      "specials": [
+        {
+          "index": 1,
+          "type": "keep"
+        },
+        {
+          "index": 4,
+          "type": "gather"
+        }
+      ],
+      "actions": [
+        {
+          "kind": "heavy",
+          "index": 12
+        },
+        {
+          "kind": "cross",
+          "index": 7
+        },
+        {
+          "kind": "heavy",
+          "index": 17
+        },
+        {
+          "kind": "heavy",
+          "index": 12
+        },
+        {
+          "kind": "heavy",
+          "index": 11
+        }
+      ]
+    },
+    {
+      "id": "H04",
+      "specials": [
+        {
+          "index": 15,
+          "type": "burst"
+        },
+        {
+          "index": 0,
+          "type": "gather"
+        }
+      ],
+      "actions": [
+        {
+          "kind": "heavy",
+          "index": 10
+        },
+        {
+          "kind": "cross",
+          "index": 15
+        },
+        {
+          "kind": "heavy",
+          "index": 18
+        },
+        {
+          "kind": "heavy",
+          "index": 13
+        }
+      ]
+    },
+    {
+      "id": "M03-T2",
+      "specials": [
+        {
+          "index": 0,
+          "type": "burst"
+        },
+        {
+          "index": 12,
+          "type": "gather"
+        }
+      ],
+      "actions": [
+        {
+          "kind": "quench"
+        }
+      ]
+    },
+    {
+      "id": "B04",
+      "specials": [
+        {
+          "index": 12,
+          "type": "burst"
+        },
+        {
+          "index": 16,
+          "type": "gather"
+        }
+      ],
+      "actions": [
+        {
+          "kind": "temper"
+        },
+        {
+          "kind": "heavy",
+          "index": 0
+        }
+      ]
+    },
+    {
+      "id": "T04",
+      "specials": [
+        {
+          "index": 12,
+          "type": "burst"
+        },
+        {
+          "index": 9,
+          "type": "gather"
+        }
+      ],
+      "actions": [
+        {
+          "kind": "cross",
+          "index": 4
+        },
+        {
+          "kind": "quench"
+        }
+      ]
+    },
+    {
+      "id": "D05",
+      "specials": [
+        {
+          "index": 17,
+          "type": "gather"
+        },
+        {
+          "index": 1,
+          "type": "burst"
+        }
+      ],
+      "actions": [
+        {
+          "kind": "cross",
+          "index": 18
+        },
+        {
+          "kind": "quench"
+        }
+      ]
+    },
+    {
+      "id": "H05",
+      "specials": [
+        {
+          "index": 3,
+          "type": "keep"
+        },
+        {
+          "index": 10,
+          "type": "gather"
+        }
+      ],
+      "actions": [
+        {
+          "kind": "cross",
+          "index": 3
+        },
+        {
+          "kind": "light",
+          "index": 0
+        }
+      ]
+    },
+    {
+      "id": "M05-T2",
+      "specials": [
+        {
+          "index": 27,
+          "type": "burst"
+        },
+        {
+          "index": 23,
+          "type": "keep"
+        }
+      ],
+      "actions": [
+        {
+          "kind": "quench"
+        },
+        {
+          "kind": "heavy",
+          "index": 10
+        },
+        {
+          "kind": "cross",
+          "index": 15
+        },
+        {
+          "kind": "heavy",
+          "index": 2
+        }
+      ]
+    },
+    {
+      "id": "B05",
+      "specials": [
+        {
+          "index": 17,
+          "type": "gather"
+        },
+        {
+          "index": 16,
+          "type": "keep"
+        }
+      ],
+      "actions": [
+        {
+          "kind": "heavy",
+          "index": 16
+        },
+        {
+          "kind": "cross",
+          "index": 11
+        },
+        {
+          "kind": "heavy",
+          "index": 21
+        },
+        {
+          "kind": "heavy",
+          "index": 26
+        }
+      ]
+    },
+    {
+      "id": "D06",
+      "specials": [
+        {
+          "index": 5,
+          "type": "burst"
+        },
+        {
+          "index": 25,
+          "type": "keep"
+        }
+      ],
+      "actions": [
+        {
+          "kind": "heavy",
+          "index": 10
+        },
+        {
+          "kind": "heavy",
+          "index": 5
+        },
+        {
+          "kind": "cross",
+          "index": 6
+        }
+      ]
+    },
+    {
+      "id": "H06",
+      "specials": [
+        {
+          "index": 1,
+          "type": "burst"
+        },
+        {
+          "index": 19,
+          "type": "gather"
+        }
+      ],
+      "actions": [
+        {
+          "kind": "cross",
+          "index": 1
+        }
+      ]
+    },
+    {
+      "id": "M06-T2",
+      "specials": [
+        {
+          "index": 15,
+          "type": "keep"
+        },
+        {
+          "index": 23,
+          "type": "burst"
+        }
+      ],
+      "actions": [
+        {
+          "kind": "quench"
+        },
+        {
+          "kind": "temper"
+        }
+      ]
+    },
+    {
+      "id": "B06",
+      "specials": [
+        {
+          "index": 12,
+          "type": "keep"
+        },
+        {
+          "index": 20,
+          "type": "gather"
+        }
+      ],
+      "actions": [
+        {
+          "kind": "quench"
+        },
+        {
+          "kind": "heavy",
+          "index": 17
+        },
+        {
+          "kind": "heavy",
+          "index": 12
+        },
+        {
+          "kind": "cross",
+          "index": 11
+        },
+        {
+          "kind": "heavy",
+          "index": 6
+        }
+      ]
+    },
+    {
+      "id": "T05",
+      "specials": [
+        {
+          "index": 3,
+          "type": "keep"
+        },
+        {
+          "index": 15,
+          "type": "gather"
+        }
+      ],
+      "actions": [
+        {
+          "kind": "heavy",
+          "index": 13
+        },
+        {
+          "kind": "cross",
+          "index": 15
+        },
+        {
+          "kind": "heavy",
+          "index": 2
+        },
+        {
+          "kind": "heavy",
+          "index": 3
+        },
+        {
+          "kind": "heavy",
+          "index": 1
+        }
+      ]
+    },
+    {
+      "id": "D07",
+      "specials": [
+        {
+          "index": 11,
+          "type": "burst"
+        },
+        {
+          "index": 5,
+          "type": "gather"
+        }
+      ],
+      "actions": [
+        {
+          "kind": "temper"
+        },
+        {
+          "kind": "heavy",
+          "index": 0
+        },
+        {
+          "kind": "heavy",
+          "index": 13
+        }
+      ]
+    },
+    {
+      "id": "H07",
+      "specials": [
+        {
+          "index": 13,
+          "type": "keep"
+        },
+        {
+          "index": 11,
+          "type": "gather"
+        }
+      ],
+      "actions": [
+        {
+          "kind": "temper"
+        }
+      ]
+    },
+    {
+      "id": "M01-T3",
+      "specials": [
+        {
+          "index": 21,
+          "type": "keep"
+        },
+        {
+          "index": 14,
+          "type": "burst"
+        }
+      ],
+      "actions": [
+        {
+          "kind": "heavy",
+          "index": 6
+        },
+        {
+          "kind": "heavy",
+          "index": 13
+        },
+        {
+          "kind": "cross",
+          "index": 14
+        },
+        {
+          "kind": "heavy",
+          "index": 17
+        },
+        {
+          "kind": "quench"
+        }
+      ]
+    },
+    {
+      "id": "B07",
+      "specials": [
+        {
+          "index": 11,
+          "type": "keep"
+        },
+        {
+          "index": 14,
+          "type": "gather"
+        }
+      ],
+      "actions": [
+        {
+          "kind": "cross",
+          "index": 7
+        },
+        {
+          "kind": "heavy",
+          "index": 6
+        }
+      ]
+    },
+    {
+      "id": "T06",
+      "specials": [
+        {
+          "index": 10,
+          "type": "burst"
+        },
+        {
+          "index": 8,
+          "type": "keep"
+        }
+      ],
+      "actions": [
+        {
+          "kind": "temper"
+        }
+      ]
+    },
+    {
+      "id": "D08",
+      "specials": [
+        {
+          "index": 12,
+          "type": "gather"
+        },
+        {
+          "index": 19,
+          "type": "burst"
+        }
+      ],
+      "actions": [
+        {
+          "kind": "heavy",
+          "index": 6
+        },
+        {
+          "kind": "cross",
+          "index": 2
+        },
+        {
+          "kind": "heavy",
+          "index": 11
+        },
+        {
+          "kind": "heavy",
+          "index": 16
+        },
+        {
+          "kind": "heavy",
+          "index": 6
+        }
+      ]
+    },
+    {
+      "id": "H08",
+      "specials": [
+        {
+          "index": 14,
+          "type": "keep"
+        },
+        {
+          "index": 2,
+          "type": "gather"
+        }
+      ],
+      "actions": [
+        {
+          "kind": "cross",
+          "index": 5
+        },
+        {
+          "kind": "light",
+          "index": 0
+        }
+      ]
+    },
+    {
+      "id": "M04-T3",
+      "specials": [
+        {
+          "index": 11,
+          "type": "keep"
+        },
+        {
+          "index": 14,
+          "type": "burst"
+        }
+      ],
+      "actions": [
+        {
+          "kind": "heavy",
+          "index": 14
+        },
+        {
+          "kind": "cross",
+          "index": 13
+        }
+      ]
+    },
+    {
+      "id": "B08",
+      "specials": [
+        {
+          "index": 8,
+          "type": "burst"
+        },
+        {
+          "index": 22,
+          "type": "keep"
+        }
+      ],
+      "actions": [
+        {
+          "kind": "cross",
+          "index": 9
+        }
+      ]
+    },
+    {
+      "id": "D09",
+      "specials": [
+        {
+          "index": 11,
+          "type": "gather"
+        },
+        {
+          "index": 7,
+          "type": "keep"
+        }
+      ],
+      "actions": [
+        {
+          "kind": "cross",
+          "index": 10
+        },
+        {
+          "kind": "quench"
+        }
+      ]
+    },
+    {
+      "id": "H09",
+      "specials": [
+        {
+          "index": 10,
+          "type": "gather"
+        },
+        {
+          "index": 11,
+          "type": "burst"
+        }
+      ],
+      "actions": [
+        {
+          "kind": "cross",
+          "index": 3
+        },
+        {
+          "kind": "light",
+          "index": 0
+        }
+      ]
+    },
+    {
+      "id": "M07-T3",
+      "specials": [
+        {
+          "index": 10,
+          "type": "keep"
+        },
+        {
+          "index": 17,
+          "type": "gather"
+        }
+      ],
+      "actions": [
+        {
+          "kind": "temper"
+        }
+      ]
+    },
+    {
+      "id": "B09",
+      "specials": [
+        {
+          "index": 12,
+          "type": "gather"
+        },
+        {
+          "index": 25,
+          "type": "keep"
+        }
+      ],
+      "actions": [
+        {
+          "kind": "heavy",
+          "index": 8
+        },
+        {
+          "kind": "cross",
+          "index": 12
+        },
+        {
+          "kind": "heavy",
+          "index": 5
+        },
+        {
+          "kind": "heavy",
+          "index": 2
+        }
+      ]
+    },
+    {
+      "id": "T07",
+      "specials": [
+        {
+          "index": 10,
+          "type": "keep"
+        },
+        {
+          "index": 11,
+          "type": "burst"
+        }
+      ],
+      "actions": [
+        {
+          "kind": "quench"
+        },
+        {
+          "kind": "cross",
+          "index": 11
+        },
+        {
+          "kind": "heavy",
+          "index": 6
+        },
+        {
+          "kind": "heavy",
+          "index": 1
+        }
+      ]
+    },
+    {
+      "id": "D10",
+      "specials": [
+        {
+          "index": 12,
+          "type": "keep"
+        },
+        {
+          "index": 6,
+          "type": "gather"
+        }
+      ],
+      "actions": [
+        {
+          "kind": "heavy",
+          "index": 11
+        },
+        {
+          "kind": "heavy",
+          "index": 6
+        },
+        {
+          "kind": "cross",
+          "index": 5
+        },
+        {
+          "kind": "heavy",
+          "index": 7
+        },
+        {
+          "kind": "heavy",
+          "index": 1
+        }
+      ]
+    },
+    {
+      "id": "H10",
+      "specials": [
+        {
+          "index": 14,
+          "type": "gather"
+        },
+        {
+          "index": 15,
+          "type": "burst"
+        }
+      ],
+      "actions": [
+        {
+          "kind": "heavy",
+          "index": 10
+        },
+        {
+          "kind": "cross",
+          "index": 15
+        },
+        {
+          "kind": "heavy",
+          "index": 18
+        },
+        {
+          "kind": "heavy",
+          "index": 17
+        }
+      ]
+    },
+    {
+      "id": "M02-T4",
+      "specials": [
+        {
+          "index": 11,
+          "type": "keep"
+        },
+        {
+          "index": 2,
+          "type": "burst"
+        }
+      ],
+      "actions": [
+        {
+          "kind": "heavy",
+          "index": 2
+        },
+        {
+          "kind": "cross",
+          "index": 3
+        },
+        {
+          "kind": "quench"
+        }
+      ]
+    },
+    {
+      "id": "B10",
+      "specials": [
+        {
+          "index": 23,
+          "type": "burst"
+        },
+        {
+          "index": 5,
+          "type": "keep"
+        }
+      ],
+      "actions": [
+        {
+          "kind": "temper"
+        },
+        {
+          "kind": "heavy",
+          "index": 0
+        }
+      ]
+    },
+    {
+      "id": "T08",
+      "specials": [
+        {
+          "index": 5,
+          "type": "keep"
+        },
+        {
+          "index": 17,
+          "type": "burst"
+        }
+      ],
+      "actions": [
+        {
+          "kind": "cross",
+          "index": 6
+        },
+        {
+          "kind": "quench"
+        }
+      ]
+    },
+    {
+      "id": "D11",
+      "specials": [
+        {
+          "index": 13,
+          "type": "keep"
+        },
+        {
+          "index": 10,
+          "type": "burst"
+        }
+      ],
+      "actions": [
+        {
+          "kind": "cross",
+          "index": 10
+        },
+        {
+          "kind": "quench"
+        }
+      ]
+    },
+    {
+      "id": "H11",
+      "specials": [
+        {
+          "index": 1,
+          "type": "keep"
+        },
+        {
+          "index": 8,
+          "type": "gather"
+        }
+      ],
+      "actions": [
+        {
+          "kind": "cross",
+          "index": 5
+        },
+        {
+          "kind": "quench"
+        }
+      ]
+    },
+    {
+      "id": "M05-T4",
+      "specials": [
+        {
+          "index": 20,
+          "type": "burst"
+        },
+        {
+          "index": 23,
+          "type": "keep"
+        }
+      ],
+      "actions": [
+        {
+          "kind": "heavy",
+          "index": 25
+        },
+        {
+          "kind": "cross",
+          "index": 20
+        },
+        {
+          "kind": "quench"
+        }
+      ]
+    },
+    {
+      "id": "B11",
+      "specials": [
+        {
+          "index": 25,
+          "type": "keep"
+        },
+        {
+          "index": 5,
+          "type": "burst"
+        }
+      ],
+      "actions": [
+        {
+          "kind": "heavy",
+          "index": 22
+        },
+        {
+          "kind": "cross",
+          "index": 18
+        },
+        {
+          "kind": "heavy",
+          "index": 25
+        },
+        {
+          "kind": "heavy",
+          "index": 25
+        }
+      ]
+    },
+    {
+      "id": "D12",
+      "specials": [
+        {
+          "index": 23,
+          "type": "burst"
+        },
+        {
+          "index": 3,
+          "type": "gather"
+        }
+      ],
+      "actions": [
+        {
+          "kind": "cross",
+          "index": 8
+        },
+        {
+          "kind": "quench"
+        }
+      ]
+    },
+    {
+      "id": "H12",
+      "specials": [
+        {
+          "index": 7,
+          "type": "gather"
+        },
+        {
+          "index": 8,
+          "type": "burst"
+        }
+      ],
+      "actions": [
+        {
+          "kind": "cross",
+          "index": 4
+        },
+        {
+          "kind": "quench"
+        }
+      ]
+    },
+    {
+      "id": "M08-T4",
+      "specials": [
+        {
+          "index": 11,
+          "type": "burst"
+        },
+        {
+          "index": 8,
+          "type": "keep"
+        }
+      ],
+      "actions": [
+        {
+          "kind": "cross",
+          "index": 11
+        },
+        {
+          "kind": "quench"
+        }
+      ]
+    },
+    {
+      "id": "B12",
+      "specials": [
+        {
+          "index": 19,
+          "type": "keep"
+        },
+        {
+          "index": 20,
+          "type": "gather"
+        }
+      ],
+      "actions": [
+        {
+          "kind": "quench"
+        },
+        {
+          "kind": "cross",
+          "index": 6
+        }
+      ]
+    },
+    {
+      "id": "T09",
+      "specials": [
+        {
+          "index": 11,
+          "type": "burst"
+        },
+        {
+          "index": 5,
+          "type": "keep"
+        }
+      ],
+      "actions": [
+        {
+          "kind": "heavy",
+          "index": 6
+        },
+        {
+          "kind": "cross",
+          "index": 10
+        },
+        {
+          "kind": "heavy",
+          "index": 3
+        },
+        {
+          "kind": "heavy",
+          "index": 1
+        }
+      ]
+    },
+    {
+      "id": "D13",
+      "specials": [
+        {
+          "index": 0,
+          "type": "keep"
+        },
+        {
+          "index": 18,
+          "type": "burst"
+        }
+      ],
+      "actions": [
+        {
+          "kind": "temper"
+        },
+        {
+          "kind": "heavy",
+          "index": 0
+        }
+      ]
+    },
+    {
+      "id": "H13",
+      "specials": [
+        {
+          "index": 11,
+          "type": "burst"
+        },
+        {
+          "index": 0,
+          "type": "keep"
+        }
+      ],
+      "actions": [
+        {
+          "kind": "heavy",
+          "index": 12
+        },
+        {
+          "kind": "temper"
+        }
+      ]
+    },
+    {
+      "id": "M03-T5",
+      "specials": [
+        {
+          "index": 33,
+          "type": "burst"
+        },
+        {
+          "index": 15,
+          "type": "gather"
+        }
+      ],
+      "actions": [
+        {
+          "kind": "quench"
+        },
+        {
+          "kind": "temper"
+        }
+      ]
+    },
+    {
+      "id": "B13",
+      "specials": [
+        {
+          "index": 6,
+          "type": "keep"
+        },
+        {
+          "index": 18,
+          "type": "gather"
+        }
+      ],
+      "actions": [
+        {
+          "kind": "temper"
+        },
+        {
+          "kind": "heavy",
+          "index": 0
+        }
+      ]
+    },
+    {
+      "id": "T10",
+      "specials": [
+        {
+          "index": 4,
+          "type": "gather"
+        },
+        {
+          "index": 2,
+          "type": "keep"
+        }
+      ],
+      "actions": [
+        {
+          "kind": "temper"
+        }
+      ]
+    },
+    {
+      "id": "D14",
+      "specials": [
+        {
+          "index": 19,
+          "type": "burst"
+        },
+        {
+          "index": 6,
+          "type": "gather"
+        }
+      ],
+      "actions": [
+        {
+          "kind": "heavy",
+          "index": 11
+        },
+        {
+          "kind": "cross",
+          "index": 6
+        },
+        {
+          "kind": "heavy",
+          "index": 16
+        },
+        {
+          "kind": "heavy",
+          "index": 11
+        },
+        {
+          "kind": "heavy",
+          "index": 12
+        }
+      ]
+    },
+    {
+      "id": "H14",
+      "specials": [
+        {
+          "index": 3,
+          "type": "burst"
+        },
+        {
+          "index": 5,
+          "type": "gather"
+        }
+      ],
+      "actions": [
+        {
+          "kind": "cross",
+          "index": 4
+        },
+        {
+          "kind": "quench"
+        }
+      ]
+    },
+    {
+      "id": "M06-T5",
+      "specials": [
+        {
+          "index": 3,
+          "type": "gather"
+        },
+        {
+          "index": 9,
+          "type": "keep"
+        }
+      ],
+      "actions": [
+        {
+          "kind": "quench"
+        },
+        {
+          "kind": "temper"
+        }
+      ]
+    },
+    {
+      "id": "B14",
+      "specials": [
+        {
+          "index": 2,
+          "type": "gather"
+        },
+        {
+          "index": 4,
+          "type": "burst"
+        }
+      ],
+      "actions": [
+        {
+          "kind": "cross",
+          "index": 9
+        }
+      ]
+    },
+    {
+      "id": "D15",
+      "specials": [
+        {
+          "index": 22,
+          "type": "gather"
+        },
+        {
+          "index": 23,
+          "type": "keep"
+        }
+      ],
+      "actions": [
+        {
+          "kind": "quench"
+        },
+        {
+          "kind": "cross",
+          "index": 2
+        }
+      ]
+    },
+    {
+      "id": "H15",
+      "specials": [
+        {
+          "index": 17,
+          "type": "gather"
+        },
+        {
+          "index": 0,
+          "type": "keep"
+        }
+      ],
+      "actions": [
+        {
+          "kind": "cross",
+          "index": 4
+        },
+        {
+          "kind": "quench"
+        }
+      ]
+    },
+    {
+      "id": "M07-T5",
+      "specials": [
+        {
+          "index": 23,
+          "type": "burst"
+        },
+        {
+          "index": 6,
+          "type": "gather"
+        }
+      ],
+      "actions": [
+        {
+          "kind": "temper"
+        }
+      ]
+    },
+    {
+      "id": "B15",
+      "specials": [
+        {
+          "index": 9,
+          "type": "gather"
+        },
+        {
+          "index": 16,
+          "type": "burst"
+        }
+      ],
+      "actions": [
+        {
+          "kind": "temper"
+        }
+      ]
+    },
+    {
+      "id": "T11",
+      "specials": [
+        {
+          "index": 13,
+          "type": "gather"
+        },
+        {
+          "index": 3,
+          "type": "keep"
+        }
+      ],
+      "actions": [
+        {
+          "kind": "heavy",
+          "index": 15
+        },
+        {
+          "kind": "cross",
+          "index": 14
+        },
+        {
+          "kind": "heavy",
+          "index": 2
+        },
+        {
+          "kind": "heavy",
+          "index": 3
+        },
+        {
+          "kind": "heavy",
+          "index": 6
+        }
+      ]
+    },
+    {
+      "id": "D16",
+      "specials": [
+        {
+          "index": 19,
+          "type": "gather"
+        },
+        {
+          "index": 31,
+          "type": "burst"
+        }
+      ],
+      "actions": [
+        {
+          "kind": "heavy",
+          "index": 6
+        },
+        {
+          "kind": "cross",
+          "index": 1
+        },
+        {
+          "kind": "heavy",
+          "index": 11
+        },
+        {
+          "kind": "heavy",
+          "index": 6
+        },
+        {
+          "kind": "heavy",
+          "index": 7
+        }
+      ]
+    },
+    {
+      "id": "H16",
+      "specials": [
+        {
+          "index": 22,
+          "type": "burst"
+        },
+        {
+          "index": 3,
+          "type": "keep"
+        }
+      ],
+      "actions": [
+        {
+          "kind": "cross",
+          "index": 20
+        },
+        {
+          "kind": "heavy",
+          "index": 23
+        },
+        {
+          "kind": "heavy",
+          "index": 22
+        },
+        {
+          "kind": "heavy",
+          "index": 21
+        }
+      ]
+    },
+    {
+      "id": "M04-T6",
+      "specials": [
+        {
+          "index": 24,
+          "type": "keep"
+        },
+        {
+          "index": 4,
+          "type": "gather"
+        }
+      ],
+      "actions": [
+        {
+          "kind": "heavy",
+          "index": 7
+        },
+        {
+          "kind": "cross",
+          "index": 6
+        },
+        {
+          "kind": "heavy",
+          "index": 4
+        },
+        {
+          "kind": "heavy",
+          "index": 3
+        }
+      ]
+    },
+    {
+      "id": "B16",
+      "specials": [
+        {
+          "index": 12,
+          "type": "burst"
+        },
+        {
+          "index": 23,
+          "type": "gather"
+        }
+      ],
+      "actions": [
+        {
+          "kind": "heavy",
+          "index": 17
+        },
+        {
+          "kind": "cross",
+          "index": 12
+        },
+        {
+          "kind": "heavy",
+          "index": 22
+        }
+      ]
+    },
+    {
+      "id": "T12",
+      "specials": [
+        {
+          "index": 8,
+          "type": "burst"
+        },
+        {
+          "index": 13,
+          "type": "gather"
+        }
+      ],
+      "actions": [
+        {
+          "kind": "cross",
+          "index": 5
+        },
+        {
+          "kind": "quench"
+        }
+      ]
+    },
+    {
+      "id": "D17",
+      "specials": [
+        {
+          "index": 3,
+          "type": "keep"
+        },
+        {
+          "index": 16,
+          "type": "gather"
+        }
+      ],
+      "actions": [
+        {
+          "kind": "cross",
+          "index": 6
+        },
+        {
+          "kind": "quench"
+        }
+      ]
+    },
+    {
+      "id": "H17",
+      "specials": [
+        {
+          "index": 13,
+          "type": "burst"
+        },
+        {
+          "index": 30,
+          "type": "gather"
+        }
+      ],
+      "actions": [
+        {
+          "kind": "cross",
+          "index": 13
+        }
+      ]
+    },
+    {
+      "id": "M05-T6",
+      "specials": [
+        {
+          "index": 23,
+          "type": "keep"
+        },
+        {
+          "index": 18,
+          "type": "gather"
+        }
+      ],
+      "actions": [
+        {
+          "kind": "quench"
+        },
+        {
+          "kind": "heavy",
+          "index": 25
+        },
+        {
+          "kind": "cross",
+          "index": 20
+        },
+        {
+          "kind": "heavy",
+          "index": 10
+        },
+        {
+          "kind": "heavy",
+          "index": 2
+        }
+      ]
+    },
+    {
+      "id": "B17",
+      "specials": [
+        {
+          "index": 18,
+          "type": "burst"
+        },
+        {
+          "index": 7,
+          "type": "keep"
+        }
+      ],
+      "actions": [
+        {
+          "kind": "cross",
+          "index": 6
+        },
+        {
+          "kind": "quench"
+        }
+      ]
+    },
+    {
+      "id": "D18",
+      "specials": [
+        {
+          "index": 4,
+          "type": "keep"
+        },
+        {
+          "index": 20,
+          "type": "burst"
+        }
+      ],
+      "actions": [
+        {
+          "kind": "cross",
+          "index": 20
+        },
+        {
+          "kind": "temper"
+        }
+      ]
+    },
+    {
+      "id": "H18",
+      "specials": [
+        {
+          "index": 16,
+          "type": "burst"
+        },
+        {
+          "index": 7,
+          "type": "gather"
+        }
+      ],
+      "actions": [
+        {
+          "kind": "cross",
+          "index": 8
+        },
+        {
+          "kind": "quench"
+        }
+      ]
+    },
+    {
+      "id": "M08-T6",
+      "specials": [
+        {
+          "index": 25,
+          "type": "burst"
+        },
+        {
+          "index": 15,
+          "type": "gather"
+        }
+      ],
+      "actions": [
+        {
+          "kind": "quench"
+        },
+        {
+          "kind": "cross",
+          "index": 20
+        },
+        {
+          "kind": "light",
+          "index": 0
+        }
+      ]
+    }
+  ]
+}

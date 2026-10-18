@@ -1,0 +1,2624 @@
+{
+  "combinations": 116842,
+  "results": [
+    {
+      "id": "B01",
+      "best": {
+        "rank": 2.1111111111111116,
+        "recipe": [
+          {
+            "id": "ore_iron_raw",
+            "count": 6
+          }
+        ],
+        "sum": [
+          132,
+          144,
+          120,
+          120
+        ],
+        "ratios": [
+          1.1,
+          1.3333333333333333,
+          1.1111111111111112,
+          1.1111111111111112
+        ]
+      },
+      "early": true
+    },
+    {
+      "id": "B02",
+      "best": {
+        "rank": 53,
+        "recipe": [
+          {
+            "id": "ore_iron_raw",
+            "count": 4
+          },
+          {
+            "id": "ore_tin_raw",
+            "count": 2
+          },
+          {
+            "id": "ore_nickel_raw",
+            "count": 1
+          }
+        ],
+        "sum": [
+          132,
+          186,
+          186,
+          140
+        ],
+        "ratios": [
+          1.0476190476190477,
+          1.1071428571428572,
+          1.1071428571428572,
+          1
+        ]
+      },
+      "early": true
+    },
+    {
+      "id": "B03",
+      "best": {
+        "rank": 2.1111111111111116,
+        "recipe": [
+          {
+            "id": "ore_iron_raw",
+            "count": 6
+          }
+        ],
+        "sum": [
+          132,
+          144,
+          120,
+          120
+        ],
+        "ratios": [
+          1,
+          1.3333333333333333,
+          1,
+          1.1111111111111112
+        ]
+      },
+      "early": true
+    },
+    {
+      "id": "B04",
+      "best": {
+        "rank": 106.71428571428571,
+        "recipe": [
+          {
+            "id": "ore_iron_raw",
+            "count": 2
+          },
+          {
+            "id": "ore_bauxite_raw",
+            "count": 1
+          },
+          {
+            "id": "ore_chromite_raw",
+            "count": 2
+          }
+        ],
+        "sum": [
+          142,
+          104,
+          142,
+          96
+        ],
+        "ratios": [
+          1.0142857142857142,
+          1.1555555555555554,
+          1.290909090909091,
+          1.3714285714285714
+        ]
+      },
+      "early": true
+    },
+    {
+      "id": "B05",
+      "best": {
+        "rank": 103,
+        "recipe": [
+          {
+            "id": "ore_copper_raw",
+            "count": 4
+          },
+          {
+            "id": "ore_tin_raw",
+            "count": 2
+          },
+          {
+            "id": "ore_chromite_raw",
+            "count": 2
+          }
+        ],
+        "sum": [
+          148,
+          240,
+          212,
+          208
+        ],
+        "ratios": [
+          1.0277777777777777,
+          1.6666666666666667,
+          1.325,
+          1
+        ]
+      },
+      "early": true
+    },
+    {
+      "id": "B06",
+      "best": {
+        "rank": 57,
+        "recipe": [
+          {
+            "id": "ore_iron_raw",
+            "count": 5
+          },
+          {
+            "id": "ore_chromite_raw",
+            "count": 1
+          }
+        ],
+        "sum": [
+          154,
+          134,
+          142,
+          126
+        ],
+        "ratios": [
+          1.0694444444444444,
+          1.2407407407407407,
+          1.0757575757575757,
+          1.5
+        ]
+      },
+      "early": true
+    },
+    {
+      "id": "B07",
+      "best": {
+        "rank": 53.14285714285714,
+        "recipe": [
+          {
+            "id": "ore_iron_raw",
+            "count": 5
+          },
+          {
+            "id": "ore_tin_raw",
+            "count": 1
+          },
+          {
+            "id": "ore_manganese_raw",
+            "count": 1
+          }
+        ],
+        "sum": [
+          146,
+          170,
+          184,
+          142
+        ],
+        "ratios": [
+          1.042857142857143,
+          1.0119047619047619,
+          1.010989010989011,
+          1.0142857142857142
+        ]
+      },
+      "early": true
+    },
+    {
+      "id": "B08",
+      "best": {
+        "rank": 55.22222222222222,
+        "recipe": [
+          {
+            "id": "ore_iron_raw",
+            "count": 4
+          },
+          {
+            "id": "ore_copper_raw",
+            "count": 1
+          },
+          {
+            "id": "ore_iron_sand_highcarbon",
+            "count": 1
+          }
+        ],
+        "sum": [
+          144,
+          148,
+          112,
+          132
+        ],
+        "ratios": [
+          1,
+          1.0277777777777777,
+          1.037037037037037,
+          1.2222222222222223
+        ]
+      },
+      "early": true
+    },
+    {
+      "id": "B09",
+      "best": {
+        "rank": 54.708333333333336,
+        "recipe": [
+          {
+            "id": "ore_iron_raw",
+            "count": 5
+          },
+          {
+            "id": "ore_iron_sand_highcarbon",
+            "count": 1
+          }
+        ],
+        "sum": [
+          158,
+          128,
+          120,
+          122
+        ],
+        "ratios": [
+          1.0972222222222223,
+          1.0666666666666667,
+          1,
+          1.2708333333333333
+        ]
+      },
+      "early": true
+    },
+    {
+      "id": "B10",
+      "best": {
+        "rank": 106.33333333333333,
+        "recipe": [
+          {
+            "id": "ore_iron_raw",
+            "count": 4
+          },
+          {
+            "id": "ore_iron_sand_highcarbon",
+            "count": 1
+          },
+          {
+            "id": "ore_chromite_raw",
+            "count": 1
+          }
+        ],
+        "sum": [
+          180,
+          118,
+          142,
+          128
+        ],
+        "ratios": [
+          1,
+          1.0925925925925926,
+          1.0757575757575757,
+          1.3333333333333333
+        ]
+      },
+      "early": true
+    },
+    {
+      "id": "B11",
+      "best": {
+        "rank": 152.17857142857142,
+        "recipe": [
+          {
+            "id": "ore_copper_raw",
+            "count": 5
+          },
+          {
+            "id": "ore_chromite_raw",
+            "count": 3
+          }
+        ],
+        "sum": [
+          172,
+          262,
+          186,
+          228
+        ],
+        "ratios": [
+          1.1944444444444444,
+          1.6375,
+          1.0568181818181819,
+          1.0178571428571428
+        ]
+      },
+      "early": true
+    },
+    {
+      "id": "B12",
+      "best": {
+        "rank": 153.95238095238096,
+        "recipe": [
+          {
+            "id": "ore_iron_raw",
+            "count": 4
+          },
+          {
+            "id": "ore_manganese_raw",
+            "count": 2
+          },
+          {
+            "id": "ore_titanium_raw",
+            "count": 1
+          }
+        ],
+        "sum": [
+          160,
+          198,
+          196,
+          138
+        ],
+        "ratios": [
+          1.0389610389610389,
+          1.1785714285714286,
+          1,
+          1.0952380952380953
+        ]
+      },
+      "early": true
+    },
+    {
+      "id": "B13",
+      "best": {
+        "rank": 110.66666666666667,
+        "recipe": [
+          {
+            "id": "ore_iron_raw",
+            "count": 3
+          },
+          {
+            "id": "ore_chromite_raw",
+            "count": 2
+          }
+        ],
+        "sum": [
+          154,
+          100,
+          144,
+          112
+        ],
+        "ratios": [
+          1.0266666666666666,
+          1,
+          1.309090909090909,
+          1.8666666666666667
+        ]
+      },
+      "early": true
+    },
+    {
+      "id": "B14",
+      "best": {
+        "rank": 253.41666666666666,
+        "recipe": [
+          {
+            "id": "ore_tin_raw",
+            "count": 1
+          },
+          {
+            "id": "ore_chromite_raw",
+            "count": 2
+          },
+          {
+            "id": "ore_titanium_raw",
+            "count": 3
+          }
+        ],
+        "sum": [
+          186,
+          160,
+          208,
+          100
+        ],
+        "ratios": [
+          1.0333333333333334,
+          1.0256410256410255,
+          1.9259259259259258,
+          1.0416666666666667
+        ]
+      },
+      "early": true
+    },
+    {
+      "id": "B15",
+      "best": {
+        "rank": 55.125,
+        "recipe": [
+          {
+            "id": "ore_iron_raw",
+            "count": 5
+          },
+          {
+            "id": "ore_chromite_raw",
+            "count": 1
+          }
+        ],
+        "sum": [
+          154,
+          134,
+          142,
+          126
+        ],
+        "ratios": [
+          1.0694444444444444,
+          1.0151515151515151,
+          1.1833333333333333,
+          1.3125
+        ]
+      },
+      "early": true
+    },
+    {
+      "id": "B16",
+      "best": {
+        "rank": 152.17857142857142,
+        "recipe": [
+          {
+            "id": "ore_copper_raw",
+            "count": 5
+          },
+          {
+            "id": "ore_chromite_raw",
+            "count": 3
+          }
+        ],
+        "sum": [
+          172,
+          262,
+          186,
+          228
+        ],
+        "ratios": [
+          1.075,
+          1.8194444444444444,
+          1.0568181818181819,
+          1.0178571428571428
+        ]
+      },
+      "early": true
+    },
+    {
+      "id": "B17",
+      "best": {
+        "rank": 153,
+        "recipe": [
+          {
+            "id": "ore_iron_raw",
+            "count": 4
+          },
+          {
+            "id": "ore_chromite_raw",
+            "count": 1
+          },
+          {
+            "id": "ore_titanium_raw",
+            "count": 2
+          }
+        ],
+        "sum": [
+          188,
+          186,
+          178,
+          126
+        ],
+        "ratios": [
+          1.032967032967033,
+          1.021978021978022,
+          1.0595238095238095,
+          1
+        ]
+      },
+      "early": true
+    },
+    {
+      "id": "T01",
+      "best": {
+        "rank": 52.416666666666664,
+        "recipe": [
+          {
+            "id": "ore_iron_raw",
+            "count": 2
+          },
+          {
+            "id": "ore_titanium_raw",
+            "count": 1
+          }
+        ],
+        "sum": [
+          72,
+          86,
+          68,
+          50
+        ],
+        "ratios": [
+          1,
+          1.7916666666666667,
+          1.0303030303030303,
+          1.0416666666666667
+        ]
+      },
+      "early": true
+    },
+    {
+      "id": "T02",
+      "best": {
+        "rank": 2,
+        "recipe": [
+          {
+            "id": "ore_copper_raw",
+            "count": 1
+          },
+          {
+            "id": "ore_tin_raw",
+            "count": 2
+          }
+        ],
+        "sum": [
+          36,
+          80,
+          92,
+          66
+        ],
+        "ratios": [
+          1,
+          1.3333333333333333,
+          1.393939393939394,
+          1
+        ]
+      },
+      "early": true
+    },
+    {
+      "id": "T03",
+      "best": {
+        "rank": 54.916666666666664,
+        "recipe": [
+          {
+            "id": "ore_iron_raw",
+            "count": 2
+          },
+          {
+            "id": "ore_iron_sand_highcarbon",
+            "count": 1
+          }
+        ],
+        "sum": [
+          92,
+          56,
+          60,
+          62
+        ],
+        "ratios": [
+          1.1794871794871795,
+          1.037037037037037,
+          1,
+          1.2916666666666667
+        ]
+      },
+      "early": true
+    },
+    {
+      "id": "T04",
+      "best": {
+        "rank": 53,
+        "recipe": [
+          {
+            "id": "ore_iron_raw",
+            "count": 1
+          },
+          {
+            "id": "ore_copper_raw",
+            "count": 2
+          },
+          {
+            "id": "ore_manganese_raw",
+            "count": 1
+          }
+        ],
+        "sum": [
+          60,
+          144,
+          88,
+          104
+        ],
+        "ratios": [
+          1.25,
+          1.6363636363636365,
+          1,
+          1
+        ]
+      },
+      "early": true
+    },
+    {
+      "id": "T05",
+      "best": {
+        "rank": 54.85185185185185,
+        "recipe": [
+          {
+            "id": "ore_iron_raw",
+            "count": 1
+          },
+          {
+            "id": "ore_tin_raw",
+            "count": 1
+          },
+          {
+            "id": "ore_chromite_raw",
+            "count": 1
+          }
+        ],
+        "sum": [
+          80,
+          56,
+          102,
+          64
+        ],
+        "ratios": [
+          1.1111111111111112,
+          1.037037037037037,
+          1.2142857142857142,
+          1.1851851851851851
+        ]
+      },
+      "early": true
+    },
+    {
+      "id": "T06",
+      "best": {
+        "rank": 2.740740740740742,
+        "recipe": [
+          {
+            "id": "ore_iron_raw",
+            "count": 2
+          },
+          {
+            "id": "ore_tin_raw",
+            "count": 1
+          }
+        ],
+        "sum": [
+          58,
+          66,
+          80,
+          58
+        ],
+        "ratios": [
+          1.6111111111111112,
+          1,
+          1.1111111111111112,
+          1.0740740740740742
+        ]
+      },
+      "early": true
+    },
+    {
+      "id": "T07",
+      "best": {
+        "rank": 104.9047619047619,
+        "recipe": [
+          {
+            "id": "ore_tin_raw",
+            "count": 1
+          },
+          {
+            "id": "ore_iron_sand_highcarbon",
+            "count": 1
+          },
+          {
+            "id": "ore_titanium_raw",
+            "count": 1
+          }
+        ],
+        "sum": [
+          90,
+          64,
+          88,
+          50
+        ],
+        "ratios": [
+          1,
+          1.1851851851851851,
+          1.1282051282051282,
+          1.1904761904761905
+        ]
+      },
+      "early": true
+    },
+    {
+      "id": "T08",
+      "best": {
+        "rank": 1003,
+        "recipe": [
+          {
+            "id": "ore_copper_raw",
+            "count": 1
+          },
+          {
+            "id": "ore_tin_raw",
+            "count": 3
+          },
+          {
+            "id": "ore_tungsten_raw",
+            "count": 1
+          }
+        ],
+        "sum": [
+          108,
+          104,
+          162,
+          140
+        ],
+        "ratios": [
+          1.35,
+          1.04,
+          1.1571428571428573,
+          1
+        ]
+      },
+      "early": true
+    },
+    {
+      "id": "T09",
+      "best": {
+        "rank": 154.07142857142858,
+        "recipe": [
+          {
+            "id": "ore_iron_raw",
+            "count": 1
+          },
+          {
+            "id": "ore_iron_sand_highcarbon",
+            "count": 1
+          },
+          {
+            "id": "ore_titanium_raw",
+            "count": 2
+          }
+        ],
+        "sum": [
+          126,
+          108,
+          96,
+          62
+        ],
+        "ratios": [
+          1.125,
+          1.0384615384615385,
+          1.2,
+          1.1071428571428572
+        ]
+      },
+      "early": true
+    },
+    {
+      "id": "T10",
+      "best": {
+        "rank": 53,
+        "recipe": [
+          {
+            "id": "ore_iron_raw",
+            "count": 1
+          },
+          {
+            "id": "ore_copper_raw",
+            "count": 2
+          },
+          {
+            "id": "ore_manganese_raw",
+            "count": 1
+          }
+        ],
+        "sum": [
+          60,
+          144,
+          88,
+          104
+        ],
+        "ratios": [
+          1.0714285714285714,
+          1.5,
+          1,
+          1
+        ]
+      },
+      "early": true
+    },
+    {
+      "id": "T11",
+      "best": {
+        "rank": 58.83333333333333,
+        "recipe": [
+          {
+            "id": "ore_iron_raw",
+            "count": 1
+          },
+          {
+            "id": "ore_copper_raw",
+            "count": 1
+          },
+          {
+            "id": "ore_chromite_raw",
+            "count": 1
+          }
+        ],
+        "sum": [
+          74,
+          82,
+          74,
+          76
+        ],
+        "ratios": [
+          1.0277777777777777,
+          1.0512820512820513,
+          1.0277777777777777,
+          1.5833333333333333
+        ]
+      },
+      "early": true
+    },
+    {
+      "id": "T12",
+      "best": {
+        "rank": 1003.1333333333333,
+        "recipe": [
+          {
+            "id": "ore_copper_raw",
+            "count": 2
+          },
+          {
+            "id": "ore_tin_raw",
+            "count": 2
+          },
+          {
+            "id": "ore_tungsten_raw",
+            "count": 1
+          }
+        ],
+        "sum": [
+          102,
+          130,
+          134,
+          152
+        ],
+        "ratios": [
+          1.457142857142857,
+          1.1818181818181819,
+          1.0307692307692307,
+          1.0133333333333334
+        ]
+      },
+      "early": true
+    },
+    {
+      "id": "D01",
+      "best": {
+        "rank": 2,
+        "recipe": [
+          {
+            "id": "ore_copper_raw",
+            "count": 2
+          },
+          {
+            "id": "ore_tin_raw",
+            "count": 4
+          }
+        ],
+        "sum": [
+          72,
+          160,
+          184,
+          132
+        ],
+        "ratios": [
+          1,
+          1.3333333333333333,
+          1.5333333333333334,
+          1
+        ]
+      },
+      "early": true
+    },
+    {
+      "id": "D02",
+      "best": {
+        "rank": 3.3409090909090917,
+        "recipe": [
+          {
+            "id": "ore_iron_raw",
+            "count": 1
+          },
+          {
+            "id": "ore_copper_raw",
+            "count": 3
+          },
+          {
+            "id": "ore_tin_raw",
+            "count": 4
+          }
+        ],
+        "sum": [
+          102,
+          228,
+          216,
+          182
+        ],
+        "ratios": [
+          1.0625,
+          1.1875,
+          1.0384615384615385,
+          1.0340909090909092
+        ]
+      },
+      "early": true
+    },
+    {
+      "id": "D03",
+      "best": {
+        "rank": 2.1111111111111116,
+        "recipe": [
+          {
+            "id": "ore_iron_raw",
+            "count": 6
+          }
+        ],
+        "sum": [
+          132,
+          144,
+          120,
+          120
+        ],
+        "ratios": [
+          1.8333333333333333,
+          1,
+          1,
+          1.1111111111111112
+        ]
+      },
+      "early": true
+    },
+    {
+      "id": "D04",
+      "best": {
+        "rank": 103,
+        "recipe": [
+          {
+            "id": "ore_copper_raw",
+            "count": 1
+          },
+          {
+            "id": "ore_tin_raw",
+            "count": 4
+          },
+          {
+            "id": "ore_chromite_raw",
+            "count": 2
+          }
+        ],
+        "sum": [
+          152,
+          144,
+          256,
+          154
+        ],
+        "ratios": [
+          1.2063492063492063,
+          1.0285714285714285,
+          1.4065934065934067,
+          1
+        ]
+      },
+      "early": true
+    },
+    {
+      "id": "D05",
+      "best": {
+        "rank": 3.000000000000001,
+        "recipe": [
+          {
+            "id": "ore_copper_raw",
+            "count": 2
+          },
+          {
+            "id": "ore_tin_raw",
+            "count": 4
+          }
+        ],
+        "sum": [
+          72,
+          160,
+          184,
+          132
+        ],
+        "ratios": [
+          1,
+          1.0256410256410255,
+          1.5333333333333334,
+          1.1
+        ]
+      },
+      "early": true
+    },
+    {
+      "id": "D06",
+      "best": {
+        "rank": 53.3125,
+        "recipe": [
+          {
+            "id": "ore_copper_raw",
+            "count": 4
+          },
+          {
+            "id": "ore_tin_raw",
+            "count": 3
+          },
+          {
+            "id": "ore_manganese_raw",
+            "count": 1
+          }
+        ],
+        "sum": [
+          96,
+          262,
+          212,
+          198
+        ],
+        "ratios": [
+          1,
+          1.2596153846153846,
+          1.0192307692307692,
+          1.03125
+        ]
+      },
+      "early": true
+    },
+    {
+      "id": "D07",
+      "best": {
+        "rank": 6,
+        "recipe": [
+          {
+            "id": "ore_iron_raw",
+            "count": 1
+          },
+          {
+            "id": "ore_copper_raw",
+            "count": 1
+          },
+          {
+            "id": "ore_tin_raw",
+            "count": 3
+          }
+        ],
+        "sum": [
+          72,
+          122,
+          152,
+          104
+        ],
+        "ratios": [
+          1.0285714285714285,
+          1.0166666666666666,
+          1.3818181818181818,
+          1.3
+        ]
+      },
+      "early": true
+    },
+    {
+      "id": "D08",
+      "best": {
+        "rank": 152.17857142857142,
+        "recipe": [
+          {
+            "id": "ore_copper_raw",
+            "count": 5
+          },
+          {
+            "id": "ore_chromite_raw",
+            "count": 3
+          }
+        ],
+        "sum": [
+          172,
+          262,
+          186,
+          228
+        ],
+        "ratios": [
+          1.5357142857142858,
+          1.6375,
+          1.0568181818181819,
+          1.0178571428571428
+        ]
+      },
+      "early": true
+    },
+    {
+      "id": "D09",
+      "best": {
+        "rank": 103,
+        "recipe": [
+          {
+            "id": "ore_copper_raw",
+            "count": 2
+          },
+          {
+            "id": "ore_tin_raw",
+            "count": 4
+          },
+          {
+            "id": "ore_iron_sand_highcarbon",
+            "count": 2
+          }
+        ],
+        "sum": [
+          168,
+          176,
+          224,
+          176
+        ],
+        "ratios": [
+          1.1666666666666667,
+          1,
+          1,
+          1
+        ]
+      },
+      "early": true
+    },
+    {
+      "id": "D10",
+      "best": {
+        "rank": 1203.0666666666666,
+        "recipe": [
+          {
+            "id": "ore_copper_raw",
+            "count": 5
+          },
+          {
+            "id": "ore_manganese_raw",
+            "count": 4
+          },
+          {
+            "id": "ore_tungsten_raw",
+            "count": 1
+          }
+        ],
+        "sum": [
+          186,
+          354,
+          266,
+          302
+        ],
+        "ratios": [
+          1.55,
+          1.77,
+          1.1083333333333334,
+          1.0066666666666666
+        ]
+      },
+      "early": true
+    },
+    {
+      "id": "D11",
+      "best": {
+        "rank": 4.142857142857143,
+        "recipe": [
+          {
+            "id": "ore_iron_raw",
+            "count": 3
+          },
+          {
+            "id": "ore_copper_raw",
+            "count": 2
+          },
+          {
+            "id": "ore_tin_raw",
+            "count": 2
+          }
+        ],
+        "sum": [
+          110,
+          196,
+          164,
+          156
+        ],
+        "ratios": [
+          1.3095238095238095,
+          1,
+          1.0649350649350648,
+          1.1142857142857143
+        ]
+      },
+      "early": true
+    },
+    {
+      "id": "D12",
+      "best": {
+        "rank": 3.6493506493506485,
+        "recipe": [
+          {
+            "id": "ore_iron_raw",
+            "count": 1
+          },
+          {
+            "id": "ore_copper_raw",
+            "count": 3
+          },
+          {
+            "id": "ore_tin_raw",
+            "count": 3
+          }
+        ],
+        "sum": [
+          88,
+          210,
+          176,
+          164
+        ],
+        "ratios": [
+          1.0476190476190477,
+          1.0714285714285714,
+          1.0476190476190477,
+          1.0649350649350648
+        ]
+      },
+      "early": true
+    },
+    {
+      "id": "D13",
+      "best": {
+        "rank": 8.428571428571429,
+        "recipe": [
+          {
+            "id": "ore_iron_raw",
+            "count": 3
+          },
+          {
+            "id": "ore_copper_raw",
+            "count": 1
+          },
+          {
+            "id": "ore_tin_raw",
+            "count": 1
+          }
+        ],
+        "sum": [
+          88,
+          134,
+          112,
+          108
+        ],
+        "ratios": [
+          1.1,
+          1.0307692307692307,
+          1.018181818181818,
+          1.542857142857143
+        ]
+      },
+      "early": true
+    },
+    {
+      "id": "D14",
+      "best": {
+        "rank": 203.19230769230768,
+        "recipe": [
+          {
+            "id": "ore_copper_raw",
+            "count": 3
+          },
+          {
+            "id": "ore_tin_raw",
+            "count": 1
+          },
+          {
+            "id": "ore_chromite_raw",
+            "count": 4
+          }
+        ],
+        "sum": [
+          214,
+          206,
+          244,
+          212
+        ],
+        "ratios": [
+          1.3375,
+          1.2875,
+          1.0892857142857142,
+          1.0192307692307692
+        ]
+      },
+      "early": true
+    },
+    {
+      "id": "D15",
+      "best": {
+        "rank": 53.45454545454545,
+        "recipe": [
+          {
+            "id": "ore_copper_raw",
+            "count": 4
+          },
+          {
+            "id": "ore_tin_raw",
+            "count": 3
+          },
+          {
+            "id": "ore_titanium_raw",
+            "count": 1
+          }
+        ],
+        "sum": [
+          102,
+          268,
+          196,
+          184
+        ],
+        "ratios": [
+          1.0625,
+          1.1166666666666667,
+          1.0208333333333333,
+          1.0454545454545454
+        ]
+      },
+      "early": true
+    },
+    {
+      "id": "D16",
+      "best": {
+        "rank": 2203.25,
+        "recipe": [
+          {
+            "id": "ore_copper_raw",
+            "count": 4
+          },
+          {
+            "id": "ore_manganese_raw",
+            "count": 4
+          },
+          {
+            "id": "ore_tungsten_raw",
+            "count": 2
+          }
+        ],
+        "sum": [
+          236,
+          316,
+          284,
+          328
+        ],
+        "ratios": [
+          1.9666666666666666,
+          1.4363636363636363,
+          1.0923076923076922,
+          1.025
+        ]
+      },
+      "early": true
+    },
+    {
+      "id": "D17",
+      "best": {
+        "rank": 53.14285714285714,
+        "recipe": [
+          {
+            "id": "ore_copper_raw",
+            "count": 2
+          },
+          {
+            "id": "ore_tin_raw",
+            "count": 4
+          },
+          {
+            "id": "ore_titanium_raw",
+            "count": 1
+          }
+        ],
+        "sum": [
+          100,
+          198,
+          212,
+          142
+        ],
+        "ratios": [
+          1.1904761904761905,
+          1.010204081632653,
+          1.164835164835165,
+          1.0142857142857142
+        ]
+      },
+      "early": true
+    },
+    {
+      "id": "D18",
+      "best": {
+        "rank": 103.22727272727273,
+        "recipe": [
+          {
+            "id": "ore_copper_raw",
+            "count": 2
+          },
+          {
+            "id": "ore_tin_raw",
+            "count": 4
+          },
+          {
+            "id": "ore_manganese_raw",
+            "count": 2
+          }
+        ],
+        "sum": [
+          116,
+          224,
+          272,
+          180
+        ],
+        "ratios": [
+          1.0357142857142858,
+          1,
+          1.1333333333333333,
+          1.0227272727272727
+        ]
+      },
+      "early": true
+    },
+    {
+      "id": "H01",
+      "best": {
+        "rank": 2.357142857142858,
+        "recipe": [
+          {
+            "id": "ore_tin_raw",
+            "count": 3
+          },
+          {
+            "id": "ore_bauxite_raw",
+            "count": 1
+          }
+        ],
+        "sum": [
+          52,
+          82,
+          138,
+          58
+        ],
+        "ratios": [
+          1.3,
+          1.025,
+          1.9166666666666667,
+          1.0357142857142858
+        ]
+      },
+      "early": true
+    },
+    {
+      "id": "H02",
+      "best": {
+        "rank": 2.444444444444445,
+        "recipe": [
+          {
+            "id": "ore_iron_raw",
+            "count": 2
+          },
+          {
+            "id": "ore_tin_raw",
+            "count": 3
+          }
+        ],
+        "sum": [
+          86,
+          102,
+          160,
+          94
+        ],
+        "ratios": [
+          1.4333333333333333,
+          1.02,
+          1.3333333333333333,
+          1.0444444444444445
+        ]
+      },
+      "early": true
+    },
+    {
+      "id": "H03",
+      "best": {
+        "rank": 3.7499999999999996,
+        "recipe": [
+          {
+            "id": "ore_copper_raw",
+            "count": 2
+          },
+          {
+            "id": "ore_tin_raw",
+            "count": 1
+          },
+          {
+            "id": "ore_bauxite_raw",
+            "count": 2
+          }
+        ],
+        "sum": [
+          50,
+          162,
+          100,
+          86
+        ],
+        "ratios": [
+          1,
+          1.2461538461538462,
+          1,
+          1.075
+        ]
+      },
+      "early": true
+    },
+    {
+      "id": "H04",
+      "best": {
+        "rank": 3.1388888888888884,
+        "recipe": [
+          {
+            "id": "ore_iron_raw",
+            "count": 1
+          },
+          {
+            "id": "ore_copper_raw",
+            "count": 3
+          },
+          {
+            "id": "ore_tin_raw",
+            "count": 2
+          }
+        ],
+        "sum": [
+          74,
+          192,
+          136,
+          146
+        ],
+        "ratios": [
+          1.0277777777777777,
+          1.6,
+          1.1333333333333333,
+          1.0138888888888888
+        ]
+      },
+      "early": true
+    },
+    {
+      "id": "H05",
+      "best": {
+        "rank": 3.1111111111111116,
+        "recipe": [
+          {
+            "id": "ore_copper_raw",
+            "count": 1
+          },
+          {
+            "id": "ore_tin_raw",
+            "count": 5
+          }
+        ],
+        "sum": [
+          78,
+          134,
+          212,
+          120
+        ],
+        "ratios": [
+          1.0833333333333333,
+          1.0151515151515151,
+          1.2619047619047619,
+          1.1111111111111112
+        ]
+      },
+      "early": true
+    },
+    {
+      "id": "H06",
+      "best": {
+        "rank": 4.222222222222223,
+        "recipe": [
+          {
+            "id": "ore_copper_raw",
+            "count": 2
+          },
+          {
+            "id": "ore_tin_raw",
+            "count": 4
+          }
+        ],
+        "sum": [
+          72,
+          160,
+          184,
+          132
+        ],
+        "ratios": [
+          1,
+          1.1111111111111112,
+          1.2777777777777777,
+          1.2222222222222223
+        ]
+      },
+      "early": true
+    },
+    {
+      "id": "H07",
+      "best": {
+        "rank": 3,
+        "recipe": [
+          {
+            "id": "ore_copper_raw",
+            "count": 1
+          },
+          {
+            "id": "ore_tin_raw",
+            "count": 1
+          },
+          {
+            "id": "ore_bauxite_raw",
+            "count": 2
+          }
+        ],
+        "sum": [
+          42,
+          118,
+          88,
+          56
+        ],
+        "ratios": [
+          1.05,
+          1.2291666666666667,
+          1.1,
+          1
+        ]
+      },
+      "early": true
+    },
+    {
+      "id": "H08",
+      "best": {
+        "rank": 4.222222222222223,
+        "recipe": [
+          {
+            "id": "ore_copper_raw",
+            "count": 2
+          },
+          {
+            "id": "ore_tin_raw",
+            "count": 4
+          }
+        ],
+        "sum": [
+          72,
+          160,
+          184,
+          132
+        ],
+        "ratios": [
+          1,
+          1.1111111111111112,
+          1.0222222222222221,
+          1.2222222222222223
+        ]
+      },
+      "early": true
+    },
+    {
+      "id": "H09",
+      "best": {
+        "rank": 3.8333333333333326,
+        "recipe": [
+          {
+            "id": "ore_copper_raw",
+            "count": 2
+          },
+          {
+            "id": "ore_tin_raw",
+            "count": 2
+          },
+          {
+            "id": "ore_bauxite_raw",
+            "count": 2
+          }
+        ],
+        "sum": [
+          64,
+          180,
+          140,
+          104
+        ],
+        "ratios": [
+          1.0666666666666667,
+          1,
+          1.0606060606060606,
+          1.0833333333333333
+        ]
+      },
+      "early": true
+    },
+    {
+      "id": "H10",
+      "best": {
+        "rank": 152.10204081632654,
+        "recipe": [
+          {
+            "id": "ore_copper_raw",
+            "count": 4
+          },
+          {
+            "id": "ore_chromite_raw",
+            "count": 3
+          }
+        ],
+        "sum": [
+          164,
+          218,
+          174,
+          198
+        ],
+        "ratios": [
+          1.6734693877551021,
+          1.4155844155844155,
+          1.0357142857142858,
+          1.010204081632653
+        ]
+      },
+      "early": true
+    },
+    {
+      "id": "H11",
+      "best": {
+        "rank": 54.26984126984127,
+        "recipe": [
+          {
+            "id": "ore_copper_raw",
+            "count": 2
+          },
+          {
+            "id": "ore_tin_raw",
+            "count": 4
+          },
+          {
+            "id": "ore_titanium_raw",
+            "count": 1
+          }
+        ],
+        "sum": [
+          100,
+          198,
+          212,
+          142
+        ],
+        "ratios": [
+          1.1904761904761905,
+          1.0879120879120878,
+          1.0095238095238095,
+          1.126984126984127
+        ]
+      },
+      "early": true
+    },
+    {
+      "id": "H12",
+      "best": {
+        "rank": 55.916666666666664,
+        "recipe": [
+          {
+            "id": "ore_copper_raw",
+            "count": 2
+          },
+          {
+            "id": "ore_tin_raw",
+            "count": 3
+          },
+          {
+            "id": "ore_titanium_raw",
+            "count": 1
+          }
+        ],
+        "sum": [
+          86,
+          180,
+          172,
+          124
+        ],
+        "ratios": [
+          1.1944444444444444,
+          1,
+          1.1944444444444444,
+          1.2916666666666667
+        ]
+      },
+      "early": true
+    },
+    {
+      "id": "H13",
+      "best": {
+        "rank": 106.71428571428571,
+        "recipe": [
+          {
+            "id": "ore_iron_raw",
+            "count": 2
+          },
+          {
+            "id": "ore_bauxite_raw",
+            "count": 1
+          },
+          {
+            "id": "ore_chromite_raw",
+            "count": 2
+          }
+        ],
+        "sum": [
+          142,
+          104,
+          142,
+          96
+        ],
+        "ratios": [
+          1.0142857142857142,
+          1.04,
+          1.290909090909091,
+          1.3714285714285714
+        ]
+      },
+      "early": true
+    },
+    {
+      "id": "H14",
+      "best": {
+        "rank": 103,
+        "recipe": [
+          {
+            "id": "ore_iron_raw",
+            "count": 1
+          },
+          {
+            "id": "ore_tin_raw",
+            "count": 4
+          },
+          {
+            "id": "ore_nickel_raw",
+            "count": 2
+          }
+        ],
+        "sum": [
+          110,
+          204,
+          232,
+          140
+        ],
+        "ratios": [
+          1.3095238095238095,
+          1.0408163265306123,
+          1.0357142857142858,
+          1
+        ]
+      },
+      "early": true
+    },
+    {
+      "id": "H15",
+      "best": {
+        "rank": 57.16666666666667,
+        "recipe": [
+          {
+            "id": "ore_copper_raw",
+            "count": 3
+          },
+          {
+            "id": "ore_tin_raw",
+            "count": 2
+          },
+          {
+            "id": "ore_titanium_raw",
+            "count": 1
+          }
+        ],
+        "sum": [
+          80,
+          206,
+          144,
+          136
+        ],
+        "ratios": [
+          1.1111111111111112,
+          1.0729166666666667,
+          1,
+          1.4166666666666667
+        ]
+      },
+      "early": true
+    },
+    {
+      "id": "H16",
+      "best": {
+        "rank": 1153.3809523809523,
+        "recipe": [
+          {
+            "id": "ore_copper_raw",
+            "count": 3
+          },
+          {
+            "id": "ore_manganese_raw",
+            "count": 3
+          },
+          {
+            "id": "ore_tungsten_raw",
+            "count": 1
+          }
+        ],
+        "sum": [
+          148,
+          234,
+          198,
+          218
+        ],
+        "ratios": [
+          1.510204081632653,
+          1.3928571428571428,
+          1.1785714285714286,
+          1.0380952380952382
+        ]
+      },
+      "early": true
+    },
+    {
+      "id": "H17",
+      "best": {
+        "rank": 104.25,
+        "recipe": [
+          {
+            "id": "ore_copper_raw",
+            "count": 2
+          },
+          {
+            "id": "ore_tin_raw",
+            "count": 4
+          },
+          {
+            "id": "ore_manganese_raw",
+            "count": 2
+          }
+        ],
+        "sum": [
+          116,
+          224,
+          272,
+          180
+        ],
+        "ratios": [
+          1.0357142857142858,
+          1,
+          1.0625,
+          1.125
+        ]
+      },
+      "early": true
+    },
+    {
+      "id": "H18",
+      "best": {
+        "rank": 56.75,
+        "recipe": [
+          {
+            "id": "ore_copper_raw",
+            "count": 3
+          },
+          {
+            "id": "ore_tin_raw",
+            "count": 3
+          },
+          {
+            "id": "ore_titanium_raw",
+            "count": 1
+          }
+        ],
+        "sum": [
+          94,
+          224,
+          184,
+          154
+        ],
+        "ratios": [
+          1.119047619047619,
+          1,
+          1.010989010989011,
+          1.375
+        ]
+      },
+      "early": true
+    },
+    {
+      "id": "M01-T1",
+      "best": {
+        "rank": 352,
+        "recipe": [
+          {
+            "id": "ore_copper_raw",
+            "count": 7
+          },
+          {
+            "id": "ore_chromite_raw",
+            "count": 7
+          }
+        ],
+        "sum": [
+          364,
+          406,
+          378,
+          392
+        ],
+        "ratios": [
+          1.8571428571428572,
+          1.3181818181818181,
+          1.0384615384615385,
+          1
+        ]
+      },
+      "early": true
+    },
+    {
+      "id": "M02-T1",
+      "best": {
+        "rank": 303,
+        "recipe": [
+          {
+            "id": "ore_iron_raw",
+            "count": 4
+          },
+          {
+            "id": "ore_copper_raw",
+            "count": 6
+          },
+          {
+            "id": "ore_chromite_raw",
+            "count": 6
+          }
+        ],
+        "sum": [
+          400,
+          444,
+          404,
+          416
+        ],
+        "ratios": [
+          1.0416666666666667,
+          1.3875,
+          1.0520833333333333,
+          1
+        ]
+      },
+      "early": true
+    },
+    {
+      "id": "M07-T1",
+      "best": {
+        "rank": 3.158730158730158,
+        "recipe": [
+          {
+            "id": "ore_copper_raw",
+            "count": 5
+          },
+          {
+            "id": "ore_tin_raw",
+            "count": 5
+          },
+          {
+            "id": "ore_bauxite_raw",
+            "count": 4
+          }
+        ],
+        "sum": [
+          150,
+          422,
+          332,
+          256
+        ],
+        "ratios": [
+          1.0714285714285714,
+          1.1593406593406594,
+          1.077922077922078,
+          1.0158730158730158
+        ]
+      },
+      "early": true
+    },
+    {
+      "id": "M03-T2",
+      "best": {
+        "rank": 303.09615384615387,
+        "recipe": [
+          {
+            "id": "ore_copper_raw",
+            "count": 7
+          },
+          {
+            "id": "ore_tin_raw",
+            "count": 3
+          },
+          {
+            "id": "ore_chromite_raw",
+            "count": 6
+          }
+        ],
+        "sum": [
+          362,
+          446,
+          456,
+          420
+        ],
+        "ratios": [
+          1.0284090909090908,
+          1.1614583333333333,
+          1.0961538461538463,
+          1.0096153846153846
+        ]
+      },
+      "early": true
+    },
+    {
+      "id": "M05-T2",
+      "best": {
+        "rank": 103.58730158730158,
+        "recipe": [
+          {
+            "id": "ore_iron_raw",
+            "count": 12
+          },
+          {
+            "id": "ore_chromite_raw",
+            "count": 2
+          }
+        ],
+        "sum": [
+          352,
+          316,
+          324,
+          292
+        ],
+        "ratios": [
+          1.0476190476190477,
+          1.025974025974026,
+          1.051948051948052,
+          1.1587301587301588
+        ]
+      },
+      "early": true
+    },
+    {
+      "id": "M06-T2",
+      "best": {
+        "rank": 203.71428571428572,
+        "recipe": [
+          {
+            "id": "ore_iron_raw",
+            "count": 10
+          },
+          {
+            "id": "ore_nickel_raw",
+            "count": 2
+          },
+          {
+            "id": "ore_chromite_raw",
+            "count": 2
+          }
+        ],
+        "sum": [
+          340,
+          376,
+          336,
+          300
+        ],
+        "ratios": [
+          1.0119047619047619,
+          1.032967032967033,
+          1.0909090909090908,
+          1.0714285714285714
+        ]
+      },
+      "early": true
+    },
+    {
+      "id": "M01-T3",
+      "best": {
+        "rank": 352,
+        "recipe": [
+          {
+            "id": "ore_copper_raw",
+            "count": 7
+          },
+          {
+            "id": "ore_chromite_raw",
+            "count": 7
+          }
+        ],
+        "sum": [
+          364,
+          406,
+          378,
+          392
+        ],
+        "ratios": [
+          1.8571428571428572,
+          1.3181818181818181,
+          1.0384615384615385,
+          1
+        ]
+      },
+      "early": true
+    },
+    {
+      "id": "M04-T3",
+      "best": {
+        "rank": 353.05555555555554,
+        "recipe": [
+          {
+            "id": "ore_iron_raw",
+            "count": 6
+          },
+          {
+            "id": "ore_copper_raw",
+            "count": 2
+          },
+          {
+            "id": "ore_chromite_raw",
+            "count": 7
+          }
+        ],
+        "sum": [
+          456,
+          330,
+          438,
+          362
+        ],
+        "ratios": [
+          1.1692307692307693,
+          1,
+          1.042857142857143,
+          1.0055555555555555
+        ]
+      },
+      "early": true
+    },
+    {
+      "id": "M07-T3",
+      "best": {
+        "rank": 3.158730158730158,
+        "recipe": [
+          {
+            "id": "ore_copper_raw",
+            "count": 5
+          },
+          {
+            "id": "ore_tin_raw",
+            "count": 5
+          },
+          {
+            "id": "ore_bauxite_raw",
+            "count": 4
+          }
+        ],
+        "sum": [
+          150,
+          422,
+          332,
+          256
+        ],
+        "ratios": [
+          1.0714285714285714,
+          1.1593406593406594,
+          1.077922077922078,
+          1.0158730158730158
+        ]
+      },
+      "early": true
+    },
+    {
+      "id": "M02-T4",
+      "best": {
+        "rank": 303,
+        "recipe": [
+          {
+            "id": "ore_iron_raw",
+            "count": 4
+          },
+          {
+            "id": "ore_copper_raw",
+            "count": 6
+          },
+          {
+            "id": "ore_chromite_raw",
+            "count": 6
+          }
+        ],
+        "sum": [
+          400,
+          444,
+          404,
+          416
+        ],
+        "ratios": [
+          1.0416666666666667,
+          1.3875,
+          1.0520833333333333,
+          1
+        ]
+      },
+      "early": true
+    },
+    {
+      "id": "M05-T4",
+      "best": {
+        "rank": 103.58730158730158,
+        "recipe": [
+          {
+            "id": "ore_iron_raw",
+            "count": 12
+          },
+          {
+            "id": "ore_chromite_raw",
+            "count": 2
+          }
+        ],
+        "sum": [
+          352,
+          316,
+          324,
+          292
+        ],
+        "ratios": [
+          1.0476190476190477,
+          1.025974025974026,
+          1.051948051948052,
+          1.1587301587301588
+        ]
+      },
+      "early": true
+    },
+    {
+      "id": "M08-T4",
+      "best": {
+        "rank": 3503.3333333333335,
+        "recipe": [
+          {
+            "id": "ore_copper_raw",
+            "count": 5
+          },
+          {
+            "id": "ore_manganese_raw",
+            "count": 10
+          },
+          {
+            "id": "ore_tungsten_raw",
+            "count": 3
+          }
+        ],
+        "sum": [
+          434,
+          558,
+          590,
+          558
+        ],
+        "ratios": [
+          1.0046296296296295,
+          1.1923076923076923,
+          1.1706349206349207,
+          1.0333333333333334
+        ]
+      },
+      "early": true
+    },
+    {
+      "id": "M03-T5",
+      "best": {
+        "rank": 303.09615384615387,
+        "recipe": [
+          {
+            "id": "ore_copper_raw",
+            "count": 7
+          },
+          {
+            "id": "ore_tin_raw",
+            "count": 3
+          },
+          {
+            "id": "ore_chromite_raw",
+            "count": 6
+          }
+        ],
+        "sum": [
+          362,
+          446,
+          456,
+          420
+        ],
+        "ratios": [
+          1.0284090909090908,
+          1.1614583333333333,
+          1.0961538461538463,
+          1.0096153846153846
+        ]
+      },
+      "early": true
+    },
+    {
+      "id": "M06-T5",
+      "best": {
+        "rank": 203.71428571428572,
+        "recipe": [
+          {
+            "id": "ore_iron_raw",
+            "count": 10
+          },
+          {
+            "id": "ore_nickel_raw",
+            "count": 2
+          },
+          {
+            "id": "ore_chromite_raw",
+            "count": 2
+          }
+        ],
+        "sum": [
+          340,
+          376,
+          336,
+          300
+        ],
+        "ratios": [
+          1.0119047619047619,
+          1.032967032967033,
+          1.0909090909090908,
+          1.0714285714285714
+        ]
+      },
+      "early": true
+    },
+    {
+      "id": "M07-T5",
+      "best": {
+        "rank": 3.158730158730158,
+        "recipe": [
+          {
+            "id": "ore_copper_raw",
+            "count": 5
+          },
+          {
+            "id": "ore_tin_raw",
+            "count": 5
+          },
+          {
+            "id": "ore_bauxite_raw",
+            "count": 4
+          }
+        ],
+        "sum": [
+          150,
+          422,
+          332,
+          256
+        ],
+        "ratios": [
+          1.0714285714285714,
+          1.1593406593406594,
+          1.077922077922078,
+          1.0158730158730158
+        ]
+      },
+      "early": true
+    },
+    {
+      "id": "M04-T6",
+      "best": {
+        "rank": 353.05555555555554,
+        "recipe": [
+          {
+            "id": "ore_iron_raw",
+            "count": 6
+          },
+          {
+            "id": "ore_copper_raw",
+            "count": 2
+          },
+          {
+            "id": "ore_chromite_raw",
+            "count": 7
+          }
+        ],
+        "sum": [
+          456,
+          330,
+          438,
+          362
+        ],
+        "ratios": [
+          1.1692307692307693,
+          1,
+          1.042857142857143,
+          1.0055555555555555
+        ]
+      },
+      "early": true
+    },
+    {
+      "id": "M05-T6",
+      "best": {
+        "rank": 103.58730158730158,
+        "recipe": [
+          {
+            "id": "ore_iron_raw",
+            "count": 12
+          },
+          {
+            "id": "ore_chromite_raw",
+            "count": 2
+          }
+        ],
+        "sum": [
+          352,
+          316,
+          324,
+          292
+        ],
+        "ratios": [
+          1.0476190476190477,
+          1.025974025974026,
+          1.051948051948052,
+          1.1587301587301588
+        ]
+      },
+      "early": true
+    },
+    {
+      "id": "M08-T6",
+      "best": {
+        "rank": 3503.3333333333335,
+        "recipe": [
+          {
+            "id": "ore_copper_raw",
+            "count": 5
+          },
+          {
+            "id": "ore_manganese_raw",
+            "count": 10
+          },
+          {
+            "id": "ore_tungsten_raw",
+            "count": 3
+          }
+        ],
+        "sum": [
+          434,
+          558,
+          590,
+          558
+        ],
+        "ratios": [
+          1.0046296296296295,
+          1.1923076923076923,
+          1.1706349206349207,
+          1.0333333333333334
+        ]
+      },
+      "early": true
+    }
+  ]
+}

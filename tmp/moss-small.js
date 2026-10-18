@@ -1,0 +1,1 @@
+JSON.stringify([...document.querySelector('.body-reading-caption').querySelectorAll('b,small')].map(el=>{let c=getComputedStyle(el);return [el.tagName,el.getBoundingClientRect().height,c.fontSize,c.fontFamily,c.lineHeight,c.verticalAlign];}))

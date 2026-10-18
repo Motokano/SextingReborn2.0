@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="dark">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src data: blob:; connect-src 'none'; font-src 'none'; object-src 'none'; base-uri 'none'">
+<title>百炼工坊 · 83关锻造解谜</title>
+<style>/* INLINE_STYLE */</style>
+</head>
+<body>
+<header class="topbar">
+ <div class="brand"><svg viewBox="0 0 48 48" aria-hidden="true"><path d="M5 18h38l-7 9H25v7h10v5H12v-5h8v-7H12z"/><path d="M29 5h10v7H29zM24 10h5v11h-5z"/></svg><div><h1>百炼工坊</h1><span>锻造解谜 · 离线试玩</span></div></div>
+ <div class="top-progress"><span id="total-progress">0 / 83 件完成</span><div class="progress-track"><i id="total-bar"></i></div></div>
+ <div class="header-actions"><button id="help-open" class="quiet">玩法</button><button id="save-open" class="quiet">存档</button></div>
+</header>
+<div class="workspace">
+ <aside class="campaign" aria-label="关卡目录">
+  <div class="eyebrow">工坊图册 <span>6 CHAPTERS</span></div>
+  <nav id="chapters" aria-label="章节"></nav>
+  <div class="chapter-heading"><h2 id="chapter-name"></h2><span id="chapter-count"></span></div>
+  <div id="level-list" class="level-list"></div>
+  <p class="campaign-note">完成一件，解锁下一件。<br>已完成的部件可以随时重玩。</p>
+ </aside>
+ <main id="game">
+  <div class="level-heading"><div><p class="eyebrow" id="level-kicker"></p><h2 id="level-name"></h2><p id="level-lesson" class="lesson"></p></div><span id="category" class="category"></span></div>
+  <div class="workbench">
+   <div class="bench-top"><div class="case-info"><span class="live-dot"></span><span id="case-label"></span></div><div id="match-status" class="match-status" aria-live="polite"></div></div>
+   <div class="boards">
+    <section class="board-panel"><div class="board-heading"><h3>当前坯料</h3><span>点格落锤</span></div><div id="current-board" class="board"></div></section>
+    <section class="board-panel target-panel"><div class="board-heading"><h3>目标图样</h3><span>逐格吻合</span></div><div id="target-board" class="board"></div></section>
+   </div>
+   <div id="move-detail" class="move-detail" aria-live="polite">点击坯料上的格子，开始第一锤。</div>
+   <div class="operations">
+    <div class="hammer-counter"><span class="operation-name">锤击</span><strong id="hammer-count"></strong><small>点击非零格</small></div>
+    <button id="quench" class="heat-button"><span class="operation-name">淬火</span><strong id="quench-count"></strong><small>全盘＋1</small></button>
+    <button id="temper" class="heat-button"><span class="operation-name">回火</span><strong id="temper-count"></strong><small>减半，向上取整</small></button>
+    <button id="finish" class="finish-button">收工验收<span>对照目标图样</span></button>
+   </div>
+  </div>
+  <div id="result" class="result" hidden aria-live="polite"><div><span id="result-kicker" class="eyebrow"></span><h3 id="result-title"></h3><p id="result-detail"></p></div><button id="next-level" class="primary"></button></div>
+  <div class="lower-controls"><div><button id="undo" class="quiet">撤销一手</button><button id="restart" class="quiet">重新开炉</button><button id="new-case" class="quiet">换块坯料</button></div><button id="reference-toggle" class="quiet" hidden>查看参考解</button></div>
+  <div id="reference" class="reference" hidden><div><span class="eyebrow">参考路径</span><p id="reference-path"></p><p id="reference-status" class="muted"></p></div><button id="demo-step" class="quiet">演示下一步</button></div>
+  <div id="history" class="history" aria-label="本局操作记录"></div>
+  <footer><span id="storage-status">进度自动保存在当前浏览器</span><span>83件部件 · 249个可解开局 · 玩法试验版</span></footer>
+ </main>
+</div>
+<div id="toast" class="toast" role="status" hidden></div>
+<dialog id="help-dialog"><div class="dialog-top"><h2>一锤一锤，敲到恰好</h2><button data-close="help-dialog" class="quiet">关闭</button></div>
+ <p>让坯料每一格的数值与目标图样相同，再点击「收工验收」，就能解锁下一关。</p>
+ <dl><dt>锤击</dt><dd>点击非零格：该格变为0，它原来的数值分别加给上、下、左、右的有效邻格。空白处不接收数值，斜角不参与。</dd><dt>淬火</dt><dd>所有有效格＋1，包括0变1。</dd><dt>回火</dt><dd>所有有效格减半并向上取整。例如5变3，1仍是1，0仍是0。</dd></dl>
+ <p>三种次数独立，不必全部用完。有的目标需要热处理，有的目标保留0；每关都要自己判断。达标格数可以先下降再上升。</p>
+ <p>「撤销一手」「重新开炉」供解谜试玩使用。「换块坯料」保留目标和次数，重新开始本关。</p>
+ <p class="muted">每种部件有3个已验算开局；这些盘面用于试玩，尚未决定材料、威力或耐久的最终评分。</p>
+</dialog>
+<dialog id="save-dialog"><div class="dialog-top"><h2>工坊存档</h2><button data-close="save-dialog" class="quiet">关闭</button></div>
+ <p id="save-summary"></p><p>进度保存在当前浏览器。换电脑或更换文件位置前，可以导出存档，之后再导入继续。</p>
+ <div class="save-actions"><button id="export-save" class="primary">导出存档</button><button id="import-save" class="quiet">导入存档</button></div>
+ <input type="file" id="save-file" accept="application/json,.json" hidden>
+ <details id="save-text-section"><summary>存档文本与备用导入</summary><p class="muted">可以把存档文本复制保存，再粘贴回来继续；浏览器限制下载时也能使用。</p><label for="save-text" class="muted">存档文本</label><textarea id="save-text" rows="5" spellcheck="false"></textarea><div class="save-actions"><button id="copy-save" class="quiet">复制文本</button><button id="download-save" class="quiet">下载JSON</button><button id="load-save-text" class="quiet">从文本导入</button></div></details>
+ <div class="reset-area"><p class="muted">重置会清除本浏览器的关卡进度。</p><button id="reset-save" class="danger">重置全部进度</button></div>
+</dialog>
+<script>/* INLINE_SCRIPT */</script>
+</body></html>

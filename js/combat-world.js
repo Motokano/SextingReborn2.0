@@ -405,11 +405,11 @@
         if (target !== 'player' && st.x === x && st.y === y) return false;
         return !(E.getNpcAt && E.getNpcAt(x,y)) && !(E.getPortalAt && E.getPortalAt(x,y));
     }
-    function preparePlayerApproach(target, move) {
+    function preparePlayerApproach(target, move, weaponIntent) {
         var st = E.getState(), x = st.x, y = st.y;
         var distance = Math.max(Math.abs(target.x-x), Math.abs(target.y-y));
-        var base = Math.max(1, Number(move && (move.attack_range || move.range)) || 1);
-        var range = global.CombatBreath ? global.CombatBreath.range(move) : base;
+        var base = weaponIntent ? 1 : Math.max(1, Number(move && (move.attack_range || move.range)) || 1);
+        var range = global.CombatBreath ? global.CombatBreath.range(move, weaponIntent) : base;
         if (distance > range || distance < 1) return false;
         if (distance <= base) return true;
         var path = [];
@@ -437,6 +437,7 @@
         var move = ctx.moveTemplate || sk && (sk.moves || []).filter(function(m){return m.id===ctx.moveId;})[0];
         var range = Math.max(1,Number(move && (move.attack_range || move.range)) || 1);
         if (a.kind === 'player' && ctx.resourceResult && ctx.resourceResult.breathBurst) range += ctx.resourceResult.breathBurst.range_bonus;
+        if (ctx.weaponAction && global.ModularWeaponCombat) range = global.ModularWeaponCombat.range(ctx.resourceResult && ctx.resourceResult.breathBurst && ctx.resourceResult.breathBurst.range_bonus);
         if (Math.max(Math.abs(ap.x-dp.x),Math.abs(ap.y-dp.y)) <= range) return;
         ctx.distanceMiss = true; ctx.hitRollSuccess = false;
         (ctx.segments || []).forEach(function(seg){seg.hitRollSuccess=false;});
@@ -483,6 +484,7 @@
                 return (complete && (b.strength - a.strength || a.speed - b.speed)) || (a.eventId < b.eventId ? -1 : a.eventId > b.eventId ? 1 : 0);
             });
             var q = list[0], current = target === 'player' ? E.getState() : target;
+            function applyDisplacement() {
             var x = current.x, y = current.y, ox = x, oy = y;
             var dx = x - q.actorPos.x, dy = y - q.actorPos.y;
             if (!isFinite(dx) || !isFinite(dy) || (!dx && !dy)) return;
@@ -511,6 +513,9 @@
                 else if (global.CombatEnemies.addEnemyStun) global.CombatEnemies.addEnemyStun(state.mapId, index, target.enemy_id, 50);
                 q.ctx.collisionDamageApplied = damage;
             }
+            }
+            if (global.CombatMetaSkills) global.CombatMetaSkills.withSource(q.ctx.metaSource || (q.ctx.resourceResult && q.ctx.resourceResult.metaSource), applyDisplacement);
+            else applyDisplacement();
         });
         if (!(options && options.deferKills)) settleEnemyKills();
     }

@@ -29,6 +29,9 @@
     var DEFAULT_MIN_H = 64;
     var MAX_H_RATIO = 0.72; // 高度上限：视口高度比例（沿用 game-log 既有上限）
 
+    var listeners = new Set();
+    function notify() { listeners.forEach(function (fn) { fn(); }); }
+    function subscribe(fn) { listeners.add(fn); return function () { listeners.delete(fn); }; }
     var registry = {};    // id -> spec
     var stored = {};      // id -> { x, y, w, h, visible }（持久化覆盖，仅自定义过的窗口）
     var rawStored = {};   // id -> 原始持久化条目（注册前暂存；注册时校验归属）
@@ -278,9 +281,10 @@
         }
         if (spec.foldInPlace && el.classList) {
             el.classList.toggle('folded', !!(stored[id] && stored[id].folded));
-            var foldButton = el.querySelector('.ui-window-min');
+            var foldButton = spec.managedChrome ? null : el.querySelector('.ui-window-min');
             if (foldButton) { foldButton.textContent = stored[id] && stored[id].folded ? '+' : '−'; foldButton.setAttribute('aria-expanded', String(!(stored[id] && stored[id].folded))); }
         }
+        notify();
         syncTaskBar(id); // 任务条显示条件：minimized && 游戏门控 && 玩家偏好
         if (spec.onVisibility && typeof spec.onVisibility === 'function') {
             try { spec.onVisibility(el, visible); } catch (e0) { /* ignore */ }
@@ -406,7 +410,7 @@
         if (!header) return;
 
         // 关闭按钮（spec.closable !== false 且有 .ui-window-close 时）
-        if (spec.closable !== false) {
+        if (spec.closable !== false && !spec.managedChrome) {
             var closeEl = el.querySelector('.ui-window-close');
             if (closeEl) {
                 closeEl.addEventListener('click', function (e) {
@@ -710,6 +714,7 @@
             resetWindow(id);
         }
         lock = false;
+        notify();
         try { writeStorageNow(); } catch (e0) { /* ignore */ }
     }
 
@@ -756,6 +761,7 @@
 
     function setLock(v) {
         lock = !!v;
+        notify();
         try { writeStorageNow(); } catch (e0) { /* ignore */ } // 低频操作：同步落盘
     }
 
@@ -979,7 +985,9 @@
     }
 
     global.UIWindows = {
+        subscribe: subscribe,
         setFolded: setFolded,
+        isFolded: function (id) { return !!(stored[id] && stored[id].folded); },
         registerPanel: registerPanel,
         init: init,
         applyLayout: applyLayout,

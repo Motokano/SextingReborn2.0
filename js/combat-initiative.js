@@ -7,6 +7,16 @@
 
     var SKILL_ID_ENEMY_ATTACK = '__enemy_counter_attack__';
     var MOVE_ID_ENEMY_ATTACK = 'enemy_counter_strike';
+    function effectiveSpeed(owner, base) {
+        var bs = global.BuffSystem;
+        var mult = bs && bs.getBattleMoveSpeedMultiplier ? Number(bs.getBattleMoveSpeedMultiplier(owner)) || 1 : 1;
+        var delta = bs && bs.getBattleMoveSpeedDeltaPercent ? Number(bs.getBattleMoveSpeedDeltaPercent(owner)) || 0 : 0;
+        var extra = Number(base) * delta / 100;
+        if (owner === 'player' && global.CharacterAttributes && global.CharacterAttributes.getCombatSpeed) {
+            extra = global.CharacterAttributes.getCombatSpeed(delta) - global.CharacterAttributes.getCombatSpeed();
+        }
+        return Math.max(1, Number(base) * mult + extra);
+    }
 
     /**
      * 玩家当前攻击生效的后遗症 id 列表（34 号草案阶段三：来源为肌群大型被动的装配；
@@ -53,31 +63,9 @@
         var VeRaw = Number(o.enemySpeed);
         if (!isFinite(VpRaw)) VpRaw = 0;
         if (!isFinite(VeRaw)) VeRaw = 0;
-        var moveSpeedMulPlayer = 1;
-        var moveSpeedMulEnemy = 1;
-        var moveSpeedDeltaPctPlayer = 0;
-        var moveSpeedDeltaPctEnemy = 0;
-        if (global.BuffSystem && typeof global.BuffSystem.getBattleMoveSpeedMultiplier === 'function') {
-            moveSpeedMulPlayer = Number(global.BuffSystem.getBattleMoveSpeedMultiplier('player')) || 1;
-            if (o.enemyOwnerId != null && String(o.enemyOwnerId)) {
-                moveSpeedMulEnemy = Number(global.BuffSystem.getBattleMoveSpeedMultiplier(String(o.enemyOwnerId))) || 1;
-            }
-            if (!isFinite(moveSpeedMulPlayer) || moveSpeedMulPlayer <= 0) moveSpeedMulPlayer = 1;
-            if (!isFinite(moveSpeedMulEnemy) || moveSpeedMulEnemy <= 0) moveSpeedMulEnemy = 1;
-            if (typeof global.BuffSystem.getBattleMoveSpeedDeltaPercent === 'function') {
-                moveSpeedDeltaPctPlayer = Number(global.BuffSystem.getBattleMoveSpeedDeltaPercent('player')) || 0;
-                if (o.enemyOwnerId != null && String(o.enemyOwnerId)) {
-                    moveSpeedDeltaPctEnemy = Number(global.BuffSystem.getBattleMoveSpeedDeltaPercent(String(o.enemyOwnerId))) || 0;
-                }
-            }
-        }
-        var moveSpeedTotalMulPlayer = moveSpeedMulPlayer + (moveSpeedDeltaPctPlayer / 100);
-        var moveSpeedTotalMulEnemy = moveSpeedMulEnemy + (moveSpeedDeltaPctEnemy / 100);
-        if (!isFinite(moveSpeedTotalMulPlayer) || moveSpeedTotalMulPlayer <= 0) moveSpeedTotalMulPlayer = 0.05;
-        if (!isFinite(moveSpeedTotalMulEnemy) || moveSpeedTotalMulEnemy <= 0) moveSpeedTotalMulEnemy = 0.05;
         // 保留小数比较（05 5.7：内部小数，仅展示取整）；同速 = 精确相等时同时结算
-        var Vp = (VpRaw * moveSpeedTotalMulPlayer) || 0;
-        var Ve = (VeRaw * moveSpeedTotalMulEnemy) || 0;
+        var Vp = effectiveSpeed('player', VpRaw);
+        var Ve = effectiveSpeed(String(o.enemyOwnerId || ''), VeRaw);
         if (Vp < 1) Vp = 1;
         if (Ve < 1) Ve = 1;
 
@@ -120,13 +108,13 @@
         }
 
         if (atkForced) {
-            return { mode: 'sequential', firstStrike: 'player', attackerForced: true, defenderForced: false, canceledForced: canceled };
+            return { mode: 'sequential', firstStrike: 'player', attackerForced: true, defenderForced: false, canceledForced: canceled,playerSpeed:Vp,enemySpeed:Ve };
         }
         if (defForced) {
-            return { mode: 'sequential', firstStrike: 'enemy', attackerForced: false, defenderForced: true, canceledForced: canceled };
+            return { mode: 'sequential', firstStrike: 'enemy', attackerForced: false, defenderForced: true, canceledForced: canceled,playerSpeed:Vp,enemySpeed:Ve };
         }
 
-        return { mode: mode, firstStrike: firstStrike, attackerForced: false, defenderForced: false, canceledForced: canceled };
+        return { mode: mode, firstStrike: firstStrike, attackerForced: false, defenderForced: false, canceledForced: canceled,playerSpeed:Vp,enemySpeed:Ve };
     }
 
     function getEnemyAttackSkillId() {
@@ -138,6 +126,7 @@
     }
 
     global.CombatInitiative = {
+        effectiveSpeed: effectiveSpeed,
         getPlayerPostEffectIds: getPlayerPostEffectIds,
         hasInitiativeAlwaysFirstAmong: hasInitiativeAlwaysFirstAmong,
         resolvePlayerInitiatedExchange: resolvePlayerInitiatedExchange,

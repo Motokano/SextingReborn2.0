@@ -1,0 +1,5972 @@
+{
+  "version": 1,
+  "rules": "Collect fixed tiles by direct hammering; store and optionally spend one effect per hammer. Cross adjacent full, distant half floor. Gather moves half of each neighbor after hammer, before opportunity.",
+  "method": "Two seeds per component. High goals disallow cross. Beam witnesses prove sampled reachability, not maxima or every random layout. Targets unchanged.",
+  "baselineRoutes": 83,
+  "samples": [
+    {
+      "id": "B01",
+      "goal": {
+        "type": "high",
+        "min": 75
+      },
+      "seed": 37,
+      "specials": [
+        {
+          "index": 5,
+          "type": "burst"
+        },
+        {
+          "index": 3,
+          "type": "keep"
+        }
+      ],
+      "score": 78,
+      "actions": [
+        {
+          "kind": "quench"
+        },
+        {
+          "kind": "heavy",
+          "index": 3
+        },
+        {
+          "kind": "heavy",
+          "index": 4
+        },
+        {
+          "kind": "heavy",
+          "index": 5
+        },
+        {
+          "kind": "heavy",
+          "index": 8,
+          "effect": "burst"
+        },
+        {
+          "kind": "heavy",
+          "index": 5
+        }
+      ]
+    },
+    {
+      "id": "B01",
+      "goal": {
+        "type": "high",
+        "min": 75
+      },
+      "seed": 2246822507,
+      "specials": [
+        {
+          "index": 15,
+          "type": "keep"
+        },
+        {
+          "index": 17,
+          "type": "gather"
+        }
+      ],
+      "score": 87,
+      "actions": [
+        {
+          "kind": "quench"
+        },
+        {
+          "kind": "heavy",
+          "index": 15
+        },
+        {
+          "kind": "heavy",
+          "index": 16
+        },
+        {
+          "kind": "heavy",
+          "index": 17
+        },
+        {
+          "kind": "heavy",
+          "index": 14,
+          "effect": "gather"
+        },
+        {
+          "kind": "heavy",
+          "index": 14,
+          "effect": "keep"
+        }
+      ]
+    },
+    {
+      "id": "T01",
+      "goal": {
+        "type": "high",
+        "min": 70
+      },
+      "seed": 37,
+      "specials": [
+        {
+          "index": 3,
+          "type": "burst"
+        },
+        {
+          "index": 1,
+          "type": "keep"
+        }
+      ],
+      "score": 74,
+      "actions": [
+        {
+          "kind": "heavy",
+          "index": 1
+        },
+        {
+          "kind": "heavy",
+          "index": 2,
+          "effect": "keep"
+        },
+        {
+          "kind": "heavy",
+          "index": 3
+        },
+        {
+          "kind": "heavy",
+          "index": 2,
+          "effect": "burst"
+        },
+        {
+          "kind": "heavy",
+          "index": 1
+        }
+      ]
+    },
+    {
+      "id": "T01",
+      "goal": {
+        "type": "high",
+        "min": 70
+      },
+      "seed": 2246822507,
+      "specials": [
+        {
+          "index": 9,
+          "type": "keep"
+        },
+        {
+          "index": 11,
+          "type": "gather"
+        }
+      ],
+      "score": 71,
+      "actions": [
+        {
+          "kind": "quench"
+        },
+        {
+          "kind": "heavy",
+          "index": 9
+        },
+        {
+          "kind": "heavy",
+          "index": 5
+        },
+        {
+          "kind": "heavy",
+          "index": 1
+        },
+        {
+          "kind": "heavy",
+          "index": 2,
+          "effect": "keep"
+        },
+        {
+          "kind": "heavy",
+          "index": 3
+        }
+      ]
+    },
+    {
+      "id": "D01",
+      "goal": {
+        "type": "high",
+        "min": 175
+      },
+      "seed": 37,
+      "specials": [
+        {
+          "index": 4,
+          "type": "burst"
+        },
+        {
+          "index": 2,
+          "type": "keep"
+        }
+      ],
+      "score": 188,
+      "actions": [
+        {
+          "kind": "heavy",
+          "index": 6
+        },
+        {
+          "kind": "heavy",
+          "index": 3
+        },
+        {
+          "kind": "heavy",
+          "index": 4
+        },
+        {
+          "kind": "heavy",
+          "index": 7,
+          "effect": "burst"
+        },
+        {
+          "kind": "heavy",
+          "index": 8
+        },
+        {
+          "kind": "heavy",
+          "index": 4
+        }
+      ]
+    },
+    {
+      "id": "D01",
+      "goal": {
+        "type": "high",
+        "min": 175
+      },
+      "seed": 2246822507,
+      "specials": [
+        {
+          "index": 13,
+          "type": "keep"
+        },
+        {
+          "index": 15,
+          "type": "gather"
+        }
+      ],
+      "score": 204,
+      "actions": [
+        {
+          "kind": "quench"
+        },
+        {
+          "kind": "heavy",
+          "index": 15
+        },
+        {
+          "kind": "heavy",
+          "index": 12
+        },
+        {
+          "kind": "heavy",
+          "index": 13,
+          "effect": "gather"
+        },
+        {
+          "kind": "heavy",
+          "index": 13,
+          "effect": "keep"
+        },
+        {
+          "kind": "heavy",
+          "index": 10
+        }
+      ]
+    },
+    {
+      "id": "H01",
+      "goal": {
+        "type": "low",
+        "max": 12
+      },
+      "seed": 37,
+      "specials": [
+        {
+          "index": 3,
+          "type": "burst"
+        },
+        {
+          "index": 1,
+          "type": "keep"
+        }
+      ],
+      "score": 12,
+      "actions": [
+        {
+          "kind": "temper"
+        },
+        {
+          "kind": "light",
+          "index": 8
+        },
+        {
+          "kind": "light",
+          "index": 11
+        }
+      ]
+    },
+    {
+      "id": "H01",
+      "goal": {
+        "type": "low",
+        "max": 12
+      },
+      "seed": 2246822507,
+      "specials": [
+        {
+          "index": 10,
+          "type": "keep"
+        },
+        {
+          "index": 11,
+          "type": "gather"
+        }
+      ],
+      "score": 12,
+      "actions": [
+        {
+          "kind": "temper"
+        },
+        {
+          "kind": "light",
+          "index": 8
+        },
+        {
+          "kind": "light",
+          "index": 9
+        },
+        {
+          "kind": "light",
+          "index": 10
+        }
+      ]
+    },
+    {
+      "id": "M01-T1",
+      "goal": {
+        "type": "high",
+        "min": 135
+      },
+      "seed": 37,
+      "specials": [
+        {
+          "index": 6,
+          "type": "burst"
+        },
+        {
+          "index": 3,
+          "type": "keep"
+        }
+      ],
+      "score": 135,
+      "actions": [
+        {
+          "kind": "heavy",
+          "index": 0
+        },
+        {
+          "kind": "heavy",
+          "index": 6
+        },
+        {
+          "kind": "heavy",
+          "index": 13,
+          "effect": "burst"
+        },
+        {
+          "kind": "heavy",
+          "index": 6
+        },
+        {
+          "kind": "heavy",
+          "index": 13
+        }
+      ]
+    },
+    {
+      "id": "M01-T1",
+      "goal": {
+        "type": "high",
+        "min": 135
+      },
+      "seed": 2246822507,
+      "specials": [
+        {
+          "index": 18,
+          "type": "keep"
+        },
+        {
+          "index": 21,
+          "type": "gather"
+        }
+      ],
+      "score": 135,
+      "actions": [
+        {
+          "kind": "quench"
+        },
+        {
+          "kind": "heavy",
+          "index": 6
+        },
+        {
+          "kind": "heavy",
+          "index": 21
+        },
+        {
+          "kind": "heavy",
+          "index": 13,
+          "effect": "gather"
+        },
+        {
+          "kind": "heavy",
+          "index": 13
+        },
+        {
+          "kind": "heavy",
+          "index": 6
+        },
+        {
+          "kind": "heavy",
+          "index": 3
+        }
+      ]
+    },
+    {
+      "id": "B02",
+      "goal": {
+        "type": "range",
+        "min": 21,
+        "max": 26
+      },
+      "seed": 37,
+      "specials": [
+        {
+          "index": 7,
+          "type": "burst"
+        },
+        {
+          "index": 4,
+          "type": "keep"
+        }
+      ],
+      "score": 21,
+      "actions": [
+        {
+          "kind": "quench"
+        },
+        {
+          "kind": "temper"
+        }
+      ]
+    },
+    {
+      "id": "B02",
+      "goal": {
+        "type": "range",
+        "min": 21,
+        "max": 26
+      },
+      "seed": 2246822507,
+      "specials": [
+        {
+          "index": 23,
+          "type": "keep"
+        },
+        {
+          "index": 26,
+          "type": "gather"
+        }
+      ],
+      "score": 21,
+      "actions": [
+        {
+          "kind": "quench"
+        },
+        {
+          "kind": "temper"
+        }
+      ]
+    },
+    {
+      "id": "T02",
+      "goal": {
+        "type": "range",
+        "min": 28,
+        "max": 34
+      },
+      "seed": 37,
+      "specials": [
+        {
+          "index": 5,
+          "type": "burst"
+        },
+        {
+          "index": 3,
+          "type": "keep"
+        }
+      ],
+      "score": 30,
+      "actions": [
+        {
+          "kind": "quench"
+        },
+        {
+          "kind": "heavy",
+          "index": 1
+        }
+      ]
+    },
+    {
+      "id": "T02",
+      "goal": {
+        "type": "range",
+        "min": 28,
+        "max": 34
+      },
+      "seed": 2246822507,
+      "specials": [
+        {
+          "index": 15,
+          "type": "keep"
+        },
+        {
+          "index": 17,
+          "type": "gather"
+        }
+      ],
+      "score": 30,
+      "actions": [
+        {
+          "kind": "quench"
+        },
+        {
+          "kind": "heavy",
+          "index": 1
+        }
+      ]
+    },
+    {
+      "id": "D02",
+      "goal": {
+        "type": "high",
+        "min": 185
+      },
+      "seed": 37,
+      "specials": [
+        {
+          "index": 6,
+          "type": "burst"
+        },
+        {
+          "index": 3,
+          "type": "keep"
+        }
+      ],
+      "score": 194,
+      "actions": [
+        {
+          "kind": "heavy",
+          "index": 6
+        },
+        {
+          "kind": "heavy",
+          "index": 11,
+          "effect": "burst"
+        },
+        {
+          "kind": "heavy",
+          "index": 16
+        },
+        {
+          "kind": "heavy",
+          "index": 17
+        },
+        {
+          "kind": "heavy",
+          "index": 12
+        },
+        {
+          "kind": "quench"
+        }
+      ]
+    },
+    {
+      "id": "D02",
+      "goal": {
+        "type": "high",
+        "min": 185
+      },
+      "seed": 2246822507,
+      "specials": [
+        {
+          "index": 19,
+          "type": "keep"
+        },
+        {
+          "index": 22,
+          "type": "gather"
+        }
+      ],
+      "score": 219,
+      "actions": [
+        {
+          "kind": "heavy",
+          "index": 22
+        },
+        {
+          "kind": "heavy",
+          "index": 16,
+          "effect": "gather"
+        },
+        {
+          "kind": "heavy",
+          "index": 16
+        },
+        {
+          "kind": "heavy",
+          "index": 21
+        },
+        {
+          "kind": "heavy",
+          "index": 16
+        },
+        {
+          "kind": "heavy",
+          "index": 11
+        }
+      ]
+    },
+    {
+      "id": "H02",
+      "goal": {
+        "type": "range",
+        "min": 26,
+        "max": 32
+      },
+      "seed": 37,
+      "specials": [
+        {
+          "index": 4,
+          "type": "burst"
+        },
+        {
+          "index": 2,
+          "type": "keep"
+        }
+      ],
+      "score": 26,
+      "actions": [
+        {
+          "kind": "quench"
+        },
+        {
+          "kind": "cross",
+          "index": 0
+        }
+      ]
+    },
+    {
+      "id": "H02",
+      "goal": {
+        "type": "range",
+        "min": 26,
+        "max": 32
+      },
+      "seed": 2246822507,
+      "specials": [
+        {
+          "index": 12,
+          "type": "keep"
+        },
+        {
+          "index": 13,
+          "type": "gather"
+        }
+      ],
+      "score": 26,
+      "actions": [
+        {
+          "kind": "quench"
+        },
+        {
+          "kind": "cross",
+          "index": 0
+        }
+      ]
+    },
+    {
+      "id": "M02-T1",
+      "goal": {
+        "type": "high",
+        "min": 125
+      },
+      "seed": 37,
+      "specials": [
+        {
+          "index": 8,
+          "type": "burst"
+        },
+        {
+          "index": 5,
+          "type": "keep"
+        }
+      ],
+      "score": 125,
+      "actions": [
+        {
+          "kind": "quench"
+        },
+        {
+          "kind": "heavy",
+          "index": 9
+        },
+        {
+          "kind": "heavy",
+          "index": 8
+        },
+        {
+          "kind": "heavy",
+          "index": 15
+        },
+        {
+          "kind": "heavy",
+          "index": 16,
+          "effect": "burst"
+        },
+        {
+          "kind": "heavy",
+          "index": 1
+        }
+      ]
+    },
+    {
+      "id": "M02-T1",
+      "goal": {
+        "type": "high",
+        "min": 125
+      },
+      "seed": 2246822507,
+      "specials": [
+        {
+          "index": 25,
+          "type": "keep"
+        },
+        {
+          "index": 28,
+          "type": "gather"
+        }
+      ],
+      "score": 132,
+      "actions": [
+        {
+          "kind": "quench"
+        },
+        {
+          "kind": "heavy",
+          "index": 23
+        },
+        {
+          "kind": "heavy",
+          "index": 22
+        },
+        {
+          "kind": "heavy",
+          "index": 28
+        },
+        {
+          "kind": "heavy",
+          "index": 29,
+          "effect": "gather"
+        },
+        {
+          "kind": "heavy",
+          "index": 29
+        }
+      ]
+    },
+    {
+      "id": "D03",
+      "goal": {
+        "type": "range",
+        "min": 29,
+        "max": 36
+      },
+      "seed": 37,
+      "specials": [
+        {
+          "index": 5,
+          "type": "burst"
+        },
+        {
+          "index": 3,
+          "type": "keep"
+        }
+      ],
+      "score": 30,
+      "actions": [
+        {
+          "kind": "quench"
+        },
+        {
+          "kind": "heavy",
+          "index": 0
+        }
+      ]
+    },
+    {
+      "id": "D03",
+      "goal": {
+        "type": "range",
+        "min": 29,
+        "max": 36
+      },
+      "seed": 2246822507,
+      "specials": [
+        {
+          "index": 15,
+          "type": "keep"
+        },
+        {
+          "index": 17,
+          "type": "gather"
+        }
+      ],
+      "score": 30,
+      "actions": [
+        {
+          "kind": "quench"
+        },
+        {
+          "kind": "heavy",
+          "index": 0
+        }
+      ]
+    },
+    {
+      "id": "H03",
+      "goal": {
+        "type": "range",
+        "min": 31,
+        "max": 36
+      },
+      "seed": 37,
+      "specials": [
+        {
+          "index": 4,
+          "type": "burst"
+        },
+        {
+          "index": 2,
+          "type": "keep"
+        }
+      ],
+      "score": 31,
+      "actions": [
+        {
+          "kind": "quench"
+        },
+        {
+          "kind": "cross",
+          "index": 4
+        }
+      ]
+    },
+    {
+      "id": "H03",
+      "goal": {
+        "type": "range",
+        "min": 31,
+        "max": 36
+      },
+      "seed": 2246822507,
+      "specials": [
+        {
+          "index": 12,
+          "type": "keep"
+        },
+        {
+          "index": 14,
+          "type": "gather"
+        }
+      ],
+      "score": 31,
+      "actions": [
+        {
+          "kind": "quench"
+        },
+        {
+          "kind": "cross",
+          "index": 4
+        }
+      ]
+    },
+    {
+      "id": "M07-T1",
+      "goal": {
+        "type": "high",
+        "min": 215
+      },
+      "seed": 37,
+      "specials": [
+        {
+          "index": 6,
+          "type": "burst"
+        },
+        {
+          "index": 3,
+          "type": "keep"
+        }
+      ],
+      "score": 225,
+      "actions": [
+        {
+          "kind": "heavy",
+          "index": 6
+        },
+        {
+          "kind": "heavy",
+          "index": 3,
+          "effect": "burst"
+        },
+        {
+          "kind": "heavy",
+          "index": 4,
+          "effect": "keep"
+        },
+        {
+          "kind": "heavy",
+          "index": 7
+        },
+        {
+          "kind": "heavy",
+          "index": 4
+        }
+      ]
+    },
+    {
+      "id": "M07-T1",
+      "goal": {
+        "type": "high",
+        "min": 215
+      },
+      "seed": 2246822507,
+      "specials": [
+        {
+          "index": 18,
+          "type": "keep"
+        },
+        {
+          "index": 20,
+          "type": "gather"
+        }
+      ],
+      "score": 259,
+      "actions": [
+        {
+          "kind": "quench"
+        },
+        {
+          "kind": "heavy",
+          "index": 18
+        },
+        {
+          "kind": "heavy",
+          "index": 15
+        },
+        {
+          "kind": "heavy",
+          "index": 16,
+          "effect": "keep"
+        },
+        {
+          "kind": "heavy",
+          "index": 19
+        },
+        {
+          "kind": "heavy",
+          "index": 16
+        },
+        {
+          "kind": "heavy",
+          "index": 13
+        }
+      ]
+    },
+    {
+      "id": "B03",
+      "goal": {
+        "type": "high",
+        "min": 130
+      },
+      "seed": 37,
+      "specials": [
+        {
+          "index": 4,
+          "type": "burst"
+        },
+        {
+          "index": 2,
+          "type": "keep"
+        }
+      ],
+      "score": 164,
+      "actions": [
+        {
+          "kind": "heavy",
+          "index": 2
+        },
+        {
+          "kind": "heavy",
+          "index": 4
+        },
+        {
+          "kind": "heavy",
+          "index": 5
+        },
+        {
+          "kind": "heavy",
+          "index": 9,
+          "effect": "burst"
+        },
+        {
+          "kind": "heavy",
+          "index": 10,
+          "effect": "keep"
+        },
+        {
+          "kind": "heavy",
+          "index": 10
+        }
+      ]
+    },
+    {
+      "id": "B03",
+      "goal": {
+        "type": "high",
+        "min": 130
+      },
+      "seed": 2246822507,
+      "specials": [
+        {
+          "index": 14,
+          "type": "keep"
+        },
+        {
+          "index": 16,
+          "type": "gather"
+        }
+      ],
+      "score": 161,
+      "actions": [
+        {
+          "kind": "heavy",
+          "index": 16
+        },
+        {
+          "kind": "heavy",
+          "index": 13
+        },
+        {
+          "kind": "heavy",
+          "index": 14
+        },
+        {
+          "kind": "heavy",
+          "index": 10,
+          "effect": "gather"
+        },
+        {
+          "kind": "heavy",
+          "index": 10,
+          "effect": "keep"
+        },
+        {
+          "kind": "heavy",
+          "index": 10
+        }
+      ]
+    },
+    {
+      "id": "T03",
+      "goal": {
+        "type": "high",
+        "min": 85
+      },
+      "seed": 37,
+      "specials": [
+        {
+          "index": 4,
+          "type": "burst"
+        },
+        {
+          "index": 2,
+          "type": "keep"
+        }
+      ],
+      "score": 85,
+      "actions": [
+        {
+          "kind": "heavy",
+          "index": 2
+        },
+        {
+          "kind": "heavy",
+          "index": 4
+        },
+        {
+          "kind": "heavy",
+          "index": 6,
+          "effect": "burst"
+        },
+        {
+          "kind": "heavy",
+          "index": 5
+        },
+        {
+          "kind": "heavy",
+          "index": 1
+        },
+        {
+          "kind": "heavy",
+          "index": 2
+        }
+      ]
+    },
+    {
+      "id": "T03",
+      "goal": {
+        "type": "high",
+        "min": 85
+      },
+      "seed": 2246822507,
+      "specials": [
+        {
+          "index": 12,
+          "type": "keep"
+        },
+        {
+          "index": 14,
+          "type": "gather"
+        }
+      ],
+      "score": 97,
+      "actions": [
+        {
+          "kind": "quench"
+        },
+        {
+          "kind": "heavy",
+          "index": 2
+        },
+        {
+          "kind": "heavy",
+          "index": 6
+        },
+        {
+          "kind": "heavy",
+          "index": 5
+        },
+        {
+          "kind": "heavy",
+          "index": 1
+        },
+        {
+          "kind": "heavy",
+          "index": 2
+        },
+        {
+          "kind": "heavy",
+          "index": 1
+        }
+      ]
+    },
+    {
+      "id": "D04",
+      "goal": {
+        "type": "high",
+        "min": 200
+      },
+      "seed": 37,
+      "specials": [
+        {
+          "index": 6,
+          "type": "burst"
+        },
+        {
+          "index": 3,
+          "type": "keep"
+        }
+      ],
+      "score": 201,
+      "actions": [
+        {
+          "kind": "heavy",
+          "index": 12
+        },
+        {
+          "kind": "heavy",
+          "index": 7
+        },
+        {
+          "kind": "heavy",
+          "index": 6
+        },
+        {
+          "kind": "heavy",
+          "index": 11,
+          "effect": "burst"
+        },
+        {
+          "kind": "heavy",
+          "index": 12
+        },
+        {
+          "kind": "heavy",
+          "index": 5
+        }
+      ]
+    },
+    {
+      "id": "D04",
+      "goal": {
+        "type": "high",
+        "min": 200
+      },
+      "seed": 2246822507,
+      "specials": [
+        {
+          "index": 19,
+          "type": "keep"
+        },
+        {
+          "index": 22,
+          "type": "gather"
+        }
+      ],
+      "score": 259,
+      "actions": [
+        {
+          "kind": "heavy",
+          "index": 22
+        },
+        {
+          "kind": "heavy",
+          "index": 21
+        },
+        {
+          "kind": "heavy",
+          "index": 16
+        },
+        {
+          "kind": "heavy",
+          "index": 16,
+          "effect": "gather"
+        },
+        {
+          "kind": "heavy",
+          "index": 16
+        },
+        {
+          "kind": "heavy",
+          "index": 11
+        }
+      ]
+    },
+    {
+      "id": "H04",
+      "goal": {
+        "type": "high",
+        "min": 185
+      },
+      "seed": 37,
+      "specials": [
+        {
+          "index": 5,
+          "type": "burst"
+        },
+        {
+          "index": 2,
+          "type": "keep"
+        }
+      ],
+      "score": 190,
+      "actions": [
+        {
+          "kind": "quench"
+        },
+        {
+          "kind": "heavy",
+          "index": 18
+        },
+        {
+          "kind": "heavy",
+          "index": 5
+        },
+        {
+          "kind": "heavy",
+          "index": 13,
+          "effect": "burst"
+        },
+        {
+          "kind": "heavy",
+          "index": 12
+        },
+        {
+          "kind": "heavy",
+          "index": 17
+        },
+        {
+          "kind": "heavy",
+          "index": 8
+        }
+      ]
+    },
+    {
+      "id": "H04",
+      "goal": {
+        "type": "high",
+        "min": 185
+      },
+      "seed": 2246822507,
+      "specials": [
+        {
+          "index": 15,
+          "type": "keep"
+        },
+        {
+          "index": 16,
+          "type": "gather"
+        }
+      ],
+      "score": 196,
+      "actions": [
+        {
+          "kind": "heavy",
+          "index": 10
+        },
+        {
+          "kind": "heavy",
+          "index": 15
+        },
+        {
+          "kind": "heavy",
+          "index": 16
+        },
+        {
+          "kind": "heavy",
+          "index": 11,
+          "effect": "gather"
+        },
+        {
+          "kind": "heavy",
+          "index": 11,
+          "effect": "keep"
+        },
+        {
+          "kind": "heavy",
+          "index": 11
+        }
+      ]
+    },
+    {
+      "id": "M03-T2",
+      "goal": {
+        "type": "range",
+        "min": 22,
+        "max": 30
+      },
+      "seed": 37,
+      "specials": [
+        {
+          "index": 9,
+          "type": "burst"
+        },
+        {
+          "index": 5,
+          "type": "keep"
+        }
+      ],
+      "score": 24,
+      "actions": [
+        {
+          "kind": "quench"
+        }
+      ]
+    },
+    {
+      "id": "M03-T2",
+      "goal": {
+        "type": "range",
+        "min": 22,
+        "max": 30
+      },
+      "seed": 2246822507,
+      "specials": [
+        {
+          "index": 27,
+          "type": "keep"
+        },
+        {
+          "index": 30,
+          "type": "gather"
+        }
+      ],
+      "score": 24,
+      "actions": [
+        {
+          "kind": "quench"
+        }
+      ]
+    },
+    {
+      "id": "B04",
+      "goal": {
+        "type": "low",
+        "max": 13
+      },
+      "seed": 37,
+      "specials": [
+        {
+          "index": 4,
+          "type": "burst"
+        },
+        {
+          "index": 2,
+          "type": "keep"
+        }
+      ],
+      "score": 12,
+      "actions": [
+        {
+          "kind": "temper"
+        },
+        {
+          "kind": "heavy",
+          "index": 0
+        }
+      ]
+    },
+    {
+      "id": "B04",
+      "goal": {
+        "type": "low",
+        "max": 13
+      },
+      "seed": 2246822507,
+      "specials": [
+        {
+          "index": 12,
+          "type": "keep"
+        },
+        {
+          "index": 14,
+          "type": "gather"
+        }
+      ],
+      "score": 12,
+      "actions": [
+        {
+          "kind": "temper"
+        },
+        {
+          "kind": "heavy",
+          "index": 0
+        }
+      ]
+    },
+    {
+      "id": "T04",
+      "goal": {
+        "type": "range",
+        "min": 31,
+        "max": 37
+      },
+      "seed": 37,
+      "specials": [
+        {
+          "index": 5,
+          "type": "burst"
+        },
+        {
+          "index": 3,
+          "type": "keep"
+        }
+      ],
+      "score": 31,
+      "actions": [
+        {
+          "kind": "quench"
+        },
+        {
+          "kind": "cross",
+          "index": 0
+        }
+      ]
+    },
+    {
+      "id": "T04",
+      "goal": {
+        "type": "range",
+        "min": 31,
+        "max": 37
+      },
+      "seed": 2246822507,
+      "specials": [
+        {
+          "index": 15,
+          "type": "keep"
+        },
+        {
+          "index": 17,
+          "type": "gather"
+        }
+      ],
+      "score": 31,
+      "actions": [
+        {
+          "kind": "quench"
+        },
+        {
+          "kind": "cross",
+          "index": 0
+        }
+      ]
+    },
+    {
+      "id": "D05",
+      "goal": {
+        "type": "range",
+        "min": 51,
+        "max": 59
+      },
+      "seed": 37,
+      "specials": [
+        {
+          "index": 5,
+          "type": "burst"
+        },
+        {
+          "index": 3,
+          "type": "keep"
+        }
+      ],
+      "score": 52,
+      "actions": [
+        {
+          "kind": "quench"
+        },
+        {
+          "kind": "cross",
+          "index": 2
+        }
+      ]
+    },
+    {
+      "id": "D05",
+      "goal": {
+        "type": "range",
+        "min": 51,
+        "max": 59
+      },
+      "seed": 2246822507,
+      "specials": [
+        {
+          "index": 16,
+          "type": "keep"
+        },
+        {
+          "index": 18,
+          "type": "gather"
+        }
+      ],
+      "score": 52,
+      "actions": [
+        {
+          "kind": "quench"
+        },
+        {
+          "kind": "cross",
+          "index": 2
+        }
+      ]
+    },
+    {
+      "id": "H05",
+      "goal": {
+        "type": "range",
+        "min": 43,
+        "max": 51
+      },
+      "seed": 37,
+      "specials": [
+        {
+          "index": 5,
+          "type": "burst"
+        },
+        {
+          "index": 3,
+          "type": "keep"
+        }
+      ],
+      "score": 46,
+      "actions": [
+        {
+          "kind": "quench"
+        },
+        {
+          "kind": "cross",
+          "index": 0
+        }
+      ]
+    },
+    {
+      "id": "H05",
+      "goal": {
+        "type": "range",
+        "min": 43,
+        "max": 51
+      },
+      "seed": 2246822507,
+      "specials": [
+        {
+          "index": 16,
+          "type": "keep"
+        },
+        {
+          "index": 18,
+          "type": "gather"
+        }
+      ],
+      "score": 46,
+      "actions": [
+        {
+          "kind": "quench"
+        },
+        {
+          "kind": "cross",
+          "index": 0
+        }
+      ]
+    },
+    {
+      "id": "M05-T2",
+      "goal": {
+        "type": "high",
+        "min": 190
+      },
+      "seed": 37,
+      "specials": [
+        {
+          "index": 8,
+          "type": "burst"
+        },
+        {
+          "index": 4,
+          "type": "keep"
+        }
+      ],
+      "score": 247,
+      "actions": [
+        {
+          "kind": "quench"
+        },
+        {
+          "kind": "heavy",
+          "index": 8
+        },
+        {
+          "kind": "heavy",
+          "index": 9
+        },
+        {
+          "kind": "heavy",
+          "index": 5
+        },
+        {
+          "kind": "heavy",
+          "index": 2,
+          "effect": "burst"
+        },
+        {
+          "kind": "heavy",
+          "index": 5
+        },
+        {
+          "kind": "heavy",
+          "index": 2
+        }
+      ]
+    },
+    {
+      "id": "M05-T2",
+      "goal": {
+        "type": "high",
+        "min": 190
+      },
+      "seed": 2246822507,
+      "specials": [
+        {
+          "index": 24,
+          "type": "keep"
+        },
+        {
+          "index": 27,
+          "type": "gather"
+        }
+      ],
+      "score": 211,
+      "actions": [
+        {
+          "kind": "quench"
+        },
+        {
+          "kind": "heavy",
+          "index": 10
+        },
+        {
+          "kind": "heavy",
+          "index": 6
+        },
+        {
+          "kind": "heavy",
+          "index": 5
+        },
+        {
+          "kind": "heavy",
+          "index": 3
+        },
+        {
+          "kind": "heavy",
+          "index": 2
+        },
+        {
+          "kind": "heavy",
+          "index": 5
+        }
+      ]
+    },
+    {
+      "id": "B05",
+      "goal": {
+        "type": "high",
+        "min": 115
+      },
+      "seed": 37,
+      "specials": [
+        {
+          "index": 7,
+          "type": "burst"
+        },
+        {
+          "index": 4,
+          "type": "keep"
+        }
+      ],
+      "score": 157,
+      "actions": [
+        {
+          "kind": "heavy",
+          "index": 11
+        },
+        {
+          "kind": "heavy",
+          "index": 6
+        },
+        {
+          "kind": "heavy",
+          "index": 7
+        },
+        {
+          "kind": "heavy",
+          "index": 12,
+          "effect": "burst"
+        },
+        {
+          "kind": "heavy",
+          "index": 11
+        },
+        {
+          "kind": "heavy",
+          "index": 6
+        }
+      ]
+    },
+    {
+      "id": "B05",
+      "goal": {
+        "type": "high",
+        "min": 115
+      },
+      "seed": 2246822507,
+      "specials": [
+        {
+          "index": 23,
+          "type": "keep"
+        },
+        {
+          "index": 26,
+          "type": "gather"
+        }
+      ],
+      "score": 144,
+      "actions": [
+        {
+          "kind": "heavy",
+          "index": 26
+        },
+        {
+          "kind": "heavy",
+          "index": 21,
+          "effect": "gather"
+        },
+        {
+          "kind": "heavy",
+          "index": 21
+        },
+        {
+          "kind": "heavy",
+          "index": 16
+        },
+        {
+          "kind": "heavy",
+          "index": 21
+        },
+        {
+          "kind": "heavy",
+          "index": 26
+        }
+      ]
+    },
+    {
+      "id": "D06",
+      "goal": {
+        "type": "high",
+        "min": 190
+      },
+      "seed": 37,
+      "specials": [
+        {
+          "index": 7,
+          "type": "burst"
+        },
+        {
+          "index": 4,
+          "type": "keep"
+        }
+      ],
+      "score": 196,
+      "actions": [
+        {
+          "kind": "quench"
+        },
+        {
+          "kind": "heavy",
+          "index": 7
+        },
+        {
+          "kind": "heavy",
+          "index": 12,
+          "effect": "burst"
+        },
+        {
+          "kind": "heavy",
+          "index": 17
+        },
+        {
+          "kind": "heavy",
+          "index": 16
+        },
+        {
+          "kind": "heavy",
+          "index": 11
+        }
+      ]
+    },
+    {
+      "id": "D06",
+      "goal": {
+        "type": "high",
+        "min": 190
+      },
+      "seed": 2246822507,
+      "specials": [
+        {
+          "index": 23,
+          "type": "keep"
+        },
+        {
+          "index": 26,
+          "type": "gather"
+        }
+      ],
+      "score": 194,
+      "actions": [
+        {
+          "kind": "heavy",
+          "index": 20
+        },
+        {
+          "kind": "heavy",
+          "index": 25
+        },
+        {
+          "kind": "heavy",
+          "index": 26
+        },
+        {
+          "kind": "heavy",
+          "index": 21,
+          "effect": "gather"
+        },
+        {
+          "kind": "heavy",
+          "index": 21
+        },
+        {
+          "kind": "heavy",
+          "index": 16
+        }
+      ]
+    },
+    {
+      "id": "H06",
+      "goal": {
+        "type": "range",
+        "min": 43,
+        "max": 51
+      },
+      "seed": 37,
+      "specials": [
+        {
+          "index": 6,
+          "type": "burst"
+        },
+        {
+          "index": 3,
+          "type": "keep"
+        }
+      ],
+      "score": 44,
+      "actions": [
+        {
+          "kind": "quench"
+        },
+        {
+          "kind": "heavy",
+          "index": 1
+        }
+      ]
+    },
+    {
+      "id": "H06",
+      "goal": {
+        "type": "range",
+        "min": 43,
+        "max": 51
+      },
+      "seed": 2246822507,
+      "specials": [
+        {
+          "index": 18,
+          "type": "keep"
+        },
+        {
+          "index": 20,
+          "type": "gather"
+        }
+      ],
+      "score": 44,
+      "actions": [
+        {
+          "kind": "quench"
+        },
+        {
+          "kind": "heavy",
+          "index": 1
+        }
+      ]
+    },
+    {
+      "id": "M06-T2",
+      "goal": {
+        "type": "range",
+        "min": 42,
+        "max": 54
+      },
+      "seed": 37,
+      "specials": [
+        {
+          "index": 6,
+          "type": "burst"
+        },
+        {
+          "index": 3,
+          "type": "keep"
+        }
+      ],
+      "score": 47,
+      "actions": [
+        {
+          "kind": "quench"
+        },
+        {
+          "kind": "temper"
+        }
+      ]
+    },
+    {
+      "id": "M06-T2",
+      "goal": {
+        "type": "range",
+        "min": 42,
+        "max": 54
+      },
+      "seed": 2246822507,
+      "specials": [
+        {
+          "index": 20,
+          "type": "keep"
+        },
+        {
+          "index": 22,
+          "type": "gather"
+        }
+      ],
+      "score": 47,
+      "actions": [
+        {
+          "kind": "quench"
+        },
+        {
+          "kind": "temper"
+        }
+      ]
+    },
+    {
+      "id": "B06",
+      "goal": {
+        "type": "high",
+        "min": 95
+      },
+      "seed": 37,
+      "specials": [
+        {
+          "index": 7,
+          "type": "burst"
+        },
+        {
+          "index": 4,
+          "type": "keep"
+        }
+      ],
+      "score": 110,
+      "actions": [
+        {
+          "kind": "quench"
+        },
+        {
+          "kind": "heavy",
+          "index": 7
+        },
+        {
+          "kind": "heavy",
+          "index": 12
+        },
+        {
+          "kind": "heavy",
+          "index": 11
+        },
+        {
+          "kind": "heavy",
+          "index": 6,
+          "effect": "burst"
+        },
+        {
+          "kind": "heavy",
+          "index": 11
+        }
+      ]
+    },
+    {
+      "id": "B06",
+      "goal": {
+        "type": "high",
+        "min": 95
+      },
+      "seed": 2246822507,
+      "specials": [
+        {
+          "index": 21,
+          "type": "keep"
+        },
+        {
+          "index": 24,
+          "type": "gather"
+        }
+      ],
+      "score": 143,
+      "actions": [
+        {
+          "kind": "heavy",
+          "index": 24
+        },
+        {
+          "kind": "heavy",
+          "index": 20
+        },
+        {
+          "kind": "heavy",
+          "index": 21,
+          "effect": "gather"
+        },
+        {
+          "kind": "heavy",
+          "index": 21,
+          "effect": "keep"
+        },
+        {
+          "kind": "heavy",
+          "index": 16
+        },
+        {
+          "kind": "heavy",
+          "index": 21
+        }
+      ]
+    },
+    {
+      "id": "T05",
+      "goal": {
+        "type": "high",
+        "min": 70
+      },
+      "seed": 37,
+      "specials": [
+        {
+          "index": 4,
+          "type": "burst"
+        },
+        {
+          "index": 2,
+          "type": "keep"
+        }
+      ],
+      "score": 76,
+      "actions": [
+        {
+          "kind": "heavy",
+          "index": 4
+        },
+        {
+          "kind": "heavy",
+          "index": 5
+        },
+        {
+          "kind": "heavy",
+          "index": 6
+        },
+        {
+          "kind": "heavy",
+          "index": 2,
+          "effect": "burst"
+        },
+        {
+          "kind": "heavy",
+          "index": 1
+        },
+        {
+          "kind": "heavy",
+          "index": 2
+        }
+      ]
+    },
+    {
+      "id": "T05",
+      "goal": {
+        "type": "high",
+        "min": 70
+      },
+      "seed": 2246822507,
+      "specials": [
+        {
+          "index": 12,
+          "type": "keep"
+        },
+        {
+          "index": 13,
+          "type": "gather"
+        }
+      ],
+      "score": 72,
+      "actions": [
+        {
+          "kind": "heavy",
+          "index": 3
+        },
+        {
+          "kind": "heavy",
+          "index": 7
+        },
+        {
+          "kind": "heavy",
+          "index": 6
+        },
+        {
+          "kind": "heavy",
+          "index": 2
+        },
+        {
+          "kind": "heavy",
+          "index": 3
+        },
+        {
+          "kind": "heavy",
+          "index": 7
+        }
+      ]
+    },
+    {
+      "id": "D07",
+      "goal": {
+        "type": "low",
+        "max": 26
+      },
+      "seed": 37,
+      "specials": [
+        {
+          "index": 3,
+          "type": "burst"
+        },
+        {
+          "index": 1,
+          "type": "keep"
+        }
+      ],
+      "score": 25,
+      "actions": [
+        {
+          "kind": "temper"
+        },
+        {
+          "kind": "heavy",
+          "index": 0
+        },
+        {
+          "kind": "light",
+          "index": 1
+        }
+      ]
+    },
+    {
+      "id": "D07",
+      "goal": {
+        "type": "low",
+        "max": 26
+      },
+      "seed": 2246822507,
+      "specials": [
+        {
+          "index": 10,
+          "type": "keep"
+        },
+        {
+          "index": 11,
+          "type": "gather"
+        }
+      ],
+      "score": 25,
+      "actions": [
+        {
+          "kind": "temper"
+        },
+        {
+          "kind": "heavy",
+          "index": 0
+        },
+        {
+          "kind": "light",
+          "index": 1
+        }
+      ]
+    },
+    {
+      "id": "H07",
+      "goal": {
+        "type": "low",
+        "max": 19
+      },
+      "seed": 37,
+      "specials": [
+        {
+          "index": 4,
+          "type": "burst"
+        },
+        {
+          "index": 2,
+          "type": "keep"
+        }
+      ],
+      "score": 18,
+      "actions": [
+        {
+          "kind": "temper"
+        }
+      ]
+    },
+    {
+      "id": "H07",
+      "goal": {
+        "type": "low",
+        "max": 19
+      },
+      "seed": 2246822507,
+      "specials": [
+        {
+          "index": 12,
+          "type": "keep"
+        },
+        {
+          "index": 14,
+          "type": "gather"
+        }
+      ],
+      "score": 18,
+      "actions": [
+        {
+          "kind": "temper"
+        }
+      ]
+    },
+    {
+      "id": "M01-T3",
+      "goal": {
+        "type": "high",
+        "min": 135
+      },
+      "seed": 37,
+      "specials": [
+        {
+          "index": 6,
+          "type": "burst"
+        },
+        {
+          "index": 3,
+          "type": "keep"
+        }
+      ],
+      "score": 135,
+      "actions": [
+        {
+          "kind": "heavy",
+          "index": 0
+        },
+        {
+          "kind": "heavy",
+          "index": 6
+        },
+        {
+          "kind": "heavy",
+          "index": 13,
+          "effect": "burst"
+        },
+        {
+          "kind": "heavy",
+          "index": 6
+        },
+        {
+          "kind": "heavy",
+          "index": 13
+        }
+      ]
+    },
+    {
+      "id": "M01-T3",
+      "goal": {
+        "type": "high",
+        "min": 135
+      },
+      "seed": 2246822507,
+      "specials": [
+        {
+          "index": 18,
+          "type": "keep"
+        },
+        {
+          "index": 21,
+          "type": "gather"
+        }
+      ],
+      "score": 135,
+      "actions": [
+        {
+          "kind": "quench"
+        },
+        {
+          "kind": "heavy",
+          "index": 6
+        },
+        {
+          "kind": "heavy",
+          "index": 21
+        },
+        {
+          "kind": "heavy",
+          "index": 13,
+          "effect": "gather"
+        },
+        {
+          "kind": "heavy",
+          "index": 13
+        },
+        {
+          "kind": "heavy",
+          "index": 6
+        },
+        {
+          "kind": "heavy",
+          "index": 3
+        }
+      ]
+    },
+    {
+      "id": "B07",
+      "goal": {
+        "type": "range",
+        "min": 36,
+        "max": 41
+      },
+      "seed": 37,
+      "specials": [
+        {
+          "index": 7,
+          "type": "burst"
+        },
+        {
+          "index": 4,
+          "type": "keep"
+        }
+      ],
+      "score": 40,
+      "actions": [
+        {
+          "kind": "cross",
+          "index": 7
+        },
+        {
+          "kind": "heavy",
+          "index": 12,
+          "effect": "burst"
+        }
+      ]
+    },
+    {
+      "id": "B07",
+      "goal": {
+        "type": "range",
+        "min": 36,
+        "max": 41
+      },
+      "seed": 2246822507,
+      "specials": [
+        {
+          "index": 23,
+          "type": "keep"
+        },
+        {
+          "index": 26,
+          "type": "gather"
+        }
+      ],
+      "score": 36,
+      "actions": [
+        {
+          "kind": "quench"
+        },
+        {
+          "kind": "cross",
+          "index": 12
+        },
+        {
+          "kind": "heavy",
+          "index": 1
+        }
+      ]
+    },
+    {
+      "id": "T06",
+      "goal": {
+        "type": "low",
+        "max": 22
+      },
+      "seed": 37,
+      "specials": [
+        {
+          "index": 4,
+          "type": "burst"
+        },
+        {
+          "index": 2,
+          "type": "keep"
+        }
+      ],
+      "score": 21,
+      "actions": [
+        {
+          "kind": "temper"
+        }
+      ]
+    },
+    {
+      "id": "T06",
+      "goal": {
+        "type": "low",
+        "max": 22
+      },
+      "seed": 2246822507,
+      "specials": [
+        {
+          "index": 12,
+          "type": "keep"
+        },
+        {
+          "index": 13,
+          "type": "gather"
+        }
+      ],
+      "score": 21,
+      "actions": [
+        {
+          "kind": "temper"
+        }
+      ]
+    },
+    {
+      "id": "D08",
+      "goal": {
+        "type": "high",
+        "min": 205
+      },
+      "seed": 37,
+      "specials": [
+        {
+          "index": 5,
+          "type": "burst"
+        },
+        {
+          "index": 3,
+          "type": "keep"
+        }
+      ],
+      "score": 256,
+      "actions": [
+        {
+          "kind": "heavy",
+          "index": 11
+        },
+        {
+          "kind": "heavy",
+          "index": 6
+        },
+        {
+          "kind": "heavy",
+          "index": 5
+        },
+        {
+          "kind": "heavy",
+          "index": 10
+        },
+        {
+          "kind": "heavy",
+          "index": 11,
+          "effect": "burst"
+        },
+        {
+          "kind": "heavy",
+          "index": 6
+        }
+      ]
+    },
+    {
+      "id": "D08",
+      "goal": {
+        "type": "high",
+        "min": 205
+      },
+      "seed": 2246822507,
+      "specials": [
+        {
+          "index": 15,
+          "type": "keep"
+        },
+        {
+          "index": 17,
+          "type": "gather"
+        }
+      ],
+      "score": 224,
+      "actions": [
+        {
+          "kind": "quench"
+        },
+        {
+          "kind": "heavy",
+          "index": 17
+        },
+        {
+          "kind": "heavy",
+          "index": 16,
+          "effect": "gather"
+        },
+        {
+          "kind": "heavy",
+          "index": 16
+        },
+        {
+          "kind": "heavy",
+          "index": 15
+        },
+        {
+          "kind": "heavy",
+          "index": 11
+        },
+        {
+          "kind": "heavy",
+          "index": 6
+        }
+      ]
+    },
+    {
+      "id": "H08",
+      "goal": {
+        "type": "range",
+        "min": 28,
+        "max": 34
+      },
+      "seed": 37,
+      "specials": [
+        {
+          "index": 4,
+          "type": "burst"
+        },
+        {
+          "index": 2,
+          "type": "keep"
+        }
+      ],
+      "score": 28,
+      "actions": [
+        {
+          "kind": "quench"
+        },
+        {
+          "kind": "cross",
+          "index": 3
+        }
+      ]
+    },
+    {
+      "id": "H08",
+      "goal": {
+        "type": "range",
+        "min": 28,
+        "max": 34
+      },
+      "seed": 2246822507,
+      "specials": [
+        {
+          "index": 13,
+          "type": "keep"
+        },
+        {
+          "index": 15,
+          "type": "gather"
+        }
+      ],
+      "score": 28,
+      "actions": [
+        {
+          "kind": "quench"
+        },
+        {
+          "kind": "cross",
+          "index": 3
+        }
+      ]
+    },
+    {
+      "id": "M04-T3",
+      "goal": {
+        "type": "high",
+        "min": 100
+      },
+      "seed": 37,
+      "specials": [
+        {
+          "index": 6,
+          "type": "burst"
+        },
+        {
+          "index": 3,
+          "type": "keep"
+        }
+      ],
+      "score": 104,
+      "actions": [
+        {
+          "kind": "heavy",
+          "index": 4
+        },
+        {
+          "kind": "heavy",
+          "index": 7
+        },
+        {
+          "kind": "heavy",
+          "index": 6
+        },
+        {
+          "kind": "heavy",
+          "index": 3,
+          "effect": "burst"
+        },
+        {
+          "kind": "heavy",
+          "index": 4
+        }
+      ]
+    },
+    {
+      "id": "M04-T3",
+      "goal": {
+        "type": "high",
+        "min": 100
+      },
+      "seed": 2246822507,
+      "specials": [
+        {
+          "index": 19,
+          "type": "keep"
+        },
+        {
+          "index": 22,
+          "type": "gather"
+        }
+      ],
+      "score": 124,
+      "actions": [
+        {
+          "kind": "quench"
+        },
+        {
+          "kind": "heavy",
+          "index": 7
+        },
+        {
+          "kind": "heavy",
+          "index": 14
+        },
+        {
+          "kind": "heavy",
+          "index": 21
+        },
+        {
+          "kind": "heavy",
+          "index": 20
+        },
+        {
+          "kind": "heavy",
+          "index": 13
+        },
+        {
+          "kind": "heavy",
+          "index": 6
+        }
+      ]
+    },
+    {
+      "id": "B08",
+      "goal": {
+        "type": "range",
+        "min": 28,
+        "max": 33
+      },
+      "seed": 37,
+      "specials": [
+        {
+          "index": 6,
+          "type": "burst"
+        },
+        {
+          "index": 3,
+          "type": "keep"
+        }
+      ],
+      "score": 31,
+      "actions": [
+        {
+          "kind": "cross",
+          "index": 9
+        },
+        {
+          "kind": "quench"
+        }
+      ]
+    },
+    {
+      "id": "B08",
+      "goal": {
+        "type": "range",
+        "min": 28,
+        "max": 33
+      },
+      "seed": 2246822507,
+      "specials": [
+        {
+          "index": 20,
+          "type": "keep"
+        },
+        {
+          "index": 22,
+          "type": "gather"
+        }
+      ],
+      "score": 31,
+      "actions": [
+        {
+          "kind": "cross",
+          "index": 9
+        },
+        {
+          "kind": "quench"
+        }
+      ]
+    },
+    {
+      "id": "D09",
+      "goal": {
+        "type": "range",
+        "min": 38,
+        "max": 46
+      },
+      "seed": 37,
+      "specials": [
+        {
+          "index": 6,
+          "type": "burst"
+        },
+        {
+          "index": 3,
+          "type": "keep"
+        }
+      ],
+      "score": 38,
+      "actions": [
+        {
+          "kind": "quench"
+        },
+        {
+          "kind": "cross",
+          "index": 2
+        }
+      ]
+    },
+    {
+      "id": "D09",
+      "goal": {
+        "type": "range",
+        "min": 38,
+        "max": 46
+      },
+      "seed": 2246822507,
+      "specials": [
+        {
+          "index": 19,
+          "type": "keep"
+        },
+        {
+          "index": 22,
+          "type": "gather"
+        }
+      ],
+      "score": 38,
+      "actions": [
+        {
+          "kind": "quench"
+        },
+        {
+          "kind": "cross",
+          "index": 2
+        }
+      ]
+    },
+    {
+      "id": "H09",
+      "goal": {
+        "type": "range",
+        "min": 40,
+        "max": 46
+      },
+      "seed": 37,
+      "specials": [
+        {
+          "index": 4,
+          "type": "burst"
+        },
+        {
+          "index": 2,
+          "type": "keep"
+        }
+      ],
+      "score": 43,
+      "actions": [
+        {
+          "kind": "quench"
+        },
+        {
+          "kind": "cross",
+          "index": 3
+        }
+      ]
+    },
+    {
+      "id": "H09",
+      "goal": {
+        "type": "range",
+        "min": 40,
+        "max": 46
+      },
+      "seed": 2246822507,
+      "specials": [
+        {
+          "index": 14,
+          "type": "keep"
+        },
+        {
+          "index": 16,
+          "type": "gather"
+        }
+      ],
+      "score": 43,
+      "actions": [
+        {
+          "kind": "quench"
+        },
+        {
+          "kind": "cross",
+          "index": 3
+        }
+      ]
+    },
+    {
+      "id": "M07-T3",
+      "goal": {
+        "type": "low",
+        "max": 52
+      },
+      "seed": 37,
+      "specials": [
+        {
+          "index": 6,
+          "type": "burst"
+        },
+        {
+          "index": 3,
+          "type": "keep"
+        }
+      ],
+      "score": 51,
+      "actions": [
+        {
+          "kind": "temper"
+        }
+      ]
+    },
+    {
+      "id": "M07-T3",
+      "goal": {
+        "type": "low",
+        "max": 52
+      },
+      "seed": 2246822507,
+      "specials": [
+        {
+          "index": 18,
+          "type": "keep"
+        },
+        {
+          "index": 20,
+          "type": "gather"
+        }
+      ],
+      "score": 51,
+      "actions": [
+        {
+          "kind": "temper"
+        }
+      ]
+    },
+    {
+      "id": "B09",
+      "goal": {
+        "type": "high",
+        "min": 115
+      },
+      "seed": 37,
+      "specials": [
+        {
+          "index": 6,
+          "type": "burst"
+        },
+        {
+          "index": 3,
+          "type": "keep"
+        }
+      ],
+      "score": 165,
+      "actions": [
+        {
+          "kind": "heavy",
+          "index": 5
+        },
+        {
+          "kind": "heavy",
+          "index": 2
+        },
+        {
+          "kind": "heavy",
+          "index": 3
+        },
+        {
+          "kind": "heavy",
+          "index": 6,
+          "effect": "keep"
+        },
+        {
+          "kind": "heavy",
+          "index": 5,
+          "effect": "burst"
+        },
+        {
+          "kind": "heavy",
+          "index": 2
+        }
+      ]
+    },
+    {
+      "id": "B09",
+      "goal": {
+        "type": "high",
+        "min": 115
+      },
+      "seed": 2246822507,
+      "specials": [
+        {
+          "index": 19,
+          "type": "keep"
+        },
+        {
+          "index": 22,
+          "type": "gather"
+        }
+      ],
+      "score": 115,
+      "actions": [
+        {
+          "kind": "quench"
+        },
+        {
+          "kind": "heavy",
+          "index": 22
+        },
+        {
+          "kind": "heavy",
+          "index": 18,
+          "effect": "gather"
+        },
+        {
+          "kind": "heavy",
+          "index": 18
+        },
+        {
+          "kind": "heavy",
+          "index": 13
+        },
+        {
+          "kind": "heavy",
+          "index": 18
+        },
+        {
+          "kind": "heavy",
+          "index": 2
+        }
+      ]
+    },
+    {
+      "id": "T07",
+      "goal": {
+        "type": "high",
+        "min": 55
+      },
+      "seed": 37,
+      "specials": [
+        {
+          "index": 3,
+          "type": "burst"
+        },
+        {
+          "index": 1,
+          "type": "keep"
+        }
+      ],
+      "score": 68,
+      "actions": [
+        {
+          "kind": "quench"
+        },
+        {
+          "kind": "heavy",
+          "index": 2
+        },
+        {
+          "kind": "heavy",
+          "index": 3
+        },
+        {
+          "kind": "heavy",
+          "index": 1,
+          "effect": "burst"
+        },
+        {
+          "kind": "heavy",
+          "index": 3,
+          "effect": "keep"
+        },
+        {
+          "kind": "heavy",
+          "index": 1
+        }
+      ]
+    },
+    {
+      "id": "T07",
+      "goal": {
+        "type": "high",
+        "min": 55
+      },
+      "seed": 2246822507,
+      "specials": [
+        {
+          "index": 9,
+          "type": "keep"
+        },
+        {
+          "index": 10,
+          "type": "gather"
+        }
+      ],
+      "score": 56,
+      "actions": [
+        {
+          "kind": "heavy",
+          "index": 10
+        },
+        {
+          "kind": "heavy",
+          "index": 6,
+          "effect": "gather"
+        },
+        {
+          "kind": "heavy",
+          "index": 6
+        },
+        {
+          "kind": "heavy",
+          "index": 9
+        },
+        {
+          "kind": "heavy",
+          "index": 6
+        },
+        {
+          "kind": "heavy",
+          "index": 3,
+          "effect": "keep"
+        }
+      ]
+    },
+    {
+      "id": "D10",
+      "goal": {
+        "type": "high",
+        "min": 250
+      },
+      "seed": 37,
+      "specials": [
+        {
+          "index": 7,
+          "type": "burst"
+        },
+        {
+          "index": 4,
+          "type": "keep"
+        }
+      ],
+      "score": 320,
+      "actions": [
+        {
+          "kind": "heavy",
+          "index": 4
+        },
+        {
+          "kind": "heavy",
+          "index": 9
+        },
+        {
+          "kind": "heavy",
+          "index": 8,
+          "effect": "keep"
+        },
+        {
+          "kind": "heavy",
+          "index": 7
+        },
+        {
+          "kind": "heavy",
+          "index": 8,
+          "effect": "burst"
+        },
+        {
+          "kind": "heavy",
+          "index": 3
+        }
+      ]
+    },
+    {
+      "id": "D10",
+      "goal": {
+        "type": "high",
+        "min": 250
+      },
+      "seed": 2246822507,
+      "specials": [
+        {
+          "index": 21,
+          "type": "keep"
+        },
+        {
+          "index": 24,
+          "type": "gather"
+        }
+      ],
+      "score": 264,
+      "actions": [
+        {
+          "kind": "quench"
+        },
+        {
+          "kind": "heavy",
+          "index": 1
+        },
+        {
+          "kind": "heavy",
+          "index": 6
+        },
+        {
+          "kind": "heavy",
+          "index": 11
+        },
+        {
+          "kind": "heavy",
+          "index": 12
+        },
+        {
+          "kind": "heavy",
+          "index": 7
+        },
+        {
+          "kind": "heavy",
+          "index": 2
+        }
+      ]
+    },
+    {
+      "id": "H10",
+      "goal": {
+        "type": "high",
+        "min": 170
+      },
+      "seed": 37,
+      "specials": [
+        {
+          "index": 5,
+          "type": "burst"
+        },
+        {
+          "index": 3,
+          "type": "keep"
+        }
+      ],
+      "score": 173,
+      "actions": [
+        {
+          "kind": "heavy",
+          "index": 18
+        },
+        {
+          "kind": "heavy",
+          "index": 22
+        },
+        {
+          "kind": "heavy",
+          "index": 21
+        },
+        {
+          "kind": "heavy",
+          "index": 5
+        },
+        {
+          "kind": "heavy",
+          "index": 17,
+          "effect": "burst"
+        },
+        {
+          "kind": "heavy",
+          "index": 18
+        }
+      ]
+    },
+    {
+      "id": "H10",
+      "goal": {
+        "type": "high",
+        "min": 170
+      },
+      "seed": 2246822507,
+      "specials": [
+        {
+          "index": 17,
+          "type": "keep"
+        },
+        {
+          "index": 19,
+          "type": "gather"
+        }
+      ],
+      "score": 191,
+      "actions": [
+        {
+          "kind": "quench"
+        },
+        {
+          "kind": "heavy",
+          "index": 19
+        },
+        {
+          "kind": "heavy",
+          "index": 18,
+          "effect": "gather"
+        },
+        {
+          "kind": "heavy",
+          "index": 18
+        },
+        {
+          "kind": "heavy",
+          "index": 17
+        },
+        {
+          "kind": "heavy",
+          "index": 16,
+          "effect": "keep"
+        }
+      ]
+    },
+    {
+      "id": "M02-T4",
+      "goal": {
+        "type": "high",
+        "min": 140
+      },
+      "seed": 37,
+      "specials": [
+        {
+          "index": 10,
+          "type": "burst"
+        },
+        {
+          "index": 6,
+          "type": "keep"
+        }
+      ],
+      "score": 154,
+      "actions": [
+        {
+          "kind": "quench"
+        },
+        {
+          "kind": "heavy",
+          "index": 10
+        },
+        {
+          "kind": "heavy",
+          "index": 17
+        },
+        {
+          "kind": "heavy",
+          "index": 24,
+          "effect": "burst"
+        },
+        {
+          "kind": "heavy",
+          "index": 25
+        },
+        {
+          "kind": "heavy",
+          "index": 17
+        }
+      ]
+    },
+    {
+      "id": "M02-T4",
+      "goal": {
+        "type": "high",
+        "min": 140
+      },
+      "seed": 2246822507,
+      "specials": [
+        {
+          "index": 30,
+          "type": "keep"
+        },
+        {
+          "index": 34,
+          "type": "gather"
+        }
+      ],
+      "score": 149,
+      "actions": [
+        {
+          "kind": "quench"
+        },
+        {
+          "kind": "heavy",
+          "index": 36
+        },
+        {
+          "kind": "heavy",
+          "index": 30
+        },
+        {
+          "kind": "heavy",
+          "index": 29
+        },
+        {
+          "kind": "heavy",
+          "index": 35
+        },
+        {
+          "kind": "heavy",
+          "index": 36,
+          "effect": "keep"
+        }
+      ]
+    },
+    {
+      "id": "B10",
+      "goal": {
+        "type": "low",
+        "max": 12
+      },
+      "seed": 37,
+      "specials": [
+        {
+          "index": 6,
+          "type": "burst"
+        },
+        {
+          "index": 3,
+          "type": "keep"
+        }
+      ],
+      "score": 12,
+      "actions": [
+        {
+          "kind": "temper"
+        },
+        {
+          "kind": "heavy",
+          "index": 0
+        }
+      ]
+    },
+    {
+      "id": "B10",
+      "goal": {
+        "type": "low",
+        "max": 12
+      },
+      "seed": 2246822507,
+      "specials": [
+        {
+          "index": 18,
+          "type": "keep"
+        },
+        {
+          "index": 21,
+          "type": "gather"
+        }
+      ],
+      "score": 12,
+      "actions": [
+        {
+          "kind": "temper"
+        },
+        {
+          "kind": "heavy",
+          "index": 0
+        }
+      ]
+    },
+    {
+      "id": "T08",
+      "goal": {
+        "type": "range",
+        "min": 32,
+        "max": 38
+      },
+      "seed": 37,
+      "specials": [
+        {
+          "index": 5,
+          "type": "burst"
+        },
+        {
+          "index": 3,
+          "type": "keep"
+        }
+      ],
+      "score": 32,
+      "actions": [
+        {
+          "kind": "quench"
+        },
+        {
+          "kind": "cross",
+          "index": 5
+        }
+      ]
+    },
+    {
+      "id": "T08",
+      "goal": {
+        "type": "range",
+        "min": 32,
+        "max": 38
+      },
+      "seed": 2246822507,
+      "specials": [
+        {
+          "index": 15,
+          "type": "keep"
+        },
+        {
+          "index": 17,
+          "type": "gather"
+        }
+      ],
+      "score": 32,
+      "actions": [
+        {
+          "kind": "quench"
+        },
+        {
+          "kind": "cross",
+          "index": 5
+        }
+      ]
+    },
+    {
+      "id": "D11",
+      "goal": {
+        "type": "range",
+        "min": 51,
+        "max": 59
+      },
+      "seed": 37,
+      "specials": [
+        {
+          "index": 6,
+          "type": "burst"
+        },
+        {
+          "index": 3,
+          "type": "keep"
+        }
+      ],
+      "score": 52,
+      "actions": [
+        {
+          "kind": "quench"
+        },
+        {
+          "kind": "cross",
+          "index": 6
+        }
+      ]
+    },
+    {
+      "id": "D11",
+      "goal": {
+        "type": "range",
+        "min": 51,
+        "max": 59
+      },
+      "seed": 2246822507,
+      "specials": [
+        {
+          "index": 19,
+          "type": "keep"
+        },
+        {
+          "index": 22,
+          "type": "gather"
+        }
+      ],
+      "score": 52,
+      "actions": [
+        {
+          "kind": "quench"
+        },
+        {
+          "kind": "cross",
+          "index": 6
+        }
+      ]
+    },
+    {
+      "id": "H11",
+      "goal": {
+        "type": "range",
+        "min": 30,
+        "max": 36
+      },
+      "seed": 37,
+      "specials": [
+        {
+          "index": 5,
+          "type": "burst"
+        },
+        {
+          "index": 3,
+          "type": "keep"
+        }
+      ],
+      "score": 31,
+      "actions": [
+        {
+          "kind": "quench"
+        },
+        {
+          "kind": "heavy",
+          "index": 5
+        }
+      ]
+    },
+    {
+      "id": "H11",
+      "goal": {
+        "type": "range",
+        "min": 30,
+        "max": 36
+      },
+      "seed": 2246822507,
+      "specials": [
+        {
+          "index": 15,
+          "type": "keep"
+        },
+        {
+          "index": 17,
+          "type": "gather"
+        }
+      ],
+      "score": 31,
+      "actions": [
+        {
+          "kind": "quench"
+        },
+        {
+          "kind": "heavy",
+          "index": 5
+        }
+      ]
+    },
+    {
+      "id": "M05-T4",
+      "goal": {
+        "type": "high",
+        "min": 190
+      },
+      "seed": 37,
+      "specials": [
+        {
+          "index": 8,
+          "type": "burst"
+        },
+        {
+          "index": 4,
+          "type": "keep"
+        }
+      ],
+      "score": 247,
+      "actions": [
+        {
+          "kind": "quench"
+        },
+        {
+          "kind": "heavy",
+          "index": 8
+        },
+        {
+          "kind": "heavy",
+          "index": 9
+        },
+        {
+          "kind": "heavy",
+          "index": 5
+        },
+        {
+          "kind": "heavy",
+          "index": 2,
+          "effect": "burst"
+        },
+        {
+          "kind": "heavy",
+          "index": 5
+        },
+        {
+          "kind": "heavy",
+          "index": 2
+        }
+      ]
+    },
+    {
+      "id": "M05-T4",
+      "goal": {
+        "type": "high",
+        "min": 190
+      },
+      "seed": 2246822507,
+      "specials": [
+        {
+          "index": 24,
+          "type": "keep"
+        },
+        {
+          "index": 27,
+          "type": "gather"
+        }
+      ],
+      "score": 211,
+      "actions": [
+        {
+          "kind": "quench"
+        },
+        {
+          "kind": "heavy",
+          "index": 10
+        },
+        {
+          "kind": "heavy",
+          "index": 6
+        },
+        {
+          "kind": "heavy",
+          "index": 5
+        },
+        {
+          "kind": "heavy",
+          "index": 3
+        },
+        {
+          "kind": "heavy",
+          "index": 2
+        },
+        {
+          "kind": "heavy",
+          "index": 5
+        }
+      ]
+    },
+    {
+      "id": "B11",
+      "goal": {
+        "type": "high",
+        "min": 115
+      },
+      "seed": 37,
+      "specials": [
+        {
+          "index": 7,
+          "type": "burst"
+        },
+        {
+          "index": 4,
+          "type": "keep"
+        }
+      ],
+      "score": 122,
+      "actions": [
+        {
+          "kind": "heavy",
+          "index": 7
+        },
+        {
+          "kind": "heavy",
+          "index": 8
+        },
+        {
+          "kind": "heavy",
+          "index": 13
+        },
+        {
+          "kind": "heavy",
+          "index": 18,
+          "effect": "burst"
+        },
+        {
+          "kind": "heavy",
+          "index": 13
+        },
+        {
+          "kind": "heavy",
+          "index": 8
+        }
+      ]
+    },
+    {
+      "id": "B11",
+      "goal": {
+        "type": "high",
+        "min": 115
+      },
+      "seed": 2246822507,
+      "specials": [
+        {
+          "index": 21,
+          "type": "keep"
+        },
+        {
+          "index": 24,
+          "type": "gather"
+        }
+      ],
+      "score": 120,
+      "actions": [
+        {
+          "kind": "heavy",
+          "index": 22
+        },
+        {
+          "kind": "heavy",
+          "index": 21
+        },
+        {
+          "kind": "heavy",
+          "index": 24
+        },
+        {
+          "kind": "heavy",
+          "index": 25,
+          "effect": "gather"
+        },
+        {
+          "kind": "heavy",
+          "index": 25,
+          "effect": "keep"
+        },
+        {
+          "kind": "heavy",
+          "index": 24
+        }
+      ]
+    },
+    {
+      "id": "D12",
+      "goal": {
+        "type": "range",
+        "min": 49,
+        "max": 59
+      },
+      "seed": 37,
+      "specials": [
+        {
+          "index": 6,
+          "type": "burst"
+        },
+        {
+          "index": 3,
+          "type": "keep"
+        }
+      ],
+      "score": 55,
+      "actions": [
+        {
+          "kind": "quench"
+        },
+        {
+          "kind": "cross",
+          "index": 8
+        }
+      ]
+    },
+    {
+      "id": "D12",
+      "goal": {
+        "type": "range",
+        "min": 49,
+        "max": 59
+      },
+      "seed": 2246822507,
+      "specials": [
+        {
+          "index": 20,
+          "type": "keep"
+        },
+        {
+          "index": 22,
+          "type": "gather"
+        }
+      ],
+      "score": 55,
+      "actions": [
+        {
+          "kind": "quench"
+        },
+        {
+          "kind": "cross",
+          "index": 8
+        }
+      ]
+    },
+    {
+      "id": "H12",
+      "goal": {
+        "type": "range",
+        "min": 33,
+        "max": 39
+      },
+      "seed": 37,
+      "specials": [
+        {
+          "index": 5,
+          "type": "burst"
+        },
+        {
+          "index": 2,
+          "type": "keep"
+        }
+      ],
+      "score": 33,
+      "actions": [
+        {
+          "kind": "quench"
+        },
+        {
+          "kind": "heavy",
+          "index": 4
+        }
+      ]
+    },
+    {
+      "id": "H12",
+      "goal": {
+        "type": "range",
+        "min": 33,
+        "max": 39
+      },
+      "seed": 2246822507,
+      "specials": [
+        {
+          "index": 15,
+          "type": "keep"
+        },
+        {
+          "index": 16,
+          "type": "gather"
+        }
+      ],
+      "score": 33,
+      "actions": [
+        {
+          "kind": "quench"
+        },
+        {
+          "kind": "heavy",
+          "index": 4
+        }
+      ]
+    },
+    {
+      "id": "M08-T4",
+      "goal": {
+        "type": "range",
+        "min": 53,
+        "max": 62
+      },
+      "seed": 37,
+      "specials": [
+        {
+          "index": 7,
+          "type": "burst"
+        },
+        {
+          "index": 4,
+          "type": "keep"
+        }
+      ],
+      "score": 55,
+      "actions": [
+        {
+          "kind": "heavy",
+          "index": 7
+        },
+        {
+          "kind": "cross",
+          "index": 13,
+          "effect": "burst"
+        }
+      ]
+    },
+    {
+      "id": "M08-T4",
+      "goal": {
+        "type": "range",
+        "min": 53,
+        "max": 62
+      },
+      "seed": 2246822507,
+      "specials": [
+        {
+          "index": 22,
+          "type": "keep"
+        },
+        {
+          "index": 25,
+          "type": "gather"
+        }
+      ],
+      "score": 53,
+      "actions": [
+        {
+          "kind": "quench"
+        },
+        {
+          "kind": "cross",
+          "index": 28
+        },
+        {
+          "kind": "heavy",
+          "index": 4
+        }
+      ]
+    },
+    {
+      "id": "B12",
+      "goal": {
+        "type": "range",
+        "min": 27,
+        "max": 33
+      },
+      "seed": 37,
+      "specials": [
+        {
+          "index": 8,
+          "type": "burst"
+        },
+        {
+          "index": 5,
+          "type": "keep"
+        }
+      ],
+      "score": 27,
+      "actions": [
+        {
+          "kind": "quench"
+        },
+        {
+          "kind": "cross",
+          "index": 6
+        }
+      ]
+    },
+    {
+      "id": "B12",
+      "goal": {
+        "type": "range",
+        "min": 27,
+        "max": 33
+      },
+      "seed": 2246822507,
+      "specials": [
+        {
+          "index": 25,
+          "type": "keep"
+        },
+        {
+          "index": 28,
+          "type": "gather"
+        }
+      ],
+      "score": 27,
+      "actions": [
+        {
+          "kind": "quench"
+        },
+        {
+          "kind": "cross",
+          "index": 6
+        }
+      ]
+    },
+    {
+      "id": "T09",
+      "goal": {
+        "type": "high",
+        "min": 60
+      },
+      "seed": 37,
+      "specials": [
+        {
+          "index": 4,
+          "type": "burst"
+        },
+        {
+          "index": 2,
+          "type": "keep"
+        }
+      ],
+      "score": 63,
+      "actions": [
+        {
+          "kind": "heavy",
+          "index": 4
+        },
+        {
+          "kind": "heavy",
+          "index": 2
+        },
+        {
+          "kind": "heavy",
+          "index": 3,
+          "effect": "burst"
+        },
+        {
+          "kind": "heavy",
+          "index": 1,
+          "effect": "keep"
+        },
+        {
+          "kind": "heavy",
+          "index": 1
+        }
+      ]
+    },
+    {
+      "id": "T09",
+      "goal": {
+        "type": "high",
+        "min": 60
+      },
+      "seed": 2246822507,
+      "specials": [
+        {
+          "index": 12,
+          "type": "keep"
+        },
+        {
+          "index": 13,
+          "type": "gather"
+        }
+      ],
+      "score": 76,
+      "actions": [
+        {
+          "kind": "quench"
+        },
+        {
+          "kind": "heavy",
+          "index": 13
+        },
+        {
+          "kind": "heavy",
+          "index": 3,
+          "effect": "gather"
+        },
+        {
+          "kind": "heavy",
+          "index": 3
+        },
+        {
+          "kind": "heavy",
+          "index": 6
+        },
+        {
+          "kind": "heavy",
+          "index": 1
+        },
+        {
+          "kind": "heavy",
+          "index": 2
+        }
+      ]
+    },
+    {
+      "id": "D13",
+      "goal": {
+        "type": "low",
+        "max": 37
+      },
+      "seed": 37,
+      "specials": [
+        {
+          "index": 4,
+          "type": "burst"
+        },
+        {
+          "index": 2,
+          "type": "keep"
+        }
+      ],
+      "score": 36,
+      "actions": [
+        {
+          "kind": "temper"
+        },
+        {
+          "kind": "heavy",
+          "index": 0
+        }
+      ]
+    },
+    {
+      "id": "D13",
+      "goal": {
+        "type": "low",
+        "max": 37
+      },
+      "seed": 2246822507,
+      "specials": [
+        {
+          "index": 14,
+          "type": "keep"
+        },
+        {
+          "index": 16,
+          "type": "gather"
+        }
+      ],
+      "score": 36,
+      "actions": [
+        {
+          "kind": "temper"
+        },
+        {
+          "kind": "heavy",
+          "index": 0
+        }
+      ]
+    },
+    {
+      "id": "H13",
+      "goal": {
+        "type": "low",
+        "max": 3
+      },
+      "seed": 37,
+      "specials": [
+        {
+          "index": 3,
+          "type": "burst"
+        },
+        {
+          "index": 1,
+          "type": "keep"
+        }
+      ],
+      "score": 3,
+      "actions": [
+        {
+          "kind": "temper"
+        },
+        {
+          "kind": "light",
+          "index": 11
+        }
+      ]
+    },
+    {
+      "id": "H13",
+      "goal": {
+        "type": "low",
+        "max": 3
+      },
+      "seed": 2246822507,
+      "specials": [
+        {
+          "index": 9,
+          "type": "keep"
+        },
+        {
+          "index": 11,
+          "type": "gather"
+        }
+      ],
+      "score": 3,
+      "actions": [
+        {
+          "kind": "temper"
+        },
+        {
+          "kind": "light",
+          "index": 11
+        }
+      ]
+    },
+    {
+      "id": "M03-T5",
+      "goal": {
+        "type": "range",
+        "min": 29,
+        "max": 39
+      },
+      "seed": 37,
+      "specials": [
+        {
+          "index": 10,
+          "type": "burst"
+        },
+        {
+          "index": 6,
+          "type": "keep"
+        }
+      ],
+      "score": 39,
+      "actions": [
+        {
+          "kind": "quench"
+        },
+        {
+          "kind": "temper"
+        }
+      ]
+    },
+    {
+      "id": "M03-T5",
+      "goal": {
+        "type": "range",
+        "min": 29,
+        "max": 39
+      },
+      "seed": 2246822507,
+      "specials": [
+        {
+          "index": 32,
+          "type": "keep"
+        },
+        {
+          "index": 36,
+          "type": "gather"
+        }
+      ],
+      "score": 39,
+      "actions": [
+        {
+          "kind": "quench"
+        },
+        {
+          "kind": "temper"
+        }
+      ]
+    },
+    {
+      "id": "B13",
+      "goal": {
+        "type": "low",
+        "max": 14
+      },
+      "seed": 37,
+      "specials": [
+        {
+          "index": 6,
+          "type": "burst"
+        },
+        {
+          "index": 3,
+          "type": "keep"
+        }
+      ],
+      "score": 14,
+      "actions": [
+        {
+          "kind": "temper"
+        },
+        {
+          "kind": "heavy",
+          "index": 0
+        }
+      ]
+    },
+    {
+      "id": "B13",
+      "goal": {
+        "type": "low",
+        "max": 14
+      },
+      "seed": 2246822507,
+      "specials": [
+        {
+          "index": 18,
+          "type": "keep"
+        },
+        {
+          "index": 20,
+          "type": "gather"
+        }
+      ],
+      "score": 14,
+      "actions": [
+        {
+          "kind": "temper"
+        },
+        {
+          "kind": "heavy",
+          "index": 0
+        }
+      ]
+    },
+    {
+      "id": "T10",
+      "goal": {
+        "type": "low",
+        "max": 18
+      },
+      "seed": 37,
+      "specials": [
+        {
+          "index": 6,
+          "type": "burst"
+        },
+        {
+          "index": 3,
+          "type": "keep"
+        }
+      ],
+      "score": 16,
+      "actions": [
+        {
+          "kind": "temper"
+        }
+      ]
+    },
+    {
+      "id": "T10",
+      "goal": {
+        "type": "low",
+        "max": 18
+      },
+      "seed": 2246822507,
+      "specials": [
+        {
+          "index": 19,
+          "type": "keep"
+        },
+        {
+          "index": 22,
+          "type": "gather"
+        }
+      ],
+      "score": 16,
+      "actions": [
+        {
+          "kind": "temper"
+        }
+      ]
+    },
+    {
+      "id": "D14",
+      "goal": {
+        "type": "high",
+        "min": 205
+      },
+      "seed": 37,
+      "specials": [
+        {
+          "index": 5,
+          "type": "burst"
+        },
+        {
+          "index": 3,
+          "type": "keep"
+        }
+      ],
+      "score": 256,
+      "actions": [
+        {
+          "kind": "heavy",
+          "index": 11
+        },
+        {
+          "kind": "heavy",
+          "index": 6
+        },
+        {
+          "kind": "heavy",
+          "index": 5
+        },
+        {
+          "kind": "heavy",
+          "index": 10
+        },
+        {
+          "kind": "heavy",
+          "index": 11,
+          "effect": "burst"
+        },
+        {
+          "kind": "heavy",
+          "index": 6
+        }
+      ]
+    },
+    {
+      "id": "D14",
+      "goal": {
+        "type": "high",
+        "min": 205
+      },
+      "seed": 2246822507,
+      "specials": [
+        {
+          "index": 15,
+          "type": "keep"
+        },
+        {
+          "index": 17,
+          "type": "gather"
+        }
+      ],
+      "score": 224,
+      "actions": [
+        {
+          "kind": "quench"
+        },
+        {
+          "kind": "heavy",
+          "index": 17
+        },
+        {
+          "kind": "heavy",
+          "index": 16,
+          "effect": "gather"
+        },
+        {
+          "kind": "heavy",
+          "index": 16
+        },
+        {
+          "kind": "heavy",
+          "index": 15
+        },
+        {
+          "kind": "heavy",
+          "index": 11
+        },
+        {
+          "kind": "heavy",
+          "index": 6
+        }
+      ]
+    },
+    {
+      "id": "H14",
+      "goal": {
+        "type": "range",
+        "min": 33,
+        "max": 39
+      },
+      "seed": 37,
+      "specials": [
+        {
+          "index": 6,
+          "type": "burst"
+        },
+        {
+          "index": 3,
+          "type": "keep"
+        }
+      ],
+      "score": 33,
+      "actions": [
+        {
+          "kind": "quench"
+        },
+        {
+          "kind": "heavy",
+          "index": 8
+        }
+      ]
+    },
+    {
+      "id": "H14",
+      "goal": {
+        "type": "range",
+        "min": 33,
+        "max": 39
+      },
+      "seed": 2246822507,
+      "specials": [
+        {
+          "index": 18,
+          "type": "keep"
+        },
+        {
+          "index": 20,
+          "type": "gather"
+        }
+      ],
+      "score": 33,
+      "actions": [
+        {
+          "kind": "quench"
+        },
+        {
+          "kind": "heavy",
+          "index": 8
+        }
+      ]
+    },
+    {
+      "id": "M06-T5",
+      "goal": {
+        "type": "range",
+        "min": 47,
+        "max": 59
+      },
+      "seed": 37,
+      "specials": [
+        {
+          "index": 6,
+          "type": "burst"
+        },
+        {
+          "index": 3,
+          "type": "keep"
+        }
+      ],
+      "score": 47,
+      "actions": [
+        {
+          "kind": "quench"
+        },
+        {
+          "kind": "temper"
+        }
+      ]
+    },
+    {
+      "id": "M06-T5",
+      "goal": {
+        "type": "range",
+        "min": 47,
+        "max": 59
+      },
+      "seed": 2246822507,
+      "specials": [
+        {
+          "index": 20,
+          "type": "keep"
+        },
+        {
+          "index": 22,
+          "type": "gather"
+        }
+      ],
+      "score": 47,
+      "actions": [
+        {
+          "kind": "quench"
+        },
+        {
+          "kind": "temper"
+        }
+      ]
+    },
+    {
+      "id": "B14",
+      "goal": {
+        "type": "range",
+        "min": 27,
+        "max": 32
+      },
+      "seed": 37,
+      "specials": [
+        {
+          "index": 7,
+          "type": "burst"
+        },
+        {
+          "index": 4,
+          "type": "keep"
+        }
+      ],
+      "score": 28,
+      "actions": [
+        {
+          "kind": "cross",
+          "index": 9
+        },
+        {
+          "kind": "quench"
+        }
+      ]
+    },
+    {
+      "id": "B14",
+      "goal": {
+        "type": "range",
+        "min": 27,
+        "max": 32
+      },
+      "seed": 2246822507,
+      "specials": [
+        {
+          "index": 21,
+          "type": "keep"
+        },
+        {
+          "index": 24,
+          "type": "gather"
+        }
+      ],
+      "score": 28,
+      "actions": [
+        {
+          "kind": "cross",
+          "index": 9
+        },
+        {
+          "kind": "quench"
+        }
+      ]
+    },
+    {
+      "id": "D15",
+      "goal": {
+        "type": "range",
+        "min": 47,
+        "max": 57
+      },
+      "seed": 37,
+      "specials": [
+        {
+          "index": 7,
+          "type": "burst"
+        },
+        {
+          "index": 4,
+          "type": "keep"
+        }
+      ],
+      "score": 49,
+      "actions": [
+        {
+          "kind": "quench"
+        },
+        {
+          "kind": "cross",
+          "index": 5
+        }
+      ]
+    },
+    {
+      "id": "D15",
+      "goal": {
+        "type": "range",
+        "min": 47,
+        "max": 57
+      },
+      "seed": 2246822507,
+      "specials": [
+        {
+          "index": 23,
+          "type": "keep"
+        },
+        {
+          "index": 26,
+          "type": "gather"
+        }
+      ],
+      "score": 49,
+      "actions": [
+        {
+          "kind": "quench"
+        },
+        {
+          "kind": "cross",
+          "index": 5
+        }
+      ]
+    },
+    {
+      "id": "H15",
+      "goal": {
+        "type": "range",
+        "min": 35,
+        "max": 41
+      },
+      "seed": 37,
+      "specials": [
+        {
+          "index": 6,
+          "type": "burst"
+        },
+        {
+          "index": 3,
+          "type": "keep"
+        }
+      ],
+      "score": 37,
+      "actions": [
+        {
+          "kind": "quench"
+        },
+        {
+          "kind": "cross",
+          "index": 4
+        }
+      ]
+    },
+    {
+      "id": "H15",
+      "goal": {
+        "type": "range",
+        "min": 35,
+        "max": 41
+      },
+      "seed": 2246822507,
+      "specials": [
+        {
+          "index": 18,
+          "type": "keep"
+        },
+        {
+          "index": 21,
+          "type": "gather"
+        }
+      ],
+      "score": 37,
+      "actions": [
+        {
+          "kind": "quench"
+        },
+        {
+          "kind": "cross",
+          "index": 4
+        }
+      ]
+    },
+    {
+      "id": "M07-T5",
+      "goal": {
+        "type": "low",
+        "max": 52
+      },
+      "seed": 37,
+      "specials": [
+        {
+          "index": 6,
+          "type": "burst"
+        },
+        {
+          "index": 3,
+          "type": "keep"
+        }
+      ],
+      "score": 51,
+      "actions": [
+        {
+          "kind": "temper"
+        }
+      ]
+    },
+    {
+      "id": "M07-T5",
+      "goal": {
+        "type": "low",
+        "max": 52
+      },
+      "seed": 2246822507,
+      "specials": [
+        {
+          "index": 18,
+          "type": "keep"
+        },
+        {
+          "index": 20,
+          "type": "gather"
+        }
+      ],
+      "score": 51,
+      "actions": [
+        {
+          "kind": "temper"
+        }
+      ]
+    },
+    {
+      "id": "B15",
+      "goal": {
+        "type": "low",
+        "max": 18
+      },
+      "seed": 37,
+      "specials": [
+        {
+          "index": 7,
+          "type": "burst"
+        },
+        {
+          "index": 4,
+          "type": "keep"
+        }
+      ],
+      "score": 18,
+      "actions": [
+        {
+          "kind": "temper"
+        }
+      ]
+    },
+    {
+      "id": "B15",
+      "goal": {
+        "type": "low",
+        "max": 18
+      },
+      "seed": 2246822507,
+      "specials": [
+        {
+          "index": 21,
+          "type": "keep"
+        },
+        {
+          "index": 24,
+          "type": "gather"
+        }
+      ],
+      "score": 18,
+      "actions": [
+        {
+          "kind": "temper"
+        }
+      ]
+    },
+    {
+      "id": "T11",
+      "goal": {
+        "type": "high",
+        "min": 70
+      },
+      "seed": 37,
+      "specials": [
+        {
+          "index": 5,
+          "type": "burst"
+        },
+        {
+          "index": 2,
+          "type": "keep"
+        }
+      ],
+      "score": 81,
+      "actions": [
+        {
+          "kind": "heavy",
+          "index": 3
+        },
+        {
+          "kind": "heavy",
+          "index": 6
+        },
+        {
+          "kind": "heavy",
+          "index": 5
+        },
+        {
+          "kind": "heavy",
+          "index": 2,
+          "effect": "burst"
+        },
+        {
+          "kind": "heavy",
+          "index": 1
+        }
+      ]
+    },
+    {
+      "id": "T11",
+      "goal": {
+        "type": "high",
+        "min": 70
+      },
+      "seed": 2246822507,
+      "specials": [
+        {
+          "index": 15,
+          "type": "keep"
+        },
+        {
+          "index": 16,
+          "type": "gather"
+        }
+      ],
+      "score": 74,
+      "actions": [
+        {
+          "kind": "heavy",
+          "index": 3
+        },
+        {
+          "kind": "heavy",
+          "index": 6
+        },
+        {
+          "kind": "heavy",
+          "index": 5
+        },
+        {
+          "kind": "heavy",
+          "index": 2
+        },
+        {
+          "kind": "heavy",
+          "index": 3
+        },
+        {
+          "kind": "heavy",
+          "index": 6
+        }
+      ]
+    },
+    {
+      "id": "D16",
+      "goal": {
+        "type": "high",
+        "min": 255
+      },
+      "seed": 37,
+      "specials": [
+        {
+          "index": 8,
+          "type": "burst"
+        },
+        {
+          "index": 4,
+          "type": "keep"
+        }
+      ],
+      "score": 268,
+      "actions": [
+        {
+          "kind": "heavy",
+          "index": 4
+        },
+        {
+          "kind": "heavy",
+          "index": 9
+        },
+        {
+          "kind": "heavy",
+          "index": 8,
+          "effect": "keep"
+        },
+        {
+          "kind": "heavy",
+          "index": 3
+        },
+        {
+          "kind": "heavy",
+          "index": 8,
+          "effect": "burst"
+        },
+        {
+          "kind": "quench"
+        }
+      ]
+    },
+    {
+      "id": "D16",
+      "goal": {
+        "type": "high",
+        "min": 255
+      },
+      "seed": 2246822507,
+      "specials": [
+        {
+          "index": 24,
+          "type": "keep"
+        },
+        {
+          "index": 27,
+          "type": "gather"
+        }
+      ],
+      "score": 264,
+      "actions": [
+        {
+          "kind": "quench"
+        },
+        {
+          "kind": "heavy",
+          "index": 1
+        },
+        {
+          "kind": "heavy",
+          "index": 6
+        },
+        {
+          "kind": "heavy",
+          "index": 11
+        },
+        {
+          "kind": "heavy",
+          "index": 12
+        },
+        {
+          "kind": "heavy",
+          "index": 7
+        },
+        {
+          "kind": "heavy",
+          "index": 2
+        }
+      ]
+    },
+    {
+      "id": "H16",
+      "goal": {
+        "type": "high",
+        "min": 190
+      },
+      "seed": 37,
+      "specials": [
+        {
+          "index": 6,
+          "type": "burst"
+        },
+        {
+          "index": 3,
+          "type": "keep"
+        }
+      ],
+      "score": 192,
+      "actions": [
+        {
+          "kind": "quench"
+        },
+        {
+          "kind": "heavy",
+          "index": 23
+        },
+        {
+          "kind": "heavy",
+          "index": 6
+        },
+        {
+          "kind": "heavy",
+          "index": 18,
+          "effect": "burst"
+        },
+        {
+          "kind": "heavy",
+          "index": 17
+        },
+        {
+          "kind": "heavy",
+          "index": 22
+        },
+        {
+          "kind": "heavy",
+          "index": 12
+        }
+      ]
+    },
+    {
+      "id": "H16",
+      "goal": {
+        "type": "high",
+        "min": 190
+      },
+      "seed": 2246822507,
+      "specials": [
+        {
+          "index": 18,
+          "type": "keep"
+        },
+        {
+          "index": 21,
+          "type": "gather"
+        }
+      ],
+      "score": 205,
+      "actions": [
+        {
+          "kind": "heavy",
+          "index": 21
+        },
+        {
+          "kind": "heavy",
+          "index": 18,
+          "effect": "gather"
+        },
+        {
+          "kind": "heavy",
+          "index": 18,
+          "effect": "keep"
+        },
+        {
+          "kind": "heavy",
+          "index": 17
+        },
+        {
+          "kind": "heavy",
+          "index": 18
+        },
+        {
+          "kind": "heavy",
+          "index": 23
+        }
+      ]
+    },
+    {
+      "id": "M04-T6",
+      "goal": {
+        "type": "high",
+        "min": 105
+      },
+      "seed": 37,
+      "specials": [
+        {
+          "index": 8,
+          "type": "burst"
+        },
+        {
+          "index": 4,
+          "type": "keep"
+        }
+      ],
+      "score": 106,
+      "actions": [
+        {
+          "kind": "heavy",
+          "index": 8
+        },
+        {
+          "kind": "heavy",
+          "index": 7
+        },
+        {
+          "kind": "heavy",
+          "index": 4
+        },
+        {
+          "kind": "heavy",
+          "index": 3,
+          "effect": "burst"
+        },
+        {
+          "kind": "heavy",
+          "index": 6,
+          "effect": "keep"
+        }
+      ]
+    },
+    {
+      "id": "M04-T6",
+      "goal": {
+        "type": "high",
+        "min": 105
+      },
+      "seed": 2246822507,
+      "specials": [
+        {
+          "index": 24,
+          "type": "keep"
+        },
+        {
+          "index": 27,
+          "type": "gather"
+        }
+      ],
+      "score": 110,
+      "actions": [
+        {
+          "kind": "heavy",
+          "index": 21
+        },
+        {
+          "kind": "heavy",
+          "index": 28
+        },
+        {
+          "kind": "heavy",
+          "index": 20
+        },
+        {
+          "kind": "heavy",
+          "index": 27
+        },
+        {
+          "kind": "heavy",
+          "index": 20,
+          "effect": "gather"
+        },
+        {
+          "kind": "heavy",
+          "index": 13
+        }
+      ]
+    },
+    {
+      "id": "B16",
+      "goal": {
+        "type": "high",
+        "min": 125
+      },
+      "seed": 37,
+      "specials": [
+        {
+          "index": 9,
+          "type": "burst"
+        },
+        {
+          "index": 5,
+          "type": "keep"
+        }
+      ],
+      "score": 125,
+      "actions": [
+        {
+          "kind": "quench"
+        },
+        {
+          "kind": "heavy",
+          "index": 22
+        },
+        {
+          "kind": "heavy",
+          "index": 9
+        },
+        {
+          "kind": "heavy",
+          "index": 27,
+          "effect": "burst"
+        },
+        {
+          "kind": "heavy",
+          "index": 26
+        },
+        {
+          "kind": "heavy",
+          "index": 31
+        },
+        {
+          "kind": "heavy",
+          "index": 1
+        }
+      ]
+    },
+    {
+      "id": "B16",
+      "goal": {
+        "type": "high",
+        "min": 125
+      },
+      "seed": 2246822507,
+      "specials": [
+        {
+          "index": 27,
+          "type": "keep"
+        },
+        {
+          "index": 30,
+          "type": "gather"
+        }
+      ],
+      "score": 125,
+      "actions": [
+        {
+          "kind": "heavy",
+          "index": 21
+        },
+        {
+          "kind": "heavy",
+          "index": 26
+        },
+        {
+          "kind": "heavy",
+          "index": 22
+        },
+        {
+          "kind": "heavy",
+          "index": 27
+        },
+        {
+          "kind": "heavy",
+          "index": 22,
+          "effect": "keep"
+        },
+        {
+          "kind": "heavy",
+          "index": 17
+        }
+      ]
+    },
+    {
+      "id": "T12",
+      "goal": {
+        "type": "range",
+        "min": 32,
+        "max": 38
+      },
+      "seed": 37,
+      "specials": [
+        {
+          "index": 6,
+          "type": "burst"
+        },
+        {
+          "index": 3,
+          "type": "keep"
+        }
+      ],
+      "score": 35,
+      "actions": [
+        {
+          "kind": "quench"
+        },
+        {
+          "kind": "cross",
+          "index": 5
+        }
+      ]
+    },
+    {
+      "id": "T12",
+      "goal": {
+        "type": "range",
+        "min": 32,
+        "max": 38
+      },
+      "seed": 2246822507,
+      "specials": [
+        {
+          "index": 19,
+          "type": "keep"
+        },
+        {
+          "index": 22,
+          "type": "gather"
+        }
+      ],
+      "score": 35,
+      "actions": [
+        {
+          "kind": "quench"
+        },
+        {
+          "kind": "cross",
+          "index": 5
+        }
+      ]
+    },
+    {
+      "id": "D17",
+      "goal": {
+        "type": "range",
+        "min": 55,
+        "max": 63
+      },
+      "seed": 37,
+      "specials": [
+        {
+          "index": 6,
+          "type": "burst"
+        },
+        {
+          "index": 3,
+          "type": "keep"
+        }
+      ],
+      "score": 55,
+      "actions": [
+        {
+          "kind": "cross",
+          "index": 6
+        },
+        {
+          "kind": "heavy",
+          "index": 5,
+          "effect": "burst"
+        }
+      ]
+    },
+    {
+      "id": "D17",
+      "goal": {
+        "type": "range",
+        "min": 55,
+        "max": 63
+      },
+      "seed": 2246822507,
+      "specials": [
+        {
+          "index": 19,
+          "type": "keep"
+        },
+        {
+          "index": 22,
+          "type": "gather"
+        }
+      ],
+      "score": 62,
+      "actions": [
+        {
+          "kind": "heavy",
+          "index": 6
+        },
+        {
+          "kind": "cross",
+          "index": 11
+        },
+        {
+          "kind": "heavy",
+          "index": 2
+        }
+      ]
+    },
+    {
+      "id": "H17",
+      "goal": {
+        "type": "range",
+        "min": 64,
+        "max": 74
+      },
+      "seed": 37,
+      "specials": [
+        {
+          "index": 7,
+          "type": "burst"
+        },
+        {
+          "index": 4,
+          "type": "keep"
+        }
+      ],
+      "score": 69,
+      "actions": [
+        {
+          "kind": "heavy",
+          "index": 7
+        },
+        {
+          "kind": "cross",
+          "index": 8,
+          "effect": "burst"
+        }
+      ]
+    },
+    {
+      "id": "H17",
+      "goal": {
+        "type": "range",
+        "min": 64,
+        "max": 74
+      },
+      "seed": 2246822507,
+      "specials": [
+        {
+          "index": 23,
+          "type": "keep"
+        },
+        {
+          "index": 26,
+          "type": "gather"
+        }
+      ],
+      "score": 64,
+      "actions": [
+        {
+          "kind": "quench"
+        },
+        {
+          "kind": "cross",
+          "index": 10
+        },
+        {
+          "kind": "heavy",
+          "index": 0
+        }
+      ]
+    },
+    {
+      "id": "M05-T6",
+      "goal": {
+        "type": "high",
+        "min": 190
+      },
+      "seed": 37,
+      "specials": [
+        {
+          "index": 8,
+          "type": "burst"
+        },
+        {
+          "index": 4,
+          "type": "keep"
+        }
+      ],
+      "score": 247,
+      "actions": [
+        {
+          "kind": "quench"
+        },
+        {
+          "kind": "heavy",
+          "index": 8
+        },
+        {
+          "kind": "heavy",
+          "index": 9
+        },
+        {
+          "kind": "heavy",
+          "index": 5
+        },
+        {
+          "kind": "heavy",
+          "index": 2,
+          "effect": "burst"
+        },
+        {
+          "kind": "heavy",
+          "index": 5
+        },
+        {
+          "kind": "heavy",
+          "index": 2
+        }
+      ]
+    },
+    {
+      "id": "M05-T6",
+      "goal": {
+        "type": "high",
+        "min": 190
+      },
+      "seed": 2246822507,
+      "specials": [
+        {
+          "index": 24,
+          "type": "keep"
+        },
+        {
+          "index": 27,
+          "type": "gather"
+        }
+      ],
+      "score": 211,
+      "actions": [
+        {
+          "kind": "quench"
+        },
+        {
+          "kind": "heavy",
+          "index": 10
+        },
+        {
+          "kind": "heavy",
+          "index": 6
+        },
+        {
+          "kind": "heavy",
+          "index": 5
+        },
+        {
+          "kind": "heavy",
+          "index": 3
+        },
+        {
+          "kind": "heavy",
+          "index": 2
+        },
+        {
+          "kind": "heavy",
+          "index": 5
+        }
+      ]
+    },
+    {
+      "id": "B17",
+      "goal": {
+        "type": "range",
+        "min": 30,
+        "max": 36
+      },
+      "seed": 37,
+      "specials": [
+        {
+          "index": 8,
+          "type": "burst"
+        },
+        {
+          "index": 5,
+          "type": "keep"
+        }
+      ],
+      "score": 30,
+      "actions": [
+        {
+          "kind": "quench"
+        },
+        {
+          "kind": "heavy",
+          "index": 6
+        }
+      ]
+    },
+    {
+      "id": "B17",
+      "goal": {
+        "type": "range",
+        "min": 30,
+        "max": 36
+      },
+      "seed": 2246822507,
+      "specials": [
+        {
+          "index": 25,
+          "type": "keep"
+        },
+        {
+          "index": 28,
+          "type": "gather"
+        }
+      ],
+      "score": 30,
+      "actions": [
+        {
+          "kind": "quench"
+        },
+        {
+          "kind": "heavy",
+          "index": 6
+        }
+      ]
+    },
+    {
+      "id": "D18",
+      "goal": {
+        "type": "range",
+        "min": 49,
+        "max": 59
+      },
+      "seed": 37,
+      "specials": [
+        {
+          "index": 7,
+          "type": "burst"
+        },
+        {
+          "index": 4,
+          "type": "keep"
+        }
+      ],
+      "score": 49,
+      "actions": [
+        {
+          "kind": "quench"
+        },
+        {
+          "kind": "cross",
+          "index": 5
+        }
+      ]
+    },
+    {
+      "id": "D18",
+      "goal": {
+        "type": "range",
+        "min": 49,
+        "max": 59
+      },
+      "seed": 2246822507,
+      "specials": [
+        {
+          "index": 23,
+          "type": "keep"
+        },
+        {
+          "index": 26,
+          "type": "gather"
+        }
+      ],
+      "score": 49,
+      "actions": [
+        {
+          "kind": "quench"
+        },
+        {
+          "kind": "cross",
+          "index": 5
+        }
+      ]
+    },
+    {
+      "id": "H18",
+      "goal": {
+        "type": "range",
+        "min": 38,
+        "max": 44
+      },
+      "seed": 37,
+      "specials": [
+        {
+          "index": 6,
+          "type": "burst"
+        },
+        {
+          "index": 3,
+          "type": "keep"
+        }
+      ],
+      "score": 39,
+      "actions": [
+        {
+          "kind": "heavy",
+          "index": 6
+        },
+        {
+          "kind": "cross",
+          "index": 5,
+          "effect": "burst"
+        }
+      ]
+    },
+    {
+      "id": "H18",
+      "goal": {
+        "type": "range",
+        "min": 38,
+        "max": 44
+      },
+      "seed": 2246822507,
+      "specials": [
+        {
+          "index": 18,
+          "type": "keep"
+        },
+        {
+          "index": 20,
+          "type": "gather"
+        }
+      ],
+      "score": 40,
+      "actions": [
+        {
+          "kind": "quench"
+        },
+        {
+          "kind": "cross",
+          "index": 8
+        },
+        {
+          "kind": "heavy",
+          "index": 1
+        }
+      ]
+    },
+    {
+      "id": "M08-T6",
+      "goal": {
+        "type": "range",
+        "min": 58,
+        "max": 67
+      },
+      "seed": 37,
+      "specials": [
+        {
+          "index": 7,
+          "type": "burst"
+        },
+        {
+          "index": 4,
+          "type": "keep"
+        }
+      ],
+      "score": 58,
+      "actions": [
+        {
+          "kind": "heavy",
+          "index": 7
+        },
+        {
+          "kind": "cross",
+          "index": 13,
+          "effect": "burst"
+        },
+        {
+          "kind": "heavy",
+          "index": 5
+        }
+      ]
+    },
+    {
+      "id": "M08-T6",
+      "goal": {
+        "type": "range",
+        "min": 58,
+        "max": 67
+      },
+      "seed": 2246822507,
+      "specials": [
+        {
+          "index": 22,
+          "type": "keep"
+        },
+        {
+          "index": 25,
+          "type": "gather"
+        }
+      ],
+      "score": 61,
+      "actions": [
+        {
+          "kind": "quench"
+        },
+        {
+          "kind": "cross",
+          "index": 13
+        },
+        {
+          "kind": "heavy",
+          "index": 20
+        }
+      ]
+    }
+  ]
+}

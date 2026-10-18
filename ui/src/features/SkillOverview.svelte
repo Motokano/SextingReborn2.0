@@ -1,0 +1,9 @@
+<script lang="ts">
+ import type {Readable} from 'svelte/store';
+ let {store,controller,overlays,t}=$props<{store:Readable<any>,controller:any,overlays:any,t:any}>();
+ let root:HTMLDivElement,open=$derived($store.open);
+ $effect(()=>{if(open&&root)return overlays.enter(root,{escape:()=>controller.close('survival')});});
+</script>
+<div id="modal-survival" bind:this={root} class:show={open} role="dialog" aria-modal="true" aria-label={t('survival.modal.title')} tabindex="-1" data-ui-owner="svelte">
+ {#if open}<div class="survival-panel"><div class="survival-header"><div><h2>{t('survival.modal.title')}</h2><div class="subtitle">{t('survival.modal.subtitle')}</div></div><button type="button" class="btn-close" id="survival-modal-close" aria-label="关闭" onclick={()=>controller.close('survival')}>✖</button></div><div class="survival-body"><nav class="skill-overview-tabs" aria-label="技能分页">{#each ['survival','life','special'] as tab}<button type="button" class="skill-overview-tab" class:active={$store.tab===tab} data-skill-tab={tab} onclick={()=>controller.tab(tab)}>{t('skill.tab.'+tab)}</button>{/each}</nav><div id="survival-skill-table" class="survival-table">{#each $store.rows as row}<div class="survival-row"><div class="survival-row-info"><div class="survival-name">{row.name}</div>{#if row.desc}<div class="survival-desc">{row.desc}</div>{/if}</div><div class="survival-level">{row.level}</div><button type="button" class="survival-plus-btn" onclick={()=>controller.plus(row.skillId)}>{t('survival.btn.plus_one')}</button><button type="button" class="survival-plus-btn" onclick={()=>controller.study(row.skillId)}>{t(row.studying?'survival.btn.stop_study':'survival.btn.study')}</button></div>{:else}<div class="skill-overview-empty">{t('skill.tab.empty.'+$store.tab)}</div>{/each}</div></div></div>{/if}
+</div>

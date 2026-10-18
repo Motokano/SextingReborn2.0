@@ -1,0 +1,24 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>步法整合界面检查</title>
+<style>body{margin:0;background:#111;color:#eee;font:14px sans-serif}header{padding:10px}button{padding:6px 12px}iframe{width:100%;height:calc(100vh - 60px);border:0}</style>
+<header><button id="prepare">加载测试角色并打开武学</button> <span id="result">请在独立测试端口运行；测试使用当前页面内的角色。</span></header>
+<iframe id="game" src="../?no_reload"></iframe>
+<script>
+document.getElementById('prepare').onclick = function () {
+  var w = document.getElementById('game').contentWindow;
+  var result = document.getElementById('result');
+  if (!w.SceneApp || !w.CombatSkills || !w.CombatSkills.getSkill('combat_basic_footwork')) {
+    result.textContent = '游戏尚未加载完成'; return;
+  }
+  w.InventoryEquipment.setState({ skills: {
+    combat_basic_unarmed: { level: 100 }, combat_basic_footwork: { level: 500 }
+  }, skill_max_level_bonus: {}, combat: { hubs: { footwork: 'combat_basic_footwork' },
+    limbs: { lhand: { active: 'combat_basic_unarmed' }, rhand: { active: 'combat_basic_unarmed' } } } });
+  w.CharacterAttributes.setState({ character_creation_completed: true, characterName: '步法测试' });
+  w.SceneApp.openCombatPanel();
+  var retired = w.document.querySelectorAll('[data-slot="parry"]').length;
+  result.textContent = retired === 0 && !w.CombatSkills.getSkill('combat_basic_parry')
+    ? 'PASS：招架分类、技能与四肢招架槽已移除；请切换步法查看效果说明。' : 'FAIL：旧招架入口仍存在';
+};
+</script>

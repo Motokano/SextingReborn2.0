@@ -20,7 +20,7 @@ const render=uiSource.slice(uiSource.indexOf('    function renderCurrent()'),uiS
 const elements={};const element=()=>({style:{},classList:{add(){},remove(){}},removeAttribute(){}});
 let complete;
 const line={speakerRole:'npc',speakerId:'npc.supervisor.manager',speakerName:'林经理',text:'existing line',avatarUrl:'old-headshot.png'};
-const r={queue:[line],isOpen:true,currentSpeakerName:'',currentLineSpeakerRole:'',currentCloseLabel:'',currentAvatarUrl:'',currentFallbackGlyph:'',currentNextDisabled:false,currentNextLabel:'',lastLoggedKey:null,
+const r={view:null,queue:[line],isOpen:true,currentSpeakerName:'',currentLineSpeakerRole:'',currentCloseLabel:'',currentAvatarUrl:'',currentFallbackGlyph:'',currentNextDisabled:false,currentNextLabel:'',lastLoggedKey:null,
  $:id=>elements[id] ||= element(),ui:x=>x,normalizeEntityId:normalization.normalizeEntityId,startTyping(){},logDialogueLine(){},clearOptionsUi(){},renderOptionsUi(){},renderDialogueText(){},options:null,
  DialoguePawn:{resolve:()=>new Promise(resolve=>{complete=resolve})}};r.global=r;for(const match of uiSource.matchAll(/var (\w+_ID) = '([^']+)'/g)) r[match[1]]=match[2];vm.createContext(r);vm.runInContext(render,r);
 r.renderCurrent();assert.equal(r.currentAvatarUrl,'','old line portrait is ignored');r.queue=[{speakerRole:'player'}];complete('late-manager');await Promise.resolve();assert.equal(r.currentAvatarUrl,'','late previous-speaker image is ignored');

@@ -715,13 +715,13 @@
                 if (disclosure.open && other) other.open = false;
             });
         });
-        var abCook = document.getElementById('action-bar-cook');
+        var abCook = !window.SvelteInteractions && document.getElementById('action-bar-cook');
         if (abCook) {
             abCook.addEventListener('click', function () {
                 if (cookingStationPanelOpen) closeCookingStationPanel(); else openCookingStationPanel();
             });
         }
-        var bubCook = document.getElementById('player-action-cook');
+        var bubCook = !window.SvelteInteractions && document.getElementById('player-action-cook');
         if (bubCook) {
             bubCook.addEventListener('click', function () {
                 if (!cookingStationPanelOpen) openCookingStationPanel();

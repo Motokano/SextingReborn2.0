@@ -1,0 +1,346 @@
+{
+  "count": 1088,
+  "issues": [],
+  "stats": [
+    {
+      "id": "B01",
+      "old": 100,
+      "target": 110,
+      "samples": 32,
+      "perfect": 32,
+      "oneStarReachable": 32,
+      "oldMeanHammers": 5.5,
+      "newMeanHammers": 5.46875
+    },
+    {
+      "id": "T01",
+      "old": 45,
+      "target": 75,
+      "samples": 32,
+      "perfect": 32,
+      "oneStarReachable": 32,
+      "oldMeanHammers": 4.166666666666667,
+      "newMeanHammers": 5.34375
+    },
+    {
+      "id": "D01",
+      "old": 105,
+      "target": 210,
+      "samples": 32,
+      "perfect": 32,
+      "oneStarReachable": 32,
+      "oldMeanHammers": 3.4166666666666665,
+      "newMeanHammers": 5.5
+    },
+    {
+      "id": "M01-T1",
+      "old": 85,
+      "target": 160,
+      "samples": 32,
+      "perfect": 32,
+      "oneStarReachable": 32,
+      "oldMeanHammers": 3,
+      "newMeanHammers": 5.6875
+    },
+    {
+      "id": "D02",
+      "old": 110,
+      "target": 185,
+      "samples": 32,
+      "perfect": 32,
+      "oneStarReachable": 32,
+      "oldMeanHammers": 3.75,
+      "newMeanHammers": 4.90625
+    },
+    {
+      "id": "M02-T1",
+      "old": 75,
+      "target": 150,
+      "samples": 32,
+      "perfect": 32,
+      "oneStarReachable": 32,
+      "oldMeanHammers": 1.8333333333333333,
+      "newMeanHammers": 5.09375
+    },
+    {
+      "id": "M07-T1",
+      "old": 115,
+      "target": 225,
+      "samples": 32,
+      "perfect": 32,
+      "oneStarReachable": 32,
+      "oldMeanHammers": 2.5833333333333335,
+      "newMeanHammers": 5.375
+    },
+    {
+      "id": "B03",
+      "old": 80,
+      "target": 135,
+      "samples": 32,
+      "perfect": 32,
+      "oneStarReachable": 32,
+      "oldMeanHammers": 3.5833333333333335,
+      "newMeanHammers": 5.25
+    },
+    {
+      "id": "T03",
+      "old": 50,
+      "target": 85,
+      "samples": 32,
+      "perfect": 32,
+      "oneStarReachable": 32,
+      "oldMeanHammers": 3.9166666666666665,
+      "newMeanHammers": 5.375
+    },
+    {
+      "id": "D04",
+      "old": 135,
+      "target": 200,
+      "samples": 32,
+      "perfect": 32,
+      "oneStarReachable": 32,
+      "oldMeanHammers": 4.583333333333333,
+      "newMeanHammers": 5.46875
+    },
+    {
+      "id": "H04",
+      "old": 125,
+      "target": 185,
+      "samples": 32,
+      "perfect": 32,
+      "oneStarReachable": 32,
+      "oldMeanHammers": 4.333333333333333,
+      "newMeanHammers": 5.3125
+    },
+    {
+      "id": "M05-T2",
+      "old": 110,
+      "target": 220,
+      "samples": 32,
+      "perfect": 32,
+      "oneStarReachable": 32,
+      "oldMeanHammers": 2.8333333333333335,
+      "newMeanHammers": 5.5625
+    },
+    {
+      "id": "B05",
+      "old": 80,
+      "target": 135,
+      "samples": 32,
+      "perfect": 32,
+      "oneStarReachable": 32,
+      "oldMeanHammers": 3.8333333333333335,
+      "newMeanHammers": 5.625
+    },
+    {
+      "id": "D06",
+      "old": 120,
+      "target": 200,
+      "samples": 32,
+      "perfect": 32,
+      "oneStarReachable": 32,
+      "oldMeanHammers": 4.083333333333333,
+      "newMeanHammers": 5.5
+    },
+    {
+      "id": "B06",
+      "old": 70,
+      "target": 110,
+      "samples": 32,
+      "perfect": 32,
+      "oneStarReachable": 32,
+      "oldMeanHammers": 4.083333333333333,
+      "newMeanHammers": 5.40625
+    },
+    {
+      "id": "T05",
+      "old": 50,
+      "target": 80,
+      "samples": 32,
+      "perfect": 32,
+      "oneStarReachable": 32,
+      "oldMeanHammers": 4.166666666666667,
+      "newMeanHammers": 5.375
+    },
+    {
+      "id": "M01-T3",
+      "old": 95,
+      "target": 160,
+      "samples": 32,
+      "perfect": 32,
+      "oneStarReachable": 32,
+      "oldMeanHammers": 3.8333333333333335,
+      "newMeanHammers": 5.4375
+    },
+    {
+      "id": "D08",
+      "old": 150,
+      "target": 225,
+      "samples": 32,
+      "perfect": 32,
+      "oneStarReachable": 32,
+      "oldMeanHammers": 4.833333333333333,
+      "newMeanHammers": 5.71875
+    },
+    {
+      "id": "M04-T3",
+      "old": 60,
+      "target": 120,
+      "samples": 32,
+      "perfect": 32,
+      "oneStarReachable": 32,
+      "oldMeanHammers": 2.5833333333333335,
+      "newMeanHammers": 5.1875
+    },
+    {
+      "id": "B09",
+      "old": 80,
+      "target": 135,
+      "samples": 32,
+      "perfect": 32,
+      "oneStarReachable": 32,
+      "oldMeanHammers": 3.9166666666666665,
+      "newMeanHammers": 5.125
+    },
+    {
+      "id": "T07",
+      "old": 30,
+      "target": 60,
+      "samples": 32,
+      "perfect": 32,
+      "oneStarReachable": 32,
+      "oldMeanHammers": 3.25,
+      "newMeanHammers": 4.875
+    },
+    {
+      "id": "D10",
+      "old": 195,
+      "target": 290,
+      "samples": 32,
+      "perfect": 32,
+      "oneStarReachable": 32,
+      "oldMeanHammers": 4.833333333333333,
+      "newMeanHammers": 5.53125
+    },
+    {
+      "id": "H10",
+      "old": 120,
+      "target": 180,
+      "samples": 32,
+      "perfect": 32,
+      "oneStarReachable": 32,
+      "oldMeanHammers": 4.583333333333333,
+      "newMeanHammers": 5.46875
+    },
+    {
+      "id": "M02-T4",
+      "old": 95,
+      "target": 175,
+      "samples": 32,
+      "perfect": 32,
+      "oneStarReachable": 32,
+      "oldMeanHammers": 1.6666666666666667,
+      "newMeanHammers": 5.21875
+    },
+    {
+      "id": "M05-T4",
+      "old": 125,
+      "target": 225,
+      "samples": 32,
+      "perfect": 32,
+      "oneStarReachable": 32,
+      "oldMeanHammers": 3.4166666666666665,
+      "newMeanHammers": 5.46875
+    },
+    {
+      "id": "B11",
+      "old": 85,
+      "target": 135,
+      "samples": 32,
+      "perfect": 32,
+      "oneStarReachable": 32,
+      "oldMeanHammers": 4,
+      "newMeanHammers": 5.59375
+    },
+    {
+      "id": "T09",
+      "old": 50,
+      "target": 80,
+      "samples": 32,
+      "perfect": 32,
+      "oneStarReachable": 32,
+      "oldMeanHammers": 3.5833333333333335,
+      "newMeanHammers": 5.03125
+    },
+    {
+      "id": "D14",
+      "old": 165,
+      "target": 245,
+      "samples": 32,
+      "perfect": 32,
+      "oneStarReachable": 32,
+      "oldMeanHammers": 4.833333333333333,
+      "newMeanHammers": 5.75
+    },
+    {
+      "id": "T11",
+      "old": 50,
+      "target": 75,
+      "samples": 32,
+      "perfect": 32,
+      "oneStarReachable": 32,
+      "oldMeanHammers": 4.333333333333333,
+      "newMeanHammers": 5.375
+    },
+    {
+      "id": "D16",
+      "old": 215,
+      "target": 320,
+      "samples": 32,
+      "perfect": 32,
+      "oneStarReachable": 32,
+      "oldMeanHammers": 4.666666666666667,
+      "newMeanHammers": 5.78125
+    },
+    {
+      "id": "H16",
+      "old": 150,
+      "target": 225,
+      "samples": 32,
+      "perfect": 32,
+      "oneStarReachable": 32,
+      "oldMeanHammers": 4.583333333333333,
+      "newMeanHammers": 5.5625
+    },
+    {
+      "id": "M04-T6",
+      "old": 75,
+      "target": 120,
+      "samples": 32,
+      "perfect": 32,
+      "oneStarReachable": 32,
+      "oldMeanHammers": 3.3333333333333335,
+      "newMeanHammers": 5.3125
+    },
+    {
+      "id": "B16",
+      "old": 95,
+      "target": 135,
+      "samples": 32,
+      "perfect": 32,
+      "oneStarReachable": 32,
+      "oldMeanHammers": 4.5,
+      "newMeanHammers": 5.5
+    },
+    {
+      "id": "M05-T6",
+      "old": 135,
+      "target": 235,
+      "samples": 32,
+      "perfect": 32,
+      "oneStarReachable": 32,
+      "oldMeanHammers": 3.5,
+      "newMeanHammers": 5.59375
+    }
+  ]
+}

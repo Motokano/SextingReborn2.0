@@ -1,0 +1,3995 @@
+{
+  "schema_version": 2,
+  "items": {
+    "ore_antimony_raw": {
+      "item_id": "ore_antimony_raw",
+      "editor_name": "针晶矿",
+      "weight_kg": 1.7,
+      "attribute_modules": {
+        "base": {
+          "identity": {
+            "name": "针晶矿",
+            "name_0": "针晶矿",
+            "sn": "针晶矿",
+            "placeholder_name": "针簇灰石",
+            "fn_before": "灰亮细晶在石面聚成针簇，看着能炼东西",
+            "fn": "这种带针状晶簇的含锑矿石被叫作针晶矿。",
+            "desc_0": "这种带针状晶簇的含锑矿石被叫作针晶矿。"
+          },
+          "stacking": {
+            "stack_limit": 1
+          },
+          "trade": {
+            "base_value": 750,
+            "price_class": "rare",
+            "volatility": "mid",
+            "region_restrict": 0
+          },
+          "provenance": {
+            "source": "mining",
+            "production_lines": "forge"
+          }
+        }
+      },
+      "category": "ore",
+      "sub_category": "alloy_metal",
+      "tags": "material;ore;craft;trade_raw"
+    },
+    "ore_copper_raw": {
+      "item_id": "ore_copper_raw",
+      "editor_name": "粗铜矿石",
+      "weight_kg": 2.5,
+      "attribute_modules": {
+        "base": {
+          "identity": {
+            "name": "粗铜矿石",
+            "name_0": "粗铜矿石",
+            "sn": "粗铜矿石",
+            "placeholder_name": "绿斑粗石",
+            "fn_before": "暗色石块上散着绿斑，看着能炼东西",
+            "fn": "带绿斑的铜矿石，矿质与暗色石头夹在一起。",
+            "desc_0": "带绿斑的铜矿石，矿质与暗色石头夹在一起。"
+          },
+          "stacking": {
+            "stack_limit": 1
+          },
+          "trade": {
+            "base_value": 300,
+            "price_class": "material",
+            "volatility": "mid",
+            "region_restrict": 0
+          },
+          "provenance": {
+            "source": "mining",
+            "production_lines": "forge;craft"
+          }
+        }
+      },
+      "category": "ore",
+      "sub_category": "non_ferrous",
+      "tags": "material;ore;craft;trade_raw"
+    },
+    "ore_gold_raw": {
+      "item_id": "ore_gold_raw",
+      "editor_name": "金矿",
+      "weight_kg": 1.5,
+      "attribute_modules": {
+        "base": {
+          "identity": {
+            "name": "金矿",
+            "name_0": "金矿",
+            "sn": "金矿",
+            "placeholder_name": "带金星的石块",
+            "fn_before": "浅色石块里散着金黄亮点，看着能炼东西",
+            "fn": "含金的矿石，浅色石底里散着金黄的细点。",
+            "desc_0": "含金的矿石，浅色石底里散着金黄的细点。"
+          },
+          "stacking": {
+            "stack_limit": 1
+          },
+          "trade": {
+            "base_value": 800,
+            "price_class": "rare",
+            "volatility": "high",
+            "region_restrict": 6
+          },
+          "provenance": {
+            "source": "mining",
+            "production_lines": "forge"
+          }
+        }
+      },
+      "category": "ore",
+      "sub_category": "precious",
+      "tags": "material;ore;dungeon_only"
+    },
+    "ore_iron_raw": {
+      "item_id": "ore_iron_raw",
+      "editor_name": "铁质矿石",
+      "weight_kg": 3,
+      "attribute_modules": {
+        "base": {
+          "identity": {
+            "name": "铁质矿石",
+            "name_0": "铁质矿石",
+            "sn": "铁质矿石",
+            "placeholder_name": "红褐粗石",
+            "fn_before": "红褐外壳裹着灰黑石块，看着能炼东西",
+            "fn": "带红褐色外壳的铁矿石，断口里还夹着灰黑色石质。",
+            "desc_0": "带红褐色外壳的铁矿石，断口里还夹着灰黑色石质。"
+          },
+          "stacking": {
+            "stack_limit": 1
+          },
+          "trade": {
+            "base_value": 400,
+            "price_class": "material",
+            "volatility": "low",
+            "region_restrict": 0
+          },
+          "provenance": {
+            "source": "mining",
+            "production_lines": "forge;craft;build"
+          }
+        }
+      },
+      "category": "ore",
+      "sub_category": "black_metal",
+      "tags": "material;ore;craft;trade_raw;building"
+    },
+    "ore_lead_raw": {
+      "item_id": "ore_lead_raw",
+      "editor_name": "铅矿",
+      "weight_kg": 3.2,
+      "attribute_modules": {
+        "base": {
+          "identity": {
+            "name": "铅矿",
+            "name_0": "铅矿",
+            "sn": "铅矿",
+            "placeholder_name": "灰亮方石",
+            "fn_before": "灰亮石块的断面层层见方，看着能炼东西",
+            "fn": "含铅的矿石，灰亮晶块留着一层层方整的断口。",
+            "desc_0": "含铅的矿石，灰亮晶块留着一层层方整的断口。"
+          },
+          "stacking": {
+            "stack_limit": 1
+          },
+          "trade": {
+            "base_value": 160,
+            "price_class": "material",
+            "volatility": "low",
+            "region_restrict": 0
+          },
+          "provenance": {
+            "source": "mining",
+            "production_lines": "forge"
+          }
+        }
+      },
+      "category": "ore",
+      "sub_category": "non_ferrous",
+      "tags": "material;ore;craft;trade_raw"
+    },
+    "ore_manganese_raw": {
+      "item_id": "ore_manganese_raw",
+      "editor_name": "黑纹矿",
+      "weight_kg": 2.4,
+      "attribute_modules": {
+        "base": {
+          "identity": {
+            "name": "黑纹矿",
+            "name_0": "黑纹矿",
+            "sn": "黑纹矿",
+            "placeholder_name": "黑纹块石",
+            "fn_before": "黑褐石块上横着深色条纹，看着能炼东西",
+            "fn": "这种带深色条纹的含锰矿石被叫作黑纹矿。",
+            "desc_0": "这种带深色条纹的含锰矿石被叫作黑纹矿。"
+          },
+          "stacking": {
+            "stack_limit": 1
+          },
+          "trade": {
+            "base_value": 600,
+            "price_class": "material",
+            "volatility": "mid",
+            "region_restrict": 0
+          },
+          "provenance": {
+            "source": "mining",
+            "production_lines": "forge"
+          }
+        }
+      },
+      "category": "ore",
+      "sub_category": "alloy_metal",
+      "tags": "material;ore;craft;trade_raw"
+    },
+    "ore_molybdenum_raw": {
+      "item_id": "ore_molybdenum_raw",
+      "editor_name": "银片矿",
+      "weight_kg": 1.6,
+      "attribute_modules": {
+        "base": {
+          "identity": {
+            "name": "银片矿",
+            "name_0": "银片矿",
+            "sn": "银片矿",
+            "placeholder_name": "银灰片石",
+            "fn_before": "石面叠着一层层银灰薄片，说不好干啥",
+            "fn": "这种含钼的矿石俗称银片矿，石面层叠着银灰薄片。",
+            "desc_0": "这种含钼的矿石俗称银片矿，石面层叠着银灰薄片。"
+          },
+          "stacking": {
+            "stack_limit": 1
+          },
+          "trade": {
+            "base_value": 1800,
+            "price_class": "rare",
+            "volatility": "high",
+            "region_restrict": 0
+          },
+          "provenance": {
+            "source": "mining",
+            "production_lines": "forge"
+          }
+        }
+      },
+      "category": "ore",
+      "sub_category": "alloy_metal",
+      "tags": "material;ore;craft;trade_raw"
+    },
+    "ore_silver_raw": {
+      "item_id": "ore_silver_raw",
+      "editor_name": "银矿",
+      "weight_kg": 1.5,
+      "attribute_modules": {
+        "base": {
+          "identity": {
+            "name": "银矿",
+            "name_0": "银矿",
+            "sn": "银矿",
+            "placeholder_name": "泛白光的石块",
+            "fn_before": "暗色石块缝里泛着白光，看着能炼东西",
+            "fn": "含银的矿石，暗色石缝里透出些白亮纹路。",
+            "desc_0": "含银的矿石，暗色石缝里透出些白亮纹路。"
+          },
+          "stacking": {
+            "stack_limit": 1
+          },
+          "trade": {
+            "base_value": 600,
+            "price_class": "rare",
+            "volatility": "high",
+            "region_restrict": 6
+          },
+          "provenance": {
+            "source": "mining",
+            "production_lines": "forge"
+          }
+        }
+      },
+      "category": "ore",
+      "sub_category": "precious",
+      "tags": "material;ore;dungeon_only"
+    },
+    "ore_tin_raw": {
+      "item_id": "ore_tin_raw",
+      "editor_name": "锡矿",
+      "weight_kg": 1.8,
+      "attribute_modules": {
+        "base": {
+          "identity": {
+            "name": "锡矿",
+            "name_0": "锡矿",
+            "sn": "锡矿",
+            "placeholder_name": "黑粒褐石",
+            "fn_before": "褐色石头里嵌着黑色细粒，看着能炼东西",
+            "fn": "含锡的矿石，褐色石底里嵌着细小的黑色晶粒。",
+            "desc_0": "含锡的矿石，褐色石底里嵌着细小的黑色晶粒。"
+          },
+          "stacking": {
+            "stack_limit": 1
+          },
+          "trade": {
+            "base_value": 280,
+            "price_class": "material",
+            "volatility": "mid",
+            "region_restrict": 0
+          },
+          "provenance": {
+            "source": "mining",
+            "production_lines": "forge"
+          }
+        }
+      },
+      "category": "ore",
+      "sub_category": "non_ferrous",
+      "tags": "material;ore;craft;trade_raw"
+    },
+    "ore_titanium_raw": {
+      "item_id": "ore_titanium_raw",
+      "editor_name": "钛砂",
+      "weight_kg": 2,
+      "attribute_modules": {
+        "base": {
+          "identity": {
+            "name": "钛砂",
+            "name_0": "钛砂",
+            "sn": "钛砂",
+            "placeholder_name": "黑灰细砂",
+            "fn_before": "细碎的黑灰颗粒闪着暗光，说不好干啥",
+            "fn": "夹有钛质矿物的黑灰细砂，细粒间闪着暗光。",
+            "desc_0": "夹有钛质矿物的黑灰细砂，细粒间闪着暗光。"
+          },
+          "stacking": {
+            "stack_limit": 1
+          },
+          "trade": {
+            "base_value": 1100,
+            "price_class": "rare",
+            "volatility": "high",
+            "region_restrict": 0
+          },
+          "provenance": {
+            "source": "mining",
+            "production_lines": "forge"
+          }
+        }
+      },
+      "category": "ore",
+      "sub_category": "alloy_metal",
+      "tags": "material;ore;craft;trade_raw"
+    },
+    "ore_tungsten_raw": {
+      "item_id": "ore_tungsten_raw",
+      "editor_name": "黑重矿",
+      "weight_kg": 2.8,
+      "attribute_modules": {
+        "base": {
+          "identity": {
+            "name": "黑重矿",
+            "name_0": "黑重矿",
+            "sn": "黑重矿",
+            "placeholder_name": "黑亮条晶",
+            "fn_before": "黑亮石块上长着条状晶体，看着能炼东西",
+            "fn": "这类含钨的矿石被叫作黑重矿，黑亮晶体常呈长条状。",
+            "desc_0": "这类含钨的矿石被叫作黑重矿，黑亮晶体常呈长条状。"
+          },
+          "stacking": {
+            "stack_limit": 1
+          },
+          "trade": {
+            "base_value": 1600,
+            "price_class": "rare",
+            "volatility": "high",
+            "region_restrict": 0
+          },
+          "provenance": {
+            "source": "mining",
+            "production_lines": "forge"
+          }
+        }
+      },
+      "category": "ore",
+      "sub_category": "alloy_metal",
+      "tags": "material;ore;craft;trade_raw"
+    },
+    "ore_zinc_raw": {
+      "item_id": "ore_zinc_raw",
+      "editor_name": "锌矿",
+      "weight_kg": 2,
+      "attribute_modules": {
+        "base": {
+          "identity": {
+            "name": "锌矿",
+            "name_0": "锌矿",
+            "sn": "锌矿",
+            "placeholder_name": "黄褐晶块",
+            "fn_before": "黄褐色晶块泛着油光，看着能炼东西",
+            "fn": "含锌的矿石，黄褐色晶体在光下泛着油润的光。",
+            "desc_0": "含锌的矿石，黄褐色晶体在光下泛着油润的光。"
+          },
+          "stacking": {
+            "stack_limit": 1
+          },
+          "trade": {
+            "base_value": 240,
+            "price_class": "material",
+            "volatility": "mid",
+            "region_restrict": 0
+          },
+          "provenance": {
+            "source": "mining",
+            "production_lines": "forge"
+          }
+        }
+      },
+      "category": "ore",
+      "sub_category": "non_ferrous",
+      "tags": "material;ore;craft;trade_raw"
+    },
+    "material_forging_antimony": {
+      "item_id": "material_forging_antimony",
+      "editor_name": "针晶矿料",
+      "weight_kg": 0.18,
+      "attribute_modules": {
+        "base": {
+          "identity": {
+            "name": "针晶矿料",
+            "name_0": "针晶矿料",
+            "sn": "针晶矿料",
+            "placeholder_name": "银亮纹坯",
+            "fn_before": "银亮小块断面带着细长纹理，像能再加工",
+            "fn": "针晶矿加工后得到的一份坯料。",
+            "desc_0": "针晶矿加工后得到的一份坯料。"
+          },
+          "stacking": {
+            "stack_limit": 1
+          },
+          "trade": {
+            "base_value": 750,
+            "price_class": "rare",
+            "volatility": "mid",
+            "region_restrict": 0
+          },
+          "provenance": {
+            "source": "forge",
+            "production_lines": "forge"
+          }
+        }
+      },
+      "category": "material",
+      "sub_category": "forging_feed",
+      "tags": "material;forging_feed;forge"
+    },
+    "material_forging_copper": {
+      "item_id": "material_forging_copper",
+      "editor_name": "铜料",
+      "weight_kg": 0.3,
+      "attribute_modules": {
+        "base": {
+          "identity": {
+            "name": "铜料",
+            "name_0": "铜料",
+            "sn": "铜料",
+            "placeholder_name": "红褐小坯",
+            "fn_before": "红褐小块的断面泛着光，像能再加工",
+            "fn": "粗铜矿石加工后得到的一份坯料。",
+            "desc_0": "粗铜矿石加工后得到的一份坯料。"
+          },
+          "stacking": {
+            "stack_limit": 1
+          },
+          "trade": {
+            "base_value": 300,
+            "price_class": "material",
+            "volatility": "mid",
+            "region_restrict": 0
+          },
+          "provenance": {
+            "source": "forge",
+            "production_lines": "forge"
+          }
+        }
+      },
+      "category": "material",
+      "sub_category": "forging_feed",
+      "tags": "material;forging_feed;forge"
+    },
+    "material_forging_gold": {
+      "item_id": "material_forging_gold",
+      "editor_name": "金料",
+      "weight_kg": 0.6,
+      "attribute_modules": {
+        "base": {
+          "identity": {
+            "name": "金料",
+            "name_0": "金料",
+            "sn": "金料",
+            "placeholder_name": "金黄小坯",
+            "fn_before": "金黄小块表面留着浅浅凹痕，像能再加工",
+            "fn": "金矿加工后得到的一份坯料。",
+            "desc_0": "金矿加工后得到的一份坯料。"
+          },
+          "stacking": {
+            "stack_limit": 1
+          },
+          "trade": {
+            "base_value": 800,
+            "price_class": "rare",
+            "volatility": "high",
+            "region_restrict": 0
+          },
+          "provenance": {
+            "source": "forge",
+            "production_lines": "forge"
+          }
+        }
+      },
+      "category": "material",
+      "sub_category": "forging_feed",
+      "tags": "material;forging_feed;forge"
+    },
+    "material_forging_iron": {
+      "item_id": "material_forging_iron",
+      "editor_name": "铁料",
+      "weight_kg": 0.2,
+      "attribute_modules": {
+        "base": {
+          "identity": {
+            "name": "铁料",
+            "name_0": "铁料",
+            "sn": "铁料",
+            "placeholder_name": "灰黑小坯",
+            "fn_before": "灰黑小块表面留着锤痕，像能再加工",
+            "fn": "铁质矿石加工后得到的一份坯料。",
+            "desc_0": "铁质矿石加工后得到的一份坯料。"
+          },
+          "stacking": {
+            "stack_limit": 1
+          },
+          "trade": {
+            "base_value": 400,
+            "price_class": "material",
+            "volatility": "low",
+            "region_restrict": 0
+          },
+          "provenance": {
+            "source": "forge",
+            "production_lines": "forge"
+          }
+        }
+      },
+      "category": "material",
+      "sub_category": "forging_feed",
+      "tags": "material;forging_feed;forge"
+    },
+    "material_forging_lead": {
+      "item_id": "material_forging_lead",
+      "editor_name": "铅料",
+      "weight_kg": 0.64,
+      "attribute_modules": {
+        "base": {
+          "identity": {
+            "name": "铅料",
+            "name_0": "铅料",
+            "sn": "铅料",
+            "placeholder_name": "暗灰小坯",
+            "fn_before": "暗灰小块表面蒙着一层浅色，像能再加工",
+            "fn": "铅矿加工后得到的一份坯料。",
+            "desc_0": "铅矿加工后得到的一份坯料。"
+          },
+          "stacking": {
+            "stack_limit": 1
+          },
+          "trade": {
+            "base_value": 160,
+            "price_class": "material",
+            "volatility": "low",
+            "region_restrict": 0
+          },
+          "provenance": {
+            "source": "forge",
+            "production_lines": "forge"
+          }
+        }
+      },
+      "category": "material",
+      "sub_category": "forging_feed",
+      "tags": "material;forging_feed;forge"
+    },
+    "material_forging_manganese": {
+      "item_id": "material_forging_manganese",
+      "editor_name": "黑纹矿料",
+      "weight_kg": 0.24,
+      "attribute_modules": {
+        "base": {
+          "identity": {
+            "name": "黑纹矿料",
+            "name_0": "黑纹矿料",
+            "sn": "黑纹矿料",
+            "placeholder_name": "深灰纹坯",
+            "fn_before": "深灰小块上散着深浅纹路，像能再加工",
+            "fn": "黑纹矿加工后得到的一份坯料。",
+            "desc_0": "黑纹矿加工后得到的一份坯料。"
+          },
+          "stacking": {
+            "stack_limit": 1
+          },
+          "trade": {
+            "base_value": 600,
+            "price_class": "material",
+            "volatility": "mid",
+            "region_restrict": 0
+          },
+          "provenance": {
+            "source": "forge",
+            "production_lines": "forge"
+          }
+        }
+      },
+      "category": "material",
+      "sub_category": "forging_feed",
+      "tags": "material;forging_feed;forge"
+    },
+    "material_forging_molybdenum": {
+      "item_id": "material_forging_molybdenum",
+      "editor_name": "银片矿料",
+      "weight_kg": 0.2,
+      "attribute_modules": {
+        "base": {
+          "identity": {
+            "name": "银片矿料",
+            "name_0": "银片矿料",
+            "sn": "银片矿料",
+            "placeholder_name": "银灰粗坯",
+            "fn_before": "银灰小块表面叠着薄薄细纹，像能再加工",
+            "fn": "银片矿加工后得到的一份坯料。",
+            "desc_0": "银片矿加工后得到的一份坯料。"
+          },
+          "stacking": {
+            "stack_limit": 1
+          },
+          "trade": {
+            "base_value": 1800,
+            "price_class": "rare",
+            "volatility": "high",
+            "region_restrict": 0
+          },
+          "provenance": {
+            "source": "forge",
+            "production_lines": "forge"
+          }
+        }
+      },
+      "category": "material",
+      "sub_category": "forging_feed",
+      "tags": "material;forging_feed;forge"
+    },
+    "material_forging_silver": {
+      "item_id": "material_forging_silver",
+      "editor_name": "银料",
+      "weight_kg": 0.36,
+      "attribute_modules": {
+        "base": {
+          "identity": {
+            "name": "银料",
+            "name_0": "银料",
+            "sn": "银料",
+            "placeholder_name": "浅白小坯",
+            "fn_before": "浅白小块的边缘闪着亮光，像能再加工",
+            "fn": "银矿加工后得到的一份坯料。",
+            "desc_0": "银矿加工后得到的一份坯料。"
+          },
+          "stacking": {
+            "stack_limit": 1
+          },
+          "trade": {
+            "base_value": 600,
+            "price_class": "rare",
+            "volatility": "high",
+            "region_restrict": 0
+          },
+          "provenance": {
+            "source": "forge",
+            "production_lines": "forge"
+          }
+        }
+      },
+      "category": "material",
+      "sub_category": "forging_feed",
+      "tags": "material;forging_feed;forge"
+    },
+    "material_forging_tin": {
+      "item_id": "material_forging_tin",
+      "editor_name": "锡料",
+      "weight_kg": 0.18,
+      "attribute_modules": {
+        "base": {
+          "identity": {
+            "name": "锡料",
+            "name_0": "锡料",
+            "sn": "锡料",
+            "placeholder_name": "浅灰小坯",
+            "fn_before": "浅灰小块的表面带着亮光，像能再加工",
+            "fn": "锡矿加工后得到的一份坯料。",
+            "desc_0": "锡矿加工后得到的一份坯料。"
+          },
+          "stacking": {
+            "stack_limit": 1
+          },
+          "trade": {
+            "base_value": 280,
+            "price_class": "material",
+            "volatility": "mid",
+            "region_restrict": 0
+          },
+          "provenance": {
+            "source": "forge",
+            "production_lines": "forge"
+          }
+        }
+      },
+      "category": "material",
+      "sub_category": "forging_feed",
+      "tags": "material;forging_feed;forge"
+    },
+    "material_forging_titanium": {
+      "item_id": "material_forging_titanium",
+      "editor_name": "钛砂料",
+      "weight_kg": 0.1,
+      "attribute_modules": {
+        "base": {
+          "identity": {
+            "name": "钛砂料",
+            "name_0": "钛砂料",
+            "sn": "钛砂料",
+            "placeholder_name": "暗银小坯",
+            "fn_before": "暗银小块表面有细小凹点，像能再加工",
+            "fn": "钛砂加工后得到的一份坯料。",
+            "desc_0": "钛砂加工后得到的一份坯料。"
+          },
+          "stacking": {
+            "stack_limit": 1
+          },
+          "trade": {
+            "base_value": 1100,
+            "price_class": "rare",
+            "volatility": "high",
+            "region_restrict": 0
+          },
+          "provenance": {
+            "source": "forge",
+            "production_lines": "forge"
+          }
+        }
+      },
+      "category": "material",
+      "sub_category": "forging_feed",
+      "tags": "material;forging_feed;forge"
+    },
+    "material_forging_tungsten": {
+      "item_id": "material_forging_tungsten",
+      "editor_name": "黑重矿料",
+      "weight_kg": 0.56,
+      "attribute_modules": {
+        "base": {
+          "identity": {
+            "name": "黑重矿料",
+            "name_0": "黑重矿料",
+            "sn": "黑重矿料",
+            "placeholder_name": "灰黑粗坯",
+            "fn_before": "灰黑小块表面带着粗糙纹理，像能再加工",
+            "fn": "黑重矿加工后得到的一份坯料。",
+            "desc_0": "黑重矿加工后得到的一份坯料。"
+          },
+          "stacking": {
+            "stack_limit": 1
+          },
+          "trade": {
+            "base_value": 1600,
+            "price_class": "rare",
+            "volatility": "high",
+            "region_restrict": 0
+          },
+          "provenance": {
+            "source": "forge",
+            "production_lines": "forge"
+          }
+        }
+      },
+      "category": "material",
+      "sub_category": "forging_feed",
+      "tags": "material;forging_feed;forge"
+    },
+    "material_forging_zinc": {
+      "item_id": "material_forging_zinc",
+      "editor_name": "锌料",
+      "weight_kg": 0.14,
+      "attribute_modules": {
+        "base": {
+          "identity": {
+            "name": "锌料",
+            "name_0": "锌料",
+            "sn": "锌料",
+            "placeholder_name": "蓝灰小坯",
+            "fn_before": "蓝灰小块边缘泛着冷光，像能再加工",
+            "fn": "锌矿加工后得到的一份坯料。",
+            "desc_0": "锌矿加工后得到的一份坯料。"
+          },
+          "stacking": {
+            "stack_limit": 1
+          },
+          "trade": {
+            "base_value": 240,
+            "price_class": "material",
+            "volatility": "mid",
+            "region_restrict": 0
+          },
+          "provenance": {
+            "source": "forge",
+            "production_lines": "forge"
+          }
+        }
+      },
+      "category": "material",
+      "sub_category": "forging_feed",
+      "tags": "material;forging_feed;forge"
+    },
+    "tool_repair_roll": {
+      "item_id": "tool_repair_roll",
+      "editor_name": "帆布工具卷",
+      "weight_kg": 0.3,
+      "attribute_modules": {
+        "base": {
+          "identity": {
+            "name": "帆布工具卷",
+            "name_0": "帆布工具卷",
+            "sn": "帆布工具卷",
+            "placeholder_name": "带袋布卷",
+            "fn_before": "厚布上缝着几个长短不同的袋，像能装工具",
+            "fn": "缝着独立袋位的帆布工具卷，摊开后能放取其中的工具。",
+            "desc_0": "缝着独立袋位的帆布工具卷，摊开后能放取其中的工具。"
+          },
+          "stacking": {
+            "stack_limit": 1
+          }
+        },
+        "structure": {
+          "assembly_host": {
+            "assembly_slots": {
+              "whetstone": {
+                "accepts": [
+                  "repair.whetstone"
+                ],
+                "required": false
+              },
+              "hammer": {
+                "accepts": [
+                  "repair.hammer"
+                ],
+                "required": false
+              },
+              "pliers": {
+                "accepts": [
+                  "repair.pliers"
+                ],
+                "required": false
+              }
+            }
+          }
+        }
+      },
+      "category": "tool",
+      "sub_category": "repair_kit",
+      "tags": "tool;repair;assembly_root"
+    },
+    "weapon_component_b01": {
+      "item_id": "weapon_component_b01",
+      "editor_name": "平磨直刃",
+      "weight_kg": 0.32,
+      "attribute_modules": {
+        "base": {
+          "identity": {
+            "name": "平磨直刃",
+            "name_0": "平磨直刃",
+            "sn": "平磨直刃",
+            "placeholder_name": "平直薄片",
+            "fn_before": "平直的片面向一边收薄，像能装上去",
+            "fn": "刃面平直并收向刃口的侧刃。",
+            "desc_0": "刃面平直并收向刃口的侧刃。"
+          },
+          "stacking": {
+            "stack_limit": 1
+          },
+          "provenance": {
+            "source": "forge",
+            "production_lines": "forge"
+          }
+        },
+        "structure": {
+          "assembly_part": {
+            "assembly_types": [
+              "weapon.single_hand.side1",
+              "weapon.single_hand.side2"
+            ]
+          }
+        }
+      },
+      "category": "weapon_component",
+      "sub_category": "blade",
+      "tags": "weapon_component;forge;assembly_part"
+    },
+    "weapon_component_b02": {
+      "item_id": "weapon_component_b02",
+      "editor_name": "厚身凸刃",
+      "weight_kg": 0.42,
+      "attribute_modules": {
+        "base": {
+          "identity": {
+            "name": "厚身凸刃",
+            "name_0": "厚身凸刃",
+            "sn": "厚身凸刃",
+            "placeholder_name": "凸面厚片",
+            "fn_before": "片面微鼓而中部较厚，像能装上去",
+            "fn": "刃后留有厚实承力部分的凸面侧刃。",
+            "desc_0": "刃后留有厚实承力部分的凸面侧刃。"
+          },
+          "stacking": {
+            "stack_limit": 1
+          },
+          "provenance": {
+            "source": "forge",
+            "production_lines": "forge"
+          }
+        },
+        "structure": {
+          "assembly_part": {
+            "assembly_types": [
+              "weapon.single_hand.side1",
+              "weapon.single_hand.side2"
+            ]
+          }
+        }
+      },
+      "category": "weapon_component",
+      "sub_category": "blade",
+      "tags": "weapon_component;forge;assembly_part"
+    },
+    "weapon_component_b03": {
+      "item_id": "weapon_component_b03",
+      "editor_name": "透镜形刃",
+      "weight_kg": 0.34,
+      "attribute_modules": {
+        "base": {
+          "identity": {
+            "name": "透镜形刃",
+            "name_0": "透镜形刃",
+            "sn": "透镜形刃",
+            "placeholder_name": "弧面长片",
+            "fn_before": "长片两面有圆顺的弧度，像能装上去",
+            "fn": "刃面圆顺过渡的透镜形侧刃。",
+            "desc_0": "刃面圆顺过渡的透镜形侧刃。"
+          },
+          "stacking": {
+            "stack_limit": 1
+          },
+          "provenance": {
+            "source": "forge",
+            "production_lines": "forge"
+          }
+        },
+        "structure": {
+          "assembly_part": {
+            "assembly_types": [
+              "weapon.single_hand.side1",
+              "weapon.single_hand.side2"
+            ]
+          }
+        }
+      },
+      "category": "weapon_component",
+      "sub_category": "blade",
+      "tags": "weapon_component;forge;assembly_part"
+    },
+    "weapon_component_b04": {
+      "item_id": "weapon_component_b04",
+      "editor_name": "窄身菱脊刃",
+      "weight_kg": 0.25,
+      "attribute_modules": {
+        "base": {
+          "identity": {
+            "name": "窄身菱脊刃",
+            "name_0": "窄身菱脊刃",
+            "sn": "窄身菱脊刃",
+            "placeholder_name": "窄脊长片",
+            "fn_before": "窄长片面中间隆起一道脊，像能装上去",
+            "fn": "窄身带菱形脊的侧刃。",
+            "desc_0": "窄身带菱形脊的侧刃。"
+          },
+          "stacking": {
+            "stack_limit": 1
+          },
+          "provenance": {
+            "source": "forge",
+            "production_lines": "forge"
+          }
+        },
+        "structure": {
+          "assembly_part": {
+            "assembly_types": [
+              "weapon.single_hand.side1",
+              "weapon.single_hand.side2"
+            ]
+          }
+        }
+      },
+      "category": "weapon_component",
+      "sub_category": "blade",
+      "tags": "weapon_component;forge;assembly_part"
+    },
+    "weapon_component_b05": {
+      "item_id": "weapon_component_b05",
+      "editor_name": "宽身平刃",
+      "weight_kg": 0.48,
+      "attribute_modules": {
+        "base": {
+          "identity": {
+            "name": "宽身平刃",
+            "name_0": "宽身平刃",
+            "sn": "宽身平刃",
+            "placeholder_name": "宽面长片",
+            "fn_before": "长片较宽而一边收薄，像能装上去",
+            "fn": "平直宽面的侧刃。",
+            "desc_0": "平直宽面的侧刃。"
+          },
+          "stacking": {
+            "stack_limit": 1
+          },
+          "provenance": {
+            "source": "forge",
+            "production_lines": "forge"
+          }
+        },
+        "structure": {
+          "assembly_part": {
+            "assembly_types": [
+              "weapon.single_hand.side1",
+              "weapon.single_hand.side2"
+            ]
+          }
+        }
+      },
+      "category": "weapon_component",
+      "sub_category": "blade",
+      "tags": "weapon_component;forge;assembly_part"
+    },
+    "weapon_component_b06": {
+      "item_id": "weapon_component_b06",
+      "editor_name": "浅槽宽刃",
+      "weight_kg": 0.3,
+      "attribute_modules": {
+        "base": {
+          "identity": {
+            "name": "浅槽宽刃",
+            "name_0": "浅槽宽刃",
+            "sn": "浅槽宽刃",
+            "placeholder_name": "带槽宽片",
+            "fn_before": "宽长片面上凹着一道浅槽，像能装上去",
+            "fn": "带浅纵槽的宽身侧刃。",
+            "desc_0": "带浅纵槽的宽身侧刃。"
+          },
+          "stacking": {
+            "stack_limit": 1
+          },
+          "provenance": {
+            "source": "forge",
+            "production_lines": "forge"
+          }
+        },
+        "structure": {
+          "assembly_part": {
+            "assembly_types": [
+              "weapon.single_hand.side1",
+              "weapon.single_hand.side2"
+            ]
+          }
+        }
+      },
+      "category": "weapon_component",
+      "sub_category": "blade",
+      "tags": "weapon_component;forge;assembly_part"
+    },
+    "weapon_component_b07": {
+      "item_id": "weapon_component_b07",
+      "editor_name": "六棱厚身刃",
+      "weight_kg": 0.44,
+      "attribute_modules": {
+        "base": {
+          "identity": {
+            "name": "六棱厚身刃",
+            "name_0": "六棱厚身刃",
+            "sn": "六棱厚身刃",
+            "placeholder_name": "厚棱长片",
+            "fn_before": "长片中部较厚并带斜棱面，像能装上去",
+            "fn": "中部厚实并带六棱截面的侧刃。",
+            "desc_0": "中部厚实并带六棱截面的侧刃。"
+          },
+          "stacking": {
+            "stack_limit": 1
+          },
+          "provenance": {
+            "source": "forge",
+            "production_lines": "forge"
+          }
+        },
+        "structure": {
+          "assembly_part": {
+            "assembly_types": [
+              "weapon.single_hand.side1",
+              "weapon.single_hand.side2"
+            ]
+          }
+        }
+      },
+      "category": "weapon_component",
+      "sub_category": "blade",
+      "tags": "weapon_component;forge;assembly_part"
+    },
+    "weapon_component_b08": {
+      "item_id": "weapon_component_b08",
+      "editor_name": "嵌钢复合刃",
+      "weight_kg": 0.36,
+      "attribute_modules": {
+        "base": {
+          "identity": {
+            "name": "嵌钢复合刃",
+            "name_0": "嵌钢复合刃",
+            "sn": "嵌钢复合刃",
+            "placeholder_name": "接缝长片",
+            "fn_before": "片面一边留有细长接缝，像能装上去",
+            "fn": "刃缘与承力部分接合的复合侧刃。",
+            "desc_0": "刃缘与承力部分接合的复合侧刃。"
+          },
+          "stacking": {
+            "stack_limit": 1
+          },
+          "provenance": {
+            "source": "forge",
+            "production_lines": "forge"
+          }
+        },
+        "structure": {
+          "assembly_part": {
+            "assembly_types": [
+              "weapon.single_hand.side1",
+              "weapon.single_hand.side2"
+            ]
+          }
+        }
+      },
+      "category": "weapon_component",
+      "sub_category": "blade",
+      "tags": "weapon_component;forge;assembly_part"
+    },
+    "weapon_component_b09": {
+      "item_id": "weapon_component_b09",
+      "editor_name": "渐薄透镜刃",
+      "weight_kg": 0.34,
+      "attribute_modules": {
+        "base": {
+          "identity": {
+            "name": "渐薄透镜刃",
+            "name_0": "渐薄透镜刃",
+            "sn": "渐薄透镜刃",
+            "placeholder_name": "渐薄弧片",
+            "fn_before": "圆弧片面沿长边逐渐变薄，像能装上去",
+            "fn": "沿长度渐薄的透镜形侧刃。",
+            "desc_0": "沿长度渐薄的透镜形侧刃。"
+          },
+          "stacking": {
+            "stack_limit": 1
+          },
+          "provenance": {
+            "source": "forge",
+            "production_lines": "forge"
+          }
+        },
+        "structure": {
+          "assembly_part": {
+            "assembly_types": [
+              "weapon.single_hand.side1",
+              "weapon.single_hand.side2"
+            ]
+          }
+        }
+      },
+      "category": "weapon_component",
+      "sub_category": "blade",
+      "tags": "weapon_component;forge;assembly_part"
+    },
+    "weapon_component_b10": {
+      "item_id": "weapon_component_b10",
+      "editor_name": "浅凹磨脊刃",
+      "weight_kg": 0.38,
+      "attribute_modules": {
+        "base": {
+          "identity": {
+            "name": "浅凹磨脊刃",
+            "name_0": "浅凹磨脊刃",
+            "sn": "浅凹磨脊刃",
+            "placeholder_name": "凹面脊片",
+            "fn_before": "长片刃面微凹而中脊凸起，像能装上去",
+            "fn": "浅凹刃面配厚脊与根部的侧刃。",
+            "desc_0": "浅凹刃面配厚脊与根部的侧刃。"
+          },
+          "stacking": {
+            "stack_limit": 1
+          },
+          "provenance": {
+            "source": "forge",
+            "production_lines": "forge"
+          }
+        },
+        "structure": {
+          "assembly_part": {
+            "assembly_types": [
+              "weapon.single_hand.side1",
+              "weapon.single_hand.side2"
+            ]
+          }
+        }
+      },
+      "category": "weapon_component",
+      "sub_category": "blade",
+      "tags": "weapon_component;forge;assembly_part"
+    },
+    "weapon_component_b11": {
+      "item_id": "weapon_component_b11",
+      "editor_name": "前宽劈砍刃",
+      "weight_kg": 0.52,
+      "attribute_modules": {
+        "base": {
+          "identity": {
+            "name": "前宽劈砍刃",
+            "name_0": "前宽劈砍刃",
+            "sn": "前宽劈砍刃",
+            "placeholder_name": "前宽长片",
+            "fn_before": "长片前部展开得较宽，像能装上去",
+            "fn": "前部加宽的劈砍侧刃。",
+            "desc_0": "前部加宽的劈砍侧刃。"
+          },
+          "stacking": {
+            "stack_limit": 1
+          },
+          "provenance": {
+            "source": "forge",
+            "production_lines": "forge"
+          }
+        },
+        "structure": {
+          "assembly_part": {
+            "assembly_types": [
+              "weapon.single_hand.side1",
+              "weapon.single_hand.side2"
+            ]
+          }
+        }
+      },
+      "category": "weapon_component",
+      "sub_category": "blade",
+      "tags": "weapon_component;forge;assembly_part"
+    },
+    "weapon_component_b12": {
+      "item_id": "weapon_component_b12",
+      "editor_name": "精整六棱刃",
+      "weight_kg": 0.43,
+      "attribute_modules": {
+        "base": {
+          "identity": {
+            "name": "精整六棱刃",
+            "name_0": "精整六棱刃",
+            "sn": "精整六棱刃",
+            "placeholder_name": "整齐棱片",
+            "fn_before": "长片的斜棱面平整连贯，像能装上去",
+            "fn": "棱面经过整修的六棱侧刃。",
+            "desc_0": "棱面经过整修的六棱侧刃。"
+          },
+          "stacking": {
+            "stack_limit": 1
+          },
+          "provenance": {
+            "source": "forge",
+            "production_lines": "forge"
+          }
+        },
+        "structure": {
+          "assembly_part": {
+            "assembly_types": [
+              "weapon.single_hand.side1",
+              "weapon.single_hand.side2"
+            ]
+          }
+        }
+      },
+      "category": "weapon_component",
+      "sub_category": "blade",
+      "tags": "weapon_component;forge;assembly_part"
+    },
+    "weapon_component_b13": {
+      "item_id": "weapon_component_b13",
+      "editor_name": "双槽渐薄刃",
+      "weight_kg": 0.26,
+      "attribute_modules": {
+        "base": {
+          "identity": {
+            "name": "双槽渐薄刃",
+            "name_0": "双槽渐薄刃",
+            "sn": "双槽渐薄刃",
+            "placeholder_name": "双槽薄片",
+            "fn_before": "细长片面并排凹着两道槽，像能装上去",
+            "fn": "带双纵槽并沿长度渐薄的侧刃。",
+            "desc_0": "带双纵槽并沿长度渐薄的侧刃。"
+          },
+          "stacking": {
+            "stack_limit": 1
+          },
+          "provenance": {
+            "source": "forge",
+            "production_lines": "forge"
+          }
+        },
+        "structure": {
+          "assembly_part": {
+            "assembly_types": [
+              "weapon.single_hand.side1",
+              "weapon.single_hand.side2"
+            ]
+          }
+        }
+      },
+      "category": "weapon_component",
+      "sub_category": "blade",
+      "tags": "weapon_component;forge;assembly_part"
+    },
+    "weapon_component_b14": {
+      "item_id": "weapon_component_b14",
+      "editor_name": "硬刃软芯复合刃",
+      "weight_kg": 0.4,
+      "attribute_modules": {
+        "base": {
+          "identity": {
+            "name": "硬刃软芯复合刃",
+            "name_0": "硬刃软芯复合刃",
+            "sn": "硬刃软芯复合刃",
+            "placeholder_name": "夹层刃片",
+            "fn_before": "薄边与中部间有细密交界，像能装上去",
+            "fn": "刃缘与芯部组合的复合侧刃。",
+            "desc_0": "刃缘与芯部组合的复合侧刃。"
+          },
+          "stacking": {
+            "stack_limit": 1
+          },
+          "provenance": {
+            "source": "forge",
+            "production_lines": "forge"
+          }
+        },
+        "structure": {
+          "assembly_part": {
+            "assembly_types": [
+              "weapon.single_hand.side1",
+              "weapon.single_hand.side2"
+            ]
+          }
+        }
+      },
+      "category": "weapon_component",
+      "sub_category": "blade",
+      "tags": "weapon_component;forge;assembly_part"
+    },
+    "weapon_component_b15": {
+      "item_id": "weapon_component_b15",
+      "editor_name": "精整渐薄刃",
+      "weight_kg": 0.33,
+      "attribute_modules": {
+        "base": {
+          "identity": {
+            "name": "精整渐薄刃",
+            "name_0": "精整渐薄刃",
+            "sn": "精整渐薄刃",
+            "placeholder_name": "匀薄长片",
+            "fn_before": "长片两面圆顺而厚薄渐变，像能装上去",
+            "fn": "沿长度精整渐薄的侧刃。",
+            "desc_0": "沿长度精整渐薄的侧刃。"
+          },
+          "stacking": {
+            "stack_limit": 1
+          },
+          "provenance": {
+            "source": "forge",
+            "production_lines": "forge"
+          }
+        },
+        "structure": {
+          "assembly_part": {
+            "assembly_types": [
+              "weapon.single_hand.side1",
+              "weapon.single_hand.side2"
+            ]
+          }
+        }
+      },
+      "category": "weapon_component",
+      "sub_category": "blade",
+      "tags": "weapon_component;forge;assembly_part"
+    },
+    "weapon_component_b16": {
+      "item_id": "weapon_component_b16",
+      "editor_name": "精磨宽刃",
+      "weight_kg": 0.5,
+      "attribute_modules": {
+        "base": {
+          "identity": {
+            "name": "精磨宽刃",
+            "name_0": "精磨宽刃",
+            "sn": "精磨宽刃",
+            "placeholder_name": "整磨宽片",
+            "fn_before": "宽片刃面留有整齐磨痕，像能装上去",
+            "fn": "宽身刃面经过整磨的侧刃。",
+            "desc_0": "宽身刃面经过整磨的侧刃。"
+          },
+          "stacking": {
+            "stack_limit": 1
+          },
+          "provenance": {
+            "source": "forge",
+            "production_lines": "forge"
+          }
+        },
+        "structure": {
+          "assembly_part": {
+            "assembly_types": [
+              "weapon.single_hand.side1",
+              "weapon.single_hand.side2"
+            ]
+          }
+        }
+      },
+      "category": "weapon_component",
+      "sub_category": "blade",
+      "tags": "weapon_component;forge;assembly_part"
+    },
+    "weapon_component_b17": {
+      "item_id": "weapon_component_b17",
+      "editor_name": "精焊夹钢刃",
+      "weight_kg": 0.42,
+      "attribute_modules": {
+        "base": {
+          "identity": {
+            "name": "精焊夹钢刃",
+            "name_0": "精焊夹钢刃",
+            "sn": "精焊夹钢刃",
+            "placeholder_name": "夹缝长片",
+            "fn_before": "长片侧面留着细密接合线，像能装上去",
+            "fn": "芯部与两侧焊合的夹层侧刃。",
+            "desc_0": "芯部与两侧焊合的夹层侧刃。"
+          },
+          "stacking": {
+            "stack_limit": 1
+          },
+          "provenance": {
+            "source": "forge",
+            "production_lines": "forge"
+          }
+        },
+        "structure": {
+          "assembly_part": {
+            "assembly_types": [
+              "weapon.single_hand.side1",
+              "weapon.single_hand.side2"
+            ]
+          }
+        }
+      },
+      "category": "weapon_component",
+      "sub_category": "blade",
+      "tags": "weapon_component;forge;assembly_part"
+    },
+    "weapon_component_d01": {
+      "item_id": "weapon_component_d01",
+      "editor_name": "圆柱击条",
+      "weight_kg": 0.38,
+      "attribute_modules": {
+        "base": {
+          "identity": {
+            "name": "圆柱击条",
+            "name_0": "圆柱击条",
+            "sn": "圆柱击条",
+            "placeholder_name": "圆柱长条",
+            "fn_before": "长条四周圆滑而两端平齐，像能装上去",
+            "fn": "圆柱形的钝击侧条。",
+            "desc_0": "圆柱形的钝击侧条。"
+          },
+          "stacking": {
+            "stack_limit": 1
+          },
+          "provenance": {
+            "source": "forge",
+            "production_lines": "forge"
+          }
+        },
+        "structure": {
+          "assembly_part": {
+            "assembly_types": [
+              "weapon.single_hand.side1",
+              "weapon.single_hand.side2"
+            ]
+          }
+        }
+      },
+      "category": "weapon_component",
+      "sub_category": "blunt_side",
+      "tags": "weapon_component;forge;assembly_part"
+    },
+    "weapon_component_d02": {
+      "item_id": "weapon_component_d02",
+      "editor_name": "厚背击条",
+      "weight_kg": 0.48,
+      "attribute_modules": {
+        "base": {
+          "identity": {
+            "name": "厚背击条",
+            "name_0": "厚背击条",
+            "sn": "厚背击条",
+            "placeholder_name": "厚背长条",
+            "fn_before": "长条背部较厚而外面钝圆，像能装上去",
+            "fn": "带厚背的钝击侧条。",
+            "desc_0": "带厚背的钝击侧条。"
+          },
+          "stacking": {
+            "stack_limit": 1
+          },
+          "provenance": {
+            "source": "forge",
+            "production_lines": "forge"
+          }
+        },
+        "structure": {
+          "assembly_part": {
+            "assembly_types": [
+              "weapon.single_hand.side1",
+              "weapon.single_hand.side2"
+            ]
+          }
+        }
+      },
+      "category": "weapon_component",
+      "sub_category": "blunt_side",
+      "tags": "weapon_component;forge;assembly_part"
+    },
+    "weapon_component_d03": {
+      "item_id": "weapon_component_d03",
+      "editor_name": "扁平拍板",
+      "weight_kg": 0.32,
+      "attribute_modules": {
+        "base": {
+          "identity": {
+            "name": "扁平拍板",
+            "name_0": "扁平拍板",
+            "sn": "扁平拍板",
+            "placeholder_name": "扁平短板",
+            "fn_before": "短板较宽而四边圆钝，像能装上去",
+            "fn": "扁平钝边的侧击板。",
+            "desc_0": "扁平钝边的侧击板。"
+          },
+          "stacking": {
+            "stack_limit": 1
+          },
+          "provenance": {
+            "source": "forge",
+            "production_lines": "forge"
+          }
+        },
+        "structure": {
+          "assembly_part": {
+            "assembly_types": [
+              "weapon.single_hand.side1",
+              "weapon.single_hand.side2"
+            ]
+          }
+        }
+      },
+      "category": "weapon_component",
+      "sub_category": "blunt_side",
+      "tags": "weapon_component;forge;assembly_part"
+    },
+    "weapon_component_d04": {
+      "item_id": "weapon_component_d04",
+      "editor_name": "六棱击条",
+      "weight_kg": 0.42,
+      "attribute_modules": {
+        "base": {
+          "identity": {
+            "name": "六棱击条",
+            "name_0": "六棱击条",
+            "sn": "六棱击条",
+            "placeholder_name": "六棱长条",
+            "fn_before": "长条绕着六个平整棱面，像能装上去",
+            "fn": "未开刃的六棱钝击侧条。",
+            "desc_0": "未开刃的六棱钝击侧条。"
+          },
+          "stacking": {
+            "stack_limit": 1
+          },
+          "provenance": {
+            "source": "forge",
+            "production_lines": "forge"
+          }
+        },
+        "structure": {
+          "assembly_part": {
+            "assembly_types": [
+              "weapon.single_hand.side1",
+              "weapon.single_hand.side2"
+            ]
+          }
+        }
+      },
+      "category": "weapon_component",
+      "sub_category": "blunt_side",
+      "tags": "weapon_component;forge;assembly_part"
+    },
+    "weapon_component_d05": {
+      "item_id": "weapon_component_d05",
+      "editor_name": "弧面击条",
+      "weight_kg": 0.38,
+      "attribute_modules": {
+        "base": {
+          "identity": {
+            "name": "弧面击条",
+            "name_0": "弧面击条",
+            "sn": "弧面击条",
+            "placeholder_name": "弧面长条",
+            "fn_before": "长条外侧弯成连续的圆弧，像能装上去",
+            "fn": "弧面相连的钝击侧条。",
+            "desc_0": "弧面相连的钝击侧条。"
+          },
+          "stacking": {
+            "stack_limit": 1
+          },
+          "provenance": {
+            "source": "forge",
+            "production_lines": "forge"
+          }
+        },
+        "structure": {
+          "assembly_part": {
+            "assembly_types": [
+              "weapon.single_hand.side1",
+              "weapon.single_hand.side2"
+            ]
+          }
+        }
+      },
+      "category": "weapon_component",
+      "sub_category": "blunt_side",
+      "tags": "weapon_component;forge;assembly_part"
+    },
+    "weapon_component_d06": {
+      "item_id": "weapon_component_d06",
+      "editor_name": "加厚击板",
+      "weight_kg": 0.5,
+      "attribute_modules": {
+        "base": {
+          "identity": {
+            "name": "加厚击板",
+            "name_0": "加厚击板",
+            "sn": "加厚击板",
+            "placeholder_name": "加厚平板",
+            "fn_before": "板面平展而侧边厚实，像能装上去",
+            "fn": "加厚的钝击侧板。",
+            "desc_0": "加厚的钝击侧板。"
+          },
+          "stacking": {
+            "stack_limit": 1
+          },
+          "provenance": {
+            "source": "forge",
+            "production_lines": "forge"
+          }
+        },
+        "structure": {
+          "assembly_part": {
+            "assembly_types": [
+              "weapon.single_hand.side1",
+              "weapon.single_hand.side2"
+            ]
+          }
+        }
+      },
+      "category": "weapon_component",
+      "sub_category": "blunt_side",
+      "tags": "weapon_component;forge;assembly_part"
+    },
+    "weapon_component_d07": {
+      "item_id": "weapon_component_d07",
+      "editor_name": "窄圆击条",
+      "weight_kg": 0.28,
+      "attribute_modules": {
+        "base": {
+          "identity": {
+            "name": "窄圆击条",
+            "name_0": "窄圆击条",
+            "sn": "窄圆击条",
+            "placeholder_name": "细圆长条",
+            "fn_before": "细长条身四周圆滑，像能装上去",
+            "fn": "窄圆截面的钝击侧条。",
+            "desc_0": "窄圆截面的钝击侧条。"
+          },
+          "stacking": {
+            "stack_limit": 1
+          },
+          "provenance": {
+            "source": "forge",
+            "production_lines": "forge"
+          }
+        },
+        "structure": {
+          "assembly_part": {
+            "assembly_types": [
+              "weapon.single_hand.side1",
+              "weapon.single_hand.side2"
+            ]
+          }
+        }
+      },
+      "category": "weapon_component",
+      "sub_category": "blunt_side",
+      "tags": "weapon_component;forge;assembly_part"
+    },
+    "weapon_component_d08": {
+      "item_id": "weapon_component_d08",
+      "editor_name": "凸面击块",
+      "weight_kg": 0.52,
+      "attribute_modules": {
+        "base": {
+          "identity": {
+            "name": "凸面击块",
+            "name_0": "凸面击块",
+            "sn": "凸面击块",
+            "placeholder_name": "凸面短块",
+            "fn_before": "短块的一面向外鼓起，像能装上去",
+            "fn": "接触面向外隆起的钝击侧块。",
+            "desc_0": "接触面向外隆起的钝击侧块。"
+          },
+          "stacking": {
+            "stack_limit": 1
+          },
+          "provenance": {
+            "source": "forge",
+            "production_lines": "forge"
+          }
+        },
+        "structure": {
+          "assembly_part": {
+            "assembly_types": [
+              "weapon.single_hand.side1",
+              "weapon.single_hand.side2"
+            ]
+          }
+        }
+      },
+      "category": "weapon_component",
+      "sub_category": "blunt_side",
+      "tags": "weapon_component;forge;assembly_part"
+    },
+    "weapon_component_d09": {
+      "item_id": "weapon_component_d09",
+      "editor_name": "厚棱击条",
+      "weight_kg": 0.48,
+      "attribute_modules": {
+        "base": {
+          "identity": {
+            "name": "厚棱击条",
+            "name_0": "厚棱击条",
+            "sn": "厚棱击条",
+            "placeholder_name": "厚棱长块",
+            "fn_before": "长块带有厚实而圆钝的棱，像能装上去",
+            "fn": "加厚钝棱的侧击条。",
+            "desc_0": "加厚钝棱的侧击条。"
+          },
+          "stacking": {
+            "stack_limit": 1
+          },
+          "provenance": {
+            "source": "forge",
+            "production_lines": "forge"
+          }
+        },
+        "structure": {
+          "assembly_part": {
+            "assembly_types": [
+              "weapon.single_hand.side1",
+              "weapon.single_hand.side2"
+            ]
+          }
+        }
+      },
+      "category": "weapon_component",
+      "sub_category": "blunt_side",
+      "tags": "weapon_component;forge;assembly_part"
+    },
+    "weapon_component_d10": {
+      "item_id": "weapon_component_d10",
+      "editor_name": "偏重击块",
+      "weight_kg": 0.6,
+      "attribute_modules": {
+        "base": {
+          "identity": {
+            "name": "偏重击块",
+            "name_0": "偏重击块",
+            "sn": "偏重击块",
+            "placeholder_name": "偏厚短块",
+            "fn_before": "短块一端明显比另一端厚，像能装上去",
+            "fn": "质量偏向一端的钝击侧块。",
+            "desc_0": "质量偏向一端的钝击侧块。"
+          },
+          "stacking": {
+            "stack_limit": 1
+          },
+          "provenance": {
+            "source": "forge",
+            "production_lines": "forge"
+          }
+        },
+        "structure": {
+          "assembly_part": {
+            "assembly_types": [
+              "weapon.single_hand.side1",
+              "weapon.single_hand.side2"
+            ]
+          }
+        }
+      },
+      "category": "weapon_component",
+      "sub_category": "blunt_side",
+      "tags": "weapon_component;forge;assembly_part"
+    },
+    "weapon_component_d11": {
+      "item_id": "weapon_component_d11",
+      "editor_name": "宽面拍板",
+      "weight_kg": 0.44,
+      "attribute_modules": {
+        "base": {
+          "identity": {
+            "name": "宽面拍板",
+            "name_0": "宽面拍板",
+            "sn": "宽面拍板",
+            "placeholder_name": "宽面短板",
+            "fn_before": "板面宽阔而边缘圆钝，像能装上去",
+            "fn": "宽阔钝面的侧击板。",
+            "desc_0": "宽阔钝面的侧击板。"
+          },
+          "stacking": {
+            "stack_limit": 1
+          },
+          "provenance": {
+            "source": "forge",
+            "production_lines": "forge"
+          }
+        },
+        "structure": {
+          "assembly_part": {
+            "assembly_types": [
+              "weapon.single_hand.side1",
+              "weapon.single_hand.side2"
+            ]
+          }
+        }
+      },
+      "category": "weapon_component",
+      "sub_category": "blunt_side",
+      "tags": "weapon_component;forge;assembly_part"
+    },
+    "weapon_component_d12": {
+      "item_id": "weapon_component_d12",
+      "editor_name": "弧背击条",
+      "weight_kg": 0.45,
+      "attribute_modules": {
+        "base": {
+          "identity": {
+            "name": "弧背击条",
+            "name_0": "弧背击条",
+            "sn": "弧背击条",
+            "placeholder_name": "弧背厚条",
+            "fn_before": "厚条背面弯成连续圆弧，像能装上去",
+            "fn": "带厚实弧背的钝击侧条。",
+            "desc_0": "带厚实弧背的钝击侧条。"
+          },
+          "stacking": {
+            "stack_limit": 1
+          },
+          "provenance": {
+            "source": "forge",
+            "production_lines": "forge"
+          }
+        },
+        "structure": {
+          "assembly_part": {
+            "assembly_types": [
+              "weapon.single_hand.side1",
+              "weapon.single_hand.side2"
+            ]
+          }
+        }
+      },
+      "category": "weapon_component",
+      "sub_category": "blunt_side",
+      "tags": "weapon_component;forge;assembly_part"
+    },
+    "weapon_component_d13": {
+      "item_id": "weapon_component_d13",
+      "editor_name": "渐细圆条",
+      "weight_kg": 0.29,
+      "attribute_modules": {
+        "base": {
+          "identity": {
+            "name": "渐细圆条",
+            "name_0": "渐细圆条",
+            "sn": "渐细圆条",
+            "placeholder_name": "渐细圆条",
+            "fn_before": "圆滑条身向一端渐渐收细，像能装上去",
+            "fn": "沿长度渐细的钝击侧条。",
+            "desc_0": "沿长度渐细的钝击侧条。"
+          },
+          "stacking": {
+            "stack_limit": 1
+          },
+          "provenance": {
+            "source": "forge",
+            "production_lines": "forge"
+          }
+        },
+        "structure": {
+          "assembly_part": {
+            "assembly_types": [
+              "weapon.single_hand.side1",
+              "weapon.single_hand.side2"
+            ]
+          }
+        }
+      },
+      "category": "weapon_component",
+      "sub_category": "blunt_side",
+      "tags": "weapon_component;forge;assembly_part"
+    },
+    "weapon_component_d14": {
+      "item_id": "weapon_component_d14",
+      "editor_name": "棱面击块",
+      "weight_kg": 0.53,
+      "attribute_modules": {
+        "base": {
+          "identity": {
+            "name": "棱面击块",
+            "name_0": "棱面击块",
+            "sn": "棱面击块",
+            "placeholder_name": "棱面短块",
+            "fn_before": "短块表面分出几道钝棱，像能装上去",
+            "fn": "棱面分明而未开刃的钝击侧块。",
+            "desc_0": "棱面分明而未开刃的钝击侧块。"
+          },
+          "stacking": {
+            "stack_limit": 1
+          },
+          "provenance": {
+            "source": "forge",
+            "production_lines": "forge"
+          }
+        },
+        "structure": {
+          "assembly_part": {
+            "assembly_types": [
+              "weapon.single_hand.side1",
+              "weapon.single_hand.side2"
+            ]
+          }
+        }
+      },
+      "category": "weapon_component",
+      "sub_category": "blunt_side",
+      "tags": "weapon_component;forge;assembly_part"
+    },
+    "weapon_component_d15": {
+      "item_id": "weapon_component_d15",
+      "editor_name": "厚背拍板",
+      "weight_kg": 0.5,
+      "attribute_modules": {
+        "base": {
+          "identity": {
+            "name": "厚背拍板",
+            "name_0": "厚背拍板",
+            "sn": "厚背拍板",
+            "placeholder_name": "厚背宽板",
+            "fn_before": "宽板背部凸起一片厚面，像能装上去",
+            "fn": "宽面厚背的钝击侧板。",
+            "desc_0": "宽面厚背的钝击侧板。"
+          },
+          "stacking": {
+            "stack_limit": 1
+          },
+          "provenance": {
+            "source": "forge",
+            "production_lines": "forge"
+          }
+        },
+        "structure": {
+          "assembly_part": {
+            "assembly_types": [
+              "weapon.single_hand.side1",
+              "weapon.single_hand.side2"
+            ]
+          }
+        }
+      },
+      "category": "weapon_component",
+      "sub_category": "blunt_side",
+      "tags": "weapon_component;forge;assembly_part"
+    },
+    "weapon_component_d16": {
+      "item_id": "weapon_component_d16",
+      "editor_name": "端重击条",
+      "weight_kg": 0.6,
+      "attribute_modules": {
+        "base": {
+          "identity": {
+            "name": "端重击条",
+            "name_0": "端重击条",
+            "sn": "端重击条",
+            "placeholder_name": "端厚长条",
+            "fn_before": "长条末端鼓起一块厚头，像能装上去",
+            "fn": "质量集中在远端的钝击侧条。",
+            "desc_0": "质量集中在远端的钝击侧条。"
+          },
+          "stacking": {
+            "stack_limit": 1
+          },
+          "provenance": {
+            "source": "forge",
+            "production_lines": "forge"
+          }
+        },
+        "structure": {
+          "assembly_part": {
+            "assembly_types": [
+              "weapon.single_hand.side1",
+              "weapon.single_hand.side2"
+            ]
+          }
+        }
+      },
+      "category": "weapon_component",
+      "sub_category": "blunt_side",
+      "tags": "weapon_component;forge;assembly_part"
+    },
+    "weapon_component_d17": {
+      "item_id": "weapon_component_d17",
+      "editor_name": "宽冠击板",
+      "weight_kg": 0.46,
+      "attribute_modules": {
+        "base": {
+          "identity": {
+            "name": "宽冠击板",
+            "name_0": "宽冠击板",
+            "sn": "宽冠击板",
+            "placeholder_name": "宽冠短板",
+            "fn_before": "宽板外缘圆鼓成冠状，像能装上去",
+            "fn": "带宽圆冠面的钝击侧板。",
+            "desc_0": "带宽圆冠面的钝击侧板。"
+          },
+          "stacking": {
+            "stack_limit": 1
+          },
+          "provenance": {
+            "source": "forge",
+            "production_lines": "forge"
+          }
+        },
+        "structure": {
+          "assembly_part": {
+            "assembly_types": [
+              "weapon.single_hand.side1",
+              "weapon.single_hand.side2"
+            ]
+          }
+        }
+      },
+      "category": "weapon_component",
+      "sub_category": "blunt_side",
+      "tags": "weapon_component;forge;assembly_part"
+    },
+    "weapon_component_d18": {
+      "item_id": "weapon_component_d18",
+      "editor_name": "厚脊击条",
+      "weight_kg": 0.52,
+      "attribute_modules": {
+        "base": {
+          "identity": {
+            "name": "厚脊击条",
+            "name_0": "厚脊击条",
+            "sn": "厚脊击条",
+            "placeholder_name": "厚脊长条",
+            "fn_before": "长条背部凸出一道厚脊，像能装上去",
+            "fn": "带厚脊的钝击侧条。",
+            "desc_0": "带厚脊的钝击侧条。"
+          },
+          "stacking": {
+            "stack_limit": 1
+          },
+          "provenance": {
+            "source": "forge",
+            "production_lines": "forge"
+          }
+        },
+        "structure": {
+          "assembly_part": {
+            "assembly_types": [
+              "weapon.single_hand.side1",
+              "weapon.single_hand.side2"
+            ]
+          }
+        }
+      },
+      "category": "weapon_component",
+      "sub_category": "blunt_side",
+      "tags": "weapon_component;forge;assembly_part"
+    },
+    "weapon_component_h01": {
+      "item_id": "weapon_component_h01",
+      "editor_name": "直柄圆首柄",
+      "weight_kg": 0.2,
+      "attribute_modules": {
+        "base": {
+          "identity": {
+            "name": "直柄圆首柄",
+            "name_0": "直柄圆首柄",
+            "sn": "直柄圆首柄",
+            "placeholder_name": "圆尾直把",
+            "fn_before": "细直把手末端收成圆头，像是个握把",
+            "fn": "没有护手并带圆钝尾首的直柄。",
+            "desc_0": "没有护手并带圆钝尾首的直柄。"
+          },
+          "stacking": {
+            "stack_limit": 1
+          },
+          "provenance": {
+            "source": "forge",
+            "production_lines": "forge"
+          }
+        },
+        "structure": {
+          "assembly_part": {
+            "assembly_types": [
+              "weapon.single_hand.hilt"
+            ]
+          }
+        }
+      },
+      "category": "weapon_component",
+      "sub_category": "hilt",
+      "tags": "weapon_component;forge;assembly_part"
+    },
+    "weapon_component_h02": {
+      "item_id": "weapon_component_h02",
+      "editor_name": "短格扁首柄",
+      "weight_kg": 0.28,
+      "attribute_modules": {
+        "base": {
+          "identity": {
+            "name": "短格扁首柄",
+            "name_0": "短格扁首柄",
+            "sn": "短格扁首柄",
+            "placeholder_name": "横格扁尾把",
+            "fn_before": "短横格下连着扁圆尾把，像是个握把",
+            "fn": "带短横格和扁圆尾首的手柄。",
+            "desc_0": "带短横格和扁圆尾首的手柄。"
+          },
+          "stacking": {
+            "stack_limit": 1
+          },
+          "provenance": {
+            "source": "forge",
+            "production_lines": "forge"
+          }
+        },
+        "structure": {
+          "assembly_part": {
+            "assembly_types": [
+              "weapon.single_hand.hilt"
+            ]
+          }
+        }
+      },
+      "category": "weapon_component",
+      "sub_category": "hilt",
+      "tags": "weapon_component;forge;assembly_part"
+    },
+    "weapon_component_h03": {
+      "item_id": "weapon_component_h03",
+      "editor_name": "弧柄单弓柄",
+      "weight_kg": 0.26,
+      "attribute_modules": {
+        "base": {
+          "identity": {
+            "name": "弧柄单弓柄",
+            "name_0": "弧柄单弓柄",
+            "sn": "弧柄单弓柄",
+            "placeholder_name": "弧柄弓环把",
+            "fn_before": "微弯把身外绕着一道弓环，像是个握把",
+            "fn": "带单弓护手的弧柄。",
+            "desc_0": "带单弓护手的弧柄。"
+          },
+          "stacking": {
+            "stack_limit": 1
+          },
+          "provenance": {
+            "source": "forge",
+            "production_lines": "forge"
+          }
+        },
+        "structure": {
+          "assembly_part": {
+            "assembly_types": [
+              "weapon.single_hand.hilt"
+            ]
+          }
+        }
+      },
+      "category": "weapon_component",
+      "sub_category": "hilt",
+      "tags": "weapon_component;forge;assembly_part"
+    },
+    "weapon_component_h04": {
+      "item_id": "weapon_component_h04",
+      "editor_name": "厚首剑柄",
+      "weight_kg": 0.32,
+      "attribute_modules": {
+        "base": {
+          "identity": {
+            "name": "厚首剑柄",
+            "name_0": "厚首剑柄",
+            "sn": "厚首剑柄",
+            "placeholder_name": "厚尾直把",
+            "fn_before": "直把尾端凸着厚实圆头，像是个握把",
+            "fn": "没有护手并带厚实柄首的手柄。",
+            "desc_0": "没有护手并带厚实柄首的手柄。"
+          },
+          "stacking": {
+            "stack_limit": 1
+          },
+          "provenance": {
+            "source": "forge",
+            "production_lines": "forge"
+          }
+        },
+        "structure": {
+          "assembly_part": {
+            "assembly_types": [
+              "weapon.single_hand.hilt"
+            ]
+          }
+        }
+      },
+      "category": "weapon_component",
+      "sub_category": "hilt",
+      "tags": "weapon_component;forge;assembly_part"
+    },
+    "weapon_component_h05": {
+      "item_id": "weapon_component_h05",
+      "editor_name": "宽格剑柄",
+      "weight_kg": 0.3,
+      "attribute_modules": {
+        "base": {
+          "identity": {
+            "name": "宽格剑柄",
+            "name_0": "宽格剑柄",
+            "sn": "宽格剑柄",
+            "placeholder_name": "宽横格把",
+            "fn_before": "把身前端横伸出两道宽翼，像是个握把",
+            "fn": "带宽横向剑格的手柄。",
+            "desc_0": "带宽横向剑格的手柄。"
+          },
+          "stacking": {
+            "stack_limit": 1
+          },
+          "provenance": {
+            "source": "forge",
+            "production_lines": "forge"
+          }
+        },
+        "structure": {
+          "assembly_part": {
+            "assembly_types": [
+              "weapon.single_hand.hilt"
+            ]
+          }
+        }
+      },
+      "category": "weapon_component",
+      "sub_category": "hilt",
+      "tags": "weapon_component;forge;assembly_part"
+    },
+    "weapon_component_h06": {
+      "item_id": "weapon_component_h06",
+      "editor_name": "椭圆盘护手柄",
+      "weight_kg": 0.32,
+      "attribute_modules": {
+        "base": {
+          "identity": {
+            "name": "椭圆盘护手柄",
+            "name_0": "椭圆盘护手柄",
+            "sn": "椭圆盘护手柄",
+            "placeholder_name": "椭圆盘把",
+            "fn_before": "把身前端连着椭圆挡片，像是个握把",
+            "fn": "带椭圆盘状护手的手柄。",
+            "desc_0": "带椭圆盘状护手的手柄。"
+          },
+          "stacking": {
+            "stack_limit": 1
+          },
+          "provenance": {
+            "source": "forge",
+            "production_lines": "forge"
+          }
+        },
+        "structure": {
+          "assembly_part": {
+            "assembly_types": [
+              "weapon.single_hand.hilt"
+            ]
+          }
+        }
+      },
+      "category": "weapon_component",
+      "sub_category": "hilt",
+      "tags": "weapon_component;forge;assembly_part"
+    },
+    "weapon_component_h07": {
+      "item_id": "weapon_component_h07",
+      "editor_name": "梨首直柄",
+      "weight_kg": 0.22,
+      "attribute_modules": {
+        "base": {
+          "identity": {
+            "name": "梨首直柄",
+            "name_0": "梨首直柄",
+            "sn": "梨首直柄",
+            "placeholder_name": "梨尾直把",
+            "fn_before": "直把尾端鼓成梨子的形状，像是个握把",
+            "fn": "没有护手并带梨形圆钝尾首的直柄。",
+            "desc_0": "没有护手并带梨形圆钝尾首的直柄。"
+          },
+          "stacking": {
+            "stack_limit": 1
+          },
+          "provenance": {
+            "source": "forge",
+            "production_lines": "forge"
+          }
+        },
+        "structure": {
+          "assembly_part": {
+            "assembly_types": [
+              "weapon.single_hand.hilt"
+            ]
+          }
+        }
+      },
+      "category": "weapon_component",
+      "sub_category": "hilt",
+      "tags": "weapon_component;forge;assembly_part"
+    },
+    "weapon_component_h08": {
+      "item_id": "weapon_component_h08",
+      "editor_name": "双支护手柄",
+      "weight_kg": 0.34,
+      "attribute_modules": {
+        "base": {
+          "identity": {
+            "name": "双支护手柄",
+            "name_0": "双支护手柄",
+            "sn": "双支护手柄",
+            "placeholder_name": "双弓环把",
+            "fn_before": "两道弓环从把手外侧绕过，像是个握把",
+            "fn": "带双支护弓的手柄。",
+            "desc_0": "带双支护弓的手柄。"
+          },
+          "stacking": {
+            "stack_limit": 1
+          },
+          "provenance": {
+            "source": "forge",
+            "production_lines": "forge"
+          }
+        },
+        "structure": {
+          "assembly_part": {
+            "assembly_types": [
+              "weapon.single_hand.hilt"
+            ]
+          }
+        }
+      },
+      "category": "weapon_component",
+      "sub_category": "hilt",
+      "tags": "weapon_component;forge;assembly_part"
+    },
+    "weapon_component_h09": {
+      "item_id": "weapon_component_h09",
+      "editor_name": "弧背军刀柄",
+      "weight_kg": 0.3,
+      "attribute_modules": {
+        "base": {
+          "identity": {
+            "name": "弧背军刀柄",
+            "name_0": "弧背军刀柄",
+            "sn": "弧背军刀柄",
+            "placeholder_name": "弧背弯把",
+            "fn_before": "弯曲把身外侧连着弧形背，像是个握把",
+            "fn": "背线连续弯曲的军刀护手柄。",
+            "desc_0": "背线连续弯曲的军刀护手柄。"
+          },
+          "stacking": {
+            "stack_limit": 1
+          },
+          "provenance": {
+            "source": "forge",
+            "production_lines": "forge"
+          }
+        },
+        "structure": {
+          "assembly_part": {
+            "assembly_types": [
+              "weapon.single_hand.hilt"
+            ]
+          }
+        }
+      },
+      "category": "weapon_component",
+      "sub_category": "hilt",
+      "tags": "weapon_component;forge;assembly_part"
+    },
+    "weapon_component_h10": {
+      "item_id": "weapon_component_h10",
+      "editor_name": "八棱重首柄",
+      "weight_kg": 0.42,
+      "attribute_modules": {
+        "base": {
+          "identity": {
+            "name": "八棱重首柄",
+            "name_0": "八棱重首柄",
+            "sn": "八棱重首柄",
+            "placeholder_name": "八棱尾把",
+            "fn_before": "把手尾部鼓成八棱厚块，像是个握把",
+            "fn": "没有护手并带八棱重首的手柄。",
+            "desc_0": "没有护手并带八棱重首的手柄。"
+          },
+          "stacking": {
+            "stack_limit": 1
+          },
+          "provenance": {
+            "source": "forge",
+            "production_lines": "forge"
+          }
+        },
+        "structure": {
+          "assembly_part": {
+            "assembly_types": [
+              "weapon.single_hand.hilt"
+            ]
+          }
+        }
+      },
+      "category": "weapon_component",
+      "sub_category": "hilt",
+      "tags": "weapon_component;forge;assembly_part"
+    },
+    "weapon_component_h11": {
+      "item_id": "weapon_component_h11",
+      "editor_name": "三支护手柄",
+      "weight_kg": 0.36,
+      "attribute_modules": {
+        "base": {
+          "identity": {
+            "name": "三支护手柄",
+            "name_0": "三支护手柄",
+            "sn": "三支护手柄",
+            "placeholder_name": "三弓环把",
+            "fn_before": "三道弓环围在把身外侧，像是个握把",
+            "fn": "带三支护弓的手柄。",
+            "desc_0": "带三支护弓的手柄。"
+          },
+          "stacking": {
+            "stack_limit": 1
+          },
+          "provenance": {
+            "source": "forge",
+            "production_lines": "forge"
+          }
+        },
+        "structure": {
+          "assembly_part": {
+            "assembly_types": [
+              "weapon.single_hand.hilt"
+            ]
+          }
+        }
+      },
+      "category": "weapon_component",
+      "sub_category": "hilt",
+      "tags": "weapon_component;forge;assembly_part"
+    },
+    "weapon_component_h12": {
+      "item_id": "weapon_component_h12",
+      "editor_name": "下弯剑格柄",
+      "weight_kg": 0.31,
+      "attribute_modules": {
+        "base": {
+          "identity": {
+            "name": "下弯剑格柄",
+            "name_0": "下弯剑格柄",
+            "sn": "下弯剑格柄",
+            "placeholder_name": "下弯横格把",
+            "fn_before": "把手前面的横格两端下弯，像是个握把",
+            "fn": "带下弯剑格及圆钝尾首的手柄。",
+            "desc_0": "带下弯剑格及圆钝尾首的手柄。"
+          },
+          "stacking": {
+            "stack_limit": 1
+          },
+          "provenance": {
+            "source": "forge",
+            "production_lines": "forge"
+          }
+        },
+        "structure": {
+          "assembly_part": {
+            "assembly_types": [
+              "weapon.single_hand.hilt"
+            ]
+          }
+        }
+      },
+      "category": "weapon_component",
+      "sub_category": "hilt",
+      "tags": "weapon_component;forge;assembly_part"
+    },
+    "weapon_component_h13": {
+      "item_id": "weapon_component_h13",
+      "editor_name": "短尾刺剑柄",
+      "weight_kg": 0.26,
+      "attribute_modules": {
+        "base": {
+          "identity": {
+            "name": "短尾刺剑柄",
+            "name_0": "短尾刺剑柄",
+            "sn": "短尾刺剑柄",
+            "placeholder_name": "尖尾把手",
+            "fn_before": "细把尾端伸出一段短尖，像是个握把",
+            "fn": "没有护手并带短尾刺的手柄。",
+            "desc_0": "没有护手并带短尾刺的手柄。"
+          },
+          "stacking": {
+            "stack_limit": 1
+          },
+          "provenance": {
+            "source": "forge",
+            "production_lines": "forge"
+          }
+        },
+        "structure": {
+          "assembly_part": {
+            "assembly_types": [
+              "weapon.single_hand.hilt"
+            ]
+          }
+        }
+      },
+      "category": "weapon_component",
+      "sub_category": "hilt",
+      "tags": "weapon_component;forge;assembly_part"
+    },
+    "weapon_component_h14": {
+      "item_id": "weapon_component_h14",
+      "editor_name": "半篮护手柄",
+      "weight_kg": 0.38,
+      "attribute_modules": {
+        "base": {
+          "identity": {
+            "name": "半篮护手柄",
+            "name_0": "半篮护手柄",
+            "sn": "半篮护手柄",
+            "placeholder_name": "半篮环把",
+            "fn_before": "几道弓环在把外围成半篮，像是个握把",
+            "fn": "带半篮状护手的手柄。",
+            "desc_0": "带半篮状护手的手柄。"
+          },
+          "stacking": {
+            "stack_limit": 1
+          },
+          "provenance": {
+            "source": "forge",
+            "production_lines": "forge"
+          }
+        },
+        "structure": {
+          "assembly_part": {
+            "assembly_types": [
+              "weapon.single_hand.hilt"
+            ]
+          }
+        }
+      },
+      "category": "weapon_component",
+      "sub_category": "hilt",
+      "tags": "weapon_component;forge;assembly_part"
+    },
+    "weapon_component_h15": {
+      "item_id": "weapon_component_h15",
+      "editor_name": "宽弧剑格柄",
+      "weight_kg": 0.34,
+      "attribute_modules": {
+        "base": {
+          "identity": {
+            "name": "宽弧剑格柄",
+            "name_0": "宽弧剑格柄",
+            "sn": "宽弧剑格柄",
+            "placeholder_name": "宽弧格把",
+            "fn_before": "宽阔横格沿把前弯成弧面，像是个握把",
+            "fn": "带宽弧剑格的手柄。",
+            "desc_0": "带宽弧剑格的手柄。"
+          },
+          "stacking": {
+            "stack_limit": 1
+          },
+          "provenance": {
+            "source": "forge",
+            "production_lines": "forge"
+          }
+        },
+        "structure": {
+          "assembly_part": {
+            "assembly_types": [
+              "weapon.single_hand.hilt"
+            ]
+          }
+        }
+      },
+      "category": "weapon_component",
+      "sub_category": "hilt",
+      "tags": "weapon_component;forge;assembly_part"
+    },
+    "weapon_component_h16": {
+      "item_id": "weapon_component_h16",
+      "editor_name": "厚首配重柄",
+      "weight_kg": 0.44,
+      "attribute_modules": {
+        "base": {
+          "identity": {
+            "name": "厚首配重柄",
+            "name_0": "厚首配重柄",
+            "sn": "厚首配重柄",
+            "placeholder_name": "厚首长把",
+            "fn_before": "把身尾端连着厚实钝头，像是个握把",
+            "fn": "没有护手并带厚实配重首的手柄。",
+            "desc_0": "没有护手并带厚实配重首的手柄。"
+          },
+          "stacking": {
+            "stack_limit": 1
+          },
+          "provenance": {
+            "source": "forge",
+            "production_lines": "forge"
+          }
+        },
+        "structure": {
+          "assembly_part": {
+            "assembly_types": [
+              "weapon.single_hand.hilt"
+            ]
+          }
+        }
+      },
+      "category": "weapon_component",
+      "sub_category": "hilt",
+      "tags": "weapon_component;forge;assembly_part"
+    },
+    "weapon_component_h17": {
+      "item_id": "weapon_component_h17",
+      "editor_name": "碗形护手柄",
+      "weight_kg": 0.42,
+      "attribute_modules": {
+        "base": {
+          "identity": {
+            "name": "碗形护手柄",
+            "name_0": "碗形护手柄",
+            "sn": "碗形护手柄",
+            "placeholder_name": "碗形罩把",
+            "fn_before": "一片碗形罩面围着把身，像是个握把",
+            "fn": "带碗形护手的手柄。",
+            "desc_0": "带碗形护手的手柄。"
+          },
+          "stacking": {
+            "stack_limit": 1
+          },
+          "provenance": {
+            "source": "forge",
+            "production_lines": "forge"
+          }
+        },
+        "structure": {
+          "assembly_part": {
+            "assembly_types": [
+              "weapon.single_hand.hilt"
+            ]
+          }
+        }
+      },
+      "category": "weapon_component",
+      "sub_category": "hilt",
+      "tags": "weapon_component;forge;assembly_part"
+    },
+    "weapon_component_h18": {
+      "item_id": "weapon_component_h18",
+      "editor_name": "回曲宽格柄",
+      "weight_kg": 0.36,
+      "attribute_modules": {
+        "base": {
+          "identity": {
+            "name": "回曲宽格柄",
+            "name_0": "回曲宽格柄",
+            "sn": "回曲宽格柄",
+            "placeholder_name": "回弯宽格把",
+            "fn_before": "宽横格两端向后回弯，像是个握把",
+            "fn": "带回曲宽剑格的手柄。",
+            "desc_0": "带回曲宽剑格的手柄。"
+          },
+          "stacking": {
+            "stack_limit": 1
+          },
+          "provenance": {
+            "source": "forge",
+            "production_lines": "forge"
+          }
+        },
+        "structure": {
+          "assembly_part": {
+            "assembly_types": [
+              "weapon.single_hand.hilt"
+            ]
+          }
+        }
+      },
+      "category": "weapon_component",
+      "sub_category": "hilt",
+      "tags": "weapon_component;forge;assembly_part"
+    },
+    "weapon_component_m01_t1": {
+      "item_id": "weapon_component_m01_t1",
+      "editor_name": "双面锤头",
+      "weight_kg": 0.9,
+      "attribute_modules": {
+        "base": {
+          "identity": {
+            "name": "双面锤头",
+            "name_0": "双面锤头",
+            "sn": "双面锤头",
+            "placeholder_name": "双面方头",
+            "fn_before": "宽头左右各伸出平钝端面，像能接个柄",
+            "fn": "两侧各有锤面的双面锤头。",
+            "desc_0": "两侧各有锤面的双面锤头。"
+          },
+          "stacking": {
+            "stack_limit": 1
+          },
+          "provenance": {
+            "source": "forge",
+            "production_lines": "forge"
+          }
+        },
+        "structure": {
+          "assembly_part": {
+            "assembly_types": [
+              "weapon.single_hand.side1"
+            ]
+          }
+        }
+      },
+      "category": "weapon_component",
+      "sub_category": "multi_position",
+      "tags": "weapon_component;forge;assembly_part"
+    },
+    "weapon_component_m01_t3": {
+      "item_id": "weapon_component_m01_t3",
+      "editor_name": "双面锤头",
+      "weight_kg": 0.9,
+      "attribute_modules": {
+        "base": {
+          "identity": {
+            "name": "双面锤头",
+            "name_0": "双面锤头",
+            "sn": "双面锤头",
+            "placeholder_name": "双面方头",
+            "fn_before": "宽头左右各伸出平钝端面，像能接个柄",
+            "fn": "两侧各有锤面的双面锤头。",
+            "desc_0": "两侧各有锤面的双面锤头。"
+          },
+          "stacking": {
+            "stack_limit": 1
+          },
+          "provenance": {
+            "source": "forge",
+            "production_lines": "forge"
+          }
+        },
+        "structure": {
+          "assembly_part": {
+            "assembly_types": [
+              "weapon.single_hand.side1"
+            ]
+          }
+        }
+      },
+      "category": "weapon_component",
+      "sub_category": "multi_position",
+      "tags": "weapon_component;forge;assembly_part"
+    },
+    "weapon_component_m02_t1": {
+      "item_id": "weapon_component_m02_t1",
+      "editor_name": "双刃斧头",
+      "weight_kg": 1,
+      "attribute_modules": {
+        "base": {
+          "identity": {
+            "name": "双刃斧头",
+            "name_0": "双刃斧头",
+            "sn": "双刃斧头",
+            "placeholder_name": "双翼刃头",
+            "fn_before": "宽头两边展开成带薄边的翼，像能接个柄",
+            "fn": "两侧各有斧刃的双刃斧头。",
+            "desc_0": "两侧各有斧刃的双刃斧头。"
+          },
+          "stacking": {
+            "stack_limit": 1
+          },
+          "provenance": {
+            "source": "forge",
+            "production_lines": "forge"
+          }
+        },
+        "structure": {
+          "assembly_part": {
+            "assembly_types": [
+              "weapon.single_hand.side1"
+            ]
+          }
+        }
+      },
+      "category": "weapon_component",
+      "sub_category": "multi_position",
+      "tags": "weapon_component;forge;assembly_part"
+    },
+    "weapon_component_m02_t4": {
+      "item_id": "weapon_component_m02_t4",
+      "editor_name": "双刃斧头",
+      "weight_kg": 1,
+      "attribute_modules": {
+        "base": {
+          "identity": {
+            "name": "双刃斧头",
+            "name_0": "双刃斧头",
+            "sn": "双刃斧头",
+            "placeholder_name": "双翼刃头",
+            "fn_before": "宽头两边展开成带薄边的翼，像能接个柄",
+            "fn": "两侧各有斧刃的双刃斧头。",
+            "desc_0": "两侧各有斧刃的双刃斧头。"
+          },
+          "stacking": {
+            "stack_limit": 1
+          },
+          "provenance": {
+            "source": "forge",
+            "production_lines": "forge"
+          }
+        },
+        "structure": {
+          "assembly_part": {
+            "assembly_types": [
+              "weapon.single_hand.side1"
+            ]
+          }
+        }
+      },
+      "category": "weapon_component",
+      "sub_category": "multi_position",
+      "tags": "weapon_component;forge;assembly_part"
+    },
+    "weapon_component_m03_t2": {
+      "item_id": "weapon_component_m03_t2",
+      "editor_name": "锤斧复合头",
+      "weight_kg": 1,
+      "attribute_modules": {
+        "base": {
+          "identity": {
+            "name": "锤斧复合头",
+            "name_0": "锤斧复合头",
+            "sn": "锤斧复合头",
+            "placeholder_name": "方头刃翼块",
+            "fn_before": "块体一侧平钝而另一侧展宽，像能接个柄",
+            "fn": "一侧为锤面另一侧为斧刃的复合头。",
+            "desc_0": "一侧为锤面另一侧为斧刃的复合头。"
+          },
+          "stacking": {
+            "stack_limit": 1
+          },
+          "provenance": {
+            "source": "forge",
+            "production_lines": "forge"
+          }
+        },
+        "structure": {
+          "assembly_part": {
+            "assembly_types": [
+              "weapon.single_hand.side1"
+            ]
+          }
+        }
+      },
+      "category": "weapon_component",
+      "sub_category": "multi_position",
+      "tags": "weapon_component;forge;assembly_part"
+    },
+    "weapon_component_m03_t5": {
+      "item_id": "weapon_component_m03_t5",
+      "editor_name": "锤斧复合头",
+      "weight_kg": 1,
+      "attribute_modules": {
+        "base": {
+          "identity": {
+            "name": "锤斧复合头",
+            "name_0": "锤斧复合头",
+            "sn": "锤斧复合头",
+            "placeholder_name": "方头刃翼块",
+            "fn_before": "块体一侧平钝而另一侧展宽，像能接个柄",
+            "fn": "一侧为锤面另一侧为斧刃的复合头。",
+            "desc_0": "一侧为锤面另一侧为斧刃的复合头。"
+          },
+          "stacking": {
+            "stack_limit": 1
+          },
+          "provenance": {
+            "source": "forge",
+            "production_lines": "forge"
+          }
+        },
+        "structure": {
+          "assembly_part": {
+            "assembly_types": [
+              "weapon.single_hand.side1"
+            ]
+          }
+        }
+      },
+      "category": "weapon_component",
+      "sub_category": "multi_position",
+      "tags": "weapon_component;forge;assembly_part"
+    },
+    "weapon_component_m04_t3": {
+      "item_id": "weapon_component_m04_t3",
+      "editor_name": "锤镐复合头",
+      "weight_kg": 0.92,
+      "attribute_modules": {
+        "base": {
+          "identity": {
+            "name": "锤镐复合头",
+            "name_0": "锤镐复合头",
+            "sn": "锤镐复合头",
+            "placeholder_name": "方头尖喙块",
+            "fn_before": "块体一侧平钝而另一侧伸尖，像能接个柄",
+            "fn": "一侧为锤面另一侧为尖喙的复合头。",
+            "desc_0": "一侧为锤面另一侧为尖喙的复合头。"
+          },
+          "stacking": {
+            "stack_limit": 1
+          },
+          "provenance": {
+            "source": "forge",
+            "production_lines": "forge"
+          }
+        },
+        "structure": {
+          "assembly_part": {
+            "assembly_types": [
+              "weapon.single_hand.side1"
+            ]
+          }
+        }
+      },
+      "category": "weapon_component",
+      "sub_category": "multi_position",
+      "tags": "weapon_component;forge;assembly_part"
+    },
+    "weapon_component_m04_t6": {
+      "item_id": "weapon_component_m04_t6",
+      "editor_name": "锤镐复合头",
+      "weight_kg": 0.92,
+      "attribute_modules": {
+        "base": {
+          "identity": {
+            "name": "锤镐复合头",
+            "name_0": "锤镐复合头",
+            "sn": "锤镐复合头",
+            "placeholder_name": "方头尖喙块",
+            "fn_before": "块体一侧平钝而另一侧伸尖，像能接个柄",
+            "fn": "一侧为锤面另一侧为尖喙的复合头。",
+            "desc_0": "一侧为锤面另一侧为尖喙的复合头。"
+          },
+          "stacking": {
+            "stack_limit": 1
+          },
+          "provenance": {
+            "source": "forge",
+            "production_lines": "forge"
+          }
+        },
+        "structure": {
+          "assembly_part": {
+            "assembly_types": [
+              "weapon.single_hand.side1"
+            ]
+          }
+        }
+      },
+      "category": "weapon_component",
+      "sub_category": "multi_position",
+      "tags": "weapon_component;forge;assembly_part"
+    },
+    "weapon_component_m05_t2": {
+      "item_id": "weapon_component_m05_t2",
+      "editor_name": "一体双刃剑身",
+      "weight_kg": 0.8,
+      "attribute_modules": {
+        "base": {
+          "identity": {
+            "name": "一体双刃剑身",
+            "name_0": "一体双刃剑身",
+            "sn": "一体双刃剑身",
+            "placeholder_name": "双薄边长片",
+            "fn_before": "长片两边收薄而前端带尖，像能接个柄",
+            "fn": "尖端与两侧剑刃连为一体的剑身。",
+            "desc_0": "尖端与两侧剑刃连为一体的剑身。"
+          },
+          "stacking": {
+            "stack_limit": 1
+          },
+          "provenance": {
+            "source": "forge",
+            "production_lines": "forge"
+          }
+        },
+        "structure": {
+          "assembly_part": {
+            "assembly_types": [
+              "weapon.single_hand.front"
+            ]
+          }
+        }
+      },
+      "category": "weapon_component",
+      "sub_category": "multi_position",
+      "tags": "weapon_component;forge;assembly_part"
+    },
+    "weapon_component_m05_t4": {
+      "item_id": "weapon_component_m05_t4",
+      "editor_name": "一体双刃剑身",
+      "weight_kg": 0.8,
+      "attribute_modules": {
+        "base": {
+          "identity": {
+            "name": "一体双刃剑身",
+            "name_0": "一体双刃剑身",
+            "sn": "一体双刃剑身",
+            "placeholder_name": "双薄边长片",
+            "fn_before": "长片两边收薄而前端带尖，像能接个柄",
+            "fn": "尖端与两侧剑刃连为一体的剑身。",
+            "desc_0": "尖端与两侧剑刃连为一体的剑身。"
+          },
+          "stacking": {
+            "stack_limit": 1
+          },
+          "provenance": {
+            "source": "forge",
+            "production_lines": "forge"
+          }
+        },
+        "structure": {
+          "assembly_part": {
+            "assembly_types": [
+              "weapon.single_hand.front"
+            ]
+          }
+        }
+      },
+      "category": "weapon_component",
+      "sub_category": "multi_position",
+      "tags": "weapon_component;forge;assembly_part"
+    },
+    "weapon_component_m05_t6": {
+      "item_id": "weapon_component_m05_t6",
+      "editor_name": "一体双刃剑身",
+      "weight_kg": 0.8,
+      "attribute_modules": {
+        "base": {
+          "identity": {
+            "name": "一体双刃剑身",
+            "name_0": "一体双刃剑身",
+            "sn": "一体双刃剑身",
+            "placeholder_name": "双薄边长片",
+            "fn_before": "长片两边收薄而前端带尖，像能接个柄",
+            "fn": "尖端与两侧剑刃连为一体的剑身。",
+            "desc_0": "尖端与两侧剑刃连为一体的剑身。"
+          },
+          "stacking": {
+            "stack_limit": 1
+          },
+          "provenance": {
+            "source": "forge",
+            "production_lines": "forge"
+          }
+        },
+        "structure": {
+          "assembly_part": {
+            "assembly_types": [
+              "weapon.single_hand.front"
+            ]
+          }
+        }
+      },
+      "category": "weapon_component",
+      "sub_category": "multi_position",
+      "tags": "weapon_component;forge;assembly_part"
+    },
+    "weapon_component_m06_t2": {
+      "item_id": "weapon_component_m06_t2",
+      "editor_name": "一体单刃刀身",
+      "weight_kg": 0.86,
+      "attribute_modules": {
+        "base": {
+          "identity": {
+            "name": "一体单刃刀身",
+            "name_0": "一体单刃刀身",
+            "sn": "一体单刃刀身",
+            "placeholder_name": "厚背尖长片",
+            "fn_before": "尖长片一边收薄而另一边厚，像能接个柄",
+            "fn": "尖端与刀刃和厚背连为一体的刀身。",
+            "desc_0": "尖端与刀刃和厚背连为一体的刀身。"
+          },
+          "stacking": {
+            "stack_limit": 1
+          },
+          "provenance": {
+            "source": "forge",
+            "production_lines": "forge"
+          }
+        },
+        "structure": {
+          "assembly_part": {
+            "assembly_types": [
+              "weapon.single_hand.front"
+            ]
+          }
+        }
+      },
+      "category": "weapon_component",
+      "sub_category": "multi_position",
+      "tags": "weapon_component;forge;assembly_part"
+    },
+    "weapon_component_m06_t5": {
+      "item_id": "weapon_component_m06_t5",
+      "editor_name": "一体单刃刀身",
+      "weight_kg": 0.86,
+      "attribute_modules": {
+        "base": {
+          "identity": {
+            "name": "一体单刃刀身",
+            "name_0": "一体单刃刀身",
+            "sn": "一体单刃刀身",
+            "placeholder_name": "厚背尖长片",
+            "fn_before": "尖长片一边收薄而另一边厚，像能接个柄",
+            "fn": "尖端与刀刃和厚背连为一体的刀身。",
+            "desc_0": "尖端与刀刃和厚背连为一体的刀身。"
+          },
+          "stacking": {
+            "stack_limit": 1
+          },
+          "provenance": {
+            "source": "forge",
+            "production_lines": "forge"
+          }
+        },
+        "structure": {
+          "assembly_part": {
+            "assembly_types": [
+              "weapon.single_hand.front"
+            ]
+          }
+        }
+      },
+      "category": "weapon_component",
+      "sub_category": "multi_position",
+      "tags": "weapon_component;forge;assembly_part"
+    },
+    "weapon_component_m07_t1": {
+      "item_id": "weapon_component_m07_t1",
+      "editor_name": "一体棍身",
+      "weight_kg": 0.85,
+      "attribute_modules": {
+        "base": {
+          "identity": {
+            "name": "一体棍身",
+            "name_0": "一体棍身",
+            "sn": "一体棍身",
+            "placeholder_name": "圆钝长杆",
+            "fn_before": "长杆四周圆钝而顶端收平，像能接个柄",
+            "fn": "棍顶与两侧连为一体的棍身。",
+            "desc_0": "棍顶与两侧连为一体的棍身。"
+          },
+          "stacking": {
+            "stack_limit": 1
+          },
+          "provenance": {
+            "source": "forge",
+            "production_lines": "forge"
+          }
+        },
+        "structure": {
+          "assembly_part": {
+            "assembly_types": [
+              "weapon.single_hand.front"
+            ]
+          }
+        }
+      },
+      "category": "weapon_component",
+      "sub_category": "multi_position",
+      "tags": "weapon_component;forge;assembly_part"
+    },
+    "weapon_component_m07_t3": {
+      "item_id": "weapon_component_m07_t3",
+      "editor_name": "一体棍身",
+      "weight_kg": 0.85,
+      "attribute_modules": {
+        "base": {
+          "identity": {
+            "name": "一体棍身",
+            "name_0": "一体棍身",
+            "sn": "一体棍身",
+            "placeholder_name": "圆钝长杆",
+            "fn_before": "长杆四周圆钝而顶端收平，像能接个柄",
+            "fn": "棍顶与两侧连为一体的棍身。",
+            "desc_0": "棍顶与两侧连为一体的棍身。"
+          },
+          "stacking": {
+            "stack_limit": 1
+          },
+          "provenance": {
+            "source": "forge",
+            "production_lines": "forge"
+          }
+        },
+        "structure": {
+          "assembly_part": {
+            "assembly_types": [
+              "weapon.single_hand.front"
+            ]
+          }
+        }
+      },
+      "category": "weapon_component",
+      "sub_category": "multi_position",
+      "tags": "weapon_component;forge;assembly_part"
+    },
+    "weapon_component_m07_t5": {
+      "item_id": "weapon_component_m07_t5",
+      "editor_name": "一体棍身",
+      "weight_kg": 0.85,
+      "attribute_modules": {
+        "base": {
+          "identity": {
+            "name": "一体棍身",
+            "name_0": "一体棍身",
+            "sn": "一体棍身",
+            "placeholder_name": "圆钝长杆",
+            "fn_before": "长杆四周圆钝而顶端收平，像能接个柄",
+            "fn": "棍顶与两侧连为一体的棍身。",
+            "desc_0": "棍顶与两侧连为一体的棍身。"
+          },
+          "stacking": {
+            "stack_limit": 1
+          },
+          "provenance": {
+            "source": "forge",
+            "production_lines": "forge"
+          }
+        },
+        "structure": {
+          "assembly_part": {
+            "assembly_types": [
+              "weapon.single_hand.front"
+            ]
+          }
+        }
+      },
+      "category": "weapon_component",
+      "sub_category": "multi_position",
+      "tags": "weapon_component;forge;assembly_part"
+    },
+    "weapon_component_m08_t4": {
+      "item_id": "weapon_component_m08_t4",
+      "editor_name": "冠刺锤头",
+      "weight_kg": 1.2,
+      "attribute_modules": {
+        "base": {
+          "identity": {
+            "name": "冠刺锤头",
+            "name_0": "冠刺锤头",
+            "sn": "冠刺锤头",
+            "placeholder_name": "冠尖双面头",
+            "fn_before": "双面钝头上方伸出一段尖角，像能接个柄",
+            "fn": "冠刺与两侧锤面连为一体的锤头。",
+            "desc_0": "冠刺与两侧锤面连为一体的锤头。"
+          },
+          "stacking": {
+            "stack_limit": 1
+          },
+          "provenance": {
+            "source": "forge",
+            "production_lines": "forge"
+          }
+        },
+        "structure": {
+          "assembly_part": {
+            "assembly_types": [
+              "weapon.single_hand.front"
+            ]
+          }
+        }
+      },
+      "category": "weapon_component",
+      "sub_category": "multi_position",
+      "tags": "weapon_component;forge;assembly_part"
+    },
+    "weapon_component_m08_t6": {
+      "item_id": "weapon_component_m08_t6",
+      "editor_name": "冠刺锤头",
+      "weight_kg": 1.2,
+      "attribute_modules": {
+        "base": {
+          "identity": {
+            "name": "冠刺锤头",
+            "name_0": "冠刺锤头",
+            "sn": "冠刺锤头",
+            "placeholder_name": "冠尖双面头",
+            "fn_before": "双面钝头上方伸出一段尖角，像能接个柄",
+            "fn": "冠刺与两侧锤面连为一体的锤头。",
+            "desc_0": "冠刺与两侧锤面连为一体的锤头。"
+          },
+          "stacking": {
+            "stack_limit": 1
+          },
+          "provenance": {
+            "source": "forge",
+            "production_lines": "forge"
+          }
+        },
+        "structure": {
+          "assembly_part": {
+            "assembly_types": [
+              "weapon.single_hand.front"
+            ]
+          }
+        }
+      },
+      "category": "weapon_component",
+      "sub_category": "multi_position",
+      "tags": "weapon_component;forge;assembly_part"
+    },
+    "weapon_component_t01": {
+      "item_id": "weapon_component_t01",
+      "editor_name": "短菱剑尖",
+      "weight_kg": 0.08,
+      "attribute_modules": {
+        "base": {
+          "identity": {
+            "name": "短菱剑尖",
+            "name_0": "短菱剑尖",
+            "sn": "短菱剑尖",
+            "placeholder_name": "短尖小块",
+            "fn_before": "短小块体的四面收向尖端，像能装上去",
+            "fn": "短小菱形的刺击前端。",
+            "desc_0": "短小菱形的刺击前端。"
+          },
+          "stacking": {
+            "stack_limit": 1
+          },
+          "provenance": {
+            "source": "forge",
+            "production_lines": "forge"
+          }
+        },
+        "structure": {
+          "assembly_part": {
+            "assembly_types": [
+              "weapon.single_hand.front"
+            ]
+          }
+        }
+      },
+      "category": "weapon_component",
+      "sub_category": "front",
+      "tags": "weapon_component;forge;assembly_part"
+    },
+    "weapon_component_t02": {
+      "item_id": "weapon_component_t02",
+      "editor_name": "平顶圆头",
+      "weight_kg": 0.1,
+      "attribute_modules": {
+        "base": {
+          "identity": {
+            "name": "平顶圆头",
+            "name_0": "平顶圆头",
+            "sn": "平顶圆头",
+            "placeholder_name": "平顶圆块",
+            "fn_before": "圆块顶端平整而边缘钝圆，像能装上去",
+            "fn": "平顶圆边的钝击前端。",
+            "desc_0": "平顶圆边的钝击前端。"
+          },
+          "stacking": {
+            "stack_limit": 1
+          },
+          "provenance": {
+            "source": "forge",
+            "production_lines": "forge"
+          }
+        },
+        "structure": {
+          "assembly_part": {
+            "assembly_types": [
+              "weapon.single_hand.front"
+            ]
+          }
+        }
+      },
+      "category": "weapon_component",
+      "sub_category": "front",
+      "tags": "weapon_component;forge;assembly_part"
+    },
+    "weapon_component_t03": {
+      "item_id": "weapon_component_t03",
+      "editor_name": "扁叶剑尖",
+      "weight_kg": 0.1,
+      "attribute_modules": {
+        "base": {
+          "identity": {
+            "name": "扁叶剑尖",
+            "name_0": "扁叶剑尖",
+            "sn": "扁叶剑尖",
+            "placeholder_name": "叶形尖片",
+            "fn_before": "扁片像叶子一样收出尖角，像能装上去",
+            "fn": "扁叶形的刺击前端。",
+            "desc_0": "扁叶形的刺击前端。"
+          },
+          "stacking": {
+            "stack_limit": 1
+          },
+          "provenance": {
+            "source": "forge",
+            "production_lines": "forge"
+          }
+        },
+        "structure": {
+          "assembly_part": {
+            "assembly_types": [
+              "weapon.single_hand.front"
+            ]
+          }
+        }
+      },
+      "category": "weapon_component",
+      "sub_category": "front",
+      "tags": "weapon_component;forge;assembly_part"
+    },
+    "weapon_component_t04": {
+      "item_id": "weapon_component_t04",
+      "editor_name": "半球击头",
+      "weight_kg": 0.16,
+      "attribute_modules": {
+        "base": {
+          "identity": {
+            "name": "半球击头",
+            "name_0": "半球击头",
+            "sn": "半球击头",
+            "placeholder_name": "半圆小头",
+            "fn_before": "块体的一端圆鼓如半个球，像能装上去",
+            "fn": "半球形的钝击前端。",
+            "desc_0": "半球形的钝击前端。"
+          },
+          "stacking": {
+            "stack_limit": 1
+          },
+          "provenance": {
+            "source": "forge",
+            "production_lines": "forge"
+          }
+        },
+        "structure": {
+          "assembly_part": {
+            "assembly_types": [
+              "weapon.single_hand.front"
+            ]
+          }
+        }
+      },
+      "category": "weapon_component",
+      "sub_category": "front",
+      "tags": "weapon_component;forge;assembly_part"
+    },
+    "weapon_component_t05": {
+      "item_id": "weapon_component_t05",
+      "editor_name": "四棱剑尖",
+      "weight_kg": 0.11,
+      "attribute_modules": {
+        "base": {
+          "identity": {
+            "name": "四棱剑尖",
+            "name_0": "四棱剑尖",
+            "sn": "四棱剑尖",
+            "placeholder_name": "四棱尖块",
+            "fn_before": "四道长棱一同收向尖端，像能装上去",
+            "fn": "带四道棱的刺击前端。",
+            "desc_0": "带四道棱的刺击前端。"
+          },
+          "stacking": {
+            "stack_limit": 1
+          },
+          "provenance": {
+            "source": "forge",
+            "production_lines": "forge"
+          }
+        },
+        "structure": {
+          "assembly_part": {
+            "assembly_types": [
+              "weapon.single_hand.front"
+            ]
+          }
+        }
+      },
+      "category": "weapon_component",
+      "sub_category": "front",
+      "tags": "weapon_component;forge;assembly_part"
+    },
+    "weapon_component_t06": {
+      "item_id": "weapon_component_t06",
+      "editor_name": "扁圆击头",
+      "weight_kg": 0.12,
+      "attribute_modules": {
+        "base": {
+          "identity": {
+            "name": "扁圆击头",
+            "name_0": "扁圆击头",
+            "sn": "扁圆击头",
+            "placeholder_name": "扁圆小头",
+            "fn_before": "短块顶面宽圆而侧面扁平，像能装上去",
+            "fn": "扁圆形的钝击前端。",
+            "desc_0": "扁圆形的钝击前端。"
+          },
+          "stacking": {
+            "stack_limit": 1
+          },
+          "provenance": {
+            "source": "forge",
+            "production_lines": "forge"
+          }
+        },
+        "structure": {
+          "assembly_part": {
+            "assembly_types": [
+              "weapon.single_hand.front"
+            ]
+          }
+        }
+      },
+      "category": "weapon_component",
+      "sub_category": "front",
+      "tags": "weapon_component;forge;assembly_part"
+    },
+    "weapon_component_t07": {
+      "item_id": "weapon_component_t07",
+      "editor_name": "脊棱窄尖",
+      "weight_kg": 0.1,
+      "attribute_modules": {
+        "base": {
+          "identity": {
+            "name": "脊棱窄尖",
+            "name_0": "脊棱窄尖",
+            "sn": "脊棱窄尖",
+            "placeholder_name": "窄脊尖片",
+            "fn_before": "窄长尖片中间凸着一条脊，像能装上去",
+            "fn": "带脊棱的窄刺击前端。",
+            "desc_0": "带脊棱的窄刺击前端。"
+          },
+          "stacking": {
+            "stack_limit": 1
+          },
+          "provenance": {
+            "source": "forge",
+            "production_lines": "forge"
+          }
+        },
+        "structure": {
+          "assembly_part": {
+            "assembly_types": [
+              "weapon.single_hand.front"
+            ]
+          }
+        }
+      },
+      "category": "weapon_component",
+      "sub_category": "front",
+      "tags": "weapon_component;forge;assembly_part"
+    },
+    "weapon_component_t08": {
+      "item_id": "weapon_component_t08",
+      "editor_name": "多棱钝头",
+      "weight_kg": 0.2,
+      "attribute_modules": {
+        "base": {
+          "identity": {
+            "name": "多棱钝头",
+            "name_0": "多棱钝头",
+            "sn": "多棱钝头",
+            "placeholder_name": "多棱钝块",
+            "fn_before": "块体带有数个平整的棱面，像能装上去",
+            "fn": "带多道钝棱的钝击前端。",
+            "desc_0": "带多道钝棱的钝击前端。"
+          },
+          "stacking": {
+            "stack_limit": 1
+          },
+          "provenance": {
+            "source": "forge",
+            "production_lines": "forge"
+          }
+        },
+        "structure": {
+          "assembly_part": {
+            "assembly_types": [
+              "weapon.single_hand.front"
+            ]
+          }
+        }
+      },
+      "category": "weapon_component",
+      "sub_category": "front",
+      "tags": "weapon_component;forge;assembly_part"
+    },
+    "weapon_component_t09": {
+      "item_id": "weapon_component_t09",
+      "editor_name": "渐收长尖",
+      "weight_kg": 0.13,
+      "attribute_modules": {
+        "base": {
+          "identity": {
+            "name": "渐收长尖",
+            "name_0": "渐收长尖",
+            "sn": "渐收长尖",
+            "placeholder_name": "渐细长尖",
+            "fn_before": "细长的块体逐渐收出尖端，像能装上去",
+            "fn": "逐渐收窄的长刺击前端。",
+            "desc_0": "逐渐收窄的长刺击前端。"
+          },
+          "stacking": {
+            "stack_limit": 1
+          },
+          "provenance": {
+            "source": "forge",
+            "production_lines": "forge"
+          }
+        },
+        "structure": {
+          "assembly_part": {
+            "assembly_types": [
+              "weapon.single_hand.front"
+            ]
+          }
+        }
+      },
+      "category": "weapon_component",
+      "sub_category": "front",
+      "tags": "weapon_component;forge;assembly_part"
+    },
+    "weapon_component_t10": {
+      "item_id": "weapon_component_t10",
+      "editor_name": "鼓形击头",
+      "weight_kg": 0.18,
+      "attribute_modules": {
+        "base": {
+          "identity": {
+            "name": "鼓形击头",
+            "name_0": "鼓形击头",
+            "sn": "鼓形击头",
+            "placeholder_name": "鼓形圆块",
+            "fn_before": "圆块中部鼓起而两端较平，像能装上去",
+            "fn": "鼓形的钝击前端。",
+            "desc_0": "鼓形的钝击前端。"
+          },
+          "stacking": {
+            "stack_limit": 1
+          },
+          "provenance": {
+            "source": "forge",
+            "production_lines": "forge"
+          }
+        },
+        "structure": {
+          "assembly_part": {
+            "assembly_types": [
+              "weapon.single_hand.front"
+            ]
+          }
+        }
+      },
+      "category": "weapon_component",
+      "sub_category": "front",
+      "tags": "weapon_component;forge;assembly_part"
+    },
+    "weapon_component_t11": {
+      "item_id": "weapon_component_t11",
+      "editor_name": "厚根菱尖",
+      "weight_kg": 0.12,
+      "attribute_modules": {
+        "base": {
+          "identity": {
+            "name": "厚根菱尖",
+            "name_0": "厚根菱尖",
+            "sn": "厚根菱尖",
+            "placeholder_name": "厚根尖块",
+            "fn_before": "尖块根部较厚而尖端细窄，像能装上去",
+            "fn": "根部加厚的菱形刺击前端。",
+            "desc_0": "根部加厚的菱形刺击前端。"
+          },
+          "stacking": {
+            "stack_limit": 1
+          },
+          "provenance": {
+            "source": "forge",
+            "production_lines": "forge"
+          }
+        },
+        "structure": {
+          "assembly_part": {
+            "assembly_types": [
+              "weapon.single_hand.front"
+            ]
+          }
+        }
+      },
+      "category": "weapon_component",
+      "sub_category": "front",
+      "tags": "weapon_component;forge;assembly_part"
+    },
+    "weapon_component_t12": {
+      "item_id": "weapon_component_t12",
+      "editor_name": "圆冠重击头",
+      "weight_kg": 0.22,
+      "attribute_modules": {
+        "base": {
+          "identity": {
+            "name": "圆冠重击头",
+            "name_0": "圆冠重击头",
+            "sn": "圆冠重击头",
+            "placeholder_name": "圆冠厚块",
+            "fn_before": "厚块顶端隆起一圈圆冠，像能装上去",
+            "fn": "圆冠形的厚实钝击前端。",
+            "desc_0": "圆冠形的厚实钝击前端。"
+          },
+          "stacking": {
+            "stack_limit": 1
+          },
+          "provenance": {
+            "source": "forge",
+            "production_lines": "forge"
+          }
+        },
+        "structure": {
+          "assembly_part": {
+            "assembly_types": [
+              "weapon.single_hand.front"
+            ]
+          }
+        }
+      },
+      "category": "weapon_component",
+      "sub_category": "front",
+      "tags": "weapon_component;forge;assembly_part"
+    },
+    "weapon_single_hand_assembly": {
+      "item_id": "weapon_single_hand_assembly",
+      "editor_name": "单手武器",
+      "weight_kg": 0,
+      "attribute_modules": {
+        "base": {
+          "identity": {
+            "name": "单手武器",
+            "name_0": "单手武器",
+            "sn": "单手武器",
+            "placeholder_name": "拼接长器",
+            "fn_before": "几个部件连成一件带把长物，像能拿来挥",
+            "fn": "由已装入部件组成的单手武器。",
+            "desc_0": "由已装入部件组成的单手武器。"
+          },
+          "stacking": {
+            "stack_limit": 1
+          },
+          "provenance": {
+            "source": "forge",
+            "production_lines": "forge"
+          }
+        },
+        "equipment": {
+          "wearable": {
+            "equip_slot": "weapon_right"
+          }
+        },
+        "structure": {
+          "assembly_host": {
+            "assembly_slots": {
+              "front": {
+                "accepts": [
+                  "weapon.single_hand.front"
+                ],
+                "required": false
+              },
+              "side1": {
+                "accepts": [
+                  "weapon.single_hand.side1"
+                ],
+                "required": false
+              },
+              "side2": {
+                "accepts": [
+                  "weapon.single_hand.side2"
+                ],
+                "required": false
+              },
+              "hilt": {
+                "accepts": [
+                  "weapon.single_hand.hilt"
+                ],
+                "required": false
+              }
+            }
+          }
+        }
+      },
+      "category": "weapon",
+      "sub_category": "single_hand",
+      "tags": "weapon;single_hand;assembly_root"
+    },
+    "tool_repair_hammer": {
+      "item_id": "tool_repair_hammer",
+      "editor_name": "修理锤",
+      "weight_kg": 3,
+      "category": "tool",
+      "sub_category": "repair",
+      "tags": "tool;repair;assembly_part",
+      "attribute_modules": {
+        "base": {
+          "identity": {
+            "name": "修理锤",
+            "name_0": "修理锤",
+            "sn": "修理锤",
+            "placeholder_name": "木柄方头物",
+            "fn_before": "方形铁块下接着木柄，看着能敲打",
+            "fn": "木柄修理锤，锤头方正，两端都有平整的锤面。",
+            "desc_0": "木柄修理锤，锤头方正，两端都有平整的锤面。"
+          },
+          "stacking": {
+            "stack_limit": 1
+          },
+          "trade": {
+            "base_value": 600,
+            "price_class": "life_good",
+            "volatility": "low",
+            "region_restrict": 0
+          },
+          "provenance": {
+            "source": "buy",
+            "production_lines": "forge"
+          }
+        },
+        "structure": {
+          "assembly_part": {
+            "assembly_types": [
+              "repair.hammer"
+            ]
+          }
+        }
+      }
+    },
+    "tool_repair_pliers": {
+      "item_id": "tool_repair_pliers",
+      "editor_name": "维修钳",
+      "weight_kg": 1.5,
+      "category": "tool",
+      "sub_category": "repair",
+      "tags": "tool;repair;assembly_part",
+      "attribute_modules": {
+        "base": {
+          "identity": {
+            "name": "维修钳",
+            "name_0": "维修钳",
+            "sn": "维修钳",
+            "placeholder_name": "双柄铁夹",
+            "fn_before": "两根长柄连着带齿的夹口，看着能夹物",
+            "fn": "宽口维修钳，钳口带齿，两根长柄向外弯开。",
+            "desc_0": "宽口维修钳，钳口带齿，两根长柄向外弯开。"
+          },
+          "stacking": {
+            "stack_limit": 1
+          },
+          "trade": {
+            "base_value": 480,
+            "price_class": "life_good",
+            "volatility": "low",
+            "region_restrict": 0
+          },
+          "provenance": {
+            "source": "buy",
+            "production_lines": "forge"
+          }
+        },
+        "structure": {
+          "assembly_part": {
+            "assembly_types": [
+              "repair.pliers"
+            ]
+          }
+        }
+      }
+    },
+    "tool_repair_whetstone": {
+      "item_id": "tool_repair_whetstone",
+      "editor_name": "磨刀石",
+      "weight_kg": 2,
+      "category": "tool",
+      "sub_category": "repair",
+      "tags": "tool;repair;assembly_part",
+      "attribute_modules": {
+        "base": {
+          "identity": {
+            "name": "磨刀石",
+            "name_0": "磨刀石",
+            "sn": "磨刀石",
+            "placeholder_name": "灰色长方石",
+            "fn_before": "灰色长方石块两面粗细不同，可以磨东西",
+            "fn": "一块两面粗细不同的长方形磨刀石。",
+            "desc_0": "一块两面粗细不同的长方形磨刀石。"
+          },
+          "stacking": {
+            "stack_limit": 1
+          },
+          "trade": {
+            "base_value": 360,
+            "price_class": "life_good",
+            "volatility": "low",
+            "region_restrict": 0
+          },
+          "provenance": {
+            "source": "buy",
+            "production_lines": "forge"
+          }
+        },
+        "structure": {
+          "assembly_part": {
+            "assembly_types": [
+              "repair.whetstone"
+            ]
+          }
+        }
+      }
+    }
+  }
+}

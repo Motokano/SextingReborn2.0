@@ -425,7 +425,7 @@
       function keyOf(x, y) { return x + "," + y; }
       function round1(n) { return Math.round((n || 0) * 10) / 10; }
       function roundNutrient(n) { return Math.round((Number(n) || 0) * 1000) / 1000; }
-      function inBounds(x, y) { return x >= 0 && x < SIZE && y >= 0 && y < SIZE; }
+      function inBounds(x, y) { return Number.isInteger(x) && Number.isInteger(y) && x >= 0 && x < SIZE && y >= 0 && y < SIZE; }
 
       function venturiConcRangeForLevel(level) {
         var lv = Math.max(1, Math.min(VENTURI_MAX_LEVEL, Number(level) || 1));
@@ -1687,7 +1687,7 @@
       }
 
       function clonePoint(p) { return { x: p.x, y: p.y }; }
-      function cell(state, x, y) { return state.map[y][x]; }
+      function cell(state, x, y) { return inBounds(x, y) ? state.map[y][x] : null; }
       function isChannelCell(c) { return c.kind === "channel"; }
       function isPoolCell(c) { return c.kind === "pool"; }
       function isVenturiCell(c) { return c.kind === "venturi_fertilizer"; }
@@ -2069,6 +2069,7 @@
       }
 
       function getIrrigationSourceForPlot(state, x, y) {
+        if (!inBounds(x, y)) return null;
         var candidates = [];
         forEachNeighbor(x, y, function (nx, ny) {
           var c = cell(state, nx, ny);
@@ -2458,6 +2459,7 @@
         ctx = ctx || {};
         if (!state || !state.task) return { ok: true, advanced: false, reason: 'no_task' };
         if (ctx.panelOpen === false) return { ok: true, advanced: false, reason: 'panel_closed' };
+        if (!inBounds(state.task.x, state.task.y)) return { ok: false, advanced: false, reason: 'out_of_bounds' };
         var taskTicks = ctx.taskTicks != null ? Number(ctx.taskTicks) : TASK_TICKS;
         var staminaPerTick = ctx.staminaPerTick != null ? Number(ctx.staminaPerTick) : TASK_STAMINA_PER_TICK;
         var getStamina = ctx.getStamina;
@@ -2626,10 +2628,11 @@
       /** 塞电池：储能 += 电量（k89 整格放电口径）；来电翻转 gate → 已种作物刻度按融合态重算 */
       function addPowerCharge(st, amount) {
         if (!st) return { ok: false, reason: 'no_state' };
-        var a = Math.floor(Number(amount) || 0);
-        if (!(a > 0)) return { ok: false, reason: 'invalid_amount', charge: st.power_charge || 0 };
+        var a = (typeof amount === 'number' || typeof amount === 'string') ? Math.floor(Number(amount)) : NaN;
+        var charge = st.power_charge == null ? 0 : st.power_charge;
+        if (!Number.isFinite(a) || a <= 0 || !Number.isFinite(charge) || charge < 0 || a > Number.MAX_VALUE - charge || !Number.isFinite(charge + a)) return { ok: false, reason: 'invalid_amount', charge: st.power_charge || 0 };
         var poweredBefore = isSuperFusionPowered(st);
-        st.power_charge = (st.power_charge || 0) + a;
+        st.power_charge = charge + a;
         if (!poweredBefore && isSuperFusionPowered(st)) {
           syncAllCropGrowthTicksForFusionChange(st);
         }

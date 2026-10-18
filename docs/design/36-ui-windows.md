@@ -60,7 +60,7 @@
 | 窗口 id | DOM | 名称 | 能力 |
 |---------|-----|------|------|
 | `win-time` | `#top-hud` | `ui.windows.time` 时间 | 仅显隐 |
-| `win-actions-right` | `#right-hud` | `ui.windows.right_actions` 右侧入口 | 仅显隐 |
+| `win-actions-right` | `#right-hud-actions` | `ui.windows.right_actions` 右侧入口 | 仅显隐；不含面板管理 |
 | `win-bottom` | `#bottom-hud-stack`（动作栏+快捷腰带） | `ui.windows.bottom_bar` 底部动作栏 | 仅显隐（含腰带，两者联动显隐） |
 | `win-dialogue` | `#dialogue-panel` | `ui.windows.dialogue` 对话 | 仅显隐（**默认始终显示**；见 §4.5 约束） |
 
@@ -92,6 +92,7 @@
 ### 4.3 窗口列表菜单（仿 RO）
 
 - 入口：右侧按钮列新增 `btn-ui-windows`（📑 或 ⊞，`data-ui="ui.windows.menu"`），点击弹出窗口列表（可并入现有 ⚙ `player-actions-submenu` 同风格的下拉面板，或独立小面板——实现时二选一，推荐独立面板）。
+- **恢复入口（2026-10-15 修正）**：`#right-hud` 保留整体布局，`#ui-windows-hud-wrap` 与可隐藏的 `#right-hud-actions` 为同级。关闭功能按钮不能隐藏面板管理；旧的 `win-actions-right.visible=false` 偏好仍有效，重新加载后可从面板管理恢复。原生与 Svelte 共用此结构，开场演出仍可通过外层隐藏整个 HUD。
 - 内容：
   1. 所有**当前已解锁**窗口的显隐开关列表（自由窗口 + 锚定窗口）。
   2. 「锁定布局」开关（全局锁）。

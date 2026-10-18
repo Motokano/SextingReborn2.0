@@ -19,10 +19,9 @@ body#moss-hud-theme.moss-game .moss-supplement>summary{cursor:pointer}
 body#moss-hud-theme.moss-game .moss-top-shell{position:fixed;inset:0 0 auto;z-index:35;pointer-events:none}
 body#moss-hud-theme.moss-game .moss-top-shell .demo-top{pointer-events:auto}
 body#moss-hud-theme.moss-game .demo-top{grid-template-columns:auto minmax(0,1fr) auto;height:64px}
-body#moss-hud-theme.moss-game .demo-top>a span{display:none}
-body#moss-hud-theme.moss-game #top-hud{position:static;transform:none;inset:auto;pointer-events:auto}
+body#moss-hud-theme.moss-game #top-hud{position:static;transform:none;inset:auto;pointer-events:auto;grid-column:2}
 body#moss-hud-theme.moss-game #top-hud .time-pill{display:contents}
-body#moss-hud-theme.moss-game #right-hud{position:static;inset:auto;transform:none;display:flex;gap:6px;flex-direction:row;pointer-events:auto}
+body#moss-hud-theme.moss-game #right-hud{position:static;inset:auto;transform:none;display:flex;gap:6px;flex-direction:row;pointer-events:auto;grid-column:3;justify-self:end}
 body#moss-hud-theme.moss-game #right-hud .hud-btn{width:33px;height:33px;border:1px solid #9f8b6555;border-top-color:#b3a17caa;border-radius:5px;background:linear-gradient(#364131,#20291f);box-shadow:inset 0 0 0 2px #141b14,0 2px 3px #0005;color:#d2c29b}
 body#moss-hud-theme.moss-game #right-hud #btn-ui-windows{width:auto;min-width:99px;padding:0 10px;display:flex;gap:10px;align-items:center}
 body#moss-hud-theme.moss-game #right-hud .jianghu-nav-content{display:inline-flex}
@@ -126,7 +125,6 @@ body#moss-hud-theme.moss-game.ui-polished.ui-reference-study #game-log-panel .jo
 body#moss-hud-theme.moss-game.ui-polished.ui-reference-study #game-log-panel .game-log-tools{margin-top:5px}
 body#moss-hud-theme.moss-game.ui-polished.ui-reference-study #buff-hud .panel-content{gap:7px}
 body#moss-hud-theme.moss-game.ui-polished.ui-reference-study .demo-top{height:54px;padding:0 22px}
-body#moss-hud-theme.moss-game.ui-polished.ui-reference-study .demo-top>a{font-size:18px}
 body#moss-hud-theme.moss-game.ui-polished.ui-reference-study #right-hud{gap:5px}
 body#moss-hud-theme.moss-game.ui-polished.ui-reference-study #right-hud .hud-btn{height:29px;width:29px}
 body#moss-hud-theme.moss-game.ui-polished.ui-reference-study #right-hud #btn-ui-windows{min-width:94px;padding:0 8px}

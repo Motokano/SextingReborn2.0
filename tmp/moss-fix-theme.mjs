@@ -1,0 +1,8 @@
+import fs from 'node:fs';
+let h=fs.readFileSync('index.html','utf8');h=h.replace('<body class="ui-refined ui-layout ui-matte moss-game','<body id="moss-hud-theme" class="ui-refined ui-layout moss-game');h=h.replace('    <link rel="stylesheet" href="css/game-theme-layout.css">','');h=h.replace('    <link rel="stylesheet" href="css/game-theme-matte.css">','');fs.writeFileSync('index.html',h);
+let build=fs.readFileSync('tools/build-moss-runtime-css.mjs','utf8');build=build.replace("fs.writeFileSync('css/ui-moss-runtime.css'", "css=css.replaceAll('body.moss-game','body#moss-hud-theme.moss-game');\nfs.writeFileSync('css/ui-moss-runtime.css'");fs.writeFileSync('tools/build-moss-runtime-css.mjs',build);
+let css=fs.readFileSync('css/ui-moss-game.css','utf8').replaceAll('body.moss-game','body#moss-hud-theme.moss-game');fs.writeFileSync('css/ui-moss-game.css',css);
+// Preserve log filtering/new-record behavior while avoiding the obsolete header shell.
+let t=fs.readFileSync('js/game-theme.js','utf8').replace("panel.querySelector('.game-log-header').appendChild(tools);", "panel.querySelector(document.body.classList.contains('moss-game') ? '.panel-content' : '.game-log-header').appendChild(tools);");fs.writeFileSync('js/game-theme.js',t);
+let a=fs.readFileSync('js/ui-moss-game.js','utf8').replace("log.querySelector('.panel-head').classList.add('game-log-header');",'');a=a.replace("g.AppBoot=g.AppBoot||{};", "g.AppBoot=g.AppBoot||{};");fs.writeFileSync('js/ui-moss-game.js',a);
+let l=fs.readFileSync('js/game-log.js','utf8').replace("dragHandle: '.game-log-header',", "dragHandle: document.body.classList.contains('moss-game') ? '.panel-head' : '.game-log-header',");fs.writeFileSync('js/game-log.js',l);

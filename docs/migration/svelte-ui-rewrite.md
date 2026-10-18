@@ -1,5 +1,7 @@
 # Svelte UI 重写说明（对话组件）
 
+> 历史试作，未接入正式游戏。2026-10-14 状态核对：下述文件已移至 `_archive-js/svelte/`，本体仍加载 React 对话视图。当前全量迁移以[全量 UI 迁移方案](svelte-full-ui-migration.md)及其表册为准；下文保留当时的方案记录，不代表当前已完成。
+
 本次基于你现有 React 组件 `js/dialogue-react-view.js`，提供了等价 Svelte 版本。
 
 ## 新增文件

@@ -1,0 +1,13 @@
+<script lang="ts">
+ import type {Readable} from 'svelte/store';
+ let {store,controller,overlays,t}=$props<{store:Readable<any>,controller:any,overlays:any,t:any}>();
+ let root:HTMLDivElement,open=$derived($store.open);
+ $effect(()=>{if(open&&root)return overlays.enter(root,{escape:()=>controller.close('save')});});
+</script>
+<div id="modal-save" bind:this={root} class:show={open} role="dialog" aria-modal="true" aria-label={t('save.modal.title')} tabindex="-1" data-ui-owner="svelte">
+ {#if open}<div class="survival-panel"><div class="survival-header"><div><h2>{t('save.modal.title')}</h2><div class="subtitle">{t('save.modal.subtitle')}</div></div><button type="button" class="btn-close" id="save-modal-close" aria-label="关闭" onclick={()=>controller.close('save')}>✖</button></div><div class="survival-body" aria-busy={$store.busy}>
+ <p class="save-hint">{t('save.hint.realtime')}</p><div class="save-actions"><button type="button" class="primary" id="btn-save-local-now" disabled={$store.busy} onclick={()=>controller.run('local')}>{t('save.btn.localNow')}</button></div><div class="save-divider"></div><p class="save-hint">{t('save.hint.exportImport')}</p>
+ <div class="save-row"><label for="save-input-account">{t('save.label.account')}</label><input type="text" id="save-input-account" autocomplete="username" value={$store.account} oninput={e=>controller.edit('account',e.currentTarget.value)}/></div><div class="save-row"><label for="save-input-password">{t('save.label.password')}</label><input type="password" id="save-input-password" autocomplete="current-password" value={$store.password} oninput={e=>controller.edit('password',e.currentTarget.value)}/></div>
+ <div class="save-actions"><button type="button" class="primary" id="btn-save-export" disabled={$store.busy} onclick={()=>controller.run('export')}>{t('save.btn.export')}</button><button type="button" id="btn-save-copy-code" disabled={$store.busy} onclick={()=>controller.run('copy')}>{t('save.btn.copyCode')}</button></div><div class="save-row"><label for="save-textarea-export">{t('save.label.codeOut')}</label><textarea id="save-textarea-export" readonly spellcheck="false" value={$store.exportCode}></textarea></div><div class="save-divider"></div><div class="save-row"><label for="save-textarea-import">{t('save.label.codePaste')}</label><textarea id="save-textarea-import" spellcheck="false" value={$store.importCode} oninput={e=>controller.edit('importCode',e.currentTarget.value)}></textarea></div><div class="save-actions"><button type="button" class="primary" id="btn-save-import" disabled={$store.busy} onclick={()=>controller.run('import')}>{t('save.btn.import')}</button></div>
+ </div></div>{/if}
+</div>

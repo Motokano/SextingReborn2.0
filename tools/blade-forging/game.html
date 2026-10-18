@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="zh-CN">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="dark">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; connect-src 'none'; img-src data:; base-uri 'none'; object-src 'none'">
+<title>百炼工坊 · 自由锻造83件</title><style>/* INLINE_STYLE */</style></head>
+<body>
+<header><div class="brand"><svg viewBox="0 0 48 48" aria-hidden="true"><path d="M4 20h40l-8 9H26v6h10v5H12v-5h9v-6h-8zM27 5h13v8H27zM22 10h5v12h-5z"/></svg><div><h1>百炼工坊</h1></div></div><div class="header-actions"><button id="catalog-open" class="quiet">部件</button><button id="help-open" class="quiet">规则</button></div></header>
+<main>
+ <nav class="campaign-nav" aria-label="部件导航"><button id="previous-level" class="quiet">← 上一件</button><span id="campaign-progress"></span><button id="next-level" class="quiet">下一件 →</button></nav>
+ <section class="intro"><div><span class="eyebrow" id="level-meta"></span><h2 id="level-name"></h2></div></section>
+ <section class="objective" aria-label="本件锻造目标"><span id="goal-type" class="goal-chip"></span><div><strong id="goal-text"></strong></div></section>
+ <section class="score-band" aria-label="计分区域评分">
+  <div class="score-main"><span id="score-label">区域总分</span><strong id="score">7</strong></div>
+  <div class="score-progress"><div class="progress-heading"><span>完成度</span><span id="percent">7%</span></div><div class="track"><i id="score-bar"></i></div></div>
+  <div id="rating" class="rating" role="img" aria-label="当前0星"><span data-star="1">★<small>60%</small></span><span data-star="2">★<small>80%</small></span><span data-star="3">★<small>100%</small></span></div>
+  
+ </section>
+ <div class="workspace">
+  <section class="bench">
+   <div class="bench-heading"><h3>锤法</h3><span>剩余 <b id="hammer-left">8 / 8</b> 锤</span></div>
+   <div class="modes" role="group" aria-label="选择锤法">
+    <button data-mode="light"><strong>轻锤</strong><small>减半 · 向下取整</small><small id="light-count">剩3 / 3次</small></button>
+    <button data-mode="heavy"><strong>大力锤</strong><small>向四邻传分</small></button>
+    <button data-mode="cross"><strong>十字锤</strong><small>近全额 · 远半额</small><small id="cross-count">剩1 / 1次</small></button>
+   </div>
+   <div id="effect-belt" class="effect-belt" role="group" aria-label="选择本锤效果"></div>
+   <div class="board-stage"><div id="board" class="board" aria-label="部件锻造盘面"></div></div>
+   <div class="board-note"><span><i class="legend-edge"></i><span id="region-legend">金色格计分</span></span></div>
+   <div class="bench-bottom"><span>全盘总量 <b id="total"></b></span><span id="locks"></span></div>
+  </section>
+  <aside class="sidebar">
+   <section class="action-panel"><span class="eyebrow">落锤预览</span><div class="selection-heading"><h3 id="selection-name">查看落点</h3><span id="selection-kind"></span></div><div id="preview-score" class="preview-score" aria-live="polite"></div></section>
+   <div class="heat-controls"><button id="quench"><span><b>淬火</b><small id="quench-count"></small></span><small>全盘＋1</small><em id="quench-preview"></em></button><button id="temper"><span><b>回火</b><small id="temper-count"></small></span><small>全盘均分</small><em id="temper-preview"></em></button></div>
+   <section id="opportunity-panel" class="opportunity-panel" hidden><div class="section-heading"><h3>临时效果</h3></div><button id="opportunity-card" class="special-card opportunity-card" hidden><span class="card-heading"><b id="opportunity-name"></b><span id="opportunity-state" class="effect-state"></span></span><p id="opportunity-description"></p></button></section>
+   <section id="special-panel" class="special-panel"><div class="section-heading"><h3>可收取</h3><span>敲中收取</span></div><div id="specials"></div></section>
+   <button id="finish" class="finish">收工</button>
+  </aside>
+ </div>
+ <section id="result" class="result" hidden aria-live="polite"><div><div id="result-stars" class="rating result-stars" role="img" aria-label="0星"><span data-star="1">★</span><span data-star="2">★</span><span data-star="3">★</span></div><h3 id="result-title"></h3><p id="result-description"></p></div><div class="result-actions"><button id="result-next" class="primary">下一件 →</button><button id="result-new" class="quiet">再开一炉</button></div></section>
+ <div class="bottom-controls"><div><button id="undo" class="quiet">撤销</button><button id="restart" class="quiet">重试</button><button id="new-furnace" class="quiet" title="重抽两个可收取效果格">换一炉</button></div><span id="status" role="status"></span></div>
+ <p id="save-status" class="muted" role="status" hidden></p>
+</main>
+<canvas id="forge-fx" aria-hidden="true"></canvas>
+<dialog id="catalog"><div class="dialog-heading"><h2>部件</h2><button id="catalog-close" class="quiet">关闭</button></div><p id="catalog-summary"></p><div id="chapter-tabs" class="chapter-tabs" role="group" aria-label="章节"></div><div class="catalog-filters" role="group" aria-label="目标类型"><button data-filter="all">全部</button><button data-filter="high">堆高总分</button><button data-filter="low">压低总分</button><button data-filter="range">控制区间</button></div><div id="catalog-levels" class="catalog-levels"></div></dialog>
+<dialog id="help"><div class="dialog-heading"><h2>规则</h2><button id="help-close" class="quiet">关闭</button></div>
+ <h3>目标</h3>
+ <p>只统计金色格总分。堆分达到下限、压分不超过上限、控分落在指定区间，均为100%完成度。60%一星、80%二星、100%三星；收工达到一星解锁下一件。</p>
+ <p>堆分完成度＝当前总分÷目标。压分和控分按消除初始差距的比例计分；控分超出区间会降低完成度。</p>
+ <h3>操作</h3>
+ <p>选好锤法后，点击格子立即落锤。悬停或键盘聚焦可预览，Enter或空格落锤。点击效果卡片只定位格子。</p>
+ <dl><dt>轻锤</dt><dd>落点减半，向下取整，最多3次。</dd><dt>大力锤</dt><dd>落点归零，原值传给四个紧邻有效格。</dd><dt>十字锤</dt><dd>落点归零，同一行列紧邻格获得全额，远处获得一半，向下取整。落点永久禁敲，仍能接分。最多1次。</dd><dt>淬火</dt><dd>全盘＋1，包括0分格和禁敲格。1次。</dd><dt>回火</dt><dd>全盘总分均分。余数优先给原值较高的格，同值按行列顺序。1次。</dd></dl>
+ <p>三种锤法共用8次总锤数。0分格和禁敲格不能落锤，无效点击不耗次数。轮廓空白不参与数值变化；十字锤可跨空白传分。可随时收工。</p>
+ <h3>可收取效果</h3>
+ <p>每炉随机两个不同效果。直接敲中收取，存入效果栏；点选后用于之后的一次有效落锤，每锤一种。再次点选可取消。热处理不收取、不消耗；切换不兼容锤法会取消选用并保留效果。</p>
+ <dl><dt>留力</dt><dd>大力锤或十字锤保留落点原值。</dd><dt>传力</dt><dd>大力锤或十字锤传分翻倍。十字锤先翻倍，再计算远处减半。</dd><dt>聚料</dt><dd>锤后从四邻各搬回一半分数，逐格向下取整。</dd><dt>扩散</dt><dd>大力锤向周围八个紧邻有效格传递全额分数，含斜角。</dd><dt>削尽</dt><dd>轻锤直接清零，仍扣轻锤次数。</dd><dt>匀压</dt><dd>锤后将落点与四邻的总分均分；余数优先给均分前高分格，同分按行列顺序。</dd><dt>余劲</dt><dd>返还1次总锤数；轻锤和十字锤专属次数照扣。剩余0锤时不能使用。</dd></dl>
+ <h3>临时效果</h3>
+ <p>每次有效落锤后刷新，最多一格，下一锤直接敲中才生效。先结算锤法及选用效果，再结算临时效果。余热使落点＋2；剥落使四邻各－1，最低0。敲别处会更换机会，热处理不刷新或触发。传分经过不触发连锁。</p>
+ <h3>进度</h3>
+ <p>撤销恢复盘面、效果、次数和随机状态。重试保留本炉效果位置，换一炉重新抽取。切换已解锁部件保留炉况；刷新会新开一炉。最佳星级与解锁保存在当前浏览器，复制HTML不会带走记录。</p>
+</dialog>
+<script>/* INLINE_SCRIPT */</script>
+</body></html>

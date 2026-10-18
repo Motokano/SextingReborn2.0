@@ -11,6 +11,8 @@
         'btn-reset-demo-save': 'M5 8a8 8 0 1 1-1 8 M5 3v5h5'
     };
     Object.keys(paths).forEach(function (id) {
+        if (window.SvelteInteractions) return;
+        if (id === 'btn-ui-windows' && window.SvelteHUD) return;
         var button = document.getElementById(id);
         if (!button) return;
         var original = document.createElement('span');
@@ -26,6 +28,8 @@
         ['btn-ui-windows', 'ui-windows-menu'],
         ['btn-player-actions', 'player-actions-submenu']
     ].forEach(function (ids) {
+        if (ids[0] === 'btn-player-actions' && window.SvelteInteractions) return;
+        if (ids[0] === 'btn-ui-windows' && window.SvelteHUD) return;
         var trigger = document.getElementById(ids[0]);
         var menu = document.getElementById(ids[1]);
         if (!trigger || !menu) return;

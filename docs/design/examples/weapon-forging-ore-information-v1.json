@@ -1,0 +1,1612 @@
+{
+  "version": 1,
+  "date": "2026-10-17",
+  "status": "design_only",
+  "itemCatalog": "weapon-forging-ore-items-v1.json",
+  "scope": "十二矿逐字段认识与设计数据引用；不是新增物品字段，不注册运行时物品、知识或矿点。",
+  "knowledgePolicy": {
+    "owner": "character",
+    "defaultKnown": false,
+    "language": {
+      "nameMinLevel": 3,
+      "observationDescriptionMinLevel": 2,
+      "identifiedDescriptionMinLevel": 4
+    },
+    "identity": "identity_known && language>=3; otherwise placeholder_name",
+    "description": "language<2: omit; language>=4 && identity_known: fn; otherwise fn_before",
+    "materialNumbers": {
+      "minForgingLevel": 10,
+      "requires": [
+        "material_seen",
+        "forge_use_known",
+        "feed_route_known",
+        "feed_unit_known"
+      ],
+      "axesTogether": true
+    },
+    "productPotential": {
+      "minForgingLevel": 25,
+      "requires": [
+        "all_contributing_material_routes_known",
+        "component_structure_known"
+      ],
+      "reverseCalculationRequires": [
+        "instance_recipe_known"
+      ]
+    },
+    "traitStrength": {
+      "minForgingLevel": 50,
+      "requires": [
+        "effect_known",
+        "trigger_known",
+        "relevant_route_known"
+      ],
+      "predictionRequires": [
+        "recipe_known",
+        "inheritance_rule_known"
+      ],
+      "randomWinnerVisibleBeforeFinish": false
+    },
+    "traitsStillApplyWhenUnknown": true,
+    "noUnseenEnumeration": true,
+    "noPlaceholderRowsOrHiddenCounts": true,
+    "noNumbersViaSortingAutofillLogsOrErrors": true,
+    "noUnknownContributionTreatedAsZero": true,
+    "noIdentityGrantFromLanguageOrForgingLevel": true,
+    "noAutomaticRecipeGrant": true,
+    "showProcessingQuoteWhen": [
+      "material_seen",
+      "forge_use_known",
+      "feed_route_known"
+    ],
+    "recognitionCosts": {
+      "observationConsumesMaterial": false,
+      "assayEnabled": false,
+      "separateRecognitionFee": 0,
+      "componentStructureResearchIsSeparate": true
+    },
+    "processingInspection": {
+      "actionId": "inspect_ore_processing",
+      "stationRequired": true,
+      "requires": [
+        "raw_material_present",
+        "out_of_combat"
+      ],
+      "identityKnownRequired": false,
+      "consumeSample": 0,
+      "ticks": 0,
+      "stamina": 0,
+      "xp": 0,
+      "repeatKnownRoute": "no_op",
+      "scope": "only_inspected_raw_ore_route",
+      "grants": [
+        "material_seen",
+        "forge_use_known",
+        "feed_route_known",
+        "feed_unit_known"
+      ],
+      "doesNotGrant": [
+        "raw_identity",
+        "processed_feed_identity",
+        "four_axis_directions",
+        "four_axis_scores_without_level",
+        "component_structure",
+        "component_recipe",
+        "ore_trait",
+        "combination_recipe"
+      ],
+      "interfacePolicy": "show_operation_for_present_physical_sample_without_requiring_its_real_name",
+      "countsAreKnownOnInspection": true,
+      "unseenFeedItemListing": false,
+      "costPolicy": "no_extra_recognition_fee_no_assay"
+    },
+    "backendOnly": [
+      "role",
+      "rarity",
+      "realMineralFamily",
+      "guangdongBackground",
+      "sourceIds",
+      "mining.proposedFloors",
+      "mining.relativeSpawnWeight",
+      "rawItem.baseValue",
+      "rawItem.priceClass",
+      "rawItem.volatility",
+      "rawItem.tags",
+      "rawItem.source",
+      "rawItem.productionLines"
+    ],
+    "noRawOreCombatBonus": true,
+    "legacyMaterialOreModuleAllowed": false,
+    "safeFallback": "基础外观文案；专业数值和未认识标题整体省略。"
+  },
+  "entries": {
+    "ore_iron_raw": {
+      "itemRef": "weapon-forging-ore-items-v1.json#/items/ore_iron_raw",
+      "sourceRef": "weapon-forging-ores-v1.json#/ores/0",
+      "scoresRef": "weapon-forging-ores-v1.json#/ores/0/scores",
+      "processingRef": "weapon-forging-balance-v1.json#/ores/0/processing",
+      "intrinsicTraitRef": "weapon-ore-intrinsic-traits-v1.json#/intrinsicTraits/0",
+      "traitSelectionRef": "weapon-ore-combinations-v1.json#/rules",
+      "information": {
+        "forgeUse": {
+          "text": "这种矿石可以加工成铸造用料。",
+          "requires": [
+            "forge_use_known"
+          ]
+        },
+        "fullKnownSummary": {
+          "text": "炼出的料各方面都比较平稳，适合拿来打底，再按要做的东西掺别的料。",
+          "requires": [
+            "forge_use_known",
+            "hardness_direction_known",
+            "toughness_direction_known",
+            "deformationResistance_direction_known",
+            "density_direction_known"
+          ]
+        },
+        "properties": {
+          "hardness": {
+            "label": "硬度",
+            "directionText": "硬度适中，适合作为一般底料。",
+            "directionRequires": [
+              "forge_use_known",
+              "hardness_direction_known"
+            ],
+            "scoreRef": "scores.hardness",
+            "scoreRequires": [
+              "material_seen",
+              "forge_use_known",
+              "feed_route_known",
+              "feed_unit_known",
+              "life_forging_level>=10"
+            ],
+            "unknownPolicy": "omit",
+            "scoreUnlockRef": "weapon-forging-balance-v1.json:knowledgeUnlocks.material_scores"
+          },
+          "toughness": {
+            "label": "韧性",
+            "directionText": "韧性适中，没有特别突出的长处。",
+            "directionRequires": [
+              "forge_use_known",
+              "toughness_direction_known"
+            ],
+            "scoreRef": "scores.toughness",
+            "scoreRequires": [
+              "material_seen",
+              "forge_use_known",
+              "feed_route_known",
+              "feed_unit_known",
+              "life_forging_level>=10"
+            ],
+            "unknownPolicy": "omit",
+            "scoreUnlockRef": "weapon-forging-balance-v1.json:knowledgeUnlocks.material_scores"
+          },
+          "deformationResistance": {
+            "label": "抗变形",
+            "directionText": "抵抗变形的表现较平稳。",
+            "directionRequires": [
+              "forge_use_known",
+              "deformationResistance_direction_known"
+            ],
+            "scoreRef": "scores.deformationResistance",
+            "scoreRequires": [
+              "material_seen",
+              "forge_use_known",
+              "feed_route_known",
+              "feed_unit_known",
+              "life_forging_level>=10"
+            ],
+            "unknownPolicy": "omit",
+            "scoreUnlockRef": "weapon-forging-balance-v1.json:knowledgeUnlocks.material_scores"
+          },
+          "density": {
+            "label": "密度",
+            "directionText": "用来打底时，成品的分量比较容易掌握。",
+            "directionRequires": [
+              "forge_use_known",
+              "density_direction_known"
+            ],
+            "scoreRef": "scores.density",
+            "scoreRequires": [
+              "material_seen",
+              "forge_use_known",
+              "feed_route_known",
+              "feed_unit_known",
+              "life_forging_level>=10"
+            ],
+            "unknownPolicy": "omit",
+            "scoreUnlockRef": "weapon-forging-balance-v1.json:knowledgeUnlocks.material_scores"
+          }
+        },
+        "location": {
+          "requires": [
+            "specific_location_evidence"
+          ],
+          "policy": "只显示角色实际采到的位置或有来源的地点线索，不从本表允许楼层公开全分布。"
+        },
+        "processing": {
+          "processingRef": "weapon-forging-balance-v1.json:ores[id=ore_iron_raw].processing",
+          "requires": [
+            "material_seen",
+            "forge_use_known",
+            "feed_route_known"
+          ],
+          "inputOutput": "one_raw_item_to_one_feed_unit_no_byproducts",
+          "unknownPolicy": "omit"
+        }
+      },
+      "spawnPolicy": {
+        "status": "pending",
+        "sourceIndex": "mining",
+        "candidateRef": "weapon-forging-ores-v1.json#/ores/0/mining",
+        "discoveryCandidateRef": "weapon-forging-ores-v1.json#/ores/0/discoveryCandidate",
+        "autoRegister": false,
+        "preserveExistingPlacement": true
+      }
+    },
+    "ore_copper_raw": {
+      "itemRef": "weapon-forging-ore-items-v1.json#/items/ore_copper_raw",
+      "sourceRef": "weapon-forging-ores-v1.json#/ores/1",
+      "scoresRef": "weapon-forging-ores-v1.json#/ores/1/scores",
+      "processingRef": "weapon-forging-balance-v1.json#/ores/1/processing",
+      "intrinsicTraitRef": "weapon-ore-intrinsic-traits-v1.json#/intrinsicTraits/1",
+      "traitSelectionRef": "weapon-ore-combinations-v1.json#/rules",
+      "information": {
+        "forgeUse": {
+          "text": "这种矿石可以加工成铸造用料。",
+          "requires": [
+            "forge_use_known"
+          ]
+        },
+        "fullKnownSummary": {
+          "text": "炼出的料能补韧性，掺多了也会增重；要打出硬挺的刃口，还得补别的料。",
+          "requires": [
+            "forge_use_known",
+            "hardness_direction_known",
+            "toughness_direction_known",
+            "deformationResistance_direction_known",
+            "density_direction_known"
+          ]
+        },
+        "properties": {
+          "hardness": {
+            "label": "硬度",
+            "directionText": "硬度偏低，不能只靠它撑起刃口。",
+            "directionRequires": [
+              "forge_use_known",
+              "hardness_direction_known"
+            ],
+            "scoreRef": "scores.hardness",
+            "scoreRequires": [
+              "material_seen",
+              "forge_use_known",
+              "feed_route_known",
+              "feed_unit_known",
+              "life_forging_level>=10"
+            ],
+            "unknownPolicy": "omit",
+            "scoreUnlockRef": "weapon-forging-balance-v1.json:knowledgeUnlocks.material_scores"
+          },
+          "toughness": {
+            "label": "韧性",
+            "directionText": "能明显补足用料的韧性。",
+            "directionRequires": [
+              "forge_use_known",
+              "toughness_direction_known"
+            ],
+            "scoreRef": "scores.toughness",
+            "scoreRequires": [
+              "material_seen",
+              "forge_use_known",
+              "feed_route_known",
+              "feed_unit_known",
+              "life_forging_level>=10"
+            ],
+            "unknownPolicy": "omit",
+            "scoreUnlockRef": "weapon-forging-balance-v1.json:knowledgeUnlocks.material_scores"
+          },
+          "deformationResistance": {
+            "label": "抗变形",
+            "directionText": "抵抗变形的表现偏弱。",
+            "directionRequires": [
+              "forge_use_known",
+              "deformationResistance_direction_known"
+            ],
+            "scoreRef": "scores.deformationResistance",
+            "scoreRequires": [
+              "material_seen",
+              "forge_use_known",
+              "feed_route_known",
+              "feed_unit_known",
+              "life_forging_level>=10"
+            ],
+            "unknownPolicy": "omit",
+            "scoreUnlockRef": "weapon-forging-balance-v1.json:knowledgeUnlocks.material_scores"
+          },
+          "density": {
+            "label": "密度",
+            "directionText": "分量偏沉，掺多了会让成品增重。",
+            "directionRequires": [
+              "forge_use_known",
+              "density_direction_known"
+            ],
+            "scoreRef": "scores.density",
+            "scoreRequires": [
+              "material_seen",
+              "forge_use_known",
+              "feed_route_known",
+              "feed_unit_known",
+              "life_forging_level>=10"
+            ],
+            "unknownPolicy": "omit",
+            "scoreUnlockRef": "weapon-forging-balance-v1.json:knowledgeUnlocks.material_scores"
+          }
+        },
+        "location": {
+          "requires": [
+            "specific_location_evidence"
+          ],
+          "policy": "只显示角色实际采到的位置或有来源的地点线索，不从本表允许楼层公开全分布。"
+        },
+        "processing": {
+          "processingRef": "weapon-forging-balance-v1.json:ores[id=ore_copper_raw].processing",
+          "requires": [
+            "material_seen",
+            "forge_use_known",
+            "feed_route_known"
+          ],
+          "inputOutput": "one_raw_item_to_one_feed_unit_no_byproducts",
+          "unknownPolicy": "omit"
+        }
+      },
+      "spawnPolicy": {
+        "status": "pending",
+        "sourceIndex": "mining",
+        "candidateRef": "weapon-forging-ores-v1.json#/ores/1/mining",
+        "discoveryCandidateRef": "weapon-forging-ores-v1.json#/ores/1/discoveryCandidate",
+        "autoRegister": false,
+        "preserveExistingPlacement": true
+      }
+    },
+    "ore_tin_raw": {
+      "itemRef": "weapon-forging-ore-items-v1.json#/items/ore_tin_raw",
+      "sourceRef": "weapon-forging-ores-v1.json#/ores/2",
+      "scoresRef": "weapon-forging-ores-v1.json#/ores/2/scores",
+      "processingRef": "weapon-forging-balance-v1.json#/ores/2/processing",
+      "intrinsicTraitRef": "weapon-ore-intrinsic-traits-v1.json#/intrinsicTraits/2",
+      "traitSelectionRef": "weapon-ore-combinations-v1.json#/rules",
+      "information": {
+        "forgeUse": {
+          "text": "这种矿石可以加工成铸造用料。",
+          "requires": [
+            "forge_use_known"
+          ]
+        },
+        "fullKnownSummary": {
+          "text": "这种矿料擅长补抗变形，掺进用料里能少些使用损耗；韧性仍得另顾。",
+          "requires": [
+            "forge_use_known",
+            "hardness_direction_known",
+            "toughness_direction_known",
+            "deformationResistance_direction_known",
+            "density_direction_known"
+          ]
+        },
+        "properties": {
+          "hardness": {
+            "label": "硬度",
+            "directionText": "能提供一些硬度，但并不突出。",
+            "directionRequires": [
+              "forge_use_known",
+              "hardness_direction_known"
+            ],
+            "scoreRef": "scores.hardness",
+            "scoreRequires": [
+              "material_seen",
+              "forge_use_known",
+              "feed_route_known",
+              "feed_unit_known",
+              "life_forging_level>=10"
+            ],
+            "unknownPolicy": "omit",
+            "scoreUnlockRef": "weapon-forging-balance-v1.json:knowledgeUnlocks.material_scores"
+          },
+          "toughness": {
+            "label": "韧性",
+            "directionText": "韧性偏低，需要留意其他用料。",
+            "directionRequires": [
+              "forge_use_known",
+              "toughness_direction_known"
+            ],
+            "scoreRef": "scores.toughness",
+            "scoreRequires": [
+              "material_seen",
+              "forge_use_known",
+              "feed_route_known",
+              "feed_unit_known",
+              "life_forging_level>=10"
+            ],
+            "unknownPolicy": "omit",
+            "scoreUnlockRef": "weapon-forging-balance-v1.json:knowledgeUnlocks.material_scores"
+          },
+          "deformationResistance": {
+            "label": "抗变形",
+            "directionText": "很适合补抗变形这一项。",
+            "directionRequires": [
+              "forge_use_known",
+              "deformationResistance_direction_known"
+            ],
+            "scoreRef": "scores.deformationResistance",
+            "scoreRequires": [
+              "material_seen",
+              "forge_use_known",
+              "feed_route_known",
+              "feed_unit_known",
+              "life_forging_level>=10"
+            ],
+            "unknownPolicy": "omit",
+            "scoreUnlockRef": "weapon-forging-balance-v1.json:knowledgeUnlocks.material_scores"
+          },
+          "density": {
+            "label": "密度",
+            "directionText": "分量不算高，补料时较容易控制重量。",
+            "directionRequires": [
+              "forge_use_known",
+              "density_direction_known"
+            ],
+            "scoreRef": "scores.density",
+            "scoreRequires": [
+              "material_seen",
+              "forge_use_known",
+              "feed_route_known",
+              "feed_unit_known",
+              "life_forging_level>=10"
+            ],
+            "unknownPolicy": "omit",
+            "scoreUnlockRef": "weapon-forging-balance-v1.json:knowledgeUnlocks.material_scores"
+          }
+        },
+        "location": {
+          "requires": [
+            "specific_location_evidence"
+          ],
+          "policy": "只显示角色实际采到的位置或有来源的地点线索，不从本表允许楼层公开全分布。"
+        },
+        "processing": {
+          "processingRef": "weapon-forging-balance-v1.json:ores[id=ore_tin_raw].processing",
+          "requires": [
+            "material_seen",
+            "forge_use_known",
+            "feed_route_known"
+          ],
+          "inputOutput": "one_raw_item_to_one_feed_unit_no_byproducts",
+          "unknownPolicy": "omit"
+        }
+      },
+      "spawnPolicy": {
+        "status": "pending",
+        "sourceIndex": "mining",
+        "candidateRef": "weapon-forging-ores-v1.json#/ores/2/mining",
+        "discoveryCandidateRef": "weapon-forging-ores-v1.json#/ores/2/discoveryCandidate",
+        "autoRegister": false,
+        "preserveExistingPlacement": false
+      }
+    },
+    "ore_lead_raw": {
+      "itemRef": "weapon-forging-ore-items-v1.json#/items/ore_lead_raw",
+      "sourceRef": "weapon-forging-ores-v1.json#/ores/3",
+      "scoresRef": "weapon-forging-ores-v1.json#/ores/3/scores",
+      "processingRef": "weapon-forging-balance-v1.json#/ores/3/processing",
+      "intrinsicTraitRef": "weapon-ore-intrinsic-traits-v1.json#/intrinsicTraits/3",
+      "traitSelectionRef": "weapon-ore-combinations-v1.json#/rules",
+      "information": {
+        "forgeUse": {
+          "text": "这种矿石可以加工成铸造用料。",
+          "requires": [
+            "forge_use_known"
+          ]
+        },
+        "fullKnownSummary": {
+          "text": "少量就能把分量补上去，但硬度、韧性和抗变形都得靠其他用料撑住。",
+          "requires": [
+            "forge_use_known",
+            "hardness_direction_known",
+            "toughness_direction_known",
+            "deformationResistance_direction_known",
+            "density_direction_known"
+          ]
+        },
+        "properties": {
+          "hardness": {
+            "label": "硬度",
+            "directionText": "硬度很低，不适合独自承担这一项。",
+            "directionRequires": [
+              "forge_use_known",
+              "hardness_direction_known"
+            ],
+            "scoreRef": "scores.hardness",
+            "scoreRequires": [
+              "material_seen",
+              "forge_use_known",
+              "feed_route_known",
+              "feed_unit_known",
+              "life_forging_level>=10"
+            ],
+            "unknownPolicy": "omit",
+            "scoreUnlockRef": "weapon-forging-balance-v1.json:knowledgeUnlocks.material_scores"
+          },
+          "toughness": {
+            "label": "韧性",
+            "directionText": "韧性较低，配料时需要补足。",
+            "directionRequires": [
+              "forge_use_known",
+              "toughness_direction_known"
+            ],
+            "scoreRef": "scores.toughness",
+            "scoreRequires": [
+              "material_seen",
+              "forge_use_known",
+              "feed_route_known",
+              "feed_unit_known",
+              "life_forging_level>=10"
+            ],
+            "unknownPolicy": "omit",
+            "scoreUnlockRef": "weapon-forging-balance-v1.json:knowledgeUnlocks.material_scores"
+          },
+          "deformationResistance": {
+            "label": "抗变形",
+            "directionText": "抵抗变形的能力较弱。",
+            "directionRequires": [
+              "forge_use_known",
+              "deformationResistance_direction_known"
+            ],
+            "scoreRef": "scores.deformationResistance",
+            "scoreRequires": [
+              "material_seen",
+              "forge_use_known",
+              "feed_route_known",
+              "feed_unit_known",
+              "life_forging_level>=10"
+            ],
+            "unknownPolicy": "omit",
+            "scoreUnlockRef": "weapon-forging-balance-v1.json:knowledgeUnlocks.material_scores"
+          },
+          "density": {
+            "label": "密度",
+            "directionText": "密度很高，少量就能明显增加成品分量。",
+            "directionRequires": [
+              "forge_use_known",
+              "density_direction_known"
+            ],
+            "scoreRef": "scores.density",
+            "scoreRequires": [
+              "material_seen",
+              "forge_use_known",
+              "feed_route_known",
+              "feed_unit_known",
+              "life_forging_level>=10"
+            ],
+            "unknownPolicy": "omit",
+            "scoreUnlockRef": "weapon-forging-balance-v1.json:knowledgeUnlocks.material_scores"
+          }
+        },
+        "location": {
+          "requires": [
+            "specific_location_evidence"
+          ],
+          "policy": "只显示角色实际采到的位置或有来源的地点线索，不从本表允许楼层公开全分布。"
+        },
+        "processing": {
+          "processingRef": "weapon-forging-balance-v1.json:ores[id=ore_lead_raw].processing",
+          "requires": [
+            "material_seen",
+            "forge_use_known",
+            "feed_route_known"
+          ],
+          "inputOutput": "one_raw_item_to_one_feed_unit_no_byproducts",
+          "unknownPolicy": "omit"
+        }
+      },
+      "spawnPolicy": {
+        "status": "pending",
+        "sourceIndex": "mining",
+        "candidateRef": "weapon-forging-ores-v1.json#/ores/3/mining",
+        "discoveryCandidateRef": "weapon-forging-ores-v1.json#/ores/3/discoveryCandidate",
+        "autoRegister": false,
+        "preserveExistingPlacement": false
+      }
+    },
+    "ore_zinc_raw": {
+      "itemRef": "weapon-forging-ore-items-v1.json#/items/ore_zinc_raw",
+      "sourceRef": "weapon-forging-ores-v1.json#/ores/4",
+      "scoresRef": "weapon-forging-ores-v1.json#/ores/4/scores",
+      "processingRef": "weapon-forging-balance-v1.json#/ores/4/processing",
+      "intrinsicTraitRef": "weapon-ore-intrinsic-traits-v1.json#/intrinsicTraits/4",
+      "traitSelectionRef": "weapon-ore-combinations-v1.json#/rules",
+      "information": {
+        "forgeUse": {
+          "text": "这种矿石可以加工成铸造用料。",
+          "requires": [
+            "forge_use_known"
+          ]
+        },
+        "fullKnownSummary": {
+          "text": "这种矿料能兼顾韧性和抗变形，分量较轻，硬度却需要别的用料补上。",
+          "requires": [
+            "forge_use_known",
+            "hardness_direction_known",
+            "toughness_direction_known",
+            "deformationResistance_direction_known",
+            "density_direction_known"
+          ]
+        },
+        "properties": {
+          "hardness": {
+            "label": "硬度",
+            "directionText": "硬度偏低，需要搭配其他用料。",
+            "directionRequires": [
+              "forge_use_known",
+              "hardness_direction_known"
+            ],
+            "scoreRef": "scores.hardness",
+            "scoreRequires": [
+              "material_seen",
+              "forge_use_known",
+              "feed_route_known",
+              "feed_unit_known",
+              "life_forging_level>=10"
+            ],
+            "unknownPolicy": "omit",
+            "scoreUnlockRef": "weapon-forging-balance-v1.json:knowledgeUnlocks.material_scores"
+          },
+          "toughness": {
+            "label": "韧性",
+            "directionText": "能补充一定韧性。",
+            "directionRequires": [
+              "forge_use_known",
+              "toughness_direction_known"
+            ],
+            "scoreRef": "scores.toughness",
+            "scoreRequires": [
+              "material_seen",
+              "forge_use_known",
+              "feed_route_known",
+              "feed_unit_known",
+              "life_forging_level>=10"
+            ],
+            "unknownPolicy": "omit",
+            "scoreUnlockRef": "weapon-forging-balance-v1.json:knowledgeUnlocks.material_scores"
+          },
+          "deformationResistance": {
+            "label": "抗变形",
+            "directionText": "抵抗变形的表现较好。",
+            "directionRequires": [
+              "forge_use_known",
+              "deformationResistance_direction_known"
+            ],
+            "scoreRef": "scores.deformationResistance",
+            "scoreRequires": [
+              "material_seen",
+              "forge_use_known",
+              "feed_route_known",
+              "feed_unit_known",
+              "life_forging_level>=10"
+            ],
+            "unknownPolicy": "omit",
+            "scoreUnlockRef": "weapon-forging-balance-v1.json:knowledgeUnlocks.material_scores"
+          },
+          "density": {
+            "label": "密度",
+            "directionText": "密度较低，比较适合控制成品分量。",
+            "directionRequires": [
+              "forge_use_known",
+              "density_direction_known"
+            ],
+            "scoreRef": "scores.density",
+            "scoreRequires": [
+              "material_seen",
+              "forge_use_known",
+              "feed_route_known",
+              "feed_unit_known",
+              "life_forging_level>=10"
+            ],
+            "unknownPolicy": "omit",
+            "scoreUnlockRef": "weapon-forging-balance-v1.json:knowledgeUnlocks.material_scores"
+          }
+        },
+        "location": {
+          "requires": [
+            "specific_location_evidence"
+          ],
+          "policy": "只显示角色实际采到的位置或有来源的地点线索，不从本表允许楼层公开全分布。"
+        },
+        "processing": {
+          "processingRef": "weapon-forging-balance-v1.json:ores[id=ore_zinc_raw].processing",
+          "requires": [
+            "material_seen",
+            "forge_use_known",
+            "feed_route_known"
+          ],
+          "inputOutput": "one_raw_item_to_one_feed_unit_no_byproducts",
+          "unknownPolicy": "omit"
+        }
+      },
+      "spawnPolicy": {
+        "status": "pending",
+        "sourceIndex": "mining",
+        "candidateRef": "weapon-forging-ores-v1.json#/ores/4/mining",
+        "discoveryCandidateRef": "weapon-forging-ores-v1.json#/ores/4/discoveryCandidate",
+        "autoRegister": false,
+        "preserveExistingPlacement": false
+      }
+    },
+    "ore_titanium_raw": {
+      "itemRef": "weapon-forging-ore-items-v1.json#/items/ore_titanium_raw",
+      "sourceRef": "weapon-forging-ores-v1.json#/ores/5",
+      "scoresRef": "weapon-forging-ores-v1.json#/ores/5/scores",
+      "processingRef": "weapon-forging-balance-v1.json#/ores/5/processing",
+      "intrinsicTraitRef": "weapon-ore-intrinsic-traits-v1.json#/intrinsicTraits/5",
+      "traitSelectionRef": "weapon-ore-combinations-v1.json#/rules",
+      "information": {
+        "forgeUse": {
+          "text": "这种矿石可以加工成铸造用料。",
+          "requires": [
+            "forge_use_known"
+          ]
+        },
+        "fullKnownSummary": {
+          "text": "这种矿料能在较轻的分量下提供硬度和韧性；要做沉重的部件，还得另外配重。",
+          "requires": [
+            "forge_use_known",
+            "hardness_direction_known",
+            "toughness_direction_known",
+            "deformationResistance_direction_known",
+            "density_direction_known"
+          ]
+        },
+        "properties": {
+          "hardness": {
+            "label": "硬度",
+            "directionText": "硬度较好，适合补足较硬的用料。",
+            "directionRequires": [
+              "forge_use_known",
+              "hardness_direction_known"
+            ],
+            "scoreRef": "scores.hardness",
+            "scoreRequires": [
+              "material_seen",
+              "forge_use_known",
+              "feed_route_known",
+              "feed_unit_known",
+              "life_forging_level>=10"
+            ],
+            "unknownPolicy": "omit",
+            "scoreUnlockRef": "weapon-forging-balance-v1.json:knowledgeUnlocks.material_scores"
+          },
+          "toughness": {
+            "label": "韧性",
+            "directionText": "韧性较好。",
+            "directionRequires": [
+              "forge_use_known",
+              "toughness_direction_known"
+            ],
+            "scoreRef": "scores.toughness",
+            "scoreRequires": [
+              "material_seen",
+              "forge_use_known",
+              "feed_route_known",
+              "feed_unit_known",
+              "life_forging_level>=10"
+            ],
+            "unknownPolicy": "omit",
+            "scoreUnlockRef": "weapon-forging-balance-v1.json:knowledgeUnlocks.material_scores"
+          },
+          "deformationResistance": {
+            "label": "抗变形",
+            "directionText": "抵抗变形的表现尚可。",
+            "directionRequires": [
+              "forge_use_known",
+              "deformationResistance_direction_known"
+            ],
+            "scoreRef": "scores.deformationResistance",
+            "scoreRequires": [
+              "material_seen",
+              "forge_use_known",
+              "feed_route_known",
+              "feed_unit_known",
+              "life_forging_level>=10"
+            ],
+            "unknownPolicy": "omit",
+            "scoreUnlockRef": "weapon-forging-balance-v1.json:knowledgeUnlocks.material_scores"
+          },
+          "density": {
+            "label": "密度",
+            "directionText": "密度低，适合轻型件；重型件可能需要另外配重。",
+            "directionRequires": [
+              "forge_use_known",
+              "density_direction_known"
+            ],
+            "scoreRef": "scores.density",
+            "scoreRequires": [
+              "material_seen",
+              "forge_use_known",
+              "feed_route_known",
+              "feed_unit_known",
+              "life_forging_level>=10"
+            ],
+            "unknownPolicy": "omit",
+            "scoreUnlockRef": "weapon-forging-balance-v1.json:knowledgeUnlocks.material_scores"
+          }
+        },
+        "location": {
+          "requires": [
+            "specific_location_evidence"
+          ],
+          "policy": "只显示角色实际采到的位置或有来源的地点线索，不从本表允许楼层公开全分布。"
+        },
+        "processing": {
+          "processingRef": "weapon-forging-balance-v1.json:ores[id=ore_titanium_raw].processing",
+          "requires": [
+            "material_seen",
+            "forge_use_known",
+            "feed_route_known"
+          ],
+          "inputOutput": "one_raw_item_to_one_feed_unit_no_byproducts",
+          "unknownPolicy": "omit"
+        }
+      },
+      "spawnPolicy": {
+        "status": "pending",
+        "sourceIndex": "mining",
+        "candidateRef": "weapon-forging-ores-v1.json#/ores/5/mining",
+        "discoveryCandidateRef": "weapon-forging-ores-v1.json#/ores/5/discoveryCandidate",
+        "autoRegister": false,
+        "preserveExistingPlacement": false
+      }
+    },
+    "ore_tungsten_raw": {
+      "itemRef": "weapon-forging-ore-items-v1.json#/items/ore_tungsten_raw",
+      "sourceRef": "weapon-forging-ores-v1.json#/ores/6",
+      "scoresRef": "weapon-forging-ores-v1.json#/ores/6/scores",
+      "processingRef": "weapon-forging-balance-v1.json#/ores/6/processing",
+      "intrinsicTraitRef": "weapon-ore-intrinsic-traits-v1.json#/intrinsicTraits/6",
+      "traitSelectionRef": "weapon-ore-combinations-v1.json#/rules",
+      "information": {
+        "forgeUse": {
+          "text": "这种矿石可以加工成铸造用料。",
+          "requires": [
+            "forge_use_known"
+          ]
+        },
+        "fullKnownSummary": {
+          "text": "炼出的料很硬，也很沉，韧性却差；要发挥它的硬度，还得照顾其他用料。",
+          "requires": [
+            "forge_use_known",
+            "hardness_direction_known",
+            "toughness_direction_known",
+            "deformationResistance_direction_known",
+            "density_direction_known"
+          ]
+        },
+        "properties": {
+          "hardness": {
+            "label": "硬度",
+            "directionText": "能显著提高用料硬度。",
+            "directionRequires": [
+              "forge_use_known",
+              "hardness_direction_known"
+            ],
+            "scoreRef": "scores.hardness",
+            "scoreRequires": [
+              "material_seen",
+              "forge_use_known",
+              "feed_route_known",
+              "feed_unit_known",
+              "life_forging_level>=10"
+            ],
+            "unknownPolicy": "omit",
+            "scoreUnlockRef": "weapon-forging-balance-v1.json:knowledgeUnlocks.material_scores"
+          },
+          "toughness": {
+            "label": "韧性",
+            "directionText": "韧性很低，需要其他用料补足。",
+            "directionRequires": [
+              "forge_use_known",
+              "toughness_direction_known"
+            ],
+            "scoreRef": "scores.toughness",
+            "scoreRequires": [
+              "material_seen",
+              "forge_use_known",
+              "feed_route_known",
+              "feed_unit_known",
+              "life_forging_level>=10"
+            ],
+            "unknownPolicy": "omit",
+            "scoreUnlockRef": "weapon-forging-balance-v1.json:knowledgeUnlocks.material_scores"
+          },
+          "deformationResistance": {
+            "label": "抗变形",
+            "directionText": "能提供一定抗变形能力。",
+            "directionRequires": [
+              "forge_use_known",
+              "deformationResistance_direction_known"
+            ],
+            "scoreRef": "scores.deformationResistance",
+            "scoreRequires": [
+              "material_seen",
+              "forge_use_known",
+              "feed_route_known",
+              "feed_unit_known",
+              "life_forging_level>=10"
+            ],
+            "unknownPolicy": "omit",
+            "scoreUnlockRef": "weapon-forging-balance-v1.json:knowledgeUnlocks.material_scores"
+          },
+          "density": {
+            "label": "密度",
+            "directionText": "密度高，掺多了成品会很沉。",
+            "directionRequires": [
+              "forge_use_known",
+              "density_direction_known"
+            ],
+            "scoreRef": "scores.density",
+            "scoreRequires": [
+              "material_seen",
+              "forge_use_known",
+              "feed_route_known",
+              "feed_unit_known",
+              "life_forging_level>=10"
+            ],
+            "unknownPolicy": "omit",
+            "scoreUnlockRef": "weapon-forging-balance-v1.json:knowledgeUnlocks.material_scores"
+          }
+        },
+        "location": {
+          "requires": [
+            "specific_location_evidence"
+          ],
+          "policy": "只显示角色实际采到的位置或有来源的地点线索，不从本表允许楼层公开全分布。"
+        },
+        "processing": {
+          "processingRef": "weapon-forging-balance-v1.json:ores[id=ore_tungsten_raw].processing",
+          "requires": [
+            "material_seen",
+            "forge_use_known",
+            "feed_route_known"
+          ],
+          "inputOutput": "one_raw_item_to_one_feed_unit_no_byproducts",
+          "unknownPolicy": "omit"
+        }
+      },
+      "spawnPolicy": {
+        "status": "pending",
+        "sourceIndex": "mining",
+        "candidateRef": "weapon-forging-ores-v1.json#/ores/6/mining",
+        "discoveryCandidateRef": "weapon-forging-ores-v1.json#/ores/6/discoveryCandidate",
+        "autoRegister": false,
+        "preserveExistingPlacement": false
+      }
+    },
+    "ore_molybdenum_raw": {
+      "itemRef": "weapon-forging-ore-items-v1.json#/items/ore_molybdenum_raw",
+      "sourceRef": "weapon-forging-ores-v1.json#/ores/7",
+      "scoresRef": "weapon-forging-ores-v1.json#/ores/7/scores",
+      "processingRef": "weapon-forging-balance-v1.json#/ores/7/processing",
+      "intrinsicTraitRef": "weapon-ore-intrinsic-traits-v1.json#/intrinsicTraits/7",
+      "traitSelectionRef": "weapon-ore-combinations-v1.json#/rules",
+      "information": {
+        "forgeUse": {
+          "text": "这种矿石可以加工成铸造用料。",
+          "requires": [
+            "forge_use_known"
+          ]
+        },
+        "fullKnownSummary": {
+          "text": "炼出的料擅长抵抗变形，也能补硬度，分量适中。",
+          "requires": [
+            "forge_use_known",
+            "hardness_direction_known",
+            "toughness_direction_known",
+            "deformationResistance_direction_known",
+            "density_direction_known"
+          ]
+        },
+        "properties": {
+          "hardness": {
+            "label": "硬度",
+            "directionText": "能补充较好的硬度。",
+            "directionRequires": [
+              "forge_use_known",
+              "hardness_direction_known"
+            ],
+            "scoreRef": "scores.hardness",
+            "scoreRequires": [
+              "material_seen",
+              "forge_use_known",
+              "feed_route_known",
+              "feed_unit_known",
+              "life_forging_level>=10"
+            ],
+            "unknownPolicy": "omit",
+            "scoreUnlockRef": "weapon-forging-balance-v1.json:knowledgeUnlocks.material_scores"
+          },
+          "toughness": {
+            "label": "韧性",
+            "directionText": "能提供一定韧性。",
+            "directionRequires": [
+              "forge_use_known",
+              "toughness_direction_known"
+            ],
+            "scoreRef": "scores.toughness",
+            "scoreRequires": [
+              "material_seen",
+              "forge_use_known",
+              "feed_route_known",
+              "feed_unit_known",
+              "life_forging_level>=10"
+            ],
+            "unknownPolicy": "omit",
+            "scoreUnlockRef": "weapon-forging-balance-v1.json:knowledgeUnlocks.material_scores"
+          },
+          "deformationResistance": {
+            "label": "抗变形",
+            "directionText": "抗变形能力很突出，适合减少使用损耗。",
+            "directionRequires": [
+              "forge_use_known",
+              "deformationResistance_direction_known"
+            ],
+            "scoreRef": "scores.deformationResistance",
+            "scoreRequires": [
+              "material_seen",
+              "forge_use_known",
+              "feed_route_known",
+              "feed_unit_known",
+              "life_forging_level>=10"
+            ],
+            "unknownPolicy": "omit",
+            "scoreUnlockRef": "weapon-forging-balance-v1.json:knowledgeUnlocks.material_scores"
+          },
+          "density": {
+            "label": "密度",
+            "directionText": "密度适中，不以加重为主要长处。",
+            "directionRequires": [
+              "forge_use_known",
+              "density_direction_known"
+            ],
+            "scoreRef": "scores.density",
+            "scoreRequires": [
+              "material_seen",
+              "forge_use_known",
+              "feed_route_known",
+              "feed_unit_known",
+              "life_forging_level>=10"
+            ],
+            "unknownPolicy": "omit",
+            "scoreUnlockRef": "weapon-forging-balance-v1.json:knowledgeUnlocks.material_scores"
+          }
+        },
+        "location": {
+          "requires": [
+            "specific_location_evidence"
+          ],
+          "policy": "只显示角色实际采到的位置或有来源的地点线索，不从本表允许楼层公开全分布。"
+        },
+        "processing": {
+          "processingRef": "weapon-forging-balance-v1.json:ores[id=ore_molybdenum_raw].processing",
+          "requires": [
+            "material_seen",
+            "forge_use_known",
+            "feed_route_known"
+          ],
+          "inputOutput": "one_raw_item_to_one_feed_unit_no_byproducts",
+          "unknownPolicy": "omit"
+        }
+      },
+      "spawnPolicy": {
+        "status": "pending",
+        "sourceIndex": "mining",
+        "candidateRef": "weapon-forging-ores-v1.json#/ores/7/mining",
+        "discoveryCandidateRef": "weapon-forging-ores-v1.json#/ores/7/discoveryCandidate",
+        "autoRegister": false,
+        "preserveExistingPlacement": false
+      }
+    },
+    "ore_manganese_raw": {
+      "itemRef": "weapon-forging-ore-items-v1.json#/items/ore_manganese_raw",
+      "sourceRef": "weapon-ore-intrinsic-traits-v1.json#/oreAdditions/0",
+      "scoresRef": "weapon-ore-intrinsic-traits-v1.json#/oreAdditions/0/scores",
+      "processingRef": "weapon-forging-balance-v1.json#/ores/8/processing",
+      "intrinsicTraitRef": "weapon-ore-intrinsic-traits-v1.json#/intrinsicTraits/8",
+      "traitSelectionRef": "weapon-ore-combinations-v1.json#/rules",
+      "information": {
+        "forgeUse": {
+          "text": "这种矿石可以加工成铸造用料。",
+          "requires": [
+            "forge_use_known"
+          ]
+        },
+        "fullKnownSummary": {
+          "text": "抗变形和韧性兼顾，硬度普通。",
+          "requires": [
+            "forge_use_known",
+            "hardness_direction_known",
+            "toughness_direction_known",
+            "deformationResistance_direction_known",
+            "density_direction_known"
+          ]
+        },
+        "properties": {
+          "hardness": {
+            "label": "硬度",
+            "directionText": "提供中等硬度。",
+            "directionRequires": [
+              "forge_use_known",
+              "hardness_direction_known"
+            ],
+            "scoreRef": "scores.hardness",
+            "scoreRequires": [
+              "material_seen",
+              "forge_use_known",
+              "feed_route_known",
+              "feed_unit_known",
+              "life_forging_level>=10"
+            ],
+            "unknownPolicy": "omit",
+            "scoreUnlockRef": "weapon-forging-balance-v1.json:knowledgeUnlocks.material_scores"
+          },
+          "toughness": {
+            "label": "韧性",
+            "directionText": "能补充韧性。",
+            "directionRequires": [
+              "forge_use_known",
+              "toughness_direction_known"
+            ],
+            "scoreRef": "scores.toughness",
+            "scoreRequires": [
+              "material_seen",
+              "forge_use_known",
+              "feed_route_known",
+              "feed_unit_known",
+              "life_forging_level>=10"
+            ],
+            "unknownPolicy": "omit",
+            "scoreUnlockRef": "weapon-forging-balance-v1.json:knowledgeUnlocks.material_scores"
+          },
+          "deformationResistance": {
+            "label": "抗变形",
+            "directionText": "擅长补抗变形。",
+            "directionRequires": [
+              "forge_use_known",
+              "deformationResistance_direction_known"
+            ],
+            "scoreRef": "scores.deformationResistance",
+            "scoreRequires": [
+              "material_seen",
+              "forge_use_known",
+              "feed_route_known",
+              "feed_unit_known",
+              "life_forging_level>=10"
+            ],
+            "unknownPolicy": "omit",
+            "scoreUnlockRef": "weapon-forging-balance-v1.json:knowledgeUnlocks.material_scores"
+          },
+          "density": {
+            "label": "密度",
+            "directionText": "分量适中，投多仍会增重。",
+            "directionRequires": [
+              "forge_use_known",
+              "density_direction_known"
+            ],
+            "scoreRef": "scores.density",
+            "scoreRequires": [
+              "material_seen",
+              "forge_use_known",
+              "feed_route_known",
+              "feed_unit_known",
+              "life_forging_level>=10"
+            ],
+            "unknownPolicy": "omit",
+            "scoreUnlockRef": "weapon-forging-balance-v1.json:knowledgeUnlocks.material_scores"
+          }
+        },
+        "location": {
+          "requires": [
+            "specific_location_evidence"
+          ],
+          "policy": "只显示角色实际采到的位置或有来源的地点线索，不从本表允许楼层公开全分布。"
+        },
+        "processing": {
+          "processingRef": "weapon-forging-balance-v1.json:ores[id=ore_manganese_raw].processing",
+          "requires": [
+            "material_seen",
+            "forge_use_known",
+            "feed_route_known"
+          ],
+          "inputOutput": "one_raw_item_to_one_feed_unit_no_byproducts",
+          "unknownPolicy": "omit"
+        }
+      },
+      "spawnPolicy": {
+        "status": "pending",
+        "sourceIndex": "mining",
+        "candidateRef": "weapon-ore-intrinsic-traits-v1.json#/oreAdditions/0/mining",
+        "discoveryCandidateRef": "weapon-ore-intrinsic-traits-v1.json#/oreAdditions/0/discoveryCandidate",
+        "autoRegister": false,
+        "preserveExistingPlacement": false
+      }
+    },
+    "ore_antimony_raw": {
+      "itemRef": "weapon-forging-ore-items-v1.json#/items/ore_antimony_raw",
+      "sourceRef": "weapon-ore-intrinsic-traits-v1.json#/oreAdditions/1",
+      "scoresRef": "weapon-ore-intrinsic-traits-v1.json#/oreAdditions/1/scores",
+      "processingRef": "weapon-forging-balance-v1.json#/ores/9/processing",
+      "intrinsicTraitRef": "weapon-ore-intrinsic-traits-v1.json#/intrinsicTraits/9",
+      "traitSelectionRef": "weapon-ore-combinations-v1.json#/rules",
+      "information": {
+        "forgeUse": {
+          "text": "这种矿石可以加工成铸造用料。",
+          "requires": [
+            "forge_use_known"
+          ]
+        },
+        "fullKnownSummary": {
+          "text": "硬度较高且密度不高，韧性很低。",
+          "requires": [
+            "forge_use_known",
+            "hardness_direction_known",
+            "toughness_direction_known",
+            "deformationResistance_direction_known",
+            "density_direction_known"
+          ]
+        },
+        "properties": {
+          "hardness": {
+            "label": "硬度",
+            "directionText": "能提供较多硬度。",
+            "directionRequires": [
+              "forge_use_known",
+              "hardness_direction_known"
+            ],
+            "scoreRef": "scores.hardness",
+            "scoreRequires": [
+              "material_seen",
+              "forge_use_known",
+              "feed_route_known",
+              "feed_unit_known",
+              "life_forging_level>=10"
+            ],
+            "unknownPolicy": "omit",
+            "scoreUnlockRef": "weapon-forging-balance-v1.json:knowledgeUnlocks.material_scores"
+          },
+          "toughness": {
+            "label": "韧性",
+            "directionText": "韧性很低，需其他用料补足。",
+            "directionRequires": [
+              "forge_use_known",
+              "toughness_direction_known"
+            ],
+            "scoreRef": "scores.toughness",
+            "scoreRequires": [
+              "material_seen",
+              "forge_use_known",
+              "feed_route_known",
+              "feed_unit_known",
+              "life_forging_level>=10"
+            ],
+            "unknownPolicy": "omit",
+            "scoreUnlockRef": "weapon-forging-balance-v1.json:knowledgeUnlocks.material_scores"
+          },
+          "deformationResistance": {
+            "label": "抗变形",
+            "directionText": "能补一些抗变形。",
+            "directionRequires": [
+              "forge_use_known",
+              "deformationResistance_direction_known"
+            ],
+            "scoreRef": "scores.deformationResistance",
+            "scoreRequires": [
+              "material_seen",
+              "forge_use_known",
+              "feed_route_known",
+              "feed_unit_known",
+              "life_forging_level>=10"
+            ],
+            "unknownPolicy": "omit",
+            "scoreUnlockRef": "weapon-forging-balance-v1.json:knowledgeUnlocks.material_scores"
+          },
+          "density": {
+            "label": "密度",
+            "directionText": "密度贡献不高。",
+            "directionRequires": [
+              "forge_use_known",
+              "density_direction_known"
+            ],
+            "scoreRef": "scores.density",
+            "scoreRequires": [
+              "material_seen",
+              "forge_use_known",
+              "feed_route_known",
+              "feed_unit_known",
+              "life_forging_level>=10"
+            ],
+            "unknownPolicy": "omit",
+            "scoreUnlockRef": "weapon-forging-balance-v1.json:knowledgeUnlocks.material_scores"
+          }
+        },
+        "location": {
+          "requires": [
+            "specific_location_evidence"
+          ],
+          "policy": "只显示角色实际采到的位置或有来源的地点线索，不从本表允许楼层公开全分布。"
+        },
+        "processing": {
+          "processingRef": "weapon-forging-balance-v1.json:ores[id=ore_antimony_raw].processing",
+          "requires": [
+            "material_seen",
+            "forge_use_known",
+            "feed_route_known"
+          ],
+          "inputOutput": "one_raw_item_to_one_feed_unit_no_byproducts",
+          "unknownPolicy": "omit"
+        }
+      },
+      "spawnPolicy": {
+        "status": "pending",
+        "sourceIndex": "mining",
+        "candidateRef": "weapon-ore-intrinsic-traits-v1.json#/oreAdditions/1/mining",
+        "discoveryCandidateRef": "weapon-ore-intrinsic-traits-v1.json#/oreAdditions/1/discoveryCandidate",
+        "autoRegister": false,
+        "preserveExistingPlacement": false
+      }
+    },
+    "ore_silver_raw": {
+      "itemRef": "weapon-forging-ore-items-v1.json#/items/ore_silver_raw",
+      "sourceRef": "weapon-ore-intrinsic-traits-v1.json#/oreAdditions/2",
+      "scoresRef": "weapon-ore-intrinsic-traits-v1.json#/oreAdditions/2/scores",
+      "processingRef": "weapon-forging-balance-v1.json#/ores/10/processing",
+      "intrinsicTraitRef": "weapon-ore-intrinsic-traits-v1.json#/intrinsicTraits/10",
+      "traitSelectionRef": "weapon-ore-combinations-v1.json#/rules",
+      "information": {
+        "forgeUse": {
+          "text": "这种矿石可以加工成铸造用料。",
+          "requires": [
+            "forge_use_known"
+          ]
+        },
+        "fullKnownSummary": {
+          "text": "韧性较高，硬度及抗变形偏低。",
+          "requires": [
+            "forge_use_known",
+            "hardness_direction_known",
+            "toughness_direction_known",
+            "deformationResistance_direction_known",
+            "density_direction_known"
+          ]
+        },
+        "properties": {
+          "hardness": {
+            "label": "硬度",
+            "directionText": "硬度贡献较低。",
+            "directionRequires": [
+              "forge_use_known",
+              "hardness_direction_known"
+            ],
+            "scoreRef": "scores.hardness",
+            "scoreRequires": [
+              "material_seen",
+              "forge_use_known",
+              "feed_route_known",
+              "feed_unit_known",
+              "life_forging_level>=10"
+            ],
+            "unknownPolicy": "omit",
+            "scoreUnlockRef": "weapon-forging-balance-v1.json:knowledgeUnlocks.material_scores"
+          },
+          "toughness": {
+            "label": "韧性",
+            "directionText": "适合补充韧性。",
+            "directionRequires": [
+              "forge_use_known",
+              "toughness_direction_known"
+            ],
+            "scoreRef": "scores.toughness",
+            "scoreRequires": [
+              "material_seen",
+              "forge_use_known",
+              "feed_route_known",
+              "feed_unit_known",
+              "life_forging_level>=10"
+            ],
+            "unknownPolicy": "omit",
+            "scoreUnlockRef": "weapon-forging-balance-v1.json:knowledgeUnlocks.material_scores"
+          },
+          "deformationResistance": {
+            "label": "抗变形",
+            "directionText": "抗变形贡献不高。",
+            "directionRequires": [
+              "forge_use_known",
+              "deformationResistance_direction_known"
+            ],
+            "scoreRef": "scores.deformationResistance",
+            "scoreRequires": [
+              "material_seen",
+              "forge_use_known",
+              "feed_route_known",
+              "feed_unit_known",
+              "life_forging_level>=10"
+            ],
+            "unknownPolicy": "omit",
+            "scoreUnlockRef": "weapon-forging-balance-v1.json:knowledgeUnlocks.material_scores"
+          },
+          "density": {
+            "label": "密度",
+            "directionText": "会明显增加用料密度。",
+            "directionRequires": [
+              "forge_use_known",
+              "density_direction_known"
+            ],
+            "scoreRef": "scores.density",
+            "scoreRequires": [
+              "material_seen",
+              "forge_use_known",
+              "feed_route_known",
+              "feed_unit_known",
+              "life_forging_level>=10"
+            ],
+            "unknownPolicy": "omit",
+            "scoreUnlockRef": "weapon-forging-balance-v1.json:knowledgeUnlocks.material_scores"
+          }
+        },
+        "location": {
+          "requires": [
+            "specific_location_evidence"
+          ],
+          "policy": "只显示角色实际采到的位置或有来源的地点线索，不从本表允许楼层公开全分布。"
+        },
+        "processing": {
+          "processingRef": "weapon-forging-balance-v1.json:ores[id=ore_silver_raw].processing",
+          "requires": [
+            "material_seen",
+            "forge_use_known",
+            "feed_route_known"
+          ],
+          "inputOutput": "one_raw_item_to_one_feed_unit_no_byproducts",
+          "unknownPolicy": "omit"
+        }
+      },
+      "spawnPolicy": {
+        "status": "pending",
+        "sourceIndex": "mining",
+        "candidateRef": "weapon-ore-intrinsic-traits-v1.json#/oreAdditions/2/mining",
+        "discoveryCandidateRef": "weapon-ore-intrinsic-traits-v1.json#/oreAdditions/2/discoveryCandidate",
+        "autoRegister": false,
+        "preserveExistingPlacement": true
+      }
+    },
+    "ore_gold_raw": {
+      "itemRef": "weapon-forging-ore-items-v1.json#/items/ore_gold_raw",
+      "sourceRef": "weapon-ore-intrinsic-traits-v1.json#/oreAdditions/3",
+      "scoresRef": "weapon-ore-intrinsic-traits-v1.json#/oreAdditions/3/scores",
+      "processingRef": "weapon-forging-balance-v1.json#/ores/11/processing",
+      "intrinsicTraitRef": "weapon-ore-intrinsic-traits-v1.json#/intrinsicTraits/11",
+      "traitSelectionRef": "weapon-ore-combinations-v1.json#/rules",
+      "information": {
+        "forgeUse": {
+          "text": "这种矿石可以加工成铸造用料。",
+          "requires": [
+            "forge_use_known"
+          ]
+        },
+        "fullKnownSummary": {
+          "text": "密度和韧性较高，硬度及抗变形很低。",
+          "requires": [
+            "forge_use_known",
+            "hardness_direction_known",
+            "toughness_direction_known",
+            "deformationResistance_direction_known",
+            "density_direction_known"
+          ]
+        },
+        "properties": {
+          "hardness": {
+            "label": "硬度",
+            "directionText": "硬度贡献很低。",
+            "directionRequires": [
+              "forge_use_known",
+              "hardness_direction_known"
+            ],
+            "scoreRef": "scores.hardness",
+            "scoreRequires": [
+              "material_seen",
+              "forge_use_known",
+              "feed_route_known",
+              "feed_unit_known",
+              "life_forging_level>=10"
+            ],
+            "unknownPolicy": "omit",
+            "scoreUnlockRef": "weapon-forging-balance-v1.json:knowledgeUnlocks.material_scores"
+          },
+          "toughness": {
+            "label": "韧性",
+            "directionText": "能提供较多韧性。",
+            "directionRequires": [
+              "forge_use_known",
+              "toughness_direction_known"
+            ],
+            "scoreRef": "scores.toughness",
+            "scoreRequires": [
+              "material_seen",
+              "forge_use_known",
+              "feed_route_known",
+              "feed_unit_known",
+              "life_forging_level>=10"
+            ],
+            "unknownPolicy": "omit",
+            "scoreUnlockRef": "weapon-forging-balance-v1.json:knowledgeUnlocks.material_scores"
+          },
+          "deformationResistance": {
+            "label": "抗变形",
+            "directionText": "抗变形贡献很低。",
+            "directionRequires": [
+              "forge_use_known",
+              "deformationResistance_direction_known"
+            ],
+            "scoreRef": "scores.deformationResistance",
+            "scoreRequires": [
+              "material_seen",
+              "forge_use_known",
+              "feed_route_known",
+              "feed_unit_known",
+              "life_forging_level>=10"
+            ],
+            "unknownPolicy": "omit",
+            "scoreUnlockRef": "weapon-forging-balance-v1.json:knowledgeUnlocks.material_scores"
+          },
+          "density": {
+            "label": "密度",
+            "directionText": "少量也能大幅增加用料密度。",
+            "directionRequires": [
+              "forge_use_known",
+              "density_direction_known"
+            ],
+            "scoreRef": "scores.density",
+            "scoreRequires": [
+              "material_seen",
+              "forge_use_known",
+              "feed_route_known",
+              "feed_unit_known",
+              "life_forging_level>=10"
+            ],
+            "unknownPolicy": "omit",
+            "scoreUnlockRef": "weapon-forging-balance-v1.json:knowledgeUnlocks.material_scores"
+          }
+        },
+        "location": {
+          "requires": [
+            "specific_location_evidence"
+          ],
+          "policy": "只显示角色实际采到的位置或有来源的地点线索，不从本表允许楼层公开全分布。"
+        },
+        "processing": {
+          "processingRef": "weapon-forging-balance-v1.json:ores[id=ore_gold_raw].processing",
+          "requires": [
+            "material_seen",
+            "forge_use_known",
+            "feed_route_known"
+          ],
+          "inputOutput": "one_raw_item_to_one_feed_unit_no_byproducts",
+          "unknownPolicy": "omit"
+        }
+      },
+      "spawnPolicy": {
+        "status": "pending",
+        "sourceIndex": "mining",
+        "candidateRef": "weapon-ore-intrinsic-traits-v1.json#/oreAdditions/3/mining",
+        "discoveryCandidateRef": "weapon-ore-intrinsic-traits-v1.json#/oreAdditions/3/discoveryCandidate",
+        "autoRegister": false,
+        "preserveExistingPlacement": true
+      }
+    }
+  }
+}
