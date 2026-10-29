@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><base href="../../">
+<meta name="viewport" content="width=device-width,initial-scale=1"><title>设施修复前后</title>
+<style>
+*{box-sizing:border-box}body{margin:24px;background:#292923;color:#eee6d5;font:14px system-ui}h1{font-size:24px;margin:0 0 8px}p{color:#c0b9a9;margin:0 0 20px}#cards{display:grid;grid-template-columns:repeat(3,376px);gap:14px}.card{background:#34352e;border:1px solid #5a5b4e;border-radius:12px;padding:10px}.card h2{font-size:16px;margin:0 0 8px}.pair{display:flex;gap:2px}.state{width:176px;text-align:center}.state span{display:block;color:#cabda2;font-size:12px}iframe{border:0;width:176px;height:218px}a{color:inherit;text-decoration:none}.sprite{margin:0;background:#34352e;overflow:hidden}.tile{position:absolute;left:0;top:-25px}
+@media(max-width:1180px){#cards{grid-template-columns:repeat(2,376px)}}@media(max-width:790px){#cards{grid-template-columns:376px}}
+</style></head><body>
+<script src="js/core/map-projection.js"></script><script src="js/core/tile-renderer-v2.js?v=facility-damage-20261027"></script>
+<script>
+const entries=[['stove','cooking','灶台'],['pharmacy','pharmacy','制药台'],['forging','forging','铸造台'],['barrel','compost','制肥桶'],['bathroom','bathroom','卫生间'],['farm','agriculture','农场'],['ranch','livestock','牧场'],['sewing','sewing','缝纫台'],['toolbench','observation','工具台']];
+const params=new URLSearchParams(location.search),key=params.get('sprite');
+if(key){
+ document.body.className='sprite';const entry=entries.find(e=>e[0]===key),ready=params.get('ready')==='1';
+ window.NPCSystem={isDemoFlagTrue:()=>ready};
+ const draw=CanvasRenderingContext2D.prototype.drawImage;
+ CanvasRenderingContext2D.prototype.drawImage=function(...args){const result=draw.apply(this,args);if(this.canvas.id==='map-grid-canvas-dynamic'&&args[0].src?.includes('interactive-devices'))window.reviewReady=true;return result;};
+ const host=document.createElement('div');host.className='tile';document.body.append(host);
+ const renderer=TileRendererV2.create(host,{cellPx:144/Math.SQRT2});
+ renderer.render({map:{map_id:'review-'+key,width:1,height:1},st:{x:0,y:0},dynamicMetaAt:()=>({walkable:true,npc:true,npcId:'npc.station.'+entry[1]+'_base',npcLabel:'',[entry[1]+'Station']:true})});
+}else{
+ const title=document.createElement('h1');title.textContent='设施修复前后';document.body.append(title);
+ const intro=document.createElement('p');intro.textContent='144px格宽 · 与地图共用绘制、底座和阴影。点击状态名称查看原图。';document.body.append(intro);
+ const cards=document.createElement('div');cards.id='cards';document.body.append(cards);
+ for(const [key,kind,name] of entries){
+  const card=document.createElement('section');card.className='card';const heading=document.createElement('h2');heading.textContent=name;card.append(heading);
+  const pair=document.createElement('div');pair.className='pair';card.append(pair);
+  for(const ready of [false,true]){
+   const state=document.createElement('div');state.className='state';const label=document.createElement('span'),link=document.createElement('a');
+   link.href='assets/map/isometric/interactive-devices'+(ready?'-v1':'-damaged-v1')+'/'+key+'.png';link.target='_blank';link.textContent=ready?'完成后 · 现有图片':(kind==='sewing'||kind==='observation'?'装配完成前':'修复前');label.append(link);state.append(label);
+   const frame=document.createElement('iframe');frame.title=name+link.textContent;frame.src='reference/facility-damage-v1/review.html?no_reload&sprite='+key+'&ready='+(ready?1:0);state.append(frame);pair.append(state);
+  }
+  cards.append(card);
+ }
+}
+</script></body></html>

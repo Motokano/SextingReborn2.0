@@ -7,7 +7,7 @@ import { fileURLToPath } from 'node:url';
 
 const root = path.resolve(process.argv[2] || fileURLToPath(new URL('../', import.meta.url)));
 const read = file => fs.readFileSync(path.join(root, file), 'utf8');
-const kinds = {forging:'forging', sewing:'sewing', stove:'cooking', ranch:'livestock', farm:'agriculture', bed:'bed', barrel:'compost', pharmacy:'pharmacy', warehouse:'warehouse', toolbench:'observation'};
+const kinds = {bathroom:'bathroom', forging:'forging', sewing:'sewing', stove:'cooking', ranch:'livestock', farm:'agriculture', bed:'bed', barrel:'compost', pharmacy:'pharmacy', warehouse:'warehouse', toolbench:'observation'};
 const sizes = {};
 for (const key of Object.keys(kinds)) {
     const info = inspectPng(path.join(root, 'assets/map/isometric/interactive-devices-v1', key + '.png'));
@@ -17,7 +17,7 @@ for (const key of Object.keys(kinds)) {
     sizes[key] = info;
 }
 
-function harness({fail = false, mode = 'isometric'} = {}) {
+function harness({fail = false, mode = 'isometric', flags = null} = {}) {
     let clock = 0;
     const draws = [], texts = [], transforms = [], translations = [], ellipses = [], requests = [], pending = [];
     const footprintEllipses = [], shadowTransforms = [];
@@ -37,11 +37,12 @@ function harness({fail = false, mode = 'isometric'} = {}) {
     }, Image:class {
         set src(value) {
             this.url = value; if (!value.startsWith('assets/map/terrain/')) requests.push(value);
-            const info = sizes[path.basename(value, '.png')] || {width:100,height:100};
+            const info = sizes[(value.includes('interactive-devices-damaged-v1') ? 'damaged-' : '') + path.basename(value, '.png')] || {width:100,height:100};
             this.naturalWidth = info.width; this.naturalHeight = info.height;
             pending.push(() => { const callback = fail ? this.onerror : this.onload; if (callback) callback(); });
         }
     }};
+    if (flags) sandbox.NPCSystem = {isDemoFlagTrue:key=>flags[key]===true};
     sandbox.window = sandbox; vm.createContext(sandbox);
     vm.runInContext(read('js/core/map-projection.js'), sandbox);
     vm.runInContext(read('js/core/tile-renderer-v2.js'), sandbox);
@@ -63,7 +64,7 @@ for (const [key, flag] of Object.entries(kinds)) {
     const body = h.draws.find(d => d.layer.id === 'map-grid-canvas-dynamic' && d.args[0].url);
     assert.ok(body, key + ': visible body');
     assert.deepEqual(body.args.slice(1,5),sizes[key].crop,key + ': measured crop');
-    assert.ok(body.args[7] <= 72.01 && body.args[8] <= 76,key + ': tile-scale size');
+    assert.ok(body.args[7] <= 72.01 && body.args[8] <= (key === 'bathroom' ? 84 : 76),key + ': tile-scale size');
     assert.ok(Math.abs(body.args[6] + body.args[8]) < .1,key + ': bottom anchored without whitespace gap');
     const shadowMatrix=h.shadowTransforms.find(t=>t[0]===1&&t[2]===-.48&&t[3]===-.24);
     assert.ok(shadowMatrix,key + ': silhouette shadow');
@@ -102,7 +103,7 @@ for(const flag of Object.values(kinds))env.E['is'+flag[0].toUpperCase()+flag.sli
 vm.createContext(env); const metaAt=vm.runInContext('('+sceneCode.slice(start,end)+')',env);
 for(const state of [[1,1,false,true],[0,0,false,false],[1,0,false,false],[1,1,true,false]]){
     [visual,identified,rear]=state; const m=metaAt(10,10);
-    for(const flag of Object.values(kinds).filter(f=>!['observation','sewing','forging'].includes(f)))assert.equal(m[flag+'Station'],state[3],flag+': visibility '+state);
+    for(const flag of Object.values(kinds).filter(f=>!['observation','sewing','forging','bathroom'].includes(f)))assert.equal(m[flag+'Station'],state[3],flag+': visibility '+state);
     env.E.getInteractNpcIdAt=()=> 'npc.station.observation_base';
     const toolMeta=metaAt(10,10);
     assert.equal(toolMeta.npcId,state[3]?'npc.station.observation_base':null,'toolbench: NPC visibility '+state);
@@ -110,8 +111,48 @@ for(const state of [[1,1,false,true],[0,0,false,false],[1,0,false,false],[1,1,tr
     assert.equal(metaAt(10,10).npcId,state[3]?'npc.station.sewing_base':null,'sewing: NPC visibility '+state);
     env.E.getInteractNpcIdAt=()=> 'npc.station.forging_base';
     assert.equal(metaAt(10,10).npcId,state[3]?'npc.station.forging_base':null,'forging: NPC visibility '+state);
+    env.E.getInteractNpcIdAt=()=> 'npc.station.bathroom_base';
+    assert.equal(metaAt(10,10).npcId,state[3]?'npc.station.bathroom_base':null,'bathroom: NPC visibility '+state);
 }
-console.log('PASS: 10 RGBA sprites, crops/anchors/scale, facility NPC mapping, body/shadow visibility, load/failure cache, legacy fallback, all scene vision gates.');
+console.log('PASS: 11 RGBA sprites, crops/anchors/scale, facility NPC mapping, body/shadow visibility, load/failure cache, legacy fallback, all scene vision gates.');
+
+// A state change must redraw both body and matching shadow, without changing
+// picking/ground contact or leaking repair state to temporary stations.
+const repairs = {
+ stove:['cooking_base_station_unlocked'], pharmacy:['npc_station_pharmacy_base_repaired'],
+ forging:['forging_station_unlocked'], barrel:['npc_station_compost_base_repaired'],
+ bathroom:['bathroom_station_unlocked'], farm:['facility_restored:agriculture'],
+ ranch:['facility_restored:livestock'], sewing:['sewing_station_unlocked'],
+ toolbench:['observation_calendar_unlocked','observation_temperature_unlocked']
+};
+for (const [key, required] of Object.entries(repairs)) {
+ const info=inspectPng(path.join(root,'assets/map/isometric/interactive-devices-damaged-v1',key+'.png'));
+ sizes['damaged-'+key]=info;
+ assert.deepEqual(info.cornerAlpha,[0,0,0,0]);assert.ok(info.transparentFraction>.2&&info.transparentFraction<.9);
+ assert.ok(info.crop[0]>0&&info.crop[1]>0&&info.crop[0]+info.crop[2]<info.width&&info.crop[1]+info.crop[3]<info.height,key+': silhouette not clipped');
+ const flags={},h=harness({flags}),kind=kinds[key],meta={[kind+'Station']:true,npc:true,npcId:'npc.station.'+kind+'_base',npcLabel:key};
+ const bodies=()=>h.draws.filter(d=>d.layer.id==='map-grid-canvas-dynamic'&&d.args[0].url);
+ h.render(meta);h.flush();h.render(meta);
+ assert.match(bodies()[0].args[0].url,/interactive-devices-damaged-v1/);
+ assert.deepEqual(bodies()[0].args.slice(1,5),info.crop,key+': measured unfinished crop');
+ assert.ok(Math.abs(bodies()[0].args[6]+bodies()[0].args[8])<.1,key+': unchanged ground contact');
+ assert.ok(bodies()[0].args[7]<=72.01&&bodies()[0].args[8]<=84,key+': actual tile scale');
+ const center=h.renderer.getCellCenter(0,0);assert.deepEqual(JSON.parse(JSON.stringify(h.renderer.hitTest(center.x,center.y))),{x:0,y:0});
+ h.render({...meta,unknownPresence:true});assert.equal(bodies().length,0);
+ h.render({});assert.equal(h.draws.filter(d=>d.layer.id==='map-grid-canvas-dynamic').length,0);
+ if(required.length>1){flags[required[0]]=true;h.render(meta);assert.match(bodies()[0].args[0].url,/damaged-v1/,key+': partial assembly stays unfinished');}
+ required.forEach(flag=>{flags[flag]=true;});h.render(meta);h.flush();h.render(meta);
+ assert.match(bodies()[0].args[0].url,/interactive-devices-v1/);
+ assert.deepEqual(bodies()[0].args.slice(1,5),sizes[key].crop,key+': repaired art unchanged');
+ assert.equal(h.draws.filter(d=>d.layer.id==='map-grid-canvas-dynamic'&&!d.args[0].url).length,1,'only current shadow drawn');
+ required.forEach(flag=>{flags[flag]=false;});h.render(meta);
+ assert.match(bodies()[0].args[0].url,/damaged-v1/,key+': load/reset switches back');assert.equal(h.requests.length,2,key+': both states cached independently');
+ const other=harness({flags:{}});other.render({...meta,npcId:'npc.station.'+kind+'_temporary'});other.flush();assert.ok(other.requests.every(url=>!url.includes('damaged-v1')),'temporary station independent of base repair');
+ const staleFlags={},stale=harness({flags:staleFlags});stale.render(meta);required.forEach(flag=>{staleFlags[flag]=true;});stale.render(meta);stale.flush();stale.render(meta);
+ assert.ok(stale.draws.filter(d=>d.layer.id==='map-grid-canvas-dynamic'&&d.args[0].url).every(d=>!d.args[0].url.includes('damaged-v1')),'late damaged image cannot restore stale state');
+ const failed=harness({flags:{},fail:true});failed.render(meta);failed.flush();assert.ok(failed.texts.some(t=>t[0]===key.slice(0,6)));failed.recover();failed.advance(5000);failed.render(meta);failed.flush();assert.equal(failed.requests.length,2,'unfinished image retries after outage');
+}
+console.log('PASS: 9 unfinished RGBA assets, live completion/reset, partial assembly, independent caches/shadows, stale loads, retry, visibility, picking and temporary-station isolation.');
 
 // Only the existing street thug receives tier-one character art.
 {

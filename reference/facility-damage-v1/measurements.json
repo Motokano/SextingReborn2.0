@@ -1,0 +1,227 @@
+{
+  "stove": {
+    "width": 1312,
+    "height": 1199,
+    "crop": [
+      186,
+      6,
+      933,
+      1184
+    ],
+    "anchor": [
+      653,
+      1189
+    ],
+    "transparentFraction": 0.49173790658882405,
+    "cornerAlpha": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "displayWidthAt144": 56,
+    "source": "assets/map/isometric/interactive-devices-v1/stove.png",
+    "sourceSHA256": "322d90ab1fb399da1b08d6b07beb172d2abfbf03f46cd2ba4e4dca3566b37118",
+    "damagedSHA256": "791432e768adc39d902f190279593f22a78382a02414f8bcd3b09cfefe6d0bc8"
+  },
+  "pharmacy": {
+    "width": 1300,
+    "height": 1209,
+    "crop": [
+      221,
+      80,
+      873,
+      1048
+    ],
+    "anchor": [
+      663.5,
+      1127
+    ],
+    "transparentFraction": 0.5599891836864541,
+    "cornerAlpha": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "displayWidthAt144": 58,
+    "source": "assets/map/isometric/interactive-devices-v1/pharmacy.png",
+    "sourceSHA256": "299352343d2a391623ebeb4b7f653baca71bdbe860493fec72caf6589155f659",
+    "damagedSHA256": "8156bda363b4043c8e88f8006224fc84577c5d386ee39232bbc3d62d903e0770"
+  },
+  "forging": {
+    "width": 1300,
+    "height": 1209,
+    "crop": [
+      167,
+      81,
+      971,
+      1079
+    ],
+    "anchor": [
+      646.5,
+      1159
+    ],
+    "transparentFraction": 0.5134828529617611,
+    "cornerAlpha": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "displayWidthAt144": 68,
+    "source": "assets/map/isometric/interactive-devices-v1/forging.png",
+    "sourceSHA256": "25bc88a01b94562fc74907a71e633a25b9551104ba1dc434df65b84cec340738",
+    "damagedSHA256": "d8f43575b993c19fcfe71182d7e6f7239745547ca155760f85fad0a35fc93777"
+  },
+  "barrel": {
+    "width": 1360,
+    "height": 1157,
+    "crop": [
+      200,
+      68,
+      973,
+      994
+    ],
+    "anchor": [
+      660,
+      1061
+    ],
+    "transparentFraction": 0.5661453302150592,
+    "cornerAlpha": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "displayWidthAt144": 58.47136150234742,
+    "source": "assets/map/isometric/interactive-devices-v1/barrel.png",
+    "sourceSHA256": "3a68db965707545c10636cdbf226420a4dd38544d40b95444beaf9a8257f5356",
+    "damagedSHA256": "a9086089865c3d7e34ed8d3a520ad0e31c6aa0c65239ae43d4da16b9ae44ee2a"
+  },
+  "bathroom": {
+    "width": 1300,
+    "height": 1209,
+    "crop": [
+      224,
+      14,
+      895,
+      1156
+    ],
+    "anchor": [
+      700.5,
+      1169
+    ],
+    "transparentFraction": 0.5449449640516638,
+    "cornerAlpha": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "displayWidthAt144": 64,
+    "source": "assets/map/isometric/interactive-devices-v1/bathroom.png",
+    "sourceSHA256": "06248c84af2daf532cd206fd6a23b2e163f4b7216e6a805306e770ecd5d9c3c8",
+    "damagedSHA256": "37a95cc3c9b990f5c1b33c30e549576c6f4f089685c084943d8e0ced4136f110"
+  },
+  "farm": {
+    "width": 1374,
+    "height": 1145,
+    "crop": [
+      210,
+      124,
+      963,
+      901
+    ],
+    "anchor": [
+      690,
+      1024
+    ],
+    "transparentFraction": 0.5991526985882547,
+    "cornerAlpha": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "displayWidthAt144": 64,
+    "source": "assets/map/isometric/interactive-devices-v1/farm.png",
+    "sourceSHA256": "ef88d84fb65d8ddee5b084bdb7641f79885c4d639a8568dff77afb3a4d490279",
+    "damagedSHA256": "0a7091e72d8ddd5133f268ed5c2f1dcf985cc0dc7527da01f9d2dbb7faa396db"
+  },
+  "ranch": {
+    "width": 1306,
+    "height": 1205,
+    "crop": [
+      106,
+      127,
+      1096,
+      954
+    ],
+    "anchor": [
+      652.5,
+      1080
+    ],
+    "transparentFraction": 0.4862180933196927,
+    "cornerAlpha": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "displayWidthAt144": 72,
+    "source": "assets/map/isometric/interactive-devices-v1/ranch.png",
+    "sourceSHA256": "c3af7d0472aa5fba14c0b6949f384547857c19bd1f7e3f8c359b25bfe67bf30e",
+    "damagedSHA256": "097106d8d8506b4d8c5ce15217d31c27057473fc739dcb8bec489767bf6d71ef"
+  },
+  "sewing": {
+    "width": 1300,
+    "height": 1209,
+    "crop": [
+      157,
+      187,
+      1000,
+      935
+    ],
+    "anchor": [
+      653.5,
+      1121
+    ],
+    "transparentFraction": 0.5454596933256983,
+    "cornerAlpha": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "displayWidthAt144": 64,
+    "source": "assets/map/isometric/interactive-devices-v1/sewing.png",
+    "sourceSHA256": "82543b96c373e86f9beb1dc36df465fe6fb72648adba688cbb165899fcdeed30",
+    "damagedSHA256": "7cff706801c93391c43cdca246aba5b8f251a1a719d7b7dfd8f0eb63ff242f5b"
+  },
+  "toolbench": {
+    "width": 1300,
+    "height": 1209,
+    "crop": [
+      219,
+      78,
+      869,
+      1055
+    ],
+    "anchor": [
+      659.5,
+      1132
+    ],
+    "transparentFraction": 0.5671724883883693,
+    "cornerAlpha": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "displayWidthAt144": 58,
+    "source": "assets/map/isometric/interactive-devices-v1/toolbench.png",
+    "sourceSHA256": "18557a8513ec9311a92fa7fa8d1ef580f0617864c761e5e17363149926b20d05",
+    "damagedSHA256": "95e41bad954a084fdd1b88c6aada13776c27d06031176539295cd348532a17b0"
+  }
+}

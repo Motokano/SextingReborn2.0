@@ -94,6 +94,7 @@
         // Approved device pawns. Crop and anchor are source-image pixel coordinates;
         // sizes below describe visible content on a 144px tile, not transparent padding.
         var deviceSpecs = {
+            bathroom: { crop: [223,13,890,1156], anchor: [701.5,1168], width: 64, label: '卫生间' },
             forging: { crop: [166,81,970,1079], anchor: [650,1159], width: 68, label: '铸造台' },
             sewing: { crop: [212,95,877,1033], anchor: [661,1127], width: 64, label: '缝纫台' },
             toolbench: { crop: [218,77,869,1055], anchor: [662,1131], width: 58, label: '工具台' },
@@ -111,6 +112,7 @@
         // Ground footprint of each oval base in display pixels at 144px tile width.
         // A base is already on the ground plane; it must not be flattened again.
         var deviceFootprints = {
+            bathroom: [32,11],
             forging: [34,11],
             sewing: [32,10.5],
             toolbench: [29,10],
@@ -126,11 +128,42 @@
         deviceFootprints.streetThug = [23,7];
         spriteSources.linManager = 'assets/npc/npc_supervisor_manager/standing-mailbag-v2.png';
         deviceFootprints.linManager = [23,7];
+        // Only these base facilities have an unfinished appearance. Completion
+        // uses the same persisted flags as their menus, including staged assembly.
+        var deviceStates = {
+            stove: { npc: 'cooking', flags: ['cooking_base_station_unlocked'], crop: [186,6,933,1184], anchor: [653,1189], width: 56 },
+            pharmacy: { npc: 'pharmacy', flags: ['npc_station_pharmacy_base_repaired'], crop: [221,80,873,1048], anchor: [663.5,1127], width: 58 },
+            forging: { npc: 'forging', flags: ['forging_station_unlocked'], crop: [167,81,971,1079], anchor: [646.5,1159], width: 68 },
+            barrel: { npc: 'compost', flags: ['npc_station_compost_base_repaired'], crop: [200,68,973,994], anchor: [660,1061], width: 973 * 64 / 1065 },
+            bathroom: { npc: 'bathroom', flags: ['bathroom_station_unlocked'], crop: [224,14,895,1156], anchor: [700.5,1169], width: 64 },
+            farm: { npc: 'agriculture', flags: ['facility_restored:agriculture'], crop: [210,124,963,901], anchor: [690,1024], width: 64 },
+            ranch: { npc: 'livestock', flags: ['facility_restored:livestock'], crop: [106,127,1096,954], anchor: [652.5,1080], width: 72 },
+            sewing: { npc: 'sewing', flags: ['sewing_station_unlocked'], crop: [157,187,1000,935], anchor: [653.5,1121], width: 64 },
+            toolbench: { npc: 'observation', flags: ['observation_calendar_unlocked', 'observation_temperature_unlocked'], crop: [219,78,869,1055], anchor: [659.5,1132], width: 58 }
+        };
+        Object.keys(deviceStates).forEach(function (key) {
+            var state = deviceStates[key], variant = key + 'Damaged';
+            pawnSpecs[variant] = { crop: state.crop, anchor: state.anchor, width: state.width, label: deviceSpecs[key].label };
+            spriteSources[variant] = 'assets/map/isometric/interactive-devices-damaged-v1/' + key + '.png';
+            deviceFootprints[variant] = deviceFootprints[key];
+        });
+        function deviceAppearanceKey(key, npcId) {
+            var state = deviceStates[key], npc = global.NPCSystem;
+            // Standalone art previews and temporary/other-map stations retain
+            // their existing appearance; base repair flags must not affect them.
+            if (!state || npcId !== 'npc.station.' + state.npc + '_base' || !npc || typeof npc.isDemoFlagTrue !== 'function') return key;
+            return state.flags.every(function (flag) { return npc.isDemoFlagTrue(flag); }) ? key : key + 'Damaged';
+        }
         // Dialogue reads the same sources and crops as map pawns.
         global.TileRendererV2.getSpeakerPawn = function (entityId) {
             var key = entityId === 'npc.station.forging_base' ? 'forging' : entityId === 'npc.station.sewing_base' ? 'sewing' : entityId === 'npc.station.observation_base' ? 'toolbench' :
                 entityId === 'npc.supervisor.manager' ? 'linManager' :
                 entityId === 'enemy.street_thug' ? 'streetThug' : 'npc';
+            Object.keys(deviceStates).some(function (device) {
+                if (entityId !== 'npc.station.' + deviceStates[device].npc + '_base') return false;
+                key = deviceAppearanceKey(device, entityId);
+                return true;
+            });
             return {url:spriteSources[key],crop:pawnSpecs[key] ? pawnSpecs[key].crop.slice() : null};
         };
         var spriteCache = {};
@@ -162,6 +195,7 @@
         }
 
         function deviceKeyForMeta(m) {
+            if (m.npcId === 'npc.station.bathroom_base') return 'bathroom';
             if (m.npcId === 'npc.station.forging_base') return 'forging';
             if (m.npcId === 'npc.station.sewing_base') return 'sewing';
             if (m.npcId === 'npc.station.observation_base') return 'toolbench';
@@ -356,7 +390,7 @@
             dynamicCtx.textAlign='center';dynamicCtx.textBaseline='middle';
             if(m.unknownPresence){dynamicCtx.fillStyle='rgba(245,222,179,.95)';dynamicCtx.font='bold 20px sans-serif';dynamicCtx.fillText('?',c.x,c.y-lift);}
             else if(projection.isIsometric && deviceKey && !m.enemy && (!m.npc || String(m.npcId || '').indexOf('npc.station.') === 0)) {
-                drawCalibratedPawn(dynamicCtx, deviceKey, c.x, c.y, m.npcLabel);
+                drawCalibratedPawn(dynamicCtx, deviceAppearanceKey(deviceKey, m.npcId), c.x, c.y, m.npcLabel);
             }
             else if(m.npc && m.npcId==='npc.supervisor.manager' && projection.isIsometric){drawCalibratedPawn(dynamicCtx,'linManager',c.x,c.y,m.npcLabel);}
             else if(m.npc){
