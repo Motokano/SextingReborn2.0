@@ -1,0 +1,51 @@
+<!doctype html><html lang="zh-CN"><meta charset="utf-8"><title>九招完整笔触检查</title>
+<style>*{box-sizing:border-box}body{margin:0;padding:16px;background:#17251e;color:#eee5cf;font:14px 'Microsoft YaHei',sans-serif}h1{font-size:23px;margin:0 0 7px}p{margin:6px 0;color:#bdcbb8}button,select{background:#304335;color:inherit;border:1px solid #798b6d;padding:6px;margin:0 5px 8px 0}#grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}section{border:1px solid #607355;border-radius:6px;overflow:hidden;background:#2b3e2f}h2{font-size:14px;margin:0;padding:5px 10px;background:#213325}canvas{display:block;width:100%;height:155px}#status{color:#e3cf91}</style>
+<h1>九招完整笔触检查</h1><p>正式结算与绘制器 · 正式地图比例 · 1.5× 连续播放 · 检查样例不读写玩家存档</p>
+<label>结果 <select id="result"><option value="hit">命中</option><option value="miss">未命中</option><option value="dry" selected>乏力</option></select></label>
+<label>出招侧 <select id="side"><option value="right">右</option><option value="left">左</option></select></label>
+<button id="play" disabled>连续播放</button><button id="contact" disabled>查看接触帧</button><span id="status">加载中…</span><div id="grid"></div>
+<script src="../js/combat-damage.js"></script><script src="../js/scene-animation.js"></script><script src="../js/combat-fx-paint.js"></script><script src="../js/combat-fx-presentation.js"></script><script src="../js/combat-fx-events.js"></script><script src="../js/combat-fx-runtime.js"></script><script src="../js/combat-pipeline.js"></script><script src="../js/core/map-projection.js"></script><script src="../js/core/tile-renderer-v2.js"></script><script src="../js/scene-renderer.js"></script>
+<script>
+(async()=>{
+const $=id=>document.getElementById(id),names={jab:'刺拳',front_kick:'正蹬',swing_punch:'摆拳',whip_kick:'鞭腿',poke_eye:'戳眼',kick_knee:'踹膝',shove:'推搡',slap_combo:'连环掌掴',weapon_strike:'兵击直斩'},cards=[];
+const map={map_id:'all_moves_review',width:7,height:7,blocks:[],portals:[]},state={mapId:map.map_id,x:3,y:3};
+window.GameEngine={getMap:()=>map,getState:()=>state};window.GameTime={getState:()=>({minuteOfDay:720})};
+const cfg=await fetch('../data/survival-config.json').then(r=>r.json());window.Survival={getConfigValue:(key,fallback)=>cfg[key]??fallback};
+const R=CombatFxRuntime,paint=CombatFxPaint,projection=MapProjection.create(map,101,'isometric');
+CombatPipeline.setConfig({pipelines:{review:{phases:[{handler:'builtin.damage_stub'}]}}});
+let captured;SceneAnimation.on('combat:resolved',p=>{captured=p;});
+async function image(src){const i=new Image();i.src=src;await i.decode();return i;}
+const [manifest,player,enemy]=await Promise.all([fetch('../assets/map/isometric/player-atlas-v1/manifest.json').then(r=>r.json()),image('../assets/map/isometric/player-atlas-v1/L00.png'),image('../assets/map/isometric/street-thug-v1/standing.png')]);
+const pose=manifest.states.find(x=>x.id==='D000'),s=manifest.displayBaseWidth/pose.baseWidth;
+const pawns=[{image:player,crop:pose.crop,w:pose.crop[2]*s,h:pose.crop[3]*s,ax:pose.anchor[0]*s,ay:pose.anchor[1]*s},{image:enemy,crop:[230,38,757,1216],w:46,h:1216*46/757,ax:(609.5-230)*46/757,ay:(1253-38)*46/757}];
+pawns.forEach(p=>p.shadow=TileRendererV2.makeGroundShadow(p.image,{crop:p.crop,anchor:[p.crop[0]+p.ax*p.crop[2]/p.w,p.crop[1]+p.ay*p.crop[2]/p.w],width:p.w},[23,7]));
+for(const [move,name]of Object.entries(names)){
+ const section=document.createElement('section'),title=document.createElement('h2'),canvas=document.createElement('canvas');title.textContent=name;section.append(title,canvas);$('grid').append(section);cards.push({move,title,canvas});
+}
+function prepare(){for(const card of cards){
+ R.clear();R.startPlaybackClock(1000);const result=$('result').value,n=card.move==='slap_combo'?2:1;
+ CombatPipeline.runPipeline('review',{moveId:card.move,moveTemplate:{hit_segments:n},limbId:($('side').value==='left'?'l':'r')+(/kick/.test(card.move)?'foot':'hand'),rawDamage:12,damageType:card.move==='weapon_strike'?'slash':'blunt',hitRollSuccess:result!=='miss',forceZeroDamageByResourceInsufficient:result==='dry',hitPart:card.move==='poke_eye'?'head':card.move==='kick_knee'?'left_leg':'abdomen',attacker:{kind:'player',pos:{x:3,y:3}},defender:{kind:'enemy',enemyId:'review',index:0,pos:{x:3,y:2}},segments:n>1?Array.from({length:n},()=>({hitRollSuccess:result!=='miss',hitPart:'head',rawDamage:12})):null});
+ card.payload=captured;card.title.textContent=names[card.move]+(n>1?' · 两段':'');
+ if(card.payload.segments.some(s=>s.result!==result))throw Error(card.move+' 的逐段结果不正确');
+ }R.clear();}
+let playing=false,elapsed=0,last=0,contactCalls=0;
+const contact=paint.drawMoveContact;paint.drawMoveContact=(...args)=>{contactCalls++;return contact(...args);};
+function pawn(ctx,p,x,y){ctx.save();ctx.translate(x,y+8);ctx.drawImage(p.shadow,-64,-40,160,88);ctx.drawImage(p.image,...p.crop,-p.ax,-p.ay,p.w,p.h);ctx.restore();}
+function draw(){contactCalls=0;for(const card of cards){
+ R.clear();R.startPlaybackClock(1000);R.enqueue(card.payload);const action=R.getActiveActions()[0],end=action.segments.at(-1).hitMs;
+ const time=playing?1000+(elapsed%1500):end+25/R.speed;
+ const width=card.canvas.clientWidth,dpr=devicePixelRatio||1;card.canvas.width=Math.round(width*dpr);card.canvas.height=Math.round(155*dpr);const ctx=card.canvas.getContext('2d');ctx.setTransform(dpr,0,0,dpr,0,0);
+ const origin=projection.cellCenter(3,3),center=(x,y)=>{const p=projection.cellCenter(x,y);return{x:width*.38+p.x-origin.x,y:134+p.y-origin.y};};
+ const frame={ctx,nowMs:time,combatNowMs:time,map,state,cellPx:101,projection,cellCenter:center,cellToPx:center,cellPolygon:(x,y)=>projection.cellPolygon(x,y).map(p=>({x:width*.38+p.x-origin.x,y:134+p.y-origin.y})),mapWidthPx:projection.widthPx,mapHeightPx:projection.heightPx};
+ for(const [i,x,y,kind]of [[0,3,3,'player'],[1,3,2,'enemy']]){const p=center(x,y),o=R.getPawnOffsetAt(x,y,kind,frame);pawn(ctx,pawns[i],p.x+o.x,p.y+o.y);}
+ // Captures the same compositing entry point used by the live map.
+ SceneRenderer.renderCombatEffects(frame);
+ }R.clear();$('status').textContent=`${playing?'连续播放':'接触后 25 ms'} · ${$('result').selectedOptions[0].text} · 当前命中爆点 ${contactCalls} 个`;
+ if($('result').value!=='hit'&&contactCalls)throw Error('未命中或乏力不应出现命中爆点');}
+function tick(now){if(playing){elapsed+=CombatFxPresentation.frameDelta(now-last);draw();}last=now;requestAnimationFrame(tick);}
+for(const id of ['result','side'])$(id).onchange=()=>{elapsed=0;prepare();draw();};
+$('play').onclick=()=>{playing=!playing;elapsed=0;last=performance.now();$('play').textContent=playing?'暂停':'连续播放';draw();};
+$('contact').onclick=()=>{playing=false;$('play').textContent='连续播放';draw();};
+prepare();draw();$('play').disabled=false;$('contact').disabled=false;requestAnimationFrame(tick);
+})().catch(e=>{document.getElementById('status').textContent=e.stack;console.error(e);});
+</script></html>

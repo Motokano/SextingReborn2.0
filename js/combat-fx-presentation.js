@@ -41,7 +41,7 @@ function geometry(e,time,view,offset){
     if(roundhouse){dest.x+=lateral.x*limbSide*7*scale;dest.y+=lateral.y*limbSide*7*scale;if(['abdomen','chest'].includes(e.part))dest.y-=8*scale*heightScale;}
     if(e.move==='kick_knee'&&/foot|leg/.test(e.part))dest.y=bp.y-17*scale*heightScale;
     if(e.result==='parry'){dest.x+=(from.x-dest.x)*.12;dest.y+=4*scale;}
-    if(e.result==='miss')dest.y-=15*scale;
+    // Misses keep the approved swing; the defender's dodge conveys the miss.
     if(e.result==='distance'){dest.x=from.x+(dest.x-from.x)*.45;dest.y=from.y+(dest.y-from.y)*.45;}
     const angle=Math.atan2(dest.y-from.y,dest.x-from.x),length=Math.hypot(dest.x-from.x,dest.y-from.y)/scale;
     const lift=roundhouse?10*clamp(lateral.y*side*2):0;
@@ -56,7 +56,9 @@ function drawStrike(ctx,e,time,view,events){
     const g=geometry(e,time,view,offset),age=time-e.hitAt,wind=(time-e.at)/(e.hitAt-e.at);
     if(age<=paint.trailLife){
         ctx.save();ctx.translate(g.from.x,g.from.y);ctx.scale(g.scale,g.scale);ctx.rotate(g.angle);
-        ctx.globalAlpha=clamp(wind*2)*(e.result==='dry'?.3:.9);
+        // A miss or exhausted strike still uses the full preview brush.
+        // Outcome-specific feedback belongs to contact effects and result text.
+        ctx.globalAlpha=clamp(wind*2)*.9;
         paint.drawMoveTrail(ctx,{move:e.move,length:g.length,progress:paint.motionProgress(wind),side:g.side,age,wind,angle:g.angle,sweep:g.sweep,result:e.result});ctx.restore();
     }
     if(age>=0&&age<=paint.contactLife&&['hit','parry','armor'].includes(e.result)){

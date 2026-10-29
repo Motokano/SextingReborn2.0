@@ -29,7 +29,18 @@ for(const move of Object.keys(c.CombatFxPaint.accents))for(const result of ['hit
     const e={actor:'player',target:'enemy',from,to,move,part:'chest',side,result,at:segment.startMs*1.5,hitAt:segment.hitMs*1.5,segment:0,segmentCount:1,powerFactor:1};
     for(const age of [-160,-25,0,55,125]){
         const t=e.hitAt+age,expected=recorder(),actual=recorder(),ref=demoFrame(expected,c.CombatFxPaint,[e],t,{project,scale:1});
-        ref.draw(e);c.CombatFxRuntime.render({...args,ctx:actual,nowMs:t/1.5});
+        // Keep the frozen preview intact. The new rule reuses its normal hit trail
+        // for misses/exhaustion, but excludes the hit-only contact drawing.
+        if(result==='miss'||result==='dry'){
+            const normalSwing={...e,result:'hit'};
+            demoFrame(expected,{...c.CombatFxPaint,drawMoveContact(){}},[normalSwing],t,{project,scale:1}).draw(normalSwing);
+        }else ref.draw(e);
+        let contacts=0;
+        const drawContact=c.CombatFxPaint.drawMoveContact;
+        c.CombatFxPaint.drawMoveContact=(...args)=>{contacts++;return drawContact(...args);};
+        try{c.CombatFxRuntime.render({...args,ctx:actual,nowMs:t/1.5});}
+        finally{c.CombatFxPaint.drawMoveContact=drawContact;}
+        assert.equal(contacts,result==='hit'&&age>=0?1:0,`${move}/${result}/${age}: impact burst only on a real hit`);
         assert.deepEqual(normalize(actual.draws),normalize(expected.draws),`${move}/${result}/${side}/${JSON.stringify(to)}/${age}: ink must equal approved demo`);
         for(const [key,p,kind] of [['player',from,'player'],['enemy',to,'enemy']]){
             assert.deepEqual(normalize(c.CombatFxRuntime.getPawnOffsetAt(p.x,p.y,kind,{...args,nowMs:t/1.5})),normalize(ref.offset(key)),key+' whole-pawn motion');

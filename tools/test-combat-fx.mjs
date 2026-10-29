@@ -73,6 +73,46 @@ for(const projection of projections)for(const move of Object.keys(c.CombatFxPain
   assert.equal(depth,0,move+result);
 }
 assert(paintCalls>0);const damageBeforeRender=delivered;R.render({...args,nowMs:clock+2000});assert.equal(delivered,damageBeforeRender);
+// Audit the full normal swing against miss/dry on real map projections, including
+// the second slap, both hands/feet, low/high targets and the complete trail fade.
+const paint=c.CombatFxPaint,originalTrail=paint.drawMoveTrail,originalContact=paint.drawMoveContact;
+let trails=[],contacts=0,fullBrushFrames=0;
+paint.drawMoveTrail=(ctx,stroke)=>{
+  const {result,...geometry}=stroke;
+  trails.push({...geometry,alpha:ctx.globalAlpha});
+  return originalTrail(ctx,stroke);
+};
+paint.drawMoveContact=(...params)=>{contacts++;return originalContact(...params);};
+const normalized=v=>JSON.parse(JSON.stringify(v,(_,n)=>typeof n==='number'?Math.round(n*1e7)/1e7:n));
+try{
+  for(const projection of projections)for(const move of Object.keys(paint.accents))for(const side of ['l','r'])for(const part of ['head','abdomen','left_leg'])for(const dir of [[1,0],[1,1],[0,1],[-1,1],[-1,0],[-1,-1],[0,-1],[1,-1]]){
+    let normalFrames;
+    for(const result of ['hit','miss','dry']){
+      R.clear();
+      R.enqueue({actionId:'full-brush',mapId:state.mapId,attacker:{key:'player',kind:'player',x:0,y:0},defender:{key:'enemy',kind:'enemy',x:dir[0],y:dir[1]},
+        segments:Array.from({length:move==='slap_combo'?2:1},()=>({moveId:move,limbId:side+(/kick/.test(move)?'foot':'hand'),hitPart:part,result,damage:result==='hit'?10:0}))});
+      const action=R.getActiveActions()[0],frames=[];
+      for(const segment of action.segments)for(const age of [-180,-25,0,55,125,161,279,281]){
+        const time=segment.hitMs+age/R.speed;trails=[];contacts=0;
+        R.render({...args,projection,cellCenter:projection.cellCenter,nowMs:time});
+        const expectedContacts=result==='hit'?action.segments.filter(s=>{const a=(time-s.hitMs)*R.speed;return a>=0&&a<=paint.contactLife;}).length:0;
+        assert.equal(contacts,expectedContacts,`${move}/${result}/${segment.index}/${age}: only hit segments get a burst`);
+        frames.push(normalized(trails));fullBrushFrames++;
+      }
+      if(result==='hit')normalFrames=frames;
+      else assert.deepEqual(frames,normalFrames,`${move}/${result}/${side}/${part}/${dir}: full trail, opacity and fade must equal a hit`);
+    }
+  }
+}finally{paint.drawMoveTrail=originalTrail;paint.drawMoveContact=originalContact;}
+// Resource insufficiency and misses must survive actual multi-segment resolution.
+for(const move of Object.keys(paint.accents))for(const result of ['hit','miss','dry']){
+  R.clear();const n=move==='slap_combo'?2:1;
+  resolve(attack({moveId:move,hitRollSuccess:result!=='miss',forceZeroDamageByResourceInsufficient:result==='dry',
+    segments:n>1?Array.from({length:n},()=>({hitRollSuccess:result!=='miss',hitPart:'chest',rawDamage:10})):null}));
+  assert.deepEqual(Array.from(latest().segments,s=>s.result),Array(n).fill(result),`${move}: each resolved segment keeps ${result}`);
+  if(result!=='hit')assert(latest().segments.every(s=>s.damage===0));
+}
+console.log(`PASS all-move full brush audit: ${fullBrushFrames} real-projection frames; miss/dry equal normal trails; hit-only bursts; both slap segments and all nine pipeline results.`);
 R.clear();resolve(attack());const queuedBefore=R.getActiveActions().length;
 A.emit('combat:attack',{resolvedFx:true,x:2,y:1,fromX:1,fromY:1});assert.equal(R.getActiveActions().length,queuedBefore);
 // Leaving a map (including replacing a map under the same ID) clears all queued visuals.
