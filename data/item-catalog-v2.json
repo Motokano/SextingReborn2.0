@@ -26667,6 +26667,278 @@
         }
       },
       "category": "equipment"
+    },
+    "material_iron_blank_common": {
+      "item_id": "material_iron_blank_common",
+      "editor_name": "普通铁坯",
+      "weight_kg": 0.2,
+      "attribute_modules": {
+        "base": {
+          "identity": {
+            "name": "普通铁坯",
+            "name_0": "普通铁坯",
+            "sn": "普通铁坯",
+            "placeholder_name": "暗灰小坯块",
+            "fn_before": "暗灰小块表面留着压痕，像能再加工",
+            "fn": "从废铁中回收整理的小铁坯，可锻打成日用工具的铁件。",
+            "desc_0": "从废铁中回收整理的小铁坯，可锻打成日用工具的铁件。"
+          },
+          "stacking": {
+            "stack_limit": 100
+          },
+          "trade": {
+            "base_value": 12,
+            "price_class": "material",
+            "volatility": "low",
+            "region_restrict": 0
+          },
+          "provenance": {
+            "source": "craft",
+            "production_lines": "craft"
+          }
+        }
+      },
+      "category": "material",
+      "sub_category": "metal_blank",
+      "tags": "material;metal;craft"
+    },
+    "material_lead_portion": {
+      "item_id": "material_lead_portion",
+      "editor_name": "小份铅料",
+      "weight_kg": 0.01,
+      "attribute_modules": {
+        "base": {
+          "identity": {
+            "name": "小份铅料",
+            "name_0": "小份铅料",
+            "sn": "小份铅料",
+            "placeholder_name": "灰白小粒",
+            "fn_before": "灰白小块带着浅凹痕，像能压成形",
+            "fn": "分成小份的铅料，质软而沉，可制成钓鱼用的小配重。",
+            "desc_0": "分成小份的铅料，质软而沉，可制成钓鱼用的小配重。"
+          },
+          "stacking": {
+            "stack_limit": 100
+          },
+          "trade": {
+            "base_value": 3,
+            "price_class": "material",
+            "volatility": "low",
+            "region_restrict": 0
+          },
+          "provenance": {
+            "source": "craft",
+            "production_lines": "craft"
+          }
+        }
+      },
+      "category": "material",
+      "sub_category": "metal_blank",
+      "tags": "material;metal;craft"
+    },
+    "material_steel_wire": {
+      "item_id": "material_steel_wire",
+      "editor_name": "钢丝料",
+      "weight_kg": 0.1,
+      "attribute_modules": {
+        "base": {
+          "identity": {
+            "name": "钢丝料",
+            "name_0": "钢丝料",
+            "sn": "钢丝料",
+            "placeholder_name": "银灰细丝束",
+            "fn_before": "一小束细丝泛着冷光，像能弯成形",
+            "fn": "拉制后收拢的一束钢丝，可加工成鱼钩和其他细小金属件。",
+            "desc_0": "拉制后收拢的一束钢丝，可加工成鱼钩和其他细小金属件。"
+          },
+          "stacking": {
+            "stack_limit": 100
+          },
+          "trade": {
+            "base_value": 20,
+            "price_class": "material",
+            "volatility": "mid",
+            "region_restrict": 0
+          },
+          "provenance": {
+            "source": "craft",
+            "production_lines": "craft"
+          }
+        }
+      },
+      "category": "material",
+      "sub_category": "metal_wire",
+      "tags": "material;metal;craft"
+    },
+    "material_precision_parts": {
+      "item_id": "material_precision_parts",
+      "editor_name": "精密机件",
+      "weight_kg": 0.15,
+      "attribute_modules": {
+        "base": {
+          "identity": {
+            "name": "精密机件",
+            "name_0": "精密机件",
+            "sn": "精密机件",
+            "placeholder_name": "细小零件堆",
+            "fn_before": "小齿轮和轴套收在一起，像能装东西",
+            "fn": "从旧机械零件中挑选修整的小齿轮和轴套，可用于渔具装配与维修。",
+            "desc_0": "从旧机械零件中挑选修整的小齿轮和轴套，可用于渔具装配与维修。"
+          },
+          "stacking": {
+            "stack_limit": 100
+          },
+          "trade": {
+            "base_value": 120,
+            "price_class": "material",
+            "volatility": "mid",
+            "region_restrict": 0
+          },
+          "provenance": {
+            "source": "craft",
+            "production_lines": "craft"
+          }
+        }
+      },
+      "category": "material",
+      "sub_category": "mechanical_parts",
+      "tags": "material;mechanical;craft"
+    },
+    "material_nylon_stock": {
+      "item_id": "material_nylon_stock",
+      "editor_name": "尼龙料",
+      "weight_kg": 0.15,
+      "attribute_modules": {
+        "base": {
+          "identity": {
+            "name": "尼龙料",
+            "name_0": "尼龙料",
+            "sn": "尼龙料",
+            "placeholder_name": "乳白细丝束",
+            "fn_before": "乳白细丝松松束在一起，像能搓成线",
+            "fn": "成束的尼龙线坯，可按所需粗细整理或编织成钓线。",
+            "desc_0": "成束的尼龙线坯，可按所需粗细整理或编织成钓线。"
+          },
+          "stacking": {
+            "stack_limit": 100
+          },
+          "trade": {
+            "base_value": 45,
+            "price_class": "material",
+            "volatility": "mid",
+            "region_restrict": 0
+          },
+          "provenance": {
+            "source": "dungeon;buy",
+            "production_lines": "craft"
+          }
+        }
+      },
+      "category": "material",
+      "sub_category": "synthetic_fiber",
+      "tags": "material;synthetic;craft"
+    },
+    "material_carbon_line_stock": {
+      "item_id": "material_carbon_line_stock",
+      "editor_name": "碳线专用料",
+      "weight_kg": 0.1,
+      "attribute_modules": {
+        "base": {
+          "identity": {
+            "name": "碳线专用料",
+            "name_0": "碳线专用料",
+            "sn": "碳线专用料",
+            "placeholder_name": "半透明细丝束",
+            "fn_before": "半透明细丝盘成小圈，像能做线材",
+            "fn": "供碳线子线加工的专用线坯，表面光滑，材质与普通尼龙不同。",
+            "desc_0": "供碳线子线加工的专用线坯，表面光滑，材质与普通尼龙不同。"
+          },
+          "stacking": {
+            "stack_limit": 100
+          },
+          "trade": {
+            "base_value": 80,
+            "price_class": "material",
+            "volatility": "mid",
+            "region_restrict": 0
+          },
+          "provenance": {
+            "source": "dungeon;buy",
+            "production_lines": "craft"
+          }
+        }
+      },
+      "category": "material",
+      "sub_category": "synthetic_fiber",
+      "tags": "material;synthetic;craft"
+    },
+    "ore_flint": {
+      "item_id": "ore_flint",
+      "editor_name": "燧石料",
+      "weight_kg": 0.1,
+      "attribute_modules": {
+        "base": {
+          "identity": {
+            "name": "燧石料",
+            "name_0": "燧石料",
+            "sn": "燧石料",
+            "placeholder_name": "深灰硬石块",
+            "fn_before": "深灰石块断口泛着蜡光，像能派上用场",
+            "fn": "断口细密的燧石，和铁片配合敲击可用来取火。",
+            "desc_0": "断口细密的燧石，和铁片配合敲击可用来取火。"
+          },
+          "stacking": {
+            "stack_limit": 100
+          },
+          "trade": {
+            "base_value": 30,
+            "price_class": "material",
+            "volatility": "low",
+            "region_restrict": 0
+          },
+          "provenance": {
+            "source": "gathering;buy",
+            "production_lines": "craft"
+          }
+        }
+      },
+      "category": "ore",
+      "sub_category": "stone",
+      "tags": "material;stone;craft"
+    },
+    "material_stainless_sheet": {
+      "item_id": "material_stainless_sheet",
+      "editor_name": "耐蚀金属薄板",
+      "weight_kg": 0.8,
+      "attribute_modules": {
+        "base": {
+          "identity": {
+            "name": "耐蚀金属薄板",
+            "name_0": "耐蚀金属薄板",
+            "sn": "耐蚀金属薄板",
+            "placeholder_name": "银灰薄片",
+            "fn_before": "银灰薄片边缘留着卷痕，像能敲成形",
+            "fn": "耐锈蚀的不锈钢薄板，可裁整成盆体等日用容器。",
+            "desc_0": "耐锈蚀的不锈钢薄板，可裁整成盆体等日用容器。"
+          },
+          "stacking": {
+            "stack_limit": 100
+          },
+          "trade": {
+            "base_value": 180,
+            "price_class": "material",
+            "volatility": "mid",
+            "region_restrict": 0
+          },
+          "provenance": {
+            "source": "dungeon;buy",
+            "production_lines": "craft"
+          }
+        }
+      },
+      "category": "material",
+      "sub_category": "metal_sheet",
+      "tags": "material;metal;craft"
     }
   }
 }

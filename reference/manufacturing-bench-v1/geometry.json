@@ -1,0 +1,40 @@
+{
+  "tileWidth": 144,
+  "tileHeight": 101.82337649086284,
+  "logicalFootprint": [
+    1,
+    1
+  ],
+  "bodyFootprint": [
+    0.95,
+    0.7
+  ],
+  "worktopHeightPx": 42,
+  "operatorSide": "+y",
+  "projection": {
+    "origin": [
+      640,
+      850
+    ],
+    "halfTile": 600,
+    "heightScale": 600
+  },
+  "footCorners": {
+    "back": [
+      565,
+      533.9232688096133
+    ],
+    "right": [
+      1087,
+      903.033008588991
+    ],
+    "front": [
+      715,
+      1166.0767311903867
+    ],
+    "left": [
+      193,
+      796.966991411009
+    ]
+  }
+}

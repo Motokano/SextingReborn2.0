@@ -1,0 +1,104 @@
+{
+  "date": "2026-10-31",
+  "sourcePixelsPreserved": true,
+  "trueAlpha": true,
+  "visualApproval": "pending",
+  "assets": [
+    {
+      "id": "unrepaired",
+      "level": null,
+      "width": 1254,
+      "height": 1254,
+      "crop": [
+        114,
+        114,
+        1065,
+        1095
+      ],
+      "cornerAlpha": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "sha256": "9c353c16e49afaaaef81ec897b4834ea1f383bc25df1e60a5041596c6590cce0",
+      "worktopHeightPx": 40.48413631022327,
+      "groundAxisResidualPx": [
+        -0.8362852889810999,
+        3.7945933366946933
+      ]
+    },
+    {
+      "id": "level-1",
+      "level": 1,
+      "width": 1254,
+      "height": 1254,
+      "crop": [
+        144,
+        149,
+        996,
+        1020
+      ],
+      "cornerAlpha": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "sha256": "6d697bfa086727867a96b530751a00f05b69872665e4a148d3b7c0326c414230",
+      "worktopHeightPx": 41.760000000000005,
+      "groundAxisResidualPx": [
+        -4.279882082091292,
+        1.5515658737842655
+      ]
+    },
+    {
+      "id": "level-2",
+      "level": 2,
+      "width": 1254,
+      "height": 1254,
+      "crop": [
+        141,
+        142,
+        1003,
+        1048
+      ],
+      "cornerAlpha": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "sha256": "61a569c870347c99a81c163dfad903fef3c09a7e18c43227156cbbcdc0c660b7",
+      "worktopHeightPx": 43.43555555555555,
+      "groundAxisResidualPx": [
+        -1.831542668623192,
+        2.26151639836348
+      ]
+    },
+    {
+      "id": "level-3",
+      "level": 3,
+      "width": 1254,
+      "height": 1254,
+      "crop": [
+        107,
+        78,
+        1075,
+        1127
+      ],
+      "cornerAlpha": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "sha256": "7a60a2fee9e768faf6f0f9c05ebe5ef220ebc79bc1d9e70847240773df1c632d",
+      "worktopHeightPx": 42.40136518771331,
+      "groundAxisResidualPx": [
+        -3.0076396719491547,
+        2.5207929255646278
+      ]
+    }
+  ]
+}

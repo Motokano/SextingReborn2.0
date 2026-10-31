@@ -1,0 +1,268 @@
+{
+  "version": 1,
+  "status": "candidate_art_not_deployed",
+  "tileWidth": 144,
+  "tileHeight": 101.82337649086284,
+  "pawnScale": 1.25,
+  "groundFootprintTarget": [
+    0.9,
+    0.55
+  ],
+  "geometrySource": "reference/manufacturing-bench-v1/geometry.json",
+  "registrationNote": "Contact points are manual estimates of visible feet; anchor is the midpoint of opposite left/right contacts. Back contact is inferred, not independently verified. Render uses uniform scale and translation only, with shared ground width104.4px. Generated camera residuals are recorded, not corrected by image distortion.",
+  "assets": [
+    {
+      "id": "unrepaired",
+      "file": "unrepaired-v2.png",
+      "sourceId": "unrepaired-v2",
+      "level": null,
+      "name": "未修复制作台",
+      "contacts": [
+        [
+          212,
+          822
+        ],
+        [
+          735,
+          1185
+        ],
+        [
+          1063,
+          984
+        ]
+      ],
+      "heightSample": [
+        [
+          739,
+          855
+        ],
+        [
+          735,
+          1185
+        ]
+      ],
+      "logicalFootprint": [
+        1,
+        1
+      ],
+      "nativeFacing": "long axis +x; operator side +y",
+      "projectionMode": "native",
+      "anchor": [
+        637.5,
+        903
+      ],
+      "scaleAt144": 0.12267920094007051,
+      "worktopHeightPx": 40.48413631022327,
+      "groundAxisResidualPx": [
+        -0.8362852889810999,
+        3.7945933366946933
+      ],
+      "width": 1254,
+      "height": 1254,
+      "crop": [
+        114,
+        114,
+        1065,
+        1095
+      ],
+      "transparentPixels": 942686,
+      "opaquePixels": 2153,
+      "cornerAlpha": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "sha256": "9c353c16e49afaaaef81ec897b4834ea1f383bc25df1e60a5041596c6590cce0"
+    },
+    {
+      "level": 1,
+      "name": "基础制作台",
+      "contacts": [
+        [
+          238,
+          823
+        ],
+        [
+          744,
+          1148
+        ],
+        [
+          1038,
+          952
+        ]
+      ],
+      "heightSample": [
+        [
+          748,
+          828
+        ],
+        [
+          744,
+          1148
+        ]
+      ],
+      "id": "level-1",
+      "file": "level-1.png",
+      "logicalFootprint": [
+        1,
+        1
+      ],
+      "nativeFacing": "long axis +x; operator side +y",
+      "projectionMode": "native",
+      "anchor": [
+        638,
+        887.5
+      ],
+      "scaleAt144": 0.1305,
+      "worktopHeightPx": 41.760000000000005,
+      "groundAxisResidualPx": [
+        -4.279882082091292,
+        1.5515658737842655
+      ],
+      "width": 1254,
+      "height": 1254,
+      "crop": [
+        144,
+        149,
+        996,
+        1020
+      ],
+      "transparentPixels": 973283,
+      "opaquePixels": 1581,
+      "cornerAlpha": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "sha256": "6d697bfa086727867a96b530751a00f05b69872665e4a148d3b7c0326c414230"
+    },
+    {
+      "level": 2,
+      "name": "加固制作台",
+      "contacts": [
+        [
+          238,
+          828
+        ],
+        [
+          746,
+          1173
+        ],
+        [
+          1048,
+          977
+        ]
+      ],
+      "heightSample": [
+        [
+          754,
+          836
+        ],
+        [
+          746,
+          1173
+        ]
+      ],
+      "id": "level-2",
+      "file": "level-2.png",
+      "logicalFootprint": [
+        1,
+        1
+      ],
+      "nativeFacing": "long axis +x; operator side +y",
+      "projectionMode": "native",
+      "anchor": [
+        643,
+        902.5
+      ],
+      "scaleAt144": 0.1288888888888889,
+      "worktopHeightPx": 43.43555555555555,
+      "groundAxisResidualPx": [
+        -1.831542668623192,
+        2.26151639836348
+      ],
+      "width": 1254,
+      "height": 1254,
+      "crop": [
+        141,
+        142,
+        1003,
+        1048
+      ],
+      "transparentPixels": 957325,
+      "opaquePixels": 1270,
+      "cornerAlpha": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "sha256": "61a569c870347c99a81c163dfad903fef3c09a7e18c43227156cbbcdc0c660b7"
+    },
+    {
+      "level": 3,
+      "name": "精密制作台",
+      "contacts": [
+        [
+          210,
+          815
+        ],
+        [
+          762,
+          1180
+        ],
+        [
+          1089,
+          970
+        ]
+      ],
+      "heightSample": [
+        [
+          767,
+          823
+        ],
+        [
+          762,
+          1180
+        ]
+      ],
+      "id": "level-3",
+      "file": "level-3.png",
+      "logicalFootprint": [
+        1,
+        1
+      ],
+      "nativeFacing": "long axis +x; operator side +y",
+      "projectionMode": "native",
+      "anchor": [
+        649.5,
+        892.5
+      ],
+      "scaleAt144": 0.11877133105802049,
+      "worktopHeightPx": 42.40136518771331,
+      "groundAxisResidualPx": [
+        -3.0076396719491547,
+        2.5207929255646278
+      ],
+      "width": 1254,
+      "height": 1254,
+      "crop": [
+        107,
+        78,
+        1075,
+        1127
+      ],
+      "transparentPixels": 866748,
+      "opaquePixels": 1688,
+      "cornerAlpha": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "sha256": "7a60a2fee9e768faf6f0f9c05ebe5ef220ebc79bc1d9e70847240773df1c632d"
+    }
+  ]
+}

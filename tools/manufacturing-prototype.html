@@ -1,0 +1,18 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>制作台 · 交互试玩</title>
+  <link rel="stylesheet" href="manufacturing-prototype.css">
+</head>
+<body>
+  <!-- Three forge-style variants, ?variant=A|B|C. Isolated, disposable UI prototype. -->
+  <div class="demo-heading"><span>制作台试玩</span><button id="settings-toggle" aria-expanded="false">试玩设置</button></div>
+  <aside id="settings" hidden aria-label="试玩设置"></aside>
+  <main id="app"><p class="loading">加载中…</p></main>
+  <div id="announcer" class="sr-only" role="status" aria-live="polite"></div>
+  <nav class="prototype-switcher" aria-label="原型方案切换"><button data-variant="-1" aria-label="上一个方案">←</button><span id="variant-label"></span><button data-variant="1" aria-label="下一个方案">→</button></nav>
+  <script type="module" src="manufacturing-prototype.js"></script>
+</body>
+</html>

@@ -1,0 +1,9 @@
+id,sn,placeholder_name,fn_before,fn,category,sub_category,weight,stack_limit,tags,source,production_lines,spoilage_ticks,price_class,volatility,region_restrict,base_value,edible,usable
+material_iron_blank_common,普通铁坯,暗灰小坯块,暗灰小块表面留着压痕，像能再加工,从废铁中回收整理的小铁坯，可锻打成日用工具的铁件。,material,metal_blank,0.2,100,material;metal;craft,craft,craft,0,material,low,0,12,0,0
+material_lead_portion,小份铅料,灰白小粒,灰白小块带着浅凹痕，像能压成形,分成小份的铅料，质软而沉，可制成钓鱼用的小配重。,material,metal_blank,0.01,100,material;metal;craft,craft,craft,0,material,low,0,3,0,0
+material_steel_wire,钢丝料,银灰细丝束,一小束细丝泛着冷光，像能弯成形,拉制后收拢的一束钢丝，可加工成鱼钩和其他细小金属件。,material,metal_wire,0.1,100,material;metal;craft,craft,craft,0,material,mid,0,20,0,0
+material_precision_parts,精密机件,细小零件堆,小齿轮和轴套收在一起，像能装东西,从旧机械零件中挑选修整的小齿轮和轴套，可用于渔具装配与维修。,material,mechanical_parts,0.15,100,material;mechanical;craft,craft,craft,0,material,mid,0,120,0,0
+material_nylon_stock,尼龙料,乳白细丝束,乳白细丝松松束在一起，像能搓成线,成束的尼龙线坯，可按所需粗细整理或编织成钓线。,material,synthetic_fiber,0.15,100,material;synthetic;craft,dungeon;buy,craft,0,material,mid,0,45,0,0
+material_carbon_line_stock,碳线专用料,半透明细丝束,半透明细丝盘成小圈，像能做线材,供碳线子线加工的专用线坯，表面光滑，材质与普通尼龙不同。,material,synthetic_fiber,0.1,100,material;synthetic;craft,dungeon;buy,craft,0,material,mid,0,80,0,0
+ore_flint,燧石料,深灰硬石块,深灰石块断口泛着蜡光，像能派上用场,断口细密的燧石，和铁片配合敲击可用来取火。,ore,stone,0.1,100,material;stone;craft,gathering;buy,craft,0,material,low,0,30,0,0
+material_stainless_sheet,耐蚀金属薄板,银灰薄片,银灰薄片边缘留着卷痕，像能敲成形,耐锈蚀的不锈钢薄板，可裁整成盆体等日用容器。,material,metal_sheet,0.8,100,material;metal;craft,dungeon;buy,craft,0,material,mid,0,180,0,0

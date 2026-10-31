@@ -1,0 +1,9 @@
+<!doctype html><meta charset="utf-8"><title>制作台棋格投影模板</title><style>body{margin:0;background:#ece8dd}canvas{display:block;width:768px;height:768px}</style><canvas width="1280" height="1280" id="guide"></canvas><script>
+const g=document.querySelector('canvas').getContext('2d');const p=(u,v,z=0)=>[640+600*(u-v),850+600/Math.SQRT2*(u+v)-600*z];
+function poly(a,fill,line='#292e2a',width=4){g.beginPath();a.forEach((v,i)=>g[i?'lineTo':'moveTo'](...p(...v)));g.closePath();g.fillStyle=fill;g.fill();g.strokeStyle=line;g.lineWidth=width;g.stroke();}
+function box(u,v,w,d,z,h){poly([[u,v+d,z],[u+w,v+d,z],[u+w,v+d,z+h],[u,v+d,z+h]],'#536864');poly([[u+w,v,z],[u+w,v+d,z],[u+w,v+d,z+h],[u+w,v,z+h]],'#3e514c');poly([[u,v,z+h],[u+w,v,z+h],[u+w,v+d,z+h],[u,v+d,z+h]],'#bca375');}
+g.fillStyle='#ece8dd';g.fillRect(0,0,1280,1280);poly([[-.5,-.5],[.5,-.5],[.5,.5],[-.5,.5]],'#e0dbc9','#9b967e',3);
+for(const [u,v]of [[-.435,-.31],[.365,-.31],[-.435,.24],[.365,.24]])box(u,v,.07,.07,0,.54);
+box(-.40,-.28,.80,.56,.15,.035);box(-.475,-.35,.95,.7,.54,.0433);box(-.34,.19,.17,.13,.5833,.10);box(-.36,.22,.04,.09,.6833,.035);box(-.19,.22,.04,.09,.6833,.035);
+g.fillStyle='#202820';g.font='20px sans-serif';g.fillText('GEOMETRY ONLY: 1 x 1 tile. Body 0.95 x 0.70.',30,30);g.fillText('Orthographic +/- 1/sqrt(2) ground axes. Vertical uprights.',30,60);g.fillText('144px tile width; worktop rise 42px. No floor/base in final.',30,90);
+</script>

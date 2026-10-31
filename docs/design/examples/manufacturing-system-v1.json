@@ -1,0 +1,4837 @@
+{
+  "schema_version": 1,
+  "date": "2026-10-30",
+  "status": "8种材料模板已注册；已补可升级制作台与逐配方台级、工具条件；三级划分及具体数值为待接入试玩方案",
+  "classification": "../manufacturing-classification-v1.json",
+  "facilities": {
+    "simple": {
+      "name": "基地简易操作面",
+      "requires": [],
+      "inputs": [],
+      "ticks": 0,
+      "stamina": 0,
+      "note": "使用现有基地动作入口；不追加本体材料门槛，仍检查位置与行动状态",
+      "workbench_level_min": 0,
+      "required_tools": [],
+      "build_status": "design_only"
+    },
+    "bench": {
+      "name": "制造台本体",
+      "requires": [
+        "simple"
+      ],
+      "inputs": [
+        [
+          "wood_plank_soft",
+          4
+        ],
+        [
+          "ore_scrap_metal",
+          1
+        ],
+        [
+          "mechanical_parts",
+          1
+        ]
+      ],
+      "ticks": 8,
+      "stamina": 12,
+      "note": "建成为一级制造台，提供固定的粗夹持、切整与量具；便携工具仍需按配方另备",
+      "workbench_level_min": 0,
+      "required_tools": [],
+      "build_status": "design_only",
+      "level_on_completion": 1
+    },
+    "metal": {
+      "name": "金工工位",
+      "requires": [
+        "bench"
+      ],
+      "inputs": [
+        [
+          "ore_scrap_metal",
+          2
+        ],
+        [
+          "ore_cast_iron",
+          1
+        ],
+        [
+          "mechanical_parts",
+          1
+        ]
+      ],
+      "ticks": 8,
+      "stamina": 16,
+      "note": "日用金属成形和回收；不改变武器铸造",
+      "workbench_level_min": 1,
+      "required_tools": [],
+      "build_status": "design_only"
+    },
+    "kiln": {
+      "name": "陶玻工位",
+      "requires": [
+        "bench"
+      ],
+      "inputs": [
+        [
+          "ore_clay_raw",
+          12
+        ],
+        [
+          "ore_limestone",
+          4
+        ],
+        [
+          "wood_plank_soft",
+          2
+        ]
+      ],
+      "ticks": 8,
+      "stamina": 16,
+      "note": "陶器、复合磨料与回收玻璃成形；制作报价包含加热工序，不新增玻璃器坯库存或另一套燃料管理",
+      "workbench_level_min": 1,
+      "required_tools": [],
+      "build_status": "design_only"
+    },
+    "precision": {
+      "name": "精密装配工位",
+      "requires": [
+        "bench"
+      ],
+      "inputs": [
+        [
+          "mechanical_parts",
+          2
+        ],
+        [
+          "electronic_wire",
+          1
+        ],
+        [
+          "item_glass",
+          1
+        ]
+      ],
+      "ticks": 10,
+      "stamina": 20,
+      "note": "二级台起可加装，提供精密夹持与量具；完整精密器具要求三级台，不加电池门槛",
+      "workbench_level_min": 2,
+      "required_tools": [
+        {
+          "item_id": "tool_repair_hammer",
+          "count": 1,
+          "consume": false
+        },
+        {
+          "item_id": "tool_repair_pliers",
+          "count": 1,
+          "consume": false
+        }
+      ],
+      "build_status": "design_only"
+    },
+    "soil": {
+      "name": "制造台配土操作",
+      "requires": [
+        "bench"
+      ],
+      "inputs": [],
+      "ticks": 0,
+      "stamina": 0,
+      "note": "本体附带的操作能力；不额外建一座配土设施",
+      "workbench_level_min": 1,
+      "required_tools": [],
+      "build_status": "design_only"
+    }
+  },
+  "methods": {
+    "wood": {
+      "name": "木竹整形与绑扎",
+      "learning": "基础配方随对应技能等级一并授予该配方所需工序；高级配方按有效实物或完整兴趣点记录授予",
+      "source": "basic_tools",
+      "grant_scope": "按配方登记方法适用范围；共用工序名称不自动解锁其他型号或上游原料生产"
+    },
+    "fiber": {
+      "name": "捻绳与基础布作",
+      "learning": "基础配方随对应技能等级一并授予该配方所需工序；高级配方按有效实物或完整兴趣点记录授予",
+      "source": "basic_tools",
+      "grant_scope": "按配方登记方法适用范围；共用工序名称不自动解锁其他型号或上游原料生产"
+    },
+    "stone": {
+      "name": "石器整形",
+      "learning": "基础配方随对应技能等级一并授予该配方所需工序；高级配方按有效实物或完整兴趣点记录授予",
+      "source": "basic_tools",
+      "grant_scope": "按配方登记方法适用范围；共用工序名称不自动解锁其他型号或上游原料生产"
+    },
+    "iron": {
+      "name": "日用金工",
+      "learning": "基础配方随对应技能等级一并授予该配方所需工序；高级配方按有效实物或完整兴趣点记录授予",
+      "source": "metal_workshop",
+      "grant_scope": "按配方登记方法适用范围；共用工序名称不自动解锁其他型号或上游原料生产"
+    },
+    "lead": {
+      "name": "铅坠定重成形",
+      "learning": "基础配方随对应技能等级一并授予该配方所需工序；高级配方按有效实物或完整兴趣点记录授予",
+      "source": "tackle_basic",
+      "grant_scope": "按配方登记方法适用范围；共用工序名称不自动解锁其他型号或上游原料生产"
+    },
+    "wire": {
+      "name": "金属线件成形",
+      "learning": "已学的钩、前导线或相关针具方案同时授予钢锭拉制钢丝的工序，不增加额外等级或资料锁",
+      "source": "tackle_basic",
+      "grant_scope": "按配方登记方法适用范围；共用工序名称不自动解锁其他型号或上游原料生产"
+    },
+    "line": {
+      "name": "定规格线件加工",
+      "learning": "基础配方随对应技能等级一并授予该配方所需工序；高级配方按有效实物或完整兴趣点记录授予",
+      "source": "tackle_basic",
+      "grant_scope": "按配方登记方法适用范围；共用工序名称不自动解锁其他型号或上游原料生产"
+    },
+    "assembly": {
+      "name": "机械与工具装配",
+      "learning": "基础配方随对应技能等级一并授予该配方所需工序；高级配方按有效实物或完整兴趣点记录授予",
+      "source": "metal_workshop",
+      "grant_scope": "按配方登记方法适用范围；共用工序名称不自动解锁其他型号或上游原料生产"
+    },
+    "precision": {
+      "name": "精密装配",
+      "learning": "对应完整器具方案包含已有机械零件的选配与精密装配，不另设精密机件库存或加工配方",
+      "source": "metal_workshop",
+      "grant_scope": "按配方登记方法适用范围；共用工序名称不自动解锁其他型号或上游原料生产"
+    },
+    "soft": {
+      "name": "软体拟饵成形",
+      "learning": "基础清单不含此工序；雷蛙的成形步骤须有明确工艺记录，只有外形和内部结构不足以还原",
+      "source": "tackle_lure",
+      "grant_scope": "按配方登记方法适用范围；共用工序名称不自动解锁其他型号或上游原料生产"
+    },
+    "bait": {
+      "name": "固定饵料配制",
+      "learning": "基础配方随对应技能等级一并授予该配方所需工序；高级配方按有效实物或完整兴趣点记录授予",
+      "source": "tackle_basic",
+      "grant_scope": "按配方登记方法适用范围；共用工序名称不自动解锁其他型号或上游原料生产"
+    },
+    "clean": {
+      "name": "清洁布料处理",
+      "learning": "基础配方随对应技能等级一并授予该配方所需工序；高级配方按有效实物或完整兴趣点记录授予",
+      "source": "medical_records",
+      "grant_scope": "按配方登记方法适用范围；共用工序名称不自动解锁其他型号或上游原料生产"
+    },
+    "seal": {
+      "name": "容器密封",
+      "learning": "基础配方随对应技能等级一并授予该配方所需工序；高级配方按有效实物或完整兴趣点记录授予",
+      "source": "kitchen",
+      "grant_scope": "按配方登记方法适用范围；共用工序名称不自动解锁其他型号或上游原料生产"
+    },
+    "pottery": {
+      "name": "陶作烧制",
+      "learning": "基础配方随对应技能等级一并授予该配方所需工序；高级配方按有效实物或完整兴趣点记录授予",
+      "source": "pottery",
+      "grant_scope": "按配方登记方法适用范围；共用工序名称不自动解锁其他型号或上游原料生产"
+    },
+    "glass": {
+      "name": "回收玻璃成形",
+      "learning": "基础容器随对应等级掌握本方案玻璃成形，高级器具随完整资料掌握；需要陶玻工位能力",
+      "source": "medical_records",
+      "grant_scope": "按配方登记方法适用范围；共用工序名称不自动解锁其他型号或上游原料生产"
+    },
+    "filter": {
+      "name": "叠层过滤材料",
+      "learning": "基础配方随对应技能等级一并授予该配方所需工序；高级配方按有效实物或完整兴趣点记录授予",
+      "source": "medical_records",
+      "grant_scope": "按配方登记方法适用范围；共用工序名称不自动解锁其他型号或上游原料生产"
+    },
+    "medical": {
+      "name": "医用器具装配",
+      "learning": "基础配方随对应技能等级一并授予该配方所需工序；高级配方按有效实物或完整兴趣点记录授予",
+      "source": "medical_records",
+      "grant_scope": "按配方登记方法适用范围；共用工序名称不自动解锁其他型号或上游原料生产"
+    },
+    "soil": {
+      "name": "客土配制",
+      "learning": "种植5级与对应土壤观察；完整配土记录可提前授予；使用已有基质和矿物辅料，不搬运新增原土",
+      "source": "soil_sources",
+      "grant_scope": "按配方登记方法适用范围；共用工序名称不自动解锁其他型号或上游原料生产"
+    },
+    "recovery": {
+      "name": "废铁加工",
+      "learning": "制造1级授予普通铁坯加工；与武器矿材加工独立",
+      "source": "metal_workshop",
+      "grant_scope": "按配方登记方法适用范围；共用工序名称不自动解锁其他型号或上游原料生产"
+    }
+  },
+  "research": {
+    "S": {
+      "ticks": 4,
+      "stamina": 2,
+      "focus": 4,
+      "experience": 2,
+      "consumes_sample": false
+    },
+    "M": {
+      "ticks": 8,
+      "stamina": 8,
+      "focus": 8,
+      "experience": 4,
+      "consumes_sample": true
+    },
+    "P": {
+      "ticks": 6,
+      "stamina": 0,
+      "focus": 12,
+      "experience": 3,
+      "consumes_sample": false
+    },
+    "record": {
+      "ticks": 6,
+      "stamina": 0,
+      "focus": 12,
+      "experience": 3,
+      "consumes_sample": false
+    },
+    "interest_point": {
+      "ticks": 6,
+      "stamina": 0,
+      "focus": 12,
+      "experience": 3,
+      "consumes_sample": false
+    }
+  },
+  "work_profiles": {
+    "routine": {
+      "name": "常规配制",
+      "recommended_level": 1,
+      "base_success_rate": 1,
+      "random_failure": false
+    },
+    "standard": {
+      "name": "普通加工",
+      "recommended_level": 10,
+      "base_success_rate": 0.9,
+      "random_failure": true
+    },
+    "complex": {
+      "name": "复杂装配",
+      "recommended_level": 25,
+      "base_success_rate": 0.82,
+      "random_failure": true
+    },
+    "specialist": {
+      "name": "专业加工",
+      "recommended_level": 40,
+      "base_success_rate": 0.8,
+      "random_failure": true
+    }
+  },
+  "discovery_sources": {
+    "basic_tools": {
+      "name": "基础工具的技能解锁与材料供应",
+      "primary": "对应生活技能等级直接授予基础方案",
+      "fallback": "外部旧物或交易提供现成工具和原料",
+      "phase": "1至5级试值",
+      "note": "不要求找到成品样本；加工与工位仍需真实材料"
+    },
+    "tackle_basic": {
+      "name": "基础钓具的技能解锁",
+      "primary": "钓鱼1级掌握首套手竿方案及相关钢丝加工；铅坠直接使用现有铅料，尼龙料提供早期外部供应",
+      "fallback": "现有计划中的起步钓组与外部原料供应",
+      "phase": "1至10级试值",
+      "note": "不因接触起步钓组额外解锁高级型号；无需先钓鱼升级才能制造首套工具"
+    },
+    "tackle_lure": {
+      "name": "高级渔具兴趣点",
+      "primary": "旧渔具维修桌、拟饵工作角的实物与制作记录",
+      "fallback": "交易流通的同型实物或同内容资料",
+      "phase": "地牢探索",
+      "note": "完整资料可独立解锁，直接使用已有机械零件；专用碳线原料保留外部供应"
+    },
+    "metal_workshop": {
+      "name": "金工材料与维修兴趣点",
+      "primary": "普通铁坯加工随制造1级，复杂维修钳来自旧维修工位",
+      "fallback": "普通铁坯、机件或完整资料交易",
+      "phase": "基础供料与探索分别配置",
+      "note": "基础工具不因铁坯加工知识再次被锁住"
+    },
+    "kitchen": {
+      "name": "炊具技能与发酵兴趣点",
+      "primary": "基础炊具随烹饪等级；陶发酵坛来自发酵作业区",
+      "fallback": "成品、半成品或高级制作记录交易",
+      "phase": "基础1至10级及地牢探索",
+      "note": "制造器具不解锁菜谱与料理技法"
+    },
+    "pottery": {
+      "name": "配方范围内陶作与玻璃成形",
+      "primary": "基础配方授予所需工序，高级复合器具随对应完整资料掌握",
+      "fallback": "现成器具或原料交易",
+      "phase": "基础与高级分别开放",
+      "note": "玻璃、陶土为已有输入；不新增玻璃器坯或磨料库存"
+    },
+    "medical_records": {
+      "name": "制药基础工具与专业兴趣点",
+      "primary": "基础器具随制药等级；专业器具来自药房、实验室及医用装配点",
+      "fallback": "器具、玻璃与其他既有原料或相同专业资料交易",
+      "phase": "基础1至3级及地牢探索",
+      "note": "器筒、针头、软管和密封件作为完整配方工序，不另投放医用组件包；不授予药方或注射使用知识"
+    },
+    "soil_sources": {
+      "name": "种植技能与对应土壤认识",
+      "primary": "种植5级加对应土壤实际观察；完整配土记录也可提前授予",
+      "fallback": "同种客土成品检查可补土壤认识；制造用料来自已有基质与辅料",
+      "phase": "地域独立发现，非土质升级链",
+      "note": "取消七种原土与搬运额度；土源仅为知识证据，不从远处取料"
+    }
+  },
+  "recipes": [
+    {
+      "recipe_id": "manufacturing.fishing_rod_hand_basic",
+      "item_id": "fishing_rod_hand_basic",
+      "name": "基础手竿",
+      "unlock_rule": "L",
+      "station": "bench",
+      "methods": [
+        "wood",
+        "fiber"
+      ],
+      "work_profile": "standard",
+      "ticks": 8,
+      "stamina": 8,
+      "output_count": 1,
+      "inputs": [
+        {
+          "item_id": "wood_bamboo_green",
+          "count": 1
+        },
+        {
+          "item_id": "supply_rope_hemp_short",
+          "count": 1
+        },
+        {
+          "item_id": "resin_pine",
+          "count": 1
+        }
+      ],
+      "discovery_source": "tackle_basic",
+      "status": "新增试调配方，未实装",
+      "balance_snapshot": {
+        "input_weight_kg": 1.5,
+        "output_weight_kg": 0.45,
+        "mass_difference_kg": 1.05
+      },
+      "unlock": {
+        "kind": "skill_level",
+        "skill_id": "life_fishing",
+        "level": 1,
+        "grants": {
+          "recipe": true,
+          "structure": true,
+          "listed_material_relations": true,
+          "recipe_scoped_processes": true,
+          "other_recipes": false,
+          "upstream_industrial_production": false,
+          "hidden_item_properties": false,
+          "use_recipes_or_tactics": false
+        },
+        "experience_on_unlock": 0,
+        "persistent": true,
+        "additional_grants": [
+          "maintenance.fishing_rod_hand_basic"
+        ],
+        "linked_processing_grants": []
+      },
+      "material_roots": [
+        "wood_bamboo_green",
+        "supply_rope_hemp_short",
+        "resin_pine"
+      ],
+      "external_special_roots": [],
+      "workbench_level_min": 1,
+      "required_tools": []
+    },
+    {
+      "recipe_id": "manufacturing.fishing_rod_lure_basic",
+      "item_id": "fishing_rod_lure_basic",
+      "name": "基础路亚竿",
+      "unlock_rule": "X",
+      "station": "precision",
+      "methods": [
+        "wood",
+        "precision",
+        "seal"
+      ],
+      "work_profile": "complex",
+      "ticks": 12,
+      "stamina": 12,
+      "output_count": 1,
+      "inputs": [
+        {
+          "item_id": "wood_bamboo_green",
+          "count": 1
+        },
+        {
+          "item_id": "mechanical_parts",
+          "count": 1
+        },
+        {
+          "item_id": "resin_pine",
+          "count": 1
+        }
+      ],
+      "discovery_source": "tackle_lure",
+      "status": "新增试调配方，未实装",
+      "balance_snapshot": {
+        "input_weight_kg": 2.2,
+        "output_weight_kg": 0.3,
+        "mass_difference_kg": 1.9
+      },
+      "unlock": {
+        "kind": "exploration",
+        "interest_point": "tackle_assembly",
+        "complete_record_route": {
+          "research_profile": "record",
+          "grants": {
+            "recipe": true,
+            "structure": true,
+            "listed_material_relations": true,
+            "recipe_scoped_processes": true,
+            "other_recipes": false,
+            "upstream_industrial_production": false,
+            "hidden_item_properties": false,
+            "use_recipes_or_tactics": false
+          }
+        },
+        "hard_skill_level": null,
+        "persistent": true,
+        "sample_route": {
+          "research_profile": "M",
+          "consumes_sample": true,
+          "research_eligibility": "关键可研究结构完整；消耗前清空内容物并卸下外接子树",
+          "grants": "complete_standard_recipe_from_listed_inputs",
+          "missing_processes": []
+        },
+        "additional_grants": [
+          "maintenance.fishing_rod_lure_basic"
+        ],
+        "linked_processing_grants": []
+      },
+      "material_note": "竹片选材、层叠与定形并入整竿工序，取消独立竿坯；保持现有完整竿、接口和目标承载，需玩法验收",
+      "material_roots": [
+        "wood_bamboo_green",
+        "mechanical_parts",
+        "resin_pine"
+      ],
+      "external_special_roots": [],
+      "workbench_level_min": 3,
+      "required_tools": [
+        {
+          "item_id": "tool_repair_pliers",
+          "count": 1,
+          "consume": false
+        }
+      ]
+    },
+    {
+      "recipe_id": "manufacturing.fishing_reel_basic",
+      "item_id": "fishing_reel_basic",
+      "name": "基础渔轮",
+      "unlock_rule": "X",
+      "station": "precision",
+      "methods": [
+        "precision"
+      ],
+      "work_profile": "complex",
+      "ticks": 12,
+      "stamina": 12,
+      "output_count": 1,
+      "inputs": [
+        {
+          "item_id": "mechanical_parts",
+          "count": 2
+        },
+        {
+          "item_id": "material_iron_blank_common",
+          "count": 1
+        }
+      ],
+      "discovery_source": "tackle_lure",
+      "status": "新增试调配方，未实装",
+      "balance_snapshot": {
+        "input_weight_kg": 2.2,
+        "output_weight_kg": 0.28,
+        "mass_difference_kg": 1.92
+      },
+      "unlock": {
+        "kind": "exploration",
+        "interest_point": "tackle_assembly",
+        "complete_record_route": {
+          "research_profile": "record",
+          "grants": {
+            "recipe": true,
+            "structure": true,
+            "listed_material_relations": true,
+            "recipe_scoped_processes": true,
+            "other_recipes": false,
+            "upstream_industrial_production": false,
+            "hidden_item_properties": false,
+            "use_recipes_or_tactics": false
+          }
+        },
+        "hard_skill_level": null,
+        "persistent": true,
+        "sample_route": {
+          "research_profile": "M",
+          "consumes_sample": true,
+          "research_eligibility": "关键可研究结构完整；消耗前清空内容物并卸下外接子树",
+          "grants": "complete_standard_recipe_from_listed_inputs",
+          "missing_processes": []
+        },
+        "additional_grants": [
+          "maintenance.fishing_reel_basic"
+        ],
+        "linked_processing_grants": []
+      },
+      "material_roots": [
+        "mechanical_parts",
+        "ore_scrap_metal"
+      ],
+      "external_special_roots": [],
+      "workbench_level_min": 3,
+      "required_tools": [
+        {
+          "item_id": "tool_repair_pliers",
+          "count": 1,
+          "consume": false
+        }
+      ]
+    },
+    {
+      "recipe_id": "manufacturing.fishing_line_main_nylon_thin",
+      "item_id": "fishing_line_main_nylon_thin",
+      "name": "尼龙主线·细",
+      "unlock_rule": "L",
+      "station": "bench",
+      "methods": [
+        "line"
+      ],
+      "work_profile": "routine",
+      "ticks": 3,
+      "stamina": 2,
+      "output_count": 3,
+      "inputs": [
+        {
+          "item_id": "material_nylon_stock",
+          "count": 1
+        }
+      ],
+      "discovery_source": "tackle_basic",
+      "status": "新增试调配方，未实装",
+      "balance_snapshot": {
+        "input_weight_kg": 0.15,
+        "output_weight_kg": 0.09,
+        "mass_difference_kg": 0.06
+      },
+      "unlock": {
+        "kind": "skill_level",
+        "skill_id": "life_fishing",
+        "level": 1,
+        "grants": {
+          "recipe": true,
+          "structure": true,
+          "listed_material_relations": true,
+          "recipe_scoped_processes": true,
+          "other_recipes": false,
+          "upstream_industrial_production": false,
+          "hidden_item_properties": false,
+          "use_recipes_or_tactics": false
+        },
+        "experience_on_unlock": 0,
+        "persistent": true,
+        "linked_processing_grants": []
+      },
+      "material_roots": [
+        "material_nylon_stock"
+      ],
+      "external_special_roots": [
+        "material_nylon_stock"
+      ],
+      "workbench_level_min": 1,
+      "required_tools": []
+    },
+    {
+      "recipe_id": "manufacturing.fishing_line_main_nylon_thick",
+      "item_id": "fishing_line_main_nylon_thick",
+      "name": "尼龙主线·粗",
+      "unlock_rule": "L",
+      "station": "bench",
+      "methods": [
+        "line"
+      ],
+      "work_profile": "routine",
+      "ticks": 3,
+      "stamina": 2,
+      "output_count": 3,
+      "inputs": [
+        {
+          "item_id": "material_nylon_stock",
+          "count": 1
+        }
+      ],
+      "discovery_source": "tackle_basic",
+      "status": "新增试调配方，未实装",
+      "balance_snapshot": {
+        "input_weight_kg": 0.15,
+        "output_weight_kg": 0.12,
+        "mass_difference_kg": 0.03
+      },
+      "unlock": {
+        "kind": "skill_level",
+        "skill_id": "life_fishing",
+        "level": 5,
+        "grants": {
+          "recipe": true,
+          "structure": true,
+          "listed_material_relations": true,
+          "recipe_scoped_processes": true,
+          "other_recipes": false,
+          "upstream_industrial_production": false,
+          "hidden_item_properties": false,
+          "use_recipes_or_tactics": false
+        },
+        "experience_on_unlock": 0,
+        "persistent": true,
+        "linked_processing_grants": []
+      },
+      "material_roots": [
+        "material_nylon_stock"
+      ],
+      "external_special_roots": [
+        "material_nylon_stock"
+      ],
+      "workbench_level_min": 1,
+      "required_tools": []
+    },
+    {
+      "recipe_id": "manufacturing.fishing_leader_nylon_basic",
+      "item_id": "fishing_leader_nylon_basic",
+      "name": "尼龙子线",
+      "unlock_rule": "L",
+      "station": "bench",
+      "methods": [
+        "line"
+      ],
+      "work_profile": "routine",
+      "ticks": 3,
+      "stamina": 2,
+      "output_count": 8,
+      "inputs": [
+        {
+          "item_id": "material_nylon_stock",
+          "count": 1
+        }
+      ],
+      "discovery_source": "tackle_basic",
+      "status": "新增试调配方，未实装",
+      "balance_snapshot": {
+        "input_weight_kg": 0.15,
+        "output_weight_kg": 0.08,
+        "mass_difference_kg": 0.07
+      },
+      "unlock": {
+        "kind": "skill_level",
+        "skill_id": "life_fishing",
+        "level": 1,
+        "grants": {
+          "recipe": true,
+          "structure": true,
+          "listed_material_relations": true,
+          "recipe_scoped_processes": true,
+          "other_recipes": false,
+          "upstream_industrial_production": false,
+          "hidden_item_properties": false,
+          "use_recipes_or_tactics": false
+        },
+        "experience_on_unlock": 0,
+        "persistent": true,
+        "linked_processing_grants": []
+      },
+      "material_roots": [
+        "material_nylon_stock"
+      ],
+      "external_special_roots": [
+        "material_nylon_stock"
+      ],
+      "workbench_level_min": 1,
+      "required_tools": []
+    },
+    {
+      "recipe_id": "manufacturing.fishing_leader_carbon",
+      "item_id": "fishing_leader_carbon",
+      "name": "碳线子线",
+      "unlock_rule": "X",
+      "station": "bench",
+      "methods": [
+        "line"
+      ],
+      "work_profile": "routine",
+      "ticks": 4,
+      "stamina": 3,
+      "output_count": 8,
+      "inputs": [
+        {
+          "item_id": "material_carbon_line_stock",
+          "count": 1
+        }
+      ],
+      "discovery_source": "tackle_lure",
+      "status": "新增试调配方，未实装",
+      "balance_snapshot": {
+        "input_weight_kg": 0.1,
+        "output_weight_kg": 0.08,
+        "mass_difference_kg": 0.02
+      },
+      "unlock": {
+        "kind": "exploration",
+        "interest_point": "tackle_special",
+        "complete_record_route": {
+          "research_profile": "record",
+          "grants": {
+            "recipe": true,
+            "structure": true,
+            "listed_material_relations": true,
+            "recipe_scoped_processes": true,
+            "other_recipes": false,
+            "upstream_industrial_production": false,
+            "hidden_item_properties": false,
+            "use_recipes_or_tactics": false
+          }
+        },
+        "hard_skill_level": null,
+        "persistent": true,
+        "linked_processing_grants": []
+      },
+      "material_roots": [
+        "material_carbon_line_stock"
+      ],
+      "external_special_roots": [
+        "material_carbon_line_stock"
+      ],
+      "workbench_level_min": 2,
+      "required_tools": []
+    },
+    {
+      "recipe_id": "manufacturing.fishing_line_braid_fixed",
+      "item_id": "fishing_line_braid_fixed",
+      "name": "编织主线",
+      "unlock_rule": "X",
+      "station": "bench",
+      "methods": [
+        "line"
+      ],
+      "work_profile": "routine",
+      "ticks": 4,
+      "stamina": 3,
+      "output_count": 2,
+      "inputs": [
+        {
+          "item_id": "material_nylon_stock",
+          "count": 1
+        }
+      ],
+      "discovery_source": "tackle_lure",
+      "status": "新增试调配方，未实装",
+      "balance_snapshot": {
+        "input_weight_kg": 0.15,
+        "output_weight_kg": 0.08,
+        "mass_difference_kg": 0.07
+      },
+      "unlock": {
+        "kind": "exploration",
+        "interest_point": "tackle_special",
+        "complete_record_route": {
+          "research_profile": "record",
+          "grants": {
+            "recipe": true,
+            "structure": true,
+            "listed_material_relations": true,
+            "recipe_scoped_processes": true,
+            "other_recipes": false,
+            "upstream_industrial_production": false,
+            "hidden_item_properties": false,
+            "use_recipes_or_tactics": false
+          }
+        },
+        "hard_skill_level": null,
+        "persistent": true,
+        "linked_processing_grants": []
+      },
+      "material_roots": [
+        "material_nylon_stock"
+      ],
+      "external_special_roots": [
+        "material_nylon_stock"
+      ],
+      "workbench_level_min": 2,
+      "required_tools": []
+    },
+    {
+      "recipe_id": "manufacturing.fishing_leader_lure_wire",
+      "item_id": "fishing_leader_lure_wire",
+      "name": "金属前导线",
+      "unlock_rule": "X",
+      "station": "metal",
+      "methods": [
+        "wire"
+      ],
+      "work_profile": "standard",
+      "ticks": 4,
+      "stamina": 4,
+      "output_count": 3,
+      "inputs": [
+        {
+          "item_id": "material_steel_wire",
+          "count": 1
+        }
+      ],
+      "discovery_source": "tackle_lure",
+      "status": "新增试调配方，未实装",
+      "balance_snapshot": {
+        "input_weight_kg": 0.1,
+        "output_weight_kg": 0.075,
+        "mass_difference_kg": 0.025
+      },
+      "unlock": {
+        "kind": "exploration",
+        "interest_point": "tackle_special",
+        "complete_record_route": {
+          "research_profile": "record",
+          "grants": {
+            "recipe": true,
+            "structure": true,
+            "listed_material_relations": true,
+            "recipe_scoped_processes": true,
+            "other_recipes": false,
+            "upstream_industrial_production": false,
+            "hidden_item_properties": false,
+            "use_recipes_or_tactics": false
+          }
+        },
+        "hard_skill_level": null,
+        "persistent": true,
+        "sample_route": {
+          "research_profile": "S",
+          "consumes_sample": false,
+          "research_eligibility": "关键可研究结构完整；消耗前清空内容物并卸下外接子树",
+          "grants": "complete_standard_recipe_from_listed_inputs",
+          "missing_processes": []
+        },
+        "linked_processing_grants": [
+          "manufacturing.draw_steel_wire"
+        ]
+      },
+      "material_roots": [
+        "ore_steel_ingot"
+      ],
+      "external_special_roots": [],
+      "workbench_level_min": 2,
+      "required_tools": [
+        {
+          "item_id": "tool_repair_pliers",
+          "count": 1,
+          "consume": false
+        }
+      ]
+    },
+    {
+      "recipe_id": "manufacturing.fishing_float_small",
+      "item_id": "fishing_float_small",
+      "name": "小吃铅浮漂",
+      "unlock_rule": "L",
+      "station": "bench",
+      "methods": [
+        "wood"
+      ],
+      "work_profile": "standard",
+      "ticks": 4,
+      "stamina": 3,
+      "output_count": 1,
+      "inputs": [
+        {
+          "item_id": "wood_cork",
+          "count": 3
+        }
+      ],
+      "discovery_source": "tackle_basic",
+      "status": "新增试调配方，未实装",
+      "balance_snapshot": {
+        "input_weight_kg": 0.03,
+        "output_weight_kg": 0.02,
+        "mass_difference_kg": 0.01
+      },
+      "unlock": {
+        "kind": "skill_level",
+        "skill_id": "life_fishing",
+        "level": 1,
+        "grants": {
+          "recipe": true,
+          "structure": true,
+          "listed_material_relations": true,
+          "recipe_scoped_processes": true,
+          "other_recipes": false,
+          "upstream_industrial_production": false,
+          "hidden_item_properties": false,
+          "use_recipes_or_tactics": false
+        },
+        "experience_on_unlock": 0,
+        "persistent": true,
+        "linked_processing_grants": []
+      },
+      "material_roots": [
+        "wood_cork"
+      ],
+      "external_special_roots": [],
+      "workbench_level_min": 1,
+      "required_tools": []
+    },
+    {
+      "recipe_id": "manufacturing.fishing_float_large",
+      "item_id": "fishing_float_large",
+      "name": "较大吃铅浮漂",
+      "unlock_rule": "L",
+      "station": "bench",
+      "methods": [
+        "wood"
+      ],
+      "work_profile": "standard",
+      "ticks": 4,
+      "stamina": 3,
+      "output_count": 1,
+      "inputs": [
+        {
+          "item_id": "wood_cork",
+          "count": 4
+        }
+      ],
+      "discovery_source": "tackle_basic",
+      "status": "新增试调配方，未实装",
+      "balance_snapshot": {
+        "input_weight_kg": 0.04,
+        "output_weight_kg": 0.03,
+        "mass_difference_kg": 0.01
+      },
+      "unlock": {
+        "kind": "skill_level",
+        "skill_id": "life_fishing",
+        "level": 10,
+        "grants": {
+          "recipe": true,
+          "structure": true,
+          "listed_material_relations": true,
+          "recipe_scoped_processes": true,
+          "other_recipes": false,
+          "upstream_industrial_production": false,
+          "hidden_item_properties": false,
+          "use_recipes_or_tactics": false
+        },
+        "experience_on_unlock": 0,
+        "persistent": true,
+        "linked_processing_grants": []
+      },
+      "material_roots": [
+        "wood_cork"
+      ],
+      "external_special_roots": [],
+      "workbench_level_min": 1,
+      "required_tools": []
+    },
+    {
+      "recipe_id": "manufacturing.fishing_sinker_fixed_1g",
+      "item_id": "fishing_sinker_fixed_1g",
+      "name": "固定铅坠·一克",
+      "unlock_rule": "L",
+      "station": "metal",
+      "methods": [
+        "lead"
+      ],
+      "work_profile": "standard",
+      "ticks": 3,
+      "stamina": 3,
+      "output_count": 6,
+      "inputs": [
+        {
+          "item_id": "material_forging_lead",
+          "count": 1
+        }
+      ],
+      "discovery_source": "tackle_basic",
+      "status": "新增试调配方，未实装",
+      "balance_snapshot": {
+        "input_weight_kg": 0.64,
+        "output_weight_kg": 0.006,
+        "mass_difference_kg": 0.634
+      },
+      "unlock": {
+        "kind": "skill_level",
+        "skill_id": "life_fishing",
+        "level": 1,
+        "grants": {
+          "recipe": true,
+          "structure": true,
+          "listed_material_relations": true,
+          "recipe_scoped_processes": true,
+          "other_recipes": false,
+          "upstream_industrial_production": false,
+          "hidden_item_properties": false,
+          "use_recipes_or_tactics": false
+        },
+        "experience_on_unlock": 0,
+        "persistent": true,
+        "linked_processing_grants": []
+      },
+      "material_roots": [
+        "material_forging_lead"
+      ],
+      "external_special_roots": [],
+      "workbench_level_min": 1,
+      "required_tools": []
+    },
+    {
+      "recipe_id": "manufacturing.fishing_sinker_fixed_2g",
+      "item_id": "fishing_sinker_fixed_2g",
+      "name": "固定铅坠·两克",
+      "unlock_rule": "L",
+      "station": "metal",
+      "methods": [
+        "lead"
+      ],
+      "work_profile": "standard",
+      "ticks": 3,
+      "stamina": 3,
+      "output_count": 6,
+      "inputs": [
+        {
+          "item_id": "material_forging_lead",
+          "count": 1
+        }
+      ],
+      "discovery_source": "tackle_basic",
+      "status": "新增试调配方，未实装",
+      "balance_snapshot": {
+        "input_weight_kg": 0.64,
+        "output_weight_kg": 0.012,
+        "mass_difference_kg": 0.628
+      },
+      "unlock": {
+        "kind": "skill_level",
+        "skill_id": "life_fishing",
+        "level": 5,
+        "grants": {
+          "recipe": true,
+          "structure": true,
+          "listed_material_relations": true,
+          "recipe_scoped_processes": true,
+          "other_recipes": false,
+          "upstream_industrial_production": false,
+          "hidden_item_properties": false,
+          "use_recipes_or_tactics": false
+        },
+        "experience_on_unlock": 0,
+        "persistent": true,
+        "linked_processing_grants": []
+      },
+      "material_roots": [
+        "material_forging_lead"
+      ],
+      "external_special_roots": [],
+      "workbench_level_min": 1,
+      "required_tools": []
+    },
+    {
+      "recipe_id": "manufacturing.fishing_sinker_fixed_3g",
+      "item_id": "fishing_sinker_fixed_3g",
+      "name": "固定铅坠·三克",
+      "unlock_rule": "L",
+      "station": "metal",
+      "methods": [
+        "lead"
+      ],
+      "work_profile": "standard",
+      "ticks": 3,
+      "stamina": 3,
+      "output_count": 6,
+      "inputs": [
+        {
+          "item_id": "material_forging_lead",
+          "count": 1
+        }
+      ],
+      "discovery_source": "tackle_basic",
+      "status": "新增试调配方，未实装",
+      "balance_snapshot": {
+        "input_weight_kg": 0.64,
+        "output_weight_kg": 0.018,
+        "mass_difference_kg": 0.622
+      },
+      "unlock": {
+        "kind": "skill_level",
+        "skill_id": "life_fishing",
+        "level": 10,
+        "grants": {
+          "recipe": true,
+          "structure": true,
+          "listed_material_relations": true,
+          "recipe_scoped_processes": true,
+          "other_recipes": false,
+          "upstream_industrial_production": false,
+          "hidden_item_properties": false,
+          "use_recipes_or_tactics": false
+        },
+        "experience_on_unlock": 0,
+        "persistent": true,
+        "linked_processing_grants": []
+      },
+      "material_roots": [
+        "material_forging_lead"
+      ],
+      "external_special_roots": [],
+      "workbench_level_min": 1,
+      "required_tools": []
+    },
+    {
+      "recipe_id": "manufacturing.fishing_hook_single_small",
+      "item_id": "fishing_hook_single_small",
+      "name": "小号单钩",
+      "unlock_rule": "L",
+      "station": "metal",
+      "methods": [
+        "wire"
+      ],
+      "work_profile": "standard",
+      "ticks": 5,
+      "stamina": 5,
+      "output_count": 6,
+      "inputs": [
+        {
+          "item_id": "material_steel_wire",
+          "count": 1
+        }
+      ],
+      "discovery_source": "tackle_basic",
+      "status": "新增试调配方，未实装",
+      "balance_snapshot": {
+        "input_weight_kg": 0.1,
+        "output_weight_kg": 0.03,
+        "mass_difference_kg": 0.07
+      },
+      "unlock": {
+        "kind": "skill_level",
+        "skill_id": "life_fishing",
+        "level": 1,
+        "grants": {
+          "recipe": true,
+          "structure": true,
+          "listed_material_relations": true,
+          "recipe_scoped_processes": true,
+          "other_recipes": false,
+          "upstream_industrial_production": false,
+          "hidden_item_properties": false,
+          "use_recipes_or_tactics": false
+        },
+        "experience_on_unlock": 0,
+        "persistent": true,
+        "linked_processing_grants": [
+          "manufacturing.draw_steel_wire"
+        ]
+      },
+      "material_roots": [
+        "ore_steel_ingot"
+      ],
+      "external_special_roots": [],
+      "workbench_level_min": 1,
+      "required_tools": []
+    },
+    {
+      "recipe_id": "manufacturing.fishing_hook_single_medium",
+      "item_id": "fishing_hook_single_medium",
+      "name": "中号单钩",
+      "unlock_rule": "L",
+      "station": "metal",
+      "methods": [
+        "wire"
+      ],
+      "work_profile": "standard",
+      "ticks": 5,
+      "stamina": 5,
+      "output_count": 6,
+      "inputs": [
+        {
+          "item_id": "material_steel_wire",
+          "count": 1
+        }
+      ],
+      "discovery_source": "tackle_basic",
+      "status": "新增试调配方，未实装",
+      "balance_snapshot": {
+        "input_weight_kg": 0.1,
+        "output_weight_kg": 0.048,
+        "mass_difference_kg": 0.052
+      },
+      "unlock": {
+        "kind": "skill_level",
+        "skill_id": "life_fishing",
+        "level": 5,
+        "grants": {
+          "recipe": true,
+          "structure": true,
+          "listed_material_relations": true,
+          "recipe_scoped_processes": true,
+          "other_recipes": false,
+          "upstream_industrial_production": false,
+          "hidden_item_properties": false,
+          "use_recipes_or_tactics": false
+        },
+        "experience_on_unlock": 0,
+        "persistent": true,
+        "linked_processing_grants": [
+          "manufacturing.draw_steel_wire"
+        ]
+      },
+      "material_roots": [
+        "ore_steel_ingot"
+      ],
+      "external_special_roots": [],
+      "workbench_level_min": 1,
+      "required_tools": []
+    },
+    {
+      "recipe_id": "manufacturing.fishing_lure_frog",
+      "item_id": "fishing_lure_frog",
+      "name": "浮水雷蛙",
+      "unlock_rule": "X",
+      "station": "bench",
+      "methods": [
+        "soft",
+        "wire"
+      ],
+      "work_profile": "complex",
+      "ticks": 6,
+      "stamina": 6,
+      "output_count": 1,
+      "inputs": [
+        {
+          "item_id": "sewing_rubber_sheet",
+          "count": 1
+        },
+        {
+          "item_id": "material_steel_wire",
+          "count": 1
+        }
+      ],
+      "discovery_source": "tackle_lure",
+      "status": "新增试调配方，未实装",
+      "balance_snapshot": {
+        "input_weight_kg": 0.3,
+        "output_weight_kg": 0.018,
+        "mass_difference_kg": 0.282
+      },
+      "unlock": {
+        "kind": "exploration",
+        "interest_point": "tackle_special",
+        "complete_record_route": {
+          "research_profile": "record",
+          "grants": {
+            "recipe": true,
+            "structure": true,
+            "listed_material_relations": true,
+            "recipe_scoped_processes": true,
+            "other_recipes": false,
+            "upstream_industrial_production": false,
+            "hidden_item_properties": false,
+            "use_recipes_or_tactics": false
+          }
+        },
+        "hard_skill_level": null,
+        "persistent": true,
+        "sample_route": {
+          "research_profile": "M",
+          "consumes_sample": true,
+          "research_eligibility": "关键可研究结构完整；消耗前清空内容物并卸下外接子树",
+          "grants": "structure_and_observable_assembly",
+          "missing_processes": [
+            "soft"
+          ]
+        },
+        "linked_processing_grants": [
+          "manufacturing.draw_steel_wire"
+        ]
+      },
+      "material_roots": [
+        "sewing_rubber_sheet",
+        "ore_steel_ingot"
+      ],
+      "external_special_roots": [],
+      "workbench_level_min": 2,
+      "required_tools": [
+        {
+          "item_id": "tool_repair_pliers",
+          "count": 1,
+          "consume": false
+        }
+      ]
+    },
+    {
+      "recipe_id": "manufacturing.fishing_bait_grain",
+      "item_id": "fishing_bait_grain",
+      "name": "谷物饵小份",
+      "unlock_rule": "L",
+      "station": "simple",
+      "methods": [
+        "bait"
+      ],
+      "work_profile": "routine",
+      "ticks": 4,
+      "stamina": 3,
+      "output_count": 20,
+      "inputs": [
+        {
+          "item_id": "herb_wheat_flour",
+          "count": 1
+        },
+        {
+          "item_id": "solvent_water_pure",
+          "count": 1
+        }
+      ],
+      "discovery_source": "tackle_basic",
+      "status": "新增试调配方，未实装",
+      "balance_snapshot": {
+        "input_weight_kg": 1.1,
+        "output_weight_kg": 0.2,
+        "mass_difference_kg": 0.9
+      },
+      "unlock": {
+        "kind": "skill_level",
+        "skill_id": "life_fishing",
+        "level": 1,
+        "grants": {
+          "recipe": true,
+          "structure": true,
+          "listed_material_relations": true,
+          "recipe_scoped_processes": true,
+          "other_recipes": false,
+          "upstream_industrial_production": false,
+          "hidden_item_properties": false,
+          "use_recipes_or_tactics": false
+        },
+        "experience_on_unlock": 0,
+        "persistent": true,
+        "linked_processing_grants": []
+      },
+      "material_roots": [
+        "herb_wheat_flour",
+        "solvent_water_pure"
+      ],
+      "external_special_roots": [],
+      "workbench_level_min": 0,
+      "required_tools": []
+    },
+    {
+      "recipe_id": "manufacturing.tool_pickaxe_iron_simple",
+      "item_id": "tool_pickaxe_iron_simple",
+      "name": "简易矿镐",
+      "unlock_rule": "L",
+      "station": "metal",
+      "methods": [
+        "iron",
+        "wood"
+      ],
+      "work_profile": "standard",
+      "ticks": 10,
+      "stamina": 12,
+      "output_count": 1,
+      "inputs": [
+        {
+          "item_id": "material_iron_blank_common",
+          "count": 3
+        },
+        {
+          "item_id": "wood_hickory",
+          "count": 1
+        }
+      ],
+      "discovery_source": "basic_tools",
+      "status": "新增试调配方，未实装",
+      "balance_snapshot": {
+        "input_weight_kg": 0.95,
+        "output_weight_kg": 2.8,
+        "mass_difference_kg": -1.85
+      },
+      "unlock": {
+        "kind": "skill_level",
+        "skill_id": "life_mining",
+        "level": 1,
+        "grants": {
+          "recipe": true,
+          "structure": true,
+          "listed_material_relations": true,
+          "recipe_scoped_processes": true,
+          "other_recipes": false,
+          "upstream_industrial_production": false,
+          "hidden_item_properties": false,
+          "use_recipes_or_tactics": false
+        },
+        "experience_on_unlock": 0,
+        "persistent": true,
+        "linked_processing_grants": []
+      },
+      "material_roots": [
+        "ore_scrap_metal",
+        "wood_hickory"
+      ],
+      "external_special_roots": [],
+      "workbench_level_min": 1,
+      "required_tools": []
+    },
+    {
+      "recipe_id": "manufacturing.tool_hatchet_woodcutter",
+      "item_id": "tool_hatchet_woodcutter",
+      "name": "伐木小斧",
+      "unlock_rule": "L",
+      "station": "metal",
+      "methods": [
+        "iron",
+        "wood"
+      ],
+      "work_profile": "standard",
+      "ticks": 8,
+      "stamina": 10,
+      "output_count": 1,
+      "inputs": [
+        {
+          "item_id": "material_iron_blank_common",
+          "count": 2
+        },
+        {
+          "item_id": "wood_hickory",
+          "count": 1
+        }
+      ],
+      "discovery_source": "basic_tools",
+      "status": "新增试调配方，未实装",
+      "balance_snapshot": {
+        "input_weight_kg": 0.75,
+        "output_weight_kg": 1.9,
+        "mass_difference_kg": -1.15
+      },
+      "unlock": {
+        "kind": "skill_level",
+        "skill_id": "life_logging",
+        "level": 1,
+        "grants": {
+          "recipe": true,
+          "structure": true,
+          "listed_material_relations": true,
+          "recipe_scoped_processes": true,
+          "other_recipes": false,
+          "upstream_industrial_production": false,
+          "hidden_item_properties": false,
+          "use_recipes_or_tactics": false
+        },
+        "experience_on_unlock": 0,
+        "persistent": true,
+        "linked_processing_grants": []
+      },
+      "material_roots": [
+        "ore_scrap_metal",
+        "wood_hickory"
+      ],
+      "external_special_roots": [],
+      "workbench_level_min": 1,
+      "required_tools": []
+    },
+    {
+      "recipe_id": "manufacturing.tool_repair_hammer",
+      "item_id": "tool_repair_hammer",
+      "name": "修理锤",
+      "unlock_rule": "L",
+      "station": "metal",
+      "methods": [
+        "iron",
+        "wood"
+      ],
+      "work_profile": "standard",
+      "ticks": 10,
+      "stamina": 12,
+      "output_count": 1,
+      "inputs": [
+        {
+          "item_id": "material_iron_blank_common",
+          "count": 3
+        },
+        {
+          "item_id": "wood_hickory",
+          "count": 1
+        }
+      ],
+      "discovery_source": "metal_workshop",
+      "status": "新增试调配方，未实装",
+      "balance_snapshot": {
+        "input_weight_kg": 0.95,
+        "output_weight_kg": 3,
+        "mass_difference_kg": -2.05
+      },
+      "unlock": {
+        "kind": "skill_level",
+        "skill_id": "life_manufacturing",
+        "level": 5,
+        "grants": {
+          "recipe": true,
+          "structure": true,
+          "listed_material_relations": true,
+          "recipe_scoped_processes": true,
+          "other_recipes": false,
+          "upstream_industrial_production": false,
+          "hidden_item_properties": false,
+          "use_recipes_or_tactics": false
+        },
+        "experience_on_unlock": 0,
+        "persistent": true,
+        "linked_processing_grants": []
+      },
+      "material_roots": [
+        "ore_scrap_metal",
+        "wood_hickory"
+      ],
+      "external_special_roots": [],
+      "workbench_level_min": 1,
+      "required_tools": []
+    },
+    {
+      "recipe_id": "manufacturing.tool_repair_pliers",
+      "item_id": "tool_repair_pliers",
+      "name": "维修钳",
+      "unlock_rule": "X",
+      "station": "metal",
+      "methods": [
+        "iron",
+        "assembly"
+      ],
+      "work_profile": "complex",
+      "ticks": 10,
+      "stamina": 10,
+      "output_count": 1,
+      "inputs": [
+        {
+          "item_id": "material_iron_blank_common",
+          "count": 1
+        },
+        {
+          "item_id": "mechanical_parts",
+          "count": 1
+        }
+      ],
+      "discovery_source": "metal_workshop",
+      "status": "新增试调配方，未实装",
+      "balance_snapshot": {
+        "input_weight_kg": 1.2,
+        "output_weight_kg": 1.5,
+        "mass_difference_kg": -0.3
+      },
+      "unlock": {
+        "kind": "exploration",
+        "interest_point": "repair",
+        "complete_record_route": {
+          "research_profile": "record",
+          "grants": {
+            "recipe": true,
+            "structure": true,
+            "listed_material_relations": true,
+            "recipe_scoped_processes": true,
+            "other_recipes": false,
+            "upstream_industrial_production": false,
+            "hidden_item_properties": false,
+            "use_recipes_or_tactics": false
+          }
+        },
+        "hard_skill_level": null,
+        "persistent": true,
+        "sample_route": {
+          "research_profile": "M",
+          "consumes_sample": true,
+          "research_eligibility": "关键可研究结构完整；消耗前清空内容物并卸下外接子树",
+          "grants": "complete_standard_recipe_from_listed_inputs",
+          "missing_processes": []
+        },
+        "linked_processing_grants": []
+      },
+      "material_roots": [
+        "ore_scrap_metal",
+        "mechanical_parts"
+      ],
+      "external_special_roots": [],
+      "workbench_level_min": 2,
+      "required_tools": [
+        {
+          "item_id": "tool_repair_hammer",
+          "count": 1,
+          "consume": false
+        }
+      ]
+    },
+    {
+      "recipe_id": "manufacturing.tool_repair_whetstone",
+      "item_id": "tool_repair_whetstone",
+      "name": "磨刀石",
+      "unlock_rule": "L",
+      "station": "kiln",
+      "methods": [
+        "stone",
+        "pottery"
+      ],
+      "work_profile": "standard",
+      "ticks": 8,
+      "stamina": 8,
+      "output_count": 1,
+      "inputs": [
+        {
+          "item_id": "item_glass",
+          "count": 1
+        },
+        {
+          "item_id": "ore_clay_raw",
+          "count": 4
+        }
+      ],
+      "discovery_source": "metal_workshop",
+      "status": "新增试调配方，未实装",
+      "balance_snapshot": {
+        "input_weight_kg": 2.4,
+        "output_weight_kg": 2,
+        "mass_difference_kg": 0.4
+      },
+      "unlock": {
+        "kind": "skill_level",
+        "skill_id": "life_manufacturing",
+        "level": 5,
+        "grants": {
+          "recipe": true,
+          "structure": true,
+          "listed_material_relations": true,
+          "recipe_scoped_processes": true,
+          "other_recipes": false,
+          "upstream_industrial_production": false,
+          "hidden_item_properties": false,
+          "use_recipes_or_tactics": false
+        },
+        "experience_on_unlock": 0,
+        "persistent": true,
+        "linked_processing_grants": []
+      },
+      "material_note": "采用玻璃与陶土的复合磨料成形方案，工序内完成粒度分选与两面成形；这是游戏试配方案，不直接把任意花岗岩当磨刀石",
+      "material_roots": [
+        "item_glass",
+        "ore_clay_raw"
+      ],
+      "external_special_roots": [],
+      "workbench_level_min": 1,
+      "required_tools": []
+    },
+    {
+      "recipe_id": "manufacturing.tool_repair_roll",
+      "item_id": "tool_repair_roll",
+      "name": "帆布工具卷",
+      "unlock_rule": "L",
+      "station": "bench",
+      "methods": [
+        "fiber"
+      ],
+      "work_profile": "routine",
+      "ticks": 6,
+      "stamina": 4,
+      "output_count": 1,
+      "inputs": [
+        {
+          "item_id": "textile_hemp_cloth",
+          "count": 8
+        },
+        {
+          "item_id": "supply_rope_hemp_short",
+          "count": 1
+        }
+      ],
+      "discovery_source": "basic_tools",
+      "status": "新增试调配方，未实装",
+      "balance_snapshot": {
+        "input_weight_kg": 0.5,
+        "output_weight_kg": 0.3,
+        "mass_difference_kg": 0.2
+      },
+      "unlock": {
+        "kind": "skill_level",
+        "skill_id": "life_weaving",
+        "level": 3,
+        "grants": {
+          "recipe": true,
+          "structure": true,
+          "listed_material_relations": true,
+          "recipe_scoped_processes": true,
+          "other_recipes": false,
+          "upstream_industrial_production": false,
+          "hidden_item_properties": false,
+          "use_recipes_or_tactics": false
+        },
+        "experience_on_unlock": 0,
+        "persistent": true,
+        "linked_processing_grants": []
+      },
+      "material_roots": [
+        "textile_hemp_cloth",
+        "supply_rope_hemp_short"
+      ],
+      "external_special_roots": [],
+      "workbench_level_min": 1,
+      "required_tools": [
+        {
+          "item_id": "tool_sewing_kit_cloth",
+          "count": 1,
+          "consume": false
+        }
+      ]
+    },
+    {
+      "recipe_id": "manufacturing.supply_rope_hemp_short",
+      "item_id": "supply_rope_hemp_short",
+      "name": "短麻绳",
+      "unlock_rule": "L",
+      "station": "simple",
+      "methods": [
+        "fiber"
+      ],
+      "work_profile": "routine",
+      "ticks": 3,
+      "stamina": 3,
+      "output_count": 1,
+      "inputs": [
+        {
+          "item_id": "textile_hemp_fiber",
+          "count": 1
+        }
+      ],
+      "discovery_source": "basic_tools",
+      "status": "新增试调配方，未实装",
+      "balance_snapshot": {
+        "input_weight_kg": 0.3,
+        "output_weight_kg": 0.3,
+        "mass_difference_kg": 0
+      },
+      "unlock": {
+        "kind": "skill_level",
+        "skill_id": "life_manufacturing",
+        "level": 1,
+        "grants": {
+          "recipe": true,
+          "structure": true,
+          "listed_material_relations": true,
+          "recipe_scoped_processes": true,
+          "other_recipes": false,
+          "upstream_industrial_production": false,
+          "hidden_item_properties": false,
+          "use_recipes_or_tactics": false
+        },
+        "experience_on_unlock": 0,
+        "persistent": true,
+        "linked_processing_grants": []
+      },
+      "material_roots": [
+        "textile_hemp_fiber"
+      ],
+      "external_special_roots": [],
+      "workbench_level_min": 0,
+      "required_tools": []
+    },
+    {
+      "recipe_id": "manufacturing.supply_torch_bamboo",
+      "item_id": "supply_torch_bamboo",
+      "name": "竹火把",
+      "unlock_rule": "L",
+      "station": "simple",
+      "methods": [
+        "wood",
+        "fiber"
+      ],
+      "work_profile": "routine",
+      "ticks": 4,
+      "stamina": 4,
+      "output_count": 3,
+      "inputs": [
+        {
+          "item_id": "wood_bamboo_green",
+          "count": 1
+        },
+        {
+          "item_id": "textile_cotton_cloth",
+          "count": 5
+        },
+        {
+          "item_id": "hus_pork_lard",
+          "count": 1
+        }
+      ],
+      "discovery_source": "basic_tools",
+      "status": "新增试调配方，未实装",
+      "balance_snapshot": {
+        "input_weight_kg": 1.6,
+        "output_weight_kg": 1.5,
+        "mass_difference_kg": 0.1
+      },
+      "unlock": {
+        "kind": "skill_level",
+        "skill_id": "life_manufacturing",
+        "level": 1,
+        "grants": {
+          "recipe": true,
+          "structure": true,
+          "listed_material_relations": true,
+          "recipe_scoped_processes": true,
+          "other_recipes": false,
+          "upstream_industrial_production": false,
+          "hidden_item_properties": false,
+          "use_recipes_or_tactics": false
+        },
+        "experience_on_unlock": 0,
+        "persistent": true,
+        "linked_processing_grants": []
+      },
+      "material_roots": [
+        "wood_bamboo_green",
+        "textile_cotton_cloth",
+        "hus_pork_lard"
+      ],
+      "external_special_roots": [],
+      "workbench_level_min": 0,
+      "required_tools": []
+    },
+    {
+      "recipe_id": "manufacturing.supply_flint_fire",
+      "item_id": "supply_flint_fire",
+      "name": "火石",
+      "unlock_rule": "L",
+      "station": "metal",
+      "methods": [
+        "stone",
+        "iron"
+      ],
+      "work_profile": "standard",
+      "ticks": 4,
+      "stamina": 4,
+      "output_count": 2,
+      "inputs": [
+        {
+          "item_id": "ore_flint",
+          "count": 1
+        },
+        {
+          "item_id": "material_iron_blank_common",
+          "count": 1
+        }
+      ],
+      "discovery_source": "basic_tools",
+      "status": "新增试调配方，未实装",
+      "balance_snapshot": {
+        "input_weight_kg": 0.3,
+        "output_weight_kg": 0.2,
+        "mass_difference_kg": 0.1
+      },
+      "unlock": {
+        "kind": "skill_level",
+        "skill_id": "life_manufacturing",
+        "level": 3,
+        "grants": {
+          "recipe": true,
+          "structure": true,
+          "listed_material_relations": true,
+          "recipe_scoped_processes": true,
+          "other_recipes": false,
+          "upstream_industrial_production": false,
+          "hidden_item_properties": false,
+          "use_recipes_or_tactics": false
+        },
+        "experience_on_unlock": 0,
+        "persistent": true,
+        "linked_processing_grants": []
+      },
+      "material_roots": [
+        "ore_flint",
+        "ore_scrap_metal"
+      ],
+      "external_special_roots": [
+        "ore_flint"
+      ],
+      "workbench_level_min": 1,
+      "required_tools": []
+    },
+    {
+      "recipe_id": "manufacturing.supply_bandage_cloth",
+      "item_id": "supply_bandage_cloth",
+      "name": "布制绷带",
+      "unlock_rule": "L",
+      "station": "simple",
+      "methods": [
+        "clean"
+      ],
+      "work_profile": "routine",
+      "ticks": 3,
+      "stamina": 2,
+      "output_count": 1,
+      "inputs": [
+        {
+          "item_id": "textile_cotton_cloth",
+          "count": 4
+        },
+        {
+          "item_id": "solvent_water_pure",
+          "count": 1
+        }
+      ],
+      "discovery_source": "medical_records",
+      "status": "新增试调配方，未实装",
+      "balance_snapshot": {
+        "input_weight_kg": 0.58,
+        "output_weight_kg": 0.08,
+        "mass_difference_kg": 0.5
+      },
+      "unlock": {
+        "kind": "skill_level",
+        "skill_id": "life_pharmacy",
+        "level": 1,
+        "grants": {
+          "recipe": true,
+          "structure": true,
+          "listed_material_relations": true,
+          "recipe_scoped_processes": true,
+          "other_recipes": false,
+          "upstream_industrial_production": false,
+          "hidden_item_properties": false,
+          "use_recipes_or_tactics": false
+        },
+        "experience_on_unlock": 0,
+        "persistent": true,
+        "linked_processing_grants": []
+      },
+      "material_roots": [
+        "textile_cotton_cloth",
+        "solvent_water_pure"
+      ],
+      "external_special_roots": [],
+      "workbench_level_min": 0,
+      "required_tools": []
+    },
+    {
+      "recipe_id": "manufacturing.tool_bucket_water_empty",
+      "item_id": "tool_bucket_water_empty",
+      "name": "水桶",
+      "unlock_rule": "L",
+      "station": "bench",
+      "methods": [
+        "wood",
+        "seal"
+      ],
+      "work_profile": "standard",
+      "ticks": 8,
+      "stamina": 8,
+      "output_count": 1,
+      "inputs": [
+        {
+          "item_id": "wood_oak",
+          "count": 4
+        },
+        {
+          "item_id": "material_iron_blank_common",
+          "count": 1
+        },
+        {
+          "item_id": "resin_pine",
+          "count": 1
+        }
+      ],
+      "discovery_source": "basic_tools",
+      "status": "新增试调配方，未实装",
+      "balance_snapshot": {
+        "input_weight_kg": 1.6,
+        "output_weight_kg": 1.2,
+        "mass_difference_kg": 0.4
+      },
+      "unlock": {
+        "kind": "skill_level",
+        "skill_id": "life_manufacturing",
+        "level": 3,
+        "grants": {
+          "recipe": true,
+          "structure": true,
+          "listed_material_relations": true,
+          "recipe_scoped_processes": true,
+          "other_recipes": false,
+          "upstream_industrial_production": false,
+          "hidden_item_properties": false,
+          "use_recipes_or_tactics": false
+        },
+        "experience_on_unlock": 0,
+        "persistent": true,
+        "linked_processing_grants": []
+      },
+      "material_roots": [
+        "wood_oak",
+        "ore_scrap_metal",
+        "resin_pine"
+      ],
+      "external_special_roots": [],
+      "workbench_level_min": 1,
+      "required_tools": []
+    },
+    {
+      "recipe_id": "manufacturing.tool_flask_iron_water",
+      "item_id": "tool_flask_iron_water",
+      "name": "铁皮水壶",
+      "unlock_rule": "L",
+      "station": "metal",
+      "methods": [
+        "iron",
+        "seal"
+      ],
+      "work_profile": "standard",
+      "ticks": 8,
+      "stamina": 8,
+      "output_count": 1,
+      "inputs": [
+        {
+          "item_id": "material_iron_blank_common",
+          "count": 1
+        },
+        {
+          "item_id": "wood_cork",
+          "count": 1
+        }
+      ],
+      "discovery_source": "basic_tools",
+      "status": "新增试调配方，未实装",
+      "balance_snapshot": {
+        "input_weight_kg": 0.21,
+        "output_weight_kg": 0.7,
+        "mass_difference_kg": -0.49
+      },
+      "unlock": {
+        "kind": "skill_level",
+        "skill_id": "life_manufacturing",
+        "level": 5,
+        "grants": {
+          "recipe": true,
+          "structure": true,
+          "listed_material_relations": true,
+          "recipe_scoped_processes": true,
+          "other_recipes": false,
+          "upstream_industrial_production": false,
+          "hidden_item_properties": false,
+          "use_recipes_or_tactics": false
+        },
+        "experience_on_unlock": 0,
+        "persistent": true,
+        "linked_processing_grants": []
+      },
+      "material_roots": [
+        "ore_scrap_metal",
+        "wood_cork"
+      ],
+      "external_special_roots": [],
+      "workbench_level_min": 2,
+      "required_tools": [
+        {
+          "item_id": "tool_repair_hammer",
+          "count": 1,
+          "consume": false
+        }
+      ]
+    },
+    {
+      "recipe_id": "manufacturing.tool_sewing_kit_cloth",
+      "item_id": "tool_sewing_kit_cloth",
+      "name": "缝纫工具包",
+      "unlock_rule": "L",
+      "station": "bench",
+      "methods": [
+        "fiber",
+        "wire"
+      ],
+      "work_profile": "standard",
+      "ticks": 4,
+      "stamina": 4,
+      "output_count": 1,
+      "inputs": [
+        {
+          "item_id": "textile_cotton_cloth",
+          "count": 5
+        },
+        {
+          "item_id": "textile_hemp_fiber",
+          "count": 1
+        },
+        {
+          "item_id": "material_steel_wire",
+          "count": 1
+        }
+      ],
+      "discovery_source": "basic_tools",
+      "status": "新增试调配方，未实装",
+      "balance_snapshot": {
+        "input_weight_kg": 0.5,
+        "output_weight_kg": 0.3,
+        "mass_difference_kg": 0.2
+      },
+      "unlock": {
+        "kind": "skill_level",
+        "skill_id": "life_weaving",
+        "level": 1,
+        "grants": {
+          "recipe": true,
+          "structure": true,
+          "listed_material_relations": true,
+          "recipe_scoped_processes": true,
+          "other_recipes": false,
+          "upstream_industrial_production": false,
+          "hidden_item_properties": false,
+          "use_recipes_or_tactics": false
+        },
+        "experience_on_unlock": 0,
+        "persistent": true,
+        "linked_processing_grants": [
+          "manufacturing.draw_steel_wire"
+        ]
+      },
+      "material_roots": [
+        "textile_cotton_cloth",
+        "textile_hemp_fiber",
+        "ore_steel_ingot"
+      ],
+      "external_special_roots": [],
+      "workbench_level_min": 1,
+      "required_tools": []
+    },
+    {
+      "recipe_id": "manufacturing.tool_pot_clay_cooking",
+      "item_id": "tool_pot_clay_cooking",
+      "name": "粗陶饭锅",
+      "unlock_rule": "L",
+      "station": "kiln",
+      "methods": [
+        "pottery"
+      ],
+      "work_profile": "standard",
+      "ticks": 10,
+      "stamina": 8,
+      "output_count": 1,
+      "inputs": [
+        {
+          "item_id": "ore_clay_raw",
+          "count": 5
+        }
+      ],
+      "discovery_source": "kitchen",
+      "status": "新增试调配方，未实装",
+      "balance_snapshot": {
+        "input_weight_kg": 1.75,
+        "output_weight_kg": 1.5,
+        "mass_difference_kg": 0.25
+      },
+      "unlock": {
+        "kind": "skill_level",
+        "skill_id": "life_cooking",
+        "level": 1,
+        "grants": {
+          "recipe": true,
+          "structure": true,
+          "listed_material_relations": true,
+          "recipe_scoped_processes": true,
+          "other_recipes": false,
+          "upstream_industrial_production": false,
+          "hidden_item_properties": false,
+          "use_recipes_or_tactics": false
+        },
+        "experience_on_unlock": 0,
+        "persistent": true,
+        "linked_processing_grants": []
+      },
+      "material_roots": [
+        "ore_clay_raw"
+      ],
+      "external_special_roots": [],
+      "workbench_level_min": 1,
+      "required_tools": []
+    },
+    {
+      "recipe_id": "manufacturing.tool_steamer_bamboo_cooking",
+      "item_id": "tool_steamer_bamboo_cooking",
+      "name": "竹蒸笼",
+      "unlock_rule": "L",
+      "station": "bench",
+      "methods": [
+        "wood",
+        "fiber"
+      ],
+      "work_profile": "standard",
+      "ticks": 6,
+      "stamina": 6,
+      "output_count": 1,
+      "inputs": [
+        {
+          "item_id": "wood_bamboo_green",
+          "count": 1
+        },
+        {
+          "item_id": "textile_coir",
+          "count": 1
+        }
+      ],
+      "discovery_source": "kitchen",
+      "status": "新增试调配方，未实装",
+      "balance_snapshot": {
+        "input_weight_kg": 1.5,
+        "output_weight_kg": 0.8,
+        "mass_difference_kg": 0.7
+      },
+      "unlock": {
+        "kind": "skill_level",
+        "skill_id": "life_cooking",
+        "level": 3,
+        "grants": {
+          "recipe": true,
+          "structure": true,
+          "listed_material_relations": true,
+          "recipe_scoped_processes": true,
+          "other_recipes": false,
+          "upstream_industrial_production": false,
+          "hidden_item_properties": false,
+          "use_recipes_or_tactics": false
+        },
+        "experience_on_unlock": 0,
+        "persistent": true,
+        "linked_processing_grants": []
+      },
+      "material_roots": [
+        "wood_bamboo_green",
+        "textile_coir"
+      ],
+      "external_special_roots": [],
+      "workbench_level_min": 1,
+      "required_tools": []
+    },
+    {
+      "recipe_id": "manufacturing.tool_wok_iron_cooking",
+      "item_id": "tool_wok_iron_cooking",
+      "name": "铸铁炒锅",
+      "unlock_rule": "L",
+      "station": "metal",
+      "methods": [
+        "iron"
+      ],
+      "work_profile": "standard",
+      "ticks": 10,
+      "stamina": 12,
+      "output_count": 1,
+      "inputs": [
+        {
+          "item_id": "ore_cast_iron",
+          "count": 2
+        }
+      ],
+      "discovery_source": "kitchen",
+      "status": "新增试调配方，未实装",
+      "balance_snapshot": {
+        "input_weight_kg": 4,
+        "output_weight_kg": 2.2,
+        "mass_difference_kg": 1.8
+      },
+      "unlock": {
+        "kind": "skill_level",
+        "skill_id": "life_cooking",
+        "level": 5,
+        "grants": {
+          "recipe": true,
+          "structure": true,
+          "listed_material_relations": true,
+          "recipe_scoped_processes": true,
+          "other_recipes": false,
+          "upstream_industrial_production": false,
+          "hidden_item_properties": false,
+          "use_recipes_or_tactics": false
+        },
+        "experience_on_unlock": 0,
+        "persistent": true,
+        "linked_processing_grants": []
+      },
+      "material_roots": [
+        "ore_cast_iron"
+      ],
+      "external_special_roots": [],
+      "workbench_level_min": 2,
+      "required_tools": [
+        {
+          "item_id": "tool_repair_hammer",
+          "count": 1,
+          "consume": false
+        }
+      ]
+    },
+    {
+      "recipe_id": "manufacturing.tool_fryer_pot_iron_cooking",
+      "item_id": "tool_fryer_pot_iron_cooking",
+      "name": "深炸铁锅",
+      "unlock_rule": "L",
+      "station": "metal",
+      "methods": [
+        "iron"
+      ],
+      "work_profile": "standard",
+      "ticks": 10,
+      "stamina": 12,
+      "output_count": 1,
+      "inputs": [
+        {
+          "item_id": "ore_cast_iron",
+          "count": 2
+        }
+      ],
+      "discovery_source": "kitchen",
+      "status": "新增试调配方，未实装",
+      "balance_snapshot": {
+        "input_weight_kg": 4,
+        "output_weight_kg": 2.8,
+        "mass_difference_kg": 1.2
+      },
+      "unlock": {
+        "kind": "skill_level",
+        "skill_id": "life_cooking",
+        "level": 10,
+        "grants": {
+          "recipe": true,
+          "structure": true,
+          "listed_material_relations": true,
+          "recipe_scoped_processes": true,
+          "other_recipes": false,
+          "upstream_industrial_production": false,
+          "hidden_item_properties": false,
+          "use_recipes_or_tactics": false
+        },
+        "experience_on_unlock": 0,
+        "persistent": true,
+        "linked_processing_grants": []
+      },
+      "material_roots": [
+        "ore_cast_iron"
+      ],
+      "external_special_roots": [],
+      "workbench_level_min": 2,
+      "required_tools": [
+        {
+          "item_id": "tool_repair_hammer",
+          "count": 1,
+          "consume": false
+        }
+      ]
+    },
+    {
+      "recipe_id": "manufacturing.tool_pickling_jar_cooking",
+      "item_id": "tool_pickling_jar_cooking",
+      "name": "腌缸（玻璃罐）",
+      "unlock_rule": "L",
+      "station": "kiln",
+      "methods": [
+        "glass",
+        "seal"
+      ],
+      "work_profile": "standard",
+      "ticks": 10,
+      "stamina": 8,
+      "output_count": 1,
+      "inputs": [
+        {
+          "item_id": "item_glass",
+          "count": 1
+        },
+        {
+          "item_id": "sewing_rubber_sheet",
+          "count": 1
+        }
+      ],
+      "discovery_source": "kitchen",
+      "status": "新增试调配方，未实装",
+      "balance_snapshot": {
+        "input_weight_kg": 1.2,
+        "output_weight_kg": 1.1,
+        "mass_difference_kg": 0.1
+      },
+      "unlock": {
+        "kind": "skill_level",
+        "skill_id": "life_cooking",
+        "level": 5,
+        "grants": {
+          "recipe": true,
+          "structure": true,
+          "listed_material_relations": true,
+          "recipe_scoped_processes": true,
+          "other_recipes": false,
+          "upstream_industrial_production": false,
+          "hidden_item_properties": false,
+          "use_recipes_or_tactics": false
+        },
+        "experience_on_unlock": 0,
+        "persistent": true,
+        "linked_processing_grants": []
+      },
+      "material_roots": [
+        "item_glass",
+        "sewing_rubber_sheet"
+      ],
+      "external_special_roots": [],
+      "workbench_level_min": 2,
+      "required_tools": []
+    },
+    {
+      "recipe_id": "manufacturing.tool_fermentation_jar_cooking",
+      "item_id": "tool_fermentation_jar_cooking",
+      "name": "陶发酵坛",
+      "unlock_rule": "X",
+      "station": "kiln",
+      "methods": [
+        "pottery",
+        "seal",
+        "assembly"
+      ],
+      "work_profile": "complex",
+      "ticks": 12,
+      "stamina": 12,
+      "output_count": 1,
+      "inputs": [
+        {
+          "item_id": "ore_clay_raw",
+          "count": 12
+        },
+        {
+          "item_id": "mechanical_parts",
+          "count": 1
+        },
+        {
+          "item_id": "sewing_rubber_sheet",
+          "count": 1
+        }
+      ],
+      "discovery_source": "kitchen",
+      "status": "新增试调配方，未实装",
+      "balance_snapshot": {
+        "input_weight_kg": 5.4,
+        "output_weight_kg": 4,
+        "mass_difference_kg": 1.4
+      },
+      "unlock": {
+        "kind": "exploration",
+        "interest_point": "fermentation",
+        "complete_record_route": {
+          "research_profile": "record",
+          "grants": {
+            "recipe": true,
+            "structure": true,
+            "listed_material_relations": true,
+            "recipe_scoped_processes": true,
+            "other_recipes": false,
+            "upstream_industrial_production": false,
+            "hidden_item_properties": false,
+            "use_recipes_or_tactics": false
+          }
+        },
+        "hard_skill_level": null,
+        "persistent": true,
+        "sample_route": {
+          "research_profile": "M",
+          "consumes_sample": true,
+          "research_eligibility": "关键可研究结构完整；消耗前清空内容物并卸下外接子树",
+          "grants": "complete_standard_recipe_from_listed_inputs",
+          "missing_processes": []
+        },
+        "linked_processing_grants": []
+      },
+      "material_roots": [
+        "ore_clay_raw",
+        "mechanical_parts",
+        "sewing_rubber_sheet"
+      ],
+      "external_special_roots": [],
+      "workbench_level_min": 2,
+      "required_tools": [
+        {
+          "item_id": "tool_repair_pliers",
+          "count": 1,
+          "consume": false
+        }
+      ]
+    },
+    {
+      "recipe_id": "manufacturing.tool_mortar_pestle_cooking",
+      "item_id": "tool_mortar_pestle_cooking",
+      "name": "研磨钵与杵",
+      "unlock_rule": "L",
+      "station": "bench",
+      "methods": [
+        "stone",
+        "wood"
+      ],
+      "work_profile": "standard",
+      "ticks": 6,
+      "stamina": 6,
+      "output_count": 1,
+      "inputs": [
+        {
+          "item_id": "ore_granite",
+          "count": 1
+        },
+        {
+          "item_id": "wood_olive",
+          "count": 1
+        }
+      ],
+      "discovery_source": "kitchen",
+      "status": "新增试调配方，未实装",
+      "balance_snapshot": {
+        "input_weight_kg": 3.3,
+        "output_weight_kg": 1.6,
+        "mass_difference_kg": 1.7
+      },
+      "unlock": {
+        "kind": "skill_level",
+        "skill_id": "life_cooking",
+        "level": 1,
+        "grants": {
+          "recipe": true,
+          "structure": true,
+          "listed_material_relations": true,
+          "recipe_scoped_processes": true,
+          "other_recipes": false,
+          "upstream_industrial_production": false,
+          "hidden_item_properties": false,
+          "use_recipes_or_tactics": false
+        },
+        "experience_on_unlock": 0,
+        "persistent": true,
+        "linked_processing_grants": []
+      },
+      "material_roots": [
+        "ore_granite",
+        "wood_olive"
+      ],
+      "external_special_roots": [],
+      "workbench_level_min": 1,
+      "required_tools": []
+    },
+    {
+      "recipe_id": "manufacturing.tool_rolling_pin_pharmacy",
+      "item_id": "tool_rolling_pin_pharmacy",
+      "name": "擀面杖",
+      "unlock_rule": "L",
+      "station": "bench",
+      "methods": [
+        "wood"
+      ],
+      "work_profile": "routine",
+      "ticks": 4,
+      "stamina": 4,
+      "output_count": 1,
+      "inputs": [
+        {
+          "item_id": "wood_olive",
+          "count": 2
+        }
+      ],
+      "discovery_source": "medical_records",
+      "status": "新增试调配方，未实装",
+      "balance_snapshot": {
+        "input_weight_kg": 0.6,
+        "output_weight_kg": 0.35,
+        "mass_difference_kg": 0.25
+      },
+      "unlock": {
+        "kind": "skill_level",
+        "skill_id": "life_pharmacy",
+        "level": 1,
+        "grants": {
+          "recipe": true,
+          "structure": true,
+          "listed_material_relations": true,
+          "recipe_scoped_processes": true,
+          "other_recipes": false,
+          "upstream_industrial_production": false,
+          "hidden_item_properties": false,
+          "use_recipes_or_tactics": false
+        },
+        "experience_on_unlock": 0,
+        "persistent": true,
+        "linked_processing_grants": []
+      },
+      "material_roots": [
+        "wood_olive"
+      ],
+      "external_special_roots": [],
+      "workbench_level_min": 1,
+      "required_tools": []
+    },
+    {
+      "recipe_id": "manufacturing.tool_strainer_pot_pharmacy",
+      "item_id": "tool_strainer_pot_pharmacy",
+      "name": "带网汤锅",
+      "unlock_rule": "X",
+      "station": "metal",
+      "methods": [
+        "iron",
+        "wire",
+        "assembly"
+      ],
+      "work_profile": "complex",
+      "ticks": 8,
+      "stamina": 8,
+      "output_count": 1,
+      "inputs": [
+        {
+          "item_id": "ore_cast_iron",
+          "count": 1
+        },
+        {
+          "item_id": "material_steel_wire",
+          "count": 1
+        }
+      ],
+      "discovery_source": "medical_records",
+      "status": "新增试调配方，未实装",
+      "balance_snapshot": {
+        "input_weight_kg": 2.1,
+        "output_weight_kg": 1.4,
+        "mass_difference_kg": 0.7
+      },
+      "unlock": {
+        "kind": "exploration",
+        "interest_point": "pharmacy_tools",
+        "complete_record_route": {
+          "research_profile": "record",
+          "grants": {
+            "recipe": true,
+            "structure": true,
+            "listed_material_relations": true,
+            "recipe_scoped_processes": true,
+            "other_recipes": false,
+            "upstream_industrial_production": false,
+            "hidden_item_properties": false,
+            "use_recipes_or_tactics": false
+          }
+        },
+        "hard_skill_level": null,
+        "persistent": true,
+        "sample_route": {
+          "research_profile": "M",
+          "consumes_sample": true,
+          "research_eligibility": "关键可研究结构完整；消耗前清空内容物并卸下外接子树",
+          "grants": "complete_standard_recipe_from_listed_inputs",
+          "missing_processes": []
+        },
+        "linked_processing_grants": [
+          "manufacturing.draw_steel_wire"
+        ]
+      },
+      "material_roots": [
+        "ore_cast_iron",
+        "ore_steel_ingot"
+      ],
+      "external_special_roots": [],
+      "workbench_level_min": 2,
+      "required_tools": [
+        {
+          "item_id": "tool_repair_hammer",
+          "count": 1,
+          "consume": false
+        },
+        {
+          "item_id": "tool_repair_pliers",
+          "count": 1,
+          "consume": false
+        }
+      ]
+    },
+    {
+      "recipe_id": "manufacturing.tool_distiller_pharmacy",
+      "item_id": "tool_distiller_pharmacy",
+      "name": "蒸馏器",
+      "unlock_rule": "X",
+      "station": "precision",
+      "methods": [
+        "glass",
+        "seal",
+        "precision"
+      ],
+      "work_profile": "specialist",
+      "ticks": 20,
+      "stamina": 16,
+      "output_count": 1,
+      "inputs": [
+        {
+          "item_id": "item_glass",
+          "count": 1
+        },
+        {
+          "item_id": "metal_pipe",
+          "count": 1
+        },
+        {
+          "item_id": "sewing_rubber_sheet",
+          "count": 1
+        }
+      ],
+      "discovery_source": "medical_records",
+      "status": "新增试调配方，未实装",
+      "balance_snapshot": {
+        "input_weight_kg": 3.7,
+        "output_weight_kg": 2.2,
+        "mass_difference_kg": 1.5
+      },
+      "unlock": {
+        "kind": "exploration",
+        "interest_point": "distillation",
+        "complete_record_route": {
+          "research_profile": "record",
+          "grants": {
+            "recipe": true,
+            "structure": true,
+            "listed_material_relations": true,
+            "recipe_scoped_processes": true,
+            "other_recipes": false,
+            "upstream_industrial_production": false,
+            "hidden_item_properties": false,
+            "use_recipes_or_tactics": false
+          }
+        },
+        "hard_skill_level": null,
+        "persistent": true,
+        "linked_processing_grants": []
+      },
+      "support_facilities": [
+        "kiln"
+      ],
+      "material_roots": [
+        "item_glass",
+        "metal_pipe",
+        "sewing_rubber_sheet"
+      ],
+      "external_special_roots": [],
+      "workbench_level_min": 3,
+      "required_tools": [
+        {
+          "item_id": "tool_repair_pliers",
+          "count": 1,
+          "consume": false
+        }
+      ]
+    },
+    {
+      "recipe_id": "manufacturing.tool_layer_filter_sheet_pharmacy",
+      "item_id": "tool_layer_filter_sheet_pharmacy",
+      "name": "分层过滤片",
+      "unlock_rule": "X",
+      "station": "bench",
+      "methods": [
+        "filter"
+      ],
+      "work_profile": "standard",
+      "ticks": 6,
+      "stamina": 4,
+      "output_count": 10,
+      "inputs": [
+        {
+          "item_id": "textile_cotton_fiber",
+          "count": 1
+        },
+        {
+          "item_id": "textile_hemp_fiber",
+          "count": 1
+        }
+      ],
+      "discovery_source": "medical_records",
+      "status": "新增试调配方，未实装",
+      "balance_snapshot": {
+        "input_weight_kg": 0.6,
+        "output_weight_kg": 0.5,
+        "mass_difference_kg": 0.1
+      },
+      "unlock": {
+        "kind": "exploration",
+        "interest_point": "pharmacy_tools",
+        "complete_record_route": {
+          "research_profile": "record",
+          "grants": {
+            "recipe": true,
+            "structure": true,
+            "listed_material_relations": true,
+            "recipe_scoped_processes": true,
+            "other_recipes": false,
+            "upstream_industrial_production": false,
+            "hidden_item_properties": false,
+            "use_recipes_or_tactics": false
+          }
+        },
+        "hard_skill_level": null,
+        "persistent": true,
+        "linked_processing_grants": []
+      },
+      "material_roots": [
+        "textile_cotton_fiber",
+        "textile_hemp_fiber"
+      ],
+      "external_special_roots": [],
+      "workbench_level_min": 2,
+      "required_tools": [
+        {
+          "item_id": "tool_sewing_kit_cloth",
+          "count": 1,
+          "consume": false
+        }
+      ]
+    },
+    {
+      "recipe_id": "manufacturing.tool_long_handle_flask_pharmacy",
+      "item_id": "tool_long_handle_flask_pharmacy",
+      "name": "长柄药瓶",
+      "unlock_rule": "X",
+      "station": "precision",
+      "methods": [
+        "glass",
+        "assembly"
+      ],
+      "work_profile": "complex",
+      "ticks": 8,
+      "stamina": 6,
+      "output_count": 1,
+      "inputs": [
+        {
+          "item_id": "item_glass",
+          "count": 1
+        },
+        {
+          "item_id": "material_iron_blank_common",
+          "count": 1
+        }
+      ],
+      "discovery_source": "medical_records",
+      "status": "新增试调配方，未实装",
+      "balance_snapshot": {
+        "input_weight_kg": 1.2,
+        "output_weight_kg": 0.25,
+        "mass_difference_kg": 0.95
+      },
+      "unlock": {
+        "kind": "exploration",
+        "interest_point": "pharmacy_tools",
+        "complete_record_route": {
+          "research_profile": "record",
+          "grants": {
+            "recipe": true,
+            "structure": true,
+            "listed_material_relations": true,
+            "recipe_scoped_processes": true,
+            "other_recipes": false,
+            "upstream_industrial_production": false,
+            "hidden_item_properties": false,
+            "use_recipes_or_tactics": false
+          }
+        },
+        "hard_skill_level": null,
+        "persistent": true,
+        "linked_processing_grants": []
+      },
+      "support_facilities": [
+        "kiln"
+      ],
+      "material_roots": [
+        "item_glass",
+        "ore_scrap_metal"
+      ],
+      "external_special_roots": [],
+      "workbench_level_min": 3,
+      "required_tools": [
+        {
+          "item_id": "tool_repair_pliers",
+          "count": 1,
+          "consume": false
+        }
+      ]
+    },
+    {
+      "recipe_id": "manufacturing.tool_steel_basin_pharmacy",
+      "item_id": "tool_steel_basin_pharmacy",
+      "name": "钢盆",
+      "unlock_rule": "L",
+      "station": "metal",
+      "methods": [
+        "iron"
+      ],
+      "work_profile": "standard",
+      "ticks": 6,
+      "stamina": 6,
+      "output_count": 1,
+      "inputs": [
+        {
+          "item_id": "material_stainless_sheet",
+          "count": 1
+        }
+      ],
+      "discovery_source": "medical_records",
+      "status": "新增试调配方，未实装",
+      "balance_snapshot": {
+        "input_weight_kg": 0.8,
+        "output_weight_kg": 0.6,
+        "mass_difference_kg": 0.2
+      },
+      "unlock": {
+        "kind": "skill_level",
+        "skill_id": "life_pharmacy",
+        "level": 3,
+        "grants": {
+          "recipe": true,
+          "structure": true,
+          "listed_material_relations": true,
+          "recipe_scoped_processes": true,
+          "other_recipes": false,
+          "upstream_industrial_production": false,
+          "hidden_item_properties": false,
+          "use_recipes_or_tactics": false
+        },
+        "experience_on_unlock": 0,
+        "persistent": true,
+        "linked_processing_grants": []
+      },
+      "material_roots": [
+        "material_stainless_sheet"
+      ],
+      "external_special_roots": [
+        "material_stainless_sheet"
+      ],
+      "workbench_level_min": 2,
+      "required_tools": [
+        {
+          "item_id": "tool_repair_hammer",
+          "count": 1,
+          "consume": false
+        }
+      ]
+    },
+    {
+      "recipe_id": "manufacturing.tool_garlic_press_pharmacy",
+      "item_id": "tool_garlic_press_pharmacy",
+      "name": "压蒜器",
+      "unlock_rule": "X",
+      "station": "metal",
+      "methods": [
+        "iron",
+        "assembly"
+      ],
+      "work_profile": "complex",
+      "ticks": 6,
+      "stamina": 6,
+      "output_count": 1,
+      "inputs": [
+        {
+          "item_id": "material_iron_blank_common",
+          "count": 1
+        },
+        {
+          "item_id": "mechanical_parts",
+          "count": 1
+        }
+      ],
+      "discovery_source": "medical_records",
+      "status": "新增试调配方，未实装",
+      "balance_snapshot": {
+        "input_weight_kg": 1.2,
+        "output_weight_kg": 0.3,
+        "mass_difference_kg": 0.9
+      },
+      "unlock": {
+        "kind": "exploration",
+        "interest_point": "pharmacy_tools",
+        "complete_record_route": {
+          "research_profile": "record",
+          "grants": {
+            "recipe": true,
+            "structure": true,
+            "listed_material_relations": true,
+            "recipe_scoped_processes": true,
+            "other_recipes": false,
+            "upstream_industrial_production": false,
+            "hidden_item_properties": false,
+            "use_recipes_or_tactics": false
+          }
+        },
+        "hard_skill_level": null,
+        "persistent": true,
+        "sample_route": {
+          "research_profile": "M",
+          "consumes_sample": true,
+          "research_eligibility": "关键可研究结构完整；消耗前清空内容物并卸下外接子树",
+          "grants": "complete_standard_recipe_from_listed_inputs",
+          "missing_processes": []
+        },
+        "linked_processing_grants": []
+      },
+      "material_roots": [
+        "ore_scrap_metal",
+        "mechanical_parts"
+      ],
+      "external_special_roots": [],
+      "workbench_level_min": 2,
+      "required_tools": [
+        {
+          "item_id": "tool_repair_hammer",
+          "count": 1,
+          "consume": false
+        },
+        {
+          "item_id": "tool_repair_pliers",
+          "count": 1,
+          "consume": false
+        }
+      ]
+    },
+    {
+      "recipe_id": "manufacturing.tool_mortar_pharmacy",
+      "item_id": "tool_mortar_pharmacy",
+      "name": "药钵",
+      "unlock_rule": "L",
+      "station": "kiln",
+      "methods": [
+        "pottery",
+        "wood"
+      ],
+      "work_profile": "standard",
+      "ticks": 8,
+      "stamina": 6,
+      "output_count": 1,
+      "inputs": [
+        {
+          "item_id": "ore_clay_raw",
+          "count": 2
+        },
+        {
+          "item_id": "wood_olive",
+          "count": 1
+        }
+      ],
+      "discovery_source": "medical_records",
+      "status": "新增试调配方，未实装",
+      "balance_snapshot": {
+        "input_weight_kg": 1,
+        "output_weight_kg": 0.6,
+        "mass_difference_kg": 0.4
+      },
+      "unlock": {
+        "kind": "skill_level",
+        "skill_id": "life_pharmacy",
+        "level": 1,
+        "grants": {
+          "recipe": true,
+          "structure": true,
+          "listed_material_relations": true,
+          "recipe_scoped_processes": true,
+          "other_recipes": false,
+          "upstream_industrial_production": false,
+          "hidden_item_properties": false,
+          "use_recipes_or_tactics": false
+        },
+        "experience_on_unlock": 0,
+        "persistent": true,
+        "linked_processing_grants": []
+      },
+      "material_roots": [
+        "ore_clay_raw",
+        "wood_olive"
+      ],
+      "external_special_roots": [],
+      "workbench_level_min": 1,
+      "required_tools": []
+    },
+    {
+      "recipe_id": "manufacturing.tool_roller_pharmacy",
+      "item_id": "tool_roller_pharmacy",
+      "name": "卷药器",
+      "unlock_rule": "X",
+      "station": "bench",
+      "methods": [
+        "wood",
+        "assembly"
+      ],
+      "work_profile": "complex",
+      "ticks": 6,
+      "stamina": 4,
+      "output_count": 1,
+      "inputs": [
+        {
+          "item_id": "wood_olive",
+          "count": 1
+        },
+        {
+          "item_id": "mechanical_parts",
+          "count": 1
+        }
+      ],
+      "discovery_source": "medical_records",
+      "status": "新增试调配方，未实装",
+      "balance_snapshot": {
+        "input_weight_kg": 1.3,
+        "output_weight_kg": 0.35,
+        "mass_difference_kg": 0.95
+      },
+      "unlock": {
+        "kind": "exploration",
+        "interest_point": "pharmacy_tools",
+        "complete_record_route": {
+          "research_profile": "record",
+          "grants": {
+            "recipe": true,
+            "structure": true,
+            "listed_material_relations": true,
+            "recipe_scoped_processes": true,
+            "other_recipes": false,
+            "upstream_industrial_production": false,
+            "hidden_item_properties": false,
+            "use_recipes_or_tactics": false
+          }
+        },
+        "hard_skill_level": null,
+        "persistent": true,
+        "sample_route": {
+          "research_profile": "M",
+          "consumes_sample": true,
+          "research_eligibility": "关键可研究结构完整；消耗前清空内容物并卸下外接子树",
+          "grants": "complete_standard_recipe_from_listed_inputs",
+          "missing_processes": []
+        },
+        "linked_processing_grants": []
+      },
+      "material_roots": [
+        "wood_olive",
+        "mechanical_parts"
+      ],
+      "external_special_roots": [],
+      "workbench_level_min": 2,
+      "required_tools": []
+    },
+    {
+      "recipe_id": "manufacturing.tool_syringe_pharmacy",
+      "item_id": "tool_syringe_pharmacy",
+      "name": "注射器",
+      "unlock_rule": "X",
+      "station": "precision",
+      "methods": [
+        "medical",
+        "glass",
+        "iron"
+      ],
+      "work_profile": "specialist",
+      "ticks": 8,
+      "stamina": 6,
+      "output_count": 1,
+      "inputs": [
+        {
+          "item_id": "item_glass",
+          "count": 1
+        },
+        {
+          "item_id": "material_iron_blank_common",
+          "count": 1
+        },
+        {
+          "item_id": "sewing_rubber_sheet",
+          "count": 1
+        }
+      ],
+      "discovery_source": "medical_records",
+      "status": "新增试调配方，未实装",
+      "balance_snapshot": {
+        "input_weight_kg": 1.4,
+        "output_weight_kg": 0.15,
+        "mass_difference_kg": 1.25
+      },
+      "unlock": {
+        "kind": "exploration",
+        "interest_point": "medical",
+        "complete_record_route": {
+          "research_profile": "record",
+          "grants": {
+            "recipe": true,
+            "structure": true,
+            "listed_material_relations": true,
+            "recipe_scoped_processes": true,
+            "other_recipes": false,
+            "upstream_industrial_production": false,
+            "hidden_item_properties": false,
+            "use_recipes_or_tactics": false
+          }
+        },
+        "hard_skill_level": null,
+        "persistent": true,
+        "linked_processing_grants": []
+      },
+      "support_facilities": [
+        "kiln"
+      ],
+      "material_note": "器筒、针头与密封件加工合入专业配方，不新增医用组件包；保持已有可重复使用玻璃注射器身份，游戏抽象不新增临床效能",
+      "material_roots": [
+        "item_glass",
+        "ore_scrap_metal",
+        "sewing_rubber_sheet"
+      ],
+      "external_special_roots": [],
+      "workbench_level_min": 3,
+      "required_tools": [
+        {
+          "item_id": "tool_repair_pliers",
+          "count": 1,
+          "consume": false
+        }
+      ]
+    },
+    {
+      "recipe_id": "manufacturing.tool_iv_set_pharmacy",
+      "item_id": "tool_iv_set_pharmacy",
+      "name": "输液器",
+      "unlock_rule": "X",
+      "station": "precision",
+      "methods": [
+        "medical",
+        "wire"
+      ],
+      "work_profile": "specialist",
+      "ticks": 16,
+      "stamina": 12,
+      "output_count": 2,
+      "inputs": [
+        {
+          "item_id": "sewing_rubber_sheet",
+          "count": 1
+        },
+        {
+          "item_id": "material_steel_wire",
+          "count": 1
+        }
+      ],
+      "discovery_source": "medical_records",
+      "status": "新增试调配方，未实装",
+      "balance_snapshot": {
+        "input_weight_kg": 0.3,
+        "output_weight_kg": 0.2,
+        "mass_difference_kg": 0.1
+      },
+      "unlock": {
+        "kind": "exploration",
+        "interest_point": "medical",
+        "complete_record_route": {
+          "research_profile": "record",
+          "grants": {
+            "recipe": true,
+            "structure": true,
+            "listed_material_relations": true,
+            "recipe_scoped_processes": true,
+            "other_recipes": false,
+            "upstream_industrial_production": false,
+            "hidden_item_properties": false,
+            "use_recipes_or_tactics": false
+          }
+        },
+        "hard_skill_level": null,
+        "persistent": true,
+        "linked_processing_grants": [
+          "manufacturing.draw_steel_wire"
+        ]
+      },
+      "material_note": "软管与针头整形、清洁和装配合入专业工序；保持既有一次性用品行为，不以原橡胶片可直接使用替代完整加工",
+      "material_roots": [
+        "sewing_rubber_sheet",
+        "ore_steel_ingot"
+      ],
+      "external_special_roots": [],
+      "workbench_level_min": 3,
+      "required_tools": [
+        {
+          "item_id": "tool_repair_pliers",
+          "count": 1,
+          "consume": false
+        }
+      ]
+    },
+    {
+      "recipe_id": "manufacturing.soil_amend_yellow_cotton",
+      "item_id": "soil_amend_yellow_cotton",
+      "name": "黄绵土客土",
+      "unlock_rule": "LT",
+      "station": "soil",
+      "methods": [
+        "soil"
+      ],
+      "work_profile": "routine",
+      "ticks": 6,
+      "stamina": 8,
+      "output_count": 4,
+      "inputs": [
+        {
+          "item_id": "compost_matrix_grade_low",
+          "count": 3
+        },
+        {
+          "item_id": "ore_clay_raw",
+          "count": 3
+        },
+        {
+          "item_id": "ore_limestone",
+          "count": 1
+        },
+        {
+          "item_id": "textile_hemp_cloth",
+          "count": 4
+        }
+      ],
+      "input_alternatives": {
+        "compost_matrix_grade_low": [
+          {
+            "item_id": "compost_matrix_grade_mid",
+            "count": 3
+          },
+          {
+            "item_id": "compost_matrix_grade_high",
+            "count": 3
+          }
+        ]
+      },
+      "discovery_source": "soil_sources",
+      "status": "新增试调配方，未实装",
+      "balance_snapshot": {
+        "input_weight_kg": 10.95,
+        "output_weight_kg": 10,
+        "mass_difference_kg": 0.95
+      },
+      "unlock": {
+        "kind": "skill_and_soil_evidence",
+        "skill_id": "life_planting",
+        "level": 5,
+        "soil_evidence_key": "soil_source.yellow_cotton",
+        "evidence": "实际观察对应土壤地貌，或检查已取得的同种客土成品；不消耗土样，不新增原土物品；到达区域不自动完成",
+        "complete_record_alternative": true,
+        "grants": {
+          "recipe": true,
+          "structure": true,
+          "listed_material_relations": true,
+          "recipe_scoped_processes": true,
+          "other_recipes": false,
+          "upstream_industrial_production": false,
+          "hidden_item_properties": false,
+          "use_recipes_or_tactics": false
+        },
+        "experience_on_unlock": 0,
+        "persistent": true,
+        "linked_processing_grants": []
+      },
+      "material_note": "沿用23号基质经制造成为换土材料的游戏抽象；矿物粉碎和混配包含在配方中，不新增原土、石粉与土源额度",
+      "material_roots": [
+        "compost_matrix_grade_low",
+        "ore_clay_raw",
+        "ore_limestone",
+        "textile_hemp_cloth"
+      ],
+      "external_special_roots": [],
+      "workbench_level_min": 1,
+      "required_tools": []
+    },
+    {
+      "recipe_id": "manufacturing.soil_amend_cinnamon",
+      "item_id": "soil_amend_cinnamon",
+      "name": "褐土客土",
+      "unlock_rule": "LT",
+      "station": "soil",
+      "methods": [
+        "soil"
+      ],
+      "work_profile": "routine",
+      "ticks": 6,
+      "stamina": 8,
+      "output_count": 4,
+      "inputs": [
+        {
+          "item_id": "compost_matrix_grade_low",
+          "count": 3
+        },
+        {
+          "item_id": "ore_clay_raw",
+          "count": 1
+        },
+        {
+          "item_id": "ore_limestone",
+          "count": 1
+        },
+        {
+          "item_id": "textile_hemp_cloth",
+          "count": 4
+        }
+      ],
+      "input_alternatives": {
+        "compost_matrix_grade_low": [
+          {
+            "item_id": "compost_matrix_grade_mid",
+            "count": 3
+          },
+          {
+            "item_id": "compost_matrix_grade_high",
+            "count": 3
+          }
+        ]
+      },
+      "discovery_source": "soil_sources",
+      "status": "新增试调配方，未实装",
+      "balance_snapshot": {
+        "input_weight_kg": 10.25,
+        "output_weight_kg": 10,
+        "mass_difference_kg": 0.25
+      },
+      "unlock": {
+        "kind": "skill_and_soil_evidence",
+        "skill_id": "life_planting",
+        "level": 5,
+        "soil_evidence_key": "soil_source.cinnamon",
+        "evidence": "实际观察对应土壤地貌，或检查已取得的同种客土成品；不消耗土样，不新增原土物品；到达区域不自动完成",
+        "complete_record_alternative": true,
+        "grants": {
+          "recipe": true,
+          "structure": true,
+          "listed_material_relations": true,
+          "recipe_scoped_processes": true,
+          "other_recipes": false,
+          "upstream_industrial_production": false,
+          "hidden_item_properties": false,
+          "use_recipes_or_tactics": false
+        },
+        "experience_on_unlock": 0,
+        "persistent": true,
+        "linked_processing_grants": []
+      },
+      "material_note": "沿用23号基质经制造成为换土材料的游戏抽象；矿物粉碎和混配包含在配方中，不新增原土、石粉与土源额度",
+      "material_roots": [
+        "compost_matrix_grade_low",
+        "ore_clay_raw",
+        "ore_limestone",
+        "textile_hemp_cloth"
+      ],
+      "external_special_roots": [],
+      "workbench_level_min": 1,
+      "required_tools": []
+    },
+    {
+      "recipe_id": "manufacturing.soil_amend_purple",
+      "item_id": "soil_amend_purple",
+      "name": "紫色土客土",
+      "unlock_rule": "LT",
+      "station": "soil",
+      "methods": [
+        "soil"
+      ],
+      "work_profile": "routine",
+      "ticks": 6,
+      "stamina": 8,
+      "output_count": 4,
+      "inputs": [
+        {
+          "item_id": "compost_matrix_grade_low",
+          "count": 3
+        },
+        {
+          "item_id": "ore_granite",
+          "count": 1
+        },
+        {
+          "item_id": "ore_clay_raw",
+          "count": 1
+        },
+        {
+          "item_id": "textile_hemp_cloth",
+          "count": 4
+        }
+      ],
+      "input_alternatives": {
+        "compost_matrix_grade_low": [
+          {
+            "item_id": "compost_matrix_grade_mid",
+            "count": 3
+          },
+          {
+            "item_id": "compost_matrix_grade_high",
+            "count": 3
+          }
+        ]
+      },
+      "discovery_source": "soil_sources",
+      "status": "新增试调配方，未实装",
+      "balance_snapshot": {
+        "input_weight_kg": 12.45,
+        "output_weight_kg": 10,
+        "mass_difference_kg": 2.45
+      },
+      "unlock": {
+        "kind": "skill_and_soil_evidence",
+        "skill_id": "life_planting",
+        "level": 5,
+        "soil_evidence_key": "soil_source.purple",
+        "evidence": "实际观察对应土壤地貌，或检查已取得的同种客土成品；不消耗土样，不新增原土物品；到达区域不自动完成",
+        "complete_record_alternative": true,
+        "grants": {
+          "recipe": true,
+          "structure": true,
+          "listed_material_relations": true,
+          "recipe_scoped_processes": true,
+          "other_recipes": false,
+          "upstream_industrial_production": false,
+          "hidden_item_properties": false,
+          "use_recipes_or_tactics": false
+        },
+        "experience_on_unlock": 0,
+        "persistent": true,
+        "linked_processing_grants": []
+      },
+      "material_note": "沿用23号基质经制造成为换土材料的游戏抽象；矿物粉碎和混配包含在配方中，不新增原土、石粉与土源额度",
+      "material_roots": [
+        "compost_matrix_grade_low",
+        "ore_granite",
+        "ore_clay_raw",
+        "textile_hemp_cloth"
+      ],
+      "external_special_roots": [],
+      "workbench_level_min": 1,
+      "required_tools": []
+    },
+    {
+      "recipe_id": "manufacturing.soil_amend_red",
+      "item_id": "soil_amend_red",
+      "name": "红壤客土",
+      "unlock_rule": "LT",
+      "station": "soil",
+      "methods": [
+        "soil"
+      ],
+      "work_profile": "routine",
+      "ticks": 6,
+      "stamina": 8,
+      "output_count": 4,
+      "inputs": [
+        {
+          "item_id": "compost_matrix_grade_low",
+          "count": 2
+        },
+        {
+          "item_id": "ore_iron_raw",
+          "count": 1
+        },
+        {
+          "item_id": "ore_clay_raw",
+          "count": 3
+        },
+        {
+          "item_id": "textile_hemp_cloth",
+          "count": 4
+        }
+      ],
+      "input_alternatives": {
+        "compost_matrix_grade_low": [
+          {
+            "item_id": "compost_matrix_grade_mid",
+            "count": 2
+          },
+          {
+            "item_id": "compost_matrix_grade_high",
+            "count": 2
+          }
+        ]
+      },
+      "discovery_source": "soil_sources",
+      "status": "新增试调配方，未实装",
+      "balance_snapshot": {
+        "input_weight_kg": 10.15,
+        "output_weight_kg": 10,
+        "mass_difference_kg": 0.15
+      },
+      "unlock": {
+        "kind": "skill_and_soil_evidence",
+        "skill_id": "life_planting",
+        "level": 5,
+        "soil_evidence_key": "soil_source.red",
+        "evidence": "实际观察对应土壤地貌，或检查已取得的同种客土成品；不消耗土样，不新增原土物品；到达区域不自动完成",
+        "complete_record_alternative": true,
+        "grants": {
+          "recipe": true,
+          "structure": true,
+          "listed_material_relations": true,
+          "recipe_scoped_processes": true,
+          "other_recipes": false,
+          "upstream_industrial_production": false,
+          "hidden_item_properties": false,
+          "use_recipes_or_tactics": false
+        },
+        "experience_on_unlock": 0,
+        "persistent": true,
+        "linked_processing_grants": []
+      },
+      "material_note": "沿用23号基质经制造成为换土材料的游戏抽象；矿物粉碎和混配包含在配方中，不新增原土、石粉与土源额度",
+      "material_roots": [
+        "compost_matrix_grade_low",
+        "ore_iron_raw",
+        "ore_clay_raw",
+        "textile_hemp_cloth"
+      ],
+      "external_special_roots": [],
+      "workbench_level_min": 1,
+      "required_tools": []
+    },
+    {
+      "recipe_id": "manufacturing.soil_amend_alpine_meadow",
+      "item_id": "soil_amend_alpine_meadow",
+      "name": "高山草甸土客土",
+      "unlock_rule": "LT",
+      "station": "soil",
+      "methods": [
+        "soil"
+      ],
+      "work_profile": "routine",
+      "ticks": 6,
+      "stamina": 8,
+      "output_count": 4,
+      "inputs": [
+        {
+          "item_id": "compost_matrix_grade_low",
+          "count": 3
+        },
+        {
+          "item_id": "wood_bits",
+          "count": 2
+        },
+        {
+          "item_id": "textile_coir",
+          "count": 1
+        },
+        {
+          "item_id": "textile_hemp_cloth",
+          "count": 4
+        }
+      ],
+      "input_alternatives": {
+        "compost_matrix_grade_low": [
+          {
+            "item_id": "compost_matrix_grade_mid",
+            "count": 3
+          },
+          {
+            "item_id": "compost_matrix_grade_high",
+            "count": 3
+          }
+        ]
+      },
+      "discovery_source": "soil_sources",
+      "status": "新增试调配方，未实装",
+      "balance_snapshot": {
+        "input_weight_kg": 10.2,
+        "output_weight_kg": 10,
+        "mass_difference_kg": 0.2
+      },
+      "unlock": {
+        "kind": "skill_and_soil_evidence",
+        "skill_id": "life_planting",
+        "level": 5,
+        "soil_evidence_key": "soil_source.alpine_meadow",
+        "evidence": "实际观察对应土壤地貌，或检查已取得的同种客土成品；不消耗土样，不新增原土物品；到达区域不自动完成",
+        "complete_record_alternative": true,
+        "grants": {
+          "recipe": true,
+          "structure": true,
+          "listed_material_relations": true,
+          "recipe_scoped_processes": true,
+          "other_recipes": false,
+          "upstream_industrial_production": false,
+          "hidden_item_properties": false,
+          "use_recipes_or_tactics": false
+        },
+        "experience_on_unlock": 0,
+        "persistent": true,
+        "linked_processing_grants": []
+      },
+      "material_note": "沿用23号基质经制造成为换土材料的游戏抽象；矿物粉碎和混配包含在配方中，不新增原土、石粉与土源额度",
+      "material_roots": [
+        "compost_matrix_grade_low",
+        "wood_bits",
+        "textile_coir",
+        "textile_hemp_cloth"
+      ],
+      "external_special_roots": [],
+      "workbench_level_min": 1,
+      "required_tools": []
+    },
+    {
+      "recipe_id": "manufacturing.soil_amend_paddy",
+      "item_id": "soil_amend_paddy",
+      "name": "水稻土客土",
+      "unlock_rule": "LT",
+      "station": "soil",
+      "methods": [
+        "soil"
+      ],
+      "work_profile": "routine",
+      "ticks": 6,
+      "stamina": 8,
+      "output_count": 4,
+      "inputs": [
+        {
+          "item_id": "compost_matrix_grade_low",
+          "count": 3
+        },
+        {
+          "item_id": "ore_clay_raw",
+          "count": 4
+        },
+        {
+          "item_id": "textile_hemp_cloth",
+          "count": 4
+        }
+      ],
+      "input_alternatives": {
+        "compost_matrix_grade_low": [
+          {
+            "item_id": "compost_matrix_grade_mid",
+            "count": 3
+          },
+          {
+            "item_id": "compost_matrix_grade_high",
+            "count": 3
+          }
+        ]
+      },
+      "discovery_source": "soil_sources",
+      "status": "新增试调配方，未实装",
+      "balance_snapshot": {
+        "input_weight_kg": 10.5,
+        "output_weight_kg": 10,
+        "mass_difference_kg": 0.5
+      },
+      "unlock": {
+        "kind": "skill_and_soil_evidence",
+        "skill_id": "life_planting",
+        "level": 5,
+        "soil_evidence_key": "soil_source.paddy",
+        "evidence": "实际观察对应土壤地貌，或检查已取得的同种客土成品；不消耗土样，不新增原土物品；到达区域不自动完成",
+        "complete_record_alternative": true,
+        "grants": {
+          "recipe": true,
+          "structure": true,
+          "listed_material_relations": true,
+          "recipe_scoped_processes": true,
+          "other_recipes": false,
+          "upstream_industrial_production": false,
+          "hidden_item_properties": false,
+          "use_recipes_or_tactics": false
+        },
+        "experience_on_unlock": 0,
+        "persistent": true,
+        "linked_processing_grants": []
+      },
+      "material_note": "沿用23号基质经制造成为换土材料的游戏抽象；矿物粉碎和混配包含在配方中，不新增原土、石粉与土源额度",
+      "material_roots": [
+        "compost_matrix_grade_low",
+        "ore_clay_raw",
+        "textile_hemp_cloth"
+      ],
+      "external_special_roots": [],
+      "workbench_level_min": 1,
+      "required_tools": []
+    },
+    {
+      "recipe_id": "manufacturing.soil_amend_black",
+      "item_id": "soil_amend_black",
+      "name": "典型黑土客土",
+      "unlock_rule": "LT",
+      "station": "soil",
+      "methods": [
+        "soil"
+      ],
+      "work_profile": "routine",
+      "ticks": 6,
+      "stamina": 8,
+      "output_count": 4,
+      "inputs": [
+        {
+          "item_id": "compost_matrix_grade_low",
+          "count": 3
+        },
+        {
+          "item_id": "wood_charcoal",
+          "count": 3
+        },
+        {
+          "item_id": "textile_hemp_cloth",
+          "count": 4
+        }
+      ],
+      "input_alternatives": {
+        "compost_matrix_grade_low": [
+          {
+            "item_id": "compost_matrix_grade_mid",
+            "count": 3
+          },
+          {
+            "item_id": "compost_matrix_grade_high",
+            "count": 3
+          }
+        ]
+      },
+      "discovery_source": "soil_sources",
+      "status": "新增试调配方，未实装",
+      "balance_snapshot": {
+        "input_weight_kg": 10.3,
+        "output_weight_kg": 10,
+        "mass_difference_kg": 0.3
+      },
+      "unlock": {
+        "kind": "skill_and_soil_evidence",
+        "skill_id": "life_planting",
+        "level": 5,
+        "soil_evidence_key": "soil_source.black",
+        "evidence": "实际观察对应土壤地貌，或检查已取得的同种客土成品；不消耗土样，不新增原土物品；到达区域不自动完成",
+        "complete_record_alternative": true,
+        "grants": {
+          "recipe": true,
+          "structure": true,
+          "listed_material_relations": true,
+          "recipe_scoped_processes": true,
+          "other_recipes": false,
+          "upstream_industrial_production": false,
+          "hidden_item_properties": false,
+          "use_recipes_or_tactics": false
+        },
+        "experience_on_unlock": 0,
+        "persistent": true,
+        "linked_processing_grants": []
+      },
+      "material_note": "沿用23号基质经制造成为换土材料的游戏抽象；矿物粉碎和混配包含在配方中，不新增原土、石粉与土源额度",
+      "material_roots": [
+        "compost_matrix_grade_low",
+        "wood_charcoal",
+        "textile_hemp_cloth"
+      ],
+      "external_special_roots": [],
+      "workbench_level_min": 1,
+      "required_tools": []
+    },
+    {
+      "recipe_id": "existing_hunting.consumable_hunting_net",
+      "item_id": "consumable_hunting_net",
+      "name": "捕网",
+      "unlock_rule": "L",
+      "station": "simple",
+      "methods": [],
+      "work_profile": "existing_hunting",
+      "ticks": 1,
+      "stamina": 4,
+      "output_count": 1,
+      "inputs": [
+        {
+          "item_id": "textile_coir",
+          "count": 2
+        }
+      ],
+      "discovery_source": "existing_hunting",
+      "status": "既有狩猎用料、费用与执行器保留；本轮仅提议接入技能解锁与旧认知兼容",
+      "balance_snapshot": {
+        "input_weight_kg": 1,
+        "output_weight_kg": 0.4,
+        "mass_difference_kg": 0.6
+      },
+      "unlock": {
+        "kind": "skill_level",
+        "skill_id": "life_hunting",
+        "level": 1,
+        "grants": {
+          "recipe": true,
+          "structure": true,
+          "listed_material_relations": true,
+          "recipe_scoped_processes": true,
+          "other_recipes": false,
+          "upstream_industrial_production": false,
+          "hidden_item_properties": false,
+          "use_recipes_or_tactics": false
+        },
+        "experience_on_unlock": 0,
+        "persistent": true,
+        "legacy_alternative": {
+          "existing_craft_access": true
+        },
+        "linked_processing_grants": []
+      },
+      "workbench_level_min": 0,
+      "required_tools": []
+    },
+    {
+      "recipe_id": "existing_hunting.consumable_hunting_snare",
+      "item_id": "consumable_hunting_snare",
+      "name": "套索",
+      "unlock_rule": "L",
+      "station": "simple",
+      "methods": [],
+      "work_profile": "existing_hunting",
+      "ticks": 1,
+      "stamina": 3,
+      "output_count": 1,
+      "inputs": [
+        {
+          "item_id": "textile_coir",
+          "count": 1
+        }
+      ],
+      "discovery_source": "existing_hunting",
+      "status": "既有狩猎用料、费用与执行器保留；本轮仅提议接入技能解锁与旧认知兼容",
+      "balance_snapshot": {
+        "input_weight_kg": 0.5,
+        "output_weight_kg": 0.2,
+        "mass_difference_kg": 0.3
+      },
+      "unlock": {
+        "kind": "skill_level",
+        "skill_id": "life_hunting",
+        "level": 5,
+        "grants": {
+          "recipe": true,
+          "structure": true,
+          "listed_material_relations": true,
+          "recipe_scoped_processes": true,
+          "other_recipes": false,
+          "upstream_industrial_production": false,
+          "hidden_item_properties": false,
+          "use_recipes_or_tactics": false
+        },
+        "experience_on_unlock": 0,
+        "persistent": true,
+        "legacy_alternative": {
+          "all_flags": [
+            "snare_tightening",
+            "snare_anchor"
+          ]
+        },
+        "additional_grants": [
+          "snare_tightening",
+          "snare_anchor"
+        ],
+        "linked_processing_grants": []
+      },
+      "workbench_level_min": 0,
+      "required_tools": []
+    },
+    {
+      "recipe_id": "existing_hunting.consumable_hunting_bait",
+      "item_id": "consumable_hunting_bait",
+      "name": "蔬菜诱饵",
+      "unlock_rule": "L",
+      "station": "simple",
+      "methods": [],
+      "work_profile": "existing_hunting",
+      "ticks": 1,
+      "stamina": 2,
+      "output_count": 1,
+      "inputs": [
+        {
+          "item_id": "herb_carrot",
+          "count": 1
+        }
+      ],
+      "discovery_source": "existing_hunting",
+      "status": "既有狩猎用料、费用与执行器保留；本轮仅提议接入技能解锁与旧认知兼容",
+      "balance_snapshot": {
+        "input_weight_kg": 1.25,
+        "output_weight_kg": 0.15,
+        "mass_difference_kg": 1.1
+      },
+      "unlock": {
+        "kind": "skill_level",
+        "skill_id": "life_hunting",
+        "level": 1,
+        "grants": {
+          "recipe": true,
+          "structure": true,
+          "listed_material_relations": true,
+          "recipe_scoped_processes": true,
+          "other_recipes": false,
+          "upstream_industrial_production": false,
+          "hidden_item_properties": false,
+          "use_recipes_or_tactics": false
+        },
+        "experience_on_unlock": 0,
+        "persistent": true,
+        "legacy_alternative": {
+          "existing_craft_access": true
+        },
+        "linked_processing_grants": []
+      },
+      "workbench_level_min": 0,
+      "required_tools": []
+    },
+    {
+      "recipe_id": "existing_hunting.consumable_javelin_stone",
+      "item_id": "consumable_javelin_stone",
+      "name": "石砾投枪",
+      "unlock_rule": "L",
+      "station": "simple",
+      "methods": [],
+      "work_profile": "existing_hunting",
+      "ticks": 1,
+      "stamina": 4,
+      "output_count": 1,
+      "inputs": [
+        {
+          "item_id": "wood_bamboo_green",
+          "count": 1
+        },
+        {
+          "item_id": "ore_limestone",
+          "count": 1
+        }
+      ],
+      "discovery_source": "existing_hunting",
+      "status": "既有狩猎用料、费用与执行器保留；本轮仅提议接入技能解锁与旧认知兼容",
+      "balance_snapshot": {
+        "input_weight_kg": 1.8,
+        "output_weight_kg": 1.8,
+        "mass_difference_kg": 0
+      },
+      "unlock": {
+        "kind": "skill_level",
+        "skill_id": "life_hunting",
+        "level": 1,
+        "grants": {
+          "recipe": true,
+          "structure": true,
+          "listed_material_relations": true,
+          "recipe_scoped_processes": true,
+          "other_recipes": false,
+          "upstream_industrial_production": false,
+          "hidden_item_properties": false,
+          "use_recipes_or_tactics": false
+        },
+        "experience_on_unlock": 0,
+        "persistent": true,
+        "legacy_alternative": {
+          "existing_craft_access": true
+        },
+        "linked_processing_grants": []
+      },
+      "workbench_level_min": 0,
+      "required_tools": []
+    },
+    {
+      "recipe_id": "existing_hunting.consumable_hunting_blood_kit",
+      "item_id": "consumable_hunting_blood_kit",
+      "name": "采血包",
+      "unlock_rule": "L",
+      "station": "simple",
+      "methods": [],
+      "work_profile": "existing_hunting",
+      "ticks": 1,
+      "stamina": 3,
+      "output_count": 1,
+      "inputs": [
+        {
+          "item_id": "item_glass",
+          "count": 1
+        },
+        {
+          "item_id": "textile_coir",
+          "count": 1
+        }
+      ],
+      "discovery_source": "existing_hunting",
+      "status": "既有狩猎用料、费用与执行器保留；本轮仅提议接入技能解锁与旧认知兼容",
+      "balance_snapshot": {
+        "input_weight_kg": 1.5,
+        "output_weight_kg": 0.2,
+        "mass_difference_kg": 1.3
+      },
+      "unlock": {
+        "kind": "skill_level",
+        "skill_id": "life_hunting",
+        "level": 1,
+        "grants": {
+          "recipe": true,
+          "structure": true,
+          "listed_material_relations": true,
+          "recipe_scoped_processes": true,
+          "other_recipes": false,
+          "upstream_industrial_production": false,
+          "hidden_item_properties": false,
+          "use_recipes_or_tactics": false
+        },
+        "experience_on_unlock": 0,
+        "persistent": true,
+        "legacy_alternative": {
+          "existing_craft_access": true
+        },
+        "linked_processing_grants": []
+      },
+      "workbench_level_min": 0,
+      "required_tools": []
+    },
+    {
+      "recipe_id": "existing_hunting.consumable_hunting_skin_kit",
+      "item_id": "consumable_hunting_skin_kit",
+      "name": "剥皮耗材包",
+      "unlock_rule": "L",
+      "station": "simple",
+      "methods": [],
+      "work_profile": "existing_hunting",
+      "ticks": 1,
+      "stamina": 3,
+      "output_count": 1,
+      "inputs": [
+        {
+          "item_id": "ore_limestone",
+          "count": 1
+        },
+        {
+          "item_id": "textile_coir",
+          "count": 1
+        }
+      ],
+      "discovery_source": "existing_hunting",
+      "status": "既有狩猎用料、费用与执行器保留；本轮仅提议接入技能解锁与旧认知兼容",
+      "balance_snapshot": {
+        "input_weight_kg": 1.3,
+        "output_weight_kg": 0.2,
+        "mass_difference_kg": 1.1
+      },
+      "unlock": {
+        "kind": "skill_level",
+        "skill_id": "life_hunting",
+        "level": 1,
+        "grants": {
+          "recipe": true,
+          "structure": true,
+          "listed_material_relations": true,
+          "recipe_scoped_processes": true,
+          "other_recipes": false,
+          "upstream_industrial_production": false,
+          "hidden_item_properties": false,
+          "use_recipes_or_tactics": false
+        },
+        "experience_on_unlock": 0,
+        "persistent": true,
+        "legacy_alternative": {
+          "existing_craft_access": true
+        },
+        "linked_processing_grants": []
+      },
+      "workbench_level_min": 0,
+      "required_tools": []
+    }
+  ],
+  "processing_recipes": [
+    {
+      "recipe_id": "manufacturing.process_ordinary_iron",
+      "item_id": "material_iron_blank_common",
+      "name": "普通铁坯",
+      "station": "metal",
+      "methods": [
+        "recovery"
+      ],
+      "work_profile": "routine",
+      "ticks": 4,
+      "stamina": 6,
+      "output_count": 3,
+      "inputs": [
+        {
+          "item_id": "ore_scrap_metal",
+          "count": 1
+        }
+      ],
+      "unlock_rule": "L",
+      "unlock": {
+        "kind": "skill_level",
+        "skill_id": "life_manufacturing",
+        "level": 1,
+        "experience_on_unlock": 0,
+        "persistent": true,
+        "grants": {
+          "recipe": true,
+          "recipe_scoped_processes": true
+        }
+      },
+      "balance_snapshot": {
+        "input_weight_kg": 3,
+        "output_weight_kg": 0.6,
+        "mass_difference_kg": 2.4
+      },
+      "runtime_status": "design_only",
+      "workbench_level_min": 1,
+      "required_tools": []
+    },
+    {
+      "recipe_id": "manufacturing.draw_steel_wire",
+      "item_id": "material_steel_wire",
+      "name": "钢丝料",
+      "station": "metal",
+      "methods": [
+        "wire"
+      ],
+      "work_profile": "routine",
+      "ticks": 6,
+      "stamina": 8,
+      "output_count": 3,
+      "inputs": [
+        {
+          "item_id": "ore_steel_ingot",
+          "count": 1
+        }
+      ],
+      "unlock_rule": "linked",
+      "unlock": {
+        "kind": "any_known_recipe",
+        "recipe_ids": [
+          "manufacturing.fishing_leader_lure_wire",
+          "manufacturing.fishing_hook_single_small",
+          "manufacturing.fishing_hook_single_medium",
+          "manufacturing.fishing_lure_frog",
+          "manufacturing.tool_sewing_kit_cloth",
+          "manufacturing.tool_strainer_pot_pharmacy",
+          "manufacturing.tool_iv_set_pharmacy"
+        ],
+        "persistent": true,
+        "experience_on_unlock": 0
+      },
+      "balance_snapshot": {
+        "input_weight_kg": 2.1,
+        "output_weight_kg": 0.3,
+        "mass_difference_kg": 1.8
+      },
+      "runtime_status": "design_only",
+      "workbench_level_min": 1,
+      "required_tools": []
+    }
+  ],
+  "numeric_rules": {
+    "skill_range": [
+      1,
+      100
+    ],
+    "success_formula": "routine:1; other:clamp(base+0.002*(L-1)-0.01*max(0,recommended-L),0.25,0.98)",
+    "stamina_formula": "ceil_0.1(base_stamina*(1-0.002*L)*existing_environment_multiplier)",
+    "skill_discount_applies_to": [
+      "manufacture",
+      "process",
+      "maintenance"
+    ],
+    "time_formula": "base_ticks; no skill time reduction",
+    "success_experience_formula": "base_ticks",
+    "failure_experience_formula": "base_ticks*0.25",
+    "next_level_experience_formula": "50*L+50",
+    "cumulative_experience_formula": "25*(L-1)*(L+2)",
+    "research_experience_rule": "一次研究任务结算一次；只对新增知识发放，按任务预算不按字段个数叠加"
+  },
+  "knowledge_contract": {
+    "structure": "基础等级包或高级有效证据授予该标准型号；不鉴定未知样本全部配料与性能",
+    "methods": "基础等级包或高级完整证据授予本方案工序及明确关联的4种中间料加工；不扩展到所有上游工业生产",
+    "standard_recipe": "基础以等级为知识来源，高级以有效实物或记录为来源；任何路径均不扩大到未列出的型号",
+    "evidence": "按角色、知识内容与授予事实幂等；重复点位或副本不重复发经验",
+    "skills": "解锁技能决定何时学会，制造技能影响在制造台执行；解锁不发经验，知识不因掉级删除"
+  },
+  "lifecycle": {
+    "material_commit": "首个有效工作tick前原子扣除当前批全部投入并保存任务种子；未来批不预扣",
+    "pause": "保留同一任务、进度和种子；无离线推进",
+    "cancel": "未开始不扣料；已开始的当前批投入不退，未来批不扣；不发经验",
+    "failure": "当前批不产成品、投入不退、给25%工作经验；不新增泛用废料物品",
+    "delivery": "成品与经验一次提交；放不下则停在唯一完成待领取状态，不能丢弃或重复生成",
+    "spoilage": "已投入易腐材料保留原到期tick，暂停不冻结；未完成时变质报废且不给未完成工作经验；待领取成品按生成时刻继续腐败",
+    "death": "基地已投入的生产任务沿用生产存货豁免；不补发随身物品，不允许退回任务原料保护背包",
+    "requirements": "开始、恢复、逐tick和结算校验同一台体及工具；下一批重新检查并选定工具，不把上一批的满足状态当作永久权限",
+    "tool_commit": "工具只锁定引用，材料才转入生产投入；任务提交、占用和释放必须可原子回滚，旧任务版本按其保存的条件执行"
+  },
+  "maintenance": {
+    "targets": [
+      "fishing_rod_hand_basic",
+      "fishing_rod_lure_basic",
+      "fishing_reel_basic"
+    ],
+    "eligibility": "仍存在且fishing_broken为true的实例；拥有对应结构与维修方法；未卷入活动作业",
+    "result": "只清除fishing_broken；保留fishing_wear_stage、身份和全部无关字段；永久磨损不回退",
+    "costs": [
+      {
+        "item_id": "fishing_rod_hand_basic",
+        "ticks": 4,
+        "stamina": 4,
+        "inputs": [
+          {
+            "item_id": "resin_pine",
+            "count": 1
+          },
+          {
+            "item_id": "supply_rope_hemp_short",
+            "count": 1
+          }
+        ],
+        "station": "bench",
+        "workbench_level_min": 1,
+        "required_tools": []
+      },
+      {
+        "item_id": "fishing_rod_lure_basic",
+        "ticks": 6,
+        "stamina": 6,
+        "inputs": [
+          {
+            "item_id": "mechanical_parts",
+            "count": 1
+          },
+          {
+            "item_id": "resin_pine",
+            "count": 1
+          }
+        ],
+        "station": "precision",
+        "workbench_level_min": 2,
+        "required_tools": [
+          {
+            "item_id": "tool_repair_pliers",
+            "count": 1,
+            "consume": false
+          }
+        ]
+      },
+      {
+        "item_id": "fishing_reel_basic",
+        "ticks": 6,
+        "stamina": 6,
+        "inputs": [
+          {
+            "item_id": "mechanical_parts",
+            "count": 1
+          }
+        ],
+        "station": "precision",
+        "workbench_level_min": 2,
+        "required_tools": [
+          {
+            "item_id": "tool_repair_pliers",
+            "count": 1,
+            "consume": false
+          }
+        ]
+      }
+    ],
+    "completion": "有效维修固定成功，按本次基础tick给经验；无随机复原原料，不恢复已丢失子树",
+    "other_tools": "没有现役耐久消费者的工具不新增虚假维修；武器维修保持铸造规则",
+    "knowledge": "手竿随钓鱼1级配方掌握基础维修；路亚竿与渔轮由各自有效拆研或完整兴趣点资料授予维修方法",
+    "workbench": "手竿修理一级台；路亚竿与轮的换件维修二级台加精密工位和维修钳即可，不要求达到完整新件制造的三级"
+  },
+  "audit": {
+    "existing_items": 72,
+    "new_product_recipes": 56,
+    "preserved_hunting_recipes": 6,
+    "processing_recipes": 2,
+    "non_manufacturing_entries": 10,
+    "existing_materials": 69,
+    "proposed_material_concepts": 6,
+    "acyclic_material_dependencies": true,
+    "price_balance": "未通过经济定稿；原表大量价格为0、空值或占位，不能宣称无套利",
+    "unlock_distribution": {
+      "new_skill_level": 33,
+      "new_exploration": 16,
+      "new_soil_skill_and_evidence": 7,
+      "existing_hunting_skill_routes": 6,
+      "external_state_or_facilities": 10
+    },
+    "advanced_points_cover_all_16_targets": true,
+    "material_supply": {
+      "new_products": 56,
+      "existing_root_materials_only": 49,
+      "with_external_special_materials": 7,
+      "derived_intermediates": 2,
+      "external_special_material_types": 4,
+      "all_proposed_intermediates_have_existing_roots": true
+    },
+    "registered_new_materials": 8,
+    "workbench_level_distribution": {
+      "0": 4,
+      "1": 31,
+      "2": 15,
+      "3": 6
+    },
+    "processing_level_distribution": {
+      "1": 2
+    },
+    "tool_and_upgrade_dependencies_acyclic": true,
+    "required_tools_are_registered": true,
+    "retired_registered_materials": 2,
+    "mass_snapshot_semantics": "份数为配方计量，模板重量保留；有符号重量差仅作数据参考，允许负值，不用于约束批量或反推材料份数"
+  },
+  "review_revision": 8,
+  "unlock_policy": {
+    "confirmed_direction": "基础随对应生活技能等级，高级通过地牢探索研究仿制，兴趣点可提供配方",
+    "scope": "本次制造范围；不自动改写武器、防具、菜谱和药方",
+    "numeric_status": "等级1/3/5/10均为试调值",
+    "legacy_hunting": "五条入门配方保持开放，套索新增狩猎5级路径，原两项认知仍可独立满足制作条件；用料费用不变",
+    "skill_names": {
+      "life_manufacturing": "制造",
+      "life_fishing": "钓鱼",
+      "life_mining": "挖矿",
+      "life_logging": "伐木",
+      "life_weaving": "纺织",
+      "life_cooking": "烹饪",
+      "life_pharmacy": "制药",
+      "life_hunting": "狩猎",
+      "life_planting": "种植"
+    },
+    "basic_grant": {
+      "recipe": true,
+      "structure": true,
+      "listed_material_relations": true,
+      "recipe_scoped_processes": true,
+      "other_recipes": false,
+      "upstream_industrial_production": false,
+      "hidden_item_properties": false,
+      "use_recipes_or_tactics": false,
+      "explicit_linked_material_processes": true
+    },
+    "grant_event": "初始化、有效生活技能等级变化、读档迁移时幂等核对；1级配方无首个经验要求",
+    "persistent": "已学配方永久保留；掉级、死亡或转移样本不忘记",
+    "unlock_experience": 0,
+    "work_skill": "制造执行器以life_manufacturing计算成功率、费用与工作经验；解锁所属技能不重复获得制作经验；旧狩猎保留原执行器结算",
+    "advanced_requirement": "完整证据授予配方，不叠加生活技能或制造等级硬门槛；仍须满足配方最低台级、专业工位、工具、材料与行动条件",
+    "visibility": "未知配方隐藏；已经掌握的列入已学清单，缺台级、工具或材料时保留可见，禁用开工并显示已知缺项",
+    "basic_evidence_bypass": false,
+    "material_prerequisites": "必要中间料加工随首个使用它的完整配方授予，不另加研究材料或高级资料门槛"
+  },
+  "interest_points": {
+    "tackle_assembly": {
+      "name": "旧渔具维修桌",
+      "scene": "旧渔具储藏处或维修间",
+      "evidence": "待修渔轮、装配草图与维修手册",
+      "recipes": [
+        "fishing_rod_lure_basic",
+        "fishing_reel_basic"
+      ],
+      "sample": true,
+      "status": "待投放的设计模板，不代表现有地图已放置",
+      "grant_policy": "每个实例明确配置1至2个相关配方内容；recipes仅为候选池，不是一次全送",
+      "complete_evidence": "对应完整记录授予该方案结构、材料关系与所需工序",
+      "research_profile": "interest_point"
+    },
+    "tackle_special": {
+      "name": "拟饵与专用线材工作角",
+      "scene": "渔具店后间或渔具作业区",
+      "evidence": "拟饵模具、定规格工艺卡与实物",
+      "recipes": [
+        "fishing_leader_carbon",
+        "fishing_line_braid_fixed",
+        "fishing_leader_lure_wire",
+        "fishing_lure_frog"
+      ],
+      "sample": true,
+      "status": "待投放的设计模板，不代表现有地图已放置",
+      "grant_policy": "每个实例明确配置1至2个相关配方内容；recipes仅为候选池，不是一次全送",
+      "complete_evidence": "对应完整记录授予该方案结构、材料关系与所需工序",
+      "research_profile": "interest_point"
+    },
+    "repair": {
+      "name": "旧维修工位",
+      "scene": "厂房维修间",
+      "evidence": "可拆维修钳、装配图与夹持机构",
+      "recipes": [
+        "tool_repair_pliers"
+      ],
+      "sample": true,
+      "status": "待投放的设计模板，不代表现有地图已放置",
+      "grant_policy": "每个实例明确配置1至2个相关配方内容；recipes仅为候选池，不是一次全送",
+      "complete_evidence": "对应完整记录授予该方案结构、材料关系与所需工序",
+      "research_profile": "interest_point"
+    },
+    "fermentation": {
+      "name": "旧发酵作业区",
+      "scene": "厨房附间或食品作业间",
+      "evidence": "带密封结构的坛体、制作与维护记录",
+      "recipes": [
+        "tool_fermentation_jar_cooking"
+      ],
+      "sample": true,
+      "status": "待投放的设计模板，不代表现有地图已放置",
+      "grant_policy": "每个实例明确配置1至2个相关配方内容；recipes仅为候选池，不是一次全送",
+      "complete_evidence": "对应完整记录授予该方案结构、材料关系与所需工序",
+      "research_profile": "interest_point"
+    },
+    "pharmacy_tools": {
+      "name": "药房配制工作台",
+      "scene": "旧药房或配制间",
+      "evidence": "器具实物、玻璃成形与过滤材料记录",
+      "recipes": [
+        "tool_strainer_pot_pharmacy",
+        "tool_layer_filter_sheet_pharmacy",
+        "tool_long_handle_flask_pharmacy",
+        "tool_garlic_press_pharmacy",
+        "tool_roller_pharmacy"
+      ],
+      "sample": true,
+      "status": "待投放的设计模板，不代表现有地图已放置",
+      "grant_policy": "每个实例明确配置1至2个相关配方内容；recipes仅为候选池，不是一次全送",
+      "complete_evidence": "对应完整记录授予该方案结构、材料关系与所需工序",
+      "research_profile": "interest_point"
+    },
+    "distillation": {
+      "name": "蒸馏操作角",
+      "scene": "药房后间或旧实验室",
+      "evidence": "蒸馏装置、连接图与密封操作记录",
+      "recipes": [
+        "tool_distiller_pharmacy"
+      ],
+      "sample": false,
+      "status": "待投放的设计模板，不代表现有地图已放置",
+      "grant_policy": "每个实例明确配置1至2个相关配方内容；recipes仅为候选池，不是一次全送",
+      "complete_evidence": "对应完整记录授予该方案结构、材料关系与所需工序",
+      "research_profile": "interest_point"
+    },
+    "medical": {
+      "name": "医用器具装配台",
+      "scene": "旧诊所器材间",
+      "evidence": "玻璃、金属与橡胶材料与器具装配记录",
+      "recipes": [
+        "tool_syringe_pharmacy",
+        "tool_iv_set_pharmacy"
+      ],
+      "sample": false,
+      "status": "待投放的设计模板，不代表现有地图已放置",
+      "grant_policy": "每个实例明确配置1至2个相关配方内容；recipes仅为候选池，不是一次全送",
+      "complete_evidence": "对应完整记录授予该方案结构、材料关系与所需工序",
+      "research_profile": "interest_point"
+    }
+  },
+  "interest_point_contract": {
+    "discovery": "可见只揭示现场物件与已观察事实；完成有效调查或研究才授予知识",
+    "alternatives": "现场记录可以直接研究；可带走资料或样本在基地研究；一般不强制两条路都走",
+    "time": "现场研究占主动工作通道并推进世界tick，遵循当前位置危险与战斗暂停规则",
+    "consumption": "观察和读记录不吞掉场景家具；只有明确确认的M实物样本在开工消耗",
+    "dedupe": "按角色与知识内容去重；地图实例ID用于保存搜刮状态；不同地点同一内容不重复发研究经验",
+    "partial": "残缺证据仅授予其明确事实，不能固定要求集齐N页；每个高级目标至少配置一条可完成的证据路线",
+    "repeat": "已知配方不抽取另一张万能配方，不自动升级品质；已有容器与材料仍按原规则处理",
+    "placement": "与地点用途一致，至少一条非强制战斗可达路线；无全图配方标记、任务箭头或未来目录",
+    "economy": "知识奖励独立于成品和材料奖励；完整解锁不赠送库存、技能等级或免费设施"
+  },
+  "material_policy": {
+    "confirmed": "尽量复用已有材料；必要新增材料优先由已有物品加工，允许极少数无法合理推导的外部专用原料",
+    "proposed_intermediates": [
+      "material_iron_blank_common",
+      "material_steel_wire"
+    ],
+    "external_exceptions": [
+      "material_nylon_stock",
+      "material_carbon_line_stock",
+      "ore_flint",
+      "material_stainless_sheet"
+    ],
+    "new_material_count": 6,
+    "net_reduction": 15,
+    "retired_previous_concepts": 16,
+    "upstream_depth": "新增链最多一层；不拆出针头、垫片、玻璃粉和七种原土",
+    "knowledge": "普通铁坯加工在制造1级掌握，钢丝加工随使用它的首个完整配方授予；不另加材料研究门槛",
+    "soil": "保留七个现有客土成品；取消七种原土，以23号腐熟基质制造线为根",
+    "status": "8种物品模板已注册，当前制造路线使用6种（2种中间料、4种外部专材）；小份铅料和精密机件仅兼容保留。配方用于独立试玩，正式流程、解锁及供应待接入",
+    "retired_registered_materials": [
+      "material_lead_portion",
+      "material_precision_parts"
+    ],
+    "yield_policy": "用户确认按玩法节奏收敛批量，不以真实重量损耗推导数量。铁坯与钢丝一批3份、钩坠6个、鱼饵20份；雷蛙和耐用器具一批1件。同步收敛工具投入，取消小份铅料与精密机件加工。具体数值仍为试调值。"
+  },
+  "facility_contract": {
+    "multi_facility": "精密玻璃配方须在同一台体的精密工位执行并拥有可用陶玻工位；两者共享台级，不跨台或跨地图借用",
+    "material_processing": "材料整形步骤可并入产物配方；仅普通铁坯、钢丝料两种跨配方共用材料单列加工，产量按玩法节奏确定",
+    "tier_and_modules": "本体按1至3升级，金工、陶玻和精密为专业工位；金工与陶玻一级即可建，精密二级可建，工位自身不另设等级",
+    "start_predicate": "已知完整配方 AND 工位可用 AND 台级达到workbench_level_min AND required_tools全部可用 AND inputs整批齐备 AND 行动与费用条件通过；全部成立后才可扣料"
+  },
+  "material_registration": {
+    "date": "2026-10-30",
+    "source_csv": "data/items/manufacturing_materials_base.csv",
+    "runtime_catalogs": [
+      "data/items.json",
+      "data/item-catalog-v2.json"
+    ],
+    "item_ids": [
+      "material_iron_blank_common",
+      "material_lead_portion",
+      "material_steel_wire",
+      "material_precision_parts",
+      "material_nylon_stock",
+      "material_carbon_line_stock",
+      "ore_flint",
+      "material_stainless_sheet"
+    ],
+    "registered_count": 8,
+    "item_templates": "registered",
+    "processing_recipes": "design_only",
+    "unlock_routes": "design_only",
+    "external_supply": "not_placed",
+    "source_field_semantics": "source记录计划获得方式；不自动添加配方、采集点、地牢掉落或商店库存",
+    "pricing": "8项均已填非零内部基线价值，属首版试值，不向玩家直接显示；钢锭上游价值仍为空，整条生产收益尚未平衡",
+    "supply_audit_baseline": "已有根材料指本轮登记前的物品；4种外部专材登记后仍单独计入外部供应需求",
+    "compatibility": "proposed_materials为当前材料设计清单；停用但仍注册的模板移至retired_materials，保留正式ID",
+    "active_item_ids": [
+      "material_iron_blank_common",
+      "material_steel_wire",
+      "material_nylon_stock",
+      "material_carbon_line_stock",
+      "ore_flint",
+      "material_stainless_sheet"
+    ],
+    "retired_item_ids": [
+      "material_lead_portion",
+      "material_precision_parts"
+    ],
+    "retirement_note": "2026-10-31取消小份铅料和精密机件加工及配方消耗；原模板保留兼容，不再作为当前制造原料"
+  },
+  "workbench": {
+    "status": "用户确定可升级并作为配方条件；三级划分、升级投入与逐项要求为待试玩方案，未实装",
+    "max_level": 3,
+    "shared_level_scope": "同一基地同一制造台实例及挂接工位共用一个台级；不能借另一座台的等级或跨地图拼条件",
+    "levels": [
+      {
+        "level": 1,
+        "name": "基础制作台",
+        "construction_ref": "facilities.bench",
+        "ability": "基础定形与夹持，覆盖入门工具、整套手竿钓具及常规材料加工"
+      },
+      {
+        "level": 2,
+        "name": "加固制作台",
+        "ability": "稳定固定、校直与复杂装配，可安装精密工位并维修竿轮"
+      },
+      {
+        "level": 3,
+        "name": "精密制作台",
+        "ability": "精细定位与重复校准，支持整竿轮及专业玻璃、医用器具的完整制造"
+      }
+    ],
+    "upgrades": [
+      {
+        "upgrade_id": "manufacturing.bench_1_to_2",
+        "from_level": 1,
+        "to_level": 2,
+        "required_facilities": [
+          "metal"
+        ],
+        "inputs": [
+          {
+            "item_id": "wood_plank_soft",
+            "count": 6
+          },
+          {
+            "item_id": "ore_steel_ingot",
+            "count": 2
+          },
+          {
+            "item_id": "mechanical_parts",
+            "count": 2
+          }
+        ],
+        "required_tools": [
+          {
+            "item_id": "tool_repair_hammer",
+            "count": 1,
+            "consume": false
+          }
+        ],
+        "ticks": 12,
+        "stamina": 18,
+        "grants_processing_recipes": [],
+        "processing_grant_trigger": "inspect_upgrade_plan"
+      },
+      {
+        "upgrade_id": "manufacturing.bench_2_to_3",
+        "from_level": 2,
+        "to_level": 3,
+        "required_facilities": [
+          "precision"
+        ],
+        "inputs": [
+          {
+            "item_id": "ore_steel_ingot",
+            "count": 2
+          },
+          {
+            "item_id": "mechanical_parts",
+            "count": 2
+          },
+          {
+            "item_id": "electronic_wire",
+            "count": 2
+          },
+          {
+            "item_id": "item_glass",
+            "count": 2
+          }
+        ],
+        "required_tools": [
+          {
+            "item_id": "tool_repair_hammer",
+            "count": 1,
+            "consume": false
+          },
+          {
+            "item_id": "tool_repair_pliers",
+            "count": 1,
+            "consume": false
+          }
+        ],
+        "ticks": 16,
+        "stamina": 24,
+        "grants_processing_recipes": [],
+        "processing_grant_trigger": "inspect_upgrade_plan"
+      }
+    ],
+    "upgrade_knowledge": "检查现有台体即可知道下一次改造条件，不增加角色等级或升级图纸锁，也不授予成品或中间料配方",
+    "lower_level_compatibility": "台级达到或超过最低要求即可；升级保留原工位、已学配方和低级配方，不能代替缺失工具或工位",
+    "numeric_effect": "台级只决定能否执行该工艺，首版不叠加成功率、减耗或成品性能加成；同配方沿用原数值",
+    "level_zero": "0表示不要求制作台，仍按原基地行动条件执行；不是可升级的背包工作台",
+    "upgrade_job": {
+      "success": "有效建设与升级固定成功，使用专门的设施施工任务；所列体力和时间为固定试值，不套用制造成功率和技能减耗，首版不发制造经验",
+      "start": "检查前一级、同台工位、可达材料和工具；台体没有进行中或暂停的生产、研究、维修及待领取成果；首个有效tick原子扣料并锁定工具",
+      "pause": "关闭、离开、战斗或工具不可用时暂停；不推进离线时间，施工中台体与所有挂接工位不可用",
+      "cancel": "开始前不扣料；开始后放弃不退已投入材料，解除工具锁并恢复原台级及工位",
+      "completion": "按任务ID一次提交目标台级与完成标记；保留同一台体及工位ID；保存失败回滚升级提交，不重扣材料",
+      "repetition": "只允许1到2、2到3；同目标升级不能重入或重复付费，不能跳级、拆回材料或重复获得等级"
+    },
+    "persistence": "保存台体ID、基地ID、level、已建工位、upgrade_job_id、改造版本；配方任务保存使用的台体ID、最低台级、工具实例引用及条件快照",
+    "migration": "未来接入时，无台体为0；确有旧台体但无等级字段的记1，确有旧精密工位的至少记2；不凭角色等级、物品持有或研究进度补送台级"
+  },
+  "tool_contract": {
+    "reusable_item_ids": [
+      "tool_repair_hammer",
+      "tool_repair_pliers",
+      "tool_sewing_kit_cloth"
+    ],
+    "consumption": "required_tools为重复使用的真实工具，inputs为消耗材料；同一实例或堆叠份额不可同时占两类，不凭标签自动代替",
+    "builtin_equipment": "没有required_tools的配方仍使用对应台级和工位所含的固定夹具；不据此生成或赠送便携锤钳针具",
+    "initial_tools": "一级金工的固定夹具可制修理锤；一级台的固定穿线夹具可制缝纫工具包；二级金工加修理锤可制维修钳，均不要求同款工具先存在",
+    "accessibility": "工具位于随身或本基地按权限可达的仓库；可解析可达工具卷中的真实子实例，不能用空工具卷代替工具，不借用其他角色或其他地点的工具",
+    "reservation": "开工选定实际实例并占用至本批完成、失败或放弃；暂停保留占用，禁止同时用于其他任务、出售、拆装、转移或作为耗材",
+    "validity": "开工、恢复、每个工作tick与结算前校验存在、可达、未被其他任务占用及既有可用状态；工具失效暂停，不额外扣料，不静默替换",
+    "durability": "沿用工具已有可用状态；本轮不新增工具耐久或次数，每批结束释放占用且不销毁工具",
+    "death": "工具仍留在原容器，不享受生产投入的死亡豁免；随身工具消失时暂停，取得同款后显式重选并原子更换引用，不复制或返还丢失工具"
+  },
+  "workbench_policy": {
+    "confirmed_direction": "制作台可升级；配方除材料与工具外，还要求制作台达到最低等级",
+    "proposed_tiers": 3,
+    "tier_assignment": "按工艺复杂度逐项分配，不按解锁来源、技能等级、物品尺寸或数量机械分档",
+    "knowledge": "技能与探索仍只授予制作知识；台级控制生产条件，不授予或隐藏已经学会的配方",
+    "status": "已更新设计表，三级划分、工具要求及升级成本待试玩，未接入运行时"
+  }
+}
