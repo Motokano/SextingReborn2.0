@@ -1,0 +1,8 @@
+{
+  "schemaVersion": 1,
+  "pools": {
+    "npc.station.manufacturing_base.fallback": {
+      "lines": ["台面缺了大半，下层木板也已断裂，台钳只剩固定座。铁架还撑得住，但眼下没法使用。"]
+    }
+  }
+}

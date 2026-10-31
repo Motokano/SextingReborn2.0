@@ -1,5 +1,5 @@
 {
-  "status": "candidate_art_complete_pending_user_review",
-  "scope": "unrepaired state and three upgrade levels, same 1x1 footprint, review only",
+  "status": "unrepaired_v2_approved_and_placed_in_hideout",
+  "scope": "unrepaired-v2 at M0_Base_Inside_lv_1 (4,11); upgrade levels remain art previews; repair and production not connected",
   "date": "2026-10-31"
 }

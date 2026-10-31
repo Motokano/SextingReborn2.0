@@ -23,6 +23,15 @@
             shadow.width = 640; shadow.height = 352;
             var sc = shadow.getContext('2d');
             sc.scale(4,4); sc.translate(64,40);
+            // Furniture without a pedestal casts shade from its actual four feet.
+            if (spec.groundContacts) {
+                sc.beginPath();
+                spec.groundContacts.forEach(function (p, i) {
+                    sc[i ? 'lineTo' : 'moveTo']((p[0]-spec.anchor[0])*scale+4,(p[1]-spec.anchor[1])*scale+2);
+                });
+                sc.closePath(); sc.fillStyle='rgba(9,15,11,.25)'; sc.fill();
+                return shadow;
+            }
             // Project the raised object from the CENTER of its ground footprint.
             sc.save(); sc.transform(1,0,-.48,-.24,-.48*depth,-1.24*depth);
             sc.drawImage(image,crop[0],crop[1],crop[2],crop[3],x,y,spec.width,crop[3]*scale);
@@ -94,6 +103,7 @@
         // Approved device pawns. Crop and anchor are source-image pixel coordinates;
         // sizes below describe visible content on a 144px tile, not transparent padding.
         var deviceSpecs = {
+            manufacturing: { crop: [114,114,1065,1095], anchor: [637.5,903], groundCenter: [637.5,903], groundContacts: [[212,822],[735,1185],[1063,984],[540,621]], width: 1065*104.4/851, label: '制作台' },
             bathroom: { crop: [223,13,890,1156], anchor: [701.5,1168], width: 64, label: '卫生间' },
             forging: { crop: [166,81,970,1079], anchor: [650,1159], width: 68, label: '铸造台' },
             sewing: { crop: [212,95,877,1033], anchor: [661,1127], width: 64, label: '缝纫台' },
@@ -109,9 +119,11 @@
         Object.keys(deviceSpecs).forEach(function (key) {
             spriteSources[key] = 'assets/map/isometric/interactive-devices-v1/' + key + '.png';
         });
+        spriteSources.manufacturing = 'assets/map/isometric/manufacturing-bench-v1/unrepaired-v2.png';
         // Ground footprint of each oval base in display pixels at 144px tile width.
         // A base is already on the ground plane; it must not be flattened again.
         var deviceFootprints = {
+            manufacturing: [52.2,34.6],
             bathroom: [32,11],
             forging: [34,11],
             sewing: [32,10.5],
@@ -156,7 +168,7 @@
         }
         // Dialogue reads the same sources and crops as map pawns.
         global.TileRendererV2.getSpeakerPawn = function (entityId) {
-            var key = entityId === 'npc.station.forging_base' ? 'forging' : entityId === 'npc.station.sewing_base' ? 'sewing' : entityId === 'npc.station.observation_base' ? 'toolbench' :
+            var key = entityId === 'npc.station.manufacturing_base' ? 'manufacturing' : entityId === 'npc.station.forging_base' ? 'forging' : entityId === 'npc.station.sewing_base' ? 'sewing' : entityId === 'npc.station.observation_base' ? 'toolbench' :
                 entityId === 'npc.supervisor.manager' ? 'linManager' :
                 entityId === 'enemy.street_thug' ? 'streetThug' : 'npc';
             Object.keys(deviceStates).some(function (device) {
@@ -195,6 +207,7 @@
         }
 
         function deviceKeyForMeta(m) {
+            if (m.npcId === 'npc.station.manufacturing_base') return 'manufacturing';
             if (m.npcId === 'npc.station.bathroom_base') return 'bathroom';
             if (m.npcId === 'npc.station.forging_base') return 'forging';
             if (m.npcId === 'npc.station.sewing_base') return 'sewing';
@@ -216,15 +229,17 @@
             var width = crop[2] * scale, height = crop[3] * scale;
             var x = (crop[0] - spec.anchor[0]) * scale;
             var y = (crop[1] - spec.anchor[1]) * scale;
+            var footX = spec.groundCenter ? cx + (spec.anchor[0] - spec.groundCenter[0]) * scale : cx;
+            var footY = spec.groundCenter ? cy + (spec.anchor[1] - spec.groundCenter[1]) * scale : cy + 8 * unit;
             if (image) {
-                ctx.save(); ctx.translate(cx, cy + 8 * unit);
+                ctx.save(); ctx.translate(footX, footY);
                 ctx.imageSmoothingEnabled = true; ctx.imageSmoothingQuality = 'high';
                 ctx.save(); ctx.filter = 'blur(.35px)';
                 ctx.drawImage(spriteCache[key].shadow,-64*unit,-40*unit,160*unit,88*unit);
                 ctx.restore();
                 ctx.drawImage(image, crop[0], crop[1], crop[2], crop[3], x, y, width, height);
                 ctx.restore();
-                drawSpriteLabel(ctx, label || spec.label, cx, cy + 8 * unit + y - 4 * unit);
+                drawSpriteLabel(ctx, label || spec.label, cx, footY + y - 4 * unit);
             } else {
                 // Keep a recognizable device label during loading or failure, never a person.
                 drawSpriteLabel(ctx, label || spec.label, cx, cy - 9 * unit);
